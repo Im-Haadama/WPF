@@ -1,0 +1,25 @@
+Files in this package
+people.php      -- functions for handling info
+people-post.php -- for calls from the client
+
+For who earns delivery based.
+----------------------------
+driver.php      -- Entry of delivery
+driver-post.php -- Handles entry.
+drivers.php     -- For manager - see all.
+
+Employees
+---------
+report.php      -- report for salery based. Manager
+worker.php      -- for employees.
+
+Volunteers
+----------
+volunteer.php   -- for usage of volunteers
+volunteer-post.php calls
+volunteers.php  -- for manager
+
+Each page shows the data
+-- filtered by month. Default last month.
+-- Employee sees his data
+-- Manager see all.

@@ -1,0 +1,418 @@
+<?php
+
+require_once( '../tools_wp_login.php' );
+require_once( "../gui/inputs.php" );
+require_once( "account.php" );
+// $start_time =  microtime(true);
+
+// only if admin can select user. Otherwise get id from login info
+$user    = new WP_User( $user_ID );
+$manager = false;
+if ( ! empty( $user->roles ) && is_array( $user->roles ) ) {
+	foreach ( $user->roles as $role ) {
+		if ( $role == 'administrator' or $role == 'shop_manager' ) {
+			$manager = true;
+		}
+	}
+}
+if ( $manager ) {
+	$customer_id = $_GET["customer_id"];
+	// print "id: " . $customer_id;
+} else {
+	$customer_id = $user_ID;
+}
+
+if ( ! $manager ) {
+	require_once( "../header.php" );
+}
+
+?>
+
+<html dir="rtl" lang="he">
+<meta charset="UTF-8">
+<head>
+    <script>
+
+        function addTransaction() {
+            var type = document.getElementById("transaction_type").value;
+            var amount = document.getElementById("transaction_amount").value;
+            var date = document.getElementById("transaction_date").value;
+            var ref = document.getElementById("transaction_ref").value;
+            var request = "account-add-trans.php?customer_id=" + <?php print $customer_id ?>
+                +"&type=" + type + "&amount=" + amount + "&date=" + date + "&ref=" + ref;
+            // window.alert(request);
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                // Wait to get query result
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+                {
+                    updateDisplay();
+                }
+            }
+            xmlhttp.open("GET", request, true);
+            xmlhttp.send();
+        }
+
+        function updateDisplay() {
+            xmlhttp2 = new XMLHttpRequest();
+            xmlhttp2.onreadystatechange = function () {
+                // Wait to get query result
+                if (xmlhttp2.readyState == 4 && xmlhttp2.status == 200)  // Request finished
+                {
+                    label = document.getElementById("total");
+                    label.innerHTML = xmlhttp2.response;
+                }
+            }
+            var request2 = "get-customer-account-post.php?operation=total&customer_id=" + <? print $customer_id; ?>;
+            xmlhttp2.open("GET", request2, true);
+            xmlhttp2.send();
+
+            xmlhttp1 = new XMLHttpRequest();
+            xmlhttp1.onreadystatechange = function () {
+                // Wait to get query result
+                if (xmlhttp1.readyState == 4 && xmlhttp1.status == 200)  // Request finished
+                {
+                    table = document.getElementById("transactions");
+                    table.innerHTML = xmlhttp1.response;
+                }
+            }
+            var request1 = "get-customer-account-post.php?operation=table&customer_id=" + <? print $customer_id; ?>;
+            xmlhttp1.open("GET", request1, true);
+            xmlhttp1.send();
+            document.getElementById('btn_invoice').disabled = true;
+            document.getElementById('btn_receipt').disabled = true;
+            document.getElementById('btn_refund').disabled = true;
+        }
+        function create_user() {
+            var request = "account-post.php?operation=create_invoice_user&id=" +<?php print $customer_id ?>;
+            //  window.alert(request);
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                // Wait to get query result
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+                {
+                    updateDisplay();
+                }
+            }
+            xmlhttp.open("GET", request, true);
+            xmlhttp.send();
+        }
+
+        function calcRefund() {
+
+        }
+
+        function create_refund() {
+            // var request = "account-post.php?operation=show_refund&id=";
+            var request = "../delivery/create-delivery.php?refund&id=";
+            var collection = document.getElementsByClassName("trans_checkbox");
+            for (var i = 0; i < collection.length; i++) {
+                if (collection[i].checked) {
+                    var del_id = table.rows[i + 1].cells[6].firstChild.innerHTML;
+                    request = request + del_id;
+                    break;
+                }
+            }
+
+            //  window.alert(request);
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                // Wait to get query result
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+                {
+                    // refund_area.innerHTML = xmlhttp.response;
+                    refund_area.innerHTML = xmlhttp.response;
+
+                    document.getElementById("btn_calc").onclick = function () {
+                        calcRefund();
+                    }
+
+                }
+            }
+            xmlhttp.open("GET", request, true);
+            xmlhttp.send();
+
+        }
+
+    </script>
+</head>
+
+<body onload="updateDisplay()">
+
+<?php
+
+// $now = debug_time("print", $start_time);
+
+print "<center><h1>מצב חשבון ";
+print get_customer_name( $customer_id );
+print  "</h1> </center>";
+
+if ( $manager ) {
+	print "<br>";
+	print "email: " . get_customer_email( $customer_id );
+	print "<br>";
+	print "phone: " . get_customer_phone( $customer_id );
+	print "<br>";
+	print "הנתונים הן יתרת חוב. זיכוי ותשלום ירשמו בסימן שלילי";
+	print "<br>";
+	print "סוג פעולה";
+	print '<input type="text" id="transaction_type">';
+	print "סכום";
+	print '<input type="text" id="transaction_amount">';
+	print "תאריך";
+	print '<input type="date" id="transaction_date">';
+	print "מזהה";
+	print '<input type="text" id="transaction_ref">';
+	print '<button id="btn_add" onclick="addTransaction()">הוסף תנועה</button>';
+
+	print "<br/>";
+	print "אמצעי תשלום";
+	print gui_select( "payment", "im_payments", get_payment_method( $customer_id ) );
+	print gui_button( "save_payment_method", "save_payment_method()", "שמור" );
+}
+
+?>
+<br>
+
+<script>
+	<?php
+	$filename = __DIR__ . "/../client_tools.js";
+	$handle = fopen( $filename, "r" );
+	$contents = fread( $handle, filesize( $filename ) );
+	print $contents;
+	?>
+
+    function save_payment_method() {
+        var method = get_value(document.getElementById("payment"));
+        xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+            // Wait to get query result
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+            {
+                logging.innerHTML += "חשבונית מספר " + receipt_id;
+                updateDisplay();
+            }
+        }
+        var request = "account-post.php?operation=save_payment";
+        request = request + "&user_id=" + <?php print $customer_id; ?>;
+        request = request + "&method_id=" + method;
+
+        xmlhttp.open("GET", request, true);
+        xmlhttp.send();
+    }
+    function update_sum() {
+        var collection = document.getElementsByClassName("trans_checkbox");
+        var table = document.getElementById("transactions");
+        var total = 0;
+        var credit = parseFloat(get_value(document.getElementById("credit")));
+        if (isNaN(credit)) credit = 0;
+        var bank = parseFloat(get_value(document.getElementById("bank")));
+        if (isNaN(bank)) bank = 0;
+        var cash = parseFloat(get_value(document.getElementById("cash")));
+        if (isNaN(cash)) cash = 0;
+        var check = parseFloat(get_value(document.getElementById("check")));
+        if (isNaN(check)) check = 0;
+
+        var delivery_count = 0;
+        for (var i = 0; i < collection.length; i++) {
+            if (collection[i].checked) {
+                delivery_count++;
+                total += parseFloat(get_value(table.rows[i + 1].cells[2].firstChild));
+
+            }
+        }
+        total = Math.round(100 * total) / 100;
+        // alert(total);
+        if (total === 0) {
+            logging.innerHTML = "יש לבחור משלוחים להפקת המסמך";
+
+            document.getElementById('btn_invoice').disabled = true;
+            document.getElementById('btn_receipt').disabled = true;
+            document.getElementById('btn_refund').disabled = true;
+        } else {
+            logging.innerHTML = "סכום השורות שנבחר " + total + "<br/>";
+            logging.innerHTML += " סך תקבולים " + (credit + bank + cash + check) + "<br/>";
+            var total_pay = (credit + bank + cash + check);
+            var cash_delta = Math.round(100 * (total_pay - total)) / 100;
+            change.innerHTML = cash_delta;
+
+            if (total_pay > 0) {
+                document.getElementById('btn_invoice').disabled = true;
+                document.getElementById('btn_receipt').disabled = false;
+            } else {
+                document.getElementById('btn_invoice').disabled = false;
+                document.getElementById('btn_receipt').disabled = true;
+            }
+            document.getElementById('btn_refund').disabled = (delivery_count != 1);
+        }
+    }
+    //קבלה
+    function create_receipt() {
+        document.getElementById('btn_receipt').disabled = true;
+        var collection = document.getElementsByClassName("trans_checkbox");
+        var table = document.getElementById("transactions");
+        var del_ids = new Array();
+        var total = 0;
+
+        for (var i = 0; i < collection.length; i++) {
+            if (collection[i].checked) {
+                var del_id = table.rows[i + 1].cells[6].firstChild.innerHTML;
+                del_ids.push(del_id);
+                total = total + parseInt(table.rows[i + 1].cells[2].firstChild.data);
+            }
+        }
+        xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+            // Wait to get query result
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+            {
+                receipt_id = xmlhttp.responseText.trim();
+                logging.innerHTML += "חשבונית מספר " + receipt_id;
+                updateDisplay();
+            }
+        }
+        var credit = parseFloat(get_value(document.getElementById("credit")));
+        if (isNaN(credit)) credit = 0;
+        var bank = parseFloat(get_value(document.getElementById("bank")));
+        if (isNaN(bank)) bank = 0;
+        var cash = parseFloat(get_value(document.getElementById("cash")));
+        if (isNaN(cash)) cash = 0;
+        var check = parseFloat(get_value(document.getElementById("check")));
+        if (isNaN(check)) check = 0;
+        var request = "account-post.php?operation=create_receipt" +
+            "&cash=" + cash +
+            "&credit=" + credit +
+            "&bank=" + bank +
+            "&check=" + check +
+            "&change=" + change.innerHTML +
+            "&ids=" + del_ids.join() +
+            "&user_id=" + <?php print $customer_id; ?>;
+        // alert(request);
+        xmlhttp.open("GET", request, true);
+        xmlhttp.send();
+//        }
+    }
+    function create_invoice() {
+        document.getElementById('btn_invoice').disabled = true;
+        var collection = document.getElementsByClassName("trans_checkbox");
+        var table = document.getElementById("transactions");
+        var del_ids = new Array();
+        var total = 0;
+
+        for (var i = 0; i < collection.length; i++) {
+            if (collection[i].checked) {
+                var del_id = table.rows[i + 1].cells[6].firstChild.innerHTML;
+                del_ids.push(del_id);
+                total = total + parseInt(table.rows[i + 1].cells[2].firstChild.data);
+            }
+        }
+        xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+            // Wait to get query result
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+            {
+                invoice_id = xmlhttp.responseText.trim();
+                logging.innerHTML += "חשבונית מספר " + invoice_id + " נוצרה ";
+                updateDisplay();
+            }
+        }
+        var request = "account-post.php?operation=create_invoice" +
+            "&ids=" + del_ids.join() +
+            "&user_id=" + <?php print $customer_id; ?>;
+        xmlhttp.open("GET", request, true);
+        xmlhttp.send();
+    }
+
+    function printDeliveryNotes() {
+        // Get the html
+        document.getElementById('btn_print').style.visibility = "hidden";
+        window.open("//pdfcrowd.com/url_to_pdf/");
+        document.getElementById('btn_print').style.visibility = "visible";
+//	var txt = document.documentElement.innerHTML;
+
+        // Download the html
+// 	var a = document.getElementById("a");
+//	var file = new Blob(txt, 'text/html');
+// 	a.href = URL.createObjectURL(file);
+        // a.download = 're.html';
+
+//	download(txt, 'myfilename.html', 'text/html')
+//	window.open('data:text/html;charset=utf-8,<html dir="rtl" lang="he">' + txt + '</html>');
+
+//
+
+        // To Do: upload the file
+
+        document.getElementById('btn_calc').style.visibility = "visible";
+        document.getElementById('btn_print').style.visibility = "visible";
+    }
+
+</script>
+<h2>
+    <label id="total">יתרה</label>
+</h2>
+<br>
+<H2>תנועות</H2>
+
+<?php
+
+if ( $manager ) {
+	require_once( '../invoice4u/invoice.php' );
+	$invoice = new Invoice4u();
+	$invoice->Login();
+
+	if ( is_null( $invoice->token ) ) {
+		die ( "can't login" );
+	}
+
+	// print "client name " . $client_name . "<br/>";
+	$client_name = get_customer_name( $customer_id );
+	$client      = $invoice->GetCustomerByName( $client_name );
+	// var_dump($client);
+
+	if ( is_null( $client->ID ) ) {
+		print gui_button( "btn_create_user", "create_user()", "צור משתמש" );
+//        print "<B>יש להקים לקוח ב Invoice4u</B>";
+	} else {
+		$style = "table.payment_table { border-collapse: collapse; } " .
+		         " table.payment_table, td.change, th.change { border: 1px solid black; } ";
+		$sums  = null;
+		print gui_table( array(
+			array(
+				"תשלום",
+				gui_button( "btn_receipt", "create_receipt()", "הפק חשבונית מס קבלה" )
+			),
+			array( "מזומן", gui_input( "cash", "", array( 'onkeyup="update_sum()"' ) ) ),
+			array( "אשראי", gui_input( "credit", "", array( 'onkeyup="update_sum()"' ) ) ),
+			array( "העברה", gui_input( "bank", "", array( 'onkeyup="update_sum()"' ) ) ),
+			array( "המחאה", gui_input( "check", "", array( 'onkeyup="update_sum()"' ) ) ),
+			array( "עודף", " <div id=\"change\"></div>" )
+		), "payment_table", true, "", $sums, $style, "payment_table" );
+
+
+		print gui_button( "btn_refund", "create_refund()", "הפק זיכוי" );
+		print gui_button( "btn_invoice", "create_invoice()", "הפק חשבונית מס" );
+		// print "<button id=\"btn_invoice\" onclick=\"create_invoice()\">הפק חשבונית מס</button>";
+		// print "<br/>";
+		// print "<button id=\"btn_receipt\" onclick=\"create_receipt()\">הפק חשבונית מס קבלה</button>";
+		print '<div id="logging"></div>';
+		print '<div id="refund_area"></div>';
+
+//	    print gui_table()
+//            ));
+//	    print "מזומן";
+//        print "<input id=\"cash\" onchange='update_sum()'><br/>";
+//        print "אשראי";
+//        print "<input id=\"credit\" onchange='update_sum()'><br/>";
+//        print "העברה";
+//        print "<input id=\"bank\" onchange='update_sum()'><br/>";
+//        print "המחאה";
+//        print "<input id=\"check\" onchange='update_sum()'><br/>";
+	}
+}
+
+?>
+<table id="transactions"></table>
+
+</body>
+</html>
