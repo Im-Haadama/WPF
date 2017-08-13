@@ -2,8 +2,13 @@
 require_once( '../multi-site/multi-site.php' );
 require_once( 'delivery-common.php' );
 
-$order_id = $_GET["order_id"];
 $id       = $_GET["id"];
+$order_id = $_GET["order_id"];
+$edit     = false;
+if ( $id > 0 ) {
+	$edit     = true;
+	$order_id = get_order_id( $id );
+}
 
 ?>
 
@@ -31,20 +36,11 @@ $id       = $_GET["id"];
         row.insertCell().innerHTML = "0";
     }
 
-    function get_value(element) {
-        if (element === null) {
-            return 0;
-        }
-        if (element.tagName == "INPUT") {
-            return element.value;
-        } else {
-            return element.nodeValue;
-        }
-    }
     function addDelivery() {
+
         calcDelivery();
         document.getElementById('btn_add').disabled = true;
-        var order_id = <?php print $order_id; ?>;
+	    <?php if ( isset( $order_id ) ) print "var order_id = " . $order_id . ";" ?>
 
         var table = document.getElementById('del_table');
         var lines = table.rows.length;
@@ -54,10 +50,9 @@ $id       = $_GET["id"];
         var line_number = 0;
         var is_edit = false;
 
-		<?php if ( $edit ) {
+	    <?php if ( $edit ) {
 	    print "is_edit = true;";
-    }
-	    ?>
+    } ?>
 
         // Enter delivery note to db.
         var request = "create-delivery-post.php?operation=add_header&order_id=" + order_id
@@ -65,9 +60,9 @@ $id       = $_GET["id"];
             + "&vat=" + total_vat;
 
 
-		<?php if ( $edit ) {
-		print "request = request + \"&edit&delivery_id=" . $id . "\"";
-	} ?>
+	    <?php if ( $edit ) {
+	    print "request = request + \"&edit&delivery_id=" . $id . "\"";
+    } ?>
 
         var delivery_id = 0;
         var saved_lines = 0;

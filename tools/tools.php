@@ -136,7 +136,7 @@ function calculate_price( $price, $supplier, $sale_price = '' ) {
 	$factor = $row["factor"];
 
 	// Check for sale
-	if ( is_numeric( $sale_price ) and $sale_price < $price ) {
+	if ( is_numeric( $sale_price ) and $sale_price < $price and $sale_price > 0 ) {
 		$price = $sale_price;
 	}
 

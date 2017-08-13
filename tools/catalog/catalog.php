@@ -165,7 +165,7 @@ class Catalog {
 			$print_line = $debug;
 		}
 
-		// Current info
+		// Current infoAd
 		$current_supplier_name = get_meta_field( $prod_id, "supplier_name" );
 		$current_price         = get_price( $prod_id );
 		$line                  .= gui_cell( $prod_id );
@@ -211,7 +211,11 @@ class Catalog {
 
 			return true;
 		}
-		$best          = best_alternatives( $alternatives );
+		$best = best_alternatives( $alternatives, $debug_product == $prod_id );
+		if ( $prod_id == $debug_product ) {
+			print "best:<br/>";
+			var_dump( $best );
+		}
 		$best_price    = $best[0];
 		$best_supplier = $best[1];
 		$best_pricelistid = $best[2];
@@ -297,7 +301,7 @@ class Catalog {
 
 		print "set regular price " . $regular_price . "<br/>";
 		update_post_meta( $product_id, "_regular_price", $regular_price );
-		if ( is_numeric( $sale_price ) and $sale_price < $regular_price ) {
+		if ( is_numeric( $sale_price ) and $sale_price < $regular_price and $sale_price > 0 ) {
 			// print "sale ";
 			print "set sale price " . $sale_price . "<br/>";
 			update_post_meta( $product_id, "_sale_price", $sale_price );
@@ -430,12 +434,17 @@ class Catalog {
 	}
 }
 
-function best_alternatives( $alternatives ) {
+function best_alternatives( $alternatives, $debug = false ) {
+	global $debug_product;
 	my_log( "best_alternatives" );
 	$min  = 1111111;
 	$best = null;
 	for ( $i = 0; $i < count( $alternatives ); $i ++ ) {
+		if ( $debug ) {
+			print "option: " . $i . " " . $alternatives[ $i ][0] . " " . $alternatives[ $i ][1] . " " . $alternatives[ $i ][3] . "<br/>";
+		}
 		$price = calculate_price( $alternatives[ $i ][0], $alternatives[ $i ][1], $alternatives[ $i ][3] );
+		print "price: " . $price . "<br/>";
 		my_log( "price $price" );
 		if ( $price < $min ) {
 			$best = $alternatives[ $i ];
@@ -467,6 +476,7 @@ function prof_print() {
 function alternatives( $id, $details = false )
 {
 	global $conn;
+	global $debug_product;
 
 	// prof_flag("start " . $id);
 	if ( ! ( $id > 0 ) ) {
@@ -474,6 +484,9 @@ function alternatives( $id, $details = false )
 		die ( 1 );
 	}
 
+	if ( $id == $debug_product ) {
+		print "Alternatives<br/>";
+	}
 	// Search by pricelist_id
 	$sql = "select price, supplier_id, id, sale_price from 
 			im_supplier_price_list where id in (select pricelist_id from im_supplier_mapping where product_id = $id)";
@@ -498,8 +511,6 @@ function alternatives( $id, $details = false )
 	}
 
 	// prof_flag("mid " . $id);
-
-
 	$output .= "by name: ";
 	// Search by product_name and supplier_id
 	$sql = " SELECT pl.price, pl.supplier_id, pl.id, pl.sale_price
@@ -510,7 +521,13 @@ function alternatives( $id, $details = false )
 		AND m.product_id = " . $id;
 
 	$result = mysqli_query( $conn, $sql );
+	$c      = 0;
 	while ( $row = mysqli_fetch_row( $result ) ) {
+		if ( $id == $debug_product ) {
+			print $c ++ . ")";
+			var_dump( $row );
+			print "<br/>";
+		}
 		$found = false;
 		// Don't repeat alternatives
 		for ( $i = 0; $i < count( $rows ); $i ++ ) {

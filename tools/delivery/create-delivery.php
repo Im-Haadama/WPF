@@ -3,47 +3,47 @@ include_once( "../tools_wp_login.php" );
 include_once( "../orders/orders-common.php" );
 include_once( "delivery.php" );
 include_once( "../multi-site/multi-site.php" );
+
+print header_text( true );
+
+/// If id is set -> edit. get order_id from id.
+/// Otherwise order_id should be set.
 ?>
-<html dir="rtl" lang="he">
-<head>
-    <meta charset="UTF-8">
+<script type="text/javascript" src="../client_tools.js"></script>
+<?php
 
-	<?php
-	$order_id = $_GET["order_id"];
+$script_file = MultiSite::LocalSiteTools() . "/delivery/create-delivery-script.php?i=1";
 
-	$script_file = MultiSite::LocalSiteTools() . "/delivery/create-delivery-script.php?";
-	$first       = true;
-	if ( isset( $_GET["id"] ) ) {
-		$script_file .= "id=" . $_GET["id"];
-		$first       = false;
+if ( isset( $_GET["id"] ) ) {
+	$id          = $_GET["id"];
+	$script_file .= "&id=" . $id;
+	$edit        = false;
+	if ( $id > 0 ) {
+		$edit     = true;
+		$order_id = get_order_id( $id );
 	}
+} else {
 	if ( isset( $_GET["order_id"] ) ) {
-		if ( ! $first ) {
-			$script_file .= '&';
-		}
-		$script_file .= 'order_id=' . $_GET["order_id"];
-		$first       = false;
+		$order_id = $_GET["order_id"];
+	} else {
+		print "nothing to work with<br/>";
+		die ( 1 );
 	}
-	$contents = file_get_contents( $script_file );
-	// $contents = fread($handle, filesize($filename));
+}
+
+$script_file .= "&order_id=" . $order_id;
+
+$contents = file_get_contents( $script_file );
 	print $contents;
 	?>
 </head>
 <body>
-<center><img src="<?php print $logo_url; ?>"></center>
 <?php
-
 
 // display form for creating invoice. If id already exist, open for edit
 $id       = $_GET["id"];
 if ( isset( $_GET["refund"] ) ) {
 	$refund = true;
-}
-
-$edit = false;
-if ( $id > 0 ) {
-	$edit     = true;
-	$order_id = get_order_id( $id );
 }
 
 my_log( __FILE__, "order=" . $order_id . " id = " . $id );
