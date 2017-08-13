@@ -55,4 +55,26 @@ function get_user_id() {
 	return $current_user->ID;
 }
 
+function week_day( $idx ) {
+	switch ( $idx ) {
+		case 1:
+			return "ראשון";
+			break;
+		case 2:
+			return "שני";
+			break;
+		case 3:
+			return "שלישי";
+			break;
+		case 4:
+			return "רביעי";
+			break;
+		case 5:
+			return "חמישי";
+			break;
+		case 6:
+			return "שישי";
+			break;
+	}
+}
 ?>

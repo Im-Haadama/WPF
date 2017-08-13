@@ -41,6 +41,7 @@ if ( isset( $_GET["operation"] ) ) {
 			break;
 
 		case "create_supply":
+			print "create supply<br/>";
 			$supplier_id = $_GET["supplier_id"];
 			my_log( "supplier_id=" . $supplier_id );
 

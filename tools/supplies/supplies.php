@@ -118,7 +118,7 @@ function supply_close( $supply_id ) {
 }
 
 function supply_status( $supply_id ) {
-	return sql_query_single_scalar( "SELECT status FROM ihstore.im_supplies WHERE id = " . $supply_id );
+	return sql_query_single_scalar( "SELECT status FROM im_supplies WHERE id = " . $supply_id );
 }
 
 function print_supply( $id, $internal ) {
@@ -218,7 +218,7 @@ function print_supply_lines( $id, $internal ) {
 }
 
 function print_comment( $id ) {
-	$sql = "SELECT text FROM ihstore.im_supplies" .
+	$sql = "SELECT text FROM im_supplies" .
 	       " WHERE id = " . $id;
 
 	// print $sql;
@@ -281,7 +281,7 @@ function got_supply( $supply_id, $supply_total, $supply_number ) {
 
 function supply_business_info( $supply_id ) {
 	global $conn;
-	$sql = "SELECT business_id FROM ihstore.im_supplies WHERE id = " . $supply_id;
+	$sql = "SELECT business_id FROM im_supplies WHERE id = " . $supply_id;
 	$bid = sql_query_single_scalar( $sql );
 	if ( $bid > 0 ) {
 		print business_supply_info( $bid );
@@ -389,10 +389,19 @@ function get_clients_per_product( $prod_id ) {
 }
 
 function display_active_supplies( $status ) {
+	global $conn;
+
 	$has_lines = false;
 	$sql       = "SELECT id, supplier, status, date(date) FROM im_supplies WHERE status IN (" .
 	             implode( ",", $status ) . ") AND id > (SELECT inventory_in FROM im_info)"
 	             . " ORDER BY 4, 3, 2";
+
+	$result = mysqli_query( $conn, $sql );
+
+	if ( ! $result ) {
+		sql_error( $sql );
+		die( 1 );
+	}
 	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
 
 	$data = "<table border='1'><tr><td>בחר</td><td><h3>מספר</h3></td><td><h3>תאריך</h3></td><td><h3>ספק</h3></td><td>סטטוס</td></tr>";
@@ -421,10 +430,12 @@ function display_active_supplies( $status ) {
 
 function create_supplier_order( $supplier_id, $ids ) {
 	$supply_id = create_supply( $supplier_id );
+	print "created supply " . $supply_id . "<br/>";
 
 	for ( $pos = 0; $pos < count( $ids ); $pos += 2 ) {
 		$prod_id  = $ids[ $pos ];
 		$quantity = $ids[ $pos + 1 ];
+		print "adding " . $prod_id . " quantity " . $quantity . "<br/>";
 
 		// Calculate the price
 //        $pricelist = new PriceList($supplier_id);

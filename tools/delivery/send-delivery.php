@@ -19,4 +19,4 @@ if ( ! ( $del_id > 0 ) ) {
 
 $delivery = new delivery( $del_id );
 // print "info: " . $info_email;
-$delivery->send_mail( $info_email );
+$delivery->send_mail( $track_email );

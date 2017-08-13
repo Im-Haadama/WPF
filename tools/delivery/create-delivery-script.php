@@ -1,19 +1,13 @@
 <?php
 require_once( '../multi-site/multi-site.php' );
+require_once( 'delivery-common.php' );
+
 $order_id = $_GET["order_id"];
 $id       = $_GET["id"];
 
 ?>
 
 <script>
-    const product_name_id = 0;
-    const q_quantity_ordered_id = 1; // Only display
-    const q_supply_id = 2;
-    const has_vat_id = 3;
-    const line_vat_id = 4;
-    const p_id = 5;
-    const line_total_id = 6;
-    const term_id = 7;
 
     function moveNextRow(my_row) {
         if (event.which == 13) {
@@ -61,8 +55,9 @@ $id       = $_GET["id"];
         var is_edit = false;
 
 		<?php if ( $edit ) {
-		print "is_edit = true;";
-	} ?>
+	    print "is_edit = true;";
+    }
+	    ?>
 
         // Enter delivery note to db.
         var request = "create-delivery-post.php?operation=add_header&order_id=" + order_id
@@ -176,16 +171,6 @@ $id       = $_GET["id"];
         document.getElementById('btn_print').style.visibility = "visible";
 
     }
-	<?php    function print_fresh_category() {
-		$list = "";
-		if ( MultiSite::LocalSiteID() == 1 ) {
-			foreach ( get_term_children( 15, "product_cat" ) as $child_term_id ) {
-				$list .= $child_term_id . ", ";
-			}
-		}
-		print rtrim( $list, ", " );
-	}
-	?>
 
     function calcDelivery() {
         var table = document.getElementById('del_table');

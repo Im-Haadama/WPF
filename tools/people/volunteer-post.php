@@ -40,11 +40,13 @@ switch ( $operation ) {
 		break;
 
 	case "display":
-		$user_id = $_GET["user_id"];
-		if ( $user_id == 0 ) {
+		$user = wp_get_current_user();
+		print $user->id;
+
+		if ( $user->id == 1 ) {
 			print print_transactions();
 		} else {
-			print print_transactions( $user_id );
+			print print_transactions( $user->id );
 		}
 		break;
 

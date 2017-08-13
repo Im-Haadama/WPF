@@ -3,6 +3,8 @@
 require_once( '../tools_wp_login.php' );
 require_once( "../gui/inputs.php" );
 require_once( "account.php" );
+require_once( "../multi-site/multi-site.php" );
+require_once( "../delivery/delivery-common.php" );
 // $start_time =  microtime(true);
 
 // only if admin can select user. Otherwise get id from login info
@@ -99,6 +101,74 @@ if ( ! $manager ) {
         }
 
         function calcRefund() {
+            var table = document.getElementById('del_table');
+            var total = 0;
+            var total_vat = 0;
+            var lines = table.rows.length;
+            var quantity_discount = 0;
+            var due_vat = 0;
+
+            for (var i = 1; i < lines; i++)  // Skip the header. Skip last lines: total, vat, total-vat, discount
+            {
+                if (table.rows[i].cells[0].innerHTML == "סהכ חייבי מעם") break;
+                if (table.rows[i].cells[0].innerHTML == "" ||
+                    table.rows[i].cells[0].innerHTML == "הנחת כמות") continue; // Reserved line for discount
+                if (table.rows[i].cells[0].innerHTML == "הנחת סל") {
+                    continue;
+                }
+                var q = get_value(table.rows[i].cells[q_refund_id].firstChild);
+                var p = get_value(table.rows[i].cells[p_id].firstChild);
+                var line_refund = Math.round(p * q * 100) / 100;
+
+                if ((q >= 8) && (table.rows[i].cells.length > 7)) {
+                    var line_term_id = table.rows[i].cells[term_id].innerHTML;
+                    // alert (line_term_id);
+                    var terms = line_term_id.split(",");
+                    var fresh = false;
+                    for (var x = 0; x < terms.length; x++) {
+                        if ([<?php print_fresh_category()?>].indexOf(parseInt(terms[x])) > -1) {
+                            fresh = true;
+                        }
+                    }
+                    if (fresh) Math.round(line_refund * 0.85 * 100) / 100;
+
+                }
+                table.rows[i].cells[refund_total_id].firstChild.nodeValue = line_refund;
+                total += line_refund;
+
+                // Vat
+                var vat_percent = <?php global $global_vat; print $global_vat; ?>;
+                var line_vat = 0;
+                if (table.rows[i].cells[has_vat_id].firstChild.checked) {
+                    line_vat = Math.round(100 * p * q / (100 + vat_percent) * vat_percent) / 100;
+                    total_vat += line_vat;
+                    due_vat += p * q;
+                }
+                table.rows[i].cells[line_vat_id].firstChild.nodeValue = line_vat;
+            }
+
+            // Show discount line or hide
+            var line = table.rows.length - 4;
+            quantity_discount = Math.round(quantity_discount);
+            table.rows[line].cells[product_name_id].innerHTML = (quantity_discount > 0) ? "הנחת כמות" : "";
+            table.rows[line].cells[q_supply_id].innerHTML = (quantity_discount > 0) ? -0.15 : "";
+            table.rows[line].cells[p_id].innerHTML = (quantity_discount > 0) ? quantity_discount : "";
+            var discount = -Math.round(quantity_discount * 15) / 100;
+            total = total + discount;
+            table.rows[line].cells[line_total_id].innerHTML = (quantity_discount > 0) ? discount : "";
+
+            // Update totals
+            total = Math.round(100 * total, 2) / 100;
+            due_vat = Math.round(100 * due_vat, 2) / 100;
+//    round_total = Math.round(total);
+//    table.rows[table.rows.length - 4].cells[line_total_id].firstChild.nodeValue = Math.round((round_total-total) *100)/100;
+            // Due VAT
+            table.rows[table.rows.length - 3].cells[refund_total_id].firstChild.nodeValue = due_vat;
+            // VAT
+            table.rows[table.rows.length - 2].cells[refund_total_id].firstChild.nodeValue = Math.round(total_vat * 100) / 100;
+            // Total
+            table.rows[table.rows.length - 1].cells[refund_total_id].firstChild.nodeValue = total_refund;
+
 
         }
 
@@ -390,7 +460,7 @@ if ( $manager ) {
 		), "payment_table", true, "", $sums, $style, "payment_table" );
 
 
-		print gui_button( "btn_refund", "create_refund()", "הפק זיכוי" );
+		// print gui_button( "btn_refund", "create_refund()", "הפק זיכוי" );
 		print gui_button( "btn_invoice", "create_invoice()", "הפק חשבונית מס" );
 		// print "<button id=\"btn_invoice\" onclick=\"create_invoice()\">הפק חשבונית מס</button>";
 		// print "<br/>";

@@ -31,7 +31,7 @@ function show_in( $prod_id ) {
 	$inventory_in = sql_query_single_scalar( "SELECT inventory_in FROM im_info" );
 
 	$sql = "select supply_id as אספקה, quantity as כמות, supplier_name as ספק " .
-	       " from ihstore.im_supplies_lines sl " .
+	       " from im_supplies_lines sl " .
 	       " join im_suppliers sr " .
 	       " join im_supplies s " .
 	       " where supply_id > " . $inventory_in .
@@ -51,7 +51,7 @@ function show_out( $prod_id ) {
 	$inventory_out = sql_query_single_scalar( "SELECT inventory_out FROM im_info" );
 
 	$sql = "select delivery_id as משלוח, quantity as כמות, client_from_delivery(delivery_id) as לקוח" . //, supplier_name as לקוח " .
-	       " from ihstore.im_delivery_lines dl " .
+	       " from im_delivery_lines dl " .
 	       // " join wp_users u " .
 	       " join im_delivery d " .
 	       " where delivery_id > " . $inventory_out .

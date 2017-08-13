@@ -2,9 +2,9 @@
 require_once( '../tools.php' );
 require_once( '../../wp-content/plugins/woocommerce-delivery-notes/woocommerce-delivery-notes.php' );
 require_once( '../multi-site/multi-site.php' );
-//$header = $_GET["header"];
+$header = $_GET["header"];
 //$footer = $_GET["footer"];
-$header = ( MultiSite::LocalSiteID() == 1 );
+//$header = ( MultiSite::LocalSiteID() == 1 );
 // print "Start " . MultiSite::LocalSiteName();
 // print $header;
 if ( $header ) {
@@ -243,17 +243,39 @@ function print_legacy() {
 
 			array_push( $fields, "" ); // Billing method
 
-			$choosed_day = "ד";
+			$postcode = get_user_meta( $client_id, 'shipping_postcode', true );
+//            print $postcode . "<br/>";
+
+			$zone_id = get_zone_from_postcode( $postcode );
+
+			$optional_days = sql_query_single_scalar( "SELECT delivery_days FROM wp_woocommerce_shipping_zones WHERE zone_id =" . $zone_id );
+			$today         = get_day_letter( date( 'w' ) );
+			// print "today: " . $today . "<br/>";
+			$choosed_day = $today;
+
+			// Sooner the better.
+			// Is in the optional days
+			foreach ( explode( ",", $optional_days ) as $aday ) {
+				if ( $aday >= $today ) {
+					$choosed_day = $aday;
+					break;
+				}
+			}
 			array_push( $fields, $choosed_day );
 
 			// $client_id = $ref;
 			$long_lat = get_long_lat( $client_id, $address );
+			// var_dump( $long_lat); print "<br/>";
 
-			$zone = intval( get_user_meta( $client_id, 'shipping_zone', true ) );
 
-			array_push( $fields, zone_get_name( $zone ) );
+			if ( ! $zone_id ) {
+				$zone_id = intval( get_user_meta( $client_id, 'shipping_zone', true ) );
+			}
+			/// print $zone_id . "<br/>";
 
-			$zone_order = get_zone_order( $zone );
+			array_push( $fields, zone_get_name( $zone_id ) );
+
+			$zone_order = get_zone_order( $zone_id );
 
 //	    $x = sprintf("%.02f", 40 - $long_lat[0]);
 //	    $y = sprintf("%.02f", $long_lat[1]);

@@ -9,6 +9,7 @@ include_once( "../multi-site/multi-site.php" );
     <meta charset="UTF-8">
 
 	<?php
+	$order_id = $_GET["order_id"];
 
 	$script_file = MultiSite::LocalSiteTools() . "/delivery/create-delivery-script.php?";
 	$first       = true;
@@ -34,7 +35,6 @@ include_once( "../multi-site/multi-site.php" );
 
 
 // display form for creating invoice. If id already exist, open for edit
-$order_id = $_GET["order_id"];
 $id       = $_GET["id"];
 if ( isset( $_GET["refund"] ) ) {
 	$refund = true;
@@ -62,9 +62,6 @@ if ( $id > 0 ) {
 } else {
 	$client_id = get_customer_id_by_order_id( $order_id );
 	print "<form name=\"delivery\" action= \"\">";
-	print "<center>הפקת תעודת משלוח להזמנה מספר  ";
-	print $order_id;
-	print  " </center>";
 
 	print_order_info( $order_id );
 	$d = delivery::CreateFromOrder( $order_id );

@@ -80,7 +80,7 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 	}
 	$sql_month = null;
 	if ( isset( $month ) and $month > 0 ) {
-		print "מציג נתונים לחודש " . $month . "<br/>";
+		print "מציג נתונים לחודש " . $month . " מזהה " . $user_id . "<br/>";
 		$sql_month = " and month(date)=" . $month . " and year(date)=" . $year;
 	}
 	// $month_sum = array();
@@ -94,7 +94,7 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 	// print $user_id;
 	$data = "<table border='1'><tr>";
 	$data .= gui_cell( "בחר" );
-	$data .= "<td>תאריך</td><td>משעה</td><td>עד שעה</td><td>שעות</td><td>125%</td><td>150%</td>";
+	$data .= "<td>תאריך</td><td>יום בשבוע</td><td>משעה</td><td>עד שעה</td><td>שעות</td><td>125%</td><td>150%</td>";
 	$data .= "<td>פרויקט</td>";
 	if ( $user_id == 0 ) {
 		$data .= "<td>עובד</td>";
@@ -111,7 +111,7 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 
 	$data .= "</tr>";
 
-	$sql = "SELECT date, start_time, end_time, project_id, user_id, traveling, expense, expense_text, id FROM im_working_hours WHERE 1 ";
+	$sql = "SELECT date, start_time, end_time, project_id, user_id, traveling, expense, expense_text, id, dayofweek(date) FROM im_working_hours WHERE 1 ";
 
 	if ( $user_id > 0 ) {
 		$sql .= " and user_id = " . $user_id . " ";
@@ -146,9 +146,14 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 
 		$line  .= gui_cell( gui_checkbox( "chk" . $row[8], "hours_checkbox" ) );
 		$line  .= "<td>" . $row[0] . "</td>";
+		$line  .= gui_cell( week_day( $row[9] ) );
 		$start = new DateTime( $row[1] );
 		$end   = new DateTime( $row[2] );
-		$dur   = $end->diff( $start );
+
+		if ( $end < $start ) {
+			$end->add( DateInterval::createFromDateString( "1 day" ) );
+		}
+		$dur   = $end->diff( $start, true );
 		$line  .= "<td>" . $start->format( "G:i" ) . "</td>";
 		$line  .= "<td>" . $end->format( "G:i" ) . "</td>";
 

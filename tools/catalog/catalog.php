@@ -109,16 +109,20 @@ class Catalog {
 			print "NOT implemeted<br/>";
 
 		}
-		self::UpdateProduct( $product_id, $line );
+		if ( $product_id > 0 ) {
+			self::UpdateProduct( $product_id, $line );
+		}
 	}
 
 	static function RemoveOldMap( $product_id, $pricelist_id ) {
 		$pricelist    = PriceList::Get( $pricelist_id );
 		$supplier_id  = $pricelist["supplier_id"];
-		$alternatives = alternatives( $product_id );
-		foreach ( $alternatives as $p ) {
-			if ( $p[1] == $supplier_id ) {
-				Catalog::DeleteMapping( $p[2] );
+		if ( $product_id > 0 ) {
+			$alternatives = alternatives( $product_id );
+			foreach ( $alternatives as $p ) {
+				if ( $p[1] == $supplier_id ) {
+					Catalog::DeleteMapping( $p[2] );
+				}
 			}
 		}
 	}
@@ -146,7 +150,7 @@ class Catalog {
 //        print "end<br/>";
 	}
 
-	static function UpdateProduct( $prod_id, &$line ) {
+	static function UpdateProduct( $prod_id, &$line, $details = false ) {
 		if ( ! ( $prod_id > 0 ) ) {
 			print __METHOD__ . " bad prod_id: " . $prod_id . "<br/>";
 			die ( 1 );
@@ -161,31 +165,39 @@ class Catalog {
 			$print_line = $debug;
 		}
 
-		// print "prod_id: " . $prod_id . "<br/>";
-		$alternatives = alternatives( $prod_id, $prod_id == $debug_product );
-
-		// If no alternative to a variation, check alternative from parent
-		if ( count( $alternatives ) == 0 ) {
-			// print "count == 0. trying parent ";
-			$parent = get_product_parent( $prod_id );
-			// print "parent: " . $parent ;
-			if ( $parent > 0 ) {
-				$alternatives = alternatives( $parent );
-			}
-			// print " " . count($alternatives) . "<br/>";
-		}
-		$count = count( $alternatives );
-		my_log( "count $count" );
-		// print $count . "<br/>";
+		// Current info
 		$current_supplier_name = get_meta_field( $prod_id, "supplier_name" );
-		$m                     = 0;
 		$current_price         = get_price( $prod_id );
 		$line                  .= gui_cell( $prod_id );
 		$line                  .= gui_cell( get_product_name( $prod_id ) );
-		$line                  .= gui_cell( $count );
-		if ( $debug ) {
-			print $count . " ";
+		// print "prod_id: " . $prod_id . "<br/>";
+
+		// Find alternatives
+		$alternatives = alternatives( $prod_id, $details );
+		if ( $debug_product == $prod_id ) {
+			print "count= " . count( $alternatives ) . " ";
+			var_dump( $alternatives );
 		}
+
+		// If no alternative to a variation, check alternative from parent
+		$count = count( $alternatives );
+		if ( $count == 0 ) {
+			if ( $details )
+				print "count == 0. trying parent ";
+			$parent = get_product_parent( $prod_id );
+			// print "parent: " . $parent ;
+			if ( $parent > 0 ) {
+				if ( $details ) {
+					print "parent " . $parent . " ";
+				}
+				$alternatives = alternatives( $parent, $details );
+				$count        = count( $alternatives);
+			}
+			// print " " . count($alternatives) . "<br/>";
+		}
+		$line .= gui_cell( $count );
+		// my_log( "count $count" );
+		// print $count . "<br/>";
 
 		if ( $count == 0 ) {
 			if ( get_post_status( $prod_id ) == 'draft' ) {
@@ -199,14 +211,16 @@ class Catalog {
 
 			return true;
 		}
-		my_log( $m ++ );
 		$best          = best_alternatives( $alternatives );
-		$best_supplier = $best[1];
 		$best_price    = $best[0];
-		my_log( "best price $best_price" );
+		$best_supplier = $best[1];
 		$best_pricelistid = $best[2];
+		$sale_price = $best[3];
+		if ( $sale_price > 0 and $sale_price < $best_price )
+			$new_price = $sale_price;
+		else $new_price = $best_price;
+
 		$line             .= gui_cell( get_supplier_name( $best_supplier ) . " " . $best_price );
-		$calc_price       = calculate_price( $best_price, $best_supplier );
 		$prod_status      = sql_query_single_scalar( "SELECT post_status FROM wp_posts WHERE id=" . $prod_id );
 		// print $prod_id . " " . $prod_status . "<br/>";
 
@@ -218,9 +232,10 @@ class Catalog {
 			$print_line = true;
 		}
 
-		if ( $calc_price <> $current_price ) {
+
+		if ( $new_price <> $current_price ) {
 			$print_line = true;
-			$status     .= gui_cell( "מחיר חדש " . $calc_price . " מחיר ישן " . $current_price );
+			// $status     .= gui_cell( "מחיר חדש " . $calc_price . " מחיר ישן " . $current_price );
 			Catalog::SelectOption( $prod_id, $best_pricelistid );
 		}
 
@@ -231,7 +246,8 @@ class Catalog {
 		// var_dump($alternatives);
 		$line .= gui_cell( $status );
 
-		Catalog::SelectOption( $prod_id, $best_pricelistid );
+		// ???????
+		// Catalog::SelectOption( $prod_id, $best_pricelistid );
 		// $print_line = true;
 
 		$line .= "</tr>";
@@ -259,6 +275,7 @@ class Catalog {
 
 		// print "select ";
 		$pricelist = PriceList::Get( $pricelist_id );
+		// var_dump($pricelist);
 		// print "pricelist:get " . $pricelist ;
 		$supplier = $pricelist["supplier_id"];
 		// Remove supplier category
@@ -269,15 +286,30 @@ class Catalog {
 		terms_remove_category( $product_id, $current_supplier );
 		terms_add_category( $product_id, $supplier_name );
 
-		$buy_price = $pricelist["price"];
+		$regular_price = calculate_price( $pricelist["price"], $supplier );
+//		print "regular: " . $regular_price . "<br/>";
 
-		$price        = calculate_price( $buy_price, $supplier );
-		$product_name = $pricelist["product_name"];
+		$sale_price = calculate_price( $pricelist["price"], $supplier, $pricelist["sale_price"] );
+//		print "sale: " . $sale_price . "<br/>";
+
+		// $product_name = $pricelist["product_name"];
 		// print $product_id . " " . $product_name . " ". $price . " " . $supplier . "<br/>";
 
-		update_post_meta( $product_id, "_regular_price", $price );
-		update_post_meta( $product_id, "_price", $price );
-		update_post_meta( $product_id, "buy_price", $buy_price );
+		print "set regular price " . $regular_price . "<br/>";
+		update_post_meta( $product_id, "_regular_price", $regular_price );
+		if ( is_numeric( $sale_price ) and $sale_price < $regular_price ) {
+			// print "sale ";
+			print "set sale price " . $sale_price . "<br/>";
+			update_post_meta( $product_id, "_sale_price", $sale_price );
+			update_post_meta( $product_id, "_price", $sale_price );
+			update_post_meta( $product_id, "buy_price", $pricelist["sale_price"] );
+		} else {
+			sql_query( "DELETE FROM wp_postmeta WHERE post_id = " . $product_id . " AND meta_key = '_sale_price'" );
+			update_post_meta( $product_id, "buy_price", $pricelist["price"] );
+			update_post_meta( $product_id, "_price", $regular_price );
+
+		}
+
 		$sql = "UPDATE im_supplier_mapping SET selected = TRUE WHERE product_id = " . $product_id .
 		       " AND supplier = " . $supplier;
 
@@ -310,9 +342,11 @@ class Catalog {
 	// Or null? if not exists.
 	// TOdo: rewrite...
 
-	static function GetProdID( $pricelist_id ) # Returns prod id if this supplier product mapped
+	static function GetProdID( $pricelist_id, $include_hide = false ) # Returns prod id if this supplier product mapped
 	{
-		$sql = "SELECT product_id, id FROM im_supplier_mapping WHERE pricelist_id = " . $pricelist_id . " AND product_id > 0";
+		$sql = "SELECT product_id, id FROM im_supplier_mapping WHERE pricelist_id = " . $pricelist_id;
+		if ( ! $include_hide )
+			$sql .= " AND product_id > 0";
 		// print $sql;
 		$id = sql_query_single( $sql );
 
@@ -331,8 +365,11 @@ class Catalog {
 		}
 		// print $result["product_name"] . ": " . $product_name . "<br/>";
 		$sql = "SELECT product_id, id FROM im_supplier_mapping " .
-		       " WHERE product_id > 0 AND supplier_product_name = '" . $product_name . "'" .
+		       " WHERE supplier_product_name = '" . $product_name . "'" .
 		       " AND supplier_id = " . $result["supplier_id"];
+
+		if ( ! $include_hide )
+			$sql .= " and product_id > 0";
 		// print $sql;
 		// Todo: should return more the one
 		$id = sql_query_single( $sql );
@@ -372,7 +409,8 @@ class Catalog {
 		$export = mysql_query( $sql ) or die ( my_log( mysql_error(), "catalog-map.php" ) );
 	}
 
-	function HideProduct( $pricelist_id ) {
+	function HideProduct( $pricelist_id )
+	{
 		global $conn;
 
 		my_log( "null_mapping", "catalog-map.php" );
@@ -382,6 +420,11 @@ class Catalog {
 
 		// Otherwise need to add map to -1
 		if ( mysqli_affected_rows( $conn ) < 1 ) {
+//			$sql = "INSERT INTO im_supplier_mapping (product_id, pricelist_id) "
+//			       . "VALUES (-1, " . $pricelist_id . ")";
+//
+//			print $sql;
+//			sql_query ($sql);
 			$this->AddMapping( - 1, $pricelist_id, MultiSite::LocalSiteID() );
 		}
 	}
@@ -392,7 +435,7 @@ function best_alternatives( $alternatives ) {
 	$min  = 1111111;
 	$best = null;
 	for ( $i = 0; $i < count( $alternatives ); $i ++ ) {
-		$price = calculate_price( $alternatives[ $i ][0], $alternatives[ $i ][1] );
+		$price = calculate_price( $alternatives[ $i ][0], $alternatives[ $i ][1], $alternatives[ $i ][3] );
 		my_log( "price $price" );
 		if ( $price < $min ) {
 			$best = $alternatives[ $i ];
@@ -404,31 +447,49 @@ function best_alternatives( $alternatives ) {
 	return $best;
 }
 
-function alternatives( $id, $debug = false ) {
+function prof_flag( $str ) {
+	global $prof_timing, $prof_names;
+	$prof_timing[] = microtime( true );
+	$prof_names[]  = $str;
+}
+
+// Call this when you're done and want to see the results
+function prof_print() {
+	global $prof_timing, $prof_names;
+	$size = count( $prof_timing );
+	for ( $i = 0; $i < $size - 1; $i ++ ) {
+		echo "<b>{$prof_names[$i]}</b><br>";
+		echo sprintf( "&nbsp;&nbsp;&nbsp;%f<br>", $prof_timing[ $i + 1 ] - $prof_timing[ $i ] );
+	}
+	echo "<b>{$prof_names[$size-1]}</b><br>";
+}
+
+function alternatives( $id, $details = false )
+{
 	global $conn;
 
-	if ( $debug ) {
-		print "Debugging product " . $id . "<br/>";
-	}
-
+	// prof_flag("start " . $id);
 	if ( ! ( $id > 0 ) ) {
 		print __METHOD__ . "! (id>0) " . $id . "</br>";
 		die ( 1 );
 	}
 
 	// Search by pricelist_id
-	$sql = "select price, supplier_id, id from 
+	$sql = "select price, supplier_id, id, sale_price from 
 			im_supplier_price_list where id in (select pricelist_id from im_supplier_mapping where product_id = $id)";
 
 //    print "<br/>" . $sql . "<br/>";
 	$result = mysqli_query( $conn, $sql );
+	$output = "";
 	if ( ! $result ) {
 		sql_error( $sql );
+
+		return null;
 	} else {
 		$rows = array();
 		while ( $row = mysqli_fetch_row( $result ) ) {
-			if ( $debug ) {
-				print "alternative by prod_id: pricelist_id=" . $row[2] . " " . get_supplier_name( $row[1] ) . " " . $row[2] . "<br/>";
+			if ( $details ) {
+				$output .= get_supplier_name( $row[1] ) . " " . $row[0] . ", ";
 			}
 			// Todo: handle priority
 			// array_push($row, get_supplier_priority($row[1]));
@@ -436,8 +497,12 @@ function alternatives( $id, $debug = false ) {
 		}
 	}
 
+	// prof_flag("mid " . $id);
+
+
+	$output .= "by name: ";
 	// Search by product_name and supplier_id
-	$sql = " SELECT pl.price, pl.supplier_id, pl.id
+	$sql = " SELECT pl.price, pl.supplier_id, pl.id, pl.sale_price
   		FROM im_supplier_price_list pl
     	JOIN im_supplier_mapping m
   		WHERE m.supplier_product_name = pl.product_name
@@ -454,17 +519,18 @@ function alternatives( $id, $debug = false ) {
 			}
 		}
 		if ( ! $found ) {
-			if ( $debug ) {
-				print "alternative by product name: " . get_supplier_name( $row[1] ) . " " . $row[2] . "<br/>";
+			if ( $details ) {
+				$output .= get_supplier_name( $row[1] ) . " " . $row[0] . ", ";
 			}
 			array_push( $rows, $row );
 		}
 	}
 
-	if ( $debug ) {
-		var_dump( $rows );
+	if ( $details ) {
+		print rtrim( $output, ", ");
 	}
 
-	return $rows;
+//	prof_flag("end " . $id);
 
+	return $rows;
 }

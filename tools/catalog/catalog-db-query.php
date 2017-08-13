@@ -65,6 +65,8 @@ switch ( $operation ) {
 }
 
 function show_catalog( $for_update, $search_text, $csv, $active = false, $siton = false, $buy = false, $category = null, $order = false ) {
+	$count = 0;
+	prof_flag( "Start" );
 	my_log( "search_text = " . $search_text, "catalog-db-query.php" );
 	$sql = 'select '
 	       . ' id, post_title '
@@ -101,7 +103,9 @@ function show_catalog( $for_update, $search_text, $csv, $active = false, $siton 
 	while ( $row = mysql_fetch_row( $export ) ) {
 		$line_number ++;
 		$prod_id            = $row[0];
+		// prof_flag("handle " . $prod_id);
 		$product_categories = array();
+
 		if ( $category ) { // Check if this product in the given categories
 			$terms = get_the_terms( $prod_id, 'product_cat' );
 			if ( $terms ) {
@@ -113,8 +117,6 @@ function show_catalog( $for_update, $search_text, $csv, $active = false, $siton 
 					foreach ( $parents as $parent ) {
 						array_push( $product_categories, $parent );
 					}
-
-
 				}
 			} else {
 				print "no terms for " . $prod_id . "<br/>";
@@ -172,6 +174,7 @@ function show_catalog( $for_update, $search_text, $csv, $active = false, $siton 
 		}
 
 		if ( $buy ) {
+			// prof_flag("alternative-start" . $prod_id);
 			$line         .= "<td>";
 			$alternatives = alternatives( $prod_id );
 			foreach ( $alternatives as $alt ) {
@@ -181,7 +184,7 @@ function show_catalog( $for_update, $search_text, $csv, $active = false, $siton 
 			$line = rtrim( $line, ", " );
 
 			$line .= "</td>";
-
+			// prof_flag("alternative-end" . $prod_id);
 		}
 
 		$show_in_list = 1;
@@ -205,6 +208,8 @@ function show_catalog( $for_update, $search_text, $csv, $active = false, $siton 
 		if ( $show_in_list ) {
 			$data .= trim( $line );
 		}
+		// prof_flag("end " . $prod_id);
+		$count ++;
 	}
 	$data .= "</table>";
 	if ( $csv ) {
@@ -213,6 +218,8 @@ function show_catalog( $for_update, $search_text, $csv, $active = false, $siton 
 		$data = str_replace( "<td>", "", $data );
 	}
 
+	prof_flag( "Done" );
+	prof_print();
 	print $data;
 }
 

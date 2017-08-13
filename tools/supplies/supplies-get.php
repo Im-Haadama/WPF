@@ -6,9 +6,10 @@
  * Time: 17:38
  */
 require_once( '../tools.php' );
-require_once( '../header_no_login.php' );
+// require_once( '../header_no_login.php' );
 require_once( 'supplies.php' );
 
+print header_text( true );
 ?>
 
 <html dir="rtl">

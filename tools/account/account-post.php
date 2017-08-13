@@ -113,7 +113,7 @@ function sc_balance( $atts ) {
 
 function send_month_summary( $user_ids ) {
 	global $current_user;
-	global $info_email;
+	global $support_email;
 	add_shortcode( 'display_name', 'sc_display_name' );
 	add_shortcode( 'trans', 'sc_trans' );
 	add_shortcode( 'id', 'sc_id' );
@@ -134,7 +134,7 @@ function send_month_summary( $user_ids ) {
 		$user_info = get_userdata( $id );
 
 		print "שולח סיכום חודשי ללקוח " . sc_display_name( null ) . "<br/>";
-		send_mail( "סיכום חודשי עם האדמה", $user_info->user_email . ", " . $info_email, $message );
+		send_mail( "סיכום חודשי עם האדמה", $user_info->user_email . ", " . $support_email, $message );
 	}
 }
 

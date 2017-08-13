@@ -10,7 +10,7 @@ require_once( "../tools_wp_login.php" );
 function business_supply_info( $bid ) {
 	global $conn;
 
-	$sql = "SELECT amount, ref FROM ihstore.im_business_info WHERE id = " . $bid;
+	$sql = "SELECT amount, ref FROM im_business_info WHERE id = " . $bid;
 
 	$result = sql_query_single( $sql );
 

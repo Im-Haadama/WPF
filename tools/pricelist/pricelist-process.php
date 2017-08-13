@@ -12,6 +12,8 @@ require_once( 'pricelist.php' );
 // TODO: incremental doesn't handle deletion.
 // TODO: for now deleting will be done in full sync (once a day).
 function pricelist_remote_site_process( $supplier_id, &$results, $inc = false ) {
+	$debug_product = 756;
+
 	$debug = false;
 
 	$PL = new PriceList( $supplier_id );
@@ -60,8 +62,12 @@ function pricelist_remote_site_process( $supplier_id, &$results, $inc = false ) 
 		// print "prod id " . $prod_id;
 		$name = $row->find( 'td', 2 )->plaintext;
 		// $date = $row->find('td', 3)->plaintext;
-		$price   = $row->find( 'td', 4 )->plaintext;
-		$var_num = $row->find( 'td', 5 )->plaintext;
+		$price      = $row->find( 'td', 4 )->plaintext;
+		$sale_price = $row->find( 'td', 5 )->plaintext;
+		$var_num    = $row->find( 'td', 6 )->plaintext;
+		if ( isset( $debug_product ) and $prod_id == $debug_product ) {
+			print "DEBUG: " . $type . " " . $prod_id . " " . $name . " " . $price . " " . $sale_price . " " . $var_num . "<br/>";
+		}
 		if ( $debug ) {
 			print "<p dir=ltr>" . $name;
 		}
@@ -70,7 +76,7 @@ function pricelist_remote_site_process( $supplier_id, &$results, $inc = false ) 
 			if ( $debug ) {
 				print " regular ";
 			}
-			$result = handle_line( $price, $name, $prod_id, $PL, false, $id, 0 );
+			$result = handle_line( $price, $sale_price, $name, $prod_id, $PL, false, $id, 0 );
 			switch ( $result ) {
 				case UpdateResult::UsageError:
 				case UpdateResult::SQLError:
@@ -86,7 +92,7 @@ function pricelist_remote_site_process( $supplier_id, &$results, $inc = false ) 
 			}
 			$parent_id = 0;
 			// Insert or update the parent. Get back the parent id
-			$result = handle_line( $price, $name, $prod_id, $PL, true, $parent_id, 0 );
+			$result = handle_line( $price, $sale_price, $name, $prod_id, $PL, true, $parent_id, 0 );
 			if ( $parent_id == 0 ) {
 				print "Didn't get parent id for product " . $name . "<br/>";
 				die ( 2 );
@@ -110,10 +116,11 @@ function pricelist_remote_site_process( $supplier_id, &$results, $inc = false ) 
 				//print "prod id " . $prod_id;
 				$name = $row->find( 'td', 2 )->plaintext;
 				// $date = $row->find('td', 3)->plaintext;
-				$price = $row->find( 'td', 4 )->plaintext;
+				$price      = $row->find( 'td', 4 )->plaintext;
+				$sale_price = $row->find( 'td', 5 )->plaintext;
 
 				if ( $price > 0 ) {
-					$result = handle_line( $price, $name, $var_id, $PL, false, $var_id, $parent_id );
+					$result = handle_line( $price, $sale_price, $name, $var_id, $PL, false, $var_id, $parent_id );
 					switch ( $result ) {
 						case UpdateResult::UsageError:
 						case UpdateResult::SQLError:
@@ -229,7 +236,7 @@ function pricelist_process( $filename, $supplier_id, $add ) {
 					$item_code = $data[ $item_code_idx[ $col ] ];
 				}
 				if ( $price > 0 ) {
-					$result = handle_line( $price, $name . " " . $detail, $item_code, $PL, false, $id );
+					$result = handle_line( $price, "", $name . " " . $detail, $item_code, $PL, false, $id );
 					switch ( $result ) {
 						case UpdateResult::UsageError:
 						case UpdateResult::SQLError:
@@ -330,13 +337,13 @@ function print_items( $title, $list ) {
 }
 
 // Variation are saved with reference to parent.
-function handle_line( $price, $name, $item_code, $PL, $has_variations, &$id, $parent_id = null ) {
+function handle_line( $price, $sale_price, $name, $item_code, $PL, $has_variations, &$id, $parent_id = null ) {
 	$name = pricelist_strip_product_name( $name );
 	$id   = 0;
 	// Check if we have a price.
 	// Product with variations doesn't need a price
 	if ( $price > 0 or $has_variations ) {
-		return $PL->AddOrUpdate( $price, $name, $item_code, $id, $parent_id );
+		return $PL->AddOrUpdate( $price, $sale_price, $name, $item_code, $id, $parent_id );
 	}
 //    else
 //        print "price: " . $price . "<br/>";

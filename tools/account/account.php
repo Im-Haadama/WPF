@@ -154,38 +154,6 @@ function show_trans( $customer_id, $from_last_zero = false ) {
 	return $data;
 }
 
-/**
- * New user registrations should have display_name set to 'firstname lastname'
- * Best used on 'user_register'
- *
- * @param int $user_id The user ID
- *
- * @return void
- * @uses get_userdata()
- * @uses wp_update_user()
- */
-function set_default_display_name( $user_id ) {
-	// $user = get_userdata( $user_id );
-	$name = get_customer_name( $user_id );
-	// print $user_id . " " . $name;
-	if ( strlen( $name ) < 3 ) {
-		$name = get_user_meta( $user_id, 'billing_first_name', true ) . " " .
-		        get_user_meta( $user_id, 'billing_last_name', true );
-		// print "user meta name " . $name;
-
-	}
-	$args = array(
-		'ID'           => $user_id,
-		'display_name' => $name,
-		'nickname'     => $name
-	);
-
-	// print "<br/>";
-	if ( strlen( $name ) > 3 ) {
-		wp_update_user( $args );
-	}
-
-}
 
 function customer_type( $client_id ) {
 	// 0 - regular
@@ -217,4 +185,3 @@ function get_payment_method( $client_id ) {
 	return sql_query_single_scalar( "SELECT id FROM im_payments WHERE `default` = 1" );
 }
 
-add_action( 'user_register', 'set_default_display_name' );

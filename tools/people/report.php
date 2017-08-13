@@ -49,7 +49,7 @@ require_once( '../gui/inputs.php' );
 		show_all( $month );
 	}
 
-	$today = date( 'Y-05', strtotime( 'today' ) );
+	$today = date( 'Y-m', strtotime( 'last month' ) );
 
 	print gui_input_month( "month", "month", $today, "onchange=update()" );
 

@@ -81,7 +81,7 @@ function remove_map( $ids ) {
 
 // Hide this items.
 function hide_product( $ids ) {
-	my_log( "strart hide" );
+	my_log( "start hide" );
 //    print "hide";
 	$catalog = new Catalog();
 
@@ -205,7 +205,8 @@ function search_unmapped_local() {
 		$pricelist = PriceList::Get( $pricelist_id );
 //        $sql = " select product_name, supplier_id, date, price, supplier_product_code from im_supplier_price_list " .
 
-		$prod_link_id = Catalog::GetProdID( $pricelist_id );
+		$prod_link_id = Catalog::GetProdID( $pricelist_id, true );
+
 		$prod_id      = $prod_link_id[0];
 		if ( ( $prod_id == - 1 ) or ( $prod_id > 0 ) ) {
 			continue;
@@ -225,13 +226,17 @@ function print_unmapped( $pricelist_id, $supplier_product_code, $product_name, $
 		$product_name_prf = substr( $product_name, 0, $pos );
 	}
 	$sql1 = 'SELECT DISTINCT id, post_title FROM `wp_posts` WHERE '
-	        . ' post_title LIKE \'%' . addslashes( $product_name_prf ) . '%\' AND post_type IN (\'product\', \'product_variation\')'
-	        . ' AND (post_status = \'publish\' OR post_status = \'draft\')' .
-	        ' OR id IN ' .
-	        '(SELECT object_id FROM wp_term_relationships WHERE term_taxonomy_id IN ' .
-	        '(SELECT term_taxonomy_id FROM wp_term_taxonomy WHERE term_id IN ' .
-	        "(SELECT term_id FROM wp_terms WHERE name LIKE '%" . addslashes( $product_name_prf ) . "%'))) ORDER BY 2";
+	        . ' post_type IN (\'product\', \'product_variation\')'
+	        . ' AND (post_status = \'publish\' OR post_status = \'draft\')'
+	        . ' AND (post_title LIKE \'%' . addslashes( $product_name_prf ) . '%\' '
+	        . ' OR id IN '
+	        . '(SELECT object_id FROM wp_term_relationships WHERE term_taxonomy_id IN '
+	        . '(SELECT term_taxonomy_id FROM wp_term_taxonomy WHERE term_id IN '
+	        . "(SELECT term_id FROM wp_terms WHERE name LIKE '%" . addslashes( $product_name_prf ) . "%'))))"
+	        . " ORDER BY 2";
 
+//	print $sql1 . "<br/>";
+//	die(1);
 	$striped_prod = $product_name;
 	foreach ( array( "אורגני", "יחידה", "טרי" ) as $word_to_remove ) {
 		$striped_prod = str_replace( $word_to_remove, "", $striped_prod );

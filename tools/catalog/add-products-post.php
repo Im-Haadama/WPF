@@ -96,7 +96,7 @@ if ( is_numeric( $site_id ) and ( $site_id != MultiSite::LocalSiteID() ) ) {
 		$product_name = $in_create_params[ $i ];
 		$price        = $in_create_params[ $i + 1 ];
 
-		$PL->AddOrUpdate( $price, $product_name, $code = 10, $pricelist_ids[ $count ], 0 );
+		$PL->AddOrUpdate( $price, '', $product_name, $code = 10, $pricelist_ids[ $count ], 0 );
 		$count ++;
 	}
 }

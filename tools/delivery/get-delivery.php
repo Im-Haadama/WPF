@@ -1,16 +1,11 @@
 <?php
 require_once '../tools.php';
 require_once 'delivery.php';
-require_once '../orders/orders-common.php'
+require_once '../orders/orders-common.php';
+
+print header_text( true );
 ?>
 
-<html dir="rtl" lang="he">
-<head>
-    <meta charset="UTF-8">
-
-</head>
-<body>
-<center><img src="http://store.im-haadama.co.il/wp-content/uploads/2014/11/cropped-imadama-logo-7x170.jpg"></center>
 
 <?php
 

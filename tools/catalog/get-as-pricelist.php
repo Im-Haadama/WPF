@@ -41,7 +41,8 @@ while ( $row = mysqli_fetch_row( $result ) ) {
 	$prod_id      = $row[1];
 	$date         = $row[2];
 
-	$price = get_price( $prod_id );
+	$regular_price = get_regular_price( $prod_id );
+	$sale_price    = get_sale_price( $prod_id );
 
 	$vars = get_product_variations( $prod_id );
 
@@ -50,7 +51,8 @@ while ( $row = mysqli_fetch_row( $result ) ) {
 	$line .= "<td>" . $prod_id . "</td>";
 	$line .= "<td>" . $product_name . "</td>";
 	$line .= "<td>" . $date . "</td>";
-	$line .= "<td>" . $price . "</td>";
+	$line .= "<td>" . $regular_price . "</td>";
+	$line .= "<td>" . $sale_price . "</td>";
 	$line .= gui_cell( count( $vars ) );
 	$line .= "</tr>";
 	$data .= $line;
@@ -62,7 +64,8 @@ while ( $row = mysqli_fetch_row( $result ) ) {
 			$line .= "<td>" . $var . "</td>";
 			$line .= "<td>" . get_product_name( $var ) . "</td>";
 			$line .= "<td>" . $date . "</td>";
-			$line .= "<td>" . get_price( $var ) . "</td>";
+			$line .= "<td>" . get_regular_price( $var ) . "</td>";
+			$line .= "<td>" . get_sale_price( $var ) . "</td>";
 			$line .= "<td>" . $prod_id . "</td>";
 			$line .= "</tr>";
 			$data .= $line;

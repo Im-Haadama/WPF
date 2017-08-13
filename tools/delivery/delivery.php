@@ -197,11 +197,13 @@ class delivery {
 				$line_total       = get_order_itemmeta( $order_item_id, '_line_total' );
 
 				$price = $this->item_price( $client_type, $prod_id, $line_total, $quantity_ordered );
+
 				//print $price . "<br/>";
 
 				if ( get_vat_percent( $prod_id ) == 0 ) {
 					$has_vat = false;
 				}
+
 				$data .= $this->delivery_line( $prod_name, $quantity_ordered, $quantity_delivered, $price, $has_vat, $prod_id );
 				// print "ex " . $expand_basket . " is " . is_basket($prod_id) . "<br/>";
 
@@ -253,17 +255,17 @@ class delivery {
 		// Summary
 		$data .= "<tr><td>סהכ חייבי מעם</td><td></td><td></td><td></td><td></td><td></td><td>" . $this->due_vat . "</td>";
 		if ( $refund ) {
-			$data .= gui_cell( "סהכ זיכוי חייבי מעם" ) . gui_cell( 0 );
+			$data .= "<td style=\"display:none;\"></td>" . gui_cell( "סהכ זיכוי חייבי מעם" ) . gui_cell( 0 );
 		}
 		$data .= "</tr>";
 		$data .= "<tr><td>סכום מעם</td><td></td><td></td><td></td><td></td><td></td><td>" . $this->vat_total . "</td>";
 		if ( $refund ) {
-			$data .= gui_cell( "סהכ זיכוי מעם" ) . gui_cell( 0 );
+			$data .= "<td style=\"display:none;\"></td>" . gui_cell( "סהכ זיכוי מעם" ) . gui_cell( 0 );
 		}
 		$data .= "</tr>";
 		$data .= "<tr><td>סהכ לתשלום</td><td></td><td></td><td></td><td></td><td></td><td id=\"total\">" . ( $this->total ) . "</td>";
 		if ( $refund ) {
-			$data .= gui_cell( "סהכ זיכוי" ) . gui_cell( 0 );
+			$data .= "<td style=\"display:none;\"></td>" . gui_cell( "סהכ זיכוי" ) . gui_cell( 0 );
 		}
 		$data .= "</tr>";
 
@@ -374,15 +376,18 @@ class delivery {
 		return $row[0];
 	}
 
+
 	function item_price( $client_type, $prod_id, $line_total, $quantity_ordered ) {
 //    	print get_product_name($prod_id) . " ";
+//		print "YY<br/>";
 		$price = - 1;
-		print $line_total;
+
 		switch ( $client_type ) {
 			case 0:
 				if ( $line_total == 0 ) {
 					$price = get_price( $prod_id );
-					print $price;
+
+					// print $price;
 				} else {
 					$price = round( $line_total / $quantity_ordered, 2 );
 				}

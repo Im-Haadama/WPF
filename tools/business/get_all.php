@@ -1,6 +1,7 @@
 <?php
 require_once( '../tools.php' );
 require_once( '../header.php' );
+require_once( "../gui/inputs.php" );
 ?>
 <html dir="rtl">
 <header>
@@ -82,24 +83,39 @@ require_once( '../header.php' );
  */
 
 // Build the query
-$sql   = "SELECT id, date, amount, delivery_fee FROM im_business_info WHERE ";
-$query = " is_active = 1 ";
+// $sql   = "SELECT id, date, amount, delivery_fee FROM im_business_info WHERE ";
+$sql = "SELECT id, part_id, date, week, amount, ref +0, delivery_fee FROM im_business_info WHERE ";
+
+$query   = " is_active = 1 ";
+$new_url = "get_all.php?";
 foreach ( $_GET as $key => $value ) {
-	$query .= " and " . $key . " = '" . $value . "'";
+	if ( $key <> "sort" ) {
+		$query   .= " and " . $key . " = '" . $value . "'";
+		$new_url .= $key . "=" . $value . "&";
+	}
 }
+$new_url = rtrim( $new_url, "&" );
+
+// print "new: " . $new_url . "<br/>";
+if ( isset( $_GET["sort"] ) ) {
+	$query .= " order by " . $_GET["sort"];
+}
+
 $sql .= $query;
-$sql .= ' order by 3 desc';
+
+// print $sql;
 
 print "<table dir='rtl' id='table_business'>";
 print "<tr>";
 print_col( "#" );
-print_col( "מזהה" );
-print_col( "לקוח/ספק" );
-print_col( "תאריך" );
-print_col( "שבוע" );
-print_col( "סכום" );
-print_col( "תעודת משלוח" );
-print_col( "דמי משלוח" );
+$key = 1;
+print_col( "מזהה", $key ++ );
+print_col( "לקוח/ספק", $key ++ );
+print_col( "תאריך", $key ++ );
+print_col( "שבוע", $key ++ );
+print_col( "סכום", $key ++ );
+print_col( "תעודת משלוח", $key ++ );
+print_col( "דמי משלוח", $key ++ );
 print "</tr>";
 
 //$sql = "SELECT id" .
@@ -108,11 +124,16 @@ print "</tr>";
 $seq                = 1;
 $total_amount       = 0;
 $total_delivery_fee = 0;
-$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . $sql );
-while ( $row = mysql_fetch_row( $export ) ) {
-	$total_amount       += $row[2];
-	$total_delivery_fee += $row[3];
-	print_business( $row[0], true, $seq );
+
+print $sql;
+
+$result = mysqli_query( $conn, $sql );
+//$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . $sql );
+//while ( $row = mysql_fetch_row( $export ) ) {
+while ( $row = mysqli_fetch_assoc( $result ) ) {
+	$total_amount       += $row["amount"];
+	$total_delivery_fee += $row["delivery_fee"];
+	print_business( $row["id"], true, $seq );
 	$seq ++;
 }
 print "<tr>";
@@ -127,8 +148,14 @@ print_col( "$total_delivery_fee" );
 print "</tr>";
 print "</table>";
 
-function print_col( $hdr ) {
-	print "<td>" . $hdr . "</td>";
+function print_col( $hdr, $key = null ) {
+	global $new_url;
+	if ( $key ) {
+		$url = $new_url . "&sort=" . $key;
+		print "<td>" . gui_hyperlink( $hdr, $url ) . "</td>";
+	} else {
+		print "<td>" . $hdr . "</td>";
+	}
 }
 
 function get_name( $id ) {

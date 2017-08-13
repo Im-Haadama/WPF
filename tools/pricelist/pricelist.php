@@ -121,14 +121,17 @@ class PriceList {
 		return $row[0];
 	}
 
-	function AddOrUpdate( $price, $product_name, $code = 10, &$id, $parent_id = null ) {
+	function AddOrUpdate( $regular_price, $sale_price, $product_name, $code = 10, &$id, $parent_id = null ) {
 		global $debug;
 		my_log( __METHOD__, __FILE__ );
 		if ( mb_strlen( $product_name ) > 40 ) {
 			$product_name = mb_substr( $product_name, 0, 40 );
 		}
-		if ( ! is_numeric( $price ) ) {
-			print "Bad price: " . $price;
+		if ( ! is_numeric( $sale_price ) ) {
+			$sale_price = 0;
+		}
+		if ( ! is_numeric( $regular_price ) ) {
+			print "Bad price: " . $regular_price;
 
 			return UpdateResult::UsageError;
 		}
@@ -151,7 +154,7 @@ class PriceList {
 			$id  = $row[0];
 		}
 		if ( $id == - 1 ) { // Hide
-			return UpdateResukt::NotUsed;
+			return UpdateResult::NotUsed;
 		}
 		if ( $id > 0 ) {
 			if ( $debug ) {
@@ -159,7 +162,8 @@ class PriceList {
 			}
 			$old_price = $this->Get( $id )["price"];
 			$sql       = "update im_supplier_price_list " .
-			             " set line_status = 1, price = " . $price . ", date = '" . $date . "' " .
+			             " set line_status = 1, price = " . $regular_price . ", sale_price = " . $sale_price .
+			             ", date = '" . $date . "' " .
 			             " where product_name = '" . $product_name . "' and supplier_id = " . $this->SupplierID;
 
 			// print "<br/>"  . $product_name . "<br/>";
@@ -172,9 +176,9 @@ class PriceList {
 				return UpdateResult::SQLError;
 			}
 
-			if ( $price > $old_price ) {
+			if ( $regular_price > $old_price ) {
 				$rc = UpdateResult::UpPrice;
-			} else if ( $price < $old_price ) {
+			} else if ( $regular_price < $old_price ) {
 				$rc = UpdateResult::DownPrice;
 			} else {
 				$rc = UpdateResult::NoChangPrice;
@@ -199,15 +203,15 @@ class PriceList {
 			if ( $parent_id > 0 ) {
 				// Variation
 				$sql = "INSERT INTO im_supplier_price_list (product_name, supplier_id, "
-				       . "date, price, supplier_product_code, line_status, variation, parent_id ) " .
+				       . "date, price, sale_price, supplier_product_code, line_status, variation, parent_id ) " .
 				       "VALUES ('" . addslashes( $product_name ) . "', " . $this->SupplierID .
-				       ", " . "'" . $date . "', " . $price . ", " . $code . ", 1, TRUE, " . $parent_id . ")";
+				       ", " . "'" . $date . "', " . $regular_price . ", " . $sale_price . ", " . $code . ", 1, TRUE, " . $parent_id . ")";
 			} else {
 				// Product
 				$sql = "INSERT INTO im_supplier_price_list (product_name, supplier_id, "
-				       . "date, price, supplier_product_code, line_status, variation ) " .
+				       . "date, price, sale_price, supplier_product_code, line_status, variation ) " .
 				       "VALUES ('" . addslashes( $product_name ) . "', " . $this->SupplierID .
-				       ", " . "'" . $date . "', " . $price . ", " . $code . ", 1, FALSE )";
+				       ", " . "'" . $date . "', " . $regular_price . ", " . $sale_price . ", " . $code . ", 1, FALSE )";
 			}
 
 //	        print "<p dir=ltr>" . $sql . "</p>";
@@ -309,7 +313,7 @@ class PriceList {
 
 	static function Get( $pricelist_id ) {
 		// my_log("Pricelist::Get" . $pricelist_id);
-		$sql = " SELECT product_name, supplier_id, date, price, supplier_product_code FROM im_supplier_price_list " .
+		$sql = " SELECT product_name, supplier_id, date, price, supplier_product_code, sale_price FROM im_supplier_price_list " .
 		       " WHERE id = " . $pricelist_id;
 
 		$result = sql_query_single_assoc( $sql );

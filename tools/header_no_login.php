@@ -1,3 +1,6 @@
+<?php
+require_once( "config.php" );
+?>
 <html dir="rtl">
 <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8">

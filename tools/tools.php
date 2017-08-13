@@ -23,15 +23,18 @@ if ( $conn->connect_error ) {
 }
 
 function send_mail( $subject, $to, $message ) {
+	global $mail_sender;
+
 //    print "start send";
 //    print $subject ."<br/>";
 //    print $to . "<br/>";
 //    print $message . "<br/>";
 	$headers   = array();
 	$headers[] = "MIME-Version: 1.0";
-	$headers[] = "From: עם האדמה <info@im-haadama.co.il>";
-	// $headers[] = "Cc: עם האדמה <info@im-haadama.co.il>";
-	$headers[] = "Reply-To: Im Haadama <info@im-haadama.co.il>";
+//	$headers[] = "From: עם האדמה <info@im-haadama.co.il>";
+//	$headers[] = "Reply-To: Im Haadama <info@im-haadama.co.il>";
+	$headers[] = "From: " . $mail_sender;
+	$headers[] = "Reply-To: " . $mail_sender;
 	$headers[] = "Subject: {$subject}";
 	$headers[] = "X-Mailer: PHP/" . phpversion();
 	$headers[] = "Content-type: text/html";
@@ -116,10 +119,10 @@ function uptime_log( $msg, $title = '' ) {
 }
 
 
-function calculate_price( $price, $supplier ) {
+function calculate_price( $price, $supplier, $sale_price = '' ) {
 	global $conn;
 	if ( ! is_numeric( $supplier ) ) {
-		print "Mush sent number value for supplier. " . $supplier . " was sent";
+		print "Invalid " . $supplier . " was sent";
 		die( 2 );
 	}
 	$sql    = "SELECT factor FROM im_suppliers WHERE id = " . $supplier;
@@ -131,6 +134,11 @@ function calculate_price( $price, $supplier ) {
 	}
 	$row    = mysqli_fetch_assoc( $result );
 	$factor = $row["factor"];
+
+	// Check for sale
+	if ( is_numeric( $sale_price ) and $sale_price < $price ) {
+		$price = $sale_price;
+	}
 
 	if ( is_numeric( $factor ) ) {
 		if ( $price > 10 ) {
@@ -222,7 +230,11 @@ function get_postmeta_field( $post_id, $field_name ) {
 function sql_query( $sql ) {
 	global $conn;
 
-	return mysqli_query( $conn, $sql );
+	if ( $result = mysqli_query( $conn, $sql ) ) {
+		return $result;
+	} else {
+		sql_error( $sql );
+	}
 }
 
 function sql_query_array( $sql ) {
@@ -297,6 +309,19 @@ function get_price( $prod_id ) {
 function get_sale_price( $prod_id ) {
 	return get_postmeta_field( $prod_id, '_sale_price' );
 }
+
+function get_regular_price( $prod_id ) {
+	return get_postmeta_field( $prod_id, '_regular_price' );
+}
+
+function set_price( $prod_id, $price ) {
+	$sql = "UPDATE wp_postmeta SET meta_value = " . $price . " WHERE meta_key = '_price' AND post_id = " . $prod_id;
+	print $sql;
+	sql_query( $sql );
+
+	// return set_post_meta_field( $prod_id, '_sale_price', $sale_price );
+}
+
 
 // get_sale_price
 function get_buy_price( $prod_id ) {
@@ -753,27 +778,16 @@ function order_get_zone( $order_id ) {
 //	print "order id = " . $order_id . "<br/>";
 	my_log( __METHOD__ . " order_id " . $order_id );
 	$country = get_postmeta_field( $order_id, '_shipping_country' );
-	if ( strlen( $country ) < 2 ) {
-		$country = "IL";
-	}
 	// print "country = " . $country . "<br/>";
 
 	$postcode = get_postmeta_field( $order_id, '_shipping_postcode' );;
 	my_log( "postcode = " . $postcode );
 	// print "postcode = " . $postcode . "<br/>";
 
-	$zone1 = WC_Shipping_Zones::get_zone_matching_package( array(
-		'destination' => array(
-			'country'  => $country,
-//            'state'    => $state,
-			'postcode' => $postcode,
-		),
-	) )->get_id();
-	my_log( "zone: " . $zone1 );
-//	print $zone1;
 
-	if ( zone_get_name( $zone1 ) != 'N/A' ) {
-		return $zone1;
+	$zone = get_zone_from_postcode( $postcode, $country );
+	if ( zone_get_name( $zone ) != 'N/A' ) {
+		return $zone;
 	}
 
 	$client_id = get_customer_id_by_order_id( $order_id );
@@ -785,6 +799,25 @@ function order_get_zone( $order_id ) {
 	}
 
 	return 0;
+
+}
+
+function get_zone_from_postcode( $postcode, $country = null ) {
+	if ( ! $country or strlen( $country ) < 2 ) {
+		$country = "IL";
+	}
+
+	$zone1 = WC_Shipping_Zones::get_zone_matching_package( array(
+		'destination' => array(
+			'country'  => $country,
+//            'state'    => $state,
+			'postcode' => $postcode,
+		),
+	) )->get_id();
+	my_log( "zone: " . $zone1 );
+//	print $zone1;
+
+	return $zone1;
 }
 
 function zone_get_name( $id ) {

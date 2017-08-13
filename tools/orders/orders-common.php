@@ -98,7 +98,6 @@ function order_info_data( $order_id ) {
 		$zone_name = zone_get_name( $zone );
 	}
 
-
 	$data .= gui_row( array(
 		"איזור משלוח:",
 		$zone_name,
