@@ -92,7 +92,12 @@ class MultiSite {
 
 			//print "running on site " . $site_name . "<br/>";
 			// TODO: check if to use ? or &
-			$file = $url . "/" . $func . "?header=" . ( $first ? "1" : "0" );
+			if ( strstr( $func, "&" ) ) {
+				$glue = "?";
+			} else {
+				$glue = "&";
+			}
+			$file = $url . "/" . $func . $glue . "header=" . ( $first ? "1" : "0" );
 			// print $file . "<br/>";
 			$data  .= file_get_html( $file );
 			$first = false;

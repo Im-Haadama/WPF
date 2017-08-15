@@ -58,15 +58,15 @@ switch ( $operation ) {
 	case "customer_prices":
 		show_catalog( false, '', false, true, false, false, array( 15 ) );
 		break;
-	default:
-		$for_update = false;
-		show_catalog( $for_update, '', true );
-		break;
+//	default:
+//		$for_update = false;
+//		show_catalog( $for_update, '', true );
+//		break;
 }
 
 function show_catalog( $for_update, $search_text, $csv, $active = false, $siton = false, $buy = false, $category = null, $order = false ) {
+
 	$count = 0;
-	prof_flag( "Start" );
 	my_log( "search_text = " . $search_text, "catalog-db-query.php" );
 	$sql = 'select '
 	       . ' id, post_title '
@@ -79,6 +79,7 @@ function show_catalog( $for_update, $search_text, $csv, $active = false, $siton 
 
 	if ( $active ) {
 		$sql .= ' and post_status = \'publish\'';
+
 	}
 
 	$sql .= ' order by 2';
@@ -98,7 +99,11 @@ function show_catalog( $for_update, $search_text, $csv, $active = false, $siton 
 		$data .= "<td>הזמנה</td>";
 	}
 	$data        .= "</tr>";
-	$line_number = 0;
+	$line_number = 0;//	default:
+//		$for_update = false;
+//		show_catalog( $for_update, '', true );
+//		break;
+
 
 	while ( $row = mysql_fetch_row( $export ) ) {
 		$line_number ++;
@@ -218,8 +223,6 @@ function show_catalog( $for_update, $search_text, $csv, $active = false, $siton 
 		$data = str_replace( "<td>", "", $data );
 	}
 
-	prof_flag( "Done" );
-	prof_print();
 	print $data;
 }
 

@@ -118,8 +118,8 @@ function uptime_log( $msg, $title = '' ) {
 	error_log( $log, 3, $error_file );
 }
 
-
-function calculate_price( $price, $supplier, $sale_price = '' ) {
+// TODO: Decide about 80% fruit factor
+function calculate_price( $price, $supplier, $sale_price = '', $terms = null ) {
 	global $conn;
 	if ( ! is_numeric( $supplier ) ) {
 		print "Invalid " . $supplier . " was sent";
@@ -141,9 +141,14 @@ function calculate_price( $price, $supplier, $sale_price = '' ) {
 	}
 
 	if ( is_numeric( $factor ) ) {
-		if ( $price > 10 ) {
-			$factor = $factor * 0.8;
-		}
+
+		// Fruits factor
+//		if ($terms) foreach ($terms as $term){
+//			if ($term->id == 11 and $price > 10 and MultiSite::LocalSiteID() == 1){
+//				$factor = $factor * 0.8;
+//				print "fruit factor";
+//			}
+//		}
 
 		return round( $price * ( 100 + $factor ) / 100, 1 );
 	}

@@ -290,10 +290,11 @@ class Catalog {
 		terms_remove_category( $product_id, $current_supplier );
 		terms_add_category( $product_id, $supplier_name );
 
-		$regular_price = calculate_price( $pricelist["price"], $supplier );
+		$terms         = get_the_terms( $product_id, 'product_cat' );
+		$regular_price = calculate_price( $pricelist["price"], $supplier, $terms );
 //		print "regular: " . $regular_price . "<br/>";
 
-		$sale_price = calculate_price( $pricelist["price"], $supplier, $pricelist["sale_price"] );
+		$sale_price = calculate_price( $pricelist["price"], $supplier, $pricelist["sale_price"], $terms );
 //		print "sale: " . $sale_price . "<br/>";
 
 		// $product_name = $pricelist["product_name"];

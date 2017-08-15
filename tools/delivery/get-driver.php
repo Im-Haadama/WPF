@@ -3,6 +3,7 @@ require_once( '../tools.php' );
 require_once( '../../wp-content/plugins/woocommerce-delivery-notes/woocommerce-delivery-notes.php' );
 require_once( '../multi-site/multi-site.php' );
 $header = $_GET["header"];
+//if (isset($_GET["week"])) $week = $_GET["week"];
 //$footer = $_GET["footer"];
 //$header = ( MultiSite::LocalSiteID() == 1 );
 // print "Start " . MultiSite::LocalSiteName();
@@ -24,16 +25,24 @@ if ( $header ) {
 $print = 1; //$_GET["print"];
 
 print_deliveries();
-
+//else print_archive_deliveries($week);
+//
 print_legacy();
 
 die( 0 );
 
 function print_deliveries() {
+//    print "start";
+//    if (isset($_GET["week"])){
+//        $week = $_GET["week"];
+//        $sql = "select order_id from im_delivery where date >= '" .$week . "'";
+//        print $sql;
+//    } else {
 	$sql = 'SELECT posts.id'
 	       . ' FROM `wp_posts` posts'
 	       . ' WHERE `post_status` in (\'wc-awaiting-shipment\', \'wc-processing\')'
 	       . ' order by 1';
+//    }
 
 	// print $sql;
 	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );

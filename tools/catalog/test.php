@@ -62,7 +62,7 @@ $line = "";
 //	Catalog::UpdateProduct( $row[0], $line, false );
 //}
 //prof_flag("end");
-$prod_id       = 5191;
+$prod_id       = 3703;
 $debug_product = $prod_id;
 Catalog::UpdateProduct( $prod_id, $line, false );
 

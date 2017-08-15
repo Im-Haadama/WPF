@@ -9,7 +9,19 @@
 require_once( '../tools.php' );
 require_once( '../multi-site/multi-site.php' );
 
-$output = MultiSite::GetAll( "delivery/get-driver.php" );
+if ( isset( $_GET["week"] ) ) {
+	$week = $_GET["week"];
+} else {
+	$week = date( "Y-m-d", strtotime( "last sunday" ) );
+}
+
+if ( date( 'Y-m-d' ) > date( 'Y-m-d', strtotime( $week . "+1 week" ) ) ) {
+	print gui_hyperlink( "שבוע הבא", "get-driver-multi.php?week=" . date( 'Y-m-d', strtotime( $week . " +1 week" ) ) ) . " ";
+}
+
+print gui_hyperlink( "שבוע קודם", "get-driver-multi.php?week=" . date( 'Y-m-d', strtotime( $week . " -1 week" ) ) );
+
+$output = MultiSite::GetAll( "delivery/get-driver.php?week=" . $week );
 
 $dom = str_get_html( $output );
 
