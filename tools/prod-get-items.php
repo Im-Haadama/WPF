@@ -28,7 +28,8 @@ $sql = 'select '
        . ' where post_status = \'publish\' and post_type = \'product\''
        . ' ';
 
-$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+
+$result = sql_query( $sql );
 
 $fields = mysql_num_fields( $export );
 
@@ -36,7 +37,7 @@ $data      .= "<table><tr><td><h3>מזהה</h3></td><td><h3>שם פריט</h3></
 $total     = 0;
 $vat_total = 0;
 
-while ( $row = mysql_fetch_row( $export ) ) {
+while ( $row = mysqli_fetch_row( $result ) ) {
 	$line      = "";
 	$prod_id   = $row[0];
 	$prod_name = $row[1];

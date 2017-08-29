@@ -5,8 +5,10 @@
  * Date: 21/07/17
  * Time: 15:11
  */
-require_once( '../tools.php' );
+require_once( '../im_tools.php' );
 require_once( '../multi-site/multi-site.php' );
+require_once( "../suppliers/gui.php" );
+
 print header_text( true );
 
 

@@ -1,6 +1,6 @@
 <?php
 
-require_once( "tools.php" );
+require_once( "im_tools.php" );
 $multisite = false;
 
 if ( $_SERVER['REMOTE_ADDR'] == "160.153.153.166" or

@@ -6,7 +6,8 @@
  * Time: 15:55
  */
 
-require_once( '../tools.php' );
+require_once( '../im_tools.php' );
+require_once( "../suppliers/gui.php" );
 
 print "ספקים: ";
 print_select_supplier( "remote_supplier", false );

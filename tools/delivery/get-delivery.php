@@ -1,5 +1,5 @@
 <?php
-require_once '../tools.php';
+require_once '../im_tools.php';
 require_once 'delivery.php';
 require_once '../orders/orders-common.php';
 
@@ -24,11 +24,10 @@ print  "</h2> </center>";
 
 print order_info_data( $order_id );
 
-print $d->delivery_text();
+print $d->delivery_text( ImDocumentType::delivery, false );
 //$sql = 'select product_name, quantity, vat,price, line_price '
 //        . ' from im_delivery_lines where delivery_id = ' . $id ;
 //
-//$export = mysql_query ( $sql ) or die ( "Sql error : " . mysql_error( ) );
 //
 //$fields = mysql_num_fields ( $export );
 //
@@ -38,7 +37,7 @@ print $d->delivery_text();
 //$line_number = 0;
 //$calc_total = 0;
 //
-//while( $row = mysql_fetch_row( $export ) )
+//while( $row = mysqli_fetch_row( $result ) )
 //{
 //	$line_number = $line_number + 1;
 //	$line = "<tr>";
@@ -63,8 +62,7 @@ print $d->delivery_text();
 //$sql = 'select vat, total '
 //        . ' from im_delivery where id = ' . $id ;
 //
-//$export = mysql_query ( $sql ) or die ( "Sql error : " . mysql_error( ) );
-//$row = mysql_fetch_row( $export );
+//$row = mysqli_fetch_row( $result );
 //
 //$vat_total = $row[0];
 //$total = $row[1];

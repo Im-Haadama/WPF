@@ -115,15 +115,18 @@ function gui_input_month( $name, $class, $value, $events ) {
 	return $data;
 }
 
-function gui_input_date( $name, $class, $value, $events ) {
+function gui_input_date( $name, $class, $value = null, $events = null ) {
 	$data = '<input type="date" name="' . $name . '" ';
+	if ( is_null( $value ) ) {
+		$value = date( 'Y-m-d' );
+	}
 	if ( strlen( $value ) > 0 ) {
 		$data .= "value=\"$value\" ";
 	}
 	if ( strlen( $class ) > 0 ) {
 		$data .= "class=\"$class\" ";
 	}
-	if ( strlen( $events ) > 0 ) {
+	if ( $events and strlen( $events ) > 0 ) {
 		$data .= addslashes( $events );
 	} // ' onkeypress="' . $onkeypress . '"';
 	$data .= '>';
@@ -132,41 +135,62 @@ function gui_input_date( $name, $class, $value, $events ) {
 	return $data;
 }
 
-function gui_select( $id, $table, $selected = null, $events = null, $more_values = null ) {
+function gui_select_table( $id, $table, $selected = null, $events = null, $more_values = null, $name = null, $where = null ) {
 	global $conn;
-	$data = "<select id=\"" . $id . "\"";
 
+	$values = array();
+
+	if ( $more_values ) {
+		foreach ( $more_values as $value ) {
+			array_push( $values, $value );
+//			$data .= "<option value=\"" . $value[0] . "\"";
+//			if ( $selected and $selected == $value ) {
+//				$data .= " selected";
+//			}
+//			// print $selected . " " . $row["$id"] . "<br/>";
+//			$data .= ">";
+//			$data .= $value[1] . "</option>";
+		}
+	}
+	if ( $name == null ) {
+		$name = "name";
+	}
+	$sql = "SELECT id, " . $name . " FROM " . $table;
+	if ( $where ) {
+		$sql .= " " . $where;
+	}
+// 	print $sql;
+	$results = mysqli_query( $conn, $sql );
+	while ( $row = $results->fetch_assoc() ) {
+		array_push( $values, $row );
+	}
+
+	return gui_select( $id, $name, $values, $events, $selected );
+}
+
+function gui_select( $id, $name, $values, $events, $selected ) {
+
+	$data = "<select id=\"" . $id . "\"";
 	if ( $events ) {
 		$data .= $events;
 	}
 
 	$data .= ">";
 
-	if ( $more_values ) {
-		foreach ( $more_values as $value ) {
-			$data .= "<option value=\"" . $value[0] . "\"";
-			if ( $selected and $selected == $value ) {
-				$data .= " selected";
-			}
-			// print $selected . " " . $row["$id"] . "<br/>";
-			$data .= ">";
-			$data .= $value[1] . "</option>";
-		}
-	}
-	$sql     = "SELECT id, name FROM " . $table;
-	$results = mysqli_query( $conn, $sql );
-	while ( $row = $results->fetch_assoc() ) {
+	foreach ( $values as $row ) {
 		$data .= "<option value=\"" . $row["id"] . "\"";
 		if ( $selected and $selected == $row["id"] ) {
 			$data .= " selected";
 		}
 		// print $selected . " " . $row["$id"] . "<br/>";
 		$data .= ">";
-		$data .= $row["name"] . "</option>";
+		$data .= $row[ $name ] . "</option>";
 	}
+
 	$data .= "</select>";
 
 	return $data;
+
 }
 
 function gui_hyperlink( $text, $link ) {
@@ -180,8 +204,16 @@ function gui_hyperlink( $text, $link ) {
 //    print "</table>";
 //}
 
-function gui_cell( $cell ) {
-	$data = "<td>";
+function gui_cell( $cell, $id = null, $show = true ) {
+	$data = "<td";
+	if ( $id ) {
+		$data .= " id=\"" . $id . "\"";
+	}
+	if ( ! $show ) {
+		$data .= " style=\"display:none;\"";
+	}
+	$data .= ">";
+
 //	if (is_numeric($cell))
 //		$data .= number_format($cell, 2);
 //	else
@@ -191,23 +223,34 @@ function gui_cell( $cell ) {
 	return $data;
 }
 
-function gui_row( $cells, &$sum_fields = null ) {
+function gui_row( $cells, $id = null, $show = null, &$sum_fields = null ) {
 	$data = "<tr>";
 
 	if ( is_array( $cells ) ) {
 		$i = 0;
 		foreach ( $cells as $cell ) {
+
 			if ( $sum_fields[ $i ] and is_numeric( $sum_fields[ $i ] ) ) {
 				$sum_fields[ $i ] += $cell;
 			}
+			$cell_id = null;
+			if ( $id ) {
+				$cell_id = $id . "_" . $i;
+			}
 
-			$data .= gui_cell( $cell );
+			$show_cell = true;
+			if ( is_array( $show ) ) {
+				$show_cell = $show[ $i ];
+			}
+
+			$data .= gui_cell( $cell, $cell_id, $show_cell);
 			$i ++;
 		}
 	} else {
 		$data .= $cells;
 	}
 	$data .= "</tr>";
+
 
 	return $data;
 }

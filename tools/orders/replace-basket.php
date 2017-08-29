@@ -35,9 +35,9 @@ function replace_basket_with_products( $order_id ) {
 	       . ' group by woi.order_item_name order by 1'
 	       . ' ';
 
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+	$result = sql_query( $sql );
 
-	while ( $row = mysql_fetch_row( $export ) ) {
+	while ( $row = mysqli_fetch_row( $result ) ) {
 		$order_item_id = $row[2];
 		$product_id    = get_prod_id( $order_item_id );
 		print "prod_id = " . $product_id;

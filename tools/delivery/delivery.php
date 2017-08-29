@@ -6,10 +6,14 @@
  * Time: 19:29
  */
 require_once( "../tools_wp_login.php" );
+require_once( "../pricing.php" );
 require_once( "../account/account.php" );
 include_once( "../orders/orders-common.php" );
 include_once( "../gui/inputs.php" );
 include_once( "../multi-site/multi-site.php" );
+require_once( "../mail.php" );
+require_once( "../account/gui.php" );
+require_once( "../delivery/delivery-common.php" );
 
 class delivery {
 	private $ID = 0;
@@ -19,20 +23,27 @@ class delivery {
 	private $due_vat = 0;
 	private $line_number = 0;
 	private $del_price = 0;
+	private $order_total = 0;
+	private $order_due_vat = 0;
+	private $order_total_vat = 0;
 
 	function delivery( $id ) {
 //        my_log("CONS. id = " . $id);
 		$this->ID = $id;
 	}
 
+	public static function GuiCreateNewNoOrder() {
+		$data = gui_table( array(
+			array( "לקוח:", gui_select_client( 30 ) ),
+			array( "תאריך", gui_input_date( "delivery_date", "" ) ),
+			array( gui_button( "btn_add_delivery", "", "הוסף תעודת משלוח" ) )
+		) );
+
+		return $data;
+	}
 	public static function CreateFromOrder( $order_id ) {
-		$sql = "SELECT id FROM im_delivery WHERE order_id = " . $order_id;
 
-		$export = mysql_query( $sql ) or die ( "Sql error: " . mysql_error() . $sql );
-
-		$row = mysql_fetch_row( $export );
-
-		$id = $row[0];
+		$id = get_delivery_id( $order_id );
 
 		$instance = new self( $id );
 
@@ -68,22 +79,22 @@ class delivery {
 
 		$sql = "UPDATE wp_posts SET post_status = 'wc-processing' WHERE id = " . $order_id;
 
-		$export = mysql_query( $sql ) or die ( "Sql error: " . mysql_error() . $sql );
+		sql_query( $sql );
 
 		// Remove from client account
 		$sql = 'DELETE FROM im_client_accounts WHERE transaction_ref = ' . $this->ID;
 
-		$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . $sql );
+		sql_query( $sql );
 
 		// Remove the header
 		$sql = 'DELETE FROM im_delivery WHERE id = ' . $this->ID;
 
-		$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . $sql );
+		sql_query( $sql );
 
 		// Remove the lines
 		$sql = 'DELETE FROM im_delivery_lines WHERE delivery_id = ' . $this->ID;
 
-		$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . $sql );
+		sql_query( $sql );
 
 	}
 
@@ -91,11 +102,7 @@ class delivery {
 		if ( ! ( $this->d_OrderID > 0 ) ) {
 			$sql = "SELECT order_id FROM im_delivery WHERE id = " . $this->ID;
 
-			$export = mysql_query( $sql ) or die ( "Sql error: " . mysql_error() . $sql );
-
-			$row = mysql_fetch_row( $export );
-
-			$this->d_OrderID = $row[0];
+			$this->d_OrderID = sql_query_single_scalar( $sql );
 		}
 
 		return $this->d_OrderID;
@@ -104,27 +111,90 @@ class delivery {
 	public function DeleteLines() {
 		$sql = 'DELETE FROM im_delivery_lines WHERE delivery_id = ' . $this->ID;
 
-		$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . $sql );
+		sql_query( $sql );
 	}
 
 	public function Price() {
 		$sql = 'SELECT transaction_amount FROM im_client_accounts WHERE transaction_ref = ' . $this->ID;
 		// my_log($sql);
 
-		$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . $sql );
-
-		$row = mysql_fetch_row( $export );
-
-		return $row[0];
+		return sql_query_single_scalar( $sql );
 	}
 
-	function print_delivery( $expand_basket = false, $print_comments = false, $refund = false ) {
-		print $this->delivery_text( $expand_basket, $print_comments, $refund );
+	function print_delivery( $document_type, $for_edit ) {
+		print $this->delivery_text( $document_type, $for_edit );
 	}
 
-	function delivery_text( $expand_basket = false, $print_comments = false, $refund = false ) {
+	function delivery_text( $document_type, $edit = ImDocumentOperation::show ) {
+		// $expand_basket = false, $refund = false, $edit_order = false
+		$debug = false;
+		if ( $debug ) {
+			print "Document type " . $document_type . "<br/>";
+			print "Edit: " . $edit . "<br/>";
+		}
 		global $global_vat;
 		global $conn;
+
+		$expand_basket = false;
+
+		// All fields:
+		$show_fields = array();
+		for ( $i = 0; $i <= DeliveryFields::max_fields; $i ++ ) {
+			$show_fields[ $i ] = false;
+		}
+
+		$show_fields[ DeliveryFields::product_name ]       = true;
+		$show_fields[ DeliveryFields::q_quantity_ordered ] = true;
+		$show_fields[ DeliveryFields::q_units_ordered ]    = true;
+		$show_fields[ DeliveryFields::price ]              = true;
+		$show_fields[ DeliveryFields::has_vat ]            = true;
+		$show_fields[ DeliveryFields::line_vat ]           = true;
+		$show_fields[ DeliveryFields::line_total ]         = true;
+
+		$empty_array = array();
+		for ( $i = 0; $i <= DeliveryFields::max_fields; $i ++ ) {
+			$empty_array[ $i ] = "";
+		}
+
+//		p_id = 6,
+//		term_id = 8,
+		$refund = false;
+
+		$header_fields = array(
+			"בחר",
+			"פריט",
+			"כמות הוזמן",
+			"יחידות הוזמנו",
+			"כמות סופק",
+			"מחיר",
+			"חייב מע\"מ",
+			"מע\"מ",
+			"סה\"כ",
+			"קטגוריה",
+			"כמות לזיכוי",
+			"סה\"כ זיכוי"
+		);
+
+		switch ( $document_type ) {
+			case ImDocumentType::order:
+				$header_fields[ DeliveryFields::line_total ] = "סה\"כ להזמנה";
+				if ( $edit == ImDocumentOperation::edit ) {
+					$header_fields[ DeliveryFields::line_select ] = gui_checkbox( "chk", "line_chk", false );
+					$show_fields[ DeliveryFields::line_select ]   = true;
+				}
+				break;
+			case ImDocumentType::delivery:
+				$show_fields[ DeliveryFields::q_supply ] = true;
+				break;
+			case ImDocumentType::refund:
+				$refund                                      = true;
+				$show_fields[ DeliveryFields::q_refund ]     = true;
+				$show_fields[ DeliveryFields::refund_total ] = true;
+				break;
+			default:
+				print "Document type " . $document_type . " not handled " . __FILE__ . " " . __LINE__ . "<br/>";
+				die( 1 );
+		}
 
 		$data      = ""; // gui_image(get_logo_url());
 		$del_price = 0;
@@ -143,11 +213,32 @@ class delivery {
 		$loaded      = false;
 		$volume_line = false;
 
+		$data .= "<style> " .
+		         "table.prods { border-collapse: collapse; } " .
+		         " table.prods, td.prods, th.prods { border: 1px solid black; } " .
+		         " </style>";
+
+		$data .= "<table class=\"prods\" id=\"del_table\" border=\"1\">";
+		// <tr><td>פריט</td><td>כמות הוזמן</td><td>יחידה</td></td><td>כמות סופק</td><td>חייב מע\"מ</td><td>מע\"מ</td><td>מחיר</td><td>סהכ</td>";
+
+		// Print header
+		$data .= "<tr>";
+		for ( $i = 0; $i < sizeof( $header_fields ); $i ++ ) {
+			// print $i . " " . $show_fields[$i] . "<br/>";
+			$data .= gui_cell( $header_fields[ $i ], "header" . $i, $show_fields[ $i ] );
+			//	print $i . " " . $show_fields[$i]. "<br/>";
+		}
+		$data .= "</tr>";
+
 		if ( $this->ID > 0 ) { // load delivery
 			$loaded = true;
 			$sql    = 'select id, product_name, quantity, quantity_ordered, vat, price, line_price, prod_id ' .
 			          'from im_delivery_lines ' .
 			          'where delivery_id=' . $this->ID . " order by 1";
+
+			if ( $debug ) {
+				print $sql . "<Br/>";
+			}
 
 			$result = $conn->query( $sql );
 
@@ -156,21 +247,14 @@ class delivery {
 				die ( "select error" );
 			}
 
-			$data .= "<style> " .
-			         "table.prods { border-collapse: collapse; } " .
-			         " table.prods, td.prods, th.prods { border: 1px solid black; } " .
-			         " </style>";
-
-			$data .= "<table class=\"prods\" id=\"del_table\" border=\"1\"><tr><td>פריט</td><td>כמות הוזמן</td><td>כמות סופק</td><td>חייב מעם</td><td>מעם</td><td>מחיר</td><td>סהכ</td>";
-			if ( $refund ) {
-				$data .= gui_cell( "כמות לזיכוי" ) . gui_cell( "סהכ זיכוי" );
-			}
-			$data .= "</tr>";
 			while ( $row = mysqli_fetch_assoc( $result ) ) {
 				if ( $row["product_name"] == "הנחת כמות" ) {
 					$volume_line = true;
 				}
-				$data .= $this->delivery_line( $row["product_name"], $row["quantity_ordered"], $row["quantity"], $row["price"], $row["vat"], $row["prod_id"], $refund );
+				// $data .= $this->delivery_line($show_fields, $row["id"], $row["quantity_ordered"], "", $row["quantity"], $row["price"], $row["vat"], $row["prod_id"], $refund, "" );
+				// TODO: client Type
+				$data .= $this->delivery_line( $show_fields, ImDocumentType::delivery, $row["id"], 1, false );
+				// $data .= $this->delivery_line($show_fields, $document_type, $line_id, $client_type, $edit = false)
 			}
 			$del_price = $this->DeliveryFee();
 		} else {
@@ -182,44 +266,35 @@ class delivery {
 			       . ' and woi.order_item_id = woim.order_item_id and woim.`meta_key` = \'_product_id\''
 			       . ' order by 3';
 
-			$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+			$result = sql_query( $sql);
 
-			$data               .= "<table id=\"del_table\" border=\"1\"><tr><td>פריט</td><td>כמות הוזמן</td><td>כמות סופק</td><td>חייב מעם</td><td>מעם</td><td>מחיר</td><td>סהכ</td></tr>";
-			$quantity_delivered = 0;
-
-			while ( $row = mysql_fetch_row( $export ) ) {
-				$has_vat   = true;
+			while ( $row = mysqli_fetch_row( $result ) ) {
 				$prod_name = $row[0];
 				$prod_id   = $row[1];
 				// print $prod_id . "<br/>";
 				$order_item_id    = $row[2];
-				$quantity_ordered = get_order_itemmeta( $order_item_id, '_qty' );
-				$line_total       = get_order_itemmeta( $order_item_id, '_line_total' );
-
-				$price = $this->item_price( $client_type, $prod_id, $line_total, $quantity_ordered );
 
 				//print $price . "<br/>";
-
+				$has_vat = true;
 				if ( get_vat_percent( $prod_id ) == 0 ) {
 					$has_vat = false;
 				}
 
-				$data .= $this->delivery_line( $prod_name, $quantity_ordered, $quantity_delivered, $price, $has_vat, $prod_id );
+				// $data .= $this->delivery_line($show_fields, $prod_id, $quantity_ordered, "", $quantity_ordered, $price, $has_vat, $prod_id, $refund, $unit );
+				$data .= $this->delivery_line( $show_fields, $document_type, $order_item_id, $client_type, $edit);
 				// print "ex " . $expand_basket . " is " . is_basket($prod_id) . "<br/>";
 
-				if ( $expand_basket && is_basket( $prod_id ) ) {
-					$this->expand_basket( $prod_id, 0, $quantity_ordered, $data, 0 );
-				}
+//				if ( $expand_basket && is_basket( $prod_id ) ) {
+//					$this->expand_basket( $prod_id, 0, $quantity_ordered, $data, 0 );
+//				}
 			}
+
 			// Get and display order delivery price
 			$sql2 = 'SELECT meta_value FROM `wp_woocommerce_order_itemmeta` WHERE order_item_id IN ( '
 			        . 'SELECT order_item_id FROM wp_woocommerce_order_items WHERE order_id = ' . $this->OrderId()
 			        . ' AND order_item_type = \'shipping\' )  AND meta_key = \'cost\'; ';
 
-			$export2 = mysql_query( $sql2 ) or die ( "Sql error : " . mysql_error() );
-
-			$row2      = mysql_fetch_row( $export2 );
-			$del_price = $row2[0];
+			$del_price = sql_query_single_scalar( $sql2);
 			if ( ! is_numeric( $del_price ) ) {
 				$del_price = 0;
 			}
@@ -232,20 +307,32 @@ class delivery {
 			$this->due_vat += $del_price;
 
 			$del_vat         = round( $del_price / ( 100 + $global_vat ) * $global_vat, 2 );
-			$value           = '<tr><td>משלוח</td>'
-			                   . '<td></td>'
-			                   . '<td><input type="text" name="del_quantity' . '" value="1"></td>'
-			                   . '<td><input id="has_vat" type = "checkbox" checked></button></td>'
-			                   . '<td>' . $del_vat . '</td>'
-			                   . '<td><input type="text" name="del_price' . '" value="' . $del_price . '"></td>'
-			                   . '<td>' . $del_price . '</td></tr>';
-			$data            .= $value;
+
+//			$value           = '<tr><td>דמי משלוח</td>'
+//			                   . '<td></td><td></td>'
+//			                   . '<td><input type="text" name="del_quantity' . '" value="1"></td>'
+//			                   . '<td><input id="has_vat" type = "checkbox" checked></button></td>'
+//			                   . '<td>' . $del_vat . '</td>'
+//			                   . '<td><input type="text" name="del_price' . '" value="' . $del_price . '"></td>'
+//			                   . '<td>' . $del_price . '</td></tr>';
+
+			$delivery_line                                       = $empty_array;
+			$delivery_line[ DeliveryFields::product_name ]       = "דמי משלוח";
+			$delivery_line[ DeliveryFields::q_quantity_ordered ] = 1;
+			$delivery_line[ DeliveryFields::price ]              = gui_input( "delivery", "", "" );
+			$delivery_line[ DeliveryFields::has_vat ]            = gui_checkbox( "has_vat", "vat", true );
+			$delivery_line[ DeliveryFields::line_vat ]           = $del_vat;
+			$delivery_line[ DeliveryFields::line_total ]         = $del_price;
+
+
+			$data            .= gui_row( $delivery_line, "delivery_fee", $show_fields);
 			$this->vat_total += $del_vat;
 			// Spare line for volume discount
 		}
 
 		if ( ! $volume_line ) {
-			$data .= "<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>";
+			$delivery_line = $empty_array;
+			$data          .= gui_row( $delivery_line, "volume_discount", $show_fields);
 		}
 
 		// Handle round field
@@ -253,35 +340,28 @@ class delivery {
 //        $data .= "<tr><td>עיגול</td><td></td><td></td><td></td><td></td><td></td><td>" . $round . "</td></tr>";
 
 		// Summary
-		$data .= "<tr><td>סהכ חייבי מעם</td><td></td><td></td><td></td><td></td><td></td><td>" . $this->due_vat . "</td>";
-		if ( $refund ) {
-			$data .= "<td style=\"display:none;\"></td>" . gui_cell( "סהכ זיכוי חייבי מעם" ) . gui_cell( 0 );
-		}
-		$data .= "</tr>";
-		$data .= "<tr><td>סכום מעם</td><td></td><td></td><td></td><td></td><td></td><td>" . $this->vat_total . "</td>";
-		if ( $refund ) {
-			$data .= "<td style=\"display:none;\"></td>" . gui_cell( "סהכ זיכוי מעם" ) . gui_cell( 0 );
-		}
-		$data .= "</tr>";
-		$data .= "<tr><td>סהכ לתשלום</td><td></td><td></td><td></td><td></td><td></td><td id=\"total\">" . ( $this->total ) . "</td>";
-		if ( $refund ) {
-			$data .= "<td style=\"display:none;\"></td>" . gui_cell( "סהכ זיכוי" ) . gui_cell( 0 );
-		}
-		$data .= "</tr>";
+		// Due VAT
+		$summary_line                                 = $empty_array;
+		$summary_line[ DeliveryFields::product_name ] = "סה\"כ חייבי מע\"מ";
+		$summary_line[ DeliveryFields::line_total ]   = $this->order_due_vat;
+		$data                                         .= gui_row( $summary_line, "due_vat", $show_fields );
+
+		// Total VAT
+		$summary_line                                 = $empty_array;
+		$summary_line[ DeliveryFields::product_name ] = "סכום מע\"מ";
+		$summary_line[ DeliveryFields::line_total ]   = $this->order_total_vat;
+		$data                                         .= gui_row( $summary_line, "vat", $show_fields );
+
+		// Total
+		$summary_line                                 = $empty_array;
+		$summary_line[ DeliveryFields::product_name ] = "סה\"כ לתשלום";
+		$summary_line[ DeliveryFields::line_total ]   = $this->order_total;
+		$data                                         .= gui_row( $summary_line, "total", $show_fields);
+
 
 		$data = str_replace( "\r", "", $data );
 
-		if ( $data == "" ) {
-			$data = "\n(0) Records Found!\n";
-		}
-
 		$data .= "</table>";
-
-		if ( $print_comments ) {
-			$data  .= "<b>" . "הערות לקוח" . "</b><br/>";
-			$order = new WC_Order( $this->OrderId() );
-			$data  .= nl2br( $order->customer_message );
-		}
 
 		return "$data";
 	}
@@ -292,74 +372,202 @@ class delivery {
 	// display delivery
 	// - Prices are taken from the database - delivery
 
-	public function delivery_line( $prod_name, $quantity_ordered, $quantity_delivered, $price, $has_vat, $prod_id, $refund = false ) {
+	// public function delivery_line($show_fields, $prod_id, $quantity_ordered, $unit_ordered, $quantity_delivered, $price, $has_vat, $document_type, $edit)
+	// Delivery or Order line.
+	// If Document is delivery, line_id is delivery line id.
+	// If Document is order, line_id is order line id.
+	public function delivery_line( $show_fields, $document_type, $line_id, $client_type, $edit = ImDocumentOperation::show ) {
+		$debug = false;
+		if ( $debug ) {
+			print "Edit: " . $edit;
+			print " Document type: " . $document_type . "<br/>";
+			print " line id " . $line_id . "<br/>";
+		}
+
 		global $global_vat;
 		$vat = 0;
 
-		// Display item name
-		$value = "<td id='" . $prod_id . "'>" . $prod_name . '</td>';
+		$value = "";
 
-		$value .= "<td>" . $quantity_ordered . "</td>";
-
-		$value .= '<td>';
-		if ( ! $refund ) {
-			$value .= '<input type="text" name="quantity' . $this->line_number . '"';
-			if ( $this->ID > 0 ) {
-				$value .= " value=" . $quantity_delivered;
-			}
-			$value .= ' onkeypress="moveNextRow(' . $this->line_number . ')">';
+		if ( $show_fields[ DeliveryFields::line_select ] ) {
+			$value .= gui_cell( gui_checkbox( "chk" . $line_id, "line_chk", false ) ); // 0 - Checkbox
 		} else {
-			$value .= $quantity_delivered;
+			$value .= gui_cell( "", "", false );
+		}
+		$prod_name          = "unset";
+		$unit_ordered       = null;
+		$quantity_ordered   = 0;
+		$quantity_delivered = 0;
+		$prod_id            = 0;
+		//////////////////////////////////////////
+		// Fetch fields from the order/delivery //
+		//////////////////////////////////////////
+		$unit_q           = "";
+		$order_line_total = 0;
+		$load_from_order  = false;
+		switch ( $document_type ) {
+			case ImDocumentType::order:
+				$load_from_order = true;
+				break;
+
+			case ImDocumentType::delivery:
+				if ( $edit == ImDocumentOperation::create ) {
+					$load_from_order = true;
+				} else {
+					$load_from_order = false;
+				}
+				// TODO: check price
+				break;
+		}
+		if ( $load_from_order ) {
+//			print "loading from order<br/>";
+			$sql              = "SELECT order_item_name FROM wp_woocommerce_order_items WHERE order_item_id = " . $line_id;
+			$prod_name        = sql_query_single_scalar( $sql );
+			$quantity_ordered = get_order_itemmeta( $line_id, '_qty' );
+			$unit_ordered     = get_order_itemmeta( $line_id, 'unit' );
+			$order_line_total = get_order_itemmeta( $line_id, '_line_total' );
+			$prod_id          = get_order_itemmeta( $line_id, '_product_id' );
+			$line_price       = get_order_itemmeta( $line_id, '_line_total' );
+			$price            = round( $order_line_total / $quantity_ordered, 2 );
+
+			if ( $unit_ordered ) {
+				$quantity_ordered = "";
+				$unit_array       = explode( ",", $unit_ordered );
+				$unit_q           = $unit_array[1];
+				// print "unit: " ; var_dump($unit) ; print "<br/>";
+			}
+
+		} else {
+			$sql = "SELECT prod_id, product_name, quantity_ordered, quantity, price, line_price FROM im_delivery_lines WHERE id = " . $line_id;
+
+			$row = sql_query_single( $sql );
+
+			$prod_id            = $row[0];
+			$prod_name          = $row[1];
+			$quantity_ordered   = $row[2];
+			$quantity_delivered = $row[3];
+			$price              = $row[4];
+			$line_price         = $row[5];
+
+			// $unit_ordered     = ;
+			// $order_line_total = $row[5];
+
+			$prod_name = get_product_name( $prod_id );
 		}
 
-		$value .= '</td>';
+		// in Order price is total/q. in delivery get from db.
+		// $price            = $this->item_price( $client_type, $prod_id, $order_line_total, $quantity_ordered );
+
+		// Display item name. product_name
+		$value .= "<td id='" . $prod_id . "'>" . $prod_name . '</td>'; // 1- name
+
+		// q_quantity_ordered
+		$value .= "<td>" . $quantity_ordered . "</td>";                             // 2- ordered
+
+		// q_units_ordered
+		$value .= "<td>" . $unit_q . "</td>";                                       // 3- unit
+
+		// supplied
+
+		// q_supply
+		switch ( $document_type ) {
+			case ImDocumentType::order:
+				// TODO: get supplied q
+				$value .= gui_cell( $quantity_delivered, "", $show_fields[ DeliveryFields::q_supply ] ); // 4-supplied
+				// $value .= gui_cell( "הוזמן", $debug );
+				break;
+
+			case ImDocumentType::delivery:
+				if ( $edit ) {
+					$value .= "<td>";
+					$value .= '<input type="text" name="quantity' . $this->line_number . '"';           // 4 - Supplied
+					if ( $this->ID > 0 ) {
+						$value .= " value=" . $quantity_delivered;
+					}
+					$value .= ' onkeypress="moveNextRow(' . $this->line_number . ')">';
+					$value .= "</td>";
+				} else {
+					$value .= gui_cell( $quantity_delivered );
+				}
+				break;
+			case ImDocumentType::refund;
+				$value .= gui_cell( $quantity_delivered );                                              // 4- Supplied
+				break;
+		}
 
 		if ( ! is_numeric( $price ) ) {
 			$price = 0;
 		}
 
-		$value .= '<td><input id="has_vat" type = "checkbox" ';
-		if ( $has_vat > 0 ) {
-			$value .= "checked";
-		}
-		$value .= ' ></td>';
 
-		$line_price = round( $quantity_delivered * $price, 2 );
-
-		if ( $has_vat ) {
-			$vat           = round( $price * $quantity_delivered / ( 100 + $global_vat ) * $global_vat, 2 );
+		// Handle price, due vat, line vat, total_line
+		$has_vat = true;
+		if ( get_vat_percent( $prod_id ) == 0 ) {
+			$has_vat = false;
+//			$this->order_due_vat += round(($line_price * $global_vat) /100, 2);
+		} else {
+			$vat           = round( $line_price / ( 100 + $global_vat ) * $global_vat, 2 );
 			$this->due_vat += $price * $quantity_delivered;
 		}
 
-		$value .= '<td id="vat' . $this->line_number . '">' . $vat . '</td>'
-		          . '<td id ="price' . $this->line_number . '">' . $price . '</td>'
-		          . '<td id ="line_total' . $this->line_number . '">' . $line_price . '</td>';
+		// price
+		$value .= gui_cell( $price, "price" . $this->line_number );                                   // 5 - price
 
+		// has_vat
+		$value .= gui_cell( gui_checkbox( "has_vat" . $prod_id, "has_vat", $has_vat > 0 ) ); // 6 - has vat
+
+		// vat
+		$value .= gui_cell( $vat, "vat" . $this->line_number );                                       // 7 - line vat
+
+		// Line total
+		$value .= gui_cell( $line_price, "order_line_total" . $this->line_number );                   // 8 - line total
+
+		$this->order_total += $line_price;
+		// Accumulate numbers
+		if ( $vat > 0 ) {
+			$this->order_due_vat   += $line_price;
+			$this->order_total_vat += $vat;
+		}
+
+		// terms
 		// Check if this product eligible for quantity discount.
 		$terms = get_the_terms( $prod_id, 'product_cat' );
+		$terms_cell = "";
 		if ( $terms ) {
-			$terms_cell = '<td style="display:none;">';
 			foreach ( $terms as $term ) {
 				$terms_cell .= $term->term_id . ",";
 			}
 			$terms_cell = rtrim( $terms_cell, "," );
-			$terms_cell .= '</td>';
 		} else {
-			$terms_cell = "<td style=\"display:none;\"></td>";
 			if ( $prod_id > 0 ) {
-				print "no terms for " . $prod_id;
+				$terms_cell .= "no terms for " . $prod_id;
 			}
 		}
+		$value .= gui_cell( $terms_cell, "terms" . $this->line_number, false );                    // 9 - terms
 
-		$value .= $terms_cell;
-
-		if ( $refund ) {
-			$value .= gui_cell( gui_input( "refund_" . $this->line_number, 0 ) );
-			$value .= gui_cell( "0" );
+		// Handle refund
+		if ( $document_type == ImDocumentType::refund ) {
+			$value .= gui_cell( gui_input( "refund_" . $this->line_number, 0 ) );             // 10 - refund q
+			$value .= gui_cell( "0" );                                                              // 11 - refund amount
+		} else {
+			$value .= gui_cell( "debug", "", $debug );
+			$value .= gui_cell( "debug", "", $debug);
 		}
 
-		$this->total       = $this->total + $line_price;
-		$this->vat_total   = $this->vat_total + $vat;
+		// Handle totals
+		switch ( $document_type ) {
+			case ImDocumentType::order:
+				break;
+
+			case ImDocumentType::delivery:
+				$this->total     = $this->total + $line_price;
+				$this->vat_total = $this->vat_total + $vat;
+				break;
+
+			case ImDocumentType::refund;
+				break;
+		}
+
 		$this->line_number = $this->line_number + 1;
 
 		return "<tr> " . trim( $value ) . "</tr>";
@@ -369,40 +577,36 @@ class delivery {
 		$sql = 'SELECT fee FROM im_delivery WHERE id = ' . $this->ID;
 		// my_log($sql);
 
-		$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . $sql );
-
-		$row = mysql_fetch_row( $export );
-
-		return $row[0];
+		return sql_query_single_scalar( $sql);
 	}
 
 
-	function item_price( $client_type, $prod_id, $line_total, $quantity_ordered ) {
-//    	print get_product_name($prod_id) . " ";
-//		print "YY<br/>";
-		$price = - 1;
-
-		switch ( $client_type ) {
-			case 0:
-				if ( $line_total == 0 ) {
-					$price = get_price( $prod_id );
-
-					// print $price;
-				} else {
-					$price = round( $line_total / $quantity_ordered, 2 );
-				}
-				break;
-			case 1:
-				$price = siton_price( $prod_id );
-				break;
-			case 2:
-				$price = get_buy_price( $prod_id );
-				break;
-		}
-
-		//      print $price . "<br/>";
-		return $price;
-	}
+//	function item_price( $client_type, $prod_id, $line_total, $quantity_ordered ) {
+////    	print get_product_name($prod_id) . " ";
+////		print "YY<br/>";
+//		$price = - 1;
+//
+//		switch ( $client_type ) {
+//			case 0:
+//				if ( $line_total == 0 ) {
+//					$price = get_price( $prod_id );
+//
+//					// print $price;
+//				} else {
+//					$price = round( $line_total / $quantity_ordered, 2 );
+//				}
+//				break;
+//			case 1:
+//				$price = siton_price( $prod_id );
+//				break;
+//			case 2:
+//				$price = get_buy_price( $prod_id );
+//				break;
+//		}
+//
+//		//      print $price . "<br/>";
+//		return $price;
+//	}
 
 	function expand_basket( $basket_id, $client_type, $quantity_ordered, &$data, $level ) {
 		global $conn;
@@ -418,12 +622,12 @@ class delivery {
 				$price = $this->item_price( $client_type, $prod_id, 0, 0 );
 				//                        print "prod_id = " . $prod_id . "price = " . $price . "<br/>";
 				$product_name = "===> " . get_product_name( $prod_id );
-				$data         .= $this->delivery_line( $product_name, $quantity_ordered * $quantity, 0,
-					$price, round( $price * get_vat_percent( $prod_id ), 2 ), $prod_id );
+				$data         .= $this->delivery_line( $prod_id, $quantity_ordered * $quantity, "", 0,
+					$price, round( $price * get_vat_percent( $prod_id ), 2 ), $prod_id, false, "" );
 			}
 		}
 		if ( $level == 0 ) {
-			$data .= "<tr><td>הנחת סל</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>";
+			$data .= "<tr><td>הנחת סל</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>";
 		}
 	}
 
@@ -439,13 +643,11 @@ class delivery {
 		my_log( __FILE__, "client_id = " . $client_id );
 
 		$sql = "SELECT dlines FROM im_delivery WHERE id = " . $this->ID;
-		$export = mysql_query( $sql ) or sql_error( $sql );
 
-		$row    = mysql_fetch_row( $export );
-		$dlines = $row[0];
+		$dlines = sql_query_single_scalar( $sql);
+
 		my_log( __FILE__, "dlines = " . $dlines );
 
-		$message  = file_get_contents( "../header.php" );
 		$del_user = order_info( $order_id, '_billing_first_name' );
 		$message  = header_text();
 		$message  .= "

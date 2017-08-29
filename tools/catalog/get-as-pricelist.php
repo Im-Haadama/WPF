@@ -6,7 +6,7 @@
  * Time: 22:48
  * purpose: export all published products as pricelist for external store
  */
-require_once( '../tools.php' );
+require_once( '../im_tools.php' );
 require_once( '../gui/inputs.php' );
 
 if ( isset( $_GET["incremental"] ) ) {

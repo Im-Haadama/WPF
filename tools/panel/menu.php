@@ -5,7 +5,7 @@
  * Date: 18/05/17
  * Time: 20:39
  */
-require_once( '../tools.php' );
+require_once( '../im_tools.php' );
 require_once( '../header.php' );
 require_once( "../gui/inputs.php" );
 require_once( "../gui/sql_table.php" );
@@ -31,7 +31,7 @@ $col = 0;
 
 $table[0][ $col ] = gui_header( 1, "הזמנות" );
 $table[1][ $col ] = table_content( $sql, true, true, $links );
-$table[2][ $col ] = gui_hyperlink( "צור מנויים", "../weekly/create-subs.php" );
+$table[2][ $col ] = gui_hyperlink( "צור הזננות למנויים", "../weekly/create-subs.php" );
 $table[3][ $col ] = "";
 $table[4][ $col ] = "";
 
@@ -94,8 +94,12 @@ $i                         = 0;
 $table[ $i ++ ][ ++ $col ] = gui_header( 1, "מלאי" );
 $table[ $i ++ ][ $col ]    = gui_hyperlink( "איפוס", "../weekly/start.php" );
 
+$i                         = 0;
+$table[ $i ++ ][ ++ $col ] = gui_header( 1, "לקוחות" );
+$table[ $i ++ ][ $col ]    = gui_hyperlink( "צור לקוח", "../account/add-account.php" );
+
 for ( $i = 0; $i < sizeof( $table ); $i ++ ) {
-	for ( $j = 0; $j < 5; $j ++ ) {
+	for ( $j = 0; $j < sizeof( $table[0] ); $j ++ ) {
 		if ( is_null( $table[ $i ][ $j ] ) ) {
 			$table[ $i ][ $j ] = " ";
 		}

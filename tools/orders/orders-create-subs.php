@@ -6,7 +6,7 @@
  * Time: 21:07
  */
 
-require_once( '../tools.php' );
+require_once( '../im_tools.php' );
 require_once( 'orders-common.php' );
 
 // Read all subscriptions and create order for them
@@ -15,11 +15,10 @@ orders_create_subs();
 
 //$sql = "select client, basket from im_subscriptions where datediff(now(), last_order) > weeks * 7 - 2";
 //
-//$export = mysql_query ( $sql ) or die ( "Sql error : " . mysql_error( ) );
 //
 //my_log("creating subscriptions orders", __FILE__);
 //
-//while( $row = mysql_fetch_row( $export ))
+//while( $row = mysqli_fetch_row( $result ))
 // {
 //    $user_id = $row[0];
 //    $user = get_userdata($user_id);
@@ -53,7 +52,6 @@ orders_create_subs();
 //
 //     $sql1 = "update im_subscriptions set last_order=now() where client = " . $user_id;
 //
-//     $export1 = mysql_query ( $sql1 ) or die ( "Sql error : " . mysql_error( ) );
 //
 //}
 

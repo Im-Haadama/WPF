@@ -1,5 +1,5 @@
 <?php
-require_once( '../tools.php' );
+require_once( '../im_tools.php' );
 require_once( "../gui/inputs.php" );
 require_once( "../catalog/catalog.php" );
 
@@ -84,7 +84,7 @@ function show_catalog( $for_update, $search_text, $csv, $active = false, $siton 
 
 	$sql .= ' order by 2';
 
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+	$result = sql_query( $sql );
 
 	$data = "<table><tr>";
 	if ( $for_update ) {
@@ -105,7 +105,7 @@ function show_catalog( $for_update, $search_text, $csv, $active = false, $siton 
 //		break;
 
 
-	while ( $row = mysql_fetch_row( $export ) ) {
+	while ( $row = mysqli_fetch_row( $result ) ) {
 		$line_number ++;
 		$prod_id            = $row[0];
 		// prof_flag("handle " . $prod_id);

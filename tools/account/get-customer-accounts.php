@@ -67,13 +67,11 @@ $sql = 'SELECT id FROM im_delivery'
        . ' meta_key = \'_customer_user\''
        . ' AND meta_value = ' . $customer_id . ')';
 
-$export = mysql_query( $sql ) or die ( "Sql error: " . mysql_error() . $sql );
-
-$fields = mysql_num_fields( $export );
+$result = sql_query( $sql );
 
 $data = "<table id=\"del_table\" border=\"0\"><tr><td>משלוח</td><td>תאריך</td><td>מחיר</td><td>מעם</td></tr>";
 
-while ( $row = mysql_fetch_row( $export ) ) {
+while ( $row = mysqli_fetch_row( $result ) ) {
 	$line_number = $line_number + 1;
 	$line        = "<tr>";
 	$delivery_id = $row[0];
@@ -102,9 +100,7 @@ function delivery_info( $delivery_id ) {
 	$sql = 'select date, total, vat '
 	       . ' from im_delivery where id = ' . $delivery_id;
 
-	$export = mysql_query( $sql ) or die ( "Sql error: " . mysql_error() . $sql );
-
-	$row = mysql_fetch_row( $export );
+	$row = sql_query_single( $sql );
 
 	$line = "<td>" . $row[0] . '</td>';
 	$line .= "<td>" . $row[1] . "</td>";

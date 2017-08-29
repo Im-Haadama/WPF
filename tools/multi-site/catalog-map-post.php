@@ -6,7 +6,7 @@
  * Time: 11:53
  */
 // require_once('multi-catalog.php');
-require_once( '../tools.php' );
+require_once( '../im_tools.php' );
 require_once( "multi-site.php" );
 require_once( 'simple_html_dom.php' );
 require_once( "multi-site.php" );
@@ -125,9 +125,9 @@ function is_mapped( $code ) {
 	$sql = 'SELECT id FROM `im_supplier_mapping` WHERE supplier_product_code = ' . $code .
 	       ' AND supplier_product_code != 10';
 
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+	$result = sql_query( $sql );
 
-	$row = mysql_fetch_row( $export );
+	$row = mysqli_fetch_row( $result );
 
 	if ( $row[0] > 0 ) {
 		return true;
@@ -168,7 +168,7 @@ function multi_search_unmapped_products( $site_id ) {
 	       " (select local_prod_id, remote_site_id from im_multisite_map)";
 	/// . ' supplier_product_code not in (select supplier_product_code from im_supplier_mapping)';
 
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+	$result = sql_query( $sql );
 
 	$data = "<tr>";
 	$data .= "<td>בחר</td>";
@@ -178,7 +178,7 @@ function multi_search_unmapped_products( $site_id ) {
 	$data .= "<td>תמונה מקומית</td>";
 	$data .= "</tr>";
 
-	while ( $row = mysql_fetch_row( $export ) ) {
+	while ( $row = mysqli_fetch_row( $result ) ) {
 		$product_id = $row[0];
 //        $supplier_id = $row[1];
 		$product_name = $row[1];
@@ -255,8 +255,7 @@ function search_invalid_mapping() {
 	$sql = 'SELECT id, supplier_id, supplier_product_name, supplier_product_code
             FROM im_supplier_mapping';
 
-
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+	$result = sql_query( $sql );
 
 	$data = "<tr>";
 	$data .= "<td>בחר</td>";
@@ -266,7 +265,7 @@ function search_invalid_mapping() {
 	$data .= "<td>שם מוצר</td>";
 	$data .= "</tr>";
 
-	while ( $row = mysql_fetch_row( $export ) ) {
+	while ( $row = mysqli_fetch_row( $result ) ) {
 		$line_id      = $row[0];
 		$product_id   = $row[1];
 		$supplier_id  = $row[2];

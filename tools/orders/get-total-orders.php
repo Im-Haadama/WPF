@@ -5,7 +5,7 @@
  * Date: 31/10/16
  * Time: 18:06
  */
-require_once( '../tools.php' );
+require_once( '../im_tools.php' );
 require_once( '../header.php' );
 
 ?>
@@ -55,7 +55,7 @@ require_once( '../header.php' );
                     var prod_id = collection[i].id.substring(3);
                     map_ids.push(prod_id);
 
-                    var quantity = eval(get_value(table.rows[i + 1].cells[5].firstChild));
+                    var quantity = eval(get_value(table.rows[i + 1].cells[6].firstChild));
                     map_ids.push(quantity);
                 }
             }
@@ -66,6 +66,7 @@ require_once( '../header.php' );
             xmlhttp = new XMLHttpRequest();
             xmlhttp.open("GET", request, true);
             xmlhttp.onreadystatechange = function () {
+                document.getElementById("logging").innerHTML = xmlhttp.response;
                 show_totals();
                 // location.reload();
             }
@@ -83,7 +84,7 @@ require_once( '../header.php' );
 
             // select the prods
             for (var i = 0; i < collection.length; i++) {
-                var prod_supplier_name = table.rows[i + 1].cells[6].innerHTML;
+                var prod_supplier_name = table.rows[i + 1].cells[7].innerHTML;
 
                 if (supplier_name == prod_supplier_name)
                     collection[i].checked = true;
@@ -105,14 +106,16 @@ require_once( '../header.php' );
 $sql1 = 'SELECT id, supplier_name FROM im_suppliers';
 
 // Get line options
-$export1 = mysql_query( $sql1 );
-while ( $row1 = mysql_fetch_row( $export1 ) ) {
+$result = sql_query( $sql1 );
+while ( $row1 = mysqli_fetch_row( $result ) ) {
 	print "<option value = \"" . $row1[0] . "\" > " . $row1[1] . "</option>";
 }
 
 ?>
 </select>
 <button id="btn_select_prods" onclick="selectProds()">בחר</button>
+
+<div id="logging"></div>
 
 </body>
 </html>

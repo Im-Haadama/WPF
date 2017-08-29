@@ -6,7 +6,7 @@
  * Time: 22:25
  */
 
-require_once( '../tools.php' );
+require_once( '../im_tools.php' );
 require_once( 'orders-common.php' );
 ?>
 
@@ -23,13 +23,13 @@ function table_line( $prod_name, $prod_id, $prod_quantity, $supplier_name, $bask
 
 	$prod_quantity_number = $prod_quantity;
 	// Check in which baskets we have this product
-	$sql = 'SELECT basket_id FROM im_baskets WHERE product_id = ' . $prod_id;
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+	$sql           = 'SELECT basket_id FROM im_baskets WHERE product_id = ' . $prod_id;
+	$result        = sql_query( $sql );
 	$quantity      = $prod_quantity;
 	$prod_name     = get_product_name( $prod_id );
 	$supplier_name = get_postmeta_field( $prod_id, "supplier_name" );
 
-	while ( $row = mysql_fetch_row( $export ) ) {
+	while ( $row = mysqli_fetch_row( $result ) ) {
 		$basket_id = $row[0];
 		if ( is_numeric( $basket_quantities[ $basket_id ] ) ) {
 			$quantity .= '+' . $basket_quantities[ $basket_id ];
@@ -72,7 +72,7 @@ function get_field( $order_id, $field_name ) {
 	       . " AND meta_key = '" . $field_name . "'";
 	// print $sql . "<br>";
 	$export = mysql_query( $sql ) or die ( "Sql error: " . mysql_error() );
-	$row = mysql_fetch_row( $export );
+	$row = mysqli_fetch_row( $result );
 
 //	print $row[0] + "<br>";
 	return $row[0];
@@ -97,7 +97,7 @@ $basket_products = array();
 $basket_ids      = array();
 $export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . "SQL = " . $sql );
 
-while ( $row = mysql_fetch_row( $export ) ) {
+while ( $row = mysqli_fetch_row( $result ) ) {
 	array_push( $basket_products, array( $row[0], $row[1], 0 ) );
 	array_push( $basket_ids, $row[0] );
 }
@@ -117,7 +117,7 @@ $sql = 'select woi.order_item_name, sum(woim.meta_value), woi.order_item_id'
        . " and woi.order_item_id = woim1.order_item_id and woim1.`meta_key` = '_product_id'"
        . " group by woi.order_item_name order by 1 ";
 
-$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+$result = sql_query( $sql );
 
 $fields = mysql_num_fields( $export );
 
@@ -136,7 +136,7 @@ $total        = 0;
 $total_margin = 0;
 $data_lines   = array();
 
-while ( $row = mysql_fetch_row( $export ) ) {
+while ( $row = mysqli_fetch_row( $result ) ) {
 	// $line = '';
 	$prod_name     = $row[0];
 	$prod_quantity = $row[1];

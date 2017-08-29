@@ -1,7 +1,8 @@
-<?php require_once( '../tools_wp_login.php' );
+<?php
+require( '../tools_wp_login.php' );
 print header_text( false );
-require_once( "../gui/inputs.php" );
-require_once( "account.php" );
+require( "../gui/inputs.php" );
+require( "account.php" );
 ?>
 <html dir="rtl" lang="he">
 <head>
@@ -70,10 +71,7 @@ $sql = 'select round(sum(ia.transaction_amount),2), ia.client_id, wu.display_nam
        . ' where wu.id=ia.client_id'
        . ' group by client_id';
 
-
-$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
-
-$fields = mysql_num_fields( $export );
+$result = mysqli_query( $conn, $sql );
 
 $data = "<table>";
 $data .= "<tr>";
@@ -85,7 +83,7 @@ $data .= "</tr>";
 
 $data_lines = array();
 
-while ( $row = mysql_fetch_row( $export ) ) {
+while ( $row = mysqli_fetch_row( $result ) ) {
 	// $line = '';
 	$customer_total = $row[0];
 	$customer_id    = $row[1];

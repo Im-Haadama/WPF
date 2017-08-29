@@ -1,5 +1,5 @@
 <?php
-require_once( '../tools.php' );
+require_once( '../im_tools.php' );
 require_once( '../../wp-content/plugins/woocommerce-delivery-notes/woocommerce-delivery-notes.php' );
 require_once( '../multi-site/multi-site.php' );
 $header = $_GET["header"];
@@ -45,13 +45,13 @@ function print_deliveries() {
 //    }
 
 	// print $sql;
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+	$result = sql_query( $sql );
 
 	$data_lines = array();
 	$site_tools = MultiSite::LocalSiteTools();
 
 	//print "loop start<br>";
-	while ( $row = mysql_fetch_row( $export ) ) {
+	while ( $row = mysqli_fetch_row( $result ) ) {
 		$fields = array();
 		foreach ( $row as $value ) {
 			array_push( $fields, MultiSite::LocalSiteName() );
@@ -345,13 +345,13 @@ function get_delivery_driver( $order_id ) {
 
 	$sql = 'SELECT path  FROM im_paths WHERE city = "' . $city . '"';
 	// print $sql . "<br>";
-	$export = mysql_query( $sql ) or die ( "Sql error: " . mysql_error() . $sql );
-	$row = mysql_fetch_row( $export );
+	$result = sql_query( $sql );
+	$row    = mysqli_fetch_row( $result );
 
 	$sql = 'SELECT driver FROM im_path_info WHERE id = "' . $row[0] . '"';
 	// print $sql . "<br>";
-	$export = mysql_query( $sql ) or die ( "Sql error: " . mysql_error() . $sql );
-	$row = mysql_fetch_row( $export );
+	$result = sql_query( $sql );
+	$row    = mysqli_fetch_row( $result );
 
 	// print "done<br>";
 
@@ -364,8 +364,8 @@ function get_order_order( $order_id ) {
 
 	$sql = 'SELECT city_order, path FROM im_paths WHERE city = "' . $city . '"';
 	// print    $sql . "<br>";
-	$export = mysql_query( $sql ) or die ( "Sql error: " . mysql_error() . $sql );
-	$row = mysql_fetch_row( $export );
+	$result = sql_query( $sql );
+	$row    = mysqli_fetch_row( $result );
 //	print $row[0] + "<br>";
 	$city_order = $row[0];
 	$path       = $row[1];

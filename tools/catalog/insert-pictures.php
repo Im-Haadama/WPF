@@ -6,7 +6,7 @@
  * Time: 18:49
  */
 
-require_once( "../tools.php" );
+require_once( "../im_tools.php" );
 
 $img_list  = $_GET["img_array"];
 $img_array = explode( ",", $img_list );

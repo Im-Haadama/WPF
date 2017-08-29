@@ -5,7 +5,7 @@
  * Date: 18/04/17
  * Time: 22:53
  */
-require_once( '../tools.php' );
+require_once( '../im_tools.php' );
 require_once( '../header.php' );
 ?>
 <script>
@@ -58,13 +58,13 @@ while ( $row = mysqli_fetch_row( $result ) ) {
 print print_entry( 0 );
 function delete_suppliers( $id ) {
 	$sql = "delete from im_suppliers where id = $id";
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . $sql );
+	sql_query( $sql );
 }
 
 function print_suppliers( $id, $horizontal, $seq ) {
 	$sql = "select id, supplier_name, supplier_contact_name, supplier_contact_phone, factor, site_id from im_suppliers where id = $id";
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . $sql );
-	$row = mysql_fetch_row( $export );
+	$row = sql_query_single( $sql );
+
 	if ( ! $horizontal ) {
 		print "<table>";
 	}

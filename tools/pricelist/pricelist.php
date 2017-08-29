@@ -5,7 +5,7 @@
  * Date: 06/12/15
  * Time: 10:16
  */
-require_once( '../tools.php' );
+require_once( '../im_tools.php' );
 require_once( '../catalog/catalog.php' );
 require_once( '../gui/inputs.php' );
 require_once( '../multi-site/multi-site.php' );
@@ -62,7 +62,7 @@ class PriceList {
 		       . ' and s.id = pl.supplier_id '
 		       . ' order by 1';
 
-		$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+		$result = sql_query( $sql );
 
 		$data .= "<tr>";
 		$data .= "<td>בחר</td>";
@@ -79,7 +79,7 @@ class PriceList {
 
 		// Add new item fields
 
-		while ( $row = mysql_fetch_row( $export ) ) {
+		while ( $row = mysqli_fetch_row( $result ) ) {
 			$pl_id     = $row[3];
 			$link_data = $catalog->GetProdID( $pl_id );
 			$prod_id   = $link_data[0];
@@ -103,9 +103,9 @@ class PriceList {
 		$sql = 'SELECT max(date) FROM im_supplier_price_list'
 		       . ' WHERE supplier_id = ' . $this->SupplierID;
 
-		$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+		$result = sql_query( $sql );
 
-		$row = mysql_fetch_row( $export );
+		$row = mysqli_fetch_row( $result );
 
 		return $row[0];
 	}
@@ -114,9 +114,9 @@ class PriceList {
 		$sql = 'SELECT factor FROM im_suppliers'
 		       . ' WHERE id = ' . $this->SupplierID;
 
-		$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+		$result = sql_query( $sql );
 
-		$row = mysql_fetch_row( $export );
+		$row = mysqli_fetch_row( $result );
 
 		return $row[0];
 	}
@@ -339,7 +339,6 @@ class PriceList {
 //            . " where supplier_id = " . $this->SupplierID;
 //
 //        my_log($sql, __CLASS__);
-//        $export = mysql_query($sql);
 //        if (! $export)
 //            die ('Invalid query: ' . mysql_error());
 //
@@ -404,7 +403,6 @@ class PriceList {
 //        }
 //
 //        my_log($sql, "catalog_update_price");
-//        $export = mysql_query($sql);
 //        if (! $export)
 //            die ('Invalid query: ' . mysql_error());
 		return;
@@ -416,14 +414,7 @@ class PriceList {
 		$sql = "SELECT price FROM im_supplier_price_list "
 		       . " WHERE product_name = '" . addslashes( $product_name ) . "' AND supplier_id = " . $this->SupplierID;
 
-		$export = mysql_query( $sql );
-		if ( ! $export ) {
-			die ( 'Invalid query: ' . mysql_error() );
-		}
-
-		$row = mysql_fetch_row( $export );
-
-		return $row[0];
+		return sql_query_single_scalar( $sql );
 	}
 
 	function ChangeStatus( $status ) {
@@ -554,6 +545,21 @@ class PriceList {
 		}
 	}
 }
+
+function pricelist_get_price( $prod_id ) {
+	// my_log("prod_id = " . $prod_id);
+	if ( ! ( $prod_id > 0 ) ) {
+		print "missing prod_id " . $prod_id . "<br/>";
+		die ( 1 );
+	}
+	$supplier_id = get_supplier_id( get_postmeta_field( $prod_id, "supplier_name" ) );
+
+	$sql = 'SELECT price FROM im_supplier_price_list WHERE supplier_id = \'' . $supplier_id . '\'' .
+	       ' AND product_name IN (SELECT supplier_product_name FROM im_supplier_mapping WHERE product_id = ' . $prod_id . ')';
+
+	return sql_query_single_scalar( $sql );
+}
+
 
 function print_html_line( $product_name, $price, $date, $pl_id, $supplier_product_code, $factor, $linked_prod_id, $editable = true, $map_id ) {
 	$calc_price = round( $price * ( 100 + $factor ) / 100, 1 );

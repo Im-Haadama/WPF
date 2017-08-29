@@ -6,7 +6,7 @@
  * Time: 18:09
  */
 
-require '../tools.php';
+require '../im_tools.php';
 require_once( "supplies.php" );
 require_once( "../gui/inputs.php" );
 $id = $_GET["id"];

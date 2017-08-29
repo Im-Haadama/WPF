@@ -7,6 +7,8 @@
  */
 require_once( '../tools_wp_login.php' );
 require_once( '../gui/inputs.php' );
+require_once( "../suppliers/gui.php" );
+
 ?>
 <html dir="rtl" lang="he">
 <header>

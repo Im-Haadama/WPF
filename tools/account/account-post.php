@@ -27,7 +27,6 @@ switch ( $operation ) {
 		$user_ids = $_GET["ids"];
 		$ids      = explode( ',', $user_ids );
 		send_month_summary( $ids );
-
 		break;
 
 	case "zero_near_zero":
@@ -75,6 +74,101 @@ switch ( $operation ) {
 		invoice_create_user( $id );
 		break;
 
+
+	case "get_client_id":
+		$customer_id = $_GET["customer_id"];
+		$invoice     = new Invoice4u();
+		$invoice->Login();
+
+		if ( is_null( $invoice->token ) ) {
+			die ( "can't login" );
+		}
+
+		// print "client name " . $client_name . "<br/>";
+		$client_name = get_customer_name( $customer_id );
+		$client      = $invoice->GetCustomerByName( $client_name );
+		print $client->ID;
+		break;
+
+	case "check_email":
+		$email = $_GET["email"];
+		if ( sql_query_single_scalar( "SELECT count(*) FROM wp_users WHERE user_email = '" . $email . "'" ) > 0 ) {
+			print "exists";
+
+			return;
+		}
+		// New. find login name
+		$new_login = strtok( $email, "@" );
+		if ( sql_query_single_scalar( "SELECT count(*) FROM wp_users WHERE user_login = '" . $new_login . "'" ) == 0 ) {
+			print $new_login;
+
+			return;
+		}
+		$trial = 1;
+		while ( 1 ) {
+			$new_login = strtok( $email, "@" ) . $trial;
+
+			if ( sql_query_single_scalar( "SELECT count(*) FROM wp_users WHERE user_login = '" . $new_login . "'" ) == 0 ) {
+				print $new_login;
+
+				return;
+			}
+			$trial ++;
+
+		}
+		print $new_login;
+		break;
+
+	case "add_user":
+		print "adding user";
+		$user    = $_GET["user"];
+		$name    = urldecode( $_GET["name"] );
+		$email   = $_GET["email"];
+		$address = urldecode( $_GET["address"] );
+		$city    = urldecode( $_GET["city"] );
+		$phone   = $_GET["phone"];
+		$zip     = $_GET["zip"];
+		add_im_user( $user, $name, $email, $address, $city, $phone, $zip );
+		break;
+
+}
+
+function add_im_user( $user, $name, $email, $address, $city, $phone, $zip ) {
+	$id = wp_create_user( $user, randomPassword(), $email );
+	if ( ! is_numeric( $id ) ) {
+		print "לא מצליח להגדיר יוזר";
+		var_dump( $id );
+
+		return;
+	}
+	$name_part = explode( " ", $name );
+	update_user_meta( $id, 'first_name', $name_part[0] );
+	update_user_meta( $id, 'shipping_first_name', $name_part[0] );
+	unset( $name_part[0] );
+	update_user_meta( $id, 'billing_address_1', $address );
+	update_user_meta( $id, 'billing_city', $city );
+
+	update_user_meta( $id, 'last_name', implode( " ", $name_part ) );
+	update_user_meta( $id, 'shipping_last_name', implode( " ", $name_part ) );
+	update_user_meta( $id, 'billing_phone', $phone );
+	update_user_meta( $id, 'billing_postcode', $zip );
+
+	update_user_meta( $id, 'shipping_address_1', $address );
+	update_user_meta( $id, 'shipping_postcode', $zip );
+	update_user_meta( $id, 'shipping_city', $city );
+	update_user_meta( $id, 'legacy_user', 1 );
+}
+
+function randomPassword() {
+	$alphabet    = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
+	$pass        = array(); //remember to declare $pass as an array
+	$alphaLength = strlen( $alphabet ) - 1; //put the length -1 in cache
+	for ( $i = 0; $i < 8; $i ++ ) {
+		$n      = rand( 0, $alphaLength );
+		$pass[] = $alphabet[ $n ];
+	}
+
+	return implode( $pass ); //turn the array into a string
 }
 
 $current_user = 0;
@@ -156,6 +250,9 @@ function invoice_create_user( $user_id ) {
 	}
 	$invoice->CreateUser( $name, $email, $phone );
 
+	$client = $invoice->GetCustomerByName( $name );
+	print $client->ID;
+
 }
 
 function invoice_create_document( $type, $ids, $user_id, $cash = 0, $bank = 0, $credit = 0, $check = 0 ) {
@@ -216,12 +313,12 @@ function invoice_create_document( $type, $ids, $user_id, $cash = 0, $bank = 0, $
 		$sql = 'select product_name, quantity, vat, price, line_price '
 		       . ' from im_delivery_lines where delivery_id = ' . $del_id;
 
-		$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . " " . $sql );
+		$result = sql_query( $sql );
 
 		// var_dump ($client->ClientID);
 
 		// drill to lines
-		while ( $row = mysql_fetch_row( $export ) ) {
+		while ( $row = mysqli_fetch_row( $result ) ) {
 			if ( $row[4] != 0 ) {
 				$item           = new Item();
 				$item->Name     = $row[0];
@@ -318,9 +415,10 @@ function zero_near_zero() {
 	       . ' where wu.id=ia.client_id'
 	       . ' group by client_id';
 
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
 
-	while ( $row = mysql_fetch_row( $export ) ) {
+	$result = sql_query( $sql );
+
+	while ( $row = mysqli_fetch_row( $result ) ) {
 		// $line = '';
 		$customer_total = $row[0];
 		$customer_id    = $row[1];

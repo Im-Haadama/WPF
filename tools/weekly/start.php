@@ -19,12 +19,14 @@ if ( isset( $_GET["operation"] ) ) {
 		case "reset_inventory":
 			print gui_header( 1, "מאפס מלאי" );
 			reset_inventory();
-			print gui_header( 2, "מאתחל רשימה של אמיר" );
-			$PL = new PriceList( 100004 );
-			$PL->RemoveLines( 1 );
-			$PL->RemoveLines( 2 );
-			print gui_header( 2, "יוצר הזמנות למנויים" );
-			orders_create_subs();
+			if ( MultiSite::LocalSiteID() == 1 ) {
+				print gui_header( 2, "מאתחל רשימה של אמיר" );
+				$PL = new PriceList( 100004 );
+				$PL->RemoveLines( 1 );
+				$PL->RemoveLines( 2 );
+				print gui_header( 2, "יוצר הזמנות למנויים" );
+				orders_create_subs();
+			}
 			die ( 0 );
 			break;
 	}

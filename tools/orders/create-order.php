@@ -6,7 +6,7 @@
  * Time: 00:26
  */
 
-require_once "../tools.php";
+require_once "../im_tools.php";
 
 $user_id    = $_GET["user_id"];
 $prod_ids   = $_GET["prod_ids"];

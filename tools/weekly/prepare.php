@@ -33,9 +33,9 @@ print "</style>";
 while ( $row = mysqli_fetch_assoc( $result ) ) {
 	$id = $row["id"];
 //	print $id . "<br/>";
-	print_order_info( $id );
+	print_order_info( $id, true );
 	$D = Delivery::CreateFromOrder( $id );
-	$D->print_delivery( true, true );
+	$D->print_delivery( true, false );
 }
 
 $sql = 'SELECT id as id'

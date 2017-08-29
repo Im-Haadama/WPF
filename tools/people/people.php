@@ -134,12 +134,12 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 	}
 	// "  order by 1 desc";
 	// print $sql;
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+	$result        = sql_query( $sql );
 	$total_sal     = 0;
 	$total_travel  = 0;
 	$total_expense = 0;
 
-	while ( $row = mysql_fetch_row( $export ) ) {
+	while ( $row = mysqli_fetch_row( $result ) ) {
 
 		// print "xxx" . $row[5] . $row[6]. $row[7] . $row[8]. "<br/>";
 		$line = "<tr>";
@@ -261,7 +261,7 @@ function project_name( $id ) {
 
 	$export = mysql_query( $sql ) or die ( "Sql error: " . mysql_error() . $sql );
 
-	$row = mysql_fetch_row( $export );
+	$row = mysqli_fetch_row( $result );
 
 //        print $rate . "<br/>";
 

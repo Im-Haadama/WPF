@@ -116,14 +116,14 @@ print "\$row = mysql_fetch_row( \$export ); \n";
 print "if (!\$horizontal) print \"<table>\";";
 
 // Read the headers.
-$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . $sql );
-//$row = mysql_fetch_row( $export );
+$result = sql_query( $sql );
+//$row = mysqli_fetch_row( $result );
 
 print "if (\$horizontal) print \"<tr>\";\n";
 
 // Read table rows;
 $col_idx = 0;
-while ( $row = mysql_fetch_row( $export ) ) {
+while ( $row = mysqli_fetch_row( $result ) ) {
 //	print "if (!\$horizontal and $row[0]
 	if ( in_array( $row[0], $skip_in_horizontal ) ) {
 		$include = 0;

@@ -6,7 +6,7 @@
  * Time: 16:31
  */
 
-require_once( '../tools.php' );
+require_once( '../im_tools.php' );
 
 class Bundles {
 //    function PrintHTML()
@@ -16,7 +16,6 @@ class Bundles {
 //        $sql = 'SELECT prod_id, quantity, margin FROM im_bundles'
 //            . ' order by 1';
 //
-//        $export = mysql_query($sql) or die ("Sql error : " . mysql_error());
 //
 //        $data .= "<tr>";
 //        $data .= "<td>בחר</td>";
@@ -51,7 +50,7 @@ class Bundles {
 		$sql = 'SELECT prod_id, bundle_prod_id, quantity, margin, id FROM im_bundles'
 		       . ' ORDER BY 1';
 
-		$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+		$result = sql_query( $sql );
 
 		$data .= "<tr>";
 		$data .= "<td>בחר</td>";
@@ -61,7 +60,7 @@ class Bundles {
 		$data .= "<td>רווח</td>";
 		$data .= "</tr>";
 
-		while ( $row = mysql_fetch_row( $export ) ) {
+		while ( $row = mysqli_fetch_row( $result ) ) {
 			$product_name = get_product_name( $row[0] );
 			$bundle_id    = $row[1];
 			$quantity     = $row[2];
@@ -88,7 +87,7 @@ class Bundles {
 		$sql = "INSERT INTO im_bundles (prod_id, quantity, margin, bundle_prod_id) VALUES (" . $prod_id . ", " .
 		       $quantity . ", " . $margin . ", " . $bundle_prod_id . ")";
 
-		$export = mysql_query( $sql ) or die ( sql_error( $sql ) );
+		sql_query( $sql );
 	}
 
 	function Delete( $bundle_id ) {
@@ -96,7 +95,7 @@ class Bundles {
 
 		my_log( "sql = " . $sql );
 
-		$export = mysql_query( $sql ) or die ( sql_error( $sql ) );
+		sql_query( $sql );
 	}
 }
 
@@ -110,9 +109,9 @@ class Bundle {
 	function CalculatePrice() {
 		$sql = "SELECT quantity, margin, prod_id FROM im_bundles WHERE bundle_prod_id = " . $this->id;
 
-		$export = mysql_query( $sql ) or die ( sql_error( $sql ) );
+		$result = sql_query( $sql );
 
-		$row = mysql_fetch_row( $export );
+		$row = mysqli_fetch_row( $result );
 
 		$quantity = $row[0];
 		$margin   = $row[1];
@@ -125,9 +124,9 @@ class Bundle {
 		$sql = "SELECT quantity, prod_id FROM im_bundles WHERE bundle_prod_id = " . $this->id;
 		// print $sql;
 
-		$export = mysql_query( $sql ) or die ( sql_error( $sql ) );
+		sql_query( $sql );
 
-		$row = mysql_fetch_row( $export );
+		$row = mysqli_fetch_row( $result );
 
 		$quantity = $row[0];
 		$prod_id  = $row[1];
@@ -140,9 +139,9 @@ class Bundle {
 	function GetSupplier() {
 		$sql = "SELECT prod_id FROM im_bundles WHERE bundle_prod_id = " . $this->id;
 
-		$export = mysql_query( $sql ) or die ( sql_error( $sql ) );
+		sql_query( $sql );
 
-		$row = mysql_fetch_row( $export );
+		$row = mysqli_fetch_row( $result );
 
 		return get_supplier( $row[0] );
 	}

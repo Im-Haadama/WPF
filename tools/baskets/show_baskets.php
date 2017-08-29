@@ -6,8 +6,9 @@
  * Time: 17:36
  */
 
-require_once( '../tools.php' );
+require_once( '../im_tools.php' );
 require_once( 'show_basket.php' );
+require_once( "../catalog/catalog.php" );
 ?>
 <html dir="rtl">
 <header>
@@ -16,11 +17,11 @@ require_once( 'show_basket.php' );
 
 $sql = 'SELECT DISTINCT basket_id FROM im_baskets';
 
-$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+$result = sql_query( $sql );
 
 $data .= "<table><tr><td><h3>שם הסל</h3></td><td><h3>עלות קניה</h3></td><td><h3>מכירה</h3></td><td><h3>מחיר בנפרד</h3></td><td><h3>אחוזי הנחה</h3></td></tr>";
 
-while ( $row = mysql_fetch_row( $export ) ) {
+while ( $row = mysqli_fetch_row( $result ) ) {
 	$basket_id = $row[0];
 
 	$line            = "<tr>";
@@ -48,9 +49,9 @@ function get_total_sellprice( $basket_id ) {
 	$total_price = 0;
 	$sql         = 'SELECT product_id FROM im_baskets WHERE basket_id = ' . $basket_id;
 
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+	$result = sql_query( $sql );
 
-	while ( $row = mysql_fetch_row( $export ) ) {
+	while ( $row = mysqli_fetch_row( $result ) ) {
 		$total_price += get_price( $row[0] );
 	}
 
@@ -61,9 +62,10 @@ function get_total_listprice( $basket_id ) {
 	$total_price = 0;
 	$sql         = 'SELECT product_id FROM im_baskets WHERE basket_id = ' . $basket_id;
 
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+	$result = sql_query( $sql );
 
-	while ( $row = mysql_fetch_row( $export ) ) {
+	while ( $row = mysqli_fetch_row( $result ) ) {
+		// Catalog::GetBuyPrice($row[0]);
 		$total_price += pricelist_get_price( $row[0] );
 	}
 

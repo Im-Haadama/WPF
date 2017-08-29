@@ -5,7 +5,7 @@
  * Date: 13/03/17
  * Time: 23:29
  */
-require_once( '../tools.php' );
+require_once( '../im_tools.php' );
 require_once( '../gui/inputs.php' );
 
 ?>
@@ -35,62 +35,6 @@ require_once( '../gui/inputs.php' );
             xmlhttp.send();
         }
 
-        function add_chef() {
-            var user = get_value(document.getElementById("user"));
-            if (user.length < 4) {
-                alert("הכנס שם משתמש");
-                return;
-            }
-            var name = get_value(document.getElementById("name"));
-            if (name.length < 5) {
-                alert("הכנס שם");
-                return;
-            }
-            var email = get_value(document.getElementById("email"));
-            if (email.length < 5) {
-                alert("הכנס email");
-                return;
-            }
-            var address = get_value(document.getElementById("address"));
-            if (address.length < 6) {
-                alert("הכנס כתובת");
-                return;
-            }
-            var city = get_value(document.getElementById("city"));
-            if (city.length < 5) {
-                alert("הכנס ישוב");
-                return;
-            }
-            var phone = get_value(document.getElementById("phone"));
-            if (phone.length < 10) {
-                alert("הכנס טלפון");
-                return;
-            }
-            var zip = get_value(document.getElementById("zip"));
-            if (zip.length < 5) {
-                alert("הכנס מיקוד");
-                return;
-            }
-            var request = "delivery-post.php?operation=add_chef&user=" + encodeURI(user) +
-                '&name=' + name +
-                '&email=' + encodeURI(email) +
-                '&address=' + encodeURI(address) +
-                '&city=' + city +
-                '&phone=' + phone +
-                '&zip=' + zip;
-            xmlhttp = new XMLHttpRequest();
-            xmlhttp.onreadystatechange = function () {
-                // Wait to get query result
-                if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
-                {
-                    var http_text = xmlhttp.responseText.trim();
-                    document.getElementById("logging").innerHTML = http_text;
-                }
-            }
-            xmlhttp.open("GET", request, true);
-            xmlhttp.send();
-
-        }
     </script>
 <?php
 print header_text();
@@ -121,17 +65,3 @@ function user_checkbox( $id ) {
 }
 
 
-print gui_header( 2, "הוסף לקוח חדש" );
-
-print gui_table(
-	array(
-		array( "שם משתמש", gui_input( "user", "", "" ) ),
-		array( "שם", gui_input( "name", "", "" ) ),
-		array( "דואל", gui_input( "email", "", "" ) ),
-		array( "כתובת", gui_input( "address", "", "" ) ),
-		array( "ישוב", gui_input( "city", "", "" ) ),
-		array( "טלפון", gui_input( "phone", "", "" ) ),
-		array( "מיקוד", gui_input( "zip", "", "" ) )
-	) );
-
-print gui_button( "btn_add", "add_chef()", "הוסף" );

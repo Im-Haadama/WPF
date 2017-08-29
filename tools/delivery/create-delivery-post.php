@@ -6,7 +6,7 @@
  * Time: 18:12
  */
 
-require_once( '../tools.php' );
+require_once( '../im_tools.php' );
 require_once( '../tools_wp_login.php' );
 require_once( '../orders/orders-common.php' );
 require_once( '../account/account.php' );
@@ -38,6 +38,7 @@ switch ( $operation ) {
 }
 
 function create_delivery_header( $order_id, $total, $vat, $lines, $edit, $fee ) {
+	global $conn;
 /// Usage: http://store.im-haadama.co.il/tools/delivery/db-add-delivery.php?client_id=1&order_id=1794&total=100&vat=18
 
 // If delivery edited delete old delivery
@@ -59,12 +60,12 @@ function create_delivery_header( $order_id, $total, $vat, $lines, $edit, $fee ) 
 	}
 	my_log( $sql );
 
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . "sql: " . $sql );
+	sql_query( $sql );
 
 	if ( $edit ) {
 		$delivery_id = $_GET["delivery_id"];
 	} else {
-		$delivery_id = mysql_insert_id();
+		$delivery_id = mysqli_insert_id( $conn );
 	}
 
 	if ( ! ( $delivery_id > 0 ) ) {
@@ -85,7 +86,6 @@ function create_delivery_header( $order_id, $total, $vat, $lines, $edit, $fee ) 
 	$order->update_status( 'wc-awaiting-shipment' );
 //$sql = "update wp_posts set post_status = 'wc-completed' where id = " . $order_id;
 //
-//$export = mysql_query ( $sql ) or die ( "Sql error: " . mysql_error( ) . $sql);
 
 // Output the new delivery id!
 	print $delivery_id;

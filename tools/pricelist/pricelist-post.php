@@ -63,8 +63,6 @@ switch ( $operation ) {
 //
 //            $export = mysql_query($sql) or die ("Sql error : " . mysql_error());
 //
-//            $row = mysql_fetch_row($export);
-//
 //            my_log("delete price " . $price_id . " product " . $row[0] . "price " . $row[1]);
 			$pl->Delete( $price_id );
 		}

@@ -50,22 +50,23 @@ my_log( __FILE__, "order=" . $order_id . " id = " . $id );
 
 if ( $id > 0 ) {
 	print "<form name=\"delivery\" action= \"\">";
-	print "<center>עריכת תעודת משלוח מספר  " . $id;
-	print  " </center>";
+	print gui_header( 2, "עריכת תעודת משלוח מספר  " . $id );
+	print gui_header( 3, "הזמנה מספר " . get_order_id( $id ) );
 
 	$d = new Delivery( $id );
-	$d->print_delivery( false, false, $refund );
+	$d->print_delivery( ImDocumentType::delivery, true );
 
-	$d = new delivery( $id );
+	//$d = new delivery( $id );
 	print "</form>";
 
 } else {
 	$client_id = get_customer_id_by_order_id( $order_id );
 	print "<form name=\"delivery\" action= \"\">";
+	print gui_header( 2, "יצירת תעודת משלוח להזמנה מספר " . $order_id );
 
-	print_order_info( $order_id );
+	print_order_info( $order_id, true );
 	$d = delivery::CreateFromOrder( $order_id );
-	$d->print_delivery( true );
+	$d->print_delivery( ImDocumentType::delivery, true );
 	print "</form>";
 }
 
@@ -75,7 +76,6 @@ if ( $id > 0 ) {
 <button id="btn_add" onclick="addDelivery()">אשר ושמור תעודה</button>
 <button id="btn_addline" onclick="addLine()">הוסף שורה</button>
 <textarea id="logging" rows="2" cols="50"></textarea>
-
 
 </body>
 </html>

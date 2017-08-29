@@ -5,6 +5,8 @@ require_once( "../gui/inputs.php" );
 require_once( "account.php" );
 require_once( "../multi-site/multi-site.php" );
 require_once( "../delivery/delivery-common.php" );
+require_once( '../invoice4u/invoice.php' );
+
 // $start_time =  microtime(true);
 
 // only if admin can select user. Otherwise get id from login info
@@ -18,11 +20,14 @@ if ( ! empty( $user->roles ) && is_array( $user->roles ) ) {
 	}
 }
 if ( $manager ) {
+	print header_text( true );
 	$customer_id = $_GET["customer_id"];
 	// print "id: " . $customer_id;
+
 } else {
 	$customer_id = $user_ID;
 }
+
 
 if ( ! $manager ) {
 	require_once( "../header.php" );
@@ -55,35 +60,55 @@ if ( ! $manager ) {
             xmlhttp.send();
         }
 
-        function updateDisplay() {
-            xmlhttp2 = new XMLHttpRequest();
-            xmlhttp2.onreadystatechange = function () {
-                // Wait to get query result
-                if (xmlhttp2.readyState == 4 && xmlhttp2.status == 200)  // Request finished
-                {
-                    label = document.getElementById("total");
-                    label.innerHTML = xmlhttp2.response;
-                }
-            }
-            var request2 = "get-customer-account-post.php?operation=total&customer_id=" + <? print $customer_id; ?>;
-            xmlhttp2.open("GET", request2, true);
-            xmlhttp2.send();
+        function disable_btn(id) {
+            var btn = document.getElementById(id);
+            if (btn) btn.disabled = true;
+        }
 
-            xmlhttp1 = new XMLHttpRequest();
-            xmlhttp1.onreadystatechange = function () {
-                // Wait to get query result
-                if (xmlhttp1.readyState == 4 && xmlhttp1.status == 200)  // Request finished
-                {
-                    table = document.getElementById("transactions");
-                    table.innerHTML = xmlhttp1.response;
+        function enable_btn(id) {
+            var btn = document.getElementById(id);
+            if (btn) btn.disabled = false;
+        }
+
+        function updateDisplay() {
+            var id = document.getElementById("invoice_client_id").innerHTML;
+            if (id > 0) {
+                document.getElementById("payment_table").style.visibility = "visible";
+                document.getElementById("btn_invoice").style.visibility = "visible";
+                document.getElementById("btn_create_user").style.visibility = "hidden";
+
+                xmlhttp2 = new XMLHttpRequest();
+                xmlhttp2.onreadystatechange = function () {
+                    // Wait to get query result
+                    if (xmlhttp2.readyState == 4 && xmlhttp2.status == 200)  // Request finished
+                    {
+                        label = document.getElementById("total");
+                        label.innerHTML = xmlhttp2.response;
+                    }
                 }
+                var request2 = "get-customer-account-post.php?operation=total&customer_id=" + <? print $customer_id; ?>;
+                xmlhttp2.open("GET", request2, true);
+                xmlhttp2.send();
+
+                xmlhttp1 = new XMLHttpRequest();
+                xmlhttp1.onreadystatechange = function () {
+                    // Wait to get query result
+                    if (xmlhttp1.readyState == 4 && xmlhttp1.status == 200)  // Request finished
+                    {
+                        table = document.getElementById("transactions");
+                        table.innerHTML = xmlhttp1.response;
+                    }
+                }
+                var request1 = "get-customer-account-post.php?operation=table&customer_id=" + <? print $customer_id; ?>;
+                xmlhttp1.open("GET", request1, true);
+                xmlhttp1.send();
+                disable_btn("btn_invoice");
+                disable_btn("btn_receipt");
+                disable_btn("btn_refund");
+            } else {
+                document.getElementById("payment_table").style.visibility = "hidden";
+                document.getElementById("btn_invoice").style.visibility = "hidden";
             }
-            var request1 = "get-customer-account-post.php?operation=table&customer_id=" + <? print $customer_id; ?>;
-            xmlhttp1.open("GET", request1, true);
-            xmlhttp1.send();
-            document.getElementById('btn_invoice').disabled = true;
-            document.getElementById('btn_receipt').disabled = true;
-            document.getElementById('btn_refund').disabled = true;
         }
         function create_user() {
             var request = "account-post.php?operation=create_invoice_user&id=" +<?php print $customer_id ?>;
@@ -91,8 +116,9 @@ if ( ! $manager ) {
             xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function () {
                 // Wait to get query result
-                if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+                if (xmlhttp.readyState === 4 && xmlhttp.status === 200)  // Request finished
                 {
+                    document.getElementById("invoice_client_id").innerHTML = xmlhttp.response;
                     updateDisplay();
                 }
             }
@@ -218,11 +244,22 @@ print get_customer_name( $customer_id );
 print  "</h1> </center>";
 
 if ( $manager ) {
-	print "<br>";
-	print "email: " . get_customer_email( $customer_id );
-	print "<br>";
-	print "phone: " . get_customer_phone( $customer_id );
-	print "<br>";
+	$invoice = new Invoice4u();
+	$invoice->Login();
+
+	if ( is_null( $invoice->token ) ) {
+		die ( "can't login" );
+	}
+
+	// print "client name " . $client_name . "<br/>";
+	$client_name = get_customer_name( $customer_id );
+	$client      = $invoice->GetCustomerByName( $client_name );
+
+	print gui_table( array(
+		array( "email", get_customer_email( $customer_id ) ),
+		array( "phone", get_customer_phone( $customer_id ) ),
+		array( "מספר מזהה", gui_lable( "invoice_client_id", $client->ID ) )
+	) );
 	print "הנתונים הן יתרת חוב. זיכוי ותשלום ירשמו בסימן שלילי";
 	print "<br>";
 	print "סוג פעולה";
@@ -237,7 +274,7 @@ if ( $manager ) {
 
 	print "<br/>";
 	print "אמצעי תשלום";
-	print gui_select( "payment", "im_payments", get_payment_method( $customer_id ) );
+	print gui_select_table( "payment", "im_payments", get_payment_method( $customer_id ) );
 	print gui_button( "save_payment_method", "save_payment_method()", "שמור" );
 }
 
@@ -428,57 +465,33 @@ if ( $manager ) {
 
 if ( $manager ) {
 	require_once( '../invoice4u/invoice.php' );
-	$invoice = new Invoice4u();
-	$invoice->Login();
-
-	if ( is_null( $invoice->token ) ) {
-		die ( "can't login" );
-	}
-
-	// print "client name " . $client_name . "<br/>";
-	$client_name = get_customer_name( $customer_id );
-	$client      = $invoice->GetCustomerByName( $client_name );
 	// var_dump($client);
 
-	if ( is_null( $client->ID ) ) {
-		print gui_button( "btn_create_user", "create_user()", "צור משתמש" );
-//        print "<B>יש להקים לקוח ב Invoice4u</B>";
-	} else {
-		$style = "table.payment_table { border-collapse: collapse; } " .
-		         " table.payment_table, td.change, th.change { border: 1px solid black; } ";
-		$sums  = null;
-		print gui_table( array(
-			array(
-				"תשלום",
-				gui_button( "btn_receipt", "create_receipt()", "הפק חשבונית מס קבלה" )
-			),
-			array( "מזומן", gui_input( "cash", "", array( 'onkeyup="update_sum()"' ) ) ),
-			array( "אשראי", gui_input( "credit", "", array( 'onkeyup="update_sum()"' ) ) ),
-			array( "העברה", gui_input( "bank", "", array( 'onkeyup="update_sum()"' ) ) ),
-			array( "המחאה", gui_input( "check", "", array( 'onkeyup="update_sum()"' ) ) ),
-			array( "עודף", " <div id=\"change\"></div>" )
-		), "payment_table", true, "", $sums, $style, "payment_table" );
+	$style = "table.payment_table { border-collapse: collapse; } " .
+	         " table.payment_table, td.change, th.change { border: 1px solid black; } ";
+	$sums  = null;
+	print gui_table( array(
+		array(
+			"תשלום",
+			gui_button( "btn_receipt", "create_receipt()", "הפק חשבונית מס קבלה" )
+		),
+		array( "מזומן", gui_input( "cash", "", array( 'onkeyup="update_sum()"' ) ) ),
+		array( "אשראי", gui_input( "credit", "", array( 'onkeyup="update_sum()"' ) ) ),
+		array( "העברה", gui_input( "bank", "", array( 'onkeyup="update_sum()"' ) ) ),
+		array( "המחאה", gui_input( "check", "", array( 'onkeyup="update_sum()"' ) ) ),
+		array( "עודף", " <div id=\"change\"></div>" )
+	), "payment_table", true, "", $sums, $style, "payment_table" );
 
 
-		// print gui_button( "btn_refund", "create_refund()", "הפק זיכוי" );
-		print gui_button( "btn_invoice", "create_invoice()", "הפק חשבונית מס" );
-		// print "<button id=\"btn_invoice\" onclick=\"create_invoice()\">הפק חשבונית מס</button>";
-		// print "<br/>";
-		// print "<button id=\"btn_receipt\" onclick=\"create_receipt()\">הפק חשבונית מס קבלה</button>";
-		print '<div id="logging"></div>';
-		print '<div id="refund_area"></div>';
+	// print gui_button( "btn_refund", "create_refund()", "הפק זיכוי" );
+	print gui_button( "btn_invoice", "create_invoice()", "הפק חשבונית מס" );
+	// print "<button id=\"btn_invoice\" onclick=\"create_invoice()\">הפק חשבונית מס</button>";
+	// print "<br/>";
+	// print "<button id=\"btn_receipt\" onclick=\"create_receipt()\">הפק חשבונית מס קבלה</button>";
+	print '<div id="logging"></div>';
+	print '<div id="refund_area"></div>';
 
-//	    print gui_table()
-//            ));
-//	    print "מזומן";
-//        print "<input id=\"cash\" onchange='update_sum()'><br/>";
-//        print "אשראי";
-//        print "<input id=\"credit\" onchange='update_sum()'><br/>";
-//        print "העברה";
-//        print "<input id=\"bank\" onchange='update_sum()'><br/>";
-//        print "המחאה";
-//        print "<input id=\"check\" onchange='update_sum()'><br/>";
-	}
+	print gui_button( "btn_create_user", "create_user()", "צור משתמש" );
 }
 
 ?>

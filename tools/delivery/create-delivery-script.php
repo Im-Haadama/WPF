@@ -14,6 +14,18 @@ if ( $id > 0 ) {
 
 <script>
 
+    const product_name_id = <? print DeliveryFields::product_name; ?>;
+    const q_quantity_ordered_id = <? print DeliveryFields::q_quantity_ordered; ?>;
+    const q_units = <? print DeliveryFields::q_units_ordered; ?>;
+    const q_supply_id = <? print DeliveryFields::q_supply; ?>;
+    const has_vat_id = <? print DeliveryFields::has_vat; ?>;
+    const line_vat_id = <?print DeliveryFields::line_vat; ?>;
+    const price_id = <? print DeliveryFields::price; ?>;
+    const line_total_id = <? print DeliveryFields::line_total; ?>;
+    const term_id = <? print DeliveryFields::term; ?>;
+    const q_refund_id = <? print DeliveryFields::q_refund ?>;
+    const refund_total_id = <? print DeliveryFields::refund_total; ?>;
+
     function moveNextRow(my_row) {
         if (event.which == 13) {
             var current = document.getElementsByName("quantity" + (my_row));
@@ -25,19 +37,32 @@ if ( $id > 0 ) {
 
     function addLine() {
         var table = document.getElementById('del_table');
+//        var hidden = [];
+//        for (var i = 0; i < table.rows.length; i++) {
+//            for (var j = 0; j < table.rows[0].cells.length; j++)
+//                table.rows[i].cells[j].style.display = 'visible';
+////             hidden[i] = table.rows[0].cells[i].style.display;
+//
+//        }
+//        return;
+
         var lines = table.rows.length;
         var row = table.insertRow(lines - 4);
-        row.insertCell().innerHTML = "<input type=\"text\">";
-        row.insertCell().innerHTML = "0";
-        row.insertCell().innerHTML = "<input type=\"text\">";
-        row.insertCell().innerHTML = "<input id=\"has_vat\" type = \"checkbox\">";
-        row.insertCell().innerHTML = "0";
-        row.insertCell().innerHTML = "<input type=\"text\">";
-        row.insertCell().innerHTML = "0";
+//        row.insertCell(0).style.visibility = false;              // 0 - select
+        row.insertCell(-1).innerHTML = "<input type=\"text\">";   // 1 - product name
+        row.insertCell(-1).innerHTML = "0";                       // 2 - quantity ordered
+        row.insertCell(-1).innerHTML = "";                        // 3 - unit ordered
+        row.insertCell(-1).innerHTML = "<input type=\"text\">";   // 4 - supplied
+        row.insertCell(-1).innerHTML = "<input type=\"text\">";   // 5 - price
+        row.insertCell(-1).innerHTML = "<input id=\"has_vat\" type = \"checkbox\">"; // 6 - has vat
+        row.insertCell(-1).innerHTML = "0";                       // 7 - line vat
+        row.insertCell(-1).innerHTML = "";   // 8 - total_line
+//        row.insertCell(9).style.visibility = false;              // 9 - categ
+//        row.insertCell(10).style.visibility = false;              // 10 - refund q
+//        row.insertCell(11).style.visibility = false;              // 11 - refund total
     }
 
     function addDelivery() {
-
         calcDelivery();
         document.getElementById('btn_add').disabled = true;
 	    <?php if ( isset( $order_id ) ) print "var order_id = " . $order_id . ";" ?>
@@ -72,10 +97,10 @@ if ( $id > 0 ) {
         // Check number of lines in the delivery
         for (i = 1; i < lines - 3; i++) {
             var quantity = get_value(table.rows[i].cells[q_supply_id].firstChild);
-            saved_lines++;
+            if (quantity > 0) saved_lines++;
 
             var product = get_value(table.rows[i].cells[product_name_id].firstChild);
-            if (product == "משלוח") fee = get_value(table.rows[i].cells[line_total_id].firstChild);
+            if (product == "דמי משלוח") fee = get_value(table.rows[i].cells[line_total_id].firstChild);
         }
         request = request + "&lines=" + saved_lines;
         request = request + "&fee=" + fee;
@@ -99,7 +124,7 @@ if ( $id > 0 ) {
                 // logging.value += response_text;
                 // Enter delivery lines to db.
                 for (i = 1; i < lines - 3; i++) {
-                    var prod_id = document.getElementById('del_table').rows[i].cells[0].id;
+                    var prod_id = document.getElementById('del_table').rows[i].cells[product_name_id].id;
                     if (!(prod_id > 0)) prod_id = 0; // New or unknown
                     var prod_name = get_value(table.rows[i].cells[product_name_id].firstChild);
 //                if (prod_name == null) prod_name = "";
@@ -109,10 +134,21 @@ if ( $id > 0 ) {
                     var quantity = get_value(table.rows[i].cells[q_supply_id].firstChild);
                     var quantity_ordered = get_value(table.rows[i].cells[q_quantity_ordered_id].firstChild);
                     if (quantity == "") quantity = 0;
-                    var price = get_value(table.rows[i].cells[p_id].firstChild);
+                    var price = get_value(table.rows[i].cells[price_id].firstChild);
                     var vat = get_value(table.rows[i].cells[line_vat_id].firstChild);
                     // var prod_name = get_value(table.rows[i].cells[product_name_id].firstChild);
-                    var line_total = get_value(table.rows[i].cells[line_total_id].firstChild);
+                    var line_total;
+                    if (table.rows[i].cells[0].children.length === 1) { // delivery lines or new line
+                        prod_id = 0;
+                        prod_name = get_value(table.rows[i].cells[0]);
+                        quantity = get_value(table.rows[i].cells[3]);
+                        quantity_ordered = 0;
+                        price = get_value(table.rows[i].cells[4]);
+                        vat = get_value(table.rows[i].cells[6]);
+                        line_total = get_value(table.rows[i].cells[7]);
+                    } else {
+                        line_total = get_value(table.rows[i].cells[line_total_id].firstChild);
+                    }
 
                     if (prod_id > 0 || line_total != 0) {
                         line_args.push(prod_id);
@@ -177,42 +213,64 @@ if ( $id > 0 ) {
 
         for (var i = 1; i < lines; i++)  // Skip the header. Skip last lines: total, vat, total-vat, discount
         {
-            if (table.rows[i].cells[0].innerHTML == "סהכ חייבי מעם") break;
-            if (table.rows[i].cells[0].innerHTML == "" ||
-                table.rows[i].cells[0].innerHTML == "הנחת כמות") continue; // Reserved line for discount
-            if (table.rows[i].cells[0].innerHTML == "הנחת סל") {
+            if (table.rows[i].cells[product_name_id].innerHTML == "סה\"כ חייבי מע\"מ") break;
+            if (table.rows[i].cells[product_name_id].innerHTML == "" ||
+                table.rows[i].cells[product_name_id].innerHTML == "הנחת כמות") continue; // Reserved line for discount
+            if (table.rows[i].cells[product_name_id].innerHTML == "הנחת סל") {
                 // Sum upper lines and compare to basket price
                 var j = i - 1;
                 var sum = 0;
-                while (table.rows[j].cells[0].innerHTML.substr(0, 3) == "===") {
+                while (table.rows[j].cells[product_name_id].innerHTML.substr(0, 3) == "===") {
                     sum = sum + Number(table.rows[j].cells[line_total_id].innerHTML);
                     j = j - 1;
                 }
-                var basket_total = Number(table.rows[j].cells[q_quantity_ordered_id].innerHTML) * Number(table.rows[j].cells[p_id].innerHTML);
+                var basket_total = Number(table.rows[j].cells[q_quantity_ordered_id].innerHTML) * Number(table.rows[j].cells[price_id].innerHTML);
                 if (sum > basket_total) {
                     diff = Math.round(100 * (basket_total - sum), 2) / 100;
                     table.rows[i].cells[q_supply_id].innerHTML = 1;
                     table.rows[i].cells[line_total_id].innerHTML = diff;
-                    table.rows[i].cells[p_id].innerHTML = diff;
+                    table.rows[i].cells[price_id].innerHTML = diff;
                     total += diff;
                 } else {
                     table.rows[i].cells[q_supply_id].innerHTML = '';
                     table.rows[i].cells[line_total_id].innerHTML = '';
-                    table.rows[i].cells[p_id].innerHTML = '';
+                    table.rows[i].cells[price_id].innerHTML = '';
                 }
 
                 continue;
             }
-            var q = get_value(table.rows[i].cells[q_supply_id].firstChild);
-            var p = get_value(table.rows[i].cells[p_id].firstChild);
-            if (table.rows[i].cells[p_id].firstChild.tagName == "INPUT") { // delivery lines or new line
-                p = table.rows[i].cells[p_id].firstChild.value;
+            var q = 0;
+            var p = 0;
+            var line_total = 0;
+            var vat_percent = <?php global $global_vat; print $global_vat; ?>;
+            var line_vat = 0;
+            if (table.rows[i].cells[price_id].firstChild.tagName == "INPUT") { // delivery lines or new line
+                p = table.rows[i].cells[4].firstChild.value;
+                q = table.rows[i].cells[3].firstChild.value;
+                line_total = Math.round(p * q * 100) / 100;
+                if (table.rows[i].cells[5].firstChild.checked) {
+                    line_vat = Math.round(100 * p * q / (100 + vat_percent) * vat_percent) / 100;
+                    table.rows[i].cells[6].innerHTML = line_vat;
+                }
+                table.rows[i].cells[7].innerHTML = line_total;
+            } else {
+                q = get_value(table.rows[i].cells[q_supply_id].firstChild);
+                p = get_value(table.rows[i].cells[price_id].firstChild);
+                line_total = Math.round(p * q * 100) / 100;
+                table.rows[i].cells[line_total_id].firstChild.nodeValue = line_total;
+                if (table.rows[i].cells[has_vat_id].firstChild.checked) {
+                    line_vat = Math.round(100 * p * q / (100 + vat_percent) * vat_percent) / 100;
+                    table.rows[i].cells[line_vat_id].firstChild.nodeValue = line_vat;
+                }
             }
-            var line_total = Math.round(p * q * 100) / 100;
-            table.rows[i].cells[line_total_id].firstChild.nodeValue = line_total;
+            if (line_vat) due_vat += line_total;
+            total_vat += line_vat;
             total += line_total;
 
-            if ((q >= 8) && (table.rows[i].cells.length > 7)) {
+            if (<?php print ( MultiSite::LocalSiteID() == 1 ) ? 1 : 0; ?> &&
+            (q >= 8) && (table.rows[i].cells.length > 7)
+        )
+            {
                 var line_term_id = table.rows[i].cells[term_id].innerHTML;
                 // alert (line_term_id);
                 var terms = line_term_id.split(",");
@@ -224,16 +282,6 @@ if ( $id > 0 ) {
                 }
                 if (fresh) quantity_discount += line_total;
             }
-
-            // Vat
-            var vat_percent = <?php global $global_vat; print $global_vat; ?>;
-            var line_vat = 0;
-            if (table.rows[i].cells[has_vat_id].firstChild.checked) {
-                line_vat = Math.round(100 * p * q / (100 + vat_percent) * vat_percent) / 100;
-                total_vat += line_vat;
-                due_vat += p * q;
-            }
-            table.rows[i].cells[line_vat_id].firstChild.nodeValue = line_vat;
         }
 
         // Show discount line or hide
@@ -241,7 +289,7 @@ if ( $id > 0 ) {
         quantity_discount = Math.round(quantity_discount);
         table.rows[line].cells[product_name_id].innerHTML = (quantity_discount > 0) ? "הנחת כמות" : "";
         table.rows[line].cells[q_supply_id].innerHTML = (quantity_discount > 0) ? -0.15 : "";
-        table.rows[line].cells[p_id].innerHTML = (quantity_discount > 0) ? quantity_discount : "";
+        table.rows[line].cells[price_id].innerHTML = (quantity_discount > 0) ? quantity_discount : "";
         var discount = -Math.round(quantity_discount * 15) / 100;
         total = total + discount;
         table.rows[line].cells[line_total_id].innerHTML = (quantity_discount > 0) ? discount : "";
@@ -259,3 +307,4 @@ if ( $id > 0 ) {
         table.rows[table.rows.length - 1].cells[line_total_id].firstChild.nodeValue = total;
     }
 </script>
+

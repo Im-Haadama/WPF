@@ -1,5 +1,5 @@
 <?php
-require '../tools.php';
+require '../im_tools.php';
 require_once( 'orders-common.php' );
 ?>
 <html dir="rtl" lang="he">
@@ -34,9 +34,8 @@ $data .= "<table>";
 //
 //my_log($sql, "get-orders-per-item.php");
 //
-//$export = mysql_query ( $sql ) or die ( "Sql error : " . mysql_error( ) );
 //
-//while( $row = mysql_fetch_row( $export ) )
+//while( $row = mysqli_fetch_row( $result ) )
 //{
 //    $data .= "<tr> ". orders_per_item($prod_id, 1) . "</tr>";
 //}
@@ -50,18 +49,14 @@ $data .= "<br>בסלים";
 
 $data .= "<table>";
 
-$sql = 'SELECT  basket_id, quantity FROM `im_baskets` WHERE `product_id` = ' . $prod_id;
-$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+$sql    = 'SELECT  basket_id, quantity FROM `im_baskets` WHERE `product_id` = ' . $prod_id;
+$result = mysqli_query( $conn, $sql );
 
-while ( $row = mysql_fetch_row( $export ) ) {
+while ( $row = mysqli_fetch_row( $result ) ) {
 	$data .= "<tr> " . trim( orders_per_item( $row[0], $row[1] ) ) . "</tr>";
 
 	// $data .= "<tr> ". trim( $line ) . "</tr>";
 }
-
-$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
-
-$fields = mysql_num_fields( $export );
 
 $data .= "</table>";
 
@@ -73,9 +68,9 @@ $data .= "<tr><td>הספקה</td><td>כמות</td></tr>";
 $sql = ' SELECT d.id, quantity FROM im_supplies_lines dl JOIN im_supplies d'
        . ' WHERE dl.supply_id = d.id AND (d.status = 1 OR d.status = 3) AND dl.status = 1 AND dl.product_id = ' . $prod_id;
 
-$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+$result = mysqli_query( $conn, $sql );
 
-while ( $row = mysql_fetch_row( $export ) ) {
+while ( $row = mysqli_fetch_row( $result ) ) {
 	$supply_id = $row[0];
 
 	$data .= "<tr><td><a href='../supplies/supply-get.php?id=" . $supply_id . "'>" . $supply_id . "</a></td><td>" . $row[1]
@@ -83,10 +78,6 @@ while ( $row = mysql_fetch_row( $export ) ) {
 
 	// $data .= "<tr> ". trim( $line ) . "</tr>";
 }
-
-$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
-
-$fields = mysql_num_fields( $export );
 
 $data .= "</table>";
 

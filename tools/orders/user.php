@@ -6,7 +6,7 @@
  * Time: 20:54
  */
 
-require_once "../tools.php";
+require_once "../im_tools.php";
 require_once( "../gui/inputs.php" );
 $user_id = $_GET["user_id"];
 

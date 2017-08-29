@@ -12,7 +12,7 @@ $supplier_name = $_GET["supplier_name"];
 
 if ( isset( $_GET["file"] ) ) {
 	// inbox manager activation
-	$file = "http://tabula.aglamaz.com/imap/attachment-manager/" . $_GET["file"];
+	$file = "http://tabula.aglamaz.com/attachment-manager/" . $_GET["file"];
 	print "processing " . $supplier_name . "<br/>";
 }
 

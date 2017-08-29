@@ -1,5 +1,5 @@
 <?php
-require_once( '../tools.php' );
+require_once( '../im_tools.php' );
 require_once( 'pricelist.php' );
 require_once( 'pricelist-process.php' );
 

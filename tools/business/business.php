@@ -50,19 +50,19 @@ function business_add_transaction( $part_id, $date, $amount, $delivery_fee, $ref
 	       "\", " . ( $amount - $delivery_fee ) . ", " . $delivery_fee . ", '" . $ref . "', " . $project . ")";
 
 	my_log( $sql, __FILE__ );
-	// $export = mysql_query($sql) or my_log("SQL failed " . $sql, __FILE__);
+
 	mysqli_query( $conn, $sql ) or my_log( "SQL failed " . $sql, __FILE__ );
 
 	return mysqli_insert_id( $conn );
 }
 
 function business_update_transaction( $delivery_id, $total, $fee ) {
-	$sql = "UPDATE im_business_info SET total = " . $total . ", " .
+	$sql = "UPDATE im_business_info SET amount = " . $total . ", " .
 	       " delivery_fee = " . $fee .
 	       " WHERE ref = " . $delivery_id;
 
 	my_log( $sql, __FILE__ );
-	$export = mysql_query( $sql ) or my_log( "SQL failed " . $sql, __FILE__ );
+	sql_query( $sql );
 }
 
 function business_logical_delete( $ids ) {
@@ -77,5 +77,5 @@ function business_delete_transaction( $ref ) {
 	       . " WHERE ref = " . $ref;
 
 	my_log( $sql, __FILE__ );
-	$export = mysql_query( $sql ) or my_log( "SQL failed " . $sql, __FILE__ );
+	sql_query( $sql );
 }

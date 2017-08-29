@@ -6,7 +6,7 @@
  * Time: 18:42
  */
 
-require_once( "../tools.php" );
+require_once( "../im_tools.php" );
 require_once( "inputs.php" );
 
 function table_content( $sql, $header = true, $footer = true, $links = null, &$sum_fields = null ) {

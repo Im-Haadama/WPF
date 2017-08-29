@@ -50,7 +50,7 @@ function account_add_transaction( $client_id, $date, $amount, $ref, $type ) {
 	       . "VALUES (" . $client_id . ", \"" . $date . "\", " . $amount . ", \"" . $type . "\", " . $ref . ")";
 
 	my_log( $sql, "db-add-delivery.php" );
-	$export = mysql_query( $sql ) or my_log( "SQL failed " . $sql, __FILE__ );
+	sql_query( $sql );
 }
 
 function account_update_transaction( $total, $delivery_id ) {
@@ -58,7 +58,7 @@ function account_update_transaction( $total, $delivery_id ) {
 	       " WHERE transaction_ref = " . $delivery_id;
 
 	my_log( $sql, "db-add-delivery.php" );
-	$export = mysql_query( $sql ) or my_log( "SQL failed " . $sql, __FILE__ );
+	sql_query( $sql );
 }
 
 $total = 0;
@@ -68,11 +68,8 @@ function client_balance( $client_id ) {
 	       . ' from im_client_accounts '
 	       . ' where client_id = ' . $client_id;
 
-	$export = mysql_query( $sql ) or die ( "Sql error: " . mysql_error() . $sql );
+	return round( sql_query_single_scalar( $sql ), 2 );
 
-	$row = mysql_fetch_row( $export );
-
-	return round( $row[0], 2 );
 }
 
 function balance( $date, $client_id ) {
@@ -80,28 +77,23 @@ function balance( $date, $client_id ) {
 	       . ' from im_client_accounts where date <= "' . $date
 	       . '" and client_id = ' . $client_id;
 
-	$export = mysql_query( $sql ) or die ( "Sql error: " . mysql_error() . $sql );
+	return round( sql_query_single_scalar( $sql ), 2 );
 
-	$row = mysql_fetch_row( $export );
-
-	return round( $row[0], 2 );
 }
 
 function show_trans( $customer_id, $from_last_zero = false ) {
 	$sql = 'select date, transaction_amount, transaction_method, transaction_ref, id '
 	       . ' from im_client_accounts where client_id = ' . $customer_id . ' order by date desc ';
 
-	$export = mysql_query( $sql ) or die ( "Sql error: " . mysql_error() . $sql );
+	$result = sql_query( $sql );
 
-	$fields = mysql_num_fields( $export );
-
-	$data = "<table id='transactions_table' border=\"1\"><tr><td>בחר</td><td>תאריך</td><td>סכום</td><td>מע\"ם</td><td>יתרה</td><td>פעולה</td>" .
+	$data = "<table id='transactions_table' border=\"1\" ><tr><td>בחר</td><td>תאריך</td><td>סכום</td><td>מע\"ם</td><td>יתרה</td><td>פעולה</td>" .
 	        "<td>תעודת משלוח</td><td>מס הזמנה</td></tr>";
 
 	global $total;
 
-	while ( $row = mysql_fetch_row( $export ) ) {
-		$line   = "<tr>";
+	while ( $row = mysqli_fetch_row( $result ) ) {
+		$line   = "<tr class=\"color2\">";
 		$date   = $row[0];
 		$amount = $row[1];
 		$total  += $amount;
@@ -142,10 +134,6 @@ function show_trans( $customer_id, $from_last_zero = false ) {
 	}
 
 	$data = str_replace( "\r", "", $data );
-
-	if ( $data == "" ) {
-		$data = "\n(0) Records Found!\n";
-	}
 
 	$data .= "</table>";
 

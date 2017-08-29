@@ -4,12 +4,93 @@ require_once( '../tools_wp_login.php' );
 require 'orders-common.php';
 require '../delivery/delivery.php';
 
+print header_text( false );
 ?>
+<script type="text/javascript" src="../client_tools.js"></script>
 
-<html dir="rtl" lang="he">
-<head>
-    <meta charset="UTF-8">
     <script>
+
+        //        function moveNextRow(my_row) {
+        //            if (event.which == 13) {
+        //                alert(my_row);
+        ////                var current = document.getElementsByName("quantity" + (my_row));
+        ////                current[0].value = Math.round(current[0].value * 10) / 10;
+        ////                var objs = document.getElementsByName("quantity" + (my_row + 1));
+        ////                if (objs[0]) objs[0].focus();
+        //            }
+        //        }
+
+        function add_order() {
+            var user_id = get_value(document.getElementById("client_select"));
+            var prods = [];
+            var quantities = [];
+            var comment = [];
+            var units = [];
+
+            var item_table = document.getElementById("order_items");
+
+            for (var i = 1; i < item_table.rows.length; i++) {
+                var prod = get_value(document.getElementById("itm_" + i));
+                var q = get_value(document.getElementById("qua_" + i));
+                var u = get_value(document.getElementById("uni_" + i));
+
+                if (q > 0) {
+                    prods.push(encodeURI(prod));
+                    quantities.push(encodeURI(q));
+                    units.push(encodeURI(u));
+                }
+
+                // ids.push(get_value(item_table.rows[i].cells[0].innerHTML));
+            }
+
+            var request = "../orders/orders-post.php?operation=create_order" +
+                "&user_id=" + user_id +
+                "&prods=" + prods.join() +
+                "&quantities=" + quantities.join() +
+                // "&comments="   + encodeURI(comment) +
+                "&units=" + units.join();
+
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                // Wait to get delivery id.
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {  // Request finished
+                    logging.innerHTML = xmlhttp.responseText;
+                }
+            }
+            xmlhttp.open("GET", request, true);
+            xmlhttp.send();
+        }
+        function select_product(my_row) {
+            if (event.which === 13) {
+                var objs = document.getElementById("qua_" + (my_row));
+                if (objs) objs.focus();
+            }
+        }
+        function select_unit(my_row) {
+            if (event.which === 13) {
+                var objs = document.getElementById("uni_" + (my_row));
+                if (objs) objs.focus();
+            }
+        }
+
+        function add_line() {
+            var item_table = document.getElementById("order_items");
+            var line_idx = item_table.rows.length;
+            var new_row = item_table.insertRow(-1);
+            var product = new_row.insertCell(0);
+            product.innerHTML = "<input id=\"itm_" + line_idx + "\" list=\"items\" onkeypress=\"select_product(" + line_idx + ")\">";
+            var quantity = new_row.insertCell(1);
+            quantity.innerHTML = "<input id = \"qua_" + line_idx + "\" onkeypress=\"select_unit(" + line_idx + ")\">";
+            var units = new_row.insertCell(2);
+            units.innerHTML = "<input id=\"uni_" + line_idx + "\" list=\"units\", onkeypress=\"add_line(" + line_idx + ")\">";
+            product.firstElementChild.focus();
+
+        }
+        function show_create_order() {
+            var new_order = document.getElementById("new_order");
+            new_order.style.display = 'block';
+            add_line();
+        }
         function complete_status() {
             xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function () {
@@ -66,14 +147,7 @@ $sql = 'SELECT posts.id'
        . ' FROM `wp_posts` posts'
        . " WHERE post_status LIKE '%wc-processing%' or post_status LIKE '%wc-on-hold%' order by 1";
 
-
-$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
-
-$fields = mysql_num_fields( $export );
-
-for ( $i = 0; $i < $fields; $i ++ ) {
-	$header .= mysql_field_name( $export, $i ) . "\t";
-}
+$result = mysqli_query( $conn, $sql );
 
 $data = "<table>";
 $data .= "<tr>" . gui_cell( gui_bold( "אזור" ) );
@@ -93,7 +167,7 @@ $total_order_delivered = 0;
 $total_delivery_fee    = 0;
 $lines                 = array();
 
-while ( $row = mysql_fetch_row( $export ) ) {
+while ( $row = mysqli_fetch_row( $result ) ) {
 	$order_id    = $row[0];
 	$customer_id = get_postmeta_field( $order_id, '_customer_user' );
 
@@ -108,7 +182,6 @@ while ( $row = mysql_fetch_row( $export ) ) {
 	// 2) Customer name with link to his deliveries
 	$row_text .= "<td><a href=\"../account/get-customer-account.php?customer_id=" . $customer_id . "\">" .
 
-
 	             get_customer_by_order_id( $order_id ) . "</a></td>";
 
 	$row_text .= "<td>" . get_postmeta_field( $order_id, '_shipping_first_name' ) . ' ' .
@@ -120,15 +193,9 @@ while ( $row = mysql_fetch_row( $export ) ) {
 	$total_order_total += $order_total;
 
 	// 4) Delivery note
-	$sql1 = 'SELECT id FROM im_delivery'
-	        . ' WHERE order_id = ' . $order_id;
-
-	my_log( $sql1 );
-	// print $sql . "<br>";
-	$export1 = mysql_query( $sql1 );
-	if ( $export1 ) {
-		$row1        = mysql_fetch_row( $export1 );
-		$delivery_id = intval( $row1[0] );
+	$delivery_id = get_delivery_id( $order_id );
+//    print "order: " . $order_id . "<br/>" . " del: " . $delivery_id . "<br/>";
+	if ( $delivery_id > 0 ) {
 		$delivery    = new Delivery( $delivery_id );
 		$row_text    .= "<td><a href=\"..\delivery\get-delivery.php?id=" . $delivery_id . "\"</a>" . $delivery_id . "</td>";
 //        $total_amount = get_delivery_total($delivery_id[0]);
@@ -181,10 +248,9 @@ $sql = 'SELECT distinct meta.meta_value ' .
        'order by 1';
 
 // print "לקוחות החודש: ";
-
-$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+$result       = mysqli_query( $conn, $sql );
 $active_users = array();
-while ( $row = mysql_fetch_row( $export ) ) {
+while ( $row = mysqli_fetch_row( $result ) ) {
 	$user_id                  = $row[0];
 	$active_users[ $user_id ] = $user_id;
 	// print get_customer_name($user_id) . ", ";
@@ -199,11 +265,13 @@ $sql = 'SELECT meta.meta_value ' .
        'and meta.post_id = posts.id and meta.meta_key = \'_customer_user\' ' .
        'and post_date > curdate() - 7 ' .
        'order by 1 ';
-$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+
+$result = mysqli_query( $conn, $sql );
+
+while ( $row = mysqli_fetch_row( $result ) ) {
 
 // print "לקוחות השבוע: ";
 
-while ( $row = mysql_fetch_row( $export ) ) {
 	$user_id = $row[0];
 	// print get_customer_name($user_id) . ", ";
 
@@ -227,16 +295,42 @@ function get_user_order_count( $u ) {
 	       ' WHERE post_status like \'wc-%\' ' .
 	       ' and meta.meta_key = \'_customer_user\' and meta.meta_value = ' . $u .
 	       ' and meta.post_id = posts.ID';
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
 
-	$row = mysql_fetch_row( $export );
-
-	return $row[0];
-
+	return sql_query_single_scalar( $sql );
 }
 
 ?>
 <button id="btn" onclick="complete_status()">סיים טיפול בכל ההזמנות</button>
 <button id="btn" onclick="create_subs()">צור הזמנות למנויים</button>
 <button id="btn" onclick="replace_baskets()">החלף סלים</button>
+<datalist id="units">
+    <option value="קג"></option>
+    <option value="יח"></option>
+</datalist>
+
+
+<?php
+print gui_button( "btn_new", "show_create_order()", "הזמנה חדשה" );
+
+?>
+<div id="new_order" style="display: none">
+	<?php
+	print gui_header( 1, "יצירת הזמנה" );
+	print gui_header( 2, "בחר לקוח" );
+	// TODO: Change back to 90
+	print gui_select_client( 0 );
+
+	print gui_header( 2, "בחר מוצרים" );
+	print gui_datalist( "items", "im_products", "post_title" );
+
+	print gui_table( array( array( "פריט", "כמות", "קג או יח" ) ),
+		"order_items" );
+
+	print gui_button( "add_line", "add_line()", "הוסף שורה" );
+	print gui_button( "add_order", "add_order()", "הוסף הזמנה" );
+	?>
+
+</div>
+<div id="logging"></div>
+
 </html>

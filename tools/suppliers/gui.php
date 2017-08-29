@@ -13,11 +13,11 @@ function print_select_supplier( $id, $source ) {
 	}
 	print ">";
 
-	$sql1 = 'SELECT id, supplier_name, site_id FROM im_suppliers ORDER BY 2';
+	$sql = 'SELECT id, supplier_name, site_id FROM im_suppliers ORDER BY 2';
 
 	// Get line options
-	$export1 = mysql_query( $sql1 );
-	while ( $row1 = mysql_fetch_row( $export1 ) ) {
+	$result = sql_query( $sql );
+	while ( $row1 = mysqli_fetch_row( $result ) ) {
 		print "<option value = \"" . $row1[0] . "\" ";
 		$site_id = $row1[2];
 		if ( is_numeric( $site_id ) ) {

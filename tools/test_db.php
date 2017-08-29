@@ -36,7 +36,7 @@ if ( ! $export ) {
 	uptime_log( "export failed" . mysql_error() );
 }
 
-$row = mysql_fetch_row( $export );
+$row = mysqli_fetch_row( $result );
 
 uptime_log( $row[0] );
 

@@ -5,9 +5,10 @@
  * Date: 06/12/15
  * Time: 10:07
  */
-require_once( '../tools.php' );
+require_once( '../im_tools.php' );
 require_once( '../pricelist/pricelist.php' );
 require_once( '../wp/terms.php' );
+require_once( '../pricing.php' );
 
 class Catalog {
 	static function CreateProducts( $category_name, $ids ) {
@@ -94,7 +95,7 @@ class Catalog {
 			       . $supplier_id . ", '" . $supplier_product_name . '\', '
 			       . $pricelist["supplier_product_code"] . ", " . $pricelist_id . ')';
 
-			$export = mysql_query( $sql ) or die ( my_log( mysql_error(), "catalog-map.php" ) );
+			sql_query( $sql );
 
 			if ( $product_id > 0 ) { // not hide
 				$pricelist = new PriceList( $supplier_id );
@@ -134,7 +135,7 @@ class Catalog {
 
 		my_log( $sql, "catalog-map.php" );
 
-		$export = mysql_query( $sql ) or die ( my_log( mysql_error(), "catalog-map.php" ) );
+		sql_query( $sql );
 	}
 
 	static function PublishItem( $product_id ) {
@@ -383,18 +384,27 @@ class Catalog {
 	}
 
 	static function GetBuyPrice( $product_id, $supplier ) {
+		// print "prod_id = " . $product_id . " supplier = " . $supplier . "<br/>";
 		$sql = "SELECT pricelist_id FROM im_supplier_mapping WHERE product_id = " .
 		       $product_id . " AND supplier_id = " . $supplier;
 
+//		print $sql . "<br/>";
+
 		$pl_line = sql_query_single_scalar( $sql );
 
-		$PriceList = new PriceList( $supplier );
+		if ( $pl_line > 0 ) {
+//			print " pricelist " . $pl_line . "<br/>";
 
-		$pl_line = $PriceList->Get( $pl_line );
+			$PriceList = new PriceList( $supplier );
 
-		// var_dump($pl_line);
+			$pl_line = $PriceList->Get( $pl_line );
 
-		return $pl_line["price"];
+			// var_dump($pl_line);
+
+			return $pl_line["price"];
+		}
+
+		return null;
 	}
 
 //    static function Options($prod_id)
@@ -411,7 +421,7 @@ class Catalog {
 
 		my_log( $sql, "catalog-map.php" );
 
-		$export = mysql_query( $sql ) or die ( my_log( mysql_error(), "catalog-map.php" ) );
+		sql_query( $sql );
 	}
 
 	function HideProduct( $pricelist_id )
@@ -445,7 +455,7 @@ function best_alternatives( $alternatives, $debug = false ) {
 			print "option: " . $i . " " . $alternatives[ $i ][0] . " " . $alternatives[ $i ][1] . " " . $alternatives[ $i ][3] . "<br/>";
 		}
 		$price = calculate_price( $alternatives[ $i ][0], $alternatives[ $i ][1], $alternatives[ $i ][3] );
-		print "price: " . $price . "<br/>";
+		//print "price: " . $price . "<br/>";
 		my_log( "price $price" );
 		if ( $price < $min ) {
 			$best = $alternatives[ $i ];
@@ -457,22 +467,22 @@ function best_alternatives( $alternatives, $debug = false ) {
 	return $best;
 }
 
-function prof_flag( $str ) {
-	global $prof_timing, $prof_names;
-	$prof_timing[] = microtime( true );
-	$prof_names[]  = $str;
-}
-
-// Call this when you're done and want to see the results
-function prof_print() {
-	global $prof_timing, $prof_names;
-	$size = count( $prof_timing );
-	for ( $i = 0; $i < $size - 1; $i ++ ) {
-		echo "<b>{$prof_names[$i]}</b><br>";
-		echo sprintf( "&nbsp;&nbsp;&nbsp;%f<br>", $prof_timing[ $i + 1 ] - $prof_timing[ $i ] );
-	}
-	echo "<b>{$prof_names[$size-1]}</b><br>";
-}
+//function prof_flag( $str ) {
+//	global $prof_timing, $prof_names;
+//	$prof_timing[] = microtime( true );
+//	$prof_names[]  = $str;
+//}
+//
+//// Call this when you're done and want to see the results
+//function prof_print() {
+//	global $prof_timing, $prof_names;
+//	$size = count( $prof_timing );
+//	for ( $i = 0; $i < $size - 1; $i ++ ) {
+//		echo "<b>{$prof_names[$i]}</b><br>";
+//		echo sprintf( "&nbsp;&nbsp;&nbsp;%f<br>", $prof_timing[ $i + 1 ] - $prof_timing[ $i ] );
+//	}
+//	echo "<b>{$prof_names[$size-1]}</b><br>";
+//}
 
 function alternatives( $id, $details = false )
 {

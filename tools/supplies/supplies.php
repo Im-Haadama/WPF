@@ -7,8 +7,12 @@
  */
 
 // test
-include_once( "../tools.php" );
+include_once( "../im_tools.php" );
 require_once( "../gui/inputs.php" );
+require_once( "../mail.php" );
+require_once( "../catalog/catalog.php" );
+
+// print header_text(false);
 
 // Supply status: 1 = new, 3 = sent, 5 = supplied, 8 = merged into other, 9 = delete
 
@@ -21,30 +25,25 @@ abstract class SupplyStatus {
 }
 
 function create_supply( $supplierID ) {
+	global $conn;
 	$sql = "INSERT INTO im_supplies (date, supplier, status) VALUES " . "(CURRENT_TIMESTAMP, " . $supplierID . ", 1)";
 
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . "sql: " . $sql );
+	sql_query( $sql );
 
-	$supply_id = mysql_insert_id();
-
-	return $supply_id;
+	return mysqli_insert_id( $conn );
 }
 
 function supply_add_line( $supply_id, $prod_id, $quantity ) {
 	$sql = "INSERT INTO im_supplies_lines (supply_id, product_id, quantity) VALUES "
 	       . "( " . $supply_id . ", " . $prod_id . ", " . $quantity . ")";
 
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . "sql: " . $sql );
+	sql_query( $sql );
 }
 
 function supply_get_supplier_id( $supply_id ) {
 	$sql = "SELECT supplier FROM im_supplies WHERE id = " . $supply_id;
 
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . "sql: " . $sql );
-
-	$row = mysql_fetch_row( $export );
-
-	return $row[0];
+	return sql_query_single_scalar( $sql );
 }
 
 function supply_get_supplier( $supply_id ) {
@@ -55,22 +54,13 @@ function supply_quantity_ordered( $prod_id ) {
 	$sql = 'SELECT sum(quantity) FROM im_supplies_lines WHERE product_id = ' . $prod_id
 	       . ' AND status = 1 AND supply_id IN (SELECT id FROM im_supplies WHERE status = 1 OR status = 3)';
 
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . "sql: " . $sql );
-
-	$row = mysql_fetch_row( $export );
-
-	my_log( "prod_id = " . $prod_id . " ordered = " . $row[0] );
-
-	return $row[0];
-
+	return sql_query_single_scalar( $sql );
 }
 
 function supply_delete( $supply_id ) {
 	$sql = 'UPDATE im_supplies SET status = 9 WHERE id = ' . $supply_id;
 
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . "sql: " . $sql );
-
-	$row = mysql_fetch_row( $export );
+	sql_query( $sql );
 }
 
 function supply_sent( $supply_id ) {
@@ -89,28 +79,20 @@ function supply_sent( $supply_id ) {
 function supply_delete_line( $line_id ) {
 	$sql = 'UPDATE im_supplies_lines SET status = 9 WHERE id = ' . $line_id;
 
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . "sql: " . $sql );
+	sql_query( $sql );
 
-	$row = mysql_fetch_row( $export );
 }
 
 function supply_update_line( $line_id, $q ) {
 	$sql = 'UPDATE im_supplies_lines SET quantity = ' . $q . ' WHERE id = ' . $line_id;
 
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . "sql: " . $sql );
-
-	$row = mysql_fetch_row( $export );
+	sql_query( $sql );
 }
 
 function supply_change_status( $supply_id, $status ) {
-	global $conn;
-
 	$sql = 'UPDATE im_supplies SET status = ' . $status . ' WHERE id = ' . $supply_id;
 
-	if ( ! mysqli_query( $conn, $sql ) ) {
-		sql_error( $sql );
-	}
-
+	sql_query( $sql );
 }
 
 function supply_close( $supply_id ) {
@@ -133,7 +115,7 @@ function print_supply_lines( $id, $internal ) {
 	$sql = 'select product_id, quantity, id '
 	       . ' from im_supplies_lines where status = 1 and supply_id = ' . $id;
 
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+	$result = sql_query( $sql );
 
 	$data = "<table id=\"del_table\" border=\"1\"><tr><td>בחר</td><td>פריט</td><td>כמות</td><td>מידה</td><td>מחיר</td><td>סהכ";
 
@@ -147,7 +129,10 @@ function print_supply_lines( $id, $internal ) {
 	// $vat_total = 0;
 	$line_number = 0;
 
-	while ( $row = mysql_fetch_row( $export ) ) {
+	$supplier_id = sql_query_single_scalar( "SELECT supplier FROM im_supplies WHERE id = " . $id );
+//	print "supplier_id: " . $supplier_id . "<br/>";
+
+	while ( $row = mysqli_fetch_row( $result ) ) {
 		$line_number  = $line_number + 1;
 		$line         = "<tr>";
 		$prod_id      = $row[0];
@@ -156,7 +141,8 @@ function print_supply_lines( $id, $internal ) {
 		$line_id      = $row[2];
 
 		// $vat_line = $row[2];
-		$item_price = pricelist_get_price( $prod_id );
+//		$item_price = pricelist_get_price( $prod_id );
+		$item_price = Catalog::GetBuyPrice( $prod_id, $supplier_id );
 		$total_line = $item_price * $quantity;
 		$total      += $total_line;
 
@@ -321,38 +307,40 @@ function update_supply_lines( $params ) {
 	}
 }
 
-function do_merge_supply( $merged, $other ) {
-	global $conn;
-	if ( supply_get_supplier_id( $merged ) != supply_get_supplier_id( $other ) ) {
-		print "לא ניתן למזג אספקות של ספקים שונים. אספקה $other לא תמוזג ";
-
-		return;
-	}
-	my_log( "merging " . $merged . " and " . $other );
-
-	// Moved the lines to merged supply
-	$sql = "update im_supplies_lines set supply_id = $merged where supply_id = $other ";
-//    . $merged . ", product_id, quantity from im_supplies_lines where "
-//        . " supply_id = " . $other;
-
-	my_log( $sql );
-	mysqli_query( $conn, $sql );
-
-	// TODO: really merge. sum the quantities.
-//    $export = mysql_query ( $sql ) or die ( "Sql error : " . mysql_error( ) . "sql: " . $sql);
+//function do_merge_supply( $merged, $other ) {
+//	global $conn;
+//	if ( supply_get_supplier_id( $merged ) != supply_get_supplier_id( $other ) ) {
+//		print "לא ניתן למזג אספקות של ספקים שונים. אספקה $other לא תמוזג ";
 //
-//    $sql = "update im_supplies set status = 8 " .
-//        " where id = " . $other;
+//		return;
+//	}
+//	my_log( "merging " . $merged . " and " . $other );
 //
-//    my_log ($sql);
-//    $export = mysql_query ( $sql ) or die ( "Sql error : " . mysql_error( ) . "sql: " . $sql);
+//	$sql = "select sum("
+//	// Moved the lines to merged supply
+////	$sql = "update im_supplies_lines set supply_id = $merged where supply_id = $other ";
+//////    . $merged . ", product_id, quantity from im_supplies_lines where "
+//////        . " supply_id = " . $other;
+////
+////	my_log( $sql );
+////	mysqli_query( $conn, $sql );
 //
-//    $sql = "update im_supplies_lines set status = 8 " .
-//        " where supply_id = " . $other;
+//	// TODO: really merge. sum the quantities.
+////	$sql = ""
+////    $export = mysql_query ( $sql ) or die ( "Sql error : " . mysql_error( ) . "sql: " . $sql);
+////
+////    $sql = "update im_supplies set status = 8 " .
+////        " where id = " . $other;
+////
+////    my_log ($sql);
+////    $export = mysql_query ( $sql ) or die ( "Sql error : " . mysql_error( ) . "sql: " . $sql);
+////
+////    $sql = "update im_supplies_lines set status = 8 " .
+////        " where supply_id = " . $other;
+////
+////    mysqli_query($conn, $sql);
 //
-//    mysqli_query($conn, $sql);
-
-}
+//}
 
 function merge_supplies( $params ) {
 	for ( $i = 0; $i < count( $params ); $i ++ ) {
@@ -362,14 +350,51 @@ function merge_supplies( $params ) {
 			return;
 		}
 	}
-	for ( $pos = 1; $pos < count( $params ); $pos ++ ) {
-		$supply_id = $params[ $pos ];
-		my_log( "merging $supply_id into $params[0]" );
-		do_merge_supply( $params[0], $supply_id );
-		supply_change_status( $supply_id, SupplyStatus::Merged );
-	}
+	$supply_id = $params[0];
+	unset( $params[0] );
+	do_merge_supplies( $params, $supply_id );
+	supplies_change_status( $params, SupplyStatus::Merged );
+//	for ( $pos = 1; $pos < count( $params ); $pos ++ ) {
+//		$supply_id = $params[ $pos ];
+//		my_log( "merging $supply_id into $params[0]" );
+//		do_merge_supply( $params[0], $supply_id );
+//		supply_change_status( $supply_id, SupplyStatus::Merged );
+//	}
 }
 
+function supplies_change_status( $params, $status ) {
+	$sql = "UPDATE im_supplies SET status = " . $status .
+	       " WHERE id IN (" . rtrim( implode( $params, "," ) ) . ")";
+
+	sql_query( $sql );
+}
+
+function do_merge_supplies( $params, $supply_id ) {
+	// Read sum of lines.
+	$sql     = "SELECT sum(quantity), product_id, 1 FROM im_supplies_lines
+WHERE status = 1 AND supply_id IN (" . $supply_id . ", " . rtrim( implode( ",", $params ) ) . ")" .
+	           " GROUP BY product_id, status ";
+	$result  = sql_query( $sql );
+	$results = array();
+
+	while ( $row = mysqli_fetch_row( $result ) ) {
+		array_push( $results, $row );
+	}
+
+	// Move all lines to be in merged status
+	$sql = "UPDATE im_supplies_lines SET status = " . SupplyStatus::Merged . " WHERE supply_id IN ("
+	       . $supply_id . ", " . rtrim( implode( ",", $params ) ) . ")";
+
+	sql_query( $sql );
+
+	// Insert new lines
+	$sql = "INSERT INTO im_supplies_lines (status, supply_id, product_id, quantity) VALUES ";
+	foreach ( $results as $row ) {
+		$sql .= "( " . SupplyStatus::NewSupply . ", " . $supply_id . ", " . $row[1] . ", " . $row[0] . "),";
+	}
+	$sql = rtrim( $sql, "," );
+	sql_query( $sql );
+}
 //
 //drop function get_product_name
 //DELIMITER //
@@ -402,10 +427,10 @@ function display_active_supplies( $status ) {
 		sql_error( $sql );
 		die( 1 );
 	}
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+	$result = sql_query( $sql );
 
 	$data = "<table border='1'><tr><td>בחר</td><td><h3>מספר</h3></td><td><h3>תאריך</h3></td><td><h3>ספק</h3></td><td>סטטוס</td></tr>";
-	while ( $row = mysql_fetch_row( $export ) ) {
+	while ( $row = mysqli_fetch_row( $result ) ) {
 		$supply_id   = $row[0];
 		$supplier_id = $row[1];
 		$value       = "<tr><td><input id=\"chk" . $supply_id . "\" class=\"supply_checkbox\" type=\"checkbox\"></td>";

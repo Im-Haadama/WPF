@@ -7,7 +7,7 @@
  */
 require_once( 'catalog.php' );
 require_once( '../pricelist/pricelist.php' );
-require_once( '../tools.php' );
+require_once( '../im_tools.php' );
 require_once( '../multi-site/multi-site.php' );
 
 // To map item from price list to our database the shop manager select item from the price list
@@ -102,11 +102,9 @@ function is_mapped( $code ) {
 	$sql = 'SELECT id FROM `im_supplier_mapping` WHERE supplier_product_code = ' . $code .
 	       ' AND supplier_product_code != 10';
 
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+	$id = sql_query_single_scalar( $sql );
 
-	$row = mysql_fetch_row( $export );
-
-	if ( $row[0] > 0 ) {
+	if ( $id > 0 ) {
 		// print $sql;
 		return true;
 	}
@@ -175,7 +173,6 @@ function search_unmapped_local() {
 //    // print $sql;
 //        /// . ' supplier_product_code not in (select supplier_product_code from im_supplier_mapping)';
 //
-//    $export = mysql_query($sql) or die ("Sql error : " . mysql_error());
 
 	$sql    = "SELECT id, supplier_id, product_name FROM im_supplier_price_list ORDER BY 2, 3";
 	$result = mysqli_query( $conn, $sql );
@@ -188,7 +185,7 @@ function search_unmapped_local() {
 	$data .= "<td>מוצר שלנו </td>";
 	$data .= "</tr>";
 
-	while ( $row = mysqli_fetch_row( $result ) ) // mysql_fetch_row($export))
+	while ( $row = mysqli_fetch_row( $result ) )
 	{
 		$pricelist_id = $row[0];
 //        $supplier_id = $row[1];
@@ -249,8 +246,8 @@ function print_unmapped( $pricelist_id, $supplier_product_code, $product_name, $
 
 	// Get line options
 	$options = "";
-	$export1 = mysql_query( $sql1 );
-	while ( $row1 = mysql_fetch_row( $export1 ) ) {
+	$result1 = sql_query( $sql1 );
+	while ( $row1 = mysqli_fetch_row( $result1 ) ) {
 //        print $row1[1] . " " . $product_name . "<br/>";
 		$striped_option = $row1[1];
 		$striped_option = str_replace( "-", " ", $striped_option );
@@ -306,7 +303,7 @@ function search_invalid_mapping() {
             FROM im_supplier_mapping';
 
 
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+	$result = sql_query( $sql );
 
 	$data = "<tr>";
 	$data .= "<td>בחר</td>";
@@ -316,7 +313,7 @@ function search_invalid_mapping() {
 	$data .= "<td>שם מוצר</td>";
 	$data .= "</tr>";
 
-	while ( $row = mysql_fetch_row( $export ) ) {
+	while ( $row = mysqli_fetch_row( $result ) ) {
 		$line_id      = $row[0];
 		$product_id   = $row[1];
 		$supplier_id  = $row[2];

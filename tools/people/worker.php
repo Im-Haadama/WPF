@@ -5,7 +5,7 @@
  * Date: 08/05/16
  * Time: 19:48
  */
-require_once( "../tools.php" );
+require_once( "../im_tools.php" );
 require_once( '../tools_wp_login.php' );
 require_once( "../header.php" );
 require_once( "../gui/inputs.php" );
@@ -125,7 +125,7 @@ print gui_header( 1, "הוספת פעילות" );
 		$sql = "SELECT id, project_name FROM im_projects";
 		$export = mysql_query( $sql ) or die ( "Sql error: " . mysql_error() . $sql );
 
-		while ( $row = mysql_fetch_row( $export ) ) {
+		while ( $row = mysqli_fetch_row( $result ) ) {
 			print "<option value=\"" . $row[0] . "\">" . $row[1] . "</option>";
 		}
 		?>

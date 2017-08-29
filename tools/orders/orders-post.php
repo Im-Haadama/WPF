@@ -5,7 +5,7 @@
  * Date: 16/07/15
  * Time: 16:00
  */
-require_once( '../tools.php' );
+require_once( '../im_tools.php' );
 require_once( 'orders-common.php' );
 
 // To map item from price list to our database the shop manager select item from the price list
@@ -15,7 +15,18 @@ require_once( 'orders-common.php' );
 $operation = $_GET["operation"];
 my_log( "Operation: " . $operation, __FILE__ );
 switch ( $operation ) {
-	case "replace_baskets";
+	case "create_order":
+		$user_id    = $_GET["user_id"];
+		$prods      = $_GET["prods"];
+		$quantities = $_GET["quantities"];
+		$comments   = $_GET["comments"];
+		$units      = $_GET["units"];
+
+		print "creating order for " . get_user_name( $user_id );
+		create_order( $user_id, explode( ",", $prods ),
+			explode( ",", $quantities ), $comments, explode( ",", $units ) );
+		break;
+	case "replace_baskets":
 		// Disable for now. replace_baskets();
 		break;
 
@@ -28,6 +39,10 @@ switch ( $operation ) {
 		if ( ! is_numeric( $q ) ) {
 			die ( "no quantity" );
 		}
+		$units = null;
+		if ( isset ( $_GET["units"] ) ) {
+			$units = $_GET["units"];
+		}
 		$order_id = $_GET["order_id"];
 		if ( ! is_numeric( $order_id ) ) {
 			die ( "no order_id" );
@@ -39,7 +54,7 @@ switch ( $operation ) {
 			die ( "no prod_id for " . $name . "<br/>" );
 		}
 		$order = new WC_Order( $order_id );
-		order_add_product( $order, $prod_id, $q );
+		order_add_product( $order, $prod_id, $q, false, - 1, $units );
 		break;
 
 	case "delete_lines":
@@ -62,9 +77,9 @@ function replace_baskets() {
 	       . ' FROM `wp_posts` posts'
 	       . " WHERE post_status LIKE '%wc-processing%' or post_status LIKE '%wc-on-hold%' order by 1";
 
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+	$result = sql_query( $sql );
 
-	while ( $row = mysql_fetch_row( $export ) ) {
+	while ( $row = mysqli_fetch_row( $result ) ) {
 		$order_id = $row[0];
 
 		replace_basket_with_products( $order_id );
@@ -85,9 +100,9 @@ function remove_dislike_from_order( $order_id ) {
 	       . ' group by woi.order_item_name order by 1'
 	       . ' ';
 
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+	$result = sql_query( $sql );
 
-	while ( $row = mysql_fetch_row( $export ) ) {
+	while ( $row = mysqli_fetch_row( $result ) ) {
 		$order_item_id = $row[2];
 		$product_id    = get_prod_id( $order_item_id );
 		print "prod_id = " . $product_id;

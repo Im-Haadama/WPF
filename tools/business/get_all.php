@@ -1,7 +1,9 @@
 <?php
-require_once( '../tools.php' );
+require_once( '../im_tools.php' );
 require_once( '../header.php' );
 require_once( "../gui/inputs.php" );
+require_once( "../delivery/delivery.php" );
+require_once( "../suppliers/gui.php" );
 ?>
 <html dir="rtl">
 <header>
@@ -125,11 +127,9 @@ $seq                = 1;
 $total_amount       = 0;
 $total_delivery_fee = 0;
 
-print $sql;
-
-$result = mysqli_query( $conn, $sql );
-//$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . $sql );
-//while ( $row = mysql_fetch_row( $export ) ) {
+// print $sql;
+$result = sql_query( $sql );
+//while ( $row = mysqli_fetch_row( $result ) ) {
 while ( $row = mysqli_fetch_assoc( $result ) ) {
 	$total_amount       += $row["amount"];
 	$total_delivery_fee += $row["delivery_fee"];
@@ -162,22 +162,18 @@ function get_name( $id ) {
 	$sql = "SELECT display_name FROM wp_users WHERE id = " . $id .
 	       " UNION SELECT supplier_name FROM im_suppliers WHERE id = " . $id;
 
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . $sql );
-	$row = mysql_fetch_row( $export );
-
-	return $row[0];
+	return sql_query_single_scalar( $sql );
 }
 
 // From here created by coder.old.php
 function delete_business( $id ) {
 	$sql = "delete from im_business_info where id = $id";
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . $sql );
+	sql_query( $sql );
 }
 
 function print_business( $id, $horizontal, $seq ) {
 	$sql = "select id, part_id, date, week, amount, ref, delivery_fee from im_business_info where id = $id";
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . $sql );
-	$row = mysql_fetch_row( $export );
+	$row = sql_query_single( $sql );
 	if ( ! $horizontal ) {
 		print "<table>";
 	}
@@ -309,12 +305,21 @@ function print_business( $id, $horizontal, $seq ) {
 }
 
 print "</table>";
-
 ?>
+
+<h2>מחק שורות שמוצגות</h2>
+
+<tr>
+    <button id="btn_delete_business" onclick="delete_item()">-</button>
+</tr>
+
 <br>
-<h1>הוסף תעודת משלוח</h1>
+<h1 align="center">הוסף תעודת משלוח</h1>
 
 <br/>
+<Table align="center">
+    <tr>
+        <td>
 <table>
     <tr>
         <td>ספק:</td>
@@ -332,11 +337,23 @@ print "</table>";
         <td>סימוכין:</td>
         <td><input type="text" id="ref"></td>
     </tr>
-</table>
-<button id="btn_add_business" onclick="add_item()">+</button>
+    <tr>
+        <td>
+            <button id="btn_add_business" onclick="add_item()">הוספת תעודת ספק</button>
+        </td>
+    </tr>
 
-<h2>מחק שורות שמוצגות</h2>
-<button id="btn_delete_business" onclick="delete_item()">-</button>
+</table>
+        </td>
+        <td>
+			<?php
+
+			print delivery::GuiCreateNewNoOrder();
+			?>
+        </td>
+    </tr>
+
+</Table>
 
 
 </body>
