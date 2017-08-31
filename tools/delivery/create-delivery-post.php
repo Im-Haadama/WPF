@@ -27,12 +27,12 @@ switch ( $operation ) {
 		break;
 
 	case "add_lines":
-		print "add lines<br/>";
+//		print "add lines<br/>";
 		$edit        = isset( $_GET["edit"] );
 		$lines       = $_GET["lines"];
 		$delivery_id = $_GET["delivery_id"];
 		$_lines      = explode( ',', $lines );
-		print "del id = " . $delivery_id . "<br/>";
+//		print "del id = " . $delivery_id . " " . sizeof($_lines) . "<br/>";
 		add_delivery_lines( $delivery_id, $_lines, $edit );
 		break;
 }
@@ -97,42 +97,47 @@ function add_delivery_lines( $delivery_id, $lines, $edit ) {
 		$d->DeleteLines();
 	}
 
-	for ( $pos = 0; $pos < count( $lines ); $pos += 7 ) {
+	for ( $pos = 0; $pos < count( $lines ); $pos += 8 ) {
 		$prod_id          = $lines[ $pos ];
 		$product_name     = $lines[ $pos + 1 ];
 		$quantity         = $lines[ $pos + 2 ];
 		$quantity_ordered = $lines[ $pos + 3 ];
-		$vat              = $lines[ $pos + 4 ];
-		$price            = $lines[ $pos + 5 ];
-		$line_price       = $lines[ $pos + 6 ];
+		$unit_ordered     = $lines[ $pos + 4 ];
+		if ( ! ( strlen( $unit_ordered ) > 0 ) ) {
+			$unit_ordered = "NULL";
+		} // print $unit_ordered . "<br/>";
+		$vat        = $lines[ $pos + 5 ];
+		$price      = $lines[ $pos + 6 ];
+		$line_price = $lines[ $pos + 7 ];
 //        $product_name = get_product_name($prod_id);
 //        my_log("product_id = " . $product_id . ", supplier_id=" . $supplier_id . ", product_name=" . $product_name);
-		print $product_name . " " . $delivery_id . " " . $quantity . " " . $quantity_ordered . " " . $vat . " " . $price . " " . $line_price . " " . $prod_id . "<br/>";
-		add_delivery_line( $product_name, $delivery_id, $quantity, $quantity_ordered, $vat, $price, $line_price, $prod_id );
+		// print "id: " . $prod_id . ", name: " . $product_name . " delivery_id: " . $delivery_id . " quantity: " . $quantity . " quantity_ordred: " . $quantity_ordered .
+//		      " vat: " . $vat . " price: " . $price . " line_price: " . $line_price . "<br/>";
+		add_delivery_line( $product_name, $delivery_id, $quantity, $quantity_ordered, $unit_ordered, $vat, $price, $line_price, $prod_id );
 	}
 }
 
-function add_delivery_line( $product_name, $delivery_id, $quantity, $quantity_ordered, $vat, $price, $line_price, $prod_id ) {
+function add_delivery_line( $product_name, $delivery_id, $quantity, $quantity_ordered, $unit_ordered, $vat, $price, $line_price, $prod_id ) {
 	global $conn;
 	$product_name = preg_replace( '/[\'"%()]/', "", $product_name );
+	// print "name: " . $product_name . "<br/>";
 
-	$sql = "INSERT INTO im_delivery_lines (delivery_id, product_name, quantity, quantity_ordered, vat, price, line_price, prod_id) VALUES ("
+	$sql = "INSERT INTO im_delivery_lines (delivery_id, product_name, quantity, quantity_ordered, unit_ordered, vat, price, line_price, prod_id) VALUES ("
 	       . $delivery_id . ", "
 	       . "'" . urldecode( $product_name ) . "', "
 	       . $quantity . ", "
 	       . $quantity_ordered . ", "
+	       . $unit_ordered . ", "
 	       . $vat . ", "
 	       . $price . ', '
 	       . $line_price . ', '
 	       . $prod_id . ' )';
 
-	print $sql . "<br/>";
+	// print $sql . "<br/>";
 
 	my_log( $sql, "db-add-delivery-line.php" );
 
-	if ( ! mysqli_query( $conn, $sql ) ) {
-		my_log( "Error: " . $sql . mysqli_error( $conn ) );
-	}
+	sql_query( $sql);
 }
 
 ?>

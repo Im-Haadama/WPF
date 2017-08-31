@@ -119,7 +119,6 @@ function set_price( $prod_id, $price ) {
 	// return set_post_meta_field( $prod_id, '_sale_price', $sale_price );
 }
 
-
 // get_sale_price
 function get_buy_price( $prod_id ) {
 	return get_postmeta_field( $prod_id, 'buy_price' );

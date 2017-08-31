@@ -18,14 +18,14 @@ require_once( "../delivery/delivery-common.php" );
 class delivery {
 	private $ID = 0;
 	private $d_OrderID = 0;
-	private $total = 0;
-	private $vat_total = 0;
-	private $due_vat = 0;
+	private $order_total = 0;
+	private $order_vat_total = 0;
+	private $order_due_vat = 0;
 	private $line_number = 0;
 	private $del_price = 0;
-	private $order_total = 0;
-	private $order_due_vat = 0;
-	private $order_total_vat = 0;
+	private $delivery_total = 0;
+	private $delivery_due_vat = 0;
+	private $delivery_total_vat = 0;
 
 	function delivery( $id ) {
 //        my_log("CONS. id = " . $id);
@@ -127,6 +127,8 @@ class delivery {
 
 	function delivery_text( $document_type, $edit = ImDocumentOperation::show ) {
 		// $expand_basket = false, $refund = false, $edit_order = false
+		global $delivery_fields_names;
+		global $header_fields;
 		$debug = false;
 		if ( $debug ) {
 			print "Document type " . $document_type . "<br/>";
@@ -139,20 +141,20 @@ class delivery {
 
 		// All fields:
 		$show_fields = array();
-		for ( $i = 0; $i <= DeliveryFields::max_fields; $i ++ ) {
+		for ( $i = 0; $i < DeliveryFields::max_fields; $i ++ ) {
 			$show_fields[ $i ] = false;
 		}
 
-		$show_fields[ DeliveryFields::product_name ]       = true;
-		$show_fields[ DeliveryFields::q_quantity_ordered ] = true;
-		$show_fields[ DeliveryFields::q_units_ordered ]    = true;
-		$show_fields[ DeliveryFields::price ]              = true;
-		$show_fields[ DeliveryFields::has_vat ]            = true;
-		$show_fields[ DeliveryFields::line_vat ]           = true;
-		$show_fields[ DeliveryFields::line_total ]         = true;
+		$show_fields[ DeliveryFields::product_name ]  = true;
+		$show_fields[ DeliveryFields::order_q ]       = true;
+		$show_fields[ DeliveryFields::order_q_units ] = true;
+		$show_fields[ DeliveryFields::price ]         = true;
+		$show_fields[ DeliveryFields::has_vat ]       = true;
+		$show_fields[ DeliveryFields::line_vat ]      = true;
+		$show_fields[ DeliveryFields::delivery_line ] = true;
 
 		$empty_array = array();
-		for ( $i = 0; $i <= DeliveryFields::max_fields; $i ++ ) {
+		for ( $i = 0; $i < DeliveryFields::max_fields; $i ++ ) {
 			$empty_array[ $i ] = "";
 		}
 
@@ -160,36 +162,22 @@ class delivery {
 //		term_id = 8,
 		$refund = false;
 
-		$header_fields = array(
-			"בחר",
-			"פריט",
-			"כמות הוזמן",
-			"יחידות הוזמנו",
-			"כמות סופק",
-			"מחיר",
-			"חייב מע\"מ",
-			"מע\"מ",
-			"סה\"כ",
-			"קטגוריה",
-			"כמות לזיכוי",
-			"סה\"כ זיכוי"
-		);
-
 		switch ( $document_type ) {
 			case ImDocumentType::order:
-				$header_fields[ DeliveryFields::line_total ] = "סה\"כ להזמנה";
+				$header_fields[ DeliveryFields::delivery_line ] = "סה\"כ להזמנה";
 				if ( $edit == ImDocumentOperation::edit ) {
 					$header_fields[ DeliveryFields::line_select ] = gui_checkbox( "chk", "line_chk", false );
 					$show_fields[ DeliveryFields::line_select ]   = true;
 				}
+				$show_fields[ DeliveryFields::order_line ] = true;
 				break;
 			case ImDocumentType::delivery:
-				$show_fields[ DeliveryFields::q_supply ] = true;
+				$show_fields[ DeliveryFields::delivery_q ] = true;
 				break;
 			case ImDocumentType::refund:
-				$refund                                      = true;
-				$show_fields[ DeliveryFields::q_refund ]     = true;
-				$show_fields[ DeliveryFields::refund_total ] = true;
+				$refund                                     = true;
+				$show_fields[ DeliveryFields::refund_q ]    = true;
+				$show_fields[ DeliveryFields::refund_line ] = true;
 				break;
 			default:
 				print "Document type " . $document_type . " not handled " . __FILE__ . " " . __LINE__ . "<br/>";
@@ -222,13 +210,15 @@ class delivery {
 		// <tr><td>פריט</td><td>כמות הוזמן</td><td>יחידה</td></td><td>כמות סופק</td><td>חייב מע\"מ</td><td>מע\"מ</td><td>מחיר</td><td>סהכ</td>";
 
 		// Print header
-		$data .= "<tr>";
-		for ( $i = 0; $i < sizeof( $header_fields ); $i ++ ) {
-			// print $i . " " . $show_fields[$i] . "<br/>";
-			$data .= gui_cell( $header_fields[ $i ], "header" . $i, $show_fields[ $i ] );
-			//	print $i . " " . $show_fields[$i]. "<br/>";
-		}
-		$data .= "</tr>";
+		$sum  = null;
+		$data .= gui_row( $header_fields, "header", $show_fields, $sum );
+//		$data .= "<tr>";
+//		for ( $i = 0; $i < sizeof( $header_fields ); $i ++ ) {
+//			// print $i . " " . $show_fields[$i] . "<br/>";
+//			$data .= gui_cell( $header_fields[ $i ], "header" . $i, $show_fields[ $i ] );
+//			//	print $i . " " . $show_fields[$i]. "<br/>";
+//		}
+//		$data .= "</tr>";
 
 		if ( $this->ID > 0 ) { // load delivery
 			$loaded = true;
@@ -253,7 +243,7 @@ class delivery {
 				}
 				// $data .= $this->delivery_line($show_fields, $row["id"], $row["quantity_ordered"], "", $row["quantity"], $row["price"], $row["vat"], $row["prod_id"], $refund, "" );
 				// TODO: client Type
-				$data .= $this->delivery_line( $show_fields, ImDocumentType::delivery, $row["id"], 1, false );
+				$data .= $this->delivery_line( $show_fields, ImDocumentType::delivery, $row["id"], 1, $edit );
 				// $data .= $this->delivery_line($show_fields, $document_type, $line_id, $client_type, $edit = false)
 			}
 			$del_price = $this->DeliveryFee();
@@ -284,9 +274,9 @@ class delivery {
 				$data .= $this->delivery_line( $show_fields, $document_type, $order_item_id, $client_type, $edit);
 				// print "ex " . $expand_basket . " is " . is_basket($prod_id) . "<br/>";
 
-//				if ( $expand_basket && is_basket( $prod_id ) ) {
-//					$this->expand_basket( $prod_id, 0, $quantity_ordered, $data, 0 );
-//				}
+				if ( $expand_basket && is_basket( $prod_id ) ) {
+					$this->expand_basket( $prod_id, 0, $quantity_ordered, $data, 0 );
+				}
 			}
 
 			// Get and display order delivery price
@@ -303,8 +293,8 @@ class delivery {
 //        print "del_price = " . $del_price . "<br/>";
 //        print "vat_percent = " . $global_vat . "<br/>";
 		if ( ! $loaded ) {
-			$this->total   += $del_price;
-			$this->due_vat += $del_price;
+			$this->order_total   += $del_price;
+			$this->order_due_vat += $del_price;
 
 			$del_vat         = round( $del_price / ( 100 + $global_vat ) * $global_vat, 2 );
 
@@ -316,23 +306,24 @@ class delivery {
 //			                   . '<td><input type="text" name="del_price' . '" value="' . $del_price . '"></td>'
 //			                   . '<td>' . $del_price . '</td></tr>';
 
-			$delivery_line                                       = $empty_array;
-			$delivery_line[ DeliveryFields::product_name ]       = "דמי משלוח";
-			$delivery_line[ DeliveryFields::q_quantity_ordered ] = 1;
-			$delivery_line[ DeliveryFields::price ]              = gui_input( "delivery", "", "" );
-			$delivery_line[ DeliveryFields::has_vat ]            = gui_checkbox( "has_vat", "vat", true );
-			$delivery_line[ DeliveryFields::line_vat ]           = $del_vat;
-			$delivery_line[ DeliveryFields::line_total ]         = $del_price;
+			$delivery_line                                  = $empty_array;
+			$delivery_line[ DeliveryFields::product_name ]  = "דמי משלוח";
+			$delivery_line[ DeliveryFields::delivery_q ]    = 1;
+			$delivery_line[ DeliveryFields::price ]         = $edit ? gui_input( "delivery", $del_price, "" ) : $del_price;
+			$delivery_line[ DeliveryFields::has_vat ]       = gui_checkbox( "has_vat", "vat", true );
+			$delivery_line[ DeliveryFields::line_vat ]      = $del_vat;
+			$delivery_line[ DeliveryFields::delivery_line ] = $del_price;
 
-
-			$data            .= gui_row( $delivery_line, "delivery_fee", $show_fields);
-			$this->vat_total += $del_vat;
+			$sums = null;
+			global $delivery_fields_names;
+			$data                  .= gui_row( $delivery_line, "del", $show_fields, $sums, $delivery_fields_names );
+			$this->order_vat_total += $del_vat;
 			// Spare line for volume discount
 		}
 
 		if ( ! $volume_line ) {
 			$delivery_line = $empty_array;
-			$data          .= gui_row( $delivery_line, "volume_discount", $show_fields);
+			$data          .= gui_row( $delivery_line, "dis", $show_fields, $sums, $delivery_fields_names );
 		}
 
 		// Handle round field
@@ -341,22 +332,22 @@ class delivery {
 
 		// Summary
 		// Due VAT
-		$summary_line                                 = $empty_array;
-		$summary_line[ DeliveryFields::product_name ] = "סה\"כ חייבי מע\"מ";
-		$summary_line[ DeliveryFields::line_total ]   = $this->order_due_vat;
-		$data                                         .= gui_row( $summary_line, "due_vat", $show_fields );
+		$summary_line                                  = $empty_array;
+		$summary_line[ DeliveryFields::product_name ]  = "סה\"כ חייבי מע\"מ";
+		$summary_line[ DeliveryFields::delivery_line ] = $this->delivery_due_vat;
+		$data                                          .= gui_row( $summary_line, "due", $show_fields, $sum, $delivery_fields_names );
 
 		// Total VAT
-		$summary_line                                 = $empty_array;
-		$summary_line[ DeliveryFields::product_name ] = "סכום מע\"מ";
-		$summary_line[ DeliveryFields::line_total ]   = $this->order_total_vat;
-		$data                                         .= gui_row( $summary_line, "vat", $show_fields );
+		$summary_line                                  = $empty_array;
+		$summary_line[ DeliveryFields::product_name ]  = "סכום מע\"מ";
+		$summary_line[ DeliveryFields::delivery_line ] = $this->delivery_total_vat;
+		$data                                          .= gui_row( $summary_line, "vat", $show_fields, $sum, $delivery_fields_names );
 
 		// Total
-		$summary_line                                 = $empty_array;
-		$summary_line[ DeliveryFields::product_name ] = "סה\"כ לתשלום";
-		$summary_line[ DeliveryFields::line_total ]   = $this->order_total;
-		$data                                         .= gui_row( $summary_line, "total", $show_fields);
+		$summary_line                                  = $empty_array;
+		$summary_line[ DeliveryFields::product_name ]  = "סה\"כ לתשלום";
+		$summary_line[ DeliveryFields::delivery_line ] = $this->delivery_total;
+		$data                                          .= gui_row( $summary_line, "tot", $show_fields, $sum, $delivery_fields_names );
 
 
 		$data = str_replace( "\r", "", $data );
@@ -377,9 +368,11 @@ class delivery {
 	// If Document is delivery, line_id is delivery line id.
 	// If Document is order, line_id is order line id.
 	public function delivery_line( $show_fields, $document_type, $line_id, $client_type, $edit = ImDocumentOperation::show ) {
+		global $delivery_fields_names;
+
 		$debug = false;
 		if ( $debug ) {
-			print "Edit: " . $edit;
+			print "Edit: " . $edit . "<br/>";
 			print " Document type: " . $document_type . "<br/>";
 			print " line id " . $line_id . "<br/>";
 		}
@@ -387,32 +380,38 @@ class delivery {
 		global $global_vat;
 		$vat = 0;
 
-		$value = "";
-
-		if ( $show_fields[ DeliveryFields::line_select ] ) {
-			$value .= gui_cell( gui_checkbox( "chk" . $line_id, "line_chk", false ) ); // 0 - Checkbox
-		} else {
-			$value .= gui_cell( "", "", false );
+		$line = array();
+		for ( $i = 0; $i <= DeliveryFields::max_fields; $i ++ ) {
+			$line[ $i ] = "";
 		}
-		$prod_name          = "unset";
+
+		$line[ DeliveryFields::line_select ] = gui_checkbox( "chk" . $line_id, "line_chk", false );
+
+//		if ( $show_fields[  ] ) {
+//			$value .= gui_cell(  ); // 0 - Checkbox
+//		} else {
+//			$value .= gui_cell( "", "", false );
+//		}
 		$unit_ordered       = null;
-		$quantity_ordered   = 0;
 		$quantity_delivered = 0;
-		$prod_id            = 0;
 		//////////////////////////////////////////
 		// Fetch fields from the order/delivery //
 		//////////////////////////////////////////
 		$unit_q           = "";
-		$order_line_total = 0;
 		$load_from_order  = false;
 		switch ( $document_type ) {
 			case ImDocumentType::order:
 				$load_from_order = true;
+				if ( $debug ) {
+					print "load from order";
+				}
 				break;
 
 			case ImDocumentType::delivery:
 				if ( $edit == ImDocumentOperation::create ) {
 					$load_from_order = true;
+					if ( $debug )
+						print "create. load from order";
 				} else {
 					$load_from_order = false;
 				}
@@ -438,60 +437,105 @@ class delivery {
 			}
 
 		} else {
-			$sql = "SELECT prod_id, product_name, quantity_ordered, quantity, price, line_price FROM im_delivery_lines WHERE id = " . $line_id;
+			$sql = "SELECT prod_id, product_name, quantity_ordered, unit_ordered, quantity, price, line_price FROM im_delivery_lines WHERE id = " . $line_id;
 
 			$row = sql_query_single( $sql );
 
 			$prod_id            = $row[0];
 			$prod_name          = $row[1];
 			$quantity_ordered   = $row[2];
-			$quantity_delivered = $row[3];
-			$price              = $row[4];
-			$line_price         = $row[5];
+			$unit_q             = $row[3];
+			if ( $unit_q > 0 and $quantity_ordered == 0 ) {
+				$quantity_ordered = "";
+			}
+			$quantity_delivered  = $row[4];
+			$price               = $row[5];
+			$delivery_line_price = $row[6];
 
 			// $unit_ordered     = ;
 			// $order_line_total = $row[5];
 
-			$prod_name = get_product_name( $prod_id );
+// ????			$prod_name = get_product_name( $prod_id );
 		}
 
 		// in Order price is total/q. in delivery get from db.
 		// $price            = $this->item_price( $client_type, $prod_id, $order_line_total, $quantity_ordered );
 
 		// Display item name. product_name
-		$value .= "<td id='" . $prod_id . "'>" . $prod_name . '</td>'; // 1- name
+		$line[ DeliveryFields::product_name ] = $prod_name;
+		$line[ DeliveryFields::product_id ]   = $prod_id;
+		// $value .= "<td id='" . $prod_id . "'>" . $prod_name . '</td>'; // 1- name
 
 		// q_quantity_ordered
-		$value .= "<td>" . $quantity_ordered . "</td>";                             // 2- ordered
+		$line[ DeliveryFields::order_q ]       = $quantity_ordered;
+		$line[ DeliveryFields::order_q_units ] = $unit_q;
+		// $value .= "<td>" . $quantity_ordered . "</td>";                             // 2- ordered
 
-		// q_units_ordered
-		$value .= "<td>" . $unit_q . "</td>";                                       // 3- unit
+		$has_vat = true;
+		if ( get_vat_percent( $prod_id ) == 0 ) {
+			$has_vat = false;
+		}
 
-		// supplied
+		if ( $has_vat ) {
+			$vat = round( ( $line_price * $global_vat ) / 100, 2 );
+		}
+
+		// price
+		if ( $edit == ImDocumentOperation::create and $document_type == ImDocumentType::delivery ) {
+			$line[ DeliveryFields::price ] = gui_input( "", $price );
+		} else {
+			$line[ DeliveryFields::price ] = $price;
+		}
+		// $value .= gui_cell( $price, "price" . $this->line_number );                                   // 5 - price
+
+		// has_vat
+		$line[ DeliveryFields::has_vat ] = gui_checkbox( "has_vat" . $prod_id, "has_vat", $has_vat > 0 ); // 6 - has vat
+
+//		$line[DeliveryFields::order_line] = $line_price;
 
 		// q_supply
 		switch ( $document_type ) {
 			case ImDocumentType::order:
 				// TODO: get supplied q
-				$value .= gui_cell( $quantity_delivered, "", $show_fields[ DeliveryFields::q_supply ] ); // 4-supplied
+				// $line[DeliveryFields::delivery_q] = $quantity_delivered;
+				// $value .= gui_cell( $quantity_delivered, "", $show_fields[ DeliveryFields::delivery_q ] ); // 4-supplied
 				// $value .= gui_cell( "הוזמן", $debug );
 				break;
 
 			case ImDocumentType::delivery:
-				if ( $edit ) {
-					$value .= "<td>";
-					$value .= '<input type="text" name="quantity' . $this->line_number . '"';           // 4 - Supplied
-					if ( $this->ID > 0 ) {
-						$value .= " value=" . $quantity_delivered;
-					}
-					$value .= ' onkeypress="moveNextRow(' . $this->line_number . ')">';
-					$value .= "</td>";
+				// $line[DeliveryFields::order_line] = $order_line_total;
+				if ( $edit == ImDocumentOperation::edit ) {
+					$line[ DeliveryFields::delivery_q ] = gui_input( "quantity" . $this->line_number,
+						( $quantity_delivered > 0 ) ? $quantity_delivered : "",
+						array( 'onkeypress="moveNextRow(' . $this->line_number . ')"'));
 				} else {
-					$value .= gui_cell( $quantity_delivered );
+					$line[ DeliveryFields::delivery_q ] = $quantity_delivered;
+					// $value .= gui_cell( $quantity_delivered );
 				}
+				// Order info
+				// $order_line                       = $line[DeliveryFields::price] * $line[DeliveryFields::order_q];
+				// $line[DeliveryFields::order_line] = $order_line;
+				// $this->delivery_total             += $order_line;
+
+				// Delivery info
+				$delivery_line                         = $line[ DeliveryFields::price ] * $line[ DeliveryFields::delivery_q ];
+				$line[ DeliveryFields::delivery_line ] = $delivery_line;
+				// if ($line[$delivery_line])
+				$this->delivery_total += $delivery_line;
+				if ( $has_vat ) {
+					$line[ DeliveryFields::line_vat ] = round( $delivery_line / ( 100 + $global_vat ) * $global_vat, 2 );
+					// round($delivery_line / (100 + $global_vat));
+
+					$this->delivery_due_vat   += $delivery_line;
+					$this->delivery_total_vat += $line[ DeliveryFields::line_vat ];
+				} else {
+					$line[ DeliveryFields::line_vat ] = "";
+				}
+
 				break;
 			case ImDocumentType::refund;
-				$value .= gui_cell( $quantity_delivered );                                              // 4- Supplied
+				$line[ DeliveryFields::delivery_q ] = $quantity_delivered;
+				// $value .= gui_cell( $quantity_delivered );                                              // 4- Supplied
 				break;
 		}
 
@@ -499,34 +543,14 @@ class delivery {
 			$price = 0;
 		}
 
-
-		// Handle price, due vat, line vat, total_line
-		$has_vat = true;
-		if ( get_vat_percent( $prod_id ) == 0 ) {
-			$has_vat = false;
-//			$this->order_due_vat += round(($line_price * $global_vat) /100, 2);
-		} else {
-			$vat           = round( $line_price / ( 100 + $global_vat ) * $global_vat, 2 );
-			$this->due_vat += $price * $quantity_delivered;
-		}
-
-		// price
-		$value .= gui_cell( $price, "price" . $this->line_number );                                   // 5 - price
-
-		// has_vat
-		$value .= gui_cell( gui_checkbox( "has_vat" . $prod_id, "has_vat", $has_vat > 0 ) ); // 6 - has vat
-
-		// vat
-		$value .= gui_cell( $vat, "vat" . $this->line_number );                                       // 7 - line vat
-
 		// Line total
-		$value .= gui_cell( $line_price, "order_line_total" . $this->line_number );                   // 8 - line total
+//		$value .= gui_cell( $line_price, "order_line_total" . $this->line_number );                   // 8 - line total
 
-		$this->order_total += $line_price;
-		// Accumulate numbers
+		$this->delivery_total += $line_price;
+		// Accumulate vat
 		if ( $vat > 0 ) {
-			$this->order_due_vat   += $line_price;
-			$this->order_total_vat += $vat;
+			$this->delivery_due_vat   += $line_price;
+			$this->delivery_total_vat += $vat;
 		}
 
 		// terms
@@ -538,20 +562,14 @@ class delivery {
 				$terms_cell .= $term->term_id . ",";
 			}
 			$terms_cell = rtrim( $terms_cell, "," );
-		} else {
-			if ( $prod_id > 0 ) {
-				$terms_cell .= "no terms for " . $prod_id;
-			}
 		}
-		$value .= gui_cell( $terms_cell, "terms" . $this->line_number, false );                    // 9 - terms
+		$line[ DeliveryFields::term ] = $terms_cell;
+		//$value .= gui_cell( $terms_cell, "terms" . $this->line_number, false );                    // 9 - terms
 
 		// Handle refund
 		if ( $document_type == ImDocumentType::refund ) {
-			$value .= gui_cell( gui_input( "refund_" . $this->line_number, 0 ) );             // 10 - refund q
-			$value .= gui_cell( "0" );                                                              // 11 - refund amount
-		} else {
-			$value .= gui_cell( "debug", "", $debug );
-			$value .= gui_cell( "debug", "", $debug);
+			$line[ DeliveryFields::refund_q ] = gui_cell( gui_input( "refund_" . $this->line_number, 0 ) );             // 10 - refund q
+			// $value .= gui_cell( "0" );                                                              // 11 - refund amount
 		}
 
 		// Handle totals
@@ -560,8 +578,9 @@ class delivery {
 				break;
 
 			case ImDocumentType::delivery:
-				$this->total     = $this->total + $line_price;
-				$this->vat_total = $this->vat_total + $vat;
+				$this->delivery_total += $line_price;
+				// print "total: " . $this->delivery_total . "<br/>";
+				$this->delivery_total_vat += $vat;
 				break;
 
 			case ImDocumentType::refund;
@@ -570,7 +589,12 @@ class delivery {
 
 		$this->line_number = $this->line_number + 1;
 
-		return "<tr> " . trim( $value ) . "</tr>";
+//		return "<tr> " . trim( $value ) . "</tr>";
+		// var_dump($show_fields);
+
+		$sums = null;
+
+		return gui_row( $line, $this->line_number, $show_fields, $sums, $delivery_fields_names);
 	}
 
 	public function DeliveryFee() {

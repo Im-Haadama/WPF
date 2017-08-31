@@ -1,5 +1,6 @@
 <?php
 require_once( '../im_tools.php' );
+require_once( '../pricing.php' );
 ?>
 <html dir="rtl">
 <header>

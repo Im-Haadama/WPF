@@ -3,7 +3,6 @@ require_once '../im_tools.php';
 require_once 'delivery.php';
 require_once '../orders/orders-common.php';
 
-print header_text( true );
 ?>
 
 
@@ -13,14 +12,8 @@ $id   = $_GET["id"];
 $send = $_GET["send"];
 
 $d = new Delivery( $id );
-print "<center><h1>תעודת משלוח מספר ";
-print $id;
-print  "</h1> </center>";
 
 $order_id = get_order_id( $id );
-print "<center><h2>הזמנה מספר ";
-print $order_id;
-print  "</h2> </center>";
 
 print order_info_data( $order_id );
 

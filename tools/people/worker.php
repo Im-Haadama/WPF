@@ -122,8 +122,8 @@ print gui_header( 1, "הוספת פעילות" );
     פרויקט
     <select id="project">
 		<?php
-		$sql = "SELECT id, project_name FROM im_projects";
-		$export = mysql_query( $sql ) or die ( "Sql error: " . mysql_error() . $sql );
+		$sql    = "SELECT id, project_name FROM im_projects";
+		$result = sql_query( $sql );
 
 		while ( $row = mysqli_fetch_row( $result ) ) {
 			print "<option value=\"" . $row[0] . "\">" . $row[1] . "</option>";

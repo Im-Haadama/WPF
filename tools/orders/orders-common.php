@@ -57,10 +57,19 @@ function order_info( $order_id, $field_name ) {
 	return sql_query_single_scalar( $sql );
 }
 
-function order_info_data( $order_id, $edit = false ) {
-//	$header = "הזמנה מספר " . $order_id;
+function order_info_data( $order_id, $edit = false, $operation = null ) {
+
+	$header = "";
+	if ( $operation ) {
+		$header .= $operation;
+	}
+	$header .= "הזמנה מספר " . $order_id;
 //	if ($edit) $header = "עריכת " . $header;
-//	$data = gui_header( 1, $header );
+	$data = header_text();
+	$data .= gui_header( 1, $header, true );
+	$d_id = get_delivery_id( $order_id );
+	if ( $d_id > 0 )
+		$data .= gui_header( 2, "משלוח מספר " . $d_id);
 	$data      .= "<table><tr><td rowspan='4'>";
 	$data      .= '<table>';
 	$client_id = get_customer_id_by_order_id( $order_id );
@@ -244,8 +253,8 @@ function user_dislike( $user_id, $prod_id ) {
 }
 
 
-function print_order_info( $order_id, $comments ) {
-	print order_info_data( $order_id, $comments );
+function print_order_info( $order_id, $comments, $operation = null ) {
+	print order_info_data( $order_id, $comments, $operation );
 //    if (is_numeric($order_id)) {
 //    	$client_id = get_customer_id_by_order_id($order_id);
 //        $order = new WC_Order($order_id);

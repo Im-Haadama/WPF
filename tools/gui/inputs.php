@@ -223,18 +223,19 @@ function gui_cell( $cell, $id = null, $show = true ) {
 	return $data;
 }
 
-function gui_row( $cells, $id = null, $show = null, &$sum_fields = null ) {
+function gui_row( $cells, $id = null, $show = null, &$sum_fields = null, $col_ids = null ) {
 	$data = "<tr>";
 
 	if ( is_array( $cells ) ) {
 		$i = 0;
 		foreach ( $cells as $cell ) {
-
 			if ( $sum_fields[ $i ] and is_numeric( $sum_fields[ $i ] ) ) {
 				$sum_fields[ $i ] += $cell;
 			}
 			$cell_id = null;
-			if ( $id ) {
+			if ( $col_ids and is_array( $col_ids ) ) {
+				$cell_id = $col_ids[ $i ] . "_" . $id;
+			} else if ( $id ) {
 				$cell_id = $id . "_" . $i;
 			}
 
@@ -250,7 +251,6 @@ function gui_row( $cells, $id = null, $show = null, &$sum_fields = null ) {
 		$data .= $cells;
 	}
 	$data .= "</tr>";
-
 
 	return $data;
 }

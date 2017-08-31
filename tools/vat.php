@@ -23,7 +23,9 @@ function get_vat_percent( $product_id ) {
 			}
 		}
 	} else {
-		print "no terms for " . $product_id;
+		if ( $product_id > 0 ) {
+			print "no terms for " . $product_id;
+		}
 	}
 
 	return $vat;

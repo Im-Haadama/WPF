@@ -35,7 +35,7 @@ while ( $row = mysqli_fetch_assoc( $result ) ) {
 //	print $id . "<br/>";
 	print_order_info( $id, true );
 	$D = Delivery::CreateFromOrder( $id );
-	$D->print_delivery( true, false );
+	$D->print_delivery( ImDocumentType::delivery, true );
 }
 
 $sql = 'SELECT id as id'

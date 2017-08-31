@@ -11,26 +11,34 @@ function get_value(element) {
     if (element === null) {
         return 0;
     }
-    switch (element.tagName) {
-        case "INPUT":
+    if (element.tagName)
+        switch (element.tagName) {
+            case "INPUT":
+                if (element.type == "checkbox") {
+                    if (element.checked) return 1;
+                    return 0;
+                    // if (element.checke == "on") return 1;
+                    // return 0;
+                }
+                return element.value;
 
-            if (element.type == "checkbox") {
-                if (element.checked) return 1;
-                return 0;
-                // if (element.checke == "on") return 1;
-                // return 0;
-            }
-            return element.value;
-
-        case "TEXTAREA":
-            // alert (element.value);
-            return element.value;
-        case "SELECT":
-            var idx = element.selectedIndex;
-            return element.options[idx].value;
-        case "LABEL":
-            return element.textContent;
-    }
+            case "TEXTAREA":
+                // alert (element.value);
+                return element.value;
+            case "SELECT":
+                var idx = element.selectedIndex;
+                return element.options[idx].value;
+            case "LABEL":
+                return element.textContent;
+            case "TD":
+                var e = element.firstElementChild;
+                if (e)
+                    return get_value(e);
+                else // text
+                    return element.innerHTML;
+        }
+    else
+        return element;
     return element.nodeValue;
 }
 

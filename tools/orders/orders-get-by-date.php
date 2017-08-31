@@ -11,16 +11,6 @@ require_once( '../im_tools.php' );
 
 $last_days = $_GET["last_days"];
 
-$link = mysql_connect( $servername, $username, $password );
-mysql_set_charset( 'utf8', $link );
-
-// Check connection
-if ( $link->connect_error ) {
-	die( "Connection failed: " . $conn->connect_error );
-}
-
-mysql_select_db( $dbname );
-
 print "<center>הזמנות מה-" . $last_days . " ימים אחרונים " . "</center>";
 
 $sql = 'SELECT posts.id, posts.post_date'
@@ -31,10 +21,10 @@ $sql = 'SELECT posts.id, posts.post_date'
 
 $result = sql_query( $sql );
 
-$fields = mysql_num_fields( $export );
+$fields = mysqli_num_fields( $result );
 
 for ( $i = 0; $i < $fields; $i ++ ) {
-	$header .= mysql_field_name( $export, $i ) . "\t";
+	$header .= $fields[ i ] . "\t";
 }
 
 $data = "<table>";
@@ -89,10 +79,10 @@ $sql = 'select '
 
 $result = sql_query( $sql );
 
-$fields = mysql_num_fields( $export );
+$fields = mysqli_num_fields( $result );
 
 for ( $i = 0; $i < $fields; $i ++ ) {
-	$header .= mysql_field_name( $export, $i ) . "\t";
+	$header .= $fields[ i ] . "\t";
 }
 
 $data = "<table>";

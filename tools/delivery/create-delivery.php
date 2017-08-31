@@ -4,7 +4,7 @@ include_once( "../orders/orders-common.php" );
 include_once( "delivery.php" );
 include_once( "../multi-site/multi-site.php" );
 
-print header_text( true );
+print header_text( false );
 
 /// If id is set -> edit. get order_id from id.
 /// Otherwise order_id should be set.
@@ -54,7 +54,7 @@ if ( $id > 0 ) {
 	print gui_header( 3, "הזמנה מספר " . get_order_id( $id ) );
 
 	$d = new Delivery( $id );
-	$d->print_delivery( ImDocumentType::delivery, true );
+	$d->print_delivery( ImDocumentType::delivery, ImDocumentOperation::edit );
 
 	//$d = new delivery( $id );
 	print "</form>";
@@ -62,9 +62,9 @@ if ( $id > 0 ) {
 } else {
 	$client_id = get_customer_id_by_order_id( $order_id );
 	print "<form name=\"delivery\" action= \"\">";
-	print gui_header( 2, "יצירת תעודת משלוח להזמנה מספר " . $order_id );
+	// print gui_header( 2, "יצירת תעודת משלוח להזמנה מספר " . $order_id, true );
 
-	print_order_info( $order_id, true );
+	print_order_info( $order_id, true, "יצירת תעודת משלוח ל" );
 	$d = delivery::CreateFromOrder( $order_id );
 	$d->print_delivery( ImDocumentType::delivery, true );
 	print "</form>";

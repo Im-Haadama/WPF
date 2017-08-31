@@ -259,14 +259,7 @@ function project_name( $id ) {
 	$sql = 'SELECT project_name FROM im_projects '
 	       . ' WHERE id = ' . $id;
 
-	$export = mysql_query( $sql ) or die ( "Sql error: " . mysql_error() . $sql );
-
-	$row = mysqli_fetch_row( $result );
-
-//        print $rate . "<br/>";
-
-
-	return $row[0];
+	return sql_query_single_scalar( $sql );
 }
 
 function add_activity( $user_id, $date, $start, $end, $project_id, $vol = true, $traveling = 0, $extra_text = "", $extra = 0 ) {

@@ -77,12 +77,17 @@ require_once( "../suppliers/gui.php" );
 </header>
 <body>
 <?php
-/**
- * Created by PhpStorm.
- * User: agla
- * Date: 14/10/16
- * Time: 05:59
- */
+if ( isset( $_GET["week"] ) ) {
+	$week = $_GET["week"];
+} else {
+	$week = date( "Y-m-d", strtotime( "last sunday" ) );
+}
+
+if ( date( 'Y-m-d' ) > date( 'Y-m-d', strtotime( $week . "+1 week" ) ) ) {
+	print gui_hyperlink( "שבוע הבא", "get_all.php?week=" . date( 'Y-m-d', strtotime( $week . " +1 week" ) ) ) . " ";
+}
+
+print gui_hyperlink( "שבוע קודם", "get_all.php?week=" . date( 'Y-m-d', strtotime( $week . " -1 week" ) ) );
 
 // Build the query
 // $sql   = "SELECT id, date, amount, delivery_fee FROM im_business_info WHERE ";

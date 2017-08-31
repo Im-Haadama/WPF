@@ -31,8 +31,8 @@ function table_line( $prod_name, $prod_id, $prod_quantity, $supplier_name, $bask
 
 	while ( $row = mysqli_fetch_row( $result ) ) {
 		$basket_id = $row[0];
-		if ( is_numeric( $basket_quantities[ $basket_id ] ) ) {
-			$quantity .= '+' . $basket_quantities[ $basket_id ];
+		if ( is_numeric( $basket_count[ $basket_id ] ) ) {
+			$quantity .= '+' . $basket_count[ $basket_id ];
 		}
 	}
 	$line = "<td> " . $prod_name .
@@ -95,7 +95,7 @@ $sql = 'select bk.product_id, wp.post_title'
 
 $basket_products = array();
 $basket_ids      = array();
-$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . "SQL = " . $sql );
+$result          = sql_query( $sql );
 
 while ( $row = mysqli_fetch_row( $result ) ) {
 	array_push( $basket_products, array( $row[0], $row[1], 0 ) );
@@ -119,7 +119,7 @@ $sql = 'select woi.order_item_name, sum(woim.meta_value), woi.order_item_id'
 
 $result = sql_query( $sql );
 
-$fields = mysql_num_fields( $export );
+$fields = mysqli_num_fields( $result );
 
 $data = "<table>";
 $data .= "<tr>";
