@@ -13,6 +13,7 @@ require_once( '../account/account.php' );
 require_once( '../business/business.php' );
 require_once( '../delivery/delivery.php' );
 
+// print header_text();
 $operation = $_GET["operation"];
 switch ( $operation ) {
 	case "add_header":
@@ -92,6 +93,7 @@ function create_delivery_header( $order_id, $total, $vat, $lines, $edit, $fee ) 
 }
 
 function add_delivery_lines( $delivery_id, $lines, $edit ) {
+	print header_text();
 	if ( $edit ) {
 		$d = new delivery( $delivery_id );
 		$d->DeleteLines();
@@ -111,8 +113,8 @@ function add_delivery_lines( $delivery_id, $lines, $edit ) {
 		$line_price = $lines[ $pos + 7 ];
 //        $product_name = get_product_name($prod_id);
 //        my_log("product_id = " . $product_id . ", supplier_id=" . $supplier_id . ", product_name=" . $product_name);
-		// print "id: " . $prod_id . ", name: " . $product_name . " delivery_id: " . $delivery_id . " quantity: " . $quantity . " quantity_ordred: " . $quantity_ordered .
-//		      " vat: " . $vat . " price: " . $price . " line_price: " . $line_price . "<br/>";
+		print "<div style=\"direction: ltr;\"> id: " . $prod_id . ", name: " . $product_name . " delivery_id: " . $delivery_id . " quantity: " . $quantity . " quantity_ordred: " . $quantity_ordered .
+		      "units: " . $unit_ordered . " vat: " . $vat . " price: " . $price . " line_price: " . $line_price . "</div>";
 		add_delivery_line( $product_name, $delivery_id, $quantity, $quantity_ordered, $unit_ordered, $vat, $price, $line_price, $prod_id );
 	}
 }

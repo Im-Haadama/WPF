@@ -44,8 +44,12 @@ function gui_checkbox( $id, $class, $value = false, $events = null ) {
 	if ( $value ) {
 		$data .= "checked ";
 	}
-	if ( strlen( $events ) > 0 ) {
-		$data .= $events;
+	if ( $events ) {
+		if ( is_array( $events ) ) {
+			$data .= implode( ",", $events );
+		} else {
+			$data .= $events;
+		}
 	}
 
 	$data .= ">";

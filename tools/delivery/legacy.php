@@ -35,6 +35,21 @@ require_once( '../gui/inputs.php' );
             xmlhttp.send();
         }
 
+        function clear() {
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                // Wait to get query result
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+                {
+                    var http_text = xmlhttp.responseText.trim();
+                    document.getElementById("logging").innerHTML = http_text;
+                }
+            }
+            var request = "delivery-post.php?operation=clear_legacy";
+            xmlhttp.open("GET", request, true);
+            xmlhttp.send();
+        }
+
     </script>
 <?php
 print header_text();
@@ -53,6 +68,8 @@ while ( $row = mysqli_fetch_row( $result ) ) {
 print "</table>";
 
 print gui_button( "btn_done", "done()", "בצע" );
+
+print gui_button( "btn_clear", "clear()", "נקה" );
 
 print '<div id="logging">';
 

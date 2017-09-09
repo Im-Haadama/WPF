@@ -101,6 +101,7 @@ if ( ! $send ) {
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
             {
                 window.history.back();
+                window.reload();
             }
         }
         xmlhttp.open("GET", request, true);

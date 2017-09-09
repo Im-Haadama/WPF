@@ -73,9 +73,10 @@ class ImDocumentType {
 }
 
 class ImDocumentOperation {
-	const create = 1,
-		show = 2,
-		edit = 3;
+	const create = 1, // From order to delivery. Expand basket
+		show = 2,     // Load from db
+		edit = 3;     // Load and edit
+
 }
 
 function print_fresh_category() {

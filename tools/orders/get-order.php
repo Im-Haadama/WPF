@@ -78,7 +78,7 @@ require_once( '../delivery/delivery.php' );
 <body>
 
 <?php
-print header_text( true );
+// print header_text( true );
 $siton = false;
 
 if ( isset( $_GET["siton"] ) ) {

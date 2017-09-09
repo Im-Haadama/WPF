@@ -5,9 +5,11 @@
  * Date: 16/07/15
  * Time: 21:42
  */
-define( '__ROOT__', dirname( dirname( __FILE__ ) ) );
-require( __ROOT__ . "/config.php" );
-require( __ROOT__ . "/wp-load.php" );
+if ( ! defined( STORE_DIR ) ) {
+	define( 'STORE_DIR', dirname( dirname( __FILE__ ) ) );
+}
+require( STORE_DIR . "/im-config.php" );
+require( STORE_DIR . "/wp-load.php" );
 require( "sql.php" );
 require( "wp.php" );
 require( "vat.php" );
@@ -26,7 +28,7 @@ if ( $conn->connect_error ) {
 
 // Logging
 function my_log( $msg, $title = '' ) {
-	$error_file = __ROOT__ . '/logs/php_error.log';
+	$error_file = STORE_DIR . '/logs/php_error.log';
 //    print $error_file;
 	$date = date( 'd.m.Y h:i:s' );
 	$msg  = print_r( $msg, true );
@@ -35,7 +37,7 @@ function my_log( $msg, $title = '' ) {
 }
 
 function uptime_log( $msg, $title = '' ) {
-	$error_file = __ROOT__ . '/logs/uptime.log';
+	$error_file = STORE_DIR . '/logs/uptime.log';
 	$date       = date( 'd.m.Y h:i:s' );
 	$msg        = print_r( $msg, true );
 	$log        = $date . ": " . $title . "  |  " . $msg . "\n";
@@ -187,7 +189,7 @@ function client_price( $prod_id ) {
 }
 
 function siton_price( $prod_id ) {
-	$price = client_price( $prod_id );
+	// $price = client_price( $prod_id );
 	// my_log (__FILE__, "prod id = " . $prod_id . " price = " . $price);
 
 //    $supplier = get_postmeta_field($prod_id, 'supplier_name');
@@ -252,6 +254,67 @@ function get_basket_date( $basket_id ) {
 
 	return substr( $row, 0, 10 );
 }
+
+//function show_trans( $customer_id, $from_last_zero = false ) {
+//	$sql = 'select date, transaction_amount, transaction_method, transaction_ref, id '
+//	       . ' from im_client_accounts where client_id = ' . $customer_id . ' order by date desc ';
+//
+//	$result = sql_query( $sql );
+//
+//	$data = "<table id='transactions_table' border=\"1\" ><tr><td>בחר</td><td>תאריך</td><td>סכום</td><td>מע\"ם</td><td>יתרה</td><td>פעולה</td>" .
+//	        "<td>תעודת משלוח</td><td>מס הזמנה</td></tr>";
+//
+//	global $total;
+//
+//	while ( $row = mysqli_fetch_row( $result ) ) {
+//		$line   = "<tr class=\"color2\">";
+//		$date   = $row[0];
+//		$amount = round($row[1], 2);
+//		$total  += $amount;
+//		$type   = $row[2];
+//		$doc_id = $row[3];
+//		$vat    = get_delivery_vat( $doc_id );
+//
+//		// <input id=\"chk" . $doc_id . "\" class=\"trans_checkbox\" type=\"checkbox\">
+//		$line    .= "<td>" . gui_checkbox( "chk" . $doc_id, "trans_checkbox", "", "onchange=\"update_sum()\"" ) . "</td>";
+//		$line    .= "<td>" . $date . "</td>";
+//		$line    .= "<td>" . $amount . "</td>";
+//		$line    .= "<td>" . $vat . "</td>";
+//		$balance = balance( $date, $customer_id );
+//		$line    .= "<td>" . $balance . "</td>";
+//		$line    .= "<td>" . $type . "</td>";
+//
+//		$delivery_id = $doc_id;
+//
+//		// Display item name
+//		if ( $type == "משלוח" ) {
+//			$line     .= "<td><a href=\"../delivery/get-delivery.php?id=" . $doc_id . "\">" . $doc_id . '</a></td>';
+//			$order_id = get_order_id( $doc_id );
+//			$line     .= "<td>" . $order_id . "</td>";
+//			if ( is_numeric( $order_id ) ) {
+//				$line .= "<td>" . order_info( $order_id, '_shipping_first_name' ) . "</td>";
+//			} else {
+//				$line .= "<td></td>";
+//			}
+//		} else {
+//			$line .= "<td>" . $doc_id . "</td><td></td><td></td>";
+//		}
+//		$line .= "</tr>";
+//
+//		$data .= trim( $line );
+//		if ( $from_last_zero and abs( $balance ) < 2 ) {
+//			break;
+//		}
+//	}
+//
+//	$data = str_replace( "\r", "", $data );
+//
+//	$data .= "</table>";
+//
+//	$total = round( $total, 2 );
+//
+//	return $data;
+//}
 
 function get_basket_content( $basket_id ) {
 	// t ;

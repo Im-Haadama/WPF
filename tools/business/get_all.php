@@ -1,6 +1,6 @@
 <?php
 require_once( '../im_tools.php' );
-require_once( '../header.php' );
+//require_once( '../header.php' );
 require_once( "../gui/inputs.php" );
 require_once( "../delivery/delivery.php" );
 require_once( "../suppliers/gui.php" );
@@ -91,7 +91,7 @@ print gui_hyperlink( "שבוע קודם", "get_all.php?week=" . date( 'Y-m-d', s
 
 // Build the query
 // $sql   = "SELECT id, date, amount, delivery_fee FROM im_business_info WHERE ";
-$sql = "SELECT id, part_id, date, week, amount, ref +0, delivery_fee FROM im_business_info WHERE ";
+$sql = "SELECT id, client_displayname(part_id), date, week, amount, ref +0, delivery_fee FROM im_business_info WHERE ";
 
 $query   = " is_active = 1 ";
 $new_url = "get_all.php?";
@@ -123,6 +123,7 @@ print_col( "שבוע", $key ++ );
 print_col( "סכום", $key ++ );
 print_col( "תעודת משלוח", $key ++ );
 print_col( "דמי משלוח", $key ++ );
+print_col( "הזמנה", $key ++ );
 print "</tr>";
 
 //$sql = "SELECT id" .
@@ -163,21 +164,21 @@ function print_col( $hdr, $key = null ) {
 	}
 }
 
-function get_name( $id ) {
-	$sql = "SELECT display_name FROM wp_users WHERE id = " . $id .
-	       " UNION SELECT supplier_name FROM im_suppliers WHERE id = " . $id;
-
-	return sql_query_single_scalar( $sql );
-}
+//function get_name( $id ) {
+//	$sql = "SELECT display_name FROM wp_users WHERE id = " . $id .
+//	       " UNION SELECT supplier_name FROM im_suppliers WHERE id = " . $id;
+//
+//	return sql_query_single_scalar( $sql );
+//}
 
 // From here created by coder.old.php
-function delete_business( $id ) {
-	$sql = "delete from im_business_info where id = $id";
-	sql_query( $sql );
-}
+//function delete_business( $id ) {
+//	$sql = "delete from im_business_info where id = $id";
+//	sql_query( $sql );
+//}
 
 function print_business( $id, $horizontal, $seq ) {
-	$sql = "select id, part_id, date, week, amount, ref, delivery_fee from im_business_info where id = $id";
+	$sql = "select id, client_displayname(part_id), date, week, amount, ref, delivery_fee, order_from_delivery(id), delivery_get_vat(ref) from im_business_info where id = $id";
 	$row = sql_query_single( $sql );
 	if ( ! $horizontal ) {
 		print "<table>";
@@ -213,7 +214,7 @@ function print_business( $id, $horizontal, $seq ) {
 	print "<td>";
 	print "<a href=\"get_all.php?part_id=" . urlencode( $row[1] );
 	print "\">";
-	print get_name( $row[1] );
+	print $row[1];
 	print "</a>";
 	print "</td>";
 	if ( ! $horizontal ) {
@@ -304,6 +305,40 @@ function print_business( $id, $horizontal, $seq ) {
 	if ( ! $horizontal ) {
 		print "</tr>";
 	}
+
+	if ( ! $horizontal ) {
+		print "<tr>";
+	}
+	if ( ! $horizontal ) {
+		print "<td>";
+		print "order_id";
+		print "</td>";
+	}
+	print "<td>";
+	print "<a href=\"../orders/get-order.php?order_id=" . $row[7];
+	print "\">";
+	print $row[7];
+	print "</a>";
+	print "</td>";
+	if ( ! $horizontal ) {
+		print "</tr>";
+	}
+
+	if ( ! $horizontal ) {
+		print "<tr>";
+	}
+	if ( ! $horizontal ) {
+		print "<td>";
+		print "order_id";
+		print "</td>";
+	}
+	print "<td>";
+	print $row[8];
+	print "</td>";
+	if ( ! $horizontal ) {
+		print "</tr>";
+	}
+
 	if ( $horizontal ) {
 		print "</tr>";
 	}

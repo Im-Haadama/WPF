@@ -6,7 +6,11 @@
  * Time: 18:11
  */
 
-require_once( '../tools_wp_login.php' );
+if ( ! defined( TOOLS_DIR ) ) {
+	define( TOOLS_DIR, dirname( __FILE__ ) );
+}
+
+require_once( TOOLS_DIR . '/im_tools.php' );
 
 $operation = $_GET["operation"];
 

@@ -74,6 +74,7 @@ class PriceList {
 		$data .= "<td>פריט מקושר</td>";
 		$data .= "<td>מחיר מכירה</td>";
 		$data .= "<td>מחיר מבצע</td>";
+		$data .= "<td>קטגוריות</td>";
 		$data .= "<td>מזהה</td>";
 		$data .= "</tr>";
 
@@ -121,7 +122,7 @@ class PriceList {
 		return $row[0];
 	}
 
-	function AddOrUpdate( $regular_price, $sale_price, $product_name, $code = 10, &$id, $parent_id = null ) {
+	function AddOrUpdate( $regular_price, $sale_price, $product_name, $code = 10, $category, &$id, $parent_id = null ) {
 		global $debug;
 		my_log( __METHOD__, __FILE__ );
 		if ( mb_strlen( $product_name ) > 40 ) {
@@ -135,7 +136,7 @@ class PriceList {
 
 			return UpdateResult::UsageError;
 		}
-//        print "Add: " . $product_name . ", " . $price . "<br/>";
+		print "Add: " . $product_name . ", " . $regular_price . " " . $category . "<br/>";
 		global $conn;
 
 		// Change if line exits.
@@ -163,8 +164,13 @@ class PriceList {
 			$old_price = $this->Get( $id )["price"];
 			$sql       = "update im_supplier_price_list " .
 			             " set line_status = 1, price = " . $regular_price . ", sale_price = " . $sale_price .
-			             ", date = '" . $date . "' " .
-			             " where product_name = '" . $product_name . "' and supplier_id = " . $this->SupplierID;
+			             ", date = '" . $date . "' ";
+
+			if ( isset( $category ) ) {
+				$sql .= ", category = '" . $category . "'";
+			}
+
+			$sql .= " where product_name = '" . $product_name . "' and supplier_id = " . $this->SupplierID;
 
 			// print "<br/>"  . $product_name . "<br/>";
 			// print "<p dir='ltr'>"  . $sql . "</p>";
@@ -203,15 +209,31 @@ class PriceList {
 			if ( $parent_id > 0 ) {
 				// Variation
 				$sql = "INSERT INTO im_supplier_price_list (product_name, supplier_id, "
-				       . "date, price, sale_price, supplier_product_code, line_status, variation, parent_id ) " .
-				       "VALUES ('" . addslashes( $product_name ) . "', " . $this->SupplierID .
-				       ", " . "'" . $date . "', " . $regular_price . ", " . $sale_price . ", " . $code . ", 1, TRUE, " . $parent_id . ")";
+				       . "date, price, sale_price, supplier_product_code, line_status, variation, parent_id";
+				if ( isset( $category ) ) {
+					$sql .= ", category ";
+				}
+				$sql .= ") VALUES ('" . addslashes( $product_name ) . "', " . $this->SupplierID .
+				        ", " . "'" . $date . "', " . $regular_price . ", " . $sale_price . ", " . $code . ", 1, TRUE " . $parent_id;
+				if ( isset( $category ) ) {
+					$sql .= ", '" . $category . "'";
+				}
+				$sql .= ")";
 			} else {
 				// Product
 				$sql = "INSERT INTO im_supplier_price_list (product_name, supplier_id, "
-				       . "date, price, sale_price, supplier_product_code, line_status, variation ) " .
-				       "VALUES ('" . addslashes( $product_name ) . "', " . $this->SupplierID .
-				       ", " . "'" . $date . "', " . $regular_price . ", " . $sale_price . ", " . $code . ", 1, FALSE )";
+				       . "date, price, sale_price, supplier_product_code, line_status, variation";
+				if ( isset( $category ) ) {
+					$sql .= ", category ";
+				}
+
+				$sql .= ") VALUES ('" . addslashes( $product_name ) . "', " . $this->SupplierID .
+				        ", " . "'" . $date . "', " . $regular_price . ", " . $sale_price . ", " . $code . ", 1, FALSE";
+				if ( isset( $category ) ) {
+					$sql .= ", '" . $category . "'";
+				}
+				$sql .= ")";
+
 			}
 
 //	        print "<p dir=ltr>" . $sql . "</p>";
@@ -590,6 +612,8 @@ function print_html_line( $product_name, $price, $date, $pl_id, $supplier_produc
 			$line .= "<td></td><td></td><td></td>";
 		}
 	}
+	$category = sql_query_single_scalar( "SELECT category FROM im_supplier_price_list WHERE id = " . $pl_id );
+	$line     .= gui_cell( $category);
 	$line .= gui_cell( $linked_prod_id );
 	$line .= gui_cell( $map_id );
 	$line .= "</tr>";

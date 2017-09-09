@@ -6,10 +6,20 @@
  * Time: 07:58
  */
 
-require_once( '../tools_wp_login.php' );
-require_once( __ROOT__ . '/tools/orders/orders-common.php' );
-require_once( '../business/business.php' );
-require_once( '../gui/inputs.php' );
+if ( ! defined( TOOLS_DIR ) ) {
+	define( TOOLS_DIR, dirname( dirname( __FILE__ ) ) );
+}
+
+require_once( TOOLS_DIR . '/im_tools.php' );
+require_once( STORE_DIR . '/tools/orders/orders-common.php' );
+require_once( TOOLS_DIR . '/business/business.php' );
+require_once( TOOLS_DIR . '/gui/inputs.php' );
+
+#############################
+# legacy_users              #
+# 1) Classical store client #
+# 2) Chef clients           #
+#############################
 
 function get_rate( $user_id, $project_id ) {
 	global $conn;
@@ -81,7 +91,7 @@ function balance( $date, $client_id ) {
 
 }
 
-function show_trans( $customer_id, $from_last_zero = false ) {
+function show_trans( $customer_id, $from_last_zero = false, $checkbox = true ) {
 	$sql = 'select date, transaction_amount, transaction_method, transaction_ref, id '
 	       . ' from im_client_accounts where client_id = ' . $customer_id . ' order by date desc ';
 
@@ -95,14 +105,15 @@ function show_trans( $customer_id, $from_last_zero = false ) {
 	while ( $row = mysqli_fetch_row( $result ) ) {
 		$line   = "<tr class=\"color2\">";
 		$date   = $row[0];
-		$amount = $row[1];
+		$amount = round( $row[1], 2);
 		$total  += $amount;
 		$type   = $row[2];
 		$doc_id = $row[3];
 		$vat    = get_delivery_vat( $doc_id );
 
 		// <input id=\"chk" . $doc_id . "\" class=\"trans_checkbox\" type=\"checkbox\">
-		$line    .= "<td>" . gui_checkbox( "chk" . $doc_id, "trans_checkbox", "", "onchange=\"update_sum()\"" ) . "</td>";
+		if ( $checkbox )
+			$line .= "<td>" . gui_checkbox( "chk" . $doc_id, "trans_checkbox", "", "onchange=\"update_sum()\"" ) . "</td>";
 		$line    .= "<td>" . $date . "</td>";
 		$line    .= "<td>" . $amount . "</td>";
 		$line    .= "<td>" . $vat . "</td>";
@@ -173,3 +184,26 @@ function get_payment_method( $client_id ) {
 	return sql_query_single_scalar( "SELECT id FROM im_payments WHERE `default` = 1" );
 }
 
+function im_set_default_display_name( $user_id ) {
+	// $user = get_userdata( $user_id );
+	$user = get_user_by( "id", $user_id );
+
+	$name = $user->user_firstname . " " . $user->user_lastname;;
+	// print $user_id . " " . $name;
+	if ( strlen( $name ) < 3 ) {
+		$name = get_user_meta( $user_id, 'billing_first_name', true ) . " " .
+		        get_user_meta( $user_id, 'billing_last_name', true );
+		// print "user meta name " . $name;
+
+	}
+	$args = array(
+		'ID'           => $user_id,
+		'display_name' => $name,
+		'nickname'     => $name
+	);
+
+	// print "<br/>";
+	if ( strlen( $name ) > 3 ) {
+		wp_update_user( $args );
+	}
+}

@@ -26,6 +26,10 @@ switch ( $operation ) {
 //		var_dump($ids);
 		save_legacy( $ids );
 		break;
+
+	case "clear_legacy":
+		clear_legacy();
+		break;
 }
 
 
@@ -48,5 +52,15 @@ function save_legacy( $ids ) {
 			print mysqli_error( $conn ) . " " . $sql;
 			die ( 1 );
 		}
+	}
+}
+
+function clear_legacy() {
+	global $conn;
+	$sql    = "UPDATE im_delivery_legacy SET status = 2 WHERE status = 1";
+	$result = mysqli_query( $conn, $sql );
+	if ( ! $result ) {
+		print mysqli_error( $conn ) . " " . $sql;
+		die ( 1 );
 	}
 }

@@ -31,7 +31,12 @@ if ( $id > 0 ) {
             var current = document.getElementsByName("quantity" + (my_row));
             current[0].value = Math.round(current[0].value * 10) / 10;
             var objs = document.getElementsByName("quantity" + (my_row + 1));
+            calcDelivery();
             if (objs[0]) objs[0].focus();
+            else {
+                var del = document.getElementById("delivery");
+                if (del) del.focus();
+            }
         }
     }
 
@@ -54,10 +59,13 @@ if ( $id > 0 ) {
         row.insertCell(-1).innerHTML = "0";                       // 2 - quantity ordered
         row.insertCell(-1).innerHTML = "";                        // 3 - unit ordered
         row.insertCell(-1).innerHTML = "<input id=\"prc_" + line_id + "\" type=\"text\">";   // 5 - price
+        row.insertCell(-1).innerHTML = ""; // order total
         row.insertCell(-1).innerHTML = "<input id=\"deq_" + line_id + "\" type=\"text\">";   // 4 - supplied
         row.insertCell(-1).innerHTML = "<input id=\"hvt_" + line_id + "\"  type = \"checkbox\" checked>"; // 6 - has vat
         row.insertCell(-1).id = "lvt_" + line_id;                       // 7 - line vat
         row.insertCell(-1).id = "del_" + line_id;   // 8 - total_line
+
+        calcDelivery();
 //        row.insertCell(9).style.visibility = false;              // 9 - categ
 //        row.insertCell(10).style.visibility = false;              // 10 - refund q
 //        row.insertCell(11).style.visibility = false;              // 11 - refund total
@@ -152,11 +160,16 @@ if ( $id > 0 ) {
                     if (prod_name.length > 1) prod_name = prod_name.replace(/['"()%,]/g, "").substr(0, 20);
 
                     var quantity = get_value(document.getElementById("deq_" + prfx));
+                    if (quantity === "") quantity = 0;
+
                     var quantity_ordered = get_value(document.getElementById("orq_" + prfx));
+                    if (quantity_ordered === "") quantity_ordered = 0;
+
                     var unit_ordered = get_value(document.getElementById("oru_" + prfx));
-                    if (quantity == "") quantity = 0;
+                    if (unit_ordered.length < 1) unit_ordered = 0;
+
                     var price = get_value(document.getElementById("prc_" + prfx));
-                    var vat = get_value(document.getElementById("hvt_" + prfx));
+                    var vat = get_value(document.getElementById("lvt_" + prfx));
                     // var prod_name = get_value(table.rows[i].cells[product_name_id].firstChild);
                     var line_total = get_value(document.getElementById("del_" + prfx));
 //                    if (table.rows[i].cells[0].children.length === 1) { // delivery lines or new line
@@ -171,10 +184,9 @@ if ( $id > 0 ) {
 //                        line_total = get_value(table.rows[i].cells[line_total_id].firstChild);
 //                    }
 
-                    if (quantity_ordered === "") quantity_ordered = 0;
                     if (prod_id > 0 || line_total > 0 || line_total < 0) {
                         push(line_args, prod_id);
-                        push(line_args, encodeURI(prod_name));
+                        push(line_args, encodeURIComponent(prod_name));
                         push(line_args, quantity);
                         push(line_args, quantity_ordered);
                         push(line_args, unit_ordered);
@@ -246,23 +258,21 @@ if ( $id > 0 ) {
 
         for (var i = 1; i < lines; i++)  // Skip the header. Skip last lines: total, vat, total-vat, discount
         {
-            if (table.rows[i].cells[product_name_id].innerHTML == "סה\"כ חייבי מע\"מ") break;
-            if (table.rows[i].cells[product_name_id].innerHTML == "" ||
-                table.rows[i].cells[product_name_id].innerHTML == "הנחת כמות") continue; // Reserved line for discount
-            if (table.rows[i].cells[product_name_id].innerHTML == "הנחת סל") {
+            if (table.rows[i].cells[0].id.substr(4, 3) == "bsk") {
                 // Sum upper lines and compare to basket price
                 var j = i - 1;
                 var sum = 0;
                 while (table.rows[j].cells[product_name_id].innerHTML.substr(0, 3) == "===") {
-                    sum = sum + Number(table.rows[j].cells[line_total_id].innerHTML);
+                    sum = sum + Number(document.getElementById("del_" + j).innerHTML);
                     j = j - 1;
                 }
-                var basket_total = Number(table.rows[j].cells[q_quantity_ordered_id].innerHTML) * Number(table.rows[j].cells[price_id].innerHTML);
+                var basket_total = Number(get_value(document.getElementById("orq_" + j))) * Number(get_value(document.getElementById("prc_" + j)));
                 if (sum > basket_total) {
                     diff = Math.round(100 * (basket_total - sum), 2) / 100;
                     table.rows[i].cells[q_supply_id].innerHTML = 1;
                     table.rows[i].cells[line_total_id].innerHTML = diff;
                     table.rows[i].cells[price_id].innerHTML = diff;
+                    table.rows[i].cells[line_vat_id].innerHTML = 0;
                     total += diff;
                 } else {
                     table.rows[i].cells[q_supply_id].innerHTML = '';
@@ -272,6 +282,10 @@ if ( $id > 0 ) {
 
                 continue;
             }
+            if (table.rows[i].cells[product_name_id].innerHTML == "סה\"כ חייבי מע\"מ") break;
+            if (table.rows[i].cells[product_name_id].innerHTML == "" ||
+                table.rows[i].cells[product_name_id].innerHTML == "הנחת כמות") continue; // Reserved line for discount
+
             var q = 0;
             var p = 0;
             var line_total = 0;

@@ -19,7 +19,7 @@ if ( ! empty( $user->roles ) && is_array( $user->roles ) ) {
 		}
 	}
 }
-if ( $manager ) {
+if ( $manager and isset( $_GET["customer_id"] ) ) {
 	print header_text( true );
 	$customer_id = $_GET["customer_id"];
 	// print "id: " . $customer_id;
@@ -27,7 +27,6 @@ if ( $manager ) {
 } else {
 	$customer_id = $user_ID;
 }
-
 
 if ( ! $manager ) {
 	require_once( "../header.php" );
@@ -104,7 +103,7 @@ if ( ! $manager ) {
                 xmlhttp1.send();
                 disable_btn("btn_invoice");
                 disable_btn("btn_receipt");
-                disable_btn("btn_refund");
+                // disable_btn("btn_refund");
             } else {
                 document.getElementById("payment_table").style.visibility = "hidden";
                 document.getElementById("btn_invoice").style.visibility = "hidden";
@@ -324,7 +323,7 @@ if ( $manager ) {
         for (var i = 0; i < collection.length; i++) {
             if (collection[i].checked) {
                 delivery_count++;
-                total += parseFloat(get_value(table.rows[i + 1].cells[2].firstChild));
+                total += parseFloat(get_value(table.rows[i + 1].cells[2]));
 
             }
         }
@@ -335,7 +334,7 @@ if ( $manager ) {
 
             document.getElementById('btn_invoice').disabled = true;
             document.getElementById('btn_receipt').disabled = true;
-            document.getElementById('btn_refund').disabled = true;
+            //document.getElementById('btn_refund').disabled = true;
         } else {
             logging.innerHTML = "סכום השורות שנבחר " + total + "<br/>";
             logging.innerHTML += " סך תקבולים " + (credit + bank + cash + check) + "<br/>";
@@ -350,7 +349,7 @@ if ( $manager ) {
                 document.getElementById('btn_invoice').disabled = false;
                 document.getElementById('btn_receipt').disabled = true;
             }
-            document.getElementById('btn_refund').disabled = (delivery_count != 1);
+            // document.getElementById('btn_refund').disabled = (delivery_count != 1);
         }
     }
     //קבלה

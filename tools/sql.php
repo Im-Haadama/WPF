@@ -89,5 +89,5 @@ function sql_error( $sql ) {
 		print "called from " . $debug[ $i ]["function"] . "<br/>";
 	}
 	my_log( $message );
-	print $message . "<br/>";
+	print "<div style=\"direction: ltr;\">" . $message . "</div>";
 }

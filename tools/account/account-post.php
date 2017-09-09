@@ -62,7 +62,9 @@ switch ( $operation ) {
 		if ( is_numeric( $doc_id ) && $doc_id > 0 ) {
 			$pay_description = $pay_type . " " . $_GET["ids"];
 			account_add_transaction( $user_id, date( "Y-m-d" ), $change - ( $cash + $bank + $credit + $check ), $doc_id, $pay_description );
-			account_add_transaction( $user_id, date( "Y-m-d" ), - $change, $doc_id, $change > 0 ? "עודף" : "חוסר/ניצול יתרה" );
+			if ( abs( $change ) > 0 ) {
+				account_add_transaction( $user_id, date( "Y-m-d" ), - $change, $doc_id, $change > 0 ? "עודף" : "חוסר/ניצול יתרה" );
+			}
 			print "חשבונית מס קבלה מספר " . $doc_id . "נוצרה!" . "<br/>";
 		} else {
 			print "doc_id: " . $doc_id . "<br/>";
@@ -156,7 +158,10 @@ function add_im_user( $user, $name, $email, $address, $city, $phone, $zip ) {
 	update_user_meta( $id, 'shipping_address_1', $address );
 	update_user_meta( $id, 'shipping_postcode', $zip );
 	update_user_meta( $id, 'shipping_city', $city );
-	update_user_meta( $id, 'legacy_user', 1 );
+	update_user_meta( $id, 'legacy_user', 2 );
+
+	im_set_default_display_name( $id);
+
 }
 
 function randomPassword() {
@@ -233,6 +238,9 @@ function send_month_summary( $user_ids ) {
 }
 
 function invoice_create_user( $user_id ) {
+	// First change wordpress display name
+	im_set_default_display_name( $user_id);
+
 	$invoice = new Invoice4u();
 	$invoice->Login();
 

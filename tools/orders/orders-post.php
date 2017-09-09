@@ -67,6 +67,16 @@ switch ( $operation ) {
 		order_delete_lines( $params );
 		break;
 
+	case "start_handle":
+		$ids = $_GET["ids"];
+		order_change_status( explode( ",", $ids ), "wc-processing" );
+		break;
+
+	case "delivered":
+		$ids = $_GET["ids"];
+		order_change_status( explode( ",", $ids ), "wc-completed" );
+		break;
+
 	default:
 		// die("operation " . $operation . " not handled<br/>");
 

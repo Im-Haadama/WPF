@@ -188,10 +188,12 @@ function pricelist_process( $filename, $supplier_id, $add ) {
 	$name_idx            = Array();
 	$price_idx           = Array();
 	$detail_idx          = Array();
+	$category_idx        = Array();
 	$parse_header_result = false;
 	$inventory_idx       = 0;
 	for ( $i = 0; ! $parse_header_result and ( $i < 4 ); $i ++ ) {
-		$parse_header_result = parse_header( $file, $item_code_idx, $name_idx, $price_idx, $inventory_idx, $detail_idx );
+		$parse_header_result = parse_header( $file, $item_code_idx, $name_idx, $price_idx, $inventory_idx, $detail_idx,
+			$category_idx );
 	}
 
 	if ( ! $parse_header_result ) {
@@ -212,6 +214,7 @@ function pricelist_process( $filename, $supplier_id, $add ) {
 	$results = array();
 
 	$item_count = 0;
+	$category   = null;
 	while ( ( $data = fgetcsv( $file ) ) !== false ) {
 		if ( $data ) {
 			for ( $col = 0; $col < count( $price_idx ); $col ++ ) {
@@ -220,6 +223,10 @@ function pricelist_process( $filename, $supplier_id, $add ) {
 				$name      = $data[ $name_idx[ $col ] ];
 				$detail    = $data[ $detail_idx[ $col ] ];
 				$detail    = rtrim( $detail, "!" );
+				if ( isset( $category_idx[ $col ] ) ) {
+					$category = $data[ $category_idx[ $col ] ];
+					// print $category . "<br/>";
+				}
 				if ( $detail == "מוגבל מאוד" or $detail == "מוגבל מאד" ) {
 					continue;
 				}
@@ -236,7 +243,7 @@ function pricelist_process( $filename, $supplier_id, $add ) {
 					$item_code = $data[ $item_code_idx[ $col ] ];
 				}
 				if ( $price > 0 ) {
-					$result = handle_line( $price, "", $name . " " . $detail, $item_code, $PL, false, $id );
+					$result = handle_line( $price, "", $name . " " . $detail, $item_code, $category, $PL, false, $id, $category );
 					switch ( $result ) {
 						case UpdateResult::UsageError:
 						case UpdateResult::SQLError:
@@ -270,7 +277,7 @@ function pricelist_process( $filename, $supplier_id, $add ) {
 	return true;
 }
 
-function parse_header( $file, &$item_code_idx, &$name_idx, &$price_idx, &$inventory_idx, &$detail_idx ) {
+function parse_header( $file, &$item_code_idx, &$name_idx, &$price_idx, &$inventory_idx, &$detail_idx, &$category_idx ) {
 	$header = fgetcsv( $file );
 
 //    print "header size: " . count($header) ."<br/>";
@@ -284,6 +291,9 @@ function parse_header( $file, &$item_code_idx, &$name_idx, &$price_idx, &$invent
 			case 'פריט':
 			case 'קוד פריט':
 				array_push( $item_code_idx, $i );
+				break;
+			case 'קטגוריות':
+				array_push( $category_idx, $i );
 				break;
 			case 'הירק':
 			case 'סוג קמח':
@@ -337,13 +347,13 @@ function print_items( $title, $list ) {
 }
 
 // Variation are saved with reference to parent.
-function handle_line( $price, $sale_price, $name, $item_code, $PL, $has_variations, &$id, $parent_id = null ) {
+function handle_line( $price, $sale_price, $name, $item_code, $category, $PL, $has_variations, &$id, $parent_id = null ) {
 	$name = pricelist_strip_product_name( $name );
 	$id   = 0;
 	// Check if we have a price.
 	// Product with variations doesn't need a price
 	if ( $price > 0 or $has_variations ) {
-		return $PL->AddOrUpdate( $price, $sale_price, $name, $item_code, $id, $parent_id );
+		return $PL->AddOrUpdate( $price, $sale_price, $name, $item_code, $category, $id, $parent_id );
 	}
 //    else
 //        print "price: " . $price . "<br/>";

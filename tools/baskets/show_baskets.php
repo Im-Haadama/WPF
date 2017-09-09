@@ -81,11 +81,11 @@ print "שבוע טוב! " . "<br/>";
 print "החלוקה, כרגיל, ביום שלישי." . "<br/>";
 print "סלים שפע אורגני לבחירתכם השבוע:" . "<br/>";
 
-print get_product_name( 35 ) . ": " . get_basket_content( 35 );
+print get_product_name( 36 ) . ": " . get_basket_content( 36 );
 print "<br/>";
-print get_product_name( 2201 ) . ": " . get_basket_content( 2201 );
-print "<br/>";
-print get_product_name( 711 ) . ": " . get_basket_content( 711 );
+//print get_product_name( 2201 ) . ": " . get_basket_content( 2201 );
+//print "<br/>";
+//print get_product_name( 711 ) . ": " . get_basket_content( 711 );
 
 print "<br/>";
 print "ניתן לבצע עד שתי החלפות בסל או להרכיב סל משלכם מהשפע שקיים באתר!" . "<br/>";

@@ -6,7 +6,7 @@
  * Time: 08:00
  */
 
-require_once( "../im_tools.php" );
+// require_once( "../im_tools.php" );
 // BAD: print header_text();
 // require_once("../tools_wp_login.php");
 function orders_item_count( $item_id ) {
@@ -178,6 +178,12 @@ function order_delete_lines( $lines ) {
 
 }
 
+function order_change_status( $ids, $status ) {
+	foreach ( $ids as $id ) {
+		$order = new WC_Order( $id );
+		$order->update_status( $status );
+	}
+}
 function order_add_product( $order, $product_id, $quantity, $replace = false, $client_id = - 1, $unit = null ) {
 	// If it's a new order we need to get the client_id. Otherwise get it from the order.
 	if ( $client_id == - 1 ) {
@@ -536,8 +542,7 @@ function add_products( $prod_key, $qty, &$needed_products ) {
 				$unit_key = 1;
 				break;
 			default:
-				print "error: new unit - " . $unit_str;
-				die( 1);
+				print "error: new unit ignored - " . $unit_str;
 		}
 //		if (strlen($unit)){
 //			if (is_null($needed_products[$prod_key])) $needed_products[$prod_or_var] = array();
@@ -655,4 +660,128 @@ function set_order_itemmeta( $order_item_id, $meta_key, $meta_value ) {
 
 		sql_query( $sql );
 	}
+}
+
+function orders_table( $statuses ) {
+	global $conn;
+//	LIKE 'wc-processing%' or post_status LIKE 'wc-on-hold%' order by 1";
+
+	$status_names = wc_get_order_statuses();
+	// var_dump($status_names);
+	$all_tables = "";
+	if ( ! is_array( $statuses ) ) {
+		$statuses = array( $statuses );
+	}
+	foreach ( $statuses as $status ) {
+		// print $status . "<br/>";
+
+		$data = gui_header( 2, $status_names[ $status ] );
+
+		$sql = 'SELECT posts.id'
+		       . ' FROM `wp_posts` posts'
+		       . " WHERE post_status = '" . $status . "'" .
+		       " order by 1";
+
+		// print $sql;
+		$result = mysqli_query( $conn, $sql );
+
+		$data                  .= "<table id='" . $status . "'>";
+		$data                  .= "<tr>";
+		$data                  .= gui_cell( gui_checkbox( "chk_all", "", "",
+			array( "onchange=select_orders('" . $status . "')" ) ) );
+		$data                  .= gui_cell( gui_bold( "אזור" ) );
+		$data                  .= "<td><h3>מספר </br> הזמנה</h3></td>";
+		$data                  .= "<td><h3>שם המזמין</h3></td>";
+		$data                  .= "<td><h3>עבור</h3></td>";
+		$data                  .= "<td><h3>סכום</h3></td>";
+		$data                  .= "</tr>";
+		$count                 = 0;
+		$total_delivery_total  = 0;
+		$total_order_total     = 0;
+		$total_order_delivered = 0;
+		$total_delivery_fee    = 0;
+		$lines                 = array();
+
+		if ( ! $result ) {
+			continue;
+		}
+
+		$count = 0;
+		while ( $row = mysqli_fetch_row( $result ) ) {
+			$order_id    = $row[0];
+			$row_text    = gui_cell( gui_checkbox( "chk_" . $order_id, "select_order" ) );
+			$customer_id = get_postmeta_field( $order_id, '_customer_user' );
+
+			// display order_id with link to display it.
+			$count ++;
+			// 1) order ID with link to the order
+			$zone = order_get_zone( $order_id );
+			// print $order_id. " ". $zone . "<br/>";
+			$row_text .= gui_cell( zone_get_name( $zone ) );
+			$row_text .= "<td><a href=\"get-order.php?order_id=" . $order_id . "\">" . $order_id . "</a></td>";
+
+			// 2) Customer name with link to his deliveries
+			$row_text .= "<td><a href=\"../account/get-customer-account.php?customer_id=" . $customer_id . "\">" .
+
+			             get_customer_by_order_id( $order_id ) . "</a></td>";
+
+			$row_text .= "<td>" . get_postmeta_field( $order_id, '_shipping_first_name' ) . ' ' .
+			             get_postmeta_field( $order_id, '_shipping_last_name' ) . "</td>";
+
+			// 3) Order total
+			$order_total       = get_postmeta_field( $order_id, '_order_total' );
+			$row_text          .= "<td>" . $order_total . '</td>';
+			$total_order_total += $order_total;
+
+			// 4) Delivery note
+			$delivery_id = get_delivery_id( $order_id );
+//    print "order: " . $order_id . "<br/>" . " del: " . $delivery_id . "<br/>";
+			if ( $delivery_id > 0 ) {
+				$delivery = new Delivery( $delivery_id );
+				$row_text .= "<td><a href=\"..\delivery\get-delivery.php?id=" . $delivery_id . "\"</a>" . $delivery_id . "</td>";
+//        $total_amount = get_delivery_total($delivery_id[0]);
+//        $row_text .= "<td>" . $total_amount . "</td>";
+				if ( $delivery_id > 0 ) {
+					$row_text .= "<td>" . $delivery->Price() . "</td>";
+					$row_text .= "<td>" . $delivery->DeliveryFee() . "</td>";
+					$percent  = "";
+					if ( ( $order_total - $delivery->DeliveryFee() ) > 0 ) {
+						$percent = round( 100 * ( $delivery->Price() - $delivery->DeliveryFee() ) / ( $order_total - $delivery->DeliveryFee() ), 0 ) . "%";
+					}
+					$row_text              .= "<td>" . $percent . "%</td>";
+					$total_delivery_total  += $delivery->Price();
+					$total_delivery_fee    += $delivery->DeliveryFee();
+					$total_order_delivered += $order_total;
+				}
+			} else {
+				$row_text .= "<td></td><td></td><td></td>";
+			}
+			$line = $row_text;
+
+			array_push( $lines, array( $zone, $line ) );
+		}
+		//   $data .= "<tr> " . trim($line) . "</tr>";
+		sort( $lines );
+
+		foreach ( $lines as $line ) {
+			$data .= "<tr>" . $line[1] . "</tr>";
+		}
+		$rate = 0;
+		if ( $total_order_delivered > 0 ) {
+			$rate = round( 100 * ( $total_delivery_total - $total_delivery_fee ) / $total_order_delivered );
+		}
+//		$data .= "<tr><td></td><td></td><td></td><td>" . $total_order_total . "</td><td></td>" .
+//		         "<td>" . $total_delivery_total . "</td>" .
+//		         "<td>" . $total_delivery_fee . "</td>" .
+//		         "<td>" . $rate . "%</td></tr>";
+		$data = str_replace( "\r", "", $data );
+
+		$data .= "</table>";
+
+		if ( $count > 0 ) {
+			$all_tables .= $data;
+		}
+	}
+
+	return $all_tables;
 }

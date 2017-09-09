@@ -6,10 +6,13 @@ require_once( '../pricing.php' );
 <header>
 </header>
 <?php
+
 $basket_id = $_GET["basket_id"];
 
 if ( $basket_id > 0 ) {
 	print_basket( $basket_id );
+} else {
+	print header_text( true );
 }
 
 function print_basket( $basket_id ) {

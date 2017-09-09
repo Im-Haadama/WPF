@@ -1,8 +1,7 @@
 <?php
 require( '../tools_wp_login.php' );
 print header_text( false );
-require( "../gui/inputs.php" );
-require( "account.php" );
+require_once( "account.php" );
 ?>
 <html dir="rtl" lang="he">
 <head>
@@ -81,7 +80,10 @@ $data .= "<td>לקוח</td>";
 $data .= "<td>יתרה לתשלום</td>";
 $data .= "</tr>";
 
-$data_lines = array();
+print "<a href=\"get-accounts-status.php?zero\">הצג גם חשבונות מאופסים</a>";
+
+$data_lines         = array();
+$data_lines_credits = array();
 
 while ( $row = mysqli_fetch_row( $result ) ) {
 	// $line = '';
@@ -94,9 +96,14 @@ while ( $row = mysqli_fetch_row( $result ) ) {
 
 	$line .= "<td>" . $customer_total . "</td>";
 	$line .= "<td>" . get_payment_method_name( $customer_id ) . "</td>";
-	if ( $include_zero || $customer_total <> 0 ) {
-		array_push( $data_lines, array( - $customer_total, $line ) );
+	if ( $include_zero || $customer_total > 0 ) {
+		//array_push( $data_lines, array( - $customer_total, $line ) );
+		array_push( $data_lines, array( $customer_name, $line ) );
+	} else if ( $customer_total < 0 ) {
+		//array_push( $data_lines, array( - $customer_total, $line ) );
+		array_push( $data_lines_credits, array( $customer_name, $line ) );
 	}
+
 }
 
 sort( $data_lines );
@@ -108,13 +115,8 @@ for ( $i = 0; $i < count( $data_lines ); $i ++ ) {
 
 $data = str_replace( "\r", "", $data );
 
-if ( $data == "" ) {
-	$data = "\n(0) Records Found!\n";
-}
+print "<center><h1>יתרת לקוחות לתשלום</h1></center>";
 
-print "<center><h1>יתרת לקוחות</h1></center>";
-
-print "<a href=\"get-accounts-status.php?zero\">הצג גם חשבונות מאופסים</a>";
 
 $data .= "</table>";
 

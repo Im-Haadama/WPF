@@ -8,7 +8,11 @@
 
 require_once( "orders-common.php" );
 require_once( "../gui/inputs.php" );
-require_once( __ROOT__ . "/tools/supplies/supplies.php" );
+if ( ! defined( STORE_DIR ) ) {
+	define( 'STORE_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
+}
+
+require_once( STORE_DIR . "/tools/supplies/supplies.php" );
 
 $filter_zero = $_GET["filter_zero"];
 //$basket_quantities;
