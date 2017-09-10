@@ -81,8 +81,16 @@ class ImDocumentOperation {
 
 function print_fresh_category() {
 	$list = "";
-	if ( MultiSite::LocalSiteID() == 1 ) {
-		foreach ( get_term_children( 15, "product_cat" ) as $child_term_id ) {
+
+	$option = sql_query_single_scalar( "SELECT option_value FROM wp_options WHERE option_name = 'im_discount_categories'" );
+	if ( ! $option ) {
+		return;
+	}
+
+	$fresh_categ = explode( ",", $option );
+	foreach ( $fresh_categ as $categ ) {
+		$list .= $categ . ",";
+		foreach ( get_term_children( $categ, "product_cat" ) as $child_term_id ) {
 			$list .= $child_term_id . ", ";
 		}
 	}

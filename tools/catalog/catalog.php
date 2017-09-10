@@ -350,6 +350,7 @@ class Catalog {
 
 	static function GetProdID( $pricelist_id, $include_hide = false ) # Returns prod id if this supplier product mapped
 	{
+		global $conn;
 		$sql = "SELECT product_id, id FROM im_supplier_mapping WHERE pricelist_id = " . $pricelist_id;
 		if ( ! $include_hide )
 			$sql .= " AND product_id > 0";
@@ -371,7 +372,7 @@ class Catalog {
 		}
 		// print $result["product_name"] . ": " . $product_name . "<br/>";
 		$sql = "SELECT product_id, id FROM im_supplier_mapping " .
-		       " WHERE supplier_product_name = '" . $product_name . "'" .
+		       " WHERE supplier_product_name = '" . mysqli_real_escape_string( $conn, $product_name ) . "'" .
 		       " AND supplier_id = " . $result["supplier_id"];
 
 		if ( ! $include_hide )

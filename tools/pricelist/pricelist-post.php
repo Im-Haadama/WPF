@@ -121,7 +121,9 @@ switch ( $operation ) {
 //        my_log("product_name " . $product_name, "pricelist-post.php");
 //        my_log("date " . date('Y-m-d'), "pricelist-post.php");
 //        print "Adding " . $product_name . " " . " price: " . $price . "<br/>";
-		$pl->AddOrUpdate( trim( $price ), '', $product_name, 10, $pricelist_id, 0 );
+		$pl->AddOrUpdate( trim( $price ), '', $product_name, 10, "", $pricelist_id, 0 );
+// function AddOrUpdate( $regular_price, $sale_price, $product_name, $code = 10, $category, &$id, $parent_id = null ) {
+
 		break;
 
 	case "add_prices":
@@ -133,7 +135,7 @@ switch ( $operation ) {
 			$price        = $params[ $pos + 1 ];
 			//  print "Adding " . $product_name . " " . " price: " . $price . "<br/>";
 
-			$pl->AddOrUpdate( $price, '', $product_name, 10, $pricelist_id, 0 );
+			$pl->AddOrUpdate( $price, '', $product_name, 10, "", $pricelist_id, 0 );
 			print $pricelist_id . "<br/>";
 		}
 		break;

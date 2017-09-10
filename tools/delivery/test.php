@@ -17,6 +17,8 @@ require_once( 'delivery.php' );
 // print get_user_meta(96, 'shipping_zone');
 //print ord(substr('א', 1,1));
 //print ord(substr('ב', 1,1));
-print header_text( false );
-$d = delivery::CreateFromOrder( 6862 );
-$d->print_delivery( true );
+//print header_text( false );
+//$d = delivery::CreateFromOrder( 6862 );
+//$d->print_delivery( true );
+
+print_fresh_category();

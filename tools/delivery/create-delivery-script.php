@@ -363,6 +363,7 @@ if ( $id > 0 ) {
         table.rows[line].cells[product_name_id].innerHTML = (quantity_discount > 0) ? "הנחת כמות" : "";
         table.rows[line].cells[q_supply_id].innerHTML = (quantity_discount > 0) ? -0.15 : "";
         table.rows[line].cells[price_id].innerHTML = (quantity_discount > 0) ? quantity_discount : "";
+        table.rows[line].cells[line_vat_id].innerHTML = 0; // For now just for fresh. No VAT. (quantity_discount > 0) ? quantity_discount : "";
         var discount = -Math.round(quantity_discount * 15) / 100;
         total = total + discount;
         table.rows[line].cells[line_total_id].innerHTML = (quantity_discount > 0) ? discount : "";

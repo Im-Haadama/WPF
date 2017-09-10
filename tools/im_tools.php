@@ -8,7 +8,7 @@
 if ( ! defined( STORE_DIR ) ) {
 	define( 'STORE_DIR', dirname( dirname( __FILE__ ) ) );
 }
-require( STORE_DIR . "/im-config.php" );
+require( STORE_DIR . "/wp-config.php" );
 require( STORE_DIR . "/wp-load.php" );
 require( "sql.php" );
 require( "wp.php" );
@@ -18,7 +18,7 @@ require( "vat.php" );
 //mysql_set_charset( 'utf8', $link );
 //mysql_select_db( $dbname );
 
-$conn = new mysqli( $servername, $username, $password, $dbname );
+$conn = new mysqli( DB_HOST, DB_NAME, DB_PASSWORD, DB_NAME );
 mysqli_set_charset( $conn, 'utf8' );
 
 // Check connection
