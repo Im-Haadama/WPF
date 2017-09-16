@@ -21,4 +21,12 @@ require_once( 'delivery.php' );
 //$d = delivery::CreateFromOrder( 6862 );
 //$d->print_delivery( true );
 
+// print_fresh_category();
+//print "a";
+//$order = new WC_Order(2053 );
+//$order->update_status( 'wc-awaiting-shipment' );
+//
+//print $order->get_status();
+
+
 print_fresh_category();

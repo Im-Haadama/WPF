@@ -262,7 +262,9 @@ if ( $id > 0 ) {
                 // Sum upper lines and compare to basket price
                 var j = i - 1;
                 var sum = 0;
-                while (table.rows[j].cells[product_name_id].innerHTML.substr(0, 3) == "===") {
+                // while (table.rows[j].cells[product_name_id].innerHTML.substr(0, 3) == "===") {
+                while (get_value(document.getElementById("nam_" + j)).substr(0, 3) == "===") {
+                    // alert(table.rows[j].cells[product_name_id].innerHTML);
                     sum = sum + Number(document.getElementById("del_" + j).innerHTML);
                     j = j - 1;
                 }

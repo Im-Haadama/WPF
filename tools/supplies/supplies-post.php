@@ -9,7 +9,7 @@ require_once( '../im_tools.php' );
 require_once( 'supplies.php' );
 require_once( '../orders/orders-common.php' );
 require_once( '../gui/inputs.php' );
-require_once( "../business/business.php" );
+require_once( "../business/business-post.php" );
 require_once( "../business/business-info.php" );
 if ( isset( $_GET["operation"] ) ) {
 	$operation = $_GET["operation"];

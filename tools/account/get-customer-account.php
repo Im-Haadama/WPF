@@ -5,6 +5,7 @@ require_once( "../gui/inputs.php" );
 require_once( "account.php" );
 require_once( "../multi-site/multi-site.php" );
 require_once( "../delivery/delivery-common.php" );
+require_once( '../../im-config.php' );
 require_once( '../invoice4u/invoice.php' );
 
 // $start_time =  microtime(true);
@@ -247,7 +248,7 @@ if ( $manager ) {
 	$invoice->Login();
 
 	if ( is_null( $invoice->token ) ) {
-		die ( "can't login" );
+		die ( "can't login to Invoice4u" . $invoice->invoice_user );
 	}
 
 	// print "client name " . $client_name . "<br/>";

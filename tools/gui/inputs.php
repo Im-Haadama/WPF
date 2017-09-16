@@ -227,14 +227,19 @@ function gui_cell( $cell, $id = null, $show = true ) {
 	return $data;
 }
 
-function gui_row( $cells, $id = null, $show = null, &$sum_fields = null, $col_ids = null ) {
+function gui_row( $cells, $id = null, $show = null, &$acc_fields = null, $col_ids = null ) {
 	$data = "<tr>";
 
 	if ( is_array( $cells ) ) {
 		$i = 0;
 		foreach ( $cells as $cell ) {
-			if ( $sum_fields[ $i ] and is_numeric( $sum_fields[ $i ] ) ) {
-				$sum_fields[ $i ] += $cell;
+			if ( is_array( $acc = $acc_fields[ $i ] ) ) {
+				// var_dump($acc);
+				$acc[1]( $acc_fields[ $i ][0], $cell );
+
+//				print "Y" . ($sum_fields[$i] === true) . "Y";
+//				if (($sum_fields[$i] === true) and ($cell > 0)) { print "XX"; $sum_fields[$i] = 0; };
+				// $sum_fields[ $i ] += $cell;
 			}
 			$cell_id = null;
 			if ( $col_ids and is_array( $col_ids ) ) {
@@ -247,7 +252,6 @@ function gui_row( $cells, $id = null, $show = null, &$sum_fields = null, $col_id
 			if ( is_array( $show ) ) {
 				$show_cell = $show[ $i ];
 			}
-
 			$data .= gui_cell( $cell, $cell_id, $show_cell);
 			$i ++;
 		}
@@ -302,7 +306,9 @@ function gui_table( $rows, $id = null, $header = true, $footer = true, &$sum_fie
 	if ( is_array( $rows ) ) {
 		foreach ( $rows as $row ) {
 			if ( ! is_null( $row ) ) {
-				$data .= gui_row( $row, $sum_fields );
+				$data .= gui_row( $row, $id, null, $sum_fields );
+//				function gui_row( $cells, $id = null, $show = null, &$sum_fields = null, $col_ids = null ) {
+
 			}
 		}
 
@@ -310,7 +316,15 @@ function gui_table( $rows, $id = null, $header = true, $footer = true, &$sum_fie
 		$data .= "<tr>" . $rows . "</tr>";
 	}
 	if ( $sum_fields ) {
-		$data .= gui_row( $sum_fields );
+		$array = array();
+		foreach ( $sum_fields as $value ) {
+			if ( is_array( $value ) ) {
+				array_push( $array, $value[0] );
+			} else {
+				array_push( $array, $value );
+			}
+		}
+		$data .= gui_row( $array );
 	}
 
 	if ( $footer ) {

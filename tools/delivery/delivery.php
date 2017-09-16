@@ -458,7 +458,6 @@ class delivery {
 				case 2:
 					$price = get_buy_price( $prod_id );
 					break;
-
 			}
 
 			if ( $unit_ordered ) {
@@ -504,8 +503,13 @@ class delivery {
 		$line[ DeliveryFields::order_q_units ] = $unit_q;
 		// $value .= "<td>" . $quantity_ordered . "</td>";                             // 2- ordered
 
-		if ( is_null( $has_vat ) and get_vat_percent( $prod_id ) == 0 ) {
-			$has_vat = false;
+		if ( is_null( $has_vat ) ) {
+			if ( get_vat_percent( $prod_id ) == 0 ) {
+				// print "<br/>" . $prod_id . " " . get_vat_percent($prod_id) . " " . get_product_name($prod_id) ;
+				$has_vat = false;
+			} else {
+				$has_vat = true;
+			}
 		}
 
 		if ( $has_vat ) {
@@ -691,7 +695,7 @@ class delivery {
 				}
 
 				$line[ DeliveryFields::product_name ] = "===> " . get_product_name( $prod_id );
-				$line[ DeliveryFields::price ]        = get_price( $prod_id );
+				$line[ DeliveryFields::price ]        = get_price( $prod_id, $client_type );
 				$has_vat                              = true;
 				if ( get_vat_percent( $prod_id ) == 0 ) {
 					//print "has vat false<br/>";
@@ -717,8 +721,9 @@ class delivery {
 			}
 			$line[ DeliveryFields::product_name ] = gui_lable( "ba", "הנחת סל" );
 			// $line[DeliveryFields::has_vat] = gui_checkbox("", )
-			$sums = null;
-			$data .= gui_row( $line, "bsk" . $this->line_number, $show_fields, $sums, $delivery_fields_names );
+			$sums              = null;
+			$data              .= gui_row( $line, "bsk" . $this->line_number, $show_fields, $sums, $delivery_fields_names );
+			$this->line_number = $this->line_number + 1;
 
 
 //			$data .= "<tr><td id='bsk_dis". $this->line_number .

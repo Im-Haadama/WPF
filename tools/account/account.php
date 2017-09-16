@@ -12,7 +12,7 @@ if ( ! defined( TOOLS_DIR ) ) {
 
 require_once( TOOLS_DIR . '/im_tools.php' );
 require_once( STORE_DIR . '/tools/orders/orders-common.php' );
-require_once( TOOLS_DIR . '/business/business.php' );
+require_once( TOOLS_DIR . '/business/business-post.php' );
 require_once( TOOLS_DIR . '/gui/inputs.php' );
 
 #############################

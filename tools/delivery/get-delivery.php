@@ -3,11 +3,7 @@ require_once '../im_tools.php';
 require_once 'delivery.php';
 require_once '../orders/orders-common.php';
 
-?>
-
-
-<?php
-
+print header_text( false );
 $id   = $_GET["id"];
 $send = $_GET["send"];
 

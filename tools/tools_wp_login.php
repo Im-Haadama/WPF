@@ -1,6 +1,12 @@
 <?php
 
 require_once( "im_tools.php" );
+
+if ( ! defined( STORE_DIR ) ) {
+	define( 'STORE_DIR', dirname( dirname( __FILE__ ) ) );
+}
+
+require_once( STORE_DIR . "/wp-load.php" );
 $multisite = false;
 
 if ( $_SERVER['REMOTE_ADDR'] == "160.153.153.166" or

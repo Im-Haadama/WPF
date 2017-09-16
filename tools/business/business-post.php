@@ -7,10 +7,12 @@
  */
 
 if ( ! defined( TOOLS_DIR ) ) {
-	define( TOOLS_DIR, dirname( __FILE__ ) );
+	define( TOOLS_DIR, dirname( dirname( __FILE__ ) ) );
 }
 
 require_once( TOOLS_DIR . '/im_tools.php' );
+require_once( TOOLS_DIR . '/gui/inputs.php' );
+
 
 $operation = $_GET["operation"];
 
@@ -41,6 +43,73 @@ switch ( $operation ) {
 		my_log( "Deleting ids: " . $ids );
 		business_logical_delete( $ids );
 		break;
+
+	case "show_makolet":
+		$month = $_GET["month"];
+		show_makolet( $month );
+		break;
+}
+
+function sum_numbers( &$sum, $number ) {
+	$sum += $number;
+	// print $sum . " " . $number . " " . "<br/>";
+}
+
+function show_makolet( $month_year ) {
+	$year  = substr( $month_year, 0, 4 );
+	$month = substr( $month_year, 5, 2 );
+	print gui_header( 1, "משלוחים שבוצעו" );
+	$sql = "select d.id, client_from_delivery(d.id), d.date, order_id, total, vat, fee, round(total-vat-fee,2), client_displayname(driver), city_from_delivery(d.id) from im_delivery d" .
+	       " join im_business_info i " .
+	       " where month(d.date)=" . $month . " and year(d.date)=" . $year . " and i.ref = d.id and i.is_active = 1 ";
+
+
+	$result = sql_query( $sql );
+	$table  = array();
+
+	$header = array(
+		"מספר משלוח",
+		"לקוח",
+		"תאריך הזנה",
+		"מספר הזמנה",
+		"סה\"כ שולם",
+		"מע\"מ עסקה",
+		"דמי משלוח כולל מע\"מ",
+		"עסקה נטו",
+		"נהג"
+	);
+
+	array_push( $table, $header );
+	$driver_array = array();
+
+	while ( $row = mysqli_fetch_row( $result ) ) {
+		if ( $row[6] == 0 ) {
+			$sql1   = "select line_price from im_delivery_lines where delivery_id = " . $row[0] . " and product_name like '%משלוח%'";
+			$row[6] = sql_query_single_scalar( $sql1 );
+		}
+//		$id =  $row[0];
+
+		// $row = array($id, $row[1]);
+		array_push( $table, $row );
+		$driver_array[ $row[8] ] += $row[6];
+	}
+	$sums = array(
+		"סה\"כ",
+		'',
+		'',
+		'',
+		array( 0, 'sum_numbers' ),
+		array( 0, 'sum_numbers' ),
+		array( 0, 'sum_numbers' ),
+		array( 0, 'sum_numbers' ),
+		0
+	);
+	print gui_table( $table, "", true, true, $sums );
+
+	foreach ( $driver_array as $key => $value ) {
+		print $key . " " . $value . "<br/>";
+	}
+
 }
 
 function business_add_transaction( $part_id, $date, $amount, $delivery_fee, $ref, $project ) {

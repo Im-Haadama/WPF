@@ -99,8 +99,15 @@ function calculate_price( $price, $supplier, $sale_price = '', $terms = null ) {
 }
 
 
-function get_price( $prod_id ) {
-	return get_postmeta_field( $prod_id, '_price' );
+function get_price( $prod_id, $client_type = 0 ) {
+	switch ( $client_type ) {
+		case 0:
+			return get_postmeta_field( $prod_id, '_price' );
+		case 1:
+			return siton_price( $prod_id );
+		case 2:
+			return get_buy_price( $prod_id );
+	}
 }
 
 function get_sale_price( $prod_id ) {

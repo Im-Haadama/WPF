@@ -1,5 +1,5 @@
 <?php
-require 'orders-common.php';
+require_once 'orders-common.php';
 require_once( '../gui/inputs.php' );
 require_once( '../delivery/delivery.php' );
 ?>

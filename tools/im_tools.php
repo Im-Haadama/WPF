@@ -9,6 +9,7 @@ if ( ! defined( STORE_DIR ) ) {
 	define( 'STORE_DIR', dirname( dirname( __FILE__ ) ) );
 }
 require( STORE_DIR . "/wp-config.php" );
+require( STORE_DIR . "/im-config.php" );
 require( STORE_DIR . "/wp-load.php" );
 require( "sql.php" );
 require( "wp.php" );
@@ -556,7 +557,7 @@ function header_text( $print_logo = true, $close_header = true ) {
 	}
 	$text .= '</p>';
 	$text .= "<style>";
-	$text .= file_get_contents( "../im.css" );
+	$text .= file_get_contents( STORE_DIR . "/tools/im.css" );
 	$text .= "</style>";
 	if ( $close_header ) {
 		$text .= '</head>';
@@ -573,10 +574,11 @@ function multisite_map_get_remote( $prod_id, $remote_site_id ) {
 }
 
 function print_page_header( $display_logo ) {
+	global $business_name;
 	print '<html dir="rtl">
     <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
-    <title>תוצרת טבעית - עם האדמה</title>';
+    <title>' . $business_name . '</title>';
 	if ( $display_logo ) {
 		print '<center><img src="http://store.im-haadama.co.il/wp-content/uploads/2014/11/cropped-imadama-logo-7x170.jpg"></center>';
 	}

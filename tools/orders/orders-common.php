@@ -58,15 +58,14 @@ function order_info( $order_id, $field_name ) {
 }
 
 function order_info_data( $order_id, $edit = false, $operation = null ) {
-
+	global $logo_url;
 	$header = "";
 	if ( $operation ) {
 		$header .= $operation;
 	}
 	$header .= "הזמנה מספר " . $order_id;
-//	if ($edit) $header = "עריכת " . $header;
-	$data = header_text();
-	$data .= gui_header( 1, $header, true );
+
+	$data = gui_header( 1, $header, true );
 	$d_id = get_delivery_id( $order_id );
 	if ( $d_id > 0 )
 		$data .= gui_header( 2, "משלוח מספר " . $d_id);
@@ -119,6 +118,7 @@ function order_info_data( $order_id, $edit = false, $operation = null ) {
 
 	$data .= '</table>';
 	$data .= "</td>";
+	$data .= '<tr><td><img src=' . $logo_url . ' height="100"></td></tr>';
 	$data .= "<td height='16'>" . gui_header( 2, "הערות לקוח להזמנה" ) . "</td></tr>";
 	$data .= "<tr><td valign='top'>" . nl2br( order_get_excerpt( $order_id ) ) . "</td></tr>";
 	if ( true or get_delivery_id( $order_id ) > 0 ) { // Done
@@ -261,37 +261,6 @@ function user_dislike( $user_id, $prod_id ) {
 
 function print_order_info( $order_id, $comments, $operation = null ) {
 	print order_info_data( $order_id, $comments, $operation );
-//    if (is_numeric($order_id)) {
-//    	$client_id = get_customer_id_by_order_id($order_id);
-//        $order = new WC_Order($order_id);
-//        $order_date = $order->order_date;
-//
-//        $data = "<h1>הזמנת לקוח מספר" . $order_id . "</h1>";
-//        $data .= "<p>" . "מתאריך " . $order_date . "</p>";
-//
-//        $data .= '<table>';
-//        $row_text = '<tr><td>לקוח:</td><td>' . addslashes(order_info($order_id, '_shipping_first_name')) . ' '
-//            . order_info($order_id, '_shipping_last_name') . '</td><tr>';
-//        $data .= $row_text;
-//        $row_text = '<tr><td>כתובת:</td><td>' . order_info($order_id, '_shipping_address_1') . ' '
-//            . order_info($order_id, '_shipping_address_2') . '</td><tr>';
-//        $data .= $row_text;
-//        $row_text = '<tr><td>כתובת:</td><td>' . order_info($order_id, '_shipping_city') . '</td><tr>';
-//        $row_text .= '<tr><td>טלפון:</td><td>' . order_info($order_id, '_billing_phone') . '</td><tr>';
-//        $data .= $row_text;
-//
-//		$preference = "";
-//	    foreach (get_user_meta($client_id, "preference") as $pref)
-//		    $preference .= $pref;
-//
-//	    $data .= gui_row(array("העדפות לקוח:", $preference));
-//
-//	    $data .= '</table>';
-//
-//        print $data;
-//    } else {
-//        die ("Error: no order_id");
-//    }
 }
 
 // $multiply is the number of ordered baskets or 1 for ordinary item.

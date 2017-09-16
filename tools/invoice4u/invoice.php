@@ -6,6 +6,9 @@
  * Date: 28/08/16
  * Time: 06:25
  */
+
+require_once( STORE_DIR . '/im-config.php' );
+
 class Customer {
 	public $Name;
 	public $Active = true; // must be unique
