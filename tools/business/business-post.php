@@ -59,10 +59,10 @@ function show_makolet( $month_year ) {
 	$year  = substr( $month_year, 0, 4 );
 	$month = substr( $month_year, 5, 2 );
 	print gui_header( 1, "משלוחים שבוצעו" );
-	$sql = "select d.id, client_from_delivery(d.id), d.date, order_id, total, vat, fee, round(total-vat-fee,2), client_displayname(driver), city_from_delivery(d.id) from im_delivery d" .
+	$sql = "select d.id, client_from_delivery(d.id), d.date, order_id, total, vat, round(reduce_vat(fee),2), " .
+	       " round(total-vat-reduce_vat(fee),2), client_displayname(driver), city_from_delivery(d.id) from im_delivery d" .
 	       " join im_business_info i " .
 	       " where month(d.date)=" . $month . " and year(d.date)=" . $year . " and i.ref = d.id and i.is_active = 1 ";
-
 
 	$result = sql_query( $sql );
 	$table  = array();
@@ -74,7 +74,7 @@ function show_makolet( $month_year ) {
 		"מספר הזמנה",
 		"סה\"כ שולם",
 		"מע\"מ עסקה",
-		"דמי משלוח כולל מע\"מ",
+		"דמי משלוח",
 		"עסקה נטו",
 		"נהג"
 	);
@@ -84,8 +84,9 @@ function show_makolet( $month_year ) {
 
 	while ( $row = mysqli_fetch_row( $result ) ) {
 		if ( $row[6] == 0 ) {
-			$sql1   = "select line_price from im_delivery_lines where delivery_id = " . $row[0] . " and product_name like '%משלוח%'";
+			$sql1   = "SELECT round(reduce_vat(line_price),2) FROM im_delivery_lines WHERE delivery_id = " . $row[0] . " AND product_name LIKE '%משלוח%'";
 			$row[6] = sql_query_single_scalar( $sql1 );
+			$row[7] = $row[4] - $row[5] - $row[6];
 		}
 //		$id =  $row[0];
 

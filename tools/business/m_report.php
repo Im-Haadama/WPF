@@ -47,7 +47,7 @@ print header_text( true );
 <?
 $today = date( 'Y-m', strtotime( 'last month' ) );
 
-print gui_input_month( "month", "month", $today, "onchange=update()" );
+print gui_input_month( "month", "month", $today, "onchange=show_all()" );
 
 ?>
 

@@ -22,6 +22,7 @@ switch ( $operation ) {
 		$user_id   = $_GET["user_id"];
 		$method_id = $_GET["method_id"];
 		update_user_meta( $user_id, 'payment_method', $method_id );
+		break;
 
 	case "send_month_summary":
 		$user_ids = $_GET["ids"];
@@ -263,7 +264,7 @@ function invoice_create_user( $user_id ) {
 
 }
 
-function invoice_create_document( $type, $ids, $user_id, $cash = 0, $bank = 0, $credit = 0, $check = 0 ) {
+function invoice_create_document( $type, $ids, $customer_id, $cash = 0, $bank = 0, $credit = 0, $check = 0 ) {
 	// print "create invoice<br/>";
 	global $debug;
 
@@ -274,11 +275,15 @@ function invoice_create_document( $type, $ids, $user_id, $cash = 0, $bank = 0, $
 		die ( "can't login" );
 	}
 
-	$client_name = get_customer_name( $user_id );
-
-	// print "client name " . $client_name . "<br/>";
-	$client = $invoice->GetCustomerByName( $client_name );
+//	$client_name = get_customer_name( $user_id );
+//
+//	// print "client name " . $client_name . "<br/>";
+//	$client = $invoice->GetCustomerByName( $client_name );
 	// var_dump($client);
+	$client_email = get_customer_email( $customer_id );
+	// print $client_email;
+	$client = $invoice->GetCustomerByEmail( $client_email );
+
 
 	if ( is_null( $client->ID ) ) {
 		// var_dump($invoice);

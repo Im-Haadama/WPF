@@ -30,8 +30,7 @@ if ( $debug ) {
 }
 switch ( $operation ) {
 	case "get_priceslist":
-		print
-			print_pricelist( $supplier_id );
+		$pl->PrintHTML();
 		break;
 
 	case "get_csv":
@@ -184,46 +183,6 @@ switch ( $operation ) {
 		$PL          = new PriceList( $supplier_id );
 		$PL->RemoveLines( $status );
 
-}
-
-function print_pricelist( $supplier_id ) {
-	// global $debug;
-
-//    $site_id = sql_query_single_scalar('select site_id from im_suppliers where id = ' . $supplier_id);
-//
-//    if ($site_id > 0) {
-//        // remote
-//        $data = "<tr>";
-//        $data .= "<td>בחר</td>";
-//        $data .= "<td>קוד מוצר</td>";
-//        $data .= "<td>שם מוצר</td>";
-//        $data .= "<td>תאריך שינוי</td>";
-//        $data .= "<td>מחיר קנייה</td>";
-//        $data .= "<td>מחיר מחושב</td>";
-//        $data .= "<td>פריט מקושר</td>";
-//        $data .= "<td>מחיר מכירה</td>";
-//        $data .= "<td>מחיר מבצע</td>";
-//        $data .= "<td>מזהה</td>";
-//        $data .= "</tr>";
-//
-//        print $data;
-//
-//        $remote = get_site_tools_url($site_id) . "/catalog/get-as-pricelist.php";
-//        $html = file_get_html($remote);
-//        foreach($html->find('tr') as $row) {
-//            $prod_id = $row->find('td', 1)->plaintext;
-//            //print "prod id " . $prod_id;
-//            $name = $row->find('td', 2)->plaintext;
-//            $date = $row->find('td', 3)->plaintext;
-//            $price = $row->find('td', 4)->plaintext;
-//            $local_prod_id = multisite_map_get_remote($prod_id, $site_id);
-//            print print_html_line($name, $price, $date, $prod_id, $prod_id, 5, $local_prod_id, false);
-//        }
-//    } else {
-//        // Local
-	global $pl;
-	$pl->PrintHTML();
-//    }
 }
 
 ?>

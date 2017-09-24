@@ -64,11 +64,14 @@ if ( $_GET["zero"] === null ) {
 
 //require_once("../header.php");
 
-$sql = 'select round(sum(ia.transaction_amount),2), ia.client_id, wu.display_name'
+$sql = 'select round(sum(ia.transaction_amount),2), ia.client_id, wu.display_name, client_payment_method(ia.client_id), max(date) '
        . ' from im_client_accounts ia'
        . ' join wp_users wu'
        . ' where wu.id=ia.client_id'
-       . ' group by client_id';
+       . ' group by client_id '
+       . ' order by 4,5';
+
+//print $sql;
 
 $result = mysqli_query( $conn, $sql );
 
@@ -78,6 +81,7 @@ $data .= gui_cell( "בחר" );
 
 $data .= "<td>לקוח</td>";
 $data .= "<td>יתרה לתשלום</td>";
+$data .= "<td>הזמנה אחרונה</td>";
 $data .= "</tr>";
 
 print "<a href=\"get-accounts-status.php?zero\">הצג גם חשבונות מאופסים</a>";
@@ -94,11 +98,13 @@ while ( $row = mysqli_fetch_row( $result ) ) {
 	$line = gui_cell( gui_checkbox( "chk_" . $customer_id, "user_chk" ) );
 	$line .= "<td><a href = \"get-customer-account.php?customer_id=" . $customer_id . "\">" . $customer_name . "</a></td>";
 
-	$line .= "<td>" . $customer_total . "</td>";
-	$line .= "<td>" . get_payment_method_name( $customer_id ) . "</td>";
+	$line           .= "<td>" . $customer_total . "</td>";
+	$payment_method = get_payment_method( $customer_id );
+	$line           .= "<td>" . $row[4] . "</td>";
+	$line           .= "<td>" . get_payment_method_name( $customer_id ) . "</td>";
 	if ( $include_zero || $customer_total > 0 ) {
 		//array_push( $data_lines, array( - $customer_total, $line ) );
-		array_push( $data_lines, array( $customer_name, $line ) );
+		array_push( $data_lines, array( $payment_method, $line ) );
 	} else if ( $customer_total < 0 ) {
 		//array_push( $data_lines, array( - $customer_total, $line ) );
 		array_push( $data_lines_credits, array( $customer_name, $line ) );
@@ -106,7 +112,7 @@ while ( $row = mysqli_fetch_row( $result ) ) {
 
 }
 
-sort( $data_lines );
+// sort( $data_lines );
 
 for ( $i = 0; $i < count( $data_lines ); $i ++ ) {
 	$line = $data_lines[ $i ][1];

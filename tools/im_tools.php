@@ -416,11 +416,13 @@ function get_minimum_order() {
 	$sql = "SELECT min_order FROM wp_woocommerce_shipping_zones WHERE zone_id = " . $zone1->get_id();
 //    my_log($sql);
 	$result = mysqli_query( $conn, $sql );
-	$row    = mysqli_fetch_assoc( $result );
-//    my_log($row["min_order"]);
+	if ( $result ) {
+		$row = mysqli_fetch_assoc( $result );
+		//    my_log($row["min_order"]);
 
-	if ( is_numeric( $row["min_order"] ) ) {
-		$value = $row["min_order"];
+		if ( is_numeric( $row["min_order"] ) ) {
+			$value = $row["min_order"];
+		}
 	}
 
 	return $value;

@@ -126,6 +126,27 @@ class Invoice4u {
 		return $this->result;
 	}
 
+	public function GetCustomerByEmail( $email ) {
+		$wsdl = "http://private.invoice4u.co.il/Services/CustomerService.svc?wsdl";
+
+		$cust        = new Customer();
+		$cust->Email = $email;
+		// print $email;
+		$response  = $this->requestWS( $wsdl, "GetCustomers", array(
+			'cust'       => $cust,
+			'token'      => $this->token,
+			'getAllRows' => false
+		) );
+		$customers = $response->Response->Customer;
+		foreach ( $customers as $customer ) {
+			if ( $customer->Email == $email ) {
+				return $customer;
+			}
+		}
+
+		return null;
+	}
+
 	public function CreateUser( $name, $email, $phone ) {
 		$wsdl = "http://private.invoice4u.co.il/Services/CustomerService.svc?wsdl";
 

@@ -130,7 +130,7 @@ function print_supply_lines( $id, $internal ) {
 	$line_number = 0;
 
 	$supplier_id = sql_query_single_scalar( "SELECT supplier FROM im_supplies WHERE id = " . $id );
-//	print "supplier_id: " . $supplier_id . "<br/>";
+	print "supplier_id: " . $supplier_id . "<br/>";
 
 	while ( $row = mysqli_fetch_row( $result ) ) {
 		$line_number  = $line_number + 1;

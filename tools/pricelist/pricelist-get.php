@@ -114,7 +114,7 @@ require_once( "../suppliers/gui.php" );
             for (var i = 0; i < collection.length; i++) {
                 if (collection[i].checked) {
 
-                    var map_id = get_value(table.rows[i + 1].cells[10].firstChild);
+                    var map_id = get_value(table.rows[i + 1].cells[11].firstChild);
 
                     params.push(map_id);
                     //        alert(map_id);

@@ -62,8 +62,11 @@ $line = "";
 //	Catalog::UpdateProduct( $row[0], $line, false );
 //}
 //prof_flag("end");
-$prod_id       = 3703;
-$debug_product = $prod_id;
-Catalog::UpdateProduct( $prod_id, $line, false );
+//$prod_id       = 3703;
+//$debug_product = $prod_id;
+//Catalog::UpdateProduct( $prod_id, $line, false );
+
+// Catalog::DeleteMappingProductId(7345);
+print get_post_status( 7345 );
 
 //prof_print();

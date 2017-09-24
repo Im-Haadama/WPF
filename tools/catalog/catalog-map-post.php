@@ -174,7 +174,8 @@ function search_unmapped_local() {
 //        /// . ' supplier_product_code not in (select supplier_product_code from im_supplier_mapping)';
 //
 
-	$sql    = "SELECT id, supplier_id, product_name FROM im_supplier_price_list ORDER BY 2, 3";
+	$sql    = "SELECT id, supplier_id, product_name " .
+	          " FROM im_supplier_price_list ORDER BY 2, 3";
 	$result = mysqli_query( $conn, $sql );
 
 	$data = "<tr>";
@@ -205,7 +206,7 @@ function search_unmapped_local() {
 		$prod_link_id = Catalog::GetProdID( $pricelist_id, true );
 
 		$prod_id      = $prod_link_id[0];
-		if ( ( $prod_id == - 1 ) or ( $prod_id > 0 ) ) {
+		if ( ( ( $prod_id == - 1 ) or ( $prod_id > 0 ) ) and get_post_status( $prod_id ) != 'trash' ) {
 			continue;
 		}
 		$data .= print_unmapped( $pricelist_id, $pricelist["supplier_product_code"],

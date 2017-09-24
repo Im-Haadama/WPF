@@ -386,24 +386,33 @@ class Catalog {
 
 	static function GetBuyPrice( $product_id, $supplier ) {
 		// print "prod_id = " . $product_id . " supplier = " . $supplier . "<br/>";
+
 		$sql = "SELECT pricelist_id FROM im_supplier_mapping WHERE product_id = " .
 		       $product_id . " AND supplier_id = " . $supplier;
 
-//		print $sql . "<br/>";
-
-		$pl_line = sql_query_single_scalar( $sql );
-
-		if ( $pl_line > 0 ) {
-//			print " pricelist " . $pl_line . "<br/>";
-
-			$PriceList = new PriceList( $supplier );
-
-			$pl_line = $PriceList->Get( $pl_line );
-
-			// var_dump($pl_line);
-
-			return $pl_line["price"];
+		$rows = sql_query_array( $sql );
+		if ( count( $rows ) > 1 ) {
+			// print "multiply links product " . $product_id . "<br/>";
 		}
+
+		foreach ( $rows as $row ) {
+			$pl_line = $row[0];
+			// print $pl_line . " ";
+
+			if ( $pl_line > 0 ) {
+				//			print " pricelist " . $pl_line . "<br/>";
+
+				$PriceList = new PriceList( $supplier );
+
+				$pl_line = $PriceList->Get( $pl_line );
+
+				// var_dump($pl_line);
+
+				return $pl_line["price"];
+			}
+		}
+		print "<br/>";
+
 
 		return null;
 	}

@@ -252,8 +252,13 @@ if ( $manager ) {
 	}
 
 	// print "client name " . $client_name . "<br/>";
-	$client_name = get_customer_name( $customer_id );
-	$client      = $invoice->GetCustomerByName( $client_name );
+//	$client_name = get_customer_name( $customer_id );
+//	$client      = $invoice->GetCustomerByName( $client_name );
+
+	$client_email = get_customer_email( $customer_id );
+	// print $client_email;
+	$client = $invoice->GetCustomerByEmail( $client_email );
+	//var_dump($client);
 
 	print gui_table( array(
 		array( "email", get_customer_email( $customer_id ) ),
