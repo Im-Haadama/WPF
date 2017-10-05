@@ -10,9 +10,8 @@ if ( ! defined( TOOLS_DIR ) ) {
 	define( TOOLS_DIR, dirname( dirname( __FILE__ ) ) );
 }
 
-require_once( TOOLS_DIR . '/im_tools.php' );
+require_once( TOOLS_DIR . '/tools_wp_login.php' );
 require_once( TOOLS_DIR . '/gui/inputs.php' );
-
 
 $operation = $_GET["operation"];
 
@@ -60,7 +59,8 @@ function show_makolet( $month_year ) {
 	$month = substr( $month_year, 5, 2 );
 	print gui_header( 1, "משלוחים שבוצעו" );
 	$sql = "select d.id, client_from_delivery(d.id), d.date, order_id, total, vat, round(reduce_vat(fee),2), " .
-	       " round(total-vat-reduce_vat(fee),2), client_displayname(driver), city_from_delivery(d.id) from im_delivery d" .
+	       " round(total-vat-reduce_vat(fee),2), client_displayname(driver), city_from_delivery(d.id), payment_receipt " .
+	       " from im_delivery d" .
 	       " join im_business_info i " .
 	       " where month(d.date)=" . $month . " and year(d.date)=" . $year . " and i.ref = d.id and i.is_active = 1 ";
 

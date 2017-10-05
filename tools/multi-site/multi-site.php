@@ -6,7 +6,7 @@
  * Time: 18:13
  */
 
-require_once( '../im_tools.php' );
+require_once( '../tools_wp_login.php' );
 require_once( 'simple_html_dom.php' );
 require_once( '../gui/sql_table.php' );
 
@@ -91,7 +91,7 @@ class MultiSite {
 			}
 
 			//print "running on site " . $site_name . "<br/>";
-			// TODO: check if to use ? or &
+
 			if ( strstr( $func, "&" ) ) {
 				$glue = "?";
 			} else {

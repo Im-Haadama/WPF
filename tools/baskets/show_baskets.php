@@ -6,7 +6,7 @@
  * Time: 17:36
  */
 
-require_once( '../im_tools.php' );
+require_once( '../tools_wp_login.php' );
 require_once( 'show_basket.php' );
 require_once( "../catalog/catalog.php" );
 ?>

@@ -613,4 +613,28 @@ function get_product_variations( $prod_id ) {
 	return $vars;
 }
 
+function comma_implode( $array ) {
+//	print "<p dir=\"ltr\">";
+//	var_dump($array);
+//	print "</p>";
+	if ( is_null( $array ) ) {
+		return "";
+	}
+	if ( is_bool( $array ) ) {
+		return $array;
+	}
+	if ( ! is_array( $array ) ) {
+		return "not array!";
+	}
+	if ( is_string( $array[0] ) ) {
+		return trim( implode( ", ", $array ), ", " );
+	}
+	$result = "";
+	foreach ( $array as $var ) { // not string...
+		$result .= $var->name;
+		$result .= ", ";
+	}
+
+	return rtrim( $result, ", " );
+}
 ?>

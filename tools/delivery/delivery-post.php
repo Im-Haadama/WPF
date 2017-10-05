@@ -7,7 +7,7 @@
  */
 //require_once('catalog.php');
 require_once( '../pricelist/pricelist.php' );
-require_once( '../im_tools.php' );
+require_once( '../tools_wp_login.php' );
 
 // To map item from price list to our database the shop manager select item from the price list
 // and product_id. The triplet: product_id, supplier_id and product_code are sent as saved

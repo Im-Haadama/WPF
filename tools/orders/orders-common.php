@@ -6,7 +6,7 @@
  * Time: 08:00
  */
 
-// require_once( "../im_tools.php" );
+// require_once( "../tools_wp_login.php" );
 // BAD: print header_text();
 // require_once("../tools_wp_login.php");
 function orders_item_count( $item_id ) {
@@ -435,8 +435,56 @@ function calculate_total_products() {
 	return $variety . " סוגי מוצרים" . "<br/>" . $total . " פריטים ";
 }
 
+function check_cache_validity() {
+	$sql = "SELECT count(p.id) 
+	FROM wp_posts p
+	 LEFT JOIN im_need_orders o
+	  ON p.id = o.order_id 
+	  WHERE p.id IS NULL OR o.order_id IS NULL AND post_status LIKE '%wc-processing%'";
+
+	$diff = sql_query_single_scalar( $sql );
+
+	if ( $diff > 0 ) {
+		return false;
+	}
+
+	return true;
+
+}
+
 function calculate_needed( &$needed_products ) {
 	global $conn;
+	print "checking cache<br/>";
+	if ( 0 and check_cache_validity() ) {
+		print "valid</br>";
+		$needed_products = array();
+
+		$sql = " SELECT prod_id, need_q, need_u FROM im_need ";
+
+		$result = sql_query( $sql );
+
+		while ( $row = mysqli_fetch_row( $result ) ) {
+			$prod_or_var = $row[0];
+			$q           = $row[1];
+			$u           = $row[2];
+
+			$needed_products[ $prod_or_var ][0] = $q;
+			$needed_products[ $prod_or_var ][1] = $u;
+		}
+
+		return $needed_products;
+	}
+
+	print "not valid<br/>";
+	// Cache not vaild.
+	// Clean the im_need_orders, im_need table
+	$sql = "truncate table im_need_orders";
+	sql_query( $sql );
+
+	$sql = "truncate table im_need";
+	sql_query( $sql );
+
+	// Do the calculation
 	$sql = "SELECT id FROM wp_posts " .
 	       " WHERE post_status LIKE '%wc-processing%'";
 
@@ -444,6 +492,10 @@ function calculate_needed( &$needed_products ) {
 
 	while ( $row = mysqli_fetch_assoc( $result ) ) {
 		$id = $row["id"];
+
+		// Update im_need_orders table
+		$sql1 = "INSERT INTO im_need_orders (order_id) VALUE (" . $id . ") ";
+		sql_query( $sql1 );
 
 		$order       = new WC_Order( $id );
 		$order_items = $order->get_items();
@@ -462,6 +514,7 @@ function calculate_needed( &$needed_products ) {
 				$unit_array = explode( ",", $unit );
 				$unit_t     = $unit_array[0];
 				$key        = array( $prod_or_var, $unit_t );
+				$qty        = $unit_array[1];
 			} else {
 				$key = array( $prod_or_var, '');
 			}
@@ -482,6 +535,21 @@ function calculate_needed( &$needed_products ) {
 			add_products( $key, $qty, $needed_products);
 			//   print $item['product_id'] . " " . $item['qty'] . "<br/>";
 		}
+	}
+	// Update im_need table
+	foreach ( $needed_products as $prod_or_var => $v1 ) {
+		$q = 0;
+		$u = 0;
+		if ( isset( $needed_products[ $prod_or_var ][0] ) ) {
+			$q = $needed_products[ $prod_or_var ][0];
+		}
+		if ( isset( $needed_products[ $prod_or_var ][1] ) ) {
+			$u = $needed_products[ $prod_or_var ][1];
+		}
+		$sql = "INSERT INTO im_need (prod_id, need_q, need_u) " .
+		       " VALUES (" . $prod_or_var . "," . $q . "," . $u . ")";
+
+		sql_query( $sql );
 	}
 }
 

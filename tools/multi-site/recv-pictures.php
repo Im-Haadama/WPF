@@ -7,7 +7,7 @@
  * Recieves pictures from secondary site to main site (with multisite mapping)
  * As June 2017 from Im haadama(send) to Organic Store(recv)
  */
-require_once( '../im_tools.php' );
+require_once( '../tools_wp_login.php' );
 
 $ids           = $_GET["imgs"];
 $prefix        = $_GET["prefix"];

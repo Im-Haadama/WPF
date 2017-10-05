@@ -1,5 +1,5 @@
 <?php include "tools_wp_login.php";
-require_once( "im_tools.php" );
+require_once( "tools_wp_login.php" );
 ?>
 <html dir="rtl">
 <head>
@@ -57,7 +57,7 @@ require_once( "im_tools.php" );
                         <td style="vertical-align: top;">
                             <meta http-equiv="content-type" content="text/html; charset=utf-8">
                             <p align="center"><span lang="he-IL"><a
-                                            href="delivery/get-driver-multi.php" target="doc_frame"><span lang="he-IL">פלט
+                                            href="delivery/get-driver-multi.php"><span lang="he-IL">פלט
 לנהגים</span></a></span></p>
                         </td>
                         <td style="border: medium none ; padding: 0in;">
@@ -90,7 +90,7 @@ require_once( "im_tools.php" );
                     <tr>
                         <td style="border: medium none ; padding: 0in;">
                             <p align="center"><span lang="he-IL"><a
-                                            href="orders/get-total-orders.php" target="doc_frame"><span
+                                            href="orders/get-total-orders.php"><span
                                                 lang="he-IL">פריטים להזמין</span></a></span></p>
                         </td>
                         <td style="vertical-align: top;"><a href="people/drivers.php">משלוחים
@@ -129,7 +129,7 @@ require_once( "im_tools.php" );
                     <tr>
                         <td style="border: medium none ; padding: 0in;">
                             <p align="center"><span lang="he-IL"><a
-                                            href="weekly/prepare.php" target="doc_frame"><span
+                                            href="weekly/prepare.php"><span
                                                 lang="he-IL">הכנת סבב</span></a></span></p>
                         </td>
 

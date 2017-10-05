@@ -7,10 +7,12 @@
  */
 
 require_once( 'catalog.php' );
+require_once( "../im_tools.php" );
+require_once( "../../wp-includes/taxonomy.php" );
 print header_text();
 // print Catalog::GetBuyPrice(32, 100005);
 
-$line = "";
+//$line = "";
 //Catalog::UpdateProduct(4425, $line);
 //
 //print $line;
@@ -67,6 +69,9 @@ $line = "";
 //Catalog::UpdateProduct( $prod_id, $line, false );
 
 // Catalog::DeleteMappingProductId(7345);
-print get_post_status( 7345 );
+// print get_post_status( 7345 );
 
 //prof_print();
+
+set_category( array( 1803 ), "פירות וירקות" );
+

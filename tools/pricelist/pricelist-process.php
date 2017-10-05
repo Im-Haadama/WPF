@@ -5,7 +5,7 @@
  * Date: 24/02/17
  * Time: 09:13
  */
-require_once( '../im_tools.php' );
+require_once( '../tools_wp_login.php' );
 require_once( 'pricelist.php' );
 
 
@@ -44,6 +44,12 @@ function pricelist_remote_site_process( $supplier_id, &$results, $inc = false ) 
 	print gui_header( 2, "מבקש נתונים" );
 	flush();
 	$html = file_get_html( $remote );
+	if ( strlen( $html ) < 1000 ) {
+		print "no data<br/>";
+		print "remote: " . $remote . "<br/>";
+		print $html . strlen( $html );
+		die ( 1 );
+	}
 	print gui_header( 2, "התקבלו נתונים" );
 	flush();
 	$item_count = 0;
@@ -76,7 +82,7 @@ function pricelist_remote_site_process( $supplier_id, &$results, $inc = false ) 
 			if ( $debug ) {
 				print " regular ";
 			}
-			$result = handle_line( $price, $sale_price, $name, $prod_id, $PL, false, $id, 0 );
+			$result = handle_line( $price, $sale_price, $name, $prod_id, "", $PL, $var_num > 0, $id, 0 );
 			switch ( $result ) {
 				case UpdateResult::UsageError:
 				case UpdateResult::SQLError:
@@ -92,7 +98,7 @@ function pricelist_remote_site_process( $supplier_id, &$results, $inc = false ) 
 			}
 			$parent_id = 0;
 			// Insert or update the parent. Get back the parent id
-			$result = handle_line( $price, $sale_price, $name, $prod_id, $PL, true, $parent_id, 0 );
+			$result = handle_line( $price, $sale_price, $name, $prod_id, "", $PL, true, $parent_id, 0 );
 			if ( $parent_id == 0 ) {
 				print "Didn't get parent id for product " . $name . "<br/>";
 				die ( 2 );
@@ -120,7 +126,7 @@ function pricelist_remote_site_process( $supplier_id, &$results, $inc = false ) 
 				$sale_price = $row->find( 'td', 5 )->plaintext;
 
 				if ( $price > 0 ) {
-					$result = handle_line( $price, $sale_price, $name, $var_id, $PL, false, $var_id, $parent_id );
+					$result = handle_line( $price, $sale_price, $name, $var_id, "", $PL, false, $var_id, $parent_id );
 					switch ( $result ) {
 						case UpdateResult::UsageError:
 						case UpdateResult::SQLError:
@@ -249,7 +255,7 @@ function pricelist_process( $filename, $supplier_id, $add ) {
 						case UpdateResult::SQLError:
 							print "Unexpected error 3";
 							print $price . " " . $name . " " . $item_code . "<br/>";
-							die( 1 );
+							break;
 						default:
 							$results[ $result ][] = array( $name, $price, $id );
 					}

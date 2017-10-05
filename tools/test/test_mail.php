@@ -6,7 +6,7 @@
  * Time: 16:23
  */
 
-require_once( "im_tools.php" );
+require_once( "tools_wp_login.php" );
 require_once( "mail.php" );
 
 send_mail( "mail-test", "yaakov.aglamaz@gmail.com" . ", info@im-haadama.co.il", "test message" );

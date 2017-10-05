@@ -5,7 +5,7 @@
  * Date: 06/12/15
  * Time: 10:16
  */
-require_once( '../im_tools.php' );
+require_once( '../tools_wp_login.php' );
 require_once( '../catalog/catalog.php' );
 require_once( '../gui/inputs.php' );
 require_once( '../multi-site/multi-site.php' );
@@ -124,6 +124,7 @@ class PriceList {
 
 	function AddOrUpdate( $regular_price, $sale_price, $product_name, $code = 10, $category, &$id, $parent_id = null ) {
 		global $debug;
+
 		my_log( __METHOD__, __FILE__ );
 		if ( mb_strlen( $product_name ) > 40 ) {
 			$product_name = mb_substr( $product_name, 0, 40 );
@@ -136,7 +137,7 @@ class PriceList {
 
 			return UpdateResult::UsageError;
 		}
-		print "Add: " . $product_name . ", " . $regular_price . " " . $category . "<br/>";
+		// print "Add: " . $product_name . ", " . $regular_price . " " . $category . "<br/>";
 		global $conn;
 
 		// Change if line exits.
@@ -172,7 +173,7 @@ class PriceList {
 
 			$sql .= " where product_name = '" . $product_name . "' and supplier_id = " . $this->SupplierID;
 
-			// print "<br/>"  . $product_name . "<br/>";
+			//  print "<br/>"  . $product_name . "<br/>";
 			// print "<p dir='ltr'>"  . $sql . "</p>";
 
 			$result = mysqli_query( $conn, $sql );
@@ -193,11 +194,20 @@ class PriceList {
 			// Update linked products
 			$prod_ids = Catalog::GetProdID( $id );
 			$line     = "";
+			if ( $debug ) {
+				print "update";
+			}
 			if ( $prod_ids ) {
 				foreach ( $prod_ids as $prod_id ) {
+					if ( $debug ) {
+						print $prod_id . " ";
+					}
 					Catalog::UpdateProduct( $prod_id, $line );
 					my_log( $line );
 				}
+			}
+			if ( $debug ) {
+				print "<br/>";
 			}
 
 		} else {

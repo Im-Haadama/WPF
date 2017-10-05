@@ -7,7 +7,7 @@
  */
 
 // test
-include_once( "../im_tools.php" );
+include_once( "../tools_wp_login.php" );
 require_once( "../gui/inputs.php" );
 require_once( "../mail.php" );
 require_once( "../catalog/catalog.php" );
@@ -33,9 +33,9 @@ function create_supply( $supplierID ) {
 	return mysqli_insert_id( $conn );
 }
 
-function supply_add_line( $supply_id, $prod_id, $quantity ) {
-	$sql = "INSERT INTO im_supplies_lines (supply_id, product_id, quantity) VALUES "
-	       . "( " . $supply_id . ", " . $prod_id . ", " . $quantity . ")";
+function supply_add_line( $supply_id, $prod_id, $quantity, $units ) {
+	$sql = "INSERT INTO im_supplies_lines (supply_id, product_id, quantity, units) VALUES "
+	       . "( " . $supply_id . ", " . $prod_id . ", " . $quantity . ", " . $units . ")";
 
 	sql_query( $sql );
 }
@@ -109,7 +109,6 @@ function print_supply( $id, $internal ) {
 }
 
 function print_supply_lines( $id, $internal ) {
-
 	$data_lines = array();
 	my_log( __FILE__, "id = " . $id . " internal = " . $internal );
 	$sql = 'select product_id, quantity, id '
@@ -117,7 +116,7 @@ function print_supply_lines( $id, $internal ) {
 
 	$result = sql_query( $sql );
 
-	$data = "<table id=\"del_table\" border=\"1\"><tr><td>בחר</td><td>פריט</td><td>כמות</td><td>מידה</td><td>מחיר</td><td>סהכ";
+	$data = "<table id=\"del_table\" border=\"1\"><tr><td>בחר</td><td>פריט</td><td>כמות</td><td>יחידות</td><td>מידה</td><td>מחיר</td><td>סהכ";
 
 	if ( $internal ) {
 		$data .= "<td>מחיר מכירה</td>";
@@ -130,7 +129,7 @@ function print_supply_lines( $id, $internal ) {
 	$line_number = 0;
 
 	$supplier_id = sql_query_single_scalar( "SELECT supplier FROM im_supplies WHERE id = " . $id );
-	print "supplier_id: " . $supplier_id . "<br/>";
+	// print "supplier_id: " . $supplier_id . "<br/>";
 
 	while ( $row = mysqli_fetch_row( $result ) ) {
 		$line_number  = $line_number + 1;
@@ -151,6 +150,7 @@ function print_supply_lines( $id, $internal ) {
 		$line .= "<td>" . $product_name . '</td>';
 		$line .= "<td>" . gui_input( $line_id, $quantity, array( 'onchange="changed(this)"' ) ) . "</td>";
 //        $line .= "<td>" . $quantity . "</td>";
+
 		$attr_array = get_post_meta( $prod_id, '_product_attributes' );
 		$attr_text  = "";
 		foreach ( $attr_array as $attr ) {
@@ -162,7 +162,6 @@ function print_supply_lines( $id, $internal ) {
 		}
 
 		$line .= "<td>" . $attr_text . "</td>";
-
 
 		//    $line .= "<td>" . $vat_line . "</td>";
 		if ( $item_price > 0 ) {
@@ -457,9 +456,10 @@ function create_supplier_order( $supplier_id, $ids ) {
 	$supply_id = create_supply( $supplier_id );
 	print "created supply " . $supply_id . "<br/>";
 
-	for ( $pos = 0; $pos < count( $ids ); $pos += 2 ) {
+	for ( $pos = 0; $pos < count( $ids ); $pos += 3 ) {
 		$prod_id  = $ids[ $pos ];
 		$quantity = $ids[ $pos + 1 ];
+		$units    = $ids[ $pos + 2 ];
 		print "adding " . $prod_id . " quantity " . $quantity . "<br/>";
 
 		// Calculate the price
@@ -468,7 +468,7 @@ function create_supplier_order( $supplier_id, $ids ) {
 //        $sell_price = calculate_price($buy_price, $supplier_id);
 
 //        my_log("supplier_id = " . $supplier_id . " name = " . $product_name);
-		supply_add_line( $supply_id, $prod_id, $quantity );
+		supply_add_line( $supply_id, $prod_id, $quantity, $units );
 
 	}
 }

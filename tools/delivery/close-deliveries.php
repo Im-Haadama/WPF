@@ -6,7 +6,7 @@
  * Time: 23:19
  */
 
-require_once( '../im_tools.php' );
+require_once( '../tools_wp_login.php' );
 require_once( '../multi-site/multi-site.php' );
 
 $sql = "UPDATE wp_posts 

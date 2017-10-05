@@ -1,7 +1,8 @@
 <?php
-require_once( '../im_tools.php' );
+require_once( '../tools_wp_login.php' );
 require_once( '../../wp-content/plugins/woocommerce-delivery-notes/woocommerce-delivery-notes.php' );
 require_once( '../multi-site/multi-site.php' );
+require_once( '../account/account.php' );
 $header = $_GET["header"];
 //if (isset($_GET["week"])) $week = $_GET["week"];
 //$footer = $_GET["footer"];
@@ -31,7 +32,7 @@ print_legacy();
 
 die( 0 );
 
-function print_deliveries() {
+function print_deliveries( $edit = false ) {
 //    print "start";
 //    if (isset($_GET["week"])){
 //        $week = $_GET["week"];
@@ -85,7 +86,8 @@ function print_deliveries() {
 				$field_value = get_meta_field( $order_id, $field );
 				array_push( $fields, $field_value );
 			}
-			array_push( $fields, get_meta_field( $order_id, '_payment_method' ) );
+			// array_push( $fields, get_meta_field( $order_id, '_payment_method' ) );
+			array_push( $fields, get_payment_method_name( $client_id ) );
 
 			$long_lat = get_long_lat( $client_id, $address );
 
@@ -118,9 +120,9 @@ function print_deliveries() {
 			array_push( $fields, zone_get_name( $zone ) );
 			$sort_index = sort_key( $choosed_day, $zone_order, $long_lat );
 
-			array_push( $fields, $sort_index );
+			// array_push( $fields, $sort_index );
 
-			$line = "<tr> " . table_line( $order_id, $fields ) . "</tr>";
+			$line = "<tr> " . table_line( $order_id, $fields, $edit ) . "</tr>";
 
 			// get_field($order_id, '_shipping_city');
 			array_push( $data_lines, array( $sort_index, $line, $order_id ) );
@@ -314,9 +316,12 @@ function print_legacy() {
 //print "done legacy<br/>";
 
 
-function table_line( $ref, $fields ) {
+function table_line( $ref, $fields, $edit = false ) {
 	//"onclick=\"close_orders()\""
-	$row_text = gui_cell( gui_checkbox( "chk_" . $ref, "", "", null ) );
+	$row_text = "";
+	if ( $edit ) {
+		$row_text = gui_cell( gui_checkbox( "chk_" . $ref, "", "", null ) );
+	}
 
 	foreach ( $fields as $field ) // display customer name
 	{
@@ -386,10 +391,13 @@ function get_long_lat( $client_id, $address ) {
 	return $long_lat;
 }
 
-function table_header() {
+function table_header( $edit = false ) {
 	$data = "";
-	$data .= "<table>";
-	$data .= "<tr><td>בחר</td></td><td><h3>אתר</h3></td>";
+	$data .= "<table><tr>";
+	if ( $edit ) {
+		$data .= "<td>בחר</td>";
+	}
+	$data .= "</td><td><h3>אתר</h3></td>";
 	$data .= "<td><h3>מספר </br>הזמנה</h3></td>";
 	$data .= "<td><h3>שם המזמין</h3></td>";
 	$data .= "<td><h3>שם המקבל</h3></td>";
@@ -400,7 +408,7 @@ function table_header() {
 	$data .= "<td><h3>אופן תשלום</h3></td>";
 	$data .= "<td><h3>יום</h3></td>";
 	$data .= "<td><h3>אזור</h3></td>";
-	$data .= "<td><h3>מיקום</h3></td>";
+	// $data .= "<td><h3>מיקום</h3></td>";
 	print $data;
 }
 

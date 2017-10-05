@@ -371,6 +371,8 @@ class delivery {
 
 		$data .= "</table>";
 
+		$data .= "מספר שורות  " . $this->line_number . "<br/>";
+
 		return "$data";
 	}
 

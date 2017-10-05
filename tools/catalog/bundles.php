@@ -6,7 +6,7 @@
  * Time: 16:31
  */
 
-require_once( '../im_tools.php' );
+require_once( '../tools_wp_login.php' );
 
 class Bundles {
 //    function PrintHTML()
@@ -124,7 +124,7 @@ class Bundle {
 		$sql = "SELECT quantity, prod_id FROM im_bundles WHERE bundle_prod_id = " . $this->id;
 		// print $sql;
 
-		sql_query( $sql );
+		$result = sql_query( $sql );
 
 		$row = mysqli_fetch_row( $result );
 
@@ -139,7 +139,7 @@ class Bundle {
 	function GetSupplier() {
 		$sql = "SELECT prod_id FROM im_bundles WHERE bundle_prod_id = " . $this->id;
 
-		sql_query( $sql );
+		$result = sql_query( $sql );
 
 		$row = mysqli_fetch_row( $result );
 

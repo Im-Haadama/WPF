@@ -1,22 +1,29 @@
 <?php
-
 require_once( "im_tools.php" );
 
 if ( ! defined( STORE_DIR ) ) {
 	define( 'STORE_DIR', dirname( dirname( __FILE__ ) ) );
 }
-
+// print $_SERVER['REMOTE_ADDR'];
 require_once( STORE_DIR . "/wp-load.php" );
+require_once( STORE_DIR . "/wp-includes/pluggable.php" );
 $multisite = false;
 
-if ( $_SERVER['REMOTE_ADDR'] == "160.153.153.166" or
-     $_SERVER['REMOTE_ADDR'] == "192.64.80.133"
+if ( $_SERVER['REMOTE_ADDR'] == "160.153.129.234" or // Aglamaz.com
+     $_SERVER['REMOTE_ADDR'] == "192.64.80.133" or // Tabula
+     $_SERVER['REMOTE_ADDR'] == "82.80.250.18" or // super-organi: self calling - reading create-delivery-script
+     $_SERVER['REMOTE_ADDR'] == "82.81.243.189" or // Aglamaz home
+     $_SERVER['REMOTE_ADDR'] == "127.0.0.1"
 ) {
 	$multisite = true;
 } else {
-	if ( is_user_logged_in() ) {
-		$current_user = wp_get_current_user();
+//	foreach (get_included_files() as $file)
+//		print $file . "<br/>";
 
+	$user = wp_get_current_user();
+
+	if ( strlen( $user->user_login ) > 2 ) {
+		// print "ברוך הבא " . $user->user_login . "<br/>";
 	} else {
 		//    print "need to login<br/>";
 		//    if (!defined("BASE_PATH")) define('BASE_PATH', isset($_SERVER['DOCUMENT_ROOT']) ? $_SERVER['DOCUMENT_ROOT'] : substr($_SERVER['PATH_TRANSLATED'],0, -1*strlen($_SERVER['SCRIPT_NAME'])));
@@ -26,15 +33,17 @@ if ( $_SERVER['REMOTE_ADDR'] == "160.153.153.166" or
 		//    print "docroot: " . $_SERVER["DOCUMENT_ROOT"] .  "<br/>";
 		//    print "base_path: " . BASE_PATH  . "<br/>";
 		$url = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_HOST ) . '/wp-login.php?redirect_to=' . $_SERVER['REQUEST_URI'] . '"';
-		print $url;
+		// print $url;
 
-		print '<script language="javascript">';
-		print "window.location.href = '" . $url . "'";
-
-		print '</script>';
+//		print '<script language="javascript">';
+//		print "window.location.href = '" . $url . "'";
+//
+//		print '</script>';
+		print $_SERVER['REMOTE_ADDR'];
 		exit();
 	}
 }
+
 function get_customer_name( $customer_id ) {
 	$user = get_user_by( "id", $customer_id );
 

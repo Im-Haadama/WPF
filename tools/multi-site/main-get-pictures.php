@@ -8,7 +8,7 @@
  * Calculate pictures to receive and send "send command" to remote
  */
 
-require_once( "../im_tools.php" );
+require_once( "../tools_wp_login.php" );
 require_once( "multi-site.php" );
 print header_text();
 $sql = "select m.remote_prod_id as rid, p.post_title as title, m.local_prod_id as id " .

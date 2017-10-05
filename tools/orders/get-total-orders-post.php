@@ -64,7 +64,21 @@ function get_total_orders( $filter_zero, $history = false ) {
 
 		$line .= "<td>" . $numeric_quantity . "</td>";
 
-		$supplier_name = get_supplier( $prod_id );
+		if ( MultiSite::LocalSiteID() == 2 ) {
+			$terms = get_the_terms( $prod_id, 'product_cat' );
+
+			if ( $terms ) {
+				foreach ( $terms as $term ) {
+					if ( $term->name != 'השף' ) {
+						$supplier_name = $term->name;
+						break;
+					}
+				}
+			}
+		} else {
+			$supplier_name = get_supplier( $prod_id );
+		}
+
 		$line          .= "<td>" . $supplier_name . "</td>";
 
 		// TODO: sale price

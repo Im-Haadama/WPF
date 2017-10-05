@@ -6,7 +6,7 @@
  * Time: 21:07
  */
 
-require_once( '../im_tools.php' );
+require_once( '../tools_wp_login.php' );
 require_once( 'orders-common.php' );
 
 // Read all subscriptions and create order for them

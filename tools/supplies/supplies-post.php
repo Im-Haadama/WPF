@@ -5,7 +5,7 @@
  * Date: 05/05/16
  * Time: 11:45
  */
-require_once( '../im_tools.php' );
+require_once( '../tools_wp_login.php' );
 require_once( 'supplies.php' );
 require_once( '../orders/orders-common.php' );
 require_once( '../gui/inputs.php' );

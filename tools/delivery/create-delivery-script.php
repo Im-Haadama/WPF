@@ -1,7 +1,6 @@
 <?php
 require_once( '../multi-site/multi-site.php' );
 require_once( 'delivery-common.php' );
-
 $id       = $_GET["id"];
 $order_id = $_GET["order_id"];
 $edit     = false;

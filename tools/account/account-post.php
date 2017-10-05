@@ -62,6 +62,10 @@ switch ( $operation ) {
 		$pay_type = pay_type( $cash, $bank, $credit, $check );
 		if ( is_numeric( $doc_id ) && $doc_id > 0 ) {
 			$pay_description = $pay_type . " " . $_GET["ids"];
+
+			$sql = "UPDATE im_delivery SET payment_receipt = " . $doc_id . " WHERE id IN (" . comma_implode( $ids ) . " ) ";
+			sql_query( $sql );
+
 			account_add_transaction( $user_id, date( "Y-m-d" ), $change - ( $cash + $bank + $credit + $check ), $doc_id, $pay_description );
 			if ( abs( $change ) > 0 ) {
 				account_add_transaction( $user_id, date( "Y-m-d" ), - $change, $doc_id, $change > 0 ? "עודף" : "חוסר/ניצול יתרה" );
@@ -284,10 +288,9 @@ function invoice_create_document( $type, $ids, $customer_id, $cash = 0, $bank = 
 	// print $client_email;
 	$client = $invoice->GetCustomerByEmail( $client_email );
 
-
 	if ( is_null( $client->ID ) ) {
 		// var_dump($invoice);
-		die( "cant get client name" );
+		$client = $invoice->GetCustomerByName( get_customer_name( $customer_id ) ) or die( "cant get client name" );
 	}
 
 	$email = $client->Email;
@@ -314,7 +317,7 @@ function invoice_create_document( $type, $ids, $customer_id, $cash = 0, $bank = 
 	foreach ( $ids as $del_id ) {
 		$subject .= $del_id . ", ";
 	}
-	$doc->Subject = trim( $subject, "," );
+	$doc->Subject = trim( $subject, ", " );
 
 	// Add the deliveries
 	$doc->Items = Array();

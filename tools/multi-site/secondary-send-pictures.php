@@ -6,7 +6,7 @@
  * Time: 21:03
  * Sending pictures from secodary to main
  */
-require_once( "../im_tools.php" );
+require_once( "../tools_wp_login.php" );
 $ids = explode( ',', $_GET["ids"] );
 
 $result = "";

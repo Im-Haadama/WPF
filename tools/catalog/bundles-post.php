@@ -5,7 +5,7 @@
  * Date: 16/07/15
  * Time: 16:00
  */
-require_once( '../im_tools.php' );
+require_once( '../tools_wp_login.php' );
 require_once( '../catalog/bundles.php' );
 
 // To map item from price list to our database the shop manager select item from the price list

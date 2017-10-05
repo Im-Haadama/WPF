@@ -5,7 +5,7 @@
  * Date: 08/03/17
  * Time: 07:44
  */
-require_once( "../im_tools.php" );
+require_once( "../tools_wp_login.php" );
 
 $supplier_id = $_GET["supplier_id"];
 print $supplier_id;

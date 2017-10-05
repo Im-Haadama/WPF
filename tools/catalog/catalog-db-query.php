@@ -1,5 +1,5 @@
 <?php
-require_once( '../im_tools.php' );
+require_once( '../tools_wp_login.php' );
 require_once( "../gui/inputs.php" );
 require_once( "../catalog/catalog.php" );
 
@@ -7,14 +7,17 @@ $search_text = $_GET["search_txt"];
 $operation   = $_GET["operation"];
 
 // Check connection
-if ( $link->connect_error ) {
-	die( "Connection failed: " . $conn->connect_error );
-}
-
-mysql_select_db( $dbname );
 
 my_log( $operation, "catalog-db-query.php" );
 switch ( $operation ) {
+	case "set_category":
+		$category = $_GET["category"];
+		print "setting category " . $category . "<br/>";
+		$prod_ids = $_GET["prod_ids"];
+		$ids      = explode( ',', $prod_ids );
+		set_category( $ids, $category );
+		break;
+
 	case "set_supplier":
 		$supplier_name = $_GET["supplier_name"];
 		$prod_ids      = $_GET["prod_ids"];
@@ -63,6 +66,17 @@ switch ( $operation ) {
 //		show_catalog( $for_update, '', true );
 //		break;
 }
+function set_category( $prod_ids, $category ) {
+
+	// my_log($debug_string, __FILE__);
+	foreach ( $prod_ids as $product_id ) {
+		// my_log("set supplier " . $prod, __FILE__);
+//		set_post_meta_field( $prod, "supplier_name", $supplier_name );
+		print "prod " . $product_id . " " . get_product_name( $product_id );
+		terms_add_category( $product_id, $category );
+
+	}
+}
 
 function show_catalog( $for_update, $search_text, $csv, $active = false, $siton = false, $buy = false, $category = null, $order = false ) {
 
@@ -74,12 +88,25 @@ function show_catalog( $for_update, $search_text, $csv, $active = false, $siton 
 	       . ' where post_type = \'product\'';
 
 	if ( $search_text <> "" ) {
-		$sql .= ' and post_title like \'%' . $search_text . '%\'';
+		if ( is_numeric( $search_text ) ) {
+			$sql .= ' and id = ' . $search_text . ' ';
+		} else {
+			$ids = explode( "|", $search_text );
+			if ( is_array( $ids ) and is_numeric( $ids[0] ) ) {
+				$sql .= ' and id in (';
+				foreach ( $ids as $id ) {
+					$sql .= $id . ", ";
+				}
+				$sql = rtrim( $sql, ", " ) . ")";
+
+			} else {
+				$sql .= " and post_title like '%" . $search_text . "%'";
+			}
+		}
 	}
 
 	if ( $active ) {
 		$sql .= ' and post_status = \'publish\'';
-
 	}
 
 	$sql .= ' order by 2';
@@ -91,6 +118,8 @@ function show_catalog( $for_update, $search_text, $csv, $active = false, $siton 
 		$data .= "<td></td>";
 	}
 	$data .= "<td><h3>מזהה</h3></td><td><h3>שם פריט</h3></td><td><h3>מחיר</h3></td><td><h3>מעם</h3></td><td><h3>ספק</h3></td>";
+	$data .= gui_cell( gui_header( 3, "סטטוס" ) );
+	$data .= gui_cell( gui_header( 3, "קטגוריה" ) );
 	if ( $buy ) {
 		$data .= "<td>רשימה</td>";
 	}
@@ -111,8 +140,9 @@ function show_catalog( $for_update, $search_text, $csv, $active = false, $siton 
 		// prof_flag("handle " . $prod_id);
 		$product_categories = array();
 
+		$terms = get_the_terms( $prod_id, 'product_cat' );
+
 		if ( $category ) { // Check if this product in the given categories
-			$terms = get_the_terms( $prod_id, 'product_cat' );
 			if ( $terms ) {
 				foreach ( $terms as $term ) {
 					$product_cat_id = $term->term_id;
@@ -205,6 +235,7 @@ function show_catalog( $for_update, $search_text, $csv, $active = false, $siton 
 		if ( $order ) {
 			$line .= gui_cell( gui_input( "prod_quantity" . $prod_id, "", null, "q_" . $prod_id ) );
 		}
+		$line .= gui_cell( comma_implode( $terms ) );
 		$line .= "</tr>";
 
 		// $line .= "<td>" . $categ . "</td>";

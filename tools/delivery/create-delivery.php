@@ -1,8 +1,8 @@
 <?php
-include_once( "../tools_wp_login.php" );
-include_once( "../orders/orders-common.php" );
+// include_once( "../tools_wp_login.php" );
+// include_once( "../orders/orders-common.php" );
 include_once( "delivery.php" );
-include_once( "../multi-site/multi-site.php" );
+// include_once( "../multi-site/multi-site.php" );
 
 print header_text( false );
 

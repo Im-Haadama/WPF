@@ -75,6 +75,10 @@ $sql = 'select round(sum(ia.transaction_amount),2), ia.client_id, wu.display_nam
 
 $result = mysqli_query( $conn, $sql );
 
+if ( ! $result ) {
+	print sql_error( $sql );
+	die( 1 );
+}
 $data = "<table>";
 $data .= "<tr>";
 $data .= gui_cell( "בחר" );

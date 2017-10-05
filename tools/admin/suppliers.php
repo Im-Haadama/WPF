@@ -5,7 +5,7 @@
  * Date: 18/04/17
  * Time: 22:53
  */
-require_once( '../im_tools.php' );
+require_once( '../tools_wp_login.php' );
 require_once( '../header.php' );
 ?>
 <script>

@@ -194,8 +194,6 @@ if ( ! $manager ) {
             table.rows[table.rows.length - 2].cells[refund_total_id].firstChild.nodeValue = Math.round(total_vat * 100) / 100;
             // Total
             table.rows[table.rows.length - 1].cells[refund_total_id].firstChild.nodeValue = total_refund;
-
-
         }
 
         function create_refund() {
@@ -227,7 +225,6 @@ if ( ! $manager ) {
             }
             xmlhttp.open("GET", request, true);
             xmlhttp.send();
-
         }
 
     </script>
@@ -258,7 +255,11 @@ if ( $manager ) {
 	$client_email = get_customer_email( $customer_id );
 	// print $client_email;
 	$client = $invoice->GetCustomerByEmail( $client_email );
-	//var_dump($client);
+
+	if ( ! $client ) {
+		$client = $invoice->GetCustomerByName( get_customer_name( $customer_id ) );
+	}
+	/// var_dump($client);
 
 	print gui_table( array(
 		array( "email", get_customer_email( $customer_id ) ),
@@ -348,7 +349,7 @@ if ( $manager ) {
             var cash_delta = Math.round(100 * (total_pay - total)) / 100;
             change.innerHTML = cash_delta;
 
-            if (total_pay > 0) {
+            if ((total_pay > 0) && Math.abs(cash_delta) < 100) {
                 document.getElementById('btn_invoice').disabled = true;
                 document.getElementById('btn_receipt').disabled = false;
             } else {

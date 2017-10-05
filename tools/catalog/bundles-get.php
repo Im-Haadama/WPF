@@ -6,7 +6,7 @@
  * Time: 15:25
  */
 
-require_once( '../im_tools.php' );
+require_once( '../tools_wp_login.php' );
 ?>
 
 <html dir="rtl">

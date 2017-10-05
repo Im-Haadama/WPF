@@ -116,6 +116,7 @@ function get_sale_price( $prod_id ) {
 
 function get_regular_price( $prod_id ) {
 	return get_postmeta_field( $prod_id, '_regular_price' );
+
 }
 
 function set_price( $prod_id, $price ) {

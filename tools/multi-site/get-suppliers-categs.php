@@ -6,7 +6,7 @@
  * Time: 15:55
  */
 
-require_once( '../im_tools.php' );
+require_once( '../tools_wp_login.php' );
 require_once( "../suppliers/gui.php" );
 
 print "ספקים: ";

@@ -6,7 +6,7 @@
  * Time: 12:08
  */
 
-require_once( "../im_tools.php" );
+require_once( "../tools_wp_login.php" );
 require_once( "../pricelist/pricelist.php" );
 require_once( "../pricelist/pricelist-process.php" );
 

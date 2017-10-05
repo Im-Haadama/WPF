@@ -5,7 +5,7 @@
  * Date: 13/03/17
  * Time: 23:29
  */
-require_once( '../im_tools.php' );
+require_once( '../tools_wp_login.php' );
 require_once( '../gui/inputs.php' );
 
 ?>
@@ -35,7 +35,7 @@ require_once( '../gui/inputs.php' );
             xmlhttp.send();
         }
 
-        function clear() {
+        function clear_legacy() {
             xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function () {
                 // Wait to get query result
@@ -69,7 +69,7 @@ print "</table>";
 
 print gui_button( "btn_done", "done()", "בצע" );
 
-print gui_button( "btn_clear", "clear()", "נקה" );
+print gui_button( "btn_clear", "clear_legacy()", "נקה" );
 
 print '<div id="logging">';
 

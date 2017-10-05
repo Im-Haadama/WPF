@@ -6,7 +6,7 @@
  * Time: 04:27
  */
 require_once( "../gui/inputs.php" );
-require_once( "../im_tools.php" );
+require_once( "../tools_wp_login.php" );
 
 print header_text( true );
 

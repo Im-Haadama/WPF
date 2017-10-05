@@ -5,7 +5,7 @@
  * Date: 18/08/17
  * Time: 05:20
  */
-require_once( "im_tools.php" );
+// require_once( "tools_wp_login.php" );
 
 // Postmeta table
 function get_postmeta_field( $post_id, $field_name ) {

@@ -6,7 +6,7 @@
  * Time: 22:48
  * purpose: export all published products as pricelist for external store
  */
-require_once( '../im_tools.php' );
+require_once( '../tools_wp_login.php' );
 require_once( '../gui/inputs.php' );
 
 $sql = "SELECT post_title, id, post_modified FROM im_products";

@@ -6,8 +6,9 @@
  * Time: 22:48
  * purpose: export all published products as pricelist for external store
  */
-require_once( '../im_tools.php' );
+require_once( '../tools_wp_login.php' );
 require_once( '../gui/inputs.php' );
+require_once( '../pricing.php' );
 
 if ( isset( $_GET["incremental"] ) ) {
 	if ( ! isset( $_GET["site_id"] ) ) {
@@ -21,7 +22,6 @@ if ( isset( $_GET["incremental"] ) ) {
 }
 
 $sql = "SELECT post_title, id, post_modified FROM im_products";
-
 if ( $incremental ) {
 	$max      = sql_query_single_scalar( "SELECT max(post_modified) FROM wp_posts" );
 	$date_q   = "SELECT last_inc_update FROM im_multisite WHERE id = " . $site_id;
@@ -31,8 +31,14 @@ if ( $incremental ) {
 }
 print header_text();
 
+// print $sql;
+
 $result = mysqli_query( $conn, $sql );
 
+if ( ! $result ) {
+	sql_error( $sql );
+	die ( 1 );
+}
 $data = "";
 
 print "<table>";

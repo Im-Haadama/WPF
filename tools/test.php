@@ -5,7 +5,13 @@
  * Date: 15/04/17
  * Time: 12:15
  */
-require_once( 'tools_wp_login.php' );
+// require_once( 'tools_wp_login.php' );
+$url = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_HOST ) . '/wp-login.php?redirect_to=' . $_SERVER['REQUEST_URI'] . '"';
+print '<script language="javascript">';
+print "window.location.href = '" . $url . "'";
+
+print '</script>';
+exit();
 
 //$args = array(
 //    'posts_per_page' => -1,

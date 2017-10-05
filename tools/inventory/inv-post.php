@@ -5,7 +5,7 @@
  * Date: 04/06/17
  * Time: 13:39
  */
-require_once( '../im_tools.php' );
+require_once( '../tools_wp_login.php' );
 require_once( '../gui/sql_table.php' );
 
 $operation = $_GET["operation"];

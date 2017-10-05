@@ -5,7 +5,7 @@
  * Date: 06/12/15
  * Time: 10:07
  */
-require_once( '../im_tools.php' );
+require_once( '../tools_wp_login.php' );
 require_once( '../pricelist/pricelist.php' );
 require_once( '../wp/terms.php' );
 require_once( '../pricing.php' );
@@ -288,8 +288,6 @@ class Catalog {
 
 		$supplier_name = get_supplier_name( $supplier );
 		update_post_meta( $product_id, "supplier_name", $supplier_name );
-		terms_remove_category( $product_id, $current_supplier );
-		terms_add_category( $product_id, $supplier_name );
 
 		$terms         = get_the_terms( $product_id, 'product_cat' );
 		$regular_price = calculate_price( $pricelist["price"], $supplier, $terms );
@@ -411,9 +409,6 @@ class Catalog {
 				return $pl_line["price"];
 			}
 		}
-		print "<br/>";
-
-
 		return null;
 	}
 

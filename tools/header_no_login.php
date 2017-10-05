@@ -1,11 +1,14 @@
 <?php
-require_once( "config.php" );
+if ( ! defined( STORE_DIR ) ) {
+	define( 'STORE_DIR', dirname( __FILE__ ) );
+}
+require_once( STORE_DIR . '/im-config.php' );
 ?>
 <html dir="rtl">
 <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
-    <title>תוצרת טבעית - עם האדמה</title>
-    <center><img src="http://store.im-haadama.co.il/wp-content/uploads/2014/11/cropped-imadama-logo-7x170.jpg"></center>
+    <title><?php print $business_name; ?></title>
+    <center><img src="<?php print $logo_url; ?> "></center>
 </head>
 <?php
 // require_once "tools_wp_login.php";

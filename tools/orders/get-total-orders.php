@@ -5,16 +5,57 @@
  * Date: 31/10/16
  * Time: 18:06
  */
-require_once( '../im_tools.php' );
+require_once( '../tools_wp_login.php' );
 require_once( '../header.php' );
 
 ?>
 <html dir="rtl" lang="he">
 <header>
+    <script type="text/javascript" src="../client_tools.js"></script>
     <script>
         function show_totals() {
             xmlhttp = new XMLHttpRequest();
             var filter = document.getElementById("filter_zero").checked;
+            var request = "get-total-orders-post.php";
+            if (filter) request = request + "?filter_zero=1";
+
+            xmlhttp.open("GET", request, true);
+            xmlhttp.onreadystatechange = function () {
+                // Wait to get query result
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {  // Request finished
+                    table = document.getElementById("ordered_items");
+                    table.innerHTML = xmlhttp.response;
+
+                    update_selector();
+                }
+            }
+            xmlhttp.send();
+        }
+
+        function update_selector() {
+            var table = document.getElementById("ordered_items");
+            var terms = [];
+            for (var i = 1; i < table.rows.length; i++) {
+                var term = table.rows[i].cells[7].innerHTML;
+                var found = false;
+                for (var j = 0; j < terms.length; j++)
+                    if (terms[j] == term) found = true;
+                if (!found) terms[j] = term;
+            }
+
+            var selector = document.getElementById("select_term");
+
+            selector.options.length = 0;
+            for (i = 0; i < terms.length; i++) {
+                var option = document.createElement("option");
+                option.text = terms[i];
+                selector.options.add(option);
+            }
+
+        }
+
+        function create_single() {
+            xmlhttp = new XMLHttpRequest();
             var request = "get-total-orders-post.php";
             if (filter) request = request + "?filter_zero=1";
 
@@ -29,13 +70,13 @@ require_once( '../header.php' );
             xmlhttp.send();
         }
 
-        function get_value(element) {
-            if (element.tagName == "INPUT") {
-                return element.value;
-            } else {
-                return element.nodeValue;
-            }
-        }
+        //        function get_value(element) {
+        //            if (element.tagName == "INPUT") {
+        //                return element.value;
+        //            } else {
+        //                return element.nodeValue;
+        //            }
+        //        }
 
         function createSupply() {
             var table = document.getElementById('ordered_items');
@@ -57,6 +98,10 @@ require_once( '../header.php' );
 
                     var quantity = eval(get_value(table.rows[i + 1].cells[6].firstChild));
                     map_ids.push(quantity);
+
+                    var units = eval(get_value(table.rows[i + 1].cells[3].firstChild));
+                    map_ids.push(units);
+
                 }
             }
             // Call the server to save the supply
@@ -79,7 +124,7 @@ require_once( '../header.php' );
             // var lines = table.rows.length;
             var collection = document.getElementsByClassName("product_checkbox");
 
-            var sel = document.getElementById("supplier_id");
+            var sel = document.getElementById("select_term");
             var supplier_name = sel.options[sel.selectedIndex].innerHTML.trim();
 
             // select the prods
@@ -98,22 +143,30 @@ require_once( '../header.php' );
 <center><h1>סך הפריטים שהוזמנו</h1></center>
 <input type="checkbox" id="filter_zero" onclick='show_totals();'>סנן מוזמנים<br>
 <table id="ordered_items"></table>
-<button id="btn_create_order" onclick="createSupply()">צור!</button>
-צור הזמנה לספק
-<select id="supplier_id"" >
-<?php
 
-$sql1 = 'SELECT id, supplier_name FROM im_suppliers';
+
+צור הזמנה לספק
+<select id="supplier_id">
+	<?php
+
+	$sql1 = 'SELECT id, supplier_name FROM im_suppliers';
 
 // Get line options
-$result = sql_query( $sql1 );
-while ( $row1 = mysqli_fetch_row( $result ) ) {
-	print "<option value = \"" . $row1[0] . "\" > " . $row1[1] . "</option>";
-}
-
-?>
+	$result = sql_query( $sql1 );
+	while ( $row1 = mysqli_fetch_row( $result ) ) {
+		print "<option value = \"" . $row1[0] . "\" > " . $row1[1] . "</option>";
+	}
+	?>
 </select>
+
+<button id="btn_create_order" onclick="createSupply()">צור!</button>
+<br/>
+בחר פריטים של קטגוריה
+<select id="select_term"></select>
 <button id="btn_select_prods" onclick="selectProds()">בחר</button>
+
+<br/>
+<button id="btn_create_supply_single_supplier" onclick="create_single()">ספק יחיד</button>
 
 <div id="logging"></div>
 

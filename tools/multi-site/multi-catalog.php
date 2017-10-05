@@ -9,6 +9,7 @@
 $remote_id = 2;
 
 require_once( '../tools_wp_login.php' );
+require_once( '../gui/gui.php' );
 
 // To map item from price list to our database the shop manager select item from the price list
 // and product_id. The triplet: product_id, supplier_id and product_code are sent as saved
@@ -172,19 +173,7 @@ require_once( '../tools_wp_login.php' );
 
 <button id="btn_map" onclick="map_products()">שמור מיפוי</button>
 <button id="btn_create" onclick="create_products()">צור מוצרים</button>
-<select id="product_cat">
-	<?php
-	$product_categories = get_terms( 'product_cat', array(
-		'hide_empty' => false,
-	) );
-	foreach ( $product_categories as $cat ) {
-
-		echo '<option value="' . $cat->slug . '"data-category-id=' . $cat->term_id . '>' . $cat->name . '</option>';
-		// $line .= '<option value="' . $new_price . '" data-supplier = ' . $row1[1] . ' data-supplier-price = ' . $supplier_price . '>' . $new_price . ' ' . get_supplier_name($row1[1]) . '</option>';
-
-	}
-	?>
-</select>
+<?php print gui_select_terms(); ?>
 
 <table id="map_table">
 </table>

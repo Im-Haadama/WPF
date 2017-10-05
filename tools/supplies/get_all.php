@@ -1,5 +1,5 @@
 <?php
-require_once( '../im_tools.php' );
+require_once( '../tools_wp_login.php' );
 require_once( '../header.php' );
 require_once( '../gui/inputs.php' );
 print header_text( false, false );
@@ -103,8 +103,8 @@ while ( $row = mysqli_fetch_row( $result ) ) {
 	print_supplies( $url, $row[0], true );
 }
 function print_supplies( $url, $id, $horizontal ) {
-	$sql    = "select id, status, date, supplier, text, business_id from im_supplies where id = $id";
-	$result = sql_query_single( $sql );
+	$sql = "select id, status, date, supplier, text, business_id from im_supplies where id = $id";
+	$row = sql_query_single( $sql );
 	if ( ! $horizontal ) {
 		print "<table>";
 	}

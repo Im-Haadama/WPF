@@ -5,7 +5,7 @@
  * Date: 18/08/17
  * Time: 05:24
  */
-require_once( "../im_tools.php" );
+require_once( "../tools_wp_login.php" );
 
 
 function gui_select_client( $active_days, $new = false ) {
@@ -24,3 +24,4 @@ function gui_select_client( $active_days, $new = false ) {
 	return gui_select_table( "client_select", "wp_users", 2, "", "", "display_name",
 		$sql_where );
 }
+

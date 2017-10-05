@@ -6,7 +6,7 @@
  * Time: 00:26
  */
 
-require_once "../im_tools.php";
+require_once "../tools_wp_login.php";
 
 $user_id    = $_GET["user_id"];
 $prod_ids   = $_GET["prod_ids"];

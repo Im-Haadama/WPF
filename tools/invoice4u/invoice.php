@@ -129,7 +129,7 @@ class Invoice4u {
 	public function GetCustomerByEmail( $email ) {
 		$wsdl = "http://private.invoice4u.co.il/Services/CustomerService.svc?wsdl";
 
-		$cust        = new Customer();
+		$cust        = new Customer( "" );
 		$cust->Email = $email;
 		// print $email;
 		$response  = $this->requestWS( $wsdl, "GetCustomers", array(
@@ -139,6 +139,7 @@ class Invoice4u {
 		) );
 		$customers = $response->Response->Customer;
 		foreach ( $customers as $customer ) {
+			// print $customer->Email . " ";
 			if ( $customer->Email == $email ) {
 				return $customer;
 			}
