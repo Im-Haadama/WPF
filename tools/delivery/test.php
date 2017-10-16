@@ -29,4 +29,7 @@ require_once( 'delivery.php' );
 //print $order->get_status();
 
 
-print_fresh_category();
+// print_fresh_category();
+
+sql_query( "set lc_time_names = 'he_IL'" );
+print sql_query_single_scalar( "select @@lc_time_names" );

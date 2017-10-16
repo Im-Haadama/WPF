@@ -114,7 +114,11 @@ print gui_button( "btn_new", "show_create_order()", "הזמנה חדשה" );
             xmlhttp.onreadystatechange = function () {
                 // Wait to get delivery id.
                 if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {  // Request finished
-                    logging.innerHTML = xmlhttp.responseText;
+                    if (xmlhttp.responseText.includes("בהצלחה")) {
+                        location.reload();
+                    } else {
+                        logging.innerHTML = xmlhttp.responseText;
+                    }
                 }
             }
             xmlhttp.open("GET", request, true);
@@ -289,7 +293,6 @@ function get_user_order_count( $u ) {
 	<?php
 	print gui_header( 1, "יצירת הזמנה" );
 	print gui_header( 2, "בחר לקוח" );
-	// TODO: Change back to 90
 	print gui_select_client( 90, true );
 
 	print gui_header( 2, "בחר מוצרים" );

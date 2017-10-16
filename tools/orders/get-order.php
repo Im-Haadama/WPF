@@ -118,6 +118,7 @@ print gui_datalist( "items", "im_products", "post_title" );
     <option value="יח"></option>
 </datalist>
 
+<!-- TODO: limit to units datalist -->
 <?php
 print gui_table( array(
 	array( "בחר פריט", "כמות", "יח" ),

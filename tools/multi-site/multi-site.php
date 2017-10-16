@@ -49,6 +49,11 @@ class MultiSite {
 	static function Execute( $request, $site ) {
 		// print "req: " . $request . " site = " . $site . "<br/>";
 		$remote_request = get_site_tools_url( $site ) . '/' . $request;
+		if ( strlen( $remote_request ) < 4 ) {
+			print "remote tools not set.<br/>";
+			die ( 2 );
+		}
+		// print $remote_request;
 		if ( strstr( $remote_request, "?" ) ) {
 			$remote_request = $remote_request . "&multisite";
 		} else {

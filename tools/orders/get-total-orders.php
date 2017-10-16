@@ -16,8 +16,8 @@ require_once( '../header.php' );
         function show_totals() {
             xmlhttp = new XMLHttpRequest();
             var filter = document.getElementById("filter_zero").checked;
-            var request = "get-total-orders-post.php";
-            if (filter) request = request + "?filter_zero=1";
+            var request = "get-total-orders-post.php?operation=show_required";
+            if (filter) request = request + "&filter_zero=1";
 
             xmlhttp.open("GET", request, true);
             xmlhttp.onreadystatechange = function () {
@@ -51,32 +51,23 @@ require_once( '../header.php' );
                 option.text = terms[i];
                 selector.options.add(option);
             }
-
         }
 
         function create_single() {
             xmlhttp = new XMLHttpRequest();
-            var request = "get-total-orders-post.php";
-            if (filter) request = request + "?filter_zero=1";
+            var request = "get-total-orders-post.php?operation=create_single";
 
             xmlhttp.open("GET", request, true);
             xmlhttp.onreadystatechange = function () {
                 // Wait to get query result
                 if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {  // Request finished
-                    table = document.getElementById("ordered_items");
-                    table.innerHTML = xmlhttp.response;
+                    if (xmlhttp.response.length > 2) {
+                        document.getElementById("logging").innerText = xmlhttp.response;
+                    }
                 }
             }
             xmlhttp.send();
         }
-
-        //        function get_value(element) {
-        //            if (element.tagName == "INPUT") {
-        //                return element.value;
-        //            } else {
-        //                return element.nodeValue;
-        //            }
-        //        }
 
         function createSupply() {
             var table = document.getElementById('ordered_items');
@@ -88,25 +79,26 @@ require_once( '../header.php' );
 
             // Request header
             var request = "../supplies/supplies-post.php?operation=create_supply&supplier_id=" + supplier_id + "&create_info=";
-            var map_ids = new Array();
+            var prod_ids = new Array();
 
             // Add the data.
             for (var i = 0; i < collection.length; i++) {
                 if (collection[i].checked) { // Add to suppply
                     var prod_id = collection[i].id.substring(3);
-                    map_ids.push(prod_id);
+                    prod_ids.push(prod_id);
 
-                    var quantity = eval(get_value(table.rows[i + 1].cells[6].firstChild));
-                    map_ids.push(quantity);
+                    var quantity = eval(get_value(table.rows[i + 1].cells[6].innerText));
+                    prod_ids.push(quantity);
 
-                    var units = eval(get_value(table.rows[i + 1].cells[3].firstChild));
-                    map_ids.push(units);
-
+                    var units = 0;
+                    var units_text = get_value(table.rows[i + 1].cells[3].innerText);
+                    if (units_text.length >= 1) units = eval(units_text);
+                    prod_ids.push(units);
                 }
             }
             // Call the server to save the supply
 
-            request = request + map_ids.join();
+            request = request + prod_ids.join();
 
             xmlhttp = new XMLHttpRequest();
             xmlhttp.open("GET", request, true);

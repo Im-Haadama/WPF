@@ -19,10 +19,10 @@ class DeliveryFields {
 		// Order info
 		order_q = 4, // Only display
 		order_q_units = 5,
-		price = 6,
-		order_line = 7,
+		delivery_q = 6,
+		price = 7,
+		order_line = 8,
 		// Delivery info
-		delivery_q = 8,
 		has_vat = 9,
 		line_vat = 10,
 		delivery_line = 11,
@@ -33,20 +33,20 @@ class DeliveryFields {
 }
 
 $delivery_fields_names = array(
-	"chk",
-	"nam",
-	"pid",
-	"ter",
-	"orq",
-	"oru",
-	"prc",
-	"orl",
-	"deq",
-	"hvt",
-	"lvt",
-	"del",
-	"req",
-	"ret"
+	"chk", // 0
+	"nam", // 1
+	"pid", // 2
+	"ter", // 3
+	"orq", // 4
+	"oru", // 5
+	"deq", // 6
+	"prc", // 7
+	"orl", // 8
+	"hvt", // 9
+	"lvt", // 10
+	"del", // 11
+	"req", // 12
+	"ret"  // 13
 );
 
 $header_fields = array(
@@ -56,9 +56,9 @@ $header_fields = array(
 	"קטגוריה",
 	"כמות הוזמן",
 	"יחידות הוזמנו",
+	"כמות סופק",
 	"מחיר",
 	"סה\"כ להזמנה",
-	"כמות סופק",
 	"חייב מע\"מ",
 	"מע\"מ",
 	"סה\"כ",
@@ -73,7 +73,9 @@ class ImDocumentType {
 }
 
 class ImDocumentOperation {
-	const create = 1, // From order to delivery. Expand basket
+	const
+		collect = 0, // From order to delivery, before collection
+		create = 1, // From order to delivery. Expand basket
 		show = 2,     // Load from db
 		edit = 3;     // Load and edit
 

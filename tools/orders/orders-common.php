@@ -455,7 +455,7 @@ function check_cache_validity() {
 function calculate_needed( &$needed_products ) {
 	global $conn;
 	print "checking cache<br/>";
-	if ( 0 and check_cache_validity() ) {
+	if ( check_cache_validity() ) {
 		print "valid</br>";
 		$needed_products = array();
 
@@ -726,7 +726,7 @@ function orders_table( $statuses ) {
 		$data                  .= "<tr>";
 		$data                  .= gui_cell( gui_checkbox( "chk_all", "", "",
 			array( "onchange=select_orders('" . $status . "')" ) ) );
-		$data                  .= gui_cell( gui_bold( "אזור" ) );
+		$data                  .= gui_cell( gui_bold( "משימה" ) );
 		$data                  .= "<td><h3>מספר </br> הזמנה</h3></td>";
 		$data                  .= "<td><h3>שם המזמין</h3></td>";
 		$data                  .= "<td><h3>עבור</h3></td>";
@@ -752,9 +752,9 @@ function orders_table( $statuses ) {
 			// display order_id with link to display it.
 			$count ++;
 			// 1) order ID with link to the order
-			$zone = order_get_zone( $order_id );
-			// print $order_id. " ". $zone . "<br/>";
-			$row_text .= gui_cell( zone_get_name( $zone ) );
+			$mission = order_get_mission_name( $order_id );
+			// print $order_id. " ". $mission . "<br/>";
+			$row_text .= gui_cell( $mission );
 			$row_text .= "<td><a href=\"get-order.php?order_id=" . $order_id . "\">" . $order_id . "</a></td>";
 
 			// 2) Customer name with link to his deliveries
@@ -795,7 +795,7 @@ function orders_table( $statuses ) {
 			}
 			$line = $row_text;
 
-			array_push( $lines, array( $zone, $line ) );
+			array_push( $lines, array( $mission, $line ) );
 		}
 		//   $data .= "<tr> " . trim($line) . "</tr>";
 		sort( $lines );

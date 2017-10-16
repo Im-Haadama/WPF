@@ -451,10 +451,40 @@ function order_get_zone( $order_id ) {
 	if ( strlen( $client_shipping_zone ) > 1 ) {
 		return $client_shipping_zone;
 	}
-
 	return 0;
+}
+
+function order_get_mission_id( $order_id ) {
+	$mission_id = get_post_meta( $order_id, 'mission_id', true );
+
+	if ( ! is_numeric( $mission_id ) ) {
+		return 0;
+	}
+
+	return $mission_id;
+}
+
+function get_mission_name( $mission_id ) {
+	// Todo: find better way to do this
+	sql_query( "set lc_time_names = 'he_IL'" );
+
+	$sql = "select concat(name, ' ', DATE_FORMAT(date, \"%a %d/%m\")) from im_missions where id = $mission_id";
+
+	$name = sql_query_single_scalar( $sql );
+
+	if ( strlen( $name ) < 2 ) {
+		$sql  = "select name from im_missions where id = $mission_id";
+		$name = sql_query_single_scalar( $sql );
+	}
+
+	return $name;
+}
+
+function order_get_mission_name( $order_id ) {
+	get_mission_name( order_get_mission_id( $order_id ) );
 
 }
+
 
 function get_zone_from_postcode( $postcode, $country = null ) {
 	if ( ! $country or strlen( $country ) < 2 ) {
@@ -543,11 +573,15 @@ function get_logo_url() {
 	return $logo_url;
 }
 
-function header_text( $print_logo = true, $close_header = true ) {
+function header_text( $print_logo = true, $close_header = true, $rtl = true ) {
 	global $business_info;
 	global $logo_url;
 
-	$text = '<html dir="rtl">';
+	$text = '<html';
+	if ( $rtl ) {
+		$text .= ' dir="rtl"';
+	}
+	$text .= '>';
 	$text .= '<head>';
 	$text .= '<meta http-equiv="content-type" content="text/html; charset=utf-8">';
 	$text .= '<title>';

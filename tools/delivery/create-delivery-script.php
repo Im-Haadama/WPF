@@ -54,7 +54,7 @@ if ( $id > 0 ) {
         var line_id = lines - 4;
         var row = table.insertRow(lines - 4);
 //        row.insertCell(0).style.visibility = false;              // 0 - select
-        row.insertCell(-1).innerHTML = "<input id=\"nam_" + line_id + "\" type=\"text\">";   // 1 - product name
+        row.insertCell(-1).innerHTML = "<input id=\"nam_" + line_id + "\" type=\"text\" list=\"items\">";   // 1 - product name
         row.insertCell(-1).innerHTML = "0";                       // 2 - quantity ordered
         row.insertCell(-1).innerHTML = "";                        // 3 - unit ordered
         row.insertCell(-1).innerHTML = "<input id=\"prc_" + line_id + "\" type=\"text\">";   // 5 - price

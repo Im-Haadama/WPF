@@ -8,8 +8,6 @@
 
 // require_once("../config.php");
 
-$obj_name = "student";
-
 function translate2heb( $w ) {
 	return translate_word( $w, "en", "he" );
 }

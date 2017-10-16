@@ -1,6 +1,6 @@
 <?php
 require_once( '../tools_wp_login.php' );
-require_once( '../../wp-content/plugins/woocommerce-delivery-notes/woocommerce-delivery-notes.php' );
+// require_once( '../../wp-content/plugins/woocommerce-delivery-notes/woocommerce-delivery-notes.php' );
 require_once( '../multi-site/multi-site.php' );
 require_once( '../account/account.php' );
 $header = $_GET["header"];
@@ -99,26 +99,12 @@ function print_deliveries( $edit = false ) {
 			// print "zone=" . $zone;
 			// var_dump($shipping);
 
-			// Day
-			$optional_days = sql_query_single_scalar( "SELECT delivery_days FROM wp_woocommerce_shipping_zones WHERE zone_id =" . $zone_id );
-			$today         = get_day_letter( date( 'w' ) );
-			// print "today: " . $today . "<br/>";
-			$choosed_day = $today;
-
-			// Sooner the better.
-			// Is in the optional days
-			foreach ( explode( ",", $optional_days ) as $aday ) {
-				if ( $aday >= $today ) {
-					$choosed_day = $aday;
-					break;
-				}
-			}
-			array_push( $fields, $choosed_day );
+			array_push( $fields, order_get_mission_id( $order_id ) );
 
 			$zone = order_get_zone( $order_id );
 
 			array_push( $fields, zone_get_name( $zone ) );
-			$sort_index = sort_key( $choosed_day, $zone_order, $long_lat );
+			$sort_index = sort_key( $zone, $zone_order, $long_lat );
 
 			// array_push( $fields, $sort_index );
 
@@ -406,7 +392,7 @@ function table_header( $edit = false ) {
 	$data .= "<td><h3>כתובת-2</h3></td>";
 	// $data .= "<td><h3></h3></td>";
 	$data .= "<td><h3>אופן תשלום</h3></td>";
-	$data .= "<td><h3>יום</h3></td>";
+	$data .= "<td><h3>משימה</h3></td>";
 	$data .= "<td><h3>אזור</h3></td>";
 	// $data .= "<td><h3>מיקום</h3></td>";
 	print $data;

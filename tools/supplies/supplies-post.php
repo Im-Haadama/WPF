@@ -45,8 +45,8 @@ if ( isset( $_GET["operation"] ) ) {
 			$supplier_id = $_GET["supplier_id"];
 			my_log( "supplier_id=" . $supplier_id );
 
-			$create_pairs = $_GET["create_info"];
-			$ids          = explode( ',', $create_pairs );
+			$create_info = $_GET["create_info"];
+			$ids         = explode( ',', $create_info );
 			create_supplier_order( $supplier_id, $ids );
 			break;
 

@@ -18,12 +18,73 @@ $filter_zero = $_GET["filter_zero"];
 //$basket_quantities;
 $basket_ordered = array();
 
-get_total_orders( $filter_zero );
+if ( ! isset( $_GET["operation"] ) ) {
+	print "send operation";
+	die ( 1 );
+}
+
+$operation = $_GET["operation"];
+
+switch ( $operation ) {
+	case "create_single":
+		create_supply_single();
+		break;
+	case "show_required":
+		get_total_orders( $filter_zero );
+		break;
+	default:
+		print $operation . " not handled ";
+		die ( 2 );
+}
+
+
+function create_supply_single() {
+	$debug = false;
+	print header_text( false, false, false );
+	$needed_products = array();
+
+	calculate_needed( $needed_products );
+	$supplies_data = array();
+
+	foreach ( $needed_products as $prod_id => $quantity_array ) {
+		$supplied_q = supply_quantity_ordered( $prod_id );
+		if ( ! is_numeric( $supplied_q ) ) {
+			$supplied_q = 0;
+		}
+		if ( $debug ) {
+			print "prod: " . get_product_name( $prod_id ) . " supplied: " . $supplied_q . ". needed: " .
+			      $quantity_array[0] . " " . $quantity_array[1];
+		}
+
+		$a = alternatives( $prod_id );
+		if ( count( $a ) == 1 ) {
+			$supplier_id = $a[0][1];
+			if ( is_numeric( $supplies_data[ $supplier_id ] ) ) {
+				$supplies_data[ $supplier_id ] = array();
+			}
+			$supplies_data[ $supplier_id ][ $prod_id ] = $quantity_array;
+			// Add to supply
+			// print " single supplier " . get_supplier_name($supplier_id);
+		}
+		if ( $debug ) {
+			print  "<br/>";
+		}
+	}
+
+	foreach ( $supplies_data as $supplier_id => $supply_data ) {
+		print get_supplier_name( $supplier_id ) . "<br/>";
+		$supply_id = create_supply( $supplier_id );
+		foreach ( $supplies_data[ $supplier_id ] as $prod_id => $datum ) {
+			print get_product_name( $prod_id ) . " " . $datum[0] . " " . $datum[1] . "<br/>";
+			supply_add_line( $supply_id, $prod_id, $datum[0], $datum[1] );
+		}
+	}
+
+
+}
 
 // for the panel
 function get_total_orders( $filter_zero, $history = false ) {
-	global $conn;
-
 	$needed_products = array();
 
 	calculate_needed( $needed_products );

@@ -129,5 +129,9 @@ function set_price( $prod_id, $price ) {
 
 // get_sale_price
 function get_buy_price( $prod_id ) {
-	return get_postmeta_field( $prod_id, 'buy_price' );
+	if ( $prod_id > 0 ) {
+		return get_postmeta_field( $prod_id, 'buy_price' );
+	}
+
+	return - 1;
 }

@@ -111,7 +111,7 @@ function print_supply( $id, $internal ) {
 function print_supply_lines( $id, $internal ) {
 	$data_lines = array();
 	my_log( __FILE__, "id = " . $id . " internal = " . $internal );
-	$sql = 'select product_id, quantity, id '
+	$sql = 'select product_id, quantity, id, units '
 	       . ' from im_supplies_lines where status = 1 and supply_id = ' . $id;
 
 	$result = sql_query( $sql );
@@ -138,6 +138,7 @@ function print_supply_lines( $id, $internal ) {
 		$product_name = get_product_name( $prod_id );
 		$quantity     = $row[1];
 		$line_id      = $row[2];
+		$units        = $row[3];
 
 		// $vat_line = $row[2];
 //		$item_price = pricelist_get_price( $prod_id );
@@ -149,6 +150,8 @@ function print_supply_lines( $id, $internal ) {
 		// Display item name
 		$line .= "<td>" . $product_name . '</td>';
 		$line .= "<td>" . gui_input( $line_id, $quantity, array( 'onchange="changed(this)"' ) ) . "</td>";
+		$line .= "<td>" . gui_input( $line_id, $units, array( 'onchange="changed(this)"' ) ) . "</td>";
+
 //        $line .= "<td>" . $quantity . "</td>";
 
 		$attr_array = get_post_meta( $prod_id, '_product_attributes' );
@@ -460,7 +463,7 @@ function create_supplier_order( $supplier_id, $ids ) {
 		$prod_id  = $ids[ $pos ];
 		$quantity = $ids[ $pos + 1 ];
 		$units    = $ids[ $pos + 2 ];
-		print "adding " . $prod_id . " quantity " . $quantity . "<br/>";
+		print "adding " . $prod_id . " quantity " . $quantity . " units " . $units . "<br/>";
 
 		// Calculate the price
 //        $pricelist = new PriceList($supplier_id);

@@ -15,6 +15,7 @@ require_once( "../mail.php" );
 require_once( "../account/gui.php" );
 require_once( "../delivery/delivery-common.php" );
 
+$debug = false;
 class delivery {
 	private $ID = 0;
 	private $d_OrderID = 0;
@@ -129,7 +130,7 @@ class delivery {
 		// $expand_basket = false, $refund = false, $edit_order = false
 		global $delivery_fields_names;
 		global $header_fields;
-		$debug = false;
+		global $debug;
 		if ( $debug ) {
 			print "Document type " . $document_type . "<br/>";
 			print "operation: " . $operation . "<br/>";
@@ -139,7 +140,7 @@ class delivery {
 
 		$expand_basket = false;
 
-		if ( $operation == ImDocumentOperation::create ) {
+		if ( $operation == ImDocumentOperation::create or $operation == ImDocumentOperation::collect ) {
 			$expand_basket = true;
 		}
 
@@ -174,10 +175,12 @@ class delivery {
 				break;
 			case ImDocumentType::delivery:
 				$show_fields[ DeliveryFields::delivery_q ] = true;
-				$show_fields[ DeliveryFields::has_vat ]    = true;
-				$show_fields[ DeliveryFields::line_vat ]   = true;
-				$show_fields[ DeliveryFields::delivery_line ] = true;
-				if ( $operation == ImDocumentOperation::create )
+				if ( $operation != ImDocumentOperation::collect ) {
+					$show_fields[ DeliveryFields::has_vat ]       = true;
+					$show_fields[ DeliveryFields::line_vat ]      = true;
+					$show_fields[ DeliveryFields::delivery_line ] = true;
+				}
+				if ( $operation == ImDocumentOperation::create or $operation == ImDocumentOperation::collect )
 					$show_fields[ DeliveryFields::order_line ] = true;
 				break;
 			case ImDocumentType::refund:
@@ -389,7 +392,7 @@ class delivery {
 	public function delivery_line( $show_fields, $document_type, $line_id, $client_type, $operation ) {
 		global $delivery_fields_names;
 
-		$debug = false;
+		global $debug;
 		if ( $debug ) {
 			print "Operation: " . $operation . "<br/>";
 			print " Document type: " . $document_type . "<br/>";
@@ -427,7 +430,7 @@ class delivery {
 				break;
 
 			case ImDocumentType::delivery:
-				if ( $operation == ImDocumentOperation::create ) {
+				if ( $operation == ImDocumentOperation::create or $operation == ImDocumentOperation::collect ) {
 					$load_from_order = true;
 					if ( $debug )
 						print "create. load from order";
@@ -440,7 +443,9 @@ class delivery {
 		$has_vat = null;
 
 		if ( $load_from_order ) {
-//			print "loading from order<br/>";
+			if ( $debug ) {
+				print "loading from order<br/>";
+			}
 			$sql              = "SELECT order_item_name FROM wp_woocommerce_order_items WHERE order_item_id = " . $line_id;
 			$prod_name        = sql_query_single_scalar( $sql );
 			$quantity_ordered = get_order_itemmeta( $line_id, '_qty' );
@@ -449,7 +454,7 @@ class delivery {
 			$this->order_total += $order_line_total;
 			$line[ DeliveryFields::order_line ] = $order_line_total;
 			$prod_id          = get_order_itemmeta( $line_id, '_product_id' );
-			$line_price       = get_order_itemmeta( $line_id, '_line_total' );
+			// $line_price       = get_order_itemmeta( $line_id, '_line_total' );
 			switch ( $client_type ) {
 				case 0:
 					$price = round( $order_line_total / $quantity_ordered, 2 );
@@ -470,18 +475,27 @@ class delivery {
 			}
 
 		} else {
+			if ( $debug ) {
+				print "loading from im_delivery_lines<br/>";
+			}
 			$sql = "SELECT prod_id, product_name, quantity_ordered, unit_ordered, quantity, price, line_price, vat FROM im_delivery_lines WHERE id = " . $line_id;
 
 			$row = sql_query_single( $sql );
+			if ( ! $row ) {
+				sql_error( $sql );
+				die ( 2 );
+			}
 
-			$prod_id            = $row[0];
-			$prod_name          = $row[1];
-			$quantity_ordered   = $row[2];
-			$unit_q             = $row[3];
+			$prod_id          = $row[0];
+			$prod_name        = $row[1];
+			$quantity_ordered = $row[2];
+			$unit_q           = $row[3];
 			if ( $unit_q > 0 and $quantity_ordered == 0 ) {
 				$quantity_ordered = "";
 			}
-			$quantity_delivered  = $row[4];
+			$quantity_delivered = $row[4];
+			if ( $debug )
+				print "q = " . $quantity_delivered . "<br/>";
 			$price               = $row[5];
 			$delivery_line_price = $row[6];
 			$has_vat             = $row[7];
@@ -542,13 +556,18 @@ class delivery {
 
 			case ImDocumentType::delivery:
 				// $line[DeliveryFields::order_line] = $order_line_total;
-				if ( $operation == ImDocumentOperation::edit ) {
-					$line[ DeliveryFields::delivery_q ] = gui_input( "quantity" . $this->line_number,
-						( $quantity_delivered > 0 ) ? $quantity_delivered : "",
-						array( 'onkeypress="moveNextRow(' . $this->line_number . ')"'));
-				} else {
-					$line[ DeliveryFields::delivery_q ] = $quantity_delivered;
-					// $value .= gui_cell( $quantity_delivered );
+				switch ( $operation ) {
+					case ImDocumentOperation::edit:
+						$line[ DeliveryFields::delivery_q ] = gui_input( "quantity" . $this->line_number,
+							( $quantity_delivered > 0 ) ? $quantity_delivered : "",
+							array( 'onkeypress="moveNextRow(' . $this->line_number . ')"' ) );
+						break;
+					case ImDocumentOperation::collect:
+						break;
+					case ImDocumentOperation::show:
+						$line[ DeliveryFields::delivery_q ] = $quantity_delivered;
+						break;
+					default:
 				}
 				// Order info
 				// $order_line                       = $line[DeliveryFields::price] * $line[DeliveryFields::order_q];
@@ -584,7 +603,7 @@ class delivery {
 		// Line total
 //		$value .= gui_cell( $line_price, "order_line_total" . $this->line_number );                   // 8 - line total
 
-		$this->delivery_total += $line_price;
+		// $this->delivery_total += $line_price;
 		// Accumulate vat
 		if ( $vat > 0 ) {
 			$this->delivery_due_vat   += $line_price;

@@ -13,7 +13,7 @@ $order_id = get_order_id( $id );
 
 print order_info_data( $order_id );
 
-print $d->delivery_text( ImDocumentType::delivery, false );
+print $d->delivery_text( ImDocumentType::delivery, ImDocumentOperation::show );
 //$sql = 'select product_name, quantity, vat,price, line_price '
 //        . ' from im_delivery_lines where delivery_id = ' . $id ;
 //

@@ -83,10 +83,15 @@ function sql_query_single_assoc( $sql ) {
 
 function sql_error( $sql ) {
 	$debug = debug_backtrace();
+	for ( $i = 2; $i < 6 && $i < count( $debug ); $i ++ ) {
+		print "called from " . $debug[ $i ]["function"] . ":" . $debug[ $i ]["line"] . "<br/>";
+	}
 	global $conn;
-	$message = "Error: sql = `" . $sql . "`. Sql error : " . mysqli_error( $conn ) . "<br/>";
-	for ( $i = 2; $i < 4 && $i < count( $debug ); $i ++ ) {
-		print "called from " . $debug[ $i ]["function"] . "<br/>";
+	if ( is_string( $sql ) ) {
+		$message = "Error: sql = `" . $sql . "`. Sql error : " . mysqli_error( $conn ) . "<br/>";
+	} else {
+		$message = $sql->error;
+		// $message = "sql not string";
 	}
 	my_log( $message );
 	print "<div style=\"direction: ltr;\">" . $message . "</div>";

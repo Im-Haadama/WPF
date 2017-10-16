@@ -20,10 +20,10 @@ if ( isset( $_GET["operation"] ) ) {
 			print gui_header( 1, "מאפס מלאי" );
 			reset_inventory();
 			if ( MultiSite::LocalSiteID() == 1 ) {
-				print gui_header( 2, "מאתחל רשימה של אמיר" );
-				$PL = new PriceList( 100004 );
-				$PL->RemoveLines( 1 );
-				$PL->RemoveLines( 2 );
+//				print gui_header( 2, "מאתחל רשימה של אמיר" );
+//				$PL = new PriceList( 100004 );
+//				$PL->RemoveLines( 1 );
+//				$PL->RemoveLines( 2 );
 				print gui_header( 2, "יוצר הזמנות למנויים" );
 				orders_create_subs();
 			}
@@ -41,8 +41,8 @@ if ( isset( $_GET["operation"] ) ) {
 		print gui_header( 2, "אספקות בדרך" );
 		print $got;
 	}
-	print "<br/><B>" . "יש לסגור הספקות לפני איפוס שבועי!" . "</B><br/>";
-	print "<br/><B>" . "איפוס שבועי מוחק את הרשימה של אמיר בן יהודה!" . "</B><br/>";
+//	print "<br/><B>" . "יש לסגור הספקות לפני איפוס שבועי!" . "</B><br/>";
+//	print "<br/><B>" . "איפוס שבועי מוחק את הרשימה של אמיר בן יהודה!" . "</B><br/>";
 	print gui_hyperlink( "האם ברצונך לאפס את המלאי?", "start.php?operation=reset_inventory" );
 }
 function reset_inventory() {
