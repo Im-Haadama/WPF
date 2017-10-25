@@ -13,7 +13,7 @@ if ( ! defined( STORE_DIR ) ) {
 require_once( STORE_DIR . "/wp-load.php" );
 require_once( STORE_DIR . "/wp-includes/pluggable.php" );
 
-if ( $multisite or $_SERVER['REMOTE_ADDR'] == "160.153.153.166" or // Aglamaz.com
+if ( $multisite or $_SERVER['REMOTE_ADDR'] == "160.153.129.234" or // Aglamaz.com
      $_SERVER['REMOTE_ADDR'] == "192.64.80.133" or // Tabula
      $_SERVER['REMOTE_ADDR'] == "82.80.250.18" or // super-organi: self calling - reading create-delivery-script
      $_SERVER['REMOTE_ADDR'] == "82.81.243.189" or // Aglamaz home

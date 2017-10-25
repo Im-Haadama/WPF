@@ -16,6 +16,22 @@ require_once( '../delivery/delivery.php' );
 		$order_id = $_GET["order_id"];
 		?>
 
+        function save_mission() {
+            var mission = get_value(document.getElementById("mission_select"));
+            var request = "orders-post.php?operation=mission&id=" + mission + "&order_id=<?print $order_id; ?>";
+
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                // Wait to get query result
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+                {
+                    location.reload();
+                }
+            }
+            xmlhttp.open("GET", request, true);
+            xmlhttp.send();
+
+        }
         function del_item() {
             var table = document.getElementById('order_lines');
 

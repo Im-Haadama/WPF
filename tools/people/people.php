@@ -62,9 +62,12 @@ function get_project_name( $project_id ) {
 	$sql = "SELECT project_name FROM im_projects WHERE id = " . $project_id;
 
 	$result = mysqli_query( $conn, $sql );
-	$row    = mysqli_fetch_assoc( $result );
+	if ( $result ) {
+		$row = mysqli_fetch_assoc( $result );
 
-	return $row["project_name"];
+		return $row["project_name"];
+	}
+	print "unknown project";
 }
 
 function is_volunteer( $uid ) {
@@ -276,4 +279,3 @@ function add_activity( $user_id, $date, $start, $end, $project_id, $vol = true, 
 }
 
 ?>
-

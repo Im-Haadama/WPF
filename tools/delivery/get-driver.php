@@ -88,8 +88,9 @@ function print_deliveries( $edit = false ) {
 			}
 			// array_push( $fields, get_meta_field( $order_id, '_payment_method' ) );
 			array_push( $fields, get_payment_method_name( $client_id ) );
+			array_push( $fields, order_get_mission_id( $order_id ) );
 
-			$long_lat = get_long_lat( $client_id, $address );
+
 
 			// $sort_index = (40-$long_lat[0]) * 1000 + $long_lat[1];
 			// get_postmeta_field($order_id, "_shipping_method")
@@ -99,12 +100,14 @@ function print_deliveries( $edit = false ) {
 			// print "zone=" . $zone;
 			// var_dump($shipping);
 
-			array_push( $fields, order_get_mission_id( $order_id ) );
+			array_push( $fields, $zone_order );
 
-			$zone = order_get_zone( $order_id );
+			$long_lat = get_long_lat( $client_id, $address );
 
-			array_push( $fields, zone_get_name( $zone ) );
-			$sort_index = sort_key( $zone, $zone_order, $long_lat );
+			array_push( $fields, $long_lat[0] );
+			array_push( $fields, $long_lat[1] );
+
+			$sort_index = sort_key( $zone_order, $long_lat );
 
 			// array_push( $fields, $sort_index );
 
@@ -147,13 +150,13 @@ function get_day_letter( $day ) {
 	return "Error";
 }
 
-function sort_key( $choosed_day, $zone_order, $long_lat ) {
+function sort_key( $zone_order, $long_lat ) {
 	// $x = sprintf("%.02f", 40 - $long_lat[0]);
 	// $y = sprintf("%.02f", $long_lat[1]);
 
 //     $coor = 100 * (40 -$long_lat[0]) + $long_lat[1];
 
-	$sort_index = $choosed_day . " " . $zone_order . " " . $long_lat[0] . " " . $long_lat[1];
+	$sort_index = $zone_order . " " . $long_lat[0] . " " . $long_lat[1];
 
 	return $sort_index;
 }
@@ -393,7 +396,9 @@ function table_header( $edit = false ) {
 	// $data .= "<td><h3></h3></td>";
 	$data .= "<td><h3>אופן תשלום</h3></td>";
 	$data .= "<td><h3>משימה</h3></td>";
-	$data .= "<td><h3>אזור</h3></td>";
+	$data .= "<td><h3>סדר אזור</h3></td>";
+	$data .= "<td><h3>long</h3></td>";
+	$data .= "<td><h3>lat</h3></td>";
 	// $data .= "<td><h3>מיקום</h3></td>";
 	print $data;
 }

@@ -177,7 +177,6 @@ function print_supply_lines( $id, $internal ) {
 			$sell_price = get_price( $prod_id );
 			$line       .= "<td>" . sprintf( '%0.2f', $sell_price ) . "</td>";
 			$line       .= "<td>" . get_clients_per_product( $prod_id ) . "</td>";
-
 		}
 		$line .= "</tr>";
 

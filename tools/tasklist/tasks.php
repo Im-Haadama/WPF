@@ -13,20 +13,36 @@ require_once( dirname( TOOLS_DIR ) . '/wp-config.php' );
 require_once( TOOLS_DIR . '/sql.php' );
 require_once( 'tasklist.php' );
 
-if ( ! isset( $_GET["condition"] ) ) {
-	print "must send condition";
-	die ( 1 );
+if ( ! isset( $_GET["operation"] ) ) {
+	print "Must send operation";
+	die( 1 );
 }
-$condition = $_GET["condition"];
-switch ( $condition ) {
-	case "daily":
-		if ( ! isset( $_GET["id"] ) ) {
-			print "daily must send id";
-			die ( 2 );
-		}
-		$id          = $_GET["id"];
-		$last_finish = sql_query_single_scalar( "SELECT max(datediff(curdate(), ended)) FROM im_tasklist WHERE task_template = " . $id );
-		// print $last_finish;
-		print $last_finish >= 1;
+
+$operation = $_GET["operation"];
+switch ( $operation ) {
+	case "check":
+		check_condition();
 		break;
+}
+
+create_tasks();
+
+function check_condition() {
+	if ( ! isset( $_GET["condition"] ) ) {
+		print "must send condition";
+		die ( 1 );
+	}
+	$condition = $_GET["condition"];
+	switch ( $condition ) {
+		case "daily":
+			if ( ! isset( $_GET["id"] ) ) {
+				print "daily must send id";
+				die ( 2 );
+			}
+			$id          = $_GET["id"];
+			$last_finish = sql_query_single_scalar( "SELECT max(datediff(curdate(), ended)) FROM im_tasklist WHERE task_template = " . $id );
+			// print $last_finish;
+			print $last_finish >= 1;
+			break;
+	}
 }

@@ -14,8 +14,6 @@ require_once( "../business/business-info.php" );
 if ( isset( $_GET["operation"] ) ) {
 	$operation = $_GET["operation"];
 	switch ( $operation ) {
-		case "get_archive":
-
 		case "get_business":
 			$supply_id = $_GET["supply_id"]; // מספר הספקה שלנו
 			print supply_business_info( $supply_id );
@@ -27,6 +25,7 @@ if ( isset( $_GET["operation"] ) ) {
 			$supply_number = $_GET["supply_number"]; // מספר תעודת משלוח
 			got_supply( $supply_id, $supply_total, $supply_number );
 			break;
+
 		case "send":
 			$params = $_GET["id"];
 			$ids    = explode( ',', $params );
@@ -151,7 +150,6 @@ if ( isset( $_GET["operation"] ) ) {
 			print $operation . " not handled <br/>";
 
 	}
-
 }
 
 my_log( __FILE__, $operation );

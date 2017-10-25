@@ -292,8 +292,16 @@ function get_user_order_count( $u ) {
 <div id="new_order" style="display: none">
 	<?php
 	print gui_header( 1, "יצירת הזמנה" );
-	print gui_header( 2, "בחר לקוח" );
-	print gui_select_client( 90, true );
+	print gui_table( array(
+		array(
+			gui_header( 2, "בחר לקוח" ),
+			gui_header( 2, "בחר מועד" )
+		),
+		array(
+			gui_select_client( 90, true ),
+			gui_select_mission()
+		)
+	) );
 
 	print gui_header( 2, "בחר מוצרים" );
 	print gui_datalist( "items", "im_products", "post_title" );

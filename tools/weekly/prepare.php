@@ -39,7 +39,7 @@ while ( $row = mysqli_fetch_assoc( $result ) ) {
 }
 
 $sql = 'SELECT id as id'
-       . ' FROM `im_supplies` posts'
+       . ' FROM `im_supplies` '
        . " WHERE status < 5 order by 1";
 
 // print $sql;

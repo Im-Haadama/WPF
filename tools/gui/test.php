@@ -6,6 +6,7 @@
  * Time: 21:04
  */
 require_once( "inputs.php" );
+require_once( "../account/gui.php" );
 
 ?>
 <html>
@@ -26,7 +27,8 @@ require_once( "inputs.php" );
 </header>
 <body>
 <?php
-print gui_checkbox( "with_sale", "", "", "onclick=\"update_prices()\"" );
+// print gui_checkbox( "with_sale", "", "", "onclick=\"update_prices()\"" );
+print gui_select_mission();
 
 ?>
 </body>

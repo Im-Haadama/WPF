@@ -37,9 +37,8 @@ switch ( $operation ) {
 		die ( 2 );
 }
 
-
 function create_supply_single() {
-	$debug = false;
+	$debug = true;
 	print header_text( false, false, false );
 	$needed_products = array();
 
@@ -55,9 +54,17 @@ function create_supply_single() {
 			print "prod: " . get_product_name( $prod_id ) . " supplied: " . $supplied_q . ". needed: " .
 			      $quantity_array[0] . " " . $quantity_array[1];
 		}
+		if ( $quantity_array[0] <= $supplied_q ) {
+			if ( $debug ) {
+				print " already ordered<br/>";
+			}
+			continue;
+		}
 
 		$a = alternatives( $prod_id );
 		if ( count( $a ) == 1 ) {
+			// Check quantity in progress
+
 			$supplier_id = $a[0][1];
 			if ( is_numeric( $supplies_data[ $supplier_id ] ) ) {
 				$supplies_data[ $supplier_id ] = array();
@@ -79,8 +86,6 @@ function create_supply_single() {
 			supply_add_line( $supply_id, $prod_id, $datum[0], $datum[1] );
 		}
 	}
-
-
 }
 
 // for the panel
@@ -142,34 +147,36 @@ function get_total_orders( $filter_zero, $history = false ) {
 
 		$line          .= "<td>" . $supplier_name . "</td>";
 
-		// TODO: sale price
-		$price = get_price( $prod_id );
-		$line  .= "<td>" . $price . "</td>";
+		$line .= gui_cell( orders_per_item( $prod_id, 1, true ));
 
-		// Add margin info
-		if ( MultiSite::LocalSiteID() == 1 ) {
-
-			$buy_price = get_buy_price( $prod_id );
-			$line      .= "<td>" . $buy_price . "</td>";
-
-
-			if ( $buy_price > 0 ) {
-				if ( $price != 0 ) {
-					$buy = $numeric_quantity * $buy_price;
-					// $total_buy += $buy;
-					$sale = $numeric_quantity * $price;
-					// $total_sale += $sale;
-					// $total_buy_supplier[$supplier_id] += $buy;
-					// $total_sale_supplier[$supplier_id] += $sale;
-
-					$line .= "<td>" . $numeric_quantity * ( $price - $buy_price ) . "</td>";
-				} else {
-					$line .= "<td></td>";
-				}
-			} else {
-				$line .= "<td></td><td></td>";
-			}
-		}
+//		// TODO: sale price
+//		$price = get_price( $prod_id );
+//		$line  .= "<td>" . $price . "</td>";
+//
+//		// Add margin info
+//		if ( MultiSite::LocalSiteID() == 1 ) {
+//
+//			$buy_price = get_buy_price( $prod_id );
+//			$line      .= "<td>" . $buy_price . "</td>";
+//
+//
+//			if ( $buy_price > 0 ) {
+//				if ( $price != 0 ) {
+//					$buy = $numeric_quantity * $buy_price;
+//					// $total_buy += $buy;
+//					$sale = $numeric_quantity * $price;
+//					// $total_sale += $sale;
+//					// $total_buy_supplier[$supplier_id] += $buy;
+//					// $total_sale_supplier[$supplier_id] += $sale;
+//
+//					$line .= "<td>" . $numeric_quantity * ( $price - $buy_price ) . "</td>";
+//				} else {
+//					$line .= "<td></td>";
+//				}
+//			} else {
+//				$line .= "<td></td><td></td>";
+//			}
+//		}
 
 		$line .= "</tr>";
 //        prof_flag("table_line end");
@@ -206,11 +213,12 @@ tr:nth-child(even) {
 	$data .= "<td>כמות סופקה</td>";
 	$data .= "<td>כמות להזמין</td>";
 	$data .= "<td>ספק</td>";
-	$data .= "<td>מחיר ללקוח</td>";
-	if ( MultiSite::LocalSiteID() == 1 ) {
-		$data .= "<td>מחיר קניה</td>";
-		$data .= "<td>סהכ מרווח</td>";
-	}
+	$data .= "<td>לקוחות</td>";
+//	$data .= "<td>מחיר ללקוח</td>";
+//	if ( MultiSite::LocalSiteID() == 1 ) {
+//		$data .= "<td>מחיר קניה</td>";
+//		$data .= "<td>סהכ מרווח</td>";
+//	}
 	$data .= "</tr>";
 
 	// print "sort: " . date( "h:i:sa" ) . "<br/>";

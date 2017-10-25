@@ -27,6 +27,9 @@ if ( $conn->connect_error ) {
 	die( "Connection failed: " . $conn->connect_error );
 }
 
+// Timezone
+date_default_timezone_set( "Asia/Jerusalem" );
+
 // Logging
 function my_log( $msg, $title = '' ) {
 	$error_file = STORE_DIR . '/logs/php_error.log';

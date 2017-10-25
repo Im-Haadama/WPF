@@ -25,3 +25,11 @@ function gui_select_client( $active_days, $new = false ) {
 		$sql_where );
 }
 
+function gui_select_mission( $selected = 0, $events = "" ) {
+	$sql_where = " where date >= curdate()";
+
+	// print $sql_where;
+	return gui_select_table( "mission_select", "im_missions", $selected, $events, "",
+		"name", $sql_where );
+}
+

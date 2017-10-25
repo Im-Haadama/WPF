@@ -18,7 +18,6 @@ class eTasklist {
 		canceled = 3;
 }
 
-
 function get_task_link( $template_id ) {
 	if ( $template_id > 0 ) {
 		return sql_query_single_scalar( "SELECT task_url FROM im_task_templates WHERE id = " . $template_id );
@@ -79,10 +78,19 @@ function tasklist_set_defaults( &$values ) {
 }
 
 function create_tasks() {
-	$sql    = "SELECT id, task_description, task_url, project_id FROM im_task_templates";
+	// TODO: check last run.
+	// Todo: Run in the background
+	$sql    = "SELECT id, task_description, task_url, project_id, repeat_days FROM im_task_templates";
 	$result = sql_query( $sql );
 
 	while ( $row = mysqli_fetch_row( $result ) ) {
+		// Check if it is the right day.
+		$days  = explode( ",", $row[4] );
+		$today = date( "w" ) + 1;
+		if ( ! in_array( $today, $days ) ) {
+			continue;
+		}
+
 		// Check if task from this template active
 		$count = sql_query_single_scalar( "SELECT count(*) FROM im_tasklist WHERE task_template = " . $row[0] .
 		                                  " AND status < 2" );

@@ -109,12 +109,14 @@ function order_info_data( $order_id, $edit = false, $operation = null ) {
 		$zone_name = zone_get_name( $zone );
 	}
 
-	$data .= gui_row( array(
+	$data    .= gui_row( array(
 		"איזור משלוח:",
 		$zone_name,
 		"ימים: ",
 		sql_query_single_scalar( "SELECT delivery_days FROM wp_woocommerce_shipping_zones WHERE zone_id =" . $zone )
 	) );
+	$mission = get_meta_field( $order_id, "mission_id" );
+	$data    .= gui_row( array( gui_select_mission( $mission, "onchange=\"save_mission()\"" ) ) );
 
 	$data .= '</table>';
 	$data .= "</td>";
@@ -436,15 +438,25 @@ function calculate_total_products() {
 }
 
 function check_cache_validity() {
-	$sql = "SELECT count(p.id) 
+//	$sql = "SELECT count(p.id)
+//	FROM wp_posts p
+//	 LEFT JOIN im_need_orders o
+//	  ON p.id = o.order_id
+//	  WHERE p.id IS NULL OR o.order_id IS NULL AND post_status LIKE '%wc-processing%'";
+	$sql = "SELECT count(id)
 	FROM wp_posts p
-	 LEFT JOIN im_need_orders o
-	  ON p.id = o.order_id 
-	  WHERE p.id IS NULL OR o.order_id IS NULL AND post_status LIKE '%wc-processing%'";
+  	where post_status like '%wc-processing%'
+  	and id not in (select order_id from im_need_orders)";
+	$new = sql_query_single_scalar( $sql );
+//	print "new: " . $new . "<br/>";
 
-	$diff = sql_query_single_scalar( $sql );
+	$sql  = "SELECT count(id)
+	  FROM im_need_orders
+	  WHERE order_id NOT IN (SELECT id FROM wp_posts WHERE post_status LIKE '%wc-processing%')";
+	$done = sql_query_single_scalar( $sql );
+//	print "done: " . $done . "<br/>";
 
-	if ( $diff > 0 ) {
+	if ( $new + $done > 0 ) {
 		return false;
 	}
 

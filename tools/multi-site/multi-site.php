@@ -92,10 +92,9 @@ class MultiSite {
 			$active    = $site_info[3];
 
 			if ( ! $active ) {
+				print "site " . $id . " not active <br/>";
 				continue;
 			}
-
-			//print "running on site " . $site_name . "<br/>";
 
 			if ( strstr( $func, "&" ) ) {
 				$glue = "?";
@@ -104,7 +103,9 @@ class MultiSite {
 			}
 			$file = $url . "/" . $func . $glue . "header=" . ( $first ? "1" : "0" );
 			// print $file . "<br/>";
-			$data  .= file_get_html( $file );
+			$result_text = file_get_html( $file );
+//			print $result_text;
+			$data  .= $result_text;
 			$first = false;
 		}
 		$data .= "</table>";

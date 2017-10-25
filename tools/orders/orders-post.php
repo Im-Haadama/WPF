@@ -77,6 +77,12 @@ switch ( $operation ) {
 		order_change_status( explode( ",", $ids ), "wc-completed" );
 		break;
 
+	case "mission":
+		print ( "change mission" );
+		$mission_id = $_GET["id"];
+		$order_id   = $_GET["order_id"];
+		set_post_meta_field( $order_id, "mission_id", $mission_id );
+
 	default:
 		// die("operation " . $operation . " not handled<br/>");
 

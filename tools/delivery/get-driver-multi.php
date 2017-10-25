@@ -23,6 +23,7 @@ print gui_hyperlink( "שבוע קודם", "get-driver-multi.php?week=" . date( '
 
 $output = MultiSite::GetAll( "delivery/get-driver.php?week=" . $week );
 
+
 $dom = str_get_html( $output );
 
 print header_text( false );
@@ -37,28 +38,31 @@ $data_lines = array();
 $header     = null;
 foreach ( $dom->find( 'tr' ) as $row ) {
 	if ( ! $header ) {
-		$header = $row;
+		for ( $i = 0; $i < 8; $i ++ ) {
+			$header .= $row->find( 'td', $i );
+		}
 		continue;
 	}
-	$key_fields = $row->find( 'td', 11 )->plaintext;
+	// $key_fields = $row->find( 'td', 11 )->plaintext;
 	$name       = $row->find( 'td', 3 )->plaintext;
 	$zone_order = "0";
 	$long       = "0";
 	$lat        = "0";
-	sscanf( $key_fields, "%s %s %f %f", $day, $zone_order, $long, $lat );
+	// sscanf( $key_fields, "%s %s %f %f", $day, $zone_order, $long, $lat );
+	$zone_order = $row->find( 'td', 9 )->plaintext;
+	$long       = $row->find( 'td', 10 )->plaintext;
+	$lat        = $row->find( 'td', 11 )->plaintext;
 	// print "day " . $day . " zone " . $zone_order . " long " . $long . " " . $lat . "<br/>";
 	$coor = 100 * ( 40 - $long ) + $lat[1];
 
-	// Key= D ZZ LO LA
-	$key = 1000000 * ( mb_ord( $day ) - mb_ord( 'א' ) + 1 ) + 10000 * $zone_order + $coor;
+	// Key= ZZ LO LA
+	$key = 10000 * $zone_order + $coor;
 
 	// print "name = " . $name . " key= "  . $key . "<br/>";
 	$mission_id = $row->find( 'td', 8 )->plaintext;
 	$line_data  = "<tr>";
-	for ( $i = 0; $i < 10; $i ++ ) {
-		if ( $i <> 8 ) {
-			$line_data .= $row->find( 'td', $i );
-		}
+	for ( $i = 0; $i < 8; $i ++ ) {
+		$line_data .= $row->find( 'td', $i );
 	}
 	$line_data .= "</tr>";
 	if ( ! isset( $data_lines[ $mission_id ] ) ) {
@@ -84,8 +88,8 @@ foreach ( $data_lines as $mission_id => $data_line ) {
 	print $data;
 
 	print "</table>";
-
 }
+
 function mb_ord( $c ) {
 	return ord( substr( $c, 1, 1 ) );
 }

@@ -159,14 +159,18 @@ function gui_select_table( $id, $table, $selected = null, $events = null, $more_
 	if ( $name == null ) {
 		$name = "name";
 	}
+
 	$sql = "SELECT id, " . $name . " FROM " . $table;
 	if ( $where ) {
 		$sql .= " " . $where;
 	}
-// 	print $sql;
 	$results = mysqli_query( $conn, $sql );
-	while ( $row = $results->fetch_assoc() ) {
-		array_push( $values, $row );
+	if ( $results ) {
+		while ( $row = $results->fetch_assoc() ) {
+			array_push( $values, $row );
+		}
+	} else {
+		return "no results " . $sql;
 	}
 
 	return gui_select( $id, $name, $values, $events, $selected );
