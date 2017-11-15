@@ -1,5 +1,5 @@
 <?php
-require_once( '../tools_wp_login.php' );
+require_once( '../r-shop_manager.php' );
 // require_once( '../../wp-content/plugins/woocommerce-delivery-notes/woocommerce-delivery-notes.php' );
 require_once( '../multi-site/multi-site.php' );
 require_once( '../account/account.php' );
@@ -28,7 +28,7 @@ $print = 1; //$_GET["print"];
 print_deliveries();
 //else print_archive_deliveries($week);
 //
-print_legacy();
+//print_legacy();
 
 die( 0 );
 
@@ -45,109 +45,74 @@ function print_deliveries( $edit = false ) {
 	       . ' order by 1';
 //    }
 
-	// print $sql;
-	$result = sql_query( $sql );
+	$orders = sql_query_array( $sql );
 
-	$data_lines = array();
-	$site_tools = MultiSite::LocalSiteTools();
-
-	//print "loop start<br>";
-	while ( $row = mysqli_fetch_row( $result ) ) {
-		$fields = array();
-		foreach ( $row as $value ) {
-			array_push( $fields, MultiSite::LocalSiteName() );
-
-			$order_id = $value;
-			// print $order_id . "<br/>";
-
-			$client_id = get_customer_id_by_order_id( $order_id );
-
-			$ref = "<a href=\"" . $site_tools . "/orders/get-order.php?order_id=" . $order_id . "\">" . $order_id . "</a>";
-			array_push( $fields, $ref );
-
-			$name = get_meta_field( $order_id, '_billing_first_name' ) . " " .
-			        get_meta_field( $order_id, '_billing_last_name' );
-
-			array_push( $fields, gui_hyperlink( $name, $site_tools . "../../wp-admin/user-edit.php?user_id=" . $client_id ) );
-
-			$receiver_name = get_meta_field( $order_id, '_shipping_first_name' ) . " " .
-			                 get_meta_field( $order_id, '_shipping_last_name' );
-
-			array_push( $fields, $receiver_name );
-
-			$address = "";
-			foreach ( array( '_shipping_address_1', '_shipping_city' ) as $field ) {
-				$address .= get_meta_field( $order_id, $field ) . " ";
-			}
-
-			array_push( $fields, "<a href='waze://?q=$address'>$address</a>" );
-
-			foreach ( array( '_billing_phone', '_shipping_address_2' ) as $field ) {
-				$field_value = get_meta_field( $order_id, $field );
-				array_push( $fields, $field_value );
-			}
-			// array_push( $fields, get_meta_field( $order_id, '_payment_method' ) );
-			array_push( $fields, get_payment_method_name( $client_id ) );
-			array_push( $fields, order_get_mission_id( $order_id ) );
-
-
-
-			// $sort_index = (40-$long_lat[0]) * 1000 + $long_lat[1];
-			// get_postmeta_field($order_id, "_shipping_method")
-			$zone_id = order_get_zone( $order_id );
-			// print "zone id " . $zone_id . "<br/>";
-			$zone_order = get_zone_order( $zone_id );
-			// print "zone=" . $zone;
-			// var_dump($shipping);
-
-			array_push( $fields, $zone_order );
-
-			$long_lat = get_long_lat( $client_id, $address );
-
-			array_push( $fields, $long_lat[0] );
-			array_push( $fields, $long_lat[1] );
-
-			$sort_index = sort_key( $zone_order, $long_lat );
-
-			// array_push( $fields, $sort_index );
-
-			$line = "<tr> " . table_line( $order_id, $fields, $edit ) . "</tr>";
-
-			// get_field($order_id, '_shipping_city');
-			array_push( $data_lines, array( $sort_index, $line, $order_id ) );
-			// print "size = " . sizeof($data_lines) . "<br/>";
-		}
+	foreach ( $orders as $order ) {
+		print_order( $order, null );
 	}
-	sort( $data_lines );
 
-	$data = "";
-	for ( $i = 0; $i < count( $data_lines ); $i ++ ) {
-		$line = $data_lines[ $i ][1];
-		$data .= trim( $line );
+	$sql = "SELECT id, client_id, mission_id FROM im_delivery_legacy " .
+	       " WHERE status = 1";
 
-		//	$print_url_id = $data_lines[$i][2] . "-" . $print_url_id;
+	$deliveries = sql_query_array( $sql );
+
+	foreach ( $deliveries as $delivery_info ) {
+		print_order_or_delivery( null, $delivery_info );
 	}
-	print $data;
-
 }
 
-function get_day_letter( $day ) {
-	switch ( $day ) {
-		case 0:
-			return 'א';
-		case 1:
-			return 'ב';
-		case 2:
-			return 'ג';
-		case 3:
-			return 'ד';
-		case 4:
-			return 'ה';
-		case 5:
-			return 'ו';
+function print_order_or_delivery( $order_id, $delivery_info ) {
+	$site_tools = MultiSite::LocalSiteTools();
+
+	$fields = array();
+	array_push( $fields, MultiSite::LocalSiteName() );
+
+	$address = "";
+
+	if ( $order_id ) {
+		$client_id = get_customer_id_by_order_id( $order_id );
+		$ref       = "<a href=\"" . $site_tools . "/orders/get-order.php?order_id=" . $order_id . "\">" . $order_id . "</a>";
+		foreach ( array( '_shipping_address_1', '_shipping_city' ) as $field ) {
+			$address .= get_meta_field( $order_id, $field ) . " ";
+		}
+		$receiver_name = get_meta_field( $order_id, '_shipping_first_name' ) . " " .
+		                 get_meta_field( $order_id, '_shipping_last_name' );
+		$shipping2     = get_meta_field( $order_id, '_shipping_address_2', true );
+		$mission_id    = order_get_mission_id( $order_id );
+		$ref           = $order_id;
+	} else {
+		$client_id     = $delivery_info[1];
+		$address       = get_user_meta( $client_id, 'shipping_address_1', true ) . " " . get_user_meta( $client_id, 'shipping_city', true );
+		$receiver_name = get_user_name( $client_id );
+		$shipping2     = get_user_meta( $client_id, 'shipping_address_2', true );
+		$ref           = $delivery_info[0];
 	}
 
-	return "Error";
+	array_push( $fields, $ref );
+
+	array_push( $fields, $client_id );
+
+	array_push( $fields, $receiver_name );
+
+	array_push( $fields, "<a href='waze://?q=$address'>$address</a>" );
+
+	array_push( $fields, get_user_meta( $client_id, 'billing_phone', true ) );
+	array_push( $fields, $shipping2 );
+	$payment_method = get_payment_method_name( $client_id );
+	if ( $payment_method <> "מזומן" and $payment_method <> "המחאה" ) {
+		$payment_method = "";
+	}
+	array_push( $fields, $payment_method );
+
+	array_push( $fields, MultiSite::LocalSiteID() );
+	// array_push($fields, get_delivery_id($order_id));
+
+
+	$line = "<tr> " . table_line( 1, $fields ) . "</tr>";
+
+			// get_field($order_id, '_shipping_city');
+
+	print $line;
 }
 
 function sort_key( $zone_order, $long_lat ) {
@@ -191,15 +156,12 @@ function get_zone_order( $zone_id ) {
 	return sprintf( "%02d", sql_query_single_scalar( $sql ) );
 }
 
-//print "start legacy<br/>";
-
 function print_legacy() {
 	global $conn;
 
 	$site_tools = MultiSite::LocalSiteTools();
 
-
-	$sql = "SELECT id, client_id FROM im_delivery_legacy " .
+	$sql = "SELECT id, client_id, mission_id FROM im_delivery_legacy " .
 	       " WHERE status = 1";
 
 	$result     = mysqli_query( $conn, $sql );
@@ -217,16 +179,13 @@ function print_legacy() {
 			// print "client_id = " .$client_id . "<br/>";
 			$ref = $row['id'];
 
+			array_push( $fields, $client_id);
 			$user_info = get_userdata( $client_id );
 
 			// display customer name
 			$name = $user_info->first_name . " " . $user_info->last_name;
 
 			array_push( $fields, gui_hyperlink( $name, $site_tools . "../../wp-admin/user-edit.php?user_id=" . $client_id ) );
-
-			$receiver_name = "";
-
-			array_push( $fields, $receiver_name );
 
 			$address = "";
 			foreach ( array( 'shipping_address_1', 'shipping_city' ) as $field ) {
@@ -235,7 +194,7 @@ function print_legacy() {
 
 			array_push( $fields, "<a href='waze://?q=$address'>$address</a>" );
 
-			foreach ( array( 'billing_phone', 'shipping_address_2' ) as $field ) {
+			foreach ( array( 'shipping_address_2', 'billing_phone' ) as $field ) {
 				$field_value = get_user_meta( $client_id, $field, true );
 				// print $ref . " " . $field_value . "<br/>";
 				array_push( $fields, $field_value );
@@ -248,20 +207,7 @@ function print_legacy() {
 
 			$zone_id = get_zone_from_postcode( $postcode );
 
-			$optional_days = sql_query_single_scalar( "SELECT delivery_days FROM wp_woocommerce_shipping_zones WHERE zone_id =" . $zone_id );
-			$today         = get_day_letter( date( 'w' ) );
-			// print "today: " . $today . "<br/>";
-			$choosed_day = $today;
-
-			// Sooner the better.
-			// Is in the optional days
-			foreach ( explode( ",", $optional_days ) as $aday ) {
-				if ( $aday >= $today ) {
-					$choosed_day = $aday;
-					break;
-				}
-			}
-			array_push( $fields, $choosed_day );
+			array_push( $fields, $row['mission_id'] );
 
 			// $client_id = $ref;
 			$long_lat = get_long_lat( $client_id, $address );
@@ -280,7 +226,7 @@ function print_legacy() {
 //	    $x = sprintf("%.02f", 40 - $long_lat[0]);
 //	    $y = sprintf("%.02f", $long_lat[1]);
 
-			$sort_index = sort_key( $choosed_day, $zone_order, $long_lat );
+			$sort_index = sort_key( $zone_order, $long_lat );
 			// $sort_index = $day . "/" . $zone_order . ":" . $x . "-" . $long_lat[1];
 			array_push( $fields, $sort_index );
 
@@ -300,7 +246,6 @@ function print_legacy() {
 	}
 	print $data;
 }
-
 
 //print "done legacy<br/>";
 
@@ -383,22 +328,19 @@ function get_long_lat( $client_id, $address ) {
 function table_header( $edit = false ) {
 	$data = "";
 	$data .= "<table><tr>";
-	if ( $edit ) {
-		$data .= "<td>בחר</td>";
-	}
-	$data .= "</td><td><h3>אתר</h3></td>";
+	$data .= "<td><h3>אתר</h3></td>";
 	$data .= "<td><h3>מספר </br>הזמנה</h3></td>";
-	$data .= "<td><h3>שם המזמין</h3></td>";
+	$data .= "<td><h3>מספר </br>לקוח</h3></td>";
+//	$data .= "<td><h3>שם המזמין</h3></td>";
 	$data .= "<td><h3>שם המקבל</h3></td>";
 	$data .= "<td><h3>כתובת</h3></td>";
-	$data .= "<td><h3>טלפון</h3></td>";
 	$data .= "<td><h3>כתובת-2</h3></td>";
+	$data .= "<td><h3>טלפון</h3></td>";
 	// $data .= "<td><h3></h3></td>";
-	$data .= "<td><h3>אופן תשלום</h3></td>";
+	$data .= "<td><h3>מזומן/המחאה</h3></td>";
 	$data .= "<td><h3>משימה</h3></td>";
-	$data .= "<td><h3>סדר אזור</h3></td>";
-	$data .= "<td><h3>long</h3></td>";
-	$data .= "<td><h3>lat</h3></td>";
+	$data .= "<td><h3>אתר</h3></td>";
+	$data .= "<td><h3>מספר משלוח</h3></td>";
 	// $data .= "<td><h3>מיקום</h3></td>";
 	print $data;
 }
