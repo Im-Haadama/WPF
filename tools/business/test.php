@@ -5,7 +5,7 @@
  * Date: 11/11/16
  * Time: 17:57
  */
-require_once( '../tools_wp_login.php' );
+require_once( '../r-shop_manager.php' );
 
 $date = "2016-10-16";
 

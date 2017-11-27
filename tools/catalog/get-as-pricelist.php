@@ -6,7 +6,7 @@
  * Time: 22:48
  * purpose: export all published products as pricelist for external store
  */
-require_once( '../tools_wp_login.php' );
+require_once( '../r-shop_manager.php' );
 require_once( '../gui/inputs.php' );
 require_once( '../pricing.php' );
 

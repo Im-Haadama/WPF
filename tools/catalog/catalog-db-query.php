@@ -1,5 +1,5 @@
 <?php
-require_once( '../tools_wp_login.php' );
+require_once( '../r-shop_manager.php' );
 require_once( "../gui/inputs.php" );
 require_once( "../catalog/catalog.php" );
 
@@ -78,7 +78,10 @@ function set_category( $prod_ids, $category ) {
 	}
 }
 
-function show_catalog( $for_update, $search_text, $csv, $active = false, $siton = false, $buy = false, $category = null, $order = false ) {
+function show_catalog(
+	$for_update, $search_text, $csv, $active = false, $siton = false, $buy = false, $category = null,
+	$order = false, $suppliers = null
+) {
 
 	$count = 0;
 	my_log( "search_text = " . $search_text, "catalog-db-query.php" );
@@ -168,6 +171,7 @@ function show_catalog( $for_update, $search_text, $csv, $active = false, $siton 
 				continue;
 			}
 		}
+
 		$prod_name = $row[1];
 
 		// Display product line
@@ -213,6 +217,10 @@ function show_catalog( $for_update, $search_text, $csv, $active = false, $siton 
 			$line         .= "<td>";
 			$alternatives = alternatives( $prod_id );
 			foreach ( $alternatives as $alt ) {
+//				if (! $suppliers or in_array($alt[1], $suppliers)) {
+//
+//				}
+
 				$line .= get_supplier_name( $alt[1] ) . ", ";
 			}
 

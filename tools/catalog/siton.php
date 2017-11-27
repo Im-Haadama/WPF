@@ -39,7 +39,7 @@
                     table.innerHTML = xmlhttp.response;
                 }
             }
-            var request = "catalog-db-query.php?operation=siton";
+            var request = "catalog-db-query.php?operation=fresh_siton";
             xmlhttp.open("GET", request, true);
             xmlhttp.send();
 

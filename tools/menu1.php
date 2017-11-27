@@ -4,7 +4,7 @@
     <title>ניהול החנות</title>
 
 </head>
-<?php include "tools_wp_login.php";
+<?php include "r-shop_manager.php";
 
 ?>
 <body>

@@ -6,7 +6,7 @@
  * Time: 00:26
  */
 
-require_once "../tools_wp_login.php";
+require_once "../r-shop_manager.php";
 
 $user_id    = $_GET["user_id"];
 $prod_ids   = $_GET["prod_ids"];
@@ -20,5 +20,5 @@ if ( ! ( count( $prod_ids ) > 0 ) or ! ( $user_id > 0 ) ) {
 
 $ids = explode( ',', $prod_ids );
 
-create_order( $user_id, $ids, $quantities );
+create_order( $user_id, 1, $ids, $quantities );
 

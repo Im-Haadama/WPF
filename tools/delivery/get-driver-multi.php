@@ -1,3 +1,4 @@
+<html>
 <?php
 /**
  * Created by PhpStorm.
@@ -8,8 +9,10 @@
 
 require_once( '../r-shop_manager.php' );
 require_once( '../multi-site/multi-site.php' );
+require_once( '../maps/build-path.php' );
 
 $debug = false;
+// $addresses = array();
 
 if ( isset( $_GET["debug"] ) ) {
 	$debug = true;
@@ -33,78 +36,146 @@ $dom = str_get_html( $output );
 
 print header_text( false );
 
-print "<style>";
-print "@media print {";
-print "h1 {page-break-before: always;}";
-print "}";
-print "</style>";
+?>
+<style>
+    @media print {
+        h1 {
+            page-break-before: always;
+        }
+    }
+</style>
+<script>
+    function delivered(st, v) {
+        var url = st + "/orders/orders-post.php?operation=delivered&ids=" + v;
+
+        xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+            // Wait to get query result
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+            {
+                if (xmlhttp.response == "delivered") {
+                    var row = document.getElementById("chk_" + v).parentElement.parentElement;
+                    var table = row.parentElement.parentElement;
+                    table.deleteRow(row.rowIndex);
+                } else {
+                    alert("failed: " + xmlhttp.response);
+                }
+                // window.location = window.location;
+            }
+        }
+
+        xmlhttp.open("GET", url, true);
+        xmlhttp.send();
+    }
+</script>
+<?php
+
 
 $data_lines = array();
 
-$header     = null;
+$header = null;
 foreach ( $dom->find( 'tr' ) as $row ) {
 	if ( ! $header ) {
 		for ( $i = 0; $i < 7; $i ++ ) {
-			$header .= $row->find( 'td', $i );
+			if ( $i != 2 ) {
+				$header .= $row->find( 'td', $i );
+			}
 		}
 		$header .= gui_cell( gui_header( 3, "מספר ארגזים, קירור" ) );
 		$header .= gui_cell( gui_header( 3, "נמסר" ));
+		$header .= gui_cell( gui_header( 3, "ק\"מ ליעד" ) );
+		$header .= gui_cell( gui_header( 3, "דקות" ) );
+		$header .= gui_cell( gui_header( 3, "דקות מצטבר" ));
 		continue;
 	}
 	// $key_fields = $row->find( 'td', 11 )->plaintext;
-	$name       = $row->find( 'td', 3 )->plaintext;
-	$zone_order = "0";
-	$long       = "0";
-	$lat        = "0";
-	// sscanf( $key_fields, "%s %s %f %f", $day, $zone_order, $long, $lat );
-	$zone_order = $row->find( 'td', 9 )->plaintext;
-	$long       = $row->find( 'td', 10 )->plaintext;
-	$lat        = $row->find( 'td', 11 )->plaintext;
-	// print "day " . $day . " zone " . $zone_order . " long " . $long . " " . $lat . "<br/>";
-	$coor = 100 * ( 40 - $long ) + $lat[1];
-
-	// Key= ZZ LO LA
-	$key = 10000 * $zone_order + $coor;
+	$order_id               = $row->find( 'td', 1 )->plaintext;
+	$user_id                = $row->find( 'td', 2 )->plaintext;
+	$name                   = $row->find( 'td', 3 )->plaintext;
+	$addresses[ $order_id ] = $row->find( 'td', 4 )->plaintext;
+	$site_id                = $row->find( 'td', 9 )->plaintext;
+	$delivery_id            = $row->find( 'td', 10 )->plaintext;
 
 	// print "name = " . $name . " key= "  . $key . "<br/>";
 	$mission_id = $row->find( 'td', 8 )->plaintext;
 	$line_data  = "<tr>";
 	for ( $i = 0; $i < 7; $i ++ ) {
-		$line_data .= $row->find( 'td', $i );
+		if ( $i <> 2 )
+			$line_data .= $row->find( 'td', $i );
 	}
 	$line_data .= gui_cell( "" ); // #box
-	$line_data .= gui_cell( gui_checkbox( "", "" ) ); // #delivered
-	if ( $debug ) {
-		$line_data .= gui_cell( $key . " " . $long . " " . $lat );
-	}
+	$line_data .= gui_cell( gui_checkbox( "chk_" . $order_id, "", "", 'onchange="delivered(\'' . MultiSite::SiteTools( $site_id ) . "'," . $order_id . ')"' ) ); // #delivered
 
 	$line_data .= "</tr>";
 	if ( ! isset( $data_lines[ $mission_id ] ) ) {
 		$data_lines[ $mission_id ] = array();
 		/// print "new: " . $mission_id . "<br/>";
 	}
-	array_push( $data_lines[ $mission_id ], array( $key, $line_data ) );
+	array_push( $data_lines[ $mission_id ], array( $user_id, $line_data ) );
 }
 
 foreach ( $data_lines as $mission_id => $data_line ) {
-	print gui_header( 1, get_mission_name( $mission_id ) );
+	print gui_header( 1, get_mission_name( $mission_id ) . "($mission_id)" );
+
+	// Collect the stop points
+	$path              = array();
+	$stop_points       = array();
+	$lines_per_station = array();
+	for ( $i = 0; $i < count( $data_lines[ $mission_id ] ); $i ++ ) {
+		$stop_point = $data_lines[ $mission_id ][ $i ][0];
+		array_push( $stop_points, $stop_point );
+		if ( $lines_per_station[ $stop_point ] == null ) {
+			$lines_per_station[ $stop_point ] = array();
+			array_push( $lines_per_station[ $stop_point ], $data_lines[ $mission_id ][ $i ][1] );
+		}
+	}
+//	foreach ($stop_points as $p) print $p . " ";
+	find_route_1( 1, $stop_points, $path );
+//	var_dump($path);
+	if ( $debug ) {
+		print map_get_order_address( $path[0] ) . "<br/>";// . " " .get_distance(1, $path[0]) . "<br/>";
+		for ( $i = 1; $i < count( $path ); $i ++ ) {
+			// print $path[$i] . " " . $addresses[$path[$i]]. "<br/>";
+			print map_get_order_address( $path[ $i ] ) . "<br/>"; // get_distance($path[$i], $path[$i-1]) . "<br/>";
+		}
+	}
+
 	// print "mission_id: " . var_dump($data_lines[$mission_id]) . "<br/>";
 	print "<table>";
 	$data = $header;
 
 	$data .= gui_list( "באחריות הנהג להעמיס את הרכב ולסמן את מספר האריזות והאם יש קירור." );
 	$data .= gui_list( "יש לוודא שכל המשלוחים הועמסו.");
+	$data .= gui_list( "בעת קבלת כסף או המחאה יש לשלוח מיידית הודעה ליעקב, עם הסכום ושם הלקוח.");
 
-	sort( $data_line );
-
-	for ( $i = 0; $i < count( $data_lines[ $mission_id ] ); $i ++ ) {
-		$line = $data_line[ $i ][1];
-		$data .= trim( $line );
+	$prev           = 1;
+	$total_distance = 0;
+	$total_duration = 0;
+	for ( $i = 0; $i < count( $path ); $i ++ ) {
+		foreach ( $lines_per_station[ $path[ $i ] ] as $line ) {
+			$distance       = round( get_distance( $prev, $path[ $i ] ) / 1000, 1 );
+			$total_distance += $distance;
+			$duration       = round( get_distance_duration( $prev, $path[ $i ] ) / 60, 0 );
+			$total_duration += $duration + 5;
+			$data           .= substr( $line, 0, strpos( $line, "</tr>" ) ) . gui_cell( $distance . "km" ) .
+			                   gui_cell( $duration . "ד'" ) . gui_cell( $total_duration . "ד'" ) . "</td>";
+		}
+		$prev = $path[ $i];
 	}
+	$total_distance += get_distance( $path[ count( $path ) - 1 ], 1 ) / 1000;
+
+//	foreach ($path as $id => $stop_point){
+//		print $id ."<br/>";
+//	for ( $i = 0; $i < count( $data_lines[ $mission_id ] ); $i ++ ) {
+//		$line = $data_line[ $i ][1];
+//		$data .= trim( $line );
+//	}
 
 	print $data;
 
 	print "</table>";
+
+	print "סך הכל ק\"מ " . $total_distance . "<br/>";
 }
 
 function mb_ord( $c ) {

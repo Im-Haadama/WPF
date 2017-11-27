@@ -6,7 +6,7 @@
  * Time: 18:42
  */
 
-require_once( "../tools_wp_login.php" );
+require_once( "../r-shop_manager.php" );
 require_once( "inputs.php" );
 
 function table_content( $sql, $header = true, $footer = true, $links = null, &$sum_fields = null ) {

@@ -7,7 +7,7 @@
  */
 
 print "test1";
-include "tools_wp_login.php";
+include "r-shop_manager.php";
 print "test2";
 require_once( "tools.php" );
 ?>

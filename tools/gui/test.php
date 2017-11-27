@@ -28,7 +28,7 @@ require_once( "../account/gui.php" );
 <body>
 <?php
 // print gui_checkbox( "with_sale", "", "", "onclick=\"update_prices()\"" );
-print gui_select_mission();
+print gui_select_mission( "mission_select" );
 
 ?>
 </body>

@@ -30,6 +30,8 @@ $actions = array(
 	array( "בטל", "tasklist.php?operation=cancel&id=" )
 );
 
+$load_actions = array( "create_tasks" );
+
 $defaults         = [];
 $defaults["date"] = "date(\"m/d/y\")";
 

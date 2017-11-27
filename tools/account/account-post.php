@@ -5,7 +5,7 @@
  * Date: 03/07/15
  * Time: 11:53
  */
-require_once( '../tools_wp_login.php' );
+require_once( '../r-shop_manager.php' );
 require_once( 'account.php' );
 require_once( '../invoice4u/invoice.php' );
 require_once( '../delivery/delivery.php' );
@@ -54,11 +54,12 @@ switch ( $operation ) {
 		$change       = $_GET["change"];
 		$delivery_ids = $_GET["ids"];
 		$user_id      = $_GET["user_id"];
+		$date         = $_GET["date"];
 		$ids          = explode( ',', $delivery_ids );
 		$c            = $cash - $change;
 //        if (abs($c) < 0) $c =0;
 		//      if (round($c,0) < 1 or round($c,0) < 1)
-		$doc_id   = invoice_create_document( "r", $ids, $user_id, $c, $bank, $credit, $check );
+		$doc_id   = invoice_create_document( "r", $ids, $user_id, $date, $c, $bank, $credit, $check );
 		$pay_type = pay_type( $cash, $bank, $credit, $check );
 		if ( is_numeric( $doc_id ) && $doc_id > 0 ) {
 			$pay_description = $pay_type . " " . $_GET["ids"];
@@ -268,7 +269,7 @@ function invoice_create_user( $user_id ) {
 
 }
 
-function invoice_create_document( $type, $ids, $customer_id, $cash = 0, $bank = 0, $credit = 0, $check = 0 ) {
+function invoice_create_document( $type, $ids, $customer_id, $date, $cash = 0, $bank = 0, $credit = 0, $check = 0 ) {
 	// print "create invoice<br/>";
 	global $debug;
 
@@ -366,6 +367,7 @@ function invoice_create_document( $type, $ids, $customer_id, $cash = 0, $bank = 
 		if ( $bank > 0 ) {
 			$pay         = new PaymentBank();
 			$pay->Amount = $bank;
+			$pay->Date   = $date;
 			array_push( $doc->Payments, $pay );
 		}
 		if ( $credit > 0 ) {

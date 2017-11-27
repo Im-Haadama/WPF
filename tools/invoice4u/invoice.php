@@ -138,7 +138,8 @@ class Invoice4u {
 			'getAllRows' => false
 		) );
 		$customers = $response->Response->Customer;
-		foreach ( $customers as $customer ) {
+		if ( $customers )
+			foreach ( $customers as $customer ) {
 			// print $customer->Email . " ";
 			if ( $customer->Email == $email ) {
 				return $customer;

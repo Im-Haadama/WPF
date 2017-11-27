@@ -81,6 +81,7 @@ print "}<br/>";
 print "function print_" . $obj_name . "(\$id, \$horizontal, \$seq)<br/>";
 print "{<br/>";
 print "\$sql = \"select " . $field_list . " from " . $table_name . " where id = \$id\";<br/>";
+
 print "\$export = mysql_query ( \$sql ) or die ( \"Sql error : \" . mysql_error( ) . \$sql );<br/>";
 print "\$row = mysql_fetch_row( \$export ); <br/>";
 print "if (!\$horizontal) print \"&#60table>\";</br>";
@@ -121,12 +122,12 @@ print "print \"&#60/table>\";</br>";
 // Print input fields
 print "?>";
 
-$conn->query( $sql );
-$result = mysqli_query( $conn, $sql );
-while ( $row = mysqli_fetch_assoc( $result ) ) {
-//    $name = $row[]
-
-}
+//$conn->query( $sql );
+//$result = mysqli_query( $conn, $sql );
+//while ( $row = mysqli_fetch_assoc( $result ) ) {
+////    $name = $row[]
+//
+//}
 
 
 ?>

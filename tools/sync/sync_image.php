@@ -6,6 +6,6 @@
  * Time: 20:55
  */
 
-require_once( '../tools_wp_login.php' );
+require_once( '../r-shop_manager.php' );
 
 wp_get_attachment_image_src();

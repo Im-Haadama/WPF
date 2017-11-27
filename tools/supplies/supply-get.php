@@ -6,7 +6,7 @@
  * Time: 18:09
  */
 
-require '../tools_wp_login.php';
+require '../r-shop_manager.php';
 require_once( "supplies.php" );
 require_once( "../gui/inputs.php" );
 $id = $_GET["id"];
@@ -176,7 +176,7 @@ if ( ! $send ) {
             // Wait to get query result
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
             {
-                location.reload();
+                update_display();
             }
         }
         var request = "supplies-post.php?operation=update_lines&params=" + params;

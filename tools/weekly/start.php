@@ -5,7 +5,7 @@
  * Date: 23/01/17
  * Time: 18:11
  */
-require_once( '../tools_wp_login.php' );
+require_once( '../r-shop_manager.php' );
 require_once( '../multi-site/multi-site.php' );
 require_once( '../orders/orders-common.php' );
 require_once( '../supplies/supplies.php' );
@@ -45,6 +45,7 @@ if ( isset( $_GET["operation"] ) ) {
 //	print "<br/><B>" . "איפוס שבועי מוחק את הרשימה של אמיר בן יהודה!" . "</B><br/>";
 	print gui_hyperlink( "האם ברצונך לאפס את המלאי?", "start.php?operation=reset_inventory" );
 }
+
 function reset_inventory() {
 	global $conn;
 	$sql    = "UPDATE im_supplies SET status = 9 WHERE status IN (1, 3)";
@@ -79,8 +80,9 @@ function reset_inventory() {
 	if ( ! $result ) {
 		sql_error( $sql );
 	}
-
-	sql_query( "UPDATE im_info SET inventory_in = " . $last_supply );
+	$sql = "UPDATE im_info SET info_data = " . $last_supply . " WHERE info_key = 'inventory_in'";
+	print $sql;
+	sql_query( $sql );
 
 	$sql = "create or replace view i_out as " .
 	       " select prod_id, round(sum(dl.quantity),1) as q_out " .
@@ -90,7 +92,7 @@ function reset_inventory() {
 
 	sql_query( $sql );
 
-	sql_query( "UPDATE im_info SET inventory_out = " . $last_delivery );
+	sql_query( "UPDATE im_info SET info_data = " . $last_delivery . " where info_key = 'inventory_out'" );
 
 }
 

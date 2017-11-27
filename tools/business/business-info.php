@@ -5,7 +5,7 @@
  * Date: 09/06/17
  * Time: 17:31
  */
-require_once( "../tools_wp_login.php" );
+require_once( "../r-shop_manager.php" );
 
 function business_supply_info( $bid ) {
 	global $conn;

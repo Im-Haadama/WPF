@@ -5,7 +5,7 @@
  * Date: 06/12/15
  * Time: 10:07
  */
-require_once( '../tools_wp_login.php' );
+require_once( '../r-shop_manager.php' );
 require_once( '../pricelist/pricelist.php' );
 require_once( '../wp/terms.php' );
 require_once( '../pricing.php' );
@@ -385,29 +385,12 @@ class Catalog {
 	static function GetBuyPrice( $product_id, $supplier ) {
 		// print "prod_id = " . $product_id . " supplier = " . $supplier . "<br/>";
 
-		$sql = "SELECT pricelist_id FROM im_supplier_mapping WHERE product_id = " .
-		       $product_id . " AND supplier_id = " . $supplier;
-
-		$rows = sql_query_array( $sql );
-		if ( count( $rows ) > 1 ) {
-			// print "multiply links product " . $product_id . "<br/>";
-		}
-
-		foreach ( $rows as $row ) {
-			$pl_line = $row[0];
-			// print $pl_line . " ";
-
-			if ( $pl_line > 0 ) {
-				//			print " pricelist " . $pl_line . "<br/>";
-
-				$PriceList = new PriceList( $supplier );
-
-				$pl_line = $PriceList->Get( $pl_line );
-
-				// var_dump($pl_line);
-
-				return $pl_line["price"];
+		$alternatives = alternatives( $product_id );
+		for ( $i = 0; $i < count( $alternatives ); $i ++ ) {
+			if ( $alternatives[ $i ][1] == $supplier ) {
+				return $alternatives[ $i ][0];
 			}
+
 		}
 		return null;
 	}

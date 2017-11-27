@@ -1,5 +1,5 @@
 <?php
-require( '../tools_wp_login.php' );
+require( '../r-shop_manager.php' );
 print header_text( false );
 require_once( "account.php" );
 ?>

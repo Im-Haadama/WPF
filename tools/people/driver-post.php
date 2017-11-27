@@ -6,7 +6,7 @@
  * Time: 21:12
  */
 
-require_once( "../tools_wp_login.php" );
+require_once( "../r-shop_manager.php" );
 require_once( "people.php" );
 require_once( "../account/account.php" );
 

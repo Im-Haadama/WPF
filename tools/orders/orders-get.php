@@ -1,19 +1,27 @@
 <?php
 
-require_once( '../tools_wp_login.php' );
+require_once( '../r-shop_manager.php' );
 require_once 'orders-common.php';
 require_once '../delivery/delivery.php';
+require_once( '../maps/build-path.php' );
 
 print header_text( false );
 
 print gui_button( "btn_new", "show_create_order()", "הזמנה חדשה" );
 ?>
-<button id="btn" onclick="complete_status()">סיים טיפול בכל ההזמנות</button>
-<button id="btn" onclick="create_subs()">צור הזמנות למנויים</button>
 
 <script type="text/javascript" src="../client_tools.js"></script>
 
     <script>
+        function mission_changed(order_id) {
+            // "mis_"
+            //var order_id = field.name.substr(4);
+            var mis = document.getElementById("mis_" + order_id);
+            var mission_id = get_value(mis);
+//            $mission_id = $_GET["id"];
+//            $order_id   = $_GET["order_id"];
+            execute_url("orders-post.php?operation=mission&order_id=" + order_id + "&id=" + mission_id);
+        }
 
         function start_handle() {
             var collection = document.getElementsByClassName("select_order");
@@ -81,13 +89,19 @@ print gui_button( "btn_new", "show_create_order()", "הזמנה חדשה" );
         //        }
 
         function add_order() {
-            var user_id = get_value(document.getElementById("client_select"));
+            var user_name = get_value(document.getElementById("client_select"));
+            var user_id = user_name.substr(0, user_name.indexOf(")"));
+            if (!(user_id > 0)) {
+                alert("יש לבחור לקוח, כולל מספר מזהה מהרשימה");
+                return;
+            }
             var prods = [];
             var quantities = [];
             var comment = [];
             var units = [];
 
             var item_table = document.getElementById("order_items");
+            var line_number = 0;
 
             for (var i = 1; i < item_table.rows.length; i++) {
                 var prod = get_value(document.getElementById("itm_" + i));
@@ -98,17 +112,25 @@ print gui_button( "btn_new", "show_create_order()", "הזמנה חדשה" );
                     prods.push(encodeURI(prod));
                     quantities.push(encodeURI(q));
                     units.push(encodeURI(u));
+                    line_number++;
                 }
 
                 // ids.push(get_value(item_table.rows[i].cells[0].innerHTML));
             }
+            if (line_number === 0) {
+                alert("יש לבחור מוצרים, כולל כמויות");
+                return;
+            }
+
+            var mission_id = get_value(document.getElementById("mis_new"));
 
             var request = "../orders/orders-post.php?operation=create_order" +
                 "&user_id=" + user_id +
                 "&prods=" + prods.join() +
                 "&quantities=" + quantities.join() +
                 // "&comments="   + encodeURI(comment) +
-                "&units=" + units.join();
+                "&units=" + units.join() +
+                "&mission_id=" + mission_id;
 
             xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function () {
@@ -247,15 +269,15 @@ $sql = 'SELECT meta.meta_value ' .
 
 $result = mysqli_query( $conn, $sql );
 
-while ( $row = mysqli_fetch_row( $result ) ) {
+//while ( $row = mysqli_fetch_row( $result ) ) {
 
 // print "לקוחות השבוע: ";
 
-	$user_id = $row[0];
+//	$user_id = $row[0];
 	// print get_customer_name($user_id) . ", ";
 
-	unset( $active_users[ $user_id ] );
-}
+//	unset( $active_users[ $user_id ] );
+//}
 
 // print "<br>";
 
@@ -266,7 +288,7 @@ while ( $row = mysqli_fetch_row( $result ) ) {
 //	print   $name . "(" . get_user_order_count( $u ) . "), ";
 //}
 
-print "$data";
+//print "$data";
 
 function get_user_order_count( $u ) {
 	$sql = 'SELECT count(*) ' .
@@ -288,6 +310,141 @@ function get_user_order_count( $u ) {
 
 <?php
 
+function orders_table( $statuses ) {
+	global $conn;
+//	LIKE 'wc-processing%' or post_status LIKE 'wc-on-hold%' order by 1";
+
+	$status_names = wc_get_order_statuses();
+	// var_dump($status_names);
+	$all_tables = "";
+	if ( ! is_array( $statuses ) ) {
+		$statuses = array( $statuses );
+	}
+	foreach ( $statuses as $status ) {
+		// print $status . "<br/>";
+
+		$data = gui_header( 2, $status_names[ $status ] );
+
+		$sql = 'SELECT posts.id'
+		       . ' FROM `wp_posts` posts'
+		       . " WHERE post_status = '" . $status . "'" .
+		       " order by 1";
+
+		// Build path
+		$order_ids = sql_query_array_scalar( $sql );
+
+		// If no orders in this status, move on.
+		if ( sizeof( $order_ids ) < 1 ) {
+			continue;
+		}
+
+		$path = array();
+		find_route_1( 1, $order_ids, $path, false );
+
+		// print $sql;
+		$result = mysqli_query( $conn, $sql );
+
+		$data                  .= "<table id='" . $status . "'>";
+		$data                  .= "<tr>";
+		$data                  .= gui_cell( gui_checkbox( "chk_all", "", "",
+			array( "onchange=select_orders('" . $status . "')" ) ) );
+		$data                  .= gui_cell( gui_bold( "משימה" ) );
+		$data                  .= "<td><h3>מספר </br> הזמנה</h3></td>";
+		$data                  .= "<td><h3>שם המזמין</h3></td>";
+		$data                  .= "<td><h3>עבור</h3></td>";
+		$data                  .= "<td><h3>סכום</h3></td>";
+		$data                  .= "</tr>";
+		$count                 = 0;
+		$total_delivery_total  = 0;
+		$total_order_total     = 0;
+		$total_order_delivered = 0;
+		$total_delivery_fee    = 0;
+		$lines                 = array();
+
+		if ( ! $result ) {
+			continue;
+		}
+
+		$count = 0;
+		while ( $row = mysqli_fetch_row( $result ) ) {
+			$order_id    = $row[0];
+			$row_text    = gui_cell( gui_checkbox( "chk_" . $order_id, "select_order" ) );
+			$customer_id = order_get_customer_id( $order_id );
+
+			// display order_id with link to display it.
+			$count ++;
+			// 1) order ID with link to the order
+			$mission_id = order_get_mission_id( $order_id );
+			// print $order_id. " ". $mission . "<br/>";
+
+			$row_text .= gui_cell( gui_select_mission( "mis_" . $order_id, $mission_id, "onchange=\"mission_changed(" . $order_id . ")\"" ) );
+			$row_text .= "<td><a href=\"get-order.php?order_id=" . $order_id . "\">" . $order_id . "</a></td>";
+
+			// 2) Customer name with link to his deliveries
+			$row_text .= "<td><a href=\"../account/get-customer-account.php?customer_id=" . $customer_id . "\">" .
+
+			             get_customer_by_order_id( $order_id ) . "</a></td>";
+
+			$row_text .= "<td>" . get_postmeta_field( $order_id, '_shipping_first_name' ) . ' ' .
+			             get_postmeta_field( $order_id, '_shipping_last_name' ) . "</td>";
+
+			// 3) Order total
+			$order_total       = get_postmeta_field( $order_id, '_order_total' );
+			$row_text          .= "<td>" . $order_total . '</td>';
+			$total_order_total += $order_total;
+
+			// 4) Delivery note
+			$delivery_id = get_delivery_id( $order_id );
+//    print "order: " . $order_id . "<br/>" . " del: " . $delivery_id . "<br/>";
+			if ( $delivery_id > 0 ) {
+				$delivery = new Delivery( $delivery_id );
+				$row_text .= "<td><a href=\"..\delivery\get-delivery.php?id=" . $delivery_id . "\"</a>" . $delivery_id . "</td>";
+//        $total_amount = get_delivery_total($delivery_id[0]);
+//        $row_text .= "<td>" . $total_amount . "</td>";
+				if ( $delivery_id > 0 ) {
+					$row_text .= "<td>" . $delivery->Price() . "</td>";
+					$row_text .= "<td>" . $delivery->DeliveryFee() . "</td>";
+					$percent  = "";
+					if ( ( $order_total - $delivery->DeliveryFee() ) > 0 ) {
+						$percent = round( 100 * ( $delivery->Price() - $delivery->DeliveryFee() ) / ( $order_total - $delivery->DeliveryFee() ), 0 ) . "%";
+					}
+					$row_text              .= "<td>" . $percent . "%</td>";
+					$total_delivery_total  += $delivery->Price();
+					$total_delivery_fee    += $delivery->DeliveryFee();
+					$total_order_delivered += $order_total;
+				}
+			} else {
+				$row_text .= "<td></td><td></td><td></td>";
+			}
+			$line = $row_text;
+
+			array_push( $lines, array( array_search( $customer_id, $path ), $line ) );
+		}
+		//   $data .= "<tr> " . trim($line) . "</tr>";
+		sort( $lines );
+
+		foreach ( $lines as $line ) {
+			$data .= "<tr>" . $line[1] . "</tr>";
+		}
+		$rate = 0;
+		if ( $total_order_delivered > 0 ) {
+			$rate = round( 100 * ( $total_delivery_total - $total_delivery_fee ) / $total_order_delivered );
+		}
+//		$data .= "<tr><td></td><td></td><td></td><td>" . $total_order_total . "</td><td></td>" .
+//		         "<td>" . $total_delivery_total . "</td>" .
+//		         "<td>" . $total_delivery_fee . "</td>" .
+//		         "<td>" . $rate . "%</td></tr>";
+		$data = str_replace( "\r", "", $data );
+
+		$data .= "</table>";
+
+		if ( $count > 0 ) {
+			$all_tables .= $data;
+		}
+	}
+
+	return $all_tables;
+}
 ?>
 <div id="new_order" style="display: none">
 	<?php
@@ -299,7 +456,7 @@ function get_user_order_count( $u ) {
 		),
 		array(
 			gui_select_client( 90, true ),
-			gui_select_mission()
+			gui_select_mission( "mis_new")
 		)
 	) );
 

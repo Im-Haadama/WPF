@@ -5,7 +5,7 @@
  * Date: 04/11/16
  * Time: 06:20
  */
-require_once( "../tools_wp_login.php" );
+require_once( "../r-shop_manager.php" );
 require_once( 'delivery.php' );
 
 //$shipping = get_postmeta_field(6416, '_shipping_method');

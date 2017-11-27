@@ -1,6 +1,6 @@
 <?php
 require "../header.php";
-require '../tools_wp_login.php';
+require '../r-shop_manager.php';
 ?>
 
 <html dir="rtl" lang="he">

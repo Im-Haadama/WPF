@@ -1,6 +1,6 @@
 <?php
 
-require_once( '../tools_wp_login.php' );
+require_once( '../r-shop_manager.php' );
 $product_categories = get_terms( 'product_cat', array(
 	'hide_empty' => false,
 ) );

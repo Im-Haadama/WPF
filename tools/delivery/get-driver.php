@@ -45,23 +45,16 @@ function print_deliveries( $edit = false ) {
 	       . ' order by 1';
 //    }
 
-	$orders = sql_query_array( $sql );
+	$orders = sql_query_array_scalar( $sql );
 
 	foreach ( $orders as $order ) {
-		print_order( $order, null );
+		print_order( $order );
 	}
 
-	$sql = "SELECT id, client_id, mission_id FROM im_delivery_legacy " .
-	       " WHERE status = 1";
-
-	$deliveries = sql_query_array( $sql );
-
-	foreach ( $deliveries as $delivery_info ) {
-		print_order_or_delivery( null, $delivery_info );
-	}
 }
 
-function print_order_or_delivery( $order_id, $delivery_info ) {
+function print_order( $order_id )
+{
 	$site_tools = MultiSite::LocalSiteTools();
 
 	$fields = array();
@@ -69,24 +62,14 @@ function print_order_or_delivery( $order_id, $delivery_info ) {
 
 	$address = "";
 
-	if ( $order_id ) {
-		$client_id = get_customer_id_by_order_id( $order_id );
-		$ref       = "<a href=\"" . $site_tools . "/orders/get-order.php?order_id=" . $order_id . "\">" . $order_id . "</a>";
-		foreach ( array( '_shipping_address_1', '_shipping_city' ) as $field ) {
-			$address .= get_meta_field( $order_id, $field ) . " ";
-		}
-		$receiver_name = get_meta_field( $order_id, '_shipping_first_name' ) . " " .
-		                 get_meta_field( $order_id, '_shipping_last_name' );
-		$shipping2     = get_meta_field( $order_id, '_shipping_address_2', true );
-		$mission_id    = order_get_mission_id( $order_id );
-		$ref           = $order_id;
-	} else {
-		$client_id     = $delivery_info[1];
-		$address       = get_user_meta( $client_id, 'shipping_address_1', true ) . " " . get_user_meta( $client_id, 'shipping_city', true );
-		$receiver_name = get_user_name( $client_id );
-		$shipping2     = get_user_meta( $client_id, 'shipping_address_2', true );
-		$ref           = $delivery_info[0];
-	}
+	$client_id     = order_get_customer_id( $order_id );
+	$ref           = "<a href=\"" . $site_tools . "/orders/get-order.php?order_id=" . $order_id . "\">" . $order_id . "</a>";
+	$address       = order_get_address( $order_id );
+	$receiver_name = get_meta_field( $order_id, '_shipping_first_name' ) . " " .
+	                 get_meta_field( $order_id, '_shipping_last_name' );
+	$shipping2     = get_meta_field( $order_id, '_shipping_address_2', true );
+	$mission_id    = order_get_mission_id( $order_id );
+	$ref           = $order_id;
 
 	array_push( $fields, $ref );
 
@@ -96,13 +79,16 @@ function print_order_or_delivery( $order_id, $delivery_info ) {
 
 	array_push( $fields, "<a href='waze://?q=$address'>$address</a>" );
 
-	array_push( $fields, get_user_meta( $client_id, 'billing_phone', true ) );
 	array_push( $fields, $shipping2 );
+
+	array_push( $fields, get_user_meta( $client_id, 'billing_phone', true ) );
 	$payment_method = get_payment_method_name( $client_id );
 	if ( $payment_method <> "מזומן" and $payment_method <> "המחאה" ) {
 		$payment_method = "";
 	}
 	array_push( $fields, $payment_method );
+
+	array_push( $fields, order_get_mission_id( $order_id ));
 
 	array_push( $fields, MultiSite::LocalSiteID() );
 	// array_push($fields, get_delivery_id($order_id));

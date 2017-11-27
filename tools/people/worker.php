@@ -5,9 +5,7 @@
  * Date: 08/05/16
  * Time: 19:48
  */
-require_once( "../tools_wp_login.php" );
-require_once( '../tools_wp_login.php' );
-require_once( "../header.php" );
+require_once( '../r-staff.php' );
 require_once( "../gui/inputs.php" );
 print header_text();
 
@@ -42,7 +40,7 @@ print header_text();
                 // update_display();
             }
         }
-        var request = "volunteer-post.php?operation=display";
+        var request = "people-post.php?operation=display";
         xmlhttp.open("GET", request, true);
         xmlhttp.send();
     }
@@ -93,7 +91,7 @@ print header_text();
                 update_display();
             }
         }
-        var request = "volunteer-post.php?operation=add_time&start=" + start + '&end=' + end +
+        var request = "people-post.php?operation=add_time&start=" + start + '&end=' + end +
             '&date=' + date + "&project=" + id + "&vol=0" + "&traveling=" + traveling +
             "&extra_text=" + encodeURI(extra_text) +
             "&extra=" + extra;

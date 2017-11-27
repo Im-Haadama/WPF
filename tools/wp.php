@@ -5,7 +5,7 @@
  * Date: 18/08/17
  * Time: 05:20
  */
-// require_once( "tools_wp_login.php" );
+// require_once( "r-shop_manager.php" );
 
 // Postmeta table
 function get_postmeta_field( $post_id, $field_name ) {

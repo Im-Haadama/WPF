@@ -1,5 +1,5 @@
 <?php
-require_once( "../tools_wp_login.php" );
+require_once( "../r-shop_manager.php" );
 require_once( "../gui/sql_table.php" );
 /**
  * Created by PhpStorm.

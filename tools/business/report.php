@@ -5,11 +5,12 @@
  * Date: 08/06/17
  * Time: 18:02
  */
-require_once( "../tools_wp_login.php" );
+require_once( "../r-shop_manager.php" );
 require_once( "../gui/sql_table.php" );
 require_once( "../people/people.php" );
 
 print header_text();
+
 
 if ( isset( $_GET["week"] ) ) {
 	print_weekly_report( $_GET["week"] );

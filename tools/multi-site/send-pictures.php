@@ -7,7 +7,7 @@
  * Sends pictures from site with multisite mapping to secondary site.
  * As June 2017 from Im haadama to Organic Store
  */
-require_once( "../tools_wp_login.php" );
+require_once( "../r-shop_manager.php" );
 require_once( "multi-site.php" );
 
 //

@@ -9,10 +9,10 @@ if ( $id > 0 ) {
 	$order_id = get_order_id( $id );
 }
 
+print gui_datalist( "items", "im_products", "post_title" );
 ?>
 
 <script>
-
     const product_name_id = <? print DeliveryFields::product_name; ?>;
     const q_quantity_ordered_id = <? print DeliveryFields::order_q; ?>;
     const q_units = <? print DeliveryFields::order_q_units; ?>;
@@ -24,6 +24,27 @@ if ( $id > 0 ) {
     const term_id = <? print DeliveryFields::term; ?>;
     const q_refund_id = <? print DeliveryFields::refund_q ?>;
     const refund_total_id = <? print DeliveryFields::refund_line; ?>;
+
+    function getPrice(my_row) {
+        var product_name = get_value(document.getElementById("nam_" + my_row));
+        var request = "delivery-post.php?operation=get_price&name=" + encodeURI(product_name);
+
+        xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+            // Wait to get delivery id.
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+            {
+                var price = xmlhttp.response;
+
+                if (Math.isNumeric(price)) {
+                    document.getElementById("prc_" + my_row).value = price;
+                    document.getElementById("deq_" + my_row).focus();
+                }
+            }
+        }
+        xmlhttp.open("GET", request, true);
+        xmlhttp.send();
+    }
 
     function moveNextRow(my_row) {
         if (event.which == 13) {
@@ -54,11 +75,11 @@ if ( $id > 0 ) {
         var line_id = lines - 4;
         var row = table.insertRow(lines - 4);
 //        row.insertCell(0).style.visibility = false;              // 0 - select
-        row.insertCell(-1).innerHTML = "<input id=\"nam_" + line_id + "\" type=\"text\" list=\"items\">";   // 1 - product name
+        row.insertCell(-1).innerHTML = "<input id=\"nam_" + line_id + "\" type=\"text\" list=\"items\" onchange=\"getPrice(" + line_id + ")\">";   // 1 - product name
         row.insertCell(-1).innerHTML = "0";                       // 2 - quantity ordered
         row.insertCell(-1).innerHTML = "";                        // 3 - unit ordered
         row.insertCell(-1).innerHTML = "<input id=\"prc_" + line_id + "\" type=\"text\">";   // 5 - price
-        row.insertCell(-1).innerHTML = ""; // order total
+        // row.insertCell(-1).innerHTML = ""; // order total
         row.insertCell(-1).innerHTML = "<input id=\"deq_" + line_id + "\" type=\"text\">";   // 4 - supplied
         row.insertCell(-1).innerHTML = "<input id=\"hvt_" + line_id + "\"  type = \"checkbox\" checked>"; // 6 - has vat
         row.insertCell(-1).id = "lvt_" + line_id;                       // 7 - line vat
@@ -201,7 +222,12 @@ if ( $id > 0 ) {
 //                    3) Send the delivery notes to the client
                         // Now call the server, to send the delivery. It waits few seconds for the save lines to finish
                         xmlhttp_send = new XMLHttpRequest();
-                        xmlhttp_send.open("GET", "send-delivery.php?del_id=" + delivery_id);
+                        var request = "send-delivery.php?del_id=" + delivery_id;
+	                    <?php if ( $edit ) {
+	                    print 'request = request + "&edit";
+                        ';
+                    } ?>
+                        xmlhttp_send.open("GET", request);
                         xmlhttp_send.send();
                     }
                 }

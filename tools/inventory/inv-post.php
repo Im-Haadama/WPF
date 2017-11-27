@@ -5,7 +5,7 @@
  * Date: 04/06/17
  * Time: 13:39
  */
-require_once( '../tools_wp_login.php' );
+require_once( '../r-shop_manager.php' );
 require_once( '../gui/sql_table.php' );
 
 $operation = $_GET["operation"];
@@ -28,7 +28,7 @@ switch ( $operation ) {
 function show_in( $prod_id ) {
 	print header_text();
 	print gui_header( 1, "הספקות לפריט " . get_product_name( $prod_id ) );
-	$inventory_in = sql_query_single_scalar( "SELECT inventory_in FROM im_info" );
+	$inventory_in = sql_query_single_scalar( "SELECT info_data FROM im_info WHERE info_key = 'inventory_in'" );
 
 	$sql = "select supply_id as אספקה, quantity as כמות, supplier_name as ספק " .
 	       " from im_supplies_lines sl " .
@@ -48,7 +48,7 @@ function show_in( $prod_id ) {
 function show_out( $prod_id ) {
 	print header_text();
 	print gui_header( 1, "משלוחים לפריט " . get_product_name( $prod_id ) );
-	$inventory_out = sql_query_single_scalar( "SELECT inventory_out FROM im_info" );
+	$inventory_out = sql_query_single_scalar( "SELECT info_data FROM im_info where info_key = 'from inventory_out'" );
 
 	$sql = "select delivery_id as משלוח, quantity as כמות, client_from_delivery(delivery_id) as לקוח" . //, supplier_name as לקוח " .
 	       " from im_delivery_lines dl " .

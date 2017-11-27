@@ -11,6 +11,6 @@ require_once( STORE_DIR . '/im-config.php' );
     <center><img src="<?php print $logo_url; ?> "></center>
 </head>
 <?php
-// require_once "tools_wp_login.php";
+// require_once "r-shop_manager.php";
 // echo 'ברוך הבא ' . get_current_user_name() . '!';
 ?>

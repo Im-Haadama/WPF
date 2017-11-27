@@ -11,7 +11,7 @@ if ( ! defined( STORE_DIR ) ) {
 }
 
 require_once( STORE_DIR . "/wp-config.php" );
-require_once( "../tools_wp_login.php" );
+require_once( "../r-shop_manager.php" );
 require_once( "../gui/inputs.php" );
 ?>
 <body onload="show_all()">

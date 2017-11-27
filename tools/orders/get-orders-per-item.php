@@ -1,6 +1,7 @@
 <?php
-require '../tools_wp_login.php';
+require '../r-shop_manager.php';
 require_once( 'orders-common.php' );
+require_once( '../gui/inputs.php' );
 ?>
 <html dir="rtl" lang="he">
 <head>
@@ -65,7 +66,7 @@ $data .= "<br />באספקות";
 $data .= "<table>";
 $data .= "<tr><td>הספקה</td><td>כמות</td></tr>";
 
-$sql = ' SELECT d.id, quantity FROM im_supplies_lines dl JOIN im_supplies d'
+$sql = ' SELECT d.id, quantity, d.supplier FROM im_supplies_lines dl JOIN im_supplies d'
        . ' WHERE dl.supply_id = d.id AND (d.status = 1 OR d.status = 3) AND dl.status = 1 AND dl.product_id = ' . $prod_id;
 
 $result = mysqli_query( $conn, $sql );
@@ -74,7 +75,9 @@ while ( $row = mysqli_fetch_row( $result ) ) {
 	$supply_id = $row[0];
 
 	$data .= "<tr><td><a href='../supplies/supply-get.php?id=" . $supply_id . "'>" . $supply_id . "</a></td><td>" . $row[1]
-	         . "</td></tr>";
+	         . "</td>";
+	$data .= gui_cell( get_supplier_name( $row[2] ) );
+	$data .= "</tr>";
 
 	// $data .= "<tr> ". trim( $line ) . "</tr>";
 }

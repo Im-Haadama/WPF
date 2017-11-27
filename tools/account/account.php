@@ -10,9 +10,9 @@ if ( ! defined( TOOLS_DIR ) ) {
 	define( TOOLS_DIR, dirname( dirname( __FILE__ ) ) );
 }
 
-require_once( TOOLS_DIR . '/tools_wp_login.php' );
+require_once( TOOLS_DIR . '/im_tools.php' );
 require_once( STORE_DIR . '/tools/orders/orders-common.php' );
-require_once( TOOLS_DIR . '/business/business-post.php' );
+// require_once( TOOLS_DIR . '/business/business-post.php' );
 require_once( TOOLS_DIR . '/gui/inputs.php' );
 
 #############################
@@ -97,7 +97,11 @@ function show_trans( $customer_id, $from_last_zero = false, $checkbox = true ) {
 
 	$result = sql_query( $sql );
 
-	$data = "<table id='transactions_table' border=\"1\" ><tr><td>בחר</td><td>תאריך</td><td>סכום</td><td>מע\"ם</td><td>יתרה</td><td>פעולה</td>" .
+	$data = "<table id='transactions_table' border=\"1\" ><tr>";
+	if ( $checkbox ) {
+		$data .= "<td>בחר</td>";
+	}
+	$data .= "<td>תאריך</td><td>סכום</td><td>מע\"ם</td><td>יתרה</td><td>פעולה</td>" .
 	        "<td>תעודת משלוח</td><td>מס הזמנה</td>";
 
 	$data .= gui_cell( "מקבל" );

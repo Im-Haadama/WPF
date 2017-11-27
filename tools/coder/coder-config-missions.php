@@ -12,7 +12,7 @@ $target_folder = "../delivery";
 
 $table_suffix = "";
 $table_name   = $table_prefix . $obj_name . $table_suffix;
-$order        = "order by 2 ";
+$order        = "order by 3 ";
 $useMultiSite = false;
 
 $header_text = "ניהול תבנית משימות";
@@ -32,5 +32,4 @@ $defaults["date"] = "date(\"m/d/y\")";
 // Fields to skip in horizontal
 $skip_in_horizontal = array();
 
-
-$query = " date >= curdate() -7 or date is null ";
+$query = "date > date_sub(curdate(), interval 7 day)";

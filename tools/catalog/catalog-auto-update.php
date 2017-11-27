@@ -7,6 +7,9 @@
  */
 require_once( 'catalog.php' );
 
+print "disabled";
+die( 1 );
+
 $details = isset( $_GET["details"] );
 
 $sql = "SELECT id, post_title, post_type, post_status

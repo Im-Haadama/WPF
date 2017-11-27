@@ -6,8 +6,8 @@
  * Time: 18:12
  */
 
-require_once( '../tools_wp_login.php' );
-require_once( '../tools_wp_login.php' );
+require_once( '../r-shop_manager.php' );
+require_once( '../r-shop_manager.php' );
 require_once( '../orders/orders-common.php' );
 require_once( '../account/account.php' );
 require_once( '../business/business-post.php' );
@@ -72,7 +72,7 @@ function create_delivery_header( $order_id, $total, $vat, $lines, $edit, $fee ) 
 	if ( ! ( $delivery_id > 0 ) ) {
 		die ( "Error!" );
 	}
-	$client_id = get_customer_id_by_order_id( $order_id );
+	$client_id = order_get_customer_id( $order_id );
 
 	if ( $edit ) {
 		account_update_transaction( $total, $delivery_id );

@@ -5,7 +5,7 @@
  * Date: 28/08/16
  * Time: 15:06
  */
-require_once( '../tools_wp_login.php' );
+require_once( '../r-shop_manager.php' );
 require_once( '../../wp-content/plugins/woocommerce/includes/wc-order-item-functions.php' );
 require_once( '../header.php' );
 require_once( 'orders-common.php' );

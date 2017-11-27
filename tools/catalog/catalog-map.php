@@ -5,7 +5,7 @@
  * Date: 03/07/15
  * Time: 11:53
  */
-require_once( '../tools_wp_login.php' );
+require_once( '../r-shop_manager.php' );
 require_once( 'catalog.php' );
 require_once( '../gui.php' );
 
@@ -196,6 +196,14 @@ require_once( '../gui.php' );
             }
         }
 
+        function select_detailed() {
+            var is_on = document.getElementById("select_all").checked;
+            var collection = document.getElementsByClassName("product_checkbox");
+            for (var i = 0; i < collection.length; i++) {
+                collection[i].checked = is_on;
+            }
+        }
+
         function selected(sel) {
             var pricelist_id = sel.id;
             document.getElementById("chk" + pricelist_id).checked = true;
@@ -206,6 +214,7 @@ require_once( '../gui.php' );
 </header>
 <body onload="update_tables()">
 <input id="select_all" type="checkbox" onclick="select_all_toggle()">בחר הכל</button>
+<input id="select_details" type="checkbox" onclick="select_detailed()">בחר מפורטים</button>
 
 <button id="btn_hide" onclick="map_hide()">הסתר</button>
 <button id="btn_map" onclick="map_products()">שמור מיפוי</button>

@@ -5,7 +5,7 @@
  * Date: 25/02/16
  * Time: 19:29
  */
-require_once( "../tools_wp_login.php" );
+require_once( "../r-shop_manager.php" );
 require_once( "../pricing.php" );
 require_once( "../account/account.php" );
 include_once( "../orders/orders-common.php" );
@@ -27,6 +27,7 @@ class delivery {
 	private $delivery_total = 0;
 	private $delivery_due_vat = 0;
 	private $delivery_total_vat = 0;
+	private $margin_total = 0;
 
 	function delivery( $id ) {
 //        my_log("CONS. id = " . $id);
@@ -126,7 +127,7 @@ class delivery {
 		print $this->delivery_text( $document_type, $operation );
 	}
 
-	function delivery_text( $document_type, $operation = ImDocumentOperation::show ) {
+	function delivery_text( $document_type, $operation = ImDocumentOperation::show, $margin = false ) {
 		// $expand_basket = false, $refund = false, $edit_order = false
 		global $delivery_fields_names;
 		global $header_fields;
@@ -182,6 +183,10 @@ class delivery {
 				}
 				if ( $operation == ImDocumentOperation::create or $operation == ImDocumentOperation::collect )
 					$show_fields[ DeliveryFields::order_line ] = true;
+				if ( $margin ) {
+					$show_fields[ DeliveryFields::buy_price ]   = true;
+					$show_fields[ DeliveryFields::line_margin ] = true;
+				}
 				break;
 			case ImDocumentType::refund:
 				$refund                                     = true;
@@ -196,7 +201,7 @@ class delivery {
 		$data      = ""; // gui_image(get_logo_url());
 		$del_price = 0;
 
-		$client_id   = get_customer_id_by_order_id( $this->OrderId() );
+		$client_id   = order_get_customer_id( $this->OrderId() );
 		$client_type = customer_type( $client_id );
 		switch ( $client_type ) {
 			case 1:
@@ -252,7 +257,7 @@ class delivery {
 				}
 				// $data .= $this->delivery_line($show_fields, $row["id"], $row["quantity_ordered"], "", $row["quantity"], $row["price"], $row["vat"], $row["prod_id"], $refund, "" );
 				// TODO: client Type
-				$data .= $this->delivery_line( $show_fields, ImDocumentType::delivery, $row["id"], $client_type, $operation );
+				$data .= $this->delivery_line( $show_fields, ImDocumentType::delivery, $row["id"], $client_type, $operation, $margin );
 				// $data .= $this->delivery_line($show_fields, $document_type, $line_id, $client_type, $edit = false)
 			}
 			$del_price = $this->DeliveryFee();
@@ -367,6 +372,7 @@ class delivery {
 		$summary_line[ DeliveryFields::product_name ]  = "סה\"כ לתשלום";
 		$summary_line[ DeliveryFields::delivery_line ] = $this->delivery_total;
 		$summary_line[ DeliveryFields::order_line ]    = $this->order_total;
+		$summary_line[ DeliveryFields::line_margin ]   = $this->margin_total;
 		$data                                          .= gui_row( $summary_line, "tot", $show_fields, $sum, $delivery_fields_names );
 
 
@@ -389,7 +395,7 @@ class delivery {
 	// Delivery or Order line.
 	// If Document is delivery, line_id is delivery line id.
 	// If Document is order, line_id is order line id.
-	public function delivery_line( $show_fields, $document_type, $line_id, $client_type, $operation ) {
+	public function delivery_line( $show_fields, $document_type, $line_id, $client_type, $operation, $margin = false ) {
 		global $delivery_fields_names;
 
 		global $debug;
@@ -629,6 +635,12 @@ class delivery {
 			// $value .= gui_cell( "0" );                                                              // 11 - refund amount
 		}
 
+		if ( $margin ) {
+			$line[ DeliveryFields::buy_price ]   = get_buy_price( $prod_id );
+			$line[ DeliveryFields::line_margin ] = ( $price - get_buy_price( $prod_id ) ) * $quantity_delivered;
+			$this->margin_total                  += $line[ DeliveryFields::line_margin ];
+		}
+
 		// Handle totals
 		switch ( $document_type ) {
 			case ImDocumentType::order:
@@ -752,14 +764,14 @@ class delivery {
 		}
 	}
 
-	function send_mail( $more_email = null ) {
+	function send_mail( $more_email = null, $edit = false ) {
 		print $more_email;
 		global $business_name;
 		global $bank_info;
 		global $support_email;
 
 		$order_id  = get_order_id( $this->ID );
-		$client_id = get_customer_id_by_order_id( $this->OrderId() );
+		$client_id = order_get_customer_id( $this->OrderId() );
 
 		my_log( __FILE__, "client_id = " . $client_id );
 
@@ -816,7 +828,11 @@ class delivery {
 		print "To: " . $to . "<br/>";
 		print "Message:<br/>";
 		print $message . "<br/>";
-		send_mail( "משלוח " . $this->ID . " בוצע", $to, $message );
+		$subject = "משלוח " . $this->ID . " בוצע";
+		if ( $edit ) {
+			$subject = "משלוח מספר " . $this->ID . " - תיקון";
+		}
+		send_mail( $subject, $to, $message );
 
 		// print "mail sent to " . $to . "<br/>";
 	}

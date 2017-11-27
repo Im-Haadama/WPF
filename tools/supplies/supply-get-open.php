@@ -5,7 +5,7 @@
  * Date: 28/06/17
  * Time: 06:37
  */
-require_once( "../tools_wp_login.php" );
+require_once( "../r-shop_manager.php" );
 require_once( "supplies.php" );
 $supply_id = $_GET["id"];
 

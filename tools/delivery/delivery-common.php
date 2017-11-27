@@ -29,7 +29,9 @@ class DeliveryFields {
 		// Refund info
 		refund_q = 12,
 		refund_line = 13,
-		max_fields = 14;
+		buy_price = 14,
+		line_margin = 15,
+		max_fields = 16;
 }
 
 $delivery_fields_names = array(
@@ -46,7 +48,9 @@ $delivery_fields_names = array(
 	"lvt", // 10
 	"del", // 11
 	"req", // 12
-	"ret"  // 13
+	"ret",  // 13
+	"buy", //14
+	"mar", // 15
 );
 
 $header_fields = array(
@@ -63,7 +67,9 @@ $header_fields = array(
 	"מע\"מ",
 	"סה\"כ",
 	"כמות לזיכוי",
-	"סה\"כ זיכוי"
+	"סה\"כ זיכוי",
+	"מחיר עלות",
+	"סה\"כ מרווח שורה"
 );
 
 class ImDocumentType {

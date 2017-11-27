@@ -5,7 +5,7 @@
  * Date: 16/07/15
  * Time: 16:00
  */
-require_once( '../tools_wp_login.php' );
+require_once( '../r-shop_manager.php' );
 require_once( 'pricelist.php' );
 require_once( '../catalog/catalog.php' );
 require_once( '../multi-site/multi-site.php' );

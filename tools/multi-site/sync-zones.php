@@ -6,7 +6,7 @@
  * Time: 20:58
  */
 
-require_once( '../tools_wp_login.php' );
+require_once( '../r-shop_manager.php' );
 require_once( "../gui/sql_table.php" );
 require_once( "../multi-site/multi-site.php" );
 
@@ -73,7 +73,7 @@ function update_zone_table( $table ) {
 				$keys[ $row_key ] = 1;
 				$insert_values    = "";
 
-				print "<br/>handle " . $row_key . "<br/>";
+				print "<br/>handle " . $row_key . " ";
 
 				$sql = "SELECT COUNT(*) FROM wp_woocommerce_shipping_zones WHERE zone_id=" . $row_key;
 
@@ -97,22 +97,23 @@ function update_zone_table( $table ) {
 
 		if ( $insert ) {
 			$sql = "INSERT INTO wp_woocommerce_shipping_zones (" . $field_list . ") VALUES ( " . $row_key . ", " . rtrim( $insert_values, ", " ) . ")";
-			print $sql . "<br/>";
+			// print $sql . "<br/>";
 			sql_query( $sql );
 		} else {
 			$sql = "UPDATE wp_woocommerce_shipping_zones SET " . rtrim( $update_fields, ", " ) .
 			       " WHERE zone_id = " . $row_key;
-			print $sql . "<br/>";
+			// print $sql . "<br/>";
 			sql_query( $sql );
 		}
 	}
 	// Delete not recieved keys.
 	$min        = sql_query_single_scalar( "SELECT min(zone_id) FROM wp_woocommerce_shipping_zones" );
 	$max        = sql_query_single_scalar( "SELECT max(zone_id) FROM wp_woocommerce_shipping_zones" );
+	$ids        = sql_query_array_scalar( "select zone_id from wp_woocommerce_shipping_zones" );
 	$for_delete = "";
 
 	for ( $i = $min; $i <= $max; $i ++ ) {
-		if ( ! $keys[ $i ] ) {
+		if ( ! $keys[ $i ] and in_array( $i, $ids ) ) {
 			$for_delete .= $i . ", ";
 		}
 	}

@@ -6,7 +6,7 @@
  * Time: 18:49
  */
 
-require_once( "../tools_wp_login.php" );
+require_once( "../r-shop_manager.php" );
 
 $img_list  = $_GET["img_array"];
 $img_array = explode( ",", $img_list );

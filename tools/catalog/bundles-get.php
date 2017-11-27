@@ -6,7 +6,7 @@
  * Time: 15:25
  */
 
-require_once( '../tools_wp_login.php' );
+require_once( '../r-shop_manager.php' );
 ?>
 
 <html dir="rtl">

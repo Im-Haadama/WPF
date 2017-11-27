@@ -60,7 +60,7 @@ if ( $id > 0 ) {
 	print "</form>";
 
 } else {
-	$client_id = get_customer_id_by_order_id( $order_id );
+	$client_id = order_get_customer_id( $order_id );
 	print "<form name=\"delivery\" action= \"\">";
 	// print gui_header( 2, "יצירת תעודת משלוח להזמנה מספר " . $order_id, true );
 

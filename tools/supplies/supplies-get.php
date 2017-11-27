@@ -5,7 +5,7 @@
  * Date: 05/05/16
  * Time: 17:38
  */
-require_once( '../tools_wp_login.php' );
+require_once( '../r-shop_manager.php' );
 // require_once( '../header_no_login.php' );
 require_once( 'supplies.php' );
 

@@ -5,9 +5,9 @@
  * Date: 31/10/16
  * Time: 18:06
  */
-require_once( '../tools_wp_login.php' );
-require_once( '../header.php' );
+require_once( '../r-shop_manager.php' );
 
+print header_text( false );
 ?>
 <html dir="rtl" lang="he">
 <header>
@@ -27,6 +27,8 @@ require_once( '../header.php' );
                     table.innerHTML = xmlhttp.response;
 
                     update_selector();
+                    document.getElementById("btn_create_order").disabled = false;
+
                 }
             }
             xmlhttp.send();
@@ -70,6 +72,7 @@ require_once( '../header.php' );
         }
 
         function createSupply() {
+            document.getElementById("btn_create_order").disabled = true;
             var table = document.getElementById('ordered_items');
             // var lines = table.rows.length;
             var collection = document.getElementsByClassName("product_checkbox");
@@ -132,7 +135,7 @@ require_once( '../header.php' );
 </header>
 <body onload="show_totals()">
 
-<center><h1>סך הפריטים שהוזמנו</h1></center>
+<center><h1>פריטים להזמנות</h1></center>
 <input type="checkbox" id="filter_zero" onclick='show_totals();'>סנן מוזמנים<br>
 <table id="ordered_items"></table>
 

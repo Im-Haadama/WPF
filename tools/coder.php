@@ -6,7 +6,7 @@
  * Time: 21:20
  */
 
-require_once( 'tools_wp_login.php' );
+require_once( 'r-shop_manager.php' );
 $table_prefix = "im_";
 $obj_name     = "business";
 $table_suffix = "_info";

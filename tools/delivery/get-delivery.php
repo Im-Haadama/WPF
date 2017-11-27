@@ -1,11 +1,12 @@
 <?php
-require_once '../tools_wp_login.php';
+require_once '../r-shop_manager.php';
 require_once 'delivery.php';
 require_once '../orders/orders-common.php';
 
 print header_text( false );
-$id   = $_GET["id"];
-$send = $_GET["send"];
+$id     = $_GET["id"];
+$send   = $_GET["send"];
+$margin = isset( $_GET["margin"] );
 
 $d = new Delivery( $id );
 
@@ -13,7 +14,7 @@ $order_id = get_order_id( $id );
 
 print order_info_data( $order_id );
 
-print $d->delivery_text( ImDocumentType::delivery, ImDocumentOperation::show );
+print $d->delivery_text( ImDocumentType::delivery, ImDocumentOperation::show, $margin );
 //$sql = 'select product_name, quantity, vat,price, line_price '
 //        . ' from im_delivery_lines where delivery_id = ' . $id ;
 //
@@ -75,7 +76,6 @@ print $d->delivery_text( ImDocumentType::delivery, ImDocumentOperation::show );
 //print "</form>";
 
 if ( ! $send ) {
-	print '<button id="btn_print" onclick="printDeliveryNotes()">הדפס תעודה</button>';
 	print '<button id="btn_del" onclick="deleteDelivery()">מחק תעודה</button>';
 	print '<button id="btn_edit" onclick="editDelivery()">ערוך תעודה</button>';
 }
@@ -103,29 +103,6 @@ if ( ! $send ) {
         xmlhttp.open("GET", request, true);
         xmlhttp.send();
 
-    }
-    function printDeliveryNotes() {
-        // Get the html
-        document.getElementById('btn_print').style.visibility = "hidden";
-        window.open("//pdfcrowd.com/url_to_pdf/");
-        document.getElementById('btn_print').style.visibility = "visible";
-//	var txt = document.documentElement.innerHTML;
-
-        // Download the html
-// 	var a = document.getElementById("a");
-//	var file = new Blob(txt, 'text/html');
-// 	a.href = URL.createObjectURL(file);
-        // a.download = 're.html';
-
-//	download(txt, 'myfilename.html', 'text/html')
-//	window.open('data:text/html;charset=utf-8,<html dir="rtl" lang="he">' + txt + '</html>');
-
-//
-
-        // To Do: upload the file
-
-        document.getElementById('btn_calc').style.visibility = "visible";
-        document.getElementById('btn_print').style.visibility = "visible";
     }
 
 

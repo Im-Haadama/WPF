@@ -6,8 +6,10 @@
  * Time: 05:08
  */
 
+require_once( "../options.php" );
+
 function print_category_select( $id, $select = false ) {
-	$term             = get_term( sql_query_single_scalar( "SELECT suppliers_category FROM im_info" ), "product_cat" );
+	$term             = get_term( info_get( "suppliers_category" ) );
 	$suppliers_father = urldecode( $term->slug );
 	//print "father: " . $suppliers_father . "<br/>";
 	print '<select id="' . $id . '">';

@@ -10,7 +10,7 @@ if ( ! defined( TOOLS_DIR ) ) {
 	define( TOOLS_DIR, dirname( dirname( __FILE__ ) ) );
 }
 
-require_once( TOOLS_DIR . '/tools_wp_login.php' );
+require_once( TOOLS_DIR . '/r-shop_manager.php' );
 require_once( TOOLS_DIR . '/gui/inputs.php' );
 
 $operation = $_GET["operation"];

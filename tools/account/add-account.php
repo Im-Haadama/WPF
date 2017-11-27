@@ -6,7 +6,7 @@
  * Time: 06:45
  */
 require_once( "../gui/inputs.php" );
-require_once( "../tools_wp_login.php" );
+require_once( "../r-shop_manager.php" );
 
 ?>
 <script type="text/javascript" src="../client_tools.js"></script>

@@ -16,4 +16,4 @@ require_once( "../multi-site/simple_html_dom.php" );
 
 print header_text( false );
 
-create_tasks();
+create_tasks( true );

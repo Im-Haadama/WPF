@@ -1,6 +1,6 @@
 <?php
 
-require_once( '../tools_wp_login.php' );
+require_once( '../r-shop_manager.php' );
 require_once( "../gui/inputs.php" );
 require_once( "account.php" );
 require_once( "../multi-site/multi-site.php" );
@@ -21,7 +21,7 @@ if ( ! empty( $user->roles ) && is_array( $user->roles ) ) {
 	}
 }
 if ( $manager and isset( $_GET["customer_id"] ) ) {
-	print header_text( true );
+	print header_text( false );
 	$customer_id = $_GET["customer_id"];
 	// print "id: " . $customer_id;
 
@@ -261,27 +261,36 @@ if ( $manager ) {
 	}
 	/// var_dump($client);
 
-	print gui_table( array(
-		array( "email", get_customer_email( $customer_id ) ),
-		array( "phone", get_customer_phone( $customer_id ) ),
-		array( "מספר מזהה", gui_lable( "invoice_client_id", $client->ID ) )
+	$user_info = gui_table( array(
+		array( "דואל", get_customer_email( $customer_id ) ),
+		array( "טלפון", get_customer_phone( $customer_id ) ),
+		array( "מספר מזהה", gui_lable( "invoice_client_id", $client->ID ) ),
+		array(
+			"אמצעי תשלום",
+			gui_select_table( "payment", "im_payments", get_payment_method( $customer_id ),
+				"onchange=\"save_payment_method()\"" )
+		)
 	) );
-	print "הנתונים הן יתרת חוב. זיכוי ותשלום ירשמו בסימן שלילי";
-	print "<br>";
-	print "סוג פעולה";
-	print '<input type="text" id="transaction_type">';
-	print "סכום";
-	print '<input type="text" id="transaction_amount">';
-	print "תאריך";
-	print '<input type="date" id="transaction_date">';
-	print "מזהה";
-	print '<input type="text" id="transaction_ref">';
-	print '<button id="btn_add" onclick="addTransaction()">הוסף תנועה</button>';
+	$style     = "table.payment_table { border-collapse: collapse; } " .
+	             " table.payment_table, td.change, th.change { border: 1px solid black; } ";
+	$sums      = null;
+	$new_tran  = gui_table( array(
+		array(
+			"תשלום",
+			gui_button( "btn_receipt", "create_receipt()", "הפק חשבונית מס קבלה" )
+		),
+		array( "תאריך", gui_input_date( "pay_date", "" ) ),
+		array( "מזומן", gui_input( "cash", "", array( 'onkeyup="update_sum()"' ) ) ),
+		array( "אשראי", gui_input( "credit", "", array( 'onkeyup="update_sum()"' ) ) ),
+		array( "העברה", gui_input( "bank", "", array( 'onkeyup="update_sum()"' ) ) ),
+		array( "המחאה", gui_input( "check", "", array( 'onkeyup="update_sum()"' ) ) ),
+		array( "עודף", " <div id=\"change\"></div>" )
+	), "payment_table", true, true, $sums, $style, "payment_table" );
 
-	print "<br/>";
-	print "אמצעי תשלום";
-	print gui_select_table( "payment", "im_payments", get_payment_method( $customer_id ) );
-	print gui_button( "save_payment_method", "save_payment_method()", "שמור" );
+	print gui_table( array(
+		array( gui_header( 2, "פרטי לקוח", true ), gui_header( 2, "קבלה", true ) ),
+		array( $user_info, $new_tran )
+	) );
 }
 
 ?>
@@ -302,7 +311,7 @@ if ( $manager ) {
             // Wait to get query result
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
             {
-                logging.innerHTML += "חשבונית מספר " + receipt_id;
+                //logging.innerHTML += "חשבונית מספר " + receipt_id;
                 updateDisplay();
             }
         }
@@ -349,7 +358,7 @@ if ( $manager ) {
             var cash_delta = Math.round(100 * (total_pay - total)) / 100;
             change.innerHTML = cash_delta;
 
-            if ((total_pay > 0) && Math.abs(cash_delta) < 100) {
+            if ((total_pay > 0) && Math.abs(cash_delta) < 200) {
                 document.getElementById('btn_invoice').disabled = true;
                 document.getElementById('btn_receipt').disabled = false;
             } else {
@@ -392,11 +401,13 @@ if ( $manager ) {
         if (isNaN(cash)) cash = 0;
         var check = parseFloat(get_value(document.getElementById("check")));
         if (isNaN(check)) check = 0;
+        var date = get_value(document.getElementById("pay_date"));
         var request = "account-post.php?operation=create_receipt" +
             "&cash=" + cash +
             "&credit=" + credit +
             "&bank=" + bank +
             "&check=" + check +
+            "&date=" + date +
             "&change=" + change.innerHTML +
             "&ids=" + del_ids.join() +
             "&user_id=" + <?php print $customer_id; ?>;
@@ -462,46 +473,46 @@ if ( $manager ) {
 
 </script>
 <h2>
-    <label id="total">יתרה</label>
+    <label id="total">יתרה לתשלום</label>
 </h2>
 <br>
-<H2>תנועות</H2>
-
 <?php
 
 if ( $manager ) {
 	require_once( '../invoice4u/invoice.php' );
 	// var_dump($client);
 
-	$style = "table.payment_table { border-collapse: collapse; } " .
-	         " table.payment_table, td.change, th.change { border: 1px solid black; } ";
-	$sums  = null;
-	print gui_table( array(
-		array(
-			"תשלום",
-			gui_button( "btn_receipt", "create_receipt()", "הפק חשבונית מס קבלה" )
-		),
-		array( "מזומן", gui_input( "cash", "", array( 'onkeyup="update_sum()"' ) ) ),
-		array( "אשראי", gui_input( "credit", "", array( 'onkeyup="update_sum()"' ) ) ),
-		array( "העברה", gui_input( "bank", "", array( 'onkeyup="update_sum()"' ) ) ),
-		array( "המחאה", gui_input( "check", "", array( 'onkeyup="update_sum()"' ) ) ),
-		array( "עודף", " <div id=\"change\"></div>" )
-	), "payment_table", true, "", $sums, $style, "payment_table" );
 
 
 	// print gui_button( "btn_refund", "create_refund()", "הפק זיכוי" );
-	print gui_button( "btn_invoice", "create_invoice()", "הפק חשבונית מס" );
 	// print "<button id=\"btn_invoice\" onclick=\"create_invoice()\">הפק חשבונית מס</button>";
 	// print "<br/>";
 	// print "<button id=\"btn_receipt\" onclick=\"create_receipt()\">הפק חשבונית מס קבלה</button>";
 	print '<div id="logging"></div>';
-	print '<div id="refund_area"></div>';
+	// print '<div id="refund_area"></div>';
 
 	print gui_button( "btn_create_user", "create_user()", "צור משתמש" );
 }
 
 ?>
+<H2>תנועות</H2>
 <table id="transactions"></table>
 
+<?php
+print "הנתונים הן יתרת חוב. זיכוי ותשלום ירשמו בסימן שלילי";
+print "<br/>";
+print gui_table( array(
+	array( "סוג פעולה", "סכום", "תאריך", "מזהה" ),
+	array(
+		'<input type="text" id="transaction_type">',
+		'<input type="text" id="transaction_amount">',
+		'<input type="date" id="transaction_date">',
+		'<input type="text" id="transaction_ref">'
+	)
+) );
+print '<button id="btn_add" onclick="addTransaction()">הוסף תנועה</button>';
+print gui_button( "btn_invoice", "create_invoice()", "הפק חשבונית מס" );
+
+?>
 </body>
 </html>

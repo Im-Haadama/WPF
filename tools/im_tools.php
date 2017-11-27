@@ -132,10 +132,13 @@ function get_supplier( $prod_id ) {
 	return get_postmeta_field( $prod_id, "supplier_name" );
 }
 
-function get_customer_id_by_order_id( $order_id ) {
+function order_get_customer_id( $order_id ) {
 	return get_postmeta_field( $order_id, "_customer_user" );
 }
 
+function order_set_customer_id( $order_id, $customer_id ) {
+	update_post_meta( $order_id, '_customer_user', $customer_id );
+}
 function get_customer_by_order_id( $order_id ) {
 	$first_name = get_postmeta_field( $order_id, '_billing_first_name' );
 	$last_name  = get_postmeta_field( $order_id, '_billing_last_name' );
@@ -447,7 +450,7 @@ function order_get_zone( $order_id ) {
 		return $zone;
 	}
 
-	$client_id = get_customer_id_by_order_id( $order_id );
+	$client_id = order_get_customer_id( $order_id );
 
 	$client_shipping_zone = get_user_meta( $client_id, 'shipping_zone', true );
 
@@ -458,8 +461,32 @@ function order_get_zone( $order_id ) {
 }
 
 function order_get_mission_id( $order_id ) {
-	$mission_id = get_post_meta( $order_id, 'mission_id', true );
+	$mission = get_post_meta( $order_id, 'mission_id', true );
+	if ( is_array( $mission ) ) {
+		$mission_id = $mission[0];
+	} else {
+		$mission_id = $mission;
+	}
+	if ( strlen( $mission_id ) < 1 ) {
+		$info = get_post_meta( $order_id, '_shipping_method', true );
+		// Get from shipping_method
+		$shipping_info = $info[0];
+		if ( strlen( $shipping_info ) > 10 ) {
+			$delivery_option = substr( $shipping_info, 10 );
+			$zone_id         = sql_query_single_scalar( "SELECT zone_id FROM wp_woocommerce_shipping_zone_methods WHERE instance_id = "
+			                                            . $delivery_option );
+		} else {
+			$postcode = get_user_meta( order_get_customer_id( $order_id ), 'shipping_postcode', true );
 
+			$zone_id = get_zone_from_postcode( $postcode );
+		}
+		$mission_name = sql_query_single_scalar( "SELECT codes FROM wp_woocommerce_shipping_zones WHERE zone_id = " . $zone_id );
+		$sql          = "SELECT id FROM im_missions WHERE path_code = '" . $mission_name . "' " .
+		                " AND date >= curdate() ";
+//		print $sql;
+		$mission_id = sql_query_single_scalar( $sql );
+		update_post_meta( $order_id, 'mission_id', $mission_id );
+	}
 	if ( ! is_numeric( $mission_id ) ) {
 		return 0;
 	}
@@ -467,27 +494,26 @@ function order_get_mission_id( $order_id ) {
 	return $mission_id;
 }
 
+function order_set_mission_id( $order_id, $mission_id ) {
+	set_post_meta_field( $order_id, "mission_id", $mission_id );
+}
+
 function get_mission_name( $mission_id ) {
 	// Todo: find better way to do this
 	sql_query( "set lc_time_names = 'he_IL'" );
-
-	$sql = "select concat(name, ' ', DATE_FORMAT(date, \"%a %d/%m\")) from im_missions where id = $mission_id";
-
-	$name = sql_query_single_scalar( $sql );
-
-	if ( strlen( $name ) < 2 ) {
-		$sql  = "select name from im_missions where id = $mission_id";
-		$name = sql_query_single_scalar( $sql );
+	if ( ! is_numeric( $mission_id ) ) {
+		return $mission_id;
 	}
+
+	$sql  = "select ifnull(concat(name, ' ', DATE_FORMAT(date, \"%a %d/%m\")), name) from im_missions where id = $mission_id";
+	$name = sql_query_single_scalar( $sql );
 
 	return $name;
 }
 
 function order_get_mission_name( $order_id ) {
-	get_mission_name( order_get_mission_id( $order_id ) );
-
+	return get_mission_name( order_get_mission_id( $order_id ) );
 }
-
 
 function get_zone_from_postcode( $postcode, $country = null ) {
 	if ( ! $country or strlen( $country ) < 2 ) {
@@ -510,25 +536,6 @@ function get_zone_from_postcode( $postcode, $country = null ) {
 
 function zone_get_name( $id ) {
 	return sql_query_single_scalar( "SELECT zone_name FROM wp_woocommerce_shipping_zones WHERE zone_id = " . $id );
-}
-
-
-function sunday( $date ) {
-	$datetime = new DateTime( $date );
-	$interval = new DateInterval( "P" . $datetime->format( "w" ) . "D" );
-	$datetime->sub( $interval );
-
-	return $datetime;
-}
-
-function get_week( $str_date ) {
-	$s = sunday( $str_date );
-
-	return $s->format( 'Y-m-j' );
-	// var_dump($s);
-	// $d = DateTime::createFromFormat("Y-m-j", $str_date);
-
-	// sunday($d)->format("Y-m-j");
 }
 
 function handle_sql_error( $sql ) {
@@ -590,7 +597,7 @@ function header_text( $print_logo = true, $close_header = true, $rtl = true ) {
 	$text .= '<title>';
 	$text .= $business_info;
 	$text .= '</title>';
-	$text .= '<p style="text-align:center;">';
+	// $text .= '<p style="text-align:center;">';
 	if ( $print_logo ) {
 		$text .= '<img src=' . $logo_url . '>';
 	}
@@ -627,6 +634,15 @@ function print_page_header( $display_logo ) {
 function get_user_name( $id ) {
 //    var_dump(get_user_meta($id, 'first_name'));
 	return get_user_meta( $id, 'first_name' )[0] . " " . get_user_meta( $id, 'last_name' )[0];
+}
+
+function get_user_address( $user_id ) {
+	if ( is_numeric( $user_id ) ) {
+		return get_user_meta( $user_id, 'shipping_address_1', true ) . " " .
+		       get_user_meta( $user_id, 'shipping_city', true );
+	}
+	print "bad user id" . $user_id . "<br/>";
+	die(1);
 
 }
 
@@ -674,4 +690,110 @@ function comma_implode( $array ) {
 
 	return rtrim( $result, ", " );
 }
+
+function get_customer_name( $customer_id ) {
+	$user = get_user_by( "id", $customer_id );
+
+	return $user->user_firstname . " " . $user->user_lastname;
+}
+
+function get_customer_email( $customer_id ) {
+	$user = get_user_by( "id", $customer_id );
+
+	return $user->user_email;
+}
+
+function get_customer_phone( $user_id ) {
+	return get_meta_field( get_last_order( $user_id ), '_billing_phone' );
+}
+
+function get_current_user_name() {
+	return get_customer_name( wp_get_current_user()->ID );
+}
+
+function get_user_id() {
+	$current_user = wp_get_current_user();
+
+	return $current_user->ID;
+}
+
+// Days...
+function sunday( $date ) {
+	$datetime = new DateTime( $date );
+	$interval = new DateInterval( "P" . $datetime->format( "w" ) . "D" );
+	$datetime->sub( $interval );
+
+	return $datetime;
+}
+
+function get_week( $str_date ) {
+	$s = sunday( $str_date );
+
+	return $s->format( 'Y-m-j' );
+}
+
+function week_day( $idx ) {
+	switch ( $idx ) {
+		case 1:
+			return "ראשון";
+			break;
+		case 2:
+			return "שני";
+			break;
+		case 3:
+			return "שלישי";
+			break;
+		case 4:
+			return "רביעי";
+			break;
+		case 5:
+			return "חמישי";
+			break;
+		case 6:
+			return "שישי";
+			break;
+	}
+}
+
+function get_day_letter( $day ) {
+	switch ( $day ) {
+		case 0:
+			return 'א';
+		case 1:
+			return 'ב';
+		case 2:
+			return 'ג';
+		case 3:
+			return 'ד';
+		case 4:
+			return 'ה';
+		case 5:
+			return 'ו';
+	}
+
+	return "Error";
+}
+
+function get_letter_day( $letter ) {
+	switch ( $letter ) {
+		case 'א':
+			return 0;
+		case 'ב':
+			return 1;
+		case 'ג':
+			return 2;
+		case 'ד':
+			return 3;
+		case 'ה':
+			return 4;
+		case 'ו':
+			return 5;
+	}
+
+	return "Error";
+}
+
+
+
+
 ?>

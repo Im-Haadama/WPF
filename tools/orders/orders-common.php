@@ -6,9 +6,7 @@
  * Time: 08:00
  */
 
-// require_once( "../tools_wp_login.php" );
 // BAD: print header_text();
-// require_once("../tools_wp_login.php");
 function orders_item_count( $item_id ) {
 	$sql = ' select sum(woim.meta_value) '
 	       . ' from wp_woocommerce_order_items woi join wp_woocommerce_order_itemmeta woim, '
@@ -71,13 +69,14 @@ function order_info_data( $order_id, $edit = false, $operation = null ) {
 		$data .= gui_header( 2, "משלוח מספר " . $d_id);
 	$data      .= "<table><tr><td rowspan='4'>";
 	$data      .= '<table>';
-	$client_id = get_customer_id_by_order_id( $order_id );
+	$client_id = order_get_customer_id( $order_id );
 	// Client info
-	$row_text = '<tr><td>לקוח:</td><td>' . order_info( $order_id, '_billing_first_name' ) . ' '
-	            . order_info( $order_id, '_billing_last_name' ) . '</td><tr>';
-	$data     .= $row_text;
-	$row_text = '<tr><td>טלפון:</td><td>' . order_info( $order_id, '_billing_phone' ) . '</td><tr>';
-	$data     .= $row_text;
+	$user_edit = "../";
+	$row_text  = '<tr><td>לקוח:</td><td>' . gui_hyperlink( order_info( $order_id, '_billing_first_name' ) . ' '
+	                                                       . order_info( $order_id, '_billing_last_name' ), $user_edit ) . '</td><tr>';
+	$data      .= $row_text;
+	$row_text  = '<tr><td>טלפון:</td><td>' . order_info( $order_id, '_billing_phone' ) . '</td><tr>';
+	$data      .= $row_text;
 
 	// Shipping info
 	$row_text = '<tr><td>משלוח:</td><td>' . order_info( $order_id, '_shipping_first_name' ) . ' '
@@ -94,6 +93,7 @@ function order_info_data( $order_id, $edit = false, $operation = null ) {
 		$preference .= $pref;
 	}
 
+//	$data .= gui_row(array("משימה:", order_get_mission_name($order_id)));
 	$data .= gui_row( array( "העדפות לקוח:", $preference ) );
 
 	$data .= gui_row( array( "איזור משלוח ברירת מחדל:", get_user_meta( $client_id, 'shipping_zone', true ) ) );
@@ -115,8 +115,8 @@ function order_info_data( $order_id, $edit = false, $operation = null ) {
 		"ימים: ",
 		sql_query_single_scalar( "SELECT delivery_days FROM wp_woocommerce_shipping_zones WHERE zone_id =" . $zone )
 	) );
-	$mission = get_meta_field( $order_id, "mission_id" );
-	$data    .= gui_row( array( gui_select_mission( $mission, "onchange=\"save_mission()\"" ) ) );
+	$mission = order_get_mission_id( $order_id );
+	$data    .= gui_row( array( gui_select_mission( "mission_select", $mission, "onchange=\"save_mission()\"" ) ) );
 
 	$data .= '</table>';
 	$data .= "</td>";
@@ -189,7 +189,7 @@ function order_change_status( $ids, $status ) {
 function order_add_product( $order, $product_id, $quantity, $replace = false, $client_id = - 1, $unit = null ) {
 	// If it's a new order we need to get the client_id. Otherwise get it from the order.
 	if ( $client_id == - 1 ) {
-		$client_id = get_post_meta( $order->get_id(), '_customer_user', true );
+		$client_id = order_get_customer_id( $order->get_id() );
 	}
 
 	my_log( __METHOD__, __FILE__ );
@@ -260,7 +260,6 @@ function user_dislike( $user_id, $prod_id ) {
 	return $v;
 }
 
-
 function print_order_info( $order_id, $comments, $operation = null ) {
 	print order_info_data( $order_id, $comments, $operation );
 }
@@ -272,17 +271,18 @@ function orders_per_item( $prod_id, $multiply, $short = false ) {
 	$sql = 'select woi.order_item_id, order_id'
 	       . ' from wp_woocommerce_order_items woi join wp_woocommerce_order_itemmeta woim'
 	       . ' where order_id in'
-	       . ' (SELECT id FROM `wp_posts` '
-	       . ' WHERE `post_status` LIKE \'%wc';
+	       . '(select order_id from im_need_orders) ';
+//	       . ' (SELECT id FROM `wp_posts` '
+//	       . ' WHERE `post_status` LIKE \'%wc';
 
-	global $history;
+//	global $history;
+//
+//	if ( ! $history ) {
+//		$sql .= '-processing';
+//	}
 
-	if ( ! $history ) {
-		$sql .= '-processing';
-	}
-
-	$sql .= '%\')'
-	        . ' and woi.order_item_id = woim.order_item_id '
+//	$sql .= '%\')';
+	$sql .= ' and woi.order_item_id = woim.order_item_id '
 	        . ' and (woim.meta_key = \'_product_id\' or
                  woim.meta_key = \'_variation_id\') and woim.meta_value = ' . $prod_id;
 
@@ -359,7 +359,7 @@ function orders_create_subs() {
 
 		my_log( "totals" );
 		// assign the order to the current user
-		update_post_meta( $order->get_id(), '_customer_user', $user_id );
+		order_set_customer_id( $order->get_id(), $user_id );
 		// payment_complete
 		$order->payment_complete();
 
@@ -409,6 +409,7 @@ function orders_create_subs() {
 //	    $item_id = $item->save();
 //	    $order->add_shipping(array())
 
+
 function order_get_last( $user_id ) {
 	return sql_query_single_scalar( "	select max(post_date)
 		from wp_posts posts, wp_postmeta meta
@@ -416,6 +417,26 @@ function order_get_last( $user_id ) {
 		 	and meta.meta_key = '_customer_user'
             and meta.meta_value = '$user_id'
             and post_status in ('wc-completed', 'wc-processing', 'wc-awaiting-shipment')" );
+}
+
+function order_get_address( $order_id ) {
+	if ( $order_id > 0 ) {
+		$address = "";
+		foreach ( array( '_shipping_address_1', '_shipping_city' ) as $field ) {
+			$address .= get_meta_field( $order_id, $field ) . " ";
+		}
+		if ( strlen( $address ) > 4 ) {
+			return $address;
+		}
+		// Take the address from the client;
+		$client_id = order_get_customer_id( $order_id );
+		print $client_id . " " . $order_id;
+		$address .= get_user_address( $client_id );
+
+		return $address;
+	}
+
+	return "Error";
 }
 
 function calculate_total_products() {
@@ -584,6 +605,7 @@ function add_products( $prod_key, $qty, &$needed_products ) {
 		$unit_str = $prod_key[1];
 
 		switch ( $unit_str ) {
+			case 'קג':
 			case '':
 				$unit_key = 0;
 				break;
@@ -604,7 +626,7 @@ function add_products( $prod_key, $qty, &$needed_products ) {
 
 }
 
-function create_order( $user_id, $prods, $quantities, $comments, $units = null ) {
+function create_order( $user_id, $mission_id, $prods, $quantities, $comments, $units = null ) {
 //	print "user: " . $user_id;
 //	var_dump($prods);
 
@@ -619,6 +641,8 @@ function create_order( $user_id, $prods, $quantities, $comments, $units = null )
 	print "new order: " . $order_id . "<br/>";
 	// print "count: " . count($prods) . "<br/>";
 	$extra_comments = "";
+
+	order_set_mission_id( $order_id, $mission_id);
 
 	for ( $i = 0; $i < count( $prods ); $i ++ ) {
 		$prod_name = urldecode( $prods[ $i ] );
@@ -641,7 +665,7 @@ function create_order( $user_id, $prods, $quantities, $comments, $units = null )
 //	$user = get_userdata( $user_id );
 	$order->calculate_totals();
 //	$order->customer_message = $comments;
-	update_post_meta( $order_id, '_customer_user', $user_id );
+	order_set_customer_id( $order_id, $user_id);
 	// print "after update user " . $user_id . "<br/>";
 	foreach (
 		array(
@@ -711,126 +735,3 @@ function set_order_itemmeta( $order_item_id, $meta_key, $meta_value ) {
 	}
 }
 
-function orders_table( $statuses ) {
-	global $conn;
-//	LIKE 'wc-processing%' or post_status LIKE 'wc-on-hold%' order by 1";
-
-	$status_names = wc_get_order_statuses();
-	// var_dump($status_names);
-	$all_tables = "";
-	if ( ! is_array( $statuses ) ) {
-		$statuses = array( $statuses );
-	}
-	foreach ( $statuses as $status ) {
-		// print $status . "<br/>";
-
-		$data = gui_header( 2, $status_names[ $status ] );
-
-		$sql = 'SELECT posts.id'
-		       . ' FROM `wp_posts` posts'
-		       . " WHERE post_status = '" . $status . "'" .
-		       " order by 1";
-
-		// print $sql;
-		$result = mysqli_query( $conn, $sql );
-
-		$data                  .= "<table id='" . $status . "'>";
-		$data                  .= "<tr>";
-		$data                  .= gui_cell( gui_checkbox( "chk_all", "", "",
-			array( "onchange=select_orders('" . $status . "')" ) ) );
-		$data                  .= gui_cell( gui_bold( "משימה" ) );
-		$data                  .= "<td><h3>מספר </br> הזמנה</h3></td>";
-		$data                  .= "<td><h3>שם המזמין</h3></td>";
-		$data                  .= "<td><h3>עבור</h3></td>";
-		$data                  .= "<td><h3>סכום</h3></td>";
-		$data                  .= "</tr>";
-		$count                 = 0;
-		$total_delivery_total  = 0;
-		$total_order_total     = 0;
-		$total_order_delivered = 0;
-		$total_delivery_fee    = 0;
-		$lines                 = array();
-
-		if ( ! $result ) {
-			continue;
-		}
-
-		$count = 0;
-		while ( $row = mysqli_fetch_row( $result ) ) {
-			$order_id    = $row[0];
-			$row_text    = gui_cell( gui_checkbox( "chk_" . $order_id, "select_order" ) );
-			$customer_id = get_postmeta_field( $order_id, '_customer_user' );
-
-			// display order_id with link to display it.
-			$count ++;
-			// 1) order ID with link to the order
-			$mission = order_get_mission_name( $order_id );
-			// print $order_id. " ". $mission . "<br/>";
-			$row_text .= gui_cell( $mission );
-			$row_text .= "<td><a href=\"get-order.php?order_id=" . $order_id . "\">" . $order_id . "</a></td>";
-
-			// 2) Customer name with link to his deliveries
-			$row_text .= "<td><a href=\"../account/get-customer-account.php?customer_id=" . $customer_id . "\">" .
-
-			             get_customer_by_order_id( $order_id ) . "</a></td>";
-
-			$row_text .= "<td>" . get_postmeta_field( $order_id, '_shipping_first_name' ) . ' ' .
-			             get_postmeta_field( $order_id, '_shipping_last_name' ) . "</td>";
-
-			// 3) Order total
-			$order_total       = get_postmeta_field( $order_id, '_order_total' );
-			$row_text          .= "<td>" . $order_total . '</td>';
-			$total_order_total += $order_total;
-
-			// 4) Delivery note
-			$delivery_id = get_delivery_id( $order_id );
-//    print "order: " . $order_id . "<br/>" . " del: " . $delivery_id . "<br/>";
-			if ( $delivery_id > 0 ) {
-				$delivery = new Delivery( $delivery_id );
-				$row_text .= "<td><a href=\"..\delivery\get-delivery.php?id=" . $delivery_id . "\"</a>" . $delivery_id . "</td>";
-//        $total_amount = get_delivery_total($delivery_id[0]);
-//        $row_text .= "<td>" . $total_amount . "</td>";
-				if ( $delivery_id > 0 ) {
-					$row_text .= "<td>" . $delivery->Price() . "</td>";
-					$row_text .= "<td>" . $delivery->DeliveryFee() . "</td>";
-					$percent  = "";
-					if ( ( $order_total - $delivery->DeliveryFee() ) > 0 ) {
-						$percent = round( 100 * ( $delivery->Price() - $delivery->DeliveryFee() ) / ( $order_total - $delivery->DeliveryFee() ), 0 ) . "%";
-					}
-					$row_text              .= "<td>" . $percent . "%</td>";
-					$total_delivery_total  += $delivery->Price();
-					$total_delivery_fee    += $delivery->DeliveryFee();
-					$total_order_delivered += $order_total;
-				}
-			} else {
-				$row_text .= "<td></td><td></td><td></td>";
-			}
-			$line = $row_text;
-
-			array_push( $lines, array( $mission, $line ) );
-		}
-		//   $data .= "<tr> " . trim($line) . "</tr>";
-		sort( $lines );
-
-		foreach ( $lines as $line ) {
-			$data .= "<tr>" . $line[1] . "</tr>";
-		}
-		$rate = 0;
-		if ( $total_order_delivered > 0 ) {
-			$rate = round( 100 * ( $total_delivery_total - $total_delivery_fee ) / $total_order_delivered );
-		}
-//		$data .= "<tr><td></td><td></td><td></td><td>" . $total_order_total . "</td><td></td>" .
-//		         "<td>" . $total_delivery_total . "</td>" .
-//		         "<td>" . $total_delivery_fee . "</td>" .
-//		         "<td>" . $rate . "%</td></tr>";
-		$data = str_replace( "\r", "", $data );
-
-		$data .= "</table>";
-
-		if ( $count > 0 ) {
-			$all_tables .= $data;
-		}
-	}
-
-	return $all_tables;
-}

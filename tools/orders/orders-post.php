@@ -1,11 +1,13 @@
 <?php
+header( "Access-Control-Allow-Origin: http://store.im-haadama.co.il" );
+
 /**
  * Created by PhpStorm.
  * User: agla
  * Date: 16/07/15
  * Time: 16:00
  */
-require_once( '../tools_wp_login.php' );
+require_once( '../r-shop_manager.php' );
 require_once( 'orders-common.php' );
 
 // To map item from price list to our database the shop manager select item from the price list
@@ -21,9 +23,10 @@ switch ( $operation ) {
 		$quantities = $_GET["quantities"];
 		$comments   = $_GET["comments"];
 		$units      = $_GET["units"];
+		$mission_id = $_GET["mission_id"];
 
 		print "creating order for " . get_user_name( $user_id );
-		create_order( $user_id, explode( ",", $prods ),
+		create_order( $user_id, $mission_id, explode( ",", $prods ),
 			explode( ",", $quantities ), $comments, explode( ",", $units ) );
 		break;
 	case "replace_baskets":
@@ -75,13 +78,15 @@ switch ( $operation ) {
 	case "delivered":
 		$ids = $_GET["ids"];
 		order_change_status( explode( ",", $ids ), "wc-completed" );
+		print "delivered";
 		break;
 
 	case "mission":
 		print ( "change mission" );
 		$mission_id = $_GET["id"];
 		$order_id   = $_GET["order_id"];
-		set_post_meta_field( $order_id, "mission_id", $mission_id );
+		my_log( "mission=" . $mission_id . " order_id=" . $order_id );
+		order_set_mission_id( $order_id, $mission_id );
 
 	default:
 		// die("operation " . $operation . " not handled<br/>");

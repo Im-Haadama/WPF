@@ -24,7 +24,7 @@ function send_mail( $subject, $to, $message ) {
 	$headers[] = "Content-type: text/html";
 
 	$rc = mail( $to, $subject, $message, implode( "\r\n", $headers ) );
-//    print "sent. RC = " . $rc . "<br/>";
+	print "sent. RC = " . $rc . "<br/>";
 //    print "to = " . $to. "<br/>";
 //    print "subject = " . $subject. "<br/>";
 	return $rc;

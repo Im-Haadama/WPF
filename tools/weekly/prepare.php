@@ -1,6 +1,5 @@
 <?php
-require_once '../tools_wp_login.php';
-require_once( '../header.php' );
+require_once '../r-shop_manager.php';
 /**
  * Created by PhpStorm.
  * User: agla
@@ -13,6 +12,7 @@ require_once( '../header.php' );
 // 2) ride info
 // 3) pickup sheets
 
+print header_text( false );
 require_once '../delivery/delivery.php';
 require_once '../orders/orders-common.php';
 require_once '../supplies/supplies-post.php';

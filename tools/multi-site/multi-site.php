@@ -6,7 +6,7 @@
  * Time: 18:13
  */
 
-require_once( '../tools_wp_login.php' );
+require_once( '../r-shop_manager.php' );
 require_once( 'simple_html_dom.php' );
 require_once( '../gui/sql_table.php' );
 
@@ -96,12 +96,12 @@ class MultiSite {
 				continue;
 			}
 
-			if ( strstr( $func, "&" ) ) {
-				$glue = "?";
-			} else {
+			if ( strstr( $func, "?" ) ) {
 				$glue = "&";
+			} else {
+				$glue = "?";
 			}
-			$file = $url . "/" . $func . $glue . "header=" . ( $first ? "1" : "0" );
+			$file = $url . "/" . $func . $glue . "header=" . ( $first ? "1" : "0" ) . "&key=lasdhflajsdhflasjdhflaksj";
 			// print $file . "<br/>";
 			$result_text = file_get_html( $file );
 //			print $result_text;
@@ -144,7 +144,7 @@ class MultiSite {
 	}
 
 	static function SiteTools( $site_id ) {
-		$sql = "SELECT tools_url FROM im_multisite WHERE site_id = " . $site_id;
+		$sql = "SELECT tools_url FROM im_multisite WHERE id = " . $site_id;
 
 		return sql_query_single_scalar( $sql );
 	}

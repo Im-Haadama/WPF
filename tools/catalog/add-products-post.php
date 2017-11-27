@@ -6,7 +6,7 @@
  * Time: 12:08
  */
 
-require_once( "../tools_wp_login.php" );
+require_once( "../r-shop_manager.php" );
 require_once( "../pricelist/pricelist.php" );
 require_once( "../pricelist/pricelist-process.php" );
 

@@ -7,7 +7,7 @@
  */
 require_once( 'catalog.php' );
 require_once( '../pricelist/pricelist.php' );
-require_once( '../tools_wp_login.php' );
+require_once( '../r-shop_manager.php' );
 require_once( '../multi-site/multi-site.php' );
 
 // To map item from price list to our database the shop manager select item from the price list
@@ -161,18 +161,6 @@ function search_unmapped_remote() {
 
 function search_unmapped_local() {
 	global $conn;
-//    my_log("search_unmaaped_products");
-//    // Purpose: read supplier items and map them to our database.
-//    // First get all unmapped items
-//    $sql = 'SELECT id, supplier_id, product_name, date, supplier_product_code'
-//        . ' from im_supplier_price_list'
-//        . ' where '
-//        . ' (supplier_id, product_name) not in '
-//        . ' (select supplier_id, supplier_product_name from im_supplier_mapping)'
-//        . ' group by supplier_id, product_name ';
-//    // print $sql;
-//        /// . ' supplier_product_code not in (select supplier_product_code from im_supplier_mapping)';
-//
 
 	$sql    = "SELECT id, supplier_id, product_name " .
 	          " FROM im_supplier_price_list ORDER BY 2, 3";
@@ -184,24 +172,15 @@ function search_unmapped_local() {
 	$data .= "<td>שם מוצר</td>";
 	$data .= "<td>מזהה ספק</td>";
 	$data .= "<td>מוצר שלנו </td>";
+	$data .= gui_cell( "קטגוריה" );
+	$data .= gui_cell( "תמונה" );
 	$data .= "</tr>";
 
 	while ( $row = mysqli_fetch_row( $result ) )
 	{
 		$pricelist_id = $row[0];
-//        $supplier_id = $row[1];
-//        $product_name = $row[2];
-//        $supplier_product_code = $row[4];
-//
-//        if (is_mapped($supplier_product_code)) {
-//            // print $supplier_product_code . "is mapped<br/>";
-////            my_log($supplier_product_code . " is mapped");
-//            continue;
-//        }
-		// print $pricelist_id . "<br/>";
 
 		$pricelist = PriceList::Get( $pricelist_id );
-//        $sql = " select product_name, supplier_id, date, price, supplier_product_code from im_supplier_price_list " .
 
 		$prod_link_id = Catalog::GetProdID( $pricelist_id, true );
 
@@ -209,8 +188,8 @@ function search_unmapped_local() {
 		if ( ( ( $prod_id == - 1 ) or ( $prod_id > 0 ) ) and get_post_status( $prod_id ) != 'trash' ) {
 			continue;
 		}
-		$data .= print_unmapped( $pricelist_id, $pricelist["supplier_product_code"],
-			$pricelist["product_name"], $pricelist["supplier_id"] );
+		$data .= print_unmapped( $pricelist_id, $pricelist["supplier_product_code"], $pricelist["product_name"],
+			$pricelist["supplier_id"] );
 	}
 	print $data;
 }
@@ -277,6 +256,10 @@ function print_unmapped( $pricelist_id, $supplier_product_code, $product_name, $
 		$line .= "<td style=\"display:none;\">" . $site_id . "</td>";
 	}
 
+	$item = PriceList::Get( $pricelist_id );
+	$line .= gui_cell( $item["category"] );
+	$url  = $item["picture_path"];
+	$line .= gui_cell( basename( $url ) );
 	$line .= "</tr>";
 
 

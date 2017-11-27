@@ -5,7 +5,7 @@
  * Date: 24/02/17
  * Time: 09:13
  */
-require_once( '../tools_wp_login.php' );
+require_once( '../r-shop_manager.php' );
 require_once( 'pricelist.php' );
 
 
@@ -180,13 +180,19 @@ function pricelist_process_name( $filename, $supplier_name, $add ) {
 	}
 }
 
-function pricelist_process( $filename, $supplier_id, $add ) {
+function pricelist_process( $filename_or_file, $supplier_id, $add, $picture_prefix = null ) {
 	$debug = true;
 
 	// The file is on server. Lets read it
-	$file = fopen( $filename, "r" );
-	if ( ! $file ) {
-		return false;
+	if ( is_string( $filename_or_file ) ) {
+		$filename = $filename_or_file;
+
+		$file = fopen( $filename, "r" );
+		if ( ! $file ) {
+			return false;
+		}
+	} else {
+		$file = $filename_or_file;
 	}
 //    print "reading header...<br/>";
 
@@ -195,13 +201,16 @@ function pricelist_process( $filename, $supplier_id, $add ) {
 	$price_idx           = Array();
 	$detail_idx          = Array();
 	$category_idx        = Array();
+	$is_active_idx       = null;
+	$picture_path_idx    = null;
 	$parse_header_result = false;
 	$inventory_idx       = 0;
 	for ( $i = 0; ! $parse_header_result and ( $i < 4 ); $i ++ ) {
 		$parse_header_result = parse_header( $file, $item_code_idx, $name_idx, $price_idx, $inventory_idx, $detail_idx,
-			$category_idx );
+			$category_idx, $is_active_idx, $picture_path_idx );
 	}
 
+	print "pp = $picture_path_idx<br/>";
 	if ( ! $parse_header_result ) {
 		print "Missing headers:<br/>";
 		die( " name " . count( $name_idx ) . " price " . count( $price_idx ) );
@@ -223,7 +232,12 @@ function pricelist_process( $filename, $supplier_id, $add ) {
 	$category   = null;
 	while ( ( $data = fgetcsv( $file ) ) !== false ) {
 		if ( $data ) {
+			if ( isset( $is_active_idx ) and ( $data[ $is_active_idx ] == 1 ) ) {
+				// print $data[ $name_idx[ 0 ] ] . " not active. Skipped<br/>";
+				continue;
+			}
 			for ( $col = 0; $col < count( $price_idx ); $col ++ ) {
+				$pic_path  = null;
 				$item_code = 10;
 				$price     = trim( $data[ $price_idx[ $col ] ], '₪ ' );
 				$name      = $data[ $name_idx[ $col ] ];
@@ -248,8 +262,18 @@ function pricelist_process( $filename, $supplier_id, $add ) {
 				if ( $item_code_idx[ $col ] != - 1 ) {
 					$item_code = $data[ $item_code_idx[ $col ] ];
 				}
+				if ( $picture_path_idx ) {
+					$pp = $data[ $picture_path_idx ];
+					if ( strlen( $pp ) > 3 ) {
+						$pic_path = $picture_prefix . '/' . $pp;
+					} else {
+						$pic_path = "";
+					}
+				}
+
 				if ( $price > 0 ) {
-					$result = handle_line( $price, "", $name . " " . $detail, $item_code, $category, $PL, false, $id, $category );
+					$result = handle_line( $price, "", $name . " " . $detail, $item_code, $category, $PL,
+						false, $id, $category, $pic_path);
 					switch ( $result ) {
 						case UpdateResult::UsageError:
 						case UpdateResult::SQLError:
@@ -262,6 +286,7 @@ function pricelist_process( $filename, $supplier_id, $add ) {
 					$item_count ++;
 				}
 			}
+
 			$line_number ++;
 		}
 	}
@@ -283,7 +308,9 @@ function pricelist_process( $filename, $supplier_id, $add ) {
 	return true;
 }
 
-function parse_header( $file, &$item_code_idx, &$name_idx, &$price_idx, &$inventory_idx, &$detail_idx, &$category_idx ) {
+function parse_header(
+	$file, &$item_code_idx, &$name_idx, &$price_idx, &$inventory_idx, &$detail_idx, &$category_idx,
+	&$filter_idx, &$picture_idx) {
 	$header = fgetcsv( $file );
 
 //    print "header size: " . count($header) ."<br/>";
@@ -296,6 +323,7 @@ function parse_header( $file, &$item_code_idx, &$name_idx, &$price_idx, &$invent
 		switch ( $key ) {
 			case 'פריט':
 			case 'קוד פריט':
+			case 'מסד':
 				array_push( $item_code_idx, $i );
 				break;
 			case 'קטגוריות':
@@ -325,6 +353,13 @@ function parse_header( $file, &$item_code_idx, &$name_idx, &$price_idx, &$invent
 				$inventory_idx = $i;
 				break;
 		}
+		if ( strstr( $key, "הצגה" ) ) {
+			$filter_idx = $i;
+		}
+		if ( strstr( $key, "תמונה" ) ) {
+			$picture_idx = $i;
+//		print "picture idx $picture_idx<br/>";
+		}
 	}
 
 	//if ($name_idx == -1 or $price_idx == -1) die("item code " . $item_code_idx . "name " . $name_idx  . "price " . $price_idx );
@@ -353,13 +388,15 @@ function print_items( $title, $list ) {
 }
 
 // Variation are saved with reference to parent.
-function handle_line( $price, $sale_price, $name, $item_code, $category, $PL, $has_variations, &$id, $parent_id = null ) {
+function handle_line(
+	$price, $sale_price, $name, $item_code, $category, $PL, $has_variations, &$id, $parent_id = null,
+	$pic_path = null) {
 	$name = pricelist_strip_product_name( $name );
 	$id   = 0;
 	// Check if we have a price.
 	// Product with variations doesn't need a price
 	if ( $price > 0 or $has_variations ) {
-		return $PL->AddOrUpdate( $price, $sale_price, $name, $item_code, $category, $id, $parent_id );
+		return $PL->AddOrUpdate( $price, $sale_price, $name, $item_code, $category, $id, $parent_id, $pic_path );
 	}
 //    else
 //        print "price: " . $price . "<br/>";

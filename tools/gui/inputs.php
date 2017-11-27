@@ -17,13 +17,12 @@ function gui_button( $id, $func, $text ) {
 	return "<button id=\"" . $id . "\" onclick=\"" . $func . "\"> " . $text . "</button>";
 }
 
-function gui_datalist( $id, $table, $field ) {
+function gui_datalist( $id, $table, $field, $include_id = false ) {
 	global $conn;
 
 	$data = "<datalist id=\"" . $id . "\">";
 
-	$sql = "select " . $field . " from " . $table;
-//    print $sql;
+	$sql    = "select " . $field . ", id from " . $table;
 	$result = mysqli_query( $conn, $sql );
 	if ( ! $result ) {
 		print mysqli_error( $conn );
@@ -31,7 +30,11 @@ function gui_datalist( $id, $table, $field ) {
 		return "";
 	}
 	while ( $row = mysqli_fetch_assoc( $result ) ) {
-		$data .= "<option value=\"" . htmlspecialchars( $row[ $field ] ) . "\">";
+		$id_text = "";
+		if ( $include_id ) {
+			$id_text = $row["ID"] . ")";
+		}
+		$data .= "<option value=\"" . $id_text . htmlspecialchars( $row[ $field ] ) . "\">";
 	}
 
 	$data .= "</datalist>";
@@ -40,7 +43,7 @@ function gui_datalist( $id, $table, $field ) {
 }
 
 function gui_checkbox( $id, $class, $value = false, $events = null ) {
-	$data = "<input id=\"$id\" class=\"$class\" type=\"checkbox\"";
+	$data = "<input id=\"$id\" class=\"$class\" type=\"checkbox\" ";
 	if ( $value ) {
 		$data .= "checked ";
 	}
@@ -82,7 +85,7 @@ function gui_input( $name, $value, $events = null, $id = null ) {
 		$data = rtrim( $data, "," );
 	}
 //    if (strlen($onkeyup) > 0) $data .= ' onkeyup="' . $onkeyup . '">';
-	$data .= "</input>";
+	$data .= ">";
 
 	return $data;
 }
@@ -119,8 +122,8 @@ function gui_input_month( $name, $class, $value, $events ) {
 	return $data;
 }
 
-function gui_input_date( $name, $class, $value = null, $events = null ) {
-	$data = '<input type="date" name="' . $name . '" ';
+function gui_input_date( $id, $class, $value = null, $events = null ) {
+	$data = '<input type="date" id="' . $id . '" ';
 	if ( is_null( $value ) ) {
 		$value = date( 'Y-m-d' );
 	}
@@ -139,7 +142,7 @@ function gui_input_date( $name, $class, $value = null, $events = null ) {
 	return $data;
 }
 
-function gui_select_table( $id, $table, $selected = null, $events = null, $more_values = null, $name = null, $where = null ) {
+function gui_select_table( $id, $table, $selected = null, $events = null, $more_values = null, $name = null, $where = null, $include_id = false, $datalist = false ) {
 	global $conn;
 
 	$values = array();
@@ -164,6 +167,7 @@ function gui_select_table( $id, $table, $selected = null, $events = null, $more_
 	if ( $where ) {
 		$sql .= " " . $where;
 	}
+
 	$results = mysqli_query( $conn, $sql );
 	if ( $results ) {
 		while ( $row = $results->fetch_assoc() ) {
@@ -173,11 +177,45 @@ function gui_select_table( $id, $table, $selected = null, $events = null, $more_
 		return "no results " . $sql;
 	}
 
-	return gui_select( $id, $name, $values, $events, $selected );
+	if ( $datalist )
+		return gui_select_datalist( $id, $name, $values, $events, $include_id );
+	else
+		return gui_select( $id, $name, $values, $events, $selected);
 }
 
-function gui_select( $id, $name, $values, $events, $selected ) {
+function gui_select_datalist( $id, $name, $values, $events, $include_id = true ) {
+	$data = "<datalist id=\"" . $id . "_items\">";
 
+	foreach ( $values as $row ) {
+		$value = "";
+		if ( $include_id ) {
+			$value .= $row["id"] . ")";
+		}
+		$value .= $row[ $name ];
+		$data  .= "<option value=\"" . $value . "\"";
+		$data  .= ">";
+		// $data .= $row[ $name ] . "</option>";
+	}
+
+	$data .= "</datalist>";
+
+//	if ( $selected and $selected == $row["id"] ) {
+//		$data .= " selected";
+//	}
+	$data .= "<input id=\"" . $id . "\" list=\"" . $id . "_items\"";
+
+	if ( $events ) {
+		$data .= $events;
+	}
+
+	$data .= ">";
+
+	return $data;
+
+}
+
+function gui_select( $id, $name, $values, $events, $selected )
+{
 	$data = "<select id=\"" . $id . "\"";
 	if ( $events ) {
 		$data .= $events;
@@ -201,8 +239,14 @@ function gui_select( $id, $name, $values, $events, $selected ) {
 
 }
 
-function gui_hyperlink( $text, $link ) {
-	return "<a href='" . $link . "'>" . $text . "</a>";
+function gui_hyperlink( $text, $link, $target = null ) {
+	$data = "<a href='" . $link . "'";
+	if ( $target ) {
+		$data .= 'target="' . $target . '"';
+	}
+	$data .= ">" . $text . "</a>";
+
+	return $data;
 }
 
 //function gui_print_table($rows)
@@ -315,7 +359,6 @@ function gui_table( $rows, $id = null, $header = true, $footer = true, &$sum_fie
 
 			}
 		}
-
 	} else {
 		$data .= "<tr>" . $rows . "</tr>";
 	}

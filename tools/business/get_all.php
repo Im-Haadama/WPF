@@ -1,5 +1,5 @@
 <?php
-require_once( '../tools_wp_login.php' );
+require_once( '../r-shop_manager.php' );
 //require_once( '../header.php' );
 require_once( "../gui/inputs.php" );
 require_once( "../delivery/delivery.php" );
@@ -178,7 +178,7 @@ function print_col( $hdr, $key = null ) {
 //}
 
 function print_business( $id, $horizontal, $seq ) {
-	$sql = "select id, client_displayname(part_id), date, week, amount, ref, delivery_fee, order_from_delivery(id), delivery_get_vat(ref) from im_business_info where id = $id";
+	$sql = "select id, client_displayname(part_id), date, week, amount, ref, delivery_fee, order_from_delivery(id) from im_business_info where id = $id";
 	$row = sql_query_single( $sql );
 	if ( ! $horizontal ) {
 		print "<table>";

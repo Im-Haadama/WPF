@@ -7,7 +7,7 @@
  */
 
 // test
-include_once( "../tools_wp_login.php" );
+include_once( "../r-shop_manager.php" );
 require_once( "../gui/inputs.php" );
 require_once( "../mail.php" );
 require_once( "../catalog/catalog.php" );
@@ -33,7 +33,7 @@ function create_supply( $supplierID ) {
 	return mysqli_insert_id( $conn );
 }
 
-function supply_add_line( $supply_id, $prod_id, $quantity, $units ) {
+function supply_add_line( $supply_id, $prod_id, $quantity, $units = 0 ) {
 	$sql = "INSERT INTO im_supplies_lines (supply_id, product_id, quantity, units) VALUES "
 	       . "( " . $supply_id . ", " . $prod_id . ", " . $quantity . ", " . $units . ")";
 
@@ -249,7 +249,7 @@ function print_supplies( $ids, $internal ) {
 //    print "<html dir=\"rtl\">";
 	foreach ( $ids as $id ) {
 		print "<h1>";
-		print "אספקה מספר " . $id . " " . supply_get_supplier( $id ) . " " . date( "Y-m-d" );
+		print "אספקה מספר " . gui_hyperlink( $id, "../supplies/supply-get.php?id= " . $id ) . " " . supply_get_supplier( $id ) . " " . date( "Y-m-d" );
 		print "</h1>";
 		print_supply( $id, $internal );
 		print "<p style=\"page-break-after:always;\"></p>";
@@ -419,7 +419,7 @@ function display_active_supplies( $status ) {
 
 	$has_lines = false;
 	$sql       = "SELECT id, supplier, status, date(date) FROM im_supplies WHERE status IN (" .
-	             implode( ",", $status ) . ") AND id > (SELECT inventory_in FROM im_info)"
+	             implode( ",", $status ) . ") AND id > (SELECT info_data FROM im_info where info_key='inventory_in')"
 	             . " ORDER BY 4, 3, 2";
 
 	$result = mysqli_query( $conn, $sql );

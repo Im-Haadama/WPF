@@ -11,6 +11,6 @@
  * Tutorial: http://www.sellwithwp.com/woocommerce-custom-order-status-2/
  **/
 
-require_once( "../tools_wp_login.php" );
+require_once( "../r-shop_manager.php" );
 
 

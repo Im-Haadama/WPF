@@ -1,25 +1,53 @@
 <?php
-require_once( '../tools_wp_login.php' );
+require_once( '../r-shop_manager.php' );
 require_once( 'pricelist.php' );
 require_once( 'pricelist-process.php' );
 
+print header_text( false, true, true );
 $supplier_id = $_GET["supplier_id"];
 if ( isset( $_GET["add"] ) ) {
 	$add = true;
 }
 
+$tmp_file  = $_FILES["fileToUpload"]["tmp_name"];
+$file_name = $_FILES["fileToUpload"]["name"];
+$ext       = pathinfo( $file_name, PATHINFO_EXTENSION );
+
 $target_dir    = "../uploads/";
-$target_file   = $target_dir . "prices" . $supplier_id . ".csv";
-$uploadOk      = 1;
+$target_file   = $target_dir . "prices" . $supplier_id . "." . $ext;
 $imageFileType = pathinfo( $target_file, PATHINFO_EXTENSION );
-if ( move_uploaded_file( $_FILES["fileToUpload"]["tmp_name"], $target_file ) ) {
-	echo "The file " . basename( $_FILES["fileToUpload"]["name"] ) . " has been uploaded.<br/>";
+if ( move_uploaded_file( $tmp_file, $target_file ) ) {
+	echo "The file " . basename( $file_name ) . " has been uploaded.<br/>";
 	print $target_file . "<br/>";
 }
 
-print "reading file...<br/>";
+switch ( $ext ) {
+	case "csv":
+		pricelist_process( $target_file, $supplier_id, $add );
+		break;
+	case "xls":
+		read_chef_xls( $target_file, $supplier_id );
+		break;
+	default:
+		print "File type " . $ext . "not handled.";
+		die( 1 );
+}
 
-pricelist_process( $target_file, $supplier_id, $add );
+function read_chef_xls( $input_file, $supplier_id ) {
+	$file = "http://super-organi.co.il/tools/" . substr( $input_file, 3 ); // Remove "../" re
+	$url  = "http://tabula.aglamaz.com/imap/xls2csv.php?input=" . $file;
+	print $url;
+	$txt = file_get_contents( $url );
 
+	$temp_file = tmpfile();
+
+	fwrite( $temp_file, $txt );
+	fseek( $temp_file, 0 );
+	pricelist_process( $temp_file, $supplier_id, false, 'http://www.cheforgani.co.il/img/uploads/products' );
+//	print realpath($target_file);
+
+	// print "coming soon..";
+}
 
 ?>
+

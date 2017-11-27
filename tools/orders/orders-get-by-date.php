@@ -1,5 +1,5 @@
 <?php
-require_once( '../tools_wp_login.php' );
+require_once( '../r-shop_manager.php' );
 
 ?>
 <html dir="rtl" lang="he">
@@ -41,7 +41,7 @@ while ( $row = mysqli_fetch_row( $result ) ) {
 	while ( $row_i = mysqli_fetch_row( $result_i ) ) {
 		$row_text .= "<td>" . $row_i[0] . '</td>';
 	}
-	$user_id   = get_postmeta_field( $order_id, '_customer_user' );
+	$user_id   = order_get_customer_id( $order_id );
 	$user_info = get_userdata( $user_id );
 	$row_text  .= "<td>" . $user_info->user_email . "</td>";
 

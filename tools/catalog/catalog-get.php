@@ -1,5 +1,5 @@
 <?php
-require_once( '../tools_wp_login.php' );
+require_once( '../r-shop_manager.php' );
 require_once( '../gui/wp_inputs.php' );
 require_once( '../gui/inputs.php' );
 

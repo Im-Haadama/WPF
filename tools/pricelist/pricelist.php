@@ -5,7 +5,7 @@
  * Date: 06/12/15
  * Time: 10:16
  */
-require_once( '../tools_wp_login.php' );
+require_once( '../r-shop_manager.php' );
 require_once( '../catalog/catalog.php' );
 require_once( '../gui/inputs.php' );
 require_once( '../multi-site/multi-site.php' );
@@ -122,7 +122,10 @@ class PriceList {
 		return $row[0];
 	}
 
-	function AddOrUpdate( $regular_price, $sale_price, $product_name, $code = 10, $category, &$id, $parent_id = null ) {
+	function AddOrUpdate(
+		$regular_price, $sale_price, $product_name, $code = 10, $category, &$id, $parent_id = null,
+		$picture_path = null
+	) {
 		global $debug;
 
 		my_log( __METHOD__, __FILE__ );
@@ -171,6 +174,11 @@ class PriceList {
 				$sql .= ", category = '" . $category . "'";
 			}
 
+			if ( isset( $picture_path ) ) {
+				$sql .= ", picture_path = '" . mysqli_real_escape_string( $conn, $picture_path ) . "'";
+			} else {
+				$sql .= ", picture_path = null";
+			}
 			$sql .= " where product_name = '" . $product_name . "' and supplier_id = " . $this->SupplierID;
 
 			//  print "<br/>"  . $product_name . "<br/>";
@@ -215,38 +223,35 @@ class PriceList {
 				$code = "10";
 			}
 
-			// New in price list
+			$sql = "INSERT INTO im_supplier_price_list (product_name, supplier_id, "
+			       . "date, price, sale_price, supplier_product_code, line_status";
+
+			$values = "VALUES ('" . addslashes( $product_name ) . "', " . $this->SupplierID .
+			          ", " . "'" . $date . "', " . $regular_price . ", " . $sale_price . ", " . $code . ", 1";
+
 			if ( $parent_id > 0 ) {
 				// Variation
-				$sql = "INSERT INTO im_supplier_price_list (product_name, supplier_id, "
-				       . "date, price, sale_price, supplier_product_code, line_status, variation, parent_id";
-				if ( isset( $category ) ) {
-					$sql .= ", category ";
-				}
-				$sql .= ") VALUES ('" . addslashes( $product_name ) . "', " . $this->SupplierID .
-				        ", " . "'" . $date . "', " . $regular_price . ", " . $sale_price . ", " . $code . ", 1, TRUE " . $parent_id;
-				if ( isset( $category ) ) {
-					$sql .= ", '" . $category . "'";
-				}
-				$sql .= ")";
+				$sql    .= ", variation, parent_id";
+				$values .= ", 1, " . $parent_id;
 			} else {
 				// Product
-				$sql = "INSERT INTO im_supplier_price_list (product_name, supplier_id, "
-				       . "date, price, sale_price, supplier_product_code, line_status, variation";
-				if ( isset( $category ) ) {
-					$sql .= ", category ";
-				}
-
-				$sql .= ") VALUES ('" . addslashes( $product_name ) . "', " . $this->SupplierID .
-				        ", " . "'" . $date . "', " . $regular_price . ", " . $sale_price . ", " . $code . ", 1, FALSE";
-				if ( isset( $category ) ) {
-					$sql .= ", '" . $category . "'";
-				}
-				$sql .= ")";
-
+				$sql    .= ", variation";
+				$values .= ", 0";
 			}
 
-//	        print "<p dir=ltr>" . $sql . "</p>";
+			if ( isset( $category ) ) {
+				$sql    .= ", category ";
+				$values .= ", '" . $category . "'";
+			}
+			if ( isset( $picture_path ) ) {
+				$sql    .= ", picture_path ";
+				$values .= ", '" . mysqli_real_escape_string( $conn, $picture_path ) . "'";
+			}
+			// Complete the sql statement
+			$sql .= ") " . $values . ")";
+
+			// print "<p dir=ltr>" . $sql . "</p>";
+
 			$result = mysqli_query( $conn, $sql );
 			if ( ! $result ) {
 				sql_error( $sql );
@@ -345,12 +350,11 @@ class PriceList {
 
 	static function Get( $pricelist_id ) {
 		// my_log("Pricelist::Get" . $pricelist_id);
-		$sql = " SELECT product_name, supplier_id, date, price, supplier_product_code, sale_price FROM im_supplier_price_list " .
+		$sql = " SELECT product_name, supplier_id, date, price, supplier_product_code, sale_price, category, picture_path FROM im_supplier_price_list " .
 		       " WHERE id = " . $pricelist_id;
 
 		$result = sql_query_single_assoc( $sql );
 
-		// my_log("result");
 		return $result;
 	}
 
