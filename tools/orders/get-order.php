@@ -2,6 +2,11 @@
 require_once 'orders-common.php';
 require_once( '../gui/inputs.php' );
 require_once( '../delivery/delivery.php' );
+$order_id = $_GET["order_id"];
+$margin   = false;
+if ( isset( $_GET["margin"] ) ) {
+	$margin = true;
+}
 ?>
 <html dir="rtl" lang="he">
 <head>
@@ -13,7 +18,6 @@ require_once( '../delivery/delivery.php' );
 		$contents = fread( $handle, filesize( $filename ) );
 		print $contents;
 
-		$order_id = $_GET["order_id"];
 		?>
 
         function save_mission() {
@@ -113,7 +117,7 @@ $for_edit    = ! ( $delivery_id > 0 );
 print order_info_data( $order_id, $for_edit );
 
 $d = delivery::CreateFromOrder( $order_id );
-$d->print_delivery( ImDocumentType::order, ImDocumentOperation::edit );
+$d->print_delivery( ImDocumentType::order, ImDocumentOperation::edit, $margin );
 
 $data = str_replace( "\r", "", $data );
 

@@ -1,10 +1,41 @@
 <?php
-require_once( '../r-shop_manager.php' );
+require_once( '../im_tools.php' );
 require_once( "../gui/inputs.php" );
 require_once( "../catalog/catalog.php" );
 
 $search_text = $_GET["search_txt"];
 $operation   = $_GET["operation"];
+
+class CatalogFields {
+	const
+		/// User interface
+		line_select = 0,
+		id = 1,
+		name = 2,
+		price = 3,
+		vat = 4,
+		supplier = 5,
+		status = 6,
+		category = 7,
+		order = 8,
+		cost_price = 9,
+		field_count = 10;
+}
+
+;
+
+$header_fields = array(
+	"בחר",
+	"מזהה",
+	"שם פריט",
+	"מחיר",
+	"מע\"מ",
+	"ספק",
+	"סטטוס",
+	"קטגוריה",
+	"הזמנה",
+	"מחיר עלות"
+);
 
 // Check connection
 
@@ -35,8 +66,7 @@ switch ( $operation ) {
 		show_catalog( $for_update, $search_text, false, true );
 		break;
 	case "fresh_siton":
-		$for_update = false;
-		show_catalog( $for_update, $search_text, false, true, true, false, array( 15, 390 ), false );
+		show_fresh_siton();
 		break;
 
 	case "fresh_siton_order":
@@ -61,11 +91,20 @@ switch ( $operation ) {
 	case "customer_prices":
 		show_catalog( false, '', false, true, false, false, array( 15 ) );
 		break;
-//	default:
-//		$for_update = false;
-//		show_catalog( $for_update, '', true );
-//		break;
 }
+
+function show_fresh_siton() {
+	print header_text( true, true, true );
+
+	foreach ( array( 11, 12, 27, 28, ) as $categ ) {
+		$term = get_term( $categ );
+
+		print gui_header( 1, $term->name );
+		show_catalog( 0, "", false, true, true, false, array( $term->term_id ), false );
+	}
+
+}
+
 function set_category( $prod_ids, $category ) {
 
 	// my_log($debug_string, __FILE__);
@@ -82,6 +121,25 @@ function show_catalog(
 	$for_update, $search_text, $csv, $active = false, $siton = false, $buy = false, $category = null,
 	$order = false, $suppliers = null
 ) {
+
+	global $header_fields;
+	$show_fields = array();
+
+	for ( $i = 0; $i < CatalogFields::field_count; $i ++ ) {
+		$show_fields[ $i ] = false;
+	}
+
+	$show_fields[ CatalogFields::name ] = true;
+
+	if ( $siton ) {
+		$show_fields[ CatalogFields::id ]    = true;
+		$show_fields[ CatalogFields::price ] = true;
+	}
+	if ( $buy ) {
+		$show_fields[ CatalogFields::id ]         = true;
+		$show_fields[ CatalogFields::cost_price ] = true;
+		$show_fields[ CatalogFields::supplier ]   = true;
+	}
 
 	$count = 0;
 	my_log( "search_text = " . $search_text, "catalog-db-query.php" );
@@ -116,30 +174,27 @@ function show_catalog(
 
 	$result = sql_query( $sql );
 
-	$data = "<table><tr>";
-	if ( $for_update ) {
-		$data .= "<td></td>";
-	}
-	$data .= "<td><h3>מזהה</h3></td><td><h3>שם פריט</h3></td><td><h3>מחיר</h3></td><td><h3>מעם</h3></td><td><h3>ספק</h3></td>";
-	$data .= gui_cell( gui_header( 3, "סטטוס" ) );
-	$data .= gui_cell( gui_header( 3, "קטגוריה" ) );
-	if ( $buy ) {
-		$data .= "<td>רשימה</td>";
-	}
+	$data = "<table>";
 
-	if ( $order ) {
-		$data .= "<td>הזמנה</td>";
-	}
-	$data        .= "</tr>";
+	$data        .= gui_row( $header_fields, "", $show_fields );
 	$line_number = 0;//	default:
-//		$for_update = false;
-//		show_catalog( $for_update, '', true );
-//		break;
 
+	if ( $for_update ) {
+		print "update<br/>";
+		$show_fields[ CatalogFields::line_select ] = true;
+		$show_fields[ CatalogFields::status ]      = true;
+	}
+	if ( $order ) {
+		$show_fields[ CatalogFields::order ] = true;
+	}
 
 	while ( $row = mysqli_fetch_row( $result ) ) {
+		$fields = array();
+		for ( $i = 0; $i < CatalogFields::field_count; $i ++ ) {
+			$fields[ $i ] = "";
+		}
 		$line_number ++;
-		$prod_id            = $row[0];
+		$prod_id = $row[0];
 		// prof_flag("handle " . $prod_id);
 		$product_categories = array();
 
@@ -151,8 +206,13 @@ function show_catalog(
 					$product_cat_id = $term->term_id;
 
 					$parents = get_ancestors( $product_cat_id, 'product_cat' );
+
 					array_push( $product_categories, $term->term_id );
+					if ( $term->term_id == 341 )
+						continue;
 					foreach ( $parents as $parent ) {
+						if ( $parent->term_id == 341 )
+							continue;
 						array_push( $product_categories, $parent );
 					}
 				}
@@ -160,97 +220,63 @@ function show_catalog(
 				print "no terms for " . $prod_id . "<br/>";
 				continue;
 			}
-//			if ($prod_id == 6602) {
-//				print "found: ";
-//				var_dump($product_categories); print "<br/>";
-//				print "wanted: ";
-//				var_dump($category); print "<br/>";
-//			}
 
 			if ( sizeof( array_intersect( $product_categories, $category ) ) == 0 ) {
 				continue;
 			}
 		}
 
-		$prod_name = $row[1];
+		$fields[ CatalogFields::name ] = $row[1];
+		// print "XXX" . CatalogFields::name . "XXX<br/>";
 
-		// Display product line
-		$line = "<tr>";
-		if ( $for_update ) {
-			$line .= "<td><input id=\"chk" . $prod_id . "\" class=\"product_checkbox\" type=\"checkbox\"></td>";
-		}
-		$line .= "<td>" . $prod_id . '</td>';
-		$line .= '<td>' . $prod_name . '</td>';
+		// $fields[CatalogFields::line_select] ="<input id=\"chk" . $prod_id . "\" class=\"product_checkbox\" type=\"checkbox\">";
+		$fields[ CatalogFields::id ] = $prod_id;
 
 		// price
 		$price = get_postmeta_field( $prod_id, '_price' );
-		$line  .= '<td>';
 		if ( $for_update ) {
-			$line .= '<input type="text" value="' . $price . '">';
+			$fields[ CatalogFields::price ] = '<input type="text" value="' . $price . '">';
 		} else {
 			if ( $siton ) {
 				$price = siton_price( $prod_id );
 			} else if ( $buy ) {
 				$price = get_buy_price( $prod_id );
 			}
-			$line .= $price;
+			$fields[ CatalogFields::price ] = $price;
 		}
-		$line .= '</td>';
 
 		// vat percent
 		$vat_percent = get_postmeta_field( $prod_id, 'vat_percent' );
-		$line        .= '<td>';
-		if ( $vat_percent > 0 ) {
-			$line .= $vat_percent . '%';
-		}
+		if ( $vat_percent )
+			$fields[ CatalogFields::vat ] = $vat_percent . "%";
 
-		//
-		$line .= '</td>';
-		$line .= '<td>' . get_postmeta_field( $prod_id, 'supplier_name' ) . '</td>';
+		// $fields[CatalogFields::supplier] = get_postmeta_field( $prod_id, 'supplier_name' );
 
-		if ( $for_update ) {
-			$line .= '<td>' . get_post_status( $prod_id ) . '</td>';
-		}
+		$fields[ CatalogFields::status ] = get_post_status( $prod_id );
 
 		if ( $buy ) {
 			// prof_flag("alternative-start" . $prod_id);
-			$line         .= "<td>";
 			$alternatives = alternatives( $prod_id );
+			$supplies     = "";
 			foreach ( $alternatives as $alt ) {
-//				if (! $suppliers or in_array($alt[1], $suppliers)) {
-//
-//				}
-
-				$line .= get_supplier_name( $alt[1] ) . ", ";
+				$supplies .= get_supplier_name( $alt->getSupplierId() ) . ", ";
 			}
 
-			$line = rtrim( $line, ", " );
-
-			$line .= "</td>";
-			// prof_flag("alternative-end" . $prod_id);
+			$fields[ CatalogFields::supplier ] = rtrim( $suppliers, ", " );
 		}
+
+		$fields[ CatalogFields::cost_price ] = get_buy_price( $prod_id );
+		$fields[ CatalogFields::supplier ]   = get_supplier( $prod_id);
 
 		$show_in_list = 1;
-//        $product_cats = wp_get_post_terms($prod_id, 'product_cat' );
-//
-//        // $line .= "<td>";
-//        foreach ($product_cats as &$categ) {
-//            $categ_name = $categ->name;
-//            if ($categ_name == "משתלה" || $categ_name == "ציוד" || $categ_name == "גינון" || $categ_name == "שתילי חורף"
-//                || $categ_name == "גינון" || $categ_name == "מארז כמות") $show_in_list = 0;
-//            // $line .=  $categ_name . ", ";
-//        }
-		if ( $order ) {
-			$line .= gui_cell( gui_input( "prod_quantity" . $prod_id, "", null, "q_" . $prod_id ) );
-		}
-		$line .= gui_cell( comma_implode( $terms ) );
-		$line .= "</tr>";
 
-		// $line .= "<td>" . $categ . "</td>";
-		// $line .= "</tr>";
+		// $fields[CatalogFields::order] =gui_cell( gui_input( "prod_quantity" . $prod_id, "", null, "q_" . $prod_id ) );
+		$fields[ CatalogFields::category ] = comma_implode( $terms );
 
 		if ( $show_in_list ) {
-			$data .= trim( $line );
+			// var_dump($fields); print "<br/>";
+			// var_dump($show_fields); print "<br/>";
+			$data .= gui_row( $fields, "cat", $show_fields, $sums);
 		}
 		// prof_flag("end " . $prod_id);
 		$count ++;

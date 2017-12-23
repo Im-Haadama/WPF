@@ -47,7 +47,11 @@ switch ( $operation ) {
 //            my_log("supplier_id " . $supplier_id, "pricelist-post.php");
 			my_log( "price " . $price, "pricelist-post.php" );
 //            my_log("product_name " . $product_name_code, "pricelist-post.php");
-			$pl->Update( $line_id, $price );
+//			$regular_price, $sale_price = 0, $product_name = null, $code = 10, $category = null, &$id, $parent_id = null,
+//		$picture_path = null
+
+			// Todo - display and update sale price
+			$pl->Update( $line_id, $price, 0 );
 		}
 		break;
 

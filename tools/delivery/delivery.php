@@ -123,8 +123,8 @@ class delivery {
 		return sql_query_single_scalar( $sql );
 	}
 
-	function print_delivery( $document_type, $operation ) {
-		print $this->delivery_text( $document_type, $operation );
+	function print_delivery( $document_type, $operation, $margin = false ) {
+		print $this->delivery_text( $document_type, $operation, $margin );
 	}
 
 	function delivery_text( $document_type, $operation = ImDocumentOperation::show, $margin = false ) {
@@ -173,6 +173,10 @@ class delivery {
 					$show_fields[ DeliveryFields::line_select ]   = true;
 				}
 				$show_fields[ DeliveryFields::order_line ] = true;
+				if ( $margin ) {
+					$show_fields[ DeliveryFields::buy_price ]   = true;
+					$show_fields[ DeliveryFields::line_margin ] = true;
+				}
 				break;
 			case ImDocumentType::delivery:
 				$show_fields[ DeliveryFields::delivery_q ] = true;
@@ -285,7 +289,7 @@ class delivery {
 				}
 
 				// $data .= $this->delivery_line($show_fields, $prod_id, $quantity_ordered, "", $quantity_ordered, $price, $has_vat, $prod_id, $refund, $unit );
-				$data .= $this->delivery_line( $show_fields, $document_type, $order_item_id, $client_type, $operation);
+				$data .= $this->delivery_line( $show_fields, $document_type, $order_item_id, $client_type, $operation, $margin );
 				// print "ex " . $expand_basket . " is " . is_basket($prod_id) . "<br/>";
 
 				if ( $expand_basket && is_basket( $prod_id ) ) {
@@ -581,7 +585,9 @@ class delivery {
 				// $this->delivery_total             += $order_line;
 
 				// Delivery info
-				$delivery_line                         = $line[ DeliveryFields::price ] * $line[ DeliveryFields::delivery_q ];
+				if ( is_numeric( $line[ DeliveryFields::price ] ) and is_numeric( $line[ DeliveryFields::delivery_q ] ) ) {
+					$delivery_line = $line[ DeliveryFields::price ] * $line[ DeliveryFields::delivery_q ];
+				}
 				$line[ DeliveryFields::delivery_line ] = $delivery_line;
 				// if ($line[$delivery_line])
 				$this->delivery_total += $delivery_line;
@@ -636,8 +642,9 @@ class delivery {
 		}
 
 		if ( $margin ) {
+			$q                                   = ( $operation == ImDocumentType::delivery ) ? $quantity_delivered : $quantity_ordered;
 			$line[ DeliveryFields::buy_price ]   = get_buy_price( $prod_id );
-			$line[ DeliveryFields::line_margin ] = ( $price - get_buy_price( $prod_id ) ) * $quantity_delivered;
+			$line[ DeliveryFields::line_margin ] = ( $price - get_buy_price( $prod_id ) ) * $q;
 			$this->margin_total                  += $line[ DeliveryFields::line_margin ];
 		}
 
@@ -828,7 +835,7 @@ class delivery {
 		print "To: " . $to . "<br/>";
 		print "Message:<br/>";
 		print $message . "<br/>";
-		$subject = "משלוח " . $this->ID . " בוצע";
+		$subject = "משלוח מספר" . $this->ID . " בוצע";
 		if ( $edit ) {
 			$subject = "משלוח מספר " . $this->ID . " - תיקון";
 		}

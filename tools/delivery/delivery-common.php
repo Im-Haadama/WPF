@@ -5,8 +5,7 @@
  * Date: 05/08/17
  * Time: 12:38
  */
-
-require_once( "../multi-site/multi-site.php" );
+// require_once( "../multi-site/multi-site.php" );
 
 class DeliveryFields {
 	const

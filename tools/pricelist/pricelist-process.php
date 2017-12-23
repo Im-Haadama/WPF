@@ -8,7 +8,6 @@
 require_once( '../r-shop_manager.php' );
 require_once( 'pricelist.php' );
 
-
 // TODO: incremental doesn't handle deletion.
 // TODO: for now deleting will be done in full sync (once a day).
 function pricelist_remote_site_process( $supplier_id, &$results, $inc = false ) {
@@ -29,27 +28,32 @@ function pricelist_remote_site_process( $supplier_id, &$results, $inc = false ) 
 	// $results = array();
 
 	$sql     = "SELECT site_id FROM im_suppliers WHERE id=" . $supplier_id;
+	// print $sql;
 	$site_id = sql_query_single_scalar( $sql );
 
+	print $site_id;
 	if ( ! ( $site_id > 0 ) ) {
 		sql_error( $sql );
 		die( 1 );
 	}
 
-	$remote = get_site_tools_url( $site_id ) . "/catalog/get-as-pricelist.php";
+	$remote = "/catalog/get-as-pricelist.php";
 	if ( $inc ) {
 		$remote .= "?incremental&site_id=" . MultiSite::LocalSiteID();
 	}
 
 	print gui_header( 2, "מבקש נתונים" );
 	flush();
-	$html = file_get_html( $remote );
+	$html = MultiSite::Execute( $remote, $site_id );
+//	print $html;
+//	die(1);
 	if ( strlen( $html ) < 1000 ) {
 		print "no data<br/>";
 		print "remote: " . $remote . "<br/>";
 		print $html . strlen( $html );
 		die ( 1 );
 	}
+
 	print gui_header( 2, "התקבלו נתונים" );
 	flush();
 	$item_count = 0;
@@ -86,8 +90,9 @@ function pricelist_remote_site_process( $supplier_id, &$results, $inc = false ) 
 			switch ( $result ) {
 				case UpdateResult::UsageError:
 				case UpdateResult::SQLError:
-					print "Unexpected error 1";
-					die( 1 );
+					print "Didn't update " . $name . "<br/>";
+					break;
+
 				default:
 					$results[ $result ][] = array( $name, $price, $id );
 			}
@@ -199,6 +204,7 @@ function pricelist_process( $filename_or_file, $supplier_id, $add, $picture_pref
 	$item_code_idx       = Array();
 	$name_idx            = Array();
 	$price_idx           = Array();
+	$sale_idx            = Array();
 	$detail_idx          = Array();
 	$category_idx        = Array();
 	$is_active_idx       = null;
@@ -206,7 +212,7 @@ function pricelist_process( $filename_or_file, $supplier_id, $add, $picture_pref
 	$parse_header_result = false;
 	$inventory_idx       = 0;
 	for ( $i = 0; ! $parse_header_result and ( $i < 4 ); $i ++ ) {
-		$parse_header_result = parse_header( $file, $item_code_idx, $name_idx, $price_idx, $inventory_idx, $detail_idx,
+		$parse_header_result = parse_header( $file, $item_code_idx, $name_idx, $price_idx, $sale_idx, $inventory_idx, $detail_idx,
 			$category_idx, $is_active_idx, $picture_path_idx );
 	}
 
@@ -240,6 +246,9 @@ function pricelist_process( $filename_or_file, $supplier_id, $add, $picture_pref
 				$pic_path  = null;
 				$item_code = 10;
 				$price     = trim( $data[ $price_idx[ $col ] ], '₪ ' );
+				if ( $sale_idx ) {
+					$sale_price = $data[ $sale_idx[ $col ] ];
+				}
 				$name      = $data[ $name_idx[ $col ] ];
 				$detail    = $data[ $detail_idx[ $col ] ];
 				$detail    = rtrim( $detail, "!" );
@@ -272,7 +281,7 @@ function pricelist_process( $filename_or_file, $supplier_id, $add, $picture_pref
 				}
 
 				if ( $price > 0 ) {
-					$result = handle_line( $price, "", $name . " " . $detail, $item_code, $category, $PL,
+					$result = handle_line( $price, $sale_price, $name . " " . $detail, $item_code, $category, $PL,
 						false, $id, $category, $pic_path);
 					switch ( $result ) {
 						case UpdateResult::UsageError:
@@ -309,7 +318,7 @@ function pricelist_process( $filename_or_file, $supplier_id, $add, $picture_pref
 }
 
 function parse_header(
-	$file, &$item_code_idx, &$name_idx, &$price_idx, &$inventory_idx, &$detail_idx, &$category_idx,
+	$file, &$item_code_idx, &$name_idx, &$price_idx, &$sale_idx, &$inventory_idx, &$detail_idx, &$category_idx,
 	&$filter_idx, &$picture_idx) {
 	$header = fgetcsv( $file );
 
@@ -344,6 +353,7 @@ function parse_header(
 				array_push( $detail_idx, $i );
 				break;
 			case 'מחיר':
+			case 'מחירון':
 			case 'מחיר נטו':
 			case 'מחיר לק"ג':
 			case 'סיטונאות':
@@ -351,6 +361,9 @@ function parse_header(
 				break;
 			case 'מלאי (ביחידות)':
 				$inventory_idx = $i;
+				break;
+			case 'מחיר מבצע':
+				array_push( $sale_idx, $i );
 				break;
 		}
 		if ( strstr( $key, "הצגה" ) ) {

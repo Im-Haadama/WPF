@@ -51,7 +51,7 @@ function swap( &$a, &$b ) {
 
 function find_route_1( $node, $rest, &$path, $print = false ) {
 	if ( $print ) {
-		$url = "http://gebweb.net/optimap/index.php?loc0=" . urlencode( get_user_address( $node ) );
+		$url = "http://gebweb.net/optimap/index.php?loc0=" . urlencode( map_get_order_address( $node ) );
 		for ( $i = 0; $i < count( $rest ); $i ++ ) {
 //		print $rest[$i] . " " . get_user_address($rest[$i]) . "<br/>";
 			$url .= "&loc" . ( $i + 1 ) . "=" . urlencode( map_get_order_address( $rest[ $i ] ) );

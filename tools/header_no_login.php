@@ -1,5 +1,5 @@
 <?php
-if ( ! defined( STORE_DIR ) ) {
+if ( ! defined( "STORE_DIR" ) ) {
 	define( 'STORE_DIR', dirname( __FILE__ ) );
 }
 require_once( STORE_DIR . '/im-config.php' );

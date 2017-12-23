@@ -11,13 +11,9 @@ require_once( "supplies.php" );
 require_once( "../gui/inputs.php" );
 $id = $_GET["id"];
 
+print header_text( false );
 ?>
 
-<html dir="rtl" lang="he">
-<head>
-    <meta charset="UTF-8">
-
-</head>
 <script>
     function add_item() {
         var request_url = "supplies-post.php?operation=add_item&supply_id=<?php print $id; ?>";
@@ -42,8 +38,6 @@ $id = $_GET["id"];
 </script>
 <body onload="update_display()">
 
-
-<center><img src="http://store.im-haadama.co.il/wp-content/uploads/2014/11/cropped-imadama-logo-7x170.jpg"></center>
 <div id="logging"></div>
 <?php
 
@@ -84,13 +78,8 @@ if ( ! $send ) {
 	?>
     <input id="itm_" list="prods">
 </div>
+<script type="text/javascript" src="../client_tools.js"></script>
 <script>
-	<?php
-	$filename = __DIR__ . "/../client_tools.js";
-	$handle = fopen( $filename, "r" );
-	$contents = fread( $handle, filesize( $filename ) );
-	print $contents;
-	?>
 
     function update_comment() {
         var text = get_value(document.getElementById("comment"));

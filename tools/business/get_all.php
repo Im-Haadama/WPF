@@ -4,7 +4,10 @@ require_once( '../r-shop_manager.php' );
 require_once( "../gui/inputs.php" );
 require_once( "../delivery/delivery.php" );
 require_once( "../suppliers/gui.php" );
+
+p
 ?>
+
 <html dir="rtl">
 <header>
     <script>

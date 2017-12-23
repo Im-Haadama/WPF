@@ -5,15 +5,11 @@
  * Date: 07/10/16
  * Time: 18:11
  */
-
-if ( ! defined( TOOLS_DIR ) ) {
+if ( ! defined( "TOOLS_DIR" ) ) {
 	define( TOOLS_DIR, dirname( dirname( __FILE__ ) ) );
 }
-
-require_once( TOOLS_DIR . '/r-shop_manager.php' );
+require_once( TOOLS_DIR . '/r-staff.php' );
 require_once( TOOLS_DIR . '/gui/inputs.php' );
-
-$operation = $_GET["operation"];
 
 function get_env( $var, $default ) {
 	if ( isset( $_GET[ $var ] ) ) {
@@ -23,36 +19,41 @@ function get_env( $var, $default ) {
 	}
 }
 
-switch ( $operation ) {
-	case "add_item":
-		print "Adding item<br/>";
-		$part_id      = $_GET["part_id"];
-		$date         = $_GET["date"];
-		$amount       = $_GET["amount"];
-		$delivery_fee = get_env( "delivery_fee", 0 );
-		$ref          = $_GET["ref"];
-		$project      = get_env( "project", 1 );
+if ( isset( $_GET["operation"] ) ) {
+	$operation = $_GET["operation"];
+	switch ( $operation ) {
+		case "add_item":
+			print "Adding item<br/>";
+			$part_id      = $_GET["part_id"];
+			$date         = $_GET["date"];
+			$amount       = $_GET["amount"];
+			$delivery_fee = get_env( "delivery_fee", 0 );
+			$ref          = $_GET["ref"];
+			$project      = get_env( "project", 1 );
 
-		business_add_transaction( $part_id, $date, $amount, $delivery_fee, $ref, $project );
-		print $part_id . ", " . $date . ", " . $amount . ", " . $delivery_fee . ", " . $ref . ", " . $project . "<br/>";
-		print "done<br/>";
-		break;
-	case "delete_items":
-		$ids = $_GET["ids"];
-		my_log( "Deleting ids: " . $ids );
-		business_logical_delete( $ids );
-		break;
+			business_add_transaction( $part_id, $date, $amount, $delivery_fee, $ref, $project );
+			print $part_id . ", " . $date . ", " . $amount . ", " . $delivery_fee . ", " . $ref . ", " . $project . "<br/>";
+			print "done<br/>";
+			break;
+		case "delete_items":
+			$ids = $_GET["ids"];
+			my_log( "Deleting ids: " . $ids );
+			business_logical_delete( $ids );
+			break;
 
-	case "show_makolet":
-		$month = $_GET["month"];
-		show_makolet( $month );
-		break;
+		case "show_makolet":
+			$user  = wp_get_current_user();
+			$roles = $user->roles;
+			if ( in_array( "administrator", $roles ) ) {
+				$month = $_GET["month"];
+				show_makolet( $month );
+			} else {
+				my_log( "show_makolet user $user" );
+			}
+			break;
+	}
 }
 
-function sum_numbers( &$sum, $number ) {
-	$sum += $number;
-	// print $sum . " " . $number . " " . "<br/>";
-}
 
 function show_makolet( $month_year ) {
 	$year  = substr( $month_year, 0, 4 );

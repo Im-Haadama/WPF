@@ -5,10 +5,105 @@
  * Date: 06/12/15
  * Time: 10:16
  */
-require_once( '../r-shop_manager.php' );
+// require_once( '../im-tools.php' );
 require_once( '../catalog/catalog.php' );
 require_once( '../gui/inputs.php' );
 require_once( '../multi-site/multi-site.php' );
+
+class PricelistItem {
+	private $product_name;
+	private $supplier_id;
+	private $date;
+	private $price;
+	private $supplier_product_code;
+	private $sale_price;
+	private $category;
+	private $picture_path;
+
+	function __construct( $pricelist_id ) {
+		$sql = " SELECT product_name, supplier_id, date, price, supplier_product_code, sale_price, category, picture_path FROM im_supplier_price_list " .
+		       " WHERE id = " . $pricelist_id;
+
+		$result = sql_query_single_assoc( $sql );
+		if ( $result == null ) {
+			print "$pricelist_id not found<br/>";
+			die( 1 );
+		}
+		$this->product_name          = $result["product_name"];
+		$this->supplier_id           = $result["supplier_id"];
+		$this->date                  = $result["date"];
+		$this->price                 = $result["price"];
+		$this->supplier_product_code = $result["supplier_product_code"];
+		$this->sale_price            = $result["sale_price"];
+		$this->category              = $result["category"];
+		$this->picture_path          = $result["picture_path"];
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getProductName() {
+		return $this->product_name;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getSupplierId() {
+		return $this->supplier_id;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getDate() {
+		return $this->date;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getPrice() {
+		return $this->price;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getSupplierProductCode() {
+		return $this->supplier_product_code;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getSalePrice() {
+		return $this->sale_price;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getCategory() {
+		return $this->category;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getPicturePath() {
+		return $this->picture_path;
+	}
+
+	public function getSellPrice() {
+		return calculate_price( $this->price, $this->supplier_id, $this->sale_price );
+	}
+
+	public function getSupplierName() {
+		return get_supplier_name( $this->supplier_id );
+	}
+}
+
 
 class UpdateResult {
 	const UsageError = 0;
@@ -200,20 +295,7 @@ class PriceList {
 			}
 
 			// Update linked products
-			$prod_ids = Catalog::GetProdID( $id );
-			$line     = "";
-			if ( $debug ) {
-				print "update";
-			}
-			if ( $prod_ids ) {
-				foreach ( $prod_ids as $prod_id ) {
-					if ( $debug ) {
-						print $prod_id . " ";
-					}
-					Catalog::UpdateProduct( $prod_id, $line );
-					my_log( $line );
-				}
-			}
+			Update( $id, $regular_price, $sale_price );
 			if ( $debug ) {
 				print "<br/>";
 			}
@@ -412,11 +494,30 @@ class PriceList {
 	// Return code: 0 - usage error: error. 1:
 	// ID: output the pricelist id
 
-	function Update( $line_id, $price ) {
+	function Update( $id, $price, $sale_price = 0 ) {
 		global $conn;
+		$debug = false;
+		my_log( __METHOD__, "update line $id, price $price, sale price $sale_price" );
 		$sql = "UPDATE im_supplier_price_list SET price = " . $price .
-		       " WHERE id = " . $line_id;
+		       ", sale_price = " . $sale_price .
+		       " WHERE id = " . $id;
 		mysqli_query( $conn, $sql );
+
+		$prod_ids = Catalog::GetProdID( $id );
+		$line     = "";
+		if ( $debug ) {
+			print "update";
+		}
+		if ( $prod_ids ) {
+			foreach ( $prod_ids as $prod_id ) {
+				if ( $debug ) {
+					print $prod_id . " ";
+				}
+				my_log( __METHOD__, "update product $prod_id" );
+				Catalog::UpdateProduct( $prod_id, $line );
+				my_log( $line );
+			}
+		}
 
 //        $this->ExecuteRemotes("pricelist/pricelist-post.php?operation=update_in_slave&price=" . $price .           "&line_id=" . $line_id);
 

@@ -5,7 +5,7 @@
  * Date: 08/10/17
  * Time: 17:30
  */
-if ( ! defined( TOOLS_DIR ) ) {
+if ( ! defined( 'TOOLS_DIR' ) ) {
 	define( TOOLS_DIR, dirname( dirname( __FILE__ ) ) );
 }
 require_once( TOOLS_DIR . '/im_tools.php' );

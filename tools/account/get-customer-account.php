@@ -358,7 +358,7 @@ if ( $manager ) {
             var cash_delta = Math.round(100 * (total_pay - total)) / 100;
             change.innerHTML = cash_delta;
 
-            if ((total_pay > 0) && Math.abs(cash_delta) < 200) {
+            if ((total_pay > 0) && Math.abs(cash_delta) <= 400) {
                 document.getElementById('btn_invoice').disabled = true;
                 document.getElementById('btn_receipt').disabled = false;
             } else {

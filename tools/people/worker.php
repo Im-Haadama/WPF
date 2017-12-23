@@ -16,6 +16,13 @@ print header_text();
 	$handle = fopen( $filename, "r" );
 	$contents = fread( $handle, filesize( $filename ) );
 	print $contents;
+
+	$user = wp_get_current_user();
+	$roles = $user->roles;
+	if ( count( array_intersect( array( "administrator" ), $roles ) ) < 1 ) {
+		// print gui_select_client()
+	}
+
 	?>
     function get_value(element) {
         if (element.tagName == "INPUT") {
@@ -36,8 +43,6 @@ print header_text();
                 table.innerHTML = xmlhttp.response;
                 document.getElementById("btn_add_time").disabled = false;
                 document.getElementById("btn_delete").disabled = false;
-
-                // update_display();
             }
         }
         var request = "people-post.php?operation=display";
@@ -114,9 +119,10 @@ print gui_header( 1, "הוספת פעילות" );
     תאריך
     <input id="date" type="date" value="<?php echo date( 'Y-m-d' ); ?>"><br/>
     משעה
-    <input id="start_h" type="time" value="09:00:00">
+    <input id="start_h" type="time" value="09:00" pattern="([1]?[0-9]|2[0-3]):[0-5][0-9]">
     עד שעה
-    <input id="end_h" type="time" value="13:00:00"><br/>
+    <input id="end_h" type="time" value="13:00" pattern="([1]?[0-9]|2[0-3]):[0-5][0-9]"><br/>
+
     פרויקט
     <select id="project">
 		<?php

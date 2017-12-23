@@ -1,19 +1,23 @@
 <?php
+// error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
+
 /**
  * Created by PhpStorm.
  * User: agla
  * Date: 16/07/15
  * Time: 21:42
  */
-if ( ! defined( STORE_DIR ) ) {
+if ( ! defined( "STORE_DIR" ) ) {
 	define( 'STORE_DIR', dirname( dirname( __FILE__ ) ) );
 }
-require( STORE_DIR . "/wp-config.php" );
-require( STORE_DIR . "/im-config.php" );
-require( STORE_DIR . "/wp-load.php" );
-require( "sql.php" );
-require( "wp.php" );
-require( "vat.php" );
+require_once( STORE_DIR . "/wp-config.php" );
+require_once( STORE_DIR . "/im-config.php" );
+require_once( STORE_DIR . "/wp-load.php" );
+require_once( "sql.php" );
+require_once( "wp.php" );
+require_once( "vat.php" );
 
 //$link       = mysql_connect( $servername, $username, $password );
 //mysql_set_charset( 'utf8', $link );
@@ -461,6 +465,10 @@ function order_get_zone( $order_id ) {
 }
 
 function order_get_mission_id( $order_id ) {
+	if ( ! is_numeric( $order_id ) ) {
+		print "Bad order id: $order_id<br/>";
+		die( 1 );
+	}
 	$mission = get_post_meta( $order_id, 'mission_id', true );
 	if ( is_array( $mission ) ) {
 		$mission_id = $mission[0];
@@ -473,6 +481,11 @@ function order_get_mission_id( $order_id ) {
 		$shipping_info = $info[0];
 		if ( strlen( $shipping_info ) > 10 ) {
 			$delivery_option = substr( $shipping_info, 10 );
+			if ( ! is_numeric( $delivery_option ) ) {
+				print "bad delivery option. order $order_id<br/>";
+
+				return 0;
+			}
 			$zone_id         = sql_query_single_scalar( "SELECT zone_id FROM wp_woocommerce_shipping_zone_methods WHERE instance_id = "
 			                                            . $delivery_option );
 		} else {
@@ -637,13 +650,13 @@ function get_user_name( $id ) {
 }
 
 function get_user_address( $user_id ) {
-	if ( is_numeric( $user_id ) ) {
+	$u = $user_id + 0;
+	if ( is_numeric( $u ) ) {
 		return get_user_meta( $user_id, 'shipping_address_1', true ) . " " .
 		       get_user_meta( $user_id, 'shipping_city', true );
 	}
-	print "bad user id" . $user_id . "<br/>";
+	print "bad user id: " . $user_id . "<br/>";
 	die(1);
-
 }
 
 function get_product_variations( $prod_id ) {

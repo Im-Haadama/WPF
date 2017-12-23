@@ -79,15 +79,16 @@ require_once( '../gui.php' );
 //                map_ids.push(product_name);
 //                map_ids.push(supplier_code);
                     var site = <?php print MultiSite::LocalSiteID(); ?>; // local
-                    if (table.rows[i + 1].cells.length > 6) {
-                        // Handle remote
-                        site = table.rows[i + 1].cells[6].innerHTML;
-
-//                    if (map_ids_remote[remote_site] == null)
-//                        map_ids_remote[remote_site] = new Array();
-//                    map_ids_remote[remote_site].push(product_id);
-//                    map_ids_remote[remote_site].push(pricelist_id);
-                    }
+                    // TODO: fix that
+//                    if (table.rows[i + 1].cells.length > 6) {
+//                        // Handle remote
+//                        site = table.rows[i + 1].cells[6].innerHTML;
+//
+////                    if (map_ids_remote[remote_site] == null)
+////                        map_ids_remote[remote_site] = new Array();
+////                    map_ids_remote[remote_site].push(product_id);
+////                    map_ids_remote[remote_site].push(pricelist_id);
+//                    }
                     // Handle local
                     map_ids.push(site);
                     map_ids.push(product_id);

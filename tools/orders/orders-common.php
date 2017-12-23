@@ -6,6 +6,12 @@
  * Time: 08:00
  */
 
+if ( ! defined( 'TOOLS_DIR' ) ) {
+	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
+}
+
+require_once( TOOLS_DIR . "/catalog/bundles.php" );
+
 // BAD: print header_text();
 function orders_item_count( $item_id ) {
 	$sql = ' select sum(woim.meta_value) '
@@ -214,7 +220,10 @@ function order_add_product( $order, $product_id, $quantity, $replace = false, $c
 			} else {
 				$q = $quantity;
 			}
+			print "adding " . $product_id . " " . $q . " ";
 			$oid = $order->add_product( wc_get_product( $product_id ), $q );
+
+			print $oid . "<br/>";
 
 			if ( $has_units ) {
 				set_order_itemmeta( $oid, 'unit', array( $unit, $quantity ) );
@@ -266,22 +275,14 @@ function print_order_info( $order_id, $comments, $operation = null ) {
 
 // $multiply is the number of ordered baskets or 1 for ordinary item.
 function orders_per_item( $prod_id, $multiply, $short = false ) {
+
 	my_log( "prod_id=" . $prod_id, __METHOD__ );
 
 	$sql = 'select woi.order_item_id, order_id'
 	       . ' from wp_woocommerce_order_items woi join wp_woocommerce_order_itemmeta woim'
 	       . ' where order_id in'
 	       . '(select order_id from im_need_orders) ';
-//	       . ' (SELECT id FROM `wp_posts` '
-//	       . ' WHERE `post_status` LIKE \'%wc';
 
-//	global $history;
-//
-//	if ( ! $history ) {
-//		$sql .= '-processing';
-//	}
-
-//	$sql .= '%\')';
 	$sql .= ' and woi.order_item_id = woim.order_item_id '
 	        . ' and (woim.meta_key = \'_product_id\' or
                  woim.meta_key = \'_variation_id\') and woim.meta_value = ' . $prod_id;
@@ -301,7 +302,7 @@ function orders_per_item( $prod_id, $multiply, $short = false ) {
 		if ( $short ) {
 			$lines .= $quantity . " " . $last_name . ", ";
 		} else {
-			$line  = "<tr>" . "<td> " . $order_id . "</td><td>" . $quantity * $multiply . "</td><td>" . $first_name . "</td><td>" . $last_name . "</td></tr>";
+			$line  = "<tr>" . "<td> " . gui_hyperlink( $order_id, "get-order.php?order_id=" . $order_id ) . "</td><td>" . $quantity * $multiply . "</td><td>" . $first_name . "</td><td>" . $last_name . "</td></tr>";
 			$lines .= $line;
 		}
 	}
@@ -344,12 +345,12 @@ function orders_create_subs() {
 		$zone     = WC_Shipping_Zones::get_zone_matching_package( $package );
 		$method   = WC_Shipping_Zones::get_shipping_method( $zone->get_id() );
 
-		$shipping = new $method;
+//		$shipping = new $method;
 
 		$rate           = new WC_Shipping_Rate();
 		$rate->id       = 'flat_rate';
 		$rate->label    = 'משלוח';
-		$rate->cost     = $shipping->cost;
+//		$rate->cost     = $shipping->cost;
 		$rate->calc_tax = 'per_order';
 
 		$order->add_shipping( $rate );
@@ -543,6 +544,7 @@ function calculate_needed( &$needed_products ) {
 			}
 			$qty  = $item['qty'];
 			$unit = $item['unit'];
+
 			if ( $unit ) {
 				$unit_array = explode( ",", $unit );
 				$unit_t     = $unit_array[0];
@@ -551,19 +553,6 @@ function calculate_needed( &$needed_products ) {
 			} else {
 				$key = array( $prod_or_var, '');
 			}
-
-
-//			$sql1 = "select order_item_id from wp_woocommerce_order_items where order_id = " . $id .
-//			       " and order_item_name = '" . $item["name"] . "'";
-//
-//			$oid = sql_query_single_scalar($sql1);
-//
-//			$unit = get_order_itemmeta($oid, "unit");
-//			if (strlen($unit)){
-//				$unit_array = explode(",", $unit);
-//			} else {
-//				$unit_array = null;
-//			}
 
 			add_products( $key, $qty, $needed_products);
 			//   print $item['product_id'] . " " . $item['qty'] . "<br/>";
@@ -619,6 +608,12 @@ function add_products( $prod_key, $qty, &$needed_products ) {
 //			if (is_null($needed_products[$prod_key])) $needed_products[$prod_or_var] = array();
 //		}
 		// print "prod_or_var: " . $prod_or_var . " unit_key: " . $unit_key . "<br/>";
+
+		if ( is_bundle( $prod_or_var ) ) {
+			$b           = Bundle::CreateFromBundleProd( $prod_or_var );
+			$prod_or_var = $b->GetProdId();
+			$qty         = $qty * $b->GetQuantity();
+		}
 
 		$needed_products[ $prod_or_var ][ $unit_key ] += $qty;
 		//if ($key == 354) { print "array:"; var_dump($needed_products[$prod_or_var]); print "<br/>";}

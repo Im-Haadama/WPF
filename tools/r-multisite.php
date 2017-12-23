@@ -10,26 +10,31 @@ if ( ! defined( "STORE_DIR" ) ) {
 }
 
 if ( ! defined( "TOOLS_DIR" ) ) {
-	define( 'TOOLS_DIR', STORE_DIR . "/tools" );
+	define( TOOLS_DIR, STORE_DIR . "/tools" );
 }
 
 require_once( STORE_DIR . "/wp-load.php" );
 require_once( STORE_DIR . "/wp-includes/pluggable.php" );
 
-if ( isset( $_GET["key"] ) ) {
-	$key = $_GET["key"];
-	if ( $key == "lasdhflajsdhflasjdhflaksj" ) {
+require_once( TOOLS_DIR . "/options.php" );
+
+$multisite = false;
+// Check if one of two - right api key (for multisite) - compare with DB, or wp login (manual).
+if ( isset( $_GET["api_key"] ) ) {
+//	 print "got key";
+	$key = substr( $_GET["api_key"], 0, 36 ); // Don't know why and where extra _ was added.
+//	print "Y". $key . " " . strlen($key) . "Y<br/>";
+	$db_key = info_get( "api_key" );
+//	print "X".$db_key . " " . strlen($db_key) . "X<br/>";
+	if ( strlen( $key ) > 10 and ( $key == $db_key ) ) {
+//		print "right key";
 		$multisite = true;
 	}
 }
 
-if ( $multisite or $_SERVER['REMOTE_ADDR'] == "160.153.129.234" or // Aglamaz.com
-     $_SERVER['REMOTE_ADDR'] == "192.64.80.133" or // Tabula
-     $_SERVER['REMOTE_ADDR'] == "82.80.250.18" or // super-organi: self calling - reading create-delivery-script
-     $_SERVER['REMOTE_ADDR'] == "127.0.0.1"
-) {
-	$multisite = true;
-} else {
+if ( ! $multisite ) {
+	die( 1 );
+
 	$user = wp_get_current_user();
 	if ( $user->ID == "0" ) {
 		// Force login

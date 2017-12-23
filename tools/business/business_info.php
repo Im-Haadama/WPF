@@ -16,3 +16,7 @@ function business_supply_info( $bid ) {
 
 	return "תעודת משלוח מספר " . $result[1] . " סכום " . $result[0];
 }
+
+function display_part_name( $part_id ) {
+	return sql_query_single_scalar( "select client_displayname($part_id)" );
+}

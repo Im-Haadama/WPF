@@ -6,6 +6,8 @@
  * Time: 05:19
  */
 
+require_once( "im_tools.php" );
+
 function sql_query( $sql ) {
 	global $conn;
 
@@ -13,6 +15,8 @@ function sql_query( $sql ) {
 		return $result;
 	} else {
 		sql_error( $sql );
+
+		return null;
 	}
 }
 
@@ -39,8 +43,15 @@ function sql_query_single_scalar( $sql ) {
 
 		return "Error";
 	}
+	// print gettype($result) . "<br/>";
+	if ( gettype( $result ) != "object" ) {
+		var_dump( $result );
+		print "<br/>";
+		print "bad result. sql= $sql<br/>";
+		print "result = $result<br/>";
+		die( 2 );
+	}
 	$arr = mysqli_fetch_row( $result );
-
 	return $arr[0];
 }
 

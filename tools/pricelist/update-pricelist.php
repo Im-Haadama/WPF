@@ -6,7 +6,7 @@
  * Time: 10:31
  */
 require_once( "pricelist-process.php" );
-print header_text();
+// print header_text();
 
 $supplier_name = $_GET["supplier_name"];
 

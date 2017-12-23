@@ -7,6 +7,7 @@
  */
 require_once( '../r-shop_manager.php' );
 require_once( '../gui/sql_table.php' );
+require_once( "../catalog/bundles.php" );
 
 $operation = $_GET["operation"];
 
@@ -46,9 +47,14 @@ function show_in( $prod_id ) {
 }
 
 function show_out( $prod_id ) {
+	$sums = array(
+		"סה\"כ",
+		array( 0, 'sum_numbers' ),
+		'',
+	);
 	print header_text();
 	print gui_header( 1, "משלוחים לפריט " . get_product_name( $prod_id ) );
-	$inventory_out = sql_query_single_scalar( "SELECT info_data FROM im_info where info_key = 'from inventory_out'" );
+	$inventory_out = sql_query_single_scalar( "SELECT info_data FROM im_info WHERE info_key = 'inventory_out'" );
 
 	$sql = "select delivery_id as משלוח, quantity as כמות, client_from_delivery(delivery_id) as לקוח" . //, supplier_name as לקוח " .
 	       " from im_delivery_lines dl " .
@@ -60,7 +66,42 @@ function show_out( $prod_id ) {
 	       " and dl.delivery_id = d.id";
 
 	// print $sql;
-	print table_content( $sql, true, true, array( "../delivery/get-delivery.php?id=%s" ) );
+	print table_content( $sql, true, true, array( "../delivery/get-delivery.php?id=%s" ), $sums );
+
+	$sql    = "select id, quantity from im_bundles where prod_id = $prod_id";
+	$result = sql_query( $sql );
+	$total  = $sums[1][0];
+
+
+	if ( $result ) {
+		$sums = array(
+			"סה\"כ",
+			array( 0, 'sum_numbers' ),
+			'',
+		);
+
+		while ( $row = mysqli_fetch_assoc( $result ) ) {
+			$b_id = $row["id"];
+			$B    = Bundle::createFromDb( $b_id );
+			print gui_header( 2, "במארזים " . get_product_name( $b_id ) );
+
+			$sql = "select delivery_id as משלוח, quantity as כמות, client_from_delivery(delivery_id) as לקוח" . //, supplier_name as לקוח " .
+			       " from im_delivery_lines dl " .
+			       // " join wp_users u " .
+			       " join im_delivery d " .
+			       " where delivery_id > " . $inventory_out .
+			       " and prod_id = " . $b_id .
+			       // " and s.supplier = sr.id" .
+			       " and dl.delivery_id = d.id";
+
+			// print $sql;
+			print table_content( $sql, true, true, array( "../delivery/get-delivery.php?id=%s" ), $sums );
+			if ( is_numeric( $sums[1] ) ) {
+				$total += $sums[1] * $B->GetQuantity();
+			}
+		}
+		print "סך הכל סופק " . $total . "<br/>";
+	}
 }
 
 function show_inventory() {
@@ -107,6 +148,15 @@ function get_out( $prod_id ) {
 	if ( ! is_numeric( $r ) ) {
 		$r = 0;
 	}
+	$b = Bundle::CreateFromProd( $prod_id );
+	if ( $b ) { // We have a bundle
+////		print "bundle " . $b- . "<br/>";
+//		$sql = "SELECT q_out FROM i_out WHERE prod_id = " . $b->GetProdId();
+//		// print $sql;
+		// print $prod_id . " " . get_product_name($prod_id) . " " . $b->GetBundleProdId() . "<br/>";
+		$r += $b->GetQuantity() * get_out( $b->GetBundleProdId() );
+	}
 
 	return $r;
 }
+

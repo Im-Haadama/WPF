@@ -89,10 +89,12 @@ print gui_button( "btn_new", "show_create_order()", "הזמנה חדשה" );
         //        }
 
         function add_order() {
+            document.getElementById('add_order').disabled = true;
             var user_name = get_value(document.getElementById("client_select"));
             var user_id = user_name.substr(0, user_name.indexOf(")"));
             if (!(user_id > 0)) {
                 alert("יש לבחור לקוח, כולל מספר מזהה מהרשימה");
+                document.getElementById('add_order').disabled = false;
                 return;
             }
             var prods = [];
@@ -140,6 +142,7 @@ print gui_button( "btn_new", "show_create_order()", "הזמנה חדשה" );
                         location.reload();
                     } else {
                         logging.innerHTML = xmlhttp.responseText;
+                        document.getElementById('add_order').disabled = false;
                     }
                 }
             }
@@ -176,6 +179,8 @@ print gui_button( "btn_new", "show_create_order()", "הזמנה חדשה" );
             var new_order = document.getElementById("new_order");
             new_order.style.display = 'block';
             add_line();
+            document.getElementById("client_select").focus();
+
         }
         function complete_status() {
             xmlhttp = new XMLHttpRequest();

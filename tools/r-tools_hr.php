@@ -8,7 +8,7 @@
 
 require_once( "im_tools.php" );
 
-if ( ! defined( STORE_DIR ) ) {
+if ( ! defined( "STORE_DIR" ) ) {
 	define( 'STORE_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
 }
 // print $_SERVER['REMOTE_ADDR'];
@@ -35,6 +35,8 @@ if ( $multisite or $_SERVER['REMOTE_ADDR'] == "160.153.129.234" or // Aglamaz.co
 
 	$roles = $user->roles;
 	if ( count( array_intersect( array( "hr", "administrator" ), $roles ) ) < 1 ) {
+		my_log( __FILE__ . " " . $user->name );
+
 		// No relevant role - send to store.
 		// < 1! (in_array("shop_manager", $roles) or in_array("administrator", $roles))) {
 		print '<script language="javascript">';

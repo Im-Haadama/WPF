@@ -111,8 +111,10 @@ foreach ( $dom->find( 'tr' ) as $row ) {
 		$data_lines[ $mission_id ] = array();
 		/// print "new: " . $mission_id . "<br/>";
 	}
-	array_push( $data_lines[ $mission_id ], array( $user_id, $line_data ) );
+	array_push( $data_lines[ $mission_id ], array( $order_id, $line_data ) );
 }
+
+//var_dump($addresses);
 
 foreach ( $data_lines as $mission_id => $data_line ) {
 	print gui_header( 1, get_mission_name( $mission_id ) . "($mission_id)" );
@@ -123,6 +125,7 @@ foreach ( $data_lines as $mission_id => $data_line ) {
 	$lines_per_station = array();
 	for ( $i = 0; $i < count( $data_lines[ $mission_id ] ); $i ++ ) {
 		$stop_point = $data_lines[ $mission_id ][ $i ][0];
+//		print "stop point: " . $stop_point . "<br/>";
 		array_push( $stop_points, $stop_point );
 		if ( $lines_per_station[ $stop_point ] == null ) {
 			$lines_per_station[ $stop_point ] = array();
@@ -130,7 +133,7 @@ foreach ( $data_lines as $mission_id => $data_line ) {
 		}
 	}
 //	foreach ($stop_points as $p) print $p . " ";
-	find_route_1( 1, $stop_points, $path );
+	find_route_1( 1, $stop_points, $path, true );
 //	var_dump($path);
 	if ( $debug ) {
 		print map_get_order_address( $path[0] ) . "<br/>";// . " " .get_distance(1, $path[0]) . "<br/>";

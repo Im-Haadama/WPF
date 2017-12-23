@@ -22,45 +22,55 @@ switch ( $operation ) {
 		$bl->PrintHTML();
 		break;
 
+	case "calculate":
+		$product_name = $_GET["product_name"];
+		$q            = $_GET["q"];
+		$margin       = $_GET["margin"];
+		$b            = Bundle::createNew( $product_name, $q, $margin );
+
 	case "update_price":
-		$params = explode( ',', $_GET["params"] );
-		for ( $pos = 0; $pos < count( $params ); $pos += 3 ) {
-			$supplier_id  = $params[ $pos + 2 ];
-			$price        = $params[ $pos + 1 ];
-			$product_name = $params[ $pos ];
-			my_log( "supplier_id " . $supplier_id, "pricelist-post.php" );
-			my_log( "price " . $price, "pricelist-post.php" );
-			my_log( "product_name " . $product_name, "pricelist-post.php" );
-			$pl->Update( $price, $product_name );
-		}
+		// TODO: update bundle
+
+//		$params = explode( ',', $_GET["params"] );
+//		for ( $pos = 0; $pos < count( $params ); $pos += 3 ) {
+//			$supplier_id  = $params[ $pos + 2 ];
+//			$price        = $params[ $pos + 1 ];
+//			$product_name = $params[ $pos ];
+//			my_log( "supplier_id " . $supplier_id, "pricelist-post.php" );
+//			my_log( "price " . $price, "pricelist-post.php" );
+//			my_log( "product_name " . $product_name, "pricelist-post.php" );
+//			$pl->Update( $price, $product_name );
+//		}
+
+
 		break;
 
 	case "delete_item":
+		my_log( "operation delete bundle", __FILE__ );
 		$params = explode( ',', $_GET["params"] );
 		for ( $pos = 0; $pos < count( $params ); $pos ++ ) {
 			$item_id = $params[ $pos ];
-			$bl->Delete( $item_id );
+			$b       = Bundle::load( $item_id );
+			$b->Delete();
 		}
 		break;
 
 	case "add_item":
-		$product_id     = $_GET["product_id"];
-		$quantity       = $_GET["quantity"];
-		$margin         = $_GET["margin"];
-		$bundle_prod_id = $_GET["bundle_prod_id"];
+//		var request = post_url + "?operation=add_item&product_name=" + encodeURI(prod_name) + '&quantity=' + quantity +
+//		              '&margin=' + margin + '&bundle_prod_name=' + encodeURI(bundle_prod_name);
+
+		$product_name     = urldecode( $_GET["product_name"] );
+		$quantity         = $_GET["quantity"];
+		$margin           = $_GET["margin"];
+		$bundle_prod_name = urldecode( $_GET["bundle_prod_name"] );
 //        my_log("supplier_id " . $supplier_id, "pricelist-post.php");
 //        my_log("price " . $price, "pricelist-post.php");
 //        my_log("product_name " . $product_name, "pricelist-post.php");
 //        my_log("date " . date('Y-m-d'), "pricelist-post.php");
 		$bundles = new Bundles();
-		$bundles->Add( $product_id, $quantity, $margin, $bundle_prod_id );
+		$bundles->Add( $product_name, $quantity, $margin, $bundle_prod_name );
 		break;
 
-	case "map":
-		$map_triplets = $_GET["map_triplets"];
-		$ids          = explode( ',', $map_triplets );
-		map_products( $ids );
-		break;
 }
 
 ?>

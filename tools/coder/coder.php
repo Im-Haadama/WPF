@@ -18,8 +18,8 @@ $display_name["part_id"] = "get_name";
 $display_url        = array();
 $display_url["ref"] = "../delivery/get-delivery.php?id=";
 
-$sql = "describe " . $table_name;
-$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . $sql );
+$sql    = "describe " . $table_name;
+$result = sql_query( $sql );
 
 if ( 0 ) {
 	print "<table>";
@@ -28,8 +28,6 @@ if ( 0 ) {
 	}
 	print "</table>";
 }
-$sql = "describe " . $table_name;
-$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . $sql );
 $row        = mysqli_fetch_row( $result );
 $field_list = $row[0];
 while ( $row = mysqli_fetch_row( $result ) ) {
@@ -86,7 +84,7 @@ print "\$export = mysql_query ( \$sql ) or die ( \"Sql error : \" . mysql_error(
 print "\$row = mysql_fetch_row( \$export ); <br/>";
 print "if (!\$horizontal) print \"&#60table>\";</br>";
 // Read the headers.
-$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . $sql );
+$result = sql_query( $sql );
 //$row = mysqli_fetch_row( $result );
 
 print "if (\$horizontal) print \"&#60tr>&#60td>\$seq&#60/td>\";<br/>";

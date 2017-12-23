@@ -24,6 +24,53 @@ abstract class SupplyStatus {
 	const Deleted = 9;
 }
 
+class Supply {
+	private $ID = 0;
+	private $Status;
+	private $Date;
+	private $Supplier;
+	private $Text;
+	private $BusinessID;
+
+	/**
+	 * Supply constructor.
+	 *
+	 * @param int $ID
+	 */
+	public function __construct( $ID ) {
+		$this->ID         = $ID;
+		$row              = sql_query_single( "SELECT status, date, supplier, text, business_id FROM im_supplies" );
+		$this->Status     = $row[0];
+		$this->Date       = $row[1];
+		$this->Supplier   = $row[2];
+		$this->Text       = $row[3];
+		$this->BusinessID = $row[4];
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getStatus() {
+		return $this->Status;
+	}
+
+	// $internal - true = for our usage. false = for send to supplier.
+	public function PrintSupply( $internal ) {
+		print nl2br( sql_query_single_scalar( "SELECT text FROM im_supplies WHERE id = " . $this->ID ) ) . "<br/>";
+		switch ( $this->Status ) {
+			case SupplyStatus::NewSupply:
+				print_supply_lines( $this->ID, $internal, false );
+				break;
+		}
+	}
+
+	public function EditSupply( $internal ) {
+		print "edit<br/>";
+		print nl2br( sql_query_single_scalar( "SELECT text FROM im_supplies WHERE id = " . $this->ID ) ) . "<br/>";
+		print_supply_lines( $this->ID, $internal, true );
+	}
+
+}
 function create_supply( $supplierID ) {
 	global $conn;
 	$sql = "INSERT INTO im_supplies (date, supplier, status) VALUES " . "(CURRENT_TIMESTAMP, " . $supplierID . ", 1)";
@@ -103,12 +150,8 @@ function supply_status( $supply_id ) {
 	return sql_query_single_scalar( "SELECT status FROM im_supplies WHERE id = " . $supply_id );
 }
 
-function print_supply( $id, $internal ) {
-	print nl2br( sql_query_single_scalar( "SELECT text FROM im_supplies WHERE id = " . $id ) ) . "<br/>";
-	print_supply_lines( $id, $internal );
-}
 
-function print_supply_lines( $id, $internal ) {
+function print_supply_lines( $id, $internal, $edit = true ) {
 	$data_lines = array();
 	my_log( __FILE__, "id = " . $id . " internal = " . $internal );
 	$sql = 'select product_id, quantity, id, units '
@@ -116,7 +159,11 @@ function print_supply_lines( $id, $internal ) {
 
 	$result = sql_query( $sql );
 
-	$data = "<table id=\"del_table\" border=\"1\"><tr><td>בחר</td><td>פריט</td><td>כמות</td><td>יחידות</td><td>מידה</td><td>מחיר</td><td>סהכ";
+	$data = "<table id=\"del_table\" border=\"1\"><tr><td>בחר</td><td>פריט</td><td>כמות</td><td>יחידות</td>";
+	if ( ! $edit ) {
+		$data .= gui_cell( "כמות לוקט" );
+	}
+	$data .= "<td>מידה</td><td>מחיר</td><td>סהכ";
 
 	if ( $internal ) {
 		$data .= "<td>מחיר מכירה</td>";
@@ -149,8 +196,14 @@ function print_supply_lines( $id, $internal ) {
 		$line .= "<td><input id=\"chk" . $line_id . "\" class=\"supply_checkbox\" type=\"checkbox\"></td>";
 		// Display item name
 		$line .= "<td>" . $product_name . '</td>';
-		$line .= "<td>" . gui_input( $line_id, $quantity, array( 'onchange="changed(this)"' ) ) . "</td>";
-		$line .= "<td>" . gui_input( $line_id, $units, array( 'onchange="changed(this)"' ) ) . "</td>";
+		if ( $edit ) {
+			$line .= "<td>" . gui_input( $line_id, $quantity, array( 'onchange="changed(this)"' ) ) . "</td>";
+			$line .= "<td>" . gui_input( $line_id, $units, array( 'onchange="changed(this)"' ) ) . "</td>";
+		} else {
+			$line .= gui_cell( $quantity );
+			$line .= gui_cell( $units );
+			$line .= gui_cell( "" ); // Collected info
+		}
 
 //        $line .= "<td>" . $quantity . "</td>";
 
@@ -251,7 +304,7 @@ function print_supplies( $ids, $internal ) {
 		print "<h1>";
 		print "אספקה מספר " . gui_hyperlink( $id, "../supplies/supply-get.php?id= " . $id ) . " " . supply_get_supplier( $id ) . " " . date( "Y-m-d" );
 		print "</h1>";
-		print_supply( $id, $internal );
+		print_supply( $id, $internal, false );
 		print "<p style=\"page-break-after:always;\"></p>";
 	}
 //    print "</html>";

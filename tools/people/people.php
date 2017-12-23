@@ -6,6 +6,7 @@
  * Time: 21:15
  */
 require_once( "../account/account.php" );
+require_once( "../business/business-post.php" );
 
 function people_add_activity( $id, $date, $start, $end, $project_id, $traveling, $expense_text, $expense ) {
 	if ( strlen( $traveling ) == 0 ) {
@@ -21,7 +22,7 @@ function people_add_activity( $id, $date, $start, $end, $project_id, $traveling,
 	       "," . $traveling . ", \"" . $expense_text . "\", " . $expense . ")";
 	print header_text();
 	// print $sql;
-	$export = mysql_query( $sql );
+	$export = sql_query( $sql );
 	if ( ! $export ) {
 		die ( 'Invalid query: ' . $sql . mysql_error() );
 	}
@@ -275,7 +276,9 @@ function add_activity( $user_id, $date, $start, $end, $project_id, $vol = true, 
 	if ( $vol ) {
 		account_add_transaction( $user_id, $date, $amount, 1, get_project_name( $project_id ) );
 	}
+	my_log( "before business" );
 	business_add_transaction( $user_id, $date, $amount * 1.1, 0, 0, get_project_name( $project_id ) );
+	my_log( "end add_activity" );
 }
 
 ?>

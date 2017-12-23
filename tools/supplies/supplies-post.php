@@ -10,7 +10,7 @@ require_once( 'supplies.php' );
 require_once( '../orders/orders-common.php' );
 require_once( '../gui/inputs.php' );
 require_once( "../business/business-post.php" );
-require_once( "../business/business-info.php" );
+require_once( "../business/business_info.php" );
 if ( isset( $_GET["operation"] ) ) {
 	$operation = $_GET["operation"];
 	switch ( $operation ) {
@@ -52,7 +52,8 @@ if ( isset( $_GET["operation"] ) ) {
 		case "get_supply":
 			$supply_id = $_GET["id"];
 			$internal  = $_GET["internal"];
-			print_supply( $supply_id, $internal );
+			$Supply    = new Supply( $supply_id );
+			$Supply->EditSupply( $internal );
 			break;
 
 		case "get_supply_lines":

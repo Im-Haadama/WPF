@@ -5,42 +5,10 @@
  * Date: 04/01/16
  * Time: 16:31
  */
-
-require_once( '../r-shop_manager.php' );
+// require_once( '../r-shop_manager.php' );
+require_once( "catalog.php" );
 
 class Bundles {
-//    function PrintHTML()
-//    {
-//        $data = "";
-//
-//        $sql = 'SELECT prod_id, quantity, margin FROM im_bundles'
-//            . ' order by 1';
-//
-//
-//        $data .= "<tr>";
-//        $data .= "<td>בחר</td>";
-//        $data .= "<td>שם מוצר</td>";
-//        $data .= "<td>כמות במארז</td>";
-//        $data .= "<td>מרווח מארז</td>";
-//        $data .= "<td>מרווח חדש</td>";
-//        $data .= "</tr>";
-//
-//        while ($row = mysql_fetch_row($export)) {
-//            $product_id = $row[0];
-//            $quantity = $row[1];
-//            $margin = $row[2];
-//
-//            $line = "<tr>";
-//            $line .= "<td><input id=\"chk" . $product_id . "\" class=\"product_checkbox\" type=\"checkbox\"></td>";
-//            $line .= "<td>" . get_product_name($product_id) . "</td>";
-//            $line .= "<td>" . $quantity . "</td>";
-//            $line .= "<td>" . $margin . "</td>";
-//            $line .= '<td><input type="text" value="' . $margin . '"</td>';
-//            $line .= "</tr>";
-//            $data .= $line;
-//        }
-//        print $data;
-//    }
 
 	private $class_name = "bundle";
 
@@ -83,71 +51,131 @@ class Bundles {
 		return $this->class_name;
 	}
 
-	function Add( $prod_id, $quantity, $margin, $bundle_prod_id ) {
+	function Add( $prod_name, $quantity, $margin, $bundle_prod_name ) {
+		$prod_id        = get_product_id_by_name( $prod_name );
+		$bundle_prod_id = get_product_id_by_name( $bundle_prod_name );
+
 		$sql = "INSERT INTO im_bundles (prod_id, quantity, margin, bundle_prod_id) VALUES (" . $prod_id . ", " .
-		       $quantity . ", " . $margin . ", " . $bundle_prod_id . ")";
+		       $quantity . ", '" . $margin . "', " . $bundle_prod_id . ")";
 
 		sql_query( $sql );
 	}
 
-	function Delete( $bundle_id ) {
-		$sql = "DELETE FROM im_bundles WHERE id = " . $bundle_id;
+}
+
+class NotFoundException extends Exception {
+}
+
+class Bundle {
+	private $id;
+	private $bundle_prod_id;
+	private $prod_id;
+	private $quantity;
+	private $margin;
+
+	static function createNew( $product_name, $q, $margin ) {
+		$b           = new Bundle();
+		$b->prod_id  = get_product_id_by_name( $product_name );
+		$b->quantity = $q;
+		$b->margin   = $margin;
+
+		return $b;
+	}
+
+	static function createFromDb( $_id ) {
+		$b     = new Bundle();
+		$b->id = $_id;
+		$sql   = "select prod_id, quantity, margin, bundle_prod_id from im_bundles where id = $_id";
+		$row   = sql_query_single_assoc( $sql );
+		if ( $row ) {
+			$b->bundle_prod_id = $row["bundle_prod_id"];
+			$b->prod_id        = $row["prod_id"];
+			$b->quantity       = $row["quantity"];
+			$b->margin         = $row["margin"];
+		} else {
+			print "cant find bundle " . $_id . "<br/>";
+			throw new NotFoundException();
+		}
+
+		return $b;
+	}
+
+	static function CreateFromProd( $prod_id ) {
+		$sql = "select id from im_bundles where prod_id = $prod_id";
+		$_id = sql_query_single_scalar( $sql );
+		if ( $_id ) {
+			return new self( $_id );
+		}
+
+		return null;
+	}
+
+	static function CreateFromBundleProd( $prod_id ) {
+		$sql = "select id from im_bundles where bundle_prod_id = $prod_id";
+		$_id = sql_query_single_scalar( $sql );
+		if ( $_id ) {
+			return new self( $_id );
+		}
+
+		return null;
+	}
+
+	function Update() {
+		$product_id    = $this->bundle_prod_id;
+		$regular_price = $this->quantity * get_price( $this->prod_id );
+		$sale_price    = $this->CalculatePrice();
+
+		my_log( "Bundle::Update $product_id $regular_price $sale_price " . $this->quantity );
+
+		update_post_meta( $product_id, "_regular_price", $regular_price );
+		update_post_meta( $product_id, "_sale_price", $sale_price );
+		update_post_meta( $product_id, "_price", $sale_price );
+		update_post_meta( $product_id, "buy_price", get_buy_price( $this->prod_id ) * $this->quantity );
+	}
+
+	function CalculatePrice() {
+		if ( strstr( $this->margin, "%" ) ) {
+			$percent = substr( $this->margin, 0, strlen( $this->margin ) - 1 );
+
+			return get_buy_price( $this->prod_id ) * $this->quantity * ( 100 + $percent ) / 100;
+		}
+
+		return ( get_buy_price( $this->prod_id ) + $this->margin ) * $this->quantity;
+	}
+
+	function Delete() {
+		my_log( "delete bundle", __CLASS__ );
+		$sql = "SELECT bundle_prod_id FROM im_bundles WHERE id = " . $this->id;
+		my_log( $sql, __CLASS__ );
+		$bundle_prod_id = sql_query_single_scalar( $sql );
+		my_log( $bundle_prod_id, __CLASS__ );
+
+		Catalog::DraftItems( array( $bundle_prod_id ) );
+
+		$sql = "DELETE FROM im_bundles WHERE id = " . $this->id;
 
 		my_log( "sql = " . $sql );
 
 		sql_query( $sql );
 	}
-}
-
-class Bundle {
-	private $id;
-
-	function Bundle( $_id ) {
-		$this->id = $_id;
-	}
-
-	function CalculatePrice() {
-		$sql = "SELECT quantity, margin, prod_id FROM im_bundles WHERE bundle_prod_id = " . $this->id;
-
-		$result = sql_query( $sql );
-
-		$row = mysqli_fetch_row( $result );
-
-		$quantity = $row[0];
-		$margin   = $row[1];
-		$prod_id  = $row[2];
-
-		return get_buy_price( $prod_id ) * $quantity * ( 100 + $margin ) / 100;
-	}
 
 	function GetBuyPrice() {
-		$sql = "SELECT quantity, prod_id FROM im_bundles WHERE bundle_prod_id = " . $this->id;
-		// print $sql;
-
-		$result = sql_query( $sql );
-
-		$row = mysqli_fetch_row( $result );
-
-		$quantity = $row[0];
-		$prod_id  = $row[1];
-		//     print "prod_id = " . $prod_id;
-
-		//   print "buy: " . get_buy_price($prod_id);
-		return $quantity * get_buy_price( $prod_id );
+		return $this->quantity * get_buy_price( $this->prod_id );
 	}
 
 	function GetSupplier() {
-		$sql = "SELECT prod_id FROM im_bundles WHERE bundle_prod_id = " . $this->id;
+		return get_supplier( $this->prod_id );
+	}
 
-		$result = sql_query( $sql );
+	function GetProdId() {
+		return $this->prod_id;
+	}
 
-		$row = mysqli_fetch_row( $result );
+	function GetBundleProdId() {
+		return $this->bundle_prod_id;
+	}
 
-		return get_supplier( $row[0] );
+	function GetQuantity() {
+		return $this->quantity;
 	}
 }
-
-// $p = new Bundle(3099);
-// print "<br />supp: " . $p->GetSupplier();
-// print "<br />Buy price:" . $p->GetBuyPrice();
-// print "<br />price: " . $p->CalculatePrice(); 

@@ -6,9 +6,13 @@
  * Time: 18:13
  */
 
-require_once( '../r-shop_manager.php' );
 require_once( 'simple_html_dom.php' );
-require_once( '../gui/sql_table.php' );
+
+if ( ! defined( "TOOLS_DIR" ) ) {
+	define( "TOOLS_DIR", dirname( dirname( __FILE__ ) ) );
+}
+
+require_once( TOOLS_DIR . '/gui/sql_table.php' );
 
 $local_site_id = - 1;
 
@@ -49,19 +53,28 @@ class MultiSite {
 	static function Execute( $request, $site ) {
 		// print "req: " . $request . " site = " . $site . "<br/>";
 		$remote_request = get_site_tools_url( $site ) . '/' . $request;
+		print $remote_request . "<br/>";
 		if ( strlen( $remote_request ) < 4 ) {
 			print "remote tools not set.<br/>";
 			die ( 2 );
 		}
 		// print $remote_request;
+
 		if ( strstr( $remote_request, "?" ) ) {
-			$remote_request = $remote_request . "&multisite";
+			$glue = "&";
 		} else {
-			$remote_request = $remote_request . "?multisite";
+			$glue = "?";
 		}
+//			$remote_request = $remote_request . "&multisite";
+//		} else {
+//			$remote_request = $remote_request . "?multisite";
+//		}
 
-		// print "Execute remote: " . $remote_request . "<br/>";
-
+		$api_key = sql_query_single_scalar( "select api_key from im_multisite where id = $site" );
+		if ( $api_key ) {
+			$remote_request .= $glue . "api_key=$api_key";
+		}
+//		 print "Execute remote: " . $remote_request . "<br/>";
 		$html = file_get_html( $remote_request );
 
 		// print $html;

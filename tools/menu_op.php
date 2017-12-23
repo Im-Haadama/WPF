@@ -1,6 +1,8 @@
 <?php
 include "r-shop_manager.php";
-require_once( "gui/inputs.php" );
+require_once( TOOLS_DIR . "/gui/inputs.php" );
+// print TOOLS_DIR . "/multi-site/multi-site.php";
+require_once( TOOLS_DIR . "/multi-site/multi-site.php" );
 print header_text( false );
 ?>
 
@@ -25,9 +27,12 @@ $table[1][ $col ] = gui_hyperlink( "מעקב תשלומים", "account/get-accou
 $table[2][ $col ] = gui_hyperlink( "הוספת לקוח", "account/add-account.php", "doc_frame" );
 
 $col ++;
-$table[0][ $col ] = gui_header( 2, "מחירון" );
-$table[1][ $col ] = gui_hyperlink( "כל הפריטים", "catalog/cost-price-list.php", "doc_frame" );
-
+$row                      = 0;
+$table[ $row ++ ][ $col ] = gui_header( 2, "מחירון" );
+$table[ $row ++ ][ $col ] = gui_hyperlink( "כל הפריטים", "catalog/cost-price-list.php", "doc_frame" );
+if ( MultiSite::LocalSiteID() == 2 ) {
+	$table[ $row ++ ][ $col ] = gui_hyperlink( "עדכון מחירים מהשף", "pricelist/update-chef.php", "doc_frame" );
+}
 ?>
 <div style="text-align:center; ">
     <table style="margin-top: 0cm;">

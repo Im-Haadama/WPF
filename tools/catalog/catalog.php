@@ -5,32 +5,33 @@
  * Date: 06/12/15
  * Time: 10:07
  */
-require_once( '../r-shop_manager.php' );
+// require_once( '../im-tools.php' );
 require_once( '../pricelist/pricelist.php' );
 require_once( '../wp/terms.php' );
 require_once( '../pricing.php' );
+require_once( 'bundles.php' );
 
 class Catalog {
 	static function CreateProducts( $category_name, $ids ) {
 		my_log( "Create_products. Category = " . $category_name );
 
 		for ( $pos = 0; $pos < count( $ids ); $pos += 4 ) {
-			$product_name          = urldecode( $ids[ $pos ] );
+			// $product_name          = urldecode( $ids[ $pos ] );
 			$supplier_id           = $ids[ $pos + 1 ];
 			$pricelist_id          = $ids[ $pos + 2 ];
-			$supplier_product_code = $ids[ $pos + 3 ];
-			print $product_name . ", " . $supplier_id . ", " . $pricelist_id . ", " . $supplier_product_code . "<br/>";
+			// $supplier_product_code = $ids[ $pos + 3 ];
+			// print $product_name . ", " . $supplier_id . ", " . $pricelist_id . ", " . $supplier_product_code . "<br/>";
 
 			// Calculate the price
 			$pricelist = new PriceList( $supplier_id );
-			$buy_price = $pricelist->GetByName( $product_name );
-			print "Buy price: " . $buy_price . "<br/>";
-			$sell_price = calculate_price( $buy_price, $supplier_id );
+			// $buy_price = $pricelist->GetByName( $product_name );
+			// print "Buy price: " . $buy_price . "<br/>";
+			// $sell_price = calculate_price( $buy_price, $supplier_id );
 
-			print "Sell price: " . $sell_price . "<br/>";
+			// print "Sell price: " . $sell_price . "<br/>";
 
-			my_log( "supplier_id = " . $supplier_id . " name = " . $product_name );
-			$id = Catalog::CreateProduct( $sell_price, $supplier_id, $product_name, $category_name );
+			// my_log( "supplier_id = " . $supplier_id . " name = " . $product_name );
+			$id = Catalog::CreateProduct( $pricelist_id, $category_name );
 			// Create link to supplier price list
 			Catalog::AddMapping( $id, $pricelist_id, MultiSite::LocalSiteID() );
 			/// my_log ("add mapp done. Site id = " . $pricelist->SiteId() . " " . MultiSite::LocalSiteID());
@@ -53,25 +54,60 @@ class Catalog {
 		}
 	}
 
-	static function CreateProduct( $sell_price, $supplier_id, $product_name, $category_name ) {
-//    my_log("title= " . $product_name . ", supplier_id=" . $supplier_id . ", sell_price=" . $sell_price, __METHOD__);
+	static function CreateProduct( $pricelist_id, $category_name ) // Create product from pricelist information
+	{
+		$item = new PricelistItem( $pricelist_id );
+
+		Pricelist::Get( $pricelist_id );
 		$post_information = array(
-			'post_title'  => $product_name,
+			'post_title'  => $item->getProductName(),
 			// 'post_content' => 'this is new item shop',
 			'post_status' => 'publish',
 			'post_type'   => "product"
 		);
-//    my_log("calling wp_insert_post");
 		$post_id = wp_insert_post( $post_information, true );
-//    my_log("after");
-		update_post_meta( $post_id, "_regular_price", $sell_price );
-		update_post_meta( $post_id, "_price", $sell_price );
-		update_post_meta( $post_id, "supplier_name", get_supplier_name( $supplier_id ) );
-		update_post_meta( $post_id, "_visibility", "visible" );
-		wp_set_object_terms( $post_id, $category_name, 'product_cat' );
-		// wc_set_term_order($category_id, $post_id);
 
-		// print "create product done <br/>";
+		update_post_meta( $post_id, "_regular_price", $item->getSellPrice() );
+		update_post_meta( $post_id, "_price", $item->getSellPrice() );
+		update_post_meta( $post_id, "supplier_name", $item->getSupplierName() );
+		update_post_meta( $post_id, "_visibility", "visible" );
+		// update_post_meta( $post_id, 'fifu_image_url', $item->getPicturePath() );
+
+		$categ = $item->getCategory();
+
+		if ( ! $categ ) {
+			$categ = $category_name;
+		}
+
+		wp_set_object_terms( $post_id, $categ, 'product_cat' );
+
+		// Get The image
+		$image = $item->getPicturePath();
+		if ( strlen( $image ) > 5 ) {
+			print "image: $image<br/>";
+
+			$get = wp_remote_get( $image );
+
+			$type = wp_remote_retrieve_header( $get, 'content-type' );
+
+			print "type: $type<br/>";
+			if ( $type ) {
+				$mirror = wp_upload_bits( basename( $image ), '', wp_remote_retrieve_body( $get ) );
+
+				$attachment = array(
+					'post_title'     => basename( $image ),
+					'post_mime_type' => $type
+				);
+
+				$attach_id = wp_insert_attachment( $attachment, $mirror['file'], $post_id );
+
+				require_once( STORE_DIR . 'wp-admin/includes/image.php' );
+
+				$attach_data = wp_generate_attachment_metadata( $attach_id, $mirror['file'] );
+
+				wp_update_attachment_metadata( $attach_id, $attach_data );
+			}
+		}
 		return $post_id;
 	}
 
@@ -121,7 +157,7 @@ class Catalog {
 		if ( $product_id > 0 ) {
 			$alternatives = alternatives( $product_id );
 			foreach ( $alternatives as $p ) {
-				if ( $p[1] == $supplier_id ) {
+				if ( $p->getSupplierId() == $supplier_id ) {
 					Catalog::DeleteMapping( $p[2] );
 				}
 			}
@@ -217,10 +253,10 @@ class Catalog {
 			print "best:<br/>";
 			var_dump( $best );
 		}
-		$best_price    = $best[0];
-		$best_supplier = $best[1];
-		$best_pricelistid = $best[2];
-		$sale_price = $best[3];
+		$best_price       = $best->getPrice();
+		$best_supplier    = $best->getSupplierId();
+		$best_pricelistid = $best->getId();
+		$sale_price       = $best->getSalePrice();
 		if ( $sale_price > 0 and $sale_price < $best_price )
 			$new_price = $sale_price;
 		else $new_price = $best_price;
@@ -236,7 +272,6 @@ class Catalog {
 			Catalog::PublishItem( $prod_id );
 			$print_line = true;
 		}
-
 
 		if ( $new_price <> $current_price ) {
 			$print_line = true;
@@ -299,7 +334,7 @@ class Catalog {
 		// $product_name = $pricelist["product_name"];
 		// print $product_id . " " . $product_name . " ". $price . " " . $supplier . "<br/>";
 
-		print "set regular price " . $regular_price . "<br/>";
+		// print "set regular price " . $regular_price . "<br/>";
 		update_post_meta( $product_id, "_regular_price", $regular_price );
 		if ( is_numeric( $sale_price ) and $sale_price < $regular_price and $sale_price > 0 ) {
 			// print "sale ";
@@ -325,14 +360,26 @@ class Catalog {
 		$var = get_product_variations( $product_id );
 
 		foreach ( $var as $v ) {
-			my_log( "updating variation " . $v . " to pricelist " . $pricelist_id . " price " . $price );
+			my_log( "updating variation " . $v . " to pricelist " . $pricelist_id );
 			$var = new WC_Product_Variation( $v );
 			update_post_meta( $v, "supplier_name", get_supplier_name( $supplier ) );
 			update_post_meta( $v, "_regular_price", $price );
 			update_post_meta( $v, "_price", $price );
-			update_post_meta( $v, "buy_price", $buy_price );
+			update_post_meta( $v, "buy_price", $pricelist["price"] );
 		}
 		mysqli_query( $conn, "UPDATE wp_posts SET post_modified = NOW() WHERE id = " . $product_id );
+
+		// Update bundle
+		$sql     = "SELECT id FROM im_bundles WHERE prod_id = " . $product_id;
+		$bundles = sql_query_single( $sql );
+		if ( $bundles ) {
+			foreach ( $bundles as $bundle_id ) {
+				my_log( "updating bundle " . $bundle_id );
+				// TODO: update bundle
+				$b = Bundle::createFromDb( $bundle_id );
+				$b->Update();
+			}
+		}
 	}
 
 	static function PublishItems( $ids ) {
@@ -348,27 +395,33 @@ class Catalog {
 
 	static function GetProdID( $pricelist_id, $include_hide = false ) # Returns prod id if this supplier product mapped
 	{
+		$debug = false;
+		if ( $pricelist_id == 22737 )
+			$debug = true;
 		global $conn;
+		$result_ids = array();
+		// find products mapped by id.
 		$sql = "SELECT product_id, id FROM im_supplier_mapping WHERE pricelist_id = " . $pricelist_id;
 		if ( ! $include_hide )
 			$sql .= " AND product_id > 0";
 		// print $sql;
-		$id = sql_query_single( $sql );
-
-		/// print "id=" . $id . "<br/>";
-		// my_log(__METHOD__ . " " . $pricelist_id . " " . $id);
-		if ( $id ) {
-			return $id;
+		$result = sql_query( $sql );
+		if ( $result ) {
+			while ( $row = mysqli_fetch_row( $result ) ) {
+				array_push( $result_ids, $row[0] );
+			}
+			if ( $debug ) {
+				my_log( "direct link to $pricelist_id " . implode( ",", $result_ids ) );
+				my_log( $sql );
+			}
 		}
 
-		# If product removed in supplier and previously mapped we update the link
-		$result = PriceList::Get( $pricelist_id );
-//        // var_dump($result);
+		// find products mapped by name
+		$result       = PriceList::Get( $pricelist_id );
 		$product_name = $result["product_name"];
 		foreach ( array( "חדשה", "מוגבל", "גדול", "טעים", "מבצע", "חדש", "ויפה", "יפה" ) as $word_to_remove ) {
 			$product_name = str_replace( $word_to_remove, "", $product_name );
 		}
-		// print $result["product_name"] . ": " . $product_name . "<br/>";
 		$sql = "SELECT product_id, id FROM im_supplier_mapping " .
 		       " WHERE supplier_product_name = '" . mysqli_real_escape_string( $conn, $product_name ) . "'" .
 		       " AND supplier_id = " . $result["supplier_id"];
@@ -376,10 +429,21 @@ class Catalog {
 		if ( ! $include_hide )
 			$sql .= " and product_id > 0";
 		// print $sql;
-		// Todo: should return more the one
-		$id = sql_query_single( $sql );
+		$result = sql_query( $sql );
+		if ( $result ) {
+			{
+				while ( $row = mysqli_fetch_row( $result ) ) {
+					if ( ! in_array( $row[0], $result_ids ) ) {
+						array_push( $result_ids, $row[0] );
+					}
+					if ( $debug ) {
+						my_log( "name link to $pricelist_id " . $row[0] );
+					}
+				}
+			}
+		}
 
-		return $id;
+		return $result_ids;
 	}
 
 	static function GetBuyPrice( $product_id, $supplier ) {
@@ -387,10 +451,9 @@ class Catalog {
 
 		$alternatives = alternatives( $product_id );
 		for ( $i = 0; $i < count( $alternatives ); $i ++ ) {
-			if ( $alternatives[ $i ][1] == $supplier ) {
-				return $alternatives[ $i ][0];
+			if ( $alternatives[ $i ]->getSupplierId() == $supplier ) {
+				return $alternatives[ $i ]->getPrice();
 			}
-
 		}
 		return null;
 	}
@@ -442,12 +505,14 @@ function best_alternatives( $alternatives, $debug = false ) {
 		if ( $debug ) {
 			print "option: " . $i . " " . $alternatives[ $i ][0] . " " . $alternatives[ $i ][1] . " " . $alternatives[ $i ][3] . "<br/>";
 		}
-		$price = calculate_price( $alternatives[ $i ][0], $alternatives[ $i ][1], $alternatives[ $i ][3] );
+		//$price, $supplier, $sale_price = '', $terms = null
+		$price = calculate_price( $alternatives[ $i ]->getPrice(), $alternatives[ $i ]->getSupplierId(),
+			$alternatives[ $i ]->getSalePrice());
 		//print "price: " . $price . "<br/>";
 		my_log( "price $price" );
 		if ( $price < $min ) {
 			$best = $alternatives[ $i ];
-			my_log( "best $best" );
+			my_log( "best $best[0]" );
 			$min = $price;
 		}
 	}
@@ -505,7 +570,9 @@ function alternatives( $id, $details = false )
 			}
 			// Todo: handle priority
 			// array_push($row, get_supplier_priority($row[1]));
-			array_push( $rows, $row );
+			// array_push( $rows, $row );
+			$n = new PricelistItem( $row[2] );
+			array_push( $rows, $n);
 		}
 	}
 
@@ -530,7 +597,7 @@ function alternatives( $id, $details = false )
 		$found = false;
 		// Don't repeat alternatives
 		for ( $i = 0; $i < count( $rows ); $i ++ ) {
-			if ( $rows[ $i ][2] == $row[2] ) {
+			if ( $rows[ $i ]->getSupplierId() == $row[2] ) {
 				$found = true;
 			}
 		}
@@ -538,7 +605,8 @@ function alternatives( $id, $details = false )
 			if ( $details ) {
 				$output .= get_supplier_name( $row[1] ) . " " . $row[0] . ", ";
 			}
-			array_push( $rows, $row );
+			// array_push( $rows, $row );
+			array_push( $rows, new PricelistItem( $row[2]));
 		}
 	}
 
@@ -550,3 +618,4 @@ function alternatives( $id, $details = false )
 
 	return $rows;
 }
+

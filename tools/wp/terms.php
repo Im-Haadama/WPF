@@ -5,7 +5,6 @@
  * Date: 03/07/17
  * Time: 05:51
  */
-require_once( "../r-shop_manager.php" );
 //print header_text(false);
 function terms_add_category( $object_id, $term ) {
 	wp_set_object_terms( $object_id, $term, "product_cat", true );

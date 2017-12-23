@@ -24,23 +24,6 @@ $data .= "<br>ישירות";
 
 $data .= "<table>";
 
-// First display all direct orders
-//$sql = 'select woi.order_item_id, order_id'
-//        . ' from wp_woocommerce_order_items woi join wp_woocommerce_order_itemmeta woim'
-//        . ' where order_id in'
-//        . ' (SELECT id FROM `wp_posts` '
-//        . ' WHERE `post_status` LIKE \'%wc-processing%\')'
-//        . ' and woi.order_item_id = woim.order_item_id '
-//        . ' and woim.meta_key = \'_product_id\' and woim.meta_value = ' . $prod_id;
-//
-//my_log($sql, "get-orders-per-item.php");
-//
-//
-//while( $row = mysqli_fetch_row( $result ) )
-//{
-//    $data .= "<tr> ". orders_per_item($prod_id, 1) . "</tr>";
-//}
-
 $data .= "<tr> " . orders_per_item( $prod_id, 1 ) . "</tr>";
 
 // Second display all basket orders
@@ -55,6 +38,22 @@ $result = mysqli_query( $conn, $sql );
 
 while ( $row = mysqli_fetch_row( $result ) ) {
 	$data .= "<tr> " . trim( orders_per_item( $row[0], $row[1] ) ) . "</tr>";
+
+	// $data .= "<tr> ". trim( $line ) . "</tr>";
+}
+
+$data .= "</table>";
+
+$data .= "<br>במארזים";
+
+$data .= "<table>";
+
+$sql    = 'SELECT  bundle_prod_id, quantity, id FROM im_bundles WHERE prod_id = ' . $prod_id;
+$result = mysqli_query( $conn, $sql );
+
+while ( $row = mysqli_fetch_row( $result ) ) {
+	$b    = Bundle::createFromDb( $row[2] );
+	$data .= "<tr> " . trim( orders_per_item( $b->GetBundleProdId(), $b->GetQuantity() ) ) . "</tr>";
 
 	// $data .= "<tr> ". trim( $line ) . "</tr>";
 }

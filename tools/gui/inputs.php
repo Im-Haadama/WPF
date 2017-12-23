@@ -300,6 +300,7 @@ function gui_row( $cells, $id = null, $show = null, &$acc_fields = null, $col_id
 			if ( is_array( $show ) ) {
 				$show_cell = $show[ $i ];
 			}
+			//	print $i . " " . $cell . " " . $show_cell . "<br/>";
 			$data .= gui_cell( $cell, $cell_id, $show_cell);
 			$i ++;
 		}

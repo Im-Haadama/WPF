@@ -25,6 +25,7 @@ switch ( $operation ) {
 		$units      = $_GET["units"];
 		$mission_id = $_GET["mission_id"];
 
+		print header_text();
 		print "creating order for " . get_user_name( $user_id );
 		create_order( $user_id, $mission_id, explode( ",", $prods ),
 			explode( ",", $quantities ), $comments, explode( ",", $units ) );

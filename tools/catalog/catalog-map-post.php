@@ -5,10 +5,12 @@
  * Date: 03/07/15
  * Time: 11:53
  */
+require_once( '../r-shop_manager.php' );
 require_once( 'catalog.php' );
 require_once( '../pricelist/pricelist.php' );
-require_once( '../r-shop_manager.php' );
 require_once( '../multi-site/multi-site.php' );
+
+print header_text();
 
 // To map item from price list to our database the shop manager select item from the price list
 // and product_id. The triplet: product_id, supplier_id and product_code are sent as saved
@@ -236,7 +238,7 @@ function print_unmapped( $pricelist_id, $supplier_product_code, $product_name, $
 		$options .= '<option value="' . $row1[0] . '" ';
 		if ( ! strcmp( $striped_option, $striped_prod ) ) {
 			$options .= 'selected';
-			$match   = true;
+//			$match   = true;
 		}
 		$options .= '>' . $row1[1] . '</option>';
 	}

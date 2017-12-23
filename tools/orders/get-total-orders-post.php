@@ -8,7 +8,7 @@
 
 require_once( "orders-common.php" );
 require_once( "../gui/inputs.php" );
-if ( ! defined( STORE_DIR ) ) {
+if ( ! defined( "STORE_DIR" ) ) {
 	define( 'STORE_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
 }
 

@@ -1,6 +1,11 @@
 <?php
-require_once( '../multi-site/multi-site.php' );
+require_once( "../im_tools.php" );
+require_once( "../multi-site/multi-site.php" );
+require_once( '../gui/inputs.php' );
 require_once( 'delivery-common.php' );
+require_once( "../../wp-includes/pluggable.php" );
+require_once( "../account/account.php" );
+
 $id       = $_GET["id"];
 $order_id = $_GET["order_id"];
 $edit     = false;
@@ -36,7 +41,7 @@ print gui_datalist( "items", "im_products", "post_title" );
             {
                 var price = xmlhttp.response;
 
-                if (Math.isNumeric(price)) {
+                if (price > 0) {
                     document.getElementById("prc_" + my_row).value = price;
                     document.getElementById("deq_" + my_row).focus();
                 }
@@ -280,6 +285,7 @@ print gui_datalist( "items", "im_products", "post_title" );
         var lines = table.rows.length;
         var quantity_discount = 0;
         var due_vat = 0;
+        var delivery_fee = 0;
 
         for (var i = 1; i < lines; i++)  // Skip the header. Skip last lines: total, vat, total-vat, discount
         {
@@ -311,7 +317,8 @@ print gui_datalist( "items", "im_products", "post_title" );
             }
             if (table.rows[i].cells[product_name_id].innerHTML == "סה\"כ חייבי מע\"מ") break;
             if (table.rows[i].cells[product_name_id].innerHTML == "" ||
-                table.rows[i].cells[product_name_id].innerHTML == "הנחת כמות") continue; // Reserved line for discount
+                table.rows[i].cells[product_name_id].innerHTML == "הנחת כמות" ||
+                table.rows[i].cells[product_name_id].innerHTML == "הנחת עובד") continue; // Reserved line for discount
 
             var q = 0;
             var p = 0;
@@ -334,35 +341,6 @@ print gui_datalist( "items", "im_products", "post_title" );
             document.getElementById("del_" + prfx).innerHTML = line_total.toString();
             document.getElementById("lvt_" + prfx).innerHTML = line_vat.toString();
 
-            //            if (table.rows[i].cells[price_id].firstChild.tagName == "INPUT") { // delivery lines or new line
-//                var prfx = table.rows[i].cells[0].substr(4);
-//                p = get_value(document.getElementById("deq_" + prfx));
-//                has_vat = get_value(document.getElementById("hvt_" + prfx));
-//                if (table.rows[i].cells[0].id == "delivery_fee_0") {
-//                    p = get_value(document.getElementById("delivery_fee_5").firstElementChild);
-//                    if (! document.getElementById("delivery_fee_6").firstElementChild.checked) has_vat = false;
-//                    q = 1;
-//                } else {
-//                    p = get_value(document.getElementById(""))
-//                    alert ("XXXXXX");
-//                }
-//                if (has_vat) line_vat = Math.round(100 * p * q / (100 + vat_percent) * vat_percent) / 100;
-//
-//                line_total = Math.round(p * q * 100) / 100;
-//                if (table.rows[i].cells[5].firstChild.checked) {
-//                    table.rows[i].cells[6].innerHTML = line_vat;
-//                }
-//                table.rows[i].cells[7].innerHTML = line_total;
-//            } else {
-//                q = get_value(table.rows[i].cells[q_supply_id].firstChild);
-//                p = get_value(table.rows[i].cells[price_id].firstChild);
-//                line_total = Math.round(p * q * 100) / 100;
-//                table.rows[i].cells[line_total_id].innerHTML = line_total;
-//                if (table.rows[i].cells[has_vat_id].firstChild.checked) {
-//                    line_vat = Math.round(100 * p * q / (100 + vat_percent) * vat_percent) / 100;
-//                    table.rows[i].cells[line_vat_id].innerHTML = line_vat;
-//                }
-//            }
             if (line_vat) due_vat += line_total;
             total_vat += line_vat;
             total += line_total;
@@ -384,16 +362,39 @@ print gui_datalist( "items", "im_products", "post_title" );
             }
         }
 
+        var employee_discount = false;
+	    <?php
+	    $customer_id = order_get_customer_id( $order_id );
+	    $wp_user = get_user_by( 'id', $customer_id );
+	    $roles = $wp_user->roles;
+	    if ( customer_type( $customer_id ) == 0 // Not owner or siton
+	         and count( array_intersect( array( "staff" ), $roles ) )
+	    ) {
+		    print "employee_discount = true;";
+	    }
+
+	    ?>
         // Show discount line or hide
         var line = table.rows.length - 4;
-        quantity_discount = Math.round(quantity_discount);
-        table.rows[line].cells[product_name_id].innerHTML = (quantity_discount > 0) ? "הנחת כמות" : "";
-        table.rows[line].cells[q_supply_id].innerHTML = (quantity_discount > 0) ? -0.15 : "";
-        table.rows[line].cells[price_id].innerHTML = (quantity_discount > 0) ? quantity_discount : "";
-        table.rows[line].cells[line_vat_id].innerHTML = 0; // For now just for fresh. No VAT. (quantity_discount > 0) ? quantity_discount : "";
-        var discount = -Math.round(quantity_discount * 15) / 100;
+        var discount = 0;
+        if (employee_discount) {
+            var discount_gross = Math.round(total - 25, 0); /// todo: get delivery_fee
+            discount = -Math.round(discount_gross * 10) / 100;
+            table.rows[line].cells[product_name_id].innerHTML = (discount_gross > 0) ? "הנחת עובד" : "";
+            table.rows[line].cells[q_supply_id].innerHTML = (discount_gross > 0) ? -0.1 : "";
+            table.rows[line].cells[price_id].innerHTML = discount_gross;
+            table.rows[line].cells[line_vat_id].innerHTML = 0; // For now just for fresh. No VAT. (quantity_discount > 0) ? quantity_discount : "";
+
+        } else {
+            quantity_discount = Math.round(quantity_discount);
+            table.rows[line].cells[product_name_id].innerHTML = (quantity_discount > 0) ? "הנחת כמות" : "";
+            table.rows[line].cells[q_supply_id].innerHTML = (quantity_discount > 0) ? -0.15 : "";
+            table.rows[line].cells[price_id].innerHTML = (quantity_discount > 0) ? quantity_discount : "";
+            table.rows[line].cells[line_vat_id].innerHTML = 0; // For now just for fresh. No VAT. (quantity_discount > 0) ? quantity_discount : "";
+            discount = -Math.round(quantity_discount * 15) / 100;
+        }
         total = total + discount;
-        table.rows[line].cells[line_total_id].innerHTML = (quantity_discount > 0) ? discount : "";
+        table.rows[line].cells[line_total_id].innerHTML = (discount < 0) ? discount : "";
 
         // Update totals
         total = Math.round(100 * total, 2) / 100;

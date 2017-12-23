@@ -6,8 +6,17 @@
  * Time: 18:42
  */
 
-require_once( "../r-shop_manager.php" );
 require_once( "inputs.php" );
+if ( ! defined( "TOOLS_DIR" ) ) {
+	define( "TOOLS_DIR", dirname( dirname( __FILE__ ) ) );
+}
+
+require_once( TOOLS_DIR . "/sql.php" );
+
+function sum_numbers( &$sum, $number ) {
+	$sum += $number;
+	// print $sum . " " . $number . " " . "<br/>";
+}
 
 function table_content( $sql, $header = true, $footer = true, $links = null, &$sum_fields = null ) {
 	global $conn;
