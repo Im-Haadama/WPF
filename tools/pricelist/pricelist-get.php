@@ -23,6 +23,23 @@ require_once( "../suppliers/gui.php" );
 
         var supplier_id;
 
+        function delList() {
+            var sel = document.getElementById("supplier_id");
+            supplier_id = sel.options[sel.selectedIndex].value;
+
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                // Wait to get query result
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+                {
+                    change_supplier();
+                }
+            }
+            var request = "pricelist-post.php?operation=delete_list&supplier_id=" + supplier_id;
+            xmlhttp.open("GET", request, true);
+            xmlhttp.send();
+
+        }
         function get_value(element) {
             if (element.tagName == "INPUT") {
                 return element.value;
@@ -114,13 +131,14 @@ require_once( "../suppliers/gui.php" );
             for (var i = 0; i < collection.length; i++) {
                 if (collection[i].checked) {
 
-                    var map_id = get_value(table.rows[i + 1].cells[11].firstChild);
+                    var pricelist_id = table.rows[i + 1].cells[0].firstChild.id.substr(3);
 
-                    params.push(map_id);
+                    params.push(pricelist_id);
                     //        alert(map_id);
                 }
             }
-            execute_url("pricelist-post.php?operation=delete_map&params=" + params, change_supplier);
+            var URL = "pricelist-post.php?operation=delete_map&params=" + params;
+            execute_url(URL, change_supplier);
         }
 
         function donPrices() {
@@ -275,6 +293,13 @@ require_once( "../suppliers/gui.php" );
     <button id="btn_delete" onclick="delPrices()">מחק פריטים</button>
     <button id="btn_delete_map" onclick="delMap()">מחק מיפוי</button>
     <button id="btn_dontsell" onclick="donPrices()">לא למכירה</button>
+	<?php
+	$user = wp_get_current_user();
+	if ( $user->ID == "1" ) {
+		print '<button id="btn_delete_list" onclick="delList()">מחק רשימה</button>';
+	}
+
+	?>
 </div>
 <lable id="is_slave"></lable>
 <br/>
