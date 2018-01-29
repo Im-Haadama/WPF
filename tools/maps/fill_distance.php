@@ -10,7 +10,7 @@ require_once( "../r-shop_manager.php" );
 print header_text( false, false, false );
 require_once( "config.php" );
 
-$sql    = "SELECT order_id FROM ihstore.im_need_orders";
+$sql    = "SELECT order_id FROM im_need_orders";
 $result = sql_query_array( $sql );
 $users  = array();
 

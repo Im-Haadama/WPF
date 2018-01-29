@@ -95,7 +95,9 @@ function order_info_data( $order_id, $edit = false, $operation = null ) {
 	$data     .= $row_text;
 
 	$preference = "";
-	foreach ( get_user_meta( $client_id, "preference" ) as $pref ) {
+	$wp_pref    = get_user_meta( $client_id, "preference" );
+	if ( $wp_pref )
+		foreach ( $wp_pref as $pref ) {
 		$preference .= $pref;
 	}
 
@@ -274,8 +276,7 @@ function print_order_info( $order_id, $comments, $operation = null ) {
 }
 
 // $multiply is the number of ordered baskets or 1 for ordinary item.
-function orders_per_item( $prod_id, $multiply, $short = false ) {
-
+function orders_per_item( $prod_id, $multiply, $short = false, $include_basket = false ) {
 	my_log( "prod_id=" . $prod_id, __METHOD__ );
 
 	$sql = 'select woi.order_item_id, order_id'
@@ -283,9 +284,18 @@ function orders_per_item( $prod_id, $multiply, $short = false ) {
 	       . ' where order_id in'
 	       . '(select order_id from im_need_orders) ';
 
+	$baskets = null;
+	if ( $include_basket ) {
+		$sql1    = "select basket_id from im_baskets where product_id = $prod_id";
+		$baskets = sql_query_array_scalar( $sql1 );
+	}
 	$sql .= ' and woi.order_item_id = woim.order_item_id '
-	        . ' and (woim.meta_key = \'_product_id\' or
-                 woim.meta_key = \'_variation_id\') and woim.meta_value = ' . $prod_id;
+	        . ' and (woim.meta_key = \'_product_id\' or woim.meta_key = \'_variation_id\')
+	         and woim.meta_value in (' . $prod_id;
+	if ( $baskets ) {
+		$sql .= ", " . comma_implode( $baskets );
+	}
+	$sql .= ")";
 
 	my_log( $sql, "get-orders-per-item.php" );
 
@@ -488,9 +498,8 @@ function check_cache_validity() {
 
 function calculate_needed( &$needed_products ) {
 	global $conn;
-	print "checking cache<br/>";
 	if ( check_cache_validity() ) {
-		print "valid</br>";
+		print "cv</br>";
 		$needed_products = array();
 
 		$sql = " SELECT prod_id, need_q, need_u FROM im_need ";
@@ -611,7 +620,12 @@ function add_products( $prod_key, $qty, &$needed_products ) {
 
 		if ( is_bundle( $prod_or_var ) ) {
 			$b           = Bundle::CreateFromBundleProd( $prod_or_var );
-			$prod_or_var = $b->GetProdId();
+			$p           = $b->GetProdId();
+			if ( ! ( $p > 0 ) ) {
+				print "bad prod id for $prod_or_var<br/>";
+
+				return;
+			}
 			$qty         = $qty * $b->GetQuantity();
 		}
 

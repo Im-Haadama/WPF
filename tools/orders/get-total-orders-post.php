@@ -6,6 +6,7 @@
  * Time: 01:20
  */
 
+require_once( "../im_tools.php" );
 require_once( "orders-common.php" );
 require_once( "../gui/inputs.php" );
 if ( ! defined( "STORE_DIR" ) ) {
@@ -65,7 +66,7 @@ function create_supply_single() {
 		if ( count( $a ) == 1 ) {
 			// Check quantity in progress
 
-			$supplier_id = $a[0][1];
+			$supplier_id = $a[0]->getSupplierId();
 			if ( is_numeric( $supplies_data[ $supplier_id ] ) ) {
 				$supplies_data[ $supplier_id ] = array();
 			}
@@ -147,7 +148,7 @@ function get_total_orders( $filter_zero, $history = false ) {
 
 		$line          .= "<td>" . $supplier_name . "</td>";
 
-		$line .= gui_cell( orders_per_item( $prod_id, 1, true ));
+		$line .= gui_cell( orders_per_item( $prod_id, 1, true, true ) );
 
 //		// TODO: sale price
 //		$price = get_price( $prod_id );
@@ -401,9 +402,9 @@ function q_in( $prod_id ) {
 		print $sql . " " . mysqli_error( $conn ) . "<br/>";
 	}
 
-	$row = $result->fetch_assoc();
+	$row = mysqli_fetch_row( $result );
 
-	return round( $row["q_in"], 1 );
+	return round( $row[0], 1 );
 }
 
 function q_out( $prod_id ) {
@@ -417,9 +418,9 @@ function q_out( $prod_id ) {
 		print $sql . " " . mysqli_error( $conn ) . "<br/>";
 	}
 
-	$row = $result->fetch_assoc();
+	$row = mysqli_fetch_row( $result );
 
-	return round( $row["q_out"], 1 );
+	return round( $row[0], 1 );
 }
 
 //function delta_time($str, $zero = false)

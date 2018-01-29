@@ -9,8 +9,9 @@ require_once( '../r-shop_manager.php' );
 require_once( 'catalog.php' );
 require_once( '../pricelist/pricelist.php' );
 require_once( '../multi-site/multi-site.php' );
+require_once( "../wp/terms.php" );
 
-print header_text();
+// print header_text();
 
 // To map item from price list to our database the shop manager select item from the price list
 // and product_id. The triplet: product_id, supplier_id and product_code are sent as saved
@@ -23,6 +24,17 @@ switch ( $operation ) {
 	case "get_unmapped":
 		my_log( "get_unmapped" );
 		search_unmapped_products();
+		break;
+
+	case "create_term":
+		my_log( $operation );
+		$category_name = $_GET["category_name"];
+		terms_create( $category_name );
+		break;
+
+	case "get_unmapped_terms":
+		my_log( "get_unmapped_terms" );
+		search_unmapped_terms();
 		break;
 
 	case 'get_invalid_mapped':
@@ -56,7 +68,6 @@ switch ( $operation ) {
 		Catalog::CreateProducts( $category_name, $ids );
 		break;
 }
-
 
 function map_products( $ids ) {
 	print "start mapping<br/>";
@@ -115,10 +126,10 @@ function is_mapped( $code ) {
 }
 
 // Write the result to screen. Client will insert to result_table
-function search_unmapped_products() {
-	search_unmapped_local();
-	//  search_unmapped_remote();
-}
+//function search_unmapped_products() {
+//	search_unmapped_local();
+//	//  search_unmapped_remote();
+//}
 
 function search_unmapped_remote() {
 	global $conn;
@@ -160,8 +171,7 @@ function search_unmapped_remote() {
 	print $data;
 }
 
-
-function search_unmapped_local() {
+function search_unmapped_products() {
 	global $conn;
 
 	$sql    = "SELECT id, supplier_id, product_name " .
@@ -194,6 +204,43 @@ function search_unmapped_local() {
 			$pricelist["supplier_id"] );
 	}
 	print $data;
+}
+
+function search_unmapped_terms() {
+	global $conn;
+
+	// print header_text();
+	$all_terms      = array();
+	$all_terms_flat = array();
+	$sql            = "SELECT id, supplier_id, product_name " .
+	                  " FROM im_supplier_price_list ORDER BY 2, 3";
+	$result         = mysqli_query( $conn, $sql );
+
+	while ( $row = mysqli_fetch_row( $result ) ) {
+		$pricelist_id = $row[0];
+
+		$prod_link_id = Catalog::GetProdID( $pricelist_id, true );
+
+		$prod_id = $prod_link_id[0];
+		if ( ( ( $prod_id == - 1 ) or ( $prod_id > 0 ) ) and get_post_status( $prod_id ) != 'trash' ) {
+			continue;
+		}
+
+		$item      = PriceList::Get( $pricelist_id );
+		$prod_term = $item["category"];
+		$terms     = explode( ",", $prod_term );
+		foreach ( $terms as $term ) {
+			// print "term: " . $term . "<br/>";
+			if ( ! in_array( $term, $all_terms_flat ) ) {
+				array_push( $all_terms_flat, $term );
+				array_push( $all_terms, array( 'term' => $term, 'id' => terms_get_id( $term ) ) );
+			}
+		}
+	}
+	// var_dump($all_terms);
+
+	// print gui_select_datalist("term", "name", $all_terms, "");
+	print gui_select( "create_term", "term", $all_terms, "", "" );
 }
 
 function print_unmapped( $pricelist_id, $supplier_product_code, $product_name, $supplier_id, $site_id = 0 ) {

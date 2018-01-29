@@ -142,6 +142,11 @@ function show_inventory() {
 }
 
 function get_out( $prod_id ) {
+	if ( ! ( $prod_id > 0 ) ) {
+		print "Bad usage get_out<br/>";
+
+		return 0;
+	}
 	$sql = "SELECT q_out FROM i_out WHERE prod_id = " . $prod_id;
 	// print $sql;
 	$r = sql_query_single_scalar( $sql );

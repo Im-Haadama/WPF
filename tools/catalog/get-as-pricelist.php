@@ -6,9 +6,11 @@
  * Time: 22:48
  * purpose: export all published products as pricelist for external store
  */
+
 require_once( '../r-multisite.php' );
 require_once( '../gui/inputs.php' );
 require_once( '../pricing.php' );
+require_once( "../wp/terms.php" );
 
 if ( isset( $_GET["incremental"] ) ) {
 	if ( ! isset( $_GET["site_id"] ) ) {
@@ -34,8 +36,6 @@ if ( $incremental ) {
 
 print header_text();
 
-// print $sql;
-
 $result = mysqli_query( $conn, $sql );
 
 if ( ! $result ) {
@@ -48,14 +48,18 @@ $line_count = 0;
 print "<table>";
 while ( $row = mysqli_fetch_row( $result ) ) {
 	$line_count ++;
-	$product_name = $row[0];
-	$prod_id      = $row[1];
-	$date         = $row[2];
+	$product_name  = $row[0];
+	$prod_id       = $row[1];
+	$date          = $row[2];
+	$attachment_id = get_post_thumbnail_id( $prod_id );
+	$picture_path  = wp_get_attachment_url( $attachment_id );
 
 	$regular_price = get_regular_price( $prod_id );
 	$sale_price    = get_sale_price( $prod_id );
 
 	$vars = get_product_variations( $prod_id );
+
+	$terms = terms_get_as_string( $prod_id );
 
 	$line = "<tr>";
 	$line .= "<td>prod</td>";
@@ -65,6 +69,8 @@ while ( $row = mysqli_fetch_row( $result ) ) {
 	$line .= "<td>" . $regular_price . "</td>";
 	$line .= "<td>" . $sale_price . "</td>";
 	$line .= gui_cell( count( $vars ) );
+	$line .= "<td>" . $picture_path . "</td>";
+	$line .= "<td>" . $terms . "</td>";
 	$line .= "</tr>";
 	$data .= $line;
 

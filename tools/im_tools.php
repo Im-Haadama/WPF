@@ -2,7 +2,6 @@
 // error_reporting( E_ALL );
 ini_set( 'display_errors', 'on' );
 
-
 /**
  * Created by PhpStorm.
  * User: agla
@@ -12,6 +11,7 @@ ini_set( 'display_errors', 'on' );
 if ( ! defined( "STORE_DIR" ) ) {
 	define( 'STORE_DIR', dirname( dirname( __FILE__ ) ) );
 }
+
 require_once( STORE_DIR . "/wp-config.php" );
 require_once( STORE_DIR . "/im-config.php" );
 require_once( STORE_DIR . "/wp-load.php" );
@@ -51,7 +51,6 @@ function uptime_log( $msg, $title = '' ) {
 	$log        = $date . ": " . $title . "  |  " . $msg . "\n";
 	error_log( $log, 3, $error_file );
 }
-
 
 function get_supplier_id( $supplier_name ) {
 	return sql_query_single_scalar( 'SELECT id FROM im_suppliers WHERE supplier_name = \'' . $supplier_name . '\'' );
@@ -398,8 +397,8 @@ function get_site_tools_url( $site_id ) {
 
 
 function get_minimum_order() {
+
 	global $woocommerce;
-	global $conn;
 
 	$value = 85;
 
@@ -424,8 +423,8 @@ function get_minimum_order() {
 //    my_log ("zone_id = " . $zone1->get_id());
 
 	$sql = "SELECT min_order FROM wp_woocommerce_shipping_zones WHERE zone_id = " . $zone1->get_id();
-//    my_log($sql);
-	$result = mysqli_query( $conn, $sql );
+	my_log( $sql );
+	$result = sql_query( $sql );
 	if ( $result ) {
 		$row = mysqli_fetch_assoc( $result );
 		//    my_log($row["min_order"]);
@@ -464,40 +463,72 @@ function order_get_zone( $order_id ) {
 	return 0;
 }
 
-function order_get_mission_id( $order_id ) {
+function order_get_mission_id( $order_id, $debug = false ) {
+//	print "aaa";
+	global $conn;
+//if ($order_id == 8097) $debug = true;
 	if ( ! is_numeric( $order_id ) ) {
 		print "Bad order id: $order_id<br/>";
 		die( 1 );
 	}
 	$mission = get_post_meta( $order_id, 'mission_id', true );
+	if ( $debug ) {
+		var_dump( $mission );
+		print "<br/>";
+	}
 	if ( is_array( $mission ) ) {
 		$mission_id = $mission[0];
 	} else {
 		$mission_id = $mission;
 	}
-	if ( strlen( $mission_id ) < 1 ) {
-		$info = get_post_meta( $order_id, '_shipping_method', true );
-		// Get from shipping_method
-		$shipping_info = $info[0];
-		if ( strlen( $shipping_info ) > 10 ) {
-			$delivery_option = substr( $shipping_info, 10 );
-			if ( ! is_numeric( $delivery_option ) ) {
-				print "bad delivery option. order $order_id<br/>";
-
-				return 0;
+	if ( $debug or ( strlen( $mission_id ) < 1 ) ) {
+		$shipping_info = "";
+		$order         = wc_get_order( $order_id );
+		foreach ( $order->get_items( 'shipping' ) as $item_id => $shipping_item_obj ) {
+			// if (get_class($shipping_item_obj) == "WC_Order_Item_Shipping") {
+			// var_dump($shipping_item_obj); print "<br/>";
+			$shipping_info = $shipping_item_obj['name'];
+			if ( $debug ) {
+				print $shipping_info;
 			}
-			$zone_id         = sql_query_single_scalar( "SELECT zone_id FROM wp_woocommerce_shipping_zone_methods WHERE instance_id = "
-			                                            . $delivery_option );
-		} else {
-			$postcode = get_user_meta( order_get_customer_id( $order_id ), 'shipping_postcode', true );
+			//	break;
 
-			$zone_id = get_zone_from_postcode( $postcode );
 		}
-		$mission_name = sql_query_single_scalar( "SELECT codes FROM wp_woocommerce_shipping_zones WHERE zone_id = " . $zone_id );
-		$sql          = "SELECT id FROM im_missions WHERE path_code = '" . $mission_name . "' " .
-		                " AND date >= curdate() ";
-//		print $sql;
-		$mission_id = sql_query_single_scalar( $sql );
+		// $info = get_post_meta( $order_id, '_shipping_method', true );
+		// var_dump($info); print "<br/>";
+		// Get from shipping_method
+		// $shipping_info = $info[0];
+
+//		if ( strlen( $shipping_info ) > 10 ) {
+
+//			$delivery_option = substr( $shipping_info, 10 );
+//			if ($debug) print $delivery_option . "<br/>";
+//			if ( ! is_numeric( $delivery_option ) ) {
+//				print "bad delivery option. order $order_id<br/>";
+//
+//				return 0;
+//			}
+//			$zone_id         = sql_query_single_scalar( "SELECT zone_id FROM wp_woocommerce_shipping_zone_methods WHERE instance_id = "
+//			                                            . $delivery_option );
+//			if ($debug) print "zone: " . $zone_id . "<br/>";
+//		} else {
+//			$postcode = get_user_meta( order_get_customer_id( $order_id ), 'shipping_postcode', true );
+//
+//			$zone_id = get_zone_from_postcode( $postcode );
+//		}
+//		$codes = sql_query_single_scalar( "SELECT codes FROM wp_woocommerce_shipping_zones WHERE zone_id = " . $zone_id );
+//		if ($debug) print "codes: " . $codes . "<br/>";
+		$sql = "SELECT path_code FROM im_mission_methods WHERE method = '" . mysqli_real_escape_string( $conn, $shipping_info ) . "'";
+		// print $sql;
+		$path_code = sql_query_single_scalar( $sql );
+
+		if ( $debug ) {
+			print "path code: " . $path_code . "<br/>";
+		}
+		$mission_id = sql_query_single_scalar( "SELECT min(id) FROM im_missions WHERE path_code = '" . $path_code . "'" .
+		                                       " AND date >= curdate()" );
+		if ( $debug )
+			print "mission_id: " . $mission_id . "<br/>";
 		update_post_meta( $order_id, 'mission_id', $mission_id );
 	}
 	if ( ! is_numeric( $mission_id ) ) {
@@ -524,8 +555,8 @@ function get_mission_name( $mission_id ) {
 	return $name;
 }
 
-function order_get_mission_name( $order_id ) {
-	return get_mission_name( order_get_mission_id( $order_id ) );
+function order_get_mission_name( $order_id, $debug = false ) {
+	return get_mission_name( order_get_mission_id( $order_id, $debug ) );
 }
 
 function get_zone_from_postcode( $postcode, $country = null ) {
@@ -560,13 +591,16 @@ function handle_sql_error( $sql ) {
 }
 
 function get_meta_field( $post_id, $field_name ) {
-	$sql = 'SELECT meta_value FROM `wp_postmeta` pm'
+	if ( $post_id > 0 ) {
+		$sql = 'SELECT meta_value FROM `wp_postmeta` pm'
 	       . ' WHERE pm.post_id = ' . $post_id
 	       . " AND meta_key = '" . $field_name . "'";
 
 	// print $sql . "<br>";
-	return sql_query_single_scalar( $sql );
+		return sql_query_single_scalar( $sql );
+	}
 
+	return "Bad post id";
 }
 
 function get_last_order( $user_id ) {
@@ -717,7 +751,11 @@ function get_customer_email( $customer_id ) {
 }
 
 function get_customer_phone( $user_id ) {
-	return get_meta_field( get_last_order( $user_id ), '_billing_phone' );
+	if ( $user_id > 0 ) {
+		return get_meta_field( get_last_order( $user_id ), '_billing_phone' );
+	}
+
+	return "Error: bad user_id";
 }
 
 function get_current_user_name() {

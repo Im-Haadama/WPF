@@ -15,11 +15,15 @@ $table[0][ $col ] = gui_header( 2, "אריזה" );
 $table[1][ $col ] = gui_hyperlink( "הזמנות פעילות", "orders/orders-get.php", "doc_frame" );
 $table[2][ $col ] = gui_hyperlink( "פריטים להזמנות", "orders/get-total-orders.php", "doc_frame" );
 $table[3][ $col ] = gui_hyperlink( "הדפסה", "weekly/print.php" );
+$table[4][ $col ] = "";
 
 $col ++;
 $table[0][ $col ] = gui_header( 2, "משלוחים" );
 $table[1][ $col ] = gui_hyperlink( "משימות נהיגה", "delivery/get-driver-multi.php" );
-$table[2][ $col ] = "";
+$table[2][ $col ] = gui_hyperlink( "סנכרן איזורים", "/tools/multi-site/sync-data.php?table=wp_woocommerce_shipping_zone_locations&operation=update&source=1" );
+$table[3][ $col ] = gui_hyperlink( "סנכרן סוגי משלוח", "/tools/multi-site/sync-data.php?table=wp_woocommerce_shipping_zone_methods&operation=update&source=1" );
+$table[4][ $col ] = gui_hyperlink( "סנכרן משימות", "/tools/multi-site/sync-data.php?table=im_missions&operation=update&source=1" );
+$table[5][ $col ] = "";
 
 $col ++;
 $table[0][ $col ] = gui_header( 2, "לקוחות" );

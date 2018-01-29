@@ -11,6 +11,7 @@ require_once( '../orders/orders-common.php' );
 require_once( '../gui/inputs.php' );
 require_once( "../business/business-post.php" );
 require_once( "../business/business_info.php" );
+// print header_text(false, true, false);
 if ( isset( $_GET["operation"] ) ) {
 	$operation = $_GET["operation"];
 	switch ( $operation ) {

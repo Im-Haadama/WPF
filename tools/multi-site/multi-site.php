@@ -52,6 +52,7 @@ class MultiSite {
 
 	static function Execute( $request, $site ) {
 		// print "req: " . $request . " site = " . $site . "<br/>";
+		// die(1);
 		$remote_request = get_site_tools_url( $site ) . '/' . $request;
 		print $remote_request . "<br/>";
 		if ( strlen( $remote_request ) < 4 ) {
@@ -73,8 +74,10 @@ class MultiSite {
 		$api_key = sql_query_single_scalar( "select api_key from im_multisite where id = $site" );
 		if ( $api_key ) {
 			$remote_request .= $glue . "api_key=$api_key";
+		} else {
+			print "no api key<br/>";
 		}
-//		 print "Execute remote: " . $remote_request . "<br/>";
+		// print "Execute remote: " . $remote_request . "<br/>";
 		$html = file_get_html( $remote_request );
 
 		// print $html;

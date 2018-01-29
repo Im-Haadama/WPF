@@ -62,6 +62,7 @@ function find_route_1( $node, $rest, &$path, $print = false ) {
 
 	find_route( $node, $rest, $path );
 
+
 //	print "path: ";
 //	foreach ($path as $p) print $p . " " ;
 //	print  "<br/>";
@@ -97,6 +98,7 @@ function find_route_1( $node, $rest, &$path, $print = false ) {
 
 // Go to next closest node first
 function find_route( $node, $rest, &$path ) {
+//	debug_time1("find_route");
 //	my_log(__FILE__, "size of rest " . sizeof($rest));
 	if ( sizeof( $rest ) == 1 ) {
 		array_push( $path, $rest[0] );
@@ -142,6 +144,7 @@ function map_get_order_address( $order_id ) {
 }
 
 function get_distance( $order_a, $order_b ) {
+	global $conn;
 	if ( $order_a == $order_b ) {
 		return 0;
 	}
@@ -158,7 +161,9 @@ function get_distance( $order_a, $order_b ) {
 		die( 1 );
 	}
 	$sql = "SELECT distance FROM im_distance WHERE order_a = " . $order_a . " AND order_b = " . $order_b;
+	// print $sql . " ";
 	$ds  = sql_query_single_scalar( $sql );
+	// print $ds . "<br/>";
 
 	if ( $ds > 0 ) {
 		return $ds;
@@ -171,6 +176,9 @@ function get_distance( $order_a, $order_b ) {
 		$sql1 = "insert into im_distance (order_a, order_b, distance, duration) VALUES 
 				($order_a, $order_b, $distance, $duration)";
 		sql_query( $sql1 );
+		if ( mysqli_affected_rows( $conn ) < 1 ) {
+			print "fail: " . $sql1 . "<br/>";
+		}
 
 		return $distance;
 	}
@@ -219,11 +227,13 @@ function do_get_distance( $a, $b ) {
 	}
 
 	global $key;
+//	debug_time1("google start");
 	$s = "https://maps.googleapis.com/maps/api/directions/json?origin=" . urlencode( $a ) . "&destination=" .
 	     urlencode( $b ) . "&key=" . $key . "&language=iw";
 
 	// print $s;
 	$result = file_get_contents( $s );
+//	debug_time1("google end");
 
 	$j = json_decode( $result );
 
@@ -234,6 +244,8 @@ function do_get_distance( $a, $b ) {
 		return array( $v, $t );
 	}
 	print "can't find distance between " . $a . " " . $b . "<br/>";
+
+	return null;
 
 }
 

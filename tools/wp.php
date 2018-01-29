@@ -7,6 +7,9 @@
  */
 // require_once( "r-shop_manager.php" );
 
+require_once( STORE_DIR . "/wp-includes/taxonomy.php" );
+
+
 // Postmeta table
 function get_postmeta_field( $post_id, $field_name ) {
 	$sql = 'SELECT meta_value FROM `wp_postmeta` pm'
@@ -18,8 +21,6 @@ function get_postmeta_field( $post_id, $field_name ) {
 
 
 function set_post_meta_field( $post_id, $field_name, $field_value ) {
-	$link = $GLOBALS["glink"];
-//    my_log("add_post_meta(" . $post_id . ", " . $field_name . ", " . $field_value . ");" , __FILE__);
 	if ( ! add_post_meta( $post_id, $field_name, $field_value, true ) ) {
 		update_post_meta( $post_id, $field_name, $field_value );
 	}

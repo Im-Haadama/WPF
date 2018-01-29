@@ -6,7 +6,7 @@
  * Time: 20:58
  */
 
-require_once( '../r-shop_manager.php' );
+require_once( '../r-multisite.php' );
 require_once( "../gui/sql_table.php" );
 require_once( "../multi-site/multi-site.php" );
 
@@ -29,6 +29,13 @@ switch ( $operation ) {
 
 		print $html;
 		update_zone_table( $html );
+		break;
+
+	case "get_shipping":
+		print header_text( false );
+		print table_content( "SELECT zone_id, instance_id, method_id, method_order, is_enabled FROM wp_woocommerce_shipping_zone_methods" );
+		break;
+
 }
 
 function update_zone_table( $table ) {

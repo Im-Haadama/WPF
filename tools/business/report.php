@@ -11,7 +11,6 @@ require_once( "../people/people.php" );
 
 print header_text();
 
-
 if ( isset( $_GET["week"] ) ) {
 	print_weekly_report( $_GET["week"] );
 	die( 0 );
@@ -41,6 +40,14 @@ function print_project_report( $project_id ) {
 
 }
 
+function sums( &$s, $a ) {
+//	var_dump($s); print "<br/>";
+//	var_dump($a); print "<br/>";
+	if ( is_numeric( $s ) and is_numeric( $a ) ) {
+		$s += $a;
+		// print $s . "<br/>";
+	}
+}
 function print_weekly_report( $week ) {
 	print gui_header( 1, "מציג תוצאות לשבוע המתחיל ביום " . $week );
 // print date('Y-m-d', strtotime($week . " -1 week")) . "<br/>";
@@ -51,15 +58,15 @@ function print_weekly_report( $week ) {
 	print gui_hyperlink( "שבוע קודם", "report.php?week=" . date( 'Y-m-d', strtotime( $week . " -1 week" ) ) );
 
 	$sql = "SELECT id, date AS תאריך, amount AS סכום, delivery_fee AS 'דמי משלוח', client_from_delivery(ref) AS לקוח FROM im_business_info WHERE " .
-	       " week = '" . $week . "' AND amount > 0 ORDER BY 3 DESC";
+	       " week = '" . $week . "' AND amount > 0 ORDER BY 1";
 
-	$sums_in = array( 0, 0, 1, 1, 0 );
+	$sums_in = array( 0, 0, array( 0, sums ), array( 0, sums ), 0 );
 	$inputs  = table_content( $sql, true, true, null, $sums_in );
 
 	$sql = "SELECT id, date, amount AS סכום, supplier_from_business(id) AS ספק FROM im_business_info WHERE " .
 	       " week = '" . $week . "' AND is_active = 1 AND amount < 0 ORDER BY 3 DESC";
 
-	$sums_supplies = array( 0, 0, 1, 0, 0 );
+	$sums_supplies = array( 0, 0, array( 0, sums ), 0, 0 );
 	$outputs       = table_content( $sql, true, true, null, $sums_supplies );
 
 	$salary      = 0;
@@ -68,12 +75,12 @@ function print_weekly_report( $week ) {
 
 
 	print gui_header( 1, "סיכום" );
-	$total_sums = array( "סיכום", 1 );
+	$total_sums = array( "סיכום", array( 0, sums ) );
 	print gui_table( array(
 		array( "סעיף", "סכום" ),
-		array( "תוצרת", $sums_in[2] ),
-		array( "דמי משלוח", $sums_in[3] ),
-		array( "גלם", $sums_supplies[2] ),
+		array( "תוצרת", $sums_in[2][0] ),
+		array( "דמי משלוח", $sums_in[3][0] ),
+		array( "גלם", $sums_supplies[2][0] ),
 		array( "שכר", $salary )
 	), "totals", true, true, $total_sums );
 

@@ -6,9 +6,11 @@
  * Time: 14:19
  */
 //require_once('catalog.php');
+require_once( "../im_tools.php" );
 require_once( '../pricelist/pricelist.php' );
 require_once( '../r-shop_manager.php' );
 
+// print header_text(false);
 // To map item from price list to our database the shop manager select item from the price list
 // and product_id. The triplet: product_id, supplier_id and product_code are sent as saved
 // in im_supplier_products
@@ -33,8 +35,9 @@ switch ( $operation ) {
 
 	case "get_price":
 		$name = $_GET["name"];
-		$sql  = "SELECT id FROM ihstore.im_products WHERE post_title = '" . urldecode( $name ) . "'";
+		$sql  = "SELECT id FROM im_products WHERE post_title = '" . urldecode( $name ) . "'";
 		$id   = sql_query_single_scalar( $sql );
+		// print $id . "<br/>";
 		print get_price( $id );
 		break;
 }

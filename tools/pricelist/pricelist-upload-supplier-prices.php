@@ -13,7 +13,7 @@ $tmp_file  = $_FILES["fileToUpload"]["tmp_name"];
 $file_name = $_FILES["fileToUpload"]["name"];
 $ext       = pathinfo( $file_name, PATHINFO_EXTENSION );
 
-$target_dir    = "../uploads/";
+$target_dir    = dirname( __FILE__ ) . "/uploads/";
 $target_file   = $target_dir . "prices" . $supplier_id . "." . $ext;
 $imageFileType = pathinfo( $target_file, PATHINFO_EXTENSION );
 if ( move_uploaded_file( $tmp_file, $target_file ) ) {

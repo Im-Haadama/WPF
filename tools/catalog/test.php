@@ -9,7 +9,7 @@
 require_once( "../im_tools.php" );
 require_once( 'catalog.php' );
 
-print header_text();
+print header_text( false, true, false );
 // print Catalog::GetBuyPrice(32, 100005);
 
 //$line = "";
@@ -78,32 +78,42 @@ $line = "";
 error_reporting( E_ALL );
 ini_set( 'display_errors', 'on' );
 
-require_once( STORE_DIR . '/wp-admin/includes/image.php' );
-require_once( STORE_DIR . '/wp-admin/includes/file.php' );
-require_once( STORE_DIR . "/wp-admin/includes/media.php" );
+print Catalog::GetProdImage( 1141 );
 
-update_picture( 2382 );
+////require_once( STORE_DIR . '/wp-admin/includes/image.php' );
+////require_once( STORE_DIR . '/wp-admin/includes/file.php' );
+////require_once( STORE_DIR . "/wp-admin/includes/media.php" );
+//
+//
+//// update_picture( 2382 );
+//$prod_id = 79;
+////$debug_product = $prod_id;
+////$line = "";
+////Catalog::UpdateProduct(1117, $line, true);
+//
+//$image = 'http://store.im-haadama.co.il/wp-content/uploads/2014/10/etinger.jpg';
+//
+//upload_image($prod_id, $image);
 
-
-function update_picture( $prod_id ) {
-	$a = alternatives( $prod_id );
-	foreach ( $a as $alter ) {
-		$image = $alter->getPicturePath();
-		if ( $image ) {
-			print "$image<br/>";
-			$xx = 'id';
-			$i  = media_sideload_image( $image, $prod_id, "", $xx );
-			// print "x: " . $i;
-			// $i = 2407;
-			$attach_data = wp_generate_attachment_metadata( $i, $image );
-			//$res1= wp_update_attachment_metadata( $i, $attach_data );
-			//$res2= set_post_thumbnail( $prod_id, $i);
-
-//			print "res1: $res1<br/>";
-			//print "res2: $res2<br/>";
-			return;
-		}
-	}
-	// $pl = Pricelist
-}
-
+//function update_picture( $prod_id ) {
+//	$a = alternatives( $prod_id );
+//	foreach ( $a as $alter ) {
+//		$image = $alter->getPicturePath();
+//		if ( $image ) {
+//			print "$image<br/>";
+//			$xx = 'id';
+//			$i  = media_sideload_image( $image, $prod_id, "", $xx );
+//			// print "x: " . $i;
+//			// $i = 2407;
+//			$attach_data = wp_generate_attachment_metadata( $i, $image );
+//			//$res1= wp_update_attachment_metadata( $i, $attach_data );
+//			//$res2= set_post_thumbnail( $prod_id, $i);
+//
+////			print "res1: $res1<br/>";
+//			//print "res2: $res2<br/>";
+//			return;
+//		}
+//	}
+//	// $pl = Pricelist
+//}
+//

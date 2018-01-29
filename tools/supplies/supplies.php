@@ -56,11 +56,19 @@ class Supply {
 
 	// $internal - true = for our usage. false = for send to supplier.
 	public function PrintSupply( $internal ) {
+//		var_dump($this);
 		print nl2br( sql_query_single_scalar( "SELECT text FROM im_supplies WHERE id = " . $this->ID ) ) . "<br/>";
 		switch ( $this->Status ) {
 			case SupplyStatus::NewSupply:
 				print_supply_lines( $this->ID, $internal, false );
 				break;
+			case SupplyStatus::Sent:
+				print_supply_lines( $this->ID, $internal, false );
+				break;
+			default:
+				print_supply_lines( $this->ID, $internal, false );
+				break;
+
 		}
 	}
 
@@ -229,7 +237,7 @@ function print_supply_lines( $id, $internal, $edit = true ) {
 		if ( $internal ) {
 			$sell_price = get_price( $prod_id );
 			$line       .= "<td>" . sprintf( '%0.2f', $sell_price ) . "</td>";
-			$line       .= "<td>" . get_clients_per_product( $prod_id ) . "</td>";
+			$line       .= "<td>" . orders_per_item( $prod_id, 1, true ) . "</td>";
 		}
 		$line .= "</tr>";
 
@@ -304,7 +312,8 @@ function print_supplies( $ids, $internal ) {
 		print "<h1>";
 		print "אספקה מספר " . gui_hyperlink( $id, "../supplies/supply-get.php?id= " . $id ) . " " . supply_get_supplier( $id ) . " " . date( "Y-m-d" );
 		print "</h1>";
-		print_supply( $id, $internal, false );
+		$s = new Supply( $id );
+		$s->PrintSupply( $internal );
 		print "<p style=\"page-break-after:always;\"></p>";
 	}
 //    print "</html>";
@@ -462,11 +471,6 @@ WHERE status = 1 AND supply_id IN (" . $supply_id . ", " . rtrim( implode( ",", 
 //
 //call get_product_name(35);
 
-
-function get_clients_per_product( $prod_id ) {
-	return orders_per_item( $prod_id, 1, true );
-}
-
 function display_active_supplies( $status ) {
 	global $conn;
 
@@ -475,6 +479,7 @@ function display_active_supplies( $status ) {
 	             implode( ",", $status ) . ") AND id > (SELECT info_data FROM im_info where info_key='inventory_in')"
 	             . " ORDER BY 4, 3, 2";
 
+	// print $sql;
 	$result = mysqli_query( $conn, $sql );
 
 	if ( ! $result ) {

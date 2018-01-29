@@ -23,7 +23,7 @@ function gui_select_category( $id, $list = true ) {
 	$result = "";
 
 	if ( $list ) {
-		$result = gui_datalist( "category", "im_categories", "name" );
+		$result = gui_datalist( "category", "im_categories", "name", 0 );
 	}
 
 	$result .= '<input id="cat_' . $id . '" list="category" onkeypress="select_category(' . $id . ')">';

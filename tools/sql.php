@@ -6,8 +6,6 @@
  * Time: 05:19
  */
 
-require_once( "im_tools.php" );
-
 function sql_query( $sql ) {
 	global $conn;
 

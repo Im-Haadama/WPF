@@ -6,7 +6,7 @@
  * Time: 20:58
  */
 
-require_once( '../r-shop_manager.php' );
+require_once( '../r-multisite.php' );
 require_once( "../gui/sql_table.php" );
 require_once( "../multi-site/multi-site.php" );
 
@@ -21,6 +21,19 @@ switch ( $table ) {
 		$key = "zone_id";
 		break;
 	case "im_missions":
+		$key = "id";
+		break;
+	case "wp_woocommerce_shipping_zone_locations":
+//		print "zone_locations<br/>";
+		$key = "location_id";
+		break;
+	case "wp_woocommerce_shipping_zone_methods":
+		$key = "instance_id";
+		break;
+	case "im_baskets":
+		$key = "id";
+		break;
+	case 'im_mission_methods':
 		$key = "id";
 		break;
 	default:
@@ -41,13 +54,16 @@ switch ( $operation ) {
 			die ( 1 );
 		}
 		$source = $_GET["source"];
-		$html   = MultiSite::Execute( "multi-site/sync-data.php?table=$table&operation=get", $source );
+		$url    = "multi-site/sync-data.php?table=$table&operation=get";
+		print "url: " . $url . "<br/>";
+		$html = MultiSite::Execute( $url, $source );
 
 		print $html;
 		update_table( $html, $table, $key );
 }
 
 function update_table( $html, $table, $table_key ) {
+	global $conn;
 	print header_text( false, true, false );
 	$dom = str_get_html( $html );
 	$row = $dom->find( 'tr' );
@@ -100,7 +116,7 @@ function update_table( $html, $table, $table_key ) {
 				continue;
 			}
 			if ( $insert ) {
-				$insert_values .= quote_text( $fields[ $i ] ) . ", ";
+				$insert_values .= quote_text( mysqli_real_escape_string( $conn, $fields[ $i ] ) ) . ", ";
 			} else { // Update
 				$update_fields .= $headers[ $i ] . "=" . quote_text( $fields[ $i ] ) . ", ";
 			}

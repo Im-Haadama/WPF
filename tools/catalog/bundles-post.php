@@ -17,6 +17,7 @@ my_log( "Operation: " . $operation, __FILE__ );
 
 $bl = new Bundles();
 
+
 switch ( $operation ) {
 	case "get_bundles":
 		$bl->PrintHTML();
@@ -27,6 +28,7 @@ switch ( $operation ) {
 		$q            = $_GET["q"];
 		$margin       = $_GET["margin"];
 		$b            = Bundle::createNew( $product_name, $q, $margin );
+		break;
 
 	case "update_price":
 		// TODO: update bundle
@@ -59,18 +61,37 @@ switch ( $operation ) {
 //		var request = post_url + "?operation=add_item&product_name=" + encodeURI(prod_name) + '&quantity=' + quantity +
 //		              '&margin=' + margin + '&bundle_prod_name=' + encodeURI(bundle_prod_name);
 
-		$product_name     = urldecode( $_GET["product_name"] );
-		$quantity         = $_GET["quantity"];
-		$margin           = $_GET["margin"];
-		$bundle_prod_name = urldecode( $_GET["bundle_prod_name"] );
+		$product_name = urldecode( $_GET["item_name"] );
+		$quantity     = $_GET["quantity"];
+		$margin       = $_GET["margin"];
+		// $bundle_prod_name = urldecode( $_GET["bundle_prod_name"] );
 //        my_log("supplier_id " . $supplier_id, "pricelist-post.php");
 //        my_log("price " . $price, "pricelist-post.php");
 //        my_log("product_name " . $product_name, "pricelist-post.php");
 //        my_log("date " . date('Y-m-d'), "pricelist-post.php");
 		$bundles = new Bundles();
-		$bundles->Add( $product_name, $quantity, $margin, $bundle_prod_name );
+		$bundles->Add( $product_name, $quantity, $margin );
 		break;
 
+	case "update_all":
+		$sql    = "select id from im_bundles";
+		$result = sql_query( $sql );
+		while ( $row = mysqli_fetch_row( $result ) ) {
+			print $row[0] . "<br/>";
+			$b = Bundle::createFromDb( $row[0] );
+			$b->Update();
+		}
+		break;
+
+	case "update":
+		$params = explode( ',', $_GET["params"] );
+		for ( $pos = 0; $pos < count( $params ); $pos += 2 ) {
+			$item_id = $params[ $pos ];
+			$margin  = $params[ $pos + 1 ];
+			$b       = Bundle::createFromDb( $item_id );
+			$b->UpdateMargin( $margin );
+		}
+		break;
 }
 
 ?>

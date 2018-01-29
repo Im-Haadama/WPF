@@ -11,6 +11,7 @@ require_once( '../gui/inputs.php' );
 require_once( '../multi-site/multi-site.php' );
 
 class PricelistItem {
+	private $id;
 	private $product_name;
 	private $supplier_id;
 	private $date;
@@ -29,6 +30,7 @@ class PricelistItem {
 			print "$pricelist_id not found<br/>";
 			die( 1 );
 		}
+		$this->id                    = $pricelist_id;
 		$this->product_name          = $result["product_name"];
 		$this->supplier_id           = $result["supplier_id"];
 		$this->date                  = $result["date"];
@@ -38,6 +40,14 @@ class PricelistItem {
 		$this->category              = $result["category"];
 		$this->picture_path          = $result["picture_path"];
 	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getId() {
+		return $this->id;
+	}
+
 
 	/**
 	 * @return mixed
@@ -124,6 +134,28 @@ class PriceList {
 		$this->SupplierID = $id;
 	}
 
+	static function DeleteMapping( $pricelist_id ) {
+		// Get product id
+		$prod_ids    = Catalog::GetProdID( $pricelist_id );
+		$supplier_id = sql_query_single_scalar( "SELECT supplier_id FROM im_supplier_price_list WHERE ID = " . $pricelist_id );
+//		print "supplier id: " . $supplier_id . "<br/>";
+
+		foreach ( $prod_ids as $prod_id ) {
+//			print "prod id: " . $prod_id . "<br/>";
+			$sql = "DELETE FROM im_supplier_mapping WHERE product_id = " . $prod_id . " AND supplier_id = " . $supplier_id;
+//			print $sql . "<br/>";
+			sql_query( $sql );
+
+			$line = "";
+			Catalog::UpdateProduct( $prod_id, $line );
+//			print header_text(false, true, false);
+//			print $line;
+
+		}
+
+		return;
+	}
+
 	function SiteId() {
 		return sql_query_single_scalar( "SELECT site_id FROM im_suppliers WHERE id =" . $this->SupplierID );
 	}
@@ -142,7 +174,6 @@ class PriceList {
 		while ( $row = mysqli_fetch_row( $result ) ) {
 			print $row[0] . ", " . $row[1] . ", " . $row[2] . "\n";
 		}
-
 	}
 
 	function PrintHTML() {
@@ -193,7 +224,6 @@ class PriceList {
 		$data .= "</tr>";
 		print $data;
 	}
-
 
 	function GetUpdateDate() {
 		$sql = 'SELECT max(date) FROM im_supplier_price_list'
@@ -294,12 +324,6 @@ class PriceList {
 				$rc = UpdateResult::NoChangPrice;
 			}
 
-			// Update linked products
-			Update( $id, $regular_price, $sale_price );
-			if ( $debug ) {
-				print "<br/>";
-			}
-
 		} else {
 			if ( $code == "" ) {
 				$code = "10";
@@ -344,91 +368,16 @@ class PriceList {
 			$id = mysqli_insert_id( $conn );
 			$rc = UpdateResult::NewPrice;
 		}
+		// Update linked products
+		$this->Update( $id, $regular_price, $sale_price );
+		if ( $debug ) {
+			print "<br/>";
+		}
 
 		return $rc;
 	}
 
-//	function Delete($pricelist_id)
-//	{
-//		global $conn;
-//		my_log(__METHOD__ . $pricelist_id);
-//
-//		// Get product id for drafting
-//		$sql = "select product_id from im_supplier_mapping " .
-//		       " where pricelist_id = " . $pricelist_id;
-//
-//		$result = mysqli_query($conn, $sql);
-//		$row = mysqli_fetch_assoc($result);
-//
-//		$prod_id = $row["product_id"];
-//		my_log("prod_id = " . $prod_id);
-//
-//		// If not found, try with name
-//		if (! ($prod_id > 0)) {
-//			$sql = "select supplier_id, product_name from im_supplier_price_list " .
-//			       " where id = " . $pricelist_id;
-//			my_log($sql);
-//			$result = mysqli_query($conn, $sql);
-//			$row = mysqli_fetch_assoc($result);
-//
-//			$supplier_id = $row["supplier_id"];
-//			$supplier_product_name = $row["product_name"];
-//			my_log("supplier_id = " . $supplier_id);
-//			my_log("supplier_product_name = " . $supplier_product_name);
-//
-//			$sql = "select product_id from im_supplier_mapping " .
-//			       " where supplier_id = " . $supplier_id .
-//			       " and supplier_product_name = '" . $supplier_product_name . "'";
-//
-//			my_log($sql);
-//			$result = mysqli_query($conn, $sql);
-//			if ($result) {
-//				$row = mysqli_fetch_assoc($result);
-//				$prod_id = $row["product_id"];
-//				my_log("prod_id = " . $prod_id);
-//			}
-//		}
-//
-//		my_log("Delete. id = " . $pricelist_id);
-//		my_log("catalog_delete_price", "pricelist-post.php");
-//		$sql = "delete from im_supplier_price_list  "
-//		       . " where id = " . $pricelist_id;
-//
-//		mysqli_query($conn, $sql);
-//
-//		// The mapping stays - in case supplier gets it back.
-//
-//		// If no other option for this product - make it draft
-//		if ($prod_id > 0) {
-//			$sql = "select count(*) as c " .
-//			       " from im_supplier_price_list " .
-//			       " where id in (select pricelist_id " .
-//			       " from im_supplier_mapping " .
-//			       " where product_id = " . $prod_id . ")";
-//
-//			my_log($sql);
-//			$result = mysqli_query($conn, $sql);
-//
-//			$count = 0;
-//			if ($result) {
-//				$row = mysqli_fetch_assoc($result);
-//
-//				$count = $row["c"];
-//				//            my_log(__METHOD__ . " count = " . $count);
-//			}
-//			if ($count == 0)
-//			{
-//				my_log("No more source for " . $prod_id);
-//				$prods = array($prod_id);
-//				//            my_log("count = " . count($prods));
-//
-//				catalog::DraftItems($prods);
-//			}
-//		}
-//		// $this->ExecuteRemotes("pricelist/pricelist-post.php?operation=delete&params=" . $pricelist_id);
-//
-//		return;
-//	}
+	// Also called when mapping is deleted
 
 	static function Get( $pricelist_id ) {
 		// my_log("Pricelist::Get" . $pricelist_id);
@@ -440,84 +389,19 @@ class PriceList {
 		return $result;
 	}
 
-//    function Clean()
-//    {
-//        my_log(__CLASS__, "pricelist-post.php");
-//        global $conn;
-//
-//        $table_name = "temp_supplier_" . $this->SupplierID;
-//
-//        $sql = "drop table " . $table_name . "; create table " . $table_name .
-//            " as select * from im_supplier_price_list  "
-//            . " where supplier_id = " . $this->SupplierID;
-//
-//        mysqli_query($conn, $sql);
-//
-//        $sql = "delete from im_supplier_price_list  "
-//            . " where supplier_id = " . $this->SupplierID;
-//
-//        my_log($sql, __CLASS__);
-//        if (! $export)
-//            die ('Invalid query: ' . mysql_error());
-//
-//        return;
-//    }
-
-//    function AddInSlave($price, $product_name, $line_id)
-//    {
-//        global $conn;
-//
-//        $date = date('y/m/d');
-//
-//        $sql = "insert into im_supplier_price_list (id, product_name, supplier_id, date, price,  line_status) " .
-//            " Values(". $line_id. ", '" . $product_name . "', " . $this->SupplierID . ", " . $date . ", " . $price . ", 1)";
-//
-//        // print $sql . "<br/>";
-//        if (! mysqli_query($conn, $sql)){
-//            sql_error($sql);
-//            die(1);
-//        };
-//    }
-
-//    function UpdateInSlave($price, $line_id)
-//    {
-//        global $conn;
-//        $date = date('y/m/d');
-//
-//        $sql = "update im_supplier_price_list set date = " . $date .
-//            ", price=" . $price . " where id=" . $line_id;
-//
-//        mysqli_query($conn, $sql);
-//
-//    }
-
 	// Return code: 0 - usage error: error. 1:
 	// ID: output the pricelist id
 
 	function Update( $id, $price, $sale_price = 0 ) {
 		global $conn;
-		$debug = false;
 		my_log( __METHOD__, "update line $id, price $price, sale price $sale_price" );
 		$sql = "UPDATE im_supplier_price_list SET price = " . $price .
 		       ", sale_price = " . $sale_price .
 		       " WHERE id = " . $id;
 		mysqli_query( $conn, $sql );
 
-		$prod_ids = Catalog::GetProdID( $id );
-		$line     = "";
-		if ( $debug ) {
-			print "update";
-		}
-		if ( $prod_ids ) {
-			foreach ( $prod_ids as $prod_id ) {
-				if ( $debug ) {
-					print $prod_id . " ";
-				}
-				my_log( __METHOD__, "update product $prod_id" );
-				Catalog::UpdateProduct( $prod_id, $line );
-				my_log( $line );
-			}
-		}
+
+		$this->UpdateCatalog( $id );
 
 //        $this->ExecuteRemotes("pricelist/pricelist-post.php?operation=update_in_slave&price=" . $price .           "&line_id=" . $line_id);
 
@@ -545,6 +429,26 @@ class PriceList {
 		return;
 	}
 
+	static function UpdateCatalog( $pricelist_id ) {
+		$debug    = false;
+		$prod_ids = Catalog::GetProdID( $pricelist_id );
+		$line     = "";
+		if ( $debug ) {
+			print "update";
+		}
+		if ( $prod_ids ) {
+			foreach ( $prod_ids as $prod_id ) {
+				if ( $debug ) {
+					print $prod_id . " ";
+				}
+				my_log( __METHOD__, "update product $prod_id" );
+				Catalog::UpdateProduct( $prod_id, $line );
+				my_log( $line );
+			}
+		}
+
+	}
+
 	function GetByName( $product_name ) {
 		$product_name = pricelist_strip_product_name( $product_name );
 
@@ -552,24 +456,6 @@ class PriceList {
 		       . " WHERE product_name = '" . addslashes( $product_name ) . "' AND supplier_id = " . $this->SupplierID;
 
 		return sql_query_single_scalar( $sql );
-	}
-
-	function ChangeStatus( $status ) {
-		// Act local
-		global $conn;
-
-		$sql = "UPDATE im_supplier_price_list SET line_status = " . $status . " WHERE supplier_id = " . $this->SupplierID;
-
-//        print $sql;
-
-		$result = mysqli_query( $conn, $sql );
-
-		if ( ! $result ) {
-			handle_sql_error( $sql );
-		}
-
-		// Act remote
-//        $this->ExecuteRemotes("pricelist/pricelist-post.php?operation=change_status" . "&status=" . $status);
 	}
 
 //    function DraftRemoved()
@@ -601,15 +487,13 @@ class PriceList {
 ////        }
 //    }
 
-	function RemoveLines( $status ) {
-		$removed = Array();
-
-		// print "Removing previous items...<br/>";
+	function ChangeStatus( $status ) {
+		// Act local
 		global $conn;
-		$sql = "select id, price, product_name " .
-		       " from im_supplier_price_list " .
-		       " where line_status = " . $status .
-		       " and supplier_id = " . $this->SupplierID;
+
+		$sql = "UPDATE im_supplier_price_list SET line_status = " . $status . " WHERE supplier_id = " . $this->SupplierID;
+
+//        print $sql;
 
 		$result = mysqli_query( $conn, $sql );
 
@@ -617,19 +501,8 @@ class PriceList {
 			handle_sql_error( $sql );
 		}
 
-		while ( $row = mysqli_fetch_row( $result ) ) {
-			$id = $row[0];
-			// print "removing " . $id . "<br/>";
-			my_log( "Remove " . $id );
-			$this->Delete( $id );
-			$removed[] = array( $row[2], $row[1] );
-			// var_dump($ids);
-		}
-//        $this->ExecuteRemotes("pricelist/pricelist-post.php?operation=delete_price&params=" . implode(",", $ids));
-
-//        print "Done<br/>";
-		// var_dump($removed);
-		return $removed;
+		// Act remote
+//        $this->ExecuteRemotes("pricelist/pricelist-post.php?operation=change_status" . "&status=" . $status);
 	}
 
 //    function ExecuteRemotes($url)
@@ -652,6 +525,39 @@ class PriceList {
 //            MultiSite::Execute($url, $row[0]);
 //        }
 //    }
+
+	function RemoveLines( $status ) {
+		$removed = Array();
+
+		// print "Removing previous items...<br/>";
+		global $conn;
+		$sql = "select id, price, product_name " .
+		       " from im_supplier_price_list " .
+		       " where line_status = " . $status .
+		       " and supplier_id = " . $this->SupplierID;
+
+		print $sql;
+
+		$result = mysqli_query( $conn, $sql );
+
+		if ( ! $result ) {
+			handle_sql_error( $sql );
+		}
+
+		while ( $row = mysqli_fetch_row( $result ) ) {
+			$id = $row[0];
+			print "removing " . $id . "<br/>";
+			my_log( "Remove " . $id );
+			$this->Delete( $id );
+			$removed[] = array( $row[2], $row[1] );
+			// var_dump($ids);
+		}
+//        $this->ExecuteRemotes("pricelist/pricelist-post.php?operation=delete_price&params=" . implode(",", $ids));
+
+//        print "Done<br/>";
+		// var_dump($removed);
+		return $removed;
+	}
 
 	function Delete( $pricelist_id ) {
 		global $conn;
@@ -681,6 +587,7 @@ class PriceList {
 			Catalog::UpdateProduct( $prod_id, $line );
 		}
 	}
+
 }
 
 function pricelist_get_price( $prod_id ) {
@@ -745,3 +652,4 @@ function pricelist_strip_product_name( $name ) {
 }
 
 ?>
+

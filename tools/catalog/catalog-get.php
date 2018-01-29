@@ -34,6 +34,30 @@ print header_text( true );
             xmlhttp.open("GET", request, true);
             xmlhttp.send();
         }
+
+        function add_category() {
+            var collection = document.getElementsByClassName("product_checkbox");
+            var prod_ids = new Array();
+            for (var i = 0; i < collection.length; i++) {
+                if (collection[i].checked) {
+                    var id = collection[i].id.substr(3);
+                    prod_ids.push(id);
+                }
+            }
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                // Wait to get query result
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+                {
+                    searchProducts();
+                }
+            }
+            var category = get_value(document.getElementById("cat_1"));
+            var request = "catalog-db-query.php?operation=add_category&category=" + encodeURI(category) + "&prod_ids=" + prod_ids;
+            xmlhttp.open("GET", request, true);
+            xmlhttp.send();
+        }
+
         function set_vat() {
             var collection = document.getElementsByClassName("product_checkbox");
             var prod_ids = new Array();
@@ -133,13 +157,14 @@ print header_text( true );
 <input type="text" id="search_txt">
 <button id="search_btn" onclick="searchProducts()">חפש פריטים</button>
 <input id="select_all" type="checkbox" onclick="select_all_toggle()">בחר הכל</button>
-<!--<button id="set_vat" onclick="set_vat()">שנה מעמ</button>-->
+<button id="set_vat" onclick="set_vat()">שנה מעמ</button>
 <input type="text" id="supplier_name">
 <!--<button id="set_vat" onclick="set_supplier()">שנה ספק</button>-->
 <!--<button id="publish" onclick="publish()">פרסם</button>-->
 <?php
 
-print gui_button( "btn_set_terms", "set_category()", "שנה קטגוריות" );
+print gui_button( "btn_add_terms", "add_category()", "הוסף קטגוריות" );
+print gui_button( "btn_set_terms", "set_category()", "החלף קטגוריה" );
 print gui_select_category( 1, true );
 ?>
 

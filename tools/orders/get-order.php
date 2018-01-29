@@ -1,7 +1,10 @@
 <?php
+
+require_once( "../im_tools.php" );
 require_once 'orders-common.php';
 require_once( '../gui/inputs.php' );
 require_once( '../delivery/delivery.php' );
+
 $order_id = $_GET["order_id"];
 $margin   = false;
 if ( isset( $_GET["margin"] ) ) {

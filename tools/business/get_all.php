@@ -5,7 +5,7 @@ require_once( "../gui/inputs.php" );
 require_once( "../delivery/delivery.php" );
 require_once( "../suppliers/gui.php" );
 
-p
+print header_text( false, true );
 ?>
 
 <html dir="rtl">

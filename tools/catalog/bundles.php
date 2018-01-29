@@ -51,9 +51,16 @@ class Bundles {
 		return $this->class_name;
 	}
 
-	function Add( $prod_name, $quantity, $margin, $bundle_prod_name ) {
+	function Add( $prod_name, $quantity, $margin ) {
+		$b = Bundle::createNew( $prod_name, $quantity, $margin );
+		// print $prod_name . "<br/>";
 		$prod_id        = get_product_id_by_name( $prod_name );
-		$bundle_prod_id = get_product_id_by_name( $bundle_prod_name );
+
+		// print $prod_id. "<br/>";
+		// ($product_name, $sell_price, $supplier_name, $categ = null, $image_path)
+		$bundle_prod_id = Catalog::DoCreateProduct( "מארז " . $quantity . " ק\"ג " . $prod_name,
+			$b->CalculatePrice(), $b->GetSupplier(), "מארזי כמות", Catalog::GetProdImage( $prod_id ) );
+		// $bundle_prod_id = get_product_id_by_name( $bundle_prod_name );
 
 		$sql = "INSERT INTO im_bundles (prod_id, quantity, margin, bundle_prod_id) VALUES (" . $prod_id . ", " .
 		       $quantity . ", '" . $margin . "', " . $bundle_prod_id . ")";
@@ -82,6 +89,27 @@ class Bundle {
 		return $b;
 	}
 
+	static function CreateFromProd( $prod_id ) {
+		$sql = "select id from im_bundles where prod_id = $prod_id";
+		$_id = sql_query_single_scalar( $sql );
+		if ( $_id ) {
+			return new self( $_id );
+		}
+
+		return null;
+	}
+
+	static function CreateFromBundleProd( $prod_id ) {
+		$sql = "select id from im_bundles where bundle_prod_id = $prod_id";
+
+		$_id = sql_query_single_scalar( $sql );
+		if ( $_id ) {
+			return Bundle::createFromDb( $_id );
+		}
+
+		return null;
+	}
+
 	static function createFromDb( $_id ) {
 		$b     = new Bundle();
 		$b->id = $_id;
@@ -100,30 +128,22 @@ class Bundle {
 		return $b;
 	}
 
-	static function CreateFromProd( $prod_id ) {
-		$sql = "select id from im_bundles where prod_id = $prod_id";
-		$_id = sql_query_single_scalar( $sql );
-		if ( $_id ) {
-			return new self( $_id );
-		}
+	function UpdateMargin( $margin ) {
+		$this->margin = $margin;
+		$this->Update();
 
-		return null;
+		$sql = "update im_bundles set margin = '" . $margin . "'" .
+		       " where id = " . $this->id;
+
+		sql_query( $sql );
+
+
 	}
-
-	static function CreateFromBundleProd( $prod_id ) {
-		$sql = "select id from im_bundles where bundle_prod_id = $prod_id";
-		$_id = sql_query_single_scalar( $sql );
-		if ( $_id ) {
-			return new self( $_id );
-		}
-
-		return null;
-	}
-
 	function Update() {
 		$product_id    = $this->bundle_prod_id;
 		$regular_price = $this->quantity * get_price( $this->prod_id );
 		$sale_price    = $this->CalculatePrice();
+		print "price: $sale_price <br/>";
 
 		my_log( "Bundle::Update $product_id $regular_price $sale_price " . $this->quantity );
 
@@ -137,10 +157,10 @@ class Bundle {
 		if ( strstr( $this->margin, "%" ) ) {
 			$percent = substr( $this->margin, 0, strlen( $this->margin ) - 1 );
 
-			return get_buy_price( $this->prod_id ) * $this->quantity * ( 100 + $percent ) / 100;
+			return round( get_buy_price( $this->prod_id ) * $this->quantity * ( 100 + $percent ) / 100, 0 );
 		}
 
-		return ( get_buy_price( $this->prod_id ) + $this->margin ) * $this->quantity;
+		return round( ( get_buy_price( $this->prod_id ) + $this->margin ) * $this->quantity, 0 );
 	}
 
 	function Delete() {

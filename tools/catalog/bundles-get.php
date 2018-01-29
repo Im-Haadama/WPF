@@ -16,9 +16,10 @@ print gui_button( "btn_new", "show_create_new()", "מארז חדש" );
 
 <html dir="rtl">
 <header>
+    <script type="text/javascript" src="../client_tools.js"></script>
     <script>
         function getPrice() {
-            var product_name = get_value(document.getElementById("item_id"));
+            var product_name = get_value(document.getElementById("item_name"));
             var request = "../delivery/delivery-post.php?operation=get_price&name=" + encodeURI(product_name);
 
             xmlhttp = new XMLHttpRequest();
@@ -42,7 +43,7 @@ print gui_button( "btn_new", "show_create_new()", "מארז חדש" );
             var q = get_value(document.getElementById("quantity"));
             var margin = get_value(document.getElementById("margin"));
 
-            var request = "bundle-post.php?operation=calculate&name=" + encodeURI(product_name) +
+            var request = "bundles-post.php?operation=calculate&name=" + encodeURI(product_name) +
                 "&quantity=" + q + "&margin=" + margin;
 
             xmlhttp = new XMLHttpRequest();
@@ -73,29 +74,38 @@ print gui_button( "btn_new", "show_create_new()", "מארז חדש" );
 
         }
 
-        function get_value(element) {
-            if (element.tagName == "INPUT") {
-                return element.value;
-            } else {
-                return element.nodeValue;
+        function create_bundle() {
+            var item_name = get_value(document.getElementById("item_name"));
+            var quantity = get_value(document.getElementById("quantity"));
+            var margin = get_value(document.getElementById("margin"));
+
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                // Wait to get query result
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+                {
+                    updateDisplay();
+                }
             }
+            var request = post_url + "?operation=add_item&item_name=" + encodeURI(item_name) + "&quantity=" + quantity +
+                "&margin=" + encodeURI(margin);
+            xmlhttp.open("GET", request, true);
+            xmlhttp.send();
         }
+
 
         function save_items() {
             var table = document.getElementById(table_name);
-            var sel = document.getElementById("supplier_id");
-            var id = sel.options[sel.selectedIndex].value;
 
             var collection = document.getElementsByClassName(class_name + "_checkbox");
             var params = new Array();
             for (var i = 0; i < collection.length; i++) {
                 if (collection[i].checked) {
-                    var name = get_value(table.rows[i + 1].cells[1].firstChild);
-                    var new_price = get_value(table.rows[i + 1].cells[3].firstChild);
-                    var sel = document.getElementById("supplier_id");
-                    var supplier_id = sel.options[sel.selectedIndex].value;
+                    var bundle_id = table.rows[i + 1].cells[0].firstChild.id;
+                    var margin = get_value(table.rows[i + 1].cells[4].firstChild);
 
-                    params.push(name, new_price, supplier_id);
+                    params.push(bundle_id);
+                    params.push(encodeURI(margin));
                 }
             }
             xmlhttp = new XMLHttpRequest();
@@ -106,7 +116,7 @@ print gui_button( "btn_new", "show_create_new()", "מארז חדש" );
                     updateDisplay();
                 }
             }
-            var request = post_url + "?operation=update_price&supplier_id=" + id + "&params=" + params;
+            var request = post_url + "?operation=update&params=" + params;
             xmlhttp.open("GET", request, true);
             xmlhttp.send();
         }
@@ -204,12 +214,13 @@ print gui_datalist( "items", "im_products", "post_title" );
 			gui_header( 2, "רוווח" )
 		),
 		array(
-			'<input id="item_id" list="items" onchange="getPrice()">',
+			'<input id="item_name" list="items" onchange="getPrice()">',
 			'<div id="unit_price">',
 			'<input id="quantity">',
 			'<input id="margin" onchange="calcBundle()">'
 		)
 	) );
+	print gui_button( "btn_create_bundle", "create_bundle()", "צור" );
 
 	?>
 

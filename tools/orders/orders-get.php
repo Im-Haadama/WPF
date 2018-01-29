@@ -1,5 +1,6 @@
 <?php
 
+require_once( "../im_tools.php" );
 require_once( '../r-shop_manager.php' );
 require_once 'orders-common.php';
 require_once '../delivery/delivery.php';
@@ -315,6 +316,13 @@ function get_user_order_count( $u ) {
 
 <?php
 
+function debug_time1( $str ) {
+	$micro_date = microtime();
+	$date_array = explode( " ", $micro_date );
+	$date       = date( "Y-m-d H:i:s", $date_array[1] );
+	echo "$str $date:" . $date_array[0] . "<br>";
+}
+
 function orders_table( $statuses ) {
 	global $conn;
 //	LIKE 'wc-processing%' or post_status LIKE 'wc-on-hold%' order by 1";
@@ -325,6 +333,7 @@ function orders_table( $statuses ) {
 	if ( ! is_array( $statuses ) ) {
 		$statuses = array( $statuses );
 	}
+//	debug_time1("start loop");
 	foreach ( $statuses as $status ) {
 		// print $status . "<br/>";
 
@@ -344,11 +353,13 @@ function orders_table( $statuses ) {
 		}
 
 		$path = array();
+//		debug_time1("start route");
 		find_route_1( 1, $order_ids, $path, false );
+//		debug_time1("end route");
 
 		// print $sql;
 		$result = mysqli_query( $conn, $sql );
-
+//		debug_time1("after q");
 		$data                  .= "<table id='" . $status . "'>";
 		$data                  .= "<tr>";
 		$data                  .= gui_cell( gui_checkbox( "chk_all", "", "",
@@ -358,6 +369,7 @@ function orders_table( $statuses ) {
 		$data                  .= "<td><h3>שם המזמין</h3></td>";
 		$data                  .= "<td><h3>עבור</h3></td>";
 		$data                  .= "<td><h3>סכום</h3></td>";
+		$data                  .= "<td><h3>ישוב</h3></td>";
 		$data                  .= "</tr>";
 		$count                 = 0;
 		$total_delivery_total  = 0;
@@ -371,7 +383,9 @@ function orders_table( $statuses ) {
 		}
 
 		$count = 0;
+
 		while ( $row = mysqli_fetch_row( $result ) ) {
+			// debug_time1("after fetch");
 			$order_id    = $row[0];
 			$row_text    = gui_cell( gui_checkbox( "chk_" . $order_id, "select_order" ) );
 			$customer_id = order_get_customer_id( $order_id );
@@ -419,7 +433,7 @@ function orders_table( $statuses ) {
 					$total_order_delivered += $order_total;
 				}
 			} else {
-				$row_text .= "<td></td><td></td><td></td>";
+				$row_text .= "<td>" . order_info( $order_id, '_shipping_city' ) . "</td><td></td><td></td>";
 			}
 			$line = $row_text;
 

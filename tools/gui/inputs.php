@@ -22,7 +22,12 @@ function gui_datalist( $id, $table, $field, $include_id = false ) {
 
 	$data = "<datalist id=\"" . $id . "\">";
 
-	$sql    = "select " . $field . ", id from " . $table;
+	$sql = "select " . $field;
+	if ( $include_id ) {
+		$sql .= ", id";
+	}
+	$sql .= " from " . $table;
+
 	$result = mysqli_query( $conn, $sql );
 	if ( ! $result ) {
 		print mysqli_error( $conn );
@@ -283,8 +288,10 @@ function gui_row( $cells, $id = null, $show = null, &$acc_fields = null, $col_id
 		foreach ( $cells as $cell ) {
 			if ( is_array( $acc = $acc_fields[ $i ] ) ) {
 				// var_dump($acc);
-				$acc[1]( $acc_fields[ $i ][0], $cell );
-
+				if ( function_exists( $acc[1] ) )
+					$acc[1]( $acc_fields[ $i ][0], $cell );
+				else
+					print $acc[1] . " is not a function<br/>";
 //				print "Y" . ($sum_fields[$i] === true) . "Y";
 //				if (($sum_fields[$i] === true) and ($cell > 0)) { print "XX"; $sum_fields[$i] = 0; };
 				// $sum_fields[ $i ] += $cell;

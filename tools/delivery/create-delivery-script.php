@@ -345,9 +345,18 @@ print gui_datalist( "items", "im_products", "post_title" );
             total_vat += line_vat;
             total += line_total;
 
-            if (<?php print ( MultiSite::LocalSiteID() == 1 ) ? 1 : 0; ?> &&
-            (q >= 8) && (table.rows[i].cells.length > 7)
-        )
+            if (<?php
+		        $customer_id = order_get_customer_id( $order_id );
+
+		        $result = 0;
+		        if ( MultiSite::LocalSiteID() == 1 ) {
+			        if ( customer_type( $customer_id ) == 0 ) {
+				        $result = "(q >= 8) && (table.rows[i].cells.length > 7)";
+			        }
+		        }
+		        print $result;
+		        ?>
+            )
             {
                 var line_term_id = table.rows[i].cells[term_id].innerHTML;
                 // alert (line_term_id);
@@ -367,7 +376,7 @@ print gui_datalist( "items", "im_products", "post_title" );
 	    $customer_id = order_get_customer_id( $order_id );
 	    $wp_user = get_user_by( 'id', $customer_id );
 	    $roles = $wp_user->roles;
-	    if ( customer_type( $customer_id ) == 0 // Not owner or siton
+	    if ( $roles and customer_type( $customer_id ) == 0 // Not owner or siton
 	         and count( array_intersect( array( "staff" ), $roles ) )
 	    ) {
 		    print "employee_discount = true;";

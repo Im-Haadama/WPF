@@ -46,12 +46,12 @@ require_once( "../r-shop_manager.php" );
             return;
         }
         var address = get_value(document.getElementById("address"));
-        if (address.length < 6) {
+        if (address.length < 3) {
             alert("הכנס כתובת");
             return;
         }
         var city = get_value(document.getElementById("city"));
-        if (city.length < 5) {
+        if (city.length < 2) {
             alert("הכנס ישוב");
             return;
         }

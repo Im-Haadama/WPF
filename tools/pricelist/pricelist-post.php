@@ -55,6 +55,14 @@ switch ( $operation ) {
 		}
 		break;
 
+	case "delete_list":
+		print "Remove lines from list->draft items<br/>";
+		$pl->RemoveLines( 1 );
+		print "Remove the list<br/>";
+		$sql = "DELETE FROM im_suppliers WHERE id = " . $supplier_id;
+		sql_query( $sql );
+		break;
+
 	case "delete_price":
 		print "start delete";
 		$params = explode( ',', $_GET["params"] );
@@ -73,12 +81,12 @@ switch ( $operation ) {
 		break;
 
 	case "delete_map":
-		print "start delete";
+		print "start delete<br/>";
 		$params = explode( ',', $_GET["params"] );
 		for ( $pos = 0; $pos < count( $params ); $pos ++ ) {
-			$map_id = $params[ $pos ];
-			$cat->DeleteMapping( $map_id );
-//			$pl->Delete($price_id);
+			$pricelist_id = $params[ $pos ];
+			// print $map_id . "<br/>";
+			PriceList::DeleteMapping( $pricelist_id );
 		}
 		print "done delete";
 		break;
@@ -186,6 +194,15 @@ switch ( $operation ) {
 		$supplier_id = $_GET["supplier_id"];
 		$PL          = new PriceList( $supplier_id );
 		$PL->RemoveLines( $status );
+		break;
+
+	case 'get_prod':
+		$pricelist_id = $_GET["pricelist"];
+		$prod_link_id = Catalog::GetProdID( $pricelist_id, true );
+
+		$prod_id = $prod_link_id[0];
+		print $prod_id;
+		break;
 
 }
 

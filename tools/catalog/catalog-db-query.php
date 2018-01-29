@@ -49,6 +49,14 @@ switch ( $operation ) {
 		set_category( $ids, $category );
 		break;
 
+	case "add_category":
+		$category = $_GET["category"];
+		print "setting category " . $category . "<br/>";
+		$prod_ids = $_GET["prod_ids"];
+		$ids      = explode( ',', $prod_ids );
+		add_category( $ids, $category );
+		break;
+
 	case "set_supplier":
 		$supplier_name = $_GET["supplier_name"];
 		$prod_ids      = $_GET["prod_ids"];
@@ -105,7 +113,7 @@ function show_fresh_siton() {
 
 }
 
-function set_category( $prod_ids, $category ) {
+function add_category( $prod_ids, $category ) {
 
 	// my_log($debug_string, __FILE__);
 	foreach ( $prod_ids as $product_id ) {
@@ -114,6 +122,20 @@ function set_category( $prod_ids, $category ) {
 		print "prod " . $product_id . " " . get_product_name( $product_id );
 		terms_add_category( $product_id, $category );
 
+	}
+}
+
+function set_category( $prod_ids, $category ) {
+//	print header_text(false);
+//	var_dump($prod_ids); print "<br/>";
+//	print $category . "<br/>";
+	// my_log($debug_string, __FILE__);
+	foreach ( $prod_ids as $product_id ) {
+		// my_log("set supplier " . $prod, __FILE__);
+//		set_post_meta_field( $prod, "supplier_name", $supplier_name );
+//		print "prod " . $product_id . " " . get_product_name( $product_id );
+		terms_remove_category( $product_id );
+		terms_add_category( $product_id, $category );
 	}
 }
 
@@ -139,6 +161,8 @@ function show_catalog(
 		$show_fields[ CatalogFields::id ]         = true;
 		$show_fields[ CatalogFields::cost_price ] = true;
 		$show_fields[ CatalogFields::supplier ]   = true;
+	} else {
+		$show_fields[ CatalogFields::vat ] = true;
 	}
 
 	$count = 0;
@@ -183,6 +207,8 @@ function show_catalog(
 		print "update<br/>";
 		$show_fields[ CatalogFields::line_select ] = true;
 		$show_fields[ CatalogFields::status ]      = true;
+		$show_fields[ CatalogFields::category ]    = true;
+
 	}
 	if ( $order ) {
 		$show_fields[ CatalogFields::order ] = true;
@@ -229,8 +255,8 @@ function show_catalog(
 		$fields[ CatalogFields::name ] = $row[1];
 		// print "XXX" . CatalogFields::name . "XXX<br/>";
 
-		// $fields[CatalogFields::line_select] ="<input id=\"chk" . $prod_id . "\" class=\"product_checkbox\" type=\"checkbox\">";
-		$fields[ CatalogFields::id ] = $prod_id;
+		$fields[ CatalogFields::line_select ] = "<input id=\"chk" . $prod_id . "\" class=\"product_checkbox\" type=\"checkbox\">";
+		$fields[ CatalogFields::id ]          = $prod_id;
 
 		// price
 		$price = get_postmeta_field( $prod_id, '_price' );

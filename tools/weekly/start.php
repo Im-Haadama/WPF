@@ -81,8 +81,12 @@ function reset_inventory() {
 		sql_error( $sql );
 	}
 	$sql = "UPDATE im_info SET info_data = " . $last_supply . " WHERE info_key = 'inventory_in'";
-	print $sql;
+	// print $sql;
 	sql_query( $sql );
+	if ( mysqli_affected_rows( $conn ) < 1 ) {
+		sql_query( "insert into im_info  (info_key, info_data)
+ 					Values('inventory_in', $last_supply)" );
+	}
 
 	$sql = "create or replace view i_out as " .
 	       " select prod_id, round(sum(dl.quantity),1) as q_out " .
