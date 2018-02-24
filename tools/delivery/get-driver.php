@@ -3,6 +3,8 @@ require_once( '../r-shop_manager.php' );
 // require_once( '../../wp-content/plugins/woocommerce-delivery-notes/woocommerce-delivery-notes.php' );
 require_once( '../multi-site/multi-site.php' );
 require_once( '../account/account.php' );
+require_once( "../supplies/supplies.php" );
+
 $header = $_GET["header"];
 //if (isset($_GET["week"])) $week = $_GET["week"];
 //$footer = $_GET["footer"];
@@ -50,6 +52,65 @@ function print_deliveries( $edit = false ) {
 	foreach ( $orders as $order ) {
 		print_order( $order );
 	}
+
+	// Self collect supplies
+	$sql = "select s.id from im_supplies s
+          join im_suppliers r
+          Where r.self_collect = 1
+          and s.supplier = r.id 
+          and s.status = 3";
+
+	$supplies = sql_query_array_scalar( $sql );
+	foreach ( $supplies as $supply ) {
+		print_supply( $supply );
+	}
+}
+
+function print_supply( $id ) {
+	$site_tools = MultiSite::LocalSiteTools();
+
+	$fields = array();
+	array_push( $fields, MultiSite::LocalSiteName() );
+
+	$address = "";
+
+	$supplier_id = supply_get_supplier_id( $id );
+	$ref         = gui_hyperlink( $id, "../supplies/supply-get.php?id=" . $id );
+	$address     = sql_query_single_scalar( "select address from im_suppliers where id = " . $supplier_id );
+//	$receiver_name = get_meta_field( $order_id, '_shipping_first_name' ) . " " .
+//	                 get_meta_field( $order_id, '_shipping_last_name' );
+//	$shipping2     = get_meta_field( $order_id, '_shipping_address_2', true );
+//	$mission_id    = order_get_mission_id( $order_id );
+//	$ref           = $order_id;
+//
+	array_push( $fields, $ref );
+//
+	array_push( $fields, $supplier_id );
+//
+	array_push( $fields, get_supplier_name( $supplier_id ) );
+//
+	array_push( $fields, "<a href='waze://?q=$address'>$address</a>" );
+//
+	array_push( $fields, "" );
+//
+	array_push( $fields, sql_query_single_scalar( "select supplier_contact_phone from im_suppliers where id = " . $supplier_id ) );
+//	$payment_method = get_payment_method_name( $client_id );
+//	if ( $payment_method <> "מזומן" and $payment_method <> "המחאה" ) {
+//		$payment_method = "";
+//	}
+	array_push( $fields, "" );
+//
+	array_push( $fields, sql_query_single_scalar( "select mission_id from im_supplies where id = " . $id ) );
+//
+	array_push( $fields, MultiSite::LocalSiteID() );
+	// array_push($fields, get_delivery_id($order_id));
+
+
+	$line = "<tr> " . table_line( 1, $fields ) . "</tr>";
+
+	// get_field($order_id, '_shipping_city');
+
+	print $line;
 
 }
 
@@ -315,7 +376,7 @@ function table_header( $edit = false ) {
 	$data = "";
 	$data .= "<table><tr>";
 	$data .= "<td><h3>אתר</h3></td>";
-	$data .= "<td><h3>מספר </br>הזמנה</h3></td>";
+	$data .= "<td><h3>מספר </br>/הזמנה<br/>אספקה</h3></td>";
 	$data .= "<td><h3>מספר </br>לקוח</h3></td>";
 //	$data .= "<td><h3>שם המזמין</h3></td>";
 	$data .= "<td><h3>שם המקבל</h3></td>";

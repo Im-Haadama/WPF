@@ -17,12 +17,6 @@ print header_text();
 	$contents = fread( $handle, filesize( $filename ) );
 	print $contents;
 
-	$user = wp_get_current_user();
-	$roles = $user->roles;
-	if ( count( array_intersect( array( "administrator" ), $roles ) ) < 1 ) {
-		// print gui_select_client()
-	}
-
 	?>
     function get_value(element) {
         if (element.tagName == "INPUT") {
@@ -101,6 +95,14 @@ print header_text();
             "&extra_text=" + encodeURI(extra_text) +
             "&extra=" + extra;
 
+	    <? if ( $role == 'hr' ) {
+	    print 'var user_name = get_value(document.getElementById("worker_select"));
+;';
+	    print 'var worker_id = user_name.substr(0, user_name.indexOf(")"));
+';
+	    print 'request = request + "&worker_id=" + worker_id;';
+    }
+	    ?>
         // document.getElementById("debug").innerHTML = request;
         xmlhttp.open("GET", request, true);
         xmlhttp.send();
@@ -114,26 +116,36 @@ print header_text();
 <?php
 
 print gui_header( 1, "הוספת פעילות" );
+
+$table = array();
+if ( $role == 'hr' ) {
+	array_push( $table, array( "בחר עובד", gui_select_worker() ) );
+}
+array_push( $table, ( array( "תאריך", gui_input_date( "date", date( 'Y-m-d' ) ) ) ) );
+array_push( $table, ( array(
+	"משעה",
+	'<input id="start_h" type="time" value="09:00" pattern="([1]?[0-9]|2[0-3]):[0-5][0-9]">'
+) ) );
+array_push( $table, ( array(
+	"עד שעה",
+	'<input id="end_h" type="time" value="13:00" pattern="([1]?[0-9]|2[0-3]):[0-5][0-9]">'
+) ) );
+array_push( $table, ( array( "פרויקט", gui_select_table( "project", "im_projects", "3", "", "", "project_name" ) ) ) );
+
+print gui_table( $table );
 ?>
 <div>
-    תאריך
-    <input id="date" type="date" value="<?php echo date( 'Y-m-d' ); ?>"><br/>
-    משעה
-    <input id="start_h" type="time" value="09:00" pattern="([1]?[0-9]|2[0-3]):[0-5][0-9]">
-    עד שעה
-    <input id="end_h" type="time" value="13:00" pattern="([1]?[0-9]|2[0-3]):[0-5][0-9]"><br/>
-
-    פרויקט
-    <select id="project">
-		<?php
-		$sql    = "SELECT id, project_name FROM im_projects";
-		$result = sql_query( $sql );
-
-		while ( $row = mysqli_fetch_row( $result ) ) {
-			print "<option value=\"" . $row[0] . "\">" . $row[1] . "</option>";
-		}
-		?>
-    </select><br/>
+    <!--    פרויקט-->
+    <!--    <select id="project">-->
+    <!--		--><?php
+	//		$sql    = "SELECT id, project_name FROM im_projects";
+	//		$result = sql_query( $sql );
+	//
+	//		while ( $row = mysqli_fetch_row( $result ) ) {
+	//			print "<option value=\"" . $row[0] . "\">" . $row[1] . "</option>";
+	//		}
+	//		?>
+    <!--    </select><br/>-->
 	<?php
 	print gui_header( 2, "הוצאות נסיעה" );
 	print gui_input( "traveling", "" ) . "<br/>";

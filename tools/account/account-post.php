@@ -18,6 +18,12 @@ my_log( __FILE__, "operation = " . $operation );
 
 $operation = $_GET["operation"];
 switch ( $operation ) {
+	case "set_client_type":
+		$id   = $_GET["id"];
+		$type = $_GET["type"];
+		set_client_type( $id, $type );
+		break;
+
 	case "save_payment":
 		$user_id   = $_GET["user_id"];
 		$method_id = $_GET["method_id"];
@@ -41,11 +47,10 @@ switch ( $operation ) {
 		$delivery_ids = $_GET["ids"];
 		$user_id      = $_GET["user_id"];
 		$ids          = explode( ',', $delivery_ids );
-		$doc_id       = invoice_create_document( "i", $ids, $user_id );
+		$doc_id       = invoice_create_document( "i", $ids, $user_id, date( "Y-m-d" ) );
 		break;
 
 	case "create_receipt":
-		print "my log <br/>";
 		my_log( "create_receipt" );
 		$cash         = $_GET["cash"];
 		$bank         = $_GET["bank"];
@@ -56,6 +61,18 @@ switch ( $operation ) {
 		$user_id      = $_GET["user_id"];
 		$date         = $_GET["date"];
 		$ids          = explode( ',', $delivery_ids );
+
+		$no_ids = true;
+		foreach ( $ids as $id ) {
+			if ( $id > 0 ) {
+				$no_ids = false;
+			}
+		}
+		if ( $no_ids ) {
+			print "לא נבחרו תעודות משלוח";
+
+			return;
+		}
 		$c            = $cash - $change;
 //        if (abs($c) < 0) $c =0;
 		//      if (round($c,0) < 1 or round($c,0) < 1)
@@ -216,6 +233,18 @@ function sc_balance( $atts ) {
 	return $text;
 }
 
+function set_client_type( $id, $type ) {
+	print $id . " " . $type . "<br/>";
+	if ( $type == 0 ) {
+		print delete_user_meta( $id, "_client_type" );
+
+		return;
+	}
+	$meta = sql_query_single_scalar( "select type from im_client_types where id = " . $type );
+	update_user_meta( $id, "_client_type", $meta );
+
+}
+
 function send_month_summary( $user_ids ) {
 	global $current_user;
 	global $support_email;
@@ -280,20 +309,16 @@ function invoice_create_document( $type, $ids, $customer_id, $date, $cash = 0, $
 		die ( "can't login" );
 	}
 
-//	$client_name = get_customer_name( $user_id );
-//
-//	// print "client name " . $client_name . "<br/>";
-//	$client = $invoice->GetCustomerByName( $client_name );
-	// var_dump($client);
-	$client_email = get_customer_email( $customer_id );
-	// print $client_email;
-	$client = $invoice->GetCustomerByEmail( $client_email );
+	$invoice_client_id = get_invoice_user_id( $customer_id );
 
-	if ( is_null( $client->ID ) ) {
-		// var_dump($invoice);
-		$client = $invoice->GetCustomerByName( get_customer_name( $customer_id ) ) or die( "cant get client name" );
+	$client = $invoice->GetCustomerById( $invoice_client_id );
+
+	if ( ! ( $client->ID ) > 0 ) {
+		print "Client not found " . $customer_id . "<br>";
+		var_dump( $client );
+
+		return 0;
 	}
-
 	$email = $client->Email;
 	// print "user mail: " . $email . "<br/>";
 	$doc = new Document();
@@ -339,18 +364,18 @@ function invoice_create_document( $type, $ids, $customer_id, $date, $cash = 0, $
 			if ( $row[4] != 0 ) {
 				$item           = new Item();
 				$item->Name     = $row[0];
-				$item->Price    = $row[3];
-				$item->Quantity = $row[1];
+				$item->Price    = round( $row[3], 1 );
+				$item->Quantity = round( $row[1], 1);
 				if ( $row[2] > 0 ) {
 					$item->TaxPercentage   = 17;
 					$item->TotalWithoutTax = round( $row[4] / 1.17, 2 );
 				} else {
 					$item->TaxPercentage   = 0;
-					$item->TotalWithoutTax = $row[4];
+					$item->TotalWithoutTax = round( $row[4], 2);
 				}
-				$item->Total = $row[4];
+				$item->Total = round( $item->Price * $item->Quantity, 2);
 				//            if ($debug) {
-				//                print $item->Name . ", " . $row[2] . "total: " . $item->Total . "<br/>";
+				//     print $item->Name . ":" . $item->Quantity . "*" . $item->Price . " " . $item->Total . "<br/>";
 				//            }
 				array_push( $doc->Items, $item );
 				$total_lines += $item->Total;

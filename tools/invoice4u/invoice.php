@@ -72,6 +72,11 @@ class Invoice4u {
 	}
 
 	public function CreateDocument( $doc ) {
+		if ( ! $doc->ClientID > 0 ) {
+			print "No client<br/>";
+
+			return 0;
+		}
 		$wsdl = "http://private.invoice4u.co.il/Services/DocumentService.svc?wsdl";
 
 		$this->result = $this->requestWS( $wsdl, "CreateDocument", array( 'doc' => $doc, 'token' => $this->token ) );
@@ -84,7 +89,10 @@ class Invoice4u {
 //        var_dump($this->result);
 		$docNum = $this->result->DocumentNumber;
 		if ( $docNum == 0 ) {
-			var_dump( $doc );
+			foreach ( $doc->Items as $item ) {
+				print $item->Name . " " . $item->Quantity . " " . $item->Price . " " . $item->Total . "<br/>";
+			}
+			// var_dump( $doc );
 			$check_total  = 0;
 			$check_total2 = 0;
 			$pay_total    = 0;
@@ -103,9 +111,13 @@ class Invoice4u {
 
 			print "errors: ";
 			var_dump( $this->result->Errors );
-			print "calculated total: " . $check_total . "<br/>";
-			print "calculated total2: " . $check_total2 . "<br/>";
-			print "total paid: " . $pay_total . "<br/>";
+			if ( $check_total != $check_total2 or $check_total != $pay_total ) {
+				print "calculated total: " . $check_total . "<br/>";
+				print "calculated total2: " . $check_total2 . "<br/>";
+				print "total paid: " . $pay_total . "<br/>";
+			}
+			print "client id: " . $doc->Id . "<br/>";
+			var_dump( $doc );
 		}
 
 		return $docNum;
@@ -126,6 +138,32 @@ class Invoice4u {
 		return $this->result;
 	}
 
+	public function GetCustomerById( $id ) {
+		$wsdl = "http://private.invoice4u.co.il/Services/CustomerService.svc?wsdl";
+
+		$cust = new Customer( "" );
+
+		$response  = $this->requestWS( $wsdl, "GetCustomers", array(
+			'cust'       => $cust,
+			'token'      => $this->token,
+			'getAllRows' => false
+		) );
+		$customers = $response->Response->Customer;
+		// var_dump($customers);
+		if ( $customers ) {
+			foreach ( $customers as $customer ) {
+				// var_dump($customer);die(1);
+				//	print $customer->ID . "<br/>";
+				if ( $customer->ID == $id ) {
+					// print "found<br/>";
+					return $customer;
+				}
+			}
+		}
+
+		return null;
+	}
+
 	public function GetCustomerByEmail( $email ) {
 		$wsdl = "http://private.invoice4u.co.il/Services/CustomerService.svc?wsdl";
 
@@ -138,6 +176,7 @@ class Invoice4u {
 			'getAllRows' => false
 		) );
 		$customers = $response->Response->Customer;
+		// var_dump($customers);
 		if ( $customers )
 			foreach ( $customers as $customer ) {
 			// print $customer->Email . " ";

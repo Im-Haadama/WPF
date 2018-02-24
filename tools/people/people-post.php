@@ -16,20 +16,14 @@ if ( ! isset( $_GET["operation"] ) ) {
 }
 $operation = $_GET["operation"];
 
+
 switch ( $operation ) {
 	case "display":
-		$user = wp_get_current_user();
-		print $user->id;
-
-		if ( $user->id == 1 ) {
-			print print_transactions();
-		} else {
-			print print_transactions( $user->id );
-		}
+		print print_transactions( $role );
 		break;
 
 	case "display_all":
-		print print_transactions();
+		print print_transactions( 'hr' );
 
 		break;
 
@@ -47,7 +41,12 @@ switch ( $operation ) {
 		if ( isset( $_GET["user_id"] ) ) {
 			$user_id = $_GET["user_id"];
 		} else {
-			$user_id = get_user_id();
+			if ( isset( $_GET["worker_id"] ) ) {
+				$w       = $_GET["worker_id"];
+				$user_id = sql_query_single_scalar( "SELECT worker_id FROM im_working WHERE id = " . $w );
+			} else {
+				$user_id = get_user_id();
+			}
 		}
 		// if ($user_id = 1) $user_id = 238;
 		add_activity( $user_id, $date, $start, $end, $project, $vol, $traveling, $extra_text, $extra );
@@ -55,7 +54,7 @@ switch ( $operation ) {
 
 	case "show_all":
 		$month = $_GET["month"];
-		show_all( $month );
+		show_all( $role, $month );
 		break;
 	case "delete":
 		// $params = explode(',', $_GET["params"]);
@@ -72,7 +71,7 @@ switch ( $operation ) {
 
 }
 
-function show_all( $month ) {
+function show_all( $role, $month ) {
 	global $conn;
 
 	$a = explode( "-", $month );
@@ -92,7 +91,7 @@ function show_all( $month ) {
 
 		if ( $row[1] ) {
 			print gui_header( 1, get_user_name( $u ) );
-			print print_transactions( $u, $m, $y );
+			print print_transactions( $role, $u, $m, $y );
 		}
 	}
 

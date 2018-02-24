@@ -141,25 +141,28 @@ function show_inventory() {
 	// print $data;
 }
 
+function do_get_out( $prod_id ) {
+	$sql = "SELECT q_out FROM i_out WHERE prod_id = " . $prod_id;
+
+	// print $sql;
+	return sql_query_single_scalar( $sql );
+
+}
 function get_out( $prod_id ) {
 	if ( ! ( $prod_id > 0 ) ) {
 		print "Bad usage get_out<br/>";
 
 		return 0;
 	}
-	$sql = "SELECT q_out FROM i_out WHERE prod_id = " . $prod_id;
-	// print $sql;
-	$r = sql_query_single_scalar( $sql );
-	if ( ! is_numeric( $r ) ) {
-		$r = 0;
-	}
+	$r = do_get_out( $prod_id );
 	$b = Bundle::CreateFromProd( $prod_id );
-	if ( $b ) { // We have a bundle
+	if ( $b and $b->GetProdId() > 0 ) { // We have a bundle
+		// var_dump($b);
 ////		print "bundle " . $b- . "<br/>";
 //		$sql = "SELECT q_out FROM i_out WHERE prod_id = " . $b->GetProdId();
 //		// print $sql;
 		// print $prod_id . " " . get_product_name($prod_id) . " " . $b->GetBundleProdId() . "<br/>";
-		$r += $b->GetQuantity() * get_out( $b->GetBundleProdId() );
+		$r += $b->GetQuantity() * do_get_out( $b->GetBundleProdId() );
 	}
 
 	return $r;

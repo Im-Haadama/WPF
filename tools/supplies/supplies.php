@@ -73,10 +73,46 @@ class Supply {
 	}
 
 	public function EditSupply( $internal ) {
-		print "edit<br/>";
+		// print "edit<br/>";
 		print nl2br( sql_query_single_scalar( "SELECT text FROM im_supplies WHERE id = " . $this->ID ) ) . "<br/>";
 		print_supply_lines( $this->ID, $internal, true );
 	}
+
+	/**
+	 * @return int
+	 */
+	public function getID() {
+		return $this->ID;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getDate() {
+		return $this->Date;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getSupplier() {
+		return $this->Supplier;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getText() {
+		return $this->Text;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getBusinessID() {
+		return $this->BusinessID;
+	}
+
 
 }
 function create_supply( $supplierID ) {
@@ -88,10 +124,11 @@ function create_supply( $supplierID ) {
 	return mysqli_insert_id( $conn );
 }
 
-function supply_add_line( $supply_id, $prod_id, $quantity, $units = 0 ) {
-	$sql = "INSERT INTO im_supplies_lines (supply_id, product_id, quantity, units) VALUES "
-	       . "( " . $supply_id . ", " . $prod_id . ", " . $quantity . ", " . $units . ")";
+function supply_add_line( $supply_id, $prod_id, $quantity, $price, $units = 0 ) {
+	$sql = "INSERT INTO im_supplies_lines (supply_id, product_id, quantity, units, price) VALUES "
+	       . "( " . $supply_id . ", " . $prod_id . ", " . $quantity . ", " . $units . ", " . $price . " )";
 
+	print $sql;
 	sql_query( $sql );
 }
 
@@ -227,6 +264,11 @@ function print_supply_lines( $id, $internal, $edit = true ) {
 
 		$line .= "<td>" . $attr_text . "</td>";
 
+		if ( ! ( $item_price > 0 ) ) {
+			$item_price = get_buy_price( $prod_id, $supplier_id );
+			$total_line = $item_price * $quantity;
+			$total      += $total_line;
+		}
 		//    $line .= "<td>" . $vat_line . "</td>";
 		if ( $item_price > 0 ) {
 			$line .= "<td>" . sprintf( '%0.2f', $item_price ) . "</td>";
@@ -289,7 +331,7 @@ function send_supplies( $ids ) {
 
 		print '<body dir="rtl">';
 
-		print_supplies( array( $id ), false );
+		print_supplies_table( array( $id ), false );
 
 		print '</body>';
 		print '</html>';
@@ -303,10 +345,11 @@ function send_supplies( $ids ) {
 
 		send_mail( "הזמנה מספר " . $id, $email . ", info@im-haadama.co.il.test-google-a.com", $message );
 		print "הזמנוה מספר " . $id . " (ספק " . get_supplier_name( $supplier_id ) . ") נשלחה ל" . $email . "<br/>";
+
 	}
 }
 
-function print_supplies( $ids, $internal ) {
+function print_supplies_table( $ids, $internal ) {
 //    print "<html dir=\"rtl\">";
 	foreach ( $ids as $id ) {
 		print "<h1>";
@@ -471,16 +514,21 @@ WHERE status = 1 AND supply_id IN (" . $supply_id . ", " . rtrim( implode( ",", 
 //
 //call get_product_name(35);
 
-function display_active_supplies( $status ) {
-	global $conn;
 
-	$has_lines = false;
-	$sql       = "SELECT id, supplier, status, date(date) FROM im_supplies WHERE status IN (" .
-	             implode( ",", $status ) . ") AND id > (SELECT info_data FROM im_info where info_key='inventory_in')"
+function display_supplies( $week ) {
+	$sql = "SELECT id, supplier, status, date(date), paid_date FROM im_supplies WHERE status IN (1, 3, 5) AND 
+			 first_day_of_week(date) = '" . $week . "'"
 	             . " ORDER BY 4, 3, 2";
 
-	// print $sql;
-	$result = mysqli_query( $conn, $sql );
+//	print $sql;
+
+	return do_display_supplies( $sql );
+}
+
+function do_display_supplies( $sql ) {
+	$result = sql_query( $sql );
+
+	$has_lines = false;
 
 	if ( ! $result ) {
 		sql_error( $sql );
@@ -488,7 +536,8 @@ function display_active_supplies( $status ) {
 	}
 	$result = sql_query( $sql );
 
-	$data = "<table border='1'><tr><td>בחר</td><td><h3>מספר</h3></td><td><h3>תאריך</h3></td><td><h3>ספק</h3></td><td>סטטוס</td></tr>";
+	$data = "<table border='1'><tr><td>בחר</td><td><h3>מספר</h3></td><td><h3>תאריך</h3></td><td><h3>ספק</h3></td><td>סטטוס</td>";
+	$data .= gui_cell( "תאריך תשלום" ) . "</tr>";
 	while ( $row = mysqli_fetch_row( $result ) ) {
 		$supply_id   = $row[0];
 		$supplier_id = $row[1];
@@ -497,6 +546,11 @@ function display_active_supplies( $status ) {
 		$value       .= "<td>" . $row[3] . '</td>';
 		$value       .= "<td>" . get_supplier_name( $supplier_id ) . '</td>';
 		$value       .= "<td>" . get_supply_status_name( $supply_id ) . '</td>';
+		$date        = $row[4];
+		if ( $date = "0000-00-00" ) {
+			$date = null;
+		}
+		$value       .= gui_cell( $date );
 		$value       .= "</tr>";
 
 		$data      .= $value;
@@ -509,6 +563,18 @@ function display_active_supplies( $status ) {
 	}
 
 	return null;
+
+}
+
+function display_active_supplies( $status ) {
+	global $conn;
+
+	$sql = "SELECT id, supplier, status, date(date) FROM im_supplies WHERE status IN (" .
+	       implode( ",", $status ) . ") AND id > (SELECT info_data FROM im_info where info_key='inventory_in')"
+	       . " ORDER BY 4, 3, 2";
+
+	return do_display_supplies( $sql );
+	// print $sql;
 	// print $data;
 }
 
@@ -521,6 +587,7 @@ function create_supplier_order( $supplier_id, $ids ) {
 		$quantity = $ids[ $pos + 1 ];
 		$units    = $ids[ $pos + 2 ];
 		print "adding " . $prod_id . " quantity " . $quantity . " units " . $units . "<br/>";
+		$price = get_buy_price( $prod_id, $supplier_id);
 
 		// Calculate the price
 //        $pricelist = new PriceList($supplier_id);
@@ -528,7 +595,32 @@ function create_supplier_order( $supplier_id, $ids ) {
 //        $sell_price = calculate_price($buy_price, $supplier_id);
 
 //        my_log("supplier_id = " . $supplier_id . " name = " . $product_name);
-		supply_add_line( $supply_id, $prod_id, $quantity, $units );
+		supply_add_line( $supply_id, $prod_id, $quantity, $price, $units );
+
+	}
+}
+
+function supply_set_pay_date( $id, $date ) {
+	sql_query( "update im_supplies set date = " . $date . " where id = " . $id );
+}
+
+function display_date( $date ) {
+	if ( $date != "0000-00-00" ) {
+		print $date;
+	}
+}
+
+function display_status( $status ) {
+	switch ( $status ) {
+		case SupplyStatus::Supplied:
+			print "סופק";
+			break;
+		case SupplyStatus::Sent:
+			print "נשלח";
+			break;
+		case SupplyStatus::NewSupply:
+			print "חדש";
+			break;
 
 	}
 }

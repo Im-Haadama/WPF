@@ -43,6 +43,15 @@ function gui_select_client( $active_days, $new = false ) {
 //		$sql_where );
 }
 
+function gui_select_client_type( $id, $value, $events = null ) {
+	// print $sql_where;
+	$none = array( "id" => 0, "type" => "רגיל" );
+
+	return gui_select_table( $id, "im_client_types", $value, $events, array( $none ), "type",
+		null, true );
+//		$sql_where );
+}
+
 
 function gui_select_mission( $id, $selected = 0, $events = "" ) {
 //	IFNULL(DATE,NOW()) >= NOW()
@@ -55,4 +64,8 @@ function gui_select_mission( $id, $selected = 0, $events = "" ) {
 
 function gui_edit_user( $user_id ) {
 	print gui_hyperlink( "", "../account/get-customer-account.php?customer_id=" . $user_id );
+}
+
+function gui_select_payment( $id, $events, $default ) {
+	return gui_select_table( $id, "im_payments", $default, $events );
 }

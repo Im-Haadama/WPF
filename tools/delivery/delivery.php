@@ -117,7 +117,8 @@ class delivery {
 	}
 
 	public function Price() {
-		$sql = 'SELECT transaction_amount FROM im_client_accounts WHERE transaction_ref = ' . $this->ID;
+		// $sql = 'SELECT round(transaction_amount, 2) FROM im_client_accounts WHERE transaction_ref = ' . $this->ID;
+		$sql = 'SELECT round(total, 2) FROM im_delivery WHERE id = ' . $this->ID;
 		// my_log($sql);
 
 		return sql_query_single_scalar( $sql );
@@ -163,7 +164,7 @@ class delivery {
 
 //		p_id = 6,
 //		term_id = 8,
-		$refund = false;
+//		$refund = false;
 
 		switch ( $document_type ) {
 			case ImDocumentType::order:
@@ -224,12 +225,15 @@ class delivery {
 		         " table.prods, td.prods, th.prods { border: 1px solid black; } " .
 		         " </style>";
 
-		$data .= "<table class=\"prods\" id=\"del_table\" border=\"1\">";
+		// Orig: $data .= "<table class=\"prods\" id=\"del_table\" border=\"1\">";
+		$data .= "<table style='border-collapse: collapse'  id=\"del_table\">";
+
 		// <tr><td>פריט</td><td>כמות הוזמן</td><td>יחידה</td></td><td>כמות סופק</td><td>חייב מע\"מ</td><td>מע\"מ</td><td>מחיר</td><td>סהכ</td>";
 
 		// Print header
-		$sum  = null;
-		$data .= gui_row( $header_fields, "header", $show_fields, $sum );
+		$sum   = null;
+		$style = 'style="border: 2px solid #dddddd; text-align: right; padding: 8px;"';
+		$data  .= gui_row( $header_fields, "header", $show_fields, $sum, null, $style );
 //		$data .= "<tr>";
 //		for ( $i = 0; $i < sizeof( $header_fields ); $i ++ ) {
 //			// print $i . " " . $show_fields[$i] . "<br/>";
@@ -240,9 +244,9 @@ class delivery {
 
 		if ( $this->ID > 0 ) { // load delivery
 			$delivery_loaded = true;
-			$sql    = 'select id, product_name, quantity, quantity_ordered, vat, price, line_price, prod_id ' .
-			          'from im_delivery_lines ' .
-			          'where delivery_id=' . $this->ID . " order by 1";
+			$sql             = 'select id, product_name, round(quantity,1), quantity_ordered, vat, price, line_price, prod_id ' .
+			                   'from im_delivery_lines ' .
+			                   'where delivery_id=' . $this->ID . " order by 1";
 
 			if ( $debug ) {
 				print $sql . "<Br/>";
@@ -261,7 +265,7 @@ class delivery {
 				}
 				// $data .= $this->delivery_line($show_fields, $row["id"], $row["quantity_ordered"], "", $row["quantity"], $row["price"], $row["vat"], $row["prod_id"], $refund, "" );
 				// TODO: client Type
-				$data .= $this->delivery_line( $show_fields, ImDocumentType::delivery, $row["id"], $client_type, $operation, $margin );
+				$data .= $this->delivery_line( $show_fields, ImDocumentType::delivery, $row["id"], $client_type, $operation, $margin, $style );
 				// $data .= $this->delivery_line($show_fields, $document_type, $line_id, $client_type, $edit = false)
 			}
 			$del_price = $this->DeliveryFee();
@@ -289,7 +293,7 @@ class delivery {
 				}
 
 				// $data .= $this->delivery_line($show_fields, $prod_id, $quantity_ordered, "", $quantity_ordered, $price, $has_vat, $prod_id, $refund, $unit );
-				$data .= $this->delivery_line( $show_fields, $document_type, $order_item_id, $client_type, $operation, $margin );
+				$data .= $this->delivery_line( $show_fields, $document_type, $order_item_id, $client_type, $operation, $margin, $style );
 				// print "ex " . $expand_basket . " is " . is_basket($prod_id) . "<br/>";
 
 				if ( $expand_basket && is_basket( $prod_id ) ) {
@@ -361,7 +365,7 @@ class delivery {
 		$summary_line[ DeliveryFields::product_name ]  = "סה\"כ חייבי מע\"מ";
 		$summary_line[ DeliveryFields::delivery_line ] = $this->delivery_due_vat;
 		$summary_line[ DeliveryFields::order_line ]    = $this->order_due_vat;
-		$data                                          .= gui_row( $summary_line, "due", $show_fields, $sum, $delivery_fields_names );
+		$data                                          .= gui_row( $summary_line, "due", $show_fields, $sum, $delivery_fields_names, $style );
 
 
 		// Total VAT
@@ -369,7 +373,7 @@ class delivery {
 		$summary_line[ DeliveryFields::product_name ]  = "סכום מע\"מ";
 		$summary_line[ DeliveryFields::delivery_line ] = $this->delivery_total_vat;
 		$summary_line[ DeliveryFields::order_line ]    = $this->order_vat_total;
-		$data                                          .= gui_row( $summary_line, "vat", $show_fields, $sum, $delivery_fields_names );
+		$data                                          .= gui_row( $summary_line, "vat", $show_fields, $sum, $delivery_fields_names, $style );
 
 		// Total
 		$summary_line                                  = $empty_array;
@@ -377,7 +381,7 @@ class delivery {
 		$summary_line[ DeliveryFields::delivery_line ] = $this->delivery_total;
 		$summary_line[ DeliveryFields::order_line ]    = $this->order_total;
 		$summary_line[ DeliveryFields::line_margin ]   = $this->margin_total;
-		$data                                          .= gui_row( $summary_line, "tot", $show_fields, $sum, $delivery_fields_names );
+		$data                                          .= gui_row( $summary_line, "tot", $show_fields, $sum, $delivery_fields_names, $style );
 
 
 		$data = str_replace( "\r", "", $data );
@@ -399,7 +403,7 @@ class delivery {
 	// Delivery or Order line.
 	// If Document is delivery, line_id is delivery line id.
 	// If Document is order, line_id is order line id.
-	public function delivery_line( $show_fields, $document_type, $line_id, $client_type, $operation, $margin = false ) {
+	public function delivery_line( $show_fields, $document_type, $line_id, $client_type, $operation, $margin = false, $style = null ) {
 		global $delivery_fields_names;
 
 		global $debug;
@@ -467,7 +471,7 @@ class delivery {
 			// $line_price       = get_order_itemmeta( $line_id, '_line_total' );
 			switch ( $client_type ) {
 				case 0:
-					$price = round( $order_line_total / $quantity_ordered, 2 );
+					$price = round( $order_line_total / $quantity_ordered, 1 );
 					break;
 				case 1:
 					$price = siton_price( $prod_id );
@@ -488,7 +492,7 @@ class delivery {
 			if ( $debug ) {
 				print "loading from im_delivery_lines<br/>";
 			}
-			$sql = "SELECT prod_id, product_name, quantity_ordered, unit_ordered, quantity, price, line_price, vat FROM im_delivery_lines WHERE id = " . $line_id;
+			$sql = "SELECT prod_id, product_name, quantity_ordered, unit_ordered, round(quantity, 1), price, line_price, vat FROM im_delivery_lines WHERE id = " . $line_id;
 
 			$row = sql_query_single( $sql );
 			if ( ! $row ) {
@@ -506,9 +510,9 @@ class delivery {
 			$quantity_delivered = $row[4];
 			if ( $debug )
 				print "q = " . $quantity_delivered . "<br/>";
-			$price               = $row[5];
-			$delivery_line_price = $row[6];
-			$has_vat             = $row[7];
+			$price         = $row[5];
+			$delivery_line = $row[6];
+			$has_vat       = $row[7];
 
 			// $unit_ordered     = ;
 			// $order_line_total = $row[5];
@@ -539,7 +543,7 @@ class delivery {
 		}
 
 		if ( $has_vat ) {
-			$vat = round( ( $line_price * $global_vat ) / 100, 2 );
+			$vat = round( ( $delivery_line * $global_vat ) / 100, 2 );
 		}
 
 		// price
@@ -585,9 +589,9 @@ class delivery {
 				// $this->delivery_total             += $order_line;
 
 				// Delivery info
-				if ( is_numeric( $line[ DeliveryFields::price ] ) and is_numeric( $line[ DeliveryFields::delivery_q ] ) ) {
-					$delivery_line = $line[ DeliveryFields::price ] * $line[ DeliveryFields::delivery_q ];
-				}
+//				if ( is_numeric( $line[ DeliveryFields::price ] ) and is_numeric( $line[ DeliveryFields::delivery_q ] ) ) {
+//					$delivery_line = $line[ DeliveryFields::price ] * $line[ DeliveryFields::delivery_q ];
+//				}
 				$line[ DeliveryFields::delivery_line ] = $delivery_line;
 				// if ($line[$delivery_line])
 				$this->delivery_total += $delivery_line;
@@ -670,7 +674,7 @@ class delivery {
 
 		$sums = null;
 
-		return gui_row( $line, $this->line_number, $show_fields, $sums, $delivery_fields_names);
+		return gui_row( $line, $this->line_number, $show_fields, $sums, $delivery_fields_names, $style );
 	}
 
 	public function DeliveryFee() {
@@ -789,23 +793,19 @@ class delivery {
 		my_log( __FILE__, "dlines = " . $dlines );
 
 		$del_user = order_info( $order_id, '_billing_first_name' );
-		$message  = header_text();
-		$message  .= "
-<html lang=\"he\">
-<head>
-<meta charset=\"utf-8\" />
-<title>משלוח חדש</title>
-</head>
-<body dir=\"rtl\">
-שלום " . $del_user . "!
+		$message  = header_text( true, true, true );
+
+		$message .= "<body>";
+		$message .= "שלום " . $del_user . "!
 <br><br>
 המשלוח שלך ארוז ויוצא לדרך!";
-		$message  .= "<br> היתרה המעודכנת במערכת " . client_balance( $client_id );
 
 		$message .= "<Br> להלן פרטי המשלוח";
 
 		$message .= $this->delivery_text( ImDocumentType::delivery, ImDocumentOperation::show);
 		// file_get_contents("http://store.im-haadama.co.il/tools/delivery/get-delivery.php?id=" . $del_id . "&send=1");
+
+		$message .= "<br> היתרה המעודכנת במערכת " . client_balance( $client_id );
 
 		$message .= "<br /> לפרטים אודות מצב החשבון והמשלוח האחרון הכנס
 <a href = \"" . get_site_tools_url( Multisite::LocalSiteID() ) . "/account/get-customer-account.php?customer_id=" . $client_id . "\"> לאתר</a>.

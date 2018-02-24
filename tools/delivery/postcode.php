@@ -87,29 +87,3 @@ function get_postcode_array( $array ) {
 		print $line[0] . " " . $line [1] . "<br/>";
 	}
 }
-
-function get_postcode( $city ) {
-	$url = "http://www.israelpost.co.il/zip_data.nsf/SearchZip?OpenAgent&Location=" . urlencode( $city ) . "&POB=1";
-
-	$ch = curl_init();
-
-	$timeout = 5;
-	curl_setopt( $ch, CURLOPT_URL, $url );
-	curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 );
-	curl_setopt( $ch, CURLOPT_CONNECTTIMEOUT, $timeout );
-	$data = curl_exec( $ch );
-	curl_close( $ch );
-
-	$value = array();
-	if ( preg_match( "/RES[0-9]*/", $data, $value ) ) {
-		$result = substr( $value[0], 4 );
-
-		if ( $result == "11" or $result == "12" or $result == "13" ) {
-			return - 1;
-		}
-
-		return $result;
-	}
-
-	return - 2;
-}

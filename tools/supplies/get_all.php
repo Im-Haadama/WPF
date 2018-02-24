@@ -100,7 +100,7 @@ print "</tr>";
 $seq    = 1;
 $result = mysqli_query( $conn, $sql );
 while ( $row = mysqli_fetch_row( $result ) ) {
-	print_supplies( $url, $row[0], true );
+	print_supplies_table( $url, $row[0], true );
 }
 function print_supplies( $url, $id, $horizontal ) {
 	$sql = "select id, status, date, supplier, text, business_id from im_supplies where id = $id";

@@ -228,10 +228,10 @@ class Catalog {
 			$line .= "</tr>";
 
 			// Draft the product.
-			print "drafting " . $prod_id . "<br/>";
 			Catalog::DraftItems( array( $prod_id ) );
 
 			// Draft Bundles.
+			print "checking bundles<br>";
 			$sql     = "SELECT bundle_prod_id FROM im_bundles WHERE prod_id = " . $prod_id;
 			$bundles = sql_query_array_scalar( $sql );
 			if ( $bundles )
@@ -289,6 +289,7 @@ class Catalog {
 	static function DraftItems( $ids ) {
 		my_log( "start draft", "catalog-update-post.php" );
 		for ( $pos = 0; $pos < count( $ids ); $pos ++ ) {
+			print "drafting " . $ids[ $pos ] . "<br/>";
 			my_log( "id = " . $ids[ $pos ] );
 			$product_id = $ids[ $pos ];
 

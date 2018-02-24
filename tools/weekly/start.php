@@ -49,21 +49,44 @@ if ( isset( $_GET["operation"] ) ) {
 function reset_inventory() {
 	global $conn;
 	$sql    = "UPDATE im_supplies SET status = 9 WHERE status IN (1, 3)";
-	$result = mysqli_query( $conn, $sql );
+	sql_query( $sql );
 
 	$sql    = "SELECT max(id) FROM im_supplies";
-	$result = mysqli_query( $conn, $sql );
+	$result = sql_query( $sql );
 	$row    = mysqli_fetch_row( $result );
 
 	$last_supply = $row[0];
 
-	print "last supply: " . $last_supply . "<br/>";
-
 	$sql    = "SELECT max(id) FROM im_delivery";
-	$result = mysqli_query( $conn, $sql );
+	$result = sql_query( $sql );
 	$row    = mysqli_fetch_row( $result );
 
 	$last_delivery = $row[0];
+
+	$sql = "UPDATE im_info SET info_data = " . $last_supply . " WHERE info_key = 'inventory_in'";
+	// print $sql;
+	sql_query( $sql );
+
+	if ( mysqli_affected_rows( $conn ) < 1 ) {
+		sql_query( "insert into im_info  (info_key, info_data)
+ 					Values('inventory_in', $last_supply)" );
+	}
+
+	sql_query( "UPDATE im_info SET info_data = " . $last_delivery . " WHERE info_key = 'inventory_out'" );
+
+	if ( mysqli_affected_rows( $conn ) < 1 ) {
+		sql_query( "insert into im_info  (info_key, info_data)
+ 					Values('inventory_out', $last_delivery)" );
+	}
+
+	do_reset_inventory( $last_supply, $last_delivery );
+}
+
+function do_reset_inventory( $last_supply, $last_delivery ) {
+	global $conn;
+
+	print "last supply: " . $last_supply . "<br/>";
+
 
 	print "last delivery: " . $last_delivery . "<br/>";
 
@@ -76,17 +99,7 @@ function reset_inventory() {
 	       " and s.id = l.supply_id " .
 	       " group by 1";
 
-	$result = mysqli_query( $conn, $sql );
-	if ( ! $result ) {
-		sql_error( $sql );
-	}
-	$sql = "UPDATE im_info SET info_data = " . $last_supply . " WHERE info_key = 'inventory_in'";
-	// print $sql;
 	sql_query( $sql );
-	if ( mysqli_affected_rows( $conn ) < 1 ) {
-		sql_query( "insert into im_info  (info_key, info_data)
- 					Values('inventory_in', $last_supply)" );
-	}
 
 	$sql = "create or replace view i_out as " .
 	       " select prod_id, round(sum(dl.quantity),1) as q_out " .
@@ -95,9 +108,6 @@ function reset_inventory() {
 	       " group by 1 ORDER BY  1";
 
 	sql_query( $sql );
-
-	sql_query( "UPDATE im_info SET info_data = " . $last_delivery . " where info_key = 'inventory_out'" );
-
 }
 
 

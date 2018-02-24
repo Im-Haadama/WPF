@@ -147,6 +147,11 @@ function gui_input_date( $id, $class, $value = null, $events = null ) {
 	return $data;
 }
 
+function gui_input_select_from_datalist( $id, $datalist ) {
+	print "<input id='$id' list='$datalist'>";
+
+}
+
 function gui_select_table( $id, $table, $selected = null, $events = null, $more_values = null, $name = null, $where = null, $include_id = false, $datalist = false ) {
 	global $conn;
 
@@ -168,7 +173,7 @@ function gui_select_table( $id, $table, $selected = null, $events = null, $more_
 		$name = "name";
 	}
 
-	$sql = "SELECT id, " . $name . " FROM " . $table;
+	$sql = "SELECT distinct id, " . $name . " FROM " . $table;
 	if ( $where ) {
 		$sql .= " " . $where;
 	}
@@ -187,6 +192,7 @@ function gui_select_table( $id, $table, $selected = null, $events = null, $more_
 	else
 		return gui_select( $id, $name, $values, $events, $selected);
 }
+
 
 function gui_select_datalist( $id, $name, $values, $events, $include_id = true ) {
 	$data = "<datalist id=\"" . $id . "_items\">";
@@ -280,8 +286,14 @@ function gui_cell( $cell, $id = null, $show = true ) {
 	return $data;
 }
 
-function gui_row( $cells, $id = null, $show = null, &$acc_fields = null, $col_ids = null ) {
-	$data = "<tr>";
+function gui_row( $cells, $id = null, $show = null, &$acc_fields = null, $col_ids = null, $style = null ) {
+	$data = "<tr ";
+
+	if ( $style ) {
+		$data .= $style;
+	}
+
+	$data .= ">";
 
 	if ( is_array( $cells ) ) {
 		$i = 0;

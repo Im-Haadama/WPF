@@ -9,12 +9,42 @@
 require '../r-shop_manager.php';
 require_once( "supplies.php" );
 require_once( "../gui/inputs.php" );
-$id = $_GET["id"];
-
 print header_text( false );
+
+if ( isset( $_GET["business_id"] ) ) {
+	$bid = $_GET["business_id"];
+	$sql = "SELECT id FROM im_supplies WHERE business_id = " . $bid;
+//    print $sql;
+	$id = sql_query_single_scalar( $sql );
+	if ( ! ( $id > 0 ) ) {
+		print "לא נמצאה הספקה";
+
+		return;
+	}
+} else {
+	$id = $_GET["id"];
+}
+
 ?>
 
 <script>
+    function supply_pay() {
+        var date = get_value_by_name("pay_date");
+
+        var request_url = "supplies-post.php?operation=supply_pay&date=" + date +
+            "&id=" + <? print $id; ?>;
+
+        var request = new XMLHttpRequest();
+        request.onreadystatechange = function () {
+            if (request.readyState === 4 && request.status === 200) {
+                // window.location = window.location;
+                update_display();
+            }
+        }
+
+        request.open("GET", request_url, true);
+        request.send();
+    }
     function add_item() {
         var request_url = "supplies-post.php?operation=add_item&supply_id=<?php print $id; ?>";
         var _name = encodeURI(get_value(document.getElementById("itm_")));
@@ -23,7 +53,7 @@ print header_text( false );
         request_url = request_url + "&quantity=" + _q;
         var request = new XMLHttpRequest();
         request.onreadystatechange = function () {
-            if (request.readyState == 4 && request.status == 200) {
+            if (request.readyState === 4 && request.status === 200) {
                 // window.location = window.location;
                 update_display();
                 //     document.getElementById("logging").innerHTML += http_text;
@@ -51,7 +81,6 @@ print  "</h1> </center>";
 
 <input type="checkbox" id="chk_internal" onclick='update_display();'>מסמך פנימי<br>
 
-<h2>הערות</h2>
 <textarea id="comment" rows="4" cols="50">
 </textarea>
 <button id="update_comment" onclick='update_comment();'>עדכן הערות
@@ -67,8 +96,6 @@ if ( ! $send ) {
 }
 
 ?>
-<h2>פריטים</h2>
-
 <table id="items"></table>
 
 <div>
@@ -106,44 +133,44 @@ if ( ! $send ) {
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {  // Request finished
                 table = document.getElementById("items");
                 table.innerHTML = xmlhttp.response;
+                xmlhttp1 = new XMLHttpRequest();
+                var request1 = "supplies-post.php?operation=get_comment"
+                    + "&id=<?php print $id; ?>";
+
+                xmlhttp1.open("GET", request1, true);
+                xmlhttp1.onreadystatechange = function () {
+                    // Wait to get query result
+                    if (xmlhttp1.readyState === 4 && xmlhttp1.status === 200) {  // Request finished
+                        var comment = document.getElementById("comment");
+                        comment.innerHTML = xmlhttp1.response;
+                        xmlhttp2 = new XMLHttpRequest();
+                        var request2 = "supplies-post.php?operation=get_business"
+                            + "&supply_id=<?php print $id; ?>";
+
+                        xmlhttp2.open("GET", request2, true);
+                        xmlhttp2.onreadystatechange = function () {
+                            // Wait to get query result
+                            if (xmlhttp2.readyState === 4 && xmlhttp2.status === 200) {  // Request finished
+                                var arrival_info = xmlhttp2.response;
+                                if (arrival_info.length > 5) {
+                                    supply_document.innerHTML = arrival_info;
+                                    supply_arrived.hidden = true;
+                                    supply_document.hidden = false;
+                                } else {
+                                    supply_arrived.hidden = false;
+                                    supply_document.hidden = true;
+                                }
+                            }
+                        }
+                        xmlhttp2.send();
+
+                    }
+                }
+                xmlhttp1.send();
+
             }
         }
         xmlhttp.send();
-
-        xmlhttp1 = new XMLHttpRequest();
-        var request1 = "supplies-post.php?operation=get_comment"
-            + "&id=<?php print $id; ?>";
-
-        xmlhttp1.open("GET", request1, true);
-        xmlhttp1.onreadystatechange = function () {
-            // Wait to get query result
-            if (xmlhttp1.readyState === 4 && xmlhttp1.status === 200) {  // Request finished
-                var comment = document.getElementById("comment");
-                comment.innerHTML = xmlhttp1.response;
-            }
-        }
-        xmlhttp1.send();
-
-        xmlhttp2 = new XMLHttpRequest();
-        var request2 = "supplies-post.php?operation=get_business"
-            + "&supply_id=<?php print $id; ?>";
-
-        xmlhttp2.open("GET", request2, true);
-        xmlhttp2.onreadystatechange = function () {
-            // Wait to get query result
-            if (xmlhttp2.readyState === 4 && xmlhttp2.status === 200) {  // Request finished
-                var arrival_info = xmlhttp2.response;
-                if (arrival_info.length > 5) {
-                    supply_document.innerHTML = arrival_info;
-                    supply_arrived.hidden = true;
-                    supply_document.hidden = false;
-                } else {
-                    supply_arrived.hidden = false;
-                    supply_document.hidden = true;
-                }
-            }
-        }
-        xmlhttp2.send();
     }
 
     function updateItems() {
@@ -252,7 +279,7 @@ if ( ! $send ) {
     <div id="arrival_entry">
 		<?php
 		print gui_table( array(
-			array( "מספר תעודת משלוח", gui_input( "supply_number", "" ) ),
+			array( "מספר תעודת משלוח", gui_input( "supply_number", "" )),
 			array( "סכום", gui_input( "supply_total", "" ) )
 		) );
 
@@ -261,6 +288,11 @@ if ( ! $send ) {
 		?>
     </div>
 </div>
+<?php if ( user_can( get_user_id(), "pay_supply" ) ) {
+
+	print gui_table( array( array( "תאריך תשלום", gui_input_date( "pay_date", "", "", "onchange=supply_pay()" ) ) ) );
+}?>
+
 <div id="supply_document">
 </div>
 

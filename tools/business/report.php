@@ -23,11 +23,11 @@ if ( isset( $_GET["project"] ) ) {
 
 print_weekly_report( date( "Y-m-d", strtotime( "last sunday" ) ) );
 
-function print_project_report( $project_id ) {
+function print_project_report( $role, $project_id ) {
 	print gui_header( 1, "מציג סיכום עלויות פרויקט " . get_project_name( $project_id ) );
 
 	$month_sum = array();
-	$lines     = print_transactions( 0, 0, 0, null, $project_id, $month_sum );
+	$lines     = print_transactions( $role, 0, 0, 0, null, $project_id, $month_sum );
 
 	$summary = array();
 	array_push( $summary, array( "חודש", "עלות" ) );
@@ -44,10 +44,11 @@ function sums( &$s, $a ) {
 //	var_dump($s); print "<br/>";
 //	var_dump($a); print "<br/>";
 	if ( is_numeric( $s ) and is_numeric( $a ) ) {
-		$s += $a;
+		$s = round( $s + $a, 2 );
 		// print $s . "<br/>";
 	}
 }
+
 function print_weekly_report( $week ) {
 	print gui_header( 1, "מציג תוצאות לשבוע המתחיל ביום " . $week );
 // print date('Y-m-d', strtotime($week . " -1 week")) . "<br/>";
@@ -57,37 +58,48 @@ function print_weekly_report( $week ) {
 
 	print gui_hyperlink( "שבוע קודם", "report.php?week=" . date( 'Y-m-d', strtotime( $week . " -1 week" ) ) );
 
-	$sql = "SELECT id, date AS תאריך, amount AS סכום, delivery_fee AS 'דמי משלוח', client_from_delivery(ref) AS לקוח FROM im_business_info WHERE " .
-	       " week = '" . $week . "' AND amount > 0 ORDER BY 1";
+	$sql = "SELECT ref AS 'תעודת משלוח', date AS תאריך, amount AS סכום, delivery_fee AS 'דמי משלוח', client_from_delivery(ref) AS לקוח,
+		delivery_receipt(ref) AS קבלה
+		FROM im_business_info WHERE " .
+	       " is_active = 1 AND week = '" . $week . "' AND amount > 0 ORDER BY 1";
 
 	$sums_in = array( 0, 0, array( 0, sums ), array( 0, sums ), 0 );
-	$inputs  = table_content( $sql, true, true, null, $sums_in );
+	$inputs  = table_content( $sql, true, true, array( "../delivery/get-delivery.php?id=%s" ), $sums_in );
 
-	$sql = "SELECT id, date, amount AS סכום, supplier_from_business(id) AS ספק FROM im_business_info WHERE " .
+	$sql = "SELECT supply_from_business(id) as 'אספקה', id, ref as 'תעודת משלוח', date as תאריך, amount AS סכום, " .
+	       "supplier_from_business(id) AS ספק, pay_date as 'תאריך תשלום' " .
+	       " FROM im_business_info WHERE " .
 	       " week = '" . $week . "' AND is_active = 1 AND amount < 0 ORDER BY 3 DESC";
 
-	$sums_supplies = array( 0, 0, array( 0, sums ), 0, 0 );
-	$outputs       = table_content( $sql, true, true, null, $sums_supplies );
+	$sums_supplies = array( "", "", "", "", array( 0, sums ), "", "" );
+	$outputs       = table_content( $sql, true, true, array( "../supplies/supply-get.php?business_id=%s" ), $sums_supplies );
 
-	$salary      = 0;
-	$salary_text = print_transactions( 0, 0, 0, $week, 3, $salary );
-	$salary      = - $salary;
-
+	$salary_text = MultiSite::Execute( "people/report-trans.php?week=" . $week . "&project=3", 1 );
+	$dom         = str_get_html( $salary_text );
+	$row         = "";
+	foreach ( $dom->find( 'tr' ) as $row ) {
+		;
+	}
+	$salary = - $row->find( 'td', 11 )->plaintext;
+	$travel = - $row->find( 'td', 13 )->plaintext;
+	$extra  = - $row->find( 'td', 12 )->plaintext;
 
 	print gui_header( 1, "סיכום" );
 	$total_sums = array( "סיכום", array( 0, sums ) );
 	print gui_table( array(
 		array( "סעיף", "סכום" ),
-		array( "תוצרת", $sums_in[2][0] ),
-		array( "דמי משלוח", $sums_in[3][0] ),
-		array( "גלם", $sums_supplies[2][0] ),
-		array( "שכר", $salary )
+		array( "תוצרת פרוטי", $sums_in[2][0] ),
+		array( "דמי משלוח פרוטי", $sums_in[3][0] ),
+		array( "גלם", $sums_supplies[4][0] ),
+		array( "שכר", $salary ),
+		array( "הוצ' נסיעה", $travel ),
+		array( "הוצ עובדים נוספות", $extra)
 	), "totals", true, true, $total_sums );
 
 	print gui_header( 2, "הכנסות" );
 	print $inputs;
 
-	print gui_header( 2, "הוצאות" );
+	print gui_header( 2, "אספקות" );
 	print $outputs;
 
 	print gui_header( 2, "שכר" );

@@ -34,6 +34,8 @@ if ( $multisite or $_SERVER['REMOTE_ADDR'] == "160.153.129.234" or // Aglamaz.co
 	}
 
 	$roles = $user->roles;
+//	var_dump($roles);
+//	print count( array_intersect( array( "hr", "administrator" ), $roles ));
 	if ( count( array_intersect( array( "hr", "administrator" ), $roles ) ) < 1 ) {
 		my_log( __FILE__ . " " . $user->name );
 

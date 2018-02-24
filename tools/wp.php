@@ -9,7 +9,6 @@
 
 require_once( STORE_DIR . "/wp-includes/taxonomy.php" );
 
-
 // Postmeta table
 function get_postmeta_field( $post_id, $field_name ) {
 	$sql = 'SELECT meta_value FROM `wp_postmeta` pm'

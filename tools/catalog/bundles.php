@@ -92,6 +92,7 @@ class Bundle {
 	static function CreateFromProd( $prod_id ) {
 		$sql = "select id from im_bundles where prod_id = $prod_id";
 		$_id = sql_query_single_scalar( $sql );
+		// print $_id . " ";
 		if ( $_id ) {
 			return new self( $_id );
 		}

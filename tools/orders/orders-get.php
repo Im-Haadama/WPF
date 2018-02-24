@@ -108,13 +108,14 @@ print gui_button( "btn_new", "show_create_order()", "הזמנה חדשה" );
 
             for (var i = 1; i < item_table.rows.length; i++) {
                 var prod = get_value(document.getElementById("itm_" + i));
+                var prod_id = prod.substr(0, prod.indexOf(")"));
                 var q = get_value(document.getElementById("qua_" + i));
                 var u = get_value(document.getElementById("uni_" + i));
 
                 if (q > 0) {
-                    prods.push(encodeURI(prod));
-                    quantities.push(encodeURI(q));
-                    units.push(encodeURI(u));
+                    prods.push(prod_id);
+                    quantities.push(q);
+                    units.push(u);
                     line_number++;
                 }
 
@@ -138,7 +139,7 @@ print gui_button( "btn_new", "show_create_order()", "הזמנה חדשה" );
             xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function () {
                 // Wait to get delivery id.
-                if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {  // Request finished
+                if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {  // Request finished
                     if (xmlhttp.responseText.includes("בהצלחה")) {
                         location.reload();
                     } else {
@@ -168,7 +169,9 @@ print gui_button( "btn_new", "show_create_order()", "הזמנה חדשה" );
             var line_idx = item_table.rows.length;
             var new_row = item_table.insertRow(-1);
             var product = new_row.insertCell(0);
-            product.innerHTML = "<input id=\"itm_" + line_idx + "\" list=\"items\" onkeypress=\"select_product(" + line_idx + ")\">";
+            // product.innerHTML = "<input id=\"itm_" + line_idx + "\" list=\"items\" onkeypress=\"select_product(" + line_idx + ")\">";
+            var select = "<? print gui_input_select_from_datalist( "XX", "products" ); ?>";
+            product.innerHTML = select.replace("XX", "itm_" + line_idx);
             var quantity = new_row.insertCell(1);
             quantity.innerHTML = "<input id = \"qua_" + line_idx + "\" onkeypress=\"select_unit(" + line_idx + ")\">";
             var units = new_row.insertCell(2);
@@ -225,7 +228,10 @@ print gui_button( "btn_new", "show_create_order()", "הזמנה חדשה" );
     </script>
 
 </head>
+
 <?php
+
+print gui_datalist( "products", "im_products", "post_title", true );
 
 // Check connection
 if ( $link->connect_error ) {
@@ -364,12 +370,14 @@ function orders_table( $statuses ) {
 		$data                  .= "<tr>";
 		$data                  .= gui_cell( gui_checkbox( "chk_all", "", "",
 			array( "onchange=select_orders('" . $status . "')" ) ) );
+		$data                  .= "<td><h3>סוג משלוח</h3></td>";
 		$data                  .= gui_cell( gui_bold( "משימה" ) );
 		$data                  .= "<td><h3>מספר </br> הזמנה</h3></td>";
 		$data                  .= "<td><h3>שם המזמין</h3></td>";
 		$data                  .= "<td><h3>עבור</h3></td>";
 		$data                  .= "<td><h3>סכום</h3></td>";
 		$data                  .= "<td><h3>ישוב</h3></td>";
+		$data                  .= "<td><h3>אמצעי תשלום</h3></td>";
 		$data                  .= "</tr>";
 		$count                 = 0;
 		$total_delivery_total  = 0;
@@ -388,6 +396,8 @@ function orders_table( $statuses ) {
 			// debug_time1("after fetch");
 			$order_id    = $row[0];
 			$row_text    = gui_cell( gui_checkbox( "chk_" . $order_id, "select_order" ) );
+
+			$row_text    .= gui_cell( order_get_shipping( $order_id ) );
 			$customer_id = order_get_customer_id( $order_id );
 
 			// display order_id with link to display it.
@@ -417,6 +427,7 @@ function orders_table( $statuses ) {
 //    print "order: " . $order_id . "<br/>" . " del: " . $delivery_id . "<br/>";
 			if ( $delivery_id > 0 ) {
 				$delivery = new Delivery( $delivery_id );
+				// if ($delivery_id == 68) var_dump($delivery);
 				$row_text .= "<td><a href=\"..\delivery\get-delivery.php?id=" . $delivery_id . "\"</a>" . $delivery_id . "</td>";
 //        $total_amount = get_delivery_total($delivery_id[0]);
 //        $row_text .= "<td>" . $total_amount . "</td>";
@@ -427,7 +438,7 @@ function orders_table( $statuses ) {
 					if ( ( $order_total - $delivery->DeliveryFee() ) > 0 ) {
 						$percent = round( 100 * ( $delivery->Price() - $delivery->DeliveryFee() ) / ( $order_total - $delivery->DeliveryFee() ), 0 ) . "%";
 					}
-					$row_text              .= "<td>" . $percent . "%</td>";
+					$row_text              .= "<td>" . $percent . "</td>";
 					$total_delivery_total  += $delivery->Price();
 					$total_delivery_fee    += $delivery->DeliveryFee();
 					$total_order_delivered += $order_total;
@@ -435,6 +446,8 @@ function orders_table( $statuses ) {
 			} else {
 				$row_text .= "<td>" . order_info( $order_id, '_shipping_city' ) . "</td><td></td><td></td>";
 			}
+			$row_text .= gui_cell( get_payment_method_name( $customer_id ) );//gui_cell(gui_select_payment("payment_" . $customer_id,"select_payment(" . $customer_id . ")",
+			// get_payment_method($customer_id)));
 			$line = $row_text;
 
 			array_push( $lines, array( array_search( $customer_id, $path ), $line ) );

@@ -7,6 +7,11 @@ function changed(field) {
     document.getElementById("chk_" + subject).checked = true;
 }
 
+function get_value_by_name(element_name) {
+    var element = document.getElementById(element_name);
+    return get_value(element);
+
+}
 function get_value(element) {
     if (element === null) {
         return 0;
@@ -27,6 +32,7 @@ function get_value(element) {
                 return element.value;
             case "SELECT":
                 var idx = element.selectedIndex;
+                // alert(idx);
                 return element.options[idx].value;
             case "LABEL":
                 return element.textContent;

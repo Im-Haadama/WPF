@@ -13,11 +13,6 @@ if ( ! defined( "TOOLS_DIR" ) ) {
 
 require_once( TOOLS_DIR . "/sql.php" );
 
-function sum_numbers( &$sum, $number ) {
-	$sum += $number;
-	// print $sum . " " . $number . " " . "<br/>";
-}
-
 function table_content( $sql, $header = true, $footer = true, $links = null, &$sum_fields = null ) {
 	global $conn;
 

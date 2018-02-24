@@ -21,6 +21,10 @@ require_once( TOOLS_DIR . '/gui/inputs.php' );
 # 2) Chef clients           #
 #############################
 
+function get_daily_rate( $user_id ) {
+	return sql_query_single_scalar( "SELECT day_rate FROM im_working WHERE worker_id = " . $user_id );
+}
+
 function get_rate( $user_id, $project_id ) {
 	global $conn;
 
@@ -63,9 +67,9 @@ function account_add_transaction( $client_id, $date, $amount, $ref, $type ) {
 	sql_query( $sql );
 }
 
-function account_update_transaction( $total, $delivery_id ) {
+function account_update_transaction( $total, $delivery_id, $client_id ) {
 	$sql = "UPDATE im_client_accounts SET transaction_amount = " . $total .
-	       " WHERE transaction_ref = " . $delivery_id;
+	       " WHERE transaction_ref = " . $delivery_id . " and client_id = " . $client_id;
 
 	my_log( $sql, "account_update_transaction" );
 	sql_query( $sql );
@@ -91,9 +95,13 @@ function balance( $date, $client_id ) {
 
 }
 
-function show_trans( $customer_id, $from_last_zero = false, $checkbox = true ) {
+function show_trans( $customer_id, $from_last_zero = false, $checkbox = true, $top = 25 ) {
 	$sql = 'select date, transaction_amount, transaction_method, transaction_ref, id '
 	       . ' from im_client_accounts where client_id = ' . $customer_id . ' order by date desc ';
+
+	if ( $top ) {
+		$sql .= " limit " . $top;
+	}
 
 	$result = sql_query( $sql );
 
@@ -163,24 +171,6 @@ function show_trans( $customer_id, $from_last_zero = false, $checkbox = true ) {
 	return $data;
 }
 
-
-function customer_type( $client_id ) {
-	// 0 - regular
-	// 1 - siton
-	// 2 - owner
-	$key = get_user_meta( $client_id, '_client_type' );
-
-	if ( is_null( $key[0] ) ) {
-		return 0;
-	}
-	switch ( $key[0] ) {
-		case "owner":
-			return 2;
-		case "siton":
-			return 1;
-	}
-}
-
 function get_payment_method_name( $client_id ) {
 	return sql_query_single_scalar( "SELECT name FROM im_payments WHERE `id` = " . get_payment_method( $client_id ) );
 }
@@ -216,4 +206,33 @@ function im_set_default_display_name( $user_id ) {
 	if ( strlen( $name ) > 3 ) {
 		wp_update_user( $args );
 	}
+}
+
+function get_invoice_user_id( $customer_id ) {
+	// print "start";
+	$id = get_user_meta( $customer_id, 'invoice_id', 1 );
+
+	if ( $id > 0 ) {
+		return $id;
+	}
+
+	//   print "connect to invoice<br/>";
+	$invoice = new Invoice4u();
+	$invoice->Login();
+
+	if ( is_null( $invoice->token ) ) {
+		die ( "can't login to Invoice4u" . $invoice->invoice_user );
+	}
+	$client_email = get_customer_email( $customer_id );
+	// print $client_email;
+	$client = $invoice->GetCustomerByEmail( $client_email );
+
+	if ( ! $client ) {
+		$client = $invoice->GetCustomerByName( get_customer_name( $customer_id ) );
+	}
+
+	$id = $client->ID;
+	update_user_meta( $customer_id, 'invoice_id', $id );
+
+	return $id;
 }

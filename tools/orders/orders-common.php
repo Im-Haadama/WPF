@@ -195,10 +195,14 @@ function order_change_status( $ids, $status ) {
 	}
 }
 function order_add_product( $order, $product_id, $quantity, $replace = false, $client_id = - 1, $unit = null ) {
+	if ( ! ( $product_id > 0 ) ) {
+		die( "no product id given." );
+	}
 	// If it's a new order we need to get the client_id. Otherwise get it from the order.
 	if ( $client_id == - 1 ) {
 		$client_id = order_get_customer_id( $order->get_id() );
 	}
+	$customer_type = customer_type( $client_id );
 
 	my_log( __METHOD__, __FILE__ );
 	my_log( "product = " . $product_id, __METHOD__ );
@@ -223,12 +227,18 @@ function order_add_product( $order, $product_id, $quantity, $replace = false, $c
 				$q = $quantity;
 			}
 			print "adding " . $product_id . " " . $q . " ";
-			$oid = $order->add_product( wc_get_product( $product_id ), $q );
+			$product = wc_get_product( $product_id );
+			if ( $product ) {
+				$product->set_price( get_price( $product_id, $customer_type ) );
+				$oid = $order->add_product( $product, $q );
 
-			print $oid . "<br/>";
+				// print $oid . "<br/>";
 
-			if ( $has_units ) {
-				set_order_itemmeta( $oid, 'unit', array( $unit, $quantity ) );
+				if ( $has_units ) {
+					set_order_itemmeta( $oid, 'unit', array( $unit, $quantity ) );
+				}
+			} else {
+				print $product_id . " not found <br/>";
 			}
 		} else {
 			print "client dislike " . get_product_name( $product_id ) . "<br/>";
@@ -642,21 +652,25 @@ function create_order( $user_id, $mission_id, $prods, $quantities, $comments, $u
 //	$last_order = get_last_order( $user_id );
 //	print "last order: " .$last_order . "<br/>";
 
-	var_dump( $units);
-	$order    = wc_create_order();
-	// for DEBUG:
-	// $order = new WC_Order(1897);
-	$order_id = trim( str_replace( '#', '', $order->get_order_number() ) );
-	print "new order: " . $order_id . "<br/>";
+	$debug = false;
+	if ( $debug ) {
+		$order_id = 1992;
+		$order    = new WC_Order( $order_id );
+	} else {
+		$order    = wc_create_order();
+		$order_id = trim( str_replace( '#', '', $order->get_order_number() ) );
+		// print "new order: " . $order_id . "<br/>";
+	}
 	// print "count: " . count($prods) . "<br/>";
 	$extra_comments = "";
 
 	order_set_mission_id( $order_id, $mission_id);
 
 	for ( $i = 0; $i < count( $prods ); $i ++ ) {
-		$prod_name = urldecode( $prods[ $i ] );
+		// $prod_name = urldecode( $prods[ $i ] );
+
 		// print "prod_name: " . $prod_name . "<br/>";
-		$prod_id = get_product_id_by_name( $prod_name );
+		$prod_id = $prods[ $i ];
 		// print "prod(" . $prod_name . "): " . $prod_id ."<br/>";
 		if ( $prod_id > 0 ) {
 			order_add_product( $order, $prod_id, $quantities[ $i ], false, $user_id, $units[ $i ] );

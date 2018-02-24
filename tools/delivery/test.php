@@ -31,5 +31,31 @@ require_once( 'delivery.php' );
 
 // print_fresh_category();
 
-sql_query( "set lc_time_names = 'he_IL'" );
-print sql_query_single_scalar( "select @@lc_time_names" );
+//sql_query( "set lc_time_names = 'he_IL'" );
+//print sql_query_single_scalar( "select @@lc_time_names" );
+
+print header_text( false );
+print archive_get_supplier( 104, '2018-01-21' );
+
+function archive_get_supplier( $prod_id, $week ) {
+	$sql = "SELECT DISTINCT s.status, s.supplier
+	FROM im_supplies s
+	JOIN im_supplies_lines l
+	WHERE l.supply_id = s.id
+		AND first_day_of_week(date) = '" . $week . "'
+		AND s.status = 5
+		AND product_id = " . $prod_id;
+
+//	print $sql;
+//	print $sql; die(1);
+	$result = sql_query( $sql );
+	$s      = "";
+	while ( $row = mysqli_fetch_row( $result ) ) {
+		$s .= get_supplier_name( $row[0] ) . ", ";
+	}
+	$s = rtrim( $s, ", " );
+
+	// var_dump($supps);
+
+	return $s;
+}

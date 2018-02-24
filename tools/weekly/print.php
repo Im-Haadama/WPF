@@ -109,6 +109,6 @@ ORDER BY 1';
 	while ( $row = mysqli_fetch_assoc( $result ) ) {
 		array_push( $supplies, $row["id"] );
 	}
-	print_supplies( $supplies, true );
+	print_supplies_table( $supplies, true );
 }
 // require_once( '../delivery/get-driver-multi.php' );

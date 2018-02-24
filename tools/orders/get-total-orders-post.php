@@ -84,7 +84,8 @@ function create_supply_single() {
 		$supply_id = create_supply( $supplier_id );
 		foreach ( $supplies_data[ $supplier_id ] as $prod_id => $datum ) {
 			print get_product_name( $prod_id ) . " " . $datum[0] . " " . $datum[1] . "<br/>";
-			supply_add_line( $supply_id, $prod_id, $datum[0], $datum[1] );
+			$price = get_buy_price( $prod_id );
+			supply_add_line( $supply_id, $prod_id, $datum[0], $price, $datum[1] );
 		}
 	}
 }

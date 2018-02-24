@@ -76,14 +76,22 @@ function is_volunteer( $uid ) {
 }
 
 // User id == 0: display all users.
-function print_transactions( $user_id = 0, $month = null, $year = null, $week = null, $project = null, &$sum = null ) {
+function print_transactions( $role, $user_id = 0, $month = null, $year = null, $week = null, $project = null, &$sum = null ) {
 	$counters  = array();
 	$volunteer = false;
 	if ( $user_id > 0 and is_volunteer( $user_id ) ) {
 		$volunteer = true;
 	}
+	if ( $role == 'staff' ) {
+		$user_id = get_user_id();
+	}
 	$sql_month = null;
 	if ( isset( $month ) and $month > 0 ) {
+		if ( ! ( $year > 2016 ) ) {
+			print " לא נבחרה שנה";
+
+			return "אין מידע";
+		}
 		print "מציג נתונים לחודש " . $month . " מזהה " . $user_id . "<br/>";
 		$sql_month = " and month(date)=" . $month . " and year(date)=" . $year;
 	}
@@ -104,8 +112,10 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 		$data .= "<td>עובד</td>";
 	}
 
-	$data .= "<td>תעריף</td>";
-	$data .= "<td>סהכ</td>";
+	if ( $role == 'owner' ) {
+		$data .= "<td>תעריף</td>";
+		$data .= "<td>סהכ</td>";
+	}
 	$data .= "<td>הוצאות</td>";
 
 	if ( ! $volunteer ) {
@@ -138,19 +148,25 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 	}
 	// "  order by 1 desc";
 	// print $sql;
+	$sql           .= " limit 100";
 	$result        = sql_query( $sql );
 	$total_sal     = 0;
 	$total_travel  = 0;
 	$total_expense = 0;
 
+	if ( ! $result )
+		return "אין מידע";
 	while ( $row = mysqli_fetch_row( $result ) ) {
-
+		$worker_id = $row[4];
+		//print $row[0];
 		// print "xxx" . $row[5] . $row[6]. $row[7] . $row[8]. "<br/>";
 		$line = "<tr>";
 
 		$line  .= gui_cell( gui_checkbox( "chk" . $row[8], "hours_checkbox" ) );
 		$line  .= "<td>" . $row[0] . "</td>";
 		$line  .= gui_cell( week_day( $row[9] ) );
+
+		$daily = sql_query_single_scalar( "select day_rate from im_working where worker_id = " . $worker_id ) > 0;
 		$start = new DateTime( $row[1] );
 		$end   = new DateTime( $row[2] );
 
@@ -165,6 +181,9 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 		$dur_base         = min( $total_dur, 8.5 );
 		$dur_125          = min( 2, $total_dur - $dur_base );
 		$dur_150          = $total_dur - $dur_base - $dur_125;
+		if ( $daily ) {
+		}
+
 		$line             .= "<td>" . float_to_time( $dur_base ) . "</td>";
 		$line             .= "<td>" . float_to_time( $dur_125 ) . "</td>";
 		$line             .= "<td>" . float_to_time( $dur_150 ) . "</td>";
@@ -175,20 +194,28 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 		$project_id = $row[3];
 		$line       .= "<td>" . project_name( $project_id ) . "</td>";
 		if ( $user_id == 0 ) {
-			$line .= "<td>" . get_customer_name( $row[4] ) . "</td>";
+			$line .= "<td>" . get_customer_name( $worker_id ) . "</td>";
 		}
 //		else{
-		$rate = get_rate( $row[4], $project_id );
+		if ( $daily ) {
+			$rate = get_daily_rate( $worker_id );
+			$sal  = $rate;
+		} else {
+			$rate = get_rate( $worker_id, $project_id );
+			$sal  = ( $dur_base + $dur_125 * 1.25 + $dur_150 * 1.5 ) * $rate;
+		}
 
-		$line .= gui_cell( $rate );
+		if ( $role == 'owner' ) {
+			$line .= gui_cell( $rate );
+		}
 		// var_dump($dur);
-		$sal = ( $dur_base + $dur_125 * 1.25 + $dur_150 * 1.5 ) * $rate;
 
 		// print $sal . " " . $total_sal . "<br/>";
 		$total_sal += $sal;
 		// var_dump($total_sal);
 
-		$line         .= gui_cell( round( $sal, 2 ) );
+		if ( $role == 'owner' )
+			$line .= gui_cell( round( $sal, 2 ) );
 		$travel       = $row[5];
 		$total_travel += $travel;
 
@@ -215,16 +242,23 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 		"סהכ",
 		"",
 		"",
-		round( $counters["base"], 2 ),
-		round( $counters["125"], 2 ),
-		round( $counters["150"], 2 )
+		"",
+		float_to_time( $counters["base"], 2 ),
+		float_to_time( $counters["125"], 2 ),
+		float_to_time( $counters["150"], 2 ),
+		"",
+		"",
+		"",
+		$role == 'owner' ? $total_sal : "",
+		$role == 'owner' ? $total_expense : "",
+		$role == 'owner' ? $total_travel : ""
 	) );
 
 	$data      .= "</table>";
 	$total_sal = round( $total_sal, 1 );
 
 	// print "total_sal " . $total_sal ;
-	if ( $total_sal > 0 and ( $month or $week ) and ! $volunteer ) {
+	if ( $role == 'owner' and $total_sal > 0 and ( $month or $week ) and ! $volunteer ) {
 		$data      .= "חישוב שכר ראשוני" . "<br/>";
 		$data      .= "שכר שעות " . $total_sal . "<br/>";
 		$data      .= "סהכ נסיעה " . $total_travel . "<br/>";

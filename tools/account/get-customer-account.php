@@ -7,7 +7,7 @@ require_once( "../multi-site/multi-site.php" );
 require_once( "../delivery/delivery-common.php" );
 require_once( '../../im-config.php' );
 require_once( '../invoice4u/invoice.php' );
-
+require_once( "../account/gui.php" );
 // $start_time =  microtime(true);
 
 // only if admin can select user. Otherwise get id from login info
@@ -240,35 +240,19 @@ print "<center><h1>מצב חשבון ";
 print get_customer_name( $customer_id );
 print  "</h1> </center>";
 
+
 if ( $manager ) {
-	$invoice = new Invoice4u();
-	$invoice->Login();
 
-	if ( is_null( $invoice->token ) ) {
-		die ( "can't login to Invoice4u" . $invoice->invoice_user );
-	}
-
-	// print "client name " . $client_name . "<br/>";
-//	$client_name = get_customer_name( $customer_id );
-//	$client      = $invoice->GetCustomerByName( $client_name );
-
-	$client_email = get_customer_email( $customer_id );
-	// print $client_email;
-	$client = $invoice->GetCustomerByEmail( $client_email );
-
-	if ( ! $client ) {
-		$client = $invoice->GetCustomerByName( get_customer_name( $customer_id ) );
-	}
-	/// var_dump($client);
+	$client_id = get_invoice_user_id( $customer_id );
+//	var_dump($client);
 
 	$user_info = gui_table( array(
 		array( "דואל", get_customer_email( $customer_id ) ),
 		array( "טלפון", get_customer_phone( $customer_id ) ),
-		array( "מספר מזהה", gui_lable( "invoice_client_id", $client->ID ) ),
+		array( "מספר מזהה", gui_lable( "invoice_client_id", $client_id ) ),
 		array(
 			"אמצעי תשלום",
-			gui_select_table( "payment", "im_payments", get_payment_method( $customer_id ),
-				"onchange=\"save_payment_method()\"" )
+			gui_select_payment( "payment", get_payment_method( $customer_id ), "onchange=\"save_payment_method()\"" )
 		)
 	) );
 	$style     = "table.payment_table { border-collapse: collapse; } " .
@@ -374,19 +358,17 @@ if ( $manager ) {
         var collection = document.getElementsByClassName("trans_checkbox");
         var table = document.getElementById("transactions");
         var del_ids = new Array();
-        var total = 0;
 
         for (var i = 0; i < collection.length; i++) {
             if (collection[i].checked) {
                 var del_id = table.rows[i + 1].cells[6].firstChild.innerHTML;
                 del_ids.push(del_id);
-                total = total + parseInt(table.rows[i + 1].cells[2].firstChild.data);
             }
         }
         xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function () {
             // Wait to get query result
-            if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+            if (xmlhttp.readyState === 4 && xmlhttp.status === 200)  // Request finished
             {
                 receipt_id = xmlhttp.responseText.trim();
                 logging.innerHTML += "חשבונית מספר " + receipt_id;

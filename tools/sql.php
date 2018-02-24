@@ -105,3 +105,7 @@ function sql_error( $sql ) {
 	my_log( $message );
 	print "<div style=\"direction: ltr;\">" . $message . "</div>";
 }
+
+function sql_fetch_row( $result ) {
+	return mysqli_fetch_row( $result );
+}

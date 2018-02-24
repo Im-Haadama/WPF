@@ -3,6 +3,7 @@ require_once "../r-shop_manager.php";
 require_once "../gui/sql_table.php";
 require_once( "../header.php" );
 require_once( "../gui/inputs.php" );
+require_once( "../options.php" );
 ?>
 <script>
 	<?php
@@ -45,6 +46,8 @@ print header_text();
  * Time: 12:37
  */
 
+print "מציג מאספקה מספר " . info_get( "inventory_in" ) . "<br/>";
+print " מציג ממשלוח מספר " . info_get( "inventory_out" ) . "<br/>";
 
 print gui_hyperlink( "איפוס המלאי", "../weekly/start.php" );
 // print gui_button("btn_reset_invetory", "reset_inv()", "אפס מלאי");

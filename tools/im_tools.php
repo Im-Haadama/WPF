@@ -118,14 +118,17 @@ function get_supplier_name( $supplier_id ) {
 	}
 }
 
+function get_supply_status( $status ) {
+	$status_names = array( "חדש", "", "נשלח", "", "בוצע", "", "", "", "נמחק" );
+
+	return $status_names[ $status - 1 ];
+}
 function get_supply_status_name( $supplier_id ) {
 	if ( is_numeric( $supplier_id ) ) {
 		$s = sql_query_single_scalar( 'SELECT status FROM im_supplies WHERE id = ' . $supplier_id );
 
 		// Supply status: 1 = new, 3 = sent, 5 = close, 9 = delete
-		$status_names = array( "חדש", "", "נשלח", "", "בוצע", "", "", "", "נמחק" );
-
-		return $status_names[ $s - 1 ];
+		return get_supply_status( $s );
 	} else {
 		return "לא ידוע";
 	}
@@ -396,47 +399,6 @@ function get_site_tools_url( $site_id ) {
 }
 
 
-function get_minimum_order() {
-
-	global $woocommerce;
-
-	$value = 85;
-
-	$country  = $woocommerce->customer->get_shipping_country();
-	$state    = $woocommerce->customer->get_shipping_state();
-	$postcode = $woocommerce->customer->get_shipping_postcode();
-//    my_log("country " . $country);
-//    my_log("state " . $state);
-//    my_log("post code " . $postcode);
-//    $package = WC()->cart->get_shipping_packages();
-//    ob_start();
-//    var_dump($package);
-//    $result = ob_get_clean();
-//    my_log ($result);
-	$zone1 = WC_Shipping_Zones::get_zone_matching_package( array(
-		'destination' => array(
-			'country'  => $country,
-//            'state'    => $state,
-			'postcode' => $postcode,
-		),
-	) );
-//    my_log ("zone_id = " . $zone1->get_id());
-
-	$sql = "SELECT min_order FROM wp_woocommerce_shipping_zones WHERE zone_id = " . $zone1->get_id();
-	my_log( $sql );
-	$result = sql_query( $sql );
-	if ( $result ) {
-		$row = mysqli_fetch_assoc( $result );
-		//    my_log($row["min_order"]);
-
-		if ( is_numeric( $row["min_order"] ) ) {
-			$value = $row["min_order"];
-		}
-	}
-
-	return $value;
-}
-
 function order_get_zone( $order_id ) {
 //	print "order id = " . $order_id . "<br/>";
 	my_log( __METHOD__ . " order_id " . $order_id );
@@ -463,6 +425,23 @@ function order_get_zone( $order_id ) {
 	return 0;
 }
 
+function order_get_shipping( $order_id ) {
+	$debug         = false;
+	$shipping_info = "";
+	$order         = wc_get_order( $order_id );
+	foreach ( $order->get_items( 'shipping' ) as $item_id => $shipping_item_obj ) {
+		// if (get_class($shipping_item_obj) == "WC_Order_Item_Shipping") {
+		// var_dump($shipping_item_obj); print "<br/>";
+		$shipping_info = $shipping_item_obj['name'];
+		if ( $debug ) {
+			print $shipping_info;
+		}
+
+		return $shipping_info;
+		//	break;
+
+	}
+}
 function order_get_mission_id( $order_id, $debug = false ) {
 //	print "aaa";
 	global $conn;
@@ -482,18 +461,8 @@ function order_get_mission_id( $order_id, $debug = false ) {
 		$mission_id = $mission;
 	}
 	if ( $debug or ( strlen( $mission_id ) < 1 ) ) {
-		$shipping_info = "";
-		$order         = wc_get_order( $order_id );
-		foreach ( $order->get_items( 'shipping' ) as $item_id => $shipping_item_obj ) {
-			// if (get_class($shipping_item_obj) == "WC_Order_Item_Shipping") {
-			// var_dump($shipping_item_obj); print "<br/>";
-			$shipping_info = $shipping_item_obj['name'];
-			if ( $debug ) {
-				print $shipping_info;
-			}
-			//	break;
 
-		}
+		$shipping_info = order_get_shipping( $order_id );
 		// $info = get_post_meta( $order_id, '_shipping_method', true );
 		// var_dump($info); print "<br/>";
 		// Get from shipping_method
@@ -845,6 +814,97 @@ function get_letter_day( $letter ) {
 }
 
 
+function israelpost_get_address_postcode( $city, $street, $house ) {
+	$url = "http://www.israelpost.co.il/zip_data.nsf/SearchZip?OpenAgent&Location=" . urlencode( $city ) . "&street=" . $street .
+	       "&house=" . $house;
 
+	$ch = curl_init();
 
+	$timeout = 5;
+	curl_setopt( $ch, CURLOPT_URL, $url );
+	curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 );
+	curl_setopt( $ch, CURLOPT_CONNECTTIMEOUT, $timeout );
+	$data = curl_exec( $ch );
+	curl_close( $ch );
+
+	$value = array();
+	if ( preg_match( "/RES[0-9]*/", $data, $value ) ) {
+		$result = substr( $value[0], 4 );
+
+		if ( $result == "11" or $result == "12" or $result == "13" ) {
+			return - 1;
+		}
+
+		return $result;
+	}
+
+	return - 2;
+}
+
+function israelpost_get_city_postcode( $city ) {
+	$url = "http://www.israelpost.co.il/zip_data.nsf/SearchZip?OpenAgent&Location=" . urlencode( $city ) . "&POB=1";
+
+	$ch = curl_init();
+
+	$timeout = 5;
+	curl_setopt( $ch, CURLOPT_URL, $url );
+	curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 );
+	curl_setopt( $ch, CURLOPT_CONNECTTIMEOUT, $timeout );
+	$data = curl_exec( $ch );
+	curl_close( $ch );
+
+	$value = array();
+	if ( preg_match( "/RES[0-9]*/", $data, $value ) ) {
+		$result = substr( $value[0], 4 );
+
+		if ( $result == "11" or $result == "12" or $result == "13" ) {
+			return - 1;
+		}
+
+		return $result;
+	}
+
+	return - 2;
+}
+
+function get_buy_price( $prod_id, $supplier_id = 0 ) {
+	if ( $prod_id > 0 ) {
+		if ( $supplier_id > 0 ) {
+//			print "supplier: " . $supplier_id . "<br/>";
+			$a = alternatives( $prod_id );
+			foreach ( $a as $s ) {
+//				print $s->getSupplierId() . "<br/>";
+				if ( $s->getSupplierId() == $supplier_id ) {
+					return $s->getPrice();
+				}
+			}
+		}
+
+		return get_postmeta_field( $prod_id, 'buy_price' );
+	}
+
+	return - 1;
+}
+
+function customer_type( $client_id ) {
+	// 0 - regular
+	// 1 - siton
+	// 2 - owner
+	$key = get_user_meta( $client_id, '_client_type' );
+
+	if ( is_null( $key[0] ) ) {
+		return 0;
+	}
+	switch ( $key[0] ) {
+		case "owner":
+			return 2;
+		case "siton":
+			return 1;
+	}
+}
+
+function gui_select_worker() {
+	return gui_select_table( "worker_select", "im_working", null, "", "", "client_displayname(worker_id)",
+		null, true, true );
+}
 ?>

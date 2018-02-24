@@ -11,11 +11,18 @@ require_once( '../orders/orders-common.php' );
 require_once( '../gui/inputs.php' );
 require_once( "../business/business-post.php" );
 require_once( "../business/business_info.php" );
+
 // print header_text(false, true, false);
 if ( isset( $_GET["operation"] ) ) {
 	$operation = $_GET["operation"];
 	switch ( $operation ) {
+		case "supply_pay":
+			$id   = $_GET["id"];
+			$date = $_GET["date"];
+			supply_set_pay_date( $id, $date );
+			break;
 		case "get_business":
+			// print header_text(false); DONT!!!
 			$supply_id = $_GET["supply_id"]; // מספר הספקה שלנו
 			print supply_business_info( $supply_id );
 			break;
@@ -37,11 +44,16 @@ if ( isset( $_GET["operation"] ) ) {
 		case "print":
 			$params = $_GET["id"];
 			$ids    = explode( ',', $params );
-			print_supplies( $ids, true );
+			print_supplies_table( $ids, true );
 			break;
 
 		case "create_supply":
 			print "create supply<br/>";
+//			"&prods=" + prods.join() +
+//			"&quantities=" + quantities.join() +
+			// "&comments="   + encodeURI(comment) +
+//			"&units=" + units.join() +
+
 			$supplier_id = $_GET["supplier_id"];
 			my_log( "supplier_id=" . $supplier_id );
 
@@ -145,7 +157,10 @@ if ( isset( $_GET["operation"] ) ) {
 			if ( ! is_numeric( $prod_id ) ) {
 				die ( "no prod_id for " . $name . "<br/>" );
 			}
-			supply_add_line( $supply_id, $prod_id, $q );
+			$supply = new Supply( $supply_id );
+			print 'id=' . $supply->getSupplier() . "<br/>";
+			$price = get_buy_price( $prod_id, $supply->getSupplier() );
+			supply_add_line( $supply_id, $prod_id, $q, $price );
 			break;
 
 		default:
@@ -153,6 +168,14 @@ if ( isset( $_GET["operation"] ) ) {
 
 	}
 }
+
+function gui_select_supplier() {
+
+	return gui_select_table( "supplier_select", "im_suppliers", null, "", "", "supplier_name",
+		null, true, true );
+//		$sql_where );
+}
+
 
 my_log( __FILE__, $operation );
 

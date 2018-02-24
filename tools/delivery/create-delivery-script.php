@@ -345,30 +345,31 @@ print gui_datalist( "items", "im_products", "post_title" );
             total_vat += line_vat;
             total += line_total;
 
-            if (<?php
-		        $customer_id = order_get_customer_id( $order_id );
-
-		        $result = 0;
-		        if ( MultiSite::LocalSiteID() == 1 ) {
-			        if ( customer_type( $customer_id ) == 0 ) {
-				        $result = "(q >= 8) && (table.rows[i].cells.length > 7)";
-			        }
-		        }
-		        print $result;
-		        ?>
-            )
-            {
-                var line_term_id = table.rows[i].cells[term_id].innerHTML;
-                // alert (line_term_id);
-                var terms = line_term_id.split(",");
-                var fresh = false;
-                for (var x = 0; x < terms.length; x++) {
-                    if ([<?php print_fresh_category()?>].indexOf(parseInt(terms[x])) > -1) {
-                        fresh = true;
-                    }
-                }
-                if (fresh) quantity_discount += line_total;
-            }
+            // Old q>=8 discount. Now in cart.
+//            if (<?php
+	        //		        $customer_id = order_get_customer_id( $order_id );
+	        //
+	        //		        $result = 0;
+	        //		        if ( MultiSite::LocalSiteID() == 1 ) {
+	        //			        if ( customer_type( $customer_id ) == 0 ) {
+	        //				        $result = "(q >= 8) && (table.rows[i].cells.length > 7)";
+	        //			        }
+	        //		        }
+	        //		        print $result;
+	        //		        ?>
+//            )
+//            {
+//                var line_term_id = table.rows[i].cells[term_id].innerHTML;
+//                // alert (line_term_id);
+//                var terms = line_term_id.split(",");
+//                var fresh = false;
+//                for (var x = 0; x < terms.length; x++) {
+//                    if ([<?php //print_fresh_category()?>//].indexOf(parseInt(terms[x])) > -1) {
+//                        fresh = true;
+//                    }
+//                }
+//                if (fresh) quantity_discount += line_total;
+//            }
         }
 
         var employee_discount = false;
@@ -418,4 +419,3 @@ print gui_datalist( "items", "im_products", "post_title" );
         document.getElementById("del_tot").innerHTML = total;
     }
 </script>
-

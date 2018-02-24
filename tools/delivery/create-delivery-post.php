@@ -75,7 +75,7 @@ function create_delivery_header( $order_id, $total, $vat, $lines, $edit, $fee ) 
 	$client_id = order_get_customer_id( $order_id );
 
 	if ( $edit ) {
-		account_update_transaction( $total, $delivery_id );
+		account_update_transaction( $total, $delivery_id, $client_id );
 		business_update_transaction( $delivery_id, $total, $fee );
 	} else { // New!
 		$date = date( "Y-m-d" );
@@ -120,7 +120,7 @@ function add_delivery_lines( $delivery_id, $lines, $edit ) {
 }
 
 function add_delivery_line( $product_name, $delivery_id, $quantity, $quantity_ordered, $unit_ordered, $vat, $price, $line_price, $prod_id ) {
-	global $conn;
+
 	$product_name = preg_replace( '/[\'"%()]/', "", $product_name );
 	// print "name: " . $product_name . "<br/>";
 
@@ -132,7 +132,7 @@ function add_delivery_line( $product_name, $delivery_id, $quantity, $quantity_or
 	       . $unit_ordered . ", "
 	       . $vat . ", "
 	       . $price . ', '
-	       . $line_price . ', '
+	       . round( $line_price, 2 ) . ', '
 	       . $prod_id . ' )';
 
 	// print $sql . "<br/>";

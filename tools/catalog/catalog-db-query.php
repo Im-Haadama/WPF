@@ -104,7 +104,9 @@ switch ( $operation ) {
 function show_fresh_siton() {
 	print header_text( true, true, true );
 
-	foreach ( array( 11, 12, 27, 28, ) as $categ ) {
+//	foreach ( array( 11, 12, 27, 28, ) as $categ ) {
+
+	foreach ( array( 62, 18, 19, 66 ) as $categ ) {
 		$term = get_term( $categ );
 
 		print gui_header( 1, $term->name );
@@ -243,7 +245,7 @@ function show_catalog(
 					}
 				}
 			} else {
-				print "no terms for " . $prod_id . "<br/>";
+				// print "no terms for " . $prod_id . "<br/>";
 				continue;
 			}
 
