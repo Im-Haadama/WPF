@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Created by PhpStorm.
  * User: agla
@@ -277,70 +276,6 @@ function custom_add_to_cart_quantity_handler() {
 
 add_action( 'init', 'custom_add_to_cart_quantity_handler' );
 
-/***************************
- * Select date of delivery *
- ***************************/
-
-//add_action( 'woocommerce_after_order_notes', 'checkout_select_date' );
-//
-//function format_date($date)
-//{
-//    $days = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי"];
-//
-//    return $days[date("N", strtotime($date))] . " " . $date;
-//}
-//
-//function checkout_select_date( $checkout ) {
-//    $user_id = get_current_user_id();
-//    if ($user_id > 0){
-//// print "postcode: " . $postcode . "<br/>";
-//	    $customer = new WC_Customer($user_id);
-//	    $postcode = $customer->get_shipping_postcode();
-//        $package  = array( 'destination' => array( 'country' => 'IL', 'postcode' => $postcode ) );
-//        $zone     = WC_Shipping_Zones::get_zone_matching_package( $package );
-//        $zone_id = $zone->get_id();
-//        my_log("finding missions. postcode = " . $postcode . " zone = ". $zone_id);
-//        $sql = "select id, zones, date, start_h, end_h from im_missions where date > curdate() order by 3";
-//
-//        $result = sql_query($sql);
-//
-//        $options = array();
-//        while ($row = mysqli_fetch_row($result))
-//        {
-//            $zones = $row[1];
-//            // print "zones: " . $zones . "<br/>";
-//            if (in_array($zone_id, explode(",", $zones))){
-//                $options[$row[0]] = format_date($row[2]) . " " . $row[3] . ":00-" . $row[4] . ":00<br/>";
-//            }
-//        }
-//    }
-//    if (sizeof($options) < 1) {
-//        $options[1] = "מוקדם ככל האפשר<br/>";
-//        $options[2] = "תאמו איתי";
-//    }
-//
-//	echo '<div id="date_selection" style="background: lightgoldenrodyellow;"><h3>' . __( 'בחר תאריך משלוח' ) . '</h3>';
-//	woocommerce_form_field_radio( 'mission_id', array(
-//		'type' => 'select',
-//		'class' => array(
-//			'date_selection form-row-wide'
-//		),
-//		'label' => __( '' ),
-//		'placeholder' => __( '' ),
-//		'required' => true,
-//		'options' => $options
-//	), $checkout->get_value( 'date_selection' ) );
-//	echo '</div>';
-//}
-//
-//add_action('woocommerce_checkout_process', 'my_custom_checkout_field_process');
-//
-//function my_custom_checkout_field_process() {
-//	// Check if set, if its not set add an error.
-//	if ( ! $_POST['mission_id'] )
-//		wc_add_notice( __( 'אנא בחר תאריך משלוח.' ), 'error' );
-//}
-
 /**
  * Update the order meta with field value
  */
@@ -400,6 +335,11 @@ if ( ! defined( "STORE_DIR" ) ) {
 add_action( 'woocommerce_before_calculate_totals', 'im_woocommerce_update_price', 99 );
 
 function im_woocommerce_update_price() {
+	global $site_id;
+	if ( $site_id != 4 ) {
+		return;
+	}
+
 	my_log( "cart start" );
 	// TWEEK. Don't know why menu_op calls this method.
 	// DONT remove without trying menu.php and cart.
@@ -407,21 +347,10 @@ function im_woocommerce_update_price() {
 	if ( ! $conn ) {
 		return;
 	}
-	//  if (!defined (get_postmeta_field)) return;
-// my_log("cart");
 	$client_type = customer_type( get_user_id() );
-	// print "S" . get_user_id() ." " . $client_type;
-	//if ($client_type > 0) print "T". $client_type;
 
 	foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
-//	    ob_start();
-//		var_dump($cart_item);
-//		$result = ob_get_clean();
-//		my_log($result);
-//		return;
-
 		$prod_id = $cart_item['product_id'];
-		// my_log($prod_id);
 		if ( ! ( $prod_id > 0 ) ) {
 			my_log( "cart - no prod_id" );
 			continue;
@@ -437,7 +366,7 @@ function im_woocommerce_update_price() {
 					} else {
 						$quantity_price = $sell_price;
 					}
-					// my_log("quantity price " . $quantity_price . ". sell " . $sell_price);
+					my_log( "quantity price " . $quantity_price . ". sell " . $sell_price);
 					if ( $quantity_price < $sell_price ) {
 						$sell_price = $quantity_price;
 						//   my_log("sell price " . $sell_price);
@@ -457,7 +386,7 @@ function im_woocommerce_update_price() {
 		//my_log("set " . $sell_price);
 		$cart_item['data']->set_sale_price( $sell_price );
 		$cart_item['data']->set_price( $sell_price );
-		my_log( $prod_id . " " . $q . " " . $quantity_price );
+		my_log( $prod_id . " " . $q );
 
 	}
 	//		ob_start();
@@ -465,14 +394,17 @@ function im_woocommerce_update_price() {
 
 add_filter( 'woocommerce_cart_item_price', 'im_show_nonsale_price', 10, 2 );
 function im_show_nonsale_price( $newprice, $product ) {
-	$_product  = $product['data'];
-	$saleprice = $_product->sale_price;
-	if ( $_product->sale_price < $_product->regular_price ) {
+	global $site_id;
+	if ( $site_id != 4 )
+		return $newprice;
+	$_product   = $product['data'];
+	$sale_price = $_product->get_sale_price();
+	if ( ( $sale_price > 0 ) and ( $_product->get_sale_price() < $_product->get_regular_price() ) ) {
 		$newprice = '';
 		$newprice .= '<del><small style="color:#000000;">';
-		$newprice .= wc_price( $_product->regular_price );
+		$newprice .= wc_price( $_product->get_regular_price() );
 		$newprice .= '</small></del> <strong>';
-		$newprice .= wc_price( $_product->sale_price );
+		$newprice .= wc_price( $sale_price );
 		$newprice .= '</strong>';
 
 		return $newprice;
