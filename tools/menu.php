@@ -1,4 +1,5 @@
 <?php
+header( "Location: menu_op.php" );
 include "r-shop_manager.php";
 ?>
 <html dir="rtl">
