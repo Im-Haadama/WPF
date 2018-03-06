@@ -61,11 +61,12 @@ function show_menu() {
 
 // print $sql;
 function print_mission( $mission_id_filter = null ) {
-	$sql = 'SELECT posts.id as id'
+	$sql = 'SELECT posts.id as id, order_is_group(id) as is_grouped, order_user(id) as user_id'
 	       . ' FROM `wp_posts` posts'
 	       . " WHERE post_status LIKE '%wc-processing%' order by 1";
 
-	$result = sql_query( $sql );
+	$grouped_orders = array();
+	$result         = sql_query( $sql );
 	print "<style>";
 	print "@media print {";
 	print "h1 {page-break-before: always;}";
@@ -76,19 +77,37 @@ function print_mission( $mission_id_filter = null ) {
 
 	while ( $row = mysqli_fetch_assoc( $result ) ) {
 		$id         = $row["id"];
+		$is_grouped = $row["is_grouped"];
+		$user_id    = $row["user_id"];
+
 		$mission_id = order_get_mission_id( $id );
 		if ( isset( $mission_id_filter ) and $mission_id != $mission_id_filter ) {
 			continue;
 		}
-		array_push( $orders, $id );
-//	print $id . "<br/>";
+		if ( $is_grouped ) {
+			if ( ! array_key_exists( $user_id, $grouped_orders ) ) {
+				$grouped_orders[ $user_id ] = array();
+				array_push( $orders, $id );
+			}
+			array_push( $grouped_orders[ $user_id ], $id );
+		} else {
+			array_push( $orders, $id );
+		}
 	}
 	$path_orders = array();
 	find_route_1( 1, $orders, $path_orders );
 	foreach ( $path_orders as $id ) {
-		print_order_info( $id, true );
-		$D = Delivery::CreateFromOrder( $id );
-		$D->print_delivery( ImDocumentType::delivery, ImDocumentOperation::collect );
+		$user_id = order_get_customer_id( $id );
+		if ( array_key_exists( $user_id, $grouped_orders ) ) {
+			print_order_info( $grouped_orders[ $user_id ][0], true );
+			$d = Delivery::CreateFromOrder( $grouped_orders[ $user_id ] );
+			$d->print_delivery( ImDocumentType::delivery, ImDocumentOperation::collect );
+
+		} else {
+			print_order_info( $id, true );
+			$D = Delivery::CreateFromOrder( $id );
+			$D->print_delivery( ImDocumentType::delivery, ImDocumentOperation::collect );
+		}
 	}
 
 }

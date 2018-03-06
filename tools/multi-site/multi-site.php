@@ -66,11 +66,6 @@ class MultiSite {
 		} else {
 			$glue = "?";
 		}
-//			$remote_request = $remote_request . "&multisite";
-//		} else {
-//			$remote_request = $remote_request . "?multisite";
-//		}
-
 		$api_key = sql_query_single_scalar( "select api_key from im_multisite where id = $site" );
 		if ( $api_key ) {
 			// print "key";

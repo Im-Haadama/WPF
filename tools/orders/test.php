@@ -7,7 +7,7 @@
  */
 
 require_once( "../r-shop_manager.php" );
-require_once( 'orders-common.php' );
+require_once( 'orders-post.php' );
 
 //$last= order_get_last(1);
 //
@@ -15,7 +15,10 @@ require_once( 'orders-common.php' );
 //print $diff->d;
 
 print header_text( false, true, false );
-print order_get_mission_name( 8097, true );
+
+order_calculate( 2101 );
+
+// print order_get_mission_name( 8097, true );
 
 //$user_id  = 1;
 //$postcode = get_user_meta( $user_id, 'shipping_postcode', true );

@@ -364,8 +364,8 @@ function invoice_create_document( $type, $ids, $customer_id, $date, $cash = 0, $
 			if ( $row[4] != 0 ) {
 				$item           = new Item();
 				$item->Name     = $row[0];
-				$item->Price    = round( $row[3], 1 );
-				$item->Quantity = round( $row[1], 1);
+				$item->Price    = round( $row[3], 2 );
+				$item->Quantity = round( $row[1], 2 );
 				if ( $row[2] > 0 ) {
 					$item->TaxPercentage   = 17;
 					$item->TotalWithoutTax = round( $row[4] / 1.17, 2 );

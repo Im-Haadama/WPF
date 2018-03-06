@@ -12,6 +12,10 @@ if ( ! defined( "STORE_DIR" ) ) {
 	define( 'STORE_DIR', dirname( dirname( __FILE__ ) ) );
 }
 
+if ( ! defined( "TOOLS_DIR" ) ) {
+	define( 'TOOLS_DIR', dirname( __FILE__ ) );
+}
+
 require_once( STORE_DIR . "/wp-config.php" );
 require_once( STORE_DIR . "/im-config.php" );
 require_once( STORE_DIR . "/wp-load.php" );
@@ -96,15 +100,22 @@ function get_delivery_vat( $delivery_id ) {
 	}
 }
 
-function get_delivery_id( $order_id ) {
+function get_delivery_id( $order_id_or_array ) {
 //	print "get_delivery_id";
+	$order_id = 0;
+
+	if ( is_array( $order_id_or_array ) ) {
+		$order_id = $order_id_or_array[0];
+	} else if ( is_numeric( $order_id_or_array ) ) {
+		$order_id = $order_id_or_array;
+	}
 	if ( is_numeric( $order_id ) ) {
 		return sql_query_single_scalar( 'SELECT id FROM im_delivery WHERE order_id = ' . $order_id );
-	} else {
-		print "Must send a number to get_delivery_id!";
-
-		return 0;
 	}
+
+	print "Must send a number to get_delivery_id!";
+
+	return 0;
 }
 
 function get_supplier_name( $supplier_id ) {

@@ -285,3 +285,41 @@ function search_invalid_mapping() {
 }
 
 ?>
+
+die(0);
+require_once("../im_tools.php");
+print "y";
+require_once("orders-common.php");
+print "z";
+
+print header_text(false,true);
+$operation = $_GET["operation"];
+// my_log( "Operation: " . $operation, __FILE__ );
+
+switch ( $operation ) {
+case "create_order":
+$email = $_GET["email"];
+$params=  $_GET["params"];
+express_create_order($email, explode(",", $params));
+break;
+}
+
+function express_create_order($email, $params)
+{
+print "יוצר הזמנה ליוזר " . $email . "<br/>";
+$user = get_user_by("email", $email);
+
+if (! $user){
+print "יוזר לא קיים";
+die(0);
+}
+$prods = array();
+$quantities = array();
+
+for ($i = 0; $i < count($params); $i += 2){
+array_push($prods, $params[$i]);
+array_push($quantities, $params[$i+1]);
+}
+
+create_order($user->ID,0, $params, $quantities, "");
+}

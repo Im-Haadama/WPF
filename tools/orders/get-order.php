@@ -128,12 +128,13 @@ $data .= "</table>";
 
 print "$data";
 
-if ( is_numeric( $delivery_id ) ) {
-	print '<a href="../delivery/get-delivery.php?id=' . $delivery_id . '">פתח תעודת משלוח' . '</a> ';
-} else {
-	print '<a href="../delivery/create-delivery.php?order_id=' . $order_id . '">הפק תעודת משלוח' . '</a> ';
+if ( current_user_can( "edit_shop_orders" ) ) {
+	if ( is_numeric( $delivery_id ) ) {
+		print '<a href="../delivery/get-delivery.php?id=' . $delivery_id . '">פתח תעודת משלוח' . '</a> ';
+	} else {
+		print '<a href="../delivery/create-delivery.php?order_id=' . $order_id . '">הפק תעודת משלוח' . '</a> ';
+	}
 }
-
 print gui_datalist( "items", "im_products", "post_title" );
 ?>
 
@@ -143,15 +144,19 @@ print gui_datalist( "items", "im_products", "post_title" );
 
 <!-- TODO: limit to units datalist -->
 <?php
-print gui_table( array(
-	array( "בחר פריט", "כמות", "יח" ),
-	array( "<input id=\"itm_\" list=\"items\">", "<input id=\"qua_\">", "<input id=\"uni_\" list=\"units\">" )
-) );
 ?>
 
-<?php print gui_button( "btn_add_item", "add_item()", "הוסף" ); ?>
-<?php print gui_button( "btn_del_item", "del_item()", "מחק" ); ?>
-<?php print gui_button( "btn_replace", "replace()", "החלף סלים במרכיבים" ); ?>
+<?php if ( current_user_can( "edit_shop_orders" ) ) {
+	print gui_table( array(
+		array( "בחר פריט", "כמות", "יח" ),
+		array( "<input id=\"itm_\" list=\"items\">", "<input id=\"qua_\">", "<input id=\"uni_\" list=\"units\">" )
+	) );
+
+	print gui_button( "btn_add_item", "add_item()", "הוסף" );
+	print gui_button( "btn_del_item", "del_item()", "מחק" );
+	print gui_button( "btn_replace", "replace()", "החלף סלים במרכיבים" );
+}
+?>
 
 </body>
 </html>

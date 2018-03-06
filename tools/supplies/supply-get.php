@@ -87,6 +87,11 @@ print  "</h1> </center>";
 </button>
 <br/>
 <?php
+if ( user_can( get_user_id(), "pay_supply" ) ) {
+
+	print gui_table( array( array( "תאריך תשלום", gui_input_date( "pay_date", "", "", "onchange=supply_pay()" ) ) ) );
+}
+
 print gui_datalist( "prods", "im_products", "post_title" );
 
 if ( ! $send ) {
@@ -230,7 +235,7 @@ if ( ! $send ) {
     function printDeliveryNotes() {
         // Get the html
         document.getElementById('btn_print').style.visibility = "hidden";
-        window.open("//pdfcrowd.com/url_to_pdf/");
+        window.print();
         document.getElementById('btn_print').style.visibility = "visible";
 //	var txt = document.documentElement.innerHTML;
 
@@ -288,10 +293,6 @@ if ( ! $send ) {
 		?>
     </div>
 </div>
-<?php if ( user_can( get_user_id(), "pay_supply" ) ) {
-
-	print gui_table( array( array( "תאריך תשלום", gui_input_date( "pay_date", "", "", "onchange=supply_pay()" ) ) ) );
-}?>
 
 <div id="supply_document">
 </div>

@@ -99,9 +99,13 @@ function calculate_price( $price, $supplier, $sale_price = '', $terms = null ) {
 }
 
 
-function get_price( $prod_id, $client_type = 0 ) {
+function get_price( $prod_id, $client_type = 0, $quantity = 1 ) {
 	switch ( $client_type ) {
 		case 0:
+			if ( $quantity >= 8 ) {
+				return round( get_buy_price( $prod_id ) * 1.4, 1 );
+			}
+
 			return get_postmeta_field( $prod_id, '_price' );
 		case 1:
 			return siton_price( $prod_id );

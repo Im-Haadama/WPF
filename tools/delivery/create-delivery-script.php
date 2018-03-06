@@ -210,8 +210,10 @@ print gui_datalist( "items", "im_products", "post_title" );
 //                    }
 
                     if (prod_id > 0 || line_total > 0 || line_total < 0) {
-                        push(line_args, prod_id);
-                        push(line_args, encodeURIComponent(prod_name));
+                        if (prod_id > 0)
+                            push(line_args, prod_id);
+                        else
+                            push(line_args, encodeURIComponent(prod_name));
                         push(line_args, quantity);
                         push(line_args, quantity_ordered);
                         push(line_args, unit_ordered);
@@ -289,7 +291,7 @@ print gui_datalist( "items", "im_products", "post_title" );
 
         for (var i = 1; i < lines; i++)  // Skip the header. Skip last lines: total, vat, total-vat, discount
         {
-            if (table.rows[i].cells[0].id.substr(4, 3) == "bsk") {
+            if (table.rows[i].cells[0].id.substr(4, 3) == "bsk" || get_value(table.rows[i].cells[1]) == "הנחת סל") {
                 // Sum upper lines and compare to basket price
                 var j = i - 1;
                 var sum = 0;

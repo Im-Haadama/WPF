@@ -18,7 +18,7 @@ if ( date( 'Y-m-d' ) > date( 'Y-m-d', strtotime( $week . "+1 week" ) ) ) {
 
 print gui_hyperlink( "שבוע קודם", "supplies-get.php?week=" . date( 'Y-m-d', strtotime( $week . " -1 week" ) ) );
 
-print header_text( true, false );
+print header_text( false, false );
 
 print gui_button( "btn_new", "show_create_item()", "אספקה חדשה" );
 ?>

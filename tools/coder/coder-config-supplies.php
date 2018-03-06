@@ -25,6 +25,9 @@ $trans = [];
 $trans["supplier"]  = "get_supplier_name";
 $trans["paid_date"] = "display_date";
 $trans["status"]    = "display_status";
+
+$single_url = "../supplies/supply-get.php";
+
 // display_part_name()'
 //$actions = array( array( "שכפל", "missions.php?operation=dup&id=" ) );
 //				 array("בוצע", "tasklist.php?operation=end&id="),

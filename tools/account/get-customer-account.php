@@ -252,7 +252,7 @@ if ( $manager ) {
 		array( "מספר מזהה", gui_lable( "invoice_client_id", $client_id ) ),
 		array(
 			"אמצעי תשלום",
-			gui_select_payment( "payment", get_payment_method( $customer_id ), "onchange=\"save_payment_method()\"" )
+			gui_select_payment( "payment", "onchange=\"save_payment_method()\"", get_payment_method( $customer_id ) )
 		)
 	) );
 	$style     = "table.payment_table { border-collapse: collapse; } " .

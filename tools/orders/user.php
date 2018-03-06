@@ -10,6 +10,7 @@ require_once "../r-shop_manager.php";
 require_once( "../gui/inputs.php" );
 $user_id = $_GET["user_id"];
 
+print header_text( false, true );
 ?>
     <header>
         <script>

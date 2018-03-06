@@ -515,8 +515,13 @@ WHERE status = 1 AND supply_id IN (" . $supply_id . ", " . rtrim( implode( ",", 
 //call get_product_name(35);
 
 
-function display_supplies( $week ) {
-	$sql = "SELECT id, supplier, status, date(date), paid_date FROM im_supplies WHERE status IN (1, 3, 5) AND 
+function display_supplies( $week, $status = null ) {
+	if ( is_null( $status ) ) {
+		$status_query = "status in (1, 3, 5)";
+	} else {
+		$status_query = "status in (" . comma_implode( $status ) . ")";
+	}
+	$sql = "SELECT id, supplier, status, date(date), paid_date, status, business_id FROM im_supplies WHERE " . $status_query . "  AND 
 			 first_day_of_week(date) = '" . $week . "'"
 	             . " ORDER BY 4, 3, 2";
 
@@ -525,7 +530,8 @@ function display_supplies( $week ) {
 	return do_display_supplies( $sql );
 }
 
-function do_display_supplies( $sql ) {
+function do_display_supplies( $sql )
+{
 	$result = sql_query( $sql );
 
 	$has_lines = false;
@@ -536,21 +542,31 @@ function do_display_supplies( $sql ) {
 	}
 	$result = sql_query( $sql );
 
-	$data = "<table border='1'><tr><td>בחר</td><td><h3>מספר</h3></td><td><h3>תאריך</h3></td><td><h3>ספק</h3></td><td>סטטוס</td>";
+	$data = "<table border='1'><tr><td>בחר</td><td><h3>מספר</h3></td><td><h3>תאריך</h3></td><td><h3>ספק</h3></td><td>סטטוס</td><td>סכום</td>";
 	$data .= gui_cell( "תאריך תשלום" ) . "</tr>";
 	while ( $row = mysqli_fetch_row( $result ) ) {
 		$supply_id   = $row[0];
 		$supplier_id = $row[1];
+		$status      = $row[5];
 		$value       = "<tr><td><input id=\"chk" . $supply_id . "\" class=\"supply_checkbox\" type=\"checkbox\"></td>";
 		$value       .= "<td><a href=\"supply-get.php?id=" . $supply_id . "\">" . $supply_id . '</a></td>';
 		$value       .= "<td>" . $row[3] . '</td>';
 		$value       .= "<td>" . get_supplier_name( $supplier_id ) . '</td>';
 		$value       .= "<td>" . get_supply_status_name( $supply_id ) . '</td>';
-		$date        = $row[4];
-		if ( $date = "0000-00-00" ) {
-			$date = null;
+		if ( $status = 5 ) {
+			$business_id = $row[6];
+			// print "business id: " . $business_id . "<br/>";
+			if ( $business_id > 0 ) {
+				$amount = sql_query_single_scalar( "select amount from im_business_info where id = " . $business_id );
+				$value  .= gui_cell( $amount );
+			}
+			$date = $row[4];
+			if ( $date == "0000-00-00" ) {
+				$date = null;
+			}
+			$value .= gui_cell( $date );
 		}
-		$value       .= gui_cell( $date );
+
 		$value       .= "</tr>";
 
 		$data      .= $value;
@@ -567,15 +583,11 @@ function do_display_supplies( $sql ) {
 }
 
 function display_active_supplies( $status ) {
-	global $conn;
-
-	$sql = "SELECT id, supplier, status, date(date) FROM im_supplies WHERE status IN (" .
+	$sql = "SELECT id, supplier, status, date(date), paid_date, status, business_id FROM im_supplies WHERE status IN (" .
 	       implode( ",", $status ) . ") AND id > (SELECT info_data FROM im_info where info_key='inventory_in')"
 	       . " ORDER BY 4, 3, 2";
 
 	return do_display_supplies( $sql );
-	// print $sql;
-	// print $data;
 }
 
 function create_supplier_order( $supplier_id, $ids ) {
@@ -601,7 +613,9 @@ function create_supplier_order( $supplier_id, $ids ) {
 }
 
 function supply_set_pay_date( $id, $date ) {
-	sql_query( "update im_supplies set date = " . $date . " where id = " . $id );
+	$sql = "update im_supplies set paid_date = '" . $date . "' where id = " . $id;
+	print $sql;
+	sql_query( $sql);
 }
 
 function display_date( $date ) {

@@ -17,6 +17,7 @@ if ( isset( $_GET["operation"] ) ) {
 	$operation = $_GET["operation"];
 	switch ( $operation ) {
 		case "supply_pay":
+			print "supply pay<br/>";
 			$id   = $_GET["id"];
 			$date = $_GET["date"];
 			supply_set_pay_date( $id, $date );

@@ -6,10 +6,14 @@
  * Time: 20:27
  */
 
-require_once( "../r-shop_manager.php" );
-require_once( "../multi-site/multi-site.php" );
-require_once( "config.php" );
-require_once( "../orders/orders-common.php" );
+if ( ! defined( 'TOOLS_DIR' ) ) {
+	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
+}
+
+// require_once( TOOLS_DIR . "/r-shop_manager.php" );
+require_once( TOOLS_DIR . "/multi-site/multi-site.php" );
+require_once( TOOLS_DIR . "/maps/config.php" );
+require_once( TOOLS_DIR . "/orders/orders-common.php" );
 
 $addresses    = array();
 $addresses[1] = "תנובות";
@@ -243,10 +247,10 @@ function do_get_distance( $a, $b ) {
 	if ( $v > 0 ) {
 		return array( $v, $t );
 	}
-	print "can't find distance between " . $a . " " . $b . "<br/>";
+
+	// print "can't find distance between " . $a . " " . $b . "<br/>";
 
 	return null;
-
 }
 
 //$order_id = $row[0];

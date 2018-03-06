@@ -6,9 +6,12 @@
  * Time: 10:07
  */
 // require_once( '../im-tools.php' );
-require_once( '../pricelist/pricelist.php' );
-require_once( '../wp/terms.php' );
-require_once( '../pricing.php' );
+if ( ! defined( "TOOLS_DIR" ) ) {
+	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
+}
+require_once( TOOLS_DIR . '/pricelist/pricelist.php' );
+require_once( TOOLS_DIR . '/wp/terms.php' );
+require_once( TOOLS_DIR . '/pricing.php' );
 require_once( 'bundles.php' );
 
 class Catalog {
@@ -169,7 +172,7 @@ class Catalog {
 	}
 
 	static function UpdateProduct( $prod_id, &$line, $details = false ) {
-		print "update product " . $prod_id . "<br/>";
+		// print "update product " . $prod_id . "<br/>";
 		if ( ! ( $prod_id > 0 ) ) {
 			print __METHOD__ . " bad prod_id: " . $prod_id . "<br/>";
 			die ( 1 );

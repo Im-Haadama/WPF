@@ -64,8 +64,19 @@ if ( $id > 0 ) {
 	print "<form name=\"delivery\" action= \"\">";
 	// print gui_header( 2, "יצירת תעודת משלוח להזמנה מספר " . $order_id, true );
 
+	if ( sql_query_single_scalar( "select order_is_group(" . $order_id . ")" ) == 1 ) {
+		print "הזמנה קבוצתית";
+	}
+	$sql       = 'SELECT posts.id as id '
+	             . ' FROM `wp_posts` posts'
+	             . " WHERE post_status LIKE '%wc-processing%'  "
+	             . " and order_user(id) = " . $client_id;
+	$order_ids = sql_query_array_scalar( $sql );
+	// var_dump($orders);
+	print " הזמנות " . comma_implode( $order_ids );
+
 	print_order_info( $order_id, true, "יצירת תעודת משלוח ל" );
-	$d = delivery::CreateFromOrder( $order_id );
+	$d = delivery::CreateFromOrder( $order_ids );
 	$d->print_delivery( ImDocumentType::delivery, true );
 	print "</form>";
 }
@@ -79,3 +90,4 @@ if ( $id > 0 ) {
 
 </body>
 </html>
+//

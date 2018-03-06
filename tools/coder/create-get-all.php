@@ -160,7 +160,9 @@ while ( $row = mysqli_fetch_row( $result ) ) {
 }
 
 $url        = "c-get-all-" . $obj_name . ".php";
-$single_url = $target_folder . "/c-get-$obj_name.php";
+if ( ! isset ( $single_url ) ) {
+	$single_url = $target_folder . "/c-get-$obj_name.php";
+}
 
 fwrite( $get_all, "
 print \"</tr>\";

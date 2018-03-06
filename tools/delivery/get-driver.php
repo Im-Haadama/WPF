@@ -41,7 +41,7 @@ function print_deliveries( $edit = false ) {
 //        $sql = "select order_id from im_delivery where date >= '" .$week . "'";
 //        print $sql;
 //    } else {
-	$sql = 'SELECT posts.id'
+	$sql = 'SELECT posts.id, order_'
 	       . ' FROM `wp_posts` posts'
 	       . ' WHERE `post_status` in (\'wc-awaiting-shipment\', \'wc-processing\')'
 	       . ' order by 1';
@@ -50,6 +50,7 @@ function print_deliveries( $edit = false ) {
 	$orders = sql_query_array_scalar( $sql );
 
 	foreach ( $orders as $order ) {
+
 		print_order( $order );
 	}
 

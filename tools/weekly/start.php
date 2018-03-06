@@ -11,6 +11,7 @@ require_once( '../orders/orders-common.php' );
 require_once( '../supplies/supplies.php' );
 require_once( '../pricelist/pricelist.php' );
 require_once( '../gui/inputs.php' );
+require_once( "../delivery/missions.php" );
 print header_text();
 
 if ( isset( $_GET["operation"] ) ) {
@@ -27,6 +28,7 @@ if ( isset( $_GET["operation"] ) ) {
 				print gui_header( 2, "יוצר הזמנות למנויים" );
 				orders_create_subs();
 			}
+			create_missions();
 			die ( 0 );
 			break;
 	}
@@ -44,6 +46,19 @@ if ( isset( $_GET["operation"] ) ) {
 //	print "<br/><B>" . "יש לסגור הספקות לפני איפוס שבועי!" . "</B><br/>";
 //	print "<br/><B>" . "איפוס שבועי מוחק את הרשימה של אמיר בן יהודה!" . "</B><br/>";
 	print gui_hyperlink( "האם ברצונך לאפס את המלאי?", "start.php?operation=reset_inventory" );
+}
+
+function create_missions() {
+	$this_week = date( "Y-m-d", strtotime( "last sunday" ) );
+	$sql       = "SELECT id FROM im_missions WHERE FIRST_DAY_OF_WEEK(date) = '" . $this_week . "'";
+//	print $sql;
+
+	$result = sql_query( $sql );
+	while ( $row = sql_fetch_row( $result ) ) {
+		$mission_id = $row[0];
+
+		duplicate_mission( $mission_id );
+	}
 }
 
 function reset_inventory() {

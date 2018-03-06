@@ -16,6 +16,16 @@ $ext       = pathinfo( $file_name, PATHINFO_EXTENSION );
 $target_dir    = dirname( __FILE__ ) . "/uploads/";
 $target_file   = $target_dir . "prices" . $supplier_id . "." . $ext;
 $imageFileType = pathinfo( $target_file, PATHINFO_EXTENSION );
+if ( ! file_exists( $tmp_file ) ) {
+	print "file " . $tmp_file . " not found ";
+	die ( 1 );
+}
+if ( ! file_exists( $target_dir ) ) {
+	print "directory " . $target_dir . " not found ";
+	die ( 1 );
+}
+
+
 if ( move_uploaded_file( $tmp_file, $target_file ) ) {
 	echo "The file " . basename( $file_name ) . " has been uploaded.<br/>";
 	print $target_file . "<br/>";
@@ -34,10 +44,13 @@ switch ( $ext ) {
 }
 
 function read_chef_xls( $input_file, $supplier_id ) {
-	$file = "http://super-organi.co.il/tools/" . substr( $input_file, 3 ); // Remove "../" re
+	print $input_file . "<br/>";
+	$file = "http://super-organi.co.il/" . substr( $input_file, strpos( $input_file, "tools" ) );
 	$url  = "http://tabula.aglamaz.com/imap/xls2csv.php?input=" . $file;
-	print $url;
+	print "reading " . $url . "<br/>";
 	$txt = file_get_contents( $url );
+
+	print strlen( $txt ) . " bytes reader <br/>";
 
 	$temp_file = tmpfile();
 

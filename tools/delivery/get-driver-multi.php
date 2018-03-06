@@ -129,7 +129,11 @@ foreach ( $data_lines as $mission_id => $data_line ) {
 		array_push( $stop_points, $stop_point );
 		if ( $lines_per_station[ $stop_point ] == null ) {
 			$lines_per_station[ $stop_point ] = array();
-			array_push( $lines_per_station[ $stop_point ], $data_lines[ $mission_id ][ $i ][1] );
+			if ( get_distance( 1, $order_id ) ) {
+				array_push( $lines_per_station[ $stop_point ], $data_lines[ $mission_id ][ $i ][1] );
+			} else {
+				print "לא מזהה את הכתובת של הזמנה " . $data_lines[ $mission_id ][ $i ] . "<br/>";
+			}
 		}
 	}
 //	foreach ($stop_points as $p) print $p . " ";

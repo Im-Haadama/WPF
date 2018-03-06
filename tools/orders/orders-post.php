@@ -1,14 +1,18 @@
 <?php
-header( "Access-Control-Allow-Origin: http://store.im-haadama.co.il" );
-
+//header( "Access-Control-Allow-Origin: http://store.im-haadama.co.il" );
 /**
  * Created by PhpStorm.
  * User: agla
  * Date: 16/07/15
  * Time: 16:00
  */
-require_once( '../r-shop_manager.php' );
+// require_once( '../r-shop_manager.php' );
+require_once( "../im_tools.php" );
 require_once( 'orders-common.php' );
+if ( ! current_user_can( "edit_shop_orders" ) ) {
+	print "no permissions";
+	die( 0 );
+}
 
 // To map item from price list to our database the shop manager select item from the price list
 // and product_id. The triplet: product_id, supplier_id and product_code are sent as saved
@@ -59,6 +63,8 @@ switch ( $operation ) {
 		}
 		$order = new WC_Order( $order_id );
 		order_add_product( $order, $prod_id, $q, false, - 1, $units );
+		sql_query( "DELETE FROM im_need_orders WHERE order_id = " . $order_id );
+		// order_calculate($order_id);
 		break;
 
 	case "delete_lines":
@@ -69,6 +75,7 @@ switch ( $operation ) {
 		$params = explode( ',', $_GET["params"] );
 //        $order = new WC_Order($order_id);
 		order_delete_lines( $params );
+		// order_calculate($order_id);
 		break;
 
 	case "start_handle":
@@ -91,9 +98,30 @@ switch ( $operation ) {
 
 	default:
 		// die("operation " . $operation . " not handled<br/>");
-
 }
 
+function order_calculate( $order_id ) {
+	$lines       = sql_query_array_scalar( "select order_item_id " .
+	                                       " from wp_woocommerce_order_items where order_id = $order_id" .
+	                                       " and order_item_type = 'line_item'" );
+	$client_type = customer_type( order_get_customer_id( $order_id ) );
+	$total       = 0;
+	foreach ( $lines as $line ) {
+		$q       = get_order_itemmeta( $line, '_qty' );
+		$prod_id = get_order_itemmeta( $line, '_product_id' );
+		if ( ! ( $prod_id > 0 ) ) {
+			print $line . " bad prod id <br/>";
+			continue;
+		}
+		$p          = get_price( $prod_id, $client_type, $q );
+		$total_line = $p * $q;
+		$total      += $total_line;
+		set_order_itemmeta( $line, '_line_total', $total_line );
+		print $line . " " . get_product_name( $prod_id ) . " " . $q . " " . $p . " " . $q * $p . "<br/>";
+	}
+	set_post_meta_field( $order_id, '_order_total', $total );
+	print $total;
+}
 function replace_baskets() {
 	$sql = 'SELECT posts.id'
 	       . ' FROM `wp_posts` posts'

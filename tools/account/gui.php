@@ -5,7 +5,11 @@
  * Date: 18/08/17
  * Time: 05:24
  */
-require_once( "../r-shop_manager.php" );
+if ( ! defined( 'TOOLS_DIR' ) ) {
+	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
+}
+
+// require_once( TOOLS_DIR . "/r-shop_manager.php" );
 
 //function gui_select_client( $active_days, $new = false ) {
 //	if ( $active_days > 0 ) {

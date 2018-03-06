@@ -6,9 +6,13 @@
  * Time: 10:16
  */
 // require_once( '../im-tools.php' );
-require_once( '../catalog/catalog.php' );
-require_once( '../gui/inputs.php' );
-require_once( '../multi-site/multi-site.php' );
+if ( ! defined( "TOOLS_DIR" ) ) {
+	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
+}
+
+require_once( TOOLS_DIR . '/catalog/catalog.php' );
+require_once( TOOLS_DIR . '/gui/inputs.php' );
+require_once( TOOLS_DIR . '/multi-site/multi-site.php' );
 
 class PricelistItem {
 	private $id;
@@ -652,4 +656,3 @@ function pricelist_strip_product_name( $name ) {
 }
 
 ?>
-

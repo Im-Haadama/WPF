@@ -4,7 +4,6 @@ require_once( "../im_tools.php" );
 require_once( '../r-shop_manager.php' );
 require_once 'orders-common.php';
 require_once '../delivery/delivery.php';
-require_once( '../maps/build-path.php' );
 
 print header_text( false );
 
@@ -241,7 +240,7 @@ if ( $link->connect_error ) {
 print gui_header( 1, "הזמנות" );
 
 $pending = orders_table( array( "wc-pending", "wc-on-hold" ) );
-if ( strlen( $pending ) > 4 ) {
+if ( current_user_can( "edit_shop_orders" ) and strlen( $pending ) > 4 ) {
 	print $pending;
 	print gui_button( "btn_start", "start_handle()", "התחל טיפול" ) . "<br/>";
 }
@@ -329,154 +328,6 @@ function debug_time1( $str ) {
 	echo "$str $date:" . $date_array[0] . "<br>";
 }
 
-function orders_table( $statuses ) {
-	global $conn;
-//	LIKE 'wc-processing%' or post_status LIKE 'wc-on-hold%' order by 1";
-
-	$status_names = wc_get_order_statuses();
-	// var_dump($status_names);
-	$all_tables = "";
-	if ( ! is_array( $statuses ) ) {
-		$statuses = array( $statuses );
-	}
-//	debug_time1("start loop");
-	foreach ( $statuses as $status ) {
-		// print $status . "<br/>";
-
-		$data = gui_header( 2, $status_names[ $status ] );
-
-		$sql = 'SELECT posts.id'
-		       . ' FROM `wp_posts` posts'
-		       . " WHERE post_status = '" . $status . "'" .
-		       " order by 1";
-
-		// Build path
-		$order_ids = sql_query_array_scalar( $sql );
-
-		// If no orders in this status, move on.
-		if ( sizeof( $order_ids ) < 1 ) {
-			continue;
-		}
-
-		$path = array();
-//		debug_time1("start route");
-		find_route_1( 1, $order_ids, $path, false );
-//		debug_time1("end route");
-
-		// print $sql;
-		$result = mysqli_query( $conn, $sql );
-//		debug_time1("after q");
-		$data                  .= "<table id='" . $status . "'>";
-		$data                  .= "<tr>";
-		$data                  .= gui_cell( gui_checkbox( "chk_all", "", "",
-			array( "onchange=select_orders('" . $status . "')" ) ) );
-		$data                  .= "<td><h3>סוג משלוח</h3></td>";
-		$data                  .= gui_cell( gui_bold( "משימה" ) );
-		$data                  .= "<td><h3>מספר </br> הזמנה</h3></td>";
-		$data                  .= "<td><h3>שם המזמין</h3></td>";
-		$data                  .= "<td><h3>עבור</h3></td>";
-		$data                  .= "<td><h3>סכום</h3></td>";
-		$data                  .= "<td><h3>ישוב</h3></td>";
-		$data                  .= "<td><h3>אמצעי תשלום</h3></td>";
-		$data                  .= "</tr>";
-		$count                 = 0;
-		$total_delivery_total  = 0;
-		$total_order_total     = 0;
-		$total_order_delivered = 0;
-		$total_delivery_fee    = 0;
-		$lines                 = array();
-
-		if ( ! $result ) {
-			continue;
-		}
-
-		$count = 0;
-
-		while ( $row = mysqli_fetch_row( $result ) ) {
-			// debug_time1("after fetch");
-			$order_id    = $row[0];
-			$row_text    = gui_cell( gui_checkbox( "chk_" . $order_id, "select_order" ) );
-
-			$row_text    .= gui_cell( order_get_shipping( $order_id ) );
-			$customer_id = order_get_customer_id( $order_id );
-
-			// display order_id with link to display it.
-			$count ++;
-			// 1) order ID with link to the order
-			$mission_id = order_get_mission_id( $order_id );
-			// print $order_id. " ". $mission . "<br/>";
-
-			$row_text .= gui_cell( gui_select_mission( "mis_" . $order_id, $mission_id, "onchange=\"mission_changed(" . $order_id . ")\"" ) );
-			$row_text .= "<td><a href=\"get-order.php?order_id=" . $order_id . "\">" . $order_id . "</a></td>";
-
-			// 2) Customer name with link to his deliveries
-			$row_text .= "<td><a href=\"../account/get-customer-account.php?customer_id=" . $customer_id . "\">" .
-
-			             get_customer_by_order_id( $order_id ) . "</a></td>";
-
-			$row_text .= "<td>" . get_postmeta_field( $order_id, '_shipping_first_name' ) . ' ' .
-			             get_postmeta_field( $order_id, '_shipping_last_name' ) . "</td>";
-
-			// 3) Order total
-			$order_total       = get_postmeta_field( $order_id, '_order_total' );
-			$row_text          .= "<td>" . $order_total . '</td>';
-			$total_order_total += $order_total;
-
-			// 4) Delivery note
-			$delivery_id = get_delivery_id( $order_id );
-//    print "order: " . $order_id . "<br/>" . " del: " . $delivery_id . "<br/>";
-			if ( $delivery_id > 0 ) {
-				$delivery = new Delivery( $delivery_id );
-				// if ($delivery_id == 68) var_dump($delivery);
-				$row_text .= "<td><a href=\"..\delivery\get-delivery.php?id=" . $delivery_id . "\"</a>" . $delivery_id . "</td>";
-//        $total_amount = get_delivery_total($delivery_id[0]);
-//        $row_text .= "<td>" . $total_amount . "</td>";
-				if ( $delivery_id > 0 ) {
-					$row_text .= "<td>" . $delivery->Price() . "</td>";
-					$row_text .= "<td>" . $delivery->DeliveryFee() . "</td>";
-					$percent  = "";
-					if ( ( $order_total - $delivery->DeliveryFee() ) > 0 ) {
-						$percent = round( 100 * ( $delivery->Price() - $delivery->DeliveryFee() ) / ( $order_total - $delivery->DeliveryFee() ), 0 ) . "%";
-					}
-					$row_text              .= "<td>" . $percent . "</td>";
-					$total_delivery_total  += $delivery->Price();
-					$total_delivery_fee    += $delivery->DeliveryFee();
-					$total_order_delivered += $order_total;
-				}
-			} else {
-				$row_text .= "<td>" . order_info( $order_id, '_shipping_city' ) . "</td><td></td><td></td>";
-			}
-			$row_text .= gui_cell( get_payment_method_name( $customer_id ) );//gui_cell(gui_select_payment("payment_" . $customer_id,"select_payment(" . $customer_id . ")",
-			// get_payment_method($customer_id)));
-			$line = $row_text;
-
-			array_push( $lines, array( array_search( $customer_id, $path ), $line ) );
-		}
-		//   $data .= "<tr> " . trim($line) . "</tr>";
-		sort( $lines );
-
-		foreach ( $lines as $line ) {
-			$data .= "<tr>" . $line[1] . "</tr>";
-		}
-		$rate = 0;
-		if ( $total_order_delivered > 0 ) {
-			$rate = round( 100 * ( $total_delivery_total - $total_delivery_fee ) / $total_order_delivered );
-		}
-//		$data .= "<tr><td></td><td></td><td></td><td>" . $total_order_total . "</td><td></td>" .
-//		         "<td>" . $total_delivery_total . "</td>" .
-//		         "<td>" . $total_delivery_fee . "</td>" .
-//		         "<td>" . $rate . "%</td></tr>";
-		$data = str_replace( "\r", "", $data );
-
-		$data .= "</table>";
-
-		if ( $count > 0 ) {
-			$all_tables .= $data;
-		}
-	}
-
-	return $all_tables;
-}
 ?>
 <div id="new_order" style="display: none">
 	<?php

@@ -99,18 +99,23 @@ function add_delivery_lines( $delivery_id, $lines, $edit ) {
 		$d->DeleteLines();
 	}
 
-	for ( $pos = 0; $pos < count( $lines ); $pos += 8 ) {
+	for ( $pos = 0; $pos < count( $lines ); $pos += 7 ) {
 		$prod_id          = $lines[ $pos ];
-		$product_name     = $lines[ $pos + 1 ];
-		$quantity         = $lines[ $pos + 2 ];
-		$quantity_ordered = $lines[ $pos + 3 ];
-		$unit_ordered     = $lines[ $pos + 4 ];
+		if ( $prod_id > 0 ) {
+			$product_name = get_product_name( $prod_id );
+		} else {
+			$product_name = $prod_id;
+			$prod_id      = 0;
+		}
+		$quantity         = $lines[ $pos + 1 ];
+		$quantity_ordered = $lines[ $pos + 2 ];
+		$unit_ordered     = $lines[ $pos + 3 ];
 		if ( ! ( strlen( $unit_ordered ) > 0 ) ) {
 			$unit_ordered = "NULL";
 		} // print $unit_ordered . "<br/>";
-		$vat        = $lines[ $pos + 5 ];
-		$price      = $lines[ $pos + 6 ];
-		$line_price = $lines[ $pos + 7 ];
+		$vat        = $lines[ $pos + 4 ];
+		$price      = $lines[ $pos + 5 ];
+		$line_price = $lines[ $pos + 6 ];
 //        $product_name = get_product_name($prod_id);
 //        my_log("product_id = " . $product_id . ", supplier_id=" . $supplier_id . ", product_name=" . $product_name);
 		print "<div style=\"direction: ltr;\"> id: " . $prod_id . ", name: " . $product_name . " delivery_id: " . $delivery_id . " quantity: " . $quantity . " quantity_ordred: " . $quantity_ordered .

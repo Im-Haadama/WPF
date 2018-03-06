@@ -86,17 +86,23 @@ if ( isset( $_GET["operation"] ) ) {
 	switch ( $operation ) {
 		case "dup":
 			$id        = $_GET["id"];
-			$path_code = sql_query_single_scalar( "SELECT path_code FROM im_missions WHERE id = " . $id );
-			// print $path_code . "<br/>";
-			$zones = get_zones_per_path( $path_code );
-			// print $zones . "<br/>";
+			duplicate_mission( $id );
 
-			$sql = "INSERT INTO im_missions (date, start_h, end_h, zones, name, path_code) 
-						SELECT ADDDATE(date, INTERVAL 7 DAY), start_h, end_h, \"" . $zones . "\", name, path_code FROM im_missions WHERE id = " . $id;
-			// print $sql;
-			// die(1);
-			sql_query( $sql );
 			header( 'Location: ' . $_SERVER['HTTP_REFERER'] );
 			exit;
 	}
+}
+
+function duplicate_mission( $id ) {
+//	$path_code = sql_query_single_scalar( "SELECT path_code FROM im_missions WHERE id = " . $id );
+//	// print $path_code . "<br/>";
+//	$zones = get_zones_per_path( $path_code );
+	// print $zones . "<br/>";
+
+	$sql = "INSERT INTO im_missions (date, start_h, end_h, zones, name, path_code) 
+						SELECT ADDDATE(date, INTERVAL 7 DAY), start_h, end_h, zones, name, path_code FROM im_missions WHERE id = " . $id;
+	// print $sql;
+	// die(1);
+	sql_query( $sql );
+
 }
