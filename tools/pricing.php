@@ -99,6 +99,11 @@ function calculate_price( $price, $supplier, $sale_price = '', $terms = null ) {
 }
 
 
+function get_price_by_type( $prod_id, $client_type = "" ) {
+	if ( strlen( $client_type ) > 1 ) {
+
+	}
+}
 function get_price( $prod_id, $client_type = 0, $quantity = 1 ) {
 	switch ( $client_type ) {
 		case 0:
@@ -111,6 +116,8 @@ function get_price( $prod_id, $client_type = 0, $quantity = 1 ) {
 			return siton_price( $prod_id );
 		case 2:
 			return get_buy_price( $prod_id );
+		case 5:
+			return min( get_price( $prod_id ), round( get_buy_price( $prod_id ) * 1.3, 1 ) );
 	}
 }
 

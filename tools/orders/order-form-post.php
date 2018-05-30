@@ -39,12 +39,15 @@ switch ( $operation ) {
 			$user = urldecode( $_GET["user"] );
 			// print "קבוצה: " . $group . "<br/>";
 		}
+		if ( isset( $_GET["email"] ) ) {
+			$email = urldecode( ( $_GET["email"] ) );
+		}
 
-		form_create_order( explode( ",", $params ), $phone, $name, $group, $user );
+		form_create_order( explode( ",", $params ), $phone, $name, $group, $user, $email );
 		break;
 }
 
-function form_create_order( $params, $phone = null, $name = null, $group = null, $user_id = null ) {
+function form_create_order( $params, $phone = null, $name = null, $group = null, $user_id = null, $email = null ) {
 //	print "יוצר הזמנה ליוזר " . $email . "<br/>";
 //	$user = get_user_by("email", $email);
 //
@@ -69,6 +72,14 @@ function form_create_order( $params, $phone = null, $name = null, $group = null,
 	if ( $phone ) {
 		$comment .= "טלפון המזמין:" . $phone . "\n";
 	}
+	if ( $email ) {
+		$comment .= "מייל: " . $email . "\n";
+		if ( $u = get_user_by( "email", $email ) ) {
+			$user_id = $u->ID;
+			print "user: " . $user_id;
+		}
+	}
+	print $comment . "<br/>";
 
 	$order_id = create_order( $user_id ? $user_id : get_user_id(), 0, $prods, $quantities, $comment );
 

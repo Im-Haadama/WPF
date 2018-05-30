@@ -11,7 +11,7 @@ require_once( 'pricelist.php' );
 // TODO: incremental doesn't handle deletion.
 // TODO: for now deleting will be done in full sync (once a day).
 function pricelist_remote_site_process( $supplier_id, &$results, $inc = false ) {
-	$debug_product = 756;
+	$debug_product = 938;
 
 	$debug = false;
 
@@ -184,7 +184,6 @@ function pricelist_process_name( $filename, $supplier_name, $add ) {
 	$sid = sql_query_single_scalar( $sql );
 	if ( $sid > 0 ) {
 		print "supplier id = " . $sid . "<br/>";
-		print "supplier id = " . $sid . "<br/>";
 
 		pricelist_process( $filename, $sid, $add );
 	} else {
@@ -194,7 +193,7 @@ function pricelist_process_name( $filename, $supplier_name, $add ) {
 }
 
 function pricelist_process( $filename_or_file, $supplier_id, $add, $picture_prefix = null ) {
-	$debug = true;
+	$debug = false;
 
 	// The file is on server. Lets read it
 	if ( is_string( $filename_or_file ) ) {
@@ -202,6 +201,7 @@ function pricelist_process( $filename_or_file, $supplier_id, $add, $picture_pref
 
 		$file = fopen( $filename, "r" );
 		if ( ! $file ) {
+			print "can't open file<br/>";
 			return false;
 		}
 	} else {
@@ -224,7 +224,7 @@ function pricelist_process( $filename_or_file, $supplier_id, $add, $picture_pref
 			$category_idx, $is_active_idx, $picture_path_idx );
 	}
 
-	print "pp = $picture_path_idx<br/>";
+	// print "pp = $picture_path_idx<br/>";
 	if ( ! $parse_header_result ) {
 		print "Missing headers:<br/>";
 		die( " name " . count( $name_idx ) . " price " . count( $price_idx ) );
@@ -258,6 +258,9 @@ function pricelist_process( $filename_or_file, $supplier_id, $add, $picture_pref
 					$sale_price = $data[ $sale_idx[ $col ] ];
 				}
 				$name      = $data[ $name_idx[ $col ] ];
+				if ( $debug ) {
+					print "<br/>" . $name . " ";
+				}
 				$detail    = $data[ $detail_idx[ $col ] ];
 				$detail    = rtrim( $detail, "!" );
 				if ( isset( $category_idx[ $col ] ) ) {
@@ -265,6 +268,8 @@ function pricelist_process( $filename_or_file, $supplier_id, $add, $picture_pref
 					// print $category . "<br/>";
 				}
 				if ( $detail == "מוגבל מאוד" or $detail == "מוגבל מאד" ) {
+					if ( $debug )
+						print "מוגבל";
 					continue;
 				}
 				// print $name . " " . $detail . "<br/>";
@@ -274,6 +279,8 @@ function pricelist_process( $filename_or_file, $supplier_id, $add, $picture_pref
 				// if ($debug) print $name . "<br/>";
 				if ( $price > 0 and $inventory_idx and ! is_numeric( $data[ $inventory_idx ] ) and $data[ $inventory_idx ] != "יש" ) {
 					print $data[ $name_idx[ $col ] ] . " חסר" . "<br/>";
+					if ( $debug )
+						print "חסר";
 					continue;
 				}
 				if ( $item_code_idx[ $col ] != - 1 ) {
@@ -332,7 +339,7 @@ function parse_header(
 	$name_idx  = Array();
 	$header    = fgetcsv( $file );
 
-//    print "header size: " . count($header) ."<br/>";
+	// print "header size: " . count($header) ."<br/>";
 
 	for ( $i = 0; $i < count( $header ); $i ++ ) {
 		$key = trim( $header[ $i ] );
@@ -357,6 +364,7 @@ function parse_header(
 			case 'תיאור':
 			case 'מוצר':
 			case 'שם המוצר':
+				print "name " . $i . "<br/>";
 				array_push( $name_idx, $i );
 				break;
 			case 'פירוט המוצר':
@@ -367,6 +375,7 @@ function parse_header(
 			case 'מחיר נטו':
 			case 'מחיר לק"ג':
 			case 'סיטונאות':
+				print "price " . $i . "<br/>";
 				array_push( $price_idx, $i );
 				break;
 			case 'מלאי (ביחידות)':
@@ -392,15 +401,15 @@ function parse_header(
 
 	//if ($name_idx == -1 or $price_idx == -1) die("item code " . $item_code_idx . "name " . $name_idx  . "price " . $price_idx );
 	if ( count( $name_idx ) == 0 or count( $price_idx ) == 0 ) {
-		print "name_idx count: " . count( $name_idx );
-		print " price_idx count: " . count( $price_idx ) . " failed<br/>";
+		// print "name_idx count: " . count( $name_idx );
+		// print " price_idx count: " . count( $price_idx ) . " failed<br/>";
 
 		return false;
 		// print "Missing headers:<br/>";
 		// die(" name " . count($name_idx)  . " price " . count($price_idx));
 	}
-	var_dump( $name_idx );
-	var_dump( $price_idx );
+//	var_dump( $name_idx );
+//	var_dump( $price_idx );
 	print "<br/>";
 	return true;
 }
@@ -422,6 +431,8 @@ function handle_line(
 	$price, $sale_price, $name, $item_code, $category, $PL, $has_variations, &$id, $parent_id = null,
 	$pic_path = null) {
 	$name = pricelist_strip_product_name( $name );
+
+	print $name . " " . $price . "<br/>";
 	$id   = 0;
 	// Check if we have a price.
 	// Product with variations doesn't need a price

@@ -589,6 +589,7 @@ function alternatives( $prod_id, $details = false )
 {
 	global $conn;
 	global $debug_product;
+	$debug_product = 0;
 
 	// prof_flag("start " . $id);
 	if ( ! ( $prod_id > 0 ) ) {
@@ -637,6 +638,7 @@ function alternatives( $prod_id, $details = false )
 	$result = mysqli_query( $conn, $sql );
 	$c      = 0;
 	while ( $row = mysqli_fetch_row( $result ) ) {
+		$supplier_id = $row[1];
 		if ( $prod_id == $debug_product ) {
 			print $c ++ . ")";
 			var_dump( $row );
@@ -645,7 +647,7 @@ function alternatives( $prod_id, $details = false )
 		$found = false;
 		// Don't repeat alternatives
 		for ( $i = 0; $i < count( $rows ); $i ++ ) {
-			if ( $rows[ $i ]->getSupplierId() == $row[2] ) {
+			if ( $rows[ $i ]->getSupplierId() == $supplier_id ) {
 				$found = true;
 			}
 		}
@@ -664,6 +666,7 @@ function alternatives( $prod_id, $details = false )
 
 //	prof_flag("end " . $id);
 
+	// for DEBUG: if ($prod_id == 1002) { print "<br/>alters:" . var_dump($rows); };
 	return $rows;
 }
 

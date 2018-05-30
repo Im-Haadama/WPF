@@ -6,14 +6,18 @@
  * Time: 19:29
  */
 // require_once( "../r-shop_manager.php" );
-require_once( "../pricing.php" );
-require_once( "../account/account.php" );
-include_once( "../orders/orders-common.php" );
-include_once( "../gui/inputs.php" );
-include_once( "../multi-site/multi-site.php" );
-require_once( "../mail.php" );
-require_once( "../account/gui.php" );
-require_once( "../delivery/delivery-common.php" );
+if ( ! defined( 'TOOLS_DIR' ) ) {
+	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
+}
+
+require_once( TOOLS_DIR . "/pricing.php" );
+require_once( TOOLS_DIR . "/account/account.php" );
+include_once( TOOLS_DIR . "/orders/orders-common.php" );
+require_once( ROOT_DIR . '/agla/gui/inputs.php' );
+include_once( TOOLS_DIR . "/multi-site/multi-site.php" );
+require_once( TOOLS_DIR . "/mail.php" );
+require_once( TOOLS_DIR . "/account/gui.php" );
+require_once( TOOLS_DIR . "/delivery/delivery-common.php" );
 
 $debug = false;
 class delivery {
@@ -36,7 +40,7 @@ class delivery {
 
 	public static function GuiCreateNewNoOrder() {
 		$data = gui_table( array(
-			array( "לקוח:", gui_select_client( 30, true ) ),
+			array( "לקוח:", gui_select_client() ),
 			array( "תאריך", gui_input_date( "delivery_date", "" ) ),
 			array( gui_button( "btn_add_delivery", "", "הוסף תעודת משלוח" ) )
 		) );
@@ -129,7 +133,6 @@ class delivery {
 	}
 
 	function delivery_text( $document_type, $operation = ImDocumentOperation::show, $margin = false ) {
-		// $expand_basket = false, $refund = false, $edit_order = false
 		global $delivery_fields_names;
 		global $header_fields;
 		global $debug;
@@ -138,7 +141,6 @@ class delivery {
 			print "operation: " . $operation . "<br/>";
 		}
 		global $global_vat;
-		global $conn;
 
 		$expand_basket = false;
 
@@ -202,14 +204,12 @@ class delivery {
 		$data = "";
 
 		$client_id   = $this->GetCustomerID();
+//		print "cid=" . $client_id . "<br/>";
 		$client_type = customer_type( $client_id );
-		switch ( $client_type ) {
-			case 1:
-				$data .= " תעריף סיטונאי" . "<br/>";
-				break;
-			case 2:
-				$data .= " תעריף בעלים" . "<br/>";
-				break;
+//		 print $client_type . "XX<br/>";
+
+		if ( $client_type > 0 ) {
+			$data .= "תעריף " . sql_query_single_scalar( "SELECT type FROM im_client_types WHERE id = " . $client_type );
 		}
 
 		$delivery_loaded = false;
@@ -230,7 +230,7 @@ class delivery {
 
 		if ( $this->ID > 0 ) { // load delivery
 			$delivery_loaded = true;
-			$sql             = 'select id, product_name, round(quantity,1), quantity_ordered, vat, price, line_price, prod_id ' .
+			$sql             = 'select id, product_name, round(quantity, 1), quantity_ordered, vat, price, line_price, prod_id ' .
 			                   'from im_delivery_lines ' .
 			                   'where delivery_id=' . $this->ID . " order by 1";
 
@@ -249,40 +249,27 @@ class delivery {
 			}
 		} else {
 			// For group orders - first we get the needed products and then accomulate the quantities.
-			$sql = 'select distinct woim.meta_value '
+			$sql = 'select distinct woim.meta_value,  order_line_get_variation(woi.order_item_id) '
 			       . ' from wp_woocommerce_order_items woi join wp_woocommerce_order_itemmeta woim'
 			       . ' where ' . $this->OrderQuery()
 			       . ' and woi.order_item_id = woim.order_item_id and woim.`meta_key` = \'_product_id\'';
 
-//			print $sql . "<br/>";
+			$prods_result = sql_query( $sql );
+			while ( $row = sql_fetch_row( $prods_result ) ) {
+				$prod_id = $row[0];
+				$var_id  = $row[1];
 
-			$prods = sql_query_array_scalar( $sql );
-//			var_dump($prods);
-
-			foreach ( $prods as $prod_id ) {
-//			// Get order lines
-//			$sql = 'select '
-//			       . ' woim.order_item_id'
-//			       . ' from wp_woocommerce_order_items woi join wp_woocommerce_order_itemmeta woim'
-//			       . ' where ' . $this->OrderQuery()
-//			       . ' and woi.order_item_id = woim.order_item_id and woim.`meta_key` = \'_product_id\''
-//			       . ' order by 1';
-//
-//			$result = sql_query( $sql );
-//
-//			while ( $row = mysqli_fetch_row( $result ) ) {
-				// $prod_id       = $row[1];
-				// $order_item_id = $row[2];
-				$order_item_ids = sql_query_array_scalar( 'select woim.order_item_id'
-				                                          . ' from wp_woocommerce_order_items woi join wp_woocommerce_order_itemmeta woim'
-				                                          . ' where ' . $this->OrderQuery()
-				                                          . ' and woi.order_item_id = woim.order_item_id and woim.`meta_key` = \'_product_id\''
-				                                          . ' and woim.meta_value = ' . $prod_id
-				                                          . ' order by 1' );
-
+				$items_sql      = 'select woim.order_item_id'
+				                  . ' from wp_woocommerce_order_items woi join wp_woocommerce_order_itemmeta woim'
+				                  . ' where ' . $this->OrderQuery()
+				                  . ' and woi.order_item_id = woim.order_item_id and woim.`meta_key` = \'_product_id\''
+				                  . ' and woim.meta_value = ' . $prod_id
+				                  . ' and order_line_get_variation(woi.order_item_id) = ' . $var_id
+				                  . ' order by 1';
+				$order_item_ids = sql_query_array_scalar( $items_sql );
 
 				// $data .= $this->delivery_line($show_fields, $prod_id, $quantity_ordered, "", $quantity_ordered, $price, $has_vat, $prod_id, $refund, $unit );
-				$data .= $this->delivery_line( $show_fields, $document_type, $order_item_ids, $client_type, $operation, $margin, $style );
+				$data .= $this->delivery_line( $show_fields, $document_type, $order_item_ids, $client_type, $operation, $margin, $style, $var_id );
 				// print "ex " . $expand_basket . " is " . is_basket($prod_id) . "<br/>";
 
 				if ( $expand_basket && is_basket( $prod_id ) ) {
@@ -313,7 +300,7 @@ class delivery {
 			$delivery_line                                  = $empty_array;
 			$delivery_line[ DeliveryFields::product_name ]  = "דמי משלוח";
 			$delivery_line[ DeliveryFields::delivery_q ]    = 1;
-			$delivery_line[ DeliveryFields::price ]         = $operation ? gui_input( "delivery", $del_price, "" ) : $del_price;
+			$delivery_line[ DeliveryFields::price ]         = $operation ? gui_input( "delivery", $del_price > 0 ? $del_price : "", "" ) : $del_price;
 			$delivery_line[ DeliveryFields::has_vat ]       = gui_checkbox( "hvt_del", "vat", true );
 			$delivery_line[ DeliveryFields::line_vat ]      = $del_vat;
 			$delivery_line[ DeliveryFields::delivery_line ] = $del_price;
@@ -326,34 +313,35 @@ class delivery {
 			// Spare line for volume discount
 		}
 
-		if ( ! $volume_line ) {
-			$delivery_line = $empty_array;
-			$data          .= gui_row( $delivery_line, "dis", $show_fields, $sums, $delivery_fields_names );
+		if ( $operation != ImDocumentOperation::collect ) {
+
+			if ( ! $volume_line ) {
+				$delivery_line = $empty_array;
+				$data          .= gui_row( $delivery_line, "dis", $show_fields, $sums, $delivery_fields_names );
+			}
+			// Summary
+			// Due VAT
+			$summary_line                                  = $empty_array;
+			$summary_line[ DeliveryFields::product_name ]  = 'סה"כ חייב במע"מ';
+			$summary_line[ DeliveryFields::delivery_line ] = $this->delivery_due_vat;
+			$summary_line[ DeliveryFields::order_line ]    = $this->order_due_vat;
+			$data                                          .= gui_row( $summary_line, "due", $show_fields, $sum, $delivery_fields_names, $style );
+
+			// Total VAT
+			$summary_line                                  = $empty_array;
+			$summary_line[ DeliveryFields::product_name ]  = 'מע"מ 17%';
+			$summary_line[ DeliveryFields::delivery_line ] = $this->delivery_total_vat;
+			$summary_line[ DeliveryFields::order_line ]    = $this->order_vat_total;
+			$data                                          .= gui_row( $summary_line, "vat", $show_fields, $sum, $delivery_fields_names, $style );
+
+			// Total
+			$summary_line                                  = $empty_array;
+			$summary_line[ DeliveryFields::product_name ]  = "סה\"כ לתשלום";
+			$summary_line[ DeliveryFields::delivery_line ] = $this->delivery_total;
+			$summary_line[ DeliveryFields::order_line ]    = $this->order_total;
+			$summary_line[ DeliveryFields::line_margin ]   = $this->margin_total;
+			$data                                          .= gui_row( $summary_line, "tot", $show_fields, $sum, $delivery_fields_names, $style );
 		}
-
-		// Summary
-		// Due VAT
-		$summary_line                                  = $empty_array;
-		$summary_line[ DeliveryFields::product_name ]  = 'סה"כ חייב במע"מ';
-		$summary_line[ DeliveryFields::delivery_line ] = $this->delivery_due_vat;
-		$summary_line[ DeliveryFields::order_line ]    = $this->order_due_vat;
-		$data                                          .= gui_row( $summary_line, "due", $show_fields, $sum, $delivery_fields_names, $style );
-
-		// Total VAT
-		$summary_line                                  = $empty_array;
-		$summary_line[ DeliveryFields::product_name ]  = 'מע"מ 17%';
-		$summary_line[ DeliveryFields::delivery_line ] = $this->delivery_total_vat;
-		$summary_line[ DeliveryFields::order_line ]    = $this->order_vat_total;
-		$data                                          .= gui_row( $summary_line, "vat", $show_fields, $sum, $delivery_fields_names, $style );
-
-		// Total
-		$summary_line                                  = $empty_array;
-		$summary_line[ DeliveryFields::product_name ]  = "סה\"כ לתשלום";
-		$summary_line[ DeliveryFields::delivery_line ] = $this->delivery_total;
-		$summary_line[ DeliveryFields::order_line ]    = $this->order_total;
-		$summary_line[ DeliveryFields::line_margin ]   = $this->margin_total;
-		$data                                          .= gui_row( $summary_line, "tot", $show_fields, $sum, $delivery_fields_names, $style );
-
 
 		$data = str_replace( "\r", "", $data );
 
@@ -366,13 +354,13 @@ class delivery {
 
 	private function GetCustomerID() {
 		if ( is_array( $this->d_OrderID ) ) {
-			return get_customer_by_order_id( $this->d_OrderID[0] );
+			return order_get_customer_id( $this->d_OrderID[0] );
 		}
 
-		return get_customer_by_order_id( $this->d_OrderID );
+		return order_get_customer_id( $this->d_OrderID );
 	}
 
-	public function delivery_line( $show_fields, $document_type, $line_ids, $client_type, $operation, $margin = false, $style = null ) {
+	public function delivery_line( $show_fields, $document_type, $line_ids, $client_type, $operation, $margin = false, $style = null, $var_id = 0 ) {
 		global $delivery_fields_names;
 
 		global $global_vat;
@@ -412,15 +400,18 @@ class delivery {
 		$has_vat = null;
 
 		if ( $load_from_order ) {
-			$sql              = "SELECT order_item_name FROM wp_woocommerce_order_items WHERE order_item_id = " . $line_id;
-			$prod_name        = sql_query_single_scalar( $sql );
-			$quantity_ordered = get_order_itemmeta( $line_ids, '_qty' );
-			$unit_ordered     = get_order_itemmeta( $line_id, 'unit' );
-			$order_line_total = round( get_order_itemmeta( $line_ids, '_line_total' ), 1);
-			$this->order_total += $order_line_total;
+			// print "lid=". $line_id . "<br/>";
+			$sql                                = "SELECT order_item_name FROM wp_woocommerce_order_items WHERE order_item_id = " . $line_id;
+			$prod_name                          = sql_query_single_scalar( $sql );
+			$quantity_ordered                   = get_order_itemmeta( $line_ids, '_qty' );
+			$unit_ordered                       = get_order_itemmeta( $line_id, 'unit' );
+			$order_line_total                   = round( get_order_itemmeta( $line_ids, '_line_total' ), 1);
+			$this->order_total                  += $order_line_total;
 			$line[ DeliveryFields::order_line ] = $order_line_total;
-			$prod_id          = get_order_itemmeta( $line_id, '_product_id' );
+			$prod_id                            = get_order_itemmeta( $line_id, '_product_id' );
 			// $line_price       = get_order_itemmeta( $line_id, '_line_total' );
+
+			// Todo: handle prices
 			switch ( $client_type ) {
 				case 0:
 					$price = round( $order_line_total / $quantity_ordered, 1 );
@@ -431,6 +422,8 @@ class delivery {
 				case 2:
 					$price = get_buy_price( $prod_id );
 					break;
+				default:
+					$price = round( 1.3 * get_buy_price( $prod_id ), 1);
 			}
 
 			if ( $unit_ordered ) {
@@ -673,6 +666,7 @@ class delivery {
 		global $business_name;
 		global $bank_info;
 		global $support_email;
+		global $mail_sender;
 
 		$order_id  = get_order_id( $this->ID );
 		$client_id = order_get_customer_id( $this->OrderId() );
@@ -700,8 +694,9 @@ class delivery {
 
 		$message .= "<br> היתרה המעודכנת במערכת " . client_balance( $client_id );
 
-		$message .= "<br /> לפרטים אודות מצב החשבון והמשלוח האחרון הכנס
-<a href = \"" . get_site_tools_url( Multisite::LocalSiteID() ) . "/account/get-customer-account.php?customer_id=" . $client_id . "\"> לאתר</a>.
+		$message .= "<br /> לפרטים אודות מצב החשבון והמשלוח האחרון הכנס " .
+		            gui_hyperlink( "מצב חשבון", get_site_url() . '/balance' ) .
+		            "
  <br/>
  העברות בנקאיות מתעדכנות בחשבונכם אצלנו עד עשרה ימים לאחר התשלום.
 <li>
@@ -725,6 +720,7 @@ class delivery {
 		if ( $more_email ) {
 			$to = $to . ", " . $more_email;
 		}
+		print "From: " . $support_email . "<br/>";
 		print "To: " . $to . "<br/>";
 		print "Message:<br/>";
 		print $message . "<br/>";

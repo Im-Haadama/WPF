@@ -15,13 +15,8 @@ require_once( "../gui/inputs.php" );
 print header_text();
 ?>
 <header>
+    <script type="text/javascript" src="/agla/client_tools.js"></script>
     <script>
-		<?php
-		$filename = __DIR__ . "/../client_tools.js";
-		$handle = fopen( $filename, "r" );
-		$contents = fread( $handle, filesize( $filename ) );
-		print $contents;
-		?>
         function select_pr() {
             var collection = document.getElementsByClassName("product_checkbox");
             var table = document.getElementById("change_price_products_table");

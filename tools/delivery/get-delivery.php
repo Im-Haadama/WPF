@@ -1,5 +1,4 @@
 <?php
-require_once '../r-shop_manager.php';
 require_once 'delivery.php';
 require_once '../orders/orders-common.php';
 
@@ -11,69 +10,16 @@ $margin = isset( $_GET["margin"] );
 $d = new Delivery( $id );
 
 $order_id = get_order_id( $id );
+//print current_user_can("edit_shop_orders") ."<br/>";
+//print order_get_customer_id($order_id)."<br/>";
+//print get_current_user_id()."<br/>";
+if ( ( ! current_user_can( "edit_shop_orders" ) ) and ( order_get_customer_id( $order_id ) != get_current_user_id() ) ) {
+	print "אין הרשאה";
+	die( 0 );
+}
 
 print order_info_data( $order_id );
-
 print $d->delivery_text( ImDocumentType::delivery, ImDocumentOperation::show, $margin );
-//$sql = 'select product_name, quantity, vat,price, line_price '
-//        . ' from im_delivery_lines where delivery_id = ' . $id ;
-//
-//
-//$fields = mysql_num_fields ( $export );
-//
-//$data = "<table id=\"del_table\" border=\"1\"><tr><td>פריט</td><td>כמות</td><td>מעם</td><td>מחיר</td><td>סהכ</td></tr>";
-//$total = 0;
-//$vat_total = 0;
-//$line_number = 0;
-//$calc_total = 0;
-//
-//while( $row = mysqli_fetch_row( $result ) )
-//{
-//	$line_number = $line_number + 1;
-//	$line = "<tr>";
-//    	$product_name = $row[0];
-//	$quantity = $row[1];
-//	$vat_line = $row[2];
-//	$item_price = $row[3];
-//	$total_line = $row[4];
-//
-//	// Display item name
-//	$line .= "<td>" . $product_name . '</td>';
-//	$line .= "<td>" . $quantity . "</td>";
-//	$line .= "<td>" . $vat_line . "</td>";
-//	$line .= "<td>" . $item_price . "</td>";
-//	$line .= "<td>" . $total_line . "</td>"; $calc_total += $total_line;
-//
-//	$line .= "</tr>";
-//
-//	$data .= "<tr> ". trim( $line ) . "</tr>";
-//}
-//
-//$sql = 'select vat, total '
-//        . ' from im_delivery where id = ' . $id ;
-//
-//$row = mysqli_fetch_row( $result );
-//
-//$vat_total = $row[0];
-//$total = $row[1];
-//
-//$data .= "<tr><td>עיגול</td><td></td><td></td><td></td><td>" . round(100 * ($total - $calc_total)) /100 . "</td></tr>";
-//$data .= "<tr><td>סהכ ללא מעם</td><td></td><td></td><td></td><td>" . ($total - $vat_total) . "</td></tr>";
-//$data .= "<tr><td>סהכ מעם</td><td></td><td></td><td></td><td>" . $vat_total . "</td></tr>";
-//$data .= "<tr><td>סהכ לתשלום</td><td></td><td></td><td></td><td id=\"total\">" . $total . "</td></tr>";
-//
-//$data = str_replace( "\r" , "" , $data );
-//
-//if ( $data == "" )
-//{
-//    $data = "\n(0) Records Found!\n";
-//}
-//
-//$data .= "</table>";
-//
-//print "$data";
-//
-//print "</form>";
 
 if ( ! $send ) {
 	print '<button id="btn_del" onclick="deleteDelivery()">מחק תעודה</button>';

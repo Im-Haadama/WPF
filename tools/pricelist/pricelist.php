@@ -11,8 +11,10 @@ if ( ! defined( "TOOLS_DIR" ) ) {
 }
 
 require_once( TOOLS_DIR . '/catalog/catalog.php' );
-require_once( TOOLS_DIR . '/gui/inputs.php' );
+require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 require_once( TOOLS_DIR . '/multi-site/multi-site.php' );
+require_once( TOOLS_DIR . '/wp/Product.php' );
+
 
 class PricelistItem {
 	private $id;
@@ -206,6 +208,8 @@ class PriceList {
 		$data .= "<td>מחיר מבצע</td>";
 		$data .= "<td>קטגוריות</td>";
 		$data .= "<td>מזהה</td>";
+		$data .= "<td>מנוהל מלאי</td>";
+		$data .= "<td>כמות במלאי</td>";
 		$data .= "</tr>";
 
 		// Add new item fields
@@ -223,7 +227,10 @@ class PriceList {
 
 		$data .= "<tr>";
 		$data .= "<td>" . gui_button( "add", "add_item()", "הוסף" ) . "</td>";
+		$data .= gui_cell( gui_input( "product_code", "" ) );
 		$data .= gui_cell( gui_input( "product_name", "" ) );
+		$data .= gui_cell( "" );
+
 		$data .= gui_cell( gui_input( "price", "" ) );
 		$data .= "</tr>";
 		print $data;
@@ -257,6 +264,7 @@ class PriceList {
 	) {
 		global $debug;
 
+		print "AddOrUpdate: " . $product_name . " " . $regular_price . "<br/>";
 		my_log( __METHOD__, __FILE__ );
 		if ( mb_strlen( $product_name ) > 40 ) {
 			$product_name = mb_substr( $product_name, 0, 40 );
@@ -640,8 +648,15 @@ function print_html_line( $product_name, $price, $date, $pl_id, $supplier_produc
 	}
 	$category = sql_query_single_scalar( "SELECT category FROM im_supplier_price_list WHERE id = " . $pl_id );
 	$line     .= gui_cell( $category);
-	$line .= gui_cell( $linked_prod_id );
-	$line .= gui_cell( $map_id );
+	if ( $linked_prod_id > 0 ) {
+		$p            = new Product( $linked_prod_id );
+		$line         .= gui_cell( $linked_prod_id );
+		$line         .= gui_cell( $map_id );
+		$stockManaged = $p->getStockManaged();
+		$line         .= gui_cell( gui_checkbox( "chm_" . $linked_prod_id, "stock", $stockManaged, "onchange=\"change_managed(this)\")" ) );
+		$line         .= gui_cell( $stockManaged ? gui_lable( "stk_" . $linked_prod_id, $p->getStock() ) : "" );
+	}
+	// get_product_name()
 	$line .= "</tr>";
 
 	return $line;

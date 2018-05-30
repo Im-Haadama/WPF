@@ -5,13 +5,8 @@ require_once( "../header.php" );
 require_once( "../gui/inputs.php" );
 require_once( "../options.php" );
 ?>
+<script type="text/javascript" src="/agla/client_tools.js"></script>
 <script>
-	<?php
-	$filename = __DIR__ . "/../client_tools.js";
-	$handle = fopen( $filename, "r" );
-	$contents = fread( $handle, filesize( $filename ) );
-	print $contents;
-	?>
 
     function update_display() {
 

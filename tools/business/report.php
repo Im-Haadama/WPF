@@ -40,14 +40,6 @@ function print_project_report( $role, $project_id ) {
 
 }
 
-function sums( &$s, $a ) {
-//	var_dump($s); print "<br/>";
-//	var_dump($a); print "<br/>";
-	if ( is_numeric( $s ) and is_numeric( $a ) ) {
-		$s = round( $s + $a, 2 );
-		// print $s . "<br/>";
-	}
-}
 
 function print_weekly_report( $week ) {
 	print gui_header( 1, "מציג תוצאות לשבוע המתחיל ביום " . $week );

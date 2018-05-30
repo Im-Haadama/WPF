@@ -1,7 +1,7 @@
 <?php
 require_once( '../r-shop_manager.php' );
 //require_once( '../header.php' );
-require_once( "../gui/inputs.php" );
+require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 require_once( "../delivery/delivery.php" );
 require_once( "../suppliers/gui.php" );
 

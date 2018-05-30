@@ -30,7 +30,7 @@ if ( date( 'Y-m-d' ) > date( 'Y-m-d', strtotime( $week . "+1 week" ) ) ) {
 
 //print gui_hyperlink( "שבוע קודם", "get-driver-multi.php?week=" . date( 'Y-m-d', strtotime( $week . " -1 week" ) ) );
 
-$output = MultiSite::GetAll( "delivery/get-driver.php?week=" . $week );
+$output = MultiSite::GetAll( "delivery/get-driver.php?week=" . $week, $debug );
 
 $dom = str_get_html( $output );
 
@@ -117,7 +117,14 @@ foreach ( $dom->find( 'tr' ) as $row ) {
 //var_dump($addresses);
 
 foreach ( $data_lines as $mission_id => $data_line ) {
+//    $mission_id = 152;
+//    $data_line = $data_lines[152];
+//    if (1){
 	print gui_header( 1, get_mission_name( $mission_id ) . "($mission_id)" );
+
+	if ( $debug ) {
+		print_time( "start handle mission " . $mission_id, true );
+	}
 
 	// Collect the stop points
 	$path              = array();
@@ -137,7 +144,12 @@ foreach ( $data_lines as $mission_id => $data_line ) {
 		}
 	}
 //	foreach ($stop_points as $p) print $p . " ";
+	if ( $debug )
+		print_time( "start path ", true);
 	find_route_1( 1, $stop_points, $path, true );
+	if ( $debug )
+		print_time( "end path " . $mission_id, true);
+
 //	var_dump($path);
 	if ( $debug ) {
 		print map_get_order_address( $path[0] ) . "<br/>";// . " " .get_distance(1, $path[0]) . "<br/>";
@@ -183,6 +195,9 @@ foreach ( $data_lines as $mission_id => $data_line ) {
 	print "</table>";
 
 	print "סך הכל ק\"מ " . $total_distance . "<br/>";
+	if ( $debug )
+		print_time( "end handle mission " . $mission_id, true);
+
 }
 
 function mb_ord( $c ) {

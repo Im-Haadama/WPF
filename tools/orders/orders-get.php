@@ -1,18 +1,66 @@
 <?php
-
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
 require_once( "../im_tools.php" );
 require_once( '../r-shop_manager.php' );
-require_once 'orders-common.php';
+// require_once 'orders-common.php';
 require_once '../delivery/delivery.php';
 
-print header_text( false );
+print header_text( false, false );
+
+if ( isset( $_GET["week"] ) ) {
+	$week = $_GET["week"];
+}
 
 print gui_button( "btn_new", "show_create_order()", "הזמנה חדשה" );
-?>
 
-<script type="text/javascript" src="../client_tools.js"></script>
+?>
+<div id="new_order" style="display: none">
+	<?php
+	print gui_header( 1, "יצירת הזמנה" );
+	print gui_table( array(
+		array(
+			gui_header( 2, "בחר לקוח" ),
+			gui_header( 2, "בחר מועד" )
+		),
+		array(
+			gui_select_client( "onchange=\"client_changed()\"" ),
+			gui_select_mission( "mis_new" )
+		)
+	) );
+
+	print gui_lable( "rate", "מחירון משלוחים" );
+	print gui_header( 2, "בחר מוצרים" );
+	print gui_datalist( "items", "im_products", "post_title" );
+
+	print gui_table( array( array( "פריט", "כמות", "קג או יח" ) ),
+		"order_items" );
+
+	print gui_button( "add_line", "add_line()", "הוסף שורה" );
+	print gui_button( "add_order", "add_order()", "הוסף הזמנה" );
+	?>
+
+</div>
+
+<script type="text/javascript" src="/agla/client_tools.js"></script>
 
     <script>
+        function client_changed() {
+            var user_name = get_value_by_name("client_select");
+            var user_id = user_name.substr(0, user_name.indexOf(")"));
+
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                // Wait to get query result
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+                {
+                    document.getElementById("rate").innerHTML = xmlhttp.responseText;
+                }
+            }
+            var request = "orders-post.php?operation=get_rate&id=" + user_id;
+            xmlhttp.open("GET", request, true);
+            xmlhttp.send();
+        }
         function mission_changed(order_id) {
             // "mis_"
             //var order_id = field.name.substr(4);
@@ -78,15 +126,6 @@ print gui_button( "btn_new", "show_create_order()", "הזמנה חדשה" );
                     table.rows[0].firstElementChild.firstElementChild.checked;
 
         }
-        //        function moveNextRow(my_row) {
-        //            if (event.which == 13) {
-        //                alert(my_row);
-        ////                var current = document.getElementsByName("quantity" + (my_row));
-        ////                current[0].value = Math.round(current[0].value * 10) / 10;
-        ////                var objs = document.getElementsByName("quantity" + (my_row + 1));
-        ////                if (objs[0]) objs[0].focus();
-        //            }
-        //        }
 
         function add_order() {
             document.getElementById('add_order').disabled = true;
@@ -168,7 +207,7 @@ print gui_button( "btn_new", "show_create_order()", "הזמנה חדשה" );
             var line_idx = item_table.rows.length;
             var new_row = item_table.insertRow(-1);
             var product = new_row.insertCell(0);
-            // product.innerHTML = "<input id=\"itm_" + line_idx + "\" list=\"items\" onkeypress=\"select_product(" + line_idx + ")\">";
+            product.innerHTML = "<input id=\"itm_" + line_idx + "\" list=\"items\" onkeypress=\"select_product(" + line_idx + ")\">";
             var select = "<? print gui_input_select_from_datalist( "XX", "products" ); ?>";
             product.innerHTML = select.replace("XX", "itm_" + line_idx);
             var quantity = new_row.insertCell(1);
@@ -232,6 +271,12 @@ print gui_button( "btn_new", "show_create_order()", "הזמנה חדשה" );
 
 print gui_datalist( "products", "im_products", "post_title", true );
 
+if ( isset( $week ) ) {
+	print "הזמנה לשבוע  " . $week . "<br/>";
+	print orders_table( "wc-complete", false, 0, $week );
+	die ( 0 );
+}
+
 // Check connection
 if ( $link->connect_error ) {
 	die( "Connection failed: " . $conn->connect_error );
@@ -240,17 +285,22 @@ if ( $link->connect_error ) {
 print gui_header( 1, "הזמנות" );
 
 $pending = orders_table( array( "wc-pending", "wc-on-hold" ) );
+
 if ( current_user_can( "edit_shop_orders" ) and strlen( $pending ) > 4 ) {
 	print $pending;
 	print gui_button( "btn_start", "start_handle()", "התחל טיפול" ) . "<br/>";
+} else {
+	// print "אין הרשאות";
 }
 print orders_table( "wc-processing" );
+
 
 $shipment = orders_table( "wc-awaiting-shipment" );
 if ( strlen( $shipment ) > 5 ) {
 	print $shipment;
 	print gui_button( "btn_delivered", "delivered()", "משלוח נמסר" ) . "<br/>";
 }
+
 // This month active users
 $sql = 'SELECT distinct meta.meta_value ' .
        'FROM `wp_posts` posts, wp_postmeta meta ' .
@@ -329,31 +379,6 @@ function debug_time1( $str ) {
 }
 
 ?>
-<div id="new_order" style="display: none">
-	<?php
-	print gui_header( 1, "יצירת הזמנה" );
-	print gui_table( array(
-		array(
-			gui_header( 2, "בחר לקוח" ),
-			gui_header( 2, "בחר מועד" )
-		),
-		array(
-			gui_select_client( 90, true ),
-			gui_select_mission( "mis_new")
-		)
-	) );
-
-	print gui_header( 2, "בחר מוצרים" );
-	print gui_datalist( "items", "im_products", "post_title" );
-
-	print gui_table( array( array( "פריט", "כמות", "קג או יח" ) ),
-		"order_items" );
-
-	print gui_button( "add_line", "add_line()", "הוסף שורה" );
-	print gui_button( "add_order", "add_order()", "הוסף הזמנה" );
-	?>
-
-</div>
 <div id="logging"></div>
 
 </html>

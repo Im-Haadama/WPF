@@ -6,11 +6,11 @@
  * Time: 23:29
  */
 require_once( '../r-shop_manager.php' );
-require_once( '../gui/inputs.php' );
+require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 
 ?>
 
-    <script type="text/javascript" src="../client_tools.js"></script>
+    <script type="text/javascript" src="/agla/client_tools.js"></script>
     <script>
         function done() {
             var collection = document.getElementsByClassName("user_chk");

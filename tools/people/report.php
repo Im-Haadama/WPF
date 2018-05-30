@@ -6,7 +6,7 @@
  * Time: 13:07
  */
 require_once( '../r-tools_hr.php' );
-require_once( '../gui/inputs.php' );
+require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 ?>
 <header>
     <script>
@@ -45,10 +45,6 @@ require_once( '../gui/inputs.php' );
 <body onload="update();">
 <h1 align="center">נתוני שכר לחודש
 	<?
-	if ( get_current_user_name() == 'agla' ) {
-		show_all( $month );
-	}
-
 	$today = date( 'Y-m', strtotime( 'last month' ) );
 
 	print gui_input_month( "month", "month", $today, "onchange=update()" );

@@ -21,6 +21,16 @@ if ( ! current_user_can( "edit_shop_orders" ) ) {
 $operation = $_GET["operation"];
 my_log( "Operation: " . $operation, __FILE__ );
 switch ( $operation ) {
+	case "get_rate":
+		$user_id = $_GET["id"];
+		print customer_type( $user_id );
+		break;
+	case "save_order_excerpt":
+		$excerpt  = $_GET["excerpt"];
+		$order_id = $_GET["order_id"];
+		order_set_excerpt( $order_id, $excerpt );
+		break;
+
 	case "create_order":
 		$user_id    = $_GET["user_id"];
 		$prods      = $_GET["prods"];

@@ -8,14 +8,15 @@
 
 require_once( "../im_tools.php" );
 require_once( "orders-common.php" );
-require_once( "../gui/inputs.php" );
+require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 if ( ! defined( "STORE_DIR" ) ) {
 	define( 'STORE_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
 }
 
 require_once( STORE_DIR . "/tools/supplies/supplies.php" );
 
-$filter_zero = $_GET["filter_zero"];
+$filter_zero  = $_GET["filter_zero"];
+$filter_stock = $_GET["filter_stock"];
 //$basket_quantities;
 $basket_ordered = array();
 
@@ -31,7 +32,7 @@ switch ( $operation ) {
 		create_supply_single();
 		break;
 	case "show_required":
-		get_total_orders( $filter_zero );
+		get_total_orders1( $filter_zero, false, $filter_stock );
 		break;
 	default:
 		print $operation . " not handled ";
@@ -39,7 +40,7 @@ switch ( $operation ) {
 }
 
 function create_supply_single() {
-	$debug = true;
+	$debug = false;
 	print header_text( false, false, false );
 	$needed_products = array();
 
@@ -83,7 +84,7 @@ function create_supply_single() {
 		print get_supplier_name( $supplier_id ) . "<br/>";
 		$supply_id = create_supply( $supplier_id );
 		foreach ( $supplies_data[ $supplier_id ] as $prod_id => $datum ) {
-			print get_product_name( $prod_id ) . " " . $datum[0] . " " . $datum[1] . "<br/>";
+			print get_product_name( $prod_id ) . "q=" . $datum[0] . "u=" . $datum[1] . "<br/>";
 			$price = get_buy_price( $prod_id );
 			supply_add_line( $supply_id, $prod_id, $datum[0], $price, $datum[1] );
 		}
@@ -147,7 +148,182 @@ function get_total_orders( $filter_zero, $history = false ) {
 			$supplier_name = get_supplier( $prod_id );
 		}
 
-		$line          .= "<td>" . $supplier_name . "</td>";
+		$line .= "<td>" . $supplier_name . "</td>";
+
+		$line .= gui_cell( orders_per_item( $prod_id, 1, true, true ) );
+
+//		// TODO: sale price
+//		$price = get_price( $prod_id );
+//		$line  .= "<td>" . $price . "</td>";
+//
+//		// Add margin info
+//		if ( MultiSite::LocalSiteID() == 1 ) {
+//
+//			$buy_price = get_buy_price( $prod_id );
+//			$line      .= "<td>" . $buy_price . "</td>";
+//
+//
+//			if ( $buy_price > 0 ) {
+//				if ( $price != 0 ) {
+//					$buy = $numeric_quantity * $buy_price;
+//					// $total_buy += $buy;
+//					$sale = $numeric_quantity * $price;
+//					// $total_sale += $sale;
+//					// $total_buy_supplier[$supplier_id] += $buy;
+//					// $total_sale_supplier[$supplier_id] += $sale;
+//
+//					$line .= "<td>" . $numeric_quantity * ( $price - $buy_price ) . "</td>";
+//				} else {
+//					$line .= "<td></td>";
+//				}
+//			} else {
+//				$line .= "<td></td><td></td>";
+//			}
+//		}
+
+		$line .= "</tr>";
+//        prof_flag("table_line end");
+
+		//print "loop5: " .  microtime() . "<br/>";
+		if ( ! $filter_zero or ( $numeric_quantity > 0 ) ) {
+			array_push( $data_lines, array( $supplier_name, $line ) );
+		}
+	}
+
+	$data = "<style>
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+}
+
+td, th {
+    border: 1px solid #dddddd;
+    text-align: right;
+    padding: 8px;
+}
+
+tr:nth-child(even) {
+    background-color: #dddddd;
+}
+</style>";
+	$data .= "<table>";
+	$data .= "<tr>";
+	$data .= "<td>בחר</td>";
+	$data .= "<td>פריט</td>";
+	$data .= "<td>כמות נדרשת</td>";
+	$data .= "<td>יחידות נוספות</td>";
+	$data .= "<td>כמות אספקות</td>";
+	$data .= "<td>כמות סופקה</td>";
+	$data .= "<td>כמות להזמין</td>";
+	$data .= "<td>ספק</td>";
+	$data .= "<td>לקוחות</td>";
+//	$data .= "<td>מחיר ללקוח</td>";
+//	if ( MultiSite::LocalSiteID() == 1 ) {
+//		$data .= "<td>מחיר קניה</td>";
+//		$data .= "<td>סהכ מרווח</td>";
+//	}
+	$data .= "</tr>";
+
+	// print "sort: " . date( "h:i:sa" ) . "<br/>";
+
+	sort( $data_lines );
+
+	for ( $i = 0; $i < count( $data_lines ); $i ++ ) {
+		$line = $data_lines[ $i ][1];
+		$data .= trim( $line );
+	}
+
+	$data = str_replace( "\r", "", $data );
+
+	if ( $data == "" ) {
+		$data = "\n(0) Records Found!\n";
+	}
+	global $total_buy;
+	global $total_sale;
+	$data .= gui_table( array( array( "", 'סה"כ', "", "", "", "", "", $total_buy, $total_sale ) ) );
+
+	$data .= "</table>";
+
+//	print "print: " . date( "h:i:sa" ) . "<br/>";
+//
+	print "$data";
+
+//    prof_print();
+}
+
+function get_total_orders1( $filter_zero, $history = false, $filter_stock ) {
+	$needed_products = array();
+
+	calculate_needed( $needed_products );
+
+	$data_lines = array();
+
+	foreach ( $needed_products as $prod_id => $quantity_array ) {
+
+		$P = new Product( $prod_id );
+
+		if ( $filter_stock and $P->getStockManaged() and $P->getStock() > $quantity_array[0] ) {
+			continue;
+		}
+		//   $line = table_line($key, $filter_zero);
+
+		$supplied_q = supply_quantity_ordered( $prod_id );
+
+		$line = "<tr><td><input id=\"chk" . $prod_id . "\" class=\"product_checkbox\" type=\"checkbox\"></td>";
+		$line .= "<td> " . get_product_name( $prod_id ) .
+		         "</td><td><a href = \"";
+
+		$line .= "get-orders-per-item.php?prod_id=" . $prod_id;
+
+		if ( $history ) {
+			$line .= "&history";
+		}
+
+		$line .= "\">" . $quantity_array[0] . "</a></td>";
+		if ( isset( $quantity_array[1] ) ) {
+			$line .= "<td>" . $quantity_array[1] . "</td>";
+		} else {
+			$line .= "<td></td>";
+		}
+		$quantity = $quantity_array[0];
+
+		$qin  = q_in( $prod_id );
+		$qout = q_out( $prod_id );
+
+		$line .= "<td>" . $qin . "</td>";
+
+		$line .= "<td>" . $qout . "</td>";
+
+		$numeric_quantity = ceil( $quantity - $qin + $qout );
+
+		$line .= "<td>" . $numeric_quantity . "</td>";
+
+		if ( MultiSite::LocalSiteID() == 2 ) {
+			$terms = get_the_terms( $prod_id, 'product_cat' );
+
+			if ( $terms ) {
+				foreach ( $terms as $term ) {
+					if ( $term->name != 'השף' ) {
+						$supplier_name = $term->name;
+						break;
+					}
+				}
+			}
+		} else {
+			$alternatives = alternatives( $prod_id );
+			$suppliers    = array( array( "id" => 0, "option" => "בחר" ) );
+			foreach ( $alternatives as $alter ) {
+				$option = $alter->getSupplierName() . " " . $alter->getPrice();
+				// if ($prod_id == 1002){ print $option; } // print $alter->getId() . " " . $alter->getSupplierName(); print "<br/>";}
+
+				array_push( $suppliers, array( "id" => $alter->getSupplierId(), "option" => $option ) );
+
+			}
+			// if ($prod_id == 1002) {print "XX"; var_dump($suppliers); }
+			$supplier_name = gui_select( "sup_" . $prod_id, "option", $suppliers, "onchange=selectSupplier(this)", "" );
+		}
+
+		$line .= "<td>" . $supplier_name . "</td>";
 
 		$line .= gui_cell( orders_per_item( $prod_id, 1, true, true ) );
 

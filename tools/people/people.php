@@ -5,8 +5,12 @@
  * Date: 08/05/16
  * Time: 21:15
  */
-require_once( "../account/account.php" );
-require_once( "../business/business-post.php" );
+if ( ! defined( "TOOLS_DIR" ) ) {
+	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
+}
+
+require_once( TOOLS_DIR . "/account/account.php" );
+// require_once( TOOLS_DIR . "/business/business.php" );
 
 function people_add_activity( $id, $date, $start, $end, $project_id, $traveling, $expense_text, $expense ) {
 	if ( strlen( $traveling ) == 0 ) {
@@ -20,13 +24,12 @@ function people_add_activity( $id, $date, $start, $end, $project_id, $traveling,
 			expense_text, expense) VALUES (" .
 	       $id . ", \"" . $date . "\", \"" . $start . "\", \"" . $end . "\", " . $project_id .
 	       "," . $traveling . ", \"" . $expense_text . "\", " . $expense . ")";
-	print header_text();
+	// print header_text();
 	// print $sql;
 	$export = sql_query( $sql );
 	if ( ! $export ) {
 		die ( 'Invalid query: ' . $sql . mysql_error() );
 	}
-
 }
 
 function driver_add_activity( $id, $date, $quantity, $sender ) {
@@ -76,15 +79,17 @@ function is_volunteer( $uid ) {
 }
 
 // User id == 0: display all users.
-function print_transactions( $role, $user_id = 0, $month = null, $year = null, $week = null, $project = null, &$sum = null ) {
+function print_transactions( $user_id = 0, $month = null, $year = null, $week = null, $project = null, &$sum = null ) {
+	$show_salary = current_user_can( "show_salary" );
+
 	$counters  = array();
 	$volunteer = false;
 	if ( $user_id > 0 and is_volunteer( $user_id ) ) {
 		$volunteer = true;
 	}
-	if ( $role == 'staff' ) {
-		$user_id = get_user_id();
-	}
+//	if ( ! $user_id  ) {
+//		$user_id = get_user_id();
+//	}
 	$sql_month = null;
 	if ( isset( $month ) and $month > 0 ) {
 		if ( ! ( $year > 2016 ) ) {
@@ -112,7 +117,7 @@ function print_transactions( $role, $user_id = 0, $month = null, $year = null, $
 		$data .= "<td>עובד</td>";
 	}
 
-	if ( $role == 'owner' ) {
+	if ( $show_salary ) {
 		$data .= "<td>תעריף</td>";
 		$data .= "<td>סהכ</td>";
 	}
@@ -205,7 +210,7 @@ function print_transactions( $role, $user_id = 0, $month = null, $year = null, $
 			$sal  = ( $dur_base + $dur_125 * 1.25 + $dur_150 * 1.5 ) * $rate;
 		}
 
-		if ( $role == 'owner' ) {
+		if ( $show_salary ) {
 			$line .= gui_cell( $rate );
 		}
 		// var_dump($dur);
@@ -214,7 +219,7 @@ function print_transactions( $role, $user_id = 0, $month = null, $year = null, $
 		$total_sal += $sal;
 		// var_dump($total_sal);
 
-		if ( $role == 'owner' )
+		if ( $show_salary )
 			$line .= gui_cell( round( $sal, 2 ) );
 		$travel       = $row[5];
 		$total_travel += $travel;
@@ -249,16 +254,16 @@ function print_transactions( $role, $user_id = 0, $month = null, $year = null, $
 		"",
 		"",
 		"",
-		$role == 'owner' ? $total_sal : "",
-		$role == 'owner' ? $total_expense : "",
-		$role == 'owner' ? $total_travel : ""
+		$show_salary ? $total_sal : "",
+		$show_salary ? $total_expense : "",
+		$show_salary ? $total_travel : ""
 	) );
 
 	$data      .= "</table>";
 	$total_sal = round( $total_sal, 1 );
 
 	// print "total_sal " . $total_sal ;
-	if ( $role == 'owner' and $total_sal > 0 and ( $month or $week ) and ! $volunteer ) {
+	if ( $show_salary and $total_sal > 0 and ( $month or $week ) and ! $volunteer ) {
 		$data      .= "חישוב שכר ראשוני" . "<br/>";
 		$data      .= "שכר שעות " . $total_sal . "<br/>";
 		$data      .= "סהכ נסיעה " . $total_travel . "<br/>";
@@ -269,9 +274,6 @@ function print_transactions( $role, $user_id = 0, $month = null, $year = null, $
 
 		$b = balance( date( 'Y-m-j', strtotime( "last day of " . $year . "-" . $month ) ), $user_id );
 		//
-		if ( customer_type( $user_id ) == 0 ) {
-			$b = $b * 0.9;
-		}
 
 		if ( $b > 0 ) {
 			$data .= " חיובי סלים " . round( $b, 2 );

@@ -1,6 +1,6 @@
 <?php
 require_once( '../im_tools.php' );
-require_once( "../gui/inputs.php" );
+require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 require_once( "../catalog/catalog.php" );
 
 $search_text = $_GET["search_txt"];
@@ -73,8 +73,13 @@ switch ( $operation ) {
 		$for_update = false;
 		show_catalog( $for_update, $search_text, false, true );
 		break;
+
 	case "fresh_siton":
 		show_fresh_siton();
+		break;
+
+	case "pos":
+		show_pos_pricelist();
 		break;
 
 	case "fresh_siton_order":
@@ -93,12 +98,66 @@ switch ( $operation ) {
 
 	case "for_update":
 		$for_update = true;
-		show_catalog( $for_update, $search_text, false );
+		$term_info  = terms_get_id( $search_text );// , "product_cat");
+//		var_dump($term_info);
+		$term_array = null;
+		if ( $term_info ) {
+			$term_id = $term_info["term_id"];
+			print "term id: " . $term_id . " <br/>";
+			$term_array  = array( $term_id );
+			$search_text = null;
+		}
+		show_catalog( $for_update, $search_text, false, false, false, false, $term_array );
 		break;
 
 	case "customer_prices":
 		show_catalog( false, '', false, true, false, false, array( 15 ) );
 		break;
+}
+
+function show_pos_pricelist() {
+	print header_text( true, true, true );
+
+	$sql     = "SELECT prod_id FROM i_total WHERE q > 0";
+	$results = sql_query( $sql );
+
+	$data_lines = array();
+
+	while ( $row = sql_fetch_row( $results ) ) {
+		$prod_id = $row[0];
+		$p       = new Product( $prod_id );
+		if ( ! $p->isPublished() ) {
+			continue;
+		}
+		$price = get_price( $prod_id, 5 );
+		// array_push($lines, array(get_product_name($prod_id), $price));
+
+		$terms = get_the_terms( $prod_id, 'product_cat' );
+		// print $terms[0]->name . "<br/>";
+		$prod_name = get_product_name( $prod_id );
+
+		array_push( $data_lines, array(
+			$terms[0]->name . "@" . get_product_name( $prod_id ),
+			array( $prod_name, $price )
+		) );
+	}
+
+	sort( $data_lines );
+
+	$data = "<table>";
+	$term = "";
+	for ( $i = 0; $i < count( $data_lines ); $i ++ ) {
+		$line_term = strtok( $data_lines[ $i ][0], '@' );
+		if ( $line_term <> $term ) {
+			$term = $line_term;
+			$data .= gui_row( array( $term, "" ) );
+		}
+		$line = gui_row( array( $data_lines[ $i ][1][0], $data_lines[ $i ][1][1] ) );
+		$data .= trim( $line );
+	}
+	$data .= "</table>";
+
+	print $data;
 }
 
 function show_fresh_siton() {
@@ -139,16 +198,19 @@ function set_category( $prod_ids, $category ) {
 		terms_remove_category( $product_id );
 		terms_add_category( $product_id, $category );
 	}
+	delete_option( "category_children" );
+	wp_cache_flush();
 }
 
 function show_catalog(
 	$for_update, $search_text, $csv, $active = false, $siton = false, $buy = false, $category = null,
 	$order = false, $suppliers = null
 ) {
-
 	global $header_fields;
 	$show_fields = array();
 
+	print "search text: " . $search_text . "<br/>";
+	print "category: " . $category . "<br/>";
 	for ( $i = 0; $i < CatalogFields::field_count; $i ++ ) {
 		$show_fields[ $i ] = false;
 	}
@@ -174,6 +236,7 @@ function show_catalog(
 	       . ' from wp_posts '
 	       . ' where post_type = \'product\'';
 
+
 	if ( $search_text <> "" ) {
 		if ( is_numeric( $search_text ) ) {
 			$sql .= ' and id = ' . $search_text . ' ';
@@ -191,6 +254,7 @@ function show_catalog(
 			}
 		}
 	}
+//	}
 
 	if ( $active ) {
 		$sql .= ' and post_status = \'publish\'';
@@ -206,7 +270,7 @@ function show_catalog(
 	$line_number = 0;//	default:
 
 	if ( $for_update ) {
-		print "update<br/>";
+		// print "update<br/>";
 		$show_fields[ CatalogFields::line_select ] = true;
 		$show_fields[ CatalogFields::status ]      = true;
 		$show_fields[ CatalogFields::category ]    = true;
@@ -223,26 +287,16 @@ function show_catalog(
 		}
 		$line_number ++;
 		$prod_id = $row[0];
+
 		// prof_flag("handle " . $prod_id);
 		$product_categories = array();
 
 		$terms = get_the_terms( $prod_id, 'product_cat' );
 
 		if ( $category ) { // Check if this product in the given categories
-			if ( $terms ) {
+			if ( $terms ) { // Products terms
 				foreach ( $terms as $term ) {
-					$product_cat_id = $term->term_id;
-
-					$parents = get_ancestors( $product_cat_id, 'product_cat' );
-
 					array_push( $product_categories, $term->term_id );
-					if ( $term->term_id == 341 )
-						continue;
-					foreach ( $parents as $parent ) {
-						if ( $parent->term_id == 341 )
-							continue;
-						array_push( $product_categories, $parent );
-					}
 				}
 			} else {
 				// print "no terms for " . $prod_id . "<br/>";

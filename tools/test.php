@@ -5,13 +5,15 @@
  * Date: 15/04/17
  * Time: 12:15
  */
-// require_once( 'r-shop_manager.php' );
-$url = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_HOST ) . '/wp-login.php?redirect_to=' . $_SERVER['REQUEST_URI'] . '"';
-print '<script language="javascript">';
-print "window.location.href = '" . $url . "'";
+require_once( "im_tools.php" );
 
-print '</script>';
-exit();
+print header_text( false, true, false );
+
+print valid_key( "2wX8xpY7S5rmbyTBBENVUdHbKRxlOqqH" );
+
+// print order_get_shipping_fee(2230);
+
+// require_once( 'r-shop_manager.php' );
 
 //$args = array(
 //    'posts_per_page' => -1,

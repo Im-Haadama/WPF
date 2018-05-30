@@ -7,7 +7,7 @@
  */
 
 require_once( '../r-multisite.php' );
-require_once( "../gui/sql_table.php" );
+require_once( ROOT_DIR . '/agla/gui/sql_table.php' );
 require_once( "../multi-site/multi-site.php" );
 
 $operation = $_GET["operation"];
@@ -36,6 +36,14 @@ switch ( $table ) {
 	case 'im_mission_methods':
 		$key = "id";
 		break;
+	case 'wp_options':
+		$key = "options_name";
+		if ( ! isset( $_GET["query"] ) ) {
+			print "wp_options must be used with query<br/>";
+			die( 1 );
+		}
+		break;
+
 	default:
 		print "bad usage";
 		die( 2 );
@@ -45,7 +53,11 @@ switch ( $table ) {
 switch ( $operation ) {
 	case "get":
 		print header_text( false );
-		print table_content( "SELECT * FROM $table" );
+		$sql = "SELECT * FROM $table";
+		if ( isset ( $_GET["query"] ) ) {
+			$sql .= " where " . stripcslashes( $_GET["query"] );
+		}
+		print table_content( $sql );
 		break;
 
 	case "update":
@@ -54,114 +66,8 @@ switch ( $operation ) {
 			die ( 1 );
 		}
 		$source = $_GET["source"];
-		$url    = "multi-site/sync-data.php?table=$table&operation=get";
-		print "url: " . $url . "<br/>";
-		$html = MultiSite::Execute( $url, $source );
 
-		print $html;
-		update_table( $html, $table, $key );
-}
-
-function update_table( $html, $table, $table_key ) {
-	global $conn;
-	print header_text( false, true, false );
-	$dom = str_get_html( $html );
-	$row = $dom->find( 'tr' );
-	print $row->plaintext;
-
-	$headers = array();
-	$fields  = array();
-	$first   = true;
-	$keys    = array();
-
-	$row_key = - 1;
-	foreach ( $dom->find( 'tr' ) as $row ) {
-		// First line - headers.
-		if ( $first ) {
-			foreach ( $row->children() as $key ) {
-				array_push( $headers, $key->plaintext );
-			}
-			// unset($headers[0]);
-			$field_list = comma_implode( $headers );
-			print "headers: " . $field_list . "<br/>";
-			$first = false;
-			continue;
-		}
-		$first_key     = true;
-		$update_fields = "";
-		$i             = 0;
-		$insert        = false;
-
-		foreach ( $row->children() as $value ) {
-			$fields[ $i ] = $value->plaintext;
-
-			// First key: id
-			if ( $first_key ) {
-				$row_key          = intval( $fields[0] );
-				$keys[ $row_key ] = 1;
-				$insert_values    = "";
-
-				print "<br/>handle " . $row_key . " ";
-
-				$sql = "SELECT COUNT(*) FROM $table WHERE $table_key=" . $row_key;
-
-				if ( sql_query_single_scalar( $sql ) < 1 ) {
-					print " insert ";
-					$insert = true;
-				} else {
-					print " update ";
-				}
-				$first_key = false;
-				$i ++;
-				continue;
-			}
-			if ( $insert ) {
-				$insert_values .= quote_text( mysqli_real_escape_string( $conn, $fields[ $i ] ) ) . ", ";
-			} else { // Update
-				$update_fields .= $headers[ $i ] . "=" . quote_text( $fields[ $i ] ) . ", ";
-			}
-			$i ++;
-		}
-
-		if ( $insert ) {
-			$sql = "INSERT INTO $table (" . $field_list . ") VALUES ( " . $row_key . ", " . rtrim( $insert_values, ", " ) . ")";
-			// print $sql . "<br/>";
-			sql_query( $sql );
-		} else {
-			$sql = "UPDATE $table SET " . rtrim( $update_fields, ", " ) .
-			       " WHERE $table_key = " . $row_key;
-			// print $sql . "<br/>";
-			sql_query( $sql );
-		}
-	}
-	// Delete not recieved keys.
-	$min        = sql_query_single_scalar( "SELECT min($table_key) FROM $table" );
-	$max        = sql_query_single_scalar( "SELECT max($table_key) FROM $table" );
-	$ids        = sql_query_array_scalar( "select $table_key from $table" );
-	$for_delete = "";
-
-	for ( $i = $min; $i <= $max; $i ++ ) {
-		if ( ! $keys[ $i ] and in_array( $i, $ids ) ) {
-			$for_delete .= $i . ", ";
-		}
-	}
-	if ( strlen( $for_delete ) ) {
-		$sql = "DELETE FROM $table WHERE $table_key IN (" . rtrim( $for_delete, ", " ) . ")";
-		print $sql;
-
-		sql_query( $sql );
-	}
-}
-
-function quote_text( $num_or_text ) {
-	// print "x" . $num_or_text . "y";
-	if ( is_numeric( $num_or_text ) ) {
-// 		print " number, " ;
-		return $num_or_text;
-	}
-
-// 	print " text, " ;
-	return "'" . $num_or_text . "'";
+		MultiSite::UpdateFromRemote( $table, $key, $source);
 }
 
 function get_decorated_diff( $old, $new ) {

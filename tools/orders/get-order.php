@@ -2,7 +2,7 @@
 
 require_once( "../im_tools.php" );
 require_once 'orders-common.php';
-require_once( '../gui/inputs.php' );
+require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 require_once( '../delivery/delivery.php' );
 
 $order_id = $_GET["order_id"];
@@ -14,14 +14,8 @@ if ( isset( $_GET["margin"] ) ) {
 <html dir="rtl" lang="he">
 <head>
     <meta charset="UTF-8">
+    <script type="text/javascript" src="/agla/client_tools.js"></script>
     <script>
-		<?php
-		$filename = __DIR__ . "/../client_tools.js";
-		$handle = fopen( $filename, "r" );
-		$contents = fread( $handle, filesize( $filename ) );
-		print $contents;
-
-		?>
 
         function save_mission() {
             var mission = get_value(document.getElementById("mission_select"));

@@ -7,12 +7,12 @@
  */
 
 require_once( "../r-shop_manager.php" );
-require_once( "../gui/inputs.php" );
+require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 require_once( "../gui/sql_table.php" );
 require_once( "gui.php" );
 
 ?>
-    <script type="text/javascript" src="../client_tools.js"></script>
+    <script type="text/javascript" src="/agla/client_tools.js"></script>
     <script>
         function update_client_type(id) {
             var type = get_value_by_name("select_type_" + id);
@@ -90,7 +90,7 @@ print gui_table( $table );
 print gui_header( 2, "הוסף שיוך" );
 
 print gui_table( array(
-	array( "בחר לקוח", gui_select_client( 100 ) ),
+	array( "בחר לקוח", gui_select_client() ),
 	array(
 		"בחר מחירון",
 		gui_select_client_type( "select_type_new", 1 )

@@ -17,7 +17,7 @@ require_once( '../gui.php' );
 <html dir="rtl" lang="he">
 <header>
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
-    <script type="text/javascript" src="../client_tools.js"></script>
+    <script type="text/javascript" src="/agla/client_tools.js"></script>
     <script>
         function create_term() {
             var t = document.getElementById("create_term");
@@ -211,6 +211,11 @@ require_once( '../gui.php' );
                     terms.innerHTML = xmlhttp1.response;
                 }
             }
+            xmlhttp1.onloadend = function () {
+                if (xmlhttp1.status === 404 || xmlhttp1.status === 500)
+                    update_tables();
+            }
+
             var request1 = "catalog-map-post.php?operation=get_unmapped_terms";
 
             xmlhttp1.open("GET", request1, true);
@@ -252,7 +257,6 @@ require_once( '../gui.php' );
         function selected(sel) {
             var pricelist_id = sel.id;
             document.getElementById("chk" + pricelist_id).checked = true;
-
         }
 
     </script>

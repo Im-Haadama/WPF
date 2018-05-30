@@ -6,18 +6,21 @@
  * Time: 18:06
  */
 require_once( '../r-shop_manager.php' );
+require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 
 print header_text( false );
 ?>
 <html dir="rtl" lang="he">
 <header>
-    <script type="text/javascript" src="../client_tools.js"></script>
+    <script type="text/javascript" src="/agla/client_tools.js"></script>
     <script>
         function show_totals() {
             xmlhttp = new XMLHttpRequest();
             var filter = document.getElementById("filter_zero").checked;
+            var stock = document.getElementById("filter_stock").checked;
             var request = "get-total-orders-post.php?operation=show_required";
             if (filter) request = request + "&filter_zero=1";
+            if (stock) request = request + "&filter_stock=1";
 
             xmlhttp.open("GET", request, true);
             xmlhttp.onreadystatechange = function () {
@@ -71,6 +74,59 @@ print header_text( false );
             xmlhttp.send();
         }
 
+        function select_single() {
+            var table = document.getElementById("ordered_items");
+            for (var i = 1; i < table.rows.length - 1; i++) {
+                if (table.rows[i].cells[7].firstChild.options.length == 2)
+                    table.rows[i].cells[7].firstChild.selectedIndex = 1;
+            }
+        }
+
+        function create_supplies() {
+            document.getElementById("btn_create_supplies").disabled = true;
+            var table = document.getElementById('ordered_items');
+            // var lines = table.rows.length;
+            var collection = document.getElementsByClassName("product_checkbox");
+
+            var sel = document.getElementById("supplier_id");
+            var supplier_id = sel.options[sel.selectedIndex].value;
+
+            // Request header
+            var request = "../supplies/supplies-post.php?operation=create_supplies&params=";
+            var params = new Array();
+
+            // Add the data.
+            for (var i = 0; i < collection.length; i++) {
+                if (collection[i].checked) { // Add to suppplies
+                    var prod_id = collection[i].id.substring(3);
+                    params.push(prod_id);
+
+                    var supplier = get_value_by_name("sup_" + prod_id);
+                    params.push(supplier);
+
+                    var quantity = eval(get_value(table.rows[i + 1].cells[6].innerText));
+                    params.push(quantity);
+
+                    var units = 0;
+                    var units_text = get_value(table.rows[i + 1].cells[3].innerText);
+                    if (units_text.length >= 1) units = eval(units_text);
+                    params.push(units);
+                }
+            }
+            // Call the server to save the supply
+
+            request = request + params.join();
+
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.open("GET", request, true);
+            xmlhttp.onreadystatechange = function () {
+                document.getElementById("logging").innerHTML = xmlhttp.response;
+                show_totals();
+                // location.reload();
+            }
+
+            xmlhttp.send();
+        }
         function createSupply() {
             document.getElementById("btn_create_order").disabled = true;
             var table = document.getElementById('ordered_items');
@@ -131,15 +187,23 @@ print header_text( false );
             }
         }
 
+        function selectSupplier(s) {
+            var pricelist_id = s.id.substr(4);
+            document.getElementById("chk" + pricelist_id).checked = true;
+        }
+
     </script>
 </header>
 <body onload="show_totals()">
 
 <center><h1>פריטים להזמנות</h1></center>
 <input type="checkbox" id="filter_zero" onclick='show_totals();'>סנן מוזמנים<br>
+<input type="checkbox" id="filter_stock" onclick='show_totals();'>סנן פרטים במלאי<br>
 <table id="ordered_items"></table>
 
+<?php print gui_button( "btn_create_supplies", "create_supplies()", "צור הספקות" ); ?>
 
+<br/>
 צור הזמנה לספק
 <select id="supplier_id">
 	<?php
@@ -161,7 +225,7 @@ print header_text( false );
 <button id="btn_select_prods" onclick="selectProds()">בחר</button>
 
 <br/>
-<button id="btn_create_supply_single_supplier" onclick="create_single()">ספק יחיד</button>
+<button id="btn_create_supply_single_supplier" onclick="select_single()">ספק יחיד</button>
 
 <div id="logging"></div>
 

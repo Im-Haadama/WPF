@@ -16,7 +16,9 @@ require_once( 'orders-post.php' );
 
 print header_text( false, true, false );
 
-order_calculate( 2101 );
+// order_calculate( 2101 );
+
+// map_get_
 
 // print order_get_mission_name( 8097, true );
 

@@ -8,7 +8,7 @@
 
 // test
 include_once( "../r-shop_manager.php" );
-require_once( "../gui/inputs.php" );
+require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 require_once( "../mail.php" );
 require_once( "../catalog/catalog.php" );
 
@@ -128,8 +128,17 @@ function supply_add_line( $supply_id, $prod_id, $quantity, $price, $units = 0 ) 
 	$sql = "INSERT INTO im_supplies_lines (supply_id, product_id, quantity, units, price) VALUES "
 	       . "( " . $supply_id . ", " . $prod_id . ", " . $quantity . ", " . $units . ", " . $price . " )";
 
-	print $sql;
+	// print $sql;
 	sql_query( $sql );
+	$product = new WC_Product( $prod_id );
+	if ( $product->managing_stock() ) {
+		print "managed<br/>";
+		print "stock was: " . $product->get_stock_quantity() . "<br/>";
+
+		$product->set_stock_quantity( $product->get_stock_quantity() + $quantity );
+		print "stock is: " . $product->get_stock_quantity() . "<br/>";
+		$product->save();
+	}
 }
 
 function supply_get_supplier_id( $supply_id ) {
@@ -142,6 +151,14 @@ function supply_get_supplier( $supply_id ) {
 	return get_supplier_name( supply_get_supplier_id( $supply_id ) );
 }
 
+function supply_get_mission_id( $supply_id ) {
+	return sql_query_single_scalar( "SELECT mission_id FROM im_supplies WHERE id = " . $supply_id );
+}
+
+function supply_set_mission_id( $supply_id, $mission_id ) {
+	return sql_query_single_scalar( "UPDATE im_supplies SET mission_id = " . $mission_id . " WHERE id = " . $supply_id );
+}
+
 function supply_quantity_ordered( $prod_id ) {
 	$sql = 'SELECT sum(quantity) FROM im_supplies_lines WHERE product_id = ' . $prod_id
 	       . ' AND status = 1 AND supply_id IN (SELECT id FROM im_supplies WHERE status = 1 OR status = 3)';
@@ -150,6 +167,24 @@ function supply_quantity_ordered( $prod_id ) {
 }
 
 function supply_delete( $supply_id ) {
+	$sql    = "SELECT product_id, quantity FROM im_supplies_lines WHERE supply_id = " . $supply_id;
+	$result = sql_query( $sql );
+
+	while ( $row = sql_fetch_row( $result ) ) {
+		$prod_id  = $row[0];
+		$quantity = $row[1];
+
+		$product = new WC_Product( $prod_id );
+		if ( $product->managing_stock() ) {
+			// print "managed<br/>";
+			// print "stock was: " . $product->get_stock_quantity() . "<br/>";
+
+			$product->set_stock_quantity( max( 0, $product->get_stock_quantity() - $quantity ) );
+			// print "stock is: " . $product->get_stock_quantity() . "<br/>";
+			$product->save();
+		}
+
+	}
 	$sql = 'UPDATE im_supplies SET status = 9 WHERE id = ' . $supply_id;
 
 	sql_query( $sql );
@@ -176,9 +211,27 @@ function supply_delete_line( $line_id ) {
 }
 
 function supply_update_line( $line_id, $q ) {
+	$result  = sql_query( "SELECT product_id, quantity FROM im_supplies_lines WHERE id = " . $line_id );
+	$row     = sql_fetch_row( $result );
+	$prod_id = $row[0];
+	$old_q   = $row[1];
+
 	$sql = 'UPDATE im_supplies_lines SET quantity = ' . $q . ' WHERE id = ' . $line_id;
 
 	sql_query( $sql );
+
+	$product = new WC_Product( $prod_id );
+
+	if ( $product->managing_stock() ) {
+//		print "managed<br/>";
+//		print "old q: " . $old_q . "<br/>";
+//		print "stock was: " . $product->get_stock_quantity() . "<br/>";
+
+		$product->set_stock_quantity( $product->get_stock_quantity() + $q - $old_q );
+//		print "stock is: " . $product->get_stock_quantity() . "<br/>";
+		$product->save();
+	}
+
 }
 
 function supply_change_status( $supply_id, $status ) {
@@ -281,14 +334,22 @@ function print_supply_lines( $id, $internal, $edit = true ) {
 			$line       .= "<td>" . sprintf( '%0.2f', $sell_price ) . "</td>";
 			$line       .= "<td>" . orders_per_item( $prod_id, 1, true ) . "</td>";
 		}
-		$line .= "</tr>";
-
-		array_push( $data_lines, array( $product_name, $line ) );
+		$line  .= "</tr>";
+		$terms = get_the_terms( $prod_id, 'product_cat' );
+		// print $terms[0]->name . "<br/>";
+		array_push( $data_lines, array( $terms[0]->name . "@" . $product_name, $line ) );
 	}
 
 	sort( $data_lines );
 
+	$term = "";
+
 	for ( $i = 0; $i < count( $data_lines ); $i ++ ) {
+		$line_term = strtok( $data_lines[ $i ][0], '@' );
+		if ( $line_term <> $term ) {
+			$term = $line_term;
+			$data .= gui_row( array( '', $term, '', '', '', '', '' ) );
+		}
 		$line = $data_lines[ $i ][1];
 		$data .= trim( $line );
 	}
@@ -409,6 +470,7 @@ function update_supply_lines( $params ) {
 		$line_id = $params[ $pos ];
 		$q       = $params[ $pos + 1 ];
 		my_log( "update supply line" . $line_id . " q= " . $q );
+		print "line_id: " . $line_id . " new q: " . $q . "<br/>";
 		supply_update_line( $line_id, $q );
 	}
 }
@@ -542,38 +604,54 @@ function do_display_supplies( $sql )
 	}
 	$result = sql_query( $sql );
 
-	$data = "<table border='1'><tr><td>בחר</td><td><h3>מספר</h3></td><td><h3>תאריך</h3></td><td><h3>ספק</h3></td><td>סטטוס</td><td>סכום</td>";
-	$data .= gui_cell( "תאריך תשלום" ) . "</tr>";
+	$lines = array();
+	array_push( $lines, array( "בחר", "מספר", "תאריך", "משימה", "ספק", "סטטוס", "סכום", "תאריך תשלום" ) );
+//	$data = "<table border='1'><tr><td>בחר</td><td><h3>מספר</h3></td><td><h3>תאריך</h3></td><td><h3>ספק</h3></td><td>סטטוס</td><td>סכום</td>";
+	// $data .= gui_cell( "תאריך תשלום" ) . "</tr>";
 	while ( $row = mysqli_fetch_row( $result ) ) {
 		$supply_id   = $row[0];
 		$supplier_id = $row[1];
 		$status      = $row[5];
-		$value       = "<tr><td><input id=\"chk" . $supply_id . "\" class=\"supply_checkbox\" type=\"checkbox\"></td>";
-		$value       .= "<td><a href=\"supply-get.php?id=" . $supply_id . "\">" . $supply_id . '</a></td>';
-		$value       .= "<td>" . $row[3] . '</td>';
-		$value       .= "<td>" . get_supplier_name( $supplier_id ) . '</td>';
-		$value       .= "<td>" . get_supply_status_name( $supply_id ) . '</td>';
+		$line        = array(
+			gui_checkbox( "chk" . $supply_id, "supply_checkbox", "", "" ),
+			gui_hyperlink( $supply_id, "supply-get.php?id=" . $supply_id ),
+			$row[3],
+			gui_select_mission( "mis_" . $supply_id, supply_get_mission_id( $supply_id ), "onchange=mission_changed(" . $supply_id . ")" ),
+			get_supplier_name( $supplier_id ),
+			get_supply_status_name( $supply_id )
+		);
+
+//		$value       = "<tr><td><input id=\"chk" . $supply_id . "\" class=\"supply_checkbox\" type=\"checkbox\"></td>";
+//		$value       .= "<td><a href=\"supply-get.php?id=" . $supply_id . "\">" . $supply_id . '</a></td>';
+//		$value       .= "<td>" . $row[3] . '</td>';
+//		$value       .= "<td>" . get_supplier_name( $supplier_id ) . '</td>';
+//		$value       .= "<td>" . get_supply_status_name( $supply_id ) . '</td>';
 		if ( $status = 5 ) {
+			array_push( $line, $row[6] );
 			$business_id = $row[6];
-			// print "business id: " . $business_id . "<br/>";
+//			 print "business id: " . $business_id . "<br/>";
 			if ( $business_id > 0 ) {
 				$amount = sql_query_single_scalar( "select amount from im_business_info where id = " . $business_id );
-				$value  .= gui_cell( $amount );
+				array_push( $line, $amount );
+//				$value  .= gui_cell( $amount );
 			}
 			$date = $row[4];
 			if ( $date == "0000-00-00" ) {
 				$date = null;
 			}
-			$value .= gui_cell( $date );
+			array_push( $line, $date );
+//			$value .= gui_cell( $date );
 		}
 
-		$value       .= "</tr>";
-
-		$data      .= $value;
+//		$value       .= "</tr>";
+//
+//		$data      .= $value;
+		array_push( $lines, $line );
 		$has_lines = true;
 	}
-	$data .= "</table>";
+	// $data .= "</table>";
 
+	$data = gui_table( $lines );
 	if ( $has_lines ) {
 		return $data;
 	}
@@ -611,6 +689,24 @@ function create_supplier_order( $supplier_id, $ids ) {
 
 	}
 }
+
+function create_supplies( $params ) {
+	$supplies = array();
+	for ( $i = 0; $i < count( $params ); $i += 4 ) {
+		$prod_id  = $params[ $i + 0 ];
+		$supplier = $params[ $i + 1 ];
+		$quantity = $params[ $i + 2 ];
+		$units    = $params[ $i + 3 ];
+		$price    = get_buy_price( $prod_id, $supplier );
+
+		if ( is_null( $supplies[ $supplier ] ) ) {
+			$supplies[ $supplier ] = create_supply( $supplier );
+		}
+		supply_add_line( $supplies[ $supplier ], $prod_id, $quantity, $price, $units );
+		// print $prod_id . " " . $supplier . " " . $quantity . " " . $units . "<br/>";
+	}
+}
+
 
 function supply_set_pay_date( $id, $date ) {
 	$sql = "update im_supplies set paid_date = '" . $date . "' where id = " . $id;

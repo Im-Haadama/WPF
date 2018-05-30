@@ -71,7 +71,7 @@ function show_category_by_id( $term_id ) {
 ?>
 <html dir="rtl">
 <header>
-    <script type="text/javascript" src="http://fruity.co.il/tools/client_tools.js"></script>
+    <script type="text/javascript" src="/agla/client_tools.js"></script>
 
     <script>
         var tables = ["table_18", "table_19", "table_62", "table_96", "table_125", "table_66", "table_106"];
@@ -95,6 +95,7 @@ function show_category_by_id( $term_id ) {
 
             var phone = get_value_by_name("phone");
             var name = get_value_by_name("name");
+            var email = get_value_by_name("email");
 
             if (phone.length > 2) url += "&phone=" + encodeURI(phone);
             if (name.length > 2) url += "&name=" + encodeURI(name);
@@ -103,19 +104,23 @@ function show_category_by_id( $term_id ) {
 		} ?>
 			<? if ( isset( $user ) ) {
 			print "url += \"&user=\" + encodeURI('" . $user . "');";
-		} ?>
+        }
+	        ?>
+            if (email.length > 4) url += "&email=" + encodeURI(email);
             window.location.href = url;
         }
         function update() {
             var total = update_total();
             var email = get_value_by_name("email");
+            var email_valid = email.length > 5;
             var min = <?php if ( isset( $min ) ) {
 				print $min;
 			} else {
 				print 100;
 			} ?>;
-            document.getElementById("btn_add_order_1").disabled = !(total > min);
-            document.getElementById("btn_add_order_2").disabled = !(total > min);
+            var dis = !((total > min) && email_valid);
+            document.getElementById("btn_add_order_1").disabled = dis;
+            document.getElementById("btn_add_order_2").disabled = dis;
         }
         function update_total() {
             var total = 0;
@@ -176,6 +181,12 @@ print "<br/>";
 print gui_table( array( 'סה"כ הזמנה:', gui_lable( "total", "0" ) ) );
 
 print gui_button( "btn_add_order_1", "add_order()", "הוסף הזמנה" );
+?>
+<br/>
+כתובת מייל:
+<br/>
+<?php
+print gui_input( "email", "", "update()" );
 
 show_category( "פירות אורגניים" );
 show_category( "ירקות אורגניים" );

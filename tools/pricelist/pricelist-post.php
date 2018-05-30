@@ -29,6 +29,7 @@ if ( $debug ) {
 	print $operation;
 }
 switch ( $operation ) {
+
 	case "get_priceslist":
 		$pl->PrintHTML();
 		break;
@@ -55,11 +56,24 @@ switch ( $operation ) {
 		}
 		break;
 
-	case "delete_list":
+	case "managed":
+		if ( ! isset ( $_GET["prod_id"] ) ) {
+			die( "send prod_id" );
+		};
+		if ( ! isset ( $_GET["is_managed"] ) ) {
+			die( "send is_managed" );
+		};
+		$prod_id    = $_GET["prod_id"];
+		$is_managed = $_GET["is_managed"] == "on";
+		$P          = new Product( $prod_id );
+		$P->setStockManaged( $is_managed );
+		break;
+
+	case "inactive":
 		print "Remove lines from list->draft items<br/>";
 		$pl->RemoveLines( 1 );
 		print "Remove the list<br/>";
-		$sql = "DELETE FROM im_suppliers WHERE id = " . $supplier_id;
+		$sql = "UPDATE im_suppliers SET active = 0 WHERE id = " . $supplier_id;
 		sql_query( $sql );
 		break;
 
@@ -127,12 +141,17 @@ switch ( $operation ) {
 	case "add_price":
 		$product_name = $_GET["product_name"];
 		$price        = $_GET["price"];
+		$code         = 10;
+		if ( isset( $_GET["code"] ) ) {
+			$code = $_GET["code"];
+		}
+
 //        my_log("supplier_id " . $supplier_id, "pricelist-post.php");
 //        my_log("price " . $price, "pricelist-post.php");
 //        my_log("product_name " . $product_name, "pricelist-post.php");
 //        my_log("date " . date('Y-m-d'), "pricelist-post.php");
 //        print "Adding " . $product_name . " " . " price: " . $price . "<br/>";
-		$pl->AddOrUpdate( trim( $price ), '', $product_name, 10, "", $pricelist_id, 0 );
+		$pl->AddOrUpdate( trim( $price ), '', $product_name, $code, "", $pricelist_id, 0 );
 // function AddOrUpdate( $regular_price, $sale_price, $product_name, $code = 10, $category, &$id, $parent_id = null ) {
 
 		break;

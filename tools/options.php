@@ -6,7 +6,7 @@
  * Time: 15:56
  */
 
-require_once( "sql.php" );
+require_once( ROOT_DIR . '/agla/sql.php' );
 
 function info_get( $key ) {
 	$sql = "SELECT info_data FROM im_info WHERE info_key = '" . $key . "'";

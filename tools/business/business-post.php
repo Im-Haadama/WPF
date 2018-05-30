@@ -9,7 +9,8 @@ if ( ! defined( "TOOLS_DIR" ) ) {
 	define( TOOLS_DIR, dirname( dirname( __FILE__ ) ) );
 }
 require_once( TOOLS_DIR . '/r-staff.php' );
-require_once( TOOLS_DIR . '/gui/inputs.php' );
+require_once( ROOT_DIR . '/agla/gui/inputs.php' );
+require_once( TOOLS_DIR . '/business/business.php' );
 
 function get_env( $var, $default ) {
 	if ( isset( $_GET[ $var ] ) ) {
@@ -114,22 +115,6 @@ function show_makolet( $month_year ) {
 
 }
 
-function business_add_transaction( $part_id, $date, $amount, $delivery_fee, $ref, $project ) {
-	global $conn;
-	// print $date . "<br/>";
-	$sunday = sunday( $date );
-
-	$sql = "INSERT INTO im_business_info(part_id, date, week, amount, delivery_fee, ref, project_id) "
-	       . "VALUES (" . $part_id . ", \"" . $date . "\", " .
-	       "\"" . $sunday->format( "Y-m-d" ) .
-	       "\", " . ( $amount - $delivery_fee ) . ", " . $delivery_fee . ", '" . $ref . "', " . $project . ")";
-
-	my_log( $sql, __FILE__ );
-
-	mysqli_query( $conn, $sql ) or my_log( "SQL failed " . $sql, __FILE__ );
-
-	return mysqli_insert_id( $conn );
-}
 
 function business_update_transaction( $delivery_id, $total, $fee ) {
 	$sql = "UPDATE im_business_info SET amount = " . $total . ", " .

@@ -6,7 +6,7 @@
  * Time: 07:01
  */
 require_once( '../r-shop_manager.php' );
-require_once( '../gui/inputs.php' );
+require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 
 print header_text( false );
 print gui_header( 1, 'טעינת רשימת השף' );

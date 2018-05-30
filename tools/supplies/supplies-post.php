@@ -8,7 +8,7 @@
 require_once( '../r-shop_manager.php' );
 require_once( 'supplies.php' );
 require_once( '../orders/orders-common.php' );
-require_once( '../gui/inputs.php' );
+require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 require_once( "../business/business-post.php" );
 require_once( "../business/business_info.php" );
 
@@ -61,6 +61,11 @@ if ( isset( $_GET["operation"] ) ) {
 			$create_info = $_GET["create_info"];
 			$ids         = explode( ',', $create_info );
 			create_supplier_order( $supplier_id, $ids );
+			break;
+
+		case "create_supplies":
+			$params = $_GET["params"];
+			create_supplies( explode( ',', $params ) );
 			break;
 
 		case "get_supply":
@@ -162,6 +167,12 @@ if ( isset( $_GET["operation"] ) ) {
 			print 'id=' . $supply->getSupplier() . "<br/>";
 			$price = get_buy_price( $prod_id, $supply->getSupplier() );
 			supply_add_line( $supply_id, $prod_id, $q, $price );
+			break;
+
+		case "set_mission":
+			$supply_id  = $_GET["supply_id"];
+			$mission_id = $_GET["mission_id"];
+			supply_set_mission_id( $supply_id, $mission_id );
 			break;
 
 		default:

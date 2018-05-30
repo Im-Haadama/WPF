@@ -1,7 +1,7 @@
 <?php
 require_once( "../im_tools.php" );
 require_once( "../multi-site/multi-site.php" );
-require_once( '../gui/inputs.php' );
+require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 require_once( 'delivery-common.php' );
 require_once( "../../wp-includes/pluggable.php" );
 require_once( "../account/account.php" );
@@ -57,8 +57,9 @@ print gui_datalist( "items", "im_products", "post_title" );
             current[0].value = Math.round(current[0].value * 10) / 10;
             var objs = document.getElementsByName("quantity" + (my_row + 1));
             calcDelivery();
-            if (objs[0]) objs[0].focus();
-            else {
+            if (objs[0]) {
+                objs[0].focus();
+            } else {
                 var del = document.getElementById("delivery");
                 if (del) del.focus();
             }
@@ -95,6 +96,13 @@ print gui_datalist( "items", "im_products", "post_title" );
 //        row.insertCell(10).style.visibility = false;              // 10 - refund q
 //        row.insertCell(11).style.visibility = false;              // 11 - refund total
     }
+
+    function save_excerpt() {
+        var excerpt = get_value_by_name("order_excerpt");
+
+        execute_url("orders-post.php?operation=save_order_excerpt&excerpt=" + excerpt + "&order_id= + <?print $order_id; ?>");
+    }
+
 
     function addDelivery() {
         calcDelivery();

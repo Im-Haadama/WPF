@@ -8,7 +8,7 @@
  */
 
 require_once( '../r-multisite.php' );
-require_once( '../gui/inputs.php' );
+require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 require_once( '../pricing.php' );
 require_once( "../wp/terms.php" );
 
@@ -28,6 +28,7 @@ if ( $incremental ) {
 	$max      = sql_query_single_scalar( "SELECT max(post_modified) FROM wp_posts" );
 	$date_q   = "SELECT last_inc_update FROM im_multisite WHERE id = " . $site_id;
 	$prev_max = sql_query_single_scalar( $date_q );
+	print "last date: " . $prev_max . "<br/>";
 
 	if ( $prev_max ) {
 		$sql .= " where post_modified > '" . $prev_max . "'";
@@ -44,6 +45,7 @@ if ( ! $result ) {
 }
 $data = "";
 
+print $sql;
 $line_count = 0;
 print "<table>";
 while ( $row = mysqli_fetch_row( $result ) ) {

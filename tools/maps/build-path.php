@@ -71,9 +71,9 @@ function find_route_1( $node, $rest, &$path, $print = false ) {
 //	foreach ($path as $p) print $p . " " ;
 //	print  "<br/>";
 	$best_cost = evaluate_path( 1, $path, 1 );
-	if ( $print ) {
-		print "Best: " . $best_cost . "<br/>";
-	}
+//	if ( $print ) {
+//		print "Best: " . $best_cost . "<br/>";
+//	}
 	$switched = true;
 	while ( $switched ) {
 		$switched = false;
@@ -134,14 +134,27 @@ function find_route( $node, $rest, &$path ) {
 }
 
 function map_get_order_address( $order_id ) {
+	global $store_address;
 	global $addresses;
+	if ( ! is_numeric( $order_id ) ) {
+		print $order_id . " is not a number ";
+
+		return $store_address;
+	}
+	if ( $order_id == 1 ) {
+		return $store_address;
+	}
 
 	$address = $addresses[ $order_id ];
 	if ( ! $address ) {
 //		print "order id = " . $order_id;
 		$address                = order_get_address( $order_id );
+		if ( ! $address ) {
+			print "לא נמצאה כתובת  " . $order_id;
+			$addresses[ $order_id ] = $store_address;
+		}
+		// print $order_id . " " . $address . "<br/>";
 		$addresses[ $order_id ] = $address;
-		// return "לא נמצאה כתובת  " . $user_id;
 	}
 
 	return $address;
@@ -149,6 +162,10 @@ function map_get_order_address( $order_id ) {
 
 function get_distance( $order_a, $order_b ) {
 	global $conn;
+	if ( 0 ) {
+		print "a: " . $order_a . "<br/>";
+		print "b: " . $order_b . "<br/>";
+	}
 	if ( $order_a == $order_b ) {
 		return 0;
 	}
@@ -157,12 +174,12 @@ function get_distance( $order_a, $order_b ) {
 	}
 	if ( ! is_numeric( $order_a ) ) {
 		print "A is not number " . $order_a . "<br/>";
-		die( 1 );
+		// die( 1 );
 	}
 
 	if ( ! is_numeric( $order_b ) ) {
 		print "B is not number " . $order_b . "<br/>";
-		die( 1 );
+		// die( 1 );
 	}
 	$sql = "SELECT distance FROM im_distance WHERE order_a = " . $order_a . " AND order_b = " . $order_b;
 	// print $sql . " ";
@@ -198,6 +215,7 @@ function get_distance_duration( $user_a, $user_b ) {
 }
 
 function do_get_distance( $a, $b ) {
+	$start = new DateTime();
 	if ( $a == $b ) {
 		return 0;
 	}
@@ -244,11 +262,19 @@ function do_get_distance( $a, $b ) {
 	$v = $j->routes[0]->legs[0]->distance->value;
 	$t = $j->routes[0]->legs[0]->duration->value;
 
+//	$end = new DateTime();
+//
+//	$delta = $start->diff($end)->format("%s");
+//	// var_dump($delta); print "<br/>"; // ->format("%s");
+//	// print "diff: " . $sec . "<br/>";
+//	if ($delta > 0) {
+//		print "בדוק כתובות" . $a . " " . $b . "<br/>";
+//	}
 	if ( $v > 0 ) {
 		return array( $v, $t );
 	}
 
-	// print "can't find distance between " . $a . " " . $b . "<br/>";
+	print "can't find distance between " . $a . " " . $b . "<br/>";
 
 	return null;
 }

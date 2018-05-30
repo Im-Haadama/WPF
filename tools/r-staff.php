@@ -21,6 +21,9 @@ if ( $multisite or $_SERVER['REMOTE_ADDR'] == "160.153.129.234" or // Aglamaz.co
 } else {
 	$user = wp_get_current_user();
 	if ( $user->ID == "0" ) {
+		$i = get_included_files();
+		my_log( __FILE__ . "force login " . $i[ count( $i ) - 1 ] . " " . $i[ count( $i ) - 2 ] . " " . $i[ count( $i ) - 3 ] . "<br/>" );
+
 		// Force login
 		$url = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_HOST ) . '/wp-login.php?redirect_to=' . $_SERVER['REQUEST_URI'] . '"';
 
@@ -32,7 +35,7 @@ if ( $multisite or $_SERVER['REMOTE_ADDR'] == "160.153.129.234" or // Aglamaz.co
 
 	$roles = $user->roles;
 	if ( count( array_intersect( array( "shop_manager", "administrator", "staff" ), $roles ) ) < 1 ) {
-		my_log( __FILE__ . " " . $user->name );
+		my_log( __FILE__ . "redirect " . $user->name );
 
 		// No relevant role - send to store.
 		// < 1! (in_array("shop_manager", $roles) or in_array("administrator", $roles))) {

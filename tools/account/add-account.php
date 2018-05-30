@@ -5,11 +5,11 @@
  * Date: 28/08/17
  * Time: 06:45
  */
-require_once( "../gui/inputs.php" );
+require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 require_once( "../r-shop_manager.php" );
 
 ?>
-<script type="text/javascript" src="../client_tools.js"></script>
+<script type="text/javascript" src="/agla/client_tools.js"></script>
 <script>
     function check_email() {
         var email = get_value(document.getElementById("email"));

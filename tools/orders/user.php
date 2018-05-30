@@ -13,13 +13,8 @@ $user_id = $_GET["user_id"];
 print header_text( false, true );
 ?>
     <header>
+        <script type="text/javascript" src="/agla/client_tools.js"></script>
         <script>
-			<?php
-			$filename = __DIR__ . "/../client_tools.js";
-			$handle = fopen( $filename, "r" );
-			$contents = fread( $handle, filesize( $filename ) );
-			print $contents;
-			?>
 
             function send_order() {
                 var collection = document.getElementsByClassName("prod_checkbox");

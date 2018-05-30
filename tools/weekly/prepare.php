@@ -33,7 +33,7 @@ print "</style>";
 while ( $row = mysqli_fetch_assoc( $result ) ) {
 	$id = $row["id"];
 //	print $id . "<br/>";
-	print_order_info( $id, true );
+	print order_info_data( $id, true );
 	$D = Delivery::CreateFromOrder( $id );
 	$D->print_delivery( ImDocumentType::delivery, ImDocumentOperation::collect );
 }

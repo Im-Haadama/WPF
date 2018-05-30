@@ -5,7 +5,6 @@
  * Date: 26/05/17
  * Time: 14:13
  */
-require_once "../r-staff.php";
 require_once( "../account/account.php" );
 require_once( "../gui/inputs.php" );
 require_once( "people.php" );
@@ -16,14 +15,23 @@ if ( ! isset( $_GET["operation"] ) ) {
 }
 $operation = $_GET["operation"];
 
-
 switch ( $operation ) {
 	case "display":
-		print print_transactions( $role );
-		break;
-
 	case "display_all":
-		print print_transactions( 'hr' );
+		$month = null;
+		$year  = null;
+		if ( isset( $_GET["month"] ) ) {
+			$m     = $_GET["month"];
+			$month = substr( $m, 5 );
+			$year  = substr( $m, 0, 4 );
+
+		}
+		$user = get_current_user_id();
+
+		if ( current_user_can( "working_hours_all" ) ) {
+			$user = 0;
+		}
+		print print_transactions( 0, $month, $year );
 
 		break;
 
@@ -32,7 +40,8 @@ switch ( $operation ) {
 		$end        = $_GET["end"];
 		$date       = $_GET["date"];
 		$project    = $_GET["project"];
-		$user_id    = $_GET["user_id"];
+		$worker_id  = $_GET["worker_id"];
+		// print "wid=" . $worker_id . "<br/>";
 		$vol        = $_GET["vol"];
 		$traveling  = $_GET["traveling"];
 		$extra_text = $_GET["extra_text"];
@@ -42,8 +51,9 @@ switch ( $operation ) {
 			$user_id = $_GET["user_id"];
 		} else {
 			if ( isset( $_GET["worker_id"] ) ) {
-				$w       = $_GET["worker_id"];
-				$user_id = sql_query_single_scalar( "SELECT worker_id FROM im_working WHERE id = " . $w );
+				// $w       = $_GET["worker_id"];
+				$user_id = sql_query_single_scalar( "SELECT worker_id FROM im_working WHERE id = " . $worker_id );
+				//print "uid=" . $user_id . "<br/>";
 			} else {
 				$user_id = get_user_id();
 			}
@@ -54,7 +64,7 @@ switch ( $operation ) {
 
 	case "show_all":
 		$month = $_GET["month"];
-		show_all( $role, $month );
+		show_all( $month );
 		break;
 	case "delete":
 		// $params = explode(',', $_GET["params"]);
@@ -71,8 +81,11 @@ switch ( $operation ) {
 
 }
 
-function show_all( $role, $month ) {
-	global $conn;
+function show_all( $month ) {
+	if ( ! current_user_can( "show_all_hours" ) ) {
+		print "אין הרשאה";
+		die ( 1 );
+	}
 
 	$a = explode( "-", $month );
 	$y = $a[0];
@@ -85,16 +98,16 @@ function show_all( $role, $month ) {
 	       " and year(date) = " . $y .
 	       " and h.user_id = w.worker_id ";
 	// print $sql;
-	$result = mysqli_query( $conn, $sql );
+	$result = sql_query( $sql);
+
 	while ( $row = mysqli_fetch_row( $result ) ) {
 		$u = $row[0];
 
 		if ( $row[1] ) {
 			print gui_header( 1, get_user_name( $u ) );
-			print print_transactions( $role, $u, $m, $y );
+			print print_transactions( $u, $m, $y );
 		}
 	}
-
 }
 
 

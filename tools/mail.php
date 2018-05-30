@@ -8,6 +8,7 @@
 
 function send_mail( $subject, $to, $message ) {
 	global $mail_sender;
+	global $support_email;
 
 //    print "start send";
 //    print $subject ."<br/>";
@@ -17,8 +18,8 @@ function send_mail( $subject, $to, $message ) {
 	$headers[] = "MIME-Version: 1.0";
 //	$headers[] = "From: עם האדמה <info@im-haadama.co.il>";
 //	$headers[] = "Reply-To: Im Haadama <info@im-haadama.co.il>";
-	$headers[] = "From: " . $mail_sender;
-	$headers[] = "Reply-To: " . $mail_sender;
+	$headers[] = "From: " . $support_email;
+	$headers[] = "Reply-To: " . $support_email;
 	$headers[] = "Subject: {$subject}";
 	$headers[] = "X-Mailer: PHP/" . phpversion();
 	$headers[] = "Content-type: text/html";

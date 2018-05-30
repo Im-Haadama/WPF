@@ -22,5 +22,6 @@ if ( isset( $_GET["edit"] ) ) {
 }
 
 $delivery = new delivery( $del_id );
-// print "info: " . $info_email;
+print "info: " . $info_email;
+print "track: " . $track_email;
 $delivery->send_mail( $track_email, $edit );

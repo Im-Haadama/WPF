@@ -13,7 +13,8 @@ if ( ! defined( "TOOLS_DIR" ) ) {
 require_once( TOOLS_DIR . '/im_tools.php' );
 require_once( STORE_DIR . '/tools/orders/orders-common.php' );
 // require_once( TOOLS_DIR . '/business/business-post.php' );
-require_once( TOOLS_DIR . '/gui/inputs.php' );
+// require_once(TOOLS_DIR . '/multi-site/multi-site.php');
+require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 
 #############################
 # legacy_users              #
@@ -141,7 +142,7 @@ function show_trans( $customer_id, $from_last_zero = false, $checkbox = true, $t
 
 		// Display item name
 		if ( $type == "משלוח" ) {
-			$line     .= "<td><a href=\"../delivery/get-delivery.php?id=" . $doc_id . "\">" . $doc_id . '</a></td>';
+			$line     .= gui_cell( gui_hyperlink( $doc_id, MultiSite::LocalSiteTools() . '/delivery/get-delivery.php?id=' . $doc_id ) );
 			$order_id = get_order_id( $doc_id );
 			$line     .= "<td>" . $order_id . "</td>";
 			if ( is_numeric( $order_id ) ) {

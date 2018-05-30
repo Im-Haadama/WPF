@@ -41,17 +41,28 @@ function print_deliveries( $edit = false ) {
 //        $sql = "select order_id from im_delivery where date >= '" .$week . "'";
 //        print $sql;
 //    } else {
-	$sql = 'SELECT posts.id, order_'
+	$sql = 'SELECT posts.id, order_is_group(posts.id), order_user(posts.id) '
 	       . ' FROM `wp_posts` posts'
 	       . ' WHERE `post_status` in (\'wc-awaiting-shipment\', \'wc-processing\')'
 	       . ' order by 1';
 //    }
 
-	$orders = sql_query_array_scalar( $sql );
-
-	foreach ( $orders as $order ) {
-
-		print_order( $order );
+	$orders    = sql_query( $sql );
+	$prev_user = - 1;
+	while ( $order = sql_fetch_row( $orders ) ) {
+		$order_id   = $order[0];
+		$is_group   = $order[1];
+		$order_user = $order[2];
+//		print "<br/>" . $order_id . " " . $is_group . " " . $order_user;
+		if ( ! $is_group ) {
+			print_order( $order_id );
+			continue;
+		} else {
+			if ( $order_user != $prev_user ) {
+				print_order( $order_id );
+				$prev_user = $order_user;
+			}
+		}
 	}
 
 	// Self collect supplies
@@ -59,7 +70,7 @@ function print_deliveries( $edit = false ) {
           join im_suppliers r
           Where r.self_collect = 1
           and s.supplier = r.id 
-          and s.status = 3";
+          and s.status in (1, 3)";
 
 	$supplies = sql_query_array_scalar( $sql );
 	foreach ( $supplies as $supply ) {
@@ -131,7 +142,7 @@ function print_order( $order_id )
 	                 get_meta_field( $order_id, '_shipping_last_name' );
 	$shipping2     = get_meta_field( $order_id, '_shipping_address_2', true );
 	$mission_id    = order_get_mission_id( $order_id );
-	$ref           = $order_id;
+	// $ref           = $order_id;
 
 	array_push( $fields, $ref );
 

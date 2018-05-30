@@ -8,13 +8,9 @@
 require_once( '../r-shop_manager.php' );
 require_once( '../header.php' );
 ?>
+<script type="text/javascript" src="/agla/client_tools.js"></script>
+
 <script>
-	<?php
-	$filename = __DIR__ . "/../client_tools.js";
-	$handle = fopen( $filename, "r" );
-	$contents = fread( $handle, filesize( $filename ) );
-	print $contents;
-	?>
 
     function save_new() {
         var request_url = "supplier_post.php?operation=insert";

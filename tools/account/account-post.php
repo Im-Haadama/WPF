@@ -236,13 +236,13 @@ function sc_balance( $atts ) {
 function set_client_type( $id, $type ) {
 	print $id . " " . $type . "<br/>";
 	if ( $type == 0 ) {
-		print delete_user_meta( $id, "_client_type" );
+		delete_user_meta( $id, "_client_type" );
 
 		return;
 	}
 	$meta = sql_query_single_scalar( "select type from im_client_types where id = " . $type );
+	// print "meta: " . $meta . "<br/>";
 	update_user_meta( $id, "_client_type", $meta );
-
 }
 
 function send_month_summary( $user_ids ) {

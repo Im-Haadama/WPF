@@ -6,24 +6,35 @@
  * Time: 15:25
  */
 require_once( '../r-shop_manager.php' );
-require_once( '../gui/inputs.php' );
+require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 require_once( "../suppliers/gui.php" );
 
 ?>
 <html dir="rtl" lang="he">
 <header>
     <meta charset="UTF-8">
+    <script type="text/javascript" src="/agla/client_tools.js"></script>
     <script>
-		<?php
-		$filename = __DIR__ . "/../client_tools.js";
-		$handle = fopen( $filename, "r" );
-		$contents = fread( $handle, filesize( $filename ) );
-		print $contents;
-		?>
 
         var supplier_id;
 
-        function delList() {
+        function change_managed(field) {
+            var subject = field.id.substr(4);
+            var is_managed = get_value_by_name("chm_" + subject);
+
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                // Wait to get query result
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+                {
+
+                }
+            }
+            var request = "pricelist-post.php?operation=managed&is_managed=" + is_managed + "&prod_id=" + subject;
+            xmlhttp.open("GET", request, true);
+            xmlhttp.send();
+        }
+        function inActiveList() {
             var sel = document.getElementById("supplier_id");
             supplier_id = sel.options[sel.selectedIndex].value;
 
@@ -35,11 +46,11 @@ require_once( "../suppliers/gui.php" );
                     change_supplier();
                 }
             }
-            var request = "pricelist-post.php?operation=delete_list&supplier_id=" + supplier_id;
+            var request = "pricelist-post.php?operation=inactive&supplier_id=" + supplier_id;
             xmlhttp.open("GET", request, true);
             xmlhttp.send();
-
         }
+
         function get_value(element) {
             if (element.tagName == "INPUT") {
                 return element.value;
@@ -47,6 +58,7 @@ require_once( "../suppliers/gui.php" );
                 return element.nodeValue;
             }
         }
+
         function changed(field) {
             var subject = field.name;
             document.getElementById("chk" + subject).checked = true;
@@ -197,6 +209,10 @@ require_once( "../suppliers/gui.php" );
                     table.innerHTML = xmlhttp.response;
                 }
             }
+            xmlhttp.onloadend = function () {
+                if (xmlhttp.status == 404 || xmlhttp.status == 500)
+                    change_supplier();
+            }
             var request = "pricelist-post.php?operation=get_priceslist&supplier_id=" + supplier_id;
             xmlhttp.open("GET", request, true);
             xmlhttp.send();
@@ -253,6 +269,7 @@ require_once( "../suppliers/gui.php" );
         function add_item() {
             var sel = document.getElementById("supplier_id");
             var id = sel.options[sel.selectedIndex].value;
+            var code = get_value(document.getElementById("product_code"));
             var name = get_value(document.getElementById("product_name"));
             var price = get_value(document.getElementById("price"));
             xmlhttp = new XMLHttpRequest();
@@ -265,6 +282,7 @@ require_once( "../suppliers/gui.php" );
             }
             var request = "pricelist-post.php?operation=add_price&product_name=" + name + '&price=' + price +
                 '&supplier_id=' + supplier_id;
+            if (code.length > 0) request += "&code=" + code;
             xmlhttp.open("GET", request, true);
             xmlhttp.send();
         }
@@ -282,7 +300,7 @@ require_once( "../suppliers/gui.php" );
 <h1>
     מחירון ספק
 
-	<?
+	<?php
 	print_select_supplier( "supplier_id", true );
 	?>
 </h1>
@@ -296,7 +314,7 @@ require_once( "../suppliers/gui.php" );
 	<?php
 	$user = wp_get_current_user();
 	if ( $user->ID == "1" ) {
-		print '<button id="btn_delete_list" onclick="delList()">מחק רשימה</button>';
+		print '<button id="btn_delete_list" onclick="inActiveList()">הקפא ספק</button>';
 	}
 
 	?>

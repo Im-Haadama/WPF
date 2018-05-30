@@ -32,19 +32,28 @@ if ( 0 ) {
 	// business
 //	remove_role( "business" );
 	add_role( "business", "Business owner", array(
-		"set_client_type" => "true",
-		"pay_supply"      => "true",
-		"show_pricelist"  => "true"
+		"set_client_type"    => "true",
+		"pay_supply"         => "true",
+		"show_pricelist"     => "true",
+		"edit_pricelist"     => "true",
+		"edit_suppliers"     => "true",
+		"show_business_info" => "true"
 	) );
 
 	// finance
 //	remove_role( "finance" );
 	add_role( "finance", "Finance", array( "set_client_type" => "true", "pay_supply" => "true" ) );
 
-	add_role( "catalog_editor", "Catalog Editor", array( "edit_pricelist" => "true" ) );
+	add_role( "logistics", "Logistics Manager", array( "edit_missions" => "true" ) );
 
+	add_role( "catalog_editor", "Catalog Editor", array( "edit_pricelist" => "true" ) );
 }
 
+add_role( "logistics", "Logistics Manager", array( "edit_missions" => "true" ) );
+
 global $wp_roles;
-$wp_roles->add_cap( "clerk", "show_supplies" );
+//$wp_roles->add_cap("logistics", "edit_missions");
+//$wp_roles->add_cap( "business", "show_pricelist" );
+//$wp_roles->add_cap( "business", "edit_pricelist" );
+$wp_roles->add_cap( "business", "edit_suppliers" );
 print "done";

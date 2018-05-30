@@ -10,21 +10,9 @@ require_once( "../gui/inputs.php" );
 print header_text();
 
 ?>
-<script>
-	<?php
-	$filename = __DIR__ . "/../client_tools.js";
-	$handle = fopen( $filename, "r" );
-	$contents = fread( $handle, filesize( $filename ) );
-	print $contents;
+<script type="text/javascript" src="/agla/client_tools.js"></script>
 
-	?>
-    function get_value(element) {
-        if (element.tagName == "INPUT") {
-            return element.value;
-        } else {
-            return element.nodeValue;
-        }
-    }
+<script>
 
     function update_display() {
         table = document.getElementById("list");
@@ -39,7 +27,10 @@ print header_text();
                 document.getElementById("btn_delete").disabled = false;
             }
         }
-        var request = "people-post.php?operation=display";
+        var request = "people-post.php?operation=display_all";
+	    <? if ( isset( $_GET["month"] ) ) {
+	    print "request = request + \"&month=" . $_GET["month"] . "\";";
+    }?>
         xmlhttp.open("GET", request, true);
         xmlhttp.send();
     }

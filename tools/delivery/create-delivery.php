@@ -9,7 +9,7 @@ print header_text( false );
 /// If id is set -> edit. get order_id from id.
 /// Otherwise order_id should be set.
 ?>
-<script type="text/javascript" src="../client_tools.js"></script>
+<script type="text/javascript" src="/agla/client_tools.js"></script>
 <?php
 
 $script_file = MultiSite::LocalSiteTools() . "/delivery/create-delivery-script.php?i=1";
@@ -65,18 +65,22 @@ if ( $id > 0 ) {
 	// print gui_header( 2, "יצירת תעודת משלוח להזמנה מספר " . $order_id, true );
 
 	if ( sql_query_single_scalar( "select order_is_group(" . $order_id . ")" ) == 1 ) {
-		print "הזמנה קבוצתית";
-	}
-	$sql       = 'SELECT posts.id as id '
-	             . ' FROM `wp_posts` posts'
-	             . " WHERE post_status LIKE '%wc-processing%'  "
-	             . " and order_user(id) = " . $client_id;
-	$order_ids = sql_query_array_scalar( $sql );
-	// var_dump($orders);
-	print " הזמנות " . comma_implode( $order_ids );
+		// print "הזמנה קבוצתית";
+		$sql       = 'SELECT posts.id as id '
+		             . ' FROM `wp_posts` posts'
+		             . " WHERE post_status LIKE '%wc-processing%'  "
+		             . " and order_user(id) = " . $client_id;
+		$order_ids = sql_query_array_scalar( $sql );
+		print " הזמנות " . comma_implode( $order_ids );
+		print order_info_data( $order_ids, false, "יצירת תעודת משלוח ל" );
+		$d = delivery::CreateFromOrder( $order_ids );
+	} else {
+		print order_info_data( $order_id, false, "יצירת תעודת משלוח ל" );
+		$d = delivery::CreateFromOrder( $order_id );
 
-	print_order_info( $order_id, true, "יצירת תעודת משלוח ל" );
-	$d = delivery::CreateFromOrder( $order_ids );
+	}
+	// var_dump($orders);
+
 	$d->print_delivery( ImDocumentType::delivery, true );
 	print "</form>";
 }
@@ -90,4 +94,3 @@ if ( $id > 0 ) {
 
 </body>
 </html>
-//

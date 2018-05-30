@@ -1,12 +1,12 @@
 <?php
 require_once( '../r-shop_manager.php' );
 require_once( '../gui/wp_inputs.php' );
-require_once( '../gui/inputs.php' );
+require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 
 print header_text( true );
 ?>
 
-<script type="text/javascript" src="../client_tools.js"></script>
+<script type="text/javascript" src="/agla/client_tools.js"></script>
     <script>
 
         function select_category() {
@@ -132,6 +132,8 @@ print header_text( true );
         }
 
         function searchProducts() {
+            var btn = document.getElementById("btn_search");
+            btn.disabled = true;
             var query = document.getElementById('search_txt').value;
             table = document.getElementById("results_table");
 
@@ -142,6 +144,7 @@ print header_text( true );
                 {
                     table = document.getElementById("results_table");
                     table.innerHTML = xmlhttp.response;
+                    btn.disabled = false;
                 }
             }
             var request = "catalog-db-query.php?operation=for_update&search_txt=" + query;
@@ -154,8 +157,11 @@ print header_text( true );
 </head>
 <body onload="searchProducts()">
 <center><h2>פריטים בחנות</h2></center>
+חיפוש פריט לפי שם, מספר מזהה.
+ניתן לחפש גם קטגוריה
 <input type="text" id="search_txt">
-<button id="search_btn" onclick="searchProducts()">חפש פריטים</button>
+<br/>
+<button id="btn_search" onclick="searchProducts()">חפש פריטים</button>
 <input id="select_all" type="checkbox" onclick="select_all_toggle()">בחר הכל</button>
 <button id="set_vat" onclick="set_vat()">שנה מעמ</button>
 <input type="text" id="supplier_name">

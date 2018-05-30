@@ -1,13 +1,16 @@
 <?php
+error_reporting( E_ALL );
+ini_set( 'display_errors', 1 );
 
-require_once( '../r-shop_manager.php' );
-require_once( "../gui/inputs.php" );
+// This page is open to clients.
 require_once( "account.php" );
 require_once( "../multi-site/multi-site.php" );
 require_once( "../delivery/delivery-common.php" );
 require_once( '../../im-config.php' );
 require_once( '../invoice4u/invoice.php' );
 require_once( "../account/gui.php" );
+require_once( ROOT_DIR . '/agla/gui/inputs.php' );
+
 // $start_time =  microtime(true);
 
 // only if admin can select user. Otherwise get id from login info
@@ -39,13 +42,15 @@ if ( ! $manager ) {
 <meta charset="UTF-8">
 <head>
     <script>
+        var site_url = <? print '"' . get_site_url() . '"';?>;
+        var key = '<? print get_key(); ?>';
 
         function addTransaction() {
             var type = document.getElementById("transaction_type").value;
             var amount = document.getElementById("transaction_amount").value;
             var date = document.getElementById("transaction_date").value;
             var ref = document.getElementById("transaction_ref").value;
-            var request = "account-add-trans.php?customer_id=" + <?php print $customer_id ?>
+            var request = site_url + "/tools/account/account-add-trans.php?customer_id=" + <?php print $customer_id ?>
                 +"&type=" + type + "&amount=" + amount + "&date=" + date + "&ref=" + ref;
             // window.alert(request);
             xmlhttp = new XMLHttpRequest();
@@ -70,38 +75,52 @@ if ( ! $manager ) {
             if (btn) btn.disabled = false;
         }
 
+        function updateDisplayTrans() {
+            xmlhttp1 = new XMLHttpRequest();
+            xmlhttp1.onreadystatechange = function () {
+                // Wait to get query result
+                if (xmlhttp1.readyState == 4 && xmlhttp1.status == 200)  // Request finished
+                {
+                    table = document.getElementById("transactions");
+                    table.innerHTML = xmlhttp1.response;
+                }
+            }
+            var request1 = site_url + "/tools/account/get-customer-account-post.php?operation=table&customer_id=" + <? print $customer_id; ?>;
+            xmlhttp1.open("GET", request1, true);
+            xmlhttp1.send();
+            xmlhttp1.onloadend = function () {
+                if (xmlhttp1.status == 404 || xmlhttp1.status == 500)
+                    updateDisplayTrans();
+//                throw new Error(url + ' replied 404');
+            }
+        }
+        function updateDisplayTotal() {
+            xmlhttp2 = new XMLHttpRequest();
+            xmlhttp2.onreadystatechange = function () {
+                // Wait to get query result
+                if (xmlhttp2.readyState == 4 && xmlhttp2.status == 200)  // Request finished
+                {
+                    label = document.getElementById("total");
+                    label.innerHTML = xmlhttp2.response;
+                }
+            }
+            var request2 = site_url + "/tools/account/get-customer-account-post.php?key=" + key + "&operation=total&customer_id=" + <? print $customer_id; ?>;
+            xmlhttp2.open("GET", request2, true);
+            xmlhttp2.send();
+            xmlhttp2.onloadend = function () {
+                if (xmlhttp2.status == 404)
+                    updateDisplayTotal();
+            }
+        }
+
         function updateDisplay() {
             var id = document.getElementById("invoice_client_id").innerHTML;
             if (id > 0) {
                 document.getElementById("payment_table").style.visibility = "visible";
                 document.getElementById("btn_invoice").style.visibility = "visible";
                 document.getElementById("btn_create_user").style.visibility = "hidden";
-
-                xmlhttp2 = new XMLHttpRequest();
-                xmlhttp2.onreadystatechange = function () {
-                    // Wait to get query result
-                    if (xmlhttp2.readyState == 4 && xmlhttp2.status == 200)  // Request finished
-                    {
-                        label = document.getElementById("total");
-                        label.innerHTML = xmlhttp2.response;
-                    }
-                }
-                var request2 = "get-customer-account-post.php?operation=total&customer_id=" + <? print $customer_id; ?>;
-                xmlhttp2.open("GET", request2, true);
-                xmlhttp2.send();
-
-                xmlhttp1 = new XMLHttpRequest();
-                xmlhttp1.onreadystatechange = function () {
-                    // Wait to get query result
-                    if (xmlhttp1.readyState == 4 && xmlhttp1.status == 200)  // Request finished
-                    {
-                        table = document.getElementById("transactions");
-                        table.innerHTML = xmlhttp1.response;
-                    }
-                }
-                var request1 = "get-customer-account-post.php?operation=table&customer_id=" + <? print $customer_id; ?>;
-                xmlhttp1.open("GET", request1, true);
-                xmlhttp1.send();
+                updateDisplayTotal();
+                updateDisplayTrans();
                 disable_btn("btn_invoice");
                 disable_btn("btn_receipt");
                 // disable_btn("btn_refund");
@@ -280,14 +299,9 @@ if ( $manager ) {
 ?>
 <br>
 
-<script>
-	<?php
-	$filename = __DIR__ . "/../client_tools.js";
-	$handle = fopen( $filename, "r" );
-	$contents = fread( $handle, filesize( $filename ) );
-	print $contents;
-	?>
+<script type="text/javascript" src="/agla/client_tools.js"></script>
 
+<script>
     function save_payment_method() {
         var method = get_value(document.getElementById("payment"));
         xmlhttp = new XMLHttpRequest();

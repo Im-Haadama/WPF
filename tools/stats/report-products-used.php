@@ -5,6 +5,7 @@
  * Date: 12/02/17
  * Time: 07:13
  */
+require_once( "../im_tools.php" );
 require_once( "../gui/sql_table.php" );
 require_once( "../header.php" );
 print header_text();
@@ -24,7 +25,7 @@ if ( isset( $_GET["prod_id"] ) ) {
 //       " group by 1 " .
 //       " order by 2 DESC ";
 
-$sql = "select product_name as 'מוצר', round(sum(quantity),2) as 'סהכ נמכר', prod_id" .
+$sql = "select product_name as 'מוצר', round(sum(quantity),2) as 'סהכ', prod_id" .
        " from im_delivery_lines " .
        " where prod_id > 0 ";
 if ( isset( $prod_id ) ) {
@@ -43,6 +44,7 @@ $sql .= " ) group by 3 " .
 
 print $sql;
 
-print table_content( $sql );
+$links = array( 2 => "report-product.php?prod_id=%s" );
+print table_content( $sql, true, true, $links );
 
 //client_id = 196 and

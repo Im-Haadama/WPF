@@ -8,8 +8,15 @@
 
 require '../r-shop_manager.php';
 require_once( "supplies.php" );
-require_once( "../gui/inputs.php" );
+require_once( ROOT_DIR . '/agla/gui/inputs.php' );
+require_once( "../account/gui.php" );
+
 print header_text( false );
+
+$print = false;
+if ( isset( $_GET["print"] ) ) {
+	$print = true;
+}
 
 if ( isset( $_GET["business_id"] ) ) {
 	$bid = $_GET["business_id"];
@@ -78,10 +85,11 @@ print $id . " - " . supply_get_supplier( $id );
 print  "</h1> </center>";
 
 ?>
+<div id="head_edit">
 
-<input type="checkbox" id="chk_internal" onclick='update_display();'>מסמך פנימי<br>
+    <input type="checkbox" id="chk_internal" onclick='update_display();'>מסמך פנימי<br>
 
-<textarea id="comment" rows="4" cols="50">
+    <textarea id="comment" rows="4" cols="50">
 </textarea>
 <button id="update_comment" onclick='update_comment();'>עדכן הערות
 </button>
@@ -91,27 +99,58 @@ if ( user_can( get_user_id(), "pay_supply" ) ) {
 
 	print gui_table( array( array( "תאריך תשלום", gui_input_date( "pay_date", "", "", "onchange=supply_pay()" ) ) ) );
 }
-
+?>
+</div>
+<div id="head_print">
+</div>
+<?php
 print gui_datalist( "prods", "im_products", "post_title" );
 
 if ( ! $send ) {
+	print '<div id="buttons">';
 	print '<button id="btn_print" onclick="printDeliveryNotes()">הדפס תעודה</button>';
 	print '<button id="btn_del" onclick="deleteItems()">מחק שורות</button>';
 	print '<button id="btn_update" onclick="updateItems()">עדכן שורות</button>';
+	print '</div>';
 }
 
 ?>
+<br/>
+
+משימה
+<?php
+$mission_id = supply_get_mission_id( $id );
+print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_mission()\"" );
+
+?>
+
 <table id="items"></table>
 
-<div>
+<div id="add_items">
 	<?php
 	print gui_button( "btn_add_line", "add_item()", "הוסף" );
 
 	?>
     <input id="itm_" list="prods">
 </div>
-<script type="text/javascript" src="../client_tools.js"></script>
+<script type="text/javascript" src="/agla/client_tools.js"></script>
 <script>
+    function save_mission() {
+        var mission = get_value(document.getElementById("mission_select"));
+        var request = "supplies-post.php?operation=set_mission&mission_id=" + mission + "&supply_id=<?print $id; ?>";
+
+        xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+            // Wait to get query result
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+            {
+                location.reload();
+            }
+        }
+        xmlhttp.open("GET", request, true);
+        xmlhttp.send();
+    }
+
 
     function update_comment() {
         var text = get_value(document.getElementById("comment"));
@@ -233,27 +272,19 @@ if ( ! $send ) {
     }
 
     function printDeliveryNotes() {
-        // Get the html
-        document.getElementById('btn_print').style.visibility = "hidden";
+        document.getElementById('head_print').innerHTML = get_value(document.getElementById("comment"));
+        var elements = ["buttons", "supply_arrived", "add_items", "head_edit"];
+        elements.forEach(function (element) {
+            document.getElementById(element).style.display = "none";
+        });
+        document.getElementById("head_print").style.display = "block";
+
         window.print();
-        document.getElementById('btn_print').style.visibility = "visible";
-//	var txt = document.documentElement.innerHTML;
 
-        // Download the html
-// 	var a = document.getElementById("a");
-//	var file = new Blob(txt, 'text/html');
-// 	a.href = URL.createObjectURL(file);
-        // a.download = 're.html';
-
-//	download(txt, 'myfilename.html', 'text/html')
-//	window.open('data:text/html;charset=utf-8,<html dir="rtl" lang="he">' + txt + '</html>');
-
-//
-
-        // To Do: upload the file
-
-        document.getElementById('btn_calc').style.visibility = "visible";
-        document.getElementById('btn_print').style.visibility = "visible";
+        document.getElementById("head_print").style.display = "none";
+        elements.forEach(function (element) {
+            document.getElementById(element).style.display = "block";
+        });
     }
 
     function got_supply() {
@@ -281,8 +312,8 @@ if ( ! $send ) {
 <br/>
 <br/>
 <div id="supply_arrived">
-    <div id="arrival_entry">
 		<?php
+
 		print gui_table( array(
 			array( "מספר תעודת משלוח", gui_input( "supply_number", "" )),
 			array( "סכום", gui_input( "supply_total", "" ) )
@@ -291,7 +322,6 @@ if ( ! $send ) {
 		print gui_button( "btn_got_supply", "got_supply()", "סחורה התקבלה" );
 
 		?>
-    </div>
 </div>
 
 <div id="supply_document">

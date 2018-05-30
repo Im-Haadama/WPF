@@ -7,7 +7,7 @@
  */
 require_once( "../r-shop_manager.php" );
 
-require_once( "../sql.php" );
+require_once( ROOT_DIR . '/agla/sql.php' );
 
 // print header_text();
 function show_zone_names( $str_zones, $line_id ) {

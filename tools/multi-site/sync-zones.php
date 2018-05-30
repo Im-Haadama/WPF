@@ -7,7 +7,7 @@
  */
 
 require_once( '../r-multisite.php' );
-require_once( "../gui/sql_table.php" );
+require_once( ROOT_DIR . '/agla/gui/sql_table.php' );
 require_once( "../multi-site/multi-site.php" );
 
 $operation = $_GET["operation"];
@@ -132,16 +132,6 @@ function update_zone_table( $table ) {
 	}
 }
 
-function quote_text( $num_or_text ) {
-	// print "x" . $num_or_text . "y";
-	if ( is_numeric( $num_or_text ) ) {
-// 		print " number, " ;
-		return $num_or_text;
-	}
-
-// 	print " text, " ;
-	return "'" . $num_or_text . "'";
-}
 function get_decorated_diff( $old, $new ) {
 	$from_start = strspn( $old ^ $new, "\0" );
 	$from_end   = strspn( strrev( $old ) ^ strrev( $new ), "\0" );

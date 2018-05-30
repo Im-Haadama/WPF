@@ -28,7 +28,7 @@ if ( ! defined( 'TOOLS_DIR' ) ) {
 //		$sql_where );
 //}
 
-function gui_select_client( $active_days, $new = false ) {
+function gui_select_client( $events = "" ) {
 
 //	if ( $active_days > 0 ) {
 //		$sql_where = "where id in (select client_id from im_client_accounts where DATEDIFF(now(), date) < " . $active_days;
@@ -42,7 +42,7 @@ function gui_select_client( $active_days, $new = false ) {
 //	}
 
 	// print $sql_where;
-	return gui_select_table( "client_select", "wp_users", 2, "", "", "display_name",
+	return gui_select_table( "client_select", "wp_users", 2, $events, "", "display_name",
 		null, true, true );
 //		$sql_where );
 }
@@ -62,7 +62,7 @@ function gui_select_mission( $id, $selected = 0, $events = "" ) {
 	$sql_where = " where date >= curdate() or date is null";
 
 	// print $sql_where;
-	return gui_select_table( $id, "im_missions", $selected, $events, null,
+	return gui_select_table( $id, "im_missions", $selected, $events, array( 1 ),
 		"ifnull(concat (name, ' ', DAYOFMONTH(date), '/', month(date)), name)", $sql_where );
 }
 

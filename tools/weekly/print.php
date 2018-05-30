@@ -12,7 +12,7 @@ require_once '../r-shop_manager.php';
 // 2) ride info
 // 3) pickup sheets
 
-print header_text( false );
+print header_text( false, false, true );
 require_once '../delivery/delivery.php';
 require_once '../orders/orders-common.php';
 require_once '../supplies/supplies.php';
@@ -23,12 +23,20 @@ if ( isset( $_GET["operation"] ) ) {
 } else {
 	$operation = "menu";
 }
-
+?>
+<script>
+    function print_window() {
+        window.print();
+    }
+</script>
+</header>
+<?php
 switch ( $operation ) {
 	case "menu":
 		show_menu();
 		break;
 	case "mission":
+		print "<body onload=\"print_window()\">";
 		print_mission( $_GET["mission_id"] );
 		break;
 	case "supplies":
@@ -99,12 +107,12 @@ function print_mission( $mission_id_filter = null ) {
 	foreach ( $path_orders as $id ) {
 		$user_id = order_get_customer_id( $id );
 		if ( array_key_exists( $user_id, $grouped_orders ) ) {
-			print_order_info( $grouped_orders[ $user_id ][0], true );
+			print order_info_data( $grouped_orders[ $user_id ][0], true );
 			$d = Delivery::CreateFromOrder( $grouped_orders[ $user_id ] );
 			$d->print_delivery( ImDocumentType::delivery, ImDocumentOperation::collect );
 
 		} else {
-			print_order_info( $id, true );
+			print order_info_data( $id, false );
 			$D = Delivery::CreateFromOrder( $id );
 			$D->print_delivery( ImDocumentType::delivery, ImDocumentOperation::collect );
 		}
@@ -130,4 +138,7 @@ ORDER BY 1';
 	}
 	print_supplies_table( $supplies, true );
 }
-// require_once( '../delivery/get-driver-multi.php' );
+
+?>
+
+</body>

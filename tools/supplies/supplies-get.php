@@ -8,6 +8,7 @@
 require_once( '../r-shop_manager.php' );
 // require_once( '../header_no_login.php' );
 require_once( 'supplies-post.php' );
+require_once( "../account/gui.php" );
 
 if ( ! isset( $_GET["week"] ) ) {
 	$week = sunday( date( "Y-m-d" ) )->format( "Y-m-d" );
@@ -28,11 +29,13 @@ print gui_button( "btn_new", "show_create_item()", "אספקה חדשה" );
 	print gui_table( array(
 		array(
 			gui_header( 2, "בחר ספק" ),
-			gui_header( 2, "בחר מועד" )
+			gui_header( 2, "בחר מועד" ),
+			gui_header( 2, "בחר משימה" )
 		),
 		array(
 			gui_select_supplier(),
-			gui_input_date( "date", "" )
+			gui_input_date( "date", "" ),
+			gui_select_mission( "new_mission", "", "" )
 			// gui_select_mission( "mis_new")
 		)
 	) );
@@ -54,7 +57,14 @@ if ( isset( $_GET["week"] ) ) {
 	print display_supplies( $_GET["week"] );
 }
 ?>
+<script type="text/javascript" src="/agla/client_tools.js"></script>
+
     <script>
+        function mission_changed(supply_id) {
+            var mis = document.getElementById("mis_" + supply_id);
+            var mission_id = get_value(mis);
+            execute_url("supplies-post.php?operation=set_mission&supply_id=" + supply_id + "&mission_id=" + mission_id);
+        }
         function show_create_item() {
             var new_order = document.getElementById("new_item");
             new_order.style.display = 'inline-block';
@@ -306,7 +316,7 @@ if ( isset( $_GET["week"] ) ) {
 
 <button id="btn_save" onclick="savePrices()">שמור עדכונים</button>
 <button id="btn_delete" onclick="delSupplies()">מחק פריטים</button>
-<button id="btn_close" onclick="deleteItems()">בטל</button>
+<!--<button id="btn_close" onclick="deleteItems()">בטל</button>-->
 <button id="btn_merge" onclick="mergeItems()">מזג פריטים</button>
 <button id="btn_send" onclick="sendItems()">שלח הזמנה</button>
 <div id="logging" rows="6" cols="50"></div>
