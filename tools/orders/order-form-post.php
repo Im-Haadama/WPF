@@ -41,6 +41,9 @@ switch ( $operation ) {
 		}
 		if ( isset( $_GET["email"] ) ) {
 			$email = urldecode( ( $_GET["email"] ) );
+		} else {
+			print "כתובת המייל חסרה";
+			die ( 1 );
 		}
 
 		form_create_order( explode( ",", $params ), $phone, $name, $group, $user, $email );
@@ -48,6 +51,7 @@ switch ( $operation ) {
 }
 
 function form_create_order( $params, $phone = null, $name = null, $group = null, $user_id = null, $email = null ) {
+	global $support_phone;
 //	print "יוצר הזמנה ליוזר " . $email . "<br/>";
 //	$user = get_user_by("email", $email);
 //
@@ -58,6 +62,10 @@ function form_create_order( $params, $phone = null, $name = null, $group = null,
 	$prods      = array();
 	$quantities = array();
 
+	if ( count( $params ) < 2 ) {
+		print "לא נבחרו מוצרים" . "<br/>";
+		die ( 1 );
+	};
 	for ( $i = 0; $i < count( $params ); $i += 2 ) {
 		array_push( $prods, $params[ $i ] );
 		array_push( $quantities, $params[ $i + 1 ] );
@@ -77,6 +85,9 @@ function form_create_order( $params, $phone = null, $name = null, $group = null,
 		if ( $u = get_user_by( "email", $email ) ) {
 			$user_id = $u->ID;
 			print "user: " . $user_id;
+		} else {
+			print "כתובת המייל לא מוכרת. אנא פנה לשירות הלקוחות לצורך ביצוע ההזמנה. ציין את מספר ההזמנה שמופיע להלן." . "<br/>";
+			print "טלפון " . $support_phone . "<br/>";
 		}
 	}
 	print $comment . "<br/>";

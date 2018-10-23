@@ -9,14 +9,16 @@
 require_once( "../im_tools.php" );
 require_once( "orders-common.php" );
 require_once( ROOT_DIR . '/agla/gui/inputs.php' );
+require_once( "Order.php" );
+
 if ( ! defined( "STORE_DIR" ) ) {
 	define( 'STORE_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
 }
 
 require_once( STORE_DIR . "/tools/supplies/supplies.php" );
 
-$filter_zero  = $_GET["filter_zero"];
-$filter_stock = $_GET["filter_stock"];
+$filter_zero  = isset( $_GET["filter_zero"] );
+$filter_stock = isset( $_GET["filter_stock"] );
 //$basket_quantities;
 $basket_ordered = array();
 
@@ -44,7 +46,7 @@ function create_supply_single() {
 	print header_text( false, false, false );
 	$needed_products = array();
 
-	calculate_needed( $needed_products );
+	Order::CalculateNeeded( $needed_products );
 	$supplies_data = array();
 
 	foreach ( $needed_products as $prod_id => $quantity_array ) {
@@ -254,7 +256,7 @@ tr:nth-child(even) {
 function get_total_orders1( $filter_zero, $history = false, $filter_stock ) {
 	$needed_products = array();
 
-	calculate_needed( $needed_products );
+	Order::CalculateNeeded( $needed_products );
 
 	$data_lines = array();
 
@@ -267,7 +269,7 @@ function get_total_orders1( $filter_zero, $history = false, $filter_stock ) {
 		}
 		//   $line = table_line($key, $filter_zero);
 
-		$supplied_q = supply_quantity_ordered( $prod_id );
+		// $supplied_q = supply_quantity_ordered( $prod_id );
 
 		$line = "<tr><td><input id=\"chk" . $prod_id . "\" class=\"product_checkbox\" type=\"checkbox\"></td>";
 		$line .= "<td> " . get_product_name( $prod_id ) .
@@ -279,13 +281,18 @@ function get_total_orders1( $filter_zero, $history = false, $filter_stock ) {
 			$line .= "&history";
 		}
 
-		$line .= "\">" . $quantity_array[0] . "</a></td>";
+		if ( isset( $quantity_array[0] ) ) {
+			$q = round( $quantity_array[0], 1 );
+		} else {
+			$q = 0;
+		}
+		$line .= "\">" . $q . "</a></td>";
 		if ( isset( $quantity_array[1] ) ) {
 			$line .= "<td>" . $quantity_array[1] . "</td>";
 		} else {
 			$line .= "<td></td>";
 		}
-		$quantity = $quantity_array[0];
+		$quantity = isset( $quantity_array[0] ) ? $quantity_array[0] : 0;
 
 		$qin  = q_in( $prod_id );
 		$qout = q_out( $prod_id );
@@ -361,7 +368,7 @@ function get_total_orders1( $filter_zero, $history = false, $filter_stock ) {
 
 		//print "loop5: " .  microtime() . "<br/>";
 		if ( ! $filter_zero or ( $numeric_quantity > 0 ) ) {
-			array_push( $data_lines, array( $supplier_name, $line ) );
+			array_push( $data_lines, array( get_product_name( $prod_id ), $line ) );
 		}
 	}
 

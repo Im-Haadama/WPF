@@ -6,14 +6,18 @@
  * Time: 13:39
  */
 require_once( '../r-shop_manager.php' );
-require_once( '../gui/sql_table.php' );
+require_once( ROOT_DIR . '/agla/gui/sql_table.php' );
 require_once( "../catalog/bundles.php" );
 
 $operation = $_GET["operation"];
 
 switch ( $operation ) {
 	case "show":
-		show_inventory();
+		$debug = false;
+		if ( isset( $_GET["debug"] ) ) {
+			$debug = true;
+		}
+		show_inventory( $debug );
 		break;
 
 	case "in":
@@ -82,7 +86,7 @@ function show_out( $prod_id ) {
 
 		while ( $row = mysqli_fetch_assoc( $result ) ) {
 			$b_id = $row["id"];
-			$B    = Bundle::createFromDb( $b_id );
+			$B    = Bundle::CreateFromDb( $b_id );
 			print gui_header( 2, "במארזים " . get_product_name( $b_id ) );
 
 			$sql = "select delivery_id as משלוח, quantity as כמות, client_from_delivery(delivery_id) as לקוח" . //, supplier_name as לקוח " .
@@ -104,7 +108,7 @@ function show_out( $prod_id ) {
 	}
 }
 
-function show_inventory() {
+function show_inventory( $debug ) {
 	global $conn;
 
 	$sql    = "SELECT product_id, q_in FROM i_in";
@@ -122,7 +126,7 @@ function show_inventory() {
 		$q_in    = round( $row[1], 1 );
 		$q_out   = get_out( $prod_id );
 		$q       = round( $q_in - $q_out, 1 );
-		if ( $q > 0 ) {
+		if ( $q > 0 or $debug ) {
 			$line = array(
 				get_product_name( $prod_id ),
 				gui_hyperlink( $q_in, "inv-post.php?operation=in&id=" . $prod_id ),

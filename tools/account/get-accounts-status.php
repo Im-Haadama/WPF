@@ -1,4 +1,7 @@
 <?php
+//error_reporting( E_ALL );
+//ini_set( 'display_errors', 1 );
+
 require( '../r-shop_manager.php' );
 print header_text( false );
 require_once( "account.php" );
@@ -49,11 +52,7 @@ require_once( "account.php" );
 <body>
 <?php
 
-if ( $_GET["zero"] === null ) {
-	$include_zero = false;
-} else {
-	$include_zero = true;
-}
+$include_zero = isset( $_GET["zero"] );
 
 /**
  * Created by PhpStorm.

@@ -6,9 +6,16 @@
  * Time: 05:09
  */
 
+if ( ! defined( "STORE_DIR" ) ) {
+	define( 'STORE_DIR', dirname( dirname( __FILE__ ) ) );
+}
+
+require_once( STORE_DIR . '/tools/wp/Product.php' );
+
 // TODO: Decide about 80% fruit factor
 function calculate_price( $price, $supplier, $sale_price = '', $terms = null ) {
 	global $conn;
+
 	if ( ! is_numeric( $supplier ) ) {
 		print "Invalid " . $supplier . " was sent";
 		die( 2 );
@@ -42,67 +49,49 @@ function calculate_price( $price, $supplier, $sale_price = '', $terms = null ) {
 	}
 
 	return 0;
-
-//    switch ($supplier)
-//    {
-//        // Usual - 35%
-//        // Collecting +10%
-//        case 100001: // self
-//            $new_price = round($price * 1.35, 1);
-//            break;
-//        case 100003: // Misc
-//            $new_price = round($price * 1.4, 1);
-//            break;
-//        case 100004: // amir be yehuda
-//            $new_price = round($price * 1.5,1);
-//            break;
-//        case 100006: // hamakolet
-//            $new_price = round($price,1);
-//            break;
-//        case 100005: // yevulei bar
-//            $new_price = round($price * 1.45,1);
-//            break;
-//        case 100008: // Samar
-//            $new_price = round($price * 1.4,1);
-//            break;
-//        case 100009: // RAMA
-//            $new_price = round($price * 1.17 * 1.2, 1);
-//            break;
-//        case 100010: // hakselberg
-//            $new_price = round($price * 1.4,1);
-//            break;
-//        case 100016: // Sadot
-//            $new_price = round($price * 1.35,1);
-//            break;
-//        case 100018: // Mahsan
-//            $new_price = round($price * 1.3,1);
-//            break;
-//        case 100020: // Kesem
-//            $new_price = round($price * 1.4,1);
-//            break;
-//        case 100021: // Udi
-//            $new_price = round($price * 1.6,1);
-//            break;
-//        case 100022: // Snir
-//            $new_price = round($price * 1.4,1);
-//            break;
-//        case 100023: // Yaara
-//            $new_price = round($price * 1.5,1);
-//            break;
-//        case 100024: // Ohad
-//            $new_price = round($price * 1.5,1);
-//            break;
-//        default:
-//            $new_price = round($price,1);
-//    }
-//    return $new_price;
 }
 
 
-function get_price_by_type( $prod_id, $client_type = "" ) {
-	if ( strlen( $client_type ) > 1 ) {
+function get_price_by_type( $prod_id, $client_type = "", $quantity = 1 ) {
+//	$debug = debug_backtrace();
+//	for ( $i = 2; $i < 6 && $i < count( $debug ); $i ++ ) {
+//		print "called from " . $debug[ $i ]["function"] . ":" . $debug[ $i ]["line"] . "<br/>";
+//	}
 
+	if ( strlen( $client_type ) < 1 ) {
+		$client_type = "regular";
 	}
+//	print "pid = " . $prod_id . "<br/>";
+//	print "ct = " . $client_type . "<br/>";
+//	print "q = " . $quantity ."<br/>";
+
+	// client type can be:
+	// null - regular price.
+	// string - type name
+	// number - type id
+	// print "CT=" . $client_type;
+	$p = new Product( $prod_id );
+	if ( $p->isFresh() ) {
+		// print $prod_id . " " . "fresh";
+
+		$sql = "SELECT min(rate) FROM im_client_types WHERE type = '" . $client_type . "' AND (q_min <= " . $quantity . " OR q_min = 0)";
+		// print $sql . "<br/>";
+		$rate = sql_query_single_scalar( $sql );
+
+		// Nothing special. Return the price from the site.
+		if ( is_null( $rate ) ) {
+			return get_postmeta_field( $prod_id, '_price' );
+		}
+
+		// print "rate: " . $rate. "<br/>";
+
+		$buy = get_buy_price( $prod_id );
+
+		return round( ( $buy * ( 100 + $rate ) ) / 100, 1 );
+	}
+
+	// Non fresh
+	return get_postmeta_field( $prod_id, '_price' );
 }
 function get_price( $prod_id, $client_type = 0, $quantity = 1 ) {
 	switch ( $client_type ) {

@@ -1,13 +1,26 @@
 <?php
 
+// error_reporting( E_ALL );
+// ini_set( 'display_errors', 'on' );
+
 require_once( "../im_tools.php" );
 require_once 'orders-common.php';
 require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 require_once( '../delivery/delivery.php' );
 
+$user_id = login_id();
+$manager = false;
+if ( user_can( $user_id, "edit_shop_orders" ) ) {
+	$manager = true;
+}
+
 $order_id = $_GET["order_id"];
+if ( order_get_customer_id( $order_id ) != $user_id and ! $manager ) {
+	die ( "no permission" );
+}
+
 $margin   = false;
-if ( isset( $_GET["margin"] ) ) {
+if ( $manager and isset( $_GET["margin"] ) ) {
 	$margin = true;
 }
 ?>
@@ -15,6 +28,7 @@ if ( isset( $_GET["margin"] ) ) {
 <head>
     <meta charset="UTF-8">
     <script type="text/javascript" src="/agla/client_tools.js"></script>
+    <script type="text/javascript" src="/tools/tools.js"></script>
     <script>
 
         function save_mission() {
@@ -96,31 +110,28 @@ if ( isset( $_GET["margin"] ) ) {
 
 <?php
 // print header_text( true );
-$siton = false;
-
-if ( isset( $_GET["siton"] ) ) {
-	$siton = true;
-}
-
-if ( $siton ) {
-	print " - מחירון סיטונאי";
-}
+//$siton = false;
+//
+//if ( isset( $_GET["siton"] ) ) {
+//	$siton = true;
+//}
+//
+//if ( $siton ) {
+//	print " - מחירון סיטונאי";
+//}
 
 print "</h2></center>";
 
 $delivery_id = get_delivery_id( $order_id );
 $for_edit    = ! ( $delivery_id > 0 );
 
+if ( get_post_meta( $order_id, 'printed' ) )
+	$for_edit = false;
+
 print order_info_data( $order_id, $for_edit );
 
 $d = delivery::CreateFromOrder( $order_id );
-$d->print_delivery( ImDocumentType::order, ImDocumentOperation::edit, $margin );
-
-$data = str_replace( "\r", "", $data );
-
-$data .= "</table>";
-
-print "$data";
+$d->PrintDeliveries( ImDocumentType::order, ImDocumentOperation::edit, $margin );
 
 if ( current_user_can( "edit_shop_orders" ) ) {
 	if ( is_numeric( $delivery_id ) ) {
@@ -141,14 +152,16 @@ print gui_datalist( "items", "im_products", "post_title" );
 ?>
 
 <?php if ( current_user_can( "edit_shop_orders" ) ) {
-	print gui_table( array(
-		array( "בחר פריט", "כמות", "יח" ),
-		array( "<input id=\"itm_\" list=\"items\">", "<input id=\"qua_\">", "<input id=\"uni_\" list=\"units\">" )
-	) );
 
-	print gui_button( "btn_add_item", "add_item()", "הוסף" );
-	print gui_button( "btn_del_item", "del_item()", "מחק" );
-	print gui_button( "btn_replace", "replace()", "החלף סלים במרכיבים" );
+	if ( $for_edit ) {
+		print gui_table( array(
+			array( "בחר פריט", "כמות", "יח" ),
+			array( "<input id=\"itm_\" list=\"items\">", "<input id=\"qua_\">", "<input id=\"uni_\" list=\"units\">" )
+		) );
+		print gui_button( "btn_add_item", "add_item()", "הוסף" );
+		print gui_button( "btn_del_item", "del_item()", "מחק" );
+		print gui_button( "btn_replace", "replace()", "החלף סלים במרכיבים" );
+	}
 }
 ?>
 

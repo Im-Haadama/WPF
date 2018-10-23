@@ -7,29 +7,30 @@
  */
 
 $global_vat = 17;
-function get_vat_percent( $product_id ) {
-	global $global_vat;
 
-	$vat = $global_vat;
-
-	$terms = get_the_terms( $product_id, 'product_cat' );
-
-	if ( $terms ) {
-		foreach ( $terms as $term ) {
-			foreach ( array( "פרי", "פירות", "ירק", "עלים", "נבטים", "סלים" ) as $no_vat_cat ) {
-				if ( strstr( $term->name, $no_vat_cat ) ) {
-					$vat = 0;
-				}
-			}
-		}
-	} else {
-		if ( $product_id > 0 ) {
-			print "no terms for " . $product_id;
-		}
-	}
-
-	return $vat;
-}
+//function get_vat_percent( $product_id ) {
+//	global $global_vat;
+//
+//	$vat = $global_vat;
+//
+//	$terms = get_the_terms( $product_id, 'product_cat' );
+//
+//	if ( $terms ) {
+//		foreach ( $terms as $term ) {
+//			foreach ( array( "פרי", "פירות", "ירק", "עלים", "נבטים", "סלים" ) as $no_vat_cat ) {
+//				if ( strstr( $term->name, $no_vat_cat ) ) {
+//					$vat = 0;
+//				}
+//			}
+//		}
+//	} else {
+//		if ( $product_id > 0 ) {
+//			print "no terms for " . $product_id;
+//		}
+//	}
+//
+//	return $vat;
+//}
 
 function set_vat( $prod_ids, $vat_rate ) {
 	$debug_string = "set_vat: " . implode( ", ", $prod_ids ) . " rate = " . $vat_rate;

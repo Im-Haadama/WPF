@@ -4,7 +4,7 @@ require_once '../orders/orders-common.php';
 
 print header_text( false );
 $id     = $_GET["id"];
-$send   = $_GET["send"];
+$send   = isset( $_GET["send"] );
 $margin = isset( $_GET["margin"] );
 
 $d = new Delivery( $id );
@@ -22,8 +22,12 @@ print order_info_data( $order_id );
 print $d->delivery_text( ImDocumentType::delivery, ImDocumentOperation::show, $margin );
 
 if ( ! $send ) {
-	print '<button id="btn_del" onclick="deleteDelivery()">מחק תעודה</button>';
-	print '<button id="btn_edit" onclick="editDelivery()">ערוך תעודה</button>';
+	if ( sql_query_single_scalar( "SELECT payment_receipt FROM im_delivery WHERE id = " . $id ) ) {
+		print "תעודה שולמה ולא ניתנת לעריכה או למחיקה";
+	} else {
+		print '<button id="btn_del" onclick="deleteDelivery()">מחק תעודה</button>';
+		print '<button id="btn_edit" onclick="editDelivery()">ערוך תעודה</button>';
+	}
 }
 
 ?>

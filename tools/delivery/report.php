@@ -6,17 +6,26 @@
  * Time: 18:02
  */
 require_once( "../r-shop_manager.php" );
-require_once( "../gui/sql_table.php" );
+require_once( ROOT_DIR . "/agla/gui/sql_table.php" );
 
 print header_text();
 
+if ( isset( $_GET["week"] ) and isset( $_GET["prod_id"] ) ) {
+	print_prod_report( $_GET["prod_id"], $_GET["week"] );
+
+	return;
+}
+
+if ( isset( $_GET["prod_id"] ) ) {
+	print_prod_report( $_GET["prod_id"], null, isset( $_GET["user_id"] ) ? $_GET["user_id"] : null );
+
+	return;
+}
+
 if ( isset( $_GET["week"] ) ) {
-	if ( isset( $_GET["prod_id"] ) ) {
-		print_prod_report( $_GET["prod_id"], $_GET["week"] );
-	} else {
-		print_weekly_report( $_GET["week"] );
-	}
-	die( 0 );
+	print_weekly_report( $_GET["week"] );
+
+	return;
 }
 
 if ( isset( $_GET["project"] ) ) {
@@ -35,22 +44,53 @@ function sums( &$s, $a ) {
 	}
 }
 
-function print_prod_report( $prod_id, $week ) {
-	print gui_header( 1, "מציג תוצאות לשבוע המתחיל ביום " . $week );
+function print_prod_report( $prod_id, $week = null, $user_id = null ) {
+	if ( $week ) {
+		print gui_header( 1, "מציג תוצאות לשבוע המתחיל ביום " . $week );
+	}
 	print gui_header( 2, "מוצר " . get_product_name( $prod_id ) );
+	if ( $user_id ) {
+		print gui_header( 2, "לקוח " . get_customer_name( $user_id ) );
+	}
 
-	$sql = "SELECT delivery_id, product_name, round(quantity, 1), order_id  FROM im_delivery_lines dl JOIN im_delivery d " .
-	       " WHERE dl.delivery_id = d.id AND prod_id = " . $prod_id . " AND delivery_id IN (SELECT id FROM im_delivery WHERE first_day_of_week(date) = '" . $week . "')";
-	// print $sql;1
+
+	$sql = "SELECT delivery_id, product_name, round(quantity, 1), order_id";
+	if ( ! $week ) {
+		$sql .= ", date";
+	}
+	$sql .= " FROM im_delivery_lines dl JOIN im_delivery d " .
+	        " WHERE dl.delivery_id = d.id AND prod_id = " . $prod_id . " AND delivery_id IN (SELECT id FROM im_delivery";
+
+	$query = null;
+	if ( $week ) {
+		add_query( $query, "first_day_of_week(date) = '" . $week . "'" );
+	}
+	if ( $user_id ) {
+		add_query( $query, "order_user(order_id) = " . $user_id );
+	}
+
+	if ( $query ) {
+		$sql .= " " . $query;
+	}
+	$sql .= ")";
+
+	print $sql;
 	$result = sql_query( $sql );
 
 	$lines = array();
 	while ( $row = mysqli_fetch_row( $result ) ) {
-		array_push( $lines, array( $row[0], $row[2], get_customer_name( order_get_customer_id( $row[3] ) ) ) );
+		$line = array(
+			gui_hyperlink( $row[0], "get-delivery.php?id=" . $row[0] ),
+			$row[2],
+			get_customer_name( order_get_customer_id( $row[3] ) )
+		);
+		if ( ! $week ) {
+			array_push( $line, $row[4] );
+		}
+		array_push( $lines, $line );
 	}
 
 	print gui_table( $lines );
-
 }
 
 function print_weekly_report( $week ) {

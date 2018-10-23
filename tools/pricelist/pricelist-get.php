@@ -8,15 +8,42 @@
 require_once( '../r-shop_manager.php' );
 require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 require_once( "../suppliers/gui.php" );
+require_once( "../multi-site/multi-site.php" );
 
 ?>
 <html dir="rtl" lang="he">
 <header>
     <meta charset="UTF-8">
     <script type="text/javascript" src="/agla/client_tools.js"></script>
+	<?php
+	$map_table = "price_list";
+	require_once( "../catalog/mapping.php" );
+	?>
     <script>
-
         var supplier_id;
+
+        function selected(sel) {
+            var pricelist_id = sel.id.substr(3);
+            document.getElementById("chk" + pricelist_id).checked = true;
+        }
+
+
+        function updatePrices() {
+            var sel = document.getElementById("supplier_id");
+            supplier_id = sel.options[sel.selectedIndex].value;
+
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                // Wait to get query result
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+                {
+                    change_supplier();
+                }
+            }
+            var request = "pricelist-post.php?operation=refresh_prices&supplier_id=" + supplier_id;
+            xmlhttp.open("GET", request, true);
+            xmlhttp.send();
+        }
 
         function change_managed(field) {
             var subject = field.id.substr(4);
@@ -180,11 +207,21 @@ require_once( "../suppliers/gui.php" );
         }
 
         function change_supplier() {
+	        <?php if ( ! isset( $_GET["supplier_id"] ) )
+	        print '
             var sel = document.getElementById("supplier_id");
             var selected = sel.options[sel.selectedIndex];
             supplier_id = selected.value;
             var site_id = selected.getAttribute("data-site-id");
             var tools = selected.getAttribute("data-tools-url-id");
+            ';
+        else {
+	        print 'var supplier_id = ' . $_GET["supplier_id"] . ';
+                       var site_id = ' . MultiSite::LocalSiteID() . ';
+                       var tools = \'' . MultiSite::LocalSiteTools() . "';
+                ";
+        }
+	        ?>
             var upcsv = document.getElementById("upcsv");
 
             if (site_id > 0) {
@@ -287,6 +324,9 @@ require_once( "../suppliers/gui.php" );
             xmlhttp.send();
         }
 
+        function refresh() {
+            change_supplier();
+        }
     </script>
 </header>
 
@@ -301,7 +341,11 @@ require_once( "../suppliers/gui.php" );
     מחירון ספק
 
 	<?php
-	print_select_supplier( "supplier_id", true );
+	if ( ! isset ( $_GET["supplier_id"] ) ) {
+		print_select_supplier( "supplier_id", true );
+	} else {
+		print get_supplier_name( $_GET["supplier_id"] );
+	}
 	?>
 </h1>
 <lable id="last_update"></lable>
@@ -316,8 +360,11 @@ require_once( "../suppliers/gui.php" );
 	if ( $user->ID == "1" ) {
 		print '<button id="btn_delete_list" onclick="inActiveList()">הקפא ספק</button>';
 	}
+	print '<button id="btn_update_list" onclick="updatePrices()">עדכן מחירים</button>';
 
 	?>
+    <button id="btn_map" onclick="map_products()">שמור מיפוי</button>
+
 </div>
 <lable id="is_slave"></lable>
 <br/>

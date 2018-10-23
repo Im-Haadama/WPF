@@ -5,8 +5,9 @@
  * Date: 08/05/16
  * Time: 19:48
  */
+// ini_set( 'display_errors', 'on' );
 require_once( '../r-staff.php' );
-require_once( "../gui/inputs.php" );
+require_once( ROOT_DIR . "/agla/gui/inputs.php" );
 print header_text();
 
 ?>

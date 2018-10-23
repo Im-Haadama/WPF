@@ -1,6 +1,7 @@
 <?php
+ini_set( 'display_errors', 'on' );
 require_once( '../r-shop_manager.php' );
-require_once( '../gui/wp_inputs.php' );
+require_once( ROOT_DIR . '/agla/gui/wp_inputs.php' );
 require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 
 print header_text( true );
@@ -123,13 +124,6 @@ print header_text( true );
             xmlhttp.open("GET", request, true);
             xmlhttp.send();
         }
-        function select_all_toggle() {
-            var is_on = document.getElementById("select_all").checked;
-            var collection = document.getElementsByClassName("product_checkbox");
-            for (var i = 0; i < collection.length; i++) {
-                collection[i].checked = is_on;
-            }
-        }
 
         function searchProducts() {
             var btn = document.getElementById("btn_search");
@@ -162,7 +156,7 @@ print header_text( true );
 <input type="text" id="search_txt">
 <br/>
 <button id="btn_search" onclick="searchProducts()">חפש פריטים</button>
-<input id="select_all" type="checkbox" onclick="select_all_toggle()">בחר הכל</button>
+<input id="select_all" type="checkbox" onclick="select_all_toggle('select_all', 'product_checkbox')">בחר הכל</button>
 <button id="set_vat" onclick="set_vat()">שנה מעמ</button>
 <input type="text" id="supplier_name">
 <!--<button id="set_vat" onclick="set_supplier()">שנה ספק</button>-->

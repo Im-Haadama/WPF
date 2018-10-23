@@ -29,7 +29,7 @@ if ( $user->ID == "0" ) {
 <?php
 $table = array();
 
-$max_row = 6;
+$max_row = 8;
 
 function add_command( &$row, $col, $can, $text, $link, $target = "doc_frame" ) {
 	global $table, $max_row;
@@ -58,24 +58,30 @@ $table[ $row ++ ][ $col ] = gui_header( 2, "משלוחים" );
 add_command( $row, $col, "edit_shop_orders", "הצגת משימות נהיגה", "delivery/get-driver-multi.php" );
 add_command( $row, $col, "edit_shop_orders", "תעודות משלוח", "business/get_all.php?week=" .
                                                              sunday( date( "Y-m-d" ) )->format( "Y-m-d" ), "doc_frame" );
-add_command( $row, $col, "edit_missions", "ניהול משימות נהיגה", "delivery/c-get-all-missions.php" );
+add_command( $row, $col, "edit_missions", "ניהול מסלולים", "delivery/c-get-all-missions.php" );
+add_command( $row, $col, "edit_shop_orders", "משלוחי המכולת", "delivery/legacy.php" );
+add_command( $row, $col, null, "דיווח חוסרים ללקוח", "delivery/missing.php" );
 
-while ( $row < $max_row )
-	$table[ $row ++ ][ $col ] = "";
 
 // print MultiSite::LocalSiteID();
 if ( ! MultiSite::isMaster() ) {
-	add_command( $row, $col, "edit_shop_orders", "סנכרן איזורים", "/tools/multi-site/sync-data.php?table=wp_woocommerce_shipping_zone_locations&operation=update&source=4" );
-	add_command( $row, $col, "edit_shop_orders", "סנכרן סוגי משלוח", "/tools/multi-site/sync-data.php?table=wp_woocommerce_shipping_zone_methods&operation=update&source=4" );
-	add_command( $row, $col, "edit_shop_orders", "סנכרן משימות", "/tools/multi-site/sync-data.php?table=im_missions&operation=update&source=4" );
+//	add_command( $row, $col, "edit_shop_orders", "סנכרן איזורים", "/tools/multi-site/sync-data.php?table=wp_woocommerce_shipping_zone_locations&operation=update&source=4" );
+//	add_command( $row, $col, "edit_shop_orders", "סנכרן סוגי משלוח", "/tools/multi-site/sync-data.php?table=wp_woocommerce_shipping_zone_methods&operation=update&source=4" );
+	add_command( $row, $col, "edit_shop_orders", "סנכרן מידע", "/tools/delivery/sync-from-master.php" );
 }
+while ( $row < $max_row ) {
+	$table[ $row ++ ][ $col ] = "";
+}
+
 
 $col ++;
 $row                      = 0;
 $table[ $row ++ ][ $col ] = gui_header( 2, "לקוחות" );
+add_command( $row, $col, "edit_shop_orders", "הזנת תעודות משלוח", "orders/orders-get.php", "orders" );
 add_command( $row, $col, "edit_shop_orders", "מעקב תשלומים", "account/get-accounts-status.php", "doc_frame" );
 add_command( $row, $col, "edit_shop_orders", "הוספת לקוח", "account/add-account.php", "doc_frame" );
 add_command( $row, $col, "set_client_type", "ניהול לקוחות", "account/client-types.php", "doc_frame" );
+add_command( $row, $col, "edit_shop_orders", "קניה בחנות", "orders/order-pos.php", "doc_frame" );
 while ( $row < $max_row )
 	$table[ $row ++ ][ $col ] = "";
 
@@ -89,6 +95,7 @@ add_command( $row, $col, "edit_shop_orders", "כל הפריטים", "catalog/cos
 add_command( $row, $col, "edit_pricelist", "מיפוי מחירון", "catalog/catalog-map.php" );
 add_command( $row, $col, "edit_pricelist", "עדכון מחירון", "catalog/catalog-get.php" );
 add_command( $row, $col, "edit_pricelist", "מחירון גרניט", "catalog/catalog-db-query.php?operation=pos" );
+add_command( $row, $col, "edit_pricelist", "מארזים", "catalog/bundles-get.php" );
 while ( $row < $max_row )
 	$table[ $row ++ ][ $col ] = "";
 
@@ -97,6 +104,7 @@ $row                      = 0;
 $table[ $row ++ ][ $col ] = gui_header( 2, "ספקים" );
 add_command( $row, $col, "edit_suppliers", "ספקים", "suppliers/c-get-all-suppliers.php", "doc_frame" );
 add_command( $row, $col, "edit_shop_orders", "אספקות", "supplies/supplies-get.php", "doc_frame" );
+add_command( $row, $col, "edit_shop_orders", "מלאי 0", "catalog/catalog-db-query.php?operation=zero_inv", "doc_frame" );
 
 while ( $row < $max_row )
 	$table[ $row ++ ][ $col ] = "";
@@ -109,9 +117,9 @@ while ( $row < $max_row )
 	$table[ $row ++ ][ $col ] = "";
 
 
-if ( MultiSite::LocalSiteID() == 2 ) {
-	$table[ $col ++ ][ $row ] = gui_hyperlink( "עדכון מחירים מהשף", "pricelist/update-chef.php", "doc_frame" );
-}
+//if ( MultiSite::LocalSiteID() == 2 ) {
+//	$table[ $col ++ ][ $row ] = gui_hyperlink( "עדכון מחירים מהשף", "pricelist/update-chef.php", "doc_frame" );
+//}
 ?>
 <div style="text-align:center; ">
     <table style="margin-top: 0cm;">

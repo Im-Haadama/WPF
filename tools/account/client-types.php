@@ -8,7 +8,7 @@
 
 require_once( "../r-shop_manager.php" );
 require_once( ROOT_DIR . '/agla/gui/inputs.php' );
-require_once( "../gui/sql_table.php" );
+require_once( ROOT_DIR . "/agla/gui/sql_table.php" );
 require_once( "gui.php" );
 
 ?>

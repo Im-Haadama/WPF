@@ -9,7 +9,7 @@
 
 require_once( "../im_tools.php" );
 require_once( "../multi-site/multi-site.php" );
-require_once( "../gui/inputs.php" );
+require_once( ROOT_DIR . "/agla/gui/inputs.php" );
 
 print header_text( false, true, true );
 

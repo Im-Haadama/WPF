@@ -6,7 +6,7 @@
  * Time: 18:13
  */
 
-require_once( 'simple_html_dom.php' );
+require_once( 'im_simple_html_dom.php' );
 
 if ( ! defined( "TOOLS_DIR" ) ) {
 	define( "TOOLS_DIR", dirname( dirname( __FILE__ ) ) );
@@ -76,7 +76,7 @@ class MultiSite {
 		}
 		// print "Execute remote: " . $remote_request . "<br/>";
 		// print "XX" . $remote_request . "XX<br/>";
-		$html = file_get_html( $remote_request );
+		$html = im_file_get_html( $remote_request );
 
 		// print $html;
 
@@ -100,6 +100,7 @@ class MultiSite {
 		$data  = "";
 
 		while ( $site_info = mysqli_fetch_row( $result ) ) {
+			print date( "m:s" ) . "<br/>";
 			$id        = $site_info[0];
 			$url       = $site_info[1];
 			$site_name = $site_info[2];
@@ -121,7 +122,7 @@ class MultiSite {
 			}
 			$file = $url . "/" . $func . $glue . "header=" . ( $first ? "1" : "0" ) . "&key=lasdhflajsdhflasjdhflaksj";
 			// print $file . "<br/>";
-			$result_text = file_get_html( $file );
+			$result_text = im_file_get_html( $file );
 //			print $result_text;
 			$data  .= $result_text;
 			$first = false;
@@ -198,6 +199,7 @@ class MultiSite {
 		// print $html;
 
 		if ( strlen( $html ) > 100 ) {
+			// printbr($html);
 			MultiSite::UpdateTable( $html, $table, $key, $query, $ignore );
 		} else {
 			print "short response. Operation aborted <br/>";
@@ -209,7 +211,7 @@ class MultiSite {
 		global $conn;
 
 		// 		print header_text( false, true, false );
-		$dom = str_get_html( $html );
+		$dom = im_str_get_html( $html );
 
 		// print "Table key: X" . $table_key . "X<br/>";
 
@@ -275,7 +277,10 @@ class MultiSite {
 			for ( $i = 0; $i < count( $headers ); $i ++ ) {
 				if ( ( $ignore_fields == null ) or ( ! in_array( $headers[ $i ], $ignore_fields ) ) ) {
 					if ( $insert ) {
+//						if (strlen($fields[$i] == 0)) $insert_values .= "NULL, ";
+//						else // print strlen($fields[$i]) . " " . $fields[$i] . "<br/>";
 						$insert_values .= quote_text( mysqli_real_escape_string( $conn, $fields[ $i ] ) ) . ", ";
+
 					} else { // Update
 						$update_fields .= $headers[ $i ] . "=" . quote_text( mysqli_real_escape_string( $conn, $fields[ $i ] ) ) . ", ";
 					}
@@ -286,6 +291,7 @@ class MultiSite {
 				$sql = "INSERT INTO $table (" . $field_list . ") VALUES ( " . rtrim( $insert_values, ", " ) . ")";
 				// print $sql . "<br/>";
 				sql_query( $sql );
+//				 die (1);
 			} else {
 				$sql = "UPDATE $table SET " . rtrim( $update_fields, ", " ) .
 				       " WHERE $table_key = " . quote_text( $row_key );

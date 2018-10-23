@@ -6,7 +6,7 @@ require_once( 'delivery-common.php' );
 require_once( "../../wp-includes/pluggable.php" );
 require_once( "../account/account.php" );
 
-$id       = $_GET["id"];
+$id       = isset( $_GET["id"] ) ? $_GET["id"] : null;
 $order_id = $_GET["order_id"];
 $edit     = false;
 if ( $id > 0 ) {
@@ -18,21 +18,27 @@ print gui_datalist( "items", "im_products", "post_title" );
 ?>
 
 <script>
-    const product_name_id = <? print DeliveryFields::product_name; ?>;
-    const q_quantity_ordered_id = <? print DeliveryFields::order_q; ?>;
-    const q_units = <? print DeliveryFields::order_q_units; ?>;
-    const q_supply_id = <? print DeliveryFields::delivery_q; ?>;
-    const has_vat_id = <? print DeliveryFields::has_vat; ?>;
-    const line_vat_id = <?print DeliveryFields::line_vat; ?>;
-    const price_id = <? print DeliveryFields::price; ?>;
-    const line_total_id = <? print DeliveryFields::delivery_line; ?>;
-    const term_id = <? print DeliveryFields::term; ?>;
-    const q_refund_id = <? print DeliveryFields::refund_q ?>;
-    const refund_total_id = <? print DeliveryFields::refund_line; ?>;
+    const product_name_id = <?php print DeliveryFields::product_name; ?>;
+    const q_quantity_ordered_id = <?php print DeliveryFields::order_q; ?>;
+    const q_units = <?php print DeliveryFields::order_q_units; ?>;
+    const q_supply_id = <?php print DeliveryFields::delivery_q; ?>;
+    const has_vat_id = <?php print DeliveryFields::has_vat; ?>;
+    const line_vat_id = <?php print DeliveryFields::line_vat; ?>;
+    const price_id = <?php print DeliveryFields::price; ?>;
+    const line_total_id = <?php print DeliveryFields::delivery_line; ?>;
+    const term_id = <?php print DeliveryFields::term; ?>;
+    const q_refund_id = <?php print DeliveryFields::refund_q ?>;
+    const refund_total_id = <?php print DeliveryFields::refund_line; ?>;
 
     function getPrice(my_row) {
         var product_name = get_value(document.getElementById("nam_" + my_row));
         var request = "delivery-post.php?operation=get_price&name=" + encodeURI(product_name);
+
+	    <?php
+	    if ( $type = get_client_type( order_get_customer_id( $order_id ) ) ) {
+		    print 'request = request + "&type=" + \'' . $type . '\';';
+	    }
+	    ?>
 
         xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function () {
@@ -96,13 +102,6 @@ print gui_datalist( "items", "im_products", "post_title" );
 //        row.insertCell(10).style.visibility = false;              // 10 - refund q
 //        row.insertCell(11).style.visibility = false;              // 11 - refund total
     }
-
-    function save_excerpt() {
-        var excerpt = get_value_by_name("order_excerpt");
-
-        execute_url("orders-post.php?operation=save_order_excerpt&excerpt=" + excerpt + "&order_id= + <?print $order_id; ?>");
-    }
-
 
     function addDelivery() {
         calcDelivery();
@@ -234,6 +233,7 @@ print gui_datalist( "items", "im_products", "post_title" );
                 server_lines.onreadystatechange = function () {
                     if (server_lines.readyState == 4 && server_lines.status == 200) {  // Request finished
                         logging.value += ". הסתיים";
+                        location.replace(document.referrer);
 //                    3) Send the delivery notes to the client
                         // Now call the server, to send the delivery. It waits few seconds for the save lines to finish
                         xmlhttp_send = new XMLHttpRequest();
@@ -343,8 +343,15 @@ print gui_datalist( "items", "im_products", "post_title" );
             p = get_value(document.getElementById("prc_" + prfx));
             if (prfx === "del") {
                 q = 1;
-            } else
+            } else {
                 q = get_value(document.getElementById("deq_" + prfx));
+                if (eval(q) !== q) {
+                    if (eval(q) > 0) {
+                        q = eval(q);
+                        document.getElementById("deq_" + prfx).value = q;
+                    }
+                }
+            }
             has_vat = get_value(document.getElementById("hvt_" + prfx));
             if (has_vat) line_vat = Math.round(100 * p * q / (100 + vat_percent) * vat_percent) / 100;
             line_total = Math.round(p * q * 100) / 100;
@@ -398,7 +405,7 @@ print gui_datalist( "items", "im_products", "post_title" );
         var line = table.rows.length - 4;
         var discount = 0;
         if (employee_discount) {
-            var discount_gross = Math.round(total - 25, 0); /// todo: get delivery_fee
+            var discount_gross = Math.round(total, 0); /// todo: get delivery_fee
             discount = -Math.round(discount_gross * 10) / 100;
             table.rows[line].cells[product_name_id].innerHTML = (discount_gross > 0) ? "הנחת עובד" : "";
             table.rows[line].cells[q_supply_id].innerHTML = (discount_gross > 0) ? -0.1 : "";

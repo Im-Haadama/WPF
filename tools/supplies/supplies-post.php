@@ -175,6 +175,15 @@ if ( isset( $_GET["operation"] ) ) {
 			supply_set_mission_id( $supply_id, $mission_id );
 			break;
 
+		case "delivered":
+			$ids = explode( ",", $_GET["ids"] );
+			foreach ( $ids as $supply_id ) {
+				got_supply( $supply_id, 0, 0 );
+			}
+			print "delivered";
+
+			break;
+
 		default:
 			print $operation . " not handled <br/>";
 
@@ -189,5 +198,4 @@ function gui_select_supplier() {
 }
 
 
-my_log( __FILE__, $operation );
 

@@ -142,7 +142,7 @@ function multi_search_unmapped_products( $site_id ) {
 	$remote_prods = array();
 
 	$remote = get_site_tools_url( $site_id ) . "/catalog/catalog-db-query.php?operation=show";
-	$html   = file_get_html( $remote );
+	$html   = im_file_get_html( $remote );
 	foreach ( $html->find( 'tr' ) as $row ) {
 		$id               = $row->find( 'td', 0 )->plaintext;
 		$name             = $row->find( 'td', 1 )->plaintext;

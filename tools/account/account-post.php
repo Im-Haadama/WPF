@@ -13,8 +13,9 @@ require_once( '../delivery/delivery.php' );
 $debug = true;
 
 $operation = $_GET["operation"];
-
 my_log( __FILE__, "operation = " . $operation );
+global $invoice_user;
+global $invoice_password;
 
 $operation = $_GET["operation"];
 switch ( $operation ) {
@@ -62,36 +63,8 @@ switch ( $operation ) {
 		$date         = $_GET["date"];
 		$ids          = explode( ',', $delivery_ids );
 
-		$no_ids = true;
-		foreach ( $ids as $id ) {
-			if ( $id > 0 ) {
-				$no_ids = false;
-			}
-		}
-		if ( $no_ids ) {
-			print "לא נבחרו תעודות משלוח";
-
-			return;
-		}
-		$c            = $cash - $change;
-//        if (abs($c) < 0) $c =0;
-		//      if (round($c,0) < 1 or round($c,0) < 1)
-		$doc_id   = invoice_create_document( "r", $ids, $user_id, $date, $c, $bank, $credit, $check );
-		$pay_type = pay_type( $cash, $bank, $credit, $check );
-		if ( is_numeric( $doc_id ) && $doc_id > 0 ) {
-			$pay_description = $pay_type . " " . $_GET["ids"];
-
-			$sql = "UPDATE im_delivery SET payment_receipt = " . $doc_id . " WHERE id IN (" . comma_implode( $ids ) . " ) ";
-			sql_query( $sql );
-
-			account_add_transaction( $user_id, date( "Y-m-d" ), $change - ( $cash + $bank + $credit + $check ), $doc_id, $pay_description );
-			if ( abs( $change ) > 0 ) {
-				account_add_transaction( $user_id, date( "Y-m-d" ), - $change, $doc_id, $change > 0 ? "עודף" : "חוסר/ניצול יתרה" );
-			}
-			print "חשבונית מס קבלה מספר " . $doc_id . "נוצרה!" . "<br/>";
-		} else {
-			print "doc_id: " . $doc_id . "<br/>";
-		}
+		//print "create receipt<br/>";
+		create_receipt( $cash, $bank, $check, $credit, $change, $user_id, $date, $ids );
 		break;
 
 	case "create_invoice_user":
@@ -102,8 +75,7 @@ switch ( $operation ) {
 
 	case "get_client_id":
 		$customer_id = $_GET["customer_id"];
-		$invoice     = new Invoice4u();
-		$invoice->Login();
+		$invoice     = new Invoice4u( $invoice_user, $invoice_password );
 
 		if ( is_null( $invoice->token ) ) {
 			die ( "can't login" );
@@ -145,7 +117,7 @@ switch ( $operation ) {
 		break;
 
 	case "add_user":
-		print "adding user";
+		// print "adding user";
 		$user    = $_GET["user"];
 		$name    = urldecode( $_GET["name"] );
 		$email   = $_GET["email"];
@@ -155,6 +127,68 @@ switch ( $operation ) {
 		$zip     = $_GET["zip"];
 		add_im_user( $user, $name, $email, $address, $city, $phone, $zip );
 		break;
+
+	case "table":
+		$customer_id = $_GET["customer_id"];
+		$table_lines = show_trans( $customer_id );
+		print $table_lines;
+		break;
+
+	case "total":
+		$customer_id = $_GET["customer_id"];
+		print "יתרה: " . sql_query_single_scalar( "SELECT round(sum(transaction_amount), 1) FROM im_client_accounts WHERE client_id = " . $customer_id );
+		break;
+
+	case "send":
+		$del_ids = explode( ",", $_GET["del_ids"] );
+		foreach ( $del_ids as $del_id ) {
+			$delivery = new delivery( $del_id );
+			print "נשלח ל: " . $info_email;
+			print "track: " . $track_email;
+			$delivery->send_mail( $track_email, $edit );
+		}
+		break;
+
+}
+
+function create_receipt( $cash, $bank, $check, $credit, $change, $user_id, $date, $ids ) {
+	$no_ids = true;
+	foreach ( $ids as $id ) {
+		if ( $id > 0 ) {
+			$no_ids = false;
+		}
+	}
+	if ( $no_ids ) {
+		print "לא נבחרו תעודות משלוח";
+
+		return;
+	}
+	$c = $cash - $change;
+//        if (abs($c) < 0) $c =0;
+	//      if (round($c,0) < 1 or round($c,0) < 1)
+	// Check if paid (some bug cause double invoice).
+	$sql = "SELECT count(payment_receipt) FROM im_delivery WHERE id IN (" . comma_implode( $ids ) . " )";
+	if ( sql_query_single_scalar( $sql ) > 0 ) {
+		print " כבר שולם" . comma_implode( $ids ) . " <br/>";
+
+		return;
+	}
+	$doc_id   = invoice_create_document( "r", $ids, $user_id, $date, $c, $bank, $credit, $check );
+	$pay_type = pay_type( $cash, $bank, $credit, $check );
+	if ( is_numeric( $doc_id ) && $doc_id > 0 ) {
+		$pay_description = $pay_type . " " . comma_implode( $ids );
+
+		$sql = "UPDATE im_delivery SET payment_receipt = " . $doc_id . " WHERE id IN (" . comma_implode( $ids ) . " ) ";
+		sql_query( $sql );
+
+		account_add_transaction( $user_id, date( "Y-m-d" ), $change - ( $cash + $bank + $credit + $check ), $doc_id, $pay_description );
+		if ( abs( $change ) > 0 ) {
+			account_add_transaction( $user_id, date( "Y-m-d" ), - $change, $doc_id, $change > 0 ? "עודף" : "חוסר/ניצול יתרה" );
+		}
+		print "חשבונית מס קבלה מספר " . $doc_id . " נוצרה!" . "<br/>";
+	} else {
+		print "doc_id: " . $doc_id . "<br/>";
+	}
 
 }
 
@@ -184,6 +218,7 @@ function add_im_user( $user, $name, $email, $address, $city, $phone, $zip ) {
 	update_user_meta( $id, 'legacy_user', 2 );
 
 	im_set_default_display_name( $id);
+	print "משתמש התווסף בהצלחה";
 
 }
 
@@ -275,19 +310,14 @@ function send_month_summary( $user_ids ) {
 function invoice_create_user( $user_id ) {
 	// First change wordpress display name
 	im_set_default_display_name( $user_id);
+	global $invoice_user, $invoice_password;
 
-	$invoice = new Invoice4u();
-	$invoice->Login();
+	$invoice = new Invoice4u( $invoice_user, $invoice_password );
 
 	$name  = get_customer_name( $user_id );
 	$email = get_customer_email( $user_id );
 	$phone = get_customer_phone( $user_id );
 
-//    print $name . "<br/>";
-//    print $email . "<br/>";
-//    print $phone . "<br/>";
-	$invoice = new Invoice4u();
-	$invoice->Login();
 	if ( is_null( $invoice->token ) ) {
 		die ( "can't login" );
 	}
@@ -298,24 +328,33 @@ function invoice_create_user( $user_id ) {
 
 }
 
-function invoice_create_document( $type, $ids, $customer_id, $date, $cash = 0, $bank = 0, $credit = 0, $check = 0 ) {
+function invoice_create_document( $type, $ids, $customer_id, $date, $cash = 0, $bank = 0, $credit = 0, $check = 0, $subject = null ) {
 	// print "create invoice<br/>";
 	global $debug;
+	global $invoice_user;
+	global $invoice_password;
 
-	$invoice = new Invoice4u();
-	$invoice->Login();
+	$invoice = new Invoice4u( $invoice_user, $invoice_password );
 
 	if ( is_null( $invoice->token ) ) {
 		die ( "can't login" );
 	}
 
-	$invoice_client_id = get_invoice_user_id( $customer_id );
+	print "customer id : " . $customer_id . "<br/>";
+
+	$invoice_client_id = $invoice->GetInvoiceUserId( $customer_id );
+
+	print "invoice client id " . $invoice_client_id . "<br/>";
 
 	$client = $invoice->GetCustomerById( $invoice_client_id );
 
+//	var_dump($client);
+
+
 	if ( ! ( $client->ID ) > 0 ) {
 		print "Client not found " . $customer_id . "<br>";
-		var_dump( $client );
+
+		// var_dump( $client );
 
 		return 0;
 	}
@@ -331,19 +370,18 @@ function invoice_create_document( $type, $ids, $customer_id, $date, $cash = 0, $
 	$doc->ClientID = $client->ID;
 	switch ( $type ) {
 		case "r":
-			$doc->DocumentType = 3; // invoice receipt
+			$doc->DocumentType = DocumentType::InvoiceReceipt;
 			break;
 		case "i":
-			$doc->DocumentType = 1; // invoice
+			$doc->DocumentType = DocumentType::Invoice;
 			break;
 	}
 
 	// Set the subject
-	$subject = "סלים" . " ";
-	foreach ( $ids as $del_id ) {
-		$subject .= $del_id . ", ";
+	if ( ! $subject ) {
+		$subject = "סלים" . " " . comma_implode( $ids );
 	}
-	$doc->Subject = trim( $subject, ", " );
+	$doc->Subject = $subject;
 
 	// Add the deliveries
 	$doc->Items = Array();

@@ -5,8 +5,9 @@
  * Date: 26/05/17
  * Time: 14:13
  */
+// ini_set( 'display_errors', 'on' );
 require_once( "../account/account.php" );
-require_once( "../gui/inputs.php" );
+require_once( ROOT_DIR . "/agla/gui/inputs.php" );
 require_once( "people.php" );
 
 if ( ! isset( $_GET["operation"] ) ) {
@@ -16,6 +17,11 @@ if ( ! isset( $_GET["operation"] ) ) {
 $operation = $_GET["operation"];
 
 switch ( $operation ) {
+	case "get_balance":
+		$user_id = $_GET["user_id"];
+		$date    = $_GET["date"];
+		print balance( $date, $user_id );
+		break;
 	case "display":
 	case "display_all":
 		$month = null;
@@ -109,6 +115,3 @@ function show_all( $month ) {
 		}
 	}
 }
-
-
-

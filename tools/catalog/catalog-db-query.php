@@ -1,9 +1,16 @@
 <?php
+//ini_set( 'display_errors', 'on' );
+
 require_once( '../im_tools.php' );
 require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 require_once( "../catalog/catalog.php" );
 
-$search_text = $_GET["search_txt"];
+if ( ! im_user_can( "show_catalog" ) ) {
+	print "אין הרשאה";
+	die( 1 );
+}
+
+$search_text = isset( $_GET["search_txt"] ) ? $_GET["search_txt"] : null;
 $operation   = $_GET["operation"];
 
 class CatalogFields {
@@ -19,7 +26,8 @@ class CatalogFields {
 		category = 7,
 		order = 8,
 		cost_price = 9,
-		field_count = 10;
+		inventory = 10,
+		field_count = 11;
 }
 
 ;
@@ -113,6 +121,35 @@ switch ( $operation ) {
 	case "customer_prices":
 		show_catalog( false, '', false, true, false, false, array( 15 ) );
 		break;
+
+	case "zero_inv":
+		show_catalog( false, '', false, true, false, false, null, null, null, 0 );
+		break;
+
+	case "show_hidden":
+		wp_cache_flush();
+		$args = array(
+			'post_type'  => 'product',
+			'meta_key'   => '_visibility',
+			'meta_value' => 'hidden'
+		);
+
+		$the_query = new WP_Query( $args );
+
+		// The Loop
+		if ( $the_query->have_posts() ) {
+			echo '<ul>';
+			while ( $the_query->have_posts() ) {
+				$the_query->the_post();
+				echo '<li>' . get_the_title() . '</li>';
+			}
+			echo '</ul>';
+			/* Restore original Post Data */
+			wp_reset_postdata();
+		} else {
+			// no posts found
+		}
+
 }
 
 function show_pos_pricelist() {
@@ -204,13 +241,13 @@ function set_category( $prod_ids, $category ) {
 
 function show_catalog(
 	$for_update, $search_text, $csv, $active = false, $siton = false, $buy = false, $category = null,
-	$order = false, $suppliers = null
+	$order = false, $suppliers = null, $inv = null
 ) {
 	global $header_fields;
 	$show_fields = array();
 
-	print "search text: " . $search_text . "<br/>";
-	print "category: " . $category . "<br/>";
+	// print "search text: " . $search_text . "<br/>";
+	// print "category: " . $category . "<br/>";
 	for ( $i = 0; $i < CatalogFields::field_count; $i ++ ) {
 		$show_fields[ $i ] = false;
 	}
@@ -276,6 +313,11 @@ function show_catalog(
 		$show_fields[ CatalogFields::category ]    = true;
 
 	}
+	if ( ! is_null( $inv ) ) {
+		print "show inv<br/>";
+		$show_fields[ CatalogFields::id ]        = true;
+		$show_fields[ CatalogFields::inventory ] = true;
+	}
 	if ( $order ) {
 		$show_fields[ CatalogFields::order ] = true;
 	}
@@ -312,7 +354,8 @@ function show_catalog(
 		// print "XXX" . CatalogFields::name . "XXX<br/>";
 
 		$fields[ CatalogFields::line_select ] = "<input id=\"chk" . $prod_id . "\" class=\"product_checkbox\" type=\"checkbox\">";
-		$fields[ CatalogFields::id ]          = $prod_id;
+		$fields[ CatalogFields::id ]          = gui_hyperlink( $prod_id, "../../wp-admin/post.php?post=" . $prod_id . " &action=edit" );
+		$p                                    = new Product( $prod_id );
 
 		// price
 		$price = get_postmeta_field( $prod_id, '_price' );
@@ -354,6 +397,13 @@ function show_catalog(
 
 		// $fields[CatalogFields::order] =gui_cell( gui_input( "prod_quantity" . $prod_id, "", null, "q_" . $prod_id ) );
 		$fields[ CatalogFields::category ] = comma_implode( $terms );
+
+		if ( ! is_null( $inv ) ) {
+			if ( ! $p->getStockManaged() or $p->getStock() > $inv ) {
+				continue;
+			}
+			$fields[ CatalogFields::inventory ] = $p->getStock();
+		}
 
 		if ( $show_in_list ) {
 			// var_dump($fields); print "<br/>";

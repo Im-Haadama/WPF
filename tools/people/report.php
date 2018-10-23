@@ -5,7 +5,8 @@
  * Date: 26/05/17
  * Time: 13:07
  */
-require_once( '../r-tools_hr.php' );
+define( 'WCDI', '' );
+require_once( '../im_tools.php' );
 require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 ?>
 <header>
@@ -41,7 +42,9 @@ require_once( ROOT_DIR . '/agla/gui/inputs.php' );
         }
     </script>
 </header>
-<?php print header_text(); ?>
+<?php
+
+print header_text(); ?>
 <body onload="update();">
 <h1 align="center">נתוני שכר לחודש
 	<?

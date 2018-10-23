@@ -32,7 +32,7 @@ if ( date( 'Y-m-d' ) > date( 'Y-m-d', strtotime( $week . "+1 week" ) ) ) {
 
 $output = MultiSite::GetAll( "delivery/get-driver.php?week=" . $week, $debug );
 
-$dom = str_get_html( $output );
+$dom = im_str_get_html( $output );
 
 print header_text( false );
 
@@ -45,8 +45,8 @@ print header_text( false );
     }
 </style>
 <script>
-    function delivered(st, v) {
-        var url = st + "/orders/orders-post.php?operation=delivered&ids=" + v;
+    function delivered(st, v, type) {
+        var url = st + "/" + type + "/" + type + "-post.php?operation=delivered&ids=" + v;
 
         xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function () {
@@ -70,7 +70,14 @@ print header_text( false );
 </script>
 <?php
 
+function get_text( $row, $index ) {
+	$cell = $row->find( 'td', $index );
+	if ( $cell ) {
+		return $cell->plaintext;
+	}
 
+	return "";
+}
 $data_lines = array();
 
 $header = null;
@@ -89,12 +96,13 @@ foreach ( $dom->find( 'tr' ) as $row ) {
 		continue;
 	}
 	// $key_fields = $row->find( 'td', 11 )->plaintext;
+	$site                   = $row->find( 'td', 0 )->plaintext;
 	$order_id               = $row->find( 'td', 1 )->plaintext;
 	$user_id                = $row->find( 'td', 2 )->plaintext;
 	$name                   = $row->find( 'td', 3 )->plaintext;
 	$addresses[ $order_id ] = $row->find( 'td', 4 )->plaintext;
 	$site_id                = $row->find( 'td', 9 )->plaintext;
-	$delivery_id            = $row->find( 'td', 10 )->plaintext;
+	$delivery_id            = get_text( $row, 10 );
 
 	// print "name = " . $name . " key= "  . $key . "<br/>";
 	$mission_id = $row->find( 'td', 8 )->plaintext;
@@ -104,7 +112,11 @@ foreach ( $dom->find( 'tr' ) as $row ) {
 			$line_data .= $row->find( 'td', $i );
 	}
 	$line_data .= gui_cell( "" ); // #box
-	$line_data .= gui_cell( gui_checkbox( "chk_" . $order_id, "", "", 'onchange="delivered(\'' . MultiSite::SiteTools( $site_id ) . "'," . $order_id . ')"' ) ); // #delivered
+	$type      = "order";
+	if ( $site == "supplies" ) {
+		$type = "supplies";
+	}
+	$line_data .= gui_cell( gui_checkbox( "chk_" . $order_id, "", "", 'onchange="delivered(\'' . MultiSite::SiteTools( $site_id ) . "'," . $order_id . ', \'' . $type . '\')"' ) ); // #delivered
 
 	$line_data .= "</tr>";
 	if ( ! isset( $data_lines[ $mission_id ] ) ) {
@@ -134,7 +146,7 @@ foreach ( $data_lines as $mission_id => $data_line ) {
 		$stop_point = $data_lines[ $mission_id ][ $i ][0];
 //		print "stop point: " . $stop_point . "<br/>";
 		array_push( $stop_points, $stop_point );
-		if ( $lines_per_station[ $stop_point ] == null ) {
+		if ( ! isset( $lines_per_station[ $stop_point ] ) ) {
 			$lines_per_station[ $stop_point ] = array();
 			if ( get_distance( 1, $order_id ) ) {
 				array_push( $lines_per_station[ $stop_point ], $data_lines[ $mission_id ][ $i ][1] );

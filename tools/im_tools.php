@@ -1,6 +1,6 @@
 <?php
 // error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
+// ini_set( 'display_errors', 'on' );
 
 /**
  * Created by PhpStorm.
@@ -8,6 +8,7 @@ ini_set( 'display_errors', 'on' );
  * Date: 16/07/15
  * Time: 21:42
  */
+
 if ( ! defined( "STORE_DIR" ) ) {
 	define( 'STORE_DIR', dirname( dirname( __FILE__ ) ) );
 }
@@ -96,6 +97,12 @@ function order_get_mission_id( $order_id, $debug = false ) {
 function order_set_mission_id( $order_id, $mission_id ) {
 	set_post_meta_field( $order_id, "mission_id", $mission_id );
 }
+
+function get_client_type( $id ) {
+	// print "meta: " . $meta . "<br/>";
+	return get_user_meta( $id, "_client_type", true );
+}
+
 
 function get_mission_name( $mission_id ) {
 	// Todo: find better way to do this
@@ -213,7 +220,28 @@ function get_key() {
 	return $key;
 }
 
+function im_user_can( $permission ) {
+	return ( user_can( login_id(), $permission ) );
+}
 
+function login_id() {
+	$user = wp_get_current_user();
+	if ( $user->ID == "0" ) {
+		// Force login
+		$inclued_files = get_included_files();
+		my_log( __FILE__, $inclued_files[ count( $inclued_files ) - 2 ] );
+		$url = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_HOST ) . '/wp-login.php?redirect_to=' . $_SERVER['REQUEST_URI'] . '"';
+
+		print '<script language="javascript">';
+		print "window.location.href = '" . $url . "'";
+		print '</script>';
+		print $_SERVER['REMOTE_ADDR'] . "<br/>";
+		var_dump( $user );
+		exit();
+	}
+
+	return $user->ID;
+}
 
 
 ?>

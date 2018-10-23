@@ -5,11 +5,15 @@
  * Date: 15/04/17
  * Time: 12:15
  */
+
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
 require_once( "im_tools.php" );
-
-print header_text( false, true, false );
-
-print valid_key( "2wX8xpY7S5rmbyTBBENVUdHbKRxlOqqH" );
+require_once( "wp/Product.php" );
+//print header_text( false, true, false );
+//
+//print valid_key( "2wX8xpY7S5rmbyTBBENVUdHbKRxlOqqH" );
 
 // print order_get_shipping_fee(2230);
 
@@ -30,3 +34,15 @@ print valid_key( "2wX8xpY7S5rmbyTBBENVUdHbKRxlOqqH" );
 //    echo '<li>' . get_the_title() . '</li>';
 //}
 
+foreach ( array( 3184, 1061, 2021 ) as $prod_id ) {
+	$p = new Product( ( $prod_id ) );
+	if ( ! $p ) {
+		continue;
+	}
+	print "prod: " . $p->getName();
+	if ( $p->isFresh() ) {
+		print "fresh";
+	}
+	print "<br>";
+
+}

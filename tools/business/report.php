@@ -67,7 +67,7 @@ function print_weekly_report( $week ) {
 	$outputs       = table_content( $sql, true, true, array( "../supplies/supply-get.php?business_id=%s" ), $sums_supplies );
 
 	$salary_text = MultiSite::Execute( "people/report-trans.php?week=" . $week . "&project=3", 1 );
-	$dom         = str_get_html( $salary_text );
+	$dom         = im_str_get_html( $salary_text );
 	$row         = "";
 	foreach ( $dom->find( 'tr' ) as $row ) {
 		;

@@ -174,7 +174,7 @@ function create_tasks( $verbose = false ) {
 					default:
 						$url = "http://store.im-haadama.co.il/tools/tasklist/" . $query . "&id=" . $row[0];
 						// print $url . "<br/>";
-						$c = file_get_html( $url );
+						$c = im_file_get_html( $url );
 						if ( $c ) {
 							$run = true;
 						}

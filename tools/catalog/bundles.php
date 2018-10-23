@@ -1,4 +1,13 @@
 <?php
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
+if ( ! defined( "ROOT_DIR" ) ) {
+	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) );
+}
+
+require_once( ROOT_DIR . "/tools/im_tools.php" );
+
 /**
  * Created by PhpStorm.
  * User: agla
@@ -7,16 +16,22 @@
  */
 // require_once( '../r-shop_manager.php' );
 require_once( "catalog.php" );
+require_once( "gui.php" );
 
 class Bundles {
 
 	private $class_name = "bundle";
 
-	function PrintHTML() {
+	function PrintHTML( $only_active = true ) {
 		$data = "";
 
-		$sql = 'SELECT prod_id, bundle_prod_id, quantity, margin, id FROM im_bundles'
-		       . ' ORDER BY 1';
+		$sql = 'SELECT prod_id, bundle_prod_id, quantity, margin, id, get_product_name(prod_id) FROM im_bundles';
+		if ( $only_active ) {
+			$sql .= " where is_active = 1 ";
+		}
+		$sql .= ' ORDER BY 6';
+
+		// print $sql;
 
 		$result = sql_query( $sql );
 
@@ -26,21 +41,24 @@ class Bundles {
 		$data .= "<td>כמות במארז</td>";
 		$data .= "<td>מזהה מארז</td>";
 		$data .= "<td>רווח</td>";
+		$data .= "<td>מחיר מכירה</td>";
 		$data .= "</tr>";
 
 		while ( $row = mysqli_fetch_row( $result ) ) {
-			$product_name = get_product_name( $row[0] );
+			$product_name = $row[5]; // get_product_name( $row[0] );
 			$bundle_id    = $row[1];
 			$quantity     = $row[2];
 			$margin       = $row[3];
 			$id           = $row[4];
+			$b            = Bundle::CreateFromDb( $id );
 
 			$line = "<tr>";
 			$line .= "<td><input id=\"" . $id . "\" class=\"" . $this->get_class_name() . "_checkbox\" type=\"checkbox\"></td>";
 			$line .= "<td>" . $product_name . "</td>";
-			$line .= "<td>" . $quantity . "</td>";
+			$line .= "<td>" . gui_input( "qty", $quantity ) . "</td>";
 			$line .= "<td>" . $bundle_id . "</td>";
 			$line .= '<td><input type="text" value="' . $margin . '"</td>';
+			$line .= gui_cell( $b->CalculatePrice() );
 			$line .= "</tr>";
 			$data .= $line;
 		}
@@ -50,24 +68,6 @@ class Bundles {
 	function get_class_name() {
 		return $this->class_name;
 	}
-
-	function Add( $prod_name, $quantity, $margin ) {
-		$b = Bundle::createNew( $prod_name, $quantity, $margin );
-		// print $prod_name . "<br/>";
-		$prod_id        = get_product_id_by_name( $prod_name );
-
-		// print $prod_id. "<br/>";
-		// ($product_name, $sell_price, $supplier_name, $categ = null, $image_path)
-		$bundle_prod_id = Catalog::DoCreateProduct( "מארז " . $quantity . " ק\"ג " . $prod_name,
-			$b->CalculatePrice(), $b->GetSupplier(), "מארזי כמות", Catalog::GetProdImage( $prod_id ) );
-		// $bundle_prod_id = get_product_id_by_name( $bundle_prod_name );
-
-		$sql = "INSERT INTO im_bundles (prod_id, quantity, margin, bundle_prod_id) VALUES (" . $prod_id . ", " .
-		       $quantity . ", '" . $margin . "', " . $bundle_prod_id . ")";
-
-		sql_query( $sql );
-	}
-
 }
 
 class NotFoundException extends Exception {
@@ -80,11 +80,22 @@ class Bundle {
 	private $quantity;
 	private $margin;
 
-	static function createNew( $product_name, $q, $margin ) {
+	static function CreateNew( $product_id, $q, $margin ) {
 		$b           = new Bundle();
-		$b->prod_id  = get_product_id_by_name( $product_name );
+		$b->prod_id  = $product_id;
 		$b->quantity = $q;
 		$b->margin   = $margin;
+
+		// Check if exists in system
+		$sql = "SELECT id, bundle_prod_id FROM im_bundles WHERE prod_id = " . $b->prod_id .
+		       " AND quantity = " . $b->quantity;
+
+		$row = sql_query_single( $sql );
+
+		if ( $row ) {
+			$b->id             = $row[0];
+			$b->bundle_prod_id = $row[1];
+		}
 
 		return $b;
 	}
@@ -105,13 +116,13 @@ class Bundle {
 
 		$_id = sql_query_single_scalar( $sql );
 		if ( $_id ) {
-			return Bundle::createFromDb( $_id );
+			return Bundle::CreateFromDb( $_id );
 		}
 
 		return null;
 	}
 
-	static function createFromDb( $_id ) {
+	static function CreateFromDb( $_id ) {
 		$b     = new Bundle();
 		$b->id = $_id;
 		$sql   = "select prod_id, quantity, margin, bundle_prod_id from im_bundles where id = $_id";
@@ -137,9 +148,8 @@ class Bundle {
 		       " where id = " . $this->id;
 
 		sql_query( $sql );
-
-
 	}
+
 	function Update() {
 		$product_id    = $this->bundle_prod_id;
 		$regular_price = $this->quantity * get_price( $this->prod_id );
@@ -161,7 +171,13 @@ class Bundle {
 			return round( get_buy_price( $this->prod_id ) * $this->quantity * ( 100 + $percent ) / 100, 0 );
 		}
 
-		return round( ( get_buy_price( $this->prod_id ) + $this->margin ) * $this->quantity, 0 );
+		if ( $this->margin == "" ) {
+			$m = 0;
+		} else {
+			$m = $this->margin;
+		}
+
+		return round( ( get_buy_price( $this->prod_id ) ) * $this->quantity + $m, 0 );
 	}
 
 	function Delete() {
@@ -184,10 +200,6 @@ class Bundle {
 		return $this->quantity * get_buy_price( $this->prod_id );
 	}
 
-	function GetSupplier() {
-		return get_supplier( $this->prod_id );
-	}
-
 	function GetProdId() {
 		return $this->prod_id;
 	}
@@ -198,5 +210,46 @@ class Bundle {
 
 	function GetQuantity() {
 		return $this->quantity;
+	}
+
+	function CreateOrUpdate() {
+		if ( $this->id ) {
+			// Update
+		} else {
+			// Create
+			$this->Add();
+		}
+	}
+
+	function Add() {
+		//$b = Bundle::CreateNew( $prod_id, $quantity, $margin );
+		// print $prod_name . "<br/>";
+		// $prod_id        = get_product_id_by_name( $prod_name );
+
+		// print $prod_id. "<br/>";
+		// ($product_name, $sell_price, $supplier_name, $categ = null, $image_path)
+		$p              = new Product( $this->prod_id );
+		$regular_price  = $this->quantity * $p->getPrice();
+		$bundle_prod_id = Catalog::DoCreateProduct( "מארז " . $this->quantity . " ק\"ג " . get_product_name( $this->prod_id ),
+			$regular_price, $this->GetSupplier(), "מארזי כמות", Catalog::GetProdImage( $this->prod_id ), $this->CalculatePrice() );
+		// $bundle_prod_id = get_product_id_by_name( $bundle_prod_name );
+
+		$sql = "INSERT INTO im_bundles (prod_id, quantity, margin, bundle_prod_id, is_active) VALUES (" . $this->prod_id . ", " .
+		       $this->quantity . ", '" . $this->margin . "', " . $bundle_prod_id . ", 1)";
+
+		sql_query( $sql );
+	}
+
+	function GetSupplier() {
+		return get_supplier( $this->prod_id );
+	}
+
+	function Disable() {
+		// Draft the bundle.
+		$p = new Product( $this->bundle_prod_id );
+		$p->draft();
+
+		$sql = "UPDATE im_bundles SET is_active = FALSE WHERE id = " . $this->id;
+		sql_query_single_scalar( $sql );
 	}
 }

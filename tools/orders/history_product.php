@@ -69,7 +69,7 @@ function history_total_orders() {
 
 		$ordered_products[ $prod_id ] = $prod_quantity;
 		// my_log("YYY: " . $basket_quantities[35] . ", " . $basket_quantities[2201]);
-		$line = table_line( $prod_id, $prod_quantity, false, true );
+		$line = delivery_table_line( $prod_id, $prod_quantity, false, true );
 		array_push( $data_lines, array( $supplier_name, $line ) );
 	}
 

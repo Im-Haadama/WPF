@@ -20,6 +20,7 @@ require_once( TOOLS_DIR . "/account/gui.php" );
 require_once( TOOLS_DIR . "/delivery/delivery-common.php" );
 
 $debug = false;
+
 class delivery {
 	private $ID = 0;
 	private $d_OrderID = 0;
@@ -32,9 +33,9 @@ class delivery {
 	private $delivery_due_vat = 0;
 	private $delivery_total_vat = 0;
 	private $margin_total = 0;
+	private $user_id = 0;
 
-	function delivery( $id ) {
-//        my_log("CONS. id = " . $id);
+	public function __construct( $id ) {
 		$this->ID = $id;
 	}
 
@@ -47,6 +48,7 @@ class delivery {
 
 		return $data;
 	}
+
 	public static function CreateFromOrder( $order_id ) {
 
 		$id = get_delivery_id( $order_id );
@@ -60,6 +62,17 @@ class delivery {
 
 	private function SetOrderID( $order_id ) {
 		$this->d_OrderID = $order_id;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getUserId() {
+		if ( ! $this->user_id ) {
+			$this->user_id = sql_query_single_scalar( "SELECT client_from_delivery(id) FROM im_delivery WHERE id = " . $this->user_id );
+		}
+
+		return $this->user_id;
 	}
 
 	public function DeliveryDate() {
@@ -128,7 +141,7 @@ class delivery {
 		return sql_query_single_scalar( $sql );
 	}
 
-	function print_delivery( $document_type, $operation, $margin = false ) {
+	function PrintDeliveries( $document_type, $operation, $margin = false ) {
 		print $this->delivery_text( $document_type, $operation, $margin );
 	}
 
@@ -136,7 +149,7 @@ class delivery {
 		global $delivery_fields_names;
 		global $header_fields;
 		global $debug;
-		if ( $debug ) {
+		if ( false ) {
 			print "Document type " . $document_type . "<br/>";
 			print "operation: " . $operation . "<br/>";
 		}
@@ -203,14 +216,14 @@ class delivery {
 
 		$data = "";
 
-		$client_id   = $this->GetCustomerID();
+//		$client_id   = $this->GetCustomerID();
 //		print "cid=" . $client_id . "<br/>";
-		$client_type = customer_type( $client_id );
+//		$client_type = customer_type( $client_id );
 //		 print $client_type . "XX<br/>";
 
-		if ( $client_type > 0 ) {
-			$data .= "תעריף " . sql_query_single_scalar( "SELECT type FROM im_client_types WHERE id = " . $client_type );
-		}
+//		if ( $client_type > 0 ) {
+//			$data .= "תעריף " . sql_query_single_scalar( "SELECT type FROM im_client_types WHERE id = " . $client_type );
+//		}
 
 		$delivery_loaded = false;
 		$volume_line = false;
@@ -245,7 +258,7 @@ class delivery {
 				if ( $row["product_name"] == "הנחת כמות" ) {
 					$volume_line = true;
 				}
-				$data .= $this->delivery_line( $show_fields, ImDocumentType::delivery, $row["id"], $client_type, $operation, $margin, $style );
+				$data .= $this->delivery_line( $show_fields, ImDocumentType::delivery, $row["id"], 0, $operation, $margin, $style );
 			}
 		} else {
 			// For group orders - first we get the needed products and then accomulate the quantities.
@@ -269,14 +282,14 @@ class delivery {
 				$order_item_ids = sql_query_array_scalar( $items_sql );
 
 				// $data .= $this->delivery_line($show_fields, $prod_id, $quantity_ordered, "", $quantity_ordered, $price, $has_vat, $prod_id, $refund, $unit );
-				$data .= $this->delivery_line( $show_fields, $document_type, $order_item_ids, $client_type, $operation, $margin, $style, $var_id );
+				$data .= $this->delivery_line( $show_fields, $document_type, $order_item_ids, 0, $operation, $margin, $style, $var_id );
 				// print "ex " . $expand_basket . " is " . is_basket($prod_id) . "<br/>";
 
 				if ( $expand_basket && is_basket( $prod_id ) ) {
 					$quantity_ordered = get_order_itemmeta( $order_item_ids, '_qty' ); //, $client_type, $operation, $data );
 
 					$this->expand_basket( $prod_id, $quantity_ordered, 0, $show_fields, $document_type,
-						$order_item_ids, $client_type, $operation, $data );
+						$order_item_ids, 0, $operation, $data );
 				}
 			}
 
@@ -352,14 +365,6 @@ class delivery {
 		return "$data";
 	}
 
-	private function GetCustomerID() {
-		if ( is_array( $this->d_OrderID ) ) {
-			return order_get_customer_id( $this->d_OrderID[0] );
-		}
-
-		return order_get_customer_id( $this->d_OrderID );
-	}
-
 	public function delivery_line( $show_fields, $document_type, $line_ids, $client_type, $operation, $margin = false, $style = null, $var_id = 0 ) {
 		global $delivery_fields_names;
 
@@ -399,6 +404,8 @@ class delivery {
 		}
 		$has_vat = null;
 
+		$P = null;
+
 		if ( $load_from_order ) {
 			// print "lid=". $line_id . "<br/>";
 			$sql                                = "SELECT order_item_name FROM wp_woocommerce_order_items WHERE order_item_id = " . $line_id;
@@ -409,6 +416,7 @@ class delivery {
 			$this->order_total                  += $order_line_total;
 			$line[ DeliveryFields::order_line ] = $order_line_total;
 			$prod_id                            = get_order_itemmeta( $line_id, '_product_id' );
+			$P                                  = new Product( $prod_id );
 			// $line_price       = get_order_itemmeta( $line_id, '_line_total' );
 
 			// Todo: handle prices
@@ -442,6 +450,7 @@ class delivery {
 			}
 
 			$prod_id          = $row[0];
+			$P                = new Product( $prod_id );
 			$prod_name        = $row[1];
 			$quantity_ordered = $row[2];
 			$unit_q           = $row[3];
@@ -468,8 +477,7 @@ class delivery {
 		// $value .= "<td>" . $quantity_ordered . "</td>";                             // 2- ordered
 
 		if ( is_null( $has_vat ) ) {
-			if ( get_vat_percent( $prod_id ) == 0 ) {
-				// print "<br/>" . $prod_id . " " . get_vat_percent($prod_id) . " " . get_product_name($prod_id) ;
+			if ( $P->getVatPercent() == 0 ) {
 				$has_vat = false;
 			} else {
 				$has_vat = true;
@@ -510,9 +518,11 @@ class delivery {
 						break;
 					default:
 				}
-				$line[ DeliveryFields::delivery_line ] = $delivery_line;
-				$this->delivery_total += $delivery_line;
-				if ( $has_vat ) {
+				if ( isset( $delivery_line ) ) {
+					$line[ DeliveryFields::delivery_line ] = $delivery_line;
+					$this->delivery_total                  += $delivery_line;
+				}
+				if ( $has_vat and isset( $delivery_line ) ) {
 					$line[ DeliveryFields::line_vat ] = round( $delivery_line / ( 100 + $global_vat ) * $global_vat, 2 );
 					// round($delivery_line / (100 + $global_vat));
 
@@ -564,6 +574,14 @@ class delivery {
 		return gui_row( $line, $this->line_number, $show_fields, $sums, $delivery_fields_names, $style );
 	}
 
+	function OrderQuery() {
+		if ( is_array( $this->d_OrderID ) ) {
+			return "order_id in (" . comma_implode( $this->d_OrderID ) . ")";
+		} else {
+			return "order_id = " . $this->d_OrderID;
+		}
+	}
+
 
 //	public function delivery_line_group($show_fields, $document_type, $line_ids, $client_type, $operation, $margin = false, $style = null)
 //	{
@@ -581,14 +599,6 @@ class delivery {
 	// If Document is delivery, line_id is delivery line id.
 	// If Document is order, line_id is order line id.
 
-	function OrderQuery() {
-		if ( is_array( $this->d_OrderID ) ) {
-			return "order_id in (" . comma_implode( $this->d_OrderID ) . ")";
-		} else {
-			return "order_id = " . $this->d_OrderID;
-		}
-	}
-
 	function expand_basket( $basket_id, $quantity_ordered, $level, $show_fields, $document_type, $line_id, $client_type, $edit, &$data ) {
 		global $conn, $delivery_fields_names;
 		$sql2 = 'SELECT DISTINCT product_id, quantity FROM im_baskets WHERE basket_id = ' . $basket_id;
@@ -596,6 +606,8 @@ class delivery {
 		$result2 = mysqli_query( $conn, $sql2 );
 		while ( $row2 = mysqli_fetch_assoc( $result2 ) ) {
 			$prod_id  = $row2["product_id"];
+			// print $prod_id . "<br/>";
+			$P        = new Product( $prod_id );
 			$quantity = $row2["quantity"];
 			if ( is_basket( $prod_id ) ) {
 //				$this->expand_basket( $prod_id, $client_type, $quantity_ordered * $quantity, $data, $level + 1 );
@@ -615,8 +627,10 @@ class delivery {
 				$line[ DeliveryFields::product_name ] = "===> " . get_product_name( $prod_id );
 				$line[ DeliveryFields::price ]        = get_price( $prod_id, $client_type );
 				$has_vat                              = true;
-				if ( get_vat_percent( $prod_id ) == 0 ) {
-					//print "has vat false<br/>";
+
+//				if ($P-> == 149) var_dump($P);
+				if ( ! $P->getVatPercent() ) { // get_vat_percent( $prod_id ) == 0 ) {
+//					print "has vat false<br/>";
 					$has_vat = false;
 				}
 				$line[ DeliveryFields::product_id ] = $prod_id;
@@ -649,17 +663,18 @@ class delivery {
 		}
 	}
 
-	// function expand_basket( $basket_id, $client_type, $quantity_ordered, &$data, $level ) {
-	// Called when creating a delivery from an order.
-	// After the basket line is shown, we print here the basket lines and basket discount line.
-
 	public function DeliveryFee() {
 		$sql = 'SELECT fee FROM im_delivery WHERE id = ' . $this->ID;
 
+		// print $sql;
 		// my_log($sql);
 
 		return sql_query_single_scalar( $sql);
 	}
+
+	// function expand_basket( $basket_id, $client_type, $quantity_ordered, &$data, $level ) {
+	// Called when creating a delivery from an order.
+	// After the basket line is shown, we print here the basket lines and basket discount line.
 
 	function send_mail( $more_email = null, $edit = false ) {
 		print $more_email;
@@ -669,7 +684,14 @@ class delivery {
 		global $mail_sender;
 
 		$order_id  = get_order_id( $this->ID );
+		if ( ! ( $order_id > 0 ) ) {
+			die ( "can't get order id from delivery " . $this->ID );
+		}
+		// print "oid= " . $order_id . "<br/>";
 		$client_id = order_get_customer_id( $this->OrderId() );
+		if ( ! ( $client_id > 0 ) ) {
+			die ( "can't get client id from order " . $this->OrderId() );
+		}
 
 		my_log( __FILE__, "client_id = " . $client_id );
 
@@ -722,8 +744,8 @@ class delivery {
 		}
 		print "From: " . $support_email . "<br/>";
 		print "To: " . $to . "<br/>";
-		print "Message:<br/>";
-		print $message . "<br/>";
+		// print "Message:<br/>";
+		// print $message . "<br/>";
 		$subject = "משלוח מספר" . $this->ID . " בוצע";
 		if ( $edit ) {
 			$subject = "משלוח מספר " . $this->ID . " - תיקון";
@@ -731,5 +753,13 @@ class delivery {
 		send_mail( $subject, $to, $message );
 
 		// print "mail sent to " . $to . "<br/>";
+	}
+
+	private function GetCustomerID() {
+		if ( is_array( $this->d_OrderID ) ) {
+			return order_get_customer_id( $this->d_OrderID[0] );
+		}
+
+		return order_get_customer_id( $this->d_OrderID );
 	}
 }

@@ -1,6 +1,6 @@
 <?php
 // error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
+// ini_set( 'display_errors', 'on' );
 
 /**
  * Created by PhpStorm.
@@ -408,7 +408,11 @@ function comma_implode( $array ) {
 function get_customer_name( $customer_id ) {
 	$user = get_user_by( "id", $customer_id );
 
-	return $user->user_firstname . " " . $user->user_lastname;
+	if ( $user ) {
+		return $user->user_firstname . " " . $user->user_lastname;
+	}
+
+	return "לא נבחר לקוח";
 }
 
 function get_customer_email( $customer_id ) {
@@ -584,7 +588,7 @@ function get_buy_price( $prod_id, $supplier_id = 0 ) {
 	return - 1;
 }
 
-function customer_type( $client_id ) {
+function customer_type_name( $client_id ) {
 	$key = get_user_meta( $client_id, '_client_type', true );
 	// print "YY" . $key . "<br/>";
 
@@ -592,7 +596,18 @@ function customer_type( $client_id ) {
 		return 0;
 	}
 
-	return sql_query_single_scalar( "SELECT id FROM im_client_types WHERE type = " . quote_text( $key ) );
+	return $key;
+	// return sql_query_single_scalar( "SELECT name FROM im_client_types WHERE type = " . quote_text( $key ) );
+}
+
+function customer_type( $client_id ) {
+	$key = get_user_meta( $client_id, '_client_type', true );
+
+	if ( is_null( $key ) ) {
+		return 0;
+	}
+
+	return $key;
 }
 
 function gui_select_worker() {

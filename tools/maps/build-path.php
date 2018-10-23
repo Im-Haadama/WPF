@@ -190,6 +190,15 @@ function get_distance( $order_a, $order_b ) {
 		return $ds;
 	}
 	$r        = do_get_distance( map_get_order_address( $order_a ), map_get_order_address( $order_b ) );
+	if ( ! $r ) {
+		// One is invalid
+		if ( do_get_distance( $order_a, $order_a ) ) {
+			print "כתובת לא תקינה להזמנה " . $order_a . map_get_order_address( $order_a );
+		}
+		if ( do_get_distance( $order_b, $order_b ) ) {
+			print "כתובת לא תקינה להזמנה " . $order_b . map_get_order_address( $order_b );
+		}
+	}
 	$distance = $r[0];
 	$duration = $r[1];
 	// print get_client_address($order_a) . " " . get_client_address($order_b) . " " . $d . "<br/>";
@@ -215,7 +224,7 @@ function get_distance_duration( $user_a, $user_b ) {
 }
 
 function do_get_distance( $a, $b ) {
-	$start = new DateTime();
+	// $start = new DateTime();
 	if ( $a == $b ) {
 		return 0;
 	}
@@ -258,6 +267,12 @@ function do_get_distance( $a, $b ) {
 //	debug_time1("google end");
 
 	$j = json_decode( $result );
+
+	if ( ! $j or ! isset( $j->routes[0] ) ) {
+		print "not found " . $a . " " . $b . "<br/>";
+
+		return null;
+	}
 
 	$v = $j->routes[0]->legs[0]->distance->value;
 	$t = $j->routes[0]->legs[0]->duration->value;

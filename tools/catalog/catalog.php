@@ -1,4 +1,8 @@
 <?php
+
+// error_reporting( E_ALL );
+// ini_set( 'display_errors', 'on' );
+
 /**
  * Created by PhpStorm.
  * User: agla
@@ -68,7 +72,7 @@ class Catalog {
 		return $post_id;
 	}
 
-	static function DoCreateProduct( $product_name, $sell_price, $supplier_name, $categ = null, $image_path ) {
+	static function DoCreateProduct( $product_name, $sell_price, $supplier_name, $categ = null, $image_path = null, $sale_price = 0 ) {
 		$post_information = array(
 			'post_title'  => $product_name,
 			// 'post_content' => 'this is new item shop',
@@ -81,7 +85,9 @@ class Catalog {
 		update_post_meta( $post_id, "_price", $sell_price );
 		update_post_meta( $post_id, "supplier_name", $supplier_name );
 		update_post_meta( $post_id, "_visibility", "visible" );
-
+		if ( $sale_price ) {
+			update_post_meta( $post_id, "_sale_price", $sale_price );
+		}
 		if ( $categ ) {
 			wp_set_object_terms( $post_id, $categ, 'product_cat' );
 		}// Get The image
@@ -172,6 +178,7 @@ class Catalog {
 	}
 
 	static function UpdateProduct( $prod_id, &$line, $details = false ) {
+		$P = new Product( $prod_id );
 		// print "update product " . $prod_id . "<br/>";
 		if ( ! ( $prod_id > 0 ) ) {
 			print __METHOD__ . " bad prod_id: " . $prod_id . "<br/>";
@@ -190,15 +197,18 @@ class Catalog {
 		// Current infoAd
 		$current_supplier_name = get_meta_field( $prod_id, "supplier_name" );
 		$current_price         = get_price( $prod_id );
-		$line                  .= gui_cell( $prod_id );
-		$line                  .= gui_cell( get_product_name( $prod_id ) );
+		if ( $prod_id == 3518 ) {
+			print "CP = " . $current_price . "<br/>";
+		}
+		$line .= gui_cell( $prod_id );
+		$line .= gui_cell( get_product_name( $prod_id ) );
 		// print "prod_id: " . $prod_id . "<br/>";
 
 		// Find alternatives
 		$alternatives = alternatives( $prod_id, $details );
 		if ( $debug_product == $prod_id ) {
-			print "count= " . count( $alternatives ) . " ";
-			var_dump( $alternatives );
+			print "count= " . count( $alternatives ) . "<br/>";
+			// var_dump( $alternatives );
 		}
 
 		// If no alternative to a variation, check alternative from parent
@@ -222,6 +232,11 @@ class Catalog {
 		// print $count . "<br/>";
 
 		if ( $count == 0 ) {
+			// Product is in stock. Do nothing.
+			if ( $P->getStockManaged() and ( $P->getStock() > 0 ) ) {
+				return true;
+			}
+
 			if ( get_post_status( $prod_id ) == 'draft' ) {
 				return false;
 			}
@@ -247,16 +262,17 @@ class Catalog {
 			print "best:<br/>";
 			var_dump( $best );
 		}
-		$best_price       = $best->getPrice();
+		$best_price       = $best->getSellPrice();
 		$best_supplier    = $best->getSupplierId();
 		$best_pricelistid = $best->getId();
 		$sale_price       = $best->getSalePrice();
+
 		if ( $sale_price > 0 and $sale_price < $best_price )
 			$new_price = $sale_price;
 		else $new_price = $best_price;
 
-		$line             .= gui_cell( get_supplier_name( $best_supplier ) . " " . $best_price );
-		$prod_status      = sql_query_single_scalar( "SELECT post_status FROM wp_posts WHERE id=" . $prod_id );
+		$line        .= gui_cell( get_supplier_name( $best_supplier ) . " " . $best_price );
+		$prod_status = sql_query_single_scalar( "SELECT post_status FROM wp_posts WHERE id=" . $prod_id );
 		// print $prod_id . " " . $prod_status . "<br/>";
 
 		$status = "";
@@ -296,12 +312,8 @@ class Catalog {
 			my_log( "id = " . $ids[ $pos ] );
 			$product_id = $ids[ $pos ];
 
-			$my_post                = array();
-			$my_post['ID']          = $product_id;
-			$my_post['post_status'] = 'draft';
-
-			// Update the post into the database
-			wp_update_post( $my_post );
+			$p = new Product( $product_id );
+			$p->Draft();
 		}
 	}
 
@@ -358,8 +370,8 @@ class Catalog {
 			my_log( "updating variation " . $v . " to pricelist " . $pricelist_id );
 			$var = new WC_Product_Variation( $v );
 			update_post_meta( $v, "supplier_name", get_supplier_name( $supplier ) );
-			update_post_meta( $v, "_regular_price", $price );
-			update_post_meta( $v, "_price", $price );
+			update_post_meta( $v, "_regular_price", $regular_price );
+			update_post_meta( $v, "_price", $regular_price );
 			update_post_meta( $v, "buy_price", $pricelist["price"] );
 		}
 		mysqli_query( $conn, "UPDATE wp_posts SET post_modified = NOW() WHERE id = " . $product_id );
@@ -371,7 +383,7 @@ class Catalog {
 			foreach ( $bundles as $bundle_id ) {
 				my_log( "updating bundle " . $bundle_id );
 				// TODO: update bundle
-				$b = Bundle::createFromDb( $bundle_id );
+				$b = Bundle::CreateFromDb( $bundle_id );
 				$b->Update();
 			}
 		}
@@ -470,6 +482,37 @@ class Catalog {
 //        return sql_query_array_scalar($sql);
 //    }
 
+	static function GetProdOptions( $product_name ) {
+		$array = array();
+
+		$product_name_prf = name_prefix( $product_name );
+//        my_log($product_name_prf);
+
+		if ( $pos = strpos( $product_name, " " ) ) {
+			$product_name_prf = substr( $product_name, 0, $pos );
+		}
+		$sql1 = 'SELECT DISTINCT id, post_title FROM `wp_posts` WHERE '
+		        . ' post_type IN (\'product\', \'product_variation\')'
+		        . ' AND (post_status = \'publish\' OR post_status = \'draft\')'
+		        . ' AND (post_title LIKE \'%' . addslashes( $product_name_prf ) . '%\' '
+		        . ' OR id IN '
+		        . '(SELECT object_id FROM wp_term_relationships WHERE term_taxonomy_id IN '
+		        . '(SELECT term_taxonomy_id FROM wp_term_taxonomy WHERE term_id IN '
+		        . "(SELECT term_id FROM wp_terms WHERE name LIKE '%" . addslashes( $product_name_prf ) . "%'))))"
+		        . " ORDER BY 2";
+
+//	print $sql1 . "<br/>";
+//	die(1);
+
+		$result1 = sql_query( $sql1 );
+
+		while ( $row1 = mysqli_fetch_assoc( $result1 ) ) {
+			array_push( $array, $row1 );
+		}
+
+		return $array;
+	}
+
 	function DeleteMappingByPricelistId( $pricelist_id ) {
 		my_log( "delete_mapping", "catalog-map.php" );
 
@@ -499,6 +542,7 @@ class Catalog {
 			$this->AddMapping( - 1, $pricelist_id, MultiSite::LocalSiteID() );
 		}
 	}
+
 }
 
 function best_alternatives( $alternatives, $debug = false ) {
@@ -507,13 +551,10 @@ function best_alternatives( $alternatives, $debug = false ) {
 	$min  = 1111111;
 	$best = null;
 	for ( $i = 0; $i < count( $alternatives ); $i ++ ) {
-		if ( $debug ) {
-			print "option: " . $i . " " . $alternatives[ $i ][0] . " " . $alternatives[ $i ][1] . " " . $alternatives[ $i ][3] . "<br/>";
-		}
 		//$price, $supplier, $sale_price = '', $terms = null
 		$price = calculate_price( $alternatives[ $i ]->getPrice(), $alternatives[ $i ]->getSupplierId(),
 			$alternatives[ $i ]->getSalePrice());
-		//print "price: " . $price . "<br/>";
+		print "price: " . $price . "<br/>";
 		my_log( "price $price" );
 		if ( $price < $min ) {
 			$best = $alternatives[ $i ];
@@ -670,3 +711,6 @@ function alternatives( $prod_id, $details = false )
 	return $rows;
 }
 
+function name_prefix( $name ) {
+	return strtok( $name, "-()" );
+}

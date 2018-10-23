@@ -10,7 +10,8 @@ if ( ! defined( "TOOLS_DIR" ) ) {
 }
 
 require_once( TOOLS_DIR . "/account/account.php" );
-// require_once( TOOLS_DIR . "/business/business.php" );
+require_once( TOOLS_DIR . "/business/business.php" );
+
 
 function people_add_activity( $id, $date, $start, $end, $project_id, $traveling, $expense_text, $expense ) {
 	if ( strlen( $traveling ) == 0 ) {
@@ -161,6 +162,7 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 
 	if ( ! $result )
 		return "אין מידע";
+	$counters["base"] = $counters["125"] = $counters["150"] = 0;
 	while ( $row = mysqli_fetch_row( $result ) ) {
 		$worker_id = $row[4];
 		//print $row[0];
@@ -182,12 +184,10 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 		$line  .= "<td>" . $start->format( "G:i" ) . "</td>";
 		$line  .= "<td>" . $end->format( "G:i" ) . "</td>";
 
-		$total_dur        = $dur->h + $dur->i / 60;
-		$dur_base         = min( $total_dur, 8.5 );
-		$dur_125          = min( 2, $total_dur - $dur_base );
-		$dur_150          = $total_dur - $dur_base - $dur_125;
-		if ( $daily ) {
-		}
+		$total_dur = $dur->h + $dur->i / 60;
+		$dur_base  = min( $total_dur, 25 / 3 );
+		$dur_125   = min( 2, $total_dur - $dur_base );
+		$dur_150   = $total_dur - $dur_base - $dur_125;
 
 		$line             .= "<td>" . float_to_time( $dur_base ) . "</td>";
 		$line             .= "<td>" . float_to_time( $dur_125 ) . "</td>";
@@ -272,8 +272,11 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 		$total_sal += $total_expense;
 		$data      .= "סהכ " . $total_sal . "<br/>";
 
-		$b = balance( date( 'Y-m-j', strtotime( "last day of " . $year . "-" . $month ) ), $user_id );
-		//
+		$r = "people/people-post.php?operation=get_balance&date=" .
+		     date( 'Y-m-j', strtotime( "last day of " . $year . "-" . $month ) ) . "&user_id=" . $user_id;
+		// print $r;
+		$b = strip_tags( MultiSite::Execute( $r, 4 ) );
+		//print "basket: " . $b . "<br/>";
 
 		if ( $b > 0 ) {
 			$data .= " חיובי סלים " . round( $b, 2 );

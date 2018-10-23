@@ -42,8 +42,8 @@ if ( ! $manager ) {
 <meta charset="UTF-8">
 <head>
     <script>
-        var site_url = <? print '"' . get_site_url() . '"';?>;
-        var key = '<? print get_key(); ?>';
+        var site_url = <?php print '"' . get_site_url() . '"';?>;
+        var key = '<?php print get_key(); ?>';
 
         function addTransaction() {
             var type = document.getElementById("transaction_type").value;
@@ -85,7 +85,7 @@ if ( ! $manager ) {
                     table.innerHTML = xmlhttp1.response;
                 }
             }
-            var request1 = site_url + "/tools/account/get-customer-account-post.php?operation=table&customer_id=" + <? print $customer_id; ?>;
+            var request1 = site_url + "/tools/account/account-post.php?operation=table&customer_id=" + <?php print $customer_id; ?>;
             xmlhttp1.open("GET", request1, true);
             xmlhttp1.send();
             xmlhttp1.onloadend = function () {
@@ -104,7 +104,7 @@ if ( ! $manager ) {
                     label.innerHTML = xmlhttp2.response;
                 }
             }
-            var request2 = site_url + "/tools/account/get-customer-account-post.php?key=" + key + "&operation=total&customer_id=" + <? print $customer_id; ?>;
+            var request2 = site_url + "/tools/account/account-post.php?key=" + key + "&operation=total&customer_id=" + <?php print $customer_id; ?>;
             xmlhttp2.open("GET", request2, true);
             xmlhttp2.send();
             xmlhttp2.onloadend = function () {
@@ -262,7 +262,8 @@ print  "</h1> </center>";
 
 if ( $manager ) {
 
-	$client_id = get_invoice_user_id( $customer_id );
+	$invoice   = new Invoice4u( $invoice_user, $invoice_password );
+	$client_id = $invoice->GetInvoiceUserId( $customer_id );
 //	var_dump($client);
 
 	$user_info = gui_table( array(
@@ -337,7 +338,7 @@ if ( $manager ) {
         for (var i = 0; i < collection.length; i++) {
             if (collection[i].checked) {
                 delivery_count++;
-                total += parseFloat(get_value(table.rows[i + 1].cells[2]));
+                total += parseFloat(get_value_by_name("amo_" + collection[i].id.substring(3)));
 
             }
         }
@@ -375,7 +376,7 @@ if ( $manager ) {
 
         for (var i = 0; i < collection.length; i++) {
             if (collection[i].checked) {
-                var del_id = table.rows[i + 1].cells[6].firstChild.innerHTML;
+                var del_id = collection[i].id.substring(3); // table.rows[i + 1].cells[6].firstChild.innerHTML;
                 del_ids.push(del_id);
             }
         }
@@ -407,11 +408,12 @@ if ( $manager ) {
             "&change=" + change.innerHTML +
             "&ids=" + del_ids.join() +
             "&user_id=" + <?php print $customer_id; ?>;
+//        alert("fire");
         // alert(request);
         xmlhttp.open("GET", request, true);
         xmlhttp.send();
-//        }
     }
+
     function create_invoice() {
         document.getElementById('btn_invoice').disabled = true;
         var collection = document.getElementsByClassName("trans_checkbox");
@@ -421,7 +423,7 @@ if ( $manager ) {
 
         for (var i = 0; i < collection.length; i++) {
             if (collection[i].checked) {
-                var del_id = table.rows[i + 1].cells[6].firstChild.innerHTML;
+                var del_id = collection[i].id.substring(3); // table.rows[i + 1].cells[6].firstChild.innerHTML;
                 del_ids.push(del_id);
                 total = total + parseInt(table.rows[i + 1].cells[2].firstChild.data);
             }
@@ -439,6 +441,37 @@ if ( $manager ) {
         var request = "account-post.php?operation=create_invoice" +
             "&ids=" + del_ids.join() +
             "&user_id=" + <?php print $customer_id; ?>;
+        xmlhttp.open("GET", request, true);
+        xmlhttp.send();
+    }
+
+    function send_deliveries() {
+        document.getElementById('btn_send').disabled = true;
+        var collection = document.getElementsByClassName("trans_checkbox");
+        var table = document.getElementById("transactions");
+        var del_ids = new Array();
+        var total = 0;
+
+        for (var i = 0; i < collection.length; i++) {
+            if (collection[i].checked) {
+                var del_id = collection[i].id.substring(3); // table.rows[i + 1].cells[6].firstChild.innerHTML;
+                del_ids.push(del_id);
+                total = total + parseInt(table.rows[i + 1].cells[2].firstChild.data);
+            }
+        }
+        xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+            // Wait to get query result
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+            {
+                response = xmlhttp.responseText;
+                logging.innerHTML += response;
+                document.getElementById('btn_send').disabled = false;
+
+            }
+        }
+        var request = "account-post.php?operation=send" +
+            "&del_ids=" + del_ids.join();
         xmlhttp.open("GET", request, true);
         xmlhttp.send();
     }
@@ -508,6 +541,8 @@ print gui_table( array(
 ) );
 print '<button id="btn_add" onclick="addTransaction()">הוסף תנועה</button>';
 print gui_button( "btn_invoice", "create_invoice()", "הפק חשבונית מס" );
+print gui_button( "btn_send", "send_deliveries()", "שלח תעודות משלוח" );
+
 
 ?>
 </body>

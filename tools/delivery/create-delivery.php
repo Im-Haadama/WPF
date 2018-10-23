@@ -1,8 +1,12 @@
 <?php
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
 // include_once( "../tools_wp_login.php" );
 // include_once( "../orders/orders-common.php" );
 include_once( "delivery.php" );
 // include_once( "../multi-site/multi-site.php" );
+
 
 print header_text( false );
 
@@ -41,7 +45,11 @@ $contents = file_get_contents( $script_file );
 <?php
 
 // display form for creating invoice. If id already exist, open for edit
-$id       = $_GET["id"];
+$id = null;
+
+if ( isset( $_GET["id"] ) ) {
+	$id = $_GET["id"];
+}
 if ( isset( $_GET["refund"] ) ) {
 	$refund = true;
 }
@@ -54,7 +62,7 @@ if ( $id > 0 ) {
 	print gui_header( 3, "הזמנה מספר " . get_order_id( $id ) );
 
 	$d = new Delivery( $id );
-	$d->print_delivery( ImDocumentType::delivery, ImDocumentOperation::edit );
+	$d->PrintDeliveries( ImDocumentType::delivery, ImDocumentOperation::edit );
 
 	//$d = new delivery( $id );
 	print "</form>";
@@ -65,12 +73,16 @@ if ( $id > 0 ) {
 	// print gui_header( 2, "יצירת תעודת משלוח להזמנה מספר " . $order_id, true );
 
 	if ( sql_query_single_scalar( "select order_is_group(" . $order_id . ")" ) == 1 ) {
-		// print "הזמנה קבוצתית";
+//		 print "הזמנה קבוצתית";
 		$sql       = 'SELECT posts.id as id '
 		             . ' FROM `wp_posts` posts'
 		             . " WHERE post_status LIKE '%wc-processing%'  "
 		             . " and order_user(id) = " . $client_id;
 		$order_ids = sql_query_array_scalar( $sql );
+		if ( count( $order_ids ) == 0 ) {
+			print "אין הזמנות ללקוח הזמנות במצב טיפול<br/>";
+			die ( 1 );
+		}
 		print " הזמנות " . comma_implode( $order_ids );
 		print order_info_data( $order_ids, false, "יצירת תעודת משלוח ל" );
 		$d = delivery::CreateFromOrder( $order_ids );
@@ -81,7 +93,7 @@ if ( $id > 0 ) {
 	}
 	// var_dump($orders);
 
-	$d->print_delivery( ImDocumentType::delivery, true );
+	$d->PrintDeliveries( ImDocumentType::delivery, true );
 	print "</form>";
 }
 

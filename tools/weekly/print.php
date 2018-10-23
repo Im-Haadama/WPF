@@ -105,16 +105,17 @@ function print_mission( $mission_id_filter = null ) {
 	$path_orders = array();
 	find_route_1( 1, $orders, $path_orders );
 	foreach ( $path_orders as $id ) {
+		update_post_meta( $id, "printed", 1 );
 		$user_id = order_get_customer_id( $id );
 		if ( array_key_exists( $user_id, $grouped_orders ) ) {
 			print order_info_data( $grouped_orders[ $user_id ][0], true );
 			$d = Delivery::CreateFromOrder( $grouped_orders[ $user_id ] );
-			$d->print_delivery( ImDocumentType::delivery, ImDocumentOperation::collect );
+			$d->PrintDeliveries( ImDocumentType::delivery, ImDocumentOperation::collect );
 
 		} else {
 			print order_info_data( $id, false );
 			$D = Delivery::CreateFromOrder( $id );
-			$D->print_delivery( ImDocumentType::delivery, ImDocumentOperation::collect );
+			$D->PrintDeliveries( ImDocumentType::delivery, ImDocumentOperation::collect );
 		}
 	}
 

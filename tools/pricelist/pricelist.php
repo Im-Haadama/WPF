@@ -14,7 +14,8 @@ require_once( TOOLS_DIR . '/catalog/catalog.php' );
 require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 require_once( TOOLS_DIR . '/multi-site/multi-site.php' );
 require_once( TOOLS_DIR . '/wp/Product.php' );
-
+require_once( "../orders/orders-common.php" );
+require_once( "../orders/Order.php" );
 
 class PricelistItem {
 	private $id;
@@ -33,7 +34,7 @@ class PricelistItem {
 
 		$result = sql_query_single_assoc( $sql );
 		if ( $result == null ) {
-			print "$pricelist_id not found<br/>";
+			print "pricelist item $pricelist_id not found<br/>";
 			die( 1 );
 		}
 		$this->id                    = $pricelist_id;
@@ -136,7 +137,7 @@ class UpdateResult {
 class PriceList {
 	private $SupplierID = 0;
 
-	function PriceList( $id ) {
+	public function __construct( $id ) {
 		$this->SupplierID = $id;
 	}
 
@@ -162,6 +163,19 @@ class PriceList {
 		return;
 	}
 
+	function Refresh() {
+		print "start refresh<br/>";
+		$priceslist_items = sql_query_array_scalar( "SELECT id FROM im_supplier_price_list WHERE supplier_id = " . $this->SupplierID );
+		foreach ( $priceslist_items as $pricelist_id ) {
+			$prod_ids = Catalog::GetProdID( $pricelist_id );
+			foreach ( $prod_ids as $prod_id ) {
+				print "update " . $prod_id . get_product_name( $prod_id ) . "<br>";
+
+				Catalog::UpdateProduct( $prod_id, $line );
+			}
+		}
+	}
+
 	function SiteId() {
 		return sql_query_single_scalar( "SELECT site_id FROM im_suppliers WHERE id =" . $this->SupplierID );
 	}
@@ -183,6 +197,9 @@ class PriceList {
 	}
 
 	function PrintHTML() {
+
+		Order::CalculateNeeded( $needed_products );
+
 		$catalog = new Catalog();
 
 		$data = "";
@@ -196,36 +213,46 @@ class PriceList {
 
 		$result = sql_query( $sql );
 
-		$data .= "<tr>";
-		$data .= "<td>בחר</td>";
-		$data .= "<td>קוד מוצר</td>";
-		$data .= "<td>שם מוצר</td>";
-		$data .= "<td>תאריך שינוי</td>";
-		$data .= "<td>מחיר קנייה</td>";
-		$data .= "<td>מחיר מחושב</td>";
-		$data .= "<td>פריט מקושר</td>";
-		$data .= "<td>מחיר מכירה</td>";
-		$data .= "<td>מחיר מבצע</td>";
-		$data .= "<td>קטגוריות</td>";
-		$data .= "<td>מזהה</td>";
-		$data .= "<td>מנוהל מלאי</td>";
-		$data .= "<td>כמות במלאי</td>";
-		$data .= "</tr>";
+		$table_rows = array(
+			array(
+				"בחר",
+				"קוד פריט",
+				"שם פריט",
+				"תאריך שינוי",
+				"מחיר קנייה",
+				"מחיר מחושב",
+				"שם מוצר",
+				"מחיר מכירה",
+				"מחיר מבצע",
+				"קטגוריות",
+				"מזהה",
+				"מנוהל מלאי",
+				"כמות במלאי",
+				"כמות בהזמנות פתוחות"
+			)
+		);
 
 		// Add new item fields
-
 		while ( $row = mysqli_fetch_row( $result ) ) {
 			$pl_id     = $row[3];
 			$link_data = $catalog->GetProdID( $pl_id );
-			$prod_id   = $link_data[0];
+			$prod_id   = "";
+			$map_id    = "";
+			if ( $link_data ) {
+				$prod_id = $link_data[0];
+				$map_id  = null;
 
-			$map_id = $link_data[1];
+				if ( isset( $link_data[1] ) ) {
+					$map_id = $link_data[1];
+				}
+			}
 			// print $prod_id . " " . $map_id . "<br/>";
-			$data .= print_html_line( $row[0], $row[1], $row[2], $pl_id, $row[4], $row[5], $prod_id, true, $map_id );
+			array_push( $table_rows, print_html_line( $row[0], $row[1], $row[2], $pl_id, $row[4], $row[5], $prod_id, true, $map_id, $needed_products ) );
 			// $data .= $line;
 		}
 
-		$data .= "<tr>";
+		$data = gui_table( $table_rows );
+		// $data .= "<tr>";
 		$data .= "<td>" . gui_button( "add", "add_item()", "הוסף" ) . "</td>";
 		$data .= gui_cell( gui_input( "product_code", "" ) );
 		$data .= gui_cell( gui_input( "product_name", "" ) );
@@ -412,7 +439,6 @@ class PriceList {
 		       " WHERE id = " . $id;
 		mysqli_query( $conn, $sql );
 
-
 		$this->UpdateCatalog( $id );
 
 //        $this->ExecuteRemotes("pricelist/pricelist-post.php?operation=update_in_slave&price=" . $price .           "&line_id=" . $line_id);
@@ -442,7 +468,7 @@ class PriceList {
 	}
 
 	static function UpdateCatalog( $pricelist_id ) {
-		$debug    = false;
+		$debug    = true;
 		$prod_ids = Catalog::GetProdID( $pricelist_id );
 		$line     = "";
 		if ( $debug ) {
@@ -617,47 +643,76 @@ function pricelist_get_price( $prod_id ) {
 }
 
 
-function print_html_line( $product_name, $price, $date, $pl_id, $supplier_product_code, $factor, $linked_prod_id, $editable = true, $map_id ) {
+function print_html_line( $product_name, $price, $date, $pl_id, $supplier_product_code, $factor, $linked_prod_id, $editable = true, $map_id, $needed = null ) {
 	$calc_price = round( $price * ( 100 + $factor ) / 100, 1 );
 
-	$line = "<tr>";
-	$line .= "<td><input id=\"chk" . $pl_id . "\" class=\"product_checkbox\" type=\"checkbox\"></td>";
-	$line .= "<td>" . $supplier_product_code . "</td>";
-	$line .= "<td>" . $product_name . "</td>";
-	$line .= "<td>" . $date . "</td>";
+	$line = array();
+	array_push( $line, gui_checkbox( "chk" . $pl_id, "product_checkbox" ) );
+	//$line .= "<td><input id=\"chk" . $pl_id . "\" class=\"product_checkbox\" type=\"checkbox\"></td>";
+	array_push( $line, $supplier_product_code );
+	// $line .= "<td>" . $supplier_product_code . "</td>";
+	array_push( $line, $product_name );
+	//$line .= "<td>" . $product_name . "</td>";
+	array_push( $line, $date );
+	// $line .= "<td>" . $date . "</td>";
 
-	$line .= "<td>";
+	//$line .= "<td>";
 	if ( $editable ) {
-		$line .= gui_input( $pl_id, $price, array( 'onchange="changed(this)"' ) );
+		array_push( $line, gui_input( $pl_id, $price, array( 'onchange="changed(this)"' ) ) );
 	} else {
-		$line .= $price;
+		array_push( $line, $price );
 	}
-	$line .= "</td>";
+	// $line .= "</td>";
 	// $line .= '<td><input type="text" value="' . $price . '"</td>';
-	$line .= '<td>' . $calc_price . '</td>';
+	array_push( $line, $calc_price );
+	// $line .= '<td>' . $calc_price . '</td>';
 	if ( $linked_prod_id > 0 ) {
-		$line .= '<td>' . get_product_name( $linked_prod_id ) . '</td>';
-		$line .= '<td>' . get_price( $linked_prod_id ) . '</td>';
-		$line .= '<td>' . get_sale_price( $linked_prod_id ) . '</td>';
+		array_push( $line, get_product_name( $linked_prod_id ) );
+		array_push( $line, get_price( $linked_prod_id ) );
+		array_push( $line, get_sale_price( $linked_prod_id ) );
+		// $line .= '<td>' . get_product_name( $linked_prod_id ) . '</td>';
+		// $line .= '<td>' . get_price( $linked_prod_id ) . '</td>';
+//		$line .= '<td>' . get_sale_price( $linked_prod_id ) . '</td>';
 	} else {
 		if ( $linked_prod_id == - 1 ) {
-			$line .= "<td>לא למכירה</td><td></td><td></td>";
+			array_push( $line, "לא למכירה", "", "" );
+			// $line .= "<td>לא למכירה</td><td></td><td></td>";
 		} else {
-			$line .= "<td></td><td></td><td></td>";
+			//var_dump(Catalog::GetProdOptions($product_name));die (1);
+			array_push( $line, gui_select( "prd" . $pl_id, "post_title", Catalog::GetProdOptions( $product_name ), "onchange=selected(this)", "" ) );
+			// array_push( $line, "", "", "" );
+			// $line .= "<td></td><td></td><td></td>";
 		}
 	}
 	$category = sql_query_single_scalar( "SELECT category FROM im_supplier_price_list WHERE id = " . $pl_id );
-	$line     .= gui_cell( $category);
+	array_push( $line, $category );
+	// $line     .= gui_cell( $category);
 	if ( $linked_prod_id > 0 ) {
 		$p            = new Product( $linked_prod_id );
-		$line         .= gui_cell( $linked_prod_id );
-		$line         .= gui_cell( $map_id );
+		array_push( $line, gui_cell( $linked_prod_id ) );
+		// $line         .= gui_cell( $linked_prod_id );
+//		$line         .= gui_cell( $map_id );
+		array_push( $line, gui_cell( $map_id ) );
 		$stockManaged = $p->getStockManaged();
-		$line         .= gui_cell( gui_checkbox( "chm_" . $linked_prod_id, "stock", $stockManaged, "onchange=\"change_managed(this)\")" ) );
-		$line         .= gui_cell( $stockManaged ? gui_lable( "stk_" . $linked_prod_id, $p->getStock() ) : "" );
+		array_push( $line, gui_cell( gui_checkbox( "chm_" . $linked_prod_id, "stock", $stockManaged, "onchange=\"change_managed(this)\")" ) ) );
+		array_push( $line, gui_cell( $stockManaged ? gui_lable( "stk_" . $linked_prod_id, $p->getStock() ) : "" ) );
+		if ( $needed ) {
+//			var_dump($needed);
+//			die(1);
+			$n = orders_per_item( $linked_prod_id, 1, true );
+//			"";
+//			if (isset($needed[$linked_prod_id][0]))
+//				$n .= $needed[$linked_prod_id][0];
+//			if (isset($needed[$linked_prod_id][1]))
+//				$n .= $needed[$linked_prod_id][1] . "יח";
+
+			array_push( $line, $n );
+
+		}
+
 	}
 	// get_product_name()
-	$line .= "</tr>";
+	// $line .= "</tr>";
 
 	return $line;
 }

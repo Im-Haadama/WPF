@@ -5,8 +5,10 @@
  * Date: 28/08/17
  * Time: 06:45
  */
-require_once( ROOT_DIR . '/agla/gui/inputs.php' );
+ini_set( 'display_errors', 'on' );
+
 require_once( "../r-shop_manager.php" );
+require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 
 ?>
 <script type="text/javascript" src="/agla/client_tools.js"></script>

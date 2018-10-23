@@ -23,7 +23,7 @@ if ( $header ) {
 </style>';
 	print "<header style='text-align: center'><center><h1>מסלולים ליום " . date( 'd/m/Y' );
 	print "</h1></header>";
-	table_header();
+	delivery_table_header();
 }
 $print = 1; //$_GET["print"];
 
@@ -34,55 +34,12 @@ print_deliveries();
 
 die( 0 );
 
-function print_deliveries( $edit = false ) {
-//    print "start";
-//    if (isset($_GET["week"])){
-//        $week = $_GET["week"];
-//        $sql = "select order_id from im_delivery where date >= '" .$week . "'";
-//        print $sql;
-//    } else {
-	$sql = 'SELECT posts.id, order_is_group(posts.id), order_user(posts.id) '
-	       . ' FROM `wp_posts` posts'
-	       . ' WHERE `post_status` in (\'wc-awaiting-shipment\', \'wc-processing\')'
-	       . ' order by 1';
-//    }
-
-	$orders    = sql_query( $sql );
-	$prev_user = - 1;
-	while ( $order = sql_fetch_row( $orders ) ) {
-		$order_id   = $order[0];
-		$is_group   = $order[1];
-		$order_user = $order[2];
-//		print "<br/>" . $order_id . " " . $is_group . " " . $order_user;
-		if ( ! $is_group ) {
-			print_order( $order_id );
-			continue;
-		} else {
-			if ( $order_user != $prev_user ) {
-				print_order( $order_id );
-				$prev_user = $order_user;
-			}
-		}
-	}
-
-	// Self collect supplies
-	$sql = "select s.id from im_supplies s
-          join im_suppliers r
-          Where r.self_collect = 1
-          and s.supplier = r.id 
-          and s.status in (1, 3)";
-
-	$supplies = sql_query_array_scalar( $sql );
-	foreach ( $supplies as $supply ) {
-		print_supply( $supply );
-	}
-}
 
 function print_supply( $id ) {
 	$site_tools = MultiSite::LocalSiteTools();
 
 	$fields = array();
-	array_push( $fields, MultiSite::LocalSiteName() );
+	array_push( $fields, "supplies" );
 
 	$address = "";
 
@@ -118,7 +75,7 @@ function print_supply( $id ) {
 	// array_push($fields, get_delivery_id($order_id));
 
 
-	$line = "<tr> " . table_line( 1, $fields ) . "</tr>";
+	$line = "<tr> " . delivery_table_line( 1, $fields ) . "</tr>";
 
 	// get_field($order_id, '_shipping_city');
 
@@ -126,53 +83,6 @@ function print_supply( $id ) {
 
 }
 
-function print_order( $order_id )
-{
-	$site_tools = MultiSite::LocalSiteTools();
-
-	$fields = array();
-	array_push( $fields, MultiSite::LocalSiteName() );
-
-	$address = "";
-
-	$client_id     = order_get_customer_id( $order_id );
-	$ref           = "<a href=\"" . $site_tools . "/orders/get-order.php?order_id=" . $order_id . "\">" . $order_id . "</a>";
-	$address       = order_get_address( $order_id );
-	$receiver_name = get_meta_field( $order_id, '_shipping_first_name' ) . " " .
-	                 get_meta_field( $order_id, '_shipping_last_name' );
-	$shipping2     = get_meta_field( $order_id, '_shipping_address_2', true );
-	$mission_id    = order_get_mission_id( $order_id );
-	// $ref           = $order_id;
-
-	array_push( $fields, $ref );
-
-	array_push( $fields, $client_id );
-
-	array_push( $fields, $receiver_name );
-
-	array_push( $fields, "<a href='waze://?q=$address'>$address</a>" );
-
-	array_push( $fields, $shipping2 );
-
-	array_push( $fields, get_user_meta( $client_id, 'billing_phone', true ) );
-	$payment_method = get_payment_method_name( $client_id );
-	if ( $payment_method <> "מזומן" and $payment_method <> "המחאה" ) {
-		$payment_method = "";
-	}
-	array_push( $fields, $payment_method );
-
-	array_push( $fields, order_get_mission_id( $order_id ));
-
-	array_push( $fields, MultiSite::LocalSiteID() );
-	// array_push($fields, get_delivery_id($order_id));
-
-
-	$line = "<tr> " . table_line( 1, $fields ) . "</tr>";
-
-			// get_field($order_id, '_shipping_city');
-
-	print $line;
-}
 
 function sort_key( $zone_order, $long_lat ) {
 	// $x = sprintf("%.02f", 40 - $long_lat[0]);
@@ -289,7 +199,7 @@ function print_legacy() {
 			// $sort_index = $day . "/" . $zone_order . ":" . $x . "-" . $long_lat[1];
 			array_push( $fields, $sort_index );
 
-			$line = "<tr> " . table_line( $ref, $fields ) . "</tr>";
+			$line = "<tr> " . delivery_table_line( $ref, $fields ) . "</tr>";
 
 			array_push( $data_lines, array( $sort_index, $line, $ref ) );
 		}
@@ -309,20 +219,6 @@ function print_legacy() {
 //print "done legacy<br/>";
 
 
-function table_line( $ref, $fields, $edit = false ) {
-	//"onclick=\"close_orders()\""
-	$row_text = "";
-	if ( $edit ) {
-		$row_text = gui_cell( gui_checkbox( "chk_" . $ref, "", "", null ) );
-	}
-
-	foreach ( $fields as $field ) // display customer name
-	{
-		$row_text .= gui_cell( $field );
-	}
-
-	return $row_text;
-}
 
 function get_payment_name( $method ) {
 	switch ( $method ) {
@@ -384,25 +280,6 @@ function get_long_lat( $client_id, $address ) {
 	return $long_lat;
 }
 
-function table_header( $edit = false ) {
-	$data = "";
-	$data .= "<table><tr>";
-	$data .= "<td><h3>אתר</h3></td>";
-	$data .= "<td><h3>מספר </br>/הזמנה<br/>אספקה</h3></td>";
-	$data .= "<td><h3>מספר </br>לקוח</h3></td>";
-//	$data .= "<td><h3>שם המזמין</h3></td>";
-	$data .= "<td><h3>שם המקבל</h3></td>";
-	$data .= "<td><h3>כתובת</h3></td>";
-	$data .= "<td><h3>כתובת-2</h3></td>";
-	$data .= "<td><h3>טלפון</h3></td>";
-	// $data .= "<td><h3></h3></td>";
-	$data .= "<td><h3>מזומן/המחאה</h3></td>";
-	$data .= "<td><h3>משימה</h3></td>";
-	$data .= "<td><h3>אתר</h3></td>";
-	$data .= "<td><h3>מספר משלוח</h3></td>";
-	// $data .= "<td><h3>מיקום</h3></td>";
-	print $data;
-}
 
 function do_get_long_lat( $address ) {
 	// print $address . "<br/>";

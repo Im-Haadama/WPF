@@ -5,10 +5,13 @@
  * Date: 16/07/15
  * Time: 16:00
  */
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
 require_once( '../r-shop_manager.php' );
 require_once( 'pricelist.php' );
 require_once( '../catalog/catalog.php' );
 require_once( '../multi-site/multi-site.php' );
+
 ?>
 <?php
 // To map item from price list to our database the shop manager select item from the price list
@@ -36,6 +39,12 @@ switch ( $operation ) {
 
 	case "get_csv":
 		$pl->PrintCSV();
+		break;
+
+	case "refresh_prices":
+		print header_text( false, true, false );
+		print "start refresh<br/>";
+		$pl->Refresh();
 		break;
 
 	case "update_price":

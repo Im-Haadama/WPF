@@ -18,6 +18,10 @@ require_once( '../gui.php' );
 <header>
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <script type="text/javascript" src="/agla/client_tools.js"></script>
+	<?php
+	require_once( "../catalog/mapping.php" );
+	?>
+
     <script>
         function create_term() {
             var t = document.getElementById("create_term");
@@ -28,7 +32,7 @@ require_once( '../gui.php' );
                 // Wait to get query result
                 if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
                 {
-                    update_tables();
+                    refresh();
                 }
             }
             var request = "catalog-map-post.php?operation=create_term&category_name=" + encodeURI(category_name);
@@ -67,7 +71,7 @@ require_once( '../gui.php' );
                 // Wait to get query result
                 if (xmlhttp.readyState === 4 && xmlhttp.status === 200)  // Request finished
                 {
-                    update_tables();
+                    refresh();
                 }
             }
             request = "catalog-map-post.php?operation=create_products&category_name=" + encodeURI(category_name) +
@@ -89,79 +93,6 @@ require_once( '../gui.php' );
             }
         }
 
-        function map_products() {
-            var collection = document.getElementsByClassName("product_checkbox");
-            var table = document.getElementById("map_table");
-            var map_ids = new Array();
-//        var map_ids_remote = new Array();
-            for (var i = 0; i < collection.length; i++) {
-                if (collection[i].checked) {
-//                var product_name = get_value(table.rows[i+1].cells[2].firstChild);
-//                var supplier_product_code = get_value(table.rows[i+1].cells[1].firstChild);
-//                var supplier_code = get_value(table.rows[i+1].cells[3].firstChild);
-                    var sel = table.rows[i + 1].cells[4].firstChild;
-                    if (sel.selectedIndex == -1) {
-                        alert("לא נבחר מוצר עבור " + table.rows[i + 1].cells[2].innerHTML);
-                        continue;
-                    }
-                    var product_id = sel.options[sel.selectedIndex].value;
-                    var pricelist_id = collection[i].id.substr(3);
-//                map_ids.push(product_name);
-//                map_ids.push(supplier_code);
-                    var site = <?php print MultiSite::LocalSiteID(); ?>; // local
-                    // TODO: fix that
-//                    if (table.rows[i + 1].cells.length > 6) {
-//                        // Handle remote
-//                        site = table.rows[i + 1].cells[6].innerHTML;
-//
-////                    if (map_ids_remote[remote_site] == null)
-////                        map_ids_remote[remote_site] = new Array();
-////                    map_ids_remote[remote_site].push(product_id);
-////                    map_ids_remote[remote_site].push(pricelist_id);
-//                    }
-                    // Handle local
-                    map_ids.push(site);
-                    map_ids.push(product_id);
-                    map_ids.push(pricelist_id);
-//                map_ids.push(supplier_product_code);
-                }
-            }
-            //alert (map_ids.join());
-            xmlhttp = new XMLHttpRequest();
-            xmlhttp.onreadystatechange = function () {
-                // Wait to get query result
-                if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
-                {
-                    update_tables();
-                }
-            }
-            var request = "catalog-map-post.php?operation=map&ids=" + map_ids.join();
-            xmlhttp.open("GET", request, true);
-            xmlhttp.send();
-        }
-
-        function map_hide() {
-            var collection = document.getElementsByClassName("product_checkbox");
-            var table = document.getElementById("map_table");
-            var map_ids = new Array();
-            for (var i = 0; i < collection.length; i++) {
-                if (collection[i].checked) {
-                    var pricelist_id = collection[i].id.substr(3);
-                    map_ids.push(pricelist_id);
-                }
-            }
-            xmlhttp = new XMLHttpRequest();
-            xmlhttp.onreadystatechange = function () {
-                // Wait to get query result
-                if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
-                {
-                    update_tables();
-                }
-            }
-            var request = "catalog-map-post.php?operation=hide&ids=" + map_ids.join();
-            xmlhttp.open("GET", request, true);
-            xmlhttp.send();
-        }
 
         function remove_map_products() {
             var collection = document.getElementsByClassName("invalid_map_checkbox");
@@ -178,7 +109,7 @@ require_once( '../gui.php' );
                 // Wait to get query result
                 if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
                 {
-                    update_tables();
+                    refresh();
                 }
             }
             var request = "catalog-map-post.php?operation=remove_map&id_to_remove=" + map_ids.join();
@@ -186,7 +117,7 @@ require_once( '../gui.php' );
             xmlhttp.send();
         }
 
-        function update_tables() {
+        function refresh() {
             // Needed mapping
             xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function () {
@@ -213,7 +144,7 @@ require_once( '../gui.php' );
             }
             xmlhttp1.onloadend = function () {
                 if (xmlhttp1.status === 404 || xmlhttp1.status === 500)
-                    update_tables();
+                    refresh();
             }
 
             var request1 = "catalog-map-post.php?operation=get_unmapped_terms";
@@ -238,6 +169,7 @@ require_once( '../gui.php' );
 //        xmlhttp1.send();
 
         }
+
         function select_all_toggle() {
             var is_on = document.getElementById("select_all").checked;
             var collection = document.getElementsByClassName("product_checkbox");
@@ -261,7 +193,7 @@ require_once( '../gui.php' );
 
     </script>
 </header>
-<body onload="update_tables()">
+<body onload="refresh()">
 <input id="select_all" type="checkbox" onclick="select_all_toggle()">בחר הכל</button>
 <input id="select_details" type="checkbox" onclick="select_detailed()">בחר מפורטים</button>
 

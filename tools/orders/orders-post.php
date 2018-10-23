@@ -1,4 +1,8 @@
 <?php
+// error_reporting( E_ALL );
+// ini_set( 'display_errors', 'on' );
+
+
 //header( "Access-Control-Allow-Origin: http://store.im-haadama.co.il" );
 /**
  * Created by PhpStorm.
@@ -23,8 +27,15 @@ my_log( "Operation: " . $operation, __FILE__ );
 switch ( $operation ) {
 	case "get_rate":
 		$user_id = $_GET["id"];
-		print customer_type( $user_id );
+		print customer_type_name( $user_id );
 		break;
+	case "get_client_info":
+		$user_id = $_GET["id"];
+		print customer_type_name( $user_id );
+		print "\n";
+		print get_user_address( $user_id );
+		break;
+
 	case "save_order_excerpt":
 		$excerpt  = $_GET["excerpt"];
 		$order_id = $_GET["order_id"];
@@ -38,11 +49,16 @@ switch ( $operation ) {
 		$comments   = $_GET["comments"];
 		$units      = $_GET["units"];
 		$mission_id = $_GET["mission_id"];
+		$type       = null;
+		if ( isset( $_GET["type"] ) ) {
+			$type = $_GET["type"];
+		}
 
-		print header_text();
-		print "creating order for " . get_user_name( $user_id );
+		// print header_text();
+		// print "creating order for " . get_user_name( $user_id );
+//		print "pos: " . $pos . "<br/>";
 		create_order( $user_id, $mission_id, explode( ",", $prods ),
-			explode( ",", $quantities ), $comments, explode( ",", $units ) );
+			explode( ",", $quantities ), $comments, explode( ",", $units ), $type );
 		break;
 	case "replace_baskets":
 		// Disable for now. replace_baskets();
@@ -93,10 +109,15 @@ switch ( $operation ) {
 		order_change_status( explode( ",", $ids ), "wc-processing" );
 		break;
 
+	case "cancel_orders":
+		$ids = $_GET["ids"];
+		order_change_status( explode( ",", $ids ), "wc-cancelled" );
+		break;
+
 	case "delivered":
 		$ids = $_GET["ids"];
 		order_change_status( explode( ",", $ids ), "wc-completed" );
-		print "delivered";
+		// print "delivered";
 		break;
 
 	case "mission":
@@ -173,9 +194,7 @@ function remove_dislike_from_order( $order_id ) {
 		}
 		print "<br/>";
 	}
-
 }
-
 
 switch ( $operation ) {
 	case "replace_baskets":
@@ -184,4 +203,3 @@ switch ( $operation ) {
 }
 
 ?>
-

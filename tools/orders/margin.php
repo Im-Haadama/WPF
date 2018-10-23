@@ -147,7 +147,7 @@ while ( $row = mysqli_fetch_row( $result ) ) {
 		$basket_products[ $key ][2] ++;
 	}
 	$supplier_name = get_postmeta_field( $prod_id, "supplier_name" );
-	$line          = table_line( $prod_name, $prod_id, $prod_quantity, $supplier_name, $basket_count );
+	$line          = delivery_table_line( $prod_name, $prod_id, $prod_quantity, $supplier_name, $basket_count );
 	array_push( $data_lines, array( $supplier_name, $line ) );
 }
 
@@ -157,7 +157,7 @@ for ( $i = 0; $i < count( $basket_products ); $i ++ ) {
 		$prod_id       = $basket_products[ $i ][0];
 		$prod_name     = $basket_products[ $i ][1];
 		$supplier_name = get_postmeta_field( $prod_id, "supplier_name" );
-		$line          = table_line( $prod_name, $prod_id, 0, $supplier_name, $basket_count );
+		$line          = delivery_table_line( $prod_name, $prod_id, 0, $supplier_name, $basket_count );
 		array_push( $data_lines, array( $supplier_name, $line ) );
 	}
 }

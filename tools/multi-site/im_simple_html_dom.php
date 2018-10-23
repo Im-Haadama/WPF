@@ -67,9 +67,9 @@ define( 'MAX_FILE_SIZE', 600000 );
 // -----------------------------------------------------------------------------
 // get html dom from file
 // $maxlen is defined in the code as PHP_STREAM_COPY_ALL which is defined as -1.
-function file_get_html( $url, $use_include_path = false, $context = null, $offset = 0, $maxLen = - 1, $lowercase = true, $forceTagsClosed = true, $target_charset = DEFAULT_TARGET_CHARSET, $stripRN = true, $defaultBRText = DEFAULT_BR_TEXT, $defaultSpanText = DEFAULT_SPAN_TEXT ) {
+function im_file_get_html( $url, $use_include_path = false, $context = null, $offset = 0, $maxLen = - 1, $lowercase = true, $forceTagsClosed = true, $target_charset = DEFAULT_TARGET_CHARSET, $stripRN = true, $defaultBRText = DEFAULT_BR_TEXT, $defaultSpanText = DEFAULT_SPAN_TEXT ) {
 	// We DO force the tags to be terminated.
-	$dom = new simple_html_dom( null, $lowercase, $forceTagsClosed, $target_charset, $stripRN, $defaultBRText, $defaultSpanText );
+	$dom = new im_simple_html_dom( null, $lowercase, $forceTagsClosed, $target_charset, $stripRN, $defaultBRText, $defaultSpanText );
 	// For sourceforge users: uncomment the next line and comment the retreive_url_contents line 2 lines down if it is not already done.
 	$contents = file_get_contents( $url, $use_include_path, $context, $offset );
 	// Paperg - use our own mechanism for getting the contents as we want to control the timeout.
@@ -84,8 +84,8 @@ function file_get_html( $url, $use_include_path = false, $context = null, $offse
 }
 
 // get html dom from string
-function str_get_html( $str, $lowercase = true, $forceTagsClosed = true, $target_charset = DEFAULT_TARGET_CHARSET, $stripRN = true, $defaultBRText = DEFAULT_BR_TEXT, $defaultSpanText = DEFAULT_SPAN_TEXT ) {
-	$dom = new simple_html_dom( null, $lowercase, $forceTagsClosed, $target_charset, $stripRN, $defaultBRText, $defaultSpanText );
+function im_str_get_html( $str, $lowercase = true, $forceTagsClosed = true, $target_charset = DEFAULT_TARGET_CHARSET, $stripRN = true, $defaultBRText = DEFAULT_BR_TEXT, $defaultSpanText = DEFAULT_SPAN_TEXT ) {
+	$dom = new im_simple_html_dom( null, $lowercase, $forceTagsClosed, $target_charset, $stripRN, $defaultBRText, $defaultSpanText );
 	if ( empty( $str ) || strlen( $str ) > MAX_FILE_SIZE ) {
 		print "Empty";
 		$dom->clear();
@@ -98,7 +98,7 @@ function str_get_html( $str, $lowercase = true, $forceTagsClosed = true, $target
 }
 
 // dump html dom tree
-function dump_html_tree( $node, $show_attr = true, $deep = 0 ) {
+function im_dump_html_tree( $node, $show_attr = true, $deep = 0 ) {
 	$node->dump( $node );
 }
 
@@ -110,7 +110,7 @@ function dump_html_tree( $node, $show_attr = true, $deep = 0 ) {
  *
  * @package PlaceLocalInclude
  */
-class simple_html_dom_node {
+class im_simple_html_dom_node {
 	public $nodetype = HDOM_TYPE_TEXT;
 	public $tag = 'text';
 	public $attr = array();
@@ -1105,7 +1105,7 @@ class simple_html_dom_node {
  *
  * @package PlaceLocalInclude
  */
-class simple_html_dom {
+class im_simple_html_dom {
 	public $root = null;
 	public $nodes = array();
 	public $callback = null;
@@ -1250,7 +1250,7 @@ class simple_html_dom {
 		$this->lowercase                  = $lowercase;
 		$this->default_br_text            = $defaultBRText;
 		$this->default_span_text          = $defaultSpanText;
-		$this->root                       = new simple_html_dom_node( $this );
+		$this->root                       = new im_simple_html_dom_node( $this );
 		$this->root->tag                  = 'root';
 		$this->root->_[ HDOM_INFO_BEGIN ] = - 1;
 		$this->root->nodetype             = HDOM_TYPE_ROOT;
@@ -1321,7 +1321,7 @@ class simple_html_dom {
 		}
 
 		// text
-		$node = new simple_html_dom_node( $this );
+		$node = new im_simple_html_dom_node( $this );
 		++ $this->cursor;
 		$node->_[ HDOM_INFO_TEXT ] = $s;
 		$this->link_nodes( $node, false );
@@ -1432,7 +1432,7 @@ class simple_html_dom {
 			return true;
 		}
 
-		$node                       = new simple_html_dom_node( $this );
+		$node                       = new im_simple_html_dom_node( $this );
 		$node->_[ HDOM_INFO_BEGIN ] = $this->cursor;
 		++ $this->cursor;
 		$tag             = $this->copy_until( $this->token_slash );
@@ -1596,7 +1596,7 @@ class simple_html_dom {
 	// prepare HTML data and init everything
 
 	protected function as_text_node( $tag ) {
-		$node = new simple_html_dom_node( $this );
+		$node = new im_simple_html_dom_node( $this );
 		++ $this->cursor;
 		$node->_[ HDOM_INFO_TEXT ] = '</' . $tag . '>';
 		$this->link_nodes( $node, false );
@@ -1897,11 +1897,11 @@ class simple_html_dom {
 	}
 
 	function createElement( $name, $value = null ) {
-		return @str_get_html( "<$name>$value</$name>" )->first_child();
+		return @im_str_get_html( "<$name>$value</$name>" )->first_child();
 	}
 
 	function createTextNode( $value ) {
-		return @end( str_get_html( $value )->nodes );
+		return @end( im_str_get_html( $value )->nodes );
 	}
 
 	function getElementById( $id ) {

@@ -52,7 +52,7 @@ $sql    = 'SELECT  bundle_prod_id, quantity, id FROM im_bundles WHERE prod_id = 
 $result = mysqli_query( $conn, $sql );
 
 while ( $row = mysqli_fetch_row( $result ) ) {
-	$b    = Bundle::createFromDb( $row[2] );
+	$b    = Bundle::CreateFromDb( $row[2] );
 	$data .= "<tr> " . trim( orders_per_item( $b->GetBundleProdId(), $b->GetQuantity() ) ) . "</tr>";
 
 	// $data .= "<tr> ". trim( $line ) . "</tr>";

@@ -5,6 +5,8 @@
  * Date: 25/10/15
  * Time: 08:00
  */
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
 
 if ( ! defined( 'TOOLS_DIR' ) ) {
 	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
@@ -15,6 +17,7 @@ require_once( TOOLS_DIR . '/maps/build-path.php' );
 require_once( TOOLS_DIR . '/account/gui.php' );
 require_once( TOOLS_DIR . '/account/account.php' );
 require_once( TOOLS_DIR . '/delivery/delivery.php' );
+require_once( TOOLS_DIR . '/orders/Order.php' );
 
 // BAD: print header_text();
 function orders_item_count( $item_id ) {
@@ -145,7 +148,7 @@ function order_info_data( $order_id, $edit_order = false, $operation = null ) {
 // TODO: find why save excerpt cause window reload
 	if ( $edit_order ) {
 		$data .= gui_cell( gui_textarea( "order_excerpt", htmlspecialchars( $excerpt ) ) );
-		$data .= gui_cell( gui_button( "btn_save_excerpt", "save_excerpt()", "שמור הערה" ) );
+		$data .= gui_cell( gui_button( "btn_save_excerpt", "save_excerpt(" . $order_id . ")", "שמור הערה" ) );
 	} else {
 		$data .= "<tr><td valign='top'>" . nl2br( $excerpt ) . "</td></tr>";
 
@@ -215,12 +218,22 @@ function order_delete_lines( $lines ) {
 }
 
 function order_change_status( $ids, $status ) {
-	foreach ( $ids as $id ) {
+	if ( is_array( $ids ) ) {
+		$args = $ids;
+	} else {
+		$args = array( $ids );
+	}
+	foreach ( $args as $id ) {
 		$order = new WC_Order( $id );
+		// var_dump($order);
 		$order->update_status( $status );
+		// var_dump($order);
 	}
 }
-function order_add_product( $order, $product_id, $quantity, $replace = false, $client_id = - 1, $unit = null ) {
+
+function order_add_product( $order, $product_id, $quantity, $replace = false, $client_id = - 1, $unit = null, $type = null ) {
+	$total = 0;
+//	print "type: ". $type . "<br/>";
 	if ( ! ( $product_id > 0 ) ) {
 		die( "no product id given." );
 	}
@@ -228,7 +241,11 @@ function order_add_product( $order, $product_id, $quantity, $replace = false, $c
 	if ( $client_id == - 1 ) {
 		$client_id = order_get_customer_id( $order->get_id() );
 	}
-	$customer_type = customer_type( $client_id );
+	if ( $type ) {
+		$customer_type = $type;
+	} else {
+		$customer_type = customer_type( $client_id );
+	}
 
 	my_log( __METHOD__, __FILE__ );
 	my_log( "product = " . $product_id, __METHOD__ );
@@ -240,7 +257,7 @@ function order_add_product( $order, $product_id, $quantity, $replace = false, $c
 		while ( $row = mysqli_fetch_row( $result ) ) {
 			$prod_id = $row[0];
 			$q       = $row[1];
-			order_add_product( $order, $prod_id, $q * $quantity, true, $client_id );
+			$total   += order_add_product( $order, $prod_id, $q * $quantity, true, $client_id, $customer_type );
 		}
 	} else {
 		my_log( __METHOD__ . ": adding product " . $product_id, __FILE__ );
@@ -252,17 +269,24 @@ function order_add_product( $order, $product_id, $quantity, $replace = false, $c
 			} else {
 				$q = $quantity;
 			}
-			print  "<br/>" . get_product_name( $product_id ) . " " . $q . " ";
+			// print  "<br/>" . get_product_name( $product_id ) . " " . $q . " ";
 			$product = wc_get_product( $product_id );
 			if ( $product ) {
-				$product->set_price( get_price( $product_id, $customer_type, $quantity ) );
+				// print "type: " . $customer_type . "<br/>";
+				$price = get_price_by_type( $product_id, $customer_type, $quantity );
+				// print "price: " . $price . "<br/>";
+				$product->set_price( $price );
 				$oid = $order->add_product( $product, $q );
 
 				// print $oid . "<br/>";
 
 				if ( $has_units ) {
 					set_order_itemmeta( $oid, 'unit', array( $unit, $quantity ) );
+
+					return $price; // Assume about 1 kg
 				}
+
+				return $price * $quantity;
 			} else {
 				print $product_id . " not found <br/>";
 			}
@@ -530,162 +554,15 @@ function check_cache_validity() {
 
 }
 
-function calculate_needed( &$needed_products, $user_id = 0 ) {
-	global $conn;
-	if ( ! $user_id ) {
-		if ( check_cache_validity() ) {
-			print "cv</br>";
-			$needed_products = array();
 
-			$sql = " SELECT prod_id, need_q, need_u, prod_get_name(prod_id) FROM im_need ORDER BY 4 ";
-
-			$result = sql_query( $sql );
-
-			while ( $row = mysqli_fetch_row( $result ) ) {
-				$prod_or_var = $row[0];
-				$q           = $row[1];
-				$u           = $row[2];
-
-				$needed_products[ $prod_or_var ][0] = $q;
-				$needed_products[ $prod_or_var ][1] = $u;
-			}
-
-			return $needed_products;
-		}
-
-		print "not valid<br/>";
-		// Cache not vaild.
-		// Clean the im_need_orders, im_need table
-		$sql = "truncate table im_need_orders";
-		sql_query( $sql );
-
-		$sql = "truncate table im_need";
-		sql_query( $sql );
-	}
-	// Do the calculation
-	$sql = "SELECT id FROM wp_posts " .
-	       " WHERE post_status LIKE '%wc-processing%'";
-
-	if ( $user_id ) {
-		$sql .= " and order_user(id) = " . $user_id;
-	}
-
-	// print $sql;
-
-	$result = mysqli_query( $conn, $sql );
-
-	while ( $row = mysqli_fetch_assoc( $result ) ) {
-		$id = $row["id"];
-//		print "order: " . $id . "<br/>";
-
-		// Update im_need_orders table
-		if ( ! $user_id ) {
-			$sql1 = "INSERT INTO im_need_orders (order_id) VALUE (" . $id . ") ";
-			sql_query( $sql1 );
-		}
-
-		$order       = new WC_Order( $id );
-		$order_items = $order->get_items();
-
-		foreach ( $order_items as $item ) {
-			$prod_or_var = $item['product_id'];
-
-			$variation = null;
-			if ( isset( $item["variation_id"] ) && $item["variation_id"] > 0 ) {
-
-				$prod_or_var = $item["variation_id"];
-			}
-			$qty  = $item['qty'];
-			$unit = $item['unit'];
-
-			if ( $unit ) {
-				$unit_array = explode( ",", $unit );
-				$unit_t     = $unit_array[0];
-				$key        = array( $prod_or_var, $unit_t );
-				$qty        = $unit_array[1];
-			} else {
-				$key = array( $prod_or_var, '');
-			}
-
-			add_products( $key, $qty, $needed_products);
-			//   print $item['product_id'] . " " . $item['qty'] . "<br/>";
-		}
-	}
-	// Update im_need table
-	foreach ( $needed_products as $prod_or_var => $v1 ) {
-		$q = 0;
-		$u = 0;
-		if ( isset( $needed_products[ $prod_or_var ][0] ) ) {
-			$q = $needed_products[ $prod_or_var ][0];
-		}
-		if ( isset( $needed_products[ $prod_or_var ][1] ) ) {
-			$u = $needed_products[ $prod_or_var ][1];
-		}
-		if ( ! $user_id ) {
-			$sql = "INSERT INTO im_need (prod_id, need_q, need_u) " .
-			       " VALUES (" . $prod_or_var . "," . $q . "," . $u . ")";
-
-			sql_query( $sql );
-		}
-	}
-}
-
-function add_products( $prod_key, $qty, &$needed_products ) {
-	// var_dump($prod_key); print "<br/>";
-	// Prod key is array(prod_id or var_id, unit)
-
-	// Handle baskets recursively
-	$prod_or_var = $prod_key[0];
-	if ( is_basket( $prod_or_var ) ) {
-//                print $prod_id . " is basket ";
-		foreach (
-			get_basket_content_array( $prod_or_var ) as $basket_prod =>
-			$basket_q
-		) {
-			add_products( array( $basket_prod, '' ), $qty * $basket_q, $needed_products);
-		}
-	} else {
-		// Handle single product:
-		$unit_str = $prod_key[1];
-
-		switch ( $unit_str ) {
-			case 'קג':
-			case '':
-				$unit_key = 0;
-				break;
-			case 'יח':
-				$unit_key = 1;
-				break;
-			default:
-				print "error: new unit ignored - " . $unit_str;
-		}
-//		if (strlen($unit)){
-//			if (is_null($needed_products[$prod_key])) $needed_products[$prod_or_var] = array();
-//		}
-		// print "prod_or_var: " . $prod_or_var . " unit_key: " . $unit_key . "<br/>";
-
-		if ( is_bundle( $prod_or_var ) ) {
-			$b           = Bundle::CreateFromBundleProd( $prod_or_var );
-			$p           = $b->GetProdId();
-			if ( ! ( $p > 0 ) ) {
-				print "bad prod id for $prod_or_var<br/>";
-
-				return;
-			}
-			$qty         = $qty * $b->GetQuantity();
-		}
-
-		$needed_products[ $prod_or_var ][ $unit_key ] += $qty;
-		//if ($key == 354) { print "array:"; var_dump($needed_products[$prod_or_var]); print "<br/>";}
-	}
-}
-
-function create_order( $user_id, $mission_id, $prods, $quantities, $comments, $units = null ) {
+function create_order( $user_id, $mission_id, $prods, $quantities, $comments, $units = null, $type = null ) {
 //	print "user: " . $user_id;
 //	var_dump($prods);
 
 //	$last_order = get_last_order( $user_id );
 //	print "last order: " .$last_order . "<br/>";
+
+//	print "type: " . $type . "<br/>";
 
 	$debug = false;
 	if ( $debug ) {
@@ -693,13 +570,16 @@ function create_order( $user_id, $mission_id, $prods, $quantities, $comments, $u
 		$order    = new WC_Order( $order_id );
 	} else {
 		$order    = wc_create_order();
+		// var_dump($order);
 		$order_id = trim( str_replace( '#', '', $order->get_order_number() ) );
 		// print "new order: " . $order_id . "<br/>";
 	}
 	// print "count: " . count($prods) . "<br/>";
 	$extra_comments = "";
 
-	order_set_mission_id( $order_id, $mission_id);
+	order_set_mission_id( $order_id, $mission_id );
+
+	$total = 0;
 
 	for ( $i = 0; $i < count( $prods ); $i ++ ) {
 		// $prod_name = urldecode( $prods[ $i ] );
@@ -708,7 +588,7 @@ function create_order( $user_id, $mission_id, $prods, $quantities, $comments, $u
 		$prod_id = $prods[ $i ];
 		// print "prod(" . $prod_name . "): " . $prod_id ."<br/>";
 		if ( $prod_id > 0 ) {
-			order_add_product( $order, $prod_id, $quantities[ $i ], false, $user_id, $units[ $i ] );
+			$total += order_add_product( $order, $prod_id, $quantities[ $i ], false, $user_id, $units[ $i ], $type );
 
 			// if (strlen($units[$i]) > 1) $extra_comments .= $prod_name . " " . $quantities[$i] . " " . $units[$i] . "\n";
 		} else {
@@ -717,6 +597,10 @@ function create_order( $user_id, $mission_id, $prods, $quantities, $comments, $u
 		}
 	}
 
+//	if ($total < 80){
+//		print "הזמנה קטנה מדי ולא נקלטה";
+//		return 0;
+//	}
 	$comments .= "\n" . $extra_comments;
 
 //	$order->add_shipping( 25 );
@@ -744,16 +628,18 @@ function create_order( $user_id, $mission_id, $prods, $quantities, $comments, $u
 		update_post_meta( $order_id, '_' . $key, $value );
 	}
 
+// 	print "comments: " . $comments . "<br/>";
+	$order->save();
+	$order = null;
 	order_set_excerpt( $order_id, $comments );
 
-	print "הזמנה נקלטה בהצלחה.";
+	print "הזמנה " . $order_id . " נקלטה בהצלחה.";
 	//print $comments;
 	return $order_id;
 }
 
 function order_set_excerpt( $post_id, $excerpt ) {
 	$sql = "UPDATE wp_posts SET post_excerpt = '" . $excerpt . "' WHERE id=" . $post_id;
-
 	sql_query( $sql );
 }
 
@@ -816,7 +702,7 @@ class OrderFields {
 ;
 
 $order_header_fields = array(
-	"בחר",
+	"בחר", // replaced in loop
 	"סוג משלוח",
 	"משימה",
 	"מספר הזמנה",
@@ -857,8 +743,9 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 	foreach ( $statuses as $status ) {
 		// print $status . "<br/>";
 
-		$rows = array( $order_header_fields );
-		$sql  = 'SELECT posts.id'
+		$order_header_fields[0] = gui_checkbox( "select_all_" . $status, "table", 0, "onclick=\"select_all_toggle('select_all_" . $status . "', 'select_order_" . $status . "')\"" );
+		$rows                   = array( $order_header_fields );
+		$sql                    = 'SELECT posts.id'
 		        . ' FROM `wp_posts` posts'
 		        . " WHERE post_status = '" . $status . "'";
 
@@ -918,11 +805,13 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 		while ( $row = mysqli_fetch_row( $result ) ) {
 			// debug_time1("after fetch");
 			$count ++;
-			$order_id    = $row[0];
+			$order_id = $row[0];
+			$order    = new Order( $order_id );
+
 			$customer_id = order_get_customer_id( $order_id );
 
 			$line                              = $empty_line;
-			$line [ OrderFields::line_select ] = gui_checkbox( "chk_" . $order_id, "select_order" );
+			$line [ OrderFields::line_select ] = gui_checkbox( "chk_" . $order_id, "select_order_" . $status );
 			$line[ OrderFields::type ]         = order_get_shipping( $order_id );
 
 			// display order_id with link to display it.
@@ -941,7 +830,8 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 			                                  get_postmeta_field( $order_id, '_shipping_last_name' );
 
 			// 3) Order total
-			$order_total                      = get_postmeta_field( $order_id, '_order_total' );
+			$order_total = $order->GetTotal();
+			// get_postmeta_field( $order_id, '_order_total' );
 			$line[ OrderFields::total_order ] = $order_total;
 			$total_order_total                += $order_total;
 
@@ -952,7 +842,7 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 				$delivery                           = new Delivery( $delivery_id );
 				$line[ OrderFields::delivery_note ] = gui_hyperlink( $delivery_id,
 					MultiSite::LocalSiteTools() . "/delivery/get-delivery.php?id=" . $delivery_id );
-				if ( $delivery_id > 0 ) {
+				//if ( $delivery_id > 0 ) {
 					$line[ OrderFields::total_order ]  = $order_total; // $delivery->Price();
 					$line[ OrderFields::delivery_fee ] = $delivery->DeliveryFee();
 					$percent                           = "";
@@ -961,17 +851,18 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 					}
 					$line[ OrderFields::percentage ] = $percent;
 					$total_delivery_total            += $delivery->Price();
-					$total_delivery_fee              += $delivery->DeliveryFee();
+				$total_delivery_fee                  = $delivery->DeliveryFee();
 					$total_order_delivered           += $order_total;
-				}
+				//	}
 			} else {
 				$line[ OrderFields::city ]          = order_info( $order_id, '_shipping_city' );
-				$line[ OrderFields::delivery_note ] = gui_hyperlink( "צור", "../delivery/create-delivery.php?order_id=" . $order_id);
+				$line[ OrderFields::delivery_note ] = gui_hyperlink( "צור", "../delivery/create-delivery.php?order_id=" . $order_id );
+				$total_delivery_fee                 = order_get_shipping_fee( $order_id );
 			}
 			$line[ OrderFields::payment_type ] = get_payment_method_name( $customer_id );
-			$line[ OrderFields::good_costs ]   = order_good_costs( $order_id );
+			$line[ OrderFields::good_costs ]   = $order->GetBuyTotal();
 			$line[ OrderFields::margin ]       = round( ( $line[ OrderFields::total_order ] - $line[ OrderFields::good_costs ] ), 0 );
-			$line[ OrderFields::delivery_fee ] = order_get_shipping_fee( $order_id);
+			$line[ OrderFields::delivery_fee ] = $total_delivery_fee; //
 
 			array_push( $lines, array( array_search( $customer_id, $path ), $line ) );
 		}
@@ -1013,16 +904,18 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 	return $all_tables;
 }
 
-function order_good_costs( $order_id ) {
-	$order = new WC_Order( $order_id );
-	$total = 0;
-	foreach ( $order->get_items() as $item ) {
-		// if ($order_id == 2230) print $item->get_name() . "<br/>";
-		$total += get_buy_price( $item->get_product_id() ) * $item->get_quantity();
-	}
-
-	return $total;
-}
+//function order_good_costs( $order_id ) {
+//	$order = new WC_Order( $order_id );
+//	$total = 0;
+//	foreach ( $order->get_items() as $item ) {
+//		// if ($order_id == 2230) print $item->get_name() . "<br/>";
+//		$q = $item->get_quantity();
+//		$p = get_buy_price( $item->get_product_id() );
+//		if (is_numeric($q) and is_numeric($p)) $total +=  $p * $q;
+//	}
+//
+//	return $total;
+//}
 
 function total_order( $user_id ) {
 

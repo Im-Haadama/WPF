@@ -18,8 +18,8 @@ if ( isset( $_GET["operation"] ) ) {
 	$operation = $_GET["operation"];
 	switch ( $operation ) {
 		case "reset_inventory":
-			print gui_header( 1, "מאפס מלאי" );
-			reset_inventory();
+//			print gui_header( 1, "מאפס מלאי" );
+//			reset_inventory();
 //				print gui_header( 2, "מאתחל רשימה של אמיר" );
 //				$PL = new PriceList( 100004 );
 //				$PL->RemoveLines( 1 );

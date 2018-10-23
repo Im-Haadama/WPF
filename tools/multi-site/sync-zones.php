@@ -43,7 +43,7 @@ function update_zone_table( $table ) {
 	global $conn;
 
 	// var_dump($conn);
-	$dom = str_get_html( $table );
+	$dom = im_str_get_html( $table );
 	$row = $dom->find( 'tr' );
 	print $row->plaintext;
 

@@ -14,8 +14,8 @@ require_once( 'orders-common.php' );
 require_once( "../delivery/create-delivery-post.php" );
 require_once( "../account/account-post.php" );
 
-$order_id  = $_GET["order_id"];
-$operation = $_GET["operation"];
+$order_id                         = isset( $_GET["order_id"] ) ? $_GET["order_id"] : null;
+$operation                        = $_GET["operation"];
 
 //$operation = $_GET["operation"];
 my_log( "Operation: " . $operation, __FILE__ );
@@ -100,7 +100,7 @@ function create_delivery( $order_id ) {
 
 	$delivery_id = create_delivery_header( $order_id, $total, $vat, $lines, false, 0 );
 
-	print "תעודת משלוח מספר " . $delivery_id;
+	print " מספר " . $delivery_id;
 
 	foreach ( $prods as $prod ) {
 		add_delivery_line( $prod['product_name'], $delivery_id, $prod['quantity'], $prod['quantity_ordered'], 0,
@@ -111,6 +111,10 @@ function create_delivery( $order_id ) {
 
 //	$order = new WC_Order( $order_id );
 //	$order->update_status( 'wc-completed' );
+
+	global $track_email;
+	$delivery = new delivery( $delivery_id );
+	$delivery->send_mail( $track_email, false );
 
 	return $delivery_id;
 }

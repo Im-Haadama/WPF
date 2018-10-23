@@ -7,8 +7,8 @@
  */
 
 require_once( "../im_tools.php" );
-require_once( "../gui/inputs.php" );
-require_once( "../gui/sql_table.php" );
+require_once( ROOT_DIR . "/agla/gui/inputs.php" );
+require_once( ROOT_DIR . "/agla/gui/sql_table.php" );
 require_once( "../business/business.php" );
 
 print header_text( false, true, true );

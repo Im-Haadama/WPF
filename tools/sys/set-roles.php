@@ -5,13 +5,14 @@
  * Date: 24/02/18
  * Time: 23:16
  */
-
+ini_set( 'display_errors', 'on' );
 require_once( "../im_tools.php" );
 //https://www.cloudways.com/blog/add-custom-user-roles-in-wordpress/
 
 $user = get_user_id();
 
 if ( $user != 1 ) {
+	print "EXIT! User id: " . $user . "<br/>";
 	die( 1 );
 }
 
@@ -46,10 +47,14 @@ if ( 0 ) {
 
 	add_role( "logistics", "Logistics Manager", array( "edit_missions" => "true" ) );
 
-	add_role( "catalog_editor", "Catalog Editor", array( "edit_pricelist" => "true" ) );
+	add_role( "catalog_editor", "Catalog Editor", array(
+		"show_pricelist" => "true",
+		"edit_pricelist" => "true"
+	) );
+	add_role( "logistics", "Logistics Manager", array( "edit_missions" => "true" ) );
+
 }
 
-add_role( "logistics", "Logistics Manager", array( "edit_missions" => "true" ) );
 
 global $wp_roles;
 //$wp_roles->add_cap("logistics", "edit_missions");

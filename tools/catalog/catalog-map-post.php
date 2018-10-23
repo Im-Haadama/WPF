@@ -65,6 +65,7 @@ switch ( $operation ) {
 		my_log( "category: " . $category_name );
 		$map_triplets = $_GET["create_info"];
 		$ids          = explode( ',', $map_triplets );
+		//var_dump($ids);
 		Catalog::CreateProducts( $category_name, $ids );
 		break;
 }
@@ -154,7 +155,7 @@ function search_unmapped_remote() {
 		// print $site_id;
 
 		$remote = get_site_tools_url( $site_id ) . "/catalog/get-as-pricelist.php";
-		$html   = file_get_html( $remote );
+		$html   = im_file_get_html( $remote );
 		foreach ( $html->find( 'tr' ) as $row ) {
 			$prod_id = $row->find( 'td', 1 )->plaintext;
 			//print "prod id " . $prod_id;
@@ -196,9 +197,11 @@ function search_unmapped_products() {
 
 		$prod_link_id = Catalog::GetProdID( $pricelist_id, true );
 
-		$prod_id      = $prod_link_id[0];
-		if ( ( ( $prod_id == - 1 ) or ( $prod_id > 0 ) ) and get_post_status( $prod_id ) != 'trash' ) {
-			continue;
+		if ( $prod_link_id ) {
+			$prod_id = $prod_link_id[0];
+			if ( ( ( $prod_id == - 1 ) or ( $prod_id > 0 ) ) and get_post_status( $prod_id ) != 'trash' ) {
+				continue;
+			}
 		}
 		$data .= print_unmapped( $pricelist_id, $pricelist["supplier_product_code"], $pricelist["product_name"],
 			$pricelist["supplier_id"] );
@@ -243,26 +246,12 @@ function search_unmapped_terms() {
 	print gui_select( "create_term", "term", $all_terms, "", "" );
 }
 
+
 function print_unmapped( $pricelist_id, $supplier_product_code, $product_name, $supplier_id, $site_id = 0 ) {
 	$match            = false;
-	$product_name_prf = name_prefix( $product_name );
-//        my_log($product_name_prf);
 
-	if ( $pos = strpos( $product_name, " " ) ) {
-		$product_name_prf = substr( $product_name, 0, $pos );
-	}
-	$sql1 = 'SELECT DISTINCT id, post_title FROM `wp_posts` WHERE '
-	        . ' post_type IN (\'product\', \'product_variation\')'
-	        . ' AND (post_status = \'publish\' OR post_status = \'draft\')'
-	        . ' AND (post_title LIKE \'%' . addslashes( $product_name_prf ) . '%\' '
-	        . ' OR id IN '
-	        . '(SELECT object_id FROM wp_term_relationships WHERE term_taxonomy_id IN '
-	        . '(SELECT term_taxonomy_id FROM wp_term_taxonomy WHERE term_id IN '
-	        . "(SELECT term_id FROM wp_terms WHERE name LIKE '%" . addslashes( $product_name_prf ) . "%'))))"
-	        . " ORDER BY 2";
+//	if (substr($striped_prod, 0, 8) == "סברס") print "Y" . $striped_prod . "Y<br/>";
 
-//	print $sql1 . "<br/>";
-//	die(1);
 	$striped_prod = $product_name;
 	foreach ( array( "אורגני", "יחידה", "טרי" ) as $word_to_remove ) {
 		$striped_prod = str_replace( $word_to_remove, "", $striped_prod );
@@ -271,23 +260,25 @@ function print_unmapped( $pricelist_id, $supplier_product_code, $product_name, $
 
 	$striped_prod = trim( $striped_prod );
 
-//	if (substr($striped_prod, 0, 8) == "סברס") print "Y" . $striped_prod . "Y<br/>";
+	$prod_options = Catalog::GetProdOptions( $product_name );
 
-	// Get line options
 	$options = "";
-	$result1 = sql_query( $sql1 );
-	while ( $row1 = mysqli_fetch_row( $result1 ) ) {
-//        print $row1[1] . " " . $product_name . "<br/>";
-		$striped_option = $row1[1];
+
+	foreach ( $prod_options as $row1 ) {
+
+		// Get line options
+//         print $row1[1] . " " . $product_name . "<br/>";
+		// var_dump($row1); print "<br/>";
+		$striped_option = $row1["post_title"];
 		$striped_option = str_replace( "-", " ", $striped_option );
 		$striped_option = trim( $striped_option, " " );
 //        if (substr($striped_option, 0, 8) == "סברס") print "X" . $striped_option . "X<br/>";
-		$options .= '<option value="' . $row1[0] . '" ';
+		$options .= '<option value="' . $row1["id"] . '" ';
 		if ( ! strcmp( $striped_option, $striped_prod ) ) {
 			$options .= 'selected';
 //			$match   = true;
 		}
-		$options .= '>' . $row1[1] . '</option>';
+		$options .= '>' . $row1["post_title"] . '</option>';
 	}
 
 	$line = "<tr>";
@@ -311,19 +302,7 @@ function print_unmapped( $pricelist_id, $supplier_product_code, $product_name, $
 	$line .= gui_cell( basename( $url ) );
 	$line .= "</tr>";
 
-
-//    print $line;
 	return $line;
-}
-
-function name_prefix( $name ) {
-	return strtok( $name, "-()" );
-//    $pos = strpos($name, "-()");
-//    my_log($name . ": pos= " . $pos);
-//    if ($pos > 0)
-//        return substr($name, 0, $pos);
-//
-//    return $name;
 }
 
 // Write the result to screen. Client will insert to result_table

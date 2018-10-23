@@ -6,6 +6,8 @@
  * Time: 17:29
  */
 
+// error_reporting( E_ALL );
+// ini_set( 'display_errors', 'on' );
 require_once( ROOT_DIR . "/agla/gui/inputs.php" );
 require_once( "../account/gui.php" );
 
@@ -32,12 +34,14 @@ global $pos;
                     if (!get_value_by_name("chk_delivery"))
                         do_close_order(order_id);
 
+                    if (get_value_by_name("chk_payment")) {
 					<?php
 					if ( $pos ) {
 						print 'add_message("מופקת קבלה ");';
 						print 'do_pay_delivery( del_id, user_id, order_id );';
 					}
 					?>
+                    }
                 }
             }
             xmlhttp.open("GET", request, true);
@@ -154,6 +158,7 @@ global $pos;
             var log = document.getElementById("log");
 
             log.innerHTML += message;
+            // alert(message);
         }
 
         // pay = 0; Just create the order.
@@ -193,7 +198,7 @@ global $pos;
 
             var prods = [];
             var quantities = [];
-            var comment = [];
+            var comment = get_value_by_name("order_excerpt");
             var units = [];
 
             var item_table = document.getElementById("order_items");
@@ -204,7 +209,7 @@ global $pos;
                 var prod_id = prod.substr(0, prod.indexOf(")"));
                 var q = get_value(document.getElementById("qua_" + i));
                 if (q > 0 && !(prod_id > 0)) {
-                    alert("אנא בחר מוצר מתוך הרשימה " + prod);
+                    alert("אנא בחר מוצר מתוך הרשימה " + prod + " למחיקה, אפס את הכמות");
                     document.getElementById('add_order').disabled = false;
                     return false;
                 }
@@ -236,7 +241,7 @@ global $pos;
                 "&user_id=" + user_id +
                 "&prods=" + prods.join() +
                 "&quantities=" + quantities.join() +
-                // "&comments="   + encodeURI(comment) +
+                "&comments=" + encodeURI(comment) +
                 "&units=" + units.join() +
                 "&mission_id=" + mission_id;
 
@@ -255,7 +260,7 @@ global $pos;
                         order_id = message.substr(6, message.indexOf("נקלטה") - 7);
 
                         if (get_value_by_name("chk_packed")) {
-                            add_message("נוצרת תעודת משלוח ");
+                            add_message("נוצרת תעודת משלוח. ");
                             del_id = do_create_delivery_note(order_id);
                         }
                     } else {
@@ -272,16 +277,22 @@ global $pos;
         }
 
         function select_product(my_row) {
-            if (event.which === 13) {
+//            if (event.which === 13) {
                 var objs = document.getElementById("qua_" + (my_row));
                 if (objs) objs.focus();
-            }
+//            }
             getPrice(my_row);
         }
 
         function getPrice(my_row) {
             var prod = get_value(document.getElementById("nam_" + my_row))
+            if (prod.length = 0) return;
+
             var product_id = prod.substr(0, prod.indexOf(")"));
+            if (!(product_id > 0)) {
+                alert("לא נבחר מוצר");
+                return;
+            }
             var q = get_value(document.getElementById("qua_" + my_row));
 
             var request = "../delivery/delivery-post.php?operation=get_price&id=" + product_id;
@@ -302,7 +313,7 @@ global $pos;
 
                     if (price > 0) {
                         document.getElementById("prc_" + my_row).value = price;
-                        document.getElementById("qua_" + my_row).focus();
+                        // document.getElementById("qua_" + my_row).focus();
                     }
                     calcOrder();
                 }
@@ -328,6 +339,8 @@ global $pos;
 			array_push( $header[0], gui_header( 2, "בחר מועד" ) );
 			array_push( $header[1], gui_select_mission( "mis_new" ) );
 		}
+		array_push( $header[0], gui_header( 2, "הערה/שם לקוח" ) );
+		array_push( $header[1], gui_input( "order_excerpt", "" ) );
 		print gui_table( $header );
 
 		print gui_lable( "rate", $pos ? "pos" : "" );

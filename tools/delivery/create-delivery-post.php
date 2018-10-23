@@ -14,7 +14,8 @@ require_once( '../business/business-post.php' );
 require_once( '../delivery/delivery.php' );
 
 // print header_text();
-$operation = $_GET["operation"];
+if ( isset( $_GET["operation"] ) ) {
+	$operation = $_GET["operation"];
 switch ( $operation ) {
 	case "add_header":
 		$order_id = $_GET["order_id"];
@@ -23,8 +24,7 @@ switch ( $operation ) {
 		$lines    = $_GET["lines"];
 		$edit     = isset( $_GET["edit"] );
 		$fee      = $_GET["fee"];
-		$date     = $_GET["date"];
-		create_delivery_header( $order_id, $total, $vat, $lines, $edit, $fee );
+		print create_delivery_header( $order_id, $total, $vat, $lines, $edit, $fee );
 		break;
 
 	case "add_lines":
@@ -37,9 +37,13 @@ switch ( $operation ) {
 		add_delivery_lines( $delivery_id, $_lines, $edit );
 		break;
 }
+}
+
 
 function create_delivery_header( $order_id, $total, $vat, $lines, $edit, $fee ) {
 	global $conn;
+	my_log( "create_delivery_header" );
+
 /// Usage: http://store.im-haadama.co.il/tools/delivery/db-add-delivery.php?client_id=1&order_id=1794&total=100&vat=18
 
 // If delivery edited delete old delivery
@@ -84,12 +88,15 @@ function create_delivery_header( $order_id, $total, $vat, $lines, $edit, $fee ) 
 		business_add_transaction( $client_id, $date, $total, $fee, $delivery_id, 3 );
 	}
 	$order = new WC_Order( $order_id );
-	$order->update_status( 'wc-awaiting-shipment' );
+	if ( ! $order->update_status( 'wc-awaiting-shipment' ) ) {
+		printbr( "can't order status" );
+	}
 //$sql = "update wp_posts set post_status = 'wc-completed' where id = " . $order_id;
 //
 
 // Output the new delivery id!
-	print $delivery_id;
+
+	return $delivery_id;
 }
 
 function add_delivery_lines( $delivery_id, $lines, $edit ) {
@@ -126,6 +133,10 @@ function add_delivery_lines( $delivery_id, $lines, $edit ) {
 
 function add_delivery_line( $product_name, $delivery_id, $quantity, $quantity_ordered, $unit_ordered, $vat, $price, $line_price, $prod_id ) {
 
+	if ( ! ( $delivery_id > 0 ) ) {
+		print "must send positive delivery id. Got " . $delivery_id . "<br/>";
+		die ( 1 );
+	}
 	$product_name = preg_replace( '/[\'"%()]/', "", $product_name );
 	// print "name: " . $product_name . "<br/>";
 

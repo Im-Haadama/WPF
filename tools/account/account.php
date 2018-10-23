@@ -96,9 +96,11 @@ function balance( $date, $client_id ) {
 
 }
 
-function show_trans( $customer_id, $from_last_zero = false, $checkbox = true, $top = 25 ) {
+function show_trans( $customer_id, $from_last_zero = false, $checkbox = true, $top = 10000 ) {
 	$sql = 'select date, transaction_amount, transaction_method, transaction_ref, id '
 	       . ' from im_client_accounts where client_id = ' . $customer_id . ' order by date desc ';
+
+	// print $sql . "<br/>";
 
 	if ( $top ) {
 		$sql .= " limit " . $top;
@@ -111,7 +113,7 @@ function show_trans( $customer_id, $from_last_zero = false, $checkbox = true, $t
 		$data .= "<td>בחר</td>";
 	}
 	$data .= "<td>תאריך</td><td>סכום</td><td>מע\"ם</td><td>יתרה</td><td>פעולה</td>" .
-	        "<td>תעודת משלוח</td><td>מס הזמנה</td>";
+	         "<td>אסתמכא</td><td>מס הזמנה</td>";
 
 	$data .= gui_cell( "מקבל" );
 	$data .= gui_cell( "קבלה" );
@@ -128,20 +130,26 @@ function show_trans( $customer_id, $from_last_zero = false, $checkbox = true, $t
 		$doc_id = $row[3];
 		$vat    = get_delivery_vat( $doc_id );
 
+		$is_delivery = ( $type == "משלוח" );
+		$receipt     = sql_query_single_scalar( "SELECT payment_receipt FROM im_delivery WHERE id = " . $doc_id );
+
 		// <input id=\"chk" . $doc_id . "\" class=\"trans_checkbox\" type=\"checkbox\">
-		if ( $checkbox )
-			$line .= "<td>" . gui_checkbox( "chk" . $doc_id, "trans_checkbox", "", "onchange=\"update_sum()\"" ) . "</td>";
+		if ( $checkbox ) {
+			if ( $receipt or ! $is_delivery ) {
+				$line .= gui_cell( "" );
+			} else {
+				$line .= "<td>" . gui_checkbox( "chk" . $doc_id, "trans_checkbox", "", "onchange=\"update_sum()\"" ) . "</td>";
+			}
+		}
 		$line    .= "<td>" . $date . "</td>";
-		$line    .= "<td>" . $amount . "</td>";
+		$line    .= "<td>" . gui_lable( "amo_" . $doc_id, $amount ) . "</td>";
 		$line    .= "<td>" . $vat . "</td>";
 		$balance = balance( $date, $customer_id );
 		$line    .= "<td>" . $balance . "</td>";
 		$line    .= "<td>" . $type . "</td>";
 
-		$delivery_id = $doc_id;
-
 		// Display item name
-		if ( $type == "משלוח" ) {
+		if ( $is_delivery ) {
 			$line     .= gui_cell( gui_hyperlink( $doc_id, MultiSite::LocalSiteTools() . '/delivery/get-delivery.php?id=' . $doc_id ) );
 			$order_id = get_order_id( $doc_id );
 			$line     .= "<td>" . $order_id . "</td>";
@@ -150,7 +158,7 @@ function show_trans( $customer_id, $from_last_zero = false, $checkbox = true, $t
 			} else {
 				$line .= "<td></td>";
 			}
-			$line .= gui_cell( sql_query_single_scalar( "SELECT payment_receipt FROM im_delivery WHERE id = " . $doc_id ) );
+			$line .= gui_cell( $receipt );
 		} else {
 			$line .= "<td>" . $doc_id . "</td><td></td><td></td>";
 			$line .= gui_cell( "" );
@@ -173,7 +181,15 @@ function show_trans( $customer_id, $from_last_zero = false, $checkbox = true, $t
 }
 
 function get_payment_method_name( $client_id ) {
-	return sql_query_single_scalar( "SELECT name FROM im_payments WHERE `id` = " . get_payment_method( $client_id ) );
+	if ( $client_id > 0 ) {
+		$p = get_payment_method( $client_id );
+		if ( $p > 0 ) {
+			return sql_query_single_scalar( "SELECT name FROM im_payments WHERE `id` = " . $p );
+		}
+		print "לא נבחר אמצעי ברירת מחדל<br/>";
+	} else {
+		return "לא נבחר לקוח";
+	}
 }
 
 function get_payment_method( $client_id ) {
@@ -182,7 +198,12 @@ function get_payment_method( $client_id ) {
 		return $m;
 	}
 
-	return sql_query_single_scalar( "SELECT id FROM im_payments WHERE `default` = 1" );
+	$p = sql_query_single_scalar( "SELECT id FROM im_payments WHERE `default` = 1" );
+	if ( $p ) {
+		return $p;
+	} else {
+		return "לא נבחר אמצעי ברירת מחדל";
+	}
 }
 
 function im_set_default_display_name( $user_id ) {
@@ -209,31 +230,3 @@ function im_set_default_display_name( $user_id ) {
 	}
 }
 
-function get_invoice_user_id( $customer_id ) {
-	// print "start";
-	$id = get_user_meta( $customer_id, 'invoice_id', 1 );
-
-	if ( $id > 0 ) {
-		return $id;
-	}
-
-	//   print "connect to invoice<br/>";
-	$invoice = new Invoice4u();
-	$invoice->Login();
-
-	if ( is_null( $invoice->token ) ) {
-		die ( "can't login to Invoice4u" . $invoice->invoice_user );
-	}
-	$client_email = get_customer_email( $customer_id );
-	// print $client_email;
-	$client = $invoice->GetCustomerByEmail( $client_email );
-
-	if ( ! $client ) {
-		$client = $invoice->GetCustomerByName( get_customer_name( $customer_id ) );
-	}
-
-	$id = $client->ID;
-	update_user_meta( $customer_id, 'invoice_id', $id );
-
-	return $id;
-}

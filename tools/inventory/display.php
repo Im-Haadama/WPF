@@ -1,8 +1,9 @@
 <?php
+
 require_once "../r-shop_manager.php";
-require_once "../gui/sql_table.php";
+require_once( ROOT_DIR . "/agla/gui/sql_table.php" );
 require_once( "../header.php" );
-require_once( "../gui/inputs.php" );
+require_once( ROOT_DIR . "/agla/gui/inputs.php" );
 require_once( "../options.php" );
 ?>
 <script type="text/javascript" src="/agla/client_tools.js"></script>
