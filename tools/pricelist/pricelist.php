@@ -6,6 +6,9 @@
  * Time: 10:16
  */
 // require_once( '../im-tools.php' );
+// error_reporting( E_ALL );
+// ini_set( 'display_errors', 'on' );
+
 if ( ! defined( "TOOLS_DIR" ) ) {
 	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
 }
@@ -14,8 +17,8 @@ require_once( TOOLS_DIR . '/catalog/catalog.php' );
 require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 require_once( TOOLS_DIR . '/multi-site/multi-site.php' );
 require_once( TOOLS_DIR . '/wp/Product.php' );
-require_once( "../orders/orders-common.php" );
-require_once( "../orders/Order.php" );
+require_once( TOOLS_DIR . "/orders/orders-common.php" );
+require_once( TOOLS_DIR . "/orders/Order.php" );
 
 class PricelistItem {
 	private $id;
@@ -164,7 +167,6 @@ class PriceList {
 	}
 
 	function Refresh() {
-		print "start refresh<br/>";
 		$priceslist_items = sql_query_array_scalar( "SELECT id FROM im_supplier_price_list WHERE supplier_id = " . $this->SupplierID );
 		foreach ( $priceslist_items as $pricelist_id ) {
 			$prod_ids = Catalog::GetProdID( $pricelist_id );
@@ -196,13 +198,11 @@ class PriceList {
 		}
 	}
 
-	function PrintHTML() {
+	function PrintHTML( $ordered_only = false ) {
 
 		Order::CalculateNeeded( $needed_products );
 
 		$catalog = new Catalog();
-
-		$data = "";
 
 		$sql = 'SELECT product_name, price, date, pl.id, supplier_product_code, s.factor ' .
 		       ' FROM im_supplier_price_list pl ' .
@@ -247,7 +247,8 @@ class PriceList {
 				}
 			}
 			// print $prod_id . " " . $map_id . "<br/>";
-			array_push( $table_rows, print_html_line( $row[0], $row[1], $row[2], $pl_id, $row[4], $row[5], $prod_id, true, $map_id, $needed_products ) );
+			if ( ! $ordered_only or ( $needed_products[ $prod_id ][0] or $needed_products[ $prod_id ][1] ) )
+				array_push( $table_rows, print_html_line( $row[0], $row[1], $row[2], $pl_id, $row[4], $row[5], $prod_id, true, $map_id, $needed_products ) );
 			// $data .= $line;
 		}
 
@@ -260,6 +261,7 @@ class PriceList {
 
 		$data .= gui_cell( gui_input( "price", "" ) );
 		$data .= "</tr>";
+
 		print $data;
 	}
 
@@ -289,8 +291,8 @@ class PriceList {
 		$regular_price, $sale_price, $product_name, $code = 10, $category, &$id, $parent_id = null,
 		$picture_path = null
 	) {
-		global $debug;
-
+		$debug = true;
+		print "start";
 		print "AddOrUpdate: " . $product_name . " " . $regular_price . "<br/>";
 		my_log( __METHOD__, __FILE__ );
 		if ( mb_strlen( $product_name ) > 40 ) {
@@ -436,6 +438,7 @@ class PriceList {
 		my_log( __METHOD__, "update line $id, price $price, sale price $sale_price" );
 		$sql = "UPDATE im_supplier_price_list SET price = " . $price .
 		       ", sale_price = " . $sale_price .
+		       ", date = '" . date( 'y/m/d' ) . "' " .
 		       " WHERE id = " . $id;
 		mysqli_query( $conn, $sql );
 
@@ -658,7 +661,7 @@ function print_html_line( $product_name, $price, $date, $pl_id, $supplier_produc
 
 	//$line .= "<td>";
 	if ( $editable ) {
-		array_push( $line, gui_input( $pl_id, $price, array( 'onchange="changed(this)"' ) ) );
+		array_push( $line, gui_input( "prc_" . $pl_id, $price, array( 'onchange="changed(this)"' ), "prc_" . $pl_id, "", 7 ) );
 	} else {
 		array_push( $line, $price );
 	}
@@ -699,7 +702,7 @@ function print_html_line( $product_name, $price, $date, $pl_id, $supplier_produc
 		if ( $needed ) {
 //			var_dump($needed);
 //			die(1);
-			$n = orders_per_item( $linked_prod_id, 1, true );
+			$n = orders_per_item( $linked_prod_id, 1, true, true, true );
 //			"";
 //			if (isset($needed[$linked_prod_id][0]))
 //				$n .= $needed[$linked_prod_id][0];

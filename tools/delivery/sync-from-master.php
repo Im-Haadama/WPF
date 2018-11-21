@@ -6,9 +6,14 @@
  * Time: 15:55
  */
 
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
 
-require_once( "../im_tools.php" );
-require_once( "../multi-site/multi-site.php" );
+if ( ! defined( 'TOOLS_DIR' ) ) {
+	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
+}
+require_once( TOOLS_DIR . "/im_tools.php" );
+require_once( TOOLS_DIR . "/multi-site/multi-site.php" );
 require_once( ROOT_DIR . "/agla/gui/inputs.php" );
 
 print header_text( false, true, true );

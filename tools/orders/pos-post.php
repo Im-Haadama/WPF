@@ -1,6 +1,6 @@
 <?php
 
-ini_set( 'display_errors', 'on' );
+//ini_set( 'display_errors', 'on' );
 
 /**
  * Created by PhpStorm.
@@ -51,7 +51,7 @@ switch ( $operation ) {
 	case "create_delivery":
 //		$order_id = $_GET["order_id"];
 
-		create_delivery( $order_id );
+		delivery::CreateDeliveryFromOrder( $order_id, 1 );
 		break;
 
 	case "close_order":
@@ -71,50 +71,3 @@ switch ( $operation ) {
 //	create_receipt($cash, $bank, $check, $credit, $change, $u, date('Y-m-d'), array($delivery_id));
 //}
 
-function create_delivery( $order_id ) {
-	$prods       = array();
-	$order       = new WC_Order( $order_id );
-	$order_items = $order->get_items();
-	$total       = 0;
-	$vat         = 0;
-	$lines       = 0;
-	foreach ( $order_items as $product ) {
-		$lines ++;
-		$p = $product['price'];
-		// push_array($prods, array($product['qty']));
-		// $total += $p * $q;
-		// var_dump($product);
-		$prod                     = array();
-		$prod['product_name']     = $product["name"];
-		$prod['quantity']         = $product["quantity"];
-		$prod['quantity_ordered'] = 0;
-		$prod['vat']              = 0;
-		$prod['price']            = $product['total'] / $product["quantity"];
-		$prod['line_price']       = $product['total'];
-		$total                    += $product['total'];
-		$prod['prod_id']          = $product['product_id'];
-
-		// var_dump($prod);
-		array_push( $prods, $prod );
-	}
-
-	$delivery_id = create_delivery_header( $order_id, $total, $vat, $lines, false, 0 );
-
-	print " מספר " . $delivery_id;
-
-	foreach ( $prods as $prod ) {
-		add_delivery_line( $prod['product_name'], $delivery_id, $prod['quantity'], $prod['quantity_ordered'], 0,
-			$prod['vat'], $prod['price'], $prod['line_price'], $prod['prod_id'] );
-	}
-
-	print " נוצרה <br/>";
-
-//	$order = new WC_Order( $order_id );
-//	$order->update_status( 'wc-completed' );
-
-	global $track_email;
-	$delivery = new delivery( $delivery_id );
-	$delivery->send_mail( $track_email, false );
-
-	return $delivery_id;
-}

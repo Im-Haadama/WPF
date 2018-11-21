@@ -18,13 +18,19 @@ if ( isset( $_GET["operation"] ) ) {
 	$operation = $_GET["operation"];
 switch ( $operation ) {
 	case "add_header":
-		$order_id = $_GET["order_id"];
-		$total    = $_GET["total"];
-		$vat      = $_GET["vat"];
-		$lines    = $_GET["lines"];
-		$edit     = isset( $_GET["edit"] );
-		$fee      = $_GET["fee"];
-		print create_delivery_header( $order_id, $total, $vat, $lines, $edit, $fee );
+		$order_id    = $_GET["order_id"];
+		$total       = $_GET["total"];
+		$vat         = $_GET["vat"];
+		$lines       = $_GET["lines"];
+		$edit        = isset( $_GET["edit"] );
+		$fee         = $_GET["fee"];
+		$draft       = isset( $_GET["draft"] );
+		$delivery_id = null;
+		if ( $edit ) {
+			$delivery_id = $_GET["delivery_id"];
+		}
+		print delivery::CreateDeliveryHeader( $order_id, $total, $vat, $lines, $edit, $fee, $delivery_id, $draft );
+		// create_delivery_header( $order_id, $total, $vat, $lines, $edit, $fee );
 		break;
 
 	case "add_lines":
@@ -37,66 +43,6 @@ switch ( $operation ) {
 		add_delivery_lines( $delivery_id, $_lines, $edit );
 		break;
 }
-}
-
-
-function create_delivery_header( $order_id, $total, $vat, $lines, $edit, $fee ) {
-	global $conn;
-	my_log( "create_delivery_header" );
-
-/// Usage: http://store.im-haadama.co.il/tools/delivery/db-add-delivery.php?client_id=1&order_id=1794&total=100&vat=18
-
-// If delivery edited delete old delivery
-	if ( $edit ) {
-		$sql = "UPDATE im_delivery SET vat = " . $vat . ", " .
-		       " total = " . $total . ", " .
-		       " dlines = " . $lines . ", " .
-		       " fee = " . $fee .
-		       " WHERE order_id = " . $order_id;
-//        $id = get_delivery_id($order_id);
-//        $d = new delivery($id);
-//        $d->Delete();
-	} else {
-		$sql = "INSERT INTO im_delivery (date, order_id, vat, total, dlines, fee) "
-		       . "VALUES ( CURRENT_TIMESTAMP, "
-		       . $order_id . ", "
-		       . $vat . ', '
-		       . $total . ', ' . $lines . ', ' . $fee . ')';
-	}
-	my_log( $sql );
-
-	sql_query( $sql );
-
-	if ( $edit ) {
-		$delivery_id = $_GET["delivery_id"];
-	} else {
-		$delivery_id = mysqli_insert_id( $conn );
-	}
-
-	if ( ! ( $delivery_id > 0 ) ) {
-		die ( "Error!" );
-	}
-	$client_id = order_get_customer_id( $order_id );
-
-	if ( $edit ) {
-		account_update_transaction( $total, $delivery_id, $client_id );
-		business_update_transaction( $delivery_id, $total, $fee );
-	} else { // New!
-		$date = date( "Y-m-d" );
-
-		account_add_transaction( $client_id, $date, $total, $delivery_id, "משלוח" );
-		business_add_transaction( $client_id, $date, $total, $fee, $delivery_id, 3 );
-	}
-	$order = new WC_Order( $order_id );
-	if ( ! $order->update_status( 'wc-awaiting-shipment' ) ) {
-		printbr( "can't order status" );
-	}
-//$sql = "update wp_posts set post_status = 'wc-completed' where id = " . $order_id;
-//
-
-// Output the new delivery id!
-
-	return $delivery_id;
 }
 
 function add_delivery_lines( $delivery_id, $lines, $edit ) {
@@ -127,36 +73,10 @@ function add_delivery_lines( $delivery_id, $lines, $edit ) {
 //        my_log("product_id = " . $product_id . ", supplier_id=" . $supplier_id . ", product_name=" . $product_name);
 		print "<div style=\"direction: ltr;\"> id: " . $prod_id . ", name: " . $product_name . " delivery_id: " . $delivery_id . " quantity: " . $quantity . " quantity_ordred: " . $quantity_ordered .
 		      "units: " . $unit_ordered . " vat: " . $vat . " price: " . $price . " line_price: " . $line_price . "</div>";
-		add_delivery_line( $product_name, $delivery_id, $quantity, $quantity_ordered, $unit_ordered, $vat, $price, $line_price, $prod_id );
+		delivery::AddDeliveryLine( $product_name, $delivery_id, $quantity, $quantity_ordered, $unit_ordered, $vat, $price, $line_price, $prod_id );
 	}
 }
 
-function add_delivery_line( $product_name, $delivery_id, $quantity, $quantity_ordered, $unit_ordered, $vat, $price, $line_price, $prod_id ) {
-
-	if ( ! ( $delivery_id > 0 ) ) {
-		print "must send positive delivery id. Got " . $delivery_id . "<br/>";
-		die ( 1 );
-	}
-	$product_name = preg_replace( '/[\'"%()]/', "", $product_name );
-	// print "name: " . $product_name . "<br/>";
-
-	$sql = "INSERT INTO im_delivery_lines (delivery_id, product_name, quantity, quantity_ordered, unit_ordered, vat, price, line_price, prod_id) VALUES ("
-	       . $delivery_id . ", "
-	       . "'" . urldecode( $product_name ) . "', "
-	       . $quantity . ", "
-	       . $quantity_ordered . ", "
-	       . $unit_ordered . ", "
-	       . $vat . ", "
-	       . $price . ', '
-	       . round( $line_price, 2 ) . ', '
-	       . $prod_id . ' )';
-
-	// print $sql . "<br/>";
-
-	my_log( $sql, "db-add-delivery-line.php" );
-
-	sql_query( $sql);
-}
 
 ?>
 

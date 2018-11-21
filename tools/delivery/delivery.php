@@ -18,7 +18,9 @@ include_once( TOOLS_DIR . "/multi-site/multi-site.php" );
 require_once( TOOLS_DIR . "/mail.php" );
 require_once( TOOLS_DIR . "/account/gui.php" );
 require_once( TOOLS_DIR . "/delivery/delivery-common.php" );
-
+require_once( TOOLS_DIR . "/inventory/inventory.php" );
+require_once( TOOLS_DIR . "/business/business.php" );
+require_once( ROOT_DIR . "/tools/catalog/Basket.php" );
 $debug = false;
 
 class delivery {
@@ -39,82 +41,220 @@ class delivery {
 		$this->ID = $id;
 	}
 
-	public static function GuiCreateNewNoOrder() {
-		$data = gui_table( array(
-			array( "לקוח:", gui_select_client() ),
-			array( "תאריך", gui_input_date( "delivery_date", "" ) ),
-			array( gui_button( "btn_add_delivery", "", "הוסף תעודת משלוח" ) )
-		) );
+	public static function CreateDeliveryFromOrder( $order_id, $q ) {
+		// $q = 1: take from order.
+		// $q = 2: inventory
+		$prods       = array();
+		$order       = new WC_Order( $order_id );
+		$order_items = $order->get_items();
+		$total       = 0;
+		$vat         = 0;
+		$lines       = 0;
+		foreach ( $order_items as $product ) {
+			$lines ++;
+			// $p = $product['price'];
+			// push_array($prods, array($product['qty']));
+			// $total += $p * $q;
+			// var_dump($product);
+			$prod                 = array();
+			$prod['product_name'] = $product["name"];
+			switch ( $q ) {
+				case 1:
+					$prod['quantity'] = $product["quantity"];
+					break;
+				case 2:
+					$prod['quantity'] = inventory::GetQuantity( $product['product_id'] );
+					break;
 
-		return $data;
-	}
+			}
+			$prod['quantity_ordered'] = 0;
+			$prod['vat']              = 0;
+			$quantity                 = $product["quantity"];
 
-	public static function CreateFromOrder( $order_id ) {
+			$prod['price']      = $quantity ? ( $product['total'] / $quantity ) : 0;
+			$prod['line_price'] = $product['total'];
+			$total              += $product['total'];
+			$prod['prod_id']    = $product['product_id'];
 
-		$id = get_delivery_id( $order_id );
-
-		$instance = new self( $id );
-
-		$instance->SetOrderId( $order_id );
-
-		return $instance;
-	}
-
-	private function SetOrderID( $order_id ) {
-		$this->d_OrderID = $order_id;
-	}
-
-	/**
-	 * @return int
-	 */
-	public function getUserId() {
-		if ( ! $this->user_id ) {
-			$this->user_id = sql_query_single_scalar( "SELECT client_from_delivery(id) FROM im_delivery WHERE id = " . $this->user_id );
+			// var_dump($prod);
+			array_push( $prods, $prod );
 		}
 
-		return $this->user_id;
+		$delivery_id = delivery::CreateDeliveryHeader( $order_id, $total, $vat, $lines, false, 0, 0, false );
+
+		print " מספר " . $delivery_id;
+
+		foreach ( $prods as $prod ) {
+			delivery::AddDeliveryLine( $prod['product_name'], $delivery_id, $prod['quantity'], $prod['quantity_ordered'], 0,
+				$prod['vat'], $prod['price'], $prod['line_price'], $prod['prod_id'] );
+		}
+
+		print " נוצרה <br/>";
+
+//	$order = new WC_Order( $order_id );
+//	$order->update_status( 'wc-completed' );
+
+		global $track_email;
+		$delivery = new delivery( $delivery_id );
+		$delivery->send_mail( $track_email, false );
+
+		return $delivery_id;
 	}
 
-	public function DeliveryDate() {
+	public static function CreateDeliveryHeader( $order_id, $total, $vat, $lines, $edit, $fee, $delivery_id = null, $_draft = false ) {
 		global $conn;
 
-		$sql = "SELECT date FROM im_delivery WHERE id = " . $this->ID;
+		$draft = $_draft ? 1 : 0;
 
-		$result = $conn->query( $sql );
-
-		if ( ! $result ) {
-			print $sql;
-			die ( "select error" );
+		if ( $edit ) {
+			$sql = "UPDATE im_delivery SET vat = " . $vat . ", " .
+			       " total = " . $total . ", " .
+			       " dlines = " . $lines . ", " .
+			       " draft = " . $draft . ", " .
+			       " fee = " . $fee .
+			       " WHERE order_id = " . $order_id;
+			sql_query( $sql );
+		} else {
+			$sql = "INSERT INTO im_delivery (date, order_id, vat, total, dlines, fee, draft) "
+			       . "VALUES ( CURRENT_TIMESTAMP, "
+			       . $order_id . ", "
+			       . $vat . ', '
+			       . $total . ', '
+			       . $lines . ', '
+			       . $fee . ', '
+			       . $draft . ')';
+			sql_query( $sql );
+			$delivery_id = mysqli_insert_id( $conn );
 		}
 
-		$row = mysqli_fetch_assoc( $result );
+		if ( ! ( $delivery_id > 0 ) ) {
+			die ( "Error!" );
+		}
+		$client_id = order_get_customer_id( $order_id );
 
-		return $row["date"];
+		if ( $edit ) {
+			account_update_transaction( $total, $delivery_id, $client_id );
+			business_update_transaction( $delivery_id, $total, $fee );
+		} else { // New!
+			$date = date( "Y-m-d" );
+
+			account_add_transaction( $client_id, $date, $total, $delivery_id, "משלוח" );
+			business_add_transaction( $client_id, $date, $total, $fee, $delivery_id, 3 );
+		}
+		$order = new WC_Order( $order_id );
+		if ( ! $order->update_status( 'wc-awaiting-shipment' ) ) {
+			printbr( "can't update order status" );
+		}
+
+		// Return the new delivery id!
+
+		return $delivery_id;
 	}
 
-	public function Delete() {
-		// change the order back to processing
-		$order_id = $this->OrderId();
+	public static function AddDeliveryLine( $product_name, $delivery_id, $quantity, $quantity_ordered, $unit_ordered, $vat, $price, $line_price, $prod_id ) {
 
-		$sql = "UPDATE wp_posts SET post_status = 'wc-processing' WHERE id = " . $order_id;
+		if ( ! ( $delivery_id > 0 ) ) {
+			print "must send positive delivery id. Got " . $delivery_id . "<br/>";
+			die ( 1 );
+		}
+		$product_name = preg_replace( '/[\'"%()]/', "", $product_name );
+		// print "name: " . $product_name . "<br/>";
+
+		$sql = "INSERT INTO im_delivery_lines (delivery_id, product_name, quantity, quantity_ordered, unit_ordered, vat, price, line_price, prod_id) VALUES ("
+		       . $delivery_id . ", "
+		       . "'" . urldecode( $product_name ) . "', "
+		       . $quantity . ", "
+		       . $quantity_ordered . ", "
+		       . $unit_ordered . ", "
+		       . $vat . ", "
+		       . $price . ', '
+		       . round( $line_price, 2 ) . ', '
+		       . $prod_id . ' )';
+
+// print $sql . "<br/>";
+
+		my_log( $sql, "db-add-delivery-line.php" );
 
 		sql_query( $sql );
+	}
 
-		// Remove from client account
-		$sql = 'DELETE FROM im_client_accounts WHERE transaction_ref = ' . $this->ID;
+	function send_mail( $more_email = null, $edit = false ) {
+		print $more_email;
+		global $business_name;
+		global $bank_info;
+		global $support_email;
+		global $mail_sender;
 
-		sql_query( $sql );
+		$order_id = get_order_id( $this->ID );
+		if ( ! ( $order_id > 0 ) ) {
+			die ( "can't get order id from delivery " . $this->ID );
+		}
+		// print "oid= " . $order_id . "<br/>";
+		$client_id = order_get_customer_id( $this->OrderId() );
+		if ( ! ( $client_id > 0 ) ) {
+			die ( "can't get client id from order " . $this->OrderId() );
+		}
 
-		// Remove the header
-		$sql = 'DELETE FROM im_delivery WHERE id = ' . $this->ID;
+		my_log( __FILE__, "client_id = " . $client_id );
 
-		sql_query( $sql );
+		$sql = "SELECT dlines FROM im_delivery WHERE id = " . $this->ID;
 
-		// Remove the lines
-		$sql = 'DELETE FROM im_delivery_lines WHERE delivery_id = ' . $this->ID;
+		$dlines = sql_query_single_scalar( $sql );
 
-		sql_query( $sql );
+		my_log( __FILE__, "dlines = " . $dlines );
 
+		$del_user = order_info( $order_id, '_billing_first_name' );
+		$message  = header_text( true, true, true );
+
+		$message .= "<body>";
+		$message .= "שלום " . $del_user . "!
+<br><br>
+המשלוח שלך ארוז ויוצא לדרך!";
+
+		$message .= "<Br> להלן פרטי המשלוח";
+
+		$message .= $this->delivery_text( ImDocumentType::delivery, ImDocumentOperation::show );
+		// file_get_contents("http://store.im-haadama.co.il/tools/delivery/get-delivery.php?id=" . $del_id . "&send=1");
+
+		$message .= "<br> היתרה המעודכנת במערכת " . client_balance( $client_id );
+
+		$message .= "<br /> לפרטים אודות מצב החשבון והמשלוח האחרון הכנס " .
+		            gui_hyperlink( "מצב חשבון", get_site_url() . '/balance' ) .
+		            "
+ <br/>
+ העברות בנקאיות מתעדכנות בחשבונכם אצלנו עד עשרה ימים לאחר התשלום.
+<li>
+למשלמים בהעברה בנקאית - פרטי החשבון: " . $bank_info . ". 
+</li>
+<li>המחאה לפקודת " . $business_name . ".
+</li>
+<li>
+במידה ושילמתם כבר, המכתב נשלח לצורך פירוט עלות המשלוח בלבד ואין צורך לשלם שוב.
+</li>
+
+נשמח מאוד לשמוע מה דעתכם! <br/>
+ לשאלות בנוגע למשלוח מוזמנים ליצור איתנו קשר במייל " . $support_email . "
+</body>
+</html>";
+
+		$user_info = get_userdata( $client_id );
+		my_log( $user_info->user_email );
+		$to = $user_info->user_email;
+		print "To: " . $to . "<br/>";
+		if ( $more_email ) {
+			$to = $to . ", " . $more_email;
+		}
+		print "From: " . $support_email . "<br/>";
+		print "To: " . $to . "<br/>";
+		// print "Message:<br/>";
+		// print $message . "<br/>";
+		$subject = "משלוח מספר" . $this->ID . " בוצע";
+		if ( $edit ) {
+			$subject = "משלוח מספר " . $this->ID . " - תיקון";
+		}
+		send_mail( $subject, $to, $message );
+
+		// print "mail sent to " . $to . "<br/>";
 	}
 
 	public function OrderId() {
@@ -125,24 +265,6 @@ class delivery {
 		}
 
 		return $this->d_OrderID;
-	}
-
-	public function DeleteLines() {
-		$sql = 'DELETE FROM im_delivery_lines WHERE delivery_id = ' . $this->ID;
-
-		sql_query( $sql );
-	}
-
-	public function Price() {
-		// $sql = 'SELECT round(transaction_amount, 2) FROM im_client_accounts WHERE transaction_ref = ' . $this->ID;
-		$sql = 'SELECT round(total, 2) FROM im_delivery WHERE id = ' . $this->ID;
-		// my_log($sql);
-
-		return sql_query_single_scalar( $sql );
-	}
-
-	function PrintDeliveries( $document_type, $operation, $margin = false ) {
-		print $this->delivery_text( $document_type, $operation, $margin );
 	}
 
 	function delivery_text( $document_type, $operation = ImDocumentOperation::show, $margin = false ) {
@@ -370,6 +492,8 @@ class delivery {
 
 		global $global_vat;
 
+		$line_color = null;
+
 		$line = array();
 		for ( $i = 0; $i <= DeliveryFields::max_fields; $i ++ ) {
 			$line[ $i ] = "";
@@ -454,13 +578,17 @@ class delivery {
 			$prod_name        = $row[1];
 			$quantity_ordered = $row[2];
 			$unit_q           = $row[3];
-			if ( $unit_q > 0 and $quantity_ordered == 0 ) {
-				$quantity_ordered = "";
-			}
+//			if ( $unit_q > 0 and $quantity_ordered == 0 ) {
+//				$quantity_ordered = "";
+//			}
 			$quantity_delivered = $row[4];
 			$price         = $row[5];
 			$delivery_line = $row[6];
 			$has_vat       = $row[7];
+
+			if ( $quantity_delivered < ( 0.8 * $quantity_ordered ) or ( $unit_q > 0 and $quantity_delivered == 0 ) ) {
+				$line_color = "yellow";
+			}
 		}
 
 		// in Order price is total/q. in delivery get from db.
@@ -492,7 +620,7 @@ class delivery {
 		}
 
 		// has_vat
-		$line[ DeliveryFields::has_vat ] = gui_checkbox( "has_vat" . $prod_id, "has_vat", $has_vat > 0 ); // 6 - has vat
+		$line[ DeliveryFields::has_vat ] = gui_checkbox( "hvt_" . $prod_id, "has_vat", $has_vat > 0 ); // 6 - has vat
 
 		// q_supply
 		switch ( $document_type ) {
@@ -571,6 +699,9 @@ class delivery {
 
 		$this->line_number = $this->line_number + 1;
 		$sums = null;
+		if ( $line_color )
+			$style .= 'bgcolor="' . $line_color . '"';
+
 		return gui_row( $line, $this->line_number, $show_fields, $sums, $delivery_fields_names, $style );
 	}
 
@@ -581,23 +712,6 @@ class delivery {
 			return "order_id = " . $this->d_OrderID;
 		}
 	}
-
-
-//	public function delivery_line_group($show_fields, $document_type, $line_ids, $client_type, $operation, $margin = false, $style = null)
-//	{
-//
-//	}
-
-	// Used for:
-	// Creating new delivery.
-	// - Prices are taken from order for regular clients, discount for siton and buy prices for owner
-	// display delivery
-	// - Prices are taken from the database - delivery
-
-	// public function delivery_line($show_fields, $prod_id, $quantity_ordered, $unit_ordered, $quantity_delivered, $price, $has_vat, $document_type, $edit)
-	// Delivery or Order line.
-	// If Document is delivery, line_id is delivery line id.
-	// If Document is order, line_id is order line id.
 
 	function expand_basket( $basket_id, $quantity_ordered, $level, $show_fields, $document_type, $line_id, $client_type, $edit, &$data ) {
 		global $conn, $delivery_fields_names;
@@ -634,7 +748,7 @@ class delivery {
 					$has_vat = false;
 				}
 				$line[ DeliveryFields::product_id ] = $prod_id;
-				$line[ DeliveryFields::has_vat ]    = gui_checkbox( "has_vat" . $prod_id, "has_vat", $has_vat > 0 );
+				$line[ DeliveryFields::has_vat ]    = gui_checkbox( "hvt_" . $prod_id, "has_vat", $has_vat > 0 );
 				$line[ DeliveryFields::order_q ]    = $quantity_ordered;
 				$line[ DeliveryFields::delivery_q ] = gui_input( "quantity" . $this->line_number, "",
 					array( 'onkeypress="moveNextRow(' . $this->line_number . ')"' ) );
@@ -663,6 +777,142 @@ class delivery {
 		}
 	}
 
+	public static function GuiCreateNewNoOrder() {
+		$data = gui_table( array(
+			array( "לקוח:", gui_select_client() ),
+			array( "תאריך", gui_input_date( "delivery_date", "" ) ),
+			array( gui_button( "btn_add_delivery", "", "הוסף תעודת משלוח" ) )
+		) );
+
+		return $data;
+	}
+
+	public static function CreateFromOrder( $order_id ) {
+
+		$id = get_delivery_id( $order_id );
+
+		$instance = new self( $id );
+
+		$instance->SetOrderId( $order_id );
+
+		return $instance;
+	}
+
+	private function SetOrderID( $order_id ) {
+		$this->d_OrderID = $order_id;
+	}
+
+	public function isDraft() {
+		return sql_query_single_scalar( "select draft from im_delivery where ID = " . $this->ID );
+	}
+
+	public function DeliveryDate() {
+		global $conn;
+
+		$sql = "SELECT date FROM im_delivery WHERE id = " . $this->ID;
+
+		$result = $conn->query( $sql );
+
+		if ( ! $result ) {
+			print $sql;
+			die ( "select error" );
+		}
+
+		$row = mysqli_fetch_assoc( $result );
+
+		return $row["date"];
+	}
+
+	public function Delete() {
+		// change the order back to processing
+		$order_id = $this->OrderId();
+		if ( ! $order_id ) {
+			die ( "no order id: Delete" );
+		}
+
+		$sql = "UPDATE wp_posts SET post_status = 'wc-processing' WHERE id = " . $order_id;
+
+		sql_query( $sql );
+
+		// Remove from client account
+		$sql = 'DELETE FROM im_client_accounts WHERE transaction_ref = ' . $this->ID;
+
+		sql_query( $sql );
+
+		// Remove the header
+		$sql = 'DELETE FROM im_delivery WHERE id = ' . $this->ID;
+
+		sql_query( $sql );
+
+		// Remove the lines
+		$sql = 'DELETE FROM im_delivery_lines WHERE delivery_id = ' . $this->ID;
+
+		sql_query( $sql );
+
+	}
+
+	public function DeleteLines() {
+		$sql = 'DELETE FROM im_delivery_lines WHERE delivery_id = ' . $this->ID;
+
+		sql_query( $sql );
+	}
+
+	public function Price() {
+		// $sql = 'SELECT round(transaction_amount, 2) FROM im_client_accounts WHERE transaction_ref = ' . $this->ID;
+		$sql = 'SELECT round(total, 2) FROM im_delivery WHERE id = ' . $this->ID;
+		// my_log($sql);
+
+		return sql_query_single_scalar( $sql );
+	}
+
+	public function getPrintDeliveryOption() {
+		$user_id = $this->getUserId();
+
+		$option = get_user_meta( $user_id, "print_delivery_note" );
+
+		if ( $option == null ) {
+			$option = 'MP';
+		}
+
+		return $option;
+	}
+
+
+//	public function delivery_line_group($show_fields, $document_type, $line_ids, $client_type, $operation, $margin = false, $style = null)
+//	{
+//
+//	}
+
+	// Used for:
+	// Creating new delivery.
+	// - Prices are taken from order for regular clients, discount for siton and buy prices for owner
+	// display delivery
+	// - Prices are taken from the database - delivery
+
+	// public function delivery_line($show_fields, $prod_id, $quantity_ordered, $unit_ordered, $quantity_delivered, $price, $has_vat, $document_type, $edit)
+	// Delivery or Order line.
+	// If Document is delivery, line_id is delivery line id.
+	// If Document is order, line_id is order line id.
+
+	/**
+	 * @return int
+	 */
+	public function getUserId() {
+		if ( ! $this->user_id ) {
+			$this->user_id = sql_query_single_scalar( "SELECT client_from_delivery(id) FROM im_delivery WHERE id = " . $this->user_id );
+		}
+
+		return $this->user_id;
+	}
+
+	function PrintDeliveries( $document_type, $operation, $margin = false ) {
+		print $this->delivery_text( $document_type, $operation, $margin );
+	}
+
+	// function expand_basket( $basket_id, $client_type, $quantity_ordered, &$data, $level ) {
+	// Called when creating a delivery from an order.
+	// After the basket line is shown, we print here the basket lines and basket discount line.
+
 	public function DeliveryFee() {
 		$sql = 'SELECT fee FROM im_delivery WHERE id = ' . $this->ID;
 
@@ -670,89 +920,6 @@ class delivery {
 		// my_log($sql);
 
 		return sql_query_single_scalar( $sql);
-	}
-
-	// function expand_basket( $basket_id, $client_type, $quantity_ordered, &$data, $level ) {
-	// Called when creating a delivery from an order.
-	// After the basket line is shown, we print here the basket lines and basket discount line.
-
-	function send_mail( $more_email = null, $edit = false ) {
-		print $more_email;
-		global $business_name;
-		global $bank_info;
-		global $support_email;
-		global $mail_sender;
-
-		$order_id  = get_order_id( $this->ID );
-		if ( ! ( $order_id > 0 ) ) {
-			die ( "can't get order id from delivery " . $this->ID );
-		}
-		// print "oid= " . $order_id . "<br/>";
-		$client_id = order_get_customer_id( $this->OrderId() );
-		if ( ! ( $client_id > 0 ) ) {
-			die ( "can't get client id from order " . $this->OrderId() );
-		}
-
-		my_log( __FILE__, "client_id = " . $client_id );
-
-		$sql = "SELECT dlines FROM im_delivery WHERE id = " . $this->ID;
-
-		$dlines = sql_query_single_scalar( $sql);
-
-		my_log( __FILE__, "dlines = " . $dlines );
-
-		$del_user = order_info( $order_id, '_billing_first_name' );
-		$message  = header_text( true, true, true );
-
-		$message .= "<body>";
-		$message .= "שלום " . $del_user . "!
-<br><br>
-המשלוח שלך ארוז ויוצא לדרך!";
-
-		$message .= "<Br> להלן פרטי המשלוח";
-
-		$message .= $this->delivery_text( ImDocumentType::delivery, ImDocumentOperation::show);
-		// file_get_contents("http://store.im-haadama.co.il/tools/delivery/get-delivery.php?id=" . $del_id . "&send=1");
-
-		$message .= "<br> היתרה המעודכנת במערכת " . client_balance( $client_id );
-
-		$message .= "<br /> לפרטים אודות מצב החשבון והמשלוח האחרון הכנס " .
-		            gui_hyperlink( "מצב חשבון", get_site_url() . '/balance' ) .
-		            "
- <br/>
- העברות בנקאיות מתעדכנות בחשבונכם אצלנו עד עשרה ימים לאחר התשלום.
-<li>
-למשלמים בהעברה בנקאית - פרטי החשבון: " . $bank_info . ". 
-</li>
-<li>המחאה לפקודת " . $business_name . ".
-</li>
-<li>
-במידה ושילמתם כבר, המכתב נשלח לצורך פירוט עלות המשלוח בלבד ואין צורך לשלם שוב.
-</li>
-
-נשמח מאוד לשמוע מה דעתכם! <br/>
- לשאלות בנוגע למשלוח מוזמנים ליצור איתנו קשר במייל " . $support_email . "
-</body>
-</html>";
-
-		$user_info = get_userdata( $client_id );
-		my_log( $user_info->user_email );
-		$to = $user_info->user_email;
-		print "To: " . $to . "<br/>";
-		if ( $more_email ) {
-			$to = $to . ", " . $more_email;
-		}
-		print "From: " . $support_email . "<br/>";
-		print "To: " . $to . "<br/>";
-		// print "Message:<br/>";
-		// print $message . "<br/>";
-		$subject = "משלוח מספר" . $this->ID . " בוצע";
-		if ( $edit ) {
-			$subject = "משלוח מספר " . $this->ID . " - תיקון";
-		}
-		send_mail( $subject, $to, $message );
-
-		// print "mail sent to " . $to . "<br/>";
 	}
 
 	private function GetCustomerID() {

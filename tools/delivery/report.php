@@ -7,11 +7,24 @@
  */
 require_once( "../r-shop_manager.php" );
 require_once( ROOT_DIR . "/agla/gui/sql_table.php" );
+require_once( ROOT_DIR . "/tools/supplies/supplies.php" );
 
 print header_text();
 
-if ( isset( $_GET["week"] ) and isset( $_GET["prod_id"] ) ) {
-	print_prod_report( $_GET["prod_id"], $_GET["week"] );
+if ( isset( $_GET["week"] ) ) {
+	$week = $_GET["week"];
+	$args = "";
+	foreach ( $_GET as $k => $v ) {
+		if ( $k != 'week' ) {
+			$args .= "&" . $k . '=' . $v;
+		}
+	}
+	print gui_hyperlink( "שבוע קודם", "report.php?week=" . date( 'Y-m-d', strtotime( $week . " -1 week" ) ) . $args );
+
+	print gui_hyperlink( "שבוע עוקב", "report.php?week=" . date( 'Y-m-d', strtotime( $week . " +1 week" ) ) . $args );
+}
+if ( isset( $week ) and isset( $_GET["prod_id"] ) ) {
+	print_prod_report( $_GET["prod_id"], $week );
 
 	return;
 }
@@ -22,18 +35,72 @@ if ( isset( $_GET["prod_id"] ) ) {
 	return;
 }
 
+
+if ( isset( $_GET["customer_id"] ) ) {
+	client_report( $_GET["customer_id"] );
+
+	return;
+}
+
+if ( isset( $_GET["supplier_id"] ) ) {
+	$week = date( "Y-m-d", strtotime( "last sunday" ) );
+	if ( isset( $_GET["week"] ) ) {
+		$week = $_GET["week"];
+	}
+	supplier_report( $_GET["supplier_id"], $week );
+
+	return;
+}
+
 if ( isset( $_GET["week"] ) ) {
 	print_weekly_report( $_GET["week"] );
 
 	return;
 }
 
+function week_deliveries( $week ) {
+	return sql_query_array_scalar( "SELECT id FROM im_delivery WHERE first_day_of_week(date) = '" . $week . "'");
+}
+
 if ( isset( $_GET["project"] ) ) {
-	print_project_report( $_GET["project"] );
+	print_project_report( $_GET["project"], 1 );
 	die( 0 );
 }
 
-print_weekly_report( date( "Y-m-d", strtotime( "last sunday" ) ) );
+function supplier_report( $supplier_id, $week ) {
+	print gui_header( 1, "נתוני מכירה לספק " . get_supplier_name( $supplier_id ) );
+	$end   = $week;
+	$start = date( 'Y-m-d', strtotime( $week . ' -1 week' ) );
+	print gui_header( 2, "בין התאריכים " . $start . " - " . $end );
+	$sum = array();
+
+	print gui_table( supplier_report_data( $supplier_id, $start, $end ), null, true, true, $sum, null, null,
+		array( null, null, "report.php?week=" . $week . "&prod_id=%s" ) );
+
+}
+
+function client_report( $customer_id, $last = 5 ) {
+	$sql = "select id from im_delivery where order_user(order_id) = " . $customer_id .
+	       " order by 1 desc limit " . $last;
+
+	$rows = sql_query_array_scalar( $sql );
+	if ( ! $rows ) {
+		print "no results";
+
+		return;
+	}
+	foreach ( $rows as $delivery_id ) {
+		print gui_header( 1, $delivery_id );
+		$sql = "select product_name from im_delivery_lines where delivery_id = " . $delivery_id;
+
+		$items = sql_query_array_scalar( $sql );
+		foreach ( $items as $item ) {
+			print $item . "<br/>";
+		}
+	}
+}
+
+// print_weekly_report( date( "Y-m-d", strtotime( "last sunday" ) ) );
 
 function sums( &$s, $a ) {
 //	var_dump($s); print "<br/>";
@@ -52,7 +119,6 @@ function print_prod_report( $prod_id, $week = null, $user_id = null ) {
 	if ( $user_id ) {
 		print gui_header( 2, "לקוח " . get_customer_name( $user_id ) );
 	}
-
 
 	$sql = "SELECT delivery_id, product_name, round(quantity, 1), order_id";
 	if ( ! $week ) {
@@ -74,7 +140,7 @@ function print_prod_report( $prod_id, $week = null, $user_id = null ) {
 	}
 	$sql .= ")";
 
-	print $sql;
+	// print $sql;
 	$result = sql_query( $sql );
 
 	$lines = array();
@@ -90,7 +156,8 @@ function print_prod_report( $prod_id, $week = null, $user_id = null ) {
 		array_push( $lines, $line );
 	}
 
-	print gui_table( $lines );
+	$sum = array();
+	print gui_table( $lines, null, true, null, $sum, null, null, true );
 }
 
 function print_weekly_report( $week ) {

@@ -164,7 +164,7 @@ global $pos;
         // pay = 0; Just create the order.
         // pay = 1; Move control back to order-pos - create delivery and invoice
         // pay = 2; Create order and delivery note.
-        function add_order() {
+        function add_order(pay) {
             clear_message();
 
             // Check info
@@ -336,7 +336,7 @@ global $pos;
 		);
 
 		if ( ! $pos ) {
-			array_push( $header[0], gui_header( 2, "בחר מועד" ) );
+			array_push( $header[0], gui_header( 2, "בחר מסלול" ) );
 			array_push( $header[1], gui_select_mission( "mis_new" ) );
 		}
 		array_push( $header[0], gui_header( 2, "הערה/שם לקוח" ) );

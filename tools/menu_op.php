@@ -1,11 +1,17 @@
 <?php
 // require_once( "r-shop_manager.php" );
+// error_reporting( E_ALL );
+// ini_set( 'display_errors', 'on' );
+
 require_once( "im_tools.php" );
 print header_text( false );
 require_once( TOOLS_DIR . "/wp.php" );
 require_once( ROOT_DIR . "/agla/gui/inputs.php" );
 // print TOOLS_DIR . "/multi-site/multi-site.php";
 require_once( TOOLS_DIR . "/multi-site/multi-site.php" );
+
+require_once( TOOLS_DIR . "/weekly/run.php" );
+
 
 $user = wp_get_current_user();
 if ( $user->ID == "0" ) {
@@ -113,6 +119,16 @@ $col ++;
 $row                      = 0;
 $table[ $row ++ ][ $col ] = gui_header( 2, "עובדים" );
 add_command( $row, $col, null, "דיווח שעות", "http://store.im-haadama.co.il/tools/people/entry.php" );
+add_command( $row, $col, "working_hours_all", "ניהול עובדים", "people/c-get-all-working.php" );
+while ( $row < $max_row ) {
+	$table[ $row ++ ][ $col ] = "";
+}
+
+$col ++;
+$row                      = 0;
+$table[ $row ++ ][ $col ] = gui_header( 2, "ניהול" );
+add_command( $row, $col, "edit_pricelist", "תבנית", "tasklist/c-get-all-task_templates.php", "doc_frame" );
+
 while ( $row < $max_row )
 	$table[ $row ++ ][ $col ] = "";
 

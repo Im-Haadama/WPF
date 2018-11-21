@@ -11,13 +11,20 @@ require_once( "../catalog/bundles.php" );
 
 $operation = $_GET["operation"];
 
+
 switch ( $operation ) {
 	case "show":
 		$debug = false;
 		if ( isset( $_GET["debug"] ) ) {
 			$debug = true;
 		}
-		show_inventory( $debug );
+		print gui_header( 1, "פריטים לא מנוהלים" );
+		show_inventory( false, $debug );
+		break;
+
+	case "add_waste":
+		$prod_ids = $_GET["prod_ids"];
+		add_waste( explode( ",", $prod_ids ) );
 		break;
 
 	case "in":
@@ -28,6 +35,26 @@ switch ( $operation ) {
 		show_out( $_GET["id"] );
 		break;
 
+}
+
+function add_waste( $prod_ids ) {
+	$user = sql_query_single_scalar( "SELECT user_id FROM wp_usermeta WHERE meta_key = 'nickname' AND meta_value = 'waste'" );
+	if ( is_null( $user ) ) {
+		$user = 1;
+	}
+	$quantities = array();
+	foreach ( $prod_ids as $prod_id ) {
+		array_push( $quantities, 0 );
+	} // Non ordered
+	//array_push($quantities, sql_query_single_scalar( "SELECT q FROM i_total WHERE prod_id = " . $prod_id ));
+
+//	var_dump($prod_ids);
+//	var_dump($quantities);
+	$order_id = create_order( $user, 0, $prod_ids, $quantities, "פחת" );
+	// print $order_id;
+
+	$del_id = delivery::CreateDeliveryFromOrder( $order_id, 2 );
+	print "del id: " . $del_id;
 }
 
 function show_in( $prod_id ) {
@@ -108,7 +135,7 @@ function show_out( $prod_id ) {
 	}
 }
 
-function show_inventory( $debug ) {
+function show_inventory( $managed, $debug ) {
 	global $conn;
 
 	$sql    = "SELECT product_id, q_in FROM i_in";
@@ -123,11 +150,15 @@ function show_inventory( $debug ) {
 	array_push( $rows, array( "מוצר", "כמות נרכשה", "כמות סופקה", "מלאי" ) );
 	while ( $row = mysqli_fetch_row( $result ) ) {
 		$prod_id = $row[0];
+		$p       = new Product( $prod_id );
+		if ( $p->getStockManaged() != $managed )
+			continue;
 		$q_in    = round( $row[1], 1 );
 		$q_out   = get_out( $prod_id );
 		$q       = round( $q_in - $q_out, 1 );
 		if ( $q > 0 or $debug ) {
 			$line = array(
+				gui_checkbox( "chk_" . $prod_id, "select"),
 				get_product_name( $prod_id ),
 				gui_hyperlink( $q_in, "inv-post.php?operation=in&id=" . $prod_id ),
 				gui_hyperlink( $q_out, "inv-post.php?operation=out&id=" . $prod_id ),

@@ -53,6 +53,7 @@ function calculate_price( $price, $supplier, $sale_price = '', $terms = null ) {
 
 
 function get_price_by_type( $prod_id, $client_type = "", $quantity = 1 ) {
+	// print "q=" . $quantity;
 //	$debug = debug_backtrace();
 //	for ( $i = 2; $i < 6 && $i < count( $debug ); $i ++ ) {
 //		print "called from " . $debug[ $i ]["function"] . ":" . $debug[ $i ]["line"] . "<br/>";
@@ -70,28 +71,32 @@ function get_price_by_type( $prod_id, $client_type = "", $quantity = 1 ) {
 	// string - type name
 	// number - type id
 	// print "CT=" . $client_type;
-	$p = new Product( $prod_id );
-	if ( $p->isFresh() ) {
-		// print $prod_id . " " . "fresh";
+	$p    = new Product( $prod_id );
+	$type = ( $p->isFresh() ) ? "rate" : "dry_rate";
 
-		$sql = "SELECT min(rate) FROM im_client_types WHERE type = '" . $client_type . "' AND (q_min <= " . $quantity . " OR q_min = 0)";
-		// print $sql . "<br/>";
-		$rate = sql_query_single_scalar( $sql );
+	$sql = "SELECT min($type) FROM im_client_types WHERE type = '" . $client_type . "' AND (q_min <= " . $quantity . " OR q_min = 0)";
+	//  print $sql . "<br/>";
+	$rate = sql_query_single_scalar( $sql );
+	// print "rate: " . $rate;
 
-		// Nothing special. Return the price from the site.
-		if ( is_null( $rate ) ) {
-			return get_postmeta_field( $prod_id, '_price' );
-		}
-
-		// print "rate: " . $rate. "<br/>";
-
-		$buy = get_buy_price( $prod_id );
-
-		return round( ( $buy * ( 100 + $rate ) ) / 100, 1 );
+	// Nothing special. Return the price from the site.
+	if ( is_null( $rate ) ) {
+		return get_postmeta_field( $prod_id, '_price' );
 	}
 
+	// print "rate: " . $rate. "<br/>";
+
+	$price = get_postmeta_field( $prod_id, '_price' );
+	$buy   = get_buy_price( $prod_id );
+	if ( $buy == 0 ) {
+		return $price;
+	}
+	//print "price: " .$price;
+	// if (! $p->isFresh()) $rate
+	return min( $price, round( ( $buy * ( 100 + $rate ) ) / 100, 1 ) );
+
 	// Non fresh
-	return get_postmeta_field( $prod_id, '_price' );
+//	return get_postmeta_field( $prod_id, '_price' );
 }
 function get_price( $prod_id, $client_type = 0, $quantity = 1 ) {
 	switch ( $client_type ) {

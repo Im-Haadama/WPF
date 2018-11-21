@@ -32,7 +32,7 @@ print gui_datalist( "items", "im_products", "post_title" );
 
     function getPrice(my_row) {
         var product_name = get_value(document.getElementById("nam_" + my_row));
-        var request = "delivery-post.php?operation=get_price&name=" + encodeURI(product_name);
+        var request = "delivery-post.php?operation=get_price_vat&name=" + encodeURI(product_name);
 
 	    <?php
 	    if ( $type = get_client_type( order_get_customer_id( $order_id ) ) ) {
@@ -45,12 +45,16 @@ print gui_datalist( "items", "im_products", "post_title" );
             // Wait to get delivery id.
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
             {
-                var price = xmlhttp.response;
+                var response = xmlhttp.response.split(",");
+                var price = response[0];
+                var vat = response[1] > 0;
 
                 if (price > 0) {
                     document.getElementById("prc_" + my_row).value = price;
                     document.getElementById("deq_" + my_row).focus();
                 }
+
+                document.getElementById("hvt_" + my_row).checked = vat;
             }
         }
         xmlhttp.open("GET", request, true);
@@ -90,9 +94,10 @@ print gui_datalist( "items", "im_products", "post_title" );
         row.insertCell(-1).innerHTML = "<input id=\"nam_" + line_id + "\" type=\"text\" list=\"items\" onchange=\"getPrice(" + line_id + ")\">";   // 1 - product name
         row.insertCell(-1).innerHTML = "0";                       // 2 - quantity ordered
         row.insertCell(-1).innerHTML = "";                        // 3 - unit ordered
-        row.insertCell(-1).innerHTML = "<input id=\"prc_" + line_id + "\" type=\"text\">";   // 5 - price
         // row.insertCell(-1).innerHTML = ""; // order total
-        row.insertCell(-1).innerHTML = "<input id=\"deq_" + line_id + "\" type=\"text\">";   // 4 - supplied
+        row.insertCell(-1).innerHTML = "<input id=\"deq_" + line_id + "\" type=\"text\" onchange='calcDelivery()'>";   // 4 - supplied
+        row.insertCell(-1).innerHTML = "<input id=\"prc_" + line_id + "\" type=\"text\">";   // 5 - price
+        row.insertCell(-1).innerHTML = "<lable id=\"lpr_" + line_id + "\" type=\"text\">";   // line price
         row.insertCell(-1).innerHTML = "<input id=\"hvt_" + line_id + "\"  type = \"checkbox\" checked>"; // 6 - has vat
         row.insertCell(-1).id = "lvt_" + line_id;                       // 7 - line vat
         row.insertCell(-1).id = "del_" + line_id;   // 8 - total_line
@@ -103,7 +108,7 @@ print gui_datalist( "items", "im_products", "post_title" );
 //        row.insertCell(11).style.visibility = false;              // 11 - refund total
     }
 
-    function addDelivery() {
+    function addDelivery(draft) {
         calcDelivery();
         document.getElementById('btn_add').disabled = true;
 	    <?php if ( isset( $order_id ) ) print "var order_id = " . $order_id . ";" ?>
@@ -124,7 +129,6 @@ print gui_datalist( "items", "im_products", "post_title" );
         var request = "create-delivery-post.php?operation=add_header&order_id=" + order_id
             + "&total=" + total
             + "&vat=" + total_vat;
-
 
 	    <?php if ( $edit ) {
 	    print "request = request + \"&edit&delivery_id=" . $id . "\"";
@@ -153,6 +157,7 @@ print gui_datalist( "items", "im_products", "post_title" );
         }
         request = request + "&lines=" + saved_lines;
         request = request + "&fee=" + fee;
+        if (draft) request += "&draft";
 
         // Call the server to save the delivery
         server_header = new XMLHttpRequest();
@@ -231,20 +236,32 @@ print gui_datalist( "items", "im_products", "post_title" );
                 }
                 server_lines = new XMLHttpRequest();
                 server_lines.onreadystatechange = function () {
-                    if (server_lines.readyState == 4 && server_lines.status == 200) {  // Request finished
-                        logging.value += ". הסתיים";
-                        location.replace(document.referrer);
+                    if (server_lines.readyState === 4 && server_lines.status === 200) {  // Request finished
+                        logging.value += "הסתיים.\n";
 //                    3) Send the delivery notes to the client
                         // Now call the server, to send the delivery. It waits few seconds for the save lines to finish
-                        xmlhttp_send = new XMLHttpRequest();
-                        var request = "send-delivery.php?del_id=" + delivery_id;
-	                    <?php if ( $edit ) {
-	                    print 'request = request + "&edit";
-                        ';
-                    } ?>
-                        xmlhttp_send.open("GET", request);
-                        xmlhttp_send.send();
+                        if (!draft) {
+                            var xmlhttp_send = new XMLHttpRequest();
+                            var request = "send-delivery.php?del_id=" + delivery_id;
+			                <?php if ( $edit ) {
+			                print 'request = request + "&edit";     ';
+		                } ?>
+                            logging.value += "תעודה נשלחת ללקוח";
+			                <?php
+			                $d = new delivery( $id );
+			                //                                if (strstr($d->getPrintDeliveryOption(), "P")) {
+			                //                                 //   print 'logging.style.display="false";';
+			                //                                    print 'location.replace("get-delivery.php?id=' . $id . '&print"); return;';
+			                //	                               // print 'logging.style.display="true";';
+			                //                                }
+
+			                ?>
+                            xmlhttp_send.open("GET", request);
+                            xmlhttp_send.send();
+                        }
+                        location.replace(document.referrer);
                     }
+
                 }
 
                 line_request = line_request + "&lines=" + line_args.join();
@@ -289,6 +306,7 @@ print gui_datalist( "items", "im_products", "post_title" );
     }
 
     function calcDelivery() {
+
         var table = document.getElementById('del_table');
         var total = 0;
         var total_vat = 0;
@@ -352,7 +370,7 @@ print gui_datalist( "items", "im_products", "post_title" );
                     }
                 }
             }
-            has_vat = get_value(document.getElementById("hvt_" + prfx));
+            has_vat = get_value_by_name("hvt_" + prfx);
             if (has_vat) line_vat = Math.round(100 * p * q / (100 + vat_percent) * vat_percent) / 100;
             line_total = Math.round(p * q * 100) / 100;
             document.getElementById("del_" + prfx).innerHTML = line_total.toString();

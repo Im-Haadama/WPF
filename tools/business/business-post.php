@@ -5,8 +5,12 @@
  * Date: 07/10/16
  * Time: 18:11
  */
+
+// error_reporting( E_ALL );
+// ini_set( 'display_errors', 'on' );
+
 if ( ! defined( "TOOLS_DIR" ) ) {
-	define( TOOLS_DIR, dirname( dirname( __FILE__ ) ) );
+	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
 }
 require_once( TOOLS_DIR . '/r-staff.php' );
 require_once( ROOT_DIR . '/agla/gui/inputs.php' );
@@ -52,9 +56,64 @@ if ( isset( $_GET["operation"] ) ) {
 				my_log( "show_makolet user $user" );
 			}
 			break;
+		case "show_control":
+			$user  = wp_get_current_user();
+			$roles = $user->roles;
+			if ( ! isset( $month ) ) {
+				die( "no month send" );
+			}
+			if ( in_array( "administrator", $roles ) ) {
+				$month = $_GET["month"];
+				show_control( $month );
+			} else {
+				my_log( "show_control user $user" );
+			}
+			break;
 	}
 }
 
+function show_control( $month_year ) {
+	print $month_year;
+	$year = substr( $month_year, 0, 4 );
+	if ( ! $year ) {
+		die ( "bad year" );
+	}
+	$month = substr( $month_year, 5, 2 );
+	if ( ! $month ) {
+		die ( "bad month" );
+	}
+	print gui_header( 1, "תשלומים באשראי" );
+
+	$sql = "SELECT id, client_id, date, transaction_amount, transaction_ref FROM im_client_accounts WHERE month(date) = " . $month .
+	       " AND year(date) = " . $year .
+	       " AND transaction_method LIKE '%אשראי%'";
+
+	$result = sql_query( $sql );
+	$table  = array();
+
+	$header = array(
+		"לקוח",
+		"תאריך הזנה",
+		"סה\"כ שולם",
+		"קבלה"
+	);
+
+	array_push( $table, $header );
+
+	while ( $row = mysqli_fetch_row( $result ) ) {
+//		$id =  $row[0];
+
+		$row = array( get_customer_name( $row[1] ), $row[2], - $row[3], $row[4] );
+		array_push( $table, $row );
+	}
+	$sums = array(
+		"סה\"כ",
+		'',
+		array( 0, 'sum_numbers' )
+	);
+	print gui_table( $table, "", true, true, $sums );
+
+}
 
 function show_makolet( $month_year ) {
 	$year  = substr( $month_year, 0, 4 );
@@ -132,10 +191,3 @@ function business_logical_delete( $ids ) {
 	my_log( $sql );
 }
 
-function business_delete_transaction( $ref ) {
-	$sql = "DELETE FROM im_business_info "
-	       . " WHERE ref = " . $ref;
-
-	my_log( $sql, __FILE__ );
-	sql_query( $sql );
-}

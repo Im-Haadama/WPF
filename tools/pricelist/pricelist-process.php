@@ -111,7 +111,7 @@ function pricelist_remote_site_process( $supplier_id, &$results, $inc = false ) 
 			$result = handle_line( $price, $sale_price, $name, $prod_id, $terms, $PL, true, $parent_id, 0 );
 			if ( $parent_id == 0 ) {
 				print "Didn't get parent id for product " . $name . "<br/>";
-				die ( 2 );
+				continue;
 			}
 			switch ( $result ) {
 				case UpdateResult::UsageError:
@@ -262,8 +262,12 @@ function pricelist_process( $filename_or_file, $supplier_id, $add, $picture_pref
 				if ( $debug ) {
 					print "<br/>" . $name . " ";
 				}
-				$detail    = $data[ $detail_idx[ $col ] ];
-				$detail    = rtrim( $detail, "!" );
+				$detail     = "";
+				$sale_price = 0;
+				if ( isset( $detail_idx[ $col ] ) ) {
+					$detail = $data[ $detail_idx[ $col ] ];
+					$detail = rtrim( $detail, "!" );
+				}
 				if ( isset( $category_idx[ $col ] ) ) {
 					$category = $data[ $category_idx[ $col ] ];
 					// print $category . "<br/>";
@@ -324,11 +328,30 @@ function pricelist_process( $filename_or_file, $supplier_id, $add, $picture_pref
 		print "לא התקבלו מספיק שורות!" . "<br/>";
 	}
 
-	print_items( "פריטים חדשים", $results[ UpdateResult::NewPrice ] );
-	print_items( "פריטים התייקרו", $results[ UpdateResult::UpPrice ] );
-	print_items( "פריטים הוזלו", $results[ UpdateResult::DownPrice ] );
-	print_items( "פריטים יצאו", $results[ UpdateResult::DeletePrice ] );
-	print_items( "פריטים מוסתרים", $results[ UpdateResult::NotUsed ] );
+	$status_string[ UpdateResult::NewPrice ]    = "פריטים חדשים";
+	$status_string[ UpdateResult::UpPrice ]     = "פריטים התייקרו";
+	$status_string[ UpdateResult::DownPrice ]   = "פריטים הוזלו";
+	$status_string[ UpdateResult::DeletePrice ] = "פריטים יצאו";
+
+//	print_items( "פריטים התייקרו", $results[ UpdateResult::UpPrice ] );
+//	print_items( "פריטים הוזלו", $results[ UpdateResult::DownPrice ] );
+//	print_items( "פריטים יצאו", $results[ UpdateResult::DeletePrice ] );
+//	print_items( "פריטים מוסתרים", $results[ ] );
+
+	foreach (
+		array(
+			UpdateResult::NewPrice,
+			UpdateResult::UpPrice,
+			UpdateResult::DownPrice,
+			UpdateResult::DeletePrice,
+			UpdateResult::NotUsed
+		) as
+		$status
+	) {
+		if ( isset( $results[ $status ] ) ) {
+			print_items( $status_string[ $status ], $results[ $status ] );
+		}
+	}
 
 	return true;
 }

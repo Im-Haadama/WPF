@@ -9,6 +9,7 @@ require_once( '../r-shop_manager.php' );
 require_once( 'bundles.php' );
 require_once( 'catalog.php' );
 require_once( '../pricing.php' );
+require_once( ROOT_DIR . "/tools/catalog/Basket.php" );
 
 // To map item from price list to our database the shop manager select item from the price list
 // and product_id. The triplet: product_id, supplier_id and product_code are sent as saved

@@ -64,6 +64,7 @@ class Product {
 		$debug = false;
 		// if ($this->id == 149) $debug = true;
 		$terms = $this->getTerms();
+		// print var_dump($terms);
 		if ( $debug ) {
 			print info_get( "fresh" );
 			var_dump( $terms );
@@ -72,9 +73,10 @@ class Product {
 
 		foreach ( $terms as $term ) {
 			$term_id = $term->term_id;
-			// print $term_id . " ";
+			// print "term: " . $term_id . " ";
 
 			if ( $this->is_fresh( $term_id, $debug ) ) {
+				// print "fresh";
 				return true;
 			}
 		}

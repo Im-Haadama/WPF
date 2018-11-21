@@ -7,7 +7,7 @@
  */
 
 require_once( "../im_tools.php" );
-require_once( "../sql.php" );
+require_once( ROOT_DIR . "/agla/sql.php" );
 require_once( "../people/people.php" );
 require_once( "../multi-site/simple_html_dom.php" );
 require_once( "../options.php" );
@@ -115,7 +115,7 @@ function create_tasks( $verbose = false ) {
 
 		return;
 	}
-	print "+";
+	// print "+";
 
 	// Todo: Run in the background
 	$sql    = "SELECT id, task_description, task_url, project_id, repeat_days FROM im_task_templates";

@@ -63,7 +63,7 @@ function gui_select_mission( $id, $selected = 0, $events = "" ) {
 
 	// print $sql_where;
 	return gui_select_table( $id, "im_missions", $selected, $events, array( 1 ),
-		"ifnull(concat (name, ' ', DAYOFMONTH(date), '/', month(date)), name)", $sql_where );
+		"ifnull(concat (name, ' ', DAYOFMONTH(date), '/', month(date)), name)", $sql_where, false, false, "date" );
 }
 
 function gui_edit_user( $user_id ) {

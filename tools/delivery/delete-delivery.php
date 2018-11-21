@@ -18,10 +18,6 @@ if ( ! is_numeric( $id ) ) {
 	die( "no id" );
 }
 
-$d = new delivery( $id );
-$d->Delete();
-
-business_delete_transaction( $id );
 
 ?>
 

@@ -7,6 +7,9 @@
  * Time: 17:03
  */
 require_once( ROOT_DIR . '/agla/sql.php' );
+require_once( TOOLS_DIR . '/catalog/bundles.php' );
+require_once( ROOT_DIR . "/tools/catalog/Basket.php" );
+
 
 class Order {
 	private $order_id;
@@ -101,6 +104,7 @@ class Order {
 		// print $sql;
 		$result = mysqli_query( $conn, $sql );
 
+		// Loop open orders.
 		while ( $row = mysqli_fetch_assoc( $result ) ) {
 			$id     = $row["id"];
 			$status = $row["post_status"];
@@ -125,6 +129,7 @@ class Order {
 
 			foreach ( $order_items as $item ) {
 				$prod_or_var = $item['product_id'];
+				$is_bundle   = is_bundle( $prod_or_var );
 
 				$variation = null;
 				if ( isset( $item["variation_id"] ) && $item["variation_id"] > 0 ) {
@@ -152,6 +157,7 @@ class Order {
 					if ( $debug_product == $prod_or_var ) {
 						print "proccessing " . $qty . " ";
 					}
+					// Adds with bundle consideration
 					Order::AddProducts( $key, $qty, $needed_products );
 				} else {
 					// Check if order line supplied.
@@ -223,12 +229,10 @@ class Order {
 				default:
 					print "error: new unit ignored - " . $unit_str;
 			}
-//		if (strlen($unit)){
-//			if (is_null($needed_products[$prod_key])) $needed_products[$prod_or_var] = array();
-//		}
-			// print "prod_or_var: " . $prod_or_var . " unit_key: " . $unit_key . "<br/>";
 
+			// Check if this product
 			if ( is_bundle( $prod_or_var ) ) {
+				// print get_product_name($prod_or_var) . " is bundle " . "<br/>";
 				$b = Bundle::CreateFromBundleProd( $prod_or_var );
 				$p = $b->GetProdId();
 				if ( ! ( $p > 0 ) ) {
@@ -236,7 +240,8 @@ class Order {
 
 					return;
 				}
-				$qty = $qty * $b->GetQuantity();
+				$qty         = $qty * $b->GetQuantity();
+				$prod_or_var = $p;
 			}
 
 			if ( ! isset( $needed_products[ $prod_or_var ][ $unit_key ] ) ) {

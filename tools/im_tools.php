@@ -1,7 +1,10 @@
 <?php
-// error_reporting( E_ALL );
-// ini_set( 'display_errors', 'on' );
-
+// Display errors and messages only on develop server
+if ( $_SERVER['SERVER_NAME'] == "127.0.0.1" ) {
+	// print "debug";
+	error_reporting( E_ALL );
+	ini_set( 'display_errors', 'on' );
+}
 /**
  * Created by PhpStorm.
  * User: agla
@@ -243,5 +246,18 @@ function login_id() {
 	return $user->ID;
 }
 
+function get_project_name( $project_id ) {
+	global $conn;
+
+	$sql = "SELECT project_name FROM im_projects WHERE id = " . $project_id;
+
+	$result = mysqli_query( $conn, $sql );
+	if ( $result ) {
+		$row = mysqli_fetch_assoc( $result );
+
+		return $row["project_name"];
+	}
+	print "unknown project";
+}
 
 ?>

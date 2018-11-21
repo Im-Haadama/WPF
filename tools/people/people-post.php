@@ -111,6 +111,8 @@ function show_all( $month ) {
 
 		if ( $row[1] ) {
 			print gui_header( 1, get_user_name( $u ) );
+			print get_customer_email( $u ) . "<br/>";
+
 			print print_transactions( $u, $m, $y );
 		}
 	}

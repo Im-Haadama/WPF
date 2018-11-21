@@ -9,6 +9,29 @@ require_once( "../options.php" );
 <script type="text/javascript" src="/agla/client_tools.js"></script>
 <script>
 
+    function add_wasted() {
+        var collection = document.getElementsByClassName("select");
+        var prod_ids = new Array();
+
+        xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+            // Wait to get query result
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+            {
+                window.location = window.location;
+            }
+        }
+
+        for (var i = 0; i < collection.length; i++) {
+            var prod_id = collection[i].id.substr(4);
+            if (document.getElementById("chk_" + prod_id).checked)
+                prod_ids.push(prod_id);
+        }
+        var request = "inv-post.php?operation=add_waste&prod_ids=" + prod_ids.join();
+        xmlhttp.open("GET", request, true);
+        xmlhttp.send();
+
+    }
     function update_display() {
 
         var t = document.getElementById("inventory");
@@ -42,14 +65,15 @@ print header_text();
  * Time: 12:37
  */
 
-print "מציג מאספקה מספר " . info_get( "inventory_in" ) . "<br/>";
-print " מציג ממשלוח מספר " . info_get( "inventory_out" ) . "<br/>";
+// print "מציג מאספקה מספר " . info_get( "inventory_in" ) . "<br/>";
+// print " מציג ממשלוח מספר " . info_get( "inventory_out" ) . "<br/>";
 
-print gui_hyperlink( "איפוס המלאי", "../weekly/start.php" );
+// print gui_hyperlink( "איפוס המלאי", "../weekly/start.php" );
 // print gui_button("btn_reset_invetory", "reset_inv()", "אפס מלאי");
 
+print gui_button( "btn_waste", "add_wasted()", "הוסף לפחת" );
 
 ?>
-<table id="inventory">
-</table>
+<div id="inventory">
+</div>
 </body>

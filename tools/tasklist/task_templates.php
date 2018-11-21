@@ -7,6 +7,6 @@
  */
 
 
-require_once( "../im_tools.php" );
-require_once( "../sql.php" );
-require_once( "../people/people.php" );
+require_once( ROOT_DIR . "/tools/im_tools.php" );
+require_once( ROOT_DIR . "/agla/sql.php" );
+require_once( ROOT_DIR . "/tools/people/people.php" );

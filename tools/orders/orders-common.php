@@ -5,8 +5,8 @@
  * Date: 25/10/15
  * Time: 08:00
  */
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
+//error_reporting( E_ALL );
+//ini_set( 'display_errors', 'on' );
 
 if ( ! defined( 'TOOLS_DIR' ) ) {
 	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
@@ -18,6 +18,7 @@ require_once( TOOLS_DIR . '/account/gui.php' );
 require_once( TOOLS_DIR . '/account/account.php' );
 require_once( TOOLS_DIR . '/delivery/delivery.php' );
 require_once( TOOLS_DIR . '/orders/Order.php' );
+require_once( ROOT_DIR . "/tools/catalog/Basket.php" );
 
 // BAD: print header_text();
 function orders_item_count( $item_id ) {
@@ -85,65 +86,15 @@ function order_info_data( $order_id, $edit_order = false, $operation = null ) {
 	$data  .= gui_header( 2, $order->order_date, true);
 
 	$d_id = get_delivery_id( $order_id );
-	if ( $d_id > 0 )
-		$data .= gui_header( 2, "משלוח מספר " . $d_id);
-	$data      .= "<table><tr><td rowspan='4'>";
-	$data      .= '<table>';
-	$client_id = order_get_customer_id( $order_id );
-	// Client info
-	$user_edit = "../";
-	$row_text  = '<tr><td>לקוח:</td><td>' . gui_hyperlink( order_info( $order_id, '_billing_first_name' ) . ' '
-	                                                       . order_info( $order_id, '_billing_last_name' ), $user_edit ) . '</td><tr>';
-	$data      .= $row_text;
-	$row_text  = '<tr><td>טלפון:</td><td>' . order_info( $order_id, '_billing_phone' ) . '</td><tr>';
-	$data      .= $row_text;
+	if ( $d_id > 0 ) {
+		$draft_text = ( sql_query_single_scalar( "SELECT draft FROM im_delivery WHERE id = " . $d_id ) ) ? " טיוטא " : "";
 
-	// Shipping info
-	$row_text = '<tr><td>משלוח:</td><td>' . order_info( $order_id, '_shipping_first_name' ) . ' '
-	            . order_info( $order_id, '_shipping_last_name' ) . '</td><tr>';
-	$data     .= $row_text;
-//	$row_text = '<tr><td>כתובת:</td><td>' . order_info( $order_id, '_shipping_address_1' ) . ' '
-//	            . order_info( $order_id, '_shipping_address_2' ) . '</td><tr>';
-//	$data     .= $row_text;
-	$row_text = '<tr><td>כתובת:</td><td>' . order_info( $order_id, '_shipping_city' ) . '</td><tr>';
-	$data     .= $row_text;
-
-	$preference = "";
-	$wp_pref    = get_user_meta( $client_id, "preference" );
-	if ( $wp_pref )
-		foreach ( $wp_pref as $pref ) {
-		$preference .= $pref;
+		$data .= gui_header( 2, "משלוח מספר " . $d_id . $draft_text );
 	}
-
-//	$data .= gui_row(array("משימה:", order_get_mission_name($order_id)));
-	$data .= gui_row( array( "העדפות לקוח:", $preference ) );
-
-	$data .= gui_row( array( "איזור משלוח ברירת מחדל:", get_user_meta( $client_id, 'shipping_zone', true ) ) );
-
-	$zone = order_get_zone( $order_id );
-//    $data .= $zone;
-
-	// Todo: check if it's the catch all zone
-	if ( $zone == 0 ) {
-		$postcode  = get_postmeta_field( $order_id, '_shipping_postcode' );
-		$zone_name = "אנא הוסף מיקוד " . $postcode . " לאזור המתאים ";
-	} else {
-		$zone_name = zone_get_name( $zone );
-	}
-
-//	$data    .= gui_row( array(
-//		"איזור משלוח:",
-//		$zone_name,
-//		"ימים: ",
-//		sql_query_single_scalar( "SELECT delivery_days FROM wp_woocommerce_shipping_zones WHERE zone_id =" . $zone )
-//	) );
-	$mission = order_get_mission_id( $order_id );
-	$data    .= gui_row( array( gui_select_mission( "mission_select", $mission, "onchange=\"save_mission()\"" ) ) );
-
-	$data .= '</table>';
-	$data .= "</td>";
-	$data .= '<tr><td><img src=' . $logo_url . ' height="100"></td></tr>';
-	$data .= "<td height='16'>" . gui_header( 2, "הערות לקוח להזמנה" ) . "</td></tr>";
+	$data    .= order_info_table( $order_id );
+	$data    .= "</td>";
+	$data    .= '<tr><td><img src=' . $logo_url . ' height="100"></td></tr>';
+	$data    .= "<td height='16'>" . gui_header( 2, "הערות לקוח להזמנה" ) . "</td></tr>";
 	$excerpt = order_get_excerpt( $order_id );
 // TODO: find why save excerpt cause window reload
 	if ( $edit_order ) {
@@ -172,7 +123,67 @@ function order_info_data( $order_id, $edit_order = false, $operation = null ) {
 	return $data;
 }
 
+function order_info_table( $order_id ) {
+	$data      = "<table><tr><td rowspan='4'>";
+	$data      .= '<table>';
+	$client_id = order_get_customer_id( $order_id );
+	// Client info
+	$user_edit = "../";
+	$row_text  = '<tr><td>לקוח:</td><td>' . gui_hyperlink( order_info( $order_id, '_billing_first_name' ) . ' '
+	                                                       . order_info( $order_id, '_billing_last_name' ), $user_edit ) . '</td><tr>';
+	$data      .= $row_text;
+	$row_text  = '<tr><td>טלפון:</td><td>' . order_info( $order_id, '_billing_phone' ) . '</td><tr>';
+	$data      .= $row_text;
 
+	// Shipping info
+	$row_text = '<tr><td>משלוח:</td><td>' . order_info( $order_id, '_shipping_first_name' ) . ' '
+	            . order_info( $order_id, '_shipping_last_name' ) . '</td><tr>';
+	$data     .= $row_text;
+//	$row_text = '<tr><td>כתובת:</td><td>' . order_info( $order_id, '_shipping_address_1' ) . ' '
+//	            . order_info( $order_id, '_shipping_address_2' ) . '</td><tr>';
+//	$data     .= $row_text;
+	$row_text = '<tr><td>כתובת:</td><td>' . order_info( $order_id, '_shipping_city' ) . ' ' .
+	            order_info( $order_id, '_shipping_address_1' ) . ' ' .
+	            order_info( $order_id, '_shipping_address_2' ) . ' ' .
+	            '</td><tr>';
+	$data     .= $row_text;
+
+	$preference = "";
+	$wp_pref    = get_user_meta( $client_id, "preference" );
+	if ( $wp_pref )
+		foreach ( $wp_pref as $pref ) {
+			$preference .= $pref;
+		}
+
+//	$data .= gui_row(array("משימה:", order_get_mission_name($order_id)));
+	$data .= gui_row( array( "העדפות לקוח:", $preference ) );
+
+//	$data .= gui_row( array( "איזור משלוח ברירת מחדל:", get_user_meta( $client_id, 'shipping_zone', true ) ) );
+
+	$zone = order_get_zone( $order_id );
+//    $data .= $zone;
+
+	// Todo: check if it's the catch all zone
+	if ( $zone == 0 ) {
+		$postcode  = get_postmeta_field( $order_id, '_shipping_postcode' );
+		$zone_name = "אנא הוסף מיקוד " . $postcode . " לאזור המתאים ";
+	} else {
+		$zone_name = zone_get_name( $zone );
+	}
+
+//	$data    .= gui_row( array(
+//		"איזור משלוח:",
+//		$zone_name,
+//		"ימים: ",
+//		sql_query_single_scalar( "SELECT delivery_days FROM wp_woocommerce_shipping_zones WHERE zone_id =" . $zone )
+//	) );
+	$mission = order_get_mission_id( $order_id );
+	$data    .= gui_row( array( gui_select_mission( "mission_select", $mission, "onchange=\"save_mission()\"" ) ) );
+
+	$data .= '</table>';
+
+	return $data;
+}
 function get_order_itemmeta( $order_item_id, $meta_key ) {
 	global $conn;
 	if ( is_array( $order_item_id ) ) {
@@ -272,7 +283,7 @@ function order_add_product( $order, $product_id, $quantity, $replace = false, $c
 			// print  "<br/>" . get_product_name( $product_id ) . " " . $q . " ";
 			$product = wc_get_product( $product_id );
 			if ( $product ) {
-				// print "type: " . $customer_type . "<br/>";
+				//print "type: " . $customer_type . "<br/>";
 				$price = get_price_by_type( $product_id, $customer_type, $quantity );
 				// print "price: " . $price . "<br/>";
 				$product->set_price( $price );
@@ -336,7 +347,7 @@ function user_dislike( $user_id, $prod_id ) {
 //}
 
 // $multiply is the number of ordered baskets or 1 for ordinary item.
-function orders_per_item( $prod_id, $multiply, $short = false, $include_basket = false ) {
+function orders_per_item( $prod_id, $multiply, $short = false, $include_basket = false, $include_bundle = false ) {
 	my_log( "prod_id=" . $prod_id, __METHOD__ );
 
 	$sql = 'select woi.order_item_id, order_id'
@@ -349,11 +360,20 @@ function orders_per_item( $prod_id, $multiply, $short = false, $include_basket =
 		$sql1    = "select basket_id from im_baskets where product_id = $prod_id";
 		$baskets = sql_query_array_scalar( $sql1 );
 	}
+	$bundles = null;
+	if ( $include_bundle ) {
+		$sql2    = "select bundle_prod_id from im_bundles where prod_id = " . $prod_id;
+		$bundles = sql_query_array_scalar( $sql2 );
+		// if ($bundles) var_dump($bundles);
+	}
 	$sql .= ' and woi.order_item_id = woim.order_item_id '
 	        . ' and (woim.meta_key = \'_product_id\' or woim.meta_key = \'_variation_id\')
 	         and woim.meta_value in (' . $prod_id;
 	if ( $baskets ) {
 		$sql .= ", " . comma_implode( $baskets );
+	}
+	if ( $bundles ) {
+		$sql .= ", " . comma_implode( $bundles );
 	}
 	$sql .= ")";
 
@@ -366,6 +386,16 @@ function orders_per_item( $prod_id, $multiply, $short = false, $include_basket =
 		$order_item_id = $row[0];
 		$order_id      = $row[1];
 		$quantity      = get_order_itemmeta( $order_item_id, '_qty' );
+		// consider quantity in the basket or bundle
+		$pid = get_order_itemmeta( $order_item_id, '_product_id' );
+		if ( is_bundle( $pid ) ) {
+			$b        = Bundle::CreateFromBundleProd( $pid );
+			$quantity *= $b->GetQuantity();
+		}
+		if ( is_basket( $pid ) ) {
+			$b        = new Basket( $pid );
+			$quantity *= $b->GetQuantity( $prod_id );
+		}
 		$first_name    = get_postmeta_field( $order_id, '_shipping_first_name' );
 		$last_name     = get_postmeta_field( $order_id, '_shipping_last_name' );
 
@@ -499,7 +529,7 @@ function order_get_address( $order_id ) {
 		}
 		// Take the address from the client;
 		$client_id = order_get_customer_id( $order_id );
-		print $client_id . " " . $order_id;
+		// print $client_id . " " . $order_id;
 		$address .= get_user_address( $client_id );
 
 		return $address;
@@ -553,7 +583,6 @@ function check_cache_validity() {
 	return true;
 
 }
-
 
 function create_order( $user_id, $mission_id, $prods, $quantities, $comments, $units = null, $type = null ) {
 //	print "user: " . $user_id;
@@ -625,13 +654,37 @@ function create_order( $user_id, $mission_id, $prods, $quantities, $comments, $u
 	) {
 //		    print $key . "<br/>";
 		$value = get_user_meta( $user_id, $key, true );
-		update_post_meta( $order_id, '_' . $key, $value );
+		$_key  = '_' . $key;
+//		print $_key . " " . $value . "<br/>";
+		update_post_meta( $order_id, $_key, $value );
 	}
 
 // 	print "comments: " . $comments . "<br/>";
 	$order->save();
 	$order = null;
 	order_set_excerpt( $order_id, $comments );
+
+	// print "shipping first name: " . get_post_meta($order_id, '_shipping_first_name', true);
+
+	// PATCH... the above code doesn't change the shipping values
+//	foreach (
+//		array(
+//			'shipping_first_name',
+//			'shipping_last_name',
+//			'shipping_address_1',
+//			'shipping_address_2',
+//			'shipping_city',
+//			'shipping_postcode'
+//		)
+//		as $key
+//	) {
+//		$value = get_user_meta( $user_id, $key, true );
+//		$_key  = '_' . $key;
+//		$sql   = "UPDATE wp_postmeta SET meta_value = '" . $value . "' WHERE post_id = " . $order_id .
+//		         " AND meta_key = '" . $_key . "'";
+//		print $sql . "<br/>";
+//		sql_query( $sql );
+//	}
 
 	print "הזמנה " . $order_id . " נקלטה בהצלחה.";
 	//print $comments;
@@ -853,12 +906,15 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 					$total_delivery_total            += $delivery->Price();
 				$total_delivery_fee                  = $delivery->DeliveryFee();
 					$total_order_delivered           += $order_total;
+				if ( $delivery->isDraft() ) {
+					$line [ OrderFields::line_select ] = "טיוטא";
+				}
 				//	}
 			} else {
-				$line[ OrderFields::city ]          = order_info( $order_id, '_shipping_city' );
 				$line[ OrderFields::delivery_note ] = gui_hyperlink( "צור", "../delivery/create-delivery.php?order_id=" . $order_id );
 				$total_delivery_fee                 = order_get_shipping_fee( $order_id );
 			}
+			$line[ OrderFields::city ]         = order_info( $order_id, '_shipping_city' );
 			$line[ OrderFields::payment_type ] = get_payment_method_name( $customer_id );
 			$line[ OrderFields::good_costs ]   = $order->GetBuyTotal();
 			$line[ OrderFields::margin ]       = round( ( $line[ OrderFields::total_order ] - $line[ OrderFields::good_costs ] ), 0 );
@@ -866,6 +922,7 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 
 			array_push( $lines, array( array_search( $customer_id, $path ), $line ) );
 		}
+
 		//   $data .= "<tr> " . trim($line) . "</tr>";
 		sort( $lines );
 
@@ -896,7 +953,8 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 				);
 			}
 			$data       = gui_header( 2, $status_names[ $status ] );
-			$data       .= gui_table( $rows, $status, true, true, $sums, null, null, $show_fields, $sums );
+			// gui_table( $rows, $id = null, $header = true, $footer = true, &$sum_fields = null, $style = null, $class = null, $links = null)
+			$data       .= gui_table( $rows, $status, true, true, $sums, null, null, $show_fields );
 			$all_tables .= $data;
 		}
 	}

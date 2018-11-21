@@ -8,6 +8,8 @@
 if ( ! defined( "TOOLS_DIR" ) ) {
 	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
 }
+// error_reporting( E_ALL );
+// ini_set( 'display_errors', 'on' );
 
 require_once( TOOLS_DIR . "/account/account.php" );
 require_once( TOOLS_DIR . "/business/business.php" );
@@ -61,19 +63,6 @@ function sender_name( $sender_id ) {
 	return $sender;
 }
 
-function get_project_name( $project_id ) {
-	global $conn;
-
-	$sql = "SELECT project_name FROM im_projects WHERE id = " . $project_id;
-
-	$result = mysqli_query( $conn, $sql );
-	if ( $result ) {
-		$row = mysqli_fetch_assoc( $result );
-
-		return $row["project_name"];
-	}
-	print "unknown project";
-}
 
 function is_volunteer( $uid ) {
 	return sql_query_single_scalar( "SELECT volunteer FROM im_working WHERE worker_id = " . $uid );

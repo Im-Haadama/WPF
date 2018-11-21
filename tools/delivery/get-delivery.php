@@ -6,8 +6,8 @@ print header_text( false );
 $id     = $_GET["id"];
 $send   = isset( $_GET["send"] );
 $margin = isset( $_GET["margin"] );
-
-$d = new Delivery( $id );
+$print  = isset( $_GET["print"] );
+$d      = new Delivery( $id );
 
 $order_id = get_order_id( $id );
 //print current_user_can("edit_shop_orders") ."<br/>";
@@ -19,6 +19,7 @@ if ( ( ! current_user_can( "edit_shop_orders" ) ) and ( order_get_customer_id( $
 }
 
 print order_info_data( $order_id );
+
 print $d->delivery_text( ImDocumentType::delivery, ImDocumentOperation::show, $margin );
 
 if ( ! $send ) {
@@ -34,12 +35,15 @@ if ( ! $send ) {
 
 <script>
 
+	<?php if ( $print ) {
+		print 'window.print();';
+	} ?>
     function editDelivery() {
         window.location.href = "create-delivery.php?id=<?php print $id; ?>";
     }
 
     function deleteDelivery() {
-        var request = "delete-delivery.php?id=<?php print $id; ?>";
+        var request = "delivery-post.php?operation=delete_delivery&delivery_id=<?php print $id; ?>";
 
         xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function () {
@@ -52,7 +56,6 @@ if ( ! $send ) {
         }
         xmlhttp.open("GET", request, true);
         xmlhttp.send();
-
     }
 
 

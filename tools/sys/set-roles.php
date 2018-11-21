@@ -5,7 +5,7 @@
  * Date: 24/02/18
  * Time: 23:16
  */
-ini_set( 'display_errors', 'on' );
+//ini_set( 'display_errors', 'on' );
 require_once( "../im_tools.php" );
 //https://www.cloudways.com/blog/add-custom-user-roles-in-wordpress/
 
@@ -16,7 +16,7 @@ if ( $user != 1 ) {
 	die( 1 );
 }
 
-if ( 0 ) {
+if ( 1 ) {
 // staff
 //	remove_role( "staff" );
 	add_role( "staff", "Worker", array( "working_hours_self" => "true" ) );

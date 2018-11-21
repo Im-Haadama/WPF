@@ -78,16 +78,8 @@ require_once( "../multi-site/multi-site.php" );
             xmlhttp.send();
         }
 
-        function get_value(element) {
-            if (element.tagName == "INPUT") {
-                return element.value;
-            } else {
-                return element.nodeValue;
-            }
-        }
-
         function changed(field) {
-            var subject = field.name;
+            var subject = field.name.substr(4);
             document.getElementById("chk" + subject).checked = true;
         }
 
@@ -103,7 +95,7 @@ require_once( "../multi-site/multi-site.php" );
                     var line_id = collection[i].id.substr(3);
                     // var code = get_value(table.rows[i+1].cells[1].firstChild);
                     // var name_code = get_value(table.rows[i+1].cells[2].firstChild);
-                    var new_price = get_value(table.rows[i + 1].cells[4].firstChild);
+                    var new_price = get_value_by_name("prc_" + line_id);
                     // var sel = document.getElementById("supplier_id");
                     // var supplier_id = sel.options[sel.selectedIndex].value;
 
@@ -124,22 +116,6 @@ require_once( "../multi-site/multi-site.php" );
             xmlhttp.open("GET", request, true);
             xmlhttp.send();
         }
-
-        //    function loadPrices()
-        //    {
-        //        xmlhttp = new XMLHttpRequest();
-        //        xmlhttp.onreadystatechange = function()
-        //        {
-        //            // Wait to get query result
-        //            if (xmlhttp.readyState==4 && xmlhttp.status==200)  // Request finished
-        //            {
-        //                change_supplier();
-        //            }
-        //        }
-        //        var request = "pricelist-post.php?operation=update_price&supplier_id=" + supplier_id + "&params=" + params;
-        //        xmlhttp.open("GET", request, true);
-        //        xmlhttp.send();
-        //    }
 
         function delPrices() {
             // var table = document.getElementById('price_list');
@@ -163,14 +139,12 @@ require_once( "../multi-site/multi-site.php" );
         }
 
         function delMap() {
-            var table = document.getElementById('price_list');
-
             var collection = document.getElementsByClassName("product_checkbox");
             var params = new Array();
             for (var i = 0; i < collection.length; i++) {
                 if (collection[i].checked) {
 
-                    var pricelist_id = table.rows[i + 1].cells[0].firstChild.id.substr(3);
+                    var pricelist_id = collection[i].id.substr(3);
 
                     params.push(pricelist_id);
                     //        alert(map_id);
@@ -251,6 +225,10 @@ require_once( "../multi-site/multi-site.php" );
                     change_supplier();
             }
             var request = "pricelist-post.php?operation=get_priceslist&supplier_id=" + supplier_id;
+//            var o = get_value_by_name("chk_ordered");
+//            alert (o);
+            if (get_value_by_name("chk_ordered")) request += "&ordered";
+
             xmlhttp.open("GET", request, true);
             xmlhttp.send();
 
@@ -386,14 +364,19 @@ require_once( "../multi-site/multi-site.php" );
     <input type="hidden" name="post_type" value="product"/>
 </form>
 
-<?php //print gui_button("download", "download_csv()","הורד"); ?>
+<?php
+
+print gui_checkbox( "chk_ordered", "", "", "onchange=change_supplier()" );
+print "הצג רק מוזמנים<br/>";
+
+//print gui_button("download", "download_csv()","הורד"); ?>
 
 <!--<form id="downcsv" method="get" action="download_csv.php">-->
 <!--    <button type="submit">הורד</button>-->
 <!--    <input type='hidden' name='supplier_id'/>-->
 <!--</form>-->
 <a id="downcsv" href="path_to_file" download="pricelist.csv">הורד CSV</a>
-<table id="price_list"></table>
+<div id="price_list"></div>
 <!--            <button id="btn_load_prices" onclick="load_file()">טען רשימה</button>-->
 
 </div>

@@ -7,10 +7,10 @@
  */
 
 // test
-include_once( "../r-shop_manager.php" );
+// include_once( "../r-shop_manager.php" );
 require_once( ROOT_DIR . '/agla/gui/inputs.php' );
-require_once( "../mail.php" );
-require_once( "../catalog/catalog.php" );
+require_once( ROOT_DIR . "/tools/mail.php" );
+require_once( ROOT_DIR . "/tools/catalog/catalog.php" );
 
 // print header_text(false);
 
@@ -38,13 +38,20 @@ class Supply {
 	 * @param int $ID
 	 */
 	public function __construct( $ID ) {
-		$this->ID         = $ID;
-		$row              = sql_query_single( "SELECT status, date, supplier, text, business_id FROM im_supplies" );
-		$this->Status     = $row[0];
-		$this->Date       = $row[1];
-		$this->Supplier   = $row[2];
+		$this->ID       = $ID;
+		$row            = sql_query_single( "SELECT status, date, supplier, text, business_id FROM im_supplies WHERE id = " . $ID );
+		$this->Status   = $row[0];
+		$this->Date     = $row[1];
+		$this->Supplier = $row[2];
+		// print "sssss " . $this->Supplier;
 		$this->Text       = $row[3];
 		$this->BusinessID = $row[4];
+	}
+
+	public static function CreateSupply( $supplier_id ) {
+		$sid = create_supply( $supplier_id );
+
+		return new Supply( $sid );
 	}
 
 	/**
@@ -52,6 +59,10 @@ class Supply {
 	 */
 	public function getStatus() {
 		return $this->Status;
+	}
+
+	public function AddLine( $prod_id, $quantity, $price, $units = 0 ) {
+		supply_add_line( $this->ID, $prod_id, $quantity, $price, $units = 0 );
 	}
 
 	// $internal - true = for our usage. false = for send to supplier.
@@ -114,6 +125,9 @@ class Supply {
 	}
 
 
+	public function Send() {
+		send_supplies( array( $this->ID ) );
+	}
 }
 function create_supply( $supplierID ) {
 	global $conn;
@@ -668,6 +682,18 @@ function display_active_supplies( $status ) {
 	return do_display_supplies( $sql );
 }
 
+function create_delta() {
+	$sql = "select prod_id, q from i_total where q < 0";
+
+	$s = create_supply( 0 );
+	print "sid = " . $s . "<br/>";
+	$rows = sql_query_array( $sql );
+	foreach ( $rows as $row ) {
+		// var_dump($row);
+		//	print "add line " . $row[0] . " " . $row[1] . "<br/>";
+		supply_add_line( $s, $row[0], - $row[1], 0 );
+	}
+}
 function create_supplier_order( $supplier_id, $ids ) {
 	$supply_id = create_supply( $supplier_id );
 	print "created supply " . $supply_id . "<br/>";
@@ -733,4 +759,26 @@ function display_status( $status ) {
 			break;
 
 	}
+}
+
+function supplier_report_data( $supplier_id, $start_date, $end_date ) {
+	$sql = "select prod_id, sum(quantity), prod_id from im_delivery_lines dl\n"
+
+	       . "join im_delivery d\n"
+
+	       . "where date > '" . $start_date . "'\n"
+
+	       . "and date <= '" . $end_date . "'\n"
+
+	       . "and dl.delivery_id = d.id\n"
+
+	       . "and prod_id in (select product_id from im_supplier_mapping where supplier_id = " . $supplier_id . ")\n"
+
+	       . "group by 1\n"
+
+	       . "order by 2 DESC";
+
+
+// print $sql;
+	return sql_query_array( $sql, true );
 }

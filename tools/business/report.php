@@ -40,7 +40,6 @@ function print_project_report( $role, $project_id ) {
 
 }
 
-
 function print_weekly_report( $week ) {
 	print gui_header( 1, "מציג תוצאות לשבוע המתחיל ביום " . $week );
 // print date('Y-m-d', strtotime($week . " -1 week")) . "<br/>";

@@ -144,7 +144,7 @@ function print_deliveries( $edit = false, $query = null, $selectable = false ) {
 	foreach ( $supplies as $supply ) {
 		print_supply( $supply );
 	}
-	print "done";
+//	print "done";
 }
 
 function print_order( $order_id, $selectable = false ) {

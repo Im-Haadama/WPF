@@ -48,6 +48,10 @@ if ( isset( $_GET["operation"] ) ) {
 			print_supplies_table( $ids, true );
 			break;
 
+		case "create_delta":
+			create_delta();
+			break;
+
 		case "create_supply":
 			print "create supply<br/>";
 //			"&prods=" + prods.join() +
@@ -70,14 +74,14 @@ if ( isset( $_GET["operation"] ) ) {
 
 		case "get_supply":
 			$supply_id = $_GET["id"];
-			$internal  = $_GET["internal"];
+			$internal  = isset( $_GET["internal"] );
 			$Supply    = new Supply( $supply_id );
 			$Supply->EditSupply( $internal );
 			break;
 
 		case "get_supply_lines":
 			$supply_id = $_GET["id"];
-			$internal  = $_GET["internal"];
+			$internal  = isset( $_GET["internal"] );
 			print_supply_lines( $supply_id, $internal );
 			break;
 
@@ -141,31 +145,34 @@ if ( isset( $_GET["operation"] ) ) {
 			break;
 
 		case "add_item":
-			print "add_line<br/>";
-			$name = $_GET["name"];
-			print $name . "<br/>";
-			if ( ! strlen( $name ) > 2 ) {
-				die ( "no product name" );
+			// print "add_line<br/>";
+			$prod_id = $_GET["prod_id"];
+			// print $name . "<br/>";
+			if ( ! $prod_id > 0 ) {
+				die ( "no product id" );
 			}
 			$q = $_GET["quantity"];
-			print $q . "<br/>";
+			// print $q . "<br/>";
 			if ( ! is_numeric( $q ) ) {
 				die ( "no quantity" );
 			}
 			$supply_id = $_GET["supply_id"];
-			print $supply_id . "<br/>";
+			print "supply id = " . $supply_id . "<br/>";
 			if ( ! is_numeric( $supply_id ) ) {
 				die ( "no supply_id" );
 			}
-			$prod_id = get_product_id_by_name( $name );
-			print "name = " . $name . ", prod_id = " . $prod_id . "<br/>";
+			// $prod_id = get_product_id_by_name( $name );
+			// print "name = " . $name . ", prod_id = " . $prod_id . "<br/>";
 
-			if ( ! is_numeric( $prod_id ) ) {
-				die ( "no prod_id for " . $name . "<br/>" );
-			}
+//			if ( ! is_numeric( $prod_id ) ) {
+//				die ( "no prod_id for " . $name . "<br/>" );
+//			}
 			$supply = new Supply( $supply_id );
-			print 'id=' . $supply->getSupplier() . "<br/>";
+			// var_dump($supply);
+			print "prod id=" . $prod_id . '<br/>';
+			print 'supplier id=' . $supply->getSupplier() . "<br/>";
 			$price = get_buy_price( $prod_id, $supply->getSupplier() );
+			print "price: " . $price . '<br/>';
 			supply_add_line( $supply_id, $prod_id, $q, $price );
 			break;
 

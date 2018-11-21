@@ -5,7 +5,7 @@
  * Date: 28/08/17
  * Time: 06:45
  */
-ini_set( 'display_errors', 'on' );
+//ini_set( 'display_errors', 'on' );
 
 require_once( "../r-shop_manager.php" );
 require_once( ROOT_DIR . '/agla/gui/inputs.php' );

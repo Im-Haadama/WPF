@@ -5,7 +5,7 @@ require_once( '../multi-site/multi-site.php' );
 require_once( '../account/account.php' );
 require_once( "../supplies/supplies.php" );
 
-$header = $_GET["header"];
+$header = isset( $_GET["header"] );
 //if (isset($_GET["week"])) $week = $_GET["week"];
 //$footer = $_GET["footer"];
 //$header = ( MultiSite::LocalSiteID() == 1 );

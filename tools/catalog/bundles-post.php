@@ -6,8 +6,8 @@
  * Time: 16:00
  */
 
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
+//error_reporting( E_ALL );
+//ini_set( 'display_errors', 'on' );
 
 require_once( '../r-shop_manager.php' );
 require_once( '../catalog/bundles.php' );
@@ -64,7 +64,7 @@ switch ( $operation ) {
 		$params = explode( ',', $_GET["params"] );
 		for ( $pos = 0; $pos < count( $params ); $pos ++ ) {
 			$item_id = $params[ $pos ];
-			$b       = Bundle::load( $item_id );
+			$b       = Bundle::CreateFromDb( $item_id );
 			$b->Delete();
 		}
 		break;
@@ -95,11 +95,12 @@ switch ( $operation ) {
 
 	case "update":
 		$params = explode( ',', $_GET["params"] );
-		for ( $pos = 0; $pos < count( $params ); $pos += 2 ) {
-			$item_id = $params[ $pos ];
-			$margin  = $params[ $pos + 1 ];
-			$b       = Bundle::CreateFromDb( $item_id );
-			$b->UpdateMargin( $margin );
+		for ( $pos = 0; $pos < count( $params ); $pos += 3 ) {
+			$item_id  = $params[ $pos ];
+			$quantity = $params[ $pos + 1 ];
+			$margin   = $params[ $pos + 2 ];
+			$b        = Bundle::CreateFromDb( $item_id );
+			$b->Update( $quantity, $margin );
 		}
 		break;
 

@@ -8,6 +8,8 @@
 
 require_once( '../r-shop_manager.php' );
 require_once( 'orders-common.php' );
+require_once( ROOT_DIR . "/tools/catalog/Basket.php" );
+
 $order_id = $_GET["order_id"];
 if ( $order_id > 0 ) {
 	print "מחליף פריטים בסל " . $order_id . "<br/>";

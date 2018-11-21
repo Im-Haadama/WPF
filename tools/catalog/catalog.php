@@ -554,7 +554,7 @@ function best_alternatives( $alternatives, $debug = false ) {
 		//$price, $supplier, $sale_price = '', $terms = null
 		$price = calculate_price( $alternatives[ $i ]->getPrice(), $alternatives[ $i ]->getSupplierId(),
 			$alternatives[ $i ]->getSalePrice());
-		print "price: " . $price . "<br/>";
+		print "price: " . $alternatives[ $i ]->getSupplierId() . " " . $price . "<br/>";
 		my_log( "price $price" );
 		if ( $price < $min ) {
 			$best = $alternatives[ $i ];

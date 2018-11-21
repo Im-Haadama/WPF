@@ -8,6 +8,7 @@
 
 //require_once( '../r-shop_manager.php' );
 require_once( "../im_tools.php" );
+require_once( ROOT_DIR . "/tools/catalog/Basket.php" );
 //"start";
 
 foreach ( WC()->cart->cart_contents as $prod_in_cart ) {

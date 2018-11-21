@@ -100,7 +100,7 @@ class MultiSite {
 		$data  = "";
 
 		while ( $site_info = mysqli_fetch_row( $result ) ) {
-			print date( "m:s" ) . "<br/>";
+//			print date( "m:s" ) . "<br/>";
 			$id        = $site_info[0];
 			$url       = $site_info[1];
 			$site_name = $site_info[2];
@@ -177,6 +177,9 @@ class MultiSite {
 	}
 
 	static function SiteTools( $site_id ) {
+		if ( ! is_numeric( $site_id ) ) {
+			die ( "site id should be numeric" . $site_id );
+		}
 		$sql = "SELECT tools_url FROM im_multisite WHERE id = " . $site_id;
 
 		return sql_query_single_scalar( $sql );

@@ -55,7 +55,8 @@ if ( isset( $_GET["business_id"] ) ) {
     function add_item() {
         var request_url = "supplies-post.php?operation=add_item&supply_id=<?php print $id; ?>";
         var _name = encodeURI(get_value(document.getElementById("itm_")));
-        request_url = request_url + "&name=" + _name;
+        var prod_id = _name.substr(0, _name.indexOf(")"));
+        request_url = request_url + "&prod_id=" + prod_id;
         var _q = 1; // encodeURI(get_value(document . getElementById("qua_")));
         request_url = request_url + "&quantity=" + _q;
         var request = new XMLHttpRequest();
@@ -78,7 +79,7 @@ if ( isset( $_GET["business_id"] ) ) {
 <div id="logging"></div>
 <?php
 
-$send = $_GET["send"];
+$send = isset( $_GET["send"] );
 
 print "<center><h1>הספקה מספר ";
 print $id . " - " . supply_get_supplier( $id );
@@ -104,7 +105,7 @@ if ( user_can( get_user_id(), "pay_supply" ) ) {
 <div id="head_print">
 </div>
 <?php
-print gui_datalist( "prods", "im_products", "post_title" );
+print gui_datalist( "products", "im_products", "post_title", true );
 
 if ( ! $send ) {
 	print '<div id="buttons">';
@@ -129,9 +130,9 @@ print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_missio
 <div id="add_items">
 	<?php
 	print gui_button( "btn_add_line", "add_item()", "הוסף" );
-
+	print gui_select_product( "itm_", "" );
 	?>
-    <input id="itm_" list="prods">
+    <!--    <input id="itm_" list="prods">-->
 </div>
 <script type="text/javascript" src="/agla/client_tools.js"></script>
 <script>

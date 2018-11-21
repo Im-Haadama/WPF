@@ -5,8 +5,13 @@
  * Date: 16/10/17
  * Time: 16:18
  */
-require_once( "../r-shop_manager.php" );
+// require_once( "../r-shop_manager.php" );
 
+if ( ! defined( 'TOOLS_DIR' ) ) {
+	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
+}
+
+require_once( TOOLS_DIR . "/im_tools.php" );
 require_once( ROOT_DIR . '/agla/sql.php' );
 
 // print header_text();
@@ -23,15 +28,6 @@ function show_zone_names( $str_zones, $line_id ) {
 
 	return "";
 }
-
-// create_missions();
-
-// Check if create is needed.
-//$delta = sql_query_single_scalar("select max(date) - curdate() from im_missions");
-
-//if ($delta > 14) return;
-
-// print get_zones('ג');
 
 function get_zones_per_path( $path_code ) {
 	// print $path_code . "<br/>";
@@ -90,7 +86,35 @@ if ( isset( $_GET["operation"] ) ) {
 
 			header( 'Location: ' . $_SERVER['HTTP_REFERER'] );
 			exit;
+		case "del":
+			$id = $_GET["id"];
+			delete_mission( $id );
+
+			header( 'Location: ' . $_SERVER['HTTP_REFERER'] );
+			exit;
+		case "dup_week":
+			duplicate_week();
+			break;
 	}
+}
+
+function duplicate_week() {
+	$sql = "SELECT id FROM im_missions " .
+	       " WHERE date >= curdate() - INTERVAL DAYOFWEEK(curdate())+6 DAY
+                   AND DATE < curdate() - INTERVAL DAYOFWEEK(curdate())-1 DAY";
+
+	$ids = sql_query_array_scalar( $sql );
+	foreach ( $ids as $id ) {
+		// print "mission: " . $id . "<br/>";
+		duplicate_mission( $id );
+	}
+}
+
+function delete_mission( $id ) {
+	// print "deleting...<br/>";
+	$sql = "DELETE FROM im_missions WHERE id = " . $id;
+	sql_query( $sql );
+	print "deleted";
 }
 
 function duplicate_mission( $id ) {
@@ -99,8 +123,27 @@ function duplicate_mission( $id ) {
 //	$zones = get_zones_per_path( $path_code );
 	// print $zones . "<br/>";
 
-	$sql = "INSERT INTO im_missions (date, start_h, end_h, zones, name, path_code) 
-						SELECT ADDDATE(date, INTERVAL 7 DAY), start_h, end_h, zones, name, path_code FROM im_missions WHERE id = " . $id;
+	$path_code = sql_query_single_scalar( "select path_code from im_missions where id = " . $id );
+
+	$max_weeks = 4;
+	$sql       = "select date from im_missions where id = " . $id;
+	$date      = sql_query_single_scalar( $sql );
+
+	for ( $i = 1; $i <= $max_weeks; $i ++ ) {
+		$sql = "select count(id) from im_missions where path_code = " . quote_text( $path_code ) .
+		       " and date = ADDDATE(' " . $date . "', interval " . $i * 7 . " DAY) ";
+		// print $sql . "<br/>";
+		$c = sql_query_single_scalar( $sql );
+		// print "c= " . $c . "<br/>";
+		if ( ( $c == 0 ) ) {
+			$sql = "INSERT INTO im_missions (date, start_h, end_h, zones, name, path_code)
+						SELECT ADDDATE(date, INTERVAL " . $i * 7 . " DAY), start_h, end_h, zones, name, path_code FROM im_missions WHERE id = " . $id;
+			//print $sql;
+			sql_query( $sql );
+
+			return;
+		}
+	}
 	// print $sql;
 	// die(1);
 	sql_query( $sql );

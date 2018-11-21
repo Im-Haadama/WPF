@@ -11,8 +11,8 @@ require_once( 'catalog.php' );
 
 print header_text( false, true, false );
 
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
+//error_reporting( E_ALL );
+//ini_set( 'display_errors', 'on' );
 
 $line = "";
 Catalog::UpdateProduct( 1110, $line );

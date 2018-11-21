@@ -6,8 +6,8 @@
  * Time: 10:41
  */
 
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
+//error_reporting( E_ALL );
+//ini_set( 'display_errors', 'on' );
 
 require_once( "../im_tools.php" );
 require_once( "orders-common.php" );
@@ -90,10 +90,7 @@ function form_create_order( $params, $phone = null, $name = null, $group = null,
 			print "טלפון " . $support_phone . "<br/>";
 		}
 	}
-	print $comment . "<br/>";
 
-	$order_id = create_order( $user_id ? $user_id : get_user_id(), 0, $prods, $quantities, $comment );
+	return create_order( $user_id ? $user_id : get_user_id(), 0, $prods, $quantities, $comment );
 
-	update_post_meta( $order_id, "_shipping_first_name", strtok( $name, " " ) );
-	update_post_meta( $order_id, "_shipping_last_name", strtok( null, "" ) );
 }

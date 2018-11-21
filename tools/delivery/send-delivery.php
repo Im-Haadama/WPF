@@ -24,4 +24,14 @@ if ( isset( $_GET["edit"] ) ) {
 $delivery = new delivery( $del_id );
 print "info: " . $info_email;
 print "track: " . $track_email;
-$delivery->send_mail( $track_email, $edit );
+
+$option = $delivery->getPrintDeliveryOption();
+
+if ( strstr( $option, 'M' ) ) {
+	$delivery->send_mail( $track_email, $edit );
+}
+
+//if (strstr($option, 'P')){
+//	$delivery->PrintDeliveries(ImDocumentType::delivery, ImDocumentOperation::show);
+//	print '      <script>  window.print(); </script>';
+//}

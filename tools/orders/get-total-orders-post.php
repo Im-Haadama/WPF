@@ -152,7 +152,7 @@ function get_total_orders( $filter_zero, $history = false ) {
 
 		$line .= "<td>" . $supplier_name . "</td>";
 
-		$line .= gui_cell( orders_per_item( $prod_id, 1, true, true ) );
+		$line .= gui_cell( orders_per_item( $prod_id, 1, true, true, true ) );
 
 //		// TODO: sale price
 //		$price = get_price( $prod_id );
@@ -332,7 +332,7 @@ function get_total_orders1( $filter_zero, $history = false, $filter_stock ) {
 
 		$line .= "<td>" . $supplier_name . "</td>";
 
-		$line .= gui_cell( orders_per_item( $prod_id, 1, true, true ) );
+		$line .= gui_cell( orders_per_item( $prod_id, 1, true, true, true ) );
 
 //		// TODO: sale price
 //		$price = get_price( $prod_id );

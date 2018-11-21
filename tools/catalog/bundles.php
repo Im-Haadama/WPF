@@ -1,6 +1,6 @@
 <?php
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
+//error_reporting( E_ALL );
+//ini_set( 'display_errors', 'on' );
 
 if ( ! defined( "ROOT_DIR" ) ) {
 	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) );
@@ -39,7 +39,7 @@ class Bundles {
 		$data .= "<td>בחר</td>";
 		$data .= "<td>שם מוצר</td>";
 		$data .= "<td>כמות במארז</td>";
-		$data .= "<td>מזהה מארז</td>";
+		$data .= "<td>שם מארז</td>";
 		$data .= "<td>רווח</td>";
 		$data .= "<td>מחיר מכירה</td>";
 		$data .= "</tr>";
@@ -53,11 +53,13 @@ class Bundles {
 			$b            = Bundle::CreateFromDb( $id );
 
 			$line = "<tr>";
-			$line .= "<td><input id=\"" . $id . "\" class=\"" . $this->get_class_name() . "_checkbox\" type=\"checkbox\"></td>";
+			$line .= gui_cell( gui_checkbox( "chk_" . $id, $this->get_class_name() ) );
+			// "<td><input id=\"" . $id . "\" class=\"" . $this->get_class_name() . "_checkbox\" type=\"checkbox\"></td>";
 			$line .= "<td>" . $product_name . "</td>";
-			$line .= "<td>" . gui_input( "qty", $quantity ) . "</td>";
-			$line .= "<td>" . $bundle_id . "</td>";
-			$line .= '<td><input type="text" value="' . $margin . '"</td>';
+			$line .= gui_cell( gui_input( "qty_" . $id, $quantity, 'onchange="selected(this)"' ) );
+			// "<td>" . gui_input( "qty", $quantity ) . "</td>";
+			$line .= "<td>" . get_product_name( $bundle_id ) . "</td>";
+			$line .= gui_cell( gui_input( "mar_" . $id, $margin, 'onchange="selected(this)"' ) );// '<td><input type="text" value="' . $margin . '"</td>';
 			$line .= gui_cell( $b->CalculatePrice() );
 			$line .= "</tr>";
 			$data .= $line;
@@ -140,45 +142,15 @@ class Bundle {
 		return $b;
 	}
 
-	function UpdateMargin( $margin ) {
-		$this->margin = $margin;
-		$this->Update();
-
-		$sql = "update im_bundles set margin = '" . $margin . "'" .
-		       " where id = " . $this->id;
-
-		sql_query( $sql );
-	}
-
-	function Update() {
-		$product_id    = $this->bundle_prod_id;
-		$regular_price = $this->quantity * get_price( $this->prod_id );
-		$sale_price    = $this->CalculatePrice();
-		print "price: $sale_price <br/>";
-
-		my_log( "Bundle::Update $product_id $regular_price $sale_price " . $this->quantity );
-
-		update_post_meta( $product_id, "_regular_price", $regular_price );
-		update_post_meta( $product_id, "_sale_price", $sale_price );
-		update_post_meta( $product_id, "_price", $sale_price );
-		update_post_meta( $product_id, "buy_price", get_buy_price( $this->prod_id ) * $this->quantity );
-	}
-
-	function CalculatePrice() {
-		if ( strstr( $this->margin, "%" ) ) {
-			$percent = substr( $this->margin, 0, strlen( $this->margin ) - 1 );
-
-			return round( get_buy_price( $this->prod_id ) * $this->quantity * ( 100 + $percent ) / 100, 0 );
-		}
-
-		if ( $this->margin == "" ) {
-			$m = 0;
-		} else {
-			$m = $this->margin;
-		}
-
-		return round( ( get_buy_price( $this->prod_id ) ) * $this->quantity + $m, 0 );
-	}
+//	function UpdateMargin( $margin ) {
+//		$this->margin = $margin;
+//		$this->Update();
+//
+//		$sql = "update im_bundles set margin = '" . $margin . "'" .
+//		       " where id = " . $this->id;
+//
+//		sql_query( $sql );
+//	}
 
 	function Delete() {
 		my_log( "delete bundle", __CLASS__ );
@@ -214,11 +186,70 @@ class Bundle {
 
 	function CreateOrUpdate() {
 		if ( $this->id ) {
-			// Update
+			$this->Update();
 		} else {
 			// Create
 			$this->Add();
 		}
+	}
+
+	function Update( $quantity = null, $margin = null ) {
+		if ( $quantity ) {
+			$this->quantity = $quantity;
+		}
+		if ( $margin ) {
+			$this->margin = $margin;
+		}
+		$this->DoUpdate();
+		$this->Save();
+	}
+
+	function DoUpdate() {
+		$product_id    = $this->bundle_prod_id;
+		$regular_price = $this->quantity * get_price( $this->prod_id );
+		$sale_price    = $this->CalculatePrice();
+		print "price: $sale_price <br/>";
+
+		my_log( "Bundle::Update $product_id $regular_price $sale_price " . $this->quantity );
+
+		update_post_meta( $product_id, "_regular_price", $regular_price );
+		update_post_meta( $product_id, "_sale_price", $sale_price );
+		update_post_meta( $product_id, "_price", $sale_price );
+		update_post_meta( $product_id, "buy_price", get_buy_price( $this->prod_id ) * $this->quantity );
+		$my_post = array(
+			'ID'         => $product_id,
+			'post_title' => "מארז " . $this->quantity . ' ק"ג ' . get_product_name( $this->prod_id )
+		);
+
+		// Update the post into the database
+		wp_update_post( $my_post );
+	}
+
+	function CalculatePrice() {
+		if ( strstr( $this->margin, "%" ) ) {
+			$percent = substr( $this->margin, 0, strlen( $this->margin ) - 1 );
+
+			return round( get_buy_price( $this->prod_id ) * $this->quantity * ( 100 + $percent ) / 100, 0 );
+		}
+
+		if ( $this->margin == "" ) {
+			$m = 0;
+		} else {
+			$m = $this->margin;
+		}
+
+		return round( ( get_buy_price( $this->prod_id ) ) * $this->quantity + $m, 0 );
+	}
+
+	function Save() {
+		$sql = "update im_bundles " .
+		       " set margin = " . $this->margin . ", " .
+		       " quantity = " . $this->quantity .
+		       " where id = " . $this->id;
+
+		print $sql;
+
+		sql_query( $sql );
 	}
 
 	function Add() {

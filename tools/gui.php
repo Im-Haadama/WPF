@@ -6,7 +6,7 @@
  * Time: 05:08
  */
 
-require_once( "../options.php" );
+require_once( ROOT_DIR . "/tools/options.php" );
 
 function print_category_select( $id, $select = false ) {
 //	$term             = get_term( info_get( "suppliers_category" ) );

@@ -13,26 +13,24 @@ if ( ! defined( 'TOOLS_DIR' ) ) {
 // require_once( TOOLS_DIR . "/r-shop_manager.php" );
 require_once( TOOLS_DIR . "/multi-site/multi-site.php" );
 require_once( TOOLS_DIR . "/maps/config.php" );
-require_once( TOOLS_DIR . "/orders/orders-common.php" );
 
 $addresses    = array();
-$addresses[1] = "תנובות";
 
-function print_path( $ul ) {
-	print "cost: " . evaluate_path( 1, $ul, 1 ) . "<br/>";
-	$i = 1;
-	foreach ( $ul as $u ) {
-
-		print $i . ")" . map_get_order_address( $u ) . " ";
-		print "<br/>";
-		$i ++;
-	}
-}
+//function print_path( $ul ) {
+//	print "cost: " . evaluate_path( 1, $ul, 1 ) . "<br/>";
+//	$i = 1;
+//	foreach ( $ul as $u ) {
+//
+//		print $i . ")" . map_get_order_address( $u ) . " ";
+//		print "<br/>";
+//		$i ++;
+//	}
+//}
 
 function evaluate_path( $start, $elements, $end ) {
-	if ( $end < 1 ) {
-		print "end is " . $end . "<br/>";
-	}
+//	if ( $end < 1 ) {
+//		print "end is " . $end . "<br/>";
+//	}
 	$cost = get_distance( $start, $elements[0] );
 	$size = sizeof( $elements );
 //	print "size: " . $size . "<br/>";
@@ -53,28 +51,27 @@ function swap( &$a, &$b ) {
 	$b = $x;
 }
 
-function find_route_1( $node, $rest, &$path, $print = false ) {
+function find_route_1( $node, $rest, &$path, $print = false, $end ) {
 	if ( $print ) {
-		$url = "http://gebweb.net/optimap/index.php?loc0=" . urlencode( map_get_order_address( $node ) );
+		$url = "http://gebweb.net/optimap/index.php?loc0=" . $node;
 		for ( $i = 0; $i < count( $rest ); $i ++ ) {
-//		print $rest[$i] . " " . get_user_address($rest[$i]) . "<br/>";
-			$url .= "&loc" . ( $i + 1 ) . "=" . urlencode( map_get_order_address( $rest[ $i ] ) );
+//		print $rest[$i] . " " . get_user_address($rest[$i]) . "<br/>";n
+			$url .= "&loc" . ( $i + 1 ) . "=" . $rest[ $i ];
 		}
 		print gui_hyperlink( "Optimap", $url );
 		print "<br/>";
 	}
 
+	// print "find route 1. node = " . $node . " rest = " . comma_implode($path) . "<br/>";
+	if ( count( $rest ) == 1 ) {
+		array_push( $path, $rest[0] );
+
+		return;
+	}
 	find_route( $node, $rest, $path );
 
-
-//	print "path: ";
-//	foreach ($path as $p) print $p . " " ;
-//	print  "<br/>";
-	$best_cost = evaluate_path( 1, $path, 1 );
-//	if ( $print ) {
-//		print "Best: " . $best_cost . "<br/>";
-//	}
-	$switched = true;
+	$best_cost = evaluate_path( $node, $path, $end );
+	$switched  = true;
 	while ( $switched ) {
 		$switched = false;
 		for ( $switch_node = 1; $switch_node < count( $path ) - 1; $switch_node ++ ) {
@@ -84,11 +81,11 @@ function find_route_1( $node, $rest, &$path, $print = false ) {
 			swap( $alternate_path[ $switch_node ], $alternate_path[ $switch_node + 1 ] );
 //			print "alternate:";
 //			print_path($alternate_path);
-			$temp_cost = evaluate_path( 1, $alternate_path, 1 );
+			$temp_cost = evaluate_path( $node, $alternate_path, $end );
 			if ( $temp_cost < $best_cost ) {
 				if ( $print ) {
-					print "Best: " . $temp_cost . " " . $switch_node . " " . map_get_order_address( $path[ $switch_node ] ) . " " .
-					      map_get_order_address( $path[ $switch_node + 1 ] ) . "<br/>";
+					print "Best: " . $temp_cost . " " . $switch_node . " " . $path[ $switch_node ] . " " .
+					      $path[ $switch_node + 1 ] . "<br/>";
 				}
 				$switched = true;
 				swap( $path[ $switch_node ], $path[ $switch_node + 1 ] );
@@ -102,8 +99,6 @@ function find_route_1( $node, $rest, &$path, $print = false ) {
 
 // Go to next closest node first
 function find_route( $node, $rest, &$path ) {
-//	debug_time1("find_route");
-//	my_log(__FILE__, "size of rest " . sizeof($rest));
 	if ( sizeof( $rest ) == 1 ) {
 		array_push( $path, $rest[0] );
 
@@ -133,55 +128,44 @@ function find_route( $node, $rest, &$path ) {
 	find_route( $next, $new_rest, $path );
 }
 
-function map_get_order_address( $order_id ) {
-	global $store_address;
-	global $addresses;
-	if ( ! is_numeric( $order_id ) ) {
-		print $order_id . " is not a number ";
+//function map_get_order_address( $order_id )
+//{
+//	global $store_address;
+//	global $addresses;
+//	if ( ! is_numeric( $order_id ) ) {
+//		print $order_id . " is not a number ";
+//
+//		return $store_address;
+//	}
+//	if ( $order_id == 1 ) {
+//		return $store_address;
+//	}
+//
+//	$address = $addresses[ $order_id ];
+//	if ( ! $address ) {
+////		print "order id = " . $order_id;
+//		$address                = order_get_address( $order_id );
+//		if ( ! $address ) {
+//			print "לא נמצאה כתובת  " . $order_id;
+//			$addresses[ $order_id ] = $store_address;
+//		}
+//		// print $order_id . " " . $address . "<br/>";
+//		$addresses[ $order_id ] = $address;
+//	}
+//
+//	return $address;
+//}
 
-		return $store_address;
-	}
-	if ( $order_id == 1 ) {
-		return $store_address;
-	}
-
-	$address = $addresses[ $order_id ];
-	if ( ! $address ) {
-//		print "order id = " . $order_id;
-		$address                = order_get_address( $order_id );
-		if ( ! $address ) {
-			print "לא נמצאה כתובת  " . $order_id;
-			$addresses[ $order_id ] = $store_address;
-		}
-		// print $order_id . " " . $address . "<br/>";
-		$addresses[ $order_id ] = $address;
-	}
-
-	return $address;
-}
-
-function get_distance( $order_a, $order_b ) {
+function get_distance( $address_a, $address_b ) {
 	global $conn;
 	if ( 0 ) {
-		print "a: " . $order_a . "<br/>";
-		print "b: " . $order_b . "<br/>";
+		print "a: X" . $address_a . "X<br/>";
+		print "b: X" . $address_b . "X<br/>";
 	}
-	if ( $order_a == $order_b ) {
+	if ( rtrim( $address_a ) == rtrim( $address_b ) ) {
 		return 0;
 	}
-	if ( map_get_order_address( $order_a ) == map_get_order_address( $order_b ) ) {
-		return 0;
-	}
-	if ( ! is_numeric( $order_a ) ) {
-		print "A is not number " . $order_a . "<br/>";
-		// die( 1 );
-	}
-
-	if ( ! is_numeric( $order_b ) ) {
-		print "B is not number " . $order_b . "<br/>";
-		// die( 1 );
-	}
-	$sql = "SELECT distance FROM im_distance WHERE order_a = " . $order_a . " AND order_b = " . $order_b;
+	$sql = "SELECT distance FROM im_distance WHERE address_a = '" . $address_a . "' AND address_b = '" . $address_b . "'";
 	// print $sql . " ";
 	$ds  = sql_query_single_scalar( $sql );
 	// print $ds . "<br/>";
@@ -189,22 +173,22 @@ function get_distance( $order_a, $order_b ) {
 	if ( $ds > 0 ) {
 		return $ds;
 	}
-	$r        = do_get_distance( map_get_order_address( $order_a ), map_get_order_address( $order_b ) );
+	$r = do_get_distance( $address_a, $address_b );
 	if ( ! $r ) {
 		// One is invalid
-		if ( do_get_distance( $order_a, $order_a ) ) {
-			print "כתובת לא תקינה להזמנה " . $order_a . map_get_order_address( $order_a );
+		if ( do_get_distance( $address_a, $address_a ) ) {
+			print "כתובת לא תקינה  " . $address_a;
 		}
-		if ( do_get_distance( $order_b, $order_b ) ) {
-			print "כתובת לא תקינה להזמנה " . $order_b . map_get_order_address( $order_b );
+		if ( do_get_distance( $address_b, $address_b ) ) {
+			print "כתובת לא תקינה " . $address_b;
 		}
 	}
 	$distance = $r[0];
 	$duration = $r[1];
 	// print get_client_address($order_a) . " " . get_client_address($order_b) . " " . $d . "<br/>";
 	if ( $distance > 0 ) {
-		$sql1 = "insert into im_distance (order_a, order_b, distance, duration) VALUES 
-				($order_a, $order_b, $distance, $duration)";
+		$sql1 = "insert into im_distance (address_a, address_b, distance, duration) VALUES 
+				('$address_a', '$address_b', $distance, $duration)";
 		sql_query( $sql1 );
 		if ( mysqli_affected_rows( $conn ) < 1 ) {
 			print "fail: " . $sql1 . "<br/>";
@@ -216,8 +200,8 @@ function get_distance( $order_a, $order_b ) {
 	return - 1;
 }
 
-function get_distance_duration( $user_a, $user_b ) {
-	$sql = "SELECT duration FROM im_distance WHERE order_a = " . $user_a . " AND order_b = " . $user_b;
+function get_distance_duration( $address_a, $address_b ) {
+	$sql = "SELECT duration FROM im_distance WHERE address_a = '" . $address_a . "' AND address_b = '" . $address_b . "'";
 
 	return sql_query_single_scalar( $sql );
 
@@ -269,7 +253,7 @@ function do_get_distance( $a, $b ) {
 	$j = json_decode( $result );
 
 	if ( ! $j or ! isset( $j->routes[0] ) ) {
-		print "not found " . $a . " " . $b . "<br/>";
+		print "Can't find distance between '" . $a . "' and '" . $b . "'<br/>";
 
 		return null;
 	}

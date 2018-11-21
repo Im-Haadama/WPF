@@ -6,7 +6,8 @@ if ( ! defined( "TOOLS_DIR" ) ) {
 require_once( TOOLS_DIR . "/im_tools.php" );
 require_once( ROOT_DIR . "/agla/gui/inputs.php" );
 require_once( TOOLS_DIR . "/multi-site/multi-site.php" );
-
+require_once( TOOLS_DIR . "/options.php" );
+require_once( TOOLS_DIR . "/pricing.php" );
 // print header_text();
 
 $text = isset( $_GET["text"] );
@@ -28,7 +29,7 @@ function show_category_by_id( $term_id, $sale = false, $text = false ) {
 	if ( $sale ) {
 		$table = array( array( "", "מוצר", "מחיר מוזל", "מחיר רגיל", "כמות", "סה\"כ" ) );
 	} else {
-		$table = array( array( "", "מוצר", "מחיר", "מחיר לכמות", "כמות", "סה\"כ" ) );
+		$table = array( array( "", "מוצר", "מחיר", gui_link( "מחיר לכמות", "", "" ), "כמות", "סה\"כ" ) );
 	}
 
 	$args = array(
@@ -43,6 +44,9 @@ function show_category_by_id( $term_id, $sale = false, $text = false ) {
 		$loop->the_post();
 		$line = array();
 		global $product;
+		if ( ! $product->get_regular_price() ) {
+			continue;
+		}
 		$prod_id = $loop->post->ID;
 		$terms   = get_the_terms( $prod_id, 'product_cat' );
 // print "<br/>" . $prod_id . " "; print get_product_name($prod_id);
@@ -67,10 +71,10 @@ function show_category_by_id( $term_id, $sale = false, $text = false ) {
 			array_push( $line, gui_lable( "vpr_" . $prod_id, $product->get_regular_price() ) );
 		} else {
 			array_push( $line, gui_lable( "prc_" . $prod_id, $product->get_price() ) );
-			$q_price = "";
-			if ( is_numeric( get_buy_price( $prod_id ) ) ) {
-				$q_price = min( round( get_buy_price( $prod_id ) * 1.25 ), $product->get_price() );
-			}
+			$q_price = get_price_by_type( $prod_id, null, 8 );
+//			if ( is_numeric( get_buy_price( $prod_id ) ) ) {
+//				$q_price = min( round( get_buy_price( $prod_id ) * 1.25 ), $product->get_price() );
+//			}
 			array_push( $line, gui_lable( "vpr_" . $prod_id, $q_price, 1 ) );
 		}
 		array_push( $line, gui_input( "qua_" . $prod_id, "0", array( 'onchange="calc_line(this)"' ) ) );
@@ -92,11 +96,27 @@ function show_category_by_id( $term_id, $sale = false, $text = false ) {
 //woocommerce_show_product_sale_flash( $post, $product );
 }
 
+function get_form_tables() {
+	$key         = "form_categs";
+	$categs_info = info_get( $key );
+	if ( ! $categs_info ) {
+		info_update( $key, "" );
+		$categs_info = "";
+	}
+	$categs = explode( ",", $categs_info );
+	$result = "";
+	foreach ( $categs as $categ ) {
+		$result .= "\"table_" . $categ . "\", ";
+	}
+
+	return rtrim( $result, ", " );
+}
 ?>
     <script type="text/javascript" src="/agla/client_tools.js"></script>
 
     <script>
-        var tables = ["table_130", "table_18", "table_19", "table_62", "table_84", "table_96", "table_125", "table_66", "table_106"];
+
+        var tables = [<?php print get_form_tables(); ?>];
 
         function add_order() {
             var params = new Array();
@@ -121,10 +141,10 @@ function show_category_by_id( $term_id, $sale = false, $text = false ) {
 
             if (phone.length > 2) url += "&phone=" + encodeURI(phone);
             if (name.length > 2) url += "&name=" + encodeURI(name);
-			<? if ( isset( $group ) ) {
+	        <?php if ( isset( $group ) ) {
 			print "url += \"&group=\" + encodeURI('" . $group . "');";
 		} ?>
-			<? if ( isset( $user ) ) {
+	        <?php if ( isset( $user ) ) {
 			print "url += \"&user=\" + encodeURI('" . $user . "');";
         }
 	        ?>
@@ -212,22 +232,29 @@ if ( $text ) {
 <br/>
 <?php
 if ( ! $text )
-	print gui_input( "email", "", "update()" );
+	print gui_input( "email", "", "oninput=update()" );
 
 print "<br/>";
 
 //print "לפניכם מארזי כמות במחירים מוזלים. פירות ממשק נהרי, יש להזמין עד יום שישי, ההספקה בשבוע העוקב (איסוף או משלוח). בננות סוטו - להזמין עד יום ראשון בערב.";
-show_category( "מארזי כמות מוזלים", true, $text );
 
-show_category( "פירות אורגניים", false, $text );
-show_category( "פירות לא אורגניים", false, $text );
-show_category( "ירקות אורגניים", false, $text );
-show_category( "עלים אורגניים", false, $text );
-show_category( "פטריות אורגניות", false, $text );
-show_category( "זרעי מאכל אורגניים", false, $text );
-show_category( "פירות יבשים אורגניים", false, $text );
-show_category( "צמחי מרפא אורגניים", false, $text );
-show_category( "נבטים אורגניים", false, $text);
+$categs = info_get( "form_categs" );
+foreach ( explode( ",", $categs ) as $categ ) {
+	show_category_by_id( $categ );
+}
+//show_category( "מארזי כמות מוזלים", true, $text );
+
+print "<br/>";
+
+//show_category( "פירות אורגניים", false, $text );
+//show_category( "פירות לא אורגניים", false, $text );
+//show_category( "ירקות אורגניים", false, $text );
+//show_category( "עלים אורגניים", false, $text );
+//show_category( "פטריות אורגניות", false, $text );
+//show_category( "זרעי מאכל אורגניים", false, $text );
+//show_category( "פירות יבשים אורגניים", false, $text );
+//show_category( "צמחי מרפא אורגניים", false, $text );
+//show_category( "נבטים אורגניים", false, $text);
 
 print gui_button( "btn_add_order_2", "add_order()", "הוסף הזמנה" );
 

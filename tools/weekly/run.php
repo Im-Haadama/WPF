@@ -6,26 +6,111 @@
  * Time: 04:37
  */
 
-require_once( "../im_tools.php" );
+// error_reporting( E_ALL );
+// ini_set( 'display_errors', 'on' );
 
-$key = "weekly_run";
+require_once( TOOLS_DIR . "/im_tools.php" );
+require_once( TOOLS_DIR . "/options.php" );
+require_once( TOOLS_DIR . "/delivery/missions.php" );
+require_once( TOOLS_DIR . "/multi-site/multi-site.php" );
+require_once( TOOLS_DIR . "/supplies/supplies.php" );
 
-// TODO: Check permission
+$gap_key = "run_gap";
+$run_gap = 100; // info_get($gap_key);
+// $run_gap = 5; // debug mode
+$date_format = "h:m:s";
+
+if ( ! $run_gap ) {
+	// Set default
+	$run_gap = 600;
+	print "setting default run_gap to " . $run_gap . "<br/>";
+	info_update( "run_gap", $run_gap );
+}
 
 ob_start();
-$create_time = date( "Y-m-d H:m" );
-print $create_time;
+$this_run_time = time();
+print "run started " . date( $date_format ) . "\n";
 
-$log = ob_end_clean();
+// Check last run
+$key      = "weekly_run";
+$last_run = info_get( $key );
 
-print "run started " . $create_time . "<br/>";
+print "last_run: " . $last_run . "\n";
+print "this_run_time: " . $this_run_time . "\n";
+if ( $this_run_time - $last_run < $run_gap ) {
+	print "no need to run\n";
+	close_file();
 
+	return;
+}
+// print $run . " " . $create_time . "<br/>";
 
-print "run ended " . date( "H:m" );
-$file_name = "../logs/" . $create_time;
-print "results saved to " . $file_name . "<br/>";
-$file = fopen( $file_name, "w" );
-fwrite( $file, $log );
+// TODO: Check permission
+if ( MultiSite::isMaster() ) {
+	// duplicate_week();
+} else {
+	require_once( TOOLS_DIR . "/delivery/sync-from-master.php" );
+}
 
-info_update( $key, $create_time );
+auto_supply();
 
+info_update( $key, $this_run_time );
+close_file();
+
+function close_file() {
+	global $date_format;
+	print "run ended " . date( $date_format ) . "\n";
+
+	$log = ob_get_clean();
+//	print "log: " . $log . "<br/>";
+
+	$file_name = ROOT_DIR . "/logs/run-" . date( 'd' ) . ".txt";
+	// print "results saved to " . $file_name . "<br/>";
+	$file = fopen( $file_name, "a" );
+	fwrite( $file, $log );
+
+	if ( 0 ) // debug
+	{
+		print nl2br( $log );
+	}
+}
+
+function auto_supply() {
+//	print "auto supply<br/>";
+	$sql = "SELECT id FROM im_suppliers WHERE  auto_order_day = " . date( "w");
+
+	// print $sql;
+	$suppliers = sql_query_array_scalar( $sql );
+
+	foreach ( $suppliers as $supplier_id ) {
+		print "create auto order for " . get_supplier_name( $supplier_id ) . "\n";
+
+		// $s = new Supply($supplier_id);
+		$last_order = sql_query_single_scalar( "select max(date) from im_supplies where supplier = " . $supplier_id );
+
+		print "last: " . $last_order . "\n";
+		$sold         = supplier_report_data( $supplier_id, $last_order, date( 'y-m-d' ) );
+		$supply_lines = array();
+		$total        = 0;
+		foreach ( $sold as $k => $product ) {
+			$prod_id  = $sold[ $k ][0];
+			$quantity = $sold[ $k ][1];
+			$price    = get_buy_price( $prod_id, $supplier_id );
+			if ( $quantity > 0 ) {
+				print get_product_name( $prod_id ) . " " . $quantity . "\n";
+				array_push( $supply_lines, array( $prod_id, $quantity ) );
+				$total += $quantity * $price;
+			}
+		}
+		if ( $total > sql_query_single_scalar( "select min_order from im_suppliers where id = " . $supplier_id ) ) {
+			$supply = Supply::CreateSupply( $supplier_id );
+			foreach ( $supply_lines as $line ) {
+				$supply->AddLine( $line[0], $line[1], get_buy_price( $line[0] ) );
+			}
+			$supply->Send();
+		} else {
+			print "not enough for an order\n";
+		}
+//		var_dump($sold);
+	}
+}

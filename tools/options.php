@@ -19,7 +19,7 @@ function info_get( $key ) {
 }
 
 function info_update( $key, $data ) {
-	if ( is_null( info_get( $key ) ) ) {
+	if ( ! info_get( $key ) ) {
 		sql_query( "insert into im_info (info_key, info_data) VALUE ('$key', '$data')" );
 
 		return;

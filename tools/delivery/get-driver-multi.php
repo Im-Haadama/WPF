@@ -7,9 +7,11 @@
  * Time: 22:41
  */
 
+require_once( "../im_tools.php" );
 require_once( '../r-shop_manager.php' );
 require_once( '../multi-site/multi-site.php' );
 require_once( '../maps/build-path.php' );
+require_once( '../missions/Mission.php' );
 
 $debug = false;
 // $addresses = array();
@@ -97,6 +99,9 @@ foreach ( $dom->find( 'tr' ) as $row ) {
 	}
 	// $key_fields = $row->find( 'td', 11 )->plaintext;
 	$site                   = $row->find( 'td', 0 )->plaintext;
+	if ( $site == 'אתר' ) {
+		continue;
+	}
 	$order_id               = $row->find( 'td', 1 )->plaintext;
 	$user_id                = $row->find( 'td', 2 )->plaintext;
 	$name                   = $row->find( 'td', 3 )->plaintext;
@@ -116,6 +121,9 @@ foreach ( $dom->find( 'tr' ) as $row ) {
 	if ( $site == "supplies" ) {
 		$type = "supplies";
 	}
+	if ( ! is_numeric( $site_id ) ) {
+		die ( $site_id . " not number" . $site_id . " order_id = " . $order_id . " name = " . $name . " <br/>" );
+	}
 	$line_data .= gui_cell( gui_checkbox( "chk_" . $order_id, "", "", 'onchange="delivered(\'' . MultiSite::SiteTools( $site_id ) . "'," . $order_id . ', \'' . $type . '\')"' ) ); // #delivered
 
 	$line_data .= "</tr>";
@@ -123,15 +131,24 @@ foreach ( $dom->find( 'tr' ) as $row ) {
 		$data_lines[ $mission_id ] = array();
 		/// print "new: " . $mission_id . "<br/>";
 	}
-	array_push( $data_lines[ $mission_id ], array( $order_id, $line_data ) );
+	array_push( $data_lines[ $mission_id ], array( $addresses[ $order_id ], $line_data ) );
+	// var_dump($line_data); print "<br/>";
 }
 
 //var_dump($addresses);
 
 foreach ( $data_lines as $mission_id => $data_line ) {
 //    $mission_id = 152;
-//    $data_line = $data_lines[152];
+//    $data_line = $data_lines[152];1
 //    if (1){
+	if ( ! ( $mission_id > 0 ) ) {
+		print "mission 0 skipped<br/>";
+		continue;
+	}
+//        die ("no mission id");
+
+	$mission = Mission::getMission( $mission_id);
+
 	print gui_header( 1, get_mission_name( $mission_id ) . "($mission_id)" );
 
 	if ( $debug ) {
@@ -144,30 +161,32 @@ foreach ( $data_lines as $mission_id => $data_line ) {
 	$lines_per_station = array();
 	for ( $i = 0; $i < count( $data_lines[ $mission_id ] ); $i ++ ) {
 		$stop_point = $data_lines[ $mission_id ][ $i ][0];
-//		print "stop point: " . $stop_point . "<br/>";
+		// print "stop point: " . $stop_point . "<br/>";
 		array_push( $stop_points, $stop_point );
 		if ( ! isset( $lines_per_station[ $stop_point ] ) ) {
 			$lines_per_station[ $stop_point ] = array();
-			if ( get_distance( 1, $order_id ) ) {
+		}
+		if ( get_distance( $mission->getStartAddress(), $stop_point ) ) {
 				array_push( $lines_per_station[ $stop_point ], $data_lines[ $mission_id ][ $i ][1] );
 			} else {
 				print "לא מזהה את הכתובת של הזמנה " . $data_lines[ $mission_id ][ $i ] . "<br/>";
 			}
-		}
+
 	}
 //	foreach ($stop_points as $p) print $p . " ";
 	if ( $debug )
 		print_time( "start path ", true);
-	find_route_1( 1, $stop_points, $path, true );
+	// var_dump($mission);
+	find_route_1( $mission->getStartAddress(), $stop_points, $path, true, $mission->getEndAddress() );
 	if ( $debug )
 		print_time( "end path " . $mission_id, true);
 
 //	var_dump($path);
 	if ( $debug ) {
-		print map_get_order_address( $path[0] ) . "<br/>";// . " " .get_distance(1, $path[0]) . "<br/>";
+		print $path[0] . "<br/>";// . " " .get_distance(1, $path[0]) . "<br/>";
 		for ( $i = 1; $i < count( $path ); $i ++ ) {
 			// print $path[$i] . " " . $addresses[$path[$i]]. "<br/>";
-			print map_get_order_address( $path[ $i ] ) . "<br/>"; // get_distance($path[$i], $path[$i-1]) . "<br/>";
+			print $path[ $i ] . "<br/>"; // get_distance($path[$i], $path[$i-1]) . "<br/>";
 		}
 	}
 
@@ -179,7 +198,7 @@ foreach ( $data_lines as $mission_id => $data_line ) {
 	$data .= gui_list( "יש לוודא שכל המשלוחים הועמסו.");
 	$data .= gui_list( "בעת קבלת כסף או המחאה יש לשלוח מיידית הודעה ליעקב, עם הסכום ושם הלקוח.");
 
-	$prev           = 1;
+	$prev           = $mission->getStartAddress();
 	$total_distance = 0;
 	$total_duration = 0;
 	for ( $i = 0; $i < count( $path ); $i ++ ) {
@@ -193,7 +212,7 @@ foreach ( $data_lines as $mission_id => $data_line ) {
 		}
 		$prev = $path[ $i];
 	}
-	$total_distance += get_distance( $path[ count( $path ) - 1 ], 1 ) / 1000;
+	$total_distance += get_distance( $path[ count( $path ) - 1 ], $mission->getEndAddress() ) / 1000;
 
 //	foreach ($path as $id => $stop_point){
 //		print $id ."<br/>";

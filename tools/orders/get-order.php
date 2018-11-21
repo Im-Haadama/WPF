@@ -140,7 +140,13 @@ if ( current_user_can( "edit_shop_orders" ) ) {
 		print '<a href="../delivery/create-delivery.php?order_id=' . $order_id . '">הפק תעודת משלוח' . '</a> ';
 	}
 }
+print "<br/>";
 print gui_datalist( "items", "im_products", "post_title" );
+print "<br/>";
+//print gui_button("btn_cancel", "cancel_order()", "בטל הזמנה");
+
+print gui_button( "btn_del_item", "del_item()", "מחק פריטים מסומנים" );
+print "<br/>";
 ?>
 
 <datalist id="units">
@@ -154,12 +160,12 @@ print gui_datalist( "items", "im_products", "post_title" );
 <?php if ( current_user_can( "edit_shop_orders" ) ) {
 
 	if ( $for_edit ) {
+		print gui_header( 1, "הוספת פריטים" );
 		print gui_table( array(
 			array( "בחר פריט", "כמות", "יח" ),
 			array( "<input id=\"itm_\" list=\"items\">", "<input id=\"qua_\">", "<input id=\"uni_\" list=\"units\">" )
 		) );
 		print gui_button( "btn_add_item", "add_item()", "הוסף" );
-		print gui_button( "btn_del_item", "del_item()", "מחק" );
 		print gui_button( "btn_replace", "replace()", "החלף סלים במרכיבים" );
 	}
 }

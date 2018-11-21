@@ -127,6 +127,24 @@ print header_text( false );
 
             xmlhttp.send();
         }
+
+        function create_delta() {
+            document.getElementById("btn_create_delta").disabled = true;
+            // Request header
+            var request = "../supplies/supplies-post.php?operation=create_delta";
+
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.open("GET", request, true);
+            xmlhttp.onreadystatechange = function () {
+                document.getElementById("btn_create_delta").disabled = false;
+
+                document.getElementById("logging").innerHTML = xmlhttp.response;
+                show_totals();
+                // location.reload();
+            }
+
+            xmlhttp.send();
+        }
         function createSupply() {
             document.getElementById("btn_create_order").disabled = true;
             var table = document.getElementById('ordered_items');
@@ -201,7 +219,9 @@ print header_text( false );
 <input type="checkbox" id="filter_stock" onclick='show_totals();'>סנן פרטים במלאי<br>
 <table id="ordered_items"></table>
 
-<?php print gui_button( "btn_create_supplies", "create_supplies()", "צור הספקות" ); ?>
+<?php
+print gui_button( "btn_create_delta", "create_delta()", "השלם פערים" );
+print gui_button( "btn_create_supplies", "create_supplies()", "צור הספקות" ); ?>
 
 <br/>
 צור הזמנה לספק

@@ -6,8 +6,8 @@
  * Time: 15:25
  */
 
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
+//error_reporting( E_ALL );
+//ini_set( 'display_errors', 'on' );
 
 require_once( '../r-shop_manager.php' );
 require_once( ROOT_DIR . "/agla/gui/inputs.php" );
@@ -83,6 +83,11 @@ print gui_button( "btn_new", "show_create_new()", "מארז חדש" );
 
         }
 
+        function selected(sel) {
+            var pricelist_id = sel.id.substr(4);
+            document.getElementById("chk_" + pricelist_id).checked = true;
+        }
+
         function createBundle() {
             var product_name = get_value_by_name("product_name");
             var product_id = product_name.substr(0, product_name.indexOf(")"));
@@ -107,21 +112,23 @@ print gui_button( "btn_new", "show_create_new()", "מארז חדש" );
         function save_items() {
             var table = document.getElementById(table_name);
 
-            var collection = document.getElementsByClassName(class_name + "_checkbox");
+            var collection = document.getElementsByClassName(class_name);
             var params = new Array();
             for (var i = 0; i < collection.length; i++) {
                 if (collection[i].checked) {
-                    var bundle_id = table.rows[i + 1].cells[0].firstChild.id;
-                    var margin = get_value(table.rows[i + 1].cells[4].firstChild);
+                    var bundle_id = table.rows[i + 1].cells[0].firstChild.id.substr(4);
+                    var quantity = get_value_by_name("qty_" + bundle_id);
+                    var margin = get_value_by_name("mar_" + bundle_id);
 
                     params.push(bundle_id);
+                    params.push(quantity);
                     params.push(encodeURI(margin));
                 }
             }
             xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function () {
                 // Wait to get query result
-                if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+                if (xmlhttp.readyState === 4 && xmlhttp.status === 200)  // Request finished
                 {
                     updateDisplay();
                 }
@@ -134,11 +141,11 @@ print gui_button( "btn_new", "show_create_new()", "מארז חדש" );
         function del_items() {
             var table = document.getElementById(table_name);
 
-            var collection = document.getElementsByClassName(class_name + "_checkbox");
+            var collection = document.getElementsByClassName(class_name);
             var params = new Array();
             for (var i = 0; i < collection.length; i++) {
                 if (collection[i].checked) {
-                    var id = collection[i].id;
+                    var id = collection[i].id.substr(4);
 
                     params.push(id);
                 }

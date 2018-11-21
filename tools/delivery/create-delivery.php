@@ -1,6 +1,6 @@
 <?php
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
+//error_reporting( E_ALL );
+//ini_set( 'display_errors', 'on' );
 
 // include_once( "../tools_wp_login.php" );
 // include_once( "../orders/orders-common.php" );
@@ -18,10 +18,10 @@ print header_text( false );
 
 $script_file = MultiSite::LocalSiteTools() . "/delivery/create-delivery-script.php?i=1";
 
+$edit = false;
 if ( isset( $_GET["id"] ) ) {
 	$id          = $_GET["id"];
 	$script_file .= "&id=" . $id;
-	$edit        = false;
 	if ( $id > 0 ) {
 		$edit     = true;
 		$order_id = get_order_id( $id );
@@ -60,6 +60,7 @@ if ( $id > 0 ) {
 	print "<form name=\"delivery\" action= \"\">";
 	print gui_header( 2, "עריכת תעודת משלוח מספר  " . $id );
 	print gui_header( 3, "הזמנה מספר " . get_order_id( $id ) );
+	// print order_info_table(get_order_id($id));
 
 	$d = new Delivery( $id );
 	$d->PrintDeliveries( ImDocumentType::delivery, ImDocumentOperation::edit );
@@ -71,6 +72,7 @@ if ( $id > 0 ) {
 	$client_id = order_get_customer_id( $order_id );
 	print "<form name=\"delivery\" action= \"\">";
 	// print gui_header( 2, "יצירת תעודת משלוח להזמנה מספר " . $order_id, true );
+
 
 	if ( sql_query_single_scalar( "select order_is_group(" . $order_id . ")" ) == 1 ) {
 //		 print "הזמנה קבוצתית";
@@ -100,7 +102,22 @@ if ( $id > 0 ) {
 ?>
 
 <button id="btn_calc" onclick="calcDelivery()">חשב תעודה</button>
-<button id="btn_add" onclick="addDelivery()">אשר ושמור תעודה</button>
+<?php
+$show_save_draft = false;
+if ( ! $edit ) { // New
+	$show_save_draft = true;
+} else {
+	// Still draft
+	$d               = delivery::CreateFromOrder( $order_id );
+	$show_save_draft = $d->isDraft();
+}
+
+if ( $show_save_draft ) {
+	print gui_button( "btn_save_draft", "addDelivery(1)", "שמור טיוטא" );
+}
+
+?>
+<button id="btn_add" onclick="addDelivery(0)">אשר תעודה</button>
 <button id="btn_addline" onclick="addLine()">הוסף שורה</button>
 <textarea id="logging" rows="2" cols="50"></textarea>
 

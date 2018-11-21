@@ -69,6 +69,7 @@ function show_menu() {
 
 // print $sql;
 function print_mission( $mission_id_filter = null ) {
+
 	$sql = 'SELECT posts.id as id, order_is_group(id) as is_grouped, order_user(id) as user_id'
 	       . ' FROM `wp_posts` posts'
 	       . " WHERE post_status LIKE '%wc-processing%' order by 1";
@@ -118,7 +119,6 @@ function print_mission( $mission_id_filter = null ) {
 			$D->PrintDeliveries( ImDocumentType::delivery, ImDocumentOperation::collect );
 		}
 	}
-
 }
 
 function print_the_supplies() {

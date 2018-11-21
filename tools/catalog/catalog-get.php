@@ -1,5 +1,5 @@
 <?php
-ini_set( 'display_errors', 'on' );
+//ini_set( 'display_errors', 'on' );
 require_once( '../r-shop_manager.php' );
 require_once( ROOT_DIR . '/agla/gui/wp_inputs.php' );
 require_once( ROOT_DIR . '/agla/gui/inputs.php' );

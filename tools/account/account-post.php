@@ -183,13 +183,12 @@ function create_receipt( $cash, $bank, $check, $credit, $change, $user_id, $date
 
 		account_add_transaction( $user_id, date( "Y-m-d" ), $change - ( $cash + $bank + $credit + $check ), $doc_id, $pay_description );
 		if ( abs( $change ) > 0 ) {
-			account_add_transaction( $user_id, date( "Y-m-d" ), - $change, $doc_id, $change > 0 ? "עודף" : "חוסר/ניצול יתרה" );
+			account_add_transaction( $user_id, date( "Y-m-d" ), - $change, $doc_id, $change > 0 ? "עודף" : "יתרה" );
 		}
 		print "חשבונית מס קבלה מספר " . $doc_id . " נוצרה!" . "<br/>";
 	} else {
 		print "doc_id: " . $doc_id . "<br/>";
 	}
-
 }
 
 function add_im_user( $user, $name, $email, $address, $city, $phone, $zip ) {
