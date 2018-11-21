@@ -803,7 +803,11 @@ class delivery {
 	}
 
 	public function isDraft() {
-		return sql_query_single_scalar( "select draft from im_delivery where ID = " . $this->ID );
+		if ( $this->ID ) {
+			return sql_query_single_scalar( "select draft from im_delivery where ID = " . $this->ID );
+		} else {
+			die ( __METHOD__ . " no ID" );
+		}
 	}
 
 	public function DeliveryDate() {

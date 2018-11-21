@@ -224,7 +224,7 @@ if ( $text ) {
 	print "<br/>";
 	print gui_table( array( 'סה"כ הזמנה:', gui_lable( "total", "0" ) ) );
 
-	print gui_button( "btn_add_order_1", "add_order()", "הוסף הזמנה" );
+	print gui_button( "btn_add_order_1", "add_order(0)", "הוסף הזמנה" );
 }
 ?>
 <br/>
@@ -256,7 +256,7 @@ print "<br/>";
 //show_category( "צמחי מרפא אורגניים", false, $text );
 //show_category( "נבטים אורגניים", false, $text);
 
-print gui_button( "btn_add_order_2", "add_order()", "הוסף הזמנה" );
+print gui_button( "btn_add_order_2", "add_order(0)", "הוסף הזמנה" );
 
 ?>
 <script>

@@ -164,7 +164,7 @@ global $pos;
         // pay = 0; Just create the order.
         // pay = 1; Move control back to order-pos - create delivery and invoice
         // pay = 2; Create order and delivery note.
-        function add_order(pay) {
+        function add_order() {
             clear_message();
 
             // Check info

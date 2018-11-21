@@ -62,6 +62,13 @@ switch ( $operation ) {
 		business_delete_transaction( $id );
 		break;
 
+	case "check_delivery":
+		$order_id = $_GET["order_id"];
+		$id       = sql_query_single_scalar( "SELECT id FROM im_delivery WHERE order_id = " . $order_id );
+		if ( ! $id ) {
+			print "none";
+		}
+		print $id;
 }
 
 

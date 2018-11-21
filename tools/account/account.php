@@ -135,12 +135,24 @@ function show_trans( $customer_id, $from_last_zero = false, $checkbox = true, $t
 
 		// <input id=\"chk" . $doc_id . "\" class=\"trans_checkbox\" type=\"checkbox\">
 		if ( $checkbox ) {
-			if ( $receipt or ! $is_delivery ) {
-				$line .= gui_cell( "" );
-			} else {
-				$line .= "<td>" . gui_checkbox( "chk" . $doc_id, "trans_checkbox", "", "onchange=\"update_sum()\"" ) . "</td>";
-			}
+			do {
+				if ( $is_delivery ) {
+					$d = new Delivery( $doc_id );
+					if ( $d->isDraft() ) {
+						$line .= gui_cell( "טיוטא" );
+						break;
+					}
+				}
+				if ( $receipt or ! $is_delivery ) {
+					$line .= gui_cell( "" );
+					break;
+				} else {
+					$line .= "<td>" . gui_checkbox( "chk" . $doc_id, "trans_checkbox", "", "onchange=\"update_sum()\"" ) . "</td>";
+					break;
+				}
+			} while ( false );
 		}
+
 		$line    .= "<td>" . $date . "</td>";
 		$line    .= "<td>" . gui_lable( "amo_" . $doc_id, $amount ) . "</td>";
 		$line    .= "<td>" . $vat . "</td>";

@@ -1,4 +1,7 @@
 <?php
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
 require_once( "../im_tools.php" );
 require_once( "../multi-site/multi-site.php" );
 require_once( ROOT_DIR . '/agla/gui/inputs.php' );
@@ -110,6 +113,35 @@ print gui_datalist( "items", "im_products", "post_title" );
 
     function addDelivery(draft) {
         calcDelivery();
+        if (draft)
+            execute_url("delivery-post.php?operation=check_delivery&order_id=" + <?php print $order_id; ?>, doAddDraft);
+        else
+            execute_url("delivery-post.php?operation=check_delivery&order_id=" + <?php print $order_id; ?>, doAdd);
+    }
+
+    function doAddDraft(xmlhttp) {
+	    <?php
+	    if ( isset( $id ) ) { // Was new when open
+		    print 'if (xmlhttp.response != ' . $id . ') { alert ("תעודה נשמרה במקום אחר. יש לסגור ולפתוח מחדש"); return; }';
+	    } else { // Was before open
+		    print 'if (xmlhttp.response != "none") { alert ("תעודה נשמרה במקום אחר. יש לסגור ולפתוח מחדש"); return; }';
+	    }
+	    ?>
+        do_add(1);
+    }
+
+    function doAdd(xmlhttp) {
+	    <?php
+	    if ( isset( $id ) ) { // Was new when open
+		    print 'if (xmlhttp.response != ' . $id . ') { alert ("תעודה נשמרה במקום אחר. יש לסגור ולפתוח מחדש"); return; }';
+	    } else { // Was before open
+		    print 'if (xmlhttp.response != "none") { alert ("תעודה נשמרה במקום אחר. יש לסגור ולפתוח מחדש"); return; }';
+	    }
+	    ?>
+        do_add(0);
+    }
+
+    function do_add(draft) {
         document.getElementById('btn_add').disabled = true;
 	    <?php if ( isset( $order_id ) ) print "var order_id = " . $order_id . ";" ?>
 
@@ -284,7 +316,6 @@ print gui_datalist( "items", "im_products", "post_title" );
         array.push(item);
     }
 
-
     function printDeliveryNotes() {
         document.getElementById('btn_calc').style.visibility = "hidden";
         document.getElementById('btn_print').style.visibility = "hidden";
@@ -306,7 +337,6 @@ print gui_datalist( "items", "im_products", "post_title" );
     }
 
     function calcDelivery() {
-
         var table = document.getElementById('del_table');
         var total = 0;
         var total_vat = 0;

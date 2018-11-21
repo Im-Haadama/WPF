@@ -10,6 +10,13 @@ $print  = isset( $_GET["print"] );
 $d      = new Delivery( $id );
 
 $order_id = get_order_id( $id );
+
+if ( ! ( $order_id > 0 ) ) {
+	print "תעודה לא קיימת";
+
+	return;
+}
+
 //print current_user_can("edit_shop_orders") ."<br/>";
 //print order_get_customer_id($order_id)."<br/>";
 //print get_current_user_id()."<br/>";
@@ -50,14 +57,16 @@ if ( ! $send ) {
             // Wait to get delivery id.
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
             {
-                window.history.back();
-                window.reload();
+                if (window.history.previous.href)
+                    window.history.back();
+                else {
+                    alert("תעודה נמחקה. יש לסגור את החלון");
+                }
             }
         }
         xmlhttp.open("GET", request, true);
         xmlhttp.send();
     }
-
 
 </script>
 </body>
