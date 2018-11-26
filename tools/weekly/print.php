@@ -17,6 +17,8 @@ require_once '../delivery/delivery.php';
 require_once '../orders/orders-common.php';
 require_once '../supplies/supplies.php';
 require_once( "../maps/build-path.php" );
+require_once( "../missions/Mission.php" );
+
 
 if ( isset( $_GET["operation"] ) ) {
 	$operation = $_GET["operation"];
@@ -83,6 +85,8 @@ function print_mission( $mission_id_filter = null ) {
 	print "</style>";
 
 	$orders = array();
+	$start  = null;
+	$end    = null;
 
 	while ( $row = mysqli_fetch_assoc( $result ) ) {
 		$id         = $row["id"];
@@ -90,6 +94,11 @@ function print_mission( $mission_id_filter = null ) {
 		$user_id    = $row["user_id"];
 
 		$mission_id = order_get_mission_id( $id );
+		if ( $mission_id ) {
+			$mission = Mission::getMission( $mission_id );
+			$start   = $mission->getStartAddress();
+			$end     = $mission->getEndAddress();
+		}
 		if ( isset( $mission_id_filter ) and $mission_id != $mission_id_filter ) {
 			continue;
 		}
@@ -104,7 +113,9 @@ function print_mission( $mission_id_filter = null ) {
 		}
 	}
 	$path_orders = array();
-	find_route_1( 1, $orders, $path_orders );
+	// find_route_1( $node, $rest, &$path, $print = false, $end ) {
+
+	find_route_1( $start, $orders, $path_orders, false, $end );
 	foreach ( $path_orders as $id ) {
 		update_post_meta( $id, "printed", 1 );
 		$user_id = order_get_customer_id( $id );

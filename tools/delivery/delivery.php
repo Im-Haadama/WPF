@@ -856,6 +856,7 @@ class delivery {
 	}
 
 	public function DeleteLines() {
+		// TODO:
 		$sql = 'DELETE FROM im_delivery_lines WHERE delivery_id = ' . $this->ID;
 
 		sql_query( $sql );

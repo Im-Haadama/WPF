@@ -8,92 +8,19 @@ require_once( ROOT_DIR . "/agla/gui/inputs.php" );
 require_once( TOOLS_DIR . "/multi-site/multi-site.php" );
 require_once( TOOLS_DIR . "/options.php" );
 require_once( TOOLS_DIR . "/pricing.php" );
+require_once( TOOLS_DIR . "/orders/form.php" );
 // print header_text();
 
-$text = isset( $_GET["text"] );
+$text  = isset( $_GET["text"] );
+$fresh = isset( $_GET["fresh"] );
+
+// print "text = " . $text;
 
 function show_category( $term_name, $sale = false, $text = false ) {
 	$the_term = get_term_by( 'name', $term_name, 'product_cat' );
 	if ( $the_term ) {
-		show_category_by_id( $the_term->term_id, $sale, $text );
+		print show_category_by_id( $the_term->term_id, $sale, $text );
 	}
-}
-
-function show_category_by_id( $term_id, $sale = false, $text = false ) {
-	$img_size = 40;
-
-	$the_term = get_term( $term_id );
-
-	print gui_header( 2, $the_term->name );
-
-	if ( $sale ) {
-		$table = array( array( "", "מוצר", "מחיר מוזל", "מחיר רגיל", "כמות", "סה\"כ" ) );
-	} else {
-		$table = array( array( "", "מוצר", "מחיר", gui_link( "מחיר לכמות", "", "" ), "כמות", "סה\"כ" ) );
-	}
-
-	$args = array(
-		'post_type'      => 'product',
-		'posts_per_page' => 1000,
-// 'product_cat'    => $category,
-		'orderby'        => 'name',
-		'order'          => 'ASC'
-	);
-	$loop = new WP_Query( $args );
-	while ( $loop->have_posts() ) {
-		$loop->the_post();
-		$line = array();
-		global $product;
-		if ( ! $product->get_regular_price() ) {
-			continue;
-		}
-		$prod_id = $loop->post->ID;
-		$terms   = get_the_terms( $prod_id, 'product_cat' );
-// print "<br/>" . $prod_id . " "; print get_product_name($prod_id);
-		$found = false;
-		foreach ( $terms as $term ) {
-			if ( $term->term_id == $term_id ) {
-				$found = true;
-			}
-		}
-		if ( ! $found ) {
-			continue;
-		}
-		if ( has_post_thumbnail( $prod_id ) ) {
-			array_push( $line, get_the_post_thumbnail( $loop->post->ID, array( $img_size, $img_size ) ) );
-		} else {
-			array_push( $line, '<img src="' . wc_placeholder_img_src() . '" alt="Placeholder" width="' . $img_size . 'px" height="'
-			                   . $img_size . 'px" />' );
-		}
-		array_push( $line, the_title( '', '', false ) );
-		if ( $sale ) {
-			array_push( $line, gui_lable( "prc_" . $prod_id, $product->get_sale_price() ) );
-			array_push( $line, gui_lable( "vpr_" . $prod_id, $product->get_regular_price() ) );
-		} else {
-			array_push( $line, gui_lable( "prc_" . $prod_id, $product->get_price() ) );
-			$q_price = get_price_by_type( $prod_id, null, 8 );
-//			if ( is_numeric( get_buy_price( $prod_id ) ) ) {
-//				$q_price = min( round( get_buy_price( $prod_id ) * 1.25 ), $product->get_price() );
-//			}
-			array_push( $line, gui_lable( "vpr_" . $prod_id, $q_price, 1 ) );
-		}
-		array_push( $line, gui_input( "qua_" . $prod_id, "0", array( 'onchange="calc_line(this)"' ) ) );
-		array_push( $line, gui_lable( "tot_" . $prod_id, '' ) );
-		array_push( $table, $line );
-	}
-
-	if ( $text ) {
-		unset( $table[0] );
-		foreach ( $table as $row ) {
-			print $row[1] . " - " . $row [2] . ' ש"ח, ' . "<br/>";
-		}
-		print "<br/>";
-	} else {
-		print gui_table( $table, "table_" . $term_id );
-	}
-//echo get_permalink( $loop->post->ID )
-//echo esc_attr( $loop->post->post_title ? $loop->post->post_title : $loop->post->ID );
-//woocommerce_show_product_sale_flash( $post, $product );
 }
 
 function get_form_tables() {
@@ -214,22 +141,19 @@ function get_form_tables() {
 
 <?php
 // print gui_header(1, "פרוטי אקספרס");
-print "גרסה נסיונית<br/>";
 
 if ( $text ) {
+	print header_text( true );
 	print "מוצרים זמינים השבוע</br>";
 } else {
-//print "כתובת מייל של המזמין:";
-//print gui_input("email", "", array("onchange=update()"));
+	print "כתובת מייל של המזמין:";
+	print gui_input( "email", "", array( "onchange=update()" ) );
 	print "<br/>";
 	print gui_table( array( 'סה"כ הזמנה:', gui_lable( "total", "0" ) ) );
 
 	print gui_button( "btn_add_order_1", "add_order(0)", "הוסף הזמנה" );
 }
 ?>
-<br/>
-כתובת מייל:
-<br/>
 <?php
 if ( ! $text )
 	print gui_input( "email", "", "oninput=update()" );
@@ -239,8 +163,12 @@ print "<br/>";
 //print "לפניכם מארזי כמות במחירים מוזלים. פירות ממשק נהרי, יש להזמין עד יום שישי, ההספקה בשבוע העוקב (איסוף או משלוח). בננות סוטו - להזמין עד יום ראשון בערב.";
 
 $categs = info_get( "form_categs" );
-foreach ( explode( ",", $categs ) as $categ ) {
-	show_category_by_id( $categ );
+if ( $categs ) {
+	foreach ( explode( ",", $categs ) as $categ ) {
+		print show_category_by_id( $categ, false, $text );
+	}
+} else {
+	print show_category_all( false, $text, $fresh );
 }
 //show_category( "מארזי כמות מוזלים", true, $text );
 
@@ -256,7 +184,9 @@ print "<br/>";
 //show_category( "צמחי מרפא אורגניים", false, $text );
 //show_category( "נבטים אורגניים", false, $text);
 
-print gui_button( "btn_add_order_2", "add_order(0)", "הוסף הזמנה" );
+if ( ! $text ) {
+	print gui_button( "btn_add_order_2", "add_order(0)", "הוסף הזמנה" );
+}
 
 ?>
 <script>

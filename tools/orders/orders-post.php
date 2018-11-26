@@ -117,7 +117,7 @@ switch ( $operation ) {
 	case "delivered":
 		$ids = $_GET["ids"];
 		order_change_status( explode( ",", $ids ), "wc-completed" );
-		// print "delivered";
+		print "delivered";
 		break;
 
 	case "mission":

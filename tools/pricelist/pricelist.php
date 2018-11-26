@@ -221,17 +221,19 @@ class PriceList {
 				"תאריך שינוי",
 				"מחיר קנייה",
 				"מחיר מחושב",
+				"קטגוריות",
 				"שם מוצר",
 				"מחיר מכירה",
 				"מחיר מבצע",
-				"קטגוריות",
 				"מזהה",
 				"מנוהל מלאי",
-				"כמות במלאי",
-				"כמות בהזמנות פתוחות"
+				"יתרה (מלאי פחות הזמנות)",
+				"כמות בהזמנות פתוחות",
+				"מחירים נוספים"
 			)
 		);
 
+		$show_fields = array( true, true, true, true, true, true, true, true, true, true, true, true );
 		// Add new item fields
 		while ( $row = mysqli_fetch_row( $result ) ) {
 			$pl_id     = $row[3];
@@ -248,11 +250,14 @@ class PriceList {
 			}
 			// print $prod_id . " " . $map_id . "<br/>";
 			if ( ! $ordered_only or ( $needed_products[ $prod_id ][0] or $needed_products[ $prod_id ][1] ) )
-				array_push( $table_rows, print_html_line( $row[0], $row[1], $row[2], $pl_id, $row[4], $row[5], $prod_id, true, $map_id, $needed_products ) );
+				array_push( $table_rows, $this->Line( $row[0], $row[1], $row[2], $pl_id, $row[4], $row[5], $prod_id, true, $map_id, $needed_products ) );
 			// $data .= $line;
 		}
 
-		$data = gui_table( $table_rows );
+		$sum  = null;
+		$data = gui_table( $table_rows, "pricelist", true, true, $sum, null, null, $show_fields );
+		//( $rows, $id = null, $header = true, $footer = true, &$sum_fields = null, $style = null, $class = null, $show_fields = null,
+		// $links = null)
 		// $data .= "<tr>";
 		$data .= "<td>" . gui_button( "add", "add_item()", "הוסף" ) . "</td>";
 		$data .= gui_cell( gui_input( "product_code", "" ) );
@@ -263,6 +268,82 @@ class PriceList {
 		$data .= "</tr>";
 
 		print $data;
+	}
+
+	private function Line( $product_name, $price, $date, $pl_id, $supplier_product_code, $factor, $linked_prod_id, $editable = true, $map_id, $needed = null ) {
+		$calc_price = round( $price * ( 100 + $factor ) / 100, 1 );
+
+		$line = array();
+		array_push( $line, gui_checkbox( "chk" . $pl_id, "product_checkbox" ) );
+		//$line .= "<td><input id=\"chk" . $pl_id . "\" class=\"product_checkbox\" type=\"checkbox\"></td>";
+		array_push( $line, $supplier_product_code );
+		// $line .= "<td>" . $supplier_product_code . "</td>";
+		array_push( $line, $product_name );
+		//$line .= "<td>" . $product_name . "</td>";
+		array_push( $line, $date );
+		// $line .= "<td>" . $date . "</td>";
+
+		//$line .= "<td>";
+		if ( $editable ) {
+			array_push( $line, gui_input( "prc_" . $pl_id, $price, array( 'onchange="changed(this)"' ), "prc_" . $pl_id, "", 7 ) );
+		} else {
+			array_push( $line, $price );
+		}
+		// $line .= "</td>";
+		// $line .= '<td><input type="text" value="' . $price . '"</td>';
+		array_push( $line, $calc_price );
+		// $line .= '<td>' . $calc_price . '</td>';
+		$category = sql_query_single_scalar( "SELECT category FROM im_supplier_price_list WHERE id = " . $pl_id );
+		array_push( $line, $category );
+		if ( $linked_prod_id > 0 ) {
+			$p = new Product( $linked_prod_id );
+			array_push( $line, get_product_name( $linked_prod_id ) );
+			array_push( $line, get_price( $linked_prod_id ) );
+			array_push( $line, get_sale_price( $linked_prod_id ) );
+			array_push( $line, $linked_prod_id );
+			$stockManaged = $p->getStockManaged();
+			array_push( $line, gui_checkbox( "chm_" . $linked_prod_id, "stock", $stockManaged, "onchange=\"change_managed(this)\")" ) );
+			array_push( $line, $stockManaged ? gui_lable( "stk_" . $linked_prod_id, $p->getStock() ) : "" );
+			$n = orders_per_item( $linked_prod_id, 1, true, true, true );
+//			if (isset($needed[$linked_prod_id][0]))
+//				$n .= $needed[$linked_prod_id][0];
+//			if (isset($needed[$linked_prod_id][1]))
+//				$n .= $needed[$linked_prod_id][1] . "יח";
+
+			array_push( $line, $n );
+			array_push( $line, product_other_suppliers( $linked_prod_id, $this->SupplierID ) );
+
+			// $line .= '<td>' . get_product_name( $linked_prod_id ) . '</td>';
+			// $line .= '<td>' . get_price( $linked_prod_id ) . '</td>';
+			//		$line .= '<td>' . get_sale_price( $linked_prod_id ) . '</td>';
+		} else {
+			if ( $linked_prod_id == - 1 ) {
+				array_push( $line, "לא למכירה", "", "" );
+				// $line .= "<td>לא למכירה</td><td></td><td></td>";
+			} else {
+				//var_dump(Catalog::GetProdOptions($product_name));die (1);
+				array_push( $line, gui_select( "prd" . $pl_id, "post_title", Catalog::GetProdOptions( $product_name ), "onchange=selected(this)", "" ) );
+				// array_push( $line, "", "", "" );
+				// $line .= "<td></td><td></td><td></td>";
+			}
+		}
+		// $line     .= gui_cell( $category);
+//		if ( $linked_prod_id > 0 ) {
+//			array_push( $line, gui_cell( $linked_prod_id ) );
+//			// $line         .= gui_cell( $linked_prod_id );
+//		//		$line         .= gui_cell( $map_id );
+//			array_push( $line, gui_cell( $map_id ) );
+//			if ( $needed ) {
+//		//			var_dump($needed);
+//		//			die(1);
+//
+//			}
+//
+//		}
+		// get_product_name()
+		// $line .= "</tr>";
+
+		return $line;
 	}
 
 	function GetUpdateDate() {
@@ -628,7 +709,6 @@ class PriceList {
 			Catalog::UpdateProduct( $prod_id, $line );
 		}
 	}
-
 }
 
 function pricelist_get_price( $prod_id ) {
@@ -646,79 +726,6 @@ function pricelist_get_price( $prod_id ) {
 }
 
 
-function print_html_line( $product_name, $price, $date, $pl_id, $supplier_product_code, $factor, $linked_prod_id, $editable = true, $map_id, $needed = null ) {
-	$calc_price = round( $price * ( 100 + $factor ) / 100, 1 );
-
-	$line = array();
-	array_push( $line, gui_checkbox( "chk" . $pl_id, "product_checkbox" ) );
-	//$line .= "<td><input id=\"chk" . $pl_id . "\" class=\"product_checkbox\" type=\"checkbox\"></td>";
-	array_push( $line, $supplier_product_code );
-	// $line .= "<td>" . $supplier_product_code . "</td>";
-	array_push( $line, $product_name );
-	//$line .= "<td>" . $product_name . "</td>";
-	array_push( $line, $date );
-	// $line .= "<td>" . $date . "</td>";
-
-	//$line .= "<td>";
-	if ( $editable ) {
-		array_push( $line, gui_input( "prc_" . $pl_id, $price, array( 'onchange="changed(this)"' ), "prc_" . $pl_id, "", 7 ) );
-	} else {
-		array_push( $line, $price );
-	}
-	// $line .= "</td>";
-	// $line .= '<td><input type="text" value="' . $price . '"</td>';
-	array_push( $line, $calc_price );
-	// $line .= '<td>' . $calc_price . '</td>';
-	if ( $linked_prod_id > 0 ) {
-		array_push( $line, get_product_name( $linked_prod_id ) );
-		array_push( $line, get_price( $linked_prod_id ) );
-		array_push( $line, get_sale_price( $linked_prod_id ) );
-		// $line .= '<td>' . get_product_name( $linked_prod_id ) . '</td>';
-		// $line .= '<td>' . get_price( $linked_prod_id ) . '</td>';
-//		$line .= '<td>' . get_sale_price( $linked_prod_id ) . '</td>';
-	} else {
-		if ( $linked_prod_id == - 1 ) {
-			array_push( $line, "לא למכירה", "", "" );
-			// $line .= "<td>לא למכירה</td><td></td><td></td>";
-		} else {
-			//var_dump(Catalog::GetProdOptions($product_name));die (1);
-			array_push( $line, gui_select( "prd" . $pl_id, "post_title", Catalog::GetProdOptions( $product_name ), "onchange=selected(this)", "" ) );
-			// array_push( $line, "", "", "" );
-			// $line .= "<td></td><td></td><td></td>";
-		}
-	}
-	$category = sql_query_single_scalar( "SELECT category FROM im_supplier_price_list WHERE id = " . $pl_id );
-	array_push( $line, $category );
-	// $line     .= gui_cell( $category);
-	if ( $linked_prod_id > 0 ) {
-		$p            = new Product( $linked_prod_id );
-		array_push( $line, gui_cell( $linked_prod_id ) );
-		// $line         .= gui_cell( $linked_prod_id );
-//		$line         .= gui_cell( $map_id );
-		array_push( $line, gui_cell( $map_id ) );
-		$stockManaged = $p->getStockManaged();
-		array_push( $line, gui_cell( gui_checkbox( "chm_" . $linked_prod_id, "stock", $stockManaged, "onchange=\"change_managed(this)\")" ) ) );
-		array_push( $line, gui_cell( $stockManaged ? gui_lable( "stk_" . $linked_prod_id, $p->getStock() ) : "" ) );
-		if ( $needed ) {
-//			var_dump($needed);
-//			die(1);
-			$n = orders_per_item( $linked_prod_id, 1, true, true, true );
-//			"";
-//			if (isset($needed[$linked_prod_id][0]))
-//				$n .= $needed[$linked_prod_id][0];
-//			if (isset($needed[$linked_prod_id][1]))
-//				$n .= $needed[$linked_prod_id][1] . "יח";
-
-			array_push( $line, $n );
-
-		}
-
-	}
-	// get_product_name()
-	// $line .= "</tr>";
-
-	return $line;
-}
 
 function pricelist_strip_product_name( $name ) {
 	// trim sadot product name starting with * or **
@@ -726,6 +733,19 @@ function pricelist_strip_product_name( $name ) {
 	$name = str_replace( array( ')', '(', '-' ), ' ', $name );
 
 	return $name;
+}
+
+function product_other_suppliers( $prod_id, $supplier_id ) {
+	$result       = "";
+	$alternatives = alternatives( $prod_id );
+	foreach ( $alternatives as $alter ) {
+		$a_supplier_id = $alter->getSupplierId();
+		if ( $a_supplier_id != $supplier_id ) {
+			$result .= get_supplier_name( $a_supplier_id ) . " " . $alter->getPrice() . ", ";
+		}
+	}
+
+	return rtrim( $result, ", " );
 }
 
 ?>

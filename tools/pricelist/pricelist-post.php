@@ -72,7 +72,7 @@ switch ( $operation ) {
 			die( "send is_managed" );
 		};
 		$prod_id    = $_GET["prod_id"];
-		$is_managed = $_GET["is_managed"] == "on";
+		$is_managed = $_GET["is_managed"] == "1";
 		$P          = new Product( $prod_id );
 		$P->setStockManaged( $is_managed );
 		break;

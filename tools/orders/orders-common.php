@@ -237,7 +237,11 @@ function order_change_status( $ids, $status ) {
 	foreach ( $args as $id ) {
 		$order = new WC_Order( $id );
 		// var_dump($order);
-		$order->update_status( $status );
+		if ( $status == 'wc-processing' ) {
+			$order->payment_complete();
+		} else {
+			$order->update_status( $status );
+		}
 		// var_dump($order);
 	}
 }
@@ -381,6 +385,7 @@ function orders_per_item( $prod_id, $multiply, $short = false, $include_basket =
 
 	$result = sql_query( $sql);
 	$lines = "";
+	$total_quantity = 0;
 
 	while ( $row = mysqli_fetch_row( $result ) ) {
 		$order_item_id = $row[0];
@@ -398,6 +403,7 @@ function orders_per_item( $prod_id, $multiply, $short = false, $include_basket =
 		}
 		$first_name    = get_postmeta_field( $order_id, '_shipping_first_name' );
 		$last_name     = get_postmeta_field( $order_id, '_shipping_last_name' );
+		$total_quantity += $quantity;
 
 		if ( $short ) {
 			$lines .= $quantity . " " . $last_name . ", ";
@@ -406,6 +412,8 @@ function orders_per_item( $prod_id, $multiply, $short = false, $include_basket =
 			$lines .= $line;
 		}
 	}
+	if ( $short )
+		$lines = $total_quantity . ": " . rtrim( $lines, ", ");
 
 	return $lines;
 }

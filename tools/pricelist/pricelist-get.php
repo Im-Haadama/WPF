@@ -27,6 +27,9 @@ require_once( "../multi-site/multi-site.php" );
             document.getElementById("chk" + pricelist_id).checked = true;
         }
 
+        function create_supply() {
+
+        }
 
         function updatePrices() {
             var sel = document.getElementById("supplier_id");
@@ -342,6 +345,7 @@ require_once( "../multi-site/multi-site.php" );
 
 	?>
     <button id="btn_map" onclick="map_products()">שמור מיפוי</button>
+    <button id="btn_create_supply" onclick="create_supply()">צור הספקה</button>
 
 </div>
 <lable id="is_slave"></lable>
