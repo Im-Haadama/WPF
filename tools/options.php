@@ -12,14 +12,27 @@ if ( ! defined( "ROOT_DIR" ) ) {
 
 require_once( ROOT_DIR . '/agla/sql.php' );
 
-function info_get( $key ) {
+function info_get( $key, $create = false, $default = null ) {
 	$sql = "SELECT info_data FROM im_info WHERE info_key = '" . $key . "'";
 
-	return sql_query_single_scalar( $sql );
+	$result = sql_query_single_scalar( $sql );
+
+	if ( is_null( $result ) ) {
+		if ( $create ) {
+			info_update( $key, $default );
+
+			return $default;
+		}
+	}
+
+	return $result;
 }
 
 function info_update( $key, $data ) {
-	if ( ! info_get( $key ) ) {
+	$sql = "SELECT info_data FROM im_info WHERE info_key = '" . $key . "'";
+
+	$result = sql_query_single_scalar( $sql );
+	if ( ! $result ) {
 		sql_query( "insert into im_info (info_key, info_data) VALUE ('$key', '$data')" );
 
 		return;

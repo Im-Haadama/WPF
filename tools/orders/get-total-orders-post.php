@@ -34,7 +34,7 @@ switch ( $operation ) {
 		create_supply_single();
 		break;
 	case "show_required":
-		get_total_orders1( $filter_zero, false, $filter_stock );
+		get_total_orders( $filter_zero, false, $filter_stock );
 		break;
 	default:
 		print $operation . " not handled ";
@@ -93,167 +93,8 @@ function create_supply_single() {
 	}
 }
 
-// for the panel
-function get_total_orders( $filter_zero, $history = false ) {
-	$needed_products = array();
 
-	calculate_needed( $needed_products );
-
-	$data_lines = array();
-
-	foreach ( $needed_products as $prod_id => $quantity_array ) {
-		//   $line = table_line($key, $filter_zero);
-
-		$supplied_q = supply_quantity_ordered( $prod_id );
-
-		$line = "<tr><td><input id=\"chk" . $prod_id . "\" class=\"product_checkbox\" type=\"checkbox\"></td>";
-		$line .= "<td> " . get_product_name( $prod_id ) .
-		         "</td><td><a href = \"";
-
-		$line .= "get-orders-per-item.php?prod_id=" . $prod_id;
-
-		if ( $history ) {
-			$line .= "&history";
-		}
-
-		$line .= "\">" . $quantity_array[0] . "</a></td>";
-		if ( isset( $quantity_array[1] ) ) {
-			$line .= "<td>" . $quantity_array[1] . "</td>";
-		} else {
-			$line .= "<td></td>";
-		}
-		$quantity = $quantity_array[0];
-
-		$qin  = q_in( $prod_id );
-		$qout = q_out( $prod_id );
-
-		$line .= "<td>" . $qin . "</td>";
-
-		$line .= "<td>" . $qout . "</td>";
-
-		$numeric_quantity = ceil( $quantity - $qin + $qout );
-
-		$line .= "<td>" . $numeric_quantity . "</td>";
-
-		if ( MultiSite::LocalSiteID() == 2 ) {
-			$terms = get_the_terms( $prod_id, 'product_cat' );
-
-			if ( $terms ) {
-				foreach ( $terms as $term ) {
-					if ( $term->name != 'השף' ) {
-						$supplier_name = $term->name;
-						break;
-					}
-				}
-			}
-		} else {
-			$supplier_name = get_supplier( $prod_id );
-		}
-
-		$line .= "<td>" . $supplier_name . "</td>";
-
-		$line .= gui_cell( orders_per_item( $prod_id, 1, true, true, true ) );
-
-//		// TODO: sale price
-//		$price = get_price( $prod_id );
-//		$line  .= "<td>" . $price . "</td>";
-//
-//		// Add margin info
-//		if ( MultiSite::LocalSiteID() == 1 ) {
-//
-//			$buy_price = get_buy_price( $prod_id );
-//			$line      .= "<td>" . $buy_price . "</td>";
-//
-//
-//			if ( $buy_price > 0 ) {
-//				if ( $price != 0 ) {
-//					$buy = $numeric_quantity * $buy_price;
-//					// $total_buy += $buy;
-//					$sale = $numeric_quantity * $price;
-//					// $total_sale += $sale;
-//					// $total_buy_supplier[$supplier_id] += $buy;
-//					// $total_sale_supplier[$supplier_id] += $sale;
-//
-//					$line .= "<td>" . $numeric_quantity * ( $price - $buy_price ) . "</td>";
-//				} else {
-//					$line .= "<td></td>";
-//				}
-//			} else {
-//				$line .= "<td></td><td></td>";
-//			}
-//		}
-
-		$line .= "</tr>";
-//        prof_flag("table_line end");
-
-		//print "loop5: " .  microtime() . "<br/>";
-		if ( ! $filter_zero or ( $numeric_quantity > 0 ) ) {
-			array_push( $data_lines, array( $supplier_name, $line ) );
-		}
-	}
-
-	$data = "<style>
-table {
-    font-family: arial, sans-serif;
-    border-collapse: collapse;
-}
-
-td, th {
-    border: 1px solid #dddddd;
-    text-align: right;
-    padding: 8px;
-}
-
-tr:nth-child(even) {
-    background-color: #dddddd;
-}
-</style>";
-	$data .= "<table>";
-	$data .= "<tr>";
-	$data .= "<td>בחר</td>";
-	$data .= "<td>פריט</td>";
-	$data .= "<td>כמות נדרשת</td>";
-	$data .= "<td>יחידות נוספות</td>";
-	$data .= "<td>כמות אספקות</td>";
-	$data .= "<td>כמות סופקה</td>";
-	$data .= "<td>כמות להזמין</td>";
-	$data .= "<td>ספק</td>";
-	$data .= "<td>לקוחות</td>";
-//	$data .= "<td>מחיר ללקוח</td>";
-//	if ( MultiSite::LocalSiteID() == 1 ) {
-//		$data .= "<td>מחיר קניה</td>";
-//		$data .= "<td>סהכ מרווח</td>";
-//	}
-	$data .= "</tr>";
-
-	// print "sort: " . date( "h:i:sa" ) . "<br/>";
-
-	sort( $data_lines );
-
-	for ( $i = 0; $i < count( $data_lines ); $i ++ ) {
-		$line = $data_lines[ $i ][1];
-		$data .= trim( $line );
-	}
-
-	$data = str_replace( "\r", "", $data );
-
-	if ( $data == "" ) {
-		$data = "\n(0) Records Found!\n";
-	}
-	global $total_buy;
-	global $total_sale;
-	$data .= gui_table( array( array( "", 'סה"כ', "", "", "", "", "", $total_buy, $total_sale ) ) );
-
-	$data .= "</table>";
-
-//	print "print: " . date( "h:i:sa" ) . "<br/>";
-//
-	print "$data";
-
-//    prof_print();
-}
-
-function get_total_orders1( $filter_zero, $history = false, $filter_stock ) {
+function get_total_orders( $filter_zero, $history = false, $filter_stock ) {
 	$needed_products = array();
 
 	Order::CalculateNeeded( $needed_products );
@@ -263,6 +104,9 @@ function get_total_orders1( $filter_zero, $history = false, $filter_stock ) {
 	foreach ( $needed_products as $prod_id => $quantity_array ) {
 
 		$P = new Product( $prod_id );
+		if ( ! $P ) {
+			continue;
+		}
 
 		if ( $filter_stock and $P->getStockManaged() and $P->getStock() > $quantity_array[0] ) {
 			continue;
@@ -294,16 +138,14 @@ function get_total_orders1( $filter_zero, $history = false, $filter_stock ) {
 		}
 		$quantity = isset( $quantity_array[0] ) ? $quantity_array[0] : 0;
 
-		$qin  = q_in( $prod_id );
-		$qout = q_out( $prod_id );
+		$p     = new Product( $prod_id );
+		$q_inv = $p->getStock();
 
-		$line .= "<td>" . $qin . "</td>";
+		$line .= "<td>" . $q_inv . "</td>";
 
-		$line .= "<td>" . $qout . "</td>";
+		$numeric_quantity = ceil( $quantity - $q_inv );
 
-		$numeric_quantity = ceil( $quantity - $qin + $qout );
-
-		$line .= "<td>" . $numeric_quantity . "</td>";
+		$line .= gui_cell( gui_input( "qua_" . $prod_id, $numeric_quantity, "" ));
 
 		if ( MultiSite::LocalSiteID() == 2 ) {
 			$terms = get_the_terms( $prod_id, 'product_cat' );
@@ -394,8 +236,8 @@ tr:nth-child(even) {
 	$data .= "<td>פריט</td>";
 	$data .= "<td>כמות נדרשת</td>";
 	$data .= "<td>יחידות נוספות</td>";
-	$data .= "<td>כמות אספקות</td>";
-	$data .= "<td>כמות סופקה</td>";
+//	$data .= "<td>כמות אספקות</td>";
+	$data .= "<td>כמות במלאי</td>";
 	$data .= "<td>כמות להזמין</td>";
 	$data .= "<td>ספק</td>";
 	$data .= "<td>לקוחות</td>";

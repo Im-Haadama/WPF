@@ -17,11 +17,17 @@ require_once( ROOT_DIR . '/tools/delivery/delivery-common.php' );
         function done() {
             var collection = document.getElementsByClassName("user_chk");
             var user_ids = new Array();
+            var count = 0;
             for (var i = 0; i < collection.length; i++) {
                 if (collection[i].checked) {
                     var user_id = collection[i].id.substr(4);
                     user_ids.push(user_id);
+                    count++;
                 }
+            }
+            if (count === 0) {
+                alert("יש לבחור לקוחות להוספה למסלול");
+                return;
             }
             xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function () {
@@ -59,14 +65,21 @@ require_once( ROOT_DIR . '/tools/delivery/delivery-common.php' );
             document.getElementById('btn_create_ship').disabled = true;
             var collection = document.getElementsByClassName("deliveries");
             var del_ids = [];
-            var total = 0;
+            var count = 0;
 
             for (var i = 0; i < collection.length; i++) {
                 if (collection[i].checked) {
                     var del_id = collection[i].id.substring(3); // table.rows[i + 1].cells[6].firstChild.innerHTML;
                     del_ids.push(del_id);
+                    count++;
                 }
             }
+            if (count === 0) {
+                alert("יש לבחור משלוחים ליצירת תעודות משלוח");
+                document.getElementById('btn_create_ship').disabled = false;
+                return;
+            }
+
             xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function () {
                 // Wait to get query result
@@ -76,7 +89,7 @@ require_once( ROOT_DIR . '/tools/delivery/delivery-common.php' );
 
                     invoice_id = xmlhttp.responseText.trim();
                     logging.innerHTML += "תעודת משלוח מספר " + invoice_id + " נוצרה ";
-                    updateDisplay();
+                    location.reload();
                 }
             }
             var request = "legacy-post.php?operation=create_ship" +

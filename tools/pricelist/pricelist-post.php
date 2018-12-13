@@ -34,7 +34,7 @@ if ( $debug ) {
 switch ( $operation ) {
 
 	case "get_priceslist":
-		$pl->PrintHTML( isset( $_GET["ordered"] ) );
+		$pl->PrintHTML( isset( $_GET["ordered"] ) ? 1 : 0, isset( $_GET["need_supply"] ) ? 1 : 0 );
 		break;
 
 	case "get_csv":
@@ -74,7 +74,8 @@ switch ( $operation ) {
 		$prod_id    = $_GET["prod_id"];
 		$is_managed = $_GET["is_managed"] == "1";
 		$P          = new Product( $prod_id );
-		$P->setStockManaged( $is_managed );
+//		print "fresh? " . $P->isFresh() . "<br/>";
+		$P->setStockManaged( $is_managed, $P->isFresh() ? "yes" : "no" );
 		break;
 
 	case "inactive":

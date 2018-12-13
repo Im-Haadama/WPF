@@ -18,7 +18,8 @@ require_once( TOOLS_DIR . '/account/gui.php' );
 require_once( TOOLS_DIR . '/account/account.php' );
 require_once( TOOLS_DIR . '/delivery/delivery.php' );
 require_once( TOOLS_DIR . '/orders/Order.php' );
-require_once( ROOT_DIR . "/tools/catalog/Basket.php" );
+require_once( TOOLS_DIR . "/catalog/Basket.php" );
+require_once( TOOLS_DIR . '/invoice4u/invoice.php' );
 
 // BAD: print header_text();
 function orders_item_count( $item_id ) {
@@ -236,11 +237,19 @@ function order_change_status( $ids, $status ) {
 	}
 	foreach ( $args as $id ) {
 		$order = new WC_Order( $id );
+		my_log( __METHOD__, $id . " changed to " . $status );
 		// var_dump($order);
-		if ( $status == 'wc-processing' ) {
-			$order->payment_complete();
-		} else {
-			$order->update_status( $status );
+		switch ( $status ) {
+			case 'wc-processing';
+				$order->payment_complete();
+				break;
+			case 'wc-completed':
+				$o = new Order( $id );
+				$order->update_status( $status );
+				// $o->update_levels();
+				break;
+			default:
+				$order->update_status( $status );
 		}
 		// var_dump($order);
 	}
@@ -351,8 +360,8 @@ function user_dislike( $user_id, $prod_id ) {
 //}
 
 // $multiply is the number of ordered baskets or 1 for ordinary item.
-function orders_per_item( $prod_id, $multiply, $short = false, $include_basket = false, $include_bundle = false ) {
-	my_log( "prod_id=" . $prod_id, __METHOD__ );
+function orders_per_item( $prod_id, $multiply, $short = false, $include_basket = false, $include_bundle = false, $just_total = false ) {
+	// my_log( "prod_id=" . $prod_id, __METHOD__ );
 
 	$sql = 'select woi.order_item_id, order_id'
 	       . ' from wp_woocommerce_order_items woi join wp_woocommerce_order_itemmeta woim'
@@ -381,7 +390,7 @@ function orders_per_item( $prod_id, $multiply, $short = false, $include_basket =
 	}
 	$sql .= ")";
 
-	my_log( $sql, "get-orders-per-item.php" );
+	// my_log( $sql, "get-orders-per-item.php" );
 
 	$result = sql_query( $sql);
 	$lines = "";
@@ -412,9 +421,12 @@ function orders_per_item( $prod_id, $multiply, $short = false, $include_basket =
 			$lines .= $line;
 		}
 	}
-	if ( $short )
+	if ( $just_total ) {
+		return $total_quantity;
+	}
+	if ( $short and $total_quantity ) {
 		$lines = $total_quantity . ": " . rtrim( $lines, ", ");
-
+	}
 	return $lines;
 }
 
@@ -862,6 +874,10 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 		}
 
 		$count = 0;
+		global $invoice_user;
+		global $invoice_password;
+
+		$invoice = new Invoice4u( $invoice_user, $invoice_password );
 
 		while ( $row = mysqli_fetch_row( $result ) ) {
 			// debug_time1("after fetch");
@@ -872,7 +888,12 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 			$customer_id = order_get_customer_id( $order_id );
 
 			$line                              = $empty_line;
-			$line [ OrderFields::line_select ] = gui_checkbox( "chk_" . $order_id, "select_order_" . $status );
+			if ( $invoice->GetInvoiceUserId( $customer_id ) ) {
+				$line [ OrderFields::line_select ] = gui_checkbox( "chk_" . $order_id, "select_order_" . $status );
+			} else {
+				$line [ OrderFields::line_select ] = gui_hyperlink( "לקוח חדש", "../account/new-customer.php?order_id=" . $order_id );
+			}
+
 			$line[ OrderFields::type ]         = order_get_shipping( $order_id );
 
 			// display order_id with link to display it.
@@ -1075,4 +1096,119 @@ function order_get_zone( $order_id ) {
 
 function order_set_customer_id( $order_id, $customer_id ) {
 	update_post_meta( $order_id, '_customer_user', $customer_id );
+}
+
+function show_category_all( $sale, $text, $fresh = false, $inv = false ) {
+//	print "inv: " . $inv . "<br/>";
+//	print "fresh: " . $fresh . "<br/>";
+	$result = "";
+	if ( $fresh ) {
+		$categs = explode( ",", info_get( "fresh" ) );
+		// var_dump($categs);
+	} else {
+		$sql    = "SELECT term_id FROM wp_term_taxonomy WHERE taxonomy = 'product_cat'";
+		$categs = sql_query_array_scalar( $sql );
+	}
+	foreach ( $categs as $categ ) {
+//		print get_term($categ)->name . "<br/>";
+		$result .= show_category_by_id( $categ, $sale, $text, "regular", $inv );
+	}
+
+	return $result;
+}
+
+function show_category_by_id( $term_id, $sale = false, $text = false, $customer_type = "regular", $inv = false ) {
+	$result   = "";
+	$img_size = 40;
+	//print "inv: " . $inv . "<br/>";
+
+	$the_term = get_term( $term_id );
+
+	$result .= gui_header( 2, $the_term->name );
+
+	if ( $sale ) {
+		$table = array( array( "", "מוצר", "מחיר מוזל", "מחיר רגיל", "כמות", "סה\"כ" ) );
+	} else {
+		$table = array( array( "", "מוצר", "מחיר", gui_link( "מחיר לכמות", "", "" ), "כמות", "סה\"כ" ) );
+	}
+
+	if ( $inv ) {
+		array_push( $table[0], "מלאי" );
+		array_push( $table[0], "מוזמנים" );
+	}
+
+	$args = array(
+		'post_type'      => 'product',
+		'posts_per_page' => 1000,
+		'tax_query'      => array( array( 'taxonomy' => 'product_cat', 'field' => 'term_id', 'terms' => $term_id ) ),
+		'orderby'        => 'name',
+		'order'          => 'ASC'
+	);
+	// var_dump($args);
+	$loop = new WP_Query( $args );
+	while ( $loop->have_posts() ) {
+		$loop->the_post();
+		$line = array();
+		global $product;
+		if ( ! $product->get_regular_price() ) {
+			continue;
+		}
+		$prod_id = $loop->post->ID;
+		$p       = new Product( $prod_id );
+		// $terms   = get_the_terms( $prod_id, 'product_cat' );
+// print "<br/>" . $prod_id . " "; print get_product_name($prod_id);
+		$found = false;
+//		foreach ( $terms as $term ) {
+//			if ( $term->term_id == $term_id ) {
+//				$found = true;
+//			}
+//		}
+//		if ( ! $found ) {
+//			continue;
+//		}
+		if ( $text ) {
+			$line = get_product_name( $prod_id ) . " - " . get_price_by_type( $prod_id, $customer_type ) . "<br/>";
+			// print "line = " . $line . "<br/>";
+			$result .= $line;
+			continue;
+		}
+		if ( has_post_thumbnail( $prod_id ) ) {
+			array_push( $line, get_the_post_thumbnail( $loop->post->ID, array( $img_size, $img_size ) ) );
+		} else {
+			array_push( $line, '<img src="' . wc_placeholder_img_src() . '" alt="Placeholder" width="' . $img_size . 'px" height="'
+			                   . $img_size . 'px" />' );
+		}
+		array_push( $line, the_title( '', '', false ) );
+		if ( $sale ) {
+			array_push( $line, gui_lable( "prc_" . $prod_id, $product->get_sale_price() ) );
+			array_push( $line, gui_lable( "vpr_" . $prod_id, $product->get_regular_price() ) );
+		} else {
+			array_push( $line, gui_lable( "prc_" . $prod_id, $product->get_price() ) );
+			$q_price = get_price_by_type( $prod_id, null, 8 );
+//			if ( is_numeric( get_buy_price( $prod_id ) ) ) {
+//				$q_price = min( round( get_buy_price( $prod_id ) * 1.25 ), $product->get_price() );
+//			}
+			array_push( $line, gui_lable( "vpr_" . $prod_id, $q_price, 1 ) );
+		}
+		array_push( $line, gui_input( "qua_" . $prod_id, "0", array( 'onchange="calc_line(this)"' ) ) );
+		array_push( $line, gui_lable( "tot_" . $prod_id, '' ) );
+		if ( $inv ) {
+			array_push( $line, gui_input( "term_" . $term_id, $p->getStock(), "", "inv_" . $prod_id ) );
+			array_push( $line, gui_lable( "ord_" . $term_id, $p->getOrderedDetails() ) );
+		}
+		array_push( $table, $line );
+	}
+
+	if ( $text ) {
+		return $result;
+	} else {
+		$result .= gui_table( $table, "table_" . $term_id );
+	}
+
+	if ( $inv ) {
+		$result .= gui_button( "btn_save_inv" . $term_id, "save_inv(" . $term_id . ")", "שמור מלאי" );
+	}
+
+//	print "result = " . $result . "<br/>";
+	return $result;
 }

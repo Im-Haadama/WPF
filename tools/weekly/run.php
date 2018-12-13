@@ -14,6 +14,7 @@ require_once( TOOLS_DIR . "/options.php" );
 require_once( TOOLS_DIR . "/delivery/missions.php" );
 require_once( TOOLS_DIR . "/multi-site/multi-site.php" );
 require_once( TOOLS_DIR . "/supplies/supplies.php" );
+require_once( TOOLS_DIR . "/pricelist/pricelist-process.php" );
 
 // DEBUG = 1. output on screen
 $debug   = null;
@@ -51,9 +52,16 @@ auto_mail();
 
 // TODO: Check permission
 if ( MultiSite::isMaster() ) {
-	// duplicate_week();
+	duplicate_week();
 } else {
 	require_once( TOOLS_DIR . "/delivery/sync-from-master.php" );
+}
+
+if ( MultiSite::LocalSiteID() == 4 ) {
+	print "im haadama not proceesed<br/>";
+	// $results = "";
+	// pricelist_remote_site_process( 100001, $results, false );
+	// print $results;
 }
 
 auto_supply();

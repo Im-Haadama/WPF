@@ -9,6 +9,7 @@ require_once( TOOLS_DIR . "/multi-site/multi-site.php" );
 require_once( TOOLS_DIR . "/options.php" );
 require_once( TOOLS_DIR . "/pricing.php" );
 require_once( TOOLS_DIR . "/orders/form.php" );
+require_once( TOOLS_DIR . "/orders/orders-common.php" );
 // print header_text();
 
 $text  = isset( $_GET["text"] );
@@ -85,7 +86,7 @@ function get_form_tables() {
             var min = <?php if ( isset( $min ) ) {
 				print $min;
 			} else {
-				print 100;
+	            print 80;
 			} ?>;
             var dis = !((total > min) && email_valid);
             document.getElementById("btn_add_order_1").disabled = dis;
@@ -155,8 +156,6 @@ if ( $text ) {
 }
 ?>
 <?php
-if ( ! $text )
-	print gui_input( "email", "", "oninput=update()" );
 
 print "<br/>";
 
@@ -168,7 +167,7 @@ if ( $categs ) {
 		print show_category_by_id( $categ, false, $text );
 	}
 } else {
-	print show_category_all( false, $text, $fresh );
+	print show_category_all( false, $text, $fresh, true );
 }
 //show_category( "מארזי כמות מוזלים", true, $text );
 

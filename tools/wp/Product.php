@@ -34,30 +34,33 @@ class Product {
 		return $v == "yes";
 	}
 
-	function getStock() {
-		return $this->p->get_stock_quantity();
-	}
-
-	function setStockManaged( $managed ) {
-		print $this->id . " " . $managed . "<br/>";
-		update_post_meta( $this->id, '_manage_stock', $managed ? "yes" : "no" );
-	}
-
-	function isPublished() {
-		return get_post_status( $this->id ) == "publish";
-	}
-
-	function getName() {
-		return get_product_name( $this->id );
-	}
-
-	function GetVatPercent() {
-		global $global_vat;
+	function setStock( $q ) {
+		print "start ";
 		if ( $this->isFresh() ) {
-			return 0;
-		}
+			print "fresh ";
+			$delta = $q + $this->q_out() - $this->q_in();
+			print "delta: " . $this->id . " " . $delta . "<br/>";
+			if ( is_null( sql_query_single_scalar( "select meta_value " .
+			                                       " from wp_postmeta " .
+			                                       " where post_id = " . $this->id .
+			                                       " and meta_key = 'im_stock_delta'" ) ) ) {
+				sql_query( "insert into wp_postmeta (post_id, meta_key, meta_value) " .
+				           " values (" . $this->id . ", 'im_stock_delta', $delta)" );
 
-		return $global_vat;
+				return;
+			}
+
+			sql_query( "update wp_postmeta set meta_value = " . $delta .
+			           " where meta_key = 'im_stock_delta' and post_id = " . $this->id );
+
+			return;
+		}
+		// print "set stock ";
+		// print $this->id . " " . $q . "<br/>";
+		sql_query( "update wp_postmeta set meta_value = " . $q .
+		           " where post_id = " . $this->id .
+		           " and meta_key = '_stock'" );
+		// return $this->p->set_stock_quantity($q);
 	}
 
 	function isFresh() {
@@ -71,15 +74,16 @@ class Product {
 		}
 		// print "checking .. ";
 
-		foreach ( $terms as $term ) {
-			$term_id = $term->term_id;
-			// print "term: " . $term_id . " ";
+		if ( $terms )
+			foreach ( $terms as $term ) {
+				$term_id = $term->term_id;
+				// print "term: " . $term_id . " ";
 
-			if ( $this->is_fresh( $term_id, $debug ) ) {
-				// print "fresh";
-				return true;
+				if ( $this->is_fresh( $term_id, $debug ) ) {
+					// print "fresh";
+					return true;
+				}
 			}
-		}
 
 		return false;
 	}
@@ -111,7 +115,7 @@ class Product {
 		}
 		if ( in_array( $term_id, $fresh ) ) {
 			if ( $debug ) {
-				print "fresh<br/>";
+				print "fresh!<br/>";
 			}
 
 			return true;
@@ -130,6 +134,87 @@ class Product {
 		}
 
 		return false;
+	}
+
+	private function q_out() {
+		$sql = "SELECT q_out FROM i_out WHERE prod_id = " . $this->id;
+
+		$result = sql_query_single_scalar( $sql );
+
+		return round( $result, 1 );
+	}
+
+	private function q_in() {
+		$sql = "SELECT q_in FROM i_in WHERE product_id = " . $this->id;
+
+		$result = sql_query_single_scalar( $sql );
+
+		return round( $result, 1 );
+	}
+
+	function getOrdered() {
+//		print "id: " . $this->id . "<br/>";
+		return orders_per_item( $this->id, 1, true, true, true, true );
+	}
+
+	function getOrderedDetails() {
+		return orders_per_item( $this->id, 1, true, true, true );
+
+	}
+
+	function setStockManaged( $managed, $backorder ) {
+		print $this->id . " " . $managed . "<br/>";
+		update_post_meta( $this->id, '_manage_stock', $managed ? "yes" : "no" );
+//		$this->p->set_backorders( $backorder );
+//		$this->p->save();
+		update_post_meta( $this->id, '_backorders', $backorder ? "yes" : "no" );
+		update_post_meta( $this->id, '_stock_status', $backorder ? "yes" : "no" );
+		if ( is_null( $this->getStock() ) ) {
+			print "setting stock to 0<br/>";
+			update_post_meta( $this->id, '_stock', 0 );
+//			$this->setStock(0);
+//			$this->p->save();
+		}
+
+	}
+
+	function getStock() {
+		if ( $this->isFresh() ) {
+//			print "<br/> fresh " . $this -> q_in() . " " . $this->q_out() . " ";
+			$inv         = $this->q_in() - $this->q_out();
+			$stock_delta = sql_query_single_scalar( "select meta_value " .
+			                                        " from wp_postmeta " .
+			                                        " where post_id = " . $this->id .
+			                                        " and meta_key = 'im_stock_delta'" );
+			if ( $stock_delta ) {
+				$inv += $stock_delta;
+			}
+
+			return round( $inv, 1 );
+		}
+		// BUG: some products, maybe just variables can't create WC_Product.
+		if ( $this->p ) {
+			return $this->p->get_stock_quantity();
+		} else {
+			return 0;
+		}
+	}
+
+	function isPublished() {
+		return get_post_status( $this->id ) == "publish";
+	}
+
+	function getName() {
+		return get_product_name( $this->id );
+	}
+
+	function GetVatPercent() {
+		global $global_vat;
+		if ( $this->isFresh() ) {
+			return 0;
+		}
+
+		return $global_vat;
 	}
 
 	function getPrice() {

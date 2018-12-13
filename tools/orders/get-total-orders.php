@@ -104,7 +104,7 @@ print header_text( false );
                     var supplier = get_value_by_name("sup_" + prod_id);
                     params.push(supplier);
 
-                    var quantity = eval(get_value(table.rows[i + 1].cells[6].innerText));
+                    var quantity = get_value_by_name("qua_" + prod_id);
                     params.push(quantity);
 
                     var units = 0;
@@ -164,7 +164,7 @@ print header_text( false );
                     var prod_id = collection[i].id.substring(3);
                     prod_ids.push(prod_id);
 
-                    var quantity = eval(get_value(table.rows[i + 1].cells[6].innerText));
+                    var quantity = get_value_by_name("qua_" + prod_id);
                     prod_ids.push(quantity);
 
                     var units = 0;

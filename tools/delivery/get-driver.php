@@ -35,53 +35,6 @@ print_deliveries();
 die( 0 );
 
 
-function print_supply( $id ) {
-	$site_tools = MultiSite::LocalSiteTools();
-
-	$fields = array();
-	array_push( $fields, "supplies" );
-
-	$address = "";
-
-	$supplier_id = supply_get_supplier_id( $id );
-	$ref         = gui_hyperlink( $id, "../supplies/supply-get.php?id=" . $id );
-	$address     = sql_query_single_scalar( "select address from im_suppliers where id = " . $supplier_id );
-//	$receiver_name = get_meta_field( $order_id, '_shipping_first_name' ) . " " .
-//	                 get_meta_field( $order_id, '_shipping_last_name' );
-//	$shipping2     = get_meta_field( $order_id, '_shipping_address_2', true );
-//	$mission_id    = order_get_mission_id( $order_id );
-//	$ref           = $order_id;
-//
-	array_push( $fields, $ref );
-//
-	array_push( $fields, $supplier_id );
-//
-	array_push( $fields, get_supplier_name( $supplier_id ) );
-//
-	array_push( $fields, "<a href='waze://?q=$address'>$address</a>" );
-//
-	array_push( $fields, "" );
-//
-	array_push( $fields, sql_query_single_scalar( "select supplier_contact_phone from im_suppliers where id = " . $supplier_id ) );
-//	$payment_method = get_payment_method_name( $client_id );
-//	if ( $payment_method <> "מזומן" and $payment_method <> "המחאה" ) {
-//		$payment_method = "";
-//	}
-	array_push( $fields, "" );
-//
-	array_push( $fields, sql_query_single_scalar( "select mission_id from im_supplies where id = " . $id ) );
-//
-	array_push( $fields, MultiSite::LocalSiteID() );
-	// array_push($fields, get_delivery_id($order_id));
-
-
-	$line = "<tr> " . delivery_table_line( 1, $fields ) . "</tr>";
-
-	// get_field($order_id, '_shipping_city');
-
-	print $line;
-
-}
 
 
 function sort_key( $zone_order, $long_lat ) {

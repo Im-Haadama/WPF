@@ -8,9 +8,9 @@
 require_once( '../r-shop_manager.php' );
 require_once( ROOT_DIR . '/agla/gui/sql_table.php' );
 require_once( "../catalog/bundles.php" );
+require_once( "../orders/orders-common.php" );
 
 $operation = $_GET["operation"];
-
 
 switch ( $operation ) {
 	case "show":
@@ -18,7 +18,11 @@ switch ( $operation ) {
 		if ( isset( $_GET["debug"] ) ) {
 			$debug = true;
 		}
-		print gui_header( 1, "פריטים לא מנוהלים" );
+		$wait = sql_query_single_scalar( "SELECT count(id) FROM wp_posts WHERE post_status IN ('wc-waiting', 'wc-on-hold')" );
+		if ( $wait ) {
+			print gui_header( 1, "יש הזמנות במצב המתנה!" );
+		}
+		print gui_header( 1, "פריטים טריים במלאי" );
 		show_inventory( false, $debug );
 		break;
 
@@ -35,6 +39,21 @@ switch ( $operation ) {
 		show_out( $_GET["id"] );
 		break;
 
+	case "save_inv":
+		print "start<br/>";
+		$data = $_GET["data"];
+		save_inv( explode( ",", $data ) );
+}
+
+function save_inv( $data ) {
+	for ( $i = 0; $i < count( $data ); $i += 2 ) {
+		$id = $data[ $i ];
+		$q  = $data[ $i + 1 ];
+
+		my_log( "set inv " . $data[ $i ] . " " . $data [ $i + 1 ] );
+		$p = new Product( $id );
+		$p->setStock( $q );
+	}
 }
 
 function add_waste( $prod_ids ) {
@@ -138,40 +157,42 @@ function show_out( $prod_id ) {
 function show_inventory( $managed, $debug ) {
 	global $conn;
 
-	$sql    = "SELECT product_id, q_in FROM i_in";
-	$result = mysqli_query( $conn, $sql );
-	if ( ! $result ) {
-		print "no results " . $sql;
-	}
-
+//	$sql    = "SELECT product_id, q_in FROM i_in";
+//	$result = mysqli_query( $conn, $sql );
+//	if ( ! $result ) {
+//		print "no results " . $sql;
+//	}
+	$needed = array();
+	Order::CalculateNeeded( $needed );
+	print show_category_all( false, false, true, true );
 	// $data = "<table>";
-	$rows = [];
+//	$rows = [];
 
-	array_push( $rows, array( "מוצר", "כמות נרכשה", "כמות סופקה", "מלאי" ) );
-	while ( $row = mysqli_fetch_row( $result ) ) {
-		$prod_id = $row[0];
-		$p       = new Product( $prod_id );
-		if ( $p->getStockManaged() != $managed )
-			continue;
-		$q_in    = round( $row[1], 1 );
-		$q_out   = get_out( $prod_id );
-		$q       = round( $q_in - $q_out, 1 );
-		if ( $q > 0 or $debug ) {
-			$line = array(
-				gui_checkbox( "chk_" . $prod_id, "select"),
-				get_product_name( $prod_id ),
-				gui_hyperlink( $q_in, "inv-post.php?operation=in&id=" . $prod_id ),
-				gui_hyperlink( $q_out, "inv-post.php?operation=out&id=" . $prod_id ),
-				$q_in - $q_out
-			);
-			array_push( $rows, $line );
-		}
-	}
-
-	// $data .= "</table>";
-	// $sql = "select product_name as מוצר, round(q, 0) as כמות from i_total where round(q) > 0";
-	// print table_content($sql);
-	print gui_table( $rows );
+//	array_push( $rows, array( "מוצר", "כמות נרכשה", "כמות סופקה", "מלאי" ) );
+//	while ( $row = mysqli_fetch_row( $result ) ) {
+//		$prod_id = $row[0];
+//		$p       = new Product( $prod_id );
+//		if ( $p->getStockManaged() != $managed )
+//			continue;
+//		$q_in    = round( $row[1], 1 );
+//		$q_out   = get_out( $prod_id );
+//		$q       = round( $q_in - $q_out, 1 );
+//		if ( $q > 0 or $debug ) {
+//			$line = array(
+//				gui_checkbox( "chk_" . $prod_id, "select"),
+//				get_product_name( $prod_id ),
+//				gui_hyperlink( $q_in, "inv-post.php?operation=in&id=" . $prod_id ),
+//				gui_hyperlink( $q_out, "inv-post.php?operation=out&id=" . $prod_id ),
+//				$q_in - $q_out
+//			);
+//			array_push( $rows, $line );
+//		}
+//	}
+//
+//	// $data .= "</table>";
+//	// $sql = "select product_name as מוצר, round(q, 0) as כמות from i_total where round(q) > 0";
+//	// print table_content($sql);
+//	print gui_table( $rows );
 
 	// print $data;
 }

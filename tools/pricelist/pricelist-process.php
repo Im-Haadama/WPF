@@ -5,7 +5,7 @@
  * Date: 24/02/17
  * Time: 09:13
  */
-require_once( '../r-shop_manager.php' );
+require_once( TOOLS_DIR . '/r-shop_manager.php' );
 require_once( 'pricelist.php' );
 
 // TODO: incremental doesn't handle deletion.

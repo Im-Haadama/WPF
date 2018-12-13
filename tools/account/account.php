@@ -116,7 +116,7 @@ function show_trans( $customer_id, $from_last_zero = false, $checkbox = true, $t
 	         "<td>אסתמכא</td><td>מס הזמנה</td>";
 
 	$data .= gui_cell( "מקבל" );
-	$data .= gui_cell( "קבלה" );
+	$data .= gui_cell( "קבלה/חשבונית" );
 
 	$data .= "</tr>";
 	global $total;

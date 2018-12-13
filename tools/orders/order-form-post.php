@@ -71,6 +71,7 @@ function form_create_order( $params, $phone = null, $name = null, $group = null,
 		array_push( $quantities, $params[ $i + 1 ] );
 	}
 	$comment = 'הזמנה נוצרה ע"י טופס\n';
+	$comment .= "דואל " . $email . '\n';
 	if ( $group ) {
 		$comment .= "שם הקבוצה:" . $group . ". ההזמנה תארז עי הקבוצה\n";
 	}
@@ -80,17 +81,25 @@ function form_create_order( $params, $phone = null, $name = null, $group = null,
 	if ( $phone ) {
 		$comment .= "טלפון המזמין:" . $phone . "\n";
 	}
+	$order_id = create_order( $user_id ? $user_id : get_user_id(), 0, $prods, $quantities, $comment );
+
 	if ( $email ) {
 		$comment .= "מייל: " . $email . "\n";
 		if ( $u = get_user_by( "email", $email ) ) {
 			$user_id = $u->ID;
-			print "user: " . $user_id;
+
+			print "שלום " . get_customer_name( $user_id ) . "<br/>";
+			print "הזמנה " . $order_id . " נקלטה בהצלחה." . "<br/>";
+			print "ההזמנה תסופק לפי ימי החלוקה לאזורך. " . gui_hyperlink( "לפרטים", $_POST["SERVER_NAME"] . "/deliveries" ) . "<br/>";
+			print "עם אישור ההזמנה על ידינו, תקבל מייל עם העתק ההזמנה<br/>";
+			print "תוכל לראות את ההזמנה ולבצע בה שינויים באתר: " . gui_hyperlink( "החשבון שלי", $_POST["SERVER_NAME"] . "/balance" ) . "<br/>";
 		} else {
-			print "כתובת המייל לא מוכרת. אנא פנה לשירות הלקוחות לצורך ביצוע ההזמנה. ציין את מספר ההזמנה שמופיע להלן." . "<br/>";
-			print "טלפון " . $support_phone . "<br/>";
+			print "הזמנה " . $order_id . " נקלטה בהצלחה." . "<br/>";
+			print "כתובת המייל לא מוכרת. אנא פנה לשירות הלקוחות לצורך אישור ההזמנה. ציין את מספר ההזמנה שמופיע להלן." . "<br/>";
 		}
+		print " טלפון שירות הלקוחות " . $support_phone . "<br/>";
 	}
 
-	return create_order( $user_id ? $user_id : get_user_id(), 0, $prods, $quantities, $comment );
+	return $order_id;
 
 }

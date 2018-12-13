@@ -52,8 +52,19 @@ if ( isset( $_GET["supplier_id"] ) ) {
 	return;
 }
 
+// print "a";
 if ( isset( $_GET["week"] ) ) {
-	print_weekly_report( $_GET["week"] );
+//	print "w";
+	$sort = 4;
+	if ( isset( $_GET["sort"] ) ) {
+		$sort = $_GET["sort"];
+		if ( strpos( $sort, "d" ) ) {
+			//print "d<br/>";
+			$sort = substr( $sort, 0, strlen( $sort ) - 1 ) . " desc";
+			//print "sort: " . $sort . "<br/>";
+		}
+	}
+	print_weekly_report( $_GET["week"], $sort );
 
 	return;
 }
@@ -160,7 +171,7 @@ function print_prod_report( $prod_id, $week = null, $user_id = null ) {
 	print gui_table( $lines, null, true, null, $sum, null, null, true );
 }
 
-function print_weekly_report( $week ) {
+function print_weekly_report( $week, $sort = 4 ) {
 	print gui_header( 1, "מציג תוצאות לשבוע המתחיל ביום " . $week );
 // print date('Y-m-d', strtotime($week . " -1 week")) . "<br/>";
 	if ( date( 'Y-m-d' ) > date( 'Y-m-d', strtotime( $week . "+1 week" ) ) ) {
@@ -173,7 +184,9 @@ function print_weekly_report( $week ) {
 
 	$sql = "SELECT product_name, round(sum(quantity), 1), max(prod_id), product_name FROM im_delivery_lines " .
 	       " WHERE delivery_id IN (SELECT id FROM im_delivery WHERE first_day_of_week(date) = '" . $week . "')" .
-	       " GROUP BY 4";
+	       " GROUP BY prod_id order by " . $sort;
+
+	// print $sql;
 	// print $sql;1
 	$result = sql_query( $sql );
 
@@ -190,9 +203,16 @@ function print_weekly_report( $week ) {
 		array_push( $lines, array( $prod_id, $suppliers, $prod_name, $q ) );
 	}
 
-	sort( $lines );
+	// sort( $lines );
 
-	array_unshift( $lines, array( "מזהה מוצר", "ספקים", "שם מוצר", "כמות" ) );
+	$actual_link = "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+
+	array_unshift( $lines, array(
+		"מזהה מוצר",
+		"ספקים",
+		"שם מוצר",
+		gui_hyperlink( "כמות", $actual_link . "&sort=2d" )
+	) );
 
 	print gui_table( $lines );
 

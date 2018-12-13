@@ -198,8 +198,8 @@ class PriceList {
 		}
 	}
 
-	function PrintHTML( $ordered_only = false ) {
-
+	function PrintHTML( $ordered_only = false, $need_supply_only = false ) {
+		// print "nso=" . $need_supply_only . "oo=" . $ordered_only . "<br/>";
 		Order::CalculateNeeded( $needed_products );
 
 		$catalog = new Catalog();
@@ -215,7 +215,8 @@ class PriceList {
 
 		$table_rows = array(
 			array(
-				"בחר",
+				gui_checkbox( "select_all", "", false,
+					'onclick="select_all_toggle(\'select_all\', \'product_checkbox\')"' ),
 				"קוד פריט",
 				"שם פריט",
 				"תאריך שינוי",
@@ -227,7 +228,7 @@ class PriceList {
 				"מחיר מבצע",
 				"מזהה",
 				"מנוהל מלאי",
-				"יתרה (מלאי פחות הזמנות)",
+				"יתרה במלאי",
 				"כמות בהזמנות פתוחות",
 				"מחירים נוספים"
 			)
@@ -242,15 +243,26 @@ class PriceList {
 			$map_id    = "";
 			if ( $link_data ) {
 				$prod_id = $link_data[0];
+				$p       = new Product( $prod_id );
 				$map_id  = null;
 
 				if ( isset( $link_data[1] ) ) {
 					$map_id = $link_data[1];
 				}
-			}
 			// print $prod_id . " " . $map_id . "<br/>";
-			if ( ! $ordered_only or ( $needed_products[ $prod_id ][0] or $needed_products[ $prod_id ][1] ) )
-				array_push( $table_rows, $this->Line( $row[0], $row[1], $row[2], $pl_id, $row[4], $row[5], $prod_id, true, $map_id, $needed_products ) );
+				if ( $ordered_only and ! ( ( $needed_products[ $prod_id ][0] or $needed_products[ $prod_id ][1] ) ) ) {
+					continue;
+				}
+				if ( $need_supply_only and ( $needed_products[ $prod_id ][0] < $p->getStock() ) ) {
+					continue;
+				}
+			} else {
+				// print "nso=" . $need_supply_only . "<br/>";
+				if ( $need_supply_only or $ordered_only ) {
+					continue;
+				}
+			}
+			array_push( $table_rows, $this->Line( $row[0], $row[1], $row[2], $pl_id, $row[4], $row[5], $prod_id, true, $map_id, $needed_products ) );
 			// $data .= $line;
 		}
 
@@ -303,14 +315,14 @@ class PriceList {
 			array_push( $line, $linked_prod_id );
 			$stockManaged = $p->getStockManaged();
 			array_push( $line, gui_checkbox( "chm_" . $linked_prod_id, "stock", $stockManaged, "onchange=\"change_managed(this)\")" ) );
-			array_push( $line, $stockManaged ? gui_lable( "stk_" . $linked_prod_id, $p->getStock() ) : "" );
+			array_push( $line, gui_lable( "stk_" . $linked_prod_id, $p->getStock() ));
 			$n = orders_per_item( $linked_prod_id, 1, true, true, true );
 //			if (isset($needed[$linked_prod_id][0]))
 //				$n .= $needed[$linked_prod_id][0];
 //			if (isset($needed[$linked_prod_id][1]))
 //				$n .= $needed[$linked_prod_id][1] . "יח";
 
-			array_push( $line, $n );
+			array_push( $line, gui_lable( "ord_" . $linked_prod_id,$n) );
 			array_push( $line, product_other_suppliers( $linked_prod_id, $this->SupplierID ) );
 
 			// $line .= '<td>' . get_product_name( $linked_prod_id ) . '</td>';

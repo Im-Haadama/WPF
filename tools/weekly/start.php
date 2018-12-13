@@ -5,6 +5,9 @@
  * Date: 23/01/17
  * Time: 18:11
  */
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
 require_once( '../r-shop_manager.php' );
 require_once( '../multi-site/multi-site.php' );
 require_once( '../orders/orders-common.php' );
@@ -14,26 +17,29 @@ require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 require_once( "../delivery/missions.php" );
 print header_text();
 
+print "aa";
 if ( isset( $_GET["operation"] ) ) {
 	$operation = $_GET["operation"];
+	print "op = " . $operation . "<br/>";
 	switch ( $operation ) {
-		case "reset_inventory":
+		case "create_inventory_view":
+			do_create_inventory_views();
 //			print gui_header( 1, "מאפס מלאי" );
 //			reset_inventory();
 //				print gui_header( 2, "מאתחל רשימה של אמיר" );
 //				$PL = new PriceList( 100004 );
 //				$PL->RemoveLines( 1 );
 //				$PL->RemoveLines( 2 );
-			print gui_header( 2, "יוצר הזמנות למנויים" );
-			orders_create_subs();
-			print gui_header( 1, "משימות" );
-			if ( MultiSite::IsMaster() ) {
-				print "יוצר חדשות<br/>";
-				create_missions();
-				print MultiSite::RunAll( "multi-site/sync-data.php?table=im_missions&operation=update&source=" . MultiSite::LocalSiteID() );
-			} else {
-				print "מעתיק ממסטר - עדיין לא פעיל<br/>";
-			}
+//			print gui_header( 2, "יוצר הזמנות למנויים" );
+//			orders_create_subs();
+//			print gui_header( 1, "משימות" );
+//			if ( MultiSite::IsMaster() ) {
+//				print "יוצר חדשות<br/>";
+//				create_missions();
+//				print MultiSite::RunAll( "multi-site/sync-data.php?table=im_missions&operation=update&source=" . MultiSite::LocalSiteID() );
+//			} else {
+//				print "מעתיק ממסטר - עדיין לא פעיל<br/>";
+//			}
 			break;
 	}
 } else {
@@ -66,60 +72,36 @@ function create_missions() {
 	}
 }
 
-function reset_inventory() {
-	global $conn;
-	$sql    = "UPDATE im_supplies SET status = 9 WHERE status IN (1, 3)";
-	sql_query( $sql );
 
-	$sql    = "SELECT max(id) FROM im_supplies";
-	$result = sql_query( $sql );
-	$row    = mysqli_fetch_row( $result );
-
-	$last_supply = $row[0];
-
-	$sql    = "SELECT max(id) FROM im_delivery";
-	$result = sql_query( $sql );
-	$row    = mysqli_fetch_row( $result );
-
-	$last_delivery = $row[0];
-
-	sql_query( "delete from im_info where info_key = 'inventory_in'" );
-	sql_query( "insert into im_info  (info_key, info_data)
- 					Values('inventory_in', $last_supply)" );
-
-	sql_query( "delete from im_info where info_key = 'inventory_out'" );
-	sql_query( "insert into im_info  (info_key, info_data)
- 					Values('inventory_out', $last_delivery)" );
-
-	do_reset_inventory( $last_supply, $last_delivery );
-}
-
-function do_reset_inventory( $last_supply, $last_delivery ) {
-	global $conn;
-
-	print "last supply: " . $last_supply . "<br/>";
-
-
-	print "last delivery: " . $last_delivery . "<br/>";
+function do_create_inventory_views() {
 
 	$sql = "create or replace view i_in as " .
 	       " select product_id, sum(quantity) as q_in " .
 	       " from im_supplies_lines l " .
 	       " join im_supplies s " .
-	       " where supply_id > " . $last_supply . " and l.status < 8 " .
+	       //	       " where supply_id > " . $last_supply . " and l.status < 8 " .
+	       " where l.status < 8 " .
 	       " and s.status < 9 " .
 	       " and s.id = l.supply_id " .
 	       " group by 1";
 
+	print $sql . "<br/>";
 	sql_query( $sql );
 
 	$sql = "create or replace view i_out as " .
 	       " select prod_id, round(sum(dl.quantity),1) as q_out " .
 	       " from im_delivery_lines dl" .
-	       " where dl.delivery_id > " . $last_delivery .
+	       //	       " where dl.delivery_id > " . $last_delivery .
 	       " group by 1 ORDER BY  1";
 
 	sql_query( $sql );
+	print $sql . "<br/>";
+
+//	$sql = "cerate or replace VIEW `i_total` AS " .
+//	  "AS select `i_out`.`prod_id` AS `prod_id`,`wp_posts`.`post_title` AS `product_name`, " .
+//	       "(`i_in`.`q_in` - `i_out`.`q_out`) AS `q` from ((`i_out` join `i_in`) join `wp_posts`) " .
+//	       " where ((`i_in`.`product_id` = `i_out`.`prod_id`) and (`wp_posts`.`ID` = `i_in`.`product_id`))";
+//	  sql_query($sql);
 }
 
 

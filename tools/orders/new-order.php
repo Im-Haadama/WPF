@@ -264,7 +264,7 @@ global $pos;
                             del_id = do_create_delivery_note(order_id);
                         }
                     } else {
-                        logging.innerHTML = xmlhttp.responseText;
+                        add_message(xmlhttp.responseText);
                         document.getElementById('add_order').disabled = false;
                         return false;
                     }
@@ -275,7 +275,6 @@ global $pos;
 
             return true;
         }
-
         function select_product(my_row) {
 //            if (event.which === 13) {
                 var objs = document.getElementById("qua_" + (my_row));

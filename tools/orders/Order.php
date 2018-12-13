@@ -9,6 +9,7 @@
 require_once( ROOT_DIR . '/agla/sql.php' );
 require_once( TOOLS_DIR . '/catalog/bundles.php' );
 require_once( ROOT_DIR . "/tools/catalog/Basket.php" );
+require_once( ROOT_DIR . "/tools/orders/orders-common.php" );
 
 
 class Order {
@@ -19,6 +20,14 @@ class Order {
 		$this->order_id = $id;
 		$this->order    = new WC_Order( $id );
 	}
+
+//	function order_info( $order_id, $field_name ) {
+//		$sql = 'SELECT meta_value FROM `wp_postmeta` pm'
+//		       . ' WHERE pm.post_id = ' . $order_id
+//		       . ' AND `meta_key` = \'' . $field_name . '\'';
+//
+//		return sql_query_single_scalar( $sql );
+//	}
 
 	public function GetID() {
 		return $this->order_id;
@@ -252,6 +261,29 @@ class Order {
 		}
 	}
 
+	function update_levels() {
+		// OK. We supplied the order.
+		// We check if delivered different from ordered and change the stock level.
+		$order_items = $this->order->get_items();
+		$d_id        = $this->getDeliveryId();
+		foreach ( $order_items as $item ) {
+			$prod_or_var  = $item['product_id'];
+			$q_in_ordered = $item->get_quantity();
+			$p            = new Product( $prod_or_var );
+			$q_supplied   = sql_query( "SELECT quantity FROM im_delivery_lines" .
+			                           " WHERE prod_id = " . $prod_or_var .
+			                           " AND delivery_id = " . $d_id );
+			if ( $q_in_ordered != $q_supplied ) {
+				my_log( __METHOD__ . " change stock by " . $q_supplied - $q_in_ordered );
+				$p->setStock( $q_supplied - $q_in_ordered );
+			}
+		}
+	}
+
+	public function getDeliveryId() {
+		return sql_query_single_scalar( "SELECT id FROM im_delivery WHERE order_id = " . $this->order_id );
+	}
+
 	public function GetTotal() {
 		$order_items = $this->order->get_items();
 		$total       = 0;
@@ -264,7 +296,14 @@ class Order {
 			$prod_or_var = $item['product_id'];
 			$q           = $item->get_quantity();
 
-			$total += get_price_by_type( $prod_or_var, $client_type ) * $q;
+			if ( $prod_or_var > 0 and $q > 0 and
+			                          is_numeric( get_price_by_type( $prod_or_var, $client_type ) )
+			) {
+				$line = get_price_by_type( $prod_or_var, $client_type ) * $q;
+				if ( is_numeric( $line ) ) {
+					$total += $line;
+				}
+			}
 		}
 
 		return $total;

@@ -131,6 +131,7 @@ class Supply {
 }
 function create_supply( $supplierID ) {
 	global $conn;
+	my_log( __METHOD__ . $supplierID );
 	$sql = "INSERT INTO im_supplies (date, supplier, status) VALUES " . "(CURRENT_TIMESTAMP, " . $supplierID . ", 1)";
 
 	sql_query( $sql );
@@ -139,6 +140,9 @@ function create_supply( $supplierID ) {
 }
 
 function supply_add_line( $supply_id, $prod_id, $quantity, $price, $units = 0 ) {
+	if ( is_null( $price ) ) {
+		$price = 0;
+	}
 	$sql = "INSERT INTO im_supplies_lines (supply_id, product_id, quantity, units, price) VALUES "
 	       . "( " . $supply_id . ", " . $prod_id . ", " . $quantity . ", " . $units . ", " . $price . " )";
 
@@ -609,7 +613,7 @@ function display_supplies( $week, $status = null ) {
 function do_display_supplies( $sql )
 {
 	$result = sql_query( $sql );
-
+	my_log( $sql);
 	$has_lines = false;
 
 	if ( ! $result ) {
@@ -675,9 +679,11 @@ function do_display_supplies( $sql )
 }
 
 function display_active_supplies( $status ) {
-	$sql = "SELECT id, supplier, status, date(date), paid_date, status, business_id FROM im_supplies WHERE status IN (" .
-	       implode( ",", $status ) . ") AND id > (SELECT info_data FROM im_info where info_key='inventory_in')"
-	       . " ORDER BY 4, 3, 2";
+	$in_key = info_get( 'inventory_in', true, 0);
+	$sql    = "SELECT id, supplier, status, date(date), paid_date, status, business_id FROM im_supplies WHERE status IN (" .
+	          implode( ",", $status ) . ") AND id > " . $in_key . "\n" .
+	          " and date > DATE_SUB(curdate(), INTERVAL 2 WEEK)"
+	          . " ORDER BY 4, 3, 2";
 
 	return do_display_supplies( $sql );
 }
@@ -694,6 +700,7 @@ function create_delta() {
 		supply_add_line( $s, $row[0], - $row[1], 0 );
 	}
 }
+
 function create_supplier_order( $supplier_id, $ids ) {
 	$supply_id = create_supply( $supplier_id );
 	print "created supply " . $supply_id . "<br/>";
@@ -717,6 +724,7 @@ function create_supplier_order( $supplier_id, $ids ) {
 }
 
 function create_supplies( $params ) {
+	my_log( __METHOD__);
 	$supplies = array();
 	for ( $i = 0; $i < count( $params ); $i += 4 ) {
 		$prod_id  = $params[ $i + 0 ];

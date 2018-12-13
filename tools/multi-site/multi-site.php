@@ -170,6 +170,10 @@ class MultiSite {
 
 	}
 
+	static function getPickupAddress( $id ) {
+		return sql_query_single_scalar( "SELECT pickup_address FROM im_multisite WHERE id = " . $id );
+	}
+
 	static function LocalSiteTools() {
 		$sql = "SELECT tools_url FROM im_multisite WHERE local = 1";
 

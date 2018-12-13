@@ -5,6 +5,9 @@
  * Date: 16/07/15
  * Time: 15:25
  */
+//error_reporting( E_ALL );
+//ini_set( 'display_errors', 'on' );
+
 require_once( '../r-shop_manager.php' );
 require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 require_once( "../suppliers/gui.php" );
@@ -28,6 +31,63 @@ require_once( "../multi-site/multi-site.php" );
         }
 
         function create_supply() {
+	        <?php
+	        if ( ! isset( $_GET["supplier_id"] ) ) {
+		        print 'var sel = document.getElementById("supplier_id");
+                var selected = sel.options[sel.selectedIndex];
+                supplier_id = selected.value;
+                var site_id = selected.getAttribute("data-site-id");
+                var tools = selected.getAttribute("data-tools-url-id");
+                ';
+	        } else {
+		        print 'var supplier_id = ' . $_GET["supplier_id"] . ';
+                       var site_id = ' . MultiSite::LocalSiteID() . ';
+                       var tools = \'' . MultiSite::LocalSiteTools() . "';
+                ";
+	        }
+	        ?>
+
+            var table = document.getElementById('pricelist');
+
+            var collection = document.getElementsByClassName("product_checkbox");
+            var params = new Array();
+
+            for (var i = 0; i < collection.length; i++) {
+                if (collection[i].checked) {
+                    var prod_id = table.rows[i + 1].cells[10].innerText;
+                    var stock = parseFloat(get_value_by_name("stk_" + prod_id));
+                    var ordered_text = get_value_by_name("ord_" + prod_id);
+                    var ordered = parseFloat(ordered_text.substr(0, ordered_text.indexOf(":")));
+
+                    if (stock > ordered) continue;
+                    // var code = get_value(table.rows[i+1].cells[1].firstChild);
+                    // var name_code = get_value(table.rows[i+1].cells[2].firstChild);
+                    // var new_price = get_value_by_name("prc_" + line_id);
+                    // var sel = document.getElementById("supplier_id");
+                    // var supplier_id = sel.options[sel.selectedIndex].value;
+
+                    // if (code > 0 && code != 10) name_code = code;
+
+                    params.push(prod_id);
+                    params.push(ordered - stock);
+                    params.push(0); // units
+                }
+            }
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                // Wait to get query result
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+                {
+                    change_supplier();
+                }
+            }
+            if (!params.length) {
+                alert("יש לבחור חסרים במלאי כדי ליצור הספקה");
+                return;
+            }
+            var request = "../supplies/supplies-post.php?operation=create_supply&supplier_id=" + supplier_id + "&create_info=" + params;
+            xmlhttp.open("GET", request, true);
+            xmlhttp.send();
 
         }
 
@@ -231,6 +291,7 @@ require_once( "../multi-site/multi-site.php" );
 //            var o = get_value_by_name("chk_ordered");
 //            alert (o);
             if (get_value_by_name("chk_ordered")) request += "&ordered";
+            if (get_value_by_name("chk_need_supply")) request += "&need_supply";
 
             xmlhttp.open("GET", request, true);
             xmlhttp.send();
@@ -372,6 +433,9 @@ require_once( "../multi-site/multi-site.php" );
 
 print gui_checkbox( "chk_ordered", "", "", "onchange=change_supplier()" );
 print "הצג רק מוזמנים<br/>";
+
+print gui_checkbox( "chk_need_supply", "", "", "onchange=change_supplier()" );
+print "הצג רק פריטים להזמין<br/>";
 
 //print gui_button("download", "download_csv()","הורד"); ?>
 

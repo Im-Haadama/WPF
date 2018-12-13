@@ -117,7 +117,7 @@ foreach ( $dom->find( 'tr' ) as $row ) {
 			$line_data .= $row->find( 'td', $i );
 	}
 	$line_data .= gui_cell( "" ); // #box
-	$type      = "order";
+	$type      = "orders";
 	if ( $site == "supplies" ) {
 		$type = "supplies";
 	}
@@ -125,6 +125,7 @@ foreach ( $dom->find( 'tr' ) as $row ) {
 		die ( $site_id . " not number" . $site_id . " order_id = " . $order_id . " name = " . $name . " <br/>" );
 	}
 	$line_data .= gui_cell( gui_checkbox( "chk_" . $order_id, "", "", 'onchange="delivered(\'' . MultiSite::SiteTools( $site_id ) . "'," . $order_id . ', \'' . $type . '\')"' ) ); // #delivered
+	$line_data .= gui_cell( $site_id );
 
 	$line_data .= "</tr>";
 	if ( ! isset( $data_lines[ $mission_id ] ) ) {
@@ -142,7 +143,7 @@ foreach ( $data_lines as $mission_id => $data_line ) {
 //    $data_line = $data_lines[152];1
 //    if (1){
 	if ( ! ( $mission_id > 0 ) ) {
-		print "mission 0 skipped<br/>";
+		// print "mission 0 skipped<br/>";
 		continue;
 	}
 //        die ("no mission id");
@@ -161,16 +162,34 @@ foreach ( $data_lines as $mission_id => $data_line ) {
 	$lines_per_station = array();
 	for ( $i = 0; $i < count( $data_lines[ $mission_id ] ); $i ++ ) {
 		$stop_point = $data_lines[ $mission_id ][ $i ][0];
-		// print "stop point: " . $stop_point . "<br/>";
-		array_push( $stop_points, $stop_point );
-		if ( ! isset( $lines_per_station[ $stop_point ] ) ) {
-			$lines_per_station[ $stop_point ] = array();
+		$dom        = im_str_get_html( $data_lines[ $mission_id ][ $i ][1] );
+		$row        = $dom->find( 'tr' );
+		$site_id    = get_text( $row[0], 8 );
+		$order_id   = get_text( $row[0], 1 );
+		$customer   = get_text( $row[0], 2 );
+		$pickup     = MultiSite::getPickupAddress( $site_id );
+		if ( $pickup != $mission->getStartAddress() ) {
+//		    print "add stop " . MultiSite::getPickupAddress($site_id) . "<br/>";
+			add_stop_point( $pickup );
+			add_line_per_station( $mission->getStartAddress(), $pickup, gui_row( array(
+				"aa",
+				$order_id,
+				"<b>איסוף </b>" . $customer,
+				$pickup,
+				"",
+				"",
+				"",
+				"",
+				""
+			) ) );
+
 		}
-		if ( get_distance( $mission->getStartAddress(), $stop_point ) ) {
-				array_push( $lines_per_station[ $stop_point ], $data_lines[ $mission_id ][ $i ][1] );
-			} else {
-				print "לא מזהה את הכתובת של הזמנה " . $data_lines[ $mission_id ][ $i ] . "<br/>";
-			}
+		// print "stop point: " . $stop_point . "<br/>";
+
+		add_stop_point( $stop_point );
+//		array_push( $stop_points, $stop_point );
+		add_line_per_station( $mission->getStartAddress(), $stop_point, $data_lines[ $mission_id ][ $i ][1] );
+
 
 	}
 //	foreach ($stop_points as $p) print $p . " ";
@@ -229,6 +248,27 @@ foreach ( $data_lines as $mission_id => $data_line ) {
 	if ( $debug )
 		print_time( "end handle mission " . $mission_id, true);
 
+}
+
+function add_stop_point( $point ) {
+	global $stop_points;
+
+	if ( ! in_array( $point, $stop_points ) ) {
+		array_push( $stop_points, $point );
+	}
+}
+
+function add_line_per_station( $start_address, $stop_point, $line ) {
+	global $lines_per_station;
+
+	if ( ! isset( $lines_per_station[ $stop_point ] ) ) {
+		$lines_per_station[ $stop_point ] = array();
+	}
+	if ( get_distance( $start_address, $stop_point ) ) {
+		array_push( $lines_per_station[ $stop_point ], $line );
+	} else {
+		print "לא מזהה את הכתובת של הזמנה " . $line . "<br/>";
+	}
 }
 
 function mb_ord( $c ) {

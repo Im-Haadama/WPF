@@ -48,7 +48,7 @@ switch ( $operation ) {
 		$delivery_ids = $_GET["ids"];
 		$user_id      = $_GET["user_id"];
 		$ids          = explode( ',', $delivery_ids );
-		$doc_id       = invoice_create_document( "i", $ids, $user_id, date( "Y-m-d" ) );
+		create_invoice( $ids, $user_id );
 		break;
 
 	case "create_receipt":
@@ -149,6 +149,30 @@ switch ( $operation ) {
 		}
 		break;
 
+}
+
+function create_invoice( $ids, $user_id ) {
+	$no_ids = true;
+	foreach ( $ids as $id ) {
+		if ( $id > 0 ) {
+			$no_ids = false;
+		}
+	}
+	if ( $no_ids ) {
+		print "לא נבחרו תעודות משלוח";
+
+		return;
+	}
+	$doc_id = invoice_create_document( "i", $ids, $user_id, date( "Y-m-d" ) );
+
+	if ( is_numeric( $doc_id ) && $doc_id > 0 ) {
+		$sql = "UPDATE im_delivery SET payment_receipt = " . $doc_id . " WHERE id IN (" . comma_implode( $ids ) . " ) ";
+		sql_query( $sql );
+
+		print "חשבונית מס מספר " . $doc_id . " נוצרה!" . "<br/>";
+	} else {
+		print "doc_id: " . $doc_id . "<br/>";
+	}
 }
 
 function create_receipt( $cash, $bank, $check, $credit, $change, $user_id, $date, $ids ) {
@@ -339,11 +363,11 @@ function invoice_create_document( $type, $ids, $customer_id, $date, $cash = 0, $
 		die ( "can't login" );
 	}
 
-	print "customer id : " . $customer_id . "<br/>";
+	// print "customer id : " . $customer_id . "<br/>";
 
 	$invoice_client_id = $invoice->GetInvoiceUserId( $customer_id );
 
-	print "invoice client id " . $invoice_client_id . "<br/>";
+	// print "invoice client id " . $invoice_client_id . "<br/>";
 
 	$client = $invoice->GetCustomerById( $invoice_client_id );
 
