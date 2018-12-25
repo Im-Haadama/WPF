@@ -154,12 +154,6 @@ global $pos;
             log.innerHTML = "";
 
         }
-        function add_message(message) {
-            var log = document.getElementById("log");
-
-            log.innerHTML += message;
-            // alert(message);
-        }
 
         // pay = 0; Just create the order.
         // pay = 1; Move control back to order-pos - create delivery and invoice
@@ -342,7 +336,7 @@ global $pos;
 		array_push( $header[1], gui_input( "order_excerpt", "" ) );
 		print gui_table( $header );
 
-		print gui_lable( "rate", $pos ? "pos" : "" );
+		print gui_label( "rate", $pos ? "pos" : "" );
 
 		print gui_header( 2, "בחר מוצרים" );
 		print gui_datalist( "items", "im_products", "post_title" );
@@ -356,13 +350,13 @@ global $pos;
 		print gui_button( "add_line", "add_line()", "הוסף שורה" );
 		print "<br/>";
 
-		print gui_lable( "", 'סה"כ הזמנה ' );
-		print gui_lable( "total", "0" );
+		print gui_label( "", 'סה"כ הזמנה ' );
+		print gui_label( "total", "0" );
 		print "<br/><br/>";
 
 		print gui_checkbox( "chk_delivery", "", ! $pos );
 		print "משלוח ";
-		print gui_lable( "client_address", "" );
+		print gui_label( "client_address", "" );
 		printbr();
 		if ( $pos ) {
 			print gui_checkbox( "chk_payment", "", 0 );

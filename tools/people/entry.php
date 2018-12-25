@@ -53,7 +53,12 @@ if ( isset( $_GET["operation"] ) ) {
         var traveling = get_value(document.getElementById("traveling"));
         var extra_text = get_value(document.getElementById("extra_text"));
         var extra = get_value(document.getElementById("extra"));
-        var id = get_value_by_name("worker_select");
+	    <?php if ( isset( $_GET["worker"] ) ) {
+	    print 'var id = ' . $_GET["workder"] . '\n';
+    } else {
+	    print 'var id = get_value_by_name("worker_select");';
+    }
+	    ?>
         var worker_id = id.substr(0, id.indexOf(")"));
 
         if (traveling.length > 0 && !(parseInt(traveling) > 0)) {

@@ -269,7 +269,7 @@ if ( $manager ) {
 	$user_info = gui_table( array(
 		array( "דואל", get_customer_email( $customer_id ) ),
 		array( "טלפון", get_customer_phone( $customer_id ) ),
-		array( "מספר מזהה", gui_lable( "invoice_client_id", $client_id ) ),
+		array( "מספר מזהה", gui_label( "invoice_client_id", $client_id ) ),
 		array(
 			"אמצעי תשלום",
 			gui_select_payment( "payment", "onchange=\"save_payment_method()\"", get_payment_method( $customer_id ) )

@@ -5,6 +5,10 @@
  * Date: 24/02/17
  * Time: 09:13
  */
+if ( ! defined( "TOOLS_DIR" ) ) {
+	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
+}
+
 require_once( TOOLS_DIR . '/r-shop_manager.php' );
 require_once( 'pricelist.php' );
 
@@ -123,6 +127,9 @@ function pricelist_remote_site_process( $supplier_id, &$results, $inc = false ) 
 			}
 			for ( $j = 1; $j <= $var_num; $j ++ ) {
 				$row = $lines[ $i + $j ];
+				if ( ! $row ) {
+					continue;
+				}
 				// print $row;
 				$var_id = $row->find( 'td', 1 )->plaintext;
 				if ( $debug ) {

@@ -765,7 +765,7 @@ class delivery {
 			for ( $i = 0; $i <= DeliveryFields::max_fields; $i ++ ) {
 				$line[ $i ] = "";
 			}
-			$line[ DeliveryFields::product_name ] = gui_lable( "ba", "הנחת סל" );
+			$line[ DeliveryFields::product_name ] = gui_label( "ba", "הנחת סל" );
 			// $line[DeliveryFields::has_vat] = gui_checkbox("", )
 			$sums              = null;
 			$data              .= gui_row( $line, "bsk" . $this->line_number, $show_fields, $sums, $delivery_fields_names );

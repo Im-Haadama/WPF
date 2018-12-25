@@ -56,8 +56,10 @@ require_once( "../multi-site/multi-site.php" );
                 if (collection[i].checked) {
                     var prod_id = table.rows[i + 1].cells[10].innerText;
                     var stock = parseFloat(get_value_by_name("stk_" + prod_id));
+                    if (isNaN(stock)) stock = 0;
                     var ordered_text = get_value_by_name("ord_" + prod_id);
                     var ordered = parseFloat(ordered_text.substr(0, ordered_text.indexOf(":")));
+                    if (isNaN(ordered)) ordered = 1;
 
                     if (stock > ordered) continue;
                     // var code = get_value(table.rows[i+1].cells[1].firstChild);
@@ -78,7 +80,8 @@ require_once( "../multi-site/multi-site.php" );
                 // Wait to get query result
                 if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
                 {
-                    change_supplier();
+                    add_message(xmlhttp.response);
+                    // change_supplier();
                 }
             }
             if (!params.length) {
@@ -302,8 +305,8 @@ require_once( "../multi-site/multi-site.php" );
                 // Wait to get query result
                 if (xmlhttp_date.readyState == 4 && xmlhttp_date.status == 200)  // Request finished
                 {
-                    lable = document.getElementById("last_update");
-                    lable.innerHTML = xmlhttp_date.response;
+                    label = document.getElementById("last_update");
+                    label.innerHTML = xmlhttp_date.response;
                 }
             }
             request = "pricelist-post.php?operation=header&supplier_id=" + supplier_id;
@@ -390,7 +393,7 @@ require_once( "../multi-site/multi-site.php" );
 	}
 	?>
 </h1>
-<lable id="last_update"></lable>
+<label id="last_update"></label>
 
 <div id="div_change">
     <button id="btn_save" onclick="savePrices()">שמור עדכונים</button>
@@ -408,8 +411,9 @@ require_once( "../multi-site/multi-site.php" );
     <button id="btn_map" onclick="map_products()">שמור מיפוי</button>
     <button id="btn_create_supply" onclick="create_supply()">צור הספקה</button>
 
+    <label id="log"></label>
 </div>
-<lable id="is_slave"></lable>
+<label id="is_slave"></label>
 <br/>
 </div>
 

@@ -164,6 +164,7 @@ foreach ( $data_lines as $mission_id => $data_line ) {
 		$stop_point = $data_lines[ $mission_id ][ $i ][0];
 		$dom        = im_str_get_html( $data_lines[ $mission_id ][ $i ][1] );
 		$row        = $dom->find( 'tr' );
+		$site       = get_text( $row[0], 0 );
 		$site_id    = get_text( $row[0], 8 );
 		$order_id   = get_text( $row[0], 1 );
 		$customer   = get_text( $row[0], 2 );
@@ -172,7 +173,7 @@ foreach ( $data_lines as $mission_id => $data_line ) {
 //		    print "add stop " . MultiSite::getPickupAddress($site_id) . "<br/>";
 			add_stop_point( $pickup );
 			add_line_per_station( $mission->getStartAddress(), $pickup, gui_row( array(
-				"aa",
+				$site,
 				$order_id,
 				"<b>איסוף </b>" . $customer,
 				$pickup,
@@ -189,8 +190,6 @@ foreach ( $data_lines as $mission_id => $data_line ) {
 		add_stop_point( $stop_point );
 //		array_push( $stop_points, $stop_point );
 		add_line_per_station( $mission->getStartAddress(), $stop_point, $data_lines[ $mission_id ][ $i ][1] );
-
-
 	}
 //	foreach ($stop_points as $p) print $p . " ";
 	if ( $debug )
@@ -216,6 +215,7 @@ foreach ( $data_lines as $mission_id => $data_line ) {
 	$data .= gui_list( "באחריות הנהג להעמיס את הרכב ולסמן את מספר האריזות והאם יש קירור." );
 	$data .= gui_list( "יש לוודא שכל המשלוחים הועמסו.");
 	$data .= gui_list( "בעת קבלת כסף או המחאה יש לשלוח מיידית הודעה ליעקב, עם הסכום ושם הלקוח.");
+	$data .= gui_list( "במידה והלקוח לא פותח את הדלת, יש ליידע את הלקוח שהמשלוח בדלת (טלפון או הודעה)." );
 
 	$prev           = $mission->getStartAddress();
 	$total_distance = 0;

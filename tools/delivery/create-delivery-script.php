@@ -100,7 +100,7 @@ print gui_datalist( "items", "im_products", "post_title" );
         // row.insertCell(-1).innerHTML = ""; // order total
         row.insertCell(-1).innerHTML = "<input id=\"deq_" + line_id + "\" type=\"text\" onchange='calcDelivery()'>";   // 4 - supplied
         row.insertCell(-1).innerHTML = "<input id=\"prc_" + line_id + "\" type=\"text\">";   // 5 - price
-        row.insertCell(-1).innerHTML = "<lable id=\"lpr_" + line_id + "\" type=\"text\">";   // line price
+        row.insertCell(-1).innerHTML = "<label id=\"lpr_" + line_id + "\" type=\"text\">";   // line price
         row.insertCell(-1).innerHTML = "<input id=\"hvt_" + line_id + "\"  type = \"checkbox\" checked>"; // 6 - has vat
         row.insertCell(-1).id = "lvt_" + line_id;                       // 7 - line vat
         row.insertCell(-1).id = "del_" + line_id;   // 8 - total_line

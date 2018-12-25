@@ -6,6 +6,13 @@
  * Time: 13:39
  */
 require_once( '../r-shop_manager.php' );
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
+if ( ! defined( "ROOT_DIR" ) ) {
+	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
+}
+
 require_once( ROOT_DIR . '/agla/gui/sql_table.php' );
 require_once( "../catalog/bundles.php" );
 require_once( "../orders/orders-common.php" );
@@ -15,15 +22,12 @@ $operation = $_GET["operation"];
 switch ( $operation ) {
 	case "show":
 		$debug = false;
-		if ( isset( $_GET["debug"] ) ) {
-			$debug = true;
+		if ( isset( $_GET["supplier_id"] ) ) {
+			show_supplier_inventory( $_GET["supplier_id"] );
+
+			return;
 		}
-		$wait = sql_query_single_scalar( "SELECT count(id) FROM wp_posts WHERE post_status IN ('wc-waiting', 'wc-on-hold')" );
-		if ( $wait ) {
-			print gui_header( 1, "יש הזמנות במצב המתנה!" );
-		}
-		print gui_header( 1, "פריטים טריים במלאי" );
-		show_inventory( false, $debug );
+		show_fresh_inventory();
 		break;
 
 	case "add_waste":
@@ -43,6 +47,48 @@ switch ( $operation ) {
 		print "start<br/>";
 		$data = $_GET["data"];
 		save_inv( explode( ",", $data ) );
+}
+
+function show_supplier_inventory( $supplier_id ) {
+	$table = array( array( "", "מוצר", "מחיר עלות", "כמות במלאי" ) );
+
+	print gui_header( 1, "מלאי לספק " . get_supplier_name( $supplier_id ) );
+	$catalog = new Catalog();
+	$display = "";
+
+	$sql = 'SELECT product_name, price, date, pl.id, supplier_product_code, s.factor ' .
+	       ' FROM im_supplier_price_list pl ' .
+	       ' Join im_suppliers s '
+	       . ' where supplier_id = ' . $supplier_id
+	       . ' and s.id = pl.supplier_id '
+	       . ' order by 1';
+
+	$result = sql_query( $sql );
+	while ( $row = sql_fetch_row( $result ) ) {
+		$pl_id     = $row[3];
+		$link_data = $catalog->GetProdID( $pl_id );
+		if ( $link_data ) {
+			$prod_id = $link_data[0];
+			$line    = product_line( $prod_id, false, false, null, true, $supplier_id );
+			array_push( $table, $line );
+		}
+	}
+
+	$display .= gui_table( $table, "table_" . $supplier_id );
+
+	$display .= gui_button( "btn_save_inv" . $supplier_id, "save_inv(" . $supplier_id . ")", "שמור מלאי" );
+
+	print $display;
+}
+
+function show_fresh_inventory() {
+	$wait = sql_query_single_scalar( "SELECT count(id) FROM wp_posts WHERE post_status IN ('wc-waiting', 'wc-on-hold')" );
+	if ( $wait ) {
+		print gui_header( 1, "יש הזמנות במצב המתנה!" );
+		print "יש לטפל בהן לפני עדכון המלאי";
+	}
+	print gui_header( 1, "פריטים טריים במלאי" );
+	show_inventory();
 }
 
 function save_inv( $data ) {
@@ -154,14 +200,8 @@ function show_out( $prod_id ) {
 	}
 }
 
-function show_inventory( $managed, $debug ) {
-	global $conn;
+function show_inventory() {
 
-//	$sql    = "SELECT product_id, q_in FROM i_in";
-//	$result = mysqli_query( $conn, $sql );
-//	if ( ! $result ) {
-//		print "no results " . $sql;
-//	}
 	$needed = array();
 	Order::CalculateNeeded( $needed );
 	print show_category_all( false, false, true, true );

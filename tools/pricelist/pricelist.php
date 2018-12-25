@@ -253,7 +253,7 @@ class PriceList {
 				if ( $ordered_only and ! ( ( $needed_products[ $prod_id ][0] or $needed_products[ $prod_id ][1] ) ) ) {
 					continue;
 				}
-				if ( $need_supply_only and ( $needed_products[ $prod_id ][0] < $p->getStock() ) ) {
+				if ( $need_supply_only and ( $needed_products[ $prod_id ][0] <= $p->getStock() ) ) {
 					continue;
 				}
 			} else {
@@ -315,14 +315,14 @@ class PriceList {
 			array_push( $line, $linked_prod_id );
 			$stockManaged = $p->getStockManaged();
 			array_push( $line, gui_checkbox( "chm_" . $linked_prod_id, "stock", $stockManaged, "onchange=\"change_managed(this)\")" ) );
-			array_push( $line, gui_lable( "stk_" . $linked_prod_id, $p->getStock() ));
+			array_push( $line, gui_label( "stk_" . $linked_prod_id, $p->getStock() ) );
 			$n = orders_per_item( $linked_prod_id, 1, true, true, true );
 //			if (isset($needed[$linked_prod_id][0]))
 //				$n .= $needed[$linked_prod_id][0];
 //			if (isset($needed[$linked_prod_id][1]))
 //				$n .= $needed[$linked_prod_id][1] . "יח";
 
-			array_push( $line, gui_lable( "ord_" . $linked_prod_id,$n) );
+			array_push( $line, gui_label( "ord_" . $linked_prod_id, $n ) );
 			array_push( $line, product_other_suppliers( $linked_prod_id, $this->SupplierID ) );
 
 			// $line .= '<td>' . get_product_name( $linked_prod_id ) . '</td>';
@@ -580,7 +580,6 @@ class PriceList {
 				my_log( $line );
 			}
 		}
-
 	}
 
 	function GetByName( $product_name ) {

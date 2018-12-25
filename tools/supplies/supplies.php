@@ -399,7 +399,14 @@ function send_supplies( $ids ) {
 	print "שולח הזמנות...<br/>";
 
 	foreach ( $ids as $id ) {
+		print "id=" . $id . "<br/>";
 		$supplier_id = supply_get_supplier_id( $id );
+
+		$site = sql_query_single_scalar( "select site_id from im_suppliers where id = " . $supplier_id );
+		if ( $site ) {
+			send_supply_as_order( $id );
+			continue;
+		}
 //        print "supplier_id = " .$supplier_id . "</br>";
 		$email = sql_query_single_scalar( "SELECT email FROM im_suppliers WHERE id = " . $supplier_id );
 //        print "email = " . $email . "<br/>";
@@ -789,4 +796,40 @@ function supplier_report_data( $supplier_id, $start_date, $end_date ) {
 
 // print $sql;
 	return sql_query_array( $sql, true );
+}
+
+function send_supply_as_order( $id ) {
+	$supplier_id = supply_get_supplier_id( $id );
+	$row         = sql_query_single_assoc( "select site_id, user_id from im_suppliers where id = " . $supplier_id );
+
+	$site_id    = $row["site_id"];
+	$user_id    = $row["user_id"];
+	$mission_id = 0;
+
+	$prods      = array();
+	$quantities = array();
+	$units      = array();
+	$sql        = "select product_id, quantity, units from im_supplies_lines where supply_id = " . $id;
+
+	print $sql;
+	$result = sql_query( $sql );
+	while ( $row = sql_fetch_row( $result ) ) {
+		$prod_id = $row[0];
+		print "prod_id= " . $prod_id . "<br/>";
+		$remote_prod_id = supplier_prod_id( $prod_id, $supplier_id );
+		if ( $remote_prod_id ) {
+			array_push( $prods, $remote_prod_id );
+			array_push( $quantities, $row[1] );
+			array_push( $units, $row[2] );
+		}
+	}
+	$remote = "orders/orders-post.php?operation=create_order&user_id=" . $user_id .
+	          "&prods=" . implode( ",", $prods ) .
+	          "&quantities=" . implode( ",", $quantities ) .
+	          "&comments=" . urlencode( "נשלח מאתר " . MultiSite::LocalSiteName() ) .
+	          "&units=" . implode( ",", $units ) . // TODO: support units.
+	          "&mission_id=" . $mission_id;
+
+	print $remote;
+	print MultiSite::Execute( $remote, $site_id );
 }

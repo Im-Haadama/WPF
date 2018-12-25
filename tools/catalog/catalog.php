@@ -179,7 +179,6 @@ class Catalog {
 
 	static function UpdateProduct( $prod_id, &$line, $details = false ) {
 		$P = new Product( $prod_id );
-		// print "update product " . $prod_id . "<br/>";
 		if ( ! ( $prod_id > 0 ) ) {
 			print __METHOD__ . " bad prod_id: " . $prod_id . "<br/>";
 			die ( 1 );
@@ -187,6 +186,7 @@ class Catalog {
 		$line = "<tr>";
 		my_log( "update $prod_id" );
 		global $debug_product;
+		$debug_product = 313;
 		global $debug;
 		if ( $prod_id == $debug_product ) {
 			$print_line = true;
@@ -546,7 +546,6 @@ class Catalog {
 }
 
 function best_alternatives( $alternatives, $debug = false ) {
-	global $debug_product;
 	my_log( "best_alternatives" );
 	$min  = 1111111;
 	$best = null;
@@ -626,6 +625,17 @@ function upload_image( $post_id, $image ) {
 	}
 }
 
+function supplier_prod_id( $prod_id, $supplier_id ) {
+	$a = alternatives( $prod_id, false );
+
+	foreach ( $a as $s ) {
+		if ( $s->getSupplierId() == $supplier_id ) {
+			return $s->getSupplierProductCode;
+		}
+	}
+
+	return 0;
+}
 function alternatives( $prod_id, $details = false )
 {
 	global $conn;

@@ -105,4 +105,4 @@ print gui_textarea( "comments", "הערות", "", 5, 80 );
 print "<br/>";
 print gui_button( "order", "send_order()", "הזמן" );
 
-print gui_lable( "result", "" );
+print gui_label( "result", "" );

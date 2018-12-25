@@ -95,7 +95,7 @@ print gui_header( 2, "הוסף לקוח חדש" );
 
 print gui_table(
 	array(
-		array( "שם משתמש", gui_lable( "user", "אוטומטי" ) ),
+		array( "שם משתמש", gui_label( "user", "אוטומטי" ) ),
 		array( "שם", gui_input( "name", "", "" ) ),
 		array( "דואל", gui_input( "email", "", array( "onchange=\"check_email()\"" ) ) ),
 		array( "כתובת", gui_input( "address", "", "" ) ),

@@ -67,7 +67,13 @@ require_once( "../options.php" );
                 t.innerHTML = xmlhttp3.response;
             }
         }
-        xmlhttp3.open("GET", "inv-post.php?operation=show", true);
+        var url = "inv-post.php?operation=show";
+	    <?php
+	    if ( isset( $_GET["supplier_id"] ) ) {
+		    print 'url += "&supplier_id=' . $_GET["supplier_id"] . '";';
+	    }
+	    ?>
+        xmlhttp3.open("GET", url, true);
         xmlhttp3.send();
 
     }

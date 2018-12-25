@@ -1,7 +1,7 @@
 <?php
 // require_once( "r-shop_manager.php" );
-// error_reporting( E_ALL );
-// ini_set( 'display_errors', 'on' );
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
 
 require_once( "im_tools.php" );
 print header_text( false );
@@ -10,7 +10,7 @@ require_once( ROOT_DIR . "/agla/gui/inputs.php" );
 // print TOOLS_DIR . "/multi-site/multi-site.php";
 require_once( TOOLS_DIR . "/multi-site/multi-site.php" );
 
-require_once( TOOLS_DIR . "/weekly/run.php" );
+//
 
 
 $user = wp_get_current_user();
@@ -157,5 +157,8 @@ while ( $row < $max_row )
 
 <br><br>
 
+<?php
+require_once( TOOLS_DIR . "/weekly/run.php" );
+?>
 </body>
 </html>

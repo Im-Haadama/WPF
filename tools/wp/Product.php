@@ -35,11 +35,14 @@ class Product {
 	}
 
 	function setStock( $q ) {
-		print "start ";
+		if ( $q == $this->getStock() ) {
+			return;
+		}
+//		print "start ";
 		if ( $this->isFresh() ) {
-			print "fresh ";
+//			print "fresh ";
 			$delta = $q + $this->q_out() - $this->q_in();
-			print "delta: " . $this->id . " " . $delta . "<br/>";
+//			print "delta: " . $this->id . " " . $delta . "<br/>";
 			if ( is_null( sql_query_single_scalar( "select meta_value " .
 			                                       " from wp_postmeta " .
 			                                       " where post_id = " . $this->id .
@@ -47,12 +50,25 @@ class Product {
 				sql_query( "insert into wp_postmeta (post_id, meta_key, meta_value) " .
 				           " values (" . $this->id . ", 'im_stock_delta', $delta)" );
 
+				sql_query( "INSERT INTO wp_postmeta (post_id, meta_key, meta_value) " .
+				           " VALUES (" . $this->id . ", 'im_stock_delta_date', '" . date( 'd/m/Y' ) . "')" );
+
 				return;
 			}
 
 			sql_query( "update wp_postmeta set meta_value = " . $delta .
 			           " where meta_key = 'im_stock_delta' and post_id = " . $this->id );
 
+			if ( is_null( sql_query_single_scalar( "select meta_value " .
+			                                       " from wp_postmeta " .
+			                                       " where post_id = " . $this->id .
+			                                       " and meta_key = 'im_stock_delta_date'" ) ) ) {
+				sql_query( "INSERT INTO wp_postmeta (post_id, meta_key, meta_value) " .
+				           " VALUES (" . $this->id . ", 'im_stock_delta_date', '" . date( 'd/m/Y' ) . "')" );
+			} else {
+				sql_query( "UPDATE wp_postmeta SET meta_value = '" . date( 'd/m/Y' ) . "'" .
+				           " WHERE meta_key = 'im_stock_delta_date' AND post_id = " . $this->id );
+			}
 			return;
 		}
 		// print "set stock ";
@@ -61,6 +77,28 @@ class Product {
 		           " where post_id = " . $this->id .
 		           " and meta_key = '_stock'" );
 		// return $this->p->set_stock_quantity($q);
+	}
+
+	function getStock() {
+		if ( $this->isFresh() ) {
+//			print "<br/> fresh " . $this -> q_in() . " " . $this->q_out() . " ";
+			$inv         = $this->q_in() - $this->q_out();
+			$stock_delta = sql_query_single_scalar( "select meta_value " .
+			                                        " from wp_postmeta " .
+			                                        " where post_id = " . $this->id .
+			                                        " and meta_key = 'im_stock_delta'" );
+			if ( $stock_delta ) {
+				$inv += $stock_delta;
+			}
+
+			return round( $inv, 1 );
+		}
+		// BUG: some products, maybe just variables can't create WC_Product.
+		if ( $this->p ) {
+			return $this->p->get_stock_quantity();
+		} else {
+			return 0;
+		}
 	}
 
 	function isFresh() {
@@ -136,20 +174,39 @@ class Product {
 		return false;
 	}
 
-	private function q_out() {
-		$sql = "SELECT q_out FROM i_out WHERE prod_id = " . $this->id;
-
-		$result = sql_query_single_scalar( $sql );
-
-		return round( $result, 1 );
-	}
-
 	private function q_in() {
 		$sql = "SELECT q_in FROM i_in WHERE product_id = " . $this->id;
 
-		$result = sql_query_single_scalar( $sql );
+		$in = sql_query_single_scalar( $sql );
 
-		return round( $result, 1 );
+		// Add Bundles
+		$sql    = "SELECT bundle_prod_id FROM im_bundles WHERE prod_id = " . $this->id;
+		$result = sql_query( $sql );
+		while ( $row = sql_fetch_row( $result ) ) {
+			$delta = sql_query_single_scalar( "SELECT q_in FROM i_in WHERE product_id = " . $row[0] );
+			if ( is_numeric( $delta ) ) {
+				$in += $delta;
+			}
+		}
+
+		return round( $in, 1 );
+	}
+
+	private function q_out() {
+		$sql = "SELECT q_out FROM i_out WHERE prod_id = " . $this->id;
+
+		$out = sql_query_single_scalar( $sql );
+
+		$sql    = "SELECT bundle_prod_id FROM im_bundles WHERE prod_id = " . $this->id;
+		$result = sql_query( $sql );
+		while ( $row = sql_fetch_row( $result ) ) {
+			$delta = sql_query_single_scalar( "SELECT q_out FROM i_out WHERE prod_id = " . $row[0] );
+			if ( is_numeric( $delta ) ) {
+				$out += $delta;
+			}
+		}
+
+		return round( $out, 1 );
 	}
 
 	function getOrdered() {
@@ -178,26 +235,13 @@ class Product {
 
 	}
 
-	function getStock() {
-		if ( $this->isFresh() ) {
-//			print "<br/> fresh " . $this -> q_in() . " " . $this->q_out() . " ";
-			$inv         = $this->q_in() - $this->q_out();
-			$stock_delta = sql_query_single_scalar( "select meta_value " .
-			                                        " from wp_postmeta " .
-			                                        " where post_id = " . $this->id .
-			                                        " and meta_key = 'im_stock_delta'" );
-			if ( $stock_delta ) {
-				$inv += $stock_delta;
-			}
+	function getStockDate() {
+		$stock_date = sql_query_single_scalar( "select meta_value " .
+		                                       " from wp_postmeta " .
+		                                       " where post_id = " . $this->id .
+		                                       " and meta_key = 'im_stock_delta_date'" );
 
-			return round( $inv, 1 );
-		}
-		// BUG: some products, maybe just variables can't create WC_Product.
-		if ( $this->p ) {
-			return $this->p->get_stock_quantity();
-		} else {
-			return 0;
-		}
+		return $stock_date;
 	}
 
 	function isPublished() {

@@ -20,7 +20,9 @@ require_once( TOOLS_DIR . "/pricelist/pricelist-process.php" );
 $debug   = null;
 $gap_key = "run_gap";
 $run_gap = info_get( $gap_key );
-// $run_gap = 5; // debug mode
+if ( $debug ) {
+	$run_gap = 5;
+} // debug mode
 $date_format = "h:m:s";
 
 if ( ! $run_gap ) {
@@ -54,15 +56,16 @@ auto_mail();
 if ( MultiSite::isMaster() ) {
 	duplicate_week();
 } else {
-	require_once( TOOLS_DIR . "/delivery/sync-from-master.php" );
+	//require_once( TOOLS_DIR . "/delivery/sync-from-master.php" );
 }
 
-if ( MultiSite::LocalSiteID() == 4 ) {
-	print "im haadama not proceesed<br/>";
-	// $results = "";
-	// pricelist_remote_site_process( 100001, $results, false );
-	// print $results;
-}
+update_remotes();
+
+//if ( MultiSite::LocalSiteID() == 4 ) {
+//	print "im haadama not proceesed<br/>";
+//	// $results = "";
+//	// print $results;
+//}
 
 auto_supply();
 
@@ -184,5 +187,19 @@ function auto_supply() {
 			print "not enough for an order\n";
 		}
 //		var_dump($sold);
+	}
+}
+
+function update_remotes() {
+	// Update remote pricelist.
+	$sql = "select id, site_id from im_suppliers where site_id is not null";
+
+	$suppliers = sql_query( $sql );
+
+	while ( $row = sql_fetch_row( $suppliers ) ) {
+		$supplier_id = $row[0];
+		pricelist_remote_site_process( $supplier_id, $results, false );
+
+		// print $row[0] . " " . $row[1] . "<br/>";
 	}
 }

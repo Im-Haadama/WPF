@@ -1099,12 +1099,12 @@ function order_set_customer_id( $order_id, $customer_id ) {
 }
 
 function show_category_all( $sale, $text, $fresh = false, $inv = false ) {
-//	print "inv: " . $inv . "<br/>";
+//	print "inventory: " . $inventory . "<br/>";
 //	print "fresh: " . $fresh . "<br/>";
 	$result = "";
 	if ( $fresh ) {
 		$categs = explode( ",", info_get( "fresh" ) );
-		// var_dump($categs);
+//		 var_dump($categs);
 	} else {
 		$sql    = "SELECT term_id FROM wp_term_taxonomy WHERE taxonomy = 'product_cat'";
 		$categs = sql_query_array_scalar( $sql );
@@ -1117,10 +1117,9 @@ function show_category_all( $sale, $text, $fresh = false, $inv = false ) {
 	return $result;
 }
 
-function show_category_by_id( $term_id, $sale = false, $text = false, $customer_type = "regular", $inv = false ) {
+function show_category_by_id( $term_id, $sale = false, $text = false, $customer_type = "regular", $inventory = false ) {
 	$result   = "";
-	$img_size = 40;
-	//print "inv: " . $inv . "<br/>";
+	//print "inventory: " . $inventory . "<br/>";
 
 	$the_term = get_term( $term_id );
 
@@ -1132,8 +1131,9 @@ function show_category_by_id( $term_id, $sale = false, $text = false, $customer_
 		$table = array( array( "", "מוצר", "מחיר", gui_link( "מחיר לכמות", "", "" ), "כמות", "סה\"כ" ) );
 	}
 
-	if ( $inv ) {
+	if ( $inventory ) {
 		array_push( $table[0], "מלאי" );
+		array_push( $table[0], "תאריך עדכון" );
 		array_push( $table[0], "מוזמנים" );
 	}
 
@@ -1148,55 +1148,17 @@ function show_category_by_id( $term_id, $sale = false, $text = false, $customer_
 	$loop = new WP_Query( $args );
 	while ( $loop->have_posts() ) {
 		$loop->the_post();
-		$line = array();
 		global $product;
 		if ( ! $product->get_regular_price() ) {
 			continue;
 		}
 		$prod_id = $loop->post->ID;
-		$p       = new Product( $prod_id );
-		// $terms   = get_the_terms( $prod_id, 'product_cat' );
-// print "<br/>" . $prod_id . " "; print get_product_name($prod_id);
-		$found = false;
-//		foreach ( $terms as $term ) {
-//			if ( $term->term_id == $term_id ) {
-//				$found = true;
-//			}
-//		}
-//		if ( ! $found ) {
-//			continue;
-//		}
+		$line    = product_line( $prod_id, $text, $sale, $customer_type, $inventory, $term_id );
 		if ( $text ) {
-			$line = get_product_name( $prod_id ) . " - " . get_price_by_type( $prod_id, $customer_type ) . "<br/>";
-			// print "line = " . $line . "<br/>";
 			$result .= $line;
-			continue;
-		}
-		if ( has_post_thumbnail( $prod_id ) ) {
-			array_push( $line, get_the_post_thumbnail( $loop->post->ID, array( $img_size, $img_size ) ) );
 		} else {
-			array_push( $line, '<img src="' . wc_placeholder_img_src() . '" alt="Placeholder" width="' . $img_size . 'px" height="'
-			                   . $img_size . 'px" />' );
+			array_push( $table, $line );
 		}
-		array_push( $line, the_title( '', '', false ) );
-		if ( $sale ) {
-			array_push( $line, gui_lable( "prc_" . $prod_id, $product->get_sale_price() ) );
-			array_push( $line, gui_lable( "vpr_" . $prod_id, $product->get_regular_price() ) );
-		} else {
-			array_push( $line, gui_lable( "prc_" . $prod_id, $product->get_price() ) );
-			$q_price = get_price_by_type( $prod_id, null, 8 );
-//			if ( is_numeric( get_buy_price( $prod_id ) ) ) {
-//				$q_price = min( round( get_buy_price( $prod_id ) * 1.25 ), $product->get_price() );
-//			}
-			array_push( $line, gui_lable( "vpr_" . $prod_id, $q_price, 1 ) );
-		}
-		array_push( $line, gui_input( "qua_" . $prod_id, "0", array( 'onchange="calc_line(this)"' ) ) );
-		array_push( $line, gui_lable( "tot_" . $prod_id, '' ) );
-		if ( $inv ) {
-			array_push( $line, gui_input( "term_" . $term_id, $p->getStock(), "", "inv_" . $prod_id ) );
-			array_push( $line, gui_lable( "ord_" . $term_id, $p->getOrderedDetails() ) );
-		}
-		array_push( $table, $line );
 	}
 
 	if ( $text ) {
@@ -1205,10 +1167,57 @@ function show_category_by_id( $term_id, $sale = false, $text = false, $customer_
 		$result .= gui_table( $table, "table_" . $term_id );
 	}
 
-	if ( $inv ) {
+	if ( $inventory ) {
 		$result .= gui_button( "btn_save_inv" . $term_id, "save_inv(" . $term_id . ")", "שמור מלאי" );
 	}
 
 //	print "result = " . $result . "<br/>";
 	return $result;
+}
+
+function product_line( $prod_id, $text, $sale, $customer_type, $inv, $term_id ) {
+	$line     = array();
+	$img_size = 40;
+
+	$p = new Product( $prod_id );
+	if ( $text ) {
+		$line = get_product_name( $prod_id ) . " - " . get_price_by_type( $prod_id, $customer_type ) . "<br/>";
+		// print "line = " . $line . "<br/>";
+		// $result .= $line;
+		return $line;
+	}
+	if ( has_post_thumbnail( $prod_id ) ) {
+		array_push( $line, get_the_post_thumbnail( $prod_id, array( $img_size, $img_size ) ) );
+	} else {
+		array_push( $line, '<img src="' . wc_placeholder_img_src() . '" alt="Placeholder" width="' . $img_size . 'px" height="'
+		                   . $img_size . 'px" />' );
+	}
+	array_push( $line, get_product_name( $prod_id ) );
+	if ( $sale ) {
+		array_push( $line, gui_label( "prc_" . $prod_id, $p->getSalePrice() ) );
+		array_push( $line, gui_label( "vpr_" . $prod_id, $p->getRegularPrice() ) );
+	} else {
+		if ( $inv ) {
+			array_push( $line, gui_label( "buy_" . $prod_id, $p->getBuyPrice() ) );
+
+		} else {
+			array_push( $line, gui_label( "prc_" . $prod_id, $p->getPrice() ) );
+			$q_price = get_price_by_type( $prod_id, null, 8 );
+			//			if ( is_numeric( get_buy_price( $prod_id ) ) ) {
+			//				$q_price = min( round( get_buy_price( $prod_id ) * 1.25 ), $product->get_price() );
+			//			}
+			array_push( $line, gui_label( "vpr_" . $prod_id, $q_price) );
+		}
+	}
+	if ( ! $inv) {
+		array_push( $line, gui_input( "qua_" . $prod_id, "0", array( 'onchange="calc_line(this)"' ) ) );
+		array_push( $line, gui_label( "tot_" . $prod_id, '' ) );
+	}
+	if ( $inv ) {
+		array_push( $line, gui_input( "term_" . $term_id, $p->getStock(), "", "inv_" . $prod_id ) );
+		array_push( $line, gui_label( "term_" . $term_id, $p->getStockDate() ) );
+//		array_push( $line, gui_label( "ord_" . $term_id, $p->getOrderedDetails() ) );
+	}
+
+	return $line;
 }

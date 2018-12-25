@@ -51,10 +51,11 @@ class MultiSite {
 	}
 
 	static function Execute( $request, $site ) {
-		// print "req: " . $request . " site = " . $site . "<br/>";
-		// die(1);
+//		 print "req: " . $request . " site = " . $site . "<br/>";
+//		 die(1);
 		$remote_request = get_site_tools_url( $site ) . '/' . $request;
-		// print $remote_request . "<br/>";
+//		 print $remote_request . "<br/>";
+//		 die (1);
 		if ( strlen( $remote_request ) < 4 ) {
 			print "remote tools not set.<br/>";
 			die ( 2 );
@@ -199,18 +200,19 @@ class MultiSite {
 			$url .= "&query=" . urlencode( $query );
 		}
 
+		print $url . "<br/>";
+
 		$html = MultiSite::Execute( $url, $remote );
 
-		// print $url . "<br/>";
-
-		// print $html;
+		print $html;
 
 		if ( strlen( $html ) > 100 ) {
 			// printbr($html);
 			MultiSite::UpdateTable( $html, $table, $key, $query, $ignore );
 		} else {
 			print "short response. Operation aborted <br/>";
-			die( 1 );
+
+			return;
 		}
 	}
 

@@ -150,7 +150,7 @@ if ( $text ) {
 	print "כתובת מייל של המזמין:";
 	print gui_input( "email", "", array( "onchange=update()" ) );
 	print "<br/>";
-	print gui_table( array( 'סה"כ הזמנה:', gui_lable( "total", "0" ) ) );
+	print gui_table( array( 'סה"כ הזמנה:', gui_label( "total", "0" ) ) );
 
 	print gui_button( "btn_add_order_1", "add_order(0)", "הוסף הזמנה" );
 }

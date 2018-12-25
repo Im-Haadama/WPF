@@ -154,7 +154,7 @@ function show_trans( $customer_id, $from_last_zero = false, $checkbox = true, $t
 		}
 
 		$line    .= "<td>" . $date . "</td>";
-		$line    .= "<td>" . gui_lable( "amo_" . $doc_id, $amount ) . "</td>";
+		$line    .= "<td>" . gui_label( "amo_" . $doc_id, $amount ) . "</td>";
 		$line    .= "<td>" . $vat . "</td>";
 		$balance = balance( $date, $customer_id );
 		$line    .= "<td>" . $balance . "</td>";
