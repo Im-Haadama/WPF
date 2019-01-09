@@ -11,7 +11,7 @@ if ( ! defined( 'TOOLS_DIR' ) ) {
 }
 
 // require_once( TOOLS_DIR . "/r-shop_manager.php" );
-require_once( TOOLS_DIR . "/multi-site/multi-site.php" );
+require_once( TOOLS_DIR . "/multi-site/imMulti-site.php" );
 require_once( TOOLS_DIR . "/maps/config.php" );
 
 $addresses    = array();

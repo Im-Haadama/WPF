@@ -1,11 +1,11 @@
 <?php
-//error_reporting( E_ALL );
-//ini_set( 'display_errors', 'on' );
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
 
 // include_once( "../tools_wp_login.php" );
 // include_once( "../orders/orders-common.php" );
 include_once( "delivery.php" );
-// include_once( "../multi-site/multi-site.php" );
+// include_once( "../multi-site/imMulti-site.php" );
 
 
 print header_text( false );
@@ -16,7 +16,7 @@ print header_text( false );
 <script type="text/javascript" src="/agla/client_tools.js"></script>
 <?php
 
-$script_file = MultiSite::LocalSiteTools() . "/delivery/create-delivery-script.php?i=1";
+$script_file = ImMultiSite::LocalSiteTools() . "/delivery/create-delivery-script.php?i=1";
 
 $edit = false;
 if ( isset( $_GET["id"] ) ) {

@@ -13,7 +13,7 @@ if ( ! defined( "TOOLS_DIR" ) ) {
 
 require_once( TOOLS_DIR . "/account/account.php" );
 require_once( TOOLS_DIR . "/business/business.php" );
-
+require_once( TOOLS_DIR . "/account/gui.php" );
 
 function people_add_activity( $id, $date, $start, $end, $project_id, $traveling, $expense_text, $expense ) {
 	if ( strlen( $traveling ) == 0 ) {
@@ -264,7 +264,7 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 		$r = "people/people-post.php?operation=get_balance&date=" .
 		     date( 'Y-m-j', strtotime( "last day of " . $year . "-" . $month ) ) . "&user_id=" . $user_id;
 		// print $r;
-		$b = strip_tags( MultiSite::Execute( $r, 4 ) );
+		$b = strip_tags( ImMultiSite::sExecute( $r, 4 ) );
 		//print "basket: " . $b . "<br/>";
 
 		if ( $b > 0 ) {
@@ -307,6 +307,12 @@ function add_activity( $user_id, $date, $start, $end, $project_id, $vol = true, 
 	my_log( "before business" );
 	business_add_transaction( $user_id, $date, $amount * 1.1, 0, 0, get_project_name( $project_id ) );
 	my_log( "end add_activity" );
+}
+
+function gui_select_project( $id, $value, $events ) {
+	return gui_select_table( $id, "im_projects", $value, $events, "", "project_name",
+		null, true, true );
+
 }
 
 ?>

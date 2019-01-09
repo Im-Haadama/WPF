@@ -74,22 +74,22 @@ function order_get_mission_id( $order_id, $debug = false ) {
 	} else {
 		$mission_id = $mission;
 	}
-	if ( $debug or ( strlen( $mission_id ) < 1 ) ) {
-
-		$shipping_info = order_get_shipping( $order_id );
-		$sql = "SELECT path_code FROM im_mission_methods WHERE method = '" . mysqli_real_escape_string( $conn, $shipping_info ) . "'";
-		// print $sql;
-		$path_code = sql_query_single_scalar( $sql );
-
-		if ( $debug ) {
-			print "path code: " . $path_code . "<br/>";
-		}
-		$mission_id = sql_query_single_scalar( "SELECT min(id) FROM im_missions WHERE path_code = '" . $path_code . "'" .
-		                                       " AND date >= curdate()" );
-		if ( $debug )
-			print "mission_id: " . $mission_id . "<br/>";
-		update_post_meta( $order_id, 'mission_id', $mission_id );
-	}
+//	if ( $debug or ( strlen( $mission_id ) < 1 ) ) {
+//
+//		$shipping_info = order_get_shipping( $order_id );
+//		$sql = "SELECT path_code FROM im_mission_methods WHERE method = '" . mysqli_real_escape_string( $conn, $shipping_info ) . "'";
+//		// print $sql;
+//		$path_code = sql_query_single_scalar( $sql );
+//
+//		if ( $debug ) {
+//			print "path code: " . $path_code . "<br/>";
+//		}
+//		$mission_id = sql_query_single_scalar( "SELECT min(id) FROM im_missions WHERE path_code = '" . $path_code . "'" .
+//		                                       " AND date >= curdate()" );
+//		if ( $debug )
+//			print "mission_id: " . $mission_id . "<br/>";
+//		update_post_meta( $order_id, 'mission_id', $mission_id );
+//	}
 	if ( ! is_numeric( $mission_id ) ) {
 		return 0;
 	}

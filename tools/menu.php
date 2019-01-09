@@ -130,7 +130,7 @@ include "r-shop_manager.php";
                     <tr>
                         <td style="border: medium none ; padding: 0in;">
                             <p align="center"><span lang="he-IL"><a
-                                            href="weekly/prepare.php"><span
+                                            href="auto/prepare.php"><span
                                                 lang="he-IL">הכנת סבב</span></a></span></p>
                         </td>
 

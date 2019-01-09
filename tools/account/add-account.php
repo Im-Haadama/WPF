@@ -37,11 +37,11 @@ require_once( ROOT_DIR . '/agla/gui/inputs.php' );
             return;
         }
         var email = get_value(document.getElementById("email"));
-        if (email.length < 5) {
-            alert("הכנס email");
-            return;
-        }
-        check_email();
+//        if (email.length < 5) {
+//            alert("הכנס email");
+//            return;
+//        }
+//        check_email();
         var user = get_value(document.getElementById("user"));
         if (user.substr(0, 4) == "יוזר") {
             alert("יוזר עם email כזה קיים");
@@ -63,10 +63,10 @@ require_once( ROOT_DIR . '/agla/gui/inputs.php' );
             return;
         }
         var zip = get_value(document.getElementById("zip"));
-        if (zip.length < 5) {
-            alert("הכנס מיקוד");
-            return;
-        }
+//        if (zip.length < 5) {
+//            alert("הכנס מיקוד");
+//            return;
+//        }
         var request = "account-post.php?operation=add_user&user=" + encodeURI(user) +
             '&name=' + name +
             '&email=' + encodeURI(email) +

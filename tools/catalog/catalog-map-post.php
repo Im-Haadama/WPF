@@ -8,7 +8,7 @@
 require_once( '../r-shop_manager.php' );
 require_once( 'catalog.php' );
 require_once( '../pricelist/pricelist.php' );
-require_once( '../multi-site/multi-site.php' );
+require_once( '../multi-site/imMulti-site.php' );
 require_once( "../wp/terms.php" );
 
 // print header_text();

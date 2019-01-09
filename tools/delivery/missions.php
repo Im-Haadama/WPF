@@ -136,8 +136,8 @@ function duplicate_mission( $id ) {
 		$c = sql_query_single_scalar( $sql );
 		// print "c= " . $c . "<br/>";
 		if ( ( $c == 0 ) ) {
-			$sql = "INSERT INTO im_missions (date, start_h, end_h, zones, name, path_code)
-						SELECT ADDDATE(date, INTERVAL " . $i * 7 . " DAY), start_h, end_h, zones, name, path_code FROM im_missions WHERE id = " . $id;
+			$sql = "INSERT INTO im_missions (date, start_h, end_h, zones, name, path_code, start_address, end_address)
+						SELECT ADDDATE(date, INTERVAL " . $i * 7 . " DAY), start_h, end_h, zones, name, path_code, start_address, end_address FROM im_missions WHERE id = " . $id;
 			//print $sql;
 			sql_query( $sql );
 

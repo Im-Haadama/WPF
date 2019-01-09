@@ -1,20 +1,25 @@
 <?php
-// error_reporting( E_ALL );
-// ini_set( 'display_errors', 'on' );
-
-
-//header( "Access-Control-Allow-Origin: http://store.im-haadama.co.il" );
 /**
  * Created by PhpStorm.
  * User: agla
  * Date: 16/07/15
  * Time: 16:00
  */
-// require_once( '../r-shop_manager.php' );
-require_once( "../im_tools.php" );
+
+if ( ! defined( "ROOT_DIR" ) ) {
+	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
+}
+require_once( ROOT_DIR . "/tools/im_tools.php" );
+require_once( "../multi-site/imMulti-site.php" );
+header( ImMultiSite::CORS( $_SERVER['HTTP_ORIGIN'] ) );
+// require_once( '../r-multisite.php' );
 require_once( 'orders-common.php' );
-if ( ! current_user_can( "edit_shop_orders" ) ) {
-	print "no permissions";
+$order_id = get_param( "order_id" );
+
+if ( ! $multisite and ! current_user_can( "edit_shop_orders" ) and
+                      order_get_customer_id( $order_id ) != get_current_user_id()
+) {
+	print "No permissions. " . __FILE__ . "<br/>";
 	die( 0 );
 }
 
@@ -29,6 +34,7 @@ switch ( $operation ) {
 		$user_id = $_GET["id"];
 		print customer_type_name( $user_id );
 		break;
+
 	case "get_client_info":
 		$user_id = $_GET["id"];
 		print customer_type_name( $user_id );
@@ -116,12 +122,15 @@ switch ( $operation ) {
 
 	case "delivered":
 		$ids = $_GET["ids"];
-		order_change_status( explode( ",", $ids ), "wc-completed" );
+		foreach ( explode( ",", $ids ) as $id ) {
+			$o = new Order( $id );
+			$o->delivered();
+		}
 		print "delivered";
 		break;
 
 	case "mission":
-		print ( "change mission" );
+//		print ( "change mission" );
 		$mission_id = $_GET["id"];
 		$order_id   = $_GET["order_id"];
 		my_log( "mission=" . $mission_id . " order_id=" . $order_id );

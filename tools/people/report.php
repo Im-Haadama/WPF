@@ -10,7 +10,7 @@ require_once( '../im_tools.php' );
 require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 ?>
 <header>
-    <script>
+    <script>7
         function update() {
 			<?php if ( get_current_user() == 'aglamaz' ) {
 			print 'show_all();';

@@ -6,7 +6,7 @@
  * Time: 23:18
  */
 
-require_once( '../multi-site/multi-site.php' );
+require_once( '../multi-site/imMulti-site.php' );
 
 // MultiSite::RunAll("delivery/close-deliveries.php");
 //create_ord

@@ -34,3 +34,10 @@ function print_select_supplier( $id, $source ) {
 
 	print "</select>";
 }
+
+function gui_select_supplier() {
+
+	return gui_select_table( "supplier_select", "im_suppliers", null, "", "", "supplier_name",
+		null, true, true );
+//		$sql_where );
+}

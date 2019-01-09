@@ -11,8 +11,32 @@
 require_once( '../r-shop_manager.php' );
 require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 require_once( "../suppliers/gui.php" );
-require_once( "../multi-site/multi-site.php" );
+require_once( "../multi-site/imMulti-site.php" );
+require_once( "../suppliers/Supplier.php" );
 
+function set_supplier_id() {
+	if ( ! isset( $_GET["supplier_id"] ) ) {
+		print 'var sel = document.getElementById("supplier_id");
+                var selected = sel.options[sel.selectedIndex];
+                supplier_id = selected.value;
+                var site_id = selected.getAttribute("data-site-id");
+                var tools = selected.getAttribute("data-tools-url-id");
+                ';
+	} else {
+		$id      = $_GET["supplier_id"];
+		$supp    = new Supplier( $id );
+		$site_id = $supp->getSiteId();
+		print 'var supplier_id = ' . $id . ';';
+		if ( $site_id > 0 ) {
+			print 'var site_id = ' . $site_id . ';';
+			print 'var tools = \'' . ImMultiSite::SiteTools( $site_id ) . "';";
+		} else {
+			print 'var site_id = "";';
+			print 'var tools = "";';
+		}
+	}
+
+}
 ?>
 <html dir="rtl" lang="he">
 <header>
@@ -32,19 +56,7 @@ require_once( "../multi-site/multi-site.php" );
 
         function create_supply() {
 	        <?php
-	        if ( ! isset( $_GET["supplier_id"] ) ) {
-		        print 'var sel = document.getElementById("supplier_id");
-                var selected = sel.options[sel.selectedIndex];
-                supplier_id = selected.value;
-                var site_id = selected.getAttribute("data-site-id");
-                var tools = selected.getAttribute("data-tools-url-id");
-                ';
-	        } else {
-		        print 'var supplier_id = ' . $_GET["supplier_id"] . ';
-                       var site_id = ' . MultiSite::LocalSiteID() . ';
-                       var tools = \'' . MultiSite::LocalSiteTools() . "';
-                ";
-	        }
+	        set_supplier_id();
 	        ?>
 
             var table = document.getElementById('pricelist');
@@ -54,14 +66,17 @@ require_once( "../multi-site/multi-site.php" );
 
             for (var i = 0; i < collection.length; i++) {
                 if (collection[i].checked) {
-                    var prod_id = table.rows[i + 1].cells[10].innerText;
+                    var prod_id = table.rows[i + 1].cells[11].innerText;
                     var stock = parseFloat(get_value_by_name("stk_" + prod_id));
                     if (isNaN(stock)) stock = 0;
+                    var ordered = 1;
                     var ordered_text = get_value_by_name("ord_" + prod_id);
-                    var ordered = parseFloat(ordered_text.substr(0, ordered_text.indexOf(":")));
-                    if (isNaN(ordered)) ordered = 1;
+                    if (ordered_text.length > 2) {
+                        ordered = parseFloat(ordered_text.substr(0, ordered_text.indexOf(":")));
+                        if (isNaN(ordered)) ordered = 1;
+                    }
 
-                    if (stock > ordered) continue;
+                    // if (stock > ordered) continue;
                     // var code = get_value(table.rows[i+1].cells[1].firstChild);
                     // var name_code = get_value(table.rows[i+1].cells[2].firstChild);
                     // var new_price = get_value_by_name("prc_" + line_id);
@@ -70,8 +85,10 @@ require_once( "../multi-site/multi-site.php" );
 
                     // if (code > 0 && code != 10) name_code = code;
 
+                    var to_order = ordered - stock;
+                    if (to_order < 3) to_order = 3;
                     params.push(prod_id);
-                    params.push(ordered - stock);
+                    params.push(to_order);
                     params.push(0); // units
                 }
             }
@@ -150,9 +167,13 @@ require_once( "../multi-site/multi-site.php" );
         }
 
         function savePrices() {
+	        <?php
+	        set_supplier_id();
+	        ?>
+
             var table = document.getElementById('price_list');
-            var sel = document.getElementById("supplier_id");
-            supplier_id = sel.options[sel.selectedIndex].value;
+//            var sel = document.getElementById("supplier_id");
+//            supplier_id = sel.options[sel.selectedIndex].value;
 
             var collection = document.getElementsByClassName("product_checkbox");
             var params = new Array();
@@ -175,7 +196,9 @@ require_once( "../multi-site/multi-site.php" );
                 // Wait to get query result
                 if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
                 {
-                    change_supplier();
+                    // Test - don't reload page on each change.
+                    alert("שינויים נשמרו. אפשר להמשיך לעדכן");
+                    // change_supplier();
                 }
             }
             var request = "pricelist-post.php?operation=update_price&supplier_id=" + supplier_id + "&params=" + params;
@@ -183,6 +206,11 @@ require_once( "../multi-site/multi-site.php" );
             xmlhttp.send();
         }
 
+        function del_line(pricelist_id) {
+            var btn = document.getElementById("del_" + pricelist_id);
+            btn.parentElement.parentElement.style.display = 'none';
+            execute_url("pricelist-post.php?operation=delete_price&params=" + pricelist_id);
+        }
         function delPrices() {
             // var table = document.getElementById('price_list');
             // var sel = document.getElementById("supplier_id");
@@ -247,20 +275,8 @@ require_once( "../multi-site/multi-site.php" );
         }
 
         function change_supplier() {
-	        <?php if ( ! isset( $_GET["supplier_id"] ) )
-	        print '
-            var sel = document.getElementById("supplier_id");
-            var selected = sel.options[sel.selectedIndex];
-            supplier_id = selected.value;
-            var site_id = selected.getAttribute("data-site-id");
-            var tools = selected.getAttribute("data-tools-url-id");
-            ';
-        else {
-	        print 'var supplier_id = ' . $_GET["supplier_id"] . ';
-                       var site_id = ' . MultiSite::LocalSiteID() . ';
-                       var tools = \'' . MultiSite::LocalSiteTools() . "';
-                ";
-        }
+	        <?php
+	        set_supplier_id();
 	        ?>
             var upcsv = document.getElementById("upcsv");
 
@@ -349,8 +365,11 @@ require_once( "../multi-site/multi-site.php" );
         }
 
         function add_item() {
-            var sel = document.getElementById("supplier_id");
-            var id = sel.options[sel.selectedIndex].value;
+	        <?php
+	        set_supplier_id();
+	        ?>
+
+            savePrices();
             var code = get_value(document.getElementById("product_code"));
             var name = get_value(document.getElementById("product_name"));
             var price = get_value(document.getElementById("price"));
@@ -359,6 +378,7 @@ require_once( "../multi-site/multi-site.php" );
                 // Wait to get query result
                 if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
                 {
+                    // For now after add, reload.
                     change_supplier();
                 }
             }

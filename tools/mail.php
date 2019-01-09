@@ -9,7 +9,6 @@
 function send_mail( $subject, $to, $message ) {
 	global $mail_sender;
 	global $support_email;
-
 //    print "start send";
 //    print $subject ."<br/>";
 //    print $to . "<br/>";

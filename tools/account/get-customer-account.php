@@ -4,7 +4,7 @@ ini_set( 'display_errors', 1 );
 
 // This page is open to clients.
 require_once( "account.php" );
-require_once( "../multi-site/multi-site.php" );
+require_once( "../multi-site/imMulti-site.php" );
 require_once( "../delivery/delivery-common.php" );
 require_once( '../../im-config.php' );
 require_once( '../invoice4u/invoice.php' );

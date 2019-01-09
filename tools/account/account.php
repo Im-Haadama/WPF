@@ -13,7 +13,7 @@ if ( ! defined( "TOOLS_DIR" ) ) {
 require_once( TOOLS_DIR . '/im_tools.php' );
 require_once( STORE_DIR . '/tools/orders/orders-common.php' );
 // require_once( TOOLS_DIR . '/business/business-post.php' );
-// require_once(TOOLS_DIR . '/multi-site/multi-site.php');
+// require_once(TOOLS_DIR . '/multi-site/imMulti-site.php');
 require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 
 #############################
@@ -162,7 +162,7 @@ function show_trans( $customer_id, $from_last_zero = false, $checkbox = true, $t
 
 		// Display item name
 		if ( $is_delivery ) {
-			$line     .= gui_cell( gui_hyperlink( $doc_id, MultiSite::LocalSiteTools() . '/delivery/get-delivery.php?id=' . $doc_id ) );
+			$line     .= gui_cell( gui_hyperlink( $doc_id, ImMultiSite::LocalSiteTools() . '/delivery/get-delivery.php?id=' . $doc_id ) );
 			$order_id = get_order_id( $doc_id );
 			$line     .= "<td>" . $order_id . "</td>";
 			if ( is_numeric( $order_id ) ) {
@@ -192,6 +192,7 @@ function show_trans( $customer_id, $from_last_zero = false, $checkbox = true, $t
 	return $data;
 }
 
+// [displa-posts][su_posts posts_per_page="3"][su_posts posts_per_page="3" tax_term="21" order="desc"]
 function get_payment_method_name( $client_id ) {
 	if ( $client_id > 0 ) {
 		$p = get_payment_method( $client_id );

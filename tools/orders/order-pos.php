@@ -61,21 +61,6 @@ require( "new-order.php" );
         xmlhttp.send();
     }
 
-    function do_close_order(order_id) {
-        var request = "pos-post.php?operation=close_order";
-        request += "&order_id=" + order_id;
-
-        xmlhttp = new XMLHttpRequest();
-        xmlhttp.onreadystatechange = function () {
-            // Wait to get delivery id.
-            if (xmlhttp.readyState === 4 && xmlhttp.status === 200)  // Request finished
-            {
-                var response = xmlhttp.response;
-                add_message(response);
-            }
-        }
-    }
-
 </script>
 <body onload="show_create_order()">
 

@@ -5,6 +5,10 @@
  * Date: 13/03/17
  * Time: 23:29
  */
+
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
 require_once( '../r-shop_manager.php' );
 require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 require_once( ROOT_DIR . '/tools/orders/orders-common.php' );
@@ -87,9 +91,13 @@ require_once( ROOT_DIR . '/tools/delivery/delivery-common.php' );
                 {
                     document.getElementById('btn_create_ship').disabled = false;
 
-                    invoice_id = xmlhttp.responseText.trim();
-                    logging.innerHTML += "תעודת משלוח מספר " + invoice_id + " נוצרה ";
-                    location.reload();
+                    var text = xmlhttp.responseText.trim();
+                    if (Number.isInteger(text))
+                        document.getElementById("logging").innerHTML = "תעודת משלוח מספר " + invoice_id + " נוצרה ";
+                    else
+                        document.getElementById("logging").innerHTML = text;
+
+                    // location.reload();
                 }
             }
             var request = "legacy-post.php?operation=create_ship" +
@@ -103,13 +111,28 @@ require_once( ROOT_DIR . '/tools/delivery/delivery-common.php' );
 <?php
 print header_text();
 
-print gui_header( 1, "משלוחים פעילים" );
-// $sql = "select post_id from wp_posts where post_status = 'wc-
-delivery_table_header();
-print_deliveries( true, "post_excerpt like '%משלוח המכולת%'", true );
-print "</table>";
+$table = print_deliveries( "`post_status` in ('wc-awaiting-shipment', 'wc-processing') " .
+                           " and post_excerpt like '%משלוח המכולת%'", true );
 
-print gui_button( "btn_create_ship", "create_ship()", "צור תעודת משלוח" );
+if ( strlen( $table ) > 10 ) {
+	print gui_header( 1, "משלוחים לביצוע" );
+// $sql = "select post_id from wp_posts where post_status = 'wc-
+	print delivery_table_header();
+	print $table;
+
+	print "</table>";
+} else {
+	print gui_header( 1, "כל המשלוחים בוצעו" );
+}
+
+$table = print_deliveries( "post_status = 'wc-awaiting-document'", true );
+if ( strlen( $table ) > 10 ) {
+	print gui_header( 1, "משלוחים שבוצעו" );
+	print delivery_table_header();
+	print $table;
+	print "</table>";
+	print gui_button( "btn_create_ship", "create_ship()", "צור תעודת משלוח" );
+}
 
 print gui_header( 1, "הוספת משלוחים" );
 

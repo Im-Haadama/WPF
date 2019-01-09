@@ -1,4 +1,7 @@
 <?php
+//error_reporting( E_ALL );
+//ini_set( 'display_errors', 'on' );
+
 /**
  * Created by PhpStorm.
  * User: agla
@@ -43,7 +46,6 @@ switch ( $operation ) {
 		break;
 
 	case "create_invoice":
-		print "my log <br/>";
 		my_log( "create_invoice" );
 		$delivery_ids = $_GET["ids"];
 		$user_id      = $_GET["user_id"];
@@ -52,6 +54,7 @@ switch ( $operation ) {
 		break;
 
 	case "create_receipt":
+
 		my_log( "create_receipt" );
 		$cash         = $_GET["cash"];
 		$bank         = $_GET["bank"];
@@ -176,6 +179,7 @@ function create_invoice( $ids, $user_id ) {
 }
 
 function create_receipt( $cash, $bank, $check, $credit, $change, $user_id, $date, $ids ) {
+
 	$no_ids = true;
 	foreach ( $ids as $id ) {
 		if ( $id > 0 ) {
@@ -197,7 +201,9 @@ function create_receipt( $cash, $bank, $check, $credit, $change, $user_id, $date
 
 		return;
 	}
+
 	$doc_id   = invoice_create_document( "r", $ids, $user_id, $date, $c, $bank, $credit, $check );
+
 	$pay_type = pay_type( $cash, $bank, $credit, $check );
 	if ( is_numeric( $doc_id ) && $doc_id > 0 ) {
 		$pay_description = $pay_type . " " . comma_implode( $ids );
@@ -216,6 +222,17 @@ function create_receipt( $cash, $bank, $check, $credit, $change, $user_id, $date
 }
 
 function add_im_user( $user, $name, $email, $address, $city, $phone, $zip ) {
+	if ( strlen( $email ) < 1 ) {
+		$email = randomPassword() . "@aglamaz.com";
+	}
+
+	if ( strlen( $user ) == "אוטומטי" or strlen( $user ) < 5 ) {
+		$user = substr( $email, 0, 8 );
+	}
+
+	print "email: " . $email . "<br/>";
+	print "user: " . $user . "<br/>";
+
 	$id = wp_create_user( $user, randomPassword(), $email );
 	if ( ! is_numeric( $id ) ) {
 		print "לא מצליח להגדיר יוזר";
@@ -314,20 +331,50 @@ function send_month_summary( $user_ids ) {
 	foreach ( $user_ids as $id ) {
 		$current_user = $id;
 		$message      = header_text( true );
-		$post_text    = sql_query_single_scalar( "SELECT post_content FROM wp_posts WHERE post_title='סיכום חודשי' AND " .
-		                                         " post_type='page'" );
+		$post_id      = info_get( "summary_post" );
+		if ( ! $post_id ) {
+			print "בקש ממנהל מערכת להגדיר את פוסט הסיכום. פרמטר מערכת summary_post<br/>";
+			print "הודעה לא נשלחה";
+
+			return;
+
+		}
+		$post_text = sql_query_single_scalar( "SELECT post_content FROM wp_posts WHERE id = " . $post_id );
+
+		if ( strlen( $post_text ) < 20 ) {
+			print "לא נמצא פוסט סיכום'<br/>";
+			print "הודעה לא נשלחה";
+
+			return;
+
+		}
 
 		$message .= '<body dir="rtl">';
-		$message .= do_shortcode( $post_text );
+		// $message .= do_shortcode(replace_shortcode($post_text, $id));
+		// print "text = " .  $post_text;
+		$message .= do_shortcode( replace_shortcode( $post_text, $id ) );
+		// // $message .= ( $post_text );
 		$message .= '</body>';
 
 		$message .= "</html>";
 
 		$user_info = get_userdata( $id );
 
-		print "שולח סיכום חודשי ללקוח " . sc_display_name( null ) . "<br/>";
+		print "שולח סיכום חודשי ללקוח " . get_customer_name( $id ) . " " . get_customer_email( $id ) . "<br/>";
 		send_mail( "סיכום חודשי עם האדמה", $user_info->user_email . ", " . $support_email, $message );
+		// print $message;
+		print "הסתיים";
 	}
+}
+
+function replace_shortcode( $text, $id ) {
+	$new_text = gui_header( 1, "מצב חשבון" );
+	$new_text .= "יתרה לתשלום " . client_balance( $id ) . "<br/>";
+	$new_text .= show_trans( $id, true, false ) . "<br/>";
+	$new_text = str_replace( "[im-haadama-account-summary]", $new_text, $text );
+
+	return str_replace( "[display_name]", get_customer_name( $id ), $new_text );
+
 }
 
 function invoice_create_user( $user_id ) {
@@ -352,27 +399,21 @@ function invoice_create_user( $user_id ) {
 }
 
 function invoice_create_document( $type, $ids, $customer_id, $date, $cash = 0, $bank = 0, $credit = 0, $check = 0, $subject = null ) {
-	// print "create invoice<br/>";
 	global $debug;
 	global $invoice_user;
 	global $invoice_password;
 
 	$invoice = new Invoice4u( $invoice_user, $invoice_password );
 
-	if ( is_null( $invoice->token ) ) {
-		die ( "can't login" );
-	}
+	$invoice->Login();
 
-	// print "customer id : " . $customer_id . "<br/>";
+//	print "customer id : " . $customer_id . "<br/>";
 
 	$invoice_client_id = $invoice->GetInvoiceUserId( $customer_id );
 
-	// print "invoice client id " . $invoice_client_id . "<br/>";
+//	print "invoice client id " . $invoice_client_id . "<br/>";
 
 	$client = $invoice->GetCustomerById( $invoice_client_id );
-
-//	var_dump($client);
-
 
 	if ( ! ( $client->ID ) > 0 ) {
 		print "Client not found " . $customer_id . "<br>";

@@ -15,7 +15,7 @@ if ( ! defined( "TOOLS_DIR" ) ) {
 
 require_once( TOOLS_DIR . '/catalog/catalog.php' );
 require_once( ROOT_DIR . '/agla/gui/inputs.php' );
-require_once( TOOLS_DIR . '/multi-site/multi-site.php' );
+require_once( TOOLS_DIR . '/multi-site/imMulti-site.php' );
 require_once( TOOLS_DIR . '/wp/Product.php' );
 require_once( TOOLS_DIR . "/orders/orders-common.php" );
 require_once( TOOLS_DIR . "/orders/Order.php" );
@@ -234,6 +234,10 @@ class PriceList {
 			)
 		);
 
+		if ( ! $ordered_only and ! $need_supply_only ) {
+			array_unshift( $table_rows[0], gui_label( "delete_row", "מחק פריט" ) );
+		}
+
 		$show_fields = array( true, true, true, true, true, true, true, true, true, true, true, true );
 		// Add new item fields
 		while ( $row = mysqli_fetch_row( $result ) ) {
@@ -262,7 +266,12 @@ class PriceList {
 					continue;
 				}
 			}
-			array_push( $table_rows, $this->Line( $row[0], $row[1], $row[2], $pl_id, $row[4], $row[5], $prod_id, true, $map_id, $needed_products ) );
+			$line = $this->Line( $row[0], $row[1], $row[2], $pl_id, $row[4], $row[5], $prod_id, true, $map_id, $needed_products );
+			if ( ! $ordered_only and ! $need_supply_only ) {
+				array_unshift( $line, gui_button( "del_" . $pl_id, "del_line(" . $pl_id . ")", "מחק" ) );
+			}
+
+			array_push( $table_rows, $line );
 			// $data .= $line;
 		}
 
@@ -315,7 +324,7 @@ class PriceList {
 			array_push( $line, $linked_prod_id );
 			$stockManaged = $p->getStockManaged();
 			array_push( $line, gui_checkbox( "chm_" . $linked_prod_id, "stock", $stockManaged, "onchange=\"change_managed(this)\")" ) );
-			array_push( $line, gui_label( "stk_" . $linked_prod_id, $p->getStock() ) );
+			array_push( $line, gui_label( "stk_" . $linked_prod_id, gui_hyperlink( $p->getStock(), "../orders/get-orders-per-item.php?prod_id=" . $linked_prod_id ) ) );
 			$n = orders_per_item( $linked_prod_id, 1, true, true, true );
 //			if (isset($needed[$linked_prod_id][0]))
 //				$n .= $needed[$linked_prod_id][0];
@@ -385,8 +394,8 @@ class PriceList {
 		$picture_path = null
 	) {
 		$debug = true;
-		print "start";
-		print "AddOrUpdate: " . $product_name . " " . $regular_price . "<br/>";
+//		print "start";
+//		print "AddOrUpdate: " . $product_name . " " . $regular_price . "<br/>";
 		my_log( __METHOD__, __FILE__ );
 		if ( mb_strlen( $product_name ) > 40 ) {
 			$product_name = mb_substr( $product_name, 0, 40 );

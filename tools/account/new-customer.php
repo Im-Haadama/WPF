@@ -21,7 +21,7 @@ print gui_header( 1, "לקוח חדש" );
 $order_id = $_GET["order_id"];
 print "1) צור קשר טלפוני עם הלקוח. עדכן אותו שהתקבלה ההזמנה.<br/>";
 print "2) אמת את השם לחשבונית.<br/>";
-print "3) אמת את הכתובת למשלוח. בדוק האם יש אינטרקום או קוד לגשת לדלת.<br/>";
+print "3) אמת את הכתובת למשלוח. בדוק האם יש אינטרקום או קוד לגישה לדלת.<br/>";
 
 $step      = 4;
 $invoice   = new Invoice4u( $invoice_user, $invoice_password );
@@ -30,9 +30,10 @@ $client_id = $invoice->GetInvoiceUserId( order_get_customer_id( $order_id ) );
 if ( ! $client_id ) {
 	print $step ++ . ") לחץ על צור משתמש - במערכת invoice4u";
 	print gui_button( "btn_create_user", "create_user()", "צור משתמש" );
+	print "<br/>";
 }
 
-print $step ++ . ") קח פרטי תשלום" . gui_hyperlink( "כאן", "https://private.invoice4u.co.il/he/Customers/CustomerAddNew.aspx?type=edit&id=" . $client_id . "#tab-tokens" );
+print $step ++ . ") קח פרטי תשלום" . gui_hyperlink( "כאן", "https://private.invoice4u.co.il/he/Customers/CustomerAddNew.aspx?type=edit&id=" . $client_id . "#tab-tokens" ) . "<br/>";
 print "<br/>";
 print "מספר הזמנה " . $order_id . "<br/>";
 print order_info_table( $order_id );

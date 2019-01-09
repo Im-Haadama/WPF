@@ -48,6 +48,23 @@ global $pos;
             xmlhttp.send();
         }
 
+        function do_close_order(order_id) {
+            var request = "pos-post.php?operation=close_order";
+            request += "&order_id=" + order_id;
+
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                // Wait to get delivery id.
+                if (xmlhttp.readyState === 4 && xmlhttp.status === 200)  // Request finished
+                {
+                    var response = xmlhttp.response;
+                    add_message(response);
+                }
+            }
+            xmlhttp.open("GET", request, true);
+            xmlhttp.send();
+        }
+
         function show_create_order() {
             var new_order = document.getElementById("new_order");
             new_order.style.display = 'block';
@@ -325,7 +342,7 @@ global $pos;
 
 		$header = array(
 			array( gui_header( 2, "בחר לקוח" ) ),
-			array( gui_select_client( "onchange=\"client_changed()\"" ) )
+			array( gui_select_client( "", "onchange=\"client_changed()\"" ) )
 		);
 
 		if ( ! $pos ) {

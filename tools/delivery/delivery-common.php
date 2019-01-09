@@ -5,8 +5,10 @@
  * Date: 05/08/17
  * Time: 12:38
  */
-// require_once( "../multi-site/multi-site.php" );
+// require_once( "../multi-site/imMulti-site.php" );
 //require_once ("../supplies/supplies.php");
+
+require_once( ROOT_DIR . "/tools/tasklist/Tasklist.php" );
 
 class DeliveryFields {
 	const
@@ -105,15 +107,13 @@ function print_fresh_category() {
 	print rtrim( $list, ", " );
 }
 
-
-function print_deliveries( $edit = false, $query = null, $selectable = false ) {
+function print_deliveries( $query, $selectable = false ) {
+	// print "q= " . $query . "<br/>";
+	$data = "";
 	$sql = 'SELECT posts.id, order_is_group(posts.id), order_user(posts.id) '
 	       . ' FROM `wp_posts` posts'
-	       . ' WHERE `post_status` in (\'wc-awaiting-shipment\', \'wc-processing\')';
+	       . ' WHERE ' . $query;
 
-	if ( $query ) {
-		$sql .= ' and ' . $query;
-	}
 	$sql .= ' order by 1';
 
 	$orders    = sql_query( $sql );
@@ -122,34 +122,22 @@ function print_deliveries( $edit = false, $query = null, $selectable = false ) {
 		$order_id   = $order[0];
 		$is_group   = $order[1];
 		$order_user = $order[2];
-//		print "<br/>" . $order_id . " " . $is_group . " " . $order_user;
 		if ( ! $is_group ) {
-			print_order( $order_id, $selectable );
+			$data .= print_order( $order_id, $selectable );
 			continue;
 		} else {
 			if ( $order_user != $prev_user ) {
-				print_order( $order_id, $selectable );
+				$data      .= print_order( $order_id, $selectable );
 				$prev_user = $order_user;
 			}
 		}
 	}
 
-	// Self collect supplies
-	$sql = "SELECT s.id FROM im_supplies s
-          JOIN im_suppliers r
-          WHERE r.self_collect = 1
-          AND s.supplier = r.id
-          AND s.status IN (1, 3)";
-
-	$supplies = sql_query_array_scalar( $sql );
-	foreach ( $supplies as $supply ) {
-		print_supply( $supply );
-	}
-//	print "done";
+	return $data;
 }
 
 function print_order( $order_id, $selectable = false ) {
-	$site_tools = MultiSite::LocalSiteTools();
+	$site_tools = ImMultiSite::LocalSiteTools();
 
 	$fields = array();
 
@@ -157,7 +145,7 @@ function print_order( $order_id, $selectable = false ) {
 		array_push( $fields, gui_checkbox( "chk" . $order_id, "deliveries", true ) );
 	}
 
-	array_push( $fields, MultiSite::LocalSiteName() );
+	array_push( $fields, ImMultiSite::LocalSiteName() );
 
 	$client_id     = order_get_customer_id( $order_id );
 	$ref           = "<a href=\"" . $site_tools . "/orders/get-order.php?order_id=" . $order_id . "\">" . $order_id . "</a>";
@@ -185,7 +173,7 @@ function print_order( $order_id, $selectable = false ) {
 
 	array_push( $fields, order_get_mission_id( $order_id ) );
 
-	array_push( $fields, MultiSite::LocalSiteID() );
+	array_push( $fields, ImMultiSite::LocalSiteID() );
 	// array_push($fields, get_delivery_id($order_id));
 
 
@@ -193,7 +181,7 @@ function print_order( $order_id, $selectable = false ) {
 
 	// get_field($order_id, '_shipping_city');
 
-	print $line;
+	return $line;
 }
 
 function delivery_table_line( $ref, $fields, $edit = false ) {
@@ -228,11 +216,36 @@ function delivery_table_header( $edit = false ) {
 	$data .= "<td><h3>אתר</h3></td>";
 	$data .= "<td><h3>מספר משלוח</h3></td>";
 	// $data .= "<td><h3>מיקום</h3></td>";
-	print $data;
+	return $data;
+}
+
+function print_task( $id ) {
+	$fields = array();
+	array_push( $fields, "משימות" );
+
+	$ref = gui_hyperlink( $id, "../tasklist/c-get-tasklist.php?id=" . $id );
+
+	array_push( $fields, $ref );
+
+	$T = new Tasklist( $id );
+
+	array_push( $fields, "" ); // client number
+	array_push( $fields, $T->getLocationName() ); // name
+	array_push( $fields, $T->getLocationAddress() ); // address
+	array_push( $fields, $T->getTaskDescription() ); // address 2
+	array_push( $fields, "" ); // phone
+	array_push( $fields, "" ); // payment
+	array_push( $fields, $T->getMissionId() ); // payment
+	array_push( $fields, ImMultiSite::LocalSiteID() );
+
+	$line = gui_row( $fields );
+
+	print $line;
+
 }
 
 function print_supply( $id ) {
-	$site_tools = MultiSite::LocalSiteTools();
+//	$site_tools = MultiSite::LocalSiteTools();
 
 	$fields = array();
 	array_push( $fields, "supplies" );
@@ -267,7 +280,7 @@ function print_supply( $id ) {
 //
 	array_push( $fields, sql_query_single_scalar( "select mission_id from im_supplies where id = " . $id ) );
 //
-	array_push( $fields, MultiSite::LocalSiteID() );
+	array_push( $fields, imMultiSite::LocalSiteID() );
 	// array_push($fields, get_delivery_id($order_id));
 
 

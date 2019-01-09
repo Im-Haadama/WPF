@@ -6,7 +6,7 @@
  * Time: 15:11
  */
 require_once( '../r-shop_manager.php' );
-require_once( '../multi-site/multi-site.php' );
+require_once( '../multi-site/imMulti-site.php' );
 require_once( "../suppliers/gui.php" );
 
 print header_text( true );
@@ -77,8 +77,8 @@ print header_text( true );
 
     }
     function change_supplier() {
-        var remote_suppliers = ["", "", '<?php print MultiSite::Execute( "multi-site/get-suppliers-categs.php", 2 ); ?>'];
-//        var site_names = ["", "", "<?php print MultiSite::GetSiteName( 2 );?>"];
+        var remote_suppliers = ["", "", '<?php print ImMultiSite::sExecute( "multi-site/get-suppliers-categs.php", 2 ); ?>'];
+//        var site_names = ["", "", "<?php print ImMultiSite::SiteName( 2 );?>"];
 
         var sel = document.getElementById("supplier_id");
         var selected = sel.options[sel.selectedIndex];
@@ -86,7 +86,7 @@ print header_text( true );
         var site_id = selected.getAttribute("data-site-id");
         var tools = selected.getAttribute("data-tools-url-id");
 
-        if (site_id && !(site_id == <? print MultiSite::LocalSiteID(); ?>)) {
+        if (site_id && !(site_id == <? print ImMultiSite::LocalSiteID(); ?>)) {
             remote_pricelist.innerHTML = "הוספה לרשימה " + /* site_names[site_id] +*/
                 ": " + remote_suppliers[site_id];
         } else {

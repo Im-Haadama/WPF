@@ -6,32 +6,37 @@
  * Time: 04:37
  */
 
-// error_reporting( E_ALL );
-// ini_set( 'display_errors', 'on' );
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
 
+if ( ! defined( "TOOLS_DIR" ) ) {
+	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
+}
+
+return; // Not used
 require_once( TOOLS_DIR . "/im_tools.php" );
 require_once( TOOLS_DIR . "/options.php" );
 require_once( TOOLS_DIR . "/delivery/missions.php" );
-require_once( TOOLS_DIR . "/multi-site/multi-site.php" );
+// require_once( TOOLS_DIR . "/multi-site/imMulti-site.php" );
 require_once( TOOLS_DIR . "/supplies/supplies.php" );
 require_once( TOOLS_DIR . "/pricelist/pricelist-process.php" );
 
 // DEBUG = 1. output on screen
-$debug   = null;
-$gap_key = "run_gap";
-$run_gap = info_get( $gap_key );
-if ( $debug ) {
-	$run_gap = 5;
-} // debug mode
-$date_format = "h:m:s";
-
-if ( ! $run_gap ) {
-	// Set default
-	$run_gap = 600;
-	print "setting default run_gap to " . $run_gap . "<br/>";
-	info_update( "run_gap", $run_gap );
-}
-
+$debug = 1;
+//$gap_key = "run_gap";
+//$run_gap = info_get( $gap_key );
+//if ( $debug ) {
+//	$run_gap = 5;
+//} // debug mode
+//$date_format = "h:m:s";
+//
+//if ( ! $run_gap ) {
+//	// Set default
+//	$run_gap = 600;
+//	print "setting default run_gap to " . $run_gap . "<br/>";
+//	info_update( "run_gap", $run_gap );
+//}
+//
 ob_start();
 $this_run_time = time();
 print "run started " . date( $date_format ) . "\n";
@@ -53,11 +58,11 @@ if ( $this_run_time - $last_run < $run_gap and $debug == 0 ) {
 auto_mail();
 
 // TODO: Check permission
-if ( MultiSite::isMaster() ) {
-	duplicate_week();
-} else {
-	//require_once( TOOLS_DIR . "/delivery/sync-from-master.php" );
-}
+//if ( ImMultiSite::isMaster() ) {
+//	duplicate_week();
+//} else {
+//	//require_once( TOOLS_DIR . "/delivery/sync-from-master.php" );
+//}
 
 update_remotes();
 

@@ -6,6 +6,9 @@
  * Time: 01:20
  */
 
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
 require_once( "../im_tools.php" );
 require_once( "orders-common.php" );
 require_once( ROOT_DIR . '/agla/gui/inputs.php' );
@@ -147,7 +150,7 @@ function get_total_orders( $filter_zero, $history = false, $filter_stock ) {
 
 		$line .= gui_cell( gui_input( "qua_" . $prod_id, $numeric_quantity, "" ));
 
-		if ( MultiSite::LocalSiteID() == 2 ) {
+		if ( ImMultiSite::LocalSiteID() == 2 ) {
 			$terms = get_the_terms( $prod_id, 'product_cat' );
 
 			if ( $terms ) {

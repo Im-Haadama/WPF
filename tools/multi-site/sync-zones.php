@@ -8,7 +8,7 @@
 
 require_once( '../r-multisite.php' );
 require_once( ROOT_DIR . '/agla/gui/sql_table.php' );
-require_once( "../multi-site/multi-site.php" );
+require_once( "../multi-site/imMulti-site.php" );
 
 $operation = $_GET["operation"];
 
@@ -25,7 +25,7 @@ switch ( $operation ) {
 			die ( 1 );
 		}
 		$source = $_GET["source"];
-		$html   = MultiSite::Execute( "multi-site/sync-zones.php?operation=get", $source );
+		$html   = ImMultiSite::sExecute( "multi-site/sync-zones.php?operation=get", $source );
 
 		print $html;
 		update_zone_table( $html );

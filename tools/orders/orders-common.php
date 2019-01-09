@@ -20,6 +20,7 @@ require_once( TOOLS_DIR . '/delivery/delivery.php' );
 require_once( TOOLS_DIR . '/orders/Order.php' );
 require_once( TOOLS_DIR . "/catalog/Basket.php" );
 require_once( TOOLS_DIR . '/invoice4u/invoice.php' );
+require_once( TOOLS_DIR . '/multi-site/imMulti-site.php' );
 
 // BAD: print header_text();
 function orders_item_count( $item_id ) {
@@ -179,6 +180,7 @@ function order_info_table( $order_id ) {
 //		sql_query_single_scalar( "SELECT delivery_days FROM wp_woocommerce_shipping_zones WHERE zone_id =" . $zone )
 //	) );
 	$mission = order_get_mission_id( $order_id );
+//	 print "XCXmission: " . $mission . "<br/>";
 	$data    .= gui_row( array( gui_select_mission( "mission_select", $mission, "onchange=\"save_mission()\"" ) ) );
 
 	$data .= '</table>';
@@ -257,6 +259,7 @@ function order_change_status( $ids, $status ) {
 
 function order_add_product( $order, $product_id, $quantity, $replace = false, $client_id = - 1, $unit = null, $type = null ) {
 	$total = 0;
+	// print $product_id . " " . $quantity . " " . "<br/>";
 //	print "type: ". $type . "<br/>";
 	if ( ! ( $product_id > 0 ) ) {
 		die( "no product id given." );
@@ -300,6 +303,7 @@ function order_add_product( $order, $product_id, $quantity, $replace = false, $c
 				$price = get_price_by_type( $product_id, $customer_type, $quantity );
 				// print "price: " . $price . "<br/>";
 				$product->set_price( $price );
+				// print "xx" . $product . " " . $q . "<br/>";
 				$oid = $order->add_product( $product, $q );
 
 				// print $oid . "<br/>";
@@ -635,7 +639,7 @@ function create_order( $user_id, $mission_id, $prods, $quantities, $comments, $u
 
 		// print "prod_name: " . $prod_name . "<br/>";
 		$prod_id = $prods[ $i ];
-		// print "prod(" . $prod_name . "): " . $prod_id ."<br/>";
+// 		 print "prod(" . get_product_name($prod_id) . "): " . $prod_id . ", q=" . $quantities[$i] . "<br/>";
 		if ( $prod_id > 0 ) {
 			$total += order_add_product( $order, $prod_id, $quantities[ $i ], false, $user_id, $units[ $i ], $type );
 
@@ -793,6 +797,8 @@ $order_header_fields = array(
 
 
 function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null ) {
+	debug_time1( "start" );
+
 	global $order_header_fields;
 	global $conn;
 
@@ -813,6 +819,8 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 	if ( ! is_array( $statuses ) ) {
 		$statuses = array( $statuses );
 	}
+	debug_time1( "1" );
+
 	foreach ( $statuses as $status ) {
 		// print $status . "<br/>";
 
@@ -879,8 +887,9 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 
 		$invoice = new Invoice4u( $invoice_user, $invoice_password );
 
+		debug_time1( "before loop" );
 		while ( $row = mysqli_fetch_row( $result ) ) {
-			// debug_time1("after fetch");
+			debug_time1( "after fetch" );
 			$count ++;
 			$order_id = $row[0];
 			$order    = new Order( $order_id );
@@ -894,6 +903,7 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 				$line [ OrderFields::line_select ] = gui_hyperlink( "לקוח חדש", "../account/new-customer.php?order_id=" . $order_id );
 			}
 
+			debug_time1( "a1" );
 			$line[ OrderFields::type ]         = order_get_shipping( $order_id );
 
 			// display order_id with link to display it.
@@ -902,20 +912,27 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 			// print $order_id. " ". $mission . "<br/>";
 
 			$line[ OrderFields::mission ]  = gui_select_mission( "mis_" . $order_id, $mission_id, "onchange=\"mission_changed(" . $order_id . ")\"" );
-			$line[ OrderFields::order_id ] = gui_hyperlink( $order_id, MultiSite::LocalSiteTools() . "/orders/get-order.php?order_id=" . $order_id );
+			$line[ OrderFields::order_id ] = gui_hyperlink( $order_id, ImMultiSite::LocalSiteTools() . "/orders/get-order.php?order_id=" . $order_id );
 
 			// 2) Customer name with link to his deliveries
-			$line[ OrderFields::customer ] = gui_hyperlink( get_customer_name( $customer_id ), MultiSite::LocalSiteTools() .
+			$line[ OrderFields::customer ] = gui_hyperlink( get_customer_name( $customer_id ), ImMultiSite::LocalSiteTools() .
 			                                                                                   "/account/get-customer-account.php?customer_id=" . $customer_id );
+
 
 			$line[ OrderFields::recipient ] = get_postmeta_field( $order_id, '_shipping_first_name' ) . ' ' .
 			                                  get_postmeta_field( $order_id, '_shipping_last_name' );
 
+			debug_time1( "middle" );
+
 			// 3) Order total
-			$order_total = $order->GetTotal();
-			// get_postmeta_field( $order_id, '_order_total' );
-			$line[ OrderFields::total_order ] = $order_total;
-			$total_order_total                += $order_total;
+			if ( $show_fields[ OrderFields::total_order ] ) {
+				$order_total = $order->GetTotal();
+				// get_postmeta_field( $order_id, '_order_total' );
+				$line[ OrderFields::total_order ] = $order_total;
+				$total_order_total                += $order_total;
+				debug_time1( "total" );
+
+			}
 
 			// 4) Delivery note
 			$delivery_id = get_delivery_id( $order_id );
@@ -923,7 +940,7 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 			if ( $delivery_id > 0 ) {
 				$delivery                           = new Delivery( $delivery_id );
 				$line[ OrderFields::delivery_note ] = gui_hyperlink( $delivery_id,
-					MultiSite::LocalSiteTools() . "/delivery/get-delivery.php?id=" . $delivery_id );
+					ImMultiSite::LocalSiteTools() . "/delivery/get-delivery.php?id=" . $delivery_id );
 				//if ( $delivery_id > 0 ) {
 					$line[ OrderFields::total_order ]  = $order_total; // $delivery->Price();
 					$line[ OrderFields::delivery_fee ] = $delivery->DeliveryFee();
@@ -949,15 +966,18 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 			$line[ OrderFields::margin ]       = round( ( $line[ OrderFields::total_order ] - $line[ OrderFields::good_costs ] ), 0 );
 			$line[ OrderFields::delivery_fee ] = $total_delivery_fee; //
 
-			array_push( $lines, array( array_search( $customer_id, $path ), $line ) );
+			array_push( $rows, $line );
+			debug_time1( "loop end" );
 		}
 
 		//   $data .= "<tr> " . trim($line) . "</tr>";
-		sort( $lines );
 
-		foreach ( $lines as $line ) {
-			array_push( $rows, $line[1] );
-		}
+		debug_time1( "before sort" );
+
+		// sort( $lines );
+
+		debug_time1( "2" );
+
 //		$data .= gui_row( array( "", "", 'סה"כ', "", "", "", $total_order_total, "", "", "", "" ) );
 		//$data = str_replace( "\r", "", $data );
 
@@ -987,6 +1007,8 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 			$all_tables .= $data;
 		}
 	}
+
+	debug_time1( "end" );
 
 	return $all_tables;
 }
@@ -1022,7 +1044,7 @@ function total_order( $user_id ) {
 		$order_id = $row[0];
 		array_push( $order_ids, $order_id );
 		array_push( $order_clients, gui_hyperlink( get_postmeta_field( $order_id, '_shipping_first_name' ),
-			MultiSite::LocalSiteTools() . "/orders/get-order.php?order_id=" . $order_id ) );
+			ImMultiSite::LocalSiteTools() . "/orders/get-order.php?order_id=" . $order_id ) );
 
 		$totals[ $order_id ] = 0;
 

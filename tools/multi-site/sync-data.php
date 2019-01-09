@@ -8,7 +8,7 @@
 
 require_once( '../r-multisite.php' );
 require_once( ROOT_DIR . '/agla/gui/sql_table.php' );
-require_once( "../multi-site/multi-site.php" );
+require_once( "../multi-site/imMulti-site.php" );
 
 $operation = $_GET["operation"];
 if ( ! isset( $_GET["table"] ) ) {
@@ -67,7 +67,7 @@ switch ( $operation ) {
 		}
 		$source = $_GET["source"];
 
-		MultiSite::UpdateFromRemote( $table, $key, $source);
+		ImMultiSite::UpdateFromRemote( $table, $key, $source );
 }
 
 function get_decorated_diff( $old, $new ) {

@@ -6,10 +6,12 @@
  * Date: 08/03/17
  * Time: 22:41
  */
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
 
 require_once( "../im_tools.php" );
-require_once( '../r-shop_manager.php' );
-require_once( '../multi-site/multi-site.php' );
+// TODO: require_once( '../r-shop_manager.php' );
+require_once( '../multi-site/imMulti-site.php' );
 require_once( '../maps/build-path.php' );
 require_once( '../missions/Mission.php' );
 
@@ -32,11 +34,7 @@ if ( date( 'Y-m-d' ) > date( 'Y-m-d', strtotime( $week . "+1 week" ) ) ) {
 
 //print gui_hyperlink( "שבוע קודם", "get-driver-multi.php?week=" . date( 'Y-m-d', strtotime( $week . " -1 week" ) ) );
 
-$output = MultiSite::GetAll( "delivery/get-driver.php?week=" . $week, $debug );
-
-$dom = im_str_get_html( $output );
-
-print header_text( false );
+print header_text( false, true, true );
 
 ?>
 <style>
@@ -47,16 +45,18 @@ print header_text( false );
     }
 </style>
 <script>
-    function delivered(st, v, type) {
-        var url = st + "/" + type + "/" + type + "-post.php?operation=delivered&ids=" + v;
+    function delivered(site, id, type) {
+        var url = "delivery-post.php?site_id=" + site + "&type=" + type +
+            "&id=" + id + "&operation=delivered";
 
         xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function () {
             // Wait to get query result
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
             {
+                // alert (xmlhttp.response);
                 if (xmlhttp.response == "delivered") {
-                    var row = document.getElementById("chk_" + v).parentElement.parentElement;
+                    var row = document.getElementById("chk_" + id).parentElement.parentElement;
                     var table = row.parentElement.parentElement;
                     table.deleteRow(row.rowIndex);
                 } else {
@@ -83,6 +83,20 @@ function get_text( $row, $index ) {
 $data_lines = array();
 
 $header = null;
+// print "week = " . $week . "<br/>";
+$missions = sql_query_array_scalar( "SELECT id FROM im_missions WHERE date = curdate()" );
+
+print gui_header( 1, "מדפיס משימות " );
+foreach ( $missions as $mission ) {
+	print get_mission_name( $mission ) . " ";
+}
+print "<br/>";
+
+$m      = new ImMultiSite();
+$output = $m->GetAll( "delivery/get-driver.php?mission_ids=" . implode( ",", $missions ), false );
+
+$dom                        = im_str_get_html( $output );
+
 foreach ( $dom->find( 'tr' ) as $row ) {
 	if ( ! $header ) {
 		for ( $i = 0; $i < 7; $i ++ ) {
@@ -121,10 +135,14 @@ foreach ( $dom->find( 'tr' ) as $row ) {
 	if ( $site == "supplies" ) {
 		$type = "supplies";
 	}
+
+	if ( $site == "משימות" )
+		$type = "tasklist";
 	if ( ! is_numeric( $site_id ) ) {
 		die ( $site_id . " not number" . $site_id . " order_id = " . $order_id . " name = " . $name . " <br/>" );
 	}
-	$line_data .= gui_cell( gui_checkbox( "chk_" . $order_id, "", "", 'onchange="delivered(\'' . MultiSite::SiteTools( $site_id ) . "'," . $order_id . ', \'' . $type . '\')"' ) ); // #delivered
+	$line_data .= gui_cell( gui_checkbox( "chk_" . $order_id, "", "",
+		'onchange="delivered(' . $site_id . "," . $order_id . ', \'' . $type . '\')"' ) ); // #delivered
 	$line_data .= gui_cell( $site_id );
 
 	$line_data .= "</tr>";
@@ -135,8 +153,6 @@ foreach ( $dom->find( 'tr' ) as $row ) {
 	array_push( $data_lines[ $mission_id ], array( $addresses[ $order_id ], $line_data ) );
 	// var_dump($line_data); print "<br/>";
 }
-
-//var_dump($addresses);
 
 foreach ( $data_lines as $mission_id => $data_line ) {
 //    $mission_id = 152;
@@ -168,8 +184,9 @@ foreach ( $data_lines as $mission_id => $data_line ) {
 		$site_id    = get_text( $row[0], 8 );
 		$order_id   = get_text( $row[0], 1 );
 		$customer   = get_text( $row[0], 2 );
-		$pickup     = MultiSite::getPickupAddress( $site_id );
-		if ( $pickup != $mission->getStartAddress() ) {
+		$pickup     = ImMultiSite::getPickupAddress( $site_id );
+		if ( $site != "משימות" and $pickup != $mission->getStartAddress() ) {
+//		    print "site: " . $site . "<br/>";
 //		    print "add stop " . MultiSite::getPickupAddress($site_id) . "<br/>";
 			add_stop_point( $pickup );
 			add_line_per_station( $mission->getStartAddress(), $pickup, gui_row( array(

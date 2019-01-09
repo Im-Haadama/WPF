@@ -32,9 +32,9 @@ class Catalog {
 			$pricelist = new PriceList( $supplier_id );
 			$id = Catalog::CreateProduct( $pricelist_id, $category_name );
 			// Create link to supplier price list
-			Catalog::AddMapping( $id, $pricelist_id, MultiSite::LocalSiteID() );
+			Catalog::AddMapping( $id, $pricelist_id, ImMultiSite::LocalSiteID() );
 			/// my_log ("add mapp done. Site id = " . $pricelist->SiteId() . " " . MultiSite::LocalSiteID());
-			if ( $pricelist->SiteId() != MultiSite::LocalSiteID() ) {
+			if ( $pricelist->SiteId() != ImMultiSite::LocalSiteID() ) {
 				// Map to remote
 				my_log( "map to remote" );
 				$pricelist_item = PriceList::Get( $pricelist_id );
@@ -43,10 +43,10 @@ class Catalog {
 //             //   $pricelist_item["supplier_product_code"]);
 				$site_id = $pricelist->SiteId();
 				print "site_id: " . $site_id . "<br/>";
-				if ( is_numeric( $site_id ) and $site_id != MultiSite::LocalSiteID() ) {
+				if ( is_numeric( $site_id ) and $site_id != ImMultiSite::LocalSiteID() ) {
 					// Copy information from remote site
 					$remote_id = $pricelist_item["supplier_product_code"];
-					MultiSite::map( $site_id, $id, $remote_id );
+					ImMultiSite::map( $site_id, $id, $remote_id );
 					// MultiSite::CopyImage( $id, $remote_id, $pricelist->SiteId() );
 				}
 			}
@@ -539,7 +539,7 @@ class Catalog {
 //
 //			print $sql;
 //			sql_query ($sql);
-			$this->AddMapping( - 1, $pricelist_id, MultiSite::LocalSiteID() );
+			$this->AddMapping( - 1, $pricelist_id, ImMultiSite::LocalSiteID() );
 		}
 	}
 
@@ -553,7 +553,7 @@ function best_alternatives( $alternatives, $debug = false ) {
 		//$price, $supplier, $sale_price = '', $terms = null
 		$price = calculate_price( $alternatives[ $i ]->getPrice(), $alternatives[ $i ]->getSupplierId(),
 			$alternatives[ $i ]->getSalePrice());
-		print "price: " . $alternatives[ $i ]->getSupplierId() . " " . $price . "<br/>";
+//		print "price: " . $alternatives[ $i ]->getSupplierId() . " " . $price . "<br/>";
 		my_log( "price $price" );
 		if ( $price < $min ) {
 			$best = $alternatives[ $i ];
@@ -628,9 +628,13 @@ function upload_image( $post_id, $image ) {
 function supplier_prod_id( $prod_id, $supplier_id ) {
 	$a = alternatives( $prod_id, false );
 
+//	print "<br/>";
+//	print "supplier: " . $supplier_id . "<br/>";
 	foreach ( $a as $s ) {
+//		print "option: " . $s->getSupplierID() . "<br/>";
 		if ( $s->getSupplierId() == $supplier_id ) {
-			return $s->getSupplierProductCode;
+			// print "found<br/>";
+			return $s->getSupplierProductCode();
 		}
 	}
 

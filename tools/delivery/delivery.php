@@ -14,7 +14,7 @@ require_once( TOOLS_DIR . "/pricing.php" );
 require_once( TOOLS_DIR . "/account/account.php" );
 include_once( TOOLS_DIR . "/orders/orders-common.php" );
 require_once( ROOT_DIR . '/agla/gui/inputs.php' );
-include_once( TOOLS_DIR . "/multi-site/multi-site.php" );
+include_once( TOOLS_DIR . "/multi-site/imMulti-site.php" );
 require_once( TOOLS_DIR . "/mail.php" );
 require_once( TOOLS_DIR . "/account/gui.php" );
 require_once( TOOLS_DIR . "/delivery/delivery-common.php" );
@@ -65,13 +65,14 @@ class delivery {
 				case 2:
 					$prod['quantity'] = inventory::GetQuantity( $product['product_id'] );
 					break;
-
 			}
 			$prod['quantity_ordered'] = 0;
 			$prod['vat']              = 0;
 			$quantity                 = $product["quantity"];
 
-			$prod['price']      = $quantity ? ( $product['total'] / $quantity ) : 0;
+			if ( $q != 0 ) {
+				$prod['price'] = $quantity ? ( $product['total'] / $quantity ) : 0;
+			}
 			$prod['line_price'] = $product['total'];
 			$total              += $product['total'];
 			$prod['prod_id']    = $product['product_id'];
@@ -82,14 +83,14 @@ class delivery {
 
 		$delivery_id = delivery::CreateDeliveryHeader( $order_id, $total, $vat, $lines, false, 0, 0, false );
 
-		print " מספר " . $delivery_id;
+		// print " מספר " . $delivery_id;
 
 		foreach ( $prods as $prod ) {
 			delivery::AddDeliveryLine( $prod['product_name'], $delivery_id, $prod['quantity'], $prod['quantity_ordered'], 0,
 				$prod['vat'], $prod['price'], $prod['line_price'], $prod['prod_id'] );
 		}
 
-		print " נוצרה <br/>";
+		// print " נוצרה <br/>";
 
 //	$order = new WC_Order( $order_id );
 //	$order->update_status( 'wc-completed' );
@@ -179,7 +180,6 @@ class delivery {
 	}
 
 	function send_mail( $more_email = null, $edit = false ) {
-		print $more_email;
 		global $business_name;
 		global $bank_info;
 		global $support_email;
@@ -240,12 +240,12 @@ class delivery {
 		$user_info = get_userdata( $client_id );
 		my_log( $user_info->user_email );
 		$to = $user_info->user_email;
-		print "To: " . $to . "<br/>";
+		// print "To: " . $to . "<br/>";
 		if ( $more_email ) {
 			$to = $to . ", " . $more_email;
 		}
-		print "From: " . $support_email . "<br/>";
-		print "To: " . $to . "<br/>";
+		// print "From: " . $support_email . "<br/>";
+		// print "To: " . $to . "<br/>";
 		// print "Message:<br/>";
 		// print $message . "<br/>";
 		$subject = "משלוח מספר" . $this->ID . " בוצע";
@@ -253,7 +253,6 @@ class delivery {
 			$subject = "משלוח מספר " . $this->ID . " - תיקון";
 		}
 		send_mail( $subject, $to, $message );
-
 		// print "mail sent to " . $to . "<br/>";
 	}
 
@@ -546,7 +545,10 @@ class delivery {
 			// Todo: handle prices
 			switch ( $client_type ) {
 				case 0:
-					$price = round( $order_line_total / $quantity_ordered, 1 );
+					if ( $quantity_ordered )
+						$price = round( $order_line_total / $quantity_ordered, 1 );
+					else
+						$price = get_price( $prod_id);
 					break;
 				case 1:
 					$price = siton_price( $prod_id );
@@ -800,6 +802,13 @@ class delivery {
 
 	private function SetOrderID( $order_id ) {
 		$this->d_OrderID = $order_id;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getID() {
+		return $this->ID;
 	}
 
 	public function isDraft() {

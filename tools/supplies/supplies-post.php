@@ -5,6 +5,9 @@
  * Date: 05/05/16
  * Time: 11:45
  */
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
 require_once( '../r-shop_manager.php' );
 require_once( 'supplies.php' );
 require_once( '../orders/orders-common.php' );
@@ -197,12 +200,6 @@ if ( isset( $_GET["operation"] ) ) {
 	}
 }
 
-function gui_select_supplier() {
-
-	return gui_select_table( "supplier_select", "im_suppliers", null, "", "", "supplier_name",
-		null, true, true );
-//		$sql_where );
-}
 
 
 

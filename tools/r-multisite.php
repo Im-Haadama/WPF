@@ -55,6 +55,7 @@ if ( ! $multisite ) {
 	$roles = $user->roles;
 	if ( count( array_intersect( array( "shop_manager", "administrator" ), $roles ) ) < 1 ) {
 		print "Ask for permissions";
+		die ( 1 );
 		my_log( __FILE__ . " " . $user->name );
 		// No relevant role - send to store.
 		// < 1! (in_array("shop_manager", $roles) or in_array("administrator", $roles))) {

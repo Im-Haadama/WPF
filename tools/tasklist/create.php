@@ -12,8 +12,10 @@ require_once( TOOLS_DIR . '/im_tools.php' );
 require_once( dirname( TOOLS_DIR ) . '/wp-config.php' );
 require_once( ROOT_DIR . "/agla/sql.php" );
 require_once( "tasklist.php" );
-require_once( "../multi-site/im_simple_html_dom.php" );
+require_once( ROOT_DIR . "/agla/im_simple_html_dom.php" );
 
-print header_text( false );
+print header_text( false, true, false );
 
-create_tasks( true );
+print "Creating tasks from templates<br/>";
+
+create_tasks( get_param( "verbose" ), get_param( "force" ) );

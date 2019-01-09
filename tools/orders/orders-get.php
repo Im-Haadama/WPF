@@ -12,7 +12,11 @@ if ( isset( $_GET["week"] ) ) {
 	$week = $_GET["week"];
 }
 
-print gui_button( "btn_new", "show_create_order()", "הזמנה חדשה" );
+$order_type = get_param( "order_type" ); // comma separated. w - waiting to deliver. p - pending/on-hold
+
+if ( ! $order_type ) {
+	print gui_button( "btn_new", "show_create_order()", "הזמנה חדשה" );
+}
 
 require( "new-order.php" );
 
@@ -62,30 +66,25 @@ require( "new-order.php" );
         }
 
         function cancel_order() {
-            var collection = document.getElementsByClassName("select_order_wc-pending");
+            var classes = ["select_order_wc-pending", "select_order_wc-processing", "select_order_wc-on-hold"];
             var order_ids = new Array();
 
+            for (var c = 0; c < classes.length; c++) {
+                var collection = document.getElementsByClassName(classes[c]);
+                for (var i = 0; i < collection.length; i++) {
+                    var order_id = collection[i].id.substr(4);
+                    if (document.getElementById("chk_" + order_id).checked)
+                        order_ids.push(order_id);
+                }
+            }
             xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function () {
                 // Wait to get query result
-                if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+                if (xmlhttp.readyState === 4 && xmlhttp.status === 200)  // Request finished
                 {
                     window.location = window.location;
                 }
             }
-
-            for (var i = 0; i < collection.length; i++) {
-                var order_id = collection[i].id.substr(4);
-                if (document.getElementById("chk_" + order_id).checked)
-                    order_ids.push(order_id);
-            }
-            collection = document.getElementsByClassName("select_order_wc-on-hold");
-            for (var i = 0; i < collection.length; i++) {
-                order_id = collection[i].id.substr(4);
-                if (document.getElementById("chk_" + order_id).checked)
-                    order_ids.push(order_id);
-            }
-
             var request = "orders-post.php?operation=cancel_orders&ids=" + order_ids.join();
             xmlhttp.open("GET", request, true);
             xmlhttp.send();
@@ -176,21 +175,38 @@ if ( isset( $week ) ) {
 
 print gui_header( 1, "הזמנות" );
 
-$pending = orders_table( array( "wc-pending", "wc-on-hold" ) );
+debug_time1( "reset" );
 
-if ( current_user_can( "edit_shop_orders" ) and strlen( $pending ) > 4 ) {
-	print $pending;
-	print gui_button( "btn_start", "start_handle()", "התחל טיפול" );
-	print gui_button( "btn_cancel", "cancel_order()", "בטל" ) . "<br/>";
+if ( current_user_can( "edit_shop_orders" ) and
+     ( is_null( $order_type ) or in_array( "p", explode( ",", $order_type ) ) )
+) {
+	// print "XXX";
+	// print $pending;
+	$pending = orders_table( array( "wc-pending", "wc-on-hold" ) );
+	if ( strlen( $pending ) > 4 ) {
+		print $pending;
+		print gui_button( "btn_start", "start_handle()", "התחל טיפול" );
+		print gui_button( "btn_cancel", "cancel_order()", "בטל" ) . "<br/>";
+	}
 } else {
+	if ( ! current_user_can( "edit_shop_orders" ) ) {
+		print "no permission";
+	}
+	print "ot=" . is_null( $order_type ) . "<br/>";
 	// print "אין הרשאות";
 }
+
 print orders_table( "wc-processing" );
 
-$shipment = orders_table( "wc-awaiting-shipment" );
-if ( strlen( $shipment ) > 5 ) {
-	print $shipment;
-	print gui_button( "btn_delivered", "delivered()", "משלוח נמסר" ) . "<br/>";
+if ( current_user_can( "edit_shop_orders" ) and
+     ( is_null( $order_type ) or in_array( "w", explode( ",", $order_type ) ) )
+) {
+	$shipment = orders_table( "wc-awaiting-shipment" );
+
+	if ( strlen( $shipment ) > 5 ) {
+		print $shipment;
+		print gui_button( "btn_delivered", "delivered()", "משלוח נמסר" ) . "<br/>";
+	}
 }
 
 // This month active users
@@ -263,11 +279,28 @@ function get_user_order_count( $u ) {
 
 <?php
 
-function debug_time1( $str ) {
+function debug_time2( $str ) {
 	$micro_date = microtime();
 	$date_array = explode( " ", $micro_date );
 	$date       = date( "Y-m-d H:i:s", $date_array[1] );
 	echo "$str $date:" . $date_array[0] . "<br>";
+}
+
+function debug_time1( $str ) {
+	static $prev_time;
+	if ( $str == "reset" ) {
+		$prev_time = microtime();
+
+		return;
+	}
+	$now         = microtime();
+	$micro_delta = $now - $prev_time;
+	$date_array  = explode( " ", $micro_delta );
+	$date        = date( "s", $date_array[1] );
+	if ( $micro_delta > 0.05 ) {
+		my_log( "$str $date:" . $date_array[0] . "<br>", "performance" );
+	}
+	$prev_time = $now;
 }
 
 ?>

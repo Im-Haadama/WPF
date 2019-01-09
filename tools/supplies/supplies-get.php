@@ -8,7 +8,7 @@
 require_once( '../r-shop_manager.php' );
 // require_once( '../header_no_login.php' );
 require_once( 'supplies-post.php' );
-require_once( "../account/gui.php" );
+require_once( ROOT_DIR . "/tools/suppliers/gui.php" );
 
 if ( ! isset( $_GET["week"] ) ) {
 	$week = sunday( date( "Y-m-d" ) )->format( "Y-m-d" );

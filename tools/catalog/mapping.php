@@ -35,7 +35,7 @@
                 var product_id = sel.options[sel.selectedIndex].value;
 //                map_ids.push(product_name);
 //                map_ids.push(supplier_code);
-                var site = <?php print MultiSite::LocalSiteID(); ?>; // local
+                var site = <?php print ImMultiSite::LocalSiteID(); ?>; // local
                 // TODO: fix that
 //                    if (table.rows[i + 1].cells.length > 6) {
 //                        // Handle remote

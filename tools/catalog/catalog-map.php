@@ -215,6 +215,7 @@ print gui_button( "btn_select_term_items", "select_term_products()", "בחר" );
 print gui_button( "btn_create_term", "create_term()", "צור קטגוריה" );
 
 print gui_header( 1, "פריטים לא ממופים" );
+
 ?>
 
 

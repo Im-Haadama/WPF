@@ -32,7 +32,8 @@ if ( $manager and isset( $_GET["margin"] ) ) {
     <script>
 
         function save_mission() {
-            var mission = get_value(document.getElementById("mission_select"));
+            var _mission = get_value(document.getElementById("mission_select"));
+            var mission = _mission.substr(0, _mission.indexOf(")"));
             var request = "orders-post.php?operation=mission&id=" + mission + "&order_id=<?print $order_id; ?>";
 
             xmlhttp = new XMLHttpRequest();
@@ -157,7 +158,10 @@ print "<br/>";
 <?php
 ?>
 
-<?php if ( current_user_can( "edit_shop_orders" ) ) {
+<?php
+if ( current_user_can( "edit_shop_orders" ) or
+     order_get_customer_id( $order_id ) == get_current_user_id()
+) {
 
 	if ( $for_edit ) {
 		print gui_header( 1, "הוספת פריטים" );

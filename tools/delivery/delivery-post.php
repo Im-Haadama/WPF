@@ -6,13 +6,15 @@
  * Time: 14:19
  */
 //require_once('catalog.php');
-// error_reporting( E_ALL );
-// ini_set( 'display_errors', 'on' );
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
 require_once( "../im_tools.php" );
 require_once( '../pricelist/pricelist.php' );
-require_once( '../r-shop_manager.php' );
+require_once( '../r-multisite.php' );
 require_once( "../orders/orders-common.php" );
 require_once( "../business/business.php" );
+require_once( ROOT_DIR . "/agla/fund.php" );
+require_once( "../supplies/supplies.php" );
 
 // print header_text(false);
 // To map item from price list to our database the shop manager select item from the price list
@@ -69,6 +71,45 @@ switch ( $operation ) {
 			print "none";
 		}
 		print $id;
+		break;
+//		var url = "delivery-post.php?site_id=" + site + "&type=" + type +
+//		          "&id=" + id + "&operation=delivered";
+
+	case "delivered":
+//		print "start";
+		$site_id = get_param( "site_id" );
+		$type    = get_param( "type" );
+		$id      = get_param( "id" );
+		if ( $site_id != ImMultiSite::LocalSiteID() ) {
+//			print "remote";
+			print ImMultiSite::sExecute( "delivery/delivery-post.php?site_id=" . $site_id .
+			                             "&type=" . $type . "&id=" . $id . "&operation=delivered", $site_id );
+
+			return;
+		}
+		// Running local. Let's do it.
+		// print "type=" . $type . "<br/>";
+		switch ( $type ) {
+			case "orders":
+				$o = new Order( $id );
+				$r = $o->delivered();
+				if ( $r == true ) {
+					print "delivered";
+				} else {
+					print $r;
+				}
+				break;
+			case "tasklist":
+				$t = new Tasklist( $id );
+				$t->delivered();
+				print "delivered";
+				break;
+			case "supplies":
+				$s = new Supply( $id );
+				$s->picked();
+				print "delivered";
+				break;
+		}
 }
 
 

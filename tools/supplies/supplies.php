@@ -90,13 +90,6 @@ class Supply {
 	}
 
 	/**
-	 * @return int
-	 */
-	public function getID() {
-		return $this->ID;
-	}
-
-	/**
 	 * @return mixed
 	 */
 	public function getDate() {
@@ -124,9 +117,22 @@ class Supply {
 		return $this->BusinessID;
 	}
 
-
 	public function Send() {
 		send_supplies( array( $this->ID ) );
+	}
+
+	public function Picked() {
+		sql_query( "update im_supplies " .
+		           " set picked = 1 " .
+		           " where id = " . $this->getID()
+		);
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getID() {
+		return $this->ID;
 	}
 }
 function create_supply( $supplierID ) {
@@ -150,11 +156,11 @@ function supply_add_line( $supply_id, $prod_id, $quantity, $price, $units = 0 ) 
 	sql_query( $sql );
 	$product = new WC_Product( $prod_id );
 	if ( $product->managing_stock() ) {
-		print "managed<br/>";
-		print "stock was: " . $product->get_stock_quantity() . "<br/>";
+//		print "managed<br/>";
+//		print "stock was: " . $product->get_stock_quantity() . "<br/>";
 
 		$product->set_stock_quantity( $product->get_stock_quantity() + $quantity );
-		print "stock is: " . $product->get_stock_quantity() . "<br/>";
+//		print "stock is: " . $product->get_stock_quantity() . "<br/>";
 		$product->save();
 	}
 }
@@ -710,13 +716,13 @@ function create_delta() {
 
 function create_supplier_order( $supplier_id, $ids ) {
 	$supply_id = create_supply( $supplier_id );
-	print "created supply " . $supply_id . "<br/>";
+	print "creating supply " . $supply_id . "...";
 
 	for ( $pos = 0; $pos < count( $ids ); $pos += 3 ) {
 		$prod_id  = $ids[ $pos ];
 		$quantity = $ids[ $pos + 1 ];
 		$units    = $ids[ $pos + 2 ];
-		print "adding " . $prod_id . " quantity " . $quantity . " units " . $units . "<br/>";
+		// print "adding " . $prod_id . " quantity " . $quantity . " units " . $units . "<br/>";
 		$price = get_buy_price( $prod_id, $supplier_id);
 
 		// Calculate the price
@@ -726,8 +732,8 @@ function create_supplier_order( $supplier_id, $ids ) {
 
 //        my_log("supplier_id = " . $supplier_id . " name = " . $product_name);
 		supply_add_line( $supply_id, $prod_id, $quantity, $price, $units );
-
 	}
+	print "done<br/>";
 }
 
 function create_supplies( $params ) {
@@ -815,21 +821,24 @@ function send_supply_as_order( $id ) {
 	$result = sql_query( $sql );
 	while ( $row = sql_fetch_row( $result ) ) {
 		$prod_id = $row[0];
-		print "prod_id= " . $prod_id . "<br/>";
+//		print "prod_id= " . $prod_id . "<br/>";
+//		var_dump($row); print "<br/>";
 		$remote_prod_id = supplier_prod_id( $prod_id, $supplier_id );
 		if ( $remote_prod_id ) {
 			array_push( $prods, $remote_prod_id );
 			array_push( $quantities, $row[1] );
 			array_push( $units, $row[2] );
+		} else {
+			print "no remote prod" . get_product_name( $prod_id ) . "<br/>";
 		}
 	}
 	$remote = "orders/orders-post.php?operation=create_order&user_id=" . $user_id .
 	          "&prods=" . implode( ",", $prods ) .
 	          "&quantities=" . implode( ",", $quantities ) .
-	          "&comments=" . urlencode( "נשלח מאתר " . MultiSite::LocalSiteName() ) .
+	          "&comments=" . urlencode( "נשלח מאתר " . ImMultiSite::LocalSiteName() ) .
 	          "&units=" . implode( ",", $units ) . // TODO: support units.
 	          "&mission_id=" . $mission_id;
 
-	print $remote;
-	print MultiSite::Execute( $remote, $site_id );
+	print $remote . " site: " . $site_id . "<br/>";
+	print ImMultiSite::sExecute( $remote, $site_id );
 }

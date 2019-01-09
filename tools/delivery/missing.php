@@ -6,16 +6,18 @@
  * Time: 19:32
  */
 
+
 require_once( "../im_tools.php" );
 require_once( "../orders/Order.php" );
 require_once( ROOT_DIR . '/agla/gui/inputs.php' );
+
+$none = true;
 
 print header_text( true, true, true );
 
 $sql = 'SELECT posts.id, order_is_group(posts.id), order_user(posts.id) '
        . ' FROM `wp_posts` posts'
        . ' WHERE `post_status` in (\'wc-awaiting-shipment\')';
-
 
 $sql .= ' order by 1';
 
@@ -37,5 +39,11 @@ while ( $order = sql_fetch_row( $orders ) ) {
 
 		print gui_header( 1, $order->CustomerName() . " " . $link );
 		print $m;
+		$none = false;
 	}
 }
+
+if ( $none ) {
+	print "הידד, אין חוסרים בהזמנות שממתינות למשלוח";
+}
+

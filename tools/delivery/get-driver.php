@@ -1,11 +1,18 @@
 <?php
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
 require_once( '../r-shop_manager.php' );
 // require_once( '../../wp-content/plugins/woocommerce-delivery-notes/woocommerce-delivery-notes.php' );
-require_once( '../multi-site/multi-site.php' );
+require_once( '../multi-site/imMulti-site.php' );
 require_once( '../account/account.php' );
 require_once( "../supplies/supplies.php" );
 
-$header = isset( $_GET["header"] );
+$header      = isset( $_GET["header"] );
+$mission_ids = get_param_array( "mission_ids" );
+
+// var_dump($mission_ids);
+
 //if (isset($_GET["week"])) $week = $_GET["week"];
 //$footer = $_GET["footer"];
 //$header = ( MultiSite::LocalSiteID() == 1 );
@@ -23,19 +30,36 @@ if ( $header ) {
 </style>';
 	print "<header style='text-align: center'><center><h1>מסלולים ליום " . date( 'd/m/Y' );
 	print "</h1></header>";
-	delivery_table_header();
+	print delivery_table_header();
 }
 $print = 1; //$_GET["print"];
 
-print_deliveries();
+if ( isset( $mission_ids ) ) {
+	foreach ( $mission_ids as $mission_id ) {
+		if ( $mission_id ) {
+			$orders = sql_query_array_scalar( "SELECT post_id FROM wp_postmeta " .
+			                                  " WHERE meta_key = 'mission_id' " .
+			                                  " AND meta_value = " . $mission_id );
+			if ( count( $orders ) ) {
+				print print_deliveries( "posts.id in (" . comma_implode( $orders ) . ")" );
+			}
+			print_driver_supplies( $mission_id );
+
+			print_driver_tasks( $mission_id );
+
+			return;
+		}
+	}
+}
+
+print print_deliveries( //"post_excerpt like '%משלוח המכולת%' " .
+	" `post_status` in ('wc-awaiting-shipment', 'wc-processing')" );
+
 //else print_archive_deliveries($week);
 //
 //print_legacy();
 
 die( 0 );
-
-
-
 
 function sort_key( $zone_order, $long_lat ) {
 	// $x = sprintf("%.02f", 40 - $long_lat[0]);
@@ -81,7 +105,7 @@ function get_zone_order( $zone_id ) {
 function print_legacy() {
 	global $conn;
 
-	$site_tools = MultiSite::LocalSiteTools();
+	$site_tools = ImMultiSite::LocalSiteTools();
 
 	$sql = "SELECT id, client_id, mission_id FROM im_delivery_legacy " .
 	       " WHERE status = 1";
@@ -171,8 +195,6 @@ function print_legacy() {
 
 //print "done legacy<br/>";
 
-
-
 function get_payment_name( $method ) {
 	switch ( $method ) {
 		case "bacs":
@@ -255,6 +277,50 @@ function do_get_long_lat( $address ) {
 	$long       = $response_a->results[0]->geometry->location->lng;
 
 	return array( $lat, $long );
+}
+
+function print_driver_supplies( $mission_id = 0 ) {
+	// Self collect supplies
+	$sql = "SELECT s.id FROM im_supplies s
+          JOIN im_suppliers r
+          WHERE r.self_collect = 1
+          AND s.supplier = r.id
+          AND s.status IN (1, 3)" .
+	       " AND s.picked = 0";
+
+	// print $sql;
+
+	if ( $mission_id ) {
+		$sql .= " AND s.mission_id = " . $mission_id;
+	}
+
+	$supplies = sql_query_array_scalar( $sql );
+
+	if ( count( $supplies ) ) {
+		foreach ( $supplies as $supply ) {
+			//	    print "id: " . $supply . "<br/>";
+			print_supply( $supply );
+		}
+	}
+}
+
+function print_driver_tasks( $mission_id = 0 ) {
+	if ( ! table_exists( 'im_tasklist' ) ) {
+		return;
+	}
+
+	// Self collect supplies
+	$sql = "SELECT t.id FROM im_tasklist t " .
+	       "WHERE (status < 2)";
+
+	if ( $mission_id ) {
+		$sql .= " and t.mission_id = " . $mission_id;
+	}
+
+	$tasks = sql_query_array_scalar( $sql );
+	foreach ( $tasks as $task ) {
+		print_task( $task );
+	}
 }
 
 ?>

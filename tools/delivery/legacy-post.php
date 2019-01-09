@@ -27,15 +27,15 @@ switch ( $operation ) {
 		break;
 
 	case "create_ship":
+		global $legacy_user; // From im-config.php
 		// print "creating ship<br/>";
 		$ids_ = $_GET["ids"];
 		$ids  = explode( ',', $ids_ );
 //		var_dump($ids);
 		// TODO: select customer id.
-		print invoice_create_ship( 10063, $ids );
+		print invoice_create_ship( $legacy_user, $ids );
 		break;
 }
-
 
 function invoice_create_ship( $customer_id, $order_ids ) {
 	global $invoice_user;
@@ -58,7 +58,7 @@ function invoice_create_ship( $customer_id, $order_ids ) {
 	$client = $invoice->GetCustomerById( $invoice_client_id );
 
 	if ( ! ( $client->ID ) > 0 ) {
-		print "Client not found " . $customer_id . "<br>";
+		print "Invoice client not found " . $customer_id . "<br>";
 
 		// var_dump( $client );
 
@@ -89,7 +89,11 @@ function invoice_create_ship( $customer_id, $order_ids ) {
 
 		$o          = new Order( $order_id );
 		$item       = new Item();
-		$item->Name = "משלוח עבור " . get_customer_name( order_get_customer_id( $order_id ) ) . " תאריך " . $o->OrderDate();
+		$item->Name = order_get_excerpt( $order_id );
+		if ( strlen( $item->Name ) < 2 ) {
+			$item->Name = "משלוח עבור " . get_customer_name( order_get_customer_id( $order_id ) ) . " תאריך " . $o->OrderDate();
+		}
+
 		// TODO: display prices.
 		$item->Price           = 32 * 1.17;
 		$item->Quantity        = 1;
@@ -116,9 +120,10 @@ function save_legacy( $ids ) {
 	if ( ! $pid > 0 ) {
 		$pid = Catalog::DoCreateProduct( "משלוח בלבד", 32 * 1.17, "עם האדמה" );
 	}
-	foreach ( $ids as $id ) {
+	foreach ( $ids as $user_id ) {
 		// print $id . "<br/>";
-		$o = create_order( $id, 0, array( $pid ), array( 1 ), " משלוח המכולת " . date( 'Y-m-d' ) );
+		$o = create_order( $user_id, 0, array( $pid ), array( 1 ),
+			" משלוח המכולת " . date( 'Y-m-d' ) . " " . get_customer_name( $user_id ));
 		// print "order: " . $o. "<br/>";
 		order_change_status( $o, 'wc-processing' );
 		// print "ex: " . sql_query_single_scalar("select post_excerpt from wp_posts where id = " . $id) . "<br/>";

@@ -261,6 +261,31 @@ class Order {
 		}
 	}
 
+	function delivered() {
+		$new_status = "wc-completed";
+
+		$c = sql_query_single_scalar( "select count(*) from wp_posts " .
+		                              " where id = " . $this->order_id .
+		                              " and post_excerpt like '%משלוח המכולת%'" );
+
+		if ( $c ) { // legacy
+			$new_status = "wc-awaiting-document";
+		} else {
+			$d = delivery::CreateFromOrder( $this->order_id );
+			if ( $d->isDraft() ) {
+				return "draft";
+			}
+		}
+
+//		if (! $d->getID())
+//			return "No delivery";
+
+		// if order is legacy, create delivery.
+		order_change_status( $this->order_id, $new_status );
+
+		return true;
+	}
+
 	function update_levels() {
 		// OK. We supplied the order.
 		// We check if delivered different from ordered and change the stock level.

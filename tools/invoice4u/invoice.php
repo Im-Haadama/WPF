@@ -25,19 +25,30 @@ class Customer {
 class Invoice4u {
 	public $token;
 	public $result;
+	private $user, $password;
 
 	/**
 	 * Invoice4u constructor.
 	 */
 	public function __construct( $user, $password ) {
-		$this->Login( $user, $password );
+		$this->user     = $user;
+		$this->password = $password;
+		// $this->Login( $user, $password );
 	}
 
 	// public $doc;
 
+	public function Login() {
+		if ( ! $this->token ) {
+			self::DoLogin( $this->user, $this->password );
+			if ( ! $this->token ) {
+				throw new Exception( "Can't login" );
+			}
+		}
+	}
 
-	public function Login( $invoice_user, $invoice_password ) {
-
+	private function DoLogin( $invoice_user, $invoice_password ) {
+		// print "invoice login<br/>";
 		$wsdl = "http://private.invoice4u.co.il/Services/LoginService.svc?wsdl";
 		$user = array( 'username' => $invoice_user, 'password' => $invoice_password, 'isPersistent' => false );
 		// $user = array('username' => 'Test@test.com', 'password' => '123456', 'isPersistent' => false);
@@ -47,6 +58,9 @@ class Invoice4u {
 	}
 
 	private function requestWS( $wsdl, $service, $params ) {
+		if ( $service != "VerifyLogin" ) {
+			self::Login();
+		}
 		try {
 			$options = array(
 				'trace'              => true,
@@ -146,10 +160,6 @@ class Invoice4u {
 			return $id;
 		}
 
-		//   print "connect to invoice<br/>";
-		if ( is_null( $this->token ) ) {
-			die ( "Login first to Invoice4u" );
-		}
 		$client_email = get_customer_email( $customer_id );
 		// print $client_email;
 		$client = $this->GetCustomerByEmail( $client_email );
@@ -215,6 +225,7 @@ class Invoice4u {
 			'token'      => $this->token,
 			'getAllRows' => true
 		) );
+
 		$customers = $response->Response->Customer;
 
 		if ( $customers ) {
