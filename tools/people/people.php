@@ -311,7 +311,7 @@ function add_activity( $user_id, $date, $start, $end, $project_id, $vol = true, 
 
 function gui_select_project( $id, $value, $events ) {
 	return gui_select_table( $id, "im_projects", $value, $events, "", "project_name",
-		null, true, true );
+		null, true, false );
 
 }
 

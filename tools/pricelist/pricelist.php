@@ -215,6 +215,7 @@ class PriceList {
 
 		$table_rows = array(
 			array(
+				0, // Instead of id.
 				gui_checkbox( "select_all", "", false,
 					'onclick="select_all_toggle(\'select_all\', \'product_checkbox\')"' ),
 				"קוד פריט",
@@ -234,8 +235,26 @@ class PriceList {
 			)
 		);
 
+		$col_ids = array(
+			"id",
+			"cod",
+			"pli",
+			"prn",
+			"dat",
+			"buy",
+			"clp",
+			"cat",
+			"nam",
+			"sal",
+			"pid",
+			"smn",
+			"inv",
+			"opn",
+			"apr"
+		);
+
 		if ( ! $ordered_only and ! $need_supply_only ) {
-			array_unshift( $table_rows[0], gui_label( "delete_row", "מחק פריט" ) );
+			array_push( $table_rows[0], gui_label( "delete_row", "מחק פריט" ) );
 		}
 
 		$show_fields = array( true, true, true, true, true, true, true, true, true, true, true, true );
@@ -268,15 +287,16 @@ class PriceList {
 			}
 			$line = $this->Line( $row[0], $row[1], $row[2], $pl_id, $row[4], $row[5], $prod_id, true, $map_id, $needed_products );
 			if ( ! $ordered_only and ! $need_supply_only ) {
-				array_unshift( $line, gui_button( "del_" . $pl_id, "del_line(" . $pl_id . ")", "מחק" ) );
+				array_push( $line, gui_button( "del_" . $pl_id, "del_line(" . $pl_id . ")", "מחק" ) );
 			}
+			array_unshift( $line, $pl_id );
 
 			array_push( $table_rows, $line );
 			// $data .= $line;
 		}
 
-		$sum  = null;
-		$data = gui_table( $table_rows, "pricelist", true, true, $sum, null, null, $show_fields );
+		$sum = null;
+		$data = gui_table( $table_rows, "pricelist", true, true, $sum, null, null, $show_fields, null, $col_ids, true );
 		//( $rows, $id = null, $header = true, $footer = true, &$sum_fields = null, $style = null, $class = null, $show_fields = null,
 		// $links = null)
 		// $data .= "<tr>";

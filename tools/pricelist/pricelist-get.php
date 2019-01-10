@@ -66,7 +66,8 @@ function set_supplier_id() {
 
             for (var i = 0; i < collection.length; i++) {
                 if (collection[i].checked) {
-                    var prod_id = table.rows[i + 1].cells[11].innerText;
+                    var pl_id = collection[i].id.substr(3);
+                    var prod_id = get_value_by_name("pid_" + pl_id);
                     var stock = parseFloat(get_value_by_name("stk_" + prod_id));
                     if (isNaN(stock)) stock = 0;
                     var ordered = 1;

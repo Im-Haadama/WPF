@@ -5,9 +5,12 @@
  * Date: 24/11/16
  * Time: 18:22
  */
-require_once( STORE_DIR . '/tools/im_tools.php' );
-require_once( STORE_DIR . '/tools/sql.php' );
-require_once( STORE_DIR . '/tools/wp.php' );
+//ini_set( 'display_errors', 'on' );
+
+require_once( TOOLS_DIR . '/im_tools.php' );
+require_once( STORE_DIR . '/agla/sql.php' );
+require_once( TOOLS_DIR . '/wp.php' );
+require_once( TOOLS_DIR . '/pricing.php' );
 
 //require_once('../../../../tools/im_tools.php');
 // require_once ("../../../../tools/wp.php");
@@ -43,7 +46,6 @@ function get_minimum_order() {
 //    my_log ("zone_id = " . $zone1->get_id());
 
 	$sql = "SELECT min_order FROM wp_woocommerce_shipping_zones WHERE zone_id = " . $zone1->get_id();
-	my_log( $sql );
 	$result = sql_query( $sql );
 	if ( $result ) {
 		$row = mysqli_fetch_assoc( $result );
@@ -83,8 +85,9 @@ function wc_minimum_order_amount() {
 
 function wc_after_cart() {
 //    print "<a href=\"http://store.im-haadama.co.il/"
-	print "<a href=\"../tools/baskets/unfold.php\"" .
-	      "class=\"checkout-button button alt wc-forward\">החלף סלים במרכיביו</a>";
+	if ( $_SERVER['SERVER_NAME'] == 'fruity.co.il' )
+		print "<a href=\"../tools/baskets/unfold.php\"" .
+		      "class=\"checkout-button button alt wc-forward\">החלף סלים במרכיביו</a>";
 //המשך לתשלום</a>
 //    print "<input class=\"button alt\" name=\"unfold_basket\" value=\"פרום סל\" />";
 }
@@ -144,7 +147,6 @@ add_action( 'edit_user_profile', 'my_show_extra_profile_fields' );
 
 function my_show_extra_profile_fields( $user ) { ?>
 
-
     <h3>העדפות משתמש</h3>
 
     <table class="form-table">
@@ -158,24 +160,38 @@ function my_show_extra_profile_fields( $user ) { ?>
                        class="regular-text"/><br/>
                 <span class="description">הכנס העדפות משתמש.</span>
             </td>
-        </tr>
-    </table>
-
-    <h3>פרטי משלוח ברירת מחדל</h3>
-
-    <table class="form-table">
-        <tr>
-            <th><label for="shipping_zone">איזור משלוח</label></th>
-
             <td>
-                <input type="text" name="shipping_zone" id="shipping_zone"
-                       value="<?php echo esc_attr( get_the_author_meta( 'shipping_zone', $user->ID ) ); ?>"
+                <input type="text" name="auto_mail" id="auto_mail"
+                       value="<?php echo esc_attr( get_the_author_meta( 'auto_mail', $user->ID ) ); ?>"
                        class="regular-text"/><br/>
-                <span class="description">הכנס מספר איזור משלוח.</span>
+                <span class="description">הכנס העדפות דיווח. למשל 1:15. יום ב', קטגוריה 15</span>
+            </td>
+            <td/>
+            <input type="text" name="print_delivery_note" id="print_delivery_note"
+                   value="<?php echo esc_attr( get_the_author_meta( 'print_delivery_note', $user->ID ) ); ?>"
+                   class="regular-text"/><br/>
+            <span class="description">האם להדפיס תעודת משלוח - P.<br/>
+                    P - הדפסה
+                </span>
             </td>
         </tr>
-
     </table>
+
+    <!--    <h3>פרטי משלוח ברירת מחדל</h3>-->
+    <!---->
+    <!--    <table class="form-table">-->
+    <!--        <tr>-->
+    <!--            <th><label for="shipping_zone">איזור משלוח</label></th>-->
+    <!---->
+    <!--            <td>-->
+    <!--                <input type="text" name="shipping_zone" id="shipping_zone"-->
+    <!--                       value="--><?php //echo esc_attr( get_the_author_meta( 'shipping_zone', $user->ID ) ); ?><!--"-->
+    <!--                       class="regular-text"/><br/>-->
+    <!--                <span class="description">הכנס מספר איזור משלוח.</span>-->
+    <!--            </td>-->
+    <!--        </tr>-->
+    <!---->
+    <!--    </table>-->
 <?php }
 
 add_action( 'personal_options_update', 'my_save_extra_profile_fields' );
@@ -188,6 +204,8 @@ function my_save_extra_profile_fields( $user_id ) {
 
 	/* Copy and paste this line for additional fields. Make sure to change 'twitter' to the field ID. */
 	update_usermeta( $user_id, 'preference', $_POST['preference'] );
+	update_usermeta( $user_id, 'auto_mail', $_POST['auto_mail'] );
+	update_usermeta( $user_id, 'print_delivery_note', $_POST['print_delivery_note'] );
 	update_usermeta( $user_id, 'shipping_zone', $_POST['shipping_zone'] );
 }
 
@@ -259,7 +277,7 @@ function custom_quantity_field_archive() {
  * Add requires JavaScript. uzzyraja.com/sourcecodes/
  */
 function custom_add_to_cart_quantity_handler() {
-
+	if ( function_exists( 'wc_enqueue_js' ) )
 	wc_enqueue_js( '
 		jQuery( ".input-text.qty.text" ).on( "change input", ".quantity", function() {
 			var add_to_cart_button = jQuery( this ).parents( ".product" ).find( ".add_to_cart_button" );
@@ -356,33 +374,7 @@ function im_woocommerce_update_price() {
 			continue;
 		}
 		$q          = $cart_item['quantity'];
-		$sell_price = get_postmeta_field( $prod_id, '_price' ); // Regular price.
-		switch ( $client_type ) {
-			case 0: // Regular client - gets discount for quantities greater than 8.
-				if ( $q >= 8 ) {
-					$buy_price = get_postmeta_field( $prod_id, 'buy_price' );
-					if ( $buy_price > 0 ) {
-						$quantity_price = round( 1.4 * $buy_price, 1 );
-					} else {
-						$quantity_price = $sell_price;
-					}
-					my_log( "quantity price " . $quantity_price . ". sell " . $sell_price);
-					if ( $quantity_price < $sell_price ) {
-						$sell_price = $quantity_price;
-						//   my_log("sell price " . $sell_price);
-					}
-				} else {
-					$sell_price = get_postmeta_field( $prod_id, '_price' );
-				}
-				break;
-			case 1: // siton - pay 15% about buy price
-				$sell_price = min( round( get_buy_price( $prod_id ) * 1.15, 1 ), $sell_price );
-				break;
-
-			case 2: // owner - pay buy_price
-				$sell_price = min( round( get_buy_price( $prod_id ), 1 ), $sell_price );
-				break;
-		}
+		$sell_price = get_price_by_type( $prod_id, $client_type, $q );
 		//my_log("set " . $sell_price);
 		$cart_item['data']->set_sale_price( $sell_price );
 		$cart_item['data']->set_price( $sell_price );
@@ -420,3 +412,59 @@ add_filter( 'woocommerce_order_button_text', 'im_custom_order_button_text' );
 function im_custom_order_button_text() {
 	return __( 'אשר הזמנתך', 'woocommerce' );
 }
+
+// Delivery based on products.
+// Categories that can be send by post.
+
+// a function to check if the cart has product from organge and it's sub category id
+function cart_has_fresh_products() {
+//Check to see if user has product in cart
+	global $woocommerce;
+
+//assigns a default negative value
+// categories targeted 17, 18, 19
+
+	$product_in_cart = false;
+
+// start of the loop that fetches the cart items
+
+	foreach ( $woocommerce->cart->get_cart() as $cart_item_key => $values ) {
+		$_product = $values['data'];
+		$terms    = get_the_terms( $_product->id, 'product_cat' );
+
+// second level loop search, in case some items have several categories
+		foreach ( $terms as $term ) {
+
+			if ( ( $term === 17 ) || ( $term === 18 ) || ( $term === 19 ) ) {
+//category is in cart!
+				$product_in_cart = true;
+			}
+		}
+	}
+
+	return $product_in_cart;
+}
+
+// add filter and function to hide method
+add_filter( 'woocommerce_available_shipping_methods', 'hide_shipping_if_cat_is_orange', 10, 1 );
+
+function hide_shipping_if_fresh( $available_methods ) {
+	if ( cart_has_fresh_products() ) {
+// remove the rate you want
+		unset( $available_methods['flat_rate'] );
+	}
+
+// return the available methods without the one you unset.
+	return $available_methods;
+}
+
+//add_filter( 'woocommerce_checkout_fields' , 'custom_wc_checkout_fields' );
+//// Change order comments placeholder and label, and set billing phone number to not required.
+//function custom_wc_checkout_fields( $fields ) {
+////	$fields['order']['order_comments']['placeholder'] = 'Enter your placeholder text here.';
+////	$fields['order']['order_comments']['label'] = 'Enter your label here.';
+////	$fields['billing']['billing_phone']['required'] = false;
+//    $fields['billing_postcode']
+//    var_dump($fields);
+//	return $fields;
+//}

@@ -20,16 +20,29 @@ class Tasklist {
 	private $location_address;
 	private $task_description;
 	private $mission_id;
+	private $repeat_freq;
+	private $repeat_freq_numbers;
 
 	public function __construct( $_id ) {
 		$this->id = $_id;
-		$row      = sql_query_single( "SELECT location_name, location_address, task_description, mission_id FROM im_tasklist " .
+		$row      = sql_query_single( "SELECT location_name, location_address, task_description, mission_id," .
+		                              " task_template " .
+		                              " FROM im_tasklist " .
 		                              " WHERE id = " . $this->id );
 
 		$this->location_name    = $row[0];
 		$this->location_address = $row[1];
 		$this->task_description = $row[2];
 		$this->mission_id       = $row[3];
+
+		if ( $row[4] ) {
+			$row = sql_query_single( "SELECT repeat_freq, repeat_freq_numbers " .
+			                         " from im_task_teplates where id = " . $row[4] );
+
+			$this->repeat_freq         = $row[0];
+			$this->repeat_freq_numbers = $row[1];
+
+		}
 	}
 
 	/**
@@ -67,10 +80,24 @@ class Tasklist {
 		return $this->mission_id;
 	}
 
+	/**
+	 * @return mixed
+	 */
+	public function getRepeatFreq() {
+		return $this->repeat_freq;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getRepeatFreqNumbers() {
+		return $this->repeat_freq_numbers;
+	}
+
 	public function Ended() {
 		$sql = "UPDATE im_tasklist SET ended = now(), status = " . eTasklist::done .
 		       " WHERE id = " . $this->id;
-//		print $sql;
+		// print $sql;
 		sql_query( $sql );
 	}
 }
@@ -138,78 +165,77 @@ function tasklist_set_defaults( &$values ) {
 	$values["date"] = date( 'Y-m-d' );
 }
 
-function create_tasks( $verbose = false, $force = false ) {
-//	print "v= " . $verbose . "<br/>";
-	if ( $verbose ) {
-		print "Started...<br/>";
-	}
-
-	if ( $force ) {
-		print "Forcing create task<br/>";
-	}
-
-	// TODO: check last run.
-	$last_run = info_get( "tasklist_create_run" );
-	$delta    = info_get( "tasklist_delta" );
-	if ( ! $force and ( $last_run and ( time() - $last_run < $delta ) ) ) {
+function create_tasks( $freqs, $verbose = false ) {
+	foreach ( $freqs as $freq ) {
+		//	print "v= " . $verbose . "<br/>";
+		$info_key = "tasklist_create_run_" . $freq;
 		if ( $verbose ) {
-			print "last run " . ( time() - $last_run ) . " seconds. Not running.</br>";
+			print "Started...<br/>";
 		}
 
-		return;
+		// TODO: check last run.
+		$last_run = info_get( $info_key );
+		if ( date( $freq ) == date( $last_run ) ) {
+			if ( $verbose ) {
+				print "no need " . $freq . "<br/>";
+			}
+
+			return;
+		}
+
+		//	 Todo: Run in the background
+		$sql    = "SELECT id, task_description, task_url, project_id, repeat_freq, repeat_freq_numbers, condition_query, priority " . "
+		 FROM im_task_templates " .
+		          " where repeat_freq = '" . $freq . "'";
+		$result = sql_query( $sql );
+
+		while ( $row = mysqli_fetch_assoc( $result ) ) {
+			$id         = $row["id"];
+			$project_id = $row["project_id"];
+			if ( ! $project_id ) {
+				$project_id = 0;
+			}
+			// 		print "project_id= " . $project_id . "<br/>";
+
+			if ( $verbose ) {
+				print "<br/>checking " . $id . " ";
+			}
+
+			if ( ! check_frequency( $row["repeat_freq"], $row["repeat_freq_numbers"], $verbose ) ) {
+				continue;
+			}
+
+			if ( ! check_query( $row["condition_query"], $verbose ) ) {
+				continue;
+			}
+
+			// Check if task from this template active
+			if ( check_active( $id, $row["repeat_freq"], $verbose ) ) {
+				continue;
+			}
+
+			if ( $verbose ) {
+				print "creating " . $id . "<br/>";
+			}
+
+			$priority = sql_query_single_scalar( "SELECT priority FROM im_task_templates WHERE id = " . $id );
+			if ( ! $priority ) {
+				$priority = sql_query_single_scalar( "SELECT project_priority FROM im_projects WHERE id = " . $project_id );
+			}
+
+			if ( ! $priority ) {
+				$priority = 0;
+			}
+
+			$sql = "INSERT INTO im_tasklist (task_description, task_template, status, date, project_id, priority, repeat_freq) VALUES ( " .
+			       "'" . $row["task_description"] . "', " . $id . ", " . eTasklist::waiting . ", now(), " . $project_id . ",  " .
+			       $priority . ")";
+
+			sql_query( $sql );
+			print $sql;
+		}
+		info_update( $info_key, date( $freq ));
 	}
-	// Todo: Run in the background
-	$sql    = "SELECT id, task_description, task_url, project_id, repeat_freq, repeat_freq_numbers, condition_query, priority " . "
-	 FROM im_task_templates";
-	$result = sql_query( $sql );
-
-	while ( $row = mysqli_fetch_assoc( $result ) ) {
-
-		$id         = $row["id"];
-		$project_id = $row["project_id"];
-		if ( ! $project_id ) {
-			$project_id = 0;
-		}
-// 		print "project_id= " . $project_id . "<br/>";
-
-		if ( $verbose ) {
-			print "<br/>checking " . $id . " ";
-		}
-
-		if ( ! check_frequency( $row["repeat_freq"], $row["repeat_freq_numbers"], $verbose ) ) {
-			continue;
-		}
-
-		if ( ! check_query( $row["condition_query"], $verbose ) ) {
-			continue;
-		}
-
-		// Check if task from this template active
-		if ( check_active( $id, $verbose ) ) {
-			continue;
-		}
-
-		if ( $verbose ) {
-			print "creating " . $id . "<br/>";
-		}
-
-		$priority = sql_query_single_scalar( "SELECT priority FROM im_task_templates WHERE id = " . $id );
-		if ( ! $priority ) {
-			$priority = sql_query_single_scalar( "SELECT project_priority FROM im_projects WHERE id = " . $project_id );
-		}
-
-		if ( ! $priority ) {
-			$priority = 0;
-		}
-
-		$sql = "INSERT INTO im_tasklist (task_description, task_template, status, date, project_id, priority) VALUES ( " .
-		       "'" . $row["task_description"] . "', " . $id . ", " . eTasklist::waiting . ", now(), " . $project_id . ",  " .
-		       $priority . ")";
-
-		sql_query( $sql );
-		print $sql;
-	}
-	info_update( "tasklist_create_run", time() );
 }
 
 
@@ -316,7 +342,7 @@ function check_query( $query, $verbose ) {
 	return $passed;
 }
 
-function check_active( $id, $verbose ) {
+function check_active( $id, $repeat_freq, $verbose ) {
 	$sql = "SELECT count(*) FROM im_tasklist WHERE task_template = " . $id .
 	       " AND status < 2";
 
@@ -340,3 +366,4 @@ function check_active( $id, $verbose ) {
 
 	return false;
 }
+

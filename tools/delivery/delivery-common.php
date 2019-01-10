@@ -9,6 +9,7 @@
 //require_once ("../supplies/supplies.php");
 
 require_once( ROOT_DIR . "/tools/tasklist/Tasklist.php" );
+require_once( ROOT_DIR . "/tools/supplies/supplies.php" );
 
 class DeliveryFields {
 	const
@@ -245,6 +246,9 @@ function print_task( $id ) {
 }
 
 function print_supply( $id ) {
+	if ( ! ( $id > 0 ) ) {
+		throw new Exception( "bad id: " . $id );
+	}
 //	$site_tools = MultiSite::LocalSiteTools();
 
 	$fields = array();

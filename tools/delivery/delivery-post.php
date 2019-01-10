@@ -6,8 +6,8 @@
  * Time: 14:19
  */
 //require_once('catalog.php');
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
+//error_reporting( E_ALL );
+//ini_set( 'display_errors', 'on' );
 require_once( "../im_tools.php" );
 require_once( '../pricelist/pricelist.php' );
 require_once( '../r-multisite.php' );
@@ -22,9 +22,6 @@ require_once( "../supplies/supplies.php" );
 // in im_supplier_products
 
 $operation = $_GET["operation"];
-
-// print "operation = " . $operation . "<br/>";
-
 switch ( $operation ) {
 	case "get_price_vat":
 		if ( isset( $_GET["id"] ) ) {
@@ -88,7 +85,7 @@ switch ( $operation ) {
 			return;
 		}
 		// Running local. Let's do it.
-		// print "type=" . $type . "<br/>";
+		print "type=" . $type . "<br/>";
 		switch ( $type ) {
 			case "orders":
 				$o = new Order( $id );
@@ -101,7 +98,7 @@ switch ( $operation ) {
 				break;
 			case "tasklist":
 				$t = new Tasklist( $id );
-				$t->delivered();
+				$t->Ended();
 				print "delivered";
 				break;
 			case "supplies":

@@ -99,13 +99,6 @@ class Supply {
 	/**
 	 * @return mixed
 	 */
-	public function getSupplier() {
-		return $this->Supplier;
-	}
-
-	/**
-	 * @return mixed
-	 */
 	public function getText() {
 		return $this->Text;
 	}
@@ -133,6 +126,17 @@ class Supply {
 	 */
 	public function getID() {
 		return $this->ID;
+	}
+
+	public function getSupplierName() {
+		return get_supplier_name( $this->getSupplier() );
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getSupplier() {
+		return $this->Supplier;
 	}
 }
 function create_supply( $supplierID ) {
@@ -372,7 +376,7 @@ function print_supply_lines( $id, $internal, $edit = true ) {
 		$line_term = strtok( $data_lines[ $i ][0], '@' );
 		if ( $line_term <> $term ) {
 			$term = $line_term;
-			$data .= gui_row( array( '', $term, '', '', '', '', '' ) );
+			$data .= gui_row( array( '', "<b>" . $term . "</b>", '', '', '', '', '' ) );
 		}
 		$line = $data_lines[ $i ][1];
 		$data .= trim( $line );
@@ -464,7 +468,6 @@ function got_supply( $supply_id, $supply_total, $supply_number ) {
 }
 
 function supply_business_info( $supply_id ) {
-	global $conn;
 	$sql = "SELECT business_id FROM im_supplies WHERE id = " . $supply_id;
 	$bid = sql_query_single_scalar( $sql );
 	if ( $bid > 0 ) {

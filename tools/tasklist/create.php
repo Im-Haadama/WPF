@@ -18,4 +18,13 @@ print header_text( false, true, false );
 
 print "Creating tasks from templates<br/>";
 
-create_tasks( get_param( "verbose" ), get_param( "force" ) );
+
+// create_tasks( get_param( "verbose" ), get_param( "force" ) );
+$freq = get_param_array( "freq" );
+
+if ( count( $freq ) < 1 ) {
+	$freq = sql_query_array_scalar( "select DISTINCT repeat_freq from im_task_templates" );
+}
+
+
+create_tasks( $freq, true );

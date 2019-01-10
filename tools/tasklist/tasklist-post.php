@@ -19,9 +19,8 @@ require_once( ROOT_DIR . "/agla/fund.php" );
 require_once( "Tasklist.php" );
 
 $operation = get_param( "operation" );
-//print "op=" . $operation . "<br/>";
+// print "op=" . $operation . "<br/>";
 switch ( $operation ) {
-
 	case "delivered": // Done
 		$ids = get_param_array( "ids" );
 		foreach ( $ids as $id ) {
@@ -48,23 +47,22 @@ switch ( $operation ) {
 		break;
 	case "end":
 		$task_id = get_param( "id" );
+		print $task_id . "<br/>";
 		$T       = new Tasklist( $task_id );
 		$T->ended();
 		redirect_back();
-		create_tasks();
+		create_tasks( $T->getRepeatFreq() );
 		break;
 	case "cancel":
 		$task_id = get_param( "id" );
 		$sql     = "UPDATE im_tasklist SET ended = now(), status = " . eTasklist::canceled .
 		           " WHERE id = " . $task_id;
 		sql_query( $sql );
-		create_tasks();
 		redirect_back();
 		break;
 	case "check":
 		check_condition();
 		break;
-
 }
 
 ?>
