@@ -15,7 +15,7 @@ require_once( ROOT_DIR . '/tools/orders/orders-common.php' );
 
 ?>
 
-    <script type="text/javascript" src="/agla/client_tools.js"></script>
+    <script type="text/javascript" src="/niver/client_tools.js"></script>
     <script>
         function done() {
             var collection = document.getElementsByClassName("user_chk");

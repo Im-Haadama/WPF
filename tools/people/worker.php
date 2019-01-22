@@ -11,7 +11,7 @@ require_once( ROOT_DIR . "/agla/gui/inputs.php" );
 print header_text();
 
 ?>
-<script type="text/javascript" src="/agla/client_tools.js"></script>
+<script type="text/javascript" src="/niver/client_tools.js"></script>
 
 <script>
 

@@ -19,7 +19,7 @@ print gui_button( "btn_new", "show_create_new()", "מארז חדש" );
 
 <html dir="rtl">
 <header>
-    <script type="text/javascript" src="/agla/client_tools.js"></script>
+    <script type="text/javascript" src="/niver/client_tools.js"></script>
     <script>
         function getPrice() {
             var product_name = get_value(document.getElementById("item_name"));

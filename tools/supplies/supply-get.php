@@ -33,7 +33,7 @@ if ( isset( $_GET["business_id"] ) ) {
 }
 
 ?>
-<script type="text/javascript" src="/agla/client_tools.js"></script>
+<script type="text/javascript" src="/niver/client_tools.js"></script>
 
 <script>
     function supply_pay() {
@@ -135,7 +135,7 @@ print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_missio
 	?>
     <!--    <input id="itm_" list="prods">-->
 </div>
-<script type="text/javascript" src="/agla/client_tools.js"></script>
+<script type="text/javascript" src="/niver/client_tools.js"></script>
 <script>
     function save_mission() {
         var mission = get_value(document.getElementById("mission_select"));
