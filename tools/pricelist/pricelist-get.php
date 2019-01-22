@@ -9,7 +9,7 @@
 //ini_set( 'display_errors', 'on' );
 
 require_once( '../r-shop_manager.php' );
-require_once( ROOT_DIR . '/agla/gui/inputs.php' );
+require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( "../suppliers/gui.php" );
 require_once( "../multi-site/imMulti-site.php" );
 require_once( "../suppliers/Supplier.php" );

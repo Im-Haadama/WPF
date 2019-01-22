@@ -13,7 +13,7 @@ if ( ! defined( "ROOT_DIR" ) ) {
 	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
 }
 
-require_once( ROOT_DIR . '/agla/gui/sql_table.php' );
+require_once( ROOT_DIR . '/niver/gui/sql_table.php' );
 require_once( "../catalog/bundles.php" );
 require_once( "../orders/orders-common.php" );
 

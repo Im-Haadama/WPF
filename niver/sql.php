@@ -7,12 +7,15 @@
  */
 
 if ( ! function_exists( "my_log" ) ) {
-	require_once( ROOT_DIR . "/agla/fund.php" );
+	require_once( ROOT_DIR . "/niver/fund.php" );
 }
 
 function sql_query( $sql, $report_error = true ) {
 	global $conn;
 
+	if ( ! $conn ) {
+		die ( "not connected!<br/>" );
+	}
 //	print gettype($conn);
 //	if (! $conn or gettype($conn) != "mysqli") {
 //		print "no connection.<br/>";
@@ -142,6 +145,11 @@ function sql_error( $sql ) {
 function sql_fetch_row( $result ) {
 	return mysqli_fetch_row( $result );
 }
+
+function sql_fetch_assoc( $result ) {
+	return mysqli_fetch_assoc( $result );
+}
+
 
 function add_query( &$query, $p ) {
 	if ( ! $query ) {

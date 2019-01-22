@@ -85,8 +85,46 @@ function append_url( $url, $addition ) {
 	return $url . "?" . $addition;
 }
 
-function commna_implode( $array ) {
+//function comma_implode( $array ) {
+////	print "<p dir=\"ltr\">";
+////	var_dump($array);
+////	print "</p>";
+//	if ( is_null( $array ) ) {
+//		return "";
+//	}
+//	if ( is_bool( $array ) ) {
+//		return $array;
+//	}
+//	if ( ! is_array( $array ) ) {
+//		return "not array!";
+//	}
+//	if ( is_string( $array[0] ) ) {
+//		return trim( implode( ", ", $array ), ", " );
+//	}
+//	$result = "";
+//	foreach ( $array as $var ) { // not string...
+//		if ( isset( $var->name ) ) {
+//			$result .= $var->name;
+//			$result .= ", ";
+//		}
+//	}
+//
+//	return rtrim( $result, ", " );
+//}
+
+
+function comma_implode( ... $elems ) {
+	$array = array();
+	foreach ( $elems as $elem ) {
+		array_push( $array, $elem );
+	}
+
+	return comma_implode_a( $array );
+}
+
+function comma_implode_a( $array ) {
 	$str = implode( ", ", $array );
 
 	return rtrim( $str, ", " );
 }
+

@@ -14,7 +14,7 @@ require_once( TOOLS_DIR . '/im_tools.php' );
 require_once( STORE_DIR . '/tools/orders/orders-common.php' );
 // require_once( TOOLS_DIR . '/business/business-post.php' );
 // require_once(TOOLS_DIR . '/multi-site/imMulti-site.php');
-require_once( ROOT_DIR . '/agla/gui/inputs.php' );
+require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 
 #############################
 # legacy_users              #

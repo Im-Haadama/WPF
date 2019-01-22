@@ -39,7 +39,25 @@ class PivotTable {
 	}
 
 	public function Create() {
-		$rows = sql_query( "select " . "	from " . $this->table_name .
+		$table   = array();
+		$results = sql_query( "select " . comma_implode( $this->col, $this->row, $this->data ) .
+		                      " from " . $this->table_name .
 		                   " Where " . $this->page . "\n" );
+
+		while ( $data = sql_fetch_assoc( $results ) ) {
+			$row  = $data[ $this->row ];
+			$col  = $data[ $this->row ];
+			$data = $data[ $this->row ];
+			if ( is_null( $table[ $row ] ) ) {
+				$table[ $row ] = array();
+			}
+			if ( is_null( $table[ $col ] ) ) {
+				$table[ $row ][ $col ] = 0;
+			}
+
+			$table[ $row ][ $col ] += $data;
+		}
+
+		return $table;
 	}
 }

@@ -8,7 +8,7 @@
 
 require '../r-shop_manager.php';
 require_once( "supplies.php" );
-require_once( ROOT_DIR . '/agla/gui/inputs.php' );
+require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( "../account/gui.php" );
 
 print header_text( false );

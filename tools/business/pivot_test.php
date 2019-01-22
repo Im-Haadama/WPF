@@ -13,4 +13,7 @@ if ( ! defined( "ROOT_DIR" ) ) {
 
 require_once( ROOT_DIR . '/niver/PivotTable.php' );
 
-$t = new \Niver\PivotTable( "im_business_info", "EXTRACT(YEAR FROM DATE)" );
+$t = new \Niver\PivotTable( "im_business_info", "EXTRACT(YEAR FROM DATE)",
+	"part_id", "EXTRACT(MONTH FROM DATE)", "net_amount" );
+
+print gui_table( $t->Create() );
