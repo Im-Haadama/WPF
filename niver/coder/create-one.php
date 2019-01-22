@@ -11,12 +11,17 @@
 // 2) f (sql_query($sql)) print "התווסף בהצלחה"; remove print $sql;
 // 3) define ROOT_DIR
 
+error_reporting( E_ALL );
+ini_set( 'display_errors', 1 );
+
 if ( ! defined( "ROOT_DIR" ) ) {
 	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
 	print "ROOT_DIR: " . ROOT_DIR . "<br/>";
 }
 
 require_once( ROOT_DIR . '/niver/fund.php' );
+require_once( ROOT_DIR . '/niver/sql.php' );
+require_once( "common.php" );
 
 $config_file = get_param( "config_file" );
 
@@ -37,7 +42,7 @@ if ( ! file_exists( $config_file ) ) {
 	print $config_file . " not found <br/>";
 	die( 1 );
 } else {
-	print "reading " . $req_file . " ";
+	print "reading " . $config_file . " ";
 }
 
 require_once( $config_file );

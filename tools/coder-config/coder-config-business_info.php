@@ -39,7 +39,8 @@ $trans["project_id"]    = "get_project_name";
 
 $page_actions = array(
 	array( "חשבוניות", "c-get-all-business_info.php?document_type=4" ),
-	array( "חשבוניות פתוחות", "c-get-all-business_info.php?document_type=4&pay_date=0000-00-00" )
+	array( "חשבוניות פתוחות", "c-get-all-business_info.php?document_type=4&pay_date=0000-00-00" ),
+	array( "ריכוז חשבוניות", "pivot_test.php" )
 );
 
 //$actions = array(

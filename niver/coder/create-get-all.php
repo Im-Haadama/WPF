@@ -81,10 +81,10 @@ $get_all = fopen( $filename, "w" );
 fwrite( $get_all, "<?php
 require_once ('$root_file');
 // require_once('../header.php');
-require_once(ROOT_DIR . '/agla/fund.php');
-require_once(ROOT_DIR . '/agla/translate.php');
-require_once(ROOT_DIR . '/agla/gui/inputs.php');
-require_once(ROOT_DIR . '/agla/fund.php');
+require_once(ROOT_DIR . '/niver/fund.php');
+require_once(ROOT_DIR . '/niver/translate.php');
+require_once(ROOT_DIR . '/niver/gui/inputs.php');
+require_once(ROOT_DIR . '/niver/fund.php');
 print header_text(false, false);
 if (isset(\$_GET[\"debug\"])) {
 	error_reporting( E_ALL );
