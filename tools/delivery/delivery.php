@@ -13,7 +13,7 @@ if ( ! defined( 'TOOLS_DIR' ) ) {
 require_once( TOOLS_DIR . "/pricing.php" );
 require_once( TOOLS_DIR . "/account/account.php" );
 include_once( TOOLS_DIR . "/orders/orders-common.php" );
-require_once( ROOT_DIR . '/agla/gui/inputs.php' );
+require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 include_once( TOOLS_DIR . "/multi-site/imMulti-site.php" );
 require_once( TOOLS_DIR . "/mail.php" );
 require_once( TOOLS_DIR . "/account/gui.php" );

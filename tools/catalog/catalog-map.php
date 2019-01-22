@@ -17,7 +17,7 @@ require_once( '../gui.php' );
 <html dir="rtl" lang="he">
 <header>
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
-    <script type="text/javascript" src="/agla/client_tools.js"></script>
+    <script type="text/javascript" src="/niver/client_tools.js"></script>
 	<?php
 	require_once( "../catalog/mapping.php" );
 	?>

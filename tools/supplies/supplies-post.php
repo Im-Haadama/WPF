@@ -11,7 +11,7 @@ ini_set( 'display_errors', 'on' );
 require_once( '../r-shop_manager.php' );
 require_once( 'supplies.php' );
 require_once( '../orders/orders-common.php' );
-require_once( ROOT_DIR . '/agla/gui/inputs.php' );
+require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( "../business/business-post.php" );
 require_once( "../business/business_info.php" );
 

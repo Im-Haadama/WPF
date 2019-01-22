@@ -13,7 +13,7 @@ require_once( '../pricelist/pricelist.php' );
 require_once( '../r-multisite.php' );
 require_once( "../orders/orders-common.php" );
 require_once( "../business/business.php" );
-require_once( ROOT_DIR . "/agla/fund.php" );
+require_once( ROOT_DIR . "/niver/fund.php" );
 require_once( "../supplies/supplies.php" );
 require_once( ROOT_DIR . '/tools/business/business_info.php' );
 //require_once('catalog.php');

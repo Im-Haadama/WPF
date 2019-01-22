@@ -4,7 +4,7 @@
 
 require_once( "../im_tools.php" );
 require_once( "../multi-site/imMulti-site.php" );
-require_once( ROOT_DIR . '/agla/gui/inputs.php' );
+require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( "../../wp-includes/pluggable.php" );
 require_once( "../account/account.php" );
 

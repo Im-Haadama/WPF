@@ -8,7 +8,7 @@
  */
 
 require_once( '../r-multisite.php' );
-require_once( ROOT_DIR . '/agla/gui/inputs.php' );
+require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( '../pricing.php' );
 require_once( "../wp/terms.php" );
 

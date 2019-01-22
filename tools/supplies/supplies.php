@@ -13,7 +13,7 @@ if ( ! defined( "ROOT_DIR" ) ) {
 	// print "ROOT_DIR: " . ROOT_DIR . "<br/>";
 }
 
-require_once( ROOT_DIR . '/agla/gui/inputs.php' );
+require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( ROOT_DIR . "/tools/mail.php" );
 require_once( ROOT_DIR . "/tools/catalog/catalog.php" );
 
