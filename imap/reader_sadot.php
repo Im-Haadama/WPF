@@ -38,7 +38,7 @@ foreach ( array( "Batya", "Limor" ) as $sender ) {
 # $search_string = 'FROM Batya SUBJECT 12.4.19';
 # print $search_string . "<br/>";
 
-// $result_file = "/home/agla/store/imap-reader/attachment/sadot" . $date . ".pdf";
+// $result_file = "/home/agla/store/imap/attachment/sadot" . $date . ".pdf";
 // print $result_file;
 
 $attachment_file = read_mail( $host, $user, $pass, $search_strings );
@@ -46,7 +46,7 @@ $attachment_file = read_mail( $host, $user, $pass, $search_strings );
 $ext = pathinfo( $attachment_file, PATHINFO_EXTENSION );
 
 $date        = date( "j.n.y", strtotime( '' ) );
-$result_file = "/home/agla/store/imap-reader/attachment/sadot" . $result_date . "." . $ext;
+$result_file = "/home/agla/store/imap/attachment/sadot" . $result_date . "." . $ext;
 rename( $attachment_file, $result_file );
 
 print $result_file;
