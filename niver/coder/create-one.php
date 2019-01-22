@@ -18,29 +18,29 @@ if ( ! defined( "ROOT_DIR" ) ) {
 
 require_once( ROOT_DIR . '/niver/fund.php' );
 
-$req_file = get_param( "req_file" );
+$config_file = get_param( "config_file" );
 
-if ( ! $req_file ) {
+if ( ! $config_file ) {
 	if ( ! isset ( $obj_name ) ) {
 		if ( ! isset( $_GET["obj_name"] ) ) {
-			print "usage: obj_name=<obj>";
+			print "usage: obj_name=<obj> or config_file=<file>";
 			die ( 1 );
 		}
 		$obj_name = $_GET["obj_name"];
 	}
 	print "obj: " . $obj_name . "<br/>";
 
-	$req_file = "coder-config-" . $obj_name . ".php";
+	$config_file = "coder-config-" . $obj_name . ".php";
 }
 
-if ( ! file_exists( $req_file ) ) {
-	print $req_file . " not found <br/>";
+if ( ! file_exists( $config_file ) ) {
+	print $config_file . " not found <br/>";
 	die( 1 );
 } else {
 	print "reading " . $req_file . " ";
 }
 
-require_once( $req_file );
+require_once( $config_file );
 
 if ( ! isset( $conn ) or ! $conn ) {
 	die ( "<br/>NOT connected to DB<br/>" );

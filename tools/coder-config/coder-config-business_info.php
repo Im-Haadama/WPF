@@ -13,7 +13,7 @@ mysqli_set_charset( $conn, 'utf8' );
 $obj_name      = "business_info";
 $table_prefix  = "im_";
 $root_file     = realpath( ROOT_DIR ) . '/tools/business/business_info.php';
-$target_folder = "/tools/business";
+$target_folder = "tools/business";
 
 $table_suffix = "";
 $table_name   = $table_prefix . $obj_name . $table_suffix;

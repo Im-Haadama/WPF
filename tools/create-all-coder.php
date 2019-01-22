@@ -12,29 +12,34 @@ if ( ! defined( "ROOT_DIR" ) ) {
 	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) );
 }
 
+// print "ROOT_DIR=" . ROOT_DIR . "<br/>";
+
 require_once( ROOT_DIR . "/niver/im_simple_html_dom.php" );
 require_once( ROOT_DIR . "/niver/gui/inputs.php" );
 
 // $actual_link = "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 
 $path = "http://" . $_SERVER['HTTP_HOST'];
-//print "XX". $path;
-//die (1);
 
 $c = array();
-array_push( $c, "tasklist", "task_templates" );
-array_push( $c, "suppliers", "business_info" );
-array_push( $c, "supplies" );
-array_push( $c, "projects" );
+//array_push( $c, "tasklist", "task_templates" );
+array_push( $c, /* "suppliers", */
+	"business_info" );
+//array_push( $c, "supplies" );
+//array_push( $c, "projects" );
 
 foreach ( $c as $obj ) {
 	print gui_header( 1, $obj ) . "<br/>";
-	$file = $path . "/niver/coder/create-one.php?req_file=" . ROOT_DIR . "/tools/coder-config/coder-config-" . $obj . ".php";
+	print "<B>create one</B><br/>";
+	$file = $path . "/niver/coder/create-one.php?config_file=" . ROOT_DIR . "/tools/coder-config/coder-config-" . $obj . ".php";
 	print $file . "<br/>";
 	$result_text = im_file_get_html( $file );
 	print $result_text;
 
-	$file = $path . "/niver/coder/create-get-all.php?req_file=" . ROOT_DIR . "/tools/coder-config/coder-config-" . $obj . ".php" .
+	print "<br/>";
+	print "<B>create get all</B><br/>";
+
+	$file = $path . "/niver/coder/create-get-all.php?config_file=" . ROOT_DIR . "/tools/coder-config/coder-config-" . $obj . ".php" .
 	        "&obj_name=" . $obj;
 	print $file . "<br/>";
 	$result_text = im_file_get_html( $file );

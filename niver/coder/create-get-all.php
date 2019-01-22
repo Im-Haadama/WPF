@@ -16,9 +16,9 @@ if ( ! defined( "ROOT_DIR" ) ) {
 
 require_once( ROOT_DIR . '/niver/fund.php' );
 
-$req_file = get_param( "req_file" );
+$config_file = get_param( "config_file" );
 
-if ( ! $req_file ) {
+if ( ! $config_file ) {
 	if ( ! isset ( $obj_name ) ) {
 		if ( ! isset( $_GET["obj_name"] ) ) {
 			print "usage: obj_name=<obj>";
@@ -31,28 +31,10 @@ if ( ! $req_file ) {
 	$req_file = "coder-config-" . $obj_name . ".php";
 }
 
-
 require_once( ROOT_DIR . "/niver/sql.php" );
 require_once( ROOT_DIR . "/niver/gui/inputs.php" );
 require_once( "coder.php" );
 
-
-$req_file = get_param( "req_file" );
-
-if ( ! $req_file ) {
-	if ( ! isset( $obj_name ) ) {
-		if ( ! isset( $_GET["obj_name"] ) ) {
-			print "Must sent obj name";
-			die( 1 );
-		}
-	}
-}
-
-$obj_name = $_GET["obj_name"];
-
-print "obj: " . $obj_name . "<br/>";
-
-$config_file = "coder-config-" . $obj_name . ".php";
 if ( ! file_exists( $config_file ) ) {
 	print "config not found: " . $config_file;
 	die ( 1 );
@@ -74,7 +56,7 @@ if ( isset( $root_file ) ) {
 print "Creating code<br/>";
 
 if ( $useMultiSite ) {
-	require_once( ROOT_DIR . "/agla/MultiSite.php" );
+	require_once( ROOT_DIR . "/niver/MultiSite.php" );
 }
 
 if ( ! isset( $target_file ) ) {
@@ -146,7 +128,7 @@ print gui_hyperlink(\"יבא\", \"c-import-" . $obj_name . ".php\");
 <script>
 " );
 
-$client_tools = ROOT_DIR . "/agla/client_tools.js";
+$client_tools = ROOT_DIR . "/niver/client_tools.js";
 $handle       = fopen( $client_tools, "r" );
 $contents     = fread( $handle, filesize( $client_tools ) );
 fwrite( $get_all, $contents );
