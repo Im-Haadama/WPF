@@ -8,7 +8,7 @@
  * Calculate pictures to receive and send "send command" to remote
  */
 
-require_once( "../tools.php" );
+require_once( "../r-shop_manager.php" );
 require_once( "multi-site.php" );
 print header_text();
 $sql = "select m.remote_prod_id as rid, p.post_title as title, m.local_prod_id as id " .
@@ -34,7 +34,7 @@ while ( $r = mysqli_fetch_assoc( $result ) ) {
 $req = rtrim( $req, "," );
 print $req . "<br/>";
 
-$info = MultiSite::Execute( $req, 2 );
+$info = ImMultiSite::sExecute( $req, 2 );
 
 foreach ( preg_split( "/<br\/>/", $info ) as $line ) {
 	if ( strlen( $line ) > 2 ) {

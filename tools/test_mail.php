@@ -7,6 +7,8 @@
  */
 
 require_once( "tools.php" );
+require_once( "mail.php" );
+
 send_mail( "mail-test", "yaakov.aglamaz@gmail.com" . ", info@im-haadama.co.il", "test message" );
 
 //require_once("delivery.php");

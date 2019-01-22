@@ -5,10 +5,12 @@
  * Date: 16/07/15
  * Time: 16:00
  */
-require_once( '../tools_wp_login.php' );
+
+require_once( '../r-shop_manager.php' );
 require_once( 'pricelist.php' );
 require_once( '../catalog/catalog.php' );
-require_once( '../multi-site/multi-site.php' );
+require_once( '../multi-site/imMulti-site.php' );
+
 ?>
 <?php
 // To map item from price list to our database the shop manager select item from the price list
@@ -29,13 +31,19 @@ if ( $debug ) {
 	print $operation;
 }
 switch ( $operation ) {
+
 	case "get_priceslist":
-		print
-			print_pricelist( $supplier_id );
+		$pl->PrintHTML( isset( $_GET["ordered"] ) ? 1 : 0, isset( $_GET["need_supply"] ) ? 1 : 0 );
 		break;
 
 	case "get_csv":
 		$pl->PrintCSV();
+		break;
+
+	case "refresh_prices":
+		print "XXXX";
+		print header_text( false, true, false );
+		$pl->Refresh();
 		break;
 
 	case "update_price":
@@ -48,8 +56,34 @@ switch ( $operation ) {
 //            my_log("supplier_id " . $supplier_id, "pricelist-post.php");
 			my_log( "price " . $price, "pricelist-post.php" );
 //            my_log("product_name " . $product_name_code, "pricelist-post.php");
-			$pl->Update( $line_id, $price );
+//			$regular_price, $sale_price = 0, $product_name = null, $code = 10, $category = null, &$id, $parent_id = null,
+//		$picture_path = null
+
+			// Todo - display and update sale price
+			$pl->Update( $line_id, $price, 0 );
 		}
+		break;
+
+	case "managed":
+		if ( ! isset ( $_GET["prod_id"] ) ) {
+			die( "send prod_id" );
+		};
+		if ( ! isset ( $_GET["is_managed"] ) ) {
+			die( "send is_managed" );
+		};
+		$prod_id    = $_GET["prod_id"];
+		$is_managed = $_GET["is_managed"] == "1";
+		$P          = new Product( $prod_id );
+//		print "fresh? " . $P->isFresh() . "<br/>";
+		$P->setStockManaged( $is_managed, $P->isFresh() ? "yes" : "no" );
+		break;
+
+	case "inactive":
+		print "Remove lines from list->draft items<br/>";
+		$pl->RemoveLines( 1 );
+		print "Remove the list<br/>";
+		$sql = "UPDATE im_suppliers SET active = 0 WHERE id = " . $supplier_id;
+		sql_query( $sql );
 		break;
 
 	case "delete_price":
@@ -63,8 +97,6 @@ switch ( $operation ) {
 //
 //            $export = mysql_query($sql) or die ("Sql error : " . mysql_error());
 //
-//            $row = mysql_fetch_row($export);
-//
 //            my_log("delete price " . $price_id . " product " . $row[0] . "price " . $row[1]);
 			$pl->Delete( $price_id );
 		}
@@ -72,12 +104,12 @@ switch ( $operation ) {
 		break;
 
 	case "delete_map":
-		print "start delete";
+		print "start delete<br/>";
 		$params = explode( ',', $_GET["params"] );
 		for ( $pos = 0; $pos < count( $params ); $pos ++ ) {
-			$map_id = $params[ $pos ];
-			$cat->DeleteMapping( $map_id );
-//			$pl->Delete($price_id);
+			$pricelist_id = $params[ $pos ];
+			// print $map_id . "<br/>";
+			PriceList::DeleteMapping( $pricelist_id );
 		}
 		print "done delete";
 		break;
@@ -118,12 +150,19 @@ switch ( $operation ) {
 	case "add_price":
 		$product_name = $_GET["product_name"];
 		$price        = $_GET["price"];
+		$code         = 10;
+		if ( isset( $_GET["code"] ) ) {
+			$code = $_GET["code"];
+		}
+
 //        my_log("supplier_id " . $supplier_id, "pricelist-post.php");
 //        my_log("price " . $price, "pricelist-post.php");
 //        my_log("product_name " . $product_name, "pricelist-post.php");
 //        my_log("date " . date('Y-m-d'), "pricelist-post.php");
 //        print "Adding " . $product_name . " " . " price: " . $price . "<br/>";
-		$pl->AddOrUpdate( trim( $price ), '', $product_name, 10, $pricelist_id, 0 );
+		$pl->AddOrUpdate( trim( $price ), '', $product_name, $code, "", $pricelist_id, 0 );
+// function AddOrUpdate( $regular_price, $sale_price, $product_name, $code = 10, $category, &$id, $parent_id = null ) {
+
 		break;
 
 	case "add_prices":
@@ -135,7 +174,7 @@ switch ( $operation ) {
 			$price        = $params[ $pos + 1 ];
 			//  print "Adding " . $product_name . " " . " price: " . $price . "<br/>";
 
-			$pl->AddOrUpdate( $price, '', $product_name, 10, $pricelist_id, 0 );
+			$pl->AddOrUpdate( $price, '', $product_name, 10, "", $pricelist_id, 0 );
 			print $pricelist_id . "<br/>";
 		}
 		break;
@@ -183,47 +222,16 @@ switch ( $operation ) {
 		$supplier_id = $_GET["supplier_id"];
 		$PL          = new PriceList( $supplier_id );
 		$PL->RemoveLines( $status );
+		break;
 
-}
+	case 'get_prod':
+		$pricelist_id = $_GET["pricelist"];
+		$prod_link_id = Catalog::GetProdID( $pricelist_id, true );
 
-function print_pricelist( $supplier_id ) {
-	// global $debug;
+		$prod_id = $prod_link_id[0];
+		print $prod_id;
+		break;
 
-//    $site_id = sql_query_single_scalar('select site_id from im_suppliers where id = ' . $supplier_id);
-//
-//    if ($site_id > 0) {
-//        // remote
-//        $data = "<tr>";
-//        $data .= "<td>בחר</td>";
-//        $data .= "<td>קוד מוצר</td>";
-//        $data .= "<td>שם מוצר</td>";
-//        $data .= "<td>תאריך שינוי</td>";
-//        $data .= "<td>מחיר קנייה</td>";
-//        $data .= "<td>מחיר מחושב</td>";
-//        $data .= "<td>פריט מקושר</td>";
-//        $data .= "<td>מחיר מכירה</td>";
-//        $data .= "<td>מחיר מבצע</td>";
-//        $data .= "<td>מזהה</td>";
-//        $data .= "</tr>";
-//
-//        print $data;
-//
-//        $remote = get_site_tools_url($site_id) . "/catalog/get-as-pricelist.php";
-//        $html = file_get_html($remote);
-//        foreach($html->find('tr') as $row) {
-//            $prod_id = $row->find('td', 1)->plaintext;
-//            //print "prod id " . $prod_id;
-//            $name = $row->find('td', 2)->plaintext;
-//            $date = $row->find('td', 3)->plaintext;
-//            $price = $row->find('td', 4)->plaintext;
-//            $local_prod_id = multisite_map_get_remote($prod_id, $site_id);
-//            print print_html_line($name, $price, $date, $prod_id, $prod_id, 5, $local_prod_id, false);
-//        }
-//    } else {
-//        // Local
-	global $pl;
-	$pl->PrintHTML();
-//    }
 }
 
 ?>

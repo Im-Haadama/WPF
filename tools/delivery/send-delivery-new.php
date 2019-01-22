@@ -6,7 +6,7 @@
  * Time: 15:32
  */
 
-include_once( "../tools_wp_login.php" );
+include_once( "../r-shop_manager.php" );
 include_once( "../orders/orders-common.php" );
 include_once( "../account/account.php" );
 include_once( "delivery.php" );

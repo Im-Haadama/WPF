@@ -38,11 +38,13 @@ require_once( 'simple_html_dom.php' );
 //    print $line;
 //}
 
-$url = "http://store.im-haadama.co.il/wordpress/wp-content/uploads/2014/10/seeds.jpg";
+//$url = "http://store.im-haadama.co.il/wordpress/wp-content/uploads/2014/10/seeds.jpg";
+//
+//if ( $i = strstr( $url, "wordpress" ) ) {
+//	print $i . "<br/>";
+//	$url = strstr( $url, "wordpress", true ) . substr( $i, 10 );
+//	print $url;
+////                    $url = substr($url, 10);
+//}
 
-if ( $i = strstr( $url, "wordpress" ) ) {
-	print $i . "<br/>";
-	$url = strstr( $url, "wordpress", true ) . substr( $i, 10 );
-	print $url;
-//                    $url = substr($url, 10);
-}
+print ImMultiSite::RunAll( "multi-site/pp.php" );

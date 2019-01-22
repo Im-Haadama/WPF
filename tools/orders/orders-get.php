@@ -1,15 +1,127 @@
 <?php
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+require_once( "../im_tools.php" );
+require_once( '../r-shop_manager.php' );
+// require_once 'orders-common.php';
+require_once '../delivery/delivery.php';
 
-require_once( '../tools_wp_login.php' );
-require 'orders-common.php';
-require '../delivery/delivery.php';
+print header_text( false, false );
+
+if ( isset( $_GET["week"] ) ) {
+	$week = $_GET["week"];
+}
+
+$order_type = get_param( "order_type" ); // comma separated. w - waiting to deliver. p - pending/on-hold
+
+if ( ! $order_type ) {
+	print gui_button( "btn_new", "show_create_order()", "הזמנה חדשה" );
+}
+
+require( "new-order.php" );
 
 ?>
 
-<html dir="rtl" lang="he">
-<head>
-    <meta charset="UTF-8">
+<script type="text/javascript" src="/agla/client_tools.js"></script>
+
     <script>
+        function mission_changed(order_id) {
+            // "mis_"
+            //var order_id = field.name.substr(4);
+            var mis = document.getElementById("mis_" + order_id);
+            var mission_id = get_value(mis);
+//            $mission_id = $_GET["id"];
+//            $order_id   = $_GET["order_id"];
+            execute_url("orders-post.php?operation=mission&order_id=" + order_id + "&id=" + mission_id);
+        }
+
+        function start_handle() {
+            var collection = document.getElementsByClassName("select_order_wc-pending");
+            var order_ids = new Array();
+
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                // Wait to get query result
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+                {
+                    window.location = window.location;
+                }
+            }
+
+            for (var i = 0; i < collection.length; i++) {
+                var order_id = collection[i].id.substr(4);
+                if (document.getElementById("chk_" + order_id).checked)
+                    order_ids.push(order_id);
+            }
+            collection = document.getElementsByClassName("select_order_wc-on-hold");
+            for (var i = 0; i < collection.length; i++) {
+                order_id = collection[i].id.substr(4);
+                if (document.getElementById("chk_" + order_id).checked)
+                    order_ids.push(order_id);
+            }
+
+            var request = "orders-post.php?operation=start_handle&ids=" + order_ids.join();
+            xmlhttp.open("GET", request, true);
+            xmlhttp.send();
+        }
+
+        function cancel_order() {
+            var classes = ["select_order_wc-pending", "select_order_wc-processing", "select_order_wc-on-hold"];
+            var order_ids = new Array();
+
+            for (var c = 0; c < classes.length; c++) {
+                var collection = document.getElementsByClassName(classes[c]);
+                for (var i = 0; i < collection.length; i++) {
+                    var order_id = collection[i].id.substr(4);
+                    if (document.getElementById("chk_" + order_id).checked)
+                        order_ids.push(order_id);
+                }
+            }
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                // Wait to get query result
+                if (xmlhttp.readyState === 4 && xmlhttp.status === 200)  // Request finished
+                {
+                    window.location = window.location;
+                }
+            }
+            var request = "orders-post.php?operation=cancel_orders&ids=" + order_ids.join();
+            xmlhttp.open("GET", request, true);
+            xmlhttp.send();
+        }
+
+        function delivered() {
+            var collection = document.getElementsByClassName("select_order_wc-awaiting-shipment");
+            var order_ids = new Array();
+            var table = document.getElementById("wc-awaiting-shipment");
+
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                // Wait to get query result
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+                {
+                    window.location = window.location;
+                }
+            }
+
+            for (var i = 0; i < collection.length; i++) {
+                var order_id = collection[i].id.substr(4);
+                if (document.getElementById("chk_" + order_id).checked)
+                    order_ids.push(order_id);
+            }
+            var request = "orders-post.php?operation=delivered&ids=" + order_ids.join();
+            xmlhttp.open("GET", request, true);
+            xmlhttp.send();
+        }
+
+        function select_orders(table_name) {
+            var table = document.getElementById(table_name);
+            for (var i = 1; i < table.rows.length; i++)
+                table.rows[i].firstElementChild.firstElementChild.checked =
+                    table.rows[0].firstElementChild.firstElementChild.checked;
+
+        }
+
         function complete_status() {
             xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function () {
@@ -52,125 +164,50 @@ require '../delivery/delivery.php';
     </script>
 
 </head>
+
 <?php
 
-// Check connection
-if ( $link->connect_error ) {
-	die( "Connection failed: " . $conn->connect_error );
+if ( isset( $week ) ) {
+	print "הזמנה לשבוע  " . $week . "<br/>";
+	print orders_table( "wc-complete", false, 0, $week );
+	die ( 0 );
 }
 
+print gui_header( 1, "הזמנות" );
 
-print "<header><center><h1>הזמנות במצב טיפול</h1></center></header>";
+debug_time1( "reset" );
 
-$sql = 'SELECT posts.id'
-       . ' FROM `wp_posts` posts'
-       . " WHERE post_status LIKE '%wc-processing%' or post_status LIKE '%wc-on-hold%' order by 1";
-
-
-$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
-
-$fields = mysql_num_fields( $export );
-
-for ( $i = 0; $i < $fields; $i ++ ) {
-	$header .= mysql_field_name( $export, $i ) . "\t";
-}
-
-$data = "<table>";
-$data .= "<tr>" . gui_cell( gui_bold( "אזור" ) );
-$data .= "<td><h3>מספר </br> הזמנה</h3></td>";
-$data .= "<td><h3>שם המזמין</h3></td>";
-$data .= "<td><h3>עבור</h3></td>";
-$data .= "<td><h3>סכום</h3></td>";
-//$data .= "<td><h3>תעודת<br/>משלוח</h3></td>";
-//$data .= "<td><h3>סכום</h3></td>";
-//$data .= "<td><h3>דמי<br/>משלוח</h3></td>";
-//$data .= "<td><h3>אחוז מילוי</h3></td>";
-$data                  .= "</tr>";
-$count                 = 0;
-$total_delivery_total  = 0;
-$total_order_total     = 0;
-$total_order_delivered = 0;
-$total_delivery_fee    = 0;
-$lines                 = array();
-
-while ( $row = mysql_fetch_row( $export ) ) {
-	$order_id    = $row[0];
-	$customer_id = get_postmeta_field( $order_id, '_customer_user' );
-
-	// display order_id with link to display it.
-	$count ++;
-	// 1) order ID with link to the order
-	$zone = order_get_zone( $order_id );
-	// print $order_id. " ". $zone . "<br/>";
-	$row_text = gui_cell( zone_get_name( $zone ) );
-	$row_text .= "<td><a href=\"get-order.php?order_id=" . $order_id . "\">" . $order_id . "</a></td>";
-
-	// 2) Customer name with link to his deliveries
-	$row_text .= "<td><a href=\"../account/get-customer-account.php?customer_id=" . $customer_id . "\">" .
-
-
-	             get_customer_by_order_id( $order_id ) . "</a></td>";
-
-	$row_text .= "<td>" . get_postmeta_field( $order_id, '_shipping_first_name' ) . ' ' .
-	             get_postmeta_field( $order_id, '_shipping_last_name' ) . "</td>";
-
-	// 3) Order total
-	$order_total       = get_postmeta_field( $order_id, '_order_total' );
-	$row_text          .= "<td>" . $order_total . '</td>';
-	$total_order_total += $order_total;
-
-	// 4) Delivery note
-	$sql1 = 'SELECT id FROM im_delivery'
-	        . ' WHERE order_id = ' . $order_id;
-
-	my_log( $sql1 );
-	// print $sql . "<br>";
-	$export1 = mysql_query( $sql1 );
-	if ( $export1 ) {
-		$row1        = mysql_fetch_row( $export1 );
-		$delivery_id = intval( $row1[0] );
-		$delivery    = new Delivery( $delivery_id );
-		$row_text    .= "<td><a href=\"..\delivery\get-delivery.php?id=" . $delivery_id . "\"</a>" . $delivery_id . "</td>";
-//        $total_amount = get_delivery_total($delivery_id[0]);
-//        $row_text .= "<td>" . $total_amount . "</td>";
-		if ( $delivery_id > 0 ) {
-			$row_text .= "<td>" . $delivery->Price() . "</td>";
-			$row_text .= "<td>" . $delivery->DeliveryFee() . "</td>";
-			$percent  = "";
-			if ( ( $order_total - $delivery->DeliveryFee() ) > 0 ) {
-				$percent = round( 100 * ( $delivery->Price() - $delivery->DeliveryFee() ) / ( $order_total - $delivery->DeliveryFee() ), 0 ) . "%";
-			}
-			$row_text              .= "<td>" . $percent . "%</td>";
-			$total_delivery_total  += $delivery->Price();
-			$total_delivery_fee    += $delivery->DeliveryFee();
-			$total_order_delivered += $order_total;
-		}
-	} else {
-		$row_text .= "<td></td><td></td><td></td>";
+if ( current_user_can( "edit_shop_orders" ) and
+     ( is_null( $order_type ) or in_array( "p", explode( ",", $order_type ) ) )
+) {
+	// print "XXX";
+	// print $pending;
+	$pending = orders_table( array( "wc-pending", "wc-on-hold" ) );
+	if ( strlen( $pending ) > 4 ) {
+		print $pending;
+		print gui_button( "btn_start", "start_handle()", "התחל טיפול" );
+		print gui_button( "btn_cancel", "cancel_order()", "בטל" ) . "<br/>";
 	}
-	$line = $row_text;
-
-	array_push( $lines, array( $zone, $line ) );
-	//   $data .= "<tr> " . trim($line) . "</tr>";
+} else {
+	if ( ! current_user_can( "edit_shop_orders" ) ) {
+		print "no permission";
+	}
+	// print "ot=" . is_null( $order_type ) . "<br/>";
+	// print "אין הרשאות";
 }
-sort( $lines );
 
-foreach ( $lines as $line ) {
-	$data .= "<tr>" . $line[1] . "</tr>";
+print orders_table( "wc-processing" );
+
+if ( current_user_can( "edit_shop_orders" ) and
+     ( is_null( $order_type ) or in_array( "w", explode( ",", $order_type ) ) )
+) {
+	$shipment = orders_table( "wc-awaiting-shipment" );
+
+	if ( strlen( $shipment ) > 5 ) {
+		print $shipment;
+		print gui_button( "btn_delivered", "delivered()", "משלוח נמסר" ) . "<br/>";
+	}
 }
-$rate = 0;
-if ( $total_order_delivered > 0 ) {
-	$rate = round( 100 * ( $total_delivery_total - $total_delivery_fee ) / $total_order_delivered );
-}
-$data .= "<tr><td></td><td></td><td></td><td>" . $total_order_total . "</td><td></td>" .
-         "<td>" . $total_delivery_total . "</td>" .
-         "<td>" . $total_delivery_fee . "</td>" .
-         "<td>" . $rate . "%</td></tr>";
-$data = str_replace( "\r", "", $data );
-
-
-$data .= "</table>";
-$data .= '<center>סהכ הזמנות השבוע ' . $count . '</center>';
 
 // This month active users
 $sql = 'SELECT distinct meta.meta_value ' .
@@ -181,14 +218,13 @@ $sql = 'SELECT distinct meta.meta_value ' .
        'order by 1';
 
 // print "לקוחות החודש: ";
-
-$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
-$active_users = array();
-while ( $row = mysql_fetch_row( $export ) ) {
-	$user_id                  = $row[0];
-	$active_users[ $user_id ] = $user_id;
-	// print get_customer_name($user_id) . ", ";
-}
+//$result       = mysqli_query( $conn, $sql );
+//$active_users = array();
+//while ( $row = mysqli_fetch_row( $result ) ) {
+//	$user_id                  = $row[0];
+//	$active_users[ $user_id ] = $user_id;
+//	// print get_customer_name($user_id) . ", ";
+//}
 
 print "<br>";
 
@@ -199,27 +235,29 @@ $sql = 'SELECT meta.meta_value ' .
        'and meta.post_id = posts.id and meta.meta_key = \'_customer_user\' ' .
        'and post_date > curdate() - 7 ' .
        'order by 1 ';
-$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+
+$result = mysqli_query( $conn, $sql );
+
+//while ( $row = mysqli_fetch_row( $result ) ) {
 
 // print "לקוחות השבוע: ";
 
-while ( $row = mysql_fetch_row( $export ) ) {
-	$user_id = $row[0];
+//	$user_id = $row[0];
 	// print get_customer_name($user_id) . ", ";
 
-	unset( $active_users[ $user_id ] );
-}
+//	unset( $active_users[ $user_id ] );
+//}
 
 // print "<br>";
 
-print "עדיין לא הזמינו: ";
-foreach ( $active_users as $u ) {
-	$name = get_customer_name( $u );
-	// $name = "userid-" . $u;
-	print   $name . "(" . get_user_order_count( $u ) . "), ";
-}
+//print "עדיין לא הזמינו: ";
+//foreach ( $active_users as $u ) {
+//	$name = get_customer_name( $u );
+//	// $name = "userid-" . $u;
+//	print   $name . "(" . get_user_order_count( $u ) . "), ";
+//}
 
-print "$data";
+//print "$data";
 
 function get_user_order_count( $u ) {
 	$sql = 'SELECT count(*) ' .
@@ -227,16 +265,45 @@ function get_user_order_count( $u ) {
 	       ' WHERE post_status like \'wc-%\' ' .
 	       ' and meta.meta_key = \'_customer_user\' and meta.meta_value = ' . $u .
 	       ' and meta.post_id = posts.ID';
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
 
-	$row = mysql_fetch_row( $export );
-
-	return $row[0];
-
+	return sql_query_single_scalar( $sql );
 }
 
 ?>
-<button id="btn" onclick="complete_status()">סיים טיפול בכל ההזמנות</button>
-<button id="btn" onclick="create_subs()">צור הזמנות למנויים</button>
-<button id="btn" onclick="replace_baskets()">החלף סלים</button>
+<!--<button id="btn" onclick="replace_baskets()">החלף סלים</button>-->
+<datalist id="units">
+    <option value="קג"></option>
+    <option value="יח"></option>
+</datalist>
+
+
+<?php
+
+function debug_time2( $str ) {
+	$micro_date = microtime();
+	$date_array = explode( " ", $micro_date );
+	$date       = date( "Y-m-d H:i:s", $date_array[1] );
+	echo "$str $date:" . $date_array[0] . "<br>";
+}
+
+function debug_time1( $str ) {
+	static $prev_time;
+	if ( $str == "reset" ) {
+		$prev_time = microtime();
+
+		return;
+	}
+	$now         = microtime();
+	$micro_delta = $now - $prev_time;
+	$date_array  = explode( " ", $micro_delta );
+	$date        = date( "s", $date_array[1] );
+	if ( $micro_delta > 0.05 ) {
+		my_log( "$str $date:" . $date_array[0] . "<br>", "performance" );
+	}
+	$prev_time = $now;
+}
+
+?>
+<div id="logging"></div>
+
 </html>

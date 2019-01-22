@@ -29,9 +29,9 @@ function history_total_orders() {
 	       . " and woi.order_item_id = woim1.order_item_id and woim1.`meta_key` = '_product_id'"
 	       . " group by woi.order_item_name order by 1 ";
 
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+	$result = sql_query( $sql );
 
-	while ( $row = mysql_fetch_row( $export ) ) {
+	while ( $row = mysqli_fetch_row( $result ) ) {
 		$prod_name     = $row[0];
 		$prod_quantity = $row[1];
 		$order_item_id = $row[2];
@@ -57,10 +57,10 @@ function history_total_orders() {
 
 // Second pass. Output quantities
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+	$result     = sql_query( $sql );
 	$data_lines = array();
 
-	while ( $row = mysql_fetch_row( $export ) ) {
+	while ( $row = mysqli_fetch_row( $result ) ) {
 		$prod_name     = $row[0];
 		$prod_quantity = $row[1];
 		$order_item_id = $row[2];
@@ -69,13 +69,12 @@ function history_total_orders() {
 
 		$ordered_products[ $prod_id ] = $prod_quantity;
 		// my_log("YYY: " . $basket_quantities[35] . ", " . $basket_quantities[2201]);
-		$line = table_line( $prod_id, $prod_quantity, false, true );
+		$line = delivery_table_line( $prod_id, $prod_quantity, false, true );
 		array_push( $data_lines, array( $supplier_name, $line ) );
 	}
 
 //// Now add basket products, not ordered directly.
 //    $sql = 'select distinct product_id from im_baskets';
-//    $export = mysql_query($sql) or die ("Sql error : " . mysql_error());
 //
 //    while ($row = mysql_fetch_row($export))
 //    {

@@ -6,28 +6,63 @@
  * Time: 18:09
  */
 
-require '../tools.php';
+require '../r-shop_manager.php';
 require_once( "supplies.php" );
-require_once( "../gui/inputs.php" );
-$id = $_GET["id"];
+require_once( ROOT_DIR . '/agla/gui/inputs.php' );
+require_once( "../account/gui.php" );
+
+print header_text( false );
+
+$print = false;
+if ( isset( $_GET["print"] ) ) {
+	$print = true;
+}
+
+if ( isset( $_GET["business_id"] ) ) {
+	$bid = $_GET["business_id"];
+	$sql = "SELECT id FROM im_supplies WHERE business_id = " . $bid;
+//    print $sql;
+	$id = sql_query_single_scalar( $sql );
+	if ( ! ( $id > 0 ) ) {
+		print "לא נמצאה הספקה";
+
+		return;
+	}
+} else {
+	$id = $_GET["id"];
+}
 
 ?>
+<script type="text/javascript" src="/agla/client_tools.js"></script>
 
-<html dir="rtl" lang="he">
-<head>
-    <meta charset="UTF-8">
-
-</head>
 <script>
+    function supply_pay() {
+        var date = get_value_by_name("pay_date");
+
+        var request_url = "supplies-post.php?operation=supply_pay&date=" + date +
+            "&id=" + <? print $id; ?>;
+
+        var request = new XMLHttpRequest();
+        request.onreadystatechange = function () {
+            if (request.readyState === 4 && request.status === 200) {
+                // window.location = window.location;
+                update_display();
+            }
+        }
+
+        request.open("GET", request_url, true);
+        request.send();
+    }
     function add_item() {
         var request_url = "supplies-post.php?operation=add_item&supply_id=<?php print $id; ?>";
         var _name = encodeURI(get_value(document.getElementById("itm_")));
-        request_url = request_url + "&name=" + _name;
+        var prod_id = _name.substr(0, _name.indexOf(")"));
+        request_url = request_url + "&prod_id=" + prod_id;
         var _q = 1; // encodeURI(get_value(document . getElementById("qua_")));
         request_url = request_url + "&quantity=" + _q;
         var request = new XMLHttpRequest();
         request.onreadystatechange = function () {
-            if (request.readyState == 4 && request.status == 200) {
+            if (request.readyState === 4 && request.status === 200) {
                 // window.location = window.location;
                 update_display();
                 //     document.getElementById("logging").innerHTML += http_text;
@@ -42,55 +77,82 @@ $id = $_GET["id"];
 </script>
 <body onload="update_display()">
 
-
-<center><img src="http://store.im-haadama.co.il/wp-content/uploads/2014/11/cropped-imadama-logo-7x170.jpg"></center>
 <div id="logging"></div>
 <?php
 
-$send = $_GET["send"];
+$send = isset( $_GET["send"] );
 
 print "<center><h1>הספקה מספר ";
 print $id . " - " . supply_get_supplier( $id );
 print  "</h1> </center>";
 
 ?>
+<div id="head_edit">
 
-<input type="checkbox" id="chk_internal" onclick='update_display();'>מסמך פנימי<br>
+    <input type="checkbox" id="chk_internal" onclick='update_display();'>מסמך פנימי<br>
 
-<h2>הערות</h2>
-<textarea id="comment" rows="4" cols="50">
+    <textarea id="comment" rows="4" cols="50">
 </textarea>
 <button id="update_comment" onclick='update_comment();'>עדכן הערות
 </button>
 <br/>
 <?php
-print gui_datalist( "prods", "im_products", "post_title" );
+if ( user_can( get_user_id(), "pay_supply" ) ) {
+
+	print gui_table( array( array( "תאריך תשלום", gui_input_date( "pay_date", "", "", "onchange=supply_pay()" ) ) ) );
+}
+?>
+</div>
+<div id="head_print">
+</div>
+<?php
+print gui_datalist( "products", "im_products", "post_title", true );
 
 if ( ! $send ) {
+	print '<div id="buttons">';
 	print '<button id="btn_print" onclick="printDeliveryNotes()">הדפס תעודה</button>';
 	print '<button id="btn_del" onclick="deleteItems()">מחק שורות</button>';
 	print '<button id="btn_update" onclick="updateItems()">עדכן שורות</button>';
+	print '</div>';
 }
 
 ?>
-<h2>פריטים</h2>
+<br/>
+
+משימה
+<?php
+$mission_id = supply_get_mission_id( $id );
+print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_mission()\"" );
+
+?>
 
 <table id="items"></table>
 
-<div>
+<div id="add_items">
 	<?php
 	print gui_button( "btn_add_line", "add_item()", "הוסף" );
-
+	print gui_select_product( "itm_", "" );
 	?>
-    <input id="itm_" list="prods">
+    <!--    <input id="itm_" list="prods">-->
 </div>
+<script type="text/javascript" src="/agla/client_tools.js"></script>
 <script>
-	<?php
-	$filename = __DIR__ . "/../client_tools.js";
-	$handle = fopen( $filename, "r" );
-	$contents = fread( $handle, filesize( $filename ) );
-	print $contents;
-	?>
+    function save_mission() {
+        var mission = get_value(document.getElementById("mission_select"));
+        var request = "supplies-post.php?operation=set_mission&mission_id=" + mission + "&supply_id=<?print $id; ?>";
+
+        xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+            // Wait to get query result
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+            {
+                location.reload();
+            }
+        }
+        xmlhttp.open("GET", request, true);
+        xmlhttp.send();
+    }
+
 
     function update_comment() {
         var text = get_value(document.getElementById("comment"));
@@ -117,44 +179,44 @@ if ( ! $send ) {
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {  // Request finished
                 table = document.getElementById("items");
                 table.innerHTML = xmlhttp.response;
+                xmlhttp1 = new XMLHttpRequest();
+                var request1 = "supplies-post.php?operation=get_comment"
+                    + "&id=<?php print $id; ?>";
+
+                xmlhttp1.open("GET", request1, true);
+                xmlhttp1.onreadystatechange = function () {
+                    // Wait to get query result
+                    if (xmlhttp1.readyState === 4 && xmlhttp1.status === 200) {  // Request finished
+                        var comment = document.getElementById("comment");
+                        comment.innerHTML = xmlhttp1.response;
+                        xmlhttp2 = new XMLHttpRequest();
+                        var request2 = "supplies-post.php?operation=get_business"
+                            + "&supply_id=<?php print $id; ?>";
+
+                        xmlhttp2.open("GET", request2, true);
+                        xmlhttp2.onreadystatechange = function () {
+                            // Wait to get query result
+                            if (xmlhttp2.readyState === 4 && xmlhttp2.status === 200) {  // Request finished
+                                var arrival_info = xmlhttp2.response;
+                                if (arrival_info.length > 5) {
+                                    supply_document.innerHTML = arrival_info;
+                                    supply_arrived.hidden = true;
+                                    supply_document.hidden = false;
+                                } else {
+                                    supply_arrived.hidden = false;
+                                    supply_document.hidden = true;
+                                }
+                            }
+                        }
+                        xmlhttp2.send();
+
+                    }
+                }
+                xmlhttp1.send();
+
             }
         }
         xmlhttp.send();
-
-        xmlhttp1 = new XMLHttpRequest();
-        var request1 = "supplies-post.php?operation=get_comment"
-            + "&id=<?php print $id; ?>";
-
-        xmlhttp1.open("GET", request1, true);
-        xmlhttp1.onreadystatechange = function () {
-            // Wait to get query result
-            if (xmlhttp1.readyState === 4 && xmlhttp1.status === 200) {  // Request finished
-                var comment = document.getElementById("comment");
-                comment.innerHTML = xmlhttp1.response;
-            }
-        }
-        xmlhttp1.send();
-
-        xmlhttp2 = new XMLHttpRequest();
-        var request2 = "supplies-post.php?operation=get_business"
-            + "&supply_id=<?php print $id; ?>";
-
-        xmlhttp2.open("GET", request2, true);
-        xmlhttp2.onreadystatechange = function () {
-            // Wait to get query result
-            if (xmlhttp2.readyState === 4 && xmlhttp2.status === 200) {  // Request finished
-                var arrival_info = xmlhttp2.response;
-                if (arrival_info.length > 5) {
-                    supply_document.innerHTML = arrival_info;
-                    supply_arrived.hidden = true;
-                    supply_document.hidden = false;
-                } else {
-                    supply_arrived.hidden = false;
-                    supply_document.hidden = true;
-                }
-            }
-        }
-        xmlhttp2.send();
     }
 
     function updateItems() {
@@ -176,7 +238,7 @@ if ( ! $send ) {
             // Wait to get query result
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
             {
-                location.reload();
+                update_display();
             }
         }
         var request = "supplies-post.php?operation=update_lines&params=" + params;
@@ -212,35 +274,31 @@ if ( ! $send ) {
     }
 
     function printDeliveryNotes() {
-        // Get the html
-        document.getElementById('btn_print').style.visibility = "hidden";
-        window.open("//pdfcrowd.com/url_to_pdf/");
-        document.getElementById('btn_print').style.visibility = "visible";
-//	var txt = document.documentElement.innerHTML;
+        document.getElementById('head_print').innerHTML = get_value(document.getElementById("comment"));
+        var elements = ["buttons", "supply_arrived", "add_items", "head_edit"];
+        elements.forEach(function (element) {
+            document.getElementById(element).style.display = "none";
+        });
+        document.getElementById("head_print").style.display = "block";
 
-        // Download the html
-// 	var a = document.getElementById("a");
-//	var file = new Blob(txt, 'text/html');
-// 	a.href = URL.createObjectURL(file);
-        // a.download = 're.html';
+        window.print();
 
-//	download(txt, 'myfilename.html', 'text/html')
-//	window.open('data:text/html;charset=utf-8,<html dir="rtl" lang="he">' + txt + '</html>');
-
-//
-
-        // To Do: upload the file
-
-        document.getElementById('btn_calc').style.visibility = "visible";
-        document.getElementById('btn_print').style.visibility = "visible";
+        document.getElementById("head_print").style.display = "none";
+        elements.forEach(function (element) {
+            document.getElementById(element).style.display = "block";
+        });
     }
 
     function got_supply() {
         var supply_number = get_value(document.getElementById("supply_number"));
         var supply_total = get_value(document.getElementById("supply_total"));
+        var net_total = get_value(document.getElementById("net_total"));
+        var is_invoice = get_value(document.getElementById("is_invoice"));
 
         var request_url = "supplies-post.php?operation=got_supply&supply_id=<?php print $id; ?>" +
-            "&supply_total=" + supply_total + "&supply_number=" + supply_number;
+            "&supply_total=" + supply_total + "&supply_number=" + supply_number +
+            "&net_total=" + net_total +
+            "&is_invoice=" + is_invoice;
 
         var request = new XMLHttpRequest();
         request.onreadystatechange = function () {
@@ -259,21 +317,66 @@ if ( ! $send ) {
 </script>
 <br/>
 <br/>
+<style>
+    .tooltip {
+        position: relative;
+        display: inline-block;
+        border-bottom: 1px dotted black;
+    }
+
+    .tooltip .tooltiptext {
+        visibility: hidden;
+        width: 120px;
+        background-color: black;
+        color: #fff;
+        text-align: center;
+        border-radius: 6px;
+        padding: 5px 0;
+        position: absolute;
+        z-index: 1;
+        top: -5px;
+        right: 110%;
+    }
+
+    .tooltip .tooltiptext::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 100%;
+        margin-top: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: transparent transparent transparent black;
+    }
+    .tooltip:hover .tooltiptext {
+        visibility: visible;
+    }
+</style>
+
 <div id="supply_arrived">
-    <div id="arrival_entry">
-		<?php
+
+    <?php $invoice_text = '
+    <div class="tooltip">' . gui_checkbox("is_invoice", "") .
+                          '<span class="tooltiptext">יש לסמן עבור חשבונית ולהשאיר לא מסומן עבור תעודת משלוח</span>
+    </div>';
+
 		print gui_table( array(
-			array( "מספר תעודת משלוח", gui_input( "supply_number", "" ) ),
-			array( "סכום", gui_input( "supply_total", "" ) )
+		    array("חשבונית", $invoice_text),
+			array( "מספר מסמך", gui_input( "supply_number", "" )),
+			array( "סכום כולל מעמ", gui_input( "supply_total", "" ) ),
+			array( "סכום ללא מעמ", gui_input( "net_total", "" ) )
 		) );
+        // print gui_label("help", 'תיבת הסימון ליד "חשבונית" תשאר לא מסומנת במקרה של תעודת משלוח');
+		print "<br/>";
 
 		print gui_button( "btn_got_supply", "got_supply()", "סחורה התקבלה" );
 
 		?>
-    </div>
 </div>
+
 <div id="supply_document">
 </div>
+
 
 </body>
 </html>

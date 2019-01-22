@@ -1,5 +1,5 @@
 <?php
-require_once( '../tools.php' );
+require_once( '../r-shop_manager.php' );
 
 ?>
 <html dir="rtl" lang="he">
@@ -11,16 +11,6 @@ require_once( '../tools.php' );
 
 $last_days = $_GET["last_days"];
 
-$link = mysql_connect( $servername, $username, $password );
-mysql_set_charset( 'utf8', $link );
-
-// Check connection
-if ( $link->connect_error ) {
-	die( "Connection failed: " . $conn->connect_error );
-}
-
-mysql_select_db( $dbname );
-
 print "<center>הזמנות מה-" . $last_days . " ימים אחרונים " . "</center>";
 
 $sql = 'SELECT posts.id, posts.post_date'
@@ -29,29 +19,29 @@ $sql = 'SELECT posts.id, posts.post_date'
        . ' and post_status like \'wc%\'';
 
 
-$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+$result = sql_query( $sql );
 
-$fields = mysql_num_fields( $export );
+$fields = mysqli_num_fields( $result );
 
 for ( $i = 0; $i < $fields; $i ++ ) {
-	$header .= mysql_field_name( $export, $i ) . "\t";
+	$header .= $fields[ i ] . "\t";
 }
 
 $data = "<table>";
 
-while ( $row = mysql_fetch_row( $export ) ) {
+while ( $row = mysqli_fetch_row( $result ) ) {
 	$order_id  = $row[0];
 	$post_date = $row[1];
 	$row_text  = "<td><a href=\"http://store.im-haadama.co.il/tools/orders/get-order.php?order_id=" . $order_id . "\">" . $order_id . "</a></td><td>" . $post_date . "</td>";
 
-	$sql_i = 'SELECT meta_value FROM `wp_postmeta` pm'
-	         . ' WHERE pm.post_id = ' . $order_id
-	         . ' AND `meta_key` IN ( \'_shipping_first_name\', \'_shipping_last_name\', \'_shipping_city\', \'_billing_phone\', \'method_id\')';
-	$export_i = mysql_query( $sql_i ) or die ( "Sql error: " . mysql_error() );
-	while ( $row_i = mysql_fetch_row( $export_i ) ) {
+	$sql_i    = 'SELECT meta_value FROM `wp_postmeta` pm'
+	            . ' WHERE pm.post_id = ' . $order_id
+	            . ' AND `meta_key` IN ( \'_shipping_first_name\', \'_shipping_last_name\', \'_shipping_city\', \'_billing_phone\', \'method_id\')';
+	$result_i = sql_query( $sql_i );
+	while ( $row_i = mysqli_fetch_row( $result_i ) ) {
 		$row_text .= "<td>" . $row_i[0] . '</td>';
 	}
-	$user_id   = get_postmeta_field( $order_id, '_customer_user' );
+	$user_id   = order_get_customer_id( $order_id );
 	$user_info = get_userdata( $user_id );
 	$row_text  .= "<td>" . $user_info->user_email . "</td>";
 
@@ -59,8 +49,8 @@ while ( $row = mysql_fetch_row( $export ) ) {
 
 	$sql_o = 'SELECT order_item_name FROM `wp_woocommerce_order_items` WHERE order_id= \'' . $order_id . '\' AND order_item_type = \'shipping\' LIMIT 0, 30 ';
 
-	$export_o = mysql_query( $sql_o ) or die ( "Sql error: " . mysql_error() );
-	while ( $row_o = mysql_fetch_row( $export_o ) ) {
+	$result_o = sql_query( $sql_o );
+	while ( $row_o = mysqli_fetch_row( $result_o ) ) {
 		$row_text .= "<td>" . $row_o[0] . '</td>';
 	}
 	$line = $row_text;
@@ -87,17 +77,17 @@ $sql = 'select '
        . ' group by woi.order_item_name order by 1'
        . ' ';
 
-$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+$result = sql_query( $sql );
 
-$fields = mysql_num_fields( $export );
+$fields = mysqli_num_fields( $result );
 
 for ( $i = 0; $i < $fields; $i ++ ) {
-	$header .= mysql_field_name( $export, $i ) . "\t";
+	$header .= $fields[ i ] . "\t";
 }
 
 $data = "<table>";
 
-while ( $row = mysql_fetch_row( $export ) ) {
+while ( $row = mysqli_fetch_row( $result ) ) {
 	$line          = '';
 	$prod_name     = $row[0];
 	$prod_quantity = $row[1];
@@ -108,11 +98,9 @@ while ( $row = mysql_fetch_row( $export ) ) {
 	        . ' where woim.order_item_id = ' . $order_item_id . ' and woim.`meta_key` = \'_product_id\''
 	        . ' ';
 
-	$export2 = mysql_query( $sql2 ) or die ( "Sql error : " . mysql_error() );
+	$result2 = sql_query( $sql2 );
 
-	$fields = mysql_num_fields( $export2 );
-
-	$row2    = mysql_fetch_row( $export2 );
+	$row2    = mysqli_fetch_row( $result2 );
 	$prod_id = $row2[0];
 
 	$line = "<td> " . $prod_name .

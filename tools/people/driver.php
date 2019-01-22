@@ -57,9 +57,9 @@ $data .= "<tr><td>תאריך</td><td>כמות</td><td>משלוח</td></tr>";
 
 $sql = "SELECT date, quantity, sender FROM im_driver_deliveries WHERE user_id = " . get_user_id() . " ORDER BY 1 DESC";
 
-$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+$result = sql_query( $sql );
 
-while ( $row = mysql_fetch_row( $export ) ) {
+while ( $row = mysqli_fetch_row( $result ) ) {
 
 	$line = "<tr>";
 

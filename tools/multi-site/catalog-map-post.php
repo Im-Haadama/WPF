@@ -6,7 +6,7 @@
  * Time: 11:53
  */
 // require_once('multi-catalog.php');
-require_once( '../tools.php' );
+require_once( '../r-shop_manager.php' );
 require_once( "multi-site.php" );
 require_once( 'simple_html_dom.php' );
 require_once( "multi-site.php" );
@@ -108,7 +108,7 @@ function map_products( $remote_id, $ids ) {
 		$local_prod_id  = $ids[ $pos ];
 		$remote_prod_id = $ids[ $pos + 1 ];
 		// my_log("product_id = " . $product_id . ", supplier_id=" . $supplier_id . ", product_name=" . $product_name);
-		MultiSite::map( $remote_id, $local_prod_id, $remote_prod_id );
+		ImMultiSite::map( $remote_id, $local_prod_id, $remote_prod_id );
 	}
 }
 
@@ -125,9 +125,9 @@ function is_mapped( $code ) {
 	$sql = 'SELECT id FROM `im_supplier_mapping` WHERE supplier_product_code = ' . $code .
 	       ' AND supplier_product_code != 10';
 
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+	$result = sql_query( $sql );
 
-	$row = mysql_fetch_row( $export );
+	$row = mysqli_fetch_row( $result );
 
 	if ( $row[0] > 0 ) {
 		return true;
@@ -142,7 +142,7 @@ function multi_search_unmapped_products( $site_id ) {
 	$remote_prods = array();
 
 	$remote = get_site_tools_url( $site_id ) . "/catalog/catalog-db-query.php?operation=show";
-	$html   = file_get_html( $remote );
+	$html   = im_file_get_html( $remote );
 	foreach ( $html->find( 'tr' ) as $row ) {
 		$id               = $row->find( 'td', 0 )->plaintext;
 		$name             = $row->find( 'td', 1 )->plaintext;
@@ -168,7 +168,7 @@ function multi_search_unmapped_products( $site_id ) {
 	       " (select local_prod_id, remote_site_id from im_multisite_map)";
 	/// . ' supplier_product_code not in (select supplier_product_code from im_supplier_mapping)';
 
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+	$result = sql_query( $sql );
 
 	$data = "<tr>";
 	$data .= "<td>בחר</td>";
@@ -178,7 +178,7 @@ function multi_search_unmapped_products( $site_id ) {
 	$data .= "<td>תמונה מקומית</td>";
 	$data .= "</tr>";
 
-	while ( $row = mysql_fetch_row( $export ) ) {
+	while ( $row = mysqli_fetch_row( $result ) ) {
 		$product_id = $row[0];
 //        $supplier_id = $row[1];
 		$product_name = $row[1];
@@ -255,8 +255,7 @@ function search_invalid_mapping() {
 	$sql = 'SELECT id, supplier_id, supplier_product_name, supplier_product_code
             FROM im_supplier_mapping';
 
-
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+	$result = sql_query( $sql );
 
 	$data = "<tr>";
 	$data .= "<td>בחר</td>";
@@ -266,7 +265,7 @@ function search_invalid_mapping() {
 	$data .= "<td>שם מוצר</td>";
 	$data .= "</tr>";
 
-	while ( $row = mysql_fetch_row( $export ) ) {
+	while ( $row = mysqli_fetch_row( $result ) ) {
 		$line_id      = $row[0];
 		$product_id   = $row[1];
 		$supplier_id  = $row[2];
@@ -286,3 +285,41 @@ function search_invalid_mapping() {
 }
 
 ?>
+
+die(0);
+require_once("../im_tools.php");
+print "y";
+require_once("orders-common.php");
+print "z";
+
+print header_text(false,true);
+$operation = $_GET["operation"];
+// my_log( "Operation: " . $operation, __FILE__ );
+
+switch ( $operation ) {
+case "create_order":
+$email = $_GET["email"];
+$params=  $_GET["params"];
+express_create_order($email, explode(",", $params));
+break;
+}
+
+function express_create_order($email, $params)
+{
+print "יוצר הזמנה ליוזר " . $email . "<br/>";
+$user = get_user_by("email", $email);
+
+if (! $user){
+print "יוזר לא קיים";
+die(0);
+}
+$prods = array();
+$quantities = array();
+
+for ($i = 0; $i < count($params); $i += 2){
+array_push($prods, $params[$i]);
+array_push($quantities, $params[$i+1]);
+}
+
+create_order($user->ID,0, $params, $quantities, "");
+}

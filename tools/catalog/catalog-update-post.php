@@ -5,9 +5,11 @@
  * Date: 03/07/15
  * Time: 11:53
  */
-require_once( '../tools_wp_login.php' );
+require_once( '../r-shop_manager.php' );
 require_once( 'bundles.php' );
 require_once( 'catalog.php' );
+require_once( '../pricing.php' );
+require_once( ROOT_DIR . "/tools/catalog/Basket.php" );
 
 // To map item from price list to our database the shop manager select item from the price list
 // and product_id. The triplet: product_id, supplier_id and product_code are sent as saved
@@ -84,7 +86,6 @@ function select_suppliers( $update_ids ) {
 //        . $product_name . ', '
 //        . $pricelist_id . ' )';
 //
-//    $export = mysql_query ( $sql ) or die ( my_log(mysql_error( ), "catalog-map.php") );
 //}
 
 function get_items_to_remove() {
@@ -96,7 +97,7 @@ function get_items_to_remove() {
 	       . ' WHERE (supplier_id, supplier_product_name)'
 	       . ' IN (SELECT supplier_id, product_name FROM im_supplier_price_list))';
 
-	$export = mysql_query( $sql ) or die ( sql_error( $sql ) );
+	$result = sql_query( $sql );
 
 	$data = "<tr>";
 	$data .= "<td>בחר</td>";
@@ -106,7 +107,7 @@ function get_items_to_remove() {
 	$data .= "<td>מחיר נוכחי</td>";
 	$data .= "</tr>";
 
-	while ( $row = mysql_fetch_row( $export ) ) {
+	while ( $row = mysqli_fetch_row( $result ) ) {
 		$product_id = $row[0];
 		if ( is_basket( $product_id ) || is_bundle( $product_id ) ) {
 			continue;
@@ -136,7 +137,7 @@ function get_items_to_publish() {
 	       . ' AND pl.product_name = mp.supplier_product_name'
 	       . ' AND pl.supplier_id = mp.supplier_id';
 
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+	$result = sql_query( $sql );
 
 	$data = "<tr>";
 	$data .= "<td>בחר</td>";
@@ -145,7 +146,7 @@ function get_items_to_publish() {
 	$data .= "<td>מחיר נוכחי</td>";
 	$data .= "</tr>";
 
-	while ( $row = mysql_fetch_row( $export ) ) {
+	while ( $row = mysqli_fetch_row( $result ) ) {
 		$product_id   = $row[0];
 		$product_name = $row[1];
 		my_log( "to publish " . $product_name );
@@ -172,7 +173,7 @@ function get_changed_prices( $include_sale ) {
 	       . ' where post_status = \'publish\''
 	       . ' and post_type = \'product\'';
 
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+	$result = sql_query( $sql );
 
 	$data = "<tr>";
 	$data .= "<td>בחר</td>";
@@ -181,7 +182,7 @@ function get_changed_prices( $include_sale ) {
 	$data .= "<td>מחיר נוכחי</td>";
 	$data .= "</tr>";
 
-	while ( $row = mysql_fetch_row( $export ) ) {
+	while ( $row = mysqli_fetch_row( $result ) ) {
 		$product_id   = $row[0];
 		$product_name = $row[1];
 
@@ -217,8 +218,8 @@ function get_changed_prices( $include_sale ) {
 
 		//print $sql1;
 		// Get line options
-		$export1 = mysql_query( $sql1 ) or die ( mysql_error() );
-		while ( $row1 = mysql_fetch_row( $export1 ) ) {
+		$result1 = sql_query( $sql );
+		while ( $row1 = mysqli_fetch_row( $result1 ) ) {
 			$supplier_price = $row1[0];
 			$supplier_id    = $row1[1];
 			$pricelist_id   = $row1[2];

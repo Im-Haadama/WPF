@@ -5,11 +5,12 @@
  * Date: 26/05/17
  * Time: 13:07
  */
-require_once( '../tools_wp_login.php' );
-require_once( '../gui/inputs.php' );
+define( 'WCDI', '' );
+require_once( '../im_tools.php' );
+require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 ?>
 <header>
-    <script>
+    <script>7
         function update() {
 			<?php if ( get_current_user() == 'aglamaz' ) {
 			print 'show_all();';
@@ -41,14 +42,12 @@ require_once( '../gui/inputs.php' );
         }
     </script>
 </header>
-<?php print header_text(); ?>
+<?php
+
+print header_text(); ?>
 <body onload="update();">
 <h1 align="center">נתוני שכר לחודש
 	<?
-	if ( get_current_user_name() == 'agla' ) {
-		show_all( $month );
-	}
-
 	$today = date( 'Y-m', strtotime( 'last month' ) );
 
 	print gui_input_month( "month", "month", $today, "onchange=update()" );

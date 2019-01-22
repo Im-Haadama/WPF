@@ -1,8 +1,13 @@
 <?php
-require_once( '../tools.php' );
-require_once( '../header.php' );
-require_once( "../gui/inputs.php" );
+require_once( '../r-shop_manager.php' );
+//require_once( '../header.php' );
+require_once( ROOT_DIR . '/agla/gui/inputs.php' );
+require_once( "../delivery/delivery.php" );
+require_once( "../suppliers/gui.php" );
+
+print header_text( false, true );
 ?>
+
 <html dir="rtl">
 <header>
     <script>
@@ -75,16 +80,21 @@ require_once( "../gui/inputs.php" );
 </header>
 <body>
 <?php
-/**
- * Created by PhpStorm.
- * User: agla
- * Date: 14/10/16
- * Time: 05:59
- */
+if ( isset( $_GET["week"] ) ) {
+	$week = $_GET["week"];
+} else {
+	$week = date( "Y-m-d", strtotime( "last sunday" ) );
+}
+
+if ( date( 'Y-m-d' ) > date( 'Y-m-d', strtotime( $week . "+1 week" ) ) ) {
+	print gui_hyperlink( "שבוע הבא", "get_all.php?week=" . date( 'Y-m-d', strtotime( $week . " +1 week" ) ) ) . " ";
+}
+
+print gui_hyperlink( "שבוע קודם", "get_all.php?week=" . date( 'Y-m-d', strtotime( $week . " -1 week" ) ) );
 
 // Build the query
 // $sql   = "SELECT id, date, amount, delivery_fee FROM im_business_info WHERE ";
-$sql = "SELECT id, part_id, date, week, amount, ref +0, delivery_fee FROM im_business_info WHERE ";
+$sql = "SELECT id, client_displayname(part_id), date, week, amount, ref +0, delivery_fee FROM im_business_info WHERE ";
 
 $query   = " is_active = 1 ";
 $new_url = "get_all.php?";
@@ -116,6 +126,7 @@ print_col( "שבוע", $key ++ );
 print_col( "סכום", $key ++ );
 print_col( "תעודת משלוח", $key ++ );
 print_col( "דמי משלוח", $key ++ );
+print_col( "הזמנה", $key ++ );
 print "</tr>";
 
 //$sql = "SELECT id" .
@@ -125,11 +136,9 @@ $seq                = 1;
 $total_amount       = 0;
 $total_delivery_fee = 0;
 
-print $sql;
-
-$result = mysqli_query( $conn, $sql );
-//$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . $sql );
-//while ( $row = mysql_fetch_row( $export ) ) {
+// print $sql;
+$result = sql_query( $sql );
+//while ( $row = mysqli_fetch_row( $result ) ) {
 while ( $row = mysqli_fetch_assoc( $result ) ) {
 	$total_amount       += $row["amount"];
 	$total_delivery_fee += $row["delivery_fee"];
@@ -158,26 +167,22 @@ function print_col( $hdr, $key = null ) {
 	}
 }
 
-function get_name( $id ) {
-	$sql = "SELECT display_name FROM wp_users WHERE id = " . $id .
-	       " UNION SELECT supplier_name FROM im_suppliers WHERE id = " . $id;
-
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . $sql );
-	$row = mysql_fetch_row( $export );
-
-	return $row[0];
-}
+//function get_name( $id ) {
+//	$sql = "SELECT display_name FROM wp_users WHERE id = " . $id .
+//	       " UNION SELECT supplier_name FROM im_suppliers WHERE id = " . $id;
+//
+//	return sql_query_single_scalar( $sql );
+//}
 
 // From here created by coder.old.php
-function delete_business( $id ) {
-	$sql = "delete from im_business_info where id = $id";
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . $sql );
-}
+//function delete_business( $id ) {
+//	$sql = "delete from im_business_info where id = $id";
+//	sql_query( $sql );
+//}
 
 function print_business( $id, $horizontal, $seq ) {
-	$sql = "select id, part_id, date, week, amount, ref, delivery_fee from im_business_info where id = $id";
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . $sql );
-	$row = mysql_fetch_row( $export );
+	$sql = "select id, client_displayname(part_id), date, week, amount, ref, delivery_fee, order_from_delivery(id) from im_business_info where id = $id";
+	$row = sql_query_single( $sql );
 	if ( ! $horizontal ) {
 		print "<table>";
 	}
@@ -212,7 +217,7 @@ function print_business( $id, $horizontal, $seq ) {
 	print "<td>";
 	print "<a href=\"get_all.php?part_id=" . urlencode( $row[1] );
 	print "\">";
-	print get_name( $row[1] );
+	print $row[1];
 	print "</a>";
 	print "</td>";
 	if ( ! $horizontal ) {
@@ -303,18 +308,61 @@ function print_business( $id, $horizontal, $seq ) {
 	if ( ! $horizontal ) {
 		print "</tr>";
 	}
+
+	if ( ! $horizontal ) {
+		print "<tr>";
+	}
+	if ( ! $horizontal ) {
+		print "<td>";
+		print "order_id";
+		print "</td>";
+	}
+	print "<td>";
+	print "<a href=\"../orders/get-order.php?order_id=" . $row[7];
+	print "\">";
+	print $row[7];
+	print "</a>";
+	print "</td>";
+	if ( ! $horizontal ) {
+		print "</tr>";
+	}
+
+	if ( ! $horizontal ) {
+		print "<tr>";
+	}
+	if ( ! $horizontal ) {
+		print "<td>";
+		print "order_id";
+		print "</td>";
+	}
+	print "<td>";
+	print $row[8];
+	print "</td>";
+	if ( ! $horizontal ) {
+		print "</tr>";
+	}
+
 	if ( $horizontal ) {
 		print "</tr>";
 	}
 }
 
 print "</table>";
-
 ?>
+
+<h2>מחק שורות שמוצגות</h2>
+
+<tr>
+    <button id="btn_delete_business" onclick="delete_item()">-</button>
+</tr>
+
 <br>
-<h1>הוסף תעודת משלוח</h1>
+<h1 align="center">הוסף תעודת משלוח</h1>
 
 <br/>
+<Table align="center">
+    <tr>
+        <td>
 <table>
     <tr>
         <td>ספק:</td>
@@ -332,11 +380,23 @@ print "</table>";
         <td>סימוכין:</td>
         <td><input type="text" id="ref"></td>
     </tr>
-</table>
-<button id="btn_add_business" onclick="add_item()">+</button>
+    <tr>
+        <td>
+            <button id="btn_add_business" onclick="add_item()">הוספת תעודת ספק</button>
+        </td>
+    </tr>
 
-<h2>מחק שורות שמוצגות</h2>
-<button id="btn_delete_business" onclick="delete_item()">-</button>
+</table>
+        </td>
+        <td>
+			<?php
+
+			print delivery::GuiCreateNewNoOrder();
+			?>
+        </td>
+    </tr>
+
+</Table>
 
 
 </body>

@@ -5,7 +5,7 @@
  * Date: 28/05/17
  * Time: 16:12
  */
-require_once( '../tools_wp_login.php' );
+require_once( '../r-shop_manager.php' );
 require_once( '../header.php' );
 
 print header_text();

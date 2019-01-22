@@ -1,5 +1,5 @@
 <?php
-require_once( '../tools_wp_login.php' );
+require_once( '../r-shop_manager.php' );
 // require_once('../header.php');
 ?>
 <?php
@@ -56,9 +56,9 @@ function save_basket( $basket_id ) {
 function load_basket( $basket_id ) {
 	my_log( __METHOD__ );
 	WC()->cart->empty_cart( true );
-	$sql = "SELECT product_id, quantity FROM im_baskets WHERE basket_id=" . $basket_id;
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
-	while ( $row = mysql_fetch_row( $export ) ) {
+	$sql    = "SELECT product_id, quantity FROM im_baskets WHERE basket_id=" . $basket_id;
+	$result = sql_query( $sql );
+	while ( $row = mysqli_fetch_row( $result ) ) {
 		WC()->cart->add_to_cart( $row[0], $row[1] );
 	}
 	header( 'Location: ' . wc_get_cart_url() );
@@ -68,7 +68,7 @@ function do_save_basket( $basket_id, $products_array ) {
 	$basket_text = "";
 	$sql         = "DELETE FROM im_baskets WHERE basket_id = " . $basket_id;
 
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+	sql_query( $sql );
 
 	// print "תוכן הסל הבסיסי נשמר מעגלת הקניות";
 
@@ -87,7 +87,7 @@ function do_save_basket( $basket_id, $products_array ) {
 		$sql = 'INSERT INTO im_baskets (basket_id, date, product_id, quantity) VALUES (' . $basket_id . ", '" . date( 'Y/m/d' ) . "', " .
 		       $product_id . ", " . $quantity . ')';
 
-		$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+		sql_query( $sql );
 	}
 //    print "</table>";
 

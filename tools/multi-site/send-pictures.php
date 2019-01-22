@@ -7,7 +7,7 @@
  * Sends pictures from site with multisite mapping to secondary site.
  * As June 2017 from Im haadama to Organic Store
  */
-require_once( "../tools.php" );
+require_once( "../r-shop_manager.php" );
 require_once( "multi-site.php" );
 
 //
@@ -60,12 +60,12 @@ while ( $r = mysqli_fetch_assoc( $result ) ) {
 	if ( strlen( $req ) >= 1500 ) {
 		$req = rtrim( $req, ',' );
 		// print $req . "<br/>";
-		print MultiSite::Execute( $req, 2 ) . "<br/>";
+		print ImMultiSite::sExecute( $req, 2 ) . "<br/>";
 		$req = $req_prefix;
 	}
 }
 if ( strlen( $req ) > strlen( $req_prefix ) ) {
 	$req = rtrim( $req, ',' );
 	// print $req . "<br/>";
-	print MultiSite::Execute( $req, 2 ) . "<br/>";
+	print ImMultiSite::sExecute( $req, 2 ) . "<br/>";
 }

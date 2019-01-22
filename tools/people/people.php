@@ -5,7 +5,15 @@
  * Date: 08/05/16
  * Time: 21:15
  */
-require_once( "../account/account.php" );
+if ( ! defined( "TOOLS_DIR" ) ) {
+	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
+}
+// error_reporting( E_ALL );
+// ini_set( 'display_errors', 'on' );
+
+require_once( TOOLS_DIR . "/account/account.php" );
+require_once( TOOLS_DIR . "/business/business.php" );
+require_once( TOOLS_DIR . "/account/gui.php" );
 
 function people_add_activity( $id, $date, $start, $end, $project_id, $traveling, $expense_text, $expense ) {
 	if ( strlen( $traveling ) == 0 ) {
@@ -19,13 +27,12 @@ function people_add_activity( $id, $date, $start, $end, $project_id, $traveling,
 			expense_text, expense) VALUES (" .
 	       $id . ", \"" . $date . "\", \"" . $start . "\", \"" . $end . "\", " . $project_id .
 	       "," . $traveling . ", \"" . $expense_text . "\", " . $expense . ")";
-	print header_text();
+	// print header_text();
 	// print $sql;
-	$export = mysql_query( $sql );
+	$export = sql_query( $sql );
 	if ( ! $export ) {
 		die ( 'Invalid query: ' . $sql . mysql_error() );
 	}
-
 }
 
 function driver_add_activity( $id, $date, $quantity, $sender ) {
@@ -56,16 +63,6 @@ function sender_name( $sender_id ) {
 	return $sender;
 }
 
-function get_project_name( $project_id ) {
-	global $conn;
-
-	$sql = "SELECT project_name FROM im_projects WHERE id = " . $project_id;
-
-	$result = mysqli_query( $conn, $sql );
-	$row    = mysqli_fetch_assoc( $result );
-
-	return $row["project_name"];
-}
 
 function is_volunteer( $uid ) {
 	return sql_query_single_scalar( "SELECT volunteer FROM im_working WHERE worker_id = " . $uid );
@@ -73,13 +70,23 @@ function is_volunteer( $uid ) {
 
 // User id == 0: display all users.
 function print_transactions( $user_id = 0, $month = null, $year = null, $week = null, $project = null, &$sum = null ) {
+	$show_salary = current_user_can( "show_salary" );
+
 	$counters  = array();
 	$volunteer = false;
 	if ( $user_id > 0 and is_volunteer( $user_id ) ) {
 		$volunteer = true;
 	}
+//	if ( ! $user_id  ) {
+//		$user_id = get_user_id();
+//	}
 	$sql_month = null;
 	if ( isset( $month ) and $month > 0 ) {
+		if ( ! ( $year > 2016 ) ) {
+			print " לא נבחרה שנה";
+
+			return "אין מידע";
+		}
 		print "מציג נתונים לחודש " . $month . " מזהה " . $user_id . "<br/>";
 		$sql_month = " and month(date)=" . $month . " and year(date)=" . $year;
 	}
@@ -100,8 +107,10 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 		$data .= "<td>עובד</td>";
 	}
 
-	$data .= "<td>תעריף</td>";
-	$data .= "<td>סהכ</td>";
+	if ( $show_salary ) {
+		$data .= "<td>תעריף</td>";
+		$data .= "<td>סהכ</td>";
+	}
 	$data .= "<td>הוצאות</td>";
 
 	if ( ! $volunteer ) {
@@ -134,19 +143,26 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 	}
 	// "  order by 1 desc";
 	// print $sql;
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+	$sql           .= " limit 100";
+	$result        = sql_query( $sql );
 	$total_sal     = 0;
 	$total_travel  = 0;
 	$total_expense = 0;
 
-	while ( $row = mysql_fetch_row( $export ) ) {
-
+	if ( ! $result )
+		return "אין מידע";
+	$counters["base"] = $counters["125"] = $counters["150"] = 0;
+	while ( $row = mysqli_fetch_row( $result ) ) {
+		$worker_id = $row[4];
+		//print $row[0];
 		// print "xxx" . $row[5] . $row[6]. $row[7] . $row[8]. "<br/>";
 		$line = "<tr>";
 
 		$line  .= gui_cell( gui_checkbox( "chk" . $row[8], "hours_checkbox" ) );
 		$line  .= "<td>" . $row[0] . "</td>";
 		$line  .= gui_cell( week_day( $row[9] ) );
+
+		$daily = sql_query_single_scalar( "select day_rate from im_working where worker_id = " . $worker_id ) > 0;
 		$start = new DateTime( $row[1] );
 		$end   = new DateTime( $row[2] );
 
@@ -157,10 +173,11 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 		$line  .= "<td>" . $start->format( "G:i" ) . "</td>";
 		$line  .= "<td>" . $end->format( "G:i" ) . "</td>";
 
-		$total_dur        = $dur->h + $dur->i / 60;
-		$dur_base         = min( $total_dur, 8.5 );
-		$dur_125          = min( 2, $total_dur - $dur_base );
-		$dur_150          = $total_dur - $dur_base - $dur_125;
+		$total_dur = $dur->h + $dur->i / 60;
+		$dur_base  = min( $total_dur, 25 / 3 );
+		$dur_125   = min( 2, $total_dur - $dur_base );
+		$dur_150   = $total_dur - $dur_base - $dur_125;
+
 		$line             .= "<td>" . float_to_time( $dur_base ) . "</td>";
 		$line             .= "<td>" . float_to_time( $dur_125 ) . "</td>";
 		$line             .= "<td>" . float_to_time( $dur_150 ) . "</td>";
@@ -171,20 +188,28 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 		$project_id = $row[3];
 		$line       .= "<td>" . project_name( $project_id ) . "</td>";
 		if ( $user_id == 0 ) {
-			$line .= "<td>" . get_customer_name( $row[4] ) . "</td>";
+			$line .= "<td>" . get_customer_name( $worker_id ) . "</td>";
 		}
 //		else{
-		$rate = get_rate( $row[4], $project_id );
+		if ( $daily ) {
+			$rate = get_daily_rate( $worker_id );
+			$sal  = $rate;
+		} else {
+			$rate = get_rate( $worker_id, $project_id );
+			$sal  = ( $dur_base + $dur_125 * 1.25 + $dur_150 * 1.5 ) * $rate;
+		}
 
-		$line .= gui_cell( $rate );
+		if ( $show_salary ) {
+			$line .= gui_cell( $rate );
+		}
 		// var_dump($dur);
-		$sal = ( $dur_base + $dur_125 * 1.25 + $dur_150 * 1.5 ) * $rate;
 
 		// print $sal . " " . $total_sal . "<br/>";
 		$total_sal += $sal;
 		// var_dump($total_sal);
 
-		$line         .= gui_cell( round( $sal, 2 ) );
+		if ( $show_salary )
+			$line .= gui_cell( round( $sal, 2 ) );
 		$travel       = $row[5];
 		$total_travel += $travel;
 
@@ -211,16 +236,23 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 		"סהכ",
 		"",
 		"",
-		round( $counters["base"], 2 ),
-		round( $counters["125"], 2 ),
-		round( $counters["150"], 2 )
+		"",
+		float_to_time( $counters["base"], 2 ),
+		float_to_time( $counters["125"], 2 ),
+		float_to_time( $counters["150"], 2 ),
+		"",
+		"",
+		"",
+		$show_salary ? $total_sal : "",
+		$show_salary ? $total_expense : "",
+		$show_salary ? $total_travel : ""
 	) );
 
 	$data      .= "</table>";
 	$total_sal = round( $total_sal, 1 );
 
 	// print "total_sal " . $total_sal ;
-	if ( $total_sal > 0 and ( $month or $week ) and ! $volunteer ) {
+	if ( $show_salary and $total_sal > 0 and ( $month or $week ) and ! $volunteer ) {
 		$data      .= "חישוב שכר ראשוני" . "<br/>";
 		$data      .= "שכר שעות " . $total_sal . "<br/>";
 		$data      .= "סהכ נסיעה " . $total_travel . "<br/>";
@@ -229,11 +261,11 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 		$total_sal += $total_expense;
 		$data      .= "סהכ " . $total_sal . "<br/>";
 
-		$b = balance( date( 'Y-m-j', strtotime( "last day of " . $year . "-" . $month ) ), $user_id );
-		//
-		if ( customer_type( $user_id ) == 0 ) {
-			$b = $b * 0.9;
-		}
+		$r = "people/people-post.php?operation=get_balance&date=" .
+		     date( 'Y-m-j', strtotime( "last day of " . $year . "-" . $month ) ) . "&user_id=" . $user_id;
+		// print $r;
+		$b = strip_tags( ImMultiSite::sExecute( $r, 4 ) );
+		//print "basket: " . $b . "<br/>";
 
 		if ( $b > 0 ) {
 			$data .= " חיובי סלים " . round( $b, 2 );
@@ -259,14 +291,7 @@ function project_name( $id ) {
 	$sql = 'SELECT project_name FROM im_projects '
 	       . ' WHERE id = ' . $id;
 
-	$export = mysql_query( $sql ) or die ( "Sql error: " . mysql_error() . $sql );
-
-	$row = mysql_fetch_row( $export );
-
-//        print $rate . "<br/>";
-
-
-	return $row[0];
+	return sql_query_single_scalar( $sql );
 }
 
 function add_activity( $user_id, $date, $start, $end, $project_id, $vol = true, $traveling = 0, $extra_text = "", $extra = 0 ) {
@@ -279,8 +304,15 @@ function add_activity( $user_id, $date, $start, $end, $project_id, $vol = true, 
 	if ( $vol ) {
 		account_add_transaction( $user_id, $date, $amount, 1, get_project_name( $project_id ) );
 	}
+	my_log( "before business" );
 	business_add_transaction( $user_id, $date, $amount * 1.1, 0, 0, get_project_name( $project_id ) );
+	my_log( "end add_activity" );
+}
+
+function gui_select_project( $id, $value, $events ) {
+	return gui_select_table( $id, "im_projects", $value, $events, "", "project_name",
+		null, true, false );
+
 }
 
 ?>
-

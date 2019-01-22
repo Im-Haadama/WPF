@@ -5,16 +5,12 @@
  * Date: 18/04/17
  * Time: 22:53
  */
-require_once( '../tools.php' );
+require_once( '../r-shop_manager.php' );
 require_once( '../header.php' );
 ?>
+<script type="text/javascript" src="/agla/client_tools.js"></script>
+
 <script>
-	<?php
-	$filename = __DIR__ . "/../client_tools.js";
-	$handle = fopen( $filename, "r" );
-	$contents = fread( $handle, filesize( $filename ) );
-	print $contents;
-	?>
 
     function save_new() {
         var request_url = "supplier_post.php?operation=insert";
@@ -58,13 +54,13 @@ while ( $row = mysqli_fetch_row( $result ) ) {
 print print_entry( 0 );
 function delete_suppliers( $id ) {
 	$sql = "delete from im_suppliers where id = $id";
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . $sql );
+	sql_query( $sql );
 }
 
 function print_suppliers( $id, $horizontal, $seq ) {
 	$sql = "select id, supplier_name, supplier_contact_name, supplier_contact_phone, factor, site_id from im_suppliers where id = $id";
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . $sql );
-	$row = mysql_fetch_row( $export );
+	$row = sql_query_single( $sql );
+
 	if ( ! $horizontal ) {
 		print "<table>";
 	}

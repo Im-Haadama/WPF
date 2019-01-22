@@ -60,9 +60,9 @@ $data .= "<tr><td>תאריך</td><td>כמות</td><td>נהג</td><td>משלוח<
 
 $sql = "SELECT date, quantity, user_id, sender FROM im_driver_deliveries ORDER BY 1 DESC";
 
-$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+$result = sql_query( $sql );
 
-while ( $row = mysql_fetch_row( $export ) ) {
+while ( $row = mysqli_fetch_row( $result ) ) {
 
 	$line = "<tr>";
 

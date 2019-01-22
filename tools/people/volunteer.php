@@ -7,20 +7,14 @@
  */
 
 require_once( "../header.php" );
-require_once( "../tools.php" );
+require_once( "../r-shop_manager.php" );
 require_once( "../gui/inputs.php" );
 ?>
 
 <html>
 <header>
+    <script type="text/javascript" src="/agla/client_tools.js"></script>
     <script>
-
-		<?php
-		$filename = __DIR__ . "/../client_tools.js";
-		$handle = fopen( $filename, "r" );
-		$contents = fread( $handle, filesize( $filename ) );
-		print $contents;
-		?>
 
         function update_display() {
             table = document.getElementById("list");
@@ -86,7 +80,12 @@ require_once( "../gui/inputs.php" );
 	<?php
 	print gui_header( 1, "נתוני התנדבות - עם האדמה", true );
 	if ( is_admin_user() ) {
-		print gui_select( "user_id", "i_people", 0, "onchange=\"update_display()\"", array( array( 0, "כולם" ) ) );
+		print gui_select_table( "user_id", "i_people", 0, "onchange=\"update_display()\"", array(
+			array(
+				0,
+				"כולם"
+			)
+		) );
 	}
 	print "<br/>";
 	// "<input id=\"user_id\">"
@@ -105,7 +104,7 @@ require_once( "../gui/inputs.php" );
 			$sql = "SELECT id, project_name FROM im_projects";
 			$export = mysql_query( $sql ) or die ( "Sql error: " . mysql_error() . $sql );
 
-			while ( $row = mysql_fetch_row( $export ) ) {
+			while ( $row = mysqli_fetch_row( $result ) ) {
 				print "<option value=\"" . $row[0] . "\">" . $row[1] . "</option>";
 			}
 			?>

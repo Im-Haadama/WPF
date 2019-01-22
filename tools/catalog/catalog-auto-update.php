@@ -7,13 +7,16 @@
  */
 require_once( 'catalog.php' );
 
+print "disabled";
+die( 1 );
+
 $details = isset( $_GET["details"] );
 
-$sql = "SELECT id, post_title, post_type
+$sql = "SELECT id, post_title, post_type, post_status
 FROM wp_posts WHERE post_type IN ('product', 'product_variation') order by 1";
 
 $debug         = false;
-$debug_product = 1146;
+$debug_product = 313;
 if ( $debug ) {
 	print "DEBUG<br/>";
 }
@@ -31,10 +34,16 @@ while ( $row = mysqli_fetch_row( $result ) ) {
 	$prod_count ++;
 	if ( $details ) {
 		print "<br/>" . $row[0] . " " . $row[1] . " ";
-	} else if ( $prod_count % 100 == 0 ) {
-		print $prod_count . "<br/>";
 	}
-	$prod_id = $row[0];
+	$prod_id     = $row[0];
+	$prod_status = $row[3];
+
+	if ( $prod_status == 'trash' ) {
+		// Delete mapping
+		Catalog::DeleteMappingProductId( $prod_id );
+
+		continue;
+	}
 
 	$print_line = Catalog::UpdateProduct( $prod_id, $line, $details );
 

@@ -5,28 +5,46 @@
  * Date: 05/05/16
  * Time: 11:45
  */
-require_once( '../tools.php' );
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
+require_once( '../r-shop_manager.php' );
 require_once( 'supplies.php' );
 require_once( '../orders/orders-common.php' );
-require_once( '../gui/inputs.php' );
-require_once( "../business/business.php" );
-require_once( "../business/business-info.php" );
+require_once( ROOT_DIR . '/agla/gui/inputs.php' );
+require_once( "../business/business-post.php" );
+require_once( "../business/business_info.php" );
+
+// print header_text(false, true, false);
 if ( isset( $_GET["operation"] ) ) {
 	$operation = $_GET["operation"];
 	switch ( $operation ) {
-		case "get_archive":
+		case "supply_pay":
+			print "supply pay<br/>";
+			$id   = $_GET["id"];
+			$date = $_GET["date"];
+			supply_set_pay_date( $id, $date );
+			break;
 
 		case "get_business":
+			// print header_text(false); DONT!!!
 			$supply_id = $_GET["supply_id"]; // מספר הספקה שלנו
-			print supply_business_info( $supply_id );
+			supply_business_info( $supply_id );
 			break;
+
+//			                  "&net_total=" + supply_total +
+//			                  "&is_invoice=" + is_invoice;
 
 		case "got_supply":
 			$supply_id     = $_GET["supply_id"]; // מספר הספקה שלנו
 			$supply_total  = $_GET["supply_total"]; // סכום
 			$supply_number = $_GET["supply_number"]; // מספר תעודת משלוח
-			got_supply( $supply_id, $supply_total, $supply_number );
+			$net_total = get_param("net_total");
+			$is_invoice = get_param("is_invoice");
+			$doc_type = $is_invoice ? ImDocumentType::invoice : ImDocumentType::supply;
+			got_supply( $supply_id, $supply_total, $supply_number, $net_total, $doc_type );
 			break;
+
 		case "send":
 			$params = $_GET["id"];
 			$ids    = explode( ',', $params );
@@ -37,28 +55,43 @@ if ( isset( $_GET["operation"] ) ) {
 		case "print":
 			$params = $_GET["id"];
 			$ids    = explode( ',', $params );
-			print_supplies( $ids, true );
+			print_supplies_table( $ids, true );
+			break;
+
+		case "create_delta":
+			create_delta();
 			break;
 
 		case "create_supply":
 			print "create supply<br/>";
+//			"&prods=" + prods.join() +
+//			"&quantities=" + quantities.join() +
+			// "&comments="   + encodeURI(comment) +
+//			"&units=" + units.join() +
+
 			$supplier_id = $_GET["supplier_id"];
 			my_log( "supplier_id=" . $supplier_id );
 
-			$create_pairs = $_GET["create_info"];
-			$ids          = explode( ',', $create_pairs );
+			$create_info = $_GET["create_info"];
+			$ids         = explode( ',', $create_info );
 			create_supplier_order( $supplier_id, $ids );
+			break;
+
+		case "create_supplies":
+			$params = $_GET["params"];
+			create_supplies( explode( ',', $params ) );
 			break;
 
 		case "get_supply":
 			$supply_id = $_GET["id"];
-			$internal  = $_GET["internal"];
-			print_supply( $supply_id, $internal );
+			$internal  = isset( $_GET["internal"] );
+			$Supply    = new Supply( $supply_id );
+			$Supply->EditSupply( $internal );
 			break;
 
 		case "get_supply_lines":
 			$supply_id = $_GET["id"];
-			$internal  = $_GET["internal"];
+			$internal  = isset( $_GET["internal"] );
 			print_supply_lines( $supply_id, $internal );
 			break;
 
@@ -75,6 +108,7 @@ if ( isset( $_GET["operation"] ) ) {
 			print display_active_supplies( array( 3 ) );
 			print gui_header( 2, "הזמנות התקבלו" );
 			print display_active_supplies( array( 5 ) );
+			print gui_hyperlink("ארכיון", "c-get-all-supplies.php");
 			break;
 
 		case "delete_supplies":
@@ -122,37 +156,58 @@ if ( isset( $_GET["operation"] ) ) {
 			break;
 
 		case "add_item":
-			print "add_line<br/>";
-			$name = $_GET["name"];
-			print $name . "<br/>";
-			if ( ! strlen( $name ) > 2 ) {
-				die ( "no product name" );
+			// print "add_line<br/>";
+			$prod_id = $_GET["prod_id"];
+			// print $name . "<br/>";
+			if ( ! $prod_id > 0 ) {
+				die ( "no product id" );
 			}
 			$q = $_GET["quantity"];
-			print $q . "<br/>";
+			// print $q . "<br/>";
 			if ( ! is_numeric( $q ) ) {
 				die ( "no quantity" );
 			}
 			$supply_id = $_GET["supply_id"];
-			print $supply_id . "<br/>";
+			print "supply id = " . $supply_id . "<br/>";
 			if ( ! is_numeric( $supply_id ) ) {
 				die ( "no supply_id" );
 			}
-			$prod_id = get_product_id_by_name( $name );
-			print "name = " . $name . ", prod_id = " . $prod_id . "<br/>";
+			// $prod_id = get_product_id_by_name( $name );
+			// print "name = " . $name . ", prod_id = " . $prod_id . "<br/>";
 
-			if ( ! is_numeric( $prod_id ) ) {
-				die ( "no prod_id for " . $name . "<br/>" );
+//			if ( ! is_numeric( $prod_id ) ) {
+//				die ( "no prod_id for " . $name . "<br/>" );
+//			}
+			$supply = new Supply( $supply_id );
+			// var_dump($supply);
+			print "prod id=" . $prod_id . '<br/>';
+			print 'supplier id=' . $supply->getSupplier() . "<br/>";
+			$price = get_buy_price( $prod_id, $supply->getSupplier() );
+			print "price: " . $price . '<br/>';
+			supply_add_line( $supply_id, $prod_id, $q, $price );
+			break;
+
+		case "set_mission":
+			$supply_id  = $_GET["supply_id"];
+			$mission_id = $_GET["mission_id"];
+			supply_set_mission_id( $supply_id, $mission_id );
+			break;
+
+		case "delivered":
+			$ids = explode( ",", $_GET["ids"] );
+			foreach ( $ids as $supply_id ) {
+				got_supply( $supply_id, 0, 0 );
 			}
-			supply_add_line( $supply_id, $prod_id, $q );
+			print "delivered";
+
 			break;
 
 		default:
 			print $operation . " not handled <br/>";
 
 	}
-
 }
 
-my_log( __FILE__, $operation );
+
+
 

@@ -6,7 +6,7 @@
  * Time: 20:59
  */
 
-require_once( '../tools.php' );
+require_once( '../r-shop_manager.php' );
 require_once( 'orders-common.php' );
 
 
@@ -21,10 +21,10 @@ $sql = 'select '
        . ' ';
 my_log( $sql, "get-order.php" );
 
-$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+$result = sql_query( $sql );
 
 // Get product_id, order_item_id from the order
-while ( $row = mysql_fetch_row( $export ) ) {
+while ( $row = mysqli_fetch_row( $result ) ) {
 
 }
 

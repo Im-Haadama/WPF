@@ -5,7 +5,7 @@
  * Date: 03/07/15
  * Time: 11:53
  */
-require_once( '../tools_wp_login.php' );
+require_once( '../r-shop_manager.php' );
 require_once( 'account.php' );
 
 $customer_id = $_GET["customer_id"];
