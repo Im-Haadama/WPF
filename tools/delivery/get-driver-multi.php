@@ -16,12 +16,7 @@ require_once( '../maps/build-path.php' );
 require_once( '../missions/Mission.php' );
 require_once( '../orders/Order.php' );
 
-$debug = false;
-// $addresses = array();
-
-if ( isset( $_GET["debug"] ) ) {
-	$debug = true;
-}
+$debug = get_param( "debug" );
 
 if ( isset( $_GET["week"] ) ) {
 	$week = $_GET["week"];
@@ -81,10 +76,10 @@ function get_text( $row, $index ) {
 
 	return "";
 }
-$data_lines = array();
 
+// Start collecting data
+$data_lines = array();
 $header = null;
-// print "week = " . $week . "<br/>";
 $missions = sql_query_array_scalar( "SELECT id FROM im_missions WHERE date = curdate()" );
 
 print gui_header( 1, "מדפיס משימות " );
@@ -94,7 +89,7 @@ foreach ( $missions as $mission ) {
 print "<br/>";
 
 $m      = new ImMultiSite();
-$output = $m->GetAll( "delivery/get-driver.php?mission_ids=" . implode( ",", $missions ), false );
+$output = $m->GetAll( "delivery/get-driver.php?mission_ids=" . implode( ",", $missions ), $debug );
 
 $dom                        = im_str_get_html( $output );
 

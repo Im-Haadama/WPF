@@ -16,11 +16,6 @@ function sql_query( $sql, $report_error = true ) {
 	if ( ! $conn ) {
 		die ( "not connected!<br/>" );
 	}
-//	print gettype($conn);
-//	if (! $conn or gettype($conn) != "mysqli") {
-//		print "no connection.<br/>";
-//		die (1);
-//	}
 
 	if ( $result = mysqli_query( $conn, $sql ) ) {
 		return $result;
@@ -57,10 +52,12 @@ function sql_query_array( $sql, $header = false ) {
 }
 
 // Good for sql that return just one value
-function sql_query_single_scalar( $sql ) {
-	$result = sql_query( $sql );
+function sql_query_single_scalar( $sql, $report_error = true ) {
+	$result = sql_query( $sql, $report_error );
 	if ( ! $result ) {
-		sql_error( $sql );
+		if ( $report_error ) {
+			sql_error( $sql );
+		}
 
 		return "Error";
 	}
@@ -78,7 +75,7 @@ function sql_query_single_scalar( $sql ) {
 }
 
 function table_exists( $table ) {
-	$result = sql_query_single_scalar( 'SELECT 1 FROM ' . $table . ' LIMIT 1', false );
+	$result = sql_query_single_scalar( 'SELECT 1 FROM ' . $table . ' LIMIT 1', false);
 
 	return $result == 1;
 }

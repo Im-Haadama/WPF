@@ -10,6 +10,7 @@ require_once( "../supplies/supplies.php" );
 
 $header      = isset( $_GET["header"] );
 $mission_ids = get_param_array( "mission_ids" );
+$debug       = get_param( "debug" );
 
 // var_dump($mission_ids);
 
@@ -37,19 +38,29 @@ $print = 1; //$_GET["print"];
 if ( isset( $mission_ids ) ) {
 	foreach ( $mission_ids as $mission_id ) {
 		if ( $mission_id ) {
-			$orders = sql_query_array_scalar( "SELECT post_id FROM wp_postmeta " .
-			                                  " WHERE meta_key = 'mission_id' " .
-			                                  " AND meta_value = " . $mission_id );
-			if ( count( $orders ) ) {
-				print print_deliveries( "posts.id in (" . comma_implode( $orders ) . ")" );
-			}
-			print_driver_supplies( $mission_id );
+//			$orders = sql_query_array_scalar( "SELECT post_id FROM wp_postmeta " .
+//			                                  " WHERE meta_key = 'mission_id' " .
+//			                                  " AND meta_value = " . $mission_id );
+//			if ( count( $orders ) ) {
+//				print print_deliveries( "posts.id in (" . comma_implode( $orders ) . ")" );
+//			}
 
-			print_driver_tasks( $mission_id );
+			$sql = "id in (select post_id from wp_postmeta " .
+			       " WHERE meta_key = 'mission_id' " .
+			       " AND meta_value = " . $mission_id . ") " .
+			       " and `post_status` in ('wc-awaiting-shipment', 'wc-processing')";
+			// print $sql . "<br/>";
+			$data = print_deliveries( $sql, false, $debug );
 
-			return;
+			$data .= print_driver_supplies( $mission_id );
+
+			$data .= print_driver_tasks( $mission_id );
+
+			print $data;
 		}
 	}
+
+	return;
 }
 
 print print_deliveries( //"post_excerpt like '%משלוח המכולת%' " .
@@ -281,7 +292,8 @@ function do_get_long_lat( $address ) {
 
 function print_driver_supplies( $mission_id = 0 ) {
 	// Self collect supplies
-	$sql = "SELECT s.id FROM im_supplies s
+	$data = "";
+	$sql  = "SELECT s.id FROM im_supplies s
           JOIN im_suppliers r
           WHERE r.self_collect = 1
           AND s.supplier = r.id
@@ -299,14 +311,17 @@ function print_driver_supplies( $mission_id = 0 ) {
 	if ( count( $supplies ) ) {
 		foreach ( $supplies as $supply ) {
 			//	    print "id: " . $supply . "<br/>";
-			print_supply( $supply );
+			$data .= print_supply( $supply );
 		}
 	}
+
+	return $data;
 }
 
 function print_driver_tasks( $mission_id = 0 ) {
+	$data = "";
 	if ( ! table_exists( 'im_tasklist' ) ) {
-		return;
+		return "";
 	}
 
 	// Self collect supplies
@@ -319,12 +334,13 @@ function print_driver_tasks( $mission_id = 0 ) {
 
 	$tasks = sql_query_array_scalar( $sql );
 	foreach ( $tasks as $task ) {
-		print_task( $task );
+		$data .= print_task( $task );
 	}
+
+	return $data;
 }
 
-function print_deliveries( $query, $selectable = false ) {
-	// print "q= " . $query . "<br/>";
+function print_deliveries( $query, $selectable = false, $debug = false ) {
 	$data = "";
 	$sql  = 'SELECT posts.id, order_is_group(posts.id), order_user(posts.id) '
 	        . ' FROM `wp_posts` posts'
@@ -332,12 +348,18 @@ function print_deliveries( $query, $selectable = false ) {
 
 	$sql .= ' order by 1';
 
+	if ( $debug ) {
+		print $sql;
+	}
 	$orders    = sql_query( $sql );
 	$prev_user = - 1;
 	while ( $order = sql_fetch_row( $orders ) ) {
 		$order_id   = $order[0];
 		$is_group   = $order[1];
 		$order_user = $order[2];
+		if ( $debug )
+			print "order " . $order_id . "<br/>";
+
 		if ( ! $is_group ) {
 			$data .= print_order( $order_id, $selectable );
 			continue;
@@ -349,6 +371,7 @@ function print_deliveries( $query, $selectable = false ) {
 		}
 	}
 
+	// print "data=" . $data . '<br/>';
 	return $data;
 }
 
@@ -392,9 +415,9 @@ function print_order( $order_id, $selectable = false ) {
 	array_push( $fields, ImMultiSite::LocalSiteID() );
 	// array_push($fields, get_delivery_id($order_id));
 
-
 	$line = "<tr> " . delivery_table_line( 1, $fields ) . "</tr>";
 
+//	print "line=  " . $line ."<br/>";
 	// get_field($order_id, '_shipping_city');
 
 	return $line;
@@ -457,7 +480,7 @@ function print_task( $id ) {
 
 	$line = gui_row( $fields );
 
-	print $line;
+	return $line;
 
 }
 
@@ -508,7 +531,7 @@ function print_supply( $id ) {
 
 	// get_field($order_id, '_shipping_city');
 
-	print $line;
+	return $line;
 
 }
 

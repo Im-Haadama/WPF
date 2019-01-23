@@ -56,6 +56,10 @@ class MultiSite {
 			}
 			$file = $url . "/" . $func . $glue . "header=" . ( $first ? "1" : "0" ) . "&key=lasdhflajsdhflasjdhflaksj";
 
+			if ( $debug ) {
+				print "Getting $file...<br/>";
+			}
+
 			$result_text = im_file_get_html( $file );
 
 			if ( $debug ) {

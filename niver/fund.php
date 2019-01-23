@@ -125,8 +125,8 @@ function comma_implode_v( ... $elems ) {
 	return comma_implode( $array );
 }
 
-function comma_implode( $array ) {
-	$str = implode( ", ", $array );
+function comma_implode( $array, $space = " " ) {
+	$str = implode( "," . $space, $array );
 
 	return rtrim( $str, ", " );
 }
