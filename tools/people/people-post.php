@@ -7,7 +7,7 @@
  */
 // ini_set( 'display_errors', 'on' );
 require_once( "../account/account.php" );
-require_once( ROOT_DIR . "/agla/gui/inputs.php" );
+require_once( ROOT_DIR . "/niver/gui/inputs.php" );
 require_once( "people.php" );
 
 if ( ! isset( $_GET["operation"] ) ) {

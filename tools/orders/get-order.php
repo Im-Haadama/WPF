@@ -5,7 +5,7 @@
 
 require_once( "../im_tools.php" );
 require_once 'orders-common.php';
-require_once( ROOT_DIR . '/agla/gui/inputs.php' );
+require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( '../delivery/delivery.php' );
 
 $user_id = login_id();
@@ -27,7 +27,7 @@ if ( $manager and isset( $_GET["margin"] ) ) {
 <html dir="rtl" lang="he">
 <head>
     <meta charset="UTF-8">
-    <script type="text/javascript" src="/agla/client_tools.js"></script>
+    <script type="text/javascript" src="/niver/client_tools.js"></script>
     <script type="text/javascript" src="/tools/tools.js"></script>
     <script>
 

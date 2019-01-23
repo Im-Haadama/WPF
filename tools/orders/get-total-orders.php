@@ -6,13 +6,13 @@
  * Time: 18:06
  */
 require_once( '../r-shop_manager.php' );
-require_once( ROOT_DIR . '/agla/gui/inputs.php' );
+require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 
 print header_text( false );
 ?>
 <html dir="rtl" lang="he">
 <header>
-    <script type="text/javascript" src="/agla/client_tools.js"></script>
+    <script type="text/javascript" src="/niver/client_tools.js"></script>
     <script>
         function show_totals() {
             xmlhttp = new XMLHttpRequest();

@@ -7,7 +7,7 @@
  */
 define( 'WCDI', '' );
 require_once( '../im_tools.php' );
-require_once( ROOT_DIR . '/agla/gui/inputs.php' );
+require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 ?>
 <header>
     <script>7

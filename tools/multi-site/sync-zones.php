@@ -7,7 +7,7 @@
  */
 
 require_once( '../r-multisite.php' );
-require_once( ROOT_DIR . '/agla/gui/sql_table.php' );
+require_once( ROOT_DIR . '/niver/gui/sql_table.php' );
 require_once( "../multi-site/imMulti-site.php" );
 
 $operation = $_GET["operation"];

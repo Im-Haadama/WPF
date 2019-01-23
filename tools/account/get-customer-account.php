@@ -8,7 +8,7 @@ require_once( "../multi-site/imMulti-site.php" );
 require_once( '../../im-config.php' );
 require_once( '../invoice4u/invoice.php' );
 require_once( "../account/gui.php" );
-require_once( ROOT_DIR . '/agla/gui/inputs.php' );
+require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 
 // $start_time =  microtime(true);
 
@@ -299,7 +299,7 @@ if ( $manager ) {
 ?>
 <br>
 
-<script type="text/javascript" src="/agla/client_tools.js"></script>
+<script type="text/javascript" src="/niver/client_tools.js"></script>
 
 <script>
     function save_payment_method() {

@@ -13,7 +13,7 @@ $user_id = $_GET["user_id"];
 print header_text( false, true );
 ?>
     <header>
-        <script type="text/javascript" src="/agla/client_tools.js"></script>
+        <script type="text/javascript" src="/niver/client_tools.js"></script>
         <script>
 
             function send_order() {

@@ -14,7 +14,7 @@ if ( ! defined( "TOOLS_DIR" ) ) {
 }
 
 require_once( TOOLS_DIR . '/catalog/catalog.php' );
-require_once( ROOT_DIR . '/agla/gui/inputs.php' );
+require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( TOOLS_DIR . '/multi-site/imMulti-site.php' );
 require_once( TOOLS_DIR . '/wp/Product.php' );
 require_once( TOOLS_DIR . "/orders/orders-common.php" );

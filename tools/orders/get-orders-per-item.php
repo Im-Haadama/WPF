@@ -1,7 +1,7 @@
 <?php
 require '../r-shop_manager.php';
 require_once( 'orders-common.php' );
-require_once( ROOT_DIR . '/agla/gui/inputs.php' );
+require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 ?>
 <html dir="rtl" lang="he">
 <head>
