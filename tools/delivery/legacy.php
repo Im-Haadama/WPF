@@ -12,7 +12,6 @@ ini_set( 'display_errors', 'on' );
 require_once( '../r-shop_manager.php' );
 require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 require_once( ROOT_DIR . '/tools/orders/orders-common.php' );
-require_once( ROOT_DIR . '/tools/delivery/delivery-common.php' );
 
 ?>
 
@@ -134,6 +133,9 @@ if ( strlen( $table ) > 10 ) {
 	print gui_button( "btn_create_ship", "create_ship()", "צור תעודת משלוח" );
 }
 
+print '<div id="logging">';
+
+
 print gui_header( 1, "הוספת משלוחים" );
 
 print "אנא בחר משלוחים לשבוע זה" . "<br/>";
@@ -155,8 +157,6 @@ print "</table>";
 print gui_button( "btn_done", "done()", "בצע" );
 
 print gui_button( "btn_clear", "clear_legacy()", "נקה" );
-
-print '<div id="logging">';
 
 function user_checkbox( $id ) {
 	return gui_row( array(

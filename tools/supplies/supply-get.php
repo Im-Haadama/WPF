@@ -33,6 +33,7 @@ if ( isset( $_GET["business_id"] ) ) {
 }
 
 ?>
+<script type="text/javascript" src="/agla/client_tools.js"></script>
 
 <script>
     function supply_pay() {
@@ -201,6 +202,8 @@ print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_missio
                                     supply_document.innerHTML = arrival_info;
                                     supply_arrived.hidden = true;
                                     supply_document.hidden = false;
+                                    supply_document.hidden = false;
+                                    add_items.hidden = true;
                                 } else {
                                     supply_arrived.hidden = false;
                                     supply_document.hidden = true;
@@ -291,9 +294,14 @@ print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_missio
     function got_supply() {
         var supply_number = get_value(document.getElementById("supply_number"));
         var supply_total = get_value(document.getElementById("supply_total"));
+        var net_total = get_value(document.getElementById("net_total"));
+        var is_invoice = get_value(document.getElementById("is_invoice"));
+
 
         var request_url = "supplies-post.php?operation=got_supply&supply_id=<?php print $id; ?>" +
-            "&supply_total=" + supply_total + "&supply_number=" + supply_number;
+            "&supply_total=" + supply_total + "&supply_number=" + supply_number +
+            "&net_total=" + net_total +
+            "&is_invoice=" + is_invoice;
 
         var request = new XMLHttpRequest();
         request.onreadystatechange = function () {
@@ -312,13 +320,57 @@ print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_missio
 </script>
 <br/>
 <br/>
+<style>
+    .tooltip {
+        position: relative;
+        display: inline-block;
+        border-bottom: 1px dotted black;
+    }
+
+    .tooltip .tooltiptext {
+        visibility: hidden;
+        width: 120px;
+        background-color: black;
+        color: #fff;
+        text-align: center;
+        border-radius: 6px;
+        padding: 5px 0;
+        position: absolute;
+        z-index: 1;
+        top: -5px;
+        right: 110%;
+    }
+
+    .tooltip .tooltiptext::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 100%;
+        margin-top: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: transparent transparent transparent black;
+    }
+    .tooltip:hover .tooltiptext {
+        visibility: visible;
+    }
+</style>
+
 <div id="supply_arrived">
-		<?php
+
+    <?php $invoice_text = '
+    <div class="tooltip">' . gui_checkbox("is_invoice", "") .
+                          '<span class="tooltiptext">יש לסמן עבור חשבונית ולהשאיר לא מסומן עבור תעודת משלוח</span>
+    </div>';
 
 		print gui_table( array(
-			array( "מספר תעודת משלוח", gui_input( "supply_number", "" )),
-			array( "סכום", gui_input( "supply_total", "" ) )
+		    array("חשבונית", $invoice_text),
+			array( "מספר מסמך", gui_input( "supply_number", "" )),
+			array( "סכום כולל מעמ", gui_input( "supply_total", "" ) ),
+			array( "סכום ללא מעמ", gui_input( "net_total", "" ) )
 		) );
+        // print gui_label("help", 'תיבת הסימון ליד "חשבונית" תשאר לא מסומנת במקרה של תעודת משלוח');
+		print "<br/>";
 
 		print gui_button( "btn_got_supply", "got_supply()", "סחורה התקבלה" );
 
@@ -327,6 +379,7 @@ print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_missio
 
 <div id="supply_document">
 </div>
+
 
 </body>
 </html>

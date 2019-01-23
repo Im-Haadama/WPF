@@ -5,7 +5,6 @@
 require_once( "../im_tools.php" );
 require_once( "../multi-site/imMulti-site.php" );
 require_once( ROOT_DIR . '/agla/gui/inputs.php' );
-require_once( 'delivery-common.php' );
 require_once( "../../wp-includes/pluggable.php" );
 require_once( "../account/account.php" );
 
@@ -113,8 +112,31 @@ print gui_datalist( "items", "im_products", "post_title" );
 
     function addDelivery(draft) {
         calcDelivery();
-        if (draft)
-            execute_url("delivery-post.php?operation=check_delivery&order_id=" + <?php print $order_id; ?>, doAddDraft);
+        if (draft) {
+            // Get the modal
+            var modal = document.getElementById('myModal');
+            modal.style.display = "block";
+
+            // Get the <span> element that closes the modal
+            var span = document.getElementsByClassName("close")[0];
+
+            var btn= document.getElementById("save_draft_modal");
+            btn.onclick = function()
+            {
+                execute_url("delivery-post.php?operation=check_delivery&order_id=" + <?php print $order_id; ?>, doAddDraft);
+            }
+            // When the user clicks on <span> (x), close the modal
+            span.onclick = function() {
+                modal.style.display = "none";
+            }
+
+            // When the user clicks anywhere outside of the modal, close it
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }            //
+        }
         else
             execute_url("delivery-post.php?operation=check_delivery&order_id=" + <?php print $order_id; ?>, doAdd);
     }
@@ -158,7 +180,7 @@ print gui_datalist( "items", "im_products", "post_title" );
     } ?>
 
         // Enter delivery note to db.
-        var request = "create-delivery-post.php?operation=add_header&order_id=" + order_id
+        var request = "delivery-post.php?operation=add_header&order_id=" + order_id
             + "&total=" + total
             + "&vat=" + total_vat;
 
@@ -181,7 +203,8 @@ print gui_datalist( "items", "im_products", "post_title" );
             var quantity = get_value(document.getElementById("deq_" + prfx));
             if (quantity > 0 || quantity < 0) saved_lines++;
             var prod_name = get_value(document.getElementById("nam_" + prfx));
-            if (prod_name === "דמי משלוח") fee = get_value(document.getElementById("del_" + prfx))
+            if (prod_name === "דמי משלוח"
+                || prod_name === "משלוח") fee = get_value(document.getElementById("del_" + prfx))
 
 
             // var product = get_value(table.rows[i].cells[product_name_id].firstChild);
@@ -189,7 +212,13 @@ print gui_datalist( "items", "im_products", "post_title" );
         }
         request = request + "&lines=" + saved_lines;
         request = request + "&fee=" + fee;
-        if (draft) request += "&draft";
+        if (draft) {
+            request += "&draft";
+            var reason = get_select_text("draft_reason");
+            alert(reason);
+
+            request += "&reason=" + encodeURI(reason);
+        }
 
         // Call the server to save the delivery
         server_header = new XMLHttpRequest();
@@ -203,7 +232,7 @@ print gui_datalist( "items", "im_products", "post_title" );
 
                 server_lines = new XMLHttpRequest();
 
-                var line_request = "create-delivery-post.php?operation=add_lines&delivery_id=" + delivery_id;
+                var line_request = "delivery-post.php?operation=add_lines&delivery_id=" + delivery_id;
                 if (is_edit) line_request = line_request + "&edit";
                 var line_args = new Array();
 
@@ -279,17 +308,17 @@ print gui_datalist( "items", "im_products", "post_title" );
 			                print 'request = request + "&edit";     ';
 		                } ?>
                             logging.value += "תעודה נשלחת ללקוח";
-			                <?php
-			                $d = new delivery( $id );
-			                //                                if (strstr($d->getPrintDeliveryOption(), "P")) {
-			                //                                 //   print 'logging.style.display="false";';
-			                //                                    print 'location.replace("get-delivery.php?id=' . $id . '&print"); return;';
-			                //	                               // print 'logging.style.display="true";';
-			                //                                }
-
-			                ?>
                             xmlhttp_send.open("GET", request);
                             xmlhttp_send.send();
+	                        <?php
+	                        $d = new delivery( $id );
+	                        if ( strstr( $d->getPrintDeliveryOption(), "P" ) ) {
+		                        //   print 'logging.style.display="false";';
+		                        print 'location.replace("get-delivery.php?id=" + delivery_id + "&print"); return;';
+		                        // print 'logging.style.display="true";';
+	                        }
+
+	                        ?>
                         }
                         location.replace(document.referrer);
                     }
@@ -482,5 +511,106 @@ print gui_datalist( "items", "im_products", "post_title" );
         document.getElementById("del_vat").innerHTML = Math.round(total_vat * 100) / 100;
         // Total
         document.getElementById("del_tot").innerHTML = total;
+    }
+</script>
+<style>
+.modal {
+display: none; /* Hidden by default */
+position: fixed; /* Stay in place */
+z-index: 1; /* Sit on top */
+left: 0;
+top: 0;
+width: 100%; /* Full width */
+height: 100%; /* Full height */
+overflow: auto; /* Enable scroll if needed */
+background-color: rgb(0,0,0); /* Fallback color */
+background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content/Box */
+.modal-content {
+background-color: #fefefe;
+margin: 15% auto; /* 15% from the top and centered */
+padding: 20px;
+border: 1px solid #888;
+width: 80%; /* Could be more or less, depending on screen size */
+}
+
+/* The Close Button */
+.close {
+color: #aaa;
+float: right;
+font-size: 28px;
+font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+color: black;
+text-decoration: none;
+cursor: pointer;
+}
+</style>
+
+<!-- Trigger/Open The Modal -->
+<!--<button id="myBtn">Open Modal</button>-->
+
+<!-- The Modal -->
+<div id="myModal" class="modal">
+
+    <!-- Modal content -->
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <p>יש לבחור את הסיבה לשמירת טיוטא.</p>
+        <?php
+        $select_options = array();
+        $option = array();
+        $option["id"] = 1;
+        $option["reason"] = "אריזה חלקית";
+        array_push($select_options, $option);
+
+        $option["id"]++;
+        $option["reason"] = "התווספו פריטים ולא ידוע המחיר";
+        array_push($select_options, $option);
+
+        $option["id"]++;
+        $option["reason"] = "לא ידוע מחיר המשלוח";
+        array_push($select_options, $option);
+
+        print gui_select("draft_reason", "reason",
+            $select_options, "", "" );
+
+        print gui_button("save_draft_modal", "", "בצע");
+        ?>
+
+    </div>
+
+</div>
+
+<script>
+    var modal = document.getElementById('myModal');
+
+    // Get the button that opens the modal
+    var btn = document.getElementById("btn_save_draft");
+
+    // Get the <span> element that closes the modal
+    var span = document.getElementsByClassName("close")[0];
+
+    // When the user clicks on the button, open the modal
+    if (btn) // Exists only on draft
+        btn.onclick = function() {
+            modal.style.display = "block";
+        }
+
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
     }
 </script>

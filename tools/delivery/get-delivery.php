@@ -25,7 +25,7 @@ if ( ( ! current_user_can( "edit_shop_orders" ) ) and ( order_get_customer_id( $
 	die( 0 );
 }
 
-print order_info_data( $order_id );
+print order_info_box( $order_id );
 
 print $d->delivery_text( ImDocumentType::delivery, ImDocumentOperation::show, $margin );
 
@@ -57,7 +57,7 @@ if ( ! $send ) {
             // Wait to get delivery id.
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
             {
-                if (window.history.previous.href)
+                if (window.history)
                     window.history.back();
                 else {
                     alert("תעודה נמחקה. יש לסגור את החלון");

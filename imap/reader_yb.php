@@ -26,7 +26,7 @@ foreach ( array( "Office" ) as $sender ) {
 }
 
 
-$result_file = "/home/agla/store/imap-reader/attachment/yb" . $date . ".pdf";
+$result_file = "/home/agla/store/imap/attachment/yb" . $date . ".pdf";
 
 $attach_file = read_mail( $host, $user, $pass, $search_strings );
 rename( $attach_file, $result_file );

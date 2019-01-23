@@ -8,6 +8,11 @@
 
 // test
 // include_once( "../r-shop_manager.php" );
+if ( ! defined( "ROOT_DIR" ) ) {
+	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
+	// print "ROOT_DIR: " . ROOT_DIR . "<br/>";
+}
+
 require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 require_once( ROOT_DIR . "/tools/mail.php" );
 require_once( ROOT_DIR . "/tools/catalog/catalog.php" );
@@ -458,10 +463,11 @@ function print_supplies_table( $ids, $internal ) {
 //    print "</html>";
 }
 
-function got_supply( $supply_id, $supply_total, $supply_number ) {
+function got_supply( $supply_id, $supply_total, $supply_number, $net_total, $document_type  ) {
 	global $conn;
 
-	$id  = business_add_transaction( supply_get_supplier_id( $supply_id ), date( 'y-m-d' ), - $supply_total, 0, $supply_number, 1 );
+	$id  = business_add_transaction( supply_get_supplier_id( $supply_id ), date( 'y-m-d' ), - $supply_total,
+		0, $supply_number, 1, - $net_total, $document_type );
 	$sql = "UPDATE im_supplies SET business_id = " . $id . " WHERE id = " . $supply_id;
 	mysqli_query( $conn, $sql );
 	mysqli_query( $conn, "UPDATE im_supplies SET status = " . SupplyStatus::Supplied . " WHERE id = " . $supply_id );
@@ -786,7 +792,7 @@ function display_status( $status ) {
 }
 
 function supplier_report_data( $supplier_id, $start_date, $end_date ) {
-	$sql = "select prod_id, sum(quantity), prod_id from im_delivery_lines dl\n"
+	$sql = "select prod_id, sum(quantity), get_product_name(prod_id) from im_delivery_lines dl\n"
 
 	       . "join im_delivery d\n"
 

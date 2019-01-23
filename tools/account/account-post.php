@@ -75,16 +75,11 @@ switch ( $operation ) {
 		invoice_create_user( $id );
 		break;
 
-
 	case "get_client_id":
 		$customer_id = $_GET["customer_id"];
 		$invoice     = new Invoice4u( $invoice_user, $invoice_password );
 
-		if ( is_null( $invoice->token ) ) {
-			die ( "can't login" );
-		}
-
-		// print "client name " . $client_name . "<br/>";
+	 print "client name " . $client_name . "<br/>";
 		$client_name = get_customer_name( $customer_id );
 		$client      = $invoice->GetCustomerByName( $client_name );
 		print $client->ID;
@@ -384,13 +379,14 @@ function invoice_create_user( $user_id ) {
 
 	$invoice = new Invoice4u( $invoice_user, $invoice_password );
 
+	// $invoice->Login();
+
 	$name  = get_customer_name( $user_id );
 	$email = get_customer_email( $user_id );
 	$phone = get_customer_phone( $user_id );
 
-	if ( is_null( $invoice->token ) ) {
-		die ( "can't login" );
-	}
+	// print "Creating user. name=" . $name . " email = " . $email . " phone = " . $phone. "<br/>";
+
 	$invoice->CreateUser( $name, $email, $phone );
 
 	$client = $invoice->GetCustomerByName( $name );

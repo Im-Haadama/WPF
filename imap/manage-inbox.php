@@ -7,6 +7,8 @@
  */
 define( 'STORE_DIR', dirname( dirname( __FILE__ ) ) );
 
+require_once( STORE_DIR . '/agla/im_simple_html_dom.php' );
+
 $filename = STORE_DIR . '/imap/mail-config.php';
 
 if ( ! file_exists( $filename ) ) {
@@ -14,7 +16,6 @@ if ( ! file_exists( $filename ) ) {
 	die ( 1 );
 }
 require_once( $filename );
-require_once( 'simple_html_dom.php' );
 
 // print __FILE__;
 require_once( STORE_DIR . '/tools/gui/inputs.php' );
@@ -89,9 +90,16 @@ function read_inbox( $host, $user, $pass ) {
 				break;
 
 			case "batya_l@maabarot.com":
+			case "yaakov.aglamaz@gmail.com":
+			case "yaakov@im-haadama.co.il":
 			case "limor_s@maabarot.com": // Sadot
 				if ( strstr( $subject, "מחירון" ) ) {
 					$handled = handle_pricelist( $subject, $inbox, "sadot", $date, $i );
+					break;
+				}
+				if ( strstr( $subject, "הזמנה" ) ) {
+					$handled = handle_supply( $subject, $inbox, "sadot", $date, $i );
+					break;
 				}
 				break;
 			case "office@yevulebar.co.il": // yb
@@ -168,7 +176,7 @@ function run_in_server( $site_id, $relative_url ) {
 	// print $relative_url;
 
 	$full_url = $site_tools[ $site_id ] . $relative_url;
-	$html     = file_get_html( $full_url );
+	$html     = im_file_get_html( $full_url );
 	$log_file = $attach_folder . "/" . date( 'j.n.y' ) . ".log";
 	// In case running twice a day - move the file to unique name
 	shell_exec( "mv $log_file $log_file" . time() );
@@ -178,6 +186,20 @@ function run_in_server( $site_id, $relative_url ) {
 	fclose( $file );
 
 	return $html;
+}
+
+function handle_supply_in_server( $site_id, $supplier, $file ) {
+	$relative_url = "/supplies/create-supply.php?supplier_name=" . $supplier;
+	$relative_url .= "&file=" . rtrim( $file );
+
+	$html = run_in_server( $site_id, $relative_url );
+	foreach ( preg_split( "/\<br(\s*)?\/?\>/i", $html ) as $line ) {
+		if ( strstr( $line, "נוצרה" ) ) {
+			return $line;
+		}
+	}
+
+	return $html . " " . $relative_url;
 }
 
 function handle_in_server( $site_id, $supplier, $file = null ) {
@@ -227,6 +249,60 @@ function handle_automail( $subject, $inbox, $folder, $i ) {
 	print $line;
 }
 
+function handle_supply( $subject, $inbox, $supplier, $date, $i, $text = false ) {
+	global $changed_price;
+
+//	if (0) {
+	$line = "<tr>";
+	$line .= "<td>" . $subject . "</td>";
+	$line .= "<td>" . $supplier . "</td>";
+	if ( $text ) {
+		// Save mail text. For amir.
+		$file = save_html_as_csv( $inbox, $i, $supplier, $date );
+	} else {
+		print "saving attachment<br/>";
+		if ( $file = save_attachment( $inbox, $i, $supplier, $date ) ) {
+			$command = "/home/agla/store/utils/" . $supplier . "2csv.sh $file "; // 2>1 | tail -1
+			print "running: " . $command . "<br/>";
+			$file = shell_exec( $command );
+			// $csv_file =shell_exec("echo lalala");
+			// print "csv_file: " . $csv_file ."<br/>";
+			// Now run update in store
+		} else {
+			print "Failed. No file. <br/>";
+
+			return "no file";
+		}
+	}
+	// $result[2] = handle_in_server(2, $supplier, $file);
+	// if (strstr($result[2], "נקראו")) $changed_price[2] = true;
+	// print "Result2: " . $result[2]. "<br/>";
+
+//	$result[1] = handle_in_server(1, $supplier, $file);
+//	if (strstr($result[1], "נקראו")) $changed_price[1] = true;
+	$result = handle_supply_in_server( 4, $supplier, $file );
+	print $result;
+	if ( strstr( $result, "נקראו" ) ) {
+		$changed_price[3] = true;
+	}
+	// print "Result1: " . $result[1]. "<br/>";
+
+	$line .= "<td/>" . $result . "</td>";
+	$line .= "</tr>";
+
+	print $line;
+//	}
+	if ( strstr( $result, "נקראו" ) ) {
+		// print $line;
+		imap_mail_move( $inbox, $i, $supplier );
+
+		// print "MOVE: " . $move_result . "<br/>";
+		return true;
+	}
+
+	return false;
+}
+
 function handle_pricelist( $subject, $inbox, $supplier, $date, $i, $text = false ) {
 	global $changed_price;
 
@@ -239,15 +315,19 @@ function handle_pricelist( $subject, $inbox, $supplier, $date, $i, $text = false
 		// Save mail text. For amir.
 		$file = save_html_as_csv( $inbox, $i, $supplier, $date );
 	} else {
-		// print "saving attachment<br/>";
+		print "saving attachment<br/>";
 		if ( $file = save_attachment( $inbox, $i, $supplier, $date ) ) {
 			$command = "/home/agla/store/utils/" . $supplier . "2csv.sh $file "; // 2>1 | tail -1
-			//		print "running: " . $command . "<br/>";
+			print "running: " . $command . "<br/>";
 			$file = shell_exec( $command );
 			// $csv_file =shell_exec("echo lalala");
 			// print "csv_file: " . $csv_file ."<br/>";
 			// Now run update in store
-		};
+		} else {
+			print "Failed. No file. <br/>";
+
+			return;
+		}
 	}
 	// $result[2] = handle_in_server(2, $supplier, $file);
 	// if (strstr($result[2], "נקראו")) $changed_price[2] = true;
@@ -310,7 +390,7 @@ function save_html_as_csv( $inbox, $email_number, $supplier_name, $date ) {
 
 	$f = fopen( $attach_folder . "/" . $result_file, "w" );
 
-	$dom = str_get_html( $message );
+	$dom = im_str_get_html( $message );
 
 	foreach ( $dom->find( 'tr' ) as $row ) {
 		foreach ( $row->find( 'td' ) as $col ) {

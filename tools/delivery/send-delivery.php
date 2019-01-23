@@ -21,16 +21,22 @@ if ( isset( $_GET["edit"] ) ) {
 	$edit = true;
 }
 
-$delivery = new delivery( $del_id );
-print "info: " . $info_email;
-print "track: " . $track_email;
+$del_ids = get_param_array("del_id");
+foreach ($del_ids as $del_id){
+	$delivery = new delivery( $del_id );
+	print "info: " . $info_email;
+	print "track: " . $track_email;
 
-$option = $delivery->getPrintDeliveryOption();
+	$option = $delivery->getPrintDeliveryOption();
 
-if ( strstr( $option, 'M' ) ) {
-	$delivery->send_mail( $track_email, $edit );
+	if ( strstr( $option, 'M' ) ) {
+		$delivery->send_mail( $track_email, $edit );
+		print "sent<br/>";
+	} else {
+		print "<br/>";
+	}
+
 }
-
 //if (strstr($option, 'P')){
 //	$delivery->PrintDeliveries(ImDocumentType::delivery, ImDocumentOperation::show);
 //	print '      <script>  window.print(); </script>';

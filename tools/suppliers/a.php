@@ -28,13 +28,6 @@ if ( ! $manager ) {
 <meta charset="UTF-8">
 <head>
     <script>
-        function get_value(element) {
-            if (element.tagName == "INPUT") {
-                return element.value;
-            } else {
-                return element.nodeValue;
-            }
-        }
 
         function addTransaction() {
             var type = document.getElementById("transaction_type").value;

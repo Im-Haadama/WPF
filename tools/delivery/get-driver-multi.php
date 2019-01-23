@@ -14,7 +14,7 @@ require_once( "../im_tools.php" );
 require_once( '../multi-site/imMulti-site.php' );
 require_once( '../maps/build-path.php' );
 require_once( '../missions/Mission.php' );
-require_once( ROOT_DIR . '/tools/delivery/delivery-common.php' );
+require_once( '../orders/Order.php' );
 
 $debug = false;
 // $addresses = array();
@@ -260,8 +260,10 @@ foreach ( $data_lines as $mission_id => $data_line ) {
 			$total_duration += $duration + 5;
 			$data           .= substr( $line, 0, strpos( $line, "</tr>" ) ) . gui_cell( $distance . "km" ) .
 			                   gui_cell( $duration . "ד'" ) . gui_cell( $total_duration . "ד'" ) . "</td>";
+
 			try {
 				$o    = new Order( $order_id );
+				if (strlen($o->Missing()))
 				$data .= gui_row( array(
 					"חוסרים",
 					$order_id,

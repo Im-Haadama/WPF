@@ -25,17 +25,24 @@ if ( isset( $_GET["operation"] ) ) {
 			$date = $_GET["date"];
 			supply_set_pay_date( $id, $date );
 			break;
+
 		case "get_business":
 			// print header_text(false); DONT!!!
 			$supply_id = $_GET["supply_id"]; // מספר הספקה שלנו
-			print supply_business_info( $supply_id );
+			supply_business_info( $supply_id );
 			break;
+
+//			                  "&net_total=" + supply_total +
+//			                  "&is_invoice=" + is_invoice;
 
 		case "got_supply":
 			$supply_id     = $_GET["supply_id"]; // מספר הספקה שלנו
 			$supply_total  = $_GET["supply_total"]; // סכום
 			$supply_number = $_GET["supply_number"]; // מספר תעודת משלוח
-			got_supply( $supply_id, $supply_total, $supply_number );
+			$net_total = get_param("net_total");
+			$is_invoice = get_param("is_invoice");
+			$doc_type = $is_invoice ? ImDocumentType::invoice : ImDocumentType::supply;
+			got_supply( $supply_id, $supply_total, $supply_number, $net_total, $doc_type );
 			break;
 
 		case "send":
@@ -101,6 +108,7 @@ if ( isset( $_GET["operation"] ) ) {
 			print display_active_supplies( array( 3 ) );
 			print gui_header( 2, "הזמנות התקבלו" );
 			print display_active_supplies( array( 5 ) );
+			print gui_hyperlink("ארכיון", "c-get-all-supplies.php");
 			break;
 
 		case "delete_supplies":

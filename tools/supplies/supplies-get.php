@@ -21,7 +21,7 @@ print gui_hyperlink( "שבוע קודם", "supplies-get.php?week=" . date( 'Y-m-
 
 print header_text( false, false );
 
-print gui_button( "btn_new", "show_create_item()", "אספקה חדשה" );
+print gui_button( "btn_new", "show_create_item()", "הספקה חדשה" );
 ?>
 <div id="new_item" style="display: none; border:1px solid black; padding: 30px">
 	<?php
@@ -68,6 +68,11 @@ if ( isset( $_GET["week"] ) ) {
         function show_create_item() {
             var new_order = document.getElementById("new_item");
             new_order.style.display = 'inline-block';
+
+            document.getElementById("supplies_list").style.display = 'none';
+            document.getElementById("actions").style.display = 'none';
+            document.getElementById("btn_new").style.visibility='hidden';
+
             add_line();
             document.getElementById("supplier_select").focus();
         }
@@ -95,13 +100,6 @@ if ( isset( $_GET["week"] ) ) {
             }
             var request = "supplies-post.php?operation=print&id=" + params;
             window.open(request);
-        }
-        function get_value(element) {
-            if (element.tagName == "INPUT") {
-                return element.value;
-            } else {
-                return element.nodeValue;
-            }
         }
 
         function delSupplies() {
@@ -230,11 +228,12 @@ if ( isset( $_GET["week"] ) ) {
 
         function add_item() {
             document.getElementById('add_item').disabled = true;
-            var supplier_name = get_value(document.getElementById("supplier_select"));
-            var supplier_id = supplier_name.substr(0, supplier_name.indexOf(")"));
+            var supplier_id = get_value_by_name("supplier_select");
+//            var supplier_id = supplier_name.substr(0, supplier_name.indexOf(")"));
             if (!(supplier_id > 0)) {
                 alert("יש לבחור ספק, כולל מספר מזהה מהרשימה");
                 document.getElementById('add_item').disabled = false;
+
                 return;
             }
             var ids = [];
@@ -262,6 +261,8 @@ if ( isset( $_GET["week"] ) ) {
             }
             if (line_number === 0) {
                 alert("יש לבחור מוצרים, כולל כמויות");
+                document.getElementById('add_item').disabled = false;
+
                 return;
             }
 
@@ -276,11 +277,11 @@ if ( isset( $_GET["week"] ) ) {
             xmlhttp.onreadystatechange = function () {
                 // Wait to get delivery id.
                 if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {  // Request finished
-                    if (xmlhttp.responseText.includes("בהצלחה")) {
+                    if (xmlhttp.responseText.includes("done")) {
                         location.reload();
                     } else {
                         logging.innerHTML = xmlhttp.responseText;
-                        document.getElementById('add_order').disabled = false;
+                        document.getElementById('add_item').disabled = false;
                     }
                 }
             }
@@ -314,11 +315,13 @@ if ( isset( $_GET["week"] ) ) {
 <br/>
 <br/>
 
-<button id="btn_save" onclick="savePrices()">שמור עדכונים</button>
-<button id="btn_delete" onclick="delSupplies()">מחק פריטים</button>
-<!--<button id="btn_close" onclick="deleteItems()">בטל</button>-->
-<button id="btn_merge" onclick="mergeItems()">מזג פריטים</button>
-<button id="btn_send" onclick="sendItems()">שלח הזמנה</button>
+<div id="actions">
+    <button id="btn_save" onclick="savePrices()">שמור עדכונים</button>
+    <button id="btn_delete" onclick="delSupplies()">מחק פריטים</button>
+    <!--<button id="btn_close" onclick="deleteItems()">בטל</button>-->
+    <button id="btn_merge" onclick="mergeItems()">מזג פריטים</button>
+    <button id="btn_send" onclick="sendItems()">שלח הזמנה</button>
+</div>
 <div id="logging" rows="6" cols="50"></div>
 
 <div id="supplies_list" border="1">

@@ -129,7 +129,7 @@ $for_edit    = ! ( $delivery_id > 0 );
 if ( get_post_meta( $order_id, 'printed' ) )
 	$for_edit = false;
 
-print order_info_data( $order_id, $for_edit );
+print order_info_box( $order_id, $for_edit );
 
 $d = delivery::CreateFromOrder( $order_id );
 $d->PrintDeliveries( ImDocumentType::order, ImDocumentOperation::edit, $margin );

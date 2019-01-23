@@ -392,6 +392,7 @@ function parse_header(
 			case 'שם':
 			case 'תאור פריט':
 			case 'תיאור פריט':
+			case 'תיאור הפריט':
 			case 'תיאור':
 			case 'מוצר':
 			case 'שם המוצר':
@@ -402,6 +403,7 @@ function parse_header(
 				array_push( $detail_idx, $i );
 				break;
 			case 'מחיר':
+			case 'מחיר לאחר הנחה':
 			case 'מחירון':
 			case 'מחיר נטו':
 			case 'מחיר לק"ג':

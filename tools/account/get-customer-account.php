@@ -5,7 +5,6 @@ ini_set( 'display_errors', 1 );
 // This page is open to clients.
 require_once( "account.php" );
 require_once( "../multi-site/imMulti-site.php" );
-require_once( "../delivery/delivery-common.php" );
 require_once( '../../im-config.php' );
 require_once( '../invoice4u/invoice.php' );
 require_once( "../account/gui.php" );
@@ -543,6 +542,23 @@ print '<button id="btn_add" onclick="addTransaction()">הוסף תנועה</butt
 print gui_button( "btn_invoice", "create_invoice()", "הפק חשבונית מס" );
 print gui_button( "btn_send", "send_deliveries()", "שלח תעודות משלוח" );
 
+function print_fresh_category() {
+	$list = "";
+
+	$option = sql_query_single_scalar( "SELECT option_value FROM wp_options WHERE option_name = 'im_discount_categories'" );
+	if ( ! $option ) {
+		return;
+	}
+
+	$fresh_categ = explode( ",", $option );
+	foreach ( $fresh_categ as $categ ) {
+		$list .= $categ . ",";
+		foreach ( get_term_children( $categ, "product_cat" ) as $child_term_id ) {
+			$list .= $child_term_id . ", ";
+		}
+	}
+	print rtrim( $list, ", " );
+}
 
 ?>
 </body>

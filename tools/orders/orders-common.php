@@ -61,9 +61,7 @@ function get_max_supplier() {
 	return $row[0];
 }
 
-function order_info( $order_id, $field_name ) {
-	global $conn;
-
+function get_order_info( $order_id, $field_name ) {
 	$sql = 'SELECT meta_value FROM `wp_postmeta` pm'
 	         . ' WHERE pm.post_id = ' . $order_id
 	         . ' AND `meta_key` = \'' . $field_name . '\'';
@@ -71,7 +69,7 @@ function order_info( $order_id, $field_name ) {
 	return sql_query_single_scalar( $sql );
 }
 
-function order_info_data( $order_id, $edit_order = false, $operation = null ) {
+function order_info_box( $order_id, $edit_order = false, $operation = null ) {
 	global $logo_url;
 	$header = "";
 	if ( $operation ) {
@@ -83,17 +81,20 @@ function order_info_data( $order_id, $edit_order = false, $operation = null ) {
 	} else {
 		$header .= "הזמנה מספר " . $order_id;
 	}
-	$order = new WC_Order( $order_id );
 	$data = gui_header( 1, $header, true );
-	$data  .= gui_header( 2, $order->order_date, true);
+	// $data  .= gui_header( 2, $order->order_date, true);
 
 	$d_id = get_delivery_id( $order_id );
 	if ( $d_id > 0 ) {
-		$draft_text = ( sql_query_single_scalar( "SELECT draft FROM im_delivery WHERE id = " . $d_id ) ) ? " טיוטא " : "";
+		$d = new delivery($d_id);
+		$draft_text = "";
+		if ($d->isDraft()){
+			$draft_text = " טיוטא " . $d->draftReason();
+		}
 
 		$data .= gui_header( 2, "משלוח מספר " . $d_id . $draft_text );
 	}
-	$data    .= order_info_table( $order_id );
+	$data    .= order_info_right_box( $order_id );
 	$data    .= "</td>";
 	$data    .= '<tr><td><img src=' . $logo_url . ' height="100"></td></tr>';
 	$data    .= "<td height='16'>" . gui_header( 2, "הערות לקוח להזמנה" ) . "</td></tr>";
@@ -125,28 +126,31 @@ function order_info_data( $order_id, $edit_order = false, $operation = null ) {
 	return $data;
 }
 
-function order_info_table( $order_id ) {
+function order_info_right_box( $order_id ) {
+	$order = new WC_Order( $order_id );
+
 	$data      = "<table><tr><td rowspan='4'>";
 	$data      .= '<table>';
 	$client_id = order_get_customer_id( $order_id );
 	// Client info
 	$user_edit = "../";
-	$row_text  = '<tr><td>לקוח:</td><td>' . gui_hyperlink( order_info( $order_id, '_billing_first_name' ) . ' '
-	                                                       . order_info( $order_id, '_billing_last_name' ), $user_edit ) . '</td><tr>';
+	$row_text  = '<tr><td>לקוח:</td><td>' . gui_hyperlink( get_order_info( $order_id, '_billing_first_name' ) . ' '
+	                                                       . get_order_info( $order_id, '_billing_last_name' ), $user_edit ) . '</td><tr>';
 	$data      .= $row_text;
-	$row_text  = '<tr><td>טלפון:</td><td>' . order_info( $order_id, '_billing_phone' ) . '</td><tr>';
-	$data      .= $row_text;
+	$data      .= '<tr><td>טלפון:</td><td>' . get_order_info( $order_id, '_billing_phone' ) . '</td><tr>';
+	$data      .= '<tr><td>הוזמן:</td><td>' . $order->order_date . '</td><tr>';
+
 
 	// Shipping info
-	$row_text = '<tr><td>משלוח:</td><td>' . order_info( $order_id, '_shipping_first_name' ) . ' '
-	            . order_info( $order_id, '_shipping_last_name' ) . '</td><tr>';
+	$row_text = '<tr><td>משלוח:</td><td>' . get_order_info( $order_id, '_shipping_first_name' ) . ' '
+	            . get_order_info( $order_id, '_shipping_last_name' ) . '</td><tr>';
 	$data     .= $row_text;
 //	$row_text = '<tr><td>כתובת:</td><td>' . order_info( $order_id, '_shipping_address_1' ) . ' '
 //	            . order_info( $order_id, '_shipping_address_2' ) . '</td><tr>';
 //	$data     .= $row_text;
-	$row_text = '<tr><td>כתובת:</td><td>' . order_info( $order_id, '_shipping_city' ) . ' ' .
-	            order_info( $order_id, '_shipping_address_1' ) . ' ' .
-	            order_info( $order_id, '_shipping_address_2' ) . ' ' .
+	$row_text = '<tr><td>כתובת:</td><td>' . get_order_info( $order_id, '_shipping_city' ) . ' ' .
+	            get_order_info( $order_id, '_shipping_address_1' ) . ' ' .
+	            get_order_info( $order_id, '_shipping_address_2' ) . ' ' .
 	            '</td><tr>';
 	$data     .= $row_text;
 
@@ -733,7 +737,6 @@ function copy_meta_field( $source, $destination, $meta_key ) {
 }
 
 function set_order_itemmeta( $order_item_id, $meta_key, $meta_value ) {
-	global $conn;
 	$value = $meta_value;
 
 	if ( is_array( $meta_value ) ) {
@@ -801,6 +804,8 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 
 	global $order_header_fields;
 	global $conn;
+	global $invoice_user;
+	global $invoice_password;
 
 	$show_fields = array();
 	$empty_line  = array();
@@ -882,10 +887,6 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 		}
 
 		$count = 0;
-		global $invoice_user;
-		global $invoice_password;
-
-		$invoice = new Invoice4u( $invoice_user, $invoice_password );
 
 		debug_time1( "before loop" );
 		while ( $row = mysqli_fetch_row( $result ) ) {
@@ -897,7 +898,9 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 			$customer_id = order_get_customer_id( $order_id );
 
 			$line                              = $empty_line;
-			if ( $invoice->GetInvoiceUserId( $customer_id ) ) {
+			$invoice_user_id = get_user_meta( $customer_id, 'invoice_id', 1 );
+
+			if ( $invoice_user_id ) {
 				$line [ OrderFields::line_select ] = gui_checkbox( "chk_" . $order_id, "select_order_" . $status );
 			} else {
 				$line [ OrderFields::line_select ] = gui_hyperlink( "לקוח חדש", "../account/new-customer.php?order_id=" . $order_id );
@@ -960,7 +963,7 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 				$line[ OrderFields::delivery_note ] = gui_hyperlink( "צור", "../delivery/create-delivery.php?order_id=" . $order_id );
 				$total_delivery_fee                 = order_get_shipping_fee( $order_id );
 			}
-			$line[ OrderFields::city ]         = order_info( $order_id, '_shipping_city' );
+			$line[ OrderFields::city ]         = get_order_info( $order_id, '_shipping_city' );
 			$line[ OrderFields::payment_type ] = get_payment_method_name( $customer_id );
 			$line[ OrderFields::good_costs ]   = $order->GetBuyTotal();
 			$line[ OrderFields::margin ]       = round( ( $line[ OrderFields::total_order ] - $line[ OrderFields::good_costs ] ), 0 );

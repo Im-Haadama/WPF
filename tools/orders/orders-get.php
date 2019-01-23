@@ -1,6 +1,6 @@
 <?php
-//error_reporting( E_ALL );
-//ini_set( 'display_errors', 'on' );
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
 require_once( "../im_tools.php" );
 require_once( '../r-shop_manager.php' );
 // require_once 'orders-common.php';
@@ -192,7 +192,7 @@ if ( current_user_can( "edit_shop_orders" ) and
 	if ( ! current_user_can( "edit_shop_orders" ) ) {
 		print "no permission";
 	}
-	print "ot=" . is_null( $order_type ) . "<br/>";
+	// print "ot=" . is_null( $order_type ) . "<br/>";
 	// print "אין הרשאות";
 }
 

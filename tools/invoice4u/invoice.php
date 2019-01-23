@@ -33,7 +33,7 @@ class Invoice4u {
 	public function __construct( $user, $password ) {
 		$this->user     = $user;
 		$this->password = $password;
-		// $this->Login( $user, $password );
+		$this->Login( );
 	}
 
 	// public $doc;
@@ -48,19 +48,17 @@ class Invoice4u {
 	}
 
 	private function DoLogin( $invoice_user, $invoice_password ) {
-		// print "invoice login<br/>";
+		// print "EWE invoice login<br/>";
 		$wsdl = "http://private.invoice4u.co.il/Services/LoginService.svc?wsdl";
 		$user = array( 'username' => $invoice_user, 'password' => $invoice_password, 'isPersistent' => false );
 		// $user = array('username' => 'Test@test.com', 'password' => '123456', 'isPersistent' => false);
 
 		$this->requestWS( $wsdl, "VerifyLogin", $user );
 		$this->token = $this->result;
+		// var_dump ($this->token);
 	}
 
 	private function requestWS( $wsdl, $service, $params ) {
-		if ( $service != "VerifyLogin" ) {
-			self::Login();
-		}
 		try {
 			$options = array(
 				'trace'              => true,
@@ -162,9 +160,11 @@ class Invoice4u {
 
 		$client_email = get_customer_email( $customer_id );
 		// print $client_email;
+		my_log("performance - seaching customer by email", __METHOD__);
 		$client = $this->GetCustomerByEmail( $client_email );
 
 		if ( ! $client ) {
+			my_log("performance - seaching customer by name", __METHOD__);
 			$client = $this->GetCustomerByName( get_customer_name( $customer_id ) );
 		}
 
@@ -252,9 +252,10 @@ class Invoice4u {
 			array( 'customer' => $customer, 'token' => $this->token ) );
 
 		if ( ! $this->result->Errors ) {
+			// print $this->result->Errors;
 			my_log( __METHOD__, $this->result->Errors );
 		}
-//        var_dump($this->result);
+        // var_dump($this->result);
 	}
 }
 

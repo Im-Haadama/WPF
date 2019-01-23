@@ -17,11 +17,100 @@ require_once( ROOT_DIR . '/agla/gui/inputs.php' );
 include_once( TOOLS_DIR . "/multi-site/imMulti-site.php" );
 require_once( TOOLS_DIR . "/mail.php" );
 require_once( TOOLS_DIR . "/account/gui.php" );
-require_once( TOOLS_DIR . "/delivery/delivery-common.php" );
 require_once( TOOLS_DIR . "/inventory/inventory.php" );
 require_once( TOOLS_DIR . "/business/business.php" );
 require_once( ROOT_DIR . "/tools/catalog/Basket.php" );
 $debug = false;
+
+class DeliveryFields {
+	const
+		/// User interface
+		line_select = 0,
+		/// Product info
+		product_name = 1,
+		product_id = 2,
+		term = 3,
+		// Order info
+		order_q = 4, // Only display
+		order_q_units = 5,
+		delivery_q = 6,
+		price = 7,
+		order_line = 8,
+		// Delivery info
+		has_vat = 9,
+		line_vat = 10,
+		delivery_line = 11,
+		// Refund info
+		refund_q = 12,
+		refund_line = 13,
+		buy_price = 14,
+		line_margin = 15,
+		max_fields = 16;
+}
+
+$delivery_fields_names = array(
+	"chk", // 0
+	"nam", // 1
+	"pid", // 2
+	"ter", // 3
+	"orq", // 4
+	"oru", // 5
+	"deq", // 6
+	"prc", // 7
+	"orl", // 8
+	"hvt", // 9
+	"lvt", // 10
+	"del", // 11
+	"req", // 12
+	"ret",  // 13
+	"buy", //14
+	"mar", // 15
+);
+
+$header_fields = array(
+	"בחר",
+	"פריט",
+	"ID",
+	"קטגוריה",
+	"כמות הוזמן",
+	"יחידות הוזמנו",
+	"כמות סופק",
+	"מחיר",
+	"סה\"כ להזמנה",
+	"חייב מע\"מ",
+	"מע\"מ",
+	"סה\"כ",
+	"כמות לזיכוי",
+	"סה\"כ זיכוי",
+	"מחיר עלות",
+	"סה\"כ מרווח שורה"
+);
+
+class ImDocumentType {
+	const order = 1, // Client
+		delivery = 2, // Client
+		refund = 3, // Client
+		invoice = 4, // Supplier
+		supply = 5; // Supplier
+}
+
+function get_document_type_name($type)
+{
+	$names = array("", "הזמנה",  "תעודת משלוח", "זיכוי", "חשבונית");
+
+	if (isset($type) and isset($names[$type]))
+		return $names[$type];
+	return "not set" . isset($type) ? $type : "null";
+}
+
+class ImDocumentOperation {
+	const
+		collect = 0, // From order to delivery, before collection
+		create = 1, // From order to delivery. Expand basket
+		show = 2,     // Load from db
+		edit = 3;     // Load and edit
+
+}
 
 class delivery {
 	private $ID = 0;
@@ -102,7 +191,8 @@ class delivery {
 		return $delivery_id;
 	}
 
-	public static function CreateDeliveryHeader( $order_id, $total, $vat, $lines, $edit, $fee, $delivery_id = null, $_draft = false ) {
+	public static function CreateDeliveryHeader( $order_id, $total, $vat, $lines, $edit, $fee, $delivery_id = null,
+		$_draft = false, $reason = null ) {
 		global $conn;
 
 		$draft = $_draft ? 1 : 0;
@@ -116,14 +206,15 @@ class delivery {
 			       " WHERE order_id = " . $order_id;
 			sql_query( $sql );
 		} else {
-			$sql = "INSERT INTO im_delivery (date, order_id, vat, total, dlines, fee, draft) "
+			$sql = "INSERT INTO im_delivery (date, order_id, vat, total, dlines, fee, draft, draft_reason) "
 			       . "VALUES ( CURRENT_TIMESTAMP, "
 			       . $order_id . ", "
 			       . $vat . ', '
 			       . $total . ', '
 			       . $lines . ', '
 			       . $fee . ', '
-			       . $draft . ')';
+			       . $draft . ', '
+			       . ( $reason ? $reason : "NULL" ) . ')';
 			sql_query( $sql );
 			$delivery_id = mysqli_insert_id( $conn );
 		}
@@ -203,7 +294,7 @@ class delivery {
 
 		my_log( __FILE__, "dlines = " . $dlines );
 
-		$del_user = order_info( $order_id, '_billing_first_name' );
+		$del_user = get_order_info( $order_id, '_billing_first_name' );
 		$message  = header_text( true, true, true );
 
 		$message .= "<body>";
@@ -253,7 +344,7 @@ class delivery {
 			$subject = "משלוח מספר " . $this->ID . " - תיקון";
 		}
 		send_mail( $subject, $to, $message );
-		// print "mail sent to " . $to . "<br/>";
+		 print "mail sent to " . $to . "<br/>";
 	}
 
 	public function OrderId() {
@@ -819,6 +910,15 @@ class delivery {
 		}
 	}
 
+	public function draftReason()
+	{
+		if ( $this->ID ) {
+			return sql_query_single_scalar( "select draft_reason from im_delivery where ID = " . $this->ID );
+		} else {
+			die ( __METHOD__ . " no ID" );
+		}
+	}
+
 	public function DeliveryDate() {
 		global $conn;
 
@@ -884,7 +984,10 @@ class delivery {
 
 		$option = get_user_meta( $user_id, "print_delivery_note" );
 
+		// Mail
+		// Print
 		if ( $option == null ) {
+			// Setting the default - Send mail, and Print
 			$option = 'MP';
 		}
 

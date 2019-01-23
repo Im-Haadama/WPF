@@ -2,16 +2,10 @@
 error_reporting( E_ALL );
 ini_set( 'display_errors', 'on' );
 
-// include_once( "../tools_wp_login.php" );
-// include_once( "../orders/orders-common.php" );
 include_once( "delivery.php" );
-// include_once( "../multi-site/imMulti-site.php" );
-
 
 print header_text( false );
 
-/// If id is set -> edit. get order_id from id.
-/// Otherwise order_id should be set.
 ?>
 <script type="text/javascript" src="/agla/client_tools.js"></script>
 <?php
@@ -19,6 +13,8 @@ print header_text( false );
 $script_file = ImMultiSite::LocalSiteTools() . "/delivery/create-delivery-script.php?i=1";
 
 $edit = false;
+/// If id is set -> edit. get order_id from id.
+/// Otherwise order_id should be set.
 if ( isset( $_GET["id"] ) ) {
 	$id          = $_GET["id"];
 	$script_file .= "&id=" . $id;
@@ -58,21 +54,19 @@ my_log( __FILE__, "order=" . $order_id . " id = " . $id );
 
 if ( $id > 0 ) {
 	print "<form name=\"delivery\" action= \"\">";
-	print gui_header( 2, "עריכת תעודת משלוח מספר  " . $id );
-	print gui_header( 3, "הזמנה מספר " . get_order_id( $id ) );
-	// print order_info_table(get_order_id($id));
+//	print gui_header( 2, "עריכת תעודת משלוח מספר  " . $id );
+//	print gui_header( 3, "הזמנה מספר " . get_order_id( $id ) );
+	print order_info_box( get_order_id( $id ) );
 
 	$d = new Delivery( $id );
 	$d->PrintDeliveries( ImDocumentType::delivery, ImDocumentOperation::edit );
 
 	//$d = new delivery( $id );
 	print "</form>";
-
 } else {
 	$client_id = order_get_customer_id( $order_id );
 	print "<form name=\"delivery\" action= \"\">";
 	// print gui_header( 2, "יצירת תעודת משלוח להזמנה מספר " . $order_id, true );
-
 
 	if ( sql_query_single_scalar( "select order_is_group(" . $order_id . ")" ) == 1 ) {
 //		 print "הזמנה קבוצתית";
@@ -86,10 +80,10 @@ if ( $id > 0 ) {
 			die ( 1 );
 		}
 		print " הזמנות " . comma_implode( $order_ids );
-		print order_info_data( $order_ids, false, "יצירת תעודת משלוח ל" );
+		print order_info_box( $order_ids, false, "יצירת תעודת משלוח ל" );
 		$d = delivery::CreateFromOrder( $order_ids );
 	} else {
-		print order_info_data( $order_id, false, "יצירת תעודת משלוח ל" );
+		print order_info_box( $order_id, false, "יצירת תעודת משלוח ל" );
 		$d = delivery::CreateFromOrder( $order_id );
 
 	}
