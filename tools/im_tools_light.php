@@ -21,8 +21,8 @@ if ( ! defined( "TOOLS_DIR" ) ) {
 }
 
 require_once( STORE_DIR . "/im-config.php" );
-require_once( STORE_DIR . "/agla/fund.php" );
-require_once( ROOT_DIR . "/agla/sql.php" );
+require_once( STORE_DIR . "/niver/fund.php" );
+require_once( ROOT_DIR . "/niver/sql.php" );
 require_once( "vat.php" );
 
 $conn = new mysqli( IM_DB_HOST, IM_DB_NAME, IM_DB_PASSWORD, IM_DB_NAME );
@@ -206,7 +206,6 @@ function siton_price( $prod_id ) {
 }
 
 
-
 function is_bundle( $prod_id ) {
 	// my_log(__METHOD__, __FILE__);
 	$sql = 'SELECT count(bundle_prod_id) FROM im_bundles WHERE bundle_prod_id = ' . $prod_id;
@@ -225,7 +224,6 @@ function is_order( $id ) {
 
 	return sql_query_single_scalar( $sql );
 }
-
 
 
 function debug_time( $message, $previous_time ) {
@@ -324,42 +322,24 @@ function print_page_header( $display_logo ) {
 	print '</head>';
 }
 
-
-function comma_implode( $array ) {
-//	print "<p dir=\"ltr\">";
-//	var_dump($array);
-//	print "</p>";
-	if ( is_null( $array ) ) {
-		return "";
-	}
-	if ( is_bool( $array ) ) {
-		return $array;
-	}
-	if ( ! is_array( $array ) ) {
-		return "not array!";
-	}
-	if ( is_string( $array[0] ) ) {
-		return trim( implode( ", ", $array ), ", " );
-	}
-	$result = "";
-	foreach ( $array as $var ) { // not string...
-		if ( isset( $var->name ) ) {
-			$result .= $var->name;
-			$result .= ", ";
-		}
-	}
-
-	return rtrim( $result, ", " );
-}
-
 function get_customer_name( $customer_id ) {
-	$user = get_user_by( "id", $customer_id );
-
-	if ( $user ) {
-		return $user->user_firstname . " " . $user->user_lastname;
+	static $min_supplier = 0;
+	if ( ! $min_supplier ) {
+		$min_supplier = sql_query_single_scalar( "SELECT min(id) FROM im_suppliers" );
 	}
 
-	return "לא נבחר לקוח";
+	if ( $customer_id < $min_supplier ) {
+		$user = get_user_by( "id", $customer_id );
+
+		if ( $user ) {
+			return $user->user_firstname . " " . $user->user_lastname;
+		}
+
+		return "לא נבחר לקוח";
+	}
+
+	return get_supplier_name( $customer_id );
+
 }
 
 function get_customer_email( $customer_id ) {
@@ -569,17 +549,6 @@ function valid_key( $key ) {
 
 	// print $valid;
 	return ( $valid == 1 ? 1 : 0 );
-}
-
-function quote_text( $num_or_text ) {
-	// print "x" . $num_or_text . "y";
-	if ( is_numeric( $num_or_text ) ) {
-// 		print " number, " ;
-		return $num_or_text;
-	}
-
-// 	print " text, " ;
-	return "'" . $num_or_text . "'";
 }
 
 ?>

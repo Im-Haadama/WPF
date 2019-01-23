@@ -23,10 +23,9 @@ if ( ! defined( 'TOOLS_DIR' ) ) {
 }
 
 
-
 require_once( TOOLS_DIR . '/im_tools.php' );
 
-require_once( "functions_im.php");
+require_once( "functions_im.php" );
 
 // Express inventory
 add_shortcode( 'show-inventory', 'show_inventory_func' );
@@ -45,7 +44,7 @@ function show_inventory_func( $atts, $contents, $tag ) {
 add_shortcode( 'basket-content', 'content_func' );
 
 function content_func( $atts, $contents, $tag ) {
-	require_once( ROOT_DIR . '/tools/catalog/Basket.php');
+	require_once( ROOT_DIR . '/tools/catalog/Basket.php' );
 
 	$my_atts = shortcode_atts( [ 'id' => get_the_ID() ], $atts, $tag );
 
@@ -95,7 +94,6 @@ function content_func_front( $atts, $contents, $tag ) {
 add_shortcode( 'im-haadama', 'content_func' );
 add_shortcode( 'im-haadama-front', 'content_func_front' );
 add_shortcode( 'im-haadama-account-status', 'im_account_status' );
-add_shortcode( 'im-haadama-account-summary', 'im_account_summary' );
 add_shortcode( 'im-haadama-open-orders', 'im_open_orders' );
 
 function im_open_orders( $atts, $contents, $tag ) {
@@ -141,20 +139,7 @@ function im_account_status( $atts, $contents, $tag ) {
 	if ( strlen( $user->user_login ) > 2 ) {
 		require_once( TOOLS_DIR . "/account/account.php" );
 
-		return show_trans( $user->id, false, false );
-	} else {
-		return "עליך להתחבר תחילה";
-	}
-	// print "xxx";
-}
-
-function im_account_summary( $atts, $contents, $tag ) {
-	$user = 1;
-
-	if ( $user >= 1 ) {
-		require_once( TOOLS_DIR . "/account/account.php" );
-
-		return show_trans( $user, false, false );
+		return show_trans( $user->id, true, false );
 	} else {
 		return "עליך להתחבר תחילה";
 	}

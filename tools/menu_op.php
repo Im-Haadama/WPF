@@ -6,7 +6,7 @@ ini_set( 'display_errors', 'on' );
 require_once( "im_tools.php" );
 print header_text( false );
 require_once( TOOLS_DIR . "/wp.php" );
-require_once( ROOT_DIR . "/agla/gui/inputs.php" );
+require_once( ROOT_DIR . "/niver/gui/inputs.php" );
 // print TOOLS_DIR . "/multi-site/imMulti-site.php";
 require_once( TOOLS_DIR . "/multi-site/imMulti-site.php" );
 
@@ -45,10 +45,11 @@ function add_command( &$row, $col, $can, $text, $link, $target = "doc_frame" ) {
 	global $test_site;
 
 	if ( ! $can or user_can( get_user_id(), $can ) ) {
-		if ( $test_site )
+		if ( $test_site ) {
 			$table[ $row ++ ][ $col ] = $link;
-		else
+		} else {
 			$table[ $row ++ ][ $col ] = gui_hyperlink( $text, $link, $target );
+		}
 	}
 }
 
@@ -65,7 +66,7 @@ while ( $row < $max_row ) {
 	$table[ $row ++ ][ $col ] = "";
 }
 $col ++;
-$row                      = 0;
+$row = 0;
 
 $table[ $row ++ ][ $col ] = gui_header( 2, "משלוחים" );
 add_command( $row, $col, "edit_shop_orders", "הצגת משימות נהיגה", "delivery/get-driver-multi.php" );
@@ -94,13 +95,14 @@ add_command( $row, $col, "edit_shop_orders", "מעקב תשלומים", "account
 add_command( $row, $col, "edit_shop_orders", "הוספת לקוח", "account/add-account.php", "doc_frame" );
 add_command( $row, $col, "set_client_type", "ניהול לקוחות", "account/client-types.php", "doc_frame" );
 add_command( $row, $col, "edit_shop_orders", "קניה בחנות", "orders/order-pos.php", "doc_frame" );
-while ( $row < $max_row )
+while ( $row < $max_row ) {
 	$table[ $row ++ ][ $col ] = "";
+}
 
 $col ++;
 $row                      = 0;
 $table[ $row ++ ][ $col ] = gui_header( 2, "מחירון" );
-add_command( $row, $col, null, "סלי השבוע", "baskets/show_baskets.php");
+add_command( $row, $col, null, "סלי השבוע", "baskets/show_baskets.php" );
 add_command( $row, $col, "show_pricelist", "מחירון ספקים", "pricelist/pricelist-get.php" );
 add_command( $row, $col, "edit_shop_orders", "כל הפריטים", "catalog/cost-price-list.php", "doc_frame" );
 // add_command( $row, $col, "edit_shop_orders", "מחירון סיטונאי", "catalog/", "doc_frame" );
@@ -108,8 +110,9 @@ add_command( $row, $col, "edit_pricelist", "מיפוי מחירון", "catalog/c
 add_command( $row, $col, "edit_pricelist", "עדכון מחירון", "catalog/catalog-get.php" );
 add_command( $row, $col, "edit_pricelist", "מחירון גרניט", "catalog/catalog-db-query.php?operation=pos" );
 add_command( $row, $col, "edit_pricelist", "מארזים", "catalog/bundles-get.php" );
-while ( $row < $max_row )
+while ( $row < $max_row ) {
 	$table[ $row ++ ][ $col ] = "";
+}
 
 $col ++;
 $row                      = 0;
@@ -118,8 +121,9 @@ add_command( $row, $col, "edit_suppliers", "ספקים", "suppliers/c-get-all-su
 add_command( $row, $col, "edit_shop_orders", "אספקות", "supplies/supplies-get.php", "doc_frame" );
 add_command( $row, $col, "edit_shop_orders", "מלאי 0", "catalog/catalog-db-query.php?operation=zero_inv", "doc_frame" );
 
-while ( $row < $max_row )
+while ( $row < $max_row ) {
 	$table[ $row ++ ][ $col ] = "";
+}
 
 $col ++;
 $row                      = 0;
@@ -135,9 +139,12 @@ $row                      = 0;
 $table[ $row ++ ][ $col ] = gui_header( 2, "ניהול" );
 add_command( $row, $col, "edit_pricelist", "תבנית", "tasklist/c-get-all-task_templates.php", "doc_frame" );
 add_command( $row, $col, "edit_pricelist", "משימות פעילות", "tasklist/c-get-all-tasklist.php", "tasks" );
+add_command( $row, $col, "edit_pricelist", "חשבוניות", "business/c-get-all-business_info.php?document_type=4&is_active=1" );
+add_command( $row, $col, "edit_pricelist", "פרויקטים", "people/c-get-all-projects.php" );
 
-while ( $row < $max_row )
+while ( $row < $max_row ) {
 	$table[ $row ++ ][ $col ] = "";
+}
 
 if ( $test_site ) {
 	print "מצב בדיקות. בודק " . $test_limit . "תפריטים";

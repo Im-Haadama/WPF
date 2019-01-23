@@ -8,7 +8,7 @@
 //ini_set( 'display_errors', 'on' );
 
 require_once( TOOLS_DIR . '/im_tools.php' );
-require_once( STORE_DIR . '/agla/sql.php' );
+require_once( STORE_DIR . '/niver/sql.php' );
 require_once( TOOLS_DIR . '/wp.php' );
 require_once( TOOLS_DIR . '/pricing.php' );
 
@@ -45,7 +45,7 @@ function get_minimum_order() {
 	) );
 //    my_log ("zone_id = " . $zone1->get_id());
 
-	$sql = "SELECT min_order FROM wp_woocommerce_shipping_zones WHERE zone_id = " . $zone1->get_id();
+	$sql    = "SELECT min_order FROM wp_woocommerce_shipping_zones WHERE zone_id = " . $zone1->get_id();
 	$result = sql_query( $sql );
 	if ( $result ) {
 		$row = mysqli_fetch_assoc( $result );
@@ -85,9 +85,10 @@ function wc_minimum_order_amount() {
 
 function wc_after_cart() {
 //    print "<a href=\"http://store.im-haadama.co.il/"
-	if ( $_SERVER['SERVER_NAME'] == 'fruity.co.il' )
+	if ( $_SERVER['SERVER_NAME'] == 'fruity.co.il' ) {
 		print "<a href=\"../tools/baskets/unfold.php\"" .
 		      "class=\"checkout-button button alt wc-forward\">החלף סלים במרכיביו</a>";
+	}
 //המשך לתשלום</a>
 //    print "<input class=\"button alt\" name=\"unfold_basket\" value=\"פרום סל\" />";
 }
@@ -277,8 +278,8 @@ function custom_quantity_field_archive() {
  * Add requires JavaScript. uzzyraja.com/sourcecodes/
  */
 function custom_add_to_cart_quantity_handler() {
-	if ( function_exists( 'wc_enqueue_js' ) )
-	wc_enqueue_js( '
+	if ( function_exists( 'wc_enqueue_js' ) ) {
+		wc_enqueue_js( '
 		jQuery( ".input-text.qty.text" ).on( "change input", ".quantity", function() {
 			var add_to_cart_button = jQuery( this ).parents( ".product" ).find( ".add_to_cart_button" );
 
@@ -290,6 +291,7 @@ function custom_add_to_cart_quantity_handler() {
 			add_to_cart_button.attr( "href", "?add-to-cart=" + add_to_cart_button.attr( "data-product_id" ) + "&XXXX&quantity=" + jQuery( this ).val() );
 		});
 	' );
+	}
 }
 
 add_action( 'init', 'custom_add_to_cart_quantity_handler' );
@@ -387,8 +389,9 @@ function im_woocommerce_update_price() {
 add_filter( 'woocommerce_cart_item_price', 'im_show_nonsale_price', 10, 2 );
 function im_show_nonsale_price( $newprice, $product ) {
 	global $site_id;
-	if ( $site_id != 4 )
+	if ( $site_id != 4 ) {
 		return $newprice;
+	}
 	$_product   = $product['data'];
 	$sale_price = $_product->get_sale_price();
 	if ( ( $sale_price > 0 ) and ( $_product->get_sale_price() < $_product->get_regular_price() ) ) {

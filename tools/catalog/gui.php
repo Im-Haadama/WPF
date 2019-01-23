@@ -6,7 +6,7 @@
  * Time: 12:14
  */
 
-require_once( ROOT_DIR . "/agla/gui/inputs.php" );
+require_once( ROOT_DIR . "/niver/gui/inputs.php" );
 
 function gui_select_product( $id, $events ) // 'onchange="select_product(' . $line_id . ')"'
 {

@@ -11,9 +11,9 @@ if ( ! defined( "TOOLS_DIR" ) ) {
 	define( "TOOLS_DIR", dirname( dirname( __FILE__ ) ) );
 }
 
-require_once( ROOT_DIR . '/agla/gui/sql_table.php' );
+require_once( ROOT_DIR . '/niver/gui/sql_table.php' );
 
-require_once( ROOT_DIR . '/agla/MultiSite.php' );
+require_once( ROOT_DIR . '/niver/MultiSite.php' );
 
 $local_site_id = - 1;
 
@@ -177,8 +177,7 @@ class ImMultiSite extends MultiSite {
 		}
 	}
 
-	static private function UpdateTable( $html, $table, $table_key, $query = null, $ignore_fields = null )
-	{
+	static private function UpdateTable( $html, $table, $table_key, $query = null, $ignore_fields = null ) {
 		global $conn;
 
 		// 		print header_text( false, true, false );
@@ -186,12 +185,12 @@ class ImMultiSite extends MultiSite {
 
 		// print "Table key: X" . $table_key . "X<br/>";
 
-		$headers    = array();
-		$fields     = array();
-		$first      = true;
-		$keys       = array();
-		$key_order  = - 1;
-		$field_list = null;
+		$headers      = array();
+		$fields       = array();
+		$first        = true;
+		$keys         = array();
+		$key_order    = - 1;
+		$field_list   = null;
 		$insert_count = 0;
 		$update_count = 0;
 

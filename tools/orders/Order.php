@@ -6,7 +6,7 @@
  * Date: 06/10/18
  * Time: 17:03
  */
-require_once( ROOT_DIR . '/agla/sql.php' );
+require_once( ROOT_DIR . '/niver/sql.php' );
 require_once( TOOLS_DIR . '/catalog/bundles.php' );
 require_once( ROOT_DIR . "/tools/catalog/Basket.php" );
 require_once( ROOT_DIR . "/tools/orders/orders-common.php" );
@@ -264,9 +264,9 @@ class Order {
 	function delivered() {
 		$new_status = "wc-completed";
 
-		$c = sql_query_single_scalar( "select count(*) from wp_posts " .
-		                              " where id = " . $this->order_id .
-		                              " and post_excerpt like '%משלוח המכולת%'" );
+		$c = sql_query_single_scalar( "SELECT count(*) FROM wp_posts " .
+		                              " WHERE id = " . $this->order_id .
+		                              " AND post_excerpt LIKE '%משלוח המכולת%'" );
 
 		if ( $c ) { // legacy
 			$new_status = "wc-awaiting-document";
