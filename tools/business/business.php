@@ -36,3 +36,20 @@ function business_delete_transaction( $ref ) {
 	my_log( $sql, __FILE__ );
 	sql_query( $sql );
 }
+
+function business_update_transaction( $delivery_id, $total, $fee ) {
+	$sql = "UPDATE im_business_info SET amount = " . $total . ", " .
+	       " delivery_fee = " . $fee .
+	       " WHERE ref = " . $delivery_id;
+
+	my_log( $sql, __FILE__ );
+	sql_query( $sql );
+}
+
+function business_logical_delete( $ids ) {
+	global $conn;
+	$sql = "UPDATE im_business_info SET is_active = 0 WHERE id IN (" . $ids . ")";
+	$conn->query( $sql );
+	my_log( $sql );
+}
+
