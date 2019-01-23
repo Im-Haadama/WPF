@@ -9,7 +9,7 @@
 
 require_once( "../im_tools.php" );
 require_once( "../orders/Order.php" );
-require_once( ROOT_DIR . '/agla/gui/inputs.php' );
+require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 
 $none = true;
 

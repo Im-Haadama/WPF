@@ -16,4 +16,8 @@ sql_query( "ALTER TABLE im_business_info
 ADD net_total DOUBLE;
 " );
 
+sql_query( "ALTER TABLE im_delivery
+ADD draft_reason VARCHAR(50);
+" );
+
 print "done";

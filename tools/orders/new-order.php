@@ -8,7 +8,7 @@
 
 // error_reporting( E_ALL );
 // ini_set( 'display_errors', 'on' );
-require_once( ROOT_DIR . "/agla/gui/inputs.php" );
+require_once( ROOT_DIR . "/niver/gui/inputs.php" );
 require_once( "../account/gui.php" );
 
 global $pos;

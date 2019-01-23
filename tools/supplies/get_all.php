@@ -1,7 +1,7 @@
 <?php
 require_once( '../r-shop_manager.php' );
 require_once( '../header.php' );
-require_once( ROOT_DIR . '/agla/gui/inputs.php' );
+require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 print header_text( false, false );
 ?>
     <script>

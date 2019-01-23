@@ -11,7 +11,7 @@
 
 require_once( "../im_tools.php" );
 include_once( "../r-shop_manager.php" );
-require_once( ROOT_DIR . '/agla/gui/inputs.php' );
+require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 
 print header_text( true );
 ?>

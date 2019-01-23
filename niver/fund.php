@@ -70,6 +70,10 @@ function get_param( $key ) {
 }
 
 function quote_text( $num_or_text ) {
+	if ( is_null( $num_or_text ) ) {
+		return "NULL";
+	}
+
 	if ( is_numeric( $num_or_text ) ) {
 		return $num_or_text;
 	}
@@ -112,17 +116,16 @@ function append_url( $url, $addition ) {
 //	return rtrim( $result, ", " );
 //}
 
-
-function comma_implode( ... $elems ) {
+function comma_implode_v( ... $elems ) {
 	$array = array();
 	foreach ( $elems as $elem ) {
 		array_push( $array, $elem );
 	}
 
-	return comma_implode_a( $array );
+	return comma_implode( $array );
 }
 
-function comma_implode_a( $array ) {
+function comma_implode( $array ) {
 	$str = implode( ", ", $array );
 
 	return rtrim( $str, ", " );

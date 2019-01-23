@@ -7,12 +7,12 @@
  */
 
 require_once( "../r-shop_manager.php" );
-require_once( ROOT_DIR . '/agla/gui/inputs.php' );
-require_once( ROOT_DIR . "/agla/gui/sql_table.php" );
+require_once( ROOT_DIR . '/niver/gui/inputs.php' );
+require_once( ROOT_DIR . "/niver/gui/sql_table.php" );
 require_once( "gui.php" );
 
 ?>
-    <script type="text/javascript" src="/agla/client_tools.js"></script>
+    <script type="text/javascript" src="/niver/client_tools.js"></script>
     <script>
         function update_client_type(id) {
             var type = get_value_by_name("select_type_" + id);

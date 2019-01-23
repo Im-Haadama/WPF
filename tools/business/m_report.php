@@ -14,14 +14,14 @@ if ( ! defined( 'STORE_DIR' ) ) {
 
 require_once( STORE_DIR . "/wp-config.php" );
 require_once( "../r-shop_manager.php" );
-require_once( ROOT_DIR . "/agla/gui/inputs.php" );
+require_once( ROOT_DIR . "/niver/gui/inputs.php" );
 ?>
 <body onload="show_all()">
 <?php
 print header_text( true );
 
 ?>
-<script type="text/javascript" src="/agla/client_tools.js"></script>
+<script type="text/javascript" src="/niver/client_tools.js"></script>
 <script>
 
     function create_invoice() {

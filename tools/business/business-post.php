@@ -13,7 +13,7 @@ if ( ! defined( "TOOLS_DIR" ) ) {
 	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
 }
 require_once( TOOLS_DIR . '/r-staff.php' );
-require_once( ROOT_DIR . '/agla/gui/inputs.php' );
+require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( TOOLS_DIR . '/business/business.php' );
 require_once( TOOLS_DIR . '/invoice4u/invoice.php' );
 
@@ -378,21 +378,5 @@ function show_control( $month_year ) {
 	);
 	print gui_table( $table, "", true, true, $sums );
 
-}
-
-function business_update_transaction( $delivery_id, $total, $fee ) {
-	$sql = "UPDATE im_business_info SET amount = " . $total . ", " .
-	       " delivery_fee = " . $fee .
-	       " WHERE ref = " . $delivery_id;
-
-	my_log( $sql, __FILE__ );
-	sql_query( $sql );
-}
-
-function business_logical_delete( $ids ) {
-	global $conn;
-	$sql = "UPDATE im_business_info SET is_active = 0 WHERE id IN (" . $ids . ")";
-	$conn->query( $sql );
-	my_log( $sql );
 }
 

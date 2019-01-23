@@ -11,8 +11,8 @@ if ( ! defined( "ROOT_DIR" ) ) {
 	define( "ROOT_DIR", dirname( dirname( dirname( __FILE__ ) ) ) );
 }
 
-require_once( ROOT_DIR . '/agla/sql.php' );
-require_once( ROOT_DIR . '/agla/gui/window.php' );
+require_once( ROOT_DIR . '/niver/sql.php' );
+require_once( ROOT_DIR . '/niver/gui/window.php' );
 
 class Tasklist {
 	private $id;
@@ -103,7 +103,7 @@ class Tasklist {
 }
 
 require_once( ROOT_DIR . "/tools/people/people.php" );
-require_once( ROOT_DIR . "/agla/im_simple_html_dom.php" );
+require_once( ROOT_DIR . "/niver/im_simple_html_dom.php" );
 require_once( ROOT_DIR . "/tools/options.php" );
 
 class eTasklist {

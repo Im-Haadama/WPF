@@ -13,10 +13,10 @@ if ( ! defined( "ROOT_DIR" ) ) {
 }
 
 require_once( ROOT_DIR . "/tools/im_tools.php" );
-require_once( ROOT_DIR . "/agla/sql.php" );
-require_once( ROOT_DIR . "/agla/fund.php" );
+require_once( ROOT_DIR . "/niver/sql.php" );
+require_once( ROOT_DIR . "/niver/fund.php" );
 require_once( ROOT_DIR . "/tools/people/people.php" );
-require_once( ROOT_DIR . '/agla/gui/window.php' );
+require_once( ROOT_DIR . '/niver/gui/window.php' );
 
 
 $operation = get_param( "operation" );

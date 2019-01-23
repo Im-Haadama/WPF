@@ -207,7 +207,8 @@ class delivery {
 			       . $lines . ', '
 			       . $fee . ', '
 			       . $draft . ', '
-			       . ( $reason ? $reason : "NULL" ) . ')';
+			       . quote_text( $reason )
+			       . ')';
 			sql_query( $sql );
 			$delivery_id = mysqli_insert_id( $conn );
 		}

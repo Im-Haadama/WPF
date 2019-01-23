@@ -5,7 +5,7 @@
  * Date: 07/01/19
  * Time: 12:54
  */
-require_once( ROOT_DIR . "/agla/gui/inputs.php" );
+require_once( ROOT_DIR . "/niver/gui/inputs.php" );
 require_once( TOOLS_DIR . "/multi-site/imMulti-site.php" );
 
 function sync_from_master() {

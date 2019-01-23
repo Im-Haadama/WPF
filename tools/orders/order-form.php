@@ -7,7 +7,7 @@ if ( ! defined( "TOOLS_DIR" ) ) {
 	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
 }
 require_once( TOOLS_DIR . "/im_tools.php" );
-require_once( ROOT_DIR . "/agla/gui/inputs.php" );
+require_once( ROOT_DIR . "/niver/gui/inputs.php" );
 require_once( TOOLS_DIR . "/multi-site/imMulti-site.php" );
 require_once( TOOLS_DIR . "/options.php" );
 require_once( TOOLS_DIR . "/pricing.php" );
@@ -43,7 +43,7 @@ function get_form_tables() {
 	return rtrim( $result, ", " );
 }
 ?>
-    <script type="text/javascript" src="/agla/client_tools.js"></script>
+<script type="text/javascript" src="/niver/client_tools.js"></script>
 
     <script>
 

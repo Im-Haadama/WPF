@@ -6,7 +6,7 @@
  * Time: 18:02
  */
 require_once( "../r-shop_manager.php" );
-require_once( ROOT_DIR . "/agla/gui/sql_table.php" );
+require_once( ROOT_DIR . "/niver/gui/sql_table.php" );
 require_once( ROOT_DIR . "/tools/supplies/supplies.php" );
 
 print header_text();

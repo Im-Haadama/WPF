@@ -10,7 +10,7 @@
 // ini_set( 'display_errors', 'on' );
 
 require_once( "../im_tools.php" );
-require_once( "../../agla/gui/inputs.php" );
+require_once( "../../niver/gui/inputs.php" );
 
 $sql_products = "SELECT id FROM wp_posts WHERE post_type = 'product' ";
 

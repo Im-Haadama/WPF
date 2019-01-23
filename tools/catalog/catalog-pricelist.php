@@ -7,7 +7,7 @@
  * purpose: export all published products as pricelist for external store
  */
 require_once( '../r-shop_manager.php' );
-require_once( ROOT_DIR . '/agla/gui/inputs.php' );
+require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 
 $sql = "SELECT post_title, id, post_modified FROM im_products";
 

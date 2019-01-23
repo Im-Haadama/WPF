@@ -15,7 +15,7 @@ require_once( ROOT_DIR . "/tools/im_tools.php" );
 require_once( "../multi-site/imMulti-site.php" );
 header( ImMultiSite::CORS() );
 
-require_once( ROOT_DIR . "/agla/fund.php" );
+require_once( ROOT_DIR . "/niver/fund.php" );
 require_once( "Tasklist.php" );
 
 $operation = get_param( "operation" );
