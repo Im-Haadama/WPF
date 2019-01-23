@@ -6,7 +6,7 @@
  * Time: 12:03
  */
 
-include "tools.php";
+include "r-shop_manager.php";
 
 $id = $_GET["id"];
 print get_basket_content( $id );

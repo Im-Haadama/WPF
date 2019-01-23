@@ -1,11 +1,14 @@
 <?php
+//error_reporting( E_ALL );
+//ini_set( 'display_errors', 'on' );
+
 /**
  * Created by PhpStorm.
  * User: agla
  * Date: 03/07/15
  * Time: 11:53
  */
-require_once( '../tools_wp_login.php' );
+require_once( '../r-shop_manager.php' );
 require_once( 'account.php' );
 require_once( '../invoice4u/invoice.php' );
 require_once( '../delivery/delivery.php' );
@@ -13,21 +16,28 @@ require_once( '../delivery/delivery.php' );
 $debug = true;
 
 $operation = $_GET["operation"];
-
 my_log( __FILE__, "operation = " . $operation );
+global $invoice_user;
+global $invoice_password;
 
 $operation = $_GET["operation"];
 switch ( $operation ) {
+	case "set_client_type":
+		$id   = $_GET["id"];
+		$type = $_GET["type"];
+		set_client_type( $id, $type );
+		break;
+
 	case "save_payment":
 		$user_id   = $_GET["user_id"];
 		$method_id = $_GET["method_id"];
 		update_user_meta( $user_id, 'payment_method', $method_id );
+		break;
 
 	case "send_month_summary":
 		$user_ids = $_GET["ids"];
 		$ids      = explode( ',', $user_ids );
 		send_month_summary( $ids );
-
 		break;
 
 	case "zero_near_zero":
@@ -36,16 +46,15 @@ switch ( $operation ) {
 		break;
 
 	case "create_invoice":
-		print "my log <br/>";
 		my_log( "create_invoice" );
 		$delivery_ids = $_GET["ids"];
 		$user_id      = $_GET["user_id"];
 		$ids          = explode( ',', $delivery_ids );
-		$doc_id       = invoice_create_document( "i", $ids, $user_id );
+		create_invoice( $ids, $user_id );
 		break;
 
 	case "create_receipt":
-		print "my log <br/>";
+
 		my_log( "create_receipt" );
 		$cash         = $_GET["cash"];
 		$bank         = $_GET["bank"];
@@ -54,20 +63,11 @@ switch ( $operation ) {
 		$change       = $_GET["change"];
 		$delivery_ids = $_GET["ids"];
 		$user_id      = $_GET["user_id"];
+		$date         = $_GET["date"];
 		$ids          = explode( ',', $delivery_ids );
-		$c            = $cash - $change;
-//        if (abs($c) < 0) $c =0;
-		//      if (round($c,0) < 1 or round($c,0) < 1)
-		$doc_id   = invoice_create_document( "r", $ids, $user_id, $c, $bank, $credit, $check );
-		$pay_type = pay_type( $cash, $bank, $credit, $check );
-		if ( is_numeric( $doc_id ) && $doc_id > 0 ) {
-			$pay_description = $pay_type . " " . $_GET["ids"];
-			account_add_transaction( $user_id, date( "Y-m-d" ), $change - ( $cash + $bank + $credit + $check ), $doc_id, $pay_description );
-			account_add_transaction( $user_id, date( "Y-m-d" ), - $change, $doc_id, $change > 0 ? "עודף" : "חוסר/ניצול יתרה" );
-			print "חשבונית מס קבלה מספר " . $doc_id . "נוצרה!" . "<br/>";
-		} else {
-			print "doc_id: " . $doc_id . "<br/>";
-		}
+
+		//print "create receipt<br/>";
+		create_receipt( $cash, $bank, $check, $credit, $change, $user_id, $date, $ids );
 		break;
 
 	case "create_invoice_user":
@@ -75,6 +75,203 @@ switch ( $operation ) {
 		invoice_create_user( $id );
 		break;
 
+
+	case "get_client_id":
+		$customer_id = $_GET["customer_id"];
+		$invoice     = new Invoice4u( $invoice_user, $invoice_password );
+
+		if ( is_null( $invoice->token ) ) {
+			die ( "can't login" );
+		}
+
+		// print "client name " . $client_name . "<br/>";
+		$client_name = get_customer_name( $customer_id );
+		$client      = $invoice->GetCustomerByName( $client_name );
+		print $client->ID;
+		break;
+
+	case "check_email":
+		$email = $_GET["email"];
+		if ( sql_query_single_scalar( "SELECT count(*) FROM wp_users WHERE user_email = '" . $email . "'" ) > 0 ) {
+			print "exists";
+
+			return;
+		}
+		// New. find login name
+		$new_login = strtok( $email, "@" );
+		if ( sql_query_single_scalar( "SELECT count(*) FROM wp_users WHERE user_login = '" . $new_login . "'" ) == 0 ) {
+			print $new_login;
+
+			return;
+		}
+		$trial = 1;
+		while ( 1 ) {
+			$new_login = strtok( $email, "@" ) . $trial;
+
+			if ( sql_query_single_scalar( "SELECT count(*) FROM wp_users WHERE user_login = '" . $new_login . "'" ) == 0 ) {
+				print $new_login;
+
+				return;
+			}
+			$trial ++;
+
+		}
+		print $new_login;
+		break;
+
+	case "add_user":
+		// print "adding user";
+		$user    = $_GET["user"];
+		$name    = urldecode( $_GET["name"] );
+		$email   = $_GET["email"];
+		$address = urldecode( $_GET["address"] );
+		$city    = urldecode( $_GET["city"] );
+		$phone   = $_GET["phone"];
+		$zip     = $_GET["zip"];
+		add_im_user( $user, $name, $email, $address, $city, $phone, $zip );
+		break;
+
+	case "table":
+		$customer_id = $_GET["customer_id"];
+		$table_lines = show_trans( $customer_id );
+		print $table_lines;
+		break;
+
+	case "total":
+		$customer_id = $_GET["customer_id"];
+		print "יתרה: " . sql_query_single_scalar( "SELECT round(sum(transaction_amount), 1) FROM im_client_accounts WHERE client_id = " . $customer_id );
+		break;
+
+	case "send":
+		$del_ids = explode( ",", $_GET["del_ids"] );
+		foreach ( $del_ids as $del_id ) {
+			$delivery = new delivery( $del_id );
+			print "נשלח ל: " . $info_email;
+			print "track: " . $track_email;
+			$delivery->send_mail( $track_email, $edit );
+		}
+		break;
+
+}
+
+function create_invoice( $ids, $user_id ) {
+	$no_ids = true;
+	foreach ( $ids as $id ) {
+		if ( $id > 0 ) {
+			$no_ids = false;
+		}
+	}
+	if ( $no_ids ) {
+		print "לא נבחרו תעודות משלוח";
+
+		return;
+	}
+	$doc_id = invoice_create_document( "i", $ids, $user_id, date( "Y-m-d" ) );
+
+	if ( is_numeric( $doc_id ) && $doc_id > 0 ) {
+		$sql = "UPDATE im_delivery SET payment_receipt = " . $doc_id . " WHERE id IN (" . comma_implode( $ids ) . " ) ";
+		sql_query( $sql );
+
+		print "חשבונית מס מספר " . $doc_id . " נוצרה!" . "<br/>";
+	} else {
+		print "doc_id: " . $doc_id . "<br/>";
+	}
+}
+
+function create_receipt( $cash, $bank, $check, $credit, $change, $user_id, $date, $ids ) {
+
+	$no_ids = true;
+	foreach ( $ids as $id ) {
+		if ( $id > 0 ) {
+			$no_ids = false;
+		}
+	}
+	if ( $no_ids ) {
+		print "לא נבחרו תעודות משלוח";
+
+		return;
+	}
+	$c = $cash - $change;
+//        if (abs($c) < 0) $c =0;
+	//      if (round($c,0) < 1 or round($c,0) < 1)
+	// Check if paid (some bug cause double invoice).
+	$sql = "SELECT count(payment_receipt) FROM im_delivery WHERE id IN (" . comma_implode( $ids ) . " )";
+	if ( sql_query_single_scalar( $sql ) > 0 ) {
+		print " כבר שולם" . comma_implode( $ids ) . " <br/>";
+
+		return;
+	}
+
+	$doc_id   = invoice_create_document( "r", $ids, $user_id, $date, $c, $bank, $credit, $check );
+
+	$pay_type = pay_type( $cash, $bank, $credit, $check );
+	if ( is_numeric( $doc_id ) && $doc_id > 0 ) {
+		$pay_description = $pay_type . " " . comma_implode( $ids );
+
+		$sql = "UPDATE im_delivery SET payment_receipt = " . $doc_id . " WHERE id IN (" . comma_implode( $ids ) . " ) ";
+		sql_query( $sql );
+
+		account_add_transaction( $user_id, date( "Y-m-d" ), $change - ( $cash + $bank + $credit + $check ), $doc_id, $pay_description );
+		if ( abs( $change ) > 0 ) {
+			account_add_transaction( $user_id, date( "Y-m-d" ), - $change, $doc_id, $change > 0 ? "עודף" : "יתרה" );
+		}
+		print "חשבונית מס קבלה מספר " . $doc_id . " נוצרה!" . "<br/>";
+	} else {
+		print "doc_id: " . $doc_id . "<br/>";
+	}
+}
+
+function add_im_user( $user, $name, $email, $address, $city, $phone, $zip ) {
+	if ( strlen( $email ) < 1 ) {
+		$email = randomPassword() . "@aglamaz.com";
+	}
+
+	if ( strlen( $user ) == "אוטומטי" or strlen( $user ) < 5 ) {
+		$user = substr( $email, 0, 8 );
+	}
+
+	print "email: " . $email . "<br/>";
+	print "user: " . $user . "<br/>";
+
+	$id = wp_create_user( $user, randomPassword(), $email );
+	if ( ! is_numeric( $id ) ) {
+		print "לא מצליח להגדיר יוזר";
+		var_dump( $id );
+
+		return;
+	}
+	$name_part = explode( " ", $name );
+	update_user_meta( $id, 'first_name', $name_part[0] );
+	update_user_meta( $id, 'shipping_first_name', $name_part[0] );
+	unset( $name_part[0] );
+	update_user_meta( $id, 'billing_address_1', $address );
+	update_user_meta( $id, 'billing_city', $city );
+
+	update_user_meta( $id, 'last_name', implode( " ", $name_part ) );
+	update_user_meta( $id, 'shipping_last_name', implode( " ", $name_part ) );
+	update_user_meta( $id, 'billing_phone', $phone );
+	update_user_meta( $id, 'billing_postcode', $zip );
+
+	update_user_meta( $id, 'shipping_address_1', $address );
+	update_user_meta( $id, 'shipping_postcode', $zip );
+	update_user_meta( $id, 'shipping_city', $city );
+	update_user_meta( $id, 'legacy_user', 2 );
+
+	im_set_default_display_name( $id);
+	print "משתמש התווסף בהצלחה";
+
+}
+
+function randomPassword() {
+	$alphabet    = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
+	$pass        = array(); //remember to declare $pass as an array
+	$alphaLength = strlen( $alphabet ) - 1; //put the length -1 in cache
+	for ( $i = 0; $i < 8; $i ++ ) {
+		$n      = rand( 0, $alphaLength );
+		$pass[] = $alphabet[ $n ];
+	}
+
+	return implode( $pass ); //turn the array into a string
 }
 
 $current_user = 0;
@@ -111,6 +308,18 @@ function sc_balance( $atts ) {
 	return $text;
 }
 
+function set_client_type( $id, $type ) {
+	print $id . " " . $type . "<br/>";
+	if ( $type == 0 ) {
+		delete_user_meta( $id, "_client_type" );
+
+		return;
+	}
+	$meta = sql_query_single_scalar( "select type from im_client_types where id = " . $type );
+	// print "meta: " . $meta . "<br/>";
+	update_user_meta( $id, "_client_type", $meta );
+}
+
 function send_month_summary( $user_ids ) {
 	global $current_user;
 	global $support_email;
@@ -122,64 +331,97 @@ function send_month_summary( $user_ids ) {
 	foreach ( $user_ids as $id ) {
 		$current_user = $id;
 		$message      = header_text( true );
-		$post_text    = sql_query_single_scalar( "SELECT post_content FROM wp_posts WHERE post_title='סיכום חודשי' AND " .
-		                                         " post_type='page'" );
+		$post_id      = info_get( "summary_post" );
+		if ( ! $post_id ) {
+			print "בקש ממנהל מערכת להגדיר את פוסט הסיכום. פרמטר מערכת summary_post<br/>";
+			print "הודעה לא נשלחה";
+
+			return;
+
+		}
+		$post_text = sql_query_single_scalar( "SELECT post_content FROM wp_posts WHERE id = " . $post_id );
+
+		if ( strlen( $post_text ) < 20 ) {
+			print "לא נמצא פוסט סיכום'<br/>";
+			print "הודעה לא נשלחה";
+
+			return;
+
+		}
 
 		$message .= '<body dir="rtl">';
-		$message .= do_shortcode( $post_text );
+		// $message .= do_shortcode(replace_shortcode($post_text, $id));
+		// print "text = " .  $post_text;
+		$message .= do_shortcode( replace_shortcode( $post_text, $id ) );
+		// // $message .= ( $post_text );
 		$message .= '</body>';
 
 		$message .= "</html>";
 
 		$user_info = get_userdata( $id );
 
-		print "שולח סיכום חודשי ללקוח " . sc_display_name( null ) . "<br/>";
+		print "שולח סיכום חודשי ללקוח " . get_customer_name( $id ) . " " . get_customer_email( $id ) . "<br/>";
 		send_mail( "סיכום חודשי עם האדמה", $user_info->user_email . ", " . $support_email, $message );
+		// print $message;
+		print "הסתיים";
 	}
 }
 
+function replace_shortcode( $text, $id ) {
+	$new_text = gui_header( 1, "מצב חשבון" );
+	$new_text .= "יתרה לתשלום " . client_balance( $id ) . "<br/>";
+	$new_text .= show_trans( $id, true, false ) . "<br/>";
+	$new_text = str_replace( "[im-haadama-account-summary]", $new_text, $text );
+
+	return str_replace( "[display_name]", get_customer_name( $id ), $new_text );
+
+}
+
 function invoice_create_user( $user_id ) {
-	$invoice = new Invoice4u();
-	$invoice->Login();
+	// First change wordpress display name
+	im_set_default_display_name( $user_id);
+	global $invoice_user, $invoice_password;
+
+	$invoice = new Invoice4u( $invoice_user, $invoice_password );
 
 	$name  = get_customer_name( $user_id );
 	$email = get_customer_email( $user_id );
 	$phone = get_customer_phone( $user_id );
 
-//    print $name . "<br/>";
-//    print $email . "<br/>";
-//    print $phone . "<br/>";
-	$invoice = new Invoice4u();
-	$invoice->Login();
 	if ( is_null( $invoice->token ) ) {
 		die ( "can't login" );
 	}
 	$invoice->CreateUser( $name, $email, $phone );
 
+	$client = $invoice->GetCustomerByName( $name );
+	print $client->ID;
+
 }
 
-function invoice_create_document( $type, $ids, $user_id, $cash = 0, $bank = 0, $credit = 0, $check = 0 ) {
-	// print "create invoice<br/>";
+function invoice_create_document( $type, $ids, $customer_id, $date, $cash = 0, $bank = 0, $credit = 0, $check = 0, $subject = null ) {
 	global $debug;
+	global $invoice_user;
+	global $invoice_password;
 
-	$invoice = new Invoice4u();
+	$invoice = new Invoice4u( $invoice_user, $invoice_password );
+
 	$invoice->Login();
 
-	if ( is_null( $invoice->token ) ) {
-		die ( "can't login" );
+//	print "customer id : " . $customer_id . "<br/>";
+
+	$invoice_client_id = $invoice->GetInvoiceUserId( $customer_id );
+
+//	print "invoice client id " . $invoice_client_id . "<br/>";
+
+	$client = $invoice->GetCustomerById( $invoice_client_id );
+
+	if ( ! ( $client->ID ) > 0 ) {
+		print "Client not found " . $customer_id . "<br>";
+
+		// var_dump( $client );
+
+		return 0;
 	}
-
-	$client_name = get_customer_name( $user_id );
-
-	// print "client name " . $client_name . "<br/>";
-	$client = $invoice->GetCustomerByName( $client_name );
-	// var_dump($client);
-
-	if ( is_null( $client->ID ) ) {
-		// var_dump($invoice);
-		die( "cant get client name" );
-	}
-
 	$email = $client->Email;
 	// print "user mail: " . $email . "<br/>";
 	$doc = new Document();
@@ -192,19 +434,18 @@ function invoice_create_document( $type, $ids, $user_id, $cash = 0, $bank = 0, $
 	$doc->ClientID = $client->ID;
 	switch ( $type ) {
 		case "r":
-			$doc->DocumentType = 3; // invoice receipt
+			$doc->DocumentType = DocumentType::InvoiceReceipt;
 			break;
 		case "i":
-			$doc->DocumentType = 1; // invoice
+			$doc->DocumentType = DocumentType::Invoice;
 			break;
 	}
 
 	// Set the subject
-	$subject = "סלים" . " ";
-	foreach ( $ids as $del_id ) {
-		$subject .= $del_id . ", ";
+	if ( ! $subject ) {
+		$subject = "סלים" . " " . comma_implode( $ids );
 	}
-	$doc->Subject = trim( $subject, "," );
+	$doc->Subject = $subject;
 
 	// Add the deliveries
 	$doc->Items = Array();
@@ -216,27 +457,27 @@ function invoice_create_document( $type, $ids, $user_id, $cash = 0, $bank = 0, $
 		$sql = 'select product_name, quantity, vat, price, line_price '
 		       . ' from im_delivery_lines where delivery_id = ' . $del_id;
 
-		$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . " " . $sql );
+		$result = sql_query( $sql );
 
 		// var_dump ($client->ClientID);
 
 		// drill to lines
-		while ( $row = mysql_fetch_row( $export ) ) {
+		while ( $row = mysqli_fetch_row( $result ) ) {
 			if ( $row[4] != 0 ) {
 				$item           = new Item();
 				$item->Name     = $row[0];
-				$item->Price    = $row[3];
-				$item->Quantity = $row[1];
+				$item->Price    = round( $row[3], 2 );
+				$item->Quantity = round( $row[1], 2 );
 				if ( $row[2] > 0 ) {
 					$item->TaxPercentage   = 17;
 					$item->TotalWithoutTax = round( $row[4] / 1.17, 2 );
 				} else {
 					$item->TaxPercentage   = 0;
-					$item->TotalWithoutTax = $row[4];
+					$item->TotalWithoutTax = round( $row[4], 2);
 				}
-				$item->Total = $row[4];
+				$item->Total = round( $item->Price * $item->Quantity, 2);
 				//            if ($debug) {
-				//                print $item->Name . ", " . $row[2] . "total: " . $item->Total . "<br/>";
+				//     print $item->Name . ":" . $item->Quantity . "*" . $item->Price . " " . $item->Total . "<br/>";
 				//            }
 				array_push( $doc->Items, $item );
 				$total_lines += $item->Total;
@@ -253,6 +494,7 @@ function invoice_create_document( $type, $ids, $user_id, $cash = 0, $bank = 0, $
 		if ( $bank > 0 ) {
 			$pay         = new PaymentBank();
 			$pay->Amount = $bank;
+			$pay->Date   = $date;
 			array_push( $doc->Payments, $pay );
 		}
 		if ( $credit > 0 ) {
@@ -318,9 +560,10 @@ function zero_near_zero() {
 	       . ' where wu.id=ia.client_id'
 	       . ' group by client_id';
 
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
 
-	while ( $row = mysql_fetch_row( $export ) ) {
+	$result = sql_query( $sql );
+
+	while ( $row = mysqli_fetch_row( $result ) ) {
 		// $line = '';
 		$customer_total = $row[0];
 		$customer_id    = $row[1];

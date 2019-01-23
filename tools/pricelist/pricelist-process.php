@@ -5,14 +5,17 @@
  * Date: 24/02/17
  * Time: 09:13
  */
-require_once( '../tools.php' );
-require_once( 'pricelist.php' );
+if ( ! defined( "TOOLS_DIR" ) ) {
+	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
+}
 
+require_once( TOOLS_DIR . '/r-shop_manager.php' );
+require_once( 'pricelist.php' );
 
 // TODO: incremental doesn't handle deletion.
 // TODO: for now deleting will be done in full sync (once a day).
 function pricelist_remote_site_process( $supplier_id, &$results, $inc = false ) {
-	$debug_product = 756;
+	$debug_product = 938;
 
 	$debug = false;
 
@@ -23,27 +26,40 @@ function pricelist_remote_site_process( $supplier_id, &$results, $inc = false ) 
 		print gui_list( " רק הפריטים שהוספו או עודכן מחיר יעודכנו" );
 		print gui_list( "פריטים שנמחקו לא יורדו" );
 	} else {
+		print gui_header( 1, "משנה פריטים למצב המתנה" );
 		$PL->ChangeStatus( 2 );
 	}
 
 	// $results = array();
 
 	$sql     = "SELECT site_id FROM im_suppliers WHERE id=" . $supplier_id;
+	// print $sql;
 	$site_id = sql_query_single_scalar( $sql );
 
+	print $site_id;
 	if ( ! ( $site_id > 0 ) ) {
 		sql_error( $sql );
 		die( 1 );
 	}
 
-	$remote = get_site_tools_url( $site_id ) . "/catalog/get-as-pricelist.php";
+	$remote = "/catalog/get-as-pricelist.php";
 	if ( $inc ) {
-		$remote .= "?incremental&site_id=" . MultiSite::LocalSiteID();
+		$remote .= "?incremental&site_id=" . ImMultiSite::LocalSiteID();
 	}
 
 	print gui_header( 2, "מבקש נתונים" );
 	flush();
-	$html = file_get_html( $remote );
+	print $remote . "<br/>";
+	$html = ImMultiSite::sExecute( $remote, $site_id );
+//	print $html;
+//	die(1);
+	if ( strlen( $html ) < 500 ) {
+		print "no data<br/>";
+		print "remote: " . $remote . "<br/>";
+		print $html . strlen( $html );
+		die ( 1 );
+	}
+
 	print gui_header( 2, "התקבלו נתונים" );
 	flush();
 	$item_count = 0;
@@ -65,6 +81,9 @@ function pricelist_remote_site_process( $supplier_id, &$results, $inc = false ) 
 		$price      = $row->find( 'td', 4 )->plaintext;
 		$sale_price = $row->find( 'td', 5 )->plaintext;
 		$var_num    = $row->find( 'td', 6 )->plaintext;
+		$picture    = $row->find( 'td', 7 )->plaintext;
+		$terms      = $row->find( 'td', 8 )->plaintext;
+
 		if ( isset( $debug_product ) and $prod_id == $debug_product ) {
 			print "DEBUG: " . $type . " " . $prod_id . " " . $name . " " . $price . " " . $sale_price . " " . $var_num . "<br/>";
 		}
@@ -76,12 +95,13 @@ function pricelist_remote_site_process( $supplier_id, &$results, $inc = false ) 
 			if ( $debug ) {
 				print " regular ";
 			}
-			$result = handle_line( $price, $sale_price, $name, $prod_id, $PL, false, $id, 0 );
+			$result = handle_line( $price, $sale_price, $name, $prod_id, $terms, $PL, $var_num > 0, $id, 0, $picture );
 			switch ( $result ) {
 				case UpdateResult::UsageError:
 				case UpdateResult::SQLError:
-					print "Unexpected error 1";
-					die( 1 );
+					print "Didn't update " . $name . "<br/>";
+					break;
+
 				default:
 					$results[ $result ][] = array( $name, $price, $id );
 			}
@@ -92,10 +112,10 @@ function pricelist_remote_site_process( $supplier_id, &$results, $inc = false ) 
 			}
 			$parent_id = 0;
 			// Insert or update the parent. Get back the parent id
-			$result = handle_line( $price, $sale_price, $name, $prod_id, $PL, true, $parent_id, 0 );
+			$result = handle_line( $price, $sale_price, $name, $prod_id, $terms, $PL, true, $parent_id, 0 );
 			if ( $parent_id == 0 ) {
 				print "Didn't get parent id for product " . $name . "<br/>";
-				die ( 2 );
+				continue;
 			}
 			switch ( $result ) {
 				case UpdateResult::UsageError:
@@ -107,6 +127,9 @@ function pricelist_remote_site_process( $supplier_id, &$results, $inc = false ) 
 			}
 			for ( $j = 1; $j <= $var_num; $j ++ ) {
 				$row = $lines[ $i + $j ];
+				if ( ! $row ) {
+					continue;
+				}
 				// print $row;
 				$var_id = $row->find( 'td', 1 )->plaintext;
 				if ( $debug ) {
@@ -120,7 +143,7 @@ function pricelist_remote_site_process( $supplier_id, &$results, $inc = false ) 
 				$sale_price = $row->find( 'td', 5 )->plaintext;
 
 				if ( $price > 0 ) {
-					$result = handle_line( $price, $sale_price, $name, $var_id, $PL, false, $var_id, $parent_id );
+					$result = handle_line( $price, $sale_price, $name, $var_id, "", $PL, false, $var_id, $parent_id );
 					switch ( $result ) {
 						case UpdateResult::UsageError:
 						case UpdateResult::SQLError:
@@ -150,6 +173,9 @@ function pricelist_remote_site_process( $supplier_id, &$results, $inc = false ) 
 	}
 	if ( ! $inc and ( $item_count <= 4 ) ) {
 		print "לא התקבלו מספיק שורות!" . "<br/>";
+	} else {
+		print gui_header( 1, "מוריד פריטים במצב המתנה" );
+		$PL->RemoveLines( 2 );
 	}
 
 	print_items( "פריטים חדשים", $results[ UpdateResult::NewPrice ] );
@@ -174,26 +200,39 @@ function pricelist_process_name( $filename, $supplier_name, $add ) {
 	}
 }
 
-function pricelist_process( $filename, $supplier_id, $add ) {
-	$debug = true;
+function pricelist_process( $filename_or_file, $supplier_id, $add, $picture_prefix = null ) {
+	$debug = false;
 
 	// The file is on server. Lets read it
-	$file = fopen( $filename, "r" );
-	if ( ! $file ) {
-		return false;
+	if ( is_string( $filename_or_file ) ) {
+		$filename = $filename_or_file;
+
+		$file = fopen( $filename, "r" );
+		if ( ! $file ) {
+			print "can't open file<br/>";
+			return false;
+		}
+	} else {
+		$file = $filename_or_file;
 	}
 //    print "reading header...<br/>";
 
 	$item_code_idx       = Array();
 	$name_idx            = Array();
 	$price_idx           = Array();
+	$sale_idx            = Array();
 	$detail_idx          = Array();
+	$category_idx        = Array();
+	$is_active_idx       = null;
+	$picture_path_idx    = null;
 	$parse_header_result = false;
 	$inventory_idx       = 0;
 	for ( $i = 0; ! $parse_header_result and ( $i < 4 ); $i ++ ) {
-		$parse_header_result = parse_header( $file, $item_code_idx, $name_idx, $price_idx, $inventory_idx, $detail_idx );
+		$parse_header_result = parse_header( $file, $item_code_idx, $name_idx, $price_idx, $sale_idx, $inventory_idx, $detail_idx,
+			$category_idx, $is_active_idx, $picture_path_idx );
 	}
 
+	// print "pp = $picture_path_idx<br/>";
 	if ( ! $parse_header_result ) {
 		print "Missing headers:<br/>";
 		die( " name " . count( $name_idx ) . " price " . count( $price_idx ) );
@@ -212,15 +251,37 @@ function pricelist_process( $filename, $supplier_id, $add ) {
 	$results = array();
 
 	$item_count = 0;
+	$category   = null;
 	while ( ( $data = fgetcsv( $file ) ) !== false ) {
 		if ( $data ) {
+			if ( isset( $is_active_idx ) and ( $data[ $is_active_idx ] == 1 ) ) {
+				// print $data[ $name_idx[ 0 ] ] . " not active. Skipped<br/>";
+				continue;
+			}
 			for ( $col = 0; $col < count( $price_idx ); $col ++ ) {
+				$pic_path  = null;
 				$item_code = 10;
 				$price     = trim( $data[ $price_idx[ $col ] ], '₪ ' );
+				if ( $sale_idx ) {
+					$sale_price = $data[ $sale_idx[ $col ] ];
+				}
 				$name      = $data[ $name_idx[ $col ] ];
-				$detail    = $data[ $detail_idx[ $col ] ];
-				$detail    = rtrim( $detail, "!" );
+				if ( $debug ) {
+					print "<br/>" . $name . " ";
+				}
+				$detail     = "";
+				$sale_price = 0;
+				if ( isset( $detail_idx[ $col ] ) ) {
+					$detail = $data[ $detail_idx[ $col ] ];
+					$detail = rtrim( $detail, "!" );
+				}
+				if ( isset( $category_idx[ $col ] ) ) {
+					$category = $data[ $category_idx[ $col ] ];
+					// print $category . "<br/>";
+				}
 				if ( $detail == "מוגבל מאוד" or $detail == "מוגבל מאד" ) {
+					if ( $debug )
+						print "מוגבל";
 					continue;
 				}
 				// print $name . " " . $detail . "<br/>";
@@ -230,25 +291,38 @@ function pricelist_process( $filename, $supplier_id, $add ) {
 				// if ($debug) print $name . "<br/>";
 				if ( $price > 0 and $inventory_idx and ! is_numeric( $data[ $inventory_idx ] ) and $data[ $inventory_idx ] != "יש" ) {
 					print $data[ $name_idx[ $col ] ] . " חסר" . "<br/>";
+					if ( $debug )
+						print "חסר";
 					continue;
 				}
 				if ( $item_code_idx[ $col ] != - 1 ) {
 					$item_code = $data[ $item_code_idx[ $col ] ];
 				}
+				if ( $picture_path_idx ) {
+					$pp = $data[ $picture_path_idx ];
+					if ( strlen( $pp ) > 3 ) {
+						$pic_path = $picture_prefix . '/' . $pp;
+					} else {
+						$pic_path = "";
+					}
+				}
+
 				if ( $price > 0 ) {
-					$result = handle_line( $price, "", $name . " " . $detail, $item_code, $PL, false, $id );
+					$result = handle_line( $price, $sale_price, $name . " " . $detail, $item_code, $category, $PL,
+						false, $id, $category, $pic_path);
 					switch ( $result ) {
 						case UpdateResult::UsageError:
 						case UpdateResult::SQLError:
 							print "Unexpected error 3";
 							print $price . " " . $name . " " . $item_code . "<br/>";
-							die( 1 );
+							break;
 						default:
 							$results[ $result ][] = array( $name, $price, $id );
 					}
 					$item_count ++;
 				}
 			}
+
 			$line_number ++;
 		}
 	}
@@ -261,19 +335,42 @@ function pricelist_process( $filename, $supplier_id, $add ) {
 		print "לא התקבלו מספיק שורות!" . "<br/>";
 	}
 
-	print_items( "פריטים חדשים", $results[ UpdateResult::NewPrice ] );
-	print_items( "פריטים התייקרו", $results[ UpdateResult::UpPrice ] );
-	print_items( "פריטים הוזלו", $results[ UpdateResult::DownPrice ] );
-	print_items( "פריטים יצאו", $results[ UpdateResult::DeletePrice ] );
-	print_items( "פריטים מוסתרים", $results[ UpdateResult::NotUsed ] );
+	$status_string[ UpdateResult::NewPrice ]    = "פריטים חדשים";
+	$status_string[ UpdateResult::UpPrice ]     = "פריטים התייקרו";
+	$status_string[ UpdateResult::DownPrice ]   = "פריטים הוזלו";
+	$status_string[ UpdateResult::DeletePrice ] = "פריטים יצאו";
+
+//	print_items( "פריטים התייקרו", $results[ UpdateResult::UpPrice ] );
+//	print_items( "פריטים הוזלו", $results[ UpdateResult::DownPrice ] );
+//	print_items( "פריטים יצאו", $results[ UpdateResult::DeletePrice ] );
+//	print_items( "פריטים מוסתרים", $results[ ] );
+
+	foreach (
+		array(
+			UpdateResult::NewPrice,
+			UpdateResult::UpPrice,
+			UpdateResult::DownPrice,
+			UpdateResult::DeletePrice,
+			UpdateResult::NotUsed
+		) as
+		$status
+	) {
+		if ( isset( $results[ $status ] ) ) {
+			print_items( $status_string[ $status ], $results[ $status ] );
+		}
+	}
 
 	return true;
 }
 
-function parse_header( $file, &$item_code_idx, &$name_idx, &$price_idx, &$inventory_idx, &$detail_idx ) {
-	$header = fgetcsv( $file );
+function parse_header(
+	$file, &$item_code_idx, &$name_idx, &$price_idx, &$sale_idx, &$inventory_idx, &$detail_idx, &$category_idx,
+	&$filter_idx, &$picture_idx) {
+	$price_idx = Array();
+	$name_idx  = Array();
+	$header    = fgetcsv( $file );
 
-//    print "header size: " . count($header) ."<br/>";
+	// print "header size: " . count($header) ."<br/>";
 
 	for ( $i = 0; $i < count( $header ); $i ++ ) {
 		$key = trim( $header[ $i ] );
@@ -283,7 +380,11 @@ function parse_header( $file, &$item_code_idx, &$name_idx, &$price_idx, &$invent
 		switch ( $key ) {
 			case 'פריט':
 			case 'קוד פריט':
+			case 'מסד':
 				array_push( $item_code_idx, $i );
+				break;
+			case 'קטגוריות':
+				array_push( $category_idx, $i );
 				break;
 			case 'הירק':
 			case 'סוג קמח':
@@ -294,33 +395,53 @@ function parse_header( $file, &$item_code_idx, &$name_idx, &$price_idx, &$invent
 			case 'תיאור':
 			case 'מוצר':
 			case 'שם המוצר':
+				print "name " . $i . "<br/>";
 				array_push( $name_idx, $i );
 				break;
 			case 'פירוט המוצר':
 				array_push( $detail_idx, $i );
 				break;
 			case 'מחיר':
+			case 'מחירון':
 			case 'מחיר נטו':
 			case 'מחיר לק"ג':
 			case 'סיטונאות':
+				print "price " . $i . "<br/>";
 				array_push( $price_idx, $i );
 				break;
 			case 'מלאי (ביחידות)':
 				$inventory_idx = $i;
 				break;
+			case 'מחיר מבצע':
+				array_push( $sale_idx, $i );
+				break;
+		}
+		if ( strstr( $key, "הצגה" ) ) {
+			$filter_idx = $i;
+		}
+		if ( strstr( $key, "מחיר" ) and ! in_array( $i, $price_idx ) ) {
+			my_log( "key: $key, price: " . $i, __FILE__ );
+			array_push( $price_idx, $i );
+		}
+
+		if ( strstr( $key, "תמונה" ) ) {
+			$picture_idx = $i;
+//		print "picture idx $picture_idx<br/>";
 		}
 	}
 
 	//if ($name_idx == -1 or $price_idx == -1) die("item code " . $item_code_idx . "name " . $name_idx  . "price " . $price_idx );
 	if ( count( $name_idx ) == 0 or count( $price_idx ) == 0 ) {
-		print "name_idx count: " . count( $name_idx ) . "<br/>";
-		print "price_idx count: " . count( $price_idx ) . "<br/>";
+		// print "name_idx count: " . count( $name_idx );
+		// print " price_idx count: " . count( $price_idx ) . " failed<br/>";
 
 		return false;
 		// print "Missing headers:<br/>";
 		// die(" name " . count($name_idx)  . " price " . count($price_idx));
 	}
-
+//	var_dump( $name_idx );
+//	var_dump( $price_idx );
+	print "<br/>";
 	return true;
 }
 
@@ -337,13 +458,17 @@ function print_items( $title, $list ) {
 }
 
 // Variation are saved with reference to parent.
-function handle_line( $price, $sale_price, $name, $item_code, $PL, $has_variations, &$id, $parent_id = null ) {
+function handle_line(
+	$price, $sale_price, $name, $item_code, $category, $PL, $has_variations, &$id, $parent_id = null,
+	$pic_path = null) {
 	$name = pricelist_strip_product_name( $name );
+
+	print $name . " " . $price . "<br/>";
 	$id   = 0;
 	// Check if we have a price.
 	// Product with variations doesn't need a price
 	if ( $price > 0 or $has_variations ) {
-		return $PL->AddOrUpdate( $price, $sale_price, $name, $item_code, $id, $parent_id );
+		return $PL->AddOrUpdate( $price, $sale_price, $name, $item_code, $category, $id, $parent_id, $pic_path );
 	}
 //    else
 //        print "price: " . $price . "<br/>";

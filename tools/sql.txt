@@ -1,0 +1,136 @@
+CREATE TABLE im_baskets
+(
+    id INT(11) PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    basket_id BIGINT(20) NOT NULL,
+    date DATETIME NOT NULL,
+    product_id INT(11),
+    quantity TINYINT(1) unsigned DEFAULT '1' NOT NULL
+);
+CREATE TABLE im_bundles
+(
+    id BIGINT(10) unsigned PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    prod_id BIGINT(10) unsigned NOT NULL,
+    quantity FLOAT UNSIGNED NOT NULL,
+    margin SMALLINT(2) unsigned NOT NULL,
+    bundle_prod_id INT(10) NOT NULL
+);
+CREATE TABLE im_client_accounts
+(
+    ID BIGINT(20) PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    client_id BIGINT(20) NOT NULL,
+    date DATE NOT NULL,
+    transaction_amount FLOAT NOT NULL,
+    transaction_method TEXT NOT NULL,
+    transaction_ref BIGINT(20) NOT NULL
+);
+CREATE TABLE im_delivery
+(
+    ID BIGINT(20) unsigned PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    date DATE NOT NULL,
+    order_id BIGINT(20) unsigned NOT NULL,
+    vat FLOAT NOT NULL,
+    total FLOAT NOT NULL,
+    dlines INT(5) DEFAULT '0' NOT NULL
+);
+CREATE TABLE im_delivery_lines
+(
+    id BIGINT(20) unsigned PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    delivery_id BIGINT(20) unsigned NOT NULL,
+    product_name VARCHAR(30) NOT NULL,
+    quantity FLOAT NOT NULL,
+    vat FLOAT NOT NULL,
+    price FLOAT NOT NULL,
+    line_price FLOAT NOT NULL
+);
+CREATE TABLE im_driver_deliveries
+(
+    id INT(10) PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    user_id INT(4) NOT NULL,
+    date DATE NOT NULL,
+    quantity INT(4) NOT NULL,
+    sender INT(4) DEFAULT '1' NOT NULL
+);
+CREATE TABLE im_path_info
+(
+    id INT(4) PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    driver VARCHAR(20) NOT NULL
+);
+CREATE TABLE im_paths
+(
+    ID INT(4) PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    path INT(4) NOT NULL,
+    city VARCHAR(20) NOT NULL,
+    city_order INT(4) NOT NULL
+);
+CREATE TABLE im_projects
+(
+    ID INT(11) PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    project_name VARCHAR(20) NOT NULL,
+    project_contact VARCHAR(20) NOT NULL
+);
+CREATE TABLE im_subscriptions
+(
+    id BIGINT(8) PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    client BIGINT(8) NOT NULL,
+    basket INT(8) NOT NULL,
+    weeks SMALLINT(1) NOT NULL,
+    last_order DATETIME,
+    name VARCHAR(20) NOT NULL
+);
+CREATE TABLE im_supplier_mapping
+(
+    id BIGINT(20) PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    product_id BIGINT(20) NOT NULL,
+    supplier_id BIGINT(20) NOT NULL,
+    supplier_product_name VARCHAR(40) NOT NULL,
+    pricelist_id INT(4) DEFAULT '0' NOT NULL,
+    supplier_product_code INT(11)
+);
+CREATE TABLE im_supplier_price_list
+(
+    ID BIGINT(20) PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    product_name VARCHAR(40) NOT NULL,
+    supplier_id BIGINT(20) NOT NULL,
+    date DATE NOT NULL,
+    price FLOAT NOT NULL,
+    supplier_product_code INT(11) DEFAULT '10'
+);
+CREATE TABLE im_suppliers
+(
+    id BIGINT(20) PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    supplier_name VARCHAR(20) NOT NULL,
+    supplier_contact_name VARCHAR(20) NOT NULL,
+    supplier_contact_phone VARCHAR(20) NOT NULL
+);
+CREATE TABLE im_supplies
+(
+    id BIGINT(10) unsigned PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    status TINYINT(2) NOT NULL,
+    date DATETIME NOT NULL,
+    supplier INT(4) NOT NULL
+);
+CREATE TABLE im_supplies_lines
+(
+    id BIGINT(10) PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    status INT(4) DEFAULT '1' NOT NULL,
+    supply_id BIGINT(10) NOT NULL,
+    product_id INT(10) NOT NULL,
+    quantity FLOAT NOT NULL
+);
+CREATE TABLE im_weekly_sale
+(
+    ID INT(10) unsigned PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    date DATETIME NOT NULL,
+    supplier INT(11) NOT NULL,
+    buy_total FLOAT NOT NULL,
+    sale_total FLOAT NOT NULL
+);
+CREATE TABLE im_working_hours
+(
+    ID BIGINT(20) PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    user_id BIGINT(20) NOT NULL,
+    date DATE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    project_id INT(11) NOT NULL
+);

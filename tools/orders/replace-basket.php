@@ -5,10 +5,11 @@
  * Date: 28/08/16
  * Time: 15:06
  */
-require_once( '../tools_wp_login.php' );
+require_once( '../r-shop_manager.php' );
 require_once( '../../wp-content/plugins/woocommerce/includes/wc-order-item-functions.php' );
 require_once( '../header.php' );
 require_once( 'orders-common.php' );
+require_once( ROOT_DIR . "/tools/catalog/Basket.php" );
 
 $order_id = $_GET["order_id"];
 if ( $order_id > 0 ) {
@@ -35,9 +36,9 @@ function replace_basket_with_products( $order_id ) {
 	       . ' group by woi.order_item_name order by 1'
 	       . ' ';
 
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+	$result = sql_query( $sql );
 
-	while ( $row = mysql_fetch_row( $export ) ) {
+	while ( $row = mysqli_fetch_row( $result ) ) {
 		$order_item_id = $row[2];
 		$product_id    = get_prod_id( $order_item_id );
 		print "prod_id = " . $product_id;

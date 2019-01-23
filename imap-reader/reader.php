@@ -29,7 +29,6 @@ function read_mail( $host, $user, $pass, $search_strings ) {
 	}
 
 	if ( $emails ) {
-		$count = 1;
 
 		/* put the newest emails on top */
 		rsort( $emails );

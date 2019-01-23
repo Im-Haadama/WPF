@@ -5,38 +5,176 @@
  * Date: 16/07/15
  * Time: 15:25
  */
-require_once( '../tools_wp_login.php' );
-require_once( '../gui/inputs.php' );
+//error_reporting( E_ALL );
+//ini_set( 'display_errors', 'on' );
+
+require_once( '../r-shop_manager.php' );
+require_once( ROOT_DIR . '/agla/gui/inputs.php' );
+require_once( "../suppliers/gui.php" );
+require_once( "../multi-site/imMulti-site.php" );
+require_once( "../suppliers/Supplier.php" );
+
+function set_supplier_id() {
+	if ( ! isset( $_GET["supplier_id"] ) ) {
+		print 'var sel = document.getElementById("supplier_id");
+                var selected = sel.options[sel.selectedIndex];
+                supplier_id = selected.value;
+                var site_id = selected.getAttribute("data-site-id");
+                var tools = selected.getAttribute("data-tools-url-id");
+                ';
+	} else {
+		$id      = $_GET["supplier_id"];
+		$supp    = new Supplier( $id );
+		$site_id = $supp->getSiteId();
+		print 'var supplier_id = ' . $id . ';';
+		if ( $site_id > 0 ) {
+			print 'var site_id = ' . $site_id . ';';
+			print 'var tools = \'' . ImMultiSite::SiteTools( $site_id ) . "';";
+		} else {
+			print 'var site_id = "";';
+			print 'var tools = "";';
+		}
+	}
+
+}
 ?>
 <html dir="rtl" lang="he">
 <header>
     <meta charset="UTF-8">
+    <script type="text/javascript" src="/agla/client_tools.js"></script>
+	<?php
+	$map_table = "price_list";
+	require_once( "../catalog/mapping.php" );
+	?>
     <script>
-		<?php
-		$filename = __DIR__ . "/../client_tools.js";
-		$handle = fopen( $filename, "r" );
-		$contents = fread( $handle, filesize( $filename ) );
-		print $contents;
-		?>
-
         var supplier_id;
 
-        function get_value(element) {
-            if (element.tagName == "INPUT") {
-                return element.value;
-            } else {
-                return element.nodeValue;
-            }
+        function selected(sel) {
+            var pricelist_id = sel.id.substr(3);
+            document.getElementById("chk" + pricelist_id).checked = true;
         }
+
+        function create_supply() {
+	        <?php
+	        set_supplier_id();
+	        ?>
+
+            var table = document.getElementById('pricelist');
+
+            var collection = document.getElementsByClassName("product_checkbox");
+            var params = new Array();
+
+            for (var i = 0; i < collection.length; i++) {
+                if (collection[i].checked) {
+                    var pl_id = collection[i].id.substr(3);
+                    var prod_id = get_value_by_name("pid_" + pl_id);
+                    var stock = parseFloat(get_value_by_name("stk_" + prod_id));
+                    if (isNaN(stock)) stock = 0;
+                    var ordered = 1;
+                    var ordered_text = get_value_by_name("ord_" + prod_id);
+                    if (ordered_text.length > 2) {
+                        ordered = parseFloat(ordered_text.substr(0, ordered_text.indexOf(":")));
+                        if (isNaN(ordered)) ordered = 1;
+                    }
+
+                    // if (stock > ordered) continue;
+                    // var code = get_value(table.rows[i+1].cells[1].firstChild);
+                    // var name_code = get_value(table.rows[i+1].cells[2].firstChild);
+                    // var new_price = get_value_by_name("prc_" + line_id);
+                    // var sel = document.getElementById("supplier_id");
+                    // var supplier_id = sel.options[sel.selectedIndex].value;
+
+                    // if (code > 0 && code != 10) name_code = code;
+
+                    var to_order = ordered - stock;
+                    if (to_order < 3) to_order = 3;
+                    params.push(prod_id);
+                    params.push(to_order);
+                    params.push(0); // units
+                }
+            }
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                // Wait to get query result
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+                {
+                    add_message(xmlhttp.response);
+                    // change_supplier();
+                }
+            }
+            if (!params.length) {
+                alert("יש לבחור חסרים במלאי כדי ליצור הספקה");
+                return;
+            }
+            var request = "../supplies/supplies-post.php?operation=create_supply&supplier_id=" + supplier_id + "&create_info=" + params;
+            xmlhttp.open("GET", request, true);
+            xmlhttp.send();
+
+        }
+
+        function updatePrices() {
+            var sel = document.getElementById("supplier_id");
+            supplier_id = sel.options[sel.selectedIndex].value;
+
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                // Wait to get query result
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+                {
+                    change_supplier();
+                }
+            }
+            var request = "pricelist-post.php?operation=refresh_prices&supplier_id=" + supplier_id;
+            xmlhttp.open("GET", request, true);
+            xmlhttp.send();
+        }
+
+        function change_managed(field) {
+            var subject = field.id.substr(4);
+            var is_managed = get_value_by_name("chm_" + subject);
+
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                // Wait to get query result
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+                {
+
+                }
+            }
+            var request = "pricelist-post.php?operation=managed&is_managed=" + is_managed + "&prod_id=" + subject;
+            xmlhttp.open("GET", request, true);
+            xmlhttp.send();
+        }
+        function inActiveList() {
+            var sel = document.getElementById("supplier_id");
+            supplier_id = sel.options[sel.selectedIndex].value;
+
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                // Wait to get query result
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+                {
+                    change_supplier();
+                }
+            }
+            var request = "pricelist-post.php?operation=inactive&supplier_id=" + supplier_id;
+            xmlhttp.open("GET", request, true);
+            xmlhttp.send();
+        }
+
         function changed(field) {
-            var subject = field.name;
+            var subject = field.name.substr(4);
             document.getElementById("chk" + subject).checked = true;
         }
 
         function savePrices() {
+	        <?php
+	        set_supplier_id();
+	        ?>
+
             var table = document.getElementById('price_list');
-            var sel = document.getElementById("supplier_id");
-            supplier_id = sel.options[sel.selectedIndex].value;
+//            var sel = document.getElementById("supplier_id");
+//            supplier_id = sel.options[sel.selectedIndex].value;
 
             var collection = document.getElementsByClassName("product_checkbox");
             var params = new Array();
@@ -45,7 +183,7 @@ require_once( '../gui/inputs.php' );
                     var line_id = collection[i].id.substr(3);
                     // var code = get_value(table.rows[i+1].cells[1].firstChild);
                     // var name_code = get_value(table.rows[i+1].cells[2].firstChild);
-                    var new_price = get_value(table.rows[i + 1].cells[4].firstChild);
+                    var new_price = get_value_by_name("prc_" + line_id);
                     // var sel = document.getElementById("supplier_id");
                     // var supplier_id = sel.options[sel.selectedIndex].value;
 
@@ -59,7 +197,9 @@ require_once( '../gui/inputs.php' );
                 // Wait to get query result
                 if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
                 {
-                    change_supplier();
+                    // Test - don't reload page on each change.
+                    alert("שינויים נשמרו. אפשר להמשיך לעדכן");
+                    // change_supplier();
                 }
             }
             var request = "pricelist-post.php?operation=update_price&supplier_id=" + supplier_id + "&params=" + params;
@@ -67,22 +207,11 @@ require_once( '../gui/inputs.php' );
             xmlhttp.send();
         }
 
-        //    function loadPrices()
-        //    {
-        //        xmlhttp = new XMLHttpRequest();
-        //        xmlhttp.onreadystatechange = function()
-        //        {
-        //            // Wait to get query result
-        //            if (xmlhttp.readyState==4 && xmlhttp.status==200)  // Request finished
-        //            {
-        //                change_supplier();
-        //            }
-        //        }
-        //        var request = "pricelist-post.php?operation=update_price&supplier_id=" + supplier_id + "&params=" + params;
-        //        xmlhttp.open("GET", request, true);
-        //        xmlhttp.send();
-        //    }
-
+        function del_line(pricelist_id) {
+            var btn = document.getElementById("del_" + pricelist_id);
+            btn.parentElement.parentElement.style.display = 'none';
+            execute_url("pricelist-post.php?operation=delete_price&params=" + pricelist_id);
+        }
         function delPrices() {
             // var table = document.getElementById('price_list');
             // var sel = document.getElementById("supplier_id");
@@ -105,20 +234,19 @@ require_once( '../gui/inputs.php' );
         }
 
         function delMap() {
-            var table = document.getElementById('price_list');
-
             var collection = document.getElementsByClassName("product_checkbox");
             var params = new Array();
             for (var i = 0; i < collection.length; i++) {
                 if (collection[i].checked) {
 
-                    var map_id = get_value(table.rows[i + 1].cells[10].firstChild);
+                    var pricelist_id = collection[i].id.substr(3);
 
-                    params.push(map_id);
+                    params.push(pricelist_id);
                     //        alert(map_id);
                 }
             }
-            execute_url("pricelist-post.php?operation=delete_map&params=" + params, change_supplier);
+            var URL = "pricelist-post.php?operation=delete_map&params=" + params;
+            execute_url(URL, change_supplier);
         }
 
         function donPrices() {
@@ -148,11 +276,9 @@ require_once( '../gui/inputs.php' );
         }
 
         function change_supplier() {
-            var sel = document.getElementById("supplier_id");
-            var selected = sel.options[sel.selectedIndex];
-            supplier_id = selected.value;
-            var site_id = selected.getAttribute("data-site-id");
-            var tools = selected.getAttribute("data-tools-url-id");
+	        <?php
+	        set_supplier_id();
+	        ?>
             var upcsv = document.getElementById("upcsv");
 
             if (site_id > 0) {
@@ -177,7 +303,16 @@ require_once( '../gui/inputs.php' );
                     table.innerHTML = xmlhttp.response;
                 }
             }
+            xmlhttp.onloadend = function () {
+                if (xmlhttp.status == 404 || xmlhttp.status == 500)
+                    change_supplier();
+            }
             var request = "pricelist-post.php?operation=get_priceslist&supplier_id=" + supplier_id;
+//            var o = get_value_by_name("chk_ordered");
+//            alert (o);
+            if (get_value_by_name("chk_ordered")) request += "&ordered";
+            if (get_value_by_name("chk_need_supply")) request += "&need_supply";
+
             xmlhttp.open("GET", request, true);
             xmlhttp.send();
 
@@ -187,8 +322,8 @@ require_once( '../gui/inputs.php' );
                 // Wait to get query result
                 if (xmlhttp_date.readyState == 4 && xmlhttp_date.status == 200)  // Request finished
                 {
-                    lable = document.getElementById("last_update");
-                    lable.innerHTML = xmlhttp_date.response;
+                    label = document.getElementById("last_update");
+                    label.innerHTML = xmlhttp_date.response;
                 }
             }
             request = "pricelist-post.php?operation=header&supplier_id=" + supplier_id;
@@ -231,8 +366,12 @@ require_once( '../gui/inputs.php' );
         }
 
         function add_item() {
-            var sel = document.getElementById("supplier_id");
-            var id = sel.options[sel.selectedIndex].value;
+	        <?php
+	        set_supplier_id();
+	        ?>
+
+            savePrices();
+            var code = get_value(document.getElementById("product_code"));
             var name = get_value(document.getElementById("product_name"));
             var price = get_value(document.getElementById("price"));
             xmlhttp = new XMLHttpRequest();
@@ -240,15 +379,20 @@ require_once( '../gui/inputs.php' );
                 // Wait to get query result
                 if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
                 {
+                    // For now after add, reload.
                     change_supplier();
                 }
             }
             var request = "pricelist-post.php?operation=add_price&product_name=" + name + '&price=' + price +
                 '&supplier_id=' + supplier_id;
+            if (code.length > 0) request += "&code=" + code;
             xmlhttp.open("GET", request, true);
             xmlhttp.send();
         }
 
+        function refresh() {
+            change_supplier();
+        }
     </script>
 </header>
 
@@ -262,19 +406,35 @@ require_once( '../gui/inputs.php' );
 <h1>
     מחירון ספק
 
-	<?
-	print_select_supplier( "supplier_id", true );
+	<?php
+	if ( ! isset ( $_GET["supplier_id"] ) ) {
+		print_select_supplier( "supplier_id", true );
+	} else {
+		print get_supplier_name( $_GET["supplier_id"] );
+	}
 	?>
 </h1>
-<lable id="last_update"></lable>
+<label id="last_update"></label>
 
 <div id="div_change">
     <button id="btn_save" onclick="savePrices()">שמור עדכונים</button>
     <button id="btn_delete" onclick="delPrices()">מחק פריטים</button>
     <button id="btn_delete_map" onclick="delMap()">מחק מיפוי</button>
     <button id="btn_dontsell" onclick="donPrices()">לא למכירה</button>
+	<?php
+	$user = wp_get_current_user();
+	if ( $user->ID == "1" ) {
+		print '<button id="btn_delete_list" onclick="inActiveList()">הקפא ספק</button>';
+	}
+	print '<button id="btn_update_list" onclick="updatePrices()">עדכן מחירים</button>';
+
+	?>
+    <button id="btn_map" onclick="map_products()">שמור מיפוי</button>
+    <button id="btn_create_supply" onclick="create_supply()">צור הספקה</button>
+
+    <label id="log"></label>
 </div>
-<lable id="is_slave"></lable>
+<label id="is_slave"></label>
 <br/>
 </div>
 
@@ -294,14 +454,22 @@ require_once( '../gui/inputs.php' );
     <input type="hidden" name="post_type" value="product"/>
 </form>
 
-<?php //print gui_button("download", "download_csv()","הורד"); ?>
+<?php
+
+print gui_checkbox( "chk_ordered", "", "", "onchange=change_supplier()" );
+print "הצג רק מוזמנים<br/>";
+
+print gui_checkbox( "chk_need_supply", "", "", "onchange=change_supplier()" );
+print "הצג רק פריטים להזמין<br/>";
+
+//print gui_button("download", "download_csv()","הורד"); ?>
 
 <!--<form id="downcsv" method="get" action="download_csv.php">-->
 <!--    <button type="submit">הורד</button>-->
 <!--    <input type='hidden' name='supplier_id'/>-->
 <!--</form>-->
 <a id="downcsv" href="path_to_file" download="pricelist.csv">הורד CSV</a>
-<table id="price_list"></table>
+<div id="price_list"></div>
 <!--            <button id="btn_load_prices" onclick="load_file()">טען רשימה</button>-->
 
 </div>

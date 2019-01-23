@@ -5,10 +5,13 @@
  * Date: 03/07/15
  * Time: 11:53
  */
+require_once( '../r-shop_manager.php' );
 require_once( 'catalog.php' );
 require_once( '../pricelist/pricelist.php' );
-require_once( '../tools.php' );
-require_once( '../multi-site/multi-site.php' );
+require_once( '../multi-site/imMulti-site.php' );
+require_once( "../wp/terms.php" );
+
+// print header_text();
 
 // To map item from price list to our database the shop manager select item from the price list
 // and product_id. The triplet: product_id, supplier_id and product_code are sent as saved
@@ -21,6 +24,17 @@ switch ( $operation ) {
 	case "get_unmapped":
 		my_log( "get_unmapped" );
 		search_unmapped_products();
+		break;
+
+	case "create_term":
+		my_log( $operation );
+		$category_name = $_GET["category_name"];
+		terms_create( $category_name );
+		break;
+
+	case "get_unmapped_terms":
+		my_log( "get_unmapped_terms" );
+		search_unmapped_terms();
 		break;
 
 	case 'get_invalid_mapped':
@@ -51,10 +65,10 @@ switch ( $operation ) {
 		my_log( "category: " . $category_name );
 		$map_triplets = $_GET["create_info"];
 		$ids          = explode( ',', $map_triplets );
+		//var_dump($ids);
 		Catalog::CreateProducts( $category_name, $ids );
 		break;
 }
-
 
 function map_products( $ids ) {
 	print "start mapping<br/>";
@@ -102,11 +116,9 @@ function is_mapped( $code ) {
 	$sql = 'SELECT id FROM `im_supplier_mapping` WHERE supplier_product_code = ' . $code .
 	       ' AND supplier_product_code != 10';
 
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+	$id = sql_query_single_scalar( $sql );
 
-	$row = mysql_fetch_row( $export );
-
-	if ( $row[0] > 0 ) {
+	if ( $id > 0 ) {
 		// print $sql;
 		return true;
 	}
@@ -115,10 +127,10 @@ function is_mapped( $code ) {
 }
 
 // Write the result to screen. Client will insert to result_table
-function search_unmapped_products() {
-	search_unmapped_local();
-	//  search_unmapped_remote();
-}
+//function search_unmapped_products() {
+//	search_unmapped_local();
+//	//  search_unmapped_remote();
+//}
 
 function search_unmapped_remote() {
 	global $conn;
@@ -143,7 +155,7 @@ function search_unmapped_remote() {
 		// print $site_id;
 
 		$remote = get_site_tools_url( $site_id ) . "/catalog/get-as-pricelist.php";
-		$html   = file_get_html( $remote );
+		$html   = im_file_get_html( $remote );
 		foreach ( $html->find( 'tr' ) as $row ) {
 			$prod_id = $row->find( 'td', 1 )->plaintext;
 			//print "prod id " . $prod_id;
@@ -160,24 +172,11 @@ function search_unmapped_remote() {
 	print $data;
 }
 
-
-function search_unmapped_local() {
+function search_unmapped_products() {
 	global $conn;
-//    my_log("search_unmaaped_products");
-//    // Purpose: read supplier items and map them to our database.
-//    // First get all unmapped items
-//    $sql = 'SELECT id, supplier_id, product_name, date, supplier_product_code'
-//        . ' from im_supplier_price_list'
-//        . ' where '
-//        . ' (supplier_id, product_name) not in '
-//        . ' (select supplier_id, supplier_product_name from im_supplier_mapping)'
-//        . ' group by supplier_id, product_name ';
-//    // print $sql;
-//        /// . ' supplier_product_code not in (select supplier_product_code from im_supplier_mapping)';
-//
-//    $export = mysql_query($sql) or die ("Sql error : " . mysql_error());
 
-	$sql    = "SELECT id, supplier_id, product_name FROM im_supplier_price_list ORDER BY 2, 3";
+	$sql    = "SELECT id, supplier_id, product_name " .
+	          " FROM im_supplier_price_list ORDER BY 2, 3";
 	$result = mysqli_query( $conn, $sql );
 
 	$data = "<tr>";
@@ -186,57 +185,73 @@ function search_unmapped_local() {
 	$data .= "<td>שם מוצר</td>";
 	$data .= "<td>מזהה ספק</td>";
 	$data .= "<td>מוצר שלנו </td>";
+	$data .= gui_cell( "קטגוריה" );
+	$data .= gui_cell( "תמונה" );
 	$data .= "</tr>";
 
-	while ( $row = mysqli_fetch_row( $result ) ) // mysql_fetch_row($export))
+	while ( $row = mysqli_fetch_row( $result ) )
 	{
 		$pricelist_id = $row[0];
-//        $supplier_id = $row[1];
-//        $product_name = $row[2];
-//        $supplier_product_code = $row[4];
-//
-//        if (is_mapped($supplier_product_code)) {
-//            // print $supplier_product_code . "is mapped<br/>";
-////            my_log($supplier_product_code . " is mapped");
-//            continue;
-//        }
-		// print $pricelist_id . "<br/>";
 
 		$pricelist = PriceList::Get( $pricelist_id );
-//        $sql = " select product_name, supplier_id, date, price, supplier_product_code from im_supplier_price_list " .
 
 		$prod_link_id = Catalog::GetProdID( $pricelist_id, true );
 
-		$prod_id      = $prod_link_id[0];
-		if ( ( $prod_id == - 1 ) or ( $prod_id > 0 ) ) {
-			continue;
+		if ( $prod_link_id ) {
+			$prod_id = $prod_link_id[0];
+			if ( ( ( $prod_id == - 1 ) or ( $prod_id > 0 ) ) and get_post_status( $prod_id ) != 'trash' ) {
+				continue;
+			}
 		}
-		$data .= print_unmapped( $pricelist_id, $pricelist["supplier_product_code"],
-			$pricelist["product_name"], $pricelist["supplier_id"] );
+		$data .= print_unmapped( $pricelist_id, $pricelist["supplier_product_code"], $pricelist["product_name"],
+			$pricelist["supplier_id"] );
 	}
 	print $data;
 }
 
+function search_unmapped_terms() {
+	global $conn;
+
+	// print header_text();
+	$all_terms      = array();
+	$all_terms_flat = array();
+	$sql            = "SELECT id, supplier_id, product_name " .
+	                  " FROM im_supplier_price_list ORDER BY 2, 3";
+	$result         = mysqli_query( $conn, $sql );
+
+	while ( $row = mysqli_fetch_row( $result ) ) {
+		$pricelist_id = $row[0];
+
+		$prod_link_id = Catalog::GetProdID( $pricelist_id, true );
+
+		$prod_id = $prod_link_id[0];
+		if ( ( ( $prod_id == - 1 ) or ( $prod_id > 0 ) ) and get_post_status( $prod_id ) != 'trash' ) {
+			continue;
+		}
+
+		$item      = PriceList::Get( $pricelist_id );
+		$prod_term = $item["category"];
+		$terms     = explode( ",", $prod_term );
+		foreach ( $terms as $term ) {
+			// print "term: " . $term . "<br/>";
+			if ( ! in_array( $term, $all_terms_flat ) ) {
+				array_push( $all_terms_flat, $term );
+				array_push( $all_terms, array( 'term' => $term, 'id' => terms_get_id( $term ) ) );
+			}
+		}
+	}
+	// var_dump($all_terms);
+
+	// print gui_select_datalist("term", "name", $all_terms, "");
+	print gui_select( "create_term", "term", $all_terms, "", "" );
+}
+
+
 function print_unmapped( $pricelist_id, $supplier_product_code, $product_name, $supplier_id, $site_id = 0 ) {
 	$match            = false;
-	$product_name_prf = name_prefix( $product_name );
-//        my_log($product_name_prf);
 
-	if ( $pos = strpos( $product_name, " " ) ) {
-		$product_name_prf = substr( $product_name, 0, $pos );
-	}
-	$sql1 = 'SELECT DISTINCT id, post_title FROM `wp_posts` WHERE '
-	        . ' post_type IN (\'product\', \'product_variation\')'
-	        . ' AND (post_status = \'publish\' OR post_status = \'draft\')'
-	        . ' AND (post_title LIKE \'%' . addslashes( $product_name_prf ) . '%\' '
-	        . ' OR id IN '
-	        . '(SELECT object_id FROM wp_term_relationships WHERE term_taxonomy_id IN '
-	        . '(SELECT term_taxonomy_id FROM wp_term_taxonomy WHERE term_id IN '
-	        . "(SELECT term_id FROM wp_terms WHERE name LIKE '%" . addslashes( $product_name_prf ) . "%'))))"
-	        . " ORDER BY 2";
+//	if (substr($striped_prod, 0, 8) == "סברס") print "Y" . $striped_prod . "Y<br/>";
 
-//	print $sql1 . "<br/>";
-//	die(1);
 	$striped_prod = $product_name;
 	foreach ( array( "אורגני", "יחידה", "טרי" ) as $word_to_remove ) {
 		$striped_prod = str_replace( $word_to_remove, "", $striped_prod );
@@ -245,23 +260,25 @@ function print_unmapped( $pricelist_id, $supplier_product_code, $product_name, $
 
 	$striped_prod = trim( $striped_prod );
 
-//	if (substr($striped_prod, 0, 8) == "סברס") print "Y" . $striped_prod . "Y<br/>";
+	$prod_options = Catalog::GetProdOptions( $product_name );
 
-	// Get line options
 	$options = "";
-	$export1 = mysql_query( $sql1 );
-	while ( $row1 = mysql_fetch_row( $export1 ) ) {
-//        print $row1[1] . " " . $product_name . "<br/>";
-		$striped_option = $row1[1];
+
+	foreach ( $prod_options as $row1 ) {
+
+		// Get line options
+//         print $row1[1] . " " . $product_name . "<br/>";
+		// var_dump($row1); print "<br/>";
+		$striped_option = $row1["post_title"];
 		$striped_option = str_replace( "-", " ", $striped_option );
 		$striped_option = trim( $striped_option, " " );
 //        if (substr($striped_option, 0, 8) == "סברס") print "X" . $striped_option . "X<br/>";
-		$options .= '<option value="' . $row1[0] . '" ';
+		$options .= '<option value="' . $row1["id"] . '" ';
 		if ( ! strcmp( $striped_option, $striped_prod ) ) {
 			$options .= 'selected';
-			$match   = true;
+//			$match   = true;
 		}
-		$options .= '>' . $row1[1] . '</option>';
+		$options .= '>' . $row1["post_title"] . '</option>';
 	}
 
 	$line = "<tr>";
@@ -279,21 +296,13 @@ function print_unmapped( $pricelist_id, $supplier_product_code, $product_name, $
 		$line .= "<td style=\"display:none;\">" . $site_id . "</td>";
 	}
 
+	$item = PriceList::Get( $pricelist_id );
+	$line .= gui_cell( $item["category"] );
+	$url  = $item["picture_path"];
+	$line .= gui_cell( basename( $url ) );
 	$line .= "</tr>";
 
-
-//    print $line;
 	return $line;
-}
-
-function name_prefix( $name ) {
-	return strtok( $name, "-()" );
-//    $pos = strpos($name, "-()");
-//    my_log($name . ": pos= " . $pos);
-//    if ($pos > 0)
-//        return substr($name, 0, $pos);
-//
-//    return $name;
 }
 
 // Write the result to screen. Client will insert to result_table
@@ -306,7 +315,7 @@ function search_invalid_mapping() {
             FROM im_supplier_mapping';
 
 
-	$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+	$result = sql_query( $sql );
 
 	$data = "<tr>";
 	$data .= "<td>בחר</td>";
@@ -316,7 +325,7 @@ function search_invalid_mapping() {
 	$data .= "<td>שם מוצר</td>";
 	$data .= "</tr>";
 
-	while ( $row = mysql_fetch_row( $export ) ) {
+	while ( $row = mysqli_fetch_row( $result ) ) {
 		$line_id      = $row[0];
 		$product_id   = $row[1];
 		$supplier_id  = $row[2];

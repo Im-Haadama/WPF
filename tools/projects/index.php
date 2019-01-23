@@ -6,7 +6,7 @@
  * Time: 08:19
  */
 
-require_once( '../tools.php' );
+require_once( '../r-shop_manager.php' );
 
 $user = new WP_User( $user_ID );
 

@@ -6,7 +6,7 @@
  * Time: 21:20
  */
 
-require_once( 'tools.php' );
+require_once( 'r-shop_manager.php' );
 $table_prefix = "im_";
 $obj_name     = "business";
 $table_suffix = "_info";
@@ -23,7 +23,7 @@ $export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . $sql );
 
 if ( 0 ) {
 	print "<table>";
-	while ( $row = mysql_fetch_row( $export ) ) {
+	while ( $row = mysqli_fetch_row( $result ) ) {
 		print "<tr><td>" . $row[0] . "</td><td>" . $row[1] . "</td>" . "</tr>";
 	}
 	print "</table>";
@@ -32,7 +32,7 @@ $sql = "describe " . $table_name;
 $export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . $sql );
 $row        = mysql_fetch_row( $export );
 $field_list = $row[0];
-while ( $row = mysql_fetch_row( $export ) ) {
+while ( $row = mysqli_fetch_row( $result ) ) {
 	$field_list .= ", " . $row[0];
 }
 
@@ -86,13 +86,13 @@ print "\$row = mysql_fetch_row( \$export ); <br/>";
 print "if (!\$horizontal) print \"&#60table>\";</br>";
 // Read the headers.
 $export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . $sql );
-//$row = mysql_fetch_row( $export );
+//$row = mysqli_fetch_row( $result );
 
 print "if (\$horizontal) print \"&#60tr>&#60td>\$seq&#60/td>\";<br/>";
 
 // Read table rows;
 $col_idx = 0;
-while ( $row = mysql_fetch_row( $export ) ) {
+while ( $row = mysqli_fetch_row( $result ) ) {
 	$field_name = $row[0];
 	print "if (!\$horizontal) print \"&#60tr>\";<br/>";
 	print "if (!\$horizontal) {";
@@ -124,7 +124,7 @@ print "?>";
 $conn->query( $sql );
 $result = mysqli_query( $conn, $sql );
 while ( $row = mysqli_fetch_assoc( $result ) ) {
-	$name = $row[]
+	// $name = $row[]
 
 }
 

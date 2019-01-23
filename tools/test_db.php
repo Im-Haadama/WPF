@@ -11,7 +11,7 @@ define( '__ROOT__', dirname( dirname( __FILE__ ) ) );
 require( '../config.php' );
 
 function uptime_log( $msg, $title = '' ) {
-	$error_file = __ROOT__ . '/logs/uptime.log';
+	$error_file = STORE_DIR . '/logs/uptime.log';
 	$date       = date( 'd.m.Y h:i:s' );
 	$msg        = print_r( $msg, true );
 	$log        = $date . ": " . $title . "  |  " . $msg . "\n";
@@ -36,7 +36,7 @@ if ( ! $export ) {
 	uptime_log( "export failed" . mysql_error() );
 }
 
-$row = mysql_fetch_row( $export );
+$row = mysqli_fetch_row( $result );
 
 uptime_log( $row[0] );
 

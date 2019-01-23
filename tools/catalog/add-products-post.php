@@ -6,7 +6,7 @@
  * Time: 12:08
  */
 
-require_once( "../tools.php" );
+require_once( "../r-shop_manager.php" );
 require_once( "../pricelist/pricelist.php" );
 require_once( "../pricelist/pricelist-process.php" );
 
@@ -34,12 +34,12 @@ $pricelist_ids        = array();
 
 $update_list_results = array();
 
-if ( is_numeric( $site_id ) and ( $site_id != MultiSite::LocalSiteID() ) ) {
+if ( is_numeric( $site_id ) and ( $site_id != ImMultiSite::LocalSiteID() ) ) {
 	print gui_header( 1, "מוסיף פריטים לרשימת ספק " . $remote_supplier ) . "<br/>";
 	$request = "pricelist/pricelist-post.php?operation=add_prices&supplier_id=" . $remote_supplier . "&Params=" . $params;
 	// print '<p dir="ltr">' . $request . "</p>";
 	// Add to pricelist
-	$result = str_replace( "<br/>", "\n", MultiSite::Execute( $request, $site_id ) );
+	$result = str_replace( "<br/>", "\n", ImMultiSite::sExecute( $request, $site_id ) );
 	$lines  = explode( PHP_EOL, $subject );
 
 	$fp = fopen( "php://memory", 'r+' );
@@ -81,7 +81,7 @@ if ( is_numeric( $site_id ) and ( $site_id != MultiSite::LocalSiteID() ) ) {
 
 	print gui_header( 2, "יוצר פריטים באתר מרוחק" ) . "<br/>";
 	// Create remote products.
-	print MultiSite::Execute( $request, $site_id );
+	print ImMultiSite::sExecute( $request, $site_id );
 
 	// Sync remote products
 	print gui_header( 2, "מסנרכן פריטים בין האתרים" ) . "<br/>";
@@ -96,7 +96,7 @@ if ( is_numeric( $site_id ) and ( $site_id != MultiSite::LocalSiteID() ) ) {
 		$product_name = $in_create_params[ $i ];
 		$price        = $in_create_params[ $i + 1 ];
 
-		$PL->AddOrUpdate( $price, '', $product_name, $code = 10, $pricelist_ids[ $count ], 0 );
+		$PL->AddOrUpdate( $price, '', $product_name, $code = 10, "", $pricelist_ids[ $count ], 0 );
 		$count ++;
 	}
 }

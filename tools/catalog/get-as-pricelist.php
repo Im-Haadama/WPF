@@ -6,8 +6,11 @@
  * Time: 22:48
  * purpose: export all published products as pricelist for external store
  */
-require_once( '../tools.php' );
-require_once( '../gui/inputs.php' );
+
+require_once( '../r-multisite.php' );
+require_once( ROOT_DIR . '/agla/gui/inputs.php' );
+require_once( '../pricing.php' );
+require_once( "../wp/terms.php" );
 
 if ( isset( $_GET["incremental"] ) ) {
 	if ( ! isset( $_GET["site_id"] ) ) {
@@ -21,30 +24,44 @@ if ( isset( $_GET["incremental"] ) ) {
 }
 
 $sql = "SELECT post_title, id, post_modified FROM im_products";
-
 if ( $incremental ) {
 	$max      = sql_query_single_scalar( "SELECT max(post_modified) FROM wp_posts" );
 	$date_q   = "SELECT last_inc_update FROM im_multisite WHERE id = " . $site_id;
 	$prev_max = sql_query_single_scalar( $date_q );
+	print "last date: " . $prev_max . "<br/>";
 
-	$sql .= " where post_modified > (" . $date_q . ")";
+	if ( $prev_max ) {
+		$sql .= " where post_modified > '" . $prev_max . "'";
+	}
 }
+
 print header_text();
 
 $result = mysqli_query( $conn, $sql );
 
+if ( ! $result ) {
+	sql_error( $sql );
+	die ( 1 );
+}
 $data = "";
 
+print $sql;
+$line_count = 0;
 print "<table>";
 while ( $row = mysqli_fetch_row( $result ) ) {
-	$product_name = $row[0];
-	$prod_id      = $row[1];
-	$date         = $row[2];
+	$line_count ++;
+	$product_name  = $row[0];
+	$prod_id       = $row[1];
+	$date          = $row[2];
+	$attachment_id = get_post_thumbnail_id( $prod_id );
+	$picture_path  = wp_get_attachment_url( $attachment_id );
 
 	$regular_price = get_regular_price( $prod_id );
 	$sale_price    = get_sale_price( $prod_id );
 
 	$vars = get_product_variations( $prod_id );
+
+	$terms = terms_get_as_string( $prod_id );
 
 	$line = "<tr>";
 	$line .= "<td>prod</td>";
@@ -54,6 +71,8 @@ while ( $row = mysqli_fetch_row( $result ) ) {
 	$line .= "<td>" . $regular_price . "</td>";
 	$line .= "<td>" . $sale_price . "</td>";
 	$line .= gui_cell( count( $vars ) );
+	$line .= "<td>" . $picture_path . "</td>";
+	$line .= "<td>" . $terms . "</td>";
 	$line .= "</tr>";
 	$data .= $line;
 
@@ -74,7 +93,10 @@ while ( $row = mysqli_fetch_row( $result ) ) {
 }
 
 if ( $incremental ) {
-	sql_query_single_scalar( "UPDATE im_multisite SET last_inc_update = NOW() WHERE id = " . $site_id );
+	sql_query( "UPDATE im_multisite SET last_inc_update = NOW() WHERE id = " . $site_id );
+	if ( $line_count == 0 ) {
+		print "no new lines since $prev_max<br/>";
+	}
 }
 
 print $data;
@@ -94,3 +116,5 @@ print "</table>";
 //            $line .= "<td></td><td></td><td></td>";
 //    }
 //    $line .= gui_cell($prod_id);
+
+// http://super-organi.co.il/tools/catalog/get-as-pricelist.php?incremental&site_id=1&api_key=89e12f8f-682c-4280-8657-5dae8ba46ecb

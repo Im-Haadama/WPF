@@ -1,6 +1,6 @@
 <?php
 
-require_once( '../tools_wp_login.php' );
+require_once( '../r-shop_manager.php' );
 
 // only if admin can select user. Otherwise get id from login info
 $user    = new WP_User( $user_ID );

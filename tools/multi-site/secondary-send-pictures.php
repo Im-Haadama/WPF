@@ -6,7 +6,7 @@
  * Time: 21:03
  * Sending pictures from secodary to main
  */
-require_once( "../tools.php" );
+require_once( "../r-shop_manager.php" );
 $ids = explode( ',', $_GET["ids"] );
 
 $result = "";

@@ -6,30 +6,117 @@
  * Time: 01:20
  */
 
-require_once( "orders-common.php" );
-require_once( "../gui/inputs.php" );
-require_once( __ROOT__ . "/tools/supplies/supplies.php" );
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
 
-$filter_zero = $_GET["filter_zero"];
+require_once( "../im_tools.php" );
+require_once( "orders-common.php" );
+require_once( ROOT_DIR . '/agla/gui/inputs.php' );
+require_once( "Order.php" );
+
+if ( ! defined( "STORE_DIR" ) ) {
+	define( 'STORE_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
+}
+
+require_once( STORE_DIR . "/tools/supplies/supplies.php" );
+
+$filter_zero  = isset( $_GET["filter_zero"] );
+$filter_stock = isset( $_GET["filter_stock"] );
 //$basket_quantities;
 $basket_ordered = array();
 
-get_total_orders( $filter_zero );
+if ( ! isset( $_GET["operation"] ) ) {
+	print "send operation";
+	die ( 1 );
+}
 
-// for the panel
-function get_total_orders( $filter_zero, $history = false ) {
-	global $conn;
+$operation = $_GET["operation"];
 
+switch ( $operation ) {
+	case "create_single":
+		create_supply_single();
+		break;
+	case "show_required":
+		get_total_orders( $filter_zero, false, $filter_stock );
+		break;
+	default:
+		print $operation . " not handled ";
+		die ( 2 );
+}
+
+function create_supply_single() {
+	$debug = false;
+	print header_text( false, false, false );
 	$needed_products = array();
 
-	calculate_needed( $needed_products );
+	Order::CalculateNeeded( $needed_products );
+	$supplies_data = array();
+
+	foreach ( $needed_products as $prod_id => $quantity_array ) {
+		$supplied_q = supply_quantity_ordered( $prod_id );
+		if ( ! is_numeric( $supplied_q ) ) {
+			$supplied_q = 0;
+		}
+		if ( $debug ) {
+			print "prod: " . get_product_name( $prod_id ) . " supplied: " . $supplied_q . ". needed: " .
+			      $quantity_array[0] . " " . $quantity_array[1];
+		}
+		if ( $quantity_array[0] <= $supplied_q ) {
+			if ( $debug ) {
+				print " already ordered<br/>";
+			}
+			continue;
+		}
+
+		$a = alternatives( $prod_id );
+		if ( count( $a ) == 1 ) {
+			// Check quantity in progress
+
+			$supplier_id = $a[0]->getSupplierId();
+			if ( is_numeric( $supplies_data[ $supplier_id ] ) ) {
+				$supplies_data[ $supplier_id ] = array();
+			}
+			$supplies_data[ $supplier_id ][ $prod_id ] = $quantity_array;
+			// Add to supply
+			// print " single supplier " . get_supplier_name($supplier_id);
+		}
+		if ( $debug ) {
+			print  "<br/>";
+		}
+	}
+
+	foreach ( $supplies_data as $supplier_id => $supply_data ) {
+		print get_supplier_name( $supplier_id ) . "<br/>";
+		$supply_id = create_supply( $supplier_id );
+		foreach ( $supplies_data[ $supplier_id ] as $prod_id => $datum ) {
+			print get_product_name( $prod_id ) . "q=" . $datum[0] . "u=" . $datum[1] . "<br/>";
+			$price = get_buy_price( $prod_id );
+			supply_add_line( $supply_id, $prod_id, $datum[0], $price, $datum[1] );
+		}
+	}
+}
+
+
+function get_total_orders( $filter_zero, $history = false, $filter_stock ) {
+	$needed_products = array();
+
+	Order::CalculateNeeded( $needed_products );
 
 	$data_lines = array();
 
-	foreach ( $needed_products as $prod_id => $quantity ) {
+	foreach ( $needed_products as $prod_id => $quantity_array ) {
+
+		$P = new Product( $prod_id );
+		if ( ! $P ) {
+			continue;
+		}
+
+		if ( $filter_stock and $P->getStockManaged() and $P->getStock() > $quantity_array[0] ) {
+			continue;
+		}
 		//   $line = table_line($key, $filter_zero);
 
-		$supplied_q = supply_quantity_ordered( $prod_id );
+		// $supplied_q = supply_quantity_ordered( $prod_id );
 
 		$line = "<tr><td><input id=\"chk" . $prod_id . "\" class=\"product_checkbox\" type=\"checkbox\"></td>";
 		$line .= "<td> " . get_product_name( $prod_id ) .
@@ -41,71 +128,130 @@ function get_total_orders( $filter_zero, $history = false ) {
 			$line .= "&history";
 		}
 
-		$line .= "\">" . $quantity . "</a></td>";
+		if ( isset( $quantity_array[0] ) ) {
+			$q = round( $quantity_array[0], 1 );
+		} else {
+			$q = 0;
+		}
+		$line .= "\">" . $q . "</a></td>";
+		if ( isset( $quantity_array[1] ) ) {
+			$line .= "<td>" . $quantity_array[1] . "</td>";
+		} else {
+			$line .= "<td></td>";
+		}
+		$quantity = isset( $quantity_array[0] ) ? $quantity_array[0] : 0;
 
-		$qin  = q_in( $prod_id );
-		$qout = q_out( $prod_id );
+		$p     = new Product( $prod_id );
+		$q_inv = $p->getStock();
 
-		$line .= "<td>" . $qin . "</td>";
+		$line .= "<td>" . $q_inv . "</td>";
 
-		$line .= "<td>" . $qout . "</td>";
+		$numeric_quantity = ceil( $quantity - $q_inv );
 
-		$numeric_quantity = ceil( $quantity - $qin + $qout );
+		$line .= gui_cell( gui_input( "qua_" . $prod_id, $numeric_quantity, "" ));
 
-		$line .= "<td>" . $numeric_quantity . "</td>";
+		if ( ImMultiSite::LocalSiteID() == 2 ) {
+			$terms = get_the_terms( $prod_id, 'product_cat' );
 
-		$supplier_name = get_supplier( $prod_id );
-		$line          .= "<td>" . $supplier_name . "</td>";
-
-		// Add margin info
-		$buy_price = get_buy_price( $prod_id );
-		$line      .= "<td>" . $buy_price . "</td>";
-
-		// TODO: sale price
-		$price = get_price( $prod_id );
-		$line  .= "<td>" . $price . "</td>";
-
-		if ( $buy_price > 0 ) {
-			if ( $price != 0 ) {
-				$buy = $numeric_quantity * $buy_price;
-				// $total_buy += $buy;
-				$sale = $numeric_quantity * $price;
-				// $total_sale += $sale;
-				// $total_buy_supplier[$supplier_id] += $buy;
-				// $total_sale_supplier[$supplier_id] += $sale;
-
-				$line .= "<td>" . $numeric_quantity * ( $price - $buy_price ) . "</td>";
-			} else {
-				$line .= "<td></td>";
+			if ( $terms ) {
+				foreach ( $terms as $term ) {
+					if ( $term->name != 'השף' ) {
+						$supplier_name = $term->name;
+						break;
+					}
+				}
 			}
 		} else {
-			$line .= "<td></td><td></td>";
+			$alternatives = alternatives( $prod_id );
+			$suppliers    = array( array( "id" => 0, "option" => "בחר" ) );
+			foreach ( $alternatives as $alter ) {
+				$option = $alter->getSupplierName() . " " . $alter->getPrice();
+				// if ($prod_id == 1002){ print $option; } // print $alter->getId() . " " . $alter->getSupplierName(); print "<br/>";}
+
+				array_push( $suppliers, array( "id" => $alter->getSupplierId(), "option" => $option ) );
+
+			}
+			// if ($prod_id == 1002) {print "XX"; var_dump($suppliers); }
+			$supplier_name = gui_select( "sup_" . $prod_id, "option", $suppliers, "onchange=selectSupplier(this)", "" );
 		}
+
+		$line .= "<td>" . $supplier_name . "</td>";
+
+		$line .= gui_cell( orders_per_item( $prod_id, 1, true, true, true ) );
+
+//		// TODO: sale price
+//		$price = get_price( $prod_id );
+//		$line  .= "<td>" . $price . "</td>";
+//
+//		// Add margin info
+//		if ( MultiSite::LocalSiteID() == 1 ) {
+//
+//			$buy_price = get_buy_price( $prod_id );
+//			$line      .= "<td>" . $buy_price . "</td>";
+//
+//
+//			if ( $buy_price > 0 ) {
+//				if ( $price != 0 ) {
+//					$buy = $numeric_quantity * $buy_price;
+//					// $total_buy += $buy;
+//					$sale = $numeric_quantity * $price;
+//					// $total_sale += $sale;
+//					// $total_buy_supplier[$supplier_id] += $buy;
+//					// $total_sale_supplier[$supplier_id] += $sale;
+//
+//					$line .= "<td>" . $numeric_quantity * ( $price - $buy_price ) . "</td>";
+//				} else {
+//					$line .= "<td></td>";
+//				}
+//			} else {
+//				$line .= "<td></td><td></td>";
+//			}
+//		}
 
 		$line .= "</tr>";
 //        prof_flag("table_line end");
 
 		//print "loop5: " .  microtime() . "<br/>";
 		if ( ! $filter_zero or ( $numeric_quantity > 0 ) ) {
-			array_push( $data_lines, array( $supplier_name, $line ) );
+			array_push( $data_lines, array( get_product_name( $prod_id ), $line ) );
 		}
 	}
 
-	$data = "<table>";
+	$data = "<style>
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+}
+
+td, th {
+    border: 1px solid #dddddd;
+    text-align: right;
+    padding: 8px;
+}
+
+tr:nth-child(even) {
+    background-color: #dddddd;
+}
+</style>";
+	$data .= "<table>";
 	$data .= "<tr>";
 	$data .= "<td>בחר</td>";
 	$data .= "<td>פריט</td>";
 	$data .= "<td>כמות נדרשת</td>";
-	$data .= "<td>כמות אספקות</td>";
-	$data .= "<td>כמות סופקה</td>";
+	$data .= "<td>יחידות נוספות</td>";
+//	$data .= "<td>כמות אספקות</td>";
+	$data .= "<td>כמות במלאי</td>";
 	$data .= "<td>כמות להזמין</td>";
 	$data .= "<td>ספק</td>";
-	$data .= "<td>מחיר קניה</td>";
-	$data .= "<td>מחיר ללקוח</td>";
-	$data .= "<td>סהכ מרווח</td>";
+	$data .= "<td>לקוחות</td>";
+//	$data .= "<td>מחיר ללקוח</td>";
+//	if ( MultiSite::LocalSiteID() == 1 ) {
+//		$data .= "<td>מחיר קניה</td>";
+//		$data .= "<td>סהכ מרווח</td>";
+//	}
 	$data .= "</tr>";
 
-	print "sort: " . date( "h:i:sa" ) . "<br/>";
+	// print "sort: " . date( "h:i:sa" ) . "<br/>";
 
 	sort( $data_lines );
 
@@ -125,8 +271,8 @@ function get_total_orders( $filter_zero, $history = false ) {
 
 	$data .= "</table>";
 
-	print "print: " . date( "h:i:sa" ) . "<br/>";
-
+//	print "print: " . date( "h:i:sa" ) . "<br/>";
+//
 	print "$data";
 
 //    prof_print();
@@ -152,9 +298,9 @@ function basket_ordered( $basket_id ) {
 	       . " and woi.order_item_id = woim1.order_item_id and woim1.`meta_key` = '_product_id'"
 	       . " group by woi.order_item_name order by 1 ";
 //     print $sql;
-	$export = mysql_query( $sql ) or die ( $sql . " Sql error : " . mysql_error() );
+	$result = sql_query( $sql );
 
-	if ( $row = mysql_fetch_row( $export ) ) {
+	if ( $row = mysqli_fetch_row( $result ) ) {
 		$val = $row[0];
 	} else {
 		$val = 0;
@@ -181,8 +327,8 @@ function table_line( $prod_id, $prod_quantity, $filter_zero, $history = false ) 
 //    prof_flag("start table_line");
 
 	// Check in which baskets we have this product
-	$sql = 'SELECT basket_id, quantity FROM im_baskets WHERE product_id = ' . $prod_id;
-	$export = mysql_query( $sql ) or die ( $sql . "Sql error : " . mysql_error() );
+	$sql              = 'SELECT basket_id, quantity FROM im_baskets WHERE product_id = ' . $prod_id;
+	$result           = sql_query( $sql );
 	$quantity         = $prod_quantity;
 	$numeric_quantity = $prod_quantity;
 	$prod_name        = get_product_name( $prod_id );
@@ -191,7 +337,7 @@ function table_line( $prod_id, $prod_quantity, $filter_zero, $history = false ) 
 
 //    prof_flag("table_line export");
 
-	while ( $row = mysql_fetch_row( $export ) ) {
+	while ( $row = mysqli_fetch_row( $result ) ) {
 		$basket_id          = $row[0];
 		$quantity_in_basket = $row[1];
 //        prof_flag("b" . $basket_id);
@@ -285,9 +431,9 @@ function q_in( $prod_id ) {
 		print $sql . " " . mysqli_error( $conn ) . "<br/>";
 	}
 
-	$row = $result->fetch_assoc();
+	$row = mysqli_fetch_row( $result );
 
-	return round( $row["q_in"], 1 );
+	return round( $row[0], 1 );
 }
 
 function q_out( $prod_id ) {
@@ -301,9 +447,9 @@ function q_out( $prod_id ) {
 		print $sql . " " . mysqli_error( $conn ) . "<br/>";
 	}
 
-	$row = $result->fetch_assoc();
+	$row = mysqli_fetch_row( $result );
 
-	return round( $row["q_out"], 1 );
+	return round( $row[0], 1 );
 }
 
 //function delta_time($str, $zero = false)

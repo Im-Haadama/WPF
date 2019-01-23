@@ -6,19 +6,15 @@
  * Time: 20:54
  */
 
-require_once "../tools.php";
+require_once "../r-shop_manager.php";
 require_once( "../gui/inputs.php" );
 $user_id = $_GET["user_id"];
 
+print header_text( false, true );
 ?>
     <header>
+        <script type="text/javascript" src="/agla/client_tools.js"></script>
         <script>
-			<?php
-			$filename = __DIR__ . "/../client_tools.js";
-			$handle = fopen( $filename, "r" );
-			$contents = fread( $handle, filesize( $filename ) );
-			print $contents;
-			?>
 
             function send_order() {
                 var collection = document.getElementsByClassName("prod_checkbox");
@@ -109,4 +105,4 @@ print gui_textarea( "comments", "הערות", "", 5, 80 );
 print "<br/>";
 print gui_button( "order", "send_order()", "הזמן" );
 
-print gui_lable( "result", "" );
+print gui_label( "result", "" );

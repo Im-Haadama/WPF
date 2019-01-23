@@ -6,7 +6,7 @@
  * Time: 04:27
  */
 
-if ( ! isset( $_GET["client_id"] ) ) {
+if ( isset( $_GET["client_id"] ) ) {
 	$client_id = $_GET["client_id"];
 } else {
 	print "קישור לא נכון";

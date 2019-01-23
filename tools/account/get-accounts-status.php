@@ -1,6 +1,9 @@
-<?php require_once( '../tools_wp_login.php' );
+<?php
+//error_reporting( E_ALL );
+//ini_set( 'display_errors', 1 );
+
+require( '../r-shop_manager.php' );
 print header_text( false );
-require_once( "../gui/inputs.php" );
 require_once( "account.php" );
 ?>
 <html dir="rtl" lang="he">
@@ -49,11 +52,7 @@ require_once( "account.php" );
 <body>
 <?php
 
-if ( $_GET["zero"] === null ) {
-	$include_zero = false;
-} else {
-	$include_zero = true;
-}
+$include_zero = isset( $_GET["zero"] );
 
 /**
  * Created by PhpStorm.
@@ -64,28 +63,36 @@ if ( $_GET["zero"] === null ) {
 
 //require_once("../header.php");
 
-$sql = 'select round(sum(ia.transaction_amount),2), ia.client_id, wu.display_name'
+$sql = 'select round(sum(ia.transaction_amount),2), ia.client_id, wu.display_name, client_payment_method(ia.client_id), max(date) '
        . ' from im_client_accounts ia'
        . ' join wp_users wu'
        . ' where wu.id=ia.client_id'
-       . ' group by client_id';
+       . ' group by client_id '
+       . ' order by 4,5';
 
+//print $sql;
 
-$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
+$result = mysqli_query( $conn, $sql );
 
-$fields = mysql_num_fields( $export );
-
+if ( ! $result ) {
+	print sql_error( $sql );
+	die( 1 );
+}
 $data = "<table>";
 $data .= "<tr>";
 $data .= gui_cell( "בחר" );
 
 $data .= "<td>לקוח</td>";
 $data .= "<td>יתרה לתשלום</td>";
+$data .= "<td>הזמנה אחרונה</td>";
 $data .= "</tr>";
 
-$data_lines = array();
+print "<a href=\"get-accounts-status.php?zero\">הצג גם חשבונות מאופסים</a>";
 
-while ( $row = mysql_fetch_row( $export ) ) {
+$data_lines         = array();
+$data_lines_credits = array();
+
+while ( $row = mysqli_fetch_row( $result ) ) {
 	// $line = '';
 	$customer_total = $row[0];
 	$customer_id    = $row[1];
@@ -94,14 +101,21 @@ while ( $row = mysql_fetch_row( $export ) ) {
 	$line = gui_cell( gui_checkbox( "chk_" . $customer_id, "user_chk" ) );
 	$line .= "<td><a href = \"get-customer-account.php?customer_id=" . $customer_id . "\">" . $customer_name . "</a></td>";
 
-	$line .= "<td>" . $customer_total . "</td>";
-	$line .= "<td>" . get_payment_method_name( $customer_id ) . "</td>";
-	if ( $include_zero || $customer_total <> 0 ) {
-		array_push( $data_lines, array( - $customer_total, $line ) );
+	$line           .= "<td>" . $customer_total . "</td>";
+	$payment_method = get_payment_method( $customer_id );
+	$line           .= "<td>" . $row[4] . "</td>";
+	$line           .= "<td>" . get_payment_method_name( $customer_id ) . "</td>";
+	if ( $include_zero || $customer_total > 0 ) {
+		//array_push( $data_lines, array( - $customer_total, $line ) );
+		array_push( $data_lines, array( $payment_method, $line ) );
+	} else if ( $customer_total < 0 ) {
+		//array_push( $data_lines, array( - $customer_total, $line ) );
+		array_push( $data_lines_credits, array( $customer_name, $line ) );
 	}
+
 }
 
-sort( $data_lines );
+// sort( $data_lines );
 
 for ( $i = 0; $i < count( $data_lines ); $i ++ ) {
 	$line = $data_lines[ $i ][1];
@@ -110,13 +124,8 @@ for ( $i = 0; $i < count( $data_lines ); $i ++ ) {
 
 $data = str_replace( "\r", "", $data );
 
-if ( $data == "" ) {
-	$data = "\n(0) Records Found!\n";
-}
+print "<center><h1>יתרת לקוחות לתשלום</h1></center>";
 
-print "<center><h1>יתרת לקוחות</h1></center>";
-
-print "<a href=\"get-accounts-status.php?zero\">הצג גם חשבונות מאופסים</a>";
 
 $data .= "</table>";
 

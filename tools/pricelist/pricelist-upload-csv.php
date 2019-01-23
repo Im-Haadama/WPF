@@ -1,5 +1,5 @@
 <?php
-require_once( '../tools.php' );
+require_once( '../r-shop_manager.php' );
 ?>
 
 <!DOCTYPE html>

@@ -1,5 +1,5 @@
 <?php
-require '../tools_wp_login.php';
+require '../r-shop_manager.php';
 
 $order_id         = $_GET["delivery_id"];
 $total            = $_GET["total"];
