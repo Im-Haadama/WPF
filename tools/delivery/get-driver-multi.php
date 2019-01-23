@@ -263,21 +263,22 @@ foreach ( $data_lines as $mission_id => $data_line ) {
 
 			try {
 				$o    = new Order( $order_id );
-				if (strlen($o->Missing()))
-				$data .= gui_row( array(
-					"חוסרים",
-					$order_id,
-					$o->CustomerName(),
-					"נא לסמן מה הושלם:",
-					$o->Missing(),
-					"",
-					"",
-					"",
-					"",
-					"",
-					"",
-					""
-				) );
+				if ( strlen( $o->Missing() ) ) {
+					$data .= gui_row( array(
+						"חוסרים",
+						$order_id,
+						$o->CustomerName(),
+						"נא לסמן מה הושלם:",
+						$o->Missing(),
+						"",
+						"",
+						"",
+						"",
+						"",
+						"",
+						""
+					) );
+				}
 			} catch ( Exception $e ) {
 				// probably from different site
 			}

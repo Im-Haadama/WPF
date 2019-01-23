@@ -21,8 +21,8 @@ if ( isset( $_GET["edit"] ) ) {
 	$edit = true;
 }
 
-$del_ids = get_param_array("del_id");
-foreach ($del_ids as $del_id){
+$del_ids = get_param_array( "del_id" );
+foreach ( $del_ids as $del_id ) {
 	$delivery = new delivery( $del_id );
 	print "info: " . $info_email;
 	print "track: " . $track_email;

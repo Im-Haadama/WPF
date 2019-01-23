@@ -71,7 +71,7 @@ if ( isset( $_GET["week"] ) ) {
 
             document.getElementById("supplies_list").style.display = 'none';
             document.getElementById("actions").style.display = 'none';
-            document.getElementById("btn_new").style.visibility='hidden';
+            document.getElementById("btn_new").style.visibility = 'hidden';
 
             add_line();
             document.getElementById("supplier_select").focus();
@@ -316,11 +316,11 @@ if ( isset( $_GET["week"] ) ) {
 <br/>
 
 <div id="actions">
-    <button id="btn_save" onclick="savePrices()">שמור עדכונים</button>
-    <button id="btn_delete" onclick="delSupplies()">מחק פריטים</button>
-    <!--<button id="btn_close" onclick="deleteItems()">בטל</button>-->
-    <button id="btn_merge" onclick="mergeItems()">מזג פריטים</button>
-    <button id="btn_send" onclick="sendItems()">שלח הזמנה</button>
+	<button id="btn_save" onclick="savePrices()">שמור עדכונים</button>
+	<button id="btn_delete" onclick="delSupplies()">מחק פריטים</button>
+	<!--<button id="btn_close" onclick="deleteItems()">בטל</button>-->
+	<button id="btn_merge" onclick="mergeItems()">מזג פריטים</button>
+	<button id="btn_send" onclick="sendItems()">שלח הזמנה</button>
 </div>
 <div id="logging" rows="6" cols="50"></div>
 

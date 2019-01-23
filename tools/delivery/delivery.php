@@ -94,13 +94,14 @@ class ImDocumentType {
 		supply = 5; // Supplier
 }
 
-function get_document_type_name($type)
-{
-	$names = array("", "הזמנה",  "תעודת משלוח", "זיכוי", "חשבונית");
+function get_document_type_name( $type ) {
+	$names = array( "", "הזמנה", "תעודת משלוח", "זיכוי", "חשבונית" );
 
-	if (isset($type) and isset($names[$type]))
-		return $names[$type];
-	return "not set" . isset($type) ? $type : "null";
+	if ( isset( $type ) and isset( $names[ $type ] ) ) {
+		return $names[ $type ];
+	}
+
+	return "not set" . isset( $type ) ? $type : "null";
 }
 
 class ImDocumentOperation {
@@ -191,8 +192,10 @@ class delivery {
 		return $delivery_id;
 	}
 
-	public static function CreateDeliveryHeader( $order_id, $total, $vat, $lines, $edit, $fee, $delivery_id = null,
-		$_draft = false, $reason = null ) {
+	public static function CreateDeliveryHeader(
+		$order_id, $total, $vat, $lines, $edit, $fee, $delivery_id = null,
+		$_draft = false, $reason = null
+	) {
 		global $conn;
 
 		$draft = $_draft ? 1 : 0;
@@ -344,7 +347,7 @@ class delivery {
 			$subject = "משלוח מספר " . $this->ID . " - תיקון";
 		}
 		send_mail( $subject, $to, $message );
-		 print "mail sent to " . $to . "<br/>";
+		print "mail sent to " . $to . "<br/>";
 	}
 
 	public function OrderId() {
@@ -910,8 +913,7 @@ class delivery {
 		}
 	}
 
-	public function draftReason()
-	{
+	public function draftReason() {
 		if ( $this->ID ) {
 			return sql_query_single_scalar( "select draft_reason from im_delivery where ID = " . $this->ID );
 		} else {

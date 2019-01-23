@@ -86,9 +86,9 @@ function order_info_box( $order_id, $edit_order = false, $operation = null ) {
 
 	$d_id = get_delivery_id( $order_id );
 	if ( $d_id > 0 ) {
-		$d = new delivery($d_id);
+		$d          = new delivery( $d_id );
 		$draft_text = "";
-		if ($d->isDraft()){
+		if ( $d->isDraft() ) {
 			$draft_text = " טיוטא " . $d->draftReason();
 		}
 
@@ -897,7 +897,7 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 
 			$customer_id = order_get_customer_id( $order_id );
 
-			$line                              = $empty_line;
+			$line            = $empty_line;
 			$invoice_user_id = get_user_meta( $customer_id, 'invoice_id', 1 );
 
 			if ( $invoice_user_id ) {

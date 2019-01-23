@@ -79,7 +79,7 @@ switch ( $operation ) {
 		$customer_id = $_GET["customer_id"];
 		$invoice     = new Invoice4u( $invoice_user, $invoice_password );
 
-	 print "client name " . $client_name . "<br/>";
+		print "client name " . $client_name . "<br/>";
 		$client_name = get_customer_name( $customer_id );
 		$client      = $invoice->GetCustomerByName( $client_name );
 		print $client->ID;

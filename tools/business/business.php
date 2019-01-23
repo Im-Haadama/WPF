@@ -8,8 +8,10 @@
 
 require_once( TOOLS_DIR . "/im_tools.php" );
 
-function business_add_transaction( $part_id, $date, $amount, $delivery_fee, $ref, $project, $net_total = 0,
-	$document_type = ImDocumentType::delivery) {
+function business_add_transaction(
+	$part_id, $date, $amount, $delivery_fee, $ref, $project, $net_total = 0,
+	$document_type = ImDocumentType::delivery
+) {
 	global $conn;
 	// print $date . "<br/>";
 	$sunday = sunday( $date );
@@ -17,7 +19,7 @@ function business_add_transaction( $part_id, $date, $amount, $delivery_fee, $ref
 	$sql = "INSERT INTO im_business_info(part_id, date, week, amount, delivery_fee, ref, project_id, net_total, document_type) "
 	       . "VALUES (" . $part_id . ", \"" . $date . "\", " .
 	       "\"" . $sunday->format( "Y-m-d" ) .
-	       "\", " . ( $amount - $delivery_fee ) . ", " . $delivery_fee . ", '" . $ref . "', '" . $project . "', ".
+	       "\", " . ( $amount - $delivery_fee ) . ", " . $delivery_fee . ", '" . $ref . "', '" . $project . "', " .
 	       $net_total . ", " . $document_type . " )";
 
 	my_log( $sql, __FILE__ );

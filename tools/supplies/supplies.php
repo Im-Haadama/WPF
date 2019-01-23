@@ -463,7 +463,7 @@ function print_supplies_table( $ids, $internal ) {
 //    print "</html>";
 }
 
-function got_supply( $supply_id, $supply_total, $supply_number, $net_total, $document_type  ) {
+function got_supply( $supply_id, $supply_total, $supply_number, $net_total, $document_type ) {
 	global $conn;
 
 	$id  = business_add_transaction( supply_get_supplier_id( $supply_id ), date( 'y-m-d' ), - $supply_total,
@@ -792,21 +792,21 @@ function display_status( $status ) {
 }
 
 function supplier_report_data( $supplier_id, $start_date, $end_date ) {
-	$sql = "select prod_id, sum(quantity), get_product_name(prod_id) from im_delivery_lines dl\n"
+	$sql = "SELECT prod_id, sum(quantity), get_product_name(prod_id) FROM im_delivery_lines dl\n"
 
-	       . "join im_delivery d\n"
+	       . "JOIN im_delivery d\n"
 
-	       . "where date > '" . $start_date . "'\n"
+	       . "WHERE date > '" . $start_date . "'\n"
 
-	       . "and date <= '" . $end_date . "'\n"
+	       . "AND date <= '" . $end_date . "'\n"
 
-	       . "and dl.delivery_id = d.id\n"
+	       . "AND dl.delivery_id = d.id\n"
 
-	       . "and prod_id in (select product_id from im_supplier_mapping where supplier_id = " . $supplier_id . ")\n"
+	       . "AND prod_id IN (SELECT product_id FROM im_supplier_mapping WHERE supplier_id = " . $supplier_id . ")\n"
 
-	       . "group by 1\n"
+	       . "GROUP BY 1\n"
 
-	       . "order by 2 DESC";
+	       . "ORDER BY 2 DESC";
 
 
 // print $sql;

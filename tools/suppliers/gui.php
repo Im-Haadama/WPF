@@ -35,7 +35,7 @@ function print_select_supplier( $id, $source ) {
 	print "</select>";
 }
 
-function gui_select_supplier($id = "supplier_select", $value = null, $events = null) {
+function gui_select_supplier( $id = "supplier_select", $value = null, $events = null ) {
 
 	return gui_select_table( $id, "im_suppliers", $value, $events, "", "supplier_name",
 		null, true, false, "supplier_name" );

@@ -33,7 +33,7 @@ class Invoice4u {
 	public function __construct( $user, $password ) {
 		$this->user     = $user;
 		$this->password = $password;
-		$this->Login( );
+		$this->Login();
 	}
 
 	// public $doc;
@@ -160,11 +160,11 @@ class Invoice4u {
 
 		$client_email = get_customer_email( $customer_id );
 		// print $client_email;
-		my_log("performance - seaching customer by email", __METHOD__);
+		my_log( "performance - seaching customer by email", __METHOD__ );
 		$client = $this->GetCustomerByEmail( $client_email );
 
 		if ( ! $client ) {
-			my_log("performance - seaching customer by name", __METHOD__);
+			my_log( "performance - seaching customer by name", __METHOD__ );
 			$client = $this->GetCustomerByName( get_customer_name( $customer_id ) );
 		}
 
@@ -255,7 +255,7 @@ class Invoice4u {
 			// print $this->result->Errors;
 			my_log( __METHOD__, $this->result->Errors );
 		}
-        // var_dump($this->result);
+		// var_dump($this->result);
 	}
 }
 

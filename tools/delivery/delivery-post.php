@@ -37,7 +37,7 @@ switch ( $operation ) {
 		if ( $edit ) {
 			$delivery_id = $_GET["delivery_id"];
 		}
-		$reason = get_param("reason");
+		$reason = get_param( "reason" );
 		print delivery::CreateDeliveryHeader( $order_id, $total, $vat, $lines, $edit, $fee, $delivery_id, $draft, $reason );
 		// create_delivery_header( $order_id, $total, $vat, $lines, $edit, $fee );
 		break;

@@ -120,18 +120,17 @@ print gui_datalist( "items", "im_products", "post_title" );
             // Get the <span> element that closes the modal
             var span = document.getElementsByClassName("close")[0];
 
-            var btn= document.getElementById("save_draft_modal");
-            btn.onclick = function()
-            {
+            var btn = document.getElementById("save_draft_modal");
+            btn.onclick = function () {
                 execute_url("delivery-post.php?operation=check_delivery&order_id=" + <?php print $order_id; ?>, doAddDraft);
             }
             // When the user clicks on <span> (x), close the modal
-            span.onclick = function() {
+            span.onclick = function () {
                 modal.style.display = "none";
             }
 
             // When the user clicks anywhere outside of the modal, close it
-            window.onclick = function(event) {
+            window.onclick = function (event) {
                 if (event.target == modal) {
                     modal.style.display = "none";
                 }
@@ -514,42 +513,42 @@ print gui_datalist( "items", "im_products", "post_title" );
     }
 </script>
 <style>
-.modal {
-display: none; /* Hidden by default */
-position: fixed; /* Stay in place */
-z-index: 1; /* Sit on top */
-left: 0;
-top: 0;
-width: 100%; /* Full width */
-height: 100%; /* Full height */
-overflow: auto; /* Enable scroll if needed */
-background-color: rgb(0,0,0); /* Fallback color */
-background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-}
+    .modal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0, 0, 0); /* Fallback color */
+        background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+    }
 
-/* Modal Content/Box */
-.modal-content {
-background-color: #fefefe;
-margin: 15% auto; /* 15% from the top and centered */
-padding: 20px;
-border: 1px solid #888;
-width: 80%; /* Could be more or less, depending on screen size */
-}
+    /* Modal Content/Box */
+    .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto; /* 15% from the top and centered */
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%; /* Could be more or less, depending on screen size */
+    }
 
-/* The Close Button */
-.close {
-color: #aaa;
-float: right;
-font-size: 28px;
-font-weight: bold;
-}
+    /* The Close Button */
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
 
-.close:hover,
-.close:focus {
-color: black;
-text-decoration: none;
-cursor: pointer;
-}
+    .close:hover,
+    .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
 </style>
 
 <!-- Trigger/Open The Modal -->
@@ -562,26 +561,26 @@ cursor: pointer;
     <div class="modal-content">
         <span class="close">&times;</span>
         <p>יש לבחור את הסיבה לשמירת טיוטא.</p>
-        <?php
-        $select_options = array();
-        $option = array();
-        $option["id"] = 1;
-        $option["reason"] = "אריזה חלקית";
-        array_push($select_options, $option);
+	    <?php
+	    $select_options   = array();
+	    $option           = array();
+	    $option["id"]     = 1;
+	    $option["reason"] = "אריזה חלקית";
+	    array_push( $select_options, $option );
 
-        $option["id"]++;
-        $option["reason"] = "התווספו פריטים ולא ידוע המחיר";
-        array_push($select_options, $option);
+	    $option["id"] ++;
+	    $option["reason"] = "התווספו פריטים ולא ידוע המחיר";
+	    array_push( $select_options, $option );
 
-        $option["id"]++;
-        $option["reason"] = "לא ידוע מחיר המשלוח";
-        array_push($select_options, $option);
+	    $option["id"] ++;
+	    $option["reason"] = "לא ידוע מחיר המשלוח";
+	    array_push( $select_options, $option );
 
-        print gui_select("draft_reason", "reason",
-            $select_options, "", "" );
+	    print gui_select( "draft_reason", "reason",
+		    $select_options, "", "" );
 
-        print gui_button("save_draft_modal", "", "בצע");
-        ?>
+	    print gui_button( "save_draft_modal", "", "בצע" );
+	    ?>
 
     </div>
 
@@ -598,17 +597,17 @@ cursor: pointer;
 
     // When the user clicks on the button, open the modal
     if (btn) // Exists only on draft
-        btn.onclick = function() {
+        btn.onclick = function () {
             modal.style.display = "block";
         }
 
     // When the user clicks on <span> (x), close the modal
-    span.onclick = function() {
+    span.onclick = function () {
         modal.style.display = "none";
     }
 
     // When the user clicks anywhere outside of the modal, close it
-    window.onclick = function(event) {
+    window.onclick = function (event) {
         if (event.target == modal) {
             modal.style.display = "none";
         }
