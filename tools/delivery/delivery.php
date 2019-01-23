@@ -94,16 +94,6 @@ class ImDocumentType {
 		supply = 5; // Supplier
 }
 
-function get_document_type_name( $type ) {
-	$names = array( "", "הזמנה", "תעודת משלוח", "זיכוי", "חשבונית" );
-
-	if ( isset( $type ) and isset( $names[ $type ] ) ) {
-		return $names[ $type ];
-	}
-
-	return "not set" . isset( $type ) ? $type : "null";
-}
-
 class ImDocumentOperation {
 	const
 		collect = 0, // From order to delivery, before collection

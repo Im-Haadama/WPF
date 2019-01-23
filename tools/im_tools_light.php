@@ -551,4 +551,28 @@ function valid_key( $key ) {
 	return ( $valid == 1 ? 1 : 0 );
 }
 
+function get_project_name( $project_id ) {
+	global $conn;
+
+	$sql = "SELECT project_name FROM im_projects WHERE id = " . $project_id;
+
+	$result = mysqli_query( $conn, $sql );
+	if ( $result ) {
+		$row = mysqli_fetch_assoc( $result );
+
+		return $row["project_name"];
+	}
+	print "unknown project";
+}
+
+function get_document_type_name( $type ) {
+	$names = array( "", "הזמנה", "תעודת משלוח", "זיכוי", "חשבונית" );
+
+	if ( isset( $type ) and isset( $names[ $type ] ) ) {
+		return $names[ $type ];
+	}
+
+	return "not set" . isset( $type ) ? $type : "null";
+}
+
 ?>

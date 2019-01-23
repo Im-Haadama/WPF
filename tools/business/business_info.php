@@ -6,6 +6,10 @@
  * Time: 17:31
  */
 
+if ( ! defined( "ROOT_DIR" ) ) {
+	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
+}
+
 function business_supply_info( $bid ) {
 	global $conn;
 
