@@ -422,7 +422,7 @@ class delivery {
 
 		$data = "";
 
-//		$client_id   = $this->GetCustomerID();
+		$client_id = $this->GetCustomerID();
 //		print "cid=" . $client_id . "<br/>";
 //		$client_type = customer_type( $client_id );
 //		 print $client_type . "XX<br/>";
@@ -495,7 +495,7 @@ class delivery {
 					$quantity_ordered = get_order_itemmeta( $order_item_ids, '_qty' ); //, $client_type, $operation, $data );
 
 					$this->expand_basket( $prod_id, $quantity_ordered, 0, $show_fields, $document_type,
-						$order_item_ids, 0, $operation, $data );
+						$order_item_ids, customer_type( $client_id ), $operation, $data );
 				}
 			}
 
@@ -569,6 +569,14 @@ class delivery {
 		$data .= "מספר שורות  " . $this->line_number . "<br/>";
 
 		return "$data";
+	}
+
+	private function GetCustomerID() {
+		if ( is_array( $this->d_OrderID ) ) {
+			return order_get_customer_id( $this->d_OrderID[0] );
+		}
+
+		return order_get_customer_id( $this->d_OrderID );
 	}
 
 	public function delivery_line( $show_fields, $document_type, $line_ids, $client_type, $operation, $margin = false, $style = null, $var_id = 0 ) {
@@ -826,7 +834,7 @@ class delivery {
 				}
 
 				$line[ DeliveryFields::product_name ] = "===> " . get_product_name( $prod_id );
-				$line[ DeliveryFields::price ]        = get_price( $prod_id, $client_type );
+				$line[ DeliveryFields::price ]        = get_price_by_type( $prod_id, $client_type );
 				$has_vat                              = true;
 
 //				if ($P-> == 149) var_dump($P);
@@ -972,21 +980,6 @@ class delivery {
 		return sql_query_single_scalar( $sql );
 	}
 
-	public function getPrintDeliveryOption() {
-		$user_id = $this->getUserId();
-
-		$option = get_user_meta( $user_id, "print_delivery_note" );
-
-		// Mail
-		// Print
-		if ( $option == null ) {
-			// Setting the default - Send mail, and Print
-			$option = 'MP';
-		}
-
-		return $option;
-	}
-
 
 //	public function delivery_line_group($show_fields, $document_type, $line_ids, $client_type, $operation, $margin = false, $style = null)
 //	{
@@ -1004,6 +997,21 @@ class delivery {
 	// If Document is delivery, line_id is delivery line id.
 	// If Document is order, line_id is order line id.
 
+	public function getPrintDeliveryOption() {
+		$user_id = $this->getUserId();
+
+		$option = get_user_meta( $user_id, "print_delivery_note" );
+
+		// Mail
+		// Print
+		if ( $option == null ) {
+			// Setting the default - Send mail, and Print
+			$option = 'MP';
+		}
+
+		return $option;
+	}
+
 	/**
 	 * @return int
 	 */
@@ -1015,13 +1023,13 @@ class delivery {
 		return $this->user_id;
 	}
 
-	function PrintDeliveries( $document_type, $operation, $margin = false ) {
-		print $this->delivery_text( $document_type, $operation, $margin );
-	}
-
 	// function expand_basket( $basket_id, $client_type, $quantity_ordered, &$data, $level ) {
 	// Called when creating a delivery from an order.
 	// After the basket line is shown, we print here the basket lines and basket discount line.
+
+	function PrintDeliveries( $document_type, $operation, $margin = false ) {
+		print $this->delivery_text( $document_type, $operation, $margin );
+	}
 
 	public function DeliveryFee() {
 		$sql = 'SELECT fee FROM im_delivery WHERE id = ' . $this->ID;
@@ -1030,13 +1038,5 @@ class delivery {
 		// my_log($sql);
 
 		return sql_query_single_scalar( $sql);
-	}
-
-	private function GetCustomerID() {
-		if ( is_array( $this->d_OrderID ) ) {
-			return order_get_customer_id( $this->d_OrderID[0] );
-		}
-
-		return order_get_customer_id( $this->d_OrderID );
 	}
 }
