@@ -246,5 +246,40 @@ function login_id() {
 	return $user->ID;
 }
 
+function get_current_user_name() {
+	return get_customer_name( wp_get_current_user()->ID );
+}
+
+function get_user_id() {
+	$current_user = wp_get_current_user();
+
+	return $current_user->ID;
+}
+
+function get_customer_name( $customer_id ) {
+	static $min_supplier = 0;
+	if ( ! $min_supplier ) {
+		$min_supplier = sql_query_single_scalar( "SELECT min(id) FROM im_suppliers" );
+	}
+
+	if ( $customer_id < $min_supplier ) {
+		$user = get_user_by( "id", $customer_id );
+
+		if ( $user ) {
+			return $user->user_firstname . " " . $user->user_lastname;
+		}
+
+		return "לא נבחר לקוח";
+	}
+
+	return get_supplier_name( $customer_id );
+
+}
+
+function get_customer_email( $customer_id ) {
+	$user = get_user_by( "id", $customer_id );
+
+	return $user->user_email;
+}
 
 ?>

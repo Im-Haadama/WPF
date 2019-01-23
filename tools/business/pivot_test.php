@@ -18,7 +18,15 @@ require_once( ROOT_DIR . '/niver/PivotTable.php' );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( ROOT_DIR . '/tools/im_tools_light.php' );
 
-$t = new \Niver\PivotTable( "im_business_info", "EXTRACT(YEAR FROM DATE) = " . 2019 . " and document_type = 4",
-	"client_displayname(part_id)", "EXTRACT(MONTH FROM DATE)", "net_total" );
+$year = get_param( "year" );
+if ( ! $year ) {
+	$year = date( "Y" );
+}
+// $month = get_param("monty");
+
+print gui_hyperlink( "שנה קודמת", "pivot_test.php?year=" . ( $year - 1 ) );
+
+$t = new \Niver\PivotTable( "im_business_info", "EXTRACT(YEAR FROM DATE) = " . $year . " and document_type = 4",
+	"EXTRACT(MONTH FROM DATE)", "client_displayname(part_id)", "net_amount" );
 
 print gui_table( $t->Create() );
