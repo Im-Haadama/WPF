@@ -71,11 +71,23 @@ class MultiSite {
 		return $data;
 	}
 
+	public function getSiteToolsURL( $site_id ) {
+		if ( isset( $this->sites_array[ $site_id ] ) ) {
+			return $this->sites_array[ $site_id ][ FieldIdx::site_tools_idx ];
+		} else {
+			print "site ";
+			var_dump( $site_id );
+			print " not defined!";
+
+			return null;
+		}
+	}
+
 	public function getSiteName( $site_id ) {
 		return $this->sites_array[ $site_id ][ FieldIdx::site_name_idx ];
 	}
 
-	function Execute( $request, $site ) {
+	function Execute( $request, $site, $debug = false ) {
 		$remote_request = $this->getSiteToolsURL( $site ) . '/' . $request;
 
 //		 print $remote_request . "<br/>";
@@ -83,7 +95,6 @@ class MultiSite {
 			print "remote tools not set.<br/>";
 			die ( 2 );
 		}
-		// print $remote_request;
 
 		if ( strstr( $remote_request, "?" ) ) {
 			$glue = "&";
@@ -102,23 +113,15 @@ class MultiSite {
 		}
 		//  print "Execute remote: " . $remote_request . "<br/>";
 		// print "XX" . $remote_request . "XX<br/>";
+
+		if ( $debug ) {
+			print "request = " . $remote_request . "<br/>";
+		}
 		$html = im_file_get_html( $remote_request );
 
 		// print $html;
 
 		return $html;
-	}
-
-	public function getSiteToolsURL( $site_id ) {
-		if ( isset( $this->sites_array[ $site_id ] ) ) {
-			return $this->sites_array[ $site_id ][ FieldIdx::site_tools_idx ];
-		} else {
-			print "site ";
-			var_dump( $site_id );
-			print " not defined!";
-
-			return null;
-		}
 	}
 
 	public function getApiKey( $site_id ) {

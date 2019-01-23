@@ -144,10 +144,15 @@ class ImMultiSite extends MultiSite {
 		return $result;
 	}
 
-	static function sExecute( $request, $site ) {
+	static function sExecute( $request, $site, $debug = false ) {
 		$i = self::getInstance();
 		//	var_dump ($i);
-		$i->Execute( $request, $site );
+		$r = $i->Execute( $request, $site, $debug );
+		if ( $debug ) {
+			print "<br/>Result: " . $r;
+		}
+
+		return $r;
 	}
 
 	static function SiteName() {

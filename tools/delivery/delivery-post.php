@@ -23,6 +23,8 @@ require_once( ROOT_DIR . '/tools/business/business_info.php' );
 // and product_id. The triplet: product_id, supplier_id and product_code are sent as saved
 // in im_supplier_products
 
+$debug = get_param( "debug" );
+
 $operation = $_GET["operation"];
 switch ( $operation ) {
 	case "add_header":
@@ -102,14 +104,23 @@ switch ( $operation ) {
 //		          "&id=" + id + "&operation=delivered";
 
 	case "delivered":
-//		print "start";
+		if ( $debug ) {
+			print "start<br/>";
+		}
 		$site_id = get_param( "site_id" );
 		$type    = get_param( "type" );
 		$id      = get_param( "id" );
 		if ( $site_id != ImMultiSite::LocalSiteID() ) {
-//			print "remote";
-			print ImMultiSite::sExecute( "delivery/delivery-post.php?site_id=" . $site_id .
-			                             "&type=" . $type . "&id=" . $id . "&operation=delivered", $site_id );
+			if ( $debug ) {
+				print "remote.. ";
+			}
+			$request = "delivery/delivery-post.php?site_id=" . $site_id .
+			           "&type=" . $type . "&id=" . $id . "&operation=delivered";
+			if ( $debug ) {
+				$request .= "&debug=1";
+				print $request;
+			}
+			print ImMultiSite::sExecute( $request, $site_id, $debug );
 
 			return;
 		}
