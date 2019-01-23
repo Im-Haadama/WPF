@@ -81,17 +81,6 @@ function read_inbox( $host, $user, $pass ) {
 		$l = substr( $sender, 0, 4 );
 		// print "\n" . $l . " " . $subject . "\n";
 
-		// TEMP
-		if ( $sender == "yaakov.aglamaz@gmail.com" ) {
-			if ( strstr( $subject, "הזמנה" ) ) {
-				print "result = " . handle_supply( $subject, $inbox, "sadot", $date, $i );
-				die( 1 );
-				break;
-			}
-		}
-		// TEMP
-		continue;
-
 		switch ( strtolower( $sender ) ) {
 			case "yab02@orange.net.il": // Amir ben yehuda
 				if ( strstr( $subject, "רשימה" ) ) {
