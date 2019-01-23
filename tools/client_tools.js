@@ -7,6 +7,20 @@ function changed(field) {
     document.getElementById("chk_" + subject).checked = true;
 }
 
+// TODO:
+// function check_input(element)
+// {
+//     return false;
+// }
+//
+// function check_inputs(elements)
+// {
+//     elements.forEach(function(element) {
+//         if (!check_input(element)) return false;
+//     });
+//     return true;
+// }
+
 function get_value(element) {
     if (element === null) {
         return 0;

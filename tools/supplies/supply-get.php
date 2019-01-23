@@ -202,6 +202,8 @@ print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_missio
                                     supply_document.innerHTML = arrival_info;
                                     supply_arrived.hidden = true;
                                     supply_document.hidden = false;
+                                    supply_document.hidden = false;
+                                    add_items.hidden = true;
                                 } else {
                                     supply_arrived.hidden = false;
                                     supply_document.hidden = true;
@@ -294,6 +296,7 @@ print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_missio
         var supply_total = get_value(document.getElementById("supply_total"));
         var net_total = get_value(document.getElementById("net_total"));
         var is_invoice = get_value(document.getElementById("is_invoice"));
+
 
         var request_url = "supplies-post.php?operation=got_supply&supply_id=<?php print $id; ?>" +
             "&supply_total=" + supply_total + "&supply_number=" + supply_number +
