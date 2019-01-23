@@ -965,8 +965,10 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 			}
 			$line[ OrderFields::city ]         = get_order_info( $order_id, '_shipping_city' );
 			$line[ OrderFields::payment_type ] = get_payment_method_name( $customer_id );
-			$line[ OrderFields::good_costs ]   = $order->GetBuyTotal();
-			$line[ OrderFields::margin ]       = round( ( $line[ OrderFields::total_order ] - $line[ OrderFields::good_costs ] ), 0 );
+			if ( current_user_can( "show_business_info" ) ) {
+				$line[ OrderFields::good_costs ] = $order->GetBuyTotal();
+				$line[ OrderFields::margin ]     = round( ( $line[ OrderFields::total_order ] - $line[ OrderFields::good_costs ] ), 0 );
+			}
 			$line[ OrderFields::delivery_fee ] = $total_delivery_fee; //
 
 			array_push( $rows, $line );

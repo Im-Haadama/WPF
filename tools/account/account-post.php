@@ -217,12 +217,15 @@ function create_receipt( $cash, $bank, $check, $credit, $change, $user_id, $date
 }
 
 function add_im_user( $user, $name, $email, $address, $city, $phone, $zip ) {
+
 	if ( strlen( $email ) < 1 ) {
 		$email = randomPassword() . "@aglamaz.com";
 	}
 
-	if ( strlen( $user ) == "אוטומטי" or strlen( $user ) < 5 ) {
+
+	if ( $user == "אוטומטי" or strlen( $user ) < 5 ) {
 		$user = substr( $email, 0, 8 );
+		print "user: " . $user . "<br/>";
 	}
 
 	print "email: " . $email . "<br/>";

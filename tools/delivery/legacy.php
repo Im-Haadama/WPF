@@ -12,6 +12,7 @@ ini_set( 'display_errors', 'on' );
 require_once( '../r-shop_manager.php' );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( ROOT_DIR . '/tools/orders/orders-common.php' );
+require_once( ROOT_DIR . '/tools/delivery/delivery-common.php' );
 
 ?>
 
@@ -130,8 +131,8 @@ if ( strlen( $table ) > 10 ) {
 	print delivery_table_header();
 	print $table;
 	print "</table>";
-	print gui_button( "btn_create_ship", "create_ship()", "צור תעודת משלוח" );
 }
+print gui_button( "btn_create_ship", "create_ship()", "צור תעודת משלוח" );
 
 print '<div id="logging">';
 
