@@ -213,8 +213,8 @@ print gui_datalist( "items", "im_products", "post_title" );
         request = request + "&fee=" + fee;
         if (draft) {
             request += "&draft";
-            var reason = get_select_text("draft_reason");
-            alert(reason);
+            var reason = "not implemented"; // get_select_text("draft_reason");
+            // alert(reason);
 
             request += "&reason=" + encodeURI(reason);
         }
@@ -576,10 +576,10 @@ print gui_datalist( "items", "im_products", "post_title" );
 	    $option["reason"] = "לא ידוע מחיר המשלוח";
 	    array_push( $select_options, $option );
 
-	    print gui_select( "draft_reason", "reason",
-		    $select_options, "", "" );
+	    //	    print gui_select( "draft_reason", "reason",
+	    //		    $select_options, "", "" );
 
-	    print gui_button( "save_draft_modal", "", "בצע" );
+	    //	    print gui_button( "save_draft_modal", "", "בצע" );
 	    ?>
 
     </div>
