@@ -13,6 +13,7 @@ if ( ! defined( "ROOT_DIR" ) ) {
 }
 
 require_once( ROOT_DIR . '/niver/sql.php' );
+require_once( ROOT_DIR . '/tools/im_tools.php' );
 
 class PivotTable {
 	private $table_name;
@@ -38,7 +39,8 @@ class PivotTable {
 		$this->data       = $data;
 	}
 
-	public function Create() {
+	public function Create( $add_url, $row_url = null, $row_trans = null ) {
+		// var_dump($row_trans);
 		$rows        = array();
 		$cols        = array();
 		$table       = array();
@@ -57,9 +59,22 @@ class PivotTable {
 			$cell = $data[ $this->data ];
 //			print "row=$row col=$col cell=$cell<br/>";
 			if ( ! isset( $table[ $row ] ) ) {
+				// Open new row.
 				$table[ $row ]    = array();
-				$table[ $row ][0] = "" . $row;
-				//			print "row: " . $row . "<br/>";
+
+				// Set the label - include url if provided
+				if ( isset( $row_trans[ $this->row ] ) ) {
+					$label = $row_trans[ $this->row ]( $row );
+				} else {
+					$label = $row;
+				}
+
+				if ( isset( $row_url ) ) {
+					$table[ $row ][0] = gui_hyperlink( $label, sprintf( $row_url, $row ) );
+				} else {
+					$table[ $row ][0] = $label;
+				}
+
 				array_push( $rows, $row );
 			}
 			if ( ! isset( $table[ $row ][ $col ] ) ) {
@@ -83,7 +98,8 @@ class PivotTable {
 			foreach ( $cols as $col ) {
 				//	print "col: " . $col;
 				if ( ! isset ( $table[ $row ][ $col ] ) ) {
-					$table[ $row ][ $col ] = 0;
+					$u                     = sprintf( $add_url, $row, $col );
+					$table[ $row ][ $col ] = gui_hyperlink( "0", $u);
 				}
 			}
 			ksort( $table[ $row ] );

@@ -232,8 +232,12 @@ while ( $row = mysqli_fetch_assoc( $result ) ) {
 		continue;
 	}
 	// fwrite($output, "print \"<td><input class=\\\"chk\\\" id=\\\"chk_" . $line_id ."\\\" type=\\\"checkbox\\\"></td>\";<br/>";
+	fwrite( $output, 'if (get_param("' . $name . '")){' .
+	                 $value . '= get_param("' . $name . '");' .
+	                 '$values[\'chk_' . $name . '\'] = true;' .
+	                 "}" );
 	print_cell_start();
-	print_checkbox( "chk_" . $name, false );
+	print_checkbox( "chk_" . $name );
 	print_cell_end();
 	$line_id += 1;
 	print_cell_start();
