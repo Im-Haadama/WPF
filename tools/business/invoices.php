@@ -33,7 +33,7 @@ print gui_button( "btn_new", "show_create_invoice()", "חשבונית חדשה" 
 
 ?>
 
-<script type="text/javascript" src="/niver/client_tools.js"></script>
+<script type="text/javascript" src="/niver/gui/client_tools.js"></script>
 
 <script>
     function show_create_invoice() {

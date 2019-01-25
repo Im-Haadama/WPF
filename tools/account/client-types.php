@@ -12,7 +12,7 @@ require_once( ROOT_DIR . "/niver/gui/sql_table.php" );
 require_once( "gui.php" );
 
 ?>
-    <script type="text/javascript" src="/niver/client_tools.js"></script>
+    <script type="text/javascript" src="/niver/gui/client_tools.js"></script>
     <script>
         function update_client_type(id) {
             var type = get_value_by_name("select_type_" + id);

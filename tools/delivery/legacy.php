@@ -16,7 +16,7 @@ require_once( ROOT_DIR . '/tools/delivery/delivery-common.php' );
 
 ?>
 
-    <script type="text/javascript" src="/niver/client_tools.js"></script>
+    <script type="text/javascript" src="/niver/gui/client_tools.js"></script>
     <script>
         function done() {
             var collection = document.getElementsByClassName("user_chk");

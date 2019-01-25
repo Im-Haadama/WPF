@@ -22,7 +22,7 @@ if ( isset( $_GET["operation"] ) ) {
 	exit( 0 );
 }
 ?>
-<script type="text/javascript" src="/niver/client_tools.js"></script>
+<script type="text/javascript" src="/niver/gui/client_tools.js"></script>
 
 <script>
 

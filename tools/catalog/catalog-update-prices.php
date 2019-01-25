@@ -15,7 +15,7 @@ require_once( "../gui/inputs.php" );
 print header_text();
 ?>
 <header>
-    <script type="text/javascript" src="/niver/client_tools.js"></script>
+    <script type="text/javascript" src="/niver/gui/client_tools.js"></script>
     <script>
         function select_pr() {
             var collection = document.getElementsByClassName("product_checkbox");

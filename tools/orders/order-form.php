@@ -43,7 +43,7 @@ function get_form_tables() {
 	return rtrim( $result, ", " );
 }
 ?>
-<script type="text/javascript" src="/niver/client_tools.js"></script>
+<script type="text/javascript" src="/niver/gui/client_tools.js"></script>
 
     <script>
 

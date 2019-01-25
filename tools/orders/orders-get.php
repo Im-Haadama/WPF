@@ -22,7 +22,7 @@ require( "new-order.php" );
 
 ?>
 
-<script type="text/javascript" src="/niver/client_tools.js"></script>
+<script type="text/javascript" src="/niver/gui/client_tools.js"></script>
 
     <script>
         function mission_changed(order_id) {

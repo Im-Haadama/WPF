@@ -7,7 +7,7 @@ require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 print header_text( true );
 ?>
 
-<script type="text/javascript" src="/niver/client_tools.js"></script>
+<script type="text/javascript" src="/niver/gui/client_tools.js"></script>
     <script>
 
         function select_category() {

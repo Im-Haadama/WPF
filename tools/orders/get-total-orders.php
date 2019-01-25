@@ -12,7 +12,7 @@ print header_text( false );
 ?>
 <html dir="rtl" lang="he">
 <header>
-    <script type="text/javascript" src="/niver/client_tools.js"></script>
+    <script type="text/javascript" src="/niver/gui/client_tools.js"></script>
     <script>
         function show_totals() {
             xmlhttp = new XMLHttpRequest();
