@@ -5,10 +5,11 @@
  * Date: 24/11/16
  * Time: 18:22
  */
-//ini_set( 'display_errors', 'on' );
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
 
 require_once( TOOLS_DIR . '/im_tools.php' );
-require_once( STORE_DIR . '/niver/sql.php' );
+require_once( STORE_DIR . '/niver/data/sql.php' );
 require_once( TOOLS_DIR . '/wp.php' );
 require_once( TOOLS_DIR . '/pricing.php' );
 

@@ -6,7 +6,7 @@
  * Date: 06/10/18
  * Time: 17:03
  */
-require_once( ROOT_DIR . '/niver/sql.php' );
+require_once( ROOT_DIR . '/niver/data/sql.php' );
 require_once( TOOLS_DIR . '/catalog/bundles.php' );
 require_once( ROOT_DIR . "/tools/catalog/Basket.php" );
 require_once( ROOT_DIR . "/tools/orders/orders-common.php" );

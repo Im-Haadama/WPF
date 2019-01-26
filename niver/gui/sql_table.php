@@ -8,7 +8,7 @@
 
 require_once( "inputs.php" );
 
-require_once( ROOT_DIR . "/niver/sql.php" );
+require_once( ROOT_DIR . "/niver/data/sql.php" );
 
 function table_content( $sql, $header = true, $footer = true, $links = null, &$sum_fields = null ) {
 	global $conn;

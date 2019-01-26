@@ -15,7 +15,7 @@ abstract class FieldIdx {
 
 ;
 
-require_once( "im_simple_html_dom.php" );
+require_once( "data/im_simple_html_dom.php" );
 
 class MultiSite {
 	private $sites_array;

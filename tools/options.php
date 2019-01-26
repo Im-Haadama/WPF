@@ -10,7 +10,7 @@ if ( ! defined( "ROOT_DIR" ) ) {
 	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) );
 }
 
-require_once( ROOT_DIR . '/niver/sql.php' );
+require_once( ROOT_DIR . '/niver/data/sql.php' );
 
 function info_get( $key, $create = false, $default = null ) {
 	$sql = "SELECT info_data FROM im_info WHERE info_key = '" . $key . "'";

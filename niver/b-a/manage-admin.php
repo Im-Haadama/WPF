@@ -11,7 +11,6 @@ error_reporting( E_ALL );
 ini_set( 'display_errors', 'on' );
 
 require_once( STORE_DIR . '/niver/data/im_simple_html_dom.php' );
-require_once( STORE_DIR . '/niver/data/Imap.php' );
 require_once( STORE_DIR . '/niver/data/attachment_folder.php' );
 
 $filename = STORE_DIR . '/niver/b-a/mail-config.php';

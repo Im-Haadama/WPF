@@ -12,12 +12,31 @@ if ( ! defined( "ROOT_DIR" ) ) {
 
 require_once( ROOT_DIR . '/tools/im_tools_light.php' );
 
-sql_query( "ALTER TABLE im_business_info
-ADD net_total DOUBLE;
+// Version 1.6
+//sql_query( "ALTER TABLE im_business_info
+//ADD net_total DOUBLE;
+//" );
+//
+//sql_query( "ALTER TABLE im_delivery
+//ADD draft_reason VARCHAR(50);
+//" );
+
+// Version 1.7
+//sql_query( "ALTER TABLE im_suppliers
+//drop invoice_email;
+//" );
+
+sql_query( "ALTER TABLE im_suppliers
+ADD invoice_email VARCHAR(50)  
+  CHARACTER SET utf8
+  COLLATE utf8_general_ci;
 " );
 
-sql_query( "ALTER TABLE im_delivery
-ADD draft_reason VARCHAR(50);
+sql_query( "ALTER TABLE im_business_info
+ADD invoice_file VARCHAR(200)  
+  CHARACTER SET utf8
+  COLLATE utf8_general_ci;
 " );
 
 print "done";
+

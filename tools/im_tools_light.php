@@ -22,7 +22,7 @@ if ( ! defined( "TOOLS_DIR" ) ) {
 
 require_once( STORE_DIR . "/im-config.php" );
 require_once( STORE_DIR . "/niver/fund.php" );
-require_once( ROOT_DIR . "/niver/sql.php" );
+require_once( ROOT_DIR . "/niver/data/sql.php" );
 require_once( "vat.php" );
 
 $conn = new mysqli( IM_DB_HOST, IM_DB_NAME, IM_DB_PASSWORD, IM_DB_NAME );

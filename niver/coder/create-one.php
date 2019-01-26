@@ -20,7 +20,7 @@ if ( ! defined( "ROOT_DIR" ) ) {
 }
 
 require_once( ROOT_DIR . '/niver/fund.php' );
-require_once( ROOT_DIR . '/niver/sql.php' );
+require_once( ROOT_DIR . '/niver/data/sql.php' );
 require_once( "common.php" );
 
 $config_file = get_param( "config_file" );
@@ -65,7 +65,7 @@ print "root file: " . $root_file;
 //require_once ($root_file);
 print "done<br/>";
 
-require_once( "../translate.php" );
+require_once( ROOT_DIR . "/niver/data/translate.php" );
 
 
 $filename      = ROOT_DIR . "/$target_folder/c-get-$obj_name.php";
@@ -86,7 +86,7 @@ ini_set('display_errors', 1);
 require_once ('$root_file');
 // require_once('../header.php');
 require_once(ROOT_DIR . '/niver/fund.php');
-require_once(ROOT_DIR . '/niver/translate.php');
+require_once(ROOT_DIR . '/niver/data/translate.php');
 require_once(ROOT_DIR . '/niver/gui/inputs.php');
 " );
 
@@ -113,7 +113,7 @@ print_entry(\$id);
 <script>
 " );
 
-$client_tools = ROOT_DIR . '/niver/client_tools.js';
+$client_tools = ROOT_DIR . '/niver/gui/client_tools.js';
 // if (isset($datalist)) print "dl=" . $datalist . "<br/>";
 
 $handle   = fopen( $client_tools, "r" );
@@ -306,7 +306,7 @@ $output = fopen( $post_filename, "w" );
 fwrite( $output, "<?php
 require_once ('$root_file');
 // require_once('../header.php');
-require_once(\"../translate.php\");
+require_once(ROOT_DIR . '/niver/data/translate.php');
 require_once(ROOT_DIR . '/niver/gui/inputs.php');\n" );
 
 // fwrite($output, "<br/>------------------------\n");

@@ -5,6 +5,7 @@
  * Date: 25/01/19
  * Time: 07:49
  */
+require_once( ROOT_DIR . '/niver/data/Imap.php' );
 
 function inbox_files( $hostname, $mail_user, $password, $attach_folder, $folder_url ) {
 	$m = new Imap();

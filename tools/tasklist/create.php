@@ -10,7 +10,7 @@ if ( ! defined( 'TOOLS_DIR' ) ) {
 }
 require_once( TOOLS_DIR . '/im_tools.php' );
 require_once( dirname( TOOLS_DIR ) . '/wp-config.php' );
-require_once( ROOT_DIR . "/niver/sql.php" );
+require_once( ROOT_DIR . "/niver/data/sql.php" );
 require_once( "tasklist.php" );
 require_once( ROOT_DIR . "/niver/im_simple_html_dom.php" );
 

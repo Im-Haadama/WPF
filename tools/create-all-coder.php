@@ -12,7 +12,7 @@ if ( ! defined( "ROOT_DIR" ) ) {
 	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) );
 }
 
-require_once( ROOT_DIR . "/niver/im_simple_html_dom.php" );
+require_once( ROOT_DIR . "/niver/data/im_simple_html_dom.php" );
 require_once( ROOT_DIR . "/niver/gui/inputs.php" );
 
 // $actual_link = "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";

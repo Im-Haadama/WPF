@@ -11,7 +11,7 @@ if ( ! defined( "ROOT_DIR" ) ) {
 	define( "ROOT_DIR", dirname( dirname( dirname( __FILE__ ) ) ) );
 }
 
-require_once( ROOT_DIR . '/niver/sql.php' );
+require_once( ROOT_DIR . '/niver/data/sql.php' );
 require_once( ROOT_DIR . '/niver/gui/window.php' );
 
 class Tasklist {

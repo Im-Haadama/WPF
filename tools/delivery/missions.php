@@ -12,7 +12,7 @@ if ( ! defined( 'TOOLS_DIR' ) ) {
 }
 
 require_once( TOOLS_DIR . "/im_tools.php" );
-require_once( ROOT_DIR . '/niver/sql.php' );
+require_once( ROOT_DIR . '/niver/data/sql.php' );
 
 // print header_text();
 function show_zone_names( $str_zones, $line_id ) {

@@ -13,7 +13,7 @@ if ( ! defined( "ROOT_DIR" ) ) {
 }
 
 require_once( ROOT_DIR . "/tools/im_tools.php" );
-require_once( ROOT_DIR . "/niver/sql.php" );
+require_once( ROOT_DIR . "/niver/data/sql.php" );
 require_once( ROOT_DIR . "/niver/fund.php" );
 require_once( ROOT_DIR . "/tools/people/people.php" );
 require_once( ROOT_DIR . '/niver/gui/window.php' );

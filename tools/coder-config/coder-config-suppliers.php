@@ -13,7 +13,6 @@ $conn = new mysqli( IM_DB_HOST, IM_DB_NAME, IM_DB_PASSWORD, IM_DB_NAME );
 mysqli_set_charset( $conn, 'utf8' );
 $obj_name = "suppliers";
 
-
 $table_prefix  = "im_";
 $root_file     = ROOT_DIR . '/tools/im_tools.php';
 $target_folder = "tools/suppliers";

@@ -31,7 +31,7 @@ if ( ! $config_file ) {
 	$req_file = "coder-config-" . $obj_name . ".php";
 }
 
-require_once( ROOT_DIR . "/niver/sql.php" );
+require_once( ROOT_DIR . "/niver/data/sql.php" );
 require_once( ROOT_DIR . "/niver/gui/inputs.php" );
 require_once( "coder.php" );
 
@@ -82,7 +82,7 @@ fwrite( $get_all, "<?php
 require_once ('$root_file');
 // require_once('../header.php');
 require_once(ROOT_DIR . '/niver/fund.php');
-require_once(ROOT_DIR . '/niver/translate.php');
+require_once(ROOT_DIR . '/niver/data/translate.php');
 require_once(ROOT_DIR . '/niver/gui/inputs.php');
 require_once(ROOT_DIR . '/niver/fund.php');
 print header_text(false, false);
@@ -128,7 +128,7 @@ print gui_hyperlink(\"יבא\", \"c-import-" . $obj_name . ".php\");
 <script>
 " );
 
-$client_tools = ROOT_DIR . "/niver/client_tools.js";
+$client_tools = ROOT_DIR . "/niver/gui/client_tools.js";
 $handle       = fopen( $client_tools, "r" );
 $contents     = fread( $handle, filesize( $client_tools ) );
 fwrite( $get_all, $contents );

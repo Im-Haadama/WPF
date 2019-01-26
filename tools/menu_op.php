@@ -141,6 +141,7 @@ add_command( $row, $col, "edit_pricelist", "תבנית", "tasklist/c-get-all-tas
 add_command( $row, $col, "edit_pricelist", "משימות פעילות", "tasklist/c-get-all-tasklist.php", "tasks" );
 add_command( $row, $col, "edit_pricelist", "חשבוניות", "business/c-get-all-business_info.php?document_type=4&is_active=1" );
 add_command( $row, $col, "edit_pricelist", "פרויקטים", "people/c-get-all-projects.php" );
+add_command( $row, $col, "edit_pricelist", "תיבת דואר", "business/manage-inbox.php" );
 
 while ( $row < $max_row ) {
 	$table[ $row ++ ][ $col ] = "";
