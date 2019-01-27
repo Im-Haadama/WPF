@@ -58,20 +58,6 @@ if ( isset( $_GET["operation"] ) ) {
 	print gui_hyperlink( "האם ברצונך לאפס את המלאי?", "start.php?operation=reset_inventory" );
 }
 
-function create_missions() {
-	$this_week = date( "Y-m-d", strtotime( "last sunday" ) );
-	$sql       = "SELECT id FROM im_missions WHERE FIRST_DAY_OF_WEEK(date) = '" . $this_week . "' order by 1";
-//	print $sql;
-
-	$result = sql_query( $sql );
-	while ( $row = sql_fetch_row( $result ) ) {
-		$mission_id = $row[0];
-		print "משכפל את משימה " . $mission_id . "<br/>";
-
-		duplicate_mission( $mission_id );
-	}
-}
-
 
 function do_create_inventory_views() {
 

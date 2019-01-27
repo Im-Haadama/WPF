@@ -6,12 +6,6 @@
  * Time: 11:26
  */
 
-if ( ! defined( "ROOT_DIR" ) ) {
-	define( "ROOT_DIR", dirname( dirname( __FILE__ ) ) );
-}
-
-require_once( ROOT_DIR . "/agla/fund.php" );
-require_once( ROOT_DIR . "/agla/MultiSite.php" );
 
 //const site_id_idx = 0;
 //const site_name_idx = 1;
@@ -25,6 +19,10 @@ $hosts_to_sync = array(
 );
 
 $period = get_param( "period" );
+
+if ( ! $period ) {
+	die ( "period should be set" );
+}
 
 // Working on behalf of master - fruity.
 $m = new MultiSite( $hosts_to_sync, 3, 3 );

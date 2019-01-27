@@ -4,9 +4,22 @@
  * User: agla
  * Date: 07/01/19
  * Time: 12:54
+ * Run in slave sites. Sync data from master.
  */
+
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
+print "a";
+
+if ( ! defined( "ROOT_DIR" ) ) {
+	define( "ROOT_DIR", dirname( dirname( dirname( __FILE__ ) ) ) );
+}
+
+print "b";
+
 require_once( ROOT_DIR . "/niver/gui/inputs.php" );
-require_once( TOOLS_DIR . "/multi-site/imMulti-site.php" );
+require_once( ROOT_DIR . "/tools/multi-site/imMulti-site.php" );
 
 function sync_from_master() {
 	print header_text( false, true, true );

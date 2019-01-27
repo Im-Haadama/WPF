@@ -14,6 +14,6 @@ if ( ! defined( 'TOOLS_DIR' ) ) {
 }
 require_once( TOOLS_DIR . "/im_tools.php" );
 
-require_once( 'sync.php' );
+require_once( TOOLS_DIR . '/multi-site/sync.php' );
 
 sync_from_master();

@@ -39,40 +39,45 @@ class MultiSite {
 
 	function GetAll( $func, $debug = false ) {
 		$first = true;
-		$data  = "";
+		$data  = "<table>";
 
 		foreach ( $this->sites_array as $site_id => $site ) {
-			$url       = $this->getSiteToolsURL( $site_id );
-			$site_name = $this->getSiteName( $site_id );
-
-			if ( $debug ) {
-				print_time( "site " . $site_name, true );
-			}
-
-			if ( strstr( $func, "?" ) ) {
-				$glue = "&";
-			} else {
-				$glue = "?";
-			}
-			$file = $url . "/" . $func . $glue . "header=" . ( $first ? "1" : "0" ) . "&key=lasdhflajsdhflasjdhflaksj";
-
-			if ( $debug ) {
-				print "Getting $file...<br/>";
-			}
-
-			$result_text = im_file_get_html( $file );
-
-			if ( $debug ) {
-				print "result from " . $site_name . "<br/>";
-				print $result_text . "<br/>";
-			}
-			// print "id=" . $id . " " . "result: " . $result_text;
-			$data  .= $result_text;
-			$first = false;
+			$data .= $this->Run( $func, $site_id, $first, $debug );
 		}
 		$data .= "</table>";
 
 		return $data;
+	}
+
+	function Run( $func, $site_id, $first = false, $debug = false ) {
+		$url = $this->getSiteToolsURL( $site_id );
+
+		$site_name = $this->getSiteName( $site_id );
+
+		if ( $debug ) {
+			print_time( "site " . $site_name, true );
+		}
+
+		if ( strstr( $func, "?" ) ) {
+			$glue = "&";
+		} else {
+			$glue = "?";
+		}
+		$file = $url . "/" . $func . $glue . "header=" . ( $first ? "1" : "0" ) . "&key=lasdhflajsdhflasjdhflaksj";
+
+		if ( $debug ) {
+			print "Getting $file...<br/>";
+		}
+
+		$result_text = im_file_get_html( $file );
+
+		if ( $debug ) {
+			print "result from " . $site_name . "<br/>";
+			print $result_text . "<br/>";
+		}
+
+		// print "id=" . $id . " " . "result: " . $result_text;
+		return $result_text;
 	}
 
 	public function getSiteToolsURL( $site_id ) {
