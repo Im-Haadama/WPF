@@ -11,7 +11,7 @@ if ( ! defined( __ROOT__ ) ) {
 }
 require_once( __ROOT__ . '/wp-load.php' );
 require_once( __ROOT__ . '/im-config.php' );
-require_once( __ROOT__ . '/niver/sql.php' );
+require_once( __ROOT__ . '/niver/data/sql.php' );
 
 if ( isset( $servername ) and strlen( $servername ) > 2 ) {
 	$conn = new mysqli( $servername, $username, $password, $dbname );

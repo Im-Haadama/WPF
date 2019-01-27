@@ -390,13 +390,15 @@ $insert_func .= "\$values = rtrim(\$values, \", \") . \")\";
 \$sql = rtrim(\$sql, \", \") . \")\" . \$values;";
 
 $update_func .= "\$sql .= \" where id = \$id;\";\n";
-append_to_query( "print \$sql;
-sql_query(\$sql);
+append_to_query( "
 }
 " );
 
 fwrite( $output, $update_func );
 fwrite( $output, $insert_func );
+
+fwrite( $output, 'sql_query($sql);' );
+fwrite( $output, 'print "done<br/>";' );
 
 print "done";
 

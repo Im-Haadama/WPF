@@ -67,3 +67,4 @@ foreach ( $by_supplier_table as $supplier_id => $table ) {
 
 	print gui_table( $by_supplier_table[ $supplier_id ] );
 }
+

@@ -103,7 +103,7 @@ class Tasklist {
 }
 
 require_once( ROOT_DIR . "/tools/people/people.php" );
-require_once( ROOT_DIR . "/niver/im_simple_html_dom.php" );
+require_once( ROOT_DIR . "/niver/data/im_simple_html_dom.php" );
 require_once( ROOT_DIR . "/tools/options.php" );
 
 class eTasklist {
