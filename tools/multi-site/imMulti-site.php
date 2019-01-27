@@ -76,12 +76,6 @@ class ImMultiSite extends MultiSite {
 		return self::getInstance()->getLocalSiteName();
 	}
 
-	static function isMaster() {
-		$i = self::getInstance();
-
-		return $i->getLocalSiteID() == $i->getMaster();
-	}
-
 
 	static function map( $remote_site_id, $local_prod_id, $remote_prod_id ) {
 		my_log( __FILE__, __METHOD__ );

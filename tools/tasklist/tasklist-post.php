@@ -51,7 +51,9 @@ switch ( $operation ) {
 		$T       = new Tasklist( $task_id );
 		$T->ended();
 		redirect_back();
-		create_tasks( $T->getRepeatFreq() );
+		if ( is_array( $T->getRepeatFreq() ) ) {
+			create_tasks( $T->getRepeatFreq() );
+		}
 		break;
 	case "cancel":
 		$task_id = get_param( "id" );

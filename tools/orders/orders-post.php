@@ -209,6 +209,46 @@ switch ( $operation ) {
 	case "replace_baskets":
 		replace_baskets();
 		break;
+
+	case "check_email":
+		$email = get_param( "email" );
+		if ( ! $email or strlen( $email ) < 5 ) {
+			print "u"; // unknown
+
+			return;
+		}
+		$u       = get_user_by( "email", $email );
+		$user_id = $u->ID;
+		if ( $user_id ) {
+			print "שלום " . get_customer_name( $user_id ) . "<br/>";
+			print customer_delivery_options( $user_id );
+		} else {
+			print "אין לקוח כתובת מייל זאת";
+		}
+		break;
 }
 
+function customer_delivery_options( $user_id ) {
+	$postcode = get_user_meta( $user_id, 'shipping_postcode', true );
+// 	print "code= " . $postcode . "<br/>";
+	$package = array( 'destination' => array( 'country' => 'IL', 'postcode' => $postcode ) );
+	$zone    = WC_Shipping_Zones::get_zone_matching_package( $package );
+	$methods = $zone->get_shipping_methods();
+
+	$options = array();
+	foreach ( $methods as $k => $method ) {
+		// var_dump ($method);
+		$n               = array();
+		$n["id"]         = $k;
+		$n["title"]      = $method->title;
+		$n["data-price"] = $method->cost;
+		array_push( $options, $n );
+	}
+
+//		var_dump($method);
+
+	print gui_select( "select_method", "title", $options, "onchange=\"update_shipping()\"", 0 );
+
+
+}
 ?>

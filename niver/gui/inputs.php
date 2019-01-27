@@ -286,7 +286,14 @@ function gui_select( $id, $name, $values, $events, $selected ) {
 	foreach ( $values as $row ) {
 		$data .= "<option value=\"" . $row["id"] . "\"";
 		if ( $selected and $selected == $row["id"] ) {
-			$data .= " selected";
+			$data .= " selected ";
+		}
+		if ( is_array( $row ) ) {
+			foreach ( $row as $k => $f ) {
+				if ( substr( $k, 0, 4 ) == "data" ) {
+					$data .= $k . "=" . '"' . $f . '"';
+				}
+			}
 		}
 		// print $selected . " " . $row["$id"] . "<br/>";
 		$data .= ">";

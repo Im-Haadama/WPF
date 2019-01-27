@@ -45,12 +45,15 @@ switch ( $operation ) {
 			print "כתובת המייל חסרה";
 			die ( 1 );
 		}
+		$method = get_param( "method" );
+//		print "method= " . $method . "<br/>";
 
-		form_create_order( explode( ",", $params ), $phone, $name, $group, $user, $email );
+		form_create_order( explode( ",", $params ), $phone, $name, $group, $user, $email, $method );
 		break;
 }
 
-function form_create_order( $params, $phone = null, $name = null, $group = null, $user_id = null, $email = null ) {
+function form_create_order( $params, $phone = null, $name = null, $group = null, $user_id = null, $email = null, $method = null ) {
+	// print "Method=" . $method;
 	global $support_phone;
 //	print "יוצר הזמנה ליוזר " . $email . "<br/>";
 //	$user = get_user_by("email", $email);
@@ -81,7 +84,7 @@ function form_create_order( $params, $phone = null, $name = null, $group = null,
 	if ( $phone ) {
 		$comment .= "טלפון המזמין:" . $phone . "\n";
 	}
-	$order_id = create_order( $user_id ? $user_id : get_user_id(), 0, $prods, $quantities, $comment );
+	$order_id = create_order( $user_id ? $user_id : get_user_id(), 0, $prods, $quantities, $comment, null, null, $method );
 
 	if ( $email ) {
 		$comment .= "מייל: " . $email . "\n";

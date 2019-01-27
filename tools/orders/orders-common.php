@@ -612,7 +612,7 @@ function check_cache_validity() {
 
 }
 
-function create_order( $user_id, $mission_id, $prods, $quantities, $comments, $units = null, $type = null ) {
+function create_order( $user_id, $mission_id, $prods, $quantities, $comments, $units = null, $type = null, $method = null ) {
 //	print "user: " . $user_id;
 //	var_dump($prods);
 
@@ -685,6 +685,15 @@ function create_order( $user_id, $mission_id, $prods, $quantities, $comments, $u
 		$_key  = '_' . $key;
 //		print $_key . " " . $value . "<br/>";
 		update_post_meta( $order_id, $_key, $value );
+	}
+
+	// TODO:: Set the shipping method
+	if ( $method ) {
+
+		$si = new WC_Shipping_Rate( '', '', 0, null, $method );
+		// $m = new WC_Shipping_Method($method);
+		$order->add_shipping( $si );
+		// 	var_dump($order);
 	}
 
 // 	print "comments: " . $comments . "<br/>";

@@ -76,8 +76,9 @@ add_command( $row, $col, "edit_missions", "ניהול מסלולים", "delivery
 add_command( $row, $col, "edit_shop_orders", "משלוחי המכולת", "delivery/legacy.php" );
 add_command( $row, $col, null, "דיווח חוסרים ללקוח", "delivery/missing.php" );
 
+$m = new ImMultiSite();
 // print MultiSite::LocalSiteID();
-if ( ! ImMultiSite::isMaster() ) {
+if ( ! $m->isMaster() ) {
 //	add_command( $row, $col, "edit_shop_orders", "סנכרן איזורים", "/tools/multi-site/sync-data.php?table=wp_woocommerce_shipping_zone_locations&operation=update&source=4" );
 //	add_command( $row, $col, "edit_shop_orders", "סנכרן סוגי משלוח", "/tools/multi-site/sync-data.php?table=wp_woocommerce_shipping_zone_methods&operation=update&source=4" );
 	add_command( $row, $col, "edit_shop_orders", "סנכרן מידע", "/tools/multi-site/sync-from-master.php" );

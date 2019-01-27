@@ -69,6 +69,7 @@ function get_form_tables() {
             var phone = get_value_by_name("phone");
             var name = get_value_by_name("name");
             var email = get_value_by_name("email");
+            var method = get_value_by_name("select_method");
 
             if (phone.length > 2) url += "&phone=" + encodeURI(phone);
             if (name.length > 2) url += "&name=" + encodeURI(name);
@@ -80,7 +81,34 @@ function get_form_tables() {
         }
 		    ?>
             if (email.length > 4) url += "&email=" + encodeURI(email);
+            url += "&method=" + method;
             window.location.href = url;
+        }
+
+        function update_shipping() {
+            var m = document.getElementById("select_method");
+        }
+
+        function update_email() {
+            var email = get_value_by_name("email");
+
+            var request = "/tools/orders/orders-post.php?operation=check_email&email=" + email;
+
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                // Wait to get query result
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+                {
+                    if (xmlhttp.response === "u") {
+                        alert("משתמש לא ידוע. בדוק את כתובת המייל שלך");
+                    } else {
+                        document.getElementById("user_info").innerHTML = xmlhttp.response;
+                    }
+                }
+            }
+            xmlhttp.open("GET", request, true);
+            xmlhttp.send();
+
         }
         function update() {
             var total = update_total();
@@ -151,7 +179,9 @@ if ( $text ) {
 	print "מוצרים זמינים השבוע</br>";
 } else {
 	print "כתובת מייל של המזמין:";
-	print gui_input( "email", "", array( "onchange=update()" ) );
+	print gui_input( "email", "", array( "onchange=update_email()" ) );
+	print "<br/>";
+	print gui_label( "user_info", "" );
 	print "<br/>";
 	print gui_table( array( 'סה"כ הזמנה:', gui_label( "total", "0" ) ) );
 
