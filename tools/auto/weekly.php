@@ -2,11 +2,9 @@
 /**
  * Created by PhpStorm.
  * User: agla
- * Date: 07/01/19
- * Time: 12:46
+ * Date: 27/01/19
+ * Time: 20:49
  */
-
-// Run from crontab.
 
 error_reporting( E_ALL );
 ini_set( 'display_errors', 'on' );
@@ -25,9 +23,8 @@ if ( ! isset( $hosts_to_sync ) ) {
 $m = new MultiSite( $hosts_to_sync, $master, 3 );
 
 // Run daily on master.
-print $m->Run( "auto/daily-master.php", $master );
+print $m->Run( "auto/weekly-master.php", $master );
 
 // Now sync to slaves.
-
 print $m->GetAll( "multi-site/sync-from-master.php" );
-print $m->GetAll( "auto/daily-all.php" );
+

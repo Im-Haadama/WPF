@@ -25,6 +25,10 @@ function sync_from_master() {
 	print header_text( false, true, true );
 
 	$i = new ImMultiSite();
+	if ( $i->isMaster() ) {
+		return "Master, no need to sync";
+	}
+
 	print gui_header( 1, "מסנכרן מיקומים" );
 	$i->UpdateFromRemote( "wp_woocommerce_shipping_zone_locations", "location_id" );
 

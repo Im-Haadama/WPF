@@ -141,6 +141,10 @@ class MultiSite {
 		return $this->master_id;
 	}
 
+	function isMaster() {
+		return $this->master_id == $this->local_site_id;
+	}
+
 	function getLocalSiteName() {
 		return $this->getSiteName( $this->getLocalSiteID() );
 	}
