@@ -50,6 +50,22 @@ require_once( ROOT_DIR . '/tools/delivery/delivery-common.php' );
             xmlhttp.send();
         }
 
+        function create_invoice() {
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                // Wait to get query result
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+                {
+                    var http_text = xmlhttp.responseText.trim();
+                    document.getElementById("logging").innerHTML = http_text;
+                }
+            }
+            var request = "legacy-post.php?operation=create_invoice";
+            xmlhttp.open("GET", request, true);
+            xmlhttp.send();
+
+        }
+
         function clear_legacy() {
             xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function () {
@@ -104,7 +120,6 @@ require_once( ROOT_DIR . '/tools/delivery/delivery-common.php' );
                 "&ids=" + del_ids.join();
             xmlhttp.open("GET", request, true);
             xmlhttp.send();
-
         }
 
     </script>
@@ -159,12 +174,23 @@ print gui_button( "btn_done", "done()", "בצע" );
 
 print gui_button( "btn_clear", "clear_legacy()", "נקה" );
 
+global $legacy_user;
+
+$data = business_open_ship( $legacy_user );
+
+// print $data . " " . strlen($data);
+if ( strlen( $data ) > 30 ) {
+	print gui_header( 1, "תעודות משלוח פתוחות" );
+
+	print $data;
+
+	print gui_button( "id_legacy_invoice", "create_invoice()", "הפק חשבונית מס" );
+
+}
+
 function user_checkbox( $id ) {
 	return gui_row( array(
 		gui_checkbox( "chk_" . $id, "user_chk" ),
 		get_user_name( $id )
 	) );
-
 }
-
-

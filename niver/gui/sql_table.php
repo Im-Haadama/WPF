@@ -33,7 +33,7 @@ function table_content( $sql, $header = true, $footer = true, $links = null, &$s
 		}
 		array_push( $rows_data, $headers );
 	}
-
+	$row_count = 0;
 	while ( $row = mysqli_fetch_row( $result ) ) {
 		$i        = 0;
 		$row_data = array();
@@ -47,12 +47,17 @@ function table_content( $sql, $header = true, $footer = true, $links = null, &$s
 
 			// print $key;
 			array_push( $row_data, $value );
+			$row_count ++;
 			$i ++;
 		}
 
 		array_push( $rows_data, $row_data );
 	}
 
-	return gui_table( $rows_data, null, $header, $footer, $sum_fields );
+	if ( $row_count >= 1 ) {
+		return gui_table( $rows_data, null, $header, $footer, $sum_fields );
+	}
+
+	return null;
 
 }

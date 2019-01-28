@@ -53,3 +53,18 @@ function business_logical_delete( $ids ) {
 	my_log( $sql );
 }
 
+function business_open_ship( $part_id ) {
+	$sql = "select id, date, amount, net_total, ref " .
+	       " from im_business_info " .
+	       " where part_id = " . $part_id .
+	       " and invoice is null " .
+	       " and document_type = " . ImDocumentType::ship;
+
+	// print $sql;
+
+	$data = table_content( $sql );
+
+	// $rows = sql_query_array($sql );
+
+	return $data; // gui_table($rows);
+}

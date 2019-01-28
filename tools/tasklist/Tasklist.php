@@ -170,18 +170,18 @@ function create_tasks( $freqs, $verbose = false ) {
 		//	print "v= " . $verbose . "<br/>";
 		$info_key = "tasklist_create_run_" . $freq;
 		if ( $verbose ) {
-			print "Started...<br/>";
+			print "Started $freq...<br/>";
 		}
 
 		// TODO: check last run.
-		$last_run = info_get( $info_key );
-		if ( date( $freq ) == date( $last_run ) ) {
-			if ( $verbose ) {
-				print "no need " . $freq . "<br/>";
-			}
-
-			return;
-		}
+//		$last_run = info_get( $info_key );
+//		if ( date( $freq ) == date( $last_run ) ) {
+//			if ( $verbose ) {
+//				print "run lately. Skipping " . $freq;
+//			}
+//
+//			continue;
+//		}
 
 		//	 Todo: Run in the background
 		$sql    = "SELECT id, task_description, task_url, project_id, repeat_freq, repeat_freq_numbers, condition_query, priority " . "
@@ -190,6 +190,7 @@ function create_tasks( $freqs, $verbose = false ) {
 		$result = sql_query( $sql );
 
 		while ( $row = mysqli_fetch_assoc( $result ) ) {
+			// if ($row["id"] == 10) var_dump($row);
 			$id         = $row["id"];
 			$project_id = $row["project_id"];
 			if ( ! $project_id ) {
@@ -198,7 +199,7 @@ function create_tasks( $freqs, $verbose = false ) {
 			// 		print "project_id= " . $project_id . "<br/>";
 
 			if ( $verbose ) {
-				print "<br/>checking " . $id . " ";
+				print "<br/>checking task_template" . $id . " ";
 			}
 
 			if ( ! check_frequency( $row["repeat_freq"], $row["repeat_freq_numbers"], $verbose ) ) {
@@ -227,7 +228,8 @@ function create_tasks( $freqs, $verbose = false ) {
 				$priority = 0;
 			}
 
-			$sql = "INSERT INTO im_tasklist (task_description, task_template, status, date, project_id, priority, repeat_freq) VALUES ( " .
+			$sql = "INSERT INTO im_tasklist " .
+			       "(task_description, task_template, status, date, project_id, priority) VALUES ( " .
 			       "'" . $row["task_description"] . "', " . $id . ", " . eTasklist::waiting . ", now(), " . $project_id . ",  " .
 			       $priority . ")";
 
@@ -240,6 +242,8 @@ function create_tasks( $freqs, $verbose = false ) {
 
 
 function check_frequency( $repeat_freq, $repeat_freq_numbers, $verbose ) {
+
+	// print "rf=$repeat_freq. rfn=$repeat_freq_numbers<br/>";
 	if ( strlen( $repeat_freq ) == 0 ) {
 		if ( $verbose ) {
 			print "empty freq passed<br/>";
@@ -249,7 +253,7 @@ function check_frequency( $repeat_freq, $repeat_freq_numbers, $verbose ) {
 	}
 
 	if ( $verbose ) {
-		print "checking " . $repeat_freq . ". now = " . date( $repeat_freq ) . " " . $repeat_freq_numbers;
+		print "checking frequency " . $repeat_freq . ". now = " . date( $repeat_freq ) . " " . $repeat_freq_numbers;
 	}
 
 	$passed = false;

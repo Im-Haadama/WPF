@@ -38,5 +38,9 @@ ADD invoice_file VARCHAR(200)
   COLLATE utf8_general_ci;
 " );
 
+sql_query( "ALTER TABLE im_business_info
+ADD invoice INTEGER(10);  
+" );
+
 print "done";
 

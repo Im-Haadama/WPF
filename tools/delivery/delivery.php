@@ -91,7 +91,8 @@ class ImDocumentType {
 		delivery = 2, // Client
 		refund = 3, // Client
 		invoice = 4, // Supplier
-		supply = 5; // Supplier
+		supply = 5, // Supplier
+		ship = 6;  // Legacy
 }
 
 class ImDocumentOperation {
