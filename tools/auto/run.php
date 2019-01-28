@@ -95,45 +95,6 @@ function close_file( $debug ) {
 	}
 }
 
-function auto_supply() {
-//	print "auto supply<br/>";
-	$sql = "SELECT id FROM im_suppliers WHERE  auto_order_day = " . date( "w");
-
-	// print $sql;
-	$suppliers = sql_query_array_scalar( $sql );
-
-	foreach ( $suppliers as $supplier_id ) {
-		print "create auto order for " . get_supplier_name( $supplier_id ) . "\n";
-
-		// $s = new Supply($supplier_id);
-		$last_order = sql_query_single_scalar( "select max(date) from im_supplies where supplier = " . $supplier_id );
-
-		print "last: " . $last_order . "\n";
-		$sold         = supplier_report_data( $supplier_id, $last_order, date( 'y-m-d' ) );
-		$supply_lines = array();
-		$total        = 0;
-		foreach ( $sold as $k => $product ) {
-			$prod_id  = $sold[ $k ][0];
-			$quantity = $sold[ $k ][1];
-			$price    = get_buy_price( $prod_id, $supplier_id );
-			if ( $quantity > 0 ) {
-				print get_product_name( $prod_id ) . " " . $quantity . "\n";
-				array_push( $supply_lines, array( $prod_id, $quantity ) );
-				$total += $quantity * $price;
-			}
-		}
-		if ( $total > sql_query_single_scalar( "select min_order from im_suppliers where id = " . $supplier_id ) ) {
-			$supply = Supply::CreateSupply( $supplier_id );
-			foreach ( $supply_lines as $line ) {
-				$supply->AddLine( $line[0], $line[1], get_buy_price( $line[0] ) );
-			}
-			$supply->Send();
-		} else {
-			print "not enough for an order\n";
-		}
-//		var_dump($sold);
-	}
-}
 
 function update_remotes() {
 	// Update remote pricelist.

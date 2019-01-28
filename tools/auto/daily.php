@@ -28,6 +28,5 @@ $m = new MultiSite( $hosts_to_sync, $master, 3 );
 print $m->Run( "auto/daily-master.php", $master );
 
 // Now sync to slaves.
-
 print $m->GetAll( "multi-site/sync-from-master.php" );
 print $m->GetAll( "auto/daily-all.php" );
