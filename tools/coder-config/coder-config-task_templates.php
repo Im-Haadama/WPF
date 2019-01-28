@@ -7,7 +7,7 @@
  */
 
 
-$obj_name      = "task_template";
+$obj_name      = "task_templates";
 $table_prefix  = "im_";
 $root_file     = realpath( ROOT_DIR ) . '/tools/im_tools.php';
 $target_folder = "/tools/tasklist";
