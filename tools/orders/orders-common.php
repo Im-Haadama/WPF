@@ -613,13 +613,6 @@ function check_cache_validity() {
 }
 
 function create_order( $user_id, $mission_id, $prods, $quantities, $comments, $units = null, $type = null, $method = null ) {
-//	print "user: " . $user_id;
-//	var_dump($prods);
-
-//	$last_order = get_last_order( $user_id );
-//	print "last order: " .$last_order . "<br/>";
-
-//	print "type: " . $type . "<br/>";
 
 	$debug = false;
 	if ( $debug ) {
@@ -701,7 +694,6 @@ function create_order( $user_id, $mission_id, $prods, $quantities, $comments, $u
 		// $m = new WC_Shipping_Method($method);
 		$order->add_shipping( $si );
 
-		print "מועד החלוקה שנבחר " . $m->get_title() . "<br/>";
 		// 	var_dump($order);
 	}
 

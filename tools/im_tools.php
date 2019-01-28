@@ -52,7 +52,6 @@ function order_get_shipping( $order_id ) {
 
 		return $shipping_info;
 		//	break;
-
 	}
 }
 

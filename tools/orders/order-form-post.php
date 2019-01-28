@@ -93,7 +93,9 @@ function form_create_order( $params, $phone = null, $name = null, $group = null,
 
 			print "שלום " . get_customer_name( $user_id ) . "<br/>";
 			print "הזמנה " . $order_id . " נקלטה בהצלחה." . "<br/>";
-			print "ההזמנה תסופק לפי ימי החלוקה לאזורך. " . gui_hyperlink( "לפרטים", $_POST["SERVER_NAME"] . "/deliveries" ) . "<br/>";
+			// print "ההזמנה תסופק לפי ימי החלוקה לאזורך. " . gui_hyperlink( "לפרטים", $_POST["SERVER_NAME"] . "/deliveries" ) . "<br/>";
+			print "מועד החלוקה שנבחר " . order_get_shipping( $order_id ) . "<br/>";
+
 			print "עם אישור ההזמנה על ידינו, תקבל מייל עם העתק ההזמנה<br/>";
 			print "תוכל לראות את ההזמנה ולבצע בה שינויים באתר: " . gui_hyperlink( "החשבון שלי", $_POST["SERVER_NAME"] . "/balance" ) . "<br/>";
 		} else {
