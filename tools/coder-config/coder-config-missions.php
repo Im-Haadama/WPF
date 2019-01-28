@@ -6,10 +6,13 @@
  * Time: 09:28
  */
 
+$obj_name      = "missions";
 $table_prefix  = "im_";
 $root_file     = ROOT_DIR . '/tools/im_tools.php';
 $target_folder = "tools/delivery";
 $server_name   = $_SERVER['SERVER_NAME'];
+
+require_once( ROOT_DIR . '/tools/im_tools_light.php' );
 
 $table_suffix = "";
 $table_name   = $table_prefix . $obj_name . $table_suffix;

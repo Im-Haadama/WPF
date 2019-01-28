@@ -6,7 +6,7 @@
  * Time: 09:26
  */
 
-function append_to_query( $s ) {
+function append_to_function( $s ) {
 	global $update_func;
 	global $insert_func;
 

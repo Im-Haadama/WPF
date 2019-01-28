@@ -248,7 +248,5 @@ function customer_delivery_options( $user_id ) {
 //		var_dump($method);
 
 	print gui_select( "select_method", "title", $options, "onchange=\"update_shipping()\"", 0 );
-
-
 }
 ?>

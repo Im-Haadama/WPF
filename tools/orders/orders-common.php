@@ -689,10 +689,19 @@ function create_order( $user_id, $mission_id, $prods, $quantities, $comments, $u
 
 	// TODO:: Set the shipping method
 	if ( $method ) {
+		$postcode = get_user_meta( $user_id, 'shipping_postcode', true );
+		$package  = array( 'destination' => array( 'country' => 'IL', 'postcode' => $postcode ) );
+		$zone     = WC_Shipping_Zones::get_zone_matching_package( $package );
+		$methods  = $zone->get_shipping_methods();
+		$m        = $methods[ $method ];
+		// var_dump($m->instance_settings['cost']);
+		//  print "m = " . $m->get_cost() . "<br/>";
 
-		$si = new WC_Shipping_Rate( '', '', 0, null, $method );
+		$si = new WC_Shipping_Rate( 'ss', $m->get_title(), $m->instance_settings['cost'], "ffoo", $method );
 		// $m = new WC_Shipping_Method($method);
 		$order->add_shipping( $si );
+
+		print "מועד החלוקה שנבחר " . $m->get_title() . "<br/>";
 		// 	var_dump($order);
 	}
 
@@ -723,7 +732,7 @@ function create_order( $user_id, $mission_id, $prods, $quantities, $comments, $u
 //		sql_query( $sql );
 //	}
 
-	print "הזמנה " . $order_id . " נקלטה בהצלחה.";
+	// print "הזמנה " . $order_id . " נקלטה בהצלחה.";
 	//print $comments;
 	return $order_id;
 }

@@ -343,7 +343,7 @@ case \"insert\":
 $update_func = "function update_" . $table_name . "()";
 $insert_func = "function insert_" . $table_name . "()";
 
-append_to_query( "
+append_to_function( "
 {
 " );
 
@@ -390,15 +390,14 @@ $insert_func .= "\$values = rtrim(\$values, \", \") . \")\";
 \$sql = rtrim(\$sql, \", \") . \")\" . \$values;";
 
 $update_func .= "\$sql .= \" where id = \$id;\";\n";
-append_to_query( "
+append_to_function( "sql_query(\$sql);
+print \"done\";
 }
 " );
 
 fwrite( $output, $update_func );
 fwrite( $output, $insert_func );
 
-fwrite( $output, 'sql_query($sql);' );
-fwrite( $output, 'print "done<br/>";' );
 
 print "done";
 
