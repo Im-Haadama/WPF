@@ -36,7 +36,7 @@ if ( ! $client_id ) {
 print $step ++ . ") קח פרטי תשלום" . gui_hyperlink( "כאן", "https://private.invoice4u.co.il/he/Customers/CustomerAddNew.aspx?type=edit&id=" . $client_id . "#tab-tokens" ) . "<br/>";
 print "<br/>";
 print "מספר הזמנה " . $order_id . "<br/>";
-print order_info_table( $order_id );
+print order_info_box( $order_id );
 
 print "<br/>";
 ?>

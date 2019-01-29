@@ -42,5 +42,9 @@ sql_query( "ALTER TABLE im_business_info
 ADD invoice INTEGER(10);  
 " );
 
+sql_query( "ALTER TABLE im_business_info
+ADD document_type INT(2) DEFAULT '1' NOT NULL;
+" );
+
 print "done";
 

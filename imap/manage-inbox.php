@@ -7,7 +7,7 @@
  */
 define( 'STORE_DIR', dirname( dirname( __FILE__ ) ) );
 
-require_once( STORE_DIR . '/agla/im_simple_html_dom.php' );
+require_once( STORE_DIR . '/niver/data/im_simple_html_dom.php' );
 
 $filename = STORE_DIR . '/imap/mail-config.php';
 
