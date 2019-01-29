@@ -55,6 +55,7 @@ class Supply {
 	}
 
 	public static function CreateFromFile( $file_name, $supplier_id, $debug = false ) {
+		$debug               = true;
 		$item_code_idx       = Array();
 		$name_idx            = Array();
 		$price_idx           = Array();
@@ -89,7 +90,7 @@ class Supply {
 			return null;
 		}
 		if ( ! count( $item_code_idx ) ) {
-			print "Can't find item code header.<br/>";
+			print "Info: can't find item code header.<br/>";
 		}
 		if ( ! count( $price_idx ) ) {
 			print "Can't find price header.<br/>";
@@ -140,6 +141,7 @@ class Supply {
 				}
 			}
 		}
+		// var_dump($lines);
 
 		$comments = "";
 		if ( count( $lines ) ) {
@@ -158,19 +160,23 @@ class Supply {
 				$quantity              = $line[1];
 				$name                  = $line[2];
 				$price                 = $line[3];
+//				print "name: " . $name;
 
+				$prod_id = get_product_id_by_name( $name );
 				$prod_id = sql_query_single_scalar( "select product_id \n" .
 				                                    " from im_supplier_mapping\n" .
-				                                    " where supplier_product_code = " . $supplier_product_code );
+				                                    " where supplier_product_name = " . quote_text( $name ) );
+//				print "prod_id: " . $prod_id . "<br/>";
 
 				if ( ! ( $prod_id > 0 ) ) {
-					$comments .= " פריט עם קוד " . $supplier_product_code . " לא נמצא. שם " . $name . " כמות " . $quantity . "\n";
+					$comments .= " פריט בשם " . $name . " לא נמצא. כמות " . $quantity . "\n";
 					continue;
 				}
 
 				if ( $debug ) {
 					print "c=" . $supplier_product_code . " q=" . $quantity . " n=" . $name . " pid=" . $prod_id . " on=" . get_product_name( $prod_id ) . " " . $name . "<br/>";
 				}
+				// print "prod_id: " . $prod_id . " q= " . $quantity_idx . " price = " . $price . "<br/>";
 				$Supply->AddLine( $prod_id, $quantity, $price );
 				// supply_add_line($id, $prod_id, $quantity, $price);
 			}
@@ -181,7 +187,6 @@ class Supply {
 
 			return $Supply;
 		}
-
 	}
 
 	public static function CreateSupply( $supplier_id ) {
@@ -190,12 +195,19 @@ class Supply {
 		return new Supply( $sid );
 	}
 
-	public function AddLine( $prod_id, $quantity, $price, $units = 0 ) {
-		supply_add_line( $this->ID, $prod_id, $quantity, $price, $units = 0 );
+	/**
+	 * @return int
+	 */
+	public function getID() {
+		return $this->ID;
 	}
 
 
 	// $internal - true = for our usage. false = for send to supplier.
+
+	public function AddLine( $prod_id, $quantity, $price, $units = 0 ) {
+		supply_add_line( $this->ID, $prod_id, $quantity, $price, $units = 0 );
+	}
 
 	/**
 	 * @return mixed
@@ -266,13 +278,6 @@ class Supply {
 		           " set picked = 1 " .
 		           " where id = " . $this->getID()
 		);
-	}
-
-	/**
-	 * @return int
-	 */
-	public function getID() {
-		return $this->ID;
 	}
 
 	public function getSupplierName() {
