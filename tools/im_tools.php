@@ -192,7 +192,10 @@ function random_str( $length, $keyspace = '0123456789abcdefghijklmnopqrstuvwxyzA
 }
 
 function order_get_customer_id( $order_id ) {
-	return get_postmeta_field( $order_id, "_customer_user" );
+	if ( $order_id > 0 ) {
+		return get_postmeta_field( $order_id, "_customer_user" );
+	}
+	throw new Exception( "Invalid order_id: " . $order_id );
 }
 
 function get_key() {

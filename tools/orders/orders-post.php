@@ -16,12 +16,12 @@ header( ImMultiSite::CORS( $_SERVER['HTTP_ORIGIN'] ) );
 require_once( 'orders-common.php' );
 $order_id = get_param( "order_id" );
 
-if ( ! $multisite and ! current_user_can( "edit_shop_orders" ) and
-                      order_get_customer_id( $order_id ) != get_current_user_id()
-) {
-	print "No permissions. " . __FILE__ . "<br/>";
-	die( 0 );
-}
+//if ( ! $multisite and ! current_user_can( "edit_shop_orders" ) and
+//                      order_get_customer_id( $order_id ) != get_current_user_id()
+//) {
+//	print "No permissions. " . __FILE__ . "<br/>";
+//	die( 0 );
+//}
 
 // To map item from price list to our database the shop manager select item from the price list
 // and product_id. The triplet: product_id, supplier_id and product_code are sent as saved
