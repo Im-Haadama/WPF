@@ -14,6 +14,7 @@ if ( ! defined( "ROOT_DIR" ) ) {
 }
 
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
+require_once( TOOLS_DIR . '/data/header.php' );
 require_once( ROOT_DIR . "/tools/mail.php" );
 require_once( ROOT_DIR . "/tools/catalog/catalog.php" );
 
@@ -53,11 +54,148 @@ class Supply {
 		$this->BusinessID = $row[4];
 	}
 
+	public static function CreateFromFile( $file_name, $supplier_id, $debug = false ) {
+		$item_code_idx       = Array();
+		$name_idx            = Array();
+		$price_idx           = Array();
+		$sale_idx            = Array();
+		$detail_idx          = Array();
+		$category_idx        = Array();
+		$quantity_idx        = Array();
+		$is_active_idx       = null;
+		$picture_path_idx    = null;
+		$parse_header_result = false;
+		$inventory_idx       = 0;
+		$prev_name           = "";
+
+		$file = file( $file_name );
+		for ( $i = 0; ! $parse_header_result and ( $i < 4 ); $i ++ ) {
+			if ( $debug ) {
+				print "trying to locate headers " . $file[ $i ] . "<br/>";
+
+			}
+			$parse_header_result = parse_header( $file[ $i ], $item_code_idx, $name_idx, $price_idx, $sale_idx, $inventory_idx,
+				$detail_idx, $category_idx, $is_active_idx, $filter_idx, $picture_idx, $quantity_idx );
+		}
+
+		if ( ! count( $name_idx ) ) {
+			print "Can't find name header.<br/>";
+
+			return null;
+		}
+		if ( ! count( $quantity_idx ) ) {
+			print "Can't find quantity header.<br/>";
+
+			return null;
+		}
+		if ( ! count( $item_code_idx ) ) {
+			print "Can't find item code header.<br/>";
+		}
+		if ( ! count( $price_idx ) ) {
+			print "Can't find price header.<br/>";
+
+			return null;
+		}
+		if ( $debug ) {
+			print "headers: <br/>";
+			print "price : " . $price_idx[0];
+			print "<br/>";
+			print "name: " . $name_idx[0];
+			print "<br/>";
+			print "quantity: " . $quantity_idx[0];
+			print "<br/>";
+		}
+
+		$lines = array();
+		for ( ; $i < count( $file ); $i ++ ) {
+			$data = str_getcsv( $file[ $i ] );
+			if ( $data ) {
+				if ( isset( $is_active_idx ) and ( $data[ $is_active_idx ] == 1 ) ) {
+					// print $data[ $name_idx[ 0 ] ] . " not active. Skipped<br/>";
+					continue;
+				}
+				for ( $col = 0; $col < count( $price_idx ); $col ++ ) {
+					$name = $data[ $name_idx[ $col ] ];
+					if ( $name == $prev_name ) {
+						continue;
+					}
+					$prev_name = $name;
+					$quantity  = $data[ $quantity_idx[ $col ] ];
+					$price     = $data[ $price_idx[ $col ] ];
+					$item_code = $data[ $price_idx[ $col ] ];
+
+					if ( isset( $detail_idx[ $col ] ) ) {
+						$detail = $data[ $detail_idx[ $col ] ];
+						$detail = rtrim( $detail, "!" );
+					}
+
+					if ( isset( $item_code_idx[ $col ] ) ) {
+						$item_code = $data[ $item_code_idx[ $col ] ];
+					}
+
+					if ( $price > 0 ) {
+						$new = array( $item_code, $quantity, $name, $price );
+						array_push( $lines, $new );
+					}
+				}
+			}
+		}
+
+		$comments = "";
+		if ( count( $lines ) ) {
+//			$supplier_id = get_supplier_id($supplier_name);
+			$Supply = Supply::CreateSupply( $supplier_id ); // create_supply( $supplier_id );
+			if ( ! ( $Supply->getID() > 0 ) ) {
+				die ( "שגיאה " );
+			}
+
+			if ( $debug ) {
+				print "creating supply " . $Supply->getID() . " supplier id: " . $supplier_id . "<br/>";
+			}
+
+			foreach ( $lines as $line ) {
+				$supplier_product_code = $line[0];
+				$quantity              = $line[1];
+				$name                  = $line[2];
+				$price                 = $line[3];
+
+				$prod_id = sql_query_single_scalar( "select product_id \n" .
+				                                    " from im_supplier_mapping\n" .
+				                                    " where supplier_product_code = " . $supplier_product_code );
+
+				if ( ! ( $prod_id > 0 ) ) {
+					$comments .= " פריט עם קוד " . $supplier_product_code . " לא נמצא. שם " . $name . " כמות " . $quantity . "\n";
+					continue;
+				}
+
+				if ( $debug ) {
+					print "c=" . $supplier_product_code . " q=" . $quantity . " n=" . $name . " pid=" . $prod_id . " on=" . get_product_name( $prod_id ) . " " . $name . "<br/>";
+				}
+				$Supply->AddLine( $prod_id, $quantity, $price );
+				// supply_add_line($id, $prod_id, $quantity, $price);
+			}
+
+			print " הספקה " . $Supply->getID() . " נוצרה <br/>";
+
+			$Supply->setText( $comments );
+
+			return $Supply;
+		}
+
+	}
+
 	public static function CreateSupply( $supplier_id ) {
 		$sid = create_supply( $supplier_id );
 
 		return new Supply( $sid );
 	}
+
+	public function AddLine( $prod_id, $quantity, $price, $units = 0 ) {
+		supply_add_line( $this->ID, $prod_id, $quantity, $price, $units = 0 );
+	}
+
+
+	// $internal - true = for our usage. false = for send to supplier.
 
 	/**
 	 * @return mixed
@@ -66,14 +204,9 @@ class Supply {
 		return $this->Status;
 	}
 
-	public function AddLine( $prod_id, $quantity, $price, $units = 0 ) {
-		supply_add_line( $this->ID, $prod_id, $quantity, $price, $units = 0 );
-	}
-
-	// $internal - true = for our usage. false = for send to supplier.
 	public function PrintSupply( $internal ) {
 //		var_dump($this);
-		print nl2br( sql_query_single_scalar( "SELECT text FROM im_supplies WHERE id = " . $this->ID ) ) . "<br/>";
+		print nl2br( $this->Text ) . "<br/>";
 		switch ( $this->Status ) {
 			case SupplyStatus::NewSupply:
 				print_supply_lines( $this->ID, $internal, false );
@@ -106,6 +239,15 @@ class Supply {
 	 */
 	public function getText() {
 		return $this->Text;
+	}
+
+	/**
+	 * @param mixed $Text
+	 */
+	public function setText( $Text ) {
+		$this->Text = $Text;
+		sql_query( "UPDATE im_supplies SET text = " . quote_text( $Text ) .
+		           " WHERE id = " . $this->ID );
 	}
 
 	/**
@@ -399,14 +541,6 @@ function print_supply_lines( $id, $internal, $edit = true ) {
 	$data .= "</table>";
 
 	print "$data";
-}
-
-function print_comment( $id ) {
-	$sql = "SELECT text FROM im_supplies" .
-	       " WHERE id = " . $id;
-
-	// print $sql;
-	print sql_query_single_scalar( $sql );
 }
 
 function send_supplies( $ids ) {

@@ -33,7 +33,7 @@ print gui_button( "btn_new", "show_create_item()", "הספקה חדשה" );
 			gui_header( 2, "בחר משימה" )
 		),
 		array(
-			gui_select_supplier(),
+			gui_select_supplier( "supplier_select", null, 'onchange="change_supplier()"' ),
 			gui_input_date( "date", "" ),
 			gui_select_mission( "new_mission", "", "" )
 			// gui_select_mission( "mis_new")
@@ -50,7 +50,16 @@ print gui_button( "btn_new", "show_create_item()", "הספקה חדשה" );
 	print gui_button( "add_item", "add_item()", "הוסף הספקה" );
 
 	?>
+    <form name="upload_csv" id="upcsv" method="post" enctype="multipart/form-data">
+        טען אספקה מקובץ CSV
+        <input type="file" name="fileToUpload" id="fileToUpload">
+        <input type="submit" value="החלף" name="submit">
+
+        <input type="hidden" name="post_type" value="product"/>
+    </form>
+
 </div>
+
 <?php
 
 if ( isset( $_GET["week"] ) ) {
@@ -60,6 +69,11 @@ if ( isset( $_GET["week"] ) ) {
 <script type="text/javascript" src="/niver/gui/client_tools.js"></script>
 
     <script>
+        function change_supplier() {
+            var supplier_id = get_value_by_name("supplier_select");
+            var upcsv = document.getElementById("upcsv");
+            upcsv.action = "/tools/supplies/supplies-post.php?operation=create_from_file&supplier_id=" + supplier_id;
+        }
         function mission_changed(supply_id) {
             var mis = document.getElementById("mis_" + supply_id);
             var mission_id = get_value(mis);
@@ -212,6 +226,7 @@ if ( isset( $_GET["week"] ) ) {
         }
 
         function updateDisplay() {
+            change_supplier(); // Set the upload button
             xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function () {
                 // Wait to get query result

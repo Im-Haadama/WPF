@@ -49,7 +49,7 @@ if ( $multisite or $_SERVER['REMOTE_ADDR'] == "160.153.129.234" or // Aglamaz.co
 
 $role = 'staff';
 
-if ( $roles and count( array_intersect( array( "hr" ), $roles ) ) >= 1 ) {
+if ( isset( $roles ) and count( array_intersect( array( "hr" ), $roles ) ) >= 1 ) {
 	$role = 'hr';
 }
 

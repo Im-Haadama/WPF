@@ -14,5 +14,6 @@ print "<center><h1>הספקה מספר ";
 print $id . " - " . supply_get_supplier( $supply_id );
 print  "</h1> </center>";
 
+
 print_comment( $supply_id );
 print_supply( $supply_id, false );

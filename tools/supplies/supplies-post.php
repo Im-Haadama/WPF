@@ -15,9 +15,11 @@ require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( "../business/business-post.php" );
 require_once( "../business/business_info.php" );
 
+// my_log(__FILE__);
 // print header_text(false, true, false);
 if ( isset( $_GET["operation"] ) ) {
 	$operation = $_GET["operation"];
+	// my_log($operation);
 	switch ( $operation ) {
 		case "supply_pay":
 			print "supply pay<br/>";
@@ -97,7 +99,8 @@ if ( isset( $_GET["operation"] ) ) {
 
 		case "get_comment":
 			$supply_id = $_GET["id"];
-			print_comment( $supply_id );
+			$s         = new Supply( $supply_id );
+			print $s->getText();
 			break;
 
 		case "get_all":
@@ -201,6 +204,19 @@ if ( isset( $_GET["operation"] ) ) {
 			print "delivered";
 
 			break;
+
+		case "create_from_file":
+			$supplier_id = get_param( "supplier_id" );
+			print "יוצר הספקה לספק " . $supplier_id . " <br/>";
+
+			$tmp_file = $_FILES["fileToUpload"]["tmp_name"];
+			$s        = Supply::CreateFromFile( $tmp_file, $supplier_id, true );
+			if ( $s ) {
+				$s->EditSupply( true );
+			}
+
+			break;
+
 
 		default:
 			print $operation . " not handled <br/>";

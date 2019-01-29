@@ -5,6 +5,7 @@ require_once( 'pricelist-process.php' );
 
 print header_text( false, true, true );
 $supplier_id = $_GET["supplier_id"];
+$add         = false;
 if ( isset( $_GET["add"] ) ) {
 	$add = true;
 }
