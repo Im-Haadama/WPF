@@ -50,7 +50,7 @@ print header_text( false );
 
             var selector = document.getElementById("select_term");
 
-            selector.options.length = 0;
+            //selector.options.length = 0;
             for (i = 0; i < terms.length; i++) {
                 var option = document.createElement("option");
                 option.text = terms[i];
