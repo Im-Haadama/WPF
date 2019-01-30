@@ -198,8 +198,8 @@ if ( $test_site ) {
 <?php
 // require_once( TOOLS_DIR . "/weekly/run.php" );
 ?>
-<div style="center">Fresh stoer powered by Niver Dri Sol 2015</div>
-<div style="center">Version 1.6.2</div>
+<div align="center">Fresh store powered by Niver Dri Sol 2015-2019</div>
+<div align="center">Version 1.6.2</div>
 </body>
 </html>
 

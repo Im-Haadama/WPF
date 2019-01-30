@@ -43,14 +43,15 @@ function print_deliveries( $query, $selectable = false ) {
 	$prev_user = - 1;
 	while ( $order = sql_fetch_row( $orders ) ) {
 		$order_id   = $order[0];
+		$o          = new Order( $order_id );
 		$is_group   = $order[1];
 		$order_user = $order[2];
 		if ( ! $is_group ) {
-			$data .= print_order( $order_id, $selectable );
+			$data .= $o->Print( $selectable );
 			continue;
 		} else {
 			if ( $order_user != $prev_user ) {
-				$data      .= print_order( $order_id, $selectable );
+				$data      .= $o->print( $selectable );
 				$prev_user = $order_user;
 			}
 		}
@@ -59,53 +60,53 @@ function print_deliveries( $query, $selectable = false ) {
 	return $data;
 }
 
-function print_order( $order_id, $selectable = false ) {
-	$site_tools = ImMultiSite::LocalSiteTools();
-
-	$fields = array();
-
-	if ( $selectable ) {
-		array_push( $fields, gui_checkbox( "chk" . $order_id, "deliveries", true ) );
-	}
-
-	array_push( $fields, ImMultiSite::LocalSiteName() );
-
-	$client_id     = order_get_customer_id( $order_id );
-	$ref           = "<a href=\"" . $site_tools . "/orders/get-order.php?order_id=" . $order_id . "\">" . $order_id . "</a>";
-	$address       = order_get_address( $order_id );
-	$receiver_name = get_meta_field( $order_id, '_shipping_first_name' ) . " " .
-	                 get_meta_field( $order_id, '_shipping_last_name' );
-	$shipping2     = get_meta_field( $order_id, '_shipping_address_2', true );
-
-	array_push( $fields, $ref );
-
-	array_push( $fields, $client_id );
-
-	array_push( $fields, $receiver_name );
-
-	array_push( $fields, "<a href='waze://?q=$address'>$address</a>" );
-
-	array_push( $fields, $shipping2 );
-
-	array_push( $fields, get_user_meta( $client_id, 'billing_phone', true ) );
-	$payment_method = get_payment_method_name( $client_id );
-	if ( $payment_method <> "מזומן" and $payment_method <> "המחאה" ) {
-		$payment_method = "";
-	}
-	array_push( $fields, $payment_method );
-
-	array_push( $fields, order_get_mission_id( $order_id ) );
-
-	array_push( $fields, ImMultiSite::LocalSiteID() );
-	// array_push($fields, get_delivery_id($order_id));
-
-
-	$line = "<tr> " . delivery_table_line( 1, $fields ) . "</tr>";
-
-	// get_field($order_id, '_shipping_city');
-
-	return $line;
-}
+//function print_order( $order_id, $selectable = false ) {
+//	$site_tools = ImMultiSite::LocalSiteTools();
+//
+//	$fields = array();
+//
+//	if ( $selectable ) {
+//		array_push( $fields, gui_checkbox( "chk" . $order_id, "deliveries", true ) );
+//	}
+//
+//	array_push( $fields, ImMultiSite::LocalSiteName() );
+//
+//	$client_id     = order_get_customer_id( $order_id );
+//	$ref           = "<a href=\"" . $site_tools . "/orders/get-order.php?order_id=" . $order_id . "\">" . $order_id . "</a>";
+//	$address       = order_get_address( $order_id );
+//	$receiver_name = get_meta_field( $order_id, '_shipping_first_name' ) . " " .
+//	                 get_meta_field( $order_id, '_shipping_last_name' );
+//	$shipping2     = get_meta_field( $order_id, '_shipping_address_2', true );
+//
+//	array_push( $fields, $ref );
+//
+//	array_push( $fields, $client_id );
+//
+//	array_push( $fields, $receiver_name );
+//
+//	array_push( $fields, "<a href='waze://?q=$address'>$address</a>" );
+//
+//	array_push( $fields, $shipping2 );
+//
+//	array_push( $fields, get_user_meta( $client_id, 'billing_phone', true ) );
+//	$payment_method = get_payment_method_name( $client_id );
+//	if ( $payment_method <> "מזומן" and $payment_method <> "המחאה" ) {
+//		$payment_method = "";
+//	}
+//	array_push( $fields, $payment_method );
+//
+//	array_push( $fields, order_get_mission_id( $order_id ) );
+//
+//	array_push( $fields, ImMultiSite::LocalSiteID() );
+//	// array_push($fields, get_delivery_id($order_id));
+//
+//
+//	$line = "<tr> " . delivery_table_line( 1, $fields ) . "</tr>";
+//
+//	// get_field($order_id, '_shipping_city');
+//
+//	return $line;
+//}
 
 function delivery_table_line( $ref, $fields, $edit = false ) {
 	//"onclick=\"close_orders()\""

@@ -46,7 +46,7 @@ function gui_select_client( $id = null, $events = "" ) {
 //	}
 
 	// print $sql_where;
-	return gui_select_table( $id, "wp_users", 2, $events, "", "display_name",
+	return gui_select_table( $id, "wp_users", '', $events, "", "display_name",
 		null, true, true );
 //		$sql_where );
 }

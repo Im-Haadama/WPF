@@ -26,6 +26,10 @@ require_once( ROOT_DIR . '/tools/im_tools_light.php' );
 //drop invoice_email;
 //" );
 
+sql_query( "ALTER TABLE im_supplies
+ADD picked BIT  
+" );
+
 sql_query( "ALTER TABLE im_suppliers
 ADD invoice_email VARCHAR(50)  
   CHARACTER SET utf8

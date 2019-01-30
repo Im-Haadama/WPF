@@ -102,9 +102,9 @@ function invoice_create_ship( $customer_id, $order_ids ) {
 
 		$o          = new Order( $order_id );
 		$item       = new Item();
-		$item->Name = order_get_excerpt( $order_id );
+		$item->Name = $o->GetComments();
 		if ( strlen( $item->Name ) < 2 ) {
-			$item->Name = "משלוח עבור " . get_customer_name( order_get_customer_id( $order_id ) ) . " תאריך " . $o->OrderDate();
+			$item->Name = "משלוח עבור " . $o->CustomerName() . " תאריך " . $o->OrderDate();
 		}
 
 		// TODO: display prices.

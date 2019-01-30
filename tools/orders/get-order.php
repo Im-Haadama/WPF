@@ -163,7 +163,7 @@ print "<br/>";
 
 <?php
 if ( current_user_can( "edit_shop_orders" ) or
-     order_get_customer_id( $order_id ) == get_current_user_id()
+     $o->getCustomerId() == get_current_user_id()
 ) {
 
 	if ( $for_edit ) {

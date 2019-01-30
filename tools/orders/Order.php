@@ -113,7 +113,7 @@ class Order {
 		}
 		// If it's a new order we need to get the client_id. Otherwise get it from the order.
 		if ( $client_id == - 1 ) {
-			$client_id = $this->getCustomerId();// order_get_customer_id( $this->order_id );
+			$client_id = $this->getCustomerId();
 		}
 		if ( $type ) {
 			$customer_type = $type;
@@ -219,7 +219,7 @@ class Order {
 	}
 
 	public function CustomerName() {
-		$user = get_user_by( "id", $this->CustomerId() );
+		$user = get_user_by( "id", $this->getCustomerId() );
 		if ( $user ) {
 			return $user->user_firstname . " " . $user->user_lastname;
 		}
@@ -231,7 +231,7 @@ class Order {
 		$needed = array();
 
 		$result = "";
-		$this->CalculateNeeded( $needed, $this->CustomerId() );
+		$this->CalculateNeeded( $needed, $this->getCustomerId() );
 
 		// var_dump($needed); print "<br/>";
 		foreach ( $needed as $id => $p ) {
@@ -611,11 +611,11 @@ class Order {
 			$data .= "<tr><td valign='top'>" . nl2br( $excerpt ) . "</td></tr>";
 
 		}
-		if ( true or get_delivery_id( $order_id ) > 0 ) { // Done
+		if ( true or get_delivery_id( $this->order_id ) > 0 ) { // Done
 			$data .= "<tr></tr>";
 			$data .= "<tr></tr>";
 		} else {
-			$days = get_postmeta_field( $order_id, "pack_day" );
+			$days = get_postmeta_field( $this->order_id, "pack_day" );
 			if ( strlen( $days ) > 1 ) {
 				$data .= "<tr><td>" . gui_header( 2, "יום ביצוע" . $days ) . "</td></tr>";
 			} else {
@@ -672,16 +672,16 @@ class Order {
 
 //	$data .= gui_row( array( "איזור משלוח ברירת מחדל:", get_user_meta( $client_id, 'shipping_zone', true ) ) );
 
-		$zone = order_get_zone( $this->order_id );
+		// $zone = order_get_zone( $this->order_id );
 //    $data .= $zone;
 
 		// Todo: check if it's the catch all zone
-		if ( $zone == 0 ) {
-			$postcode  = get_postmeta_field( $this->order_id, '_shipping_postcode' );
-			$zone_name = "אנא הוסף מיקוד " . $postcode . " לאזור המתאים ";
-		} else {
-			$zone_name = zone_get_name( $zone );
-		}
+//		if ( $zone == 0 ) {
+//			$postcode  = get_postmeta_field( $this->order_id, '_shipping_postcode' );
+//			$zone_name = "אנא הוסף מיקוד " . $postcode . " לאזור המתאים ";
+//		} else {
+//			$zone_name = zone_get_name( $zone );
+//		}
 
 //	$data    .= gui_row( array(
 //		"איזור משלוח:",
@@ -754,6 +754,54 @@ class Order {
 			print wc_delete_order_item( $line );
 		}
 
+	}
+
+	function Print( $selectable = false ) {
+		$site_tools = ImMultiSite::LocalSiteTools();
+
+		$fields = array();
+
+		if ( $selectable ) {
+			array_push( $fields, gui_checkbox( "chk" . $this->order_id, "deliveries", true ) );
+		}
+
+		array_push( $fields, ImMultiSite::LocalSiteName() );
+
+		$client_id     = $this->getCustomerId();
+		$ref           = "<a href=\"" . $site_tools . "/orders/get-order.php?order_id=" . $this->order_id . "\">" . $this->order_id . "</a>";
+		$address       = order_get_address( $this->order_id );
+		$receiver_name = get_meta_field( $this->order_id, '_shipping_first_name' ) . " " .
+		                 get_meta_field( $this->order_id, '_shipping_last_name' );
+		$shipping2     = get_meta_field( $this->order_id, '_shipping_address_2', true );
+
+		array_push( $fields, $ref );
+
+		array_push( $fields, $client_id );
+
+		array_push( $fields, $receiver_name );
+
+		array_push( $fields, "<a href='waze://?q=$address'>$address</a>" );
+
+		array_push( $fields, $shipping2 );
+
+		array_push( $fields, get_user_meta( $client_id, 'billing_phone', true ) );
+		$payment_method = get_payment_method_name( $client_id );
+		if ( $payment_method <> "מזומן" and $payment_method <> "המחאה" ) {
+			$payment_method = "";
+		}
+		array_push( $fields, $payment_method );
+
+		array_push( $fields, order_get_mission_id( $this->order_id ) );
+
+		array_push( $fields, ImMultiSite::LocalSiteID() );
+		// array_push($fields, get_delivery_id($order_id));
+
+		$line = "<tr> " . delivery_table_line( 1, $fields ) . "</tr>";
+
+//	print "line=  " . $line ."<br/>";
+		// get_field($order_id, '_shipping_city');
+
+		return $line;
 	}
 
 }

@@ -91,11 +91,9 @@ print "<br/>";
 
 $m      = new ImMultiSite();
 $output = $m->GetAll( "delivery/get-driver.php?mission_ids=" . implode( ",", $missions ), $debug );
-
 $dom                        = im_str_get_html( $output );
 
 foreach ( $dom->find( 'tr' ) as $row ) {
-
 	if ( ! $header ) {
 		for ( $i = 0; $i < 7; $i ++ ) {
 			if ( $i != 2 ) {
@@ -110,7 +108,12 @@ foreach ( $dom->find( 'tr' ) as $row ) {
 		continue;
 	}
 	// $key_fields = $row->find( 'td', 11 )->plaintext;
-	$site                   = $row->find( 'td', 0 )->plaintext;
+	try {
+		$site = $row->find( 'td', 0 )->plaintext;
+	} catch ( Exception $e ) {
+		var_dump( $row );
+		die ( 1 );
+	}
 	if ( $site == 'אתר' ) {
 		continue;
 	}

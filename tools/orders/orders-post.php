@@ -175,10 +175,11 @@ switch ( $operation ) {
 }
 
 function order_calculate( $order_id ) {
+	$o           = new Order( $order_id );
 	$lines       = sql_query_array_scalar( "select order_item_id " .
 	                                       " from wp_woocommerce_order_items where order_id = $order_id" .
 	                                       " and order_item_type = 'line_item'" );
-	$client_type = customer_type( order_get_customer_id( $order_id ) );
+	$client_type = $o->getCustomerId();
 	$total       = 0;
 	foreach ( $lines as $line ) {
 		$q       = get_order_itemmeta( $line, '_qty' );

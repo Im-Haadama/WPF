@@ -156,10 +156,12 @@ function print_prod_report( $prod_id, $week = null, $user_id = null ) {
 
 	$lines = array();
 	while ( $row = mysqli_fetch_row( $result ) ) {
-		$line = array(
+		$order_id = $row[3];
+		$o        = new Order( $order_id );
+		$line     = array(
 			gui_hyperlink( $row[0], "get-delivery.php?id=" . $row[0] ),
 			$row[2],
-			get_customer_name( order_get_customer_id( $row[3] ) )
+			get_customer_name( $o->getCustomerId() )
 		);
 		if ( ! $week ) {
 			array_push( $line, $row[4] );

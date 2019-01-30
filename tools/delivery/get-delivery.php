@@ -21,7 +21,7 @@ if ( ! ( $order_id > 0 ) ) {
 //print current_user_can("edit_shop_orders") ."<br/>";
 //print order_get_customer_id($order_id)."<br/>";
 //print get_current_user_id()."<br/>";
-if ( ( ! current_user_can( "edit_shop_orders" ) ) and ( order_get_customer_id( $order_id ) != get_current_user_id() ) ) {
+if ( ( ! current_user_can( "edit_shop_orders" ) ) and ( $O->getCustomerId() != get_current_user_id() ) ) {
 	print "אין הרשאה";
 	die( 0 );
 }

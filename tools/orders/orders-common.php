@@ -256,15 +256,16 @@ function order_get_last( $user_id ) {
 
 function order_get_address( $order_id ) {
 	if ( $order_id > 0 ) {
+		$o       = new Order( $order_id );
 		$address = "";
 		foreach ( array( '_shipping_address_1', '_shipping_city' ) as $field ) {
-			$address .= get_meta_field( $order_id, $field ) . " ";
+			$address .= $o->getOrderInfo( $field ) . " ";
 		}
 		if ( strlen( $address ) > 4 ) {
 			return $address;
 		}
 		// Take the address from the client;
-		$client_id = order_get_customer_id( $order_id );
+		$client_id = $o->getCustomerId();
 		// print $client_id . " " . $order_id;
 		$address .= get_user_address( $client_id );
 
@@ -684,32 +685,32 @@ function total_order( $user_id ) {
 	return gui_table( $table );
 }
 
-function order_get_zone( $order_id ) {
-//	print "order id = " . $order_id . "<br/>";
-	my_log( __METHOD__ . " order_id " . $order_id );
-	$country = get_postmeta_field( $order_id, '_shipping_country' );
-	// print "country = " . $country . "<br/>";
-
-	$postcode = get_postmeta_field( $order_id, '_shipping_postcode' );;
-	my_log( "postcode = " . $postcode );
-	// print "postcode = " . $postcode . "<br/>";
-
-
-	$zone = get_zone_from_postcode( $postcode, $country );
-	if ( zone_get_name( $zone ) != 'N/A' ) {
-		return $zone;
-	}
-
-	$client_id = order_get_customer_id( $order_id );
-
-	$client_shipping_zone = get_user_meta( $client_id, 'shipping_zone', true );
-
-	if ( strlen( $client_shipping_zone ) > 1 ) {
-		return $client_shipping_zone;
-	}
-
-	return 0;
-}
+//function order_get_zone( $order_id ) {
+////	print "order id = " . $order_id . "<br/>";
+//	my_log( __METHOD__ . " order_id " . $order_id );
+//	$country = get_postmeta_field( $order_id, '_shipping_country' );
+//	// print "country = " . $country . "<br/>";
+//
+//	$postcode = get_postmeta_field( $order_id, '_shipping_postcode' );;
+//	my_log( "postcode = " . $postcode );
+//	// print "postcode = " . $postcode . "<br/>";
+//
+//
+//	$zone = get_zone_from_postcode( $postcode, $country );
+//	if ( zone_get_name( $zone ) != 'N/A' ) {
+//		return $zone;
+//	}
+//
+//	$client_id = order_get_customer_id( $order_id );
+//
+//	$client_shipping_zone = get_user_meta( $client_id, 'shipping_zone', true );
+//
+//	if ( strlen( $client_shipping_zone ) > 1 ) {
+//		return $client_shipping_zone;
+//	}
+//
+//	return 0;
+//}
 
 function show_category_all( $sale, $text, $fresh = false, $inv = false ) {
 //	print "inventory: " . $inventory . "<br/>";
