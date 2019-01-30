@@ -333,7 +333,7 @@ function invoices_table( $statuses, $week = null ) {
 			$order_id = $row[0];
 			$order    = new Order( $order_id );
 
-			$customer_id = order_get_customer_id( $order_id );
+			$customer_id = $order->getCustomerId();
 
 			$line = $empty_line;
 			if ( $invoice->GetInvoiceUserId( $customer_id ) ) {

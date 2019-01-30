@@ -1,4 +1,6 @@
 <?php
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
 
 /**
  * Created by PhpStorm.
@@ -13,21 +15,197 @@ require_once( ROOT_DIR . "/tools/orders/orders-common.php" );
 
 
 class Order {
-	private $order_id;
-	private $order;
+	private $order_id = 0;
+	private $WC_Order = null;
+	private $mission_id = 0;
+	private $customer_id = 0;
+	private $comments = null;
 
+	// Load order
 	public function __construct( $id ) {
 		$this->order_id = $id;
-		$this->order    = new WC_Order( $id );
+		$this->WC_Order = new WC_Order( $id );
 	}
 
-//	function order_info( $order_id, $field_name ) {
-//		$sql = 'SELECT meta_value FROM `wp_postmeta` pm'
-//		       . ' WHERE pm.post_id = ' . $order_id
-//		       . ' AND `meta_key` = \'' . $field_name . '\'';
-//
-//		return sql_query_single_scalar( $sql );
-//	}
+	// Create new
+	static function CreateOrder(
+		$user_id, $mission_id, $prods, $quantities, $comments, $units = null, $type = null,
+		$method = null
+	) {
+		$debug    = false;
+		$WC_Order = wc_create_order();
+		// var_dump($order);
+		$order_id = trim( str_replace( '#', '', $WC_Order->get_order_number() ) );
+		if ( $debug ) {
+			print $order_id . "<br/>";
+		}
+
+		$o           = new Order( $order_id );
+		$o->WC_Order = $WC_Order;
+		// print "count: " . count($prods) . "<br/>";
+		$extra_comments = "";
+
+		$o->SetMissionID( $mission_id );
+
+		$total = 0;
+
+		for ( $i = 0; $i < count( $prods ); $i ++ ) {
+			$prod_id = $prods[ $i ];
+
+			if ( $prod_id > 0 ) {
+				$total += $o->AddProduct( $prod_id, $quantities[ $i ], false, $user_id, $units[ $i ], $type );
+			} else {
+				print "פריט לא נמצא " . $prods[ $i ] . "<br/>";
+				my_log( "can't prod id for " . $prods[ $i ] );
+			}
+		}
+
+		$comments .= "\n" . $extra_comments;
+
+		$o->WC_Order->calculate_totals();
+
+		$o->setCustomerId( $user_id );
+
+		foreach (
+			array(
+				'billing_first_name',
+				'billing_last_name',
+				'billing_phone',
+				'shipping_first_name',
+				'shipping_last_name',
+				'shipping_address_1',
+				'shipping_address_2',
+				'shipping_city',
+				'shipping_postcode'
+			)
+			as $key
+		) {
+//		    print $key . "<br/>";
+			$value = get_user_meta( $user_id, $key, true );
+			$_key  = '_' . $key;
+//		print $_key . " " . $value . "<br/>";
+			update_post_meta( $order_id, $_key, $value );
+		}
+
+		if ( $method ) {
+			$o->SetDeliveryMethod( $method );
+		}
+
+// 	print "comments: " . $comments . "<br/>";
+		$o->WC_Order->save();
+
+		//		$order = null;
+
+		$o->SetComments( $comments );
+
+		return $o;
+	}
+
+	function SetMissionID( $mission_id ) {
+		$this->mission_id = $mission_id;
+		set_post_meta_field( $this->order_id, "mission_id", $this->mission_id );
+	}
+
+	function AddProduct( $product_id, $quantity, $replace = false, $client_id = - 1, $unit = null, $type = null ) {
+		$total = 0;
+		if ( ! ( $product_id > 0 ) ) {
+			die( "no product id given." );
+		}
+		// If it's a new order we need to get the client_id. Otherwise get it from the order.
+		if ( $client_id == - 1 ) {
+			$client_id = $this->getCustomerId();// order_get_customer_id( $this->order_id );
+		}
+		if ( $type ) {
+			$customer_type = $type;
+		} else {
+			$customer_type = customer_type( $client_id );
+		}
+
+		my_log( __METHOD__, __FILE__ );
+		my_log( "product = " . $product_id, __METHOD__ );
+		if ( $replace and ( is_basket( $product_id ) ) ) {
+			my_log( "Add basket products " . $product_id );
+			$sql = 'SELECT DISTINCT product_id, quantity FROM im_baskets WHERE basket_id = ' . $product_id;
+
+			$result = sql_query( $sql );
+			while ( $row = mysqli_fetch_row( $result ) ) {
+				$prod_id = $row[0];
+				$q       = $row[1];
+				$total   += $this->AddProduct( $prod_id, $q * $quantity, true, $client_id, $customer_type );
+			}
+		} else {
+			my_log( __METHOD__ . ": adding product " . $product_id, __FILE__ );
+			if ( ! user_dislike( $client_id, $product_id ) ) {
+				$has_units = false;
+				if ( $unit and strlen( $unit ) > 0 ) {
+					$has_units = true;
+					$q         = 1;
+				} else {
+					$q = $quantity;
+				}
+				// print  "<br/>" . get_product_name( $product_id ) . " " . $q . " ";
+				$product = wc_get_product( $product_id );
+				if ( $product ) {
+					//print "type: " . $customer_type . "<br/>";
+					$price = get_price_by_type( $product_id, $customer_type, $quantity );
+					// print "price: " . $price . "<br/>";
+					$product->set_price( $price );
+					// print "xx" . $product . " " . $q . "<br/>";
+					$oid = $this->WC_Order->add_product( $product, $q );
+
+					// print $oid . "<br/>";
+
+					if ( $has_units ) {
+						set_order_itemmeta( $oid, 'unit', array( $unit, $quantity ) );
+
+						return $price; // Assume about 1 kg
+					}
+
+					return $price * $quantity;
+				} else {
+					print $product_id . " not found <br/>";
+				}
+			} else {
+				print "client dislike " . get_product_name( $product_id ) . "<br/>";
+			}
+		}
+		// Remove the order from require products cache
+		sql_query( "DELETE FROM im_need_orders WHERE order_id = " . $this->order_id );
+
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getCustomerId() {
+		if ( ! $this->customer_id ) {
+			$this->customer_id = get_postmeta_field( $this->order_id, "_customer_user" );
+		}
+
+		return $this->customer_id;
+	}
+
+	/**
+	 * @param mixed $customer_id
+	 */
+	public function setCustomerId( $customer_id ) {
+		$this->customer_id = $customer_id;
+		update_post_meta( $this->order_id, '_customer_user', $this->customer_id );
+	}
+
+	function SetDeliveryMethod( $method ) {
+		$postcode = get_user_meta( $this->getCustomerId(), 'shipping_postcode', true );
+		$package  = array( 'destination' => array( 'country' => 'IL', 'state' => '', 'postcode' => $postcode ) );
+		$zone     = WC_Shipping_Zones::get_zone_matching_package( $package );
+		$methods  = $zone->get_shipping_methods();
+		$m        = $methods[ $method ];
+		// var_dump($m->instance_settings['cost']);
+		//  print "m = " . $m->get_cost() . "<br/>";
+
+		$si = new WC_Shipping_Rate( 'ss', $m->get_title(), $m->instance_settings['cost'], "ffoo", $method );
+		// $m = new WC_Shipping_Method($method);
+		$this->WC_Order->add_shipping( $si );
+	}
 
 	public function GetID() {
 		return $this->order_id;
@@ -47,10 +225,6 @@ class Order {
 		}
 
 		return "לא נבחר לקוח";
-	}
-
-	public function CustomerId() {
-		return get_postmeta_field( $this->order_id, "_customer_user" );
 	}
 
 	public function Missing() {
@@ -261,6 +435,10 @@ class Order {
 		}
 	}
 
+	public function getItems() {
+		return $this->WC_Order->get_items();
+	}
+
 	function delivered() {
 		$new_status = "wc-completed";
 
@@ -281,7 +459,35 @@ class Order {
 //			return "No delivery";
 
 		// if order is legacy, create delivery.
-		order_change_status( $this->order_id, $new_status );
+		$this->ChangeStatus( $new_status );
+
+		return true;
+	}
+
+	function ChangeStatus( $status, $ids = null ) {
+		if ( $ids and is_array( $ids ) ) {
+			$args = $ids;
+		} else {
+			$args = array( $this->order_id );
+		}
+		foreach ( $args as $id ) {
+			$order = new WC_Order( $id );
+			my_log( __METHOD__, $id . " changed to " . $status );
+			// var_dump($order);
+			switch ( $status ) {
+				case 'wc-processing';
+					$order->payment_complete();
+					break;
+				case 'wc-completed':
+					$o = new Order( $id );
+					$order->update_status( $status );
+					// $o->update_levels();
+					break;
+				default:
+					$order->update_status( $status );
+			}
+			// var_dump($order);
+		}
 
 		return true;
 	}
@@ -310,11 +516,11 @@ class Order {
 	}
 
 	public function GetTotal() {
-		$order_items = $this->order->get_items();
+		$order_items = $this->WC_Order->get_items();
 		$total       = 0;
 		// print "cid= " . $this->CustomerId() . "<br/>";
 
-		$client_type = customer_type( $this->CustomerId() );
+		$client_type = customer_type( $this->getCustomerId() );
 
 		// print "cty= " . $client_type . "<br/>";
 		foreach ( $order_items as $item ) {
@@ -335,7 +541,7 @@ class Order {
 	}
 
 	public function GetBuyTotal() {
-		$order_items = $this->order->get_items();
+		$order_items = $this->WC_Order->get_items();
 		$total       = 0;
 		// print "cid= " . $this->CustomerId() . "<br/>";
 
@@ -363,6 +569,191 @@ class Order {
 		}
 
 		return $total;
+	}
+
+	function infoBox( $edit_order = false, $operation = null, $addition_orders = null ) {
+		if ( ! $this->WC_Order ) {
+			throw new Exception( "no WC_Order" );
+		}
+
+		global $logo_url;
+		$header = "";
+		if ( $operation ) {
+			$header .= $operation;
+		}
+		$header .= " מספר הזמנה " . $this->order_id;
+		if ( $addition_orders ) {
+			$header .= comma_implode( $addition_orders );
+		}
+		$data = gui_header( 1, $header, true );
+		// $data  .= gui_header( 2, $order->order_date, true);
+
+		$d_id = get_delivery_id( $this->order_id );
+		if ( $d_id > 0 ) {
+			$d          = new delivery( $d_id );
+			$draft_text = "";
+			if ( $d->isDraft() ) {
+				$draft_text = " טיוטא " . $d->draftReason();
+			}
+
+			$data .= gui_header( 2, "משלוח מספר " . $d_id . $draft_text );
+		}
+		$data    .= $this->infoRightBox();
+		$data    .= "</td>";
+		$data    .= '<tr><td><img src=' . $logo_url . ' height="100"></td></tr>';
+		$data    .= "<td height='16'>" . gui_header( 2, "הערות לקוח להזמנה" ) . "</td></tr>";
+		$excerpt = $this->GetComments();
+// TODO: find why save excerpt cause window reload
+		if ( $edit_order ) {
+			$data .= gui_cell( gui_textarea( "order_excerpt", htmlspecialchars( $excerpt ) ) );
+			$data .= gui_cell( gui_button( "btn_save_excerpt", "save_excerpt(" . $this->order_id . ")", "שמור הערה" ) );
+		} else {
+			$data .= "<tr><td valign='top'>" . nl2br( $excerpt ) . "</td></tr>";
+
+		}
+		if ( true or get_delivery_id( $order_id ) > 0 ) { // Done
+			$data .= "<tr></tr>";
+			$data .= "<tr></tr>";
+		} else {
+			$days = get_postmeta_field( $order_id, "pack_day" );
+			if ( strlen( $days ) > 1 ) {
+				$data .= "<tr><td>" . gui_header( 2, "יום ביצוע" . $days ) . "</td></tr>";
+			} else {
+				$options = array( array( "id" => 1, "name" => 'א' ), array( "id" => 2, "name" => 'ב' ) );
+				$select  = gui_select( "day", "name", $options, "onchange=save_day()", null );
+				$data    .= "<tr><td>" . $select . "</td></tr>";
+			}
+		}
+
+		$data .= "</table>";
+
+		return $data;
+	}
+
+	function infoRightBox() {
+		if ( ! $this->WC_Order ) {
+			return new Exception( "no WC_Order" );
+		}
+
+		$data      = "<table><tr><td rowspan='4'>";
+		$data      .= '<table>';
+		$client_id = $this->getCustomerId();
+		// Client info
+		$user_edit = "../";
+		$row_text  = '<tr><td>לקוח:</td><td>' . gui_hyperlink( $this->getOrderInfo( '_billing_first_name' ) . ' '
+		                                                       . $this->getOrderInfo( '_billing_last_name' ), $user_edit ) . '</td><tr>';
+		$data      .= $row_text;
+		$data      .= '<tr><td>טלפון:</td><td>' . $this->getOrderInfo( '_billing_phone' ) . '</td><tr>';
+		$data      .= '<tr><td>הוזמן:</td><td>' . $this->GetOrderDate() . '</td><tr>';
+
+		// Shipping info
+		$row_text = '<tr><td>משלוח:</td><td>' . $this->getOrderInfo( '_shipping_first_name' ) . ' '
+		            . $this->getOrderInfo( '_shipping_last_name' ) . '</td><tr>';
+		$data     .= $row_text;
+//	$row_text = '<tr><td>כתובת:</td><td>' . order_info( $order_id, '_shipping_address_1' ) . ' '
+//	            . order_info( $order_id, '_shipping_address_2' ) . '</td><tr>';
+//	$data     .= $row_text;
+		$row_text = '<tr><td>כתובת:</td><td>' . $this->getOrderInfo( '_shipping_city' ) . ' ' .
+		            $this->getOrderInfo( '_shipping_address_1' ) . ' ' .
+		            $this->getOrderInfo( '_shipping_address_2' ) . ' ' .
+		            '</td><tr>';
+		$data     .= $row_text;
+
+		$preference = "";
+		$wp_pref    = get_user_meta( $client_id, "preference" );
+		if ( $wp_pref ) {
+			foreach ( $wp_pref as $pref ) {
+				$preference .= $pref;
+			}
+		}
+
+//	$data .= gui_row(array("משימה:", order_get_mission_name($order_id)));
+		$data .= gui_row( array( "העדפות לקוח:", $preference ) );
+
+//	$data .= gui_row( array( "איזור משלוח ברירת מחדל:", get_user_meta( $client_id, 'shipping_zone', true ) ) );
+
+		$zone = order_get_zone( $this->order_id );
+//    $data .= $zone;
+
+		// Todo: check if it's the catch all zone
+		if ( $zone == 0 ) {
+			$postcode  = get_postmeta_field( $this->order_id, '_shipping_postcode' );
+			$zone_name = "אנא הוסף מיקוד " . $postcode . " לאזור המתאים ";
+		} else {
+			$zone_name = zone_get_name( $zone );
+		}
+
+//	$data    .= gui_row( array(
+//		"איזור משלוח:",
+//		$zone_name,
+//		"ימים: ",
+//		sql_query_single_scalar( "SELECT delivery_days FROM wp_woocommerce_shipping_zones WHERE zone_id =" . $zone )
+//	) );
+		$mission = order_get_mission_id( $this->order_id );
+//	 print "XCXmission: " . $mission . "<br/>";
+		$data .= gui_row( array( gui_select_mission( "mission_select", $mission, "onchange=\"save_mission()\"" ) ) );
+
+		$data .= '</table>';
+
+		return $data;
+	}
+
+	function getOrderInfo( $field_name ) {
+		$sql = 'SELECT meta_value FROM `wp_postmeta` pm'
+		       . ' WHERE pm.post_id = ' . $this->order_id
+		       . ' AND `meta_key` = \'' . $field_name . '\'';
+
+		return sql_query_single_scalar( $sql );
+	}
+
+	function GetOrderDate() {
+		if ( ! $this->WC_Order ) {
+			throw new Exception( "no WC_Order" );
+		}
+
+		return $this->WC_Order->order_date;
+	}
+
+	function GetComments() {
+
+		if ( $this->comments ) {
+			return $this->comments;
+		}
+
+		$sql = "SELECT post_excerpt FROM wp_posts WHERE id=" . $this->order_id;
+
+		$this->comments = sql_query_single_scalar( $sql );
+
+		return $this->comments;
+	}
+
+	function SetComments( $comments ) {
+		$this->comments = $comments;
+		$sql            = "UPDATE wp_posts SET post_excerpt = '" . $this->comments . "' WHERE id=" . $this->order_id;
+		sql_query( $sql );
+	}
+
+	function quantity_in_order( $order_item_id ) {
+// Get and display item quantity
+		if ( is_numeric( $order_item_id ) ) {
+			$sql2 = 'SELECT meta_value FROM wp_woocommerce_order_itemmeta'
+			        . ' WHERE order_item_id = ' . $order_item_id
+			        . ' AND `meta_key` = \'_qty\''
+			        . ' ';
+
+			return sql_query_single_scalar( $sql2 );
+		}
+
+		return 0;
+	}
+
+	function DeleteLines( $lines ) {
+		print "order_delete_lines<br/>";
+		foreach ( $lines as $line ) {
+			print $line;
+			print wc_delete_order_item( $line );
+		}
+
 	}
 
 }

@@ -106,7 +106,9 @@ class ImDocumentOperation {
 
 class delivery {
 	private $ID = 0;
-	private $d_OrderID = 0;
+	private $order_id = 0;
+	private $AdditionalOrders = null;
+	private $order = null;
 	private $order_total = 0;
 	private $order_vat_total = 0;
 	private $order_due_vat = 0;
@@ -126,8 +128,8 @@ class delivery {
 		// $q = 1: take from order.
 		// $q = 2: inventory
 		$prods       = array();
-		$order       = new WC_Order( $order_id );
-		$order_items = $order->get_items();
+		$order       = new Order( $order_id );
+		$order_items = $order->getItems();
 		$total       = 0;
 		$vat         = 0;
 		$lines       = 0;
@@ -217,7 +219,8 @@ class delivery {
 		if ( ! ( $delivery_id > 0 ) ) {
 			die ( "Error!" );
 		}
-		$client_id = order_get_customer_id( $order_id );
+		$order     = new Order( $order_id );
+		$client_id = $order->getCustomerId();
 
 		if ( $edit ) {
 			account_update_transaction( $total, $delivery_id, $client_id );
@@ -228,8 +231,8 @@ class delivery {
 			account_add_transaction( $client_id, $date, $total, $delivery_id, "משלוח" );
 			business_add_transaction( $client_id, $date, $total, $fee, $delivery_id, 3 );
 		}
-		$order = new WC_Order( $order_id );
-		if ( ! $order->update_status( 'wc-awaiting-shipment' ) ) {
+		// $order = new WC_Order( $order_id );
+		if ( ! $order->ChangeStatus( 'wc-awaiting-shipment' ) ) {
 			printbr( "can't update order status" );
 		}
 
@@ -276,7 +279,7 @@ class delivery {
 			die ( "can't get order id from delivery " . $this->ID );
 		}
 		// print "oid= " . $order_id . "<br/>";
-		$client_id = order_get_customer_id( $this->OrderId() );
+		$client_id = $this->getCustomerId();
 		if ( ! ( $client_id > 0 ) ) {
 			die ( "can't get client id from order " . $this->OrderId() );
 		}
@@ -342,14 +345,26 @@ class delivery {
 		print "mail sent to " . $to . "<br/>";
 	}
 
-	public function OrderId() {
-		if ( ! ( $this->d_OrderID > 0 ) ) {
-			$sql = "SELECT order_id FROM im_delivery WHERE id = " . $this->ID;
+	public function getCustomerId() {
+		$this->getOrder()->getCustomerID();
+	}
 
-			$this->d_OrderID = sql_query_single_scalar( $sql );
+	private function getOrder() {
+		if ( ! $this->order ) {
+			$this->order = new Order( $this->OrderId() );
 		}
 
-		return $this->d_OrderID;
+		return $this->order;
+	}
+
+	public function OrderId() {
+		if ( ! ( $this->order_id > 0 ) ) {
+			$sql = "SELECT order_id FROM im_delivery WHERE id = " . $this->ID;
+
+			$this->order_id = sql_query_single_scalar( $sql );
+		}
+
+		return $this->order_id;
 	}
 
 	function delivery_text( $document_type, $operation = ImDocumentOperation::show, $margin = false ) {
@@ -572,13 +587,13 @@ class delivery {
 		return "$data";
 	}
 
-	private function GetCustomerID() {
-		if ( is_array( $this->d_OrderID ) ) {
-			return order_get_customer_id( $this->d_OrderID[0] );
-		}
-
-		return order_get_customer_id( $this->d_OrderID );
-	}
+//	private function GetCustomerID() {
+//		if ( is_array( $this->d_OrderID ) ) {
+//			return order_get_customer_id( $this->d_OrderID[0] );
+//		}
+//
+//		return order_get_customer_id( $this->d_OrderID );
+//	}
 
 	public function delivery_line( $show_fields, $document_type, $line_ids, $client_type, $operation, $margin = false, $style = null, $var_id = 0 ) {
 		global $delivery_fields_names;
@@ -802,10 +817,10 @@ class delivery {
 	}
 
 	function OrderQuery() {
-		if ( is_array( $this->d_OrderID ) ) {
-			return "order_id in (" . comma_implode( $this->d_OrderID ) . ")";
+		if ( is_array( $this->order_id ) ) {
+			return "order_id in (" . comma_implode( $this->order_id ) . ")";
 		} else {
-			return "order_id = " . $this->d_OrderID;
+			return "order_id = " . $this->order_id;
 		}
 	}
 
@@ -883,6 +898,15 @@ class delivery {
 		return $data;
 	}
 
+	public static function CreateFromOrders( $order_ids ) {
+		$order_id = array_shift( $order_ids );
+		$instance = delivery::CreateFromOrder( $order_id );
+
+		$instance->AdditionalOrders = $order_ids;
+
+		return $instance;
+	}
+
 	public static function CreateFromOrder( $order_id ) {
 
 		$id = get_delivery_id( $order_id );
@@ -895,7 +919,11 @@ class delivery {
 	}
 
 	private function SetOrderID( $order_id ) {
-		$this->d_OrderID = $order_id;
+		$this->order_id = $order_id;
+	}
+
+	public function OrderInfoBox() {
+		return $this->order->infoBox();
 	}
 
 	/**
@@ -1041,3 +1069,4 @@ class delivery {
 		return sql_query_single_scalar( $sql);
 	}
 }
+

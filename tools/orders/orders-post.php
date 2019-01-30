@@ -45,7 +45,8 @@ switch ( $operation ) {
 	case "save_order_excerpt":
 		$excerpt  = $_GET["excerpt"];
 		$order_id = $_GET["order_id"];
-		order_set_excerpt( $order_id, $excerpt );
+		$Order    = new Order( $order_id );
+		$Order->SetComments( $order_id, $excerpt );
 		break;
 
 	case "create_order":
@@ -63,8 +64,11 @@ switch ( $operation ) {
 		// print header_text();
 		// print "creating order for " . get_user_name( $user_id );
 //		print "pos: " . $pos . "<br/>";
-		create_order( $user_id, $mission_id, explode( ",", $prods ),
+		$o = Order::CreateOrder( $user_id, $mission_id, explode( ",", $prods ),
 			explode( ",", $quantities ), $comments, explode( ",", $units ), $type );
+
+		print "הזמנה " . $o->GetID() . " נקלטה בהצלחה.";
+
 		break;
 	case "replace_baskets":
 		// Disable for now. replace_baskets();
@@ -93,10 +97,8 @@ switch ( $operation ) {
 		if ( ! is_numeric( $prod_id ) ) {
 			die ( "no prod_id for " . $name . "<br/>" );
 		}
-		$order = new WC_Order( $order_id );
-		order_add_product( $order, $prod_id, $q, false, - 1, $units );
-		sql_query( "DELETE FROM im_need_orders WHERE order_id = " . $order_id );
-		// order_calculate($order_id);
+		$o = new Order( $order_id );
+		$o->AddProduct( $prod_id, $q, false, - 1, $units );
 		break;
 
 	case "delete_lines":
@@ -104,20 +106,29 @@ switch ( $operation ) {
 		if ( ! is_numeric( $order_id ) ) {
 			die ( "no order_id" );
 		}
-		$params = explode( ',', $_GET["params"] );
-//        $order = new WC_Order($order_id);
-		order_delete_lines( $params );
-		// order_calculate($order_id);
+		$lines = get_param_array( "param" );
+		$o     = new Order( $order_id );
+		foreach ( $lines as $line ) {
+			wc_delete_order_item( $line );
+		}
+
+
 		break;
 
 	case "start_handle":
-		$ids = $_GET["ids"];
-		order_change_status( explode( ",", $ids ), "wc-processing" );
+		$ids = get_param_array( "ids" );
+		foreach ( $ids as $id ) {
+			$o = new Order( $id );
+			$o->ChangeStatus( "wc-processing" );
+		}
 		break;
 
 	case "cancel_orders":
-		$ids = $_GET["ids"];
-		order_change_status( explode( ",", $ids ), "wc-cancelled" );
+		$ids = get_param_array( "ids" );
+		foreach ( $ids as $id ) {
+			$o = new Order( $id );
+			$o->ChangeStatus( "wc-cancelled" );
+		}
 		break;
 
 	case "delivered":
@@ -134,7 +145,30 @@ switch ( $operation ) {
 		$mission_id = $_GET["id"];
 		$order_id   = $_GET["order_id"];
 		my_log( "mission=" . $mission_id . " order_id=" . $order_id );
-		order_set_mission_id( $order_id, $mission_id );
+		$o = new Order( $order_id );
+		$o->SetMissionID( $mission_id );
+		break;
+
+	case "replace_baskets":
+		replace_baskets();
+		break;
+
+	case "check_email":
+		$email = get_param( "email" );
+		if ( ! $email or strlen( $email ) < 5 ) {
+			print "u"; // unknown
+
+			return;
+		}
+		$u       = get_user_by( "email", $email );
+		$user_id = $u->ID;
+		if ( $user_id ) {
+			print "שלום " . get_customer_name( $user_id ) . "<br/>";
+			print customer_delivery_options( $user_id );
+		} else {
+			print "אין לקוח כתובת מייל זאת";
+		}
+		break;
 
 	default:
 		// die("operation " . $operation . " not handled<br/>");
@@ -205,33 +239,10 @@ function remove_dislike_from_order( $order_id ) {
 	}
 }
 
-switch ( $operation ) {
-	case "replace_baskets":
-		replace_baskets();
-		break;
-
-	case "check_email":
-		$email = get_param( "email" );
-		if ( ! $email or strlen( $email ) < 5 ) {
-			print "u"; // unknown
-
-			return;
-		}
-		$u       = get_user_by( "email", $email );
-		$user_id = $u->ID;
-		if ( $user_id ) {
-			print "שלום " . get_customer_name( $user_id ) . "<br/>";
-			print customer_delivery_options( $user_id );
-		} else {
-			print "אין לקוח כתובת מייל זאת";
-		}
-		break;
-}
-
 function customer_delivery_options( $user_id ) {
 	$postcode = get_user_meta( $user_id, 'shipping_postcode', true );
 // 	print "code= " . $postcode . "<br/>";
-	$package = array( 'destination' => array( 'country' => 'IL', 'postcode' => $postcode ) );
+	$package = array( 'destination' => array( 'country' => 'IL', 'state' => '', 'postcode' => $postcode ) );
 	$zone    = WC_Shipping_Zones::get_zone_matching_package( $package );
 	$methods = $zone->get_shipping_methods();
 

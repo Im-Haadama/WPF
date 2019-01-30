@@ -6,10 +6,10 @@ require_once( '../im_tools.php' );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( "../catalog/catalog.php" );
 
-if ( ! im_user_can( "show_catalog" ) ) {
-	print "אין הרשאה";
-	die( 1 );
-}
+//if ( ! im_user_can( "show_catalog" ) ) {
+//	print "אין הרשאה";
+//	die( 1 );
+//}
 
 $search_text = isset( $_GET["search_txt"] ) ? $_GET["search_txt"] : null;
 $operation   = $_GET["operation"];

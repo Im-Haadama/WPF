@@ -12,7 +12,8 @@ print header_text( false );
 
 $script_file = ImMultiSite::LocalSiteTools() . "/delivery/create-delivery-script.php?i=1";
 
-$edit = false;
+$edit     = false;
+$order_id = - 1;
 /// If id is set -> edit. get order_id from id.
 /// Otherwise order_id should be set.
 if ( isset( $_GET["id"] ) ) {
@@ -30,6 +31,9 @@ if ( isset( $_GET["id"] ) ) {
 		die ( 1 );
 	}
 }
+
+$O = new Order( $order_id );
+
 
 $script_file .= "&order_id=" . $order_id;
 
@@ -56,7 +60,7 @@ if ( $id > 0 ) {
 	print "<form name=\"delivery\" action= \"\">";
 //	print gui_header( 2, "עריכת תעודת משלוח מספר  " . $id );
 //	print gui_header( 3, "הזמנה מספר " . get_order_id( $id ) );
-	print order_info_box( get_order_id( $id ) );
+	print $O->infoBox();
 
 	$d = new Delivery( $id );
 	$d->PrintDeliveries( ImDocumentType::delivery, ImDocumentOperation::edit );
@@ -64,7 +68,7 @@ if ( $id > 0 ) {
 	//$d = new delivery( $id );
 	print "</form>";
 } else {
-	$client_id = order_get_customer_id( $order_id );
+	$client_id = $O->getCustomerId();
 	print "<form name=\"delivery\" action= \"\">";
 	// print gui_header( 2, "יצירת תעודת משלוח להזמנה מספר " . $order_id, true );
 
@@ -80,10 +84,10 @@ if ( $id > 0 ) {
 			die ( 1 );
 		}
 		print " הזמנות " . comma_implode( $order_ids );
-		print order_info_box( $order_ids, false, "יצירת תעודת משלוח ל" );
-		$d = delivery::CreateFromOrder( $order_ids );
+		$d = delivery::CreateFromOrders( $order_ids );
+		print $d->OrderInfoBox( $order_ids, false, "יצירת תעודת משלוח ל" );
 	} else {
-		print order_info_box( $order_id, false, "יצירת תעודת משלוח ל" );
+		print $O->infoBox( false, "יצירת תעודת משלוח ל" );
 		$d = delivery::CreateFromOrder( $order_id );
 
 	}

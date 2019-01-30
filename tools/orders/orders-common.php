@@ -61,296 +61,6 @@ function get_max_supplier() {
 	return $row[0];
 }
 
-function get_order_info( $order_id, $field_name ) {
-	$sql = 'SELECT meta_value FROM `wp_postmeta` pm'
-	         . ' WHERE pm.post_id = ' . $order_id
-	         . ' AND `meta_key` = \'' . $field_name . '\'';
-
-	return sql_query_single_scalar( $sql );
-}
-
-function order_info_box( $order_id, $edit_order = false, $operation = null ) {
-	global $logo_url;
-	$header = "";
-	if ( $operation ) {
-		$header .= $operation;
-	}
-	if ( is_array( $order_id ) ) {
-		$header   .= "הזמנה מספר " . comma_implode( $order_id );
-		$order_id = $order_id[0];
-	} else {
-		$header .= "הזמנה מספר " . $order_id;
-	}
-	$data = gui_header( 1, $header, true );
-	// $data  .= gui_header( 2, $order->order_date, true);
-
-	$d_id = get_delivery_id( $order_id );
-	if ( $d_id > 0 ) {
-		$d          = new delivery( $d_id );
-		$draft_text = "";
-		if ( $d->isDraft() ) {
-			$draft_text = " טיוטא " . $d->draftReason();
-		}
-
-		$data .= gui_header( 2, "משלוח מספר " . $d_id . $draft_text );
-	}
-	$data    .= order_info_right_box( $order_id );
-	$data    .= "</td>";
-	$data    .= '<tr><td><img src=' . $logo_url . ' height="100"></td></tr>';
-	$data    .= "<td height='16'>" . gui_header( 2, "הערות לקוח להזמנה" ) . "</td></tr>";
-	$excerpt = order_get_excerpt( $order_id );
-// TODO: find why save excerpt cause window reload
-	if ( $edit_order ) {
-		$data .= gui_cell( gui_textarea( "order_excerpt", htmlspecialchars( $excerpt ) ) );
-		$data .= gui_cell( gui_button( "btn_save_excerpt", "save_excerpt(" . $order_id . ")", "שמור הערה" ) );
-	} else {
-		$data .= "<tr><td valign='top'>" . nl2br( $excerpt ) . "</td></tr>";
-
-	}
-	if ( true or get_delivery_id( $order_id ) > 0 ) { // Done
-		$data .= "<tr></tr>";
-		$data .= "<tr></tr>";
-	} else {
-		$days = get_postmeta_field( $order_id, "pack_day" );
-		if ( strlen( $days ) > 1 ) {
-			$data .= "<tr><td>" . gui_header( 2, "יום ביצוע" . $days ) . "</td></tr>";
-		} else {
-			$options = array( array( "id" => 1, "name" => 'א' ), array( "id" => 2, "name" => 'ב' ) );
-			$select  = gui_select( "day", "name", $options, "onchange=save_day()", null );
-			$data    .= "<tr><td>" . $select . "</td></tr>";
-		}
-	}
-
-	$data .= "</table>";
-
-	return $data;
-}
-
-function order_info_right_box( $order_id ) {
-	$order = new WC_Order( $order_id );
-
-	$data      = "<table><tr><td rowspan='4'>";
-	$data      .= '<table>';
-	$client_id = order_get_customer_id( $order_id );
-	// Client info
-	$user_edit = "../";
-	$row_text  = '<tr><td>לקוח:</td><td>' . gui_hyperlink( get_order_info( $order_id, '_billing_first_name' ) . ' '
-	                                                       . get_order_info( $order_id, '_billing_last_name' ), $user_edit ) . '</td><tr>';
-	$data      .= $row_text;
-	$data      .= '<tr><td>טלפון:</td><td>' . get_order_info( $order_id, '_billing_phone' ) . '</td><tr>';
-	$data      .= '<tr><td>הוזמן:</td><td>' . $order->order_date . '</td><tr>';
-
-
-	// Shipping info
-	$row_text = '<tr><td>משלוח:</td><td>' . get_order_info( $order_id, '_shipping_first_name' ) . ' '
-	            . get_order_info( $order_id, '_shipping_last_name' ) . '</td><tr>';
-	$data     .= $row_text;
-//	$row_text = '<tr><td>כתובת:</td><td>' . order_info( $order_id, '_shipping_address_1' ) . ' '
-//	            . order_info( $order_id, '_shipping_address_2' ) . '</td><tr>';
-//	$data     .= $row_text;
-	$row_text = '<tr><td>כתובת:</td><td>' . get_order_info( $order_id, '_shipping_city' ) . ' ' .
-	            get_order_info( $order_id, '_shipping_address_1' ) . ' ' .
-	            get_order_info( $order_id, '_shipping_address_2' ) . ' ' .
-	            '</td><tr>';
-	$data     .= $row_text;
-
-	$preference = "";
-	$wp_pref    = get_user_meta( $client_id, "preference" );
-	if ( $wp_pref )
-		foreach ( $wp_pref as $pref ) {
-			$preference .= $pref;
-		}
-
-//	$data .= gui_row(array("משימה:", order_get_mission_name($order_id)));
-	$data .= gui_row( array( "העדפות לקוח:", $preference ) );
-
-//	$data .= gui_row( array( "איזור משלוח ברירת מחדל:", get_user_meta( $client_id, 'shipping_zone', true ) ) );
-
-	$zone = order_get_zone( $order_id );
-//    $data .= $zone;
-
-	// Todo: check if it's the catch all zone
-	if ( $zone == 0 ) {
-		$postcode  = get_postmeta_field( $order_id, '_shipping_postcode' );
-		$zone_name = "אנא הוסף מיקוד " . $postcode . " לאזור המתאים ";
-	} else {
-		$zone_name = zone_get_name( $zone );
-	}
-
-//	$data    .= gui_row( array(
-//		"איזור משלוח:",
-//		$zone_name,
-//		"ימים: ",
-//		sql_query_single_scalar( "SELECT delivery_days FROM wp_woocommerce_shipping_zones WHERE zone_id =" . $zone )
-//	) );
-	$mission = order_get_mission_id( $order_id );
-//	 print "XCXmission: " . $mission . "<br/>";
-	$data    .= gui_row( array( gui_select_mission( "mission_select", $mission, "onchange=\"save_mission()\"" ) ) );
-
-	$data .= '</table>';
-
-	return $data;
-}
-function get_order_itemmeta( $order_item_id, $meta_key ) {
-	global $conn;
-	if ( is_array( $order_item_id ) ) {
-		$sql = "SELECT sum(meta_value) FROM wp_woocommerce_order_itemmeta "
-		       . ' WHERE order_item_id IN ( ' . comma_implode( $order_item_id ) . ") "
-		       . ' AND meta_key = \'' . mysqli_real_escape_string( $conn, $meta_key ) . '\'';
-
-		return sql_query_single_scalar( $sql );
-	}
-	if ( is_numeric( $order_item_id ) ) {
-		$sql2 = 'SELECT meta_value FROM wp_woocommerce_order_itemmeta'
-	        . ' WHERE order_item_id = ' . $order_item_id
-		        . ' AND meta_key = \'' . mysqli_real_escape_string( $conn, $meta_key ) . '\''
-	        . ' ';
-
-		return sql_query_single_scalar( $sql2 );
-	}
-
-	return - 1;
-}
-
-function quantity_in_order( $order_item_id ) {
-// Get and display item quantity
-	if ( is_numeric( $order_item_id ) ) {
-		$sql2 = 'SELECT meta_value FROM wp_woocommerce_order_itemmeta'
-		        . ' WHERE order_item_id = ' . $order_item_id
-		        . ' AND `meta_key` = \'_qty\''
-		        . ' ';
-
-		return sql_query_single_scalar( $sql2 );
-	}
-
-	return 0;
-}
-
-function order_delete_lines( $lines ) {
-	print "order_delete_lines<br/>";
-	foreach ( $lines as $line ) {
-		print $line;
-		print wc_delete_order_item( $line );
-	}
-
-}
-
-function order_change_status( $ids, $status ) {
-	if ( is_array( $ids ) ) {
-		$args = $ids;
-	} else {
-		$args = array( $ids );
-	}
-	foreach ( $args as $id ) {
-		$order = new WC_Order( $id );
-		my_log( __METHOD__, $id . " changed to " . $status );
-		// var_dump($order);
-		switch ( $status ) {
-			case 'wc-processing';
-				$order->payment_complete();
-				break;
-			case 'wc-completed':
-				$o = new Order( $id );
-				$order->update_status( $status );
-				// $o->update_levels();
-				break;
-			default:
-				$order->update_status( $status );
-		}
-		// var_dump($order);
-	}
-}
-
-function order_add_product( $order, $product_id, $quantity, $replace = false, $client_id = - 1, $unit = null, $type = null ) {
-	$total = 0;
-	// print $product_id . " " . $quantity . " " . "<br/>";
-//	print "type: ". $type . "<br/>";
-	if ( ! ( $product_id > 0 ) ) {
-		die( "no product id given." );
-	}
-	// If it's a new order we need to get the client_id. Otherwise get it from the order.
-	if ( $client_id == - 1 ) {
-		$client_id = order_get_customer_id( $order->get_id() );
-	}
-	if ( $type ) {
-		$customer_type = $type;
-	} else {
-		$customer_type = customer_type( $client_id );
-	}
-
-	my_log( __METHOD__, __FILE__ );
-	my_log( "product = " . $product_id, __METHOD__ );
-	if ( $replace and ( is_basket( $product_id ) ) ) {
-		my_log( "Add basket products " . $product_id );
-		$sql = 'SELECT DISTINCT product_id, quantity FROM im_baskets WHERE basket_id = ' . $product_id;
-
-		$result = sql_query( $sql );
-		while ( $row = mysqli_fetch_row( $result ) ) {
-			$prod_id = $row[0];
-			$q       = $row[1];
-			$total   += order_add_product( $order, $prod_id, $q * $quantity, true, $client_id, $customer_type );
-		}
-	} else {
-		my_log( __METHOD__ . ": adding product " . $product_id, __FILE__ );
-		if ( ! user_dislike( $client_id, $product_id ) ) {
-			$has_units = false;
-			if ( $unit and strlen( $unit ) > 0 ) {
-				$has_units = true;
-				$q         = 1;
-			} else {
-				$q = $quantity;
-			}
-			// print  "<br/>" . get_product_name( $product_id ) . " " . $q . " ";
-			$product = wc_get_product( $product_id );
-			if ( $product ) {
-				//print "type: " . $customer_type . "<br/>";
-				$price = get_price_by_type( $product_id, $customer_type, $quantity );
-				// print "price: " . $price . "<br/>";
-				$product->set_price( $price );
-				// print "xx" . $product . " " . $q . "<br/>";
-				$oid = $order->add_product( $product, $q );
-
-				// print $oid . "<br/>";
-
-				if ( $has_units ) {
-					set_order_itemmeta( $oid, 'unit', array( $unit, $quantity ) );
-
-					return $price; // Assume about 1 kg
-				}
-
-				return $price * $quantity;
-			} else {
-				print $product_id . " not found <br/>";
-			}
-		} else {
-			print "client dislike " . get_product_name( $product_id ) . "<br/>";
-		}
-	}
-}
-
-//        }
-//    }
-// else {
-//        if (is_order($product_id)) {
-//            $sql = 'select '
-//                . ' woi.order_item_name, woim.meta_value, woim.order_item_id'
-//                . ' from wp_woocommerce_order_items woi join wp_woocommerce_order_itemmeta woim'
-//                . ' where order_id = ' . $product_id
-//                . ' and woi.order_item_id = woim.order_item_id and woim.`meta_key` = \'_product_id\''
-//                . ' group by woi.order_item_name order by 1'
-//                . ' ';
-//            my_log($sql, __METHOD__);
-//
-//            $export = mysql_query ( $sql ) or die ( "Sql error : " . mysql_error( ) );
-//
-//            while( $row = mysqli_fetch_row( $result ) ) {
-//                $order_item_id = $row[2];
-//                $prod_id = $row[1];
-//                order_add_product($order, $prod_id, quantity_in_order($order_item_id));
-//            }
-//        } else {
-
-
 function user_dislike( $user_id, $prod_id ) {
 	$sql = 'SELECT id FROM im_client_dislike WHERE client_id=' . $user_id .
 	       ' AND dislike_prod_id=' . $prod_id;
@@ -363,9 +73,6 @@ function user_dislike( $user_id, $prod_id ) {
 	return $v;
 }
 
-//function print_order_info( $order_id, $comments, $operation = null ) {
-//	print order_info_data( $order_id, $comments, $operation );
-//}
 
 // $multiply is the number of ordered baskets or 1 for ordinary item.
 function orders_per_item( $prod_id, $multiply, $short = false, $include_basket = false, $include_bundle = false, $just_total = false ) {
@@ -439,80 +146,81 @@ function orders_per_item( $prod_id, $multiply, $short = false, $include_basket =
 }
 
 function orders_create_subs() {
-	print "creating orders for subscriptions<br/>";
-	$sql = "SELECT client, basket, weeks, unfold_basket FROM im_subscriptions ";
-
-	$result = sql_query_array( $sql );
-
-	my_log( "creating subscriptions orders", __FILE__ );
-	foreach ( $result as $row ) {
-		$user_id = $row[0];
-
-		print get_user_name( $user_id ) . ": last order on- " . order_get_last( $user_id ) . "<br/>";
-		$diff = date_diff( new DateTime( order_get_last( $user_id ) ), new DateTime() );
-
-		// print get_user_name($user_id) . " " . $diff->days . "<br/>";
-		if ( $diff->days < ( $row[2] * 7 - 3 ) ) {
-			continue;
-		}
-
-		$product_id = $row[1];
-		print "creating $user_id  $product_id, $row[3]<br/>";
-
-		my_log( "create order: product = " . $product_id, __METHOD__ );
-
-		$order = wc_create_order();
-		$order->set_created_via( "מנויים" );
-		order_add_product( $order, $product_id, 1, $row[3], $user_id );
-		$order_id = $order->get_id();
-
-		$postcode = get_user_meta( $user_id, 'shipping_postcode', true );
-		$package  = array( 'destination' => array( 'country' => 'IL', 'postcode' => $postcode ) );
-		$zone     = WC_Shipping_Zones::get_zone_matching_package( $package );
-		$method   = WC_Shipping_Zones::get_shipping_method( $zone->get_id() );
-
-//		$shipping = new $method;
-
-		$rate           = new WC_Shipping_Rate();
-		$rate->id       = 'flat_rate';
-		$rate->label    = 'משלוח';
-//		$rate->cost     = $shipping->cost;
-		$rate->calc_tax = 'per_order';
-
-		$order->add_shipping( $rate );
-
-		my_log( "add_product" );
-		$order->calculate_totals();
-
-		my_log( "totals" );
-		// assign the order to the current user
-		order_set_customer_id( $order->get_id(), $user_id );
-		// payment_complete
-		$order->payment_complete();
-
-		// billing info
-		print $order_id;
-		foreach (
-			array(
-				'billing_first_name',
-				'billing_last_name',
-				'billing_phone',
-				'billing_address_1',
-				'billing_address_2',
-				'shipping_first_name',
-				'shipping_last_name',
-				'shipping_address_1',
-				'shipping_address_2',
-				'shipping_city',
-				'shipping_postcode'
-			) as $key
-		) {
-//	    	print $key . " ";
-			$values = get_user_meta( $user_id, $key );
-//		    print $key . " " . $values[0] . "<br/>";
-			update_post_meta( $order_id, "_" . $key, $values[0] );
-		}
-	}
+	die( "not implemented" );
+//	print "creating orders for subscriptions<br/>";
+//	$sql = "SELECT client, basket, weeks, unfold_basket FROM im_subscriptions ";
+//
+//	$result = sql_query_array( $sql );
+//
+//	my_log( "creating subscriptions orders", __FILE__ );
+//	foreach ( $result as $row ) {
+//		$user_id = $row[0];
+//
+//		print get_user_name( $user_id ) . ": last order on- " . order_get_last( $user_id ) . "<br/>";
+//		$diff = date_diff( new DateTime( order_get_last( $user_id ) ), new DateTime() );
+//
+//		// print get_user_name($user_id) . " " . $diff->days . "<br/>";
+//		if ( $diff->days < ( $row[2] * 7 - 3 ) ) {
+//			continue;
+//		}
+//
+//		$product_id = $row[1];
+//		print "creating $user_id  $product_id, $row[3]<br/>";
+//
+//		my_log( "create order: product = " . $product_id, __METHOD__ );
+//
+//		$order = wc_create_order();
+//		$order->set_created_via( "מנויים" );
+//		order_add_product( $order, $product_id, 1, $row[3], $user_id );
+//		$order_id = $order->get_id();
+//
+//		$postcode = get_user_meta( $user_id, 'shipping_postcode', true );
+//		$package  = array( 'destination' => array( 'country' => 'IL', 'postcode' => $postcode ) );
+//		$zone     = WC_Shipping_Zones::get_zone_matching_package( $package );
+//		$method   = WC_Shipping_Zones::get_shipping_method( $zone->get_id() );
+//
+////		$shipping = new $method;
+//
+//		$rate           = new WC_Shipping_Rate();
+//		$rate->id       = 'flat_rate';
+//		$rate->label    = 'משלוח';
+////		$rate->cost     = $shipping->cost;
+//		$rate->calc_tax = 'per_order';
+//
+//		$order->add_shipping( $rate );
+//
+//		my_log( "add_product" );
+//		$order->calculate_totals();
+//
+//		my_log( "totals" );
+//		// assign the order to the current user
+//		order_set_customer_id( $order->get_id(), $user_id );
+//		// payment_complete
+//		$order->payment_complete();
+//
+//		// billing info
+//		print $order_id;
+//		foreach (
+//			array(
+//				'billing_first_name',
+//				'billing_last_name',
+//				'billing_phone',
+//				'billing_address_1',
+//				'billing_address_2',
+//				'shipping_first_name',
+//				'shipping_last_name',
+//				'shipping_address_1',
+//				'shipping_address_2',
+//				'shipping_city',
+//				'shipping_postcode'
+//			) as $key
+//		) {
+////	    	print $key . " ";
+//			$values = get_user_meta( $user_id, $key );
+////		    print $key . " " . $values[0] . "<br/>";
+//			update_post_meta( $order_id, "_" . $key, $values[0] );
+//		}
+//	}
 }
 
 // Add new shipping
@@ -612,133 +320,6 @@ function check_cache_validity() {
 
 }
 
-function create_order( $user_id, $mission_id, $prods, $quantities, $comments, $units = null, $type = null, $method = null ) {
-
-	$debug = false;
-	if ( $debug ) {
-		$order_id = 1992;
-		$order    = new WC_Order( $order_id );
-	} else {
-		$order    = wc_create_order();
-		// var_dump($order);
-		$order_id = trim( str_replace( '#', '', $order->get_order_number() ) );
-		// print "new order: " . $order_id . "<br/>";
-	}
-	// print "count: " . count($prods) . "<br/>";
-	$extra_comments = "";
-
-	order_set_mission_id( $order_id, $mission_id );
-
-	$total = 0;
-
-	for ( $i = 0; $i < count( $prods ); $i ++ ) {
-		// $prod_name = urldecode( $prods[ $i ] );
-
-		// print "prod_name: " . $prod_name . "<br/>";
-		$prod_id = $prods[ $i ];
-// 		 print "prod(" . get_product_name($prod_id) . "): " . $prod_id . ", q=" . $quantities[$i] . "<br/>";
-		if ( $prod_id > 0 ) {
-			$total += order_add_product( $order, $prod_id, $quantities[ $i ], false, $user_id, $units[ $i ], $type );
-
-			// if (strlen($units[$i]) > 1) $extra_comments .= $prod_name . " " . $quantities[$i] . " " . $units[$i] . "\n";
-		} else {
-			print "פריט לא נמצא " . $prods[ $i ] . "<br/>";
-			my_log( "can't prod id for " . $prods[ $i ] );
-		}
-	}
-
-//	if ($total < 80){
-//		print "הזמנה קטנה מדי ולא נקלטה";
-//		return 0;
-//	}
-	$comments .= "\n" . $extra_comments;
-
-//	$order->add_shipping( 25 );
-//	$user = get_userdata( $user_id );
-	$order->calculate_totals();
-//	$order->customer_message = $comments;
-	order_set_customer_id( $order_id, $user_id);
-	// print "after update user " . $user_id . "<br/>";
-	foreach (
-		array(
-			'billing_first_name',
-			'billing_last_name',
-			'billing_phone',
-			'shipping_first_name',
-			'shipping_last_name',
-			'shipping_address_1',
-			'shipping_address_2',
-			'shipping_city',
-			'shipping_postcode'
-		)
-		as $key
-	) {
-//		    print $key . "<br/>";
-		$value = get_user_meta( $user_id, $key, true );
-		$_key  = '_' . $key;
-//		print $_key . " " . $value . "<br/>";
-		update_post_meta( $order_id, $_key, $value );
-	}
-
-	// TODO:: Set the shipping method
-	if ( $method ) {
-		$postcode = get_user_meta( $user_id, 'shipping_postcode', true );
-		$package  = array( 'destination' => array( 'country' => 'IL', 'postcode' => $postcode ) );
-		$zone     = WC_Shipping_Zones::get_zone_matching_package( $package );
-		$methods  = $zone->get_shipping_methods();
-		$m        = $methods[ $method ];
-		// var_dump($m->instance_settings['cost']);
-		//  print "m = " . $m->get_cost() . "<br/>";
-
-		$si = new WC_Shipping_Rate( 'ss', $m->get_title(), $m->instance_settings['cost'], "ffoo", $method );
-		// $m = new WC_Shipping_Method($method);
-		$order->add_shipping( $si );
-
-		// 	var_dump($order);
-	}
-
-// 	print "comments: " . $comments . "<br/>";
-	$order->save();
-	$order = null;
-	order_set_excerpt( $order_id, $comments );
-
-	// print "shipping first name: " . get_post_meta($order_id, '_shipping_first_name', true);
-
-	// PATCH... the above code doesn't change the shipping values
-//	foreach (
-//		array(
-//			'shipping_first_name',
-//			'shipping_last_name',
-//			'shipping_address_1',
-//			'shipping_address_2',
-//			'shipping_city',
-//			'shipping_postcode'
-//		)
-//		as $key
-//	) {
-//		$value = get_user_meta( $user_id, $key, true );
-//		$_key  = '_' . $key;
-//		$sql   = "UPDATE wp_postmeta SET meta_value = '" . $value . "' WHERE post_id = " . $order_id .
-//		         " AND meta_key = '" . $_key . "'";
-//		print $sql . "<br/>";
-//		sql_query( $sql );
-//	}
-
-	// print "הזמנה " . $order_id . " נקלטה בהצלחה.";
-	//print $comments;
-	return $order_id;
-}
-
-function order_set_excerpt( $post_id, $excerpt ) {
-	$sql = "UPDATE wp_posts SET post_excerpt = '" . $excerpt . "' WHERE id=" . $post_id;
-	sql_query( $sql );
-}
-
-function order_get_excerpt( $post_id ) {
-	$sql = "SELECT post_excerpt FROM wp_posts WHERE id=" . $post_id;
-
-	return sql_query_single_scalar( $sql );
-}
 
 /// print "התקבלה הזמנה של סל " . get_product_name($basket_id) . " עבור " . get_customer_name($user_id);
 
@@ -905,7 +486,7 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 			$order_id = $row[0];
 			$order    = new Order( $order_id );
 
-			$customer_id = order_get_customer_id( $order_id );
+			$customer_id = $order->getCustomerId( $order_id );
 
 			$line            = $empty_line;
 			$invoice_user_id = get_user_meta( $customer_id, 'invoice_id', 1 );
@@ -944,7 +525,6 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 				$line[ OrderFields::total_order ] = $order_total;
 				$total_order_total                += $order_total;
 				debug_time1( "total" );
-
 			}
 
 			// 4) Delivery note
@@ -973,7 +553,7 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 				$line[ OrderFields::delivery_note ] = gui_hyperlink( "צור", "../delivery/create-delivery.php?order_id=" . $order_id );
 				$total_delivery_fee                 = order_get_shipping_fee( $order_id );
 			}
-			$line[ OrderFields::city ]         = get_order_info( $order_id, '_shipping_city' );
+			$line[ OrderFields::city ]         = $order->getOrderInfo( '_shipping_city' );
 			$line[ OrderFields::payment_type ] = get_payment_method_name( $customer_id );
 			if ( current_user_can( "show_business_info" ) ) {
 				$line[ OrderFields::good_costs ] = $order->GetBuyTotal();
@@ -1131,10 +711,6 @@ function order_get_zone( $order_id ) {
 	return 0;
 }
 
-function order_set_customer_id( $order_id, $customer_id ) {
-	update_post_meta( $order_id, '_customer_user', $customer_id );
-}
-
 function show_category_all( $sale, $text, $fresh = false, $inv = false ) {
 //	print "inventory: " . $inventory . "<br/>";
 //	print "fresh: " . $fresh . "<br/>";
@@ -1257,4 +833,25 @@ function product_line( $prod_id, $text, $sale, $customer_type, $inv, $term_id ) 
 	}
 
 	return $line;
+}
+
+function get_order_itemmeta( $order_item_id, $meta_key ) {
+	global $conn;
+	if ( is_array( $order_item_id ) ) {
+		$sql = "SELECT sum(meta_value) FROM wp_woocommerce_order_itemmeta "
+		       . ' WHERE order_item_id IN ( ' . comma_implode( $order_item_id ) . ") "
+		       . ' AND meta_key = \'' . mysqli_real_escape_string( $conn, $meta_key ) . '\'';
+
+		return sql_query_single_scalar( $sql );
+	}
+	if ( is_numeric( $order_item_id ) ) {
+		$sql2 = 'SELECT meta_value FROM wp_woocommerce_order_itemmeta'
+		        . ' WHERE order_item_id = ' . $order_item_id
+		        . ' AND meta_key = \'' . mysqli_real_escape_string( $conn, $meta_key ) . '\''
+		        . ' ';
+
+		return sql_query_single_scalar( $sql2 );
+	}
+
+	return - 1;
 }

@@ -15,7 +15,8 @@ if ( user_can( $user_id, "edit_shop_orders" ) ) {
 }
 
 $order_id = $_GET["order_id"];
-if ( order_get_customer_id( $order_id ) != $user_id and ! $manager ) {
+$o        = new Order( $order_id );
+if ( $o->getCustomerId() != $user_id and ! $manager ) {
 	die ( "no permission" );
 }
 
@@ -129,7 +130,9 @@ $for_edit    = ! ( $delivery_id > 0 );
 if ( get_post_meta( $order_id, 'printed' ) )
 	$for_edit = false;
 
-print order_info_box( $order_id, $for_edit );
+$order = new Order( $order_id );
+
+print $order->infoBox( $for_edit );
 
 $d = delivery::CreateFromOrder( $order_id );
 $d->PrintDeliveries( ImDocumentType::order, ImDocumentOperation::edit, $margin );

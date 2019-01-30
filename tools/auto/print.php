@@ -118,14 +118,15 @@ function print_mission( $mission_id_filter = null ) {
 	find_route_1( $start, $orders, $path_orders, false, $end );
 	foreach ( $path_orders as $id ) {
 		update_post_meta( $id, "printed", 1 );
-		$user_id = order_get_customer_id( $id );
+		$O       = new Order( $id );
+		$user_id = $O->getCustomerId();
 		if ( array_key_exists( $user_id, $grouped_orders ) ) {
-			print order_info_data( $grouped_orders[ $user_id ][0], true );
+			print $O->infoBox( true, null, $grouped_orders[ $user_id ][0] );
 			$d = Delivery::CreateFromOrder( $grouped_orders[ $user_id ] );
 			$d->PrintDeliveries( ImDocumentType::delivery, ImDocumentOperation::collect );
 
 		} else {
-			print order_info_data( $id, false );
+			print $O->infoBox( false );
 			$D = Delivery::CreateFromOrder( $id );
 			$D->PrintDeliveries( ImDocumentType::delivery, ImDocumentOperation::collect );
 		}

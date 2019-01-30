@@ -10,6 +10,7 @@ $print  = isset( $_GET["print"] );
 $d      = new Delivery( $id );
 
 $order_id = get_order_id( $id );
+$O        = new Order( $order_id );
 
 if ( ! ( $order_id > 0 ) ) {
 	print "תעודה לא קיימת";
@@ -25,7 +26,7 @@ if ( ( ! current_user_can( "edit_shop_orders" ) ) and ( order_get_customer_id( $
 	die( 0 );
 }
 
-print order_info_box( $order_id );
+print $O->infoBox( $order_id );
 
 print $d->delivery_text( ImDocumentType::delivery, ImDocumentOperation::show, $margin );
 

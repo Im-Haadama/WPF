@@ -287,6 +287,7 @@ function debug_time2( $str ) {
 }
 
 function debug_time1( $str ) {
+	return;
 	static $prev_time;
 	if ( $str == "reset" ) {
 		$prev_time = microtime();

@@ -96,10 +96,6 @@ function order_get_mission_id( $order_id, $debug = false ) {
 	return $mission_id;
 }
 
-function order_set_mission_id( $order_id, $mission_id ) {
-	set_post_meta_field( $order_id, "mission_id", $mission_id );
-}
-
 function get_client_type( $id ) {
 	// print "meta: " . $meta . "<br/>";
 	return get_user_meta( $id, "_client_type", true );
@@ -131,7 +127,7 @@ function get_zone_from_postcode( $postcode, $country = null ) {
 	$zone1 = WC_Shipping_Zones::get_zone_matching_package( array(
 		'destination' => array(
 			'country'  => $country,
-//            'state'    => $state,
+			'state'    => '',
 			'postcode' => $postcode,
 		),
 	) )->get_id();
@@ -189,13 +185,6 @@ function random_str( $length, $keyspace = '0123456789abcdefghijklmnopqrstuvwxyzA
 	}
 
 	return implode( '', $pieces );
-}
-
-function order_get_customer_id( $order_id ) {
-	if ( $order_id > 0 ) {
-		return get_postmeta_field( $order_id, "_customer_user" );
-	}
-	throw new Exception( "Invalid order_id: " . $order_id );
 }
 
 function get_key() {

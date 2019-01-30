@@ -59,7 +59,7 @@ $col = 0;
 $table[ $row ++ ][ $col ] = gui_header( 2, "אריזה" );
 add_command( $row, $col, "edit_shop_orders", "הזמנות", "orders/orders-get.php", "doc_frame" );
 add_command( $row, $col, "edit_shop_orders", "פריטים להזמנות", "orders/get-total-orders.php", "doc_frame" );
-add_command( $row, $col, "edit_shop_orders", "הדפסה", "weekly/print.php", "print" );
+add_command( $row, $col, "edit_shop_orders", "הדפסה", "auto/print.php", "print" );
 add_command( $row, $col, "show_supplies", "אספקות", "supplies/supplies-get.php" );
 add_command( $row, $col, "show_supplies", "מצב המלאי", "inventory/display.php" );
 while ( $row < $max_row ) {

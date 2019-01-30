@@ -19,13 +19,15 @@ require_once( "../orders/orders-common.php" );
 print header_text( false, true, true );
 print gui_header( 1, "לקוח חדש" );
 $order_id = $_GET["order_id"];
+$O        = new Order( $order_id );
+
 print "1) צור קשר טלפוני עם הלקוח. עדכן אותו שהתקבלה ההזמנה.<br/>";
 print "2) אמת את השם לחשבונית.<br/>";
 print "3) אמת את הכתובת למשלוח. בדוק האם יש אינטרקום או קוד לגישה לדלת.<br/>";
 
 $step      = 4;
 $invoice   = new Invoice4u( $invoice_user, $invoice_password );
-$client_id = $invoice->GetInvoiceUserId( order_get_customer_id( $order_id ) );
+$client_id = $invoice->GetInvoiceUserId( $O->getCustomerId() );
 
 if ( ! $client_id ) {
 	print $step ++ . ") לחץ על צור משתמש - במערכת invoice4u";
@@ -47,7 +49,8 @@ print "<br/>";
     }
 
     function create_user() {
-        var request = "account-post.php?operation=create_invoice_user&id=" +<?php print order_get_customer_id( $order_id ); ?>;
+        var request = "account-post.php?operation=create_invoice_user&id=" +
+		    <?php print $O->getCustomerId(); ?>;
         //  window.alert(request);
         xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function () {

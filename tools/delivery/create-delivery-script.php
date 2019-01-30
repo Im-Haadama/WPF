@@ -16,6 +16,8 @@ if ( $id > 0 ) {
 	$order_id = get_order_id( $id );
 }
 
+$O = new Order( $order_id );
+
 print gui_datalist( "items", "im_products", "post_title" );
 ?>
 
@@ -37,7 +39,7 @@ print gui_datalist( "items", "im_products", "post_title" );
         var request = "delivery-post.php?operation=get_price_vat&name=" + encodeURI(product_name);
 
 	    <?php
-	    if ( $type = get_client_type( order_get_customer_id( $order_id ) ) ) {
+	    if ( $type = get_client_type( $O->getCustomerId() ) ) {
 		    print 'request = request + "&type=" + \'' . $type . '\';';
 	    }
 	    ?>
@@ -213,7 +215,7 @@ print gui_datalist( "items", "im_products", "post_title" );
         request = request + "&fee=" + fee;
         if (draft) {
             request += "&draft";
-            var reason = "not implemented"; // get_select_text("draft_reason");
+            var reason = ""; // get_select_text("draft_reason");
             // alert(reason);
 
             request += "&reason=" + encodeURI(reason);
@@ -467,7 +469,7 @@ print gui_datalist( "items", "im_products", "post_title" );
 
         var employee_discount = false;
 	    <?php
-	    $customer_id = order_get_customer_id( $order_id );
+	    $customer_id = $O->getCustomerId();
 	    $wp_user = get_user_by( 'id', $customer_id );
 	    $roles = $wp_user->roles;
 	    if ( $roles and customer_type( $customer_id ) == 0 // Not owner or siton
