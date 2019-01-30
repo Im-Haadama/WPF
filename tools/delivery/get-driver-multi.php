@@ -15,6 +15,7 @@ require_once( '../multi-site/imMulti-site.php' );
 require_once( '../maps/build-path.php' );
 require_once( '../missions/Mission.php' );
 require_once( '../orders/Order.php' );
+require_once( "../supplies/supplies.php" );
 
 $debug = get_param( "debug" );
 
@@ -258,7 +259,7 @@ foreach ( $data_lines as $mission_id => $data_line ) {
 
 			try {
 				$o    = new Order( $order_id );
-				if ( strlen( $o->Missing() ) ) {
+				if ( $o->getDeliveryId() and strlen( $o->Missing() ) ) {
 					$data .= gui_row( array(
 						"חוסרים",
 						$order_id,
