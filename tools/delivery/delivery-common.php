@@ -47,11 +47,11 @@ function print_deliveries( $query, $selectable = false ) {
 		$is_group   = $order[1];
 		$order_user = $order[2];
 		if ( ! $is_group ) {
-			$data .= $o->Print( $selectable );
+			$data .= $o->PrintHtml( $selectable );
 			continue;
 		} else {
 			if ( $order_user != $prev_user ) {
-				$data      .= $o->print( $selectable );
+				$data      .= $o->PrintHtml( $selectable );
 				$prev_user = $order_user;
 			}
 		}

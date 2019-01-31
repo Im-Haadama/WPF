@@ -362,11 +362,11 @@ function print_deliveries( $query, $selectable = false, $debug = false ) {
 			print "order " . $order_id . "<br/>";
 
 		if ( ! $is_group ) {
-			$data .= $o->Print( $selectable );
+			$data .= $o->PrintHtml( $selectable );
 			continue;
 		} else {
 			if ( $order_user != $prev_user ) {
-				$data      .= $o->Print( $selectable );
+				$data      .= $o->PrintHtml( $selectable );
 				$prev_user = $order_user;
 			}
 		}

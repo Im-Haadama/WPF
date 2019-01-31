@@ -756,7 +756,7 @@ class Order {
 
 	}
 
-	function Print( $selectable = false ) {
+	function PrintHtml( $selectable = false ) {
 		$site_tools = ImMultiSite::LocalSiteTools();
 
 		$fields = array();
