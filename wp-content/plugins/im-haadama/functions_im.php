@@ -12,6 +12,7 @@ require_once( TOOLS_DIR . '/im_tools.php' );
 require_once( STORE_DIR . '/niver/data/sql.php' );
 require_once( TOOLS_DIR . '/wp.php' );
 require_once( TOOLS_DIR . '/pricing.php' );
+require_once( STORE_DIR . '/niver/gui/inputs.php' );
 
 if ( ! isset( $woocommerce ) ) {
 	// print "Woocommerce is not present. Exiting";
@@ -24,7 +25,17 @@ add_action( 'woocommerce_checkout_process', 'wc_minimum_order_amount' );
 add_action( 'woocommerce_before_cart', 'wc_minimum_order_amount' );
 add_action( 'woocommerce_checkout_order_processed', 'wc_minimum_order_amount' );
 add_action( 'woocommerce_after_cart_table', 'wc_after_cart' );
+add_action( 'wp_footer', 'im_footer' );
 
+function im_footer() {
+	$data = '<div style="color:#95bd3e" align="center">';
+	$data .= 'Fresh store powered by ' . gui_hyperlink( "Niver Dri Sol",
+			"http://niver-dri-sol.com" ) . ' 2015-2019 ';
+	$data .= 'Version 1.6.2';
+	$data .= "</div>";
+
+	return $data;
+}
 
 function get_minimum_order() {
 	global $woocommerce;
@@ -477,3 +488,4 @@ function hide_shipping_if_fresh( $available_methods ) {
 //    var_dump($fields);
 //	return $fields;
 //}
+?>

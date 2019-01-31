@@ -63,8 +63,10 @@ function get_form_tables() {
                     }
                 }
             }
-            var url = "<?php print ImMultiSite::LocalSiteTools();?>/orders/order-form-post.php?operation=create_order" +
-                "&params=" + params;
+            var url = "/order-finish/?params=" + params;
+
+//                "<?php //print ImMultiSite::LocalSiteTools();?>///orders/order-form-post.php?operation=create_order" +
+//                "&params=" + params;
 
             var phone = get_value_by_name("phone");
             var name = get_value_by_name("name");

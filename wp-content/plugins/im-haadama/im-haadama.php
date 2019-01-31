@@ -27,6 +27,20 @@ require_once( TOOLS_DIR . '/im_tools.php' );
 
 require_once( "functions_im.php" );
 
+add_shortcode( 'form-order', 'create_order_form' );
+
+function create_order_form( $atts, $contents, $tag ) {
+	require_once( TOOLS_DIR . "/orders/order-form-post.php" );
+	$params = get_param_array( "params" );
+	$name   = get_param( "name" );
+	$phone  = get_param( "phone" );
+	$group  = get_param( "group" );
+	$user   = get_param( "user" );
+	$method = get_param( "method" );
+	$email  = get_param( "email" );
+
+	return order_form( $params, $name, $phone, $group, $user, $method, $email );
+}
 // Express inventory
 add_shortcode( 'show-inventory', 'show_inventory_func' );
 
@@ -46,12 +60,12 @@ add_shortcode( 'basket-content', 'content_func' );
 function content_func( $atts, $contents, $tag ) {
 	require_once( ROOT_DIR . '/tools/catalog/Basket.php' );
 
-	$my_atts = shortcode_atts( [ 'id' => get_the_ID() ], $atts, $tag );
-
-	$id = $my_atts['id'];
+//	$my_atts = shortcode_atts( [ 'id' => get_the_ID() ], $atts, $tag );
+//
+//	$id = $my_atts['id'];
 //
 	$text = "תכולת הסל: ";
-	$text .= get_basket_content( $id );;
+	$text .= get_basket_content( get_the_ID() );;
 
 //
 	return $text;

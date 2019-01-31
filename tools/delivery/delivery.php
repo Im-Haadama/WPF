@@ -274,7 +274,8 @@ class delivery {
 		global $support_email;
 		global $mail_sender;
 
-		$order_id = get_order_id( $this->ID );
+		$order_id = $this->OrderId();
+
 		if ( ! ( $order_id > 0 ) ) {
 			die ( "can't get order id from delivery " . $this->ID );
 		}
@@ -292,7 +293,7 @@ class delivery {
 
 		my_log( __FILE__, "dlines = " . $dlines );
 
-		$del_user = get_order_info( $order_id, '_billing_first_name' );
+		$del_user = $this->getOrder()->getOrderInfo( '_billing_first_name' );
 		$message  = header_text( true, true, true );
 
 		$message .= "<body>";
@@ -345,18 +346,6 @@ class delivery {
 		print "mail sent to " . $to . "<br/>";
 	}
 
-	public function getCustomerId() {
-		$this->getOrder()->getCustomerID();
-	}
-
-	private function getOrder() {
-		if ( ! $this->order ) {
-			$this->order = new Order( $this->OrderId() );
-		}
-
-		return $this->order;
-	}
-
 	public function OrderId() {
 		if ( ! ( $this->order_id > 0 ) ) {
 			$sql = "SELECT order_id FROM im_delivery WHERE id = " . $this->ID;
@@ -365,6 +354,18 @@ class delivery {
 		}
 
 		return $this->order_id;
+	}
+
+	public function getCustomerId() {
+		return $this->getOrder()->getCustomerID();
+	}
+
+	private function getOrder() {
+		if ( ! $this->order ) {
+			$this->order = new Order( $this->OrderId() );
+		}
+
+		return $this->order;
 	}
 
 	function delivery_text( $document_type, $operation = ImDocumentOperation::show, $margin = false ) {
@@ -923,7 +924,7 @@ class delivery {
 	}
 
 	public function OrderInfoBox() {
-		return $this->order->infoBox();
+		return $this->getOrder()->infoBox();
 	}
 
 	/**

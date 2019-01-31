@@ -161,8 +161,8 @@ switch ( $operation ) {
 			return;
 		}
 		$u       = get_user_by( "email", $email );
-		$user_id = $u->ID;
-		if ( $user_id ) {
+		if ( $u ) {
+			$user_id = $u->ID;
 			print "שלום " . get_customer_name( $user_id ) . "<br/>";
 			print customer_delivery_options( $user_id );
 		} else {

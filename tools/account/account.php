@@ -164,9 +164,10 @@ function show_trans( $customer_id, $from_last_zero = false, $checkbox = true, $t
 		if ( $is_delivery ) {
 			$line     .= gui_cell( gui_hyperlink( $doc_id, ImMultiSite::LocalSiteTools() . '/delivery/get-delivery.php?id=' . $doc_id ) );
 			$order_id = get_order_id( $doc_id );
+			$o        = new Order( $order_id );
 			$line     .= "<td>" . $order_id . "</td>";
 			if ( is_numeric( $order_id ) ) {
-				$line .= "<td>" . get_order_info( $order_id, '_shipping_first_name' ) . "</td>";
+				$line .= "<td>" . $o->getOrderInfo( '_shipping_first_name' ) . "</td>";
 			} else {
 				$line .= "<td></td>";
 			}
