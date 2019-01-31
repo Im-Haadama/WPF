@@ -7,6 +7,9 @@
  */
 define( 'STORE_DIR', dirname( dirname( __FILE__ ) ) );
 
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
 require_once( STORE_DIR . '/niver/data/im_simple_html_dom.php' );
 
 $filename = STORE_DIR . '/imap/mail-config.php';

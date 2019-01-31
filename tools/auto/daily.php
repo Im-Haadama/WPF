@@ -17,6 +17,7 @@ if ( ! defined( "ROOT_DIR" ) ) {
 
 require_once( ROOT_DIR . "/niver/MultiSite.php" );
 require_once( ROOT_DIR . "/utils/config.php" );
+require_once( ROOT_DIR . "/niver/gui/inputs.php" );
 
 if ( ! isset( $hosts_to_sync ) ) {
 	die ( "define hosts_to_sync in config file" );
@@ -24,9 +25,13 @@ if ( ! isset( $hosts_to_sync ) ) {
 
 $m = new MultiSite( $hosts_to_sync, $master, 3 );
 
+print gui_header( 1, "Running daily on master" );
+
 // Run daily on master.
 print $m->Run( "auto/daily-master.php", $master );
 
+print gui_header( 1, "Syncing to slaves" );
+
 // Now sync to slaves.
-print $m->GetAll( "multi-site/sync-from-master.php" );
-print $m->GetAll( "auto/daily-all.php" );
+print $m->GetAll( "multi-site/sync-from-master.php", true );
+print $m->GetAll( "auto/daily-all.php", true );

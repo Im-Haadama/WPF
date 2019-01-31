@@ -37,11 +37,14 @@ class MultiSite {
 		print MultiSite::GetAll( $func );
 	}
 
-	function GetAll( $func, $debug = false ) {
+	function GetAll( $func, $verbose = false, $debug = false ) {
 		$first = true;
 		$data  = "<table>";
 
 		foreach ( $this->sites_array as $site_id => $site ) {
+			if ( $verbose ) {
+				print gui_header( 2, "Running on " . $this->sites_array[ $site_id ][ FieldIdx::site_name_idx ] );
+			}
 			$data .= $this->Run( $func, $site_id, $first, $debug );
 		}
 		$data .= "</table>";
@@ -53,10 +56,6 @@ class MultiSite {
 		$url = $this->getSiteToolsURL( $site_id );
 
 		$site_name = $this->getSiteName( $site_id );
-
-		if ( $debug ) {
-			print_time( "site " . $site_name, true );
-		}
 
 		if ( strstr( $func, "?" ) ) {
 			$glue = "&";

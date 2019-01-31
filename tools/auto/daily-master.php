@@ -21,3 +21,4 @@ require_once( "../delivery/missions.php" );
 
 print header_text();
 
+print "done";

@@ -50,5 +50,9 @@ sql_query( "ALTER TABLE im_business_info
 ADD document_type INT(2) DEFAULT '1' NOT NULL;
 " );
 
+sql_query( "ALTER TABLE im_suppliers
+ADD auto_order_day INT(11);
+" );
+
 print "done";
 

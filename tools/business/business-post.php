@@ -132,8 +132,8 @@ function create_subcontract_invoice( $month, $year, $net_sell, $net_delivery ) {
 
 	$type = "i";
 
-	print "user: " . $invoice_user_sub . "<br/>";
-	print "password: " . $invoice_password_sub . "<br/>";
+//	print "user: " . $invoice_user_sub . "<br/>";
+//	print "password: " . $invoice_password_sub . "<br/>";
 
 	$invoice = new Invoice4u( $invoice_user_sub, $invoice_password_sub );
 

@@ -336,7 +336,6 @@ function print_business( $id, $horizontal, $seq ) {
 		print "</td>";
 	}
 	print "<td>";
-	print $row[8];
 	print "</td>";
 	if ( ! $horizontal ) {
 		print "</tr>";

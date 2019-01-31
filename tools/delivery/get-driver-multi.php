@@ -90,8 +90,8 @@ foreach ( $missions as $mission ) {
 print "<br/>";
 
 $m      = new ImMultiSite();
-$output = $m->GetAll( "delivery/get-driver.php?mission_ids=" . implode( ",", $missions ), $debug );
-$dom                        = im_str_get_html( $output );
+$output = $m->GetAll( "delivery/get-driver.php?mission_ids=" . implode( ",", $missions ), false, $debug );
+$dom    = im_str_get_html( $output );
 
 foreach ( $dom->find( 'tr' ) as $row ) {
 	if ( ! $header ) {

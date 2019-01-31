@@ -1,4 +1,7 @@
 #!/bin/bash
 DIR="/home/agla/store/utils"
 cd $DIR
-php ../tools/auto/daily.php &> $DIR/daily.log
+FILE="daily.log.`date +%d`.html"
+echo $FILE
+date > $FILE
+php ../tools/auto/daily.php &> $FILE

@@ -234,10 +234,11 @@ function save_legacy( $ids ) {
 	}
 	foreach ( $ids as $user_id ) {
 		// print $id . "<br/>";
-		$o = create_order( $user_id, 0, array( $pid ), array( 1 ),
+		$o = Order::CreateOrder( $user_id, 0, array( $pid ), array( 1 ),
 			" משלוח המכולת " . date( 'Y-m-d' ) . " " . get_customer_name( $user_id ));
 		// print "order: " . $o. "<br/>";
-		order_change_status( $o, 'wc-processing' );
+		$o->ChangeStatus( 'wc-processing' );
+		// order_change_status( $o,  );
 		// print "ex: " . sql_query_single_scalar("select post_excerpt from wp_posts where id = " . $id) . "<br/>";
 	}
 //	global $conn;

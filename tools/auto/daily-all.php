@@ -15,6 +15,7 @@ if ( ! defined( 'ROOT_DIR' ) ) {
 
 require_once( ROOT_DIR . "/tools/im_tools.php" );
 require_once( ROOT_DIR . "/niver/gui/inputs.php" );
+require_once( ROOT_DIR . "/tools/supplies/supplies.php" );
 
 print gui_header( 1, "Handling auto orders" );
 auto_mail();
