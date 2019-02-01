@@ -38,6 +38,6 @@ function print_select_supplier( $id, $source ) {
 function gui_select_supplier( $id = "supplier_select", $value = null, $events = null ) {
 
 	return gui_select_table( $id, "im_suppliers", $value, $events, "", "supplier_name",
-		null, true, false, "supplier_name" );
+		"where active = 1", true, false, "supplier_name" );
 //		$sql_where );
 }

@@ -39,7 +39,13 @@ ADD invoice_email VARCHAR(50)
 sql_query( "ALTER TABLE im_business_info
 ADD invoice_file VARCHAR(200)  
   CHARACTER SET utf8
-  COLLATE utf8_general_ci;
+  COLLATE utf8_general_ci,
+
+" );
+
+sql_query( "ALTER TABLE im_business_info
+   add `occasional_supplier` varchar(50) CHARACTER SET utf8 DEFAULT NULL;
+
 " );
 
 sql_query( "ALTER TABLE im_business_info
@@ -51,8 +57,10 @@ ADD document_type INT(2) DEFAULT '1' NOT NULL;
 " );
 
 sql_query( "ALTER TABLE im_suppliers
-ADD auto_order_day INT(11);
+ADD auto_order_day INT(11),
+add invoice_email VARCHAR(50);
 " );
+
 
 print "done";
 

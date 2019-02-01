@@ -30,7 +30,7 @@ $table = inbox_files( $hostname, $mail_user, $password, $attach_folder, $folder_
 
 $by_supplier_table = array();
 
-$header = array( "נושא", "מסמך" );
+$header = array( "נושא", "מסמך", "תאריך" );
 
 // -1 - not related to supplier
 
@@ -50,7 +50,7 @@ foreach ( $table as $row ) {
 		$by_supplier_table[ $supplier_id ] = array();
 		array_push( $by_supplier_table[ $supplier_id ], $header );
 	}
-	$line = array( $row[0], $row[2] );
+	$line = array( $row[0], $row[2], $row[3] );
 	if ( $supplier_id == - 1 ) {
 		array_push( $line, $row[1] );
 	}

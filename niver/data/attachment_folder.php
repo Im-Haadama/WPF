@@ -47,7 +47,8 @@ function inbox_files( $hostname, $mail_user, $password, $attach_folder, $folder_
 			$row = array(
 				$message->getSubject(),
 				$message->getSender(),
-				$text
+				$text,
+				$message->getDate()
 			);
 			// gui_hyperlink("הורד קבצים", "admin-post.php?operation=download&id=" . $message->getI()));
 

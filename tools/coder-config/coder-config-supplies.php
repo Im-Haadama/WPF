@@ -6,14 +6,12 @@
  * Time: 09:28
  */
 
-require_once( "../../im-config.php" );
-$conn = new mysqli( IM_DB_HOST, IM_DB_NAME, IM_DB_PASSWORD, IM_DB_NAME );
-mysqli_set_charset( $conn, 'utf8' );
-
 $obj_name      = "supplies";
 $table_prefix  = "im_";
 $root_file     = realpath( ROOT_DIR ) . "/tools/supplies/supplies.php";
 $target_folder = "tools/supplies";
+
+require_once( ROOT_DIR . '/tools/im_tools_light.php' );
 
 $table_suffix = "";
 $table_name   = $table_prefix . $obj_name . $table_suffix;
@@ -33,10 +31,8 @@ $trans["status"]    = "display_status";
 
 $single_url = "../supplies/supply-get.php";
 
-// display_part_name()'
-//$actions = array( array( "שכפל", "missions.php?operation=dup&id=" ) );
-//				 array("בוצע", "tasklist.php?operation=end&id="),
-//	             array("בטל", "tasklist.php?operation=cancel&id="));
+$display_url                = array();
+$display_url["business_id"] = "../business/c-get-business_info.php?id=";
 
 $defaults         = [];
 $defaults["date"] = "date(\"m/d/y\")";

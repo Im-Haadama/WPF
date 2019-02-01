@@ -16,6 +16,18 @@ class Imap {
 	private $index;
 
 	function Connect( $host, $user, $password ) {
+		if ( strlen( $host ) < 5 ) {
+			die ( "host not supplied" );
+		}
+
+		if ( strlen( $user ) < 4 ) {
+			die ( "user not supplied" );
+		}
+
+		if ( strlen( $password ) < 5 ) {
+			die ( "password not supplied" );
+		}
+
 		$this->inbox = imap_open( $host, $user, $password );
 
 		return ( $this->inbox != null );

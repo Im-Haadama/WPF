@@ -14,7 +14,7 @@ if ( ! defined( "ROOT_DIR" ) ) {
 }
 
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
-require_once( TOOLS_DIR . '/data/header.php' );
+require_once( ROOT_DIR . '/tools/data/header.php' );
 require_once( ROOT_DIR . "/tools/mail.php" );
 require_once( ROOT_DIR . "/tools/catalog/catalog.php" );
 
