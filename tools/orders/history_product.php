@@ -11,7 +11,7 @@ history_total_orders();
 
 function history_total_orders() {
 	require 'orders-common.php';
-	require_once( '../supplies/supplies.php' );
+	require_once( '../supplies/Supply.php' );
 
 	$basket_quantities = array();
 	// $total_buy_supplier = array();

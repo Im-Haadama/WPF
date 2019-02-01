@@ -121,10 +121,10 @@ function gui_input( $name, $value, $events = null, $id = null, $class = null, $s
 	return $data;
 }
 
-function gui_textarea( $name, $value, $onkeypress = null, $rows = 0, $cols = 0 ) {
+function gui_textarea( $name, $value, $events = null, $rows = 0, $cols = 0 ) {
 	$data = '<textarea name="' . $name . '" id="' . $name . '"';
-	if ( strlen( $onkeypress ) > 0 ) {
-		$data .= ' onkeypress="' . $onkeypress;
+	if ( strlen( $events ) > 0 ) {
+		$data .= $events;
 	}
 	if ( $rows == 0 ) {
 		$rows = min( 10, substr_count( $value, "\n" ) + 2 );
@@ -168,7 +168,8 @@ function gui_input_date( $id, $class, $value = null, $events = null ) {
 		$data .= "class=\"$class\" ";
 	}
 	if ( $events and strlen( $events ) > 0 ) {
-		$data .= addslashes( $events );
+		// $data .= addslashes( $events );
+		$data .= $events;
 	} // ' onkeypress="' . $onkeypress . '"';
 	$data .= '>';
 

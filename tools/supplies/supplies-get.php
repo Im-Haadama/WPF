@@ -63,21 +63,17 @@ print gui_button( "btn_new", "show_create_item()", "הספקה חדשה" );
 <?php
 
 if ( isset( $_GET["week"] ) ) {
-	print display_supplies( $_GET["week"] );
+	print SuppliesTable( $_GET["week"] );
 }
 ?>
 <script type="text/javascript" src="/niver/gui/client_tools.js"></script>
+<script type="text/javascript" src="mission.js"></script>
 
     <script>
         function change_supplier() {
             var supplier_id = get_value_by_name("supplier_select");
             var upcsv = document.getElementById("upcsv");
             upcsv.action = "/tools/supplies/supplies-post.php?operation=create_from_file&supplier_id=" + supplier_id;
-        }
-        function mission_changed(supply_id) {
-            var mis = document.getElementById("mis_" + supply_id);
-            var mission_id = get_value(mis);
-            execute_url("supplies-post.php?operation=set_mission&supply_id=" + supply_id + "&mission_id=" + mission_id);
         }
         function show_create_item() {
             var new_order = document.getElementById("new_item");

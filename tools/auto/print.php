@@ -15,7 +15,7 @@ require_once '../r-shop_manager.php';
 print header_text( false, false, true );
 require_once '../delivery/delivery.php';
 require_once '../orders/orders-common.php';
-require_once '../supplies/supplies.php';
+require_once '../supplies/Supply.php';
 require_once( "../maps/build-path.php" );
 require_once( "../missions/Mission.php" );
 

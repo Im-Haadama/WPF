@@ -74,7 +74,7 @@ print header_text( false, false );
                     window.location = window.location;
                 }
             }
-            var request = "supplies.php?operation=delete_items&ids=" + ids.join();
+            var request = "Supply.php?operation=delete_items&ids=" + ids.join();
             // alert (request);
             xmlhttp.open("GET", request, true);
             xmlhttp.send();

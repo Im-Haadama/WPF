@@ -6,7 +6,7 @@
  * Time: 06:37
  */
 require_once( "../r-shop_manager.php" );
-require_once( "supplies.php" );
+require_once( "Supply.php" );
 $supply_id = $_GET["id"];
 
 print header_text();

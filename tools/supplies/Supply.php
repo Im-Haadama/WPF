@@ -37,6 +37,7 @@ class Supply {
 	private $Supplier;
 	private $Text;
 	private $BusinessID;
+	private $MissionID;
 
 	/**
 	 * Supply constructor.
@@ -45,13 +46,14 @@ class Supply {
 	 */
 	public function __construct( $ID ) {
 		$this->ID       = $ID;
-		$row            = sql_query_single( "SELECT status, date, supplier, text, business_id FROM im_supplies WHERE id = " . $ID );
+		$row            = sql_query_single( "SELECT status, date(date), supplier, text, business_id, mission_id FROM im_supplies WHERE id = " . $ID );
 		$this->Status   = $row[0];
 		$this->Date     = $row[1];
 		$this->Supplier = $row[2];
 		// print "sssss " . $this->Supplier;
 		$this->Text       = $row[3];
 		$this->BusinessID = $row[4];
+		$this->MissionID  = $row[5];
 	}
 
 	public static function CreateFromFile( $file_name, $supplier_id, $debug = false ) {
@@ -202,11 +204,190 @@ class Supply {
 		return $this->ID;
 	}
 
+	public function AddLine( $prod_id, $quantity, $price, $units = 0 ) {
+		supply_add_line( $this->ID, $prod_id, $quantity, $price, $units = 0 );
+	}
+
+	public function UpdateField( $field_name, $value ) {
+		sql_query( "update im_supplies " .
+		           "set " . $field_name . '=' . quote_text( $value ) .
+		           " where id = " . $this->ID );
+	}
+
+	public function Html( $internal, $edit ) {
+		$data = "";
+
+		$data .= $this->HtmlHeader( $edit );
+		$data .= "<br/>";
+		$data .= $this->HtmlLines( $internal, $edit );
+		$data .= "<br/>";
+
+		return $data;
+	}
+
+	public function HtmlHeader( $edit ) {
+		$rows = array();
+		$row  = array( "הערות" );
+		// Text + Button
+		if ( $edit ) {
+			array_push( $row, gui_textarea( "comment", $this->Text, "onchange=\"update_comment()\"" ) );
+		} else {
+			array_push( $row, $this->Text );
+		}
+
+		array_push( $rows, $row );
+		// Date
+		$row = array( "תאריך הספקה" );
+
+		if ( $edit ) {
+			array_push( $row, gui_input_date( "date", "", $this->Date,
+				"onchange=\"update_field('supplies-post.php', " . $this->ID . ",'date', '')\"" ) );
+		} else {
+			array_push( $row, $this->Date );
+		}
+
+		array_push( $rows, $row );
+
+		$row = array( "שילוח" );
+		if ( $edit ) {
+			array_push( $row, gui_select_mission( "mis_" . $this->ID, $this->MissionID, "onchange=mission_changed(" . $this->ID . ")" ) );
+		} else {
+			array_push( $row, $this->getMissionID() );
+		}
+
+		array_push( $rows, $row );
+		$data = gui_table( $rows );
+
+		return $data;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getMissionID() {
+		return $this->MissionID;
+	}
+
 
 	// $internal - true = for our usage. false = for send to supplier.
 
-	public function AddLine( $prod_id, $quantity, $price, $units = 0 ) {
-		supply_add_line( $this->ID, $prod_id, $quantity, $price, $units = 0 );
+	function HtmlLines( $internal, $edit = true ) {
+		$data_lines = array();
+		my_log( __FILE__, "id = " . $this->ID . " internal = " . $internal );
+		$sql = 'select product_id, quantity, id, units '
+		       . ' from im_supplies_lines where status = 1 and supply_id = ' . $this->ID;
+
+		$result = sql_query( $sql );
+
+		$data = "<table id=\"del_table\" border=\"1\"><tr><td>בחר</td><td>פריט</td><td>כמות</td><td>יחידות</td>";
+		if ( ! $edit ) {
+			$data .= gui_cell( "כמות לוקט" );
+		}
+		$data .= "<td>מידה</td><td>מחיר</td><td>סהכ";
+
+		if ( $internal ) {
+			$data .= "<td>מחיר מכירה</td>";
+		}
+
+		$data .= "</td>";
+
+		$total = 0;
+		// $vat_total = 0;
+		$line_number = 0;
+
+		$supplier_id = sql_query_single_scalar( "SELECT supplier FROM im_supplies WHERE id = " . $this->ID );
+		// print "supplier_id: " . $supplier_id . "<br/>";
+
+		while ( $row = mysqli_fetch_row( $result ) ) {
+			$line_number  = $line_number + 1;
+			$line         = "<tr>";
+			$prod_id      = $row[0];
+			$product_name = get_product_name( $prod_id );
+			$quantity     = $row[1];
+			$line_id      = $row[2];
+			$units        = $row[3];
+
+			// $vat_line = $row[2];
+//		$item_price = pricelist_get_price( $prod_id );
+			$item_price = Catalog::GetBuyPrice( $prod_id, $supplier_id );
+			$total_line = $item_price * $quantity;
+			$total      += $total_line;
+
+			$line .= "<td><input id=\"chk" . $line_id . "\" class=\"supply_checkbox\" type=\"checkbox\"></td>";
+			// Display item name
+			$line .= "<td>" . $product_name . '</td>';
+			if ( $edit ) {
+				$line .= "<td>" . gui_input( $line_id, $quantity, array( 'onchange="changed(this)"' ) ) . "</td>";
+				$line .= "<td>" . gui_input( $line_id, $units, array( 'onchange="changed(this)"' ) ) . "</td>";
+			} else {
+				$line .= gui_cell( $quantity );
+				$line .= gui_cell( $units );
+				$line .= gui_cell( "" ); // Collected info
+			}
+
+//        $line .= "<td>" . $quantity . "</td>";
+
+			$attr_array = get_post_meta( $prod_id, '_product_attributes' );
+			$attr_text  = "";
+			foreach ( $attr_array as $attr ) {
+				foreach ( $attr as $i ) {
+					if ( $i['name'] = 'unit' ) {
+						$attr_text .= $i['value'];
+					}
+				}
+			}
+
+			$line .= "<td>" . $attr_text . "</td>";
+
+			if ( ! ( $item_price > 0 ) ) {
+				$item_price = get_buy_price( $prod_id, $supplier_id );
+				$total_line = $item_price * $quantity;
+				$total      += $total_line;
+			}
+			//    $line .= "<td>" . $vat_line . "</td>";
+			if ( $item_price > 0 ) {
+				$line .= "<td>" . sprintf( '%0.2f', $item_price ) . "</td>";
+				$line .= "<td>" . sprintf( '%0.2f', $total_line ) . "</td>";
+			} else {
+				$line .= "<td></td><td></td>";
+			}
+			if ( $internal ) {
+				$sell_price = get_price( $prod_id );
+				$line       .= "<td>" . sprintf( '%0.2f', $sell_price ) . "</td>";
+				$line       .= "<td>" . orders_per_item( $prod_id, 1, true ) . "</td>";
+			}
+			$line  .= "</tr>";
+			$terms = get_the_terms( $prod_id, 'product_cat' );
+			// print $terms[0]->name . "<br/>";
+			array_push( $data_lines, array( $terms[0]->name . "@" . $product_name, $line ) );
+		}
+
+		sort( $data_lines );
+
+		$term = "";
+
+		for ( $i = 0; $i < count( $data_lines ); $i ++ ) {
+			$line_term = strtok( $data_lines[ $i ][0], '@' );
+			if ( $line_term <> $term ) {
+				$term = $line_term;
+				$data .= gui_row( array( '', "<b>" . $term . "</b>", '', '', '', '', '' ) );
+			}
+			$line = $data_lines[ $i ][1];
+			$data .= trim( $line );
+		}
+		// $data .= trim( $line );
+
+		$data .= "<tr><td>סהכ</td><td></td><td></td><td></td><td></td><td>" . $total . "</tdtd></tr>";
+
+		$data = str_replace( "\r", "", $data );
+
+		if ( $data == "" ) {
+			$data = "\n(0) Records Found!\n";
+		}
+
+		$data .= "</table>";
+
+		return "$data";
 	}
 
 	/**
@@ -216,27 +397,10 @@ class Supply {
 		return $this->Status;
 	}
 
-	public function PrintSupply( $internal ) {
-//		var_dump($this);
-		print nl2br( $this->Text ) . "<br/>";
-		switch ( $this->Status ) {
-			case SupplyStatus::NewSupply:
-				print_supply_lines( $this->ID, $internal, false );
-				break;
-			case SupplyStatus::Sent:
-				print_supply_lines( $this->ID, $internal, false );
-				break;
-			default:
-				print_supply_lines( $this->ID, $internal, false );
-				break;
-
-		}
-	}
-
 	public function EditSupply( $internal ) {
 		// print "edit<br/>";
-		print nl2br( sql_query_single_scalar( "SELECT text FROM im_supplies WHERE id = " . $this->ID ) ) . "<br/>";
-		print_supply_lines( $this->ID, $internal, true );
+		// print nl2br( sql_query_single_scalar( "SELECT text FROM im_supplies WHERE id = " . $this->ID ) ) . "<br/>";
+		return HtmlLines( $this->ID, $internal, true );
 	}
 
 	/**
@@ -291,14 +455,17 @@ class Supply {
 		return $this->Supplier;
 	}
 }
-function create_supply( $supplierID ) {
-	global $conn;
+
+function create_supply( $supplierID, $date ) {
+
+	if ( ! $date )
+		$date = date('Y-m-d');
 	my_log( __METHOD__ . $supplierID );
-	$sql = "INSERT INTO im_supplies (date, supplier, status) VALUES " . "(CURRENT_TIMESTAMP, " . $supplierID . ", 1)";
+	$sql = "INSERT INTO im_supplies (date, supplier, status) VALUES " . "('" . $date . "' , " . $supplierID . ", 1)";
 
 	sql_query( $sql );
 
-	return mysqli_insert_id( $conn );
+	return sql_insert_id(  );
 }
 
 function supply_add_line( $supply_id, $prod_id, $quantity, $price, $units = 0 ) {
@@ -428,126 +595,6 @@ function supply_status( $supply_id ) {
 	return sql_query_single_scalar( "SELECT status FROM im_supplies WHERE id = " . $supply_id );
 }
 
-
-function print_supply_lines( $id, $internal, $edit = true ) {
-	$data_lines = array();
-	my_log( __FILE__, "id = " . $id . " internal = " . $internal );
-	$sql = 'select product_id, quantity, id, units '
-	       . ' from im_supplies_lines where status = 1 and supply_id = ' . $id;
-
-	$result = sql_query( $sql );
-
-	$data = "<table id=\"del_table\" border=\"1\"><tr><td>בחר</td><td>פריט</td><td>כמות</td><td>יחידות</td>";
-	if ( ! $edit ) {
-		$data .= gui_cell( "כמות לוקט" );
-	}
-	$data .= "<td>מידה</td><td>מחיר</td><td>סהכ";
-
-	if ( $internal ) {
-		$data .= "<td>מחיר מכירה</td>";
-	}
-
-	$data .= "</td>";
-
-	$total = 0;
-	// $vat_total = 0;
-	$line_number = 0;
-
-	$supplier_id = sql_query_single_scalar( "SELECT supplier FROM im_supplies WHERE id = " . $id );
-	// print "supplier_id: " . $supplier_id . "<br/>";
-
-	while ( $row = mysqli_fetch_row( $result ) ) {
-		$line_number  = $line_number + 1;
-		$line         = "<tr>";
-		$prod_id      = $row[0];
-		$product_name = get_product_name( $prod_id );
-		$quantity     = $row[1];
-		$line_id      = $row[2];
-		$units        = $row[3];
-
-		// $vat_line = $row[2];
-//		$item_price = pricelist_get_price( $prod_id );
-		$item_price = Catalog::GetBuyPrice( $prod_id, $supplier_id );
-		$total_line = $item_price * $quantity;
-		$total      += $total_line;
-
-		$line .= "<td><input id=\"chk" . $line_id . "\" class=\"supply_checkbox\" type=\"checkbox\"></td>";
-		// Display item name
-		$line .= "<td>" . $product_name . '</td>';
-		if ( $edit ) {
-			$line .= "<td>" . gui_input( $line_id, $quantity, array( 'onchange="changed(this)"' ) ) . "</td>";
-			$line .= "<td>" . gui_input( $line_id, $units, array( 'onchange="changed(this)"' ) ) . "</td>";
-		} else {
-			$line .= gui_cell( $quantity );
-			$line .= gui_cell( $units );
-			$line .= gui_cell( "" ); // Collected info
-		}
-
-//        $line .= "<td>" . $quantity . "</td>";
-
-		$attr_array = get_post_meta( $prod_id, '_product_attributes' );
-		$attr_text  = "";
-		foreach ( $attr_array as $attr ) {
-			foreach ( $attr as $i ) {
-				if ( $i['name'] = 'unit' ) {
-					$attr_text .= $i['value'];
-				}
-			}
-		}
-
-		$line .= "<td>" . $attr_text . "</td>";
-
-		if ( ! ( $item_price > 0 ) ) {
-			$item_price = get_buy_price( $prod_id, $supplier_id );
-			$total_line = $item_price * $quantity;
-			$total      += $total_line;
-		}
-		//    $line .= "<td>" . $vat_line . "</td>";
-		if ( $item_price > 0 ) {
-			$line .= "<td>" . sprintf( '%0.2f', $item_price ) . "</td>";
-			$line .= "<td>" . sprintf( '%0.2f', $total_line ) . "</td>";
-		} else {
-			$line .= "<td></td><td></td>";
-		}
-		if ( $internal ) {
-			$sell_price = get_price( $prod_id );
-			$line       .= "<td>" . sprintf( '%0.2f', $sell_price ) . "</td>";
-			$line       .= "<td>" . orders_per_item( $prod_id, 1, true ) . "</td>";
-		}
-		$line  .= "</tr>";
-		$terms = get_the_terms( $prod_id, 'product_cat' );
-		// print $terms[0]->name . "<br/>";
-		array_push( $data_lines, array( $terms[0]->name . "@" . $product_name, $line ) );
-	}
-
-	sort( $data_lines );
-
-	$term = "";
-
-	for ( $i = 0; $i < count( $data_lines ); $i ++ ) {
-		$line_term = strtok( $data_lines[ $i ][0], '@' );
-		if ( $line_term <> $term ) {
-			$term = $line_term;
-			$data .= gui_row( array( '', "<b>" . $term . "</b>", '', '', '', '', '' ) );
-		}
-		$line = $data_lines[ $i ][1];
-		$data .= trim( $line );
-	}
-	// $data .= trim( $line );
-
-	$data .= "<tr><td>סהכ</td><td></td><td></td><td></td><td></td><td>" . $total . "</tdtd></tr>";
-
-	$data = str_replace( "\r", "", $data );
-
-	if ( $data == "" ) {
-		$data = "\n(0) Records Found!\n";
-	}
-
-	$data .= "</table>";
-
-	print "$data";
-}
-
 function send_supplies( $ids ) {
 	print_page_header( false );
 	print "שולח הזמנות...<br/>";
@@ -596,7 +643,7 @@ function print_supplies_table( $ids, $internal ) {
 		print "אספקה מספר " . gui_hyperlink( $id, "../supplies/supply-get.php?id= " . $id ) . " " . supply_get_supplier( $id ) . " " . date( "Y-m-d" );
 		print "</h1>";
 		$s = new Supply( $id );
-		$s->PrintSupply( $internal );
+		$s->Html( $internal, false );
 		print "<p style=\"page-break-after:always;\"></p>";
 	}
 //    print "</html>";
@@ -756,7 +803,7 @@ WHERE status = 1 AND supply_id IN (" . $supply_id . ", " . rtrim( implode( ",", 
 //call get_product_name(35);
 
 
-function display_supplies( $week, $status = null ) {
+function SuppliesTable( $week, $status = null ) {
 	if ( is_null( $status ) ) {
 		$status_query = "status in (1, 3, 5)";
 	} else {
@@ -768,10 +815,10 @@ function display_supplies( $week, $status = null ) {
 
 //	print $sql;
 
-	return do_display_supplies( $sql );
+	return DoSuppliesTable( $sql );
 }
 
-function do_display_supplies( $sql )
+function DoSuppliesTable( $sql )
 {
 	$result = sql_query( $sql );
 	my_log( $sql);
@@ -846,7 +893,7 @@ function display_active_supplies( $status ) {
 	          " and date > DATE_SUB(curdate(), INTERVAL 2 WEEK)"
 	          . " ORDER BY 4, 3, 2";
 
-	return do_display_supplies( $sql );
+	return DoSuppliesTable( $sql );
 }
 
 function create_delta() {
@@ -862,9 +909,9 @@ function create_delta() {
 	}
 }
 
-function create_supplier_order( $supplier_id, $ids ) {
-	$supply_id = create_supply( $supplier_id );
-	print "creating supply " . $supply_id . "...";
+function create_supplier_order( $supplier_id, $ids, $date = null ) {
+	$supply_id = create_supply( $supplier_id, $date );
+	print "creating supply " . gui_hyperlink( $supply_id, "supply-get.php?id=" . $supply_id) . "...";
 
 	for ( $pos = 0; $pos < count( $ids ); $pos += 3 ) {
 		$prod_id  = $ids[ $pos ];

@@ -8,7 +8,7 @@
 
 $obj_name      = "supplies";
 $table_prefix  = "im_";
-$root_file     = realpath( ROOT_DIR ) . "/tools/supplies/supplies.php";
+$root_file     = realpath( ROOT_DIR ) . "/tools/supplies/Supply.php";
 $target_folder = "tools/supplies";
 
 require_once( ROOT_DIR . '/tools/im_tools_light.php' );

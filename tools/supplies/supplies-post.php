@@ -9,7 +9,7 @@ error_reporting( E_ALL );
 ini_set( 'display_errors', 'on' );
 
 require_once( '../r-shop_manager.php' );
-require_once( 'supplies.php' );
+require_once( 'Supply.php' );
 require_once( '../orders/orders-common.php' );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( "../business/business-post.php" );
@@ -66,17 +66,14 @@ if ( isset( $_GET["operation"] ) ) {
 
 		case "create_supply":
 			print "create supply<br/>";
-//			"&prods=" + prods.join() +
-//			"&quantities=" + quantities.join() +
-			// "&comments="   + encodeURI(comment) +
-//			"&units=" + units.join() +
 
+			$date        = get_param( "date" );
 			$supplier_id = $_GET["supplier_id"];
 			my_log( "supplier_id=" . $supplier_id );
 
 			$create_info = $_GET["create_info"];
 			$ids         = explode( ',', $create_info );
-			create_supplier_order( $supplier_id, $ids );
+			create_supplier_order( $supplier_id, $ids, $date );
 			break;
 
 		case "create_supplies":
@@ -88,13 +85,13 @@ if ( isset( $_GET["operation"] ) ) {
 			$supply_id = $_GET["id"];
 			$internal  = isset( $_GET["internal"] );
 			$Supply    = new Supply( $supply_id );
-			$Supply->EditSupply( $internal );
+			print $Supply->Html( $internal, true );
 			break;
 
 		case "get_supply_lines":
 			$supply_id = $_GET["id"];
 			$internal  = isset( $_GET["internal"] );
-			print_supply_lines( $supply_id, $internal );
+			HtmlLines( $supply_id, $internal );
 			break;
 
 		case "get_comment":
@@ -142,6 +139,20 @@ if ( isset( $_GET["operation"] ) ) {
 			my_log( "update lines" );
 			$params = explode( ',', $_GET["params"] );
 			update_supply_lines( $params );
+			break;
+
+//			var request = post_file + "?operation=update_field" +
+//			              "&field_name=" + field_name +
+//			              "&value=" + encodeURI(value) +
+//			              "&id=" + id;
+
+		case 'update_field':
+			$field_name = get_param( "field_name" );
+			$value      = get_param( "value" );
+			$id         = get_param( "id" );
+			$s          = new Supply( $id );
+			$s->UpdateField( $field_name, $value );
+
 			break;
 
 		case 'save_comment':

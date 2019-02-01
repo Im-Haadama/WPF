@@ -18,7 +18,7 @@ if ( ! defined( "STORE_DIR" ) ) {
 	define( 'STORE_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
 }
 
-require_once( STORE_DIR . "/tools/supplies/supplies.php" );
+require_once( STORE_DIR . "/tools/supplies/Supply.php" );
 
 $filter_zero  = isset( $_GET["filter_zero"] );
 $filter_stock = isset( $_GET["filter_stock"] );

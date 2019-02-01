@@ -6,7 +6,7 @@
  * Time: 22:05
  */
 
-require_once( 'supplies.php' );
+require_once( 'Supply.php' );
 require_once( "../pricelist/pricelist-process.php" );
 
 

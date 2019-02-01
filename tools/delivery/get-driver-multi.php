@@ -15,7 +15,7 @@ require_once( '../multi-site/imMulti-site.php' );
 require_once( '../maps/build-path.php' );
 require_once( '../missions/Mission.php' );
 require_once( '../orders/Order.php' );
-require_once( "../supplies/supplies.php" );
+require_once( "../supplies/Supply.php" );
 
 $debug = get_param( "debug" );
 
@@ -306,7 +306,7 @@ foreach ( $data_lines as $mission_id => $data_line ) {
 		foreach ( $supplies_to_collect as $supply_id ) {
 			$s = new Supply( $supply_id );
 			print gui_header( 1, "אספקה  " . $supply_id . " מספק " . $s->getSupplierName() );
-			$s->PrintSupply( true );
+			$s->Html( true, false );
 		}
 	}
 

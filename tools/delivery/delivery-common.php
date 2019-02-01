@@ -6,10 +6,10 @@
  * Time: 12:38
  */
 // require_once( "../multi-site/imMulti-site.php" );
-//require_once ("../supplies/supplies.php");
+//require_once ("../supplies/Supply.php");
 
 require_once( ROOT_DIR . "/tools/tasklist/Tasklist.php" );
-require_once( ROOT_DIR . "/tools/supplies/supplies.php" );
+require_once( ROOT_DIR . "/tools/supplies/Supply.php" );
 
 
 function print_fresh_category() {

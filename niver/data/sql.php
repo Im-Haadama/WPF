@@ -10,6 +10,12 @@ if ( ! function_exists( "my_log" ) ) {
 	require_once( ROOT_DIR . "/niver/fund.php" );
 }
 
+function sql_insert_id() {
+	global $conn;
+
+	return mysqli_insert_id( $conn );
+}
+
 function sql_query( $sql, $report_error = true ) {
 	global $conn;
 

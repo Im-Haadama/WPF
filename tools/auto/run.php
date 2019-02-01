@@ -17,7 +17,7 @@ return; // Not used
 require_once( TOOLS_DIR . "/options.php" );
 require_once( TOOLS_DIR . "/delivery/missions.php" );
 // require_once( TOOLS_DIR . "/multi-site/imMulti-site.php" );
-require_once( TOOLS_DIR . "/supplies/supplies.php" );
+require_once( TOOLS_DIR . "/supplies/Supply.php" );
 require_once( TOOLS_DIR . "/pricelist/pricelist-process.php" );
 
 // DEBUG = 1. output on screen

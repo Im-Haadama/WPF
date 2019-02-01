@@ -7,7 +7,7 @@
  */
 require_once( "../r-shop_manager.php" );
 require_once( ROOT_DIR . "/niver/gui/sql_table.php" );
-require_once( ROOT_DIR . "/tools/supplies/supplies.php" );
+require_once( ROOT_DIR . "/tools/supplies/Supply.php" );
 
 print header_text();
 

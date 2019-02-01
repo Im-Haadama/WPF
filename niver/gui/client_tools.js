@@ -7,6 +7,16 @@ function changed(field) {
     document.getElementById("chk_" + subject).checked = true;
 }
 
+function update_field(post_file, id, field_name, finish_action) {
+    var value = get_value_by_name(field_name);
+    var request = post_file + "?operation=update_field" +
+        "&field_name=" + field_name +
+        "&value=" + encodeURI(value) +
+        "&id=" + id;
+
+    execute_url(request, finish_action);
+}
+
 function get_select_text(element_name) {
     var element = document.getElementById(element_name);
     var idx = element.selectedIndex;

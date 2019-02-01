@@ -7,7 +7,7 @@
  */
 
 require '../r-shop_manager.php';
-require_once( "supplies.php" );
+require_once( "Supply.php" );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( "../account/gui.php" );
 
@@ -34,13 +34,14 @@ if ( isset( $_GET["business_id"] ) ) {
 
 ?>
 <script type="text/javascript" src="/niver/gui/client_tools.js"></script>
+<script type="text/javascript" src="supply.js"></script>
 
 <script>
     function supply_pay() {
         var date = get_value_by_name("pay_date");
 
         var request_url = "supplies-post.php?operation=supply_pay&date=" + date +
-            "&id=" + <? print $id; ?>;
+            "&id=" + <?php print $id; ?>;
 
         var request = new XMLHttpRequest();
         request.onreadystatechange = function () {
@@ -91,20 +92,20 @@ print  "</h1> </center>";
 
     <input type="checkbox" id="chk_internal" onclick='update_display();'>מסמך פנימי<br>
 
-    <textarea id="comment" rows="4" cols="50">
-</textarea>
-<button id="update_comment" onclick='update_comment();'>עדכן הערות
-</button>
+    <!--<button id="update_comment" onclick='update_comment();'>עדכן הערות-->
+    <!--</button>-->
 <br/>
 <?php
-if ( user_can( get_user_id(), "pay_supply" ) ) {
-
-	print gui_table( array( array( "תאריך תשלום", gui_input_date( "pay_date", "", "", "onchange=supply_pay()" ) ) ) );
-}
-?>
+//if ( user_can( get_user_id(), "pay_supply" ) ) {
+//
+//	print gui_table( array( array( "תאריך תשלום", gui_input_date( "pay_date", "", "", "onchange=supply_pay()" ) ) ) );
+//}
+//?>
 </div>
 <div id="head_print">
 </div>
+<div id="supply"></div>
+
 <?php
 print gui_datalist( "products", "im_products", "post_title", true );
 
@@ -119,14 +120,6 @@ if ( ! $send ) {
 ?>
 <br/>
 
-משימה
-<?php
-$mission_id = supply_get_mission_id( $id );
-print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_mission()\"" );
-
-?>
-
-<table id="items"></table>
 
 <div id="add_items">
 	<?php
@@ -136,6 +129,8 @@ print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_missio
     <!--    <input id="itm_" list="prods">-->
 </div>
 <script type="text/javascript" src="/niver/gui/client_tools.js"></script>
+<script type="text/javascript" src="supply.js"></script>
+
 <script>
     function save_mission() {
         var mission = get_value(document.getElementById("mission_select"));
@@ -177,44 +172,7 @@ print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_missio
         xmlhttp.onreadystatechange = function () {
             // Wait to get query result
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {  // Request finished
-                table = document.getElementById("items");
-                table.innerHTML = xmlhttp.response;
-                xmlhttp1 = new XMLHttpRequest();
-                var request1 = "supplies-post.php?operation=get_comment"
-                    + "&id=<?php print $id; ?>";
-
-                xmlhttp1.open("GET", request1, true);
-                xmlhttp1.onreadystatechange = function () {
-                    // Wait to get query result
-                    if (xmlhttp1.readyState === 4 && xmlhttp1.status === 200) {  // Request finished
-                        var comment = document.getElementById("comment");
-                        comment.innerHTML = xmlhttp1.response;
-                        xmlhttp2 = new XMLHttpRequest();
-                        var request2 = "supplies-post.php?operation=get_business"
-                            + "&supply_id=<?php print $id; ?>";
-
-                        xmlhttp2.open("GET", request2, true);
-                        xmlhttp2.onreadystatechange = function () {
-                            // Wait to get query result
-                            if (xmlhttp2.readyState === 4 && xmlhttp2.status === 200) {  // Request finished
-                                var arrival_info = xmlhttp2.response;
-                                if (arrival_info.length > 5) {
-                                    supply_document.innerHTML = arrival_info;
-                                    supply_arrived.hidden = true;
-                                    supply_document.hidden = false;
-                                    supply_document.hidden = false;
-                                    add_items.hidden = true;
-                                } else {
-                                    supply_arrived.hidden = false;
-                                    supply_document.hidden = true;
-                                }
-                            }
-                        }
-                        xmlhttp2.send();
-
-                    }
-                }
-                xmlhttp1.send();
+                supply.innerHTML = xmlhttp.response;
 
             }
         }
