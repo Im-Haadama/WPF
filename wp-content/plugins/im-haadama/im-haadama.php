@@ -22,7 +22,6 @@ if ( ! defined( 'TOOLS_DIR' ) ) {
 	define( 'TOOLS_DIR', dirname( dirname( dirname( dirname( IM_HAADAMA_PLUGIN ) ) ) ) . "/tools" );
 }
 
-
 require_once( TOOLS_DIR . '/im_tools.php' );
 
 require_once( "functions_im.php" );

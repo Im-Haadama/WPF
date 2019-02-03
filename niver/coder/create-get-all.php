@@ -67,7 +67,8 @@ if ( ! isset( $target_file ) ) {
 
 $target_real_folder = realpath( $target_folder );
 
-$filename = ROOT_DIR . "/$target_folder/c-get-all-$obj_name.php";
+$filename        = ROOT_DIR . "/$target_folder/c-get-all-$obj_name.php";
+$import_filename = ROOT_DIR . "/$target_folder/c-import-$obj_name.php";
 print "creating " . gui_hyperlink( $filename, "$target_folder/c-get-all-$obj_name.php" ) . "<br/>";
 
 $get_all = fopen( $filename, "w" );
@@ -78,20 +79,8 @@ if ( ! is_writable( $filename ) ) {
 }
 $get_all = fopen( $filename, "w" );
 
-fwrite( $get_all, "<?php
-require_once ('$root_file');
-// require_once('../header.php');
-require_once(ROOT_DIR . '/niver/fund.php');
-require_once(ROOT_DIR . '/niver/data/translate.php');
-require_once(ROOT_DIR . '/niver/gui/inputs.php');
-require_once(ROOT_DIR . '/niver/fund.php');
-print header_text(false, false);
-if (isset(\$_GET[\"debug\"])) {
-	error_reporting( E_ALL );
-	ini_set( 'display_errors', 'on' );
-	\$debug = true;
-}
-" );
+write_header( $get_all );
+
 $object_file = $target_folder . '/' . $obj_name . ".php";
 print "object file: " . $object_file . "<br/>";
 if ( file_exists( $object_file ) ) {
@@ -327,6 +316,40 @@ ob_end_clean();
 
 fwrite( $get_all, $code );
 
+if ( isset( $import_csv ) ) {
+	write_import_csv( $get_all );
+}
+
 fclose( $get_all );
 
+//print gui_header(2, "import");
+//$import = fopen($import_filename, "w");
+//write_header($import);
+
+
+
 print "done<br/>";
+
+function write_header( $file ) {
+	global $root_file;
+
+	fwrite( $file, "<?php
+require_once ('$root_file');
+// require_once('../header.php');
+require_once(ROOT_DIR . '/niver/fund.php');
+require_once(ROOT_DIR . '/niver/data/translate.php');
+require_once(ROOT_DIR . '/niver/gui/inputs.php');
+require_once(ROOT_DIR . '/niver/fund.php');
+print header_text(false, false);
+if (isset(\$_GET[\"debug\"])) {
+	error_reporting( E_ALL );
+	ini_set( 'display_errors', 'on' );
+	\$debug = true;
+}
+" );
+
+}
+
+function write_import_csv( $file ) {
+
+}

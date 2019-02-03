@@ -117,7 +117,7 @@ function invoice_create_ship( $customer_id, $order_ids ) {
 		array_push( $doc->Items, $item );
 		$total_lines += $item->Total;
 
-		order_change_status( $order_id, "wc-completed" );
+		$o->ChangeStatus( "wc-completed" );
 	}
 
 	// print "create<br/>";

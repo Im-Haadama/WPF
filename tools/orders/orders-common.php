@@ -536,7 +536,9 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 				$line[ OrderFields::delivery_note ] = gui_hyperlink( $delivery_id,
 					ImMultiSite::LocalSiteTools() . "/delivery/get-delivery.php?id=" . $delivery_id );
 				//if ( $delivery_id > 0 ) {
-					$line[ OrderFields::total_order ]  = $order_total; // $delivery->Price();
+				if ( isset( $orders_total ) ) {
+					$line[ OrderFields::total_order ] = $order_total;
+				} // $delivery->Price();
 					$line[ OrderFields::delivery_fee ] = $delivery->DeliveryFee();
 					$percent                           = "";
 					if ( ( $order_total - $delivery->DeliveryFee() ) > 0 ) {

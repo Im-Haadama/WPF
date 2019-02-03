@@ -393,8 +393,13 @@ function invoice_create_user( $user_id ) {
 	$invoice->CreateUser( $name, $email, $phone );
 
 	$client = $invoice->GetCustomerByName( $name );
-	print $client->ID;
 
+	$id = $client->ID;
+
+	// Save locally.
+	update_user_meta( $user_id, 'invoice_id', $id );
+
+	print $id;
 }
 
 function invoice_create_document( $type, $ids, $customer_id, $date, $cash = 0, $bank = 0, $credit = 0, $check = 0, $subject = null ) {
