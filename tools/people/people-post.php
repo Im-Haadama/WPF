@@ -18,9 +18,9 @@ $operation = $_GET["operation"];
 
 switch ( $operation ) {
 	case "get_balance":
-		$user_id = $_GET["user_id"];
-		$date    = $_GET["date"];
-		print balance( $date, $user_id );
+		$email = get_param( "email" );
+		$date  = $_GET["date"];
+		print balance( $date, $email );
 		break;
 	case "display":
 	case "display_all":
@@ -119,7 +119,7 @@ function show_all( $month ) {
 
 		if ( $row[1] ) {
 			print gui_header( 1, get_user_name( $u ) );
-			print get_customer_email( $u ) . "<br/>";
+			print "כתובת מייל של העובד/ת: " . get_customer_email( $u ) . "<br/>";
 
 			print print_transactions( $u, $m, $y );
 		}

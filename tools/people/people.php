@@ -92,7 +92,7 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 
 			return "אין מידע";
 		}
-		print "מציג נתונים לחודש " . $month . " מזהה " . $user_id . "<br/>";
+		// print "מציג נתונים לחודש " . $month . " מזהה " . $user_id . "<br/>";
 		$sql_month = " and month(date)=" . $month . " and year(date)=" . $year;
 	}
 	// $month_sum = array();
@@ -265,9 +265,10 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 		$total_sal += $total_travel;
 		$total_sal += $total_expense;
 		$data      .= "סהכ " . $total_sal . "<br/>";
+		$email     = get_customer_email( $user_id );
 
 		$r = "people/people-post.php?operation=get_balance&date=" .
-		     date( 'Y-m-j', strtotime( "last day of " . $year . "-" . $month ) ) . "&user_id=" . $user_id;
+		     date( 'Y-m-j', strtotime( "last day of " . $year . "-" . $month ) ) . "&email=" . $email;
 		// print $r;
 		$b = strip_tags( ImMultiSite::sExecute( $r, 4 ) );
 		//print "basket: " . $b . "<br/>";

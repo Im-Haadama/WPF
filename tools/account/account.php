@@ -81,7 +81,8 @@ function client_balance( $client_id ) {
 
 }
 
-function balance( $date, $client_id ) {
+function balance( $date, $email ) {
+	$client_id = get_customer_by_email( strtolower( $email ) );
 	$sql = 'select sum(transaction_amount) '
 	       . ' from im_client_accounts where date <= "' . $date
 	       . '" and client_id = ' . $client_id;

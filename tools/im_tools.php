@@ -264,7 +264,16 @@ function get_customer_name( $customer_id ) {
 	}
 
 	return get_supplier_name( $customer_id );
+}
 
+function get_customer_by_email( $email ) {
+// print "email = " . $email;
+
+	$user = get_user_by( "email", $email );
+
+// 	var_dump($user);
+
+	return $user->ID;
 }
 
 function get_customer_email( $customer_id ) {
