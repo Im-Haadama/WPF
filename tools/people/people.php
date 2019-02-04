@@ -23,6 +23,9 @@ function people_add_activity( $id, $date, $start, $end, $project_id, $traveling,
 		$expense = 0;
 	}
 	my_log( "people_add_activity", __FILE__ );
+	if ( time() - strtotime( $date ) < 0 ) {
+		return "לא ניתן להזין תאריכים עתידיים";
+	}
 	$sql = "INSERT INTO im_working_hours (user_id, date, start_time, end_time, project_id, traveling,
 			expense_text, expense) VALUES (" .
 	       $id . ", \"" . $date . "\", \"" . $start . "\", \"" . $end . "\", " . $project_id .
@@ -33,6 +36,8 @@ function people_add_activity( $id, $date, $start, $end, $project_id, $traveling,
 	if ( ! $export ) {
 		die ( 'Invalid query: ' . $sql . mysql_error() );
 	}
+
+	return 0; // Success
 }
 
 function driver_add_activity( $id, $date, $quantity, $sender ) {
@@ -296,7 +301,10 @@ function project_name( $id ) {
 
 function add_activity( $user_id, $date, $start, $end, $project_id, $vol = true, $traveling = 0, $extra_text = "", $extra = 0 ) {
 	my_log( "add_activity", __FILE__ );
-	people_add_activity( $user_id, $date, $start, $end, $project_id, $traveling, $extra_text, $extra );
+	$result = people_add_activity( $user_id, $date, $start, $end, $project_id, $traveling, $extra_text, $extra );
+	if ( $result ) {
+		return $result;
+	}
 	$fend   = strtotime( $end );
 	$fstart = strtotime( $start );
 	$amount = - get_rate( $user_id, $project_id ) * ( $fend - $fstart ) / 3600;
@@ -309,9 +317,17 @@ function add_activity( $user_id, $date, $start, $end, $project_id, $vol = true, 
 	my_log( "end add_activity" );
 }
 
-function gui_select_project( $id, $value, $events ) {
+function gui_select_project( $id, $value, $events, $worker = null ) {
+	$query = null;
+
+	if ( $worker ) {
+		// print "w=" . $worker;
+		// $user_id = sql_query("select user_id from im_working where id = " . $worker);
+		$query = " where id in (select project_id from im_working where worker_id = " . $worker . ")";
+	}
+
 	return gui_select_table( $id, "im_projects", $value, $events, "", "project_name",
-		null, true, false );
+		$query, true, false );
 
 }
 

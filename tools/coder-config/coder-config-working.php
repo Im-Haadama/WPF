@@ -6,11 +6,12 @@
  * Time: 11:04
  */
 
-require_once( ROOT_DIR . "/tools/people/people.php" );
-
+$obj_name      = "working";
 $table_prefix  = "im_";
-$root_file     = ROOT_DIR . '/tools/people/people.php';
+$root_file     = realpath( ROOT_DIR ) . '/tools/im_tools.php';
 $target_folder = "/tools/people";
+
+require_once( ROOT_DIR . '/tools/im_tools_light.php' );
 
 $table_suffix = "";
 $table_name   = $table_prefix . $obj_name . $table_suffix;
@@ -27,12 +28,21 @@ $trans["worker_id"] = "get_user_name";
 //$trans["paid_date"] = "display_date";
 //$trans["status"]    = "display_status";
 
-// $single_url = "../suppliers/c-get-suppliers.php";
+//$page_actions = array(
+//	array( "רענן", "create.php?verbose=1" ),
+//	array( "תבניות", "c-get-all-task_templates.php" )
+//);
+//
+//$actions = array(
+//	array( "התחל", "tasklist.php?operation=start&id=" ),
+//	array( "בוצע", "tasklist.php?operation=end&id=" ),
+//	array( "בטל", "tasklist.php?operation=cancel&id=" )
+//);
 
-// display_part_name()'
-//$actions = array( array( "שכפל", "missions.php?operation=dup&id=" ) );
-//				 array("בוצע", "tasklist.php?operation=end&id="),
-//	             array("בטל", "tasklist.php?operation=cancel&id="));
+$display_url                  = array();
+$display_url["task_template"] = "c-get-task_templates.php?id=";
+
+// $load_actions = array( "create_tasks" );
 
 $defaults         = [];
 $defaults["date"] = "date(\"m/d/y\")";
@@ -43,5 +53,5 @@ $skip_in_horizontal = array();
 // $query = " status in (" . SupplyStatus::NewSupply . ", " . SupplyStatus::Sent . ", " . SupplyStatus::Supplied . ")";
 $query = " is_active = 1 ";
 
-$insert["worker_id"]  = "gui_select_client";
-$insert["project_id"] = "gui_select_project";
+//$insert["worker_id"]  = "gui_select_client";
+//$insert["project_id"] = "gui_select_project";

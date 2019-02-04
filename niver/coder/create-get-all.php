@@ -183,18 +183,28 @@ if ( ! isset( $order ) ) {
 }
 
 fwrite( $get_all, "
-\$sql = \"" . $remote_sql . "\";
-\$remote_url = '$url';
+\$sql = \"" . $remote_sql . "\";" );
+
+if ( isset( $preset_query ) ) {
+	fwrite( $get_all, "\$preset_query = array(" .
+	                  comma_implode( $preset_query, true ) . ");" );
+	fwrite( $get_all, "
+	\$ps = get_param(\"preset\");
+	
+	if (\$ps) \$sql .= \" and \" . \$preset_query[\$ps];" );
+}
+fwrite( $get_all, "\$remote_url = '$url';
 
 foreach(\$_GET as \$key => \$value)
 {
-	if (! in_array(\$key, array(\"debug\"))){
+	if (! in_array(\$key, array(\"debug\", \"preset\"))){
 	    \$sql .= \" and \" . \$key . \" = '\" . \$value .\"'\";
 	    \$remote_url = append_url(\$remote_url, \"\$key=\" . urlencode(\$value) . \"&\");
 	    }
 }
 
 \$sql = \$sql . \"" . $order . "\";
+
 print \"<table dir='rtl' border=\'1\' id='table_" . $obj_name . "'>\";
 print \"<tr>\";
 " );

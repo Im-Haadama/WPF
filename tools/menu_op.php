@@ -139,7 +139,7 @@ $col ++;
 $row                      = 0;
 $table[ $row ++ ][ $col ] = gui_header( 2, "ניהול" );
 add_command( $row, $col, "edit_pricelist", "תבנית", "tasklist/c-get-all-task_templates.php", "doc_frame" );
-add_command( $row, $col, "edit_pricelist", "משימות פעילות", "tasklist/c-get-all-tasklist.php", "tasks" );
+add_command( $row, $col, "edit_pricelist", "משימות פעילות", "tasklist/c-get-all-tasklist.php?preset=1", "tasks" );
 add_command( $row, $col, "edit_pricelist", "חשבוניות", "business/c-get-all-business_info.php?document_type=4&is_active=1" );
 add_command( $row, $col, "edit_pricelist", "פרויקטים", "people/c-get-all-projects.php" );
 add_command( $row, $col, "edit_pricelist", "תיבת דואר", "business/manage-inbox.php" );

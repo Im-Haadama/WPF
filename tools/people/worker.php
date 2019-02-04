@@ -79,6 +79,9 @@ print header_text();
             // Wait to get query result
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
             {
+                if (xmlhttp.response.length) // Failed
+                    alert(xmlhttp.response);
+
                 update_display();
             }
         }

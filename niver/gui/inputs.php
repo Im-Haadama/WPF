@@ -189,9 +189,12 @@ function gui_input_select_from_datalist( $id, $datalist, $events = null ) {
 
 function gui_select_table(
 	$id, $table, $selected = null, $events = null, $more_values = null, $name = null, $where = null,
-	$include_id = false, $datalist = false, $order_by = null
+	$include_id = false, $datalist = false, $order_by = null, $id_key = null
 ) {
 	global $conn;
+	if ( ! $id_key ) {
+		$id_key = "id";
+	}
 
 	$values = array();
 
@@ -211,7 +214,7 @@ function gui_select_table(
 		$name = "name";
 	}
 
-	$sql = "SELECT distinct id, " . $name;
+	$sql = "SELECT distinct " . $id_key . ", " . $name;
 	if ( $order_by ) {
 		$sql .= ", " . $order_by;
 	}
@@ -219,9 +222,12 @@ function gui_select_table(
 	if ( $where ) {
 		$sql .= " " . $where;
 	}
+	// print $sql;
 	if ( $order_by ) {
 		$sql .= " order by 3 ";
 	}
+
+	// print $sql;
 
 	$results = mysqli_query( $conn, $sql );
 	if ( $results ) {
@@ -233,21 +239,23 @@ function gui_select_table(
 	}
 
 	if ( $datalist ) {
-		return gui_select_datalist( $id, $name, $values, $events, $selected, $include_id );
+		return gui_select_datalist( $id, $name, $values, $events, $selected, $include_id, $id_key );
 	} else {
 		return gui_select( $id, $name, $values, $events, $selected );
 	}
 }
 
 
-function gui_select_datalist( $id, $name, $values, $events, $selected = null, $include_id = true ) {
+function gui_select_datalist( $id, $name, $values, $events, $selected = null, $include_id = true, $id_key = null ) {
+	if ( ! $id_key )
+		$id_key = "id";
 
 	$data = "<datalist id=\"" . $id . "_items\">";
 
 	foreach ( $values as $row ) {
 		$value = "";
 		if ( $include_id ) {
-			$value .= $row["id"] . ")";
+			$value .= $row[ $id_key ] . ")";
 		}
 		$value .= $row[ $name ];
 		$data  .= "<option value=\"" . $value . "\"";

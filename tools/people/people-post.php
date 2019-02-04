@@ -42,11 +42,11 @@ switch ( $operation ) {
 		break;
 
 	case "add_time":
-		$start      = $_GET["start"];
-		$end        = $_GET["end"];
-		$date       = $_GET["date"];
-		$project    = $_GET["project"];
-		$worker_id  = $_GET["worker_id"];
+		$start     = $_GET["start"];
+		$end       = $_GET["end"];
+		$date      = $_GET["date"];
+		$project   = $_GET["project"];
+		$worker_id = get_param( "worker_id" );
 		// print "wid=" . $worker_id . "<br/>";
 		$vol        = $_GET["vol"];
 		$traveling  = $_GET["traveling"];
@@ -56,16 +56,24 @@ switch ( $operation ) {
 		if ( isset( $_GET["user_id"] ) ) {
 			$user_id = $_GET["user_id"];
 		} else {
-			if ( isset( $_GET["worker_id"] ) ) {
-				// $w       = $_GET["worker_id"];
+			if ( isset( $worker_id ) ) {
+//				$w       = $_GET["worker_id"];
+//				print "w=" . $w;
 				$user_id = sql_query_single_scalar( "SELECT worker_id FROM im_working WHERE id = " . $worker_id );
 				//print "uid=" . $user_id . "<br/>";
 			} else {
 				$user_id = get_user_id();
 			}
 		}
+		if ( ! $user_id ) {
+			print "no user selected";
+			die( 1 );
+		}
 		// if ($user_id = 1) $user_id = 238;
-		add_activity( $user_id, $date, $start, $end, $project, $vol, $traveling, $extra_text, $extra );
+		$result = add_activity( $user_id, $date, $start, $end, $project, $vol, $traveling, $extra_text, $extra );
+		if ( $result ) {
+			print $result;
+		}
 		break;
 
 	case "show_all":

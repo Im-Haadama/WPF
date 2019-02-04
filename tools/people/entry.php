@@ -6,14 +6,30 @@
  * Time: 11:42
  */
 
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
 require_once( "../im_tools.php" );
 require_once( ROOT_DIR . "/niver/gui/inputs.php" );
 require_once( ROOT_DIR . "/niver/gui/sql_table.php" );
 require_once( "../business/business.php" );
+require_once( "people.php" );
 
-print header_text( false, true, true );
+$role = "";
 
-if ( isset( $_GET["operation"] ) ) {
+$operation = get_param( "operation" );
+
+
+if ( isset( $operation ) ) {
+	switch ( $operation ) {
+		case "get_projects":
+//            print "aa";
+			$worker_id = get_param( "id" );
+//            print "w=" . $worker_id . "<br/>";
+			print gui_select_project( "select_project", 0, "", $worker_id );
+
+			return;
+	}
 	print table_content( "select client_displayname(user_id) as עובד, date as תאריך, start_time as התחלה, end_time as סיום, " .
 	                     " traveling as 'הוצאות נסיעה', expense as 'הוצאות', expense_text as 'תיאור הוצאה' " .
 	                     " from im_working_hours " .
@@ -21,10 +37,30 @@ if ( isset( $_GET["operation"] ) ) {
 	                     " limit 10" );
 	exit( 0 );
 }
+
+print header_text( false, true, true );
+
 ?>
+
 <script type="text/javascript" src="/niver/gui/client_tools.js"></script>
 
 <script>
+
+    function worker_changed() {
+        var worker_id = get_worker();
+        xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+            // Wait to get query result
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+            {
+                document.getElementById("project").innerHTML = xmlhttp.response;
+            }
+        }
+        request = "entry.php?operation=get_projects&id=" + worker_id;
+        xmlhttp.open("GET", request, true);
+        xmlhttp.send();
+
+    }
 
     function update_display() {
         xmlhttp = new XMLHttpRequest();
@@ -42,6 +78,12 @@ if ( isset( $_GET["operation"] ) ) {
 
     }
 
+    function get_worker() {
+        var worker_str = get_value_by_name("worker_select");
+
+        return worker_str.substr(0, worker_str.indexOf(")"));
+    }
+
     function add_item() {
         document.getElementById("btn_add_time").disabled = true;
 
@@ -56,10 +98,10 @@ if ( isset( $_GET["operation"] ) ) {
 	    <?php if ( isset( $_GET["worker"] ) ) {
 	    print 'var id = ' . $_GET["workder"] . '\n';
     } else {
-	    print 'var id = get_value_by_name("worker_select");';
+	    print 'var id = get_worker();';
     }
 	    ?>
-        var worker_id = id.substr(0, id.indexOf(")"));
+        //    var worker_id = id.substr(0, id.indexOf(")"));
 
         if (traveling.length > 0 && !(parseInt(traveling) > 0)) {
             document.getElementById("btn_add_time").disabled = false;
@@ -72,13 +114,15 @@ if ( isset( $_GET["operation"] ) ) {
             // Wait to get query result
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
             {
+                if (xmlhttp.response.length) // Failed
+                    alert(xmlhttp.response);
                 update_display();
             }
         }
         var request = "people-post.php?operation=add_time&start=" + start + '&end=' + end +
             '&date=' + date + "&project=" + project_id + "&vol=0" + "&traveling=" + traveling +
             "&extra_text=" + encodeURI(extra_text) +
-            "&worker_id=" + worker_id +
+            "&user_id=" + id +
             "&extra=" + extra;
 
 		<? if ( $role == 'hr' ) {
@@ -86,7 +130,7 @@ if ( isset( $_GET["operation"] ) ) {
 ;';
 		print 'var worker_id = user_name.substr(0, user_name.indexOf(")"));
 ';
-		print 'request = request + "&worker_id=" + worker_id;';
+	    print 'request = request + "&user_id=" + worker_id;';
 	}
 		?>
         // document.getElementById("debug").innerHTML = request;
@@ -102,7 +146,7 @@ print header_text(false, true, true);
 print gui_header( 1, "הזנת נתוני שכר" );
 
 $table = array();
-array_push( $table, array( "בחר עובד", gui_select_worker() ) );
+array_push( $table, array( "בחר עובד", gui_select_worker( "onchange=worker_changed()" ) ) );
 array_push( $table, ( array( "תאריך", gui_input_date( "date", date( 'Y-m-d' ) ) ) ) );
 array_push( $table, ( array(
 "משעה",

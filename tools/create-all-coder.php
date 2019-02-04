@@ -20,7 +20,7 @@ require_once( ROOT_DIR . "/niver/gui/inputs.php" );
 $path = "http://" . $_SERVER['HTTP_HOST'];
 
 $c = array();
-array_push( $c, "bank" );
+array_push( $c, "bank", "working" );
 //array_push( $c, "missions" );
 //array_push( $c, "tasklist", "task_templates" );
 //array_push( $c, "suppliers", "business_info" );

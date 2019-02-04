@@ -21,11 +21,12 @@ $debug = get_param( "debug" );
 
 if ( isset( $_GET["week"] ) ) {
 	$week = $_GET["week"];
-} else {
-	$week = date( "Y-m-d", strtotime( "last sunday" ) );
 }
+//else {
+//	$week = date( "Y-m-d", strtotime( "last sunday" ) );
+//}
 
-if ( date( 'Y-m-d' ) > date( 'Y-m-d', strtotime( $week . "+1 week" ) ) ) {
+if ( isset( $week ) and date( 'Y-m-d' ) > date( 'Y-m-d', strtotime( $week . "+1 week" ) ) ) {
 	print gui_hyperlink( "שבוע הבא", "get-driver-multi.php?week=" . date( 'Y-m-d', strtotime( $week . " +1 week" ) ) ) . " ";
 }
 
@@ -81,7 +82,12 @@ function get_text( $row, $index ) {
 // Start collecting data
 $data_lines = array();
 $header = null;
-$missions = sql_query_array_scalar( "SELECT id FROM im_missions WHERE date = curdate()" );
+if ( isset( $week ) ) {
+	$missions = sql_query_array_scalar( "SELECT id FROM im_missions WHERE date >= " . quote_text( $week ) .
+	                                    " AND date < DATE_ADD(" . quote_text( $week ) . ", INTERVAL 1 WEEK)" );
+} else {
+	$missions = sql_query_array_scalar( "SELECT id FROM im_missions WHERE date = curdate()" );
+}
 
 print gui_header( 1, "מדפיס משימות " );
 foreach ( $missions as $mission ) {

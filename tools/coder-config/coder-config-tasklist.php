@@ -16,8 +16,11 @@ require_once( ROOT_DIR . '/tools/im_tools_light.php' );
 $table_suffix = "";
 $table_name   = $table_prefix . $obj_name . $table_suffix;
 $order        = "order by 12 desc, 6 desc, 2 ";
-$query        = "(date(date) <= CURRENT_DATE or isnull(date)) and (status < 2) ";
-$query        .= " and (not mission_id > 0) and task_active_time(id)";
+$preset_query = array(
+	"",
+	"(date(date) <= CURRENT_DATE or isnull(date)) and (status < 2) " .
+	" and (not mission_id > 0) and task_active_time(id)"
+);
 $useMultiSite = false;
 
 $header_text = "משימות פעילות";
@@ -25,7 +28,7 @@ $header_text = "משימות פעילות";
 // transform value
 $trans = [];
 //$trans["task_template"] = "get_task_link";
-$trans["zones"] = "show_zone_names";
+$trans["url"] = "show_zone_names";
 
 $page_actions = array(
 	array( "רענן", "create.php?verbose=1" ),

@@ -89,7 +89,7 @@ function append_url( $url, $addition ) {
 	return $url . "?" . $addition;
 }
 
-function comma_implode( $array ) {
+function comma_implode( $array, $quote = false ) {
 //	print "<p dir=\"ltr\">";
 //	var_dump($array);
 //	print "</p>";
@@ -103,7 +103,16 @@ function comma_implode( $array ) {
 		return "not array!";
 	}
 	if ( is_string( $array[0] ) ) {
-		return trim( implode( ", ", $array ), ", " );
+		$result = "";
+		foreach ( $array as $s ) {
+			if ( $quote ) {
+				$result .= quote_text( $s ) . ", ";
+			} else {
+				$result .= $s . ", ";
+			}
+		}
+
+		return trim( $result, ", " );
 	}
 	$result = "";
 	foreach ( $array as $var ) { // not string...

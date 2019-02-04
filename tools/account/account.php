@@ -27,37 +27,31 @@ function get_daily_rate( $user_id ) {
 }
 
 function get_rate( $user_id, $project_id ) {
-	global $conn;
 
 	$sql = 'select rate '
 	       . ' from im_working '
 	       . ' where worker_id = ' . $user_id
 	       . ' and project_id = ' . $project_id;
 
-	$result = mysqli_query( $conn, $sql );
-	if ( $row = mysqli_fetch_row( $result ) ) { // Specific rate
-		$rate = $row[0];
-	} else { // Default rate
-		$sql = 'select rate '
-		       . ' from im_working '
-		       . ' where worker_id = ' . $user_id
-		       . ' and project_id = 0';
+	$rate = sql_query_single_scalar( $sql );
 
-		$result = mysqli_query( $conn, $sql );
-
-		if ( ! $result ) {
-			print "no default rate! " . $user_id . " ";
-			print mysqli_error( $conn );
-			die ( 1 );
-		}
-		if ( $row = mysqli_fetch_row( $result ) ) {
-			$rate = $row[0];
-		} else {
-			print "no default rate for " . $user_id . " ";
-		}
+	if ( $rate ) {
+		return round( $rate, 2 );
 	}
 
-	return round( $rate, 2 );
+	$result = sql_query( $sql );
+	$sql    = 'select rate '
+	          . ' from im_working '
+	          . ' where worker_id = ' . $user_id
+	          . ' and project_id = 0';
+
+	$rate = sql_query_single_scalar( $sql );
+	if ( $rate )
+		return round( $rate, 2);
+
+	print "no default rate for " . $user_id . " ";
+
+	return 0;
 }
 
 function account_add_transaction( $client_id, $date, $amount, $ref, $type ) {
