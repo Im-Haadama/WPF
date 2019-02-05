@@ -39,7 +39,7 @@ ADD invoice_email VARCHAR(50)
 sql_query( "ALTER TABLE im_business_info
 ADD invoice_file VARCHAR(200)  
   CHARACTER SET utf8
-  COLLATE utf8_general_ci,
+  COLLATE utf8_general_ci
 
 " );
 
@@ -56,9 +56,22 @@ sql_query( "ALTER TABLE im_business_info
 ADD document_type INT(2) DEFAULT '1' NOT NULL;
 " );
 
+sql_query( "ALTER TABLE im_business_info
+MODIFY week DATE;
+" );
+
+sql_query( "ALTER TABLE im_business_info
+MODIFY delivery_fee FLOAT;
+" );
+
 sql_query( "ALTER TABLE im_suppliers
 ADD auto_order_day INT(11),
 add invoice_email VARCHAR(50);
+" );
+
+sql_query( "ALTER TABLE im_suppliers
+ADD auto_order_day INT(11),
+ADD invoice_email VARCHAR(50);
 " );
 
 
