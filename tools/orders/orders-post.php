@@ -106,7 +106,8 @@ switch ( $operation ) {
 		if ( ! is_numeric( $order_id ) ) {
 			die ( "no order_id" );
 		}
-		$lines = get_param_array( "param" );
+		$lines = get_param_array( "params" );
+		// var_dump($lines);
 		$o     = new Order( $order_id );
 		foreach ( $lines as $line ) {
 			wc_delete_order_item( $line );

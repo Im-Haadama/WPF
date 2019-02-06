@@ -273,9 +273,9 @@ class PriceList {
 					$map_id = $link_data[1];
 				}
 			// print $prod_id . " " . $map_id . "<br/>";
-				if ( $ordered_only and ! ( ( $needed_products[ $prod_id ][0] or $needed_products[ $prod_id ][1] ) ) ) {
+				if ( $ordered_only and ! isset( $needed_products[ $prod_id ][0] ) and ! isset( $needed_products[ $prod_id ][1] ) )
 					continue;
-				}
+
 				if ( $need_supply_only and ( $needed_products[ $prod_id ][0] <= $p->getStock() ) ) {
 					continue;
 				}

@@ -14,10 +14,10 @@ require_once( TOOLS_DIR . '/wp.php' );
 require_once( TOOLS_DIR . '/pricing.php' );
 require_once( STORE_DIR . '/niver/gui/inputs.php' );
 
-if ( ! isset( $woocommerce ) ) {
-	// print "Woocommerce is not present. Exiting";
-	return;
-}
+//if ( ! isset( $woocommerce ) ) {
+//	 print "Woocommerce is not present. Exiting";
+//	return;
+//}
 
 //require_once('../../../../tools/im_tools.php');
 // require_once ("../../../../tools/wp.php");
