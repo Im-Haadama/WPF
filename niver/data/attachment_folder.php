@@ -25,8 +25,10 @@ function inbox_files( $hostname, $mail_user, $password, $attach_folder, $folder_
 	}
 
 	while ( $message = $m->ReadNext() ) {
+		// print "sub= " . $message->getSubject() . "<br/>";
 		// Check if message is invoice
 		if ( strstr( $message->getSubject(), "חשבונית" ) ) {
+//			$target = $message->getAttachment
 			$target = $attach_folder . '/' . $message->getSender();
 			$url    = $folder_url . '/' . $message->getSender();
 
@@ -36,19 +38,20 @@ function inbox_files( $hostname, $mail_user, $password, $attach_folder, $folder_
 
 			// Check if there is attachment
 			$file = $message->SaveAttachment( $target );
+			//	print "file=" . $file ."<br/>";
 
 			$text = "";
 			if ( ! ( strlen( $file ) > 3 ) ) {
 				$text = "אין מסמך";
 			} else {
-				$text = gui_hyperlink( basename( $file ), $url . '/' . $file );
-
+				$text = gui_hyperlink( substr( basename( $file ), 0, 20 ), $url . '/' . $file );
 			}
 			$row = array(
-				$message->getSubject(),
+				substr( $message->getSubject(), 0, 20 ),
 				$message->getSender(),
 				$text,
-				$message->getDate()
+				$message->getDate(),
+				$message->getIndex()
 			);
 			// gui_hyperlink("הורד קבצים", "admin-post.php?operation=download&id=" . $message->getI()));
 

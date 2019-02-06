@@ -7,20 +7,27 @@
  * Time: 15:04
  */
 class ImapMessage {
-	private $i;
+	private $index;
 	private $header;
 	private $subject;
 	private $sender;
 	private $date;
 	private $inbox;
+	private $attachments;
 
-	public function __construct( $inbox, $email ) { //$i, $header, $subject, $sender, $date ) {
-		$this->inbox   = $inbox;
-		$this->i       = imap_msgno( $inbox, $email );
-		$this->header  = imap_headerinfo( $inbox, $this->i );
-		$this->subject = $this->header_subject( $this->header );
-		$this->sender  = $this->header_sender_email( $this->header );
-		$this->date    = $this->header_date( $this->header );
+//	private $message_no;
+
+	public function __construct( $inbox, $index ) { //$i, $header, $subject, $sender, $date ) {
+		// print "email: " . $email;
+		// print "msg_no: " . $index . "<br/>";
+		$this->inbox = $inbox;
+		$this->index = $index;
+		// $this->message_no = imap_msgno($inbox, $index);
+		$this->header      = imap_headerinfo( $inbox, $index );
+		$this->subject     = $this->header_subject( $this->header );
+		$this->sender      = $this->header_sender_email( $this->header );
+		$this->date        = $this->header_date( $this->header );
+		$this->attachments = null; // Read only if needed
 	}
 
 	private function header_subject( $header ) {
@@ -40,17 +47,10 @@ class ImapMessage {
 	}
 
 	private function header_date( $header ) {
-		$date = date( "j.n.y", strtotime( $header->date ) );
+		$date = date( 'Y-m-d', strtotime( $header->date ) );
 
 		// print $date;
 		return $date;
-	}
-
-	/**
-	 * @return mixed
-	 */
-	public function getI() {
-		return $this->i;
 	}
 
 	/**
@@ -68,6 +68,13 @@ class ImapMessage {
 	}
 
 	/**
+	 * @return int
+	 */
+//	public function getMessageNo(): int {
+//		return $this->message_no;
+//	}
+
+	/**
 	 * @return mixed
 	 */
 	public function getSender() {
@@ -81,9 +88,26 @@ class ImapMessage {
 		return $this->date;
 	}
 
-	function SaveAttachment( $folder ) {
-		/* get mail structure */
-		$structure = imap_fetchstructure( $this->inbox, $this->i );
+	function GetAttachmentName( $index = 1 ) {
+		$this->read_attachments();
+		// var_dump($this->attachments);
+		$attachment = $this->attachments[ $index ];
+		$el         = imap_mime_header_decode( $attachment['name'] );
+		// var_dump($el);
+		$filename = "";
+		$s        = count( $el );
+		for ( $ii = 0; $ii < $s; $ii ++ ) {
+			$filename .= $el[ $ii ]->text;
+		}
+
+		return $filename;
+	}
+
+	private function read_attachments() {
+		if ( $this->attachments ) {
+			return;
+		}
+		$structure = imap_fetchstructure( $this->inbox, $this->getIndex() );
 
 		$attachments = array();
 
@@ -117,7 +141,7 @@ class ImapMessage {
 				}
 
 				if ( $attachments[ $i ]['is_attachment'] ) {
-					$attachments[ $i ]['attachment'] = imap_fetchbody( $this->inbox, $this->i, $i + 1 );
+					$attachments[ $i ]['attachment'] = imap_fetchbody( $this->inbox, $this->getIndex(), $i + 1 );
 
 					/* 3 = BASE64 encoding */
 					if ( $structure->parts[ $i ]->encoding == 3 ) {
@@ -129,9 +153,24 @@ class ImapMessage {
 				}
 			}
 		}
+		$this->attachments = $attachments;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getIndex() {
+		return $this->index;
+	}
+
+	function SaveAttachment( $folder ) {
+		/* get mail structure */
+		$this->read_attachments();
+
+		// var_dump($this->attachments);
 
 		/* iterate through each attachment and save it */
-		foreach ( $attachments as $attachment ) {
+		foreach ( $this->attachments as $attachment ) {
 			if ( $attachment['is_attachment'] == 1 ) {
 				$el       = imap_mime_header_decode( $attachment['name'] );
 				$filename = "";

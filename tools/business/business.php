@@ -10,23 +10,33 @@ require_once( TOOLS_DIR . "/im_tools.php" );
 
 function business_add_transaction(
 	$part_id, $date, $amount, $delivery_fee, $ref, $project, $net_total = 0,
-	$document_type = ImDocumentType::delivery
+	$document_type = ImDocumentType::delivery,
+	$document_file = null
 ) {
-	global $conn;
 	// print $date . "<br/>";
 	$sunday = sunday( $date );
+	if ( ! $part_id ) {
+		die ( "no supplier" );
+	}
 
-	$sql = "INSERT INTO im_business_info(part_id, date, week, amount, delivery_fee, ref, project_id, net_total, document_type) "
-	       . "VALUES (" . $part_id . ", \"" . $date . "\", " .
-	       "\"" . $sunday->format( "Y-m-d" ) .
-	       "\", " . ( $amount - $delivery_fee ) . ", " . $delivery_fee . ", '" . $ref . "', '" . $project . "', " .
-	       $net_total . ", " . $document_type . " )";
+	$fields = "part_id, date, week, amount, delivery_fee, ref, project_id, net_total, document_type ";
+	$values = $part_id . ", \"" . $date . "\", " .
+	          "\"" . $sunday->format( "Y-m-d" ) .
+	          "\", " . ( $amount - $delivery_fee ) . ", " . $delivery_fee . ", '" . $ref . "', '" . $project . "', " .
+	          $net_total . ", " . $document_type;
+
+	if ( $document_file ) {
+		$fields .= ", invoice_file";
+		$values .= ", " . quote_text( $document_file );
+	}
+	$sql = "INSERT INTO im_business_info (" . $fields . ") "
+	       . "VALUES (" . $values . " )";
 
 	my_log( $sql, __FILE__ );
 
-	mysqli_query( $conn, $sql ) or my_log( "SQL failed " . $sql, __FILE__ );
+	sql_query( $sql);
 
-	return mysqli_insert_id( $conn );
+	return sql_insert_id();
 }
 
 function business_delete_transaction( $ref ) {

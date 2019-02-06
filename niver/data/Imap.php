@@ -38,18 +38,35 @@ class Imap {
 		$this->index    = 0;
 	}
 
+	function MoveMessage( $i, $folder_name ) {
+//		print "i=" . $i . "<br/>";
+//		print "f=" . $folder_name . "<br/>";
+//		var_dump($this->inbox);
+
+		imap_mail_move( $this->inbox, $i, $folder_name );
+//		imap_mail_copy( $this->inbox, $i, $folder_name, CP_MOVE );
+
+		imap_expunge( $this->inbox );
+	}
+
+	function ReadMessage( $idx ) {
+		return new ImapMessage( $this->inbox, $idx );
+	}
+
 	function ReadNext() {
 		if ( $this->index == count( $this->messages ) ) {
 			return null;
 		}
 
-		$email = $this->messages[ $this->index ++ ];
+		$msg_no = $this->messages[ $this->index ++ ];
+		// print "msg_no= " . $msg_no . "<br/>";
 
-		if ( ! $email ) {
+		if ( ! $msg_no ) {
 			return null;
 		}
 
-		$message = new ImapMessage( $this->inbox, $email ); // $i, $header, $subject, $sender, $date);
+		// print "readnext msg_no: " . $msg_no . "<br/>";
+		$message = new ImapMessage( $this->inbox, $this->index ); // $i, $header, $subject, $sender, $date);
 
 		return $message;
 	}
