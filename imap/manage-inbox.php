@@ -11,7 +11,6 @@ error_reporting( E_ALL );
 ini_set( 'display_errors', 'on' );
 
 require_once( STORE_DIR . '/niver/data/im_simple_html_dom.php' );
-
 $filename = STORE_DIR . '/imap/mail-config.php';
 
 if ( ! file_exists( $filename ) ) {
@@ -22,6 +21,12 @@ require_once( $filename );
 
 // print __FILE__;
 require_once( STORE_DIR . '/tools/gui/inputs.php' );
+require_once( STORE_DIR . '/niver/fund.php' );
+
+$debug = get_param( "debug" );
+if ( $debug ) {
+	print "Debug mode<br/>";
+}
 
 $changed_price = array();
 $site_tools    = array(
@@ -42,10 +47,11 @@ $text .= '</head>';
 print $text;
 
 for ( $i = 0; $i < count( $hosts ); $i ++ ) {
-	read_inbox( $hosts[ $i ], $users[ $i ], $passes[ $i ] );
+	read_inbox( $hosts[ $i ], $users[ $i ], $passes[ $i ], $debug );
 }
 
-function read_inbox( $host, $user, $pass ) {
+function read_inbox( $host, $user, $pass, $debug ) {
+
 	$count = 0;
 
 	print gui_header( 1, $user );
@@ -108,7 +114,7 @@ function read_inbox( $host, $user, $pass ) {
 			case "office@yevulebar.co.il": // yb
 //			print "start yb $subject<br/>";
 				if ( strstr( $subject, "מלאי" ) ) {
-					$handled = handle_pricelist( $subject, $inbox, "yb", $date, $i );
+					$handled = handle_pricelist( $subject, $inbox, "yb", $date, $i, null, $debug );
 				}
 				break;
 
@@ -181,7 +187,6 @@ function run_in_server( $site_id, $relative_url ) {
 	$full_url = $site_tools[ $site_id ] . $relative_url;
 	$html     = im_file_get_html( $full_url );
 	$log_file = $attach_folder . "/" . date( 'j.n.y' ) . ".log";
-	// In case running twice a day - move the file to unique name
 	shell_exec( "mv $log_file $log_file" . time() );
 
 	$file = fopen( $log_file, "w" );
@@ -205,11 +210,17 @@ function handle_supply_in_server( $site_id, $supplier, $file ) {
 	return $html . " " . $relative_url;
 }
 
-function handle_in_server( $site_id, $supplier, $file = null ) {
+function handle_in_server( $site_id, $supplier, $file = null, $debug = false ) {
 	$relative_url = "/pricelist/update-pricelist.php?supplier_name=" . $supplier;
 	if ( $file ) {
 		$relative_url .= "&file=" . rtrim( $file );
 	}
+	if ( $debug ) {
+		$relative_url .= "&debug=1";
+	}
+
+	if ( $debug )
+		print $relative_url . "<br/>";
 
 	$html = run_in_server( $site_id, $relative_url );
 	foreach ( preg_split( "/\<br(\s*)?\/?\>/i", $html ) as $line ) {
@@ -306,7 +317,9 @@ function handle_supply( $subject, $inbox, $supplier, $date, $i, $text = false ) 
 	return false;
 }
 
-function handle_pricelist( $subject, $inbox, $supplier, $date, $i, $text = false ) {
+function handle_pricelist( $subject, $inbox, $supplier, $date, $i, $text = false, $debug = false ) {
+	// print "hjd=" . $debug . "<br>";
+
 	global $changed_price;
 
 //	if (0) {
@@ -318,10 +331,16 @@ function handle_pricelist( $subject, $inbox, $supplier, $date, $i, $text = false
 		// Save mail text. For amir.
 		$file = save_html_as_csv( $inbox, $i, $supplier, $date );
 	} else {
-		print "saving attachment<br/>";
-		if ( $file = save_attachment( $inbox, $i, $supplier, $date ) ) {
+		if ( $debug ) {
+			print "saving attachment<br/>";
+		}
+		if ( $file = save_attachment( $inbox, $i, $supplier, $date, $debug ) ) {
+			if ( $debug )
+				print "saved " . $file . "<br/>";
+
 			$command = "/home/agla/store/utils/" . $supplier . "2csv.sh $file "; // 2>1 | tail -1
-			print "running: " . $command . "<br/>";
+			if ( $debug )
+				print "running: " . $command . "<br/>";
 			$file = shell_exec( $command );
 			// $csv_file =shell_exec("echo lalala");
 			// print "csv_file: " . $csv_file ."<br/>";
@@ -338,7 +357,7 @@ function handle_pricelist( $subject, $inbox, $supplier, $date, $i, $text = false
 
 //	$result[1] = handle_in_server(1, $supplier, $file);
 //	if (strstr($result[1], "נקראו")) $changed_price[1] = true;
-	$result[3] = handle_in_server( 4, $supplier, $file );
+	$result[3] = handle_in_server( 4, $supplier, $file, $debug );
 	if ( strstr( $result[3], "נקראו" ) ) {
 		$changed_price[3] = true;
 	}
@@ -410,12 +429,12 @@ function save_html_as_csv( $inbox, $email_number, $supplier_name, $date ) {
 	return $result_file;
 }
 
-function save_attachment( $inbox, $email_number, $supplier_name, $date ) {
+function save_attachment( $inbox, $email_number, $supplier_name, $date, $debug = null ) {
 	global $attach_folder;
 
-	$overview = imap_fetch_overview( $inbox, $email_number, 0 );
+//	$overview = imap_fetch_overview( $inbox, $email_number, 0 );
 
-	$message = imap_fetchbody( $inbox, $email_number, 2 );
+//	$message = imap_fetchbody( $inbox, $email_number, 2 );
 
 	/* get mail structure */
 	$structure = imap_fetchstructure( $inbox, $email_number );
@@ -477,6 +496,9 @@ function save_attachment( $inbox, $email_number, $supplier_name, $date ) {
 			}
 			$ext         = pathinfo( $filename, PATHINFO_EXTENSION );
 			$result_file .= '.' . $ext;
+
+			if ( $debug )
+				print "result = " . $result_file . "<br/>";
 
 			// $result_file1 = $result_file;
 			// if ($attachment_count > 0) $result_file1 .= $attachment_count;

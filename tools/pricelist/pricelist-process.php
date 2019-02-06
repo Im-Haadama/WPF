@@ -14,7 +14,6 @@ require_once( TOOLS_DIR . '/data/header.php' );
 
 require_once( 'pricelist.php' );
 
-
 // TODO: incremental doesn't handle deletion.
 // TODO: for now deleting will be done in full sync (once a day).
 function pricelist_remote_site_process( $supplier_id, &$results, $inc = false ) {
@@ -187,52 +186,60 @@ function pricelist_remote_site_process( $supplier_id, &$results, $inc = false ) 
 	print_items( "פריטים יצאו", $results[ UpdateResult::DeletePrice ] );
 }
 
-function pricelist_process_name( $filename, $supplier_name, $add ) {
-	global $conn;
-
+function pricelist_process_name( $filename, $supplier_name, $add, $debug = false ) {
 	$sql = "select id from im_suppliers where supplier_name = '$supplier_name' or eng_name = '$supplier_name'";
 	// print $sql;
 	$sid = sql_query_single_scalar( $sql );
 	if ( $sid > 0 ) {
 		print "supplier id = " . $sid . "<br/>";
 
-		pricelist_process( $filename, $sid, $add );
+		try {
+			pricelist_process( $filename, $sid, $add, null, $debug );
+		} catch ( Exception $e ) {
+			print $e->getMessage();
+			die ( 1 );
+		}
 	} else {
 		print "Cannot find supplier $supplier_name<br/>";
 		die( 1 );
 	}
 }
 
-function pricelist_process( $filename_or_file, $supplier_id, $add, $picture_prefix = null ) {
-	$debug = false;
-
-	// The file is on server. Lets read it
-	if ( is_string( $filename_or_file ) ) {
-		$filename = $filename_or_file;
-
-		$file = fopen( $filename, "r" );
-		if ( ! $file ) {
-			print "can't open file<br/>";
-			return false;
-		}
-	} else {
-		$file = $filename_or_file;
+function pricelist_process( $filename, $supplier_id, $add, $picture_prefix = null, $debug = false ) {
+	// Read the file
+	$file = file( $filename );
+	if ( ! $file ) {
+		throw new Exception( "Can't handle file " . $filename );
 	}
-//    print "reading header...<br/>";
+	do_pricelist_process( $file, $supplier_id, $add, $picture_prefix, $debug );
+}
 
+function do_pricelist_process( $file, $supplier_id, $add, $picture_prefix = null, $debug = false ) {
 	$item_code_idx       = Array();
 	$name_idx            = Array();
 	$price_idx           = Array();
 	$sale_idx            = Array();
 	$detail_idx          = Array();
 	$category_idx        = Array();
+	$filter_idx          = Array();
+	$quantity_idx        = Array(); // Used for delivery notes.
 	$is_active_idx       = null;
 	$picture_path_idx    = null;
 	$parse_header_result = false;
 	$inventory_idx       = 0;
+	$line_number         = 0;
 	for ( $i = 0; ! $parse_header_result and ( $i < 4 ); $i ++ ) {
-		$parse_header_result = parse_header( $file, $item_code_idx, $name_idx, $price_idx, $sale_idx, $inventory_idx, $detail_idx,
-			$category_idx, $is_active_idx, $picture_path_idx );
+		$header_line = $file[ $line_number ];
+		$line_number ++;
+
+//		$header_line, &$item_code_idx, &$name_idx, &$price_idx, &$sale_idx, &$inventory_idx, &$detail_idx,
+//	&$category_idx, $is_active_idx, &$filter_idx, &$picture_idx, &$quantity_idx
+
+		$parse_header_result = parse_header( $header_line, $item_code_idx, $name_idx, $price_idx, $sale_idx, $inventory_idx, $detail_idx,
+			$category_idx, $is_active_idx, $filter_idx, $picture_path_idx, $quantity_idx );
+	}
+	if ( $debug ) {
+		print "ln=" . $line_number . "<br/>";
 	}
 
 	// print "pp = $picture_path_idx<br/>";
@@ -255,7 +262,14 @@ function pricelist_process( $filename_or_file, $supplier_id, $add, $picture_pref
 
 	$item_count = 0;
 	$category   = null;
-	while ( ( $data = fgetcsv( $file ) ) !== false ) {
+	print "<table>";
+	for ( ; $line_number < count( $file ); $line_number ++ ) {
+		$data = str_getcsv( $file[ $line_number ] );
+		if ( $debug ) {
+			var_dump( $data );
+			print "<br/>";
+		}
+
 		if ( $data ) {
 			if ( isset( $is_active_idx ) and ( $data[ $is_active_idx ] == 1 ) ) {
 				// print $data[ $name_idx[ 0 ] ] . " not active. Skipped<br/>";
@@ -268,7 +282,7 @@ function pricelist_process( $filename_or_file, $supplier_id, $add, $picture_pref
 				if ( $sale_idx ) {
 					$sale_price = $data[ $sale_idx[ $col ] ];
 				}
-				$name      = $data[ $name_idx[ $col ] ];
+				$name = $data[ $name_idx[ $col ] ];
 				if ( $debug ) {
 					print "<br/>" . $name . " ";
 				}
@@ -298,7 +312,7 @@ function pricelist_process( $filename_or_file, $supplier_id, $add, $picture_pref
 						print "חסר";
 					continue;
 				}
-				if ( $item_code_idx[ $col ] != - 1 ) {
+				if ( isset( $item_code_idx[ $col ] ) ) {
 					$item_code = $data[ $item_code_idx[ $col ] ];
 				}
 				if ( $picture_path_idx ) {
@@ -325,10 +339,9 @@ function pricelist_process( $filename_or_file, $supplier_id, $add, $picture_pref
 					$item_count ++;
 				}
 			}
-
-			$line_number ++;
 		}
 	}
+	print "</table>";
 	echo $item_count . " פריטים נקראו!" . "<br/>";
 	if ( ! $add and ( $item_count > 4 ) ) {
 		$results[ UpdateResult::DeletePrice ] = $PL->RemoveLines( 2 );
@@ -384,12 +397,15 @@ function handle_line(
 	$pic_path = null) {
 	$name = pricelist_strip_product_name( $name );
 
-	print $name . " " . $price . "<br/>";
+	// print $name . " " . $price;
 	$id   = 0;
 	// Check if we have a price.
 	// Product with variations doesn't need a price
 	if ( $price > 0 or $has_variations ) {
-		return $PL->AddOrUpdate( $price, $sale_price, $name, $item_code, $category, $id, $parent_id, $pic_path );
+		$rc = $PL->AddOrUpdate( $price, $sale_price, $name, $item_code, $category, $id, $parent_id, $pic_path );
+		print gui_row( array( $name, $price, $rc ) );
+
+		return $rc;
 	}
 //    else
 //        print "price: " . $price . "<br/>";

@@ -171,7 +171,7 @@ class PriceList {
 		foreach ( $priceslist_items as $pricelist_id ) {
 			$prod_ids = Catalog::GetProdID( $pricelist_id );
 			foreach ( $prod_ids as $prod_id ) {
-				print "update " . $prod_id . get_product_name( $prod_id ) . "<br>";
+//				print "update " . $prod_id . get_product_name( $prod_id ) . "<br>";
 
 				Catalog::UpdateProduct( $prod_id, $line );
 			}
@@ -411,9 +411,9 @@ class PriceList {
 
 	function AddOrUpdate(
 		$regular_price, $sale_price, $product_name, $code = 10, $category, &$id, $parent_id = null,
-		$picture_path = null
+		$picture_path = null, $debug = false
 	) {
-		$debug = true;
+
 //		print "start";
 //		print "AddOrUpdate: " . $product_name . " " . $regular_price . "<br/>";
 		my_log( __METHOD__, __FILE__ );
@@ -533,9 +533,6 @@ class PriceList {
 		}
 		// Update linked products
 		$this->Update( $id, $regular_price, $sale_price );
-		if ( $debug ) {
-			print "<br/>";
-		}
 
 		return $rc;
 	}
@@ -592,8 +589,8 @@ class PriceList {
 		return;
 	}
 
-	static function UpdateCatalog( $pricelist_id ) {
-		$debug    = true;
+	static function UpdateCatalog( $pricelist_id, $debug = false ) {
+
 		$prod_ids = Catalog::GetProdID( $pricelist_id );
 		$line     = "";
 		if ( $debug ) {

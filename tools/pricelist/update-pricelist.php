@@ -6,17 +6,25 @@
  * Time: 10:31
  */
 require_once( "pricelist-process.php" );
+print header_text( false );
+print "<body>";
 // print header_text();
 
 $supplier_name = $_GET["supplier_name"];
+
+$debug = get_param( "debug" );
+if ( $debug ) {
+	print "Debug mode<br/>";
+}
 
 if ( isset( $_GET["file"] ) ) {
 	// inbox manager activation
 	$file = "http://tabula.aglamaz.com/attachments/" . $_GET["file"];
 	print "processing " . $supplier_name . "<br/>";
-	pricelist_process_name( $file, $supplier_name, false );
+	pricelist_process_name( $file, $supplier_name, false, $debug );
 	exit( 0 );
 }
+
 
 $sql    = "SELECT source_path FROM im_suppliers WHERE eng_name = '" . $supplier_name . "'";
 $source = sql_query_single_scalar( $sql );
@@ -29,4 +37,6 @@ if ( strlen( $source ) < 10 ) {
 $sql = "SELECT id FROM im_suppliers WHERE eng_name = '$supplier_name'";
 $sid = sql_query_single_scalar( $sql );
 
-pricelist_process( $source, $sid, false );
+pricelist_process( $source, $sid, false, $debug );
+
+print "</body>";
