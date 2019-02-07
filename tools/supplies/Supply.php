@@ -329,12 +329,16 @@ class Supply {
 
 			$attr_array = get_post_meta( $prod_id, '_product_attributes' );
 			$attr_text  = "";
-			foreach ( $attr_array as $attr ) {
-				foreach ( $attr as $i ) {
-					if ( $i['name'] = 'unit' ) {
-						$attr_text .= $i['value'];
+			if ( is_array( $attr_array ) )
+				foreach ( $attr_array as $attr ) {
+					foreach ( $attr as $i ) {
+						if ( $i['name'] = 'unit' ) {
+							$attr_text .= $i['value'];
+						}
 					}
-				}
+				} else {
+				print "Warning: " . __FILE__ . ":" . __LINE__;
+				var_dump( $attr_array );
 			}
 
 			$line .= "<td>" . $attr_text . "</td>";

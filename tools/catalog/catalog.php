@@ -649,7 +649,6 @@ function alternatives( $prod_id, $details = false )
 	// prof_flag("start " . $id);
 	if ( ! ( $prod_id > 0 ) ) {
 		print __METHOD__ . "! (id>0) " . $prod_id . "</br>";
-		die ( 1 );
 	}
 
 	if ( $prod_id == $debug_product ) {
