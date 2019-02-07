@@ -7,14 +7,18 @@
  */
 require_once( ROOT_DIR . '/niver/data/Imap.php' );
 
-function inbox_files( $hostname, $mail_user, $password, $attach_folder, $folder_url ) {
+function inbox_files( $hostname, $mail_user, $password, $attach_folder, $folder_url, $subjects ) {
 	$m = new Imap();
 
 	if ( ! $m->Connect( $hostname, $mail_user, $password ) ) {
 		die( "can't connect to mail" );
 	}
 
-	$m->Read();
+	if ( ! $m->Read() ) {
+		print "Nothing found";
+
+		return null;
+	};
 
 	$rows = array( array( "נושא", "שולח", "הורדה" ) );
 
@@ -25,9 +29,19 @@ function inbox_files( $hostname, $mail_user, $password, $attach_folder, $folder_
 	}
 
 	while ( $message = $m->ReadNext() ) {
-		// print "sub= " . $message->getSubject() . "<br/>";
+//		 print "sub= " . $message->getSubject() . "<br/>";
 		// Check if message is invoice
-		if ( strstr( $message->getSubject(), "חשבונית" ) ) {
+		$found = false;
+		foreach ( $subjects as $subject ) {
+//			print $subject;
+			if ( strstr( $message->getSubject(), $subject ) ) {
+				$found = true;
+				break;
+			}
+		}
+
+
+		if ( $found ) {
 //			$target = $message->getAttachment
 			$target = $attach_folder . '/' . $message->getSender();
 			$url    = $folder_url . '/' . $message->getSender();

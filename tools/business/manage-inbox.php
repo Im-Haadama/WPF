@@ -116,8 +116,12 @@ if ( isset( $operation ) ) {
     </script>
 <?php
 
-$table = inbox_files( $hostname, $mail_user, $password, $attach_folder, $folder_url );
+$table = inbox_files( $hostname, $mail_user, $password, $attach_folder, $folder_url,
+	array( "חשבונית", "חוזה" ) );
 
+if ( ! $table ) {
+	return;
+}
 //var_dump($table);
 
 $by_supplier_table = array();
@@ -152,6 +156,7 @@ foreach ( $table as $row ) {
 	$link = null;
 	$line = array( substr( $subject, 0, 20 ), $doc_name, $date );
 	if ( $supplier_id == - 1 ) {
+		print $row[1];
 		array_push( $line, $row[1] );
 	} else {
 		$end_of_month = strtotime( 'last day of ' . date( 'F-Y', strtotime( $date ) ) ) . "<br/>";

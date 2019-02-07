@@ -36,7 +36,23 @@ class Imap {
 	function Read() {
 		$this->messages = imap_search( $this->inbox, 'ALL', SE_UID );
 		$this->index    = 0;
+		if ( ! $this->messages ) {
+			return 0;
+		}
+
+		return count( $this->messages );
 	}
+
+	function Search( $criteria ) {
+		$this->index    = 0;
+		$this->messages = imap_search( $this->inbox, $criteria, SE_UID );
+		if ( ! $this->messages ) {
+			return 0;
+		}
+
+		return count( $this->messages );
+	}
+
 
 	function MoveMessage( $i, $folder_name ) {
 //		print "i=" . $i . "<br/>";
