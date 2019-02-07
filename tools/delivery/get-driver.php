@@ -11,6 +11,7 @@ require_once( "../tasklist/Tasklist.php" );
 
 $header      = isset( $_GET["header"] );
 $mission_ids = get_param_array( "mission_ids" );
+
 $debug       = get_param( "debug" );
 
 // var_dump($mission_ids);
