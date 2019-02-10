@@ -267,7 +267,7 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 		$data      .= "סהכ " . $total_sal . "<br/>";
 		$email     = get_customer_email( $user_id );
 
-		$r = "people/people-post.php?operation=get_balance&date=" .
+		$r = "people/people-post.php?operation=get_balance_email&date=" .
 		     date( 'Y-m-j', strtotime( "last day of " . $year . "-" . $month ) ) . "&email=" . $email;
 		// print $r;
 		$b = strip_tags( ImMultiSite::sExecute( $r, 4 ) );

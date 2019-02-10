@@ -18,10 +18,16 @@ $operation = $_GET["operation"];
 
 switch ( $operation ) {
 	case "get_balance":
+		$customer_id = get_param( "customer_id" );
+		$date        = $_GET["date"];
+		print balance( $date, $customer_id );
+		break;
+	case "get_balance_email":
 		$email = get_param( "email" );
 		$date  = $_GET["date"];
-		print balance( $date, $email );
+		print balance_email( $date, $email );
 		break;
+
 	case "display":
 	case "display_all":
 		$month = null;
