@@ -178,6 +178,9 @@ function get_product_id_by_name( $product_name ) {
 	global $conn;
 	$sql    = "SELECT id FROM im_products WHERE post_title = '" . $product_name . "'";
 	$result = mysqli_query( $conn, $sql );
+	if ( ! $result ) {
+		return null;
+	}
 	$row    = mysqli_fetch_assoc( $result );
 
 	return $row["ID"];

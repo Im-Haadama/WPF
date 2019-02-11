@@ -14,6 +14,28 @@ print header_text( false );
 <header>
     <script type="text/javascript" src="/niver/gui/client_tools.js"></script>
     <script>
+        function moveNext(prod_id) {
+            if (window.event.keyCode !== 13) return;
+            var row = document.getElementById("inv_" + prod_id).parentElement.parentElement.rowIndex;
+            var next = document.getElementById("ordered_items").rows[row + 1].cells[4];
+            if (next) next.firstElementChild.focus();
+        }
+        function change_inv(prod_id) {
+
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                // Wait to get query result
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+                {
+                }
+            }
+            var prod_ids = new Array();
+            var q = get_value_by_name("inv_" + prod_id);
+            prod_ids.push(prod_id, q);
+            var request = "../inventory/inv-post.php?operation=save_inv&data=" + prod_ids.join();
+            xmlhttp.open("GET", request, true);
+            xmlhttp.send();
+        }
         function show_totals() {
             xmlhttp = new XMLHttpRequest();
             var filter = document.getElementById("filter_zero").checked;

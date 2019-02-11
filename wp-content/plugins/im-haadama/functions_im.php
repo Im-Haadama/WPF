@@ -478,6 +478,50 @@ function hide_shipping_if_fresh( $available_methods ) {
 	return $available_methods;
 }
 
+// Menu
+add_action( 'admin_menu', 'im_admin_menu' );
+add_action( 'packing_menu', 'im_packing_menu' );
+
+function im_admin_menu() {
+	add_menu_page( 'Fresh Store', 'Fresh Store', 'manage_options', '/admin_menu/', 'fresh_store_admin_page', 'dashicons-tickets', 6 );
+}
+
+function im_packing_menu() {
+	add_menu_page( 'Fresh Store', 'Fresh Store', 'manage_options', '/admin_menu/', 'fresh_store_packing', 'dashicons-tickets', 6 );
+}
+
+function fresh_store_packing_page() {
+	?>
+
+	<?php
+	error_reporting( E_ALL );
+	ini_set( 'display_errors', 'on' );
+
+	print gui_table( array(//array("אריזה", "גביה", "קטלוג"),
+		array( "packing" )
+	) );
+
+	// require_once("../tools/menu_op.php");
+}
+
+
+function fresh_store_admin_page() {
+	?>
+
+	<?php
+	error_reporting( E_ALL );
+	ini_set( 'display_errors', 'on' );
+
+	print gui_table( array(//array("אריזה", "גביה", "קטלוג"),
+		array(
+			gui_hyperlink( gui_image( "http://store.im-haadama.co.il/wp-content/uploads/2019/02/iconfinder_00-ELASTOFONT-STORE-READY_cart_2703080-1.png" ),
+				"admin.php?page=packing" )
+		)
+	) );
+
+	// require_once("../tools/menu_op.php");
+}
+
 //add_filter( 'woocommerce_checkout_fields' , 'custom_wc_checkout_fields' );
 //// Change order comments placeholder and label, and set billing phone number to not required.
 //function custom_wc_checkout_fields( $fields ) {

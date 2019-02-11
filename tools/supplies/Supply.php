@@ -164,10 +164,10 @@ class Supply {
 				$price                 = $line[3];
 //				print "name: " . $name;
 
-				$prod_id = get_product_id_by_name( $name );
+				// $prod_id = get_product_id_by_name( $name );
 				$prod_id = sql_query_single_scalar( "select product_id \n" .
 				                                    " from im_supplier_mapping\n" .
-				                                    " where supplier_product_name = " . quote_text( $name ) );
+				                                    " where supplier_product_name = " . quote_text( pricelist_strip_product_name( $name ) ) );
 //				print "prod_id: " . $prod_id . "<br/>";
 
 				if ( ! ( $prod_id > 0 ) ) {
@@ -404,7 +404,7 @@ class Supply {
 	public function EditSupply( $internal ) {
 		// print "edit<br/>";
 		// print nl2br( sql_query_single_scalar( "SELECT text FROM im_supplies WHERE id = " . $this->ID ) ) . "<br/>";
-		return HtmlLines( $this->ID, $internal, true );
+		return $this->HtmlLines( $this->ID, $internal, true );
 	}
 
 	/**
@@ -460,7 +460,7 @@ class Supply {
 	}
 }
 
-function create_supply( $supplierID, $date ) {
+function create_supply( $supplierID, $date = null ) {
 
 	if ( ! $date )
 		$date = date('Y-m-d');

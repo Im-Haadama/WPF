@@ -108,7 +108,7 @@ function gui_input( $name, $value, $events = null, $id = null, $class = null, $s
 	if ( $events ) {
 		if ( is_array( $events ) ) {
 			foreach ( $events as $event ) {
-				$data .= $event . ",";
+				$data .= $event . " ";
 			}
 		} else {
 			$data .= $events;

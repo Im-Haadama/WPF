@@ -134,6 +134,16 @@ function comma_implode_v( ... $elems ) {
 	return comma_implode( $array );
 }
 
+function get_next_array( $array, $search_key ) {
+	$prev_key = null;
+
+	foreach ( $array as $key => $value ) {
+		if ( $search_key == $prev_key ) {
+			return $key;
+		}
+		$prev_key = $key;
+	}
+}
 //function comma_implode( $array, $space = " " ) {
 //	$str = implode( "," . $space, $array );
 //

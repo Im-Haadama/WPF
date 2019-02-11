@@ -144,7 +144,10 @@ function get_total_orders( $filter_zero, $history = false, $filter_stock ) {
 		$p     = new Product( $prod_id );
 		$q_inv = $p->getStock();
 
-		$line .= "<td>" . $q_inv . "</td>";
+		$line .= gui_cell( gui_input( "inv_" . $prod_id, $q_inv, array(
+			"onchange=\"change_inv(" . $prod_id . ")\"",
+			"onkeyup=\"moveNext(" . $prod_id . ")\""
+		) ) );
 
 		$numeric_quantity = ceil( $quantity - $q_inv );
 
