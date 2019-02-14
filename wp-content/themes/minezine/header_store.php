@@ -6,12 +6,12 @@
  * Time: 06:33
  */
 // require_once('config.php');
-if ( ! defined( __ROOT__ ) ) {
-	define( '__ROOT__', dirname( dirname( dirname( dirname( __FILE__ ) ) ) ) );
+if ( ! defined( 'ROOT_DIR' ) ) {
+	define( 'ROOT_DIR', dirname( dirname( dirname( dirname( __FILE__ ) ) ) ) );
 }
-require_once( __ROOT__ . '/wp-load.php' );
-require_once( __ROOT__ . '/im-config.php' );
-require_once( __ROOT__ . '/niver/data/sql.php' );
+require_once( ROOT_DIR . '/wp-load.php' );
+require_once( ROOT_DIR . '/im-config.php' );
+require_once( ROOT_DIR . '/niver/data/sql.php' );
 
 if ( isset( $servername ) and strlen( $servername ) > 2 ) {
 	$conn = new mysqli( $servername, $username, $password, $dbname );
@@ -21,6 +21,9 @@ if ( isset( $servername ) and strlen( $servername ) > 2 ) {
 function tag_st( $str ) {
 	return "'" . $str . "'";
 }
+
+$current_user = wp_get_current_user();
+$post_slug    = get_post_field( 'post_name', get_post() );
 
 $sql = "INSERT INTO im_activity (time, login, ip, url, ref, search) VALUES (" .
        " now(), " . tag_st( $current_user->user_login ) . ", "

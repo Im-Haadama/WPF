@@ -6,14 +6,15 @@
  * Time: 15:42
  */
 ?>
-<!--<div align="center">-->
-<!--    תוצרת אורגנית בפיקוח או מ-->
-<!--    <a href="http://im-haadama.co.il/about/">-->
-<!--חקלאות בת קיימא.-->
-<!--    </a>-->
-<!--לפרטים אודות ה-->
-<!--<a href="http://store.im-haadama.co.il/about/">שירות והמשלוחים</a>-->
-<!--</div>-->
+
+<div align="center">
+    תוצרת אורגנית בפיקוח או מ
+    <a href="http://im-haadama.co.il/about/">
+        חקלאות בת קיימא.
+    </a>
+    לפרטים אודות ה
+    <a href="http://store.im-haadama.co.il/about/">שירות והמשלוחים</a>
+</div>
 
 <div align="center">
 	<?php
@@ -28,8 +29,8 @@
 	// האספקה בימים שני-עד רביעי.
 	?>
     <!--    <h2> לרגל החג, המשלוחים יבצעו ביום ב'. הזמנות עד השעה 18.-->
-    <!--    <h2> המשלוחים בימים ב' עד ה', בהתאם-->
-    <!--    <a href="http://store.im-haadama.co.il/about">לאיזורים</a></h2>-->
+    <h2> המשלוחים בימים ב' עד ה', בהתאם
+        <a href="http://store.im-haadama.co.il/about">לאיזורים</a></h2>
     <script>
         function save_basket() {
             var sel = document.getElementById("basket");
@@ -66,56 +67,67 @@
 	}
 
 	function get_basket_name( $basket_id ) {
-		$sql  = 'SELECT post_title FROM wp_posts WHERE id = ' . $basket_id;
-		$name = sql_query_single_scalar( $sql );
+		$sql = 'SELECT post_title FROM wp_posts WHERE id = ' . $basket_id;
+		$export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() . "COMMAND=" . $sql );
 
-		return $name;
+		$row = mysql_fetch_row( $export );
+
+		return $row[0];
 	}
 
-	define( '__ROOT__', dirname( dirname( dirname( dirname( __FILE__ ) ) ) ) );
-	require_once( __ROOT__ . '/im-config.php' );
+	// define('__ROOT__', dirname(dirname(dirname(dirname(__FILE__)))));
+
+	// require( '../../../config.php');
 
 	if ( $manager ) {
+		$config = STORE_DIR . '/im-config.php';
+		if ( file_exists( $config ) ) {
+			require_once( $config );
+		} else {
 
-		print '<button id="btn_save_basket" onclick="save_basket()">שמור כסל שבועי</button>';
+			print '<button id="btn_save_basket" onclick="save_basket()">שמור כסל שבועי</button>';
 
-		$conn = mysqli_connect( DB_HOST, DB_USER, DB_PASSWORD, DB_NAME );
-		if ( ! $conn ) {
-			// print $password;
-			die ( 1 );
+			// Basket selector
+			global $servername, $username, $password;
+			// print $servername;
+			$conn = mysqli_connect( $servername, $username, $password );
+			if ( ! $conn ) {
+				die ( 1 );
+			}
+			mysqli_set_charset( $conn, 'utf8' );
+			mysqli_select_db( $conn, $dbname );
+
+			$select_box = '<select id="basket">';
+
+			$sql = "SELECT DISTINCT basket_id FROM im_baskets";
+
+			$export = mysql_query( $sql );
+			print mysql_error();
+			while ( $row = mysql_fetch_row( $export ) ) {
+				$basket_id   = $row[0];
+				$basket_name = get_basket_name( $basket_id );
+				$line        = '<option value="' . $basket_id . '" data-basket_id = ' . $basket_id . '>' . $basket_name . ' ' . $basket_id . '</option>';
+				$select_box  .= $line;
+			}
+			$select_box .= '</select>';
+
+			print $select_box;
+
+			print '<button id="btn_load_basket" onclick="load_basket()">טען סל שבועי</button>';
+			print '<button id="btn_empty_basket" onclick="empty_basket()">רוקן סל</button>';
 		}
-		mysqli_set_charset( $conn, 'utf8' );
-		mysqli_select_db( $conn, $dbname );
-
-		$select_box = '<select id="basket">';
-
-		$sql = "SELECT DISTINCT basket_id FROM im_baskets";
-
-		$result = sql_query( $sql );
-		while ( $row = mysqli_fetch_row( $result ) ) {
-			$basket_id   = $row[0];
-			$basket_name = get_basket_name( $basket_id );
-			$line        = '<option value="' . $basket_id . '" data-basket_id = ' . $basket_id . '>' . $basket_name . ' ' . $basket_id . '</option>';
-			$select_box  .= $line;
-		}
-		$select_box .= '</select>';
-
-		print $select_box;
-
-		print '<button id="btn_load_basket" onclick="load_basket()">טען סל שבועי</button>';
-		print '<button id="btn_empty_basket" onclick="empty_basket()">רוקן סל</button>';
 	}
 
 	// Audit
-	$error_dir = STORE_DIR . '/audit.log';
-	$date      = date( 'd.m h:i' );
-	$msg       = print_r( $msg, true );
-
-	global $current_user;
-	get_currentuserinfo();
-
-	global $post;
-	$post_slug = $_SERVER[ REQUEST_URI ];
+	//	$error_dir = STORE_DIR . '/audit.log';
+	//	$date      = date( 'd.m h:i' );
+	//	$msg       = print_r( $msg, true );
+	//
+	//	global $current_user;
+	//	get_currentuserinfo();
+	//
+	//	global $post;
+	//	$post_slug = $_SERVER[ REQUEST_URI ];
 
 	require_once( 'header_store.php' );
 
