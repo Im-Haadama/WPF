@@ -243,4 +243,3 @@ function im_set_default_display_name( $user_id ) {
 		wp_update_user( $args );
 	}
 }
-

@@ -311,9 +311,9 @@ function check_cache_validity() {
 	  FROM im_need_orders
 	  WHERE order_id NOT IN (SELECT id FROM wp_posts WHERE post_status LIKE '%wc-processing%')";
 	$done = sql_query_single_scalar( $sql );
-//	print "done: " . $done . "<br/>";
+	print "done: " . $done . "<br/>";
 
-	if ( $new + $done > 0 ) {
+	if ( $new > 0 ) {
 		return false;
 	}
 
@@ -519,6 +519,7 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 
 			debug_time1( "middle" );
 
+			$order_total = 0;
 			// 3) Order total
 			if ( $show_fields[ OrderFields::total_order ] ) {
 				$order_total = $order->GetTotal();
@@ -554,6 +555,7 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 				//	}
 			} else {
 				$line[ OrderFields::delivery_note ] = gui_hyperlink( "צור", "../delivery/create-delivery.php?order_id=" . $order_id );
+				$line[ OrderFields::percentage ]    = gui_hyperlink( "בטל", $_SERVER['PHP_SELF'] . "?operation=cancel_order&id=" . $order_id );
 				$total_delivery_fee                 = order_get_shipping_fee( $order_id );
 			}
 			$line[ OrderFields::city ]         = $order->getOrderInfo( '_shipping_city' );

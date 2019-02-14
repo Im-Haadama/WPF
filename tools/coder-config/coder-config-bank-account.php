@@ -6,24 +6,23 @@
  * Time: 09:28
  */
 
-$obj_name      = "bank";
+
+$obj_name      = "bank_account";
+$table_prefix  = "im_";
 $root_file     = realpath( ROOT_DIR ) . '/tools/im_tools.php';
 $target_folder = "/tools/business";
 
-require_once( ROOT_DIR . '/im-config.php' );
-require_once( ROOT_DIR . '/tools/business/business.php' );
+require_once( ROOT_DIR . '/tools/im_tools_light.php' );
 
-$im_table_suffix = "";
-$table_name      = $im_table_prefix . $obj_name . $table_suffix;
-$order           = "order by 2 ";
+$table_suffix = "";
+$table_name   = $table_prefix . $obj_name . $table_suffix;
+$order        = "order by 2 ";
 
 $useMultiSite = false;
 
-$header_text = "מצב חשבון";
+$header_text = "חשבונות";
 
 $import_csv = true;
-
-$import_key = array( "account_id", "select_bank_account" );
 
 //$actions = array(
 //	array( "בטל", "task_templates.php?operation=cancel&id=" )

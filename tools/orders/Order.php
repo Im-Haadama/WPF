@@ -2,6 +2,7 @@
 error_reporting( E_ALL );
 ini_set( 'display_errors', 'on' );
 
+
 /**
  * Created by PhpStorm.
  * User: agla
@@ -12,6 +13,12 @@ require_once( ROOT_DIR . '/niver/data/sql.php' );
 require_once( TOOLS_DIR . '/catalog/bundles.php' );
 require_once( ROOT_DIR . "/tools/catalog/Basket.php" );
 require_once( ROOT_DIR . "/tools/orders/orders-common.php" );
+
+// Somehow functions_im.php doesn't apply.
+remove_filter( 'woocommerce_stock_amount', 'intval' );
+
+// Add a filter, that validates the quantity to be a float
+add_filter( 'woocommerce_stock_amount', 'floatval' );
 
 
 class Order {
@@ -107,6 +114,11 @@ class Order {
 	}
 
 	function AddProduct( $product_id, $quantity, $replace = false, $client_id = - 1, $unit = null, $type = null ) {
+		$debug = false;
+
+		if ( $debug ) {
+			print "pid= " . $product_id . " q= " . $quantity . "<br/>";
+		}
 		$total = 0;
 		if ( ! ( $product_id > 0 ) ) {
 			die( "no product id given." );
@@ -243,11 +255,12 @@ class Order {
 	}
 
 	public static function CalculateNeeded( &$needed_products, $user_id = 0 ) {
-		// print "user id " . $user_id . "<br/>";
+		/// print "user id " . $user_id . "<br/>";
 		$debug_product = 0; // 141;
 		global $conn;
 		if ( ! $user_id ) {
-			if ( 0 and check_cache_validity() ) {
+			print "checking<br/>";
+			if ( check_cache_validity() ) {
 				print "cv</br>";
 				$needed_products = array();
 
@@ -805,3 +818,5 @@ class Order {
 	}
 
 }
+
+// orders/orders-post.php?operation=create_order&user_id=423&prods=288,298,336,153,110&quantities=0.9,0.2,0.6,1.1,1.1&comments=&units=0,0,0,0,0&mission_id=0&type=pos

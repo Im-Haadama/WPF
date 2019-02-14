@@ -124,7 +124,7 @@ class Invoice4u {
 				//var_dump ($item);
 			}
 			foreach ( $doc->Payments as $pay ) {
-				print $pay->Type . " " . $item->Total . "<br/>";
+//				print $pay->Type . " " . $item->Total . "<br/>";
 				$pay_total += $pay->Amount;
 				var_dump( $pay );
 			}

@@ -640,6 +640,7 @@ function supplier_prod_id( $prod_id, $supplier_id ) {
 
 	return 0;
 }
+
 function alternatives( $prod_id, $details = false )
 {
 	global $conn;

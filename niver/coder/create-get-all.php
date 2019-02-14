@@ -45,6 +45,8 @@ require_once( $config_file );
 
 print "done<br/>";
 
+print "Table: " . $table_name . '<br/>';
+
 if ( isset( $root_file ) ) {
 //	$root_file = ROOT_DIR . '/' . $root_file;
 	print $root_file . "<br/>";
@@ -326,8 +328,13 @@ ob_end_clean();
 
 fwrite( $get_all, $code );
 
+var_dump( $import_key );
+if ( ! isset( $import_key ) ) {
+	$import_key = null;
+}
+
 if ( isset( $import_csv ) ) {
-	write_import_csv( $get_all );
+	write_import_csv( $import_filename, $import_key );
 }
 
 fclose( $get_all );
@@ -345,6 +352,9 @@ function write_header( $file ) {
 
 	fwrite( $file, "<?php
 require_once ('$root_file');
+if ( ! defined( \"ROOT_DIR\" ) ) {
+	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) );
+}
 // require_once('../header.php');
 require_once(ROOT_DIR . '/niver/fund.php');
 require_once(ROOT_DIR . '/niver/data/translate.php');
@@ -360,6 +370,38 @@ if (isset(\$_GET[\"debug\"])) {
 
 }
 
-function write_import_csv( $file ) {
+function write_import_csv( $obj_name, $import_csv, $import_key = null ) {
+	print gui_header( 2, "import");
 
+	$file = fopen( $import_csv, "w" );
+
+	write_header( $file );
+
+	var_dump( $import_key );
+
+	if ( $import_key ) {
+		fwrite( $file, "?>" );
+		fwrite( $file, "<div>בחר ליבוא:</div>" . $import_key[1]() );
+		fwrite( $file, '<form name="upload_csv" id="upcsv" method="post" enctype="multipart/form-data">
+		                                                         טען מקובץ CSV
+	    <input type="file" name="fileToUpload" id="fileToUpload">
+        <input type="submit" value="טען" name="submit">
+
+        <input type="hidden" name="post_type" value="product"/>
+    </form>
+    <script>
+            function change_' . $obj_name . '() {
+            var supplier_id = get_value_by_name("supplier_select");
+            var upcsv = document.getElementById("upcsv");
+            upcsv.action = "/tools/supplies/supplies-post.php?operation=create_from_file&supplier_id=" + supplier_id;
+        }
+
+</script>' );
+		fwrite( $file, "<?php " );
+
+	}
+
+	fwrite( $file, "?>" );
+
+	fclose( $file);
 }

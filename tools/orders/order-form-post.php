@@ -6,8 +6,12 @@
  * Time: 10:41
  */
 
-//error_reporting( E_ALL );
-//ini_set( 'display_errors', 'on' );
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
+if ( ! defined( "TOOLS_DIR" ) ) {
+	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
+}
 
 require_once( TOOLS_DIR . "/im_tools.php" );
 require_once( "orders-common.php" );

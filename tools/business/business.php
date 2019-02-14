@@ -6,7 +6,11 @@
  * Time: 17:11
  */
 
-require_once( TOOLS_DIR . "/im_tools.php" );
+if ( ! defined( "ROOT_DIR" ) ) {
+	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
+}
+
+require_once( ROOT_DIR . "/tools/im_tools.php" );
 
 function business_add_transaction(
 	$part_id, $date, $amount, $delivery_fee, $ref, $project, $net_total = 0,
@@ -77,4 +81,9 @@ function business_open_ship( $part_id ) {
 	// $rows = sql_query_array($sql );
 
 	return $data; // gui_table($rows);
+}
+
+function select_bank_account() {
+	return gui_select_table( "select_account", "im_bank_account", null,
+		null, null, "name" );
 }

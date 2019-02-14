@@ -5,14 +5,18 @@
  * Date: 24/11/16
  * Time: 18:22
  */
-//error_reporting( E_ALL );
-//ini_set( 'display_errors', 'on' );
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
 
-require_once( TOOLS_DIR . '/im_tools.php' );
-require_once( STORE_DIR . '/niver/data/sql.php' );
-require_once( TOOLS_DIR . '/wp.php' );
-require_once( TOOLS_DIR . '/pricing.php' );
-require_once( STORE_DIR . '/niver/gui/inputs.php' );
+if ( ! defined( "ROOT_DIR" ) ) {
+	define( 'ROOT_DIR', dirname( dirname( dirname( dirname( __FILE__ ) ) ) ) );
+}
+
+require_once( ROOT_DIR . '/tools/im_tools.php' );
+require_once( ROOT_DIR . '/niver/data/sql.php' );
+require_once( ROOT_DIR . '/tools/wp.php' );
+require_once( ROOT_DIR . '/tools/pricing.php' );
+require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 
 //if ( ! isset( $woocommerce ) ) {
 //	 print "Woocommerce is not present. Exiting";
@@ -487,7 +491,7 @@ function im_admin_menu() {
 }
 
 function im_packing_menu() {
-	add_menu_page( 'Fresh Store', 'Fresh Store', 'manage_options', '/admin_menu/', 'fresh_store_packing', 'dashicons-tickets', 6 );
+	add_menu_page( 'Fresh Store', 'Fresh Store', 'packing_options', '/packing_menu/', 'fresh_store_packing_page', 'dashicons-tickets', 6 );
 }
 
 function fresh_store_packing_page() {
@@ -515,7 +519,7 @@ function fresh_store_admin_page() {
 	print gui_table( array(//array("אריזה", "גביה", "קטלוג"),
 		array(
 			gui_hyperlink( gui_image( "http://store.im-haadama.co.il/wp-content/uploads/2019/02/iconfinder_00-ELASTOFONT-STORE-READY_cart_2703080-1.png" ),
-				"admin.php?page=packing" )
+				"admin.php?page=packing_menu" )
 		)
 	) );
 

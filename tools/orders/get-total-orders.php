@@ -130,8 +130,8 @@ print header_text( false );
                     params.push(quantity);
 
                     var units = 0;
-                    var units_text = get_value(table.rows[i + 1].cells[3].innerText);
-                    if (units_text.length >= 1) units = eval(units_text);
+//                    var units_text = get_value(table.rows[i + 1].cells[3].innerText);
+//                    if (units_text.length >= 1) units = eval(units_text);
                     params.push(units);
                 }
             }
@@ -167,14 +167,15 @@ print header_text( false );
 
             xmlhttp.send();
         }
-        function createSupply() {
-            document.getElementById("btn_create_order").disabled = true;
-            var table = document.getElementById('ordered_items');
-            // var lines = table.rows.length;
-            var collection = document.getElementsByClassName("product_checkbox");
 
-            var sel = document.getElementById("supplier_id");
-            var supplier_id = sel.options[sel.selectedIndex].value;
+        function createSupply(supplier_id) {
+            document.getElementById("btn_create_order").disabled = true;
+            var table = document.getElementById('ordered_items' + supplier_id);
+            // var lines = table.rows.length;
+            var collection = document.getElementsByClassName("product_checkbox" + supplier_id);
+
+            //          var sel = document.getElementById("supplier_id");
+//            var supplier_id = sel.options[sel.selectedIndex].value;
 
             // Request header
             var request = "../supplies/supplies-post.php?operation=create_supply&supplier_id=" + supplier_id + "&create_info=";
@@ -183,15 +184,16 @@ print header_text( false );
             // Add the data.
             for (var i = 0; i < collection.length; i++) {
                 if (collection[i].checked) { // Add to suppply
-                    var prod_id = collection[i].id.substring(3);
+                    var prod_id = collection[i].id.substring(3); // remove chk_
+                    prod_id = prod_id.substr(0, prod_id.indexOf("_")); // remove supplier id
                     prod_ids.push(prod_id);
 
                     var quantity = get_value_by_name("qua_" + prod_id);
                     prod_ids.push(quantity);
 
                     var units = 0;
-                    var units_text = get_value(table.rows[i + 1].cells[3].innerText);
-                    if (units_text.length >= 1) units = eval(units_text);
+//                    var units_text = get_value(table.rows[i + 1].cells[3].innerText);
+//                    if (units_text.length >= 1) units = eval(units_text);
                     prod_ids.push(units);
                 }
             }
@@ -227,6 +229,10 @@ print header_text( false );
             }
         }
 
+        function line_selected(check_id) {
+            var chk = document.getElementById("chk" + check_id);
+            chk.checked = true;
+        }
         function selectSupplier(s) {
             var pricelist_id = s.id.substr(4);
             document.getElementById("chk" + pricelist_id).checked = true;

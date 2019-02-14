@@ -102,6 +102,36 @@ function get_total_orders( $filter_zero, $history = false, $filter_stock ) {
 
 	Order::CalculateNeeded( $needed_products );
 
+	$suppliers = array();
+
+	// Find out which suppliers are relevant
+	foreach ( $needed_products as $prod_id => $product_info ) {
+		foreach ( alternatives( $prod_id ) as $alter ) {
+			$supplier = $alter->getSupplierId();
+			if ( ! in_array( $supplier, $suppliers ) ) {
+				array_push( $suppliers, $supplier );
+			}
+
+		}
+	}
+
+	$sql = "SELECT id, supplier_priority FROM im_suppliers WHERE id IN (" . comma_implode( $suppliers ) . ")" .
+	       " AND active " .
+	       " ORDER BY 2";
+
+	$result = sql_query( $sql );
+
+	while ( $row = sql_fetch_row( $result ) ) {
+		$supplier_id = $row[0];
+		get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero, $filter_stock, $history );
+
+		print gui_button( "btn_supplier_" . $supplier_id, "createSupply(" . $supplier_id . ")", "צור הספקה" );
+	}
+}
+
+function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero, $filter_stock, $history ) {
+	print gui_header( 2, get_supplier_name( $supplier_id ) );
+
 	$data_lines = array();
 
 	foreach ( $needed_products as $prod_id => $quantity_array ) {
@@ -118,7 +148,7 @@ function get_total_orders( $filter_zero, $history = false, $filter_stock ) {
 
 		// $supplied_q = supply_quantity_ordered( $prod_id );
 
-		$line = "<tr><td><input id=\"chk" . $prod_id . "\" class=\"product_checkbox\" type=\"checkbox\"></td>";
+		$line = "<tr><td><input id=\"chk" . $prod_id . '_' . $supplier_id . "\" class=\"product_checkbox" . $supplier_id . "\" type=\"checkbox\"></td>";
 		$line .= "<td> " . get_product_name( $prod_id ) .
 		         "</td><td><a href = \"";
 
@@ -151,32 +181,41 @@ function get_total_orders( $filter_zero, $history = false, $filter_stock ) {
 
 		$numeric_quantity = ceil( $quantity - $q_inv );
 
-		$line .= gui_cell( gui_input( "qua_" . $prod_id, $numeric_quantity, "" ));
+		$line .= gui_cell( gui_input( "qua_" . $prod_id, $numeric_quantity,
+			"onchange=\"line_selected('" . $prod_id . '_' . $supplier_id . "')\"" ));
 
-		if ( ImMultiSite::LocalSiteID() == 2 ) {
-			$terms = get_the_terms( $prod_id, 'product_cat' );
+//		if ( ImMultiSite::LocalSiteID() == 2 ) {
+//			$terms = get_the_terms( $prod_id, 'product_cat' );
+//
+//			if ( $terms ) {
+//				foreach ( $terms as $term ) {
+//					if ( $term->name != 'השף' ) {
+//						$supplier_name = $term->name;
+//						break;
+//					}
+//				}
+//			}
+//		} else {
 
-			if ( $terms ) {
-				foreach ( $terms as $term ) {
-					if ( $term->name != 'השף' ) {
-						$supplier_name = $term->name;
-						break;
-					}
-				}
+		$this_supplier = false;
+		$alternatives  = alternatives( $prod_id );
+		$suppliers     = array( array( "id" => 0, "option" => "בחר" ) );
+		foreach ( $alternatives as $alter ) {
+			$option = $alter->getSupplierName() . " " . $alter->getPrice();
+			// if ($prod_id == 1002){ print $option; } // print $alter->getId() . " " . $alter->getSupplierName(); print "<br/>";}
+
+			array_push( $suppliers, array( "id" => $alter->getSupplierId(), "option" => $option ) );
+
+			if ( $alter->getSupplierId() == $supplier_id ) {
+				$this_supplier = true;
 			}
-		} else {
-			$alternatives = alternatives( $prod_id );
-			$suppliers    = array( array( "id" => 0, "option" => "בחר" ) );
-			foreach ( $alternatives as $alter ) {
-				$option = $alter->getSupplierName() . " " . $alter->getPrice();
-				// if ($prod_id == 1002){ print $option; } // print $alter->getId() . " " . $alter->getSupplierName(); print "<br/>";}
-
-				array_push( $suppliers, array( "id" => $alter->getSupplierId(), "option" => $option ) );
-
-			}
-			// if ($prod_id == 1002) {print "XX"; var_dump($suppliers); }
-			$supplier_name = gui_select( "sup_" . $prod_id, "option", $suppliers, "onchange=selectSupplier(this)", "" );
 		}
+
+		if ( ! $this_supplier )
+			continue;
+		// if ($prod_id == 1002) {print "XX"; var_dump($suppliers); }
+		$supplier_name = gui_select( "sup_" . $prod_id, "option", $suppliers, "onchange=selectSupplier(this)", "" );
+//		}
 
 		$line .= "<td>" . $supplier_name . "</td>";
 
@@ -236,7 +275,7 @@ tr:nth-child(even) {
     background-color: #dddddd;
 }
 </style>";
-	$data .= "<table>";
+	$data .= "<table>"; // This tags change to tbody somehow.
 	$data .= "<tr>";
 	$data .= "<td>בחר</td>";
 	$data .= "<td>פריט</td>";

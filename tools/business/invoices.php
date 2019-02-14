@@ -396,7 +396,8 @@ function invoices_table( $statuses, $week = null ) {
 				}
 				//	}
 			} else {
-				$line[ OrderFields::delivery_note ] = gui_hyperlink( "צור", "../delivery/create-delivery.php?order_id=" . $order_id );
+				$line[ OrderFields::delivery_note ] = gui_hyperlink( "צור", "../delivery/create-delivery.php?order_id=" . $order_id ) .
+				                                      gui_hyperlink( "בטל", "orders-post.php?operation=cancel_orders&ids=" . $order_id );
 				$total_delivery_fee                 = order_get_shipping_fee( $order_id );
 			}
 			$line[ OrderFields::city ]         = order_info( $order_id, '_shipping_city' );

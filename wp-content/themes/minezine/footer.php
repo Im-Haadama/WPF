@@ -7,7 +7,9 @@
 ?>
 </div> <!-- end of main-content -->
 <footer id="wrapper-footer">
-	<?php print im_footer(); ?>
+	<?php if ( function_exists( 'im_footer' ) ) {
+		print im_footer();
+	} ?>
 	<?php if ( is_active_sidebar( 'sidebar-2' ) || is_active_sidebar( 'sidebar-3' ) || is_active_sidebar( 'sidebar-4' ) ) { ?>
         <div id="footer">
 			<?php if ( ! is_page_template( 'template-landing-page.php' ) ) { ?>

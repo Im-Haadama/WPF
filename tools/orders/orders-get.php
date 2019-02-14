@@ -20,6 +20,17 @@ if ( ! $order_type ) {
 
 require( "new-order.php" );
 
+$operation = get_param( "operation" );
+
+if ( $operation )
+	switch ( $operation ) {
+		case "cancel_order":
+			$id = get_param( "id" );
+			$o  = new Order( $id );
+			$o->ChangeStatus( "wc-cancelled" );
+			break;
+	}
+
 ?>
 
 <script type="text/javascript" src="/niver/gui/client_tools.js"></script>
