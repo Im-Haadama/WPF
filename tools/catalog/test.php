@@ -14,6 +14,19 @@ print header_text( false, true, false );
 //error_reporting( E_ALL );
 //ini_set( 'display_errors', 'on' );
 
-$line = "";
-Catalog::UpdateProduct( 1110, $line );
-print $line;
+$sql = 'select '
+       . ' id, post_title '
+       . ' from wp_posts '
+       . ' where post_type = \'product\'';
+
+$result = sql_query( $sql );
+
+while ( $row = sql_fetch_row( $result ) ) {
+	$prod_id = $row[0];
+	print "prod_id= " . $prod_id;
+
+	$a = alternatives( $prod_id );
+	var_dump( $a );
+
+	print "<br/>";
+}

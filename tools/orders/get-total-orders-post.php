@@ -98,11 +98,16 @@ function create_supply_single() {
 
 
 function get_total_orders( $filter_zero, $history = false, $filter_stock ) {
+
+	// $time = debug_time("start", 0);
 	$needed_products = array();
 
 	Order::CalculateNeeded( $needed_products );
 
-	$suppliers = array();
+// 	$time = debug_time("after needed", $time);
+
+	$suppliers       = array();
+	$supplier_needed = array();
 
 	// Find out which suppliers are relevant
 	foreach ( $needed_products as $prod_id => $product_info ) {
@@ -110,10 +115,14 @@ function get_total_orders( $filter_zero, $history = false, $filter_stock ) {
 			$supplier = $alter->getSupplierId();
 			if ( ! in_array( $supplier, $suppliers ) ) {
 				array_push( $suppliers, $supplier );
+				$supplier_needed[ $supplier ] = array();
 			}
-
+			$supplier_needed[ $supplier ][ $prod_id ] = $product_info;
 		}
 	}
+//	var_dump($supplier_needed[100001]);
+
+//	$time = debug_time("after suppliers", $time);
 
 	$sql = "SELECT id, supplier_priority FROM im_suppliers WHERE id IN (" . comma_implode( $suppliers ) . ")" .
 	       " AND active " .
@@ -123,19 +132,21 @@ function get_total_orders( $filter_zero, $history = false, $filter_stock ) {
 
 	while ( $row = sql_fetch_row( $result ) ) {
 		$supplier_id = $row[0];
-		get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero, $filter_stock, $history );
+		get_total_orders_supplier( $supplier_id, $supplier_needed[ $supplier_id ], $filter_zero, $filter_stock, $history );
 
 		print gui_button( "btn_supplier_" . $supplier_id, "createSupply(" . $supplier_id . ")", "צור הספקה" );
+//		$time = debug_time("after supplier", $time);
+
 	}
 }
 
 function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero, $filter_stock, $history ) {
+//	$time = debug_time("start supplier", 0);
 	print gui_header( 2, get_supplier_name( $supplier_id ) );
 
 	$data_lines = array();
 
 	foreach ( $needed_products as $prod_id => $quantity_array ) {
-
 		$P = new Product( $prod_id );
 		if ( ! $P ) {
 			continue;
@@ -184,19 +195,6 @@ function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero
 		$line .= gui_cell( gui_input( "qua_" . $prod_id, $numeric_quantity,
 			"onchange=\"line_selected('" . $prod_id . '_' . $supplier_id . "')\"" ));
 
-//		if ( ImMultiSite::LocalSiteID() == 2 ) {
-//			$terms = get_the_terms( $prod_id, 'product_cat' );
-//
-//			if ( $terms ) {
-//				foreach ( $terms as $term ) {
-//					if ( $term->name != 'השף' ) {
-//						$supplier_name = $term->name;
-//						break;
-//					}
-//				}
-//			}
-//		} else {
-
 		$this_supplier = false;
 		$alternatives  = alternatives( $prod_id );
 		$suppliers     = array( array( "id" => 0, "option" => "בחר" ) );
@@ -221,43 +219,16 @@ function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero
 
 		$line .= gui_cell( orders_per_item( $prod_id, 1, true, true, true ) );
 
-//		// TODO: sale price
-//		$price = get_price( $prod_id );
-//		$line  .= "<td>" . $price . "</td>";
-//
-//		// Add margin info
-//		if ( MultiSite::LocalSiteID() == 1 ) {
-//
-//			$buy_price = get_buy_price( $prod_id );
-//			$line      .= "<td>" . $buy_price . "</td>";
-//
-//
-//			if ( $buy_price > 0 ) {
-//				if ( $price != 0 ) {
-//					$buy = $numeric_quantity * $buy_price;
-//					// $total_buy += $buy;
-//					$sale = $numeric_quantity * $price;
-//					// $total_sale += $sale;
-//					// $total_buy_supplier[$supplier_id] += $buy;
-//					// $total_sale_supplier[$supplier_id] += $sale;
-//
-//					$line .= "<td>" . $numeric_quantity * ( $price - $buy_price ) . "</td>";
-//				} else {
-//					$line .= "<td></td>";
-//				}
-//			} else {
-//				$line .= "<td></td><td></td>";
-//			}
-//		}
-
 		$line .= "</tr>";
-//        prof_flag("table_line end");
 
 		//print "loop5: " .  microtime() . "<br/>";
 		if ( ! $filter_zero or ( $numeric_quantity > 0 ) ) {
 			array_push( $data_lines, array( get_product_name( $prod_id ), $line ) );
 		}
+		// $time = debug_time("end product" . $prod_id, $time);
+
 	}
+
 
 	$data = "<style>
 table {

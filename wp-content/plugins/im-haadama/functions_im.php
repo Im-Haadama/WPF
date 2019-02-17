@@ -49,14 +49,7 @@ function get_minimum_order() {
 	$country  = $woocommerce->customer->get_shipping_country();
 	$state    = $woocommerce->customer->get_shipping_state();
 	$postcode = $woocommerce->customer->get_shipping_postcode();
-//    my_log("country " . $country);
-//    my_log("state " . $state);
-//    my_log("post code " . $postcode);
-//    $package = WC()->cart->get_shipping_packages();
-//    ob_start();
-//    var_dump($package);
-//    $result = ob_get_clean();
-//    my_log ($result);
+
 	$zone1 = WC_Shipping_Zones::get_zone_matching_package( array(
 		'destination' => array(
 			'country'  => $country,
@@ -483,16 +476,18 @@ function hide_shipping_if_fresh( $available_methods ) {
 }
 
 // Menu
+//add_action( 'admin_page_packing_menu', 'im_packing_menu' );
 add_action( 'admin_menu', 'im_admin_menu' );
-add_action( 'packing_menu', 'im_packing_menu' );
 
 function im_admin_menu() {
-	add_menu_page( 'Fresh Store', 'Fresh Store', 'manage_options', '/admin_menu/', 'fresh_store_admin_page', 'dashicons-tickets', 6 );
+//	add_menu_page( 'Fresh Store', 'Fresh Store', 'manage_options', 'im-haadama/admin.php', 'fresh_store_admin_page',
+//        'dashicons-tickets', 6 );
+	add_menu_page( 'Fresh Store', 'תפריט אריזה', 'manage_options', 'im-haadama/packing.php', 'fresh_store_packing_page',
+		'dashicons-tickets', 6 );
+	add_menu_page( 'Fresh Store', 'ניהול ספקים', 'manage_options', 'im-haadama/supplier_account.php', 'fresh_store_supplier_account_page',
+		'dashicons-tickets', 6 );
 }
 
-function im_packing_menu() {
-	add_menu_page( 'Fresh Store', 'Fresh Store', 'packing_options', '/packing_menu/', 'fresh_store_packing_page', 'dashicons-tickets', 6 );
-}
 
 function fresh_store_packing_page() {
 	?>
@@ -508,23 +503,20 @@ function fresh_store_packing_page() {
 	// require_once("../tools/menu_op.php");
 }
 
-
-function fresh_store_admin_page() {
+function fresh_store_supplier_account_page() {
 	?>
 
 	<?php
 	error_reporting( E_ALL );
 	ini_set( 'display_errors', 'on' );
 
-	print gui_table( array(//array("אריזה", "גביה", "קטלוג"),
-		array(
-			gui_hyperlink( gui_image( "http://store.im-haadama.co.il/wp-content/uploads/2019/02/iconfinder_00-ELASTOFONT-STORE-READY_cart_2703080-1.png" ),
-				"admin.php?page=packing_menu" )
-		)
+	print gui_table( array(
+		array( "supplier_account" )
 	) );
 
 	// require_once("../tools/menu_op.php");
 }
+
 
 //add_filter( 'woocommerce_checkout_fields' , 'custom_wc_checkout_fields' );
 //// Change order comments placeholder and label, and set billing phone number to not required.

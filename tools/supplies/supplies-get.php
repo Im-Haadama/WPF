@@ -67,7 +67,7 @@ if ( isset( $_GET["week"] ) ) {
 }
 ?>
 <script type="text/javascript" src="/niver/gui/client_tools.js"></script>
-<script type="text/javascript" src="mission.js"></script>
+<script type="text/javascript" src="supply.js"></script>
 
     <script>
         function change_supplier() {
@@ -184,7 +184,7 @@ if ( isset( $_GET["week"] ) ) {
                 if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
                 {
                     var http_text = xmlhttp.responseText.trim();
-                    document.getElementById("logging").innerHTML = http_text;
+                    add_message(http_text);
                     updateDisplay();
                 }
             }
@@ -211,7 +211,7 @@ if ( isset( $_GET["week"] ) ) {
                 {
                     http_text = xmlhttp.responseText.trim();
                     if (http_text.length > 2)
-                        document.getElementById("logging").innerHTML = http_text;
+                        add_message(http_text);
                     else
                         updateDisplay();
                 }
@@ -284,15 +284,15 @@ if ( isset( $_GET["week"] ) ) {
                 "&create_info=" + ids.join() +
                 "&date=" + date;
 
+            reset_message();
             xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function () {
                 // Wait to get delivery id.
                 if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {  // Request finished
+                    add_message(xmlhttp.responseText);
+                    document.getElementById('add_item').disabled = false;
                     if (xmlhttp.responseText.includes("done")) {
-                        location.reload();
-                    } else {
-                        logging.innerHTML = xmlhttp.responseText;
-                        document.getElementById('add_item').disabled = false;
+                        // location.reload();
                     }
                 }
             }
@@ -333,7 +333,7 @@ if ( isset( $_GET["week"] ) ) {
 	<button id="btn_merge" onclick="mergeItems()">מזג פריטים</button>
 	<button id="btn_send" onclick="sendItems()">שלח הזמנה</button>
 </div>
-<div id="logging" rows="6" cols="50"></div>
+<?php print gui_textarea( "log", "", "" ); ?>
 
 <div id="supplies_list" border="1">
     <!--    <table id="other_product_list">-->

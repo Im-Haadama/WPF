@@ -19,6 +19,8 @@ require_once( "../supplies/Supply.php" );
 
 $debug = get_param( "debug" );
 
+$missing = get_param( "missing" );
+
 if ( isset( $_GET["week"] ) ) {
 	$week = $_GET["week"];
 }
@@ -266,7 +268,8 @@ foreach ( $data_lines as $mission_id => $data_line ) {
 			$data           .= substr( $line, 0, strpos( $line, "</tr>" ) ) . gui_cell( $distance . "km" ) .
 			                   gui_cell( $duration . "ד'" ) . gui_cell( $total_duration . "ד'" ) . "</td>";
 
-			try {
+			if ( $missing )
+				try {
 				$o    = new Order( $order_id );
 				if ( $o->getDeliveryId() and strlen( $o->Missing() ) ) {
 					$data .= gui_row( array(

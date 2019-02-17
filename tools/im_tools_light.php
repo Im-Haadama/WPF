@@ -229,7 +229,7 @@ function is_order( $id ) {
 }
 
 
-function debug_time( $message, $previous_time ) {
+function deb_ug_time( $message, $previous_time ) {
 	$diff  = microtime( true ) - $previous_time;
 	$sec   = intval( $diff );
 	$micro = $diff - $sec;

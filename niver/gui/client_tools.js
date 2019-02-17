@@ -29,6 +29,14 @@ function get_value_by_name(element_name) {
     return get_value(element);
 
 }
+
+function reset_message(message) {
+    var log = document.getElementById("log");
+
+    log.innerHTML = "";
+    // alert(message);
+}
+
 function add_message(message) {
     var log = document.getElementById("log");
 

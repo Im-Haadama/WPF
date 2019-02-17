@@ -45,7 +45,8 @@ print "<br/>";
 <script>
     function update_display() {
         if (get_value_by_name("invoice_client_id").length > 1)
-            document.getElementById("btn_create_user").isDisabled = true;
+            location.reload();
+        // document.getElementById("btn_create_user").isDisabled = true;
     }
 
     function create_user() {

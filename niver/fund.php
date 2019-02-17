@@ -61,9 +61,13 @@ function get_param_array( $key ) {
 	return null;
 }
 
-function get_param( $key ) {
+function get_param( $key, $mandory = false ) {
 	if ( isset( $_GET[ $key ] ) ) {
 		return $_GET[ $key ];
+	}
+
+	if ( $mandory ) {
+		die ( "key " . $key . " not supplied" );
 	}
 
 	return null;

@@ -14,7 +14,7 @@ function sum_numbers( &$s, $a ) {
 //	var_dump($a); print "<br/>";
 	if ( is_numeric( $s ) and is_numeric( $a ) ) {
 		$s = round( $s + $a, 2 );
-		// print $s . "<br/>";
+//		 print "s=" . $s . "<br/>";
 	}
 }
 

@@ -73,7 +73,25 @@ if ( isset( $_GET["operation"] ) ) {
 
 			$create_info = $_GET["create_info"];
 			$ids         = explode( ',', $create_info );
-			create_supplier_order( $supplier_id, $ids, $date );
+			$supply      = Supply::CreateSupply( $supplier_id );
+			if ( ! $supply->getID() ) {
+				return false;
+			}
+			for ( $pos = 0; $pos < count( $ids ); $pos += 3 ) {
+				$prod_id  = $ids[ $pos ];
+				$quantity = $ids[ $pos + 1 ];
+				$units    = $ids[ $pos + 2 ];
+				// print "adding " . $prod_id . " quantity " . $quantity . " units " . $units . "<br/>";
+				$price = get_buy_price( $prod_id, $supplier_id );
+				if ( ! $supply->AddLine( $prod_id, $quantity, $price, $units ) ) {
+					return false;
+				}
+			}
+			$mission_id = get_param( "mission_id" );
+			if ( $mission_id ) {
+				$s->setMissionID( $mission_id );
+			}
+			print "done";
 			break;
 
 		case "create_supplies":
@@ -204,7 +222,8 @@ if ( isset( $_GET["operation"] ) ) {
 		case "set_mission":
 			$supply_id  = $_GET["supply_id"];
 			$mission_id = $_GET["mission_id"];
-			supply_set_mission_id( $supply_id, $mission_id );
+			$s          = new Supply( $supply_id );
+			$s->setMissionID( $mission_id);
 			break;
 
 		case "delivered":

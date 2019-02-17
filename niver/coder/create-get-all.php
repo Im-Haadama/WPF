@@ -44,7 +44,6 @@ print "reading config...";
 require_once( $config_file );
 
 print "done<br/>";
-
 print "Table: " . $table_name . '<br/>';
 
 if ( isset( $root_file ) ) {
@@ -235,13 +234,23 @@ print \"</tr>\";
 \$result = mysqli_query(\$conn, \$sql);
 if (! \$result) { sql_error(\$conn); die(1); }
 if (\$debug) print \$sql;
+\$accum = null;" );
+if ( isset( $accumulate ) ) {
+	print "Accumulating<br/>";
+	fwrite( $get_all, '$accum=array();' );
+}
+fwrite( $get_all, "
 while (\$row = mysqli_fetch_row(\$result)) {
-print_" . $obj_name . "(\"\$remote_url\", \$row[0], true, \"" . $single_url . "\");
+print_" . $obj_name . "(\"\$remote_url\", \$row[0], true, \"" . $single_url . "\", \$accum);
 }
 " );
+if ( isset( $accumulate ) ) {
+	fwrite( $get_all, 'print gui_row($accum);' );
+}
+
 
 ob_start();
-print "function print_" . $obj_name . "(\$url, \$id, \$horizontal, \$single_url)\n";
+print "function print_" . $obj_name . "(\$url, \$id, \$horizontal, \$single_url, &\$accum)\n";
 print "{\n";
 print "\$sql = \"select " . $field_list . " from " . $table_name . " where id = \$id\";\n";
 print "\$result = sql_query ( \$sql );\n";
@@ -309,10 +318,21 @@ while ( $row = mysqli_fetch_row( $result ) ) {
 	print 'print $value; ';
 	print 'print "</a>";
 ';
-	$col_idx ++;
 	print "print \"</td>\";\n";
 	print '}';
 	print "if (!\$horizontal) print \"</tr>\";\n";
+	if ( isset( $accumulate ) ) {
+
+		if ( isset( $accumulate[ $column_name[ $col_idx ] ] ) ) {
+			print 'if (! isset($accum["' . $column_name[ $col_idx ] . '"])) $accum["' . $column_name[ $col_idx ] . '"] = 0; ';
+			print  $accumulate[ $column_name[ $col_idx ] ] .
+			       '($accum["' . $column_name[ $col_idx ] . '"], $row[' . $col_idx . ']);';
+		} else {
+			print '$accum["' . $column_name[ $col_idx ] . '"] = ""; ';
+
+		}
+	}
+	$col_idx ++;
 }
 if ( isset( $actions ) ) {
 	foreach ( $actions as $action ) {
@@ -328,7 +348,7 @@ ob_end_clean();
 
 fwrite( $get_all, $code );
 
-var_dump( $import_key );
+// var_dump( $import_key );
 if ( ! isset( $import_key ) ) {
 	$import_key = null;
 }

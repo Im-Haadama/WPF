@@ -56,6 +56,7 @@ class Supply {
 		$this->MissionID  = $row[5];
 	}
 
+
 	public static function CreateFromFile( $file_name, $supplier_id, $debug = false ) {
 		$debug               = true;
 		$item_code_idx       = Array();
@@ -205,7 +206,25 @@ class Supply {
 	}
 
 	public function AddLine( $prod_id, $quantity, $price, $units = 0 ) {
-		supply_add_line( $this->ID, $prod_id, $quantity, $price, $units = 0 );
+		if ( is_null( $price ) ) {
+			$price = 0;
+		}
+		$sql = "INSERT INTO im_supplies_lines (supply_id, product_id, quantity, units, price) VALUES "
+		       . "( " . $this->ID . ", " . $prod_id . ", " . $quantity . ", " . $units . ", " . $price . " )";
+
+		// print $sql;
+		sql_query( $sql );
+		$product = new WC_Product( $prod_id );
+		if ( $product->managing_stock() ) {
+//		print "managed<br/>";
+//		print "stock was: " . $product->get_stock_quantity() . "<br/>";
+
+			$product->set_stock_quantity( $product->get_stock_quantity() + $quantity );
+//		print "stock is: " . $product->get_stock_quantity() . "<br/>";
+			$product->save();
+		}
+
+		return true;
 	}
 
 	public function UpdateField( $field_name, $value ) {
@@ -266,6 +285,16 @@ class Supply {
 	 */
 	public function getMissionID() {
 		return $this->MissionID;
+	}
+
+	/**
+	 * @param mixed $MissionID
+	 */
+	public function setMissionID( $MissionID ) {
+		$this->MissionID = $MissionID;
+
+		return sql_query_single_scalar( "UPDATE im_supplies SET mission_id = " . $MissionID . " WHERE id = " .
+		                                $this->ID );
 	}
 
 
@@ -473,23 +502,10 @@ function create_supply( $supplierID, $date = null ) {
 }
 
 function supply_add_line( $supply_id, $prod_id, $quantity, $price, $units = 0 ) {
-	if ( is_null( $price ) ) {
-		$price = 0;
-	}
-	$sql = "INSERT INTO im_supplies_lines (supply_id, product_id, quantity, units, price) VALUES "
-	       . "( " . $supply_id . ", " . $prod_id . ", " . $quantity . ", " . $units . ", " . $price . " )";
+	// For backward
+	$s = new Supply( $supply_id );
 
-	// print $sql;
-	sql_query( $sql );
-	$product = new WC_Product( $prod_id );
-	if ( $product->managing_stock() ) {
-//		print "managed<br/>";
-//		print "stock was: " . $product->get_stock_quantity() . "<br/>";
-
-		$product->set_stock_quantity( $product->get_stock_quantity() + $quantity );
-//		print "stock is: " . $product->get_stock_quantity() . "<br/>";
-		$product->save();
-	}
+	return $s->AddLine( $prod_id, $quantity, $price, $units = 0 );
 }
 
 function supply_get_supplier_id( $supply_id ) {
@@ -504,10 +520,6 @@ function supply_get_supplier( $supply_id ) {
 
 function supply_get_mission_id( $supply_id ) {
 	return sql_query_single_scalar( "SELECT mission_id FROM im_supplies WHERE id = " . $supply_id );
-}
-
-function supply_set_mission_id( $supply_id, $mission_id ) {
-	return sql_query_single_scalar( "UPDATE im_supplies SET mission_id = " . $mission_id . " WHERE id = " . $supply_id );
 }
 
 function supply_quantity_ordered( $prod_id ) {

@@ -53,6 +53,7 @@ if ( 1 ) {
 	) );
 	add_role( "logistics", "Logistics Manager", array( "edit_missions" => "true" ) );
 
+	add_role( "packing_manager", "Packing Manager", array( "manage_packing" => "true" ) );
 }
 
 
@@ -61,4 +62,7 @@ global $wp_roles;
 //$wp_roles->add_cap( "business", "show_pricelist" );
 //$wp_roles->add_cap( "business", "edit_pricelist" );
 $wp_roles->add_cap( "business", "edit_suppliers" );
+
+$wp_roles->add_cap( "packing_manager", "manage_packing" );
+
 print "done";

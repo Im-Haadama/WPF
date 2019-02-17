@@ -64,4 +64,6 @@ $insert["project_id"] = "gui_select_project";
 $insert["mission_id"] = "gui_select_mission";
 $insert["part_id"]    = "gui_select_supplier";
 
+$accumulate           = array();
+$accumulate["amount"] = "sum_numbers";
 

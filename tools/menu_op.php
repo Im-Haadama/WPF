@@ -5,10 +5,10 @@ ini_set( 'display_errors', 'on' );
 
 require_once( "im_tools.php" );
 print header_text( false );
-require_once( TOOLS_DIR . "/wp.php" );
+require_once( ROOT_DIR . "/tools/wp.php" );
 require_once( ROOT_DIR . "/niver/gui/inputs.php" );
 // print TOOLS_DIR . "/multi-site/imMulti-site.php";
-require_once( TOOLS_DIR . "/multi-site/imMulti-site.php" );
+require_once( ROOT_DIR . "/tools/multi-site/imMulti-site.php" );
 
 $test_site  = get_param( "test_site" );
 $test_limit = get_param( "test_limit" );
@@ -123,6 +123,7 @@ $table[ $row ++ ][ $col ] = gui_header( 2, "ספקים" );
 add_command( $table, $row, $col, "edit_suppliers", "ספקים", "suppliers/c-get-all-suppliers.php", "doc_frame" );
 add_command( $table, $row, $col, "edit_shop_orders", "אספקות", "supplies/supplies-get.php", "doc_frame" );
 add_command( $table, $row, $col, "edit_shop_orders", "מלאי 0", "catalog/catalog-db-query.php?operation=zero_inv", "doc_frame" );
+add_command( $table, $row, $col, "edit_suppliers", "יתרת ספקים", "suppliers/get-supplier-balance.php", "doc_frame" );
 
 while ( $row < $max_row ) {
 	$table[ $row ++ ][ $col ] = "";
@@ -145,6 +146,7 @@ add_command( $table, $row, $col, "edit_pricelist", "משימות פעילות", 
 add_command( $table, $row, $col, "edit_pricelist", "חשבוניות", "business/c-get-all-business_info.php?document_type=4&is_active=1" );
 add_command( $table, $row, $col, "edit_pricelist", "פרויקטים", "people/c-get-all-projects.php" );
 add_command( $table, $row, $col, "edit_pricelist", "תיבת דואר", "business/manage-inbox.php" );
+add_command( $table, $row, $col, "edit_pricelist", "בנק", "business/c-get-all-business_info.php" );
 
 while ( $row < $max_row ) {
 	$table[ $row ++ ][ $col ] = "";

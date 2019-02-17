@@ -305,7 +305,7 @@ function check_cache_validity() {
   	where post_status like '%wc-processing%'
   	and id not in (select order_id from im_need_orders)";
 	$new = sql_query_single_scalar( $sql );
-//	print "new: " . $new . "<br/>";
+	print "new: " . $new . "<br/>";
 
 	$sql  = "SELECT count(id)
 	  FROM im_need_orders
@@ -313,12 +313,11 @@ function check_cache_validity() {
 	$done = sql_query_single_scalar( $sql );
 	print "done: " . $done . "<br/>";
 
-	if ( $new > 0 ) {
+	if ( $done > 0 or $new > 0 ) {
 		return false;
 	}
 
 	return true;
-
 }
 
 
