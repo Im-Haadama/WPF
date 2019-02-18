@@ -749,9 +749,10 @@ function show_category_by_id( $term_id, $sale = false, $text = false, $customer_
 	}
 
 	if ( $inventory ) {
-		array_push( $table[0], "מלאי" );
-		array_push( $table[0], "תאריך עדכון" );
-		array_push( $table[0], "מוזמנים" );
+		$table = array( array( "", "שם מוצר", "מחיר עלות", "כמות במלאי", "תאריך עדכון", "דוח תנועות" ) );
+//		array_push( $table[0], "מלאי" );
+//		array_push( $table[0], "תאריך עדכון" );
+//		array_push( $table[0], "מוזמנים" );
 	}
 
 	$args = array(
@@ -833,6 +834,7 @@ function product_line( $prod_id, $text, $sale, $customer_type, $inv, $term_id ) 
 	if ( $inv ) {
 		array_push( $line, gui_input( "term_" . $term_id, $p->getStock(), "", "inv_" . $prod_id ) );
 		array_push( $line, gui_label( "term_" . $term_id, $p->getStockDate() ) );
+		array_push( $line, gui_hyperlink( "דוח", "../delivery/report.php?prod_id=" . $prod_id ) );
 //		array_push( $line, gui_label( "ord_" . $term_id, $p->getOrderedDetails() ) );
 	}
 

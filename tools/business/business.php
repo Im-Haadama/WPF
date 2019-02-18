@@ -84,6 +84,6 @@ function business_open_ship( $part_id ) {
 }
 
 function select_bank_account() {
-	return gui_select_table( "select_account", "im_bank_account", null,
+	return gui_select_table( "select_account_id", "im_bank_account", null,
 		null, null, "name" );
 }

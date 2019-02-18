@@ -7,14 +7,14 @@
  */
 
 $obj_name      = "bank";
-$root_file     = realpath( ROOT_DIR ) . '/tools/im_tools.php';
+$root_file     = realpath( ROOT_DIR ) . '/tools/business/business.php';
 $target_folder = "/tools/business";
 
 require_once( ROOT_DIR . '/im-config.php' );
-require_once( ROOT_DIR . '/tools/business/business.php' );
+// require_once( ROOT_DIR . '/tools/business/business.php' );
 
 $im_table_suffix = "";
-$table_name      = $im_table_prefix . $obj_name . $table_suffix;
+$table_name      = $im_table_prefix . $obj_name . $im_table_suffix;
 $order           = "order by 2 ";
 
 $useMultiSite = false;

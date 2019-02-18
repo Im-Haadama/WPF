@@ -131,7 +131,8 @@ function print_prod_report( $prod_id, $week = null, $user_id = null ) {
 		print gui_header( 2, "לקוח " . get_customer_name( $user_id ) );
 	}
 
-	$sql = "SELECT delivery_id, product_name, round(quantity, 1), order_id";
+	$sql      = "SELECT delivery_id, product_name, round(quantity, 1), order_id, date";
+	$order_by = array();
 	if ( ! $week ) {
 		$sql .= ", date";
 	}
@@ -141,7 +142,10 @@ function print_prod_report( $prod_id, $week = null, $user_id = null ) {
 	$query = null;
 	if ( $week ) {
 		add_query( $query, "first_day_of_week(date) = '" . $week . "'" );
+	} else {
+		array_push( $order_by, "5 desc" );
 	}
+
 	if ( $user_id ) {
 		add_query( $query, "order_user(order_id) = " . $user_id );
 	}
@@ -150,6 +154,12 @@ function print_prod_report( $prod_id, $week = null, $user_id = null ) {
 		$sql .= " " . $query;
 	}
 	$sql .= ")";
+
+//	var_dump($order_by);
+	if ( count( $order_by ) )
+		$sql .= "order by " . comma_implode( $order_by );
+
+	// print $sql;
 
 	// print $sql;
 	$result = sql_query( $sql );

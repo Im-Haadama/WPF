@@ -15,7 +15,7 @@ function my_log( $msg, $title = '' ) {
 	error_log( $log, 3, $error_file );
 }
 
-function header_text( $print_logo = true, $close_header = true, $rtl = true, $css = null ) {
+function header_text( $print_logo = true, $close_header = true, $rtl = true, $script_file = false ) {
 	global $business_info;
 	global $logo_url;
 	global $style_file;
@@ -39,11 +39,14 @@ function header_text( $print_logo = true, $close_header = true, $rtl = true, $cs
 		}
 	}
 	$text .= '</p>';
-	$text .= "<style>";
 	if ( isset( $style_file ) ) {
+		$text .= "<style>";
 		$text .= file_get_contents( $style_file );
+		$text .= "</style>";
 	}
-	$text .= "</style>";
+	if ( $script_file ) {
+		$text .= '<script type="text/javascript" src="/niver/gui/client_tools.js"></script>';
+	}
 	if ( $close_header ) {
 		$text .= '</head>';
 	}

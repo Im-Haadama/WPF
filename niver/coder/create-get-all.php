@@ -354,7 +354,7 @@ if ( ! isset( $import_key ) ) {
 }
 
 if ( isset( $import_csv ) ) {
-	write_import_csv( $import_filename, $import_key );
+	write_import_csv( $obj_name, $import_filename, $import_key );
 }
 
 fclose( $get_all );
@@ -380,7 +380,7 @@ require_once(ROOT_DIR . '/niver/fund.php');
 require_once(ROOT_DIR . '/niver/data/translate.php');
 require_once(ROOT_DIR . '/niver/gui/inputs.php');
 require_once(ROOT_DIR . '/niver/fund.php');
-print header_text(false, false);
+print header_text(false, true, true, true);
 if (isset(\$_GET[\"debug\"])) {
 	error_reporting( E_ALL );
 	ini_set( 'display_errors', 'on' );
@@ -393,15 +393,29 @@ if (isset(\$_GET[\"debug\"])) {
 function write_import_csv( $obj_name, $import_csv, $import_key = null ) {
 	print gui_header( 2, "import");
 
-	$file = fopen( $import_csv, "w" );
+	if ( ! is_string( $import_csv ) ) {
+		var_dump( $import_key );
+		die( 1 );
+	}
+	$file        = fopen( $import_csv, "w" );
+	$action_file = basename( $import_csv );
 
 	write_header( $file );
 
-	var_dump( $import_key );
+	fwrite( $file, '
+	$operation = get_param("operation");
+	switch($operation)
+	{
+		case "import_from_file":
+			$file_name = $_FILES["fileToUpload"]["name"];
+			import_from_file($obj_name, $import_key, $file_name);
+			break;
+	}' );
+//	var_dump( $import_key );
 
+	fwrite( $file, '?> <body onload="change_' . $obj_name . '()" >' );
 	if ( $import_key ) {
-		fwrite( $file, "?>" );
-		fwrite( $file, "<div>בחר ליבוא:</div>" . $import_key[1]() );
+		fwrite( $file, "<div>בחר ליבוא:</div><?php print " . $import_key[1] . "(); ?>" );
 		fwrite( $file, '<form name="upload_csv" id="upcsv" method="post" enctype="multipart/form-data">
 		                                                         טען מקובץ CSV
 	    <input type="file" name="fileToUpload" id="fileToUpload">
@@ -411,11 +425,10 @@ function write_import_csv( $obj_name, $import_csv, $import_key = null ) {
     </form>
     <script>
             function change_' . $obj_name . '() {
-            var supplier_id = get_value_by_name("supplier_select");
+            var obj_name = get_value_by_name("select_' . $import_key[0] . '");
             var upcsv = document.getElementById("upcsv");
-            upcsv.action = "/tools/supplies/supplies-post.php?operation=create_from_file&supplier_id=" + supplier_id;
+            upcsv.action = "' . $action_file . '?operation=import_from_file&' . $obj_name . '=" + obj_name;       
         }
-
 </script>' );
 		fwrite( $file, "<?php " );
 
