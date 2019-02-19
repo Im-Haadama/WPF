@@ -152,6 +152,10 @@ class Bundle {
 //		sql_query( $sql );
 //	}
 
+	static function GetBundles( $prod_id ) {
+		return sql_query_array_scalar( "SELECT bundle_prod_id FROM im_bundles WHERE prod_id = " . $prod_id );
+	}
+
 	function Delete() {
 		my_log( "delete bundle", __CLASS__ );
 		$sql = "SELECT bundle_prod_id FROM im_bundles WHERE id = " . $this->id;

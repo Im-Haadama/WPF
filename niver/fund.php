@@ -18,6 +18,7 @@ function my_log( $msg, $title = '' ) {
 function header_text( $print_logo = true, $close_header = true, $rtl = true, $script_file = false ) {
 	global $business_info;
 	global $logo_url;
+
 	global $style_file;
 
 	$text = '<html';
@@ -34,7 +35,7 @@ function header_text( $print_logo = true, $close_header = true, $rtl = true, $sc
 	$text .= '</title>';
 	// $text .= '<p style="text-align:center;">';
 	if ( $print_logo ) {
-		if ( defined( $logo_url ) ) {
+		if ( ( $logo_url ) ) {
 			$text .= '<img src=' . $logo_url . '>';
 		}
 	}
@@ -157,3 +158,27 @@ function get_next_array( $array, $search_key ) {
 //	return rtrim( $str, ", " );
 //}
 
+function debug_time2( $str ) {
+	$micro_date = microtime();
+	$date_array = explode( " ", $micro_date );
+	$date       = date( "Y-m-d H:i:s", $date_array[1] );
+	echo "$str $date:" . $date_array[0] . "<br>";
+}
+
+function debug_time1( $str ) {
+	return;
+	static $prev_time;
+	if ( $str == "reset" ) {
+		$prev_time = microtime();
+
+		return;
+	}
+	$now         = microtime();
+	$micro_delta = $now - $prev_time;
+	$date_array  = explode( " ", $micro_delta );
+	$date        = date( "s", $date_array[1] );
+	if ( $micro_delta > 0.05 ) {
+		my_log( "$str $date:" . $date_array[0] . "<br>", "performance" );
+	}
+	$prev_time = $now;
+}

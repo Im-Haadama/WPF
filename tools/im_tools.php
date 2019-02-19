@@ -22,6 +22,7 @@ if ( ! defined( "TOOLS_DIR" ) ) {
 
 require_once( "im_tools_light.php" );
 
+require_once( STORE_DIR . "/im-config.php" );
 require_once( STORE_DIR . "/wp-config.php" );
 require_once( STORE_DIR . "/wp-load.php" );
 require_once( "wp.php" );

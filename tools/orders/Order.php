@@ -219,6 +219,19 @@ class Order {
 		$this->WC_Order->add_shipping( $si );
 	}
 
+	public static function NeedToOrder( &$needed_products ) {
+		$result = array();
+		self::CalculateNeeded( $needed_products );
+		foreach ( $needed_products as $prod_id => $product ) {
+			$p = new Product( $prod_id );
+			if ( $p->getStock() < $needed_products[ $prod_id ][0] ) {
+				array_push( $result, $product );
+			}
+		}
+
+		return $result;
+	}
+
 	public function GetID() {
 		return $this->order_id;
 	}

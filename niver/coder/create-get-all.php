@@ -391,6 +391,7 @@ if (isset(\$_GET[\"debug\"])) {
 }
 
 function write_import_csv( $obj_name, $import_csv, $import_key = null ) {
+	global $table_name;
 	print gui_header( 2, "import");
 
 	if ( ! is_string( $import_csv ) ) {
@@ -407,8 +408,11 @@ function write_import_csv( $obj_name, $import_csv, $import_key = null ) {
 	switch($operation)
 	{
 		case "import_from_file":
+			require_once(ROOT_DIR . "/niver/data/Importer.php");
 			$file_name = $_FILES["fileToUpload"]["name"];
-			import_from_file($obj_name, $import_key, $file_name);
+			$I = new Importer();
+			$I->Import($file_name, "' . $table_name . '");
+			// import_from_file($obj_name, $import_key, $file_name);
 			break;
 	}' );
 //	var_dump( $import_key );

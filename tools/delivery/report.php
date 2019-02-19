@@ -131,13 +131,16 @@ function print_prod_report( $prod_id, $week = null, $user_id = null ) {
 		print gui_header( 2, "לקוח " . get_customer_name( $user_id ) );
 	}
 
-	$sql      = "SELECT delivery_id, product_name, round(quantity, 1), order_id, date";
+	$sql      = "SELECT delivery_id, product_name, round(quantity, 1), order_id, date, prod_id";
 	$order_by = array();
 	if ( ! $week ) {
 		$sql .= ", date";
 	}
+	$prod_ids = Bundle::GetBundles( $prod_id );
+	array_push( $prod_ids, $prod_id );
+
 	$sql .= " FROM im_delivery_lines dl JOIN im_delivery d " .
-	        " WHERE dl.delivery_id = d.id AND prod_id = " . $prod_id . " AND delivery_id IN (SELECT id FROM im_delivery";
+	        " WHERE dl.delivery_id = d.id AND prod_id in (" . comma_implode( $prod_ids ) . ") AND delivery_id IN (SELECT id FROM im_delivery";
 
 	$query = null;
 	if ( $week ) {
@@ -168,9 +171,15 @@ function print_prod_report( $prod_id, $week = null, $user_id = null ) {
 	while ( $row = mysqli_fetch_row( $result ) ) {
 		$order_id = $row[3];
 		$o        = new Order( $order_id );
+		$q        = $row[2];
+		$prod_id  = $row[5];
+		if ( is_bundle( $prod_id ) ) {
+			$b = Bundle::CreateFromBundleProd( $prod_id );
+			$q = $q * $b->GetQuantity();
+		}
 		$line     = array(
 			gui_hyperlink( $row[0], "get-delivery.php?id=" . $row[0] ),
-			$row[2],
+			$q,
 			get_customer_name( $o->getCustomerId() )
 		);
 		if ( ! $week ) {

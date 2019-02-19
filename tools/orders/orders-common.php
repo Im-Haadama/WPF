@@ -12,6 +12,7 @@ if ( ! defined( 'TOOLS_DIR' ) ) {
 	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
 }
 
+require_once( ROOT_DIR . "/niver/fund.php" );
 require_once( TOOLS_DIR . "/catalog/bundles.php" );
 require_once( TOOLS_DIR . '/maps/build-path.php' );
 require_once( TOOLS_DIR . '/account/gui.php' );
@@ -388,7 +389,6 @@ $order_header_fields = array(
 	"תעודת משלוח",
 	"אחוז סופק"
 );
-
 
 function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null ) {
 	debug_time1( "start" );

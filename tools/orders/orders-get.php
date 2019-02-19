@@ -290,30 +290,6 @@ function get_user_order_count( $u ) {
 
 <?php
 
-function debug_time2( $str ) {
-	$micro_date = microtime();
-	$date_array = explode( " ", $micro_date );
-	$date       = date( "Y-m-d H:i:s", $date_array[1] );
-	echo "$str $date:" . $date_array[0] . "<br>";
-}
-
-function debug_time1( $str ) {
-	return;
-	static $prev_time;
-	if ( $str == "reset" ) {
-		$prev_time = microtime();
-
-		return;
-	}
-	$now         = microtime();
-	$micro_delta = $now - $prev_time;
-	$date_array  = explode( " ", $micro_delta );
-	$date        = date( "s", $date_array[1] );
-	if ( $micro_delta > 0.05 ) {
-		my_log( "$str $date:" . $date_array[0] . "<br>", "performance" );
-	}
-	$prev_time = $now;
-}
 
 ?>
 <div id="logging"></div>
