@@ -300,19 +300,20 @@ function print_driver_supplies( $mission_id = 0 ) {
           WHERE r.self_collect = 1
           AND s.supplier = r.id
           AND s.status IN (1, 3)" .
-	       " AND s.picked = 0";
+	        " AND (s.picked = 0 or isnull(s.picked))";
 
 	// print $sql;
 
 	if ( $mission_id ) {
 		$sql .= " AND s.mission_id = " . $mission_id;
 	}
+	// DEBUG $data .= $sql;
 
 	$supplies = sql_query_array_scalar( $sql );
 
 	if ( count( $supplies ) ) {
 		foreach ( $supplies as $supply ) {
-			//	    print "id: " . $supply . "<br/>";
+//			   print "id: " . $supply . "<br/>";
 			$data .= print_supply( $supply );
 		}
 	}

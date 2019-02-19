@@ -251,7 +251,11 @@ while ( $row = mysqli_fetch_assoc( $result ) ) {
 		continue;
 	}
 	if ( isset( $insert[ $name ] ) ) {
-		$gui = $insert[ $name ] . "(\"" . $name . "\", $value, \"onchange=\\\"changed(this)\\\"\")";
+		$gui = $insert[ $name ] . "(\"" . $name . "\", $value, \"onchange=\\\"changed(this)\\\"\"";
+		if ( isset( $insert_id[ $name ] ) ) {
+			$gui .= ", \$id";
+		}
+		$gui .= ")";
 		print "insert $name: " . $gui . "<br/>";
 
 		// fwrite($output, "print \"<?php print \" . $gui . \"; \";");

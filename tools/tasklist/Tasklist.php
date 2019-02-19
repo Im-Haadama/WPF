@@ -371,3 +371,16 @@ function check_active( $id, $repeat_freq, $verbose ) {
 	return false;
 }
 
+// Select relative optional preq for given task:
+// 1) not finished.
+// 2) in the same project.
+
+function gui_select_task_related( $id, $value, $events, $task_id ) {
+	$query = "";
+	if ( $project_id = sql_query_single_scalar( "select project_id from im_tasklist where id = " . $task_id ) ) {
+		$query = "status in (0, 1) \n" .
+		         " and project_id = " . $project_id;
+	}
+
+	return gui_select_task( $id, $value, $events, $query );
+}

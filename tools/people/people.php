@@ -332,4 +332,16 @@ function gui_select_project( $id, $value, $events, $worker = null ) {
 
 }
 
+function gui_select_task( $id, $value, $events, $query = null ) {
+//	if ( $worker ) {
+//		// print "w=" . $worker;
+//		// $user_id = sql_query("select user_id from im_working where id = " . $worker);
+//		$query = " where id in (select project_id from im_working where worker_id = " . $worker . ")";
+//	}
+
+	return gui_select_table( $id, "im_tasklist", $value, $events, "", "task_description",
+		"where " . $query, true, false );
+
+}
+
 ?>

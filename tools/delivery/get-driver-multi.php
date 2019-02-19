@@ -198,7 +198,7 @@ foreach ( $data_lines as $mission_id => $data_line ) {
 		$order_id   = get_text( $row[0], 1 );
 		$customer   = get_text( $row[0], 2 );
 		$pickup     = ImMultiSite::getPickupAddress( $site_id );
-		if ( $site != "משימות" and $pickup != $mission->getStartAddress() ) {
+		if ( $site != "משימות" and $site != "supplies" and $pickup != $mission->getStartAddress() ) {
 
 //			print "xxx: " . $order_id . "<Br/>";
 
@@ -218,7 +218,7 @@ foreach ( $data_lines as $mission_id => $data_line ) {
 			) ), $order_id );
 		}
 		if ( $site == "supplies" ) {
-			array_push( $supplies_to_collect, $order_id );
+			array_push( $supplies_to_collect, array( $order_id, $site_id ) );
 		}
 
 		// print "stop point: " . $stop_point . "<br/>";
@@ -312,10 +312,18 @@ foreach ( $data_lines as $mission_id => $data_line ) {
 		print_time( "end handle mission " . $mission_id, true);
 
 	if ( count( $supplies_to_collect ) ) {
-		foreach ( $supplies_to_collect as $supply_id ) {
-			$s = new Supply( $supply_id );
-			print gui_header( 1, "אספקה  " . $supply_id . " מספק " . $s->getSupplierName() );
-			$s->Html( true, false );
+		// var_dump($supplies_to_collect);
+		foreach ( $supplies_to_collect as $_supply_id ) {
+			$supply_id = $_supply_id[0];
+			$site_id   = $_supply_id[1];
+			// print "sid= " . $site_id . "<br/>";
+			if ( $site_id != $m->getLocalSiteID() ) {
+				print $m->Run( "supplies/supplies-post.php?operation=print&id=" . $supply_id, $site_id );
+			} else {
+				$s = new Supply( $supply_id );
+				print gui_header( 1, "אספקה  " . $supply_id . " מספק " . $s->getSupplierName() );
+				print $s->Html( true, false );
+			}
 		}
 	}
 

@@ -19,7 +19,8 @@ $order        = "order by 12 desc, 6 desc, 2 ";
 $preset_query = array(
 	"",
 	"(date(date) <= CURRENT_DATE or isnull(date)) and (status < 2) " .
-	" and (not mission_id > 0) and task_active_time(id)"
+	" and (not mission_id > 0) and task_active_time(id) " .
+	" and (isnull(preq) or task_status(preq) >= 2) "
 );
 $useMultiSite = false;
 
@@ -54,3 +55,6 @@ $skip_in_horizontal = array();
 
 $insert["project_id"] = "gui_select_project";
 $insert["mission_id"] = "gui_select_mission";
+$insert["preq"]       = "gui_select_task_related";
+$insert_id["preq"]    = true;
+

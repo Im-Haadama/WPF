@@ -12,6 +12,27 @@ if ( ! defined( "ROOT_DIR" ) ) {
 
 require_once( ROOT_DIR . '/tools/im_tools_light.php' );
 
+$version = get_param( "version" );
+
+switch ( $version ) {
+	case "17":
+		version17();
+		break;
+}
+die ( 1 );
+
+function version17() {
+	sql_query( "CREATE FUNCTION task_status(task_id INT)
+  RETURNS TEXT CHARSET 'utf8'
+  BEGIN
+    declare _status int;
+    select status into _status from im_tasklist
+    where id = task_id;
+
+    return _status;
+  END;
+" );
+}
 // Version 1.6
 //sql_query( "ALTER TABLE im_business_info
 //ADD net_total DOUBLE;

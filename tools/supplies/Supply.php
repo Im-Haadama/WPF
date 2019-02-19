@@ -659,7 +659,7 @@ function print_supplies_table( $ids, $internal ) {
 		print "אספקה מספר " . gui_hyperlink( $id, "../supplies/supply-get.php?id= " . $id ) . " " . supply_get_supplier( $id ) . " " . date( "Y-m-d" );
 		print "</h1>";
 		$s = new Supply( $id );
-		$s->Html( $internal, false );
+		print $s->Html( $internal, false );
 		print "<p style=\"page-break-after:always;\"></p>";
 	}
 //    print "</html>";
