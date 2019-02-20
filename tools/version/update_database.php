@@ -18,9 +18,38 @@ switch ( $version ) {
 	case "17":
 		version17();
 		break;
+	case "tasklist":
+		create_tasklist();
+		break;
+	default:
+		die( "no valid option selected" );
+
 }
+print "done";
 die ( 1 );
 
+function create_tasklist() {
+	sql_query( "CREATE TABLE `im_tasklist` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `date` DATETIME DEFAULT NULL,
+  `task_description` VARCHAR(100) CHARACTER SET utf8 DEFAULT NULL,
+  `task_template` INT(11) DEFAULT NULL,
+  `status` INT(11) DEFAULT '0',
+  `started` DATETIME DEFAULT NULL,
+  `ended` DATETIME DEFAULT NULL,
+  `project_id` INT(11) DEFAULT NULL,
+  `mission_id` INT(11) NOT NULL DEFAULT '0',
+  `location_name` VARCHAR(50) CHARACTER SET utf8 DEFAULT NULL,
+  `location_address` VARCHAR(50) CHARACTER SET utf8 DEFAULT NULL,
+  `priority` INT(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1" );
+
+	sql_query( "ALTER TABLE im_tasklist
+	MODIFY `location_name` VARCHAR(50) CHARACTER SET utf8 DEFAULT NULL;
+	" );
+
+}
 function version17() {
 	sql_query( "CREATE FUNCTION task_status(task_id INT)
   RETURNS TEXT CHARSET 'utf8'

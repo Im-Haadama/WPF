@@ -99,6 +99,25 @@ function create_supply_single() {
 
 function get_total_orders( $filter_zero, $history = false, $filter_stock ) {
 
+	print "<style>
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+}
+
+td, th {
+    border: 1px solid #dddddd;
+    text-align: right;
+    padding: 8px;
+}
+
+tr:nth-child(even) {
+    background-color: #dddddd;
+}
+</style>";
+
+
+
 	// $time = debug_time("start", 0);
 	$needed_products = array();
 
@@ -142,7 +161,6 @@ function get_total_orders( $filter_zero, $history = false, $filter_stock ) {
 
 function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero, $filter_stock, $history ) {
 //	$time = debug_time("start supplier", 0);
-	print gui_header( 2, get_supplier_name( $supplier_id ) );
 
 	$data_lines = array();
 
@@ -229,65 +247,51 @@ function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero
 
 	}
 
+	if ( count( $data_lines ) ) {
+		print gui_header( 2, get_supplier_name( $supplier_id ) );
 
-	$data = "<style>
-table {
-    font-family: arial, sans-serif;
-    border-collapse: collapse;
-}
-
-td, th {
-    border: 1px solid #dddddd;
-    text-align: right;
-    padding: 8px;
-}
-
-tr:nth-child(even) {
-    background-color: #dddddd;
-}
-</style>";
-	$data .= "<table>"; // This tags change to tbody somehow.
-	$data .= "<tr>";
-	$data .= "<td>בחר</td>";
-	$data .= "<td>פריט</td>";
-	$data .= "<td>כמות נדרשת</td>";
-	$data .= "<td>יחידות נוספות</td>";
+		$data = "<table>"; // This tags change to tbody somehow.
+		$data .= "<tr>";
+		$data .= "<td>בחר</td>";
+		$data .= "<td>פריט</td>";
+		$data .= "<td>כמות נדרשת</td>";
+		$data .= "<td>יחידות נוספות</td>";
 //	$data .= "<td>כמות אספקות</td>";
-	$data .= "<td>כמות במלאי</td>";
-	$data .= "<td>כמות להזמין</td>";
-	$data .= "<td>ספק</td>";
-	$data .= "<td>לקוחות</td>";
+		$data .= "<td>כמות במלאי</td>";
+		$data .= "<td>כמות להזמין</td>";
+		$data .= "<td>ספק</td>";
+		$data .= "<td>לקוחות</td>";
 //	$data .= "<td>מחיר ללקוח</td>";
 //	if ( MultiSite::LocalSiteID() == 1 ) {
 //		$data .= "<td>מחיר קניה</td>";
 //		$data .= "<td>סהכ מרווח</td>";
 //	}
-	$data .= "</tr>";
+		$data .= "</tr>";
 
-	// print "sort: " . date( "h:i:sa" ) . "<br/>";
+		// print "sort: " . date( "h:i:sa" ) . "<br/>";
 
-	sort( $data_lines );
+		sort( $data_lines );
 
-	for ( $i = 0; $i < count( $data_lines ); $i ++ ) {
-		$line = $data_lines[ $i ][1];
-		$data .= trim( $line );
-	}
+		for ( $i = 0; $i < count( $data_lines ); $i ++ ) {
+			$line = $data_lines[ $i ][1];
+			$data .= trim( $line );
+		}
 
-	$data = str_replace( "\r", "", $data );
+		$data = str_replace( "\r", "", $data );
 
-	if ( $data == "" ) {
-		$data = "\n(0) Records Found!\n";
-	}
-	global $total_buy;
-	global $total_sale;
-	$data .= gui_table( array( array( "", 'סה"כ', "", "", "", "", "", $total_buy, $total_sale ) ) );
+		if ( $data == "" ) {
+			$data = "\n(0) Records Found!\n";
+		}
+		global $total_buy;
+		global $total_sale;
+		$data .= gui_table( array( array( "", 'סה"כ', "", "", "", "", "", $total_buy, $total_sale ) ) );
 
-	$data .= "</table>";
+		$data .= "</table>";
 
 //	print "print: " . date( "h:i:sa" ) . "<br/>";
 //
-	print "$data";
-
+		print "$data";
+	}
 //    prof_print();
 }
 

@@ -29,7 +29,8 @@ $header_text = "משימות פעילות";
 // transform value
 $trans = [];
 //$trans["task_template"] = "get_task_link";
-$trans["url"] = "show_zone_names";
+$trans["url"]        = "show_zone_names";
+$trans["project_id"] = "get_project_name";
 
 $page_actions = array(
 	array( "רענן", "create.php?verbose=1" ),

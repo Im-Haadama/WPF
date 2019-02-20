@@ -151,8 +151,8 @@ fwrite( $get_all, "function delete_item()
 
 fwrite( $get_all, "</script></header><body>" );
 
-fwrite( $get_all, "
-<?php" );
+//fwrite( $get_all, "
+//<?php" );
 
 $sql = "describe " . $table_name;
 
@@ -183,7 +183,7 @@ if ( ! isset( $order ) ) {
 	$order = "";
 }
 
-fwrite( $get_all, "
+fwrite( $get_all, "<?php 
 \$sql = \"" . $remote_sql . "\";" );
 
 if ( isset( $preset_query ) ) {

@@ -416,10 +416,11 @@ function delivery_table_header( $edit = false ) {
 }
 
 function print_task( $id ) {
+	$m      = ImMultiSite::getInstance();
 	$fields = array();
 	array_push( $fields, "משימות" );
 
-	$ref = gui_hyperlink( $id, "../tasklist/c-get-tasklist.php?id=" . $id );
+	$ref = gui_hyperlink( $id, $m->LocalSiteTools() . "/tasklist/c-get-tasklist.php?id=" . $id );
 
 	array_push( $fields, $ref );
 
