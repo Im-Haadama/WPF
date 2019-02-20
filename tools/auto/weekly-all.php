@@ -17,20 +17,10 @@ require_once( ROOT_DIR . "/tools/im_tools.php" );
 require_once( ROOT_DIR . "/niver/gui/inputs.php" );
 require_once( ROOT_DIR . "/tools/supplies/Supply.php" );
 
-print gui_header( 1, "Handling auto orders" );
-auto_mail();
+print gui_header( 1, "Handling local operations" );
+auto_local();
 
-print gui_header( 1, "Handling auto supply" );
-auto_supply();
-
-print gui_header( 1, "Creating tasks from templates into tasklist" );
-require_once( "../tasklist/create.php" );
-
-print "done";
-return;
-
-function auto_supply() {
-	//	Run once a week, but considered daily because each supplier has it's day.
+function auto_local() {
 	$sql = "SELECT id FROM im_suppliers WHERE  auto_order_day = " . date( "w" );
 
 	// print $sql;

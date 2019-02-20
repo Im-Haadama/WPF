@@ -143,7 +143,7 @@ if ( isset( $_GET["operation"] ) ) {
 
 		case "delete_lines":
 			my_log( "delete lines" );
-			$params = explode( ',', $_GET["params"] );
+			$params = get_param_array( "params" );
 			delete_supply_lines( $params );
 			break;
 

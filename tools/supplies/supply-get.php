@@ -207,6 +207,12 @@ if ( ! $send ) {
         xmlhttp.send();
 
     }
+    function del_line(supply_line_id) {
+        var btn = document.getElementById("del_" + supply_line_id);
+        btn.parentElement.parentElement.style.display = 'none';
+        execute_url("supplies-post.php?operation=delete_lines&params=" + supply_line_id);
+    }
+
     function deleteItems() {
         var table = document.getElementById('del_table');
 

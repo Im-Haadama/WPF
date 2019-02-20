@@ -183,9 +183,8 @@ function create_tasks( $freqs, $verbose = false ) {
 //			continue;
 //		}
 
-		//	 Todo: Run in the background
 		$sql    = "SELECT id, task_description, task_url, project_id, repeat_freq, repeat_freq_numbers, condition_query, priority " . "
-		 FROM im_task_templates " .
+   		 FROM im_task_templates " .
 		          " where repeat_freq = '" . $freq . "'";
 		$result = sql_query( $sql );
 

@@ -28,3 +28,4 @@ print $m->Run( "auto/weekly-master.php", $master );
 // Now sync to slaves.
 print $m->GetAll( "multi-site/sync-from-master.php" );
 
+print $m->GetAll( "auto/weekly.php" );

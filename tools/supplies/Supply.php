@@ -297,9 +297,7 @@ class Supply {
 		                                $this->ID );
 	}
 
-
 	// $internal - true = for our usage. false = for send to supplier.
-
 	function HtmlLines( $internal, $edit = true ) {
 		$data_lines = array();
 		my_log( __FILE__, "id = " . $this->ID . " internal = " . $internal );
@@ -315,6 +313,8 @@ class Supply {
 		$data .= "<td>מידה</td><td>מחיר</td><td>סהכ";
 
 		if ( $internal ) {
+			$data .= gui_cell( "פעולה" );
+			$data .= gui_cell( "מחיר מכירה" );
 			$data .= "<td>מחיר מכירה</td>";
 		}
 
@@ -388,6 +388,7 @@ class Supply {
 				$sell_price = get_price( $prod_id );
 				$line       .= "<td>" . sprintf( '%0.2f', $sell_price ) . "</td>";
 				$line       .= "<td>" . orders_per_item( $prod_id, 1, true ) . "</td>";
+				$line       .= gui_cell( gui_button( "del_" . $line_id, 'del_line(' . $line_id . ')"', "מחק" ) );
 			}
 			$line  .= "</tr>";
 			$terms = get_the_terms( $prod_id, 'product_cat' );
@@ -570,7 +571,6 @@ function supply_delete_line( $line_id ) {
 	$sql = 'UPDATE im_supplies_lines SET status = 9 WHERE id = ' . $line_id;
 
 	sql_query( $sql );
-
 }
 
 function supply_update_line( $line_id, $q ) {
@@ -704,6 +704,7 @@ function delete_supply_lines( $params ) {
 		$line_id = $params[ $pos ];
 		my_log( "delete supply line" . $line_id );
 		supply_delete_line( $line_id );
+		print "deleted " . $line_id . "<br/>";
 	}
 }
 
