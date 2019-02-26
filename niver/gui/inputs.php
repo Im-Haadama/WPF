@@ -259,6 +259,13 @@ function gui_select_datalist( $id, $name, $values, $events, $selected = null, $i
 		}
 		$value .= $row[ $name ];
 		$data  .= "<option value=\"" . $value . "\"";
+		$x     = "";
+		foreach ( $row as $key => $data_value ) {
+			if ( $key != $id and $key != $name ) {
+				$data .= "data-" . $key . '="' . $data_value . '" ';
+			}
+		}
+		// print $x . "<br/>";
 		$data  .= ">";
 		// $data .= $row[ $name ] . "</option>";
 	}
@@ -502,4 +509,14 @@ function gui_image( $url, $x = 0, $y = 0 ) {
 	$val .= ">";
 
 	return $val;
+}
+
+function gui_div( $id, $text = null ) {
+	$data = '<div id="' . $id . '">';
+	if ( $text ) {
+		$data .= $text;
+	}
+	$data .= "</div>";
+
+	return $data;
 }

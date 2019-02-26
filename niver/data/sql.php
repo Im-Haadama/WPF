@@ -16,6 +16,23 @@ function sql_insert_id() {
 	return mysqli_insert_id( $conn );
 }
 
+function sql_type( $table, $field ) {
+	static $type_cache = array();
+
+	if ( ! isset( $type_cache[ $table ][ $field ] ) ) {
+		$result               = sql_query( "describe $table" );
+		$type_cache[ $table ] = array();
+		while ( $row = sql_fetch_row( $result ) ) {
+			$f = $row[0];
+			$t = $row[1];
+//			print $f . " " . $t . "<br/>";
+			$type_cache[ $table ][ $f ] = $t;
+		}
+	}
+
+	return $type_cache[ $table ][ $field ];
+
+}
 function sql_query( $sql, $report_error = true ) {
 	global $conn;
 

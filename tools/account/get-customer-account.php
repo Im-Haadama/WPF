@@ -23,7 +23,7 @@ if ( ! empty( $user->roles ) && is_array( $user->roles ) ) {
 	}
 }
 if ( $manager and isset( $_GET["customer_id"] ) ) {
-	print header_text( false );
+	print header_text( false, true, true, array( "account.js" ) );
 	$customer_id = $_GET["customer_id"];
 	// print "id: " . $customer_id;
 
@@ -62,16 +62,6 @@ if ( ! $manager ) {
             }
             xmlhttp.open("GET", request, true);
             xmlhttp.send();
-        }
-
-        function disable_btn(id) {
-            var btn = document.getElementById(id);
-            if (btn) btn.disabled = true;
-        }
-
-        function enable_btn(id) {
-            var btn = document.getElementById(id);
-            if (btn) btn.disabled = false;
         }
 
         function updateDisplayTrans() {
@@ -320,65 +310,12 @@ if ( $manager ) {
         xmlhttp.open("GET", request, true);
         xmlhttp.send();
     }
-    function update_sum() {
-        var collection = document.getElementsByClassName("trans_checkbox");
-        var table = document.getElementById("transactions");
-        var total = 0;
-        var credit = parseFloat(get_value(document.getElementById("credit")));
-        if (isNaN(credit)) credit = 0;
-        var bank = parseFloat(get_value(document.getElementById("bank")));
-        if (isNaN(bank)) bank = 0;
-        var cash = parseFloat(get_value(document.getElementById("cash")));
-        if (isNaN(cash)) cash = 0;
-        var check = parseFloat(get_value(document.getElementById("check")));
-        if (isNaN(check)) check = 0;
-
-        var delivery_count = 0;
-        for (var i = 0; i < collection.length; i++) {
-            if (collection[i].checked) {
-                delivery_count++;
-                total += parseFloat(get_value_by_name("amo_" + collection[i].id.substring(3)));
-
-            }
-        }
-        total = Math.round(100 * total) / 100;
-        // alert(total);
-        if (total === 0) {
-            logging.innerHTML = "יש לבחור משלוחים להפקת המסמך";
-
-            document.getElementById('btn_invoice').disabled = true;
-            document.getElementById('btn_receipt').disabled = true;
-            //document.getElementById('btn_refund').disabled = true;
-        } else {
-            logging.innerHTML = "סכום השורות שנבחר " + total + "<br/>";
-            logging.innerHTML += " סך תקבולים " + (credit + bank + cash + check) + "<br/>";
-            var total_pay = (credit + bank + cash + check);
-            var cash_delta = Math.round(100 * (total_pay - total)) / 100;
-            change.innerHTML = cash_delta;
-
-            if ((total_pay > 0) && Math.abs(cash_delta) <= 400) {
-                document.getElementById('btn_invoice').disabled = true;
-                document.getElementById('btn_receipt').disabled = false;
-            } else {
-                document.getElementById('btn_invoice').disabled = false;
-                document.getElementById('btn_receipt').disabled = true;
-            }
-            // document.getElementById('btn_refund').disabled = (delivery_count != 1);
-        }
-    }
     //קבלה
     function create_receipt() {
-        document.getElementById('btn_receipt').disabled = true;
-        var collection = document.getElementsByClassName("trans_checkbox");
-        var table = document.getElementById("transactions");
-        var del_ids = new Array();
+        disable_btn('btn_receipt');
 
-        for (var i = 0; i < collection.length; i++) {
-            if (collection[i].checked) {
-                var del_id = collection[i].id.substring(3); // table.rows[i + 1].cells[6].firstChild.innerHTML;
-                del_ids.push(del_id);
-            }
-        }
+        var del_ids = account_get_del_ids();
+
         xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function () {
             // Wait to get query result

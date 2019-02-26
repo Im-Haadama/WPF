@@ -27,6 +27,8 @@ require_once( STORE_DIR . "/wp-config.php" );
 require_once( STORE_DIR . "/wp-load.php" );
 require_once( "wp.php" );
 
+date_default_timezone_set( "Asia/Jerusalem" );
+
 function order_get_shipping_fee( $order_id ) {
 	$order = wc_get_order( $order_id );
 	foreach ( $order->get_items( 'shipping' ) as $item_id => $shipping_item_obj ) {
@@ -278,9 +280,12 @@ function get_customer_by_email( $email ) {
 }
 
 function get_customer_email( $customer_id ) {
-	$user = get_user_by( "id", $customer_id );
+	if ( $customer_id > 0 ) {
+		$user = get_user_by( "id", $customer_id );
 
-	return $user->user_email;
+		return $user->user_email;
+	}
+	throw new Exception( "Bad customer_id " . __METHOD__ );
 }
 
 ?>

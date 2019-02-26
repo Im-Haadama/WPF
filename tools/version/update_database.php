@@ -26,7 +26,7 @@ switch ( $version ) {
 
 }
 print "done";
-die ( 1 );
+die ( 0 );
 
 function create_tasklist() {
 	sql_query( "CREATE TABLE `im_tasklist` (
@@ -60,6 +60,18 @@ function version17() {
 
     return _status;
   END;
+" );
+
+	sql_query( "create function client_displayname (user_id int) returns text 
+BEGIN
+    declare _user_id int;
+    declare _display varchar(50) CHARSET utf8;
+    select display_name into _display from wp_users
+    where id = user_id;
+
+    return _display;
+  END;
+
 " );
 }
 // Version 1.6

@@ -15,7 +15,19 @@ require_once( ROOT_DIR . '/im-config.php' );
 
 $im_table_suffix = "";
 $table_name      = $im_table_prefix . $obj_name . $im_table_suffix;
-$order           = "order by 2 ";
+$order           = "order by 3 desc ";
+$preset_query    = array(
+	// All
+	"",
+	// In without receipt
+	" in_amount > 0 and receipt is null ",
+	// Out without invoice number
+	" out_amount > 0 and business_id = 0 "
+);
+
+$actions = array(
+	array( "קבלה", "business-post.php?operation=create_invoice_bank&id=" ),
+);
 
 $useMultiSite = false;
 
@@ -23,7 +35,10 @@ $header_text = "מצב חשבון";
 
 $import_csv = true;
 
-$import_key = array( "account_id", "select_bank_account" );
+// 0 - the import key
+// 1 - the gui function.
+// 2 - dup function
+$import_key = array( "account_id", "select_bank_account", "bank_check_dup" );
 
 //$actions = array(
 //	array( "בטל", "task_templates.php?operation=cancel&id=" )

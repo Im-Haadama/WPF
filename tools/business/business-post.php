@@ -16,6 +16,11 @@ require_once( TOOLS_DIR . '/r-staff.php' );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( TOOLS_DIR . '/business/business.php' );
 require_once( TOOLS_DIR . '/invoice4u/invoice.php' );
+require_once( ROOT_DIR . '/niver/data/html2array.php' );
+require_once( ROOT_DIR . '/tools/multi-site/imMulti-site.php' );
+require_once( ROOT_DIR . '/tools/business/BankTransaction.php' );
+
+$multi_site = ImMultiSite::getInstance();
 
 function get_env( $var, $default ) {
 	if ( isset( $_GET[ $var ] ) ) {
@@ -80,7 +85,117 @@ if ( isset( $_GET["operation"] ) ) {
 				my_log( "show_control user $user" );
 			}
 			break;
+		case "create_invoice_bank":
+			require_once( ROOT_DIR . '/tools/business/BankTransaction.php' );
+			require_once( ROOT_DIR . '/tools/account/gui.php' );
+			print header_text( false, true, true,
+				array(
+					"business.js",
+					"/niver/gui/client_tools.js",
+					"/tools/account/account.js"
+				) );
+			$id = get_param( "id" );
+			print gui_header( 1, "הפקת חשבונית קבלה להעברה " );
+
+			$b = BankTransaction::createFromDB( $id );
+			print gui_header( 2, "פרטי העברה" );
+			print gui_table( array(
+					array( "תאריך", gui_div( "pay_date", $b->getDate() ) ),
+					array( "סכום", gui_div( "bank", $b->getInAmount() ) ),
+					array( "מזהה", gui_div( "bank_id", $id ) )
+				)
+			);
+
+			print gui_header( 2, "בחר לקוח" );
+			print gui_select_client_open_account();
+			print '<div id="logging"></div>';
+			print '<div id="transactions"></div>';
+			print gui_table( array(
+				array(
+					"תשלום",
+					gui_button( "btn_receipt", "create_receipt_from_bank()", "הפק חשבונית מס קבלה" )
+				),
+				array( "עודף", " <div id=\"change\"></div>" )
+			), "payment_table", true, true, $sums, "", "payment_table" );
+
+			break;
+		case "get_client_open_account":
+			$sql = "select " . $multi_site->LocalSiteId() . ", client_id, client_displayname(client_id), round(sum(transaction_amount),2) as total\n"
+			       . "from im_client_accounts\n"
+			       . "group by 2\n"
+			       . "having total > 1";
+
+			$data   = "<table>";
+			$result = sql_query( $sql );
+			while ( $row = sql_fetch_row( $result ) ) {
+				$data .= gui_row( $row );
+			}
+			$data .= "</table>";
+			print $data;
+			break;
+		case "get_trans":
+			$client_id = get_param( "client_id" );
+			$site_id   = get_param( "site_id" );
+			// $data .= $this->Run( $func, $site_id, $first, $debug );
+			print $multi_site->Run( "account/account-post.php?operation=get_open_trans&client_id=" . $client_id,
+				$site_id );
+			break;
+
+		case "create_receipt":
+			$bank_amount = get_param( "bank" );
+			$date        = get_param( "date" );
+			$change      = get_param( "change" );
+			$ids         = get_param( "ids" );
+			$site_id     = get_param( "site_id" );
+			$user_id     = get_param( "user_id" );
+			$bank_id     = get_param( "bank_id" );
+
+			business_create_multi_site_receipt( $bank_id, $bank_amount, $date, $change, $ids, $site_id, $user_id );
+			break;
 	}
+}
+
+function business_create_multi_site_receipt( $bank_id, $bank_amount, $date, $change, $ids, $site_id, $user_id ) {
+	// IDS sent as string.
+
+	// $msg = $bank . " " . $date . " " . $change . " " . comma_implode($ids) . " " . $site_id . " " . $user_id . "<br/>";
+	global $multi_site;
+
+//var request = "account-post.php?operation=create_receipt" +
+//              "&cash=" + cash +
+//              "&credit=" + credit +
+//              "&bank=" + bank +
+//              "&check=" + check +
+//              "&date=" + date +
+//              "&change=" + change.innerHTML +
+//              "&ids=" + del_ids.join() +
+//              "&user_id=" + <?php print $customer_id; <!--;-->
+
+	$receipt = $multi_site->Run( "account/account-post.php?operation=create_receipt&ids=" . $ids .
+	                             "&user_id=" . $user_id . "&bank=" . $bank_amount . "&date=" . $date .
+	                             "&change=" . $change, $site_id );
+
+	// TODO: to parse $id from $result;
+	$b = BankTransaction::createFromDB( $bank_id );
+	$b->Update( $user_id, $receipt );
+}
+
+function gui_select_client_open_account( $id = "client" ) {
+	global $multi_site;
+	$values  = html2array( $multi_site->GetAll( "business/business-post.php?operation=get_client_open_account" ) );
+	$open    = array();
+	$list_id = 0;
+	foreach ( $values as $value ) {
+		$new              = array();
+		$new["id"]        = $list_id ++;
+		$new["site_id"]   = $value[0];
+		$new["client_id"] = $value[1];
+		$new["name"]      = $value[2];
+		$new["balance"]   = $value[3];
+		array_push( $open, $new );
+	}
+
+	return gui_select_datalist( $id, "name", $open, 'onchange="client_selected()"', null, true );
 }
 
 function create_makolet( $month_year ) {
@@ -379,4 +494,3 @@ function show_control( $month_year ) {
 	print gui_table( $table, "", true, true, $sums );
 
 }
-

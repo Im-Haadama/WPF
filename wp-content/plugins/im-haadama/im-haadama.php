@@ -153,7 +153,7 @@ function im_account_status( $atts, $contents, $tag ) {
 	if ( strlen( $user->user_login ) > 2 ) {
 		require_once( TOOLS_DIR . "/account/account.php" );
 
-		return show_trans( $user->id, true, false );
+		return show_trans( $user->id, eTransview::from_last_zero );
 	} else {
 		return "עליך להתחבר תחילה";
 	}

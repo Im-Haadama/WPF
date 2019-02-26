@@ -74,6 +74,9 @@ function get_value(element) {
                     return get_value(e);
                 else // text
                     return element.innerHTML;
+            case "DIV":
+                return element.innerHTML;
+
         }
     else
         return element;
@@ -102,4 +105,14 @@ function execute_url(url, finish_action) {
     }
     xmlhttp3.open("GET", url, true);
     xmlhttp3.send();
+}
+
+function disable_btn(id) {
+    var btn = document.getElementById(id);
+    if (btn) btn.disabled = true;
+}
+
+function enable_btn(id) {
+    var btn = document.getElementById(id);
+    if (btn) btn.disabled = false;
 }

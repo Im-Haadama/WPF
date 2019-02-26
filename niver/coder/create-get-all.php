@@ -409,9 +409,30 @@ function write_import_csv( $obj_name, $import_csv, $import_key = null ) {
 	{
 		case "import_from_file":
 			require_once(ROOT_DIR . "/niver/data/Importer.php");
-			$file_name = $_FILES["fileToUpload"]["name"];
+			$file_name  = $_FILES["fileToUpload"]["tmp_name"];
+			print "Trying to import $file_name<br/>";
 			$I = new Importer();
-			$I->Import($file_name, "' . $table_name . '");
+			$fields = null;' );
+
+	if ( $import_key ) {
+		fwrite( $file, '$fields = array(); $fields[' . quote_text( $import_key[0] ) . "] = get_param(" . quote_text( $import_key[0] ) . ");" );
+	}
+
+	fwrite( $file, '
+	$count = 0;
+			try {
+				$result = $I->Import($file_name, "' . $table_name . '", $fields' );
+	if ( isset( $import_key[2] ) ) {
+		fwrite( $file, ", " . quote_text( $import_key[2] ) );
+	}
+	fwrite( $file, ');
+			} catch (Exception $e) {
+				print $e->getMessage();
+				return;
+			}
+			print $result[0] . " rows imported<br/>";
+			print $result[1] . " duplicate rows <br/>";
+			print $result[2] . " failed rows <br/>";
 			// import_from_file($obj_name, $import_key, $file_name);
 			break;
 	}' );
@@ -419,8 +440,9 @@ function write_import_csv( $obj_name, $import_csv, $import_key = null ) {
 
 	fwrite( $file, '?> <body onload="change_' . $obj_name . '()" >' );
 	if ( $import_key ) {
-		fwrite( $file, "<div>בחר ליבוא:</div><?php print " . $import_key[1] . "(); ?>" );
-		fwrite( $file, '<form name="upload_csv" id="upcsv" method="post" enctype="multipart/form-data">
+		fwrite( $file, "<div>בחר ליבוא:</div><?php print " . $import_key[1] . "(\"" . $import_key[0] . "\"); ?>" );
+	}
+	fwrite( $file, '<form name="upload_csv" id="upcsv" method="post" enctype="multipart/form-data">
 		                                                         טען מקובץ CSV
 	    <input type="file" name="fileToUpload" id="fileToUpload">
         <input type="submit" value="טען" name="submit">
@@ -429,16 +451,21 @@ function write_import_csv( $obj_name, $import_csv, $import_key = null ) {
     </form>
     <script>
             function change_' . $obj_name . '() {
-            var obj_name = get_value_by_name("select_' . $import_key[0] . '");
+            var obj_name = get_value_by_name("' . $import_key[0] . '");
             var upcsv = document.getElementById("upcsv");
-            upcsv.action = "' . $action_file . '?operation=import_from_file&' . $obj_name . '=" + obj_name;       
-        }
-</script>' );
-		fwrite( $file, "<?php " );
+            upcsv.action = "' . $action_file . '?operation=import_from_file' );
 
+	if ( $import_key ) {
+		fwrite( $file, '&' . $import_key[0] . '=" + obj_name' );
 	}
+
+	fwrite( $file, ';
+    }
+</script>' );
+	fwrite( $file, "<?php " );
 
 	fwrite( $file, "?>" );
 
 	fclose( $file);
 }
+

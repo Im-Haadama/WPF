@@ -54,19 +54,19 @@ switch ( $operation ) {
 		break;
 
 	case "create_receipt":
-
 		my_log( "create_receipt" );
-		$cash         = $_GET["cash"];
-		$bank         = $_GET["bank"];
-		$check        = $_GET["check"];
-		$credit       = $_GET["credit"];
-		$change       = $_GET["change"];
-		$delivery_ids = $_GET["ids"];
-		$user_id      = $_GET["user_id"];
-		$date         = $_GET["date"];
+		$cash         = get_param( "cash" );
+		$bank         = get_param( "bank" );
+		$check        = get_param( "check" );
+		$credit       = get_param( "credit" );
+		$change       = get_param( "change" );
+		$delivery_ids = get_param( "ids" );
+		$user_id      = get_param( "user_id", true );
+		$date         = get_param( "date" );
 		$ids          = explode( ',', $delivery_ids );
 
 		//print "create receipt<br/>";
+		// (NULL, '709.6', NULL, NULL, '205.44', '', '2019-01-22', Array)
 		create_receipt( $cash, $bank, $check, $credit, $change, $user_id, $date, $ids );
 		break;
 
@@ -147,6 +147,11 @@ switch ( $operation ) {
 		}
 		break;
 
+	case "get_open_trans":
+		$client_id = get_param( "client_id" );
+		print show_trans( $client_id, eTransview::not_paid );
+		break;
+
 }
 
 function create_invoice( $ids, $user_id ) {
@@ -174,6 +179,10 @@ function create_invoice( $ids, $user_id ) {
 }
 
 function create_receipt( $cash, $bank, $check, $credit, $change, $user_id, $date, $ids ) {
+
+	if ( ! ( $user_id > 0 ) ) {
+		throw  new Exception( "Bad customer id " . __CLASS__ );
+	}
 
 	$no_ids = true;
 	foreach ( $ids as $id ) {
@@ -368,7 +377,7 @@ function send_month_summary( $user_ids ) {
 function replace_shortcode( $text, $id ) {
 	$new_text = gui_header( 1, "מצב חשבון" );
 	$new_text .= "יתרה לתשלום " . client_balance( $id ) . "<br/>";
-	$new_text .= show_trans( $id, true, false ) . "<br/>";
+	$new_text .= show_trans( $id, eTransview::read_last ) . "<br/>";
 	$new_text = str_replace( "[im-haadama-account-summary]", $new_text, $text );
 
 	return str_replace( "[display_name]", get_customer_name( $id ), $new_text );
@@ -406,6 +415,9 @@ function invoice_create_document( $type, $ids, $customer_id, $date, $cash = 0, $
 	global $debug;
 	global $invoice_user;
 	global $invoice_password;
+
+	if ( ! ( $customer_id > 0 ) )
+		throw new Exception( "Bad customer id" . __CLASS__);
 
 	$invoice = new Invoice4u( $invoice_user, $invoice_password );
 

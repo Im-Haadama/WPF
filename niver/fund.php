@@ -46,11 +46,30 @@ function header_text( $print_logo = true, $close_header = true, $rtl = true, $sc
 		$text .= "</style>";
 	}
 	if ( $script_file ) {
-		$text .= '<script type="text/javascript" src="/niver/gui/client_tools.js"></script>';
+		// print "Debug: " . $script_file . '<br/>';
+		// var_dump($script_file);
+		do {
+			if ( $script_file === true ) {
+				$text .= '<script type="text/javascript" src="/niver/gui/client_tools.js"></script>';
+				break;
+			}
+			if ( is_string( $script_file ) ) {
+				$text .= '<script type="text/javascript" src="' . $script_file . '"></script>';
+				break;
+			}
+			if ( is_array( $script_file ) ) {
+				foreach ( $script_file as $file ) {
+					$text .= '<script type="text/javascript" src="' . $file . '"></script>';
+				}
+				break;
+			}
+			print $script_file . " not added<br/>";
+		} while ( 0 );
 	}
 	if ( $close_header ) {
 		$text .= '</head>';
 	}
+	print $text;
 
 	return $text;
 }

@@ -27,7 +27,6 @@ require_once( '../r-shop_manager.php' );
     <input type="submit" value="טען מחירון" name="submit">
 </form>
 
-<!--<button id="btn_diff" onclick="diff2last()">השווה בין שני מחירונים אחרונים של האורגני</button>-->
 <script>
     function change_supplier(id) {
         document.upload_csv.action = "pricelist-upload-supplier-prices.php?supplier_id=" + id.value;

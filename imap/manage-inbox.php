@@ -47,8 +47,11 @@ $text .= '</head>';
 print $text;
 
 for ( $i = 0; $i < count( $hosts ); $i ++ ) {
+//	print $i . "<br/>";
 	read_inbox( $hosts[ $i ], $users[ $i ], $passes[ $i ], $debug );
 }
+
+return;
 
 function read_inbox( $host, $user, $pass, $debug ) {
 
@@ -59,9 +62,10 @@ function read_inbox( $host, $user, $pass, $debug ) {
 
 	if ( ! $inbox ) {
 		print "can't open mailbox<br/>";
-		// print $host;
-		// print $user;
-		return;
+//		 print $host . "<br/>";
+//		 print $user . "<br/>";
+//		 print $pass . "<br/>";
+		return false;
 	}
 
 	$msg_cnt = imap_num_msg( $inbox );

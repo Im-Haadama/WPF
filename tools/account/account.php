@@ -96,7 +96,31 @@ function balance( $date, $client_id ) {
 
 }
 
-function show_trans( $customer_id, $from_last_zero = false, $checkbox = true, $top = 10000 ) {
+// View_type:
+class eTransview {
+	const
+		default = 0,
+		from_last_zero = 1,
+		not_paid = 2;
+}
+
+
+function show_trans( $customer_id, $view = eTransview::default ) {
+	// $from_last_zero = false, $checkbox = true, $top = 10000
+	$from_last_zero = false;
+	$checkbox       = true;
+	$top            = 100;
+	$not_paid       = false;
+	switch ( $view ) {
+		case eTransview::from_last_zero:
+			$from_last_zero = true;
+			break;
+		case eTransview::not_paid:
+			$not_paid = true;
+			break;
+
+
+	}
 	$sql = 'select date, transaction_amount, transaction_method, transaction_ref, id '
 	       . ' from im_client_accounts where client_id = ' . $customer_id . ' order by date desc ';
 
@@ -132,6 +156,15 @@ function show_trans( $customer_id, $from_last_zero = false, $checkbox = true, $t
 
 		$is_delivery = ( $type == "משלוח" );
 		$receipt     = sql_query_single_scalar( "SELECT payment_receipt FROM im_delivery WHERE id = " . $doc_id );
+
+		if ( $not_paid ) { // We want only the not paid deliveries.
+			if ( ! $is_delivery ) {
+				continue;
+			}
+			if ( $receipt ) {
+				continue;
+			}
+		}
 
 		// <input id=\"chk" . $doc_id . "\" class=\"trans_checkbox\" type=\"checkbox\">
 		if ( $checkbox ) {

@@ -403,7 +403,8 @@ function handle_line(
 	// Product with variations doesn't need a price
 	if ( $price > 0 or $has_variations ) {
 		$rc = $PL->AddOrUpdate( $price, $sale_price, $name, $item_code, $category, $id, $parent_id, $pic_path );
-		print gui_row( array( $name, $price, $rc ) );
+
+		// print gui_row( array( $name, $price, $rc ) );
 
 		return $rc;
 	}
