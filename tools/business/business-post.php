@@ -171,13 +171,17 @@ function business_create_multi_site_receipt( $bank_id, $bank_amount, $date, $cha
 //              "&ids=" + del_ids.join() +
 //              "&user_id=" + <?php print $customer_id; <!--;-->
 
-	$receipt = $multi_site->Run( "account/account-post.php?operation=create_receipt&ids=" . $ids .
-	                             "&user_id=" . $user_id . "&bank=" . $bank_amount . "&date=" . $date .
-	                             "&change=" . $change, $site_id );
+	$command = "account/account-post.php?operation=create_receipt&ids=" . $ids .
+	           "&user_id=" . $user_id . "&bank=" . $bank_amount . "&date=" . $date .
+	           "&change=" . $change;
+	$result  = $multi_site->Run( $command, $site_id );
+
+	$receipt = $result;
 
 	// TODO: to parse $id from $result;
 	$b = BankTransaction::createFromDB( $bank_id );
-	$b->Update( $user_id, $receipt );
+	$b->Update( $user_id, $receipt, $site_id );
+	print "חשבונית קבלה מספר " . $receipt . " נוצרה ";
 }
 
 function gui_select_client_open_account( $id = "client" ) {

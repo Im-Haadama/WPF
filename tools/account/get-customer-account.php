@@ -344,6 +344,15 @@ if ( $manager ) {
             "&change=" + change.innerHTML +
             "&ids=" + del_ids.join() +
             "&user_id=" + <?php print $customer_id; ?>;
+        var request = "account-post.php?operation=create_receipt" +
+            "&cash=" + cash +
+            "&credit=" + credit +
+            "&bank=" + bank +
+            "&check=" + check +
+            "&date=" + date +
+            "&change=" + change.innerHTML +
+            "&ids=" + del_ids.join() +
+            "&user_id=" + <?php print $customer_id; ?>;
 //        alert("fire");
         // alert(request);
         xmlhttp.open("GET", request, true);

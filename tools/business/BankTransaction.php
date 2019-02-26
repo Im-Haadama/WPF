@@ -53,9 +53,10 @@ class BankTransaction {
 		return $this->date;
 	}
 
-	public function Update( $customer_id, $reference ) {
+	public function Update( $customer_id, $receipt, $site_id ) {
 		$sql = "UPDATE im_bank SET customer_id = " . $customer_id .
-		       ", reference = " . $reference .
+		       ", receipt = " . $receipt .
+		       ", site_id = " . $site_id .
 		       " WHERE id = " . $this->id;
 
 		sql_query( $sql );

@@ -172,7 +172,7 @@ function create_invoice( $ids, $user_id ) {
 		$sql = "UPDATE im_delivery SET payment_receipt = " . $doc_id . " WHERE id IN (" . comma_implode( $ids ) . " ) ";
 		sql_query( $sql );
 
-		print "חשבונית מס מספר " . $doc_id . " נוצרה!" . "<br/>";
+		print $doc_id;
 	} else {
 		print "doc_id: " . $doc_id . "<br/>";
 	}
@@ -215,11 +215,11 @@ function create_receipt( $cash, $bank, $check, $credit, $change, $user_id, $date
 		$sql = "UPDATE im_delivery SET payment_receipt = " . $doc_id . " WHERE id IN (" . comma_implode( $ids ) . " ) ";
 		sql_query( $sql );
 
-		account_add_transaction( $user_id, date( "Y-m-d" ), $change - ( $cash + $bank + $credit + $check ), $doc_id, $pay_description );
+		account_add_transaction( $user_id, $date, $change - ( $cash + $bank + $credit + $check ), $doc_id, $pay_description );
 		if ( abs( $change ) > 0 ) {
-			account_add_transaction( $user_id, date( "Y-m-d" ), - $change, $doc_id, $change > 0 ? "עודף" : "יתרה" );
+			account_add_transaction( $user_id, $date, - $change, $doc_id, $change > 0 ? "עודף" : "יתרה" );
 		}
-		print "חשבונית מס קבלה מספר " . $doc_id . " נוצרה!" . "<br/>";
+		print $doc_id;
 	} else {
 		print "doc_id: " . $doc_id . "<br/>";
 	}
