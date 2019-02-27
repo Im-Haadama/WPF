@@ -23,8 +23,9 @@ auto_mail();
 print gui_header( 1, "Handling auto supply" );
 auto_supply();
 
+require_once( ROOT_DIR . "/tools/tasklist/Tasklist.php" );
 print gui_header( 1, "Creating tasks from templates into tasklist" );
-require_once( "../tasklist/create.php" );
+create_tasks();
 
 print "done";
 return;

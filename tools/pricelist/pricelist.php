@@ -300,13 +300,14 @@ class PriceList {
 		//( $rows, $id = null, $header = true, $footer = true, &$sum_fields = null, $style = null, $class = null, $show_fields = null,
 		// $links = null)
 		// $data .= "<tr>";
-		$data .= "<td>" . gui_button( "add", "add_item()", "הוסף" ) . "</td>";
-		$data .= gui_cell( gui_input( "product_code", "" ) );
-		$data .= gui_cell( gui_input( "product_name", "" ) );
-		$data .= gui_cell( "" );
-
-		$data .= gui_cell( gui_input( "price", "" ) );
 		$data .= "</tr>";
+
+		$data .= gui_table( array(
+			array( 'מק"ט - אופציונאלי', gui_input( "product_code", "" ) ),
+			array( "שם מוצר", gui_input( "product_name", "" ) ),
+			array( "מחיר", gui_input( "price", "" ) )
+		) );
+		$data .= "<td>" . gui_button( "add", "add_item()", "הוסף" ) . "</td>";
 
 		print $data;
 	}

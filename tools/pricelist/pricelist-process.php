@@ -180,10 +180,18 @@ function pricelist_remote_site_process( $supplier_id, &$results, $inc = false ) 
 		$PL->RemoveLines( 2 );
 	}
 
-	print_items( "פריטים חדשים", $results[ UpdateResult::NewPrice ] );
-	print_items( "פריטים התייקרו", $results[ UpdateResult::UpPrice ] );
-	print_items( "פריטים הוזלו", $results[ UpdateResult::DownPrice ] );
-	print_items( "פריטים יצאו", $results[ UpdateResult::DeletePrice ] );
+	if ( isset( $results[ UpdateResult::NewPrice ] ) ) {
+		print_items( "פריטים חדשים", $results[ UpdateResult::NewPrice ] );
+	}
+	if ( isset( $results[ UpdateResult::UpPrice ] ) ) {
+		print_items( "פריטים התייקרו", $results[ UpdateResult::UpPrice ] );
+	}
+	if ( isset( $results[ UpdateResult::DownPrice ] ) ) {
+		print_items( "פריטים הוזלו", $results[ UpdateResult::DownPrice ] );
+	}
+	if ( isset( $results[ UpdateResult::DeletePrice ] ) ) {
+		print_items( "פריטים יצאו", $results[ UpdateResult::DeletePrice ] );
+	}
 }
 
 function pricelist_process_name( $filename, $supplier_name, $add, $debug = false ) {

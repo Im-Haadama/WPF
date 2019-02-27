@@ -165,7 +165,19 @@ function tasklist_set_defaults( &$values ) {
 	$values["date"] = date( 'Y-m-d' );
 }
 
-function create_tasks( $freqs, $verbose = false ) {
+// if null = create for all freqs.
+function create_tasks( $freqs = null, $verbose = false ) {
+	do {
+		if ( ! $freqs ) {
+			$freqs = sql_query_array_scalar( "select DISTINCT repeat_freq from im_task_templates" );
+			break;
+		}
+		if ( ! is_array( $freqs ) ) {
+			$freqs = array( $freqs );
+			break;
+		}
+	} while ( 0 );
+
 	foreach ( $freqs as $freq ) {
 		//	print "v= " . $verbose . "<br/>";
 		$info_key = "tasklist_create_run_" . $freq;
