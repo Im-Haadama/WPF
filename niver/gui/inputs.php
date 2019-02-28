@@ -9,15 +9,6 @@
 // GUI elements
 // cast: function gui_<html code>($params) { return $text; }
 
-function sum_numbers( &$s, $a ) {
-//	var_dump($s); print "<br/>";
-//	var_dump($a); print "<br/>";
-	if ( is_numeric( $s ) and is_numeric( $a ) ) {
-		$s = round( $s + $a, 2 );
-//		 print "s=" . $s . "<br/>";
-	}
-}
-
 function gui_label( $id, $text ) {
 	return "<label id=" . $id . ">" . $text . "</label>";
 }

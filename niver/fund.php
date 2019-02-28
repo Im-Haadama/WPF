@@ -69,7 +69,8 @@ function header_text( $print_logo = true, $close_header = true, $rtl = true, $sc
 	if ( $close_header ) {
 		$text .= '</head>';
 	}
-	print $text;
+
+//	print $text;
 
 	return $text;
 }
@@ -200,4 +201,13 @@ function debug_time1( $str ) {
 		my_log( "$str $date:" . $date_array[0] . "<br>", "performance" );
 	}
 	$prev_time = $now;
+}
+
+function sum_numbers( &$s, $a ) {
+//	var_dump($s); print "<br/>";
+//	var_dump($a); print "<br/>";
+	if ( is_numeric( $s ) and is_numeric( $a ) ) {
+		$s = round( $s + $a, 2 );
+//		 print "s=" . $s . "<br/>";
+	}
 }

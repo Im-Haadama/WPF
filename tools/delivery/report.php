@@ -112,16 +112,6 @@ function client_report( $customer_id, $last = 5 ) {
 }
 
 // print_weekly_report( date( "Y-m-d", strtotime( "last sunday" ) ) );
-
-function sums( &$s, $a ) {
-//	var_dump($s); print "<br/>";
-//	var_dump($a); print "<br/>";
-	if ( is_numeric( $s ) and is_numeric( $a ) ) {
-		$s += $a;
-		// print $s . "<br/>";
-	}
-}
-
 function print_prod_report( $prod_id, $week = null, $user_id = null ) {
 	if ( $week ) {
 		print gui_header( 1, "מציג תוצאות לשבוע המתחיל ביום " . $week );

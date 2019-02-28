@@ -24,7 +24,8 @@ handle_role( "business", array(
 	"edit_pricelist",
 	"edit_suppliers",
 	"show_business_info",
-	"show_bank"
+	"show_bank",
+	"show_salary"
 ) );
 
 die ( 0 );

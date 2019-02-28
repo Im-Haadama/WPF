@@ -74,8 +74,8 @@ function is_volunteer( $uid ) {
 }
 
 // User id == 0: display all users.
-function print_transactions( $user_id = 0, $month = null, $year = null, $week = null, $project = null, &$sum = null ) {
-	$show_salary = current_user_can( "show_salary" );
+function print_transactions( $user_id = 0, $month = null, $year = null, $week = null, $project = null, &$sum = null, $show_salary = false ) {
+//	print "ss=" . $show_salary . "<br/>";
 
 	$counters  = array();
 	$volunteer = false;
@@ -257,7 +257,7 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 	$total_sal = round( $total_sal, 1 );
 
 	// print "total_sal " . $total_sal ;
-	if ( $show_salary and $total_sal > 0 and ( $month or $week ) and ! $volunteer ) {
+	if ( $show_salary and $total_sal > 0 and $month ) {
 		$data      .= "חישוב שכר ראשוני" . "<br/>";
 		$data      .= "שכר שעות " . $total_sal . "<br/>";
 		$data      .= "סהכ נסיעה " . $total_travel . "<br/>";
@@ -265,16 +265,17 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 		$total_sal += $total_travel;
 		$total_sal += $total_expense;
 		$data      .= "סהכ " . $total_sal . "<br/>";
-		$email     = get_customer_email( $user_id );
+		if ( $user_id ) {
+			$email = get_customer_email( $user_id );
+			$r     = "people/people-post.php?operation=get_balance_email&date=" .
+			         date( 'Y-m-j', strtotime( "last day of " . $year . "-" . $month ) ) . "&email=" . $email;
+			// print $r;
+			$b = strip_tags( ImMultiSite::sExecute( $r, 4 ) );
+			//print "basket: " . $b . "<br/>";
 
-		$r = "people/people-post.php?operation=get_balance_email&date=" .
-		     date( 'Y-m-j', strtotime( "last day of " . $year . "-" . $month ) ) . "&email=" . $email;
-		// print $r;
-		$b = strip_tags( ImMultiSite::sExecute( $r, 4 ) );
-		//print "basket: " . $b . "<br/>";
-
-		if ( $b > 0 ) {
-			$data .= " חיובי סלים " . round( $b, 2 );
+			if ( $b > 0 ) {
+				$data .= " חיובי סלים " . round( $b, 2 );
+			}
 		}
 	}
 

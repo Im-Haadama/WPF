@@ -5,9 +5,18 @@
  * Date: 08/06/17
  * Time: 18:02
  */
-require_once( "../r-shop_manager.php" );
-require_once( "../gui/sql_table.php" );
-require_once( "../people/people.php" );
+
+
+if ( ! defined( "ROOT_DIR" ) ) {
+	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
+}
+require_once( ROOT_DIR . '/tools/im_tools.php' );
+require_once( ROOT_DIR . '/niver/fund.php' );
+require_once( ROOT_DIR . '/tools/multi-site/imMulti-site.php' );
+//require_once( "../r-shop_manager.php" );
+require_once( ROOT_DIR . "/niver/gui/sql_table.php" );
+//require_once( "../people/people.php" );
+
 
 print header_text();
 
@@ -54,7 +63,7 @@ function print_weekly_report( $week ) {
 		FROM im_business_info WHERE " .
 	       " is_active = 1 AND week = '" . $week . "' AND amount > 0 ORDER BY 1";
 
-	$sums_in = array( 0, 0, array( 0, sums ), array( 0, sums ), 0 );
+	$sums_in = array( 0, 0, array( 0, sum_numbers ), array( 0, sum_numbers ), 0 );
 	$inputs  = table_content( $sql, true, true, array( "../delivery/get-delivery.php?id=%s" ), $sums_in );
 
 	$sql = "SELECT supply_from_business(id) as 'אספקה', id, ref as 'תעודת משלוח', date as תאריך, amount AS סכום, " .
@@ -62,8 +71,9 @@ function print_weekly_report( $week ) {
 	       " FROM im_business_info WHERE " .
 	       " week = '" . $week . "' AND is_active = 1 AND amount < 0 ORDER BY 3 DESC";
 
-	$sums_supplies = array( "", "", "", "", array( 0, sums ), "", "" );
-	$outputs       = table_content( $sql, true, true, array( "../supplies/supply-get.php?business_id=%s" ), $sums_supplies );
+	$sums_supplies = array( "", "", "", "", array( 0, sum_numbers ), "", "" );
+	$outputs       = table_content( $sql, true, true,
+		array( "../supplies/supply-get.php?business_id=%s" ), $sums_supplies );
 
 	$salary_text = ImMultiSite::sExecute( "people/report-trans.php?week=" . $week . "&project=3", 1 );
 	$dom         = im_str_get_html( $salary_text );
@@ -71,18 +81,29 @@ function print_weekly_report( $week ) {
 	foreach ( $dom->find( 'tr' ) as $row ) {
 		;
 	}
-	$salary = - $row->find( 'td', 11 )->plaintext;
-	$travel = - $row->find( 'td', 13 )->plaintext;
-	$extra  = - $row->find( 'td', 12 )->plaintext;
+	$salary_fruity = - (int) $row->find( 'td', 11 )->plaintext;
+	$travel        = - (int) $row->find( 'td', 13 )->plaintext;
+	$extra         = - (int) $row->find( 'td', 12 )->plaintext;
+
+	$salary_text .= ImMultiSite::sExecute( "people/report-trans.php?week=" . $week . "&project=11", 1 );
+	$dom         = im_str_get_html( $salary_text );
+	$row         = "";
+	foreach ( $dom->find( 'tr' ) as $row ) {
+		;
+	}
+	$salary_delivery = - (int) $row->find( 'td', 11 )->plaintext;
+	$travel          -= (int) $row->find( 'td', 13 )->plaintext;
+	$extra           -= (int) $row->find( 'td', 12 )->plaintext;
 
 	print gui_header( 1, "סיכום" );
-	$total_sums = array( "סיכום", array( 0, sums ) );
+	$total_sums = array( "סיכום", array( 0, sum_numbers ) );
 	print gui_table( array(
 		array( "סעיף", "סכום" ),
 		array( "תוצרת פרוטי", $sums_in[2][0] ),
 		array( "דמי משלוח פרוטי", $sums_in[3][0] ),
 		array( "גלם", $sums_supplies[4][0] ),
-		array( "שכר", $salary ),
+		array( "שכר אריזה", $salary_fruity ),
+		array( "שכר משלוחים", $salary_delivery ),
 		array( "הוצ' נסיעה", $travel ),
 		array( "הוצ עובדים נוספות", $extra)
 	), "totals", true, true, $total_sums );

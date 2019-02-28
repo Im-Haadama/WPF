@@ -8,7 +8,11 @@
 
 require_once( "../r-multisite.php" );
 require_once( "people.php" );
-$week = $_GET["week"];
+$week    = $_GET["week"];
+$project = get_param( "project" );
 
 // print $week;
-print print_transactions( 'owner', 0, 0, 0, $week );
+
+// print $week;
+$s = array();
+print print_transactions( 0, 0, 0, $week, $project, $s, true );
