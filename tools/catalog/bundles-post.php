@@ -5,10 +5,6 @@
  * Date: 16/07/15
  * Time: 16:00
  */
-
-//error_reporting( E_ALL );
-//ini_set( 'display_errors', 'on' );
-
 require_once( '../r-shop_manager.php' );
 require_once( '../catalog/bundles.php' );
 

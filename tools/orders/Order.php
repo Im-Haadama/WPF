@@ -1,8 +1,4 @@
 <?php
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
-
-
 /**
  * Created by PhpStorm.
  * User: agla
@@ -232,41 +228,6 @@ class Order {
 		return $result;
 	}
 
-	public function GetID() {
-		return $this->order_id;
-	}
-
-	public function OrderDate( $f = "%d/%m/%Y" ) {
-		$sql = "select DATE_FORMAT(post_date, '$f') from wp_posts where id = " . $this->order_id;
-
-		// print $sql;
-		return sql_query_single_scalar( $sql );
-	}
-
-	public function CustomerName() {
-		$user = get_user_by( "id", $this->getCustomerId() );
-		if ( $user ) {
-			return $user->user_firstname . " " . $user->user_lastname;
-		}
-
-		return "לא נבחר לקוח";
-	}
-
-	public function Missing() {
-		$needed = array();
-
-		$result = "";
-		$this->CalculateNeeded( $needed, $this->getCustomerId() );
-
-		// var_dump($needed); print "<br/>";
-		foreach ( $needed as $id => $p ) {
-			$result .= get_product_name( $id ) . " " . round( $p[0], 1 ) . "<br/>";
-			// if ($p[0]) $result .= "x" . $p[0] . "<br/>";
-		}
-
-		return $result;
-	}
-
 	public static function CalculateNeeded( &$needed_products, $user_id = 0 ) {
 		/// print "user id " . $user_id . "<br/>";
 		$debug_product = 0; // 141;
@@ -459,6 +420,41 @@ class Order {
 			$needed_products[ $prod_or_var ][ $unit_key ] += $qty;
 			//if ($key == 354) { print "array:"; var_dump($needed_products[$prod_or_var]); print "<br/>";}
 		}
+	}
+
+	public function GetID() {
+		return $this->order_id;
+	}
+
+	public function OrderDate( $f = "%d/%m/%Y" ) {
+		$sql = "select DATE_FORMAT(post_date, '$f') from wp_posts where id = " . $this->order_id;
+
+		// print $sql;
+		return sql_query_single_scalar( $sql );
+	}
+
+	public function CustomerName() {
+		$user = get_user_by( "id", $this->getCustomerId() );
+		if ( $user ) {
+			return $user->user_firstname . " " . $user->user_lastname;
+		}
+
+		return "לא נבחר לקוח";
+	}
+
+	public function Missing() {
+		$needed = array();
+
+		$result = "";
+		$this->CalculateNeeded( $needed, $this->getCustomerId() );
+
+		// var_dump($needed); print "<br/>";
+		foreach ( $needed as $id => $p ) {
+			$result .= get_product_name( $id ) . " " . round( $p[0], 1 ) . "<br/>";
+			// if ($p[0]) $result .= "x" . $p[0] . "<br/>";
+		}
+
+		return $result;
 	}
 
 	public function getItems() {

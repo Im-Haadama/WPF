@@ -100,6 +100,12 @@ class Tasklist {
 		// print $sql;
 		sql_query( $sql );
 	}
+
+	public function Postpone() {
+		$sql = "UPDATE im_tasklist set date = NOW() + INTERVAL 1 DAY\n" .
+		       " where id = " . $this->id;
+		sql_query( $sql );
+	}
 }
 
 require_once( ROOT_DIR . "/tools/people/people.php" );

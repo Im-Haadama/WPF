@@ -5,10 +5,6 @@
  * Date: 27/01/19
  * Time: 20:55
  */
-
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
-
 if ( ! defined( 'ROOT_DIR' ) ) {
 	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
 }
@@ -102,6 +98,7 @@ function auto_mail() {
 		$categ   = strtok( ":" );
 		print "day: " . $day . "<br/>";
 		print "categ: " . $categ . "<br/>";
+		$customer_type = customer_type( $client_id );
 
 		if ( $day == date( 'w' ) ) {
 			print "שולח...<br/>";
@@ -110,15 +107,15 @@ function auto_mail() {
 			           " להלן רשימת מוצרי פרוטי ";
 			do {
 				if ( $categ == 0 ) {
-					$mail = show_category_all( false, true );
+					$mail = show_category_all( false, true, false, false, $customer_type );
 					break;
 				}
 				if ( $categ == "f" ) {
-					$mail = show_category_all( false, true, true );
+					$mail = show_category_all( false, true, true, false, $customer_type );
 					break;
 				}
 				foreach ( explode( ",", $categ ) as $categ ) {
-					$mail .= show_category_by_id( $categ, false, true );
+					$mail .= show_category_by_id( $categ, false, true, $customer_type );
 				}
 			} while ( 0 );
 			$user_info = get_userdata( $client_id );

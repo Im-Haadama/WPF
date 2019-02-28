@@ -715,7 +715,7 @@ function total_order( $user_id ) {
 //	return 0;
 //}
 
-function show_category_all( $sale, $text, $fresh = false, $inv = false ) {
+function show_category_all( $sale, $text, $fresh = false, $inv = false, $customer_type = "regular" ) {
 //	print "inventory: " . $inventory . "<br/>";
 //	print "fresh: " . $fresh . "<br/>";
 	$result = "";
@@ -728,7 +728,7 @@ function show_category_all( $sale, $text, $fresh = false, $inv = false ) {
 	}
 	foreach ( $categs as $categ ) {
 //		print get_term($categ)->name . "<br/>";
-		$result .= show_category_by_id( $categ, $sale, $text, "regular", $inv );
+		$result .= show_category_by_id( $categ, $sale, $text, $customer_type, $inv );
 	}
 
 	return $result;

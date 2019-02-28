@@ -1,7 +1,4 @@
 <?php
-//error_reporting( E_ALL );
-//ini_set( 'display_errors', 1 );
-
 require( '../r-shop_manager.php' );
 print header_text( false );
 require_once( "account.php" );

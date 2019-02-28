@@ -5,9 +5,6 @@
  * Date: 31/08/17
  * Time: 22:51
  */
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
-
 if ( ! defined( 'STORE_DIR' ) ) {
 	define( 'STORE_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
 }

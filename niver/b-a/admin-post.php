@@ -7,8 +7,6 @@
  */
 
 define( 'STORE_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
 
 require_once( STORE_DIR . '/niver/gui/inputs.php' );
 require_once( STORE_DIR . "/niver/data/Imap.php" );

@@ -1,7 +1,4 @@
 <?php
-//error_reporting( E_ALL );
-//ini_set( 'display_errors', 'on' );
-
 require_once( "../im_tools.php" );
 require_once( "../multi-site/imMulti-site.php" );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );

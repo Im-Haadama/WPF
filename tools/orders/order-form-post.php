@@ -5,10 +5,6 @@
  * Date: 04/03/18
  * Time: 10:41
  */
-
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
-
 if ( ! defined( "TOOLS_DIR" ) ) {
 	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
 }

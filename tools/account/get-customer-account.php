@@ -1,7 +1,4 @@
 <?php
-error_reporting( E_ALL );
-ini_set( 'display_errors', 1 );
-
 // This page is open to clients.
 require_once( "account.php" );
 require_once( "../multi-site/imMulti-site.php" );

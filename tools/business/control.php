@@ -5,10 +5,6 @@
  * Date: 11/11/18
  * Time: 07:37
  */
-
-// error_reporting( E_ALL );
-// ini_set( 'display_errors', 'on' );
-
 require_once( "../im_tools.php" );
 include_once( "../r-shop_manager.php" );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );

@@ -40,7 +40,8 @@ $page_actions = array(
 $actions = array(
 	array( "התחל", "tasklist.php?operation=start&id=" ),
 	array( "בוצע", "tasklist.php?operation=end&id=" ),
-	array( "בטל", "tasklist.php?operation=cancel&id=" )
+	array( "בטל", "tasklist.php?operation=cancel&id=" ),
+	array( "דחה", "tasklist.php?operation=postpone&id=" )
 );
 
 $display_url                  = array();
@@ -52,7 +53,7 @@ $defaults         = [];
 $defaults["date"] = "date(\"m/d/y\")";
 
 // Fields to skip in horizontal
-$skip_in_horizontal = array();
+$skip_in_horizontal = array( "location_name", "location_address", "mission_id", "end_time", "preq" );
 
 $insert["project_id"] = "gui_select_project";
 $insert["mission_id"] = "gui_select_mission";

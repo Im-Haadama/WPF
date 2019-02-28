@@ -7,10 +7,6 @@
  */
 
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
-
-//error_reporting( E_ALL );
-//ini_set( 'display_errors', 'on' );
-
 require_once( STORE_DIR . "/tools/pricing.php" );
 function show_inventory_client() {
 	foreach ( array( 18, 19, 84 ) as $term_id ) {

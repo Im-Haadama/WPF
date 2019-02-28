@@ -5,10 +5,6 @@
  * Date: 27/10/18
  * Time: 18:44
  */
-
-// error_reporting( E_ALL );
-// ini_set( 'display_errors', 'on' );
-
 require_once( "../im_tools.php" );
 require_once( "../../niver/gui/inputs.php" );
 

@@ -1,7 +1,7 @@
 <?php
 // Display errors and messages only on develop server
 if ( ! isset( $_SERVER['SERVER_NAME'] ) or ( $_SERVER['SERVER_NAME'] == "127.0.0.1" ) ) {
-	// print "debug";
+//	 print "debug";
 	error_reporting( E_ALL );
 	ini_set( 'display_errors', 'on' );
 }

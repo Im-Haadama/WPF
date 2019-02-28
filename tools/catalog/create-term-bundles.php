@@ -5,8 +5,6 @@
  * Date: 22/01/18
  * Time: 23:56
  */
-
-error_reporting( E_ALL );
 require_once( '../r-shop_manager.php' );
 require_once( '../catalog/bundles.php' );
 

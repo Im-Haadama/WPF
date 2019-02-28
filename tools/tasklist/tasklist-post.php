@@ -62,6 +62,13 @@ switch ( $operation ) {
 		sql_query( $sql );
 		redirect_back();
 		break;
+	case "postpone":
+		$task_id = get_param( "id" );
+		$T       = new Tasklist( $task_id );
+		$T->Postpone();
+		redirect_back();
+		break;
+
 	case "check":
 		check_condition();
 		break;

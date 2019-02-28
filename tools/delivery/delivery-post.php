@@ -5,9 +5,6 @@
  * Date: 24/05/17
  * Time: 14:19
  */
-//error_reporting( E_ALL );
-//ini_set( 'display_errors', 'on' );
-
 require_once( "../im_tools.php" );
 require_once( '../pricelist/pricelist.php' );
 require_once( '../r-multisite.php' );

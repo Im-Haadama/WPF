@@ -1,8 +1,4 @@
 <?php
-
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
-
 if ( ! defined( "TOOLS_DIR" ) ) {
 	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
 }
@@ -15,8 +11,9 @@ require_once( TOOLS_DIR . "/orders/form.php" );
 require_once( TOOLS_DIR . "/orders/orders-common.php" );
 // print header_text();
 
-$text  = isset( $_GET["text"] );
-$fresh = isset( $_GET["fresh"] );
+$text    = isset( $_GET["text"] );
+$fresh   = isset( $_GET["fresh"] );
+$user_id = get_param( "user_id" );
 
 // print "text = " . $text;
 
@@ -199,10 +196,10 @@ print "<br/>";
 $categs = info_get( "form_categs" );
 if ( $categs ) {
 	foreach ( explode( ",", $categs ) as $categ ) {
-		print show_category_by_id( $categ, false, $text );
+		print show_category_by_id( $categ, false, $text, customer_type( $user_id ) );
 	}
 } else {
-	print show_category_all( false, $text, $fresh, true );
+	print show_category_all( false, $text, $fresh, true, customer_type( $user_id ) );
 }
 //show_category( "מארזי כמות מוזלים", true, $text );
 

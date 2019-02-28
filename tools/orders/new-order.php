@@ -5,9 +5,6 @@
  * Date: 31/05/18
  * Time: 17:29
  */
-
-// error_reporting( E_ALL );
-// ini_set( 'display_errors', 'on' );
 require_once( ROOT_DIR . "/niver/gui/inputs.php" );
 require_once( "../account/gui.php" );
 

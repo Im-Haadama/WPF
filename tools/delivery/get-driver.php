@@ -1,7 +1,4 @@
 <?php
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
-
 require_once( '../r-shop_manager.php' );
 // require_once( '../../wp-content/plugins/woocommerce-delivery-notes/woocommerce-delivery-notes.php' );
 require_once( '../multi-site/imMulti-site.php' );

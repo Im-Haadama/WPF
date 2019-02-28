@@ -5,9 +5,6 @@
  * Date: 06/10/18
  * Time: 11:17
  */
-
-//error_reporting( E_ALL );
-//ini_set( 'display_errors', 'on' );
 require_once( "../im_tools.php" );
 require_once( "../invoice4u/invoice.php" );
 require_once( "../orders/orders-common.php" );
