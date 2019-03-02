@@ -40,7 +40,10 @@ function reset_message(message) {
 function add_message(message) {
     var log = document.getElementById("log");
 
-    log.innerHTML += message;
+    if (log)
+        log.innerHTML += message;
+    else
+        alert(message);
     // alert(message);
 }
 

@@ -44,7 +44,12 @@ if ( isset( $_GET["operation"] ) ) {
 			$net_total     = get_param( "net_total" );
 			$is_invoice    = get_param( "is_invoice" );
 			$doc_type      = $is_invoice ? ImDocumentType::invoice : ImDocumentType::supply;
-			got_supply( $supply_id, $supply_total, $supply_number, $net_total, $doc_type );
+			$bid           = got_supply( $supply_id, $supply_total, $supply_number, $net_total, $doc_type );
+			if ( ! $bid ) {
+				print "fail";
+			} else {
+				print $bid;
+			}
 			break;
 
 		case "send":
@@ -65,7 +70,7 @@ if ( isset( $_GET["operation"] ) ) {
 			break;
 
 		case "create_supply":
-			print "create supply<br/>";
+			print "create supply ";
 
 			$date        = get_param( "date" );
 			$supplier_id = $_GET["supplier_id"];
@@ -87,11 +92,12 @@ if ( isset( $_GET["operation"] ) ) {
 					return false;
 				}
 			}
+			print $supply->getID();
 			$mission_id = get_param( "mission_id" );
 			if ( $mission_id ) {
 				$s->setMissionID( $mission_id );
 			}
-			print "done";
+			print " done";
 			break;
 
 		case "create_supplies":

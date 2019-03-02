@@ -23,7 +23,7 @@ function business_add_transaction(
 		die ( "no supplier" );
 	}
 
-	$fields = "part_id, date, week, amount, delivery_fee, ref, project_id, net_amount, document_type ";
+	$fields = "part_id, date, week, amount, delivery_fee, ref, project_id, net_total, document_type ";
 	$values = $part_id . ", \"" . $date . "\", " .
 	          "\"" . $sunday->format( "Y-m-d" ) .
 	          "\", " . ( $amount - $delivery_fee ) . ", " . $delivery_fee . ", '" . $ref . "', '" . $project . "', " .

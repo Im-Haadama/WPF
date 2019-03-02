@@ -272,7 +272,7 @@ if ( isset( $_GET["week"] ) ) {
             }
             if (line_number === 0) {
                 alert("יש לבחור מוצרים, כולל כמויות");
-                document.getElementById('add_item').disabled = false;
+                enable_btn('add_item');
 
                 return;
             }
@@ -290,8 +290,10 @@ if ( isset( $_GET["week"] ) ) {
                 // Wait to get delivery id.
                 if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {  // Request finished
                     add_message(xmlhttp.responseText);
+                    var id = xmlhttp.responseText.match(/\d+/)[0];
                     document.getElementById('add_item').disabled = false;
-                    if (xmlhttp.responseText.includes("done")) {
+                    if (id > 0) {
+                        window.location.href = "supply-get.php?id=" + id;
                         // location.reload();
                     }
                 }

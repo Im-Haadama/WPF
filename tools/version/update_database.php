@@ -15,6 +15,9 @@ require_once( ROOT_DIR . '/tools/im_tools_light.php' );
 $version = get_param( "version" );
 
 switch ( $version ) {
+	case "16":
+		version16();
+		break;
 	case "17":
 		version17();
 		break;
@@ -75,9 +78,12 @@ BEGIN
 " );
 }
 // Version 1.6
-//sql_query( "ALTER TABLE im_business_info
-//ADD net_total DOUBLE;
-//" );
+function version16() {
+
+	sql_query( "ALTER TABLE im_business_info
+ADD net_total DOUBLE;
+" );
+}
 //
 //sql_query( "ALTER TABLE im_delivery
 //ADD draft_reason VARCHAR(50);

@@ -27,7 +27,7 @@ if ( ! $year ) {
 print gui_hyperlink( "שנה קודמת", "pivot_test.php?year=" . ( $year - 1 ) );
 
 $t = new \Niver\PivotTable( "im_business_info", "EXTRACT(YEAR FROM DATE) = " . $year . " and document_type = 4 and is_active=1",
-	"EXTRACT(MONTH FROM DATE)", "part_id", "net_amount" );
+	"EXTRACT(MONTH FROM DATE)", "part_id", "net_total" );
 
 $trans            = array();
 $trans["part_id"] = 'get_customer_name';

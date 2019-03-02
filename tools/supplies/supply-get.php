@@ -256,11 +256,29 @@ if ( ! $send ) {
     }
 
     function got_supply() {
+        disable_btn("btn_got_supply");
         var supply_number = get_value(document.getElementById("supply_number"));
         var supply_total = get_value(document.getElementById("supply_total"));
         var net_total = get_value(document.getElementById("net_total"));
         var is_invoice = get_value(document.getElementById("is_invoice"));
 
+        if (!supply_number) {
+            alert("יש לרשום את מספר תעודת המשלוח");
+            enable_btn("btn_got_supply");
+            return;
+        }
+
+        if (!supply_total) {
+            alert("יש לרשום סכום תעודת המשלוח");
+            enable_btn("btn_got_supply");
+            return;
+        }
+
+        if (!net_total) {
+            alert("יש לרשום סכום תעודת המשלוח ללא מע\"מ");
+            enable_btn("btn_got_supply");
+            return;
+        }
 
         var request_url = "supplies-post.php?operation=got_supply&supply_id=<?php print $id; ?>" +
             "&supply_total=" + supply_total + "&supply_number=" + supply_number +
@@ -270,6 +288,11 @@ if ( ! $send ) {
         var request = new XMLHttpRequest();
         request.onreadystatechange = function () {
             if (request.readyState === 4 && request.status === 200) {
+                if (request.response.indexOf("fail") !== -1) {
+                    add_message("הפעולה נכשלה" + request.response);
+                    enable_btn("btn_got_supply");
+                    return;
+                }
                 // window.location = window.location;
                 update_display();
                 //     document.getElementById("logging").innerHTML += http_text;

@@ -53,7 +53,7 @@ function get_minimum_order() {
 	$zone1 = WC_Shipping_Zones::get_zone_matching_package( array(
 		'destination' => array(
 			'country'  => $country,
-//            'state'    => $state,
+			'state'    => '',
 			'postcode' => $postcode,
 		),
 	) );

@@ -666,13 +666,18 @@ function print_supplies_table( $ids, $internal ) {
 }
 
 function got_supply( $supply_id, $supply_total, $supply_number, $net_total, $document_type ) {
-	global $conn;
-
 	$id  = business_add_transaction( supply_get_supplier_id( $supply_id ), date( 'y-m-d' ), - $supply_total,
 		0, $supply_number, 1, - $net_total, $document_type );
 	$sql = "UPDATE im_supplies SET business_id = " . $id . " WHERE id = " . $supply_id;
-	mysqli_query( $conn, $sql );
-	mysqli_query( $conn, "UPDATE im_supplies SET status = " . SupplyStatus::Supplied . " WHERE id = " . $supply_id );
+	if ( ! sql_query( $sql ) ) {
+		return false;
+	}
+
+	if ( ! sql_query( "UPDATE im_supplies SET status = " . SupplyStatus::Supplied . " WHERE id = " . $supply_id ) ) {
+		return false;
+	}
+
+	return $id;
 }
 
 function supply_business_info( $supply_id ) {
