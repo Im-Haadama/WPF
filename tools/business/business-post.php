@@ -437,7 +437,9 @@ function calc_makolet( $year, $month ) {
 	$driver_array = array();
 
 	while ( $row = mysqli_fetch_row( $result ) ) {
+		$row[0] = gui_hyperlink( $row[0], "/tools/delivery/get-delivery.php?id=" . $row[0] );
 		if ( $row[6] == 0 ) {
+			print $row[0] . "<br/>";
 			$sql1   = "SELECT round(reduce_vat(line_price),2) FROM im_delivery_lines WHERE delivery_id = " . $row[0] . " AND product_name LIKE '%משלוח%'";
 			$row[6] = sql_query_single_scalar( $sql1 );
 			$row[7] = $row[4] - $row[5] - $row[6];
