@@ -27,6 +27,17 @@ require_once( TOOLS_DIR . '/im_tools.php' );
 
 require_once( "functions_im.php" );
 
+add_shortcode( 'im-page', 'im_page' );
+
+function im_page() {
+	$img_size = 50;
+	$data     = "XXX";
+	$data     .= gui_hyperlink( get_the_post_thumbnail( 4209, array( $img_size, $img_size ) ), "/how_to_use" );
+
+	return $data;
+	// [im-page]
+}
+
 add_shortcode( 'form-order', 'create_order_form' );
 
 function create_order_form( $atts, $contents, $tag ) {
