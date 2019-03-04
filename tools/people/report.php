@@ -10,7 +10,7 @@ require_once( '../im_tools.php' );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 ?>
 <header>
-    <script>7
+    <script>
         function update() {
 			<?php if ( get_current_user() == 'aglamaz' ) {
 			print 'show_all();';
@@ -55,5 +55,6 @@ print header_text(); ?>
 	?>
 </h1>
 <div id="report"></div>
+<?php print footer_text(); ?>
 </body>
 </html>

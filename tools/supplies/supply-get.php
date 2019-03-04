@@ -304,6 +304,7 @@ print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_missio
         var supply_total = get_value(document.getElementById("supply_total"));
         var net_amount = get_value(document.getElementById("net_amount"));
         var is_invoice = get_value(document.getElementById("is_invoice"));
+        var date = get_value_by_name("document_date");
 
         if (!supply_number) {
             alert("יש לרשום את מספר תעודת המשלוח");
@@ -327,6 +328,9 @@ print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_missio
             "&supply_total=" + supply_total + "&supply_number=" + supply_number +
             "&net_amount=" + net_amount +
             "&is_invoice=" + is_invoice;
+
+        if (date)
+            request_url = request_url + "$document_date=" + date;
 
         var request = new XMLHttpRequest();
         request.onreadystatechange = function () {
@@ -397,7 +401,8 @@ print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_missio
 			array( "חשבונית", $invoice_text ),
 			array( "מספר מסמך", gui_input( "supply_number", "" ) ),
 			array( "סכום כולל מעמ", gui_input( "supply_total", "" ) ),
-			array( "סכום ללא מעמ", gui_input( "net_amount", "" ) )
+			array( "סכום ללא מעמ", gui_input( "net_amount", "" ) ),
+			array( "תאריך", gui_input_date( "document_date", "" ) )
 		) );
 	// print gui_label("help", 'תיבת הסימון ליד "חשבונית" תשאר לא מסומנת במקרה של תעודת משלוח');
 	print "<br/>";

@@ -120,6 +120,8 @@ function show_all( $month ) {
 	// print $sql;
 	$result = sql_query( $sql);
 
+	$s = array();
+
 	while ( $row = mysqli_fetch_row( $result ) ) {
 		$u = $row[0];
 
@@ -127,7 +129,9 @@ function show_all( $month ) {
 			print gui_header( 1, get_user_name( $u ) );
 			print "כתובת מייל של העובד/ת: " . get_customer_email( $u ) . "<br/>";
 
-			print print_transactions( $u, $m, $y );
+//			print print_transactions( 0, $month, $year, null, null, $s, true  );
+
+			print print_transactions( $u, $m, $y, null, null, $s, true );
 		}
 	}
 }

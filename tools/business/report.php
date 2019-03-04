@@ -73,7 +73,7 @@ function print_weekly_report( $week ) {
 
 	$sums_supplies = array( "", "", "", "", array( 0, sum_numbers ), "", "" );
 	$outputs       = table_content( $sql, true, true,
-		array( "../supplies/supply-get.php?business_id=%s" ), $sums_supplies );
+		array( "../supplies/supply-get.php?id=%s" ), $sums_supplies );
 
 	$salary_text = ImMultiSite::sExecute( "people/report-trans.php?week=" . $week . "&project=3", 1 );
 	$dom         = im_str_get_html( $salary_text );

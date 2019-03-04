@@ -76,6 +76,7 @@ function is_volunteer( $uid ) {
 // User id == 0: display all users.
 function print_transactions( $user_id = 0, $month = null, $year = null, $week = null, $project = null, &$sum = null, $show_salary = false ) {
 //	print "ss=" . $show_salary . "<br/>";
+	// print "uid=" . $user_id . "<br/>";
 
 	$counters  = array();
 	$volunteer = false;
@@ -258,7 +259,7 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 
 	// print "total_sal " . $total_sal ;
 	if ( $show_salary and $total_sal > 0 and $month ) {
-		$data      .= "חישוב שכר ראשוני" . "<br/>";
+		$data      .= gui_header( 2, "חישוב שכר מקורב" ) . "<br/>";
 		$data      .= "שכר שעות " . $total_sal . "<br/>";
 		$data      .= "סהכ נסיעה " . $total_travel . "<br/>";
 		$data      .= "סהכ הוצאות " . $total_expense . "<br/>";

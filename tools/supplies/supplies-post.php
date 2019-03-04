@@ -41,7 +41,8 @@ if ( isset( $_GET["operation"] ) ) {
 			$net_amount    = get_param( "net_amount" );
 			$is_invoice    = get_param( "is_invoice" );
 			$doc_type      = $is_invoice ? ImDocumentType::invoice : ImDocumentType::supply;
-			$bid           = got_supply( $supply_id, $supply_total, $supply_number, $net_amount, $doc_type );
+			$document_date = get_param( "document_date" );
+			$bid           = got_supply( $supply_id, $supply_total, $supply_number, $net_amount, $doc_type, $document_date );
 			if ( ! $bid ) {
 				print "fail";
 			} else {

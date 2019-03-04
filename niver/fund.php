@@ -75,6 +75,12 @@ function header_text( $print_logo = true, $close_header = true, $rtl = true, $sc
 	return $text;
 }
 
+function footer_text() {
+	$text = gui_div( "footer", "Fresh store powered by Niver Dri Sol 2015-2019 Version 1.6.2. עם האדמה 2013", true );
+
+	return $text;
+}
+
 function get_param_array( $key ) {
 	if ( isset( $_GET[ $key ] ) ) {
 		$k = $_GET[ $key ];

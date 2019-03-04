@@ -502,8 +502,13 @@ function gui_image( $url, $x = 0, $y = 0 ) {
 	return $val;
 }
 
-function gui_div( $id, $text = null ) {
-	$data = '<div id="' . $id . '">';
+function gui_div( $id, $text = null, $center = false ) {
+	$data = '<div id="' . $id . '"';
+	if ( $center ) {
+		$data .= ' style="text-align:center" ';
+	}
+
+	$data .= '>';
 	if ( $text ) {
 		$data .= $text;
 	}
