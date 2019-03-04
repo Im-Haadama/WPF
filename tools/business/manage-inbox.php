@@ -43,7 +43,7 @@ if ( isset( $operation ) ) {
 			$supplier_id = get_param( "supplier_id" );
 			$date        = get_param( "date" );
 			$amount      = get_param( "amount" );
-			$net_total   = get_param( "net_total" );
+			$net_amount  = get_param( "net_amount" );
 			$ref         = get_param( "ref" );
 			$index       = get_param( "index" );
 
@@ -55,7 +55,7 @@ if ( isset( $operation ) ) {
 			// Move file to archive.
 
 			// Add the transation
-			business_add_transaction( $supplier_id, $date, $amount, 0, $ref, 0, $net_total, 4,
+			business_add_transaction( $supplier_id, $date, $amount, 0, $ref, 0, $net_amount, 4,
 				$attach_file );
 
 			// Move inbox to archive
@@ -94,7 +94,7 @@ if ( isset( $operation ) ) {
                 "&supplier_id=" + supplier_id +
                 "&date=" + date +
                 "&amount=" + tot +
-                "&net_total=" + net +
+                "&net_amount=" + net +
                 "&ref=" + ref;
 
             xmlhttp = new XMLHttpRequest();

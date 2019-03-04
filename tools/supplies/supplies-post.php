@@ -34,17 +34,14 @@ if ( isset( $_GET["operation"] ) ) {
 			supply_business_info( $supply_id );
 			break;
 
-//			                  "&net_total=" + supply_total +
-//			                  "&is_invoice=" + is_invoice;
-
 		case "got_supply":
 			$supply_id     = $_GET["supply_id"]; // מספר הספקה שלנו
 			$supply_total  = $_GET["supply_total"]; // סכום
 			$supply_number = $_GET["supply_number"]; // מספר תעודת משלוח
-			$net_total     = get_param( "net_total" );
+			$net_amount    = get_param( "net_amount" );
 			$is_invoice    = get_param( "is_invoice" );
 			$doc_type      = $is_invoice ? ImDocumentType::invoice : ImDocumentType::supply;
-			$bid           = got_supply( $supply_id, $supply_total, $supply_number, $net_total, $doc_type );
+			$bid           = got_supply( $supply_id, $supply_total, $supply_number, $net_amount, $doc_type );
 			if ( ! $bid ) {
 				print "fail";
 			} else {

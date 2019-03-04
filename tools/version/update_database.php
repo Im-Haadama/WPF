@@ -81,7 +81,7 @@ BEGIN
 function version16() {
 
 	sql_query( "ALTER TABLE im_business_info
-ADD net_total DOUBLE;
+ADD net_amount DOUBLE;
 " );
 }
 //

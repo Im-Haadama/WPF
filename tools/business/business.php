@@ -13,7 +13,7 @@ if ( ! defined( "ROOT_DIR" ) ) {
 require_once( ROOT_DIR . "/tools/im_tools.php" );
 
 function business_add_transaction(
-	$part_id, $date, $amount, $delivery_fee, $ref, $project, $net_total = 0,
+	$part_id, $date, $amount, $delivery_fee, $ref, $project, $net_amount = 0,
 	$document_type = ImDocumentType::delivery,
 	$document_file = null
 ) {
@@ -23,11 +23,11 @@ function business_add_transaction(
 		die ( "no supplier" );
 	}
 
-	$fields = "part_id, date, week, amount, delivery_fee, ref, project_id, net_total, document_type ";
+	$fields = "part_id, date, week, amount, delivery_fee, ref, project_id, net_amount, document_type ";
 	$values = $part_id . ", \"" . $date . "\", " .
 	          "\"" . $sunday->format( "Y-m-d" ) .
 	          "\", " . ( $amount - $delivery_fee ) . ", " . $delivery_fee . ", '" . $ref . "', '" . $project . "', " .
-	          $net_total . ", " . $document_type;
+	          $net_amount . ", " . $document_type;
 
 	if ( $document_file ) {
 		$fields .= ", invoice_file";
@@ -68,7 +68,7 @@ function business_logical_delete( $ids ) {
 }
 
 function business_open_ship( $part_id ) {
-	$sql = "select id, date, amount, net_total, ref " .
+	$sql = "select id, date, amount, net_amount, ref " .
 	       " from im_business_info " .
 	       " where part_id = " . $part_id .
 	       " and invoice is null " .

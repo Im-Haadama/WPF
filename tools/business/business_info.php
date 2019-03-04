@@ -17,7 +17,7 @@ require_once( ROOT_DIR . '/tools/people/people.php' );
 function business_supply_info( $bid ) {
 	global $conn;
 
-	$sql = "SELECT amount, ref, net_total FROM im_business_info WHERE id = " . $bid;
+	$sql = "SELECT amount, ref, net_amount FROM im_business_info WHERE id = " . $bid;
 
 	$result = sql_query_single( $sql );
 

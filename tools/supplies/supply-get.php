@@ -302,7 +302,7 @@ print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_missio
         disable_btn("btn_got_supply");
         var supply_number = get_value(document.getElementById("supply_number"));
         var supply_total = get_value(document.getElementById("supply_total"));
-        var net_total = get_value(document.getElementById("net_total"));
+        var net_amount = get_value(document.getElementById("net_amount"));
         var is_invoice = get_value(document.getElementById("is_invoice"));
 
         if (!supply_number) {
@@ -317,7 +317,7 @@ print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_missio
             return;
         }
 
-        if (!net_total) {
+        if (!net_amount) {
             alert("יש לרשום סכום תעודת המשלוח ללא מע\"מ");
             enable_btn("btn_got_supply");
             return;
@@ -325,7 +325,7 @@ print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_missio
 
         var request_url = "supplies-post.php?operation=got_supply&supply_id=<?php print $id; ?>" +
             "&supply_total=" + supply_total + "&supply_number=" + supply_number +
-            "&net_total=" + net_total +
+            "&net_amount=" + net_amount +
             "&is_invoice=" + is_invoice;
 
         var request = new XMLHttpRequest();
@@ -397,7 +397,7 @@ print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_missio
 			array( "חשבונית", $invoice_text ),
 			array( "מספר מסמך", gui_input( "supply_number", "" ) ),
 			array( "סכום כולל מעמ", gui_input( "supply_total", "" ) ),
-			array( "סכום ללא מעמ", gui_input( "net_total", "" ) )
+			array( "סכום ללא מעמ", gui_input( "net_amount", "" ) )
 		) );
 	// print gui_label("help", 'תיבת הסימון ליד "חשבונית" תשאר לא מסומנת במקרה של תעודת משלוח');
 	print "<br/>";

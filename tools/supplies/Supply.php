@@ -666,9 +666,9 @@ function print_supplies_table( $ids, $internal ) {
 //    print "</html>";
 }
 
-function got_supply( $supply_id, $supply_total, $supply_number, $net_total, $document_type ) {
+function got_supply( $supply_id, $supply_total, $supply_number, $net_amount, $document_type ) {
 	$id  = business_add_transaction( supply_get_supplier_id( $supply_id ), date( 'y-m-d' ), - $supply_total,
-		0, $supply_number, 1, - $net_total, $document_type );
+		0, $supply_number, 1, - $net_amount, $document_type );
 	$sql = "UPDATE im_supplies SET business_id = " . $id . " WHERE id = " . $supply_id;
 	if ( ! sql_query( $sql ) ) {
 		return false;
