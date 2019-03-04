@@ -120,6 +120,14 @@ if ( ! $send ) {
 ?>
 <br/>
 
+משימה
+<?php
+$mission_id = supply_get_mission_id( $id );
+print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_mission()\"" );
+
+?>
+
+<table id="items"></table>
 
 <div id="add_items">
 	<?php
@@ -172,7 +180,42 @@ if ( ! $send ) {
         xmlhttp.onreadystatechange = function () {
             // Wait to get query result
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {  // Request finished
-                supply.innerHTML = xmlhttp.response;
+                table = document.getElementById("items");
+                table.innerHTML = xmlhttp.response;
+                xmlhttp1 = new XMLHttpRequest();
+                var request1 = "supplies-post.php?operation=get_comment"
+                    + "&id=<?php print $id; ?>";
+
+                xmlhttp1.open("GET", request1, true);
+                xmlhttp1.onreadystatechange = function () {
+                    // Wait to get query result
+                    if (xmlhttp1.readyState === 4 && xmlhttp1.status === 200) {  // Request finished
+                        var comment = document.getElementById("comment");
+                        comment.innerHTML = xmlhttp1.response;
+                        xmlhttp2 = new XMLHttpRequest();
+                        var request2 = "supplies-post.php?operation=get_business"
+                            + "&supply_id=<?php print $id; ?>";
+
+                        xmlhttp2.open("GET", request2, true);
+                        xmlhttp2.onreadystatechange = function () {
+                            // Wait to get query result
+                            if (xmlhttp2.readyState === 4 && xmlhttp2.status === 200) {  // Request finished
+                                var arrival_info = xmlhttp2.response;
+                                if (arrival_info.length > 5) {
+                                    supply_document.innerHTML = arrival_info;
+                                    supply_arrived.hidden = true;
+                                    supply_document.hidden = false;
+                                } else {
+                                    supply_arrived.hidden = false;
+                                    supply_document.hidden = true;
+                                }
+                            }
+                        }
+                        xmlhttp2.send();
+
+                    }
+                }
+                xmlhttp1.send();
 
             }
         }
@@ -345,7 +388,6 @@ if ( ! $send ) {
 </style>
 
 <div id="supply_arrived">
-
 	<?php $invoice_text = '
     <div class="tooltip">' . gui_checkbox( "is_invoice", "" ) .
 	                      '<span class="tooltiptext">יש לסמן עבור חשבונית ולהשאיר לא מסומן עבור תעודת משלוח</span>

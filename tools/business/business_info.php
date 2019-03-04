@@ -17,11 +17,11 @@ require_once( ROOT_DIR . '/tools/people/people.php' );
 function business_supply_info( $bid ) {
 	global $conn;
 
-	$sql = "SELECT amount, ref FROM im_business_info WHERE id = " . $bid;
+	$sql = "SELECT amount, ref, net_total FROM im_business_info WHERE id = " . $bid;
 
 	$result = sql_query_single( $sql );
 
-	return "תעודת משלוח מספר " . $result[1] . " סכום " . $result[0];
+	return "תעודת משלוח מספר " . $result[1] . " סכום " . $result[0] . " (ללא מע\"מ " . $result[2] . ")";
 }
 
 function display_part_name( $part_id ) {

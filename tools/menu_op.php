@@ -144,6 +144,7 @@ add_command( $table, $row, $col, "edit_pricelist", "חשבוניות", "business
 add_command( $table, $row, $col, "edit_pricelist", "פרויקטים", "people/c-get-all-projects.php" );
 add_command( $table, $row, $col, "edit_pricelist", "תיבת דואר", "business/manage-inbox.php" );
 add_command( $table, $row, $col, "show_bank", "בנק", "business/c-get-all-bank.php" );
+add_command( $table, $row, $col, "show_bank", "ניתוח שבועי", "business/report.php" );
 
 while ( $row < $max_row ) {
 	$table[ $row ++ ][ $col ] = "";

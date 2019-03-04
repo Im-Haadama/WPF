@@ -25,7 +25,8 @@ handle_role( "business", array(
 	"edit_suppliers",
 	"show_business_info",
 	"show_bank",
-	"show_salary"
+	"show_salary",
+	"show_report"
 ) );
 
 die ( 0 );
