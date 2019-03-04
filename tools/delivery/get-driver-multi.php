@@ -88,6 +88,10 @@ if ( isset( $week ) ) {
 	$missions = sql_query_array_scalar( "SELECT id FROM im_missions WHERE date = curdate()" );
 }
 
+if ( ! count( $missions ) ) {
+	print "אין משימות להיום!";
+	die ( 1 );
+}
 print gui_header( 1, "מדפיס משימות " );
 foreach ( $missions as $mission ) {
 	print $mission . " " . get_mission_name( $mission ) . " ";
