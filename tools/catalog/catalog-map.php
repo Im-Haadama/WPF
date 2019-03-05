@@ -47,14 +47,14 @@ require_once( '../gui.php' );
             var map_ids = new Array();
             for (var i = 0; i < collection.length; i++) {
                 if (collection[i].checked) {
-                    var product_name = encodeURIComponent(get_value(table.rows[i + 1].cells[2].firstChild.data));
+                    // var product_name = encodeURIComponent(get_value(table.rows[i + 1].cells[2].firstChild.data));
                     var supplier_code = get_value(table.rows[i + 1].cells[3].firstChild);
                     var pricelist_id = collection[i].id.substr(3);
-                    var supplier_product_code = get_value(table.rows[i + 1].cells[1].firstChild);
-                    map_ids.push(product_name);
+                    // var supplier_product_code = get_value(table.rows[i + 1].cells[1].firstChild);
+                    // map_ids.push(product_name);
                     map_ids.push(supplier_code.data);
                     map_ids.push(pricelist_id);
-                    map_ids.push(supplier_product_code.data);
+                    // map_ids.push(supplier_product_code.data);
                     // Send every 10 products
                     if (map_ids.length > 40) {
                         xmlhttp = new XMLHttpRequest();

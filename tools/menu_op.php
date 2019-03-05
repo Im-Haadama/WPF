@@ -90,7 +90,7 @@ while ( $row < $max_row ) {
 $col ++;
 $row                      = 0;
 $table[ $row ++ ][ $col ] = gui_header( 2, "לקוחות" );
-add_command( $table, $row, $col, "edit_shop_orders", "הזנת תעודות משלוח", "orders/orders-get.php?order_type", "orders" );
+add_command( $table, $row, $col, "edit_shop_orders", "אריזה", "orders/orders-get.php?order_type", "orders" );
 add_command( $table, $row, $col, "edit_shop_orders", "מעקב תשלומים", "account/get-accounts-status.php", "doc_frame" );
 add_command( $table, $row, $col, "edit_shop_orders", "הוספת לקוח", "account/add-account.php", "doc_frame" );
 add_command( $table, $row, $col, "set_client_type", "ניהול לקוחות", "account/client-types.php", "doc_frame" );

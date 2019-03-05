@@ -91,6 +91,7 @@ print  "</h1> </center>";
 <div id="head_edit">
 
     <input type="checkbox" id="chk_internal" onclick='update_display();'>מסמך פנימי<br>
+    <input type="checkbox" id="chk_categ_group" onclick='update_display();'>קבץ לקטגוריות<br>
 
     <!--<button id="update_comment" onclick='update_comment();'>עדכן הערות-->
     <!--</button>-->
@@ -175,6 +176,9 @@ print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_missio
         var request = "supplies-post.php?operation=get_supply";
         request = request + "&id=<?php print $id; ?>";
         if (filter) request = request + "&internal=1";
+
+        var grouped_by_categ = get_value_by_name("chk_categ_group");
+        if (grouped_by_categ) request = request + "&categ_group=1";
 
         xmlhttp.open("GET", request, true);
         xmlhttp.onreadystatechange = function () {

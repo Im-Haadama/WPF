@@ -7,6 +7,7 @@
  * Time: 08:01
  */
 require_once( TOOLS_DIR . "/options.php" );
+require_once( ROOT_DIR . "/tools/supplies/Supply.php" );
 
 class Product {
 	private $id;
@@ -79,10 +80,10 @@ class Product {
 		// return $this->p->set_stock_quantity($q);
 	}
 
-	function getStock() {
+	function getStock( $arrived = false ) {
 		if ( $this->isFresh() ) {
 //			print "<br/> fresh " . $this -> q_in() . " " . $this->q_out() . " ";
-			$inv         = $this->q_in() - $this->q_out();
+			$inv         = $this->q_in( $arrived ) - $this->q_out();
 			$stock_delta = sql_query_single_scalar( "select meta_value " .
 			                                        " from wp_postmeta " .
 			                                        " where post_id = " . $this->id .
@@ -174,10 +175,25 @@ class Product {
 		return false;
 	}
 
-	private function q_in() {
+	private function q_in( $arrived = false ) {
 		$sql = "SELECT q_in FROM i_in WHERE product_id = " . $this->id;
 
 		$in = sql_query_single_scalar( $sql );
+
+		if ( $arrived ) {
+			// print "before: " . $in . "<br/>";
+			$sql1 = "SELECT
+					    sum(`l`.`quantity`)
+  						FROM (`im_supplies_lines` `l`
+    					JOIN `im_supplies` `s`)
+  			WHERE ((`l`.`status` < 8) AND (`s`.`status` IN (" . SupplyStatus::Sent . "," . SupplyStatus::NewSupply . ")) 
+  			
+  				AND (`s`.`id` = `l`.`supply_id`))
+  				AND l.product_id = " . $this->id;
+			$in   -= sql_query_single_scalar( $sql1 );
+			// print $sql1 . "<br/>";
+			// print "after: " . $in . "<br/>";
+		}
 
 		// Add Bundles
 		$sql    = "SELECT bundle_prod_id FROM im_bundles WHERE prod_id = " . $this->id;
@@ -188,6 +204,7 @@ class Product {
 				$in += $delta;
 			}
 		}
+
 
 		return round( $in, 1 );
 	}
@@ -207,6 +224,19 @@ class Product {
 		}
 
 		return round( $out, 1 );
+	}
+
+	function PendingSupplies() {
+		// $data = "";
+		$sql = "select l.supply_id, s.status \n" .
+		       "from im_supplies_lines l\n" .
+		       "join im_supplies s\n" .
+		       "where product_id = " . $this->id . "\n" .
+		       " and s.status in (" . SupplyStatus::Sent . "," . SupplyStatus::NewSupply . ")\n" .
+		       " and l.supply_id = s.id";
+
+		// print $sql;
+		return sql_query_array( $sql );
 	}
 
 	function getOrdered() {

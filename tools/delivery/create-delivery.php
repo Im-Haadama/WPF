@@ -90,7 +90,7 @@ if ( $id > 0 ) {
 	}
 	// var_dump($orders);
 
-	$d->PrintDeliveries( ImDocumentType::delivery, true );
+	$d->PrintDeliveries( ImDocumentType::delivery, ImDocumentOperation::create );
 	print "</form>";
 }
 

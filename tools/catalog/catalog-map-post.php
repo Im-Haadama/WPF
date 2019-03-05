@@ -63,10 +63,9 @@ switch ( $operation ) {
 	case "create_products":
 		$category_name = $_GET["category_name"];
 		my_log( "category: " . $category_name );
-		$map_triplets = $_GET["create_info"];
-		$ids          = explode( ',', $map_triplets );
+		$create_info = get_param_array( "create_info" );
 		//var_dump($ids);
-		Catalog::CreateProducts( $category_name, $ids );
+		Catalog::CreateProducts( $category_name, $create_info );
 		break;
 }
 

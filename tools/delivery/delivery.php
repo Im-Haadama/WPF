@@ -45,7 +45,8 @@ class DeliveryFields {
 		refund_line = 13,
 		buy_price = 14,
 		line_margin = 15,
-		max_fields = 16;
+		packing_info = 16,
+		max_fields = 17;
 }
 
 $delivery_fields_names = array(
@@ -65,6 +66,7 @@ $delivery_fields_names = array(
 	"ret",  // 13
 	"buy", //14
 	"mar", // 15
+	"pac" // 16
 );
 
 $header_fields = array(
@@ -83,7 +85,8 @@ $header_fields = array(
 	"כמות לזיכוי",
 	"סה\"כ זיכוי",
 	"מחיר עלות",
-	"סה\"כ מרווח שורה"
+	"סה\"כ מרווח שורה",
+	"הערות"
 );
 
 class ImDocumentType {
@@ -93,6 +96,7 @@ class ImDocumentType {
 		invoice = 4, // Supplier
 		supply = 5, // Supplier
 		ship = 6;  // Legacy
+
 }
 
 class ImDocumentOperation {
@@ -101,6 +105,7 @@ class ImDocumentOperation {
 		create = 1, // From order to delivery. Expand basket
 		show = 2,     // Load from db
 		edit = 3;     // Load and edit
+	// packing = 4;
 
 }
 
@@ -380,15 +385,18 @@ class delivery {
 
 		$expand_basket = false;
 
-		if ( $operation == ImDocumentOperation::create or $operation == ImDocumentOperation::collect ) {
-			$expand_basket = true;
-		}
-
-		// All fields:
 		$show_fields = array();
 		for ( $i = 0; $i < DeliveryFields::max_fields; $i ++ ) {
 			$show_fields[ $i ] = false;
 		}
+
+		if ( $operation == ImDocumentOperation::create or $operation == ImDocumentOperation::collect ) {
+			$expand_basket                               = true;
+			$show_fields[ DeliveryFields::packing_info ] = true;
+
+		}
+
+		// All fields:
 
 		$show_fields[ DeliveryFields::product_name ]  = true;
 		$show_fields[ DeliveryFields::order_q ]       = true;
@@ -536,7 +544,8 @@ class delivery {
 			$delivery_line                                  = $empty_array;
 			$delivery_line[ DeliveryFields::product_name ]  = "דמי משלוח";
 			$delivery_line[ DeliveryFields::delivery_q ]    = 1;
-			$delivery_line[ DeliveryFields::price ]         = $operation ? gui_input( "delivery", $del_price > 0 ? $del_price : "", "" ) : $del_price;
+			$delivery_line[ DeliveryFields::price ]         = $operation ?
+				gui_input( "delivery", $del_price > 0 ? $del_price : "", "", null, null, 5 ) : $del_price;
 			$delivery_line[ DeliveryFields::has_vat ]       = gui_checkbox( "hvt_del", "vat", true );
 			$delivery_line[ DeliveryFields::line_vat ]      = $del_vat;
 			$delivery_line[ DeliveryFields::delivery_line ] = $del_price;
@@ -694,9 +703,9 @@ class delivery {
 //				$quantity_ordered = "";
 //			}
 			$quantity_delivered = $row[4];
-			$price         = $row[5];
-			$delivery_line = $row[6];
-			$has_vat       = $row[7];
+			$price              = $row[5];
+			$delivery_line      = $row[6];
+			$has_vat            = $row[7];
 
 			if ( $quantity_delivered < ( 0.8 * $quantity_ordered ) or ( $unit_q > 0 and $quantity_delivered == 0 ) ) {
 				$line_color = "yellow";
@@ -726,7 +735,7 @@ class delivery {
 
 		// price
 		if ( $operation == ImDocumentOperation::create and $document_type == ImDocumentType::delivery ) {
-			$line[ DeliveryFields::price ] = gui_input( "", $price );
+			$line[ DeliveryFields::price ] = gui_input( "", $price, null, null, null, 5 );
 		} else {
 			$line[ DeliveryFields::price ] = $price;
 		}
@@ -747,9 +756,11 @@ class delivery {
 				// $line[DeliveryFields::order_line] = $order_line_total;
 				switch ( $operation ) {
 					case ImDocumentOperation::edit:
+					case ImDocumentOperation::create:
+
 						$line[ DeliveryFields::delivery_q ] = gui_input( "quantity" . $this->line_number,
 							( $quantity_delivered > 0 ) ? $quantity_delivered : "",
-							array( 'onkeypress="moveNextRow(' . $this->line_number . ')"' ) );
+							array( 'onkeypress="moveNextRow(' . $this->line_number . ')"' ), null, null, 5 );
 						break;
 					case ImDocumentOperation::collect:
 						break;
@@ -813,6 +824,27 @@ class delivery {
 		$sums = null;
 		if ( $line_color )
 			$style .= 'bgcolor="' . $line_color . '"';
+
+		// print $prod_id . " " . $P->getStock() . " " . $P->getStock(true). "<br/>";
+		if ( $P->getOrderedDetails() > 0.8 * $P->getStock( true ) ) {
+			$line[ DeliveryFields::packing_info ] = "מלאי: " . $P->getStock( true ) . ". הזמנות: " . $P->getOrderedDetails();
+			$pending                              = $P->PendingSupplies();
+			if ( $pending ) {
+				foreach ( $pending as $p ) {
+					if ( $p[1] == SupplyStatus::NewSupply ) {
+						$line[ DeliveryFields::packing_info ] .= "<br/>" . "יש לשלוח הספקה מספר " .
+						                                         gui_hyperlink( $p[0], "../supplies/supply-get.php?id=" . $p[0] ) . "!<br/>";
+					}
+
+					if ( $p[1] == SupplyStatus::Sent ) {
+						$line[ DeliveryFields::packing_info ] .= " הספקה מספר  " . gui_hyperlink( $p[0], "../supplies/supply-get.php?id=" . $p[0] ) . " בביצוע<br/>";
+					}
+				}
+			} else {
+				$line[ DeliveryFields::packing_info ] .= " חסר! ";
+			}
+			// " אספקות:" . ;
+		}
 
 		return gui_row( $line, $this->line_number, $show_fields, $sums, $delivery_fields_names, $style );
 	}

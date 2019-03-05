@@ -18,10 +18,10 @@ class Catalog {
 	static function CreateProducts( $category_name, $ids ) {
 		my_log( "Create_products. Category = " . $category_name );
 
-		for ( $pos = 0; $pos < count( $ids ); $pos += 4 ) {
+		for ( $pos = 0; $pos < count( $ids ); $pos += 2 ) {
 			// $product_name          = urldecode( $ids[ $pos ] );
-			$supplier_id           = $ids[ $pos + 1 ];
-			$pricelist_id          = $ids[ $pos + 2 ];
+			$supplier_id  = $ids[ $pos ];
+			$pricelist_id = $ids[ $pos + 1 ];
 			// $supplier_product_code = $ids[ $pos + 3 ];
 			// print $product_name . ", " . $supplier_id . ", " . $pricelist_id . ", " . $supplier_product_code . "<br/>";
 

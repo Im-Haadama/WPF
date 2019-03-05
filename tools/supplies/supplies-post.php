@@ -104,10 +104,11 @@ if ( isset( $_GET["operation"] ) ) {
 			break;
 
 		case "get_supply":
-			$supply_id = $_GET["id"];
-			$internal  = isset( $_GET["internal"] );
-			$Supply    = new Supply( $supply_id );
-			print $Supply->Html( $internal, true );
+			$supply_id   = $_GET["id"];
+			$internal    = isset( $_GET["internal"] );
+			$categ_group = get_param( "categ_group" );
+			$Supply      = new Supply( $supply_id );
+			print $Supply->Html( $internal, true, $categ_group );
 			break;
 
 		case "get_supply_lines":

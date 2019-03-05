@@ -54,6 +54,7 @@
         }
 
     </script>
+    XXXX
 	<?php
 	$user    = new WP_User( $user_ID );
 	$manager = false;
@@ -78,6 +79,8 @@
 	// define('__ROOT__', dirname(dirname(dirname(dirname(__FILE__)))));
 
 	// require( '../../../config.php');
+
+	print "YYYY";
 
 	if ( $manager ) {
 		$config = STORE_DIR . '/im-config.php';

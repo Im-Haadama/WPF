@@ -234,12 +234,12 @@ class Supply {
 		           " where id = " . $this->ID );
 	}
 
-	public function Html( $internal, $edit ) {
+	public function Html( $internal, $edit, $categ_group ) {
 		$data = "";
 
 		$data .= $this->HtmlHeader( $edit );
 		$data .= "<br/>";
-		$data .= $this->HtmlLines( $internal, $edit );
+		$data .= $this->HtmlLines( $internal, $edit, $categ_group );
 		$data .= "<br/>";
 
 		return $data;
@@ -299,7 +299,7 @@ class Supply {
 	}
 
 	// $internal - true = for our usage. false = for send to supplier.
-	function HtmlLines( $internal, $edit = true ) {
+	function HtmlLines( $internal, $edit = true, $categ_group = false ) {
 		$data_lines = array();
 		my_log( __FILE__, "id = " . $this->ID . " internal = " . $internal );
 		$sql = 'select product_id, quantity, id, units '
@@ -397,15 +397,19 @@ class Supply {
 			array_push( $data_lines, array( $terms[0]->name . "@" . $product_name, $line ) );
 		}
 
-		sort( $data_lines );
+		if ( $categ_group ) {
+			sort( $data_lines );
+		}
 
 		$term = "";
 
 		for ( $i = 0; $i < count( $data_lines ); $i ++ ) {
-			$line_term = strtok( $data_lines[ $i ][0], '@' );
-			if ( $line_term <> $term ) {
-				$term = $line_term;
-				$data .= gui_row( array( '', "<b>" . $term . "</b>", '', '', '', '', '' ) );
+			if ( $categ_group ) {
+				$line_term = strtok( $data_lines[ $i ][0], '@' );
+				if ( $line_term <> $term ) {
+					$term = $line_term;
+					$data .= gui_row( array( '', "<b>" . $term . "</b>", '', '', '', '', '' ) );
+				}
 			}
 			$line = $data_lines[ $i ][1];
 			$data .= trim( $line );

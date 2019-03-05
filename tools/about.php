@@ -16,6 +16,9 @@ function convert( $size ) {
 	return @round( $size / pow( 1024, ( $i = floor( log( $size, 1024 ) ) ) ), 2 ) . ' ' . $unit[ $i ];
 }
 
+echo '$_SERVER[\'SERVER_ADDR\'] = ' . $_SERVER['SERVER_ADDR'] . "<br/>";
+
+
 echo convert( memory_get_usage( true ) ); // 123 kb
 
 // print "memory usage: " . memory_get_usage() . "<br/>";
