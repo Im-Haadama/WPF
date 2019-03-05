@@ -157,7 +157,10 @@ fwrite( $get_all, "</script></header><body>" );
 $sql = "describe " . $table_name;
 
 $remote_sql = "select ";
-$result = mysqli_query( $conn, $sql ) or die ( "Sql error : " . mysqli_error( $conn ) . $sql );
+$result     = sql_query( $sql );
+if ( ! $result ) {
+	die( 1 );
+}
 $column_name = array();
 $column_idx  = 0;
 $field_list  = "";
@@ -204,7 +207,7 @@ foreach(\$_GET as \$key => \$value)
 	    }
 }
 
-\$sql = \$sql . \"" . $order . "\";
+\$sql = \$sql . \" " . $order . "\";
 
 print \"<table dir='rtl' border=\'1\' id='table_" . $obj_name . "'>\";
 print \"<tr>\";
@@ -231,7 +234,7 @@ if ( ! isset ( $single_url ) ) {
 fwrite( $get_all, "
 print \"</tr>\";
 \$seq = 1;
-\$result = mysqli_query(\$conn, \$sql);
+\$result = sql_query(\$sql);
 if (! \$result) { sql_error(\$conn); die(1); }
 if (\$debug) print \$sql;
 \$accum = null;" );

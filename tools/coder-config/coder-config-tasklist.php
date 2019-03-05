@@ -16,12 +16,23 @@ require_once( ROOT_DIR . '/tools/im_tools_light.php' );
 $table_suffix = "";
 $table_name   = $table_prefix . $obj_name . $table_suffix;
 $order        = "order by 12 desc, 6 desc, 2 ";
-$preset_query = array(
+
+$preset_basic_query = "(date(date) <= CURRENT_DATE or isnull(date)) and (status < 2) " .
+                      " and (not mission_id > 0) and task_active_time(id) " .
+                      " and (isnull(preq) or task_status(preq) >= 2) ";
+$preset_query       = array(
 	"",
-	"(date(date) <= CURRENT_DATE or isnull(date)) and (status < 2) " .
-	" and (not mission_id > 0) and task_active_time(id) " .
-	" and (isnull(preq) or task_status(preq) >= 2) "
+	$preset_basic_query,
+	$preset_basic_query . " and owner = 1",
+	$preset_basic_query . " and owner = 369",
 );
+
+foreach ( $preset_query as $q ) {
+	print $q . " <br/>";
+}
+
+$preset_title = array( "", "פעילים", "יעקב", "אלה" );
+
 $useMultiSite = false;
 
 $header_text = "משימות פעילות";
@@ -36,6 +47,9 @@ $page_actions = array(
 	array( "רענן", "create.php?verbose=1" ),
 	array( "תבניות", "c-get-all-task_templates.php" )
 );
+
+for ( $i = 0; $i < count( $preset_title ); $i ++ )
+	array_push( $page_actions, array( $preset_title[ $i ], "c-get-all-tasklist.php?preset=" . $i ));
 
 $actions = array(
 	array( "התחל", "tasklist.php?operation=start&id=" ),
@@ -58,5 +72,7 @@ $skip_in_horizontal = array( "location_name", "location_address", "mission_id", 
 $insert["project_id"] = "gui_select_project";
 $insert["mission_id"] = "gui_select_mission";
 $insert["preq"]       = "gui_select_task_related";
+$insert["owner"]      = "gui_select_worker";
+
 $insert_id["preq"]    = true;
 

@@ -232,7 +232,7 @@ function gui_select_table(
 	if ( $datalist ) {
 		return gui_select_datalist( $id, $name, $values, $events, $selected, $include_id, $id_key );
 	} else {
-		return gui_select( $id, $name, $values, $events, $selected );
+		return gui_select( $id, $name, $values, $events, $selected, $id_key );
 	}
 }
 
@@ -282,7 +282,7 @@ function gui_select_datalist( $id, $name, $values, $events, $selected = null, $i
 
 }
 
-function gui_select( $id, $name, $values, $events, $selected ) {
+function gui_select( $id, $name, $values, $events, $selected, $id_key = "id" ) {
 	$data = "<select id=\"" . $id . "\" ";
 	if ( $events ) {
 		$data .= $events;
@@ -291,8 +291,8 @@ function gui_select( $id, $name, $values, $events, $selected ) {
 	$data .= ">";
 
 	foreach ( $values as $row ) {
-		$data .= "<option value=\"" . $row["id"] . "\"";
-		if ( $selected and $selected == $row["id"] ) {
+		$data .= "<option value=\"" . $row[ $id_key ] . "\"";
+		if ( $selected and $selected == $row[ $id_key ] ) {
 			$data .= " selected ";
 		}
 		if ( is_array( $row ) ) {

@@ -502,10 +502,10 @@ function customer_type( $client_id ) {
 	return $key;
 }
 
-function gui_select_worker( $events ) {
-	return gui_select_table( "worker_select", "im_working", null, $events, "",
+function gui_select_worker( $id = null, $selected = null, $events = "" ) {
+	return gui_select_table( $id, "im_working", $selected, $events, "",
 		"client_displayname(worker_id)",
-		"where is_active=1", true, true, null, "worker_id" );
+		"where is_active=1", true, false, null, "worker_id" );
 }
 
 function valid_key( $key ) {

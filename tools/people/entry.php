@@ -146,7 +146,7 @@ print header_text(false, true, true);
 print gui_header( 1, "הזנת נתוני שכר" );
 
 $table = array();
-array_push( $table, array( "בחר עובד", gui_select_worker( "onchange=worker_changed()" ) ) );
+array_push( $table, array( "בחר עובד", gui_select_worker( null, "onchange=worker_changed()" ) ) );
 array_push( $table, ( array( "תאריך", gui_input_date( "date", date( 'Y-m-d' ) ) ) ) );
 array_push( $table, ( array(
 "משעה",
