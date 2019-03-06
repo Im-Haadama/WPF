@@ -6,6 +6,7 @@
  * Date: 19/06/16
  * Time: 17:42
  */
+
 define( 'IM_HAADAMA_PLUGIN', __FILE__ );
 
 define( 'IM_HAADAMA_PLUGIN_BASENAME', plugin_basename( IM_HAADAMA_PLUGIN ) );
@@ -239,16 +240,4 @@ function skyverge_add_custom_order_status_icon() {
 
     </style>
 	<?php
-}
-
-// WooCommerce Checkout Fields Hook
-add_filter( 'woocommerce_checkout_fields', 'custom_wc_checkout_fields' );
-// Change order comments placeholder and label, and set billing phone number to not required.
-function custom_wc_checkout_fields( $fields ) {
-	$fields['shipping']['billing_postcode']['label'] = 'PPPP';
-	$fields['shipping']['shipping_postcode']         = 'PPP';
-//	$fields['order']['order_comments']['placeholder'] = 'Enter your placeholder text here.';
-//	$fields['order']['order_comments']['label'] = 'Enter your label here.';
-//	$fields['billing']['billing_phone']['required'] = false;
-	return $fields;
 }

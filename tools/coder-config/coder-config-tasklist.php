@@ -67,7 +67,15 @@ $defaults         = [];
 $defaults["date"] = "date(\"m/d/y\")";
 
 // Fields to skip in horizontal
-$skip_in_horizontal = array( "location_name", "location_address", "mission_id", "end_time", "preq" );
+$skip_in_horizontal = array(
+	"location_name",
+	"location_address",
+	"mission_id",
+	"end_time",
+	"preq",
+	"status",
+	"ended"
+);
 
 $insert["project_id"] = "gui_select_project";
 $insert["mission_id"] = "gui_select_mission";

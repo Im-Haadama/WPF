@@ -12,6 +12,7 @@ require_once( ROOT_DIR . "/tools/orders/orders-common.php" );
 
 // Somehow functions_im.php doesn't apply.
 remove_filter( 'woocommerce_stock_amount', 'intval' );
+remove_filter( 'woocommerce_stock_amount', 'filter_woocommerce_stock_amount', 10, 1 );
 
 // Add a filter, that validates the quantity to be a float
 add_filter( 'woocommerce_stock_amount', 'floatval' );
@@ -37,6 +38,7 @@ class Order {
 	) {
 		$debug    = false;
 		$WC_Order = wc_create_order();
+
 		// var_dump($order);
 		$order_id = trim( str_replace( '#', '', $WC_Order->get_order_number() ) );
 		if ( $debug ) {

@@ -516,3 +516,28 @@ function gui_div( $id, $text = null, $center = false ) {
 
 	return $data;
 }
+
+// function gui_select_project( $id, $value, $events, $worker = null ) {
+
+function gui_select_repeat_time( $id, $value, $events ) {
+	$values       = array();
+	$line         = array();
+	$line["id"]   = 0;
+	$line["name"] = "בחר";
+	$line["data"] = null;
+	array_push( $values, $line );
+	$line["id"]   = 1;
+	$line["name"] = "לפי יום בשבוע";
+	$line["data"] = 'w';
+	array_push( $values, $line );
+	$line["id"]   = 2;
+	$line["name"] = "לפי יום בחודש";
+	$line["data"] = 'j';
+	array_push( $values, $line );
+	$line["id"]   = 3;
+	$line["name"] = "לפי יום בשנה";
+	$line["data"] = 'z';
+	array_push( $values, $line );
+
+	return gui_select( $id, "name", $values, $events, $value );
+}

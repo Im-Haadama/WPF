@@ -21,8 +21,6 @@ $order        = "order by 2 ";
 $useMultiSite = false;
 
 $header_text = "ניהול תבנית משימות";
-$header_text .= "<br/> j	Day of the month without leading zeros " .
-                "<br/> w	Numeric representation of the day of the week ";
 
 $actions = array(
 	array( "בטל", "task_templates.php?operation=cancel&id=" )
@@ -43,5 +41,6 @@ $defaults["date"] = "date(\"m/d/y\")";
 // Fields to skip in horizontal
 $skip_in_horizontal = array();
 
-$insert               = array();
-$insert["project_id"] = "gui_select_project";
+$insert                = array();
+$insert["project_id"]  = "gui_select_project";
+$insert["repeat_freq"] = "gui_select_worker";
