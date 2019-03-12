@@ -316,7 +316,7 @@ function add_activity( $user_id, $date, $start, $end, $project_id, $vol = true, 
 		account_add_transaction( $user_id, $date, $amount, 1, get_project_name( $project_id ) );
 	}
 	my_log( "before business" );
-	business_add_transaction( $user_id, $date, $amount * 1.1, 0, 0, get_project_name( $project_id ) );
+	business_add_transaction( $user_id, $date, $amount * 1.1, 0, 0, $project_id );
 	my_log( "end add_activity" );
 }
 
