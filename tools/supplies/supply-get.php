@@ -32,11 +32,29 @@ if ( isset( $_GET["business_id"] ) ) {
 	$id = $_GET["id"];
 }
 
+$s = new Supply( $id );
+
 ?>
 <script type="text/javascript" src="/niver/gui/client_tools.js"></script>
 <script type="text/javascript" src="supply.js"></script>
 
 <script>
+    function sendSupply() {
+        xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+            // Wait to get query result
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+            {
+                var http_text = xmlhttp.responseText.trim();
+                add_message(http_text);
+                updateDisplay();
+            }
+        }
+        var request = "supplies-post.php?operation=send&id=" + <? print $id; ?>;
+        xmlhttp.open("GET", request, true);
+        xmlhttp.send();
+    }
+
     function supply_pay() {
         var date = get_value_by_name("pay_date");
 
@@ -66,11 +84,9 @@ if ( isset( $_GET["business_id"] ) ) {
             if (request.readyState === 4 && request.status === 200) {
                 // window.location = window.location;
                 update_display();
-                //     document.getElementById("logging").innerHTML += http_text;
             }
         }
 
-        // document.getElementById("logging").innerHTML = request_url;
         request.open("GET", request_url, true);
         request.send();
     }
@@ -78,7 +94,7 @@ if ( isset( $_GET["business_id"] ) ) {
 </script>
 <body onload="update_display()">
 
-<div id="logging"></div>
+<div id="log"></div>
 <?php
 
 $send = isset( $_GET["send"] );
@@ -113,8 +129,9 @@ print gui_datalist( "products", "im_products", "post_title", true );
 if ( ! $send ) {
 	print '<div id="buttons">';
 	print '<button id="btn_print" onclick="printDeliveryNotes()">הדפס תעודה</button>';
-	print '<button id="btn_del" onclick="deleteItems()">מחק שורות</button>';
-	print '<button id="btn_update" onclick="updateItems()">עדכן שורות</button>';
+	if ( $s->getStatus() == 1 ) {
+		print gui_button( "btn_send", "sendSupply()", "שלח לספק" );
+	}
 	print '</div>';
 }
 
@@ -129,6 +146,8 @@ print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_missio
 ?>
 
 <table id="items"></table>
+<button id="btn_del" onclick="deleteItems()">מחק שורות</button>
+<button id="btn_update" onclick="updateItems()">עדכן שורות</button>
 
 <div id="add_items">
 	<?php
@@ -346,11 +365,9 @@ print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_missio
                 }
                 // window.location = window.location;
                 update_display();
-                //     document.getElementById("logging").innerHTML += http_text;
             }
         }
 
-        // document.getElementById("logging").innerHTML = request_url;
         request.open("GET", request_url, true);
         request.send();
         // alert (request_url);

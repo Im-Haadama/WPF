@@ -113,7 +113,8 @@ if ( $show_save_draft ) {
 
 ?>
 <button id="btn_add" onclick="addDelivery(0)">אשר תעודה</button>
-<button id="btn_addline" onclick="addLine()">הוסף שורה</button>
+<button id="btn_addline" onclick="addLine(0)">הוסף שורה</button>
+<button id="btn_addline" onclick="addLine(1)">מוצר לא באתר</button>
 <textarea id="logging" rows="2" cols="50"></textarea>
 
 </body>

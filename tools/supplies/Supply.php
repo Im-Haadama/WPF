@@ -234,7 +234,7 @@ class Supply {
 		           " where id = " . $this->ID );
 	}
 
-	public function Html( $internal, $edit, $categ_group ) {
+	public function Html( $internal, $edit, $categ_group = false ) {
 		$data = "";
 
 		$data .= $this->HtmlHeader( $edit );
@@ -299,7 +299,8 @@ class Supply {
 	}
 
 	// $internal - true = for our usage. false = for send to supplier.
-	function HtmlLines( $internal, $edit = true, $categ_group = false ) {
+	function HtmlLines( $internal, $edit = 1, $categ_group = false ) {
+		print "E=" . $edit . "<br/>";
 		$data_lines = array();
 		my_log( __FILE__, "id = " . $this->ID . " internal = " . $internal );
 		$sql = 'select product_id, quantity, id, units '
@@ -389,7 +390,9 @@ class Supply {
 				$sell_price = get_price( $prod_id );
 				$line       .= "<td>" . sprintf( '%0.2f', $sell_price ) . "</td>";
 				$line       .= "<td>" . orders_per_item( $prod_id, 1, true ) . "</td>";
-				$line       .= gui_cell( gui_button( "del_" . $line_id, 'del_line(' . $line_id . ')"', "מחק" ) );
+				if ( $edit ) {
+					$line .= gui_cell( gui_button( "del_" . $line_id, 'del_line(' . $line_id . ')"', "מחק" ) );
+				}
 			}
 			$line  .= "</tr>";
 			$terms = get_the_terms( $prod_id, 'product_cat' );

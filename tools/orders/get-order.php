@@ -120,15 +120,27 @@ if ( $manager and isset( $_GET["margin"] ) ) {
 
 print "</h2></center>";
 
-$delivery_id = get_delivery_id( $order_id );
-$for_edit    = ! ( $delivery_id > 0 );
+$for_edit = 1;
 
-if ( get_post_meta( $order_id, 'printed' ) )
+$delivery_id = get_delivery_id( $order_id );
+$printed     = get_post_meta( $order_id, 'printed' );
+
+if ( $delivery_id )
 	$for_edit = false;
+
+else if ( $printed ) {
+	$for_edit = 0;
+}
 
 $order = new Order( $order_id );
 
 print $order->infoBox( $for_edit );
+
+if ( $printed ) {
+	print "הזמנה הודפסה ולא ניתנת לעריכה<br/>";
+} else if ( $delivery_id ) {
+	print "הזמנה נארזה ולא ניתנת לעריכה";
+}
 
 $d = delivery::CreateFromOrder( $order_id );
 $d->PrintDeliveries( ImDocumentType::order, ImDocumentOperation::edit, $margin );

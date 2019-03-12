@@ -54,11 +54,10 @@ function inbox_files( $hostname, $mail_user, $password, $attach_folder, $folder_
 			$file = $message->SaveAttachment( $target );
 			//	print "file=" . $file ."<br/>";
 
-			$text = "";
 			if ( ! ( strlen( $file ) > 3 ) ) {
 				$text = "אין מסמך";
 			} else {
-				$text = gui_hyperlink( substr( basename( $file ), 0, 20 ), $url . '/' . $file );
+				$text = gui_hyperlink( substr( basename( $file ), 0, 20 ), $url . '/' . $file, "right" );
 			}
 			$row = array(
 				substr( $message->getSubject(), 0, 20 ),

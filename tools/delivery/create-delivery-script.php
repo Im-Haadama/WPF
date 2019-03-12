@@ -16,6 +16,7 @@ if ( $id > 0 ) {
 $O = new Order( $order_id );
 
 print gui_datalist( "items", "im_products", "post_title" );
+print gui_datalist( "items_with_draft", "im_products_draft", "post_title" );
 ?>
 
 <script>
@@ -77,7 +78,7 @@ print gui_datalist( "items", "im_products", "post_title" );
         }
     }
 
-    function addLine() {
+    function addLine(include_draft) {
         var table = document.getElementById('del_table');
 //        var hidden = [];
 //        for (var i = 0; i < table.rows.length; i++) {
@@ -92,7 +93,9 @@ print gui_datalist( "items", "im_products", "post_title" );
         var line_id = lines - 4;
         var row = table.insertRow(lines - 4);
 //        row.insertCell(0).style.visibility = false;              // 0 - select
-        row.insertCell(-1).innerHTML = "<input id=\"nam_" + line_id + "\" type=\"text\" list=\"items\" onchange=\"getPrice(" + line_id + ")\">";   // 1 - product name
+        var list = "items";
+        if (include_draft) list = "items_with_draft";
+        row.insertCell(-1).innerHTML = "<input id=\"nam_" + line_id + "\" type=\"text\" list=\"" + list + "\" onchange=\"getPrice(" + line_id + ")\">";   // 1 - product name
         row.insertCell(-1).innerHTML = "0";                       // 2 - quantity ordered
         row.insertCell(-1).innerHTML = "";                        // 3 - unit ordered
         // row.insertCell(-1).innerHTML = ""; // order total

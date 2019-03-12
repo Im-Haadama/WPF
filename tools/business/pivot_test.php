@@ -32,6 +32,6 @@ $t = new \Niver\PivotTable( "im_business_info", "EXTRACT(YEAR FROM DATE) = " . $
 $trans            = array();
 $trans["part_id"] = 'get_customer_name';
 print gui_table( $t->Create(
-	'c-get-business_info.php?document_type=4&part_id=%s&date=' . $year . '-' . '%s-28',
+	'c-get-business_info.php?document_type=4&part_id=%s&date=' . $year . '-' . '%02s-28',
 	'c-get-all-business_info.php?part_id=%s',
 	$trans ) );

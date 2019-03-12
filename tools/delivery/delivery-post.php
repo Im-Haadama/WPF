@@ -58,7 +58,7 @@ switch ( $operation ) {
 			// print "id = " . $id . "<br/>";
 		} else {
 			$name = $_GET["name"];
-			$sql  = "SELECT id FROM im_products WHERE post_title = '" . urldecode( $name ) . "'";
+			$sql  = "SELECT id FROM wp_posts WHERE post_title = '" . urldecode( $name ) . "' and post_status = 'publish'";
 			$id   = sql_query_single_scalar( $sql );
 			// print "id: " . $id;
 		}

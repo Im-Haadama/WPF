@@ -46,7 +46,7 @@ switch ( $operation ) {
 		$excerpt  = $_GET["excerpt"];
 		$order_id = $_GET["order_id"];
 		$Order    = new Order( $order_id );
-		$Order->SetComments( $order_id, $excerpt );
+		$Order->SetComments( $excerpt );
 		break;
 
 	case "create_order":

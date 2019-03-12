@@ -153,7 +153,8 @@ function gui_input_date( $id, $class, $value = null, $events = null ) {
 		$value = date( 'Y-m-d' );
 	}
 	if ( strlen( $value ) > 0 ) {
-		$data .= "value=\"$value\" ";
+		$date = date( "Y-m-d", strtotime( $value ) );
+		$data .= "value=\"$date\" ";
 	}
 	if ( strlen( $class ) > 0 ) {
 		$data .= "class=\"$class\" ";

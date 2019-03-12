@@ -36,7 +36,7 @@ $site_tools    = array(
 	"", // 3
 	"http://fruity.co.il/tools" // 4
 );
-$attach_folder = "/var/www/html/attachments";
+$attach_folder = ROOT_DIR . "/attachments";
 
 // header_text
 $text = '<html>';

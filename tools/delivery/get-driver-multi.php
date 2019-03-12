@@ -323,7 +323,7 @@ foreach ( $data_lines as $mission_id => $data_line ) {
 			} else {
 				$s = new Supply( $supply_id );
 				print gui_header( 1, "אספקה  " . $supply_id . " מספק " . $s->getSupplierName() );
-				print $s->Html( true, false );
+				print $s->Html( true, 0 );
 			}
 		}
 	}
@@ -345,7 +345,7 @@ function add_line_per_station( $start_address, $stop_point, $line, $order_id ) {
 	if ( ! isset( $lines_per_station[ $stop_point ] ) ) {
 		$lines_per_station[ $stop_point ] = array();
 	}
-	if ( get_distance( $start_address, $stop_point ) ) {
+	if ( get_distance( $start_address, $stop_point ) or ( $start_address == $stop_point ) ) {
 		array_push( $lines_per_station[ $stop_point ], array( $line, $order_id) );
 	} else {
 		print "לא מזהה את הכתובת של הזמנה " . $line . "<br/>";
