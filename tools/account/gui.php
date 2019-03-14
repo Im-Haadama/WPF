@@ -60,6 +60,10 @@ function gui_select_client_type( $id, $value, $events = null ) {
 //		$sql_where );
 }
 
+function gui_select_path_code( $id, $selected = 0, $events = "" ) {
+	return gui_select_table( $id, "im_missions", $selected, $events, null,
+		"path_code", "where date > CURDATE()", true, false, null, "path_code" );
+}
 
 function gui_select_mission( $id, $selected = 0, $events = "" ) {
 //	IFNULL(DATE,NOW()) >= NOW()

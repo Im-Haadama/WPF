@@ -171,11 +171,56 @@ function tasklist_set_defaults( &$values ) {
 	$values["date"] = date( 'Y-m-d' );
 }
 
+function create_tasks_per_mission() {
+	$mission_ids = sql_query_array_scalar( "SELECT id FROM im_missions WHERE date=CURDATE()" );
+
+	foreach ( $mission_ids as $id ) {
+		$m = Mission::getMission( $id );
+
+		if ( $m->getTaskCount() ) {
+			continue;
+		}
+
+		$path_code = $m->getPathCode();
+
+		$template_ids = sql_query( "SELECT id FROM im_task_templates WHERE path_code = " . $path_code );
+
+		foreach ( $template_ids as $template_id ) {
+			$sql    = "SELECT task_description, task_url, project_id, repeat_freq, repeat_freq_numbers, condition_query, priority " . "
+		   		 FROM im_task_templates " .
+			          " where id = " . $template_id;
+			$result = sql_query( $sql );
+
+			$row = mysqli_fetch_assoc( $result );
+			// if ($row["id"] == 10) var_dump($row);
+			$project_id = $row["project_id"];
+
+			$priority = sql_query_single_scalar( "SELECT priority FROM im_task_templates WHERE id = " . $id );
+
+			if ( ! $priority ) {
+				$priority = sql_query_single_scalar( "SELECT project_priority FROM im_projects WHERE id = " . $project_id );
+			}
+
+			if ( ! $priority ) {
+				$priority = 0;
+			}
+
+			$sql = "INSERT INTO im_tasklist " .
+			       "(task_description, task_template, status, date, project_id, priority) VALUES ( " .
+			       "'" . $row["task_description"] . "', " . $id . ", " . eTasklist::waiting . ", now(), " . $project_id . ",  " .
+			       $priority . ")";
+
+			sql_query( $sql );
+			print $sql;
+		}
+	}
+}
 // if null = create for all freqs.
 function create_tasks( $freqs = null, $verbose = false ) {
 	do {
 		if ( ! $freqs ) {
 			$freqs = sql_query_array_scalar( "select DISTINCT repeat_freq from im_task_templates" );
+			create_tasks_per_mission();
 			break;
 		}
 		if ( ! is_array( $freqs ) ) {
@@ -251,7 +296,7 @@ function create_tasks( $freqs = null, $verbose = false ) {
 			       $priority . ")";
 
 			sql_query( $sql );
-			print $sql;
+			// print $sql;
 		}
 		info_update( $info_key, date( $freq ));
 	}

@@ -43,4 +43,5 @@ $skip_in_horizontal = array();
 
 $insert                = array();
 $insert["project_id"]  = "gui_select_project";
-$insert["repeat_freq"] = "gui_select_worker";
+$insert["repeat_freq"] = "gui_select_repeat_time";
+$insert["path_code"]   = "gui_select_path_code";
