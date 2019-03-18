@@ -97,14 +97,18 @@ if ( isset ( $load_actions ) ) {
 }
 
 if ( isset( $page_actions ) ) {
-	print "writing page actions<br/>";
-	fwrite( $get_all, "// Page actions\n" );
-	fwrite( $get_all, "?><div class='menu'><?php " );
-	foreach ( $page_actions as $action ) {
-		fwrite( $get_all, "print gui_hyperlink(" . quote_text( $action[0] ) . ", " . quote_text( $action[1] ) . ");\n" );
-		fwrite( $get_all, "print ' '; " );
+	if ( is_string( $page_actions ) and function_exists( $page_actions ) ) {
+		print "runtime<br/>";
+		fwrite( $get_all, 'print ' . $page_actions . "();" );
+	} else {
+		print "writing page actions<br/>";
+		fwrite( $get_all, "// Page actions\n" );
+		fwrite( $get_all, "?><div class='menu'><?php " );
+		foreach ( $page_actions as $action ) {
+			fwrite( $get_all, "print gui_hyperlink(" . quote_text( $action[0] ) . ", " . quote_text( $action[1] ) . ");\n" );
+			fwrite( $get_all, "print ' '; " );
+		}
 	}
-
 }
 
 fwrite( $get_all, '$debug = get_param("debug");' );
@@ -190,12 +194,18 @@ fwrite( $get_all, "<?php
 \$sql = \"" . $remote_sql . "\";" );
 
 if ( isset( $preset_query ) ) {
-	fwrite( $get_all, "\$preset_query = array(" .
-	                  comma_implode( $preset_query, true ) . ");" );
-	fwrite( $get_all, "
-	\$ps = get_param(\"preset\");
-	
-	if (\$ps) \$sql .= \" and \" . \$preset_query[\$ps];" );
+	if ( function_exists( "preset_query" ) ) {
+		// fwrite ($get_all, "\$preset_query= " . $preset_query . "();");
+		fwrite( $get_all, "\$preset = get_param(\"preset\", false, 2);
+		\$sql .= preset_query(\$preset);" );
+	} else {
+		fwrite( $get_all, "\$preset_query = array(" .
+		                  comma_implode( $preset_query, true ) . ");" );
+		fwrite( $get_all, "
+			\$ps = get_param(\"preset\");
+			
+			if (\$ps) \$sql .= \" and \" . \$preset_query[\$ps];" );
+	}
 }
 fwrite( $get_all, "\$remote_url = '$url';
 

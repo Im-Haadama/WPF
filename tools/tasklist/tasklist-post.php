@@ -12,7 +12,7 @@ if ( ! defined( "ROOT_DIR" ) ) {
 	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
 }
 require_once( ROOT_DIR . "/tools/im_tools.php" );
-require_once( "../multi-site/imMulti-site.php" );
+require_once( ROOT_DIR . "/tools/multi-site/imMulti-site.php" );
 header( ImMultiSite::CORS() );
 
 require_once( ROOT_DIR . "/niver/fund.php" );

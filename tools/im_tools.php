@@ -299,19 +299,19 @@ function gui_select_creator( $id = null, $selected = null, $events = "" ) {
 	}
 }
 
-function is_manager( $user_id ) {
-	$user    = new WP_User( $user_id );
-	$manager = false;
-	if ( ! empty( $user->roles ) && is_array( $user->roles ) ) {
-		foreach ( $user->roles as $role ) {
-			if ( $role == 'administrator' or $role == 'shop_manager' ) {
-				$manager = true;
-			}
-		}
-	}
-
-	return $manager;
-}
+//function is_manager( $user_id ) {
+//	$user    = new WP_User( $user_id );
+//	$manager = false;
+//	if ( ! empty( $user->roles ) && is_array( $user->roles ) ) {
+//		foreach ( $user->roles as $role ) {
+//			if ( $role == 'administrator' or $role == 'shop_manager' ) {
+//				$manager = true;
+//			}
+//		}
+//	}
+//
+//	return $manager;
+//}
 
 //function is_admin($user_id)
 //{

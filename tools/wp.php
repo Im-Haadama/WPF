@@ -26,7 +26,7 @@ function set_post_meta_field( $post_id, $field_name, $field_value ) {
 	// my_log("Error: can't add meta. Post_id=" . $post_id . "Field_name=" . $field_name . "Field_value=" . $field_value, __FILE__);
 }
 
-function is_admin_user() {
+function is_manager() {
 	$user    = new WP_User( wp_get_current_user() );
 	$manager = false;
 	if ( ! empty( $user->roles ) && is_array( $user->roles ) ) {
@@ -40,3 +40,16 @@ function is_admin_user() {
 	return $manager;
 }
 
+function is_admin_user() {
+	$user    = new WP_User( wp_get_current_user() );
+	$manager = false;
+	if ( ! empty( $user->roles ) && is_array( $user->roles ) ) {
+		foreach ( $user->roles as $role ) {
+			if ( $role == 'administrator' ) {
+				$manager = true;
+			}
+		}
+	}
+
+	return $manager;
+}

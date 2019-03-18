@@ -91,16 +91,16 @@ function get_param_array( $key ) {
 	return null;
 }
 
-function get_param( $key, $mandory = false ) {
+function get_param( $key, $mandory = false, $default = null ) {
 	if ( isset( $_GET[ $key ] ) ) {
 		return $_GET[ $key ];
 	}
 
 	if ( $mandory ) {
 		die ( "key " . $key . " not supplied" );
+	} else {
+		return $default;
 	}
-
-	return null;
 }
 
 function quote_text( $num_or_text ) {
