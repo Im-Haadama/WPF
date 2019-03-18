@@ -83,7 +83,7 @@ require_once( "../options.php" );
     //	}
 </script>
 <?php
-print header_text();
+print header_text( false );
 ?>
 <body onload="update_display()">
 <?php

@@ -24,7 +24,8 @@ $preset_query       = array(
 	"",
 	$preset_basic_query,
 	$preset_basic_query . " and owner = 1",
-	$preset_basic_query . " and owner = 369",
+	$preset_basic_query . " and owner = 369 or creator = 369",
+	$preset_basic_query . " and owner = 369"
 );
 
 foreach ( $preset_query as $q ) {
@@ -42,6 +43,7 @@ $trans = [];
 //$trans["task_template"] = "get_task_link";
 $trans["url"]        = "show_zone_names";
 $trans["project_id"] = "get_project_name";
+$trans["creator"]    = "get_customer_name";
 
 $page_actions = array(
 	array( "רענן", "create.php?verbose=1" ),
@@ -74,13 +76,15 @@ $skip_in_horizontal = array(
 	"end_time",
 	"preq",
 	"status",
-	"ended"
+	"ended",
+	"creator"
 );
 
 $insert["project_id"] = "gui_select_project";
 $insert["mission_id"] = "gui_select_mission";
 $insert["preq"]       = "gui_select_task_related";
 $insert["owner"]      = "gui_select_worker";
+$insert["creator"]    = "gui_select_creator";
 
 $insert_id["preq"]    = true;
 

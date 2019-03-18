@@ -7,7 +7,7 @@
  */
 
 require_once( "../im_tools.php" );
-print header_text( true );
+print header_text( false );
 $pos = true;
 require( "new-order.php" );
 

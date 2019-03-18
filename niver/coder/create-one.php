@@ -135,7 +135,9 @@ if ( ! ( $result = sql_query( $sql ) ) ) {
 fwrite( $output, "var request_url = \"c-" . $obj_name . ".php?operation=<?php print \$operation;?>\";\n" );
 
 while ( $row = mysqli_fetch_assoc( $result ) ) {
+//	var_dump($row); print "<br/>";
 	$name     = $row["Field"];
+
 	$var_name = '_' . $name;
 	if ( $name == "id" ) {
 		fwrite( $output, "request_url = request_url + \"&id=\" + get_value(document.getElementById(\"id\"));\n" );
@@ -217,7 +219,12 @@ while ( $row = mysqli_fetch_assoc( $result ) ) {
 
 	print_row_start();
 
-	print $name . " " . $type . "<br/>";
+	print $name;
+	$star = "";
+	if ( ( $row["Null"] != "YES" ) ) {
+		$star = "(*)";
+	}
+	print " " . $type . " " . $star . "<br/>";
 
 	if ( $name == "id" ) {
 		print_cell_start();
@@ -241,7 +248,7 @@ while ( $row = mysqli_fetch_assoc( $result ) ) {
 	print_cell_end();
 	$line_id += 1;
 	print_cell_start();
-	print_header( translate2heb( $name ) );
+	print_header( translate2heb( $name ) . $star );
 	print_cell_end();
 	print_cell_start();
 	$transformer = null;

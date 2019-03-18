@@ -288,4 +288,44 @@ function get_customer_email( $customer_id ) {
 	throw new Exception( "Bad customer_id " . __METHOD__ );
 }
 
+function gui_select_creator( $id = null, $selected = null, $events = "" ) {
+	global $user_ID;
+	if ( is_manager( $user_ID ) ) {
+		return gui_select_table( $id, "im_working", $selected, $events, "",
+			"client_displayname(worker_id)",
+			"where is_active=1", true, false, null, "worker_id" );
+	} else {
+		return $user_ID;
+	}
+}
+
+function is_manager( $user_id ) {
+	$user    = new WP_User( $user_id );
+	$manager = false;
+	if ( ! empty( $user->roles ) && is_array( $user->roles ) ) {
+		foreach ( $user->roles as $role ) {
+			if ( $role == 'administrator' or $role == 'shop_manager' ) {
+				$manager = true;
+			}
+		}
+	}
+
+	return $manager;
+}
+
+//function is_admin($user_id)
+//{
+//	return false;
+//	$user    = new WP_User( $user_id );
+//	$manager = false;
+//	if ( ! empty( $user->roles ) && is_array( $user->roles ) ) {
+//		foreach ( $user->roles as $role ) {
+//			if ( $role == 'administrator' ) {
+//				$manager = true;
+//			}
+//		}
+//	}
+//	return $manager;
+//}
+
 ?>

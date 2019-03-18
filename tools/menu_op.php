@@ -190,7 +190,7 @@ if ( $test_site ) {
         </tr>
     </table>
 
-    <iframe name="doc_frame" width="1000" height="600">
+    <iframe name="doc_frame" width="100%" height="600">
     </iframe>
 
 </div>

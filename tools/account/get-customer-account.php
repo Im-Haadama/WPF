@@ -10,15 +10,9 @@ require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 // $start_time =  microtime(true);
 
 // only if admin can select user. Otherwise get id from login info
-$user    = new WP_User( $user_ID );
-$manager = false;
-if ( ! empty( $user->roles ) && is_array( $user->roles ) ) {
-	foreach ( $user->roles as $role ) {
-		if ( $role == 'administrator' or $role == 'shop_manager' ) {
-			$manager = true;
-		}
-	}
-}
+
+$manager = is_manager( $user_ID );
+
 if ( $manager and isset( $_GET["customer_id"] ) ) {
 	print header_text( false, true, true, array( "account.js" ) );
 	$customer_id = $_GET["customer_id"];
