@@ -6,6 +6,12 @@ require_once( "Tasklist.php" );
 
 require_once( "tasklist-post.php" );
 
+if ( ! defined( "TOOLS_DIR" ) ) {
+	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
+}
+
+require_once( TOOLS_DIR . '/r-shop_manager.php' );
+
 $preset_basic_query = " and (date(date) <= CURRENT_DATE or isnull(date)) and (status < 2) " .
                       " and (not mission_id > 0) and task_active_time(id) " .
                       " and (isnull(preq) or task_status(preq) >= 2) ";
@@ -36,7 +42,8 @@ function preset_query( $preset ) {
 		null,
 		$preset_basic_query,
 		$preset_basic_query . " and owner = " . $user_ID,
-		$preset_basic_query . " and (owner = " . $user_ID . " or creator = " . $user_ID . ")"
+		$preset_basic_query . " and (owner = " . $user_ID . " or creator = " . $user_ID . ")",
+		" and mission_id > 0  and status = 1"
 	);
 
 	return $set[ $preset ];
@@ -60,6 +67,8 @@ function tasklist_page_actions() {
 				print gui_hyperlink( get_customer_name( $worker ), "c-get-all-tasklist.php?preset=" . ( 100 + (int) $worker ) ) . " ";
 			}
 		}
+		print gui_hyperlink( "משימות נהיגה שלא בוצעו", "c-get-all-tasklist.php?preset=4" );
+
 	}
 }
 

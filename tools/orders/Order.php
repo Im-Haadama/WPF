@@ -163,6 +163,9 @@ class Order {
 					// print "xx" . $product . " " . $q . "<br/>";
 					$oid = $this->WC_Order->add_product( $product, $q );
 
+					// Remove the order from require products cache
+					sql_query( "DELETE FROM im_need_orders WHERE order_id = " . $this->order_id );
+
 					// print $oid . "<br/>";
 
 					if ( $has_units ) {
@@ -179,9 +182,6 @@ class Order {
 				print "client dislike " . get_product_name( $product_id ) . "<br/>";
 			}
 		}
-		// Remove the order from require products cache
-		sql_query( "DELETE FROM im_need_orders WHERE order_id = " . $this->order_id );
-
 	}
 
 	/**

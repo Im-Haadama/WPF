@@ -135,6 +135,8 @@ tr:nth-child(even) {
 			$supplier_needed[ $supplier ][ $prod_id ] = $product_info;
 		}
 	}
+
+	// var_dump($supplier_needed);
 //	var_dump($supplier_needed[100001]);
 
 //	$time = debug_time("after suppliers", $time);
@@ -146,6 +148,7 @@ tr:nth-child(even) {
 	$result = sql_query( $sql );
 
 	while ( $row = sql_fetch_row( $result ) ) {
+
 		$supplier_id = $row[0];
 		get_total_orders_supplier( $supplier_id, $supplier_needed[ $supplier_id ], $filter_zero, $filter_stock, $history );
 
