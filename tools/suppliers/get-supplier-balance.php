@@ -74,7 +74,7 @@ $include_zero = isset( $_GET["zero"] );
 //       . ' group by client_id '
 //       . ' order by 4,5';
 
-$sql = "SELECT sum(amount), part_id, supplier_displayname(part_id) \n"
+$sql = "SELECT round(sum(amount), 0), part_id, supplier_displayname(part_id) \n"
 
        . "FROM `im_business_info`\n"
 

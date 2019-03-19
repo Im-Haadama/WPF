@@ -15,6 +15,7 @@ require_once( TOOLS_DIR . '/invoice4u/invoice.php' );
 require_once( ROOT_DIR . '/niver/data/html2array.php' );
 require_once( ROOT_DIR . '/tools/multi-site/imMulti-site.php' );
 require_once( ROOT_DIR . '/tools/business/BankTransaction.php' );
+require_once( ROOT_DIR . '/tools/suppliers/gui.php' );
 
 $multi_site = ImMultiSite::getInstance();
 
@@ -81,6 +82,64 @@ if ( isset( $_GET["operation"] ) ) {
 				my_log( "show_control user $user" );
 			}
 			break;
+		case "create_pay_bank":
+			require_once( ROOT_DIR . '/tools/business/BankTransaction.php' );
+			require_once( ROOT_DIR . '/tools/account/gui.php' );
+			print header_text( false, true, true,
+				array(
+					"business.js",
+					"/niver/gui/client_tools.js",
+					"/tools/account/account.js"
+				) );
+			$id = get_param( "id" );
+			print gui_header( 1, "רישום העברה שבוצעה " );
+
+			$b = BankTransaction::createFromDB( $id );
+			print gui_header( 2, "פרטי העברה" );
+			print gui_table( array(
+					array( "תאריך", gui_div( "pay_date", $b->getDate() ) ),
+					array( "סכום", gui_div( "bank", $b->getOutAmount() ) ),
+					array( "מזהה", gui_div( "bank_id", $id ) )
+				)
+			);
+
+			print gui_header( 2, "בחר ספק" );
+			print gui_select_open_supplier();
+			print '<div id="logging"></div>';
+			print '<div id="transactions"></div>';
+			print gui_table( array(
+				array(
+					"קשר",
+					gui_button( "btn_receipt", "link_invoice_bank()", "קשר תשלום לחשבונית" )
+				),
+				array( "עודף", " <div id=\"change\"></div>" )
+			), "payment_table", true, true, $sums, "", "payment_table" );
+
+			break;
+
+		case "link_invoice_bank":
+			$bank_id     = get_param( "bank_id", true );
+			$supplier_id = get_param( "supplier_id", true );
+			$site_id     = get_param( "site_id", true );
+			$ids         = get_param( "ids", true );
+
+			// 1) mark the bank transaction to invoice.
+			$sql = "UPDATE im_bank SET reciept = " . $ids . " WHERE bank_id = " . $bank_id;
+			print $sql;
+
+			// 2) mark the invoices to transaction.
+			print $multi_site->Run( "business-post.php?operation=add_payment?ids=" . $ids . "&supplier_id=" . $supplier_id .
+			                        "bank_id=" . $bank_id, $site_id );
+			break;
+
+		case "add_payment":
+			$supplier_id = get_param( "supplier_id", true );
+			$bank_id     = get_param( "bank_id", true );
+			$ids         = get_param_array( "ids", true );
+			print "sup=" . $supplier_id . " bank_id=" . $bank_id;
+			print "ids=";
+			var_dump( $ids );
+			break;
 		case "create_invoice_bank":
 			require_once( ROOT_DIR . '/tools/business/BankTransaction.php' );
 			require_once( ROOT_DIR . '/tools/account/gui.php' );
@@ -115,6 +174,20 @@ if ( isset( $_GET["operation"] ) ) {
 			), "payment_table", true, true, $sums, "", "payment_table" );
 
 			break;
+		case "get_supplier_open_account":
+			$sql = "select " . $multi_site->LocalSiteId() . ", part_id, supplier_displayname(part_id), round(sum(amount),2) as total\n"
+			       . "from im_business_info\n"
+			       . "group by 2\n"
+			       . "having total < 0";
+
+			$data   = "<table>";
+			$result = sql_query( $sql );
+			while ( $row = sql_fetch_row( $result ) ) {
+				$data .= gui_row( $row );
+			}
+			$data .= "</table>";
+			print $data;
+			break;
 		case "get_client_open_account":
 			$sql = "select " . $multi_site->LocalSiteId() . ", client_id, client_displayname(client_id), round(sum(transaction_amount),2) as total\n"
 			       . "from im_client_accounts\n"
@@ -136,6 +209,21 @@ if ( isset( $_GET["operation"] ) ) {
 			print $multi_site->Run( "account/account-post.php?operation=get_open_trans&client_id=" . $client_id,
 				$site_id );
 			break;
+
+		case "get_open_invoices":
+			$supplier_id = get_param( "supplier_id", true );
+			$site_id     = get_param( "site_id", true );
+			print $multi_site->Run( "business/business-post.php?operation=get_open_site_invoices&supplier_id=" . $supplier_id,
+				$site_id );
+			break;
+
+		case "get_open_site_invoices":
+			$sum         = array();
+			$supplier_id = get_param( "supplier_id", true );
+			print table_content( "SELECT id, ref, amount FROM im_business_info WHERE part_id=" . $supplier_id, true,
+				null, null, $sum, true, "trans_checkbox" );
+			break;
+
 
 		case "create_receipt":
 			$bank_amount = get_param( "bank" );
@@ -178,6 +266,24 @@ function business_create_multi_site_receipt( $bank_id, $bank_amount, $date, $cha
 	$b = BankTransaction::createFromDB( $bank_id );
 	$b->Update( $user_id, $receipt, $site_id );
 	print "חשבונית קבלה מספר " . $receipt . " נוצרה ";
+}
+
+function gui_select_open_supplier( $id = "supplier" ) {
+	global $multi_site;
+	$values  = html2array( $multi_site->GetAll( "business/business-post.php?operation=get_supplier_open_account" ) );
+	$open    = array();
+	$list_id = 0;
+	foreach ( $values as $value ) {
+		$new                = array();
+		$new["id"]          = $list_id ++;
+		$new["site_id"]     = $value[0];
+		$new["supplier_id"] = $value[1];
+		$new["name"]        = $value[2];
+		$new["balance"]     = $value[3];
+		array_push( $open, $new );
+	}
+
+	return gui_select_datalist( $id, "name", $open, 'onchange="supplier_selected()"', null, true );
 }
 
 function gui_select_client_open_account( $id = "client" ) {

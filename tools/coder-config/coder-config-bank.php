@@ -22,11 +22,16 @@ $preset_query    = array(
 	// In without receipt
 	" in_amount > 0 and receipt is null ",
 	// Out without invoice number
-	" out_amount > 0 and business_id = 0 "
+	" out_amount > 0 and receipt is null "
+);
+
+$page_actions = array(
+	array( "הפק קבלות", "c-get-all-bank.php?preset=2" )
 );
 
 $actions = array(
 	array( "קבלה", "business-post.php?operation=create_invoice_bank&id=" ),
+	array( "תשלום", "business-post.php?operation=create_pay_bank&id=" ),
 );
 
 $useMultiSite = false;

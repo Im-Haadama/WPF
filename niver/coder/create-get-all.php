@@ -96,12 +96,15 @@ if ( isset ( $load_actions ) ) {
 	}
 }
 
+print "writing page actions.. ";
+// var_dump($page_actions);
+
 if ( isset( $page_actions ) ) {
 	if ( is_string( $page_actions ) and function_exists( $page_actions ) ) {
 		print "runtime<br/>";
 		fwrite( $get_all, 'print ' . $page_actions . "();" );
 	} else {
-		print "writing page actions<br/>";
+		print "config<br/>";
 		fwrite( $get_all, "// Page actions\n" );
 		fwrite( $get_all, "?><div class='menu'><?php " );
 		foreach ( $page_actions as $action ) {

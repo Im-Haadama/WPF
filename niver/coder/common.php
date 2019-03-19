@@ -32,11 +32,26 @@ function print_date( $field_name, $value ) {
 	fwrite( $output, "print \" onchange=\\\"changed(this)\\\">\";" );
 }
 
-function print_input( $field_name, $value ) {
+function print_input( $field_name, $value, $width = 100 ) {
 	global $output;
 	fwrite( $output, "print \"<input id=\\\"" . $field_name . "\\\"\"; " );
-	fwrite( $output, "if (\$id > 0 and isset(\$values[\"" . $field_name . "\"])) print \" value=\\\"\" .  $value . \"\\\"\";" );
-	fwrite( $output, "print \" onchange=\\\"changed(this)\\\">\";" );
+	fwrite( $output, "if (\$id > 0 and isset(\$values[\"" . $field_name . "\"])) print \" value=\\\"\" .  htmlspecialchars($value) . \"\\\"\";" );
+//	$line = 'onkeypress="this.style.width = ((this.value.length + 1) * 8) + \\\'px\\\'";';
+	//fwrite($output, 'print \'' . $line . '\';');
+	// fwrite($output, 'print \' style.width =\' . strlen($value) . '\';');
+	fwrite( $output, "print \" onchange=\\\"changed(this)\\\" size=" . $width . "'px'>\";" );
+}
+
+function print_textbox( $field_name, $value, $width = 100 ) {
+	global $output;
+	fwrite( $output, "print \"<textarea rows=\\\"" . $width / 50 . "\\\" cols=\\\"" . min( $width, 50 ) . "\\\" id=\\\"" . $field_name . "\\\"\"; " );
+	fwrite( $output, "if (\$id > 0 and isset(\$values[\"" . $field_name . "\"]));" );
+//	$line = 'onkeypress="this.style.width = ((this.value.length + 1) * 8) + \\\'px\\\'";';
+	//fwrite($output, 'print \'' . $line . '\';');
+	// fwrite($output, 'print \' style.width =\' . strlen($value) . '\';');
+	fwrite( $output, "print \" onchange=\\\"changed(this)\\\" size=" . $width . "'px'>\";" );
+	fwrite( $output, 'print ' . $value . ';' );
+	fwrite( $output, "print \"</textarea>\";" );
 }
 
 function print_row_start() {

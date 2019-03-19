@@ -9,10 +9,11 @@
 class BankTransaction {
 	private $id;
 	private $in_amount;
+	private $out_amount;
 	private $date;
 
 	static function createFromDB( $id ) {
-		$sql    = "SELECT in_amount, date FROM im_bank WHERE id = " . $id;
+		$sql    = "SELECT in_amount, date, out_amount FROM im_bank WHERE id = " . $id;
 		$result = sql_query( $sql );
 		if ( ! $result ) {
 			throw new Exception( "Transaction not found" );
@@ -25,9 +26,10 @@ class BankTransaction {
 		}
 		$r = new BankTransaction();
 
-		$r->id        = $id;
-		$r->in_amount = $row[0];
-		$r->date      = $row[1];
+		$r->id         = $id;
+		$r->in_amount  = $row[0];
+		$r->date       = $row[1];
+		$r->out_amount = $row[2];
 
 		return $r;
 	}
@@ -45,6 +47,14 @@ class BankTransaction {
 	public function getInAmount() {
 		return $this->in_amount;
 	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getOutAmount() {
+		return $this->out_amount;
+	}
+
 
 	/**
 	 * @return mixed

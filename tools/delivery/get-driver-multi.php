@@ -92,11 +92,11 @@ if ( ! count( $missions ) ) {
 	print "אין משימות להיום!";
 	die ( 1 );
 }
-print gui_header( 1, "מדפיס משימות " );
-foreach ( $missions as $mission ) {
-	print $mission . " " . get_mission_name( $mission ) . " ";
-}
-print "<br/>";
+//print gui_header( 1, "מדפיס משימות " );
+//foreach ( $missions as $mission ) {
+//	print $mission . " " . get_mission_name( $mission ) . " ";
+//}
+//print "<br/>";
 
 $m      = new ImMultiSite();
 $output = $m->GetAll( "delivery/get-driver.php?mission_ids=" . implode( ",", $missions ), false, $debug );
@@ -250,6 +250,7 @@ foreach ( $data_lines as $mission_id => $data_line ) {
 	$data = $header;
 
 	$data .= gui_list( "באחריות הנהג להעמיס את הרכב ולסמן את מספר האריזות והאם יש קירור." );
+	$data .= gui_list( "אם יש ללקוח מוצרים קפואים או בקירור, יש לבדוק זמינות לקבלת המסלול (לעדכן את יעקב)." );
 	$data .= gui_list( "יש לוודא שכל המשלוחים הועמסו.");
 	$data .= gui_list( "בעת קבלת כסף או המחאה יש לשלוח מיידית הודעה ליעקב, עם הסכום ושם הלקוח.");
 	$data .= gui_list( "במידה והלקוח לא פותח את הדלת, יש ליידע את הלקוח שהמשלוח בדלת (טלפון או הודעה)." );

@@ -208,8 +208,9 @@ $conn->query( $sql );
 $result  = mysqli_query( $conn, $sql );
 $line_id = 1;
 while ( $row = mysqli_fetch_assoc( $result ) ) {
-	$name = $row["Field"];
-	$type = $row["Type"];
+	$name  = $row["Field"];
+	$type  = $row["Type"];
+	$width = (int) filter_var( $type, FILTER_SANITIZE_NUMBER_INT );
 
 	$value = "\$values[\"" . $name . "\"]";
 
@@ -277,9 +278,15 @@ while ( $row = mysqli_fetch_assoc( $result ) ) {
 
 	switch ( substr( $type, 0, 3 ) ) {
 		case "var":
+			if ( $width > 30 ) {
+				print_textbox( $name, $value, $width );
+			} else {
+				print_input( $name, $value, $width /*, "checked(this)" */ );
+			}
+			break;
 		case "big":
 		case "int":
-			print_input( $name, $value /*, "checked(this)" */ );
+			print_input( $name, $value, $width /*, "checked(this)" */ );
 			break;
 		case "dat":
 			print_date( $name, $value );
@@ -294,7 +301,7 @@ while ( $row = mysqli_fetch_assoc( $result ) ) {
 			break;
 		case "flo":
 		case "dou":
-			print_input( $name, $value );
+			print_input( $name, $value, 5 );
 			break;
 		default:
 			print $type;
