@@ -152,7 +152,7 @@ class Invoice4u {
 
 	public function GetInvoiceUserId( $customer_id ) {
 		if ( ! ( $customer_id > 0 ) ) {
-			throw new Exception( "Bad customer id " . __CLASS__ );
+			throw new Exception( "Bad customer id " . __CLASS__ . " " . $customer_id );
 		}
 
 		// print "start";

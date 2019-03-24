@@ -88,6 +88,13 @@ if ( file_exists( $object_file ) ) {
 	fwrite( $get_all, "require_once('" . $object_file . "');" );
 }
 
+if ( isset ( $permission_check ) ) {
+	fwrite( $get_all, "if ( ! " . $permission_check . "()){
+		print 'np';
+		die(1);
+		}" );
+}
+
 if ( isset ( $load_actions ) ) {
 	print "writing load action code<br/>";
 	fwrite( $get_all, "// Running load actions\n" );

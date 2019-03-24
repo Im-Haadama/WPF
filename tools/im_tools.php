@@ -226,8 +226,10 @@ function login_id() {
 	if ( $user->ID == "0" ) {
 		// Force login
 		$inclued_files = get_included_files();
-		my_log( __FILE__, $inclued_files[ count( $inclued_files ) - 2 ] );
+		var_dump( $inclued_files );
+//		my_log( __FILE__, $inclued_files[ count( $inclued_files ) - 2 ] );
 		$url = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_HOST ) . '/wp-login.php?redirect_to=' . $_SERVER['REQUEST_URI'] . '"';
+		die( 1 );
 
 		print '<script language="javascript">';
 		print "window.location.href = '" . $url . "'";

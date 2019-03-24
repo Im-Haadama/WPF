@@ -13,6 +13,7 @@ if ( ! defined( "ROOT_DIR" ) ) {
 
 require_once( ROOT_DIR . '/niver/data/sql.php' );
 require_once( ROOT_DIR . '/niver/gui/window.php' );
+require_once( ROOT_DIR . '/tools/missions/Mission.php' );
 
 class Tasklist {
 	private $id;
@@ -173,6 +174,7 @@ function tasklist_set_defaults( &$values ) {
 
 function create_tasks_per_mission() {
 	$mission_ids = sql_query_array_scalar( "SELECT id FROM im_missions WHERE date=CURDATE()" );
+	$owner       = 1; // Todo: get it from the template
 
 	foreach ( $mission_ids as $id ) {
 		$m = Mission::getMission( $id );
@@ -183,7 +185,7 @@ function create_tasks_per_mission() {
 
 		$path_code = $m->getPathCode();
 
-		$template_ids = sql_query( "SELECT id FROM im_task_templates WHERE path_code = " . $path_code );
+		$template_ids = sql_query( "SELECT id FROM im_task_templates WHERE path_code = " . quote_text( $path_code ) );
 
 		foreach ( $template_ids as $template_id ) {
 			$sql    = "SELECT task_description, task_url, project_id, repeat_freq, repeat_freq_numbers, condition_query, priority " . "
@@ -206,9 +208,9 @@ function create_tasks_per_mission() {
 			}
 
 			$sql = "INSERT INTO im_tasklist " .
-			       "(task_description, task_template, status, date, project_id, priority) VALUES ( " .
+			       "(task_description, task_template, status, date, project_id, priority, owner) VALUES ( " .
 			       "'" . $row["task_description"] . "', " . $id . ", " . eTasklist::waiting . ", now(), " . $project_id . ",  " .
-			       $priority . ")";
+			       $priority . "," . $owner . ")";
 
 			sql_query( $sql );
 			print $sql;
@@ -216,7 +218,7 @@ function create_tasks_per_mission() {
 	}
 }
 // if null = create for all freqs.
-function create_tasks( $freqs = null, $verbose = false ) {
+function create_tasks( $freqs = null, $verbose = false, $owner = 1 ) {
 	do {
 		if ( ! $freqs ) {
 			$freqs = sql_query_array_scalar( "select DISTINCT repeat_freq from im_task_templates" );
@@ -291,9 +293,9 @@ function create_tasks( $freqs = null, $verbose = false ) {
 			}
 
 			$sql = "INSERT INTO im_tasklist " .
-			       "(task_description, task_template, status, date, project_id, priority) VALUES ( " .
+			       "(task_description, task_template, status, date, project_id, priority, owner) VALUES ( " .
 			       "'" . $row["task_description"] . "', " . $id . ", " . eTasklist::waiting . ", now(), " . $project_id . ",  " .
-			       $priority . ")";
+			       $priority . "," . $owner . ")";
 
 			sql_query( $sql );
 			// print $sql;

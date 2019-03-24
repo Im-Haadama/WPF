@@ -91,4 +91,3 @@ $insert["owner"]      = "gui_select_worker";
 $insert["creator"]    = "gui_select_creator";
 
 $insert_id["preq"]    = true;
-

@@ -56,6 +56,39 @@ function create_tasklist() {
 
 
 function version17() {
+	print "task_active_time<br/>";
+	sql_query( "drop function task_active_time;" );
+	sql_query( "
+CREATE FUNCTION task_active_time(`_id` INT)
+  RETURNS TEXT
+  BEGIN
+    declare _template_id int;
+    declare _working_hours, _start_hour, _end_hour varchar(50);
+    select task_template into _template_id
+      from im_tasklist
+      where id = _id;
+
+    select working_hours into _working_hours
+    from im_task_templates
+    where id = _template_id;
+
+    if (_working_hours is Null) THEN
+      return true;
+    END IF;
+
+    select substring_index(working_hours, \"-\", 1) into _start_hour
+
+    from im_task_templates
+      where id = _template_id;
+
+    select substring_index(working_hours, \"-\", -1) into _end_hour
+
+    from im_task_templates
+    where id = _template_id;
+
+    return (curtime() >= _start_hour) and (curtime() <= _end_hour);
+  END;
+" );
 
 	sql_query( "drop function prod_get_name;" );
 	sql_query( "CREATE FUNCTION `prod_get_name`(`prod_id` INT)

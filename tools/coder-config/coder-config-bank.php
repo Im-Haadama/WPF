@@ -14,6 +14,9 @@ require_once( ROOT_DIR . '/im-config.php' );
 // require_once( ROOT_DIR . '/tools/business/business.php' );
 
 $im_table_suffix = "";
+
+$permission_check = "user_is_business_owner";
+
 $table_name      = $im_table_prefix . $obj_name . $im_table_suffix;
 $order           = "order by 3 desc ";
 $preset_query    = array(

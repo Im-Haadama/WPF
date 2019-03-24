@@ -7,7 +7,11 @@
  */
 // require_once( "r-shop_manager.php" );
 
-require_once( STORE_DIR . "/wp-includes/taxonomy.php" );
+if ( ! defined( 'ROOT_DIR' ) ) {
+	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) );
+}
+
+require_once( ROOT_DIR . "/wp-includes/taxonomy.php" );
 
 // Postmeta table
 function get_postmeta_field( $post_id, $field_name ) {
