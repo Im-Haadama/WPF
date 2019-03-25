@@ -150,11 +150,16 @@ function get_user_name( $id ) {
 	return get_user_meta( $id, 'first_name' )[0] . " " . get_user_meta( $id, 'last_name' )[0];
 }
 
-function get_user_address( $user_id ) {
+function get_user_address( $user_id, $full = false ) {
 	$u = $user_id + 0;
 	if ( is_numeric( $u ) ) {
-		return get_user_meta( $user_id, 'shipping_address_1', true ) . " " .
-		       get_user_meta( $user_id, 'shipping_city', true );
+		$data = get_user_meta( $user_id, 'shipping_address_1', true ) . " " .
+		        get_user_meta( $user_id, 'shipping_city', true );
+		if ( $full ) {
+			$data .= " " . get_user_meta( $user_id, 'shipping_address_2', true );
+		}
+
+		return $data;
 	}
 	print "bad user id: " . $user_id . "<br/>";
 	die(1);
