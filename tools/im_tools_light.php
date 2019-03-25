@@ -184,6 +184,9 @@ function get_product_id_by_name( $product_name ) {
 }
 
 function get_product_name( $product_id ) {
+	if ( ! is_numeric( $product_id ) ) {
+		return null;
+	}
 	$sql = 'SELECT post_title FROM wp_posts WHERE id = ' . $product_id;
 
 	return sql_query_single_scalar( $sql );

@@ -15,8 +15,8 @@ if ( $id > 0 ) {
 
 $O = new Order( $order_id );
 
-print gui_datalist( "items", "im_products", "post_title" );
-print gui_datalist( "items_with_draft", "im_products_draft", "post_title" );
+print gui_datalist( "items", "im_products", "post_title", true );
+print gui_datalist( "draft_items", "im_products_draft", "post_title", true );
 ?>
 
 <script>
@@ -33,8 +33,10 @@ print gui_datalist( "items_with_draft", "im_products_draft", "post_title" );
     const refund_total_id = <?php print DeliveryFields::refund_line; ?>;
 
     function getPrice(my_row) {
-        var product_name = get_value(document.getElementById("nam_" + my_row));
-        var request = "delivery-post.php?operation=get_price_vat&name=" + encodeURI(product_name);
+        var product_info = get_value(document.getElementById("nam_" + my_row));
+        if (!product_info.indexOf(")")) return;
+        var product_id = product_info.substr(0, product_info.indexOf(")"));
+        var request = "delivery-post.php?operation=get_price_vat&id=" + product_id; //encodeURI(product_name);
 
 	    <?php
 	    if ( $type = get_client_type( $O->getCustomerId() ) ) {
@@ -78,7 +80,7 @@ print gui_datalist( "items_with_draft", "im_products_draft", "post_title" );
         }
     }
 
-    function addLine(include_draft) {
+    function addLine(draft) {
         var table = document.getElementById('del_table');
 //        var hidden = [];
 //        for (var i = 0; i < table.rows.length; i++) {
@@ -94,8 +96,12 @@ print gui_datalist( "items_with_draft", "im_products_draft", "post_title" );
         var row = table.insertRow(lines - 4);
 //        row.insertCell(0).style.visibility = false;              // 0 - select
         var list = "items";
-        if (include_draft) list = "items_with_draft";
-        row.insertCell(-1).innerHTML = "<input id=\"nam_" + line_id + "\" type=\"text\" list=\"" + list + "\" onchange=\"getPrice(" + line_id + ")\">";   // 1 - product name
+        if (draft) list = "draft_items";
+        var input = "<?php print gui_select_product( "nam_XX", "onchange=\\\"getPrice(XX)\\\"", "YYY" ); ?>";
+        input = input.replace(/XX/g, line_id);
+        input = input.replace(/YYY/g, list);
+
+        row.insertCell(-1).innerHTML = input;// "<input id=\"nam_" + line_id + "\" type=\"text\" list=\"" + list + "\" onchange=\"getPrice(" + line_id + ")\">";   // 1 - product name
         row.insertCell(-1).innerHTML = "0";                       // 2 - quantity ordered
         row.insertCell(-1).innerHTML = "";                        // 3 - unit ordered
         // row.insertCell(-1).innerHTML = ""; // order total
@@ -207,7 +213,6 @@ print gui_datalist( "items_with_draft", "im_products_draft", "post_title" );
             if (prod_name === "דמי משלוח"
                 || prod_name === "משלוח") fee = get_value(document.getElementById("del_" + prfx))
 
-
             // var product = get_value(table.rows[i].cells[product_name_id].firstChild);
             // if (product == "דמי משלוח") fee = get_value(table.rows[i].cells[line_total_id].firstChild);
         }
@@ -255,7 +260,12 @@ print gui_datalist( "items_with_draft", "im_products_draft", "post_title" );
 //                            prod_name = "הנחת כמות";
 //                        }
 //                    }
+                    if (!prod_id && (prod_name.indexOf(")") > 0)) {
+                        prod_id = prod_name.substr(0, prod_name.indexOf(")"));
+                        prod_name = prod_name.substr(prod_name.indexOf(")"));
+                    }
                     if (!(prod_id > 0)) prod_id = 0; // New or unknown
+
                     if (prod_name.length > 1) prod_name = prod_name.replace(/['"()%,]/g, "").substr(0, 20);
 
                     var quantity = get_value(document.getElementById("deq_" + prfx));
