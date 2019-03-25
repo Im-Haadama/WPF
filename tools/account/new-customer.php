@@ -13,58 +13,13 @@ require_once( "../im_tools.php" );
 require_once( '../r-shop_manager.php' );
 require_once( "../orders/orders-common.php" );
 
-$operation = get_param( "operation" );
-
-if ( $operation ) {
-	switch ( $operation ) {
-		case "update_address":
-			$i         = get_param( "i", true );
-			$address   = get_param( "address", true );
-			$client_id = get_param( "client_id", true );
-			update_usermeta( $client_id, "shipping_address_" . $i, $address );
-
-			$order_id = get_param( "order_id" );
-
-			if ( $order_id ) {
-				update_post_meta( $order_id, "shipping_address_" . $i, $address );
-			}
-
-			print " המידע עודכן" . get_user_address( $client_id, true );
-			break;
-	}
-	die ( 0 );
-}
-
 $order_id  = get_param( "order_id" );
 $O         = new Order( $order_id );
 $client_id = $O->getCustomerId();
 
 ?>
 <script type="text/javascript" src="/niver/gui/client_tools.js"></script>
-<script>
-    function update_address(i) {
-        var address = get_value_by_name("address_" + i);
-
-        var request = "new-customer.php?operation=update_address&i=" + i + "&address=" + encodeURI(address) +
-            "&client_id=" + <?php print $client_id; ?> +
-                "&order_id=" + <?php print $order_id; ?>;
-
-        xmlhttp = new XMLHttpRequest();
-        xmlhttp.onreadystatechange = function () {
-            // Wait to get query result
-            if (xmlhttp.readyState === 4 && xmlhttp.status === 200)  // Request finished
-            {
-                document.getElementById("invoice_client_id").innerHTML = xmlhttp.response;
-                if (get_value_by_name("invoice_client_id").length > 1)
-                // location.reload();
-                    add_message(xmlhttp.response);
-            }
-        }
-        xmlhttp.open("GET", request, true);
-        xmlhttp.send();
-
-    }
-</script>
+<script type="text/javascript" src="/tools/tools.js"></script>
 <body onload="update_display();">
 
 <?php
@@ -76,26 +31,33 @@ print "2) אמת את השם לחשבונית.<br/>";
 print "3) אמת את הכתובת למשלוח. בדוק האם יש אינטרקום או קוד לגישה לדלת.<br/>";
 
 $step      = 4;
-$invoice   = new Invoice4u( $invoice_user, $invoice_password );
-try {
-	$invoice_client_id = $invoice->GetInvoiceUserId( $O->getCustomerId() );
-} catch ( Exception $e ) {
 
-}
+$invoice_client_id = get_user_meta( $client_id, 'invoice_id', 1 );
 
 print gui_table( array(
-	array(
-		"כתובת - רק רחוב ומספר בנין",
-		gui_input( "address_1", get_usermeta( $client_id, "shipping_address_1" ), "onchange=update_address(1)" )
-	),
-	array(
-		"קומה, מספר דירה, אינטרקום ופרטים נוספים",
-		gui_input( "address_2", get_usermeta( $client_id, "shipping_address_2" ), "onchange=update_address(2)" )
-	)
-));
+	$O->info_right_box_input( "shipping_city", true, "עיר" ),
+	$O->info_right_box_input( "shipping_address_1", true, "רחוב ומספר" ),
+	$O->info_right_box_input( "shipping_address_2", true, "כניסה, קוד אינטרקום, קומה ומספר דירה" )
+) );
+
+//print gui_table( array(
+//        array("עיר",
+//	gui_input("shipping_city", get_usermeta($client_id, "shipping_city"), "onchange=\"update_address(\"shipping_city\", "
+//    . $client_id . "," . $order_id . ")\"")),
+//	array(
+//		"כתובת - רק רחוב ומספר בנין",
+//		gui_input( "address_1", get_usermeta( $client_id, "shipping_address_1" ), "onchange=\"update_address(\"shipping_address_1\", "
+//                                                                                  . $client_id . "," . $order_id . ")\"" )
+//	),
+//	array(
+//		"קומה, מספר דירה, אינטרקום ופרטים נוספים",
+//		gui_input( "address_2", get_usermeta( $client_id, "shipping_address_2" ), "onchange=\"update_address(\"shipping_address_1\", "
+//                                                                                  . $client_id . "," . $order_id . ")\"" )
+//	)
+//));
 
 
-if ( ! $client_id ) {
+if ( ! $invoice_client_id ) {
 	print $step ++ . ") לחץ על צור משתמש - במערכת invoice4u";
 	print gui_button( "btn_create_user", "create_user()", "צור משתמש" );
 	print "<br/>";
@@ -132,19 +94,12 @@ print "<br/>";
         xmlhttp.send();
     }
 
-    function add_message(message) {
-        var log = document.getElementById("log");
-
-        log.innerHTML += message;
-        // alert(message);
-    }
-
 </script>
-
+<div id="log"></div>
 מספר לקוח:
 <label id="invoice_client_id">
 	<?php
-	print $client_id;
+	print $invoice_client_id;
 	?>
 
 </label>

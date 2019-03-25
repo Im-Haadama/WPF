@@ -424,10 +424,6 @@ class Order {
 		}
 	}
 
-	public function GetID() {
-		return $this->order_id;
-	}
-
 	public function OrderDate( $f = "%d/%m/%Y" ) {
 		$sql = "select DATE_FORMAT(post_date, '$f') from wp_posts where id = " . $this->order_id;
 
@@ -622,11 +618,11 @@ class Order {
 
 			$data .= gui_header( 2, "משלוח מספר " . $d_id . $draft_text );
 		}
-		$data    .= $this->infoRightBox();
-		$data    .= "</td>";
-		$data    .= '<tr><td><img src=' . $logo_url . ' height="100"></td></tr>';
-		$data    .= "<td height='16'>" . gui_header( 2, "הערות לקוח להזמנה" ) . "</td></tr>";
-		$excerpt = $this->GetComments();
+		$data     .= $this->infoRightBox( $edit_order );
+		$data     .= "</td>";
+		$data     .= '<tr><td><img src=' . $logo_url . ' height="100"></td></tr>';
+		$data     .= "<td height='16'>" . gui_header( 2, "הערות לקוח להזמנה" ) . "</td></tr>";
+		$excerpt  = $this->GetComments();
 // TODO: find why save excerpt cause window reload
 		if ( $edit_order ) {
 			$data .= gui_cell( gui_textarea( "order_excerpt", htmlspecialchars( $excerpt ) ) );
@@ -654,7 +650,7 @@ class Order {
 		return $data;
 	}
 
-	function infoRightBox() {
+	function infoRightBox( $edit = false ) {
 		if ( ! $this->WC_Order ) {
 			return new Exception( "no WC_Order" );
 		}
@@ -677,10 +673,30 @@ class Order {
 //	$row_text = '<tr><td>כתובת:</td><td>' . order_info( $order_id, '_shipping_address_1' ) . ' '
 //	            . order_info( $order_id, '_shipping_address_2' ) . '</td><tr>';
 //	$data     .= $row_text;
-		$row_text = '<tr><td>כתובת:</td><td>' . $this->getOrderInfo( '_shipping_city' ) . ' ' .
-		            $this->getOrderInfo( '_shipping_address_1' ) . ' ' .
-		            $this->getOrderInfo( '_shipping_address_2' ) . ' ' .
-		            '</td><tr>';
+
+		//		$row_text = '<tr><td>כתובת:</td><td>' .
+		$row_text .= $this->info_right_box_input( "shipping_city", $edit, "עיר" );
+		$row_text .= $this->info_right_box_input( "shipping_address_1", $edit, "רחוב ומספר" );
+		$row_text .= $this->info_right_box_input( "shipping_address_2", $edit, "כניסה, קוד אינטרקום, קומה ומספר דירה" );
+//		             . ' ' .
+//		            $this->info_right_box_date("shipping_address_1", $edit)
+//		            . ' ' .
+//		            $this->info_right_box_date("shipping_address_2", $edit)
+//		            . '</td><tr>';
+
+//		$row_text = '<tr><td>כתובת:</td><td>' .
+//		            $this->info_right_box_date("shipping_city", $edit)
+//		             . ' ' .
+//		            $this->info_right_box_date("shipping_address_1", $edit)
+//		            . ' ' .
+//		            $this->info_right_box_date("shipping_address_2", $edit)
+//		            . '</td><tr>';
+
+//		$row_text = '<tr><td>כתובת:</td><td>' .
+//		            $this->getOrderInfo( '_shipping_city' ) . ' ' .
+//		            $this->getOrderInfo( '_shipping_address_1' ) . ' ' .
+//		            $this->getOrderInfo( '_shipping_address_2' ) . ' ' .
+//		            '</td><tr>';
 		$data     .= $row_text;
 
 		$preference = "";
@@ -725,9 +741,13 @@ class Order {
 	function getOrderInfo( $field_name ) {
 		$sql = 'SELECT meta_value FROM `wp_postmeta` pm'
 		       . ' WHERE pm.post_id = ' . $this->order_id
-		       . ' AND `meta_key` = \'' . $field_name . '\'';
+		       . ' AND (`meta_key` = \'' . $field_name . '\'' .
+		       ' or meta_key = ' . quote_text( '_' . $field_name ) . ')';
 
-		return sql_query_single_scalar( $sql );
+		$value = sql_query_single_scalar( $sql );
+
+		// print $field_name . " " . $value . "<br/>";
+		return $value;
 	}
 
 	function GetOrderDate() {
@@ -736,6 +756,22 @@ class Order {
 		}
 
 		return $this->WC_Order->order_date;
+	}
+
+	function info_right_box_input( $field, $edit, $title ) {
+		$data = array( $title );
+		if ( $edit ) {
+			array_push( $data, gui_input( $field, $this->getOrderInfo( '_' . $field ),
+				"onchange=\"update_address('" . $field . "', " . $this->getCustomerId() . ", " . $this->GetID() . ")\"" ) );
+		} else {
+			array_push( $data, $this->getOrderInfo( $field ) );
+		}
+
+		return gui_row( $data );
+	}
+
+	public function GetID() {
+		return $this->order_id;
 	}
 
 	function GetComments() {
@@ -755,6 +791,11 @@ class Order {
 		$this->comments = $comments;
 		$sql            = "UPDATE wp_posts SET post_excerpt = '" . $this->comments . "' WHERE id=" . $this->order_id;
 		sql_query( $sql );
+	}
+
+	function getAddress() {
+		return $this->getOrderInfo( 'shipping_city' ) . " " . $this->getOrderInfo( 'shipping_address_1' ) .
+		       " " . $this->getOrderInfo( 'shipping_address_2' );
 	}
 
 	function quantity_in_order( $order_item_id ) {

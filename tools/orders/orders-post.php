@@ -30,6 +30,24 @@ $order_id = get_param( "order_id" );
 $operation = $_GET["operation"];
 my_log( "Operation: " . $operation, __FILE__ );
 switch ( $operation ) {
+
+	case "update_address":
+		$address   = get_param( "address", true );
+		$field     = "_" . get_param( "f", true );
+		$client_id = get_param( "client_id", true );
+		update_usermeta( $client_id, $field, $address );
+
+		$order_id = get_param( "order_id" );
+
+		if ( $order_id ) {
+			update_post_meta( $order_id, $field, $address );
+		}
+		$o = new Order( $order_id );
+
+		print " המידע עודכן" . "<br/>" . get_user_address( $client_id, true ) . "<br/>" .
+		      $o->getAddress();
+		break;
+
 	case "get_rate":
 		$user_id = $_GET["id"];
 		print customer_type_name( $user_id );
