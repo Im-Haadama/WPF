@@ -678,37 +678,19 @@ class Order {
 		$row_text .= $this->info_right_box_input( "shipping_city", $edit, "עיר" );
 		$row_text .= $this->info_right_box_input( "shipping_address_1", $edit, "רחוב ומספר" );
 		$row_text .= $this->info_right_box_input( "shipping_address_2", $edit, "כניסה, קוד אינטרקום, קומה ומספר דירה" );
-//		             . ' ' .
-//		            $this->info_right_box_date("shipping_address_1", $edit)
-//		            . ' ' .
-//		            $this->info_right_box_date("shipping_address_2", $edit)
-//		            . '</td><tr>';
-
-//		$row_text = '<tr><td>כתובת:</td><td>' .
-//		            $this->info_right_box_date("shipping_city", $edit)
-//		             . ' ' .
-//		            $this->info_right_box_date("shipping_address_1", $edit)
-//		            . ' ' .
-//		            $this->info_right_box_date("shipping_address_2", $edit)
-//		            . '</td><tr>';
-
-//		$row_text = '<tr><td>כתובת:</td><td>' .
-//		            $this->getOrderInfo( '_shipping_city' ) . ' ' .
-//		            $this->getOrderInfo( '_shipping_address_1' ) . ' ' .
-//		            $this->getOrderInfo( '_shipping_address_2' ) . ' ' .
-//		            '</td><tr>';
+		$row_text .= $this->user_info_right_box_input( "preference", $edit, "העדפות לקוח" );
 		$data     .= $row_text;
 
-		$preference = "";
-		$wp_pref    = get_user_meta( $client_id, "preference" );
-		if ( $wp_pref ) {
-			foreach ( $wp_pref as $pref ) {
-				$preference .= $pref;
-			}
-		}
+//		 = "";
+//		$wp_pref    = get_user_meta( $client_id, "preference", 1 );
+//		if ( $wp_pref ) {
+//			foreach ( $wp_pref as $pref ) {
+//				$preference .= $pref;
+//			}
+//		}
 
 //	$data .= gui_row(array("משימה:", order_get_mission_name($order_id)));
-		$data .= gui_row( array( "העדפות לקוח:", $preference ) );
+//		./ata .= gui_row( array( "העדפות לקוח:", $preference ) );
 
 //	$data .= gui_row( array( "איזור משלוח ברירת מחדל:", get_user_meta( $client_id, 'shipping_zone', true ) ) );
 
@@ -772,6 +754,18 @@ class Order {
 
 	public function GetID() {
 		return $this->order_id;
+	}
+
+	function user_info_right_box_input( $field, $edit, $title ) {
+		$data = array( $title );
+		if ( $edit ) {
+			array_push( $data, gui_input( $field, get_user_meta( $this->getCustomerId(), "preference", 1 ),
+				"onchange=\"update_preference(" . $this->getCustomerId() . ")\"" ) );
+		} else {
+			array_push( $data, get_user_meta( $this->getCustomerId(), "preference", 1 ) );
+		}
+
+		return gui_row( $data );
 	}
 
 	function GetComments() {

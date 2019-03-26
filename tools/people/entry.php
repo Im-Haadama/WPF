@@ -30,11 +30,11 @@ if ( isset( $operation ) ) {
 
 			return;
 	}
-	print table_content( "select client_displayname(user_id) as עובד, date as תאריך, start_time as התחלה, end_time as סיום, " .
-	                     " traveling as 'הוצאות נסיעה', expense as 'הוצאות', expense_text as 'תיאור הוצאה' " .
-	                     " from im_working_hours " .
-	                     " order by id desc " .
-	                     " limit 10" );
+	print table_content( "table", "select client_displayname(user_id) as עובד, date as תאריך, start_time as התחלה, end_time as סיום, " .
+	                              " traveling as 'הוצאות נסיעה', expense as 'הוצאות', expense_text as 'תיאור הוצאה' " .
+	                              " from im_working_hours " .
+	                              " order by id desc " .
+	                              " limit 10" );
 	exit( 0 );
 }
 

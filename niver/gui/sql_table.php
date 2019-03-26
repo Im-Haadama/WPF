@@ -10,9 +10,7 @@ require_once( "inputs.php" );
 
 require_once( ROOT_DIR . "/niver/data/sql.php" );
 
-function table_content(
-	$sql, $header = true, $footer = true, $links = null, &$sum_fields = null, $add_checkbox = false,
-	$checkbox_class = null
+function table_content( $id, $sql, $header = true, $footer = true, $links = null, &$sum_fields = null, $add_checkbox = false, $checkbox_class = null, $chkbox_events = null
 ) {
 	global $conn;
 
@@ -61,13 +59,13 @@ function table_content(
 			$i ++;
 		}
 		if ( $add_checkbox )
-			array_unshift( $row_data, gui_checkbox( "chk" . $row_id, $checkbox_class ));
+			array_unshift( $row_data, gui_checkbox( "chk" . $row_id, $checkbox_class, false, $chkbox_events ) );
 
 		array_push( $rows_data, $row_data );
 	}
 
 	if ( $row_count >= 1 ) {
-		return gui_table( $rows_data, null, $header, $footer, $sum_fields );
+		return gui_table( $rows_data, $table_id, $header, $footer, $sum_fields );
 	}
 
 	return null;

@@ -280,7 +280,6 @@ function gui_select_datalist( $id, $name, $values, $events, $selected = null, $i
 	$data .= ">";
 
 	return $data;
-
 }
 
 function gui_select( $id, $name, $values, $events, $selected, $id_key = "id" ) {
@@ -292,6 +291,7 @@ function gui_select( $id, $name, $values, $events, $selected, $id_key = "id" ) {
 	$data .= ">";
 
 	foreach ( $values as $row ) {
+//		var_dump($row); print "<br/>";
 		$data .= "<option value=\"" . $row[ $id_key ] . "\"";
 		if ( $selected and $selected == $row[ $id_key ] ) {
 			$data .= " selected ";

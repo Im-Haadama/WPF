@@ -300,7 +300,7 @@ class Supply {
 
 	// $internal - true = for our usage. false = for send to supplier.
 	function HtmlLines( $internal, $edit = 1, $categ_group = false ) {
-		print "E=" . $edit . "<br/>";
+//		print "E=" . $edit . "<br/>";
 		$data_lines = array();
 		my_log( __FILE__, "id = " . $this->ID . " internal = " . $internal );
 		$sql = 'select product_id, quantity, id, units '

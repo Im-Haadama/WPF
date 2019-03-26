@@ -13,6 +13,7 @@ if ( ! defined( "ROOT_DIR" ) ) {
 require_once( ROOT_DIR . '/tools/im_tools.php' );
 require_once( ROOT_DIR . '/tools/suppliers/gui.php' );
 require_once( ROOT_DIR . '/tools/people/people.php' );
+require_once( ROOT_DIR . '/tools/gui.php' );
 
 function business_supply_info( $bid ) {
 	global $conn;

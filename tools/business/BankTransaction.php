@@ -51,8 +51,16 @@ class BankTransaction {
 	/**
 	 * @return mixed
 	 */
-	public function getOutAmount() {
-		return $this->out_amount;
+	public function getOutAmount( $attached = false ) {
+		if ( ! $attached ) {
+			return $this->out_amount;
+		}
+
+		$attached_amount = sql_query_single_scalar( "SELECT sum(amount) FROM im_bank_lines " .
+		                                            " WHERE line_id = " . $this->id );
+
+		return $this->out_amount - $attached_amount;
+
 	}
 
 

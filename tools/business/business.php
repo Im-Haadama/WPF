@@ -6,6 +6,9 @@
  * Time: 17:11
  */
 
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
 if ( ! defined( "ROOT_DIR" ) ) {
 	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
 }
@@ -76,7 +79,7 @@ function business_open_ship( $part_id ) {
 
 	// print $sql;
 
-	$data = table_content( $sql );
+	$data = table_content( "table", $sql );
 
 	// $rows = sql_query_array($sql );
 
@@ -106,4 +109,10 @@ function bank_check_dup( $fields, $values ) {
 	print " c=" . $c . "<br/>";
 
 	return $c;
+}
+
+function user_is_business_owner() {
+	$user = wp_get_current_user();
+
+	return in_array( 'business', (array) $user->roles );
 }

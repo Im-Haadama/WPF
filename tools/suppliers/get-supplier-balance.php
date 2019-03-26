@@ -74,13 +74,19 @@ $include_zero = isset( $_GET["zero"] );
 //       . ' group by client_id '
 //       . ' order by 4,5';
 
-$sql = "SELECT round(sum(amount), 0), part_id, supplier_displayname(part_id) \n"
+$sql = "SELECT round(sum(amount), 0) as balance, part_id, supplier_displayname(part_id) \n"
 
        . "FROM `im_business_info`\n"
 
        . "where part_id > 10000\n"
-
+       . " and is_active = 1\n"
+       . " and document_type = " . ImDocumentType::invoice . "\n"
        . "group by part_id";
+
+if ( ! $include_zero ) {
+	$sql .= " having balance < 0";
+}
+
 //print $sql;
 
 $result = sql_query( $sql );
@@ -93,7 +99,7 @@ $data .= "<td>לקוח</td>";
 $data .= "<td>יתרה לתשלום</td>";
 $data .= "</tr>";
 
-print "<a href=\"get-accounts-status.php?zero\">הצג גם חשבונות מאופסים</a>";
+print "<a href=\"get-supplier-balance.php?zero=1\">הצג גם חשבונות מאופסים</a>";
 
 $data_lines         = array();
 $data_lines_credits = array();

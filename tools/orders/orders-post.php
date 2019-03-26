@@ -33,19 +33,25 @@ switch ( $operation ) {
 
 	case "update_address":
 		$address   = get_param( "address", true );
-		$field     = "_" . get_param( "f", true );
+		$field     = get_param( "f", true );
 		$client_id = get_param( "client_id", true );
 		update_usermeta( $client_id, $field, $address );
 
 		$order_id = get_param( "order_id" );
 
 		if ( $order_id ) {
-			update_post_meta( $order_id, $field, $address );
+			update_post_meta( $order_id, "_" . $field, $address );
 		}
 		$o = new Order( $order_id );
 
 		print " המידע עודכן" . "<br/>" . get_user_address( $client_id, true ) . "<br/>" .
 		      $o->getAddress();
+		break;
+
+	case "update_preference":
+		$preference = get_param( "preference", true );
+		$client_id  = get_param( "client_id", true );
+		update_usermeta( $client_id, "preference", $preference );
 		break;
 
 	case "get_rate":

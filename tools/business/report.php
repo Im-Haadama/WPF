@@ -64,7 +64,7 @@ function print_weekly_report( $week ) {
 	       " is_active = 1 AND week = '" . $week . "' AND amount > 0 ORDER BY 1";
 
 	$sums_in = array( 0, 0, array( 0, sum_numbers ), array( 0, sum_numbers ), 0 );
-	$inputs  = table_content( $sql, true, true, array( "../delivery/get-delivery.php?id=%s" ), $sums_in );
+	$inputs  = table_content( "table", $sql, true, true, array( "../delivery/get-delivery.php?id=%s" ), $sums_in );
 
 	$sql = "SELECT supply_from_business(id) as 'אספקה', id, ref as 'תעודת משלוח', date as תאריך, amount AS סכום, " .
 	       "supplier_from_business(id) AS ספק, pay_date as 'תאריך תשלום' " .
@@ -72,7 +72,7 @@ function print_weekly_report( $week ) {
 	       " week = '" . $week . "' AND is_active = 1 AND amount < 0 ORDER BY 3 DESC";
 
 	$sums_supplies = array( "", "", "", "", array( 0, sum_numbers ), "", "" );
-	$outputs       = table_content( $sql, true, true,
+	$outputs       = table_content( "table", $sql, true, true,
 		array( "../supplies/supply-get.php?id=%s" ), $sums_supplies );
 
 	$salary_text = ImMultiSite::sExecute( "people/report-trans.php?week=" . $week . "&project=3", 1 );

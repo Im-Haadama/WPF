@@ -30,7 +30,7 @@ $links[1] = "../../wp-admin/edit.php?post_status=%s&post_type=shop_order";
 $col = 0;
 
 $table[0][ $col ] = gui_header( 1, "הזמנות" );
-$table[1][ $col ] = table_content( $sql, true, true, $links );
+$table[1][ $col ] = table_content( "table", $sql, true, true, $links );
 $table[2][ $col ] = gui_hyperlink( "צור הזננות למנויים", "../weekly/create-subs.php" );
 $table[3][ $col ] = "";
 $table[4][ $col ] = "";
@@ -49,7 +49,7 @@ CASE
 END AS 'מצב' FROM im_supplies WHERE status < 5 GROUP BY 2";
 $links                  = [];
 $links[0]               = "../supplies/supplies-get.php?status=%s";
-$table[ $i ++ ][ $col ] = table_content( $sql, true, true, $links );
+$table[ $i ++ ][ $col ] = table_content( "table", $sql, true, true, $links );
 
 // Catalog
 $i = 0;

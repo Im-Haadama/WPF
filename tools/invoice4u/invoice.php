@@ -10,6 +10,8 @@
 require_once( STORE_DIR . '/im-config.php' );
 require_once( "Constants.php" );
 
+define( "ApiService", "https://api.invoice4u.co.il/Services" );
+
 class Customer {
 	public $Name;
 	public $Active = true; // must be unique
@@ -49,7 +51,7 @@ class Invoice4u {
 
 	private function DoLogin( $invoice_user, $invoice_password ) {
 		// print "EWE invoice login<br/>";
-		$wsdl = "http://private.invoice4u.co.il/Services/LoginService.svc?wsdl";
+		$wsdl = ApiService . "/LoginService.svc?wsdl";
 		$user = array( 'username' => $invoice_user, 'password' => $invoice_password, 'isPersistent' => false );
 		// $user = array('username' => 'Test@test.com', 'password' => '123456', 'isPersistent' => false);
 
@@ -97,7 +99,7 @@ class Invoice4u {
 
 			return 0;
 		}
-		$wsdl = "http://private.invoice4u.co.il/Services/DocumentService.svc?wsdl";
+		$wsdl = ApiService . "/DocumentService.svc?wsdl";
 
 		$this->result = $this->requestWS( $wsdl, "CreateDocument", array( 'doc' => $doc, 'token' => $this->token ) );
 
@@ -182,7 +184,7 @@ class Invoice4u {
 	}
 
 	public function GetCustomerByEmail( $email ) {
-		$wsdl = "http://private.invoice4u.co.il/Services/CustomerService.svc?wsdl";
+		$wsdl = ApiService . "/CustomerService.svc?wsdl";
 
 		$cust        = new Customer( "" );
 		$cust->Email = $email;
@@ -212,7 +214,7 @@ class Invoice4u {
 	}
 
 	public function GetCustomerByName( $name ) {
-		$wsdl = "http://private.invoice4u.co.il/Services/CustomerService.svc?wsdl";
+		$wsdl = ApiService . "/CustomerService.svc?wsdl";
 
 		$this->result = $this->requestWS( $wsdl, "GetByName", array( 'name' => $name, 'token' => $this->token ) );
 
@@ -220,7 +222,7 @@ class Invoice4u {
 	}
 
 	public function GetCustomerById( $id ) {
-		$wsdl = "http://private.invoice4u.co.il/Services/CustomerService.svc?wsdl";
+		$wsdl = ApiService . "/CustomerService.svc?wsdl";
 
 		$cust = new Customer( "" );
 
@@ -247,7 +249,7 @@ class Invoice4u {
 	}
 
 	public function CreateUser( $name, $email, $phone ) {
-		$wsdl = "http://private.invoice4u.co.il/Services/CustomerService.svc?wsdl";
+		$wsdl = ApiService . "/CustomerService.svc?wsdl";
 
 		$customer        = new Customer( $name );
 		$customer->Email = $email;

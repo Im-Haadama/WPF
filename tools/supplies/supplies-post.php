@@ -40,7 +40,10 @@ if ( isset( $_GET["operation"] ) ) {
 			$supply_number = $_GET["supply_number"]; // מספר תעודת משלוח
 			$net_amount    = get_param( "net_amount" );
 			$is_invoice    = get_param( "is_invoice" );
+//			print "ii=" . $is_invoice . "<br/>";
 			$doc_type      = $is_invoice ? ImDocumentType::invoice : ImDocumentType::supply;
+//			print "dt=" . $doc_type;
+//			die(1);
 			$document_date = get_param( "document_date" );
 			$bid           = got_supply( $supply_id, $supply_total, $supply_number, $net_amount, $doc_type, $document_date );
 			if ( ! $bid ) {

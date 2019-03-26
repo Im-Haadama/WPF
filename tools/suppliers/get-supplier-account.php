@@ -20,5 +20,5 @@ $sql = "select id, amount, date\n" .
 
 $links = array( "../business/c-get-business_info.php?id=%s" );
 
-print table_content( $sql, true, true, $links );
+print table_content( "table", $sql, true, true, $links );
 

@@ -353,7 +353,7 @@ print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_missio
             "&is_invoice=" + is_invoice;
 
         if (date)
-            request_url = request_url + "$document_date=" + date;
+            request_url = request_url + "&document_date=" + date;
 
         var request = new XMLHttpRequest();
         request.onreadystatechange = function () {

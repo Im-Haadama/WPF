@@ -29,7 +29,8 @@ $preset_query    = array(
 );
 
 $page_actions = array(
-	array( "הפק קבלות", "c-get-all-bank.php?preset=2" )
+	array( "הפק קבלות", "c-get-all-bank.php?preset=1" ),
+	array( "סמן תשלומים", "c-get-all-bank.php?preset=2" )
 );
 
 $actions = array(

@@ -32,6 +32,7 @@ $trans = [];
 $trans["document_type"] = "get_document_type_name";
 $trans["part_id"]       = "get_customer_name";
 $trans["project_id"]    = "get_project_name";
+// $trans["document_type"] = "gui_select_document_type";
 
 
 //$page_actions = array( array("רענן", "create.php?verbose=1"),
@@ -60,9 +61,10 @@ $defaults["date"] = "date(\"m/d/y\")";
 // Fields to skip in horizontal
 $skip_in_horizontal = array( "is_active" );
 
-$insert["project_id"] = "gui_select_project";
-$insert["mission_id"] = "gui_select_mission";
-$insert["part_id"]    = "gui_select_supplier";
+$insert["project_id"]    = "gui_select_project";
+$insert["mission_id"]    = "gui_select_mission";
+$insert["part_id"]       = "gui_select_supplier";
+$insert["document_type"] = "gui_select_document_type";
 
 $accumulate           = array();
 $accumulate["amount"] = "sum_numbers";

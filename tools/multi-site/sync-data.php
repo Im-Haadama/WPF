@@ -57,7 +57,7 @@ switch ( $operation ) {
 		if ( isset ( $_GET["query"] ) ) {
 			$sql .= " where " . stripcslashes( $_GET["query"] );
 		}
-		print table_content( $sql );
+		print table_content( "table", $sql );
 		break;
 
 	case "update":

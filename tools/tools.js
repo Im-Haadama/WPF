@@ -29,6 +29,23 @@ function update_address(f, client_id, order_id) {
     }
     xmlhttp.open("GET", request, true);
     xmlhttp.send();
+}
+
+function update_preference(client_id) {
+    var preference = get_value_by_name("preference");
+
+    var request = "/tools/orders/orders-post.php?operation=update_preference&preference=" + encodeURI(preference) +
+        "&client_id=" + client_id;
+
+    xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function () {
+        // Wait to get query result
+        if (xmlhttp.readyState === 4 && xmlhttp.status === 200)  // Request finished
+        {
+        }
+    }
+    xmlhttp.open("GET", request, true);
+    xmlhttp.send();
 
 }
 

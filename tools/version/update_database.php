@@ -56,6 +56,20 @@ function create_tasklist() {
 
 
 function version17() {
+	print "bank_lines<br/>";
+	sql_query( "create table im_bank_lines
+(
+	id int not null auto_increment
+		primary key,
+	line_id int null,
+	amount float null,
+	site_id int null,
+	part_id int null,
+	invoice int null
+)
+;
+
+" );
 	print "task_active_time<br/>";
 	sql_query( "drop function task_active_time;" );
 	sql_query( "

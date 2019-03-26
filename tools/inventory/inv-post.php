@@ -139,7 +139,7 @@ function show_in( $prod_id ) {
 	// print $sql;
 
 	// print $sql;
-	print table_content( $sql, true, true, array( "../supplies/supply-get.php?id=%s" ) );
+	print table_content( "table", $sql, true, true, array( "../supplies/supply-get.php?id=%s" ) );
 }
 
 function show_out( $prod_id ) {
@@ -162,7 +162,7 @@ function show_out( $prod_id ) {
 	       " and dl.delivery_id = d.id";
 
 	// print $sql;
-	print table_content( $sql, true, true, array( "../delivery/get-delivery.php?id=%s" ), $sums );
+	print table_content( "table", $sql, true, true, array( "../delivery/get-delivery.php?id=%s" ), $sums );
 
 	$sql    = "select id, quantity from im_bundles where prod_id = $prod_id";
 	$result = sql_query( $sql );
@@ -191,7 +191,7 @@ function show_out( $prod_id ) {
 			       " and dl.delivery_id = d.id";
 
 			// print $sql;
-			print table_content( $sql, true, true, array( "../delivery/get-delivery.php?id=%s" ), $sums );
+			print table_content( "table", $sql, true, true, array( "../delivery/get-delivery.php?id=%s" ), $sums );
 			if ( is_numeric( $sums[1] ) ) {
 				$total += $sums[1] * $B->GetQuantity();
 			}

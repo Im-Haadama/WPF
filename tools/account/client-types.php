@@ -101,4 +101,4 @@ print gui_button( "btn_save", "add_client_type()", "שמור" );
 <?php
 print gui_header( 2, "מחירונים" );
 
-print table_content( "SELECT rate, dry_rate AS מרווח, type AS 'שם מחירון' FROM im_client_types" );
+print table_content( "table", "SELECT rate, dry_rate AS מרווח, type AS 'שם מחירון' FROM im_client_types" );

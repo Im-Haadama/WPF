@@ -19,6 +19,56 @@ require_once( ROOT_DIR . '/tools/suppliers/gui.php' );
 
 $multi_site = ImMultiSite::getInstance();
 
+?>
+    <script>
+        function update_display() {
+            var collection = document.getElementsByClassName("trans_checkbox");
+            table = document.getElementById("table_invoices");
+            var total = 0;
+
+            for (var i = 0; i < collection.length; i++) {
+                if (collection[i].checked) {
+                    var line_id = collection[i].id.substring(3);
+                    total += table.rows[i + 1].cells[3].firstChild.innerHTML;
+
+                }
+            }
+            alert(total);
+
+            return 0;
+
+            var collection = document.getElementsByClassName("trans_checkbox");
+            var business_ids = new Array();
+
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                // Wait to get query result
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+                {
+                    window.location = window.location;
+                }
+            }
+
+            for (var i = 0; i < collection.length; i++) {
+                var order_id = collection[i].id.substr(4);
+                if (document.getElementById("chk_" + order_id).checked)
+                    order_ids.push(order_id);
+            }
+            collection = document.getElementsByClassName("select_order_wc-on-hold");
+            for (var i = 0; i < collection.length; i++) {
+                order_id = collection[i].id.substr(4);
+                if (document.getElementById("chk_" + order_id).checked)
+                    order_ids.push(order_id);
+            }
+
+            var request = "orders-post.php?operation=start_handle&ids=" + order_ids.join();
+            xmlhttp.open("GET", request, true);
+            xmlhttp.send();
+
+        }
+    </script>
+<?php
+
 function get_env( $var, $default ) {
 	if ( isset( $_GET[ $var ] ) ) {
 		return $var;
@@ -99,6 +149,7 @@ if ( isset( $_GET["operation"] ) ) {
 			print gui_table( array(
 					array( "תאריך", gui_div( "pay_date", $b->getDate() ) ),
 					array( "סכום", gui_div( "bank", $b->getOutAmount() ) ),
+					array( "סכום לתיאום", gui_div( "bank", $b->getOutAmount( true ) ) ),
 					array( "מזהה", gui_div( "bank_id", $id ) )
 				)
 			);
@@ -170,7 +221,7 @@ if ( isset( $_GET["operation"] ) ) {
 					"תשלום",
 					gui_button( "btn_receipt", "create_receipt_from_bank()", "הפק חשבונית מס קבלה" )
 				),
-				array( "עודף", " <div id=\"change\"></div>" )
+				array( "סה\"כ", " <div id=\"total\"></div>" )
 			), "payment_table", true, true, $sums, "", "payment_table" );
 
 			break;
@@ -220,8 +271,7 @@ if ( isset( $_GET["operation"] ) ) {
 		case "get_open_site_invoices":
 			$sum         = array();
 			$supplier_id = get_param( "supplier_id", true );
-			print table_content( "SELECT id, ref, amount FROM im_business_info WHERE part_id=" . $supplier_id, true,
-				null, null, $sum, true, "trans_checkbox" );
+			print table_content( "table_invoices", "SELECT id, ref, amount FROM im_business_info WHERE part_id=" . $supplier_id, true, null, null, $sum, true, "trans_checkbox", "onchange=\"update_display()\"" );
 			break;
 
 
