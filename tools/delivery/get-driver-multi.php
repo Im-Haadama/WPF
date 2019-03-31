@@ -259,16 +259,22 @@ foreach ( $data_lines as $mission_id => $data_line ) {
 	$total_distance = 0;
 	$total_duration = 0;
 	for ( $i = 0; $i < count( $path ); $i ++ ) {
+		$first = true;
 		foreach ( $lines_per_station[ $path[ $i ] ] as $line_array ) {
 			$line     = $line_array[0];
 			$order_id = $line_array[1];
 			// print "oid=" . $order_id ."<br/>";
 			$distance       = round( get_distance( $prev, $path[ $i ] ) / 1000, 1 );
-			$total_distance += $distance;
-			$duration       = round( get_distance_duration( $prev, $path[ $i ] ) / 60, 0 );
+			if ( $first ) {
+				$total_distance += $distance;
+				$duration       = round( get_distance_duration( $prev, $path[ $i ] ) / 60, 0 );
+				$first          = false;
+			} else {
+				$duration = 0;
+			}
 			$total_duration += $duration + 5;
 			$data           .= substr( $line, 0, strpos( $line, "</tr>" ) ) . gui_cell( $distance . "km" ) .
-			                   gui_cell( $duration . "ד'" ) . gui_cell( $total_duration . "ד'" ) . "</td>";
+			                   gui_cell( $duration . "ד'" ) . gui_cell( date( "G:i", mktime( 6, $total_duration ) ) . "ד'" ) . "</td>";
 
 			if ( $missing )
 				try {

@@ -111,23 +111,27 @@ function create_receipt_from_bank() {
         // Wait to get query result
         if (xmlhttp.readyState === 4 && xmlhttp.status === 200)  // Request finished
         {
-            logging.innerHTML = xmlhttp.response;
+            add_message(xmlhttp.response);
             // receipt_id = xmlhttp.responseText.trim();
             // logging.innerHTML += "חשבונית מספר " + receipt_id;
             // updateDisplay();
         }
     }
-    var bank = parseFloat(get_value(document.getElementById("bank")));
-    if (isNaN(bank)) bank = 0;
+    var bank_amount = parseFloat(get_value(document.getElementById("bank")));
+    if (isNaN(bank_amount)) bank_amount = 0;
     var date = get_value(document.getElementById("pay_date"));
     var request = "business-post.php?operation=create_receipt" +
-        "&bank=" + bank +
+        "&bank=" + bank_amount +
         "&date=" + date +
-        "&change=" + change.innerHTML +
         "&ids=" + del_ids.join() +
         "&site_id=" + site_id +
         "&user_id=" + client_id +
         "&bank_id=" + bank_id;
+
+    var change = get_value_by_name("change");
+    if (change)
+        request += "&change=" + change;
+
     xmlhttp.open("GET", request, true);
     xmlhttp.send();
 }
@@ -151,14 +155,15 @@ function link_invoice_bank() {
             // updateDisplay();
         }
     }
-    var bank = parseFloat(get_value(document.getElementById("bank")));
-    if (isNaN(bank)) bank = 0;
+    var total = parseFloat(get_value(document.getElementById("total")));
+    if (isNaN(total)) total = 0;
     var date = get_value(document.getElementById("pay_date"));
-    var request = "business-post.php?operation=link_invoice" +
+    var request = "business-post.php?operation=link_invoice_bank" +
         "&ids=" + invoice_ids.join() +
         "&site_id=" + site_id +
         "&supplier_id=" + supplier_id +
-        "&bank_id=" + bank_id;
+        "&bank_id=" + bank_id +
+        "&amount=" + total;
     xmlhttp.open("GET", request, true);
     xmlhttp.send();
 }

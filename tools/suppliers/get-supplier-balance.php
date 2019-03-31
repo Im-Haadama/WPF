@@ -80,7 +80,7 @@ $sql = "SELECT round(sum(amount), 0) as balance, part_id, supplier_displayname(p
 
        . "where part_id > 10000\n"
        . " and is_active = 1\n"
-       . " and document_type = " . ImDocumentType::invoice . "\n"
+       . " and document_type in (" . ImDocumentType::invoice . ", " . ImDocumentType::bank . ")\n"
        . "group by part_id";
 
 if ( ! $include_zero ) {

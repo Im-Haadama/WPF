@@ -15,7 +15,16 @@ require_once( ROOT_DIR . "/niver/data/sql.php" );
 $conn = new mysqli( IM_DB_HOST, IM_DB_NAME, IM_DB_PASSWORD, IM_DB_NAME );
 mysqli_set_charset( $conn, 'utf8' );
 
+print "nv_conversion<br/>";
 
+sql_query( "CREATE TABLE `nv_conversion` (
+ `id` INT(11) NOT NULL AUTO_INCREMENT,
+ `table_name` VARCHAR(20) NOT NULL,
+ `col` VARCHAR(20) NOT NULL,
+ `header` VARCHAR(20) NOT NULL,
+ PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=8 DEFAULT CHARSET=utf8
+" );
 //sql_query("
 //CREATE TABLE `niv_users` (
 //`id` int(11) NOT NULL AUTO_INCREMENT,

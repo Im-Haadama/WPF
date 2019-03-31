@@ -12,6 +12,9 @@ if ( ! defined( "ROOT_DIR" ) ) {
 
 require_once( ROOT_DIR . '/tools/im_tools_light.php' );
 
+//print sql_query_single_scalar("show create table im_bank_account");
+//exit;
+
 $version = get_param( "version" );
 
 switch ( $version ) {
@@ -56,6 +59,30 @@ function create_tasklist() {
 
 
 function version17() {
+	print "bank_account";
+	sql_query( "create table im_bank_account
+(
+	id int not null auto_increment
+		primary key,
+	name varchar(20) not null,
+	number varchar(20) not null
+)
+;
+
+" );
+	print "supplier_display_name" . '<br/>';
+	sql_query( "drop function supplier_displayname" );
+	sql_query( "create function supplier_displayname (supplier_id int) returns text charset utf8  
+BEGIN
+declare _user_id int;
+declare _display varchar(50) CHARSET utf8;
+select supplier_name into _display from im_suppliers
+where id = supplier_id;
+
+return _display;
+END;
+
+" );
 	print "bank_lines<br/>";
 	sql_query( "create table im_bank_lines
 (

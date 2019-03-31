@@ -19,56 +19,6 @@ require_once( ROOT_DIR . '/tools/suppliers/gui.php' );
 
 $multi_site = ImMultiSite::getInstance();
 
-?>
-    <script>
-        function update_display() {
-            var collection = document.getElementsByClassName("trans_checkbox");
-            table = document.getElementById("table_invoices");
-            var total = 0;
-
-            for (var i = 0; i < collection.length; i++) {
-                if (collection[i].checked) {
-                    var line_id = collection[i].id.substring(3);
-                    total += table.rows[i + 1].cells[3].firstChild.innerHTML;
-
-                }
-            }
-            alert(total);
-
-            return 0;
-
-            var collection = document.getElementsByClassName("trans_checkbox");
-            var business_ids = new Array();
-
-            xmlhttp = new XMLHttpRequest();
-            xmlhttp.onreadystatechange = function () {
-                // Wait to get query result
-                if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
-                {
-                    window.location = window.location;
-                }
-            }
-
-            for (var i = 0; i < collection.length; i++) {
-                var order_id = collection[i].id.substr(4);
-                if (document.getElementById("chk_" + order_id).checked)
-                    order_ids.push(order_id);
-            }
-            collection = document.getElementsByClassName("select_order_wc-on-hold");
-            for (var i = 0; i < collection.length; i++) {
-                order_id = collection[i].id.substr(4);
-                if (document.getElementById("chk_" + order_id).checked)
-                    order_ids.push(order_id);
-            }
-
-            var request = "orders-post.php?operation=start_handle&ids=" + order_ids.join();
-            xmlhttp.open("GET", request, true);
-            xmlhttp.send();
-
-        }
-    </script>
-<?php
-
 function get_env( $var, $default ) {
 	if ( isset( $_GET[ $var ] ) ) {
 		return $var;
@@ -79,7 +29,14 @@ function get_env( $var, $default ) {
 
 if ( isset( $_GET["operation"] ) ) {
 	$operation = $_GET["operation"];
+	// print "op=" . $operation . "<br/>";
 	switch ( $operation ) {
+		case "get_amount":
+			$sql = "SELECT amount FROM im_business_info \n" .
+			       " WHERE id = " . get_param( "id", true );
+			print sql_query_single_scalar( $sql );
+			break;
+
 		case "add_item":
 			print "Adding item<br/>";
 			$part_id      = $_GET["part_id"];
@@ -93,6 +50,7 @@ if ( isset( $_GET["operation"] ) ) {
 			print $part_id . ", " . $date . ", " . $amount . ", " . $delivery_fee . ", " . $ref . ", " . $project . "<br/>";
 			print "done<br/>";
 			break;
+
 		case "delete_items":
 			$ids = $_GET["ids"];
 			my_log( "Deleting ids: " . $ids );
@@ -109,6 +67,7 @@ if ( isset( $_GET["operation"] ) ) {
 				my_log( "show_makolet user $user" );
 			}
 			break;
+
 		case "create_makolet":
 			$user  = wp_get_current_user();
 			$roles = $user->roles;
@@ -119,6 +78,7 @@ if ( isset( $_GET["operation"] ) ) {
 				my_log( "show_makolet user $user" );
 			}
 			break;
+
 		case "show_control":
 			$user  = wp_get_current_user();
 			$roles = $user->roles;
@@ -132,6 +92,7 @@ if ( isset( $_GET["operation"] ) ) {
 				my_log( "show_control user $user" );
 			}
 			break;
+
 		case "create_pay_bank":
 			require_once( ROOT_DIR . '/tools/business/BankTransaction.php' );
 			require_once( ROOT_DIR . '/tools/account/gui.php' );
@@ -161,36 +122,55 @@ if ( isset( $_GET["operation"] ) ) {
 			print gui_table( array(
 				array(
 					"קשר",
-					gui_button( "btn_receipt", "link_invoice_bank()", "קשר תשלום לחשבונית" )
+					gui_button( "btn_receipt", "link_invoice_bank()", "קשר תשלום לחשבוני/ות" )
 				),
-				array( "עודף", " <div id=\"change\"></div>" )
+				array( "סה\"כ", " <div id=\"total\"></div>" )
 			), "payment_table", true, true, $sums, "", "payment_table" );
 
 			break;
 
 		case "link_invoice_bank":
-			$bank_id     = get_param( "bank_id", true );
-			$supplier_id = get_param( "supplier_id", true );
-			$site_id     = get_param( "site_id", true );
-			$ids         = get_param( "ids", true );
+			$bank_id      = get_param( "bank_id", true );
+			$supplier_id  = get_param( "supplier_id", true );
+			$site_id      = get_param( "site_id", true );
+			$ids          = get_param_array( "ids" );
+			$total_amount = - get_param( "amount" );
 
 			// 1) mark the bank transaction to invoice.
-			$sql = "UPDATE im_bank SET reciept = " . $ids . " WHERE bank_id = " . $bank_id;
-			print $sql;
+			foreach ( $ids as $id ) {
+				$amount = $multi_site->Run( "business/business-post.php?operation=get_amount&id=" . $id, $site_id );
+				$sql    = "INSERT INTO im_bank_lines (line_id, amount, site_id, part_id, invoice)\n" .
+				          "VALUES (" . $bank_id . ", " . $amount . ", " . $site_id . ", " . $supplier_id . ", " .
+				          $id . ")";
+
+				sql_query( $sql );
+			}
+			$b    = BankTransaction::createFromDB( $bank_id );
+			$date = $b->getDate();
 
 			// 2) mark the invoices to transaction.
-			print $multi_site->Run( "business-post.php?operation=add_payment?ids=" . $ids . "&supplier_id=" . $supplier_id .
-			                        "bank_id=" . $bank_id, $site_id );
+			print $multi_site->Run( "business/business-post.php?operation=add_payment&ids=" . implode( $ids, "," ) . "&supplier_id=" . $supplier_id .
+			                        "&bank_id=" . $bank_id . "&date=" . $date .
+			                        "&amount=" . $total_amount, $site_id );
 			break;
 
 		case "add_payment":
 			$supplier_id = get_param( "supplier_id", true );
 			$bank_id     = get_param( "bank_id", true );
-			$ids         = get_param_array( "ids", true );
-			print "sup=" . $supplier_id . " bank_id=" . $bank_id;
-			print "ids=";
-			var_dump( $ids );
+			$ids         = get_param_array( "ids" );
+			$date        = get_param( "date", true );
+			$amount      = get_param( "amount", true );
+			$sql         = "INSERT INTO im_business_info (part_id, date, amount, ref, document_type)\n" .
+			               "VALUES(" . $supplier_id . "," . $date . "," . $amount . ", " . $bank_id . ", " . ImDocumentType::bank . ")";
+			sql_query( $sql );
+
+			$sql = "update im_business_info\n" .
+			       "set pay_date = '" . $date . "'\n" .
+			       "where id in (" . comma_implode( $ids ) . ")";
+
+			sql_query( $sql );
 			break;
+
 		case "create_invoice_bank":
 			require_once( ROOT_DIR . '/tools/business/BankTransaction.php' );
 			require_once( ROOT_DIR . '/tools/account/gui.php' );
@@ -201,9 +181,9 @@ if ( isset( $_GET["operation"] ) ) {
 					"/tools/account/account.js"
 				) );
 			$id = get_param( "id" );
-			print gui_header( 1, "הפקת חשבונית קבלה להעברה " );
-
 			$b = BankTransaction::createFromDB( $id );
+			print gui_header( 1, "הפקת חשבונית קבלה להפקדה מבנק " );
+
 			print gui_header( 2, "פרטי העברה" );
 			print gui_table( array(
 					array( "תאריך", gui_div( "pay_date", $b->getDate() ) ),
@@ -221,10 +201,11 @@ if ( isset( $_GET["operation"] ) ) {
 					"תשלום",
 					gui_button( "btn_receipt", "create_receipt_from_bank()", "הפק חשבונית מס קבלה" )
 				),
-				array( "סה\"כ", " <div id=\"total\"></div>" )
+				array( "עודף", " <div id=\"change\"></div>" )
 			), "payment_table", true, true, $sums, "", "payment_table" );
 
 			break;
+
 		case "get_supplier_open_account":
 			$sql = "select " . $multi_site->LocalSiteId() . ", part_id, supplier_displayname(part_id), round(sum(amount),2) as total\n"
 			       . "from im_business_info\n"
@@ -239,6 +220,7 @@ if ( isset( $_GET["operation"] ) ) {
 			$data .= "</table>";
 			print $data;
 			break;
+
 		case "get_client_open_account":
 			$sql = "select " . $multi_site->LocalSiteId() . ", client_id, client_displayname(client_id), round(sum(transaction_amount),2) as total\n"
 			       . "from im_client_accounts\n"
@@ -253,6 +235,7 @@ if ( isset( $_GET["operation"] ) ) {
 			$data .= "</table>";
 			print $data;
 			break;
+
 		case "get_trans":
 			$client_id = get_param( "client_id" );
 			$site_id   = get_param( "site_id" );
@@ -273,7 +256,6 @@ if ( isset( $_GET["operation"] ) ) {
 			$supplier_id = get_param( "supplier_id", true );
 			print table_content( "table_invoices", "SELECT id, ref, amount FROM im_business_info WHERE part_id=" . $supplier_id, true, null, null, $sum, true, "trans_checkbox", "onchange=\"update_display()\"" );
 			break;
-
 
 		case "create_receipt":
 			$bank_amount = get_param( "bank" );
@@ -310,12 +292,29 @@ function business_create_multi_site_receipt( $bank_id, $bank_amount, $date, $cha
 	           "&change=" . $change;
 	$result  = $multi_site->Run( $command, $site_id );
 
-	$receipt = $result;
+	if ( strstr( $result, "כבר" ) ) {
+		die( "already paid" );
+	}
+	if ( strlen( $result ) < 2 ) {
+		die( "bad response" );
+	}
+	if ( strlen( $result ) > 10 ) {
+		die( $result );
+	}
+	// print "r=" . $result . "<br/>";
 
-	// TODO: to parse $id from $result;
-	$b = BankTransaction::createFromDB( $bank_id );
-	$b->Update( $user_id, $receipt, $site_id );
-	print "חשבונית קבלה מספר " . $receipt . " נוצרה ";
+	$receipt = intval( trim( $result ) );
+
+	// print "re=" . $receipt . '<br/>';
+
+	if ( $receipt > 0 ) {
+		// TODO: to parse $id from $result;
+		$b = BankTransaction::createFromDB( $bank_id );
+		$b->Update( $user_id, $receipt, $site_id );
+		print "חשבונית קבלה מספר " . $receipt . " נוצרה ";
+	} else {
+		print $receipt;
+	}
 }
 
 function gui_select_open_supplier( $id = "supplier" ) {

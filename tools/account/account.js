@@ -4,7 +4,6 @@
 
 function update_sum() {
     var collection = document.getElementsByClassName("trans_checkbox");
-    var table = document.getElementById("transactions");
     var total = 0;
     var credit = parseFloat(get_value(document.getElementById("credit")));
     if (isNaN(credit)) credit = 0;
@@ -36,7 +35,10 @@ function update_sum() {
         logging.innerHTML += " סך תקבולים " + (credit + bank + cash + check) + "<br/>";
         var total_pay = (credit + bank + cash + check);
         var cash_delta = Math.round(100 * (total_pay - total)) / 100;
-        change.innerHTML = cash_delta;
+        var change = document.getElementById("change");
+
+        if (change)
+            change.innerHTML = cash_delta;
 
         if ((total_pay > 0) && Math.abs(cash_delta) <= 400) {
             disable_btn('btn_invoice');

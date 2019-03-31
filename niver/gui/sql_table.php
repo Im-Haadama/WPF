@@ -10,7 +10,7 @@ require_once( "inputs.php" );
 
 require_once( ROOT_DIR . "/niver/data/sql.php" );
 
-function table_content( $id, $sql, $header = true, $footer = true, $links = null, &$sum_fields = null, $add_checkbox = false, $checkbox_class = null, $chkbox_events = null
+function table_content( $table_id, $sql, $header = true, $footer = true, $links = null, &$sum_fields = null, $add_checkbox = false, $checkbox_class = null, $chkbox_events = null
 ) {
 	global $conn;
 

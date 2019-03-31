@@ -59,7 +59,7 @@ class BankTransaction {
 		$attached_amount = sql_query_single_scalar( "SELECT sum(amount) FROM im_bank_lines " .
 		                                            " WHERE line_id = " . $this->id );
 
-		return $this->out_amount - $attached_amount;
+		return $this->out_amount + $attached_amount;
 
 	}
 
@@ -72,12 +72,16 @@ class BankTransaction {
 	}
 
 	public function Update( $customer_id, $receipt, $site_id ) {
-		$sql = "UPDATE im_bank SET customer_id = " . $customer_id .
-		       ", receipt = " . $receipt .
-		       ", site_id = " . $site_id .
-		       " WHERE id = " . $this->id;
+		if ( is_numeric( $receipt ) ) {
+			$sql = "UPDATE im_bank SET customer_id = " . $customer_id .
+			       ", receipt = " . $receipt .
+			       ", site_id = " . $site_id .
+			       " WHERE id = " . $this->id;
 
-		sql_query( $sql );
+			sql_query( $sql );
+		} else {
+			throw new Exception( "invalid receipt number" );
+		}
 	}
 
 
