@@ -19,7 +19,7 @@ switch ( $operation ) {
 		// print "saving legacy deliveries<br/>";
 		$ids_ = $_GET["ids"];
 		$ids  = explode( ',', $ids_ );
-//		var_dump($ids);
+
 		save_legacy( $ids );
 		break;
 
@@ -28,22 +28,19 @@ switch ( $operation ) {
 		// print "creating ship<br/>";
 		$ids_ = $_GET["ids"];
 		$ids  = explode( ',', $ids_ );
-//		var_dump($ids);
+
 		// TODO: select customer id.
 		print invoice_create_ship( $legacy_user, $ids );
 		break;
 
-	case "create_invoice":
-		global $legacy_user; // From im-config.php
-		// print "creating ship<br/>";
-//		var_dump($ids);
-		$doc_id = invoice_create_invoice( $legacy_user );
+	case "create_subcontract_invoice":
+		global $client_customer_sub;
+		$doc_id = invoice_create_subcontract_invoice( $client_customer_sub );
 		if ( $doc_id ) {
 			print " חשבונית $doc_id הופקה ";
 		}
 
 		break;
-
 }
 
 function invoice_create_ship( $customer_id, $order_ids ) {
@@ -126,12 +123,13 @@ function invoice_create_ship( $customer_id, $order_ids ) {
 	return $doc_id;
 }
 
-function invoice_create_invoice( $customer_id ) {
-	global $invoice_user;
-	global $invoice_password;
+function invoice_create_subcontract_invoice( $invoice_client_id ) {
+	global $invoice_user_sub;
+	global $invoice_password_sub;
+	global $legacy_user;
 
 //	print "start<br/>";
-	$invoice = new Invoice4u( $invoice_user, $invoice_password );
+	$invoice = new Invoice4u( $invoice_user_sub, $invoice_password_sub );
 //	var_dump($invoice);
 
 	if ( is_null( $invoice->token ) ) {
@@ -140,14 +138,14 @@ function invoice_create_invoice( $customer_id ) {
 
 	// print "customer id : " . $customer_id . "<br/>";
 
-	$invoice_client_id = $invoice->GetInvoiceUserId( $customer_id );
+//	$invoice_client_id = $invoice->GetInvoiceUserId( $customer_id );
 
 	// print "invoice client id " . $invoice_client_id . "<br/>";
 
 	$client = $invoice->GetCustomerById( $invoice_client_id );
 
 	if ( ! ( $client->ID ) > 0 ) {
-		print "Invoice client not found " . $customer_id . "<br>";
+		print "Invoice client not found " . $invoice_client_id . "<br>";
 
 		// var_dump( $client );
 
@@ -168,7 +166,7 @@ function invoice_create_invoice( $customer_id ) {
 
 	$sql = "select id, date, amount, net_total, ref " .
 	       " from im_business_info " .
-	       " where part_id = " . $customer_id .
+	       " where part_id = " . $legacy_user .
 	       " and invoice is null " .
 	       " and document_type = " . ImDocumentType::ship;
 
@@ -210,7 +208,7 @@ function invoice_create_invoice( $customer_id ) {
 	$doc_id = $invoice->CreateDocument( $doc );
 
 	if ( $doc_id ) {
-		business_add_transaction( $customer_id, date( 'Y-m-d' ), $total_lines, 0, $doc_id, 1, $net_total,
+		business_add_transaction( $legacy_user, date( 'Y-m-d' ), $total_lines, 0, $doc_id, 1, $net_total,
 			ImDocumentType::invoice );
 
 		sql_query( "UPDATE im_business_info SET invoice = " . $doc_id .

@@ -4,4 +4,4 @@ cd $DIR
 FILE="daily.log.`date +%d`.html"
 echo $FILE
 date > $FILE
-php ../tools/auto/daily.php &> $FILE
+php $DIR/../tools/auto/daily-trigger.php &>> $FILE

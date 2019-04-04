@@ -46,7 +46,7 @@ require_once( ROOT_DIR . '/tools/delivery/delivery-common.php' );
             xmlhttp.send();
         }
 
-        function create_invoice() {
+        function create_subcontract_invoice() {
             xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function () {
                 // Wait to get query result
@@ -56,7 +56,7 @@ require_once( ROOT_DIR . '/tools/delivery/delivery-common.php' );
                     document.getElementById("logging").innerHTML = http_text;
                 }
             }
-            var request = "legacy-post.php?operation=create_invoice";
+            var request = "legacy-post.php?operation=create_subcontract_invoice";
             xmlhttp.open("GET", request, true);
             xmlhttp.send();
 
@@ -180,7 +180,7 @@ if ( strlen( $data ) > 30 ) {
 
 	print $data;
 
-	print gui_button( "id_legacy_invoice", "create_invoice()", "הפק חשבונית מס" );
+	print gui_button( "id_legacy_invoice", "create_subcontract_invoice()", "הפק חשבונית מס" );
 
 }
 

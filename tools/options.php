@@ -15,6 +15,8 @@ require_once( ROOT_DIR . '/niver/data/sql.php' );
 function info_get( $key, $create = false, $default = null ) {
 	$sql = "SELECT info_data FROM im_info WHERE info_key = '" . $key . "'";
 
+//	print $sql ."<br/>";
+
 	$result = sql_query_single_scalar( $sql );
 
 	if ( is_null( $result ) ) {
@@ -30,10 +32,13 @@ function info_get( $key, $create = false, $default = null ) {
 
 function info_update( $key, $data ) {
 	$sql = "SELECT info_data FROM im_info WHERE info_key = '" . $key . "'";
+//	print "s1=" . $sql . "<br/>";
 
 	$result = sql_query_single_scalar( $sql );
 	if ( ! $result ) {
-		sql_query( "insert into im_info (info_key, info_data) VALUE ('$key', '$data')" );
+		$sql = "insert into im_info (info_key, info_data) VALUE ('$key', '$data')";
+//		print $sql;
+		sql_query( $sql );
 
 		return;
 	}

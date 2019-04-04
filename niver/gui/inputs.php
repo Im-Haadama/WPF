@@ -540,5 +540,13 @@ function gui_select_repeat_time( $id, $value, $events ) {
 	$line["data"] = 'z';
 	array_push( $values, $line );
 
-	return gui_select( $id, "name", $values, $events, $value );
+	$selected = 0;
+
+	for ( $i = 1; $i < 4; $i ++ ) {
+		if ( $line["data"] == $value ) {
+			$selected = $i;
+		}
+	}
+
+	return gui_select( $id, "name", $values, $events, $selected );
 }

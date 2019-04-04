@@ -254,7 +254,11 @@ if ( isset( $_GET["operation"] ) ) {
 		case "get_open_site_invoices":
 			$sum         = array();
 			$supplier_id = get_param( "supplier_id", true );
-			print table_content( "table_invoices", "SELECT id, ref, amount FROM im_business_info WHERE part_id=" . $supplier_id, true, null, null, $sum, true, "trans_checkbox", "onchange=\"update_display()\"" );
+			$sql         = "SELECT id, ref, amount, date FROM im_business_info WHERE part_id=" . $supplier_id .
+			               " AND document_type = 4\n";
+
+			print table_content( "table_invoices", $sql, true, null, null, $sum, true,
+				"trans_checkbox", "onchange=\"update_display()\"" );
 			break;
 
 		case "create_receipt":

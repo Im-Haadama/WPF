@@ -18,6 +18,9 @@ require_once( ROOT_DIR . '/tools/im_tools_light.php' );
 $version = get_param( "version" );
 
 switch ( $version ) {
+	case "basic":
+		basic();
+		break;
 	case "16":
 		version16();
 		break;
@@ -34,6 +37,19 @@ switch ( $version ) {
 print "done";
 die ( 0 );
 
+
+function basic() {
+	sql_query( "CREATE TABLE im_info
+(
+	info_key VARCHAR(20) NULL,
+	info_data VARCHAR(200) NULL,
+	id INT NOT NULL AUTO_INCREMENT
+		PRIMARY KEY
+)
+;
+
+" );
+}
 function create_tasklist() {
 	sql_query( "CREATE TABLE `im_tasklist` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,

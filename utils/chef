@@ -1,2 +1,0 @@
-cat aa.php | egrep 'RowName|span' | awk -F'>|<' '/RowName/ { printf("\n%s,", $3); } /span/ {printf("%s, ",  $3);}' > q.csv
-

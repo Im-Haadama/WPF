@@ -6,19 +6,20 @@
  * Time: 19:16
  */
 
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
 require_once( gethostname() . '.php' );
 
-if ( ! isset( $_GET["tabula"] ) ) {
-	die ( 1 );
-}
+// print "dir= " . $backup_dir . "<br/>";
 
 if ( ! isset( $_GET["tabula"] ) ) {
-	die ( 1 );
+	die ( "key" );
 }
 
 $tabula = $_GET["tabula"];
 if ( $tabula != "145db255-79ea-4e9c-a51d-318a86c999bf" ) {
-	die( 2 );
+	die( "wrong key" );
 }
 
 if ( ! isset( $_GET["op"] ) ) {
@@ -29,11 +30,11 @@ $op = $_GET["op"];
 
 // print $folder;
 
-$content = scandir( $backup_dir );
+$content = scandir( $backup_dir, SCANDIR_SORT_DESCENDING );
 
-if ( count( $content ) > ( $backup_count + 3 ) ) // Files . .. tmp
+if ( count( $content ) > 2 /* ( $backup_count + 3 )*/ ) // Files . .. tmp
 {
-	$file_name = $content[3];
+	$file_name = $content[0];
 	$file      = $backup_dir . '/' . $file_name;
 	switch ( $op ) {
 		case "name":
@@ -46,7 +47,9 @@ if ( count( $content ) > ( $backup_count + 3 ) ) // Files . .. tmp
 			print readfile_chunked( $file );
 			exit( 0 );
 		case "delete":
-			unlink( $file );
+			if ( count( $content ) > $backup_count + 3 ) {
+				unlink( $content[ count( $content ) - 1 ] );
+			}
 			exit( 0 );
 	}
 	// print $file_name;

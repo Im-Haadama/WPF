@@ -15,10 +15,19 @@ case "$extension" in
 	ssconvert $file "${file%.*}.csv"
 	;;
 
+"html")
+	ssconvert $file "${file%.*}.csv"
+	;;
+
 "pdf")
 	/home/agla/store/utils/run_sadot.sh  $file > "${file%.*}.csv"
 	;;
-esac	
+
+	*)
+	echo Extention $extension not supported.
+	exit 1
+	;;
+esac
 if [ -f $result ]; then
 	echo $(basename $result)
 fi

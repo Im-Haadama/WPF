@@ -80,12 +80,16 @@ function get_text( $row, $index ) {
 
 // Start collecting data
 $data_lines = array();
-$header = null;
+$header     = null;
+$missions   = get_param_array( "mission_ids" );
+
+if ( ! $missions ) {
 if ( isset( $week ) ) {
 	$missions = sql_query_array_scalar( "SELECT id FROM im_missions WHERE date >= " . quote_text( $week ) .
 	                                    " AND date < DATE_ADD(" . quote_text( $week ) . ", INTERVAL 1 WEEK)" );
 } else {
 	$missions = sql_query_array_scalar( "SELECT id FROM im_missions WHERE date = curdate()" );
+}
 }
 
 if ( ! count( $missions ) ) {
