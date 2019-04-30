@@ -117,7 +117,7 @@ if ( isset( $operation ) ) {
 <?php
 
 $table = inbox_files( $hostname, $mail_user, $password, $attach_folder, $folder_url,
-	array( "חשבונית", "חוזה" ) );
+	array( "חשב", "חשבונית", "חוזה" ) );
 
 if ( ! $table ) {
 	return;

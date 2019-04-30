@@ -155,15 +155,34 @@ function link_invoice_bank() {
             // updateDisplay();
         }
     }
-    var total = parseFloat(get_value(document.getElementById("total")));
-    if (isNaN(total)) total = 0;
+    var bank = parseFloat(get_value(document.getElementById("bank")));
+    if (!(bank > 0)) {
+        alert("שגיאה בסכום");
+        return;
+    }
     var date = get_value(document.getElementById("pay_date"));
     var request = "business-post.php?operation=link_invoice_bank" +
         "&ids=" + invoice_ids.join() +
         "&site_id=" + site_id +
         "&supplier_id=" + supplier_id +
         "&bank_id=" + bank_id +
-        "&amount=" + total;
+        "&date=" + date +
+        "&bank=" + bank;
     xmlhttp.open("GET", request, true);
     xmlhttp.send();
+}
+
+function update_display() {
+    var collection = document.getElementsByClassName("trans_checkbox");
+    var t = 0;
+    var table = document.getElementById("table_invoices");
+
+    for (var i = 0; i < collection.length; i++) {
+        if (collection[i].checked) {
+            var amount = parseFloat(table.rows[i + 1].cells[3].innerHTML);
+            t += amount;
+        }
+    }
+
+    document.getElementById("total").innerHTML = t.toString();
 }

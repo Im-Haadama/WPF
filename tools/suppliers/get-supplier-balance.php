@@ -58,6 +58,13 @@ print header_text( false );
 
 $include_zero = isset( $_GET["zero"] );
 
+$supplier_id = get_param( "supplier_id" );
+if ( $supplier_id ) {
+	print get_supplier_balance( $supplier_id );
+
+	return;
+}
+
 /**
  * Created by PhpStorm.
  * User: agla
@@ -80,6 +87,7 @@ $sql = "SELECT round(sum(amount), 0) as balance, part_id, supplier_displayname(p
 
        . "where part_id > 10000\n"
        . " and is_active = 1\n"
+       . " and document_type in (" . ImDocumentType::invoice . ", " . ImDocumentType::bank . ")\n"
        . " and document_type in (" . ImDocumentType::invoice . ", " . ImDocumentType::bank . ")\n"
        . "group by part_id";
 
@@ -115,7 +123,7 @@ while ( $row = sql_fetch_row( $result ) ) {
 	$line = gui_cell( gui_checkbox( "chk_" . $supplier_id, "supplier_chk" ) );
 	// $line .= "<td><a href = \"get-supplier-account.php?supplier_id=" . $supplier_id . "\">" . $supplier_name . "</a></td>";
 	$line .= gui_cell( gui_hyperlink( get_supplier_name( $supplier_id ),
-		"../business/c-get-all-business_info.php?&document_type=4&&is_active=1&&part_id=" . $supplier_id ) );
+		"get-supplier-balance.php?supplier_id=" . $supplier_id ) );
 
 	$line .= "<td>" . $supplier_total . "</td>";
 //	print $line;
@@ -155,3 +163,23 @@ print "$data";
 <div id="logging"></div>
 </body>
 </html>
+
+<?php
+
+function get_supplier_balance( $supplier_id ) {
+	$sum       = array( null, null, array( 0, 'sum_numbers' ) );
+	$links     = array();
+	$selectors = array();
+
+	$selectors["document_type"] = "gui_select_document_type";
+
+	print table_content( "supplier_account",
+		"SELECT date, amount, ref, pay_date, document_type FROM im_business_info " .
+		" WHERE part_id = " . $supplier_id .
+		" AND document_type IN ( " . ImDocumentType::bank . "," . ImDocumentType::invoice . ") " .
+		" ORDER BY date DESC ", true, true, $links, $sum,
+		true, "line_select", "", $selectors );
+}
+
+?>
+

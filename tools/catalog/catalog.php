@@ -229,7 +229,7 @@ class Catalog {
 
 		if ( $count == 0 ) {
 			// Product is in stock. Do nothing.
-			if ( $P->getStockManaged() and ( $P->getStock() > 0 ) ) {
+			if ( ( $P->getStock() > 0 ) ) {
 				return true;
 			}
 
@@ -237,7 +237,6 @@ class Catalog {
 				return false;
 			}
 			$line .= gui_cell( "מוצר לא מקושר" );
-			// if ($current_supplier_name == "שדות" || $current_supplier_name == "יבולי בר") {
 			$line .= gui_cell( 'מוצר יורד' );
 			$line .= "</tr>";
 
@@ -637,6 +636,9 @@ function supplier_prod_id( $prod_id, $supplier_id ) {
 	return 0;
 }
 
+function show_monthly() {
+
+}
 function alternatives( $prod_id, $details = false )
 {
 	global $conn;

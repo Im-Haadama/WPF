@@ -12,6 +12,9 @@ if ( ! defined( 'ROOT_DIR' ) ) {
 require_once( ROOT_DIR . "/tools/im_tools.php" );
 require_once( ROOT_DIR . "/niver/gui/inputs.php" );
 require_once( ROOT_DIR . "/tools/supplies/Supply.php" );
+require_once( ROOT_DIR . "/tools/multi-site/imMulti-site.php" );
+
+$m = ImMultiSite::getInstance();
 
 ob_start();
 
@@ -25,7 +28,26 @@ auto_supply();
 
 require_once( ROOT_DIR . "/tools/tasklist/Tasklist.php" );
 print gui_header( 1, "Creating tasks from templates into tasklist" );
-create_tasks();
+create_tasks( null, true );
+
+// Local scripts - active from task_template
+//$site_name = $m->getLocalSiteName();
+//$local_dir = ROOT_DIR . '/tools/' . $site_name;
+//if (file_exists($local_dir))
+//{
+//	print gui_header( 1, "Running site specific" );
+//
+//	$scripts = scandir($local_dir);
+//
+//	foreach ($scripts as $script)
+//	{
+//		if (strstr($script, ".php")){
+//			print "running $script<br/>";
+//			require_once ($script);
+//
+//		}
+//	}
+//}
 
 // Create local database backup
 
@@ -74,7 +96,8 @@ function auto_supply() {
 			foreach ( $supply_lines as $line ) {
 				$supply->AddLine( $line[0], $line[1], get_buy_price( $line[0] ) );
 			}
-			$supply->Send();
+			// Manual control!
+			// $supply->Send();
 		} else {
 			print "not enough for an order\n";
 		}
@@ -186,7 +209,8 @@ function backup_database() {
 	     info_get( "backup_result" ) == $success
 	) {
 		print "has successful backup<br/>";
-		die( 0 );
+
+		return;
 	}
 
 	print "running backup<br/>";
@@ -213,9 +237,9 @@ function backup_database() {
 	// print $command . "<br/>";
 	exec( $command );
 
-	exec( "gzip " . $backup_file );
-
 	$result = exec( "tail -1 " . $backup_file );
+
+	exec( "gzip " . $backup_file );
 
 	// Server might gone because of the backup.
 	global $conn;

@@ -142,8 +142,9 @@ add_command( $table, $row, $col, "edit_pricelist", "תבנית", "tasklist/c-get
 add_command( $table, $row, $col, "edit_pricelist", "משימות פעילות", $m->getSiteToolsURL( 1 ) . "/tasklist/c-get-all-tasklist.php?preset=1", "tasks" );
 add_command( $table, $row, $col, "edit_pricelist", "חשבוניות", "business/c-get-all-business_info.php?document_type=4&is_active=1" );
 add_command( $table, $row, $col, "edit_pricelist", "פרויקטים", "people/c-get-all-projects.php" );
-add_command( $table, $row, $col, "edit_pricelist", "תיבת דואר", "business/manage-inbox.php" );
+add_command( $table, $row, $col, "edit_pricelist", "תיבת דואר", "business/inbox-box.php" );
 add_command( $table, $row, $col, "show_bank", "בנק", "business/c-get-all-bank.php" );
+add_command( $table, $row, $col, "show_bank", "התאם תשלומים", "business/business-post.php?operation=show_pay_to_link" );
 add_command( $table, $row, $col, "show_bank", "ניתוח שבועי", "business/report.php" );
 
 while ( $row < $max_row ) {

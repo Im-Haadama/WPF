@@ -2,7 +2,7 @@
 require_once 'delivery.php';
 require_once '../orders/orders-common.php';
 
-print header_text( false );
+print header_text( false, true, true, array( "/tools/tools.js", "/niver/gui/client_tools.js" ) );
 $id     = $_GET["id"];
 $send   = isset( $_GET["send"] );
 $margin = isset( $_GET["margin"] );

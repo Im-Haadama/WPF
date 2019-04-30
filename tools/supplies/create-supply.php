@@ -58,7 +58,8 @@ for ( $i = 0; ! $parse_header_result and ( $i < 4 ); $i ++ ) {
 		print "trying to locate headers $i <br/>";
 	}
 	$parse_header_result = parse_header( $file, $item_code_idx, $name_idx, $price_idx, $sale_idx, $inventory_idx, $detail_idx,
-		$category_idx, $is_active_idx, $picture_path_idx, $quantity_idx );
+		$category_idx, $is_active_idx, $filter_idx, $picture_path_idx, $quantity_idx );
+
 }
 
 if ( $debug ) {

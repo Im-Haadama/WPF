@@ -63,6 +63,9 @@ function get_max_supplier() {
 }
 
 function user_dislike( $user_id, $prod_id ) {
+	if ( ! $user_id ) {
+		return false;
+	}
 	$sql = 'SELECT id FROM im_client_dislike WHERE client_id=' . $user_id .
 	       ' AND dislike_prod_id=' . $prod_id;
 
@@ -76,13 +79,25 @@ function user_dislike( $user_id, $prod_id ) {
 
 
 // $multiply is the number of ordered baskets or 1 for ordinary item.
-function orders_per_item( $prod_id, $multiply, $short = false, $include_basket = false, $include_bundle = false, $just_total = false ) {
+function orders_per_item( $prod_id, $multiply, $short = false, $include_basket = false, $include_bundle = false, $just_total = false, $month = null ) {
 	// my_log( "prod_id=" . $prod_id, __METHOD__ );
 
 	$sql = 'select woi.order_item_id, order_id'
 	       . ' from wp_woocommerce_order_items woi join wp_woocommerce_order_itemmeta woim'
-	       . ' where order_id in'
-	       . '(select order_id from im_need_orders) ';
+	       . ' where order_id in';
+
+	if ( ! $month )
+		$sql .= '(select order_id from im_need_orders) ';
+	else {
+		$year = date( 'Y' );
+		if ( $month >= date( 'n' ) ) {
+			$year --;
+		}
+		$sql .= "(SELECT id FROM wp_posts WHERE post_date like '" . $year . "-" . sprintf( "%02s", $month ) . "-%'" .
+		        " and post_status = 'wc-completed')";
+//		print $sql;
+//		die (1);
+	}
 
 	$baskets = null;
 	if ( $include_basket ) {
@@ -715,7 +730,7 @@ function total_order( $user_id ) {
 //	return 0;
 //}
 
-function show_category_all( $sale, $text, $fresh = false, $inv = false, $customer_type = "regular" ) {
+function show_category_all( $sale, $text, $fresh = false, $inv = false, $customer_type = "regular", $month = null ) {
 //	print "inventory: " . $inventory . "<br/>";
 //	print "fresh: " . $fresh . "<br/>";
 	$result = "";
@@ -728,13 +743,13 @@ function show_category_all( $sale, $text, $fresh = false, $inv = false, $custome
 	}
 	foreach ( $categs as $categ ) {
 //		print get_term($categ)->name . "<br/>";
-		$result .= show_category_by_id( $categ, $sale, $text, $customer_type, $inv );
+		$result .= show_category_by_id( $categ, $sale, $text, $customer_type, $inv, $month );
 	}
 
 	return $result;
 }
 
-function show_category_by_id( $term_id, $sale = false, $text = false, $customer_type = "regular", $inventory = false ) {
+function show_category_by_id( $term_id, $sale = false, $text = false, $customer_type = "regular", $inventory = false, $month = null ) {
 	$result   = "";
 	//print "inventory: " . $inventory . "<br/>";
 
@@ -745,7 +760,32 @@ function show_category_by_id( $term_id, $sale = false, $text = false, $customer_
 	if ( $sale ) {
 		$table = array( array( "", "מוצר", "מחיר מוזל", "מחיר רגיל", "כמות", "סה\"כ" ) );
 	} else {
-		$table = array( array( "", "מוצר", "מחיר", gui_link( "מחיר לכמות", "", "" ), "כמות", "סה\"כ" ) );
+		$table = array( array( "", "מוצר" ) );
+		if ( ! $month )
+			array_push( $table[0], "מחיר", gui_link( "מחיר לכמות", "", "" ), "כמות", "סה\"כ" );
+		else
+			array_push( $table[0], "מדד זמינות"  );
+	}
+
+	if ( $month == "all" ) {
+		$table = array(
+			array(
+				"",
+				"מוצר",
+				"Jan",
+				"Feb",
+				"Mar",
+				"Apr",
+				"May",
+				"Jun",
+				"Jul",
+				"Aug",
+				"Sep",
+				"Oct",
+				"Nov",
+				"Dec"
+			)
+		);
 	}
 
 	if ( $inventory ) {
@@ -757,21 +797,29 @@ function show_category_by_id( $term_id, $sale = false, $text = false, $customer_
 
 	$args = array(
 		'post_type'      => 'product',
-		'posts_per_page' => 1000,
+		'posts_per_page' => 10000,
 		'tax_query'      => array( array( 'taxonomy' => 'product_cat', 'field' => 'term_id', 'terms' => $term_id ) ),
 		'orderby'        => 'name',
 		'order'          => 'ASC'
 	);
+
+	if ( $month ) {
+		$args['post_status'] = array( 'draft', 'publish' );
+	}
+
+//	print gui_header(1, $term_id) . "<br/>";
 	// var_dump($args);
 	$loop = new WP_Query( $args );
 	while ( $loop->have_posts() ) {
 		$loop->the_post();
 		global $product;
-		if ( ! $product->get_regular_price() ) {
+		$prod_id = $loop->post->ID;
+//		print $prod_id . " " . get_product_name($prod_id) . "<br/>";
+		if ( ! $month and ! $product->get_regular_price() ) {
+//			print "skipping " . $prod_id . "<br/>";
 			continue;
 		}
-		$prod_id = $loop->post->ID;
-		$line    = product_line( $prod_id, $text, $sale, $customer_type, $inventory, $term_id );
+		$line = product_line( $prod_id, $text, $sale, $customer_type, $inventory, $term_id, $month );
 		if ( $text ) {
 			$result .= $line;
 		} else {
@@ -793,7 +841,7 @@ function show_category_by_id( $term_id, $sale = false, $text = false, $customer_
 	return $result;
 }
 
-function product_line( $prod_id, $text, $sale, $customer_type, $inv, $term_id ) {
+function product_line( $prod_id, $text, $sale, $customer_type, $inv, $term_id, $month = null ) {
 	$line     = array();
 	$img_size = 40;
 
@@ -811,6 +859,22 @@ function product_line( $prod_id, $text, $sale, $customer_type, $inv, $term_id ) 
 		                   . $img_size . 'px" />' );
 	}
 	array_push( $line, get_product_name( $prod_id ) );
+
+	if ( $month ) {
+		if ( $month == "all" )
+			for ( $i = 1; $i <= 12; $i ++ ) {
+				array_push( $line, month_availability( $prod_id, $i ) );
+			}
+		else {
+			$a = month_availability( $prod_id, $month );
+			if ( $a == "N/A" ) {
+				return "";
+			}
+			array_push( $line, $a );
+
+			return $line;
+		}
+	}
 	if ( $sale ) {
 		array_push( $line, gui_label( "prc_" . $prod_id, $p->getSalePrice() ) );
 		array_push( $line, gui_label( "vpr_" . $prod_id, $p->getRegularPrice() ) );
@@ -819,15 +883,17 @@ function product_line( $prod_id, $text, $sale, $customer_type, $inv, $term_id ) 
 			array_push( $line, gui_label( "buy_" . $prod_id, $p->getBuyPrice() ) );
 
 		} else {
-			array_push( $line, gui_label( "prc_" . $prod_id, $p->getPrice() ) );
-			$q_price = get_price_by_type( $prod_id, null, 8 );
-			//			if ( is_numeric( get_buy_price( $prod_id ) ) ) {
-			//				$q_price = min( round( get_buy_price( $prod_id ) * 1.25 ), $product->get_price() );
-			//			}
-			array_push( $line, gui_label( "vpr_" . $prod_id, $q_price) );
+			if ( ! $month ) {
+				array_push( $line, gui_label( "prc_" . $prod_id, $p->getPrice() ) );
+				$q_price = get_price_by_type( $prod_id, null, 8 );
+				//			if ( is_numeric( get_buy_price( $prod_id ) ) ) {
+				//				$q_price = min( round( get_buy_price( $prod_id ) * 1.25 ), $product->get_price() );
+				//			}
+				array_push( $line, gui_label( "vpr_" . $prod_id, $q_price ) );
+			}
 		}
 	}
-	if ( ! $inv) {
+	if ( ! $inv and ! $month) {
 		array_push( $line, gui_input( "qua_" . $prod_id, "0", array( 'onchange="calc_line(this)"' ) ) );
 		array_push( $line, gui_label( "tot_" . $prod_id, '' ) );
 	}
@@ -860,4 +926,46 @@ function get_order_itemmeta( $order_item_id, $meta_key ) {
 	}
 
 	return - 1;
+}
+
+function month_availability( $prod_id, $month ) {
+	$year = date( 'Y' );
+	if ( $month >= date( 'n' ) ) {
+		$year --;
+	}
+
+	static $orders_per_month = null;
+
+	if ( ! $orders_per_month ) {
+		$orders_per_month = array();
+	}
+
+	if ( ! isset( $orders_per_month[ $month ] ) ) {
+		$sql                        = "select id " .
+		                              " from im_delivery where order_id in (select id from wp_posts " .
+		                              " where post_date like '" . $year . "-" . sprintf( "%02s", $month ) . "-%')";
+		$orders_per_month[ $month ] = sql_query_array_scalar( $sql );
+	}
+
+	// SELECT id, post_date, post_status FROM wp_posts WHERE post_date like '2019-04-%' and post_status = 'wc-completed'
+
+
+	$result = sql_query( "select sum(quantity), sum(quantity_ordered) " .
+	                     " from im_delivery_lines " .
+	                     " where prod_id  = " . $prod_id .
+	                     " and delivery_id in (" . comma_implode( $orders_per_month[ $month ] ) . ")" );
+
+	if ( ! $result ) {
+		die( 1 );
+	}
+	$row      = sql_fetch_row( $result );
+	$supplied = $row[0];
+	$ordered  = $row[1];
+
+	if ( ! $ordered ) {
+		return "N/A";
+	}
+
+	return round( $supplied / $ordered, 1);
+
 }

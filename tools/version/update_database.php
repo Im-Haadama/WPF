@@ -6,11 +6,13 @@
  * Time: 11:36
  */
 
+
 if ( ! defined( "ROOT_DIR" ) ) {
 	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
 }
 
 require_once( ROOT_DIR . '/tools/im_tools_light.php' );
+require_once( ROOT_DIR . '/niver/gui/sql_table.php' );
 
 //print sql_query_single_scalar("show create table im_bank_account");
 //exit;
@@ -18,6 +20,13 @@ require_once( ROOT_DIR . '/tools/im_tools_light.php' );
 $version = get_param( "version" );
 
 switch ( $version ) {
+	case "check2":
+		print table_content( "a", "SELECT * FROM im_task_templates" );
+		break;
+	case "check":
+		check();
+		break;
+
 	case "basic":
 		basic();
 		break;
@@ -38,6 +47,16 @@ print "done";
 die ( 0 );
 
 
+function check() {
+	sql_query( "alter table im_tasklist collate 	utf8_general_ci" );
+	$result = sql_query( "show create table im_tasklist" );
+	$row    = sql_fetch_row( $result );
+	print $row[1];
+	/*
+		print sql_query_single_scalar("show create table im_task_templates");*/
+
+}
+
 function basic() {
 	sql_query( "CREATE TABLE im_info
 (
@@ -51,6 +70,7 @@ function basic() {
 " );
 }
 function create_tasklist() {
+	sql_query( "drop table im_tasklist" );
 	sql_query( "CREATE TABLE `im_tasklist` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
   `date` DATETIME DEFAULT NULL,
@@ -60,7 +80,8 @@ function create_tasklist() {
   `started` DATETIME DEFAULT NULL,
   `ended` DATETIME DEFAULT NULL,
   `project_id` INT(11) DEFAULT NULL,
-  `mission_id` INT(11) NOT NULL DEFAULT '0',
+  `mission_id` INT(11) NOT NULL DEFAUL
+  T '0',
   `location_name` VARCHAR(50) CHARACTER SET utf8 DEFAULT NULL,
   `location_address` VARCHAR(50) CHARACTER SET utf8 DEFAULT NULL,
   `priority` INT(11) NOT NULL DEFAULT '0',
@@ -75,6 +96,46 @@ function create_tasklist() {
 
 
 function version17() {
+	sql_query( "drop function bank_amount_to_link" );
+	sql_query( "create function bank_amount_to_link (_line_id int) returns float   
+BEGIN
+declare _sum int;
+declare _amount float;
+declare _linked float;
+select out_amount into _amount from im_bank
+where id = _line_id;
+
+select sum(amount) into _linked from im_bank_lines
+where line_id = _line_id;
+
+IF(_linked IS NULL) then set _linked = 0;
+end if;
+
+return round(_amount + _linked, 2);
+END;" );
+
+	return;
+
+	sql_query( "alter table im_suppliers
+	add supplier_priority INT(2) DEFAULT '5';" );
+//	print "tasklist<br/>";
+//	sql_query("alter table
+//	im_tasklist
+//	add mission_id INT(11) DEFAULT '0' NOT NULL;");
+
+	sql_query( "alter table 
+	im_task_templates
+	add priority INT(11) DEFAULT '0' NOT NULL;" );
+
+//	sql_query("alter table
+//	im_task_templates
+//	add repeat_freq_numbers VARCHAR(200);");
+//	print "task_template<br/>";
+//
+//	sql_query("alter table
+//	im_task_templates
+//	add repeat_freq VARCHAR(20);");
+
 	print "bank_account";
 	sql_query( "create table im_bank_account
 (

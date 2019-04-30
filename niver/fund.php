@@ -134,6 +134,7 @@ function comma_implode( $array, $quote = false ) {
 		return $array;
 	}
 	if ( ! is_array( $array ) ) {
+		var_dump( $array );
 		return "not array!";
 	}
 	if ( is_string( $array[0] ) ) {
@@ -210,10 +211,18 @@ function debug_time1( $str ) {
 }
 
 function sum_numbers( &$s, $a ) {
+//	if (strstr($a, "<a")){
+//		print strstr("'</a>", $a) . "<br/>";
+//		print strstr("'>", $a) . "<br/>";
+//		print "h";
+//		 $n = substr($a, strstr("'>", $a), strstr("'</a>", $a) - strstr("'>", $a));
+//		 print $n;
+//	} else
+	$n = floatval( $a );
 //	var_dump($s); print "<br/>";
 //	var_dump($a); print "<br/>";
-	if ( is_numeric( $s ) and is_numeric( $a ) ) {
-		$s = round( $s + $a, 2 );
-//		 print "s=" . $s . "<br/>";
+	if ( is_numeric( $s ) and is_numeric( $n ) ) {
+		$s = round( $s + $n, 2 );
+//		 print "a=" . $a . " s=" . $s . " n=" . $n . "<br/>";
 	}
 }

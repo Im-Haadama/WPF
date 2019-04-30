@@ -60,7 +60,10 @@ class BankTransaction {
 		                                            " WHERE line_id = " . $this->id );
 
 		return $this->out_amount + $attached_amount;
+	}
 
+	public function getAttached() {
+		return sql_query_array( "SELECT * FROM im_bank_lines WHERE line_id = " . $this->id );
 	}
 
 

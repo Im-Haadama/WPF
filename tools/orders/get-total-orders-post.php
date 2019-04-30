@@ -161,6 +161,8 @@ tr:nth-child(even) {
 function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero, $filter_stock, $history ) {
 //	$time = debug_time("start supplier", 0);
 
+	$inventory_managed = info_get( "inventory" );
+
 	$data_lines = array();
 
 	foreach ( $needed_products as $prod_id => $quantity_array ) {
@@ -202,12 +204,13 @@ function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero
 		$p     = new Product( $prod_id );
 		$q_inv = $p->getStock();
 
-		$line .= gui_cell( gui_input( "inv_" . $prod_id, $q_inv, array(
-			"onchange=\"change_inv(" . $prod_id . ")\"",
-			"onkeyup=\"moveNext(" . $prod_id . ")\""
-		) ) );
+		if ( $inventory_managed ) {
+			$line .= gui_cell( gui_input( "inv_" . $prod_id, $q_inv, array(
+				"onchange=\"change_inv(" . $prod_id . ")\"",
+				"onkeyup=\"moveNext(" . $prod_id . ")\""
+			) ) );
 
-		$numeric_quantity = ceil( $quantity - $q_inv );
+			$numeric_quantity = ceil( $quantity - $q_inv );
 
 		$line .= gui_cell( gui_input( "qua_" . $prod_id, $numeric_quantity,
 			"onchange=\"line_selected('" . $prod_id . '_' . $supplier_id . "')\"" ));
@@ -228,6 +231,7 @@ function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero
 
 		if ( ! $this_supplier )
 			continue;
+
 		// if ($prod_id == 1002) {print "XX"; var_dump($suppliers); }
 		$supplier_name = gui_select( "sup_" . $prod_id, "option", $suppliers, "onchange=selectSupplier(this)", "" );
 //		}
@@ -237,6 +241,7 @@ function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero
 		$line .= gui_cell( orders_per_item( $prod_id, 1, true, true, true ) );
 
 		$line .= "</tr>";
+		}
 
 		//print "loop5: " .  microtime() . "<br/>";
 		if ( ! $filter_zero or ( $numeric_quantity > 0 ) ) {
@@ -256,10 +261,12 @@ function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero
 		$data .= "<td>כמות נדרשת</td>";
 		$data .= "<td>יחידות נוספות</td>";
 //	$data .= "<td>כמות אספקות</td>";
-		$data .= "<td>כמות במלאי</td>";
-		$data .= "<td>כמות להזמין</td>";
-		$data .= "<td>ספק</td>";
-		$data .= "<td>לקוחות</td>";
+		if ( $inventory_managed ) {
+			$data .= "<td>כמות במלאי</td>";
+			$data .= "<td>כמות להזמין</td>";
+			$data .= "<td>ספק</td>";
+			$data .= "<td>לקוחות</td>";
+		}
 //	$data .= "<td>מחיר ללקוח</td>";
 //	if ( MultiSite::LocalSiteID() == 1 ) {
 //		$data .= "<td>מחיר קניה</td>";

@@ -10,9 +10,13 @@ require_once( "inputs.php" );
 
 require_once( ROOT_DIR . "/niver/data/sql.php" );
 
-function table_content( $table_id, $sql, $header = true, $footer = true, $links = null, &$sum_fields = null, $add_checkbox = false, $checkbox_class = null, $chkbox_events = null
+function table_content_data(
+	$sql, $header = true, $footer = true, $links = null, &$sum_fields = null,
+	$add_checkbox = false, $checkbox_class = null, $chkbox_events = null, $selectors = null
 ) {
 	global $conn;
+
+	// var_dump($selectors);
 
 	$result = mysqli_query( $conn, $sql );
 	if ( ! $result ) {
@@ -39,7 +43,7 @@ function table_content( $table_id, $sql, $header = true, $footer = true, $links 
 	}
 	$row_count = 0;
 	$row_id    = null;
-	while ( $row = mysqli_fetch_row( $result ) ) {
+	while ( $row = mysqli_fetch_assoc( $result ) ) {
 		$i        = 0;
 		$row_data = array();
 		foreach ( $row as $key => $data ) {
@@ -50,7 +54,17 @@ function table_content( $table_id, $sql, $header = true, $footer = true, $links 
 			if ( $links and array_key_exists( $key, $links ) ) {
 				$value = gui_hyperlink( $data, sprintf( $links[ $i ], $data ) );
 			} else {
-				$value = $data;
+//				print $key . " " . $selectors[$key] . "<br/>";
+				if ( $selectors and array_key_exists( $key, $selectors ) ) {
+					$selector_name = $selectors[ $key ];
+					if ( strlen( $selector_name ) < 2 ) {
+						die( "selector " . $key . "is empty" );
+					}
+//					print "sn=" . $selector_name . "<br/>";
+					$value = $selector_name( "id", $data );
+				} else {
+					$value = $data;
+				}
 			}
 
 			// print $key;
@@ -63,6 +77,18 @@ function table_content( $table_id, $sql, $header = true, $footer = true, $links 
 
 		array_push( $rows_data, $row_data );
 	}
+
+	return $rows_data;
+}
+
+function table_content(
+	$table_id, $sql, $header = true, $footer = true, $links = null, &$sum_fields = null,
+	$add_checkbox = false, $checkbox_class = null, $chkbox_events = null, $selectors = null
+) {
+	$rows_data = table_content_data( $sql, $header, $footer, $links, $sum_fields,
+		$add_checkbox, $checkbox_class, $chkbox_events, $selectors );
+
+	$row_count = count( $rows_data);
 
 	if ( $row_count >= 1 ) {
 		return gui_table( $rows_data, $table_id, $header, $footer, $sum_fields );

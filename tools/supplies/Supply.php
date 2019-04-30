@@ -308,7 +308,7 @@ class Supply {
 
 		$result = sql_query( $sql );
 
-		$data = "<table id=\"del_table\" border=\"1\"><tr><td>בחר</td><td>פריט</td><td>כמות</td><td>יחידות</td>";
+		$data = "<table id=\"del_table\" border=\"1\"><tr><td>בחר</td><td>מקט</td><td>פריט</td><td>כמות</td><td>יחידות</td>";
 		if ( ! $edit ) {
 			$data .= gui_cell( "כמות לוקט" );
 		}
@@ -330,13 +330,17 @@ class Supply {
 		// print "supplier_id: " . $supplier_id . "<br/>";
 
 		while ( $row = mysqli_fetch_row( $result ) ) {
-			$line_number  = $line_number + 1;
-			$line         = "<tr>";
-			$prod_id      = $row[0];
-			$product_name = get_product_name( $prod_id );
-			$quantity     = $row[1];
-			$line_id      = $row[2];
-			$units        = $row[3];
+			$line_number           = $line_number + 1;
+			$line                  = "<tr>";
+			$prod_id               = $row[0];
+			$product_name          = get_product_name( $prod_id );
+			$quantity              = $row[1];
+			$line_id               = $row[2];
+			$units                 = $row[3];
+			$pricelist_id          = alternatives( $prod_id )[0];
+			$pricelist_item        = new PricelistItem( $pricelist_id->getId() );
+			$supplier_product_code = $pricelist_item->getSupplierProductCode();
+
 
 			// $vat_line = $row[2];
 //		$item_price = pricelist_get_price( $prod_id );
@@ -345,6 +349,8 @@ class Supply {
 			$total      += $total_line;
 
 			$line .= "<td><input id=\"chk" . $line_id . "\" class=\"supply_checkbox\" type=\"checkbox\"></td>";
+			$line .= gui_cell( $supplier_product_code );
+
 			// Display item name
 			$line .= "<td>" . $product_name . '</td>';
 			if ( $edit ) {

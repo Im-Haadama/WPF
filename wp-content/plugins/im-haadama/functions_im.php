@@ -5,9 +5,6 @@
  * Date: 24/11/16
  * Time: 18:22
  */
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
-
 if ( ! defined( "ROOT_DIR" ) ) {
 	define( 'ROOT_DIR', dirname( dirname( dirname( dirname( __FILE__ ) ) ) ) );
 }
@@ -493,8 +490,6 @@ function fresh_store_packing_page() {
 	?>
 
 	<?php
-	error_reporting( E_ALL );
-	ini_set( 'display_errors', 'on' );
 
 	print gui_table( array(//array("אריזה", "גביה", "קטלוג"),
 		array( "packing" )
@@ -507,8 +502,6 @@ function fresh_store_supplier_account_page() {
 	?>
 
 	<?php
-	error_reporting( E_ALL );
-	ini_set( 'display_errors', 'on' );
 
 	print gui_table( array(
 		array( "supplier_account" )

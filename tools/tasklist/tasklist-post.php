@@ -5,8 +5,6 @@
  * Date: 02/01/19
  * Time: 18:21
  */
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
 
 if ( ! defined( "ROOT_DIR" ) ) {
 	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
@@ -21,6 +19,10 @@ require_once( "Tasklist.php" );
 $operation = get_param( "operation" );
 // print "op=" . $operation . "<br/>";
 switch ( $operation ) {
+	case "create":
+
+		create_tasks( null, true );
+		break;
 	case "delivered": // Done
 		$ids = get_param_array( "ids" );
 		foreach ( $ids as $id ) {
@@ -71,6 +73,9 @@ switch ( $operation ) {
 
 	case "check":
 		check_condition();
+		break;
+	case "shit":
+		sql_query( "delete from im_tasklist where id >= 423" );
 		break;
 }
 

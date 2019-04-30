@@ -47,6 +47,9 @@ $header_fields = array(
 
 my_log( $operation, "catalog-db-query.php" );
 switch ( $operation ) {
+	case "monthly":
+		print show_monthly();
+		break;
 	case "set_category":
 		$category = $_GET["category"];
 		print "setting category " . $category . "<br/>";

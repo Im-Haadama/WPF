@@ -107,16 +107,27 @@ if ( isset( $_GET["operation"] ) ) {
 
 			$b = BankTransaction::createFromDB( $id );
 			print gui_header( 2, "פרטי העברה" );
+			$free_amount = $b->getOutAmount( true );
 			print gui_table( array(
 					array( "תאריך", gui_div( "pay_date", $b->getDate() ) ),
 					array( "סכום", gui_div( "bank", $b->getOutAmount() ) ),
-					array( "סכום לתיאום", gui_div( "bank", $b->getOutAmount( true ) ) ),
+					array( "סכום לתיאום", gui_div( "bank", $free_amount ) ),
 					array( "מזהה", gui_div( "bank_id", $id ) )
 				)
 			);
 
-			print gui_header( 2, "בחר ספק" );
-			print gui_select_open_supplier();
+			$lines = $b->getAttached();
+			if ( $lines ) {
+				print gui_header( 2, "שורות מתואמות" );
+
+				print gui_table( $lines );
+			}
+
+			if ( $free_amount > 0 ) {
+//				print "a=" . $amount . "<br/>";
+				print gui_header( 2, "בחר ספק" );
+				print gui_select_open_supplier();
+			}
 			print '<div id="logging"></div>';
 			print '<div id="transactions"></div>';
 			print gui_table( array(
@@ -129,18 +140,35 @@ if ( isset( $_GET["operation"] ) ) {
 
 			break;
 
+		case "show_pay_to_link":
+			$data = table_content_data( "SELECT id, date, out_amount, description,
+					bank_amount_to_link(id) FROM im_bank " .
+			                            " WHERE out_amount > 0  " .
+			                            " AND bank_amount_to_link(id) > 0 " .
+			                            " AND description NOT IN ('פרעון הלוואה', 'מסלול מורחב', 'לאומי ויזה י' )" .
+			                            " ORDER BY 2 DESC" );
+
+			foreach ( $data as $key => $row ) {
+				$id = $data[ $key ][0];
+				$b  = BankTransaction::createFromDB( $id );
+				if ( $b->getOutAmount( true ) ) {
+					array_push( $data[ $key ], gui_hyperlink( "קשר", "business-post.php?operation=create_pay_bank&id=" . $id ) );
+				}
+			}
+			print gui_table( $data );
+			break;
 		case "link_invoice_bank":
 			$bank_id      = get_param( "bank_id", true );
 			$supplier_id  = get_param( "supplier_id", true );
 			$site_id      = get_param( "site_id", true );
 			$ids          = get_param_array( "ids" );
-			$total_amount = - get_param( "amount" );
+			$bank         = get_param( "bank" );
 
 			// 1) mark the bank transaction to invoice.
 			foreach ( $ids as $id ) {
 				$amount = $multi_site->Run( "business/business-post.php?operation=get_amount&id=" . $id, $site_id );
 				$sql    = "INSERT INTO im_bank_lines (line_id, amount, site_id, part_id, invoice)\n" .
-				          "VALUES (" . $bank_id . ", " . $amount . ", " . $site_id . ", " . $supplier_id . ", " .
+				          "VALUES (" . $bank_id . ", " . min( - $amount, $bank ) . ", " . $site_id . ", " . $supplier_id . ", " .
 				          $id . ")";
 
 				sql_query( $sql );
@@ -151,7 +179,7 @@ if ( isset( $_GET["operation"] ) ) {
 			// 2) mark the invoices to transaction.
 			print $multi_site->Run( "business/business-post.php?operation=add_payment&ids=" . implode( $ids, "," ) . "&supplier_id=" . $supplier_id .
 			                        "&bank_id=" . $bank_id . "&date=" . $date .
-			                        "&amount=" . $total_amount, $site_id );
+			                        "&amount=" . $bank, $site_id );
 			break;
 
 		case "add_payment":
@@ -161,14 +189,16 @@ if ( isset( $_GET["operation"] ) ) {
 			$date        = get_param( "date", true );
 			$amount      = get_param( "amount", true );
 			$sql         = "INSERT INTO im_business_info (part_id, date, amount, ref, document_type)\n" .
-			               "VALUES(" . $supplier_id . "," . $date . "," . $amount . ", " . $bank_id . ", " . ImDocumentType::bank . ")";
+			               "VALUES(" . $supplier_id . ", '" . $date . "' ," . $amount . ", " . $bank_id . ", " . ImDocumentType::bank . ")";
 			sql_query( $sql );
+			print "התווסף תשלום בסך " . $amount . " לספק " . get_supplier_name( $supplier_id ) . "<br/>";
 
 			$sql = "update im_business_info\n" .
 			       "set pay_date = '" . $date . "'\n" .
 			       "where id in (" . comma_implode( $ids ) . ")";
 
 			sql_query( $sql );
+			print "מסמכים מספר  " . comma_implode( $ids ) . " סומנו כמשולמים<br/>";
 			break;
 
 		case "create_invoice_bank":

@@ -1,6 +1,6 @@
 <?php
 // Display errors and messages only on develop server
-if ( 1 or ! isset( $_SERVER['SERVER_NAME'] ) or ( $_SERVER['SERVER_NAME'] == "127.0.0.1" ) ) {
+if ( ! isset( $_SERVER['SERVER_NAME'] ) or ( $_SERVER['SERVER_NAME'] == "127.0.0.1" ) ) {
 //	 print "debug";
 	error_reporting( E_ALL );
 	ini_set( 'display_errors', 'on' );
@@ -230,11 +230,11 @@ function login_id() {
 	$user = wp_get_current_user();
 	if ( $user->ID == "0" ) {
 		// Force login
-		$inclued_files = get_included_files();
-		var_dump( $inclued_files );
+//		$inclued_files = get_included_files();
+//		var_dump( $inclued_files );
 //		my_log( __FILE__, $inclued_files[ count( $inclued_files ) - 2 ] );
 		$url = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_HOST ) . '/wp-login.php?redirect_to=' . $_SERVER['REQUEST_URI'] . '"';
-		die( 1 );
+//		die( 1 );
 
 		print '<script language="javascript">';
 		print "window.location.href = '" . $url . "'";

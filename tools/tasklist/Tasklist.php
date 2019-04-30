@@ -23,11 +23,12 @@ class Tasklist {
 	private $mission_id;
 	private $repeat_freq;
 	private $repeat_freq_numbers;
+	private $priority;
 
 	public function __construct( $_id ) {
 		$this->id = $_id;
 		$row      = sql_query_single( "SELECT location_name, location_address, task_description, mission_id," .
-		                              " task_template " .
+		                              " task_template, priority " .
 		                              " FROM im_tasklist " .
 		                              " WHERE id = " . $this->id );
 
@@ -35,10 +36,11 @@ class Tasklist {
 		$this->location_address = $row[1];
 		$this->task_description = $row[2];
 		$this->mission_id       = $row[3];
+		$this->priority         = $row[5];
 
 		if ( $row[4] ) {
 			$row = sql_query_single( "SELECT repeat_freq, repeat_freq_numbers " .
-			                         " from im_task_teplates where id = " . $row[4] );
+			                         " from im_task_templates where id = " . $row[4] );
 
 			$this->repeat_freq         = $row[0];
 			$this->repeat_freq_numbers = $row[1];
@@ -94,6 +96,14 @@ class Tasklist {
 	public function getRepeatFreqNumbers() {
 		return $this->repeat_freq_numbers;
 	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getPriority() {
+		return $this->priority;
+	}
+
 
 	public function Ended() {
 		$sql = "UPDATE im_tasklist SET ended = now(), status = " . eTasklist::done .
@@ -185,7 +195,7 @@ function create_tasks_per_mission() {
 
 		$path_code = $m->getPathCode();
 
-		$template_ids = sql_query( "SELECT id FROM im_task_templates WHERE path_code = " . quote_text( $path_code ) );
+		$template_ids = sql_query_array_scalar( "SELECT id FROM im_task_templates WHERE path_code = " . quote_text( $path_code ) );
 
 		foreach ( $template_ids as $template_id ) {
 			$sql    = "SELECT task_description, task_url, project_id, repeat_freq, repeat_freq_numbers, condition_query, priority " . "
@@ -199,12 +209,16 @@ function create_tasks_per_mission() {
 
 			$priority = sql_query_single_scalar( "SELECT priority FROM im_task_templates WHERE id = " . $id );
 
-			if ( ! $priority ) {
+			if ( ! $priority and ( $project_id > 0 ) ) {
 				$priority = sql_query_single_scalar( "SELECT project_priority FROM im_projects WHERE id = " . $project_id );
 			}
 
 			if ( ! $priority ) {
 				$priority = 0;
+			}
+
+			if ( ! $project_id > 0 ) {
+				$project_id = 0;
 			}
 
 			$sql = "INSERT INTO im_tasklist " .
@@ -213,7 +227,7 @@ function create_tasks_per_mission() {
 			       $priority . "," . $owner . ")";
 
 			sql_query( $sql );
-			print $sql;
+			// print $sql;
 		}
 	}
 }
@@ -231,12 +245,12 @@ function create_tasks( $freqs = null, $verbose = false, $owner = 1 ) {
 		}
 	} while ( 0 );
 
+	$verbose_table = array( array( "template_id", "freq", "query", "active", "result", "priority", "new task" ));
 	foreach ( $freqs as $freq ) {
+//		print "freq=". $freq . "<br/>";
 		//	print "v= " . $verbose . "<br/>";
 		$info_key = "tasklist_create_run_" . $freq;
-		if ( $verbose ) {
-			print "Started $freq...<br/>";
-		}
+		// $verbose_data .= "Started $freq...<br/>";
 
 		// TODO: check last run.
 //		$last_run = info_get( $info_key );
@@ -248,12 +262,14 @@ function create_tasks( $freqs = null, $verbose = false, $owner = 1 ) {
 //			continue;
 //		}
 
-		$sql    = "SELECT id, task_description, task_url, project_id, repeat_freq, repeat_freq_numbers, condition_query, priority " . "
+		$sql = "SELECT id, task_description, task_url, project_id, repeat_freq, repeat_freq_numbers, condition_query, priority " . "
    		 FROM im_task_templates " .
-		          " where repeat_freq = '" . $freq . "'";
+		       " where repeat_freq = '" . $freq . "'";
+
 		$result = sql_query( $sql );
 
 		while ( $row = mysqli_fetch_assoc( $result ) ) {
+			$verbose_line = array();
 			// if ($row["id"] == 10) var_dump($row);
 			$id         = $row["id"];
 			$project_id = $row["project_id"];
@@ -262,25 +278,21 @@ function create_tasks( $freqs = null, $verbose = false, $owner = 1 ) {
 			}
 			// 		print "project_id= " . $project_id . "<br/>";
 
-			if ( $verbose ) {
-				print "<br/>checking task_template" . $id . " ";
-			}
+			array_push( $verbose_line, $id );
+			array_push( $verbose_line, check_frequency( $row["repeat_freq"], $row["repeat_freq_numbers"] ) );
+			array_push( $verbose_line, check_query( $row["condition_query"] ) );
+			array_push( $verbose_line, check_active( $id, $row["repeat_freq"] ) );
+			$test_result = "";
+			for ( $i = 1; $i < 4; $i ++ )
+				$test_result .= substr( $verbose_line[ $i ], 0, 1);
 
-			if ( ! check_frequency( $row["repeat_freq"], $row["repeat_freq_numbers"], $verbose ) ) {
+			array_push( $verbose_line, $test_result );
+//			/;print $test_result . " " . strpos($test_result, "0") . "<br/>";
+			if ( strpos( $test_result, "0" ) ) {
+//				print "xxxx";
+				array_push( $verbose_line, "skipped" );
+				array_push( $verbose_table, $verbose_line);
 				continue;
-			}
-
-			if ( ! check_query( $row["condition_query"], $verbose ) ) {
-				continue;
-			}
-
-			// Check if task from this template active
-			if ( check_active( $id, $row["repeat_freq"], $verbose ) ) {
-				continue;
-			}
-
-			if ( $verbose ) {
-				print "creating " . $id . "<br/>";
 			}
 
 			$priority = sql_query_single_scalar( "SELECT priority FROM im_task_templates WHERE id = " . $id );
@@ -291,6 +303,7 @@ function create_tasks( $freqs = null, $verbose = false, $owner = 1 ) {
 			if ( ! $priority ) {
 				$priority = 0;
 			}
+			array_push( $verbose_line, $priority);
 
 			$sql = "INSERT INTO im_tasklist " .
 			       "(task_description, task_template, status, date, project_id, priority, owner) VALUES ( " .
@@ -298,41 +311,35 @@ function create_tasks( $freqs = null, $verbose = false, $owner = 1 ) {
 			       $priority . "," . $owner . ")";
 
 			sql_query( $sql );
+			array_push( $verbose_line, sql_insert_id() );
+
+			array_push( $verbose_table, $verbose_line);
 			// print $sql;
 		}
 		info_update( $info_key, date( $freq ));
 	}
+	if ( $verbose )
+		print gui_table( $verbose_table);
 }
 
 
-function check_frequency( $repeat_freq, $repeat_freq_numbers, $verbose ) {
+function check_frequency( $repeat_freq, $repeat_freq_numbers ) {
 
 	// print "rf=$repeat_freq. rfn=$repeat_freq_numbers<br/>";
 	if ( strlen( $repeat_freq ) == 0 ) {
-		if ( $verbose ) {
-			print "empty freq passed<br/>";
-		}
-
-		return true;
+		return "1 empty freq passed";
 	}
 
-	if ( $verbose ) {
-		print "checking frequency " . $repeat_freq . ". now = " . date( $repeat_freq ) . " " . $repeat_freq_numbers;
-	}
+	$result = $repeat_freq . ". now = " . date( $repeat_freq ) . " " . $repeat_freq_numbers;
 
+	$repeat_freq = explode( " ", $repeat_freq )[0];
 	$passed = false;
-//	print "d=" . date($repeat_freq_numbers) . "<br/>";
-//	print "df=" . date($repeat_freq) . "<br/>";
+	$result      .= "checking " . date( $repeat_freq ) . " " . $repeat_freq_numbers;
 	if ( in_array( date( $repeat_freq ), explode( ",", $repeat_freq_numbers ) ) ) {
 		$passed = true;
 	}
 
-	if ( $verbose ) {
-		print " " . ( $passed ? "yes" : "no" ) . " " . $repeat_freq_numbers . "<br/>";
-	}
-
-	// print "result=" . $passed . '<br/>';
-	return $passed;
+	return $passed . $result;
 }
 
 //
@@ -380,59 +387,30 @@ function check_frequency( $repeat_freq, $repeat_freq_numbers, $verbose ) {
 //		}
 
 
-function check_query( $query, $verbose ) {
+function check_query( $query ) {
 	if ( strlen( $query ) == 0 ) {
-		if ( $verbose ) {
-			print "empty query passed<br/>";
-		}
-
-		return true;
+		return "1 empty query passed<br/>";
 	}
 	if ( ! ( strlen( $query ) > 5 ) ) {
-		if ( $verbose ) {
-			print "short or bad query. " . $query . " failed";
-		}
-
-		return false;
-	}
-
-	if ( $verbose ) {
-		print "checking " . $query;
+		return "0 short or bad query. " . $query . " failed";
 	}
 
 	$c      = im_file_get_html( $query );
-	$passed = ( $c === "1" );
-	if ( $passed and $verbose ) {
-		print "true";
-	}
-	print "<br/>";
 
-	return $passed;
+	return ( $c === "1" ) . " $query " . $c;
 }
 
-function check_active( $id, $repeat_freq, $verbose ) {
+function check_active( $id, $repeat_freq ) {
 	$sql = "SELECT count(*) FROM im_tasklist WHERE task_template = " . $id .
 	       " AND status < 2";
 
-	if ( $verbose ) {
-		print "checking " . $id . " " . $sql . ". ";
-	}
-
 	$count = sql_query_single_scalar( $sql );
 
-	if ( $verbose ) {
-		print $count . " active ";
-	}
-
 	if ( $count >= 1 ) {
-		if ( $verbose ) {
-			print "Not creating<br/>";
-		}
-
-		return true;
+		return "0 $count";
 	}
 
-	return false;
+	return "1 not active";
 }
 
 // Select relative optional preq for given task:
@@ -447,4 +425,23 @@ function gui_select_task_related( $id, $value, $events, $task_id ) {
 	}
 
 	return gui_select_task( $id, $value, $events, $query );
+}
+
+function task_table( $task_ids ) {
+	$rows = array( array( "מזהה", "עדיפות", "תיאור" ) );
+
+	foreach ( $task_ids as $task_id ) {
+		$t = new Tasklist( $task_id );
+
+		$row = array(
+			gui_hyperlink( $t->getId(), "c-get-tasklist.php?id=" . $t->getId() ),
+			$t->getPriority(),
+			$t->getTaskDescription()
+		);
+
+		array_push( $rows, $row );
+	}
+
+
+	return gui_table( $rows );
 }

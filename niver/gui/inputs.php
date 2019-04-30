@@ -282,6 +282,30 @@ function gui_select_datalist( $id, $name, $values, $events, $selected = null, $i
 	return $data;
 }
 
+function gui_simple_select( $id, $values, $events, $selected ) {
+	$data = "<select id=\"" . $id . "\" ";
+	if ( $events ) {
+		$data .= $events;
+	}
+
+	$data .= ">";
+
+	foreach ( $values as $row ) {
+		$data .= "<option value=\"" . $row . "\"";
+		if ( $selected and $selected == $row ) {
+			$data .= " selected ";
+		}
+		// print $selected . " " . $row["$id"] . "<br/>";
+		$data .= ">";
+		$data .= $row . "</option>";
+	}
+
+	$data .= "</select>";
+
+	return $data;
+
+}
+
 function gui_select( $id, $name, $values, $events, $selected, $id_key = "id" ) {
 	$data = "<select id=\"" . $id . "\" ";
 	if ( $events ) {
@@ -305,7 +329,9 @@ function gui_select( $id, $name, $values, $events, $selected, $id_key = "id" ) {
 		}
 		// print $selected . " " . $row["$id"] . "<br/>";
 		$data .= ">";
-		$data .= $row[ $name ] . "</option>";
+		if ( $name ) {
+			$data .= $row[ $name ] . "</option>";
+		}
 	}
 
 	$data .= "</select>";
@@ -356,6 +382,7 @@ function gui_cell( $cell, $id = null, $show = true, $link = null ) {
 }
 
 function gui_row( $cells, $id = null, $show = null, &$acc_fields = null, $col_ids = null, $style = null, $links = null ) {
+//	 var_dump($acc_fields);
 	$data = "<tr ";
 
 	if ( $style ) {
@@ -368,18 +395,21 @@ function gui_row( $cells, $id = null, $show = null, &$acc_fields = null, $col_id
 		$i = 0;
 		foreach ( $cells as $cell ) {
 			if ( isset( $acc_fields[ $i ] ) and is_array( $acc = $acc_fields[ $i ] ) ) {
+				// print "a";
 				// var_dump($acc);
 				if ( function_exists( $acc[1] ) ) {
+//					print "fff";
 					$acc[1]( $acc_fields[ $i ][0], $cell );
 				} else {
 					print $acc[1] . " is not a function<br/>";
 				}
-//				print "Y" . ($sum_fields[$i] === true) . "Y";
+//				print "Y" . ($acc_fields[$i] === true) . "Y";
 //				if (($sum_fields[$i] === true) and ($cell > 0)) { print "XX"; $sum_fields[$i] = 0; };
 				// $sum_fields[ $i ] += $cell;
 			}
 			$cell_id = null;
 			if ( $col_ids and is_array( $col_ids ) ) {
+				// print "c";
 				if ( isset( $col_ids[ $i ] ) ) {
 					$cell_id = $col_ids[ $i ] . "_" . $id;
 				} else {
@@ -521,32 +551,36 @@ function gui_div( $id, $text = null, $center = false ) {
 // function gui_select_project( $id, $value, $events, $worker = null ) {
 
 function gui_select_repeat_time( $id, $value, $events ) {
-	$values       = array();
-	$line         = array();
-	$line["id"]   = 0;
-	$line["name"] = "בחר";
-	$line["data"] = null;
-	array_push( $values, $line );
-	$line["id"]   = 1;
-	$line["name"] = "לפי יום בשבוע";
-	$line["data"] = 'w';
-	array_push( $values, $line );
-	$line["id"]   = 2;
-	$line["name"] = "לפי יום בחודש";
-	$line["data"] = 'j';
-	array_push( $values, $line );
-	$line["id"]   = 3;
-	$line["name"] = "לפי יום בשנה";
-	$line["data"] = 'z';
-	array_push( $values, $line );
+//	$values       = array();
+//	$line         = array();
+//	$line["id"]   = 0;
+//	$line["name"] = "בחר";
+//	$line["data"] = null;
+//	array_push( $values, $line );
+//	$line["id"]   = 1;
+//	$line["name"] = "לפי יום בשבוע";
+//	$line["data"] = 'w';
+//	array_push( $values, $line );
+//	$line["id"]   = 2;
+//	$line["name"] = "לפי יום בחודש";
+//	$line["data"] = 'j';
+//	array_push( $values, $line );
+//	$line["id"]   = 3;
+//	$line["name"] = "לפי יום בשנה";
+//	$line["data"] = 'z';
+//	array_push( $values, $line );
+//
+//	$selected = 0;
+//
 
-	$selected = 0;
+	$values = array( "w - שבועי", "j - חודשי", "z - שנתי");
 
-	for ( $i = 1; $i < 4; $i ++ ) {
-		if ( $line["data"] == $value ) {
+	$selected = 1;
+	for ( $i = 1; $i < count( $values ); $i ++ ) {
+		if ( substr( $values[ $i ], 0, 1 ) == $value ) {
 			$selected = $i;
 		}
 	}
 
-	return gui_select( $id, "name", $values, $events, $selected );
+	return gui_simple_select( $id, $values, $events, $selected );
 }
