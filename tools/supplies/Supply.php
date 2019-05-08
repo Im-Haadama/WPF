@@ -338,8 +338,10 @@ class Supply {
 			$line_id               = $row[2];
 			$units                 = $row[3];
 			$pricelist_id          = alternatives( $prod_id )[0];
-			$pricelist_item        = new PricelistItem( $pricelist_id->getId() );
-			$supplier_product_code = $pricelist_item->getSupplierProductCode();
+			if ( $pricelist_id ) {
+				$pricelist_item        = new PricelistItem( $pricelist_id->getId() );
+				$supplier_product_code = $pricelist_item->getSupplierProductCode();
+			}
 
 
 			// $vat_line = $row[2];

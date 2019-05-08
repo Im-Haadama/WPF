@@ -126,7 +126,7 @@ function show_all( $month ) {
 		$u = $row[0];
 
 		if ( $row[1] ) {
-			print gui_header( 1, get_user_name( $u ) );
+			print gui_header( 1, get_user_name( $u ) . "(" . $u . ")" );
 			print "כתובת מייל של העובד/ת: " . get_customer_email( $u ) . "<br/>";
 
 //			print print_transactions( 0, $month, $year, null, null, $s, true  );

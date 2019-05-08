@@ -21,6 +21,7 @@ print gui_header( 1, "Handling local operations" );
 auto_local();
 
 function auto_local() {
+	return; // Should run daily.
 	$sql = "SELECT id FROM im_suppliers WHERE  auto_order_day = " . date( "w" );
 
 	// print $sql;

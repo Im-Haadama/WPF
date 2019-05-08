@@ -8,6 +8,11 @@
 
 error_reporting( E_ALL );
 ini_set( 'display_errors', 'on' );
+
+if ( ! defined( "ROOT_DIR" ) ) {
+	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
+}
+
 require_once( "pricelist-process.php" );
 require_once( '../header_no_login.php' );
 $results = array();

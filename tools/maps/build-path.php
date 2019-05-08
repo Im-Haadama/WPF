@@ -52,15 +52,19 @@ function swap( &$a, &$b ) {
 }
 
 function find_route_1( $node, $rest, &$path, $print = false, $end ) {
-	if ( $print ) {
-		$url = "http://gebweb.net/optimap/index.php?loc0=" . $node;
-		for ( $i = 0; $i < count( $rest ); $i ++ ) {
-//		print $rest[$i] . " " . get_user_address($rest[$i]) . "<br/>";n
-			$url .= "&loc" . ( $i + 1 ) . "=" . $rest[ $i ];
-		}
-		print gui_hyperlink( "Optimap", $url );
-		print "<br/>";
-	}
+//	if ( $print ) {
+//		$url = "http://gebweb.net/optimap/index.php?loc0=" . $node;
+//		$url2 = "https://www.google.com/maps/dir/";
+//
+//		for ( $i = 0; $i < count( $rest ); $i ++ ) {
+////		print $rest[$i] . " " . get_user_address($rest[$i]) . "<br/>";n
+//			$url .= "&loc" . ( $i + 1 ) . "=" . $rest[ $i ];
+//			$url2 .= "/" . $rest[$i];
+//		}
+//		print gui_hyperlink( "Optimap", $url );
+//		print gui_hyperlink("Maps", $url2);
+//		print "<br/>";
+//	}
 
 	// print "find route 1. node = " . $node . " rest = " . comma_implode($path) . "<br/>";
 	if ( count( $rest ) == 1 ) {

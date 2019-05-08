@@ -20,6 +20,9 @@ $local_site_id = - 1;
 class ImMultiSite extends MultiSite {
 
 	public function __construct() {
+		if ( ! table_exists( "im_multisite" ) ) {
+			return;
+		}
 		$sql           = "select id, site_name, tools_url, local, display_name, active, api_key, master " .
 		                 " from im_multisite";
 		$results       = sql_query( $sql );

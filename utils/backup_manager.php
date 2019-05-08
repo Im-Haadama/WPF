@@ -9,7 +9,15 @@
 error_reporting( E_ALL );
 ini_set( 'display_errors', 'on' );
 
-require_once( gethostname() . '.php' );
+if ( ! defined( "ROOT_DIR" ) ) {
+	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) );
+}
+
+require_once( ROOT_DIR . '/im-config.php' );
+
+$backup_dir = IM_BACKUP_FOLDER;
+
+// require_once( 'backup_config.php' );
 
 // print "dir= " . $backup_dir . "<br/>";
 
@@ -28,7 +36,7 @@ if ( ! isset( $_GET["op"] ) ) {
 
 $op = $_GET["op"];
 
-// print $folder;
+w// print $folder;
 
 $content = scandir( $backup_dir, SCANDIR_SORT_DESCENDING );
 

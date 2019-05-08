@@ -6,7 +6,13 @@
  * Time: 23:11
  */
 
-$backup_dir = dirname( __FILE__ ) . '/backups';
+if ( ! defined( "ROOT_DIR" ) ) {
+	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) );
+}
+
+require_once( TOOLS_DIR . '/im_config.php' );
+
+$backup_dir = IM_BACKUP_FOLDER;
 
 //print $backup_dir . "<br/>";
 

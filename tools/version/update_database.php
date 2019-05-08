@@ -96,6 +96,15 @@ function create_tasklist() {
 
 
 function version17() {
+	print "tasklist<br/>";
+	sql_query( "ALTER TABLE im_tasklist " .
+	           "ADD creator INT(11), " .
+	           "ADD preq INT(11), " .
+	           "ADD owner INT(11); " );
+	print "project priority<br/>";
+	sql_query( "ALTER TABLE im_projects ADD project_priority INT(11);" );
+	print "auto_order_day<br/>";
+	sql_query( "ALTER TABLE im_suppliers ADD auto_order_day INT(11);" );
 	sql_query( "drop function bank_amount_to_link" );
 	sql_query( "create function bank_amount_to_link (_line_id int) returns float   
 BEGIN

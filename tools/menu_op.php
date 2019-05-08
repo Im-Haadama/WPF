@@ -202,7 +202,7 @@ if ( $test_site ) {
 // require_once( TOOLS_DIR . "/weekly/run.php" );
 ?>
 <div align="center">Fresh store powered by Niver Dri Sol 2015-2019</div>
-<div align="center">Version 1.6.2</div>
+<div align="center">Version <?php print $power_version; ?> </div>
 </body>
 </html>
 

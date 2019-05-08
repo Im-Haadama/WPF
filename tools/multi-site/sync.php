@@ -10,13 +10,9 @@
 error_reporting( E_ALL );
 ini_set( 'display_errors', 'on' );
 
-print "a";
-
 if ( ! defined( "ROOT_DIR" ) ) {
 	define( "ROOT_DIR", dirname( dirname( dirname( __FILE__ ) ) ) );
 }
-
-print "b";
 
 require_once( ROOT_DIR . "/niver/gui/inputs.php" );
 require_once( ROOT_DIR . "/tools/multi-site/imMulti-site.php" );

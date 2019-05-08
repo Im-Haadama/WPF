@@ -29,10 +29,11 @@ add_action( 'woocommerce_after_cart_table', 'wc_after_cart' );
 add_action( 'wp_footer', 'im_footer' );
 
 function im_footer() {
+	global $power_version;
 	$data = '<div style="color:#95bd3e" align="center">';
 	$data .= 'Fresh store powered by ' . gui_hyperlink( "Niver Dri Sol",
 			"http://niver-dri-sol.com" ) . ' 2015-2019 ';
-	$data .= 'Version 1.6.2';
+	$data .= 'Version ' . $power_version;
 	$data .= "</div>";
 
 	return $data;

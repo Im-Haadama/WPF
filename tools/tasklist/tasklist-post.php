@@ -20,7 +20,6 @@ $operation = get_param( "operation" );
 // print "op=" . $operation . "<br/>";
 switch ( $operation ) {
 	case "create":
-
 		create_tasks( null, true );
 		break;
 	case "delivered": // Done

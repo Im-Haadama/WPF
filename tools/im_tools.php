@@ -12,6 +12,8 @@ if ( ! isset( $_SERVER['SERVER_NAME'] ) or ( $_SERVER['SERVER_NAME'] == "127.0.0
  * Time: 21:42
  */
 
+$power_version = "1.7";
+
 if ( ! defined( "STORE_DIR" ) ) {
 	define( 'STORE_DIR', dirname( dirname( __FILE__ ) ) );
 }

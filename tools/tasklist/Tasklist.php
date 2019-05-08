@@ -233,6 +233,9 @@ function create_tasks_per_mission() {
 }
 // if null = create for all freqs.
 function create_tasks( $freqs = null, $verbose = false, $owner = 1 ) {
+	if ( ! table_exists( "im_task_templates" ) ) {
+		return;
+	}
 	do {
 		if ( ! $freqs ) {
 			$freqs = sql_query_array_scalar( "select DISTINCT repeat_freq from im_task_templates" );
@@ -395,9 +398,7 @@ function check_query( $query ) {
 		return "0 short or bad query. " . $query . " failed";
 	}
 
-	$c      = im_file_get_html( $query );
-
-	return ( $c === "1" ) . " $query " . $c;
+	return strip_tags( im_file_get_html( $query ));
 }
 
 function check_active( $id, $repeat_freq ) {

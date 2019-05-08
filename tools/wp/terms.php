@@ -7,7 +7,7 @@
  */
 //print header_text(false);
 
-require_once( STORE_DIR . '/wp-admin/includes/taxonomy.php' );
+require_once( ROOT_DIR . '/wp-admin/includes/taxonomy.php' );
 
 function terms_add_category( $object_id, $term ) {
 	wp_set_object_terms( $object_id, $term, "product_cat", true );

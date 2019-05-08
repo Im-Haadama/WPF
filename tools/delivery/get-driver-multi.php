@@ -89,6 +89,7 @@ if ( isset( $week ) ) {
 	                                    " AND date < DATE_ADD(" . quote_text( $week ) . ", INTERVAL 1 WEEK)" );
 } else {
 	$missions = sql_query_array_scalar( "SELECT id FROM im_missions WHERE date = curdate()" );
+//	var_dump($missions);
 }
 }
 
@@ -102,9 +103,18 @@ if ( ! count( $missions ) ) {
 //}
 //print "<br/>";
 
-$m      = new ImMultiSite();
-$output = $m->GetAll( "delivery/get-driver.php?mission_ids=" . implode( ",", $missions ), false, $debug );
+$m        = new ImMultiSite();
+$data_url = "delivery/get-driver.php?mission_ids=" . implode( ",", $missions );
+$output   = $m->GetAll( $data_url, false, $debug );
+if ( $debug ) {
+	print "o= " . $output . "<br/>";
+}
 $dom    = im_str_get_html( $output );
+
+if ( strlen( $output ) < 10 ) {
+	print $output . "<br/>";
+	die ( "אין מסלולים להצגה" . $data_url );
+}
 
 foreach ( $dom->find( 'tr' ) as $row ) {
 	if ( ! $header ) {
@@ -237,6 +247,15 @@ foreach ( $data_lines as $mission_id => $data_line ) {
 		print_time( "start path ", true);
 	// var_dump($mission);
 	find_route_1( $mission->getStartAddress(), $stop_points, $path, true, $mission->getEndAddress() );
+	$url = "https://www.google.com/maps/dir/" . $mission->getStartAddress();
+
+	for ( $i = 0; $i < count( $path ); $i ++ ) {
+		$url .= "/" . $path[ $i ];
+	}
+	$url .= "/" . $mission->getEndAddress();
+	print gui_hyperlink( "Maps", $url );
+	print "<br/>";
+
 	if ( $debug )
 		print_time( "end path " . $mission_id, true);
 

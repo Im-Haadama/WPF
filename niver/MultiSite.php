@@ -37,19 +37,32 @@ class MultiSite {
 		print MultiSite::GetAll( $func );
 	}
 
-	function GetAll( $func, $verbose = false, $debug = false ) {
+	function GetAll( $func, $verbose = false, $debug = false, $strip = false ) {
+		$output = "";
+		if ( $debug ) {
+			print "s= " . $strip . "<br/>";
+		}
 		$first = true;
-		$data  = "<table>";
+		$data  = array( array( "site name", "result" ));
 
 		foreach ( $this->sites_array as $site_id => $site ) {
-			if ( $verbose ) {
-				print gui_header( 2, "Running on " . $this->sites_array[ $site_id ][ FieldIdx::site_name_idx ] );
+			$result = $this->Run( $func, $site_id, $first, $debug );
+			if ( $strip ) {
+				$result = strip_tags( $result, "<div><br><p><table><tr><td>" );
 			}
-			$data .= $this->Run( $func, $site_id, $first, $debug );
+			if ( $verbose ) {
+				array_push( $data, array( $this->sites_array[ $site_id ][ FieldIdx::site_name_idx ], $result ) );
+			} else {
+				$output .= $result;
+			}
+			$first = false;
 		}
-		$data .= "</table>";
 
-		return $data;
+		if ( $verbose ) {
+			return gui_table( $data );
+		}
+
+		return $output;
 	}
 
 	function Run( $func, $site_id, $first = false, $debug = false ) {

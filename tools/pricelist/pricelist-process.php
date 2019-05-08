@@ -9,7 +9,7 @@ if ( ! defined( "TOOLS_DIR" ) ) {
 	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
 }
 
-require_once( TOOLS_DIR . '/r-shop_manager.php' );
+//require_once( TOOLS_DIR . '/r-shop_manager.php' );
 require_once( TOOLS_DIR . '/data/header.php' );
 
 require_once( 'pricelist.php' );

@@ -65,6 +65,9 @@ return;
 
 function auto_supply() {
 	//	Run once a week, but considered daily because each supplier has it's day.
+	if ( ! table_exists( "im_suppliers" ) ) {
+		return;
+	}
 	$sql = "SELECT id FROM im_suppliers WHERE  auto_order_day = " . date( "w" );
 
 	// print $sql;
@@ -226,22 +229,24 @@ function backup_database() {
 		// global $conn;
 		fwrite( $file, "user=" . IM_DB_NAME . "\n" );
 		fwrite( $file, "password=" . IM_DB_PASSWORD . "\n" );
-		fwrite( $file, "single-transaction\n" );
+//		fwrite( $file, "single-transaction\n" );
 
 		fclose( $file );
 	}
 
 	$backup_file = $folder . "/" . IM_DB_NAME . '-' . date( 'Y-m-d' ) . ".sql";
 
+	print "backup file: " . $backup_file . "<br/>";
+
 	$command = "cd " . $folder . " &&  mysqldump --defaults-extra-file=" . $param_file . " " . IM_DB_NAME . " > " . $backup_file;
-	// print $command . "<br/>";
+	print $command . "<br/>";
 	exec( $command );
 
 	$result = exec( "tail -1 " . $backup_file );
 
 	exec( "gzip " . $backup_file );
 
-	// Server might gone because of the backup.
+	// Server might gone because of the backup. Reconnect
 	global $conn;
 	$conn = new mysqli( IM_DB_HOST, IM_DB_NAME, IM_DB_PASSWORD, IM_DB_NAME );
 

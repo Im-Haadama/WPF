@@ -50,9 +50,9 @@ function table_content_data(
 			if ( $key == "id" ) {
 				$row_id = $data;
 			}
-			// print $key . "<br/>";
+//			 print "key= " . $key . "<br/>";
 			if ( $links and array_key_exists( $key, $links ) ) {
-				$value = gui_hyperlink( $data, sprintf( $links[ $i ], $data ) );
+				$value = gui_hyperlink( $data, sprintf( $links[ $key ], $data ) );
 			} else {
 //				print $key . " " . $selectors[$key] . "<br/>";
 				if ( $selectors and array_key_exists( $key, $selectors ) ) {
