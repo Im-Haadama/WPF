@@ -15,6 +15,7 @@ if ( ! defined( "TOOLS_DIR" ) ) {
 
 require_once( TOOLS_DIR . '/catalog/catalog.php' );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
+require_once( ROOT_DIR . '/niver/gui/wp_inputs.php' );
 require_once( TOOLS_DIR . '/multi-site/imMulti-site.php' );
 require_once( TOOLS_DIR . '/wp/Product.php' );
 require_once( TOOLS_DIR . "/orders/orders-common.php" );
@@ -198,7 +199,13 @@ class PriceList {
 		}
 	}
 
-	function PrintHTML( $ordered_only = false, $need_supply_only = false ) {
+	function PrintHTML( $ordered_only = false, $need_supply_only = false, $args = null) {
+		$create_option = false;
+		if (isset($args) and isset($args["create_products"])){
+			print gui_header(1, "יצירת מוצרים");
+			print gui_datalist( "category", "im_categories", "name", 0 );
+			$create_option = true;
+		}
 		// print "nso=" . $need_supply_only . "oo=" . $ordered_only . "<br/>";
 		Order::CalculateNeeded( $needed_products );
 
@@ -223,7 +230,17 @@ class PriceList {
 				"תאריך שינוי",
 				"מחיר קנייה",
 				"מחיר מחושב",
-				"קטגוריות",
+			)
+		);
+
+		if ($create_option)
+		{
+			array_push($table_rows[0],
+			"קטגוריה");
+
+		} else	{
+			array_push($table_rows[0],
+			"קטגוריות",
 				"שם מוצר",
 				"מחיר מכירה",
 				"מחיר מבצע",
@@ -231,10 +248,8 @@ class PriceList {
 				"מנוהל מלאי",
 				"יתרה במלאי",
 				"כמות בהזמנות פתוחות",
-				"מחירים נוספים"
-			)
-		);
-
+				"מחירים נוספים");
+		}
 		$col_ids = array(
 			"id",
 			"cod",
@@ -254,7 +269,7 @@ class PriceList {
 		);
 
 		if ( ! $ordered_only and ! $need_supply_only ) {
-			array_push( $table_rows[0], gui_label( "delete_row", "מחק פריט" ) );
+			array_push( $table_rows[0], gui_label( "delete_row", "פעולה" ) );
 		}
 
 		$show_fields = array( true, true, true, true, true, true, true, true, true, true, true, true );
@@ -285,9 +300,13 @@ class PriceList {
 					continue;
 				}
 			}
-			$line = $this->Line( $row[0], $row[1], $row[2], $pl_id, $row[4], $row[5], $prod_id, true, $map_id, $needed_products );
+			// Line( $product_name, $price, $date, $pl_id, $supplier_product_code, $factor, $linked_prod_id, $editable = true, $args = null )
+			$line = $this->Line( $row[0], $row[1], $row[2], $pl_id, $row[4], $row[5], $prod_id, true, $args );
 			if ( ! $ordered_only and ! $need_supply_only ) {
-				array_push( $line, gui_button( "del_" . $pl_id, "del_line(" . $pl_id . ")", "מחק" ) );
+				if ($create_option)
+					array_push( $line, gui_button( "cre_" . $pl_id, "create_product(" . $pl_id . ")", "צור מוצר", true ) );
+				else
+					array_push( $line, gui_button( "del_" . $pl_id, "del_line(" . $pl_id . ")", "מחק" ) );
 			}
 			array_unshift( $line, $pl_id );
 
@@ -312,7 +331,12 @@ class PriceList {
 		print $data;
 	}
 
-	private function Line( $product_name, $price, $date, $pl_id, $supplier_product_code, $factor, $linked_prod_id, $editable = true, $map_id, $needed = null ) {
+	private function Line( $product_name, $price, $date, $pl_id, $supplier_product_code, $factor, $linked_prod_id, $editable = true, $args = null ) {
+		$create_option = false;
+		if (isset($args) and isset($args["create_products"])){
+			$create_option = true;
+		}
+
 		$calc_price = round( $price * ( 100 + $factor ) / 100, 1 );
 
 		$line = array();
@@ -337,6 +361,10 @@ class PriceList {
 		// $line .= '<td>' . $calc_price . '</td>';
 		$category = sql_query_single_scalar( "SELECT category FROM im_supplier_price_list WHERE id = " . $pl_id );
 		array_push( $line, $category );
+		if ($create_option){
+			array_push($line, gui_select_category($pl_id, false));
+
+		} else
 		if ( $linked_prod_id > 0 ) {
 			$p = new Product( $linked_prod_id );
 			array_push( $line, get_product_name( $linked_prod_id ) );
@@ -415,6 +443,7 @@ class PriceList {
 		$picture_path = null, $debug = false
 	) {
 
+//		print "code: " . $code . "<br/>";
 //		print "start";
 //		print "AddOrUpdate: " . $product_name . " " . $regular_price . "<br/>";
 		my_log( __METHOD__, __FILE__ );
@@ -489,10 +518,12 @@ class PriceList {
 			}
 
 		} else {
-			if ( $code == "" ) {
+			if ( $code === "" ) {
+				print "setting default<br/>";
 				$code = "10";
 			}
 
+			print "code: " . $code . "<br/>";
 			$sql = "INSERT INTO im_supplier_price_list (product_name, supplier_id, "
 			       . "date, price, sale_price, supplier_product_code, line_status";
 

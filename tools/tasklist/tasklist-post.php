@@ -20,6 +20,8 @@ $operation = get_param( "operation" );
 // print "op=" . $operation . "<br/>";
 switch ( $operation ) {
 	case "create":
+	case "create_tasks":
+		print "creating tasks<br/>";
 		create_tasks( null, true );
 		break;
 	case "delivered": // Done
@@ -61,6 +63,7 @@ switch ( $operation ) {
 		$sql     = "UPDATE im_tasklist SET ended = now(), status = " . eTasklist::canceled .
 		           " WHERE id = " . $task_id;
 		sql_query( $sql );
+		create_tasks( null, true );
 		redirect_back();
 		break;
 	case "postpone":

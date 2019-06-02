@@ -154,7 +154,7 @@ function operation_get_price( $id ) {
 		$q = $_GET["quantity"];
 	}
 	$type = isset( $_GET["type"] ) ? $_GET["type"] : null;
-	// print $id . "<br/>";
+//	 print $id . " " . $type . "<br/>";
 	print get_price_by_type( $id, $type, $q );
 
 }

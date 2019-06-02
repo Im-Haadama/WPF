@@ -10,76 +10,19 @@ require( '../r-shop_manager.php' );
 print header_text( false );
 // require_once( "account.php" );
 ?>
-<html dir="rtl" lang="he">
-<head>
-    <script>
 
-        //        function zero() {
-        //            xmlhttp = new XMLHttpRequest();
-        //            xmlhttp.onreadystatechange = function () {
-        //                // Wait to get query result
-        //                if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
-        //                {
-        //                    location.reload();
-        //                }
-        //            }
-        //            var request = "../business/business-post.php?operation=zero_near_zero";
-        //            xmlhttp.open("GET", request, true);
-        //            xmlhttp.send();
-        //        }
 
-        //        function send_month_summary() {
-        //            var collection = document.getElementsByClassName("user_chk");
-        //            var user_ids = new Array();
-        //            for (var i = 0; i < collection.length; i++) {
-        //                if (collection[i].checked) {
-        //                    var user_id = collection[i].id.substr(4);
-        //                    user_ids.push(user_id);
-        //                }
-        //            }
-        //            xmlhttp = new XMLHttpRequest();
-        //            xmlhttp.onreadystatechange = function () {
-        //                // Wait to get query result
-        //                if (xmlhttp.readyState === 4 && xmlhttp.status === 200)  // Request finished
-        //                {
-        //                    var http_text = xmlhttp.responseText.trim();
-        //                    document.getElementById("logging").innerHTML = http_text;
-        //                }
-        //            }
-        //            var request = "account-post.php?operation=send_month_summary&ids=" + user_ids.join();
-        //            xmlhttp.open("GET", request, true);
-        //            xmlhttp.send();
-        //
-        //        }
-    </script>
-</head>
-<body>
 <?php
 
+print header_text(false, true, true, array("suppliers.js", "/niver/gui/client_tools.js"));
 $include_zero = isset( $_GET["zero"] );
 
 $supplier_id = get_param( "supplier_id" );
 if ( $supplier_id ) {
-	print get_supplier_balance( $supplier_id );
-
+    get_supplier_balance( $supplier_id );
 	return;
 }
 
-/**
- * Created by PhpStorm.
- * User: agla
- * Date: 09/08/15
- * Time: 12:39
- */
-
-//require_once("../header.php");
-
-//$sql = 'select round(sum(ia.transaction_amount),2), ia.client_id, wu.display_name, client_payment_method(ia.client_id), max(date) '
-//       . ' from im_client_accounts ia'
-//       . ' join wp_users wu'
-//       . ' where wu.id=ia.client_id'
-//       . ' group by client_id '
-//       . ' order by 4,5';
 
 $sql = "SELECT round(sum(amount), 0) as balance, part_id, supplier_displayname(part_id) \n"
 
@@ -167,18 +110,24 @@ print "$data";
 <?php
 
 function get_supplier_balance( $supplier_id ) {
-	$sum       = array( null, null, array( 0, 'sum_numbers' ) );
-	$links     = array();
+//	$sum       = array( null, null, array( 0, 'sum_numbers' ) );
+//	$links     = array();
+
+	$args = array();
 	$selectors = array();
+    $selectors["document_type"] = "gui_select_document_type";
+	$args["selectors"] = $selectors;
 
-	$selectors["document_type"] = "gui_select_document_type";
+    $selectors_events = array();
+    $selectors_events["document_type"] = 'onchange="update_document_type(%s)"';
+	$args["selectors_events"] = $selectors_events;
 
-	print table_content( "supplier_account",
-		"SELECT date, amount, ref, pay_date, document_type FROM im_business_info " .
-		" WHERE part_id = " . $supplier_id .
-		" AND document_type IN ( " . ImDocumentType::bank . "," . ImDocumentType::invoice . ") " .
-		" ORDER BY date DESC ", true, true, $links, $sum,
-		true, "line_select", "", $selectors );
+    $sql = "SELECT id, date, amount, ref, pay_date, document_type FROM im_business_info " .
+           " WHERE part_id = " . $supplier_id .
+           " AND document_type IN ( " . ImDocumentType::bank . "," . ImDocumentType::invoice . ") " .
+           " ORDER BY date DESC ";
+
+	print table_content_args( "supplier_account", $sql, $args );
 }
 
 ?>

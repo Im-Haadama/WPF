@@ -18,6 +18,8 @@ require_once( '../multi-site/imMulti-site.php' );
 // in im_supplier_products
 
 $operation = $_GET["operation"];
+$option = get_param("option");
+
 ///my_log("Operation: " . $operation, __FILE__);
 
 $supplier_id = $_GET["supplier_id"];
@@ -33,7 +35,10 @@ if ( $debug ) {
 switch ( $operation ) {
 
 	case "get_priceslist":
-		$pl->PrintHTML( isset( $_GET["ordered"] ) ? 1 : 0, isset( $_GET["need_supply"] ) ? 1 : 0 );
+		$args = array();
+		if ($option) $args[$option] = "yes";
+
+		$pl->PrintHTML( isset( $_GET["ordered"] ) ? 1 : 0, isset( $_GET["need_supply"] ) ? 1 : 0 , $args);
 		break;
 
 	case "get_csv":

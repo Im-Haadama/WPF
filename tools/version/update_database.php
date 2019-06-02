@@ -36,6 +36,9 @@ switch ( $version ) {
 	case "17":
 		version17();
 		break;
+	case "18":
+		version18();
+		break;
 	case "tasklist":
 		create_tasklist();
 		break;
@@ -60,7 +63,7 @@ function check() {
 function basic() {
 	sql_query( "CREATE TABLE im_info
 (
-	info_key VARCHAR(20) NULL,
+	info_key VARCHAR(40) NULL,
 	info_data VARCHAR(200) NULL,
 	id INT NOT NULL AUTO_INCREMENT
 		PRIMARY KEY
@@ -94,6 +97,28 @@ function create_tasklist() {
 
 }
 
+
+function version18()
+{
+	print "template onwer";
+	sql_query("alter table im_task_templates " .
+	" add owner int(11), " .
+	" add creator int(11); ");
+
+	print "project_count";
+	sql_query("drop function project_count");
+	sql_query( "create function project_count (_project_id int, _owner_id int) returns int   
+BEGIN
+declare _count int;
+select count(*) into _count from im_tasklist
+where project_id = _project_id
+and owner = _owner_id
+and status = 0;
+
+return _count;
+END;" );
+
+}
 
 function version17() {
 	print "tasklist<br/>";

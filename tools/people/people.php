@@ -320,7 +320,7 @@ function add_activity( $user_id, $date, $start, $end, $project_id, $vol = true, 
 	my_log( "end add_activity" );
 }
 
-function gui_select_project( $id, $value, $events, $worker = null ) {
+function gui_select_project( $id, $value, $events = null, $worker = null ) {
 	$query = null;
 
 	if ( $worker ) {

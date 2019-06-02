@@ -86,6 +86,8 @@ if ( $op == 'check' ) { // would run on conductor server
 
 	print gui_table( $results );
 
+	if ($fail) print im_file_get_html("http://tabula.aglamaz.com/utils/daily.log." . date('d') . ".html");
+
 	return;
 }
 
@@ -146,7 +148,7 @@ foreach ( $hosts_to_sync as $key => $host_info ) {
 	$size   = filesize( $full_path );
 	$output .= "result size: " . $size . "<br/>";
 
-	if ( $size > 2000000 ) {
+	if ( $size > 500000 ) {
 		$output .= "delete it origin<br/>";
 		curl_get( $url . "&op=delete" );
 	}

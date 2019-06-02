@@ -53,6 +53,8 @@ if ( isset( $_GET["refund"] ) ) {
 
 my_log( __FILE__, "order=" . $order_id . " id = " . $id );
 
+$show_inventory = false; // info_get("manage_inventory") and get_param("no_inv") == "1";
+
 if ( $id > 0 ) {
 	print "<form name=\"delivery\" action= \"\">";
 //	print gui_header( 2, "עריכת תעודת משלוח מספר  " . $id );
@@ -60,7 +62,7 @@ if ( $id > 0 ) {
 	print $O->infoBox();
 
 	$d = new Delivery( $id );
-	$d->PrintDeliveries( ImDocumentType::delivery, ImDocumentOperation::edit );
+	$d->PrintDeliveries( ImDocumentType::delivery, ImDocumentOperation::edit, false, $show_inventory );
 
 	//$d = new delivery( $id );
 	print "</form>";
@@ -90,7 +92,7 @@ if ( $id > 0 ) {
 	}
 	// var_dump($orders);
 
-	$d->PrintDeliveries( ImDocumentType::delivery, ImDocumentOperation::create );
+	$d->PrintDeliveries( ImDocumentType::delivery, ImDocumentOperation::create, false, $show_inventory );
 	print "</form>";
 }
 

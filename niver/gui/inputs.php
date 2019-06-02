@@ -20,8 +20,12 @@ function printbr( $text = null ) {
 	print "<br/>";
 }
 
-function gui_button( $id, $func, $text ) {
-	return "<button id=\"" . $id . "\" onclick=\"" . $func . "\"> " . $text . "</button>";
+function gui_button( $id, $func, $text, $disabled = false ) {
+	$btn =  "<button id=\"" . $id . "\" onclick=\"" . $func . "\"";
+	if ($disabled) $btn .= " disabled";
+	$btn .= "> " . $text . "</button>";
+	
+	return $btn;
 }
 
 function gui_datalist( $id, $table, $field, $include_id = false ) {
@@ -382,7 +386,7 @@ function gui_cell( $cell, $id = null, $show = true, $link = null ) {
 }
 
 function gui_row( $cells, $id = null, $show = null, &$acc_fields = null, $col_ids = null, $style = null, $links = null ) {
-//	 var_dump($acc_fields);
+//	 var_dump($col_ids);
 	$data = "<tr ";
 
 	if ( $style ) {
@@ -416,6 +420,7 @@ function gui_row( $cells, $id = null, $show = null, &$acc_fields = null, $col_id
 					$cell_id = "undef" . "_" . $id;
 				}
 			} else if ( $id ) {
+//				print "id=" . $id . "<br/>";
 				$cell_id = $id . "_" . $i;
 			}
 
@@ -424,6 +429,7 @@ function gui_row( $cells, $id = null, $show = null, &$acc_fields = null, $col_id
 				$show_cell = $show[ $i ];
 			}
 			//	print $i . " " . $cell . " " . $show_cell . "<br/>";
+//			print "cid = " . $cell_id . "<br/>";
 			$data .= gui_cell( $cell, $cell_id, $show_cell, $links[ $i ] );
 			$i ++;
 		}
@@ -457,12 +463,86 @@ function gui_bold( $text ) {
 	return "<B>" . $text . "</B>";
 }
 
+function gui_table_args($rows, $id = null, $args) {
+
+//	var_dump($id);
+	$data = "";
+
+	$header = true;
+	$footer = true;
+	$sum_fields = null;
+	$style = null;
+	$class = null;
+	$show_fields = null;
+	$links = null;
+	$col_ids = null;
+	$first_id = false;
+	$actions = null;
+
+	if ( $style ) {
+		print "<style>" . $style . "</style>";
+	}
+	if ( $header ) {
+		$data = "<table";
+		if ( $class ) {
+			$data .= " class=\"" . $class . "\"";
+		}
+		if ( ! is_null( $id ) ) {
+			$data .= ' id="' . $id . '"';
+		}
+		$data .= " border=\"1\"";
+		$data .= ">";
+	}
+//	print "id=" . $id . '<br/>';
+	if ( is_array( $rows ) ) {
+		$first_row = true;
+		foreach ( $rows as $row ) {
+			if ( ! is_null( $row ) ) {
+				if ( $first_id ) {
+					$id = array_shift( $row );
+				}
+				if ($actions and ! $first_row){
+					foreach ($actions as $action) {
+						$h = sprintf($action, $id);
+						array_push($row, $h);
+					}
+				}
+				$first_row = false;
+
+//				print "id= " . $id ."<br/>";
+				$data .= gui_row( $row, $id, $show_fields, $sum_fields, $col_ids, null, $links );
+//				function gui_row( $cells, $id = null, $show = null, &$sum_fields = null, $col_ids = null ) {
+
+			}
+		}
+	} else {
+		$data .= "<tr>" . $rows . "</tr>";
+	}
+	if ( $sum_fields ) {
+		$array = array();
+		foreach ( $sum_fields as $value ) {
+			if ( is_array( $value ) ) {
+				array_push( $array, $value[0] );
+			} else {
+				array_push( $array, $value );
+			}
+		}
+		$data .= gui_row( $array );
+	}
+
+	if ( $footer ) {
+		$data .= "</table>";
+	}
+
+	return $data;
+}
+
 function gui_table(
 	$rows, $id = null, $header = true, $footer = true, &$sum_fields = null, $style = null, $class = null, $show_fields = null,
-	$links = null, $col_ids = null, $first_id = false
+	$links = null, $col_ids = null, $first_id = false, $actions = null
 ) {
 
-//	var_dump($links);
+//	var_dump($id);
 	$data = "";
 
 	if ( $style ) {
@@ -479,14 +559,23 @@ function gui_table(
 		$data .= " border=\"1\"";
 		$data .= ">";
 	}
+//	print "id=" . $id . '<br/>';
 	if ( is_array( $rows ) ) {
+		$first_row = true;
 		foreach ( $rows as $row ) {
 			if ( ! is_null( $row ) ) {
 				if ( $first_id ) {
 					$id = array_shift( $row );
 				}
+				if ($actions and ! $first_row){
+					foreach ($actions as $action) {
+						$h = sprintf($action, $id);
+						array_push($row, $h);
+					}
+				}
 				$first_row = false;
 
+//				print "id= " . $id ."<br/>";
 				$data .= gui_row( $row, $id, $show_fields, $sum_fields, $col_ids, null, $links );
 //				function gui_row( $cells, $id = null, $show = null, &$sum_fields = null, $col_ids = null ) {
 
@@ -550,7 +639,7 @@ function gui_div( $id, $text = null, $center = false ) {
 
 // function gui_select_project( $id, $value, $events, $worker = null ) {
 
-function gui_select_repeat_time( $id, $value, $events ) {
+function gui_select_repeat_time( $id, $value, $events = "") {
 //	$values       = array();
 //	$line         = array();
 //	$line["id"]   = 0;

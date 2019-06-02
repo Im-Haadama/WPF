@@ -128,7 +128,7 @@ function print_mission( $mission_id_filter = null ) {
 		} else {
 			print $O->infoBox( false );
 			$D = Delivery::CreateFromOrder( $id );
-			$D->PrintDeliveries( ImDocumentType::delivery, ImDocumentOperation::collect );
+			$D->PrintDeliveries( ImDocumentType::delivery, ImDocumentOperation::collect, 0, false );
 		}
 	}
 }

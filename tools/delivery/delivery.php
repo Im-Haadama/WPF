@@ -386,7 +386,7 @@ class delivery {
 		return $this->order;
 	}
 
-	function delivery_text( $document_type, $operation = ImDocumentOperation::show, $margin = false ) {
+	function delivery_text( $document_type, $operation = ImDocumentOperation::show, $margin = false, $show_inventory = false ) {
 		global $delivery_fields_names;
 		global $header_fields;
 		global $debug;
@@ -502,7 +502,8 @@ class delivery {
 				if ( $row["product_name"] == "הנחת כמות" ) {
 					$volume_line = true;
 				}
-				$data .= $this->delivery_line( $show_fields, ImDocumentType::delivery, $row["id"], 0, $operation, $margin, $style );
+				$data .= $this->delivery_line( $show_fields, ImDocumentType::delivery, $row["id"],
+					0, $operation, $margin, $style, 0, $show_inventory );
 			}
 		} else {
 			// For group orders - first we get the needed products and then accomulate the quantities.
@@ -526,7 +527,7 @@ class delivery {
 				$order_item_ids = sql_query_array_scalar( $items_sql );
 
 				// $data .= $this->delivery_line($show_fields, $prod_id, $quantity_ordered, "", $quantity_ordered, $price, $has_vat, $prod_id, $refund, $unit );
-				$data .= $this->delivery_line( $show_fields, $document_type, $order_item_ids, 0, $operation, $margin, $style, $var_id );
+				$data .= $this->delivery_line( $show_fields, $document_type, $order_item_ids, 0, $operation, $margin, $style, $var_id, $show_inventory );
 				// print "ex " . $expand_basket . " is " . is_basket($prod_id) . "<br/>";
 
 				if ( $expand_basket && is_basket( $prod_id ) ) {
@@ -618,7 +619,8 @@ class delivery {
 //		return order_get_customer_id( $this->d_OrderID );
 //	}
 
-	public function delivery_line( $show_fields, $document_type, $line_ids, $client_type, $operation, $margin = false, $style = null, $var_id = 0 ) {
+	public function delivery_line( $show_fields, $document_type, $line_ids, $client_type, $operation, $margin = false, $style = null, $var_id = 0,
+		$show_inventory = false ) {
 		global $delivery_fields_names;
 
 		global $global_vat;
@@ -839,7 +841,7 @@ class delivery {
 			$style .= 'bgcolor="' . $line_color . '"';
 
 		// print $prod_id . " " . $P->getStock() . " " . $P->getStock(true). "<br/>";
-		if ( $P->getOrderedDetails() > 0.8 * $P->getStock( true ) ) {
+		if ( $show_inventory and $P->getOrderedDetails() > 0.8 * $P->getStock( true ) ) {
 			$line[ DeliveryFields::packing_info ] = "מלאי: " . $P->getStock( true ) . ". הזמנות: " . $P->getOrderedDetails();
 			$pending                              = $P->PendingSupplies();
 			if ( $pending ) {
@@ -1102,8 +1104,8 @@ class delivery {
 	// Called when creating a delivery from an order.
 	// After the basket line is shown, we print here the basket lines and basket discount line.
 
-	function PrintDeliveries( $document_type, $operation, $margin = false ) {
-		print $this->delivery_text( $document_type, $operation, $margin );
+	function PrintDeliveries( $document_type, $operation, $margin = false, $show_inventory = false ) {
+		print $this->delivery_text( $document_type, $operation, $margin, $show_inventory );
 	}
 
 	public function DeliveryFee() {

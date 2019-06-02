@@ -4,11 +4,17 @@ require_once( "im_tools.php" );
 print header_text( false );
 require_once( ROOT_DIR . "/tools/wp.php" );
 require_once( ROOT_DIR . "/niver/gui/inputs.php" );
+require_once(ROOT_DIR . '/tools/options.php');
+
 // print TOOLS_DIR . "/multi-site/imMulti-site.php";
 require_once( ROOT_DIR . "/tools/multi-site/imMulti-site.php" );
 
 $test_site  = get_param( "test_site" );
 $test_limit = get_param( "test_limit" );
+$manage_inventory = info_get("manage_inventory");
+$manage_workers = info_get("manage_workers");
+$manage_accounting = info_get("manage_accounting");
+
 if ( ! $test_limit ) {
 	$test_limit = 5;
 }
@@ -58,9 +64,11 @@ $col = 0;
 $table[ $row ++ ][ $col ] = gui_header( 2, "אריזה" );
 add_command( $table, $row, $col, "edit_shop_orders", "הזמנות", "orders/orders-get.php", "doc_frame" );
 add_command( $table, $row, $col, "edit_shop_orders", "פריטים להזמנות", "orders/get-total-orders.php", "doc_frame" );
-add_command( $table, $row, $col, "edit_shop_orders", "הדפסה", "auto/print.php", "print" );
-add_command( $table, $row, $col, "show_supplies", "אספקות", "supplies/supplies-get.php" );
-add_command( $table, $row, $col, "show_supplies", "מצב המלאי", "inventory/display.php" );
+add_command( $table, $row, $col, "edit_shop_orders", "הדפסה", "delivery/print.php", "print" );
+if ($manage_inventory){
+    add_command( $table, $row, $col, "show_supplies", "אספקות", "supplies/supplies-get.php" );
+    add_command( $table, $row, $col, "show_supplies", "מצב המלאי", "inventory/display.php" );
+}
 while ( $row < $max_row ) {
 	$table[ $row ++ ][ $col ] = "";
 }
@@ -116,21 +124,27 @@ while ( $row < $max_row ) {
 
 $col ++;
 $row                      = 0;
+
 $table[ $row ++ ][ $col ] = gui_header( 2, "ספקים" );
 add_command( $table, $row, $col, "edit_suppliers", "ספקים", "suppliers/c-get-all-suppliers.php", "doc_frame" );
 add_command( $table, $row, $col, "edit_shop_orders", "אספקות", "supplies/supplies-get.php", "doc_frame" );
-add_command( $table, $row, $col, "edit_shop_orders", "מלאי 0", "catalog/catalog-db-query.php?operation=zero_inv", "doc_frame" );
-add_command( $table, $row, $col, "edit_suppliers", "יתרת ספקים", "suppliers/get-supplier-balance.php", "doc_frame" );
+if ($manage_inventory){
+    add_command( $table, $row, $col, "edit_shop_orders", "מלאי 0", "catalog/catalog-db-query.php?operation=zero_inv", "doc_frame" );
+    add_command( $table, $row, $col, "edit_suppliers", "יתרת ספקים", "suppliers/get-supplier-balance.php", "doc_frame" );
+}
 
 while ( $row < $max_row ) {
 	$table[ $row ++ ][ $col ] = "";
 }
 
-$col ++;
-$row                      = 0;
-$table[ $row ++ ][ $col ] = gui_header( 2, "עובדים" );
-add_command( $table, $row, $col, null, "דיווח שעות", "http://store.im-haadama.co.il/tools/people/entry.php" );
-add_command( $table, $row, $col, "working_hours_all", "ניהול עובדים", "people/c-get-all-working.php" );
+
+if ($manage_workers) {
+    $col ++;
+    $row                      = 0;
+    $table[ $row ++ ][ $col ] = gui_header( 2, "עובדים" );
+    add_command( $table, $row, $col, null, "דיווח שעות", "http://store.im-haadama.co.il/tools/people/entry.php" );
+    add_command( $table, $row, $col, "working_hours_all", "ניהול עובדים", "people/c-get-all-working.php" );
+}
 while ( $row < $max_row ) {
 	$table[ $row ++ ][ $col ] = "";
 }

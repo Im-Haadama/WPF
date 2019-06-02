@@ -136,8 +136,6 @@ switch ( $operation ) {
 		foreach ( $lines as $line ) {
 			wc_delete_order_item( $line );
 		}
-
-
 		break;
 
 	case "start_handle":
@@ -193,6 +191,12 @@ switch ( $operation ) {
 		} else {
 			print "אין לקוח כתובת מייל זאת";
 		}
+		break;
+
+	case "check_waiting_count":
+		print sql_query_single_scalar("select count(*) from wp_posts " .
+		" where post_status = 'wc-awaiting-shipment'");
+
 		break;
 
 	default:

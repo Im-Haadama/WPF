@@ -18,6 +18,8 @@ require_once( STORE_DIR . "/tools/supplies/Supply.php" );
 
 $filter_zero  = isset( $_GET["filter_zero"] );
 $filter_stock = isset( $_GET["filter_stock"] );
+$supplier_id = get_param("supplier_id");
+
 //$basket_quantities;
 $basket_ordered = array();
 
@@ -33,7 +35,7 @@ switch ( $operation ) {
 		create_supply_single();
 		break;
 	case "show_required":
-		get_total_orders( $filter_zero, false, $filter_stock );
+		get_total_orders( $filter_zero, false, $filter_stock, $supplier_id );
 		break;
 	default:
 		print $operation . " not handled ";
@@ -93,7 +95,7 @@ function create_supply_single() {
 }
 
 
-function get_total_orders( $filter_zero, $history = false, $filter_stock ) {
+function get_total_orders( $filter_zero, $history = false, $filter_stock, $supplier_id = null ) {
 
 	print "<style>
 table {
@@ -126,21 +128,48 @@ tr:nth-child(even) {
 
 	// Find out which suppliers are relevant
 	foreach ( $needed_products as $prod_id => $product_info ) {
+		$found_supplier = false;
 		foreach ( alternatives( $prod_id ) as $alter ) {
 			$supplier = $alter->getSupplierId();
+//			 print "p= " . $prod_id . "s= " . $supplier . "<br/>";
 			if ( ! in_array( $supplier, $suppliers ) ) {
 				array_push( $suppliers, $supplier );
 				$supplier_needed[ $supplier ] = array();
 			}
 			$supplier_needed[ $supplier ][ $prod_id ] = $product_info;
+			$found_supplier = true;
+		}
+		if (! $found_supplier){
+//			print "xx" . $product_info . '<br/>';
+			if (! $supplier_needed["missing"])
+				$supplier_needed["missing"] = array();
+
+			$supplier_needed["missing"][$prod_id] = $product_info;
 		}
 	}
-
 	// var_dump($supplier_needed);
 //	var_dump($supplier_needed[100001]);
 
 //	$time = debug_time("after suppliers", $time);
 
+	if ($supplier_id) {
+		if (! isset($supplier_needed[ $supplier_id ]))
+		{
+			print "אין מוצרים רלוונטים לספק " . get_supplier_name($supplier_id);
+			return;
+		}
+		get_total_orders_supplier( $supplier_id, $supplier_needed[ $supplier_id ], $filter_zero, $filter_stock, $history );
+
+		print gui_button( "btn_supplier_" . $supplier_id, "createSupply(" . $supplier_id . ")", "צור הספקה" );
+
+		return;
+	}
+
+	if ($supplier_needed["missing"]) {
+//		var_dump($supplier_needed["missing"]);
+		get_total_orders_supplier( $supplier_id, $supplier_needed["missing" ], $filter_zero, $filter_stock, $history );
+
+	}
 	$sql = "SELECT id, supplier_priority FROM im_suppliers WHERE id IN (" . comma_implode( $suppliers ) . ")" .
 	       " AND active " .
 	       " ORDER BY 2";
@@ -148,7 +177,6 @@ tr:nth-child(even) {
 	$result = sql_query( $sql );
 
 	while ( $row = sql_fetch_row( $result ) ) {
-
 		$supplier_id = $row[0];
 		get_total_orders_supplier( $supplier_id, $supplier_needed[ $supplier_id ], $filter_zero, $filter_stock, $history );
 
@@ -229,8 +257,8 @@ function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero
 			}
 		}
 
-		if ( ! $this_supplier )
-			continue;
+//		if ( ! $this_supplier )
+//			continue;
 
 		// if ($prod_id == 1002) {print "XX"; var_dump($suppliers); }
 		$supplier_name = gui_select( "sup_" . $prod_id, "option", $suppliers, "onchange=selectSupplier(this)", "" );
@@ -252,7 +280,11 @@ function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero
 	}
 
 	if ( count( $data_lines ) ) {
-		print gui_header( 2, get_supplier_name( $supplier_id ) );
+		if ($supplier_id)
+			$supplier_name = get_supplier_name( $supplier_id );
+		else $supplier_name = "מוצרים לא זמינים";
+
+		print gui_header( 2, $supplier_name );
 
 		$data = "<table>"; // This tags change to tbody somehow.
 		$data .= "<tr>";

@@ -69,7 +69,9 @@ function print_weekly_report( $week ) {
 	$sql = "SELECT supply_from_business(id) as 'אספקה', id, ref as 'תעודת משלוח', date as תאריך, amount AS סכום, " .
 	       "supplier_from_business(id) AS ספק, pay_date as 'תאריך תשלום' " .
 	       " FROM im_business_info WHERE " .
-	       " week = '" . $week . "' AND is_active = 1 AND amount < 0 ORDER BY 3 DESC";
+	       " week = '" . $week . "' AND is_active = 1 AND amount < 0 " .
+	       " and document_type = 5 " .
+	       " ORDER BY 3 DESC";
 
 	$sums_supplies = array( "", "", "", "", array( 0, sum_numbers ), "", "" );
 	$outputs       = table_content( "table", $sql, true, true,

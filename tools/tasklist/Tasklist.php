@@ -232,7 +232,7 @@ function create_tasks_per_mission() {
 	}
 }
 // if null = create for all freqs.
-function create_tasks( $freqs = null, $verbose = false, $owner = 1 ) {
+function create_tasks( $freqs = null, $verbose = false, $default_owner = 1 ) {
 	if ( ! table_exists( "im_task_templates" ) ) {
 		return;
 	}
@@ -265,8 +265,8 @@ function create_tasks( $freqs = null, $verbose = false, $owner = 1 ) {
 //			continue;
 //		}
 
-		$sql = "SELECT id, task_description, task_url, project_id, repeat_freq, repeat_freq_numbers, condition_query, priority " . "
-   		 FROM im_task_templates " .
+		$sql = "SELECT id, task_description, task_url, project_id, repeat_freq, repeat_freq_numbers, condition_query, priority, creator, owner " .
+		       " FROM im_task_templates " .
 		       " where repeat_freq = '" . $freq . "'";
 
 		$result = sql_query( $sql );
@@ -290,13 +290,21 @@ function create_tasks( $freqs = null, $verbose = false, $owner = 1 ) {
 				$test_result .= substr( $verbose_line[ $i ], 0, 1);
 
 			array_push( $verbose_line, $test_result );
-//			/;print $test_result . " " . strpos($test_result, "0") . "<br/>";
-			if ( strpos( $test_result, "0" ) ) {
+//			 print $test_result . " " . (strpos("1" . $test_result, "0") != false) . "<br/>";
+			if ( strpos(  $test_result, "0" ) !== false) {
 //				print "xxxx";
 				array_push( $verbose_line, "skipped" );
 				array_push( $verbose_table, $verbose_line);
 				continue;
 			}
+
+			$owner = sql_query_single_scalar("SELECT owner FROM im_task_templates WHERE id = " . $id );
+			if (! $owner)
+				$owner = $default_owner;
+
+			$creator = sql_query_single_scalar("SELECT creator FROM im_task_templates WHERE id = " . $id );
+			if (! $creator)
+				$creator = $default_owner;
 
 			$priority = sql_query_single_scalar( "SELECT priority FROM im_task_templates WHERE id = " . $id );
 			if ( ! $priority ) {
@@ -309,11 +317,14 @@ function create_tasks( $freqs = null, $verbose = false, $owner = 1 ) {
 			array_push( $verbose_line, $priority);
 
 			$sql = "INSERT INTO im_tasklist " .
-			       "(task_description, task_template, status, date, project_id, priority, owner) VALUES ( " .
+			       "(task_description, task_template, status, date, project_id, priority, owner, creator) VALUES ( " .
 			       "'" . $row["task_description"] . "', " . $id . ", " . eTasklist::waiting . ", now(), " . $project_id . ",  " .
-			       $priority . "," . $owner . ")";
+			       $priority . "," . $owner . "," . $creator . ")";
+
+			my_log("create task " . $sql);
 
 			sql_query( $sql );
+
 			array_push( $verbose_line, sql_insert_id() );
 
 			array_push( $verbose_table, $verbose_line);
@@ -336,10 +347,10 @@ function check_frequency( $repeat_freq, $repeat_freq_numbers ) {
 	$result = $repeat_freq . ". now = " . date( $repeat_freq ) . " " . $repeat_freq_numbers;
 
 	$repeat_freq = explode( " ", $repeat_freq )[0];
-	$passed = false;
+	$passed = 0;
 	$result      .= "checking " . date( $repeat_freq ) . " " . $repeat_freq_numbers;
 	if ( in_array( date( $repeat_freq ), explode( ",", $repeat_freq_numbers ) ) ) {
-		$passed = true;
+		$passed = 1;
 	}
 
 	return $passed . $result;

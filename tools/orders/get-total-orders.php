@@ -9,6 +9,9 @@ require_once( '../r-shop_manager.php' );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 
 print header_text( false );
+
+$supplier_id = get_param("supplier_id");
+
 ?>
 <html dir="rtl" lang="he">
 <header>
@@ -43,6 +46,7 @@ print header_text( false );
             var request = "get-total-orders-post.php?operation=show_required";
             if (filter) request = request + "&filter_zero=1";
             if (stock) request = request + "&filter_stock=1";
+            <?php if (isset($supplier_id)) print 'request += "&supplier_id=' . $supplier_id . '"'; ?>
 
             xmlhttp.open("GET", request, true);
             xmlhttp.onreadystatechange = function () {

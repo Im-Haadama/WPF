@@ -321,6 +321,7 @@ function do_pricelist_process( $file, $supplier_id, $add, $picture_prefix = null
 					continue;
 				}
 				if ( isset( $item_code_idx[ $col ] ) ) {
+//					print "code: " . $data[ $item_code_idx[ $col ] ];
 					$item_code = $data[ $item_code_idx[ $col ] ];
 				}
 				if ( $picture_path_idx ) {

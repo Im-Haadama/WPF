@@ -45,7 +45,7 @@ function get_minimum_order() {
 	$value = 85;
 
 	$country  = $woocommerce->customer->get_shipping_country();
-	$state    = $woocommerce->customer->get_shipping_state();
+	// $state    = $woocommerce->customer->get_shipping_state();
 	$postcode = $woocommerce->customer->get_shipping_postcode();
 
 	$zone1 = WC_Shipping_Zones::get_zone_matching_package( array(

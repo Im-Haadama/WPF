@@ -14,6 +14,8 @@ require_once( "../suppliers/gui.php" );
 require_once( "../multi-site/imMulti-site.php" );
 require_once( "../suppliers/Supplier.php" );
 
+$option = get_param("option");
+
 function set_supplier_id() {
 	if ( ! isset( $_GET["supplier_id"] ) ) {
 		print 'var sel = document.getElementById("supplier_id");
@@ -35,7 +37,6 @@ function set_supplier_id() {
 			print 'var tools = "";';
 		}
 	}
-
 }
 ?>
 <html dir="rtl" lang="he">
@@ -54,6 +55,13 @@ function set_supplier_id() {
             document.getElementById("chk" + pricelist_id).checked = true;
         }
 
+        function createProducts()
+        {
+	        <?php
+	        set_supplier_id();
+	        ?>
+            window.location = "pricelist-get.php?supplier_id=" + supplier_id + "&option=create_products";
+        }
         function create_supply() {
 	        <?php
 	        set_supplier_id();
@@ -275,6 +283,25 @@ function set_supplier_id() {
             xmlhttp.send();
         }
 
+        function select_category(pl_id)
+        {
+            enable_btn("cre_" + pl_id);
+        }
+
+        function create_product(pl_id)
+        {
+            <?php set_supplier_id(); ?>
+
+            var categ = get_value_by_name("cat_" + pl_id);
+
+            var request = "../catalog/catalog-map-post.php?operation=create_products&category_name=" + encodeURI(categ) +
+                "&create_info=" + supplier_id + "," + pl_id;
+
+            execute_url(request);
+
+            // alert (categ);
+        }
+
         function change_supplier() {
 	        <?php
 	        set_supplier_id();
@@ -310,6 +337,11 @@ function set_supplier_id() {
             var request = "pricelist-post.php?operation=get_priceslist&supplier_id=" + supplier_id;
 //            var o = get_value_by_name("chk_ordered");
 //            alert (o);
+
+            <?php
+                if ($option) print 'request = request + "&option=' . $option . '";';
+            ?>
+
             if (get_value_by_name("chk_ordered")) request += "&ordered";
             if (get_value_by_name("chk_need_supply")) request += "&need_supply";
 
@@ -413,6 +445,8 @@ function set_supplier_id() {
 		print get_supplier_name( $_GET["supplier_id"] );
 	}
 	?>
+
+
 </h1>
 <label id="last_update"></label>
 
@@ -421,6 +455,8 @@ function set_supplier_id() {
     <button id="btn_delete" onclick="delPrices()">מחק פריטים</button>
     <button id="btn_delete_map" onclick="delMap()">מחק מיפוי</button>
     <button id="btn_dontsell" onclick="donPrices()">לא למכירה</button>
+    <button id="btn_create_products" onclick="createProducts()">יצירת מוצרים</button>
+
 	<?php
 	$user = wp_get_current_user();
 	if ( $user->ID == "1" ) {

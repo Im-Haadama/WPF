@@ -10,14 +10,6 @@ require_once( TOOLS_DIR . '/catalog/bundles.php' );
 require_once( ROOT_DIR . "/tools/catalog/Basket.php" );
 require_once( ROOT_DIR . "/tools/orders/orders-common.php" );
 
-// Somehow functions_im.php doesn't apply.
-remove_filter( 'woocommerce_stock_amount', 'intval' );
-remove_filter( 'woocommerce_stock_amount', 'filter_woocommerce_stock_amount', 10, 1 );
-
-// Add a filter, that validates the quantity to be a float
-add_filter( 'woocommerce_stock_amount', 'floatval' );
-
-
 class Order {
 	private $order_id = 0;
 	private $WC_Order = null;
@@ -36,6 +28,13 @@ class Order {
 		$user_id, $mission_id, $prods, $quantities, $comments, $units = null, $type = null,
 		$method = null
 	) {
+		// Somehow functions_im.php doesn't apply.
+		remove_filter( 'woocommerce_stock_amount', 'intval' );
+		remove_filter( 'woocommerce_stock_amount', 'filter_woocommerce_stock_amount', 10 );
+
+		// Add a filter, that validates the quantity to be a float
+		add_filter( 'woocommerce_stock_amount', 'floatval' );
+
 		$debug    = false;
 		$WC_Order = wc_create_order();
 

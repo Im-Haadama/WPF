@@ -7,6 +7,10 @@
  */
 //print header_text(false);
 
+if ( ! defined( 'ROOT_DIR' ) ) {
+	define( 'ROOT_DIR', dirname(dirname(dirname( __FILE__ ) ) )) ;
+}
+//print ROOT_DIR;
 require_once( ROOT_DIR . '/wp-admin/includes/taxonomy.php' );
 
 function terms_add_category( $object_id, $term ) {
