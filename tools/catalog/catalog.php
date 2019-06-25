@@ -309,6 +309,7 @@ class Catalog {
 
 			$p = new Product( $product_id );
 			$p->Draft();
+			print "done<br/>";
 		}
 	}
 

@@ -307,7 +307,13 @@ class Product {
 		return get_buy_price( $this->id );
 	}
 
+	function isDraft()
+	{
+		return get_post_status( $this->id ) == "draft";
+	}
+
 	function Draft() {
+		$this->setStock(0);
 		$my_post                = array();
 		$my_post['ID']          = $this->id;
 		$my_post['post_status'] = 'draft';

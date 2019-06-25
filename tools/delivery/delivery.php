@@ -143,6 +143,9 @@ class delivery {
 	}
 
 	public static function CreateDeliveryFromOrder( $order_id, $q ) {
+		remove_filter( 'woocommerce_stock_amount', 'intval' );
+		remove_filter( 'woocommerce_stock_amount', 'filter_woocommerce_stock_amount', 10 );
+
 		// $q = 1: take from order.
 		// $q = 2: inventory
 		$prods       = array();
@@ -161,13 +164,14 @@ class delivery {
 			$prod['product_name'] = $product["name"];
 			switch ( $q ) {
 				case 1:
+					print "q=" . $product["quantity"];
 					$prod['quantity'] = $product["quantity"];
 					break;
 				case 2:
 					$prod['quantity'] = inventory::GetQuantity( $product['product_id'] );
 					break;
 			}
-			$prod['quantity_ordered'] = 0;
+			$prod['quantity_ordered'] = $prod['quantity'];
 			$prod['vat']              = 0;
 			$quantity                 = $product["quantity"];
 
@@ -183,7 +187,6 @@ class delivery {
 		}
 
 		$delivery_id = delivery::CreateDeliveryHeader( $order_id, $total, $vat, $lines, false, 0, 0, false );
-
 		// print " מספר " . $delivery_id;
 
 		foreach ( $prods as $prod ) {
@@ -485,7 +488,7 @@ class delivery {
 		$style = 'style="border: 2px solid #dddddd; text-align: right; padding: 8px;"';
 		$data  .= gui_row( $header_fields, "header", $show_fields, $sum, null, $style );
 
-		if ( $this->ID > 0 ) { // load delivery
+		if ( $this->ID > 0 and $document_type == ImDocumentType::delivery) { // load delivery
 			$delivery_loaded = true;
 			$sql             = 'select id, product_name, round(quantity, 1), quantity_ordered, vat, price, line_price, prod_id ' .
 			                   'from im_delivery_lines ' .

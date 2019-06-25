@@ -16,6 +16,10 @@ require_once( ROOT_DIR . "/tools/multi-site/imMulti-site.php" );
 
 $m = ImMultiSite::getInstance();
 
+//$text = show_category_all( false, true, false, false);
+//
+//$rc = send_mail( "da." . date('h:mm'), 'info@im-haadama.co.il', $text );
+
 ob_start();
 
 backup_database();
@@ -130,7 +134,7 @@ function auto_mail() {
 	foreach ( $auto_list as $client_id ) {
 		print get_customer_name( $client_id ) . "<br/>";
 		$last = get_user_meta( $client_id, "last_email", true );
-		if ( $last == date( 'Y-m-d' ) ) {
+		if ( $client_id != 1 and ($last == date( 'Y-m-d' ) )) {
 			print "already sent";
 			continue;
 		}
@@ -141,7 +145,7 @@ function auto_mail() {
 		print "categ: " . $categ . "<br/>";
 		$customer_type = customer_type( $client_id );
 
-		if ( $day == date( 'w' ) ) {
+		if ( $day == date( 'w' ) or $client_id == 1) {
 			print "שולח...<br/>";
 			$subject = "מוצרי השבוע ב-" . $business_name;
 			$mail    = "שלום " . get_customer_name( $client_id ) .
@@ -171,8 +175,6 @@ function auto_mail() {
 			update_user_meta( $client_id, "last_email", date( 'Y-m-d' ) );
 		}
 	}
-
-	// Todo: remove this
 }
 
 function backup_database() {

@@ -121,8 +121,8 @@ function set_supplier_id() {
         }
 
         function updatePrices() {
-            var sel = document.getElementById("supplier_id");
-            supplier_id = sel.options[sel.selectedIndex].value;
+            <?php set_supplier_id(); ?>
+            // var sel = document.getElementById("supplier_id");
 
             xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function () {

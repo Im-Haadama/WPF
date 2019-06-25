@@ -180,6 +180,15 @@ if ( isset( $_GET["operation"] ) ) {
 			print $multi_site->Run( "business/business-post.php?operation=add_payment&ids=" . implode( $ids, "," ) . "&supplier_id=" . $supplier_id .
 			                        "&bank_id=" . $bank_id . "&date=" . $date .
 			                        "&amount=" . $bank, $site_id );
+
+			print "מעדכן שורות<br/>";
+			$sql = "update im_bank " .
+			       " set receipt = \"" . comma_implode($ids) . "\", " .
+			       " site_id = " . $site_id .
+			       " where id = " . $bank_id;
+
+			sql_query($sql);
+
 			break;
 
 		case "add_payment":

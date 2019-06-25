@@ -55,8 +55,17 @@ switch ( $operation ) {
 		break;
 
 	case "close_order":
-		$ids = $_GET["ids"];
-		order_change_status( explode( ",", $ids ), "wc-completed" );
+		$ids = get_param_array("ids");
+		if ($ids){
+			foreach ($ids as $id){
+				$o = new Order($id);
+				$o->ChangeStatus("wc-completed");
+			}
+			return;
+		}
+		print "No ids!<br>";
+
+		// order_change_status( explode( ",", $ids ), "wc-completed" );
 		break;
 
 }

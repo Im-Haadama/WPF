@@ -37,7 +37,8 @@ require_once( "gui.php" );
         function add_client_type() {
             document.getElementById('btn_save').disabled = true;
 
-            var user_id = get_worker();
+            var user_id = get_value_by_name("client_select");
+            user_id = user_id.substr(0, user_id.indexOf(")"));
 
             var type = get_value_by_name("select_type_new");
 

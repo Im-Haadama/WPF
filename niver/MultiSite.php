@@ -65,6 +65,18 @@ class MultiSite {
 		return $output;
 	}
 
+	function getAllServers()
+	{
+		$result = array();
+		foreach ( $this->sites_array as $site_id => $site ) {
+			$r = parse_url($this->sites_array[$site_id][FieldIdx::site_tools_idx]);
+			// var_dump( $r ). "<br/>";
+
+			array_push($result, $r['host']);
+		}
+		return $result;
+	}
+
 	function Run( $func, $site_id, $first = false, $debug = false ) {
 		$url = $this->getSiteToolsURL( $site_id );
 

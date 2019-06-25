@@ -112,11 +112,11 @@ function print_mission( $mission_id_filter = null ) {
 			array_push( $orders, $id );
 		}
 	}
-	$path_orders = array();
+//	$path_orders = array();
 	// find_route_1( $node, $rest, &$path, $print = false, $end ) {
 
-	find_route_1( $start, $orders, $path_orders, false, $end );
-	foreach ( $path_orders as $id ) {
+	// find_route_1( $start, $orders, $path_orders, false, $end );
+	foreach ( $orders as $id ) {
 		update_post_meta( $id, "printed", 1 );
 		$O       = new Order( $id );
 		$user_id = $O->getCustomerId();

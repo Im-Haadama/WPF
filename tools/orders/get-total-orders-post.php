@@ -35,6 +35,8 @@ switch ( $operation ) {
 		create_supply_single();
 		break;
 	case "show_required":
+		print gui_header(1, "הערות לקוח");
+		Order::GetAllComments();
 		get_total_orders( $filter_zero, false, $filter_stock, $supplier_id );
 		break;
 	default:
@@ -206,7 +208,12 @@ function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero
 
 		// $supplied_q = supply_quantity_ordered( $prod_id );
 
-		$line = "<tr><td><input id=\"chk" . $prod_id . '_' . $supplier_id . "\" class=\"product_checkbox" . $supplier_id . "\" type=\"checkbox\"></td>";
+		$line = "<tr>";
+		if ($P->isDraft()){
+			$line .= "<td>טיוטא</td>";
+		} else {
+			$line .= "<td><input id=\"chk" . $prod_id . '_' . $supplier_id . "\" class=\"product_checkbox" . $supplier_id . "\" type=\"checkbox\"></td>";
+		}
 		$line .= "<td> " . get_product_name( $prod_id ) .
 		         "</td><td><a href = \"";
 
@@ -284,9 +291,9 @@ function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero
 			$supplier_name = get_supplier_name( $supplier_id );
 		else $supplier_name = "מוצרים לא זמינים";
 
-		print gui_header( 2, $supplier_name );
+		$data = gui_header( 2, $supplier_name );
 
-		$data = "<table>"; // This tags change to tbody somehow.
+		$data .= "<table>"; // This tags change to tbody somehow.
 		$data .= "<tr>";
 		$data .= "<td>בחר</td>";
 		$data .= "<td>פריט</td>";
@@ -326,11 +333,12 @@ function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero
 
 		$data .= "</table>";
 
-//	print "print: " . date( "h:i:sa" ) . "<br/>";
-//
+		if (! $supplier_id) {
+			$data .= "יש להפוך לטיוטא רק לאחר שמוצר אזל מהמלאי והוצע ללקוחות תחליף<br/>";
+			$data .= gui_button("btn_draft_products", "draft_products()", "הפוך לטיוטא");
+		}
 		print "$data";
 	}
-//    prof_print();
 }
 
 

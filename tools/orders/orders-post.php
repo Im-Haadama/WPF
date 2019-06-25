@@ -88,6 +88,12 @@ switch ( $operation ) {
 		// print header_text();
 		// print "creating order for " . get_user_name( $user_id );
 //		print "pos: " . $pos . "<br/>";
+		if (!$prods){
+			my_log("empty order requested and refused");
+			print "הזמנה ריקה לא נקלטה";
+			return null;
+
+		}
 		$o = Order::CreateOrder( $user_id, $mission_id, explode( ",", $prods ),
 			explode( ",", $quantities ), $comments, explode( ",", $units ), $type );
 

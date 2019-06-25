@@ -113,6 +113,7 @@ function get_supplier_balance( $supplier_id ) {
 //	$sum       = array( null, null, array( 0, 'sum_numbers' ) );
 //	$links     = array();
 
+    print gui_header(1, get_supplier_name($supplier_id));
 	$args = array();
 	$selectors = array();
     $selectors["document_type"] = "gui_select_document_type";
@@ -122,13 +123,13 @@ function get_supplier_balance( $supplier_id ) {
     $selectors_events["document_type"] = 'onchange="update_document_type(%s)"';
 	$args["selectors_events"] = $selectors_events;
 
-    $sql = "SELECT id, date, amount, ref, pay_date, document_type FROM im_business_info " .
+    $sql = "SELECT id, date, amount, ref, pay_date, document_type, supplier_balance($supplier_id, date) as balance FROM im_business_info " .
            " WHERE part_id = " . $supplier_id .
            " AND document_type IN ( " . ImDocumentType::bank . "," . ImDocumentType::invoice . ") " .
+           " and is_active = 1" .
            " ORDER BY date DESC ";
 
 	print table_content_args( "supplier_account", $sql, $args );
 }
 
 ?>
-

@@ -63,7 +63,7 @@ switch ( $operation ) {
 		$sql     = "UPDATE im_tasklist SET ended = now(), status = " . eTasklist::canceled .
 		           " WHERE id = " . $task_id;
 		sql_query( $sql );
-		create_tasks( null, true );
+		create_tasks( null, false );
 		redirect_back();
 		break;
 	case "postpone":

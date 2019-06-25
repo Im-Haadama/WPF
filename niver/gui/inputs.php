@@ -173,6 +173,26 @@ function gui_input_date( $id, $class, $value = null, $events = null ) {
 	return $data;
 }
 
+function gui_input_time( $id, $class, $value = null, $events = null ) {
+	$data = '<input type="time" id="' . $id . '" ';
+	if ( is_null( $value ) ) {
+		$value = date( 'h:m' );
+	}
+	if ( strlen( $value ) > 0 ) {
+		$time = date( "h:m", strtotime( $value ) );
+		$data .= "value=\"$time\" ";
+	}
+	if ( strlen( $class ) > 0 ) {
+		$data .= "class=\"$class\" ";
+	}
+	if ( $events and strlen( $events ) > 0 ) {
+		$data .= $events;
+	}
+	$data .= '>';
+
+	return $data;
+}
+
 function gui_input_select_from_datalist( $id, $datalist, $events = null ) {
 	$data = "<input id='$id' list='$datalist' ";
 	if ( $events ) {

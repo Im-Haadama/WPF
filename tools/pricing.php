@@ -77,14 +77,14 @@ function get_price_by_type( $prod_id, $client_type = "", $quantity = 1 ) {
 	$sql = "SELECT min($type) FROM im_client_types WHERE type = '" . $client_type . "' AND (q_min <= " . $quantity . " OR q_min = 0)";
 	//  print $sql . "<br/>";
 	$rate = sql_query_single_scalar( $sql );
-	// print "rate: " . $rate;
+//	 print "rate: " . $rate;
 
 	// Nothing special. Return the price from the site.
 	if ( is_null( $rate ) ) {
 		return get_postmeta_field( $prod_id, '_price' );
 	}
 
-	// print "rate: " . $rate. "<br/>";
+//	 print "rate: " . $rate. "<br/>";
 
 	$price = get_postmeta_field( $prod_id, '_price' );
 	$buy   = get_buy_price( $prod_id );

@@ -13,6 +13,7 @@ if ( ! defined( "ROOT_DIR" ) ) {
 
 require_once( ROOT_DIR . '/tools/im_tools_light.php' );
 require_once( ROOT_DIR . '/niver/gui/sql_table.php' );
+require_once( ROOT_DIR . '/tools/delivery/delivery.php' );
 
 //print sql_query_single_scalar("show create table im_bank_account");
 //exit;
@@ -100,6 +101,23 @@ function create_tasklist() {
 
 function version18()
 {
+	print "supplier balance<br/>";
+
+	 sql_query("drop function supplier_balance");
+	$sql = "create function supplier_balance (_supplier_id int, _date date) returns float   
+BEGIN
+declare _amount float;
+select sum(amount) into _amount from im_business_info
+where part_id = _supplier_id
+and date <= _date
+and is_active = 1
+and document_type in (" . ImDocumentType::bank . "," . ImDocumentType::invoice . "); 
+
+return round(_amount, 0);
+END;";
+	print $sql;
+	sql_query($sql);
+
 	print "template onwer";
 	sql_query("alter table im_task_templates " .
 	" add owner int(11), " .

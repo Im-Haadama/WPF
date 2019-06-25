@@ -74,7 +74,7 @@ function is_volunteer( $uid ) {
 }
 
 // User id == 0: display all users.
-function print_transactions( $user_id = 0, $month = null, $year = null, $week = null, $project = null, &$sum = null, $show_salary = false ) {
+function print_transactions( $user_id = 0, $month = null, $year = null, $week = null, $project = null, &$sum = null, $show_salary = false , $edit = false) {
 //	print "ss=" . $show_salary . "<br/>";
 	// print "uid=" . $user_id . "<br/>";
 
@@ -105,7 +105,7 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 
 	// var_dump($volunteer);
 	// print $user_id;
-	$data = "<table border='1'><tr>";
+	$data = "<table id=\"report_" . $user_id ."\" border='1'><tr>";
 	$data .= gui_cell( "בחר" );
 	$data .= "<td>תאריך</td><td>יום בשבוע</td><td>משעה</td><td>עד שעה</td><td>שעות</td><td>125%</td><td>150%</td>";
 	$data .= "<td>פרויקט</td>";
@@ -255,6 +255,10 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 	) );
 
 	$data      .= "</table>";
+
+	if ($edit)
+		$data .= gui_button("btn_delete", "delete_line(" . $worker_id . ")", "מחק");
+
 	$total_sal = round( $total_sal, 1 );
 
 	// print "total_sal " . $total_sal ;

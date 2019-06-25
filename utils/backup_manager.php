@@ -35,18 +35,27 @@ if ( ! isset( $_GET["op"] ) ) {
 }
 
 $op = $_GET["op"];
+$backup_count = 3;
 
-w// print $folder;
-
+// print $folder;
+if (! file_exists($backup_dir)){
+	die ("backup directory not found");
+}
 $content = scandir( $backup_dir, SCANDIR_SORT_DESCENDING );
 
 if ( count( $content ) > 2 /* ( $backup_count + 3 )*/ ) // Files . .. tmp
 {
-	$file_name = $content[0];
-	$file      = $backup_dir . '/' . $file_name;
+//	$file_name = $content[0];
+//	$file      = $backup_dir . '/' . $file_name;
 	switch ( $op ) {
 		case "name":
-			print $file_name;
+			foreach ($content as $c)
+			{
+				if (substr($c, 0, 1) != ".") {
+					print $c;
+					return;
+				}
+			}
 			exit( 0 );
 		case "file":
 			header( "Content-Disposition: attachment; filename=" . basename( $file ) . '"' );
@@ -55,7 +64,7 @@ if ( count( $content ) > 2 /* ( $backup_count + 3 )*/ ) // Files . .. tmp
 			print readfile_chunked( $file );
 			exit( 0 );
 		case "delete":
-			if ( count( $content ) > $backup_count + 3 ) {
+			if ( count( $content ) > $backup_count ) {
 				unlink( $content[ count( $content ) - 1 ] );
 			}
 			exit( 0 );

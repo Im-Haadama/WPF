@@ -17,12 +17,21 @@ if ( ! defined( "ROOT_DIR" ) ) {
 require_once( ROOT_DIR . "/niver/gui/inputs.php" );
 require_once( ROOT_DIR . "/tools/multi-site/imMulti-site.php" );
 
+
 function sync_from_master() {
 	print header_text( false, true, true );
 
 	$i = new ImMultiSite();
 	if ( $i->isMaster() ) {
 		return "Master, no need to sync";
+	}
+
+	// Check if master is available.
+	try {
+		$i->Run( "about.php", $i->getMaster() );
+	} catch (Exception $e) {
+		print "Server not respoding. Try later. Operation aborted";
+		die (1);
 	}
 
 	print gui_header( 1, "מסנכרן מיקומים" );

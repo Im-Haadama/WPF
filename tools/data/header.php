@@ -13,18 +13,20 @@ function parse_header(
 	$price_idx = Array();
 	$name_idx  = Array();
 
-	// print "header size: " . count($header) ."<br/>";
+//	 print "header size: " . count($header) ."<br/>";
 
 	$header = str_getcsv( $header_line );
 	for ( $i = 0; $i < count( $header ); $i ++ ) {
 		$key = trim( $header[ $i ] );
 		// print "key=" . $key . " ";
 
-		// print $key . " " . strlen($key) . " " . $i . "<br/>";
+//		 print $key . " " . strlen($key) . " " . $i . "<br/>";
 		switch ( $key ) {
 			case 'פריט':
+			case 'קוד':
 			case 'קוד פריט':
 			case 'מסד':
+				print "code: " . $i . "<br/>";
 				array_push( $item_code_idx, $i );
 				break;
 			case 'קטגוריות':
@@ -62,8 +64,11 @@ function parse_header(
 				array_push( $sale_idx, $i );
 				break;
 			case 'כמות':
+			case 'כמות יחידות':
 				array_push( $quantity_idx, $i );
 				break;
+			default:
+				print $key . " ignored<br/>";
 
 		}
 		if ( strstr( $key, "הצגה" ) ) {
@@ -93,5 +98,6 @@ function parse_header(
 //	var_dump( $price_idx );
 	print "<br/>";
 
+//	die("XXXXX");
 	return true;
 }

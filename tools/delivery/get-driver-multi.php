@@ -33,6 +33,7 @@ if ( isset( $week ) and date( 'Y-m-d' ) > date( 'Y-m-d', strtotime( $week . "+1 
 
 print header_text( false, true, true );
 
+
 ?>
 <style>
     @media print {
@@ -195,6 +196,9 @@ foreach ( $data_lines as $mission_id => $data_line ) {
 	$mission = Mission::getMission( $mission_id);
 
 	print gui_header( 1, get_mission_name( $mission_id ) . "($mission_id)" );
+
+	print gui_table(array(array("זמן התחלה", gui_input_time("start_time", "time")),
+	array("נקודת מוצא", gui_input("start_location", $mission->getStartAddress()))));
 
 	if ( $debug ) {
 		print_time( "start handle mission " . $mission_id, true );

@@ -186,14 +186,21 @@ function create_tasks_per_mission() {
 	$mission_ids = sql_query_array_scalar( "SELECT id FROM im_missions WHERE date=CURDATE()" );
 	$owner       = 1; // Todo: get it from the template
 
-	foreach ( $mission_ids as $id ) {
-		$m = Mission::getMission( $id );
+	foreach ( $mission_ids as $mission_id ) {
+		print "handling mission " . $mission_id . "<br/>";
+		$m = Mission::getMission( $mission_id );
 
 		if ( $m->getTaskCount() ) {
 			continue;
 		}
 
 		$path_code = $m->getPathCode();
+		print "path_code = " . $path_code . "<br/>";
+
+		if ($path_code === '') {
+			print "empty path code for mission $mission_id. skipping<br/>";
+			continue;
+		}
 
 		$template_ids = sql_query_array_scalar( "SELECT id FROM im_task_templates WHERE path_code = " . quote_text( $path_code ) );
 
@@ -207,7 +214,7 @@ function create_tasks_per_mission() {
 			// if ($row["id"] == 10) var_dump($row);
 			$project_id = $row["project_id"];
 
-			$priority = sql_query_single_scalar( "SELECT priority FROM im_task_templates WHERE id = " . $id );
+			$priority = sql_query_single_scalar( "SELECT priority FROM im_task_templates WHERE id = " . $template_id );
 
 			if ( ! $priority and ( $project_id > 0 ) ) {
 				$priority = sql_query_single_scalar( "SELECT project_priority FROM im_projects WHERE id = " . $project_id );
@@ -223,11 +230,11 @@ function create_tasks_per_mission() {
 
 			$sql = "INSERT INTO im_tasklist " .
 			       "(task_description, task_template, status, date, project_id, priority, owner) VALUES ( " .
-			       "'" . $row["task_description"] . "', " . $id . ", " . eTasklist::waiting . ", now(), " . $project_id . ",  " .
+			       "'" . $row["task_description"] . "', " . $template_id . ", " . eTasklist::waiting . ", now(), " . $project_id . ",  " .
 			       $priority . "," . $owner . ")";
 
-			sql_query( $sql );
-			// print $sql;
+			// sql_query( $sql );
+			 print $sql;
 		}
 	}
 }
@@ -413,13 +420,15 @@ function check_query( $query ) {
 }
 
 function check_active( $id, $repeat_freq ) {
-	$sql = "SELECT count(*) FROM im_tasklist WHERE task_template = " . $id .
-	       " AND status < 2";
+	$running_id = sql_query_single_scalar("select id from im_tasklist where task_template = " . $id .
+	                                      " and (status < 2 or date = curdate()) limit 1");
+//	$sql = "SELECT count(*) FROM im_tasklist WHERE task_template = " . $id .
+//	       " AND status < 2";
 
-	$count = sql_query_single_scalar( $sql );
+//	$count = sql_query_single_scalar( $sql );
 
-	if ( $count >= 1 ) {
-		return "0 $count";
+	if ( $running_id ) {
+		return "0 " . $running_id;
 	}
 
 	return "1 not active";

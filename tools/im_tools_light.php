@@ -10,7 +10,8 @@ if ( ! defined( "STORE_DIR" ) ) {
 }
 
 if ( ! defined( "ROOT_DIR" ) ) {
-	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) );
+	define( 'ROOT_DIR', dirname( dirname(
+		__FILE__ ) ) );
 }
 
 if ( ! defined( "TOOLS_DIR" ) ) {
@@ -23,7 +24,11 @@ require_once( ROOT_DIR . "/niver/data/sql.php" );
 require_once( "vat.php" );
 
 $conn = new mysqli( IM_DB_HOST, IM_DB_USER, IM_DB_PASSWORD, IM_DB_NAME );
-mysqli_set_charset( $conn, 'utf8' );
+if (! mysqli_set_charset( $conn, 'utf8' )){
+	my_log("encoding setting failed");
+	die("encoding setting failed");
+}
+
 
 // Check connection
 if ( $conn->connect_error ) {

@@ -84,15 +84,16 @@ switch ( $operation ) {
 
 	case "show_all":
 		$month = $_GET["month"];
-		show_all( $month );
+		$edit = get_param("edit");
+		show_all( $month, $edit );
 		break;
 	case "delete":
 		// $params = explode(',', $_GET["params"]);
 		$sql = "DELETE FROM im_working_hours WHERE id IN (" . $_GET["params"] . ")";
-		// print $sql;
-		$result = mysqli_query( $conn, $sql );
+		 print $sql;
+		$result = sql_query($sql );
 		// var_dump($result);
-//		print "done delete";
+		print "done delete";
 		break;
 
 	default:
@@ -101,7 +102,7 @@ switch ( $operation ) {
 
 }
 
-function show_all( $month ) {
+function show_all( $month, $edit ) {
 	if ( ! current_user_can( "show_all_hours" ) ) {
 		print "אין הרשאה";
 		die ( 1 );
@@ -131,7 +132,7 @@ function show_all( $month ) {
 
 //			print print_transactions( 0, $month, $year, null, null, $s, true  );
 
-			print print_transactions( $u, $m, $y, null, null, $s, true );
+			print print_transactions( $u, $m, $y, null, null, $s, true, $edit );
 		}
 	}
 }
