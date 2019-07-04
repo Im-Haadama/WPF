@@ -1,5 +1,6 @@
 <?php
 // require_once( "r-shop_manager.php" );
+
 require_once( "im_tools.php" );
 print header_text( false );
 require_once( ROOT_DIR . "/tools/wp.php" );

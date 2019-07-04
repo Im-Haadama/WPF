@@ -21,5 +21,9 @@ require_once( "../im_tools.php" );
 
 require_once( "Tasklist.php" );
 
-print gui_select_task_related( "aa", null, "", 234 );
-print gui_select_project( "x", null, null );
+create_tasks_per_mission();
+print "done";
+exit;
+
+//print gui_select_task_related( "aa", null, "", 234 );
+//print gui_select_project( "x", null, null );

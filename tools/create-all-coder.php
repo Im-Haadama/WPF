@@ -6,8 +6,6 @@
  * Time: 09:05
  */
 
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
 if ( ! defined( "ROOT_DIR" ) ) {
 	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) );
 }
@@ -23,8 +21,8 @@ $c = array();
 //array_push( $c, "bank" );
 //array_push( $c, "bank-account", "bank", "working" );
 //array_push( $c, "missions" );
-array_push( $c, "tasklist", "task_templates" );
-//array_push( $c, "business_info" );
+//array_push( $c, "tasklist", "task_templates" );
+array_push( $c, "business_info" );
 //array_push( $c, "suppliers", "supplies" );
 //array_push( $c, "projects" );
 
