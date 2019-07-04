@@ -321,4 +321,11 @@ class Product {
 		// Update the post into the database
 		wp_update_post( $my_post );
 	}
+
+	function getImageId()
+	{
+		$r = $this->p->get_image_id();
+		if (is_array($r)) return $r[0];
+		return $r;
+	}
 }

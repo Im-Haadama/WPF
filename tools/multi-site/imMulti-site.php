@@ -156,7 +156,8 @@ class ImMultiSite extends MultiSite {
 		self::getInstance()->getLocalSiteName();
 	}
 
-	function UpdateFromRemote( $table, $key, $remote = 0, $query = null, $ignore = null ) {
+	function UpdateFromRemote( $table, $key, $remote = 0, $query = null, $ignore = null, $debug = false ) {
+		$debug = false;
 		if ( $remote == 0 ) {
 			$remote = self::getMaster();
 		}
@@ -167,11 +168,17 @@ class ImMultiSite extends MultiSite {
 		}
 
 		// print $url . "<br/>";
+		if ($debug)
+			print $url;
+
 		$html = ImMultiSite::Execute( $url, $remote );
+
+		if ($debug)
+			print $html;
 
 		if ( strlen( $html ) > 100 ) {
 			//printbr($html);
-			ImMultiSite::UpdateTable( $html, $table, $key, $query, $ignore );
+			ImMultiSite::UpdateTable( $html, $table, $key, $query, $ignore, $debug );
 		} else {
 			print "short response. Operation aborted <br/>";
 
@@ -179,8 +186,11 @@ class ImMultiSite extends MultiSite {
 		}
 	}
 
-	static private function UpdateTable( $html, $table, $table_key, $query = null, $ignore_fields = null ) {
+	static private function UpdateTable( $html, $table, $table_key, $query = null, $ignore_fields = null, $debug = false ) {
 		global $conn;
+
+		if ($debug)
+			print "start<br/>";
 
 		// 		print header_text( false, true, false );
 		$dom = im_str_get_html( $html );
@@ -237,10 +247,18 @@ class ImMultiSite extends MultiSite {
 				$i ++;
 			}
 			$row_key = $fields[ $key_order ];
+			if (strlen($row_key) < 1)
+				die ("invalid key");
+
 			array_push( $keys, $row_key );
 			$sql = "SELECT COUNT(*) FROM $table WHERE $table_key=" . quote_text( $row_key );
 
-			if ( sql_query_single_scalar( $sql ) < 1 ) {
+			$found = sql_query_single_scalar( $sql ) >= 1;
+
+			if ($debug)
+				print "Checking " . $sql . " found= " . $found . "<br/>";
+
+			if ( ! $found ) {
 				print "<br/>handle " . $row_key . " inserted ";
 				$insert = true;
 			}
@@ -265,7 +283,8 @@ class ImMultiSite extends MultiSite {
 
 			if ( $insert ) {
 				$sql = "INSERT INTO $table (" . $field_list . ") VALUES ( " . rtrim( $insert_values, ", " ) . ")";
-				// print $sql . "<br/>";
+				if ($debug)
+					print $sql . "<br/>";
 				sql_query( $sql );
 //				 die (1);
 			} else {

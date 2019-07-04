@@ -76,6 +76,10 @@ function set_supplier_id() {
                 if (collection[i].checked) {
                     var pl_id = collection[i].id.substr(3);
                     var prod_id = get_value_by_name("pid_" + pl_id);
+                    if (! prod_id){
+                        alert ("יש ליצור מוצר באתר לפני הוספתו לאספקה " + get_value_by_name("pli_" + pl_id));
+                        return;
+                    }
                     var stock = parseFloat(get_value_by_name("stk_" + prod_id));
                     if (isNaN(stock)) stock = 0;
                     var ordered = 1;

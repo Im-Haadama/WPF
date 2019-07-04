@@ -19,6 +19,8 @@ require_once( ROOT_DIR . "/tools/multi-site/imMulti-site.php" );
 
 
 function sync_from_master() {
+	$debug = false;
+
 	print header_text( false, true, true );
 
 	$i = new ImMultiSite();
@@ -47,5 +49,5 @@ function sync_from_master() {
 	$i->UpdateFromRemote( "im_missions", "id" );
 
 	print gui_header( 1, "מסנרכן שיטות משלוח" );
-	$i->UpdateFromRemote( "wp_options", "option_name", 0, "option_name like 'woocommerce_flat_rate_%_settings'", array( 'option_id' ) );
+	$i->UpdateFromRemote( "wp_options", "option_name", 0, "option_name like 'woocommerce_flat_rate_%_settings'", array( 'option_id' ), $debug);
 }

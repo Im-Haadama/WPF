@@ -53,6 +53,12 @@ class Order {
 
 		$total = 0;
 
+		if (! count($prods)) {
+			my_log("empty order requested and refused");
+			print "הזמנה ריקה לא נקלטה";
+			return null;
+		}
+
 		for ( $i = 0; $i < count( $prods ); $i ++ ) {
 			$prod_id = $prods[ $i ];
 
@@ -234,9 +240,7 @@ class Order {
 		$debug_product = 0; // 141;
 		global $conn;
 		if ( ! $user_id ) {
-			print "checking<br/>";
 			if ( check_cache_validity() ) {
-				print "cv</br>";
 				$needed_products = array();
 
 				$sql = " SELECT prod_id, need_q, need_u, prod_get_name(prod_id) FROM im_need ORDER BY 4 ";
@@ -439,19 +443,39 @@ class Order {
 		return "לא נבחר לקוח";
 	}
 
+	function GetAllComments(){
+		$sql = "SELECT id FROM wp_posts " .
+		       " WHERE (post_status LIKE '%wc-processing%' OR post_status = 'wc-awaiting-shipment') ";
+
+		$orders = sql_query_array_scalar($sql);
+
+		print header_text(false, true, true);
+
+		$table = array(array("מספר הזמנה", "מזמין", "הערות"));
+
+		foreach ($orders as $order)
+		{
+			$o = new Order($order);
+			array_push($table, array($order, $o->CustomerName(), $o->GetComments()));
+		}
+
+		print gui_table ($table);
+	}
+
 	public function Missing() {
 		$needed = array();
 
-		$result = "";
+		$result = array();
 		$this->CalculateNeeded( $needed, $this->getCustomerId() );
 
 		// var_dump($needed); print "<br/>";
 		foreach ( $needed as $id => $p ) {
-			$result .= get_product_name( $id ) . " " . round( $p[0], 1 ) . "<br/>";
+			array_push($result, array(gui_checkbox("chk_" . $id, "product_checkbox") .  get_product_name($id), round($p[0], 1)));
+			// $result .= get_product_name( $id ) . " " . round( $p[0], 1 ) . "<br/>";
 			// if ($p[0]) $result .= "x" . $p[0] . "<br/>";
 		}
 
-		return $result;
+		return gui_table($result);
 	}
 
 	public function getItems() {

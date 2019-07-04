@@ -126,11 +126,8 @@ function table_content_data(
 	$sql, $header = true, $footer = true, $links = null,
 	$add_checkbox = false, $checkbox_class = null, $chkbox_events = null, $selectors = null
 ) {
-	global $conn;
 
-	// var_dump($selectors);
-
-	$result = mysqli_query( $conn, $sql );
+	$result = sql_query( $sql );
 	if ( ! $result ) {
 		return "error: " . $sql . sql_error( $sql );
 	}
@@ -176,7 +173,11 @@ function RowData($row, $links = null, $selectors = null, $add_checkbox = false, 
 				//$value = "xx";
 
 			} else {
-				$value = $data;
+				if ($edit) {
+					$value = gui_input($key, $data, 'onchange="changed(this)"');
+				} else {
+					$value = $data;
+				}
 			}
 		}
 		array_push( $row_data, $value );
@@ -243,10 +244,10 @@ function table_content_args($table_id, $sql, $args)
 
 }
 
-function RowContent($table, $row_id, $args = null, $transpose = false)
+function RowContent($table_name, $row_id, $args = null, $transpose = false)
 {
 	// $sql = "select id, task_description, task_url, repeat_freq_numbers, project_id, repeat_freq, condition_query, priority, working_hours from $table where id = $row_id";
-	$sql = "select * from $table where id = $row_id";
+	$sql = "select * from $table_name where id = $row_id";
 
 	$header = TableHeader($sql);
 	// var_dump($header);
@@ -260,7 +261,7 @@ function RowContent($table, $row_id, $args = null, $transpose = false)
 		$chkbox_events = GetArg($args, "checkbox_events", null);
 		$edit = GetArg($args,"edit", false);
 
-		$data = RowData($row, $links, $selectors, $add_checkbox, $checkbox_class, $chkbox_events, $edit);
+		$data = RowData($row, $links, $selectors, $add_checkbox and !$transpose, $checkbox_class, $chkbox_events, $edit);
 
 		//		 var_dump($data);
 		$table = array($header, $data);
@@ -268,7 +269,14 @@ function RowContent($table, $row_id, $args = null, $transpose = false)
 		if ($transpose)
 			$table = array_map(null, ...$table);
 
-		return gui_table($table);
+		if ($add_checkbox and $transpose){
+			for ($i = 0; $i < count($table); $i++)
+			{
+				array_unshift($table[$i], gui_checkbox("chk_" . $table[$i][0], $checkbox_class, false));
+			}
+		}
+
+		return gui_table($table, $table_name);
 	}
 	return "no data";
 }

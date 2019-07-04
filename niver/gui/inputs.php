@@ -382,6 +382,7 @@ function gui_hyperlink( $text, $link, $target = null ) {
 //}
 
 function gui_cell( $cell, $id = null, $show = true, $link = null ) {
+//	print "cell: " . $cell . "<br/>";
 	$data = "<td";
 	if ( $id ) {
 		$data .= " id=\"" . $id . "\"";
@@ -448,7 +449,7 @@ function gui_row( $cells, $id = null, $show = null, &$acc_fields = null, $col_id
 			if ( is_array( $show ) and isset( $show[ $i ] ) ) {
 				$show_cell = $show[ $i ];
 			}
-			//	print $i . " " . $cell . " " . $show_cell . "<br/>";
+//				print $i . " " . $cell . " " . $show_cell . "<br/>";
 //			print "cid = " . $cell_id . "<br/>";
 			$data .= gui_cell( $cell, $cell_id, $show_cell, $links[ $i ] );
 			$i ++;
@@ -597,8 +598,6 @@ function gui_table(
 
 //				print "id= " . $id ."<br/>";
 				$data .= gui_row( $row, $id, $show_fields, $sum_fields, $col_ids, null, $links );
-//				function gui_row( $cells, $id = null, $show = null, &$sum_fields = null, $col_ids = null ) {
-
 			}
 		}
 	} else {

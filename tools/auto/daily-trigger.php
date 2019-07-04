@@ -84,13 +84,15 @@ if ( $op == 'check' ) { // would run on conductor server
 	// Todo: Delete old ones.
 	print ( $fail ? "1 failed" : "0 all ok" );
 
-	print gui_table( $results );
+	 print gui_table( $results );
 
-	if ($fail) print im_file_get_html("http://tabula.aglamaz.com/utils/daily.log." . date('d') . ".html");
+//	if ($fail) print im_file_get_html("http://tabula.aglamaz.com/utils/daily.log." . date('d') . ".html");
 
-	return;
+//	print "going to die";
+	die(0);
 }
 
+print "after";
 
 print gui_header( 1, "Running daily on master" );
 

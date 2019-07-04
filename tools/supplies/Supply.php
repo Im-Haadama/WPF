@@ -333,6 +333,11 @@ class Supply {
 			$line_number           = $line_number + 1;
 			$line                  = "<tr>";
 			$prod_id               = $row[0];
+			if (! $prod_id)
+			{
+				print "מוצר לא תקין";
+				continue;
+			}
 			$product_name          = get_product_name( $prod_id );
 			$quantity              = $row[1];
 			$line_id               = $row[2];
@@ -367,17 +372,23 @@ class Supply {
 //        $line .= "<td>" . $quantity . "</td>";
 
 			$attr_array = get_post_meta( $prod_id, '_product_attributes' );
-			$attr_text  = "";
-			if ( is_array( $attr_array ) )
-				foreach ( $attr_array as $attr ) {
-					foreach ( $attr as $i ) {
-						if ( $i['name'] = 'unit' ) {
-							$attr_text .= $i['value'];
+			if (! $attr_array)
+				print "חסר פרטים למוצר " . $prod_id . "<br/>";
+			else {
+				$attr_text = "";
+				if ( $attr_array and is_array( $attr_array ) ) {
+					foreach ( $attr_array as $attr ) {
+						foreach ( $attr as $i ) {
+							if ( $i['name'] = 'unit' ) {
+								$attr_text .= $i['value'];
+							}
 						}
 					}
 				} else {
-				print "Warning: " . __FILE__ . ":" . __LINE__;
-				var_dump( $attr_array );
+					var_dump( $attr_array );
+					print "Warning: " . __FILE__ . ":" . __LINE__;
+					var_dump( $attr_array );
+				}
 			}
 
 			$line .= "<td>" . $attr_text . "</td>";

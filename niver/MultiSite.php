@@ -70,7 +70,6 @@ class MultiSite {
 		$result = array();
 		foreach ( $this->sites_array as $site_id => $site ) {
 			$r = parse_url($this->sites_array[$site_id][FieldIdx::site_tools_idx]);
-			// var_dump( $r ). "<br/>";
 
 			array_push($result, $r['host']);
 		}
