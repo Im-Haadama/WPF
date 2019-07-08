@@ -7,10 +7,9 @@ if ( ! defined( "ROOT_DIR" ) ) {
 require_once(ROOT_DIR . "/tools/im_tools.php");
 
 $operation = get_param("operation", true);
-$table_name = "im_business_info";
 
 // http://fruity.co.il/tools/admin/data.php?table_name=im_business_info&operation=update&id=2560&ref=22
-// $table_name = get_param("table_name", true);
+$table_name = get_param("table_name", true);
 error_reporting( E_ALL );
 ini_set( 'display_errors', 'on' );
 

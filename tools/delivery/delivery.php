@@ -269,7 +269,7 @@ class delivery {
 			die ( 1 );
 		}
 		$product_name = preg_replace( '/[\'"%()]/', "", $product_name );
-		// print "name: " . $product_name . "<br/>";
+		print "name: " . $product_name . "<br/>";
 
 		$sql = "INSERT INTO im_delivery_lines (delivery_id, product_name, quantity, quantity_ordered, unit_ordered, vat, price, line_price, prod_id) VALUES ("
 		       . $delivery_id . ", "
@@ -501,12 +501,29 @@ class delivery {
 				die ( "select error" );
 			}
 
+//			$in_basket = 0;
 			while ( $row = mysqli_fetch_assoc( $result ) ) {
 				if ( $row["product_name"] == "הנחת כמות" ) {
 					$volume_line = true;
 				}
-				$data .= $this->delivery_line( $show_fields, ImDocumentType::delivery, $row["id"],
-					0, $operation, $margin, $style, 0, $show_inventory );
+
+				// delivery_line( $document_type, $line_ids, $client_type, $operation, $margin = false, $style = null, $show_inventory = false );
+
+				$line = $this->delivery_line(  ImDocumentType::delivery, $row["id"], 0, $operation, $margin, $style, $show_inventory );
+
+//				if (substr($line[0], 0, 4) == "הנחת") $in_basket = 0;
+//
+//				if (substr($line[1], 0, 1) === "=")
+//					$in_basket = 1;
+//				else {
+//					if ($in_basket) // was a basket
+//						$data .= gui_row( $line, "bsk" . $this->line_number, $show_fields, $sums, $delivery_fields_names );
+//
+//					$in_basket = 0;
+//				}
+
+				$data .= gui_row( $line, $this->line_number, $show_fields, $sums, $delivery_fields_names, $style );
+
 			}
 		} else {
 			// For group orders - first we get the needed products and then accomulate the quantities.
@@ -530,7 +547,9 @@ class delivery {
 				$order_item_ids = sql_query_array_scalar( $items_sql );
 
 				// $data .= $this->delivery_line($show_fields, $prod_id, $quantity_ordered, "", $quantity_ordered, $price, $has_vat, $prod_id, $refund, $unit );
-				$data .= $this->delivery_line( $show_fields, $document_type, $order_item_ids, 0, $operation, $margin, $style, $var_id, $show_inventory );
+				$line = $this->delivery_line( $document_type, $order_item_ids, 0, $operation, $margin, $style, $show_inventory );
+				$data .= gui_row( $line, $this->line_number, $show_fields, $sums, $delivery_fields_names, $style );
+
 				// print "ex " . $expand_basket . " is " . is_basket($prod_id) . "<br/>";
 
 				if ( $expand_basket && is_basket( $prod_id ) ) {
@@ -622,9 +641,8 @@ class delivery {
 //		return order_get_customer_id( $this->d_OrderID );
 //	}
 
-	public function delivery_line( $show_fields, $document_type, $line_ids, $client_type, $operation, $margin = false, $style = null, $var_id = 0,
+	public function delivery_line( $document_type, $line_ids, $client_type, $operation, $margin = false, $style = null,
 		$show_inventory = false ) {
-		global $delivery_fields_names;
 
 		global $global_vat;
 
@@ -864,7 +882,8 @@ class delivery {
 			// " אספקות:" . ;
 		}
 
-		return gui_row( $line, $this->line_number, $show_fields, $sums, $delivery_fields_names, $style );
+		// return gui_row( $line, $this->line_number, $show_fields, $sums, $delivery_fields_names, $style );
+		return $line;
 	}
 
 	function OrderQuery() {

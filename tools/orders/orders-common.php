@@ -521,7 +521,7 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 			// print $order_id. " ". $mission . "<br/>";
 
 			$line[ OrderFields::mission ]  = gui_select_mission( "mis_" . $order_id, $mission_id, "onchange=\"mission_changed(" . $order_id . ")\"" );
-			$line[ OrderFields::order_id ] = gui_hyperlink( $order_id, ImMultiSite::LocalSiteTools() . "/orders/get-order.php?order_id=" . $order_id );
+			$line[ OrderFields::order_id ] = gui_hyperlink( $order_id, "/tools/orders/get-order.php?order_id=" . $order_id );
 
 			// 2) Customer name with link to his deliveries
 			$line[ OrderFields::customer ] = gui_hyperlink( get_customer_name( $customer_id ), ImMultiSite::LocalSiteTools() .

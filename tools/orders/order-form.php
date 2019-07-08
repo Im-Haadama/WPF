@@ -108,6 +108,19 @@ function get_form_tables() {
             xmlhttp.open("GET", request, true);
             xmlhttp.send();
 
+            request = "/tools/orders/orders-post.php?operation=check_delivery&email=" + email;
+
+            xmlhttp1 = new XMLHttpRequest();
+            xmlhttp1.onreadystatechange = function () {
+                // Wait to get query result
+                if (xmlhttp1.readyState == 4 && xmlhttp1.status == 200)  // Request finished
+                {
+                    document.getElementById("delivery_info").innerHTML = xmlhttp1.response;
+                }
+            }
+            xmlhttp1.open("GET", request, true);
+            xmlhttp1.send();
+
         }
         function update() {
             var total = update_total();
@@ -121,6 +134,7 @@ function get_form_tables() {
             var dis = !((total > min) && email_valid);
             document.getElementById("btn_add_order_1").disabled = dis;
             document.getElementById("btn_add_order_2").disabled = dis;
+
         }
         function update_total() {
             var total = 0;
@@ -177,14 +191,17 @@ if ( $text ) {
 	print header_text( true );
 	print "מוצרים זמינים השבוע</br>";
 } else {
-	print "כתובת מייל של המזמין:";
-	print gui_input( "email", "", array( "onchange=update_email()" ) );
-	print "<br/>";
-	print gui_label( "user_info", "" );
-	print "<br/>";
-	print gui_table( array( 'סה"כ הזמנה:', gui_label( "total", "0" ) ) );
+	print gui_header(1, "פרטי המזמין:");
+	print gui_table(array(
+	        array("כתובת המייל של המזמין:", gui_input( "email", "", array( "onchange=update_email()" ))),
+	    array("שם הלקוח:", gui_label( "user_info", "" )),
+		array("מועד המשלוח", gui_div("delivery_info")),
+		array('סה"כ הזמנה:', gui_label("total", "0" )) )
+    );
 
 	print gui_button( "btn_add_order_1", "add_order(0)", "הוסף הזמנה" );
+
+//	print gui_label("disable_reason", "(יש להזמין את כתובת המייל. מינימום הזמנה " . (isset($min) ? $min : 80) . " ש\"ח, לא כולל דמי משלוח");
 }
 ?>
 <?php

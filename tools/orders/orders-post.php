@@ -100,9 +100,6 @@ switch ( $operation ) {
 		print "הזמנה " . $o->GetID() . " נקלטה בהצלחה.";
 
 		break;
-	case "replace_baskets":
-		// Disable for now. replace_baskets();
-		break;
 
 	case "add_item":
 		$name = $_GET["name"];
@@ -192,7 +189,22 @@ switch ( $operation ) {
 		$u       = get_user_by( "email", $email );
 		if ( $u ) {
 			$user_id = $u->ID;
-			print "שלום " . get_customer_name( $user_id ) . "<br/>";
+			print get_customer_name( $user_id );
+		} else {
+			print "אין לקוח כתובת מייל זאת";
+		}
+		break;
+
+	case "check_delivery":
+		$email = get_param( "email" );
+		if ( ! $email or strlen( $email ) < 5 ) {
+			print "u"; // unknown
+
+			return;
+		}
+		$u       = get_user_by( "email", $email );
+		if ( $u ) {
+			$user_id = $u->ID;
 			print customer_delivery_options( $user_id );
 		} else {
 			print "אין לקוח כתובת מייל זאת";
@@ -277,6 +289,8 @@ function remove_dislike_from_order( $order_id ) {
 
 function customer_delivery_options( $user_id ) {
 	$postcode = get_user_meta( $user_id, 'shipping_postcode', true );
+	if (! $postcode) return "לא נמצא. בדוק עם שירות הלקוחות זמינות משלוח";
+
 // 	print "code= " . $postcode . "<br/>";
 	$package = array( 'destination' => array( 'country' => 'IL', 'state' => '', 'postcode' => $postcode ) );
 	$zone    = WC_Shipping_Zones::get_zone_matching_package( $package );
@@ -294,6 +308,6 @@ function customer_delivery_options( $user_id ) {
 
 //		var_dump($method);
 
-	print gui_select( "select_method", "title", $options, "onchange=\"update_shipping()\"", 0 );
+	return gui_select( "select_method", "title", $options, "onchange=\"update_shipping()\"", 0 );
 }
 ?>

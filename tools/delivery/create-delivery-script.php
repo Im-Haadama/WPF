@@ -294,7 +294,7 @@ print gui_datalist( "draft_items", "im_products_draft", "post_title", true );
 //                    }
 
                     if (prod_id > 0 || line_total > 0 || line_total < 0) {
-                        if (prod_id > 0)
+                        if ((prod_id > 0) && (prod_name.substr(0, 1) !== "=")) // The second is for basket lines.
                             push(line_args, prod_id);
                         else
                             push(line_args, encodeURIComponent(prod_name));
@@ -384,10 +384,16 @@ print gui_datalist( "draft_items", "im_products_draft", "post_title", true );
         var quantity_discount = 0;
         var due_vat = 0;
         var delivery_fee = 0;
+        var in_basket = false;
 
         for (var i = 1; i < lines; i++)  // Skip the header. Skip last lines: total, vat, total-vat, discount
         {
-            if (table.rows[i].cells[0].id.substr(4, 3) == "bsk" || get_value(table.rows[i].cells[1]) == "הנחת סל") {
+            var was_in_basket = in_basket;
+            var prod_name = get_value(table.rows[i].cells[1]);
+            in_basket = (prod_name.substr(0, 3) === "===");
+
+            // if (table.rows[i].cells[0].id.substr(4, 3) == "bsk" || get_value(table.rows[i].cells[1]) == "הנחת סל") {
+            if (was_in_basket && !in_basket){
                 // Sum upper lines and compare to basket price
                 var j = i - 1;
                 var sum = 0;
@@ -399,6 +405,11 @@ print gui_datalist( "draft_items", "im_products_draft", "post_title", true );
                 }
                 var basket_total = Number(get_value(document.getElementById("orq_" + j))) * Number(get_value(document.getElementById("prc_" + j)));
                 if (sum > basket_total) {
+                    if (table.rows[i].cells[0].id.substr(4, 3) !== "bsk"){
+                        table.insertRow(i);
+                        i = i + 1;
+                    }
+                    table.rows[i+1].cells[product_name_id] = "הנחת סל";
                     diff = Math.round(100 * (basket_total - sum), 2) / 100;
                     table.rows[i].cells[q_supply_id].innerHTML = 1;
                     table.rows[i].cells[line_total_id].innerHTML = diff;
