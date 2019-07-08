@@ -2,30 +2,9 @@
 
 require_once("../r-shop_manager.php");
 
-print header_text(false, true, true, "/niver/gui/client_tools.js");
+print header_text(false, true, true, array("/niver/gui/client_tools.js", "/tools/admin/data.js"));
 ?>
 <script>
-    function save_entity(table_name, id)
-    {
-        var operation = "suppliers-post.php?operation=update&id=" + id;
-        var table = document.getElementById(table_name);
-        var size = table.rows.length;
-        for (var i = 0; i < size; i++){
-            var name = table.rows[i].cells[1].innerText;
-            if (get_value_by_name("chk_" + name)) {
-                operation += "&" + name + "=" + get_value_by_name(name);
-            }
-        }
-        // alert(operation);
-	    execute_url(operation, action_back);
-    }
-    function action_back(xmlhttp)
-    {
-        if (xmlhttp.response === "done")
-            window.history.back();
-        else
-            alert (xmlhttp.response);
-    }
 
 </script>
 

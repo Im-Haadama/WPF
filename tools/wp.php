@@ -11,6 +11,11 @@ if ( ! defined( 'ROOT_DIR' ) ) {
 	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) );
 }
 
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
+require_once(ROOT_DIR . "/wp-includes/load.php");
+require_once( ROOT_DIR . "/wp-includes/pluggable.php" );
 require_once( ROOT_DIR . "/wp-includes/taxonomy.php" );
 
 // Postmeta table

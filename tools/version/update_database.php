@@ -84,8 +84,7 @@ function create_tasklist() {
   `started` DATETIME DEFAULT NULL,
   `ended` DATETIME DEFAULT NULL,
   `project_id` INT(11) DEFAULT NULL,
-  `mission_id` INT(11) NOT NULL DEFAUL
-  T '0',
+  `mission_id` INT(11) NOT NULL DEFAULT '0',
   `location_name` VARCHAR(50) CHARACTER SET utf8 DEFAULT NULL,
   `location_address` VARCHAR(50) CHARACTER SET utf8 DEFAULT NULL,
   `priority` INT(11) NOT NULL DEFAULT '0',
@@ -101,6 +100,21 @@ function create_tasklist() {
 
 function version18()
 {
+	print "pay_date<br/>";
+	sql_query("ALTER TABLE im_business_info ADD pay_date date;");
+	print "month name<br/>";
+	sql_query("drop function month_with_index;");
+	sql_query("CREATE FUNCTION month_with_index(_date date) RETURNS VARCHAR(20) 
+	BEGIN
+		declare _name varchar(20);
+		declare _index varchar(20);
+		select month(_date) into _index;
+		select monthname(_date) into _name;
+		return concat(_index, ' ', _name);
+	END;
+		
+		
+	");
 	print "supplier balance<br/>";
 
 	 sql_query("drop function supplier_balance");

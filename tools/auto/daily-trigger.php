@@ -92,8 +92,6 @@ if ( $op == 'check' ) { // would run on conductor server
 	die(0);
 }
 
-print "after";
-
 print gui_header( 1, "Running daily on master" );
 
 // Run daily on master.
@@ -124,7 +122,7 @@ $results = array( array( "hostname", "result" ) );
 
 foreach ( $hosts_to_sync as $key => $host_info ) {
 	$output = "";
-	$url    = $host_info[2] . "/../utils/backup_manager.php?tabula=145db255-79ea-4e9c-a51d-318a86c999bf";
+		$url    = $host_info[2] . "/../utils/backup_manager.php?tabula=145db255-79ea-4e9c-a51d-318a86c999bf";
 
 	$file_name = curl_get( $url . "&op=name" );
 	if ( strstr( $file_name, "Fatal" ) ) {
@@ -141,7 +139,18 @@ foreach ( $hosts_to_sync as $key => $host_info ) {
 		array_push( $results, array( $host_info[1], "file exists: " . $file_name . ". not fetching" ) );
 		continue;
 	}
+	if (! is_writable (IM_BACKUP_FOLDER))
+	{
+		array_push($results, "Folder " . IM_BACKUP_FOLDER . "   is not writable. run from shell");
+		continue;
+
+	}
 	$file   = fopen( $full_path, "w" );
+	if (! $file)
+	{
+		array_push($results, "Can't open file. check disk usage and permission.");
+		continue;
+	}
 	$backup = curl_get( $url . "&op=file" );
 	fwrite( $file, $backup );
 	fclose( $file );

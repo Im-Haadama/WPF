@@ -278,7 +278,7 @@ function randomPassword() {
 	return implode( $pass ); //turn the array into a string
 }
 
-$current_user = 0;
+// $current_user = 0;
 
 function sc_display_name( $atts ) {
 	global $current_user;

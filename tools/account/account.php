@@ -195,7 +195,7 @@ function show_trans( $customer_id, $view = eTransview::default ) {
 
 		// Display item name
 		if ( $is_delivery ) {
-			$line     .= gui_cell( gui_hyperlink( $doc_id, ImMultiSite::LocalSiteTools() . '/delivery/get-delivery.php?id=' . $doc_id ) );
+			$line     .= gui_cell( gui_hyperlink( $doc_id, "/tools/delivery/get-delivery.php?id=" . $doc_id ) );
 			$order_id = get_order_id( $doc_id );
 			try {
 				$o = new Order( $order_id );

@@ -17,10 +17,6 @@ require_once( ROOT_DIR . '/im-config.php' );
 
 $backup_dir = IM_BACKUP_FOLDER;
 
-// require_once( 'backup_config.php' );
-
-// print "dir= " . $backup_dir . "<br/>";
-
 if ( ! isset( $_GET["tabula"] ) ) {
 	die ( "key" );
 }
@@ -35,33 +31,34 @@ if ( ! isset( $_GET["op"] ) ) {
 }
 
 $op = $_GET["op"];
+
+if (! $op)
+{
+	die ("no operation given");
+
+}
 $backup_count = 3;
 
 // print $folder;
 if (! file_exists($backup_dir)){
 	die ("backup directory not found");
 }
-$content = scandir( $backup_dir, SCANDIR_SORT_DESCENDING );
 
-if ( count( $content ) > 2 /* ( $backup_count + 3 )*/ ) // Files . .. tmp
-{
-//	$file_name = $content[0];
-//	$file      = $backup_dir . '/' . $file_name;
 	switch ( $op ) {
 		case "name":
-			foreach ($content as $c)
-			{
-				if (substr($c, 0, 1) != ".") {
-					print $c;
-					return;
-				}
-			}
+			print get_file_name();
 			exit( 0 );
 		case "file":
-			header( "Content-Disposition: attachment; filename=" . basename( $file ) . '"' );
-			header( "Content-Length: " . filesize( $file ) );
+			$file = get_file_name();
+			if (! $file) {
+				print "Cant find file";
+				return;
+			}
+			$file_path = $backup_dir . '/' . $file;
+			header( "Content-Disposition: attachment; filename=" . basename( $file_path ) . '"' );
+			header( "Content-Length: " . filesize( $file_path ) );
 			header( "Content-Type: application/octet-stream;" );
-			print readfile_chunked( $file );
+			print readfile_chunked( $file_path );
 			exit( 0 );
 		case "delete":
 			if ( count( $content ) > $backup_count ) {
@@ -70,6 +67,20 @@ if ( count( $content ) > 2 /* ( $backup_count + 3 )*/ ) // Files . .. tmp
 			exit( 0 );
 	}
 	// print $file_name;
+
+
+function get_file_name()
+{
+	global $backup_dir;
+
+	$content = scandir( $backup_dir, SCANDIR_SORT_DESCENDING );
+	foreach ($content as $c)
+	{
+		if (substr($c, 0, 1) != "." and ! strstr($c, "err")) {
+			return $c;
+		}
+	}
+	return null;
 }
 
 function readfile_chunked( $filename, $retbytes = true ) {

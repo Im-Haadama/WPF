@@ -101,22 +101,32 @@ function table_content_data_args($sql, $args) {
 	return $rows_data;
 }
 
-function TableHeader($sql, $add_checkbox = false)
+function TableHeader($sql, $add_checkbox = false, $skip_id = false)
 {
 	$result = sql_query( $sql );
-
-	$i      = 0;
-	$fields = mysqli_fetch_fields( $result );
-	// var_dump($fields);
-	// var_dump($header);
 	$headers = array();
-	if ( $add_checkbox ) {
-		array_push( $headers, "" );
-	} // future option: gui_checkbox("chk_all", ""));
-	foreach ( $fields as $val ) {
-		// print $val->name . "<br/>";
-		array_push( $headers, $val->name );
-		$i ++;
+
+	if (strstr($sql, "describe"))
+	{
+		while ($row = sql_fetch_row($result))
+		{
+			if (! $skip_id or $row[0] !== "id")
+				array_push($headers, $row[0]);
+		}
+	} else { // Select
+		$i      = 0;
+		$fields = mysqli_fetch_fields( $result );
+		// var_dump($fields);
+		// var_dump($header);
+		if ( $add_checkbox ) {
+			array_push( $headers, "" );
+		} // future option: gui_checkbox("chk_all", ""));
+		foreach ( $fields as $val ) {
+			// print $val->name . "<br/>";
+			if (! $skip_id or $val->name !== "id")
+				array_push( $headers, $val->name );
+			$i ++;
+		}
 	}
 
 	return $headers;
@@ -148,13 +158,15 @@ function table_content_data(
 	return $rows_data;
 }
 
-function RowData($row, $links = null, $selectors = null, $add_checkbox = false, $checkbox_class=false, $chkbox_events=null, $edit = false) {
+function RowData($row, $links = null, $selectors = null, $add_checkbox = false, $checkbox_class=false, $chkbox_events=null, $edit = false, $skip_id= false) {
 	$row_data = array();
 	$row_id   = null;
 
 	foreach ( $row as $key => $data ) {
 		if ( $key == "id" ) {
 			$row_id = $data;
+			if ($skip_id)
+				continue;
 		}
 //			 print "key= " . $key . "<br/>";
 		if ( $links and array_key_exists( $key, $links ) ) {
@@ -187,6 +199,7 @@ function RowData($row, $links = null, $selectors = null, $add_checkbox = false, 
 	}
 
 	return $row_data;
+
 }
 
 function GetArg($args, $key, $default)
@@ -224,7 +237,7 @@ function table_content(
 
 	if ( $row_count >= 1 ) {
 		return gui_table( $rows_data, $table_id, $header, $footer, $sum_fields, null, $class, null,
-			null, null, false, $actions );
+			$links, null, false, $actions );
 
 	}
 
@@ -241,7 +254,46 @@ function table_content_args($table_id, $sql, $args)
 	}
 
 	return null;
+}
 
+function NewRow($table_name, $args = null, $transpose = false)
+{
+	$sql = "describe $table_name";
+
+	$skip_id = true;
+
+	$header = TableHeader($sql, false, $skip_id);
+	// var_dump($header);
+	$result = sql_query($sql);
+	if ($result){
+//		$links = GetArg($args, "links", null);
+		$selectors = GetArg($args, "selectors", null);
+		$add_checkbox = GetArg($args, "add_checkbox", false);
+		$checkbox_class = GetArg($args, "checkbox_class", false);
+//		$chkbox_events = GetArg($args, "checkbox_events", null);
+//		$edit = GetArg($args,"edit", false);
+		$data = array();
+		while ($row = sql_fetch_row($result)){
+			$key = $row[0];
+			if ($key === "id") continue;
+			$value = '';
+			if (isset($args["fields"]) and isset($args["fields"][$key])) {
+				$value = $args["fields"][$key];
+			}
+			array_push($data, gui_input($key, $value));
+		}
+		$table = array($header, $data);
+		if ($transpose)
+			$table = array_map(null, ...$table);
+
+		if ($add_checkbox and $transpose){
+			for ($i = 0; $i < count($table); $i++)
+			{
+				array_unshift($table[$i], gui_checkbox("chk_" . $table[$i][0], $checkbox_class, false));
+			}
+		}
+		return gui_table($table, $table_name);
+	}
 }
 
 function RowContent($table_name, $row_id, $args = null, $transpose = false)
@@ -249,7 +301,9 @@ function RowContent($table_name, $row_id, $args = null, $transpose = false)
 	// $sql = "select id, task_description, task_url, repeat_freq_numbers, project_id, repeat_freq, condition_query, priority, working_hours from $table where id = $row_id";
 	$sql = "select * from $table_name where id = $row_id";
 
-	$header = TableHeader($sql);
+	$skip_id = GetArg($args, "skip_id", false);
+
+	$header = TableHeader($sql, false, $skip_id);
 	// var_dump($header);
 	$result = sql_query($sql);
 	if ($result){
@@ -257,11 +311,11 @@ function RowContent($table_name, $row_id, $args = null, $transpose = false)
 		$links = GetArg($args, "links", null);
 		$selectors = GetArg($args, "selectors", null);
 		$add_checkbox = GetArg($args, "add_checkbox", false);
-		$checkbox_class = GetArg($args, "checkbox_clasS", false);
+		$checkbox_class = GetArg($args, "checkbox_class", false);
 		$chkbox_events = GetArg($args, "checkbox_events", null);
 		$edit = GetArg($args,"edit", false);
 
-		$data = RowData($row, $links, $selectors, $add_checkbox and !$transpose, $checkbox_class, $chkbox_events, $edit);
+		$data = RowData($row, $links, $selectors, $add_checkbox and !$transpose, $checkbox_class, $chkbox_events, $edit, $skip_id);
 
 		//		 var_dump($data);
 		$table = array($header, $data);

@@ -1,4 +1,3 @@
-<html>
 <?php
 /**
  * Created by PhpStorm.
@@ -6,6 +5,7 @@
  * Date: 08/03/17
  * Time: 22:41
  */
+
 require_once( "../im_tools.php" );
 // TODO: require_once( '../r-shop_manager.php' );
 require_once( '../multi-site/imMulti-site.php' );
@@ -384,8 +384,4 @@ function add_line_per_station( $start_address, $stop_point, $line, $order_id ) {
 	} else {
 		print "לא מזהה את הכתובת של הזמנה " . $line . "<br/>";
 	}
-}
-
-function mb_ord( $c ) {
-	return ord( substr( $c, 1, 1 ) );
 }

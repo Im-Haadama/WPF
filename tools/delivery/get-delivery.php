@@ -22,7 +22,8 @@ if ( ! ( $order_id > 0 ) ) {
 //print order_get_customer_id($order_id)."<br/>";
 //print get_current_user_id()."<br/>";
 if ( ( ! current_user_can( "edit_shop_orders" ) ) and ( $O->getCustomerId() != get_current_user_id() ) ) {
-	print "אין הרשאה";
+	print "אין הרשאה ". get_current_user_id() . "<br/>";
+	var_dump ( wp_get_current_user());
 	die( 0 );
 }
 

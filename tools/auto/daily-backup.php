@@ -84,7 +84,7 @@ function backup_database() {
 
 		fwrite( $file, "[mysqldump]\n" );
 		// global $conn;
-		fwrite( $file, "user=" . IM_DB_NAME . "\n" );
+		fwrite( $file, "user=" . IM_DB_USER . "\n" );
 		fwrite( $file, "password=" . IM_DB_PASSWORD . "\n" );
 //		fwrite( $file, "single-transaction\n" );
 
@@ -95,7 +95,7 @@ function backup_database() {
 
 	print "backup file: " . $backup_file . "<br/>";
 
-	$command = "cd " . $folder . " &&  mysqldump --defaults-extra-file=" . $param_file . " " . IM_DB_NAME . " > " . $backup_file;
+	$command = "cd " . $folder . " &&  mysqldump --defaults-extra-file=" . $param_file . "  --single-transaction " . IM_DB_NAME . " > " . $backup_file . " 2> " . $backup_file . ".err";
 	print $command . "<br/>";
 	exec( $command );
 

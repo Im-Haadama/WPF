@@ -372,9 +372,7 @@ class Supply {
 //        $line .= "<td>" . $quantity . "</td>";
 
 			$attr_array = get_post_meta( $prod_id, '_product_attributes' );
-			if (! $attr_array)
-				print "חסר פרטים למוצר " . $prod_id . "<br/>";
-			else {
+			if ($attr_array){
 				$attr_text = "";
 				if ( $attr_array and is_array( $attr_array ) ) {
 					foreach ( $attr_array as $attr ) {
@@ -384,10 +382,6 @@ class Supply {
 							}
 						}
 					}
-				} else {
-					var_dump( $attr_array );
-					print "Warning: " . __FILE__ . ":" . __LINE__;
-					var_dump( $attr_array );
 				}
 			}
 
