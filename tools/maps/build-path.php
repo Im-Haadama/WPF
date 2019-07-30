@@ -51,7 +51,12 @@ function swap( &$a, &$b ) {
 	$b = $x;
 }
 
-function find_route_1( $node, $rest, &$path, $print = false, $end ) {
+function find_route_1( $node, $rest, &$path, $print, $end ) {
+
+	if (! $rest or ! is_array($rest))
+	{
+		die("invalid points");
+	}
 //	if ( $print ) {
 //		$url = "http://gebweb.net/optimap/index.php?loc0=" . $node;
 //		$url2 = "https://www.google.com/maps/dir/";

@@ -254,14 +254,10 @@ class Bundle {
 	}
 
 	function Add() {
-		//$b = Bundle::CreateNew( $prod_id, $quantity, $margin );
-		// print $prod_name . "<br/>";
-		// $prod_id        = get_product_id_by_name( $prod_name );
-
-		// print $prod_id. "<br/>";
-		// ($product_name, $sell_price, $supplier_name, $categ = null, $image_path)
 		$p              = new Product( $this->prod_id );
 		$regular_price  = $this->quantity * $p->getPrice();
+
+		print "reg=$regular_price sal= " . $this->CalculatePrice() . "<br/>";
 		$bundle_prod_id = Catalog::DoCreateProduct( "מארז " . $this->quantity . " ק\"ג " . get_product_name( $this->prod_id ),
 			$regular_price, $this->GetSupplier(), "מארזי כמות", Catalog::GetProdImage( $this->prod_id ), $this->CalculatePrice() );
 		// $bundle_prod_id = get_product_id_by_name( $bundle_prod_name );

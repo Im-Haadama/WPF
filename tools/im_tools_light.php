@@ -23,8 +23,11 @@ require_once( STORE_DIR . "/niver/fund.php" );
 require_once( ROOT_DIR . "/niver/data/sql.php" );
 require_once( "vat.php" );
 
+if (!defined("IM_CHARSET"))
+	define ("IM_CHARSET", 'utf8');
+
 $conn = new mysqli( IM_DB_HOST, IM_DB_USER, IM_DB_PASSWORD, IM_DB_NAME );
-if (! mysqli_set_charset( $conn, 'utf8' )){
+if (! mysqli_set_charset( $conn, IM_CHARSET )){
 	my_log("encoding setting failed");
 	die("encoding setting failed");
 }
@@ -36,7 +39,10 @@ if ( $conn->connect_error ) {
 }
 
 // Timezone
-date_default_timezone_set( "Asia/Jerusalem" );
+if (defined('TIMEZONE')){
+	date_default_timezone_set( TIMEZONE );
+}
+sql_set_time_offset();
 
 function print_time( $prefix = null, $newline = false ) {
 	if ( $prefix ) {

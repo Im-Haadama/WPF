@@ -60,6 +60,7 @@ print gui_table( array(
 if ( ! $invoice_client_id ) {
 	print $step ++ . ") לחץ על צור משתמש - במערכת invoice4u";
 	print gui_button( "btn_create_user", "create_user()", "צור משתמש" );
+	print gui_button( "btn_update_user", "update_user()", "קשר משתמש" );
 	print "<br/>";
 }
 
@@ -77,6 +78,25 @@ print "<br/>";
 
     function create_user() {
         var request = "account-post.php?operation=create_invoice_user&id=" +
+		    <?php print $O->getCustomerId(); ?>;
+        //  window.alert(request);
+        xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+            // Wait to get query result
+            if (xmlhttp.readyState === 4 && xmlhttp.status === 200)  // Request finished
+            {
+                document.getElementById("invoice_client_id").innerHTML = xmlhttp.response;
+                if (get_value_by_name("invoice_client_id").length > 1)
+                    location.reload();
+//                add_message(xmlhttp.response);
+            }
+        }
+        xmlhttp.open("GET", request, true);
+        xmlhttp.send();
+    }
+
+    function update_user() {
+        var request = "account-post.php?operation=update_invoice_user&id=" +
 		    <?php print $O->getCustomerId(); ?>;
         //  window.alert(request);
         xmlhttp = new XMLHttpRequest();

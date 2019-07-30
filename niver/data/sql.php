@@ -179,3 +179,18 @@ function add_query( &$query, $p ) {
 	}
 	$query .= $p;
 }
+
+function sql_set_time_offset()
+{
+	$now = new DateTime();
+	$mins = $now->getOffset() / 60;
+	$sgn = ($mins < 0 ? -1 : 1);
+	$mins = abs($mins);
+	$hrs = floor($mins / 60);
+	$mins -= $hrs * 60;
+	$offset = sprintf('%+d:%02d', $hrs*$sgn, $mins);
+
+	// print "offset= " . $offset . "<br/>";
+
+	sql_query("SET time_zone='$offset';");
+}

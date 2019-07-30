@@ -35,9 +35,17 @@ function print_select_supplier( $id, $source ) {
 	print "</select>";
 }
 
-function gui_select_supplier( $id = "supplier_select", $value = null, $events = null ) {
+// function gui_select_supplier( $id = "supplier_select", $value = null, $events = null ) {
+
+function gui_select_supplier( $id = "supplier_select", $value = null, $args = null )
+{
+
+	$events = GetArg($args, "events", null);
+	$class = GetArg($args, "class", null);
 
 	return gui_select_table( $id, "im_suppliers", $value, $events, "", "supplier_name",
-		"where active = 1", true, false, "supplier_name" );
+		"where active = 1", true, false, "supplier_name", $class );
 //		$sql_where );
 }
+
+// Selector ($id, $value, $args)

@@ -6,9 +6,6 @@
  * Time: 07:46
  */
 
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
-
 if ( ! defined( "ROOT_DIR" ) ) {
 	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
 }
@@ -19,13 +16,14 @@ require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( ROOT_DIR . '/tools/suppliers/Supplier.php' );
 require_once( ROOT_DIR . '/tools/business/business.php' );
 
+
 $filename = ROOT_DIR . '/tools/mail-config.php';
 if ( ! file_exists( $filename ) ) {
 	print "config file " . $filename . " not found<br/>";
 	die ( 1 );
 }
-require_once( $filename );
 
+require_once( $filename );
 
 $suppler_id = get_param( "supplier_id" );
 $operation  = get_param( "operation" );
@@ -124,7 +122,8 @@ if ( ! $table ) {
 }
 //var_dump($table);
 
-$by_supplier_table = array();
+$message_table = array();
+array_push( $message_table, $header );
 
 $header = array( "נושא", "מסמך", "תאריך שליחה", "תאריך מסמך", "מספר חשבונית", "סכום כולל", "סכום נטו", "פעולה" );
 
@@ -148,16 +147,11 @@ foreach ( $table as $row ) {
 		$supplier_id = - 1;
 	} // Not found
 
-	if ( ! isset( $by_supplier_table[ $supplier_id ] ) ) {
-		$by_supplier_table[ $supplier_id ] = array();
-		array_push( $by_supplier_table[ $supplier_id ], $header );
-	}
-
 	$link = null;
 	$line = array( substr( $subject, 0, 20 ), $doc_name, $date );
 	if ( $supplier_id == - 1 ) {
 		print $row[1];
-		array_push( $line, $row[1] );
+		array_push( $line, $row[1] );0
 	} else {
 		$end_of_month = strtotime( 'last day of ' . date( 'F-Y', strtotime( $date ) ) ) . "<br/>";
 		array_push( $line, gui_input_date( "dat_" . $message_number, "", date( 'Y-m-d', $end_of_month ) ) );
@@ -168,17 +162,7 @@ foreach ( $table as $row ) {
 		array_push( $line, gui_input( "net_" . $message_number, "" ) );
 		array_push( $line, gui_button( "btn_" . $message_number, "insert_invoice(" . $message_number . "," . $supplier_id . ")", "הזן" ) );
 	}
-	array_push( $by_supplier_table[ $supplier_id ], $line );
+	array_push( $message_table, $line );
 }
 
-foreach ( $by_supplier_table as $supplier_id => $table ) {
-	// print "sid= " . $supplier_id . "<br/>";
-	if ( $supplier_id > - 1 ) {
-		print gui_header( 1, get_supplier_name( $supplier_id ) );
-	} else {
-		print gui_header( 1, "לא משויכים" );
-	}
-
-	print gui_table( $by_supplier_table[ $supplier_id ] );
-}
-
+print gui_table( $message_table);

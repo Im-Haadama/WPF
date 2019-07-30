@@ -82,7 +82,9 @@ class Catalog {
 		update_post_meta( $post_id, "supplier_name", $supplier_name );
 		update_post_meta( $post_id, "_visibility", "visible" );
 		if ( $sale_price ) {
+//			print "sale: $sale_price<br/>";
 			update_post_meta( $post_id, "_sale_price", $sale_price );
+			update_post_meta( $post_id, "_price", $sale_price );
 		}
 		if ( $categ ) {
 			wp_set_object_terms( $post_id, $categ, 'product_cat' );
@@ -536,6 +538,67 @@ class Catalog {
 //			print $sql;
 //			sql_query ($sql);
 			$this->AddMapping( - 1, $pricelist_id, ImMultiSite::LocalSiteID() );
+		}
+	}
+
+	static function auto_mail() {
+//		require_once( TOOLS_DIR . "/orders/form.php" );
+//		require_once( TOOLS_DIR . "/orders/orders-common.php" );
+//		require_once( TOOLS_DIR . "/mail.php" );
+
+		global $business_name;
+		global $support_email;
+
+		$sql = "SELECT user_id FROM wp_usermeta WHERE meta_key = 'auto_mail'";
+
+		$auto_list = sql_query_array_scalar( $sql );
+
+		print "Auto mail...<br/>";
+		print "Today " . date( "w" ) . "<br/>";
+
+		foreach ( $auto_list as $client_id ) {
+			print get_customer_name( $client_id ) . "<br/>";
+			$last = get_user_meta( $client_id, "last_email", true );
+			if ( $client_id != 1 and ($last == date( 'Y-m-d' ) )) {
+				print "already sent";
+				continue;
+			}
+			$setting = get_user_meta( $client_id, 'auto_mail', true );
+			$day     = strtok( $setting, ":" );
+			$categ   = strtok( ":" );
+			print "day: " . $day . "<br/>";
+			print "categ: " . $categ . "<br/>";
+			$customer_type = customer_type( $client_id );
+
+			if ( $day == date( 'w' ) or $client_id == 1) {
+				print "שולח...<br/>";
+				$subject = "מוצרי השבוע ב-" . $business_name;
+				$mail    = "שלום " . get_customer_name( $client_id ) .
+				           " להלן רשימת מוצרי פרוטי ";
+				do {
+					if ( $categ == 0 ) {
+						$mail = show_category_all( false, true, false, false, $customer_type );
+						break;
+					}
+					if ( $categ == "f" ) {
+						$mail = show_category_all( false, true, true, false, $customer_type );
+						break;
+					}
+					foreach ( explode( ",", $categ ) as $categ ) {
+						$mail .= show_category_by_id( $categ, false, true, $customer_type );
+					}
+				} while ( 0 );
+				$user_info = get_userdata( $client_id );
+				$to        = $user_info->user_email . ", " . $support_email;
+
+				$rc = send_mail( $subject, $to, $mail );
+				print "subject: " . $subject . "<br/>";
+				print "mail: " . $mail . "<br/>";
+				print "to: " . $to . "<br/>";
+				print "rc: " . $rc . "<br/>";
+
+				update_user_meta( $client_id, "last_email", date( 'Y-m-d' ) );
+			}
 		}
 	}
 

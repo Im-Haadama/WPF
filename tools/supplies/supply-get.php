@@ -11,7 +11,7 @@ require_once( "Supply.php" );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( "../account/gui.php" );
 
-print header_text( false );
+print header_text( false, true, true, "/vendor/sorttable.js" );
 
 $print = false;
 if ( isset( $_GET["print"] ) ) {

@@ -38,13 +38,14 @@ if ( $user->ID == "0" ) {
 ?>
 
 
-<h1 style="text-align:center; margin-bottom: 0cm;">ממשק לניהול החנות</h1>
 <?php
+print gui_header(1, "ממשק לניהול החנות", true);
 $table = array();
 
 $max_row = 8;
 
-print "Welcome " . get_user_name( get_user_id() ) . "(" . get_user_id() . ")";
+print "שלום " . get_user_name( get_user_id() ) . "(" . get_user_id() . "). " . Date("G:i", strtotime("now"));
+print " " . gui_hyperlink("התנתק/י", "/wp-login.php?loggedout=true&redirect_to=/tools/menu_op.php");
 function add_command( &$table, &$row, $col, $can, $text, $link, $target = "doc_frame" ) {
 	global $test_site;
 //    print "can: " . $can . " " . user_can( get_user_id(), $can ) . "<br/>";
@@ -80,7 +81,7 @@ $table[ $row ++ ][ $col ] = gui_header( 2, "משלוחים" );
 add_command( $table, $row, $col, "edit_shop_orders", "הצגת משימות נהיגה", "delivery/get-driver-multi.php" );
 add_command( $table, $row, $col, "edit_shop_orders", "תעודות משלוח", "business/get_all.php?week=" .
                                                              sunday( date( "Y-m-d" ) )->format( "Y-m-d" ), "doc_frame" );
-add_command( $table, $row, $col, "edit_missions", "ניהול מסלולים", "delivery/c-get-all-missions.php" );
+add_command( $table, $row, $col, "edit_missions", "ניהול מסלולים", "missions/admin.php" );
 add_command( $table, $row, $col, "edit_shop_orders", "משלוחי המכולת", "delivery/legacy.php" );
 add_command( $table, $row, $col, null, "דיווח חוסרים ללקוח", "delivery/missing.php" );
 
@@ -102,7 +103,7 @@ $table[ $row ++ ][ $col ] = gui_header( 2, "לקוחות" );
 add_command( $table, $row, $col, "edit_shop_orders", "אריזה", "orders/orders-get.php?order_type", "orders" );
 add_command( $table, $row, $col, "edit_shop_orders", "מעקב תשלומים", "account/get-accounts-status.php", "doc_frame" );
 add_command( $table, $row, $col, "edit_shop_orders", "הוספת לקוח", "account/add-account.php", "doc_frame" );
-add_command( $table, $row, $col, "set_client_type", "ניהול לקוחות", "account/client-types.php", "doc_frame" );
+add_command( $table, $row, $col, "set_client_type", "ניהול לקוחות", "customers/admin.php", "doc_frame" );
 add_command( $table, $row, $col, "edit_shop_orders", "קניה בחנות", "orders/order-pos.php", "doc_frame" );
 while ( $row < $max_row ) {
 	$table[ $row ++ ][ $col ] = "";
@@ -127,7 +128,7 @@ $col ++;
 $row                      = 0;
 
 $table[ $row ++ ][ $col ] = gui_header( 2, "ספקים" );
-add_command( $table, $row, $col, "edit_suppliers", "ספקים", "suppliers/c-get-all-suppliers.php", "doc_frame" );
+add_command( $table, $row, $col, "edit_suppliers", "ספקים", "suppliers/admin.php", "doc_frame" );
 add_command( $table, $row, $col, "edit_shop_orders", "אספקות", "supplies/supplies-get.php", "doc_frame" );
 if ($manage_inventory){
     add_command( $table, $row, $col, "edit_shop_orders", "מלאי 0", "catalog/catalog-db-query.php?operation=zero_inv", "doc_frame" );
@@ -143,7 +144,7 @@ if ($manage_workers) {
     $col ++;
     $row                      = 0;
     $table[ $row ++ ][ $col ] = gui_header( 2, "עובדים" );
-    add_command( $table, $row, $col, null, "דיווח שעות", "http://store.im-haadama.co.il/tools/people/entry.php" );
+    add_command( $table, $row, $col, null, "דיווח שעות", "http://store.im-haadama.co.il/tools/people/entry.php", "doc_frame" );
     add_command( $table, $row, $col, "working_hours_all", "ניהול עובדים", "people/c-get-all-working.php" );
 }
 while ( $row < $max_row ) {

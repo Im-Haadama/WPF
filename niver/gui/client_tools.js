@@ -7,6 +7,17 @@ function changed(field) {
     document.getElementById("chk_" + subject).checked = true;
 }
 
+function update_table_field(post_file, table_name, id, field_name, finish_action) {
+    var value = get_value_by_name(field_name);
+    var request = post_file + "?operation=update_field" +
+        "&table_name=" + table_name +
+        "&field_name=" + field_name +
+        "&value=" + encodeURI(value) +
+        "&id=" + id;
+
+    execute_url(request, finish_action);
+}
+
 function update_field(post_file, id, field_name, finish_action) {
     var value = get_value_by_name(field_name);
     var request = post_file + "?operation=update_field" +
@@ -59,6 +70,10 @@ function get_value(element) {
                     return 0;
                     // if (element.checke == "on") return 1;
                     // return 0;
+                }
+                if (element.list)
+                {
+                    return element.value.substring(0, element.value.indexOf(")"));
                 }
                 return element.value;
 

@@ -137,11 +137,13 @@ if ( strlen( $table ) > 10 ) {
 }
 
 $table = print_deliveries( "post_status = 'wc-awaiting-document'", true );
+
 if ( strlen( $table ) > 10 ) {
 	print gui_header( 1, "משלוחים שבוצעו" );
 	print delivery_table_header();
 	print $table;
 	print "</table>";
+
 }
 print gui_button( "btn_create_ship", "create_ship()", "צור תעודת משלוח" );
 
@@ -174,14 +176,24 @@ global $legacy_user;
 
 $data = business_open_ship( $legacy_user );
 
-// print $data . " " . strlen($data);
-if ( strlen( $data ) > 30 ) {
+ // print $data . " " . strlen($data);
+if ( strlen( $data ) > 182 ) {
 	print gui_header( 1, "תעודות משלוח פתוחות" );
 
 	print $data;
 
 	print gui_button( "id_legacy_invoice", "create_subcontract_invoice()", "הפק חשבונית מס" );
 
+} else {
+    print gui_header(1, "כל תעודות המשלוח הוכנסו לחשבוניות");
+}
+
+$table = table_content_args("open_invoices", "select * from im_business_info where part_id = " . $legacy_user .
+    " and document_type = 4", null);
+
+if ($table){
+    print gui_header(1, "חשבוניות פתוחות");
+     print $table;
 }
 
 function user_checkbox( $id ) {

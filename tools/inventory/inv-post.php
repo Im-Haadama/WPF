@@ -44,9 +44,9 @@ switch ( $operation ) {
 		break;
 
 	case "save_inv":
-		print "start<br/>";
-		$data = $_GET["data"];
-		save_inv( explode( ",", $data ) );
+		$data = get_param_array("data");
+		if (save_inv($data))
+			print "done";
 }
 
 function show_supplier_inventory( $supplier_id ) {
@@ -98,8 +98,10 @@ function save_inv( $data ) {
 
 		my_log( "set inv " . $data[ $i ] . " " . $data [ $i + 1 ] );
 		$p = new Product( $id );
-		$p->setStock( $q );
+		if (! $p->setStock( $q ))
+			return false;
 	}
+	return true;
 }
 
 function add_waste( $prod_ids ) {

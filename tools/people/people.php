@@ -324,7 +324,8 @@ function add_activity( $user_id, $date, $start, $end, $project_id, $vol = true, 
 	my_log( "end add_activity" );
 }
 
-function gui_select_project( $id, $value, $events = null, $worker = null ) {
+// gui_input_date( $id, $class, $value = null, $events = null ) {
+function gui_select_project( $id, $class, $value, $events = null, $worker = null ) {
 	$query = null;
 
 	if ( $worker ) {
@@ -338,7 +339,11 @@ function gui_select_project( $id, $value, $events = null, $worker = null ) {
 
 }
 
-function gui_select_task( $id, $value, $events, $query = null ) {
+function gui_select_task( $id, $value, $args ) {
+	$events = GetArg($args, "events", null);
+	$query = GetArg($args, "where", " 1 ");
+
+
 //	if ( $worker ) {
 //		// print "w=" . $worker;
 //		// $user_id = sql_query("select user_id from im_working where id = " . $worker);

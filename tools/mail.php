@@ -17,11 +17,13 @@ function send_mail( $subject, $to, $message ) {
 	$headers[] = "MIME-Version: 1.0";
 //	$headers[] = "From: עם האדמה <info@im-haadama.co.il>";
 //	$headers[] = "Reply-To: Im Haadama <info@im-haadama.co.il>";
-	$headers[] = "From: " . $support_email;
+	$headers[] = "From: " . $mail_sender;
 	$headers[] = "Reply-To: " . $support_email;
 	$headers[] = "Subject: {$subject}";
 	$headers[] = "X-Mailer: PHP/" . phpversion();
 	$headers[] = "Content-type: text/html";
+
+	print "sending from " . $support_email . " to: " . $to . '<br/>';
 
 	return mail( $to, $subject, $message, implode( "\r\n", $headers ) );
 }

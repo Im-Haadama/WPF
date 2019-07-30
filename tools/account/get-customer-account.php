@@ -305,7 +305,7 @@ if ( $manager ) {
     function create_receipt() {
         disable_btn('btn_receipt');
 
-        var del_ids = account_get_del_ids();
+        var row_ids = account_get_row_ids();
 
         xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function () {
@@ -333,16 +333,7 @@ if ( $manager ) {
             "&check=" + check +
             "&date=" + date +
             "&change=" + change.innerHTML +
-            "&ids=" + del_ids.join() +
-            "&user_id=" + <?php print $customer_id; ?>;
-        var request = "account-post.php?operation=create_receipt" +
-            "&cash=" + cash +
-            "&credit=" + credit +
-            "&bank=" + bank +
-            "&check=" + check +
-            "&date=" + date +
-            "&change=" + change.innerHTML +
-            "&ids=" + del_ids.join() +
+            "&row_ids=" + row_ids.join() +
             "&user_id=" + <?php print $customer_id; ?>;
 //        alert("fire");
         // alert(request);

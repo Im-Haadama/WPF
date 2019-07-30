@@ -123,6 +123,12 @@ tr:nth-child(even) {
 
 	Order::CalculateNeeded( $needed_products );
 
+	if (! count ($needed_products))
+	{
+		print "אין מוצרים נדרשים. יש הזמנות במצב טיפול?";
+		return;
+	}
+
 // 	$time = debug_time("after needed", $time);
 
 	$suppliers       = array();

@@ -7,8 +7,8 @@
  */
 define( 'STORE_DIR', dirname( dirname( __FILE__ ) ) );
 
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
+//error_reporting( E_ALL );
+//ini_set( 'display_errors', 'on' );
 
 require_once( STORE_DIR . '/niver/data/im_simple_html_dom.php' );
 $filename = STORE_DIR . '/imap/mail-config.php';
@@ -18,6 +18,11 @@ if ( ! file_exists( $filename ) ) {
 	die ( 1 );
 }
 require_once( $filename );
+
+if (! defined('IM_ATTACHMENTS')) {
+	print "define IM_ATTACHMENTS in config file";
+	die (1);
+}
 
 // print __FILE__;
 require_once( STORE_DIR . '/tools/gui/inputs.php' );
@@ -36,7 +41,7 @@ $site_tools    = array(
 	"", // 3
 	"http://fruity.co.il/tools" // 4
 );
-$attach_folder = ROOT_DIR . "/attachments";
+$attach_folder = IM_ATTACHMENTS; // ROOT_DIR . "/attachments";
 
 // header_text
 $text = '<html>';
@@ -116,7 +121,7 @@ function read_inbox( $host, $user, $pass, $debug ) {
 				}
 				break;
 			case "office@yevulebar.co.il": // yb
-//			print "start yb $subject<br/>";
+				//    print "start yb $subject<br/>";
 				if ( strstr( $subject, "מלאי" ) ) {
 					$handled = handle_pricelist( $subject, $inbox, "yb", $date, $i, null, $debug );
 				}
@@ -217,7 +222,7 @@ function handle_supply_in_server( $site_id, $supplier, $file ) {
 function handle_in_server( $site_id, $supplier, $file = null, $debug = false ) {
 	$relative_url = "/pricelist/update-pricelist.php?supplier_name=" . $supplier;
 	if ( $file ) {
-		$relative_url .= "&file=" . rtrim( $file );
+		$relative_url .= "&file=" . rtrim( basename($file) );
 	}
 	if ( $debug ) {
 		$relative_url .= "&debug=1";
@@ -323,7 +328,7 @@ function handle_supply( $subject, $inbox, $supplier, $date, $i, $text = false ) 
 
 function handle_pricelist( $subject, $inbox, $supplier, $date, $i, $text = false, $debug = false ) {
 	// print "hjd=" . $debug . "<br>";
-
+	$debug = true;
 	global $changed_price;
 
 //	if (0) {
@@ -359,12 +364,21 @@ function handle_pricelist( $subject, $inbox, $supplier, $date, $i, $text = false
 	// if (strstr($result[2], "נקראו")) $changed_price[2] = true;
 	// print "Result2: " . $result[2]. "<br/>";
 
-//	$result[1] = handle_in_server(1, $supplier, $file);
-//	if (strstr($result[1], "נקראו")) $changed_price[1] = true;
+	//	$result[1] = handle_in_server(1, $supplier, $file);
+	//	if (strstr($result[1], "נקראו")) $changed_price[1] = true;
+	if (! file_exists($file)){
+		print $file . " not found. failed ";
+//		return false;
+	}
+	if ($debug){
+		print "handling in server ";
+	}
 	$result[3] = handle_in_server( 4, $supplier, $file, $debug );
 	if ( strstr( $result[3], "נקראו" ) ) {
 		$changed_price[3] = true;
 	}
+	if ($debug) print $result[3];
+
 	// print "Result1: " . $result[1]. "<br/>";
 
 	$line .= "<td/>" . $result[3] . " " . $result[3] . "</td>";

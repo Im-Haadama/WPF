@@ -141,12 +141,12 @@ if ( isset( $_GET["operation"] ) ) {
 			break;
 
 		case "show_pay_to_link":
-			$data = table_content_data( "SELECT id, date, out_amount, description,
+			$data = GuiTableContent("invoices", "SELECT id, date, out_amount, description,
 					bank_amount_to_link(id) FROM im_bank " .
 			                            " WHERE out_amount > 0  " .
 			                            " AND bank_amount_to_link(id) > 0 " .
 			                            " AND description NOT IN ('פרעון הלוואה', 'מסלול מורחב', 'לאומי ויזה י' )" .
-			                            " ORDER BY 2 DESC" );
+			                            " ORDER BY 2 DESC", $args );
 
 			foreach ( $data as $key => $row ) {
 				$id = $data[ $key ][0];
@@ -166,20 +166,25 @@ if ( isset( $_GET["operation"] ) ) {
 
 			// 1) mark the bank transaction to invoice.
 			foreach ( $ids as $id ) {
-				$amount = $multi_site->Run( "business/business-post.php?operation=get_amount&id=" . $id, $site_id );
+				$command = "business/business-post.php?operation=get_amount&id=" . $id;
+				$amount = doubleval(strip_tags($multi_site->Run($command , $site_id)));
+				$line_amount = min ($amount, $bank);
+
 				$sql    = "INSERT INTO im_bank_lines (line_id, amount, site_id, part_id, invoice)\n" .
-				          "VALUES (" . $bank_id . ", " . min( - $amount, $bank ) . ", " . $site_id . ", " . $supplier_id . ", " .
+				          "VALUES (" . $bank_id . ", " . $line_amount . ", " . $site_id . ", " . $supplier_id . ", " .
 				          $id . ")";
 
-				sql_query( $sql );
+				sql_query($sql);
 			}
 			$b    = BankTransaction::createFromDB( $bank_id );
 			$date = $b->getDate();
 
 			// 2) mark the invoices to transaction.
-			print $multi_site->Run( "business/business-post.php?operation=add_payment&ids=" . implode( $ids, "," ) . "&supplier_id=" . $supplier_id .
-			                        "&bank_id=" . $bank_id . "&date=" . $date .
-			                        "&amount=" . $bank, $site_id );
+			$command = "business/business-post.php?operation=add_payment&ids=" . implode( $ids, "," ) . "&supplier_id=" . $supplier_id .
+			           "&bank_id=" . $bank_id . "&date=" . $date .
+			           "&amount=" . $bank;
+//			print $command;
+			print $multi_site->Run( $command, $site_id );
 
 			print "מעדכן שורות<br/>";
 			$sql = "update im_bank " .
@@ -187,7 +192,7 @@ if ( isset( $_GET["operation"] ) ) {
 			       " site_id = " . $site_id .
 			       " where id = " . $bank_id;
 
-			sql_query($sql);
+		     sql_query($sql);
 
 			break;
 
@@ -294,17 +299,25 @@ if ( isset( $_GET["operation"] ) ) {
 			$sum         = array();
 			$supplier_id = get_param( "supplier_id", true );
 			$sql         = "SELECT id, ref, amount, date FROM im_business_info WHERE part_id=" . $supplier_id .
-			               " AND document_type = 4\n";
+			               " AND document_type = 4\n" .
+			               " and pay_date is null " .
+			               " order by 4 desc";
 
-			print table_content( "table_invoices", $sql, true, null, null, $sum, true,
-				"trans_checkbox", "onchange=\"update_display()\"" );
+			$args = array();
+			$args["add_checkbox"] = true;
+			$args["checkbox_events"] = "onchange = \"update_display()\"";
+			$args["checkbox_class"] = "trans_checkbox";
+			print GuiTableContent("table_invoices", $sql, $args);
+
+//			print table_content( "table_invoices", $sql, true, null, null, $sum, true,
+//				"trans_checkbox", "onchange=\"update_display()\"" );
 			break;
 
 		case "create_receipt":
 			$bank_amount = get_param( "bank" );
 			$date        = get_param( "date" );
 			$change      = get_param( "change" );
-			$ids         = get_param( "ids" );
+			$ids         = get_param( "ids", true );
 			$site_id     = get_param( "site_id" );
 			$user_id     = get_param( "user_id" );
 			$bank_id     = get_param( "bank_id" );
@@ -319,6 +332,7 @@ function business_create_multi_site_receipt( $bank_id, $bank_amount, $date, $cha
 
 	// $msg = $bank . " " . $date . " " . $change . " " . comma_implode($ids) . " " . $site_id . " " . $user_id . "<br/>";
 	global $multi_site;
+	$debug = false;
 
 //var request = "account-post.php?operation=create_receipt" +
 //              "&cash=" + cash +
@@ -330,10 +344,11 @@ function business_create_multi_site_receipt( $bank_id, $bank_amount, $date, $cha
 //              "&ids=" + del_ids.join() +
 //              "&user_id=" + <?php print $customer_id; <!--;-->
 
-	$command = "account/account-post.php?operation=create_receipt&ids=" . $ids .
+	$command = "account/account-post.php?operation=create_receipt&row_ids=" . $ids .
 	           "&user_id=" . $user_id . "&bank=" . $bank_amount . "&date=" . $date .
 	           "&change=" . $change;
-	$result  = $multi_site->Run( $command, $site_id );
+//	print "ZZZZ" . $command;
+	$result  = $multi_site->Run( $command, $site_id, true, $debug );
 
 	if ( strstr( $result, "כבר" ) ) {
 		die( "already paid" );

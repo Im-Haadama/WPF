@@ -44,9 +44,11 @@ function print_category_select( $id, $select = false ) {
 	print '</select>';
 }
 
-function gui_select_document_type( $id = null, $selected, $events = "" ) {
+// $key, $data, $args
+function gui_select_document_type( $id = null, $selected = null, $args = null ) {
 	global $DocumentTypeNames;
 
+	$events = GetArg($args, "events", null);
 	$types = array();
 	for ( $i = 1; $i < ImDocumentType::count; $i ++ ) {
 		$value["id"]   = $i;
@@ -54,6 +56,5 @@ function gui_select_document_type( $id = null, $selected, $events = "" ) {
 		array_push( $types, $value );
 	}
 
-	return gui_select( $id, "name", $types,
-		$events, $selected, "id" );
+	return gui_select( $id, "name", $types, $events, $selected, "id" );
 }

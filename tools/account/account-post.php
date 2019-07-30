@@ -57,17 +57,21 @@ switch ( $operation ) {
 		$check        = get_param( "check" );
 		$credit       = get_param( "credit" );
 		$change       = get_param( "change" );
-		$delivery_ids = get_param( "ids" );
+		$row_ids      = get_param_array( "row_ids" );
 		$user_id      = get_param( "user_id", true );
 		$date         = get_param( "date" );
-		$ids          = explode( ',', $delivery_ids );
 
 		//print "create receipt<br/>";
 		// (NULL, '709.6', NULL, NULL, '205.44', '', '2019-01-22', Array)
-		create_receipt( $cash, $bank, $check, $credit, $change, $user_id, $date, $ids );
+		create_receipt( $cash, $bank, $check, $credit, $change, $user_id, $date, $row_ids );
 		break;
 
 	case "create_invoice_user":
+		$id = $_GET["id"];
+		invoice_create_user( $id );
+		break;
+
+	case "update_invoice_user":
 		$id = $_GET["id"];
 		invoice_create_user( $id );
 		break;
@@ -175,18 +179,23 @@ function create_invoice( $ids, $user_id ) {
 	}
 }
 
-function create_receipt( $cash, $bank, $check, $credit, $change, $user_id, $date, $ids ) {
+function create_receipt( $cash, $bank, $check, $credit, $change, $user_id, $date, $row_ids ) {
 
 	if ( ! ( $user_id > 0 ) ) {
 		throw  new Exception( "Bad customer id " . __CLASS__ );
 	}
 
+	$del_ids = array();
 	$no_ids = true;
-	foreach ( $ids as $id ) {
+	foreach ( $row_ids as $id ) {
 		if ( $id > 0 ) {
 			$no_ids = false;
+			array_push($del_ids, sql_query_single_scalar("select transaction_ref from im_client_accounts where ID = " . $id));
+		} else {
+			die ("bad id " . $id);
 		}
 	}
+
 	if ( $no_ids ) {
 		print "לא נבחרו תעודות משלוח";
 
@@ -196,20 +205,20 @@ function create_receipt( $cash, $bank, $check, $credit, $change, $user_id, $date
 //        if (abs($c) < 0) $c =0;
 	//      if (round($c,0) < 1 or round($c,0) < 1)
 	// Check if paid (some bug cause double invoice).
-	$sql = "SELECT count(payment_receipt) FROM im_delivery WHERE id IN (" . comma_implode( $ids ) . " )";
+	$sql = "SELECT count(payment_receipt) FROM im_delivery WHERE id IN (" . comma_implode( $del_ids ) . " )";
 	if ( sql_query_single_scalar( $sql ) > 0 ) {
-		print " כבר שולם" . comma_implode( $ids ) . " <br/>";
+		print " כבר שולם" . comma_implode( $del_ids ) . " <br/>";
 
 		return;
 	}
 
-	$doc_id   = invoice_create_document( "r", $ids, $user_id, $date, $c, $bank, $credit, $check );
+	$doc_id   = invoice_create_document( "r", $del_ids, $user_id, $date, $c, $bank, $credit, $check );
 
 	$pay_type = pay_type( $cash, $bank, $credit, $check );
 	if ( is_numeric( $doc_id ) && $doc_id > 0 ) {
-		$pay_description = $pay_type . " " . comma_implode( $ids );
+		$pay_description = $pay_type . " " . comma_implode( $del_ids );
 
-		$sql = "UPDATE im_delivery SET payment_receipt = " . $doc_id . " WHERE id IN (" . comma_implode( $ids ) . " ) ";
+		$sql = "UPDATE im_delivery SET payment_receipt = " . $doc_id . " WHERE id IN (" . comma_implode( $del_ids ) . " ) ";
 		sql_query( $sql );
 
 		account_add_transaction( $user_id, $date, $change - ( $cash + $bank + $credit + $check ), $doc_id, $pay_description );
@@ -399,6 +408,28 @@ function invoice_create_user( $user_id ) {
 	$invoice->CreateUser( $name, $email, $phone );
 
 	$client = $invoice->GetCustomerByName( $name );
+
+	$id = $client->ID;
+
+	// Save locally.
+	update_user_meta( $user_id, 'invoice_id', $id );
+
+	print $id;
+}
+
+function invoice_update_user( $user_id ) {
+	// First change wordpress display name
+	global $invoice_user, $invoice_password;
+
+	$invoice = new Invoice4u( $invoice_user, $invoice_password );
+
+	// $invoice->Login();
+
+	$name  = get_customer_name( $user_id );
+
+	// print "Creating user. name=" . $name . " email = " . $email . " phone = " . $phone. "<br/>";
+
+		$client = $invoice->GetCustomerByName( $name );
 
 	$id = $client->ID;
 

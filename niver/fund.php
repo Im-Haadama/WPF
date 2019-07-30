@@ -85,6 +85,12 @@ function get_param_array( $key ) {
 	return null;
 }
 
+function GetArg($args, $key, $default)
+{
+	if (! $args or ! isset($args[$key])) return $default;
+	return $args[$key];
+}
+
 function get_param( $key, $mandory = false, $default = null ) {
 	if ( isset( $_GET[ $key ] ) ) {
 		return $_GET[ $key ];

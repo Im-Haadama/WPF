@@ -97,9 +97,204 @@ function create_tasklist() {
 
 }
 
+// $receipt     = sql_query_single_scalar( "SELECT payment_receipt FROM im_delivery WHERE id = " . $doc_id );
+
 
 function version18()
 {
+	print "task_template_time<br/>";
+
+	sql_query( "drop function task_active_time;" );
+	sql_query( "
+CREATE FUNCTION task_active_time(`_id` INT)
+  RETURNS TEXT
+  BEGIN
+    declare _template_id int;
+    declare _working_hours, _start_hour, _end_hour varchar(50);
+    declare _now integer;
+    
+    select task_template into _template_id
+      from im_tasklist
+      where id = _id;
+
+    select (curtime() + 0) / 100 into _now;
+    
+    select task_template into _template_id
+      from im_tasklist
+      where id = _id;
+
+    select working_hours into _working_hours
+    from im_task_templates
+    where id = _template_id;
+
+    if (_working_hours is Null) THEN
+      return 1;
+    END IF;
+
+    select substring_index(working_hours, \"-\", 1) * 100 into _start_hour
+    from im_task_templates
+      where id = _template_id;
+
+    select substring_index(working_hours, \"-\", -1) *100 into _end_hour
+    from im_task_templates
+    where id = _template_id;
+    
+    if (_now <  _start_hour) then
+        return 0;
+    end if;
+    if (_now > _end_hour) then 
+        return 0;
+    end if;
+	
+	return 1;
+  END;
+" );
+
+	sql_query( "drop function task_template_time;" );
+	sql_query( "
+CREATE FUNCTION task_template_time(`_id` INT) 
+RETURNS TEXT
+BEGIN
+    declare _template_id int;
+    declare _working_hours, _start_hour, _end_hour varchar(50);
+    declare _result varchar(200);
+    declare _now integer;
+    
+    select (curtime() + 0) / 100 into _now;
+    
+    select task_template into _template_id
+      from im_tasklist
+      where id = _id;
+
+    select working_hours into _working_hours
+    from im_task_templates
+    where id = _template_id;
+
+    if (_working_hours is Null) THEN
+      return \"No working hours\";
+    END IF;
+
+    select substring_index(working_hours, \"-\", 1) * 100 into _start_hour
+
+    from im_task_templates
+      where id = _template_id;
+
+    select substring_index(working_hours, \"-\", -1) *100 into _end_hour
+
+    from im_task_templates
+    where id = _template_id;
+    
+    set _result = concat(_now, '<br/>');
+    if (_now >=  _start_hour) then
+        set _result = CONCAT(_result,  'after start ' , _start_hour , '<br/>');
+     else 
+        set _result = concat(_result, ' not after ', _start_hour, '<br/>');
+    end if;
+    if (_now <= _end_hour) then 
+        set _result = CONCAT(_result, ' before end' , _end_hour, ' <br/>');
+    else
+        set _result = concat(_result, ' not before ', _end_hour, '<br/>');
+    end if;
+	
+	return _result;
+END;
+");
+
+	//    
+
+
+	print "client_last_order, date<br/>";
+	sql_query("drop function client_last_order_date");
+	sql_query("create
+    function client_last_order_date(_id int) returns date
+BEGIN
+	declare _date date;
+	declare _last_order_id integer;
+	SELECT max(id) into _last_order_id 
+        FROM `wp_posts` posts, wp_postmeta meta 
+        WHERE post_status like 'wc-%' 
+        and meta.meta_key = '_customer_user' and meta.meta_value = _id 
+        and meta.post_id = posts.ID;
+	        
+	select post_date into _date
+	from wp_posts where id = _last_order_id;
+	
+	return _date;	   
+END;
+
+");
+
+	sql_query("drop function client_last_order");
+	sql_query("create
+    function client_last_order(_id int) returns integer
+BEGIN
+	declare _last_order_id integer;
+	SELECT max(id) into _last_order_id 
+        FROM `wp_posts` posts, wp_postmeta meta 
+        WHERE post_status like 'wc-%' 
+        and meta.meta_key = '_customer_user' and meta.meta_value = _id 
+        and meta.post_id = posts.ID;
+	        
+	return _last_order_id;	   
+END;
+
+");
+
+
+	print "get_product_name<br/>";
+	sql_query("drop function get_product_name");
+	sql_query("create
+    function get_product_name(_id int) returns varchar(100) charset 'utf8'
+BEGIN
+    declare _name varchar(100) CHARSET 'utf8';
+    select post_title into _name from wp_posts where id = _id;
+    return _name;
+  END;
+
+");
+	print "supply_from_business<br/>";
+	sql_query("drop function supply_from_business");
+	sql_query("create function supply_from_business( _business_id int) returns integer
+	BEGIN
+		declare _supply_id integer;
+		select id into _supply_id 
+	        from im_supplies where business_id = _business_id; 
+	    return _supply_id;
+	END;
+");
+
+	print "delivery_receipt<br/>";
+	sql_query("drop function delivery_reciept");
+	sql_query("create function delivery_receipt( _del_id int) returns integer
+	BEGIN
+		declare _receipt integer;
+		select payment_receipt into _receipt 
+	        from im_delivery where id = _del_id; 
+	    return _name;
+	END;
+");
+	print "project name<br/>";
+	sql_query("drop function project_name");
+	sql_query("create function project_name( _project_id int) returns varchar(100) charset utf8
+	BEGIN
+		declare _name varchar(100) charset utf8;
+		select project_name into _name 
+	        from im_projects where id = _project_id; 
+	    return _name;
+	END;
+");
+
+	print "client balance<br/>";
+	sql_query("drop function client_balance");
+	sql_query("create function client_balance( _client_id int, _date date) returns float
+	BEGIN
+	declare _amount float;
+		select sum(transaction_amount) into _amount 
+	        from im_client_accounts where date <= _date 
+	        and client_id = _client_id;
+	    return round(_amount, 0);
+	END;
+");
 	print "pay_date<br/>";
 	sql_query("ALTER TABLE im_business_info ADD pay_date date;");
 	print "month name<br/>";
@@ -129,7 +324,6 @@ and document_type in (" . ImDocumentType::bank . "," . ImDocumentType::invoice .
 
 return round(_amount, 0);
 END;";
-	print $sql;
 	sql_query($sql);
 
 	print "template onwer";
@@ -241,6 +435,7 @@ END;
 
 " );
 	print "task_active_time<br/>";
+
 	sql_query( "drop function task_active_time;" );
 	sql_query( "
 CREATE FUNCTION task_active_time(`_id` INT)
@@ -252,25 +447,36 @@ CREATE FUNCTION task_active_time(`_id` INT)
       from im_tasklist
       where id = _id;
 
+    select (curtime() + 0) / 100 into _now;
+    
+    select task_template into _template_id
+      from im_tasklist
+      where id = _id;
+
     select working_hours into _working_hours
     from im_task_templates
     where id = _template_id;
 
     if (_working_hours is Null) THEN
-      return true;
+      return 1;
     END IF;
 
-    select substring_index(working_hours, \"-\", 1) into _start_hour
-
+    select substring_index(working_hours, \"-\", 1) * 100 into _start_hour
     from im_task_templates
       where id = _template_id;
 
-    select substring_index(working_hours, \"-\", -1) into _end_hour
-
+    select substring_index(working_hours, \"-\", -1) *100 into _end_hour
     from im_task_templates
     where id = _template_id;
-
-    return (curtime() >= _start_hour) and (curtime() <= _end_hour);
+    
+    if (_now <  _start_hour) then
+        return 0;
+    end if;
+    if (_now > _end_hour) then 
+        return 0;
+    end if;
+	
+	return 1;
   END;
 " );
 

@@ -13,6 +13,11 @@ if ( ! defined( "TOOLS_DIR" ) ) {
 	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
 }
 
+if ( ! defined( "ROOT_DIR" ) ) {
+	define( 'ROOT_DIR', dirname(dirname( dirname( __FILE__ ) ) ));
+}
+
+
 require_once( TOOLS_DIR . '/catalog/catalog.php' );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( ROOT_DIR . '/niver/gui/wp_inputs.php' );

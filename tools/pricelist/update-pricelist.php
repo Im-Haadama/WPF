@@ -20,7 +20,7 @@ if ( $debug ) {
 
 if ( isset( $_GET["file"] ) ) {
 	// inbox manager activation
-	$file = "http://tabula.aglamaz.com/attachments/" . $_GET["file"];
+	$file = "https://tabula.aglamaz.com/attachments/" . $_GET["file"];
 	print "processing " . $supplier_name . "<br/>";
 	pricelist_process_name( $file, $supplier_name, false, $debug );
 	exit( 0 );

@@ -36,26 +36,39 @@ class Product {
 	}
 
 	function setStock( $q ) {
+		$debug = false;
+
+		if ($debug) print get_product_name($this->id);
+
 		if ( $q == $this->getStock() ) {
-			return;
+			return true;
 		}
 //		print "start ";
 		if ( $this->isFresh() ) {
-//			print "fresh ";
+			if ($debug)
+				print "fresh ";
+
 			$delta = $q + $this->q_out() - $this->q_in();
+			if ($debug)
+				print " " . $delta;
 //			print "delta: " . $this->id . " " . $delta . "<br/>";
 			if ( is_null( sql_query_single_scalar( "select meta_value " .
 			                                       " from wp_postmeta " .
 			                                       " where post_id = " . $this->id .
 			                                       " and meta_key = 'im_stock_delta'" ) ) ) {
+				if ($debug)
+					print " insert";
 				sql_query( "insert into wp_postmeta (post_id, meta_key, meta_value) " .
 				           " values (" . $this->id . ", 'im_stock_delta', $delta)" );
 
 				sql_query( "INSERT INTO wp_postmeta (post_id, meta_key, meta_value) " .
 				           " VALUES (" . $this->id . ", 'im_stock_delta_date', '" . date( 'd/m/Y' ) . "')" );
 
-				return;
+				return true;
 			}
+
+			if ($debug)
+				print " update";
 
 			sql_query( "update wp_postmeta set meta_value = " . $delta .
 			           " where meta_key = 'im_stock_delta' and post_id = " . $this->id );
@@ -70,13 +83,14 @@ class Product {
 				sql_query( "UPDATE wp_postmeta SET meta_value = '" . date( 'd/m/Y' ) . "'" .
 				           " WHERE meta_key = 'im_stock_delta_date' AND post_id = " . $this->id );
 			}
-			return;
+			return true;
 		}
 		// print "set stock ";
 		// print $this->id . " " . $q . "<br/>";
 		sql_query( "update wp_postmeta set meta_value = " . $q .
 		           " where post_id = " . $this->id .
 		           " and meta_key = '_stock'" );
+		return true;
 		// return $this->p->set_stock_quantity($q);
 	}
 
@@ -291,8 +305,8 @@ class Product {
 		return $global_vat;
 	}
 
-	function getPrice() {
-		return get_price( $this->id );
+	function getPrice($customer_type = "regular") {
+		return get_price_by_type( $this->id, $customer_type );
 	}
 
 	function getRegularPrice() {

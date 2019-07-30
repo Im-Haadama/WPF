@@ -15,6 +15,13 @@ $text    = isset( $_GET["text"] );
 $fresh   = isset( $_GET["fresh"] );
 $user_id = get_param( "user_id" );
 
+$just_pricelist = false;
+if (isset($user_id))
+{
+    print header_text(true, true, true);
+    print gui_header(1, "מחירון ללקוח " . get_user_name($user_id));
+    $just_pricelist = true;
+}
 // print "text = " . $text;
 
 function show_category( $term_name, $sale = false, $text = false ) {
@@ -191,15 +198,17 @@ if ( $text ) {
 	print header_text( true );
 	print "מוצרים זמינים השבוע</br>";
 } else {
-	print gui_header(1, "פרטי המזמין:");
-	print gui_table(array(
-	        array("כתובת המייל של המזמין:", gui_input( "email", "", array( "onchange=update_email()" ))),
-	    array("שם הלקוח:", gui_label( "user_info", "" )),
-		array("מועד המשלוח", gui_div("delivery_info")),
-		array('סה"כ הזמנה:', gui_label("total", "0" )) )
-    );
+    if (! $just_pricelist){
+        print gui_header(1, "פרטי המזמין:");
+        print gui_table(array(
+                array("כתובת המייל של המזמין:", gui_input( "email", "", array( "onchange=update_email()" ))),
+            array("שם הלקוח:", gui_label( "user_info", "" )),
+            array("מועד המשלוח", gui_div("delivery_info")),
+            array('סה"כ הזמנה:', gui_label("total", "0" )) )
+        );
 
-	print gui_button( "btn_add_order_1", "add_order(0)", "הוסף הזמנה" );
+	    print gui_button( "btn_add_order_1", "add_order(0)", "הוסף הזמנה" );
+    }
 
 //	print gui_label("disable_reason", "(יש להזמין את כתובת המייל. מינימום הזמנה " . (isset($min) ? $min : 80) . " ש\"ח, לא כולל דמי משלוח");
 }
@@ -210,13 +219,21 @@ print "<br/>";
 
 //print "לפניכם מארזי כמות במחירים מוזלים. פירות ממשק נהרי, יש להזמין עד יום שישי, ההספקה בשבוע העוקב (איסוף או משלוח). בננות סוטו - להזמין עד יום ראשון בערב.";
 
+// print customer_type( $user_id );
 $categs = info_get( "form_categs" );
+$args = array();
+
+if ($just_pricelist)
+{
+    $args["just_pricelist"] = true;
+}
+
 if ( $categs ) {
 	foreach ( explode( ",", $categs ) as $categ ) {
-		print show_category_by_id( $categ, false, $text, customer_type( $user_id ) );
+		print show_category_by_id( $categ, false, $text, customer_type( $user_id ), false, null, $args );
 	}
 } else {
-	print show_category_all( false, $text, $fresh, true, customer_type( $user_id ) );
+	print show_category_all( false, $text, $fresh, true, customer_type( $user_id ), null, $args );
 }
 //show_category( "מארזי כמות מוזלים", true, $text );
 
@@ -232,7 +249,7 @@ print "<br/>";
 //show_category( "צמחי מרפא אורגניים", false, $text );
 //show_category( "נבטים אורגניים", false, $text);
 
-if ( ! $text ) {
+if ( ! $text and ! $just_pricelist) {
 	print gui_button( "btn_add_order_2", "add_order(0)", "הוסף הזמנה" );
 }
 

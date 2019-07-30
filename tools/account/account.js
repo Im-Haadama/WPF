@@ -51,17 +51,17 @@ function update_sum() {
     }
 }
 
-function account_get_del_ids() {
+function account_get_row_ids() {
     var collection = document.getElementsByClassName("trans_checkbox");
-    var del_ids = new Array();
+    var row_ids = new Array();
 
     for (var i = 0; i < collection.length; i++) {
         if (collection[i].checked) {
-            var del_id = collection[i].id.substring(3); // table.rows[i + 1].cells[6].firstChild.innerHTML;
-            del_ids.push(del_id);
+            var row_id = collection[i].id.substring(4); // table.rows[i + 1].cells[6].firstChild.innerHTML;
+            row_ids.push(row_id);
         }
     }
 
-    return del_ids;
+    return row_ids;
 }
 

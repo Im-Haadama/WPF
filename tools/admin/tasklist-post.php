@@ -53,10 +53,10 @@ switch ( $operation ) {
 		print $task_id . "<br/>";
 		$T       = new Tasklist( $task_id );
 		$T->ended();
+//		if ( is_array( $T->getRepeatFreq() ) ) {
+		create_tasks( $T->getRepeatFreq() );
+//		}
 		redirect_back();
-		if ( is_array( $T->getRepeatFreq() ) ) {
-			create_tasks( $T->getRepeatFreq() );
-		}
 		break;
 	case "cancel":
 		$task_id = get_param( "id" );
@@ -70,6 +70,7 @@ switch ( $operation ) {
 		$task_id = get_param( "id" );
 		$T       = new Tasklist( $task_id );
 		$T->Postpone();
+		create_tasks( null, false );
 		redirect_back();
 		break;
 

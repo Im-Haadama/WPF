@@ -101,15 +101,18 @@ class eTransview {
 	const
 		default = 0,
 		from_last_zero = 1,
-		not_paid = 2;
+		not_paid = 2,
+		read_last = 3;
 }
 
 
 function show_trans( $customer_id, $view = eTransview::default ) {
 	// $from_last_zero = false, $checkbox = true, $top = 10000
+
+	// Show open deliveries
 	$from_last_zero = false;
 	$checkbox       = true;
-	$top            = 100;
+	$top            = null;
 	$not_paid       = false;
 	switch ( $view ) {
 		case eTransview::from_last_zero:
@@ -119,16 +122,70 @@ function show_trans( $customer_id, $view = eTransview::default ) {
 			$not_paid = true;
 			break;
 
-
+		case eTransview::read_last:
+			$top = 100;
+			break;
 	}
-	$sql = 'select date, transaction_amount, transaction_method, transaction_ref, id '
-	       . ' from im_client_accounts where client_id = ' . $customer_id . ' order by date desc ';
+	$sql = 'select date as תאריך,
+	 transaction_amount as סכום,
+	  client_balance(client_id, date) as יתרה,
+	   transaction_method as תנועה,
+	    transaction_ref as סימוכין, 
+		order_from_delivery(transaction_ref) as הזמנה,
+		delivery_receipt(transaction_ref) as קבלה,
+		id'
+	       . ' from im_client_accounts where client_id = ' . $customer_id;
 
-	// print $sql . "<br/>";
+	if ($not_paid)
+		$sql .= " and transaction_method = 'משלוח' ";
+
+	$sql .= ' order by date desc ';
+//	 print $sql . "<br/>";
 
 	if ( $top ) {
 		$sql .= " limit " . $top;
 	}
+
+	$args = array();
+	$args["links"] = array();
+	$args["links"]["סימוכין"] = "/tools/delivery/get-delivery.php?id=%s";
+	$args["links"]["הזמנה"] = "/tools/orders/get-order.php?order_id=%s";
+	$args["col_ids"] = array("chk", "dat", "amo", "bal", "des", "del", "ord");
+	$id_col = 8;
+	$args["show_cols"] = array(); $args["show_cols"][$id_col] = 0;
+	$args["id_col"] = $id_col;
+	$first = true;
+
+	$data1 = TableData($sql, $args);
+	foreach ($data1 as $id => $row)
+	{
+		$row_id = $data1[$id][7];
+		$value = "";
+		if ($first)
+		{
+			$first = false;
+			$value = "בחר";
+		} else {
+			if ($data1[$id][3] == "משלוח" and ! $data1[$id][6]){ // Just unpaid deliveries
+				$value =  gui_checkbox("chk" . $row_id, "trans_checkbox", false, "onchange=update_sum()");
+			}
+		}
+		array_unshift($data1[$id], $value);
+	}
+
+	print gui_table_args($data1, "trans_table", $args);
+	die(1);
+
+	// Todo: Add open invoices
+
+	$sql = "select id, date, amount, 'חשבונית', ref, id from im_business_info where part_id = $customer_id and document_type = " . ImDocumentType::invoice;
+	$data2 = TableData($sql, $args);
+
+//	$args["add_checkbox"] = true;
+//	$args["checkbox_class"] = "trans_checkbox";
+	$args["hide_first"] = true; // for row id
+	return gui_table_args(array_merge($data1, $data2), "transactions", $args);
+
 
 	$result = sql_query( $sql );
 

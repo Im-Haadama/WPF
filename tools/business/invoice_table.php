@@ -61,7 +61,9 @@ if ($row_id)
 	$args["edit"] = 1;
 	$args["add_checkbox"] = true;
 	$args["skip_id"] = true;
-	print RowContent("im_business_info", $row_id, $args, true);
+	$args["selectors"] = array("part_id" => "gui_select_supplier");
+	$args["transpose"] = true;
+	print GuiRowContent("im_business_info", $row_id, $args);
 	print gui_button("btn_save", 'save_entity(\'im_business_info\', ' . $row_id .')', "שמור");
 
 	return;
@@ -72,9 +74,15 @@ $part_id = get_param("part_id", false);
 if ($part_id) {
 	print gui_header(2, get_supplier_name($part_id));
 	$page .= " and part_id = " . $part_id;
-	$links = array("invoice_table.php?row_id=%s");
-	print table_content("transactions", "select id, date as 'תאריך', amount as 'סכום', net_amount as 'סכום נקי', ref as 'סימוכין', pay_date as 'תאריך תשלום'
-        from im_business_info where " . $page . " order by 2", true, true, $links);
+	$links = array("id"=> "invoice_table.php?row_id=%s", "הספקה" => "/tools/supplies/supply-get.php?id=%s");
+	$args["links"] = $links;
+
+	$sql =  "select id, date as 'תאריך', amount as 'סכום', net_amount as 'סכום נקי', ref as 'סימוכין', pay_date as 'תאריך תשלום', supply_from_business(id) as הספקה
+        from im_business_info where " . $page . " and is_active = 1 order by 2";
+
+	print GuiTableContent("transactions", $sql, $args);
+
+//	print table_content("transactions", $sql, true, true, $links);
 
 	$date = date('Y-m-d', strtotime("last day of previous month"));
 

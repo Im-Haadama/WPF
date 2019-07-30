@@ -30,6 +30,8 @@ $supplier_id = get_param("supplier_id");
                 // Wait to get query result
                 if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
                 {
+                    if (xmlhttp.response !== "done")
+                        alert(xmlhttp.response);
                 }
             }
             var prod_ids = new Array();
@@ -64,24 +66,24 @@ $supplier_id = get_param("supplier_id");
         }
 
         function update_selector() {
-            var table = document.getElementById("ordered_items");
-            var terms = [];
-            for (var i = 1; i < table.rows.length; i++) {
-                var term = table.rows[i].cells[7].innerHTML;
-                var found = false;
-                for (var j = 0; j < terms.length; j++)
-                    if (terms[j] == term) found = true;
-                if (!found) terms[j] = term;
-            }
-
-            var selector = document.getElementById("select_term");
-
-            //selector.options.length = 0;
-            for (i = 0; i < terms.length; i++) {
-                var option = document.createElement("option");
-                option.text = terms[i];
-                selector.options.add(option);
-            }
+            // var table = document.getElementById("ordered_items");
+            // var terms = [];
+            // for (var i = 1; i < table.rows.length; i++) {
+            //     var term = table.rows[i].cells[7].innerHTML;
+            //     var found = false;
+            //     for (var j = 0; j < terms.length; j++)
+            //         if (terms[j] == term) found = true;
+            //     if (!found) terms[j] = term;
+            // }
+            //
+            // var selector = document.getElementById("select_term");
+            //
+            // //selector.options.length = 0;
+            // for (i = 0; i < terms.length; i++) {
+            //     var option = document.createElement("option");
+            //     option.text = terms[i];
+            //     selector.options.add(option);
+            // }
         }
 
         function create_single() {
@@ -242,6 +244,33 @@ $supplier_id = get_param("supplier_id");
             document.getElementById("chk" + pricelist_id).checked = true;
         }
 
+        function draft_products()
+        {
+            var collection = document.getElementsByClassName("product_checkbox");
+            var params = new Array();
+            for (var i = 0; i < collection.length; i++) {
+                if (collection[i].checked) {
+                    // var name = get_value(table.rows[i+1].cells[0].firstChild);
+                    var line_id = collection[i].id.substr(3).slice(0, -1);  // remove _ separating from null supplier_id
+                    line_id =
+
+                    params.push(line_id);
+                }
+            }
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                // Wait to get query result
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+                {
+                    window.location.reload();
+                }
+            }
+            var request = "../catalog/catalog-update-post.php?operation=draft_items&update_ids=" + params;
+            xmlhttp.open("GET", request, true);
+            xmlhttp.send();
+
+        }
+
     </script>
 </header>
 <body onload="show_totals()">
@@ -249,7 +278,7 @@ $supplier_id = get_param("supplier_id");
 <center><h1>פריטים להזמנות</h1></center>
 <input type="checkbox" id="filter_zero" onclick='show_totals();'>סנן מוזמנים<br>
 <input type="checkbox" id="filter_stock" onclick='show_totals();'>סנן פרטים במלאי<br>
-<table id="ordered_items"></table>
+<div id="ordered_items"></div>
 
 <?php
 print gui_button( "btn_create_delta", "create_delta()", "השלם פערים" );

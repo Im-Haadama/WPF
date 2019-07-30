@@ -1,5 +1,11 @@
+
+// Save entity from single row view - chk_ new fields.
 function save_entity(table_name, id)
 {
+    if (!Number.isInteger(id)) {
+        alert ("invalid id: " . id);
+        return;
+    }
     var operation = "/tools/admin/data.php?table_name=" + table_name + "&operation=update&id=" + id;
     var table = document.getElementById(table_name);
     var size = table.rows.length;
@@ -27,6 +33,13 @@ function save_new(table_name)
     }
     // alert(operation);
     execute_url(operation, action_back);
+}
+
+function check_update(xmlhttp)
+{
+    if (xmlhttp.response !== "done")
+        alert (xmlhttp.response);
+
 }
 
 function action_back(xmlhttp)

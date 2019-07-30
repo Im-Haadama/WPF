@@ -164,7 +164,7 @@ function invoice_create_subcontract_invoice( $invoice_client_id ) {
 	$doc->ClientID     = $client->ID;
 	$doc->DocumentType = DocumentType::Invoice;
 
-	$sql = "select id, date, amount, net_total, ref " .
+	$sql = "select id, date, amount, net_amount, ref " .
 	       " from im_business_info " .
 	       " where part_id = " . $legacy_user .
 	       " and invoice is null " .
@@ -214,7 +214,6 @@ function invoice_create_subcontract_invoice( $invoice_client_id ) {
 		sql_query( "UPDATE im_business_info SET invoice = " . $doc_id .
 		           " WHERE id IN ( " . comma_implode( $business_ids ) . " )" );
 	}
-
 
 	// var_dump($doc);
 	return $doc_id;

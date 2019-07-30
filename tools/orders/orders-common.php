@@ -548,8 +548,7 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 
 			if ( $delivery_id > 0 ) {
 				$delivery                           = new Delivery( $delivery_id );
-				$line[ OrderFields::delivery_note ] = gui_hyperlink( $delivery_id,
-					ImMultiSite::LocalSiteTools() . "/delivery/get-delivery.php?id=" . $delivery_id );
+				$line[ OrderFields::delivery_note ] = gui_hyperlink( $delivery_id, "/tools/delivery/get-delivery.php?id=" . $delivery_id );
 				//if ( $delivery_id > 0 ) {
 				if ( isset( $orders_total ) ) {
 					$line[ OrderFields::total_order ] = $order_total;
@@ -730,7 +729,7 @@ function total_order( $user_id ) {
 //	return 0;
 //}
 
-function show_category_all( $sale, $text, $fresh = false, $inv = false, $customer_type = "regular", $month = null ) {
+function show_category_all( $sale, $text, $fresh = false, $inv = false, $customer_type = "regular", $month = null, $args = null ) {
 //	print "inventory: " . $inventory . "<br/>";
 //	print "fresh: " . $fresh . "<br/>";
 	$result = "";
@@ -743,19 +742,24 @@ function show_category_all( $sale, $text, $fresh = false, $inv = false, $custome
 	}
 	foreach ( $categs as $categ ) {
 //		print get_term($categ)->name . "<br/>";
-		$result .= show_category_by_id( $categ, $sale, $text, $customer_type, $inv, $month );
+		$result .= show_category_by_id( $categ, $sale, $text, $customer_type, $inv, $month, $args );
 	}
 
 	return $result;
 }
 
-function show_category_by_id( $term_id, $sale = false, $text = false, $customer_type = "regular", $inventory = false, $month = null ) {
+function show_category_by_id( $term_id, $sale = false, $text = false, $customer_type = "regular", $inventory = false, $month = null, $args = null )
+{
+	$just_pricelist = GetArg($args, "just_pricelist", false);
+
 	$result   = "";
 	//print "inventory: " . $inventory . "<br/>";
 
 	$the_term = get_term( $term_id );
 
 	$result .= gui_header( 2, $the_term->name );
+
+	$regular = ($customer_type == "regular");
 
 	if ( $sale ) {
 		$table = array( array( "", "מוצר", "מחיר מוזל", "מחיר רגיל", "כמות", "סה\"כ" ) );
@@ -819,18 +823,36 @@ function show_category_by_id( $term_id, $sale = false, $text = false, $customer_
 //			print "skipping " . $prod_id . "<br/>";
 			continue;
 		}
-		$line = product_line( $prod_id, $text, $sale, $customer_type, $inventory, $term_id, $month );
-		if ( $text ) {
-			$result .= $line;
-		} else {
-			array_push( $table, $line );
-		}
+		$line = product_line( $prod_id, false, $sale, $customer_type, $inventory, $term_id, $month );
+		$price = get_price($prod_id);
+		array_push( $table, array($price, $line) );
+	}
+
+//	var_dump($table);
+	sort($table); // Sort by price.
+	for ($i = 0; $i < count($table); $i++)
+	{
+		$table[$i] = $table[$i][1];
+	}
+	$args = array();
+	$args["show_cols"] = array();
+	if (! $regular){
+		$args["show_cols"][3] = false; // Hide quantity price
+	}
+	if ($just_pricelist){
+		$args["show_cols"][4] = false;
+		$args["show_cols"][5] = false;
 	}
 
 	if ( $text ) {
+		foreach ($table as $line)
+		{
+			if (is_array($line))
+				$result .= $line[1] . " " . $line[2] ."<br/>";
+		}
 		return $result;
 	} else {
-		$result .= gui_table( $table, "table_" . $term_id );
+		$result .= gui_table_args( $table, "table_" . $term_id, $args );
 	}
 
 	if ( $inventory ) {
@@ -845,6 +867,7 @@ function product_line( $prod_id, $text, $sale, $customer_type, $inv, $term_id, $
 	$line     = array();
 	$img_size = 40;
 
+//	print "ct=" . $customer_type . "<br/>";
 	$p = new Product( $prod_id );
 	if ( $text ) {
 		$line = get_product_name( $prod_id ) . " - " . get_price_by_type( $prod_id, $customer_type ) . "<br/>";
@@ -884,7 +907,7 @@ function product_line( $prod_id, $text, $sale, $customer_type, $inv, $term_id, $
 
 		} else {
 			if ( ! $month ) {
-				array_push( $line, gui_label( "prc_" . $prod_id, $p->getPrice() ) );
+				array_push( $line, gui_label( "prc_" . $prod_id, $p->getPrice($customer_type) ) );
 				$q_price = get_price_by_type( $prod_id, null, 8 );
 				//			if ( is_numeric( get_buy_price( $prod_id ) ) ) {
 				//				$q_price = min( round( get_buy_price( $prod_id ) * 1.25 ), $product->get_price() );

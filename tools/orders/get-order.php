@@ -10,7 +10,7 @@ if ( user_can( $user_id, "edit_shop_orders" ) ) {
 	$manager = true;
 }
 
-$order_id = $_GET["order_id"];
+$order_id = get_param("order_id", true);
 $o        = new Order( $order_id );
 if ( $o->getCustomerId() != $user_id and ! $manager ) {
 	die ( "no permission" );

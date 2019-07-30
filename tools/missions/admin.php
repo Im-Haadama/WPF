@@ -2,8 +2,8 @@
 /**
  * Created by PhpStorm.
  * User: agla
- * Date: 08/07/19
- * Time: 16:44
+ * Date: 09/07/19
+ * Time: 10:41
  */
 
 if ( ! defined( "ROOT_DIR" ) ) {
@@ -13,24 +13,17 @@ if ( ! defined( "ROOT_DIR" ) ) {
 error_reporting( E_ALL );
 ini_set( 'display_errors', 1 );
 
-require_once( ROOT_DIR . '/niver/PivotTable.php' );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( ROOT_DIR . '/tools/im_tools_light.php' );
+require_once(ROOT_DIR . '/niver/gui/sql_table.php');
 
-$this_url = "project_admin.php";
-$entity_name = "חשבונית";
-$table_name = "im_projects";
+$this_url = "admin.php";
+$entity_name = "מסלול";
+$entity_name_plural = "מסלולים";
+$table_name = "im_missions";
 
 print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/tools/admin/data.js",
 	"/vendor/sorttable.js") );
-
-$year = get_param( "year" );
-if ( ! $year ) {
-	$year = date( "Y" );
-}
-// $month = get_param("monty");
-
-$page = "EXTRACT(YEAR FROM DATE) = " . $year . " and document_type = 4 and is_active=1";
 
 $operation = get_param( "operation", false );
 if ( $operation ) {
@@ -87,13 +80,20 @@ if ( $part_id ) {
 	return;
 }
 
-$links = array($this_url . "?row_id=%s");
+$links = array(); $links["id"] = $this_url . "?row_id=%s";
 
-print gui_header( 1, "ניהול פרויקטים" );
+print gui_header( 1, "ניהול " . $entity_name_plural);
 $sum = null;
+$query = "where date > date_sub(curdate(), interval 10 day)";
+$actions = array(
+	array( "שכפל", "/tools/delivery/missions.php?operation=dup&id=%s" ),
+	array( "מחק", "/tools/delivery/missions.php?operation=del&id=%s" )
+);
+$order        = "order by 2 ";
+
 $args = array();
 $args["links"] = $links;
-$args["class"] = "sortable";
+// $args["first_id"] = true;
+$args["actions"] = $actions;
 
-$sql = "select * from im_projects";
-print GuiTableContent($table_name, $sql, $args);
+print GuiTableContent($table_name, "select * from $table_name $query $order", $args);

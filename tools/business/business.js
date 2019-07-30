@@ -5,14 +5,12 @@
 
 function selected_client_index() {
     var client = document.getElementById("client");
-    var i = get_value(client);
-    return i.substr(0, i.indexOf(")"));
+    return get_value(client);
 }
 
 function selected_supplier_index() {
     var client = document.getElementById("supplier");
-    var i = get_value(client);
-    return i.substr(0, i.indexOf(")"));
+    return get_value(client);
 }
 
 function selected_supplier_id() {
@@ -139,7 +137,7 @@ function create_receipt_from_bank() {
 function link_invoice_bank() {
     disable_btn('btn_receipt');
 
-    var invoice_ids = account_get_del_ids();
+    var invoice_ids = account_get_row_ids();
     var site_id = selected_supplier_site_id();
     var supplier_id = selected_supplier_id();
     var bank_id = selected_bank_id();
@@ -160,13 +158,11 @@ function link_invoice_bank() {
         alert("שגיאה בסכום");
         return;
     }
-    var date = get_value(document.getElementById("pay_date"));
     var request = "business-post.php?operation=link_invoice_bank" +
         "&ids=" + invoice_ids.join() +
         "&site_id=" + site_id +
         "&supplier_id=" + supplier_id +
         "&bank_id=" + bank_id +
-        "&date=" + date +
         "&bank=" + bank;
     xmlhttp.open("GET", request, true);
     xmlhttp.send();
@@ -179,6 +175,7 @@ function update_display() {
 
     for (var i = 0; i < collection.length; i++) {
         if (collection[i].checked) {
+            //var row_id = collection[i].substr(4);
             var amount = parseFloat(table.rows[i + 1].cells[3].innerHTML);
             t += amount;
         }

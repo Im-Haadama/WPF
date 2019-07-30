@@ -50,11 +50,9 @@ if ( $operation )
 			break;
 
 		case "update":
-			// for debug:
 			$sql    = "UPDATE $table_name set ";
 			$first  = true;
 			$values = array();
-			$types = "";
 			$row_id = intval(get_param("id", true));
 			foreach ( $_GET as $key => $value ) {
 				//print $key . "<br/>";
@@ -64,19 +62,58 @@ if ( $operation )
 					$sql    .= ", ";
 				}
 				$sql    .= $key . '=?';
-				$values[] = $value;
-				$types .= 's';
+				$values[] = strlen($value) ? $value : "'NULL'";
 				$first  = false;
 			}
 			$sql .= " where id=$row_id";
+//			print $sql;
 //			print $sql;
 			$stmt = $conn->prepare($sql);
 			if (! $stmt) {
 				die ($conn->error);
 			}
-			$stmt->bind_param($types, ...$values);
+
+			// Bind
+			$types = "";
+			$values = array();
+			foreach ( $_GET as $key => $value ) {
+				//print $key . "<br/>";
+				if (in_array($key, $ignore_list))
+					continue;
+				$type = sql_type($table_name, $key);
+				switch(substr($type, 0, 3))
+				{
+					case 'bit':
+					case "int":
+						$types .= "i";
+						$value = strlen($value) ? $value : null;
+						break;
+					case "var":
+						$types .= "s";
+						break;
+					case "dat":
+						$types .= "s";
+						break;
+					case "dou":
+						$types .= "d";
+						break;
+					default:
+						print $type . " not handled";
+						die(1);
+				}
+				array_push($values, $value);
+				// print "$type $value<br/>";
+			}
+//			print "types=$types<br/>";
+//			var_dump($values); print "<br/>";
+
+			if (! $stmt->bind_param($types, ...$values))
+			{
+				die("bind error" . sql_error($sql));
+			};
+
 			if (!$stmt->execute()) {
-				print "Execute failed: (" . $stmt->errno . ") " . $stmt->error;
+				print "Update failed: (" . $stmt->errno . ") " . $stmt->error . " " . $sql;
 				die(2);
 			}
 			print "done";

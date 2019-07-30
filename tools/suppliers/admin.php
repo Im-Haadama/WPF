@@ -17,7 +17,9 @@ if ($id)
 	$args = array();
 	$args["edit"] = true;
 	$args["add_checkbox"] = true;
-	print RowContent("im_suppliers", $id, $args, true);
+	$args["transpose"] = true;
+
+	print GuiRowContent("im_suppliers", $id, $args);
 	print gui_button("btn_save", 'save_entity(\'im_suppliers\', ' . $id .')', "שמור");
 	return;
 }

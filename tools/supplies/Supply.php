@@ -276,7 +276,9 @@ class Supply {
 		}
 
 		array_push( $rows, $row );
-		$data = gui_table( $rows );
+
+		$sum = array();
+		$data = gui_table( $rows, "supply_table", true,  true, $sum, "", "sortable");
 
 		return $data;
 	}
