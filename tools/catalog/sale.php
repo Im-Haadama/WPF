@@ -41,5 +41,5 @@ while ( $row = mysqli_fetch_row( $result ) ) {
 	array_push( $new_row, $remote );
 	array_push( $rows, $new_row );
 }
-print gui_table( $rows );
+print gui_table_args( $rows );
 

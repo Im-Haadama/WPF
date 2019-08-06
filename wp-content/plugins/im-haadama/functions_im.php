@@ -492,7 +492,7 @@ function fresh_store_packing_page() {
 
 	<?php
 
-	print gui_table( array(//array("אריזה", "גביה", "קטלוג"),
+	print gui_table_args( array(//array("אריזה", "גביה", "קטלוג"),
 		array( "packing" )
 	) );
 
@@ -504,7 +504,7 @@ function fresh_store_supplier_account_page() {
 
 	<?php
 
-	print gui_table( array(
+	print gui_table_args( array(
 		array( "supplier_account" )
 	) );
 

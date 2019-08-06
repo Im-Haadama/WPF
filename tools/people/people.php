@@ -334,14 +334,18 @@ function gui_select_project( $id, $class, $value, $events = null, $worker = null
 		$query = " where id in (select project_id from im_working where worker_id = " . $worker . ")";
 	}
 
-	return gui_select_table( $id, "im_projects", $value, $events, "", "project_name",
-		$query, true, false );
+//	return gui_select_table( $id, "im_projects", $value, $events, "", "project_name",
+//		$query, true, false );
+
+	$args = array("value"=>$value, "events"=>$events, "name"=>"project_name", "where"=>$query);
+	return GuiSelectTable($id, "im_projects", $args);
 
 }
 
 function gui_select_task( $id, $value, $args ) {
 	$events = GetArg($args, "events", null);
 	$query = GetArg($args, "where", " 1 ");
+	$length = GetArg($args, "length", 30);
 
 
 //	if ( $worker ) {
@@ -350,8 +354,16 @@ function gui_select_task( $id, $value, $args ) {
 //		$query = " where id in (select project_id from im_working where worker_id = " . $worker . ")";
 //	}
 
-	return gui_select_table( $id, "im_tasklist", $value, $events, "", "task_description",
-		"where " . $query, true, false );
+//	return gui_select_table( $id, "im_tasklist", $value, $events, "", "task_description",
+//		"where " . $query, true, false );
+
+	$args = array("value" => $value,
+	              "events"=>$events,
+	              "name"=>"substr(task_description, 1," . $length . ")",
+	              "where"=>"where " . $query,
+	              "include_id" => 1,
+	              "datalist"=>1);
+	return gui_select_table($id, "im_tasklist", $args);
 
 }
 

@@ -41,7 +41,7 @@ $col ++;
 $table[ $i ++ ][ $col ] = gui_header( 1, "אספקות" );
 $table[ $i ++ ][ $col ] = gui_header( 2, "פריטים להזמין" );
 $table[ $i ++ ][ $col ] = calculate_total_products();
-$table[ $i ++ ][ $col ] = gui_link( "תכנון הספקה", "../orders/get-total-orders.php", "doc_frame" );
+$table[ $i ++ ][ $col ] = gui_hyperlink( "תכנון הספקה", "../orders/get-total-orders.php", "doc_frame" );
 $sql                    = "SELECT count(*) AS 'כמות', 
 CASE
   WHEN status = 1 THEN \"חדש\"
@@ -109,7 +109,7 @@ for ( $i = 0; $i < sizeof( $table ); $i ++ ) {
 	// print htmlspecialchars(var_dump($table[$i]));
 }
 
-print gui_table( $table );
+print gui_table_args( $table );
 
 
 function count_unmapped() {

@@ -34,5 +34,5 @@ while ( $row = mysqli_fetch_row( $result ) ) {
 	array_push( $table, $display_row );
 }
 
-print gui_table( $table );
+print gui_table_args( $table );
 

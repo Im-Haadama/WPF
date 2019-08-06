@@ -1,5 +1,6 @@
 <?php
-
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
 /**
  * Created by PhpStorm.
  * User: agla
@@ -10,7 +11,9 @@
 require_once( '../r-shop_manager.php' );
 require_once( "tasklist.php" );
 require_once( "../../niver/web.php" );
-
+require_once( ROOT_DIR . '/niver/gui/inputs.php' );
+require_once( ROOT_DIR . '/niver/gui/sql_table.php' );
+require_once(ROOT_DIR . '/tools/people/people.php');
 
 $this_url           = "admin.php";
 $entity_name        = "משימה";
@@ -54,7 +57,25 @@ if ( $project_id ) { show_tasks( $project_id, $user_ID ); return; }
 $task_template_id = get_param("task_template_id");
 if ($task_template_id) { show_templates($task_template_id); return; }
 
-if ($operation == "templates") { show_templates(); return; }
+if ($operation) {
+	switch ($operation){
+		case "templates":
+			show_templates();
+			break;
+
+		case "new_task":
+			$args = array();
+			$args["selectors"] = array("project_id" =>  "gui_select_project", "owner" => "gui_select_creator", "creator" => "gui_select_creator");
+			 $args["transpose"] = true;
+			$args["values"] = array("owner" => $user_ID, "creator" => $user_ID);
+			// $args["debug"] = true;
+			print NewRow("im_tasklist", $args);
+			print gui_button("btn_newtask", "save_new('im_tasklist')", "צור");
+			break;
+	}
+	return;
+}
+
 
 $row_id = get_param( "row_id", false );
 if ($row_id) { show_task($row_id); return; }
@@ -63,7 +84,6 @@ $debug = get_param("debug", false, false);
 $time_filter = get_param("time", false, true);
 
 show_active_tasks($debug, $time_filter);
-
 
 $non_zero = get_param( "non_zero" );
 
@@ -161,13 +181,6 @@ if ( ! defined( "ROOT_DIR" ) ) {
 	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
 }
 
-error_reporting( E_ALL );
-ini_set( 'display_errors', 1 );
-
-require_once( ROOT_DIR . '/niver/gui/inputs.php' );
-require_once( ROOT_DIR . '/tools/im_tools_light.php' );
-require_once( ROOT_DIR . '/niver/gui/sql_table.php' );
-require_once(ROOT_DIR . '/tools/people/people.php');
 
 
 // Selectors
@@ -211,6 +224,27 @@ function show_task($row_id)
 	return;
 }
 
+function greeting()
+{
+	$data = "";
+
+	$user_id = wp_get_current_user()->ID;
+
+	$now = strtotime("now");
+
+	if ($now < strtotime("12pm"))
+		$data .= "בוקר טוב";
+	else
+		$data .= "שלום";
+
+	$data .= " " . get_customer_name($user_id) . "(" . $user_id . ")";
+
+	$data .= Date("G:i", $now );
+
+	$data .= "<br/>";
+
+	return $data;
+}
 
 function show_active_tasks($debug = false, $time = false)
 {
@@ -218,21 +252,27 @@ function show_active_tasks($debug = false, $time = false)
 	global $entity_name_plural;
 	global $table_name;
 
+	$user_id = wp_get_current_user()->ID;
+
 	$links       = array();
 	$links["id"] = $this_url . "?row_id=%s";
 
 	print gui_header( 1, "ניהול " . $entity_name_plural );
 
-	print Date("G:i", strtotime("now"));
+	print greeting();
 
 	print gui_hyperlink("משימות חוזרות", "admin.php?operation=templates");
+
+	print " ";
+
+	print gui_hyperlink("הוסף משימה", "admin.php?operation=new_task");
 
 	$sum     = null;
 //
 	$query   = "where status in (0, 1) and (isnull(preq) or task_status(preq) >= 2) and date <= Curdate()";
 	if ($time) $query .= " and task_active_time(id)";
 
-	$query .= " and owner = " . wp_get_current_user()->ID;
+	$query .= " and owner = " . $user_id;
 
 	$actions = array(
 		array( "התחל", "tasklist.php?operation=start&id=%s" ),
@@ -243,24 +283,47 @@ function show_active_tasks($debug = false, $time = false)
 	$order   = "order by priority desc ";
 	$args             = array();
 
-	$links["task_template"] = "admin.php?task_template_id=%s";
-	$links["id"] = "admin.php?row_id=%s";
+	$links["תבנית"] = "admin.php?task_template_id=%s";
+	$links["מספר"] = "admin.php?row_id=%s";
 	$args["links"]    = $links;
 //$args["first_id"] = true;
 	$args["actions"]  = $actions;
-	$args["id_col"] = 0;
+	$args["id_field"] = "מספר";
 
 //var_dump($args);
 	$more_fields = "";
 
 	if ($debug and ! $time) $more_fields .= ", task_template_time(id) ";
 
-	$sql = "select id, date(date), task_description, task_template, started, project_name(project_id),
-       priority, preq, task_active_time(id) $more_fields from $table_name $query $order";
+	$sql = "select id as מספר, date(date) as תאריך, task_description as תיאור, task_template as תבנית, started as התחיל, project_name(project_id) as פרויקט,
+       priority as עדיפות, preq as `משימה קודמת` $more_fields from $table_name $query $order";
 
 	if ($debug)
 		print $sql;
+
 	print GuiTableContent( $table_name, $sql, $args );
 
 }
 
+/**
+ * @param $id
+ * @param $value
+ * @param string $events
+ *
+ * @return string
+ */
+function gui_select_repeat_time( $id, $value, $events = "") {
+//	print "v=" . $value . "<br/>";
+
+	$values = array( "w - שבועי", "j - חודשי", "z - שנתי");
+
+	$selected = 1;
+	for ( $i = 0; $i < count( $values ); $i ++ ) {
+		if ( substr( $values[ $i ], 0, 1 ) == substr($value, 0, 1) ) {
+			$selected = $i;
+		}
+	}
+
+	// return gui_select( $id, null, $values, $events, $selected );
+	return gui_simple_select( $id, $values, $events, $selected );
+}

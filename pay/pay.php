@@ -102,7 +102,7 @@ if ( ImMultiSite::LocalSiteID() == 3 ) {
 }
 
 print gui_header( 1, "ביצוע תשלום" );
-print gui_table( array(
+print gui_table_args( array(
 	array( "מספר כרטיס", gui_input( "card", $cc, array( "onkeydown=\"check_num(event)\"" ), "card" ) ),
 	array( "תוקף", gui_input_month( "valid", "", "", null ) ),
 	array( "id", gui_input( "מספר תז", $id ) ),

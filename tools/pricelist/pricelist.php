@@ -329,7 +329,7 @@ class PriceList {
 		// $data .= "<tr>";
 		$data .= "</tr>";
 
-		$data .= gui_table( array(
+		$data .= gui_table_args( array(
 			array( 'מק"ט - אופציונאלי', gui_input( "product_code", "" ) ),
 			array( "שם מוצר", gui_input( "product_name", "" ) ),
 			array( "מחיר", gui_input( "price", "" ) )

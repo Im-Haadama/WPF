@@ -93,7 +93,7 @@ require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 print header_text( true );
 print gui_header( 2, "הוסף לקוח חדש" );
 
-print gui_table(
+print gui_table_args(
 	array(
 		array( "שם משתמש", gui_label( "user", "אוטומטי" ) ),
 		array( "שם", gui_input( "name", "", "" ) ),

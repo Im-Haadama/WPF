@@ -201,7 +201,7 @@ if ( $test_site ) {
                 <img style="padding:0;" src="<?php print get_logo_url(); ?>">
             </td>
             <td>
-				<?php print gui_table( $table );
+				<?php print gui_table_args( $table );
 				?>
             </td>
         </tr>

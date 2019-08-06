@@ -62,18 +62,12 @@ switch ($operation)
 
 function show_missions($missions)
 {
-    $data = array(array("מספר", "שם", "התחלה", "סיום", "שעת התחלה", "שעת גג"));
     $args = array();
     $args["edit"] = true;
 
-//    foreach ($missions as $mission_id)
-//    {
-//        // $m = new Mission($mission_id);
-////        array_push($data, array($mission_id, $m->getMissionName(), $m->getStartAddress(), $m->getEndAddress(), $m->getStartTime(), $m->getEndTime()));
-//        array_push($data, RowContent("im_missions", $mission_id, $args));
-//    }
-//    print gui_table_args($data, "mission_table");
-    print table_content_args("missions", "select * from im_missions where id in (". comma_implode($missions) . ")", $args);
+    $sql = "select * from im_missions where id in (". comma_implode($missions) . ")";
+
+    print GuiTableContent("missions", $sql, $args);
 }
 
 if ( isset( $_GET["week"] ) ) {
@@ -244,7 +238,7 @@ function show_path($missions, $debug, $missing)
 
         print gui_header( 1, get_mission_name( $mission_id ) . "($mission_id)" );
 
-        print gui_table(array(array("זמן התחלה", gui_input_time("start_time", "time")),
+        print gui_table_args(array(array("זמן התחלה", gui_input_time("start_time", "time")),
         array("נקודת מוצא", gui_input("start_location", $mission->getStartAddress()))));
 
         if ( $debug ) {

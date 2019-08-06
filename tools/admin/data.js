@@ -25,9 +25,9 @@ function save_new(table_name)
     var table = document.getElementById(table_name);
     var size = table.rows.length;
     for (var i = 0; i < size; i++){
-        var name = table.rows[i].cells[0].innerText;
+        var name = table.rows[i].cells[1].innerText;
         var val = get_value_by_name(name);
-        if (val.length) {
+        if (get_value_by_name("chk_" + name)) {
             operation += "&" + name + "=" + val;
         }
     }

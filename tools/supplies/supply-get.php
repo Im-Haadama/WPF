@@ -418,7 +418,7 @@ print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_missio
 	                      '<span class="tooltiptext">יש לסמן עבור חשבונית ולהשאיר לא מסומן עבור תעודת משלוח</span>
     </div>';
 
-		print gui_table( array(
+		print gui_table_args( array(
 			array( "חשבונית", $invoice_text ),
 			array( "מספר מסמך", gui_input( "supply_number", "" ) ),
 			array( "סכום כולל מעמ", gui_input( "supply_total", "" ) ),

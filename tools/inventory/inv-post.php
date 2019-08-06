@@ -74,7 +74,7 @@ function show_supplier_inventory( $supplier_id ) {
 		}
 	}
 
-	$display .= gui_table( $table, "table_" . $supplier_id );
+	$display .= gui_table_args( $table, "table_" . $supplier_id );
 
 	$display .= gui_button( "btn_save_inv" . $supplier_id, "save_inv(" . $supplier_id . ")", "שמור מלאי" );
 

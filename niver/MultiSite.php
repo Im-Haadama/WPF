@@ -59,7 +59,7 @@ class MultiSite {
 		}
 
 		if ( $verbose ) {
-			return gui_table( $data );
+			return gui_table_args( $data );
 		}
 
 		return $output;

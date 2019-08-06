@@ -925,7 +925,7 @@ function DoSuppliesTable( $sql )
 	}
 	// $data .= "</table>";
 
-	$data = gui_table( $lines );
+	$data = gui_table_args( $lines );
 	if ( $has_lines ) {
 		return $data;
 	}

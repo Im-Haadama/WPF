@@ -108,7 +108,7 @@ if ( isset( $_GET["operation"] ) ) {
 			$b = BankTransaction::createFromDB( $id );
 			print gui_header( 2, "פרטי העברה" );
 			$free_amount = $b->getOutAmount( true );
-			print gui_table( array(
+			print gui_table_args( array(
 					array( "תאריך", gui_div( "pay_date", $b->getDate() ) ),
 					array( "סכום", gui_div( "bank", $b->getOutAmount() ) ),
 					array( "סכום לתיאום", gui_div( "bank", $free_amount ) ),
@@ -120,7 +120,7 @@ if ( isset( $_GET["operation"] ) ) {
 			if ( $lines ) {
 				print gui_header( 2, "שורות מתואמות" );
 
-				print gui_table( $lines );
+				print gui_table_args( $lines );
 			}
 
 			if ( $free_amount > 0 ) {
@@ -155,7 +155,7 @@ if ( isset( $_GET["operation"] ) ) {
 					array_push( $data[ $key ], gui_hyperlink( "קשר", "business-post.php?operation=create_pay_bank&id=" . $id ) );
 				}
 			}
-			print gui_table( $data );
+			print gui_table_args( $data );
 			break;
 		case "link_invoice_bank":
 			$bank_id      = get_param( "bank_id", true );
@@ -229,7 +229,7 @@ if ( isset( $_GET["operation"] ) ) {
 			print gui_header( 1, "הפקת חשבונית קבלה להפקדה מבנק " );
 
 			print gui_header( 2, "פרטי העברה" );
-			print gui_table( array(
+			print gui_table_args( array(
 					array( "תאריך", gui_div( "pay_date", $b->getDate() ) ),
 					array( "סכום", gui_div( "bank", $b->getInAmount() ) ),
 					array( "מזהה", gui_div( "bank_id", $id ) )

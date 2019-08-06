@@ -246,7 +246,7 @@ if ( $manager ) {
 	$client_id = $invoice->GetInvoiceUserId( $customer_id );
 //	var_dump($client);
 
-	$user_info = gui_table( array(
+	$user_info = gui_table_args( array(
 		array( "דואל", get_customer_email( $customer_id ) ),
 		array( "טלפון", get_customer_phone( $customer_id ) ),
 		array( "מספר מזהה", gui_label( "invoice_client_id", $client_id ) ),
@@ -257,8 +257,8 @@ if ( $manager ) {
 	) );
 	$style     = "table.payment_table { border-collapse: collapse; } " .
 	             " table.payment_table, td.change, th.change { border: 1px solid black; } ";
-	$sums      = null;
-	$new_tran  = gui_table( array(
+	$args = array("style" => $style, "class" => "payment_table");
+	$new_tran  = gui_table_args( array(
 		array(
 			"תשלום",
 			gui_button( "btn_receipt", "create_receipt()", "הפק חשבונית מס קבלה" )
@@ -269,9 +269,9 @@ if ( $manager ) {
 		array( "העברה", gui_input( "bank", "", array( 'onkeyup="update_sum()"' ) ) ),
 		array( "המחאה", gui_input( "check", "", array( 'onkeyup="update_sum()"' ) ) ),
 		array( "עודף", " <div id=\"change\"></div>" )
-	), "payment_table", true, true, $sums, $style, "payment_table" );
+	), "payment_table");
 
-	print gui_table( array(
+	print gui_table_args( array(
 		array( gui_header( 2, "פרטי לקוח", true ), gui_header( 2, "קבלה", true ) ),
 		array( $user_info, $new_tran )
 	) );
@@ -457,7 +457,7 @@ if ( $manager ) {
 <?php
 print "הנתונים הן יתרת חוב. זיכוי ותשלום ירשמו בסימן שלילי";
 print "<br/>";
-print gui_table( array(
+print gui_table_args( array(
 	array( "סוג פעולה", "סכום", "תאריך", "מזהה" ),
 	array(
 		'<input type="text" id="transaction_type">',

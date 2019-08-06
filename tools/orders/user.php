@@ -85,7 +85,7 @@ while ( $row = mysqli_fetch_row( $result ) ) {
 	array_push( $info, prod_line( $row[0] ) );
 }
 
-print gui_table( $info, "prods" );
+print gui_table_args( $info, "prods" );
 
 
 function prod_line( $prod_id ) {

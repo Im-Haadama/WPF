@@ -335,7 +335,7 @@ function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero
 		}
 		global $total_buy;
 		global $total_sale;
-		$data .= gui_table( array( array( "", 'סה"כ', "", "", "", "", "", $total_buy, $total_sale ) ) );
+		$data .= gui_table_args( array( array( "", 'סה"כ', "", "", "", "", "", $total_buy, $total_sale ) ) );
 
 		$data .= "</table>";
 

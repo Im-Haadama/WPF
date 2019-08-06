@@ -1,9 +1,9 @@
 <?php
-//error_reporting( E_ALL );
-//ini_set( 'display_errors', 'on' );
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
 require_once( "../im_tools.php" );
 require_once( '../r-shop_manager.php' );
-// require_once 'orders-common.php';
 require_once '../delivery/delivery.php';
 
 print header_text( false, false );
@@ -191,8 +191,6 @@ debug_time1( "reset" );
 if ( current_user_can( "edit_shop_orders" ) and
      ( is_null( $order_type ) or in_array( "p", explode( ",", $order_type ) ) )
 ) {
-	// print "XXX";
-	// print $pending;
 	$pending = orders_table( array( "wc-pending", "wc-on-hold" ) );
 	if ( strlen( $pending ) > 4 ) {
 		print $pending;

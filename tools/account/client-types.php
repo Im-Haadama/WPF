@@ -85,11 +85,11 @@ while ( $row = sql_fetch_row( $result ) ) {
 	) );
 }
 
-print gui_table( $table );
+print gui_table_args( $table );
 
 print gui_header( 2, "הוסף שיוך" );
 
-print gui_table( array(
+print gui_table_args( array(
 	array( "בחר לקוח", gui_select_client() ),
 	array(
 		"בחר מחירון",

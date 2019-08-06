@@ -348,7 +348,7 @@ global $pos;
 		}
 		array_push( $header[0], gui_header( 2, "הערה/שם לקוח" ) );
 		array_push( $header[1], gui_input( "order_excerpt", "" ) );
-		print gui_table( $header );
+		print gui_table_args( $header );
 
 		print gui_label( "rate", $pos ? "pos" : "" );
 
@@ -357,7 +357,7 @@ global $pos;
 
 		$show_fields = array( true, true, ! $pos, true, true );
 		$sum         = array();
-		print gui_table( array( array( "פריט", "כמות", "קג או יח", "מחיר ליחיד או לק\"ג", "סה\"כ" ) ),
+		print gui_table_args( array( array( "פריט", "כמות", "קג או יח", "מחיר ליחיד או לק\"ג", "סה\"כ" ) ),
 			"order_items", true, true, $sum, null, null, $show_fields );
 
 		print "<br/>";
@@ -372,6 +372,7 @@ global $pos;
 		print "משלוח ";
 		print gui_label( "client_address", "" );
 		printbr();
+
 		if ( $pos ) {
 			print gui_checkbox( "chk_payment", "", 0 );
 			print "תשלום";

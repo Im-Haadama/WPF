@@ -219,7 +219,7 @@ print gui_datalist( "items", "im_products", "post_title" );
 <div id="new_item" style="display: none">
 	<?php
 	print gui_header( 1, "יצירת מארז" );
-	print gui_table( array(
+	print gui_table_args( array(
 		array(
 			gui_header( 2, "בחר מוצר" ),
 			gui_header( 2, "מחיר עלות" ),

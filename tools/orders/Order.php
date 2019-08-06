@@ -459,7 +459,7 @@ class Order {
 			array_push($table, array($order, $o->CustomerName(), $o->GetComments()));
 		}
 
-		print gui_table ($table);
+		print gui_table_args($table);
 	}
 
 	public function Missing() {

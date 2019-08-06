@@ -56,4 +56,4 @@ $text .= '</head>';
 
 print $text;
 
-print gui_table( inbox_files( $hostname, $mail_user, $password, $attach_folder, $folder_url ) );
+print gui_table_args( inbox_files( $hostname, $mail_user, $password, $attach_folder, $folder_url ) );

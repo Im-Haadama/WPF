@@ -12,4 +12,6 @@ $arr_params = array(
 	'baz' => 'tiny'
 );
 $u          = "http://fruity.co.il/order-finish/";
-echo add_query_arg( $arr_params, $u ) . "<br />";
+// echo add_query_arg( $arr_params, $u ) . "<br />";
+
+print gui_select_mission("mi");

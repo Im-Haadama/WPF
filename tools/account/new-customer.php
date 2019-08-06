@@ -34,7 +34,7 @@ $step      = 4;
 
 $invoice_client_id = get_user_meta( $client_id, 'invoice_id', 1 );
 
-print gui_table( array(
+print gui_table_args( array(
 	$O->info_right_box_input( "shipping_city", true, "עיר" ),
 	$O->info_right_box_input( "shipping_address_1", true, "רחוב ומספר" ),
 	$O->info_right_box_input( "shipping_address_2", true, "כניסה, קוד אינטרקום, קומה ומספר דירה" )

@@ -127,7 +127,7 @@ array_push( $table, ( array(
 ) ) );
 array_push( $table, ( array( "פרויקט", gui_select_table( "project", "im_projects", "3", "", "", "project_name" ) ) ) );
 
-print gui_table( $table );
+print gui_table_args( $table );
 ?>
 <div>
     <!--    פרויקט-->

@@ -145,7 +145,7 @@ switch ( $operation ) {
 		break;
 
 	case "header":
-		print gui_table( array(
+		print gui_table_args( array(
 			gui_row( array( gui_cell( "תאריך עדכון אחרון " ), gui_cell( " מרווח מכירה " ) ) ),
 			gui_row( array( gui_cell( $pl->GetUpdateDate() ), gui_cell( $pl->GetFactor() ) ) )
 		) );

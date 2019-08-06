@@ -300,9 +300,12 @@ function get_customer_email( $customer_id ) {
 function gui_select_creator( $id = null, $selected = null, $events = "" ) {
 	global $user_ID;
 	if ( is_manager( $user_ID ) ) {
-		return gui_select_table( $id, "im_working", $selected, $events, "",
-			"client_displayname(worker_id)",
-			"where is_active=1", true, false, null, "worker_id" );
+//		$id, $table, $selected = null, $events = null, $more_values = null, $name = null, $where = null,
+//	$include_id = false, $datalist = false, $order_by = null, $id_key = null
+
+		$args = array("selected"=>$selected, "events"=>$events, "name" =>"client_displayname(worker_id)",
+			"where" => "where is_active=1", "include_id" => 1, "datalist" => 0, "id_key" => "worker_id");
+		return gui_select_table( $id, "im_working", $args);
 	} else {
 		return $user_ID;
 	}

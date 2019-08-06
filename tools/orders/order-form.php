@@ -200,7 +200,7 @@ if ( $text ) {
 } else {
     if (! $just_pricelist){
         print gui_header(1, "פרטי המזמין:");
-        print gui_table(array(
+        print gui_table_args(array(
                 array("כתובת המייל של המזמין:", gui_input( "email", "", array( "onchange=update_email()" ))),
             array("שם הלקוח:", gui_label( "user_info", "" )),
             array("מועד המשלוח", gui_div("delivery_info")),

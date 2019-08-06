@@ -9,6 +9,10 @@ if ( ! defined( 'TOOLS_DIR' ) ) {
 	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
 }
 
+require_once(TOOLS_DIR . "/../niver/fund.php");
+require_once(TOOLS_DIR . "/../niver/gui/inputs.php");
+
+
 // require_once( TOOLS_DIR . "/r-shop_manager.php" );
 
 //function gui_select_client( $active_days, $new = false ) {
@@ -29,7 +33,7 @@ if ( ! defined( 'TOOLS_DIR' ) ) {
 //}
 
 // $key, $data, $args
-function gui_select_client( $id = null, $value, $args = null ) {
+function gui_select_client( $id, $value, $args = null ) {
 
 	if ( ! $id ) {
 		$id = "client_select";
@@ -51,8 +55,11 @@ function gui_select_client( $id = null, $value, $args = null ) {
 	}
 
 	// print $sql_where;
-	return gui_select_table( $id, "wp_users", $value, $events, "", "display_name",
-		$sql_where, true, true );
+//	$id, $table, $selected = null, $events = null, $more_values = null, $name = null, $where = null,
+//	$include_id = false, $datalist = false, $order_by = null, $id_key = null;
+	$args = array("name" => "display_name(%s)", "include_id" => 1, "where"=> $sql_where, "events" => $events, "value"=>$value, "datalist" => 1);
+	return GuiSelectTable( $id, "wp_users", $args);
+	// $value, $events, "", "display_name",$sql_where, true, true );
 }
 
 function gui_select_client_type( $id, $value, $events = null ) {

@@ -959,7 +959,7 @@ class delivery {
 	}
 
 	public static function GuiCreateNewNoOrder() {
-		$data = gui_table( array(
+		$data = gui_table_args( array(
 			array( "לקוח:", gui_select_client() ),
 			array( "תאריך", gui_input_date( "delivery_date", "" ) ),
 			array( gui_button( "btn_add_delivery", "", "הוסף תעודת משלוח" ) )

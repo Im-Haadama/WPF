@@ -74,7 +74,7 @@ require( "new-order.php" );
 // This button create order, delivery note.
 // print gui_button("create_delivery_note", "add_order(2)", "קניה בהקפה");
 
-print gui_table( array(
+print gui_table_args( array(
 	array( "מזומן", gui_input( "cash", "" ) ),
 	array( "אשראי", gui_input( "credit", "" ) ),
 	array( "העברה/BIT", gui_input( "bank", "" ) ),

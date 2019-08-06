@@ -28,7 +28,7 @@ print gui_button( "btn_new", "show_create_item()", "הספקה חדשה" );
 <div id="new_item" style="display: none; border:1px solid black; padding: 30px">
 	<?php
 	print gui_header( 1, "יצירת אספקה" );
-	print gui_table( array(
+	print gui_table_args( array(
 		array(
 			gui_header( 2, "בחר ספק" ),
 			gui_header( 2, "בחר מועד" ),
@@ -45,7 +45,7 @@ print gui_button( "btn_new", "show_create_item()", "הספקה חדשה" );
 	print gui_header( 2, "בחר מוצרים" );
 	print gui_datalist( "items", "im_products", "post_title", true );
 
-	print gui_table( array( array( "פריט", "כמות", "קג או יח" ) ),
+	print gui_table_args( array( array( "פריט", "כמות", "קג או יח" ) ),
 		"supply_items" );
 
 	print gui_button( "add_line", "add_line()", "הוסף שורה" );

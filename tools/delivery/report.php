@@ -225,7 +225,7 @@ function print_weekly_report( $week, $sort = 4 ) {
 		gui_hyperlink( "כמות", $actual_link . "&sort=2d" )
 	) );
 
-	print gui_table( $lines );
+	print gui_table_args( $lines );
 
 //	$sql = "SELECT ref as 'תעודת משלוח', date AS תאריך, amount AS סכום, delivery_fee AS 'דמי משלוח', client_from_delivery(ref) AS לקוח FROM im_business_info WHERE " .
 //	       " week = '" . $week . "' AND amount > 0 ORDER BY 1";

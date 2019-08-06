@@ -408,6 +408,8 @@ $order_header_fields = array(
 function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null ) {
 	debug_time1( "start" );
 
+	// print "s=" . $statuses;
+
 	global $order_header_fields;
 	global $conn;
 	global $invoice_user;
@@ -591,11 +593,6 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 
 		debug_time1( "2" );
 
-//		$data .= gui_row( array( "", "", 'סה"כ', "", "", "", $total_order_total, "", "", "", "" ) );
-		//$data = str_replace( "\r", "", $data );
-
-		// $data .= "</table>";
-
 		if ( $count > 0 ) {
 			$sums = null;
 
@@ -699,7 +696,7 @@ function total_order( $user_id ) {
 	array_push( $totals, array_sum( $totals ) );
 	array_push( $table, $totals);
 
-	return gui_table( $table );
+	return gui_table_args( $table );
 }
 
 //function order_get_zone( $order_id ) {
@@ -766,7 +763,7 @@ function show_category_by_id( $term_id, $sale = false, $text = false, $customer_
 	} else {
 		$table = array( array( "", "מוצר" ) );
 		if ( ! $month )
-			array_push( $table[0], "מחיר", gui_link( "מחיר לכמות", "", "" ), "כמות", "סה\"כ" );
+			array_push( $table[0], "מחיר", gui_hyperlink( "מחיר לכמות", "", "" ), "כמות", "סה\"כ" );
 		else
 			array_push( $table[0], "מדד זמינות"  );
 	}

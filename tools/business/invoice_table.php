@@ -97,7 +97,7 @@ $t = new \Niver\PivotTable( "im_business_info", $page,
 
 $trans            = array();
 $trans["part_id"] = 'get_customer_name';
-print gui_table( $t->Create(
+print gui_table_args( $t->Create(
 	'c-get-business_info.php?document_type=4&part_id=%s&date=' . $year . '-' . '%02s-28',
 	'invoice_table.php?part_id=%s',
 	$trans ) );

@@ -59,7 +59,7 @@ if ( $op == 'check' ) { // would run on conductor server
 
 		if ( ! file_exists( $full_path ) ) {
 			$fail   = true;
-			$output .= "missing file";
+			$output .= "missing file $full_path";
 			array_push( $results, array( $host_info[1], $output ) );
 			continue;
 		}
@@ -84,7 +84,7 @@ if ( $op == 'check' ) { // would run on conductor server
 	// Todo: Delete old ones.
 	print ( $fail ? "1 failed" : "0 all ok" );
 
-	 print gui_table( $results );
+	 print gui_table_args( $results );
 
 //	if ($fail) print im_file_get_html("http://tabula.aglamaz.com/utils/daily.log." . date('d') . ".html");
 
@@ -166,4 +166,4 @@ foreach ( $hosts_to_sync as $key => $host_info ) {
 	array_push( $results, array( $host_info[1], $output ) );
 }
 
-print gui_table( $results );
+print gui_table_args( $results );

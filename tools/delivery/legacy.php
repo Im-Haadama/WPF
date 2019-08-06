@@ -188,8 +188,10 @@ if ( strlen( $data ) > 182 ) {
     print gui_header(1, "כל תעודות המשלוח הוכנסו לחשבוניות");
 }
 
-$table = table_content_args("open_invoices", "select * from im_business_info where part_id = " . $legacy_user .
-    " and document_type = 4", null);
+$sql = "select * from im_business_info where part_id = " . $legacy_user .
+        " and document_type = 4";
+
+$table = GuiTableContent("open_invoices", $sql, null);
 
 if ($table){
     print gui_header(1, "חשבוניות פתוחות");

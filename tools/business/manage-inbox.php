@@ -165,4 +165,4 @@ foreach ( $table as $row ) {
 	array_push( $message_table, $line );
 }
 
-print gui_table( $message_table);
+print gui_table_args( $message_table);

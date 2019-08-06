@@ -44,7 +44,7 @@ function print_project_report( $role, $project_id ) {
 		array_push( $summary, array( $month, $sum ) );
 		//	print "total for month " . $month . " " . $sum . "<br/>";
 	}
-	print gui_table( $summary );
+	print gui_table_args( $summary );
 	print $lines;
 
 }

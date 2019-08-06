@@ -340,7 +340,7 @@ function create_tasks( $freqs = null, $verbose = false, $default_owner = 1 ) {
 		info_update( $info_key, date( $freq ));
 	}
 	if ( $verbose )
-		print gui_table( $verbose_table);
+		print gui_table_args( $verbose_table);
 }
 
 
@@ -464,5 +464,5 @@ function task_table( $task_ids ) {
 	}
 
 
-	return gui_table( $rows );
+	return gui_table_args( $rows );
 }

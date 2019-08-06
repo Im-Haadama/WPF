@@ -58,5 +58,5 @@ function show_inventory_term( $term_id ) {
 		}
 	}
 
-	print gui_table( $rows );
+	print gui_table_args( $rows );
 }
