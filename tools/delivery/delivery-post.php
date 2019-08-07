@@ -178,20 +178,22 @@ function add_delivery_lines( $delivery_id, $lines, $edit ) {
 	for ( $pos = 0; $pos < count( $lines ); $pos += 7 ) {
 		$prod_id = $lines[ $pos ];
 //		print "<br/>" . $prod_id;
-		if ( is_numeric( $prod_id ) ) {
-//			print "int";
-			$product_name = get_product_name( $prod_id );
-		} else {
-//			print "str";
-			if ( strstr( $prod_id, ")" ) ) {
-				$prod_id      = substr( $prod_id, 0, strstr( $prod_id, ")" ) );
-				$product_name = substr( $prod_id, strstr( $prod_id, ")" ) );
+		if ($prod_id == -1)
+			$product_name = "הנחת סל";
+		else
+			if ( is_numeric( $prod_id ) ) {
+	//			print "int";
+				$product_name = get_product_name( $prod_id );
 			} else {
-				$product_name = $prod_id;
-				$prod_id      = 0;
+	//			print "str";
+				if ( strstr( $prod_id, ")" ) ) {
+					$prod_id      = substr( $prod_id, 0, strstr( $prod_id, ")" ) );
+					$product_name = substr( $prod_id, strstr( $prod_id, ")" ) );
+				} else {
+					$product_name = $prod_id;
+					$prod_id      = 0;
+				}
 			}
-		}
-
 		$quantity         = $lines[ $pos + 1 ];
 		$quantity_ordered = $lines[ $pos + 2 ];
 		$unit_ordered     = $lines[ $pos + 3 ];

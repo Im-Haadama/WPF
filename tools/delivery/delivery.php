@@ -46,7 +46,8 @@ class DeliveryFields {
 		buy_price = 14,
 		line_margin = 15,
 		packing_info = 16,
-		max_fields = 17;
+		line_type = 17,
+		max_fields = 18;
 }
 
 $delivery_fields_names = array(
@@ -66,7 +67,8 @@ $delivery_fields_names = array(
 	"ret",  // 13
 	"buy", //14
 	"mar", // 15
-	"pac" // 16
+	"pac", // 16,
+	"typ" // 17
 );
 
 $header_fields = array(
@@ -413,7 +415,6 @@ class delivery {
 		}
 
 		// All fields:
-
 		$show_fields[ DeliveryFields::product_name ]  = true;
 		$show_fields[ DeliveryFields::order_q ]       = true;
 		$show_fields[ DeliveryFields::order_q_units ] = true;
@@ -464,13 +465,6 @@ class delivery {
 		$data = "";
 
 		$client_id = $this->GetCustomerID();
-//		print "cid=" . $client_id . "<br/>";
-//		$client_type = customer_type( $client_id );
-//		 print $client_type . "XX<br/>";
-
-//		if ( $client_type > 0 ) {
-//			$data .= "תעריף " . sql_query_single_scalar( "SELECT type FROM im_client_types WHERE id = " . $client_type );
-//		}
 
 		$delivery_loaded = false;
 		$volume_line = false;
@@ -501,29 +495,31 @@ class delivery {
 				die ( "select error" );
 			}
 
-//			$in_basket = 0;
+			$in_basket = false;
 			while ( $row = mysqli_fetch_assoc( $result ) ) {
+				$line_style = $style;
 				if ( $row["product_name"] == "הנחת כמות" ) {
 					$volume_line = true;
 				}
 
 				// delivery_line( $document_type, $line_ids, $client_type, $operation, $margin = false, $style = null, $show_inventory = false );
+				$prod_id = $row["prod_id"];
 
-				$line = $this->delivery_line(  ImDocumentType::delivery, $row["id"], 0, $operation, $margin, $style, $show_inventory );
+				if (is_basket($prod_id))
+					$in_basket = true;
 
-//				if (substr($line[0], 0, 4) == "הנחת") $in_basket = 0;
-//
-//				if (substr($line[1], 0, 1) === "=")
-//					$in_basket = 1;
-//				else {
-//					if ($in_basket) // was a basket
-//						$data .= gui_row( $line, "bsk" . $this->line_number, $show_fields, $sums, $delivery_fields_names );
-//
-//					$in_basket = 0;
-//				}
+				if ($prod_id == -1)  // Discount line.
+				{
+					$in_basket = 0;
+					if ($row["line_price"] == 0) $line_style = "hidden ";
+				}
 
-				$data .= gui_row( $line, $this->line_number, $show_fields, $sums, $delivery_fields_names, $style );
+//				print $prod_id . " " . $in_basket . "<br/>";
 
+				$line = $this->delivery_line(  ImDocumentType::delivery, $row["id"], 0, $operation,
+					$margin, $line_style, $show_inventory, $in_basket && !is_basket($prod_id));
+
+				$data .= gui_row( $line, ++$this->line_number, $show_fields, $sums, $delivery_fields_names, $line_style );
 			}
 		} else {
 			// For group orders - first we get the needed products and then accomulate the quantities.
@@ -546,12 +542,21 @@ class delivery {
 				                  . ' order by 1';
 				$order_item_ids = sql_query_array_scalar( $items_sql );
 
-				// $data .= $this->delivery_line($show_fields, $prod_id, $quantity_ordered, "", $quantity_ordered, $price, $has_vat, $prod_id, $refund, $unit );
-				$line = $this->delivery_line( $document_type, $order_item_ids, 0, $operation, $margin, $style, $show_inventory );
-				$data .= gui_row( $line, $this->line_number, $show_fields, $sums, $delivery_fields_names, $style );
+				if ( is_basket($prod_id)){
+					$basket_header = array();
+					for ($i = 0; $i < DeliveryFields::max_fields; $i++)
+						$basket_header[$i] = "";
+					$basket_header[DeliveryFields::product_name] = get_product_name($prod_id);
+					$basket_header[DeliveryFields::order_q] = get_order_itemmeta( $order_item_ids, '_qty' );
+					$basket_header[DeliveryFields::price] = get_price($prod_id);
+					$basket_header[DeliveryFields::line_type] = "bsk";
+					$basket_header[DeliveryFields::product_id] = $prod_id;
 
-				// print "ex " . $expand_basket . " is " . is_basket($prod_id) . "<br/>";
-
+					$data .= gui_row($basket_header, ++$this->line_number, $show_fields, $sums, $delivery_fields_names, $style);
+				} else {
+					$line = $this->delivery_line( $document_type, $order_item_ids, 0, $operation, $margin, $style, $show_inventory );
+					$data .= gui_row( $line, ++$this->line_number, $show_fields, $sums, $delivery_fields_names, $style );
+				}
 				if ( $expand_basket && is_basket( $prod_id ) ) {
 					$quantity_ordered = get_order_itemmeta( $order_item_ids, '_qty' ); //, $client_type, $operation, $data );
 
@@ -595,7 +600,6 @@ class delivery {
 		}
 
 		if ( $operation != ImDocumentOperation::collect ) {
-
 			if ( ! $volume_line ) {
 				$delivery_line = $empty_array;
 				$data          .= gui_row( $delivery_line, "dis", $show_fields, $sums, $delivery_fields_names );
@@ -633,16 +637,8 @@ class delivery {
 		return "$data";
 	}
 
-//	private function GetCustomerID() {
-//		if ( is_array( $this->d_OrderID ) ) {
-//			return order_get_customer_id( $this->d_OrderID[0] );
-//		}
-//
-//		return order_get_customer_id( $this->d_OrderID );
-//	}
-
-	public function delivery_line( $document_type, $line_ids, $client_type, $operation, $margin = false, $style = null,
-		$show_inventory = false ) {
+	public function delivery_line( $document_type, $line_ids, $client_type, $operation, $margin = false, &$style = null,
+		$show_inventory = false, $in_basket = false ) {
 
 		global $global_vat;
 
@@ -732,7 +728,7 @@ class delivery {
 
 			$prod_id          = $row[0];
 			$P                = new Product( $prod_id );
-			$prod_name        = $row[1];
+			$prod_name        = ($in_basket ? "===>" : "" ) . $row[1];
 			$quantity_ordered = $row[2];
 			$unit_q           = $row[3];
 //			if ( $unit_q > 0 and $quantity_ordered == 0 ) {
@@ -743,7 +739,7 @@ class delivery {
 			$delivery_line      = $row[6];
 			$has_vat            = $row[7];
 
-			if ( $quantity_delivered < ( 0.8 * $quantity_ordered ) or ( $unit_q > 0 and $quantity_delivered == 0 ) ) {
+			if ( ($quantity_delivered < ( 0.8 * $quantity_ordered ) or ( $unit_q > 0 and $quantity_delivered == 0 )) and ! is_basket($prod_id) ) {
 				$line_color = "yellow";
 			}
 		}
@@ -794,7 +790,8 @@ class delivery {
 					case ImDocumentOperation::edit:
 					case ImDocumentOperation::create:
 
-						$line[ DeliveryFields::delivery_q ] = gui_input( "quantity" . $this->line_number,
+						if (! is_basket($prod_id))
+							$line[ DeliveryFields::delivery_q ] = gui_input( "quantity" . $this->line_number,
 							( $quantity_delivered > 0 ) ? $quantity_delivered : "",
 							array( 'onkeypress="moveNextRow(' . $this->line_number . ')"' ), null, null, 5 );
 						break;
@@ -856,7 +853,6 @@ class delivery {
 			$this->margin_total                  += $line[ DeliveryFields::line_margin ];
 		}
 
-		$this->line_number = $this->line_number + 1;
 		$sums = null;
 		if ( $line_color )
 			$style .= 'bgcolor="' . $line_color . '"';
@@ -882,10 +878,18 @@ class delivery {
 			// " אספקות:" . ;
 		}
 
+		$line[DeliveryFields::line_type] = Delivery::line_type($prod_id);
+
 		// return gui_row( $line, $this->line_number, $show_fields, $sums, $delivery_fields_names, $style );
 		return $line;
 	}
 
+	private static function line_type($prod_id)
+	{
+		if ($prod_id == -1) return "dis";
+		if (is_basket($prod_id)) return "bsk";
+		return "prd";
+	}
 	function OrderQuery() {
 		if ( is_array( $this->order_id ) ) {
 			return "order_id in (" . comma_implode( $this->order_id ) . ")";
@@ -905,15 +909,9 @@ class delivery {
 			$P        = new Product( $prod_id );
 			$quantity = $row2["quantity"];
 			if ( is_basket( $prod_id ) ) {
-//				$this->expand_basket( $prod_id, $client_type, $quantity_ordered * $quantity, $data, $level + 1 );
-				$this->expand_basket( $prod_id, $quantity_ordered * $quantity, $level + 1, $show_fields, $document_type, $line_id, $client_type, $edit, $data );
-
+				$this->expand_basket( $prod_id, $quantity_ordered * $quantity, $level + 1, $show_fields,
+					$document_type, $line_id, $client_type, $edit, $data );
 			} else {
-				// $price = $this->item_price( $client_type, $prod_id, 0, 0 );
-				//                        print "prod_id = " . $prod_id . "price = " . $price . "<br/>";
-				//				$data         .= $this->delivery_line( $prod_id, $quantity_ordered * $quantity, "", 0,
-//					$price, round( $price * get_vat_percent( $prod_id ), 2 ), $prod_id, false, "" );
-
 				$line = array();
 				for ( $i = 0; $i <= DeliveryFields::max_fields; $i ++ ) {
 					$line[ $i ] = "";
@@ -923,9 +921,7 @@ class delivery {
 				$line[ DeliveryFields::price ]        = get_price_by_type( $prod_id, $client_type );
 				$has_vat                              = true;
 
-//				if ($P-> == 149) var_dump($P);
-				if ( ! $P->getVatPercent() ) { // get_vat_percent( $prod_id ) == 0 ) {
-//					print "has vat false<br/>";
+				if ( ! $P->getVatPercent() ) {
 					$has_vat = false;
 				}
 				$line[ DeliveryFields::product_id ] = $prod_id;
@@ -933,12 +929,9 @@ class delivery {
 				$line[ DeliveryFields::order_q ]    = $quantity_ordered;
 				$line[ DeliveryFields::delivery_q ] = gui_input( "quantity" . $this->line_number, "",
 					array( 'onkeypress="moveNextRow(' . $this->line_number . ')"' ) );
-				// $line[ DeliveryFields::line_vat]
 
 				$this->line_number = $this->line_number + 1;
 				$data              .= gui_row( $line, $this->line_number, $show_fields, $sums, $delivery_fields_names );
-
-				// $data .=- $this->delivery_line( $show_fields, $document_type, $line_id, $client_type, $edit );
 			}
 		}
 		if ( $level == 0 ) {
@@ -946,15 +939,14 @@ class delivery {
 			for ( $i = 0; $i <= DeliveryFields::max_fields; $i ++ ) {
 				$line[ $i ] = "";
 			}
+			$line[0] = "dis"; // Discount line
 			$line[ DeliveryFields::product_name ] = gui_label( "ba", "הנחת סל" );
-			// $line[DeliveryFields::has_vat] = gui_checkbox("", )
+			$line [DeliveryFields::product_id] = -1;
+			$line[DeliveryFields::line_type] = "dis";
+			$line[DeliveryFields::price] = 0;
 			$sums              = null;
-			$data              .= gui_row( $line, "bsk" . $this->line_number, $show_fields, $sums, $delivery_fields_names );
+			$data              .= gui_row( $line, "dis" . $this->line_number, $show_fields, $sums, $delivery_fields_names );
 			$this->line_number = $this->line_number + 1;
-
-
-//			$data .= "<tr><td id='bsk_dis". $this->line_number .
-//			         "'>הנחת סל</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>";
 		}
 	}
 

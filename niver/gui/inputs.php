@@ -679,7 +679,7 @@ function GuiSelectTable($id, $table, $args)
 	$selected = GetArg($args, "seelected", null);
 	$events = GetArg($args, "events", null);
 	$more_values = GetArg($args, "more_values", null);
-	$name = GetArg($args, "name", null);
+	$name = GetArg($args, "name", "name");
 	$where = GetArg($args, "where", null);
 	$include_id = GetArg($args, "include_id", false);
 	$datalist = GetArg($args, "datalist", false);
@@ -707,11 +707,8 @@ function GuiSelectTable($id, $table, $args)
 //			$data .= $value[1] . "</option>";
 		}
 	}
-	if ( $name == null ) {
-		$name = "name";
-	}
 
-	$sql = "SELECT distinct " . $id_key . ", " . $name;
+	$sql = "SELECT distinct " . $id_key . ", " . sprintf($name, $id_key);
 	if ( $order_by ) {
 		$sql .= ", " . $order_by;
 	}

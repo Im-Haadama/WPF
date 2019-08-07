@@ -269,7 +269,7 @@ function show_active_tasks($debug = false, $time = false)
 
 	$sum     = null;
 //
-	$query   = "where status in (0, 1) and (isnull(preq) or task_status(preq) >= 2) and date <= Curdate()";
+	$query   = "where status in (0, 1) and (isnull(preq) or task_status(preq) >= 2) and date(date) <= Curdate()";
 	if ($time) $query .= " and task_active_time(id)";
 
 	$query .= " and owner = " . $user_id;
@@ -299,7 +299,7 @@ function show_active_tasks($debug = false, $time = false)
        priority as עדיפות, preq as `משימה קודמת` $more_fields from $table_name $query $order";
 
 	if ($debug)
-		print $sql;
+		print "<br/>" . $sql . "<br/>";
 
 	print GuiTableContent( $table_name, $sql, $args );
 

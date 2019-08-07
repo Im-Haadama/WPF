@@ -363,7 +363,7 @@ function gui_select_task( $id, $value, $args ) {
 	              "where"=>"where " . $query,
 	              "include_id" => 1,
 	              "datalist"=>1);
-	return gui_select_table($id, "im_tasklist", $args);
+	return GUiSelectTable($id, "im_tasklist", $args);
 
 }
 

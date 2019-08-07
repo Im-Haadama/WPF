@@ -19,9 +19,12 @@ $supplier_id = get_param("supplier_id");
     <script>
         function moveNext(prod_id) {
             if (window.event.keyCode !== 13) return;
-            var row = document.getElementById("inv_" + prod_id).parentElement.parentElement.rowIndex;
-            var next = document.getElementById("ordered_items").rows[row + 1].cells[4];
-            if (next) next.firstElementChild.focus();
+            let this_row = window.event.currentTarget.parentElement.parentElement;
+            if (this_row.nextElementSibling) // have next row
+                this_row.nextElementSibling.cells[4].focus();
+            // var row = document.getElementById("inv_" + prod_id).parentElement.parentElement.rowIndex;
+            // var next = document.getElementById("ordered_items").rows[row + 1].cells[4];
+            // if (next) next.firstElementChild.focus();
         }
         function change_inv(prod_id) {
 

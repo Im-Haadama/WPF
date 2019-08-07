@@ -166,7 +166,7 @@ tr:nth-child(even) {
 			print "אין מוצרים רלוונטים לספק " . get_supplier_name($supplier_id);
 			return;
 		}
-		get_total_orders_supplier( $supplier_id, $supplier_needed[ $supplier_id ], $filter_zero, $filter_stock, $history );
+		print get_total_orders_supplier( $supplier_id, $supplier_needed[ $supplier_id ], $filter_zero, $filter_stock, $history );
 
 		print gui_button( "btn_supplier_" . $supplier_id, "createSupply(" . $supplier_id . ")", "צור הספקה" );
 
@@ -175,7 +175,7 @@ tr:nth-child(even) {
 
 	if ($supplier_needed["missing"]) {
 //		var_dump($supplier_needed["missing"]);
-		get_total_orders_supplier( $supplier_id, $supplier_needed["missing" ], $filter_zero, $filter_stock, $history );
+		print get_total_orders_supplier( $supplier_id, $supplier_needed["missing" ], $filter_zero, $filter_stock, $history );
 
 	}
 	$sql = "SELECT id, supplier_priority FROM im_suppliers WHERE id IN (" . comma_implode( $suppliers ) . ")" .
@@ -186,7 +186,7 @@ tr:nth-child(even) {
 
 	while ( $row = sql_fetch_row( $result ) ) {
 		$supplier_id = $row[0];
-		get_total_orders_supplier( $supplier_id, $supplier_needed[ $supplier_id ], $filter_zero, $filter_stock, $history );
+		print get_total_orders_supplier( $supplier_id, $supplier_needed[ $supplier_id ], $filter_zero, $filter_stock, $history );
 
 		print gui_button( "btn_supplier_" . $supplier_id, "createSupply(" . $supplier_id . ")", "צור הספקה" );
 //		$time = debug_time("after supplier", $time);
@@ -194,9 +194,9 @@ tr:nth-child(even) {
 	}
 }
 
-function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero, $filter_stock, $history ) {
-//	$time = debug_time("start supplier", 0);
-
+function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero, $filter_stock, $history )
+{
+	$result = "";
 	$inventory_managed = info_get( "inventory" );
 
 	$data_lines = array();
@@ -207,89 +207,63 @@ function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero
 			continue;
 		}
 
+		$row = array();
+
 		if ( $filter_stock and $P->getStockManaged() and $P->getStock() > $quantity_array[0] ) {
 			continue;
 		}
-		//   $line = table_line($key, $filter_zero);
 
-		// $supplied_q = supply_quantity_ordered( $prod_id );
-
-		$line = "<tr>";
 		if ($P->isDraft()){
-			$line .= "<td>טיוטא</td>";
+			$row[] = "טיוטא";
 		} else {
-			$line .= "<td><input id=\"chk" . $prod_id . '_' . $supplier_id . "\" class=\"product_checkbox" . $supplier_id . "\" type=\"checkbox\"></td>";
+			$row[] = gui_checkbox("chk" . $prod_id. '_' . $supplier_id, "product_checkbox". $supplier_id);
 		}
-		$line .= "<td> " . get_product_name( $prod_id ) .
-		         "</td><td><a href = \"";
+		$row[] = get_product_name($prod_id);
+		$row[] = gui_hyperlink(isset( $quantity_array[0] ) ? round( $quantity_array[0], 1 ) : 0,
+			"get-orders-per-item.php?prod_id=" . $prod_id . ($history ? "&history" : ""));
 
-		$line .= "get-orders-per-item.php?prod_id=" . $prod_id;
-
-		if ( $history ) {
-			$line .= "&history";
-		}
-
-		if ( isset( $quantity_array[0] ) ) {
-			$q = round( $quantity_array[0], 1 );
-		} else {
-			$q = 0;
-		}
-		$line .= "\">" . $q . "</a></td>";
-		if ( isset( $quantity_array[1] ) ) {
-			$line .= "<td>" . $quantity_array[1] . "</td>";
-		} else {
-			$line .= "<td></td>";
-		}
+	// Units. disabbled for now.
+	//		if ( isset( $quantity_array[1] ) ) {
+//			$line .= "<td>" . $quantity_array[1] . "</td>";
+//		} else {
+//			$line .= "<td></td>";
+//		}
 		$quantity = isset( $quantity_array[0] ) ? $quantity_array[0] : 0;
 
 		$p     = new Product( $prod_id );
 		$q_inv = $p->getStock();
 
 		if ( $inventory_managed ) {
-			$line .= gui_cell( gui_input( "inv_" . $prod_id, $q_inv, array(
+			$row[] = gui_cell( gui_input( "inv_" . $prod_id, $q_inv, array(
 				"onchange=\"change_inv(" . $prod_id . ")\"",
 				"onkeyup=\"moveNext(" . $prod_id . ")\""
 			) ) );
 
 			$numeric_quantity = ceil( $quantity - $q_inv );
 
-		$line .= gui_cell( gui_input( "qua_" . $prod_id, $numeric_quantity,
-			"onchange=\"line_selected('" . $prod_id . '_' . $supplier_id . "')\"" ));
+			$row[] = gui_cell( gui_input( "qua_" . $prod_id, $numeric_quantity,
+				"onchange=\"line_selected('" . $prod_id . '_' . $supplier_id . "')\"" ) );
+		}
 
-		$this_supplier = false;
 		$alternatives  = alternatives( $prod_id );
 		$suppliers     = array( array( "id" => 0, "option" => "בחר" ) );
 		foreach ( $alternatives as $alter ) {
 			$option = $alter->getSupplierName() . " " . $alter->getPrice();
-			// if ($prod_id == 1002){ print $option; } // print $alter->getId() . " " . $alter->getSupplierName(); print "<br/>";}
 
 			array_push( $suppliers, array( "id" => $alter->getSupplierId(), "option" => $option ) );
-
-			if ( $alter->getSupplierId() == $supplier_id ) {
-				$this_supplier = true;
-			}
 		}
-
-//		if ( ! $this_supplier )
-//			continue;
 
 		// if ($prod_id == 1002) {print "XX"; var_dump($suppliers); }
 		$supplier_name = gui_select( "sup_" . $prod_id, "option", $suppliers, "onchange=selectSupplier(this)", "" );
-//		}
 
-		$line .= "<td>" . $supplier_name . "</td>";
+		$row[] = $supplier_name;
 
-		$line .= gui_cell( orders_per_item( $prod_id, 1, true, true, true ) );
-
-		$line .= "</tr>";
-		}
+		$row [] = gui_cell( orders_per_item( $prod_id, 1, true, true, true ) );
 
 		//print "loop5: " .  microtime() . "<br/>";
 		if ( ! $filter_zero or ( $numeric_quantity > 0 ) ) {
-			array_push( $data_lines, array( get_product_name( $prod_id ), $line ) );
+			array_push( $data_lines, array( get_product_name( $prod_id ), $row ) );
 		}
-		// $time = debug_time("end product" . $prod_id, $time);
-
 	}
 
 	if ( count( $data_lines ) ) {
@@ -297,54 +271,40 @@ function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero
 			$supplier_name = get_supplier_name( $supplier_id );
 		else $supplier_name = "מוצרים לא זמינים";
 
-		$data = gui_header( 2, $supplier_name );
+		$result .= gui_header( 2, $supplier_name );
 
-		$data .= "<table>"; // This tags change to tbody somehow.
-		$data .= "<tr>";
-		$data .= "<td>בחר</td>";
-		$data .= "<td>פריט</td>";
-		$data .= "<td>כמות נדרשת</td>";
-		$data .= "<td>יחידות נוספות</td>";
-//	$data .= "<td>כמות אספקות</td>";
+		$header = array("בחר", "פריט", "כמות נדרשת", "יחידות נוספות");
+
 		if ( $inventory_managed ) {
-			$data .= "<td>כמות במלאי</td>";
-			$data .= "<td>כמות להזמין</td>";
-			$data .= "<td>ספק</td>";
-			$data .= "<td>לקוחות</td>";
+			array_push($header, "כמות במלאי");
+			array_push($header, "כמות להזמיןי");
+			array_push($header, "ספק");
+			array_push($header, "לקוחות");
 		}
-//	$data .= "<td>מחיר ללקוח</td>";
-//	if ( MultiSite::LocalSiteID() == 1 ) {
-//		$data .= "<td>מחיר קניה</td>";
-//		$data .= "<td>סהכ מרווח</td>";
-//	}
-		$data .= "</tr>";
+		$table_rows = array();
 
-		// print "sort: " . date( "h:i:sa" ) . "<br/>";
+		array_push($table_rows, $header);
 
 		sort( $data_lines );
 
-		for ( $i = 0; $i < count( $data_lines ); $i ++ ) {
-			$line = $data_lines[ $i ][1];
-			$data .= trim( $line );
-		}
-
-		$data = str_replace( "\r", "", $data );
-
-		if ( $data == "" ) {
-			$data = "\n(0) Records Found!\n";
-		}
 		global $total_buy;
 		global $total_sale;
-		$data .= gui_table_args( array( array( "", 'סה"כ', "", "", "", "", "", $total_buy, $total_sale ) ) );
 
-		$data .= "</table>";
+		$table_rows = array( array( "", 'סה"כ', "", "", "", "", "", $total_buy, $total_sale ));
+		for ( $i = 0; $i < count( $data_lines ); $i ++ ) {
+			array_push($table_rows, $data_lines[ $i ][1]);
+		}
+
+		$result .= gui_table_args(  $table_rows );
+
+		$result .= gui_table_args($rows, "needed_" . $supplier_id);
 
 		if (! $supplier_id) {
-			$data .= "יש להפוך לטיוטא רק לאחר שמוצר אזל מהמלאי והוצע ללקוחות תחליף<br/>";
-			$data .= gui_button("btn_draft_products", "draft_products()", "הפוך לטיוטא");
+			$result .= "יש להפוך לטיוטא רק לאחר שמוצר אזל מהמלאי והוצע ללקוחות תחליף<br/>";
+			$result .= gui_button("btn_draft_products", "draft_products()", "הפוך לטיוטא");
 		}
-		print "$data";
 	}
+	return $result;
 }
 
 

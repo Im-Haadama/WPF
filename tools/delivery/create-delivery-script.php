@@ -20,6 +20,7 @@ print gui_datalist( "draft_items", "im_products_draft", "post_title", true );
 ?>
 
 <script>
+    const line_select_id = <?php print DeliveryFields::line_select; ?>;
     const product_name_id = <?php print DeliveryFields::product_name; ?>;
     const q_quantity_ordered_id = <?php print DeliveryFields::order_q; ?>;
     const q_units = <?php print DeliveryFields::order_q_units; ?>;
@@ -31,6 +32,7 @@ print gui_datalist( "draft_items", "im_products_draft", "post_title", true );
     const term_id = <?php print DeliveryFields::term; ?>;
     const q_refund_id = <?php print DeliveryFields::refund_q ?>;
     const refund_total_id = <?php print DeliveryFields::refund_line; ?>;
+    const line_type_id = <? print DeliveryFields::line_type; ?>;
 
     function getPrice(my_row) {
         var product_info = get_value(document.getElementById("nam_" + my_row));
@@ -66,17 +68,21 @@ print gui_datalist( "draft_items", "im_products_draft", "post_title", true );
     }
 
     function moveNextRow(my_row) {
-        if (event.which == 13) {
+        if (event.which === 13) {
             var current = document.getElementsByName("quantity" + (my_row));
             current[0].value = Math.round(current[0].value * 10) / 10;
-            var objs = document.getElementsByName("quantity" + (my_row + 1));
             calcDelivery();
-            if (objs[0]) {
-                objs[0].focus();
-            } else {
-                var del = document.getElementById("delivery");
-                if (del) del.focus();
+            var i;
+            for (i = my_row + 1; i < document.getElementById("del_table").rows.length; i++) {
+                var next = document.getElementById("quantity" + i);
+                if (next) {
+                    next.focus();
+                    return;
+                }
             }
+
+            var del = document.getElementById("delivery");
+            if (del) del.focus();
         }
     }
 
@@ -111,6 +117,9 @@ print gui_datalist( "draft_items", "im_products_draft", "post_title", true );
         row.insertCell(-1).innerHTML = "<input id=\"hvt_" + line_id + "\"  type = \"checkbox\" checked>"; // 6 - has vat
         row.insertCell(-1).id = "lvt_" + line_id;                       // 7 - line vat
         row.insertCell(-1).id = "del_" + line_id;   // 8 - total_line
+        row.insertCell(-1).id = "pac_" + line_id; // 9 - packing info
+        row.insertCell(-1).innerHTML = "<input id=\"typ_" + line_id + "\" type=\"text\" value=\"prd\">";   // 10 - line type
+
 
         calcDelivery();
 //        row.insertCell(9).style.visibility = false;              // 9 - categ
@@ -250,6 +259,8 @@ print gui_datalist( "draft_items", "im_products_draft", "post_title", true );
                         prfx = table.rows[i].cells[0].firstElementChild.id.substr(4);
                     var prod_id;
                     var prod_name;
+                    let line_type = get_line_type(i);
+
                     //if (parseInt(prfx) > 0) { // Regular line
                     prod_id = get_value(document.getElementById("pid_" + prfx));
                     prod_name = get_value(document.getElementById("nam_" + prfx));
@@ -264,9 +275,9 @@ print gui_datalist( "draft_items", "im_products_draft", "post_title", true );
                         prod_id = prod_name.substr(0, prod_name.indexOf(")"));
                         prod_name = prod_name.substr(prod_name.indexOf(")"));
                     }
-                    if (!(prod_id > 0)) prod_id = 0; // New or unknown
+                    if ((prod_id != -1) && !(prod_id > 0)) prod_id = 0; // New or unknown
 
-                    if (prod_name.length > 1) prod_name = prod_name.replace(/['"()%,]/g, "").substr(0, 20);
+                    if (prod_name.length > 1) prod_name = prod_name.replace(/['"()%,]/g, "").substr(0, 40);
 
                     var quantity = get_value(document.getElementById("deq_" + prfx));
                     if (quantity === "") quantity = 0;
@@ -293,8 +304,8 @@ print gui_datalist( "draft_items", "im_products_draft", "post_title", true );
 //                        line_total = get_value(table.rows[i].cells[line_total_id].firstChild);
 //                    }
 
-                    if (prod_id > 0 || line_total > 0 || line_total < 0) {
-                        if ((prod_id > 0) && (prod_name.substr(0, 1) !== "=")) // The second is for basket lines.
+                    if (prod_id === -1 || prod_id > 0 || line_total > 0 || line_total < 0 || line_type === "bsk" || line_type === "dis") { // Line to be saved.
+                        if (prod_id > 0 || prod_id == -1) // -1 is basket discount.
                             push(line_args, prod_id);
                         else
                             push(line_args, encodeURIComponent(prod_name));
@@ -383,27 +394,39 @@ print gui_datalist( "draft_items", "im_products_draft", "post_title", true );
         var lines = table.rows.length;
         var quantity_discount = 0;
         var due_vat = 0;
-        var delivery_fee = 0;
-        var in_basket = false;
+        var basket_sum = 0, basket_price = 0;
 
         for (var i = 1; i < lines; i++)  // Skip the header. Skip last lines: total, vat, total-vat, discount
         {
-            var was_in_basket = in_basket;
-            var prod_name = get_value(table.rows[i].cells[1]);
-            in_basket = (prod_name.substr(0, 3) === "===");
+//            var line_id = table.rows[i].cells[0].id.substr(4);
+            let line_type = get_line_type(i);
+            if (! table.rows[i].cells.length) continue; // Skip empty line
 
+            switch (line_type)
+            {
+                case "bsk": // Start of basket;
+                    basket_sum = 0;
+                    basket_price = Number(get_value(document.getElementById("orq_" + i))) * Number(get_value(document.getElementById("prc_" + i)));
+                    break;
+                case "dis":  // End of basket.
+                    diff = Math.round(100 * (basket_price - basket_sum), 2) / 100;
+                    if (diff < 0) {
+                        table.rows[i].cells[q_supply_id].innerHTML = 1;
+                        table.rows[i].cells[line_total_id].innerHTML = diff;
+                        table.rows[i].cells[price_id].innerHTML = diff;
+                        table.rows[i].cells[line_vat_id].innerHTML = 0;
+                        table.rows[i].hidden = false;
+                    } else {
+                        table.rows[i].hidden = true;
+                        table.rows[i].cells[price_id].innerHTML = 0;
+                    }
+                    total += diff;
+                    break;
+                default:
+            }
             // if (table.rows[i].cells[0].id.substr(4, 3) == "bsk" || get_value(table.rows[i].cells[1]) == "הנחת סל") {
-            if (was_in_basket && !in_basket){
+            if (0){
                 // Sum upper lines and compare to basket price
-                var j = i - 1;
-                var sum = 0;
-                // while (table.rows[j].cells[product_name_id].innerHTML.substr(0, 3) == "===") {
-                while (get_value(document.getElementById("nam_" + j)).substr(0, 3) == "===") {
-                    // alert(table.rows[j].cells[product_name_id].innerHTML);
-                    sum = sum + Number(document.getElementById("del_" + j).innerHTML);
-                    j = j - 1;
-                }
-                var basket_total = Number(get_value(document.getElementById("orq_" + j))) * Number(get_value(document.getElementById("prc_" + j)));
                 if (sum > basket_total) {
                     if (table.rows[i].cells[0].id.substr(4, 3) !== "bsk"){
                         table.insertRow(i);
@@ -424,10 +447,15 @@ print gui_datalist( "draft_items", "im_products_draft", "post_title", true );
 
                 continue;
             }
-            if (table.rows[i].cells[product_name_id].innerHTML == "סה\"כ חייבי מע\"מ") break;
-            if (table.rows[i].cells[product_name_id].innerHTML == "" ||
-                table.rows[i].cells[product_name_id].innerHTML == "הנחת כמות" ||
-                table.rows[i].cells[product_name_id].innerHTML == "הנחת עובד") continue; // Reserved line for discount
+            if (table.rows[i].cells[product_name_id].innerHTML === "סה\"כ חייבי מע\"מ") break;
+            if (table.rows[i].cells[product_name_id].innerHTML === "" ||
+                table.rows[i].cells[product_name_id].innerHTML === "הנחת כמות" ||
+                table.rows[i].cells[product_name_id].innerHTML === "הנחת עובד") continue;  // Reserved line for discount
+
+            if (table.rows[i].cells[line_select_id].innerHTML === "basket") {
+                in_basket = true;
+                continue;
+            }
 
             var q = 0;
             var p = 0;
@@ -454,6 +482,7 @@ print gui_datalist( "draft_items", "im_products_draft", "post_title", true );
             has_vat = get_value_by_name("hvt_" + prfx);
             if (has_vat) line_vat = Math.round(100 * p * q / (100 + vat_percent) * vat_percent) / 100;
             line_total = Math.round(p * q * 100) / 100;
+            basket_sum += line_total;
             document.getElementById("del_" + prfx).innerHTML = line_total.toString();
             document.getElementById("lvt_" + prfx).innerHTML = line_vat.toString();
 
@@ -533,6 +562,16 @@ print gui_datalist( "draft_items", "im_products_draft", "post_title", true );
         document.getElementById("del_vat").innerHTML = Math.round(total_vat * 100) / 100;
         // Total
         document.getElementById("del_tot").innerHTML = total;
+    }
+
+    function get_line_type(i)
+    {
+        let type = "prd";
+
+        if (document.getElementById("typ_" + i))
+            type = get_value_by_name("typ_" + i).substr(0, 3);
+
+        return type;
     }
 </script>
 <style>

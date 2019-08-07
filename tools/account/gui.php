@@ -57,7 +57,7 @@ function gui_select_client( $id, $value, $args = null ) {
 	// print $sql_where;
 //	$id, $table, $selected = null, $events = null, $more_values = null, $name = null, $where = null,
 //	$include_id = false, $datalist = false, $order_by = null, $id_key = null;
-	$args = array("name" => "display_name(%s)", "include_id" => 1, "where"=> $sql_where, "events" => $events, "value"=>$value, "datalist" => 1);
+	$args = array("name" => "client_displayname(%s)", "include_id" => 1, "where"=> $sql_where, "events" => $events, "value"=>$value, "datalist" => 1);
 	return GuiSelectTable( $id, "wp_users", $args);
 	// $value, $events, "", "display_name",$sql_where, true, true );
 }
