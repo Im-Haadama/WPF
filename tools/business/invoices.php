@@ -207,32 +207,8 @@ print "<br>";
 
 <?php
 
-function debug_time2( $str ) {
-	$micro_date = microtime();
-	$date_array = explode( " ", $micro_date );
-	$date       = date( "Y-m-d H:i:s", $date_array[1] );
-	echo "$str $date:" . $date_array[0] . "<br>";
-}
-
-function debug_time1( $str ) {
-	static $prev_time;
-	if ( $str == "reset" ) {
-		$prev_time = microtime();
-
-		return;
-	}
-	$now         = microtime();
-	$micro_delta = $now - $prev_time;
-	$date_array  = explode( " ", $micro_delta );
-	$date        = date( "s", $date_array[1] );
-	if ( $micro_delta > 0.05 ) {
-		my_log( "$str $date:" . $date_array[0] . "<br>", "performance" );
-	}
-	$prev_time = $now;
-}
-
 function invoices_table( $statuses, $week = null ) {
-	debug_time1( "start" );
+	debug_time_log( "start" );
 
 	global $order_header_fields;
 	global $conn;
@@ -254,7 +230,7 @@ function invoices_table( $statuses, $week = null ) {
 	if ( ! is_array( $statuses ) ) {
 		$statuses = array( $statuses );
 	}
-	debug_time1( "1" );
+	debug_time_log( "1" );
 
 	foreach ( $statuses as $status ) {
 		// print $status . "<br/>";
@@ -322,9 +298,9 @@ function invoices_table( $statuses, $week = null ) {
 
 		$invoice = new Invoice4u( $invoice_user, $invoice_password );
 
-		debug_time1( "before loop" );
+		debug_time_log( "before loop" );
 		while ( $row = mysqli_fetch_row( $result ) ) {
-			debug_time1( "after fetch" );
+			debug_time_log( "after fetch" );
 			$count ++;
 			$order_id = $row[0];
 			$order    = new Order( $order_id );
@@ -338,7 +314,7 @@ function invoices_table( $statuses, $week = null ) {
 				$line [ OrderFields::line_select ] = gui_hyperlink( "לקוח חדש", "../account/new-customer.php?order_id=" . $order_id );
 			}
 
-			debug_time1( "a1" );
+			debug_time_log( "a1" );
 			$line[ OrderFields::type ] = order_get_shipping( $order_id );
 
 			// display order_id with link to display it.
@@ -357,7 +333,7 @@ function invoices_table( $statuses, $week = null ) {
 			$line[ OrderFields::recipient ] = get_postmeta_field( $order_id, '_shipping_first_name' ) . ' ' .
 			                                  get_postmeta_field( $order_id, '_shipping_last_name' );
 
-			debug_time1( "middle" );
+			debug_time_log( "middle" );
 
 			// 3) Order total
 			if ( $show_fields[ OrderFields::total_order ] ) {
@@ -365,7 +341,7 @@ function invoices_table( $statuses, $week = null ) {
 				// get_postmeta_field( $order_id, '_order_total' );
 				$line[ OrderFields::total_order ] = $order_total;
 				$total_order_total                += $order_total;
-				debug_time1( "total" );
+				debug_time_log( "total" );
 
 			}
 
@@ -403,16 +379,16 @@ function invoices_table( $statuses, $week = null ) {
 			$line[ OrderFields::delivery_fee ] = $total_delivery_fee; //
 
 			array_push( $rows, $line );
-			debug_time1( "loop end" );
+			debug_time_log( "loop end" );
 		}
 
 		//   $data .= "<tr> " . trim($line) . "</tr>";
 
-		debug_time1( "before sort" );
+		debug_time_log( "before sort" );
 
 		// sort( $lines );
 
-		debug_time1( "2" );
+		debug_time_log( "2" );
 
 //		$data .= gui_row( array( "", "", 'סה"כ', "", "", "", $total_order_total, "", "", "", "" ) );
 		//$data = str_replace( "\r", "", $data );
@@ -444,7 +420,7 @@ function invoices_table( $statuses, $week = null ) {
 		}
 	}
 
-	debug_time1( "end" );
+	debug_time_log( "end" );
 
 	return $all_tables;
 }

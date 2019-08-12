@@ -23,6 +23,10 @@ function save_new(table_name)
 {
     var operation = "/tools/admin/data.php?table_name=" + table_name + "&operation=new";
     var table = document.getElementById(table_name);
+    if (! table || ! table.rows){
+        alert("rows of table " + table_name + " not found");
+        return false;
+    }
     var size = table.rows.length;
     for (var i = 0; i < size; i++){
         var name = table.rows[i].cells[1].innerText;

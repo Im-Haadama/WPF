@@ -105,8 +105,10 @@ print "<br/>";
             if (xmlhttp.readyState === 4 && xmlhttp.status === 200)  // Request finished
             {
                 document.getElementById("invoice_client_id").innerHTML = xmlhttp.response;
-                if (get_value_by_name("invoice_client_id").length > 1)
+                if (get_value_by_name("invoice_client_id").length > 1){
+                    alert ("עדכון הצליח");
                     location.reload();
+                }
 //                add_message(xmlhttp.response);
             }
         }

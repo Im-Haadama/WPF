@@ -167,7 +167,7 @@ function show_trans( $customer_id, $view = eTransview::default ) {
 			$value = "בחר";
 		} else {
 			if ($data1[$id][3] == "משלוח" and ! $data1[$id][6]){ // Just unpaid deliveries
-				$value =  gui_checkbox("chk" . $row_id, "trans_checkbox", false, "onchange=update_sum()");
+				$value =  gui_checkbox("chk_" . $row_id, "trans_checkbox", false, "onchange=update_sum()");
 			}
 		}
 		array_unshift($data1[$id], $value);

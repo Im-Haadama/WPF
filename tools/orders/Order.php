@@ -161,6 +161,7 @@ class Order {
 				// print  "<br/>" . get_product_name( $product_id ) . " " . $q . " ";
 				$product = wc_get_product( $product_id );
 				if ( $product ) {
+					sql_query("delete from im_need_orders where id = " . $this->order_id);
 					//print "type: " . $customer_type . "<br/>";
 					$price = get_price_by_type( $product_id, $customer_type, $quantity );
 					// print "price: " . $price . "<br/>";
@@ -241,6 +242,7 @@ class Order {
 		global $conn;
 		if ( ! $user_id ) {
 			if ( check_cache_validity() ) {
+				print "cache valid<br/>";
 				$needed_products = array();
 
 				$sql = " SELECT prod_id, need_q, need_u, prod_get_name(prod_id) FROM im_need ORDER BY 4 ";
@@ -835,7 +837,9 @@ class Order {
 			print $line;
 			print wc_delete_order_item( $line );
 		}
-
+		$sql = "delete from im_need_orders where order_id = " . $this->order_id;
+//		print $sql;
+		sql_query( $sql);
 	}
 
 	function PrintHtml( $selectable = false ) {

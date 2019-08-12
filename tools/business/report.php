@@ -63,8 +63,10 @@ function print_weekly_report( $week ) {
 		FROM im_business_info WHERE " .
 	       " is_active = 1 AND week = '" . $week . "' AND amount > 0 ORDER BY 1";
 
-	$sums_in = array( 0, 0, array( 0, sum_numbers ), array( 0, sum_numbers ), 0 );
-	$inputs  = table_content( "table", $sql, true, true, array( "../delivery/get-delivery.php?id=%s" ), $sums_in );
+	$sums_in = array( "סה\"כ", "", array( 0, 'sum_numbers' ), array( 0, 'sum_numbers' ), "" );
+	$in_args = array("links" => array("id" => "../delivery/get-delivery.php?id=%s"), "sum_fields" => &$sums_in,
+		"id_field" => "תעודת משלוח");
+	$inputs = GuiTableContent("table", $sql, $in_args);
 
 	$sql = "SELECT supply_from_business(id) as 'אספקה', id, ref as 'תעודת משלוח', date as תאריך, amount AS סכום, " .
 	       "supplier_from_business(id) AS ספק, pay_date as 'תאריך תשלום' " .
@@ -73,11 +75,13 @@ function print_weekly_report( $week ) {
 	       " and document_type = 5 " .
 	       " ORDER BY 3 DESC";
 
-	$sums_supplies = array( "", "", "", "", array( 0, sum_numbers ), "", "" );
-	$outputs       = table_content( "table", $sql, true, true,
-		array( "../supplies/supply-get.php?id=%s" ), $sums_supplies );
+	$sums_supplies = array( "", "", "", "", array( 0, 'sum_numbers' ), "", "" );
+	$supplies_args = array("links" => array("../supplies/supply-get.php?id=%s"), "sum_fields" => &$sums_supplies);
+
+	$outputs = GuiTableContent("table", $sql, $supplies_args);
 
 	$salary_text = ImMultiSite::sExecute( "people/report-trans.php?week=" . $week . "&project=3", 1 );
+
 	$dom         = im_str_get_html( $salary_text );
 	$row         = "";
 	foreach ( $dom->find( 'tr' ) as $row ) {
@@ -98,7 +102,7 @@ function print_weekly_report( $week ) {
 	$extra           -= (int) $row->find( 'td', 12 )->plaintext;
 
 	print gui_header( 1, "סיכום" );
-	$total_sums = array( "סיכום", array( 0, sum_numbers ) );
+	$total_sums = array( "סיכום", array( 0, 'sum_numbers' ) );
 	print gui_table( array(
 		array( "סעיף", "סכום" ),
 		array( "תוצרת פרוטי", $sums_in[2][0] ),

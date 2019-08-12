@@ -541,7 +541,7 @@ function get_project_name( $project_id ) {
 
 		return $row["project_name"];
 	}
-	print "unknown project";
+	return "";
 }
 
 function get_document_type_name( $type ) {

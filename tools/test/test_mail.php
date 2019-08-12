@@ -13,7 +13,7 @@ require_once( "../mail.php" );
 
 $subject = random_str(10);
 // $to = "yaakov.aglamaz@gmail.com";
-$to = "yaakov.aglamaz@gmail.com";
+$to = "yaakov.aglamaz@gmail.com,info@fruity.co.il";
 
 $headers   = array();
 $headers[] = "MIME-Version: 1.0";

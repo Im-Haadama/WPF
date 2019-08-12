@@ -404,7 +404,7 @@ class Supply {
 			if ( $internal ) {
 				$sell_price = get_price( $prod_id );
 				$line       .= "<td>" . sprintf( '%0.2f', $sell_price ) . "</td>";
-				$line       .= "<td>" . orders_per_item( $prod_id, 1, true ) . "</td>";
+				$line       .= "<td>" . orders_per_item( $prod_id, 1, true, true, true ) . "</td>";
 				if ( $edit ) {
 					$line .= gui_cell( gui_button( "del_" . $line_id, 'del_line(' . $line_id . ')"', "מחק" ) );
 				}

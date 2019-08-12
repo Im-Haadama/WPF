@@ -85,7 +85,9 @@ function get_param_array( $key ) {
 	return null;
 }
 
-function GetArg($args, $key, $default)
+// Return reference is useful for summing table, e.g.
+
+function &GetArg($args, $key, $default)
 {
 	if (! $args or ! isset($args[$key])) return $default;
 	return $args[$key];
@@ -185,15 +187,15 @@ function get_next_array( $array, $search_key ) {
 //	return rtrim( $str, ", " );
 //}
 
-function debug_time2( $str ) {
+function debug_time_output( $str ) {
+
 	$micro_date = microtime();
 	$date_array = explode( " ", $micro_date );
 	$date       = date( "Y-m-d H:i:s", $date_array[1] );
 	echo "$str $date:" . $date_array[0] . "<br>";
 }
 
-function debug_time1( $str ) {
-	return;
+function debug_time_log( $str ) {
 	static $prev_time;
 	if ( $str == "reset" ) {
 		$prev_time = microtime();

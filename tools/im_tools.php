@@ -305,7 +305,7 @@ function gui_select_creator( $id = null, $selected = null, $events = "" ) {
 
 		$args = array("selected"=>$selected, "events"=>$events, "name" =>"client_displayname(worker_id)",
 			"where" => "where is_active=1", "include_id" => 1, "datalist" => 0, "id_key" => "worker_id");
-		return gui_select_table( $id, "im_working", $args);
+		return GuiSelectTable( $id, "im_working", $args);
 	} else {
 		return $user_ID;
 	}

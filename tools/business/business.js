@@ -99,7 +99,7 @@ function supplier_selected() {
 function create_receipt_from_bank() {
     disable_btn('btn_receipt');
 
-    var del_ids = account_get_del_ids();
+    var del_ids = account_get_row_ids();
     var site_id = selected_client_site_id();
     var client_id = selected_client_id();
     var bank_id = selected_bank_id();

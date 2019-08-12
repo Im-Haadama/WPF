@@ -186,7 +186,7 @@ if ( isset( $week ) ) {
 
 print gui_header( 1, "הזמנות" );
 
-debug_time1( "reset" );
+debug_time_log( "reset" );
 
 if ( current_user_can( "edit_shop_orders" ) and
      ( is_null( $order_type ) or in_array( "p", explode( ",", $order_type ) ) )

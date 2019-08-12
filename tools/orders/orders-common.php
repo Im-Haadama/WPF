@@ -406,7 +406,7 @@ $order_header_fields = array(
 );
 
 function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null ) {
-	debug_time1( "start" );
+	debug_time_log( "start" );
 
 	// print "s=" . $statuses;
 
@@ -432,7 +432,7 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 	if ( ! is_array( $statuses ) ) {
 		$statuses = array( $statuses );
 	}
-	debug_time1( "1" );
+	debug_time_log( "1" );
 
 	foreach ( $statuses as $status ) {
 		// print $status . "<br/>";
@@ -496,9 +496,9 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 
 		$count = 0;
 
-		debug_time1( "before loop" );
+		debug_time_log( "before loop" );
 		while ( $row = mysqli_fetch_row( $result ) ) {
-			debug_time1( "after fetch" );
+			debug_time_log( "after fetch" );
 			$count ++;
 			$order_id = $row[0];
 			$order    = new Order( $order_id );
@@ -514,7 +514,7 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 				$line [ OrderFields::line_select ] = gui_hyperlink( "לקוח חדש", "../account/new-customer.php?order_id=" . $order_id );
 			}
 
-			debug_time1( "a1" );
+			debug_time_log( "a1" );
 			$line[ OrderFields::type ]         = order_get_shipping( $order_id );
 
 			// display order_id with link to display it.
@@ -533,7 +533,7 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 			$line[ OrderFields::recipient ] = get_postmeta_field( $order_id, '_shipping_first_name' ) . ' ' .
 			                                  get_postmeta_field( $order_id, '_shipping_last_name' );
 
-			debug_time1( "middle" );
+			debug_time_log( "middle" );
 
 			$order_total = 0;
 			// 3) Order total
@@ -542,7 +542,7 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 				// get_postmeta_field( $order_id, '_order_total' );
 				$line[ OrderFields::total_order ] = $order_total;
 				$total_order_total                += $order_total;
-				debug_time1( "total" );
+				debug_time_log( "total" );
 			}
 
 			// 4) Delivery note
@@ -582,16 +582,16 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 			$line[ OrderFields::delivery_fee ] = $total_delivery_fee; //
 
 			array_push( $rows, $line );
-			debug_time1( "loop end" );
+			debug_time_log( "loop end" );
 		}
 
 		//   $data .= "<tr> " . trim($line) . "</tr>";
 
-		debug_time1( "before sort" );
+		debug_time_log( "before sort" );
 
 		// sort( $lines );
 
-		debug_time1( "2" );
+		debug_time_log( "2" );
 
 		if ( $count > 0 ) {
 			$sums = null;
@@ -618,7 +618,7 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 		}
 	}
 
-	debug_time1( "end" );
+	debug_time_log( "end" );
 
 	return $all_tables;
 }

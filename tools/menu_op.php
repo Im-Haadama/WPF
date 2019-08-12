@@ -156,7 +156,7 @@ $row                      = 0;
 $table[ $row ++ ][ $col ] = gui_header( 2, "ניהול" );
 add_command( $table, $row, $col, "edit_pricelist", "תבנית", "tasklist/c-get-all-task_templates.php", "doc_frame" );
 add_command( $table, $row, $col, "edit_pricelist", "משימות פעילות", $m->getSiteToolsURL( 1 ) . "/tasklist/c-get-all-tasklist.php?preset=1", "tasks" );
-add_command( $table, $row, $col, "edit_pricelist", "חשבוניות", "business/invoice_table.php" );
+    add_command( $table, $row, $col, "edit_pricelist", "חשבוניות", "business/invoice_table.php" );
 add_command( $table, $row, $col, "edit_pricelist", "פרויקטים", "people/project_admin.php" );
 add_command( $table, $row, $col, "edit_pricelist", "תיבת דואר", "business/inbox-box.php" );
 add_command( $table, $row, $col, "show_bank", "בנק", "business/c-get-all-bank.php" );

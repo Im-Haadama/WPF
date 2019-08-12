@@ -40,7 +40,17 @@ function sql_query( $sql, $report_error = true ) {
 		die ( "not connected!<br/>" );
 	}
 
+	$prev_time         = microtime(true);
 	if ( $result = mysqli_query( $conn, $sql ) ) {
+		$now         = microtime(true);
+		$micro_delta = $now - $prev_time;
+		if ( $micro_delta > 0.1 ) {
+			$report = sql_trace();
+			$date_array  = explode( " ", $micro_delta );
+			$date        = date( "s", $date_array[1] );
+			$report .= "long executing: " . $sql . $date . ":" . $date_array[0] . "<br>";
+			my_log($report, "sql performace");
+		}
 		return $result;
 	} else {
 		if ( $report_error ) {
@@ -146,14 +156,21 @@ function sql_query_single_assoc( $sql ) {
 	return null;
 }
 
-function sql_error( $sql ) {
+function sql_trace()
+{
+	$result = "";
 	$debug = debug_backtrace();
 	for ( $i = 2; $i < 6 && $i < count( $debug ); $i ++ ) {
-		print "called from " . $debug[ $i ]["function"] . ":" . $debug[ $i ]["line"] . "<br/>";
+		$result .= ("called from " . $debug[ $i ]["function"] . ":" . $debug[ $i ]["line"] . "<br/>");
 	}
+	return $result;
+}
+
+function sql_error( $sql ) {
 	global $conn;
 	if ( is_string( $sql ) ) {
 		$message = "Error: sql = `" . $sql . "`. Sql error : " . mysqli_error( $conn ) . "<br/>";
+		print sql_trace();
 	} else {
 		$message = $sql->error;
 		// $message = "sql not string";

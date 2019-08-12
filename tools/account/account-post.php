@@ -190,7 +190,13 @@ function create_receipt( $cash, $bank, $check, $credit, $change, $user_id, $date
 	foreach ( $row_ids as $id ) {
 		if ( $id > 0 ) {
 			$no_ids = false;
-			array_push($del_ids, sql_query_single_scalar("select transaction_ref from im_client_accounts where ID = " . $id));
+			$del_id = sql_query_single_scalar("select transaction_ref from im_client_accounts where ID = " . $id);
+			if ($del_id > 0)
+				array_push($del_ids, $del_id);
+			else {
+				print "Didn't find delivery id for account row " . $id;
+				return false;
+			}
 		} else {
 			die ("bad id " . $id);
 		}
@@ -199,7 +205,7 @@ function create_receipt( $cash, $bank, $check, $credit, $change, $user_id, $date
 	if ( $no_ids ) {
 		print "לא נבחרו תעודות משלוח";
 
-		return;
+		return false;
 	}
 	$c = $cash - $change;
 //        if (abs($c) < 0) $c =0;
@@ -209,7 +215,7 @@ function create_receipt( $cash, $bank, $check, $credit, $change, $user_id, $date
 	if ( sql_query_single_scalar( $sql ) > 0 ) {
 		print " כבר שולם" . comma_implode( $del_ids ) . " <br/>";
 
-		return;
+		return false;
 	}
 
 	$doc_id   = invoice_create_document( "r", $del_ids, $user_id, $date, $c, $bank, $credit, $check );
@@ -226,8 +232,10 @@ function create_receipt( $cash, $bank, $check, $credit, $change, $user_id, $date
 			account_add_transaction( $user_id, $date, - $change, $doc_id, $change > 0 ? "עודף" : "יתרה" );
 		}
 		print $doc_id;
+		return true;
 	} else {
 		print "doc_id: " . $doc_id . "<br/>";
+		return false;
 	}
 }
 

@@ -53,8 +53,10 @@ if ( isset( $_GET["refund"] ) ) {
 
 my_log( __FILE__, "order=" . $order_id . " id = " . $id );
 
-$show_inventory = info_get("manage_inventory") and get_param("no_inv") == "1";
-//print "si=" . $show_inventory ."<br/>";
+$show_inventory = false;
+if (info_get("manage_inventory") and get_param("show_inv", false, 1))
+      $show_inventory = true;
+
 
 if ( $id > 0 ) {
 	print "<form name=\"delivery\" action= \"\">";

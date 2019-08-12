@@ -31,6 +31,11 @@ require_once( ROOT_DIR . "/niver/data/sql.php" );
 function TableHeader($sql, $add_checkbox = false, $skip_id = false, $meta_fields = null)
 {
 	$result = sql_query( $sql );
+	// We need only the header. Remove query and replace with false.
+	$sql = substr($sql, 0, strpos($sql, "where")) . " where 1 = 0";
+	if (! $result)
+		return null;
+
 	$headers = array();
 	$debug = false;
 
@@ -85,7 +90,6 @@ function PrepareRow($row, $args, $row_id)
 	$selectors = GetArg($args, "selectors", null);
 	$actions = GetArg($args, "actions",null);
 	$add_checkbox = GetArg($args, "add_checkbox", false);
-//	var_dump($selectors);
 
 	$events = GetArg($args, "events", $add_checkbox ? 'onchange="changed(this)"' : null);
 	$table_name = GetArg($args, "table_name", null);
@@ -99,22 +103,57 @@ function PrepareRow($row, $args, $row_id)
 		print "start " . __FUNCTION__ . "<br/>";
 	}
 
-//	$first_row = false;
-	foreach ( $row as $key => $data ) {
+	foreach ( $row as $key => $data )
+	{
+		$orig_data = $data;
+		$value = $data; // Default;
 		if ($debug) print  "<br/>handling $key ";
 		if (strtolower($key) == "id" ) {
-//			$row_id = $data;
 			if ($skip_id) {
 				if ($debug) print "skip";
 				continue;
 			}
 		}
-		do {
-			if ( $links and array_key_exists( $key, $links ) ) {
-				if ($debug) print "links ";
-				$value = gui_hyperlink( $data, sprintf( $links[ $key ], $data ) );
-				break;
+		if ($edit) {
+			$field_events = sprintf( $events, $key );
+			if ( $selectors and array_key_exists( $key, $selectors ) ) {
+				$selector_name = $selectors[ $key ];
+				if ( strlen( $selector_name ) < 2 ) {
+					die( "selector " . $key . "is empty" );
+				}
+				$value = $selector_name( $key, $orig_data, $args); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
+			} else {
+				if ( $table_name ) {
+					$type = sql_type( $table_name, $key );
+					switch ( substr( $type, 0, 3 ) ) {
+						case 'dat':
+							$value = gui_input_date( $key, null, $data, $events );
+							break;
+						case 'var':
+							$length = 10;
+							$r      = array();
+							if ( preg_match_all( '/\(([0-9]*)\)/', $type, $r ) ) {
+								$length = $r[1][0];
+							}
+							if ( $length > 100 ) {
+								$value = gui_textarea( $key, $data, $field_events );
+							} else {
+								$value = gui_input( $key, $data, $field_events );
+							}
+							break;
+						default:
+							$field_events = sprintf( $events, $key );
+							$value        = gui_input( $key, $data, $field_events );
+							break;
+					}
+				} else {
+					if ( $debug ) {
+						var_dump( $data );
+					}
+					$value = gui_input( $key, $data, $field_events );
+				}
 			}
+		} else {
 			if ( $selectors and array_key_exists( $key, $selectors ) ) {
 				if ($debug) print "has selectors ";
 				$selector_name = $selectors[ $key ];
@@ -124,47 +163,13 @@ function PrepareRow($row, $args, $row_id)
 				//////////////////////////////////
 				// Selector ($id, $value, $args //
 				//////////////////////////////////
-
-				$value = $selector_name( $key, $data, $args); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
-				break;
+				$value = $selector_name( $key, $orig_data, $args); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
 			}
-			if ($edit) {
-				$field_events = sprintf( $events, $key );
-
-				if ($table_name) {
-					$type = sql_type($table_name, $key);
-//					print $type . "<br/>";
-					switch ( substr( $type, 0, 3 ) ) {
-						case 'dat':
-							$value = gui_input_date($key, null, $data, $events);
-							break;
-						case 'var':
-							$length = 10;
-							$r = array();
-							if (preg_match_all('/\(([0-9]*)\)/', $type, $r))
-							{
-								$length = $r[1][0];
-							}
-							if ($length > 100) {
-								$value = gui_textarea($key, $data, $field_events);
-							} else {
-								$value        = gui_input( $key, $data, $field_events );
-							}
-							break;
-						default:
-							$field_events = sprintf( $events, $key );
-							$value        = gui_input( $key, $data, $field_events );
-							break;
-					}
-				} else {
-					if ($debug) var_dump($data);
-					$value        = gui_input( $key, $data, $field_events );
-				}
-				break;
+			if ( $links and array_key_exists( $key, $links ) ) {
+				if ($debug) print "links ";
+				$value = gui_hyperlink( $value, sprintf( $links[ $key ], $data ) );
 			}
-			$value = $data;
-		} while (0);
-
+		}
 		array_push( $row_data, $value );
 //		$first_row = false;
 	}
@@ -193,11 +198,11 @@ function PrepareRow($row, $args, $row_id)
  *
  * @return array|string
  */
-function TableData($sql, $args = null)
+function TableData($sql, &$args = null)
 {
 	$result = sql_query( $sql );
 	if ( ! $result ) {
-		return "error: " . $sql . sql_error( $sql );
+		return null;
 	}
 
 	$rows_data = array();
@@ -210,6 +215,7 @@ function TableData($sql, $args = null)
 	$meta_key_field = GetArg($args, "meta_key", "id");
 	$values = GetArg($args, "values", null);
 	$v_checkbox = GetArg($args, "v_checkbox", null);
+	$sum_fields = &GetArg($args, "sum_fields", null);
 
 	$table_names = array();
 	if (preg_match_all("/from ([^ ]*)/" , $sql, $table_names))
@@ -251,11 +257,15 @@ function TableData($sql, $args = null)
 	} else {
 		if ($header_line)
 			array_push($rows_data, $header_line);
+
 		while ( $row = mysqli_fetch_assoc( $result ) ) {
 			$row_id = $row[$id_field];
 			if (! $row_id)
 			{
-				die("no row id");
+				// Error... We don't have a valid row ID.
+				print "<br/>field id:" . $id_field . "<br/>";
+				var_dump($row); print "<br/>";
+				die(__FUNCTION__ . ":" . __LINE__ . "no row id");
 			}
 			// print $key;
 			$row_count ++;
@@ -271,12 +281,29 @@ function TableData($sql, $args = null)
 				}
 			}
 			$row = PrepareRow($row, $args, $row_id);
+			if ($sum_fields)
+				HandleSum($sum_fields, $row);
 			array_push($rows_data, $row);
+		}
+		if ($sum_fields) {
+			$total_line = array();
+			foreach ($sum_fields as $cell)
+				array_push($total_line, is_array($cell) ? $cell[0] : $cell);
+			array_push($rows_data, $total_line);
 		}
 		return $rows_data;
 	}
 }
 
+function HandleSum(&$sum_fields, $row)
+{
+	for ($i = 0; $i < count($row); $i++)
+	{
+		if (is_array($sum_fields[$i]) and function_exists($sum_fields[$i][1]))
+			$sum_fields[$i][1]($sum_fields[$i][0], $row[$i]);
+
+	}
+}
 
 /**
  * @deprecated
@@ -442,16 +469,20 @@ function GuiRowContent($table_name, $row_id, $args)
  * @return string|null
  */
 
-function GuiTableContent($table_id, $sql, $args, &$sum_links = null)
+function GuiTableContent($table_id, $sql, &$args)
 {
 	// Fetch the data from DB.
 	$rows_data = TableData( $sql, $args);
+
+	if (! $rows_data)
+		return null;
 
 	$row_count = count( $rows_data);
 
 	// Convert to table if data returned.
 	if ( $row_count >= 1 ) {
-		return gui_table_args( $rows_data, $table_id, $args );
+		$html = gui_table_args( $rows_data, $table_id, $args );
+		return $html;
 	}
 
 	return null;

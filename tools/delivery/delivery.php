@@ -361,11 +361,11 @@ class delivery {
 		// print "To: " . $to . "<br/>";
 		// print "Message:<br/>";
 		// print $message . "<br/>";
-		$subject = "משלוח מספר" . $this->ID . " בוצע";
+		$subject = "משלוח מספר " . $this->ID . " בוצע";
 		if ( $edit ) {
 			$subject = "משלוח מספר " . $this->ID . " - תיקון";
 		}
-		send_mail( $subject, $to, $message );
+		send_mail($subject, $to, $message );
 		print "mail sent to " . $to . "<br/>";
 	}
 
@@ -952,7 +952,7 @@ class delivery {
 
 	public static function GuiCreateNewNoOrder() {
 		$data = gui_table_args( array(
-			array( "לקוח:", gui_select_client() ),
+			array( "לקוח:", gui_select_client("client", null, null) ),
 			array( "תאריך", gui_input_date( "delivery_date", "" ) ),
 			array( gui_button( "btn_add_delivery", "", "הוסף תעודת משלוח" ) )
 		) );

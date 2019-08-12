@@ -420,12 +420,11 @@ function check_query( $query ) {
 }
 
 function check_active( $id, $repeat_freq ) {
-	$running_id = sql_query_single_scalar("select id from im_tasklist where task_template = " . $id .
-	                                      " and (status < 2 or date = curdate()) limit 1");
-//	$sql = "SELECT count(*) FROM im_tasklist WHERE task_template = " . $id .
-//	       " AND status < 2";
+	// status < 2 - active.
+	// Date(date) = curdate() - due today. (or should it be finish date?)
 
-//	$count = sql_query_single_scalar( $sql );
+	$running_id = sql_query_single_scalar("select id from im_tasklist where task_template = " . $id .
+	                                      " and (status < 2 or date(date) = curdate()) limit 1");
 
 	if ( $running_id ) {
 		return "0 " . $running_id;

@@ -73,7 +73,10 @@ function get_value(element) {
                 }
                 if (element.list)
                 {
-                    return element.value.substring(0, element.value.indexOf(")"));
+                    if (element.value.indexOf(")") > -1)
+                        return element.value.substring(0, element.value.indexOf(")"));
+                    else
+                        return element.value;
                 }
                 return element.value;
 

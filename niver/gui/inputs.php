@@ -661,22 +661,13 @@ function gui_input_select_from_datalist( $id, $datalist, $events = null ) {
 /**
  * @param $id
  * @param $table
- * @param null $selected
- * @param null $events
- * @param null $more_values
- * @param null $name
- * @param null $where
- * @param bool $include_id
- * @param bool $datalist
- * @param null $order_by
- * @param null $id_key
- * @param null $class
+ * @param $args
  *
  * @return string
  */
 function GuiSelectTable($id, $table, $args)
 {
-	$selected = GetArg($args, "seelected", null);
+	$selected = GetArg($args, "selected", null);
 	$events = GetArg($args, "events", null);
 	$more_values = GetArg($args, "more_values", null);
 	$name = GetArg($args, "name", "name");
@@ -688,7 +679,6 @@ function GuiSelectTable($id, $table, $args)
 	$class = GetArg($args, "class", null);
 	$length_limit = GetArg($args, "length_limit", 30);
 
-	global $conn;
 	if ( ! $id_key ) {
 		$id_key = "id";
 	}
@@ -698,13 +688,6 @@ function GuiSelectTable($id, $table, $args)
 	if ( $more_values ) {
 		foreach ( $more_values as $value ) {
 			array_push( $values, substr($value, $length_limit) );
-//			$data .= "<option value=\"" . $value[0] . "\"";
-//			if ( $selected and $selected == $value ) {
-//				$data .= " selected";
-//			}
-//			// print $selected . " " . $row["$id"] . "<br/>";
-//			$data .= ">";
-//			$data .= $value[1] . "</option>";
 		}
 	}
 
@@ -721,7 +704,7 @@ function GuiSelectTable($id, $table, $args)
 		$sql .= " order by 3 ";
 	}
 
-	$results = mysqli_query( $conn, $sql );
+	$results = sql_query( $sql );
 	if ( $results ) {
 		while ( $row = $results->fetch_assoc() ) {
 			array_push( $values, $row );
@@ -920,7 +903,6 @@ function gui_select_table(
 	$id, $table, $selected = null, $events = null, $more_values = null, $name = null, $where = null,
 	$include_id = false, $datalist = false, $order_by = null, $id_key = null
 ) {
-	global $conn;
 	if ( ! $id_key ) {
 		$id_key = "id";
 	}
@@ -958,7 +940,7 @@ function gui_select_table(
 
 	// print $sql;
 
-	$results = mysqli_query( $conn, $sql );
+	$results = sql_query( $sql );
 	if ( $results ) {
 		while ( $row = $results->fetch_assoc() ) {
 			array_push( $values, $row );
