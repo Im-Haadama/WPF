@@ -59,7 +59,12 @@ $operation = get_param( "operation", false );
 global $user_ID; // by wordpress.
 
 $project_id = get_param( "project_id" );
-if ( $project_id ) { show_tasks( $project_id, $user_ID ); return; }
+if ( $project_id ) {
+	$args = [];
+	$args["project"] = $project_id;
+	show_active_tasks( $args, $project_id, $user_ID );
+	return;
+}
 
 $task_template_id = get_param("task_template_id");
 if ($task_template_id) { show_templates($task_template_id); return; }
@@ -103,7 +108,7 @@ if ($row_id) { show_task($row_id); return; }
 $debug = get_param("debug", false, false);
 $time_filter = get_param("time", false, true);
 
-show_active_tasks($debug, $time_filter);
+show_active_tasks(null, $debug, $time_filter);
 
 $non_zero = get_param( "non_zero" );
 
@@ -182,26 +187,26 @@ global $template_selectors;
 
 }
 
-function show_tasks( $project_id, $owner ) {
-	$actions     = array( gui_hyperlink( "בוצע", "../tasklist/tasklist-post.php?operation=end&id=%s" ) );
-	$links       = array();
-	$links["id"] = "../tasklist/admin.php?id=%s";
-	$links["project_id"] = "admin.php?project_id=%s";
-
-	$sql = "select * from im_tasklist " .
-	       " where project_id = " . $project_id .
-	       " and status = " . eTasklist::waiting .
-	       " and owner = " . $owner .
-	       " order by 12 desc ";
-
-	$args            = array();
-	$args["actions"] = $actions;
-	$args["class"]   = "sortable";
-	$args["links"]   = $links;
-
-	print GuiTableContent( "tasks", $sql, $args );
-
-}
+//function show_tasks( $project_id, $owner ) {
+//	$actions     = array( gui_hyperlink( "בוצע", "../tasklist/tasklist-post.php?operation=end&id=%s" ) );
+//	$links       = array();
+//	$links["id"] = "../tasklist/admin.php?id=%s";
+//	$links["project_id"] = "admin.php?project_id=%s";
+//
+//	$sql = "select * from im_tasklist " .
+//	       " where project_id = " . $project_id .
+//	       " and status = " . eTasklist::waiting .
+//	       " and owner = " . $owner .
+//	       " order by 12 desc ";
+//
+//	$args            = array();
+//	$args["actions"] = $actions;
+//	$args["class"]   = "sortable";
+//	$args["links"]   = $links;
+//
+//	print GuiTableContent( "tasks", $sql, $args );
+//
+//}
 
 
 
@@ -260,7 +265,7 @@ function greeting()
 	return $data;
 }
 
-function show_active_tasks($debug = false, $time = false)
+function show_active_tasks($args = null, $debug = false, $time = false)
 {
 	global $task_selectors;
 	global $this_url;
@@ -268,6 +273,8 @@ function show_active_tasks($debug = false, $time = false)
 	global $table_name;
 
 	$user_id = wp_get_current_user()->ID;
+	$project_id = GetArg($args, "project", null);
+	$active_only = $project_id ? false : true;
 
 	$links       = array();
 	$links["id"] = $this_url . "?row_id=%s";
@@ -283,11 +290,20 @@ function show_active_tasks($debug = false, $time = false)
 	print gui_hyperlink("הוסף משימה", "admin.php?operation=new_task");
 
 	$sum     = null;
-//
-	$query   = "where status in (0, 1) and  (isnull(preq) or task_status(preq) >= 2) and (date is null or date(date) <= Curdate())";
+
+
+	$query   = "where 1 ";
+
+	if ($active_only)
+		$query .= "and (status in (0, 1) and (isnull(preq) or task_status(preq) >= 2) and (date is null or date(date) <= Curdate()))";
+
+	if ($project_id)
+		$query .= " and project_id = $project_id";
+
 	if ($time) $query .= " and task_active_time(id)";
 
-	$query .= " and owner = " . $user_id;
+	$owner_query = $query . " and owner = " . $user_id;
+	$creator_query = $query . " and creator = " . $user_id;
 
 	$actions = array(
 		array( "התחל", "tasklist.php?operation=start&id=%s" ),
@@ -314,10 +330,19 @@ function show_active_tasks($debug = false, $time = false)
 		$more_fields .= ", task_template_time(id) ";
 
 	$sql = "select id, date(date) as date, task_description, task_template, started, project_id,
-       priority, preq $more_fields from $table_name $query $order";
+       priority, preq $more_fields from $table_name $owner_query $order";
 
 	if ($debug)
 		print "<br/>" . $sql . "<br/>";
+
+	print gui_header(1, "משימות לטיפול");
+
+	print GuiTableContent( $table_name, $sql, $args );
+
+	print gui_header(1, "משימות שיצרתי");
+
+	$sql = "select id, date(date) as date, task_description, task_template, started, project_id,
+       priority, preq $more_fields from $table_name $creator_query $order";
 
 	print GuiTableContent( $table_name, $sql, $args );
 }

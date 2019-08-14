@@ -311,6 +311,12 @@ function gui_select_creator( $id = null, $selected = null, $events = "" ) {
 	}
 }
 
+function get_term_name($term_id)
+{
+	$term = get_term($term_id);
+
+	return $term->name;
+}
 //function is_manager( $user_id ) {
 //	$user    = new WP_User( $user_id );
 //	$manager = false;
