@@ -29,7 +29,15 @@ require_once( STORE_DIR . "/wp-config.php" );
 require_once( STORE_DIR . "/wp-load.php" );
 require_once( "wp.php" );
 
+// Local and international staff...
 date_default_timezone_set( "Asia/Jerusalem" );
+$mofile = ROOT_DIR . '/wp-content/languages/plugins/im_haadama-he_IL.mo';
+if (! file_exists($mofile)){
+	print "$mofile not exists";
+	die (1);
+}
+if (! load_textdomain('im-haadama', $mofile))
+	print "can't load $mofile";
 
 function order_get_shipping_fee( $order_id ) {
 	$order = wc_get_order( $order_id );

@@ -10,6 +10,18 @@
 
 require_once( "sql.php" );
 
+function im_translate($text)
+{
+//	print "translating $text<br/>";
+	$t = translate($text, 'im_haadama');
+	// print $t . " " . strlen($t);
+	if (strlen($t))
+	{
+		return $t;
+	} else {
+		return $text;
+	}
+}
 function translate2heb( $w ) {
 	return translate_word( $w, "en", "he" );
 }

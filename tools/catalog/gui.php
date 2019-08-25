@@ -8,7 +8,17 @@
 
 require_once( ROOT_DIR . "/niver/gui/inputs.php" );
 
-function gui_select_product( $id, $events, $datalist = "products" ) // 'onchange="select_product(' . $line_id . ')"'
+// $selector_name( $key, $data, $args)
+function gui_select_product( $id, $data = null, $args = null)
+// $events, $datalist = "products" ) // 'onchange="select_product(' . $line_id . ')"'
 {
-	return gui_input_select_from_datalist( $id, $datalist, $events );
+	if (! $args)
+		$args = array();
+	$args["selected"] = $data;
+	$args["name"] = "post_title";
+	$args["selected"] = $data;
+	$args["datalist"] = true;
+	$args["id_key"] = "ID";
+	$args["include_id"] = true;
+	return GuiSelectTable( $id, "im_products", $args);
 }

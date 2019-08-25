@@ -390,7 +390,7 @@ function gui_select_open_supplier( $id = "supplier" ) {
 		array_push( $open, $new );
 	}
 
-	return gui_select_datalist( $id, "name", $open, 'onchange="supplier_selected()"', null, true );
+	return gui_select_datalist( $id, "open_supplier", "name", $open, 'onchange="supplier_selected()"', null, true );
 }
 
 function gui_select_client_open_account( $id = "client" ) {
@@ -408,7 +408,7 @@ function gui_select_client_open_account( $id = "client" ) {
 		array_push( $open, $new );
 	}
 
-	return gui_select_datalist( $id, "name", $open, 'onchange="client_selected()"', null, true );
+	return gui_select_datalist( $id, "open_account",  "name", $open, 'onchange="client_selected()"', null, true );
 }
 
 function create_makolet( $month_year ) {

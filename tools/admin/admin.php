@@ -1,6 +1,4 @@
 <?php
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
 /**
  * Created by PhpStorm.
  * User: agla
@@ -8,21 +6,22 @@ ini_set( 'display_errors', 'on' );
  * Time: 08:19
  */
 
-require_once("../../niver/fund.php");
-
 require_once( '../r-shop_manager.php' );
 require_once( "tasklist.php" );
 require_once( "../../niver/web.php" );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( ROOT_DIR . '/niver/gui/sql_table.php' );
 require_once(ROOT_DIR . '/tools/people/people.php');
+require_once("../../niver/fund.php");
+
 
 $this_url           = "admin.php";
 $entity_name        = "משימה";
 $entity_name_plural = "משימות";
 $table_name         = "im_tasklist";
 
-$task_selectors = array("project_id" =>  "gui_select_project", "owner" => "gui_select_creator", "creator" => "gui_select_creator", "preq" => "gui_select_task");
+$task_selectors = array("project_id" =>  "gui_select_project", "owner" => "gui_select_creator", "creator" => "gui_select_creator", "preq" => "gui_select_task",
+	"mission_id" => "gui_select_mission");
 $template_selectors = array("project_id" =>  "gui_select_project", "owner" => "gui_select_creator", "creator" => "gui_select_creator");
 
 print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/tools/admin/data.js" ) );
@@ -97,6 +96,9 @@ if ($operation) {
 			print NewRow("im_task_templates", $args);
 			print gui_button("btn_template", "save_new('im_task_templates')", "צור");
 			break;
+		default:
+			print $operation . " not handled <br/>";
+			die(1);
 	}
 	return;
 }
@@ -163,7 +165,7 @@ global $template_selectors;
 		print GuiRowContent("im_task_templates", $template_id, $args);
 		print gui_button( "btn_save", "save_entity('im_task_templates', " . $template_id . ')', "שמור" );
 
-		$tasks_args = array();
+		$tasks_args = array("links" => array("id" => "admin.php?row_id=%s"));
 		$table = GuiTableContent("last_tasks", "select * from im_tasklist where task_template = " . $template_id .
 			" order by date desc limit 10", $tasks_args);
 		if ($table)
@@ -221,18 +223,14 @@ print header_text( false, true, true, array(
 ) );
 
 
-function show_task($row_id)
+function show_task($row_id, $edit = 1)
 {
 	global $entity_name, $table_name, $task_selectors;
 
 	print gui_header( 1, $entity_name . " " . $row_id );
 	$args                 = array();
-	$args["edit"]         = 1;
-	$args["add_checkbox"] = true;
-	$args["skip_id"]      = true;
+	$args["edit"]         = $edit;
 	$args["selectors"] = $task_selectors;
-	$args["events"] = "onchange=\"changed(this)\"";
-	$args["transpose"] = true;
 	$project_id = sql_query_single_scalar("select project_id from im_tasklist where id = " .$row_id);
 	if ($project_id > 0)
 		$args["where"] = "project_id = " . $project_id;
@@ -276,6 +274,9 @@ function show_active_tasks($args = null, $debug = false, $time = false)
 	$project_id = GetArg($args, "project", null);
 	$active_only = $project_id ? false : true;
 
+	if (! get_param("no_limit"))
+		$limit = " limit 10 ";
+
 	$links       = array();
 	$links["id"] = $this_url . "?row_id=%s";
 
@@ -291,7 +292,6 @@ function show_active_tasks($args = null, $debug = false, $time = false)
 
 	$sum     = null;
 
-
 	$query   = "where 1 ";
 
 	if ($active_only)
@@ -302,8 +302,10 @@ function show_active_tasks($args = null, $debug = false, $time = false)
 
 	if ($time) $query .= " and task_active_time(id)";
 
+	 $query .= " and (mission_id is null or mission_id = 0) ";
+
 	$owner_query = $query . " and owner = " . $user_id;
-	$creator_query = $query . " and creator = " . $user_id;
+	$creator_query = $query . " and creator = " . $user_id . " and owner != " . $user_id;
 
 	$actions = array(
 		array( "התחל", "tasklist.php?operation=start&id=%s" ),
@@ -330,7 +332,7 @@ function show_active_tasks($args = null, $debug = false, $time = false)
 		$more_fields .= ", task_template_time(id) ";
 
 	$sql = "select id, date(date) as date, task_description, task_template, started, project_id,
-       priority, preq $more_fields from $table_name $owner_query $order";
+       priority, preq $more_fields from $table_name $owner_query $order $limit";
 
 	if ($debug)
 		print "<br/>" . $sql . "<br/>";
@@ -342,7 +344,7 @@ function show_active_tasks($args = null, $debug = false, $time = false)
 	print gui_header(1, "משימות שיצרתי");
 
 	$sql = "select id, date(date) as date, task_description, task_template, started, project_id,
-       priority, preq $more_fields from $table_name $creator_query $order";
+       priority, preq $more_fields from $table_name $creator_query $order $limit";
 
 	print GuiTableContent( $table_name, $sql, $args );
 }

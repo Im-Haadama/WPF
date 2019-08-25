@@ -32,6 +32,7 @@ if ( ! defined( 'IM_BACKUP_FOLDER' ) ) {
 $m = new MultiSite( $hosts_to_sync, $master, 3 );
 
 $op = get_param( "op" );
+$date = get_param("date", false, date('y-m-j'));
 
 if ( $op == 'check' ) { // would run on conductor server
 	$fail = false;
@@ -43,10 +44,10 @@ if ( $op == 'check' ) { // would run on conductor server
 	foreach ( $hosts_to_sync as $key => $host_info ) {
 		$output = "";
 		$url    = $host_info[2] . "/../utils/backup_manager.php?tabula=145db255-79ea-4e9c-a51d-318a86c999bf";
-
-		$file_name = curl_get( $url . "&op=name" );
-		if ( strstr( $file_name, "Fatal" ) ) {
-			array_push( $results, array( $host_info[1], "error: " . $file_name ) );
+		$get_name = $url . "&op=name&date=" . $date;
+		$file_name = curl_get( $get_name );
+		if ( strstr( $file_name, "Fatal" ) or strlen($file_name) < 5) {
+			array_push( $results, array( $host_info[1], "error file name: " . $file_name ) );
 			$fail = true;
 			continue;
 		}
@@ -60,7 +61,7 @@ if ( $op == 'check' ) { // would run on conductor server
 		if ( ! file_exists( $full_path ) ) {
 			$fail   = true;
 			$output .= "missing file $full_path";
-			array_push( $results, array( $host_info[1], $output ) );
+			array_push( $results, array( $host_info[1], $file_name, $output ) );
 			continue;
 		}
 

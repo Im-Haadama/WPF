@@ -1,0 +1,45 @@
+# Translation of Plugins - Im_haadama - Stable (latest release) in Hebrew
+# This file is distributed under the same license as the Plugins - Im_haadama - Stable (latest release) package.
+msgid ""
+msgstr ""
+"PO-Revision-Date: 2019-01-29 14:54:07+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: GlotPress/2.4.0-alpha\n"
+"Language: he_IL\n"
+"Project-Id-Version: Plugins - WooCommerce - Stable (latest release)\n"
+
+#. translators: %s: error message
+#: includes/wc-rest-functions.php:114
+msgid "Product Name"
+msgstr "שם מוצר"
+
+msgid "Quantity"
+msgstr "כמות"
+
+msgid "Id"
+msgstr "מזהה"
+
+msgid "Units"
+msgstr "יחידות"
+
+msgid "Buy Price"
+msgstr "מחיר עלות"
+
+msgid "Total"
+msgstr "סך הכל"
+
+msgid "ref"
+msgstr "סימוכין"
+
+msgid "date"
+msgstr "תאריך"
+
+msgid "amount"
+msgstr "סכום"
+
+msgid "delivery fee"
+msgstr "דמי משלוח"
+

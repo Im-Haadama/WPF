@@ -39,7 +39,7 @@ function print_select_supplier( $id, $source ) {
 
 function gui_select_supplier( $id = "supplier_select", $value = null, $args = null )
 {
-
+	$events = null;
 	$events = GetArg($args, "events", null);
 	$class = GetArg($args, "class", null);
 

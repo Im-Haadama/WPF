@@ -58,18 +58,18 @@ function print_weekly_report( $week ) {
 
 	print gui_hyperlink( "שבוע קודם", "report.php?week=" . date( 'Y-m-d', strtotime( $week . " -1 week" ) ) );
 
-	$sql = "SELECT ref AS 'תעודת משלוח', date AS תאריך, amount AS סכום, delivery_fee AS 'דמי משלוח', client_from_delivery(ref) AS לקוח,
+	$sql = "SELECT ref, date, amount, delivery_fee as 'delivery fee', client_from_delivery(ref) as client,
 		delivery_receipt(ref) AS קבלה
 		FROM im_business_info WHERE " .
 	       " is_active = 1 AND week = '" . $week . "' AND amount > 0 ORDER BY 1";
 
-	$sums_in = array( "סה\"כ", "", array( 0, 'sum_numbers' ), array( 0, 'sum_numbers' ), "" );
-	$in_args = array("links" => array("id" => "../delivery/get-delivery.php?id=%s"), "sum_fields" => &$sums_in,
-		"id_field" => "תעודת משלוח");
+	$sums_in = array(  "ref" => "סה\"כ", "date" => '', "amount" => array( 0, 'sum_numbers' ), 'delivery fee' => array(0, 'sum_numbers') );
+	$in_args = array("links" => array("ref" => "../delivery/get-delivery.php?id=%s"), "sum_fields" => &$sums_in,
+		"id_field" => "ref");
 	$inputs = GuiTableContent("table", $sql, $in_args);
 
-	$sql = "SELECT supply_from_business(id) as 'אספקה', id, ref as 'תעודת משלוח', date as תאריך, amount AS סכום, " .
-	       "supplier_from_business(id) AS ספק, pay_date as 'תאריך תשלום' " .
+	$sql = "SELECT supply_from_business(id), id, ref, date, amount, " .
+	       "supplier_from_business(id), pay_date" .
 	       " FROM im_business_info WHERE " .
 	       " week = '" . $week . "' AND is_active = 1 AND amount < 0 " .
 	       " and document_type = 5 " .
@@ -105,8 +105,8 @@ function print_weekly_report( $week ) {
 	$total_sums = array( "סיכום", array( 0, 'sum_numbers' ) );
 	print gui_table( array(
 		array( "סעיף", "סכום" ),
-		array( "תוצרת פרוטי", $sums_in[2][0] ),
-		array( "דמי משלוח פרוטי", $sums_in[3][0] ),
+		array( "תוצרת פרוטי", $sums_in['amount'][0] ),
+		array( "דמי משלוח פרוטי", $sums_in['delivery fee'][0] ),
 		array( "גלם", $sums_supplies[4][0] ),
 		array( "שכר אריזה", $salary_fruity ),
 		array( "שכר משלוחים", $salary_delivery ),

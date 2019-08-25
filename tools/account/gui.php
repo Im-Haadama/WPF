@@ -54,16 +54,11 @@ function gui_select_client( $id, $value, $args = null ) {
 		$sql_where = "where 1 order by 2";
 	}
 
-	// print $sql_where;
-//	$id, $table, $selected = null, $events = null, $more_values = null, $name = null, $where = null,
-//	$include_id = false, $datalist = false, $order_by = null, $id_key = null;
 	$args = array("name" => "client_displayname(%s)", "include_id" => 1, "where"=> $sql_where, "events" => $events, "value"=>$value, "datalist" => 1);
 	return GuiSelectTable( $id, "wp_users", $args);
-	// $value, $events, "", "display_name",$sql_where, true, true );
 }
 
 function gui_select_client_type( $id, $value, $events = null ) {
-	// print $sql_where;
 	$none = array( "id" => 0, "type" => "רגיל" );
 
 	return gui_select_table( $id, "im_client_types", $value, $events, array( $none ), "type",
@@ -76,21 +71,12 @@ function gui_select_path_code( $id, $selected = 0, $events = "" ) {
 		"path_code", "where date > CURDATE()", true, false, null, "path_code" );
 }
 
-function gui_select_mission( $id, $selected = 0, $events = "" ) {
-//	IFNULL(DATE,NOW()) >= NOW()
-	$sql_where = " where date >= curdate() or date is null";
-	// print "events: " . $events . "<br/>";
+function gui_select_mission( $id, $selected = 0, $args = null ) {
+	$events = GetArg($args, "events", null);
 
-	// print $sql_where;
-	//print "selected: " . $selected . "<br/>";
-//	$s = "";
-//	if ($selected) $s = $selected . ") " . get_mission_name($selected);
+	$sql_where = " where date >= curdate() or date is null";
 	return gui_select_table( $id, "im_missions", $selected, $events, array( 1 ),
 		"ifnull(concat (name, ' ', DAYOFMONTH(date), '/', month(date)), name)", $sql_where, true, false, "date" );
-}
-
-function gui_edit_user( $user_id ) {
-	print gui_hyperlink( "", "../account/get-customer-account.php?customer_id=" . $user_id );
 }
 
 function gui_select_payment( $id, $events, $default ) {

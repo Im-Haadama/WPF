@@ -424,7 +424,7 @@ function check_active( $id, $repeat_freq ) {
 	// Date(date) = curdate() - due today. (or should it be finish date?)
 
 	$running_id = sql_query_single_scalar("select id from im_tasklist where task_template = " . $id .
-	                                      " and (status < 2 or date(date) = curdate()) limit 1");
+	                                      " and (status < 2 or date(ended) = curdate()) limit 1");
 
 	if ( $running_id ) {
 		return "0 " . $running_id;

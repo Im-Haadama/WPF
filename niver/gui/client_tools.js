@@ -7,25 +7,15 @@ function changed(field) {
     document.getElementById("chk_" + subject).checked = true;
 }
 
-function update_table_field(post_file, table_name, id, field_name, finish_action) {
-    var value = get_value_by_name(field_name);
-    var request = post_file + "?operation=update_field" +
-        "&table_name=" + table_name +
-        "&field_name=" + field_name +
-        "&value=" + encodeURI(value) +
-        "&id=" + id;
-
-    execute_url(request, finish_action);
-}
-
-function update_field(post_file, id, field_name, finish_action) {
-    var value = get_value_by_name(field_name);
-    var request = post_file + "?operation=update_field" +
-        "&field_name=" + field_name +
-        "&value=" + encodeURI(value) +
-        "&id=" + id;
-
-    execute_url(request, finish_action);
+// In grid of rows, the pass argument should be the row ID.
+// In single row edit the passed argument should be the fieid id.
+function changed_field(id)
+{
+    var f = document.getElementById("chk_" + id);
+    if (f)
+        f.checked = true;
+    else
+        f = 'aaa'; // hook for breatpoint
 }
 
 function get_select_text(element_name) {

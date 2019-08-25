@@ -18,6 +18,7 @@
 require_once( "inputs.php" );
 
 require_once( ROOT_DIR . "/niver/data/sql.php" );
+require_once(ROOT_DIR . "/niver/data/translate.php");
 
 /**
  * Table header gets a sql query and returns array to be used as header, usually in html table.
@@ -32,7 +33,8 @@ function TableHeader($sql, $add_checkbox = false, $skip_id = false, $meta_fields
 {
 	$result = sql_query( $sql );
 	// We need only the header. Remove query and replace with false.
-	$sql = substr($sql, 0, strpos($sql, "where")) . " where 1 = 0";
+	if (strstr($sql, "where"))
+		$sql = substr($sql, 0, strpos($sql, "where")) . " where 1 = 0";
 	if (! $result)
 		return null;
 
@@ -44,7 +46,7 @@ function TableHeader($sql, $add_checkbox = false, $skip_id = false, $meta_fields
 		while ($row = sql_fetch_row($result))
 		{
 			if (! $skip_id or strtolower($row[0]) !== "id") {
-				array_push($headers, $row[0]);
+				array_push($headers, im_translate($row[0]));
 			} else {
 				if ($debug) print "skip header";
 			}
@@ -52,15 +54,13 @@ function TableHeader($sql, $add_checkbox = false, $skip_id = false, $meta_fields
 	} else { // Select
 		$i      = 0;
 		$fields = mysqli_fetch_fields( $result );
-		// var_dump($fields);
-		// var_dump($header);
 		if ( $add_checkbox ) {
 			array_push( $headers, "" );
 		} // future option: gui_checkbox("chk_all", ""));
 		foreach ( $fields as $val ) {
-			// print $val->name . "<br/>";
-			if (! $skip_id or strtolower($val->name) !== "id")
-				array_push( $headers, $val->name );
+			if (! $skip_id or strtolower($val->name) !== "id") {
+				array_push( $headers, im_translate($val->name) );
+			}
 			$i ++;
 		}
 	}
@@ -75,36 +75,46 @@ function TableHeader($sql, $add_checkbox = false, $skip_id = false, $meta_fields
 
 /**
  * PrepareRow - adds links, selectors and edit inputs.
+ *
  * @param $row
  * @param $args
+ *
+ * @param $row_id
  *
  * @return array
  */
 function PrepareRow($row, $args, $row_id)
 {
-	$checkbox_class = null;
-
 	$skip_id = GetArg($args, "skip_id", false);
 	$links = GetArg($args, "links", null);
 	$edit = GetArg($args, "edit", false);
 	$selectors = GetArg($args, "selectors", null);
 	$actions = GetArg($args, "actions",null);
-	$add_checkbox = GetArg($args, "add_checkbox", false);
+	$edit_cols = GetArg($args, "edit_cols", null);
+	$transpose = GetArg($args, "transpose", null);
+	$debug = 0;
 
-	$events = GetArg($args, "events", $add_checkbox ? 'onchange="changed(this)"' : null);
+	$events = GetArg($args, "events", null); // $edit ? "onchange='changed_field(" . $row_id . ")'" : null); // Valid for grid. In transposed single row it will be replaced.
+	// print "e=" . $events;
 	$table_name = GetArg($args, "table_name", null);
 
 	$row_data = array();
 
-	$debug = false;
 	if ($debug and ! $table_name) print "no table name<br/>";
 
 	if ($debug){
 		print "start " . __FUNCTION__ . "<br/>";
 	}
 
+	if (! is_array($row))
+	{
+		print __FUNCTION__ . "invalid row ";
+		var_dump($row);
+		return $row;
+	}
 	foreach ( $row as $key => $data )
 	{
+		$input_name = substr($key, 0, 3) . '_' . $row_id;
 		$orig_data = $data;
 		$value = $data; // Default;
 		if ($debug) print  "<br/>handling $key ";
@@ -114,20 +124,31 @@ function PrepareRow($row, $args, $row_id)
 				continue;
 			}
 		}
-		if ($edit) {
-			$field_events = sprintf( $events, $key );
+		if ($edit and (! $edit_cols or $edit_cols[$key])) {
+			if ($transpose){
+				$field_events = sprintf($events, "'" . $key . "'", $row_id);
+//				 print "EE=" . $field_events . "<br/>";
+			}
+			else
+				$field_events = sprintf( $events, $row_id, $key );
+			$args["events"] = $field_events;
 			if ( $selectors and array_key_exists( $key, $selectors ) ) {
+				if ($debug) print "has selector ";
 				$selector_name = $selectors[ $key ];
 				if ( strlen( $selector_name ) < 2 ) {
 					die( "selector " . $key . "is empty" );
 				}
-				$value = $selector_name( $key, $orig_data, $args); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
+				$value = $selector_name( $input_name, $orig_data, $args); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
 			} else {
+//				if ($key == $id_col){
+//					if ($debug) print "in id. $row_id";
+//					$value = $row_id;
+//				} else
 				if ( $table_name ) {
 					$type = sql_type( $table_name, $key );
 					switch ( substr( $type, 0, 3 ) ) {
 						case 'dat':
-							$value = gui_input_date( $key, null, $data, $events );
+							$value = gui_input_date( $input_name, null, $data, $field_events );
 							break;
 						case 'var':
 							$length = 10;
@@ -136,21 +157,21 @@ function PrepareRow($row, $args, $row_id)
 								$length = $r[1][0];
 							}
 							if ( $length > 100 ) {
-								$value = gui_textarea( $key, $data, $field_events );
+								$value = gui_textarea( $input_name, $data, $field_events );
 							} else {
-								$value = gui_input( $key, $data, $field_events );
+								$value = GuiInput($input_name, $data, $args); // gui_input( $input_name, $data, $field_events, $row_id );
 							}
 							break;
 						default:
-							$field_events = sprintf( $events, $key );
-							$value        = gui_input( $key, $data, $field_events );
+							// $field_events = sprintf( $events, $row_id, $key );
+							$value        = GuiInput($input_name, $data, $args); //gui_input( $input_name, $data, $field_events, $row_id );
 							break;
 					}
 				} else {
 					if ( $debug ) {
 						var_dump( $data );
 					}
-					$value = gui_input( $key, $data, $field_events );
+					$value = GuiInput($input_name, $data, $args); //gui_input( $key, $data, $field_events, $row_id);
 				}
 			}
 		} else {
@@ -170,7 +191,8 @@ function PrepareRow($row, $args, $row_id)
 				$value = gui_hyperlink( $value, sprintf( $links[ $key ], $data ) );
 			}
 		}
-		array_push( $row_data, $value );
+		$row_data[$key] = $value;
+		//array_push( $row_data, $value );
 //		$first_row = false;
 	}
 
@@ -216,6 +238,7 @@ function TableData($sql, &$args = null)
 	$values = GetArg($args, "values", null);
 	$v_checkbox = GetArg($args, "v_checkbox", null);
 	$sum_fields = &GetArg($args, "sum_fields", null);
+	$checkbox_class = GetArg($args, "checkbox_class", "checkbox");
 
 	$table_names = array();
 	if (preg_match_all("/from ([^ ]*)/" , $sql, $table_names))
@@ -223,11 +246,8 @@ function TableData($sql, &$args = null)
 		$args["table_name"] = $table_names[1][0];
 	}
 
-	if ( $header ) {
-		$header_line = TableHeader($sql, false, $skip_id, $meta_fields);
-	} else {
-		 $header_line = null;
-	}
+	$header_line = $header ? TableHeader($sql, false, $skip_id, $meta_fields) : null;
+
 	$row_count = 0;
 
 	$v_line = $v_checkbox ? array() : null;
@@ -237,37 +257,45 @@ function TableData($sql, &$args = null)
 		$new_row = array();
 		while ( $row = mysqli_fetch_assoc( $result ) ) {
 			$key = $row["Field"];
-			if ($key == $id_field)
-				continue;
 			if ($values and isset($values[$key])) {
 				$new_row[$key] = $values[$key];
 			} else {
 				$new_row[$key] = null;
 			}
 			if ($v_line !== null) {
-				$v_line[$key] = gui_checkbox("chk_" . $key, "checkbox", $new_row[$key] != null);
+				if (! $skip_id or ($key != $id_field))
+					$v_line[$key] = gui_checkbox("chk_" . $key, $checkbox_class, $new_row[$key] != null);
 			}
 		}
-		$new_row = PrepareRow($new_row, $args, null);
 
-		if ($v_line) array_push($rows_data, $v_line);
+		if ($v_line){
+			array_push($rows_data, $v_line);
+		}
 		if ($header_line) array_push ($rows_data, $header_line);
 		array_push($rows_data, $new_row);
 		return $rows_data;
 	} else {
-		if ($header_line)
-			array_push($rows_data, $header_line);
-
 		while ( $row = mysqli_fetch_assoc( $result ) ) {
-			$row_id = $row[$id_field];
-			if (! $row_id)
-			{
+			$the_row = array();
+			$row_id  = $row[ $id_field ];
+			if ( ! $row_id ) {
 				// Error... We don't have a valid row ID.
 				print "<br/>field id:" . $id_field . "<br/>";
-				var_dump($row); print "<br/>";
-				die(__FUNCTION__ . ":" . __LINE__ . "no row id");
+				var_dump( $row );
+				print "<br/>";
+				die( __FUNCTION__ . ":" . __LINE__ . "no row id" );
 			}
-			// print $key;
+			foreach ( $row as $key => $cell ) {
+//				if ( ! $skip_id or strtolower( $key ) !== "id" ) {
+					$the_row[$key] = $cell;
+					// array_push( $the_row, $cell );
+//				}
+				if ($v_checkbox){
+					if (! $skip_id or ($key != $id_field))
+						$v_line[$key] = gui_checkbox("chk_" . $key, $checkbox_class, false);
+				}
+			}
+
 			$row_count ++;
 
 			if ($meta_fields and is_array($meta_fields))
@@ -277,13 +305,25 @@ function TableData($sql, &$args = null)
 					" and meta_key = " . quote_text($meta_key));
 
 					$key = $meta_table . '/'. $meta_key;
-					$row[$key] = $meta_value;
+					$the_row[$key] = $meta_value;
 				}
 			}
-			$row = PrepareRow($row, $args, $row_id);
-			if ($sum_fields)
+			if ($sum_fields) {
 				HandleSum($sum_fields, $row);
-			array_push($rows_data, $row);
+			}
+
+			if ($v_line){
+				array_push($rows_data, $v_line);
+				$v_checkbox = false;
+				$v_line = null;
+			}
+
+			if ($header_line) {
+				array_push($rows_data, $header_line);
+				$header_line = null;
+			}
+
+			array_push($rows_data, $the_row);
 		}
 		if ($sum_fields) {
 			$total_line = array();
@@ -297,11 +337,14 @@ function TableData($sql, &$args = null)
 
 function HandleSum(&$sum_fields, $row)
 {
-	for ($i = 0; $i < count($row); $i++)
+	foreach ($row as $key => $cell)
 	{
-		if (is_array($sum_fields[$i]) and function_exists($sum_fields[$i][1]))
-			$sum_fields[$i][1]($sum_fields[$i][0], $row[$i]);
-
+		if (is_array($sum_fields[$key]) and function_exists($sum_fields[$key][1])) {
+//			 print "summing " . $sum_fields[$key][0][2] . "<br/>";
+			$sum_fields[$key][1]($sum_fields[$key][0], $cell);
+		} else {
+//			print "not summing " . is_array($sum_fields[$key]) . " " . function_exists($sum_fields[$key][1]) . "<br/>";
+		}
 	}
 }
 
@@ -378,63 +421,9 @@ function NewRow($table_name, $args)
 {
 	$args["edit"] = true;
 	$args["table_name"] = $table_name;
-	$args["v_checkbox"] = true;
-	$args['events'] = 'onchange="changed(this)"';
-//	$args["show_cols"] = array(0 => false);
+	$args['events'] = 'onchange="changed_field(\'%s\')"';
 	return GuiRowContent($table_name, null, $args);
-
-//	$skip_id = GetArg($args, "skip_id", true);
-//	$header = TableHeader($sql, false, $skip_id);
-//	$empty_row = array();
-//	$result = sql_query($sql);
-//	while ($row = sql_fetch_row($result)){
-//		$key = $row[0];
-//		if ($key === "id") continue;
-//		$value = '';
-//		if (isset($args["fields"]) and isset($args["fields"][$key])) {
-//			$value = $args["fields"][$key];
-//		}
-//		array_push($empty_row, gui_input($key, $value));
-//	}
-//	return gui_table_args(array($header, $empty_row), $table_name, $args);
 }
-
-//function NewRow($table_name, $args = null, $transpose = false)
-//{
-//	$sql = "describe $table_name";
-//
-//	$skip_id = true;
-//
-//	$header = TableHeader($sql, false, $skip_id);
-//	// var_dump($header);
-//	$result = sql_query($sql);
-//	if ($result){
-//		$add_checkbox = GetArg($args, "add_checkbox", false);
-//		$checkbox_class = GetArg($args, "checkbox_class", false);
-//		$data = array();
-//		while ($row = sql_fetch_row($result)){
-//			$key = $row[0];
-//			if ($key === "id") continue;
-//			$value = '';
-//			if (isset($args["fields"]) and isset($args["fields"][$key])) {
-//				$value = $args["fields"][$key];
-//			}
-//			array_push($data, gui_input($key, $value));
-//		}
-//		$table = array($header, $data);
-//		if ($transpose)
-//			$table = array_map(null, ...$table);
-//
-//		if ($add_checkbox and $transpose){
-//			for ($i = 0; $i < count($table); $i++)
-//			{
-//				array_unshift($table[$i], gui_checkbox("chk_" . $table[$i][0], $checkbox_class, false));
-//			}
-//		}
-//		return gui_table($table, $table_name);
-//	}
-//}
-
 
 /**
  * Get recorder from the database and display in html table.
@@ -446,9 +435,17 @@ function NewRow($table_name, $args)
  */
 function GuiRowContent($table_name, $row_id, $args)
 {
+	$args['first_row_to_prepare'] = 2;
+
 	$id_key = GetArg($args, "id_key", "id");
 	if (! isset($args["skip_id"])){
 		$args["skip_id"] = true;
+	}
+	$edit = GetArg($args, "edit", false);
+	if ($edit) {
+		$args["v_checkbox"] = 1;
+		$args["transpose"] = 1;
+		$args["events"] = 'onchange="changed_field(%s)"';
 	}
 	if ($row_id) {
 		$sql = "select * from $table_name where " . $id_key . " = " . $row_id;

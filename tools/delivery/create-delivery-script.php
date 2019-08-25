@@ -5,6 +5,8 @@ require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( "../../wp-includes/pluggable.php" );
 require_once( "../account/account.php" );
 
+print gui_select_product("datalist", '', array("datalist" => "im_products"));
+
 $id       = isset( $_GET["id"] ) ? $_GET["id"] : null;
 $order_id = $_GET["order_id"];
 $edit     = false;
@@ -103,7 +105,8 @@ print gui_datalist( "draft_items", "im_products_draft", "post_title", true );
 //        row.insertCell(0).style.visibility = false;              // 0 - select
         var list = "items";
         if (draft) list = "draft_items";
-        var input = "<?php print gui_select_product( "nam_XX", "onchange=\\\"getPrice(XX)\\\"", "YYY" ); ?>";
+        var input = "<?php $args = array("events" => "onchange=\\\"getPrice(XX)\\\"", "datalist" => "YYY");
+            print escape_string(gui_select_product( "nam_XX", '', $args )); ?>";
         input = input.replace(/XX/g, line_id);
         input = input.replace(/YYY/g, list);
 

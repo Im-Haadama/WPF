@@ -97,7 +97,7 @@ global $pos;
             var product = new_row.insertCell(0);
 
             //product.innerHTML = "<input id=\"nam_" + line_idx + "\" list=\"items\" onchange=\"select_product(" + line_idx + ")\">";
-            var select = "<?php print gui_input_select_from_datalist( "XX", "products", "onchange=\\\"select_product(YYY)\\\"" ); ?>";
+            var select = "<?php print gui_input_select_from_datalist( "XX", "products", "onfocusout=\\\"select_product(YYY)\\\"" ); ?>";
             product.innerHTML = select.replace("XX", "nam_" + line_idx).replace("YYY", line_idx);
             var quantity = new_row.insertCell(1);
 			<?php
@@ -177,8 +177,7 @@ global $pos;
 
             // Check info
             document.getElementById('add_order').disabled = true;
-            var user_name = get_value(document.getElementById("client_select"));
-            var user_id = user_name.substr(0, user_name.indexOf(")"));
+            var user_id = get_value(document.getElementById("client_select"));
             if (!(user_id > 0)) {
                 add_message("יש לבחור לקוח, כולל מספר מזהה מהרשימה");
                 document.getElementById('add_order').disabled = false;
@@ -213,8 +212,8 @@ global $pos;
             var line_number = 0;
 
             for (var i = 1; i < item_table.rows.length; i++) {
-                var prod = get_value(document.getElementById("nam_" + i));
-                var prod_id = prod.substr(0, prod.indexOf(")"));
+                var prod_id = get_value(document.getElementById("nam_" + i));
+                // var prod_id = prod.substr(0, prod.indexOf(")"));
                 var q = get_value(document.getElementById("qua_" + i));
                 if (q > 0 && !(prod_id > 0)) {
                     alert("אנא בחר מוצר מתוך הרשימה " + prod + " למחיקה, אפס את הכמות");
@@ -292,10 +291,10 @@ global $pos;
         }
 
         function getPrice(my_row) {
-            var prod = get_value(document.getElementById("nam_" + my_row))
-            if (prod.length = 0) return;
+            var product_id = get_value(document.getElementById("nam_" + my_row))
+            // if (prod.length = 0) return;
 
-            var product_id = prod.substr(0, prod.indexOf(")"));
+            // product_id = prod.substr(0, prod.indexOf(")"));
             if (!(product_id > 0)) {
                 alert("לא נבחר מוצר");
                 return;

@@ -11,7 +11,9 @@ require_once( "Supply.php" );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( "../account/gui.php" );
 
-print header_text( false, true, true, "/vendor/sorttable.js" );
+print header_text( false, true, true,
+    array("/vendor/sorttable.js",	"/niver/gui/client_tools.js")
+);
 
 $print = false;
 if ( isset( $_GET["print"] ) ) {
@@ -74,8 +76,7 @@ $s = new Supply( $id );
     }
     function add_item() {
         var request_url = "supplies-post.php?operation=add_item&supply_id=<?php print $id; ?>";
-        var _name = encodeURI(get_value(document.getElementById("itm_")));
-        var prod_id = _name.substr(0, _name.indexOf(")"));
+        var prod_id = get_value_by_name("itm_");
         request_url = request_url + "&prod_id=" + prod_id;
         var _q = 1; // encodeURI(get_value(document . getElementById("qua_")));
         request_url = request_url + "&quantity=" + _q;
@@ -145,14 +146,14 @@ print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_missio
 
 ?>
 
-<table id="items"></table>
+<div id="items"></div>
 <button id="btn_del" onclick="deleteItems()">מחק שורות</button>
 <button id="btn_update" onclick="updateItems()">עדכן שורות</button>
 
 <div id="add_items">
 	<?php
 	print gui_button( "btn_add_line", "add_item()", "הוסף" );
-	print gui_select_product( "itm_", "" );
+	print gui_select_product( "itm_" );
 	?>
     <!--    <input id="itm_" list="prods">-->
 </div>
@@ -184,10 +185,10 @@ print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_missio
             + "&id=<?php print $id; ?>", "update_display()");
     }
 
-    function changed(field) {
-        var subject = field.name;
-        document.getElementById("chk" + subject).checked = true;
-    }
+    // function changed(field) {
+    //     var subject = field.name;
+    //     document.getElementById("chk_" + subject).checked = true;
+    // }
 
     function update_display() {
         xmlhttp = new XMLHttpRequest();
@@ -239,21 +240,18 @@ print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_missio
                     }
                 }
                 xmlhttp1.send();
-
             }
         }
         xmlhttp.send();
     }
 
     function updateItems() {
-        var table = document.getElementById('del_table');
-
         var collection = document.getElementsByClassName("supply_checkbox");
         var params = new Array();
         for (var i = 0; i < collection.length; i++) {
             if (collection[i].checked) {
                 // var name = get_value(table.rows[i+1].cells[0].firstChild);
-                var line_id = collection[i].id.substr(3);
+                var line_id = collection[i].id.substr(4);
 
                 params.push(line_id);
                 params.push(get_value(document.getElementById(line_id)));
@@ -287,7 +285,7 @@ print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_missio
         for (var i = 0; i < collection.length; i++) {
             if (collection[i].checked) {
                 // var name = get_value(table.rows[i+1].cells[0].firstChild);
-                var line_id = collection[i].id.substr(3);
+                var line_id = collection[i].id.substr(4);
 
                 params.push(line_id);
             }

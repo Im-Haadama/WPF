@@ -121,6 +121,8 @@ function orders_per_item( $prod_id, $multiply, $short = false, $include_basket =
 	}
 	$sql .= ")";
 
+//	print $sql . "<br/>";
+
 	// my_log( $sql, "get-orders-per-item.php" );
 
 	$result = sql_query( $sql);
@@ -135,7 +137,7 @@ function orders_per_item( $prod_id, $multiply, $short = false, $include_basket =
 		$pid = get_order_itemmeta( $order_item_id, '_product_id' );
 		if ( is_bundle( $pid ) ) {
 			$b        = Bundle::CreateFromBundleProd( $pid );
-			$quantity *= $b->GetQuantity();
+			$quantity = $b->GetQuantity();
 		}
 		if ( is_basket( $pid ) ) {
 			$b        = new Basket( $pid );
@@ -143,11 +145,14 @@ function orders_per_item( $prod_id, $multiply, $short = false, $include_basket =
 		}
 		$first_name    = get_postmeta_field( $order_id, '_shipping_first_name' );
 		$last_name     = get_postmeta_field( $order_id, '_shipping_last_name' );
+
 		$total_quantity += $quantity;
 
 		if ( $short ) {
+//			print "short $first_name<br/>";
 			$lines .= $quantity . " " . $last_name . ", ";
 		} else {
+//			print "long<br/>";
 			$line  = "<tr>" . "<td> " . gui_hyperlink( $order_id, "get-order.php?order_id=" . $order_id ) . "</td><td>" . $quantity * $multiply . "</td><td>" . $first_name . "</td><td>" . $last_name . "</td></tr>";
 			$lines .= $line;
 		}

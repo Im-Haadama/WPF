@@ -95,5 +95,6 @@ $args = array();
 $args["links"] = $links;
 $args["class"] = "sortable";
 
-$sql = "select * from im_projects";
+$sql = "select * 
+from im_projects";
 print GuiTableContent($table_name, $sql, $args);

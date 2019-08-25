@@ -14,6 +14,7 @@ if ( ! defined( "ROOT_DIR" ) ) {
 }
 
 require_once( ROOT_DIR . '/im-config.php' );
+require_once( ROOT_DIR . '/niver/fund.php' );
 
 $backup_dir = IM_BACKUP_FOLDER;
 
@@ -46,7 +47,8 @@ if (! file_exists($backup_dir)){
 
 	switch ( $op ) {
 		case "name":
-			print get_file_name();
+			$date = get_param("date");
+			print get_file_name($date);
 			exit( 0 );
 		case "file":
 			$file = get_file_name();
@@ -69,14 +71,14 @@ if (! file_exists($backup_dir)){
 	// print $file_name;
 
 
-function get_file_name()
+function get_file_name($date)
 {
 	global $backup_dir;
 
 	$content = scandir( $backup_dir, SCANDIR_SORT_DESCENDING );
 	foreach ($content as $c)
 	{
-		if (substr($c, 0, 1) != "." and ! strstr($c, "err")) {
+		if (substr($c, 0, 1) != "." and ! strstr($c, "err") and strstr($c, $date)) {
 			return $c;
 		}
 	}

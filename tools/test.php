@@ -10,7 +10,12 @@
 //ini_set( 'display_errors', 'on' );
 
 require_once( "im_tools.php" );
-require_once( "wp/Product.php" );
+
+require_once("catalog/gui.php");
+print gui_select_product("xx");
+
+die (1);
+
 //print header_text( false, true, false );
 //
 //print valid_key( "2wX8xpY7S5rmbyTBBENVUdHbKRxlOqqH" );

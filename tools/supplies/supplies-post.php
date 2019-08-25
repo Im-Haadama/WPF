@@ -111,6 +111,7 @@ if ( isset( $_GET["operation"] ) ) {
 			$internal    = isset( $_GET["internal"] );
 			$categ_group = get_param( "categ_group" );
 			$Supply      = new Supply( $supply_id );
+			// print header_text(true);
 			print $Supply->Html( $internal, true, $categ_group );
 			break;
 

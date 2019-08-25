@@ -5,6 +5,7 @@ if ( ! defined( "ROOT_DIR" ) ) {
 }
 
 require_once(ROOT_DIR . "/tools/im_tools.php");
+require_once( '../r-shop_manager.php' ); // for authentication
 
 $operation = get_param("operation", true);
 
@@ -20,12 +21,10 @@ $ignore_list = array("operation", "table_name", "id");
 if ( $operation )
 	switch ( $operation ) {
 		case "new":
-//        print "adding...";
 			$sql    = "INSERT INTO $table_name (";
 			$values = "values (";
 			$first  = true;
 			foreach ( $_GET as $key => $value ) {
-				//print $key . "<br/>";
 				if (in_array($key, $ignore_list))
 					continue;
 				if ( ! $first ) {
@@ -55,7 +54,6 @@ if ( $operation )
 			$values = array();
 			$row_id = intval(get_param("id", true));
 			foreach ( $_GET as $key => $value ) {
-				//print $key . "<br/>";
 				if (in_array($key, $ignore_list))
 					continue;
 				if ( ! $first ) {
@@ -66,8 +64,6 @@ if ( $operation )
 				$first  = false;
 			}
 			$sql .= " where id=$row_id";
-//			print $sql;
-//			print $sql;
 			$stmt = $conn->prepare($sql);
 			if (! $stmt) {
 				die ($conn->error);
@@ -77,7 +73,6 @@ if ( $operation )
 			$types = "";
 			$values = array();
 			foreach ( $_GET as $key => $value ) {
-				//print $key . "<br/>";
 				if (in_array($key, $ignore_list))
 					continue;
 				$type = sql_type($table_name, $key);
@@ -102,10 +97,7 @@ if ( $operation )
 						die(1);
 				}
 				array_push($values, $value);
-				// print "$type $value<br/>";
 			}
-//			print "types=$types<br/>";
-//			var_dump($values); print "<br/>";
 
 			if (! $stmt->bind_param($types, ...$values))
 			{
@@ -120,6 +112,6 @@ if ( $operation )
 			break;
 
 		default:
-			print "no operation<br/>";
+			print "no operation handler for $operation<br/>";
 			die( 2 );
 	}

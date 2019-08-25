@@ -10,11 +10,10 @@ if ( ! defined( "ROOT_DIR" ) ) {
 	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
 }
 
-error_reporting( E_ALL );
-ini_set( 'display_errors', 1 );
+require_once( '../r-shop_manager.php' );
 
-require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( ROOT_DIR . '/tools/im_tools_light.php' );
+require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once(ROOT_DIR . '/niver/gui/sql_table.php');
 
 $this_url = "admin.php";
@@ -70,8 +69,8 @@ if ( $part_id ) {
 	print gui_header( 2, get_supplier_name( $part_id ) );
 	$page  .= " and part_id = " . $part_id;
 	$links = array( "invoice_table.php?row_id=%s" );
-	print table_content( "transactions", "select id, date as 'תאריך', amount as 'סכום', net_amount as 'סכום נקי', ref as 'סימוכין', pay_date as 'תאריך תשלום'
-        from im_business_info where " . $page . " order by 2", true, true, $links );
+	print table_content( "transactions", "select id, date, amount, net_amount, ref, pay_date " .
+        " from im_business_info where " . $page . " order by 2", true, true, $links );
 
 	$date = date( 'Y-m-d', strtotime( "last day of previous month" ) );
 

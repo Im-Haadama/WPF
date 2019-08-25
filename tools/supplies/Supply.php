@@ -277,8 +277,9 @@ class Supply {
 
 		array_push( $rows, $row );
 
-		$sum = array();
-		$data = gui_table( $rows, "supply_table", true,  true, $sum, "", "sortable");
+		$args = array();
+		// $args["class"] = "sortable";
+		$data = gui_table_args( $rows, "supply_table", $args);
 
 		return $data;
 	}
@@ -302,13 +303,43 @@ class Supply {
 
 	// $internal - true = for our usage. false = for send to supplier.
 	function HtmlLines( $internal, $edit = 1, $categ_group = false ) {
-//		print "E=" . $edit . "<br/>";
+
 		$data_lines = array();
 		my_log( __FILE__, "id = " . $this->ID . " internal = " . $internal );
-		$sql = 'select product_id, quantity, id, units '
+		$sql = 'select product_id as `Product Name`, quantity as Quantity, id as Id, units as Units'
 		       . ' from im_supplies_lines where status = 1 and supply_id = ' . $this->ID;
 
+		$args = array("id_field" => "Id", "add_checkbox" => true,
+			"selectors" => array("Product Name" => "gui_select_product"),
+			          "id_key" => "ID",
+			          "edit" => $edit,
+			          "show_cols" => array(1, 1, 1, 0, 0, $internal, $internal, $internal),
+			          "edit_cols" => array("Quantity" => true),
+			          "checkbox_class" => "supply_checkbox",
+			          "id_col" => "Id",
+			          "id_col_idx" => 2);
+
+		$rows_data = TableData( $sql, $args);
+
+		if ( $internal){
+			array_push($rows_data[0], "Buy Price");
+			array_push($rows_data[0], "Total");
+			array_push($rows_data[0], "Buyers");
+
+			for ($i = 1; $i < count($rows_data); $i++)
+			{
+				$prod_id = $rows_data[$i]["Product Name"];
+				$buy_price = get_buy_price($prod_id, $this->getSupplier());
+				array_push($rows_data[$i], $buy_price);
+				array_push($rows_data[$i], $buy_price * $rows_data[$i]["Quantity"]);
+				array_push($rows_data[$i], orders_per_item( $prod_id, 1, true, true, true ));
+			}
+		}
+
+	 return gui_table_args( $rows_data, "supply_" . $this->getID(), $args );
+		// GuiTableContent("supply", $sql, $args);
 		$result = sql_query( $sql );
+
 
 		$data = "<table id=\"del_table\" border=\"1\"><tr><td>בחר</td><td>מקט</td><td>פריט</td><td>כמות</td><td>יחידות</td>";
 		if ( ! $edit ) {
