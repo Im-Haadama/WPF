@@ -126,13 +126,13 @@ function show_trans( $customer_id, $view = eTransview::default ) {
 			$top = 100;
 			break;
 	}
-	$sql = 'select date as תאריך,
-	 transaction_amount as סכום,
-	  client_balance(client_id, date) as יתרה,
-	   transaction_method as תנועה,
-	    transaction_ref as סימוכין, 
-		order_from_delivery(transaction_ref) as הזמנה,
-		delivery_receipt(transaction_ref) as קבלה,
+	$sql = 'select id, date,
+	 transaction_amount,
+	  client_balance(client_id, date) as balance,
+	   transaction_method,
+	    transaction_ref, 
+		order_from_delivery(transaction_ref) as order_id,
+		delivery_receipt(transaction_ref) as receipt,
 		id'
 	       . ' from im_client_accounts where client_id = ' . $customer_id;
 
@@ -140,7 +140,6 @@ function show_trans( $customer_id, $view = eTransview::default ) {
 		$sql .= " and transaction_method = 'משלוח' ";
 
 	$sql .= ' order by date desc ';
-//	 print $sql . "<br/>";
 
 	if ( $top ) {
 		$sql .= " limit " . $top;
@@ -150,25 +149,28 @@ function show_trans( $customer_id, $view = eTransview::default ) {
 	$args["links"] = array();
 	$args["links"]["סימוכין"] = "/tools/delivery/get-delivery.php?id=%s";
 	$args["links"]["הזמנה"] = "/tools/orders/get-order.php?order_id=%s";
-	$args["col_ids"] = array("chk", "dat", "amo", "bal", "des", "del", "ord");
-	$id_col = 8;
-	$args["show_cols"] = array(); $args["show_cols"][$id_col] = 0;
-	$args["id_col"] = $id_col;
+	$args["col_ids"] = array("chk", "id", "dat", "amo", "bal", "des", "del", "ord");
+	$args["show_cols"] = array(); $args["show_cols"]['id'] = 0;
+	$args["add_checkbox"] = false; // Checkbox will be added only to unpaid rows
 	$first = true;
 
 	$data1 = TableData($sql, $args);
+
+//	var_dump($data1);
 	foreach ($data1 as $id => $row)
 	{
-		$row_id = $data1[$id][7];
+		$row_id = $row['id'];
+//		print "row_id=" . $row_id . " " . $id . "<br/>";
 		$value = "";
 		if ($first)
 		{
 			$first = false;
 			$value = "בחר";
 		} else {
-			if ($data1[$id][3] == "משלוח" and ! $data1[$id][6]){ // Just unpaid deliveries
+//			var_dump($data1[$id]); print"<br/>";
+			 if ($data1[$id]['transaction_method'] == "משלוח" and ! $data1[$id]['receipt']){ // Just unpaid deliveries
 				$value =  gui_checkbox("chk_" . $row_id, "trans_checkbox", false, "onchange=update_sum()");
-			}
+			 }
 		}
 		array_unshift($data1[$id], $value);
 	}

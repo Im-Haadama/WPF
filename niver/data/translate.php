@@ -10,18 +10,34 @@
 
 require_once( "sql.php" );
 
-function im_translate($text)
+function im_translate($text, $arg = null)
 {
 //	print "translating $text<br/>";
+	if (is_array($text)){
+		$result = "";
+		foreach ($text as $text_part)
+			$result .= im_translate($text_part, $arg);
+		return $result;
+	}
+
 	$t = translate($text, 'im_haadama');
 	// print $t . " " . strlen($t);
 	if (strlen($t))
 	{
+		if (strstr($t, "%s")){
+			return $arg ? sprintf($t, $arg) : $t;
+		}
 		return $t;
 	} else {
 		return $text;
 	}
 }
+
+function im_translate_arr($texts, $arg = null)
+{
+//	print "translating $text<br/>";
+}
+
 function translate2heb( $w ) {
 	return translate_word( $w, "en", "he" );
 }

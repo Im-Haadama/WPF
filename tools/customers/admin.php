@@ -9,7 +9,7 @@ $user_id = get_param("user_id", false, null);
 if ($user_id) { show_user($user_id); return; }
 
 
-$sql = "select id, client_displayname(id), client_last_order_date(id) as last_date, client_last_order(id) as last_order from wp_users
+$sql = "select id, client_displayname(id) as client, client_last_order_date(id) as 'last order date', client_last_order(id) as 'last order' from wp_users
 order by 3 desc
 limit 100";
 
@@ -25,12 +25,23 @@ print GuiTableContent("wp_users", $sql, $args);
 function show_user($user_id)
 {
 	$args = array("transpose" => true,
-	              "meta_fields" => array("preference", "auto_mail", "print_delivery_note"),
+	              "meta_fields" => array("preference", "auto_mail", "print_delivery_note",
+		              'billing_first_name',
+		              'billing_last_name',
+		              'billing_phone',
+		              'shipping_first_name',
+		              'shipping_last_name',
+		              'shipping_address_1',
+		              'shipping_address_2',
+		              'shipping_city',
+		              'shipping_postcode'
+	              ),
 	              "meta_table" => "wp_usermeta",
 		          "meta_key" => "user_id",
 		   		  "edit" => true,
-	              "add_checkbox" => true,
-	              "id_field" => "ID");
+	              // "add_checkbox" => true,
+	              "id_field" => "ID",
+		"fields" => array("ID", "user_email", "display_name"));
 
 	print gui_header(1, "משתמש מספר " . $user_id);
 	print GuiRowContent("wp_users", $user_id, $args);

@@ -6,6 +6,9 @@
  * Time: 11:58
  */
 
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
 // test
 // include_once( "../r-shop_manager.php" );
 if ( ! defined( "ROOT_DIR" ) ) {
@@ -58,8 +61,8 @@ class Supply {
 	}
 
 
-	public static function CreateFromFile( $file_name, $supplier_id, $debug = false ) {
-		$debug               = true;
+	public static function CreateFromFile( $file_name, $supplier_id, $args = null) {
+		$debug               = false;
 		$item_code_idx       = Array();
 		$name_idx            = Array();
 		$price_idx           = Array();
@@ -72,6 +75,7 @@ class Supply {
 		$parse_header_result = false;
 		$inventory_idx       = 0;
 		$prev_name           = "";
+		$needed_fields = GetArg($args, "needed_fields", array("price" => 1, "name" => 1));
 
 		$file = file( $file_name );
 		for ( $i = 0; ! $parse_header_result and ( $i < 4 ); $i ++ ) {
@@ -82,24 +86,36 @@ class Supply {
 			$parse_header_result = parse_header( $file[ $i ], $item_code_idx, $name_idx, $price_idx, $sale_idx, $inventory_idx,
 				$detail_idx, $category_idx, $is_active_idx, $filter_idx, $picture_idx, $quantity_idx );
 		}
-
+		// Name is mandatory.
 		if ( ! count( $name_idx ) ) {
-			print "Can't find name header.<br/>";
+			print im_translate(array("Error: ", "name column is missing."));
+			print "<br/>";
 
 			return null;
 		}
+		// Quantity is needed in supply (and orders).
 		if ( ! count( $quantity_idx ) ) {
-			print "Can't find quantity header.<br/>";
+			if ($needed_fields["quantity"]) {
+				print im_translate( array("Error: ", "quantity column is missing." ));
 
-			return null;
+				return null;
+			}
+			print im_translate(array("Info: ", "quantity column is missing."));
 		}
+
+		// Optional
 		if ( ! count( $item_code_idx ) ) {
-			print "Info: can't find item code header.<br/>";
+			print im_translate(array("Info: ", "can't find item code header")) . "<br/>";
 		}
-		if ( ! count( $price_idx ) ) {
-			print "Can't find price header.<br/>";
 
-			return null;
+		// Price is needed in pricelist.
+		if ( ! count( $price_idx ) ) {
+			if (isset($needed_fields["price"])){
+				print im_translate(array("Error: ",  "can't find price header")) ."<br/>";
+
+				return null;
+			}
+			print im_translate(array("Info: ", "can't find price header"));
 		}
 		if ( $debug ) {
 			print "headers: <br/>";
@@ -111,15 +127,16 @@ class Supply {
 			print "<br/>";
 		}
 
+		print "start " . count($file) . "<br/>";
 		$lines = array();
 		for ( ; $i < count( $file ); $i ++ ) {
 			$data = str_getcsv( $file[ $i ] );
 			if ( $data ) {
 				if ( isset( $is_active_idx ) and ( $data[ $is_active_idx ] == 1 ) ) {
-					// print $data[ $name_idx[ 0 ] ] . " not active. Skipped<br/>";
+					print $data[ $name_idx[ 0 ] ] . " not active. Skipped<br/>";
 					continue;
 				}
-				for ( $col = 0; $col < count( $price_idx ); $col ++ ) {
+				for ( $col = 0; $col < count( $name_idx ); $col ++ ) {  // The file can have more than one column
 					$name = $data[ $name_idx[ $col ] ];
 					if ( $name == $prev_name ) {
 						continue;
@@ -138,11 +155,11 @@ class Supply {
 						$item_code = $data[ $item_code_idx[ $col ] ];
 					}
 
-					if ( $price > 0 ) {
-						$new = array( $item_code, $quantity, $name, $price );
-						array_push( $lines, $new );
-					}
+					$new = array( $item_code, $quantity, $name, $price );
+					array_push( $lines, $new );
 				}
+			} else {
+				print "no data in line $i<br/>";
 			}
 		}
 		// var_dump($lines);
@@ -188,6 +205,7 @@ class Supply {
 			print " הספקה " . $Supply->getID() . " נוצרה <br/>";
 
 			$Supply->setText( $comments );
+			print "end<br>";
 
 			return $Supply;
 		}
@@ -315,9 +333,7 @@ class Supply {
 			          "edit" => $edit,
 			          "show_cols" => array(1, 1, 1, 0, 0, $internal, $internal, $internal),
 			          "edit_cols" => array("Quantity" => true),
-			          "checkbox_class" => "supply_checkbox",
-			          "id_col" => "Id",
-			          "id_col_idx" => 2);
+			          "checkbox_class" => "supply_checkbox");
 
 		$rows_data = TableData( $sql, $args);
 

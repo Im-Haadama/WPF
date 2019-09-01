@@ -26,7 +26,8 @@ if ( isset( $operation ) ) {
 //            print "aa";
 			$worker_id = get_param( "id" );
 //            print "w=" . $worker_id . "<br/>";
-			print gui_select_project( "select_project", 0, "", $worker_id );
+        $args = array("edit" => true, "worker" => $worker_id);
+			print gui_select_project( "select_project", 3, $args );
 
 			return;
 	}
@@ -154,7 +155,10 @@ array_push( $table, ( array(
 "עד שעה",
 '<input id="end_h" type="time" value="13:00" pattern="([1]?[0-9]|2[0-3]):[0-5][0-9]">'
 ) ) );
-array_push( $table, ( array( "פרויקט", gui_select_table( "project", "im_projects", "3", "", "", "project_name" ) ) ) );
+// array_push( $table, ( array( "פרויקט", gui_select_table( "project", "im_projects", "3", "", "", "project_name" ) ) ) );
+$args["edit"] = 1;
+// TODO: Get default project from user history or something...
+array_push( $table, ( array( "פרויקט", gui_select_project( "project",3, $args ) ) ) );
 
 print gui_table_args( $table );
 

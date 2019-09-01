@@ -27,8 +27,9 @@ function get_select_text(element_name) {
 
 function get_value_by_name(element_name) {
     var element = document.getElementById(element_name);
-    return get_value(element);
-
+    if (element)
+        return get_value(element);
+    return "not found";
 }
 
 function reset_message(message) {

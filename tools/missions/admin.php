@@ -53,7 +53,6 @@ if ( $row_id ) {
 	print gui_header( 1, $entity_name . " " . $row_id );
 	$args                 = array();
 	$args["edit"]         = 1;
-	$args["add_checkbox"] = true;
 	$args["skip_id"]      = true;
 	$args["transpose"] = true;
 

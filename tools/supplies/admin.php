@@ -41,11 +41,13 @@ function show_last_supplies()
 
 	$args = array("selectors" => $general_selectors,
 	              "events" => $update_event,
-	              "edit" => true);
+	              "edit" => true,
+		"links" => array("id" => "supply-get.php?id=%s"),
+		"selectors" => array("status" => "gui_select_supply_status", "supplier" => "gui_select_supplier"));
 
 	print gui_header( 1, "ניהול " . $entity_name_plural );
 
-	$sql = "select * from $table_name order by id desc limit 30";
+	$sql = "select id, status, date(date) as date, supplier, text, business_id as transaction, paid_date as 'Paid date' from $table_name where status != " . SupplyStatus::Deleted . " order by id desc limit 30";
 
 	print GuiTableContent( $table_name, $sql, $args );
 

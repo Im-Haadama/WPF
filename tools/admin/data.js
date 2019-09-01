@@ -10,9 +10,10 @@ function save_entity(table_name, id)
     let table = document.getElementById(table_name);
     let size = table.rows.length;
     for (let i = 0; i < size; i++){
-        let name = table.rows[i].cells[1].innerText;
-        if (get_value_by_name("chk_" + name)) {
-            operation += "&" + name + "=" + get_value_by_name(name.substr(0, 3) + "_" + id);
+        let chk_id = table.rows[i].cells[0].firstElementChild.id;
+        if (get_value_by_name(chk_id)) {
+            let name = chk_id.substr(4);
+            operation += "&" + name + "=" + encodeURIComponent(get_value_by_name(name + "_" + id));
         }
     }
     // alert(operation);

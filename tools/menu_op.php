@@ -103,7 +103,7 @@ $table[ $row ++ ][ $col ] = gui_header( 2, "לקוחות" );
 add_command( $table, $row, $col, "edit_shop_orders", "אריזה", "orders/orders-get.php?order_type", "orders" );
 add_command( $table, $row, $col, "edit_shop_orders", "מעקב תשלומים", "account/get-accounts-status.php", "doc_frame" );
 add_command( $table, $row, $col, "edit_shop_orders", "הוספת לקוח", "account/add-account.php", "doc_frame" );
-add_command( $table, $row, $col, "set_client_type", "ניהול לקוחות", "customers/admin.php", "doc_frame" );
+add_command( $table, $row, $col, "edit_shop_orders", "ניהול לקוחות", "customers/admin.php", "doc_frame" );
 add_command( $table, $row, $col, "edit_shop_orders", "קניה בחנות", "orders/order-pos.php", "doc_frame" );
 while ( $row < $max_row ) {
 	$table[ $row ++ ][ $col ] = "";

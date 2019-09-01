@@ -408,19 +408,6 @@ if ( $manager ) {
         document.getElementById('btn_print').style.visibility = "hidden";
         window.open("//pdfcrowd.com/url_to_pdf/");
         document.getElementById('btn_print').style.visibility = "visible";
-//	var txt = document.documentElement.innerHTML;
-
-        // Download the html
-// 	var a = document.getElementById("a");
-//	var file = new Blob(txt, 'text/html');
-// 	a.href = URL.createObjectURL(file);
-        // a.download = 're.html';
-
-//	download(txt, 'myfilename.html', 'text/html')
-//	window.open('data:text/html;charset=utf-8,<html dir="rtl" lang="he">' + txt + '</html>');
-
-//
-
         // To Do: upload the file
 
         document.getElementById('btn_calc').style.visibility = "visible";
@@ -436,17 +423,7 @@ if ( $manager ) {
 
 if ( $manager ) {
 	require_once( '../invoice4u/invoice.php' );
-	// var_dump($client);
-
-
-
-	// print gui_button( "btn_refund", "create_refund()", "הפק זיכוי" );
-	// print "<button id=\"btn_invoice\" onclick=\"create_invoice()\">הפק חשבונית מס</button>";
-	// print "<br/>";
-	// print "<button id=\"btn_receipt\" onclick=\"create_receipt()\">הפק חשבונית מס קבלה</button>";
 	print '<div id="logging"></div>';
-	// print '<div id="refund_area"></div>';
-
 	print gui_button( "btn_create_user", "create_user()", "צור משתמש" );
 }
 

@@ -47,16 +47,17 @@ if (! file_exists($backup_dir)){
 
 	switch ( $op ) {
 		case "name":
-			$date = get_param("date");
+			$date = get_param("date", true);
 			print get_file_name($date);
 			exit( 0 );
 		case "file":
-			$file = get_file_name();
-			if (! $file) {
-				print "Cant find file";
-				return;
+			$file_name = get_param("name", true);
+			$file_path = $backup_dir . '/' . $file_name;
+			if (! file_exists($file_path))
+			{
+				print "Error: file $file_name not found";
+				exit(1);
 			}
-			$file_path = $backup_dir . '/' . $file;
 			header( "Content-Disposition: attachment; filename=" . basename( $file_path ) . '"' );
 			header( "Content-Length: " . filesize( $file_path ) );
 			header( "Content-Type: application/octet-stream;" );

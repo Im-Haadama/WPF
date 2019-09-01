@@ -15,14 +15,14 @@ function selected_supplier_index() {
 
 function selected_supplier_id() {
     var item_id = selected_supplier_index();
-    var list = document.getElementById("supplier_items");
+    var list = document.getElementById("open_supplier");
 
     return list.options[item_id].getAttribute("data-supplier_id");
 }
 
 function selected_supplier_site_id() {
     var item_id = selected_supplier_index();
-    var list = document.getElementById("supplier_items");
+    var list = document.getElementById("open_supplier");
 
     return list.options[item_id].getAttribute("data-site_id");
 }

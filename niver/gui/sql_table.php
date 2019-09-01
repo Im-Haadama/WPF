@@ -73,6 +73,57 @@ function TableHeader($sql, $add_checkbox = false, $skip_id = false, $meta_fields
 	return $headers;
 }
 
+static $mn = array();
+function mn_used($p)
+{
+	global $mn;
+
+	foreach ($mn as $m){
+		if ($p == $m){
+//			print $p . " is used <br/>";
+			return true;
+		}
+	}
+	return false;
+}
+
+function mnemonic3($key)
+{
+	global $mn;
+//	 var_dump($mn); print "<br/>";
+	$chars = "abcdefghijklmnopqrstuvwxyz123456789";
+	if (isset ($nm[$key])) return $mn[$key];
+
+	$short_key = $key;
+//	print "sk=$short_key<br/>";
+
+	// For meta fields.
+	if (($s = strpos($key, '/'))) {
+		$short_key = substr ($key, $s + 1);
+		// print "sk=$short_key<br/>";
+	}
+
+	// Try all 3 letters.
+	$poss = substr($short_key, 0, 3);
+//	print "poss=$poss<br>";
+	if (! mn_used($poss) and (strlen($poss) == 3)) {
+		$mn[$short_key] = $poss;
+		return $poss;
+	}
+
+	// If already used, take 2 letters and the first that is available.
+	for ($i = 0; $i < strlen($chars); $i ++){
+		$poss = substr($short_key, 0, 2) . substr($chars, $i, 1);
+//		print "poss=$poss<br/>";
+		if (! mn_used($poss)) {
+			$mn[$short_key] = $poss;
+			return $poss;
+		}
+	}
+//	print "not found";
+	return "not";
+}
+
 /**
  * PrepareRow - adds links, selectors and edit inputs.
  *
@@ -82,9 +133,16 @@ function TableHeader($sql, $add_checkbox = false, $skip_id = false, $meta_fields
  * @param $row_id
  *
  * @return array
+ * @throws Exception
  */
+
 function PrepareRow($row, $args, $row_id)
 {
+	if (is_null($row)){
+		return null; // Todo: find why PivotTable creates null rows as in invoice_table.php
+	}
+
+	// On single row, the id is displayed in the header, and not showing in the table.
 	$skip_id = GetArg($args, "skip_id", false);
 	$links = GetArg($args, "links", null);
 	$edit = GetArg($args, "edit", false);
@@ -114,7 +172,9 @@ function PrepareRow($row, $args, $row_id)
 	}
 	foreach ( $row as $key => $data )
 	{
-		$input_name = substr($key, 0, 3) . '_' . $row_id;
+		$nm = $key; // mnemonic3($key);
+//		print "key=$nm<br/>";
+		$input_name = $nm . '_' . $row_id;
 		$orig_data = $data;
 		$value = $data; // Default;
 		if ($debug) print  "<br/>handling $key ";
@@ -124,10 +184,10 @@ function PrepareRow($row, $args, $row_id)
 				continue;
 			}
 		}
+		if ($debug) { print "edit=$edit "; var_dump($edit_cols); print "<br/>"; }
 		if ($edit and (! $edit_cols or $edit_cols[$key])) {
 			if ($transpose){
 				$field_events = sprintf($events, "'" . $key . "'", $row_id);
-//				 print "EE=" . $field_events . "<br/>";
 			}
 			else
 				$field_events = sprintf( $events, $row_id, $key );
@@ -140,10 +200,6 @@ function PrepareRow($row, $args, $row_id)
 				}
 				$value = $selector_name( $input_name, $orig_data, $args); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
 			} else {
-//				if ($key == $id_col){
-//					if ($debug) print "in id. $row_id";
-//					$value = $row_id;
-//				} else
 				if ( $table_name ) {
 					$type = sql_type( $table_name, $key );
 					switch ( substr( $type, 0, 3 ) ) {
@@ -300,12 +356,16 @@ function TableData($sql, &$args = null)
 
 			if ($meta_fields and is_array($meta_fields))
 			{
-				foreach ($meta_fields as $meta_key){
-					$meta_value = sql_query_single_scalar("select meta_value from " . $meta_table . " where " . $meta_key_field . " = $row_id " .
-					" and meta_key = " . quote_text($meta_key));
+				foreach ($meta_fields as $meta_key) {
+					$meta_value = sql_query_single_scalar( "select meta_value from " . $meta_table . " where " . $meta_key_field . " = $row_id " .
+					                                       " and meta_key = " . quote_text( $meta_key ) );
 
-					$key = $meta_table . '/'. $meta_key;
-					$the_row[$key] = $meta_value;
+					$key             = $meta_table . '/' . $meta_key;
+					$the_row[ $key ] = $meta_value;
+
+					if ( $v_checkbox ) {
+						$v_line[ $key ] = gui_checkbox( "chk_" . $key, $checkbox_class, false );
+					}
 				}
 			}
 			if ($sum_fields) {
@@ -435,21 +495,24 @@ function NewRow($table_name, $args)
  */
 function GuiRowContent($table_name, $row_id, $args)
 {
-	$args['first_row_to_prepare'] = 2;
-
 	$id_key = GetArg($args, "id_key", "id");
+	$fields = GetArg($args, "fields", null);
 	if (! isset($args["skip_id"])){
 		$args["skip_id"] = true;
 	}
 	$edit = GetArg($args, "edit", false);
 	if ($edit) {
+//		print "edit<br/>";
 		$args["v_checkbox"] = 1;
+		$args["first_row_to_prepare"] = 2;
 		$args["transpose"] = 1;
 		$args["events"] = 'onchange="changed_field(%s)"';
-	}
-	if ($row_id) {
-		$sql = "select * from $table_name where " . $id_key . " = " . $row_id;
 	} else {
+		$args["first_row_to_prepare"] = 1;
+	}
+	if ($row_id) { // Show specific record
+		$sql = "select " . ($fields ? comma_implode($fields) : "*") . " from $table_name where " . $id_key . " = " . $row_id;
+	} else { // Create new one.
 		$sql = "describe $table_name";
 	}
 
@@ -470,6 +533,8 @@ function GuiTableContent($table_id, $sql, &$args)
 {
 	// Fetch the data from DB.
 	$rows_data = TableData( $sql, $args);
+
+//	print "egu=" . GetArg($args, "edit", false) . "<br/>";
 
 	if (! $rows_data)
 		return null;

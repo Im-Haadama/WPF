@@ -255,10 +255,9 @@ if ( isset( $_GET["week"] ) ) {
             var line_number = 0;
 
             for (var i = 1; i < item_table.rows.length; i++) {
-                var prod = get_value(document.getElementById("itm_" + i));
-                var prod_id = prod.substr(0, prod.indexOf(")"));
-                var q = get_value(document.getElementById("qua_" + i));
-                var u = get_value(document.getElementById("uni_" + i));
+                var prod_id = get_value_by_name("itm_" + i);
+                var q = get_value_by_name("qua_" + i);
+                var u = get_value_by_name("uni_" + i);
                 if (!u > 0) u = 0;
 //                $prod_id  = $ids[ $pos ];
 //                $quantity = $ids[ $pos + 1 ];

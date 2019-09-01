@@ -51,6 +51,10 @@ switch ( $operation ) {
 		Catalog::PublishItems( $ids );
 		break;
 
+	case "handle_minus_quantity":
+		Catalog::HandleMinusQuantity();
+		print "0 ok";
+		break;
 }
 
 function select_suppliers( $update_ids ) {

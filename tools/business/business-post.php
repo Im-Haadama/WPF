@@ -125,7 +125,7 @@ if ( isset( $_GET["operation"] ) ) {
 
 			if ( $free_amount > 0 ) {
 //				print "a=" . $amount . "<br/>";
-				print gui_header( 2, "בחר ספק" );
+				print gui_header( 2, "Select Supplier" );
 				print gui_select_open_supplier();
 			}
 			print '<div id="logging"></div>';

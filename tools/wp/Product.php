@@ -349,6 +349,34 @@ class ProductIterator implements  Iterator {
 
 	private $array;
 
+	public function iteratePublished($term_id = null) {
+		$args = array(
+			'post_type' => 'product',
+			'posts_per_page' => 10000,
+			'orderby' => 'name',
+			'order' => 'ASC'
+		);
+
+		if ($term_id)
+		{
+			$args['tax_query'] = array(array(
+				'taxonomy' => 'product_cat',
+				'field'    => 'term_id',
+				'terms'    => $term_id));
+		}
+
+		$this->position = 0;
+
+		$loop = new WP_Query( $args );
+
+		while ( $loop->have_posts() ) {
+			$loop->the_post();
+			$prod_id = $loop->post->ID;
+
+			$this->array[] = $prod_id;
+		}
+	}
+
 	public function iterateCategory($term_id) {
 		$args = array(
 			'post_type' => 'product',

@@ -135,7 +135,7 @@ if ( isset( $_GET["operation"] ) ) {
 			print display_active_supplies( array( 3 ) );
 			print gui_header( 2, "הזמנות התקבלו" );
 			print display_active_supplies( array( 5 ) );
-			print gui_hyperlink( "ארכיון", "c-get-all-supplies.php" );
+			print gui_hyperlink( "Archive", "admin.php" );
 			break;
 
 		case "delete_supplies":
@@ -246,10 +246,12 @@ if ( isset( $_GET["operation"] ) ) {
 
 		case "create_from_file":
 			$supplier_id = get_param( "supplier_id" );
-			print "יוצר הספקה לספק " . $supplier_id . " <br/>";
+			print header_text(false);
+			print im_translate("Creating supply for") . " " . get_supplier_name($supplier_id) . " <br/>";
 
 			$tmp_file = $_FILES["fileToUpload"]["tmp_name"];
-			$s        = Supply::CreateFromFile( $tmp_file, $supplier_id, true );
+			$args = array("needed_fields" => array ("name" => 1, "quantity"=> 1));
+			$s        = Supply::CreateFromFile( $tmp_file, $supplier_id, $args );
 			if ( $s ) {
 				$s->EditSupply( true );
 			}

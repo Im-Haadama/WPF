@@ -703,6 +703,7 @@ class Order {
 		$row_text .= $this->info_right_box_input( "shipping_city", $edit, "עיר" );
 		$row_text .= $this->info_right_box_input( "shipping_address_1", $edit, "רחוב ומספר" );
 		$row_text .= $this->info_right_box_input( "shipping_address_2", $edit, "כניסה, קוד אינטרקום, קומה ומספר דירה" );
+		$row_text .= gui_row(array("מזהה לקוח", get_user_meta( $client_id, 'invoice_id', 1)));
 		$row_text .= $this->user_info_right_box_input( "preference", $edit, "העדפות לקוח" );
 		$data     .= $row_text;
 

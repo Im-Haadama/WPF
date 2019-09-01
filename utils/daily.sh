@@ -1,8 +1,8 @@
 #!/bin/bash
-cd `dirname $0`
-DIR=`pwd`
+cd `dirname $0` || exit
+DIR='/var/www/html/logs'
 echo $DIR
-cd $DIR
+cd $DIR || exit
 FILE="$DIR/daily.log.`date +%d`.html"
 echo $FILE
 unset LANG LANGUAGE LC_CTYPE

@@ -159,7 +159,7 @@ global $template_selectors;
 
 		$args["transpose"] = true;
 		$args["edit"] = true;
-		$args["add_checkbox"] = true;
+	//	$args["add_checkbox"] = true;
 		$args["events"] = "onchange=\"changed(this)\"";
 
 		print GuiRowContent("im_task_templates", $template_id, $args);
@@ -186,7 +186,6 @@ global $template_selectors;
 	$table = GuiTableContent( "projects", $sql, $args );
 
 	print $table;
-
 }
 
 //function show_tasks( $project_id, $owner ) {

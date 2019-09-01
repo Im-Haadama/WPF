@@ -38,8 +38,8 @@ print gui_button( "btn_new", "show_create_new()", "מארז חדש" );
         }
 
         function calcBundle() {
-            var product_name = get_value_by_name("product_name");
-            var product_id = product_name.substr(0, product_name.indexOf(")"));
+            let product_id = get_value_by_name("product_name");
+            // var product_id = product_name.substr(0, product_name.indexOf(")"));
             var q = get_value(document.getElementById("quantity"));
             var margin = get_value(document.getElementById("margin"));
 
@@ -85,8 +85,8 @@ print gui_button( "btn_new", "show_create_new()", "מארז חדש" );
         }
 
         function createBundle() {
-            var product_name = get_value_by_name("product_name");
-            var product_id = product_name.substr(0, product_name.indexOf(")"));
+            var product_id = get_value_by_name("product_name");
+            // var product_id = product_name.substr(0, product_name.indexOf(")"));
             var quantity = get_value(document.getElementById("quantity"));
             var margin = get_value(document.getElementById("margin"));
 

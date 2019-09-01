@@ -11,9 +11,6 @@ if ( ! defined( "ROOT_DIR" ) ) {
 	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
 }
 
-error_reporting( E_ALL );
-ini_set( 'display_errors', 1 );
-
 require_once( ROOT_DIR . '/niver/PivotTable.php' );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( ROOT_DIR . '/tools/im_tools_light.php' );
@@ -59,7 +56,6 @@ if ($row_id)
 	print gui_header(1, "חשבונית מס " . $row_id);
 	$args = array();
 	$args["edit"] = 1;
-	$args["add_checkbox"] = true;
 	$args["skip_id"] = true;
 	$args["selectors"] = array("part_id" => "gui_select_supplier");
 	$args["transpose"] = true;
@@ -92,15 +88,19 @@ if ($part_id) {
 
 print gui_header (1, "ריכוז חשבוניות");
 
+print gui_hyperlink("Add invoice", "/tools/business/c-get-business_info.php?document_type=4");
+
 $t = new \Niver\PivotTable( "im_business_info", $page,
-	"month_with_index(DATE)", "part_id", "net_amount" );
+	"month_with_index(DATE) as month", "part_id as supplier", "net_amount as amount" );
 
-$trans            = array();
-$trans["part_id"] = 'get_customer_name';
-print gui_table_args( $t->Create(
-	'c-get-business_info.php?document_type=4&part_id=%s&date=' . $year . '-' . '%02s-28',
+
+$args = array("row_trans" => array ("supplier" => "get_customer_name"), "order" => "order by month, supplier");
+
+$table = $t->Create(
+	'/tools/business/c-get-business_info.php?document_type=4&part_id=%s&date=' . $year . '-' . '%02s-28',
 	'invoice_table.php?part_id=%s',
-	$trans ) );
+	$args);
 
+print gui_table_args( $table, "invoices", $args );
 
-print gui_hyperlink( "שנה קודמת", "pivot_test.php?year=" . ( $year - 1 ) );
+print gui_hyperlink( "שנה קודמת", "invoice_table.php?year=" . ( $year - 1 ) );

@@ -37,9 +37,9 @@ print gui_datalist( "draft_items", "im_products_draft", "post_title", true );
     const line_type_id = <? print DeliveryFields::line_type; ?>;
 
     function getPrice(my_row) {
-        var product_info = get_value(document.getElementById("nam_" + my_row));
-        if (!product_info.indexOf(")")) return;
-        var product_id = product_info.substr(0, product_info.indexOf(")"));
+        // var product_info = get_value(document.getElementById("nam_" + my_row));
+        // if (!product_info.indexOf(")")) return;
+        var product_id = get_value_by_name("nam_" + my_row); // product_info.substr(0, product_info.indexOf(")"));
         var request = "delivery-post.php?operation=get_price_vat&id=" + product_id; //encodeURI(product_name);
 
 	    <?php
@@ -105,7 +105,7 @@ print gui_datalist( "draft_items", "im_products_draft", "post_title", true );
 //        row.insertCell(0).style.visibility = false;              // 0 - select
         var list = "items";
         if (draft) list = "draft_items";
-        var input = "<?php $args = array("events" => "onchange=\\\"getPrice(XX)\\\"", "datalist" => "YYY");
+        var input = "<?php $args = array("events" => "onchange=\"getPrice(XX)\"", "datalist" => "YYY");
             print escape_string(gui_select_product( "nam_XX", '', $args )); ?>";
         input = input.replace(/XX/g, line_id);
         input = input.replace(/YYY/g, list);

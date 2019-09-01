@@ -26,6 +26,13 @@ $missing = get_param( "missing" );
 
 $operation = get_param("operation", false, "show_today_missions");
 
+//////////////////////////////////////////////////////////////////////////////////////////////
+$id = get_param("id", false); if ($id) {
+	print header_text( false, true, true, "delivery.js" );
+	show_path($id, $debug, $missing);
+	return;
+}
+
 switch ($operation)
 {
     case "show_today_missions":
@@ -58,6 +65,8 @@ switch ($operation)
         $mission_id = get_param("mission");
 	    show_path($mission_id, $debug, $missing);
 	    break;
+
+
 }
 
 function show_missions($missions)
@@ -66,6 +75,9 @@ function show_missions($missions)
     $args["edit"] = true;
 
     $sql = "select * from im_missions where id in (". comma_implode($missions) . ")";
+
+    $args["links"] = array("id" => "get-driver-multi.php?id=%s");
+    $args ["edit_cols"] = array(0, 1,1,1,1,1);
 
     print GuiTableContent("missions", $sql, $args);
 }
@@ -92,32 +104,6 @@ if ( isset( $week ) and date( 'Y-m-d' ) > date( 'Y-m-d', strtotime( $week . "+1 
         }
     }
 </style>
-<script>
-    function delivered(site, id, type) {
-        var url = "delivery-post.php?site_id=" + site + "&type=" + type +
-            "&id=" + id + "&operation=delivered";
-
-        xmlhttp = new XMLHttpRequest();
-        xmlhttp.onreadystatechange = function () {
-            // Wait to get query result
-            if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
-            {
-                // alert (xmlhttp.response);
-                if (xmlhttp.response == "delivered") {
-                    var row = document.getElementById("chk_" + id).parentElement.parentElement;
-                    var table = row.parentElement.parentElement;
-                    table.deleteRow(row.rowIndex);
-                } else {
-                    alert(url + " failed: " + xmlhttp.response);
-                }
-                // window.location = window.location;
-            }
-        }
-
-        xmlhttp.open("GET", url, true);
-        xmlhttp.send();
-    }
-</script>
 <?php
 
 function get_text( $row, $index ) {
@@ -148,7 +134,7 @@ function show_path($missions, $debug, $missing)
     //print "<br/>";
 
     $m        = new ImMultiSite();
-    $data_url = "delivery/get-driver.php?mission_ids=" . implode( ",", $missions );
+    $data_url = "delivery/get-driver.php?mission_ids=" . comma_implode( $missions );
     $output   = $m->GetAll( $data_url, false, $debug );
     if ( $debug ) {
         print "o= " . $output . "<br/>";

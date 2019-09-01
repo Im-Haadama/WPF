@@ -10,6 +10,10 @@ if ( ! function_exists( "my_log" ) ) {
 	require_once( ROOT_DIR . "/niver/fund.php" );
 }
 
+// TODO: move meta table information to somewhere else. Maybe read from database.
+$meta_table_info = array();
+$meta_table_info["wp_usermeta"] = array("id" => "user_id", "key" => "meta_key", "value" => "meta_value");
+
 function sql_insert_id() {
 	global $conn;
 
@@ -17,6 +21,14 @@ function sql_insert_id() {
 }
 
 function sql_type( $table, $field ) {
+	global $meta_table_info;
+
+	//	print "checking $table $field<br/>";
+	// For meta fields:
+	if ($sl = strpos($field, '/')){
+		$table = substr($field, 0, $sl);
+		$field = $meta_table_info[$table]['value'];
+	}
 	static $type_cache = array();
 
 	if ( ! isset( $type_cache[ $table ][ $field ] ) ) {
@@ -30,9 +42,72 @@ function sql_type( $table, $field ) {
 		}
 	}
 
+	if (! isset($type_cache[ $table ][ $field ]))
+		throw new Exception("unknown field $field in table $table");
 	return $type_cache[ $table ][ $field ];
-
 }
+function sql_prepare($sql)
+{
+	global $conn;
+
+	$stmt = $conn->prepare($sql);
+	if ($stmt) return $stmt;
+	sql_error("prepare $sql failed");
+}
+
+function sql_bind($sql, $table_name, &$stmt, $_values)
+{
+	$debug = 0;
+	$types = "";
+	$values = array();
+	foreach ($_values as $key => $value){
+		if ($debug) print "binding $value to $key <br/>";
+		$type = sql_type($table_name, $key);
+		switch(substr($type, 0, 3))
+		{
+			case 'bit':
+			case "int":
+			case "big":
+				$types .= "i";
+				$value = $value ? $value : null;
+				break;
+			case "var":
+			case 'lon':
+				$types .= "s";
+				$value = escape_string($value);
+				break;
+			case "dat":
+				$types .= "s";
+				break;
+			case "dou":
+				$types .= "d";
+				break;
+			default:
+				print $type . " not handled";
+				die(1);
+		}
+		array_push($values, $value);
+	}
+//	print "types=" . $types . "<br/>";
+//	var_dump($values);
+
+	switch (count($values))
+	{
+		case 1:
+			return $stmt->bind_param($types, $values[0]);
+			break;
+		case 2:
+			return $stmt->bind_param($types, $values[0], $values[1]);
+			break;
+		case 3:
+			return $stmt->bind_param($types, $values[0], $values[1], $values[2]);
+			break;
+		default:
+			throw new Exception("number of arguments not implemented");
+	}
+	return true;
+}
+
 function sql_query( $sql, $report_error = true ) {
 	global $conn;
 
@@ -210,4 +285,12 @@ function sql_set_time_offset()
 	// print "offset= " . $offset . "<br/>";
 
 	sql_query("SET time_zone='$offset';");
+}
+
+function sql_table_id($table_name)
+{
+	return sql_query_single_scalar("SELECT COLUMN_NAME 
+FROM information_schema.KEY_COLUMN_USAGE 
+WHERE TABLE_NAME = '$table_name' 
+  AND CONSTRAINT_NAME = 'PRIMARY'");
 }

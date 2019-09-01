@@ -601,7 +601,28 @@ class Catalog {
 			}
 		}
 	}
+	static function HandleMinusQuantity()
+	{
+		$categs = self::GetFreshCategories();
 
+		foreach ($categs as $categ){
+//			print gui_header(1, get_term_name($categ)) . "<br/>";
+			$iter = new ProductIterator();
+			$iter->iteratePublished($categ );
+
+			while ( $prod_id = $iter->next() ) {
+				$p = new Product( $prod_id );
+				if ($p->getStock() < 0.5){
+					$p->setStock(0);
+				}
+			}
+		}
+	}
+
+	static function GetFreshCategories()
+	{
+		return explode(",", info_get( "fresh"));
+	}
 }
 
 function best_alternatives( $alternatives, $debug = false ) {

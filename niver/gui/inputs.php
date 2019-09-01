@@ -17,6 +17,8 @@
 // GUI elements
 // cast: function gui_<html code>($params) { return $text; }
 
+require_once(ROOT_DIR . '/niver/gui/sql_table.php');
+
 /**
  * Create html <label>
  * @param $id
@@ -305,7 +307,7 @@ function gui_hyperlink( $text, $link, $target = null ) {
 	if ( $target ) {
 		$data .= 'target="' . $target . '"';
 	}
-	$data .= ">" . $text . "</a>";
+	$data .= ">" . im_translate($text) . "</a>";
 
 	return $data;
 }
@@ -426,7 +428,9 @@ function gui_cell( $cell, $id = null, $show = true) {
 	}
 	$data .= ">";
 
-	$data .= $cell;
+	if (defined('im_translate'))
+		$data .= im_translate($cell);
+	else $data .= $cell;
 	$data .= "</td>";
 
 	return $data;
@@ -467,6 +471,7 @@ function gui_row( $cells, $row_id = null, $show = null, &$acc_fields = null, $co
 	if ( is_array( $cells ) ) {
 		$i = 0;
 		foreach ( $cells as $cell ) {
+			// Accumulate
 			if ( isset( $acc_fields[ $i ] ) and is_array( $acc = $acc_fields[ $i ] ) ) {
 				if ( function_exists( $acc[1] ) ) {
 					$acc[1]( $acc_fields[ $i ][0], $cell );
@@ -581,54 +586,69 @@ function gui_table(
 /**
  * Create html table with data supplied in two dimensional array. Can sum the content in the rows and
  * cols.
- * @param $rows
+ *
+ * @param $input_rows
  * @param null $id
  * @param null $args
  *
  * @return string
  */
-function gui_table_args($rows, $id = null, $args = null)
+function gui_table_args($input_rows, $id = null, $args = null)
 {
 	$data = "";
 
 	$debug = GetArg($args, "debug", false);
-	$class = GetArg($args, "class", null);
+
+	// add_checkbox should be used on multiple rows view.
 	$add_checkbox = GetArg($args, "add_checkbox", false);
 	$checkbox_class = GetArg($args, "checkbox_class", null);
 	$checkbox_events = GetArg($args, "checkbox_events", null);
+
+	// Table start and end
 	$header = true;
 	$footer = true;
+
+	// Should sum or other function on cols.
 	$sum_fields = GetArg($args, "sum_fields", null);
-	$style = null;
+
+	// Style and class.
+	$style = GetArg($args, "style", null);
+	$class = GetArg($args, "class", null);
+
+	// Cols - how to name them, whether to show. Which one is the id.
 	$col_ids = GetArg($args, "col_ids", null);
 	$show_cols = GetArg($args, "show_cols", null);
-	$id_col = GetArg($args, "id_col", "id");
-//	print "id_col=" . $id_col . "<br/>";
+	$id_field = GetArg($args, "id_field", "id");
+	// print "id_field=$id_field<br/>";
+	if (isset($args["edit_cols"]))
+	{
+		$args["edit_cols"]["id"] = false;
+	}
+
+	// Should be transpose before creating the html
 	$transpose = GetArg($args, "transpose", false);
+
+	// Prepare - change ids to selectors (from list), html input or link.
 	$first_row_to_prepare = GetArg($args, "first_row_to_prepare", 1);
 
-	for ($i = $first_row_to_prepare; $i < count($rows); $i++) {
-		if ( isset( $rows[$i][ $id_col ] ) ) {
-			$row_id = $rows[$i][ $id_col ];
-			// print "rid=" .$row_id ."<br/>";
+	if (! $input_rows)
+		return null;
+
+	for ($i = 0; $i < count($input_rows); $i++) {
+		if ( isset( $input_rows[$i][ $id_field ] ) ) {
+			$row_id = $input_rows[$i][ $id_field ];
+//			 print "found rid=$row_id<br/>";
 		} else {
-			$row_id = null;
-//			 print "no rid<br/>";
+			$row_id = $i;
 		}
-
-//		print "id_col=" . $id_col . " " . $rows[$i][$id_col] . "<br/>";
-		$rows[ $i ] = PrepareRow( $rows[ $i ], $args, $row_id );
+//		print "rid=$row_id<br/>";
+		 // print "rid=$row_id id_field=$id_field<br/>";
+		if ($i < $first_row_to_prepare)
+			$rows[$row_id] = $input_rows[$i];
+		else
+			$rows[ $row_id ] = PrepareRow( $input_rows[ $i ], $args, $row_id );
 	}
 
-	if ($transpose){
-		$rows = array_map(null, ...$rows);
-	}
-
-	if ( $style ) {
-		print "<style>" . $style . "</style>";
-	} else {
-		if ($debug) print "no style";
-	}
 	if ( $header ) {
 		$data = "<table";
 		if ( $class ) {
@@ -640,12 +660,20 @@ function gui_table_args($rows, $id = null, $args = null)
 		$data .= " border=\"1\"";
 		$data .= ">";
 	}
+	if ( $style ) {
+		$data .= "<style>" . $style . "</style>";
+	} else {
+		if ($debug) print "no style";
+	}
+
+	if ($transpose){
+		$rows = array_map(null, ...$rows);
+	}
+
 	if ( is_array( $rows ) ) {
-		foreach ( $rows as $row ) {
-			// $row_id = ! is_null($id_col) ? strip_tags($row[$id_col]) : null;
-			if (isset($row[$id_col]))
-				$row_id = $row[$id_col];
-			else $row_id = "row_id not supplied $id_col";
+		foreach ( $rows as $row_id => $row ) {
+			// $row_id = ! is_null($id_field) ? strip_tags($row[$id_field]) : null;
+//			print "rid=$row_id<br/>";
 
 			if ( ! is_null( $row ) ) {
 				$data .= gui_row( $row, $row_id, $show_cols, $sum_fields, $col_ids, null, $add_checkbox, $checkbox_class, $checkbox_events );
@@ -660,7 +688,6 @@ function gui_table_args($rows, $id = null, $args = null)
 	}
 
 	return $data;
-
 }
 
 // SELECTORS
@@ -836,6 +863,14 @@ function gui_select_datalist( $id, $datalist_id, $name, $values, $events, $selec
  *
  * @return string
  */
+
+function GuiSimpleSelect($id, $value, $args)
+{
+	$values = GetArg($args, "values", array("Send thru values argument"));
+	$events = GetArg($args, "events", null);
+	return gui_simple_select($id, $values, $events, $value);
+}
+
 function gui_simple_select( $id, $values, $events, $selected ) {
 	$data = "<select id=\"" . $id . "\" ";
 	if ( $events ) {

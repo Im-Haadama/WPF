@@ -43,3 +43,63 @@ msgstr "סכום"
 msgid "delivery fee"
 msgstr "דמי משלוח"
 
+msgid "Select Supplier"
+msgstr "בחר ספק"
+
+msgid "Add invoice"
+msgstr "הוסף חשבונית"
+
+msgid "week"
+msgstr "שבוע"
+
+msgid "Creating supply for"
+msgstr "יוצר הספקה לספק"
+
+msgid "column %s ignored"
+msgstr "עמודה %s לא זוהתה"
+
+msgid "name column is missing."
+msgstr "עמודה שם חסרה."
+
+msgid "quantity column is missing."
+msgstr "עמודה כמות חסרה."
+
+msgid "name"
+msgstr "שם"
+
+msgid "Info: can't find item code header"
+msgstr "לידיעה: לא נמצאה עמודת מספר קטלוגי"
+
+msgid "Error: Can't find price header. Please add to imported file"
+msgstr "שגיאה - לא נמצא מחיר. יש להוסיף לקובץ וליבא שוב"
+
+msgid "Archive"
+msgstr "ארכיון"
+
+msgid "status"
+msgstr "מצב"
+
+msgid "supplier"
+msgstr  "ספק"
+
+msgid "text"
+msgstr "טקסט"
+
+msgid "id"
+msgstr "מזהה"
+
+msgid "transaction"
+msgstr "תנועה"
+
+msgid "Paid date"
+msgstr "תאריך תשלום"
+
+msgid "client"
+msgstr "לקוח"
+
+msgid "last order"
+msgstr "הזמנה אחרונה"
+
+msgid "last order date"
+msgstr "תאריך הזמנה אחרונה"
+
