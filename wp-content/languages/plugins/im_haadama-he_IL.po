@@ -37,6 +37,9 @@ msgstr "סימוכין"
 msgid "date"
 msgstr "תאריך"
 
+msgid "Date"
+msgstr "תאריך"
+
 msgid "amount"
 msgstr "סכום"
 
@@ -82,6 +85,9 @@ msgstr "מצב"
 msgid "supplier"
 msgstr  "ספק"
 
+msgid "Supplier"
+msgstr  "ספק"
+
 msgid "text"
 msgstr "טקסט"
 
@@ -91,7 +97,7 @@ msgstr "מזהה"
 msgid "transaction"
 msgstr "תנועה"
 
-msgid "Paid date"
+msgid "Pay date"
 msgstr "תאריך תשלום"
 
 msgid "client"
@@ -103,3 +109,20 @@ msgstr "הזמנה אחרונה"
 msgid "last order date"
 msgstr "תאריך הזמנה אחרונה"
 
+msgid "Status"
+msgstr "מצב"
+
+msgid "supplied"
+msgstr "סופק"
+
+msgid "new"
+msgstr "חדש"
+
+msgid "Text"
+msgstr "טקסט"
+
+msgid "Transaction"
+msgstr "תנועה"
+
+msgid "Comments"
+msgstr "הערות"

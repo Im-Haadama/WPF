@@ -28,25 +28,31 @@ print gui_button( "btn_new", "show_create_item()", "הספקה חדשה" );
 <div id="new_item" style="display: none; border:1px solid black; padding: 30px">
 	<?php
 	print gui_header( 1, "יצירת אספקה" );
-	print gui_table_args( array(
+	print gui_table_args(array(
 		array(
 			gui_header( 2, "בחר ספק" ),
 			gui_header( 2, "בחר מועד" ),
 			gui_header( 2, "בחר משימה" )
 		),
 		array(
-			gui_select_supplier( "supplier_select", null, 'onchange="change_supplier()"' ),
+			gui_select_supplier( "supplier_select", null, array("events" => 'onchange="change_supplier()"')),
 			gui_input_date( "date", "" ),
 			gui_select_mission( "new_mission", "", "" )
 			// gui_select_mission( "mis_new")
 		)
-	) );
+	),
+    "supply_info",
+    array("edit" => 1, "prepare"=>false));
 
 	print gui_header( 2, "בחר מוצרים" );
 	print gui_datalist( "items", "im_products", "post_title", true );
 
-	print gui_table_args( array( array( "פריט", "כמות", "קג או יח" ) ),
-		"supply_items" );
+	try {
+		print gui_table_args( array( array( "פריט", "כמות", "קג או יח" ) ),
+			"supply_items" );
+	} catch ( Exception $e ) {
+	    print "error drawing table " . $e->getMessage();
+	}
 
 	print gui_button( "add_line", "add_line()", "הוסף שורה" );
 	print gui_button( "add_item", "add_item()", "הוסף הספקה" );

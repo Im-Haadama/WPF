@@ -64,7 +64,7 @@ if ( isset( $_GET["operation"] ) ) {
 				$month = $_GET["month"];
 				show_makolet( $month );
 			} else {
-				my_log( "show_makolet user $user" );
+				my_log( "show_makolet user " . $user->Id );
 			}
 			break;
 

@@ -17,19 +17,26 @@
 // GUI elements
 // cast: function gui_<html code>($params) { return $text; }
 
-require_once(ROOT_DIR . '/niver/gui/sql_table.php');
+require_once(STORE_DIR . '/niver/gui/sql_table.php');
 
 /**
  * Create html <label>
+ *
  * @param $id
  * label id
  * @param $text
  * content of the label
  *
+ * @param bool $hidden
+ *
  * @return string
  */
-function gui_label( $id, $text ) {
-	return "<label id=" . $id . ">" . $text . "</label>";
+function gui_label( $id, $text, $hidden = false ) {
+	$result = "<label id=" . $id . " ";
+	if ($hidden) $result .= 'style="display: none"';
+	$result .= ">" . $text . "</label>";
+
+	return $result;
 }
 
 /**
@@ -592,6 +599,7 @@ function gui_table(
  * @param null $args
  *
  * @return string
+ * @throws Exception
  */
 function gui_table_args($input_rows, $id = null, $args = null)
 {
@@ -603,6 +611,7 @@ function gui_table_args($input_rows, $id = null, $args = null)
 	$add_checkbox = GetArg($args, "add_checkbox", false);
 	$checkbox_class = GetArg($args, "checkbox_class", null);
 	$checkbox_events = GetArg($args, "checkbox_events", null);
+	$prepare = GetArg($args, "prepare", true);
 
 	// Table start and end
 	$header = true;
@@ -643,7 +652,7 @@ function gui_table_args($input_rows, $id = null, $args = null)
 		}
 //		print "rid=$row_id<br/>";
 		 // print "rid=$row_id id_field=$id_field<br/>";
-		if ($i < $first_row_to_prepare)
+		if ($i < $first_row_to_prepare || ! $prepare)
 			$rows[$row_id] = $input_rows[$i];
 		else
 			$rows[ $row_id ] = PrepareRow( $input_rows[ $i ], $args, $row_id );
@@ -655,6 +664,9 @@ function gui_table_args($input_rows, $id = null, $args = null)
 			$data .= " class=\"" . $class . "\"";
 		}
 		if ( ! is_null( $id ) ) {
+			if (! is_string($id)){
+				return "bad table id";
+			}
 			$data .= ' id="' . $id . '"';
 		}
 		$data .= " border=\"1\"";
@@ -796,7 +808,8 @@ function gui_select_datalist( $id, $datalist_id, $name, $values, $events, $selec
 	$data = "";
 	static $shown_datalist = array();
 
-	if (! $shown_datalist[$datalist_id]) {
+	if (! isset($shown_datalist[$datalist_id])) {
+		$shown_datalist[$datalist_id] =0;
 		$data .= "<datalist id=\"" . $datalist_id . "\">";
 		$selected_value = $selected;
 
@@ -866,8 +879,10 @@ function gui_select_datalist( $id, $datalist_id, $name, $values, $events, $selec
 
 function GuiSimpleSelect($id, $value, $args)
 {
-	$values = GetArg($args, "values", array("Send thru values argument"));
+	$values = GetArg($args, "values", array("Send values thru args"));
 	$events = GetArg($args, "events", null);
+	$edit = GetArg($args, "edit", true);
+	if (! $edit) return im_translate($values[$value]);
 	return gui_simple_select($id, $values, $events, $value);
 }
 
@@ -913,9 +928,13 @@ function gui_select( $id, $name, $values, $events, $selected, $id_key = "id", $c
 		$data .= ' class = "' . $class . '" ';
 	}
 
-	if ( $events ) {
-		$data .= $events;
+	if (is_array($events)) {
+		sql_error("bad events in $id");
+		var_dump($events);
+		die(1);
 	}
+
+	if ( $events ) $data .= $events;
 
 	$data .= ">";
 

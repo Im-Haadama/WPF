@@ -11,9 +11,9 @@ if ( ! defined( "TOOLS_DIR" ) ) {
 // error_reporting( E_ALL );
 // ini_set( 'display_errors', 'on' );
 
-require_once( TOOLS_DIR . "/account/account.php" );
-require_once( TOOLS_DIR . "/business/business.php" );
-require_once( TOOLS_DIR . "/account/gui.php" );
+// require_once( TOOLS_DIR . "/account/account.php" );
+// require_once( TOOLS_DIR . "/business/business.php" );
+// require_once( TOOLS_DIR . "/account/gui.php" );
 
 function people_add_activity( $id, $date, $start, $end, $project_id, $traveling, $expense_text, $expense ) {
 	if ( strlen( $traveling ) == 0 ) {

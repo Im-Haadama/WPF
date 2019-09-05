@@ -11,7 +11,7 @@ if ( ! defined( "TOOLS_DIR" ) ) {
 }
 
 require_once( TOOLS_DIR . '/im_tools.php' );
-require_once( STORE_DIR . '/tools/orders/orders-common.php' );
+require_once( TOOLS_DIR . '/orders/orders-common.php' );
 // require_once( TOOLS_DIR . '/business/business-post.php' );
 // require_once(TOOLS_DIR . '/multi-site/imMulti-site.php');
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
@@ -147,8 +147,8 @@ function show_trans( $customer_id, $view = eTransview::default ) {
 
 	$args = array();
 	$args["links"] = array();
-	$args["links"]["סימוכין"] = "/tools/delivery/get-delivery.php?id=%s";
-	$args["links"]["הזמנה"] = "/tools/orders/get-order.php?order_id=%s";
+	$args["links"]["transaction_ref"] = "/tools/delivery/get-delivery.php?id=%s";
+	$args["links"]["order"] = "/tools/orders/get-order.php?order_id=%s";
 	$args["col_ids"] = array("chk", "id", "dat", "amo", "bal", "des", "del", "ord");
 	$args["show_cols"] = array(); $args["show_cols"]['id'] = 0;
 	$args["add_checkbox"] = false; // Checkbox will be added only to unpaid rows

@@ -8,8 +8,6 @@ if ( ! defined( "TOOLS_DIR" ) ) {
 	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
 }
 
-require_once( TOOLS_DIR . '/r-shop_manager.php' );
-
 $preset_basic_query = " and (date(date) <= CURRENT_DATE or isnull(date)) and (status < 2) " .
                       " and (not mission_id > 0) " . //  and task_active_time(id)
                       " and (isnull(preq) or task_status(preq) >= 2) ";

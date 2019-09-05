@@ -126,9 +126,6 @@ function append_url( $url, $addition ) {
 }
 
 function comma_implode( $array, $quote = false ) {
-//	print "<p dir=\"ltr\">";
-//	var_dump($array);
-//	print "</p>";
 	if ( is_null( $array ) ) {
 		return "";
 	}
@@ -138,7 +135,7 @@ function comma_implode( $array, $quote = false ) {
 	if ( ! is_array( $array ) ) {
 		return $array;
 	}
-	if ( is_string( $array[0] ) ) {
+	if ( is_string( reset($array) ) ) {
 		$result = "";
 		foreach ( $array as $s ) {
 			if ( $quote ) {

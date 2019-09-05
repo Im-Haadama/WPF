@@ -1,0 +1,19 @@
+Folder symbols
+-=-=-=-=-=-=-=
+TOOLS_DIR - store/tools
+STORE_DIR - store
+ROOT_DIR - store folder. Obsoleted
+
+TASKS_DIR - new. for tasks.work
+
+Library names
+-=-=-=-=-=-=-
+niver - fund, data, gui. Not sure about this name.
+tools - store functionality.
+
+
+Folder structure
+-=-=-=-=-=-=-=-=
+page.php - the html page displayed. will be replaced in the integration with wordpress by shortcode.
+admin.php - all the functional code. including wont display noting.
+Object.php - code handling a class.

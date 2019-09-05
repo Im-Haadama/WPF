@@ -762,19 +762,21 @@ function show_category_by_id( $term_id, $sale = false, $text = false, $customer_
 	$result .= gui_header( 2, $the_term->name );
 
 	$regular = ($customer_type == "regular");
+	$header =null;
+	$table = array();
 
 	if ( $sale ) {
-		$table = array( array( "", "מוצר", "מחיר מוזל", "מחיר רגיל", "כמות", "סה\"כ" ) );
+		$header = array( "", "מוצר", "מחיר מוזל", "מחיר רגיל", "כמות", "סה\"כ" );
 	} else {
-		$table = array( array( "", "מוצר" ) );
+		$header = array( "", "מוצר" ) ;
 		if ( ! $month )
-			array_push( $table[0], "מחיר", gui_hyperlink( "מחיר לכמות", "", "" ), "כמות", "סה\"כ" );
+			array_push( $header, "מחיר", gui_hyperlink( "מחיר לכמות", "", "" ), "כמות", "סה\"כ" );
 		else
-			array_push( $table[0], "מדד זמינות"  );
+			array_push( $header, "מדד זמינות"  );
 	}
 
 	if ( $month == "all" ) {
-		$table = array(
+		$header =
 			array(
 				"",
 				"מוצר",
@@ -790,12 +792,12 @@ function show_category_by_id( $term_id, $sale = false, $text = false, $customer_
 				"Oct",
 				"Nov",
 				"Dec"
-			)
+
 		);
 	}
 
 	if ( $inventory ) {
-		$table = array( array( "", "שם מוצר", "מחיר עלות", "כמות במלאי", "תאריך עדכון", "דוח תנועות" ) );
+		$header = array( "", "שם מוצר", "מחיר עלות", "כמות במלאי", "תאריך עדכון", "דוח תנועות" ) ;
 //		array_push( $table[0], "מלאי" );
 //		array_push( $table[0], "תאריך עדכון" );
 //		array_push( $table[0], "מוזמנים" );
@@ -854,6 +856,7 @@ function show_category_by_id( $term_id, $sale = false, $text = false, $customer_
 		}
 		return $result;
 	} else {
+		array_unshift($table, $header);
 		$result .= gui_table_args( $table, "table_" . $term_id, $args );
 	}
 

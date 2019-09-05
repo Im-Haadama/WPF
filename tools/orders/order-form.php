@@ -54,12 +54,12 @@ function get_form_tables() {
         var tables = [<?php print get_form_tables(); ?>];
 
         function add_order() {
-            var params = new Array();
-            var prod_id;
-            for (var i = 0; i < tables.length; i++) {
-                var table = document.getElementById(tables[i]);
-                for (var j = 1; j < table.rows.length; j++) {
-                    var line = get_value_by_name(table.rows[j].cells[5].firstElementChild.id);
+            let params = new Array();
+            let prod_id;
+            for (let i = 0; i < tables.length; i++) {
+                let table = document.getElementById(tables[i]);
+                for (let j = 1; j < table.rows.length; j++) {
+                    let line = get_value_by_name(table.rows[j].cells[5].firstElementChild.id);
                     if (parseFloat(line) > 0) {
                         prod_id = table.rows[j].cells[4].firstElementChild.id.substr(4);
                         params.push(prod_id);
@@ -67,18 +67,18 @@ function get_form_tables() {
                     }
                 }
             }
-            var url = "/order-finish/?params=" + params;
+            let url = "/order-finish/?params=" + params;
 
 //                "<?php //print ImMultiSite::LocalSiteTools();?>///orders/order-form-post.php?operation=create_order" +
 //                "&params=" + params;
 
-            var phone = get_value_by_name("phone");
-            var name = get_value_by_name("name");
-            var email = get_value_by_name("email");
-            var method = get_value_by_name("select_method");
+            let phone = get_value_by_name("phone");
+            let name = get_value_by_name("name");
+            let email = get_value_by_name("email");
+            let method = get_value_by_name("select_method");
 
-            if (phone.length > 2) url += "&phone=" + encodeURI(phone);
-            if (name.length > 2) url += "&name=" + encodeURI(name);
+            if (phone) url += "&phone=" + encodeURI(phone);
+            if (name) url += "&name=" + encodeURI(name);
 		    <?php if ( isset( $group ) ) {
 		    print "url += \"&group=\" + encodeURI('" . $group . "');";
 	    } ?>
@@ -86,7 +86,11 @@ function get_form_tables() {
 		    print "url += \"&user=\" + encodeURI('" . $user . "');";
         }
 		    ?>
-            if (email.length > 4) url += "&email=" + encodeURI(email);
+            if (email) url += "&email=" + encodeURI(email);
+            else {
+                alert("email must be supplied");
+                return;
+            }
             url += "&method=" + method;
             window.location.href = url;
         }
@@ -160,9 +164,11 @@ function get_form_tables() {
             var total = 0;
 
             for (var i = 1; i < table.rows.length; i++) {
-                var line = get_value_by_name(table.rows[i].cells[5].firstElementChild.id);
-                if (parseFloat(line) > 0)
-                    total += parseFloat(line);
+                if (table.rows[i].cells[5]) {
+                    var line = get_value_by_name(table.rows[i].cells[5].firstElementChild.id);
+                    if (parseFloat(line) > 0)
+                        total += parseFloat(line);
+                }
             }
 
             return total;
@@ -200,12 +206,17 @@ if ( $text ) {
 } else {
     if (! $just_pricelist){
         print gui_header(1, "פרטי המזמין:");
-        print gui_table_args(array(
-                array("כתובת המייל של המזמין:", gui_input( "email", "", array( "onchange=update_email()" ))),
-            array("שם הלקוח:", gui_label( "user_info", "" )),
-            array("מועד המשלוח", gui_div("delivery_info")),
-            array('סה"כ הזמנה:', gui_label("total", "0" )) )
-        );
+	    try {
+		    print gui_table_args( array(
+				    array( "כתובת המייל של המזמין:", gui_input( "email", "", array( "onchange=update_email()" ) ) ),
+				    array( "שם הלקוח:", gui_label( "user_info", "" ) ),
+				    array( "מועד המשלוח", gui_div( "delivery_info" ) ),
+				    array( 'סה"כ הזמנה:', gui_label( "total", "0" ) )
+			    )
+		    );
+	    } catch ( Exception $e ) {
+	        my_log(__FILE__ . ":" . __LINE__ . $e->getMessage());
+	    }
 
 	    print gui_button( "btn_add_order_1", "add_order(0)", "הוסף הזמנה" );
     }

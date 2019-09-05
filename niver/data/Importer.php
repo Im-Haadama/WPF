@@ -146,12 +146,7 @@ class Importer {
 				// Fix data.
 				switch ( substr( sql_type( $table_name, $k ), 0, 3 ) ) {
 					case 'flo':
-						if ( $line[ $m ] == '' ) {
-							$line[ $m ] = 0;
-						}
-						break;
-
-					case 'int':
+					case "int":
 						if ( $line[ $m ] == '' ) {
 							$line[ $m ] = 0;
 						}

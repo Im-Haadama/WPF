@@ -294,16 +294,30 @@ function set_supplier_id() {
 
         function create_product(pl_id)
         {
+            disable_btn("cre_" + pl_id);
+
             <?php set_supplier_id(); ?>
 
-            var categ = get_value_by_name("cat_" + pl_id);
+            let categ = get_value_by_name("cat_" + pl_id);
 
-            var request = "../catalog/catalog-map-post.php?operation=create_products&category_name=" + encodeURI(categ) +
+            // let request = "/tools/about.php?x=1," + pl_id;
+            // NOTICE: hide_row depend on one colon in url. If you add parameter, change hide_row.
+            let request = "../catalog/catalog-map-post.php?operation=create_products&category_name=" + encodeURI(categ) +
                 "&create_info=" + supplier_id + "," + pl_id;
 
-            execute_url(request);
+            execute_url(request, hide_row);
 
             // alert (categ);
+        }
+
+        function hide_row(xmlhttp)
+        {
+            let row_id = xmlhttp.responseURL.substr(xmlhttp.responseURL.indexOf(",") + 1);
+
+            if (xmlhttp.response.substr(0, 4) === "done")
+                document.getElementById("id_" + row_id).parentElement.style.display = "none";
+            else
+                alert (xmlhttp.response);
         }
 
         function change_supplier() {

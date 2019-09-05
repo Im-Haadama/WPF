@@ -20,8 +20,47 @@ function sql_insert_id() {
 	return mysqli_insert_id( $conn );
 }
 
+//function sql_express_type($sql, $expression)
+//{
+//	if (! $sql)
+//		throw new Exception("No sql give");
+//
+//	if (! $expression)
+//		throw new Exception("No express");
+//
+//	static $type_cache = array();
+//
+//	if (isset($type_cache[$expression]))
+//		return $type_cache[$expression];
+//
+//	// Parse the sql and save the types.
+//	// if (! strpos(strtolower($sql), "limit")) $sql .= " limit 1"; // We want just the types.
+//
+//	$result = sql_query($sql);
+//	$c = mysqli_num_fields($result);
+//	for ($i = 0; $i < $c; $i++){
+//		$t = mysqli_fetch_field_direct($result, $i);
+//		try {
+//			$type_cache[ $t->name ] = sql_type( $t->orgtable, $t->orgname );
+//		} catch ( Exception $e ) {
+//		}
+//	}
+//
+//	if (isset($type_cache[$expression]))
+//		return $type_cache[$expression];
+//
+//	return "none";
+//
+//}
 function sql_type( $table, $field ) {
 	global $meta_table_info;
+
+	if (! $table)
+		throw new Exception("No table given");
+
+	if (! $field)
+		throw new Exception("No field given");
+
 
 	//	print "checking $table $field<br/>";
 	// For meta fields:
@@ -46,6 +85,7 @@ function sql_type( $table, $field ) {
 		throw new Exception("unknown field $field in table $table");
 	return $type_cache[ $table ][ $field ];
 }
+
 function sql_prepare($sql)
 {
 	global $conn;
@@ -55,8 +95,9 @@ function sql_prepare($sql)
 	sql_error("prepare $sql failed");
 }
 
-function sql_bind($sql, $table_name, &$stmt, $_values)
+function sql_bind($table_name, &$stmt, $_values)
 {
+//	print "table: $table_name<br/>";
 	$debug = 0;
 	$types = "";
 	$values = array();
@@ -88,8 +129,6 @@ function sql_bind($sql, $table_name, &$stmt, $_values)
 		}
 		array_push($values, $value);
 	}
-//	print "types=" . $types . "<br/>";
-//	var_dump($values);
 
 	switch (count($values))
 	{
@@ -109,9 +148,10 @@ function sql_bind($sql, $table_name, &$stmt, $_values)
 }
 
 function sql_query( $sql, $report_error = true ) {
-	global $conn;
+	$conn = get_sql_conn();
 
 	if ( ! $conn ) {
+		sql_error($sql);
 		die ( "not connected!<br/>" );
 	}
 
@@ -121,9 +161,7 @@ function sql_query( $sql, $report_error = true ) {
 		$micro_delta = $now - $prev_time;
 		if ( $micro_delta > 0.1 ) {
 			$report = sql_trace();
-			$date_array  = explode( " ", $micro_delta );
-			$date        = date( "s", $date_array[1] );
-			$report .= "long executing: " . $sql . $date . ":" . $date_array[0] . "<br>";
+			$report .= "long executing: " . $sql . " " . $micro_delta . "<br>";
 			my_log($report, "sql performace");
 		}
 		return $result;
@@ -183,9 +221,12 @@ function sql_query_single_scalar( $sql, $report_error = true ) {
 }
 
 function table_exists( $table ) {
-	$result = sql_query_single_scalar( 'SELECT 1 FROM ' . $table . ' LIMIT 1', false);
+	$sql = 'SELECT 1 FROM ' . $table . ' LIMIT 1';
+//	print $sql;
+	return sql_query( $sql, false) != null;
+//	print "r= $result<br/>";
 
-	return $result == 1;
+//	return $result == 1;
 }
 
 function escape_string( $string ) {
@@ -244,7 +285,9 @@ function sql_trace()
 function sql_error( $sql ) {
 	global $conn;
 	if ( is_string( $sql ) ) {
-		$message = "Error: sql = `" . $sql . "`. Sql error : " . mysqli_error( $conn ) . "<br/>";
+		$message = "Error: sql = `" . $sql;
+		if ($conn) $message .= "`. Sql error : " . mysqli_error( $conn ) . "<br/>";
+		else $message .= "not connected";
 		print sql_trace();
 	} else {
 		$message = $sql->error;
@@ -255,7 +298,10 @@ function sql_error( $sql ) {
 }
 
 function sql_fetch_row( $result ) {
-	return mysqli_fetch_row( $result );
+	if ($result)
+		return mysqli_fetch_row( $result );
+	else
+		return null;
 }
 
 function sql_fetch_assoc( $result ) {

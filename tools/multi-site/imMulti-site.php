@@ -133,6 +133,7 @@ class ImMultiSite extends MultiSite {
 	}
 
 	static function CORS() {
+		if (! table_exists("im_multisite")) return "";
 		$sql    = "SELECT tools_url FROM im_multisite WHERE master = 1";
 		$row    = sql_query_single_scalar( $sql );
 		$result = "Access-Control-Allow-Origin: http://";

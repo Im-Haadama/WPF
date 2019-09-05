@@ -53,19 +53,10 @@ function calculate_price( $price, $supplier, $sale_price = '', $terms = null ) {
 
 
 function get_price_by_type( $prod_id, $client_type = "", $quantity = 1 ) {
-	// print "q=" . $quantity;
-//	$debug = debug_backtrace();
-//	for ( $i = 2; $i < 6 && $i < count( $debug ); $i ++ ) {
-//		print "called from " . $debug[ $i ]["function"] . ":" . $debug[ $i ]["line"] . "<br/>";
-//	}
 
 	if ( strlen( $client_type ) < 1 ) {
 		$client_type = "regular";
 	}
-//	print "pid = " . $prod_id . "<br/>";
-//	print "ct = " . $client_type . "<br/>";
-//	print "q = " . $quantity ."<br/>";
-
 	// client type can be:
 	// null - regular price.
 	// string - type name
@@ -77,7 +68,6 @@ function get_price_by_type( $prod_id, $client_type = "", $quantity = 1 ) {
 	$sql = "SELECT min($type) FROM im_client_types WHERE type = '" . $client_type . "' AND (q_min <= " . $quantity . " OR q_min = 0)";
 	//  print $sql . "<br/>";
 	$rate = sql_query_single_scalar( $sql );
-//	 print "rate: " . $rate;
 
 	// Nothing special. Return the price from the site.
 	if ( is_null( $rate ) ) {
@@ -85,7 +75,6 @@ function get_price_by_type( $prod_id, $client_type = "", $quantity = 1 ) {
 	}
 
 //	 print "rate: " . $rate. "<br/>";
-
 	$price = get_postmeta_field( $prod_id, '_price' );
 	$buy   = get_buy_price( $prod_id );
 	if ( $buy == 0 ) {

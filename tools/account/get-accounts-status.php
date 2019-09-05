@@ -65,7 +65,7 @@ $sql = 'select round(sum(ia.transaction_amount),2), ia.client_id, wu.display_nam
        . ' join wp_users wu'
        . ' where wu.id=ia.client_id'
        . ' group by client_id '
-       . ' order by 4,5';
+       . ' order by 5 desc';
 
 //print $sql;
 

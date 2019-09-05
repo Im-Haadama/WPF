@@ -26,7 +26,19 @@ require_once( "vat.php" );
 if (!defined("IM_CHARSET"))
 	define ("IM_CHARSET", 'utf8');
 
-$conn = new mysqli( IM_DB_HOST, IM_DB_USER, IM_DB_PASSWORD, IM_DB_NAME );
+if (! defined("DB_HOST")) throw new Exception("DB configuration error = host");
+if (! defined ("DB_USER")) throw new Exception("DB configuration error = user");
+if (! defined ("DB_PASSWORD")) throw new Exception("DB configuration error = password");
+if (! defined ("DB_NAME")) throw new Exception("DB configuration error = name");
+
+$conn = new mysqli( DB_HOST, DB_USER, DB_PASSWORD, DB_NAME );
+
+function get_sql_conn()
+{
+    global $conn;
+
+    return $conn;
+}
 if (! mysqli_set_charset( $conn, IM_CHARSET )){
 	my_log("encoding setting failed");
 	die("encoding setting failed");
@@ -42,7 +54,10 @@ if ( $conn->connect_error ) {
 if (defined('TIMEZONE')){
 	date_default_timezone_set( TIMEZONE );
 }
-sql_set_time_offset();
+
+if ($conn){
+    sql_set_time_offset();
+}
 
 function print_time( $prefix = null, $newline = false ) {
 	if ( $prefix ) {
@@ -516,11 +531,18 @@ function customer_type( $client_id ) {
 	return $key;
 }
 
-function gui_select_worker( $id = null, $selected = null, $events = "" ) {
-	return gui_select_table( $id, "im_working", $selected, $events, "",
-		"client_displayname(worker_id)",
-		"where is_active=1", true, false, null, "worker_id" );
+// $selector_name( $input_name, $orig_data, $args)
+function gui_select_worker( $id = null, $selected = null, $args = null ) {
+	$events = GetArg($args, "events", null);
+	$edit = GetArg($args, "edit", true);
+	if ($edit)
+		return gui_select_table( $id, "im_working", $selected, $events, "",
+			"client_displayname(worker_id)",
+			"where is_active=1", true, false, null, "worker_id" );
+	else
+		return sql_query_single_scalar("select client_displayname(worker_id) from im_working where worker_id = " . $selected);
 }
+
 
 function valid_key( $key ) {
 	$valid = sql_query_single_scalar( "SELECT timestamp >

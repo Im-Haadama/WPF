@@ -350,9 +350,10 @@ if ( $manager ) {
 
         for (var i = 0; i < collection.length; i++) {
             if (collection[i].checked) {
-                var del_id = collection[i].id.substring(3); // table.rows[i + 1].cells[6].firstChild.innerHTML;
+                let row_id = collection[i].id.substring(4); // table.rows[i + 1].cells[6].firstChild.innerHTML;
+                let del_id = get_value_by_name("del_" + row_id);
                 del_ids.push(del_id);
-                total = total + parseInt(table.rows[i + 1].cells[2].firstChild.data);
+                total = total + parseInt(get_value_by_name("amo_" + row_id));
             }
         }
         xmlhttp = new XMLHttpRequest();

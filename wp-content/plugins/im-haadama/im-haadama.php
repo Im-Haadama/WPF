@@ -7,6 +7,9 @@
  * Time: 17:42
  */
 
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
 define( 'IM_HAADAMA_PLUGIN', __FILE__ );
 
 define( 'IM_HAADAMA_PLUGIN_BASENAME', plugin_basename( IM_HAADAMA_PLUGIN ) );
@@ -15,13 +18,20 @@ define( 'IM_HAADAMA_PLUGIN_NAME', trim( dirname( IM_HAADAMA_PLUGIN_BASENAME ), '
 
 define( 'IM_HAADAMA_PLUGIN_DIR', untrailingslashit( dirname( IM_HAADAMA_PLUGIN ) ) );
 
-if ( ! defined( 'TOOLS_DIR' ) ) {
-	define( 'TOOLS_DIR', dirname( dirname( dirname( dirname( IM_HAADAMA_PLUGIN ) ) ) ) . "/tools" );
+if ( ! defined( 'ROOT_DIR' ) ) {
+	define( 'ROOT_DIR',  dirname(dirname( dirname( dirname( IM_HAADAMA_PLUGIN)))));
 }
+
+if ( ! defined( 'TOOLS_DIR')) {
+     define ('TOOLS_DIR', ROOT_DIR . '/tools');
+}
+
+require_once (ROOT_DIR . '/im-config.php');
+
 
 require_once( TOOLS_DIR . '/im_tools.php' );
 
-require_once( "functions_im.php" );
+// require_once( "functions_im.php" );
 
 add_shortcode( 'im-page', 'im_page' );
 
@@ -240,4 +250,8 @@ function skyverge_add_custom_order_status_icon() {
 
     </style>
 	<?php
+}
+
+if (file_exists(IM_HAADAMA_PLUGIN_DIR . "/tasks.php")){
+    require_once("tasks.php");
 }

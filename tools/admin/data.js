@@ -29,10 +29,11 @@ function save_new(table_name)
         return false;
     }
     let size = table.rows.length;
-    for (let i = 1; i < size; i++){
+    // Change i to start from 0 - in new row no header. id should be hidden
+    for (let i = 0; i < size; i++){
         let name = table.rows[i].cells[1].innerText;
         if (get_value_by_name("chk_" + name)){
-            let val = get_value_by_name(name.substr(0, 3) + "_");
+            let val = get_value_by_name(name);
             operation += "&" + name + "=" + val;
         }
     }
@@ -57,6 +58,11 @@ function action_back(xmlhttp)
 
 function update_table_field(post_file, table_name, id, field_name, finish_action) {
     let value = get_value_by_name(field_name);
+    if (! value) value = get_value_by_name(field_name + "_" + id);
+    if (! value) {
+        alert ("no value found");
+        return;
+    }
     let request = post_file + "?operation=update" +
         "&table_name=" + table_name +
         "&" + field_name + '=' +

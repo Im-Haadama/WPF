@@ -66,12 +66,8 @@ switch ( $operation ) {
 		create_receipt( $cash, $bank, $check, $credit, $change, $user_id, $date, $row_ids );
 		break;
 
-	case "create_invoice_user":
-		$id = $_GET["id"];
-		invoice_create_user( $id );
-		break;
-
 	case "update_invoice_user":
+	case "create_invoice_user":
 		$id = $_GET["id"];
 		invoice_create_user( $id );
 		break;
@@ -167,7 +163,11 @@ function create_invoice( $ids, $user_id ) {
 
 		return;
 	}
-	$doc_id = invoice_create_document( "i", $ids, $user_id, date( "Y-m-d" ) );
+	try {
+		$doc_id = invoice_create_document( "i", $ids, $user_id, date( "Y-m-d" ) );
+	} catch ( Exception $e ) {
+		print "error: " . $e->getMessage();
+	}
 
 	if ( is_numeric( $doc_id ) && $doc_id > 0 ) {
 		$sql = "UPDATE im_delivery SET payment_receipt = " . $doc_id . " WHERE id IN (" . comma_implode( $ids ) . " ) ";
@@ -504,14 +504,10 @@ function invoice_create_document( $type, $ids, $customer_id, $date, $cash = 0, $
 
 	$total_lines = 0;
 	foreach ( $ids as $del_id ) {
-		// print "del id " . $del_id;
-
 		$sql = 'select product_name, quantity, vat, price, line_price '
 		       . ' from im_delivery_lines where delivery_id = ' . $del_id;
 
 		$result = sql_query( $sql );
-
-		// var_dump ($client->ClientID);
 
 		// drill to lines
 		while ( $row = mysqli_fetch_row( $result ) ) {
@@ -535,6 +531,11 @@ function invoice_create_document( $type, $ids, $customer_id, $date, $cash = 0, $
 				$total_lines += $item->Total;
 			}
 		}
+	}
+
+	if (! ($total_lines > 0))
+	{
+		die("no total for invoice<br/>");
 	}
 
 	if ( $type == "r" ) {

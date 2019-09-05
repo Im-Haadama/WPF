@@ -32,10 +32,13 @@ if ( ! defined( 'IM_BACKUP_FOLDER' ) ) {
 $m = new MultiSite( $hosts_to_sync, $master, 3 );
 
 $op = get_param( "op" );
-$date = get_param("date", false, date('y-m-j'));
+$date = get_param("date", false, date('y-m-d'));
+$debug = get_param("debug", false, false);
 
 if ( $op == 'check' ) { // would run on conductor server
 	$fail = false;
+	if ($debug) print "checking backup files<br/>";
+
 	// Check if we have new files from backuped servers.
 	// print "0 valid backups"; // No attention needed. All ok.
 
@@ -45,6 +48,7 @@ if ( $op == 'check' ) { // would run on conductor server
 		$output = "";
 		$url    = $host_info[2] . "/../utils/backup_manager.php?tabula=145db255-79ea-4e9c-a51d-318a86c999bf";
 		$get_name = $url . "&op=name&date=" . $date;
+		if ($debug) print $get_name . "<br/>";
 		$file_name = curl_get( $get_name );
 		if ( strstr( $file_name, "Fatal" ) or strlen($file_name) < 5) {
 			array_push( $results, array( $host_info[1], "error file name: " . $file_name ) );

@@ -29,9 +29,10 @@ if ($operation) {
 $row_id = get_param( "row_id", false );
 // if ($row_id) { show_supply($row_id); return; }
 
-show_last_supplies();
+$edit = get_param("edit", false, false);
+show_last_supplies($edit);
 
-function show_last_supplies()
+function show_last_supplies($edit = false)
 {
 	global $general_selectors;
 	global $this_url;
@@ -39,16 +40,17 @@ function show_last_supplies()
 	global $table_name;
 	global $update_event;
 
-	$args = array("selectors" => $general_selectors,
-	              "events" => $update_event,
-	              "edit" => true,
+	$args = array("events" => $update_event,
+	              "edit" => $edit,
 		"links" => array("id" => "supply-get.php?id=%s"),
 		"selectors" => array("status" => "gui_select_supply_status", "supplier" => "gui_select_supplier"));
 
 	print gui_header( 1, "ניהול " . $entity_name_plural );
 
-	$sql = "select id, status, date(date) as date, supplier, text, business_id as transaction, paid_date as 'Paid date' from $table_name where status != " . SupplyStatus::Deleted . " order by id desc limit 30";
+	$sql = "select id, status, date(date), supplier, text, business_id, paid_date from $table_name where status != " . SupplyStatus::Deleted . " order by id desc limit 30";
+	$args["header_fields"] = array("Id", "Status", "Date", "Supplier", "Comments", "Transaction", "Pay date");
 
+	// print $sql;
 	print GuiTableContent( $table_name, $sql, $args );
 
 }

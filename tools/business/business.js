@@ -28,17 +28,22 @@ function selected_supplier_site_id() {
 }
 
 function selected_client_id() {
-    var item_id = selected_client_index();
-    var list = document.getElementById("client_items");
+    let item_id = selected_client_index();
+    let list = document.getElementById("open_account");
 
-    return list.options[item_id].getAttribute("data-client_id");
+    if (list)
+        return list.options[item_id].getAttribute("data-client_id");
+    return 0;
 }
 
 function selected_client_site_id() {
     var item_id = selected_client_index();
-    var list = document.getElementById("client_items");
+    var list = document.getElementById("open_account");
 
-    return list.options[item_id].getAttribute("data-site_id");
+    if (list)
+        return list.options[item_id].getAttribute("data-site_id");
+
+    return 0;
 }
 
 

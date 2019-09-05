@@ -8,6 +8,8 @@ if ( ! defined( "ROOT_DIR" ) ) {
 }
 
 require_once(ROOT_DIR . "/tools/im_tools.php");
+
+get_sql_conn() || die("not connected!");
 require_once( '../r-shop_manager.php' ); // for authentication
 
 $operation = get_param("operation", true);
@@ -104,12 +106,12 @@ function update_data($table_name, $ignore_list)
 			$stmt = sql_prepare($sql);
 			if (! $stmt) return false;
 			if ($is_meta[$tbl]){
-				if (! sql_bind($sql, $tbl, $stmt,
+				if (! sql_bind($tbl, $stmt,
 					array($meta_table_info[$tbl]['value'] => $changed_value,
 						$meta_table_info[$tbl]['key'] => $changed_field,
 						$meta_table_info[$tbl]['id'] => $row_id))) return false;
 			} else {
-				if ( ! sql_bind( $sql, $table_name, $stmt,
+				if ( ! sql_bind($table_name, $stmt,
 					array(
 						$changed_field => $changed_value,
 						sql_table_id($table_name)  => $row_id
@@ -148,10 +150,8 @@ function update_data($table_name, $ignore_list)
 				$types .= "i";
 				$value = strlen($value) ? $value : null;
 				break;
-			case "var":
-				$types .= "s";
-				break;
 			case "dat":
+			case "var":
 				$types .= "s";
 				break;
 			case "dou":

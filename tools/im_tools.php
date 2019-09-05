@@ -22,22 +22,17 @@ if ( ! defined( "TOOLS_DIR" ) ) {
 	define( 'TOOLS_DIR', dirname( __FILE__ ) );
 }
 
-require_once( "im_tools_light.php" );
 
 require_once( STORE_DIR . "/im-config.php" );
+require_once( "im_tools_light.php" );
 require_once( STORE_DIR . "/wp-config.php" );
 require_once( STORE_DIR . "/wp-load.php" );
 require_once( "wp.php" );
 
 // Local and international staff...
 date_default_timezone_set( "Asia/Jerusalem" );
-$mofile = ROOT_DIR . '/wp-content/languages/plugins/im_haadama-he_IL.mo';
-if (! file_exists($mofile)){
-	print "$mofile not exists";
-	die (1);
-}
-if (! load_textdomain('im-haadama', $mofile))
-	print "can't load $mofile";
+$mofile = ROOT_DIR . '/wp-content/languages/plugins/im_haadama.mo';
+if (! load_textdomain('im-haadama', $mofile));
 
 function order_get_shipping_fee( $order_id ) {
 	$order = wc_get_order( $order_id );
@@ -86,22 +81,6 @@ function order_get_mission_id( $order_id, $debug = false ) {
 	} else {
 		$mission_id = $mission;
 	}
-//	if ( $debug or ( strlen( $mission_id ) < 1 ) ) {
-//
-//		$shipping_info = order_get_shipping( $order_id );
-//		$sql = "SELECT path_code FROM im_mission_methods WHERE method = '" . mysqli_real_escape_string( $conn, $shipping_info ) . "'";
-//		// print $sql;
-//		$path_code = sql_query_single_scalar( $sql );
-//
-//		if ( $debug ) {
-//			print "path code: " . $path_code . "<br/>";
-//		}
-//		$mission_id = sql_query_single_scalar( "SELECT min(id) FROM im_missions WHERE path_code = '" . $path_code . "'" .
-//		                                       " AND date >= curdate()" );
-//		if ( $debug )
-//			print "mission_id: " . $mission_id . "<br/>";
-//		update_post_meta( $order_id, 'mission_id', $mission_id );
-//	}
 	if ( ! is_numeric( $mission_id ) ) {
 		return 0;
 	}
@@ -270,7 +249,10 @@ function get_user_id() {
 function get_customer_name( $customer_id ) {
 	static $min_supplier = 0;
 	if ( ! $min_supplier ) {
-		$min_supplier = sql_query_single_scalar( "SELECT min(id) FROM im_suppliers" );
+		if (table_exists("im_suppliers"))
+			$min_supplier = sql_query_single_scalar( "SELECT min(id) FROM im_suppliers" );
+		else
+			$min_supplier = 1000000;
 	}
 
 	if ( $customer_id < $min_supplier ) {
@@ -305,14 +287,15 @@ function get_customer_email( $customer_id ) {
 	throw new Exception( "Bad customer_id " . __METHOD__ );
 }
 
-function gui_select_creator( $id = null, $selected = null, $events = "" ) {
+function gui_select_creator( $id = null, $selected = null, $args ) {
 	global $user_ID;
 	if ( is_manager( $user_ID ) ) {
 //		$id, $table, $selected = null, $events = null, $more_values = null, $name = null, $where = null,
 //	$include_id = false, $datalist = false, $order_by = null, $id_key = null
 
-		$args = array("selected"=>$selected, "events"=>$events, "name" =>"client_displayname(worker_id)",
-			"where" => "where is_active=1", "include_id" => 1, "datalist" => 0, "id_key" => "worker_id");
+//		$args = array("selected"=>$selected, "events"=>$events, ,
+//			"where" => "where is_active=1", "include_id" => 1, "datalist" => 0, "id_key" => "worker_id");
+		$args["name"] = "client_displayname(worker_id)";
 		return GuiSelectTable( $id, "im_working", $args);
 	} else {
 		return $user_ID;
@@ -354,4 +337,3 @@ function get_term_name($term_id)
 //	return $manager;
 //}
 
-?>

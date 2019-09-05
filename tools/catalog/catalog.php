@@ -38,7 +38,7 @@ class Catalog {
 				// my_log("calling MultiSite " . $pricelist->SiteId(). " " . $id .
 //             //   $pricelist_item["supplier_product_code"]);
 				$site_id = $pricelist->SiteId();
-				print "site_id: " . $site_id . "<br/>";
+//				print "site_id: " . $site_id . "<br/>";
 				if ( is_numeric( $site_id ) and $site_id != ImMultiSite::LocalSiteID() ) {
 					// Copy information from remote site
 					$remote_id = $pricelist_item["supplier_product_code"];
@@ -47,6 +47,7 @@ class Catalog {
 				}
 			}
 		}
+		print "done";
 	}
 
 	static function CreateProduct( $pricelist_id, $category_name ) // Create product from pricelist information

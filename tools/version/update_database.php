@@ -6,6 +6,8 @@
  * Time: 11:36
  */
 
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
 
 if ( ! defined( "ROOT_DIR" ) ) {
 	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
@@ -13,7 +15,7 @@ if ( ! defined( "ROOT_DIR" ) ) {
 
 require_once( ROOT_DIR . '/tools/im_tools_light.php' );
 require_once( ROOT_DIR . '/niver/gui/sql_table.php' );
-require_once( ROOT_DIR . '/tools/delivery/delivery.php' );
+// require_once( ROOT_DIR . '/tools/delivery/delivery.php' );
 
 //print sql_query_single_scalar("show create table im_bank_account");
 //exit;
@@ -21,13 +23,22 @@ require_once( ROOT_DIR . '/tools/delivery/delivery.php' );
 $version = get_param( "version" );
 
 switch ( $version ) {
+	case "all":
+		basic();
+		create_tasklist();
+		version16();
+		version17();
+		version18();
+		break;
+	case "20":
+		version20();
+		break;
 	case "check2":
 		print table_content( "a", "SELECT * FROM im_task_templates" );
 		break;
 	case "check":
 		check();
 		break;
-
 	case "basic":
 		basic();
 		break;
@@ -51,6 +62,30 @@ print "done";
 die ( 0 );
 
 
+function version20()
+{
+	print gui_header(1, "management");
+
+	if (! table_exists("im_working_teams")) sql_query("create table im_working_teams (
+	id INT NOT NULL AUTO_INCREMENT
+		PRIMARY KEY,
+    	team_name VARCHAR(40) CHARACTER SET utf8 NULL,
+	    manager int(11))");
+
+	sql_query("CREATE FUNCTION 	worker_teams(_user_id int)
+	 RETURNS TEXT
+BEGIN
+	declare _result varchar(200);
+	select meta_value into _result
+	from wp_usermeta
+	where meta_key = 'teams' 
+	and user_id = _user_id;
+	
+	return _result;	   
+END;"
+	);
+}
+
 function check() {
 	sql_query( "alter table im_tasklist collate 	utf8_general_ci" );
 	$result = sql_query( "show create table im_tasklist" );
@@ -62,20 +97,54 @@ function check() {
 }
 
 function basic() {
-	sql_query( "CREATE TABLE im_info
-(
-	info_key VARCHAR(40) NULL,
-	info_data VARCHAR(200) NULL,
-	id INT NOT NULL AUTO_INCREMENT
-		PRIMARY KEY
-)
-;
+	if (! table_exists("im_info"))
+	sql_query( "CREATE TABLE im_info (
+		info_key VARCHAR(40) NULL,
+		info_data VARCHAR(200) NULL,
+		id INT NOT NULL AUTO_INCREMENT
+			PRIMARY KEY
+	)
+	;" );
 
-" );
+	if (! table_exists("im_projects"))
+	{
+		sql_query("create table im_projects
+(
+	ID int auto_increment
+		primary key,
+	project_name varchar(20) not null,
+	project_contact varchar(20) not null,
+	project_priority int null
+);
+");
+	}
+
+	if (!table_exists("im_business_info"))
+		sql_query("create table im_business_info
+(
+	id bigint auto_increment
+		primary key,
+	part_id int not null,
+	date date not null,
+	week date not null,
+	amount double not null,
+	ref varchar(20) not null,
+	delivery_fee float null,
+	project_id int default 3 not null,
+	is_active bit default b'1' null,
+	document_type int(2) default 1 not null,
+	net_amount double null,
+	invoice_file varchar(200) charset utf8 null,
+	invoice int(10) null,
+	pay_date date null
+);
+
+");
+
 }
 function create_tasklist() {
-	sql_query( "drop table im_tasklist" );
-	sql_query( "CREATE TABLE `im_tasklist` (
+
+	if (! table_exists("im_tasklist"))  sql_query( "CREATE TABLE `im_tasklist` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
   `date` DATETIME DEFAULT NULL,
   `task_description` VARCHAR(100) CHARACTER SET utf8 DEFAULT NULL,
@@ -202,7 +271,6 @@ END;
 
 	//    
 
-
 	print "client_last_order, date<br/>";
 	sql_query("drop function client_last_order_date");
 	sql_query("create
@@ -239,7 +307,6 @@ BEGIN
 END;
 
 ");
-
 
 	print "get_product_name<br/>";
 	sql_query("drop function get_product_name");
@@ -312,19 +379,6 @@ BEGIN
 	");
 	print "supplier balance<br/>";
 
-	 sql_query("drop function supplier_balance");
-	$sql = "create function supplier_balance (_supplier_id int, _date date) returns float   
-BEGIN
-declare _amount float;
-select sum(amount) into _amount from im_business_info
-where part_id = _supplier_id
-and date <= _date
-and is_active = 1
-and document_type in (" . ImDocumentType::bank . "," . ImDocumentType::invoice . "); 
-
-return round(_amount, 0);
-END;";
-	sql_query($sql);
 
 	print "template onwer";
 	sql_query("alter table im_task_templates " .
@@ -374,7 +428,6 @@ end if;
 return round(_amount + _linked, 2);
 END;" );
 
-	return;
 
 	sql_query( "alter table im_suppliers
 	add supplier_priority INT(2) DEFAULT '5';" );
@@ -524,6 +577,7 @@ BEGIN
 
 " );
 
+	print "task status<br/>";
 	sql_query( "CREATE FUNCTION task_status(task_id INT)
   RETURNS TEXT CHARSET 'utf8'
   BEGIN
@@ -612,6 +666,23 @@ ADD auto_order_day INT(11),
 ADD invoice_email VARCHAR(50);
 " );
 
+function aa()
+{
+	sql_query("drop function supplier_balance");
+	$sql = "create function supplier_balance (_supplier_id int, _date date) returns float   
+BEGIN
+declare _amount float;
+select sum(amount) into _amount from im_business_info
+where part_id = _supplier_id
+and date <= _date
+and is_active = 1
+and document_type in (" . ImDocumentType::bank . "," . ImDocumentType::invoice . "); 
+
+return round(_amount, 0);
+END;";
+	sql_query($sql);
+
+}
 
 print "done";
 

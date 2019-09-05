@@ -4,6 +4,10 @@
 
 function changed(field) {
     var subject = field.id;
+
+    // in suppliy-get, the subject is quantity_id
+    let s = subject.indexOf("_"); if (s) subject = subject.substr(s + 1);
+
     document.getElementById("chk_" + subject).checked = true;
 }
 
@@ -29,7 +33,7 @@ function get_value_by_name(element_name) {
     var element = document.getElementById(element_name);
     if (element)
         return get_value(element);
-    return "not found";
+    return null;
 }
 
 function reset_message(message) {
@@ -89,6 +93,8 @@ function get_value(element) {
             case "DIV":
                 return element.innerHTML;
 
+            case "A":
+                return element.text;
         }
     else
         return element;

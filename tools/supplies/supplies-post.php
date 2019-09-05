@@ -12,6 +12,8 @@ require_once( '../r-shop_manager.php' );
 require_once( 'Supply.php' );
 require_once( '../orders/orders-common.php' );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
+require_once("../catalog/gui.php");
+
 //require_once( "../business/business-post.php" );
 // require_once( "../business/business_info.php" );
 

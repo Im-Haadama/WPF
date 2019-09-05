@@ -324,16 +324,17 @@ class Supply {
 
 		$data_lines = array();
 		my_log( __FILE__, "id = " . $this->ID . " internal = " . $internal );
-		$sql = 'select product_id as `Product Name`, quantity as Quantity, id as Id, units as Units'
+		$sql = 'select product_id, quantity, id, units'
 		       . ' from im_supplies_lines where status = 1 and supply_id = ' . $this->ID;
 
-		$args = array("id_field" => "Id", "add_checkbox" => true,
-			"selectors" => array("Product Name" => "gui_select_product"),
+		$args = array("id_field" => "id", "add_checkbox" => true,
+			"selectors" => array("product_id" => "gui_select_product"),
 			          "id_key" => "ID",
 			          "edit" => $edit,
 			          "show_cols" => array(1, 1, 1, 0, 0, $internal, $internal, $internal),
-			          "edit_cols" => array("Quantity" => true),
-			          "checkbox_class" => "supply_checkbox");
+			          "edit_cols" => array("quantity" => true),
+			          "checkbox_class" => "supply_checkbox",
+			"events"=>'onchange="changed(this)"');
 
 		$rows_data = TableData( $sql, $args);
 
@@ -347,7 +348,7 @@ class Supply {
 				$prod_id = $rows_data[$i]["Product Name"];
 				$buy_price = get_buy_price($prod_id, $this->getSupplier());
 				array_push($rows_data[$i], $buy_price);
-				array_push($rows_data[$i], $buy_price * $rows_data[$i]["Quantity"]);
+				array_push($rows_data[$i], $buy_price * $rows_data[$i]["quantity"]);
 				array_push($rows_data[$i], orders_per_item( $prod_id, 1, true, true, true ));
 			}
 		}

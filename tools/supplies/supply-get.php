@@ -10,6 +10,7 @@ require '../r-shop_manager.php';
 require_once( "Supply.php" );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( "../account/gui.php" );
+require_once("../catalog/gui.php");
 
 print header_text( false, true, true,
     array("/vendor/sorttable.js",	"/niver/gui/client_tools.js")
@@ -254,7 +255,7 @@ print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_missio
                 var line_id = collection[i].id.substr(4);
 
                 params.push(line_id);
-                params.push(get_value(document.getElementById(line_id)));
+                params.push(get_value_by_name("quantity_" +line_id));
             }
         }
         xmlhttp = new XMLHttpRequest();
