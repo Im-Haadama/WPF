@@ -15,6 +15,18 @@ if ( ! defined( "TOOLS_DIR" ) ) {
 // require_once( TOOLS_DIR . "/business/business.php" );
 // require_once( TOOLS_DIR . "/account/gui.php" );
 
+/**
+ * @param $id
+ * @param $date
+ * @param $start
+ * @param $end
+ * @param $project_id
+ * @param $traveling
+ * @param $expense_text
+ * @param $expense
+ *
+ * @return int|string
+ */
 function people_add_activity( $id, $date, $start, $end, $project_id, $traveling, $expense_text, $expense ) {
 	if ( strlen( $traveling ) == 0 ) {
 		$traveling = 0;
@@ -40,6 +52,12 @@ function people_add_activity( $id, $date, $start, $end, $project_id, $traveling,
 	return 0; // Success
 }
 
+/**
+ * @param $id
+ * @param $date
+ * @param $quantity
+ * @param $sender
+ */
 function driver_add_activity( $id, $date, $quantity, $sender ) {
 	my_log( "driver_add_activity", __FILE__ );
 	$sql = "INSERT INTO im_driver_deliveries (user_id, date, quantity, sender) VALUES (" .
@@ -54,6 +72,11 @@ function driver_add_activity( $id, $date, $quantity, $sender ) {
 	}
 }
 
+/**
+ * @param $sender_id
+ *
+ * @return string
+ */
 function sender_name( $sender_id ) {
 	$sender = "";
 	switch ( $sender_id ) {
@@ -68,12 +91,72 @@ function sender_name( $sender_id ) {
 	return $sender;
 }
 
-
-function is_volunteer( $uid ) {
-	return sql_query_single_scalar( "SELECT volunteer FROM im_working WHERE worker_id = " . $uid );
+/**
+ * @param $user_id
+ *
+ * @return string
+ */
+function worker_get_id($user_id)
+{
+	return sql_query_array_scalar("select id from im_working where user_id = " . $user_id);
 }
 
+
+/**
+ * @param $user_id
+ *
+ * @return array|string
+ */
+function worker_get_companies($user_id)
+{
+	return sql_query_array_scalar("select company_id from im_working where user_id = " . $user_id);
+}
+
+/**
+ * @param $user_id
+ *
+ * @return string
+ */
+function worker_get_projects($user_id)
+{
+	return sql_query_array_scalar("select project_id from im_working where user_id = " . $user_id);
+}
+
+/**
+ * @param $uid
+ *
+ * @return string
+ */
+function is_volunteer( $uid ) {
+	return sql_query_single_scalar( "SELECT volunteer FROM im_working WHERE user_id = " . $uid );
+}
+
+
+/** if the worker is global company worker, return array of companies
+ * @param $user_id
+ *
+ * @return string
+ */
+function worker_is_global_company($user_id)
+{
+	return sql_query_single_scalar("select company_id from im_working where user_id = " . $user_id . " and project_id = 0");
+}
+
+
 // User id == 0: display all users.
+/**
+ * @param int $user_id
+ * @param null $month
+ * @param null $year
+ * @param null $week
+ * @param null $project
+ * @param null $sum
+ * @param bool $show_salary
+ * @param bool $edit
+ *
+ * @return string
+ * @throws Exception
+ */
 function print_transactions( $user_id = 0, $month = null, $year = null, $week = null, $project = null, &$sum = null, $show_salary = false , $edit = false) {
 //	print "ss=" . $show_salary . "<br/>";
 	// print "uid=" . $user_id . "<br/>";
@@ -159,7 +242,7 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 		return "אין מידע";
 	$counters["base"] = $counters["125"] = $counters["150"] = 0;
 	while ( $row = mysqli_fetch_row( $result ) ) {
-		$worker_id = $row[4];
+		$user_id = $row[4];
 		//print $row[0];
 		// print "xxx" . $row[5] . $row[6]. $row[7] . $row[8]. "<br/>";
 		$line = "<tr>";
@@ -168,7 +251,7 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 		$line  .= "<td>" . $row[0] . "</td>";
 		$line  .= gui_cell( week_day( $row[9] ) );
 
-		$daily = sql_query_single_scalar( "select day_rate from im_working where worker_id = " . $worker_id ) > 0;
+		$daily = sql_query_single_scalar( "select day_rate from im_working where user_id = " . $user_id ) > 0;
 		$start = new DateTime( $row[1] );
 		$end   = new DateTime( $row[2] );
 
@@ -194,14 +277,14 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 		$project_id = $row[3];
 		$line       .= "<td>" . project_name( $project_id ) . "</td>";
 		if ( $user_id == 0 ) {
-			$line .= "<td>" . get_customer_name( $worker_id ) . "</td>";
+			$line .= "<td>" . get_customer_name( $user_id ) . "</td>";
 		}
 //		else{
 		if ( $daily ) {
-			$rate = get_daily_rate( $worker_id );
+			$rate = get_daily_rate( $user_id );
 			$sal  = $rate;
 		} else {
-			$rate = get_rate( $worker_id, $project_id );
+			$rate = get_rate( $user_id, $project_id );
 			$sal  = ( $dur_base + $dur_125 * 1.25 + $dur_150 * 1.5 ) * $rate;
 		}
 
@@ -257,7 +340,7 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 	$data      .= "</table>";
 
 	if ($edit)
-		$data .= gui_button("btn_delete", "delete_line(" . $worker_id . ")", "מחק");
+		$data .= gui_button("btn_delete", "delete_line(" . $user_id . ")", "מחק");
 
 	$total_sal = round( $total_sal, 1 );
 
@@ -334,13 +417,22 @@ function gui_select_project( $id, $value, $args)
 		return get_project_name($value);
 	}
 	// Filter by worker if supplied.
-	$worker = GetArg($args, "worker", null);
+	$user_id = GetArg($args, "worker", null);
 	$query = null;
-	if ( $worker ) {
+	if ( !$user_id ) {
+		throw new Exception( __FUNCTION__ .": No worker given" );
+	}
+
+	// Check if this user is global company user.
+	if ($companies = worker_get_companies($user_id)){
+		$query = " where id in (select project_id from im_working where company_id in (" . comma_implode($companies) . "))";
+	} else {
+		$query = " where id in (" . comma_implode(worker_get_projects() . ")");
+	}
+
 		// print "w=" . $worker;
 		// $user_id = sql_query("select user_id from im_working where id = " . $worker);
-		$query = " where id in (select project_id from im_working where worker_id = " . $worker . ")";
-	}
+//		$query = " where id in (select project_id from im_working where user_id = " . $user_id . ")";
 
 	$args["where"] = $query;
 	$args["name"] = "project_name";
@@ -351,7 +443,7 @@ function gui_select_project( $id, $value, $args)
 
 function gui_select_task( $id, $value, $args ) {
 	$events = GetArg($args, "events", null);
-	$query = GetArg($args, "where", " 1 ");
+	$query = GetArg($args, "where", " where status = 0 ");
 	$length = GetArg($args, "length", 30);
 
 //	if ( $worker ) {
@@ -366,7 +458,7 @@ function gui_select_task( $id, $value, $args ) {
 	$args = array("value" => $value,
 	              "events"=>$events,
 	              "name"=>"substr(task_description, 1," . $length . ")",
-	              "where"=>"where " . $query,
+	              "where"=> $query,
 	              "include_id" => 1,
 	              "datalist" =>1 );
 	return GUiSelectTable($id, "im_tasklist", $args);

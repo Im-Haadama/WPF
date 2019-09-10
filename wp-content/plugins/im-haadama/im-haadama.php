@@ -7,9 +7,6 @@
  * Time: 17:42
  */
 
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
-
 define( 'IM_HAADAMA_PLUGIN', __FILE__ );
 
 define( 'IM_HAADAMA_PLUGIN_BASENAME', plugin_basename( IM_HAADAMA_PLUGIN ) );
@@ -27,9 +24,6 @@ if ( ! defined( 'TOOLS_DIR')) {
 }
 
 require_once (ROOT_DIR . '/im-config.php');
-
-
-require_once( TOOLS_DIR . '/im_tools.php' );
 
 // require_once( "functions_im.php" );
 
@@ -65,7 +59,6 @@ function show_inventory_func( $atts, $contents, $tag ) {
 	require_once( ROOT_DIR . "/tools/express/show-inventory.php" );
 	show_inventory_client();
 }
-
 
 // Delivery time select
 //function delivery_options()

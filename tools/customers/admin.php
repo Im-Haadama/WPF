@@ -41,7 +41,11 @@ function show_user($user_id)
 		   		  "edit" => true,
 	              // "add_checkbox" => true,
 	              "id_field" => "ID",
-		"fields" => array("ID", "user_email", "display_name"));
+		"fields" => array("ID", "user_email", "display_name"),
+		"header_fields" => array("Email", "Name", "Client preferences (E.g - small cucumbers)", "Send mail about products",
+			"Delivery note - M for mail, P for Paper print",
+			"Billing first name", "Billing last name", "Phone", "Shipping first name", "Shipping last name", "Shipping address - street and number",
+			"Shipping address - entrance code, floor and flat number", "Shipping city", "Shipping post code"));
 
 	print gui_header(1, "משתמש מספר " . $user_id);
 	print GuiRowContent("wp_users", $user_id, $args);

@@ -18,6 +18,6 @@ function convert( $size ) {
 
 echo '$_SERVER[\'SERVER_ADDR\'] = ' . $_SERVER['SERVER_ADDR'] . "<br/>";
 
-// print "memory usage: " . memory_get_usage() . "<br/>";
+// print "memory usage: " . memory_get_usage() . "<br/>";21092141,18972121
 
 print "OK!<br/>";

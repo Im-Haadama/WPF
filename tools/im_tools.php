@@ -22,17 +22,11 @@ if ( ! defined( "TOOLS_DIR" ) ) {
 	define( 'TOOLS_DIR', dirname( __FILE__ ) );
 }
 
-
 require_once( STORE_DIR . "/im-config.php" );
 require_once( "im_tools_light.php" );
 require_once( STORE_DIR . "/wp-config.php" );
 require_once( STORE_DIR . "/wp-load.php" );
 require_once( "wp.php" );
-
-// Local and international staff...
-date_default_timezone_set( "Asia/Jerusalem" );
-$mofile = ROOT_DIR . '/wp-content/languages/plugins/im_haadama.mo';
-if (! load_textdomain('im-haadama', $mofile));
 
 function order_get_shipping_fee( $order_id ) {
 	$order = wc_get_order( $order_id );
@@ -92,7 +86,6 @@ function get_client_type( $id ) {
 	// print "meta: " . $meta . "<br/>";
 	return get_user_meta( $id, "_client_type", true );
 }
-
 
 function get_mission_name( $mission_id ) {
 	// Todo: find better way to do this
@@ -287,20 +280,21 @@ function get_customer_email( $customer_id ) {
 	throw new Exception( "Bad customer_id " . __METHOD__ );
 }
 
-function gui_select_creator( $id = null, $selected = null, $args ) {
-	global $user_ID;
-	if ( is_manager( $user_ID ) ) {
-//		$id, $table, $selected = null, $events = null, $more_values = null, $name = null, $where = null,
-//	$include_id = false, $datalist = false, $order_by = null, $id_key = null
-
-//		$args = array("selected"=>$selected, "events"=>$events, ,
-//			"where" => "where is_active=1", "include_id" => 1, "datalist" => 0, "id_key" => "worker_id");
-		$args["name"] = "client_displayname(worker_id)";
-		return GuiSelectTable( $id, "im_working", $args);
-	} else {
-		return $user_ID;
-	}
-}
+//function gui_select_creator( $id = null, $selected = null, $args ) {
+//	global $user_ID;
+//	if ( is_manager( $user_ID ) ) {
+////		$id, $table, $selected = null, $events = null, $more_values = null, $name = null, $where = null,
+////	$include_id = false, $datalist = false, $order_by = null, $id_key = null
+//
+////		$args = array("selected"=>$selected, "events"=>$events, ,
+////			"where" => "where is_active=1", "include_id" => 1, "datalist" => 0, "id_key" => "worker_id");
+//		$args["name"] = "client_displayname(worker_id)";
+//		$args["selected"] = $selected;
+//		return GuiSelectTable( $id, "im_working", $args);
+//	} else {
+//		return $user_ID;
+//	}
+//}
 
 function get_term_name($term_id)
 {

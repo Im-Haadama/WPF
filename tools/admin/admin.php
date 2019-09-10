@@ -10,24 +10,26 @@ error_reporting( E_ALL );
 ini_set( 'display_errors', 'on' );
 
 require_once( "tasklist.php" );
-require_once( "../../niver/web.php" );
+require_once( ROOT_DIR . "/niver/web.php" );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( ROOT_DIR . '/niver/gui/sql_table.php' );
 require_once(ROOT_DIR . '/tools/people/people.php');
-require_once("../../niver/fund.php");
+require_once(ROOT_DIR . "/niver/fund.php");
+require_once(TOOLS_DIR . "/account/gui.php");
+require_once(TOOLS_DIR . '/people/people.php');
+require_once(TOOLS_DIR . "/gui.php");
+
 require_once("common.php");
-require_once("focus.php");
+require_once("data.php");
 
-$this_url           = $_SERVER['REQUEST_URI'];
-$entity_name        = "משימה";
-$entity_name_plural = "משימות";
-$table_name         = "im_tasklist";
+//$this_url           = $_SERVER['REQUEST_URI'];
+//$entity_name        = "משימה";
+//$entity_name_plural = "משימות";
+//$table_name         = "im_tasklist";
 
-$task_selectors = array("project_id" =>  "gui_select_project", "owner" => "gui_select_creator", "creator" => "gui_select_creator", "preq" => "gui_select_task",
-	"mission_id" => "gui_select_mission");
-$template_selectors = array("project_id" =>  "gui_select_project", "owner" => "gui_select_creator", "creator" => "gui_select_creator");
-
-$operation = get_param( "operation", false );
+//
+//
+//$operation = get_param( "operation", false );
 //if ( $operation ) {
 //	switch ( $operation ) {
 ////		case "add":
@@ -58,27 +60,15 @@ $operation = get_param( "operation", false );
 // Selection:
 global $user_ID; // by wordpress.
 
+$admin_scripts = array( "/niver/gui/client_tools.js", "/tools/admin/data.js", "/tools/admin/admin.js" );
 
-if ($operation) {
+function handle_admin_operation($operation)
+{
+	global $admin_scripts;
 	switch ($operation){
-		case "templates":
-			print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/tools/admin/data.js", "/tools/admin/admin.js" ) );
-
-			print gui_hyperlink("הוסף תבנית", $url . "?operation=new_template");
-
-			show_templates();
-
-			break;
-
 		case "new_task":
-			print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/tools/admin/data.js", "/tools/admin/admin.js" ) );
-			$args = array();
-			$args["selectors"] = $task_selectors;
-			 $args["transpose"] = true;
-			$args["values"] = array("owner" => $user_ID, "creator" => $user_ID);
-			// $args["debug"] = true;
-			print NewRow("im_tasklist", $args);
-			print gui_button("btn_newtask", "save_new('im_tasklist')", "צור");
+			im_init($admin_scripts);
+			admin_new_tasks();
 			break;
 
 		case "new_sequence":
@@ -86,7 +76,7 @@ if ($operation) {
 			$args = array();
 			$args["selectors"] = $task_selectors;
 			$args["transpose"] = true;
-			$args["values"] = array("owner" => $user_ID, "creator" => $user_ID);
+			$args["values"] = array("owner" => get_user_id(), "creator" => get_user_id());
 			// $args["debug"] = true;
 			print NewRow("im_tasklist", $args);
 			print gui_button("btn_newsequence", "save_new('im_tasklist')", "צור");
@@ -97,9 +87,11 @@ if ($operation) {
 
 			print gui_header(1, "יצירת תבנית חדשה");
 			$args = array();
-			$args["selectors"] = $template_selectors;
+			$args["selectors"] = array("project_id" =>  "gui_select_project", "owner" => "gui_select_worker", "creator" => "gui_select_worker");
 			$args["transpose"] = true;
-			$args["values"] = array("owner" => $user_ID, "creator" => $user_ID);
+			$args["worker"] = get_user_id();
+			$args["companies"] = worker_get_companies(get_user_id());
+			$args["values"] = array("owner" => get_user_id(), "creator" => get_user_id());
 			print NewRow("im_task_templates", $args);
 			print gui_button("btn_template", "save_new('im_task_templates')", "צור");
 			break;
@@ -125,7 +117,7 @@ if ($operation) {
 			$args = array("selectors" => array("id" => "gui_select_worker"), "edit" => false);
 			print GuiTableContent("im_working_teams",
 				'select id from wp_users where worker_teams(id) like "%:' . $team_id . ':%"', $args);
-			print gui_hyperlink("add member", $url . "?operation=add_member&id=$team_id");
+			print gui_hyperlink("add member", get_url() . "?operation=add_member&id=$team_id");
 			break;
 
 		case "add_member":
@@ -148,11 +140,20 @@ if ($operation) {
 		case "projects":
 			print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/tools/admin/data.js", "/tools/admin/admin.js" ) );
 
-			show_projects($url, $user_ID);
+			show_projects(get_url(), get_user_id());
 			break;
 
+		case "new_company_user":
+			$company_id = data_save_new("im_company");
+			$worker_id = worker_get_id(get_user_id());
+			$sql = "update im_working set company_id = " . $company_id . " where id = " . $worker_id;
+//			print $sql;
+			sql_query($sql);
+
+			print "done";
+			break;
 		default:
-			print $operation . " not handled <br/>";
+			print __FUNCTION__ . ": " . $operation . " not handled <br/>";
 			die(1);
 	}
 	return;
@@ -163,7 +164,7 @@ $non_zero = get_param( "non_zero" );
 
 $url = get_url();
 
-print header_text( false, true, true, "/vendor/sorttable.js" );
+// print header_text( false, true, true, "/vendor/sorttable.js" );
 
 function show_projects( $owner, $url, $non_zero = true) {
 	$links = array();
@@ -185,10 +186,12 @@ function show_projects( $owner, $url, $non_zero = true) {
 }
 
 function show_templates($url,  $template_id = 0 ) {
-global $template_selectors;
 	$args              = array();
 
-	$args["selectors"] = $template_selectors;
+	$args["worker"] = get_user_id();
+	$args["companies"] = worker_get_companies(get_user_id());
+	$args["selectors"] = array("project_id" =>  "gui_select_project", "owner" => "gui_select_worker",
+	                           "creator" => "gui_select_worker", "repeat_freq" => "gui_select_repeat_time");
 	$sql         = "select * " .
 	               " from im_task_templates ";
 	if ($template_id){
@@ -229,31 +232,46 @@ if ( ! defined( "ROOT_DIR" ) ) {
 	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
 }
 
-print header_text( false, true, true, array(
-	"/niver/gui/client_tools.js",
-	"/tools/admin/data.js",
-	"/vendor/sorttable.js"
-) );
-
+//print header_text( false, true, true, array(
+//	"/niver/gui/client_tools.js",
+//	"/tools/admin/data.js",
+//	"/vendor/sorttable.js"
+//) );
 
 function show_task($row_id, $edit = 1)
 {
-	global $entity_name, $table_name, $task_selectors;
+	$table_name = "im_tasklist";
+	$entity_name = "task";
+	// global $entity_name, $task_selectors;
 
-	print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/tools/admin/data.js", "/tools/admin/admin.js" ) );
+	// print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/tools/admin/data.js", "/tools/admin/admin.js" ) );
 
 	print gui_header( 1, $entity_name . " " . $row_id );
 	$args                 = array();
 	$args["edit"]         = $edit;
-	$args["selectors"] = $task_selectors;
-	$project_id = sql_query_single_scalar("select project_id from im_tasklist where id = " .$row_id);
-	if ($project_id > 0)
-		$args["where"] = "project_id = " . $project_id;
+	$args["selectors"] = array("project_id" =>  "gui_select_project", "owner" => "gui_select_worker", "creator" => "gui_select_worker", "preq1" => "gui_select_task",
+	                                                   "mission_id" => "gui_select_mission");
+
+	$args["header_fields"] = array("Date", "Task description", "Repeating task", "Status", "Started", "Ended", "Project", "Mission", "Location", "Address", "Priority", "Prerequisite", "Assigned to",
+	"Creator");
+
+//	 $args["fields"] = array("id", "task_description");
+//
+	$args["worker"] = get_user_id();
+	$args["companies"] = worker_get_companies(get_user_id());
+	$args["debug"] = 0; // get_user_id() == 1;
+
+// 	print "d=" . $args["debug"] . " " . get_current_user();
+//	$project_id = sql_query_single_scalar("select project_id from im_tasklist where id = " .$row_id);
+//	if ($project_id > 0)
+//		$args["where"] = " project_id = " . $project_id;
 
 	try {
-		print GuiRowContent( $table_name, $row_id, $args );
+		$task_table = GuiRowContent( $table_name, $row_id, $args );
+		// print "<br/>" . str_replace("<", "$", $task_table) . "<br/>";
+		print $task_table;
 	} catch ( Exception $e ) {
-		print "having problem... " . $e->getMessage();
+		print "Error: " . $e->getMessage();
 		return;
 	}
 	print gui_button( "btn_save", "save_entity('$table_name', " . $row_id . ')', "שמור" );
@@ -268,9 +286,11 @@ function show_task($row_id, $edit = 1)
  *
  * @return string
  */
-function gui_select_repeat_time( $id, $value, $events = "") {
+// $selector_name( $input_name, $orig_data, $args)
+function gui_select_repeat_time( $id, $value, $args) {
 //	print "v=" . $value . "<br/>";
 
+	$events = GetArg($args, "events", null);
 	$values = array( "w - שבועי", "j - חודשי", "z - שנתי");
 
 	$selected = 1;
@@ -297,16 +317,17 @@ function edit_staff($url)
 	// print GuiTableContent("");
 }
 
-function show_active_tasks($args = null, $debug = false, $time = false)
+function active_tasks($args = null, $debug = false, $time = false)
 {
 	global $task_selectors;
 	global $this_url;
 	global $entity_name_plural;
-	global $table_name;
+	$table_name = "im_tasklist";
 
-	$url = GetArg($args, "url", basename(__FILE__));
+	$url = get_url(true);
+//	print "U=".$url . "<br/>";
 
-	print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/tools/admin/data.js", "/tools/admin/admin.js" ) );
+	// print header_text( false, true, is_rtl(), array( "/niver/gui/client_tools.js", "/tools/admin/data.js", "/tools/admin/admin.js" ) );
 
 	$user_id = GetArg($args, "user_id", wp_get_current_user()->ID);
 	$project_id = GetArg($args, "project", null);
@@ -319,31 +340,31 @@ function show_active_tasks($args = null, $debug = false, $time = false)
 	$links["id"] = $this_url . "?row_id=%s";
 
 	$query   = "where 1 ";
-	$title = " Managing " . $entity_name_plural;
+	$title = "Managing Tasks";
 	if ($project_id) {
 		$query .= " and project_id = $project_id";
 		$title .= " project " . get_project_name($project_id);
 	}
 
-	print gui_header( 1, $title );
+//	print gui_header( 1, $title );
 
-	print greeting();
+//	print greeting();
 
-	print gui_hyperlink("repeating tasks", $url . "?operation=templates");
+//	print gui_hyperlink("repeating tasks", $url . "?operation=templates");
 
-	print " ";
+//	print " ";
 
-	print gui_hyperlink("add tasks", $url . "?operation=new_task");
+//	print gui_hyperlink("add tasks", $url . "?operation=new_task");
 
-	print " ";
+//	print " ";
 
-	print managed_workers($user_id, $_SERVER['REQUEST_URI']);
+//	print managed_workers($user_id, $_SERVER['REQUEST_URI']);
 
-	print " ";
+//	print " ";
 
-	print gui_hyperlink("projects", $url . "?operation=projects");
+//	print gui_hyperlink("projects", $url . "?operation=projects");
 
-	$sum     = null;
+//	$sum     = null;
 
 	if ($active_only)
 		$query .= " and (status in (0, 1) and (isnull(preq) or task_status(preq) >= 2) and (date is null or date(date) <= Curdate()))";
@@ -366,7 +387,6 @@ function show_active_tasks($args = null, $debug = false, $time = false)
 	else
 		$order   = "order by priority desc ";
 
-//	print "order=$order<br/>";
 	$args             = array();
 
 	$links["task_template"] = $url . "?task_template_id=%s";
@@ -378,6 +398,7 @@ function show_active_tasks($args = null, $debug = false, $time = false)
 	$args["actions"]  = $actions;
 	$args["id_field"] = "id";
 	$args["edit"] = false;
+	$args["header_fields"] = array("Id", "Start after", "Task description", "Repeating task id", "Started", "Project Id", "Priority", "Prerequisite", "Start", "Finished", "Cancel", "Postpone");
 
 	$more_fields = "";
 
@@ -390,40 +411,38 @@ function show_active_tasks($args = null, $debug = false, $time = false)
 	if ($debug)
 		print "<br/>" . $sql . "<br/>";
 
-	print gui_header(1, "My Tasks ");
-
-	print GuiTableContent( $table_name, $sql, $args );
-
-	print gui_header(1, "Tasks I've created");
-
-	$sql = "select id, date(date) as date, task_description, task_template, started, project_id,
-       priority, preq $more_fields from $table_name $creator_query $order $limit";
-
 	try {
-		print GuiTableContent( $table_name, $sql, $args );
+		$result = GuiTableContent( $table_name, $sql, $args );
 	} catch ( Exception $e ) {
-		print "configuration problem: " . $e->getMessage();
+		print "can't load tasks." . $e->getMessage();
+		return null;
 	}
-}
 
+	if (strlen ($result) < 10) {
+		$result = im_translate( "No active tasks!" ) . "<br/>";
+		$result .= im_translate( "Let's create first one!" ) . " ";
+		$result .= gui_hyperlink( "create task", $url . "?operation=new_task" ) . "<br/>";
+	}
+
+	return $result;
+}
 
 function show_team($team_id, $active_only, $url)
 {
-	print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/tools/admin/data.js", "/tools/admin/admin.js" ) );
+//	print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/tools/admin/data.js", "/tools/admin/admin.js" ) );
 
 	print gui_header(1, "Showing status of team " . team_get_name($team_id));
 
-	$sql = "select worker_id from im_working where worker_teams(worker_id) like '%:" . $team_id . ":%'";
+	$sql = "select user_id from im_working where worker_teams(user_id) like '%:" . $team_id . ":%'";
 	$team_members = sql_query_array_scalar($sql);
 
-	foreach ($team_members as $member){
-		print gui_header(2, get_customer_name($member));
-		$args = array("user_id" => $member, "active_only" => $active_only);
+	foreach ($team_members as $user_id){
+		print gui_header(2, get_customer_name($user_id) . " " . $user_id);
+		$args = array("user_id" => $user_id, "active_only" => $active_only);
 		$args["url"] = $url;
-		show_active_tasks($args);
+		print active_tasks($args);
 	}
 }
-
 
 function greeting()
 {
@@ -431,22 +450,30 @@ function greeting()
 
 	$user_id = wp_get_current_user()->ID;
 
+	if (! $user_id) {
+		$url = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_HOST ) . '/wp-login.php?redirect_to=' . $_SERVER['REQUEST_URI'] . '"';
+
+		print '<script language="javascript">';
+		print "window.location.href = '" . $url . "'";
+		print '</script>';
+		die (1);
+	}
+
 	$now = strtotime("now");
 
 	if ($now < strtotime("12pm"))
-		$data .= "Good morning";
+		$data .= im_translate("Good morning");
 	else
-		$data .= "Hello";
+		$data .= im_translate("Hello");
 
-	$data .= " " . get_customer_name($user_id) . "(" . $user_id . ")";
+	$data .= " " . gui_div("user_id", get_customer_name($user_id), false, $user_id);
 
-	$data .= Date("G:i", $now );
+	$data .=  ". " . im_translate("the time is:") . Date("G:i", $now ) . ".";
 
 	$data .= "<br/>";
 
 	return $data;
 }
-
 
 function managed_workers($manager_id, $url)
 {
@@ -466,4 +493,78 @@ function managed_workers($manager_id, $url)
 function team_get_name($team_id)
 {
 	return sql_query_single_scalar("select team_name from im_working_teams where id = " . $team_id);
+}
+
+function admin_new_tasks()
+{
+	if (! admin_check_setup())
+		return;
+	// print im_translate("Project"). " " . im_translate("Good morning") . _("Hello") . $locale;
+	$args = array();
+	$args["selectors"] = array("project_id" =>  "gui_select_project", "owner" => "gui_select_worker", "creator" => "gui_select_worker", "preq" => "gui_select_task",
+	                           "mission_id" => "gui_select_mission");;
+	$args["transpose"] = true;
+	$args["values"] = array("owner" => get_user_id(), "creator" => get_user_id());
+	// $args["debug"] = true;
+	$args["header"] = true;
+	$args["header_fields"] = array("Start after", "Task description", "Project", "Mission", "Location name", "Priority",
+		"Creator", "Prerequisite", "Assigned to");
+
+	$args["fields"] = array("date", "task_description", "project_id", "mission_id", "location_name", "priority",
+		"creator", "preq", "owner");
+
+	$args["worker"] = get_user_id();
+	$args["companies"] = sql_query_single_scalar("select company_id from im_working where user_id = " . get_user_id());
+
+	$args["debug"] = (get_current_user() == 369);
+	$allowed_actions = array();
+
+	if (count($allowed_actions)) $args["actions"] = $allowed_actions;
+	// $args["actions"] = array();"project_id" => "add");
+	try {
+		print NewRow( "im_tasklist", $args );
+	} catch ( Exception $e ) {
+		print $e->getMessage();
+		return;
+	}
+	print gui_button("btn_newtask", "save_new('im_tasklist')", "צור");
+}
+
+function admin_check_setup()
+{
+	$worker_id = sql_query_single_scalar("select id from im_working where user_id = " . get_user_id());
+
+	if (! $worker_id) {
+		sql_query( "insert into im_working (user_id, project_id, rate, report, volunteer, day_rate, is_active, company_id) " .
+		           " values ( " . get_user_id() . ", 0, 0, 0, 0, 0, 1, 0)" );
+		$worker_id = sql_insert_id();
+		if ( ! $worker_id ) {
+			print "can't insert worker info";
+
+			return false;
+		}
+	}
+//	print "worker id: " . $worker_id . "<br/>";
+
+	$company_id = sql_query_single_scalar("select company_id from im_working where id = " . $worker_id);
+
+//	print "company id: " . $company_id . "<br/>";
+
+	if (! $company_id){
+		print "Ne need some information to get started!<br/>";
+		$args = array("values" => array("admin" => get_user_id()));
+		try {
+			print gui_header(1, "Company details");
+			print NewRow( "im_company", $args );
+		} catch ( Exception $e ) {
+			print "Error: " . $e->getMessage();
+			return false;
+		}
+
+		print gui_button( "btn_add", "save_new_custom('/tools/admin/admin-post.php?operation=new_company_user', 'im_company', location_reload)", "Add" );
+
+		// print gui_input("company", )
+		return false;
+	}
+	return true;
 }

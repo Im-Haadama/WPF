@@ -1097,7 +1097,8 @@ class delivery {
 		// Print
 		if ( $option == null ) {
 			// Setting the default - Send mail, and Print
-			$option = 'MP';
+			// 8/9/2019 - Changed the default to mail.
+			$option = 'M';
 		}
 
 		return $option;

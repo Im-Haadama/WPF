@@ -162,8 +162,8 @@ function gui_textarea( $name, $value, $events = null, $rows = 0, $cols = 0 ) {
 	if ( $rows == 0 ) {
 		$rows = min( 10, substr_count( $value, "\n" ) + 2 );
 	}
-	$data .= "cols=" . $cols . " rows=" . $rows;
-	$data .= '">';
+	$data .= " cols=" . $cols . " rows=" . $rows;
+	$data .= '>';
 	if ( strlen( $value ) > 0 ) {
 		$data .= $value;
 	}
@@ -245,9 +245,10 @@ function gui_input_month( $name, $class, $value, $events ) {
  */
 function gui_input_date( $id, $class, $value = null, $events = null ) {
 	$data = '<input type="date" id="' . $id . '" ';
-	if ( is_null( $value ) ) {
-		$value = date( 'Y-m-d' );
-	}
+	// 09/09/2019. It's ok to show null - not selected value. E.g - task date.
+//	if ( is_null( $value ) ) {
+//		$value = date( 'Y-m-d' );
+//	}
 	if (is_array($value)){
 		var_dump($value);
 		$debug = debug_backtrace();
@@ -331,7 +332,7 @@ function gui_header( $level, $text, $center = false ) {
 	if ( $center ) {
 		$data .= ' style="text-align:center"';
 	}
-	$data .= ">" . $text . "</h" . $level . ">";
+	$data .= ">" . im_translate($text) . "</h" . $level . ">";
 
 	return $data;
 }
@@ -385,10 +386,15 @@ function gui_image( $url, $x = 0, $y = 0 ) {
  * @param null $text
  * @param bool $center
  *
+ * @param null $tool_tip
+ *
  * @return string
  */
-function gui_div( $id, $text = null, $center = false ) {
-	$data = '<div id="' . $id . '"';
+function gui_div( $id, $text = null, $center = false, $tool_tip = null)  {
+	$data = '<div ';
+	if ($tool_tip)
+		$data .= 'class="tooltip" ';
+	 $data .= 'id="' . $id . '"';
 	if ( $center ) {
 		$data .= ' style="text-align:center" ';
 	}
@@ -397,6 +403,8 @@ function gui_div( $id, $text = null, $center = false ) {
 	if ( $text ) {
 		$data .= $text;
 	}
+	if ($tool_tip)
+		$data .= '<span class="tooltiptext">' . $tool_tip . '</span>';
 	$data .= "</div>";
 
 	return $data;
@@ -437,7 +445,9 @@ function gui_cell( $cell, $id = null, $show = true) {
 
 	if (defined('im_translate'))
 		$data .= im_translate($cell);
-	else $data .= $cell;
+	else
+		if (is_array($cell)) $data .= comma_implode($cell);
+		else $data .= $cell;
 	$data .= "</td>";
 
 	return $data;
@@ -462,7 +472,7 @@ function gui_cell( $cell, $id = null, $show = true) {
 function gui_row( $cells, $row_id = null, $show = null, &$acc_fields = null, $col_ids = null, $style = null, $add_checkbox = false, $checkbox_class = false,
 	$checkbox_events = null) {
 
-	$data = "<tr ";
+	$data = "<tr";
 
 	if ( $style ) {
 		$data .= $style;
@@ -506,7 +516,7 @@ function gui_row( $cells, $row_id = null, $show = null, &$acc_fields = null, $co
 			$i ++;
 		}
 	} else {
-		$data .= $cells;
+		$data .= "<td>" . $cells . "</td>";
 	}
 	$data .= "</tr>";
 
@@ -634,32 +644,26 @@ function gui_table_args($input_rows, $id = null, $args = null)
 		$args["edit_cols"]["id"] = false;
 	}
 
-	// Should be transpose before creating the html
 	$transpose = GetArg($args, "transpose", false);
 
-	// Prepare - change ids to selectors (from list), html input or link.
-	$first_row_to_prepare = GetArg($args, "first_row_to_prepare", 1);
-
-	if (! $input_rows)
+	if (! $input_rows) {
+		 if ($debug) print "no input rows";
 		return null;
+	}
 
-	for ($i = 0; $i < count($input_rows); $i++) {
-		if ( isset( $input_rows[$i][ $id_field ] ) ) {
-			$row_id = $input_rows[$i][ $id_field ];
-//			 print "found rid=$row_id<br/>";
+	if ($debug) print "row count: " . count($input_rows) . "<br/>";
+	$rows = array();
+	foreach ($input_rows as $key => $input_row) {
+		if ( in_array( $key, array( "checkbox", "header" ) ) ) {
+			$rows[ $key ] = $input_row;
 		} else {
-			$row_id = $i;
+			$rows[ $key ] = PrepareRow( $input_row, $args, $key );
 		}
-//		print "rid=$row_id<br/>";
-		 // print "rid=$row_id id_field=$id_field<br/>";
-		if ($i < $first_row_to_prepare || ! $prepare)
-			$rows[$row_id] = $input_rows[$i];
-		else
-			$rows[ $row_id ] = PrepareRow( $input_rows[ $i ], $args, $row_id );
 	}
 
 	if ( $header ) {
 		$data = "<table";
+
 		if ( $class ) {
 			$data .= " class=\"" . $class . "\"";
 		}
@@ -672,33 +676,74 @@ function gui_table_args($input_rows, $id = null, $args = null)
 		$data .= " border=\"1\"";
 		$data .= ">";
 	}
+	$action_line = null;
+
+
+	// 8/9/2019 removed because appeared in the end of task list.
+	// In case needed, a specific flag should be raised. E.g,, line_actions;
+
+//	$actions = GetArg($args, "actions", null);
+//
+//	if ($actions){
+//		$action_line = array();
+//		foreach ($input_rows[0] as $key => $cell)
+//			$action_line[$key] = isset($actions[$key]) ? $actions[$key] : null;
+//		array_push($rows, $action_line);
+//	}
+
 	if ( $style ) {
 		$data .= "<style>" . $style . "</style>";
 	} else {
 		if ($debug) print "no style";
 	}
 
-	if ($transpose){
-		$rows = array_map(null, ...$rows);
-	}
-
-	if ( is_array( $rows ) ) {
-		foreach ( $rows as $row_id => $row ) {
-			// $row_id = ! is_null($id_field) ? strip_tags($row[$id_field]) : null;
-//			print "rid=$row_id<br/>";
-
-			if ( ! is_null( $row ) ) {
-				$data .= gui_row( $row, $row_id, $show_cols, $sum_fields, $col_ids, null, $add_checkbox, $checkbox_class, $checkbox_events );
-			}
+	do {
+		if (! is_array($rows)) {
+			$data .= "<tr>" . $rows . "</tr>";
+			break;
 		}
-	} else {
-		$data .= "<tr>" . $rows . "</tr>";
-	}
+		if ($transpose) {
+			$target = array();
+			foreach ($rows as $i => $row){
+//				 print "<br/>$i:";
+				if (isset($row[0])){ // sequential
+					throw new Exception("row $i, send assoc array");
+				}
+				foreach ($row as $j => $cell){
+//					print "$j, ";
+					$target[$j][$i] = $cell;
+				}
+
+			}
+				$rows = $target;
+		}
+		foreach ($rows as $row)
+		{
+			$data .="<tr>";
+			foreach ($row as $cell)
+				$data .= "<td>" . $cell . "</td>";
+			$data .= "</tr>";
+		}
+	} while (0);
+//	if ( is_array( $rows ) ) {
+//		foreach ( $rows as $row_id => $row ) {
+//			if ($debug) print "outputing.. " . $row_id;
+//			// $row_id = ! is_null($id_field) ? strip_tags($row[$id_field]) : null;
+////			print "rid=$row_id<br/>";
+//
+//			if ( ! is_null( $row ) ) {
+//				$data .= gui_row( $row, $row_id, $show_cols, $sum_fields, $col_ids, null, $add_checkbox, $checkbox_class, $checkbox_events );
+//			}
+//		}
+//	} else {
+//		$data .= "<tr>" . $rows . "</tr>";
+//	}
 
 	if ( $footer ) {
 		$data .= "</table>";
 	}
 
+//	print "<br/>" . str_replace("<", "$", $data) . "<br/>";
 	return $data;
 }
 
@@ -714,7 +759,7 @@ function gui_table_args($input_rows, $id = null, $args = null)
 function gui_input_select_from_datalist( $id, $datalist, $events = null, $value = null ) {
 	$data = "<input id='$id' list='$datalist' ";
 	if ($value)
-		$data .= 'value="' . $value . '"';
+		$data .= ' value="' . $value . '"';
 	if ( $events ) {
 		$data .= $events;
 	}
@@ -743,6 +788,7 @@ function GuiSelectTable($id, $table, $args)
 	$id_key = GetArg($args, "id_key", null);
 	$class = GetArg($args, "class", null);
 	$length_limit = GetArg($args, "length_limit", 30);
+	$debug = GetArg($args, "debug", false);
 
 	if ( ! $id_key ) {
 		$id_key = "id";
@@ -768,6 +814,8 @@ function GuiSelectTable($id, $table, $args)
 	if ( $order_by ) {
 		$sql .= " order by 3 ";
 	}
+
+	if ($debug) print "sql= $sql<br/>";
 
 	$results = sql_query( $sql );
 	if ( $results ) {
@@ -1050,6 +1098,7 @@ function gui_select_table(
 		return "no results " . $sql;
 	}
 
+//	print $sql;
 	if ( $datalist ) {
 		return gui_select_datalist( $id, $table, $name, $values, $events, $selected, $include_id, $id_key );
 	} else {

@@ -3,69 +3,12 @@
 error_reporting( E_ALL );
 ini_set( 'display_errors', 'on' );
 
-if ( ! defined( "ROOT_DIR" ) ) {
-	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
-}
-
-require_once(ROOT_DIR . "/tools/im_tools.php");
-
-get_sql_conn() || die("not connected!");
-require_once( '../r-shop_manager.php' ); // for authentication
-
-$operation = get_param("operation", true);
-
-// http://fruity.co.il/tools/admin/data.php?table_name=im_business_info&operation=update&id=2560&ref=22
-$table_name = get_param("table_name", true);
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
-
-// TODO: Check permission to table
-
 $ignore_list = array("operation", "table_name", "id");
 
-if ( $operation )
-	switch ( $operation ) {
-		case "new":
-			$sql    = "INSERT INTO $table_name (";
-			$values = "values (";
-			$first  = true;
-			foreach ( $_GET as $key => $value ) {
-				if (in_array($key, $ignore_list))
-					continue;
-				if ( ! $first ) {
-					$sql    .= ", ";
-					$values .= ", ";
-				}
-				$sql    .= $key;
-				$values .= "\"" . $value . "\"";
-				$first  = false;
-			}
-			$sql    .= ") ";
-			$values .= ") ";
-			$sql    .= $values;
-
-			// print $sql;
-			// TODO: use prepare https://stackoverflow.com/questions/60174/how-can-i-prevent-sql-injection-in-php
-
-			if ( ! $conn->query( $sql ) ) {
-				print "Sql: " . $sql . "<br>" . mysqli_error( $conn );
-			}
-			print "done";
-			break;
-
-		case "update":
-			if (update_data($table_name, $ignore_list))
-				print "done";
-			break;
-
-		default:
-			print "no operation handler for $operation<br/>";
-			die( 2 );
-	}
-
-function update_data($table_name, $ignore_list)
+function update_data($table_name)
 {
 	// TODO: adding meta key when needed(?)
+	global $ignore_list;
 	global $meta_table_info;
 
 	// Prepare sql statements: primary and meta tables;
@@ -140,9 +83,15 @@ function update_data($table_name, $ignore_list)
 	$types = "";
 	$values = array();
 	foreach ( $_GET as $key => $value ) {
+		if (! $key)
+			continue;
 		if (in_array($key, $ignore_list))
 			continue;
-		$type = sql_type($table_name, $key);
+		try {
+			$type = sql_type( $table_name, $key );
+		} catch ( Exception $e ) {
+			return new \Exception(__CLASS__ . ":" . __METHOD__ . "can't find type of " . $key);
+		}
 		switch(substr($type, 0, 3))
 		{
 			case 'bit':
@@ -174,4 +123,42 @@ function update_data($table_name, $ignore_list)
 		die(2);
 	}
 	return true;
+}
+
+function data_save_new($table_name)
+{
+
+	global $ignore_list;
+	$sql    = "INSERT INTO $table_name (";
+	$values = "values (";
+	$first  = true;
+	foreach ( $_GET as $key => $value ) {
+		if (in_array($key, $ignore_list))
+			continue;
+		if ( ! $first ) {
+			$sql    .= ", ";
+			$values .= ", ";
+		}
+		$sql    .= $key;
+		$values .= "\"" . $value . "\"";
+		$first  = false;
+	}
+	$sql    .= ") ";
+	$values .= ") ";
+	$sql    .= $values;
+
+//	print $sql;
+
+	// print $sql;
+	// TODO: use prepare https://stackoverflow.com/questions/60174/how-can-i-prevent-sql-injection-in-php
+
+	try {
+		if ( ! sql_query($sql ) ) {
+			die(1);
+		}
+	} catch ( Exception $e ) {
+		print "error: " . $e->getMessage();
+	}
+
+	return sql_insert_id();
 }

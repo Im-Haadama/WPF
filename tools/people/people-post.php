@@ -65,7 +65,7 @@ switch ( $operation ) {
 			if ( isset( $worker_id ) ) {
 //				$w       = $_GET["worker_id"];
 //				print "w=" . $w;
-				$user_id = sql_query_single_scalar( "SELECT worker_id FROM im_working WHERE id = " . $worker_id );
+				$user_id = sql_query_single_scalar( "SELECT user_id FROM im_working WHERE id = " . $worker_id );
 				//print "uid=" . $user_id . "<br/>";
 			} else {
 				$user_id = get_user_id();
@@ -112,12 +112,12 @@ function show_all( $month, $edit ) {
 	$y = $a[0];
 	$m = $a[1];
 
-	$sql = "select distinct user_id, report " .
+	$sql = "select distinct h.user_id, report " .
 	       " from im_working_hours h " .
 	       " join im_working w " .
 	       " where month(date)=" . $m .
 	       " and year(date) = " . $y .
-	       " and h.user_id = w.worker_id ";
+	       " and h.user_id = w.user_id ";
 	// print $sql;
 	$result = sql_query( $sql);
 

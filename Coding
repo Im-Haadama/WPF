@@ -15,5 +15,13 @@ tools - store functionality.
 Folder structure
 -=-=-=-=-=-=-=-=
 page.php - the html page displayed. will be replaced in the integration with wordpress by shortcode.
+admin-post.php handles operations.
 admin.php - all the functional code. including wont display noting.
 Object.php - code handling a class.
+
+
+inputs
+-=-=-=
+
+New row - field name will be just the field name. Will be handled by save_new or save_new_custom.
+Existing row - field name will be <field>_<row_number>. Will be handled by update_entity.

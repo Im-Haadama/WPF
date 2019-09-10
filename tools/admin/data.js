@@ -6,7 +6,7 @@ function save_entity(table_name, id)
         alert ("invalid id: " . id);
         return;
     }
-    let operation = "/tools/admin/data.php?table_name=" + table_name + "&operation=update&id=" + id;
+    let operation = "/tools/admin/data-post.php?table_name=" + table_name + "&operation=update&id=" + id;
     let table = document.getElementById(table_name);
     let size = table.rows.length;
     for (let i = 0; i < size; i++){
@@ -20,9 +20,10 @@ function save_entity(table_name, id)
     execute_url(operation, action_back);
 }
 
-function save_new(table_name)
+// If we want to add custom action in the server we can send different post action.
+function save_new_custom(post_operation, table_name, action)
 {
-    let operation = "/tools/admin/data.php?table_name=" + table_name + "&operation=new";
+    let operation = post_operation + '&table_name=' + table_name;
     let table = document.getElementById(table_name);
     if (! table || ! table.rows){
         alert("rows of table " + table_name + " not found");
@@ -31,14 +32,23 @@ function save_new(table_name)
     let size = table.rows.length;
     // Change i to start from 0 - in new row no header. id should be hidden
     for (let i = 0; i < size; i++){
-        let name = table.rows[i].cells[1].innerText;
-        if (get_value_by_name("chk_" + name)){
+        let chk_id = table.rows[i].cells[0].firstElementChild.id;
+        if (get_value_by_name(chk_id)) {
+            let name = chk_id.substr(4);
             let val = get_value_by_name(name);
-            operation += "&" + name + "=" + val;
+            operation += "&" + name + "=" + encodeURI(val);
         }
     }
     // alert(operation);
-    execute_url(operation, action_back);
+    if (action)
+        execute_url(operation, action);
+    else
+        execute_url(operation, action_back);
+
+}
+function save_new(table_name, action = null)
+{
+    save_new_custom("/tools/admin/data-post.php?operation=new", table_name, action);
 }
 
 function check_update(xmlhttp)
@@ -70,6 +80,11 @@ function update_table_field(post_file, table_name, id, field_name, finish_action
         "&id=" + id;
 
     execute_url(request, finish_action);
+}
+
+function location_reload()
+{
+    location.reload();
 }
 
 // function update_field(post_file, id, field_name, finish_action) {

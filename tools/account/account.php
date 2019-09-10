@@ -23,14 +23,15 @@ require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 #############################
 
 function get_daily_rate( $user_id ) {
-	return sql_query_single_scalar( "SELECT day_rate FROM im_working WHERE worker_id = " . $user_id );
+//	return get_user_meta($user_id, 'day_rate');
+	return sql_query_single_scalar( "SELECT day_rate FROM im_working WHERE user_id = " . $user_id );
 }
 
 function get_rate( $user_id, $project_id ) {
-
+	// Check project specific rate
 	$sql = 'select rate '
 	       . ' from im_working '
-	       . ' where worker_id = ' . $user_id
+	       . ' where user_id = ' . $user_id
 	       . ' and project_id = ' . $project_id;
 
 	$rate = sql_query_single_scalar( $sql );
@@ -39,10 +40,10 @@ function get_rate( $user_id, $project_id ) {
 		return round( $rate, 2 );
 	}
 
-	$result = sql_query( $sql );
+	// Check global rate.
 	$sql    = 'select rate '
 	          . ' from im_working '
-	          . ' where worker_id = ' . $user_id
+	          . ' where user_id = ' . $user_id
 	          . ' and project_id = 0';
 
 	$rate = sql_query_single_scalar( $sql );

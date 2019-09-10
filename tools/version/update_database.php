@@ -141,9 +141,53 @@ function basic() {
 
 ");
 
+
+	if (! table_exists("im_missions"))
+		sql_query("create table im_missions
+(
+	id int auto_increment
+		primary key,
+	date date null,
+	name varchar(200) null,
+	path_code varchar(20) null,
+	start_address varchar(50) null,
+	end_address varchar(50) null,
+	start_h time null,
+	end_h time null,
+	zones varchar(100) null
+)
+charset=utf8;
+
+");
+
 }
 function create_tasklist() {
 
+	if (! table_exists ("im_working"))
+		sql_query("create table im_working
+(
+	id int auto_increment,
+	user_id int not null,
+	project_id int not null,
+	rate float not null,
+	report bit null,
+	volunteer bit null,
+	day_rate float null,
+	is_active bit default 1,
+	company_id int,
+	constraint id_2
+		unique (id)
+);
+
+");
+	if (! table_exists("im_company")) sql_query("create table im_company
+(
+	id int not null AUTO_INCREMENT PRIMARY KEY,
+	name varchar(60) not null,
+	admin int not null
+);
+
+");
 	if (! table_exists("im_tasklist"))  sql_query( "CREATE TABLE `im_tasklist` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
   `date` DATETIME DEFAULT NULL,
@@ -157,6 +201,9 @@ function create_tasklist() {
   `location_name` VARCHAR(50) CHARACTER SET utf8 DEFAULT NULL,
   `location_address` VARCHAR(50) CHARACTER SET utf8 DEFAULT NULL,
   `priority` INT(11) NOT NULL DEFAULT '0',
+`creator` INT(11), 
+ `preq` INT(11),
+ `owner` INT(11),
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1" );
 
@@ -589,7 +636,7 @@ BEGIN
   END;
 " );
 
-	sql_query( "create function client_displayname (user_id int) returns text 
+	sql_query( "create function client_displayname (user_id int) returns text charset 'utf8'
 BEGIN
     declare _user_id int;
     declare _display varchar(50) CHARSET utf8;

@@ -26,37 +26,53 @@ require_once( "vat.php" );
 if (!defined("IM_CHARSET"))
 	define ("IM_CHARSET", 'utf8');
 
-if (! defined("DB_HOST")) throw new Exception("DB configuration error = host");
-if (! defined ("DB_USER")) throw new Exception("DB configuration error = user");
-if (! defined ("DB_PASSWORD")) throw new Exception("DB configuration error = password");
-if (! defined ("DB_NAME")) throw new Exception("DB configuration error = name");
-
-$conn = new mysqli( DB_HOST, DB_USER, DB_PASSWORD, DB_NAME );
-
 function get_sql_conn()
 {
-    global $conn;
-
-    return $conn;
-}
-if (! mysqli_set_charset( $conn, IM_CHARSET )){
-	my_log("encoding setting failed");
-	die("encoding setting failed");
+	return im_init();
 }
 
 
-// Check connection
-if ( $conn->connect_error ) {
-	die( "Connection failed: " . $conn->connect_error );
-}
+//// Check connection
+//if ( $conn->connect_error ) {
+//	die( "Connection failed: " . $conn->connect_error );
+//}
 
 // Timezone
 if (defined('TIMEZONE')){
 	date_default_timezone_set( TIMEZONE );
 }
 
-if ($conn){
-    sql_set_time_offset();
+function im_init($script_files = null)
+{
+	static $conn = null;
+
+	if (! $conn){
+		if (! defined("DB_HOST")) throw new Exception("DB configuration error = host");
+		if (! defined ("DB_USER")) throw new Exception("DB configuration error = user");
+		if (! defined ("DB_PASSWORD")) throw new Exception("DB configuration error = password");
+		if (! defined ("DB_NAME")) throw new Exception("DB configuration error = name");
+		// print "connecting" . __LINE__ . "<br/>";
+
+		$conn = new mysqli( DB_HOST, DB_USER, DB_PASSWORD, DB_NAME );
+		sql_set_time_offset();
+		// print IM_CHARSET;
+		if (! mysqli_set_charset( $conn, IM_CHARSET )){
+			my_log("encoding setting failed");
+			die("encoding setting failed");
+		}
+		// Local and international staff...
+		// Todo: get it from user profile
+		date_default_timezone_set( "Asia/Jerusalem" );
+	$locale = get_locale();
+	$mofile = ROOT_DIR . '/wp-content/languages/plugins/im_haadama-' . $locale . '.mo';
+	if (! load_textdomain('im-haadama', $mofile))
+		print "load translation failed . $locale";
+	}
+
+	if ($script_files)
+		print load_scripts( $script_files );
+
+	return $conn;
 }
 
 function print_time( $prefix = null, $newline = false ) {
@@ -198,7 +214,7 @@ function get_prod_id( $order_item_id ) {
 }
 
 function get_product_id_by_name( $product_name ) {
-	global $conn;
+	$conn = get_sql_conn();
 	$sql    = "SELECT id FROM im_products WHERE post_title = '" . $product_name . "'";
 	$result = mysqli_query( $conn, $sql );
 	if ( ! $result ) {
@@ -265,7 +281,7 @@ function deb_ug_time( $message, $previous_time ) {
 }
 
 function get_site_tools_url( $site_id ) {
-	global $conn;
+	$conn = get_sql_conn();
 
 	$sql = "SELECT tools_url FROM im_multisite " .
 	       " WHERE id = " . $site_id;
@@ -284,7 +300,7 @@ function get_site_tools_url( $site_id ) {
 }
 
 function handle_sql_error( $sql ) {
-	global $conn;
+	$conn = get_sql_conn();
 
 	print $sql . "<br/>";
 	print mysqli_error( $conn );
@@ -305,7 +321,7 @@ function get_meta_field( $post_id, $field_name ) {
 }
 
 function get_last_order( $user_id ) {
-	global $conn;
+	$conn = get_sql_conn();
 
 	// get last order id
 	$sql = " SELECT max(meta.post_id) " .
@@ -531,19 +547,6 @@ function customer_type( $client_id ) {
 	return $key;
 }
 
-// $selector_name( $input_name, $orig_data, $args)
-function gui_select_worker( $id = null, $selected = null, $args = null ) {
-	$events = GetArg($args, "events", null);
-	$edit = GetArg($args, "edit", true);
-	if ($edit)
-		return gui_select_table( $id, "im_working", $selected, $events, "",
-			"client_displayname(worker_id)",
-			"where is_active=1", true, false, null, "worker_id" );
-	else
-		return sql_query_single_scalar("select client_displayname(worker_id) from im_working where worker_id = " . $selected);
-}
-
-
 function valid_key( $key ) {
 	$valid = sql_query_single_scalar( "SELECT timestamp >
           DATE_SUB(now(), INTERVAL 10 MINUTE) FROM im_auth WHERE dynamic_key = '" . $key . "'" );
@@ -553,8 +556,7 @@ function valid_key( $key ) {
 }
 
 function get_project_name( $project_id ) {
-	global $conn;
-
+	$conn = get_sql_conn();
 	$sql = "SELECT project_name FROM im_projects WHERE id = " . $project_id;
 
 	$result = mysqli_query( $conn, $sql );

@@ -50,8 +50,8 @@ function tasklist_page_actions() {
 	global $preset_basic_query;
 
 	// add_link("פעילים", "c-get-all-tasklist.php?preset=1") . " ";
-	add_link( "בטיפולי", "c-get-all-tasklist.php?preset=2" );
-	add_link( "שלי", "c-get-all-tasklist.php?preset=3" );
+	tasklist_add_link( "בטיפולי", "c-get-all-tasklist.php?preset=2" );
+	tasklist_add_link( "שלי", "c-get-all-tasklist.php?preset=3" );
 
 	global $user_ID;
 	// print "ia = " . is_manager() . "uid= " . $user_ID . "<br/>";
@@ -61,20 +61,19 @@ function tasklist_page_actions() {
 		$workers = sql_query_array_scalar( $sql );
 		foreach ( $workers as $worker ) {
 			if ( $worker != $user_ID ) {
-				add_link( get_customer_name( $worker ), "c-get-all-tasklist.php?preset=" . ( 100 + (int) $worker ) );
+				tasklist_add_link( get_customer_name( $worker ), "c-get-all-tasklist.php?preset=" . ( 100 + (int) $worker ) );
 			}
 		}
-		add_link( "משימות נהיגה שלא בוצעו", "c-get-all-tasklist.php?preset=4" );
+		tasklist_add_link( "משימות נהיגה שלא בוצעו", "c-get-all-tasklist.php?preset=4" );
 
-		add_link( "הכל", "c-get-all-tasklist.php?preset=5" );
+		tasklist_add_link( "הכל", "c-get-all-tasklist.php?preset=5" );
 
-		add_link( "חוזרות", "c-get-all-task_templates.php" );
+		tasklist_add_link( "חוזרות", "c-get-all-task_templates.php" );
 	}
 }
 
-function add_link( $text, $link ) {
+function tasklist_add_link( $text, $link ) {
 	print gui_button( "btn" . $text, "location.href='" . $link . "'", $text );
 }
 
 ?>
-

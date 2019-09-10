@@ -20,7 +20,9 @@ function im_translate($text, $arg = null)
 		return $result;
 	}
 
+//	print "translating $text to " . get_locale() . "...";
 	$t = translate($text, 'im_haadama');
+//	print $t . "<br/>";
 	// print $t . " " . strlen($t);
 	if (strlen($t))
 	{
@@ -58,3 +60,5 @@ function translate_word( $w1, $src_lng, $dst_lng ) {
 }
 
 //print translate2heb("aaa");
+
+

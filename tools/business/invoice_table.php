@@ -73,10 +73,16 @@ if ($part_id) {
 	$links = array("id"=> "invoice_table.php?row_id=%s", "הספקה" => "/tools/supplies/supply-get.php?id=%s");
 	$args["links"] = $links;
 
-	$sql =  "select id, date as 'תאריך', amount as 'סכום', net_amount as 'סכום נקי', ref as 'סימוכין', pay_date as 'תאריך תשלום', supply_from_business(id) as הספקה
+	$sql =  "select id, date, amount, net_amount, ref, pay_date, supply_from_business(id)
         from im_business_info where " . $page . " and is_active = 1 order by 2";
 
-	print GuiTableContent("transactions", $sql, $args);
+	print $sql;
+	try {
+		print GuiTableContent( "transactions", $sql, $args );
+	} catch ( Exception $e ) {
+		print "Error: " . $e->getMessage();
+		die(1);
+	}
 
 //	print table_content("transactions", $sql, true, true, $links);
 
@@ -90,17 +96,35 @@ print gui_header (1, "ריכוז חשבוניות");
 
 print gui_hyperlink("Add invoice", "/tools/business/c-get-business_info.php?document_type=4");
 
-$t = new \Niver\PivotTable( "im_business_info", $page,
-	"month_with_index(DATE) as month", "part_id as supplier", "net_amount as amount" );
+try {
+	$t = new \Niver\PivotTable( "im_business_info", $page,
+		"month_with_index(DATE)", "part_id", "net_amount" );
+} catch ( Exception $e ) {
+	print $e->getMessage();
+	die (2);
+}
 
+// var_dump($t);
 
-$args = array("row_trans" => array ("supplier" => "get_customer_name"), "order" => "order by month, supplier");
+$args = array("row_trans" => array ("part_id" => "get_customer_name"), "order" => "order by 1, 2");
 
-$table = $t->Create(
-	'/tools/business/c-get-business_info.php?document_type=4&part_id=%s&date=' . $year . '-' . '%02s-28',
-	'invoice_table.php?part_id=%s',
-	$args);
+try {
+	$table = $t->Create(
+		'/tools/business/c-get-business_info.php?document_type=4&part_id=%s&date=' . $year . '-' . '%02s-28',
+		'invoice_table.php?part_id=%s',
+		$args );
+} catch ( Exception $e ) {
+	print $e->getMessage();
+	die (3);
+}
 
-print gui_table_args( $table, "invoices", $args );
+// var_dump($table);
+
+try {
+	print gui_table_args( $table, "invoices", $args );
+} catch ( Exception $e ) {
+	print $e->getMessage();
+	die (4);
+}
 
 print gui_hyperlink( "שנה קודמת", "invoice_table.php?year=" . ( $year - 1 ) );

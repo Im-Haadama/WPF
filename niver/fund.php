@@ -15,36 +15,11 @@ function my_log( $msg, $title = '' ) {
 	error_log( $log, 3, $error_file );
 }
 
-function header_text( $print_logo = true, $close_header = true, $rtl = true, $script_file = false ) {
-	global $business_info;
-	global $logo_url;
-
+function load_scripts($script_file = false )
+{
 	global $style_file;
 
-	$text = '<html';
-	if ( $rtl ) {
-		$text .= ' dir="rtl"';
-	}
-	$text .= '>';
-	$text .= '<head>';
-	$text .= '<meta http-equiv="content-type" content="text/html; charset=utf-8">';
-	$text .= '<title>';
-	if ( defined( $business_info ) ) {
-		$text .= $business_info;
-	}
-	$text .= '</title>';
-	// $text .= '<p style="text-align:center;">';
-	if ( $print_logo ) {
-		if ( ( $logo_url ) ) {
-			$text .= '<img src=' . $logo_url . '>';
-		}
-	}
-	$text .= '</p>';
-	if ( isset( $style_file ) ) {
-		$text .= "<style>";
-		$text .= file_get_contents( $style_file );
-		$text .= "</style>";
-	}
+	$text = "";
 	if ( $script_file ) {
 		// print "Debug: " . $script_file . '<br/>';
 		// var_dump($script_file);
@@ -66,13 +41,44 @@ function header_text( $print_logo = true, $close_header = true, $rtl = true, $sc
 			print $script_file . " not added<br/>";
 		} while ( 0 );
 	}
+//	print $text;
+
+	return $text;
+
+}
+function header_text( $print_logo = true, $close_header = true, $rtl = true, $script_file = false ) {
+	global $business_info;
+	global $logo_url;
+
+
+	$text = '<html';
+	if ( $rtl ) {
+		$text .= ' dir="rtl"';
+	}
+	$text .= '>';
+	$text .= '<head>';
+	$text .= '<meta http-equiv="content-type" content="text/html; charset=utf-8">';
+	$text .= '<title>';
+	if ( defined( $business_info ) ) {
+		$text .= $business_info;
+	}
+	$text .= '</title>';
+
+	if ( $print_logo ) {
+		if ( ( $logo_url ) ) {
+			$text .= '<img src=' . $logo_url . '>';
+		}
+	}
+	$text .= '</p>';
+
+	$text .= load_scripts($script_file );
+
 	if ( $close_header ) {
 		$text .= '</head>';
 	}
 
-//	print $text;
-
 	return $text;
+	// $text .= '<p style="text-align:center;">';
 }
 
 function get_param_array( $key ) {
@@ -99,7 +105,7 @@ function get_param( $key, $mandory = false, $default = null ) {
 	}
 
 	if ( $mandory ) {
-		die ( "key " . $key . " not supplied" );
+		die ( __FUNCTION__ . " key " . $key . " not supplied" );
 	} else {
 		return $default;
 	}
@@ -329,3 +335,4 @@ function computeDiff($from, $to)
 
 	return array('values' => $diffValues, 'mask' => $diffMask);
 }
+

@@ -8,6 +8,8 @@
 
 namespace Niver;
 
+use mysql_xdevapi\Exception;
+
 if ( ! defined( "ROOT_DIR" ) ) {
 	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
 }
@@ -18,9 +20,9 @@ require_once( ROOT_DIR . '/tools/im_tools.php' );
 class PivotTable {
 	private $table_name;
 	private $page;
-	private $col, $sql_col;
-	private $row, $sql_row;
-	private $data, $sql_data;
+	private $col;
+	private $row;
+	private $data;
 
 	/**
 	 * PivotTable constructor.
@@ -30,16 +32,23 @@ class PivotTable {
 	 * @param $col
 	 * @param $row
 	 * @param $data
+	 *
+	 * @throws \Exception
 	 */
 	public function __construct( $table_name, $page, $col, $row, $data ) {
+		if (! strlen($table_name) > 1) throw new \Exception(__CLASS__ . " no table_name");
+		if (! strlen($page) > 1) throw new \Exception(__CLASS__ . " no page");
+		if (! strlen($col) > 1) throw new \Exception(__CLASS__ . " no col");
+		if (! strlen($row) > 1) throw new \Exception(__CLASS__ . " no row");
+		if (! strlen($data) > 1) throw new \Exception(__CLASS__ . " no data");
 		$this->table_name = $table_name;
 		$this->page       = $page;
-		$this->sql_col        = $col;
-		$this->sql_row        = $row;
-		$this->sql_data       = $data;
-		$this->row = ($s = strpos(strtolower($this->sql_row), "as")) ? trim(substr($this->sql_row, $s + 2)) : $this->row;
-		$this->col = ($s = strpos(strtolower($this->sql_col), "as")) ? trim(substr($this->sql_col, $s + 2)) : $this->col;
-		$this->data = ($s = strpos(strtolower($this->sql_data), "as")) ? trim(substr($this->sql_data, $s + 2)) : $this->data;
+		$this->col        = $col;
+		$this->row        = $row;
+		$this->data       = $data;
+//		$this->row = ($s = strpos(strtolower($this->sql_row), "as")) ? trim(substr($this->sql_row, $s + 2)) : $this->row;
+//		$this->col = ($s = strpos(strtolower($this->sql_col), "as")) ? trim(substr($this->sql_col, $s + 2)) : $this->col;
+//		$this->data = ($s = strpos(strtolower($this->sql_data), "as")) ? trim(substr($this->sql_data, $s + 2)) : $this->data;
 	}
 
 	public function Create( $add_url, $row_url = null, $args = null ) {
@@ -57,10 +66,12 @@ class PivotTable {
 			print "data: " . $this->data ."<br/>";
 		}
 		$table[0][0] = "";
-		$sql         = "select " . comma_implode_v( $this->sql_col, $this->sql_row, $this->sql_data ) .
+		$sql         = "select " . comma_implode_v( $this->col, $this->row, $this->data ) .
 		               " from " . $this->table_name .
 		               " Where " . $this->page . "\n" .
 		               " $order ";
+
+		// print $sql;
 
 		$results = sql_query( $sql );
 
@@ -68,6 +79,10 @@ class PivotTable {
 			$row  = $data[ $this->row ];
 			$col  = $data[ $this->col ];
 			$cell = $data[ $this->data ];
+//			if (! $row || ! $col) {
+//				throw new \Exception("bad configuration" . __CLASS__ . ":" . __FUNCTION__);
+//			}
+//			print "row = $row, col = $col, cell = $cell<br/>";
 			if ( ! isset( $table[ $row ] ) ) {
 				// Open new row.
 				$table[ $row ]    = array();

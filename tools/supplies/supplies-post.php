@@ -81,7 +81,7 @@ if ( isset( $_GET["operation"] ) ) {
 
 			$create_info = $_GET["create_info"];
 			$ids         = explode( ',', $create_info );
-			$supply      = Supply::CreateSupply( $supplier_id );
+			$supply      = Supply::CreateSupply( $supplier_id, $date );
 			if ( ! $supply->getID() ) {
 				return false;
 			}

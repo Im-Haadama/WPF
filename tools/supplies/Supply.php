@@ -211,8 +211,8 @@ class Supply {
 		}
 	}
 
-	public static function CreateSupply( $supplier_id ) {
-		$sid = create_supply( $supplier_id );
+	public static function CreateSupply( $supplier_id, $date ) {
+		$sid = create_supply( $supplier_id, $date );
 
 		return new Supply( $sid );
 	}
@@ -985,8 +985,8 @@ function DoSuppliesTable( $sql )
 function display_active_supplies( $status ) {
 	$in_key = info_get( 'inventory_in', true, 0);
 	$sql    = "SELECT id, supplier, status, date(date), paid_date, status, business_id FROM im_supplies WHERE status IN (" .
-	          implode( ",", $status ) . ") AND id > " . $in_key . "\n" .
-	          " and date > DATE_SUB(curdate(), INTERVAL 2 WEEK)"
+	          implode( ",", $status ) . ") AND id > " . $in_key . "\n"
+	          // " and date > DATE_SUB(curdate(), INTERVAL 2 WEEK)"
 	          . " ORDER BY 4, 3, 2";
 
 	return DoSuppliesTable( $sql );

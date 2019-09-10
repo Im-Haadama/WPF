@@ -9,7 +9,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: GlotPress/2.4.0-alpha\n"
 "Language: he_IL\n"
-"Project-Id-Version: Plugins - WooCommerce - Stable (latest release)\n"
+"Project-Id-Version: Imhaadama - 1 - Stable (latest release)\n"
 
 #. translators: %s: error message
 #: includes/wc-rest-functions.php:114
@@ -126,3 +126,139 @@ msgstr "תנועה"
 
 msgid "Comments"
 msgstr "הערות"
+
+msgid "Managing Tasks"
+msgstr "ניהול משימות"
+
+msgid "My Tasks"
+msgstr "המשימות שלי"
+
+msgid "Tasks I've created"
+msgstr "משימות שיצרתי"
+
+msgid "Hello"
+msgstr "שלום"
+
+msgid "Good morning"
+msgstr "בוקר טוב"
+
+msgid "Repeating tasks"
+msgstr "משימות חוזרות"
+
+msgid "add tasks"
+msgstr "הוסף משימות"
+
+msgid "projects"
+msgstr "פרויקטים"
+
+msgid "No active tasks!"
+msgstr "אין משימות פעילות!"
+
+msgid "Let create first one!"
+msgstr "הבה ניצור את הראשונה"
+
+msgid "create task"
+msgstr "יצירת משימה"
+
+msgid "the time is:"
+msgstr "השעה:"
+
+msgid "Start after"
+msgstr "התחלה לאחר"
+
+msgid "Task description"
+msgstr "תיאור המשימה"
+
+msgid "Project"
+msgstr "פרויקט"
+
+msgid "Location name"
+msgstr "מיקום"
+
+msgid "Priority"
+msgstr "עדיפות"
+
+msgid "Prerequisite"
+msgstr "פעילות קדם"
+
+msgid "Asssigned to"
+msgstr "מוקצה ל"
+
+# User details
+msgid "Email"
+msgstr "דואר אלקטרוני"
+
+msgid "Name"
+msgstr "שם"
+
+msgid "Client preferences (E.g - small cucumbers)"
+msgstr "העדפות לקוח (למשל מלפפונים קטנים)"
+
+msgid "Send mail about products"
+msgstr "שלח מייל שבועי אודות מוצרים"
+
+msgid "Delivery note - M for mail, P for Paper print"
+msgstr "תעודת משלוח: M - מייל (ברירת מחדל), P - הדפסה בנייר"
+
+msgid "Billing first name"
+msgstr "שם פרטי לחיוב"
+
+msgid "Billing last name"
+msgstr "שם משפחה לחיוב"
+
+msgid "Phone"
+msgstr "מספר טלפון"
+
+msgid "Shipping first name"
+msgstr "שם פרטי למשלוח"
+
+msgid "Shipping last name"
+msgstr "שם משפחה למשלוח"
+
+msgid "Shipping address - street and number"
+msgstr "כתובת משלוח - רחוב ומספר"
+
+msgid "Shipping address - entrance code, floor and flat number"
+msgstr "כתובת משלוח - קוד כניסה, קומה ומספר דירה"
+
+msgid "Shipping city"
+msgstr "ישוב"
+
+msgid "Shipping post code"
+msgstr "מיקוד משלוח"
+
+msgid "Repeating task id"
+msgstr "פעילות חוזרת"
+
+msgid "Started"
+msgstr "התחיל ב-"
+
+msgid "Project Id"
+msgstr "פרויקט"
+
+msgid "Actions"
+msgstr "פעילות"
+
+msgid "Ended"
+msgstr "הסתיים"
+
+msgid "Mission"
+msgstr "שליחות"
+
+msgid "Location"
+msgstr "מיקום"
+
+msgid "Address"
+msgstr "כתובת"
+
+msgid "Assigned to"
+msgstr "באחריות"
+
+msgid "Creator"
+msgstr "יזם"
+
+msgid "Repeating task"
+msgstr "פעילות חוזרת"
+
+msgid "task"
+msgstr "משימה"

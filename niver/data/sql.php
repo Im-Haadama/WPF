@@ -15,7 +15,7 @@ $meta_table_info = array();
 $meta_table_info["wp_usermeta"] = array("id" => "user_id", "key" => "meta_key", "value" => "meta_value");
 
 function sql_insert_id() {
-	global $conn;
+	$conn = get_sql_conn();
 
 	return mysqli_insert_id( $conn );
 }
@@ -59,9 +59,7 @@ function sql_type( $table, $field ) {
 		throw new Exception("No table given");
 
 	if (! $field)
-		throw new Exception("No field given");
-
-
+		throw new Exception(__CLASS__ . ":". __METHOD__ . "No field given.<br/> " . sql_trace());
 	//	print "checking $table $field<br/>";
 	// For meta fields:
 	if ($sl = strpos($field, '/')){
@@ -81,14 +79,17 @@ function sql_type( $table, $field ) {
 		}
 	}
 
-	if (! isset($type_cache[ $table ][ $field ]))
+	if (! isset($type_cache[ $table ][ $field ])){
 		throw new Exception("unknown field $field in table $table");
+	}
 	return $type_cache[ $table ][ $field ];
 }
 
 function sql_prepare($sql)
 {
-	global $conn;
+	if (! $sql)
+		return false;
+	$conn = get_sql_conn();
 
 	$stmt = $conn->prepare($sql);
 	if ($stmt) return $stmt;
@@ -148,11 +149,15 @@ function sql_bind($table_name, &$stmt, $_values)
 }
 
 function sql_query( $sql, $report_error = true ) {
-	$conn = get_sql_conn();
+	try {
+		$conn = get_sql_conn();
+	} catch ( Exception $e ) {
+		print "Error (2): " . $e->getMessage() . "<br/>";
+		die(1);
+	}
 
 	if ( ! $conn ) {
-		sql_error($sql);
-		die ( "not connected!<br/>" );
+		sql_error("Error (3): not connected");
 	}
 
 	$prev_time         = microtime(true);
@@ -230,7 +235,7 @@ function table_exists( $table ) {
 }
 
 function escape_string( $string ) {
-	global $conn;
+	$conn = get_sql_conn();
 
 	return mysqli_real_escape_string( $conn, $string );
 }
@@ -277,13 +282,17 @@ function sql_trace()
 	$result = "";
 	$debug = debug_backtrace();
 	for ( $i = 2; $i < 6 && $i < count( $debug ); $i ++ ) {
-		$result .= ("called from " . $debug[ $i ]["function"] . ":" . $debug[ $i ]["line"] . "<br/>");
+		$result .= ("called from " . $debug[$i]['file'] . " " . $debug[ $i ]["function"] . ":" . $debug[ $i ]["line"] . "<br/>");
 	}
 	return $result;
 }
 
 function sql_error( $sql ) {
-	global $conn;
+	try {
+		$conn = get_sql_conn();
+	} catch ( Exception $e ) {
+		print "Error (1): " . $e->getMessage() . "<br/>";
+	}
 	if ( is_string( $sql ) ) {
 		$message = "Error: sql = `" . $sql;
 		if ($conn) $message .= "`. Sql error : " . mysqli_error( $conn ) . "<br/>";

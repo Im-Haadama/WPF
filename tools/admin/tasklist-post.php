@@ -11,7 +11,7 @@ if ( ! defined( "ROOT_DIR" ) ) {
 }
 require_once( ROOT_DIR . "/tools/im_tools.php" );
 require_once( ROOT_DIR . "/tools/multi-site/imMulti-site.php" );
-header( ImMultiSite::CORS() );
+// header( ImMultiSite::CORS() );
 
 require_once( ROOT_DIR . "/niver/fund.php" );
 require_once( "Tasklist.php" );

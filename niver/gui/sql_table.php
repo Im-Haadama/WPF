@@ -31,22 +31,25 @@ require_once( STORE_DIR . "/niver/data/translate.php");
  */
 function TableHeader($sql, $add_checkbox = false, $skip_id = false, $meta_fields = null)
 {
-	$result = sql_query( $sql );
 	// We need only the header. Remove query and replace with false.
-	if (strstr($sql, "where"))
-		$sql = substr($sql, 0, strpos($sql, "where")) . " where 1 = 0";
+//	if (strstr($sql, "where"))
+//		$sql = substr($sql, 0, strpos($sql, "where")) . " where 1 = 0";
+
+	$result = sql_query( $sql );
+
 	if (! $result)
 		return null;
 
 	$headers = array();
 	$debug = false;
 
-	if (strstr($sql, "describe"))
+	if (strstr($sql, "describe") or strstr($sql, "show"))
 	{
 		while ($row = sql_fetch_row($result))
 		{
 			if (! $skip_id or strtolower($row[0]) !== "id") {
-				array_push($headers, im_translate($row[0]));
+				$headers[$row[0]] = im_translate($row[0]);
+				// array_push($headers, im_translate($row[0]));
 			} else {
 				if ($debug) print "skip header";
 			}
@@ -59,7 +62,7 @@ function TableHeader($sql, $add_checkbox = false, $skip_id = false, $meta_fields
 		} // future option: gui_checkbox("chk_all", ""));
 		foreach ( $fields as $val ) {
 			if (! $skip_id or strtolower($val->name) !== "id") {
-				array_push( $headers, im_translate($val->name) );
+				$headers [$val->name] = im_translate($val->name);
 			}
 			$i ++;
 		}
@@ -128,7 +131,7 @@ function mnemonic3($key)
  * PrepareRow - adds links, selectors and edit inputs.
  * $args:
  * Cell preparation priority (the top most that relevant applies).
- * 1) links - add hyperlink to other content. e.g "admin.php?id=%s".
+ * 1) links - add hyperlink to other content. e.g "admin-post.php?id=%s".
  *            Todo: selector + link -> drill into table
  *
  * Table can be used in two ways.
@@ -165,7 +168,7 @@ function PrepareRow($row, $args, $row_id)
 	$edit_cols = GetArg($args, "edit_cols", null);
 	$transpose = GetArg($args, "transpose", null);
 	$add_field_suffix = GetArg($args, "add_field_suffix", true);
-	$debug = false;
+	$debug = GetArg($args, "debug", false);
 
 	$events = GetArg($args, "events", null); // $edit ? "onchange='changed_field(" . $row_id . ")'" : null); // Valid for grid. In transposed single row it will be replaced.
 	$field_events = null;
@@ -185,8 +188,13 @@ function PrepareRow($row, $args, $row_id)
 		my_log( __FUNCTION__ . "invalid row ");
 		return $row;
 	}
+	// var_dump($row);
 	foreach ( $row as $key => $data )
 	{
+		if ($debug)
+		{
+			print $key . " " . $data . "<br/>";
+		}
 		// General preparation... decide the field name and save the orig data and default data.
 		$nm = $key; // mnemonic3($key);
 //		print "key=$nm<br/>";
@@ -194,6 +202,8 @@ function PrepareRow($row, $args, $row_id)
 			$input_name = $nm . '_' . $row_id;
 		else
 			$input_name = $nm;
+
+//		print "in=$input_name<br/>";
 		$orig_data = $data;
 		$value = $data; // Default;
 		if ($debug) print  "<br/>handling $key ";
@@ -229,6 +239,7 @@ function PrepareRow($row, $args, $row_id)
 				if ( strlen( $selector_name ) < 2 ) {
 					die( "selector " . $key . "is empty" );
 				}
+				// print $selector_name;
 				$value = $selector_name( $input_name, $orig_data, $args ); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
 				break;
 			}
@@ -236,6 +247,12 @@ function PrepareRow($row, $args, $row_id)
 
 			/// 5/9/2019 Change!! edit_cols by default is to edit. if it set, don't edit.
 			if ($edit and (! $edit_cols or ! isset($edit_cols[$key]))) { //pp e=1 e_c= ec[k]=
+				if (! $key)
+					continue;
+//					foreach ($row as $c)
+//						print $c. "<br/>";
+//					throw new Exception(__CLASS__ . ":" . __METHOD__ . "no key");
+//				}
 				if ($field_events) $args["events"] = $field_events;
 					if ( $table_name ) {
 						if (isset($args["field_types"]))
@@ -268,8 +285,10 @@ function PrepareRow($row, $args, $row_id)
 							var_dump( $data );
 						}
 						$value = GuiInput($input_name, $data, $args); //gui_input( $key, $data, $field_events, $row_id);
+						print "v=$value<br/>";
 					}
 				}
+			if ($debug) print "after $key";
 			if ( $selectors and array_key_exists( $key, $selectors ) ) {
 				if ($debug) print "has selectors ";
 				$selector_name = $selectors[ $key ];
@@ -283,7 +302,7 @@ function PrepareRow($row, $args, $row_id)
 				break;
 			}
 		} while (0);
-
+		if ($debug) print " setting ";
 		$row_data[$key] = $value;
 	}
 
@@ -315,6 +334,7 @@ function PrepareRow($row, $args, $row_id)
 //}
 
 /**
+ * Header will be build from query or sent by header_fields. In the later case, this function will transform it from seq array to assoc array.
  *
  * @param $sql
  * @param null $args
@@ -324,8 +344,10 @@ function PrepareRow($row, $args, $row_id)
  */
 function TableData($sql, &$args = null)
 {
+	// print __FUNCTION__ . "<br/>";
 	$result = sql_query( $sql );
 	if ( ! $result ) {
+		print "ERROR";
 		return null;
 	}
 
@@ -343,37 +365,28 @@ function TableData($sql, &$args = null)
 	$sum_fields = &GetArg($args, "sum_fields", null);
 	$checkbox_class = GetArg($args, "checkbox_class", "checkbox");
 
-//	if ($args and ! isset($args["field_types"])){
-//		$types = array();
-//		$c = mysqli_num_fields($result);
-//		for ($i = 0; $i < $c; $i++){
-//			$t = mysqli_fetch_field_direct($result, $i);
-//			 $types[$t->name] = sql_type($t->orgtable, $t->orgname);
-//		}
-//		 // var_dump($types);
-//		$args["field_types"] = $types;
-//	}
-
 	$table_names = array();
 	if (preg_match_all("/from ([^ ]*)/" , $sql, $table_names))
 	{
 		$args["table_name"] = $table_names[1][0];
 	}
 
-	$header_line = null;
-	if ($header and $header_fields) {
-		$header_line = array();
-		foreach ($header_fields as $h)
-			array_push($header_line, im_translate($h));
+	if ($header){
+		if ($header_fields)
+			$h_line = array(); // Build it from $header_fields using table fields.
+		else
+			$h_line = TableHeader($sql, false, $skip_id, $meta_fields);
+	} else {
+		$h_line = null; // No header.
 	}
-	else
-		$header_line = TableHeader($sql, false, $skip_id, $meta_fields);
 
 	$row_count = 0;
 
 	$v_line = $v_checkbox ? array() : null;
 
-	if (strstr($sql, "describe")) // New Row
+	$i = 0;
+
+	if (strstr($sql, "describe") || strstr($sql, "show col")) // New Row
 	{
 		$new_row = array();
 		while ( $row = mysqli_fetch_assoc( $result ) ) {
@@ -388,12 +401,15 @@ function TableData($sql, &$args = null)
 					$v_line[$key] = gui_checkbox("chk_" . $key, $checkbox_class, $new_row[$key] != null);
 			}
 		}
-
 		if ($v_line){
 			array_push($rows_data, $v_line);
 		}
-		if ($header_line) array_push ($rows_data, $header_line);
+		$header_line = TableHeader($sql, false, $skip_id, $meta_fields);
+
+		if ($header_line) $rows_data['header'] = $header_line;
+
 		array_push($rows_data, $new_row);
+
 		return $rows_data;
 	} else {
 		while ( $row = mysqli_fetch_assoc( $result ) ) {
@@ -407,13 +423,18 @@ function TableData($sql, &$args = null)
 				die( __FUNCTION__ . ":" . __LINE__ . "no row id" );
 			}
 			foreach ( $row as $key => $cell ) {
-//				if ( ! $skip_id or strtolower( $key ) !== "id" ) {
+				// Change: 9/9/2019. We put the id only in multirow display
+				if ( ! $skip_id or strtolower( $key ) !== "id" ) {
 					$the_row[$key] = $cell;
 					// array_push( $the_row, $cell );
-//				}
+				}
 				if ($v_checkbox){
 					if (! $skip_id or ($key != $id_field))
 						$v_line[$key] = gui_checkbox("chk_" . $key, $checkbox_class, false);
+				}
+				if (is_array($h_line) and $header_fields){
+					if (! $skip_id or $key !== "id")
+						$h_line[$key] = im_translate($header_fields[$i++]);
 				}
 			}
 
@@ -431,6 +452,9 @@ function TableData($sql, &$args = null)
 					if ( $v_checkbox ) {
 						$v_line[ $key ] = gui_checkbox( "chk_" . $key, $checkbox_class, false );
 					}
+					if ($h_line){
+						$h_line[$key] = im_translate($header_fields[$i++]);
+					}
 				}
 			}
 			if ($sum_fields) {
@@ -438,17 +462,18 @@ function TableData($sql, &$args = null)
 			}
 
 			if ($v_line){
-				array_push($rows_data, $v_line);
+				$rows_data["checkbox"] = $v_line;
+				// array_push($rows_data, $v_line);
 				$v_checkbox = false;
 				$v_line = null;
 			}
 
-			if ($header_line) {
-				array_push($rows_data, $header_line);
-				$header_line = null;
+			if ($h_line){
+				$rows_data['header'] = $h_line;
+				$h_line = null;
 			}
 
-			array_push($rows_data, $the_row);
+			$rows_data[$row_id] = $the_row;
 		}
 		if ($sum_fields) {
 			$total_line = array();
@@ -456,6 +481,7 @@ function TableData($sql, &$args = null)
 				array_push($total_line, is_array($cell) ? $cell[0] : $cell);
 			array_push($rows_data, $total_line);
 		}
+
 		return $rows_data;
 	}
 }
@@ -541,6 +567,9 @@ function table_content(
 /**
  * @param $table_name
  * @param $args
+ *
+ * @return string|null
+ * @throws Exception
  */
 function NewRow($table_name, $args)
 {
@@ -552,7 +581,8 @@ function NewRow($table_name, $args)
 }
 
 /**
- * Get recorder from the database and display in html table.
+ * Get record from the database and display in html table.
+ * This function defines the args for TableContent
  *
  * @param $table_name
  * @param $row_id
@@ -565,23 +595,24 @@ function GuiRowContent($table_name, $row_id, $args)
 {
 	$id_key = GetArg($args, "id_key", "id");
 	$fields = GetArg($args, "fields", null);
-	if (! isset($args["skip_id"])){
-		$args["skip_id"] = true;
-	}
+	// var_dump($fields);
+
+	if (! isset($args["skip_id"])) $args["skip_id"] = true;
 	$edit = GetArg($args, "edit", false);
 	if ($edit) {
-		// print "edit<br/>";
 		$args["v_checkbox"] = 1;
-		$args["first_row_to_prepare"] = 2;
-		$args["transpose"] = 1;
-		$args["events"] = 'onchange="changed_field(%s)"';
-	} else {
-		$args["first_row_to_prepare"] = 1;
+		if (! isset($args["transpose"])) $args["transpose"] = 1;
+		$args["events"] = "onchange=changed_field(%s)";
 	}
 	if ($row_id) { // Show specific record
 		$sql = "select " . ($fields ? comma_implode($fields) : "*") . " from $table_name where " . $id_key . " = " . $row_id;
+		$args["row_id"] = $row_id;
+
 	} else { // Create new one.
-		$sql = "describe $table_name";
+		if ($fields)
+			$sql = "show columns from $table_name where field in ( " . comma_implode($fields, true) . ")";
+		else
+			$sql = "describe $table_name";
 	}
 
 	return GuiTableContent($table_name, $sql, $args);
@@ -604,7 +635,22 @@ function GuiTableContent($table_id, $sql, &$args)
 	// Fetch the data from DB.
 	$rows_data = TableData( $sql, $args);
 
-	// print "egu=" . GetArg($args, "edit", false) . "<br/>";
+	$debug = GetArg($args, false, false);
+
+	if ($debug)
+	{
+		print "skip_id:" . GetArg($args, "skip_id", false) ."<br/>";
+		print "<table border=\"1\">";
+		foreach ($rows_data as $key => $row){
+			// var_dump($row);
+			print "<tr>";
+			foreach ($row as $cell_key => $cell){
+				print "<td>". $cell . "</td>";
+			}
+			print "</tr>";
+		}
+		print "</table>";
+	}
 
 	if (! $rows_data)
 		return null;
