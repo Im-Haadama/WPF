@@ -1,8 +1,5 @@
 <?php
 
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
-
 $ignore_list = array("operation", "table_name", "id");
 
 function update_data($table_name)

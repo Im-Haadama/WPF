@@ -14,9 +14,6 @@ $operation = get_param("operation", true);
 // http://fruity.co.il/tools/admin/data.php?table_name=im_business_info&operation=update&id=2560&ref=22
 $table_name = get_param("table_name", true);
 
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
-
 // TODO: Check permission to table
 
 if ( $operation )

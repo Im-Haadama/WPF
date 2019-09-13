@@ -180,9 +180,8 @@ function gui_textarea( $name, $value, $events = null, $rows = 0, $cols = 0 ) {
  *
  * @return string
  */
-function gui_datalist( $id, $table, $field, $include_id = false ) {
-	global $conn;
-
+function gui_datalist( $id, $table, $field, $include_id = false )
+{
 	$data = "<datalist id=\"" . $id . "\">";
 
 	$sql = "select " . $field;
@@ -191,13 +190,8 @@ function gui_datalist( $id, $table, $field, $include_id = false ) {
 	}
 	$sql .= " from " . $table;
 
-	$result = mysqli_query( $conn, $sql );
-	if ( ! $result ) {
-		print mysqli_error( $conn );
-
-		return "";
-	}
-	while ( $row = mysqli_fetch_assoc( $result ) ) {
+	$result = sql_query( $sql );
+	while ( $row = sql_fetch_assoc($result ) ) {
 		$id_text = "";
 		if ( $include_id ) {
 			$id_text = $row["ID"] . ")";
@@ -654,7 +648,7 @@ function gui_table_args($input_rows, $id = null, $args = null)
 	if ($debug) print "row count: " . count($input_rows) . "<br/>";
 	$rows = array();
 	foreach ($input_rows as $key => $input_row) {
-		if ( in_array( $key, array( "checkbox", "header" ) ) ) {
+		if ( !$prepare || in_array( $key, array( "checkbox", "header" ) ) ) {
 			$rows[ $key ] = $input_row;
 		} else {
 			$rows[ $key ] = PrepareRow( $input_row, $args, $key );
@@ -720,8 +714,11 @@ function gui_table_args($input_rows, $id = null, $args = null)
 		foreach ($rows as $row)
 		{
 			$data .="<tr>";
-			foreach ($row as $cell)
-				$data .= "<td>" . $cell . "</td>";
+			if (is_array($row))
+				foreach ($row as $cell)
+					$data .= "<td>" . $cell . "</td>";
+				else
+					$data .= "<td>" . $row . "</td>";
 			$data .= "</tr>";
 		}
 	} while (0);
@@ -1098,7 +1095,6 @@ function gui_select_table(
 		return "no results " . $sql;
 	}
 
-//	print $sql;
 	if ( $datalist ) {
 		return gui_select_datalist( $id, $table, $name, $values, $events, $selected, $include_id, $id_key );
 	} else {

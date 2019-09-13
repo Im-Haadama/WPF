@@ -6,7 +6,6 @@
  * Date: 19/06/16
  * Time: 17:42
  */
-
 define( 'IM_HAADAMA_PLUGIN', __FILE__ );
 
 define( 'IM_HAADAMA_PLUGIN_BASENAME', plugin_basename( IM_HAADAMA_PLUGIN ) );

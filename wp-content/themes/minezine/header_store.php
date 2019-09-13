@@ -13,11 +13,6 @@ require_once( ROOT_DIR . '/wp-load.php' );
 require_once( ROOT_DIR . '/im-config.php' );
 require_once( ROOT_DIR . '/niver/data/sql.php' );
 
-if ( isset( $servername ) and strlen( $servername ) > 2 ) {
-	$conn = new mysqli( $servername, $username, $password, $dbname );
-	mysqli_set_charset( $conn, 'utf8' );
-}
-
 function tag_st( $str ) {
 	return "'" . $str . "'";
 }

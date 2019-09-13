@@ -37,7 +37,7 @@ if ( $incremental ) {
 
 print header_text();
 
-$result = mysqli_query( $conn, $sql );
+$result = sql_query( $sql );
 
 if ( ! $result ) {
 	sql_error( $sql );

@@ -239,7 +239,6 @@ class Order {
 	public static function CalculateNeeded( &$needed_products, $user_id = 0 ) {
 		/// print "user id " . $user_id . "<br/>";
 		$debug_product = 0; // 141;
-		global $conn;
 		if ( ! $user_id ) {
 			if ( check_cache_validity() ) {
 				print "cache valid<br/>";
@@ -279,7 +278,7 @@ class Order {
 		}
 
 		// print $sql;
-		$result = mysqli_query( $conn, $sql );
+		$result = sql_query( $sql );
 
 		// Loop open orders.
 		while ( $row = mysqli_fetch_assoc( $result ) ) {

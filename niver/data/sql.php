@@ -240,6 +240,12 @@ function escape_string( $string ) {
 	return mysqli_real_escape_string( $conn, $string );
 }
 
+function sql_affected_rows()
+{
+	$conn = get_sql_conn();
+
+	return mysqli_affected_rows($conn);
+}
 // Good for sql that returns array of one value
 function sql_query_array_scalar( $sql ) {
 	$arr    = array();
@@ -282,7 +288,11 @@ function sql_trace()
 	$result = "";
 	$debug = debug_backtrace();
 	for ( $i = 2; $i < 6 && $i < count( $debug ); $i ++ ) {
-		$result .= ("called from " . $debug[$i]['file'] . " " . $debug[ $i ]["function"] . ":" . $debug[ $i ]["line"] . "<br/>");
+		if (isset($debug[$i]['file'])) $caller = "called from " . $debug[$i]['file'] . " ";
+		else $caller = "";
+		if (isset($debug[ $i ]["line"])) $line = ":" . $debug[ $i ]["line"];
+		else $line = "";
+		$result .= ( $caller . $debug[ $i ]["function"] . $line . "<br/>");
 	}
 	return $result;
 }

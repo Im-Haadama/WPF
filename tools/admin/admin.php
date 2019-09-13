@@ -6,8 +6,6 @@
  * Time: 08:19
  */
 
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
 
 require_once( "tasklist.php" );
 require_once( ROOT_DIR . "/niver/web.php" );
@@ -152,8 +150,26 @@ function handle_admin_operation($operation)
 
 			print "done";
 			break;
+		case "start":
+			$task_id = get_param( "id" );
+			$sql     = "UPDATE im_tasklist SET started = now(), status = " . eTasklist::started .
+			           " WHERE id = " . $task_id;
+			sql_query( $sql );
+
+			$sql = "SELECT task_url FROM im_task_templates WHERE id = "
+			       . " (SELECT task_template FROM im_tasklist WHERE id = " . $task_id . ")";
+			$url = sql_query_single_scalar( $sql );
+			if ( strlen( $url ) > 1 ) // print $url;
+			{
+				header( "Location: " . $url );
+			} else {
+				redirect_back();
+			}
+			break;
+
 		default:
 			print __FUNCTION__ . ": " . $operation . " not handled <br/>";
+
 			die(1);
 	}
 	return;
@@ -319,52 +335,30 @@ function edit_staff($url)
 
 function active_tasks($args = null, $debug = false, $time = false)
 {
-	global $task_selectors;
 	global $this_url;
-	global $entity_name_plural;
 	$table_name = "im_tasklist";
 
 	$url = get_url(true);
-//	print "U=".$url . "<br/>";
-
-	// print header_text( false, true, is_rtl(), array( "/niver/gui/client_tools.js", "/tools/admin/data.js", "/tools/admin/admin.js" ) );
-
-	$user_id = GetArg($args, "user_id", wp_get_current_user()->ID);
-	$project_id = GetArg($args, "project", null);
 	$active_only = GetArg($args, "active_only", true);
 
-	if (! get_param("no_limit"))
-		$limit = " limit 10 ";
+	if (get_param("limit"))
+		$limit = "limit " . get_param("limit");
+	else
+		$limit = "limit 10";
 
 	$links       = array();
 	$links["id"] = $this_url . "?row_id=%s";
 
 	$query   = "where 1 ";
-	$title = "Managing Tasks";
+	if (GetArg($args, "query", null))
+		$query .= " and " . GetArg($args, "query", null);
+
+	$project_id = GetArg($args, "project", null);
 	if ($project_id) {
 		$query .= " and project_id = $project_id";
-		$title .= " project " . get_project_name($project_id);
 	}
 
-//	print gui_header( 1, $title );
-
-//	print greeting();
-
-//	print gui_hyperlink("repeating tasks", $url . "?operation=templates");
-
-//	print " ";
-
-//	print gui_hyperlink("add tasks", $url . "?operation=new_task");
-
-//	print " ";
-
-//	print managed_workers($user_id, $_SERVER['REQUEST_URI']);
-
-//	print " ";
-
-//	print gui_hyperlink("projects", $url . "?operation=projects");
-
-//	$sum     = null;
+	$args["selectors"] = array("project" => "gui_select_project", "project_id" => "gui_select_project");
 
 	if ($active_only)
 		$query .= " and (status in (0, 1) and (isnull(preq) or task_status(preq) >= 2) and (date is null or date(date) <= Curdate()))";
@@ -372,9 +366,6 @@ function active_tasks($args = null, $debug = false, $time = false)
 	if ($time) $query .= " and task_active_time(id)";
 
 	$query .= " and (mission_id is null or mission_id = 0) ";
-
-	$owner_query = $query . " and owner = " . $user_id;
-	$creator_query = $query . " and creator = " . $user_id . " and owner != " . $user_id;
 
 	$actions = array(
 		array( "התחל", $url . "?operation=start&id=%s" ),
@@ -387,14 +378,11 @@ function active_tasks($args = null, $debug = false, $time = false)
 	else
 		$order   = "order by priority desc ";
 
-	$args             = array();
-
 	$links["task_template"] = $url . "?task_template_id=%s";
 	$links["id"] = $url . "?row_id=%s";
 	$links["project_id"] = $url . "?project_id=%s";
 	$args["links"]    = $links;
 
-	$args["selectors"] = $task_selectors;
 	$args["actions"]  = $actions;
 	$args["id_field"] = "id";
 	$args["edit"] = false;
@@ -406,7 +394,7 @@ function active_tasks($args = null, $debug = false, $time = false)
 		$more_fields .= ", task_template_time(id) ";
 
 	$sql = "select id, date(date) as date, task_description, task_template, started, project_id,
-       priority, preq $more_fields from $table_name $owner_query $order $limit";
+       priority, preq $more_fields from $table_name $query $order $limit";
 
 	if ($debug)
 		print "<br/>" . $sql . "<br/>";
@@ -427,19 +415,19 @@ function active_tasks($args = null, $debug = false, $time = false)
 	return $result;
 }
 
-function show_team($team_id, $active_only, $url)
+function show_team($team_id, $active_only)
 {
 //	print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/tools/admin/data.js", "/tools/admin/admin.js" ) );
 
 	print gui_header(1, "Showing status of team " . team_get_name($team_id));
+	print gui_hyperlink("Include non active", add_to_url("active_only", 0));
 
-	$sql = "select user_id from im_working where worker_teams(user_id) like '%:" . $team_id . ":%'";
-	$team_members = sql_query_array_scalar($sql);
+	$team_members = team_members($team_id);
 
 	foreach ($team_members as $user_id){
 		print gui_header(2, get_customer_name($user_id) . " " . $user_id);
-		$args = array("user_id" => $user_id, "active_only" => $active_only);
-		$args["url"] = $url;
+		$args = array("user_id" => $user_id, "active_only" => $active_only, "owner" => $user_id);
+		$args["query"] = " owner=" . $user_id;
 		print active_tasks($args);
 	}
 }
@@ -568,3 +556,24 @@ function admin_check_setup()
 	}
 	return true;
 }
+
+
+//	print gui_header( 1, $title );
+
+//	print greeting();
+
+//	print gui_hyperlink("repeating tasks", $url . "?operation=templates");
+
+//	print " ";
+
+//	print gui_hyperlink("add tasks", $url . "?operation=new_task");
+
+//	print " ";
+
+//	print managed_workers($user_id, $_SERVER['REQUEST_URI']);
+
+//	print " ";
+
+//	print gui_hyperlink("projects", $url . "?operation=projects");
+
+//	$sum     = null;

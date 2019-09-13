@@ -16,7 +16,7 @@ $sql = "select m.remote_prod_id as rid, p.post_title as title, m.local_prod_id a
        " join wp_posts p " .
        " where  p.id = m.local_prod_id ";
 
-$result = mysqli_query( $conn, $sql );
+$result = sql_query( $sql );
 
 $req = "multi-site/secondary-send-pictures.php?ids=";
 

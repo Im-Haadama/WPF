@@ -262,3 +262,9 @@ msgstr "פעילות חוזרת"
 
 msgid "task"
 msgstr "משימה"
+
+msgid "Tasks assigned to me"
+msgstr "משימות באחריותי"
+
+msgid "My teams' tasks"
+msgstr "משימות של צוותי"

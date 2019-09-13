@@ -159,13 +159,8 @@ function operation_get_price( $id ) {
 
 }
 function clear_legacy() {
-	global $conn;
 	$sql    = "UPDATE im_delivery_legacy SET status = 2 WHERE status = 1";
-	$result = mysqli_query( $conn, $sql );
-	if ( ! $result ) {
-		print mysqli_error( $conn ) . " " . $sql;
-		die ( 1 );
-	}
+	$result = sql_query( $sql );
 }
 
 function add_delivery_lines( $delivery_id, $lines, $edit ) {

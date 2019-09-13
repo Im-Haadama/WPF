@@ -10,6 +10,9 @@ if ( ! defined( "ROOT_DIR" ) ) {
 	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
 }
 
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
 require_once( ROOT_DIR . '/niver/data/attachment_folder.php' );
 require_once( ROOT_DIR . '/tools/im_tools.php' );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
@@ -151,7 +154,7 @@ foreach ( $table as $row ) {
 	$line = array( substr( $subject, 0, 20 ), $doc_name, $date );
 	if ( $supplier_id == - 1 ) {
 		print $row[1];
-		array_push( $line, $row[1] );0
+		array_push( $line, $row[1] );
 	} else {
 		$end_of_month = strtotime( 'last day of ' . date( 'F-Y', strtotime( $date ) ) ) . "<br/>";
 		array_push( $line, gui_input_date( "dat_" . $message_number, "", date( 'Y-m-d', $end_of_month ) ) );

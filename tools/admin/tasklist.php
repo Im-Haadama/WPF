@@ -1,8 +1,9 @@
 <?php
 
 require_once( "Tasklist.php" );
-
 require_once( "tasklist-post.php" );
+
+if (function_exists("get_user_id")) if (get_user_id() == 1) $debug = 1;
 
 if ( ! defined( "TOOLS_DIR" ) ) {
 	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );

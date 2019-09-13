@@ -82,17 +82,12 @@ class ImMultiSite extends MultiSite {
 
 	static function map( $remote_site_id, $local_prod_id, $remote_prod_id ) {
 		my_log( __FILE__, __METHOD__ );
-		global $conn;
 		$sql = "INSERT INTO im_multisite_map (remote_site_id, local_prod_id, remote_prod_id) " .
 		       " VALUES (" . $remote_site_id . ", " . $local_prod_id . ", " . $remote_prod_id . ")";
 
 		my_log( $sql );
 
-		$result = mysqli_query( $conn, $sql );
-		if ( ! $result ) {
-			sql_error( $sql );
-			die( 1 );
-		}
+		sql_query( $sql );
 	}
 
 	static function CopyImage( $id, $remote_id, $remote_site ) {
@@ -182,14 +177,13 @@ class ImMultiSite extends MultiSite {
 			ImMultiSite::UpdateTable( $html, $table, $key, $query, $ignore, $debug );
 		} else {
 			print "short response. Operation aborted <br/>";
+			print $html;
 
 			return;
 		}
 	}
 
 	static private function UpdateTable( $html, $table, $table_key, $query = null, $ignore_fields = null, $debug = false ) {
-		global $conn;
-
 		if ($debug)
 			print "start<br/>";
 
@@ -206,6 +200,7 @@ class ImMultiSite extends MultiSite {
 		$field_list   = null;
 		$insert_count = 0;
 		$update_count = 0;
+		$i = 0;
 
 		foreach ( $dom->find( 'tr' ) as $row ) {
 			// First line - headers.
@@ -272,11 +267,11 @@ class ImMultiSite extends MultiSite {
 					if ( $insert ) {
 //						if (strlen($fields[$i] == 0)) $insert_values .= "NULL, ";
 //						else // print strlen($fields[$i]) . " " . $fields[$i] . "<br/>";
-						$insert_values .= quote_text( mysqli_real_escape_string( $conn, $fields[ $i ] ) ) . ", ";
+						$insert_values .= quote_text( escape_string( $fields[ $i ] ) ) . ", ";
 						$insert_count ++;
 
 					} else { // Update
-						$update_fields .= $headers[ $i ] . "=" . quote_text( mysqli_real_escape_string( $conn, $fields[ $i ] ) ) . ", ";
+						$update_fields .= $headers[ $i ] . "=" . quote_text( escape_string( $fields[ $i ] ) ) . ", ";
 						$update_count ++;
 					}
 				}
@@ -297,6 +292,7 @@ class ImMultiSite extends MultiSite {
 		}
 		if ( $i < 3 ) {
 			print "not enough records.<br/>";
+			print $html . "<br/>";
 			print "Aboring<br/>";
 			die( 2 );
 		}

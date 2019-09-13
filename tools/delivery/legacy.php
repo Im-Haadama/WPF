@@ -160,7 +160,7 @@ print "אנא בחר משלוחים לשבוע זה" . "<br/>";
 $sql = 'SELECT user_id FROM wp_usermeta WHERE meta_key = "_client_type"
 AND meta_value = "legacy"';
 
-$result = mysqli_query( $conn, $sql );
+$result = sql_query( $sql );
 
 print "<table>";
 while ( $row = mysqli_fetch_row( $result ) ) {

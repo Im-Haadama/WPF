@@ -64,12 +64,6 @@ class Importer {
 	// -1 - row exists (check_dup)
 
 	private function ReadConversion( $table_name, &$conversion ) {
-		global $conn;
-
-		if ( ! $conn ) {
-			throw new Exception( "not connected" );
-		}
-
 		if ( ! $table_name ) {
 			throw new Exception( __METHOD__ . " no table sended" );
 		}

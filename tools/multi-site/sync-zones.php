@@ -40,9 +40,7 @@ switch ( $operation ) {
 
 function update_zone_table( $table ) {
 	print header_text( false, true, false );
-	global $conn;
 
-	// var_dump($conn);
 	$dom = im_str_get_html( $table );
 	$row = $dom->find( 'tr' );
 	print $row->plaintext;

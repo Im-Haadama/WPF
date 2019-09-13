@@ -235,22 +235,4 @@ function save_legacy( $ids ) {
 		// order_change_status( $o,  );
 		// print "ex: " . sql_query_single_scalar("select post_excerpt from wp_posts where id = " . $id) . "<br/>";
 	}
-//	global $conn;
-//	$sql    = "UPDATE im_delivery_legacy SET status = 2 WHERE status = 1";
-//	$result = mysqli_query( $conn, $sql );
-//	if ( ! $result ) {
-//		print mysqli_error( $conn ) . " " . $sql;
-//		die ( 1 );
-//	}
-//	$mission_id = sql_query_single_scalar( "SELECT max(id) FROM im_missions WHERE date <= curdate() AND name = \"סבב מרכז\"" );
-//	foreach ( $ids as $id ) {
-//		$sql = "INSERT INTO im_delivery_legacy (client_id, date, status, mission_id) " .
-//		       " VALUES (" . $id . ", CURRENT_TIMESTAMP(), 1, $mission_id)";
-//
-//		$result = mysqli_query( $conn, $sql );
-//		if ( ! $result ) {
-//			print mysqli_error( $conn ) . " " . $sql;
-//			die ( 1 );
-//		}
-//	}
 }

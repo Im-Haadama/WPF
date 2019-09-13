@@ -211,7 +211,6 @@ function invoices_table( $statuses, $week = null ) {
 	debug_time_log( "start" );
 
 	global $order_header_fields;
-	global $conn;
 
 	$show_fields = array();
 	$empty_line  = array();
@@ -281,7 +280,7 @@ function invoices_table( $statuses, $week = null ) {
 //		if ( $build_path ) {
 //			find_route_1( 1, $order_ids, $path, false );
 //		}
-		$result                = mysqli_query( $conn, $sql );
+		$result                = sql_query( $sql );
 		$total_delivery_total  = 0;
 		$total_order_total     = 0;
 		$total_order_delivered = 0;

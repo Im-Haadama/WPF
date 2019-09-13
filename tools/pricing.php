@@ -14,21 +14,7 @@ require_once( STORE_DIR . '/tools/wp/Product.php' );
 
 // TODO: Decide about 80% fruit factor
 function calculate_price( $price, $supplier, $sale_price = '', $terms = null ) {
-	global $conn;
-
-	if ( ! is_numeric( $supplier ) ) {
-		print "Invalid " . $supplier . " was sent";
-		die( 2 );
-	}
-	$sql    = "SELECT factor FROM im_suppliers WHERE id = " . $supplier;
-	$result = mysqli_query( $conn, $sql );
-
-	if ( ! $result ) {
-		sql_error( $sql );
-		die( 1 );
-	}
-	$row    = mysqli_fetch_assoc( $result );
-	$factor = $row["factor"];
+	$factor = sql_query_single_scalar( "SELECT factor FROM im_suppliers WHERE id = " . $supplier);
 
 	// Check for sale
 	if ( is_numeric( $sale_price ) and $sale_price < $price and $sale_price > 0 ) {

@@ -36,10 +36,8 @@ if ( $operation )
 			$values .= ") ";
 			$sql    .= $values;
 
-			print $sql;
-			if ( ! $conn->query( $sql ) ) {
-				print "Sql: " . $sql . "<br>" . mysqli_error( $conn );
-			}
+//			print $sql;
+			sql_query($sql);
 			break;
 
 

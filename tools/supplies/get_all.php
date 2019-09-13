@@ -98,7 +98,7 @@ print gui_cell( "business_id" );
 
 print "</tr>";
 $seq    = 1;
-$result = mysqli_query( $conn, $sql );
+$result = sql_query( $sql );
 while ( $row = mysqli_fetch_row( $result ) ) {
 	print_supplies_table( $url, $row[0], true );
 }

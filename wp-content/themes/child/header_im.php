@@ -90,20 +90,14 @@
 			// Basket selector
 			global $servername, $username, $password;
 			// print $servername;
-			$conn = mysqli_connect( $servername, $username, $password );
-			if ( ! $conn ) {
-				die ( 1 );
-			}
-			mysqli_set_charset( $conn, 'utf8' );
-			mysqli_select_db( $conn, $dbname );
 
 			$select_box = '<select id="basket">';
 
 			$sql = "SELECT DISTINCT basket_id FROM im_baskets";
 
-			$export = mysql_query( $sql );
+			$result = sql_query( $sql );
 			print mysql_error();
-			while ( $row = mysql_fetch_row( $export ) ) {
+			while ( $row = mysql_fetch_row( $result ) ) {
 				$basket_id   = $row[0];
 				$basket_name = get_basket_name( $basket_id );
 				$line        = '<option value="' . $basket_id . '" data-basket_id = ' . $basket_id . '>' . $basket_name . ' ' . $basket_id . '</option>';

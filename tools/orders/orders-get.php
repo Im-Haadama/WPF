@@ -6,7 +6,7 @@ require_once( "../im_tools.php" );
 require_once( '../r-shop_manager.php' );
 require_once '../delivery/delivery.php';
 
-print header_text( false, false );
+print header_text( false, false, is_rtl() );
 
 if ( isset( $_GET["week"] ) ) {
 	$week = $_GET["week"];
@@ -245,7 +245,7 @@ $sql = 'SELECT meta.meta_value ' .
        'and post_date > curdate() - 7 ' .
        'order by 1 ';
 
-$result = mysqli_query( $conn, $sql );
+$result = sql_query($sql );
 
 //while ( $row = mysqli_fetch_row( $result ) ) {
 

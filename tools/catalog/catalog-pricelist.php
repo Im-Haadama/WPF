@@ -11,7 +11,7 @@ require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 
 $sql = "SELECT post_title, id, post_modified FROM im_products";
 
-$result = mysqli_query( $conn, $sql );
+$result = sql_query( $sql );
 
 $data .= "<tr>";
 $data .= "<td>בחר</td>";

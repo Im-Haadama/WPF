@@ -19,3 +19,11 @@ function get_url($only_base = false)
 
 	return $url;
 }
+
+function add_to_url($param_name, $param_value)
+{
+	$url = get_url();
+
+	if (strpos($url, '?')) return $url . '&' . $param_name . '=' . $param_value;
+	return $url . '?' . $param_name . '=' . $param_value;
+}

@@ -6,13 +6,12 @@
  * Time: 12:15
  */
 
-//error_reporting( E_ALL );
-//ini_set( 'display_errors', 'on' );
-
 require_once( "im_tools.php" );
 
 require_once("catalog/gui.php");
-print gui_select_product("xx");
+// print gui_select_product("xx");
+print gui_select_mission("mission");
+
 
 die (1);
 

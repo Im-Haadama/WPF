@@ -212,8 +212,6 @@ class delivery {
 		$order_id, $total, $vat, $lines, $edit, $fee, $delivery_id = null,
 		$_draft = false, $reason = null
 	) {
-		global $conn;
-
 		$draft = $_draft ? 1 : 0;
 
 		if ( $edit ) {
@@ -236,7 +234,7 @@ class delivery {
 			       . quote_text( $reason )
 			       . ')';
 			sql_query( $sql );
-			$delivery_id = mysqli_insert_id( $conn );
+			$delivery_id = sql_insert_id();
 		}
 
 		if ( ! ( $delivery_id > 0 ) ) {
@@ -899,10 +897,10 @@ class delivery {
 	}
 
 	function expand_basket( $basket_id, $quantity_ordered, $level, $show_fields, $document_type, $line_id, $client_type, $edit, &$data ) {
-		global $conn, $delivery_fields_names;
+		global $delivery_fields_names;
 		$sql2 = 'SELECT DISTINCT product_id, quantity FROM im_baskets WHERE basket_id = ' . $basket_id;
 
-		$result2 = mysqli_query( $conn, $sql2 );
+		$result2 = sql_query( $sql2 );
 		while ( $row2 = mysqli_fetch_assoc( $result2 ) ) {
 			$prod_id  = $row2["product_id"];
 			// print $prod_id . "<br/>";
@@ -1012,18 +1010,9 @@ class delivery {
 	}
 
 	public function DeliveryDate() {
-		global $conn;
-
 		$sql = "SELECT date FROM im_delivery WHERE id = " . $this->ID;
 
-		$result = $conn->query( $sql );
-
-		if ( ! $result ) {
-			print $sql;
-			die ( "select error" );
-		}
-
-		$row = mysqli_fetch_assoc( $result );
+		$row = sql_query_single_scalar($sql);
 
 		return $row["date"];
 	}

@@ -166,7 +166,6 @@ function find_route( $node, $rest, &$path ) {
 //}
 
 function get_distance( $address_a, $address_b ) {
-	global $conn;
 	if ( 0 ) {
 		print "a: X" . $address_a . "X<br/>";
 		print "b: X" . $address_b . "X<br/>";
@@ -198,10 +197,10 @@ function get_distance( $address_a, $address_b ) {
 	// print get_client_address($order_a) . " " . get_client_address($order_b) . " " . $d . "<br/>";
 	if ( $distance > 0 ) {
 		$sql1 = "insert into im_distance (address_a, address_b, distance, duration) VALUES 
-				('" . mysqli_real_escape_string( $conn, $address_a ) . "', '" .
-		        mysqli_real_escape_string( $conn, $address_b ) . "', $distance, $duration)";
+				('" . escape_string( $address_a ) . "', '" .
+		        escape_string(  $address_b ) . "', $distance, $duration)";
 		sql_query( $sql1 );
-		if ( mysqli_affected_rows( $conn ) < 1 ) {
+		if ( sql_affected_rows( ) < 1 ) {
 			print "fail: " . $sql1 . "<br/>";
 		}
 
@@ -212,9 +211,8 @@ function get_distance( $address_a, $address_b ) {
 }
 
 function get_distance_duration( $address_a, $address_b ) {
-	global $conn;
-	$sql = "SELECT duration FROM im_distance WHERE address_a = '" . mysqli_real_escape_string( $conn, $address_a ) .
-	       "' AND address_b = '" . mysqli_real_escape_string( $conn, $address_b ) . "'";
+	$sql = "SELECT duration FROM im_distance WHERE address_a = '" . escape_string( $address_a ) .
+	       "' AND address_b = '" . escape_string( $address_b ) . "'";
 
 	return sql_query_single_scalar( $sql );
 

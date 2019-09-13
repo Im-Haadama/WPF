@@ -14,11 +14,11 @@ require_once( ROOT_DIR . "/niver/gui/inputs.php" );
 require_once( ROOT_DIR . "/niver/gui/sql_table.php" );
 require_once( "../business/business.php" );
 require_once( "people.php" );
+require_once( TOOLS_DIR . "/gui.php" );
 
 $role = "";
 
 $operation = get_param( "operation" );
-
 
 if ( isset( $operation ) ) {
 	switch ( $operation ) {
@@ -60,7 +60,6 @@ print header_text( false, true, true );
         request = "entry.php?operation=get_projects&id=" + worker_id;
         xmlhttp.open("GET", request, true);
         xmlhttp.send();
-
     }
 
     function update_display() {
@@ -70,7 +69,14 @@ print header_text( false, true, true );
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
             {
                 document.getElementById("last_info").innerHTML = xmlhttp.response;
-                document.getElementById("btn_add_time").disabled = false;
+                let date = get_value_by_name("date");
+                let _date = new Date(date);
+                let now = new Date();
+                if (date.length > 4 && (_date <= now))
+                    enable_btn("btn_add_time");
+                else
+                    disable_btn("btn_add_time");
+
             }
         }
         request = "entry.php?operation=get_last";
@@ -86,14 +92,14 @@ print header_text( false, true, true );
     function add_item() {
         document.getElementById("btn_add_time").disabled = true;
 
-        var sel = document.getElementById("project");
-        var project_id = sel.options[sel.selectedIndex].value;
-        var start = get_value(document.getElementById("start_h"));
-        var end = get_value(document.getElementById("end_h"));
-        var date = get_value(document.getElementById("date"));
-        var traveling = get_value(document.getElementById("traveling"));
-        var extra_text = get_value(document.getElementById("extra_text"));
-        var extra = get_value(document.getElementById("extra"));
+        let sel = document.getElementById("project");
+        let project_id = sel.options[sel.selectedIndex].value;
+        let start = get_value(document.getElementById("start_h"));
+        let end = get_value(document.getElementById("end_h"));
+        let date = get_value(document.getElementById("date"));
+        let traveling = get_value(document.getElementById("traveling"));
+        let extra_text = get_value(document.getElementById("extra_text"));
+        let extra = get_value(document.getElementById("extra"));
 	    <?php if ( isset( $_GET["worker"] ) ) {
 	    print 'var id = ' . $_GET["workder"] . '\n';
     } else {
@@ -142,11 +148,15 @@ print header_text( false, true, true );
 <?php
 print header_text(false, true, true);
 
-print gui_header( 1, "הזנת נתוני שכר" );
+print gui_header( 1, "הזנת נתוני שכר עם האדמה" );
 
 $table = array();
-array_push( $table, array( "בחר עובד", gui_select_worker( "worker_select", null, "onchange=worker_changed()" ) ) );
-array_push( $table, ( array( "תאריך", gui_input_date( "date", date( 'Y-m-d' ) ) ) ) );
+$args = array("events" => "onchange=worker_changed()");
+$args["companies"] = array(1);
+$args["worker"] = 1;
+array_push( $table, array( "בחר עובד", gui_select_worker( "worker_select", get_user_id(), $args)));
+$date = date( 'Y-m-d' );
+array_push( $table,  array( "תאריך", gui_input_date( "date",  null, $date, 'onchange=update_display()') )  );
 array_push( $table, ( array(
 "משעה",
 '<input id="start_h" type="time" value="09:00" pattern="([1]?[0-9]|2[0-3]):[0-5][0-9]">'
@@ -171,9 +181,10 @@ print gui_input( "extra_text", "" ) . "<br/>";
 print "סכום";
 print gui_input( "extra", "" ) . "<br/>";
 
+print gui_button("btn_add_time", "add_item()", "Add activity", true);
 ?>
 
-<button id="btn_add_time" onclick="add_item()">הוסף פעילות</button>
+
 
 <table id="last_info">
 

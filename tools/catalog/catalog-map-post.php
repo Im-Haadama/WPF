@@ -132,13 +132,12 @@ function is_mapped( $code ) {
 //}
 
 function search_unmapped_remote() {
-	global $conn;
 
 	$data = "";
 
 	$sql = "SELECT site_id, id FROM im_suppliers WHERE site_id > 0";
 
-	$result = mysqli_query( $conn, $sql );
+	$result = sql_query( $sql );
 
 	if ( ! $result ) {
 		sql_error( $sql );
@@ -171,12 +170,11 @@ function search_unmapped_remote() {
 	print $data;
 }
 
-function search_unmapped_products() {
-	global $conn;
-
+function search_unmapped_products()
+{
 	$sql    = "SELECT id, supplier_id, product_name " .
 	          " FROM im_supplier_price_list ORDER BY 2, 3";
-	$result = mysqli_query( $conn, $sql );
+	$result = sql_query( $sql );
 
 	$data = "<tr>";
 	$data .= "<td>בחר</td>";
@@ -209,14 +207,12 @@ function search_unmapped_products() {
 }
 
 function search_unmapped_terms() {
-	global $conn;
-
 	// print header_text();
 	$all_terms      = array();
 	$all_terms_flat = array();
 	$sql            = "SELECT id, supplier_id, product_name " .
 	                  " FROM im_supplier_price_list ORDER BY 2, 3";
-	$result         = mysqli_query( $conn, $sql );
+	$result         = sql_query( $sql );
 
 	while ( $row = mysqli_fetch_row( $result ) ) {
 		$pricelist_id = $row[0];

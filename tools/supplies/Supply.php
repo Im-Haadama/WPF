@@ -626,11 +626,9 @@ function supply_delete( $supply_id ) {
 }
 
 function supply_sent( $supply_id ) {
-	global $conn;
-
 	$sql = 'UPDATE im_supplies SET status = 3 WHERE id = ' . $supply_id;
 
-	$result = mysqli_query( $conn, $sql );
+	$result = sql_query( $sql );
 
 	if ( ! $result ) {
 		sql_error( $sql );
@@ -798,7 +796,6 @@ function update_supply_lines( $params ) {
 }
 
 //function do_merge_supply( $merged, $other ) {
-//	global $conn;
 //	if ( supply_get_supplier_id( $merged ) != supply_get_supplier_id( $other ) ) {
 //		print "לא ניתן למזג אספקות של ספקים שונים. אספקה $other לא תמוזג ";
 //
@@ -813,7 +810,7 @@ function update_supply_lines( $params ) {
 //////        . " supply_id = " . $other;
 ////
 ////	my_log( $sql );
-////	mysqli_query( $conn, $sql );
+////	mysqli_query( , $sql );
 //
 //	// TODO: really merge. sum the quantities.
 ////	$sql = ""
@@ -828,7 +825,7 @@ function update_supply_lines( $params ) {
 ////    $sql = "update im_supplies_lines set status = 8 " .
 ////        " where supply_id = " . $other;
 ////
-////    mysqli_query($conn, $sql);
+////    mysqli_query(, $sql);
 //
 //}
 
@@ -987,7 +984,7 @@ function display_active_supplies( $status ) {
 	$sql    = "SELECT id, supplier, status, date(date), paid_date, status, business_id FROM im_supplies WHERE status IN (" .
 	          implode( ",", $status ) . ") AND id > " . $in_key . "\n"
 	          // " and date > DATE_SUB(curdate(), INTERVAL 2 WEEK)"
-	          . " ORDER BY 4, 3, 2";
+	          . " ORDER BY 4 desc, 3, 2 limit 20";
 
 	return DoSuppliesTable( $sql );
 }

@@ -6,9 +6,6 @@
  * Time: 11:21
  */
 
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
-
 require_once( "../im_tools.php" );
 require_once( '../r-shop_manager.php' );
 require_once( "../orders/orders-common.php" );

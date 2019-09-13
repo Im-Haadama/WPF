@@ -78,16 +78,6 @@ function get_field( $order_id, $field_name ) {
 	return $row[0];
 }
 
-$link = mysql_connect( $servername, $username, $password );
-mysql_set_charset( 'utf8', $link );
-
-// Check connection
-if ( $link->connect_error ) {
-	die( "Connection failed: " . $conn->connect_error );
-}
-
-mysql_select_db( $dbname );
-
 // Get basket components
 $sql = 'select bk.product_id, wp.post_title'
        . ' from im_baskets bk, wp_posts wp'

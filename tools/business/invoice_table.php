@@ -38,9 +38,12 @@ if ($operation){
 					if (! isset($args["fields"]))
 						$args["fields"] = array();
 				}
-				$args["fields"][$key] = $data;
+				$args["values"][$key] = $data;
 			}
 			$args["edit"] = true;
+			// $args["]
+			$args["selectors"] = array("part_id" => "gui_select_supplier", "document_type" => "gui_select_document_type");
+			$args["fields"] = array("part_id", "date", "amount", "net_amount", "document_type");
 			print NewRow("im_business_info", $args, true);
 			print gui_button("btn_add", "save_new('im_business_info')", "הוסף");
 			break;
@@ -76,7 +79,7 @@ if ($part_id) {
 	$sql =  "select id, date, amount, net_amount, ref, pay_date, supply_from_business(id)
         from im_business_info where " . $page . " and is_active = 1 order by 2";
 
-	print $sql;
+	// print $sql;
 	try {
 		print GuiTableContent( "transactions", $sql, $args );
 	} catch ( Exception $e ) {

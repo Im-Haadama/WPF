@@ -17,8 +17,6 @@ function my_log( $msg, $title = '' ) {
 
 function load_scripts($script_file = false )
 {
-	global $style_file;
-
 	$text = "";
 	if ( $script_file ) {
 		// print "Debug: " . $script_file . '<br/>';
@@ -46,10 +44,11 @@ function load_scripts($script_file = false )
 	return $text;
 
 }
+
 function header_text( $print_logo = true, $close_header = true, $rtl = true, $script_file = false ) {
 	global $business_info;
 	global $logo_url;
-
+	global $style_file;
 
 	$text = '<html';
 	if ( $rtl ) {
@@ -72,6 +71,9 @@ function header_text( $print_logo = true, $close_header = true, $rtl = true, $sc
 	$text .= '</p>';
 
 	$text .= load_scripts($script_file );
+	if ( isset( $style_file ) ) {
+		$text .= load_style($style_file);
+	}
 
 	if ( $close_header ) {
 		$text .= '</head>';
@@ -79,6 +81,15 @@ function header_text( $print_logo = true, $close_header = true, $rtl = true, $sc
 
 	return $text;
 	// $text .= '<p style="text-align:center;">';
+}
+
+function load_style($style_file)
+{
+	$text = "<style>";
+	$text .= file_get_contents( $style_file );
+	$text .= "</style>";
+
+	return $text;
 }
 
 function get_param_array( $key ) {
@@ -158,7 +169,8 @@ function comma_implode( $array, $quote = false ) {
 		if ( isset( $var->name ) ) {
 			$result .= $var->name;
 			$result .= ", ";
-		}
+		} else
+			$result .= $var . ", ";
 	}
 
 	return rtrim( $result, ", " );
@@ -199,7 +211,7 @@ function debug_time_output( $str ) {
 
 function debug_time_log( $str ) {
 	static $prev_time;
-	if ( $str == "reset" ) {
+	if ( $str == "reset" || ! is_numeric($prev_time)){
 		$prev_time = microtime();
 
 		return;

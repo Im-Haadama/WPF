@@ -32,7 +32,7 @@ $data .= "</table>";
 $basket = "";
 
 $sql    = 'SELECT  basket_id, quantity FROM `im_baskets` WHERE `product_id` = ' . $prod_id;
-$result = mysqli_query( $conn, $sql );
+$result = sql_query( $sql );
 
 while ( $row = mysqli_fetch_row( $result ) ) {
 	$o = orders_per_item( $row[0], $row[1] );
@@ -52,7 +52,7 @@ if ( strlen( $basket ) ) {
 $bundle = "";
 
 $sql    = 'SELECT  bundle_prod_id, quantity, id FROM im_bundles WHERE prod_id = ' . $prod_id;
-$result = mysqli_query( $conn, $sql );
+$result = sql_query( $sql );
 
 while ( $row = mysqli_fetch_row( $result ) ) {
 	$b    = Bundle::CreateFromDb( $row[2] );
@@ -79,7 +79,7 @@ $sql = ' SELECT d.id, quantity, d.supplier, d.date FROM im_supplies_lines dl JOI
        . ' WHERE dl.supply_id = d.id AND (d.status = 1 OR d.status = 3) AND dl.status = 1 AND dl.product_id = ' . $prod_id .
        " order by 1 desc ";
 
-$result = mysqli_query( $conn, $sql );
+$result = sql_query( $sql );
 
 while ( $row = mysqli_fetch_row( $result ) ) {
 	$supply_id = $row[0];

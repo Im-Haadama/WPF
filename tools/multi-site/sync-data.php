@@ -52,12 +52,32 @@ switch ( $table ) {
 // print header_text(false);
 switch ( $operation ) {
 	case "get":
+		im_init(null);
 		print header_text( false );
 		$sql = "SELECT * FROM $table";
 		if ( isset ( $_GET["query"] ) ) {
 			$sql .= " where " . stripcslashes( $_GET["query"] );
 		}
-		print table_content( "table", $sql );
+		$args["textdomain"] = 'none';
+		switch ($table)
+		{
+			case "wp_woocommerce_shipping_zone_locations":
+				$args["id_field"] = "location_id";
+				break;
+			case "wp_woocommerce_shipping_zone_methods":
+			case "wp_woocommerce_shipping_zones":
+				$args["id_field"] = "zone_id";
+				break;
+			case "im_missions":
+				break;
+			case "wp_options":
+				$args["id_field"] = "option_id";
+				break;
+			default:
+				print "table $table not exportable.<br/>";
+				die (1);
+		}
+		print GuiTableContent( "table", $sql, $args );
 		break;
 
 	case "update":

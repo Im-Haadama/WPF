@@ -416,7 +416,6 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 	// print "s=" . $statuses;
 
 	global $order_header_fields;
-	global $conn;
 	global $invoice_user;
 	global $invoice_password;
 
@@ -488,7 +487,7 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 //		if ( $build_path ) {
 //			find_route_1( 1, $order_ids, $path, false );
 //		}
-		$result                = mysqli_query( $conn, $sql );
+		$result                = sql_query( $sql );
 		$total_delivery_total  = 0;
 		$total_order_total     = 0;
 		$total_order_delivered = 0;
@@ -936,18 +935,17 @@ function product_line( $prod_id, $text, $sale, $customer_type, $inv, $term_id, $
 }
 
 function get_order_itemmeta( $order_item_id, $meta_key ) {
-	global $conn;
 	if ( is_array( $order_item_id ) ) {
 		$sql = "SELECT sum(meta_value) FROM wp_woocommerce_order_itemmeta "
 		       . ' WHERE order_item_id IN ( ' . comma_implode( $order_item_id ) . ") "
-		       . ' AND meta_key = \'' . mysqli_real_escape_string( $conn, $meta_key ) . '\'';
+		       . ' AND meta_key = \'' . escape_string( $meta_key ) . '\'';
 
 		return sql_query_single_scalar( $sql );
 	}
 	if ( is_numeric( $order_item_id ) ) {
 		$sql2 = 'SELECT meta_value FROM wp_woocommerce_order_itemmeta'
 		        . ' WHERE order_item_id = ' . $order_item_id
-		        . ' AND meta_key = \'' . mysqli_real_escape_string( $conn, $meta_key ) . '\''
+		        . ' AND meta_key = \'' . escape_string( $meta_key ) . '\''
 		        . ' ';
 
 		return sql_query_single_scalar( $sql2 );

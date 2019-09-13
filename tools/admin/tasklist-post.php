@@ -32,22 +32,6 @@ switch ( $operation ) {
 			print "delivered";
 		}
 		break;
-	case "start":
-		$task_id = get_param( "id" );
-		$sql     = "UPDATE im_tasklist SET started = now(), status = " . eTasklist::started .
-		           " WHERE id = " . $task_id;
-		sql_query( $sql );
-
-		$sql = "SELECT task_url FROM im_task_templates WHERE id = "
-		       . " (SELECT task_template FROM im_tasklist WHERE id = " . $task_id . ")";
-		$url = sql_query_single_scalar( $sql );
-		if ( strlen( $url ) > 1 ) // print $url;
-		{
-			header( "Location: " . $url );
-		} else {
-			redirect_back();
-		}
-		break;
 	case "end":
 		$task_id = get_param( "id" );
 		print $task_id . "<br/>";

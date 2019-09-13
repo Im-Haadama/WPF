@@ -450,35 +450,21 @@ function table_line( $prod_id, $prod_quantity, $filter_zero, $history = false ) 
 }
 
 function q_in( $prod_id ) {
-	global $conn;
 	$sql = "SELECT q_in FROM i_in WHERE product_id = " . $prod_id;
 
 //   print $sql;
 
-	$result = $conn->query( $sql );
-	if ( ! $result ) {
-		print $sql . " " . mysqli_error( $conn ) . "<br/>";
-	}
+	$q = sql_query( $sql );
 
-	$row = mysqli_fetch_row( $result );
-
-	return round( $row[0], 1 );
+	return round( $q, 1 );
 }
 
 function q_out( $prod_id ) {
-	global $conn;
 	$sql = "SELECT q_out FROM i_out WHERE prod_id = " . $prod_id;
 
-//   print $sql;
+	$q = sql_query( $sql );
 
-	$result = $conn->query( $sql );
-	if ( ! $result ) {
-		print $sql . " " . mysqli_error( $conn ) . "<br/>";
-	}
-
-	$row = mysqli_fetch_row( $result );
-
-	return round( $row[0], 1 );
+	return round( $q, 1 );
 }
 
 //function delta_time($str, $zero = false)

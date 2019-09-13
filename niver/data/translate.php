@@ -12,6 +12,8 @@ require_once( "sql.php" );
 
 function im_translate($text, $arg = null)
 {
+	$textdomain = GetArg($arg, "textdomain", 'im_haadama');
+
 //	print "translating $text<br/>";
 	if (is_array($text)){
 		$result = "";
@@ -21,7 +23,7 @@ function im_translate($text, $arg = null)
 	}
 
 //	print "translating $text to " . get_locale() . "...";
-	$t = translate($text, 'im_haadama');
+	$t = translate($text, $textdomain);
 //	print $t . "<br/>";
 	// print $t . " " . strlen($t);
 	if (strlen($t))

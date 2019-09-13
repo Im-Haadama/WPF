@@ -64,9 +64,8 @@ function business_update_transaction( $delivery_id, $total, $fee ) {
 }
 
 function business_logical_delete( $ids ) {
-	global $conn;
 	$sql = "UPDATE im_business_info SET is_active = 0 WHERE id IN (" . $ids . ")";
-	$conn->query( $sql );
+	sql_query($sql);
 	my_log( $sql );
 }
 

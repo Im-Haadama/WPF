@@ -375,10 +375,10 @@ function im_woocommerce_update_price() {
 	my_log( "cart start" );
 	// TWEEK. Don't know why menu_op calls this method.
 	// DONT remove without trying menu.php and cart.
-	global $conn;
-	if ( ! $conn ) {
-		return;
-	}
+    if (! sql_query_single_scalar("select 1")) {
+        my_log ("not connected to db");
+        return;
+    }
 	$client_type = customer_type( get_user_id() );
 
 	foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {

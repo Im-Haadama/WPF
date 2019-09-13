@@ -113,14 +113,12 @@ function get_zone_order( $zone_id ) {
 }
 
 function print_legacy() {
-	global $conn;
-
 	$site_tools = ImMultiSite::LocalSiteTools();
 
 	$sql = "SELECT id, client_id, mission_id FROM im_delivery_legacy " .
 	       " WHERE status = 1";
 
-	$result     = mysqli_query( $conn, $sql );
+	$result     = sql_query( $sql );
 	$data_lines = array();
 
 	if ( $result ) {

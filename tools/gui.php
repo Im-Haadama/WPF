@@ -66,7 +66,6 @@ function gui_select_worker( $id = null, $selected = null, $args = null ) {
 	$edit = GetArg($args, "edit", true);
 	$companies = GetArg($args, "companies", "must send company");
 	$debug = false; // (get_user_id() == 1);
-	if ($debug) print "company: " . $companies . "<br/>";
 	$args["debug"] = $debug;
 	$args["name"] = "client_displayname(user_id)";
 	$args["where"] = "where is_active=1 and company_id in (" . comma_implode($companies) . ")";

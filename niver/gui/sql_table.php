@@ -181,6 +181,13 @@ function PrepareRow($row, $args, $row_id)
 
 	if ($debug){
 		print "start " . __FUNCTION__ . "<br/>";
+		print "edit=$edit "; var_dump($edit_cols); print "<br/>";
+		if (! $links) print "NO links<br/>";
+		else { print "Links: "; var_dump ($links); print "<br/>"; }
+		if ($selectors) {
+			print "has selectors: "; var_dump($selectors); print "<br/>";
+		}
+		else print "No selectors<br/>";
 	}
 
 	if (! is_array($row))
@@ -213,7 +220,6 @@ function PrepareRow($row, $args, $row_id)
 				continue;
 			}
 		}
-		if ($debug) { print "edit=$edit "; var_dump($edit_cols); print "<br/>"; }
 
 		if ($events) {
 			if ($transpose)	$field_events = sprintf($events, "'" . $key . "'", $row_id);
@@ -225,9 +231,20 @@ function PrepareRow($row, $args, $row_id)
 		// Let's start
 		do {
 			if ( $links and array_key_exists( $key, $links ) ) {
-				if ($debug) print "links ";
-				$value = gui_hyperlink( $value, sprintf( $links[ $key ], $data ) );
+				if ($debug) print "Has links for $key";
+				if ( $selectors and array_key_exists( $key, $selectors ) ) {
+					if ($debug) print " and also selector";
+					$selector_name = $selectors[ $key ];
+					// print $selector_name;
+					$selected = $selector_name( $input_name, $orig_data, $args ); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
+				} else $selected = $value;
+
+				$value = gui_hyperlink( $selected, sprintf( $links[ $key ], $data ) );
 				break;
+			} else {
+				if ($debug){
+					if (! array_key_exists($key, $links)) print "no links[" .$key . "]";
+				}
 			}
 			if ($debug and ! $selectors)
 				print "no selectors<br/>";
@@ -344,6 +361,7 @@ function PrepareRow($row, $args, $row_id)
  */
 function TableData($sql, &$args = null)
 {
+	$debug = (get_user_id() == 1);
 	// print __FUNCTION__ . "<br/>";
 	$result = sql_query( $sql );
 	if ( ! $result ) {
@@ -400,13 +418,20 @@ function TableData($sql, &$args = null)
 				if (! $skip_id or ($key != $id_field))
 					$v_line[$key] = gui_checkbox("chk_" . $key, $checkbox_class, $new_row[$key] != null);
 			}
+			if (is_array($h_line) and $header_fields){
+				if (! $skip_id or $key !== "id")
+					$h_line[$key] = im_translate($header_fields[$i++], $args);
+			}
 		}
 		if ($v_line){
 			array_push($rows_data, $v_line);
 		}
-		$header_line = TableHeader($sql, false, $skip_id, $meta_fields);
+		// $header_line = TableHeader($sql, false, $skip_id, $meta_fields);
 
-		if ($header_line) $rows_data['header'] = $header_line;
+		if ($h_line){
+			$rows_data['header'] = $h_line;
+			$h_line = null;
+		}
 
 		array_push($rows_data, $new_row);
 
@@ -414,14 +439,15 @@ function TableData($sql, &$args = null)
 	} else {
 		while ( $row = mysqli_fetch_assoc( $result ) ) {
 			$the_row = array();
-			$row_id  = $row[ $id_field ];
-			if ( ! $row_id ) {
+			if ( ! isset($row[$id_field])) {
 				// Error... We don't have a valid row ID.
 				print "<br/>field id:" . $id_field . "<br/>";
 				var_dump( $row );
 				print "<br/>";
 				die( __FUNCTION__ . ":" . __LINE__ . "no row id" );
 			}
+			$row_id  = $row[ $id_field ];
+
 			foreach ( $row as $key => $cell ) {
 				// Change: 9/9/2019. We put the id only in multirow display
 				if ( ! $skip_id or strtolower( $key ) !== "id" ) {
@@ -434,7 +460,7 @@ function TableData($sql, &$args = null)
 				}
 				if (is_array($h_line) and $header_fields){
 					if (! $skip_id or $key !== "id")
-						$h_line[$key] = im_translate($header_fields[$i++]);
+						$h_line[$key] = im_translate($header_fields[$i++], $args);
 				}
 			}
 
@@ -453,7 +479,7 @@ function TableData($sql, &$args = null)
 						$v_line[ $key ] = gui_checkbox( "chk_" . $key, $checkbox_class, false );
 					}
 					if ($h_line){
-						$h_line[$key] = im_translate($header_fields[$i++]);
+						$h_line[$key] = im_translate($header_fields[$i++], $args);
 					}
 				}
 			}
@@ -609,8 +635,9 @@ function GuiRowContent($table_name, $row_id, $args)
 		$args["row_id"] = $row_id;
 
 	} else { // Create new one.
-		if ($fields)
+		if ($fields) {
 			$sql = "show columns from $table_name where field in ( " . comma_implode($fields, true) . ")";
+		}
 		else
 			$sql = "describe $table_name";
 	}

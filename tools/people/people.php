@@ -464,4 +464,57 @@ function gui_select_task( $id, $value, $args ) {
 	return GUiSelectTable($id, "im_tasklist", $args);
 }
 
+function gui_select_template($id, $value, $args)
+{
+	// TODO: implement.
+	$edit = GetArg($args, "edit", false);
+
+	if (! $edit) return sql_query_single_scalar("select task");
+
+	$query = GetArg($args, "where", " where 1 ");
+	$length = GetArg($args, "length", 30);
+
+	print "value = $value<br/>";
+
+//	if ( $worker ) {
+//		// print "w=" . $worker;
+//		// $user_id = sql_query("select user_id from im_working where id = " . $worker);
+//		$query = " where id in (select project_id from im_working where worker_id = " . $worker . ")";
+//	}
+
+//	return gui_select_table( $id, "im_tasklist", $value, $events, "", "task_description",
+//		"where " . $query, true, false );
+
+	$args["value"] = $value;
+	$args["name"] ="substr(task_description, 1," . $length . ")";
+	$args["include_id"] = 1;
+	$args["datalist"] = 1;
+	return GUiSelectTable($id, "im_task_templates", $args);
+
+}
+
+function team_members($team_id)
+{
+	$sql = "select user_id from im_working where worker_teams(user_id) like '%:" . $team_id . ":%'";
+	return sql_query_array_scalar($sql);
+}
+
+function team_all_members($user_id)
+{
+	$teams = sql_query_array_scalar("select id from im_working_teams where manager = " . $user_id);
+	if (! $teams) return null;
+	$temp_result = array();
+	// Change to associative to have each member just once.
+	foreach ($teams as $team) {
+		$members = team_members($team);
+		foreach ($members as $member)
+			$temp_result[$member] = 1;
+	}
+	// Switch to simple array
+	$result = array();
+	foreach ($temp_result as $member => $x)
+		array_push($result, $member);
+	return $result;
+}
+
 ?>

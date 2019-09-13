@@ -317,7 +317,6 @@ class Catalog {
 	}
 
 	static function SelectOption( $product_id, $pricelist_id ) {
-		global $conn;
 
 		// print "select ";
 		$pricelist = PriceList::Get( $pricelist_id );
@@ -358,7 +357,7 @@ class Catalog {
 		$sql = "UPDATE im_supplier_mapping SET selected = TRUE WHERE product_id = " . $product_id .
 		       " AND supplier = " . $supplier;
 
-		mysqli_query( $conn, $sql );
+		sql_query( $sql );
 		// update_post_meta($product_id, "buy_price", $buy_price);
 
 		// Update variations
@@ -373,7 +372,7 @@ class Catalog {
 			update_post_meta( $v, "_price", $regular_price );
 			update_post_meta( $v, "buy_price", $pricelist["price"] );
 		}
-		mysqli_query( $conn, "UPDATE wp_posts SET post_modified = NOW() WHERE id = " . $product_id );
+		sql_query( "UPDATE wp_posts SET post_modified = NOW() WHERE id = " . $product_id );
 
 		// Update bundle
 		$sql     = "SELECT id FROM im_bundles WHERE prod_id = " . $product_id;
@@ -414,7 +413,6 @@ class Catalog {
 		$debug = false;
 		if ( $pricelist_id == 22737 )
 			$debug = true;
-		global $conn;
 		$result_ids = array();
 		// find products mapped by id.
 		$sql = "SELECT product_id, id FROM im_supplier_mapping WHERE pricelist_id = " . $pricelist_id;
@@ -439,7 +437,7 @@ class Catalog {
 			$product_name = str_replace( $word_to_remove, "", $product_name );
 		}
 		$sql = "SELECT product_id, id FROM im_supplier_mapping " .
-		       " WHERE supplier_product_name = '" . mysqli_real_escape_string( $conn, $product_name ) . "'" .
+		       " WHERE supplier_product_name = '" . escape_string( $product_name ) . "'" .
 		       " AND supplier_id = " . $result["supplier_id"];
 
 		if ( ! $include_hide )
@@ -524,20 +522,13 @@ class Catalog {
 
 	function HideProduct( $pricelist_id )
 	{
-		global $conn;
-
 		my_log( "null_mapping", "catalog-map.php" );
 
 		// Good if already mapped
 		sql_query( "UPDATE im_supplier_mapping SET product_id =-1 WHERE pricelist_id = " . $pricelist_id );
 
 		// Otherwise need to add map to -1
-		if ( mysqli_affected_rows( $conn ) < 1 ) {
-//			$sql = "INSERT INTO im_supplier_mapping (product_id, pricelist_id) "
-//			       . "VALUES (-1, " . $pricelist_id . ")";
-//
-//			print $sql;
-//			sql_query ($sql);
+		if ( sql_affected_rows( ) < 1 ) {
 			$this->AddMapping( - 1, $pricelist_id, ImMultiSite::LocalSiteID() );
 		}
 	}
@@ -727,7 +718,6 @@ function show_monthly() {
 }
 function alternatives( $prod_id, $details = false )
 {
-	global $conn;
 	global $debug_product;
 	$debug_product = 0;
 
@@ -744,7 +734,7 @@ function alternatives( $prod_id, $details = false )
 			im_supplier_price_list where id in (select pricelist_id from im_supplier_mapping where product_id = $prod_id)";
 
 //    print "<br/>" . $sql . "<br/>";
-	$result = mysqli_query( $conn, $sql );
+	$result = sql_query( $sql );
 	$output = "";
 	if ( ! $result ) {
 		sql_error( $sql );
@@ -774,7 +764,7 @@ function alternatives( $prod_id, $details = false )
   		AND m.supplier_id = pl.supplier_id
 		AND m.product_id = " . $prod_id;
 
-	$result = mysqli_query( $conn, $sql );
+	$result = sql_query( $sql );
 	$c      = 0;
 	while ( $row = mysqli_fetch_row( $result ) ) {
 		$supplier_id = $row[1];

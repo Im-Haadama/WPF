@@ -8,14 +8,7 @@
 
 require_once( "catalog-db-query.php" );
 
-//$categs = array();
 //$sql = "select term_id, name from wp_terms";
-//$result = mysqli_query($conn, $sql);
-//while ($row=  mysqli_fetch_row($result ))
-//{
-//    print $row[0] . " " . $row[1] . "<br/>";
-//    array_push($categs, $row[0]);
-//}
 
 $categs = array(
 	34,

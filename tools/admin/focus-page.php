@@ -1,7 +1,4 @@
 <?php
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
-
 require_once("load.php");
 require_once ("admin.php");
 
@@ -26,7 +23,7 @@ $project_id = get_param( "project_id" );
 if ( $project_id ) {
 	$args = [];
 	$args["project"] = $project_id;
-	show_active_tasks( $args );
+	print active_tasks( $args );
 	return;
 }
 
@@ -54,7 +51,7 @@ if ($team_id)
 {
 	global $admin_scripts;
 	im_init($admin_scripts);
-	show_team($team_id, get_param("active_only", false, true), get_url(1));
+	show_team($team_id, get_param("active_only", false, true));
 	return;
 }
 
@@ -74,7 +71,7 @@ $args["url"] = basename(__FILE__);
 
 im_init($admin_scripts);
 print greeting();
-print gui_hyperlink("repeating tasks", $url . "?templates");
+print gui_hyperlink("Repeating tasks", $url . "?templates");
 
 print " ";
 
@@ -90,5 +87,22 @@ print gui_hyperlink("projects", $url . "?operation=projects");
 
 //	$sum     = null;
 
-print active_tasks($args, $debug, $time_filter);
+print gui_header(1, "Tasks assigned to me");
+$args["query"] = " owner = " . get_user_id();
+$args["limit"] = get_param("limit", false, 10);
+$args["active_only"] = get_param("active_only", false, true);
+print active_tasks($args);
+if (get_user_id() != 1) return;
+
+print gui_header(1, "My teams' tasks");
+// foreach (show_team())
+
+$members = comma_implode(team_all_members(get_user_id()));
+if (strlen($members)) {
+	print $members;
+    $args["query"] = " owner in (" . $members . ")";
+	print active_tasks($args, $debug, $time_filter);
+}
+
+
 

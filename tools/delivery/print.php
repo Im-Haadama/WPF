@@ -134,7 +134,6 @@ function print_mission( $mission_id_filter = null ) {
 }
 
 function print_the_supplies() {
-	global $conn;
 	$sql = 'SELECT s.id
  FROM im_supplies s
    JOIN im_suppliers r
@@ -144,7 +143,7 @@ AND s.supplier = r.id AND
 ORDER BY 1';
 
 // print $sql;
-	$result   = $conn->query( $sql );
+	$result   = sql_query( $sql );
 	$supplies = Array();
 	while ( $row = mysqli_fetch_assoc( $result ) ) {
 		array_push( $supplies, $row["id"] );

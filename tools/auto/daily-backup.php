@@ -83,7 +83,6 @@ function backup_database() {
 		}
 
 		fwrite( $file, "[mysqldump]\n" );
-		// global $conn;
 		fwrite( $file, "user=" . IM_DB_USER . "\n" );
 		fwrite( $file, "password=" . IM_DB_PASSWORD . "\n" );
 //		fwrite( $file, "single-transaction\n" );
@@ -104,8 +103,7 @@ function backup_database() {
 	exec( "gzip " . $backup_file );
 
 	// Server might gone because of the backup. Reconnect
-	global $conn;
-	$conn = new mysqli( IM_DB_HOST, IM_DB_NAME, IM_DB_PASSWORD, IM_DB_NAME );
+	// $conn = new mysqli( IM_DB_HOST, IM_DB_NAME, IM_DB_PASSWORD, IM_DB_NAME );
 
 	if ( substr( $result, 0, 31 ) == $success ) {
 		print "success<br/>";

@@ -44,9 +44,13 @@ if (defined('TIMEZONE')){
 
 function im_init($script_files = null)
 {
+	// Singleton connection for the application.
 	static $conn = null;
+	if (0 and get_user_id() == 1) $debug = 1;
+	else $debug = 0;
 
 	if (! $conn){
+		if ($debug) print "connecting...";
 		if (! defined("DB_HOST")) throw new Exception("DB configuration error = host");
 		if (! defined ("DB_USER")) throw new Exception("DB configuration error = user");
 		if (! defined ("DB_PASSWORD")) throw new Exception("DB configuration error = password");
@@ -60,13 +64,16 @@ function im_init($script_files = null)
 			my_log("encoding setting failed");
 			die("encoding setting failed");
 		}
+		if ($debug) print "done<br/>";
 		// Local and international staff...
 		// Todo: get it from user profile
 		date_default_timezone_set( "Asia/Jerusalem" );
-	$locale = get_locale();
-	$mofile = ROOT_DIR . '/wp-content/languages/plugins/im_haadama-' . $locale . '.mo';
-	if (! load_textdomain('im-haadama', $mofile))
-		print "load translation failed . $locale";
+
+		if ($debug) print "loading translation<br/>";
+		$locale = get_locale();
+		$mofile = ROOT_DIR . '/wp-content/languages/plugins/im_haadama-' . $locale . '.mo';
+		if (! load_textdomain('im-haadama', $mofile))
+			print "load translation failed . $locale";
 	}
 
 	if ($script_files)
@@ -214,15 +221,7 @@ function get_prod_id( $order_item_id ) {
 }
 
 function get_product_id_by_name( $product_name ) {
-	$conn = get_sql_conn();
-	$sql    = "SELECT id FROM im_products WHERE post_title = '" . $product_name . "'";
-	$result = mysqli_query( $conn, $sql );
-	if ( ! $result ) {
-		return null;
-	}
-	$row    = mysqli_fetch_assoc( $result );
-
-	return $row["ID"];
+	return sql_query_single_scalar("SELECT id FROM im_products WHERE post_title = '" . $product_name . "'");
 }
 
 function get_product_name( $product_id ) {
@@ -281,30 +280,9 @@ function deb_ug_time( $message, $previous_time ) {
 }
 
 function get_site_tools_url( $site_id ) {
-	$conn = get_sql_conn();
+	return sql_query_single_scalar("SELECT tools_url FROM im_multisite " .
+	       " WHERE id = " . $site_id);
 
-	$sql = "SELECT tools_url FROM im_multisite " .
-	       " WHERE id = " . $site_id;
-
-	// print $sql;
-
-	$result = mysqli_query( $conn, $sql );
-
-	if ( ! $result ) {
-		sql_error( $sql );
-		die( 1 );
-	}
-	$row = mysqli_fetch_row( $result );
-
-	return $row[0];
-}
-
-function handle_sql_error( $sql ) {
-	$conn = get_sql_conn();
-
-	print $sql . "<br/>";
-	print mysqli_error( $conn );
-	die( 1 );
 }
 
 function get_meta_field( $post_id, $field_name ) {
@@ -321,24 +299,11 @@ function get_meta_field( $post_id, $field_name ) {
 }
 
 function get_last_order( $user_id ) {
-	$conn = get_sql_conn();
-
-	// get last order id
-	$sql = " SELECT max(meta.post_id) " .
+	return sql_query_single_scalar( " SELECT max(meta.post_id) " .
 	       " FROM `wp_posts` posts, wp_postmeta meta" .
 	       " where meta.meta_key = '_customer_user'" .
 	       " and meta.meta_value = " . $user_id .
-	       " and meta.post_id = posts.ID";
-
-	$result = mysqli_query( $conn, $sql );
-	if ( ! $result ) {
-		sql_error( $sql );
-		die( 1 );
-	}
-	$row      = mysqli_fetch_row( $result );
-	$order_id = $row[0];
-
-	return $order_id;
+	       " and meta.post_id = posts.ID");
 }
 
 function get_logo_url() {
@@ -556,16 +521,7 @@ function valid_key( $key ) {
 }
 
 function get_project_name( $project_id ) {
-	$conn = get_sql_conn();
-	$sql = "SELECT project_name FROM im_projects WHERE id = " . $project_id;
-
-	$result = mysqli_query( $conn, $sql );
-	if ( $result ) {
-		$row = mysqli_fetch_assoc( $result );
-
-		return $row["project_name"];
-	}
-	return "";
+	return sql_query_single_scalar("SELECT project_name FROM im_projects WHERE id = " . $project_id);
 }
 
 function get_document_type_name( $type ) {

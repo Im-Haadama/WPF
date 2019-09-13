@@ -189,13 +189,11 @@ class PriceList {
 	}
 
 	function PrintCSV() {
-		global $conn;
-
 		$sql = 'SELECT product_name, price, supplier_product_code' .
 		       ' FROM im_supplier_price_list pl '
 		       . ' where supplier_id = ' . $this->SupplierID;
 
-		$result = mysqli_query( $conn, $sql );
+		$result = sql_query( $sql );
 
 		print "שם, מחיר, קוד\n";
 
@@ -467,8 +465,6 @@ class PriceList {
 			return UpdateResult::UsageError;
 		}
 		// print "Add: " . $product_name . ", " . $regular_price . " " . $category . "<br/>";
-		global $conn;
-
 		// Change if line exits.
 		$sql = "select id, price " .
 		       " from im_supplier_price_list " .
@@ -478,7 +474,7 @@ class PriceList {
 		$date = date( 'y/m/d' );
 
 		$id     = 0;
-		$result = mysqli_query( $conn, $sql );
+		$result = sql_query( $sql );
 
 		if ( $result ) {
 			$row = mysqli_fetch_row( $result );
@@ -501,7 +497,7 @@ class PriceList {
 			}
 
 			if ( isset( $picture_path ) ) {
-				$sql .= ", picture_path = '" . mysqli_real_escape_string( $conn, $picture_path ) . "'";
+				$sql .= ", picture_path = '" . escape_string( $picture_path ) . "'";
 			} else {
 				$sql .= ", picture_path = null";
 			}
@@ -510,7 +506,7 @@ class PriceList {
 			//  print "<br/>"  . $product_name . "<br/>";
 			// print "<p dir='ltr'>"  . $sql . "</p>";
 
-			$result = mysqli_query( $conn, $sql );
+			$result = sql_query( $sql );
 			if ( ! $result ) {
 				sql_error( $sql );
 
@@ -554,21 +550,16 @@ class PriceList {
 			}
 			if ( isset( $picture_path ) ) {
 				$sql    .= ", picture_path ";
-				$values .= ", '" . mysqli_real_escape_string( $conn, $picture_path ) . "'";
+				$values .= ", '" . escape_string( $picture_path ) . "'";
 			}
 			// Complete the sql statement
 			$sql .= ") " . $values . ")";
 
 			// print "<p dir=ltr>" . $sql . "</p>";
 
-			$result = mysqli_query( $conn, $sql );
-			if ( ! $result ) {
-				sql_error( $sql );
-
-				return UpdateResult::SQLError;
-			}
+			$result = sql_query( $sql );
 			// Output
-			$id = mysqli_insert_id( $conn );
+			$id = sql_insert_id( );
 			$rc = UpdateResult::NewPrice;
 		}
 		// Update linked products
@@ -593,13 +584,12 @@ class PriceList {
 	// ID: output the pricelist id
 
 	function Update( $id, $price, $sale_price = 0 ) {
-		global $conn;
 		my_log( __METHOD__, "update line $id, price $price, sale price $sale_price" );
 		$sql = "UPDATE im_supplier_price_list SET price = " . $price .
 		       ", sale_price = " . $sale_price .
 		       ", date = '" . date( 'y/m/d' ) . "' " .
 		       " WHERE id = " . $id;
-		mysqli_query( $conn, $sql );
+		sql_query( $sql );
 
 		$this->UpdateCatalog( $id );
 
@@ -659,14 +649,13 @@ class PriceList {
 
 //    function DraftRemoved()
 //    {
-//        global $conn;
 //
 //        $sql = "select id from ihstore.im_supplier_price_list where " .
 //            " supplier_id = " . $this->SupplierID . " and line_status = 2";
 //        $result = mysqli_result($sql);
 //
 //        if (!$result){
-//            handle_sql_error($sql, $conn);
+//            handle_sql_error($sql);
 //        }
 ////        $table_name = "temp_supplier_" . $this->SupplierID;
 ////
@@ -677,8 +666,8 @@ class PriceList {
 ////            " WHERE b.id IS NULL ";
 ////
 //////        print $sql . "<br/>";
-////        $result = mysqli_query($conn, $sql);
-////        if (! $result) die ($sql . mysqli_error($conn));
+////        $result = mysqli_query(, $sql);
+////        if (! $result) die ($sql . mysqli_error());
 ////
 ////        while ($row = mysqli_fetch_row($result))
 ////        {
@@ -688,34 +677,20 @@ class PriceList {
 
 	function ChangeStatus( $status ) {
 		// Act local
-		global $conn;
-
-		$sql = "UPDATE im_supplier_price_list SET line_status = " . $status . " WHERE supplier_id = " . $this->SupplierID;
-
-//        print $sql;
-
-		$result = mysqli_query( $conn, $sql );
-
-		if ( ! $result ) {
-			handle_sql_error( $sql );
-		}
-
-		// Act remote
-//        $this->ExecuteRemotes("pricelist/pricelist-post.php?operation=change_status" . "&status=" . $status);
+		sql_query("UPDATE im_supplier_price_list SET line_status = " . $status . " WHERE supplier_id = " . $this->SupplierID);
 	}
 
 //    function ExecuteRemotes($url)
 //    {
 //        // print "ExecuteRemotes: " . $url . "<br/>";
 //        // my_log("Execute " . $url);
-//        global $conn;
 //
 //        $sql = "select remote_site_id, remote_supplier_id from im_multisite_pricelist " .
 //            " where supplier_id = " . $this->SupplierID;
 //
 //        my_log($sql);
 //
-//        $result = mysqli_query($conn, $sql);
+//        $result = mysqli_query($sql);
 //
 //        if ($result)
 //        while ($row = mysqli_fetch_row($result)) {
@@ -728,22 +703,12 @@ class PriceList {
 	function RemoveLines( $status ) {
 		$removed = Array();
 
-		// print "Removing previous items...<br/>";
-		global $conn;
-		$sql = "select id, price, product_name " .
+		$items_to_remove = sql_query_array("select id, price, product_name " .
 		       " from im_supplier_price_list " .
 		       " where line_status = " . $status .
-		       " and supplier_id = " . $this->SupplierID;
+		       " and supplier_id = " . $this->SupplierID);
 
-		print $sql;
-
-		$result = mysqli_query( $conn, $sql );
-
-		if ( ! $result ) {
-			handle_sql_error( $sql );
-		}
-
-		while ( $row = mysqli_fetch_row( $result ) ) {
+		foreach ($items_to_remove as $row) {
 			$id = $row[0];
 			print "removing " . $id . "<br/>";
 			my_log( "Remove " . $id );
@@ -759,7 +724,6 @@ class PriceList {
 	}
 
 	function Delete( $pricelist_id ) {
-		global $conn;
 		my_log( __METHOD__ . $pricelist_id );
 
 		// Check if this product linked.
@@ -776,7 +740,7 @@ class PriceList {
 		$sql = "DELETE FROM im_supplier_price_list  "
 		       . " WHERE id = " . $pricelist_id;
 
-		mysqli_query( $conn, $sql );
+		sql_query( $sql );
 
 		// The mapping stays - in case supplier gets it back.
 

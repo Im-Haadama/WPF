@@ -192,9 +192,7 @@ if ( isset( $_GET["operation"] ) ) {
 			$sql = "UPDATE im_supplies SET text = '" . $comment .
 			       "' WHERE id = " . $supply_id;
 
-			global $conn;
-
-			mysqli_query( $conn, $sql );
+			mysqli_query( $sql );
 			print $sql;
 			break;
 
