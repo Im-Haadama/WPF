@@ -1,3 +1,15 @@
+
+FOLDER_LIST=tools,niver
+
+# major version
+VERSION := $(shell cat version)
+# the current tar file
+BUILD_VERSION := $(shell ./build_version_number)
+# the next file
+PREVIOUS_TAR := $(shell ./last_build_file)
+
+all: .languages
+
 #######################
 ## Build the version ##
 #######################
@@ -8,34 +20,20 @@
 .languages: wp-content/languages/plugins/im_haadama-he_IL.mo
 	touch $@
 
+%.mo: %.po
+	msgfmt $? -o $@
+
 ############
 ## Deploy ##
 ############
+
 UPLOAD=utils/upload_version.sh
 
 .all_deploy: ftp.aglamaz.com.dep
 	touch $@
 
-%.dep: .fresh
+%.dep: .fresh versions/$BUILD_VERSION.tar
 	$(UPLOAD) $*
 	touch $@
 
-#deploy signature.
-.%/done: .%/lang
-	touch $@
-
-.%/lang: .%/wp-content/languages/plugins/im_haadama-he_IL.mor
-	touch $@
-
-%.mor: %.mo
-	upload.sh $? -o
-
-%.mo: %.po
-	msgfmt $? -o $@
-
-#%.rmo: %.po
-#	upload.sh $? || touch $@
-#
-#
-#	 .r.aglamaz.com/wp-content/languages/plugins/im_haadama-he_IL.po
-# hosts = aglamaz.com fruity.co.il tasks.work super-organi.co.il
+%.tar:

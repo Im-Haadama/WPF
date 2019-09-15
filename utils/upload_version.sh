@@ -5,8 +5,22 @@ if [ "$#" -ne 1 ]; then
 fi
 HOST="$1"
 
+# upload langunage
 if [ -f $HOST.dep ]; then
-  find . -name '*.mo' -newer $HOST.dep -exec utils/upload.sh "$HOST" {} \;
+  find . -name '*.mo' -newer "$HOST".dep -exec utils/upload.sh "$HOST" {} \;
 else
   find . -name '*.mo' -exec utils/upload.sh "$HOST" {} \;
 fi
+
+# upload php
+if [ -f $HOST.dep ]; then
+  $version=
+  tar cvf version/
+else
+fi
+
+#  find . -name '*.php' -exec utils/upload.sh "$HOST" {} \;
+#  find . -name '*.php' -newer "$HOST".dep -exec utils/upload.sh "$HOST" {} \;
+
+
+# version file - fresh.<number>.tar

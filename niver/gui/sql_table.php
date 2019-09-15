@@ -549,7 +549,7 @@ function table_content_data(
 			// print $key;
 			$row_count ++;
 
-			$args = array("links" => $links, "selectors" => $selectors, "add_checkbokx" => $add_checkbox,
+			$args = array("links" => $links, "selectors" => $selectors, "add_checkbox" => $add_checkbox,
 				"checkbox_class" => $checkbox_class, "checkbox_events" => $chkbox_events);
 
 		array_push( $rows_data, PrepareRow($row, $args, $row["id"]) );

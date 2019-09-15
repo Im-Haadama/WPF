@@ -7,7 +7,9 @@
  * Time: 21:42
  */
 
-$power_version = "1.7";
+// Major version.
+$power_version = file_get_contents(dirname(dirname(__FILE__)) . "/version");
+
 
 if ( ! defined( "STORE_DIR" ) ) {
 	define( 'STORE_DIR', dirname( dirname( __FILE__ ) ) );

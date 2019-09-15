@@ -707,18 +707,20 @@ function gui_table_args($input_rows, $id = null, $args = null)
 //					print "$j, ";
 					$target[$j][$i] = $cell;
 				}
-
 			}
-				$rows = $target;
+			$rows = $target;
 		}
-		foreach ($rows as $row)
+		foreach ($rows as $row_id => $row)
 		{
 			$data .="<tr>";
-			if (is_array($row))
-				foreach ($row as $cell)
-					$data .= "<td>" . $cell . "</td>";
-				else
-					$data .= "<td>" . $row . "</td>";
+			if (is_array($row)) {
+				if ($add_checkbox) $data .= "<td>" . gui_checkbox("chk_" . $row_id, $checkbox_class, 0, $checkbox_events);
+				foreach ($row as $key => $cell)
+					$data .= gui_cell($cell, $key . "_" . $row_id);
+					// $data .= "<td>" . $cell . "</td>";
+			} else
+				$data .= "<td>" . $row . "</td>";
+
 			$data .= "</tr>";
 		}
 	} while (0);

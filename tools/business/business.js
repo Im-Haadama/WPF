@@ -174,14 +174,14 @@ function link_invoice_bank() {
 }
 
 function update_display() {
-    var collection = document.getElementsByClassName("trans_checkbox");
-    var t = 0;
-    var table = document.getElementById("table_invoices");
+    let collection = document.getElementsByClassName("trans_checkbox");
+    let t = 0;
+    let table = document.getElementById("table_invoices");
 
-    for (var i = 0; i < collection.length; i++) {
+    for (let i = 0; i < collection.length; i++) {
         if (collection[i].checked) {
-            //var row_id = collection[i].substr(4);
-            var amount = parseFloat(table.rows[i + 1].cells[3].innerHTML);
+            let row_id = collection[i].id.substr(4);
+            let amount = parseFloat(get_value_by_name("amount_" + row_id));
             t += amount;
         }
     }
