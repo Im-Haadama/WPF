@@ -243,7 +243,7 @@ function PrepareRow($row, $args, $row_id)
 				break;
 			} else {
 				if ($debug){
-					if (! array_key_exists($key, $links)) print "no links[" .$key . "]";
+					if (! $links or ! array_key_exists($key, $links)) print "no links[" .$key . "]";
 				}
 			}
 			if ($debug and ! $selectors)
@@ -332,7 +332,7 @@ function PrepareRow($row, $args, $row_id)
 				array_push($row_data, gui_hyperlink($text, $action_url));
 			} else {
 				$h = sprintf($action, $row_id);
-				array_push($row, $h);
+				array_push($row_data, $h);
 			}
 		}
 	}
@@ -459,8 +459,9 @@ function TableData($sql, &$args = null)
 						$v_line[$key] = gui_checkbox("chk_" . $key, $checkbox_class, false);
 				}
 				if (is_array($h_line) and $header_fields){
-					if (! $skip_id or $key !== "id")
-						$h_line[$key] = im_translate($header_fields[$i++], $args);
+					if ((! $skip_id or $key !== "id") and isset($header_fields[$i]))
+						$h_line[$key] = im_translate($header_fields[$i], $args);
+					$i++;
 				}
 			}
 

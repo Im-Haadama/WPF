@@ -1,5 +1,5 @@
 <?php
-require_once("load.php");
+require_once( "load.php" );
 require_once ("admin.php");
 
 $debug = get_param("debug", false, false);

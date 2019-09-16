@@ -1,0 +1,49 @@
+#!/bin/bash
+# set -o xtrace
+product_name=fresh_store
+folders="niver tools utils"
+if [ "$#" -ne 1 ]; then
+	echo Usage major, minor or patch
+	echo full or major:  creates tar of all version file. updates the version file.
+	echo patch version. creates tar of the files since last version
+	exit 
+fi
+if [ $1 == "major" ]; then
+  current_version="$(cat version)"
+  echo current version: "$current_version"
+  version=${current_version%%.*}
+  version=$(($major+1)).0
+  rm tar_files
+  touch tar_files
+  $( find $folders \( -name '*.php' -o -name '*.mo' -o -name '*.js' \) -exec echo {} >> tar_files  \; )
+fi
+if [ $1 == "minor" ]; then
+  echo not implemented
+  exit 1
+  fi
+if [ $1 == "patch" ]; then
+  current_version="$(cat version)"
+  echo current version: "$current_version"
+  patch=$(echo $current_version | cut -d. -f3)
+  if [ -z $patch ]; then
+    version=$current_version.1
+  else
+    let patch=1+$patch
+    version=$(echo $current_version | cut -d. -f1-2).$patch
+  fi
+  rm tar_files
+  touch tar_files
+  $( find $folders \( -name '*.php' -o -name '*.mo' -o -name '*.js' \) -newer versions/$product_name-$current_version.tar.gz -exec echo {} >> tar_files  \; )
+fi
+
+if [ -z $current_version ]; then
+  echo Empty version name. Check usage
+  exit 1
+fi
+
+  echo New version: $version
+  echo $version > version
+  echo version >> tar_files
+  tar cvf versions/$product_name-$version.tar -T tar_files
+  gzip versions/$product_name-$version.tar
+  echo created versions/$product_name-$version.tar.gz

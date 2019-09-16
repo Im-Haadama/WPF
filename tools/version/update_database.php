@@ -13,6 +13,8 @@ if ( ! defined( "ROOT_DIR" ) ) {
 	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
 }
 
+require_once (ROOT_DIR . "/im-config.php");
+print "host=" . DB_HOST . "<br/>";
 require_once( ROOT_DIR . '/tools/im_tools_light.php' );
 require_once( ROOT_DIR . '/niver/gui/sql_table.php' );
 // require_once( ROOT_DIR . '/tools/delivery/delivery.php' );
@@ -20,9 +22,13 @@ require_once( ROOT_DIR . '/niver/gui/sql_table.php' );
 //print sql_query_single_scalar("show create table im_bank_account");
 //exit;
 
+
 $version = get_param( "version" );
 
 switch ( $version ) {
+	case "aa":
+		aa();
+		break;
 	case "all":
 		basic();
 		create_tasklist();
@@ -64,6 +70,11 @@ die ( 0 );
 
 function version20()
 {
+	print gui_header(1, "company_id");
+	sql_query("ALTER TABLE im_working ADD company_id int;");
+
+	sql_query("ALTER TABLE im_working rename worker_id user_id");
+
 	print gui_header(1, "management");
 
 	if (! table_exists("im_working_teams")) sql_query("create table im_working_teams (
@@ -723,7 +734,7 @@ select sum(amount) into _amount from im_business_info
 where part_id = _supplier_id
 and date <= _date
 and is_active = 1
-and document_type in (" . ImDocumentType::bank . "," . ImDocumentType::invoice . "); 
+and document_type in (" . ImDocumentType::bank . "," . ImDocumentType::invoice . "," . ImDocumentType::refund . "); 
 
 return round(_amount, 0);
 END;";

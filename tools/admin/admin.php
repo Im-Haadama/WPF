@@ -6,7 +6,6 @@
  * Time: 08:19
  */
 
-
 require_once( "tasklist.php" );
 require_once( ROOT_DIR . "/niver/web.php" );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
@@ -430,37 +429,6 @@ function show_team($team_id, $active_only)
 		$args["query"] = " owner=" . $user_id;
 		print active_tasks($args);
 	}
-}
-
-function greeting()
-{
-	$data = "";
-
-	$user_id = wp_get_current_user()->ID;
-
-	if (! $user_id) {
-		$url = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_HOST ) . '/wp-login.php?redirect_to=' . $_SERVER['REQUEST_URI'] . '"';
-
-		print '<script language="javascript">';
-		print "window.location.href = '" . $url . "'";
-		print '</script>';
-		die (1);
-	}
-
-	$now = strtotime("now");
-
-	if ($now < strtotime("12pm"))
-		$data .= im_translate("Good morning");
-	else
-		$data .= im_translate("Hello");
-
-	$data .= " " . gui_div("user_id", get_customer_name($user_id), false, $user_id);
-
-	$data .=  ". " . im_translate("the time is:") . Date("G:i", $now ) . ".";
-
-	$data .= "<br/>";
-
-	return $data;
 }
 
 function managed_workers($manager_id, $url)

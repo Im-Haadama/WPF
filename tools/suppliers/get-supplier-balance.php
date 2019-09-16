@@ -7,7 +7,7 @@
  */
 
 require( '../r-shop_manager.php' );
-print header_text( false );
+print header_text( false, true, is_rtl(), array("/tools/admin/data.js") );
 // require_once( "account.php" );
 ?>
 
@@ -127,11 +127,21 @@ function get_supplier_balance( $supplier_id ) {
 
     $sql = "SELECT id, date, amount, ref, pay_date, document_type, supplier_balance($supplier_id, date) as balance FROM im_business_info " .
            " WHERE part_id = " . $supplier_id .
-           " AND document_type IN ( " . ImDocumentType::bank . "," . ImDocumentType::invoice . ") " .
+           " AND document_type IN ( " . ImDocumentType::bank . "," . ImDocumentType::invoice ."," . ImDocumentType::refund . ") " .
            " and is_active = 1" .
            " ORDER BY date DESC ";
 
 	print GuiTableContent( "supplier_account", $sql, $args );
+
+	print gui_header(1, "Add transaction");
+	print im_translate("Meanwhile solution for returned goods and old transactions (older that bank account in the system");
+	$new_args = array("values" => array("part_id" => $supplier_id),
+                      "worker" => get_user_id(), // for gui_select_project
+                      "company" => worker_get_companies(get_user_id()),
+                      "selectors" => array("document_type" => "gui_select_document_type")); // , "project_id" => "gui_select_project"
+
+	print NewRow("im_business_info", $new_args);
+	print gui_button("btn_add_row", "save_new('im_business_info')", "הוסף");
 }
 
 ?>

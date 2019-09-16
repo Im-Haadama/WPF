@@ -521,7 +521,9 @@ function valid_key( $key ) {
 }
 
 function get_project_name( $project_id ) {
-	return sql_query_single_scalar("SELECT project_name FROM im_projects WHERE id = " . $project_id);
+	if ($project_id)
+		return sql_query_single_scalar("SELECT project_name FROM im_projects WHERE id = " . $project_id);
+	return "";
 }
 
 function get_document_type_name( $type ) {

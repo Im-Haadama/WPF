@@ -427,7 +427,7 @@ function gui_select_project( $id, $value, $args)
 	if ($companies = worker_get_companies($user_id)){
 		$query = " where id in (select project_id from im_working where company_id in (" . comma_implode($companies) . "))";
 	} else {
-		$query = " where id in (" . comma_implode(worker_get_projects() . ")");
+		$query = " where id in (" . comma_implode(worker_get_projects($user_id) . ")");
 	}
 
 		// print "w=" . $worker;

@@ -1,4 +1,6 @@
 #/bin/bash -f
+echo old
+exit
 if [ "$#" -ne 1 ]; then
     echo "Usage: $0 <target>"
     exit 1

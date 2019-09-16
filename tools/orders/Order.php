@@ -444,7 +444,7 @@ class Order {
 		return "לא נבחר לקוח";
 	}
 
-	function GetAllComments(){
+	static function GetAllComments(){
 		$sql = "SELECT id FROM wp_posts " .
 		       " WHERE (post_status LIKE '%wc-processing%' OR post_status = 'wc-awaiting-shipment') ";
 
