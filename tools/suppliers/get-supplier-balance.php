@@ -24,7 +24,7 @@ if ( $supplier_id ) {
 }
 
 
-$sql = "SELECT round(sum(amount), 0) as balance, part_id, supplier_displayname(part_id) \n"
+$sql = "SELECT supplier_balance(part_id, curdate()) as balance, part_id, supplier_displayname(part_id) \n"
 
        . "FROM `im_business_info`\n"
 
@@ -124,6 +124,7 @@ function get_supplier_balance( $supplier_id ) {
 	$args["selectors_events"] = $selectors_events;
 
 	$args["links"] = array("id" => "/tools/business/invoice_table.php?row_id=%s");
+
 
     $sql = "SELECT id, date, amount, ref, pay_date, document_type, supplier_balance($supplier_id, date) as balance FROM im_business_info " .
            " WHERE part_id = " . $supplier_id .

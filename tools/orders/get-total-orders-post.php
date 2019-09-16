@@ -149,7 +149,7 @@ tr:nth-child(even) {
 		}
 		if (! $found_supplier){
 //			print "xx" . $product_info . '<br/>';
-			if (! $supplier_needed["missing"])
+			if (! isset($supplier_needed["missing"]))
 				$supplier_needed["missing"] = array();
 
 			$supplier_needed["missing"][$prod_id] = $product_info;
@@ -295,9 +295,9 @@ function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero
 			array_push($table_rows, $data_lines[ $i ][1]);
 		}
 
-		$result .= gui_table_args(  $table_rows );
+		// $result .= gui_table_args(  $table_rows );
 
-		$result .= gui_table_args($rows, "needed_" . $supplier_id);
+		$result .= gui_table_args($table_rows, "needed_" . $supplier_id);
 
 		if (! $supplier_id) {
 			$result .= "יש להפוך לטיוטא רק לאחר שמוצר אזל מהמלאי והוצע ללקוחות תחליף<br/>";

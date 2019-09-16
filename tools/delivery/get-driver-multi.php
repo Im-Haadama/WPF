@@ -78,6 +78,7 @@ function show_missions($missions)
 
     $args["links"] = array("id" => "get-driver-multi.php?id=%s");
     $args ["edit_cols"] = array(0, 1,1,1,1,1);
+    // $args["events"] = array("mission_id" => "mission_changed(order_id))
 
     print GuiTableContent("missions", $sql, $args);
 }

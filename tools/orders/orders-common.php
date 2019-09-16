@@ -526,7 +526,9 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 			$mission_id = order_get_mission_id( $order_id );
 			// print $order_id. " ". $mission . "<br/>";
 
-			$line[ OrderFields::mission ]  = gui_select_mission( "mis_" . $order_id, $mission_id, "onchange=\"mission_changed(" . $order_id . ")\"" );
+			$args = array();
+			$args["events"] = "onchange=\"mission_changed(" . $order_id . ")\"";
+			$line[ OrderFields::mission ]  = gui_select_mission( "mis_" . $order_id, $mission_id,  $args);
 			$line[ OrderFields::order_id ] = gui_hyperlink( $order_id, "/tools/orders/get-order.php?order_id=" . $order_id );
 
 			// 2) Customer name with link to his deliveries

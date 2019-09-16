@@ -23,7 +23,7 @@ class Product {
 		try {
 			$this->p = new WC_Product( $id );
 		} catch ( Exception $e ) {
-			print "can't create prod " . $id . $e->getMessage() . "<br/>";
+			print "can't create prod " . $id . $e->getMessage() . " " . $this->getName() . "<br/>";
 		}
 	}
 

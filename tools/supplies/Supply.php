@@ -339,17 +339,18 @@ class Supply {
 		$rows_data = TableData( $sql, $args);
 
 		if ( $internal){
-			array_push($rows_data[0], "Buy Price");
-			array_push($rows_data[0], "Total");
-			array_push($rows_data[0], "Buyers");
+			array_push($rows_data['header'], "Buy Price");
+			array_push($rows_data['header'], "Total");
+			array_push($rows_data['header'], "Buyers");
 
-			for ($i = 1; $i < count($rows_data); $i++)
+			foreach ($rows_data as $prod_id => $row)
+//			for ($i = 1; $i < count($rows_data); $i++)
 			{
-				$prod_id = $rows_data[$i]["Product Name"];
+				//$prod_id = $rows_data[$i]["Product Name"];
 				$buy_price = get_buy_price($prod_id, $this->getSupplier());
-				array_push($rows_data[$i], $buy_price);
-				array_push($rows_data[$i], $buy_price * $rows_data[$i]["quantity"]);
-				array_push($rows_data[$i], orders_per_item( $prod_id, 1, true, true, true ));
+				array_push($rows_data[$prod_id], $buy_price);
+				array_push($rows_data[$prod_id], $buy_price * $row["quantity"]);
+				array_push($rows_data[$prod_id], orders_per_item( $prod_id, 1, true, true, true ));
 			}
 		}
 
