@@ -31,13 +31,12 @@ if ( ! isset( $_GET["op"] ) ) {
 	die ( 2 );
 }
 
+$debug = get_param("debug", false, false);
+
 $op = $_GET["op"];
+if ($debug) print "op=$op<br/>";
+$op or die ("no operation given");
 
-if (! $op)
-{
-	die ("no operation given");
-
-}
 $backup_count = 3;
 
 // print $folder;
@@ -48,6 +47,7 @@ if (! file_exists($backup_dir)){
 	switch ( $op ) {
 		case "name":
 			$date = get_param("date", true);
+			if ($debug) print "date=$date<br/>backup_dir=$backup_dir<br/>";
 			print get_file_name($date);
 			exit( 0 );
 		case "file":
@@ -83,7 +83,7 @@ function get_file_name($date)
 			return $c;
 		}
 	}
-	return null;
+	return "not found";
 }
 
 function readfile_chunked( $filename, $retbytes = true ) {

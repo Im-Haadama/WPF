@@ -131,6 +131,28 @@ class eTasklist {
 		canceled = 3;
 }
 
+function task_started($task_id) {
+	if ( ! sql_query_single_scalar( "select started from im_tasklist where id = " . $task_id ) ) {
+		$sql = "UPDATE im_tasklist SET started = now(), status = " . eTasklist::started .
+		       " WHERE id = " . $task_id;
+		sql_query( $sql );
+	}
+}
+
+function task_template($task_id)
+{
+	return sql_query_single_scalar("select task_template from im_tasklist where id = " . $task_id);
+}
+
+function task_query($task_id)
+{
+	$task_template = task_template($task_id);
+
+	if (! $task_template) return null;
+
+	return sql_query_single_scalar("select condition_query from im_task_templates where id = " . $task_template);
+}
+
 function get_task_link( $template_id ) {
 	if ( $template_id > 0 ) {
 		return sql_query_single_scalar( "SELECT task_url FROM im_task_templates WHERE id = " . $template_id );
@@ -139,6 +161,13 @@ function get_task_link( $template_id ) {
 	return "";
 }
 
+function task_url($task_id)
+{
+	$sql = "SELECT task_url FROM im_task_templates WHERE id = "
+	       . " (SELECT task_template FROM im_tasklist WHERE id = " . $task_id . ")";
+	return sql_query_single_scalar( $sql );
+
+}
 function get_task_status( $status ) {
 	switch ( $status ) {
 		case eTasklist::waiting:

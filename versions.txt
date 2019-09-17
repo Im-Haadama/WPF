@@ -1,0 +1,7 @@
+Version 2.0.4
+- minor bug fix in get total orders
+- bug fix: orders_table event was missing.
+- bug fix: show supplier balance. include refund in total.
+- show supply: change from indexed array to assoc (TableData).
+
+Version

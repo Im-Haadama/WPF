@@ -6,10 +6,7 @@
  * Time: 20:55
  */
 
-if ( ! defined( 'ROOT_DIR' ) ) {
-	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
-}
-
+require_once ("../../im-config.php");
 require_once( ROOT_DIR . "/tools/im_tools.php" );
 require_once( ROOT_DIR . "/niver/gui/inputs.php" );
 require_once( ROOT_DIR . "/tools/supplies/Supply.php" );
@@ -44,8 +41,8 @@ function backup_database() {
 		die( 1 );
 	}
 
-	if ( strlen( IM_DB_NAME ) < 3 ) {
-		print "define IM_DB_NAME";
+	if ( ! defined ( 'DB_NAME' )  ) {
+		print "define DB_NAME";
 		die( 2 );
 	}
 
@@ -75,7 +72,7 @@ function backup_database() {
 
 	print "running backup<br/>";
 
-	$param_file = $folder . "/." . IM_DB_NAME;
+	$param_file = $folder . "/." . DB_NAME;
 	if ( ! file_exists( $param_file ) ) {
 		$file = fopen( $param_file, "w" );
 		if ( ! $file ) {
@@ -90,11 +87,11 @@ function backup_database() {
 		fclose( $file );
 	}
 
-	$backup_file = $folder . "/" . IM_DB_NAME . '-' . date( 'Y-m-d' ) . ".sql";
+	$backup_file = $folder . "/" . DB_NAME . '-' . date( 'Y-m-d' ) . ".sql";
 
 	print "backup file: " . $backup_file . "<br/>";
 
-	$command = "cd " . $folder . " &&  mysqldump --defaults-extra-file=" . $param_file . "  --single-transaction " . IM_DB_NAME . " > " . $backup_file . " 2> " . $backup_file . ".err";
+	$command = "cd " . $folder . " &&  mysqldump --defaults-extra-file=" . $param_file . "  --single-transaction " . DB_NAME . " > " . $backup_file . " 2> " . $backup_file . ".err";
 	print $command . "<br/>";
 	exec( $command );
 
@@ -103,7 +100,7 @@ function backup_database() {
 	exec( "gzip " . $backup_file );
 
 	// Server might gone because of the backup. Reconnect
-	// $conn = new mysqli( IM_DB_HOST, IM_DB_NAME, IM_DB_PASSWORD, IM_DB_NAME );
+	// $conn = new mysqli( IM_DB_HOST, DB_NAME, IM_DB_PASSWORD, DB_NAME );
 
 	if ( substr( $result, 0, 31 ) == $success ) {
 		print "success<br/>";

@@ -151,13 +151,19 @@ function handle_admin_operation($operation)
 			break;
 		case "start":
 			$task_id = get_param( "id" );
-			$sql     = "UPDATE im_tasklist SET started = now(), status = " . eTasklist::started .
-			           " WHERE id = " . $task_id;
-			sql_query( $sql );
+			task_started($task_id);
+			// Started task...
+		// If the was query we want to show the result.
+		// And the move to the task_url if exists.
+		if ($query = task_query($task_id))
+		{
+			print im_file_get_html($query);
 
-			$sql = "SELECT task_url FROM im_task_templates WHERE id = "
-			       . " (SELECT task_template FROM im_tasklist WHERE id = " . $task_id . ")";
-			$url = sql_query_single_scalar( $sql );
+			$url = task_url($task_id);
+			if ($url) print gui_hyperlink(1, "Start", $url);
+			return;
+		}
+		$url = task_url($task_id);
 			if ( strlen( $url ) > 1 ) // print $url;
 			{
 				header( "Location: " . $url );
