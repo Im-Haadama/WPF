@@ -1,7 +1,90 @@
+Power store, tasks changes history.
+
+version 2.1:
+- bank transactions. im_bank_transaction_types will hold types of bank fees, loans.
+- New: Gems. Whole component - table + buttons.
+- bug fix: table.
+- try to convert http: text to url. Doesn't work if there is already an hyperlink.
+- bug fix: don't try to sum the header.
+- add_to_url: enable array of parameters.
+- bug fix: sum lines in account - amo => transaction_amount.
+- New: show worker only payment types he manage.
+- bug fix: fix the header of show_task
+- bug fix: load bank.
+- New: mandatory fields. Implemented in add invoice
+- bug fix: get-driver link to task.
+- bug fix: add event for mission update.
+- database: add bank transaction type, payment method accountant.
+- bug fix: product iterator next.
+
+
+Version 2.0.5 (done after rebase).
+- tasklist: if a task has query, show query result on task starting.
+- tasklist: list of fetch functions. need to create a class...
+- fix: backup database script - use wordpress variables. E.g DB_NAME. Added debug variable to see error cause.
+
 Version 2.0.4
 - minor bug fix in get total orders
 - bug fix: orders_table event was missing.
 - bug fix: show supplier balance. include refund in total.
 - show supply: change from indexed array to assoc (TableData).
 
-Version
+Version 2.0.3
+- bug fix: selectors in new row
+- coding: move greeting to wp.php
+- bank admin: replacement of coder. need to finish
+- bug fix: GetAllComments - static
+- bug fix: get-supplier-balance.
+- update_database: read database configuration
+- bug fix: get_project_name for null.
+
+new: version handling
+- create version. Can create major, minor (not implemeted yet) and build/patch
+- upload_version - not to be used for now.
+
+version 2.0
+1) minor: remove errors. Will be shown only to user=1;
+2) coder: remove.
+3) Remove handle conn from where not needed.
+4) Enable to select textdomain. Used to allow not translation -> data_sync.
+5) load style on demand.
+6) add to url.
+7) show my teaks' tasks.
+8) remove $conn from all files.
+9) Upload util! for now just mo files.
+
+1) minor: remove errors. Will be shown only to user=1;
+2) coder: remove.
+3) Remove handle conn from where not needed.
+4) Enable to select textdomain. Used to allow not translation -> data_sync.
+5) load style on demand.
+6) add to url.
+7) show my teaks' tasks.
+8) remove $conn from all files.
+9) Upload util! for now just mo files.
+
+tasks.work and store.im-haadama.co.il:
+1) working with shortcodes or with focus-page.php
+2) more refactoring of sql_table and inputs.
+3) loading scripts, setting style out of im_tools to im_init();
+4) Table header send directly and not throw sql "as".
+5) make SqlTable assoc.
+
+1. More work on mo/po files
+2. Sql tables - update meta fields.
+
+1) join show_task per project and show_active_tasks.
+2) pictures - show items without thumb.
+3) Products iterator!!
+4) get_term_name. Need to create a class...
+
+1) sql - add performance log (file).
+2) get_value - allow enter value, not from a list.
+3) Table header - shorten the query for performance.
+4) Prepare row - more flexible usage of edit - inputs, selectors and links.
+5) Fix querying tasks
+6) Refactoring sql_table - enable summing.
+7) Fix create invoice after sql_table refactoring.
+8) Fix email sending!!!
+9) Invalidate orders cache when order is changed.
+10) gui_select_project - when not editing - just show the name.

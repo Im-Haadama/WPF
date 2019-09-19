@@ -415,7 +415,7 @@ function print_task( $id ) {
 	$fields = array();
 	array_push( $fields, "משימות" );
 
-	$ref = gui_hyperlink( $id, $m->LocalSiteTools() . "/tasklist/c-get-tasklist.php?id=" . $id );
+	$ref = gui_hyperlink( $id, $m->LocalSiteTools() . "/admin/focus-page.php?row_id=" . $id );
 
 	array_push( $fields, $ref );
 

@@ -7,6 +7,8 @@ require_once(ROOT_DIR . "/niver/web.php");
 $debug = get_param( "debug", false, false );
 
 print header_text( true, true, is_rtl());
+
+print load_scripts(array("/tools/admin/data.js", "/niver/gui/client_tools.js"));
 // focus_init();
 
 $operation = get_param( "operation", false, null );
@@ -62,10 +64,10 @@ $args["url"] = basename( __FILE__ );
 im_init(  );
 print greeting();
 
-print "url= " . get_url(true) . "<br/>";
 print gui_hyperlink('Create Receipts', add_to_url("operation" , "receipts")); print " ";
 print gui_hyperlink('Mark payments', add_to_url("operation", "payments")); print " ";
 print gui_hyperlink('Import bank pages', add_to_url("operation" ,"import")); print " ";
+print gui_hyperlink('Edit transation types', add_to_url("operation" ,"transaction_types")); print " ";
 
 $account_id = 1;
 $page = get_param("page", false, 1);

@@ -355,7 +355,7 @@ class Catalog {
 		}
 
 		$sql = "UPDATE im_supplier_mapping SET selected = TRUE WHERE product_id = " . $product_id .
-		       " AND supplier = " . $supplier;
+		       " AND supplier_id = " . $supplier;
 
 		sql_query( $sql );
 		// update_post_meta($product_id, "buy_price", $buy_price);

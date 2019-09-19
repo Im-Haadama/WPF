@@ -423,7 +423,12 @@ class ProductIterator implements  Iterator {
 	 */
 	public function next() {
 		// TODO: Implement next() method.
-		return $this->array[$this->position++];
+		$c = $this->position;
+		if ($c < count($this->array)) {
+			$this->position++;
+			return $this->array[$c];
+		}
+		return null;
 	}
 
 	/**

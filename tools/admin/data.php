@@ -34,6 +34,10 @@ function update_data($table_name)
 	foreach ($values as $tbl => $changed_values)
 	{
 		foreach ($changed_values as $changed_field => $changed_value){
+			if (sql_type($table_name, $changed_field) == 'date' and substr($changed_value, "0001")) {
+				if ($row_id) sql_query("update $table_name set $changed_field = null where id = " . $row_id);
+				continue;
+			}
 			if ($is_meta[$tbl]){
 				if (! isset($meta_table_info)) return false;
 				$sql = "update $tbl set " . $meta_table_info[$tbl]['value'] . "=?" .
@@ -43,6 +47,7 @@ function update_data($table_name)
 			else
 				$sql = "update $table_name set $changed_field =? where id =?";
 
+			// print $sql;
 			$stmt = sql_prepare($sql);
 			if (! $stmt) return false;
 			if ($is_meta[$tbl]){

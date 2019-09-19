@@ -103,6 +103,3 @@ if (strlen($members)) {
     $args["query"] = " owner in (" . $members . ")";
 	print active_tasks($args, $debug, $time_filter);
 }
-
-
-

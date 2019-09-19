@@ -105,6 +105,7 @@ add_command( $table, $row, $col, "edit_shop_orders", "מעקב תשלומים", 
 add_command( $table, $row, $col, "edit_shop_orders", "הוספת לקוח", "account/add-account.php", "doc_frame" );
 add_command( $table, $row, $col, "edit_shop_orders", "ניהול לקוחות", "customers/admin.php", "doc_frame" );
 add_command( $table, $row, $col, "edit_shop_orders", "קניה בחנות", "orders/order-pos.php", "doc_frame" );
+add_command( $table, $row, $col, "edit_shop_orders", "אמצעי תשלום", "account/payment-admin.php", "doc_frame" );
 while ( $row < $max_row ) {
 	$table[ $row ++ ][ $col ] = "";
 }
@@ -159,7 +160,7 @@ add_command( $table, $row, $col, "edit_pricelist", "משימות פעילות", 
     add_command( $table, $row, $col, "edit_pricelist", "חשבוניות", "business/invoice_table.php" );
 add_command( $table, $row, $col, "edit_pricelist", "פרויקטים", "people/project_admin.php" );
 add_command( $table, $row, $col, "edit_pricelist", "תיבת דואר", "business/inbox-box.php" );
-add_command( $table, $row, $col, "show_bank", "בנק", "business/c-get-all-bank.php" );
+add_command( $table, $row, $col, "show_bank", "בנק", "bank/bank-page.php" );
 add_command( $table, $row, $col, "show_bank", "התאם תשלומים", "business/business-post.php?operation=show_pay_to_link" );
 add_command( $table, $row, $col, "show_bank", "ניתוח שבועי", "business/report.php" );
 

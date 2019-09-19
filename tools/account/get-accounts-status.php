@@ -96,6 +96,10 @@ while ( $row = mysqli_fetch_row( $result ) ) {
 
 	$line           .= "<td>" . $customer_total . "</td>";
 	$payment_method = get_payment_method( $customer_id );
+	$accountants = payment_get_accountants($payment_method);
+	// print $accountants . " " . get_user_id() . "<br/>";
+	if (!strstr($accountants, (string) get_user_id())) continue;
+
 	$line           .= "<td>" . $row[4] . "</td>";
 	$line           .= "<td>" . get_payment_method_name( $customer_id ) . "</td>";
 	if ( $include_zero || $customer_total > 0 ) {
@@ -105,7 +109,6 @@ while ( $row = mysqli_fetch_row( $result ) ) {
 		//array_push( $data_lines, array( - $customer_total, $line ) );
 		array_push( $data_lines_credits, array( $customer_name, $line ) );
 	}
-
 }
 
 // sort( $data_lines );

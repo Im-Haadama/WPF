@@ -289,13 +289,16 @@ if ( isset( $_GET["operation"] ) ) {
 			break;
 
 		case "get_open_invoices":
+			$debug = get_param("debug");
 			$supplier_id = get_param( "supplier_id", true );
 			$site_id     = get_param( "site_id", true );
+			// $func, $site_id, $first = false, $debug = false ) {
 			print $multi_site->Run( "business/business-post.php?operation=get_open_site_invoices&supplier_id=" . $supplier_id,
-				$site_id );
+				$site_id, true, $debug);
 			break;
 
 		case "get_open_site_invoices":
+			$debug = get_param("debug");
 			$sum         = array();
 			$supplier_id = get_param( "supplier_id", true );
 			$sql         = "SELECT id, ref, amount, date FROM im_business_info WHERE part_id=" . $supplier_id .
@@ -304,6 +307,7 @@ if ( isset( $_GET["operation"] ) ) {
 			               " order by 4 desc";
 
 			$args = array();
+			if ($debug) $args["debug"] = true;
 			$args["add_checkbox"] = true;
 			$args["checkbox_events"] = "onchange = \"update_display()\"";
 			$args["checkbox_class"] = "trans_checkbox";

@@ -36,6 +36,9 @@ switch ( $version ) {
 		version17();
 		version18();
 		break;
+	case "21":
+		version21();
+		break;
 	case "20":
 		version20();
 		break;
@@ -68,6 +71,22 @@ print "done";
 die ( 0 );
 
 
+function version21()
+{
+	print gui_header(1, "transaction types");
+
+	if (! table_exists("im_bank_transaction_types")) {
+		sql_query("ALTER TABLE im_bank ADD transaction_type int;");
+
+		sql_query( "create table im_bank_transaction_types (
+	id INT NOT NULL AUTO_INCREMENT
+		PRIMARY KEY,
+    	description VARCHAR(40) CHARACTER SET utf8 NULL,
+	    part_id int(11))" );
+	}
+
+	sql_query("ALTER TABLE im_payments ADD accountants varchar(100);");
+}
 function version20()
 {
 	print gui_header(1, "company_id");

@@ -18,7 +18,7 @@ function update_sum() {
     for (var i = 0; i < collection.length; i++) {
         if (collection[i].checked) {
             delivery_count++;
-            total += parseFloat(get_value_by_name("amo_" + collection[i].id.substring(4)));
+            total += parseFloat(get_value_by_name("transaction_amount_" + collection[i].id.substring(4)));
         }
     }
     total = Math.round(100 * total) / 100;

@@ -648,7 +648,7 @@ function gui_table_args($input_rows, $id = null, $args = null)
 	if ($debug) print "row count: " . count($input_rows) . "<br/>";
 	$rows = array();
 	foreach ($input_rows as $key => $input_row) {
-		if ( !$prepare || in_array( $key, array( "checkbox", "header" ) ) ) {
+		if ( !$prepare || in_array( $key, array( "checkbox", "header", "mandatory" ) ) ) {
 			$rows[ $key ] = $input_row;
 		} else {
 			$rows[ $key ] = PrepareRow( $input_row, $args, $key );
@@ -715,8 +715,14 @@ function gui_table_args($input_rows, $id = null, $args = null)
 			$data .="<tr>";
 			if (is_array($row)) {
 				if ($add_checkbox) $data .= "<td>" . gui_checkbox("chk_" . $row_id, $checkbox_class, 0, $checkbox_events);
-				foreach ($row as $key => $cell)
-					$data .= gui_cell($cell, $key . "_" . $row_id);
+				foreach ($row as $key => $cell){
+					$show = true;
+					 if ((! $transpose) and isset($key) and ($key === "mandatory")) $show = false;
+					 if ($transpose and isset($row_id) and ($row_id == "mandatory")) $show = false;
+
+					// print $key . " " . $row_id . " " . $show . "<br/>";
+					$data .= gui_cell($cell, $key . "_" . $row_id, $show);
+				}
 					// $data .= "<td>" . $cell . "</td>";
 			} else
 				$data .= "<td>" . $row . "</td>";

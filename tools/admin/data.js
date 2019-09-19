@@ -33,10 +33,15 @@ function save_new_custom(post_operation, table_name, action)
     // Change i to start from 0 - in new row no header. id should be hidden
     for (let i = 0; i < size; i++){
         let chk_id = table.rows[i].cells[0].firstElementChild.id;
+        let name = chk_id.substr(4);
         if (get_value_by_name(chk_id)) {
-            let name = chk_id.substr(4);
             let val = get_value_by_name(name);
             operation += "&" + name + "=" + encodeURI(val);
+        } else {
+            if (get_value_by_name("mandatory_" + name)) {
+                alert (name + " is mandatory ");
+                return false;
+            }
         }
     }
     // alert(operation);

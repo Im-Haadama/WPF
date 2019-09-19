@@ -14,6 +14,7 @@ if ( ! defined( "ROOT_DIR" ) ) {
 require_once( ROOT_DIR . '/niver/PivotTable.php' );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( ROOT_DIR . '/tools/im_tools_light.php' );
+require_once( ROOT_DIR . '/niver/web.php');
 
 print header_text(false, true, true, array("/niver/gui/client_tools.js", "/tools/admin/data.js"));
 
@@ -43,10 +44,18 @@ if ($operation){
 			$args["edit"] = true;
 			// $args["]
 			$args["selectors"] = array("part_id" => "gui_select_supplier", "document_type" => "gui_select_document_type");
-			$args["fields"] = array("part_id", "date", "amount", "net_amount", "document_type");
+			$args["fields"] = array("part_id", "date", "ref", "amount", "net_amount", "document_type");
+			$args["mandatory_fields"] = array("part_id" => 1, "date" => 1, "ref" => 1, "amount" => 1, "document_type" => 1, "net_amount" => 1);
 			print NewRow("im_business_info", $args, true);
 			print gui_button("btn_add", "save_new('im_business_info')", "הוסף");
 			break;
+		case "null_date":
+			$args = array();
+			$args["selectors"] = array("part_id" => "gui_select_supplier", "document_type" => "gui_select_document_type");
+			$args["edit"] = true;
+			print GuiTableContent("invoices", "select * from im_business_info where document_type = ". ImDocumentType::invoice .
+				" and date is null", $args );
+				break;
 		default:
 			die("$operation not handled");
 	}
@@ -62,6 +71,8 @@ if ($row_id)
 	$args["skip_id"] = true;
 	$args["selectors"] = array("part_id" => "gui_select_supplier");
 	$args["transpose"] = true;
+	$args["header_fields"] = array("Id", "Supplier", "Date", "Week", "Amount", "Reference", "Delivery fee", "Project", "Is active", "Pay date", "Document type", "Net amount", "Invoice file", "Invoice",
+		"Occasional supplier");
 	print GuiRowContent("im_business_info", $row_id, $args);
 	print gui_button("btn_save", 'save_entity(\'im_business_info\', ' . $row_id .')', "שמור");
 
@@ -97,7 +108,7 @@ if ($part_id) {
 
 print gui_header (1, "ריכוז חשבוניות");
 
-print gui_hyperlink("Add invoice", "/tools/business/c-get-business_info.php?document_type=4");
+print gui_hyperlink("Add invoice", add_to_url(array("document_type" =>"4", "operation" => "add")));
 
 try {
 	$t = new \Niver\PivotTable( "im_business_info", $page,

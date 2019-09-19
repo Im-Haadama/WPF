@@ -37,7 +37,7 @@ print gui_button( "btn_new", "show_create_item()", "הספקה חדשה" );
 		array(
 			gui_select_supplier( "supplier_select", null, array("events" => 'onchange="change_supplier()"')),
 			gui_input_date( "date", "" ),
-			gui_select_mission( "new_mission", "", "" )
+			gui_select_mission( "new_mission", "", array("events"=>"gui_select_mission") )
 			// gui_select_mission( "mis_new")
 		)
 	),

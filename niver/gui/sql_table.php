@@ -212,7 +212,7 @@ function PrepareRow($row, $args, $row_id)
 
 //		print "in=$input_name<br/>";
 		$orig_data = $data;
-		$value = $data; // Default;
+		$value = prepare_text($data); // Default;
 		if ($debug) print  "<br/>handling $key ";
 		if (strtolower($key) == "id" ) {
 			if ($skip_id) {
@@ -361,7 +361,8 @@ function PrepareRow($row, $args, $row_id)
  */
 function TableData($sql, &$args = null)
 {
-	$debug = (get_user_id() == 1);
+	$debug = 0; // (get_user_id() == 1);
+
 	// print __FUNCTION__ . "<br/>";
 	$result = sql_query( $sql );
 	if ( ! $result ) {
@@ -372,6 +373,7 @@ function TableData($sql, &$args = null)
 	$rows_data = array();
 
 	$header = GetArg($args, "header", true);
+	$mandatory_fields = GetArg($args, "mandatory_fields", null);
 	$header_fields = GetArg($args, "header_fields", null);
 	$id_field = GetArg($args, "id_field", "id");
 	$skip_id = GetArg($args, "skip_id", false);
@@ -397,6 +399,10 @@ function TableData($sql, &$args = null)
 	} else {
 		$h_line = null; // No header.
 	}
+	if ($debug) {
+		print "h_line: "; var_dump($h_line); print "<br/>";
+	}
+	$m_line = $mandatory_fields ? array() : null;
 
 	$row_count = 0;
 
@@ -404,11 +410,20 @@ function TableData($sql, &$args = null)
 
 	$i = 0;
 
+	if ($debug) {
+		print $sql ."<br/>";
+		var_dump($mandatory_fields); print "<br/>";
+		print "m_line: "; var_dump($m_line); print "<br/>";
+	}
+
 	if (strstr($sql, "describe") || strstr($sql, "show col")) // New Row
 	{
+		if ($debug) print "new<br/>";
+		// var_dump($m_line); print "<br/>";
 		$new_row = array();
 		while ( $row = mysqli_fetch_assoc( $result ) ) {
 			$key = $row["Field"];
+			if ($debug) print "handling $key<br/>";
 			if ($values and isset($values[$key])) {
 				$new_row[$key] = $values[$key];
 			} else {
@@ -422,10 +437,23 @@ function TableData($sql, &$args = null)
 				if (! $skip_id or $key !== "id")
 					$h_line[$key] = im_translate($header_fields[$i++], $args);
 			}
+			if (is_array($m_line)){
+				if ($debug) print "adding " . isset($mandatory_fields[$key]);
+				if(isset($mandatory_fields[$key])) {
+					if ($debug) print $key ."<br/>";
+					$m_line[$key] = 1;
+				}
+				// array_push($m_line, isset($mandatory_fields[$key]));
+			}
 		}
 		if ($v_line){
-			array_push($rows_data, $v_line);
+			$rows_data["checkbox"] = $v_line;
+			// array_push($rows_data, $v_line);
 		}
+
+		if ($debug) var_dump($m_line);
+
+		if ($m_line) $rows_data["mandatory"] = $m_line;
 		// $header_line = TableHeader($sql, false, $skip_id, $meta_fields);
 
 		if ($h_line){
@@ -433,7 +461,8 @@ function TableData($sql, &$args = null)
 			$h_line = null;
 		}
 
-		array_push($rows_data, $new_row);
+		$rows_data["new"] = $new_row;
+		// array_push($rows_data, $new_row);
 
 		return $rows_data;
 	} else {
@@ -660,13 +689,15 @@ function GuiRowContent($table_name, $row_id, $args)
 
 function GuiTableContent($table_id, $sql, &$args)
 {
+	if (! $sql) $sql = "select * from $table_id";
 	// Fetch the data from DB.
 	$rows_data = TableData( $sql, $args);
 
-	$debug = GetArg($args, false, false);
+	$debug = GetArg($args, "debug", false);
 
 	if ($debug)
 	{
+		print "sql: $sql<br/>";
 		print "skip_id:" . GetArg($args, "skip_id", false) ."<br/>";
 		print "<table border=\"1\">";
 		foreach ($rows_data as $key => $row){
@@ -697,4 +728,12 @@ function GuiTableContent($table_id, $sql, &$args)
 	}
 
 	return null;
+}
+
+function prepare_text($string)
+{
+	// Todo: convert text to url, only if not already hyperlink.
+//	$url = '~(?:(https?)://([^\s<]+)|(www\.[^\s<]+?\.[^\s<]+))(?<![\.,:])~i';
+//	$string = preg_replace($url, '<a href="$0" target="_blank" title="$0">$0</a>', $string);
+	return nl2br($string);
 }

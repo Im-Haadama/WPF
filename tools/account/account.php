@@ -317,6 +317,11 @@ function get_payment_method( $client_id ) {
 	}
 }
 
+function payment_get_accountants($payment_id)
+{
+	return sql_query_single_scalar("select accountants from im_payments where id = " . $payment_id);
+}
+
 function im_set_default_display_name( $user_id ) {
 	// $user = get_userdata( $user_id );
 	$user = get_user_by( "id", $user_id );

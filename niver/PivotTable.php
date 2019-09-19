@@ -108,8 +108,9 @@ class PivotTable {
 				$table[0][ $col ]      = "" . $col;
 				array_push( $cols, $col );
 			}
+			if ($row > 0)
+				$table[ $row ][ $col ] += floatval($cell);
 
-			$table[ $row ][ $col ] += $cell;
 		}
 
 		foreach ( $rows as $row ) {

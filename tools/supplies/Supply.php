@@ -936,7 +936,7 @@ function DoSuppliesTable( $sql )
 			gui_checkbox( "chk" . $supply_id, "supply_checkbox", "", "" ),
 			gui_hyperlink( $supply_id, "supply-get.php?id=" . $supply_id ),
 			$row[3],
-			gui_select_mission( "mis_" . $supply_id, supply_get_mission_id( $supply_id ), "onchange=mission_changed(" . $supply_id . ")" ),
+			gui_select_mission( "mis_" . $supply_id, supply_get_mission_id( $supply_id ), array("events"=>"onchange=mission_changed(" . $supply_id . ")" )),
 			get_supplier_name( $supplier_id ),
 			get_supply_status_name( $supply_id )
 		);

@@ -273,7 +273,7 @@ function show_task($row_id, $edit = 1)
 	$args["selectors"] = array("project_id" =>  "gui_select_project", "owner" => "gui_select_worker", "creator" => "gui_select_worker", "preq1" => "gui_select_task",
 	                                                   "mission_id" => "gui_select_mission");
 
-	$args["header_fields"] = array("Date", "Task description", "Repeating task", "Status", "Started", "Ended", "Project", "Mission", "Location", "Address", "Priority", "Prerequisite", "Assigned to",
+	$args["header_fields"] = array("Id", "Date", "Task description", "Repeating task", "Status", "Started", "Ended", "Project", "Mission", "Location", "Address", "Priority", "Prerequisite", "Assigned to",
 	"Creator");
 
 //	 $args["fields"] = array("id", "task_description");

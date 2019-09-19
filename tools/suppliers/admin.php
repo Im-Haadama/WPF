@@ -1,15 +1,18 @@
 <?php
 
 require_once("../r-shop_manager.php");
+require_once(ROOT_DIR . "/niver/web.php");
+require_once("suppliers.php");
+require_once (ROOT_DIR . '/niver/gui/gem.php');
 
 print header_text(false, true, true, array("/niver/gui/client_tools.js", "/tools/admin/data.js"));
-?>
-<script>
 
-</script>
+$operation = get_param("operation", false, null);
+if ($operation) {
+	handle_supplier_operation($operation);
+	return;
+}
 
-
-<?php
 $id = get_param("id");
 
 if ($id)
@@ -24,6 +27,7 @@ if ($id)
 	return;
 }
 
+
 $suppliers = sql_query_array("select * from im_suppliers where active = 1", true);
 
 $links = array("admin.php?id=%s");
@@ -31,5 +35,7 @@ $sum = array();
 
 print gui_table($suppliers, "tbl_suppliers", true, true, $sum, null,
 	null, null, $links);
+
+print gui_hyperlink("add", add_to_url("operation", "add"));
 
 ?>

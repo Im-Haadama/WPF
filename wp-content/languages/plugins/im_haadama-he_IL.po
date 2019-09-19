@@ -34,6 +34,9 @@ msgstr "סך הכל"
 msgid "ref"
 msgstr "סימוכין"
 
+msgid "Reference"
+msgstr "סימוכין"
+
 msgid "date"
 msgstr "תאריך"
 
@@ -43,7 +46,13 @@ msgstr "תאריך"
 msgid "amount"
 msgstr "סכום"
 
+msgid "Amount"
+msgstr "סכום"
+
 msgid "delivery fee"
+msgstr "דמי משלוח"
+
+msgid "Delivery fee"
 msgstr "דמי משלוח"
 
 msgid "Select Supplier"
@@ -53,6 +62,9 @@ msgid "Add invoice"
 msgstr "הוסף חשבונית"
 
 msgid "week"
+msgstr "שבוע"
+
+msgid "Week"
 msgstr "שבוע"
 
 msgid "Creating supply for"
@@ -268,3 +280,21 @@ msgstr "משימות באחריותי"
 
 msgid "My teams' tasks"
 msgstr "משימות של צוותי"
+
+msgid "Is active"
+msgstr "פעיל"
+
+msgid "Document type"
+msgstr "סוג מסמך"
+
+msgid "Occasional supplier"
+msgstr "ספק מזדמן"
+
+msgid "Net amount"
+msgstr "סכום ללא מיסים"
+
+msgid "Invoice file"
+msgstr "קובץ החשבונית"
+
+msgid "Invoice"
+msgstr "חשבונית"
