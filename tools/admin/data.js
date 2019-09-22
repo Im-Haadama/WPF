@@ -7,15 +7,7 @@ function save_entity(table_name, id)
         return;
     }
     let operation = "/tools/admin/data-post.php?table_name=" + table_name + "&operation=update&id=" + id;
-    let table = document.getElementById(table_name);
-    let size = table.rows.length;
-    for (let i = 0; i < size; i++){
-        let chk_id = table.rows[i].cells[0].firstElementChild.id;
-        if (get_value_by_name(chk_id)) {
-            let name = chk_id.substr(4);
-            operation += "&" + name + "=" + encodeURIComponent(get_value_by_name(name + "_" + id));
-        }
-    }
+    operation = operation + operation_arguments(table_name, id);
     // alert(operation);
     execute_url(operation, action_back);
 }
@@ -92,6 +84,33 @@ function location_reload()
     location.reload();
 }
 
+function operation_arguments(table_name, id = null)
+{
+    let operation_args = "";
+    let table = document.getElementById(table_name);
+    let size = table.rows.length;
+    for (let i = 0; i < size; i++){
+        let chk_id = table.rows[i].cells[0].firstElementChild.id;
+        if (get_value_by_name(chk_id)) {
+            let name = chk_id.substr(4);
+            if (id) name = name + "_" + id;
+            operation_args += "&" + name + "=" + encodeURIComponent(get_value_by_name(name));
+        }
+    }
+    return operation_args;
+}
+
+function search_table(table_name, url = null)
+{
+    // alert(operation);
+    let args = operation_arguments(table_name);
+    if (args.length < 3){
+        alert("Select fields to search with");
+        return;
+    }
+    if (! url) url = "/tools/admin/data-post.php?table_name=" + table_name + "&operation=search";
+    window.location =  url + args;
+}
 // function update_field(post_file, id, field_name, finish_action) {
 //     let value = get_value_by_name(field_name);
 //     let request = post_file + "?operation=update_field" +

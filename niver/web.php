@@ -20,13 +20,8 @@ function get_url($only_base = false)
 	return $url;
 }
 
-function add_to_url($param_name, ...$param_value)
+function add_param_to_url($url, $param_name, ...$param_value)
 {
-//	print "start<br/>";
-//	var_dump($param_name); print "<br/>";
-//	var_dump($param_value); print "<br/>";
-	$url = get_url();
-
 	# Todo: check if parameter is not there before.
 	if (is_array($param_name))
 	{
@@ -45,4 +40,16 @@ function add_to_url($param_name, ...$param_value)
 	// print "handling non array $param_name=$param_value<br/>";
 	if (strpos($url, '?')) return $url . '&' . $param_name . '=' . $param_value;
 	return $url . '?' . $param_name . '=' . $param_value;
+
+}
+
+// Todo: check with more than one pair
+function add_to_url($param_name, ...$param_value)
+{
+//	print "start<br/>";
+//	var_dump($param_name); print "<br/>";
+//	var_dump($param_value); print "<br/>";
+	$url = get_url();
+
+	return add_param_to_url($url, $param_name, $param_value[0]);
 }

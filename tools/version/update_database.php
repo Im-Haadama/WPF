@@ -86,6 +86,9 @@ function version21()
 	}
 
 	sql_query("ALTER TABLE im_payments ADD accountants varchar(100);");
+
+	sql_query("ALTER TABLE im_delivery_lines ADD a int;");
+
 }
 function version20()
 {

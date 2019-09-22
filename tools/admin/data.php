@@ -2,43 +2,56 @@
 
 $ignore_list = array("operation", "table_name", "id");
 
+
+function data_parse_get($table_name) {
+	global $ignore_list;
+	$values =array();
+	foreach ( $_GET as $key => $value ) {
+		if ($key === "search") continue;
+		if ( in_array( $key, $ignore_list ) ) {
+			continue;
+		}
+		$tbl   = $table_name;
+		$field = $key;
+		$meta  = false;
+		if ( $st = strpos( $key, "/" ) ) {
+			$tbl   = substr( $key, 0, $st );
+			$field = substr( $key, $st + 1 );
+			$meta  = true;
+		}
+		if ( ! isset( $values[ $tbl ] ) ) {
+			$values[ $tbl ]  = array();
+			$is_meta[ $tbl ] = $meta;
+		}
+
+		$values[ $tbl ][ $field ] = array( $value, $meta );
+	}
+	return $values;
+}
+
 function update_data($table_name)
 {
 	// TODO: adding meta key when needed(?)
-	global $ignore_list;
 	global $meta_table_info;
 
-	// Prepare sql statements: primary and meta tables;
-	$values = array();
 	$row_id = intval(get_param("id", true));
-	$is_meta = array();
-	foreach ( $_GET as $key => $value ) {
-		if (in_array($key, $ignore_list))
-			continue;
-		$tbl = $table_name;
-		$field = $key;
-		$meta = false;
-		if ($st = strpos($key, "/")){
-			$tbl = substr($key, 0, $st);
-			$field = substr($key, $st + 1);
-			$meta = true;
-		}
-		if (! isset($values[$tbl])){
-			$values[$tbl] = array();
-			$is_meta[$tbl] = $meta;
-		}
 
-		$values[$tbl][$field] = $value;
-	}
+	// Prepare sql statements: primary and meta tables;
+	$values = data_parse_get($table_name);
 
 	foreach ($values as $tbl => $changed_values)
 	{
-		foreach ($changed_values as $changed_field => $changed_value){
-			if (sql_type($table_name, $changed_field) == 'date' and substr($changed_value, "0001")) {
-				if ($row_id) sql_query("update $table_name set $changed_field = null where id = " . $row_id);
+		foreach ($changed_values as $changed_field => $changed_pair){
+			$changed_value = $changed_field[0];
+			$is_meta = $changed_value[1];
+			// Todo: bind vars here.
+			if (sql_type($table_name, $changed_field) == 'date' and strstr($changed_value, "0001")) {
+				$sql = "update $table_name set $changed_field = null where id = " . $row_id;
+				// print $sql;
+				if ($row_id) sql_query($sql);
 				continue;
 			}
-			if ($is_meta[$tbl]){
+			if ($is_meta){
 				if (! isset($meta_table_info)) return false;
 				$sql = "update $tbl set " . $meta_table_info[$tbl]['value'] . "=?" .
 				 " where " . $meta_table_info[$tbl]['key'] . "=? " .
@@ -50,7 +63,7 @@ function update_data($table_name)
 			// print $sql;
 			$stmt = sql_prepare($sql);
 			if (! $stmt) return false;
-			if ($is_meta[$tbl]){
+			if ($is_meta){
 				if (! sql_bind($tbl, $stmt,
 					array($meta_table_info[$tbl]['value'] => $changed_value,
 						$meta_table_info[$tbl]['key'] => $changed_field,
@@ -69,60 +82,6 @@ function update_data($table_name)
 				die(2);
 			}
 		}
-	}
-	return true;
-	die(1);
-	$sql .= " where id=$row_id";
-
-	print $sql;
-	die(1);
-	$stmt = $conn->prepare($sql);
-	if (! $stmt) {
-		die ($conn->error);
-	}
-
-	// Bind
-	$types = "";
-	$values = array();
-	foreach ( $_GET as $key => $value ) {
-		if (! $key)
-			continue;
-		if (in_array($key, $ignore_list))
-			continue;
-		try {
-			$type = sql_type( $table_name, $key );
-		} catch ( Exception $e ) {
-			return new \Exception(__CLASS__ . ":" . __METHOD__ . "can't find type of " . $key);
-		}
-		switch(substr($type, 0, 3))
-		{
-			case 'bit':
-			case "int":
-				$types .= "i";
-				$value = strlen($value) ? $value : null;
-				break;
-			case "dat":
-			case "var":
-				$types .= "s";
-				break;
-			case "dou":
-				$types .= "d";
-				break;
-			default:
-				print $type . " not handled";
-				die(1);
-		}
-		array_push($values, $value);
-	}
-
-	if (! $stmt->bind_param($types, ...$values))
-	{
-		die("bind error" . sql_error($sql));
-	};
-
-	if (!$stmt->execute()) {
-		print "Update failed: (" . $stmt->errno . ") " . $stmt->error . " " . $sql;
-		die(2);
 	}
 	return true;
 }
@@ -163,4 +122,54 @@ function data_save_new($table_name)
 	}
 
 	return sql_insert_id();
+}
+
+// For now use escape_string and not bind. Uncaught Error: Call to undefined method mysqli_stmt::get_result
+function data_search($table_name, $args = null)
+{
+	$result = null;
+	$values = data_parse_get($table_name);
+
+	$id_field = GetArg($args, "id_field", "id");
+	$sql = "select $id_field from $table_name where 1 ";
+	$count = 0;
+
+	$params = array();
+
+	foreach ($values as $tbl => $changed_values)
+	{
+		foreach ($changed_values as $field => $pair){
+			$is_meta = $pair[1]; if ($is_meta) die("not implemeted yet");
+
+			$sql .= " and $field =? "; // " . quote_text($changed_value);
+			$count ++;
+			$params[$field] = $pair[0];
+//			if ($is_meta){
+//				if (! isset($meta_table_info)) return false;
+//				$sql = "update $tbl set " . $meta_table_info[$tbl]['value'] . "=?" .
+//				       " where " . $meta_table_info[$tbl]['key'] . "=? " .
+//				       " and " . $meta_table_info[$tbl]['id'] . "=?";
+//			}
+//			else
+//				$sql = "update $table_name set $changed_field =? where id =?";
+
+			// print $sql;
+		}
+//		print $sql; print "<br/>";
+
+		$stmt = sql_prepare($sql);
+		sql_bind($tbl, $stmt, $params);
+		if (! $stmt->execute())
+		{
+			return "no results";
+		}
+		$id = 0;
+		$stmt->bind_result($id);
+
+		$result = array();
+		while ($stmt->fetch()){
+			$result[] = $id;
+		}
+	}
+	return $result;
 }

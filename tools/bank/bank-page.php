@@ -19,7 +19,7 @@ if ( $operation ) {
 			break;
 	}
 
-	handle_bank_operation( $operation );
+	handle_bank_operation( $operation, get_url(1) );
 
 	return;
 }
@@ -64,19 +64,5 @@ $args["url"] = basename( __FILE__ );
 im_init(  );
 print greeting();
 
-print gui_hyperlink('Create Receipts', add_to_url("operation" , "receipts")); print " ";
-print gui_hyperlink('Mark payments', add_to_url("operation", "payments")); print " ";
-print gui_hyperlink('Import bank pages', add_to_url("operation" ,"import")); print " ";
-print gui_hyperlink('Edit transation types', add_to_url("operation" ,"transaction_types")); print " ";
-
-$account_id = 1;
-$page = get_param("page", false, 1);
-$rows_per_page = 20;
-// $args["debug"] = (get_user_id() == 1);
-$offset = ($page - 1) * $rows_per_page;
-
-print GuiTableContent("im_banking", "select * from im_bank where account_id = " . $account_id .
-	" order by date desc limit $rows_per_page offset $offset ", $args);
-
-print gui_hyperlink("Older", add_to_url("page", $page + 1));
+handle_bank_operation(get_param("operation", false, null));
 

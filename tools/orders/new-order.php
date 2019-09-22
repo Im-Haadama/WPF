@@ -69,14 +69,6 @@ global $pos;
             document.getElementById("client_select").focus();
         }
 
-        //    function quantity_change(line) {
-        //        if (event.which === 13) {
-        //            add_line();
-        //            var next=document.getElementById("nam_" + (line+1));
-        //            if (next) next.focus();
-        //        }
-        //        calcOrder();
-        //    }
         function calcOrder() {
             var item_table = document.getElementById("order_items");
             var total = 0;
@@ -89,6 +81,7 @@ global $pos;
             }
             document.getElementById("total").innerHTML = total;
         }
+
         function add_line() {
             var item_table = document.getElementById("order_items");
             var line_idx = item_table.rows.length;
@@ -117,8 +110,12 @@ global $pos;
         }
         function client_changed() {
             // Owner and other client types should create order in other place.
-            var user_name = get_value_by_name("client_select");
-            var user_id = user_name.substr(0, user_name.indexOf(")"));
+            let user_id = get_value_by_name("client_select");
+
+            if (! (user_id > 0)){
+                document.getElementById("rate").innerHTML = "";
+                document.getElementById("client_address").innerHTML = "";
+            }
 
             xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function () {
@@ -334,15 +331,15 @@ global $pos;
 
     <div id="new_order" style="display: none">
 		<?php
-		print gui_header( 1, "עסקה חדשה" );
+		print gui_header( 1, "New Order" );
 
 		$header = array(
-			array( gui_header( 2, "בחר לקוח" ) ),
-			array( gui_select_client( "", "onchange=\"client_changed()\"" ) )
+			array( gui_header( 2, "Select client" ) ),
+			array( gui_select_client( "client_select", "", array("events" => "onchange=\"client_changed()\"") ) )
 		);
 
 		if ( ! $pos ) {
-			array_push( $header[0], gui_header( 2, "בחר מסלול" ) );
+			array_push( $header[0], gui_header( 2, "Select delivery" ) );
 			array_push( $header[1], gui_select_mission( "mis_new" ) );
 		}
 		array_push( $header[0], gui_header( 2, "הערה/שם לקוח" ) );

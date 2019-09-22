@@ -11,7 +11,7 @@ if ( ! defined( "ROOT_DIR" ) ) {
 }
 require_once( ROOT_DIR . "/tools/im_tools.php" );
 require_once( "../multi-site/imMulti-site.php" );
-header( ImMultiSite::CORS( $_SERVER['HTTP_ORIGIN'] ) );
+// header( ImMultiSite::CORS( $_SERVER['HTTP_ORIGIN'] ) );
 // require_once( '../r-multisite.php' );
 require_once( 'orders-common.php' );
 $order_id = get_param( "order_id" );

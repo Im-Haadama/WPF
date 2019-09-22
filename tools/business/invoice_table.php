@@ -69,7 +69,7 @@ if ($row_id)
 	$args = array();
 	$args["edit"] = 1;
 	$args["skip_id"] = true;
-	$args["selectors"] = array("part_id" => "gui_select_supplier");
+	$args["selectors"] = array("part_id" => "gui_select_supplier", "document_type" => "gui_select_document_type");
 	$args["transpose"] = true;
 	$args["header_fields"] = array("Id", "Supplier", "Date", "Week", "Amount", "Reference", "Delivery fee", "Project", "Is active", "Pay date", "Document type", "Net amount", "Invoice file", "Invoice",
 		"Occasional supplier");

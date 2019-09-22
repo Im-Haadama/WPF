@@ -263,6 +263,7 @@ print gui_datalist( "draft_items", "im_products_draft", "post_title", true );
                     var prod_id;
                     var prod_name;
                     let line_type = get_line_type(i);
+                    let part_of_basket = 0;
 
                     //if (parseInt(prfx) > 0) { // Regular line
                     prod_id = get_value(document.getElementById("pid_" + prfx));
@@ -279,6 +280,11 @@ print gui_datalist( "draft_items", "im_products_draft", "post_title", true );
                         prod_name = prod_name.substr(prod_name.indexOf(")"));
                     }
                     if ((prod_id != -1) && !(prod_id > 0)) prod_id = 0; // New or unknown
+
+                    if (prod_name.substr(0, 6) === "===&gt")
+                        part_of_basket = 1;
+                    else
+                        part_of_basket = 0;
 
                     if (prod_name.length > 1) prod_name = prod_name.replace(/['"()%,]/g, "").substr(0, 40);
 
@@ -318,6 +324,7 @@ print gui_datalist( "draft_items", "im_products_draft", "post_title", true );
                         push(line_args, vat);
                         push(line_args, price);
                         push(line_args, line_total);
+                        push(line_args, part_of_basket);
                     }
                 }
                 server_lines = new XMLHttpRequest();

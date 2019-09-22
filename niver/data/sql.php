@@ -20,6 +20,16 @@ function sql_insert_id() {
 	return mysqli_insert_id( $conn );
 }
 
+function get_sql_conn($new_conn = null)
+{
+	static $conn;
+
+	if ($new_conn)
+		$conn = $new_conn;
+
+	return $conn;
+}
+
 //function sql_express_type($sql, $expression)
 //{
 //	if (! $sql)
@@ -92,8 +102,10 @@ function sql_prepare($sql)
 	$conn = get_sql_conn();
 
 	$stmt = $conn->prepare($sql);
-	if ($stmt) return $stmt;
+	if ($stmt)
+		return $stmt;
 	sql_error("prepare $sql failed");
+	die(1);
 }
 
 function sql_bind($table_name, &$stmt, $_values)
@@ -122,6 +134,7 @@ function sql_bind($table_name, &$stmt, $_values)
 				$types .= "s";
 				break;
 			case "dou":
+			case "flo":
 				$types .= "d";
 				break;
 			default:

@@ -298,3 +298,17 @@ msgstr "קובץ החשבונית"
 
 msgid "Invoice"
 msgstr "חשבונית"
+
+# bank page
+msgid "Edit transaction types"
+msgstr "ערוך סוגי תנועות"
+
+msgid "Import bank pages"
+msgstr "יבא תנועות בנק"
+
+msgid "Mark payments"
+msgstr "סמן תנועות"
+
+msgid "Create Receipts"
+msgstr "הפק קבלות"
+

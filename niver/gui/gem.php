@@ -36,9 +36,75 @@ function GemTable($table_name, $text, $args){
 	// print gui_hyperlink("Older", add_to_url("page", $page + 1));
 	$result .= gui_header(1, "Add");
 	$args["events"] = 'onchange="update_table_field(\'/tools/admin/data-post.php\', \'' . $table_name . '\', \'%d\', \'%s\', check_update)"';
+	$sql = GetArg($args, "sql", "select * from $table_name");
 
-	$result .= GuiTableContent($table_name, null, $args);
+	$result .= GuiTableContent($table_name, $sql, $args);
 //	$result .= gui_button("add_row", "save_new('$table_name')", "Save");
+
+	return $result;
+}
+
+function GemSearch($table_name, $args = null)
+{
+	$search_fields = GetArg($args, "search_fields", null);
+	if (! $search_fields) {
+		$search_fields = sql_query_array_scalar("describe  $table_name");
+	}
+	if (!$args) $args = array();
+	$args["transpose"] = true;
+	$args["fields"] = $search_fields; /// Not tested...
+//	$events = GetArg($args, "events", "onchange=changed_field(%s)");
+
+	print NewRow($table_name, $args);
+//	foreach ($search_fields as $field)
+//	{
+//		if ($events) {
+//			$field_events = sprintf($events, quote_text($field));
+//			$args["events"] = $field_events;
+//		}
+//		$type = sql_type($table_name, $field);
+//		$input = gui_input_by_type($field, $type, $args);
+//		array_push($search_table, array($field, $input));
+//	}
+//	print gui_table_args($search_table, $table_name, $args);
+
+	$script_function = GetArg($args, "search", "search_table('".  $table_name . "')");
+
+	print gui_button("btn_search", $script_function, "Search");
+}
+
+function GemImport($table_name, $args = null)
+{
+	$result = "";
+	$header = GetArg($args, "header", "Import to $table_name");
+	$action_file = GetArg($args, "import_action", null);
+	if (! $action_file) throw new Exception("must supply import action");
+
+	$result .= gui_header(1, $header);
+
+	$selector = GetArg($args, "selector", null);
+
+	$args["events"] = "onchange='change_import'";
+	if ($selector) $result .= $selector("import_select", null, $args);
+
+	// Selecting gui
+	$result .= '<form name="upload_csv" id="upcsv" method="post" enctype="multipart/form-data">'.
+	           im_translate('Load from csv file') .
+	           '<input type="file" name="fileToUpload" id="fileToUpload">
+        <input type="submit" value="טען" name="submit">
+
+        <input type="hidden" name="post_type" value="product"/>
+    </form>';
+
+	// Setting the action upon selection
+	$result .= '
+<script>
+function change_import() {
+		let selected = get_value_by_name("import_select");
+		let upcsv = document.getElementById("upcsv");
+		upcsv.action = \'' . $action_file . '&selection=\'+ selected;
+		}
+	</script>';
 
 	return $result;
 }

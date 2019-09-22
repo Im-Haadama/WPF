@@ -11,7 +11,7 @@
 
 require_once( "../im_tools.php" );
 require_once( 'orders-common.php' );
-require_once( "../delivery/create-delivery-post.php" );
+// require_once( "../delivery/create-delivery-post.php" );
 require_once( "../account/account-post.php" );
 
 $order_id                         = isset( $_GET["order_id"] ) ? $_GET["order_id"] : null;

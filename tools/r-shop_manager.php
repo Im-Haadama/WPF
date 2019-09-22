@@ -16,6 +16,8 @@ if ( ! defined( "TOOLS_DIR" ) ) {
 require_once( STORE_DIR . "/wp-load.php" );
 require_once( STORE_DIR . "/wp-includes/pluggable.php" );
 
+im_init();
+
 if ( isset( $_GET["key"] ) ) {
 	$key = $_GET["key"];
 	if ( $key == "lasdhflajsdhflasjdhflaksj" ) {

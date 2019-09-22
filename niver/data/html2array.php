@@ -6,7 +6,8 @@
  * Time: 17:58
  */
 
-function html2array( $text ) {
+function html2array( $text )
+{
 	$dom   = im_str_get_html( $text );
 	$array = array();
 

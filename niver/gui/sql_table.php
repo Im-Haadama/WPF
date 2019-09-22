@@ -276,27 +276,8 @@ function PrepareRow($row, $args, $row_id)
 							$type = $args["field_types"][$key];
 						else
 							$type = sql_type( $table_name, $key );
-						switch ( substr( $type, 0, 3 ) ) {
-							case 'dat':
-								$value = gui_input_date( $input_name, null, $data, $field_events );
-								break;
-							case 'var':
-								$length = 10;
-								$r      = array();
-								if ( preg_match_all( '/\(([0-9]*)\)/', $type, $r ) ) {
-									$length = $r[1][0];
-								}
-								if ( $length > 100 ) {
-									$value = gui_textarea( $input_name, $data, $field_events );
-								} else {
-									$value = GuiInput($input_name, $data, $args); // gui_input( $input_name, $data, $field_events, $row_id );
-								}
-								break;
-							default:
-								// $field_events = sprintf( $events, $row_id, $key );
-								$value        = GuiInput($input_name, $data, $args); //gui_input( $input_name, $data, $field_events, $row_id );
-								break;
-						}
+						// input_by_type($input_name, $type, $args, $data = null)
+						$value = gui_input_by_type($input_name, $type, $args, $value);
 					} else {
 						if ( $debug ) {
 							var_dump( $data );

@@ -193,7 +193,7 @@ class delivery {
 
 		foreach ( $prods as $prod ) {
 			delivery::AddDeliveryLine( $prod['product_name'], $delivery_id, $prod['quantity'], $prod['quantity_ordered'], 0,
-				$prod['vat'], $prod['price'], $prod['line_price'], $prod['prod_id'] );
+				$prod['vat'], $prod['price'], $prod['line_price'], $prod['prod_id'], 0 );
 		}
 
 		// print " נוצרה <br/>";
@@ -262,7 +262,7 @@ class delivery {
 		return $delivery_id;
 	}
 
-	public static function AddDeliveryLine( $product_name, $delivery_id, $quantity, $quantity_ordered, $unit_ordered, $vat, $price, $line_price, $prod_id ) {
+	public static function AddDeliveryLine( $product_name, $delivery_id, $quantity, $quantity_ordered, $unit_ordered, $vat, $price, $line_price, $prod_id, $part_of_basket ) {
 
 		if ( ! ( $delivery_id > 0 ) ) {
 			print "must send positive delivery id. Got " . $delivery_id . "<br/>";
@@ -271,7 +271,7 @@ class delivery {
 		$product_name = preg_replace( '/[\'"%()]/', "", $product_name );
 		print "name: " . $product_name . "<br/>";
 
-		$sql = "INSERT INTO im_delivery_lines (delivery_id, product_name, quantity, quantity_ordered, unit_ordered, vat, price, line_price, prod_id) VALUES ("
+		$sql = "INSERT INTO im_delivery_lines (delivery_id, product_name, quantity, quantity_ordered, unit_ordered, vat, price, line_price, prod_id, part_of_basket) VALUES ("
 		       . $delivery_id . ", "
 		       . "'" . urldecode( $product_name ) . "', "
 		       . $quantity . ", "
@@ -280,7 +280,8 @@ class delivery {
 		       . $vat . ", "
 		       . $price . ', '
 		       . round( $line_price, 2 ) . ', '
-		       . $prod_id . ' )';
+		       . $prod_id . ', '
+		       . $part_of_basket . ' )';
 
 // print $sql . "<br/>";
 
@@ -493,7 +494,6 @@ class delivery {
 				die ( "select error" );
 			}
 
-			$in_basket = false;
 			while ( $row = mysqli_fetch_assoc( $result ) ) {
 				$line_style = $style;
 				if ( $row["product_name"] == "הנחת כמות" ) {
@@ -503,19 +503,13 @@ class delivery {
 				// delivery_line( $document_type, $line_ids, $client_type, $operation, $margin = false, $style = null, $show_inventory = false );
 				$prod_id = $row["prod_id"];
 
-				if (is_basket($prod_id))
-					$in_basket = true;
-
 				if ($prod_id == -1)  // Discount line.
 				{
-					$in_basket = 0;
 					if ($row["line_price"] == 0) $line_style = "hidden ";
 				}
 
-//				print $prod_id . " " . $in_basket . "<br/>";
-
 				$line = $this->delivery_line(  ImDocumentType::delivery, $row["id"], 0, $operation,
-					$margin, $line_style, $show_inventory, $in_basket && !is_basket($prod_id));
+					$margin, $line_style, $show_inventory);
 
 				$data .= gui_row( $line, ++$this->line_number, $show_fields, $sums, $delivery_fields_names, $line_style );
 			}
@@ -636,7 +630,7 @@ class delivery {
 	}
 
 	public function delivery_line( $document_type, $line_ids, $client_type, $operation, $margin = false, &$style = null,
-		$show_inventory = false, $in_basket = false ) {
+		$show_inventory = false ) {
 
 		global $global_vat;
 
@@ -716,7 +710,8 @@ class delivery {
 				// print "unit: " ; var_dump($unit) ; print "<br/>";
 			}
 		} else {
-			$sql = "SELECT prod_id, product_name, quantity_ordered, unit_ordered, round(quantity, 1), price, line_price, vat FROM im_delivery_lines WHERE id = " . $line_id;
+			// Loading from database
+			$sql = "SELECT prod_id, product_name, quantity_ordered, unit_ordered, round(quantity, 1), price, line_price, vat, part_of_basket FROM im_delivery_lines WHERE id = " . $line_id;
 
 			$row = sql_query_single( $sql );
 			if ( ! $row ) {
@@ -726,7 +721,7 @@ class delivery {
 
 			$prod_id          = $row[0];
 			$P                = new Product( $prod_id );
-			$prod_name        = ($in_basket ? "===>" : "" ) . $row[1];
+			$prod_name        = ($row[8] ? "===>" : "" ) . $row[1];
 			$quantity_ordered = $row[2];
 			$unit_q           = $row[3];
 //			if ( $unit_q > 0 and $quantity_ordered == 0 ) {

@@ -26,11 +26,6 @@ require_once( "vat.php" );
 if (!defined("IM_CHARSET"))
 	define ("IM_CHARSET", 'utf8');
 
-function get_sql_conn()
-{
-	return im_init();
-}
-
 
 //// Check connection
 //if ( $conn->connect_error ) {
@@ -45,9 +40,10 @@ if (defined('TIMEZONE')){
 function im_init($script_files = null)
 {
 	// Singleton connection for the application.
-	static $conn = null;
 	if (0 and get_user_id() == 1) $debug = 1;
 	else $debug = 0;
+
+	$conn = get_sql_conn();
 
 	if (! $conn){
 		if ($debug) print "connecting...";
@@ -58,6 +54,7 @@ function im_init($script_files = null)
 		// print "connecting" . __LINE__ . "<br/>";
 
 		$conn = new mysqli( DB_HOST, DB_USER, DB_PASSWORD, DB_NAME );
+		get_sql_conn($conn);
 		sql_set_time_offset();
 		// print IM_CHARSET;
 		if (! mysqli_set_charset( $conn, IM_CHARSET )){

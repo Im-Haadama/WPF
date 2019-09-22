@@ -8,7 +8,8 @@
 if ( ! defined( "TOOLS_DIR" ) ) {
 	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
 }
-require_once( TOOLS_DIR . '/r-staff.php' );
+
+require_once( '../r-multisite.php' );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( TOOLS_DIR . '/business/business.php' );
 require_once( TOOLS_DIR . '/invoice4u/invoice.php' );
@@ -17,6 +18,7 @@ require_once( ROOT_DIR . '/tools/multi-site/imMulti-site.php' );
 require_once( ROOT_DIR . '/tools/business/BankTransaction.php' );
 require_once( ROOT_DIR . '/tools/suppliers/gui.php' );
 
+im_init();
 $multi_site = ImMultiSite::getInstance();
 
 function get_env( $var, $default ) {
@@ -381,7 +383,13 @@ function business_create_multi_site_receipt( $bank_id, $bank_amount, $date, $cha
 
 function gui_select_open_supplier( $id = "supplier" ) {
 	global $multi_site;
+
 	$values  = html2array( $multi_site->GetAll( "business/business-post.php?operation=get_supplier_open_account" ) );
+
+	if (! $values) {
+		 return "nothing found";
+	}
+	// var_dump($values);
 	$open    = array();
 	$list_id = 0;
 	foreach ( $values as $value ) {

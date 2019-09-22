@@ -170,7 +170,7 @@ function add_delivery_lines( $delivery_id, $lines, $edit ) {
 		$d->DeleteLines();
 	}
 
-	for ( $pos = 0; $pos < count( $lines ); $pos += 7 ) {
+	for ( $pos = 0; $pos < count( $lines ); $pos += 8 ) {
 		$prod_id = $lines[ $pos ];
 //		print "<br/>" . $prod_id;
 		if ($prod_id == -1)
@@ -198,10 +198,11 @@ function add_delivery_lines( $delivery_id, $lines, $edit ) {
 		$vat        = $lines[ $pos + 4 ];
 		$price      = $lines[ $pos + 5 ];
 		$line_price = $lines[ $pos + 6 ];
+		$part_of_basket = $lines[$pos + 7];
 //        $product_name = get_product_name($prod_id);
 //        my_log("product_id = " . $product_id . ", supplier_id=" . $supplier_id . ", product_name=" . $product_name);
 		print "<div style=\"direction: ltr;\"> id: " . $prod_id . ", name: " . $product_name . " delivery_id: " . $delivery_id . " quantity: " . $quantity . " quantity_ordred: " . $quantity_ordered .
 		      "units: " . $unit_ordered . " vat: " . $vat . " price: " . $price . " line_price: " . $line_price . "</div>";
-		delivery::AddDeliveryLine( $product_name, $delivery_id, $quantity, $quantity_ordered, $unit_ordered, $vat, $price, $line_price, $prod_id );
+		delivery::AddDeliveryLine( $product_name, $delivery_id, $quantity, $quantity_ordered, $unit_ordered, $vat, $price, $line_price, $prod_id, $part_of_basket );
 	}
 }

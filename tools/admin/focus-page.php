@@ -1,5 +1,8 @@
 <?php
-require_once( "load.php" );
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
+require_once( "../load.php" );
 require_once ("admin.php");
 
 $debug = get_param("debug", false, false);
@@ -16,6 +19,7 @@ if ($operation){
 			break;
 	}
 
+	im_init($admin_scripts);
 	handle_admin_operation($operation);
 	return;
 }

@@ -64,7 +64,6 @@ function handle_admin_operation($operation)
 	global $admin_scripts;
 	switch ($operation){
 		case "new_task":
-			im_init($admin_scripts);
 			admin_new_tasks();
 			break;
 

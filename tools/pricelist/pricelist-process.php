@@ -127,11 +127,14 @@ function pricelist_remote_site_process( $supplier_id, &$results, $inc = false ) 
 				default:
 					$results[ $result ][] = array( $name, $price, $parent_id );
 			}
+			if ($prod_id == 934 || $prod_id == 3452) print "$prod_id var_number: $var_num<br/>";
 			for ( $j = 1; $j <= $var_num; $j ++ ) {
-				$row = $lines[ $i + $j ];
-				if ( ! $row ) {
+				if ( ! isset($lines[ $i + $j ])) {
+					print "reading variations failed $prod_id $name<br/>";
 					continue;
 				}
+				$row = $lines[ $i + $j ];
+
 				// print $row;
 				$var_id = $row->find( 'td', 1 )->plaintext;
 				if ( $debug ) {

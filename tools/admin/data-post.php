@@ -5,9 +5,11 @@ if ( ! defined( "ROOT_DIR" ) ) {
 }
 
 require_once(ROOT_DIR . "/tools/im_tools.php");
+im_init();
 get_sql_conn() || die("not connected!");
 require_once( '../r-shop_manager.php' ); // for authentication
 require_once ("data.php");
+require_once (ROOT_DIR . '/niver/gui/gem.php');
 
 $operation = get_param("operation", true);
 
@@ -26,6 +28,13 @@ if ( $operation )
 		case "update":
 			if (update_data($table_name))
 				print "done";
+			break;
+
+		case "search":
+			$args = array();
+			$ids = data_search($table_name);
+			$args["sql"] = "select * from $table_name where id in (" . comma_implode($ids). ")";
+			print GemTable($table_name, "Search results", $args);
 			break;
 
 		default:

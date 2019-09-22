@@ -672,7 +672,6 @@ function gui_table_args($input_rows, $id = null, $args = null)
 	}
 	$action_line = null;
 
-
 	// 8/9/2019 removed because appeared in the end of task list.
 	// In case needed, a specific flag should be raised. E.g,, line_actions;
 
@@ -879,6 +878,12 @@ function gui_select_datalist( $id, $datalist_id, $name, $values, $events, $selec
 			{
 				die ("check args! $id_key not found in row" . __FILE__ . " " . __LINE__);
 			}
+			if (get_user_id() == 1 and ! isset($row[$name])){
+				var_dump($row); print "<br/>";
+				print $name . " not found<br/>";
+				print sql_trace();
+				die (1);
+			}
 			$value .= $row[ $name ];
 			if ( $include_id ) {
 				$value = $row[ $id_key ] . ")" . $value;
@@ -992,7 +997,6 @@ function gui_select( $id, $name, $values, $events, $selected, $id_key = "id", $c
 	$data .= ">";
 
 	foreach ( $values as $row ) {
-//		var_dump($row); print "<br/>";
 		if (! isset($row[$id_key]))
 		{
 //			var_dump($row);
@@ -1108,4 +1112,32 @@ function gui_select_table(
 	} else {
 		return gui_select( $id, $name, $values, $events, $selected, $id_key );
 	}
+}
+
+
+function gui_input_by_type($input_name, $type = null, $args = null, $data = null)
+{
+	$field_events = GetArg($args, "field_events", null);
+	switch ( substr( $type, 0, 3 ) ) {
+		case 'dat':
+			$value = gui_input_date( $input_name, null, $data, $field_events );
+			break;
+		case 'var':
+			$length = 10;
+			$r      = array();
+			if ( preg_match_all( '/\(([0-9]*)\)/', $type, $r ) ) {
+				$length = $r[1][0];
+			}
+			if ( $length > 100 ) {
+				$value = gui_textarea( $input_name, $data, $field_events );
+			} else {
+				$value = GuiInput($input_name, $data, $args); // gui_input( $input_name, $data, $field_events, $row_id );
+			}
+			break;
+		default:
+			// $field_events = sprintf( $events, $row_id, $key );
+			$value        = GuiInput($input_name, $data, $args); //gui_input( $input_name, $data, $field_events, $row_id );
+			break;
+	}
+	return $value;
 }

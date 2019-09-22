@@ -38,15 +38,22 @@ class MultiSite {
 	}
 
 	function GetAll( $func, $verbose = false, $debug = false, $strip = false ) {
+		$debug = get_param("debug", false, $debug);
 		$output = "";
 		if ( $debug ) {
 			print "s= " . $strip . "<br/>";
+			$verbose = 1;
 		}
 		$first = true;
 		$data  = array( array( "site name", "result" ));
 
 		foreach ( $this->sites_array as $site_id => $site ) {
-			$result = $this->Run( $func, $site_id, $first, $debug );
+			if ($debug)
+				print"running " . gui_hyperlink($this->getSiteName($site_id), $this->getSiteToolsURL($site_id) . "/" . $func) . "<br/>";
+			if ($debug != 2)
+				$result = $this->Run( $func, $site_id, $first, $debug );
+			else
+				$result = "debug = 2. not run<br/>";
 			if ( $strip ) {
 				$result = strip_tags( $result, "<div><br><p><table><tr><td>" );
 			}
@@ -77,22 +84,39 @@ class MultiSite {
 	}
 
 	function Run( $func, $site_id, $first = false, $debug = false ) {
-		$url = $this->getSiteToolsURL( $site_id );
 
-		$site_name = $this->getSiteName( $site_id );
+		if ($site_id == $this->local_site_id) {
+			return im_file_get_html($this->getLocalSiteTools() . '/' . $func . "header=" . ( $first ? "1" : "0" ));
+		}
+
+		$url = $this->getSiteToolsURL( $site_id );
 
 		if ( strstr( $func, "?" ) ) {
 			$glue = "&";
 		} else {
 			$glue = "?";
 		}
-		$file = $url . "/" . $func . $glue . "header=" . ( $first ? "1" : "0" ) . "&key=lasdhflajsdhflasjdhflaksj";
+
+		$site_name = $this->getSiteName( $site_id );
+
+		$file = $url . "/" . $func . $glue . "header=" . ( $first ? "1" : "0" );
 
 		if ( $debug ) {
 			print "Getting $file...<br/>";
 		}
 
-		$result_text = im_file_get_html( $file );
+		$username = $this->sites_array[$site_id][3];
+		$password = $this->sites_array[$site_id][4];
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $file);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_USERPWD, "$username:$password");
+		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+		$result_text = curl_exec($ch);
+		$info = curl_getinfo($ch);
+		curl_close($ch);
+
+//		$result_text = im_file_get_html( $file );
 
 		if ( $debug ) {
 			print "result from " . $site_name . "<br/>";

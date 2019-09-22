@@ -25,6 +25,13 @@ if ( ! defined( 'TOOLS_DIR')) {
 require_once (ROOT_DIR . '/im-config.php');
 
 // require_once( "functions_im.php" );
+require_once(TOOLS_DIR . "/im_tools_light.php");
+
+try {
+	im_init();
+} catch ( Exception $e ) {
+    print "Database error. Please contact support";
+}
 
 add_shortcode( 'im-page', 'im_page' );
 

@@ -23,7 +23,7 @@ class ImMultiSite extends MultiSite {
 		if ( ! table_exists( "im_multisite" ) ) {
 			return;
 		}
-		$sql           = "select id, site_name, tools_url, local, display_name, active, api_key, master " .
+		$sql           = "select id, site_name, tools_url, local, display_name, active, master, user, password " .
 		                 " from im_multisite";
 		$results       = sql_query( $sql );
 		$sites_array   = array();
@@ -34,10 +34,10 @@ class ImMultiSite extends MultiSite {
 			if ( $row[3] ) {
 				$local_site_id = $row[0];
 			} // local
-			if ( $row[7] ) {
+			if ( $row[6] ) {
 				$master_id = $row[0];
 			}     // master
-			$line               = array( $id, $row[1], $row[2], $row[6] );
+			$line               = array( $id, $row[1], $row[2], $row[7], $row[8]);
 			$sites_array[ $id ] = $line;
 			// array_push($sites_array, $line);
 		}

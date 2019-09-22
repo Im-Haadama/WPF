@@ -54,8 +54,8 @@ function gui_select_client( $id, $value, $args = null ) {
 		$sql_where = "where 1 order by 2";
 	}
 
-	$select_args = array("name" => "client_displayname(%s)", "include_id" => 1, "where"=> $sql_where, "events" => $events, "value"=>$value, "datalist" => 1);
-	var_dump($select_args);
+	$select_args = array("name" => "client_displayname(id)", "include_id" => 1, "where"=> $sql_where, "events" => $events, "value"=>$value, "datalist" => 1);
+	// var_dump($select_args);
 	return GuiSelectTable( $id, "wp_users", $select_args);
 }
 

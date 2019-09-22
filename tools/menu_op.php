@@ -9,6 +9,7 @@ require_once(ROOT_DIR . '/tools/options.php');
 
 // print TOOLS_DIR . "/multi-site/imMulti-site.php";
 require_once( ROOT_DIR . "/tools/multi-site/imMulti-site.php" );
+require_once( ROOT_DIR . '/tools/r-shop_manager.php');
 
 $test_site  = get_param( "test_site" );
 $test_limit = get_param( "test_limit" );

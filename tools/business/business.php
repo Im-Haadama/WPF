@@ -85,9 +85,9 @@ function business_open_ship( $part_id ) {
 	return $data; // gui_table($rows);
 }
 
-function select_bank_account( $id ) {
-	return gui_select_table( $id, "im_bank_account", null,
-		null, null, "name" );
+function gui_select_bank_account( $id, $value, $args ) {
+	return gui_select_table( $id, "im_bank_account", $value,
+		GetArg($args, "events", null), null, "name" );
 }
 
 function bank_check_dup( $fields, $values ) {
@@ -98,14 +98,14 @@ function bank_check_dup( $fields, $values ) {
 	$account     = $values[ $account_idx ];
 	$date        = $values[ $date_idx ];
 	$balance     = $values[ $balance_idx ];
-	print "a=" . $account . " d=" . $date . " b=" . $balance;
+//	print "a=" . $account . " d=" . $date . " b=" . $balance;
 
 	$sql = "SELECT count(*) FROM im_bank WHERE account_id = " . $account .
 	       " AND date = " . quote_text( $date ) .
 	       " AND round(balance, 2) = " . round( $balance, 2 );
 	// print sql_query($sql) . "<br/>";
 	$c = sql_query_single_scalar( $sql );
-	print " c=" . $c . "<br/>";
+//	print " c=" . $c . "<br/>";
 
 	return $c;
 }

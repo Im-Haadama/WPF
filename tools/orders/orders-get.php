@@ -226,15 +226,6 @@ $sql = 'SELECT distinct meta.meta_value ' .
        'and meta.post_id = posts.id and meta.meta_key = \'_customer_user\' ' .
        'order by 1';
 
-// print "לקוחות החודש: ";
-//$result       = mysqli_query( $conn, $sql );
-//$active_users = array();
-//while ( $row = mysqli_fetch_row( $result ) ) {
-//	$user_id                  = $row[0];
-//	$active_users[ $user_id ] = $user_id;
-//	// print get_customer_name($user_id) . ", ";
-//}
-
 print "<br>";
 
 // Now active users
@@ -247,27 +238,6 @@ $sql = 'SELECT meta.meta_value ' .
 
 $result = sql_query($sql );
 
-//while ( $row = mysqli_fetch_row( $result ) ) {
-
-// print "לקוחות השבוע: ";
-
-//	$user_id = $row[0];
-	// print get_customer_name($user_id) . ", ";
-
-//	unset( $active_users[ $user_id ] );
-//}
-
-// print "<br>";
-
-//print "עדיין לא הזמינו: ";
-//foreach ( $active_users as $u ) {
-//	$name = get_customer_name( $u );
-//	// $name = "userid-" . $u;
-//	print   $name . "(" . get_user_order_count( $u ) . "), ";
-//}
-
-//print "$data";
-
 function get_user_order_count( $u ) {
 	$sql = 'SELECT count(*) ' .
 	       ' FROM `wp_posts` posts, wp_postmeta meta ' .
@@ -279,17 +249,12 @@ function get_user_order_count( $u ) {
 }
 
 ?>
-<!--<button id="btn" onclick="replace_baskets()">החלף סלים</button>-->
 <datalist id="units">
     <option value="קג"></option>
     <option value="יח"></option>
 </datalist>
 
 
-<?php
-
-
-?>
 <div id="logging"></div>
 
 </html>
