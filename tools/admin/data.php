@@ -1,13 +1,14 @@
 <?php
 
-$ignore_list = array("operation", "table_name", "id");
+$ignore_list = array("search", "operation", "table_name", "id");
 
 
 function data_parse_get($table_name) {
 	global $ignore_list;
+	$debug = (1== get_user_id());
 	$values =array();
 	foreach ( $_GET as $key => $value ) {
-		if ($key === "search") continue;
+		$value = stripcslashes($value);
 		if ( in_array( $key, $ignore_list ) ) {
 			continue;
 		}
@@ -21,9 +22,9 @@ function data_parse_get($table_name) {
 		}
 		if ( ! isset( $values[ $tbl ] ) ) {
 			$values[ $tbl ]  = array();
-			$is_meta[ $tbl ] = $meta;
 		}
 
+		if ($debug) print "parse: $key $value<br/>";
 		$values[ $tbl ][ $field ] = array( $value, $meta );
 	}
 	return $values;
@@ -42,8 +43,8 @@ function update_data($table_name)
 	foreach ($values as $tbl => $changed_values)
 	{
 		foreach ($changed_values as $changed_field => $changed_pair){
-			$changed_value = $changed_field[0];
-			$is_meta = $changed_value[1];
+			$changed_value = $changed_pair[0];
+			$is_meta = $changed_pair[1];
 			// Todo: bind vars here.
 			if (sql_type($table_name, $changed_field) == 'date' and strstr($changed_value, "0001")) {
 				$sql = "update $table_name set $changed_field = null where id = " . $row_id;

@@ -65,6 +65,10 @@ function get_sql_conn($new_conn = null)
 function sql_type( $table, $field ) {
 	global $meta_table_info;
 
+	if (substr($field, 0, 1) == "$")
+		return 'varchar';
+
+
 	if (! $table)
 		throw new Exception("No table given");
 
@@ -171,6 +175,7 @@ function sql_query( $sql, $report_error = true ) {
 
 	if ( ! $conn ) {
 		sql_error("Error (3): not connected");
+		return null;
 	}
 
 	$prev_time         = microtime(true);

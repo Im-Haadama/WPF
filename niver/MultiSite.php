@@ -85,8 +85,10 @@ class MultiSite {
 
 	function Run( $func, $site_id, $first = false, $debug = false ) {
 
-		if ($site_id == $this->local_site_id) {
-			return im_file_get_html($this->getLocalSiteTools() . '/' . $func . "header=" . ( $first ? "1" : "0" ));
+		if ( strstr( $func, "?" ) ) {
+			$glue = "&";
+		} else {
+			$glue = "?";
 		}
 
 		$url = $this->getSiteToolsURL( $site_id );
@@ -107,6 +109,7 @@ class MultiSite {
 
 		$username = $this->sites_array[$site_id][3];
 		$password = $this->sites_array[$site_id][4];
+
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $file);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);

@@ -34,7 +34,7 @@ function GemTable($table_name, $text, $args){
 	//			                                     " order by date desc limit $rows_per_page offset $offset", $args);
 
 	// print gui_hyperlink("Older", add_to_url("page", $page + 1));
-	$result .= gui_header(1, "Add");
+	$result .= gui_header(1, "table");
 	$args["events"] = 'onchange="update_table_field(\'/tools/admin/data-post.php\', \'' . $table_name . '\', \'%d\', \'%s\', check_update)"';
 	$sql = GetArg($args, "sql", "select * from $table_name");
 

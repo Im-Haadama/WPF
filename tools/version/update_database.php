@@ -21,7 +21,7 @@ require_once( ROOT_DIR . '/niver/gui/sql_table.php' );
 
 //print sql_query_single_scalar("show create table im_bank_account");
 //exit;
-
+im_init();
 
 $version = get_param( "version" );
 
@@ -35,6 +35,9 @@ switch ( $version ) {
 		version16();
 		version17();
 		version18();
+		break;
+	case "22":
+		version22();
 		break;
 	case "21":
 		version21();
@@ -71,6 +74,84 @@ print "done";
 die ( 0 );
 
 
+function version22()
+{
+	print gui_header(1, "bug management");
+
+	sql_query("ALTER TABLE im_tasklist ADD task_type int;");
+
+	sql_query( "create table im_task_type (
+	id INT NOT NULL AUTO_INCREMENT
+		PRIMARY KEY,
+    	description VARCHAR(40) CHARACTER SET utf8 NULL,
+	    meta_fields varchar(200))" );
+
+	sql_query( "create table im_task_meta (
+	meta_id INT NOT NULL AUTO_INCREMENT
+		PRIMARY KEY,
+		task_id int,
+    	meta_key VARCHAR(40) CHARACTER SET utf8 NULL,
+	    meta_value varchar(200))" );
+
+	sql_query("drop function product_price");
+	sql_query("create
+    function product_price(_id int) returns varchar(100) charset 'utf8'
+BEGIN
+    declare _price varchar(100) CHARSET 'utf8';
+    select meta_value into _price from wp_postmeta where meta_key = '_price' and post_id = _id;
+    return _price;
+  END;
+
+");
+
+
+	sql_query("CREATE FUNCTION 	post_status(_post_id int)
+	 RETURNS TEXT
+BEGIN
+	declare _result varchar(200);
+	select post_status into _result
+	from wp_posts
+	where id = _post_id; 
+	
+	return _result;	   
+END;");
+
+	print gui_header(2, "entry comment");
+	sql_query("ALTER TABLE im_working_hours ADD comment varchar(200);");
+
+	print gui_header(1, "Working rate");
+	sql_query("drop function working_rate");
+	sql_query("create
+    function working_rate(_worker int, _project int) returns float
+BEGIN
+	
+    declare _rate float;
+
+	select round(rate, 2) into _rate  
+	       from im_working 
+	        where user_id = _worker
+	       and project_id = _project;
+
+    if (_rate > 0 ) THEN
+      return _rate;
+    END IF;
+
+	select round(rate, 2) into _rate
+	          from im_working
+	          where user_id = _worker
+	          and project_id = _project;
+
+    return _rate;
+  END;
+
+");
+
+
+	print gui_header(1, "multisite");
+	sql_query("ALTER TABLE im_multisite ADD user varchar(100);");
+	sql_query("ALTER TABLE im_multisite ADD password varchar(100);");
+
+}
 function version21()
 {
 	print gui_header(1, "transaction types");

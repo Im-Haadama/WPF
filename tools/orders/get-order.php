@@ -73,8 +73,8 @@ if ( $manager and isset( $_GET["margin"] ) ) {
 
         function add_item() {
             var request_url = "orders-post.php?operation=add_item&order_id=<?php print $order_id; ?>";
-            var _name = encodeURI(get_value(document.getElementById("itm_")));
-            request_url = request_url + "&name=" + _name;
+            let prod_id = get_value_by_name("new_product");
+            request_url = request_url + "&prod_id=" + prod_id;
             var _q = encodeURI(get_value(document.getElementById("qua_")));
             request_url = request_url + "&quantity=" + _q;
             var _u = encodeURI(get_value(document.getElementById("uni_")))
@@ -176,10 +176,12 @@ if ( current_user_can( "edit_shop_orders" ) or
 
 	if ( $for_edit ) {
 	    $args = array();
-		print gui_header( 1, "הוספת פריטים" );
+		print gui_header( 1, "Add items" );
 		print gui_table_args( array(
 			array( "בחר פריט", "כמות", "יח" ),
-			array( "<input id=\"itm_\" list=\"items\">", "<input id=\"qua_\">", "<input id=\"uni_\" list=\"units\">" ))); // , array(GuiSelectTable("itm_", "wp_", $args)
+			array( gui_select_product("new_product", null, $args),
+                "<input id=\"qua_\">",
+                "<input id=\"uni_\" list=\"units\">" ))); // , array(GuiSelectTable("itm_", "wp_", $args)
 		print gui_button( "btn_add_item", "add_item()", "הוסף" );
 		print gui_button( "btn_replace", "replace()", "החלף סלים במרכיבים" );
 	}

@@ -26,6 +26,8 @@ $missing = get_param( "missing" );
 
 $operation = get_param("operation", false, "show_today_missions");
 
+im_init();
+
 //////////////////////////////////////////////////////////////////////////////////////////////
 $id = get_param("id", false); if ($id) {
 	print header_text( false, true, true, "delivery.js" );

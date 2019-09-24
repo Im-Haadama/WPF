@@ -6,4 +6,4 @@ require_once("../r-shop_manager.php");
 
 $m        = new ImMultiSite();
 
-// print $m->GetAll("about.php");
+print $m->GetAll("about.php");

@@ -93,8 +93,9 @@ function operation_arguments(table_name, id = null)
         let chk_id = table.rows[i].cells[0].firstElementChild.id;
         if (get_value_by_name(chk_id)) {
             let name = chk_id.substr(4);
-            if (id) name = name + "_" + id;
-            operation_args += "&" + name + "=" + encodeURIComponent(get_value_by_name(name));
+            let control_name = name;
+            if (id) control_name = name + "_" + id;
+            operation_args += "&" + name + "=" + encodeURIComponent(get_value_by_name(control_name));
         }
     }
     return operation_args;

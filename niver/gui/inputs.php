@@ -51,7 +51,7 @@ function gui_label( $id, $text, $hidden = false ) {
 function gui_button( $id, $func, $text, $disabled = false ) {
 	$btn =  "<button id=\"" . $id . "\" onclick=\"" . $func . "\"";
 	if ($disabled) $btn .= " disabled";
-	$btn .= "> " . $text . "</button>";
+	$btn .= "> " . im_translate($text) . "</button>";
 	
 	return $btn;
 }
@@ -165,6 +165,7 @@ function gui_textarea( $name, $value, $events = null, $rows = 0, $cols = 0 ) {
 	$data .= " cols=" . $cols . " rows=" . $rows;
 	$data .= '>';
 	if ( strlen( $value ) > 0 ) {
+		// Replace <br/> to \n
 		$data .= $value;
 	}
 	$data .= "</textarea>";
@@ -172,6 +173,13 @@ function gui_textarea( $name, $value, $events = null, $rows = 0, $cols = 0 ) {
 	return $data;
 }
 
+function remove_br($value)
+{
+	$to_replace = array("<br/>", "<br>");
+	foreach ($to_replace as $rep)
+		$value = str_replace($rep, '\n', $value);
+	return $value;
+}
 /**
  * @param $id
  * @param $table
@@ -428,6 +436,17 @@ function printbr( $text = null ) {
  * @return string
  */
 function gui_cell( $cell, $id = null, $show = true) {
+	// Preformating...
+	// a) replace \n with <br/>
+	// b) make url from strings start with http:// or https://
+
+	$cell = str_replace('\n', '<br/>', $cell);
+	if (! strstr($cell, "<a"))
+		$cell = preg_replace(
+			"~[[:alpha:]]+://[^<>[:space:]]+[[:alnum:]/]~",
+			"<a href=\"\\0\">\\0</a>",
+			$cell);
+
 	$data = "<td";
 	if ( $id ) {
 		$data .= " id=\"" . $id . "\"";
@@ -609,7 +628,7 @@ function gui_table_args($input_rows, $id = null, $args = null)
 {
 	$data = "";
 
-	$debug = GetArg($args, "debug", false);
+	 $debug = GetArg($args, "debug", false);
 
 	// add_checkbox should be used on multiple rows view.
 	$add_checkbox = GetArg($args, "add_checkbox", false);
@@ -631,6 +650,9 @@ function gui_table_args($input_rows, $id = null, $args = null)
 	// Cols - how to name them, whether to show. Which one is the id.
 	$col_ids = GetArg($args, "col_ids", null);
 	$show_cols = GetArg($args, "show_cols", null);
+	// $debug = (1 == get_user_id());
+	if ($debug) var_dump($show_cols);
+
 	$id_field = GetArg($args, "id_field", "id");
 	// print "id_field=$id_field<br/>";
 	if (isset($args["edit_cols"]))
@@ -715,9 +737,15 @@ function gui_table_args($input_rows, $id = null, $args = null)
 			if (is_array($row)) {
 				if ($add_checkbox) $data .= "<td>" . gui_checkbox("chk_" . $row_id, $checkbox_class, 0, $checkbox_events);
 				foreach ($row as $key => $cell){
-					$show = true;
-					 if ((! $transpose) and isset($key) and ($key === "mandatory")) $show = false;
-					 if ($transpose and isset($row_id) and ($row_id == "mandatory")) $show = false;
+					$show = ((!$show_cols) or
+						(! $transpose and isset($show_cols[$key])) or
+					    ($transpose and isset($show_cols[$row_id])));
+					// if ($transpose and )
+					// if ($show_cols and )
+//					if ($debug) print "checking show_cols[$key]";
+//				    if ((! $transpose) and isset($show_cols[$key]) and ($key === "mandatory")) $show = false;
+//				    if ($transpose and isset($show_cols[$row_id]) and ($row_id == "mandatory")) $show = false;
+//				    if ($debug) print "show=$show<br/>";
 
 					// print $key . " " . $row_id . " " . $show . "<br/>";
 					$data .= gui_cell($cell, $key . "_" . $row_id, $show);
@@ -878,9 +906,10 @@ function gui_select_datalist( $id, $datalist_id, $name, $values, $events, $selec
 			{
 				die ("check args! $id_key not found in row" . __FILE__ . " " . __LINE__);
 			}
-			if (get_user_id() == 1 and ! isset($row[$name])){
+//			print "name:" . $row[$name] . "<br/>";
+			if (get_user_id() == 1 and ! array_key_exists($name, $row)){
+				print "$name is missing from row<br/>";
 				var_dump($row); print "<br/>";
-				print $name . " not found<br/>";
 				print sql_trace();
 				die (1);
 			}
@@ -904,6 +933,7 @@ function gui_select_datalist( $id, $datalist_id, $name, $values, $events, $selec
 		if ($id == "datalist") return $data; // Just print the datalist.
 	}
 
+	$selected_value = "select";
 	if ($selected)
 		foreach ( $values as $row ) {
 			if ($row[$id_key] == $selected){
@@ -1117,10 +1147,10 @@ function gui_select_table(
 
 function gui_input_by_type($input_name, $type = null, $args = null, $data = null)
 {
-	$field_events = GetArg($args, "field_events", null);
+	$events = GetArg($args, "events", null);
 	switch ( substr( $type, 0, 3 ) ) {
 		case 'dat':
-			$value = gui_input_date( $input_name, null, $data, $field_events );
+			$value = gui_input_date( $input_name, null, $data, $events );
 			break;
 		case 'var':
 			$length = 10;
@@ -1129,7 +1159,7 @@ function gui_input_by_type($input_name, $type = null, $args = null, $data = null
 				$length = $r[1][0];
 			}
 			if ( $length > 100 ) {
-				$value = gui_textarea( $input_name, $data, $field_events );
+				$value = gui_textarea( $input_name, $data, $events );
 			} else {
 				$value = GuiInput($input_name, $data, $args); // gui_input( $input_name, $data, $field_events, $row_id );
 			}

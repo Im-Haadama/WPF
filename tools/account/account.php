@@ -151,7 +151,7 @@ function show_trans( $customer_id, $view = eTransview::default ) {
 	$args["links"]["transaction_ref"] = "/tools/delivery/get-delivery.php?id=%s";
 	$args["links"]["order"] = "/tools/orders/get-order.php?order_id=%s";
 	$args["col_ids"] = array("chk", "id", "dat", "amo", "bal", "des", "del", "ord");
-	$args["show_cols"] = array(); $args["show_cols"]['id'] = 0;
+//	$args["show_cols"] = array(); $args["show_cols"]['id'] = 0;
 	$args["add_checkbox"] = false; // Checkbox will be added only to unpaid rows
 	$first = true;
 

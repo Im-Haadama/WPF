@@ -6,7 +6,6 @@
  * Time: 18:02
  */
 
-
 if ( ! defined( "ROOT_DIR" ) ) {
 	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
 }
@@ -16,7 +15,6 @@ require_once( ROOT_DIR . '/tools/multi-site/imMulti-site.php' );
 //require_once( "../r-shop_manager.php" );
 require_once( ROOT_DIR . "/niver/gui/sql_table.php" );
 //require_once( "../people/people.php" );
-
 
 print header_text();
 

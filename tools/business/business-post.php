@@ -9,7 +9,7 @@ if ( ! defined( "TOOLS_DIR" ) ) {
 	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
 }
 
-require_once( '../r-multisite.php' );
+require_once( '../r-shop_manager.php' );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( TOOLS_DIR . '/business/business.php' );
 require_once( TOOLS_DIR . '/invoice4u/invoice.php' );

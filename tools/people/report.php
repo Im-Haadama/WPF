@@ -35,7 +35,7 @@ print header_text(true, true, true);
             }
             var month = document.getElementsByName("month")[0].value;
             // alert (month);
-            var request = "people-post.php?operation=show_all&month=" + month;
+            let request = "people-post.php?operation=show_all&month=" + month;
 
             <?php
                  if ($edit) print "request = request + '&edit=$edit';\n";
@@ -44,6 +44,7 @@ print header_text(true, true, true);
 //                "&ids=" + del_ids.join() +
 //                "&user_id=" + <?php //print $customer_id; ?>//;
             // report.innerHTML = request;
+
             xmlhttp.open("GET", request, true);
             xmlhttp.send();
 

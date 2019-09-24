@@ -55,14 +55,14 @@ $sql    = 'SELECT  bundle_prod_id, quantity, id FROM im_bundles WHERE prod_id = 
 $result = sql_query( $sql );
 
 while ( $row = mysqli_fetch_row( $result ) ) {
+    // print $row[0]. " " . $row[1]. " " . $row[2] . "<br/>";
 	$b    = Bundle::CreateFromDb( $row[2] );
-	$o    = orders_per_item( $b->GetBundleProdId(), $b->GetQuantity() );
+	$o    = orders_per_item( $b->GetBundleProdId(), 1 );
 	if ( strlen( $o ) )
-		$data .= "<tr> " . trim( $o ) . "</tr>";
+		$bundle .= "<tr> " . trim( $o ) . "</tr>";
 
 	// $data .= "<tr> ". trim( $line ) . "</tr>";
 }
-
 
 if ( strlen( $bundle ) ) {
 	$data .= "<br>במארזים";
@@ -70,6 +70,7 @@ if ( strlen( $bundle ) ) {
 	$data .= $bundle;
 	$data .= "</table>";
 }
+
 $data .= "<br />" . gui_header( 1, "אספקות אחרונות");
 
 $data .= "<table>";

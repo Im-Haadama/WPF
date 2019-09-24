@@ -219,7 +219,7 @@ if ( $test_site ) {
 <?php
 // require_once( TOOLS_DIR . "/weekly/run.php" );
 ?>
-<div align="center">Fresh store powered by Niver Dri Sol 2015-2019</div>
+<div align="center">Fresh store powered by Aglamaz.com 2015-2019</div>
 <div align="center">Version <?php print $power_version; ?> </div>
 </body>
 </html>

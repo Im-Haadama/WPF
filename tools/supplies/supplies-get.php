@@ -36,7 +36,7 @@ print gui_button( "btn_new", "show_create_item()", "הספקה חדשה" );
 		),
 		array(
 			gui_select_supplier( "supplier_select", null, array("events" => 'onchange="change_supplier()"')),
-			gui_input_date( "date", "" ),
+			gui_input_date( "date", "", date('y-m-d'),  'onchange="change_supplier()"'),
 			gui_select_mission( "new_mission", "", array("events"=>"gui_select_mission") )
 			// gui_select_mission( "mis_new")
 		)
@@ -81,7 +81,8 @@ if ( isset( $_GET["week"] ) ) {
         function change_supplier() {
             var supplier_id = get_value_by_name("supplier_select");
             var upcsv = document.getElementById("upcsv");
-            upcsv.action = "/tools/supplies/supplies-post.php?operation=create_from_file&supplier_id=" + supplier_id;
+            let date = get_value_by_name("date");
+            upcsv.action = "/tools/supplies/supplies-post.php?operation=create_from_file&supplier_id=" + supplier_id + "&date=" + date;
         }
         function show_create_item() {
             var new_order = document.getElementById("new_item");

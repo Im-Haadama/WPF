@@ -27,6 +27,22 @@ if ( ! defined( "TOOLS_DIR" ) ) {
  *
  * @return int|string
  */
+
+function people_add_activity_sick( $id, $date, $project_id)
+{
+	$sql = "INSERT INTO im_working_hours (user_id, date, project_id, start_time, end_time, comment) VALUES (" .
+	       $id . ", \"" . $date . '", ' . $project_id . ", 0, 0, \"" . im_translate("Sick leave") ."\")";
+	// print header_text();
+	// print $sql;
+	$export = sql_query( $sql );
+	if ( ! $export ) {
+		die ( 'Invalid query: ' . $sql . mysql_error() );
+	}
+
+	return 0; // Success
+
+}
+
 function people_add_activity( $id, $date, $start, $end, $project_id, $traveling, $expense_text, $expense ) {
 	if ( strlen( $traveling ) == 0 ) {
 		$traveling = 0;
@@ -148,27 +164,15 @@ function worker_is_global_company($user_id)
  * @param int $user_id
  * @param null $month
  * @param null $year
- * @param null $week
- * @param null $project
- * @param null $sum
- * @param bool $show_salary
- * @param bool $edit
+ * @param null $args
  *
  * @return string
  * @throws Exception
  */
-function print_transactions( $user_id = 0, $month = null, $year = null, $week = null, $project = null, &$sum = null, $show_salary = false , $edit = false) {
-//	print "ss=" . $show_salary . "<br/>";
-	// print "uid=" . $user_id . "<br/>";
+function print_transactions( $user_id = 0, $month = null, $year = null, &$args = null) // , $week = null, $project = null, &$sum = null, $show_salary = false , $edit = false) {
+{
+	$sql = "SELECT id, date, dayofweek(date), start_time, end_time, working_rate(user_id, project_id), project_id, traveling, expense, expense_text, comment FROM im_working_hours WHERE 1 ";
 
-	$counters  = array();
-	$volunteer = false;
-	if ( $user_id > 0 and is_volunteer( $user_id ) ) {
-		$volunteer = true;
-	}
-//	if ( ! $user_id  ) {
-//		$user_id = get_user_id();
-//	}
 	$sql_month = null;
 	if ( isset( $month ) and $month > 0 ) {
 		if ( ! ( $year > 2016 ) ) {
@@ -185,32 +189,6 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 		$sql_month = " and date >= '" . $week . "' and date < '" . date( 'y-m-d', strtotime( $week . "+1 week" ) ) . "'";
 		// print $sql_month;
 	}
-
-	// var_dump($volunteer);
-	// print $user_id;
-	$data = "<table id=\"report_" . $user_id ."\" border='1'><tr>";
-	$data .= gui_cell( "בחר" );
-	$data .= "<td>תאריך</td><td>יום בשבוע</td><td>משעה</td><td>עד שעה</td><td>שעות</td><td>125%</td><td>150%</td>";
-	$data .= "<td>פרויקט</td>";
-	if ( $user_id == 0 ) {
-		$data .= "<td>עובד</td>";
-	}
-
-	if ( $show_salary ) {
-		$data .= "<td>תעריף</td>";
-		$data .= "<td>סהכ</td>";
-	}
-	$data .= "<td>הוצאות</td>";
-
-	if ( ! $volunteer ) {
-		$data .= "<td>נסיעה</td>";
-		$data .= "<td>פירוט הוצאות</td>";
-	}
-
-	$data .= "</tr>";
-
-	$sql = "SELECT date, start_time, end_time, project_id, user_id, traveling, expense, expense_text, id, dayofweek(date) FROM im_working_hours WHERE 1 ";
-
 	if ( $user_id > 0 ) {
 		$sql .= " and user_id = " . $user_id . " ";
 	}
@@ -233,6 +211,50 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 	// "  order by 1 desc";
 	// print $sql;
 	$sql           .= " limit 100";
+
+	$args["header_fields"] = array("hidden id", "Date", "Weekday", "Start time", "End time", "Rate", "Project", "Traveling expense", "Other expense", "Expense details", "Comment");
+	$args["selectors"] = array("project_id" => "gui_select_project");
+	$args["skip_id"] = true;
+
+	return GuiTableContent("im_working_hours", $sql, $args);
+
+	//	print "ss=" . $show_salary . "<br/>";
+	// print "uid=" . $user_id . "<br/>";
+
+	$counters  = array();
+	$volunteer = false;
+	if ( $user_id > 0 and is_volunteer( $user_id ) ) {
+		$volunteer = true;
+	}
+//	if ( ! $user_id  ) {
+//		$user_id = get_user_id();
+//	}
+
+	// var_dump($volunteer);
+	// print $user_id;
+	$data = "<table id=\"report_" . $user_id ."\" border='1'><tr>";
+	$data .= gui_cell( "בחר" );
+	$data .= "<td>תאריך</td><td>יום בשבוע</td><td>משעה</td><td>עד שעה</td><td>שעות</td><td>125%</td><td>150%</td>";
+	$data .= "<td>פרויקט</td>";
+	if ( $user_id == 0 ) {
+		$data .= "<td>עובד</td>";
+	}
+
+	if ( $show_salary ) {
+		$data .= "<td>תעריף</td>";
+		$data .= "<td>סהכ</td>";
+	}
+	$data .= "<td>הוצאות</td>";
+
+	if ( ! $volunteer ) {
+		$data .= "<td>נסיעה</td>";
+		$data .= gui_cell("Comments");
+	}
+
+	$data .= "</tr>";
+
+	$sql = "SELECT date, start_time, end_time, project_id, user_id, traveling, expense, expense_text, id, dayofweek(date), comment FROM im_working_hours WHERE 1 ";
+
 	$result        = sql_query( $sql );
 	$total_sal     = 0;
 	$total_travel  = 0;
@@ -266,6 +288,7 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 		$dur_base  = min( $total_dur, 25 / 3 );
 		$dur_125   = min( 2, $total_dur - $dur_base );
 		$dur_150   = $total_dur - $dur_base - $dur_125;
+		$comment = $row[10];
 
 		$line             .= "<td>" . float_to_time( $dur_base ) . "</td>";
 		$line             .= "<td>" . float_to_time( $dur_125 ) . "</td>";
@@ -312,9 +335,12 @@ function print_transactions( $user_id = 0, $month = null, $year = null, $week = 
 		if ( isset( $sum ) and is_array( $sum ) ) {
 			$line_month = date( 'y-m', strtotime( $row[0] ) );
 			// print $row[0]. " " . $line_month . "<br/>";
+			if (! isset ($sum[$line_month])) $sum[$line_month] = 0;
 			$sum[ $line_month ] += ( $sal + $travel + $expense );
 		}
 //		}
+
+		$line .= gui_cell($comment);
 
 		$line .= "</tr>";
 
@@ -407,9 +433,21 @@ function add_activity( $user_id, $date, $start, $end, $project_id, $vol = true, 
 	my_log( "end add_activity" );
 }
 
+function add_activity_sick_leave( $user_id, $date, $project_id ) {
+	my_log( "add_activity", __FILE__ );
+	$result = people_add_activity_sick( $user_id, $date, $project_id);
+	if ( $result ) {
+		return $result;
+	}
+//	my_log( "before business" );
+//	business_add_transaction( $user_id, $date, $amount * 1.1, 0, 0, $project_id );
+//	my_log( "end add_activity" );
+}
+
 // $selector_name( $key, $data, $args)
 function gui_select_project( $id, $value, $args)
 {
+	// print "v=$value<br/>";
 	$edit = GetArg($args, "edit", false);
 	if (! $edit)
 	{
@@ -457,10 +495,11 @@ function gui_select_task( $id, $value, $args ) {
 
 	$args = array("value" => $value,
 	              "events"=>$events,
-	              "name"=>"substr(task_description, 1," . $length . ")",
+	              "name"=>"task_description", // "SUBSTR(task_description, 1, " . $length . ")",
 	              "where"=> $query,
 	              "include_id" => 1,
 	              "datalist" =>1 );
+
 	return GUiSelectTable($id, "im_tasklist", $args);
 }
 

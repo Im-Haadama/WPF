@@ -137,8 +137,8 @@ function orders_per_item( $prod_id, $multiply, $short = false, $include_basket =
 		$pid = get_order_itemmeta( $order_item_id, '_product_id' );
 		if ( is_bundle( $pid ) ) {
 			$b        = Bundle::CreateFromBundleProd( $pid );
-			$quantity = $b->GetQuantity();
-		}
+			$quantity *= $b->GetQuantity();
+		} else
 		if ( is_basket( $pid ) ) {
 			$b        = new Basket( $pid );
 			$quantity *= $b->GetQuantity( $prod_id );
@@ -153,7 +153,8 @@ function orders_per_item( $prod_id, $multiply, $short = false, $include_basket =
 			$lines .= $quantity . " " . $last_name . ", ";
 		} else {
 //			print "long<br/>";
-			$line  = "<tr>" . "<td> " . gui_hyperlink( $order_id, "get-order.php?order_id=" . $order_id ) . "</td><td>" . $quantity * $multiply . "</td><td>" . $first_name . "</td><td>" . $last_name . "</td></tr>";
+			$line  = "<tr>" . "<td> " . gui_hyperlink( $order_id, "get-order.php?order_id=" . $order_id ) . "</td>";
+			$line .= "<td>" . $quantity * $multiply . "</td><td>" . $first_name . "</td><td>" . $last_name . "</td></tr>";
 			$lines .= $line;
 		}
 	}

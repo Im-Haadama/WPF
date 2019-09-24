@@ -19,7 +19,7 @@ function convert( $size ) {
 	return @round( $size / pow( 1024, ( $i = floor( log( $size, 1024 ) ) ) ), 2 ) . ' ' . $unit[ $i ];
 }
 
-print $power_version;
+print $_SERVER['HTTP_HOST'] . " Version: " . $power_version . "<br/>";
 
 //echo '$_SERVER[\'SERVER_ADDR\'] = ' . $_SERVER['SERVER_ADDR'] . "<br/>";
 //

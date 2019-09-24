@@ -8,7 +8,7 @@
 error_reporting( E_ALL );
 ini_set( 'display_errors', 'on' );
 
-require_once( '../r-shop_manager.php' );
+require_once( '../r-multisite.php' );
 require_once( 'Supply.php' );
 require_once( '../orders/orders-common.php' );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
@@ -63,7 +63,7 @@ if ( isset( $_GET["operation"] ) ) {
 			break;
 
 		case "print":
-			$params = $_GET["id"];
+			$params = get_param("id", true);
 			$ids    = explode( ',', $params );
 			print_supplies_table( $ids, true );
 			break;
@@ -250,8 +250,9 @@ if ( isset( $_GET["operation"] ) ) {
 			print im_translate("Creating supply for") . " " . get_supplier_name($supplier_id) . " <br/>";
 
 			$tmp_file = $_FILES["fileToUpload"]["tmp_name"];
+			$date = get_param("date", true);
 			$args = array("needed_fields" => array ("name" => 1, "quantity"=> 1));
-			$s        = Supply::CreateFromFile( $tmp_file, $supplier_id, $args );
+			$s        = Supply::CreateFromFile( $tmp_file, $supplier_id, $date, $args );
 			if ( $s ) {
 				$s->EditSupply( true );
 			}

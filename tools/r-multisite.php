@@ -13,18 +13,19 @@ if ( ! defined( "TOOLS_DIR" ) ) {
 	define( 'TOOLS_DIR', STORE_DIR . "/tools" );
 }
 
-// Check that the caller is allowed.
-
-if (!isset($_SERVER['PHP_AUTH_USER'])) {
-	header('WWW-Authenticate: Basic realm="My Realm"');
-	header('HTTP/1.0 401 Unauthorized');
-	echo 'Text to send if user hits Cancel button';
-	exit;
-}
-	$user =  $_SERVER['PHP_AUTH_USER'];
-	$password = $_SERVER['PHP_AUTH_PW'];
-if (! check_password($user, $password)){
-	die("invalid password");
+// Check that the caller is allowed: Wordpress authentication or PHP_AUTH;
+if (! get_user_id()){
+	if (!isset($_SERVER['PHP_AUTH_USER'])) {
+		header('WWW-Authenticate: Basic realm="My Realm"');
+		header('HTTP/1.0 401 Unauthorized');
+		echo 'Text to send if user hits Cancel button';
+		exit;
+	}
+		$user =  $_SERVER['PHP_AUTH_USER'];
+		$password = $_SERVER['PHP_AUTH_PW'];
+	if (0 and ! check_password($user, $password)){
+		die("invalid password");
+	}
 }
 
 function check_password($user, $password)
@@ -37,9 +38,6 @@ function check_password($user, $password)
 }
 
 require_once( STORE_DIR . "/wp-load.php" );
-
-apply_filters( 'wp_basic_auth_credentials', [$_SERVER['PHP_AUTH_USER'] => $_SERVER['PHP_AUTH_PW']] );
-print get_user_id();
 
 //
 //require_once( STORE_DIR . "/wp-includes/pluggable.php" );

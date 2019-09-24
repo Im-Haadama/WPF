@@ -16,6 +16,8 @@ require_once( "../business/business.php" );
 require_once( "people.php" );
 require_once( TOOLS_DIR . "/gui.php" );
 
+im_init();
+
 $role = "";
 
 $operation = get_param( "operation" );
@@ -31,11 +33,14 @@ if ( isset( $operation ) ) {
 
 			return;
 	}
-	print table_content( "table", "select client_displayname(user_id) as עובד, date as תאריך, start_time as התחלה, end_time as סיום, " .
-	                              " traveling as 'הוצאות נסיעה', expense as 'הוצאות', expense_text as 'תיאור הוצאה' " .
+	$args = array();
+	$args["header_f.poields"] = array("id", "worker", "date", "Start time", "End time", "Traveling expense", "Other expense", "Expense details", "Comments");
+	// $args["id_field"] = "worker";
+	print GuiTableContent( "table", "select id, client_displayname(user_id) as worker, date, start_time, end_time, " .
+	                              " traveling, expense, expense_text, comment " .
 	                              " from im_working_hours " .
 	                              " order by id desc " .
-	                              " limit 10" );
+	                              " limit 10", $args );
 	exit( 0 );
 }
 
@@ -72,10 +77,14 @@ print header_text( false, true, true );
                 let date = get_value_by_name("date");
                 let _date = new Date(date);
                 let now = new Date();
-                if (date.length > 4 && (_date <= now))
+                if (date.length > 4 && (_date <= now)){
                     enable_btn("btn_add_time");
-                else
+                    enable_btn("btn_add_sick_leave");
+                }
+                else {
                     disable_btn("btn_add_time");
+                    disable_btn("btn_add_sick_leave");
+                }
 
             }
         }
@@ -89,8 +98,42 @@ print header_text( false, true, true );
         return get_value_by_name("worker_select");
     }
 
+    function add_sick_leave()
+    {
+        disable_btn("btn_add_time");
+        disable_btn("btn_add_sick_time");
+        let sel = document.getElementById("project");
+        let project_id = sel.options[sel.selectedIndex].value;
+        let date = get_value(document.getElementById("date"));
+	    <?php if ( isset( $_GET["worker"] ) ) {
+	    print 'var id = ' . $_GET["workder"] . '\n';
+    } else {
+	    print 'var id = get_worker();';
+    }
+	    ?>
+        let request = "people-post.php?operation=add_sick_leave" +
+            '&date=' + date + "&project=" + project_id +
+            "&user_id=" + id;
+        let xmlhttp = new XMLHttpRequest();
+
+        xmlhttp.onreadystatechange = function () {
+            // Wait to get query result
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+            {
+                if (xmlhttp.response.length) // Failed
+                    alert(xmlhttp.response);
+                update_display();
+            }
+        }
+
+
+        xmlhttp.open("GET", request, true);
+        xmlhttp.send();
+
+    }
     function add_item() {
-        document.getElementById("btn_add_time").disabled = true;
+        disable_btn("btn_add_time");
+        disable_btn("btn_add_sick_time");
 
         let sel = document.getElementById("project");
         let project_id = sel.options[sel.selectedIndex].value;
@@ -114,7 +157,7 @@ print header_text( false, true, true );
             return;
         }
 
-        xmlhttp = new XMLHttpRequest();
+        let xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function () {
             // Wait to get query result
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
@@ -182,6 +225,9 @@ print "סכום";
 print gui_input( "extra", "" ) . "<br/>";
 
 print gui_button("btn_add_time", "add_item()", "Add activity", true);
+
+print gui_button("btn_add_sick_leave", "add_sick_leave()", "Add sick leave", true);
+
 ?>
 
 

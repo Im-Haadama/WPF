@@ -312,3 +312,50 @@ msgstr "סמן תנועות"
 msgid "Create Receipts"
 msgstr "הפק קבלות"
 
+# people/entry
+msgid "Add activity"
+msgstr "הוסף פעילות"
+
+msgid "Add sick leave"
+msgstr "הוסף יום מחלה"
+
+msgid "worker"
+msgstr "עובד"
+
+msgid "expense"
+msgstr "הוצאות"
+
+msgid "comment"
+msgstr "הערות"
+
+msgid "Comment"
+msgstr "הערות"
+
+msgid "Sick leave"
+msgstr "חופשת מחלה"
+
+msgid "Start time"
+msgstr "התחלה"
+
+msgid "End time"
+msgstr "סיום"
+
+msgid "Traveling expense"
+msgstr "הוצאות נסיעה"
+
+msgid "Other expense"
+msgstr "הוצאות"
+
+msgid "Expense details"
+msgstr "פרטי הוצאות"
+
+msgid "Rate"
+msgstr "תעריף"
+
+# supply
+msgid "Buy price"
+msgstr "מחיר עלות"
+
+msgid "Buyers"
+msgstr "מזמינים"
+

@@ -16,8 +16,11 @@ print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/too
 
 global $user_ID; // by wordpress.
 
+$operation = get_param("operation");
 if ($operation) {
 	switch ( $operation ) {
+		case "check_needed":
+			break;
 		default:
 			print $operation . " not handled <br/>";
 			die(1);

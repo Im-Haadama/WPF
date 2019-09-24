@@ -368,6 +368,7 @@ add_action( 'woocommerce_before_calculate_totals', 'im_woocommerce_update_price'
 
 function im_woocommerce_update_price() {
 	global $site_id;
+	$debug = (get_user_id() == 1);
 	if ( $site_id != 4 ) {
 		return;
 	}
@@ -383,12 +384,13 @@ function im_woocommerce_update_price() {
 
 	foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 		$prod_id = $cart_item['product_id'];
+		$variation_id = $cart_item['variation_id'];
 		if ( ! ( $prod_id > 0 ) ) {
 			my_log( "cart - no prod_id" );
 			continue;
 		}
 		$q          = $cart_item['quantity'];
-		$sell_price = get_price_by_type( $prod_id, $client_type, $q );
+		$sell_price = get_price_by_type( $prod_id, $client_type, $q, $variation_id );
 		//my_log("set " . $sell_price);
 		$cart_item['data']->set_sale_price( $sell_price );
 		$cart_item['data']->set_price( $sell_price );

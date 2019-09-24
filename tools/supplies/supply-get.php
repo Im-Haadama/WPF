@@ -193,8 +193,8 @@ print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_missio
 
     function update_display() {
         xmlhttp = new XMLHttpRequest();
-        var filter = document.getElementById("chk_internal").checked;
-        var request = "supplies-post.php?operation=get_supply";
+        let filter = document.getElementById("chk_internal").checked;
+        let request = "supplies-post.php?operation=get_supply";
         request = request + "&id=<?php print $id; ?>";
         if (filter) request = request + "&internal=1";
 
@@ -434,7 +434,6 @@ print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_missio
 
 <div id="supply_document">
 </div>
-
 
 </body>
 </html>

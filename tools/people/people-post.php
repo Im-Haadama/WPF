@@ -15,6 +15,7 @@ if ( ! isset( $_GET["operation"] ) ) {
 	die( 1 );
 }
 $operation = $_GET["operation"];
+im_init();
 
 switch ( $operation ) {
 	case "get_balance":
@@ -43,8 +44,38 @@ switch ( $operation ) {
 		if ( current_user_can( "working_hours_all" ) ) {
 			$user = 0;
 		}
-		print print_transactions( 0, $month, $year );
+		$args = array();
+		$args["edit"] = get_param("edit", false, false);
+		var_dump($args);
+		print print_transactions( 0, $month, $year, $args );
 
+		break;
+
+	case "add_sick_leave":
+		$date      = $_GET["date"];
+		$project   = $_GET["project"];
+		$worker_id = get_param( "worker_id" );
+		if ( isset( $_GET["user_id"] ) ) {
+			$user_id = $_GET["user_id"];
+		} else {
+			if ( isset( $worker_id ) ) {
+//				$w       = $_GET["worker_id"];
+//				print "w=" . $w;
+				$user_id = sql_query_single_scalar( "SELECT user_id FROM im_working WHERE id = " . $worker_id );
+				//print "uid=" . $user_id . "<br/>";
+			} else {
+				$user_id = get_user_id();
+			}
+		}
+		if ( ! $user_id ) {
+			print "no user selected";
+			die( 1 );
+		}
+		// if ($user_id = 1) $user_id = 238;
+		$result = add_activity_sick_leave( $user_id, $date, $project );
+		if ( $result ) {
+			print $result;
+		}
 		break;
 
 	case "add_time":
@@ -83,9 +114,14 @@ switch ( $operation ) {
 		break;
 
 	case "show_all":
+		print header_text(true);
 		$month = $_GET["month"];
 		$edit = get_param("edit");
-		show_all( $month, $edit );
+		$args = array();
+		$edit = get_param("edit", false, false);
+		if ($edit)
+			$args["add_checkbox"] = true;
+		show_all( $month, $args );
 		break;
 	case "delete":
 		// $params = explode(',', $_GET["params"]);
@@ -102,7 +138,7 @@ switch ( $operation ) {
 
 }
 
-function show_all( $month, $edit ) {
+function show_all( $month, &$args) {
 	if ( ! current_user_can( "show_all_hours" ) ) {
 		print "אין הרשאה";
 		die ( 1 );
@@ -125,6 +161,7 @@ function show_all( $month, $edit ) {
 
 	while ( $row = mysqli_fetch_row( $result ) ) {
 		$u = $row[0];
+		$args["worker"] = $u;
 
 		if ( $row[1] ) {
 			print gui_header( 1, get_user_name( $u ) . "(" . $u . ")" );
@@ -132,7 +169,7 @@ function show_all( $month, $edit ) {
 
 //			print print_transactions( 0, $month, $year, null, null, $s, true  );
 
-			print print_transactions( $u, $m, $y, null, null, $s, true, $edit );
+			print print_transactions( $u, $m, $y, $args); // null, null, $s, true, $edit );
 		}
 	}
 }

@@ -10,6 +10,8 @@ $debug = get_param("debug", false, false);
 print header_text(true, true, is_rtl(), array("data.js"));
 // focus_init();
 
+im_init($admin_scripts);
+
 $operation = get_param("operation", false, null);
 if ($operation){
 	switch ($operation)
@@ -19,7 +21,6 @@ if ($operation){
 			break;
 	}
 
-	im_init($admin_scripts);
 	handle_admin_operation($operation);
 	return;
 }
@@ -83,27 +84,43 @@ print gui_hyperlink("add tasks", $url . "?operation=new_task");
 
 print " ";
 
-print managed_workers(get_user_id(), $_SERVER['REQUEST_URI']);
+print managed_workers(get_user_id(), $_SERVER['REQUEST_URI']) . " ";
 
-print " ";
+if (im_user_can("edit_task_types"))
+	print gui_hyperlink("projects", $url . "?operation=projects") . " ";
 
-print gui_hyperlink("projects", $url . "?operation=projects");
+if (im_user_can("edit_projects"))
+	print gui_hyperlink("task types", $url . "?operation=task_types") . " ";
 
 //	$sum     = null;
 
+// Tasks I need to handle
 print gui_header(1, "Tasks assigned to me");
 $args["query"] = " owner = " . get_user_id();
 $args["limit"] = get_param("limit", false, 10);
 $args["active_only"] = get_param("active_only", false, true);
 print active_tasks($args);
-if (get_user_id() != 1) return;
+// if (get_user_id() != 1) return;
 
-print gui_header(1, "My teams' tasks");
-// foreach (show_team())
-
+// Tasks my teams need to handle.
 $members = comma_implode(team_all_members(get_user_id()));
 if (strlen($members)) {
-	print $members;
+	print gui_header(1, "My teams' tasks");
     $args["query"] = " owner in (" . $members . ")";
 	print active_tasks($args, $debug, $time_filter);
+}
+
+// Tasks that I created
+if (strlen ($members) > 1)
+	$args["query"] = " creator = " . get_user_id() . " and owner not in (" . $members . ", " . geT_user_id() . ")";
+else
+	$args["query"] = " creator = " . get_user_id() . " and owner != " . geT_user_id();
+
+$args["limit"] = get_param("limit", false, 10);
+$args["active_only"] = get_param("active_only", false, true);
+$result =  active_tasks($args);
+// print "len=" . strlen($result);
+if (strlen($result) > 150){
+	print gui_header(1, "Tasks I've created");
+	print $result;
 }

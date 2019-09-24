@@ -45,6 +45,7 @@
 
     </script>
 	<?php
+    im_init();
 	$user    = new WP_User( $user_ID );
 	$manager = false;
 	if ( ! empty( $user->roles ) && is_array( $user->roles ) ) {

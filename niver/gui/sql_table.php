@@ -158,6 +158,8 @@ function PrepareRow($row, $args, $row_id)
 		return null; // Todo: find why PivotTable creates null rows as in invoice_table.php
 	}
 
+//	if (get_user_id() == 1) return $row;
+
 	// On single row, the id is displayed in the header, and not showing in the table.
 	$skip_id = GetArg($args, "skip_id", false);
 	$links = GetArg($args, "links", null);
@@ -188,6 +190,7 @@ function PrepareRow($row, $args, $row_id)
 			print "has selectors: "; var_dump($selectors); print "<br/>";
 		}
 		else print "No selectors<br/>";
+		print "edit_cols: " . var_dump($edit_cols); print "<br/>";
 	}
 
 	if (! is_array($row))
@@ -198,7 +201,7 @@ function PrepareRow($row, $args, $row_id)
 	// var_dump($row);
 	foreach ( $row as $key => $data )
 	{
-		if ($debug)
+		if (0 and get_user_id() == 1)
 		{
 			print $key . " " . $data . "<br/>";
 		}
@@ -263,29 +266,26 @@ function PrepareRow($row, $args, $row_id)
 			// print "pp e=" .$edit . " e_c=" . (is_array($edit_cols) ? comma_implode($edit_cols) : $edit_cols) . " ec[k]=" . isset($edit_cols[$key]) . "<br/>";
 
 			/// 5/9/2019 Change!! edit_cols by default is to edit. if it set, don't edit.
-			if ($edit and (! $edit_cols or ! isset($edit_cols[$key]))) { //pp e=1 e_c= ec[k]=
+			/// 23/9/2019  isset($edit_cols[$key]) - set $args["edit_cols"][$key] for fields that need to be edit.
+			if ($edit and  (! $edit_cols or (isset($edit_cols[$key]) and $edit_cols[$key]))){
 				if (! $key)
 					continue;
-//					foreach ($row as $c)
-//						print $c. "<br/>";
-//					throw new Exception(__CLASS__ . ":" . __METHOD__ . "no key");
-//				}
 				if ($field_events) $args["events"] = $field_events;
-					if ( $table_name ) {
-						if (isset($args["field_types"]))
-							$type = $args["field_types"][$key];
-						else
-							$type = sql_type( $table_name, $key );
-						// input_by_type($input_name, $type, $args, $data = null)
-						$value = gui_input_by_type($input_name, $type, $args, $value);
-					} else {
-						if ( $debug ) {
-							var_dump( $data );
-						}
-						$value = GuiInput($input_name, $data, $args); //gui_input( $key, $data, $field_events, $row_id);
-						print "v=$value<br/>";
+				if ( $table_name ) {
+					if (isset($args["field_types"]))
+						$type = $args["field_types"][$key];
+					else
+						$type = sql_type( $table_name, $key );
+					// input_by_type($input_name, $type, $args, $data = null)
+					$value = gui_input_by_type($input_name, $type, $args, $value);
+				} else {
+					if ( $debug ) {
+						var_dump( $data );
 					}
+					$value = GuiInput($input_name, $data, $args); //gui_input( $key, $data, $field_events, $row_id);
+//						print "v=$value<br/>";
 				}
+			}
 			if ($debug) print "after $key";
 			if ( $selectors and array_key_exists( $key, $selectors ) ) {
 				if ($debug) print "has selectors ";
@@ -696,9 +696,8 @@ function GuiTableContent($table_id, $sql, &$args)
 		return null;
 
 	$id_field = GetArg($args, "id_field", "id");
-	if (! isset($args["edit_cols"]))
-		$args["edit_cols"] = array();
-	$args["edit_cols"][$id_field] = 0;
+	if (isset($args["edit_cols"]))
+		$args["edit_cols"][$id_field] = 0;
 
 	$row_count = count( $rows_data);
 
@@ -716,5 +715,6 @@ function prepare_text($string)
 	// Todo: convert text to url, only if not already hyperlink.
 //	$url = '~(?:(https?)://([^\s<]+)|(www\.[^\s<]+?\.[^\s<]+))(?<![\.,:])~i';
 //	$string = preg_replace($url, '<a href="$0" target="_blank" title="$0">$0</a>', $string);
+	return $string;
 	return nl2br($string);
 }

@@ -373,6 +373,8 @@ class Order {
 				sql_query( $sql );
 			}
 		}
+		// var_dump($needed_products[3406]);
+
 	}
 
 	private static function AddProducts( $prod_key, $qty, &$needed_products ) {
@@ -416,6 +418,7 @@ class Order {
 
 					return;
 				}
+				// print $b->getName() . "q=$qty bq=" . $b->GetQuantity() . "<br/>";
 				$qty         = $qty * $b->GetQuantity();
 				$prod_or_var = $p;
 			}
@@ -423,6 +426,7 @@ class Order {
 			if ( ! isset( $needed_products[ $prod_or_var ][ $unit_key ] ) ) {
 				$needed_products[ $prod_or_var ][ $unit_key ] = 0;
 			}
+			// print "adding $qty to " . get_product_name($prod_or_var) . "<br/>";
 			$needed_products[ $prod_or_var ][ $unit_key ] += $qty;
 			//if ($key == 354) { print "array:"; var_dump($needed_products[$prod_or_var]); print "<br/>";}
 		}

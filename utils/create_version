@@ -18,15 +18,27 @@ if [ $1 == "major" ]; then
   $( find $folders \( -name '*.php' -o -name '*.mo' -o -name '*.js' \) -exec echo {} >> tar_files  \; )
 fi
 if [ $1 == "minor" ]; then
-  echo not implemented
-  exit 1
-  fi
+  current_version="$(cat version)"
+  echo current version: "$current_version"
+  major=$(echo $current_version | cut -s -d. -f1)
+  minor=$(echo $current_version | cut -s -d. -f2)
+  base=$major.$minor
+  if [ -z $minor ]; then
+    version=$major.1
+  else
+    let minor=1+minor
+    version=$major.$minor
+   fi
+  rm tar_files
+  touch tar_files
+  $( find $folders \( -name '*.php' -o -name '*.mo' -o -name '*.js' \) -newer versions/$product_name-$base.tar.gz -exec echo {} >> tar_files  \; )
+fi
 if [ $1 == "patch" ]; then
   current_version="$(cat version)"
   echo current version: "$current_version"
-  patch=$(echo $current_version | cut -d. -f3)
+  patch=$(echo $current_version | cut -s -d. -f3)
   if [ -z $patch ]; then
-    version=$current_version.1
+    version=$current_version.1_
   else
     let patch=1+$patch
     version=$(echo $current_version | cut -d. -f1-2).$patch

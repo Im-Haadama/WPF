@@ -139,6 +139,13 @@ function task_started($task_id) {
 	}
 }
 
+function task_ended($task_id) {
+		$sql = "UPDATE im_tasklist SET ended = now(), status = " . eTasklist::done .
+		       " WHERE id = " . $task_id;
+		sql_query( $sql );
+}
+
+
 function task_template($task_id)
 {
 	return sql_query_single_scalar("select task_template from im_tasklist where id = " . $task_id);

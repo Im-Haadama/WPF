@@ -102,10 +102,7 @@ switch ( $operation ) {
 		break;
 
 	case "add_item":
-		$name = $_GET["name"];
-		if ( ! strlen( $name ) > 2 ) {
-			die ( "no product name" );
-		}
+		$prod_id = get_param("prod_id", true);
 		$q = $_GET["quantity"];
 		if ( ! is_numeric( $q ) ) {
 			die ( "no quantity" );
@@ -118,11 +115,9 @@ switch ( $operation ) {
 		if ( ! is_numeric( $order_id ) ) {
 			die ( "no order_id" );
 		}
-		$prod_id = get_product_id_by_name( $name );
-		print "name = " . $name . ", prod_id = " . $prod_id . "<br/>";
 
 		if ( ! is_numeric( $prod_id ) ) {
-			die ( "no prod_id for " . $name . "<br/>" );
+			die ( "invalid product id" );
 		}
 		$o = new Order( $order_id );
 		$o->AddProduct( $prod_id, $q, false, - 1, $units );

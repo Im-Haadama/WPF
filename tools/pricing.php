@@ -38,7 +38,9 @@ function calculate_price( $price, $supplier, $sale_price = '', $terms = null ) {
 }
 
 
-function get_price_by_type( $prod_id, $client_type = "", $quantity = 1 ) {
+function get_price_by_type( $prod_id, $client_type = "", $quantity = 1, $variation_id = null )
+{
+	$debug = 0;
 
 	if ( strlen( $client_type ) < 1 ) {
 		$client_type = "regular";
@@ -55,14 +57,20 @@ function get_price_by_type( $prod_id, $client_type = "", $quantity = 1 ) {
 	//  print $sql . "<br/>";
 	$rate = sql_query_single_scalar( $sql );
 
+	$id = $variation_id ? $variation_id : $prod_id;
+
 	// Nothing special. Return the price from the site.
 	if ( is_null( $rate ) ) {
-		return get_postmeta_field( $prod_id, '_price' );
+		return get_postmeta_field( $id, '_price' );
 	}
 
 //	 print "rate: " . $rate. "<br/>";
-	$price = get_postmeta_field( $prod_id, '_price' );
-	$buy   = get_buy_price( $prod_id );
+
+	$price = get_postmeta_field( $id, '_price' );
+
+	if ($debug) print $prod_id ." " . $variation_id . "<br/>";
+
+	$buy   = get_buy_price( $id );
 	if ( $buy == 0 ) {
 		return $price;
 	}

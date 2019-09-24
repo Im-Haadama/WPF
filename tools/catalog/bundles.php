@@ -280,4 +280,9 @@ class Bundle {
 		$sql = "UPDATE im_bundles SET is_active = FALSE WHERE id = " . $this->id;
 		sql_query_single_scalar( $sql );
 	}
+
+	function getName()
+	{
+		return get_product_name($this->prod_id);
+	}
 }

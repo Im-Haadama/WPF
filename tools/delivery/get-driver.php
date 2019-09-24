@@ -1,10 +1,12 @@
 <?php
-require_once( '../r-shop_manager.php' );
+require_once( '../r-multisite.php' );
 // require_once( '../../wp-content/plugins/woocommerce-delivery-notes/woocommerce-delivery-notes.php' );
 require_once( '../multi-site/imMulti-site.php' );
 require_once( '../account/account.php' );
 require_once( "../supplies/Supply.php" );
 require_once( "../admin/Tasklist.php" );
+
+im_init();
 
 $header      = isset( $_GET["header"] );
 $mission_ids = get_param_array( "mission_ids" );

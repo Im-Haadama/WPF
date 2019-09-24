@@ -61,7 +61,7 @@ class Supply {
 	}
 
 
-	public static function CreateFromFile( $file_name, $supplier_id, $args = null) {
+	public static function CreateFromFile( $file_name, $supplier_id, $date, $args = null) {
 		$debug               = false;
 		$item_code_idx       = Array();
 		$name_idx            = Array();
@@ -143,8 +143,15 @@ class Supply {
 					}
 					$prev_name = $name;
 					$quantity  = $data[ $quantity_idx[ $col ] ];
-					$price     = $data[ $price_idx[ $col ] ];
-					$item_code = $data[ $price_idx[ $col ] ];
+					if (isset($data[ $price_idx[ $col ]]))
+						$price     = $data[ $price_idx[ $col ] ];
+					else
+						$price = 0;
+
+					if (isset($data[ $price_idx[ $col ] ]))
+						$item_code = $data[ $price_idx[ $col ] ];
+					else
+						$item_code = 10;
 
 					if ( isset( $detail_idx[ $col ] ) ) {
 						$detail = $data[ $detail_idx[ $col ] ];
@@ -167,7 +174,7 @@ class Supply {
 		$comments = "";
 		if ( count( $lines ) ) {
 //			$supplier_id = get_supplier_id($supplier_name);
-			$Supply = Supply::CreateSupply( $supplier_id ); // create_supply( $supplier_id );
+			$Supply = Supply::CreateSupply( $supplier_id, $date ); // create_supply( $supplier_id );
 			if ( ! ( $Supply->getID() > 0 ) ) {
 				die ( "שגיאה " );
 			}
@@ -322,16 +329,15 @@ class Supply {
 	// $internal - true = for our usage. false = for send to supplier.
 	function HtmlLines( $internal, $edit = 1, $categ_group = false ) {
 
-		$data_lines = array();
 		my_log( __FILE__, "id = " . $this->ID . " internal = " . $internal );
-		$sql = 'select product_id, quantity, id, units'
+		$sql = 'select product_id, quantity, id'
 		       . ' from im_supplies_lines where status = 1 and supply_id = ' . $this->ID;
 
 		$args = array("id_field" => "id", "add_checkbox" => true,
 			"selectors" => array("product_id" => "gui_select_product"),
 			          "id_key" => "ID",
 			          "edit" => $edit,
-			          "show_cols" => array(1, 1, 1, 0, 0, $internal, $internal, $internal),
+			          "show_cols" => array("product_id" => true, "quantity" => true, '$buy' => true, '$total' => true, '$buyers' => true),
 			          "edit_cols" => array("quantity" => true),
 			          "checkbox_class" => "supply_checkbox",
 			"events"=>'onchange="changed(this)"');
@@ -339,18 +345,39 @@ class Supply {
 		$rows_data = TableData( $sql, $args);
 
 		if ( $internal){
-			array_push($rows_data['header'], "Buy Price");
-			array_push($rows_data['header'], "Total");
-			array_push($rows_data['header'], "Buyers");
+			$rows_data['header']['$buy'] = "Buy price";
+			$rows_data['header']['$total'] = 'Total';
+			$rows_data['header']['$buyers'] = 'Buyers';
 
-			foreach ($rows_data as $prod_id => $row)
-//			for ($i = 1; $i < count($rows_data); $i++)
+			$first = true;
+			foreach ($rows_data as $line_id => $row)
 			{
+				if ($first){
+					$first = false;
+					continue;
+				}
+				$prod_id = $row['product_id'];
+
+				if (! $prod_id) {
+					print "bad id: $prod_id<br/>";
+					continue;
+				}
 				//$prod_id = $rows_data[$i]["Product Name"];
 				$buy_price = get_buy_price($prod_id, $this->getSupplier());
-				array_push($rows_data[$prod_id], $buy_price);
-				array_push($rows_data[$prod_id], $buy_price * $row["quantity"]);
-				array_push($rows_data[$prod_id], orders_per_item( $prod_id, 1, true, true, true ));
+				if (! is_numeric($buy_price)) {
+					print "no buy price<br/>";
+					$buy_price = 0;
+				}
+				if (! is_numeric($row["quantity"]))
+				{
+					print "bad quantity for $prod_id<br/>";
+					$q = 0;
+				} else
+					$q = $row["quantity"];
+
+				$rows_data[$line_id]['$buy'] = $buy_price;
+				$rows_data[$line_id]['$total'] = $buy_price * $q;
+				$rows_data[$line_id]['$buyers'] = orders_per_item( $prod_id, 1, true, true, true );
 			}
 		}
 

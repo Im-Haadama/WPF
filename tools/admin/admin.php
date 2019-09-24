@@ -15,6 +15,7 @@ require_once(ROOT_DIR . "/niver/fund.php");
 require_once(TOOLS_DIR . "/account/gui.php");
 require_once(TOOLS_DIR . '/people/people.php');
 require_once(TOOLS_DIR . "/gui.php");
+require_once(ROOT_DIR . "/niver/gui/gem.php");
 
 require_once("common.php");
 require_once("data.php");
@@ -63,6 +64,14 @@ function handle_admin_operation($operation)
 {
 	global $admin_scripts;
 	switch ($operation){
+
+		case "last_entered":
+			if (get_user_id() != 1) return;
+			$args = array();
+			$args["last_entered"] = 1;
+			print active_tasks($args);
+			break;
+
 		case "new_task":
 			admin_new_tasks();
 			break;
@@ -139,6 +148,10 @@ function handle_admin_operation($operation)
 			show_projects(get_url(), get_user_id());
 			break;
 
+		case "task_types":
+			$args = array();
+			print GemTable("im_task_type", "task types", $args);
+			break;
 		case "new_company_user":
 			$company_id = data_save_new("im_company");
 			$worker_id = worker_get_id(get_user_id());
@@ -171,6 +184,10 @@ function handle_admin_operation($operation)
 			}
 			break;
 
+		case "end":
+			$task_id = get_param( "id" );
+			task_ended($task_id);
+			break;
 		default:
 			print __FUNCTION__ . ": " . $operation . " not handled <br/>";
 
@@ -343,12 +360,24 @@ function active_tasks($args = null, $debug = false, $time = false)
 	$table_name = "im_tasklist";
 
 	$url = get_url(true);
+	$last_entered = GetArg($args, "last_entered", null);
+	if ($last_entered) print "showing newest tasks<br/>";
+
 	$active_only = GetArg($args, "active_only", true);
 
-	if (get_param("limit"))
-		$limit = "limit " . get_param("limit");
-	else
-		$limit = "limit 10";
+	$page = get_param("page", false, 1);
+	$rows_per_page = 10;
+	$offset = ($page - 1) * $rows_per_page;
+
+	$limit = "limit $rows_per_page offset $offset";
+
+//	if (get_param("limit"))
+//		$limit = "limit " . get_param("limit");
+//	else
+//		$limit = "limit 10";
+
+//	if (get_param("offset"))
+//		$limit .= " offset " . get_param("offset");
 
 	$links       = array();
 	$links["id"] = $this_url . "?row_id=%s";
@@ -364,11 +393,12 @@ function active_tasks($args = null, $debug = false, $time = false)
 
 	$args["selectors"] = array("project" => "gui_select_project", "project_id" => "gui_select_project");
 
-	if ($active_only)
-		$query .= " and (status in (0, 1) and (isnull(preq) or task_status(preq) >= 2) and (date is null or date(date) <= Curdate()))";
+	if (! $last_entered) {
+		if ($active_only)
+			$query .= " and (status in (0, 1) and (isnull(preq) or task_status(preq) >= 2) and (date is null or date(date) <= Curdate()))";
 
-	if ($time) $query .= " and task_active_time(id)";
-
+		if ($time) $query .= " and task_active_time(id)";
+	}
 	$query .= " and (mission_id is null or mission_id = 0) ";
 
 	$actions = array(
@@ -377,7 +407,7 @@ function active_tasks($args = null, $debug = false, $time = false)
 		array( "בטל", $url . "?operation=cancel&id=%s" ),
 		array( "דחה", $url . "?operation=postpone&id=%s" )
 	);
-	if (! $active_only)
+	if (! $active_only or $last_entered)
 		$order = "order by id desc ";
 	else
 		$order   = "order by priority desc ";
@@ -414,7 +444,9 @@ function active_tasks($args = null, $debug = false, $time = false)
 		$result = im_translate( "No active tasks!" ) . "<br/>";
 		$result .= im_translate( "Let's create first one!" ) . " ";
 		$result .= gui_hyperlink( "create task", $url . "?operation=new_task" ) . "<br/>";
-	}
+	} else
+		$result .= gui_hyperlink("Older", add_to_url("page", $page + 1));
+
 
 	return $result;
 }
@@ -469,10 +501,9 @@ function admin_new_tasks()
 	// $args["debug"] = true;
 	$args["header"] = true;
 	$args["header_fields"] = array("Start after", "Task description", "Project", "Mission", "Location name", "Priority",
-		"Creator", "Prerequisite", "Assigned to");
+		 "Prerequisite", "Creator", "Assigned to");
 
-	$args["fields"] = array("date", "task_description", "project_id", "mission_id", "location_name", "priority",
-		"creator", "preq", "owner");
+	$args["fields"] = array("date", "task_description", "project_id", "mission_id", "location_name", "priority","creator", "preq", "owner");
 
 	$args["worker"] = get_user_id();
 	$args["companies"] = sql_query_single_scalar("select company_id from im_working where user_id = " . get_user_id());
