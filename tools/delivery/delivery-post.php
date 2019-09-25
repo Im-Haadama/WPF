@@ -14,6 +14,8 @@ require_once( "../business/business.php" );
 require_once( ROOT_DIR . "/niver/fund.php" );
 require_once( "../supplies/Supply.php" );
 require_once( ROOT_DIR . '/tools/business/business_info.php' );
+
+im_init();
 //require_once('catalog.php');
 
 // print header_text(false);
@@ -127,12 +129,12 @@ switch ( $operation ) {
 		switch ( $type ) {
 			case "orders":
 				$o = new Order( $id );
-				$r = $o->delivered();
-				if ( $r == true ) {
+				$message = "";
+				if ( ! $o->delivered($message) )
+					print $message;
+				 else
 					print "delivered";
-				} else {
-					print $r;
-				}
+
 				break;
 			case "tasklist":
 				$t = new Tasklist( $id );

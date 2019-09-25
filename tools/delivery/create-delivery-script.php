@@ -5,6 +5,8 @@ require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( "../../wp-includes/pluggable.php" );
 require_once( "../account/account.php" );
 
+im_init();
+
 print gui_select_product("datalist", '', array("datalist" => "im_products"));
 
 $id       = isset( $_GET["id"] ) ? $_GET["id"] : null;

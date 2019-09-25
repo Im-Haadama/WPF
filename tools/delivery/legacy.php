@@ -191,7 +191,8 @@ if ( strlen( $data ) > 182 ) {
 $sql = "select * from im_business_info where part_id = " . $legacy_user .
         " and document_type = 4";
 
-$table = GuiTableContent("open_invoices", $sql, null);
+$args = array();
+$table = GuiTableContent("open_invoices", $sql, $args);
 
 if ($table){
     print gui_header(1, "חשבוניות פתוחות");

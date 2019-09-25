@@ -5,7 +5,7 @@ $ignore_list = array("search", "operation", "table_name", "id");
 
 function data_parse_get($table_name) {
 	global $ignore_list;
-	$debug = (1== get_user_id());
+	$debug = false; // (1== get_user_id());
 	$values =array();
 	foreach ( $_GET as $key => $value ) {
 		$value = stripcslashes($value);

@@ -8,12 +8,12 @@ function delivered(site, id, type) {
         if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
         {
             // alert (xmlhttp.response);
-            if (xmlhttp.response == "delivered") {
+            if (xmlhttp.response === "delivered") {
                 var row = document.getElementById("chk_" + id).parentElement.parentElement;
                 var table = row.parentElement.parentElement;
                 table.deleteRow(row.rowIndex);
             } else {
-                alert(url + " failed: " + xmlhttp.response);
+                alert(xmlhttp.response);
             }
             // window.location = window.location;
         }

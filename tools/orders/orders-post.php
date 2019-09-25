@@ -154,9 +154,10 @@ switch ( $operation ) {
 		$ids = $_GET["ids"];
 		foreach ( explode( ",", $ids ) as $id ) {
 			$o = new Order( $id );
-			$o->delivered();
+			$message ="";
+			$o->delivered($message);
 		}
-		print "delivered";
+		print $message;
 		break;
 
 	case "mission":

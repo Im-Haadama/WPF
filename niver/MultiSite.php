@@ -147,40 +147,41 @@ class MultiSite {
 	}
 
 	function Execute( $request, $site, $debug = false ) {
-		$remote_request = $this->getSiteToolsURL( $site ) . '/' . $request;
-
-//		 print $remote_request . "<br/>";
-		if ( strlen( $remote_request ) < 4 ) {
-			print "remote tools not set.<br/>";
-			die ( 2 );
-		}
-
-		if ( strstr( $remote_request, "?" ) ) {
-			$glue = "&";
-		} else {
-			$glue = "?";
-		}
-		// $api_key = sql_query_single_scalar( "select api_key from im_multisite where id = $site" );
-		$api_key = $this->getApiKey( $site );
-
-		if ( $api_key ) {
-			// print "key";
-			$remote_request .= $glue . "api_key=$api_key";
-		} else {
-			print "no api key while accessing " . $site . "<br/>";
-			die( 1 );
-		}
-		//  print "Execute remote: " . $remote_request . "<br/>";
-		// print "XX" . $remote_request . "XX<br/>";
-
-		if ( $debug ) {
-			print "request = " . $remote_request . "<br/>";
-		}
-		$html = im_file_get_html( $remote_request );
-
-		// print $html;
-
-		return $html;
+		return $this->Run($request, $site, true, $debug);
+//		$remote_request = $this->getSiteToolsURL( $site ) . '/' . $request;
+//
+////		 print $remote_request . "<br/>";
+//		if ( strlen( $remote_request ) < 4 ) {
+//			print "remote tools not set.<br/>";
+//			die ( 2 );
+//		}
+//
+//		if ( strstr( $remote_request, "?" ) ) {
+//			$glue = "&";
+//		} else {
+//			$glue = "?";
+//		}
+//		// $api_key = sql_query_single_scalar( "select api_key from im_multisite where id = $site" );
+//		$api_key = $this->getApiKey( $site );
+//
+//		if ( $api_key ) {
+//			// print "key";
+//			$remote_request .= $glue . "api_key=$api_key";
+//		} else {
+//			print "no api key while accessing " . $site . "<br/>";
+//			die( 1 );
+//		}
+//		//  print "Execute remote: " . $remote_request . "<br/>";
+//		// print "XX" . $remote_request . "XX<br/>";
+//
+//		if ( $debug ) {
+//			print "request = " . $remote_request . "<br/>";
+//		}
+//		$html = im_file_get_html( $remote_request );
+//
+//		// print $html;
+//
+//		return $html;
 	}
 
 	public function getApiKey( $site_id ) {

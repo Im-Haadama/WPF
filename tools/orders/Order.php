@@ -461,9 +461,8 @@ class Order {
 		foreach ($orders as $order)
 		{
 			$o = new Order($order);
-			array_push($table, array($order, $o->CustomerName(), $o->GetComments()));
+			array_push($table, array(gui_hyperlink($order, "get-order.php?order_id=" . $order), $o->CustomerName(), $o->GetComments()));
 		}
-
 		print gui_table_args($table);
 	}
 
@@ -487,7 +486,8 @@ class Order {
 		return $this->WC_Order->get_items();
 	}
 
-	function delivered() {
+	function delivered(&$message) {
+		$message = "";
 		$new_status = "wc-completed";
 
 		$c = sql_query_single_scalar( "SELECT count(*) FROM wp_posts " .
@@ -498,17 +498,21 @@ class Order {
 			$new_status = "wc-awaiting-document";
 		} else {
 			$d = delivery::CreateFromOrder( $this->order_id );
+			if (! $d->getID()) {
+				$message = "no delivery note";
+				return false;
+			}
+
 			if ( $d->isDraft() ) {
-				return "draft";
+				$message = "is draft";
+				return false;
 			}
 		}
-
-//		if (! $d->getID())
-//			return "No delivery";
 
 		// if order is legacy, create delivery.
 		$this->ChangeStatus( $new_status );
 
+		$message = "delivered";
 		return true;
 	}
 

@@ -11,6 +11,8 @@ require_once( "../orders/orders-common.php" );
 require_once( "../orders/Order.php" );
 require_once( "../catalog/catalog.php" );
 
+im_init();
+
 $operation = $_GET["operation"];
 // print "operation = " . $operation . "<br/>";
 

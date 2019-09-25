@@ -4,12 +4,9 @@ require_once 'orders-common.php';
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( '../delivery/delivery.php' );
 
+im_init();
 $user_id = login_id();
-$manager = false;
-if ( user_can( $user_id, "edit_shop_orders" ) ) {
-	$manager = true;
-}
-
+$manager = user_can( $user_id, "edit_shop_orders" );
 $order_id = get_param("order_id", true);
 $o        = new Order( $order_id );
 if ( $o->getCustomerId() != $user_id and ! $manager ) {

@@ -1,6 +1,6 @@
 <?php
+require_once ("../r-shop_manager.php");
 include_once( "delivery.php" );
-
 print header_text( false );
 
 ?>

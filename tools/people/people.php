@@ -480,6 +480,7 @@ function gui_select_project( $id, $value, $args)
 }
 
 function gui_select_task( $id, $value, $args ) {
+	$debug = 0; // (1 == get_user_id());
 	$events = GetArg($args, "events", null);
 	$query = GetArg($args, "where", " where status = 0 ");
 	$length = GetArg($args, "length", 30);
@@ -498,8 +499,12 @@ function gui_select_task( $id, $value, $args ) {
 	              "name"=>"task_description", // "SUBSTR(task_description, 1, " . $length . ")",
 	              "where"=> $query,
 	              "include_id" => 1,
-	              "datalist" =>1 );
+	              "datalist" =>1,
+		"debug" => $debug);
 
+	if ($debug) {
+		print "where: " . $query . "<br/>";
+	}
 	return GUiSelectTable($id, "im_tasklist", $args);
 }
 

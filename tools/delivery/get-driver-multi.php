@@ -6,9 +6,6 @@
  * Time: 22:41
  */
 
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
-
 require_once( "../im_tools.php" );
 // TODO: require_once( '../r-shop_manager.php' );
 require_once( '../multi-site/imMulti-site.php' );
@@ -38,7 +35,9 @@ $id = get_param("id", false); if ($id) {
 switch ($operation)
 {
     case "show_today_missions":
-	    print header_text( false, true, true );
+	    print header_text( false, false, true );
+	    print load_scripts("/tools/delivery/delivery.js");
+	    print "</header>";
 
 	    $missions   = get_param_array( "mission_ids" );
 	    if ( ! $missions ) {

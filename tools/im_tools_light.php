@@ -39,8 +39,9 @@ if (defined('TIMEZONE')){
 
 function im_init($script_files = null)
 {
+//	print "uid=" . get_user_id() . "<br/>";
 	// Singleton connection for the application.
-	if (0 and get_user_id() == 1) $debug = 1;
+	if (0 and get_user_id() == 2) $debug = 1;
 	else $debug = 0;
 
 	$conn = get_sql_conn();
@@ -76,6 +77,11 @@ function im_init($script_files = null)
 	if ($script_files)
 		print load_scripts( $script_files );
 
+	if ($debug){
+		print "getting...<Br/>";
+		$c = get_sql_conn();
+		var_dump($c);
+	}
 	return $conn;
 }
 
