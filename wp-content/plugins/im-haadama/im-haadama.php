@@ -33,6 +33,32 @@ try {
     print "Database error. Please contact support";
 }
 
+add_shortcode('store-locator', 'store_locator');
+function store_locator()
+{
+
+}
+add_shortcode('pay-page', 'pay_page');
+
+function pay_page($atts, $content = null)
+{
+    if (get_user_id()) {
+	    print do_shortcode("[woocommerce_checkout]");
+        return;
+    }
+    print "Register using one of the following:<br/>";
+    print do_shortcode('[miniorange_social_login shape="longbuttonwithtext" theme="default" space="8" width="180" height="35" color="000000"]');
+
+    print gui_hyperlink("Or register locally", "/wp-login.php");
+    return;
+    // [woocommerce_checkout]
+//    if (get_user_id())
+//    {
+//        do_shortcode("woocommerce_checkout");
+//    } else {
+//        print "need to login";
+//    }
+}
 add_shortcode( 'im-page', 'im_page' );
 
 function im_page() {

@@ -8,7 +8,7 @@ require_once(ROOT_DIR . "/tools/im_tools.php");
 im_init();
 get_sql_conn() || die("not connected!");
 require_once( '../r-shop_manager.php' ); // for authentication
-require_once ("data.php");
+require_once( "data.php" );
 require_once (ROOT_DIR . '/niver/gui/gem.php');
 
 $operation = get_param("operation", true);

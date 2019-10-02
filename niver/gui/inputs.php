@@ -17,7 +17,7 @@
 // GUI elements
 // cast: function gui_<html code>($params) { return $text; }
 
-require_once(STORE_DIR . '/niver/gui/sql_table.php');
+require_once(ROOT_DIR . '/niver/gui/sql_table.php');
 
 /**
  * Create html <label>
@@ -737,9 +737,9 @@ function gui_table_args($input_rows, $id = null, $args = null)
 			if (is_array($row)) {
 				if ($add_checkbox) $data .= "<td>" . gui_checkbox("chk_" . $row_id, $checkbox_class, 0, $checkbox_events);
 				foreach ($row as $key => $cell){
-					$show = ((!$show_cols) or
-						(! $transpose and isset($show_cols[$key])) or
-					    ($transpose and isset($show_cols[$row_id])));
+					$idx = ($transpose ? $row_id : $key);
+					$show = ((!$show_cols) or isset($show_cols[$idx]))
+						and !(isset($args["hide_cols"]) and isset($args["hide_cols"][$idx]));
 					// if ($transpose and )
 					// if ($show_cols and )
 //					if ($debug) print "checking show_cols[$key]";

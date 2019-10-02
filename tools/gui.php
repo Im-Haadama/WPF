@@ -8,7 +8,7 @@
 
 require_once( ROOT_DIR . "/tools/options.php" );
 
-function print_category_select( $id, $select = false ) {
+function gui_select_category( $id, $select = false ) {
 //	$term             = get_term( info_get( "suppliers_category" ) );
 //	$suppliers_father = urldecode( $term->slug );
 	//print "father: " . $suppliers_father . "<br/>";
@@ -59,24 +59,3 @@ function gui_select_document_type( $id = null, $selected = null, $args = null ) 
 	return gui_select( $id, "name", $types, $events, $selected, "id" );
 }
 
-// $selector_name( $input_name, $orig_data, $args)
-function gui_select_worker( $id = null, $selected = null, $args = null ) {
-
-	// $events = GetArg($args, "events", null);
-	$edit = GetArg($args, "edit", true);
-	$companies = GetArg($args, "companies", "must send company");
-	$debug = false; // (get_user_id() == 1);
-	$args["debug"] = $debug;
-	$args["name"] = "client_displayname(user_id)";
-	$args["where"] = "where is_active=1 and company_id in (" . comma_implode($companies) . ")";
-	$args["id_key"] = "user_id";
-	$args["selected"] = $selected;
-
-	if ($edit)
-		return GuiSelectTable($id, "im_working", $args);
-//		return gui_select_table( $id, "im_working", $selected, $events, "",
-//			"client_displayname(user_id)",
-//			"where is_active=1 and company_id = " . $company, true, false, null, "id" );
-	else
-		return sql_query_single_scalar("select client_displayname(user_id) from im_working where user_id = " . $selected);
-}

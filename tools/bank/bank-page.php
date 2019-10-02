@@ -13,11 +13,6 @@ print load_scripts(array("/tools/admin/data.js", "/niver/gui/client_tools.js"));
 
 $operation = get_param( "operation", false, null );
 if ( $operation ) {
-	switch ( $operation ) {
-		case "new_task":
-			print greeting();
-			break;
-	}
 
 	handle_bank_operation( $operation, get_url(1) );
 

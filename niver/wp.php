@@ -11,9 +11,13 @@ if ( ! defined( 'ROOT_DIR' ) ) {
 	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) );
 }
 
-require_once(ROOT_DIR . "/wp-includes/load.php");
+$no_wp = 1;
+
+require_once( ROOT_DIR . "/wp-includes/load.php" );
 require_once( ROOT_DIR . "/wp-includes/pluggable.php" );
 require_once( ROOT_DIR . "/wp-includes/taxonomy.php" );
+require_once (ROOT_DIR . '/niver/data/translate.php');
+require_once (ROOT_DIR . '/niver/gui/inputs.php');
 
 // Postmeta table
 function get_postmeta_field( $post_id, $field_name ) {
@@ -62,9 +66,11 @@ function is_admin_user() {
 
 function greeting()
 {
+	global $no_wp;
 	$data = "";
 
-	$user_id = wp_get_current_user()->ID;
+	if ($no_wp) $user_id =1;
+	else $user_id = 1; // FOR DEBUG wp_get_current_user()->ID;
 
 	if (! $user_id) {
 		$url = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_HOST ) . '/wp-login.php?redirect_to=' . $_SERVER['REQUEST_URI'] . '"';
@@ -89,4 +95,62 @@ function greeting()
 	$data .= "<br/>";
 
 	return $data;
+}
+
+function get_customer_name( $customer_id ) {
+	static $min_supplier = 0;
+	if ( ! $min_supplier ) {
+		if (table_exists("im_suppliers"))
+			$min_supplier = sql_query_single_scalar( "SELECT min(id) FROM im_suppliers" );
+		else
+			$min_supplier = 1000000;
+	}
+
+	if ( $customer_id < $min_supplier ) {
+		$user = get_user_by( "id", $customer_id );
+
+		if ( $user ) {
+			return $user->user_firstname . " " . $user->user_lastname;
+		}
+
+		return "לא נבחר לקוח";
+	}
+
+	return get_supplier_name( $customer_id );
+}
+
+function get_user_id() {
+	if (function_exists('wp_get_current_user'))
+		$current_user = wp_get_current_user();
+	else
+		return 0;
+
+	return $current_user->ID;
+}
+
+function im_user_can( $permission ) {
+	global $no_wp;
+	if ($no_wp) return true; // For debugging
+	return ( user_can( login_id(), $permission ) );
+}
+
+function login_id() {
+	$user = wp_get_current_user();
+	if ( $user->ID == "0" ) {
+		// Force login
+//		$inclued_files = get_included_files();
+//		var_dump( $inclued_files );
+//		my_log( __FILE__, $inclued_files[ count( $inclued_files ) - 2 ] );
+		$url = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_HOST ) . '/wp-login.php?redirect_to=' . $_SERVER['REQUEST_URI'] . '"';
+//		die( 1 );
+
+		print '<script language="javascript">';
+		print "window.location.href = '" . $url . "'";
+		print '</script>';
+		print $_SERVER['REMOTE_ADDR'] . "<br/>";
+		var_dump( $user );
+		exit();
+	}
+
+	return $user->ID;
 }

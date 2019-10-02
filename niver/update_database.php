@@ -12,7 +12,7 @@ if ( ! defined( "ROOT_DIR" ) ) {
 
 require_once( ROOT_DIR . "/im-config.php" );
 require_once( ROOT_DIR . "/niver/data/sql.php" );
-$conn = new mysqli( IM_DB_HOST, IM_DB_NAME, IM_DB_PASSWORD, IM_DB_NAME );
+$conn = new mysqli( DB_HOST, DB_NAME, DB_PASSWORD, DB_NAME );
 mysqli_set_charset( $conn, 'utf8' );
 
 print "nv_conversion<br/>";

@@ -12,5 +12,5 @@ require_once( "../suppliers/gui.php" );
 print "ספקים: ";
 print_select_supplier( "remote_supplier", false );
 print "<br/>קטגוריות: ";
-print_category_select( "remote_category_id" );
+gui_select_category( "remote_category_id" );
 print "<br/>";

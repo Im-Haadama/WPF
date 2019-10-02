@@ -32,7 +32,6 @@
  "selected"
  "selector"
  "selectors"
- "show_cols"
  "size"
  "skip_id" - don't show the id in table
  "sql"
@@ -44,3 +43,8 @@ sql_table.php: * GetArg - get option from array.
  "values"
  "v_checkbox"
  "where"
+
+
+fields:
+ "show_cols" - which columns to show.
+ "hide_cols" - which columns to hide. Good for default values.

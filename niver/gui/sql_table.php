@@ -17,8 +17,8 @@
 
 require_once( "inputs.php" );
 
-require_once( STORE_DIR . "/niver/data/sql.php" );
-require_once( STORE_DIR . "/niver/data/translate.php");
+require_once( ROOT_DIR . "/niver/data/sql.php" );
+require_once( ROOT_DIR . "/niver/data/translate.php");
 
 /**
  * Table header gets a sql query and returns array to be used as header, usually in html table.
@@ -644,6 +644,8 @@ function GuiRowContent($table_name, $row_id, $args)
 	if ($row_id) { // Show specific record
 		$sql = "select " . ($fields ? comma_implode($fields) : "*") . " from $table_name where " . $id_key . " = " . $row_id;
 		$args["row_id"] = $row_id;
+
+		print $sql;
 
 	} else { // Create new one.
 		if ($fields) {

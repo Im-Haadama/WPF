@@ -32,7 +32,11 @@ if ( ! defined( 'IM_BACKUP_FOLDER' ) ) {
 $m = new MultiSite( $hosts_to_sync, $master, 3 );
 
 $op = get_param( "op" );
-$date = get_param("date", false, date('y-m-d'));
+// $backup_run_time = shell_exec(`crontab -l | grep backup.sh | cut -f 2 -d' '`);
+$backup_run_time = 12;
+
+$d =  (date("H") > $backup_run_time) ? date('y-m-d') : date('y-m-d',strtotime("-1 days"));
+$date = get_param("date", false, $d);
 $debug = get_param("debug", false, false);
 
 if ( $op == 'check' ) { // would run on conductor server

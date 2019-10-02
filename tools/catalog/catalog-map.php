@@ -203,7 +203,7 @@ require_once( '../gui.php' );
 <datalist id="unmapped_terms"></datalist>
 
 <?php
-print_category_select( "product_cat" );
+gui_select_category( "product_cat" );
 
 print gui_header( 1, "יצירת מוצרים" );
 

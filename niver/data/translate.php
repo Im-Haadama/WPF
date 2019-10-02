@@ -23,7 +23,10 @@ function im_translate($text, $arg = null)
 	}
 
 //	print "translating $text to " . get_locale() . "...";
-	$t = translate($text, $textdomain);
+	if (function_exists('translate'))
+		$t = translate($text, $textdomain);
+	else
+		$t = $text;
 //	print $t . "<br/>";
 	// print $t . " " . strlen($t);
 	if (strlen($t))

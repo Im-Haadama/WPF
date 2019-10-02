@@ -203,61 +203,8 @@ function get_key() {
 	return $key;
 }
 
-function im_user_can( $permission ) {
-	return ( user_can( login_id(), $permission ) );
-}
-
-function login_id() {
-	$user = wp_get_current_user();
-	if ( $user->ID == "0" ) {
-		// Force login
-//		$inclued_files = get_included_files();
-//		var_dump( $inclued_files );
-//		my_log( __FILE__, $inclued_files[ count( $inclued_files ) - 2 ] );
-		$url = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_HOST ) . '/wp-login.php?redirect_to=' . $_SERVER['REQUEST_URI'] . '"';
-//		die( 1 );
-
-		print '<script language="javascript">';
-		print "window.location.href = '" . $url . "'";
-		print '</script>';
-		print $_SERVER['REMOTE_ADDR'] . "<br/>";
-		var_dump( $user );
-		exit();
-	}
-
-	return $user->ID;
-}
-
 function get_current_user_name() {
 	return get_customer_name( wp_get_current_user()->ID );
-}
-
-function get_user_id() {
-	$current_user = wp_get_current_user();
-
-	return $current_user->ID;
-}
-
-function get_customer_name( $customer_id ) {
-	static $min_supplier = 0;
-	if ( ! $min_supplier ) {
-		if (table_exists("im_suppliers"))
-			$min_supplier = sql_query_single_scalar( "SELECT min(id) FROM im_suppliers" );
-		else
-			$min_supplier = 1000000;
-	}
-
-	if ( $customer_id < $min_supplier ) {
-		$user = get_user_by( "id", $customer_id );
-
-		if ( $user ) {
-			return $user->user_firstname . " " . $user->user_lastname;
-		}
-
-		return "לא נבחר לקוח";
-	}
-
-	return get_supplier_name( $customer_id );
 }
 
 function get_customer_by_email( $email ) {

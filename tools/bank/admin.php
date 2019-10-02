@@ -1,6 +1,6 @@
 <?php
 require_once(ROOT_DIR . '/niver/gui/gem.php');
-require_once(ROOT_DIR . '/tools/admin/data.php');
+require_once( ROOT_DIR . '/tools/admin/data.php' );
 
 // $admin_scripts = array( "/niver/gui/client_tools.js", "/tools/admin/data.js", "/tools/admin/admin.js" );
 

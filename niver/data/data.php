@@ -1,4 +1,8 @@
 <?php
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
+require_once("../../niver/gui/inputs.php");
 
 $ignore_list = array("search", "operation", "table_name", "id");
 
@@ -94,6 +98,7 @@ function data_save_new($table_name)
 	$sql    = "INSERT INTO $table_name (";
 	$values = "values (";
 	$first  = true;
+	$sql_values = array();
 	foreach ( $_GET as $key => $value ) {
 		if (in_array($key, $ignore_list))
 			continue;
@@ -102,25 +107,19 @@ function data_save_new($table_name)
 			$values .= ", ";
 		}
 		$sql    .= $key;
-		$values .= "\"" . $value . "\"";
+		$values .= "?"; // "\"" . $value . "\"";
 		$first  = false;
+
+		$sql_values[$key] = $value;
 	}
 	$sql    .= ") ";
 	$values .= ") ";
 	$sql    .= $values;
 
-//	print $sql;
-
-	// print $sql;
-	// TODO: use prepare https://stackoverflow.com/questions/60174/how-can-i-prevent-sql-injection-in-php
-
-	try {
-		if ( ! sql_query($sql ) ) {
-			die(1);
-		}
-	} catch ( Exception $e ) {
-		print "error: " . $e->getMessage();
-	}
+	$stmt = sql_prepare($sql);
+	sql_bind($table_name, $stmt, $sql_values);
+	if (!$stmt -> execute())
+		sql_error($sql);
 
 	return sql_insert_id();
 }

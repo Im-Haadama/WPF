@@ -8,6 +8,7 @@
 if ( ! defined( "TOOLS_DIR" ) ) {
 	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
 }
+require_once(ROOT_DIR . './org/gui.php');
 // error_reporting( E_ALL );
 // ini_set( 'display_errors', 'on' );
 
@@ -118,45 +119,6 @@ function worker_get_id($user_id)
 }
 
 
-/**
- * @param $user_id
- *
- * @return array|string
- */
-function worker_get_companies($user_id)
-{
-	return sql_query_array_scalar("select company_id from im_working where user_id = " . $user_id);
-}
-
-/**
- * @param $user_id
- *
- * @return string
- */
-function worker_get_projects($user_id)
-{
-	return sql_query_array_scalar("select project_id from im_working where user_id = " . $user_id);
-}
-
-/**
- * @param $uid
- *
- * @return string
- */
-function is_volunteer( $uid ) {
-	return sql_query_single_scalar( "SELECT volunteer FROM im_working WHERE user_id = " . $uid );
-}
-
-
-/** if the worker is global company worker, return array of companies
- * @param $user_id
- *
- * @return string
- */
-function worker_is_global_company($user_id)
-{
-	return sql_query_single_scalar("select company_id from im_working where user_id = " . $user_id . " and project_id = 0");
-}
 
 
 // User id == 0: display all users.
@@ -445,68 +407,7 @@ function add_activity_sick_leave( $user_id, $date, $project_id ) {
 }
 
 // $selector_name( $key, $data, $args)
-function gui_select_project( $id, $value, $args)
-{
-	// print "v=$value<br/>";
-	$edit = GetArg($args, "edit", false);
-	if (! $edit)
-	{
-//		print "v= " . $value . "<br/>";
-		return get_project_name($value);
-	}
-	// Filter by worker if supplied.
-	$user_id = GetArg($args, "worker", null);
-	$query = null;
-	if ( !$user_id ) {
-		throw new Exception( __FUNCTION__ .": No worker given" );
-	}
 
-	// Check if this user is global company user.
-	if ($companies = worker_get_companies($user_id)){
-		$query = " where id in (select project_id from im_working where company_id in (" . comma_implode($companies) . "))";
-	} else {
-		$query = " where id in (" . comma_implode(worker_get_projects($user_id) . ")");
-	}
-
-		// print "w=" . $worker;
-		// $user_id = sql_query("select user_id from im_working where id = " . $worker);
-//		$query = " where id in (select project_id from im_working where user_id = " . $user_id . ")";
-
-	$args["where"] = $query;
-	$args["name"] = "project_name";
-	$args["selected"] = $value;
-	return GuiSelectTable($id, "im_projects", $args);
-
-}
-
-function gui_select_task( $id, $value, $args ) {
-	$debug = 0; // (1 == get_user_id());
-	$events = GetArg($args, "events", null);
-	$query = GetArg($args, "where", " where status = 0 ");
-	$length = GetArg($args, "length", 30);
-
-//	if ( $worker ) {
-//		// print "w=" . $worker;
-//		// $user_id = sql_query("select user_id from im_working where id = " . $worker);
-//		$query = " where id in (select project_id from im_working where worker_id = " . $worker . ")";
-//	}
-
-//	return gui_select_table( $id, "im_tasklist", $value, $events, "", "task_description",
-//		"where " . $query, true, false );
-
-	$args = array("value" => $value,
-	              "events"=>$events,
-	              "name"=>"task_description", // "SUBSTR(task_description, 1, " . $length . ")",
-	              "where"=> $query,
-	              "include_id" => 1,
-	              "datalist" =>1,
-		"debug" => $debug);
-
-	if ($debug) {
-		print "where: " . $query . "<br/>";
-	}
-	return GUiSelectTable($id, "im_tasklist", $args);
-}
 
 function gui_select_template($id, $value, $args)
 {
@@ -537,28 +438,5 @@ function gui_select_template($id, $value, $args)
 
 }
 
-function team_members($team_id)
-{
-	$sql = "select user_id from im_working where worker_teams(user_id) like '%:" . $team_id . ":%'";
-	return sql_query_array_scalar($sql);
-}
-
-function team_all_members($user_id)
-{
-	$teams = sql_query_array_scalar("select id from im_working_teams where manager = " . $user_id);
-	if (! $teams) return null;
-	$temp_result = array();
-	// Change to associative to have each member just once.
-	foreach ($teams as $team) {
-		$members = team_members($team);
-		foreach ($members as $member)
-			$temp_result[$member] = 1;
-	}
-	// Switch to simple array
-	$result = array();
-	foreach ($temp_result as $member => $x)
-		array_push($result, $member);
-	return $result;
-}
 
 ?>

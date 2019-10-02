@@ -1,27 +1,19 @@
 <?php
+
 error_reporting( E_ALL );
 ini_set( 'display_errors', 'on' );
 
-require_once( "../load.php" );
-require_once ("admin.php");
+require_once( "focus.php" );
 
 $debug = get_param("debug", false, false);
 
 print header_text(true, true, is_rtl(), array("data.js"));
 // focus_init();
 
-im_init($admin_scripts);
-
 $operation = get_param("operation", false, null);
-if ($operation){
-	switch ($operation)
-	{
-		case "new_task":
-			print greeting();
-			break;
-	}
 
-	handle_admin_operation($operation);
+if ($operation) {
+	handle_focus_operation($operation);
 	return;
 }
 $project_id = get_param( "project_id" );
@@ -36,7 +28,7 @@ $task_template_id = get_param("task_template_id");
 if ($task_template_id)
 {
 	global $admin_scripts;
-	im_init($admin_scripts);
+	focus_init($admin_scripts);
 	show_templates($url, $task_template_id);
 	return;
 }
@@ -55,7 +47,7 @@ if (get_param("templates", false,"none") !== "none") {
 if ($team_id)
 {
 	global $admin_scripts;
-	im_init($admin_scripts);
+	focus_init($admin_scripts);
 	show_team($team_id, get_param("active_only", false, true));
 	return;
 }
@@ -64,7 +56,7 @@ $row_id = get_param( "row_id", false );
 if ($row_id)
 {
 	global $admin_scripts;
-	im_init($admin_scripts);
+	focus_init($admin_scripts);
 	show_task($row_id);
 	return;
 }
@@ -74,7 +66,7 @@ $time_filter = get_param("time", false, true);
 $args["url"] = basename(__FILE__);
 // print "url=". $args["url"];
 
-im_init($admin_scripts);
+$url = get_url(1);
 print greeting();
 print gui_hyperlink("Repeating tasks", $url . "?templates");
 
