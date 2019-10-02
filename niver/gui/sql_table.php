@@ -309,8 +309,16 @@ function PrepareRow($row, $args, $row_id)
 			if (is_array($action))
 			{
 				$text = $action[0];
-				$action_url = sprintf($action[1], $row_id);
-				array_push($row_data, gui_hyperlink($text, $action_url));
+				if ($s = strpos($action[1], ';')) { // We have javascript command.
+					$server_action = substr($action[1], 0, $s);
+					$action_url = sprintf($server_action, $row_id);
+					$client_action = substr($action[1], $s + 1);
+					$btn = "btn_$text" . "_" . $row_id;
+					array_push($row_data, gui_button($btn, "execute_url('" . $action_url . "', $client_action, $btn )", $text));
+				} else {
+					$action_url = sprintf($action[1], $row_id);
+					array_push($row_data, gui_hyperlink($text, $action_url));
+				}
 			} else {
 				$h = sprintf($action, $row_id);
 				array_push($row_data, $h);
@@ -397,13 +405,18 @@ function TableData($sql, &$args = null)
 		print "m_line: "; var_dump($m_line); print "<br/>";
 	}
 
+
 	if (strstr($sql, "describe") || strstr($sql, "show col")) // New Row
 	{
-		if ($debug) print "new<br/>";
-		// var_dump($m_line); print "<br/>";
+		$field_list = FieldList($sql, $args);
+
+		// var_dump($field_list);
+
 		$new_row = array();
-		while ( $row = mysqli_fetch_assoc( $result ) ) {
-			$key = $row["Field"];
+		if ($debug) print "new<br/>";
+
+		foreach ($field_list as $key)
+		{
 			if ($debug) print "handling $key<br/>";
 			if ($values and isset($values[$key])) {
 				$new_row[$key] = $values[$key];
@@ -427,6 +440,7 @@ function TableData($sql, &$args = null)
 				// array_push($m_line, isset($mandatory_fields[$key]));
 			}
 		}
+		// var_dump($m_line); print "<br/>";
 		if ($v_line){
 			$rows_data["checkbox"] = $v_line;
 			// array_push($rows_data, $v_line);
@@ -442,6 +456,16 @@ function TableData($sql, &$args = null)
 			$h_line = null;
 		}
 
+		$fields = GetArg($args, "fields", null);
+
+		if ($fields) // new row field order would be like in database. Reorder it here.
+		{
+			$new_row_ordered = array();
+			foreach ($fields as $field){
+				$new_row_ordered[$field] = $new_row[$field];
+			}
+			$new_row = $new_row_ordered;
+		}
 		$rows_data["new"] = $new_row;
 		// array_push($rows_data, $new_row);
 
@@ -521,6 +545,22 @@ function TableData($sql, &$args = null)
 
 		return $rows_data;
 	}
+}
+
+function FieldList($sql, $args)
+{
+	$fields = GetArg($args, "fields", null);
+	// print "fields: "; var_dump($fields) . "<br/>";
+	if ($fields) return $fields;
+
+	$fields = array();
+
+	$result = sql_query($sql);
+	while ( $row = mysqli_fetch_assoc( $result ) ) {
+		array_push($fields, $row["Field"]);
+	}
+
+	return $fields;
 }
 
 function HandleSum(&$sum_fields, $row)
@@ -632,7 +672,6 @@ function GuiRowContent($table_name, $row_id, $args)
 {
 	$id_key = GetArg($args, "id_key", "id");
 	$fields = GetArg($args, "fields", null);
-	// var_dump($fields);
 
 	if (! isset($args["skip_id"])) $args["skip_id"] = true;
 	$edit = GetArg($args, "edit", false);
@@ -654,7 +693,6 @@ function GuiRowContent($table_name, $row_id, $args)
 		else
 			$sql = "describe $table_name";
 	}
-
 	return GuiTableContent($table_name, $sql, $args);
 }
 
@@ -672,7 +710,9 @@ function GuiRowContent($table_name, $row_id, $args)
 
 function GuiTableContent($table_id, $sql, &$args)
 {
-	if (! $sql) $sql = "select * from $table_id";
+	if (! $sql)
+		$sql = "select * from $table_id";
+
 	// Fetch the data from DB.
 	$rows_data = TableData( $sql, $args);
 

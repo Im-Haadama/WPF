@@ -731,6 +731,8 @@ function gui_table_args($input_rows, $id = null, $args = null)
 			}
 			$rows = $target;
 		}
+//		print "hc="; var_dump($args["hide_cols"]);
+
 		foreach ($rows as $row_id => $row)
 		{
 			$data .="<tr>";
@@ -738,8 +740,10 @@ function gui_table_args($input_rows, $id = null, $args = null)
 				if ($add_checkbox) $data .= "<td>" . gui_checkbox("chk_" . $row_id, $checkbox_class, 0, $checkbox_events);
 				foreach ($row as $key => $cell){
 					$idx = ($transpose ? $row_id : $key);
-					$show = ((!$show_cols) or isset($show_cols[$idx]))
-						and !(isset($args["hide_cols"]) and isset($args["hide_cols"][$idx]));
+//					print "idx=$idx $show_cols h=" . isset($args["hide_cols"]) . " hidx=" . isset($args["hide_cols"][$idx]);
+					$show = (((!$show_cols) or isset($show_cols[$idx])) // Positive
+						and !(isset($args["hide_cols"]) and isset($args["hide_cols"][$idx]))); // Negative
+//					print " s=$show . <br/>";
 					// if ($transpose and )
 					// if ($show_cols and )
 //					if ($debug) print "checking show_cols[$key]";

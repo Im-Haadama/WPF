@@ -8,7 +8,7 @@
 if ( ! defined( "TOOLS_DIR" ) ) {
 	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
 }
-require_once(ROOT_DIR . './org/gui.php');
+require_once(ROOT_DIR . '/org/gui.php');
 // error_reporting( E_ALL );
 // ini_set( 'display_errors', 'on' );
 

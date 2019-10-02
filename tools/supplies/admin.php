@@ -10,7 +10,7 @@ $table_name = "im_supplies";
 $general_selectors = array("supplier" => "gui_select_supplier");
 // function update_table_field(post_file, table_name, id, field_name, finish_action) {
 
-$update_event = 'onchange="update_table_field(\'/tools/admin/data-post.php\', \'' . $table_name . '\', \'%d\', \'%s\', check_update)"';
+$update_event = 'onchange="update_table_field(\'/niver/data/data.php\', \'' . $table_name . '\', \'%d\', \'%s\', check_update)"';
 
 print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/tools/admin/data.js" ) );
 

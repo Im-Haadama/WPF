@@ -1,4 +1,46 @@
 Power store, tasks changes history.
+Version 2.2.3:
+- complete the semi separation of store and focus.
+- New: javascript action to hide completed/finished/canceled tasks.
+- finish actions gets param. Might cause bugs...
+- Change: hide task creator.
+
+Version 2.2.2:
+1. Focus: refactoring. Working with page or with shortcode from wordpress pages. Working without store installed.
+2. Backup bug fix: Get files by date.
+3. clean_files: move files from uploads to another file.
+4. load translation only when locale is not en_US.
+5. Store locator - to be implemented.
+6.
+Version 2.2.1:
+- Unite run and execute.
+- add im_inits in missing places.
+- new: update_version to all hosts.
+
+Version 2.2:
+- sql type starting with $ for meta fields.
+- button: translate text.
+- options.txt: start of documenting sql_table and input options.
+- bug fix: glue url.
+- tasklist - show last entered. mainly for debug.
+- bug fix: operation_arguments the control name won't include row id.
+- bug fix: clean / from _GET
+- focus-page: add roles for show task types and projects.
+- task_ended: recover missing function
+- show_basket merged into show_baskets.
+- bug fix: show bundles ordered.
+- bug fix: add product to order by id.
+- bug fix: im_init in entry.php
+- new: add sick leave.
+- multisite function will use r-multisite. Can be auth by wordpress or by php user/password.
+- bug fix: import supply my not have price.
+
+version mamangement: added minor version handling
+
+database changes:
+tasklist - implementation start task_type for required meta.
+functions: product_price, post_status, working_rate functions for gui_table.
+multisite user/password
 
 version 2.1:
 - bank transactions. im_bank_transaction_types will hold types of bank fees, loans.

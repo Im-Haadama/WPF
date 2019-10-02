@@ -25,8 +25,10 @@ if ( ! defined( 'TOOLS_DIR')) {
 require_once (ROOT_DIR . '/im-config.php');
 
 // require_once( "functions_im.php" );
-require_once(TOOLS_DIR . "/im_tools_light.php");
+if (file_exists(TOOLS_DIR . "/im_tools_light.php"))
+    require_once(TOOLS_DIR . "/im_tools_light.php");
 
+if (function_exists("im_init"))
 try {
 	im_init();
 } catch ( Exception $e ) {

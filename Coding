@@ -11,14 +11,17 @@ Library names
 niver - fund, data, gui. Not sure about this name.
 tools - store functionality.
 
-
 Folder structure
 -=-=-=-=-=-=-=-=
 page.php - the html page displayed. will be replaced in the integration with wordpress by shortcode.
-admin-post.php handles operations.
+admin-post.php handles operations. check auth amd connects to db.
 admin.php - all the functional code. including wont display noting.
 Object.php - code handling a class.
 
+General
+-=-=-=-
+Auto and connection to db will be in root folder. init.php. installation specific.
+Will check that the user is known. Checking specific roles will be in the post.php.
 
 inputs
 -=-=-=
@@ -29,3 +32,4 @@ Existing row - field name will be <field>_<row_number>. Will be handled by updat
 
 20909791 3b
 1700791 2bs
+22309501

@@ -9,6 +9,9 @@ if ( ! defined( "ROOT_DIR" ) ) {
 	define( 'ROOT_DIR', dirname( dirname( dirname( dirname( __FILE__ ) ) ) ) );
 }
 
+require_once(ROOT_DIR . '/im-config.php');
+require_once(ROOT_DIR . "/init.php");
+
 require_once( ROOT_DIR . '/tools/im_tools.php' );
 require_once( ROOT_DIR . '/niver/data/sql.php' );
 require_once( ROOT_DIR . '/tools/wp.php' );

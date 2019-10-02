@@ -15,6 +15,8 @@ require_once(ROOT_DIR . "/focus/gui.php");
 require_once(ROOT_DIR . "/niver/gui/gem.php");
 require_once(ROOT_DIR . "/niver/data/data.php");
 require_once(ROOT_DIR . '/org/gui.php');
+require_once(ROOT_DIR . '/focus/Tasklist.php');
+
 
 require_once (ROOT_DIR . '/im-config.php');
 
@@ -59,8 +61,7 @@ function focus_init($script_files = null)
 		if (file_exists($style_file)) print load_style($style_file);
 		else if ($debug) print "style not found.";
 
-		$admin_scripts = array( "/niver/gui/client_tools.js", "/niver/data/data.js");
-		print load_scripts($admin_scripts);
+		// $admin_scripts = array( "/niver/gui/client_tools.js", "/niver/data/data.js");
 	}
 
 	if ($script_files)
@@ -76,6 +77,7 @@ function focus_init($script_files = null)
 
 function focus_new_task()
 {
+	$debug = 0;
 	if (! focus_check_user())
 		return;
 	// print im_translate("Project"). " " . im_translate("Good morning") . _("Hello") . $locale;
@@ -94,20 +96,21 @@ function focus_new_task()
 
 	$args["worker"] = get_user_id();
 	$args["companies"] = sql_query_single_scalar("select company_id from im_working where user_id = " . get_user_id());
-	$args["hide_cols"] = array("creator");
+	$args["hide_cols"] = array("creator" => 0);
 
-	$args["debug"] = (get_current_user() == 369);
+	// $args["debug"] = (get_current_user() == 369);
 	$allowed_actions = array();
 
 	if (count($allowed_actions)) $args["actions"] = $allowed_actions;
 	// $args["actions"] = array();"project_id" => "add");
 	try {
+		if ($debug) { print "<br/>" . __FUNCTION__. ": "; var_dump(GetArg($args, "fields", null)); print "<br/>"; }
 		print NewRow( "im_tasklist", $args );
 	} catch ( Exception $e ) {
 		print $e->getMessage();
 		return;
 	}
-	print gui_button("btn_newtask", "save_new('im_tasklist')", "צור");
+	print gui_button("btn_newtask", "save_new_custom('/focus/focus-post.php', 'im_tasklist')", "צור");
 }
 
 function focus_check_user()
@@ -128,7 +131,7 @@ function focus_check_user()
 //	}
 //	print "worker id: " . $worker_id . "<br/>";
 
-	$company_id = sql_query_single_scalar("select company_id from im_working where id = " . get_user_id());
+	$company_id = sql_query_single_scalar("select company_id from im_working where user_id = " . get_user_id());
 
 //	print "company id: " . $company_id . "<br/>";
 
@@ -153,6 +156,10 @@ function focus_check_user()
 
 function handle_focus_operation($operation)
 {
+	$allowed_tables = array("im_company", "im_tasklist");
+
+	$debug = 0;
+	if ($debug)	print "operation: " . $operation . "<br/>";
 	switch ($operation){
 		case "new_task":
 			focus_new_task();
@@ -240,6 +247,7 @@ function handle_focus_operation($operation)
 			$args = array();
 			print GemTable("im_task_type", "task types", $args);
 			break;
+
 		case "new_company_user":
 			$company_id = data_save_new("im_company");
 		//			$worker_id = worker_get_id(get_user_id());
@@ -248,7 +256,8 @@ function handle_focus_operation($operation)
 
 			print "done";
 			break;
-		case "start":
+
+		case "start_task":
 			$task_id = get_param( "id" );
 			task_started($task_id);
 			// Started task...
@@ -271,10 +280,35 @@ function handle_focus_operation($operation)
 			}
 			break;
 
-		case "end":
+		case "end_task":
 			$task_id = get_param( "id" );
 			task_ended($task_id);
 			break;
+
+		case "cancel_task":
+			$task_id = get_param( "id" );
+			task_cancelled($task_id);
+			break;
+
+		///////////////////////////
+			// DATA entry and update //
+			///////////////////////////
+
+		case "save_new":
+			$table_name = get_param("table_name", true);
+			if (! in_array($table_name, $allowed_tables))
+				die ("invalid table operation");
+			print data_save_new($table_name);
+			break;
+
+		case "update":
+			$table_name = get_param("table_name", true);
+			if (! in_array($table_name, $allowed_tables))
+				die ("invalid table operation");
+			if (update_data($table_name))
+				print "done";
+			break;
+
 		default:
 			print __FUNCTION__ . ": " . $operation . " not handled <br/>";
 
@@ -282,13 +316,6 @@ function handle_focus_operation($operation)
 	}
 	return;
 }
-
-
-//$non_zero = get_param( "non_zero" );
-//
-//$url = get_url();
-
-// print header_text( false, true, true, "/vendor/sorttable.js" );
 
 function show_projects( $owner, $url, $non_zero = true) {
 	$links = array();
@@ -356,19 +383,10 @@ if ( ! defined( "ROOT_DIR" ) ) {
 	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
 }
 
-//print header_text( false, true, true, array(
-//	"/niver/gui/client_tools.js",
-//	"/tools/admin/data.js",
-//	"/vendor/sorttable.js"
-//) );
-
 function show_task($row_id, $edit = 1)
 {
 	$table_name = "im_tasklist";
 	$entity_name = "task";
-	// global $entity_name, $task_selectors;
-
-	// print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/tools/admin/data.js", "/tools/admin/admin.js" ) );
 
 	print gui_header( 1, $entity_name . " " . $row_id );
 	$args                 = array();
@@ -446,7 +464,7 @@ function active_tasks($args = null, $debug = false, $time = false)
 	global $this_url;
 	$table_name = "im_tasklist";
 
-	$url = get_url(true);
+	$url = "focus-post.php";
 	$last_entered = GetArg($args, "last_entered", null);
 	if ($last_entered) print "showing newest tasks<br/>";
 
@@ -488,11 +506,12 @@ function active_tasks($args = null, $debug = false, $time = false)
 	}
 	$query .= " and (mission_id is null or mission_id = 0) ";
 
+	// New... the first part is action to server. If it replies with done, the second part is executed in the client (usually hiding the row).
 	$actions = array(
-		array( "התחל", $url . "?operation=start&id=%s" ),
-		array( "בוצע", $url . "?operation=end&id=%s" ),
-		array( "בטל", $url . "?operation=cancel&id=%s" ),
-		array( "דחה", $url . "?operation=postpone&id=%s" )
+		array( "started", $url . "?operation=start_task&id=%s" ),
+		array( "finished", $url . "?operation=end_task&id=%s;action_hide_row" ),
+		array( "cancel", $url . "?operation=cancel_task&id=%s" ),
+		array( "postpone", $url . "?operation=postpone_task&id=%s" )
 	);
 	if (! $active_only or $last_entered)
 		$order = "order by id desc ";
@@ -539,8 +558,6 @@ function active_tasks($args = null, $debug = false, $time = false)
 
 function show_team($team_id, $active_only)
 {
-//	print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/tools/admin/data.js", "/tools/admin/admin.js" ) );
-
 	print gui_header(1, "Showing status of team " . team_get_name($team_id));
 	print gui_hyperlink("Include non active", add_to_url("active_only", 0));
 

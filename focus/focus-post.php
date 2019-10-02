@@ -5,12 +5,6 @@ require_once("focus.php");
 $operation = get_param("operation", false, null);
 if ($operation){
 	focus_init();
-	switch ($operation)
-	{
-		case "new_task":
-			print greeting();
-			break;
-	}
 
 	handle_focus_operation($operation);
 	return;

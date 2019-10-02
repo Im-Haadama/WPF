@@ -143,6 +143,13 @@ function task_ended($task_id) {
 		$sql = "UPDATE im_tasklist SET ended = now(), status = " . eTasklist::done .
 		       " WHERE id = " . $task_id;
 		sql_query( $sql );
+		print "done";
+}
+
+function task_cancelled($task_id) {
+	$sql = "UPDATE im_tasklist SET status = " . eTasklist::canceled .", status = " . eTasklist::done .
+	       " WHERE id = " . $task_id;
+	sql_query( $sql );
 }
 
 

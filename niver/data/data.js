@@ -6,7 +6,7 @@ function save_entity(table_name, id)
         alert ("invalid id: " . id);
         return;
     }
-    let operation = "/tools/admin/data-post.php?table_name=" + table_name + "&operation=update&id=" + id;
+    let operation = "/niver/data/data.php?table_name=" + table_name + "&operation=update&id=" + id;
     operation = operation + operation_arguments(table_name, id);
     // alert(operation);
     execute_url(operation, action_back);
@@ -15,7 +15,7 @@ function save_entity(table_name, id)
 // If we want to add custom action in the server we can send different post action.
 function save_new_custom(post_operation, table_name, action)
 {
-    let operation = post_operation + '&table_name=' + table_name;
+    let operation = post_operation + '?operation=save_new&table_name=' + table_name;
     let table = document.getElementById(table_name);
     if (! table || ! table.rows){
         alert("rows of table " + table_name + " not found");
@@ -43,16 +43,24 @@ function save_new_custom(post_operation, table_name, action)
         execute_url(operation, action_back);
 
 }
-function save_new(table_name, action = null)
-{
-    save_new_custom("/tools/admin/data-post.php?operation=new", table_name, action);
-}
+// function save_new(table_name, action = null)
+// {
+//     save_new_custom("/niver/data/data.php?operation=new", table_name, action);
+// }
 
 function check_update(xmlhttp)
 {
     if (xmlhttp.response !== "done")
         alert (xmlhttp.response);
 
+}
+
+function action_hide_row(xmlhttp, btn)
+{
+    if (xmlhttp.response === "done")
+        btn.parentElement.parentElement.style.display = 'none';
+    else
+        alert (xmlhttp.response);
 }
 
 function action_back(xmlhttp)
@@ -109,7 +117,7 @@ function search_table(table_name, url = null)
         alert("Select fields to search with");
         return;
     }
-    if (! url) url = "/tools/admin/data-post.php?table_name=" + table_name + "&operation=search";
+    if (! url) url = "/niver/data/data.php?table_name=" + table_name + "&operation=search";
     window.location =  url + args;
 }
 // function update_field(post_file, id, field_name, finish_action) {

@@ -2,10 +2,9 @@
 error_reporting( E_ALL );
 ini_set( 'display_errors', 'on' );
 
-require_once("../../niver/gui/inputs.php");
+require_once(ROOT_DIR . "/niver/gui/inputs.php");
 
 $ignore_list = array("search", "operation", "table_name", "id");
-
 
 function data_parse_get($table_name) {
 	global $ignore_list;
@@ -93,7 +92,6 @@ function update_data($table_name)
 
 function data_save_new($table_name)
 {
-
 	global $ignore_list;
 	$sql    = "INSERT INTO $table_name (";
 	$values = "values (";

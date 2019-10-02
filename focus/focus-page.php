@@ -1,13 +1,20 @@
 <?php
 
+if ( ! defined( "ROOT_DIR" ) ) {
+	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) ) ;
+}
+
 error_reporting( E_ALL );
 ini_set( 'display_errors', 'on' );
+
+require_once(ROOT_DIR . '/im-config.php');
+require_once(ROOT_DIR . "/tools/wp/init.php");
 
 require_once( "focus.php" );
 
 $debug = get_param("debug", false, false);
 
-print header_text(true, true, is_rtl(), array("data.js"));
+print header_text(true, true, is_rtl(), array("/niver/data/data.js", "/niver/gui/client_tools.js"));
 // focus_init();
 
 $operation = get_param("operation", false, null);

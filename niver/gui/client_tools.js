@@ -111,14 +111,14 @@ function select_all_toggle(selector, collection) {
 
 // Limited use. The internal variable is not scoped correctly.
 // Use only if one call at a time
-function execute_url(url, finish_action) {
+function execute_url(url, finish_action, obj) {
     xmlhttp3 = new XMLHttpRequest();
     xmlhttp3.onreadystatechange = function () {
         // Wait to get query result
         if (xmlhttp3.readyState == 4 && xmlhttp3.status == 200)  // Request finished
         {
             if (finish_action)
-                finish_action(xmlhttp3);
+                finish_action(xmlhttp3, obj);
         }
     }
     xmlhttp3.open("GET", url, true);

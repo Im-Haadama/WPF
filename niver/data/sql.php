@@ -159,8 +159,25 @@ function sql_bind($table_name, &$stmt, $_values)
 		case 3:
 			return $stmt->bind_param($types, $values[0], $values[1], $values[2]);
 			break;
+		case 4:
+			return $stmt->bind_param($types, $values[0], $values[1], $values[2], $values[3]);
+			break;
+		case 5:
+			return $stmt->bind_param($types, $values[0], $values[1], $values[2], $values[3], $values[4]);
+			break;
+		case 6:
+			return $stmt->bind_param($types, $values[0], $values[1], $values[2], $values[3], $values[4], $values[5]);
+			break;
+		case 7:
+			return $stmt->bind_param($types, $values[0], $values[1], $values[2], $values[3], $values[4], $values[5], $values[6]);
+			break;
+		case 8:
+			return $stmt->bind_param($types, $values[0], $values[1], $values[2], $values[3], $values[4], $values[5], $values[6], $values[7]);
+			break;
+
 		default:
-			throw new Exception("number of arguments not implemented");
+			var_dump($values);
+			throw new Exception("number of arguments not implemented:" . count($values));
 	}
 	return true;
 }

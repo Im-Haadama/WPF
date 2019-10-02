@@ -24,7 +24,7 @@ function task_focus()
 //	print "u=$url";
 	$operation = get_param("operation", false, null);
 	if ($operation) {
-		handle_focus_operation($operation);
+		 handle_focus_operation($operation);
 		return;
 	}
 	print active_tasks();

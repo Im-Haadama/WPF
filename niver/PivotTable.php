@@ -15,7 +15,6 @@ if ( ! defined( "ROOT_DIR" ) ) {
 }
 
 require_once( ROOT_DIR . '/niver/data/sql.php' );
-require_once( ROOT_DIR . '/tools/im_tools.php' );
 
 class PivotTable {
 	private $table_name;

@@ -79,6 +79,7 @@ function get_file_name($date)
 	$content = scandir( $backup_dir, SCANDIR_SORT_DESCENDING );
 	foreach ($content as $c)
 	{
+		print $c . "<br/>";
 		if (substr($c, 0, 1) != "." and ! strstr($c, "err") and strstr($c, $date)) {
 			return $c;
 		}
