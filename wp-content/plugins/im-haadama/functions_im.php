@@ -12,10 +12,10 @@ if ( ! defined( "ROOT_DIR" ) ) {
 require_once(ROOT_DIR . '/im-config.php');
 require_once(ROOT_DIR . "/init.php");
 
-require_once( ROOT_DIR . '/tools/im_tools.php' );
+require_once( ROOT_DIR . '/fresh/im_tools.php' );
 require_once( ROOT_DIR . '/niver/data/sql.php' );
-require_once( ROOT_DIR . '/tools/wp.php' );
-require_once( ROOT_DIR . '/tools/pricing.php' );
+require_once( ROOT_DIR . '/niver/wp.php' );
+require_once( ROOT_DIR . '/fresh/pricing.php' );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 
 //if ( ! isset( $woocommerce ) ) {
@@ -23,8 +23,8 @@ require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 //	return;
 //}
 
-//require_once('../../../../tools/im_tools.php');
-// require_once ("../../../../tools/wp.php");
+//require_once('../../../../fresh/im_tools.php');
+// require_once ("../../../../niver/wp.php");
 add_action( 'woocommerce_checkout_process', 'wc_minimum_order_amount' );
 add_action( 'woocommerce_before_cart', 'wc_minimum_order_amount' );
 add_action( 'woocommerce_checkout_order_processed', 'wc_minimum_order_amount' );
@@ -101,7 +101,7 @@ function wc_minimum_order_amount() {
 function wc_after_cart() {
 //    print "<a href=\"http://store.im-haadama.co.il/"
 	if ( $_SERVER['SERVER_NAME'] == 'fruity.co.il' ) {
-		print "<a href=\"../tools/baskets/unfold.php\"" .
+		print "<a href=\"../fresh/baskets/unfold.php\"" .
 		      "class=\"checkout-button button alt wc-forward\">החלף סלים במרכיביו</a>";
 	}
 //המשך לתשלום</a>
@@ -501,7 +501,7 @@ function fresh_store_packing_page() {
 		array( "packing" )
 	) );
 
-	// require_once("../tools/menu_op.php");
+	// require_once("../fresh/menu_op.php");
 }
 
 function fresh_store_supplier_account_page() {
@@ -513,7 +513,7 @@ function fresh_store_supplier_account_page() {
 		array( "supplier_account" )
 	) );
 
-	// require_once("../tools/menu_op.php");
+	// require_once("../fresh/menu_op.php");
 }
 
 

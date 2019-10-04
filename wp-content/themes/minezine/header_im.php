@@ -27,20 +27,20 @@
 //        var supplier_id = sel.options[sel.selectedIndex].getAttribute("data-supplier")
 
             var id = sel.options[sel.selectedIndex].getAttribute("data-basket_id");
-            window.location.href = "../../../tools/baskets/basket.php?op=save&basket_id=" + id;
+            window.location.href = "../../../fresh/baskets/basket.php?op=save&basket_id=" + id;
         }
 
         function load_basket() {
             var sel = document.getElementById("basket");
 
             var id = sel.options[sel.selectedIndex].getAttribute("data-basket_id");
-            window.location.href = "../../../tools/baskets/basket.php?op=load&basket_id=" + id;
+            window.location.href = "../../../fresh/baskets/basket.php?op=load&basket_id=" + id;
         }
 
         function empty_basket() {
             var sel = document.getElementById("basket");
 
-            window.location.href = "../../../tools/baskets/basket.php?op=empty";
+            window.location.href = "../../../fresh/baskets/basket.php?op=empty";
         }
 
     </script>

@@ -11,7 +11,7 @@ define( STORE_DIR, dirname( dirname( __FILE__ ) ) );
 require_once( STORE_DIR . '/wp-config.php' );
 require_once( STORE_DIR . '/im-config.php' );
 require_once( ROOT_DIR . '/agla/gui/inputs.php' );
-require_once( STORE_DIR . '/tools/multi-site/multi-site.php' );
+require_once( STORE_DIR . '/fresh/multi-site/multi-site.php' );
 
 print header_text();
 

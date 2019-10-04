@@ -131,9 +131,11 @@ function focus_check_user()
 //	}
 //	print "worker id: " . $worker_id . "<br/>";
 
-	$company_id = sql_query_single_scalar("select company_id from im_working where user_id = " . get_user_id());
+	$sql = "select company_id from im_working where user_id = " . get_user_id();
+	// print $sql;
+	$company_id = sql_query_single_scalar($sql);
 
-//	print "company id: " . $company_id . "<br/>";
+	// print "company id: " . $company_id . "<br/>";
 
 	if (! $company_id){
 		print "Ne need some information to get started!<br/>";
@@ -172,7 +174,7 @@ function handle_focus_operation($operation)
 			break;
 
 		case "new_sequence":
-			print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/tools/admin/data.js", "/tools/admin/admin.js" ) );
+			print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/niver/data/admin.js" ) );
 			$args = array();
 			$args["selectors"] = $task_selectors;
 			$args["transpose"] = true;
@@ -183,7 +185,7 @@ function handle_focus_operation($operation)
 			break;
 
 		case "new_template":
-			print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/tools/admin/data.js", "/tools/admin/admin.js" ) );
+			print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/niver/data/admin.js" ) );
 
 			print gui_header(1, "יצירת תבנית חדשה");
 			$args = array();
@@ -197,13 +199,13 @@ function handle_focus_operation($operation)
 			break;
 
 		case "edit_staff":
-			print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/tools/admin/data.js", "/tools/admin/admin.js" ) );
+			print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/niver/data/admin.js" ) );
 			print gui_header(1, "Edit staff");
 			edit_staff();
 			break;
 
 		case "new_team":
-			print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/tools/admin/data.js", "/tools/admin/admin.js" ) );
+			print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/niver/data/admin.js" ) );
 			print gui_header(1, "Add Team");
 			$args = array("selectors" => array("manager" => "gui_select_worker"));
 			print NewRow("im_working_teams", $args);
@@ -211,7 +213,7 @@ function handle_focus_operation($operation)
 			break;
 
 		case "edit_team":
-			print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/tools/admin/data.js", "/tools/admin/admin.js" ) );
+			print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/niver/data/admin.js" ) );
 			$team_id = get_param("id", true);
 			print gui_header(1, "Edit Team" . team_get_name($team_id));
 			$args = array("selectors" => array("id" => "gui_select_worker"), "edit" => false);
@@ -238,7 +240,7 @@ function handle_focus_operation($operation)
 			break;
 
 		case "projects":
-			print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/tools/admin/data.js", "/tools/admin/admin.js" ) );
+			print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/niver/data/admin.js" ) );
 
 			show_projects(get_url(), get_user_id());
 			break;
@@ -251,7 +253,7 @@ function handle_focus_operation($operation)
 		case "new_company_user":
 			$company_id = data_save_new("im_company");
 		//			$worker_id = worker_get_id(get_user_id());
-			$sql = "update im_working set company_id = " . $company_id . " where id = " . get_user_id();
+			$sql = "update im_working set company_id = " . $company_id . " where user_id = " . get_user_id();
 			sql_query($sql);
 
 			print "done";
@@ -289,6 +291,17 @@ function handle_focus_operation($operation)
 			$task_id = get_param( "id" );
 			task_cancelled($task_id);
 			break;
+
+		case "postpone_task":
+			$task_id = get_param( "id" );
+			$t = new Tasklist($task_id);
+			if ($t->Postpone()) {
+				print "done";
+				return;
+			}
+			print "update failed";
+			break;
+
 
 		///////////////////////////
 			// DATA entry and update //
@@ -416,7 +429,7 @@ function show_task($row_id, $edit = 1)
 		print "Error: " . $e->getMessage();
 		return;
 	}
-	print gui_button( "btn_save", "save_entity('$table_name', " . $row_id . ')', "שמור" );
+	print gui_button( "btn_save", "save_entity('focus-post.php', '$table_name', " . $row_id . ')', "שמור" );
 
 	return;
 }
@@ -461,10 +474,11 @@ function edit_staff($url)
 
 function active_tasks($args = null, $debug = false, $time = false)
 {
-	global $this_url;
 	$table_name = "im_tasklist";
 
-	$url = "focus-post.php";
+	$action_url = "focus-post.php";
+	$page_url = get_url(true);
+
 	$last_entered = GetArg($args, "last_entered", null);
 	if ($last_entered) print "showing newest tasks<br/>";
 
@@ -485,7 +499,6 @@ function active_tasks($args = null, $debug = false, $time = false)
 //		$limit .= " offset " . get_param("offset");
 
 	$links       = array();
-	$links["id"] = $this_url . "?row_id=%s";
 
 	$query   = "where 1 ";
 	if (GetArg($args, "query", null))
@@ -508,19 +521,19 @@ function active_tasks($args = null, $debug = false, $time = false)
 
 	// New... the first part is action to server. If it replies with done, the second part is executed in the client (usually hiding the row).
 	$actions = array(
-		array( "started", $url . "?operation=start_task&id=%s" ),
-		array( "finished", $url . "?operation=end_task&id=%s;action_hide_row" ),
-		array( "cancel", $url . "?operation=cancel_task&id=%s" ),
-		array( "postpone", $url . "?operation=postpone_task&id=%s" )
+		array( "start", $action_url . "?operation=start_task&id=%s" ),
+		array( "finished", $action_url . "?operation=end_task&id=%s;action_hide_row" ),
+		array( "cancel", $action_url . "?operation=cancel_task&id=%s;action_hide_row" ),
+		array( "postpone", $action_url . "?operation=postpone_task&id=%s;action_hide_row" )
 	);
 	if (! $active_only or $last_entered)
 		$order = "order by id desc ";
 	else
 		$order   = "order by priority desc ";
 
-	$links["task_template"] = $url . "?task_template_id=%s";
-	$links["id"] = $url . "?row_id=%s";
-	$links["project_id"] = $url . "?project_id=%s";
+	$links["task_template"] = $page_url . "?task_template_id=%s";
+	$links["id"] = $page_url . "?row_id=%s";
+	$links["project_id"] = $page_url . "?project_id=%s";
 	$args["links"]    = $links;
 
 	$args["actions"]  = $actions;
@@ -548,7 +561,7 @@ function active_tasks($args = null, $debug = false, $time = false)
 	if (strlen ($result) < 10) {
 		$result = im_translate( "No active tasks!" ) . "<br/>";
 		$result .= im_translate( "Let's create first one!" ) . " ";
-		$result .= gui_hyperlink( "create task", $url . "?operation=new_task" ) . "<br/>";
+		$result .= gui_hyperlink( "create task", $page_url . "?operation=new_task" ) . "<br/>";
 	} else
 		$result .= gui_hyperlink("Older", add_to_url("page", $page + 1));
 

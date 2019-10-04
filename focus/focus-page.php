@@ -8,7 +8,7 @@ error_reporting( E_ALL );
 ini_set( 'display_errors', 'on' );
 
 require_once(ROOT_DIR . '/im-config.php');
-require_once(ROOT_DIR . "/tools/wp/init.php");
+require_once( ROOT_DIR . "/init.php" );
 
 require_once( "focus.php" );
 
@@ -43,7 +43,7 @@ if ($task_template_id)
 // print "X" . get_param("templates") != null . "X";
 
 if (get_param("templates", false,"none") !== "none") {
-	print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/tools/admin/data.js", "/tools/admin/admin.js" ) );
+	print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/niver/data/admin.js" ) );
 
 	print gui_hyperlink("הוסף תבנית", get_url(true) . "?operation=new_template");
 

@@ -1,23 +1,31 @@
 #!/bin/bash
 # set -o xtrace
 product_name=fresh_store
-folders="niver tools utils"
-if [ "$#" -ne 1 ]; then
-	echo Usage major, minor or patch
+folders="niver fresh utils org focus delivery wp-content/plugins/im-haadama"
+if [ "$#" -lt 1 ]; then
+	echo Usage [-f] major/minor/patch
 	echo full or major:  creates tar of all version file. updates the version file.
+	echo minor: Create tar of changes, unless -f supplied
 	echo patch version. creates tar of the files since last version
 	exit 
 fi
-if [ $1 == "major" ]; then
+if [ $1 == "-f" ]; then
+    echo Create full version
+  full=1
+  version_type=$2
+else
+    echo Create diff version
+  full=0
+  version_type=$1
+fi
+
+if [ $version_type == "major" ]; then
   current_version="$(cat version)"
   echo current version: "$current_version"
   version=${current_version%%.*}
   version=$(($major+1)).0
-  rm tar_files
-  touch tar_files
-  $( find $folders \( -name '*.php' -o -name '*.mo' -o -name '*.js' \) -exec echo {} >> tar_files  \; )
 fi
-if [ $1 == "minor" ]; then
+if [ $version_type == "minor" ]; then
   current_version="$(cat version)"
   echo current version: "$current_version"
   major=$(echo $current_version | cut -s -d. -f1)
@@ -29,11 +37,8 @@ if [ $1 == "minor" ]; then
     let minor=1+minor
     version=$major.$minor
    fi
-  rm tar_files
-  touch tar_files
-  $( find $folders \( -name '*.php' -o -name '*.mo' -o -name '*.js' \) -newer versions/$product_name-$base.tar.gz -exec echo {} >> tar_files  \; )
 fi
-if [ $1 == "patch" ]; then
+if [ $version_type == "patch" ]; then
   current_version="$(cat version)"
   echo current version: "$current_version"
   patch=$(echo $current_version | cut -s -d. -f3)
@@ -43,15 +48,20 @@ if [ $1 == "patch" ]; then
     let patch=1+$patch
     version=$(echo $current_version | cut -d. -f1-2).$patch
   fi
-  rm tar_files
-  touch tar_files
-  $( find $folders \( -name '*.php' -o -name '*.mo' -o -name '*.js' \) -newer versions/$product_name-$current_version.tar.gz -exec echo {} >> tar_files  \; )
 fi
 
 if [ -z $current_version ]; then
   echo Empty version name. Check usage
   exit 1
 fi
+
+  if [ $full ]; then
+    find $folders \( -name '*.php' -o -name '*.mo' -o -name '*.js' \) -exec echo {}  \;  > tar_files
+    else
+  find $folders \( -name '*.php' -o -name '*.mo' -o -name '*.js' \) -newer versions/$product_name-$current_version.tar.gz -exec echo {}  \; > tar_files
+    fi
+
+  # $( find $folders \( -name '*.php' -o -name '*.mo' -o -name '*.js' \) -newer versions/$product_name-$base.tar.gz -exec echo {} >> tar_files  \; )
 
   echo New version: $version
   echo $version > version

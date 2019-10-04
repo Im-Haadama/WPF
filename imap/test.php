@@ -9,7 +9,7 @@ require_once( 'mail-config.php' );
 require_once( 'simple_html_dom.php' );
 
 // print phpversion();
-//$url="http://store.im-haadama.co.il/tools/pricelist/update-sadot.php?file=sadot_15.6.17.csv";
+//$url="http://store.im-haadama.co.il/fresh/pricelist/update-sadot.php?file=sadot_15.6.17.csv";
 //$html = file_get_html($url);
 //print $html;
 

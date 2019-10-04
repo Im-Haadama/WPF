@@ -22,7 +22,7 @@ if (! defined('IM_ATTACHMENTS')) {
 }
 
 // print __FILE__;
-require_once( STORE_DIR . '/tools/gui/inputs.php' );
+require_once( STORE_DIR . '/fresh/gui/inputs.php' );
 require_once( STORE_DIR . '/niver/fund.php' );
 
 $debug = get_param( "debug" );
@@ -34,7 +34,7 @@ $changed_price = array();
 $site_tools    = array(
 	"", // 0
 	"http://store.im-haadama.co.il/tools", // 1
-	"http://super-organi.co.il/tools/", // 2
+	"http://super-organi.co.il/fresh/", // 2
 	"", // 3
 	"http://fruity.co.il/tools" // 4
 );

@@ -8,4 +8,4 @@ echo $FILE
 unset LANG LANGUAGE LC_CTYPE
 export LANG=he_IL.UTF-8 LANGUAGE=he LC_CTYPE=he_IL.UTF-8
 date > $FILE
-/usr/bin/php $DIR/../tools/auto/daily-trigger.php &>> $FILE
+/usr/bin/php $DIR/../fresh/auto/daily-trigger.php &>> $FILE

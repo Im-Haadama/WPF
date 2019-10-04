@@ -66,11 +66,12 @@ function is_admin_user() {
 
 function greeting()
 {
-	global $no_wp;
+//	global $no_wp;
 	$data = "";
 
-	if ($no_wp) $user_id =1;
-	else $user_id = 1; // FOR DEBUG wp_get_current_user()->ID;
+//	if ($no_wp) $user_id =1;
+//	else $user_id = 1; // FOR DEBUG wp_get_current_user()->ID;
+	$user_id = get_user_id();
 
 	if (! $user_id) {
 		$url = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_HOST ) . '/wp-login.php?redirect_to=' . $_SERVER['REQUEST_URI'] . '"';

@@ -19,7 +19,7 @@ if ( ! defined( 'ROOT_DIR' ) ) {
 }
 
 if ( ! defined( 'TOOLS_DIR')) {
-     define ('TOOLS_DIR', ROOT_DIR . '/tools');
+     define ('TOOLS_DIR', ROOT_DIR . '/fresh');
 }
 
 require_once (ROOT_DIR . '/im-config.php');
@@ -90,7 +90,7 @@ function create_order_form( $atts, $contents, $tag ) {
 add_shortcode( 'show-inventory', 'show_inventory_func' );
 
 function show_inventory_func( $atts, $contents, $tag ) {
-	require_once( ROOT_DIR . "/tools/express/show-inventory.php" );
+	require_once( ROOT_DIR . "/fresh/express/show-inventory.php" );
 	show_inventory_client();
 }
 
@@ -102,7 +102,7 @@ function show_inventory_func( $atts, $contents, $tag ) {
 add_shortcode( 'basket-content', 'content_func' );
 
 function content_func( $atts, $contents, $tag ) {
-	require_once( ROOT_DIR . '/tools/catalog/Basket.php' );
+	require_once( ROOT_DIR . '/fresh/catalog/Basket.php' );
 
 //	$my_atts = shortcode_atts( [ 'id' => get_the_ID() ], $atts, $tag );
 //
@@ -132,7 +132,7 @@ function content_func_front( $atts, $contents, $tag ) {
 //
 //    $text = "תכולת הסל: ";
 //
-//    $URL = "http://store.im-haadama.co.il/tools/get_basket.php?id=" . $id;
+//    $URL = "http://store.im-haadama.co.il/fresh/get_basket.php?id=" . $id;
 //    $text .= file_get_contents($URL);
 	$product = wc_get_product( 35 );
 //    $text = $product->

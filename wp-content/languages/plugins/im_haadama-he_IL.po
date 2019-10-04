@@ -160,6 +160,18 @@ msgstr "משימות חוזרות"
 msgid "add tasks"
 msgstr "הוסף משימות"
 
+msgid "start"
+msgstr "התחל"
+
+msgid "finished"
+msgstr "הסתיים"
+
+msgid "cancel"
+msgstr "בטל"
+
+msgid "postpone"
+msgstr "דחה"
+
 msgid "projects"
 msgstr "פרויקטים"
 

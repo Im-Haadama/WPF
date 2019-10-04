@@ -13,7 +13,7 @@ if ( ! defined( "ROOT_DIR" ) ) {
 
 require_once( ROOT_DIR . '/niver/data/sql.php' );
 require_once( ROOT_DIR . '/niver/gui/window.php' );
-require_once( ROOT_DIR . '/tools/missions/Mission.php' );
+require_once( ROOT_DIR . '/delivery/missions/Mission.php' );
 
 class Tasklist {
 	private $id;
@@ -115,13 +115,13 @@ class Tasklist {
 	public function Postpone() {
 		$sql = "UPDATE im_tasklist set date = NOW() + INTERVAL 1 DAY\n" .
 		       " where id = " . $this->id;
-		sql_query( $sql );
+		if (sql_query( $sql )) return true;
+		return false;
 	}
 }
 
-// require_once( ROOT_DIR . "/tools/people/people.php" );
 require_once( ROOT_DIR . "/niver/data/im_simple_html_dom.php" );
-require_once( ROOT_DIR . "/tools/options.php" );
+require_once( ROOT_DIR . "/niver/options.php" );
 
 class eTasklist {
 	const
@@ -405,51 +405,6 @@ function check_frequency( $repeat_freq, $repeat_freq_numbers ) {
 
 	return $passed . $result;
 }
-
-//
-//
-//		switch ( $query ) {
-//			case "d": // once a day
-//				$days_from_last_run = sql_query_single_scalar( "select MIN(DATEDIFF(CURDATE(), DATE(date)))  from im_tasklist
-//											where task_template = " . $id );
-//
-//				if ( is_null( $days_from_last_run ) or ( $days_from_last_run > 0 ) ) {
-//					if ( $verbose ) {
-//						print "run";
-//					}
-//					$run = true;
-//				} else if ( $verbose ) {
-//					print $days_from_last_run . " days ago ";
-//				}
-//				break;
-//			case "m": // once a month
-//				$repeat_days = sql_query_single_scalar( "select repeat_days from im_task_templates" );
-//
-//				$trigger_time       = strtotime( $repeat_days . date( 'M Y' ) );
-//				$days_from_last_run = sql_query_single_scalar( "select MIN(DATEDIFF(CURDATE(), DATE(date)))  from im_tasklist
-//											where task_template = " . $id );
-//				if ( $trigger_time > time() or $days_from_last_run > 27 ) {
-//					$run = true;
-//				}
-//				break;
-//
-//			case "w": // a week
-//				$repeat_days = sql_query_single_scalar( "select repeat_days from im_task_templates" );
-//
-//				$trigger_time       = strtotime( $repeat_days . date( 'M Y' ) );
-//				$days_from_last_run = sql_query_single_scalar( "select MIN(DATEDIFF(CURDATE(), DATE(date)))  from im_tasklist
-//											where task_template = " . $id );
-//				if ( $trigger_time > time() or $days_from_last_run > 27 ) {
-//					$run = true;
-//				}
-//				break;
-//
-//			default:
-//				// $url = "http://store.im-haadama.co.il/tools/tasklist/" . $query . "&id=" . $row[0];
-//
-//				// print $url . "<br/>";
-//		}
-
 
 function check_query( $query ) {
 	if ( strlen( $query ) == 0 ) {

@@ -10,8 +10,20 @@
 
 require_once( "sql.php" );
 
+$translate_enabled = true;
+
+function disable_translate()
+{
+	global $translate_enabled;
+
+	$translate_enabled = false;
+}
 function im_translate($text, $arg = null)
 {
+	global $translate_enabled;
+
+	if (! $translate_enabled) return $text;
+
 	$textdomain = GetArg($arg, "textdomain", 'im_haadama');
 
 //	print "translating $text<br/>";

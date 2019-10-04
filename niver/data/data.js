@@ -1,12 +1,12 @@
 
 // Save entity from single row view - chk_ new fields.
-function save_entity(table_name, id)
+function save_entity(post_operation, table_name, id)
 {
     if (!Number.isInteger(id)) {
         alert ("invalid id: " . id);
         return;
     }
-    let operation = "/niver/data/data.php?table_name=" + table_name + "&operation=update&id=" + id;
+    let operation = post_operation + "?table_name=" + table_name + "&operation=update&id=" + id;
     operation = operation + operation_arguments(table_name, id);
     // alert(operation);
     execute_url(operation, action_back);
@@ -15,7 +15,9 @@ function save_entity(table_name, id)
 // If we want to add custom action in the server we can send different post action.
 function save_new_custom(post_operation, table_name, action)
 {
-    let operation = post_operation + '?operation=save_new&table_name=' + table_name;
+    let operation = post_operation + '&table_name=' + table_name;
+    if (! post_operation.indexOf("operation="))
+        operation += '?operation=save_new';
     let table = document.getElementById(table_name);
     if (! table || ! table.rows){
         alert("rows of table " + table_name + " not found");
@@ -87,9 +89,12 @@ function update_table_field(post_file, table_name, id, field_name, finish_action
     execute_url(request, finish_action);
 }
 
-function location_reload()
+function location_reload(xmlhttp)
 {
-    location.reload();
+    if (xmlhttp.response === "done")
+        location.reload();
+    else
+        alert (xmlhttp.response);
 }
 
 function operation_arguments(table_name, id = null)
