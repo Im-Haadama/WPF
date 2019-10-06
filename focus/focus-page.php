@@ -36,14 +36,14 @@ if ($task_template_id)
 {
 	global $admin_scripts;
 	focus_init($admin_scripts);
-	show_templates($url, $task_template_id);
+	show_templates(get_url(1), $task_template_id);
 	return;
 }
 
 // print "X" . get_param("templates") != null . "X";
 
 if (get_param("templates", false,"none") !== "none") {
-	print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/niver/data/admin.js" ) );
+	print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/fresh/admin/admin.js" ) );
 
 	print gui_hyperlink("הוסף תבנית", get_url(true) . "?operation=new_template");
 

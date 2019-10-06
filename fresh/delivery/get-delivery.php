@@ -1,4 +1,6 @@
 <?php
+define('ROOT_DIR', dirname(dirname(dirname(__FILE__))));
+
 require_once 'delivery.php';
 require_once '../orders/orders-common.php';
 

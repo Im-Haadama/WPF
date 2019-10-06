@@ -11,7 +11,7 @@ require_once( "../orders/orders-common.php" );
 require_once( "../orders/Order.php" );
 require_once( "../catalog/catalog.php" );
 
-require_once (ROOT_DIR . '/init.php');
+require_once( ROOT_DIR . '/init.php' );
 
 $operation = $_GET["operation"];
 // print "operation = " . $operation . "<br/>";

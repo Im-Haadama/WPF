@@ -13,8 +13,6 @@ abstract class FieldIdx {
 	const api_key = 3;
 }
 
-;
-
 require_once( "data/im_simple_html_dom.php" );
 
 class MultiSite {

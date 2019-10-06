@@ -167,7 +167,8 @@ if ( isset( $_GET["operation"] ) ) {
 		case 'update_lines':
 			my_log( "update lines" );
 			$params = explode( ',', $_GET["params"] );
-			update_supply_lines( $params );
+			$supply_id = get_param("supply_id", true);
+			print update_supply_lines( $supply_id, $params );
 			break;
 
 //			var request = post_file + "?operation=update_field" +
@@ -209,7 +210,7 @@ if ( isset( $_GET["operation"] ) ) {
 				die ( "no quantity" );
 			}
 			$supply_id = $_GET["supply_id"];
-			print "supply id = " . $supply_id . "<br/>";
+//			print "supply id = " . $supply_id . "<br/>";
 			if ( ! is_numeric( $supply_id ) ) {
 				die ( "no supply_id" );
 			}
@@ -221,11 +222,12 @@ if ( isset( $_GET["operation"] ) ) {
 //			}
 			$supply = new Supply( $supply_id );
 			// var_dump($supply);
-			print "prod id=" . $prod_id . '<br/>';
-			print 'supplier id=' . $supply->getSupplier() . "<br/>";
+//			print "prod id=" . $prod_id . '<br/>';
+//			print 'supplier id=' . $supply->getSupplier() . "<br/>";
 			$price = get_buy_price( $prod_id, $supply->getSupplier() );
-			print "price: " . $price . '<br/>';
-			supply_add_line( $supply_id, $prod_id, $q, $price );
+//			print "price: " . $price . '<br/>';
+			if (supply_add_line( $supply_id, $prod_id, $q, $price ))
+				print "done";
 			break;
 
 		case "set_mission":

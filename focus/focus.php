@@ -132,7 +132,6 @@ function focus_check_user()
 //	print "worker id: " . $worker_id . "<br/>";
 
 	$sql = "select company_id from im_working where user_id = " . get_user_id();
-	// print $sql;
 	$company_id = sql_query_single_scalar($sql);
 
 	// print "company id: " . $company_id . "<br/>";
@@ -158,7 +157,7 @@ function focus_check_user()
 
 function handle_focus_operation($operation)
 {
-	$allowed_tables = array("im_company", "im_tasklist");
+	$allowed_tables = array("im_company", "im_tasklist", "im_task_templates");
 
 	$debug = 0;
 	if ($debug)	print "operation: " . $operation . "<br/>";
@@ -185,7 +184,7 @@ function handle_focus_operation($operation)
 			break;
 
 		case "new_template":
-			print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/niver/data/admin.js" ) );
+			print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/fresh/admin/admin.js" ) );
 
 			print gui_header(1, "יצירת תבנית חדשה");
 			$args = array();
@@ -195,7 +194,7 @@ function handle_focus_operation($operation)
 			$args["companies"] = worker_get_companies(get_user_id());
 			$args["values"] = array("owner" => get_user_id(), "creator" => get_user_id());
 			print NewRow("im_task_templates", $args);
-			print gui_button("btn_template", "save_new('im_task_templates')", "צור");
+			print gui_button("btn_template", "save_new_custom('/focus/focus-post.php', 'im_task_templates')", "add");
 			break;
 
 		case "edit_staff":
@@ -311,7 +310,10 @@ function handle_focus_operation($operation)
 			$table_name = get_param("table_name", true);
 			if (! in_array($table_name, $allowed_tables))
 				die ("invalid table operation");
-			print data_save_new($table_name);
+			$result = data_save_new($table_name);
+			if ($result > 0)
+				print "done";
+			print $result;
 			break;
 
 		case "update":
@@ -367,7 +369,9 @@ function show_templates($url,  $template_id = 0 ) {
 		$args["events"] = "onchange=\"changed(this)\"";
 
 		print GuiRowContent("im_task_templates", $template_id, $args);
-		print gui_button( "btn_save", "save_entity('im_task_templates', " . $template_id . ')', "שמור" );
+//		function save_entity(post_operation, table_name, id)
+
+		print gui_button( "btn_save", "save_entity('/focus/focus-post.php', 'im_task_templates', " . $template_id . ')', "שמור" );
 
 		$tasks_args = array("links" => array("id" => $url . "?row_id=%s"));
 		$table = GuiTableContent("last_tasks", "select * from im_tasklist where task_template = " . $template_id .

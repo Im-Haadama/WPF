@@ -13,7 +13,7 @@ if ( ! defined( "ROOT_DIR" ) ) {
 
 require_once( ROOT_DIR . '/niver/data/sql.php' );
 require_once( ROOT_DIR . '/niver/gui/window.php' );
-require_once( ROOT_DIR . '/delivery/missions/Mission.php' );
+require_once( ROOT_DIR . '/routes/missions/Mission.php' );
 
 class Tasklist {
 	private $id;

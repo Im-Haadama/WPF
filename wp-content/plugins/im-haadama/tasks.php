@@ -19,7 +19,6 @@ require_once (ROOT_DIR . '/focus/focus.php');
 function task_focus()
 {
 	focus_init(array("/niver/gui/client_tools.js", "/niver/data/data.js"));
-	// im_init();
 //	$url = get_url();
 //	print "u=$url";
 	$operation = get_param("operation", false, null);

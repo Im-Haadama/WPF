@@ -16,7 +16,7 @@ require_once( "../business/business.php" );
 require_once( "people.php" );
 require_once( TOOLS_DIR . "/gui.php" );
 
-im_init();
+require_once( ROOT_DIR . "/init.php" );
 
 $role = "";
 

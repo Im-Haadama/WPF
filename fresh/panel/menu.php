@@ -48,7 +48,7 @@ CASE
   WHEN status = 3 THEN \"נשלח\"
 END AS 'מצב' FROM im_supplies WHERE status < 5 GROUP BY 2";
 $links                  = [];
-$links[0]               = "../supplies/supplies-get.php?status=%s";
+$links[0]               = "../supplies/supplies-page.php?status=%s";
 $table[ $i ++ ][ $col ] = table_content( "table", $sql, true, true, $links );
 
 // Catalog

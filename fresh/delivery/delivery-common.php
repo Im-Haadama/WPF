@@ -123,26 +123,6 @@ function delivery_table_line( $ref, $fields, $edit = false ) {
 	return $row_text;
 }
 
-function delivery_table_header( $edit = false ) {
-	$data = "";
-	$data .= "<table><tr>";
-	$data .= "<td><h3>אתר</h3></td>";
-	$data .= "<td><h3>מספר </br>/הזמנה<br/>אספקה</h3></td>";
-	$data .= "<td><h3>מספר </br>לקוח</h3></td>";
-//	$data .= "<td><h3>שם המזמין</h3></td>";
-	$data .= "<td><h3>שם המקבל</h3></td>";
-	$data .= "<td><h3>כתובת</h3></td>";
-	$data .= "<td><h3>כתובת-2</h3></td>";
-	$data .= "<td><h3>טלפון</h3></td>";
-	// $data .= "<td><h3></h3></td>";
-	$data .= "<td><h3>מזומן/המחאה</h3></td>";
-	$data .= "<td><h3>משימה</h3></td>";
-	$data .= "<td><h3>אתר</h3></td>";
-	$data .= "<td><h3>מספר משלוח</h3></td>";
-	// $data .= "<td><h3>מיקום</h3></td>";
-	return $data;
-}
-
 function print_task( $id ) {
 	$fields = array();
 	array_push( $fields, "משימות" );

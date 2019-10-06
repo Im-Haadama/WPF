@@ -482,6 +482,27 @@ class Order {
 		return gui_table($result);
 	}
 
+	public function SuppliersOnTheGo()
+	{
+		$needed = array();
+		$suppliers = null;
+		$this->CalculateNeeded( $needed, $this->getCustomerId() );
+		foreach ( $needed as $prod_id => $p ) {
+			$P = new Product($prod_id);
+			if ($s = $P->PendingSupplies()){
+//				print "s:"; var_dump($s); print "<br/>";
+				if (!$suppliers) $suppliers = array();
+				foreach ($s as $supplies){
+					if ($supplies[3] and ! $supplies[4] and ! in_array($supplies[2], $suppliers)){ // Self collect and not picked
+						print "order " . $this->order_id . " supplier " . get_supplier_name($supplies[2]) . "<br/>";
+						array_push($suppliers, $supplies[2]);
+					}
+				}
+			}
+		}
+		return $suppliers;
+	}
+
 	public function getItems() {
 		return $this->WC_Order->get_items();
 	}

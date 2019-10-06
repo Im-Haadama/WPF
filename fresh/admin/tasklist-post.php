@@ -16,7 +16,7 @@ require_once( ROOT_DIR . "/fresh/multi-site/imMulti-site.php" );
 require_once( ROOT_DIR . "/niver/fund.php" );
 require_once( "Tasklist.php" );
 
-im_init();
+require_once( ROOT_DIR . "/init.php" );
 
 $operation = get_param( "operation" );
 // print "op=" . $operation . "<br/>";

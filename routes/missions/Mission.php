@@ -7,26 +7,22 @@
  * Tim7e: 20:00
  */
 class Mission {
-	private $id, $start_address, $end_adress, $start_time, $end_time;
+	private $id, $start_address, $end_adress, $start_time, $end_time, $date;
 
-	/**
-	 * Mission constructor.
-	 *
-	 * @param $id
-	 */
 	public function __construct( $id ) {
 		$this->id = $id;
-		$sql = "select name, start_h, end_h, start_address, end_address from im_missions";
+		$sql = "select name, hour(start_h), MINUTE(start_h), start_address, end_address, end_h, date from im_missions where id = " . $id;
 		$result = sql_query_single($sql);
 		if (! $result)
 			throw new Exception("Can't find mission " . $id);
 
 		$this->name = $result[0];
-		$this->start_address = $result[1];
-		$this->end_address = $result[2];
-		$this->start_time = $result[3];
-		$this->end_time = $result[4];
-
+		$this->start_time = $result[1] . ":" . $result[2];
+//		print "start time: " . $this->start_time . "<br/>";
+		$this->start_address = $result[3];
+		$this->end_address = $result[4];
+		$this->end_time = $result[5];
+		$this->date = $result[6];
 	}
 
 	/**
@@ -50,14 +46,37 @@ class Mission {
 		return $this->start_time;
 	}
 
+	public function getStart()
+	{
+		$s = $this->date . " " . $this->start_time;
+		// print $s . "<br/>";
+		return strtotime($s);
+	}
+
+	/**
+	 * @param mixed $start_address
+	 */
+	public function setStartAddress( $start_address ): void {
+		$this->start_address = $start_address;
+		sql_query("update im_missions set start_address = '" . $start_address . "' where id = " . $this->id);
+	}
+
+	/**
+	 * @param mixed $start_time
+	 */
+	public function setStartTime( $start_time ): void {
+		$this->start_time = $start_time;
+		$sql = "update im_missions set start_h = '" . $start_time . "' where id = " . $this->id;
+		// print "$sql<br/>";
+		sql_query($sql);
+	}
+
 	/**
 	 * @return mixed
 	 */
 	public function getEndTime() {
 		return $this->end_time;
 	}
-
-
 
 	static public function getMission( $id ) {
 		if ( ! ( $id > 0 ) ) {

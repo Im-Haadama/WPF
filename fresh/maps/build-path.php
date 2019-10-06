@@ -51,33 +51,19 @@ function swap( &$a, &$b ) {
 	$b = $x;
 }
 
-function find_route_1( $node, $rest, &$path, $print, $end ) {
+function find_route_1( $node, $rest, &$path, $print, $end, $prerequisite ) {
 
 	if (! $rest or ! is_array($rest))
 	{
 		die("invalid points");
 	}
-//	if ( $print ) {
-//		$url = "http://gebweb.net/optimap/index.php?loc0=" . $node;
-//		$url2 = "https://www.google.com/maps/dir/";
-//
-//		for ( $i = 0; $i < count( $rest ); $i ++ ) {
-////		print $rest[$i] . " " . get_user_address($rest[$i]) . "<br/>";n
-//			$url .= "&loc" . ( $i + 1 ) . "=" . $rest[ $i ];
-//			$url2 .= "/" . $rest[$i];
-//		}
-//		print gui_hyperlink( "Optimap", $url );
-//		print gui_hyperlink("Maps", $url2);
-//		print "<br/>";
-//	}
-
 	// print "find route 1. node = " . $node . " rest = " . comma_implode($path) . "<br/>";
 	if ( count( $rest ) == 1 ) {
 		array_push( $path, $rest[0] );
 
 		return;
 	}
-	find_route( $node, $rest, $path );
+	find_route( $node, $rest, $path, $prerequisite );
 
 	$best_cost = evaluate_path( $node, $path, $end );
 	$switched  = true;
@@ -107,7 +93,7 @@ function find_route_1( $node, $rest, &$path, $print, $end ) {
 }
 
 // Go to next closest node first
-function find_route( $node, $rest, &$path ) {
+function find_route( $node, $rest, &$path, $prerequisite = null ) {
 	if ( sizeof( $rest ) == 1 ) {
 		array_push( $path, $rest[0] );
 
@@ -120,6 +106,15 @@ function find_route( $node, $rest, &$path ) {
 		// print $rest[$i]  . " ";
 		$d = get_distance( $node, $rest[ $i ] );
 		if ( ( $node == $rest[ $i ] ) or ( $min == - 1 ) or ( $d < $min ) ) {
+			// If we didn't visit previous location for collecting, skip.
+//			var_dump($path); print "<br/>";
+			if ($prerequisite and isset($prerequisite[$rest[ $i ]])){
+//				print "checking preq for " . $rest[ $i ] . " ";
+				if (! in_array($prerequisite[$rest[ $i ]], $path)) {
+//					print " not yet. skipping";
+					continue;
+				}
+			}
 			$min     = $d;
 			$min_seq = $i;
 		}
@@ -134,7 +129,7 @@ function find_route( $node, $rest, &$path ) {
 		}
 	}
 
-	find_route( $next, $new_rest, $path );
+	find_route( $next, $new_rest, $path, $prerequisite );
 }
 
 //function map_get_order_address( $order_id )
@@ -295,3 +290,17 @@ function do_get_distance( $a, $b ) {
 //
 //$g->addedge("a", "b", 4);
 //$g->addedge("a", "d", 1);
+
+//	if ( $print ) {
+//		$url = "http://gebweb.net/optimap/index.php?loc0=" . $node;
+//		$url2 = "https://www.google.com/maps/dir/";
+//
+//		for ( $i = 0; $i < count( $rest ); $i ++ ) {
+////		print $rest[$i] . " " . get_user_address($rest[$i]) . "<br/>";n
+//			$url .= "&loc" . ( $i + 1 ) . "=" . $rest[ $i ];
+//			$url2 .= "/" . $rest[$i];
+//		}
+//		print gui_hyperlink( "Optimap", $url );
+//		print gui_hyperlink("Maps", $url2);
+//		print "<br/>";
+//	}

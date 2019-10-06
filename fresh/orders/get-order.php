@@ -4,7 +4,7 @@ require_once 'orders-common.php';
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( '../delivery/delivery.php' );
 
-im_init();
+require_once( ROOT_DIR . "/init.php" );
 $user_id = login_id();
 $manager = user_can( $user_id, "edit_shop_orders" );
 $order_id = get_param("order_id", true);

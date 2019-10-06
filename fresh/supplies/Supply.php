@@ -60,7 +60,6 @@ class Supply {
 		$this->MissionID  = $row[5];
 	}
 
-
 	public static function CreateFromFile( $file_name, $supplier_id, $date, $args = null) {
 		$debug               = false;
 		$item_code_idx       = Array();
@@ -218,6 +217,11 @@ class Supply {
 		}
 	}
 
+	public function GetProduct($line_id)
+	{
+		return sql_query_single_scalar("select product_id from im_supplies_lines where id = " . $line_id);
+	}
+
 	public static function CreateSupply( $supplier_id, $date ) {
 		$sid = create_supply( $supplier_id, $date );
 
@@ -329,7 +333,7 @@ class Supply {
 	// $internal - true = for our usage. false = for send to supplier.
 	function HtmlLines( $internal, $edit = 1, $categ_group = false ) {
 
-		my_log( __FILE__, "id = " . $this->ID . " internal = " . $internal );
+		// my_log( __FILE__, "id = " . $this->ID . " internal = " . $internal );
 		$sql = 'select product_id, quantity, id'
 		       . ' from im_supplies_lines where status = 1 and supply_id = ' . $this->ID;
 
@@ -338,11 +342,17 @@ class Supply {
 			          "id_key" => "ID",
 			          "edit" => $edit,
 			          "show_cols" => array("product_id" => true, "quantity" => true, '$buy' => true, '$total' => true, '$buyers' => true),
-			          "edit_cols" => array("quantity" => true),
-			          "checkbox_class" => "supply_checkbox",
-			"events"=>'onchange="changed(this)"');
+			          "edit_cols" => array("quantity" => true, '$buy' => true),
+			          "checkbox_class" => "supply_checkbox", "events"=>"onchange='changed(this)'");
 
+		// $sums = array(  "product_id" => "סה\"כ", "quantity" => array( 'sum_numbers', 0 ), '$buy' => array('sum_numbers' , 0) );
+//		$sums = array(  "quantity" => array( 'sum_numbers', 0 ) );
+
+		$args["acc_fields"] = &$sums;
 		$rows_data = TableData( $sql, $args);
+
+		var_dump($sums);
+		/// array_push($rows_data, $sums);
 
 		if ( $internal){
 			$rows_data['header']['$buy'] = "Buy price";
@@ -380,7 +390,6 @@ class Supply {
 				$rows_data[$line_id]['$buyers'] = orders_per_item( $prod_id, 1, true, true, true );
 			}
 		}
-
 	 return gui_table_args( $rows_data, "supply_" . $this->getID(), $args );
 		// GuiTableContent("supply", $sql, $args);
 		$result = sql_query( $sql );
@@ -439,8 +448,8 @@ class Supply {
 			// Display item name
 			$line .= "<td>" . $product_name . '</td>';
 			if ( $edit ) {
-				$line .= "<td>" . gui_input( $line_id, $quantity, array( 'onchange="changed(this)"' ) ) . "</td>";
-				$line .= "<td>" . gui_input( $line_id, $units, array( 'onchange="changed(this)"' ) ) . "</td>";
+				$line .= "<td>" . gui_input( $line_id, $quantity, array( "onchange='changed(this)'" ) ) . "</td>";
+				$line .= "<td>" . gui_input( $line_id, $units, array( "onchange='changed(this)'" ) ) . "</td>";
 			} else {
 				$line .= gui_cell( $quantity );
 				$line .= gui_cell( $units );
@@ -587,7 +596,27 @@ class Supply {
 	public function getSupplier() {
 		return $this->Supplier;
 	}
+
+	public function UpdateLine($line_id, $q)
+	{
+		$result  = sql_query( "SELECT product_id, quantity FROM im_supplies_lines WHERE id = " . $line_id );
+		$row     = sql_fetch_row( $result );
+		$prod_id = $row[0];
+		$old_q   = $row[1];
+
+		$sql = 'UPDATE im_supplies_lines SET quantity = ' . $q . ' WHERE id = ' . $line_id;
+
+		sql_query( $sql );
+
+		$product = new WC_Product( $prod_id );
+
+		if ( $product->managing_stock() ) {
+			$product->set_stock_quantity( $product->get_stock_quantity() + $q - $old_q );
+			$product->save();
+		}
+	}
 }
+
 
 function create_supply( $supplierID, $date = null ) {
 
@@ -670,29 +699,6 @@ function supply_delete_line( $line_id ) {
 	sql_query( $sql );
 }
 
-function supply_update_line( $line_id, $q ) {
-	$result  = sql_query( "SELECT product_id, quantity FROM im_supplies_lines WHERE id = " . $line_id );
-	$row     = sql_fetch_row( $result );
-	$prod_id = $row[0];
-	$old_q   = $row[1];
-
-	$sql = 'UPDATE im_supplies_lines SET quantity = ' . $q . ' WHERE id = ' . $line_id;
-
-	sql_query( $sql );
-
-	$product = new WC_Product( $prod_id );
-
-	if ( $product->managing_stock() ) {
-//		print "managed<br/>";
-//		print "old q: " . $old_q . "<br/>";
-//		print "stock was: " . $product->get_stock_quantity() . "<br/>";
-
-		$product->set_stock_quantity( $product->get_stock_quantity() + $q - $old_q );
-//		print "stock is: " . $product->get_stock_quantity() . "<br/>";
-		$product->save();
-	}
-
-}
 
 function supply_change_status( $supply_id, $status ) {
 	$sql = 'UPDATE im_supplies SET status = ' . $status . ' WHERE id = ' . $supply_id;
@@ -813,14 +819,31 @@ function delete_supply_lines( $params ) {
 	}
 }
 
-function update_supply_lines( $params ) {
-	for ( $pos = 0; $pos < count( $params ); $pos += 2 ) {
+function update_supply_lines( $supply_id, $params ) {
+	$result = "";
+	$supplier_id = supply_get_supplier_id($supply_id);
+	$Supply = new Supply($supply_id);
+	$pricelist = new PriceList($supplier_id);
+	// Double update - the supply and also the pricelist
+	for ( $pos = 0; $pos < count( $params ); $pos += 3 ) {
 		$line_id = $params[ $pos ];
 		$q       = $params[ $pos + 1 ];
+		$price = $params[$pos + 2];
 		my_log( "update supply line" . $line_id . " q= " . $q );
-		print "line_id: " . $line_id . " new q: " . $q . "<br/>";
-		supply_update_line( $line_id, $q );
+//		print "line_id: " . $line_id . " new q: " . $q . "<br/>";
+		$Supply->UpdateLine($line_id, $q);
+
+		// Update the pricelist.
+		$prod_id = $Supply->GetProduct($line_id);
+		$pricelist_id = Catalog::PricelistFromProduct($prod_id, $supplier_id);
+		print "pl=" . $pricelist_id . "<br/>";
+		if ($pricelist_id)
+			$pricelist->Update($pricelist_id, $price);
+		else
+			$result .= "can't find pricelist for " . get_product_name($prod_id) . " " . $prod_id;
 	}
+	if (! strlen($result)) return "done";
+	return $result;
 }
 
 //function do_merge_supply( $merged, $other ) {

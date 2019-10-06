@@ -15,7 +15,7 @@ if ( ! isset( $_GET["operation"] ) ) {
 	die( 1 );
 }
 $operation = $_GET["operation"];
-im_init();
+require_once( ROOT_DIR . "/init.php" );
 
 switch ( $operation ) {
 	case "get_balance":

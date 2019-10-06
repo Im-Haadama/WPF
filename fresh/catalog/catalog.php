@@ -176,6 +176,16 @@ class Catalog {
 //        print "end<br/>";
 	}
 
+	static function PricelistFromProduct($prod_id, $supplier_id)
+	{
+		$sql = "select pricelist_id from im_supplier_mapping " .
+		       " where product_id = " . $prod_id .
+		       " and supplier_id = " . $supplier_id;
+		// print $sql . "<br/>";
+		$pricelist_id = sql_query_single_scalar($sql);
+		return $pricelist_id;
+	}
+
 	static function UpdateProduct( $prod_id, &$line, $details = false ) {
 		$P = new Product( $prod_id );
 		if ( ! ( $prod_id > 0 ) ) {
@@ -317,7 +327,6 @@ class Catalog {
 	}
 
 	static function SelectOption( $product_id, $pricelist_id ) {
-
 		// print "select ";
 		$pricelist = PriceList::Get( $pricelist_id );
 		// var_dump($pricelist);
@@ -713,10 +722,7 @@ function supplier_prod_id( $prod_id, $supplier_id ) {
 	return 0;
 }
 
-function show_monthly() {
-
-}
-function alternatives( $prod_id, $details = false )
+function alternatives( $prod_id, $details = false, $supplier_id = null )
 {
 	global $debug_product;
 	$debug_product = 0;
@@ -792,10 +798,6 @@ function alternatives( $prod_id, $details = false )
 	if ( $details ) {
 		print rtrim( $output, ", ");
 	}
-
-//	prof_flag("end " . $id);
-
-	// for DEBUG: if ($prod_id == 1002) { print "<br/>alters:" . var_dump($rows); };
 	return $rows;
 }
 

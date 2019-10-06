@@ -30,7 +30,7 @@ if (file_exists(TOOLS_DIR . "/im_tools_light.php"))
 
 if (function_exists("im_init"))
 try {
-	im_init();
+	require_once( ROOT_DIR . "/init.php" );
 } catch ( Exception $e ) {
     print "Database error. Please contact support";
 }

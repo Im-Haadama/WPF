@@ -593,35 +593,13 @@ class PriceList {
 
 		$this->UpdateCatalog( $id );
 
-//        $this->ExecuteRemotes("pricelist/pricelist-post.php?operation=update_in_slave&price=" . $price .           "&line_id=" . $line_id);
-
-		//        $date = date('y/m/d');
-//        my_log(__FILE__, __METHOD__);
-//        my_log(__FILE__, "supplier: " . $this->SupplierID . ", price = " . $price . ", product name = " . $product_name_code);
-//        if (! is_numeric($this->SupplierID)) {
-//            die("bad supplier id: " . $this->SupplierID);
-//        }
-//        if (! is_numeric($price)) {
-//            die ("Bad price: " . $price );
-//        }
-//        $link = $GLOBALS["glink"];
-//        if (is_numeric($product_name_code) and $product_name_code != 10) {
-//            $sql = "update im_supplier_price_list set date = '" . $date . "', price = " . $price
-//                . " where supplier_product_code = '" . $product_name_code . "' and supplier_id = " . $this->SupplierID;
-//        } else {
-//            $sql = "update im_supplier_price_list set date = '" . $date . "', price = " . $price
-//                . " where product_name = '" . addslashes($product_name_code) . "' and supplier_id = " . $this->SupplierID;
-//        }
-//
-//        my_log($sql, "catalog_update_price");
-//        if (! $export)
-//            die ('Invalid query: ' . mysql_error());
 		return;
 	}
 
 	static function UpdateCatalog( $pricelist_id, $debug = false ) {
-
+//		print "pricelist_id: $pricelist_id<br/>";
 		$prod_ids = Catalog::GetProdID( $pricelist_id );
+//		print "prod_ids:"; var_dump($prod_ids); print "<br/>";
 		$line     = "";
 		if ( $debug ) {
 			print "update";

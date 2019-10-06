@@ -371,7 +371,7 @@ function TableData($sql, &$args = null)
 	$meta_key_field = GetArg($args, "meta_key", "id");
 	$values = GetArg($args, "values", null);
 	$v_checkbox = GetArg($args, "v_checkbox", null);
-	$sum_fields = &GetArg($args, "sum_fields", null);
+	$acc_fields = &GetArg($args, "acc_fields", null);
 	$checkbox_class = GetArg($args, "checkbox_class", "checkbox");
 
 	$table_names = array();
@@ -518,8 +518,8 @@ function TableData($sql, &$args = null)
 					}
 				}
 			}
-			if ($sum_fields) {
-				HandleSum($sum_fields, $row);
+			if ($acc_fields) {
+				HandleSum($acc_fields, $row);
 			}
 
 			if ($v_line){
@@ -536,11 +536,15 @@ function TableData($sql, &$args = null)
 
 			$rows_data[$row_id] = $the_row;
 		}
-		if ($sum_fields) {
+		if ($acc_fields) {
 			$total_line = array();
-			foreach ($sum_fields as $cell)
-				array_push($total_line, is_array($cell) ? $cell[0] : $cell);
-			array_push($rows_data, $total_line);
+			foreach ($acc_fields as $key => $cell)
+			{
+				$total_lines[$key] = is_array($cell) ? $cell[0] : $cell;
+			}
+//				array_push($total_line, is_array($cell) ? $cell[0] : $cell);
+			$rows_data["sums"] = $total_line;
+//			array_push($rows_data, $total_line);
 		}
 
 		return $rows_data;
@@ -565,10 +569,12 @@ function FieldList($sql, $args)
 
 function HandleSum(&$sum_fields, $row)
 {
+	$debug = 0;
 	foreach ($row as $key => $cell)
 	{
-		if (is_array($sum_fields[$key]) and function_exists($sum_fields[$key][1])) {
-//			 print "summing " . $sum_fields[$key][0][2] . "<br/>";
+		if ($debug) print "handling sum $key $cell<br/>";
+		if (isset($sum_fields[$key]) and is_array($sum_fields[$key]) and function_exists($sum_fields[$key][1])) {
+			 if ($debug) print "summing " . $sum_fields[$key][0][2] . "<br/>";
 			$sum_fields[$key][1]($sum_fields[$key][0], $cell);
 		} else {
 //			print "not summing " . is_array($sum_fields[$key]) . " " . function_exists($sum_fields[$key][1]) . "<br/>";
@@ -683,9 +689,6 @@ function GuiRowContent($table_name, $row_id, $args)
 	if ($row_id) { // Show specific record
 		$sql = "select " . ($fields ? comma_implode($fields) : "*") . " from $table_name where " . $id_key . " = " . $row_id;
 		$args["row_id"] = $row_id;
-
-		print $sql;
-
 	} else { // Create new one.
 		if ($fields) {
 			$sql = "show columns from $table_name where field in ( " . comma_implode($fields, true) . ")";

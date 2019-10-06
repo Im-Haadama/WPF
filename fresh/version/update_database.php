@@ -21,7 +21,7 @@ require_once( ROOT_DIR . '/niver/gui/sql_table.php' );
 
 //print sql_query_single_scalar("show create table im_bank_account");
 //exit;
-im_init();
+require_once( ROOT_DIR . "/init.php" );
 
 $version = get_param( "version" );
 

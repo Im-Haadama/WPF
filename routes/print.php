@@ -17,7 +17,7 @@ require_once '../delivery/delivery.php';
 require_once '../orders/orders-common.php';
 require_once '../supplies/Supply.php';
 require_once( "../maps/build-path.php" );
-require_once( "../missions/Mission.php" );
+require_once( ROOT_DIR . '/delivery/missions/Mission.php' );
 
 
 if ( isset( $_GET["operation"] ) ) {

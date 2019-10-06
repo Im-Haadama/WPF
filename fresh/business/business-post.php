@@ -18,7 +18,7 @@ require_once( ROOT_DIR . '/fresh/multi-site/imMulti-site.php' );
 require_once( ROOT_DIR . '/fresh/business/BankTransaction.php' );
 require_once( ROOT_DIR . '/fresh/suppliers/gui.php' );
 
-im_init();
+require_once( ROOT_DIR . "/init.php" );
 $multi_site = ImMultiSite::getInstance();
 
 function get_env( $var, $default ) {

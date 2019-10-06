@@ -124,7 +124,7 @@ function gui_input( $name, $value, $events = null, $id = null, $class = null, $s
 			foreach ( $events as $event ) {
 				if (strstr($event, '"'))
 				{
-					$event .= "TDOD: replace \" to '";
+					$event .= "ToDo: replace \" to '";
 				}
 
 				$data .= $event . " ";
@@ -132,7 +132,7 @@ function gui_input( $name, $value, $events = null, $id = null, $class = null, $s
 		} else {
 			if (strstr($events, '"'))
 			{
-				$events .= "TDOD: replace \" to '";
+				$events .= "ToDo: replace \" to '";
 			}
 
 			$data .= $events;
@@ -291,7 +291,9 @@ function gui_input_time( $id, $class, $value = null, $events = null ) {
 		$value = date( 'h:m' );
 	}
 	if ( strlen( $value ) > 0 ) {
-		$time = date( "h:m", strtotime( $value ) );
+//		$time = date( "h:m", strtotime( $value ) );
+		$time = $value;
+//		print "value=$time<br/>";
 		$data .= "value=\"$time\" ";
 	}
 	if ( strlen( $class ) > 0 ) {
@@ -329,11 +331,14 @@ function gui_hyperlink( $text, $link, $target = null ) {
  *
  * @return string
  */
-function gui_header( $level, $text, $center = false ) {
-	$data = "<h" . $level;
-	if ( $center ) {
-		$data .= ' style="text-align:center"';
-	}
+function gui_header( $level, $text, $center = false, $inline = false ) {
+	$data ="";
+	// if ($inline) $data .= "<style>h1 {display: inline;}</style>";
+	$data .= "<h" . $level . " ";
+	$style = "";
+	if ($inline) $style .= 'display:inline; ';
+	if ($center) $style .= 'text-align:center; ';
+	if (strlen($style)) $data .= 'style="' . $style . '"';
 	$data .= ">" . im_translate($text) . "</h" . $level . ">";
 
 	return $data;
@@ -540,7 +545,7 @@ function gui_row( $cells, $row_id = null, $show = null, &$acc_fields = null, $co
  * @deprecated use gui_table_args
  */
 function gui_table(
-	$rows, $id = null, $header = true, $footer = true, &$sum_fields = null, $style = null, $class = null, $show_fields = null,
+	$rows, $id = null, $header = true, $footer = true, &$acc_fields = null, $style = null, $class = null, $show_fields = null,
 	$links = null, $col_ids = null, $first_id = false, $actions = null
 ) {
 
@@ -588,15 +593,15 @@ function gui_table(
 				$first_row = false;
 
 //				print "id= " . $id ."<br/>";
-				$data .= gui_row( $row, $row_id, $show_fields, $sum_fields, $col_ids, null );
+				$data .= gui_row( $row, $row_id, $show_fields, $acc_fields, $col_ids, null );
 			}
 		}
 	} else {
 		$data .= "<tr>" . $rows . "</tr>";
 	}
-	if ( $sum_fields ) {
+	if ( $acc_fields ) {
 		$array = array();
-		foreach ( $sum_fields as $value ) {
+		foreach ( $acc_fields as $value ) {
 			if ( is_array( $value ) ) {
 				array_push( $array, $value[0] );
 			} else {
@@ -628,7 +633,7 @@ function gui_table_args($input_rows, $id = null, $args = null)
 {
 	$data = "";
 
-	 $debug = GetArg($args, "debug", false);
+	$debug = GetArg($args, "debug", false);
 
 	// add_checkbox should be used on multiple rows view.
 	$add_checkbox = GetArg($args, "add_checkbox", false);
@@ -641,7 +646,7 @@ function gui_table_args($input_rows, $id = null, $args = null)
 	$footer = true;
 
 	// Should sum or other function on cols.
-	$sum_fields = GetArg($args, "sum_fields", null);
+	$acc_fields = GetArg($args, "acc_fields", null);
 
 	// Style and class.
 	$style = GetArg($args, "style", null);
@@ -743,13 +748,6 @@ function gui_table_args($input_rows, $id = null, $args = null)
 //					print "idx=$idx $show_cols h=" . isset($args["hide_cols"]) . " hidx=" . isset($args["hide_cols"][$idx]);
 					$show = (((!$show_cols) or isset($show_cols[$idx])) // Positive
 						and !(isset($args["hide_cols"]) and isset($args["hide_cols"][$idx]))); // Negative
-//					print " s=$show . <br/>";
-					// if ($transpose and )
-					// if ($show_cols and )
-//					if ($debug) print "checking show_cols[$key]";
-//				    if ((! $transpose) and isset($show_cols[$key]) and ($key === "mandatory")) $show = false;
-//				    if ($transpose and isset($show_cols[$row_id]) and ($row_id == "mandatory")) $show = false;
-//				    if ($debug) print "show=$show<br/>";
 
 					// print $key . " " . $row_id . " " . $show . "<br/>";
 					$data .= gui_cell($cell, $key . "_" . $row_id, $show);
@@ -768,13 +766,14 @@ function gui_table_args($input_rows, $id = null, $args = null)
 ////			print "rid=$row_id<br/>";
 //
 //			if ( ! is_null( $row ) ) {
-//				$data .= gui_row( $row, $row_id, $show_cols, $sum_fields, $col_ids, null, $add_checkbox, $checkbox_class, $checkbox_events );
+//				$data .= gui_row( $row, $row_id, $show_cols, $acc_fields, $col_ids, null, $add_checkbox, $checkbox_class, $checkbox_events );
 //			}
 //		}
 //	} else {
 //		$data .= "<tr>" . $rows . "</tr>";
 //	}
 
+	$data .= gui_row($acc_fields);
 	if ( $footer ) {
 		$data .= "</table>";
 	}
@@ -1061,9 +1060,9 @@ function gui_select( $id, $name, $values, $events, $selected, $id_key = "id", $c
 	return $data;
 }
 
-//if ( $sum_fields ) {
+//if ( $acc_fields ) {
 //	$array = array();
-//	foreach ( $sum_fields as $value ) {
+//	foreach ( $acc_fields as $value ) {
 //		if ( is_array( $value ) ) {
 //			array_push( $array, $value[0] );
 //		} else {
@@ -1175,3 +1174,19 @@ function gui_input_by_type($input_name, $type = null, $args = null, $data = null
 	}
 	return $value;
 }
+
+
+//if ($acc_fields and isset($acc_fields[$idx])){
+//	// print "summing $idx<br/>";
+//	if ( isset( $acc_fields[ $idx ] ) and is_array( $sum = $acc_fields[ $idx ] ) ) {
+//		// var_dump($sum[1]);
+//		if ( function_exists( $sum[1] ) ) {
+//			print "processing: " . $cell . strip_tags($cell) ."X<br/>";
+//
+//			$sum[1]( $acc_fields[ $idx ][0], strip_tags($cell) );
+//			//	print "summed: $cell <br/>";
+//		} else {
+//			print $sum[1] . " is not a function<br/>";
+//		}
+//	}
+//}

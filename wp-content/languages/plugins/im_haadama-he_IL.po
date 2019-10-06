@@ -371,3 +371,11 @@ msgstr "מחיר עלות"
 msgid "Buyers"
 msgstr "מזמינים"
 
+# get-driver-multi.php
+msgid "No deliveries for today"
+msgstr "אין חלוקה היום"
+
+# msgid ""
+# msgstr ""
+
+

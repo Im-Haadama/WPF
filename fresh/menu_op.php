@@ -1,5 +1,14 @@
 <?php
-// require_once( "r-shop_manager.php" );
+
+if ( ! defined( "ROOT_DIR" ) ) {
+	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) ) ;
+}
+
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
+require_once(ROOT_DIR . '/im-config.php');
+require_once( ROOT_DIR . "/init.php" );
 
 require_once( "im_tools.php" );
 print header_text( false );
@@ -69,7 +78,7 @@ add_command( $table, $row, $col, "edit_shop_orders", "הזמנות", "orders/ord
 add_command( $table, $row, $col, "edit_shop_orders", "פריטים להזמנות", "orders/get-total-orders.php", "doc_frame" );
 add_command( $table, $row, $col, "edit_shop_orders", "הדפסה", "delivery/print.php", "print" );
 if ($manage_inventory){
-    add_command( $table, $row, $col, "show_supplies", "אספקות", "supplies/supplies-get.php" );
+    add_command( $table, $row, $col, "show_supplies", "אספקות", "supplies/supplies-page.php" );
     add_command( $table, $row, $col, "show_supplies", "מצב המלאי", "inventory/display.php" );
 }
 while ( $row < $max_row ) {
@@ -79,7 +88,8 @@ $col ++;
 $row = 0;
 
 $table[ $row ++ ][ $col ] = gui_header( 2, "משלוחים" );
-add_command( $table, $row, $col, "edit_shop_orders", "הצגת משימות נהיגה", "delivery/get-driver-multi.php" );
+add_command( $table, $row, $col, "edit_shop_orders", "Today Routes", "/routes/routes-page.php?operation=show_routes" );
+add_command( $table, $row, $col, "edit_shop_orders", "This week routes", "/routes/routes-page.php?operation=show_routes&week=" . date( "Y-m-d", strtotime( "last sunday" ) ));
 add_command( $table, $row, $col, "edit_shop_orders", "תעודות משלוח", "business/get_all.php?week=" .
                                                              sunday( date( "Y-m-d" ) )->format( "Y-m-d" ), "doc_frame" );
 add_command( $table, $row, $col, "edit_missions", "ניהול מסלולים", "missions/admin.php" );
@@ -131,7 +141,7 @@ $row                      = 0;
 
 $table[ $row ++ ][ $col ] = gui_header( 2, "ספקים" );
 add_command( $table, $row, $col, "edit_suppliers", "ספקים", "suppliers/admin.php", "doc_frame" );
-add_command( $table, $row, $col, "edit_shop_orders", "אספקות", "supplies/supplies-get.php", "doc_frame" );
+add_command( $table, $row, $col, "edit_shop_orders", "אספקות", "supplies/supplies-page.php", "doc_frame" );
 if ($manage_inventory){
     add_command( $table, $row, $col, "edit_shop_orders", "מלאי 0", "catalog/catalog-db-query.php?operation=zero_inv", "doc_frame" );
     add_command( $table, $row, $col, "edit_suppliers", "יתרת ספקים", "suppliers/get-supplier-balance.php", "doc_frame" );

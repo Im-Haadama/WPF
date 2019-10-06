@@ -15,7 +15,7 @@ function save_entity(post_operation, table_name, id)
 // If we want to add custom action in the server we can send different post action.
 function save_new_custom(post_operation, table_name, action)
 {
-    let operation = post_operation + '&table_name=' + table_name;
+    let operation = post_operation + '?table_name=' + table_name;
     if (! post_operation.indexOf("operation="))
         operation += '?operation=save_new';
     let table = document.getElementById(table_name);
@@ -134,3 +134,4 @@ function search_table(table_name, url = null)
 //
 //     execute_url(request, finish_action);
 // }
+

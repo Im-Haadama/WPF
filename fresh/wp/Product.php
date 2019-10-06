@@ -242,15 +242,18 @@ class Product {
 
 	function PendingSupplies() {
 		// $data = "";
-		$sql = "select l.supply_id, s.status \n" .
+		$sql = "select l.supply_id, s.status, s.supplier, sup.self_collect, s.picked \n" .
 		       "from im_supplies_lines l\n" .
-		       "join im_supplies s\n" .
+		       "join im_supplies s, im_suppliers sup\n" .
 		       "where product_id = " . $this->id . "\n" .
 		       " and s.status in (" . SupplyStatus::Sent . "," . SupplyStatus::NewSupply . ")\n" .
-		       " and l.supply_id = s.id";
+		       " and l.supply_id = s.id\n" .
+		" and sup.id = s.supplier";
 
 		// print $sql;
-		return sql_query_array( $sql );
+		$result = sql_query_array( $sql );
+		// var_dump($result);
+		return $result;
 	}
 
 	function getOrdered() {

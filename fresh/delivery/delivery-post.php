@@ -15,7 +15,7 @@ require_once( ROOT_DIR . "/niver/fund.php" );
 require_once( "../supplies/Supply.php" );
 require_once( ROOT_DIR . '/fresh/business/business_info.php' );
 
-im_init();
+require_once( ROOT_DIR . "/init.php" );
 //require_once('catalog.php');
 
 // print header_text(false);
