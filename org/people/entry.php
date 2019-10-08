@@ -12,7 +12,7 @@
 require_once( "../im_tools.php" );
 require_once( ROOT_DIR . "/niver/gui/inputs.php" );
 require_once( ROOT_DIR . "/niver/gui/sql_table.php" );
-require_once( "../business/business.php" );
+require_once( ROOT_DIR . "/org/business/business.php" );
 require_once( "people.php" );
 require_once( TOOLS_DIR . "/gui.php" );
 

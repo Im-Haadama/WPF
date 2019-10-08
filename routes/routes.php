@@ -2,6 +2,7 @@
 
 require_once(ROOT_DIR . "/niver/data/dom.php");
 require_once(ROOT_DIR . "/fresh/orders/Order.php");
+require_once (ROOT_DIR . "/fresh/suppliers/Supplier.php");
 
 function handle_routes_operation($operation, $debug = false) {
 	if ( $debug ) {
@@ -9,18 +10,33 @@ function handle_routes_operation($operation, $debug = false) {
 	}
 	switch ( $operation ) {
 		case "show_routes":
+		    $edit_route = get_param("edit_route", false, false);
+		    if ($edit_route) {
+		        edit_route(get_param("id", true));
+		        return;
+            }
 			if ($id = get_param("id")) {
-				print gui_div("mission_text", show_path($id));
+				print gui_div("mission_text", show_route($id, false, false, $edit_route));
 				return;
 			}
 		    $week = get_param("week");
 			show_missions($week);
 			break;
 
+        case "update_mission_preq":
+            $mission = get_param("id", true);
+            $point = get_param("point", true);
+            $preq = get_param("preq", true);
+            if ($preq == "select")
+                info_update(key, null);
+            else
+                info_update("mission_preq_" . $mission . "." . $point, $preq);
+            print "done";
+            break;
+
         case "get_local":
             $mission_ids = get_param("mission_ids", true);
             $header = get_param("header", false, false);
-//            print "header: $header<br/>";
             print get_missions($mission_ids, $header, $debug);
             break;
 
@@ -31,7 +47,7 @@ function handle_routes_operation($operation, $debug = false) {
             $m = new Mission($id);
             $m->setStartTime($start);
             $m->setStartAddress($start_point);
-            print show_path($id);
+            print show_route($id);
             break;
 
         default:
@@ -69,7 +85,7 @@ function show_missions($week)
 		return;
 	}
 	if (count($missions) == 1) {
-		print show_path($missions, $debug, $missing);
+		print show_route($missions, $debug, $missing);
 		return;
 	}
 	do_show_missions($missions);
@@ -92,13 +108,6 @@ function do_show_missions($missions)
 
 
 ?>
-	<style>
-		@media print {
-			h1 {
-				page-break-before: always;
-			}
-		}
-	</style>
 <?php
 
 //show_path($debug, $missing);
@@ -106,7 +115,7 @@ $stop_points = array();
 $lines_per_station = array();
 
 // Start collecting data
-function show_path($missions, $debug = false, $missing = false)
+function show_route($missions, $debug = false, $missing = false)
 {
 	global $stop_points;
 	global $lines_per_station;
@@ -261,33 +270,29 @@ function show_path($missions, $debug = false, $missing = false)
 			// print "stop point: " . $stop_point . "<br/>";
 
 			add_stop_point( $stop_point );
+			if (! isset($prerequisite[$stop_point])) $prerequisite[$stop_point] = info_get("mission_preq_" . $mission_id . "." . $stop_point, false, null);
+
 			//		array_push( $stop_points, $stop_point );
 			add_line_per_station( $mission->getStartAddress(), $stop_point, $data_lines[ $mission_id ][ $i ][1], $order_id );
 
 			// Check if we need to collect something on the go
             if ($site_id == $m->getLocalSiteID() and $site != "supplies"){
-                print "handle $order_id<br/>";
+//                print "handle $order_id<br/>";
                 $order = new Order($order_id);
                 if ($supply_points = $order->SuppliersOnTheGo()){
-                    // var_dump($supply_point);
-                    print "$order_id supply_point: " . var_dump($supply_points); print "<br/>";
-                    $prerequisite[$stop_point] = $supply_points;
+                    $supplier = new Supplier($supply_points[0]);
+                    $prerequisite[$stop_point] = $supplier->getAddress();
                 }
             }
+			// print $stop_point . " preq: " . $prerequisite[$stop_point] . "<br/>";
 		}
 		//	foreach ($stop_points as $p) print $p . " ";
 		if ( $debug )
 			print_time( "start path ", true);
 		// var_dump($mission);
-		find_route_1( $mission->getStartAddress(), $stop_points, $path, true, $mission->getEndAddress(), $prerequisite );
-		$url = "https://www.google.com/maps/dir/" . $mission->getStartAddress();
+		find_route_1( $mission->getStartAddress(), $stop_points, $path, false, $mission->getEndAddress(), $prerequisite );
 
-		for ( $i = 0; $i < count( $path ); $i ++ ) {
-			$url .= "/" . $path[ $i ];
-		}
-		$url .= "/" . $mission->getEndAddress();
-		print gui_hyperlink( "Maps", $url );
-		print "<br/>";
+		print get_maps_url($mission, $path) . "<br/>";
 
 		if ( $debug )
 			print_time( "end path " . $mission_id, true);
@@ -303,6 +308,7 @@ function show_path($missions, $debug = false, $missing = false)
 
 		// print "mission_id: " . var_dump($data_lines[$mission_id]) . "<br/>";
 		$data .= "<table>";
+		$data .= gui_hyperlink("Edit route", get_url() . '&edit_route=1');
 		$data .= $header;
 
 		$data .= gui_list( "באחריות הנהג להעמיס את הרכב ולסמן את מספר האריזות והאם יש קירור." );
@@ -310,7 +316,6 @@ function show_path($missions, $debug = false, $missing = false)
 		$data .= gui_list( "יש לוודא שכל המשלוחים הועמסו.");
 		$data .= gui_list( "בעת קבלת כסף או המחאה יש לשלוח מיידית הודעה ליעקב, עם הסכום ושם הלקוח.");
 		$data .= gui_list( "במידה והלקוח לא פותח את הדלת, יש ליידע את הלקוח שהמשלוח בדלת (טלפון או הודעה)." );
-
 
 		$prev           = $mission->getStartAddress();
 		$total_distance = 0;
@@ -373,7 +378,10 @@ function show_path($missions, $debug = false, $missing = false)
 
 		$data .= "</table>";
 
+		save_route($missions, $path);
+
 		$data .= "סך הכל ק\"מ " . $total_distance . "<br/>";
+
 		if ( $debug )
 			print_time( "end handle mission " . $mission_id, true);
 
@@ -419,6 +427,7 @@ function add_line_per_station( $start_address, $stop_point, $line, $order_id ) {
 
 function get_missions($mission_ids, $header, $debug)
 {
+    // $debug = 2;
     $data = "";
 
     if ($header){
@@ -433,15 +442,14 @@ function get_missions($mission_ids, $header, $debug)
         if ( $mission_id ) {
             $sql = "id in (select post_id from wp_postmeta " .
                    " WHERE meta_key = 'mission_id' " .
-                   " AND meta_value = " . $mission_id . ") " .
-                   " and `post_status` in ('wc-awaiting-shipment', 'wc-processing')";
+                   " AND meta_value = " . $mission_id . ") ";
+            if ($debug != 2) $sql .= " and `post_status` in ('wc-awaiting-shipment', 'wc-processing')";
             // print $sql . "<br/>";
             $data .= print_deliveries( $sql, false, $debug );
 
             $data .= print_driver_supplies( $mission_id );
 
             $data .= print_driver_tasks( $mission_id );
-
         }
     }
 
@@ -530,51 +538,29 @@ function print_driver_supplies( $mission_id = 0 ) {
 
 
 function print_supply( $id ) {
+    $s = new Supply($id);
 	if ( ! ( $id > 0 ) ) {
 		throw new Exception( "bad id: " . $id );
 	}
-//	$site_tools = MultiSite::LocalSiteTools();
 
 	$fields = array();
 	array_push( $fields, "supplies" );
 
-	$address = "";
-
 	$supplier_id = supply_get_supplier_id( $id );
 	$ref         = gui_hyperlink( $id, "../supplies/supply-get.php?id=" . $id );
-	$address     = sql_query_single_scalar( "select address from im_suppliers where id = " . $supplier_id );
-//	$receiver_name = get_meta_field( $order_id, '_shipping_first_name' ) . " " .
-//	                 get_meta_field( $order_id, '_shipping_last_name' );
-//	$shipping2     = get_meta_field( $order_id, '_shipping_address_2', true );
-//	$mission_id    = order_get_mission_id( $order_id );
-//	$ref           = $order_id;
-//
-	array_push( $fields, $ref );
-//
-	array_push( $fields, $supplier_id );
-//
-	array_push( $fields, "<b>איסוף</b> " . get_supplier_name( $supplier_id ) );
-//
-	array_push( $fields, "<a href='waze://?q=$address'>$address</a>" );
-//
-	array_push( $fields, "" );
-//
-	array_push( $fields, sql_query_single_scalar( "select supplier_contact_phone from im_suppliers where id = " . $supplier_id ) );
-//	$payment_method = get_payment_method_name( $client_id );
-//	if ( $payment_method <> "מזומן" and $payment_method <> "המחאה" ) {
-//		$payment_method = "";
-//	}
-	array_push( $fields, "" );
-//
-	array_push( $fields, sql_query_single_scalar( "select mission_id from im_supplies where id = " . $id ) );
-//
-	array_push( $fields, imMultiSite::LocalSiteID() );
-	// array_push($fields, get_delivery_id($order_id));
+	$address     = $s->getAddress();
 
+	array_push( $fields, $ref );
+	array_push( $fields, $supplier_id );
+	array_push( $fields, "<b>איסוף</b> " . get_supplier_name( $supplier_id ) );
+	array_push( $fields, "<a href='waze://?q=$address'>$address</a>" );
+	array_push( $fields, "" );
+	array_push( $fields, sql_query_single_scalar( "select supplier_contact_phone from im_suppliers where id = " . $supplier_id ) );
+	array_push( $fields, "" );
+	array_push( $fields, sql_query_single_scalar( "select mission_id from im_supplies where id = " . $id ) );
+	array_push( $fields, imMultiSite::LocalSiteID() );
 
 	$line = "<tr> " . delivery_table_line( 1, $fields ) . "</tr>";
-
-	// get_field($order_id, '_shipping_city');
 
 	return $line;
 
@@ -654,6 +640,61 @@ function delivery_table_header( $edit = false ) {
 	return $data;
 }
 
-    ?>
+function save_route($missions, $path) {
+//    print "missions=$missions<br/>";
+//    print "path=" . var_dump($path);
+	! is_array( $missions ) or die ( "missions array" );
+
+	sql_query( "update im_missions set path = \"" . comma_implode($path, true) . "\" where id = " . $missions );
+}
+
+function edit_route($mission)
+{
+    if (! $mission) die ("no mission");
+
+    print gui_header(1, "Mission", true, true); print gui_label("mission_id", $mission);
+	$m = new Mission($mission);
+    $path = sql_query_single_scalar("select path from im_missions where id = $mission");
+
+    $points = explode("," , $path); foreach ($points as $key => $point) $points[$key] = trim($point, "' ");
+	$list = $points;
+	array_unshift($list, "select");
+    $table = array(array("point", "preq"));
+    $prerequisite = array();
+    foreach ($points as $point)
+	    $prerequisite[$point] = info_get("mission_preq_" . $mission . "." . $point, false, "select");
+
+	$new_path = array();
+	find_route_1( $m->getStartAddress(), $points, $new_path, false, $m->getEndAddress(), $prerequisite );
+
+	foreach ($new_path as $point)
+		array_push($table, array($point, gui_simple_select($point, $list, "onchange=\"update_path_preq('" . $point . "')\"", null, $prerequisite[$point])));
+
+    print gui_table_args($table);
+
+}
+
+function get_maps_url($mission, $path)
+{
+	$url = "https://www.google.com/maps/dir/" . $mission->getStartAddress();
+
+	for ( $i = 0; $i < count( $path ); $i ++ ) {
+		$url .= "/" . $path[ $i ];
+	}
+	$url .= "/" . $mission->getEndAddress();
+	print gui_hyperlink( "Maps", $url );
+}
+
+return;
+?>
+
+
+<!--	<style>-->
+<!--		@media print {-->
+<!--			h1 {-->
+<!--				page-break-before: always;-->
+<!--			}-->
+<!--		}-->
+<!--	</style>-->
 
 

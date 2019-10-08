@@ -12,7 +12,7 @@ if ( ! defined( "ROOT_DIR" ) ) {
 
 require_once( ROOT_DIR . '/fresh/im_tools.php' );
 require_once( ROOT_DIR . '/fresh/suppliers/gui.php' );
-require_once( ROOT_DIR . '/fresh/people/people.php' );
+require_once( ROOT_DIR . '/org/people/people.php' );
 require_once( ROOT_DIR . '/fresh/gui.php' );
 
 function business_supply_info( $bid ) {

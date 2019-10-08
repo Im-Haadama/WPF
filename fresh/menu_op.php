@@ -92,7 +92,7 @@ add_command( $table, $row, $col, "edit_shop_orders", "Today Routes", "/routes/ro
 add_command( $table, $row, $col, "edit_shop_orders", "This week routes", "/routes/routes-page.php?operation=show_routes&week=" . date( "Y-m-d", strtotime( "last sunday" ) ));
 add_command( $table, $row, $col, "edit_shop_orders", "תעודות משלוח", "business/get_all.php?week=" .
                                                              sunday( date( "Y-m-d" ) )->format( "Y-m-d" ), "doc_frame" );
-add_command( $table, $row, $col, "edit_missions", "ניהול מסלולים", "missions/admin.php" );
+add_command( $table, $row, $col, "edit_missions", "ניהול מסלולים", "/routes/missions/missions-page.php" );
 add_command( $table, $row, $col, "edit_shop_orders", "משלוחי המכולת", "delivery/legacy.php" );
 add_command( $table, $row, $col, null, "דיווח חוסרים ללקוח", "delivery/missing.php" );
 
@@ -172,7 +172,7 @@ add_command( $table, $row, $col, "edit_pricelist", "משימות פעילות", 
 add_command( $table, $row, $col, "edit_pricelist", "פרויקטים", "people/project_admin.php" );
 add_command( $table, $row, $col, "edit_pricelist", "תיבת דואר", "business/inbox-box.php" );
 add_command( $table, $row, $col, "show_bank", "בנק", "bank/bank-page.php" );
-add_command( $table, $row, $col, "show_bank", "התאם תשלומים", "business/business-post.php?operation=show_pay_to_link" );
+add_command( $table, $row, $col, "show_bank", "התאם תשלומים", "/org/business/business-post.php?operation=show_pay_to_link" );
 add_command( $table, $row, $col, "show_bank", "ניתוח שבועי", "business/report.php" );
 
 while ( $row < $max_row ) {

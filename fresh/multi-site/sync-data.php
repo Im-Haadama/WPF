@@ -9,6 +9,8 @@
 require_once( '../r-multisite.php' );
 require_once( ROOT_DIR . '/niver/gui/sql_table.php' );
 require_once( "../multi-site/imMulti-site.php" );
+require_once( ROOT_DIR . "/init.php" );
+
 
 $operation = $_GET["operation"];
 if ( ! isset( $_GET["table"] ) ) {
@@ -48,7 +50,6 @@ switch ( $table ) {
 // print header_text(false);
 switch ( $operation ) {
 	case "get":
-		im_init(null);
 		print header_text( false );
 		$sql = "SELECT * FROM $table";
 		if ( isset ( $_GET["query"] ) ) {
@@ -73,7 +74,7 @@ switch ( $operation ) {
 				print "table $table not exportable.<br/>";
 				die (1);
 		}
-		setlocale(LC_ALL, "en_US");
+		disable_translate();
 		print GuiTableContent( "table", $sql, $args );
 		break;
 

@@ -89,14 +89,6 @@ function update_table_field(post_file, table_name, id, field_name, finish_action
     execute_url(request, finish_action);
 }
 
-function location_reload(xmlhttp)
-{
-    if (xmlhttp.response === "done")
-        location.reload();
-    else
-        alert (xmlhttp.response);
-}
-
 function operation_arguments(table_name, id = null)
 {
     let operation_args = "";

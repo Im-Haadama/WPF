@@ -179,7 +179,9 @@ function task_url($task_id)
 {
 	$sql = "SELECT task_url FROM im_task_templates WHERE id = "
 	       . " (SELECT task_template FROM im_tasklist WHERE id = " . $task_id . ")";
-	return sql_query_single_scalar( $sql );
+	$r = sql_query_single_scalar( $sql );
+	// print $r;
+	return $r;
 
 }
 function get_task_status( $status ) {

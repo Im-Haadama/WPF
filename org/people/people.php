@@ -8,7 +8,8 @@
 if ( ! defined( "TOOLS_DIR" ) ) {
 	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
 }
-require_once(ROOT_DIR . '/org/gui.php');
+require_once( ROOT_DIR . '/org/gui.php' );
+
 // error_reporting( E_ALL );
 // ini_set( 'display_errors', 'on' );
 
@@ -134,6 +135,7 @@ function worker_get_id($user_id)
 function print_transactions( $user_id = 0, $month = null, $year = null, &$args = null) // , $week = null, $project = null, &$sum = null, $show_salary = false , $edit = false) {
 {
 	$sql = "SELECT id, date, dayofweek(date), start_time, end_time, working_rate(user_id, project_id), project_id, traveling, expense, expense_text, comment FROM im_working_hours WHERE 1 ";
+	$data = "";
 
 	$sql_month = null;
 	if ( isset( $month ) and $month > 0 ) {
@@ -163,7 +165,7 @@ function print_transactions( $user_id = 0, $month = null, $year = null, &$args =
 		$sql .= " and project_id = " . $project;
 	}
 
-	$sql .= " order by 1 ";
+	$sql .= " order by 2 ";
 	// print $sql;
 	if ( isset( $month ) ) {
 		$sql .= "asc";
@@ -178,7 +180,9 @@ function print_transactions( $user_id = 0, $month = null, $year = null, &$args =
 	$args["selectors"] = array("project_id" => "gui_select_project");
 	$args["skip_id"] = true;
 
-	return GuiTableContent("im_working_hours", $sql, $args);
+	$data .= GuiTableContent("im_working_hours", $sql, $args);
+
+	return $data;
 
 	//	print "ss=" . $show_salary . "<br/>";
 	// print "uid=" . $user_id . "<br/>";
@@ -327,8 +331,6 @@ function print_transactions( $user_id = 0, $month = null, $year = null, &$args =
 
 	$data      .= "</table>";
 
-	if ($edit)
-		$data .= gui_button("btn_delete", "delete_line(" . $user_id . ")", "מחק");
 
 	$total_sal = round( $total_sal, 1 );
 
@@ -395,16 +397,6 @@ function add_activity( $user_id, $date, $start, $end, $project_id, $vol = true, 
 	my_log( "end add_activity" );
 }
 
-function add_activity_sick_leave( $user_id, $date, $project_id ) {
-	my_log( "add_activity", __FILE__ );
-	$result = people_add_activity_sick( $user_id, $date, $project_id);
-	if ( $result ) {
-		return $result;
-	}
-//	my_log( "before business" );
-//	business_add_transaction( $user_id, $date, $amount * 1.1, 0, 0, $project_id );
-//	my_log( "end add_activity" );
-}
 
 // $selector_name( $key, $data, $args)
 
@@ -438,5 +430,56 @@ function gui_select_template($id, $value, $args)
 
 }
 
+function handle_people_operation($operation)
+{
+	switch($operation){
+		case "salary_report":
+			$edit = get_param("edit", false, false);
+			$args = array("add_checkbox" => true, "edit_lines" => $edit);
+			print header_text(true);
+			show_all("2019-09", $args);
+			break;
+	}
+}
+
+function show_all( $month, &$args) {
+	$edit_lines = GetArg($args, "edit_lines", false);
+	if ( ! current_user_can( "show_all_hours" ) ) {
+		print "אין הרשאה";
+		die ( 1 );
+	}
+
+	$a = explode( "-", $month );
+	$y = $a[0];
+	$m = $a[1];
+
+	$sql = "select distinct h.user_id, report " .
+	       " from im_working_hours h " .
+	       " join im_working w " .
+	       " where month(date)=" . $m .
+	       " and year(date) = " . $y .
+	       " and h.user_id = w.user_id ";
+	// print $sql;
+	$result = sql_query( $sql);
+
+	$s = array();
+
+	while ( $row = mysqli_fetch_row( $result ) ) {
+		$user_id = $row[0];
+		$args["worker"] = $user_id;
+
+		if ( $row[1] ) {
+			print gui_header( 1, get_user_name( $user_id ) . "(" . $user_id . ")" );
+			print "כתובת מייל של העובד/ת: " . get_customer_email( $user_id ) . "<br/>";
+
+//			print print_transactions( 0, $month, $year, null, null, $s, true  );
+
+			print print_transactions( $user_id, $m, $y, $args); // null, null, $s, true, $edit );
+			if ($edit_lines){
+				print gui_button("btn_delete", "delete_line(" . $user_id . ")", "מחק");
+			}
+		}
+	}
+}
 
 ?>

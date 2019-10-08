@@ -25,7 +25,7 @@ $operation = get_param("operation", false, "show_missions");
 $id = get_param("id", false);
 if ($id) {
 	print header_text( false, true, true, "delivery.js" );
-	show_path($id, $debug, $missing);
+	show_route($id, $debug, $missing);
 	return;
 }
 
@@ -46,7 +46,7 @@ switch ($operation)
 
 	case "show_path":
         $mission_id = get_param("mission");
-	    show_path($mission_id, $debug, $missing);
+	    show_route($mission_id, $debug, $missing);
 	    break;
 }
 

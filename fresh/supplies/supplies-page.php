@@ -27,7 +27,7 @@ if ($id)
 {
 	$supply = new Supply($id);
 	print "<center> " . gui_header(1, "Supply number ", true, true). gui_label("supply_number", $id) . "</center>";
-	print $supply->Html(true, true);
+	print $supply->Html(true, false);
 	print gui_button( "btn_add_line", "add_item()", "add" );
 	print gui_select_product( "itm_" );
 	print gui_button("btn_del", "deleteItems()", "delete lines");
@@ -36,17 +36,13 @@ if ($id)
 	return;
 }
 
-$operation = get_param("operation");
+$operation = get_param("operation", false, "get_all");
 if ($operation) {
-	switch ( $operation ) {
-		case "check_needed":
-			break;
-		default:
-			print $operation . " not handled <br/>";
-			die(1);
-
-	}
+    handle_supplies_operation($operation);
+    return;
 }
+
+exit;
 
 $row_id = get_param( "row_id", false );
 // if ($row_id) { show_supply($row_id); return; }

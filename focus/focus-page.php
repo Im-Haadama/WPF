@@ -45,7 +45,9 @@ if ($task_template_id)
 if (get_param("templates", false,"none") !== "none") {
 	print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/fresh/admin/admin.js" ) );
 
-	print gui_hyperlink("הוסף תבנית", get_url(true) . "?operation=new_template");
+	print gui_hyperlink("Add repeating task", get_url(true) . "?operation=new_template");
+
+	$args = array();
 
 	show_templates(get_url(1));
 	return;

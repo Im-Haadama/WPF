@@ -93,6 +93,16 @@ function deleteItems() {
     xmlhttp.send();
 }
 
+function closeItems(collection_name)
+{
+    let param = new Array();
+    let collection = document.getElementsByClassName(collection_name);
+    for (let i = 0; i < collection.length; i++) {
+        if (collection[i].checked) param.push(collection[i].id.substr(4));
+    }
+    let request = "/fresh/supplies/supplies-post.php?operation=supplied&ids=" + param;
+    execute_url(request, location_reload);
+}
 function get_supply_id()
 {
     return get_value_by_name("supply_number");

@@ -446,11 +446,6 @@ function gui_cell( $cell, $id = null, $show = true) {
 	// b) make url from strings start with http:// or https://
 
 	$cell = str_replace('\n', '<br/>', $cell);
-	if (! strstr($cell, "<a"))
-		$cell = preg_replace(
-			"~[[:alpha:]]+://[^<>[:space:]]+[[:alnum:]/]~",
-			"<a href=\"\\0\">\\0</a>",
-			$cell);
 
 	$data = "<td";
 	if ( $id ) {
@@ -470,6 +465,13 @@ function gui_cell( $cell, $id = null, $show = true) {
 
 	return $data;
 }
+
+// Replace http:// with hyperlink
+//	if (! strstr($cell, "<a"))
+//		$cell = preg_replace(
+//			"~[[:alpha:]]+://[^<>[:space:]]+[[:alnum:]/]~",
+//			"<a href=\"\\0\">\\0</a>",
+//			$cell);
 
 /**
  * Convert array of cells to html table starting with <tr>.
@@ -631,6 +633,14 @@ function gui_table(
  */
 function gui_table_args($input_rows, $id = null, $args = null)
 {
+	if (0) {
+		print "<table>";
+		foreach ($input_rows as $row) {
+			print "<tr>";
+			foreach ($row as $cell) print "<td>$cell</td>";
+			print "</tr>";
+		}
+	}
 	$data = "";
 
 	$debug = GetArg($args, "debug", false);
@@ -644,9 +654,6 @@ function gui_table_args($input_rows, $id = null, $args = null)
 	// Table start and end
 	$header = true;
 	$footer = true;
-
-	// Should sum or other function on cols.
-	$acc_fields = GetArg($args, "acc_fields", null);
 
 	// Style and class.
 	$style = GetArg($args, "style", null);
@@ -699,86 +706,38 @@ function gui_table_args($input_rows, $id = null, $args = null)
 	}
 	$action_line = null;
 
-	// 8/9/2019 removed because appeared in the end of task list.
-	// In case needed, a specific flag should be raised. E.g,, line_actions;
+	if ( $style ) $data .= "<style>" . $style . "</style>";
+	if (is_array($rows) and $transpose) $rows = array_transpose($rows);
 
-//	$actions = GetArg($args, "actions", null);
-//
-//	if ($actions){
-//		$action_line = array();
-//		foreach ($input_rows[0] as $key => $cell)
-//			$action_line[$key] = isset($actions[$key]) ? $actions[$key] : null;
-//		array_push($rows, $action_line);
-//	}
+	foreach ($rows as $row_id => $row)
+	{
+		$data .="<tr>";
+		if (is_array($row)) {
+			if ($add_checkbox and $row_id != "acc") {
+				$data .= "<td>" . gui_checkbox("chk_" . $row_id, $checkbox_class, 0,
+						($row_id === "header") ? $e = 'onchange="select_all_toggle(this, \'' . $checkbox_class . '\')"' : $checkbox_events);
+			}
+			foreach ($row as $key => $cell){
+				$idx = ($transpose ? $row_id : $key);
+//					print "idx=$idx $show_cols h=" . isset($args["hide_cols"]) . " hidx=" . isset($args["hide_cols"][$idx]);
+				$show = (((!$show_cols) or isset($show_cols[$idx])) // Positive
+					and !(isset($args["hide_cols"]) and isset($args["hide_cols"][$idx]))); // Negative
 
-	if ( $style ) {
-		$data .= "<style>" . $style . "</style>";
-	} else {
-		if ($debug) print "no style";
+				// print $key . " " . $row_id . " " . $show . "<br/>";
+				$data .= gui_cell($cell, $key . "_" . $row_id, $show);
+			}
+				// $data .= "<td>" . $cell . "</td>";
+		} else
+			$data .= "<td>" . $row . "</td>";
+
+		$data .= "</tr>";
 	}
 
-	do {
-		if (! is_array($rows)) {
-			$data .= "<tr>" . $rows . "</tr>";
-			break;
-		}
-		if ($transpose) {
-			$target = array();
-			foreach ($rows as $i => $row){
-//				 print "<br/>$i:";
-				if (isset($row[0])){ // sequential
-					throw new Exception("row $i, send assoc array");
-				}
-				foreach ($row as $j => $cell){
-//					print "$j, ";
-					$target[$j][$i] = $cell;
-				}
-			}
-			$rows = $target;
-		}
-//		print "hc="; var_dump($args["hide_cols"]);
-
-		foreach ($rows as $row_id => $row)
-		{
-			$data .="<tr>";
-			if (is_array($row)) {
-				if ($add_checkbox) $data .= "<td>" . gui_checkbox("chk_" . $row_id, $checkbox_class, 0, $checkbox_events);
-				foreach ($row as $key => $cell){
-					$idx = ($transpose ? $row_id : $key);
-//					print "idx=$idx $show_cols h=" . isset($args["hide_cols"]) . " hidx=" . isset($args["hide_cols"][$idx]);
-					$show = (((!$show_cols) or isset($show_cols[$idx])) // Positive
-						and !(isset($args["hide_cols"]) and isset($args["hide_cols"][$idx]))); // Negative
-
-					// print $key . " " . $row_id . " " . $show . "<br/>";
-					$data .= gui_cell($cell, $key . "_" . $row_id, $show);
-				}
-					// $data .= "<td>" . $cell . "</td>";
-			} else
-				$data .= "<td>" . $row . "</td>";
-
-			$data .= "</tr>";
-		}
-	} while (0);
-//	if ( is_array( $rows ) ) {
-//		foreach ( $rows as $row_id => $row ) {
-//			if ($debug) print "outputing.. " . $row_id;
-//			// $row_id = ! is_null($id_field) ? strip_tags($row[$id_field]) : null;
-////			print "rid=$row_id<br/>";
-//
-//			if ( ! is_null( $row ) ) {
-//				$data .= gui_row( $row, $row_id, $show_cols, $acc_fields, $col_ids, null, $add_checkbox, $checkbox_class, $checkbox_events );
-//			}
-//		}
-//	} else {
-//		$data .= "<tr>" . $rows . "</tr>";
-//	}
-
-	$data .= gui_row($acc_fields);
+	// $data .= gui_row($acc_fields);
 	if ( $footer ) {
 		$data .= "</table>";
 	}
 
-//	print "<br/>" . str_replace("<", "$", $data) . "<br/>";
 	return $data;
 }
 
@@ -961,9 +920,8 @@ function gui_select_datalist( $id, $datalist_id, $name, $values, $events, $selec
 
 /**
  * @param $id
- * @param $values
- * @param $events
- * @param $selected
+ * @param $value
+ * @param $args
  *
  * @return string
  */
@@ -977,19 +935,18 @@ function GuiSimpleSelect($id, $value, $args)
 	return gui_simple_select($id, $values, $events, $value);
 }
 
-function gui_simple_select( $id, $values, $events, $selected ) {
+function gui_simple_select( $id, $values, $events, $selected_key = null, $selected_value = null ) {
 	$data = "<select id=\"" . $id . "\" ";
 	if ( $events ) {
 		$data .= $events;
 	}
-
 	$data .= ">";
 
-	foreach ( $values as $key => $row ) {
+	foreach ($values as $key => $row ) {
 		$data .= "<option value=\"" . $row . "\"";
 //		print $selected . " " . $row . "<br/>";
-		if ( $selected and ($selected == $key) ) {
-			$data .= " selected ";
+		if ( ( $selected_key and ($selected_key == $key) ) or ( $selected_value and ($selected_value == $row))) {
+			$data .= " selected";
 		}
 		// print $selected . " " . $row["$id"] . "<br/>";
 		$data .= ">";

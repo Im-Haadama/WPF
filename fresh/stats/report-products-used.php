@@ -44,7 +44,7 @@ $sql .= " ) group by 3 " .
 
 print $sql;
 
-$links = array( 2 => "report-product.php?prod_id=%s" );
-print table_content( "table", $sql, true, true, $links );
+$args = array("links" => array("id" => "report-product.php?prod_id=%s"));
+print GuiTableContent( "table", $sql, $links );
 
 //client_id = 196 and

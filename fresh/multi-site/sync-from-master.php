@@ -15,5 +15,7 @@ if ( ! defined( 'TOOLS_DIR' ) ) {
 require_once( TOOLS_DIR . "/im_tools.php" );
 
 require_once( TOOLS_DIR . '/multi-site/sync.php' );
+require_once( ROOT_DIR . "/init.php" );
 
-sync_from_master();
+$debug = get_param("debug", false, false);
+sync_from_master($debug);

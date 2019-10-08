@@ -494,7 +494,7 @@ class Order {
 				if (!$suppliers) $suppliers = array();
 				foreach ($s as $supplies){
 					if ($supplies[3] and ! $supplies[4] and ! in_array($supplies[2], $suppliers)){ // Self collect and not picked
-						print "order " . $this->order_id . " supplier " . get_supplier_name($supplies[2]) . "<br/>";
+//						print "order " . $this->order_id . " supplier " . get_supplier_name($supplies[2]) . "<br/>";
 						array_push($suppliers, $supplies[2]);
 					}
 				}

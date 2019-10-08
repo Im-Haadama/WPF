@@ -14,7 +14,7 @@ if ( ! defined( "ROOT_DIR" ) ) {
 require_once( ROOT_DIR . '/niver/PivotTable.php' );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( ROOT_DIR . '/fresh/im_tools_light.php' );
-require_once( ROOT_DIR . '/niver/web.php');
+require_once( ROOT_DIR . '/niver/web.php' );
 
 print header_text(false, true, true, array("/niver/gui/client_tools.js", "/fresh/admin/data.js"));
 
@@ -124,7 +124,7 @@ $args = array("row_trans" => array ("part_id" => "get_customer_name"), "order" =
 
 try {
 	$table = $t->Create(
-		'/fresh/business/c-get-business_info.php?document_type=4&part_id=%s&date=' . $year . '-' . '%02s-28',
+		'/org/business/c-get-business_info.php?document_type=4&part_id=%s&date=' . $year . '-' . '%02s-28',
 		'invoice_table.php?part_id=%s',
 		$args );
 } catch ( Exception $e ) {

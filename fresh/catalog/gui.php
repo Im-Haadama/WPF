@@ -14,6 +14,8 @@ function gui_select_product( $id, $data = null, $args = null)
 {
 	if (! $args)
 		$args = array();
+
+	if (isset($args["edit"]) and !$args["edit"]) return ($data > 0 ? get_product_name($data) : $data);
 	$args["selected"] = $data;
 	$args["name"] = "post_title";
 	$args["selected"] = $data;

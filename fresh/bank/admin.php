@@ -21,7 +21,7 @@ function handle_bank_operation($operation, $url = null) {
 			$args = array();
 			print gui_header(1, "Payments");
 			$args["header_fields"] = array("Id", "Date", "Description", "Amount");
-			$args["actions"] = array(array("Mark payment", "../business/business-post.php?operation=create_pay_bank&id=%s"));
+			$args["actions"] = array(array("Mark payment", "/org/business/business-post.php?operation=create_pay_bank&id=%s"));
 			$page = get_param("page", false, 1);
 			$rows_per_page = 20;
 			$offset = ($page - 1) * $rows_per_page;

@@ -31,23 +31,6 @@ switch ( $operation ) {
 
 	case "display":
 	case "display_all":
-		$month = null;
-		$year  = null;
-		if ( isset( $_GET["month"] ) ) {
-			$m     = $_GET["month"];
-			$month = substr( $m, 5 );
-			$year  = substr( $m, 0, 4 );
-
-		}
-		$user = get_current_user_id();
-
-		if ( current_user_can( "working_hours_all" ) ) {
-			$user = 0;
-		}
-		$args = array();
-		$args["edit"] = get_param("edit", false, false);
-		var_dump($args);
-		print print_transactions( 0, $month, $year, $args );
 
 		break;
 
@@ -136,40 +119,4 @@ switch ( $operation ) {
 		print "bad usage 2";
 		die( 2 );
 
-}
-
-function show_all( $month, &$args) {
-	if ( ! current_user_can( "show_all_hours" ) ) {
-		print "אין הרשאה";
-		die ( 1 );
-	}
-
-	$a = explode( "-", $month );
-	$y = $a[0];
-	$m = $a[1];
-
-	$sql = "select distinct h.user_id, report " .
-	       " from im_working_hours h " .
-	       " join im_working w " .
-	       " where month(date)=" . $m .
-	       " and year(date) = " . $y .
-	       " and h.user_id = w.user_id ";
-	// print $sql;
-	$result = sql_query( $sql);
-
-	$s = array();
-
-	while ( $row = mysqli_fetch_row( $result ) ) {
-		$u = $row[0];
-		$args["worker"] = $u;
-
-		if ( $row[1] ) {
-			print gui_header( 1, get_user_name( $u ) . "(" . $u . ")" );
-			print "כתובת מייל של העובד/ת: " . get_customer_email( $u ) . "<br/>";
-
-//			print print_transactions( 0, $month, $year, null, null, $s, true  );
-
-			print print_transactions( $u, $m, $y, $args); // null, null, $s, true, $edit );
-		}
-	}
 }

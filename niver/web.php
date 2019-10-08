@@ -51,5 +51,7 @@ function add_to_url($param_name, ...$param_value)
 //	var_dump($param_value); print "<br/>";
 	$url = get_url();
 
-	return add_param_to_url($url, $param_name, $param_value[0]);
+	if (isset($param_value[0]))
+		return add_param_to_url($url, $param_name, $param_value[0]);
+
 }

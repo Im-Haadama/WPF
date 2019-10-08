@@ -24,7 +24,8 @@ $sql = "SELECT count(*) AS count, post_status AS status
 
 $links    = [];
 $links[1] = "../../wp-admin/edit.php?post_status=%s&post_type=shop_order";
-print table_content( "table", $sql, true, true, $links );
+
+print GuiTableContent( "table", $sql, true, true, $links );
 
 $count = count_unmapped();
 if ( $count > 0 ) {

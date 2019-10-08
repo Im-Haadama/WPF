@@ -211,8 +211,19 @@ switch ( $operation ) {
 		break;
 
 	case "check_waiting_count":
-		print sql_query_single_scalar("select count(*) from wp_posts " .
-		" where post_status = 'wc-awaiting-shipment'");
+		$count =  sql_query_single_scalar("select count(*) from wp_posts where post_status = 'wc-awaiting-shipment'");
+
+		print $count;
+//		if (! $count) {
+//			print "0";
+//			return;
+//		}
+//		print
+//		print header_text(true, true, true, true);
+//		print load_scripts("/fresh/delivery/delivery.js");
+//
+//		print orders_table("wc-awaiting-shipment");
+//		print gui_button( "btn_delivered", "delivered_table()", "Delivered" ) . "<br/>";
 
 		break;
 
@@ -243,6 +254,7 @@ function order_calculate( $order_id ) {
 	set_post_meta_field( $order_id, '_order_total', $total );
 	print $total;
 }
+
 function replace_baskets() {
 	$sql = 'SELECT posts.id'
 	       . ' FROM `wp_posts` posts'

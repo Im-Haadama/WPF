@@ -11,11 +11,11 @@ if ( ! defined( "TOOLS_DIR" ) ) {
 
 require_once( '../r-shop_manager.php' );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
-require_once( TOOLS_DIR . '/business/business.php' );
+require_once( ROOT_DIR . '/org/business/business.php' );
 require_once( TOOLS_DIR . '/invoice4u/invoice.php' );
 require_once( ROOT_DIR . '/niver/data/html2array.php' );
 require_once( ROOT_DIR . '/fresh/multi-site/imMulti-site.php' );
-require_once( ROOT_DIR . '/fresh/business/BankTransaction.php' );
+require_once( ROOT_DIR . '/org/business/BankTransaction.php' );
 require_once( ROOT_DIR . '/fresh/suppliers/gui.php' );
 
 require_once( ROOT_DIR . "/init.php" );
@@ -96,7 +96,7 @@ if ( isset( $_GET["operation"] ) ) {
 			break;
 
 		case "create_pay_bank":
-			require_once( ROOT_DIR . '/fresh/business/BankTransaction.php' );
+			require_once( ROOT_DIR . '/org/business/BankTransaction.php' );
 			require_once( ROOT_DIR . '/fresh/account/gui.php' );
 			print header_text( false, true, true,
 				array(
@@ -168,7 +168,7 @@ if ( isset( $_GET["operation"] ) ) {
 
 			// 1) mark the bank transaction to invoice.
 			foreach ( $ids as $id ) {
-				$command = "business/business-post.php?operation=get_amount&id=" . $id;
+				$command = "org/business/business-post.php?operation=get_amount&id=" . $id;
 				$amount = doubleval(strip_tags($multi_site->Run($command , $site_id)));
 				$line_amount = min ($amount, $bank);
 
@@ -182,7 +182,7 @@ if ( isset( $_GET["operation"] ) ) {
 			$date = $b->getDate();
 
 			// 2) mark the invoices to transaction.
-			$command = "business/business-post.php?operation=add_payment&ids=" . implode( $ids, "," ) . "&supplier_id=" . $supplier_id .
+			$command = "org/business/business-post.php?operation=add_payment&ids=" . implode( $ids, "," ) . "&supplier_id=" . $supplier_id .
 			           "&bank_id=" . $bank_id . "&date=" . $date .
 			           "&amount=" . $bank;
 //			print $command;
@@ -218,7 +218,7 @@ if ( isset( $_GET["operation"] ) ) {
 			break;
 
 		case "create_invoice_bank":
-			require_once( ROOT_DIR . '/fresh/business/BankTransaction.php' );
+			require_once( ROOT_DIR . '/org/business/BankTransaction.php' );
 			require_once( ROOT_DIR . '/fresh/account/gui.php' );
 			print header_text( false, true, true,
 				array(
@@ -295,7 +295,7 @@ if ( isset( $_GET["operation"] ) ) {
 			$supplier_id = get_param( "supplier_id", true );
 			$site_id     = get_param( "site_id", true );
 			// $func, $site_id, $first = false, $debug = false ) {
-			print $multi_site->Run( "business/business-post.php?operation=get_open_site_invoices&supplier_id=" . $supplier_id,
+			print $multi_site->Run( "/org/business/business-post.php?operation=get_open_site_invoices&supplier_id=" . $supplier_id,
 				$site_id, true, $debug);
 			break;
 
@@ -384,7 +384,7 @@ function business_create_multi_site_receipt( $bank_id, $bank_amount, $date, $cha
 function gui_select_open_supplier( $id = "supplier" ) {
 	global $multi_site;
 
-	$values  = html2array( $multi_site->GetAll( "business/business-post.php?operation=get_supplier_open_account" ) );
+	$values  = html2array( $multi_site->GetAll( "org/business/business-post.php?operation=get_supplier_open_account" ) );
 
 	if (! $values) {
 		 return "nothing found";
@@ -407,7 +407,7 @@ function gui_select_open_supplier( $id = "supplier" ) {
 
 function gui_select_client_open_account( $id = "client" ) {
 	global $multi_site;
-	$values  = html2array( $multi_site->GetAll( "business/business-post.php?operation=get_client_open_account" ) );
+	$values  = html2array( $multi_site->GetAll( "org/business/business-post.php?operation=get_client_open_account" ) );
 	$open    = array();
 	$list_id = 0;
 	foreach ( $values as $value ) {

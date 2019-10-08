@@ -12,26 +12,27 @@ if ( ! defined( 'TOOLS_DIR' ) ) {
 
 // require_once( TOOLS_DIR . "/r-shop_manager.php" );
 require_once( TOOLS_DIR . "/multi-site/imMulti-site.php" );
-require_once( TOOLS_DIR . "/maps/config.php" );
 
 $addresses    = array();
 
-//function print_path( $ul ) {
-//	print "cost: " . evaluate_path( 1, $ul, 1 ) . "<br/>";
-//	$i = 1;
-//	foreach ( $ul as $u ) {
-//
-//		print $i . ")" . map_get_order_address( $u ) . " ";
-//		print "<br/>";
-//		$i ++;
-//	}
-//}
+function print_path( $ul ) {
+	$start = 'גרניט 23 כפר-יונה';
+	print "cost: " . evaluate_path( $start, $ul, $start ) . "<br/>";
+	$i = 1;
+	foreach ( $ul as $u ) {
+
+		print $i . ")" .  $u . " ";
+		print "<br/>";
+		$i ++;
+	}
+}
 
 function evaluate_path( $start, $elements, $end ) {
 //	if ( $end < 1 ) {
 //		print "end is " . $end . "<br/>";
 //	}
-	$cost = get_distance( $start, $elements[0] );
+	// $cost = get_distance( $start, $elements[0] );
+	$cost = get_distance_duration( $start, $elements[0] );
 	$size = sizeof( $elements );
 //	print "size: " . $size . "<br/>";
 	for ( $i = 1; $i < $size; $i ++ ) {
@@ -51,8 +52,8 @@ function swap( &$a, &$b ) {
 	$b = $x;
 }
 
-function find_route_1( $node, $rest, &$path, $print, $end, $prerequisite ) {
-
+function find_route_1( $node, $rest, &$path, $print, $end, $prerequisite )
+{
 	if (! $rest or ! is_array($rest))
 	{
 		die("invalid points");
@@ -66,6 +67,14 @@ function find_route_1( $node, $rest, &$path, $print, $end, $prerequisite ) {
 	find_route( $node, $rest, $path, $prerequisite );
 
 	$best_cost = evaluate_path( $node, $path, $end );
+
+	if ($print) {
+		print "first guess route<br/>";
+//		print "cost: " . $best_cost . "<br/>";
+		print_path( $path );
+	}
+
+	// Continue as long as switching adjacent nodes makes the route shorter
 	$switched  = true;
 	while ( $switched ) {
 		$switched = false;
@@ -247,10 +256,9 @@ function do_get_distance( $a, $b ) {
 		return 0;
 	}
 
-	global $key;
 //	debug_time1("google start");
 	$s = "https://maps.googleapis.com/maps/api/directions/json?origin=" . urlencode( $a ) . "&destination=" .
-	     urlencode( $b ) . "&key=" . $key . "&language=iw";
+	     urlencode( $b ) . "&key=" . MAPS_KEY . "&language=iw";
 
 	// print $s;
 	$result = file_get_contents( $s );

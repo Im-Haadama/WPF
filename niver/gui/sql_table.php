@@ -164,7 +164,7 @@ function PrepareRow($row, $args, $row_id)
 	$skip_id = GetArg($args, "skip_id", false);
 	$links = GetArg($args, "links", null);
 	$edit = GetArg($args, "edit", false);
-	// print "epr=$edit";
+	$drill = GetArg($args, "drill", false);
 	$selectors = GetArg($args, "selectors", null);
 	$actions = GetArg($args, "actions",null);
 	$edit_cols = GetArg($args, "edit_cols", null);
@@ -174,7 +174,6 @@ function PrepareRow($row, $args, $row_id)
 
 	$events = GetArg($args, "events", null); // $edit ? "onchange='changed_field(" . $row_id . ")'" : null); // Valid for grid. In transposed single row it will be replaced.
 	$field_events = null;
-	// print "e=" . $events;
 	$table_name = GetArg($args, "table_name", null);
 
 	$row_data = array();
@@ -261,6 +260,7 @@ function PrepareRow($row, $args, $row_id)
 				}
 				// print $selector_name;
 				$value = $selector_name( $input_name, $orig_data, $args ); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
+				if ($drill) $value = gui_hyperlink($value, get_url() . "&$key=$value");
 				break;
 			}
 			// print "pp e=" .$edit . " e_c=" . (is_array($edit_cols) ? comma_implode($edit_cols) : $edit_cols) . " ec[k]=" . isset($edit_cols[$key]) . "<br/>";
@@ -287,7 +287,7 @@ function PrepareRow($row, $args, $row_id)
 				}
 			}
 			if ($debug) print "after $key";
-			if ( $selectors and array_key_exists( $key, $selectors ) ) {
+			if ( $selectors and array_key_exists( $key, $selectors )) {
 				if ($debug) print "has selectors ";
 				$selector_name = $selectors[ $key ];
 				if ( strlen( $selector_name ) < 2 ) {
@@ -297,8 +297,8 @@ function PrepareRow($row, $args, $row_id)
 				// Selector ($id, $value, $args //
 				//////////////////////////////////
 				$value = $selector_name( $key, $orig_data, $args); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
-				break;
 			}
+
 		} while (0);
 		if ($debug) print " setting ";
 		$row_data[$key] = $value;
@@ -362,6 +362,7 @@ function TableData($sql, &$args = null)
 	$rows_data = array();
 
 	$header = GetArg($args, "header", true);
+	$field_list = FieldList($sql, $args);
 	$mandatory_fields = GetArg($args, "mandatory_fields", null);
 	$header_fields = GetArg($args, "header_fields", null);
 	$id_field = GetArg($args, "id_field", "id");
@@ -371,7 +372,6 @@ function TableData($sql, &$args = null)
 	$meta_key_field = GetArg($args, "meta_key", "id");
 	$values = GetArg($args, "values", null);
 	$v_checkbox = GetArg($args, "v_checkbox", null);
-	$acc_fields = &GetArg($args, "acc_fields", null);
 	$checkbox_class = GetArg($args, "checkbox_class", "checkbox");
 
 	$table_names = array();
@@ -408,7 +408,6 @@ function TableData($sql, &$args = null)
 
 	if (strstr($sql, "describe") || strstr($sql, "show col")) // New Row
 	{
-		$field_list = FieldList($sql, $args);
 
 		// var_dump($field_list);
 
@@ -518,9 +517,6 @@ function TableData($sql, &$args = null)
 					}
 				}
 			}
-			if ($acc_fields) {
-				HandleSum($acc_fields, $row);
-			}
 
 			if ($v_line){
 				$rows_data["checkbox"] = $v_line;
@@ -536,23 +532,14 @@ function TableData($sql, &$args = null)
 
 			$rows_data[$row_id] = $the_row;
 		}
-		if ($acc_fields) {
-			$total_line = array();
-			foreach ($acc_fields as $key => $cell)
-			{
-				$total_lines[$key] = is_array($cell) ? $cell[0] : $cell;
-			}
-//				array_push($total_line, is_array($cell) ? $cell[0] : $cell);
-			$rows_data["sums"] = $total_line;
-//			array_push($rows_data, $total_line);
-		}
 
 		return $rows_data;
 	}
 }
 
-function FieldList($sql, $args)
+function FieldList($sql, &$args)
 {
+//	print "field list $sql";
 	$fields = GetArg($args, "fields", null);
 	// print "fields: "; var_dump($fields) . "<br/>";
 	if ($fields) return $fields;
@@ -560,92 +547,52 @@ function FieldList($sql, $args)
 	$fields = array();
 
 	$result = sql_query($sql);
-	while ( $row = mysqli_fetch_assoc( $result ) ) {
-		array_push($fields, $row["Field"]);
+	if (strstr($sql, "describe") or strstr($sql, "show cols")){
+		while ( $row = mysqli_fetch_assoc( $result ) ) {
+//			var_dump($row);
+			$fields[$row['Field']] = 1;
+		}
+	} else {
+		$row = sql_fetch_assoc($result);
+		if ($row) foreach ($row as $key => $cell) $fields[$key] = 1;
 	}
+//	var_dump($fields);
+	$args["fields"] = $fields;
 
 	return $fields;
 }
 
-function HandleSum(&$sum_fields, $row)
+
+function HandleTableAcc($total_line, $rows_data, $fields)
 {
-	$debug = 0;
+	foreach ($rows_data as $key => $row)
+		if ($key != 'header')
+			HandleAcc($total_line, $row);
+
+	$t_line = array();
+	foreach ($fields as $field => $a){
+		$value = "";
+		if (isset($total_line[$field]))	$value = is_array($total_line[$field]) ? $total_line[$field]['val'] : $total_line[$field];
+		$t_line[$field] = $value;
+	}
+
+	return $t_line;
+}
+
+function HandleAcc(&$acc_fields, $row)
+{
+	// if (function_exists("sum_numbers")) print "AAAA";
+//	var_dump($acc_fields); print "<br/>";
 	foreach ($row as $key => $cell)
 	{
-		if ($debug) print "handling sum $key $cell<br/>";
-		if (isset($sum_fields[$key]) and is_array($sum_fields[$key]) and function_exists($sum_fields[$key][1])) {
-			 if ($debug) print "summing " . $sum_fields[$key][0][2] . "<br/>";
-			$sum_fields[$key][1]($sum_fields[$key][0], $cell);
+		if (isset($acc_fields[$key]) and is_array($acc_fields[$key]) and function_exists($acc_fields[$key]['func'])) {
+			 // if ($debug) print "summing " . $acc_fields[$key][0][2] . "<br/>";
+			$acc_fields[$key]['func']($acc_fields[$key]['val'], $cell);
 		} else {
-//			print "not summing " . is_array($sum_fields[$key]) . " " . function_exists($sum_fields[$key][1]) . "<br/>";
+//			print "not summing " . is_array($acc_fields[$key]) . " " . function_exists($acc_fields[$key][1]) . "<br/>";
 		}
 	}
 }
-
-/**
- * @deprecated
- */
-
-function table_content_data(
-	$sql, $header = true, $footer = true, $links = null,
-	$add_checkbox = false, $checkbox_class = null, $chkbox_events = null, $selectors = null
-) {
-
-	$result = sql_query( $sql );
-	if ( ! $result ) {
-		return "error: " . $sql . sql_error( $sql );
-	}
-
-	$rows_data = array();
-
-	if ( $header ) {
-		array_push( $rows_data, TableHeader($sql) );
-	}
-	$row_count = 0;
-	while ( $row = mysqli_fetch_assoc( $result ) ) {
-			// print $key;
-			$row_count ++;
-
-			$args = array("links" => $links, "selectors" => $selectors, "add_checkbox" => $add_checkbox,
-				"checkbox_class" => $checkbox_class, "checkbox_events" => $chkbox_events);
-
-		array_push( $rows_data, PrepareRow($row, $args, $row["id"]) );
-	}
-
-	return $rows_data;
-}
-
-
-
-/**
- * @deprecated 1.8.0 Use Table instead.
- */
-
-function table_content(
-	$table_id, $sql, $header = true, $footer = true, $links = null, &$sum_fields = null,
-	$add_checkbox = false, $checkbox_class = null, $chkbox_events = null, $selectors = null, $actions = null,
-	$class = null
-) {
-
-	// Fetch the data from DB.
-	$rows_data = table_content_data( $sql, $header, $footer, $links,
-		$add_checkbox, $checkbox_class, $chkbox_events, $selectors );
-
-	$row_count = count( $rows_data);
-
-	$args = array();
-	if ($links)	$args["links"] = $links;
-	if ($actions) $args["actions"] = $actions;
-
-	// Convert to table if data returned.
-	if ( $row_count >= 1 ) {
-		return gui_table_args( $rows_data, $table_id, $args );
-	}
-
-	return null;
-
-}
-
 
 /**
  * @param $table_name
@@ -711,7 +658,7 @@ function GuiRowContent($table_name, $row_id, $args)
  * @throws Exception
  */
 
-function GuiTableContent($table_id, $sql, &$args)
+function GuiTableContent($table_id, $sql, &$args = null)
 {
 	if (! $sql)
 		$sql = "select * from $table_id";
@@ -761,5 +708,5 @@ function prepare_text($string)
 //	$url = '~(?:(https?)://([^\s<]+)|(www\.[^\s<]+?\.[^\s<]+))(?<![\.,:])~i';
 //	$string = preg_replace($url, '<a href="$0" target="_blank" title="$0">$0</a>', $string);
 	return $string;
-	return nl2br($string);
+	// return nl2br($string);
 }

@@ -17,7 +17,7 @@ require_once( ROOT_DIR . '/niver/data/attachment_folder.php' );
 require_once( ROOT_DIR . '/fresh/im_tools.php' );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( ROOT_DIR . '/fresh/suppliers/Supplier.php' );
-require_once( ROOT_DIR . '/fresh/business/business.php' );
+require_once( ROOT_DIR . '/org/business/business.php' );
 
 
 $filename = ROOT_DIR . '/fresh/mail-config.php';

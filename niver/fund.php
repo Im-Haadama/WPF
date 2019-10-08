@@ -348,3 +348,16 @@ function computeDiff($from, $to)
 	return array('values' => $diffValues, 'mask' => $diffMask);
 }
 
+function array_transpose($rows)
+{
+	$target = array();
+	foreach ($rows as $i => $row){
+		if (isset($row[0])){ // sequential
+			throw new Exception("row $i, send assoc array");
+		}
+		foreach ($row as $j => $cell){
+			$target[$j][$i] = $cell;
+		}
+	}
+	return $target;
+}

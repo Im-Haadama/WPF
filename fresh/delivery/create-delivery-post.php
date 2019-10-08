@@ -10,7 +10,7 @@ require_once( '../r-shop_manager.php' );
 require_once( '../r-shop_manager.php' );
 require_once( '../orders/orders-common.php' );
 require_once( '../account/account.php' );
-require_once( '../business/business-post.php' );
+require_once( ROOT_DIR . '/org/business/business-post.php' );
 require_once( '../delivery/delivery.php' );
 
 // print header_text();

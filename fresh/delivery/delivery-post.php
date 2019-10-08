@@ -10,10 +10,10 @@ require_once( '../pricelist/pricelist.php' );
 require_once( '../r-multisite.php' );
 require_once( "../orders/orders-common.php" );
 
-require_once( "../business/business.php" );
+require_once( ROOT_DIR . "/org/business/business.php" );
 require_once( ROOT_DIR . "/niver/fund.php" );
 require_once( "../supplies/Supply.php" );
-require_once( ROOT_DIR . '/fresh/business/business_info.php' );
+require_once( ROOT_DIR . '/org/business/business_info.php' );
 
 require_once( ROOT_DIR . "/init.php" );
 //require_once('catalog.php');

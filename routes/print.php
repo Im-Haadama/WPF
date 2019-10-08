@@ -1,5 +1,15 @@
 <?php
-require_once '../r-shop_manager.php';
+
+if ( ! defined( "ROOT_DIR" ) ) {
+	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) );
+}
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
+require_once( ROOT_DIR . '/im-config.php' );
+require_once( ROOT_DIR . "/init.php" );
+
+require_once (ROOT_DIR . '/fresh/r-shop_manager.php');
 /**
  * Created by PhpStorm.
  * User: agla
@@ -13,11 +23,11 @@ require_once '../r-shop_manager.php';
 // 3) pickup sheets
 
 print header_text( false, false, true );
-require_once '../delivery/delivery.php';
-require_once '../orders/orders-common.php';
-require_once '../supplies/Supply.php';
-require_once( "../maps/build-path.php" );
-require_once( ROOT_DIR . '/delivery/missions/Mission.php' );
+require_once ROOT_DIR . '/fresh/delivery/delivery.php';
+require_once ROOT_DIR . '/fresh/orders/orders-common.php';
+require_once ROOT_DIR . '/fresh/supplies/Supply.php';
+require_once( ROOT_DIR . "/routes/maps/build-path.php" );
+require_once( ROOT_DIR . '/routes/missions/Mission.php' );
 
 
 if ( isset( $_GET["operation"] ) ) {

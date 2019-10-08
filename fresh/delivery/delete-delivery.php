@@ -9,7 +9,7 @@
 include_once( "../r-shop_manager.php" );
 include_once( "../orders/orders-common.php" );
 include_once( "delivery.php" );
-include_once( "../business/business-post.php" );
+include_once( ROOT_DIR . "/org/business/business-post.php" );
 
 // display form for creating invoice
 $id = $_GET["id"];

@@ -23,4 +23,4 @@ $sql = "SELECT client_from_delivery(delivery_id), sum(quantity)
 WHERE prod_id = " . $prod_id . "
 GROUP BY 1 ORDER BY 2 DESC";
 
-print table_content( "table", $sql );
+print GuiTableContent( "table", $sql );

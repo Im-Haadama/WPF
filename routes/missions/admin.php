@@ -10,7 +10,7 @@ if ( ! defined( "ROOT_DIR" ) ) {
 	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
 }
 
-require_once( '../r-shop_manager.php' );
+require_once( ROOT_DIR . '/fresh/r-shop_manager.php' );
 
 require_once( ROOT_DIR . '/fresh/im_tools_light.php' );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
@@ -21,7 +21,7 @@ $entity_name = "מסלול";
 $entity_name_plural = "מסלולים";
 $table_name = "im_missions";
 
-print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/fresh/admin/data.js",
+print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/niver/data/data.js",
 	"/vendor/sorttable.js") );
 
 $operation = get_param( "operation", false );
@@ -49,18 +49,6 @@ if ( $operation ) {
 }
 $row_id = get_param( "row_id", false );
 
-if ( $row_id ) {
-	print gui_header( 1, $entity_name . " " . $row_id );
-	$args                 = array();
-	$args["edit"]         = 1;
-	$args["skip_id"]      = true;
-	$args["transpose"] = true;
-
-	print GuiRowContent( $table_name, $row_id, $args );
-	print gui_button( "btn_save", "save_entity('$table_name', " . $row_id . ')', "שמור" );
-
-	return;
-}
 
 $part_id = get_param( "part_id", false );
 
@@ -68,7 +56,7 @@ if ( $part_id ) {
 	print gui_header( 2, get_supplier_name( $part_id ) );
 	$page  .= " and part_id = " . $part_id;
 	$links = array( "invoice_table.php?row_id=%s" );
-	print table_content( "transactions", "select id, date, amount, net_amount, ref, pay_date " .
+	print GuiTableContent( "transactions", "select id, date, amount, net_amount, ref, pay_date " .
         " from im_business_info where " . $page . " order by 2", true, true, $links );
 
 	$date = date( 'Y-m-d', strtotime( "last day of previous month" ) );
@@ -78,20 +66,6 @@ if ( $part_id ) {
 	return;
 }
 
-$links = array(); $links["id"] = $this_url . "?row_id=%s";
 
 print gui_header( 1, "ניהול " . $entity_name_plural);
 $sum = null;
-$query = "where date > date_sub(curdate(), interval 10 day)";
-$actions = array(
-	array( "שכפל", "/fresh/delivery/missions.php?operation=dup&id=%s" ),
-	array( "מחק", "/fresh/delivery/missions.php?operation=del&id=%s" )
-);
-$order        = "order by 2 ";
-
-$args = array();
-$args["links"] = $links;
-// $args["first_id"] = true;
-$args["actions"] = $actions;
-
-print GuiTableContent($table_name, "select * from $table_name $query $order", $args);

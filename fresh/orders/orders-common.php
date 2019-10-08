@@ -5,8 +5,8 @@
  * Date: 25/10/15
  * Time: 08:00
  */
-//error_reporting( E_ALL );
-//ini_set( 'display_errors', 'on' );
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
 
 if ( ! defined( 'TOOLS_DIR' ) ) {
 	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
@@ -14,7 +14,7 @@ if ( ! defined( 'TOOLS_DIR' ) ) {
 
 require_once( ROOT_DIR . "/niver/fund.php" );
 require_once( TOOLS_DIR . "/catalog/bundles.php" );
-require_once( TOOLS_DIR . '/maps/build-path.php' );
+require_once( ROOT_DIR . '/routes/maps/build-path.php' );
 require_once( TOOLS_DIR . '/account/gui.php' );
 require_once( TOOLS_DIR . '/account/account.php' );
 require_once( TOOLS_DIR . '/delivery/delivery.php' );
@@ -22,6 +22,7 @@ require_once( TOOLS_DIR . '/orders/Order.php' );
 require_once( TOOLS_DIR . "/catalog/Basket.php" );
 require_once( TOOLS_DIR . '/invoice4u/invoice.php' );
 require_once( TOOLS_DIR . '/multi-site/imMulti-site.php' );
+require_once( ROOT_DIR . '/niver/web.php');
 
 // BAD: print header_text();
 function orders_item_count( $item_id ) {
@@ -576,7 +577,7 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 				}
 				//	}
 			} else {
-				$line[ OrderFields::delivery_note ] = gui_hyperlink( "צור", "../delivery/create-delivery.php?order_id=" . $order_id );
+				$line[ OrderFields::delivery_note ] = gui_hyperlink( "צור", get_url(1) . "/delivery/create-delivery.php?order_id=" . $order_id, "_blank" );
 				$line[ OrderFields::percentage ]    = gui_hyperlink( "בטל", $_SERVER['PHP_SELF'] . "?operation=cancel_order&id=" . $order_id );
 				$total_delivery_fee                 = order_get_shipping_fee( $order_id );
 			}

@@ -20,7 +20,7 @@ require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( ROOT_DIR . '/fresh/data/header.php' );
 require_once( ROOT_DIR . "/fresh/mail.php" );
 require_once( ROOT_DIR . "/fresh/catalog/catalog.php" );
-require_once( ROOT_DIR . "/fresh/business/business_info.php" );
+require_once( ROOT_DIR . "/org/business/business_info.php" );
 
 // print header_text(false);
 
@@ -29,6 +29,7 @@ require_once( ROOT_DIR . "/fresh/business/business_info.php" );
 abstract class SupplyStatus {
 	const NewSupply = 1;
 	const Sent = 3;
+	const OnTheGo = 4;
 	const Supplied = 5;
 	const Merged = 8;
 	const Deleted = 9;
@@ -50,7 +51,9 @@ class Supply {
 	 */
 	public function __construct( $ID ) {
 		$this->ID       = $ID;
+		if (! ($ID > 0)) return null;
 		$row            = sql_query_single( "SELECT status, date(date), supplier, text, business_id, mission_id FROM im_supplies WHERE id = " . $ID );
+		if (! $row) return null;
 		$this->Status   = $row[0];
 		$this->Date     = $row[1];
 		$this->Supplier = $row[2];
@@ -235,6 +238,11 @@ class Supply {
 		return $this->ID;
 	}
 
+	public function getAddress()
+	{
+		return sql_query_single_scalar( "select address from im_suppliers where id = " . $this->getSupplier() );
+	}
+
 	public function AddLine( $prod_id, $quantity, $price, $units = 0 ) {
 		if ( is_null( $price ) ) {
 			$price = 0;
@@ -342,16 +350,18 @@ class Supply {
 			          "id_key" => "ID",
 			          "edit" => $edit,
 			          "show_cols" => array("product_id" => true, "quantity" => true, '$buy' => true, '$total' => true, '$buyers' => true),
-			          "edit_cols" => array("quantity" => true, '$buy' => true),
 			          "checkbox_class" => "supply_checkbox", "events"=>"onchange='changed(this)'");
 
-		// $sums = array(  "product_id" => "סה\"כ", "quantity" => array( 'sum_numbers', 0 ), '$buy' => array('sum_numbers' , 0) );
-//		$sums = array(  "quantity" => array( 'sum_numbers', 0 ) );
+		if ($edit) $args["edit_cols"] = array("quantity" => true, '$buy' => true);
 
-		$args["acc_fields"] = &$sums;
+		$args['fields'] = array("product_id" => 0, "quantity" => 1, '$buy' => 2, '$total' => 3, '$buyers' => 4);
+		$args["acc_fields"] = array(  "product_id" => "סה\"כ",
+		                              "quantity" => array( "func" => 'sum_numbers', "val" => 0 ),
+		                              '$total' => array("func" => 'sum_numbers' , "val" => 0) );
+
 		$rows_data = TableData( $sql, $args);
 
-		var_dump($sums);
+//		var_dump($sums);
 		/// array_push($rows_data, $sums);
 
 		if ( $internal){
@@ -390,10 +400,12 @@ class Supply {
 				$rows_data[$line_id]['$buyers'] = orders_per_item( $prod_id, 1, true, true, true );
 			}
 		}
-	 return gui_table_args( $rows_data, "supply_" . $this->getID(), $args );
+
+		if (isset($args['acc_fields'])) $rows_data['sums'] = HandleTableAcc($args['acc_fields'], $rows_data, $args['fields']);
+
+		return gui_table_args( $rows_data, "supply_" . $this->getID(), $args );
 		// GuiTableContent("supply", $sql, $args);
 		$result = sql_query( $sql );
-
 
 		$data = "<table id=\"del_table\" border=\"1\"><tr><td>בחר</td><td>מקט</td><td>פריט</td><td>כמות</td><td>יחידות</td>";
 		if ( ! $edit ) {
@@ -706,8 +718,8 @@ function supply_change_status( $supply_id, $status ) {
 	sql_query( $sql );
 }
 
-function supply_close( $supply_id ) {
-	supply_change_status( $supply_id, SupplyStatus::Closed );
+function supply_supplied( $supply_id ) {
+	supply_change_status( $supply_id, SupplyStatus::Supplied );
 }
 
 function supply_status( $supply_id ) {
@@ -933,33 +945,38 @@ WHERE status = 1 AND supply_id IN (" . $supply_id . ", " . rtrim( implode( ",", 
 	$sql = rtrim( $sql, "," );
 	sql_query( $sql );
 }
-//
-//drop function get_product_name
-//DELIMITER //
-// CREATE function get_product_name(prod_id int) returns varchar(15)
-//   BEGIN
-//   declare pname varchar(20)
-//     SELECT post_title into pname FROM wp_posts where id = prod_id and uid=1;
-//    select pname;
-//   END //
-// DELIMITER ;
-//
-//call get_product_name(35);
 
+function SuppliesTable( $status, $args = null ) {
+	$status_name = gui_select_supply_status(null, $status);
+	switch ($status)
+	{
+		case SupplyStatus::NewSupply:
+		case SupplyStatus::Sent:
+			$sql = "SELECT id, supplier, date(date) FROM im_supplies WHERE status = $status " .
+			       " ORDER BY 3 desc";
+			break;
 
-function SuppliesTable( $week, $status = null ) {
-	if ( is_null( $status ) ) {
-		$status_query = "status in (1, 3, 5)";
-	} else {
-		$status_query = "status in (" . comma_implode( $status ) . ")";
+		case SupplyStatus::OnTheGo:
+			$sql = "SELECT id, supplier, date(date), mission_id FROM im_supplies WHERE status = $status " .
+			       " ORDER BY 3 desc";
+			break;
+
+		default:
+			$sql = "SELECT id, supplier, date(date), mission_id FROM im_supplies WHERE status = $status " .
+			       " ORDER BY 3 desc";
 	}
-	$sql = "SELECT id, supplier, status, date(date), paid_date, status, business_id FROM im_supplies WHERE " . $status_query . "  AND 
-			 first_day_of_week(date) = '" . $week . "'"
-	             . " ORDER BY 4, 3, 2";
 
-//	print $sql;
+	$args["sql"] = $sql;
+	$args["header"] = array("Id", "Supplier", "Date", "Mission");
+	$args["add_checkbox"] = true;
+	$args["button_function"] = "closeItems('" . $status_name . "')";              //gui_button("btn_action", "", ")
+	$args["button_text"] = "close";                  //gui_button("btn_action", "", ")
+	$args["selectors"] = array("supplier" => 'gui_select_supplier', "mission_id" => 'gui_select_mission');
+	$args["links"] = array("id" => get_url(1) . "?id=%s");
+	$args["checkbox_class"] = gui_select_supply_status(null, $status);
 
-	return DoSuppliesTable( $sql );
+	return GemTable("im_supplies", $args);
+	// return DoSuppliesTable( $sql );
 }
 
 function DoSuppliesTable( $sql )
@@ -976,8 +993,6 @@ function DoSuppliesTable( $sql )
 
 	$lines = array();
 	array_push( $lines, array( "בחר", "מספר", "תאריך", "משימה", "ספק", "סטטוס", "סכום", "תאריך תשלום" ) );
-//	$data = "<table border='1'><tr><td>בחר</td><td><h3>מספר</h3></td><td><h3>תאריך</h3></td><td><h3>ספק</h3></td><td>סטטוס</td><td>סכום</td>";
-	// $data .= gui_cell( "תאריך תשלום" ) . "</tr>";
 	while ( $row = mysqli_fetch_row( $result ) ) {
 		$supply_id   = $row[0];
 		$supplier_id = $row[1];
@@ -991,11 +1006,6 @@ function DoSuppliesTable( $sql )
 			get_supply_status_name( $supply_id )
 		);
 
-//		$value       = "<tr><td><input id=\"chk" . $supply_id . "\" class=\"supply_checkbox\" type=\"checkbox\"></td>";
-//		$value       .= "<td><a href=\"supply-get.php?id=" . $supply_id . "\">" . $supply_id . '</a></td>';
-//		$value       .= "<td>" . $row[3] . '</td>';
-//		$value       .= "<td>" . get_supplier_name( $supplier_id ) . '</td>';
-//		$value       .= "<td>" . get_supply_status_name( $supply_id ) . '</td>';
 		if ( $status = 5 ) {
 			array_push( $line, $row[6] );
 			$business_id = $row[6];
@@ -1180,4 +1190,259 @@ function send_supply_as_order( $id ) {
 
 	print $remote . " site: " . $site_id . "<br/>";
 	print ImMultiSite::sExecute( $remote, $site_id );
+}
+
+function handle_supplies_operation($operation)
+{
+	switch ( $operation )
+	{
+		case "supply_pay":
+			print "supply pay<br/>";
+			$id   = $_GET["id"];
+			$date = $_GET["date"];
+			supply_set_pay_date( $id, $date );
+			break;
+
+		case "get_business":
+			// print header_text(false); DONT!!!
+			$supply_id = $_GET["supply_id"]; // מספר הספקה שלנו
+			supply_business_info( $supply_id );
+			break;
+
+		case "supplied":
+			$supply_ids = get_param_array("ids");
+			foreach ($supply_ids as $supply_id)
+				supply_supplied($supply_id);
+			print "done";
+			break;
+
+		case "got_supply":
+			$supply_id     = $_GET["supply_id"]; // מספר הספקה שלנו
+			$supply_total  = $_GET["supply_total"]; // סכום
+			$supply_number = $_GET["supply_number"]; // מספר תעודת משלוח
+			$net_amount    = get_param( "net_amount" );
+			$is_invoice    = get_param( "is_invoice" );
+//			print "ii=" . $is_invoice . "<br/>";
+			$doc_type      = $is_invoice ? ImDocumentType::invoice : ImDocumentType::supply;
+//			print "dt=" . $doc_type;
+//			die(1);
+			$document_date = get_param( "document_date" );
+			$bid           = got_supply( $supply_id, $supply_total, $supply_number, $net_amount, $doc_type, $document_date );
+			if ( ! $bid ) {
+				print "fail";
+			} else {
+				print $bid;
+			}
+			break;
+
+		case "send":
+			$params = $_GET["id"];
+			$ids    = explode( ',', $params );
+			send_supplies( $ids );
+			sent_supplies( $ids );
+			break;
+
+		case "print":
+			$params = get_param("id", true);
+			$ids    = explode( ',', $params );
+			print_supplies_table( $ids, true );
+			break;
+
+		case "create_delta":
+			create_delta();
+			break;
+
+		case "create_supply":
+			print "create supply ";
+
+			$date        = get_param( "date" );
+			$supplier_id = $_GET["supplier_id"];
+			my_log( "supplier_id=" . $supplier_id );
+
+			$create_info = $_GET["create_info"];
+			$ids         = explode( ',', $create_info );
+			$supply      = Supply::CreateSupply( $supplier_id, $date );
+			if ( ! $supply->getID() ) {
+				return false;
+			}
+			for ( $pos = 0; $pos < count( $ids ); $pos += 3 ) {
+				$prod_id  = $ids[ $pos ];
+				$quantity = $ids[ $pos + 1 ];
+				$units    = $ids[ $pos + 2 ];
+				// print "adding " . $prod_id . " quantity " . $quantity . " units " . $units . "<br/>";
+				$price = get_buy_price( $prod_id, $supplier_id );
+				if ( ! $supply->AddLine( $prod_id, $quantity, $price, $units ) ) {
+					return false;
+				}
+			}
+			print $supply->getID();
+			$mission_id = get_param( "mission_id" );
+			if ( $mission_id ) {
+				$s->setMissionID( $mission_id );
+			}
+			print " done";
+			break;
+
+		case "create_supplies":
+			$params = $_GET["params"];
+			create_supplies( explode( ',', $params ) );
+			break;
+
+		case "get_supply":
+			$supply_id   = $_GET["id"];
+			$internal    = isset( $_GET["internal"] );
+			$categ_group = get_param( "categ_group" );
+			$Supply      = new Supply( $supply_id );
+			// print header_text(true);
+			print $Supply->Html( $internal, true, $categ_group );
+			break;
+
+		case "get_supply_lines":
+			$supply_id = $_GET["id"];
+			$internal  = isset( $_GET["internal"] );
+			HtmlLines( $supply_id, $internal );
+			break;
+
+		case "get_comment":
+			$supply_id = $_GET["id"];
+			$s         = new Supply( $supply_id );
+			print $s->getText();
+			break;
+
+		case "get_all":
+			$args = array();
+			print load_scripts(true);
+			$args["title"] = "Supplies to send";      print SuppliesTable( SupplyStatus::NewSupply, $args );
+			$args["title"] = "Supplies to get";       print SuppliesTable( SupplyStatus::Sent, $args );
+			$args["title"] = "Supplies to collect";   print SuppliesTable( SupplyStatus::OnTheGo, $args );
+//			$args["title"] = "Supplies done";         print SuppliesTable( SupplyStatus::Supplied, $args );
+			break;
+
+		case "delete_supplies":
+			my_log( "delete supplies" );
+			$params = explode( ',', $_GET["params"] );
+			delete_supplies( $params );
+			break;
+
+		case "sent_supplies":
+			my_log( "sent supplies" );
+			$params = explode( ',', $_GET["params"] );
+			sent_supplies( $params );
+			break;
+
+		case "delete_lines":
+			my_log( "delete lines" );
+			$params = get_param_array( "params" );
+			delete_supply_lines( $params );
+			break;
+
+		case "merge_supplies":
+			my_log( "merge supplies" );
+			$params = explode( ',', $_GET["params"] );
+			merge_supplies( $params );
+			break;
+
+		case 'update_lines':
+			my_log( "update lines" );
+			$params = explode( ',', $_GET["params"] );
+			$supply_id = get_param("supply_id", true);
+			print update_supply_lines( $supply_id, $params );
+			break;
+
+//			var request = post_file + "?operation=update_field" +
+//			              "&field_name=" + field_name +
+//			              "&value=" + encodeURI(value) +
+//			              "&id=" + id;
+
+		case 'update_field':
+			$field_name = get_param( "field_name" );
+			$value      = get_param( "value" );
+			$id         = get_param( "id" );
+			$s          = new Supply( $id );
+			$s->UpdateField( $field_name, $value );
+
+			break;
+
+		case 'save_comment':
+			$comment = $_GET["text"];
+			print $comment . "<br/>";
+			$supply_id = $_GET["id"];
+			print $supply_id . "<br/>";
+			$sql = "UPDATE im_supplies SET text = '" . $comment .
+			       "' WHERE id = " . $supply_id;
+
+			mysqli_query( $sql );
+			print $sql;
+			break;
+
+		case "add_item":
+			// print "add_line<br/>";
+			$prod_id = $_GET["prod_id"];
+			// print $name . "<br/>";
+			if ( ! $prod_id > 0 ) {
+				die ( "no product id" );
+			}
+			$q = $_GET["quantity"];
+			// print $q . "<br/>";
+			if ( ! is_numeric( $q ) ) {
+				die ( "no quantity" );
+			}
+			$supply_id = $_GET["supply_id"];
+//			print "supply id = " . $supply_id . "<br/>";
+			if ( ! is_numeric( $supply_id ) ) {
+				die ( "no supply_id" );
+			}
+			// $prod_id = get_product_id_by_name( $name );
+			// print "name = " . $name . ", prod_id = " . $prod_id . "<br/>";
+
+//			if ( ! is_numeric( $prod_id ) ) {
+//				die ( "no prod_id for " . $name . "<br/>" );
+//			}
+			$supply = new Supply( $supply_id );
+			// var_dump($supply);
+//			print "prod id=" . $prod_id . '<br/>';
+//			print 'supplier id=' . $supply->getSupplier() . "<br/>";
+			$price = get_buy_price( $prod_id, $supply->getSupplier() );
+//			print "price: " . $price . '<br/>';
+			if (supply_add_line( $supply_id, $prod_id, $q, $price ))
+				print "done";
+			break;
+
+		case "set_mission":
+			$supply_id  = $_GET["supply_id"];
+			$mission_id = $_GET["mission_id"];
+			$s          = new Supply( $supply_id );
+			$s->setMissionID( $mission_id);
+			break;
+
+		case "delivered":
+			$ids = explode( ",", $_GET["ids"] );
+			foreach ( $ids as $supply_id ) {
+				got_supply( $supply_id, 0, 0 );
+			}
+			print "delivered";
+
+			break;
+
+		case "create_from_file":
+			$supplier_id = get_param( "supplier_id" );
+			print header_text(false);
+			print im_translate("Creating supply for") . " " . get_supplier_name($supplier_id) . " <br/>";
+
+			$tmp_file = $_FILES["fileToUpload"]["tmp_name"];
+			$date = get_param("date", true);
+			$args = array("needed_fields" => array ("name" => 1, "quantity"=> 1));
+			$s        = Supply::CreateFromFile( $tmp_file, $supplier_id, $date, $args );
+			if ( $s ) {
+				$s->EditSupply( true );
+			}
+			break;
+		case "check_open":
+			$count =  sql_query_single_scalar("select count(*) from im_supplies where status = " . SupplyStatus::NewSupply  );
+			print $count;
+			break;
+		default:
+			print $operation . " not handled <br/>";
+
+	}
 }

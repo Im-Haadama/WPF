@@ -7,6 +7,8 @@ if ( ! defined( "ROOT_DIR" ) ) {
 require_once(ROOT_DIR . '/im-config.php');
 require_once( ROOT_DIR . "/init.php" );
 
+print load_scripts("routes.js");
+
 print header_text(true, false, true, true);
 $id = get_param("id", false, 0);
 ?>
@@ -27,6 +29,14 @@ $id = get_param("id", false, 0);
     function update_display(xmlhttp)
     {
         document.getElementById("mission_text").innerHTML = xmlhttp.response;
+    }
+
+    function refresh(xmlhttp)
+    {
+        if (xmlhttp.response == "done")
+            location.reload();
+        else
+            alert(xmlhttp.response);
     }
 </script>
 </header>

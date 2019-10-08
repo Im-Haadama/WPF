@@ -123,7 +123,7 @@ function get_supplier_balance( $supplier_id ) {
     $selectors_events["document_type"] = 'onchange="update_document_type(%s)"';
 	$args["selectors_events"] = $selectors_events;
 
-	$args["links"] = array("id" => "/fresh/business/invoice_table.php?row_id=%s");
+	$args["links"] = array("id" => "/org/business/invoice_table.php?row_id=%s");
 
 
     $sql = "SELECT id, date, amount, ref, pay_date, document_type, supplier_balance($supplier_id, date) as balance FROM im_business_info " .

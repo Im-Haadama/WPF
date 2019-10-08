@@ -365,6 +365,12 @@ msgid "Rate"
 msgstr "תעריף"
 
 # supply
+msgid "Supply"
+msgstr "הספקה"
+
+# msgid ""
+# msgstr ""
+
 msgid "Buy price"
 msgstr "מחיר עלות"
 

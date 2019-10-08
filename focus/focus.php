@@ -246,7 +246,8 @@ function handle_focus_operation($operation)
 
 		case "task_types":
 			$args = array();
-			print GemTable("im_task_type", "task types", $args);
+			$args["title"] = "task types";
+			print GemTable("im_task_type", $args);
 			break;
 
 		case "new_company_user":
@@ -266,10 +267,11 @@ function handle_focus_operation($operation)
 			// And the move to the task_url if exists.
 			if ($query = task_query($task_id))
 			{
-				print im_file_get_html($query);
-
+//				print im_file_get_html($query);
 				$url = task_url($task_id);
-				if ($url) print gui_hyperlink(1, "Start", $url);
+				print '<script language="javascript">';
+				print "window.location.href = '" . $url . "'";
+				print '</script>';
 				return;
 			}
 			$url = task_url($task_id);
@@ -359,7 +361,7 @@ function show_templates($url,  $template_id = 0 ) {
 	$args["selectors"] = array("project_id" =>  "gui_select_project", "owner" => "gui_select_worker",
 	                           "creator" => "gui_select_worker", "repeat_freq" => "gui_select_repeat_time");
 	$sql         = "select * " .
-	               " from im_task_templates ";
+	               " from im_task_templates where 1 ";
 	if ($template_id){
 		print gui_header(1, "משימה חוזרת מספר " . $template_id) ."<br/>";
 
@@ -369,10 +371,10 @@ function show_templates($url,  $template_id = 0 ) {
 		$args["events"] = "onchange=\"changed(this)\"";
 
 		print GuiRowContent("im_task_templates", $template_id, $args);
-//		function save_entity(post_operation, table_name, id)
 
 		print gui_button( "btn_save", "save_entity('/focus/focus-post.php', 'im_task_templates', " . $template_id . ')', "שמור" );
 
+		// show last active
 		$tasks_args = array("links" => array("id" => $url . "?row_id=%s"));
 		$table = GuiTableContent("last_tasks", "select * from im_tasklist where task_template = " . $template_id .
 		                                       " order by date desc limit 10", $tasks_args);
@@ -385,11 +387,20 @@ function show_templates($url,  $template_id = 0 ) {
 		return;
 	}
 
+	foreach ($_GET as $key => $data){
+		if (! in_array($key, array("templates")))
+			$sql .= "where " . $key . '=' . quote_text($data);
+	}
+
+	// print $sql;
 	$sql .= " order by 3 desc";
 
 	$args["class"]     = "sortable";
 	$args["links"]     = array ("id" => $url . "?task_template_id=%s" );
 	$args["header"]    = true;
+	$args["drill"] = true;
+	$args["edit"] = false;
+
 
 	$table = GuiTableContent( "projects", $sql, $args );
 
@@ -412,7 +423,7 @@ function show_task($row_id, $edit = 1)
 	                           "mission_id" => "gui_select_mission");
 
 	$args["header_fields"] = array("Id", "Date", "Task description", "Repeating task", "Status", "Started", "Ended", "Project", "Mission", "Location", "Address", "Priority", "Prerequisite", "Assigned to",
-		"Creator");
+		"Creator", "Task type");
 
 //	 $args["fields"] = array("id", "task_description");
 //
@@ -441,7 +452,7 @@ function show_task($row_id, $edit = 1)
 /**
  * @param $id
  * @param $value
- * @param string $events
+ * @param $args
  *
  * @return string
  */
@@ -449,8 +460,9 @@ function show_task($row_id, $edit = 1)
 function gui_select_repeat_time( $id, $value, $args) {
 //	print "v=" . $value . "<br/>";
 
+	$edit = GetArg($args, "edit", false);
 	$events = GetArg($args, "events", null);
-	$values = array( "w - שבועי", "j - חודשי", "z - שנתי");
+	$values = array( "w - weekly", "j - monthly", "z - annual", "c - continuous");
 
 	$selected = 1;
 	for ( $i = 0; $i < count( $values ); $i ++ ) {
@@ -460,7 +472,10 @@ function gui_select_repeat_time( $id, $value, $args) {
 	}
 
 	// return gui_select( $id, null, $values, $events, $selected );
-	return gui_simple_select( $id, $values, $events, $selected );
+	if ($edit)
+		return gui_simple_select( $id, $values, $events, $selected );
+	else
+		return $values[$selected];
 }
 
 function edit_staff($url)

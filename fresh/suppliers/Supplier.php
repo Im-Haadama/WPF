@@ -34,4 +34,10 @@ class Supplier {
 	function getSiteId() {
 		return sql_query_single_scalar( "SELECT site_id FROM im_suppliers WHERE id = " . $this->id );
 	}
+
+	function getAddress()
+	{
+		$sql = "select address from im_suppliers where id = " . $this->id;
+		return sql_query_single_scalar( $sql);
+	}
 }

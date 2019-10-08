@@ -16,7 +16,7 @@ $operation = $_GET["operation"];
 switch ( $operation ) {
 	case "get":
 		print header_text( false );
-		print table_content( "table", "SELECT zone_id, zone_name, zone_order, min_order, zone_delivery_order, delivery_days FROM wp_woocommerce_shipping_zones" );
+		print GuiTableContent("table", "SELECT zone_id, zone_name, zone_order, min_order, zone_delivery_order, delivery_days FROM wp_woocommerce_shipping_zones");
 		break;
 
 	case "update":
@@ -33,7 +33,7 @@ switch ( $operation ) {
 
 	case "get_shipping":
 		print header_text( false );
-		print table_content( "table", "SELECT zone_id, instance_id, method_id, method_order, is_enabled FROM wp_woocommerce_shipping_zone_methods" );
+		print GuiTableContent("table", $sql);
 		break;
 
 }

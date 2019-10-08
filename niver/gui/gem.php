@@ -2,17 +2,7 @@
 
 function GemAddRow($table_name, $text, $args){
 	$result = "";
-	//			$args["header_fields"] = array("Id", "Date", "Description", "Amount");
-	//			$args["actions"] = array(array("Mark payment", "../business/business-post.php?operation=create_pay_bank&id=%s"));
-	//			$page = get_param("page", false, 1);
-	//			$rows_per_page = 20;
-	//			$offset = ($page - 1) * $rows_per_page;
 
-	//				, "select id, date, description, out_amount, reference from im_bank where account_id = " . $account_id .
-	//			                                     " and receipt is null and out_amount > 0 " .
-	//			                                     " order by date desc limit $rows_per_page offset $offset", $args);
-
-	// print gui_hyperlink("Older", add_to_url("page", $page + 1));
 	$result .= gui_header(1, "Add");
 	$result .= NewRow($table_name, $args);
 	$result .= gui_button("add_row", "save_new('$table_name')", "add");
@@ -21,25 +11,25 @@ function GemAddRow($table_name, $text, $args){
 }
 
 // Data is updated upon change by the client;
-function GemTable($table_name, $text, $args){
+function GemTable($table_name, $args){
 	$result = "";
-	//			$args["header_fields"] = array("Id", "Date", "Description", "Amount");
-	//			$args["actions"] = array(array("Mark payment", "../business/business-post.php?operation=create_pay_bank&id=%s"));
-	//			$page = get_param("page", false, 1);
-	//			$rows_per_page = 20;
-	//			$offset = ($page - 1) * $rows_per_page;
 
-	//				, "select id, date, description, out_amount, reference from im_bank where account_id = " . $account_id .
-	//			                                     " and receipt is null and out_amount > 0 " .
-	//			                                     " order by date desc limit $rows_per_page offset $offset", $args);
-
-	// print gui_hyperlink("Older", add_to_url("page", $page + 1));
-	$result .= gui_header(1, "table");
+	$title = GetArg($args, "title", "content of table " . $table_name);
+	$result .= gui_header(1, $title);
 	$args["events"] = 'onchange="update_table_field(\'/niver/data/data.php\', \'' . $table_name . '\', \'%d\', \'%s\', check_update)"';
 	$sql = GetArg($args, "sql", "select * from $table_name");
 
-	$result .= GuiTableContent($table_name, $sql, $args);
-//	$result .= gui_button("add_row", "save_new('$table_name')", "Save");
+	$table = GuiTableContent($table_name, $sql, $args);
+
+	if (! $table) return null;
+
+	$result .= $table;
+
+	if ($button_text = GetArg($args, "button_text", null)){
+		$button_function = GetArg($args, "button_function", null);
+
+		$result .= gui_button("btn_gem", $button_function, $button_text);
+	}
 
 	return $result;
 }

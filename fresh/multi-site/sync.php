@@ -18,9 +18,7 @@ require_once( ROOT_DIR . "/niver/gui/inputs.php" );
 require_once( ROOT_DIR . "/fresh/multi-site/imMulti-site.php" );
 
 
-function sync_from_master() {
-	$debug = false;
-
+function sync_from_master($debug) {
 	print header_text( false, true, true );
 
 	$i = new ImMultiSite();
@@ -30,23 +28,23 @@ function sync_from_master() {
 
 	// Check if master is available.
 	try {
-		$i->Run( "about.php", $i->getMaster() );
+		$i->Run( "/fresh/about.php", $i->getMaster(), false, $debug );
 	} catch (Exception $e) {
 		print "Server not respoding. Try later. Operation aborted";
 		die (1);
 	}
 
 	print gui_header( 1, "מסנכרן מיקומים" );
-	$i->UpdateFromRemote( "wp_woocommerce_shipping_zone_locations", "location_id" );
+	$i->UpdateFromRemote( "wp_woocommerce_shipping_zone_locations", "location_id", 0, null, null, $debug );
 
 	print gui_header( 1, "מסנכרן שיטות משלוח" );
-	$i->UpdateFromRemote( "wp_woocommerce_shipping_zone_methods", "instance_id" );
+	$i->UpdateFromRemote( "wp_woocommerce_shipping_zone_methods", "instance_id", 0, null, null, $debug );
 
 	print gui_header( 1, "מסנכרן איזורי משלוח" );
-	$i->UpdateFromRemote( "wp_woocommerce_shipping_zones", "zone_id" );
+	$i->UpdateFromRemote( "wp_woocommerce_shipping_zones", "zone_id", 0, null, null, $debug );
 
 	print gui_header( 1, "מסנכרן משימות" );
-	$i->UpdateFromRemote( "im_missions", "id" );
+	$i->UpdateFromRemote( "im_missions", "id", 0, null, null, $debug );
 
 	print gui_header( 1, "מסנרכן שיטות משלוח" );
 	$i->UpdateFromRemote( "wp_options", "option_name", 0, "option_name like 'woocommerce_flat_rate_%_settings'", array( 'option_id' ), $debug);

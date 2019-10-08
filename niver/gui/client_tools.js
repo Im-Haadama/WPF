@@ -101,10 +101,11 @@ function get_value(element) {
     return element.nodeValue;
 }
 
-function select_all_toggle(selector, collection) {
-    var is_on = document.getElementById(selector).checked;
-    var collection = document.getElementsByClassName(collection);
-    for (var i = 0; i < collection.length; i++) {
+function select_all_toggle(selector, collection_name) {
+    // let is_on = document.getElementById(selector).checked;
+    let is_on = selector.checked;
+    let collection = document.getElementsByClassName(collection_name);
+    for (let i = 0; i < collection.length; i++) {
         collection[i].checked = is_on;
     }
 }
@@ -133,4 +134,12 @@ function disable_btn(id) {
 function enable_btn(id) {
     var btn = document.getElementById(id);
     if (btn) btn.disabled = false;
+}
+
+function location_reload(xmlhttp)
+{
+    if (xmlhttp.response === "done")
+        location.reload();
+    else
+        alert (xmlhttp.response);
 }

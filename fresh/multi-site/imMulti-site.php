@@ -47,7 +47,6 @@ class ImMultiSite extends MultiSite {
 //		const api_key = 3;
 
 		MultiSite::__construct( $sites_array, $master_id, $local_site_id );
-
 	}
 
 
@@ -153,21 +152,21 @@ class ImMultiSite extends MultiSite {
 	}
 
 	function UpdateFromRemote( $table, $key, $remote = 0, $query = null, $ignore = null, $debug = false ) {
-		$debug = false;
 		if ( $remote == 0 ) {
 			$remote = self::getMaster();
 		}
 
-		$url = "multi-site/sync-data.php?table=$table&operation=get";
+		$url = "fresh/multi-site/sync-data.php?table=$table&operation=get";
 		if ( $query ) {
 			$url .= "&query=" . urlencode( $query );
 		}
+		print $url . "<br/>";
 
 		// print $url . "<br/>";
 		if ($debug)
 			print $url;
 
-		$html = ImMultiSite::Execute( $url, $remote );
+		$html = ImMultiSite::Execute( $url, $remote, $debug );
 
 		if ($debug)
 			print $html;
@@ -177,13 +176,16 @@ class ImMultiSite extends MultiSite {
 			ImMultiSite::UpdateTable( $html, $table, $key, $query, $ignore, $debug );
 		} else {
 			print "short response. Operation aborted <br/>";
+			print "url = $url";
 			print $html;
 
 			return;
 		}
 	}
 
-	static private function UpdateTable( $html, $table, $table_key, $query = null, $ignore_fields = null, $debug = false ) {
+	static private function UpdateTable( $html, $table, $table_key, $query = null, $ignore_fields = null, $debug = false )
+	{
+		$debug = 1;
 		if ($debug)
 			print "start<br/>";
 
@@ -213,6 +215,7 @@ class ImMultiSite extends MultiSite {
 
 					if ( ! strcmp( $key, $table_key ) ) {
 						$key_order = $i;
+						print "key order: " . $key_order . "<br/>";
 					}
 					$i ++;
 					if ( ( $ignore_fields == null ) or ( ! in_array( $key, $ignore_fields ) ) ) {
@@ -245,8 +248,12 @@ class ImMultiSite extends MultiSite {
 				$i ++;
 			}
 			$row_key = $fields[ $key_order ];
-			if (strlen($row_key) < 1)
-				die ("invalid key");
+//			if (strlen($row_key) < 1){
+//				print "fields: "; var_dump($fields); print "<br/>";
+//				// print "input: " . $html;
+//				print "skipping<br/>";
+//				continue;
+//			}
 
 			array_push( $keys, $row_key );
 			$sql = "SELECT COUNT(*) FROM $table WHERE $table_key=" . quote_text( $row_key );

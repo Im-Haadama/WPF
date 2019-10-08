@@ -78,7 +78,7 @@ function business_open_ship( $part_id ) {
 
 	// print $sql;
 
-	$data = table_content( "table", $sql );
+	$data = GuiTableContent( "table", $sql );
 
 	// $rows = sql_query_array($sql );
 

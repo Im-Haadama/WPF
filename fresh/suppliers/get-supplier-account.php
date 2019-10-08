@@ -18,7 +18,6 @@ $sql = "select id, amount, date\n" .
        "where part_id = " . $supplier_id . "\n" .
        "order by 3";
 
-$links = array( "../business/c-get-business_info.php?id=%s" );
-
-print table_content( "table", $sql, true, true, $links );
+$args = array("links" => array("id" => "/org/business/c-get-business_info.php?id=%s"));
+print GuiTableContent( "table", $sql, $args );
 

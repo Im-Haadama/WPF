@@ -6,6 +6,9 @@
  * Date: 20/11/18
  * Tim7e: 20:00
  */
+
+require_once (ROOT_DIR . '/niver/data/data.php');
+
 class Mission {
 	private $id, $start_address, $end_adress, $start_time, $end_time, $date;
 
@@ -126,4 +129,48 @@ class Mission {
 	{
 		return sql_query_single_scalar( "SELECT name FROM im_missions WHERE id = " . $this->id );
 	}
+}
+
+function handle_mission_operation($operation) {
+	$allowed_tables = array( "im_missions");
+
+	$debug = 0;
+	if ( $debug ) {
+		print "operation: " . $operation . "<br/>";
+	}
+	switch ( $operation ) {
+		case "update":
+			$table_name = get_param("table_name", true);
+			if (! in_array($table_name, $allowed_tables))
+				die ("invalid table operation");
+			if (update_data($table_name))
+				print "done";
+
+			break;
+		default:
+			print __FUNCTION__ . ": " . $operation . " not handled <br/>";
+
+			die(1);
+	}
+}
+
+function active_missions()
+{
+	global $table_name;
+	$query = "where date > date_sub(curdate(), interval 10 day)";
+	$actions = array(
+		array( "שכפל", "/fresh/delivery/missions.php?operation=dup&id=%s" ),
+		array( "מחק", "/fresh/delivery/missions.php?operation=del&id=%s" )
+	);
+	$order        = "order by 2 ";
+
+	$args = array();
+	$links = array(); $links["id"] = get_url(1) . "?row_id=%s";
+
+	$args["links"] = $links;
+// $args["first_id"] = true;
+	$args["actions"] = $actions;
+
+	print GuiTableContent($table_name, "select * from $table_name $query $order", $args);
+
 }

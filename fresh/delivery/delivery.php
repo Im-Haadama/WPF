@@ -18,7 +18,7 @@ include_once( TOOLS_DIR . "/multi-site/imMulti-site.php" );
 require_once( TOOLS_DIR . "/mail.php" );
 require_once( TOOLS_DIR . "/account/gui.php" );
 require_once( TOOLS_DIR . "/inventory/inventory.php" );
-require_once( TOOLS_DIR . "/business/business.php" );
+require_once( ROOT_DIR . "/org/business/business.php" );
 require_once( ROOT_DIR . "/fresh/catalog/Basket.php" );
 $debug = false;
 

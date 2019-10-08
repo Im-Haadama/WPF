@@ -46,7 +46,7 @@ switch ( $version ) {
 		version20();
 		break;
 	case "check2":
-		print table_content( "a", "SELECT * FROM im_task_templates" );
+		print GuiTableContent( "a", "SELECT * FROM im_task_templates" );
 		break;
 	case "check":
 		check();
@@ -76,6 +76,12 @@ die ( 0 );
 
 function version22()
 {
+	print gui_header(1, "save mission path");
+	sql_query("ALTER TABLE im_missions ADD path varchar(4000);");
+
+	print gui_header(1, "part of basket");
+	sql_query("ALTER TABLE im_delivery_lines ADD part_of_basket int;");
+
 	print gui_header(1, "bug management");
 
 	sql_query("ALTER TABLE im_tasklist ADD task_type int;");
@@ -213,7 +219,7 @@ function check() {
 function basic() {
 	if (! table_exists("im_info"))
 	sql_query( "CREATE TABLE im_info (
-		info_key VARCHAR(40) NULL,
+		info_key VARCHAR(200) NULL,
 		info_data VARCHAR(200) NULL,
 		id INT NOT NULL AUTO_INCREMENT
 			PRIMARY KEY

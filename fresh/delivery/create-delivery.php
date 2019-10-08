@@ -7,7 +7,7 @@ print header_text( false );
 <script type="text/javascript" src="/niver/gui/client_tools.js"></script>
 <?php
 
-$script_file = ImMultiSite::LocalSiteTools() . "/delivery/create-delivery-script.php?i=1";
+$script_file = ImMultiSite::LocalSiteTools() . "/fresh/delivery/create-delivery-script.php?i=1";
 
 $edit     = false;
 $order_id = - 1;

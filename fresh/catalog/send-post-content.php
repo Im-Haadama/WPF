@@ -13,4 +13,4 @@ print header_text( false, true, false );
 $sql = "SELECT post_title, post_content FROM wp_posts WHERE length(post_content) > 10
                                       AND post_type = 'product' ";
 
-print table_content( "table", $sql );
+print GuiTableContent( "table", $sql );

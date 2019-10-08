@@ -20,7 +20,8 @@ function gui_select_worker( $id = null, $selected = null, $args = null ) {
 //			"client_displayname(user_id)",
 //			"where is_active=1 and company_id = " . $company, true, false, null, "id" );
 	else
-		return sql_query_single_scalar("select client_displayname(user_id) from im_working where user_id = " . $selected);
+		return ($selected > 0) ? sql_query_single_scalar("select client_displayname(user_id) from im_working where user_id = " . $selected) :
+			"";
 }
 
 
