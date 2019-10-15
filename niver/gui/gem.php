@@ -15,8 +15,8 @@ function GemTable($table_name, $args){
 	$result = "";
 
 	$title = GetArg($args, "title", "content of table " . $table_name);
-	$result .= gui_header(1, $title);
-	$args["events"] = 'onchange="update_table_field(\'/niver/data/data.php\', \'' . $table_name . '\', \'%d\', \'%s\', check_update)"';
+	$result .= gui_header(2, $title);
+	$args["events"] = 'onchange="update_table_field(\'/niver/data/data-post.php\', \'' . $table_name . '\', \'%d\', \'%s\', check_update)"';
 	$sql = GetArg($args, "sql", "select * from $table_name");
 
 	$table = GuiTableContent($table_name, $sql, $args);

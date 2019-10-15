@@ -135,13 +135,9 @@ switch ( $operation ) {
 		break;
 
 	case "send":
-		$del_ids = explode( ",", $_GET["del_ids"] );
-		foreach ( $del_ids as $del_id ) {
-			$delivery = new delivery( $del_id );
-			print "נשלח ל: " . $info_email;
-			print "track: " . $track_email;
-			$delivery->send_mail( $track_email, $edit );
-		}
+		$del_ids = get_param("del_ids", true);
+		send_deliveries($del_ids);
+		print "done";
 		break;
 
 	case "get_open_trans":

@@ -20,15 +20,15 @@ if ( ! defined( "TOOLS_DIR" ) ) {
 
 require_once( STORE_DIR . "/im-config.php" );
 require_once( "im_tools_light.php" );
-require_once( STORE_DIR . "/wp-config.php" );
-require_once( STORE_DIR . "/wp-load.php" );
-require_once( ROOT_DIR . "/niver/wp.php" );
+# require_once( STORE_DIR . "/wp-config.php" );
+# require_once( STORE_DIR . "/wp-load.php" );
+# require_once( ROOT_DIR . "/niver/wp.php" );
 
-if ( (get_user_id() == 1) or ! isset( $_SERVER['SERVER_NAME'] ) or ( $_SERVER['SERVER_NAME'] == "127.0.0.1" ) ) {
-//	 print "debug";
-	error_reporting( E_ALL );
-	ini_set( 'display_errors', 'on' );
-}
+//if ( (get_user_id() == 1) or ! isset( $_SERVER['SERVER_NAME'] ) or ( $_SERVER['SERVER_NAME'] == "127.0.0.1" ) ) {
+////	 print "debug";
+//	error_reporting( E_ALL );
+//	ini_set( 'display_errors', 'on' );
+//}
 
 function order_get_shipping_fee( $order_id ) {
 	$order = wc_get_order( $order_id );

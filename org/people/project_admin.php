@@ -21,7 +21,7 @@ $this_url = "project_admin.php";
 $entity_name = "חשבונית";
 $table_name = "im_projects";
 
-print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/fresh/admin/data.js",
+print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/niver/data/data.js",
 	"/vendor/sorttable.js") );
 
 $year = get_param( "year" );

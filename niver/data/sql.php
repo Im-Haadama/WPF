@@ -205,13 +205,9 @@ function sql_query( $sql, $report_error = true ) {
 			my_log($report, "sql performace");
 		}
 		return $result;
-	} else {
-		if ( $report_error ) {
-			sql_error( $sql );
-		}
-
-		return null;
 	}
+	if ( $report_error ) sql_error( $sql );
+	return null;
 }
 
 function sql_query_array( $sql, $header = false ) {

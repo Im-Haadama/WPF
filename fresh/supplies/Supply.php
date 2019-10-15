@@ -307,7 +307,7 @@ class Supply {
 
 		$row = array( "שילוח" );
 		if ( $edit ) {
-			array_push( $row, gui_select_mission( "mis_" . $this->ID, $this->MissionID, "onchange=mission_changed(" . $this->ID . ")" ) );
+			array_push( $row, gui_select_mission( "mis_" . $this->ID, $this->MissionID, array("events" => "onchange=mission_changed(" . $this->ID . ")" )) );
 		} else {
 			array_push( $row, $this->getMissionID() );
 		}
@@ -727,10 +727,13 @@ function supply_status( $supply_id ) {
 }
 
 function send_supplies( $ids ) {
-	print_page_header( false );
-	print "שולח הזמנות...<br/>";
+	print "Sending supplies\n";
 
 	foreach ( $ids as $id ) {
+		if (! ($id > 0)){
+			print "bad delivery id " . $id . "\n";
+			return false;
+		}
 		print "id=" . $id . "<br/>";
 		$supplier_id = supply_get_supplier_id( $id );
 
@@ -763,8 +766,8 @@ function send_supplies( $ids ) {
 
 		send_mail( "הזמנה מספר " . $id, $email . ", info@im-haadama.co.il.test-google-a.com", $message );
 		print "הזמנוה מספר " . $id . " (ספק " . get_supplier_name( $supplier_id ) . ") נשלחה ל" . $email . "<br/>";
-
 	}
+	return true;
 }
 
 function print_supplies_table( $ids, $internal ) {
@@ -848,7 +851,7 @@ function update_supply_lines( $supply_id, $params ) {
 		// Update the pricelist.
 		$prod_id = $Supply->GetProduct($line_id);
 		$pricelist_id = Catalog::PricelistFromProduct($prod_id, $supplier_id);
-		print "pl=" . $pricelist_id . "<br/>";
+		// print "pl=" . $pricelist_id . "<br/>";
 		if ($pricelist_id)
 			$pricelist->Update($pricelist_id, $price);
 		else
@@ -969,13 +972,20 @@ function SuppliesTable( $status, $args = null ) {
 	$args["sql"] = $sql;
 	$args["header"] = array("Id", "Supplier", "Date", "Mission");
 	$args["add_checkbox"] = true;
-	$args["button_function"] = "closeItems('" . $status_name . "')";              //gui_button("btn_action", "", ")
-	$args["button_text"] = "close";                  //gui_button("btn_action", "", ")
 	$args["selectors"] = array("supplier" => 'gui_select_supplier', "mission_id" => 'gui_select_mission');
 	$args["links"] = array("id" => get_url(1) . "?id=%s");
 	$args["checkbox_class"] = gui_select_supply_status(null, $status);
 
-	return GemTable("im_supplies", $args);
+	$result = GemTable("im_supplies", $args);
+	if (! $result) return null;
+
+	$result .= gui_button("btn_close", "close_supplies('" . $status_name . "')", "close");
+	if ($status == SupplyStatus::NewSupply){
+		$result .= gui_button("btn_send", "send_supplies()", "send");
+		$result .= gui_button("btn_merge", "merge_supplies()", "merge");
+	}
+	return $result;
+
 	// return DoSuppliesTable( $sql );
 }
 
@@ -1238,8 +1248,8 @@ function handle_supplies_operation($operation)
 		case "send":
 			$params = $_GET["id"];
 			$ids    = explode( ',', $params );
-			send_supplies( $ids );
-			sent_supplies( $ids );
+			if (send_supplies( $ids ))
+				sent_supplies( $ids );
 			break;
 
 		case "print":
@@ -1312,7 +1322,10 @@ function handle_supplies_operation($operation)
 		case "get_all":
 			$args = array();
 			print load_scripts(true);
+			print gui_header(1, "Supply management");
+			print gui_div("results");
 			$args["title"] = "Supplies to send";      print SuppliesTable( SupplyStatus::NewSupply, $args );
+			print gui_hyperlink("Create supply", get_url(1) . "?operation=new_supply");
 			$args["title"] = "Supplies to get";       print SuppliesTable( SupplyStatus::Sent, $args );
 			$args["title"] = "Supplies to collect";   print SuppliesTable( SupplyStatus::OnTheGo, $args );
 //			$args["title"] = "Supplies done";         print SuppliesTable( SupplyStatus::Supplied, $args );
@@ -1441,8 +1454,92 @@ function handle_supplies_operation($operation)
 			$count =  sql_query_single_scalar("select count(*) from im_supplies where status = " . SupplyStatus::NewSupply  );
 			print $count;
 			break;
+			
+		case "new_supply":
+			print new_supply();
+			break;
+			
 		default:
 			print $operation . " not handled <br/>";
 
 	}
+}
+
+function handle_supply($id)
+{
+	$supply = new Supply($id);
+	print "<center> " . gui_header(1, "Supply ", true, true). gui_label("supply_number", $id) . "</center>";
+	$edit =($supply->getStatus() == SupplyStatus::NewSupply || $supply->getStatus() == SupplyStatus::Sent);
+	print $supply->Html(true, $edit);
+	switch ($supply->getStatus())
+	{
+		case SupplyStatus::NewSupply:
+			print gui_button( "btn_add_line", "add_item()", "add" );
+			print gui_select_product( "itm_" );
+			print gui_button("btn_del", "deleteItems()", "delete lines");
+			print gui_button("btn_update", "updateItems()", "update items");
+			break;
+
+		case SupplyStatus::Sent:
+			$invoice_text =  '   <div class="tooltip">' . gui_checkbox( "is_invoice", "" ) .
+			                 '<span class="tooltiptext">יש לסמן עבור חשבונית ולהשאיר לא מסומן עבור תעודת משלוח</span> </div>';
+
+			print gui_button( "btn_add_line", "add_item()", "הוסף" );
+			print gui_select_product( "itm_" );
+			print gui_button("btn_update", "updateItems()", "update");
+
+			print gui_table_args( array(
+				array( "חשבונית", $invoice_text ),
+				array( "מספר מסמך", GuiInput( "supply_number") ),
+				array( "סכום כולל מעמ", GuiInput( "supply_total") ),
+				array( "סכום ללא מעמ", GuiInput( "net_amount") ),
+				array( "תאריך", GuiInput( "document_date", "" ) )
+			) );
+			print "<br/>";
+
+			print gui_button( "btn_got_supply", "got_supply()", "סחורה התקבלה" );
+
+			break;
+	}
+
+	return;
+}
+
+function new_supply()
+{
+	$data = "";
+	$data .=gui_header( 1, "יצירת אספקה" );
+	$data .=gui_table_args(array(
+		array(
+			gui_header( 2, "בחר ספק" ),
+			gui_header( 2, "בחר מועד" ),
+			gui_header( 2, "בחר משימה" )
+		),
+		array(
+			gui_select_supplier( "supplier_select", null, array("events" => 'onchange="new_supply_change()"')),
+			gui_input_date( "date", "", date('y-m-d'),  'onchange="change_supplier()"'),
+			gui_select_mission( "new_mission", "", array("events"=>"gui_select_mission") )
+			// gui_select_mission( "mis_new")
+		)
+	),
+		"supply_info",
+		array("edit" => 1, "prepare"=>false));
+
+	$data .=gui_header( 2, "בחר מוצרים" );
+	$data .=gui_datalist( "items", "im_products", "post_title", true );
+
+	$data .=gui_table_args( array( array( "פריט", "כמות", "קג או יח" ) ),
+			"supply_items" );
+
+	$data .=gui_button( "add_line", "add_line()", "הוסף שורה" );
+	$data .=gui_button( "add_item", "add_item()", "הוסף הספקה" );
+
+	$data .='<form name="upload_csv" id="upcsv" method="post" enctype="multipart/form-data">
+			טען אספקה מקובץ CSV
+			<input type="file" name="fileToUpload" id="fileToUpload">
+			<input type="submit" value="החלף" name="submit">
+			<input type="hidden" name="post_type" value="product"/>
+		</form>';
+
+	return $data;
 }

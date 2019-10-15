@@ -58,7 +58,7 @@ require_once( "data.php" );
 // Selection:
 global $user_ID; // by wordpress.
 
-$admin_scripts = array( "/niver/gui/client_tools.js", "/fresh/admin/data.js", "/fresh/admin/admin.js" );
+$admin_scripts = array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/fresh/admin/admin.js" );
 
 
 

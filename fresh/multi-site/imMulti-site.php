@@ -111,12 +111,6 @@ class ImMultiSite extends MultiSite {
 		return sql_query_single_scalar( "SELECT pickup_address FROM im_multisite WHERE id = " . $id );
 	}
 
-//	static function LocalSiteTools() {
-//		$sql = "SELECT tools_url FROM im_multisite WHERE local = 1";
-//
-//		return sql_query_single_scalar( $sql );
-//	}
-
 	static function SiteTools( $site_id ) {
 		if ( ! is_numeric( $site_id ) ) {
 			die ( "site id should be numeric" . $site_id );
@@ -168,12 +162,21 @@ class ImMultiSite extends MultiSite {
 
 		$html = ImMultiSite::Execute( $url, $remote, $debug );
 
+		if (! $html) {
+			print "Can't get data from " . ImMultiSite::getInstance()->getSiteToolsURL( $remote ) . "/" . $url;
+			return false;
+		}
+
 		if ($debug)
 			print $html;
 
 		if ( strlen( $html ) > 100 ) {
 			//printbr($html);
-			ImMultiSite::UpdateTable( $html, $table, $key, $query, $ignore, $debug );
+			if (! ImMultiSite::UpdateTable( $html, $table, $key, $query, $ignore, $debug ))
+			{
+				print "check $url<br/>";
+				die(1);
+			}
 		} else {
 			print "short response. Operation aborted <br/>";
 			print "url = $url";
@@ -303,7 +306,7 @@ class ImMultiSite extends MultiSite {
 			print "not enough records.<br/>";
 			print $html . "<br/>";
 			print "Aboring<br/>";
-			die( 2 );
+			return false;
 		}
 		print "Update count: " . $update_count . "<br/>";
 		print "Insert count: " . $insert_count . "<br/>";
@@ -332,5 +335,6 @@ class ImMultiSite extends MultiSite {
 
 			sql_query( $sql );
 		}
+		return true;
 	}
 }

@@ -222,7 +222,7 @@ function my_save_extra_profile_fields( $user_id ) {
 	update_usermeta( $user_id, 'preference', $_POST['preference'] );
 	update_usermeta( $user_id, 'auto_mail', $_POST['auto_mail'] );
 	update_usermeta( $user_id, 'print_delivery_note', $_POST['print_delivery_note'] );
-	update_usermeta( $user_id, 'shipping_zone', $_POST['shipping_zone'] );
+    if (isset($_POST['shipping_zone']))	update_usermeta( $user_id, 'shipping_zone', $_POST['shipping_zone'] );
 }
 
 

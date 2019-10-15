@@ -30,7 +30,7 @@ function sync_from_master($debug) {
 	try {
 		$i->Run( "/fresh/about.php", $i->getMaster(), false, $debug );
 	} catch (Exception $e) {
-		print "Server not respoding. Try later. Operation aborted";
+		print "Server not responding. Try later. Operation aborted";
 		die (1);
 	}
 

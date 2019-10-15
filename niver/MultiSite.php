@@ -114,8 +114,10 @@ class MultiSite {
 		curl_setopt($ch, CURLOPT_USERPWD, "$username:$password");
 		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 		$result_text = curl_exec($ch);
-		$info = curl_getinfo($ch);
+		$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		curl_close($ch);
+
+		if ($http_code == 404) return false;
 
 //		$result_text = im_file_get_html( $file );
 

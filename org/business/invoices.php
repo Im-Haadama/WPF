@@ -322,11 +322,11 @@ function invoices_table( $statuses, $week = null ) {
 			// print $order_id. " ". $mission . "<br/>";
 
 			$line[ OrderFields::mission ]  = gui_select_mission( "mis_" . $order_id, $mission_id, "onchange=\"mission_changed(" . $order_id . ")\"" );
-			$line[ OrderFields::order_id ] = gui_hyperlink( $order_id, ImMultiSite::LocalSiteTools() . "/orders/get-order.php?order_id=" . $order_id );
+			$line[ OrderFields::order_id ] = gui_hyperlink( $order_id, ImMultiSite::LocalSiteTools() . "/fresh/orders/get-order.php?order_id=" . $order_id );
 
 			// 2) Customer name with link to his deliveries
 			$line[ OrderFields::customer ] = gui_hyperlink( get_customer_name( $customer_id ), ImMultiSite::LocalSiteTools() .
-			                                                                                   "/account/get-customer-account.php?customer_id=" . $customer_id );
+			                                                                                   "/fresh/account/get-customer-account.php?customer_id=" . $customer_id );
 
 
 			$line[ OrderFields::recipient ] = get_postmeta_field( $order_id, '_shipping_first_name' ) . ' ' .
@@ -350,7 +350,7 @@ function invoices_table( $statuses, $week = null ) {
 			if ( $delivery_id > 0 ) {
 				$delivery                           = new Delivery( $delivery_id );
 				$line[ OrderFields::delivery_note ] = gui_hyperlink( $delivery_id,
-					ImMultiSite::LocalSiteTools() . "/delivery/get-delivery.php?id=" . $delivery_id );
+					ImMultiSite::LocalSiteTools() . "/fresh/delivery/get-delivery.php?id=" . $delivery_id );
 				//if ( $delivery_id > 0 ) {
 				$line[ OrderFields::total_order ]  = $order_total; // $delivery->Price();
 				$line[ OrderFields::delivery_fee ] = $delivery->DeliveryFee();

@@ -424,7 +424,7 @@ class Catalog {
 			$debug = true;
 		$result_ids = array();
 		// find products mapped by id.
-		$sql = "SELECT product_id, id FROM im_supplier_mapping WHERE pricelist_id = " . $pricelist_id;
+		$sql = "SELECT product_id, id, supplier_product_name FROM im_supplier_mapping WHERE pricelist_id = " . $pricelist_id;
 		if ( ! $include_hide )
 			$sql .= " AND product_id > 0";
 		// print $sql;
@@ -442,25 +442,27 @@ class Catalog {
 		// find products mapped by name
 		$result       = PriceList::Get( $pricelist_id );
 		$product_name = $result["product_name"];
-		foreach ( array( "חדשה", "מוגבל", "גדול", "טעים", "מבצע", "חדש", "ויפה", "יפה" ) as $word_to_remove ) {
-			$product_name = str_replace( $word_to_remove, "", $product_name );
-		}
-		$sql = "SELECT product_id, id FROM im_supplier_mapping " .
-		       " WHERE supplier_product_name = '" . escape_string( $product_name ) . "'" .
-		       " AND supplier_id = " . $result["supplier_id"];
+		if (strlen($product_name)) {
+			foreach ( array( "חדשה", "מוגבל", "גדול", "טעים", "מבצע", "חדש", "ויפה", "יפה" ) as $word_to_remove ) {
+				$product_name = str_replace( $word_to_remove, "", $product_name );
+			}
+			$sql = "SELECT product_id, id FROM im_supplier_mapping " .
+			       " WHERE supplier_product_name = '" . escape_string( $product_name ) . "'" .
+			       " AND supplier_id = " . $result["supplier_id"];
 
-		if ( ! $include_hide )
-			$sql .= " and product_id > 0";
-		// print $sql;
-		$result = sql_query( $sql );
-		if ( $result ) {
-			{
-				while ( $row = mysqli_fetch_row( $result ) ) {
-					if ( ! in_array( $row[0], $result_ids ) ) {
-						array_push( $result_ids, $row[0] );
-					}
-					if ( $debug ) {
-						my_log( "name link to $pricelist_id " . $row[0] );
+			if ( ! $include_hide )
+				$sql .= " and product_id > 0";
+			// print $sql;
+			$result = sql_query( $sql );
+			if ( $result ) {
+				{
+					while ( $row = mysqli_fetch_row( $result ) ) {
+						if ( ! in_array( $row[0], $result_ids ) ) {
+							array_push( $result_ids, $row[0] );
+						}
+						if ( $debug ) {
+							my_log( "name link to $pricelist_id " . $row[0] );
+						}
 					}
 				}
 			}

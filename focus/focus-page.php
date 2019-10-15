@@ -40,14 +40,15 @@ if ($task_template_id)
 	return;
 }
 
-// print "X" . get_param("templates") != null . "X";
+// print "X" . get_param("templates") != null . "X";aa
 
 if (get_param("templates", false,"none") !== "none") {
-	print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/fresh/admin/admin.js" ) );
+	print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/focus/focus.js" ) );
 
 	print gui_hyperlink("Add repeating task", get_url(true) . "?operation=new_template");
 
 	$args = array();
+
 
 	show_templates(get_url(1));
 	return;
@@ -81,7 +82,11 @@ print gui_hyperlink("Repeating tasks", $url . "?templates");
 
 print " ";
 
-print gui_hyperlink("add tasks", $url . "?operation=new_task");
+print gui_hyperlink("add tasks", $url . "?operation=show_new_task");
+
+print " ";
+
+print gui_hyperlink("add sequence", $url . "?operation=new_sequence");
 
 print " ";
 

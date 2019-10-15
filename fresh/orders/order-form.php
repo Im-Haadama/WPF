@@ -68,10 +68,6 @@ function get_form_tables() {
                 }
             }
             let url = "/order-finish/?params=" + params;
-
-//                "<?php //print ImMultiSite::LocalSiteTools();?>///orders/order-form-post.php?operation=create_order" +
-//                "&params=" + params;
-
             let phone = get_value_by_name("phone");
             let name = get_value_by_name("name");
             let email = get_value_by_name("email");

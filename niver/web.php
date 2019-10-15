@@ -20,30 +20,61 @@ function get_url($only_base = false)
 	return $url;
 }
 
+/**
+ * @param $url
+ * @param $param_name
+ * @param mixed ...$param_value
+ *
+ * @return string|null
+ */
 function add_param_to_url($url, $param_name, ...$param_value)
 {
-	# Todo: check if parameter is not there before.
+	$query_parts = [];
+	if ($s = strpos($url,'?')) { // Have previous query
+		// Remove url part
+		$result = substr($url, 0, $s); // not including the ?
+		$query = substr($url, $s + 1); // not including the ?
+		while (strlen($query)) {
+			$next_amp = strpos($query, '&');
+			$param = substr($query, 0, $e = strpos($query, '='));
+			$value = $next_amp ? substr($query, $e + 1, $next_amp - $e - 1) : substr($query, $e + 1);
+
+			$query_parts[$param] = $value;
+			if ($next_amp)
+				$query = substr($query, $next_amp + 1); // Not including previous &
+			else
+				$query = "";
+		}
+	}  else
+		$result = $url;
+
 	if (is_array($param_name))
 	{
 //		print "is array<br/>";
 		$result = null;
 		foreach ($param_name as $key => $value){
-//			print "adding $key=$value<br/>";
-			if (! $result)
-				$result = add_to_url($key, $value);
-			else
-				$result .= "&$key=$value";
+			$query_parts[$key] = $param_value;
 		}
-		return $result;
+	} else {
+		$query_parts[$param_name] = $param_value[0];
 	}
-	if (is_array($param_value)) $param_value = $param_value[0];
-	// print "handling non array $param_name=$param_value<br/>";
-	if (strpos($url, '?')) return $url . '&' . $param_name . '=' . $param_value;
-	return $url . '?' . $param_name . '=' . $param_value;
 
+	// Build the url
+	$result .= "?";
+	foreach ($query_parts as $param => $value)
+		$result .= $param . '=' . $value;
+
+//	var_dump($query_parts);
+	return $result;
 }
 
 // Todo: check with more than one pair
+/**
+ * @param $param_name
+ * @param mixed ...$param_value
+ *
+ * @return string|null
+ */
 function add_to_url($param_name, ...$param_value)
 {
 //	print "start<br/>";

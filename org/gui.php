@@ -2,6 +2,7 @@
 
 require_once(ROOT_DIR . '/org/org.php');
 
+/// Parameters are required - we need to show the allowed projects to the given user.
 function gui_select_project( $id, $value, $args)
 {
 	// print "v=$value<br/>";
@@ -33,6 +34,23 @@ function gui_select_project( $id, $value, $args)
 	$args["name"] = "project_name";
 	$args["selected"] = $value;
 	return GuiSelectTable($id, "im_projects", $args);
-
 }
 
+function gui_select_worker( $id = null, $selected = null, $args = null ) {
+
+	// $events = GetArg($args, "events", null);
+	$edit = GetArg($args, "edit", true);
+	$companies = GetArg($args, "companies", "must send company");
+	$debug = false; // (get_user_id() == 1);
+	$args["debug"] = $debug;
+	$args["name"] = "client_displayname(user_id)";
+	$args["where"] = "where is_active=1 and company_id in (" . comma_implode($companies) . ")";
+	$args["id_key"] = "user_id";
+	$args["selected"] = $selected;
+
+	if ($edit)
+		return GuiSelectTable($id, "im_working", $args);
+	else
+		return ($selected > 0) ? sql_query_single_scalar("select client_displayname(user_id) from im_working where user_id = " . $selected) :
+			"";
+}

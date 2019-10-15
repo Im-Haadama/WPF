@@ -6,7 +6,12 @@
  * Time: 14:13
  */
 // ini_set( 'display_errors', 'on' );
-require_once( "../account/account.php" );
+
+if ( ! defined( "ROOT_DIR" ) ) {
+	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
+}
+
+require_once( ROOT_DIR . "/fresh/account/account.php" );
 require_once( ROOT_DIR . "/niver/gui/inputs.php" );
 require_once( "people.php" );
 

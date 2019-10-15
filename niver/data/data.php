@@ -2,9 +2,13 @@
 error_reporting( E_ALL );
 ini_set( 'display_errors', 'on' );
 
+if ( ! defined( 'ROOT_DIR' ) ) {
+	define( 'ROOT_DIR',  dirname(dirname( dirname( __FILE__)  ) ));
+}
+
 require_once(ROOT_DIR . "/niver/gui/inputs.php");
 
-$ignore_list = array("search", "operation", "table_name", "id");
+$ignore_list = array("search", "operation", "table_name", "id", "dummy");
 
 function data_parse_get($table_name) {
 	global $ignore_list;
@@ -48,7 +52,6 @@ function update_data($table_name)
 		foreach ($changed_values as $changed_field => $changed_pair){
 			$changed_value = $changed_pair[0];
 			$is_meta = $changed_pair[1];
-			// Todo: bind vars here.
 			if (sql_type($table_name, $changed_field) == 'date' and strstr($changed_value, "0001")) {
 				$sql = "update $table_name set $changed_field = null where id = " . $row_id;
 				// print $sql;
@@ -90,6 +93,16 @@ function update_data($table_name)
 	return true;
 }
 
+function cancel_data($table_name)
+{
+	// TODO: adding meta key when needed(?)
+	global $meta_table_info;
+
+	$row_id = intval(get_param("id", true));
+
+	return sql_query("update $table_name set is_active = 0 where id = $row_id");
+}
+
 function data_save_new($table_name)
 {
 	global $ignore_list;
@@ -119,7 +132,8 @@ function data_save_new($table_name)
 	if (!$stmt -> execute())
 		sql_error($sql);
 
-	return sql_insert_id();
+	$id = sql_insert_id();
+	return $id;
 }
 
 // For now use escape_string and not bind. Uncaught Error: Call to undefined method mysqli_stmt::get_result
@@ -170,4 +184,25 @@ function data_search($table_name, $args = null)
 		}
 	}
 	return $result;
+}
+
+function handle_data_operation($operation)
+{
+	$allowed_tables = array("im_company", "im_tasklist", "im_task_templates");
+
+	$debug = 0;
+	if ($debug)	print "operation: " . $operation . "<br/>";
+	switch ($operation){
+		case "update":
+			$table_name = get_param("table_name", true);
+			if (update_data($table_name))
+				print "done";
+			break;
+
+		default:
+			print __FUNCTION__ . ": " . $operation . " not handled <br/>";
+
+			die(1);
+	}
+	return;
 }

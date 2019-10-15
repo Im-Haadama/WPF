@@ -39,8 +39,9 @@ if ( ! $send ) {
 	if ( sql_query_single_scalar( "SELECT payment_receipt FROM im_delivery WHERE id = " . $id ) ) {
 		print "תעודה שולמה ולא ניתנת לעריכה או למחיקה";
 	} else {
-		print '<button id="btn_del" onclick="deleteDelivery()">מחק תעודה</button>';
-		print '<button id="btn_edit" onclick="editDelivery()">ערוך תעודה</button>';
+	    print gui_button("btn_del", "deleteDelivery()", "delete document");
+	    print gui_button("btn_edit", "editDelivery()", "edit document");
+	    print gui_button("btn_send", "sendDelivery()", "send delivery");
 	}
 }
 
@@ -53,6 +54,10 @@ if ( ! $send ) {
 	} ?>
     function editDelivery() {
         window.location.href = "create-delivery.php?id=<?php print $id; ?>";
+    }
+
+    function sendDelivery() {
+        window.location.href = "/fresh/account/account-post.php?operation=send&del_ids=<?php print $id; ?>";
     }
 
     function deleteDelivery() {

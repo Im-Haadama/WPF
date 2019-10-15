@@ -8,7 +8,7 @@ $debug = get_param( "debug", false, false );
 
 print header_text( true, true, is_rtl());
 
-print load_scripts(array("/fresh/admin/data.js", "/niver/gui/client_tools.js"));
+print load_scripts(array("/niver/data/data.js", "/niver/gui/client_tools.js"));
 // focus_init();
 
 $operation = get_param( "operation", false, null );
@@ -32,7 +32,7 @@ if ( $operation ) {
 if ( get_param( "templates", false, "none" ) !== "none" ) {
 	print header_text( false, true, true, array(
 		"/niver/gui/client_tools.js",
-		"/fresh/admin/data.js",
+		"/niver/data/data.js",
 		"/fresh/admin/admin.js"
 	) );
 

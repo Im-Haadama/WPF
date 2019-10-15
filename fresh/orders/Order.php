@@ -6,7 +6,7 @@
  * Time: 17:03
  */
 require_once( ROOT_DIR . '/niver/data/sql.php' );
-require_once( TOOLS_DIR . '/catalog/bundles.php' );
+require_once( ROOT_DIR . '/fresh/catalog/bundles.php' );
 require_once( ROOT_DIR . "/fresh/catalog/Basket.php" );
 require_once( ROOT_DIR . "/fresh/orders/orders-common.php" );
 
@@ -114,6 +114,11 @@ class Order {
 	function SetMissionID( $mission_id ) {
 		$this->mission_id = $mission_id;
 		set_post_meta_field( $this->order_id, "mission_id", $this->mission_id );
+	}
+
+	function getStatus()
+	{
+		return sql_query_single_scalar("select post_status from wp_posts where id = " . $this->order_id);
 	}
 
 	function AddProduct( $product_id, $quantity, $replace = false, $client_id = - 1, $unit = null, $type = null ) {
@@ -883,7 +888,7 @@ class Order {
 		array_push( $fields, ImMultiSite::LocalSiteName() );
 
 		$client_id     = $this->getCustomerId();
-		$ref           = "<a href=\"" . $site_tools . "/orders/get-order.php?order_id=" . $this->order_id . "\">" . $this->order_id . "</a>";
+		$ref           = "<a href=\"" . $site_tools . "/fresh/orders/get-order.php?order_id=" . $this->order_id . "\">" . $this->order_id . "</a>";
 		$address       = order_get_address( $this->order_id );
 		$receiver_name = get_meta_field( $this->order_id, '_shipping_first_name' ) . " " .
 		                 get_meta_field( $this->order_id, '_shipping_last_name' );

@@ -202,7 +202,7 @@ function PrepareRow($row, $args, $row_id)
 	{
 		if (0 and get_user_id() == 1)
 		{
-			print $key . " " . $data . "<br/>";
+			print $key  . "<br/>";
 		}
 		// General preparation... decide the field name and save the orig data and default data.
 		$nm = $key; // mnemonic3($key);
@@ -232,7 +232,9 @@ function PrepareRow($row, $args, $row_id)
 
 		// Let's start
 		do {
-			if ( $links and array_key_exists( $key, $links ) ) {
+//			var_dump($links);
+			//print "key=$key " . $links[$key] . "<br/>";
+			if ( $links and  array_key_exists( $key, $links )) {
 				if ($debug) print "Has links for $key";
 				if ( $selectors and array_key_exists( $key, $selectors ) ) {
 					if ($debug) print " and also selector";

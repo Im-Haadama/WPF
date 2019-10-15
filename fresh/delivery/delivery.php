@@ -201,9 +201,7 @@ class delivery {
 //	$order = new WC_Order( $order_id );
 //	$order->update_status( 'wc-completed' );
 
-		global $track_email;
-		$delivery = new delivery( $delivery_id );
-		$delivery->send_mail( $track_email, false );
+		send_deliveries($delivery_id);
 
 		return $delivery_id;
 	}
@@ -294,7 +292,6 @@ class delivery {
 		global $business_name;
 		global $bank_info;
 		global $support_email;
-		global $mail_sender;
 
 		$order_id = $this->OrderId();
 
@@ -1117,3 +1114,54 @@ class delivery {
 	}
 }
 
+function handle_delivery_operation($operation)
+{
+	$debug = 0;
+	if ($debug)	print "operation: " . $operation . "<br/>";
+	switch ($operation){
+		case "show_this_week":
+			$args = [];
+			// Links to prev/next week
+			$date_format = 'Y-m-j';
+			$date = get_param("week", false, date($date_format, strtotime("last sunday")));
+			print gui_hyperlink("last week", add_param_to_url(get_url(), "week", date($date_format, strtotime($date . " -1 week")))) . " ";
+			print gui_hyperlink("next week", add_param_to_url(get_url(), "week", date($date_format, strtotime($date . " +1 week"))));
+
+			print "<br/>";
+
+			// Show selected week
+			$args["sql"] = "select ID, date, order_id, client_from_delivery(ID) from im_delivery where first_day_of_week(date) = " . quote_text($date);
+//			print $args["sql"];
+			$args["id_field"] = "ID";
+
+			// $args["links"] = array("ID" => add_param_to_url(get_url(), "operation", "show_id", "row_id", "%s"));
+		    $args["links"] = array("ID" => "/fresh/delivery/get-delivery.php?id=%s");
+			$table =  GemTable("im_delivery", $args);
+			if (strlen($table) < 100)
+				print "No deliveries done this week<br/>";
+			else
+				print $table;
+			break;
+
+//		case "show_id":
+//			$d = new
+//
+//			break;
+
+		default:
+			print __FUNCTION__ . ": " . $operation . " not handled <br/>";
+
+			die(1);
+	}
+	return;
+}
+
+function send_deliveries($ids)
+{
+	global $support_email;
+	if (!is_array($ids)) $ids = array($ids);
+	foreach ($ids as $delivery_id){
+		$delivery = new delivery( $delivery_id );
+		$delivery->send_mail( $support_email, false );
+	}
+}

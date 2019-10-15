@@ -12,12 +12,28 @@ function save_entity(post_operation, table_name, id)
     execute_url(operation, action_back);
 }
 
+function cancel_entity(post_operation, table_name, id)
+{
+    if (!Number.isInteger(id)) {
+        alert ("invalid id: " . id);
+        return;
+    }
+    let operation = post_operation + "?table_name=" + table_name + "&operation=cancel&id=" + id;
+    operation = operation + operation_arguments(table_name, id);
+    // alert(operation);
+    execute_url(operation, action_back);
+}
+
 // If we want to add custom action in the server we can send different post action.
 function save_new_custom(post_operation, table_name, action)
 {
-    let operation = post_operation + '?table_name=' + table_name;
-    if (! post_operation.indexOf("operation="))
-        operation += '?operation=save_new';
+    let operation = post_operation;
+    if (operation.indexOf('?') === -1) operation+="?dummy=1"; // Make sure this is ?
+
+    if (post_operation.indexOf("operation=") === -1)
+        operation += '&operation=save_new';
+
+    operation += '&table_name=' + table_name;
     let table = document.getElementById(table_name);
     if (! table || ! table.rows){
         alert("rows of table " + table_name + " not found");
@@ -45,10 +61,6 @@ function save_new_custom(post_operation, table_name, action)
         execute_url(operation, action_back);
 
 }
-// function save_new(table_name, action = null)
-// {
-//     save_new_custom("/niver/data/data.php?operation=new", table_name, action);
-// }
 
 function check_update(xmlhttp)
 {
@@ -100,7 +112,18 @@ function operation_arguments(table_name, id = null)
             let name = chk_id.substr(4);
             let control_name = name;
             if (id) control_name = name + "_" + id;
-            operation_args += "&" + name + "=" + encodeURIComponent(get_value_by_name(control_name));
+            if (document.getElementById(control_name + ".0"))
+            {
+                // Multiple values
+                let i = 0;
+                let params = [];
+                do {
+                    params.push(get_value_by_name(control_name + "." + i));
+                    i = i + 1;
+                } while (document.getElementById(control_name + "." + i));
+                operation_args += "&" + name + "=" + params;
+            } else
+                operation_args += "&" + name + "=" + encodeURIComponent(get_value_by_name(control_name));
         }
     }
     return operation_args;

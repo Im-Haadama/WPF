@@ -76,6 +76,50 @@ die ( 0 );
 
 function version22()
 {
+//	print gui_header(1, "preq done");
+//	sql_query("CREATE FUNCTION SPLIT_STRING(str VARCHAR(255), delim VARCHAR(12), pos INT)
+//RETURNS VARCHAR(255)
+//RETURN REPLACE(SUBSTRING(SUBSTRING_INDEX(str, delim, pos),
+//       LENGTH(SUBSTRING_INDEX(str, delim, pos-1)) + 1),
+//       delim, '');");
+
+	sql_query("drop function preq_done");
+	sql_query("CREATE FUNCTION 	preq_done(_task_id int)
+	 RETURNS varchar(200)
+BEGIN 
+	declare _preq varchar(200);
+	declare _status int;
+	declare _comma_pos int;
+	declare _preq_task varchar(200);
+	select preq into _preq
+	from im_tasklist
+	where id = _task_id;
+	
+	while (length(_preq)) do
+		set _comma_pos = locate(',', _preq);
+		if (_comma_pos != 0) then
+			set _preq_task =  substring(_preq, 1, _comma_pos - 1);
+			set _preq = substr(_preq, _comma_pos+1); 
+		else
+			set _preq_task = _preq;
+			set _preq = null;
+		end if;
+		if (task_status(_preq_task) < 2) then 
+			return 0; 
+		end if;
+	end while;
+	return 1;	   
+END;");
+
+	print sql_query_single_scalar("select preq_done(2547)");
+	die (1);
+
+	print gui_header(1, "varchar preq");
+	sql_query("ALTER TABLE im_tasklist modify preq varchar(200) null;");
+
+	print gui_header(1, "is_active");
+	sql_query("ALTER TABLE im_task_templates ADD is_active bit not null default 1;");
+
 	print gui_header(1, "save mission path");
 	sql_query("ALTER TABLE im_missions ADD path varchar(4000);");
 

@@ -1,19 +1,21 @@
 <?php
 
 if ( ! defined( "ROOT_DIR" ) ) {
-	define( 'ROOT_DIR', dirname(dirname( dirname( __FILE__ ) ) ));
+	define( 'ROOT_DIR', dirname(dirname( dirname( __FILE__ ) ) )) ;
 }
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
 
-require_once( ROOT_DIR . '/im-config.php' );
+require_once(ROOT_DIR . '/im-config.php');
 require_once( ROOT_DIR . "/init.php" );
 
-require_once (ROOT_DIR . '/niver/fund.php');
+require_once( "delivery.php" );
 
-$id = get_param("id", false, null);
+$debug = get_param("debug", false, false);
 
-if ($id)
-{
+print header_text(true, true, is_rtl(), array("/niver/data/data.js", "/niver/gui/client_tools.js"));
 
+$operation = get_param("operation", false, "show_this_week");
+
+if ($operation) {
+	handle_delivery_operation($operation);
+	return;
 }

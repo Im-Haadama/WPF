@@ -517,7 +517,7 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 			if ( $invoice_user_id ) {
 				$line [ OrderFields::line_select ] = gui_checkbox( "chk_" . $order_id, "select_order_" . $status );
 			} else {
-				$line [ OrderFields::line_select ] = gui_hyperlink( "לקוח חדש", "../account/new-customer.php?order_id=" . $order_id );
+				$line [ OrderFields::line_select ] = gui_hyperlink( "לקוח חדש", "/fresh/account/new-customer.php?order_id=" . $order_id );
 			}
 
 			debug_time_log( "a1" );
@@ -535,7 +535,7 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 
 			// 2) Customer name with link to his deliveries
 			$line[ OrderFields::customer ] = gui_hyperlink( get_customer_name( $customer_id ), ImMultiSite::LocalSiteTools() .
-			                                                                                   "/account/get-customer-account.php?customer_id=" . $customer_id );
+			                                                                                   "/fresh/account/get-customer-account.php?customer_id=" . $customer_id );
 
 
 			$line[ OrderFields::recipient ] = get_postmeta_field( $order_id, '_shipping_first_name' ) . ' ' .
@@ -577,7 +577,9 @@ function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null
 				}
 				//	}
 			} else {
-				$line[ OrderFields::delivery_note ] = gui_hyperlink( "צור", get_url(1) . "/delivery/create-delivery.php?order_id=" . $order_id, "_blank" );
+				// print "status = " . $order->getStatus() . "<br/>";
+				if ($order -> getStatus() == 'wc-processing')
+					$line[ OrderFields::delivery_note ] = gui_hyperlink( "צור",  "/fresh/delivery/create-delivery.php?order_id=" . $order_id, "_blank" );
 				$line[ OrderFields::percentage ]    = gui_hyperlink( "בטל", $_SERVER['PHP_SELF'] . "?operation=cancel_order&id=" . $order_id );
 				$total_delivery_fee                 = order_get_shipping_fee( $order_id );
 			}
@@ -662,7 +664,7 @@ function total_order( $user_id ) {
 		$order_id = $row[0];
 		array_push( $order_ids, $order_id );
 		array_push( $order_clients, gui_hyperlink( get_postmeta_field( $order_id, '_shipping_first_name' ),
-			ImMultiSite::LocalSiteTools() . "/orders/get-order.php?order_id=" . $order_id ) );
+			ImMultiSite::LocalSiteTools() . "/fresh/orders/get-order.php?order_id=" . $order_id ) );
 
 		$totals[ $order_id ] = 0;
 

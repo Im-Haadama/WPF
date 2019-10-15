@@ -5,7 +5,7 @@ require_once(ROOT_DIR . "/niver/web.php");
 require_once("suppliers.php");
 require_once (ROOT_DIR . '/niver/gui/gem.php');
 
-print header_text(false, true, true, array("/niver/gui/client_tools.js", "/fresh/admin/data.js"));
+print header_text(false, true, true, array("/niver/gui/client_tools.js", "/niver/data/data.js"));
 
 $operation = get_param("operation", false, null);
 if ($operation) {

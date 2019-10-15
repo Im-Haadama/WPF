@@ -287,13 +287,9 @@ function gui_input_date( $id, $class, $value = null, $events = null ) {
  */
 function gui_input_time( $id, $class, $value = null, $events = null ) {
 	$data = '<input type="time" id="' . $id . '" ';
-	if ( is_null( $value ) ) {
-		$value = date( 'h:m' );
-	}
+	if ( is_null( $value )) $value = "8:00";
 	if ( strlen( $value ) > 0 ) {
-//		$time = date( "h:m", strtotime( $value ) );
-		$time = $value;
-//		print "value=$time<br/>";
+		$time = date('H:i', strtotime($value));
 		$data .= "value=\"$time\" ";
 	}
 	if ( strlen( $class ) > 0 ) {
@@ -495,7 +491,7 @@ function gui_row( $cells, $row_id = null, $show = null, &$acc_fields = null, $co
 	$data = "<tr";
 
 	if ( $style ) {
-		$data .= $style;
+		$data .= " " . $style;
 	}
 
 	$data .= ">";
@@ -821,7 +817,18 @@ function GuiSelectTable($id, $table, $args)
 	}
 
 	if ( $datalist ) {
-		return gui_select_datalist( $id, $table . "_values", $name, $values, $events, $selected, $include_id, $id_key, $class );
+		$data = "";
+		$seq = 0;
+//		print  "ii=" . $include_id . "<br/>";
+		foreach (explode(",", $selected) as $select_value){
+//			print "value = $select_value<br/>";
+			$data .= gui_select_datalist( $id . '.' . $seq, $table . "_values", $name, $values, $events, $select_value, $include_id, $id_key, $class );
+			$seq ++;
+		}
+		$data .= gui_select_datalist( $id . '.' . $seq, $table . "_values", $name, $values, $events, null, $include_id, $id_key, $class );
+
+		return $data;
+
 	} else {
 		return gui_select( $id, $name, $values, $events, $selected, $id_key, $class );
 	}
@@ -853,7 +860,6 @@ function gui_select_datalist( $id, $datalist_id, $name, $values, $events, $selec
 	if (! isset($shown_datalist[$datalist_id])) {
 		$shown_datalist[$datalist_id] =0;
 		$data .= "<datalist id=\"" . $datalist_id . "\">";
-		$selected_value = $selected;
 
 		if (! is_array($values))
 		{
@@ -878,6 +884,7 @@ function gui_select_datalist( $id, $datalist_id, $name, $values, $events, $selec
 			$value .= $row[ $name ];
 			if ( $include_id ) {
 				$value = $row[ $id_key ] . ")" . $value;
+		//		print "value= $value<br/>";
 			}
 			$data  .= "<option value=\"" . $value . "\" ";
 			foreach ( $row as $key => $data_value ) {
@@ -895,11 +902,12 @@ function gui_select_datalist( $id, $datalist_id, $name, $values, $events, $selec
 		if ($id == "datalist") return $data; // Just print the datalist.
 	}
 
-	$selected_value = "select";
+	$selected_value = $selected ? $selected : "select";
 	if ($selected)
 		foreach ( $values as $row ) {
 			if ($row[$id_key] == $selected){
-				$selected_value = $row[$name];
+				$selected_value = ($include_id ? $row[$id_key] : "") . ")" . $row[$name];
+
 			}
 	}
 

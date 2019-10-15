@@ -4,3 +4,50 @@
 //     let url = window.location.href; // .split('?')[0];
 //     execute_url(url + '?repeat=' + repeat);
 // }
+
+function add_member()
+{
+    let member = get_value_by_name("new_member");
+    let team = get_value_by_name("team_id");
+    execute_url("admin-post.php?operation=do_add_member&member=" + member + "&team=" + team, check_update);
+}
+
+function addSequenceTask(current)
+{
+    let next = current + 1;
+    let table = document.getElementById("sequence_table");
+    let row = table.insertRow();
+    row.innerHTML = '<tr><td>task' + next + '</td><td><input id="task' + next + '" onchange=\'addSequenceTask(' + next + ')\'></td></tr>';
+    document.getElementById("task" + next).focus();
+}
+
+function save_new_sequence()
+{
+    let project = get_value_by_name("project");
+    let priority = get_value_by_name("priority");
+    let request = '/focus/focus-post.php?operation=new_sequence&project=' + project + "&priority=" + priority;
+    for (let i = 1; i < document.getElementById("sequence_table").rows.length - 2; i ++){
+        let text = get_value_by_name("task"+ i);
+        request = request + '&task' + i + '=' + encodeURI(text);
+    }
+    execute_url(request, back_to_project);
+}
+
+function back_to_project(xmlhttp, project)
+{
+    if (xmlhttp.response === "done")
+        window.location = window.location.href + "&project=" + project;
+    else
+        alert (xmlhttp.response);
+}
+
+function show_project(xmlhttp)
+{
+    let project = get_value_by_name("project_id");
+    if (xmlhttp.response === "done" || xmlhttp.response > 0) {
+        let url = removeParam("operation", window.location.href);
+        window.location = url + "&project=" + project;
+    }
+    else
+    alert (xmlhttp.response);
+}

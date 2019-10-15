@@ -2,7 +2,6 @@
  * Created by agla on 01/02/19.
  */
 
-
 function mission_changed(supply_id) {
     let mis = document.getElementById("mis_" + supply_id);
     let mission_id = get_value(mis);
@@ -95,15 +94,127 @@ function deleteItems() {
 
 function closeItems(collection_name)
 {
-    let param = new Array();
-    let collection = document.getElementsByClassName(collection_name);
-    for (let i = 0; i < collection.length; i++) {
-        if (collection[i].checked) param.push(collection[i].id.substr(4));
-    }
-    let request = "/fresh/supplies/supplies-post.php?operation=supplied&ids=" + param;
+    let request = "/fresh/supplies/supplies-post.php?operation=supplied&ids=" + get_selected(collection_name);
     execute_url(request, location_reload);
 }
 function get_supply_id()
 {
     return get_value_by_name("supply_number");
+}
+
+function send_supplies()
+{
+    let ids = get_selected("new");
+    if (! ids.length) {
+        alert ("no supply selected");
+        return;
+    }
+    do_send_supplies(ids);
+}
+function do_send_supplies(ids) {
+    let request = "supplies-post.php?operation=send&id=" + ids;
+
+    // execute_url(url, finish_action, obj)
+
+    execute_url(request, update_message);
+}
+
+// finish_action(xmlhttp3, obj);
+function update_message(xmlhttp, obj)
+{
+    document.getElementById("results").innerText = xmlhttp.response;
+}
+
+function supply_pay(id) {
+    var date = get_value_by_name("pay_date");
+
+    var request_url = "supplies-post.php?operation=supply_pay&date=" + date +
+    "&id=" + id;
+
+    var request = new XMLHttpRequest();
+    request.onreadystatechange = function () {
+        if (request.readyState === 4 && request.status === 200) {
+            // window.location = window.location;
+            update_display();
+        }
+    }
+
+    request.open("GET", request_url, true);
+    request.send();
+}
+
+function printDeliveryNotes() {
+    document.getElementById('head_print').innerHTML = get_value(document.getElementById("comment"));
+    var elements = ["buttons", "supply_arrived", "add_items", "head_edit"];
+    elements.forEach(function (element) {
+        document.getElementById(element).style.display = "none";
+    });
+    document.getElementById("head_print").style.display = "block";
+
+    window.print();
+
+    document.getElementById("head_print").style.display = "none";
+    elements.forEach(function (element) {
+        document.getElementById(element).style.display = "block";
+    });
+}
+
+function got_supply() {
+    disable_btn("btn_got_supply");
+    var supply_number = get_value(document.getElementById("supply_number"));
+    var supply_total = get_value(document.getElementById("supply_total"));
+    var net_amount = get_value(document.getElementById("net_amount"));
+    var is_invoice = get_value(document.getElementById("is_invoice"));
+    var date = get_value_by_name("document_date");
+
+    if (!supply_number) {
+        alert("יש לרשום את מספר תעודת המשלוח");
+        enable_btn("btn_got_supply");
+        return;
+    }
+
+    if (!supply_total) {
+        alert("יש לרשום סכום תעודת המשלוח");
+        enable_btn("btn_got_supply");
+        return;
+    }
+
+    if (!net_amount) {
+        alert("יש לרשום סכום תעודת המשלוח ללא מע\"מ");
+        enable_btn("btn_got_supply");
+        return;
+    }
+
+    var request_url = "supplies-post.php?operation=got_supply&supply_id=<?php print $id; ?>" +
+        "&supply_total=" + supply_total + "&supply_number=" + supply_number +
+        "&net_amount=" + net_amount +
+        "&is_invoice=" + is_invoice;
+
+    if (date)
+        request_url = request_url + "&document_date=" + date;
+
+    var request = new XMLHttpRequest();
+    request.onreadystatechange = function () {
+        if (request.readyState === 4 && request.status === 200) {
+            if (request.response.indexOf("fail") !== -1) {
+                add_message("הפעולה נכשלה" + request.response);
+                enable_btn("btn_got_supply");
+                return;
+            }
+            // window.location = window.location;
+            update_display();
+        }
+    }
+
+    request.open("GET", request_url, true);
+    request.send();
+    // alert (request_url);
+}
+
+function new_supply_change()
+{
+    let supplier_id = get_value_by_name("supplier_select");
+    let upcsv = document.getElementById("upcsv");
+    let date = get_value_by_name("date");
+    upcsv.action = "/fresh/supplies/supplies-post.php?operation=create_from_file&supplier_id=" + supplier_id + "&date=" + date;
 }

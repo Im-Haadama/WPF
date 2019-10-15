@@ -4,6 +4,12 @@
  * User: agla
  * Date: 18/08/17
  * Time: 05:05
+ *
+ * @param $subject
+ * @param $to
+ * @param $message
+ *
+ * @return bool
  */
 
 function send_mail( $subject, $to, $message ) {

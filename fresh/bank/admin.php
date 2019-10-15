@@ -2,7 +2,7 @@
 require_once(ROOT_DIR . '/niver/gui/gem.php');
 require_once( ROOT_DIR . '/fresh/admin/data.php' );
 
-// $admin_scripts = array( "/niver/gui/client_tools.js", "/fresh/admin/data.js", "/fresh/admin/admin.js" );
+// $admin_scripts = array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/fresh/admin/admin.js" );
 
 function handle_bank_operation($operation, $url = null) {
 	$account_id = 1;

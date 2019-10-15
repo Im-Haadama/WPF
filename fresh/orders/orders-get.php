@@ -6,7 +6,7 @@ require_once( "../im_tools.php" );
 require_once( '../r-shop_manager.php' );
 require_once '../delivery/delivery.php';
 
-print header_text( false, false, is_rtl() );
+print header_text( false, false, is_rtl(), array("/fresh/delivery/delivery.js", "/niver/gui/client_tools.js") );
 
 if ( isset( $_GET["week"] ) ) {
 	$week = $_GET["week"];
@@ -190,7 +190,7 @@ if ( current_user_can( "edit_shop_orders" ) and
 
 	if ( strlen( $shipment ) > 5 ) {
 		print $shipment;
-		print gui_button( "btn_delivered", "delivered()", "משלוח נמסר" ) . "<br/>";
+		print gui_button( "btn_delivered", "delivered_table()", "Delivered" ) . "<br/>";
 	}
 }
 

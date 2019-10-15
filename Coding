@@ -22,6 +22,7 @@ General
 -=-=-=-
 Auto and connection to db will be in root folder. init.php. installation specific.
 Will check that the user is known. Checking specific roles will be in the post.php.
+data-post.php - general update functions
 
 inputs
 -=-=-=

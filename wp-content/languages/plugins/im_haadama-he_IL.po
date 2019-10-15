@@ -368,8 +368,11 @@ msgstr "תעריף"
 msgid "Supply"
 msgstr "הספקה"
 
-# msgid ""
-# msgstr ""
+msgid "Supply management"
+msgstr "ניהול הספקות"
+
+msgid "Supplies to get"
+msgstr "סחורה בדרך"
 
 msgid "Buy price"
 msgstr "מחיר עלות"
@@ -383,5 +386,4 @@ msgstr "אין חלוקה היום"
 
 # msgid ""
 # msgstr ""
-
 

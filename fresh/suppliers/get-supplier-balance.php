@@ -7,7 +7,7 @@
  */
 
 require( '../r-shop_manager.php' );
-print header_text( false, true, is_rtl(), array("/fresh/admin/data.js") );
+print header_text( false, true, is_rtl(), array("/niver/data/data.js") );
 // require_once( "account.php" );
 ?>
 

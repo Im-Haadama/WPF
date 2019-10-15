@@ -90,8 +90,7 @@ $row = 0;
 $table[ $row ++ ][ $col ] = gui_header( 2, "משלוחים" );
 add_command( $table, $row, $col, "edit_shop_orders", "Today Routes", "/routes/routes-page.php?operation=show_routes" );
 add_command( $table, $row, $col, "edit_shop_orders", "This week routes", "/routes/routes-page.php?operation=show_routes&week=" . date( "Y-m-d", strtotime( "last sunday" ) ));
-add_command( $table, $row, $col, "edit_shop_orders", "תעודות משלוח", "business/get_all.php?week=" .
-                                                             sunday( date( "Y-m-d" ) )->format( "Y-m-d" ), "doc_frame" );
+add_command( $table, $row, $col, "edit_shop_orders", "תעודות משלוח", "delivery/delivery-page.php", "doc_frame" );
 add_command( $table, $row, $col, "edit_missions", "ניהול מסלולים", "/routes/missions/missions-page.php" );
 add_command( $table, $row, $col, "edit_shop_orders", "משלוחי המכולת", "delivery/legacy.php" );
 add_command( $table, $row, $col, null, "דיווח חוסרים ללקוח", "delivery/missing.php" );
@@ -156,7 +155,7 @@ if ($manage_workers) {
     $col ++;
     $row                      = 0;
     $table[ $row ++ ][ $col ] = gui_header( 2, "עובדים" );
-    add_command( $table, $row, $col, null, "דיווח שעות", "http://store.im-haadama.co.il/fresh/people/entry.php", "doc_frame" );
+    add_command( $table, $row, $col, null, "דיווח שעות", "http://store.im-haadama.co.il/org/people/entry.php", "doc_frame" );
     add_command( $table, $row, $col, "working_hours_all", "ניהול עובדים", "people/c-get-all-working.php" );
 }
 while ( $row < $max_row ) {
@@ -167,7 +166,7 @@ $col ++;
 $row                      = 0;
 $table[ $row ++ ][ $col ] = gui_header( 2, "ניהול" );
 add_command( $table, $row, $col, "edit_pricelist", "תבנית", "tasklist/c-get-all-task_templates.php", "doc_frame" );
-add_command( $table, $row, $col, "edit_pricelist", "משימות פעילות", $m->getSiteToolsURL( 1 ) . "/tasklist/c-get-all-tasklist.php?preset=1", "tasks" );
+add_command( $table, $row, $col, "edit_pricelist", "משימות פעילות", $m->getSiteToolsURL( 1 ) . "/focus/focus-page.php", "tasks" );
     add_command( $table, $row, $col, "edit_pricelist", "חשבוניות", "business/invoice_table.php" );
 add_command( $table, $row, $col, "edit_pricelist", "פרויקטים", "people/project_admin.php" );
 add_command( $table, $row, $col, "edit_pricelist", "תיבת דואר", "business/inbox-box.php" );

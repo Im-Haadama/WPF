@@ -158,20 +158,9 @@ function set_supplier_id() {
             xmlhttp.send();
         }
         function inActiveList() {
-            var sel = document.getElementById("supplier_id");
-            supplier_id = sel.options[sel.selectedIndex].value;
-
-            xmlhttp = new XMLHttpRequest();
-            xmlhttp.onreadystatechange = function () {
-                // Wait to get query result
-                if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
-                {
-                    change_supplier();
-                }
-            }
-            var request = "pricelist-post.php?operation=inactive&supplier_id=" + supplier_id;
-            xmlhttp.open("GET", request, true);
-            xmlhttp.send();
+	        <?php set_supplier_id(); ?>
+            var request = "/fresh/pricelist/pricelist-post.php?operation=inactive&supplier_id=" + supplier_id;
+            execute_url(request, location_reload);
         }
 
         function changed(field) {
