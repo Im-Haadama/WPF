@@ -31,5 +31,5 @@ function gui_select_task( $id, $value, $args ) {
 	if ($debug) {
 		print "where: " . $query . "<br/>";
 	}
-	return GUiSelectTable($id, "im_tasklist", $args);
+	return GuiSelectTable($id, "im_tasklist", $args);
 }

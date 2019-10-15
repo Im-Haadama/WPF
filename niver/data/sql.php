@@ -355,7 +355,8 @@ function sql_fetch_row( $result ) {
 }
 
 function sql_fetch_assoc( $result ) {
-	return mysqli_fetch_assoc( $result );
+	if ($result) return mysqli_fetch_assoc( $result );
+	return null;
 }
 
 

@@ -34,6 +34,7 @@ function parse_header(
 			case 'קוד':
 			case 'קוד פריט':
 			case 'מסד':
+			case 'code':
 				array_push( $item_code_idx, $i );
 				break;
 			case 'קטגוריות':
@@ -49,11 +50,13 @@ function parse_header(
 			case 'תיאור':
 			case 'מוצר':
 			case 'שם המוצר':
+			case 'name':
 				array_push( $name_idx, $i );
 				break;
 			case 'פירוט המוצר':
 				array_push( $detail_idx, $i );
 				break;
+			case 'price':
 			case 'מחיר':
 			case 'מחיר לאחר הנחה':
 			case 'מחירון':

@@ -11,7 +11,7 @@ require_once( ROOT_DIR . "/niver/web.php" );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( ROOT_DIR . '/niver/gui/sql_table.php' );
 require_once(ROOT_DIR . "/niver/fund.php");
-require_once(ROOT_DIR . "/focus/gui.php");
+// require_once(ROOT_DIR . "/focus/gui.php");
 require_once(ROOT_DIR . "/niver/gui/gem.php");
 require_once(ROOT_DIR . "/niver/data/data.php");
 require_once(ROOT_DIR . '/org/gui.php');

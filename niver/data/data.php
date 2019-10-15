@@ -188,7 +188,7 @@ function data_search($table_name, $args = null)
 
 function handle_data_operation($operation)
 {
-	$allowed_tables = array("im_company", "im_tasklist", "im_task_templates");
+//	$allowed_tables = array("im_company", "im_tasklist", "im_task_templates");
 
 	$debug = 0;
 	if ($debug)	print "operation: " . $operation . "<br/>";
@@ -199,10 +199,38 @@ function handle_data_operation($operation)
 				print "done";
 			break;
 
+		case "auto_list":
+			$prefix = get_param("prefix", true);
+
+			$lists = array("products" => array("table" => "wp_posts", "field_name" =>'post_title', "include_id" => 1));
+			$list = get_param("list", true);
+
+			if (! isset($lists[$list])) die ("no list given");
+			$table_name = $lists[$list]["table"];
+			$field = $lists[$list]["field_name"];
+			$include_id = $lists[$list]["include_id"];
+
+			print auto_list($table_name, $field, $prefix, $include_id);
+			break;
+
 		default:
 			print __FUNCTION__ . ": " . $operation . " not handled <br/>";
 
 			die(1);
 	}
 	return;
+}
+
+function auto_list($table_name, $field, $prefix, $include_id)
+{
+	$data = "";
+
+	print "field=$field<br/>";
+	$args = [];
+	$args["sql"] = "select id, $field from $table_name where $field like '" . $prefix . "%'";
+	$args["field"] = $field;
+	$args["include_id"] = $include_id;
+	$data .= GuiDatalist($table_name . "_$prefix", $table_name, $args );
+
+	return $data;
 }

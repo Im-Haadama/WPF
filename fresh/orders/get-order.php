@@ -175,10 +175,9 @@ if ( current_user_can( "edit_shop_orders" ) or
 	    $args = array();
 		print gui_header( 1, "Add items" );
 		print gui_table_args( array(
-			array( "בחר פריט", "כמות", "יח" ),
+			array( "Select item", "quantity" ),
 			array( gui_select_product("new_product", null, $args),
-                "<input id=\"qua_\">",
-                "<input id=\"uni_\" list=\"units\">" ))); // , array(GuiSelectTable("itm_", "wp_", $args)
+                "<input id=\"qua_\">" )));
 		print gui_button( "btn_add_item", "add_item()", "הוסף" );
 		print gui_button( "btn_replace", "replace()", "החלף סלים במרכיבים" );
 	}

@@ -778,6 +778,8 @@ function GuiSelectTable($id, $table, $args)
 	$id_key = GetArg($args, "id_key", null);
 	$class = GetArg($args, "class", null);
 	$length_limit = GetArg($args, "length_limit", 30);
+	$multiply_choice = GetArg($args, "multiply_choice", false);
+
 	$debug = GetArg($args, "debug", false);
 
 	if ( ! $id_key ) {
@@ -820,12 +822,14 @@ function GuiSelectTable($id, $table, $args)
 		$data = "";
 		$seq = 0;
 //		print  "ii=" . $include_id . "<br/>";
-		foreach (explode(",", $selected) as $select_value){
-//			print "value = $select_value<br/>";
+		if ( $multiply_choice ) {
+			foreach ( explode( ",", $selected ) as $select_value ) {
 			$data .= gui_select_datalist( $id . '.' . $seq, $table . "_values", $name, $values, $events, $select_value, $include_id, $id_key, $class );
 			$seq ++;
 		}
-		$data .= gui_select_datalist( $id . '.' . $seq, $table . "_values", $name, $values, $events, null, $include_id, $id_key, $class );
+			// New one
+		} else
+			$data .= gui_select_datalist( $id, $table . "_values", $name, $values, $events, null, $include_id, $id_key, $class );
 
 		return $data;
 
