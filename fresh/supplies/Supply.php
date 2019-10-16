@@ -129,7 +129,7 @@ class Supply {
 			print "<br/>";
 		}
 
-		print "start " . count($file) . "<br/>";
+//		print "start " . count($file) . "<br/>";
 		$lines = array();
 		for ( ; $i < count( $file ); $i ++ ) {
 			$data = str_getcsv( $file[ $i ] );
@@ -211,10 +211,9 @@ class Supply {
 				// supply_add_line($id, $prod_id, $quantity, $price);
 			}
 
-			print " הספקה " . $Supply->getID() . " נוצרה <br/>";
+			print " Supply " . gui_hyperlink($Supply->getID(), "/fresh/supplies/supplies-post.php?id=" . $Supply->getID() . " created <br/>");
 
 			$Supply->setText( $comments );
-			print "end<br>";
 
 			return $Supply;
 		}
