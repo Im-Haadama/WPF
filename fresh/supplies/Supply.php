@@ -1525,7 +1525,6 @@ function new_supply()
 		array("edit" => 1, "prepare"=>false));
 
 	$data .=gui_header( 2, "בחר מוצרים" );
-	$data .=gui_datalist( "items", "im_products", "post_title", true );
 
 	$data .=gui_table_args( array( array( "פריט", "כמות", "קג או יח" ) ),
 			"supply_items" );
