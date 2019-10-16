@@ -5,7 +5,7 @@ if ( ! defined( "TOOLS_DIR" ) ) {
 require_once( TOOLS_DIR . "/im_tools.php" );
 require_once( ROOT_DIR . "/niver/gui/inputs.php" );
 require_once( TOOLS_DIR . "/multi-site/imMulti-site.php" );
-require_once( TOOLS_DIR . "/options.php" );
+require_once( ROOT_DIR . "/niver/options.php" );
 require_once( TOOLS_DIR . "/pricing.php" );
 require_once( TOOLS_DIR . "/orders/form.php" );
 require_once( TOOLS_DIR . "/orders/orders-common.php" );
@@ -216,17 +216,12 @@ if ( $text ) {
 
 	    print gui_button( "btn_add_order_1", "add_order(0)", "הוסף הזמנה" );
     }
-
-//	print gui_label("disable_reason", "(יש להזמין את כתובת המייל. מינימום הזמנה " . (isset($min) ? $min : 80) . " ש\"ח, לא כולל דמי משלוח");
 }
 ?>
 <?php
 
 print "<br/>";
 
-//print "לפניכם מארזי כמות במחירים מוזלים. פירות ממשק נהרי, יש להזמין עד יום שישי, ההספקה בשבוע העוקב (איסוף או משלוח). בננות סוטו - להזמין עד יום ראשון בערב.";
-
-// print customer_type( $user_id );
 $categs = info_get( "form_categs" );
 $args = array();
 
@@ -245,16 +240,6 @@ if ( $categs ) {
 //show_category( "מארזי כמות מוזלים", true, $text );
 
 print "<br/>";
-
-//show_category( "פירות אורגניים", false, $text );
-//show_category( "פירות לא אורגניים", false, $text );
-//show_category( "ירקות אורגניים", false, $text );
-//show_category( "עלים אורגניים", false, $text );
-//show_category( "פטריות אורגניות", false, $text );
-//show_category( "זרעי מאכל אורגניים", false, $text );
-//show_category( "פירות יבשים אורגניים", false, $text );
-//show_category( "צמחי מרפא אורגניים", false, $text );
-//show_category( "נבטים אורגניים", false, $text);
 
 if ( ! $text and ! $just_pricelist) {
 	print gui_button( "btn_add_order_2", "add_order(0)", "הוסף הזמנה" );

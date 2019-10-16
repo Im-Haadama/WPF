@@ -1377,14 +1377,14 @@ function handle_supplies_operation($operation)
 
 		case 'save_comment':
 			$comment = $_GET["text"];
-			print $comment . "<br/>";
+//			print $comment . "<br/>";
 			$supply_id = $_GET["id"];
-			print $supply_id . "<br/>";
+//			print $supply_id . "<br/>";
 			$sql = "UPDATE im_supplies SET text = '" . $comment .
 			       "' WHERE id = " . $supply_id;
 
-			mysqli_query( $sql );
-			print $sql;
+			if (sql_query($sql)) print "done";
+
 			break;
 
 		case "add_item":

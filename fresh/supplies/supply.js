@@ -39,7 +39,7 @@ function update_comment() {
     var text = get_value(document.getElementById("comment"));
 
     execute_url("supplies-post.php?operation=save_comment&text=" + encodeURI(text)
-        + "&id=" + get_supply_id(), "update_display()");
+        + "&id=" + get_supply_id(), location_reload);
 }
 
 function updateItems() {

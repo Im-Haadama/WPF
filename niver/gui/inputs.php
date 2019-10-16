@@ -639,8 +639,6 @@ function gui_table_args($input_rows, $id = null, $args = null)
 	}
 	$data = "";
 
-	$debug = GetArg($args, "debug", false);
-
 	// add_checkbox should be used on multiple rows view.
 	$add_checkbox = GetArg($args, "add_checkbox", false);
 	$checkbox_class = GetArg($args, "checkbox_class", null);
@@ -656,13 +654,15 @@ function gui_table_args($input_rows, $id = null, $args = null)
 	$class = GetArg($args, "class", null);
 
 	// Cols - how to name them, whether to show. Which one is the id.
-	$col_ids = GetArg($args, "col_ids", null);
 	$show_cols = GetArg($args, "show_cols", null);
-	// $debug = (1 == get_user_id());
-	if ($debug) var_dump($show_cols);
 
-	$id_field = GetArg($args, "id_field", "id");
-	// print "id_field=$id_field<br/>";
+	$debug = false; // (1 == get_user_id());
+
+	if ($debug) {
+		print "show_cols: <br/>";
+		var_dump($show_cols);
+	}
+
 	if (isset($args["edit_cols"]))
 	{
 		$args["edit_cols"]["id"] = false;
@@ -719,7 +719,7 @@ function gui_table_args($input_rows, $id = null, $args = null)
 				$show = (((!$show_cols) or isset($show_cols[$idx])) // Positive
 					and !(isset($args["hide_cols"]) and isset($args["hide_cols"][$idx]))); // Negative
 
-				// print $key . " " . $row_id . " " . $show . "<br/>";
+				 // if (get_user_id() == 1) print $key . " " . $row_id . " show=" . $show . "<br/>";
 				$data .= gui_cell($cell, $key . "_" . $row_id, $show);
 			}
 				// $data .= "<td>" . $cell . "</td>";

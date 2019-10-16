@@ -803,9 +803,6 @@ function show_category_by_id( $term_id, $sale = false, $text = false, $customer_
 
 	if ( $inventory ) {
 		$header = array( "", "שם מוצר", "מחיר עלות", "כמות במלאי", "תאריך עדכון", "דוח תנועות" ) ;
-//		array_push( $table[0], "מלאי" );
-//		array_push( $table[0], "תאריך עדכון" );
-//		array_push( $table[0], "מוזמנים" );
 	}
 
 	$args = array(
@@ -837,7 +834,6 @@ function show_category_by_id( $term_id, $sale = false, $text = false, $customer_
 		array_push( $table, array($price, $line) );
 	}
 
-//	var_dump($table);
 	sort($table); // Sort by price.
 	for ($i = 0; $i < count($table); $i++)
 	{
@@ -845,6 +841,7 @@ function show_category_by_id( $term_id, $sale = false, $text = false, $customer_
 	}
 	$args = array();
 	$args["show_cols"] = array();
+	$args["prepare"] = false;
 	if (! $regular){
 		$args["show_cols"][3] = false; // Hide quantity price
 	}
@@ -937,6 +934,10 @@ function product_line( $prod_id, $text, $sale, $customer_type, $inv, $term_id, $
 //		array_push( $line, gui_label( "ord_" . $term_id, $p->getOrderedDetails() ) );
 	}
 
+//	if (get_user_id() == 1){
+//	var_dump($line);
+//	die (1);
+//	}
 	return $line;
 }
 
