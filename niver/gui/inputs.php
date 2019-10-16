@@ -814,9 +814,9 @@ function GuiAutoList($id, $list_name, $args)
 	$datalist_id = $id . "_list";
 
 	$data = "<input id=\"" . $id . "\" ";
-//	if ( $selected ) {
-//		$data .= "value = '" . htmlentities($selected_value, ENT_QUOTES) . "' ";
-//	}
+	if ( $value ) {
+		$data .= "value = '" . htmlentities($value, ENT_QUOTES) . "' ";
+	}
 	$data .= "list=\"" . $datalist_id. "\" ";
 
 	if ( $events ) {
@@ -827,10 +827,6 @@ function GuiAutoList($id, $list_name, $args)
 	$data .= '<datalist id="' . $datalist_id . '"></datalist>';
 
 	return $data;
-
-//	return GuiSelectTable($id, )
-	// return GuiInput($id, $value, $args);
-	// return GuiSelectTable($id, $table_name, $args);
 }
 
 function DatalistCreate($args, $table, &$values)
