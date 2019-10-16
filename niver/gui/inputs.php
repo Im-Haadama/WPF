@@ -824,16 +824,19 @@ function GuiSelectTable($id, $table, $args)
 //		print  "ii=" . $include_id . "<br/>";
 		if ( $multiply_choice ) {
 			foreach ( explode( ",", $selected ) as $select_value ) {
-			$data .= gui_select_datalist( $id . '.' . $seq, $table . "_values", $name, $values, $events, $select_value, $include_id, $id_key, $class );
-			$seq ++;
-		}
+				$data .= gui_select_datalist( $id . '.' . $seq, $table . "_values", $name, $values, $events, $select_value, $include_id, $id_key, $class );
+				$seq ++;
+			}
 			// New one
-		} else
-			$data .= gui_select_datalist( $id, $table . "_values", $name, $values, $events, null, $include_id, $id_key, $class );
+			$data .= gui_select_datalist( $id . '.' . $seq, $table . "_values", $name, $values, $events, $select_value, $include_id, $id_key, $class );
+		} else {
+			$data .= gui_select_datalist( $id, $table . "_values", $name, $values, $events, $selected, $include_id, $id_key, $class );
+		}
 
 		return $data;
 
 	} else {
+		// print "selected=$selected<br/>";
 		return gui_select( $id, $name, $values, $events, $selected, $id_key, $class );
 	}
 }

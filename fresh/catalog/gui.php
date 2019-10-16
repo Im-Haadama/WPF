@@ -15,10 +15,12 @@ function gui_select_product( $id, $data = null, $args = null)
 	if (! $args)
 		$args = array();
 
-	if (isset($args["edit"]) and !$args["edit"]) return (($data > 0) ? get_product_name($data) : $data);
+	$product_name = (($data > 0) ? get_product_name($data) : $data);
+	// print "producT_name=$product_name<br/>";
+	if (isset($args["edit"]) and !$args["edit"]) return $product_name;
 	$args["selected"] = $data;
 	$args["name"] = "post_title";
-	$args["selected"] = $data;
+	$args["value"] = $product_name;
 	$args["datalist"] = true;
 	$args["id_key"] = "ID";
 	$args["include_id"] = true;
