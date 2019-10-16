@@ -277,7 +277,13 @@ function PrepareRow($row, $args, $row_id)
 					if (isset($args["field_types"]))
 						$type = $args["field_types"][$key];
 					else
-						$type = sql_type( $table_name, $key );
+						try {
+							$type = sql_type( $table_name, $key );
+						} catch (Exception $e) {
+							print "can't find type for $key<br/>";
+							var_dump($row);
+							return null;
+						}
 					// input_by_type($input_name, $type, $args, $data = null)
 					$value = gui_input_by_type($input_name, $type, $args, $value);
 				} else {
@@ -407,16 +413,13 @@ function TableData($sql, &$args = null)
 		print "m_line: "; var_dump($m_line); print "<br/>";
 	}
 
-
 	if (strstr($sql, "describe") || strstr($sql, "show col")) // New Row
 	{
-
-		// var_dump($field_list);
-
+//		$debug = 1;
 		$new_row = array();
 		if ($debug) print "new<br/>";
 
-		foreach ($field_list as $key)
+		foreach ($field_list as $key => $field)
 		{
 			if ($debug) print "handling $key<br/>";
 			if ($values and isset($values[$key])) {
@@ -458,15 +461,26 @@ function TableData($sql, &$args = null)
 		}
 
 		$fields = GetArg($args, "fields", null);
+//		print "fields:";
+//		var_dump($fields); print "<br/>";
+//		print "new_row:";
+//		var_dump($new_row); print "<br/>";
 
 		if ($fields) // new row field order would be like in database. Reorder it here.
 		{
 			$new_row_ordered = array();
-			foreach ($fields as $field){
-				$new_row_ordered[$field] = $new_row[$field];
+			foreach ($fields as $key => $field){
+//				print "key=$key<br/>";
+				if (! array_key_exists($key, $new_row)) {
+					var_dump($new_row);
+					die("key $key is missing from new_row");
+				}
+				$new_row_ordered[$key] = $new_row[$key];
 			}
 			$new_row = $new_row_ordered;
 		}
+//		print "new_row:<br/>";
+//		var_dump($new_row);
 		$rows_data["new"] = $new_row;
 		// array_push($rows_data, $new_row);
 

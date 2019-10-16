@@ -857,7 +857,7 @@ function DatalistCreate($args, $table, &$values)
  */
 function GuiSelectTable($id, $table, $args)
 {
-	print __FUNCTION__ . "<br/>";
+//	print __FUNCTION__ . "<br/>";
 	$selected = GetArg($args, "selected", null);
 	$events = GetArg($args, "events", null);
 	$more_values = GetArg($args, "more_values", null);
