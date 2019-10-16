@@ -17,12 +17,9 @@ $margin   = false;
 if ( $manager and isset( $_GET["margin"] ) ) {
 	$margin = true;
 }
+
+print header_text(true, true, is_rtl(), array("/niver/gui/client_tools.js", "/fresh/tools.js", "/niver/data/data.js"))
 ?>
-<html dir="rtl" lang="he">
-<head>
-    <meta charset="UTF-8">
-    <script type="text/javascript" src="/niver/gui/client_tools.js"></script>
-    <script type="text/javascript" src="/fresh/tools.js"></script>
     <script>
 
         function save_mission() {

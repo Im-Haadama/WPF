@@ -387,6 +387,6 @@ global $pos;
     </div>
 
 <?php
-print gui_datalist( "products", "im_products", "post_title", true );
+// print gui_datalist( "products", "im_products", "post_title", true );
 
 ?>

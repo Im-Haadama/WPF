@@ -202,7 +202,7 @@ function handle_data_operation($operation)
 		case "auto_list":
 			$prefix = get_param("prefix", true);
 
-			$lists = array("products" => array("table" => "wp_posts", "field_name" =>'post_title', "include_id" => 1));
+			$lists = array("products" => array("table" => "im_products", "field_name" =>'post_title', "include_id" => 1, "id_field" => "ID"));
 			$list = get_param("list", true);
 
 			if (! isset($lists[$list])) die ("no list given");
@@ -210,7 +210,10 @@ function handle_data_operation($operation)
 			$field = $lists[$list]["field_name"];
 			$include_id = $lists[$list]["include_id"];
 
-			print auto_list($table_name, $field, $prefix, $include_id);
+			$args["include_id"] = $lists[$list]["include_id"];
+			$args["id_field"] = $lists[$list]["id_field"];
+
+			print auto_list($table_name, $field, $prefix, $args);
 			break;
 
 		default:
@@ -221,13 +224,18 @@ function handle_data_operation($operation)
 	return;
 }
 
-function auto_list($table_name, $field, $prefix, $include_id)
+//($table_name, $field, $prefix, $args);
+function auto_list($table_name, $field, $prefix, $args = null)
 {
 	$data = "";
 
-	print "field=$field<br/>";
-	$args = [];
-	$args["sql"] = "select id, $field from $table_name where $field like '" . $prefix . "%'";
+	// print "field=$field<br/>";
+	if (!$args) $args = [];
+	$id_field = GetArg($args, "id_field", "id");
+	$include_id = GetArg($args, "include_id", false);
+
+	$args["sql"] = "select $id_field, $field from $table_name where $field like '" . $prefix . "%'";
+//	print $args["sql"] . "<br/>";
 	$args["field"] = $field;
 	$args["include_id"] = $include_id;
 	$data .= GuiDatalist($table_name . "_$prefix", $table_name, $args );

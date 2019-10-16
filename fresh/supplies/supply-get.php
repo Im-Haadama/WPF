@@ -126,7 +126,7 @@ print  "</h1> </center>";
 <div id="supply"></div>
 
 <?php
-print gui_datalist( "products", "im_products", "post_title", true );
+// print gui_datalist( "products", "im_products", "post_title", true );
 
 if ( ! $send ) {
 	print '<div id="buttons">';

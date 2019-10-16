@@ -150,15 +150,15 @@ function search_table(table_name, url = null)
 //     execute_url(request, finish_action);
 // }
 
-function update_list(table_name, obj)
+function update_list(list_name, obj)
 {
-    if (obj.value.length > 2)
-        execute_url("/niver/data/data.php?operation=auto_list&table=" + table_name + "&prefix=" + obj.value, do_update_list(obj));
+    if (obj.value.length >= 2)
+        execute_url("/niver/data/data-post.php?operation=auto_list&list=" + list_name + "&prefix=" + obj.value, do_update_list, obj);
     else
         obj.dataset = null;
 }
 
 function do_update_list(xmlhttp, obj)
 {
-
+    obj.list.innerHTML = xmlhttp.response;
 }

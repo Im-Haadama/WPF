@@ -24,5 +24,6 @@ function gui_select_product( $id, $data = null, $args = null)
 	$args["datalist"] = true;
 	$args["id_key"] = "ID";
 	$args["include_id"] = true;
-	return GuiSelectTable( $id, "im_products", $args);
+	// return GuiSelectTable( $id, "im_products", $args);
+	return GuiAutoList($id, "products", $args);
 }
