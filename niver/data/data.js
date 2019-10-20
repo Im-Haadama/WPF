@@ -25,7 +25,7 @@ function cancel_entity(post_operation, table_name, id)
 }
 
 // If we want to add custom action in the server we can send different post action.
-function save_new_custom(post_operation, table_name, action)
+function data_save_new(post_operation, table_name, action)
 {
     let operation = post_operation;
     if (operation.indexOf('?') === -1) operation+="?dummy=1"; // Make sure this is ?
@@ -48,7 +48,7 @@ function save_new_custom(post_operation, table_name, action)
             let val = get_value_by_name(name);
             operation += "&" + name + "=" + encodeURI(val);
         } else {
-            if (get_value_by_name("mandatory_" + name)) {
+            if (get_value_by_name(name + "_mandatory") === "1") {
                 alert (name + " is mandatory ");
                 return false;
             }
@@ -80,7 +80,7 @@ function action_hide_row(xmlhttp, btn)
 function action_back(xmlhttp)
 {
     if (xmlhttp.response === "done")
-        window.history.back();
+        location.replace(document.referrer);
     else
         alert (xmlhttp.response);
 }
@@ -160,5 +160,9 @@ function update_list(list_name, obj)
 
 function do_update_list(xmlhttp, obj)
 {
+    if (xmlhttp.response.substr(0, 5) === "Error"){
+        alert(xmlhttp.response);
+        return;
+    }
     obj.list.innerHTML = xmlhttp.response;
 }

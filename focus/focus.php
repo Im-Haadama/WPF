@@ -16,101 +16,111 @@ require_once(ROOT_DIR . "/niver/gui/gem.php");
 require_once(ROOT_DIR . "/niver/data/data.php");
 require_once(ROOT_DIR . '/org/gui.php');
 require_once(ROOT_DIR . '/focus/Tasklist.php');
+require_once(ROOT_DIR . '/niver/gui/gem.php');
+require_once(ROOT_DIR . '/org/people/people.php');
 
 
 require_once (ROOT_DIR . '/im-config.php');
 
-function focus_init($script_files = null)
-{
-//	print "uid=" . get_user_id() . "<br/>";
-	// Singleton connection for the application.
-	$debug = 0;
-
-	$conn = get_sql_conn();
-
-	if (! $conn){
-		if ($debug) print "connecting...";
-		if (! defined("DB_HOST")) throw new Exception("DB configuration error = host");
-		if (! defined ("DB_USER")) throw new Exception("DB configuration error = user");
-		if (! defined ("DB_PASSWORD")) throw new Exception("DB configuration error = password");
-		if (! defined ("DB_NAME")) throw new Exception("DB configuration error = name");
-		// print "connecting" . __LINE__ . "<br/>";
-
-		$conn = new mysqli( DB_HOST, DB_USER, DB_PASSWORD, DB_NAME );
-		get_sql_conn($conn);
-		sql_set_time_offset();
-		if (! mysqli_set_charset( $conn, IM_CHARSET )){
-			my_log("encoding setting failed");
-			die("encoding setting failed");
-		}
-		if ($debug) print "done<br/>";
-		// Local and international staff...
-		// Todo: get it from user profile
-		date_default_timezone_set( "Asia/Jerusalem" );
-		sql_query("SET collation_connection = utf8_general_ci");
-
-		if ($debug) print "loading translation<br/>";
-		$locale = get_locale();
-		if ($locale !== 'en_US') {
-			$mofile = ROOT_DIR . '/wp-content/languages/plugins/im_haadama-' . $locale . '.mo';
-			if (! load_textdomain('im-haadama', $mofile))
-				print "load translation failed . $locale";
-		}
-		$style_file = "tools/im.css";
-		if ($debug) print "loading styles $style_file";
-		if (file_exists($style_file)) print load_style($style_file);
-		else if ($debug) print "style not found.";
-
-		// $admin_scripts = array( "/niver/gui/client_tools.js", "/niver/data/data.js");
-	}
-
-	if ($script_files)
-		print load_scripts( $script_files );
-
-	if ($debug){
-		print "getting...<Br/>";
-		$c = get_sql_conn();
-		var_dump($c);
-	}
-	return $conn;
-}
+//function focus_init($script_files = null)
+//{
+////	print "uid=" . get_user_id() . "<br/>";
+//	// Singleton connection for the application.
+//	$debug = 0;
+//
+//	$conn = get_sql_conn();
+//
+//	if (! $conn){
+//		if ($debug) print "connecting...";
+//		if (! defined("DB_HOST")) throw new Exception("DB configuration error = host");
+//		if (! defined ("DB_USER")) throw new Exception("DB configuration error = user");
+//		if (! defined ("DB_PASSWORD")) throw new Exception("DB configuration error = password");
+//		if (! defined ("DB_NAME")) throw new Exception("DB configuration error = name");
+//		// print "connecting" . __LINE__ . "<br/>";
+//
+//		$conn = new mysqli( DB_HOST, DB_USER, DB_PASSWORD, DB_NAME );
+//		get_sql_conn($conn);
+//		sql_set_time_offset();
+//		if (! mysqli_set_charset( $conn, IM_CHARSET )){
+//			my_log("encoding setting failed");
+//			die("encoding setting failed");
+//		}
+//		if ($debug) print "done<br/>";
+//		// Local and international staff...
+//		// Todo: get it from user profile
+//		date_default_timezone_set( "Asia/Jerusalem" );
+//		sql_query("SET collation_connection = utf8_general_ci");
+//
+//		if ($debug) print "loading translation<br/>";
+//		$locale = get_locale();
+//		if ($locale !== 'en_US') {
+//			$mofile = ROOT_DIR . '/wp-content/languages/plugins/im_haadama-' . $locale . '.mo';
+//			if (! load_textdomain('im-haadama', $mofile))
+//				print "load translation failed . $locale";
+//		}
+//		$style_file = "tools/im.css";
+//		if ($debug) print "loading styles $style_file";
+//		if (file_exists($style_file)) print load_style($style_file);
+//		else if ($debug) print "style not found.";
+//
+//		// $admin_scripts = array( "/niver/gui/client_tools.js", "/niver/data/data.js");
+//	}
+//
+//	if ($script_files)
+//		print load_scripts( $script_files );
+//
+//	if ($debug){
+//		print "getting...<Br/>";
+//		$c = get_sql_conn();
+//		var_dump($c);
+//	}
+//	return $conn;
+//}
 
 function focus_new_task()
 {
-	$debug = 0;
-	if (! focus_check_user())
-		return;
-	// print im_translate("Project"). " " . im_translate("Good morning") . _("Hello") . $locale;
+	if (! focus_check_user()) return;
 	$args = array();
-	$args["selectors"] = array("project_id" =>  "gui_select_project", "owner" => "gui_select_worker", "creator" => "gui_select_worker", "preq" => "gui_select_task");
-	if (function_exists("gui_select_mission"))
-		$args["selectors"]["mission_id"] = "gui_select_mission";
-	// $args["transpose"] = true;
+	$args["selectors"] = array("project_id" =>  "gui_select_project",
+	                           "owner" => "gui_select_worker",
+	                           "creator" => "gui_select_worker",
+	                           "preq" => "gui_select_task",
+							   "team" => "gui_select_team"	);
 	$args["values"] = array("owner" => get_user_id(), "creator" => get_user_id());
-	// $args["debug"] = true;
 	$args["header"] = true;
-	$args["header_fields"] = array("Start after", "Task description", "Project", "Mission", "Location name", "Priority",
-		"Prerequisite", "Creator", "Assigned to");
+	$args["header_fields"] = array("date"=>"Start after",
+	                               "task_description" => "Task description",
+	                               "project_id" => "Project",
+	                               "location_name" => "Location name",
+	                               "priority" => "Priority",
+	                               "preq" => "Prerequisite",
+	                               "creator" => "Creator");
+	$args["mandatory_fields"] = array("project_id", "priority", "team", "task_description") ;
 
-	$args["fields"] = array("date", "task_description", "project_id", "mission_id", "location_name", "priority", "preq", "creator", "owner");
+	$args["fields"] = array("task_description", "project_id", "location_name", "priority", "date", "preq", "creator", "team");
+	$args['post_file'] = "/focus/focus-post.php";
+
+	// TODO: if missions are available:
+	if (0 and function_exists("gui_select_mission"))
+	{
+		$args["selectors"]["mission_id"] = "gui_select_mission";
+		$args["header_fields"]["mission_id"] = "Mission";
+		array_push($args["fields"], "mission_id");
+	}
 
 	$args["worker"] = get_user_id();
 	$args["companies"] = sql_query_single_scalar("select company_id from im_working where user_id = " . get_user_id());
-	$args["hide_cols"] = array("creator" => 0);
+	$args["hide_cols"] = array("creator" => 1);
 
-	// $args["debug"] = (get_current_user() == 369);
-	$allowed_actions = array();
-
-	if (count($allowed_actions)) $args["actions"] = $allowed_actions;
-	// $args["actions"] = array();"project_id" => "add");
-	try {
-		if ($debug) { print "<br/>" . __FUNCTION__. ": "; var_dump(GetArg($args, "fields", null)); print "<br/>"; }
-		print NewRow( "im_tasklist", $args );
-	} catch ( Exception $e ) {
-		print $e->getMessage();
-		return;
-	}
-	print gui_button("btn_newtask", "save_new_custom('/focus/focus-post.php', 'im_tasklist', show_project)", "צור");
+	print GemAddRow("im_tasklist", "New task", $args);
+//	try {
+//		if ($debug) { print "<br/>" . __FUNCTION__. ": "; var_dump(GetArg($args, "fields", null)); print "<br/>"; }
+//		print NewRow( "im_tasklist", $args );
+//	} catch ( Exception $e ) {
+//		print $e->getMessage();
+//		return;
+//	}
+//	print gui_button("btn_newtask", "data_save_new('/focus/focus-post.php', 'im_tasklist', show_project)", "צור");
 }
 
 function focus_check_user()
@@ -131,12 +141,10 @@ function focus_check_user()
 //	}
 //	print "worker id: " . $worker_id . "<br/>";
 
-	$sql = "select company_id from im_working where user_id = " . get_user_id();
-	$company_id = sql_query_single_scalar($sql);
-
-	// print "company id: " . $company_id . "<br/>";
-
-	if (! $company_id){
+	// Check if user has company
+	$user_id = get_user_id();
+	$company_ids = worker_get_companies($user_id);
+	if (! count($company_ids)){
 		print "Ne need some information to get started!<br/>";
 		$args = array("values" => array("admin" => get_user_id()));
 		try {
@@ -147,10 +155,22 @@ function focus_check_user()
 			return false;
 		}
 
-		print gui_button( "btn_add", "save_new_custom('/focus/focus-post.php?operation=new_company_user', 'im_company', location_reload)", "Add" );
+		print gui_button( "btn_add", "data_save_new('/focus/focus-post.php?operation=new_company_user', 'im_company', location_reload)", "Add" );
 
 		// print gui_input("company", )
 		return false;
+	}
+
+	// Check if user has team.
+	$team_ids = team_all_members($user_id);
+//	var_dump($team_ids);
+	if (! count($team_ids)){
+		team_add($user_id, "Personal team");
+	}
+
+	$project_ids = worker_get_projects($user_id);
+	if (! count($project_ids)) {
+		project_create($user_id, im_translate("first project"), $company_ids[0]);
 	}
 	return true;
 }
@@ -213,7 +233,7 @@ function handle_focus_operation($operation)
 			$args["companies"] = worker_get_companies(get_user_id());
 			$args["values"] = array("owner" => get_user_id(), "creator" => get_user_id());
 			print NewRow("im_task_templates", $args);
-			print gui_button("btn_template", "save_new_custom('/focus/focus-post.php', 'im_task_templates')", "add");
+			print gui_button("btn_template", "data_save_new('/focus/focus-post.php', 'im_task_templates')", "add");
 			break;
 
 		case "edit_staff":
@@ -284,26 +304,31 @@ function handle_focus_operation($operation)
 
 		case "start_task":
 			$task_id = get_param( "id" );
-			task_started($task_id);
+			if (task_started($task_id, get_user_id()) != true){
+				print "started";
+				return;
+			};
 			// Started task...
 			// If the was query we want to show the result.
 			// And the move to the task_url if exists.
-			if ($query = task_query($task_id))
-			{
-//				print im_file_get_html($query);
-				$url = task_url($task_id);
-				print '<script language="javascript">';
-				print "window.location.href = '" . $url . "'";
-				print '</script>';
-				return;
-			}
+//			if ($query = task_query($task_id))
+//			{
+////				print im_file_get_html($query);
+//				$url = task_url($task_id);
+//				if (strlen($url)) {
+//					print '<script language="javascript">';
+//					print "window.location.href = '" . $url . "'";
+//					print '</script>';
+//				}
+//				return;
+//			}
 			$url = task_url($task_id);
 			if ( strlen( $url ) > 1 ) // print $url;
 			{
 				header( "Location: " . $url );
-			} else {
-				redirect_back();
+				return;
 			}
+			print "done";
 			break;
 
 		case "end_task":
@@ -336,7 +361,7 @@ function handle_focus_operation($operation)
 			if (! in_array($table_name, $allowed_tables))
 				die ("invalid table operation");
 			$result = data_save_new($table_name);
-			print $result;
+			if ($result > 0) print "done";
 			break;
 
 		case "update":
@@ -431,7 +456,6 @@ function show_templates($url,  $template_id = 0 ) {
 	$args["drill"] = true;
 	$args["edit"] = false;
 
-
 	$table = GuiTableContent( "projects", $sql, $args );
 
 	print $table;
@@ -446,35 +470,24 @@ function show_task($row_id, $edit = 1)
 	$table_name = "im_tasklist";
 	$entity_name = "task";
 
-	print gui_header( 1, $entity_name . " " . $row_id );
+	// print gui_header( 1, $entity_name . " " . $row_id );
 	$args                 = array();
 	$args["edit"]         = $edit;
 	$args["selectors"] = array("project_id" =>  "gui_select_project", "owner" => "gui_select_worker", "creator" => "gui_select_worker", "preq" => "gui_select_task",
 	                           "mission_id" => "gui_select_mission");
+	$args["title"] = $entity_name;
 
-	$args["header_fields"] = array("Id", "Date", "Task description", "Repeating task", "Status", "Started", "Ended", "Project", "Mission", "Location", "Address", "Priority", "Prerequisite", "Assigned to",
-		"Creator", "Task type");
+	//"id" => "Id",
+	$args["header_fields"] = array( "date" => "Date", "task_description" => "Task description", "task_template" =>"Repeating task",
+		"status" => "Status", "started" => "Started", "ended" => "Ended", "project_id" => "Project", "location_name" => "Location",
+		"location_address" => "Address", "priority" => "Priority", "preq" => "Prerequisite", "owner" => "Assigned to",
+		"creator" => "Creator", "task_type" => "Task type", "mission_id" => "Mission");
 
-//	 $args["fields"] = array("id", "task_description");
-//
 	$args["worker"] = get_user_id();
 	$args["companies"] = worker_get_companies(get_user_id());
 	$args["debug"] = 0; // get_user_id() == 1;
 
-// 	print "d=" . $args["debug"] . " " . get_current_user();
-//	$project_id = sql_query_single_scalar("select project_id from im_tasklist where id = " .$row_id);
-//	if ($project_id > 0)
-//		$args["where"] = " project_id = " . $project_id;
-
-	try {
-		$task_table = GuiRowContent( $table_name, $row_id, $args );
-		// print "<br/>" . str_replace("<", "$", $task_table) . "<br/>";
-		print $task_table;
-	} catch ( Exception $e ) {
-		print "Error: " . $e->getMessage();
-		return;
-	}
-	print gui_button( "btn_save", "save_entity('focus-post.php', '$table_name', " . $row_id . ')', "שמור" );
+	print GemElement($table_name, $row_id, $args);
 
 	return;
 }
@@ -525,7 +538,7 @@ function active_tasks($args = null, $debug = false, $time = false)
 {
 	$table_name = "im_tasklist";
 
-	$action_url = "focus-post.php";
+	$action_url = "/focus/focus-post.php";
 	$page_url = get_url(true);
 
 	$last_entered = GetArg($args, "last_entered", null);
@@ -570,7 +583,7 @@ function active_tasks($args = null, $debug = false, $time = false)
 
 	// New... the first part is action to server. If it replies with done, the second part is executed in the client (usually hiding the row).
 	$actions = array(
-		array( "start", $action_url . "?operation=start_task&id=%s" ),
+		array( "start", $action_url . "?operation=start_task&id=%s;location_reload" ),
 		array( "finished", $action_url . "?operation=end_task&id=%s;action_hide_row" ),
 		array( "cancel", $action_url . "?operation=cancel_task&id=%s;action_hide_row" ),
 		array( "postpone", $action_url . "?operation=postpone_task&id=%s;action_hide_row" )
@@ -588,7 +601,8 @@ function active_tasks($args = null, $debug = false, $time = false)
 	$args["actions"]  = $actions;
 	$args["id_field"] = "id";
 	$args["edit"] = false;
-	$args["header_fields"] = array("Id", "Task description", "Repeating task id", "Project Id", "Priority", "Start", "Finished", "Cancel", "Postpone");
+	$args["header_fields"] = array("task_description" => "Task description", "task_template" => "Repeating task id", "project_id" => "Project Id", "id" => "Id",
+		"priority" => "Priority", "start" => "Start", "finish" => "Finished", "cancel" => "Cancel", "postpone" => "Postpone");
 
 	$more_fields = "";
 

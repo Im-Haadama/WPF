@@ -103,50 +103,6 @@ switch ( $operation ) {
 //		var url = "delivery-post.php?site_id=" + site + "&type=" + type +
 //		          "&id=" + id + "&operation=delivered";
 
-	case "delivered":
-		if ( $debug ) {
-			print "start<br/>";
-		}
-		$site_id = get_param( "site_id" );
-		$type    = get_param( "type" );
-		$id      = get_param( "id" );
-		if ( $site_id != ImMultiSite::LocalSiteID() ) {
-			if ( $debug ) {
-				print "remote.. ";
-			}
-			$request = "delivery/delivery-post.php?site_id=" . $site_id .
-			           "&type=" . $type . "&id=" . $id . "&operation=delivered";
-			if ( $debug ) {
-				$request .= "&debug=1";
-				print $request;
-			}
-			print ImMultiSite::sExecute( $request, $site_id, $debug );
-
-			return;
-		}
-		// Running local. Let's do it.
-		// print "type=" . $type . "<br/>";
-		switch ( $type ) {
-			case "orders":
-				$o = new Order( $id );
-				$message = "";
-				if ( ! $o->delivered($message) )
-					print $message;
-				 else
-					print "delivered";
-
-				break;
-			case "tasklist":
-				$t = new Tasklist( $id );
-				$t->Ended();
-				print "delivered";
-				break;
-			case "supplies":
-				$s = new Supply( $id );
-				$s->picked();
-				print "delivered";
-				break;
-		}
 }
 
 

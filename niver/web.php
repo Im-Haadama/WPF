@@ -8,28 +8,35 @@
 
 function get_url($only_base = false)
 {
-	$url = $_SERVER['REQUEST_URI'];
-	if ($only_base)
-	{
-		$r = parse_url($url, PHP_URL_PATH);
-		if (! $r) return "error";
+	if (isset($_SERVER['REQUEST_URI'])) {
+		$url = $_SERVER['REQUEST_URI'];
+		if ( $only_base ) {
+			$r = parse_url( $url, PHP_URL_PATH );
+			if ( ! $r ) {
+				return "error";
+			}
 
-		return $r;
+			return $r;
+		}
+
+		return $url;
 	}
-
-	return $url;
+	return "unknown";
 }
 
 /**
  * @param $url
  * @param $param_name
- * @param mixed ...$param_value
+ * @param $param_value
+ *
+ * Usage add_param_to_url($url, $param, $value) or ($url, array(param1 => value1, param2 => value2 ...)
  *
  * @return string|null
  */
-function add_param_to_url($url, $param_name, ...$param_value)
+function add_param_to_url($url, $param_name, $param_value = null)
 {
 	$query_parts = [];
+	if (!$param_value and ! is_array($param_name)) die ("bad usage");
 	if ($s = strpos($url,'?')) { // Have previous query
 		// Remove url part
 		$result = substr($url, 0, $s); // not including the ?
@@ -53,16 +60,20 @@ function add_param_to_url($url, $param_name, ...$param_value)
 //		print "is array<br/>";
 		$result = null;
 		foreach ($param_name as $key => $value){
-			$query_parts[$key] = $param_value;
+			$query_parts[$key] = $value;
 		}
 	} else {
-		$query_parts[$param_name] = $param_value[0];
+		$query_parts[$param_name] = $param_value;
 	}
+	// var_dump($query_parts);
 
 	// Build the url
-	$result .= "?";
-	foreach ($query_parts as $param => $value)
-		$result .= $param . '=' . $value;
+	$glue = '?';
+	// $result .= "?";
+	foreach ($query_parts as $param => $value) {
+		$result .=  $glue . $param . '=' . $value;
+		$glue = "&";
+	}
 
 //	var_dump($query_parts);
 	return $result;
@@ -75,14 +86,7 @@ function add_param_to_url($url, $param_name, ...$param_value)
  *
  * @return string|null
  */
-function add_to_url($param_name, ...$param_value)
+function add_to_url($param_name, $param_value = null)
 {
-//	print "start<br/>";
-//	var_dump($param_name); print "<br/>";
-//	var_dump($param_value); print "<br/>";
-	$url = get_url();
-
-	if (isset($param_value[0]))
-		return add_param_to_url($url, $param_name, $param_value[0]);
-
+	return add_param_to_url(get_url(), $param_name, $param_value);
 }

@@ -3,6 +3,7 @@
 require_once(ROOT_DIR . "/niver/data/dom.php");
 require_once(ROOT_DIR . "/fresh/orders/Order.php");
 require_once (ROOT_DIR . "/fresh/suppliers/Supplier.php");
+require_once(ROOT_DIR . "/focus/Tasklist.php");
 
 function handle_routes_operation($operation, $debug = false) {
 	if ( $debug ) {
@@ -29,10 +30,11 @@ function handle_routes_operation($operation, $debug = false) {
             $mission = get_param("id", true);
             $point = get_param("point", true);
             $preq = get_param("preq", true);
+            $key = "mission_preq_" . $mission . "." . $point;
             if ($preq == "select")
-                info_update(key, null);
+                info_update($key, null);
             else
-                info_update("mission_preq_" . $mission . "." . $point, $preq);
+                info_update($key, $preq);
             print "done";
             break;
 
@@ -51,6 +53,14 @@ function handle_routes_operation($operation, $debug = false) {
             $m->setStartAddress($start_point);
             print show_route($id, true);  // in update don't show header (logo, time, etc);
             break;
+
+		case "delivered":
+			$site_id = get_param( "site_id" );
+			$type    = get_param( "type" );
+			$id      = get_param( "id" );
+			if (delivered($site_id, $type, $id, $debug))
+			    print "delivered";
+			break;
 
         default:
             die ("operation $operation not handled");
@@ -107,6 +117,48 @@ function do_show_missions($missions)
 
 //print gui_hyperlink( "שבוע קודם", "get-driver-multi.php?week=" . date( 'Y-m-d', strtotime( $week . " -1 week" ) ) );
 
+function delivered($site_id, $type, $id, $debug = false)
+{
+    if ( $debug ) {
+        print "start<br/>";
+    }
+    if ( $site_id != ImMultiSite::LocalSiteID() ) {
+        if ( $debug ) {
+            print "remote.. ";
+        }
+        $request = "delivery/delivery-post.php?site_id=" . $site_id .
+                   "&type=" . $type . "&id=" . $id . "&operation=delivered";
+        if ( $debug ) {
+            $request .= "&debug=1";
+            print $request;
+        }
+        if (ImMultiSite::sExecute( $request, $site_id, $debug ) == "done")  return true;
+        return false;
+    }
+    // Running local. Let's do it.
+    // print "type=" . $type . "<br/>";
+    switch ( $type ) {
+        case "orders":
+            $o = new Order( $id );
+            $message = "";
+            if ( ! $o->delivered($message) )
+                print $message;
+            else
+                return true;
+            break;
+        case "tasklist":
+            $t = new Tasklist( $id );
+            $t->Ended();
+            return true;
+            break;
+        case "supplies":
+            $s = new Supply( $id );
+            $s->picked();
+            return true;
+            break;
+    }
+    return false;
+}
 
 ?>
 <?php
@@ -248,7 +300,7 @@ function show_route($missions, $update = false, $debug = false, $missing = false
 //		$data .= $header;
 
         $data .= "<table>";
-        $data .= gui_hyperlink("Edit route", get_url() . '&edit_route=1');
+        $data .= gui_hyperlink("Edit route", add_to_url(array("edit_route" => 1, "id" => $mission_id)));
         $data .= gui_list( "באחריות הנהג להעמיס את הרכב ולסמן את מספר האריזות והאם יש קירור." );
         $data .= gui_list( "אם יש ללקוח מוצרים קפואים או בקירור, יש לבדוק זמינות לקבלת המסלול (לעדכן את יעקב)." );
         $data .= gui_list( "יש לוודא שכל המשלוחים הועמסו." );
@@ -508,6 +560,7 @@ function print_supply( $id ) {
 function print_task( $id ) {
 	$fields = array();
 	array_push( $fields, "משימות" );
+	$m = ImMultiSite::getInstance();
 
 	$ref = gui_hyperlink( $id, $m->LocalSiteTools() . "/focus/focus-page.php?row_id=" . $id );
 
@@ -633,8 +686,11 @@ function collect_points($data_lines, $mission_id, &$prerequisite, &$supplies_to_
 	$mission = new Mission($mission_id);
 
 	for ( $i = 0; $i < count( $data_lines[ $mission_id ] ); $i ++ ) {
+	    print "<br/>";
+
 		$stop_point = $data_lines[ $mission_id ][ $i ][0];
-//			print "sp=" . $stop_point ."<br/>";
+
+		// print "<br/>sp=" . $stop_point; var_dump($prerequisite);
 		$dom        = im_str_get_html( $data_lines[ $mission_id ][ $i ][1] );
 		$row        = $dom->find( 'tr' );
 		$site       = table_get_text( $row[0], 0 );
@@ -645,6 +701,7 @@ function collect_points($data_lines, $mission_id, &$prerequisite, &$supplies_to_
 
 		// Deliveries created in other place
 		if ( $site != "משימות" and $site != "supplies" and $pickup_address != $mission->getStartAddress() ) {
+		    print "adding $pickup_address<br/>";
 			$prerequisite[$stop_point] = $pickup_address;
 			// Add Pickup
 			add_stop_point( $stop_points, $pickup_address );
@@ -667,7 +724,11 @@ function collect_points($data_lines, $mission_id, &$prerequisite, &$supplies_to_
 		// print "stop point: " . $stop_point . "<br/>";
 
 		add_stop_point($stop_points, $stop_point );
-		if (! isset($prerequisite[$stop_point])) $prerequisite[$stop_point] = info_get("mission_preq_" . $mission_id . "." . $stop_point, false, null);
+		if (! isset($prerequisite[$stop_point])) {
+			$p = info_get("mission_preq_" . $mission_id . "." . $stop_point, false, null);
+			// print "adding $p<br/>";
+		    if (strlen($p)) $prerequisite[$stop_point] = $p;
+		}
 
 		//		array_push( $stop_points, $stop_point );
 		add_line_per_station($lines_per_station, $mission->getStartAddress(), $stop_point, $data_lines[ $mission_id ][ $i ][1], $order_id );

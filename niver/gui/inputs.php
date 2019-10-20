@@ -750,26 +750,32 @@ function gui_table_args($input_rows, $id = null, $args = null)
 	if ( $style ) $data .= "<style>" . $style . "</style>";
 	if (is_array($rows) and $transpose) $rows = array_transpose($rows);
 
-	foreach ($rows as $row_id => $row)
+//	print "t=$transpose<br/>";
+//	print "hide cols: " ; var_dump($args["hide_cols"]); print "<br/>";
+//	print "hide rows: "; var_dump($args["hide_rows"]); print "<br/>";
+	foreach ($rows as $line_id => $line)
 	{
 		$data .="<tr>";
-		if (is_array($row)) {
-			if ($add_checkbox and $row_id != "acc") {
-				$data .= "<td>" . gui_checkbox("chk_" . $row_id, $checkbox_class, 0,
-						($row_id === "header") ? $e = 'onchange="select_all_toggle(this, \'' . $checkbox_class . '\')"' : $checkbox_events);
-			}
-			foreach ($row as $key => $cell){
-				$idx = ($transpose ? $row_id : $key);
-//					print "idx=$idx $show_cols h=" . isset($args["hide_cols"]) . " hidx=" . isset($args["hide_cols"][$idx]);
-				$show = (((!$show_cols) or isset($show_cols[$idx])) // Positive
-				         and !(isset($args["hide_cols"]) and isset($args["hide_cols"][$idx]))); // Negative
+		if (is_array($line)) {
+			$add_checkbox_line = $add_checkbox;
+			foreach ($line as $cell_id => $cell){
+				$field = ($transpose ? $line_id : $cell_id); // print "field: $field ";
+				$row_id = ($transpose ? $cell_id : $line_id); // print "row: $row_id<br/>";
 
-				// print $key . " " . $row_id . " " . $show . "<br/>";
-				$data .= gui_cell($cell, $key . "_" . $row_id, $show);
+				if ($add_checkbox_line and $row_id != "acc") {
+					$data .= "<td>" . gui_checkbox("chk_" . $row_id, $checkbox_class, 0,
+							($row_id === "header") ? $e = 'onchange="select_all_toggle(this, \'' . $checkbox_class . '\')"' : $checkbox_events);
+				}
+				$show =  ((((!$show_cols) or isset($show_cols[$field])) // Positive
+				         and !(isset($args["hide_cols"]) and isset($args["hide_cols"][$field])))  // Negative
+				         and (! isset($args["hide_rows"][$row_id])));
+
+				// print "f=$field r=$row_id $show is=" . ! isset($args["hide_rows"][$row_id]) . "<br/>";
+				$data .= gui_cell($cell, $field . "_" . $row_id, $show);
 			}
 			// $data .= "<td>" . $cell . "</td>";
 		} else
-			$data .= "<td>" . $row . "</td>";
+			$data .= "<td>" . $line . "</td>";
 
 		$data .= "</tr>";
 	}
@@ -832,7 +838,8 @@ function GuiAutoList($id, $list_name, $args)
 function DatalistCreate($args, $table, &$values)
 {
 	$where = GetArg($args, "where", null);
-	$id_key = GetArg($args, "id_key", null);
+	$id_key = GetArg($args, "id_key", "id");
+
 	$order_by = GetArg($args, "order_by", null);
 	$name = GetArg($args, "name", "name");
 
@@ -864,7 +871,7 @@ function GuiSelectTable($id, $table, $args)
 	$name = GetArg($args, "name", "name");
 	$include_id = GetArg($args, "include_id", false);
 	$datalist = GetArg($args, "datalist", false);
-	$id_key = GetArg($args, "id_key", "id_key");
+	$id_key = GetArg($args, "id_key", "id");
 	$class = GetArg($args, "class", null);
 	$length_limit = GetArg($args, "length_limit", 30);
 	$multiply_choice = GetArg($args, "multiply_choice", false);
@@ -873,22 +880,13 @@ function GuiSelectTable($id, $table, $args)
 	$values = array();
 
 	if ($autocomplete_letters) {
+		// print "auto";
 		return GuiInput($id, null, $args);
 	}
-//	if (! $autocomplete_letters) {
-//		if ( $more_values ) foreach ( $more_values as $value ) array_push( $values, substr($value, $length_limit) );
-//		DatalistCreate($args, $table, $values);
-//		if (! count($values)) return "no values";
-//	} else {
-//		$values = [];
-//	}
-
-	// var_dump($values);
 
 	if ( $datalist ) {
 		$data = "";
 		$seq  = 0;
-//		print  "ii=" . $include_id . "<br/>";
 		if ( $multiply_choice ) {
 			foreach ( explode( ",", $selected ) as $select_value ) {
 				$data .= gui_select_datalist( $id . '.' . $seq, $table . "_values", $name, $values, $events, $select_value, $include_id, $id_key, $class );
@@ -901,6 +899,7 @@ function GuiSelectTable($id, $table, $args)
 		return $data;
 
 	} else {
+		DatalistCreate($args, $table, $values);
 		return gui_select( $id, $name, $values, $events, $selected, $id_key, $class );
 	}
 }

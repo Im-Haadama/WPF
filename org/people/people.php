@@ -379,6 +379,19 @@ function project_name( $id ) {
 	return sql_query_single_scalar( $sql );
 }
 
+function project_create($user_id, $project_name, $company, $project_contact = "set later", $project_priority = 5)
+{
+	sql_query("insert into im_projects (project_name, project_contact, project_priority) values (" . quote_text($project_name) .
+	"," . quote_text($project_contact) . "," . $project_priority . ")");
+
+	$project_id = sql_insert_id();
+	
+	sql_query ("insert into im_working (user_id, project_id, company_id, rate, report, volunteer, is_active) values " .
+	" (" . $user_id . "," . $project_id . ", " . $company . ", 0, 1, 1, 1) ");
+
+	return $project_id;
+}
+
 function add_activity( $user_id, $date, $start, $end, $project_id, $vol = true, $traveling = 0, $extra_text = "", $extra = 0 ) {
 	my_log( "add_activity", __FILE__ );
 	$result = people_add_activity( $user_id, $date, $start, $end, $project_id, $traveling, $extra_text, $extra );

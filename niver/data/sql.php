@@ -14,12 +14,20 @@ if ( ! function_exists( "my_log" ) ) {
 $meta_table_info = array();
 $meta_table_info["wp_usermeta"] = array("id" => "user_id", "key" => "meta_key", "value" => "meta_value");
 
+/**
+ * @return int|string
+ */
 function sql_insert_id() {
 	$conn = get_sql_conn();
 
 	return mysqli_insert_id( $conn );
 }
 
+/**
+ * @param null $new_conn
+ *
+ * @return null
+ */
 function get_sql_conn($new_conn = null)
 {
 	static $conn;
@@ -62,6 +70,13 @@ function get_sql_conn($new_conn = null)
 //	return "none";
 //
 //}
+/**
+ * @param $table
+ * @param $field
+ *
+ * @return mixed|string
+ * @throws Exception
+ */
 function sql_type( $table, $field ) {
 	global $meta_table_info;
 
@@ -99,6 +114,11 @@ function sql_type( $table, $field ) {
 	return $type_cache[ $table ][ $field ];
 }
 
+/**
+ * @param $sql
+ *
+ * @return bool
+ */
 function sql_prepare($sql)
 {
 	if (! $sql)
@@ -112,6 +132,14 @@ function sql_prepare($sql)
 	die(1);
 }
 
+/**
+ * @param $table_name
+ * @param $stmt
+ * @param $_values
+ *
+ * @return bool
+ * @throws Exception
+ */
 function sql_bind($table_name, &$stmt, $_values)
 {
 //	print "table: $table_name<br/>";
@@ -182,6 +210,12 @@ function sql_bind($table_name, &$stmt, $_values)
 	return true;
 }
 
+/**
+ * @param $sql
+ * @param bool $report_error
+ *
+ * @return bool|mysqli_result|null
+ */
 function sql_query( $sql, $report_error = true ) {
 	try {
 		$conn = get_sql_conn();
@@ -210,6 +244,12 @@ function sql_query( $sql, $report_error = true ) {
 	return null;
 }
 
+/**
+ * @param $sql
+ * @param bool $header
+ *
+ * @return array|string
+ */
 function sql_query_array( $sql, $header = false ) {
 	$result = sql_query( $sql );
 	if ( ! $result ) {
@@ -234,6 +274,12 @@ function sql_query_array( $sql, $header = false ) {
 }
 
 // Good for sql that return just one value
+/**
+ * @param $sql
+ * @param bool $report_error
+ *
+ * @return string
+ */
 function sql_query_single_scalar( $sql, $report_error = true ) {
 	$result = sql_query( $sql, $report_error );
 	if ( ! $result ) {
@@ -256,6 +302,11 @@ function sql_query_single_scalar( $sql, $report_error = true ) {
 	return $arr[0];
 }
 
+/**
+ * @param $table
+ *
+ * @return bool
+ */
 function table_exists( $table ) {
 	$sql = 'SELECT 1 FROM ' . $table . ' LIMIT 1';
 //	print $sql;
@@ -265,12 +316,20 @@ function table_exists( $table ) {
 //	return $result == 1;
 }
 
+/**
+ * @param $string
+ *
+ * @return string
+ */
 function escape_string( $string ) {
 	$conn = get_sql_conn();
 
 	return mysqli_real_escape_string( $conn, $string );
 }
 
+/**
+ * @return int
+ */
 function sql_affected_rows()
 {
 	$conn = get_sql_conn();
@@ -278,13 +337,19 @@ function sql_affected_rows()
 	return mysqli_affected_rows($conn);
 }
 // Good for sql that returns array of one value
+/**
+ * @param $sql
+ *
+ * @return array
+ * @throws Exception
+ */
 function sql_query_array_scalar( $sql ) {
 	$arr    = array();
 	$result = sql_query( $sql );
 	if ( ! $result ) {
 		sql_error( $sql );
 
-		return "Error";
+		throw new Exception("cant fetch");
 	}
 	while ( $row = mysqli_fetch_row( $result ) ) {
 		array_push( $arr, $row[0] );
@@ -294,6 +359,11 @@ function sql_query_array_scalar( $sql ) {
 }
 
 // Good fom sql that returns one record (an array is returned)
+/**
+ * @param $sql
+ *
+ * @return array|null
+ */
 function sql_query_single( $sql ) {
 	$result = sql_query( $sql );
 	if ( $result ) {
@@ -304,6 +374,11 @@ function sql_query_single( $sql ) {
 	return null;
 }
 
+/**
+ * @param $sql
+ *
+ * @return string[]|null
+ */
 function sql_query_single_assoc( $sql ) {
 	$result = sql_query( $sql );
 	if ( $result ) {
@@ -314,6 +389,9 @@ function sql_query_single_assoc( $sql ) {
 	return null;
 }
 
+/**
+ * @return string
+ */
 function sql_trace()
 {
 	$result = "";
@@ -328,6 +406,9 @@ function sql_trace()
 	return $result;
 }
 
+/**
+ * @param $sql
+ */
 function sql_error( $sql ) {
 	try {
 		$conn = get_sql_conn();
@@ -347,6 +428,11 @@ function sql_error( $sql ) {
 	print "<div style=\"direction: ltr;\">" . $message . "</div>";
 }
 
+/**
+ * @param $result
+ *
+ * @return array|null
+ */
 function sql_fetch_row( $result ) {
 	if ($result)
 		return mysqli_fetch_row( $result );
@@ -354,12 +440,21 @@ function sql_fetch_row( $result ) {
 		return null;
 }
 
+/**
+ * @param $result
+ *
+ * @return string[]|null
+ */
 function sql_fetch_assoc( $result ) {
 	if ($result) return mysqli_fetch_assoc( $result );
 	return null;
 }
 
 
+/**
+ * @param $query
+ * @param $p
+ */
 function add_query( &$query, $p ) {
 	if ( ! $query ) {
 		$query = "Where ";
@@ -369,6 +464,9 @@ function add_query( &$query, $p ) {
 	$query .= $p;
 }
 
+/**
+ * @throws Exception
+ */
 function sql_set_time_offset()
 {
 	$now = new DateTime();
@@ -384,6 +482,11 @@ function sql_set_time_offset()
 	sql_query("SET time_zone='$offset';");
 }
 
+/**
+ * @param $table_name
+ *
+ * @return string
+ */
 function sql_table_id($table_name)
 {
 	return sql_query_single_scalar("SELECT COLUMN_NAME 

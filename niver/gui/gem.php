@@ -3,9 +3,26 @@
 function GemAddRow($table_name, $text, $args){
 	$result = "";
 
-	$result .= gui_header(1, "Add");
+	$result .= gui_header(1, $text);
 	$result .= NewRow($table_name, $args);
-	$result .= gui_button("add_row", "save_new('$table_name')", "add");
+	$post = GetArg($args, "post_file", null);
+	if (! $post) die(__FUNCTION__ . ":" . $text . "must send post file");
+	$result .= gui_button("add_row", "data_save_new('" . $post . "', '$table_name')", "add");
+
+	return $result;
+}
+
+function GemElement($table_name, $row_id, $args)
+{
+	$result = "";
+	$title = GetArg($args, "title", null);
+	if ($title)
+		$result .= gui_header(1, $title, true, true) . " " . gui_label("id", $row_id);
+
+	$result .= GuiRowContent($table_name, $row_id, $args);
+
+	if (GetArg($args, "edit", false))
+		$result .= gui_button( "btn_save", "data_save_entity('/niver/data/data.php', '$table_name', " . $row_id . ')', "שמור" );
 
 	return $result;
 }

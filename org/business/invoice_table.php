@@ -30,7 +30,7 @@ $operation = get_param("operation", false);
 if ($operation){
 	switch ($operation)
 	{
-		case "add":
+		case "show_add_invoice":
 			$args = array();
 			foreach ($_GET as $key => $data)
 			{
@@ -108,7 +108,7 @@ if ($part_id) {
 
 print gui_header (1, "ריכוז חשבוניות");
 
-print gui_hyperlink("Add invoice", add_to_url(array("document_type" =>"4", "operation" => "add")));
+print gui_hyperlink("Add invoice", add_param_to_url(get_url(), array("operation" => "show_add_invoice", "document_type" =>"4")));
 
 try {
 	$t = new \Niver\PivotTable( "im_business_info", $page,

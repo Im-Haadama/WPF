@@ -4,7 +4,7 @@ require_once "../r-shop_manager.php";
 require_once( ROOT_DIR . "/niver/gui/sql_table.php" );
 require_once( "../header.php" );
 require_once( ROOT_DIR . "/niver/gui/inputs.php" );
-require_once( "../options.php" );
+require_once( ROOT_DIR . '/niver/options.php' );
 ?>
 <script type="text/javascript" src="/niver/gui/client_tools.js"></script>
 <script>
@@ -106,3 +106,5 @@ print header_text( false );
 <div id="inventory">
 </div>
 </body>
+
+

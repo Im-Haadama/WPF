@@ -202,16 +202,14 @@ function handle_data_operation($operation)
 		case "auto_list":
 			$prefix = get_param("prefix", true);
 
-			$lists = array("products" => array("table" => "im_products", "field_name" =>'post_title', "include_id" => 1, "id_field" => "ID"));
+			$lists = array("products" => array("table" => "im_products", "field_name" =>'post_title', "include_id" => 1, "id_field" => "ID"),
+				"tasks" => array("table"=>"im_tasklist", "field_name" => "task_description", "include_id" => 1, "id_field" => "id", "query" => " status = 0"));
 			$list = get_param("list", true);
-
-			if (! isset($lists[$list])) die ("no list given");
+			if (! isset($lists[$list])) die ("Error: unknown list " . $list);
 			$table_name = $lists[$list]["table"];
 			$field = $lists[$list]["field_name"];
-			$include_id = $lists[$list]["include_id"];
 
-			$args["include_id"] = $lists[$list]["include_id"];
-			$args["id_field"] = $lists[$list]["id_field"];
+			$args = $lists[$list];
 
 			print auto_list($table_name, $field, $prefix, $args);
 			break;
@@ -235,6 +233,7 @@ function auto_list($table_name, $field, $prefix, $args = null)
 	$include_id = GetArg($args, "include_id", false);
 
 	$args["sql"] = "select $id_field, $field from $table_name where $field like '" . $prefix . "%'";
+	$query = GetArg($args, "query", null); 	if ($query) $args["sql"] .= " and " . $query;
 //	print $args["sql"] . "<br/>";
 	$args["field"] = $field;
 	$args["include_id"] = $include_id;

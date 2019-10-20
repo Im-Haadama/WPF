@@ -7,14 +7,14 @@
  */
 ?>
 
-<div align="center">
-    תוצרת אורגנית בפיקוח או מ
-    <a href="http://im-haadama.co.il/about/">
-        חקלאות בת קיימא.
-    </a>
-    לפרטים אודות ה
-    <a href="http://store.im-haadama.co.il/about/">שירות והמשלוחים</a>
-</div>
+<!--<div align="center">-->
+<!--    תוצרת אורגנית בפיקוח או מ-->
+<!--    <a href="http://im-haadama.co.il/about/">-->
+<!--        חקלאות בת קיימא.-->
+<!--    </a>-->
+<!--    לפרטים אודות ה-->
+<!--    <a href="http://store.im-haadama.co.il/about/">שירות והמשלוחים</a>-->
+<!--</div>-->
 
 <div align="center">
 	<?php

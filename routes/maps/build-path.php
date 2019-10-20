@@ -54,6 +54,7 @@ function swap( &$a, &$b ) {
 
 function find_route_1( $node, $rest, &$path, $print, $end, $prerequisite )
 {
+
 	if (! $rest or ! is_array($rest))
 	{
 		die("invalid points");
@@ -75,7 +76,8 @@ function find_route_1( $node, $rest, &$path, $print, $end, $prerequisite )
 	}
 
 	// Continue as long as switching adjacent nodes makes the route shorter
-	$switched  = true;
+	// Disable for now, because the preq is not implemented here.
+	$switched  = false;
 	while ( $switched ) {
 		$switched = false;
 		for ( $switch_node = 1; $switch_node < count( $path ) - 1; $switch_node ++ ) {
@@ -114,13 +116,14 @@ function find_route( $node, $rest, &$path, $prerequisite = null ) {
 	for ( $i = 0; $i < sizeof( $rest ); $i ++ ) {
 		// print $rest[$i]  . " ";
 		$d = get_distance( $node, $rest[ $i ] );
-		if ( ( $node == $rest[ $i ] ) or ( $min == - 1 ) or ( $d < $min ) ) {
+		if ( ( $min == - 1 ) or ( $d < $min ) ) { // ( $node == $rest[ $i ] ) or
 			// If we didn't visit previous location for collecting, skip.
-//			var_dump($path); print "<br/>";
+			// var_dump($path); print "<br/>";
 			if ($prerequisite and isset($prerequisite[$rest[ $i ]])){
-//				print "checking preq for " . $rest[ $i ] . " ";
+				print "<br/>checking preq for " . $rest[ $i ] . " ";
 				if (! in_array($prerequisite[$rest[ $i ]], $path)) {
-//					print " not yet. skipping";
+					print "X" . $prerequisite[$rest[ $i ]] . "X not yet. skipping";
+
 					continue;
 				}
 			}

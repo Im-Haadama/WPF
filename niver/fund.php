@@ -116,7 +116,7 @@ function get_param( $key, $mandory = false, $default = null ) {
 	}
 
 	if ( $mandory ) {
-		die ( __FUNCTION__ . " key " . $key . " not supplied" );
+		die ("Error: " . __FUNCTION__ . " key " . $key . " not supplied" );
 	} else {
 		return $default;
 	}
@@ -281,6 +281,7 @@ function diffline($line1, $line2)
 
 	return $result;
 }
+
 function computeDiff($from, $to)
 {
 	$diffValues = array();
@@ -360,4 +361,18 @@ function array_transpose($rows)
 		}
 	}
 	return $target;
+}
+
+function array_assoc($array)
+{
+	if (! $array) return null;
+	if (! isset($array[0])) return $array;
+	$new = array();
+
+	foreach($array as $cell){
+		// print "adding $cell<br/>";
+		$new[$cell] = $cell;
+	}
+	// var_dump($new);
+	return $new;
 }

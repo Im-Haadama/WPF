@@ -27,7 +27,7 @@ data-post.php - general update functions
 inputs
 -=-=-=
 
-New row - field name will be just the field name. Will be handled by save_new or save_new_custom.
+New row - field name will be just the field name. Will be handled by save_new or data_save_new.
 Existing row - field name will be <field>_<row_number>. Will be handled by update_entity.
 
 

@@ -148,6 +148,9 @@ msgstr "המשימות שלי"
 msgid "Tasks I've created"
 msgstr "משימות שיצרתי"
 
+msgid "New task"
+msgstr "משימה חדשה"
+
 msgid "Hello"
 msgstr "שלום"
 
@@ -384,6 +387,15 @@ msgstr "מזמינים"
 msgid "No deliveries for today"
 msgstr "אין חלוקה היום"
 
-# msgid ""
-# msgstr ""
+msgid "Or with one of the following."
+msgstr "או באמצעות חשבון קיים."
+
+msgid "Create local user (and password)"
+msgstr "צור משתמש  וסיסמא מקומיים"
+
+msgid "Connect with:"
+msgstr "התחבר באמצעות:"
+
+msgid "In order to complete your order, register to this site."
+msgstr "כדי לבצע את ההזמנה, הרשם לאתר."
 

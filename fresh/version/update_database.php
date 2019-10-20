@@ -36,6 +36,9 @@ switch ( $version ) {
 		version17();
 		version18();
 		break;
+	case "26":
+		version26();
+		break;
 	case "22":
 		version22();
 		break;
@@ -74,6 +77,39 @@ print "done";
 die ( 0 );
 
 
+function version26()
+{
+	print gui_header(1, "template working hours");
+	sql_query("alter table im_task_templates add working_hours varchar(50);");
+	print gui_header(1, "worker projects");
+	sql_query("drop function worker_projects");
+	sql_query("CREATE FUNCTION 	worker_projects(_user_id int)
+	 RETURNS TEXT
+BEGIN
+	declare _project int(11);
+	 declare projectList varchar(200);
+	 declare finished int(11);
+	
+	DEClARE curProject 
+    CURSOR FOR 
+            SELECT project_id from im_working where user_id = _user_id;
+ 
+    DECLARE CONTINUE HANDLER 
+        FOR NOT FOUND SET finished = 1;
+	
+	getLoop: LOOP
+        FETCH curProject INTO _project;
+        IF finished = 1 THEN 
+            LEAVE getLoop;
+        END IF;
+        -- build email list
+        SET projectList = CONCAT(curProject,\",\",projectList);
+    END LOOP getLoop;
+    
+	return projectList;	   
+END;");
+
+}
 function version22()
 {
 //	print gui_header(1, "preq done");
@@ -82,6 +118,7 @@ function version22()
 //RETURN REPLACE(SUBSTRING(SUBSTRING_INDEX(str, delim, pos),
 //       LENGTH(SUBSTRING_INDEX(str, delim, pos-1)) + 1),
 //       delim, '');");
+
 
 	sql_query("drop function preq_done");
 	sql_query("CREATE FUNCTION 	preq_done(_task_id int)
@@ -111,14 +148,14 @@ BEGIN
 	return 1;	   
 END;");
 
-	print sql_query_single_scalar("select preq_done(2547)");
-	die (1);
-
 	print gui_header(1, "varchar preq");
 	sql_query("ALTER TABLE im_tasklist modify preq varchar(200) null;");
 
 	print gui_header(1, "is_active");
 	sql_query("ALTER TABLE im_task_templates ADD is_active bit not null default 1;");
+	sql_query("ALTER TABLE im_tasklist ADD is_active bit not null default 1;");
+	sql_query("ALTER TABLE im_tasklist ADD team int not null default 1;");
+	sql_query("ALTER TABLE im_working ADD is_active bit not null default 1;");
 
 	print gui_header(1, "save mission path");
 	sql_query("ALTER TABLE im_missions ADD path varchar(4000);");

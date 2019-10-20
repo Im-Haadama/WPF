@@ -7,14 +7,14 @@
  */
 ?>
 
-<div align="center">
-    תוצרת אורגנית בפיקוח או מ
-    <a href="http://im-haadama.co.il/about/">
-        חקלאות בת קיימא.
-    </a>
-    לפרטים אודות ה
-    <a href="http://store.im-haadama.co.il/about/">שירות והמשלוחים</a>
-</div>
+<!--<div align="center">-->
+<!--    תוצרת אורגנית בפיקוח או מ-->
+<!--    <a href="http://im-haadama.co.il/about/">-->
+<!--        חקלאות בת קיימא.-->
+<!--    </a>-->
+<!--    לפרטים אודות ה-->
+<!--    <a href="http://store.im-haadama.co.il/about/">שירות והמשלוחים</a>-->
+<!--</div>-->
 
 <div align="center">
 	<?php
@@ -29,8 +29,8 @@
 	// האספקה בימים שני-עד רביעי.
 	?>
     <!--    <h2> לרגל החג, המשלוחים יבצעו ביום ב'. הזמנות עד השעה 18.-->
-    <h2> המשלוחים בימים ב' עד ה', בהתאם
-        <a href="http://store.im-haadama.co.il/about">לאיזורים</a></h2>
+<!--    <h2> המשלוחים בימים ב' עד ה', בהתאם-->
+<!--        <a href="http://store.im-haadama.co.il/about">לאיזורים</a></h2>-->
     <script>
         function save_basket() {
             var sel = document.getElementById("basket");

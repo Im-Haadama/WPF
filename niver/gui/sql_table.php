@@ -22,15 +22,21 @@ require_once( ROOT_DIR . "/niver/data/translate.php");
 
 /**
  * Table header gets a sql query and returns array to be used as header, usually in html table.
+ *
  * @param $sql
- * @param bool $add_checkbox
- * @param bool $skip_id
- * @param null $meta_fields
+ * @param $args
  *
  * @return array
  */
-function TableHeader($sql, $add_checkbox = false, $skip_id = false, $meta_fields = null)
+
+function TableHeader($sql, $args) // $add_checkbox = false, $skip_id = false, $meta_fields = null)
 {
+	$header_fields = GetArg($args, "header_fields", null);
+	if ($header_fields) return array_assoc($header_fields);
+
+	$skip_id = GetArg($args, "skip_id", false);
+	$add_checkbox = GetArg($args, "add_checkbox", false);
+
 	// We need only the header. Remove query and replace with false.
 //	if (strstr($sql, "where"))
 //		$sql = substr($sql, 0, strpos($sql, "where")) . " where 1 = 0";
@@ -67,16 +73,22 @@ function TableHeader($sql, $add_checkbox = false, $skip_id = false, $meta_fields
 			$i ++;
 		}
 	}
-	if ($meta_fields and is_array($meta_fields))
-	{
-		foreach ($meta_fields as $f)
-			array_push($headers, $f);
-	}
+//	if ($meta_fields and is_array($meta_fields))
+//	{
+//		foreach ($meta_fields as $f)
+//			array_push($headers, $f);
+//	}
 
+	// var_dump($headers);
 	return $headers;
 }
 
 static $mn = array();
+/**
+ * @param $p
+ *
+ * @return bool
+ */
 function mn_used($p)
 {
 	global $mn;
@@ -90,6 +102,11 @@ function mn_used($p)
 	return false;
 }
 
+/**
+ * @param $key
+ *
+ * @return false|string
+ */
 function mnemonic3($key)
 {
 	global $mn;
@@ -280,7 +297,7 @@ function PrepareRow($row, $args, $row_id)
 						try {
 							$type = sql_type( $table_name, $key );
 						} catch (Exception $e) {
-							print "can't find type for $key<br/>";
+							print __FUNCTION__ . ": can't find type for $key<br/>";
 							var_dump($row);
 							return null;
 						}
@@ -362,17 +379,15 @@ function TableData($sql, &$args = null)
 
 	// print __FUNCTION__ . "<br/>";
 	$result = sql_query( $sql );
-	if ( ! $result ) {
-		print "ERROR";
-		return null;
-	}
+	if ( ! $result ) { print "Error"; return null;	}
 
 	$rows_data = array();
 
 	$header = GetArg($args, "header", true);
 	$field_list = FieldList($sql, $args);
-	$mandatory_fields = GetArg($args, "mandatory_fields", null);
-	$header_fields = GetArg($args, "header_fields", null);
+	// print __FUNCTION__ ; var_dump($field_list); print "<br/>";
+	$mandatory_fields = GetArg($args, "mandatory_fields", null);  $mandatory_fields = array_assoc($mandatory_fields);
+	$fields = GetArg($args, "fields", null);  $fields = array_assoc($fields);
 	$id_field = GetArg($args, "id_field", "id");
 	$skip_id = GetArg($args, "skip_id", false);
 	$meta_fields = GetArg($args, "meta_fields", null);
@@ -381,6 +396,7 @@ function TableData($sql, &$args = null)
 	$values = GetArg($args, "values", null);
 	$v_checkbox = GetArg($args, "v_checkbox", null);
 	$checkbox_class = GetArg($args, "checkbox_class", "checkbox");
+	$header_fields = GetArg($args, "header_fields", null);	 $header_fields = array_assoc($header_fields);
 
 	$table_names = array();
 	if (preg_match_all("/from ([^ ]*)/" , $sql, $table_names))
@@ -388,24 +404,15 @@ function TableData($sql, &$args = null)
 		$args["table_name"] = $table_names[1][0];
 	}
 
-	if ($header){
-		if ($header_fields)
-			$h_line = array(); // Build it from $header_fields using table fields.
-		else
-			$h_line = TableHeader($sql, false, $skip_id, $meta_fields);
-	} else {
-		$h_line = null; // No header.
-	}
-	if ($debug) {
-		print "h_line: "; var_dump($h_line); print "<br/>";
-	}
+	$h_line = $header ?  TableHeader( $sql, $args ) : null;
+
+//	var_dump($h_line);
+
 	$m_line = $mandatory_fields ? array() : null;
 
 	$row_count = 0;
 
 	$v_line = $v_checkbox ? array() : null;
-
-	$i = 0;
 
 	if ($debug) {
 		print $sql ."<br/>";
@@ -415,12 +422,14 @@ function TableData($sql, &$args = null)
 
 	if (strstr($sql, "describe") || strstr($sql, "show col")) // New Row
 	{
-//		$debug = 1;
 		$new_row = array();
 		if ($debug) print "new<br/>";
 
+		// assert(0); // will fire
+		// assert (! isset($field_list[0]), "field list in seq array" );
 		foreach ($field_list as $key => $field)
 		{
+			assert(isset($field_list[$key]));
 			if ($debug) print "handling $key<br/>";
 			if ($values and isset($values[$key])) {
 				$new_row[$key] = $values[$key];
@@ -433,14 +442,14 @@ function TableData($sql, &$args = null)
 			}
 			if (is_array($h_line) and $header_fields){
 				if (! $skip_id or $key !== "id")
-					$h_line[$key] = im_translate($header_fields[$i++], $args);
+					$h_line[$key] = isset($header_fields[$key]) ? im_translate($header_fields[$key], $args) : $key;
 			}
 			if (is_array($m_line)){
 				if ($debug) print "adding " . isset($mandatory_fields[$key]);
 				if(isset($mandatory_fields[$key])) {
 					if ($debug) print $key ."<br/>";
 					$m_line[$key] = 1;
-				}
+				} else $m_line[$key] = 0;
 				// array_push($m_line, isset($mandatory_fields[$key]));
 			}
 		}
@@ -452,37 +461,28 @@ function TableData($sql, &$args = null)
 
 		if ($debug) var_dump($m_line);
 
-		if ($m_line) $rows_data["mandatory"] = $m_line;
+		if ($m_line) {
+			$rows_data["mandatory"] = $m_line;
+			$args["hide_rows"]["mandatory"] = 1;
+		}
 		// $header_line = TableHeader($sql, false, $skip_id, $meta_fields);
 
 		if ($h_line){
+//			print "adding header";
+//			var_dump($h_line);
 			$rows_data['header'] = $h_line;
 			$h_line = null;
 		}
 
-		$fields = GetArg($args, "fields", null);
-//		print "fields:";
-//		var_dump($fields); print "<br/>";
-//		print "new_row:";
-//		var_dump($new_row); print "<br/>";
-
-		if ($fields) // new row field order would be like in database. Reorder it here.
+		if ($fields)
 		{
 			$new_row_ordered = array();
 			foreach ($fields as $key => $field){
-//				print "key=$key<br/>";
-				if (! array_key_exists($key, $new_row)) {
-					var_dump($new_row);
-					die("key $key is missing from new_row");
-				}
 				$new_row_ordered[$key] = $new_row[$key];
 			}
 			$new_row = $new_row_ordered;
 		}
-//		print "new_row:<br/>";
-//		var_dump($new_row);
 		$rows_data["new"] = $new_row;
-		// array_push($rows_data, $new_row);
 
 		return $rows_data;
 	} else {
@@ -501,16 +501,17 @@ function TableData($sql, &$args = null)
 				// Change: 9/9/2019. We put the id only in multirow display
 				if ( ! $skip_id or strtolower( $key ) !== "id" ) {
 					$the_row[$key] = $cell;
+					// print "adding $key $cell<br/>";
 					// array_push( $the_row, $cell );
 				}
 				if ($v_checkbox){
 					if (! $skip_id or ($key != $id_field))
 						$v_line[$key] = gui_checkbox("chk_" . $key, $checkbox_class, false);
 				}
+				// print "handling header<br/>";
 				if (is_array($h_line) and $header_fields){
-					if ((! $skip_id or $key !== "id") and isset($header_fields[$i]))
-						$h_line[$key] = im_translate($header_fields[$i], $args);
-					$i++;
+					$down_key = strtolower($key);
+					if (! $skip_id or $down_key !== "id") $h_line[$key] = isset($header_fields[$down_key]) ? im_translate($header_fields[$down_key], $args) : $key;
 				}
 			}
 
@@ -529,7 +530,7 @@ function TableData($sql, &$args = null)
 						$v_line[ $key ] = gui_checkbox( "chk_" . $key, $checkbox_class, false );
 					}
 					if ($h_line){
-						$h_line[$key] = im_translate($header_fields[$i++], $args);
+						$h_line[$key] = im_translate($header_fields[$key++], $args);
 					}
 				}
 			}
@@ -542,6 +543,8 @@ function TableData($sql, &$args = null)
 			}
 
 			if ($h_line){
+//				print "adding header<br/>";
+//				var_dump($h_line);
 				$rows_data['header'] = $h_line;
 				$h_line = null;
 			}
@@ -553,11 +556,19 @@ function TableData($sql, &$args = null)
 	}
 }
 
+/**
+ * @param $sql
+ * @param $args
+ *
+ * @return array|mixed|null
+ */
 function FieldList($sql, &$args)
 {
 //	print "field list $sql";
 	$fields = GetArg($args, "fields", null);
-	// print "fields: "; var_dump($fields) . "<br/>";
+	if (isset($fields[0])) $fields = array_assoc($fields);
+//	print "1:"; var_dump($fields); print "<br/>";
+//	 print "fields: "; var_dump($fields) . "<br/>";
 	if ($fields) return $fields;
 
 	$fields = array();
@@ -568,9 +579,11 @@ function FieldList($sql, &$args)
 //			var_dump($row);
 			$fields[$row['Field']] = 1;
 		}
+//		print "2:"; var_dump($fields); print "<br/>";
 	} else {
 		$row = sql_fetch_assoc($result);
 		if ($row) foreach ($row as $key => $cell) $fields[$key] = 1;
+//		print "3:"; var_dump($fields); print "<br/>";
 	}
 //	var_dump($fields);
 	$args["fields"] = $fields;
@@ -579,6 +592,13 @@ function FieldList($sql, &$args)
 }
 
 
+/**
+ * @param $total_line
+ * @param $rows_data
+ * @param $fields
+ *
+ * @return array
+ */
 function HandleTableAcc($total_line, $rows_data, $fields)
 {
 	foreach ($rows_data as $key => $row)
@@ -595,6 +615,10 @@ function HandleTableAcc($total_line, $rows_data, $fields)
 	return $t_line;
 }
 
+/**
+ * @param $acc_fields
+ * @param $row
+ */
 function HandleAcc(&$acc_fields, $row)
 {
 	// if (function_exists("sum_numbers")) print "AAAA";
@@ -623,6 +647,7 @@ function NewRow($table_name, $args)
 	$args["table_name"] = $table_name;
 	$args['events'] = 'onchange="changed_field(\'%s\')"';
 	$args["add_field_suffix"] = false;
+	if (! isset($args["hide_cols"])) $args["hide_cols"] = [];
 	return GuiRowContent($table_name, null, $args);
 }
 
@@ -642,7 +667,10 @@ function GuiRowContent($table_name, $row_id, $args)
 	$id_key = GetArg($args, "id_key", "id");
 	$fields = GetArg($args, "fields", null);
 
-	if (! isset($args["skip_id"])) $args["skip_id"] = true;
+	if (! isset($args["skip_id"]))	$args["skip_id"] = true;
+
+	if (GetArg($args, "headers", null) and isset($args["headers"][0])) $args["headers"] = array_assoc($args["headers"]);
+
 	$edit = GetArg($args, "edit", false);
 	if ($edit) {
 		$args["v_checkbox"] = 1;
@@ -679,7 +707,7 @@ function GuiTableContent($table_id, $sql, &$args = null)
 	if (! $sql)
 		$sql = "select * from $table_id";
 
-	// Fetch the data from DB.
+	// Fetch the data from DB or create the new row
 	$rows_data = TableData( $sql, $args);
 
 	$debug = GetArg($args, "debug", false);
@@ -718,6 +746,11 @@ function GuiTableContent($table_id, $sql, &$args = null)
 	return null;
 }
 
+/**
+ * @param $string
+ *
+ * @return mixed
+ */
 function prepare_text($string)
 {
 	// Todo: convert text to url, only if not already hyperlink.

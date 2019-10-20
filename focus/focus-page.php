@@ -9,6 +9,7 @@ ini_set( 'display_errors', 'on' );
 
 require_once(ROOT_DIR . '/im-config.php');
 require_once( ROOT_DIR . "/init.php" );
+require_once(ROOT_DIR . "/focus/gui.php");
 
 require_once( "focus.php" );
 
@@ -77,7 +78,7 @@ $args["url"] = basename(__FILE__);
 // print "url=". $args["url"];
 
 $url = get_url(1);
-print greeting();
+if (function_exists("greeting")) print greeting();
 print gui_hyperlink("Repeating tasks", $url . "?templates");
 
 print " ";
@@ -111,8 +112,8 @@ print active_tasks($args);
 // Tasks my teams need to handle.
 $members = comma_implode(team_all_members(get_user_id()));
 if (strlen($members)) {
-	print gui_header(1, "My teams' tasks");
-    $args["query"] = " owner in (" . $members . ")";
+	print gui_header(1, "Unassigned team tasks");
+    $args["query"] = " team in (" . $members . ") and owner is null";
 	print active_tasks($args, $debug, $time_filter);
 }
 
