@@ -11,7 +11,7 @@ if ( ! defined( 'ROOT_DIR' ) ) {
 	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) );
 }
 
-$no_wp = 1;
+$no_wp = 0;
 
 require_once( ROOT_DIR . "/wp-includes/load.php" );
 require_once( ROOT_DIR . "/wp-includes/pluggable.php" );

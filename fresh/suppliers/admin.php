@@ -23,7 +23,7 @@ if ($id)
 	$args["transpose"] = true;
 
 	print GuiRowContent("im_suppliers", $id, $args);
-	print gui_button("btn_save", 'save_entity(\'im_suppliers\', ' . $id .')', "שמור");
+	print gui_button("btn_save", 'data_save_entity(\'im_suppliers\', ' . $id .')', "שמור");
 	return;
 }
 

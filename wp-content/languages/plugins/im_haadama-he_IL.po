@@ -9,7 +9,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: GlotPress/2.4.0-alpha\n"
 "Language: he_IL\n"
-"Project-Id-Version: Imhaadama - 1 - Stable (latest release)\n"
+"Project1-Id-Version: Imhaadama - 1 - Stable (latest release)\n"
 
 #. translators: %s: error message
 #: includes/wc-rest-functions.php:114
@@ -398,4 +398,17 @@ msgstr "התחבר באמצעות:"
 
 msgid "In order to complete your order, register to this site."
 msgstr "כדי לבצע את ההזמנה, הרשם לאתר."
+
+# task_template
+msgid "Team"
+msgstr "צוות"
+
+msgid "Repeat frequency"
+msgstr "תדירות חזרה"
+
+msgid "Repeat times"
+msgstr "זמני חזרה"
+
+msgid "Working hours"
+msgstr "שעות פעילות"
 

@@ -4,10 +4,14 @@
  * User: agla
  * Date: 06/05/18
  * Time: 07:30
+ *
+ * @param $msg
+ * @param string $title
+ * @param null $file - default is php_error.log
  */
 
-function my_log( $msg, $title = '' ) {
-	$error_file = ROOT_DIR . '/logs/php_error.log';
+function my_log( $msg, $title = '', $file = null ) {
+	$error_file = ROOT_DIR . '/logs/' . ($file ? $file : 'php_error.log');
 //    print $error_file;
 	$date = date( 'd.m.Y h:i:s' );
 	$msg  = print_r( $msg, true );
@@ -15,6 +19,11 @@ function my_log( $msg, $title = '' ) {
 	error_log( $log, 3, $error_file );
 }
 
+/**
+ * @param bool $script_file
+ *
+ * @return string
+ */
 function load_scripts($script_file = false )
 {
 	$text = "";
@@ -45,6 +54,14 @@ function load_scripts($script_file = false )
 
 }
 
+/**
+ * @param bool $print_logo
+ * @param bool $close_header
+ * @param bool $rtl
+ * @param bool $script_file
+ *
+ * @return string
+ */
 function header_text( $print_logo = true, $close_header = true, $rtl = true, $script_file = false ) {
 	global $business_info;
 	global $logo_url;
@@ -83,6 +100,11 @@ function header_text( $print_logo = true, $close_header = true, $rtl = true, $sc
 	// $text .= '<p style="text-align:center;">';
 }
 
+/**
+ * @param $style_file
+ *
+ * @return string
+ */
 function load_style($style_file)
 {
 	$text = "<style>";
@@ -92,6 +114,11 @@ function load_style($style_file)
 	return $text;
 }
 
+/**
+ * @param $key
+ *
+ * @return array|null
+ */
 function get_param_array( $key ) {
 	if ( isset( $_GET[ $key ] ) ) {
 		$k = $_GET[ $key ];
@@ -104,12 +131,26 @@ function get_param_array( $key ) {
 
 // Return reference is useful for summing table, e.g.
 
+/**
+ * @param $args
+ * @param $key
+ * @param $default
+ *
+ * @return mixed
+ */
 function &GetArg($args, $key, $default)
 {
 	if (! $args or ! isset($args[$key])) return $default;
 	return $args[$key];
 }
 
+/**
+ * @param $key
+ * @param bool $mandory
+ * @param null $default
+ *
+ * @return mixed|null
+ */
 function get_param( $key, $mandory = false, $default = null ) {
 	if ( isset( $_GET[ $key ] ) ) {
 		return $_GET[ $key ];
@@ -122,6 +163,11 @@ function get_param( $key, $mandory = false, $default = null ) {
 	}
 }
 
+/**
+ * @param $num_or_text
+ *
+ * @return string
+ */
 function quote_text( $num_or_text ) {
 	if ( is_null( $num_or_text ) ) {
 		return "NULL";
@@ -134,6 +180,12 @@ function quote_text( $num_or_text ) {
 	return "'" . $num_or_text . "'";
 }
 
+/**
+ * @param $url
+ * @param $addition
+ *
+ * @return string
+ */
 function append_url( $url, $addition ) {
 	if ( strstr( $url, "?" ) ) {
 		return $url . "&" . $addition;
@@ -142,6 +194,12 @@ function append_url( $url, $addition ) {
 	return $url . "?" . $addition;
 }
 
+/**
+ * @param $array
+ * @param bool $quote
+ *
+ * @return array|string
+ */
 function comma_implode( $array, $quote = false ) {
 	if ( is_null( $array ) ) {
 		return "";
@@ -176,6 +234,11 @@ function comma_implode( $array, $quote = false ) {
 	return rtrim( $result, ", " );
 }
 
+/**
+ * @param mixed ...$elems
+ *
+ * @return array|string
+ */
 function comma_implode_v( ... $elems ) {
 	$array = array();
 	foreach ( $elems as $elem ) {
@@ -185,6 +248,12 @@ function comma_implode_v( ... $elems ) {
 	return comma_implode( $array );
 }
 
+/**
+ * @param $array
+ * @param $search_key
+ *
+ * @return int|string
+ */
 function get_next_array( $array, $search_key ) {
 	$prev_key = null;
 
@@ -201,6 +270,9 @@ function get_next_array( $array, $search_key ) {
 //	return rtrim( $str, ", " );
 //}
 
+/**
+ * @param $str
+ */
 function debug_time_output( $str ) {
 
 	$micro_date = microtime();
@@ -209,6 +281,9 @@ function debug_time_output( $str ) {
 	echo "$str $date:" . $date_array[0] . "<br>";
 }
 
+/**
+ * @param $str
+ */
 function debug_time_log( $str ) {
 	static $prev_time;
 	if ( $str == "reset" || ! is_numeric($prev_time)){
@@ -226,6 +301,10 @@ function debug_time_log( $str ) {
 	$prev_time = $now;
 }
 
+/**
+ * @param $s
+ * @param $a
+ */
 function sum_numbers( &$s, $a ) {
 //	if (strstr($a, "<a")){
 //		print strstr("'</a>", $a) . "<br/>";
@@ -244,6 +323,12 @@ function sum_numbers( &$s, $a ) {
 }
 
 // diffline and computeDiff are from https://stackoverflow.com/questions/321294/highlight-the-difference-between-two-strings-in-php
+/**
+ * @param $line1
+ * @param $line2
+ *
+ * @return string
+ */
 function diffline($line1, $line2)
 {
 	$diff = computeDiff(str_split($line1), str_split($line2));
@@ -282,6 +367,12 @@ function diffline($line1, $line2)
 	return $result;
 }
 
+/**
+ * @param $from
+ * @param $to
+ *
+ * @return array
+ */
 function computeDiff($from, $to)
 {
 	$diffValues = array();
@@ -349,6 +440,12 @@ function computeDiff($from, $to)
 	return array('values' => $diffValues, 'mask' => $diffMask);
 }
 
+/**
+ * @param $rows
+ *
+ * @return array
+ * @throws Exception
+ */
 function array_transpose($rows)
 {
 	$target = array();
@@ -363,6 +460,11 @@ function array_transpose($rows)
 	return $target;
 }
 
+/**
+ * @param $array
+ *
+ * @return array|null
+ */
 function array_assoc($array)
 {
 	if (! $array) return null;
@@ -375,4 +477,46 @@ function array_assoc($array)
 	}
 	// var_dump($new);
 	return $new;
+}
+
+/**
+ * @param $key
+ *
+ * @return false|string
+ */
+function mnemonic3($key)
+{
+	global $mn;
+//	 var_dump($mn); print "<br/>";
+	$chars = "abcdefghijklmnopqrstuvwxyz123456789";
+	if (isset ($nm[$key])) return $mn[$key];
+
+	$short_key = $key;
+//	print "sk=$short_key<br/>";
+
+	// For meta fields.
+	if (($s = strpos($key, '/'))) {
+		$short_key = substr ($key, $s + 1);
+		// print "sk=$short_key<br/>";
+	}
+
+	// Try all 3 letters.
+	$poss = substr($short_key, 0, 3);
+//	print "poss=$poss<br>";
+	if (! mn_used($poss) and (strlen($poss) == 3)) {
+		$mn[$short_key] = $poss;
+		return $poss;
+	}
+
+	// If already used, take 2 letters and the first that is available.
+	for ($i = 0; $i < strlen($chars); $i ++){
+		$poss = substr($short_key, 0, 2) . substr($chars, $i, 1);
+//		print "poss=$poss<br/>";
+		if (! mn_used($poss)) {
+			$mn[$short_key] = $poss;
+			return $poss;
+		}
+	}
+//	print "not found";
+	return "not";
 }

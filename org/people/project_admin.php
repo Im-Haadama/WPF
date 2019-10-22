@@ -66,7 +66,7 @@ if ( $row_id ) {
 	$args["transpose"] = true;
 
 	print GuiRowContent( $table_name, $row_id, $args );
-	print gui_button( "btn_save", "save_entity('$table_name', " . $row_id . ')', "שמור" );
+	print gui_button( "btn_save", "data_save_entity('$table_name', " . $row_id . ')', "שמור" );
 
 	return;
 }

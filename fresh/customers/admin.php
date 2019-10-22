@@ -50,6 +50,6 @@ function show_user($user_id)
 	print gui_header(1, "משתמש מספר " . $user_id);
 	print GuiRowContent("wp_users", $user_id, $args);
 	print gui_button("btn_save",
-		"save_entity('wp_users', $user_id)",
+		"data_save_entity('wp_users', $user_id)",
 		"שמור");
 }

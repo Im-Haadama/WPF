@@ -79,6 +79,12 @@ die ( 0 );
 
 function version26()
 {
+
+	print gui_header(1, "task_template team");
+	sql_query("ALTER TABLE im_task_templates ADD team int not null default 1;");
+
+	print gui_header(1, "template check info");
+	sql_query("alter table im_task_templates add last_check datetime;");
 	print gui_header(1, "template working hours");
 	sql_query("alter table im_task_templates add working_hours varchar(50);");
 	print gui_header(1, "worker projects");

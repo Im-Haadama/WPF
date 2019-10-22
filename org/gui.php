@@ -13,17 +13,17 @@ function gui_select_project($id, $value, $args)
 		return get_project_name($value);
 	}
 	// Filter by worker if supplied.
-	$user_id = GetArg($args, "worker", null);
+	$user_id = GetArg($args, "worker", get_user_id());
 	$query = null;
 	if ( !$user_id ) {
-		throw new Exception( __FUNCTION__ .": No worker given" );
+		throw new Exception( __FUNCTION__ .": No user " . $user_id);
 	}
 
 	// Check if this user is global company user.
-	$query = " where id in (" . comma_implode(worker_get_projects($user_id)) . ")";
+	// $query = " where id in (" . comma_implode(worker_get_projects($user_id)) . ")";
 
-//	if ($companies = worker_get_companies($user_id)){
-//		$query = " where id in (select project_id from im_working where company_id in (" . comma_implode($companies) . "))";
+$companies = worker_get_companies($user_id);
+		$query = " where id in (select project_id from im_working where company_id in (" . comma_implode($companies) . "))";
 //	} else {
 //		$query = " where id in (" . comma_implode(worker_get_projects($user_id) . ")");
 //	}
@@ -72,6 +72,6 @@ function gui_select_team($id, $selected = null, $args = null)
 	if ($edit)
 		return GuiSelectTable($id, "im_working_teams", $args);
 	else
-		return ($selected > 0) ? sql_query_single_scalar("select team_name from im_working_teams where user_id = " . $selected) : "";
+		return ($selected > 0) ? sql_query_single_scalar("select team_name from im_working_teams where id = " . $selected) : "";
 
 }

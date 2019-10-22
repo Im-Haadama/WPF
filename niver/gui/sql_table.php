@@ -31,11 +31,26 @@ require_once( ROOT_DIR . "/niver/data/translate.php");
 
 function TableHeader($sql, $args) // $add_checkbox = false, $skip_id = false, $meta_fields = null)
 {
+	$debug = 0;
 	$header_fields = GetArg($args, "header_fields", null);
-	if ($header_fields) return array_assoc($header_fields);
-
 	$skip_id = GetArg($args, "skip_id", false);
-	$add_checkbox = GetArg($args, "add_checkbox", false);
+	if ($debug) { var_dump($header_fields); print "<br/>"; }
+
+	// Option a - build from given header_fields.
+	if ($header_fields) {
+		if ($fields = GetArg($args, "fields", null)){
+			if ($debug) { print "fields: "; var_dump($fields); print "<br/>"; }
+			$result = [];
+			$fields = array_assoc($fields);
+			foreach ($fields as $field => $v)
+				if (! $skip_id or strtolower($field) !== "id")
+					$result[$field] = isset($header_fields[$field]) ? $header_fields[$field] : $field;
+			return $result;
+		}
+		return array_assoc($header_fields);
+	}
+
+//	$add_checkbox = GetArg($args, "add_checkbox", false);
 
 	// We need only the header. Remove query and replace with false.
 //	if (strstr($sql, "where"))
@@ -49,6 +64,7 @@ function TableHeader($sql, $args) // $add_checkbox = false, $skip_id = false, $m
 	$headers = array();
 	$debug = false;
 
+	// If not sent, create from database fields.
 	if (strstr($sql, "describe") or strstr($sql, "show"))
 	{
 		while ($row = sql_fetch_row($result))
@@ -63,11 +79,12 @@ function TableHeader($sql, $args) // $add_checkbox = false, $skip_id = false, $m
 	} else { // Select
 		$i      = 0;
 		$fields = mysqli_fetch_fields( $result );
-		if ( $add_checkbox ) {
-			array_push( $headers, "" );
-		} // future option: gui_checkbox("chk_all", ""));
+//		if ( $add_checkbox ) {
+//			array_push( $headers, "" );
+//		} // future option: gui_checkbox("chk_all", ""));
 		foreach ( $fields as $val ) {
 			if (! $skip_id or strtolower($val->name) !== "id") {
+//				print "$skip_id adding " . $val->name . "<br/>";
 				$headers [$val->name] = im_translate($val->name);
 			}
 			$i ++;
@@ -79,7 +96,7 @@ function TableHeader($sql, $args) // $add_checkbox = false, $skip_id = false, $m
 //			array_push($headers, $f);
 //	}
 
-	// var_dump($headers);
+//	  print __FUNCTION__ . ":"; var_dump($headers); print "<br/>";
 	return $headers;
 }
 
@@ -102,47 +119,6 @@ function mn_used($p)
 	return false;
 }
 
-/**
- * @param $key
- *
- * @return false|string
- */
-function mnemonic3($key)
-{
-	global $mn;
-//	 var_dump($mn); print "<br/>";
-	$chars = "abcdefghijklmnopqrstuvwxyz123456789";
-	if (isset ($nm[$key])) return $mn[$key];
-
-	$short_key = $key;
-//	print "sk=$short_key<br/>";
-
-	// For meta fields.
-	if (($s = strpos($key, '/'))) {
-		$short_key = substr ($key, $s + 1);
-		// print "sk=$short_key<br/>";
-	}
-
-	// Try all 3 letters.
-	$poss = substr($short_key, 0, 3);
-//	print "poss=$poss<br>";
-	if (! mn_used($poss) and (strlen($poss) == 3)) {
-		$mn[$short_key] = $poss;
-		return $poss;
-	}
-
-	// If already used, take 2 letters and the first that is available.
-	for ($i = 0; $i < strlen($chars); $i ++){
-		$poss = substr($short_key, 0, 2) . substr($chars, $i, 1);
-//		print "poss=$poss<br/>";
-		if (! mn_used($poss)) {
-			$mn[$short_key] = $poss;
-			return $poss;
-		}
-	}
-//	print "not found";
-	return "not";
-}
 
 /**
  * PrepareRow - adds links, selectors and edit inputs.
@@ -364,6 +340,136 @@ function PrepareRow($row, $args, $row_id)
 //	if ($links) $data = sprintf($links[$key], $value)
 //}
 
+function RowsData($sql, $id_field, $skip_id, $v_checkbox, $checkbox_class, $h_line, $v_line, $m_line, $header_fields, $meta_fields, $meta_table, $args)
+{
+	$result = sql_query( $sql );
+	$row_count = 0;
+	$rows_data = [];
+	while ( $row = mysqli_fetch_assoc( $result ) ) {
+		$the_row = array();
+		if ( ! isset( $row[ $id_field ] ) ) {
+			// Error... We don't have a valid row ID.
+			print "<br/>field id:" . $id_field . "<br/>";
+			var_dump( $row );
+			print "<br/>";
+			die( __FUNCTION__ . ":" . __LINE__ . "no row id" );
+		}
+		$row_id = $row[ $id_field ];
+
+		foreach ( $row as $key => $cell ) {
+			// Change: 9/9/2019. We put the id only in multirow display
+			if ( ! $skip_id or strtolower( $key ) !== "id" ) {
+				$the_row[ $key ] = $cell;
+				// print "adding $key $cell<br/>";
+				// array_push( $the_row, $cell );
+			}
+			if ( $v_checkbox ) {
+				if ( ! $skip_id or ( $key != $id_field ) ) {
+					$v_line[ $key ] = gui_checkbox( "chk_" . $key, $checkbox_class, false );
+				}
+			}
+			// print "handling header<br/>";
+			// print $skip_id . " " . $key . "<br/>";
+			if ( is_array( $h_line ) and $header_fields ) {
+				$down_key = strtolower( $key );
+				if ( ! $skip_id or $key !== "id" ) {
+					// print "adding $key<br/>";
+					$h_line[ $key ] = isset( $header_fields[ $down_key ] ) ? im_translate( $header_fields[ $down_key ], $args ) : $key;
+				}
+			}
+		}
+
+		$row_count ++;
+
+		if ( $meta_fields and is_array( $meta_fields ) ) {
+			foreach ( $meta_fields as $meta_key ) {
+				$meta_value = sql_query_single_scalar( "select meta_value from " . $meta_table . " where " . $meta_key_field . " = $row_id " .
+				                                       " and meta_key = " . quote_text( $meta_key ) );
+
+				$key             = $meta_table . '/' . $meta_key;
+				$the_row[ $key ] = $meta_value;
+
+				if ( $v_checkbox ) {
+					$v_line[ $key ] = gui_checkbox( "chk_" . $key, $checkbox_class, false );
+				}
+				if ( $h_line ) {
+					// print "adding $key<br/>";
+					$h_line[ $key ] = im_translate( $header_fields[ $key ++ ], $args );
+				}
+			}
+		}
+		if ($v_line) $rows_data["checkbox"] = $v_line;
+		if ($h_line) $rows_data['header'] = $h_line;
+		if ($m_line) { $rows_data["mandatory"] = $m_line; $args["hide_rows"]["mandatory"] = 1; }
+
+		$rows_data[$row_id] = $the_row;
+	}
+	return $rows_data;
+}
+
+function NewRowData($field_list, $values, &$v_line, &$h_line, &$m_line, $skip_id, $id_field, $checkbox_class, $header_fields, $fields, &$args )
+{
+	$new_row = array();
+	$debug   = false;
+	if ( $debug ) {
+		print "new<br/>";
+	}
+
+	// assert(0); // will fire
+	// assert (! isset($field_list[0]), "field list in seq array" );
+	foreach ( $field_list as $key => $field ) {
+		assert( isset( $field_list[ $key ] ) );
+		if ( $debug ) {
+			print "handling $key<br/>";
+		}
+		if ( $values and isset( $values[ $key ] ) ) {
+			$new_row[ $key ] = $values[ $key ];
+		} else {
+			$new_row[ $key ] = null;
+		}
+		if ( $v_line !== null ) {
+			if ( ! $skip_id or ( $key != $id_field ) ) {
+				$v_line[ $key ] = gui_checkbox( "chk_" . $key, $checkbox_class, $new_row[ $key ] != null );
+			}
+		}
+		if ( is_array( $h_line ) and $header_fields ) {
+			if ( ! $skip_id or $key !== "id" ) {
+				$h_line[ $key ] = isset( $header_fields[ $key ] ) ? im_translate( $header_fields[ $key ], $args ) : $key;
+			}
+		}
+		if ( is_array( $m_line ) ) {
+			if ( $debug ) {
+				print "adding " . isset( $mandatory_fields[ $key ] );
+			}
+			if ( isset( $mandatory_fields[ $key ] ) ) {
+				if ( $debug ) {
+					print $key . "<br/>";
+				}
+				$m_line[ $key ] = 1;
+			} else {
+				$m_line[ $key ] = 0;
+			}
+			// array_push($m_line, isset($mandatory_fields[$key]));
+		}
+	}
+
+	if ($v_line) $rows_data["checkbox"] = $v_line;
+	if ($h_line) $rows_data['header'] = $h_line;
+	if ($m_line) { $rows_data["mandatory"] = $m_line; $args["hide_rows"]["mandatory"] = 1; }
+
+	if ($fields)
+	{
+		$new_row_ordered = array();
+		foreach ($fields as $key => $field){
+			$new_row_ordered[$key] = $new_row[$key];
+		}
+		$new_row = $new_row_ordered;
+	}
+	$rows_data["new"] = $new_row;
+
+	return $rows_data;
+}
+
 /**
  * Header will be build from query or sent by header_fields. In the later case, this function will transform it from seq array to assoc array.
  *
@@ -381,13 +487,12 @@ function TableData($sql, &$args = null)
 	$result = sql_query( $sql );
 	if ( ! $result ) { print "Error"; return null;	}
 
-	$rows_data = array();
-
 	$header = GetArg($args, "header", true);
 	$field_list = FieldList($sql, $args);
 	// print __FUNCTION__ ; var_dump($field_list); print "<br/>";
 	$mandatory_fields = GetArg($args, "mandatory_fields", null);  $mandatory_fields = array_assoc($mandatory_fields);
 	$fields = GetArg($args, "fields", null);  $fields = array_assoc($fields);
+	if ($debug) {print "fields: "; var_dump($fields); print "<br/>";}
 	$id_field = GetArg($args, "id_field", "id");
 	$skip_id = GetArg($args, "skip_id", false);
 	$meta_fields = GetArg($args, "meta_fields", null);
@@ -404,13 +509,11 @@ function TableData($sql, &$args = null)
 		$args["table_name"] = $table_names[1][0];
 	}
 
-	$h_line = $header ?  TableHeader( $sql, $args ) : null;
+	$h_line = ($header ?  TableHeader( $sql, $args ) : null);
 
-//	var_dump($h_line);
+//	 print "aaaa: "; var_dump($h_line); print "<br/>";
 
 	$m_line = $mandatory_fields ? array() : null;
-
-	$row_count = 0;
 
 	$v_line = $v_checkbox ? array() : null;
 
@@ -422,138 +525,34 @@ function TableData($sql, &$args = null)
 
 	if (strstr($sql, "describe") || strstr($sql, "show col")) // New Row
 	{
-		$new_row = array();
-		if ($debug) print "new<br/>";
-
-		// assert(0); // will fire
-		// assert (! isset($field_list[0]), "field list in seq array" );
-		foreach ($field_list as $key => $field)
-		{
-			assert(isset($field_list[$key]));
-			if ($debug) print "handling $key<br/>";
-			if ($values and isset($values[$key])) {
-				$new_row[$key] = $values[$key];
-			} else {
-				$new_row[$key] = null;
-			}
-			if ($v_line !== null) {
-				if (! $skip_id or ($key != $id_field))
-					$v_line[$key] = gui_checkbox("chk_" . $key, $checkbox_class, $new_row[$key] != null);
-			}
-			if (is_array($h_line) and $header_fields){
-				if (! $skip_id or $key !== "id")
-					$h_line[$key] = isset($header_fields[$key]) ? im_translate($header_fields[$key], $args) : $key;
-			}
-			if (is_array($m_line)){
-				if ($debug) print "adding " . isset($mandatory_fields[$key]);
-				if(isset($mandatory_fields[$key])) {
-					if ($debug) print $key ."<br/>";
-					$m_line[$key] = 1;
-				} else $m_line[$key] = 0;
-				// array_push($m_line, isset($mandatory_fields[$key]));
-			}
-		}
-		// var_dump($m_line); print "<br/>";
-		if ($v_line){
-			$rows_data["checkbox"] = $v_line;
-			// array_push($rows_data, $v_line);
-		}
-
-		if ($debug) var_dump($m_line);
-
-		if ($m_line) {
-			$rows_data["mandatory"] = $m_line;
-			$args["hide_rows"]["mandatory"] = 1;
-		}
-		// $header_line = TableHeader($sql, false, $skip_id, $meta_fields);
-
-		if ($h_line){
-//			print "adding header";
-//			var_dump($h_line);
-			$rows_data['header'] = $h_line;
-			$h_line = null;
-		}
-
-		if ($fields)
-		{
-			$new_row_ordered = array();
-			foreach ($fields as $key => $field){
-				$new_row_ordered[$key] = $new_row[$key];
-			}
-			$new_row = $new_row_ordered;
-		}
-		$rows_data["new"] = $new_row;
-
-		return $rows_data;
+		if ($debug) print "creating new row<br/>";
+		$rows_data = NewRowData( $field_list, $values, $v_line, $h_line, $m_line, $skip_id, $id_field, $checkbox_class, $header_fields, $fields, $args );
 	} else {
-		while ( $row = mysqli_fetch_assoc( $result ) ) {
-			$the_row = array();
-			if ( ! isset($row[$id_field])) {
-				// Error... We don't have a valid row ID.
-				print "<br/>field id:" . $id_field . "<br/>";
-				var_dump( $row );
-				print "<br/>";
-				die( __FUNCTION__ . ":" . __LINE__ . "no row id" );
-			}
-			$row_id  = $row[ $id_field ];
-
-			foreach ( $row as $key => $cell ) {
-				// Change: 9/9/2019. We put the id only in multirow display
-				if ( ! $skip_id or strtolower( $key ) !== "id" ) {
-					$the_row[$key] = $cell;
-					// print "adding $key $cell<br/>";
-					// array_push( $the_row, $cell );
-				}
-				if ($v_checkbox){
-					if (! $skip_id or ($key != $id_field))
-						$v_line[$key] = gui_checkbox("chk_" . $key, $checkbox_class, false);
-				}
-				// print "handling header<br/>";
-				if (is_array($h_line) and $header_fields){
-					$down_key = strtolower($key);
-					if (! $skip_id or $down_key !== "id") $h_line[$key] = isset($header_fields[$down_key]) ? im_translate($header_fields[$down_key], $args) : $key;
-				}
-			}
-
-			$row_count ++;
-
-			if ($meta_fields and is_array($meta_fields))
-			{
-				foreach ($meta_fields as $meta_key) {
-					$meta_value = sql_query_single_scalar( "select meta_value from " . $meta_table . " where " . $meta_key_field . " = $row_id " .
-					                                       " and meta_key = " . quote_text( $meta_key ) );
-
-					$key             = $meta_table . '/' . $meta_key;
-					$the_row[ $key ] = $meta_value;
-
-					if ( $v_checkbox ) {
-						$v_line[ $key ] = gui_checkbox( "chk_" . $key, $checkbox_class, false );
-					}
-					if ($h_line){
-						$h_line[$key] = im_translate($header_fields[$key++], $args);
-					}
-				}
-			}
-
-			if ($v_line){
-				$rows_data["checkbox"] = $v_line;
-				// array_push($rows_data, $v_line);
-				$v_checkbox = false;
-				$v_line = null;
-			}
-
-			if ($h_line){
-//				print "adding header<br/>";
-//				var_dump($h_line);
-				$rows_data['header'] = $h_line;
-				$h_line = null;
-			}
-
-			$rows_data[$row_id] = $the_row;
-		}
-
-		return $rows_data;
+		if ($debug) print "getting data<br/>";
+		// print "before: "; var_dump($h_line); print "<br/>";
+		$rows_data = RowsData($sql, $id_field, $skip_id, $v_checkbox, $checkbox_class, $h_line, $v_line, $m_line, $header_fields, $meta_fields, $meta_table, $args);
+		// print "after: "; var_dump($h_line); print "<br/>";
 	}
+
+	if (! count($rows_data)) return null;
+
+	// var_dump($m_line); print "<br/>";
+//	if ($v_line){
+//		$rows_data["checkbox"] = $v_line;
+//		// array_push($rows_data, $v_line);
+//	}
+//
+//	if ($m_line) {
+//		$rows_data["mandatory"] = $m_line;
+//		$args["hide_rows"]["mandatory"] = 1;
+//	}
+//
+//	if ($h_line){
+//		$rows_data['header'] = $h_line;
+//		$h_line = null;
+//	}
+
+	return $rows_data;
 }
 
 /**
@@ -582,10 +581,12 @@ function FieldList($sql, &$args)
 //		print "2:"; var_dump($fields); print "<br/>";
 	} else {
 		$row = sql_fetch_assoc($result);
-		if ($row) foreach ($row as $key => $cell) $fields[$key] = 1;
+		$skip_id = GetArg($args, "skip_id", false);
+		$id_field = GetArg($args, "id_field", "id");
+		if ($row) foreach ($row as $key => $cell) if (! $skip_id or ($key != $id_field)) $fields[$key] = 1;
 //		print "3:"; var_dump($fields); print "<br/>";
 	}
-//	var_dump($fields);
+
 	$args["fields"] = $fields;
 
 	return $fields;

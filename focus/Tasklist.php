@@ -286,41 +286,25 @@ function create_tasks_per_mission() {
 }
 // if null = create for all freqs.
 function create_tasks( $freqs = null, $verbose = false, $default_owner = 1 ) {
+	$log_file = "tasklist." . date("m-d") . ".log";
+	my_log("Creating tasks freqs=" . $freqs, __FUNCTION__, $log_file);
+	ob_start();
 	if ( ! table_exists( "im_task_templates" ) ) {
 		return;
 	}
-	do {
-		if ( ! $freqs ) {
-			$freqs = sql_query_array_scalar( "select DISTINCT repeat_freq from im_task_templates" );
-			create_tasks_per_mission();
-			break;
-		}
-		if ( ! is_array( $freqs ) ) {
-			$freqs = array( $freqs );
-			break;
-		}
-	} while ( 0 );
+	if ( ! $freqs ) $freqs = sql_query_array_scalar( "select DISTINCT repeat_freq from im_task_templates" );
+
+	// TODO: create_tasks_per_mission();
 
 	$verbose_table = array( array( "template_id", "freq", "query", "active", "result", "priority", "new task" ));
 	foreach ( $freqs as $freq ) {
-//		print "freq=". $freq . "<br/>";
-		//	print "v= " . $verbose . "<br/>";
-		$info_key = "tasklist_create_run_" . $freq;
-		// $verbose_data .= "Started $freq...<br/>";
+		my_log("Handling " . $freq, __FUNCTION__, $log_file);
 
-		// TODO: check last run.
-//		$last_run = info_get( $info_key );
-//		if ( date( $freq ) == date( $last_run ) ) {
-//			if ( $verbose ) {
-//				print "run lately. Skipping " . $freq;
-//			}
-//
-//			continue;
-//		}
+		// if ( date( $freq ) == date( $last_run ) ) {
 
 		$sql = "SELECT id, task_description, task_url, project_id, repeat_freq, repeat_freq_numbers, condition_query, priority, creator, owner " .
 		       " FROM im_task_templates " .
-		       " where repeat_freq = '" . $freq . "'";
+		       " where repeat_freq = '" . $freq . "' and ((last_check is null) or (last_check < " . quote_text(date('Y-m-j')) .") or repeat_freq like 'c%')";
 
 		$result = sql_query( $sql );
 
@@ -342,12 +326,15 @@ function create_tasks( $freqs = null, $verbose = false, $default_owner = 1 ) {
 			for ( $i = 1; $i < 4; $i ++ )
 				$test_result .= substr( $verbose_line[ $i ], 0, 1);
 
+			sql_query("update im_task_templates set last_check = now() where id = " . $id);
+
 			array_push( $verbose_line, $test_result );
 //			 print $test_result . " " . (strpos("1" . $test_result, "0") != false) . "<br/>";
 			if ( strpos(  $test_result, "0" ) !== false) {
 //				print "xxxx";
 				array_push( $verbose_line, "skipped" );
 				array_push( $verbose_table, $verbose_line);
+				my_log(comma_implode($verbose_line), "Template " . $id, $log_file);
 				continue;
 			}
 
@@ -383,10 +370,14 @@ function create_tasks( $freqs = null, $verbose = false, $default_owner = 1 ) {
 			array_push( $verbose_table, $verbose_line);
 			// print $sql;
 		}
-		info_update( $info_key, date( $freq ));
 	}
 	if ( $verbose )
 		print gui_table_args( $verbose_table);
+
+	$output = ob_get_contents();
+	ob_end_clean();
+
+	my_log($output, "", $log_file);
 }
 
 

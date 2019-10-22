@@ -36,7 +36,7 @@ function get_url($only_base = false)
 function add_param_to_url($url, $param_name, $param_value = null)
 {
 	$query_parts = [];
-	if (!$param_value and ! is_array($param_name)) die ("bad usage");
+	if (is_null($param_value) and ! is_array($param_name)) die (__FUNCTION__ . ": bad usage");
 	if ($s = strpos($url,'?')) { // Have previous query
 		// Remove url part
 		$result = substr($url, 0, $s); // not including the ?

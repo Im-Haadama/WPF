@@ -188,11 +188,19 @@ function data_search($table_name, $args = null)
 
 function handle_data_operation($operation)
 {
-//	$allowed_tables = array("im_company", "im_tasklist", "im_task_templates");
+	$allowed_tables = array("im_company", "im_tasklist", "im_task_templates", "im_working_teams");
 
 	$debug = 0;
 	if ($debug)	print "operation: " . $operation . "<br/>";
 	switch ($operation){
+		case "save_new":
+			$table_name = get_param("table_name", true);
+			if (! in_array($table_name, $allowed_tables))
+				die ("invalid table operation");
+			$result = data_save_new($table_name);
+			if ($result > 0) print "done";
+			break;
+
 		case "update":
 			$table_name = get_param("table_name", true);
 			if (update_data($table_name))
@@ -232,12 +240,26 @@ function auto_list($table_name, $field, $prefix, $args = null)
 	$id_field = GetArg($args, "id_field", "id");
 	$include_id = GetArg($args, "include_id", false);
 
-	$args["sql"] = "select $id_field, $field from $table_name where $field like '" . $prefix . "%'";
+	$args["sql"] = "select $id_field, $field from $table_name where $field like '%" . $prefix . "%'";
 	$query = GetArg($args, "query", null); 	if ($query) $args["sql"] .= " and " . $query;
-//	print $args["sql"] . "<br/>";
+	print $args["sql"] . "<br/>";
 	$args["field"] = $field;
 	$args["include_id"] = $include_id;
 	$data .= GuiDatalist($table_name . "_$prefix", $table_name, $args );
 
 	return $data;
+}
+
+function set_args_value(&$args, $ignore_list = null)
+{
+	if (! $ignore_list) $ignore_list = array("operation", "table_name");
+	foreach ($_GET as $key => $data)
+	{
+		if (! in_array($key, $ignore_list))
+		{
+			if (! isset($args["fields"]))
+				$args["fields"] = array();
+		}
+		$args["values"][$key] = $data;
+	}
 }

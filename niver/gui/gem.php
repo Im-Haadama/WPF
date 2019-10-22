@@ -8,6 +8,7 @@ function GemAddRow($table_name, $text, $args){
 	$post = GetArg($args, "post_file", null);
 	if (! $post) die(__FUNCTION__ . ":" . $text . "must send post file");
 	$result .= gui_button("add_row", "data_save_new('" . $post . "', '$table_name')", "add");
+	$result .= gui_button("add_row", "data_save_new('" . $post . "', '$table_name', success_message)", "add and continue");
 
 	return $result;
 }
@@ -16,13 +17,18 @@ function GemElement($table_name, $row_id, $args)
 {
 	$result = "";
 	$title = GetArg($args, "title", null);
+
+	// Set defaults
+	if (!isset($args["transpose"])) $args["transpose"] = true;
+	if (!isset($args["edit"])) $args["edit"] = true;
+
 	if ($title)
 		$result .= gui_header(1, $title, true, true) . " " . gui_label("id", $row_id);
 
 	$result .= GuiRowContent($table_name, $row_id, $args);
 
 	if (GetArg($args, "edit", false))
-		$result .= gui_button( "btn_save", "data_save_entity('/niver/data/data.php', '$table_name', " . $row_id . ')', "שמור" );
+		$result .= gui_button( "btn_save", "data_save_entity('/niver/data/data-post.php', '$table_name', " . $row_id . ')', "שמור" );
 
 	return $result;
 }

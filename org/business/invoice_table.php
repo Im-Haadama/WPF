@@ -32,15 +32,7 @@ if ($operation){
 	{
 		case "show_add_invoice":
 			$args = array();
-			foreach ($_GET as $key => $data)
-			{
-				if (! in_array($key, array("operation", "table_name")))
-				{
-					if (! isset($args["fields"]))
-						$args["fields"] = array();
-				}
-				$args["values"][$key] = $data;
-			}
+			set_args_value($args);
 			$args["edit"] = true;
 			// $args["]
 			$args["selectors"] = array("part_id" => "gui_select_supplier", "document_type" => "gui_select_document_type");
@@ -74,7 +66,7 @@ if ($row_id)
 	$args["header_fields"] = array("Id", "Supplier", "Date", "Week", "Amount", "Reference", "Delivery fee", "Project", "Is active", "Pay date", "Document type", "Net amount", "Invoice file", "Invoice",
 		"Occasional supplier");
 	print GuiRowContent("im_business_info", $row_id, $args);
-	print gui_button("btn_save", 'save_entity(\'im_business_info\', ' . $row_id .')', "שמור");
+	print gui_button("btn_save", 'data_save_entity(\'im_business_info\', ' . $row_id .')', "שמור");
 
 	return;
 }

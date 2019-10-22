@@ -700,14 +700,9 @@ function gui_table_args($input_rows, $id = null, $args = null)
 	$style = GetArg($args, "style", null);
 	$class = GetArg($args, "class", null);
 
-	// Cols - how to name them, whether to show. Which one is the id.
-	$col_ids = GetArg($args, "col_ids", null);
 	$show_cols = GetArg($args, "show_cols", null);
-	// $debug = (1 == get_user_id());
 	if ($debug) var_dump($show_cols);
 
-	$id_field = GetArg($args, "id_field", "id");
-	// print "id_field=$id_field<br/>";
 	if (isset($args["edit_cols"]))
 	{
 		$args["edit_cols"]["id"] = false;
@@ -733,9 +728,7 @@ function gui_table_args($input_rows, $id = null, $args = null)
 	if ( $header ) {
 		$data = "<table";
 
-		if ( $class ) {
-			$data .= " class=\"" . $class . "\"";
-		}
+		if ( $class ) $data .= " class=\"" . $class . "\"";
 		if ( ! is_null( $id ) ) {
 			if (! is_string($id)){
 				return "bad table id";
@@ -750,9 +743,6 @@ function gui_table_args($input_rows, $id = null, $args = null)
 	if ( $style ) $data .= "<style>" . $style . "</style>";
 	if (is_array($rows) and $transpose) $rows = array_transpose($rows);
 
-//	print "t=$transpose<br/>";
-//	print "hide cols: " ; var_dump($args["hide_cols"]); print "<br/>";
-//	print "hide rows: "; var_dump($args["hide_rows"]); print "<br/>";
 	foreach ($rows as $line_id => $line)
 	{
 		$data .="<tr>";
@@ -766,6 +756,7 @@ function gui_table_args($input_rows, $id = null, $args = null)
 					$data .= "<td>" . gui_checkbox("chk_" . $row_id, $checkbox_class, 0,
 							($row_id === "header") ? $e = 'onchange="select_all_toggle(this, \'' . $checkbox_class . '\')"' : $checkbox_events);
 				}
+				// print "hide: "; var_dump($args["hide_rows"]); print "<br/>";
 				$show =  ((((!$show_cols) or isset($show_cols[$field])) // Positive
 				         and !(isset($args["hide_cols"]) and isset($args["hide_cols"][$field])))  // Negative
 				         and (! isset($args["hide_rows"][$row_id])));

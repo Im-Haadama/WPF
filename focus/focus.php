@@ -19,7 +19,6 @@ require_once(ROOT_DIR . '/focus/Tasklist.php');
 require_once(ROOT_DIR . '/niver/gui/gem.php');
 require_once(ROOT_DIR . '/org/people/people.php');
 
-
 require_once (ROOT_DIR . '/im-config.php');
 
 //function focus_init($script_files = null)
@@ -111,6 +110,7 @@ function focus_new_task()
 	$args["worker"] = get_user_id();
 	$args["companies"] = sql_query_single_scalar("select company_id from im_working where user_id = " . get_user_id());
 	$args["hide_cols"] = array("creator" => 1);
+	set_args_value($args); // Get values from url.
 
 	print GemAddRow("im_tasklist", "New task", $args);
 //	try {
@@ -343,12 +343,10 @@ function handle_focus_operation($operation)
 
 		case "postpone_task":
 			$task_id = get_param( "id" );
-			$t = new Tasklist($task_id);
-			if ($t->Postpone()) {
-				print "done";
-				return;
-			}
-			print "update failed";
+			$T       = new Tasklist( $task_id );
+			$r = $T->Postpone();
+			create_tasks( null, false );
+			if ($r) print "done";
 			break;
 
 
@@ -378,6 +376,13 @@ function handle_focus_operation($operation)
 				die ("invalid table operation");
 			if (cancel_data($table_name))
 				print "done";
+			break;
+
+		case "edit_teams":
+			$args = [];
+			$args["post_file"] = "/niver/data/data-post.php";
+			$args["selectors"] = array("manager" => "gui_select_worker");
+			print GemAddRow("im_working_teams", "Add a team", $args);
 			break;
 
 		default:
@@ -413,20 +418,26 @@ function show_templates($url,  $template_id = 0 ) {
 	$args["worker"] = get_user_id();
 	$args["companies"] = worker_get_companies(get_user_id());
 	$args["selectors"] = array("project_id" =>  "gui_select_project", "owner" => "gui_select_worker",
-	                           "creator" => "gui_select_worker", "repeat_freq" => "gui_select_repeat_time");
+	                           "creator" => "gui_select_worker", "repeat_freq" => "gui_select_repeat_time", "team" => "gui_select_team");
+	$args["fields"] = array("id", "task_description", "project_id", "priority", "team", "repeat_freq", "repeat_freq_numbers", "working_hours", "task_url");
+	$args["header_fields"] = array("task_description" => "Task description", "project_id" => "Project", "priority" => "Priority",
+	                                      "team" => "Team", "repeat_freq" => "Repeat Frequency", "repeat_freq_numbers" => "Repeat times", "working_hours" => "Working hours",
+		"Task site");
+
 	$sql         = "select * " .
 	               " from im_task_templates where 1 ";
 	if ($template_id){
-		print gui_header(1, "משימה חוזרת מספר " . $template_id) ."<br/>";
+		// print gui_header(1, "משימה חוזרת מספר " . $template_id) ."<br/>";
+		$args["title"] = "Repeating task";
 
-		$args["transpose"] = true;
-		$args["edit"] = true;
-		//	$args["add_checkbox"] = true;
-		$args["events"] = "onchange=\"changed(this)\"";
+//		$args["transpose"] = true;
+//		$args["edit"] = true;
+//		//	$args["add_checkbox"] = true;
+//		$args["events"] = "onchange=\"changed(this)\"";
 
-		print GuiRowContent("im_task_templates", $template_id, $args);
+		print GemElement("im_task_templates", $template_id, $args);
 
-		print gui_button( "btn_save", "save_entity('/focus/focus-post.php', 'im_task_templates', " . $template_id . ')', "save" );
+		print gui_button( "btn_save", "data_save_entity('/focus/focus-post.php', 'im_task_templates', " . $template_id . ')', "save" );
 		print gui_button( "btn_cancel", "cancel_entity('/focus/focus-post.php', 'im_task_templates', " . $template_id . ')', "cancel" );
 
 		// show last active
@@ -474,10 +485,10 @@ function show_task($row_id, $edit = 1)
 	$args                 = array();
 	$args["edit"]         = $edit;
 	$args["selectors"] = array("project_id" =>  "gui_select_project", "owner" => "gui_select_worker", "creator" => "gui_select_worker", "preq" => "gui_select_task",
-	                           "mission_id" => "gui_select_mission");
+	                           "mission_id" => "gui_select_mission",
+	                           "team" => "gui_select_team");
 	$args["title"] = $entity_name;
 
-	//"id" => "Id",
 	$args["header_fields"] = array( "date" => "Date", "task_description" => "Task description", "task_template" =>"Repeating task",
 		"status" => "Status", "started" => "Started", "ended" => "Ended", "project_id" => "Project", "location_name" => "Location",
 		"location_address" => "Address", "priority" => "Priority", "preq" => "Prerequisite", "owner" => "Assigned to",
@@ -486,6 +497,7 @@ function show_task($row_id, $edit = 1)
 	$args["worker"] = get_user_id();
 	$args["companies"] = worker_get_companies(get_user_id());
 	$args["debug"] = 0; // get_user_id() == 1;
+	$args["worker"] = get_user_id();
 
 	print GemElement($table_name, $row_id, $args);
 
@@ -537,20 +549,22 @@ function edit_staff($url)
 function active_tasks($args = null, $debug = false, $time = false)
 {
 	$table_name = "im_tasklist";
+	$title = "";
 
 	$action_url = "/focus/focus-post.php";
 	$page_url = get_url(true);
 
-	$last_entered = GetArg($args, "last_entered", null);
-	if ($last_entered) print "showing newest tasks<br/>";
-
 	$active_only = GetArg($args, "active_only", true);
+	if ($active_only){
+		$title .= im_translate("active only");
+	}
 
-	$page = get_param("page", false, 1);
-	$rows_per_page = 10;
+	$page = GetArg($args, "page", 1);
+	$rows_per_page = GetArg($args, "rows_per_page", 10);
 	$offset = ($page - 1) * $rows_per_page;
 
-	$limit = "limit $rows_per_page offset $offset";
+	$limit = (($page > -1) ? "limit $rows_per_page offset $offset" : "");
+	if (! isset($args["fields"])) $args["fields"] = array("id", "task_description", "project_id", "priority", "task_template");
 
 //	if (get_param("limit"))
 //		$limit = "limit " . get_param("limit");
@@ -566,20 +580,24 @@ function active_tasks($args = null, $debug = false, $time = false)
 	if (GetArg($args, "query", null))
 		$query .= " and " . GetArg($args, "query", null);
 
-	$project_id = GetArg($args, "project", null);
+	$project_id = GetArg($args, "project_id", null);
 	if ($project_id) {
+		$title = im_translate("Project") . " " . get_project_name($project_id);
+		if ($f = array_search("project_id", $args["fields"])) {
+			unset($args["fields"][$f]);
+//			print "removed";
+		}
+//		var_dump($args["fields"]);
 		$query .= " and project_id = $project_id";
 	}
 
 	$args["selectors"] = array("project" => "gui_select_project", "project_id" => "gui_select_project");
 
-	if (! $last_entered) {
-		if ($active_only) // task_status(preq) >= 2
-			$query .= " and (status in (0, 1) and (isnull(preq) or preq_done(id)) and (date is null or date(date) <= Curdate()))";
-
-		if ($time) $query .= " and task_active_time(id)";
+	$query .= " and status < 2 ";
+	if ($active_only) {
+		$query .= " and (isnull(preq) or preq_done(id)) and (date is null or date(date) <= Curdate())";
+		$query .= " and (mission_id is null or mission_id = 0) ";
 	}
-	$query .= " and (mission_id is null or mission_id = 0) ";
 
 	// New... the first part is action to server. If it replies with done, the second part is executed in the client (usually hiding the row).
 	$actions = array(
@@ -588,10 +606,7 @@ function active_tasks($args = null, $debug = false, $time = false)
 		array( "cancel", $action_url . "?operation=cancel_task&id=%s;action_hide_row" ),
 		array( "postpone", $action_url . "?operation=postpone_task&id=%s;action_hide_row" )
 	);
-	if (! $active_only or $last_entered)
-		$order = "order by id desc ";
-	else
-		$order   = "order by priority desc ";
+	$order   = "order by priority desc ";
 
 	$links["task_template"] = $page_url . "?task_template_id=%s";
 	$links["id"] = $page_url . "?row_id=%s";
@@ -603,31 +618,30 @@ function active_tasks($args = null, $debug = false, $time = false)
 	$args["edit"] = false;
 	$args["header_fields"] = array("task_description" => "Task description", "task_template" => "Repeating task id", "project_id" => "Project Id", "id" => "Id",
 		"priority" => "Priority", "start" => "Start", "finish" => "Finished", "cancel" => "Cancel", "postpone" => "Postpone");
+	$fields = $args["fields"];
 
-	$more_fields = "";
+//	$more_fields = "";
 
-	if ($debug and ! $time)
-		$more_fields .= ", task_template_time(id) ";
+//	if ($debug and ! $time)
+//		$more_fields .= ", task_template_time(id) ";
 
-	$sql = "select id, task_description, task_template, project_id, priority $more_fields from $table_name $query $order $limit";
+	$sql = "select " . comma_implode($fields) . " from $table_name $query $order $limit";
 
 	if ($debug)
 		print "<br/>" . $sql . "<br/>";
 
+	$result = "";
 	try {
-		$result = GuiTableContent( $table_name, $sql, $args );
+		if (isset($_GET["debug"])) print "sql = $sql<br/>";
+		$table = GuiTableContent( $table_name, $sql, $args );
+		if ($table) {
+			if (strlen($title)) $result = gui_header(2, $title);
+			$result .= $table;
+		}
 	} catch ( Exception $e ) {
 		print "can't load tasks." . $e->getMessage();
 		return null;
 	}
-
-	if (strlen ($result) < 10) {
-		$result = im_translate( "No active tasks!" ) . "<br/>";
-		$result .= im_translate( "Let's create first one!" ) . " ";
-		$result .= gui_hyperlink( "create task", $page_url . "?operation=new_task" ) . "<br/>";
-	} else
-		$result .= gui_hyperlink("Older", add_to_url("page", $page + 1));
-
 
 	return $result;
 }

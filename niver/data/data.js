@@ -1,6 +1,6 @@
 
 // Save entity from single row view - chk_ new fields.
-function save_entity(post_operation, table_name, id)
+function data_save_entity(post_operation, table_name, id)
 {
     if (!Number.isInteger(id)) {
         alert ("invalid id: " . id);
