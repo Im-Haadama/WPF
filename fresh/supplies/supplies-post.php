@@ -18,5 +18,4 @@ require_once("../catalog/gui.php");
 // print header_text(false, true, false);
 if ( $operation = get_param("operation", false, null) ) {
 	handle_supplies_operation($operation);
-
 }

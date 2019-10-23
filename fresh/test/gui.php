@@ -16,13 +16,16 @@ print load_scripts(array("/niver/gui/client_tools.js", "/niver/data/data.js"));
 
 $args = [];
 $args["worker"] = get_user_id();
-print gui_select_product("product", null, $args);
+//print gui_select_product("product", null, $args);
+//
+//print "<br/>";
+//print gui_select_project("project", null, $args);
+//
+//print "<br/>";
+//print gui_select_worker("worker", null, $args);
+//
+//print "<br/>";
+//print gui_select_task("task", null, $args);
 
 print "<br/>";
-print gui_select_project("project", null, $args);
-
-print "<br/>";
-print gui_select_worker("worker", null, $args);
-
-print "<br/>";
-print gui_select_task("task", null, $args);
+print gui_select_client("client", "", $args);

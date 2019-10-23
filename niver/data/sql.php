@@ -396,7 +396,7 @@ function sql_trace()
 {
 	$result = "";
 	$debug = debug_backtrace();
-	for ( $i = 2; $i < 6 && $i < count( $debug ); $i ++ ) {
+	for ( $i = 2; $i < 10 && $i < count( $debug ); $i ++ ) {
 		if (isset($debug[$i]['file'])) $caller = "called from " . $debug[$i]['file'] . " ";
 		else $caller = "";
 		if (isset($debug[ $i ]["line"])) $line = ":" . $debug[ $i ]["line"];

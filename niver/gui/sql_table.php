@@ -43,8 +43,9 @@ function TableHeader($sql, $args) // $add_checkbox = false, $skip_id = false, $m
 			$result = [];
 			$fields = array_assoc($fields);
 			foreach ($fields as $field => $v)
-				if (! $skip_id or strtolower($field) !== "id")
-					$result[$field] = isset($header_fields[$field]) ? $header_fields[$field] : $field;
+				if (! $skip_id or strtolower($field) !== "id"){
+					$result[$field] = (isset($header_fields[$field]) ? $header_fields[$field] : $field);
+				}
 			return $result;
 		}
 		return array_assoc($header_fields);
@@ -262,7 +263,8 @@ function PrepareRow($row, $args, $row_id)
 
 			/// 5/9/2019 Change!! edit_cols by default is to edit. if it set, don't edit.
 			/// 23/9/2019  isset($edit_cols[$key]) - set $args["edit_cols"][$key] for fields that need to be edit.
-			if ($edit and  (! $edit_cols or (isset($edit_cols[$key]) and $edit_cols[$key]))){
+
+			if ($edit  and (! $edit_cols or (isset($edit_cols[$key]) and $edit_cols[$key]))){
 				if (! $key)
 					continue;
 				if ($field_events) $args["events"] = $field_events;

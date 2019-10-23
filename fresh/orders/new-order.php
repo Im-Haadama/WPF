@@ -90,8 +90,8 @@ global $pos;
             var product = new_row.insertCell(0);
 
             //product.innerHTML = "<input id=\"nam_" + line_idx + "\" list=\"items\" onchange=\"select_product(" + line_idx + ")\">";
-            var select = "<?php print gui_input_select_from_datalist( "XX", "products", "onfocusout=\\\"select_product(YYY)\\\"" ); ?>";
-            product.innerHTML = select.replace("XX", "nam_" + line_idx).replace("YYY", line_idx);
+            //var select = "<?php //print gui_select_product( "XX", "products", "onfocusout=\\\"select_product(YYY)\\\"" ); ?>//";
+            // product.innerHTML = select.replace("XX", "nam_" + line_idx).replace("YYY", line_idx);
             var quantity = new_row.insertCell(1);
 			<?php
 			//        if ($pos) $event = 'onkeyup=\"quantity_entered(" + line_idx + ")\"'; else
@@ -343,13 +343,12 @@ global $pos;
 			array_push( $header[1], gui_select_mission( "mis_new" ) );
 		}
 		array_push( $header[0], gui_header( 2, "הערה/שם לקוח" ) );
-		array_push( $header[1], gui_input( "order_excerpt", "" ) );
+		array_push( $header[1], GuiInput( "order_excerpt", "" ) );
 		print gui_table_args( $header );
 
 		print gui_label( "rate", $pos ? "pos" : "" );
 
 		print gui_header( 2, "בחר מוצרים" );
-		print gui_datalist( "items", "im_products", "post_title" );
 
 		$show_fields = array( true, true, ! $pos, true, true );
 		$sum         = array();
@@ -387,6 +386,5 @@ global $pos;
     </div>
 
 <?php
-// print gui_datalist( "products", "im_products", "post_title", true );
 
 ?>

@@ -19,8 +19,8 @@ if ( $id > 0 ) {
 
 $O = new Order( $order_id );
 
-print gui_datalist( "items", "im_products", "post_title", true );
-print gui_datalist( "draft_items", "im_products_draft", "post_title", true );
+//print gui_datalist( "items", "im_products", "post_title", true );
+//print gui_datalist( "draft_items", "im_products_draft", "post_title", true );
 ?>
 
 <script>

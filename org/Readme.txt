@@ -1,0 +1,1 @@
+Users' teams are in usermeta, teams key, in format :<team a>:<team b>: e.g: :123:444:

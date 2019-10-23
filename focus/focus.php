@@ -251,8 +251,10 @@ function handle_focus_operation($operation)
 			break;
 
 		case "edit_team":
+			// temporary - for existing teams.
 			print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/niver/data/focus.js" ) );
 			$team_id = get_param("id", true);
+			team_add_worker($team_id, team_manager($team_id));
 			print gui_header(1, "Edit Team" . team_get_name($team_id));
 			$args = array("selectors" => array("id" => "gui_select_worker"), "edit" => false);
 			print GuiTableContent("im_working_teams",
@@ -382,6 +384,8 @@ function handle_focus_operation($operation)
 			$args = [];
 			$args["post_file"] = "/niver/data/data-post.php";
 			$args["selectors"] = array("manager" => "gui_select_worker");
+			$args["links"] = array("id" => add_to_url(array("operation" => "edit_team", "id" => "%s")));
+			print GemTable("im_working_teams", $args);
 			print GemAddRow("im_working_teams", "Add a team", $args);
 			break;
 
@@ -398,9 +402,9 @@ function show_projects( $url, $owner, $non_zero = true) {
 
 	$links["id"] = add_param_to_url($url, "project_id", "%s");
 	$sql         = "select id, project_name, project_priority, project_count(id, " . $owner . ") as open_count " .
-	               " from im_projects ";
+	               " from im_projects where 1 ";
 	if ( $non_zero ) {
-		$sql .= " where project_count(id, " . $owner . ") > 0 ";
+		$sql .= " and project_count(id, " . $owner . ") > 0 ";
 	}
 	$sql .= " order by 3 desc";
 

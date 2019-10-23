@@ -121,9 +121,11 @@ print gui_hyperlink("Not filtered", add_to_url("active_only", 0)); // Not filter
 // if (get_user_id() != 1) return;
 
 // Tasks my teams need to handle.
-$members = comma_implode(team_all_members(get_user_id()));
-if (strlen($members)) {
-	$args["query"] = " team in (" . $members . ") and owner is null";
+//print  "my teams: " . comma_implode(team_all_teams(get_user_id())) . "<br/>";
+$teams = team_all_teams(get_user_id());
+if (count($teams)) {
+	$args["query"] = " team in (" . comma_implode($teams) . ") and owner is null";
+//	print $args["query"] . "<br/>";
 	$table = active_tasks($args, $debug, $time_filter);
 	if (strlen($table) > 100){
         print gui_header(1, "Unassigned team tasks");
@@ -132,11 +134,11 @@ if (strlen($members)) {
 }
 
 // Tasks that I created
-if (strlen ($members) > 1)
-	$args["query"] = " creator = " . get_user_id() . " and owner not in (" . $members . ", " . geT_user_id() . ")";
-else
-	$args["query"] = " creator = " . get_user_id() . " and owner != " . get_user_id();
-
+if (count($teams) >= 1) {
+	$args["query"] = " creator = " . get_user_id() . " and team not in (" . comma_implode($teams) . ", " . geT_user_id() . ")";
+//else
+//	$args["query"] = " creator = " . get_user_id() . " and owner != " . get_user_id();
+//
 $args["limit"] = get_param("limit", false, 10);
 $args["active_only"] = get_param("active_only", false, true);
 $result =  active_tasks($args);
@@ -144,4 +146,6 @@ $result =  active_tasks($args);
 if (strlen($result) > 150){
 	print gui_header(1, "Tasks I've created");
 	print $result;
+}
+
 }

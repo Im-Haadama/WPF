@@ -304,11 +304,11 @@ class Supply {
 
 		array_push( $rows, $row );
 
-		$row = array( "שילוח" );
+		$row = array( "Delivery route" );
 		if ( $edit ) {
 			array_push( $row, gui_select_mission( "mis_" . $this->ID, $this->MissionID, array("events" => "onchange=mission_changed(" . $this->ID . ")" )) );
 		} else {
-			array_push( $row, $this->getMissionID() );
+			array_push( $row, get_mission_name($this->getMissionID()) );
 		}
 
 		array_push( $rows, $row );
@@ -329,6 +329,8 @@ class Supply {
 
 	/**
 	 * @param mixed $MissionID
+	 *
+	 * @return string
 	 */
 	public function setMissionID( $MissionID ) {
 		$this->MissionID = $MissionID;
@@ -339,7 +341,6 @@ class Supply {
 
 	// $internal - true = for our usage. false = for send to supplier.
 	function HtmlLines( $internal, $edit = 1, $categ_group = false ) {
-
 		// my_log( __FILE__, "id = " . $this->ID . " internal = " . $internal );
 		$sql = 'select product_id, quantity, id'
 		       . ' from im_supplies_lines where status = 1 and supply_id = ' . $this->ID;
@@ -348,12 +349,14 @@ class Supply {
 			"selectors" => array("product_id" => "gui_select_product"),
 			          "id_key" => "ID",
 			          "edit" => $edit,
-			          "show_cols" => array("product_id" => true, "quantity" => true, '$buy' => true, '$total' => true, '$buyers' => true),
+			          "show_cols" => array("product_id" => true, "quantity" => true, '$buy' => true, '$total' => true),
 			          "checkbox_class" => "supply_checkbox", "events"=>"onchange='changed(this)'");
 
+		if ($internal) $args["show_cols"]['$buyers'] = true;
 		if ($edit) $args["edit_cols"] = array("quantity" => true, '$buy' => true);
 
 		$args['fields'] = array("product_id" => 0, "quantity" => 1, '$buy' => 2, '$total' => 3, '$buyers' => 4);
+		$args["header_fields"] = array("product_id" => "Product", "quantity" => "Quantity");
 		$args["acc_fields"] = array(  "product_id" => "סה\"כ",
 		                              "quantity" => array( "func" => 'sum_numbers', "val" => 0 ),
 		                              '$total' => array("func" => 'sum_numbers' , "val" => 0) );
@@ -363,23 +366,17 @@ class Supply {
 //		var_dump($sums);
 		/// array_push($rows_data, $sums);
 
-		if ( $internal){
 			$rows_data['header']['$buy'] = "Buy price";
 			$rows_data['header']['$total'] = 'Total';
 			$rows_data['header']['$buyers'] = 'Buyers';
 
-			$first = true;
 			foreach ($rows_data as $line_id => $row)
 			{
-				if ($first){
-					$first = false;
-					continue;
-				}
+				if (in_array($line_id, array("header"))) continue;
+
 				$prod_id = $row['product_id'];
 
-				if (! $prod_id) {
-					print "bad id: $prod_id<br/>";
-					continue;
+				if (! $prod_id) {print "bad id: $prod_id<br/>"; continue;
 				}
 				//$prod_id = $rows_data[$i]["Product Name"];
 				$buy_price = get_buy_price($prod_id, $this->getSupplier());
@@ -396,9 +393,8 @@ class Supply {
 
 				$rows_data[$line_id]['$buy'] = $buy_price;
 				$rows_data[$line_id]['$total'] = $buy_price * $q;
-				$rows_data[$line_id]['$buyers'] = orders_per_item( $prod_id, 1, true, true, true );
+				if ( $internal) $rows_data[$line_id]['$buyers'] = orders_per_item( $prod_id, 1, true, true, true );
 			}
-		}
 
 		if (isset($args['acc_fields'])) $rows_data['sums'] = HandleTableAcc($args['acc_fields'], $rows_data, $args['fields']);
 
@@ -972,8 +968,9 @@ function SuppliesTable( $status, $args = null ) {
 	$args["header"] = array("Id", "Supplier", "Date", "Mission");
 	$args["add_checkbox"] = true;
 	$args["selectors"] = array("supplier" => 'gui_select_supplier', "mission_id" => 'gui_select_mission');
-	$args["links"] = array("id" => get_url(1) . "?id=%s");
+	$args["links"] = array("id" => add_to_url(array("operation" =>"get", "id" => "%s")));
 	$args["checkbox_class"] = gui_select_supply_status(null, $status);
+	$args["edit"] = false;
 
 	$result = GemTable("im_supplies", $args);
 	if (! $result) return null;
@@ -1205,6 +1202,11 @@ function handle_supplies_operation($operation)
 {
 	switch ( $operation )
 	{
+		case "get":
+			$id = get_param("id", true);
+			 get_supply($id);
+			 break;
+
 		case "supply_pay":
 			print "supply pay<br/>";
 			$id   = $_GET["id"];
@@ -1226,7 +1228,7 @@ function handle_supplies_operation($operation)
 			break;
 
 		case "got_supply":
-			$supply_id     = $_GET["supply_id"]; // מספר הספקה שלנו
+			$supply_id     = get_param("supply_id", true); // מספר הספקה שלנו
 			$supply_total  = $_GET["supply_total"]; // סכום
 			$supply_number = $_GET["supply_number"]; // מספר תעודת משלוח
 			$net_amount    = get_param( "net_amount" );
@@ -1237,11 +1239,7 @@ function handle_supplies_operation($operation)
 //			die(1);
 			$document_date = get_param( "document_date" );
 			$bid           = got_supply( $supply_id, $supply_total, $supply_number, $net_amount, $doc_type, $document_date );
-			if ( ! $bid ) {
-				print "fail";
-			} else {
-				print $bid;
-			}
+			if ( $bid > 0) print "done";
 			break;
 
 		case "send":
@@ -1327,7 +1325,7 @@ function handle_supplies_operation($operation)
 			print gui_hyperlink("Create supply", get_url(1) . "?operation=new_supply");
 			$args["title"] = "Supplies to get";       print SuppliesTable( SupplyStatus::Sent, $args );
 			$args["title"] = "Supplies to collect";   print SuppliesTable( SupplyStatus::OnTheGo, $args );
-//			$args["title"] = "Supplies done";         print SuppliesTable( SupplyStatus::Supplied, $args );
+			$args["title"] = "Supplies done";         print SuppliesTable( SupplyStatus::Supplied, $args );
 			break;
 
 		case "delete_supplies":
@@ -1464,46 +1462,82 @@ function handle_supplies_operation($operation)
 	}
 }
 
-function handle_supply($id)
+function get_supply($id)
 {
 	$supply = new Supply($id);
-	print "<center> " . gui_header(1, "Supply ", true, true). gui_label("supply_number", $id) . "</center>";
+	print gui_header(1, "Supply", true, true). " " . gui_label("supply_id", $id);
 	$edit =($supply->getStatus() == SupplyStatus::NewSupply || $supply->getStatus() == SupplyStatus::Sent);
-	print $supply->Html(true, $edit);
+	$internal = true;
+
+	$footer = "<br/>";
 	switch ($supply->getStatus())
 	{
 		case SupplyStatus::NewSupply:
-			print gui_button( "btn_add_line", "add_item()", "add" );
-			print gui_select_product( "itm_" );
-			print gui_button("btn_del", "deleteItems()", "delete lines");
-			print gui_button("btn_update", "updateItems()", "update items");
+			$footer .= gui_button( "btn_add_line", "add_item()", "add" );
+			$footer .= gui_select_product( "itm_" );
+			$footer .= gui_button("btn_del", "deleteItems()", "delete lines");
+			$footer .= gui_button("btn_update", "updateItems()", "update items");
+
+			$footer .= supplier_doc();
 			break;
 
 		case SupplyStatus::Sent:
 			$invoice_text =  '   <div class="tooltip">' . gui_checkbox( "is_invoice", "" ) .
 			                 '<span class="tooltiptext">יש לסמן עבור חשבונית ולהשאיר לא מסומן עבור תעודת משלוח</span> </div>';
 
-			print gui_button( "btn_add_line", "add_item()", "הוסף" );
-			print gui_select_product( "itm_" );
-			print gui_button("btn_update", "updateItems()", "update");
+			$footer .= gui_button( "btn_add_line", "add_item()", "הוסף" );
+			$footer .= gui_select_product( "itm_" );
+			$footer .= gui_button("btn_update", "updateItems()", "update");
 
-			print gui_table_args( array(
+			$footer .= gui_table_args( array(
 				array( "חשבונית", $invoice_text ),
 				array( "מספר מסמך", GuiInput( "supply_number") ),
 				array( "סכום כולל מעמ", GuiInput( "supply_total") ),
 				array( "סכום ללא מעמ", GuiInput( "net_amount") ),
 				array( "תאריך", GuiInput( "document_date", "" ) )
 			) );
-			print "<br/>";
+			$footer .= "<br/>";
 
-			print gui_button( "btn_got_supply", "got_supply()", "סחורה התקבלה" );
+			$footer .= gui_button( "btn_got_supply", "got_supply()", "סחורה התקבלה" );
+			break;
 
+		case SupplyStatus::Supplied:
+			$internal = false;
+			$transaction_id = $supply->getBusinessID();
+			assert($transaction_id);
+			$row = sql_query_single_assoc("select * from im_business_info where id = " . $transaction_id);
+			$doc_id = $row["ref"];
+			$amount = $row["amount"];
+			$footer = gui_table_args(array(array("Document number", $doc_id),
+				array("Total to pay", $amount)));
 			break;
 	}
+
+	print $supply->Html($internal, $edit);
+	print $footer;
 
 	return;
 }
 
+function supplier_doc()
+{
+	print "<br/>";
+
+	$data = '<div class="tooltip">' . im_translate("invoice") . gui_checkbox( "is_invoice", "" );
+	$data .= '<span class="tooltiptext">' . im_translate("Check for invoice, and leave uncheck for delivery note") . '</span></div>'; // יש לסמן עבור חשבונית ולהשאיר לא מסומן עבור תעודת משלוח
+
+	$data .= gui_table_args( array(
+		// array( "חשבונית", $invoice_text ),
+		array( "מספר מסמך", GuiInput( "supply_number", "" ) ),
+		array( "סכום כולל מעמ", GuiInput( "supply_total", "" ) ),
+		array( "סכום ללא מעמ", GuiInput( "net_amount", "" ) ),
+		array( "תאריך", gui_input_date( "document_date", "" ) )
+	) );
+
+	$data .= gui_button("btn_got", "got_supply()", "Supply arrived");
+	return $data;
+
+}
 function new_supply()
 {
 	$data = "";

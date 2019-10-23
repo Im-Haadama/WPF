@@ -13,7 +13,7 @@ require_once( TOOLS_DIR . "/orders/orders-common.php" );
 
 $text    = isset( $_GET["text"] );
 $fresh   = isset( $_GET["fresh"] );
-$user_id = get_param( "user_id" );
+// $user_id = get_param( "user_id" );
 
 $just_pricelist = false;
 if (isset($user_id))

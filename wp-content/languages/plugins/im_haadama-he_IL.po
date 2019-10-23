@@ -70,6 +70,12 @@ msgstr "שבוע"
 msgid "Creating supply for"
 msgstr "יוצר הספקה לספק"
 
+msgid "Document number"
+msgstr "מספר מסמך"
+
+msgid "Total to pay"
+msgstr "סך לתשלום"
+
 msgid "column %s ignored"
 msgstr "עמודה %s לא זוהתה"
 

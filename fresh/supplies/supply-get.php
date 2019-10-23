@@ -320,57 +320,6 @@ print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_missio
         });
     }
 
-    function got_supply() {
-        disable_btn("btn_got_supply");
-        var supply_number = get_value(document.getElementById("supply_number"));
-        var supply_total = get_value(document.getElementById("supply_total"));
-        var net_amount = get_value(document.getElementById("net_amount"));
-        var is_invoice = get_value(document.getElementById("is_invoice"));
-        var date = get_value_by_name("document_date");
-
-        if (!supply_number) {
-            alert("יש לרשום את מספר תעודת המשלוח");
-            enable_btn("btn_got_supply");
-            return;
-        }
-
-        if (!supply_total) {
-            alert("יש לרשום סכום תעודת המשלוח");
-            enable_btn("btn_got_supply");
-            return;
-        }
-
-        if (!net_amount) {
-            alert("יש לרשום סכום תעודת המשלוח ללא מע\"מ");
-            enable_btn("btn_got_supply");
-            return;
-        }
-
-        var request_url = "supplies-post.php?operation=got_supply&supply_id=<?php print $id; ?>" +
-            "&supply_total=" + supply_total + "&supply_number=" + supply_number +
-            "&net_amount=" + net_amount +
-            "&is_invoice=" + is_invoice;
-
-        if (date)
-            request_url = request_url + "&document_date=" + date;
-
-        var request = new XMLHttpRequest();
-        request.onreadystatechange = function () {
-            if (request.readyState === 4 && request.status === 200) {
-                if (request.response.indexOf("fail") !== -1) {
-                    add_message("הפעולה נכשלה" + request.response);
-                    enable_btn("btn_got_supply");
-                    return;
-                }
-                // window.location = window.location;
-                update_display();
-            }
-        }
-
-        request.open("GET", request_url, true);
-        request.send();
-        // alert (request_url);
-    }
 </script>
 <br/>
 <br/>

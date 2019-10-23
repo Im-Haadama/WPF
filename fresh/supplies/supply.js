@@ -166,6 +166,7 @@ function got_supply() {
     var net_amount = get_value(document.getElementById("net_amount"));
     var is_invoice = get_value(document.getElementById("is_invoice"));
     var date = get_value_by_name("document_date");
+    let supply_id = get_value_by_name("supply_id");
 
     if (!supply_number) {
         alert("יש לרשום את מספר תעודת המשלוח");
@@ -185,7 +186,8 @@ function got_supply() {
         return;
     }
 
-    var request_url = "supplies-post.php?operation=got_supply&supply_id=<?php print $id; ?>" +
+    var request_url = "supplies-post.php?operation=got_supply" +
+        "&supply_id=" + supply_id +
         "&supply_total=" + supply_total + "&supply_number=" + supply_number +
         "&net_amount=" + net_amount +
         "&is_invoice=" + is_invoice;
@@ -193,22 +195,7 @@ function got_supply() {
     if (date)
         request_url = request_url + "&document_date=" + date;
 
-    var request = new XMLHttpRequest();
-    request.onreadystatechange = function () {
-        if (request.readyState === 4 && request.status === 200) {
-            if (request.response.indexOf("fail") !== -1) {
-                add_message("הפעולה נכשלה" + request.response);
-                enable_btn("btn_got_supply");
-                return;
-            }
-            // window.location = window.location;
-            update_display();
-        }
-    }
-
-    request.open("GET", request_url, true);
-    request.send();
-    // alert (request_url);
+    execute_url(request_url, location_reload);
 }
 
 function new_supply_change()

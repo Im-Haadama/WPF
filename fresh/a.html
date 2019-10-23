@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+</style></head>
+<center><h1 style="display:inline; text-align:center; ">Supply </h1><label id=supply_number>965</label></center>
+<table id="supply_table" border="1">
+    <tr>
+        <td id="0_0">הערות</td>
+        <td id="1_0"><textarea name="comment" id="comment" onchange="update_comment()" cols=0 rows=2></textarea></td>
+    </tr>
+    <tr>
+        <td id="0_1">תאריך הספקה</td>
+        <td id="1_1"><input type="date" id="date" value="2019-10-18"
+                            onchange="update_field('supplies-post.php', 965,'date', '')"></td>
+    </tr>
+    <tr>
+        <td id="0_2">שילוח</td>
+        <td id="1_2"><select id="mis_965" onchange=mission_changed(965)>
+            <option value=""></option>
+            <option value="1">בסבב הקרוב</option>
+            <option value="2">תאמו איתי</option>
+            <option value="727">רביעי - מרכז 23/10</option>
+        </select></td>
+    </tr>
+</table>
+<br/>
+<table id="supply_965" border="1">
+    <tr>
+        <td><input id="chk_header" class="supply_checkbox" type="checkbox"
+                   onchange="select_all_toggle(this, 'supply_checkbox')">
+        <td id="product_id_header">product_id</td>
+        <td id="quantity_header">quantity</td>
+        <td id="id_header" style="display:none;">מזהה</td>
+        <td id="$buy_header">Buy price</td>
+        <td id="$total_header">Total</td>
+        <td id="$buyers_header">Buyers</td>
+    </tr>
+    <tr>
+        <td><input id="chk_9034" class="supply_checkbox" type="checkbox">
+        <td id="product_id_9034"><input id="product_id_9034" value='בננה אורגנית לא מובחלת (ק&#039;&#039;ג)'
+                                        list="product_id_9034_list" onchange='changed(this)'
+                                        onkeyup="update_list('products', this)">
+            <datalist id="product_id_9034_list"></datalist>
+        </td>
+        <td id="quantity_9034"><input type="text" name="quantity_9034" id="quantity_9034" value="40"
+                                      onchange='changed(this)'></td>
+        <td id="id_9034" style="display:none;">9034</td>
+        <td id="$buy_9034"><input type="text" name="$buy_9034" id="$buy_9034" value="9" onchange='changed(this)'></td>
+        <td id="$total_9034">360</td>
+        <td id="$buyers_9034">30: 30 צ'רטוף</td>
+    </tr>
+    <tr>
+        <td><input id="chk_sums" class="supply_checkbox" type="checkbox">
+        <td id="product_id_sums"><input id="product_id_sums" value='סה&quot;כ' list="product_id_sums_list"
+                                        onchange='changed(this)' onkeyup="update_list('products', this)">
+            <datalist id="product_id_sums_list"></datalist>
+        </td>
+        <td id="quantity_sums"><input type="text" name="quantity_sums" id="quantity_sums" value="40"
+                                      onchange='changed(this)'></td>
+        <td id="$buy_sums"><input type="text" name="$buy_sums" id="$buy_sums" onchange='changed(this)'></td>
+        <td id="$total_sums">360</td>
+        <td id="$buyers_sums"></td>
+    </tr>
+</table>
+<br/>
+<button id="btn_add_line" onclick="add_item()"> add</button>
+<input id="itm_" list="itm__list" onkeyup="update_list('products', this)">
+<datalist id="itm__list"></datalist>
+<button id="btn_del" onclick="deleteItems()"> delete lines</button>
+<button id="btn_update" onclick="updateItems()"> update items</button>
+<div class="tooltip"><input id="is_invoice" class="" type="checkbox"><span class="tooltiptext">יש לסמן עבור חשבונית ולהשאיר לא מסומן עבור תעודת משלוח</span>
+    <table border="1">
+        <tr>
+            <td id="0_0">מספר מסמך</td>
+            <td id="1_0"><input type="text" name="supply_number" id="supply_number"></td>
+        </tr>
+        <tr>
+            <td id="0_1">סכום כולל מעמ</td>
+            <td id="1_1"><input type="text" name="supply_total" id="supply_total"></td>
+        </tr>
+        <tr>
+            <td id="0_2">סכום ללא מעמ</td>
+            <td id="1_2"><input type="text" name="net_amount" id="net_amount"></td>
+        </tr>
+        <tr>
+            <td id="0_3">תאריך</td>
+            <td id="1_3"><input type="date" id="document_date"></td>
+        </tr>
+    </table>
+    <button id="btn_got" onclick="got_supply()"> Supply arrived</button>
+</div>

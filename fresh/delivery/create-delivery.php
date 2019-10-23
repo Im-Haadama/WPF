@@ -3,9 +3,7 @@ require_once ("../r-shop_manager.php");
 include_once( "delivery.php" );
 print header_text( false );
 
-?>
-<script type="text/javascript" src="/niver/gui/client_tools.js"></script>
-<?php
+print load_scripts(array("/niver/gui/client_tools.js", "/niver/data/data.js"));
 
 $script_file = ImMultiSite::LocalSiteTools() . "/fresh/delivery/create-delivery-script.php?i=1";
 
@@ -93,7 +91,6 @@ if ( $id > 0 ) {
 		$d = delivery::CreateFromOrder( $order_id );
 
 	}
-	// var_dump($orders);
 
 	$d->PrintDeliveries( ImDocumentType::delivery, ImDocumentOperation::create, false, $show_inventory );
 	print "</form>";

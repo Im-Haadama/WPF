@@ -198,7 +198,7 @@ function doGuiDatalist($id, $values, $id_field, $field_name, $include_id)
 		$id_text = "";
 		if ( $include_id ) {
 			if (! isset($row[$id_field]) and $debug) {
-				print $id_field . " is missing. "; var_dump($row); print "<br/>";
+				print __FUNCTION__ . ": " . $id_field . " is missing. "; var_dump($row); print "<br/>";
 				print sql_trace();
 				die(1);
 			}
@@ -246,6 +246,8 @@ function GuiDatalist( $id, $table, $args = null)
 	$sql = GetArg($args, "sql", "select " . $field . ($include_id ? ", id" : "") .	 " from " . $table);
 	$id_field = GetArg($args, "id_field", "id");
 	$values = [];
+
+	// print "id_field: $id_field<br/>";
 
 	$result = sql_query( $sql );
 	while ( $row = sql_fetch_assoc($result ) ) {
@@ -497,8 +499,8 @@ function gui_cell( $cell, $id = null, $show = true) {
 	}
 	$data .= ">";
 
-	if (defined('im_translate'))
-		$data .= im_translate($cell);
+	if (function_exists('im_translate'))
+		$data .= im_translate( $cell );
 	else
 		if (is_array($cell)) $data .= comma_implode($cell);
 		else $data .= $cell;
@@ -718,7 +720,8 @@ function gui_table_args($input_rows, $id = null, $args = null)
 	if ($debug) print "row count: " . count($input_rows) . "<br/>";
 	$rows = array();
 	foreach ($input_rows as $key => $input_row) {
-		if ( !$prepare || in_array( $key, array( "checkbox", "header", "mandatory" ) ) ) {
+		if ( !$prepare || in_array( $key, array( "checkbox", "header", "mandatory", "sums" ) ) ) {
+			if (isset($input_row['checkbox'])) $input_row['checkbox'] = '';
 			$rows[ $key ] = $input_row;
 		} else {
 			$rows[ $key ] = PrepareRow( $input_row, $args, $key );
@@ -745,6 +748,7 @@ function gui_table_args($input_rows, $id = null, $args = null)
 
 	foreach ($rows as $line_id => $line)
 	{
+		// print "line$line_id<br/>";
 		$data .="<tr>";
 		if (is_array($line)) {
 			$add_checkbox_line = $add_checkbox;
@@ -755,13 +759,14 @@ function gui_table_args($input_rows, $id = null, $args = null)
 				if ($add_checkbox_line and $row_id != "acc") {
 					$data .= "<td>" . gui_checkbox("chk_" . $row_id, $checkbox_class, 0,
 							($row_id === "header") ? $e = 'onchange="select_all_toggle(this, \'' . $checkbox_class . '\')"' : $checkbox_events);
+					$add_checkbox_line = false;
 				}
-				// print "hide: "; var_dump($args["hide_rows"]); print "<br/>";
+				// print "show: "; var_dump($args["show_cols"]); print "<br/>";
 				$show =  ((((!$show_cols) or isset($show_cols[$field])) // Positive
 				         and !(isset($args["hide_cols"]) and isset($args["hide_cols"][$field])))  // Negative
 				         and (! isset($args["hide_rows"][$row_id])));
 
-				// print "f=$field r=$row_id $show is=" . ! isset($args["hide_rows"][$row_id]) . "<br/>";
+				 // print "f=$field r=$row_id $show is=" . isset($args["hide_cols"][$row_id]) . "<br/>";
 				$data .= gui_cell($cell, $field . "_" . $row_id, $show);
 			}
 			// $data .= "<td>" . $cell . "</td>";
@@ -803,7 +808,8 @@ function gui_input_select_from_datalist( $id, $datalist, $events = null, $value 
 function GuiAutoList($id, $list_name, $args)
 {
 	if (! $args) $args = [];
-//	$selected = GetArg($args, "selected", null);
+	// var_dump($args);
+// //	$selected = GetArg($args, "selected", null);
 	$events = GetArg($args, "events", "") . ' onkeyup="update_list(\'' . $list_name . '\', this)"';
 	$args["events"] = $events;
 	$value = GetArg($args, "value", null);
@@ -875,17 +881,17 @@ function GuiSelectTable($id, $table, $args)
 		return GuiInput($id, null, $args);
 	}
 
-	if ( $datalist ) {
+		if ( $datalist ) {
 		$data = "";
 		$seq  = 0;
 		if ( $multiply_choice ) {
 			foreach ( explode( ",", $selected ) as $select_value ) {
-				$data .= gui_select_datalist( $id . '.' . $seq, $table . "_values", $name, $values, $events, $select_value, $include_id, $id_key, $class );
+				$data .= gui_select_datalist( $id . '.' . $seq, $table, $table . "_values", $name, $values, $events, $select_value, $include_id, $id_key, $class );
 				$seq ++;
 			}
 			// New one
 		} else
-			$data .= gui_select_datalist( $id, $table . "_values", $name, $values, $events, null, $include_id, $id_key, $class );
+			$data .= gui_select_datalist( $id, $table, $table . "_values", $name, $values, $events, null, $include_id, $id_key, $class );
 
 		return $data;
 
@@ -908,7 +914,9 @@ function GuiSelectTable($id, $table, $args)
  *
  * @return string
  */
-function gui_select_datalist( $id, $datalist_id, $name, $values, $events, $selected = null, $include_id = true, $id_key = null, $class = null ) {
+function gui_select_datalist( $id, $table, $datalist_id, $name, $values, $events, $selected = null, $include_id = true, $id_key = null, $class = null )
+{
+
 //	print "include_id= " . $include_id . "<br/>";
 //	print "selected = " . $selected . "<br/>";
 
@@ -918,9 +926,11 @@ function gui_select_datalist( $id, $datalist_id, $name, $values, $events, $selec
 	$data = "";
 	static $shown_datalist = array();
 
+	$args = [];
+	$args["field"] = $name;
 	if (! isset($shown_datalist[$datalist_id])) {
 		$shown_datalist[$datalist_id] = 0;
-		$data = GuiDatalist($datalist_id, "wp_posts");
+		$data = GuiDatalist($datalist_id, $table, $args);
 		$shown_datalist[$datalist_id]++;
 
 		if ($id == "datalist") return $data; // Just print the datalist.
@@ -1117,7 +1127,7 @@ function gui_select_table(
 	}
 
 	if ( $datalist ) {
-		return gui_select_datalist( $id, $table, $name, $values, $events, $selected, $include_id, $id_key );
+		return gui_select_datalist( $id, $table, $table, $name, $values, $events, $selected, $include_id, $id_key );
 	} else {
 		return gui_select( $id, $name, $values, $events, $selected, $id_key );
 	}

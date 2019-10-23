@@ -33,8 +33,8 @@ require_once(TOOLS_DIR . "/../niver/gui/inputs.php");
 //}
 
 // $key, $data, $args
-function gui_select_client( $id, $value, $args = null ) {
-
+function gui_select_client( $id, $value, $args = null )
+{
 	if ( ! $id ) {
 		$id = "client_select";
 	}
