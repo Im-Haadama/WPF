@@ -6,9 +6,20 @@ function GemAddRow($table_name, $text, $args){
 	$result .= gui_header(1, $text);
 	$result .= NewRow($table_name, $args);
 	$post = GetArg($args, "post_file", null);
+	$next_page = GetArg($args, "next_page", null);
 	if (! $post) die(__FUNCTION__ . ":" . $text . "must send post file");
-	$result .= gui_button("add_row", "data_save_new('" . $post . "', '$table_name')", "add");
-	$result .= gui_button("add_row", "data_save_new('" . $post . "', '$table_name', success_message)", "add and continue");
+	if ($next_page){
+		$result .= '<script>
+		function next_page(xmlhttp) {
+		    if (xmlhttp.response === "done") window.location = "' . $next_page .
+		           '"; else alert(xmlhttp.response);
+		}
+		</script>';
+		$result .= "\n" . gui_button("add_row", "data_save_new('" . $post . "', '$table_name', next_page)\n", "add");
+	} else {
+		$result .= gui_button("add_row", "data_save_new('" . $post . "', '$table_name')", "add");
+		$result .= gui_button("add_row", "data_save_new('" . $post . "', '$table_name', success_message)", "add and continue");
+	}
 
 	return $result;
 }
@@ -27,9 +38,10 @@ function GemElement($table_name, $row_id, $args)
 
 	$result .= GuiRowContent($table_name, $row_id, $args);
 
-	if (GetArg($args, "edit", false))
+	if (GetArg($args, "edit", false)) {
 		$result .= gui_button( "btn_save", "data_save_entity('/niver/data/data-post.php', '$table_name', " . $row_id . ')', "שמור" );
-
+		$result .= gui_button( "btn_cancel", "cancel_entity('/focus/focus-post.php', 'im_task_templates', " . $row_id . ')', "cancel" );
+	}
 	return $result;
 }
 

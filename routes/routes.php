@@ -126,13 +126,15 @@ function delivered($site_id, $type, $id, $debug = false)
         if ( $debug ) {
             print "remote.. ";
         }
-        $request = "delivery/delivery-post.php?site_id=" . $site_id .
+        $request = "/routes/routes-post.php?site_id=" . $site_id .
                    "&type=" . $type . "&id=" . $id . "&operation=delivered";
         if ( $debug ) {
             $request .= "&debug=1";
             print $request;
         }
-        if (ImMultiSite::sExecute( $request, $site_id, $debug ) == "done")  return true;
+        if (ImMultiSite::sExecute( $request, $site_id, $debug ) == "delivered")  return true;
+        print "failed:<br/>";
+        print $request;
         return false;
     }
     // Running local. Let's do it.
@@ -701,7 +703,7 @@ function collect_points($data_lines, $mission_id, &$prerequisite, &$supplies_to_
 
 		// Deliveries created in other place
 		if ( $site != "משימות" and $site != "supplies" and $pickup_address != $mission->getStartAddress() ) {
-		    print "adding $pickup_address<br/>";
+		    // print "adding $pickup_address<br/>";
 			$prerequisite[$stop_point] = $pickup_address;
 			// Add Pickup
 			add_stop_point( $stop_points, $pickup_address );

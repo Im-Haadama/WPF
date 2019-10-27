@@ -10,15 +10,11 @@
 // Major version.
 $power_version = file_get_contents(dirname(dirname(__FILE__)) . "/version");
 
-if ( ! defined( "STORE_DIR" ) ) {
-	define( 'STORE_DIR', dirname( dirname( __FILE__ ) ) );
+if ( ! defined( "ROOT_DIR" ) ) {
+	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) ) ;
 }
 
-if ( ! defined( "TOOLS_DIR" ) ) {
-	define( 'TOOLS_DIR', dirname( __FILE__ ) );
-}
-
-require_once( STORE_DIR . "/im-config.php" );
+require_once( ROOT_DIR . "/im-config.php" );
 require_once( "im_tools_light.php" );
 # require_once( STORE_DIR . "/wp-config.php" );
 # require_once( STORE_DIR . "/wp-load.php" );

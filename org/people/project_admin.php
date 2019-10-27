@@ -15,7 +15,7 @@ ini_set( 'display_errors', 1 );
 
 require_once( ROOT_DIR . '/niver/PivotTable.php' );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
-require_once( ROOT_DIR . '/fresh/im_tools_light.php' );
+
 
 $this_url = "project_admin.php";
 $entity_name = "חשבונית";

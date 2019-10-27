@@ -66,9 +66,6 @@ function auto_local() {
 }
 
 //function auto_mail() {
-//	require_once( TOOLS_DIR . "/orders/form.php" );
-//	require_once( TOOLS_DIR . "/orders/orders-common.php" );
-//	require_once( TOOLS_DIR . "/mail.php" );
 //
 //	global $business_name;
 //	global $support_email;

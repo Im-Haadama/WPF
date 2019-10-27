@@ -151,11 +151,35 @@ msgstr "ניהול משימות"
 msgid "My Tasks"
 msgstr "המשימות שלי"
 
-msgid "Tasks I've created"
-msgstr "משימות שיצרתי"
+msgid "My teams"
+msgstr "משימות של צוותים שלי"
+
+msgid "More"
+msgstr "עוד"
+
+msgid "Not paged"
+msgstr "הצג רשימה מלאה"
+
+msgid "Not filtered"
+msgstr "ללא סינון"
+
+msgid "active only"
+msgstr "פעילות בלבד"
+
+msgid "Tasks I've initiated"
+msgstr "משימות שיזמתי"
 
 msgid "New task"
 msgstr "משימה חדשה"
+
+msgid "add"
+msgstr "הוסף"
+
+msgid "add and continue"
+msgstr "הוסף והמשך"
+
+msgid "team"
+msgstr "צוות"
 
 msgid "Hello"
 msgstr "שלום"
@@ -184,10 +208,19 @@ msgstr "דחה"
 msgid "projects"
 msgstr "פרויקטים"
 
+msgid "Add a project"
+msgstr "הוסף פרויקט"
+
+msgid "Project name"
+msgstr "שם הפרויקט"
+
+msgid "Project contact (client)"
+msgstr "איש קשר (לקוח)"
+
 msgid "No active tasks!"
 msgstr "אין משימות פעילות!"
 
-msgid "Let create first one!"
+msgid "Let's create first one!"
 msgstr "הבה ניצור את הראשונה"
 
 msgid "create task"
@@ -299,7 +332,7 @@ msgstr "משימה"
 msgid "Tasks assigned to me"
 msgstr "משימות באחריותי"
 
-msgid "My teams' tasks"
+msgid "My teams tasks"
 msgstr "משימות של צוותי"
 
 msgid "Is active"

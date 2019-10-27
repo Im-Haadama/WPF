@@ -62,10 +62,18 @@ function load_scripts($script_file = false )
  *
  * @return string
  */
-function header_text( $print_logo = true, $close_header = true, $rtl = true, $script_file = false ) {
+
+function HeaderText($args = null)
+{
 	global $business_info;
 	global $logo_url;
 	global $style_file;
+
+	$rtl = GetArg($args, "rtl", function_exists("is_rtl")) ? is_rtl() : false;
+	$print_logo = GetArg($args, "print_log", true);
+	$script_files = GetArg($args, "script_files", false);
+	$close_header = GetArg($args, "close_header", true);
+	$greeting = GetArg($args, "greeting", function_exists("greeting"));
 
 	$text = '<html';
 	if ( $rtl ) {
@@ -75,29 +83,37 @@ function header_text( $print_logo = true, $close_header = true, $rtl = true, $sc
 	$text .= '<head>';
 	$text .= '<meta http-equiv="content-type" content="text/html; charset=utf-8">';
 	$text .= '<title>';
-	if ( defined( $business_info ) ) {
-		$text .= $business_info;
-	}
+	if ( defined( $business_info ) ) $text .= $business_info;
 	$text .= '</title>';
 
-	if ( $print_logo ) {
-		if ( ( $logo_url ) ) {
-			$text .= '<img src=' . $logo_url . '>';
-		}
-	}
-	$text .= '</p>';
-
-	$text .= load_scripts($script_file );
+	// print "loading..."; var_dump($script_files); print "<br/>";
+	$text .= load_scripts($script_files);
 	if ( isset( $style_file ) ) {
 		$text .= load_style($style_file);
 	}
 
-	if ( $close_header ) {
-		$text .= '</head>';
-	}
+	if ( $close_header ) $text .= '</head>';
+
+	$table = array();
+	$row = array();
+	if ($greeting) $row [] = greeting();
+	if ($print_logo and $logo_url ) $row [] = '<img src=' . $logo_url . '  style="height: 100px; width: auto;">';
+	$table [] = $row;
+	$args["align_table_cells"] = array(array(null, "left"));
+	$text .= gui_table_args($table, "header", $args);
 
 	return $text;
+}
+
+function header_text( $print_logo = true, $close_header = true, $rtl = true, $script_file = false ) {
 	// $text .= '<p style="text-align:center;">';
+	$args = [];
+	$args["print_logo"] = $print_logo;
+	$args["close_header"] = $close_header;
+	$args["rtl"] = $rtl;
+	$args["script_file"] = $script_file;
+
+	return HeaderText($args);
 }
 
 /**
@@ -519,4 +535,29 @@ function mnemonic3($key)
 	}
 //	print "not found";
 	return "not";
+}
+
+/**
+ * @param $string_array
+ *
+ * @return array|null
+ */
+function comma_array_explode($string_array)
+{
+	if (! $string_array) return null;
+	$string_array = str_replace("::", ":", $string_array);
+	$teams = array();
+	$t = [];
+
+	while (strlen($string_array) > 1) {
+		$p = strpos($string_array, ":", 1);
+		$team = substr($string_array, 1, $p - 1);
+		// print "Team: $team<br/>";
+
+		$t[] = $team;
+//		print "p=$p<br/>";
+		if ($team > 0) array_push($teams, $team);
+		$string_array = substr($string_array, $p);
+	}
+	return $t;
 }

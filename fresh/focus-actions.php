@@ -6,14 +6,12 @@ if ( ! defined( "ROOT_DIR" ) ) {
 
 require_once(ROOT_DIR . '/im-config.php');
 require_once( ROOT_DIR . "/init.php" );
+$operation = get_param("operation", true);
 
-init();
-require_once("focus.php");
+switch ($operation)
+{
+	case "handle_minus_quantity":
+		Catalog::HandleMinusQuantity();
+		print "0 ok";
 
-$operation = get_param("operation", false, null);
-
-if ($operation){
-	handle_focus_operation($operation);
-	return;
 }
-

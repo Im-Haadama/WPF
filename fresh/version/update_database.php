@@ -14,18 +14,18 @@ if ( ! defined( "ROOT_DIR" ) ) {
 }
 
 require_once (ROOT_DIR . "/im-config.php");
-print "host=" . DB_HOST . "<br/>";
-require_once( ROOT_DIR . '/fresh/im_tools_light.php' );
+// print "host=" . DB_HOST . "<br/>";
 require_once( ROOT_DIR . '/niver/gui/sql_table.php' );
-// require_once( ROOT_DIR . '/fresh/delivery/delivery.php' );
 
-//print sql_query_single_scalar("show create table im_bank_account");
-//exit;
 require_once( ROOT_DIR . "/init.php" );
+init();
 
 $version = get_param( "version" );
 
 switch ( $version ) {
+	case "utf8":
+		var_dump(sql_query_array_scalar("show create table im_tasklist"));
+		break;
 	case "aa":
 		aa();
 		break;
@@ -319,8 +319,8 @@ function basic() {
 (
 	ID int auto_increment
 		primary key,
-	project_name varchar(20) not null,
-	project_contact varchar(20) not null,
+	project_name varchar(20) charset 'utf8' not null,
+	project_contact varchar(20) charset 'utf8' not null,
 	project_priority int null
 );
 ");
@@ -920,6 +920,10 @@ ADD auto_order_day INT(11),
 ADD invoice_email VARCHAR(50);
 " );
 
+function drop_im_projects()
+{
+	sql_query("drop table im_projects");
+}
 function aa()
 {
 	sql_query("drop function supplier_balance");

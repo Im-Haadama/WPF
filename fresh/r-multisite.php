@@ -5,12 +5,8 @@ if ( ! isset( $multisite ) ) {
 
 require_once( "im_tools.php" );
 
-if ( ! defined( "STORE_DIR" ) ) {
+if ( ! defined( "ROOT_DIR" ) ) {
 	define( 'STORE_DIR', dirname( dirname( __FILE__ ) ) );
-}
-
-if ( ! defined( "TOOLS_DIR" ) ) {
-	define( 'TOOLS_DIR', STORE_DIR . "/tools" );
 }
 
 // Check that the caller is allowed: Wordpress authentication or PHP_AUTH;
@@ -39,10 +35,6 @@ function check_password($user, $password)
 
 require_once( STORE_DIR . "/wp-load.php" );
 
-//
-//require_once( STORE_DIR . "/wp-includes/pluggable.php" );
-//
-//require_once( TOOLS_DIR . "/options.php" );
 //
 //$multisite = false;
 //// Check if one of two - right api key (for multisite) - compare with DB, or wp login (manual).

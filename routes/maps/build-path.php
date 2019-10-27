@@ -6,12 +6,8 @@
  * Time: 20:27
  */
 
-if ( ! defined( 'TOOLS_DIR' ) ) {
-	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
-}
-
 // require_once( TOOLS_DIR . "/r-shop_manager.php" );
-require_once( TOOLS_DIR . "/multi-site/imMulti-site.php" );
+require_once( ROOT_DIR . "/fresh/multi-site/imMulti-site.php" );
 
 $addresses    = array();
 
@@ -119,10 +115,10 @@ function find_route( $node, $rest, &$path, $prerequisite = null ) {
 		if ( ( $min == - 1 ) or ( $d < $min ) ) { // ( $node == $rest[ $i ] ) or
 			// If we didn't visit previous location for collecting, skip.
 			// var_dump($path); print "<br/>";
-			if ($prerequisite and isset($prerequisite[$rest[ $i ]])){
-				print "<br/>checking preq for " . $rest[ $i ] . " ";
+			if ($prerequisite and isset($prerequisite[$rest[ $i ]]) and strlen ($prerequisite[$rest[$i]])){
+				// print "<br/>checking preq for " . $rest[ $i ] . " ";
 				if (! in_array($prerequisite[$rest[ $i ]], $path)) {
-					print "X" . $prerequisite[$rest[ $i ]] . "X not yet. skipping";
+					print "X" . $prerequisite[$rest[ $i ]] . "X not yet. skipping<br/>";
 
 					continue;
 				}

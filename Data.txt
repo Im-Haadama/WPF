@@ -1,0 +1,6 @@
+Org data...
+
+1) Worker is wp_user.
+2) im_companies. Used for compartmentalization(מידור): One should be able to see only data from his company.
+3) Teams: im_working_teams. Each task is related to a team.
+4) Project: im_projects. Each task is related to a project. It's possible to have project related to more than one company.

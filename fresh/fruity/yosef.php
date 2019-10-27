@@ -6,12 +6,12 @@
  * Time: 19:08
  */
 
-if ( ! defined( 'TOOLS_DIR' ) ) {
-	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
+if ( ! defined( 'ROOT_DIR' ) ) {
+	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) );
 }
 
-require_once( TOOLS_DIR . '/im_tools.php' );
-require_once( TOOLS_DIR . '/account/account.php' );
+require_once( ROOT_DIR . '/im_tools.php' );
+require_once( ROOT_DIR . '/fresh/account/account.php' );
 
 $date  = date( 'Y-m-d', strtotime( "last day of this month" ) );
 $month = date( 'Ym', strtotime( "last day of this month" ) );

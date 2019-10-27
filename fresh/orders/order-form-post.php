@@ -5,11 +5,11 @@
  * Date: 04/03/18
  * Time: 10:41
  */
-if ( ! defined( "TOOLS_DIR" ) ) {
-	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
+if ( ! defined( 'ROOT_DIR' ) ) {
+	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) );
 }
 
-require_once( TOOLS_DIR . "/im_tools.php" );
+require_once( ROOT_DIR . "/im_tools.php" );
 require_once( "orders-common.php" );
 
 print header_text( false, true );

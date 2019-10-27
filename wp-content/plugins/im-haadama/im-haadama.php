@@ -2,10 +2,13 @@
 /**
  * Plugin Name: Im-Haadama
  * Created by PhpStorm.
- * User: agla
++ * User: agla
  * Date: 19/06/16
  * Time: 17:42
  */
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
 define( 'IM_HAADAMA_PLUGIN', __FILE__ );
 
 define( 'IM_HAADAMA_PLUGIN_BASENAME', plugin_basename( IM_HAADAMA_PLUGIN ) );

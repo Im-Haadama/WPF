@@ -13,7 +13,7 @@ require_once( ROOT_DIR . "/fresh/im_tools.php" );
  */
 // require_once( '../r-shop_manager.php' );
 require_once( "catalog.php" );
-require_once( "gui.php" );
+// require_once( "gui.php" );
 
 class Bundles {
 

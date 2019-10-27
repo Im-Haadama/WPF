@@ -477,13 +477,17 @@ function printbr( $text = null ) {
 /**
  * Create html table cell - <td>
  * Hide contents if $show is true.
+ *
  * @param $cell
  * @param null $id
  * @param bool $show
  *
+ * @param null $align
+ *
  * @return string
  */
-function gui_cell( $cell, $id = null, $show = true) {
+function gui_cell( $cell, $id = null, $show = true, $align = null)
+{
 	// Preformating...
 	// a) replace \n with <br/>
 	// b) make url from strings start with http:// or https://
@@ -491,12 +495,9 @@ function gui_cell( $cell, $id = null, $show = true) {
 	$cell = str_replace('\n', '<br/>', $cell);
 
 	$data = "<td";
-	if ( $id ) {
-		$data .= " id=\"" . $id . "\"";
-	}
-	if ( ! $show ) {
-		$data .= " style=\"display:none;\"";
-	}
+	if ( $id ) $data .= " id=\"" . $id . "\"";
+	if ( ! $show ) $data .= " style=\"display:none;\"";
+	if ($align) {  $data .= ' style="text-align: '. $align . '";'; }
 	$data .= ">";
 
 	if (function_exists('im_translate'))
@@ -687,6 +688,8 @@ function gui_table_args($input_rows, $id = null, $args = null)
 	$data = "";
 
 	$debug = GetArg($args, "debug", false);
+	$width = GetArg($args, "width", "100%");
+	$align_table_cells = GetArg($args, "align_table_cells", null);
 
 	// add_checkbox should be used on multiple rows view.
 	$add_checkbox = GetArg($args, "add_checkbox", false);
@@ -732,6 +735,7 @@ function gui_table_args($input_rows, $id = null, $args = null)
 		$data = "<table";
 
 		if ( $class ) $data .= " class=\"" . $class . "\"";
+		if ($width) $data .= " width=\"". $width . "\"";
 		if ( ! is_null( $id ) ) {
 			if (! is_string($id)){
 				return "bad table id";
@@ -767,7 +771,9 @@ function gui_table_args($input_rows, $id = null, $args = null)
 				         and (! isset($args["hide_rows"][$row_id])));
 
 				 // print "f=$field r=$row_id $show is=" . isset($args["hide_cols"][$row_id]) . "<br/>";
-				$data .= gui_cell($cell, $field . "_" . $row_id, $show);
+				// print "$line_id $cell_id<br/>";
+				$data .= gui_cell($cell, $field . "_" . $row_id, $show,
+					isset($align_table_cells[$line_id][$cell_id]) ? $align_table_cells[$line_id][$cell_id] : null);
 			}
 			// $data .= "<td>" . $cell . "</td>";
 		} else
@@ -850,6 +856,7 @@ function DatalistCreate($args, $table, &$values)
 	$results = sql_query( $sql );
 
 	if ( $results ) while ( $row = $results->fetch_assoc() ) array_push( $values, $row );
+	array_unshift($values, array($id_key => 0, $name => im_translate("select")));
 }
 
 /**
@@ -881,7 +888,7 @@ function GuiSelectTable($id, $table, $args)
 		return GuiInput($id, null, $args);
 	}
 
-		if ( $datalist ) {
+	if ( $datalist ) {
 		$data = "";
 		$seq  = 0;
 		if ( $multiply_choice ) {

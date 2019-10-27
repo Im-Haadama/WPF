@@ -51,3 +51,17 @@ function show_project(xmlhttp)
     else
     alert (xmlhttp.response);
 }
+
+function add_team(table_name, url)
+{
+    let params = get_form_params(table_name, false);
+    let new_loc = "?operation=show_new_team&next_page=" + encodeURIComponent(url + "&params=" + params);
+    window.location = new_loc;
+}
+
+function add_project(table_name, url)
+{
+    let params = get_form_params(table_name, false);
+    let new_loc = "?operation=show_new_project&next_page=" + encodeURIComponent(url + "&params=" + params);
+    window.location = new_loc;
+}

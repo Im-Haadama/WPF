@@ -265,7 +265,7 @@ class Order {
 				return $needed_products;
 			}
 
-			// print "not valid<br/>";
+			print "not valid<br/>";
 			// Cache not vaild.
 			// Clean the im_need_orders, im_need table
 			$sql = "truncate table im_need_orders";
@@ -288,6 +288,7 @@ class Order {
 		// Loop open orders.
 		while ( $row = mysqli_fetch_assoc( $result ) ) {
 			$id     = $row["id"];
+//			print "handling order $id</br>";
 			$status = $row["post_status"];
 			$del_id = 0;
 			// print "status = " . $status . "<br/>";
@@ -297,7 +298,8 @@ class Order {
 				$del_id = sql_query_single_scalar( "SELECT id FROM im_delivery WHERE order_id = " . $id );
 				// print "del id = " . $del_id . "<br/>";
 			}
-//		print "order: " . $id . "<br/>";
+
+			//		print "order: " . $id . "<br/>";
 
 			// Update im_need_orders table
 			if ( ! $user_id ) {
@@ -310,13 +312,12 @@ class Order {
 
 			foreach ( $order_items as $item ) {
 				$prod_or_var = $item['product_id'];
-				$is_bundle   = is_bundle( $prod_or_var );
 
 				$variation = null;
 				if ( isset( $item["variation_id"] ) && $item["variation_id"] > 0 ) {
 					$prod_or_var = $item["variation_id"];
 				}
-				// print get_product_name($prod_or_var) . " " . $prod_or_var . ":<br/>";
+				// print "GGGGG" . get_product_name($prod_or_var) . " " . $prod_or_var . ":<br/>";
 				$qty  = $item['qty'];
 				$unit = $item['unit'];
 
@@ -379,7 +380,6 @@ class Order {
 			}
 		}
 		// var_dump($needed_products[3406]);
-
 	}
 
 	private static function AddProducts( $prod_key, $qty, &$needed_products ) {
@@ -431,7 +431,7 @@ class Order {
 			if ( ! isset( $needed_products[ $prod_or_var ][ $unit_key ] ) ) {
 				$needed_products[ $prod_or_var ][ $unit_key ] = 0;
 			}
-			// print "adding $qty to " . get_product_name($prod_or_var) . "<br/>";
+			// print "QQQQ adding $qty to " . get_product_name($prod_or_var) . "<br/>";
 			$needed_products[ $prod_or_var ][ $unit_key ] += $qty;
 			//if ($key == 354) { print "array:"; var_dump($needed_products[$prod_or_var]); print "<br/>";}
 		}
@@ -466,7 +466,8 @@ class Order {
 		foreach ($orders as $order)
 		{
 			$o = new Order($order);
-			array_push($table, array(gui_hyperlink($order, "get-order.php?order_id=" . $order), $o->CustomerName(), $o->GetComments()));
+			if (strlen($o->GetComments()))
+				array_push($table, array(gui_hyperlink($order, "get-order.php?order_id=" . $order), $o->CustomerName(), $o->GetComments()));
 		}
 		print gui_table_args($table);
 	}

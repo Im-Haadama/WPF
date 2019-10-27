@@ -8,20 +8,20 @@
 error_reporting( E_ALL );
 ini_set( 'display_errors', 'on' );
 
-if ( ! defined( 'TOOLS_DIR' ) ) {
-	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
+if ( ! defined( 'ROOT_DIR' ) ) {
+	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) );
 }
 
 require_once( ROOT_DIR . "/niver/fund.php" );
-require_once( TOOLS_DIR . "/catalog/bundles.php" );
+require_once( ROOT_DIR . "/fresh/catalog/bundles.php" );
 require_once( ROOT_DIR . '/routes/maps/build-path.php' );
-require_once( TOOLS_DIR . '/account/gui.php' );
-require_once( TOOLS_DIR . '/account/account.php' );
-require_once( TOOLS_DIR . '/delivery/delivery.php' );
-require_once( TOOLS_DIR . '/orders/Order.php' );
-require_once( TOOLS_DIR . "/catalog/Basket.php" );
-require_once( TOOLS_DIR . '/invoice4u/invoice.php' );
-require_once( TOOLS_DIR . '/multi-site/imMulti-site.php' );
+require_once( ROOT_DIR . '/fresh/account/gui.php' );
+require_once( ROOT_DIR . '/fresh/account/account.php' );
+require_once( ROOT_DIR . '/fresh/delivery/delivery.php' );
+require_once( ROOT_DIR . '/fresh/orders/Order.php' );
+require_once( ROOT_DIR . '/fresh/catalog/Basket.php' );
+require_once( ROOT_DIR . '/fresh/invoice4u/invoice.php' );
+require_once( ROOT_DIR . '/fresh/multi-site/imMulti-site.php' );
 require_once( ROOT_DIR . '/niver/web.php');
 
 // BAD: print header_text();

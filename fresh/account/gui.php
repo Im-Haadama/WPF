@@ -5,15 +5,14 @@
  * Date: 18/08/17
  * Time: 05:24
  */
-if ( ! defined( 'TOOLS_DIR' ) ) {
-	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
+if ( ! defined( 'ROOT_DIR' ) ) {
+	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) );
 }
 
-require_once(TOOLS_DIR . "/../niver/fund.php");
-require_once(TOOLS_DIR . "/../niver/gui/inputs.php");
+require_once(ROOT_DIR . "/niver/fund.php");
+require_once(ROOT_DIR . "/niver/gui/inputs.php");
 
 
-// require_once( TOOLS_DIR . "/r-shop_manager.php" );
 
 //function gui_select_client( $active_days, $new = false ) {
 //	if ( $active_days > 0 ) {
@@ -72,13 +71,6 @@ function gui_select_path_code( $id, $selected = 0, $events = "" ) {
 		"path_code", "where date > CURDATE()", true, false, null, "path_code" );
 }
 
-function gui_select_mission( $id, $selected = 0, $args = null ) {
-	$events = GetArg($args, "events", null);
-
-	$sql_where = " where date >= curdate() or date is null";
-	return gui_select_table( $id, "im_missions", $selected, $events, array( 1 ),
-		"ifnull(concat (name, ' ', DAYOFMONTH(date), '/', month(date)), name)", $sql_where, true, false, "date" );
-}
 
 function gui_select_payment( $id, $events, $default ) {
 	return gui_select_table( $id, "im_payments", $default, $events );

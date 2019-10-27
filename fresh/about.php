@@ -8,7 +8,6 @@
 error_reporting( E_ALL );
 ini_set( 'display_errors', 'on' );
 
-// require_once("im_tools_light.php");
 require_once("r-multisite.php");
 
 // print "document root: " .  $_SERVER['DOCUMENT_ROOT'] . "<br/>";

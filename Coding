@@ -1,35 +1,31 @@
 Folder symbols
 -=-=-=-=-=-=-=
-TOOLS_DIR - store/tools
-STORE_DIR - store
-ROOT_DIR - store folder. Obsoleted
-
-TASKS_DIR - new. for tasks.work
+ROOT_DIR - store folder.
+TODO: Find a way to allow running older version.
 
 Library names
 -=-=-=-=-=-=-
 niver - fund, data, gui. Not sure about this name.
-tools - store functionality.
+fresh - store functionality.
+org   - organization - teams, worker, projects, etc.
 
 Folder structure
 -=-=-=-=-=-=-=-=
 page.php - the html page displayed. will be replaced in the integration with wordpress by shortcode.
 admin-post.php handles operations. check auth amd connects to db.
 admin.php - all the functional code. including wont display noting.
-Object.php - code handling a class.
+Object.php - code handling a class. e.g focus.php. Shouldn't output nothing when include. E.g. styles and scripts.
 
 General
 -=-=-=-
-Auto and connection to db will be in root folder. init.php. installation specific.
+init.php: Auto and connection to db will be in root folder. init.php. installation specific. Won't load scripts nor styles.
 Will check that the user is known. Checking specific roles will be in the post.php.
 data-post.php - general update functions
 
 inputs
 -=-=-=
-
 New row - field name will be just the field name. Will be handled by save_new or data_save_new.
 Existing row - field name will be <field>_<row_number>. Will be handled by update_entity.
-
 
 20909791 3b
 1700791 2bs

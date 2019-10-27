@@ -18,13 +18,13 @@ if ( ! defined( "ROOT_DIR" ) ) {
 }
 
 
-require_once( TOOLS_DIR . '/catalog/catalog.php' );
+require_once( ROOT_DIR . '/fresh/catalog/catalog.php' );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( ROOT_DIR . '/niver/gui/wp_inputs.php' );
-require_once( TOOLS_DIR . '/multi-site/imMulti-site.php' );
-require_once( TOOLS_DIR . '/wp/Product.php' );
-require_once( TOOLS_DIR . "/orders/orders-common.php" );
-require_once( TOOLS_DIR . "/orders/Order.php" );
+require_once( ROOT_DIR . '/fresh/multi-site/imMulti-site.php' );
+require_once( ROOT_DIR . '/fresh/wp/Product.php' );
+require_once( ROOT_DIR . "/fresh/orders/orders-common.php" );
+require_once( ROOT_DIR . "/fresh/orders/Order.php" );
 
 class PricelistItem {
 	private $id;

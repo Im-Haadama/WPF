@@ -91,7 +91,7 @@ function greeting()
 
 	$data .= " " . gui_div("user_id", get_customer_name($user_id), false, $user_id);
 
-	$data .=  ". " . im_translate("the time is:") . Date("G:i", $now ) . ".";
+	$data .=  ". " . im_translate("the time is:") . " " . Date("G:i", $now ) . ".";
 
 	$data .= "<br/>";
 

@@ -6,17 +6,21 @@
  * Time: 11:42
  */
 
+
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
 if ( ! defined( "ROOT_DIR" ) ) {
 	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
 }
 
-require_once( ROOT_DIR . "/niver/gui/inputs.php" );
-require_once( ROOT_DIR . "/niver/gui/sql_table.php" );
-require_once( ROOT_DIR . "/org/business/business.php" );
-require_once(ROOT_DIR . "/org/people/gui.php");
-require_once( "people.php" );
-require_once( TOOLS_DIR . "/gui.php" );
+// require_once( ROOT_DIR . "/niver/gui/inputs.php" );
+// require_once( ROOT_DIR . "/niver/gui/sql_table.php" );
+///require_once( ROOT_DIR . "/org/business/business.php" );
+// require_once( "people.php" );
+// require_once( TOOLS_DIR . "/gui.php" );
 
+require_once(ROOT_DIR . '/im-config.php');
 require_once( ROOT_DIR . "/init.php" );
 
 $role = "";
@@ -216,7 +220,6 @@ array_push( $table, ( array( "פרויקט", gui_select_project( "project",3, $a
 
 print gui_table_args( $table );
 
-
 print gui_header( 2, "הוצאות נסיעה" );
 print gui_input( "traveling", "" ) . "<br/>";
 print gui_header( 2, "הוצאות נוספות/משלוחים" );
@@ -230,8 +233,6 @@ print gui_button("btn_add_time", "add_item()", "Add activity", true);
 print gui_button("btn_add_sick_leave", "add_sick_leave()", "Add sick leave", true);
 
 ?>
-
-
 
 <table id="last_info">
 

@@ -6,12 +6,12 @@
  * Time: 10:07
  */
 // require_once( '../im-tools.php' );
-if ( ! defined( "TOOLS_DIR" ) ) {
-	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
+if ( ! defined( 'ROOT_DIR' ) ) {
+	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) );
 }
-require_once( TOOLS_DIR . '/pricelist/pricelist.php' );
-require_once( TOOLS_DIR . '/wp/terms.php' );
-require_once( TOOLS_DIR . '/pricing.php' );
+require_once( ROOT_DIR . '/fresh/pricelist/pricelist.php' );
+require_once( ROOT_DIR . '/fresh/wp/terms.php' );
+require_once( ROOT_DIR . '/fresh/pricing.php' );
 require_once( 'bundles.php' );
 
 class Catalog {
@@ -545,10 +545,6 @@ class Catalog {
 	}
 
 	static function auto_mail() {
-//		require_once( TOOLS_DIR . "/orders/form.php" );
-//		require_once( TOOLS_DIR . "/orders/orders-common.php" );
-//		require_once( TOOLS_DIR . "/mail.php" );
-
 		global $business_name;
 		global $support_email;
 

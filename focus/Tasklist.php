@@ -44,7 +44,6 @@ class Tasklist {
 
 			$this->repeat_freq         = $row[0];
 			$this->repeat_freq_numbers = $row[1];
-
 		}
 	}
 
@@ -285,7 +284,8 @@ function create_tasks_per_mission() {
 	}
 }
 // if null = create for all freqs.
-function create_tasks( $freqs = null, $verbose = false, $default_owner = 1 ) {
+function create_tasks( $freqs = null, $verbose = false, $default_owner = 1 )
+{
 	$log_file = "tasklist." . date("m-d") . ".log";
 	my_log("Creating tasks freqs=" . $freqs, __FUNCTION__, $log_file);
 	ob_start();
@@ -325,6 +325,8 @@ function create_tasks( $freqs = null, $verbose = false, $default_owner = 1 ) {
 			$test_result = "";
 			for ( $i = 1; $i < 4; $i ++ )
 				$test_result .= substr( $verbose_line[ $i ], 0, 1);
+			my_log("template " . $id . "result: $test_result", __FUNCTION__, $log_file);
+
 
 			sql_query("update im_task_templates set last_check = now() where id = " . $id);
 
@@ -361,11 +363,11 @@ function create_tasks( $freqs = null, $verbose = false, $default_owner = 1 ) {
 			       "'" . $row["task_description"] . "', " . $id . ", " . eTasklist::waiting . ", now(), " . $project_id . ",  " .
 			       $priority . "," . $owner . "," . $creator . ")";
 
-			my_log("create task " . $sql);
-
 			sql_query( $sql );
 
 			array_push( $verbose_line, sql_insert_id() );
+
+			my_log("Template " . $id . " " . comma_implode($verbose_line), __FUNCTION__, $log_file);
 
 			array_push( $verbose_table, $verbose_line);
 			// print $sql;
@@ -387,6 +389,8 @@ function check_frequency( $repeat_freq, $repeat_freq_numbers ) {
 	if ( strlen( $repeat_freq ) == 0 ) {
 		return "1 empty freq passed";
 	}
+
+	if (substr($repeat_freq, 0, 1) == 'c') return true;
 
 	$result = $repeat_freq . ". now = " . date( $repeat_freq ) . " " . $repeat_freq_numbers;
 

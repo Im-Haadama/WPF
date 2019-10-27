@@ -1,6 +1,10 @@
 <?php
+header('Access-Control-Allow-Origin: *');
 require( '../r-shop_manager.php' );
-print header_text( false );
+require_once(ROOT_DIR . "/fresh/multi-site/imMulti-site.php");
+$m = ImMultiSite::getInstance();
+
+	print header_text( false );
 require_once( "account.php" );
 ?>
 <html dir="rtl" lang="he">

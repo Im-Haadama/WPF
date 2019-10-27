@@ -6,12 +6,12 @@
  * Time: 07:58
  */
 
-if ( ! defined( "TOOLS_DIR" ) ) {
-	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
+if ( ! defined( 'ROOT_DIR' ) ) {
+	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) );
 }
 
-require_once( TOOLS_DIR . '/im_tools.php' );
-require_once( TOOLS_DIR . '/orders/orders-common.php' );
+require_once( ROOT_DIR . '/fresh/im_tools.php' );
+require_once( ROOT_DIR . '/fresh/orders/orders-common.php' );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 
 #############################

@@ -650,6 +650,8 @@ function NewRow($table_name, $args)
 	$args["table_name"] = $table_name;
 	$args['events'] = 'onchange="changed_field(\'%s\')"';
 	$args["add_field_suffix"] = false;
+//	$args["skip_id"] =  true;
+//	$args["id_field"] = "ID";
 	if (! isset($args["hide_cols"])) $args["hide_cols"] = [];
 	return GuiRowContent($table_name, null, $args);
 }
@@ -738,7 +740,10 @@ function GuiTableContent($table_id, $sql, &$args = null)
 	if (isset($args["edit_cols"]))
 		$args["edit_cols"][$id_field] = 0;
 
+	if (! isset($args["form_table"])) $args["form_table"] = $table_id;
+
 	$row_count = count( $rows_data);
+	if (isset($args["count"])) $args["count"] += $row_count;
 
 	// Convert to table if data returned.
 	if ( $row_count >= 1 ) {

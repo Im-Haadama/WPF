@@ -188,12 +188,13 @@ function data_search($table_name, $args = null)
 
 function handle_data_operation($operation)
 {
-	$allowed_tables = array("im_company", "im_tasklist", "im_task_templates", "im_working_teams");
+	$allowed_tables = array("im_company", "im_tasklist", "im_task_templates", "im_working_teams", "im_projects");
 
 	$debug = 0;
 	if ($debug)	print "operation: " . $operation . "<br/>";
 	switch ($operation){
 		case "save_new":
+			init();
 			$table_name = get_param("table_name", true);
 			if (! in_array($table_name, $allowed_tables))
 				die ("invalid table operation");

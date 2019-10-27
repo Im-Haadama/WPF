@@ -16,19 +16,13 @@ if ( ! defined( "STORE_DIR" ) ) {
 
 require_once( STORE_DIR . "/fresh/supplies/Supply.php" );
 
-$filter_zero  = isset( $_GET["filter_zero"] );
-$filter_stock = isset( $_GET["filter_stock"] );
+$filter_zero = get_param("filter_zero", false, false);
+$filter_stock = get_param("filter_stock", false, false);
 $supplier_id = get_param("supplier_id");
+$operation = get_param("operation", true);
 
 //$basket_quantities;
 $basket_ordered = array();
-
-if ( ! isset( $_GET["operation"] ) ) {
-	print "send operation";
-	die ( 1 );
-}
-
-$operation = $_GET["operation"];
 
 switch ( $operation ) {
 	case "create_single":
@@ -115,8 +109,6 @@ tr:nth-child(even) {
     background-color: #dddddd;
 }
 </style>";
-
-
 
 	// $time = debug_time("start", 0);
 	$needed_products = array();

@@ -7,11 +7,11 @@
  */
 // require_once( "../r-shop_manager.php" );
 
-if ( ! defined( 'TOOLS_DIR' ) ) {
-	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
+if ( ! defined( 'ROOT_DIR' ) ) {
+	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) );
 }
 
-require_once( TOOLS_DIR . "/im_tools.php" );
+require_once( ROOT_DIR . "/im_tools.php" );
 require_once( ROOT_DIR . '/niver/data/sql.php' );
 
 // print header_text();

@@ -34,7 +34,21 @@ function data_save_new(post_operation, table_name, action)
         operation += '&operation=save_new';
 
     operation += '&table_name=' + table_name;
+    let form_params = get_form_params(table_name, true);
+    if (! form_params) return;
+    operation += form_params;
+    // alert(operation);
+    if (action)
+        execute_url(operation, action);
+    else
+        execute_url(operation, action_back);
+}
+
+function get_form_params(table_name, check_mandatory)
+{
     let table = document.getElementById(table_name);
+    let params = "";
+
     if (! table || ! table.rows){
         alert("rows of table " + table_name + " not found");
         return false;
@@ -46,20 +60,15 @@ function data_save_new(post_operation, table_name, action)
         let name = chk_id.substr(4);
         if (get_value_by_name(chk_id)) {
             let val = get_value_by_name(name);
-            operation += "&" + name + "=" + encodeURI(val);
+            params += "&" + name + "=" + encodeURI(val);
         } else {
-            if (get_value_by_name(name + "_mandatory") === "1") {
+            if (check_mandatory && get_value_by_name(name + "_mandatory") === "1") {
                 alert (name + " is mandatory ");
-                return false;
+                return null;
             }
         }
     }
-    // alert(operation);
-    if (action)
-        execute_url(operation, action);
-    else
-        execute_url(operation, action_back);
-
+    return params;
 }
 
 function check_update(xmlhttp)

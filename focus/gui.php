@@ -1,8 +1,13 @@
+<script>
+    function success_message(xmlhttp)
+    {
+        if (xmlhttp.response === "done")
+            alert("<?php print im_translate("Success"); ?>");
+        else
+            alert (xmlhttp.response);
+    }
+</script>
 <?php
-
-
-// $selector_name( $input_name, $orig_data, $args)
-
 
 function gui_select_task( $id, $value, $args ) {
 	$debug = 0; // (1 == get_user_id());

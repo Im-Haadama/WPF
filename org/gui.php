@@ -7,6 +7,7 @@ function gui_select_project($id, $value, $args)
 {
 	// print "v=$value<br/>"; 16/10/2019 - default is edit=true.
 	$edit = GetArg($args, "edit", true);
+
 	if (! $edit)
 	{
 //		print "v= " . $value . "<br/>";
@@ -22,8 +23,8 @@ function gui_select_project($id, $value, $args)
 	// Check if this user is global company user.
 	// $query = " where id in (" . comma_implode(worker_get_projects($user_id)) . ")";
 
-$companies = worker_get_companies($user_id);
-		$query = " where id in (select project_id from im_working where company_id in (" . comma_implode($companies) . "))";
+	$companies = worker_get_companies($user_id);
+	$query = " where id in (select project_id from im_working where company_id in (" . comma_implode($companies) . "))";
 //	} else {
 //		$query = " where id in (" . comma_implode(worker_get_projects($user_id) . ")");
 //	}
@@ -32,10 +33,15 @@ $companies = worker_get_companies($user_id);
 	// $user_id = sql_query("select user_id from im_working where id = " . $worker);
 //		$query = " where id in (select project_id from im_working where user_id = " . $user_id . ")";
 
-	$args["where"] = $query;
-	$args["name"] = "project_name";
+	$args["where"]    = $query;
+	$args["name"]     = "project_name";
 	$args["selected"] = $value;
-	return GuiSelectTable($id, "im_projects", $args);
+	$gui              = GuiSelectTable( $id, "im_projects", $args );
+	$form_table = GetArg($args, "form_table", null);
+	if (! $form_table) die(__FUNCTION__ . ":" . " missing form_table");
+	$gui              .= gui_button( "add_new_project", "add_project('" . $form_table . "', '" . get_url() . "')", "New Project" );
+
+	return $gui;
 }
 
 function gui_select_worker( $id = null, $selected = null, $args = null ) {
@@ -51,9 +57,10 @@ function gui_select_worker( $id = null, $selected = null, $args = null ) {
 	$args["id_key"] = "user_id";
 	$args["selected"] = $selected;
 
-	if ($edit)
-		return GuiSelectTable($id, "im_working", $args);
-	else
+	if ($edit) {
+		$gui = GuiSelectTable($id, "im_working", $args);
+		return $gui;
+	} else
 		return ($selected > 0) ? sql_query_single_scalar("select client_displayname(user_id) from im_working where user_id = " . $selected) :
 			"";
 }
@@ -65,13 +72,22 @@ function gui_select_team($id, $selected = null, $args = null)
 	$debug = false; // (get_user_id() == 1);
 	$args["debug"] = $debug;
 	$args["name"] = "team_name";
-
-
 	$args["selected"] = $selected;
+	$form_table = GetArg($args, "form_table", null);
 
-	if ($edit)
-		return GuiSelectTable($id, "im_working_teams", $args);
+	if ($edit) {
+		$gui = GuiSelectTable($id, "im_working_teams", $args);
+		$gui .= gui_button("add_new_team", "add_team('" . $form_table . "', '" .get_url() . "')", "New Team");
+		return $gui;
+	}
 	else
 		return ($selected > 0) ? sql_query_single_scalar("select team_name from im_working_teams where id = " . $selected) : "";
 
+}
+
+function get_project_name($project_id)
+{
+	if ($project_id)
+		return sql_query_single_scalar("SELECT project_name FROM im_projects WHERE id = " . $project_id);
+	return "No project selected";
 }

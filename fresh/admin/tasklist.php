@@ -5,8 +5,8 @@ require_once( "tasklist-post.php" );
 
 if (function_exists("get_user_id")) if (get_user_id() == 1) $debug = 1;
 
-if ( ! defined( "TOOLS_DIR" ) ) {
-	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
+if ( ! defined( 'ROOT_DIR' ) ) {
+	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) );
 }
 
 $preset_basic_query = " and (date(date) <= CURRENT_DATE or isnull(date)) and (status < 2) " .

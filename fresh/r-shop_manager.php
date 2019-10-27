@@ -5,16 +5,13 @@ if ( ! isset( $multisite ) ) {
 
 require_once( "im_tools.php" );
 
-if ( ! defined( "STORE_DIR" ) ) {
-	define( 'STORE_DIR', dirname( dirname( __FILE__ ) ) );
+if ( ! defined( "ROOT_DIR" ) ) {
+	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) );
 }
 
-if ( ! defined( "TOOLS_DIR" ) ) {
-	define( 'TOOLS_DIR', STORE_DIR . "/tools" );
-}
 
-require_once( STORE_DIR . "/wp-load.php" );
-require_once( STORE_DIR . "/wp-includes/pluggable.php" );
+require_once( ROOT_DIR . "/wp-load.php" );
+require_once( ROOT_DIR . "/wp-includes/pluggable.php" );
 require_once(ROOT_DIR . '/init.php');
 
 

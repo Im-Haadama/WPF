@@ -18,7 +18,6 @@ function get_url($only_base = false)
 
 			return $r;
 		}
-
 		return $url;
 	}
 	return "unknown";

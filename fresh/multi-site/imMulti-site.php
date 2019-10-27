@@ -7,12 +7,11 @@
  */
 
 // require_once( 'im_simple_html_dom.php' );
-if ( ! defined( "TOOLS_DIR" ) ) {
-	define( "TOOLS_DIR", dirname( dirname( __FILE__ ) ) );
+if ( ! defined( 'ROOT_DIR' ) ) {
+	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) );
 }
 
 require_once( ROOT_DIR . '/niver/gui/sql_table.php' );
-
 require_once( ROOT_DIR . '/niver/MultiSite.php' );
 
 $local_site_id = - 1;

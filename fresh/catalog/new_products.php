@@ -6,12 +6,12 @@
  * Time: 06:18
  */
 
-if ( ! defined( 'TOOLS_DIR' ) ) {
-	define( TOOLS_DIR, dirname( dirname( __FILE__ ) ) );
+if ( ! defined( 'ROOT_DIR' ) ) {
+	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) );
 }
 
-require_once( TOOLS_DIR . '/r-shop_manager.php' );
-require_once( TOOLS_DIR . '/gui/sql_table.php' );
+require_once( ROOT_DIR . '/r-shop_manager.php' );
+require_once( ROOT_DIR . '/gui/sql_table.php' );
 
 print header_text( false );
 

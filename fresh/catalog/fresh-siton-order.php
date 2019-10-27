@@ -33,7 +33,6 @@ if ( ! isset( $_GET["client_id"] ) ) {
                 }
             }
 
-
             xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function () {
                 // Wait to get query result

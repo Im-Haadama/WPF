@@ -125,6 +125,9 @@ function sql_prepare($sql)
 		return false;
 	$conn = get_sql_conn();
 
+	if (!$conn)
+		die("not connected to db");
+
 	$stmt = $conn->prepare($sql);
 	if ($stmt)
 		return $stmt;
@@ -396,12 +399,12 @@ function sql_trace()
 {
 	$result = "";
 	$debug = debug_backtrace();
-	for ( $i = 2; $i < 10 && $i < count( $debug ); $i ++ ) {
+	for ( $i = 1; $i < 10 && $i < count( $debug ); $i ++ ) {
 		if (isset($debug[$i]['file'])) $caller = "called from " . $debug[$i]['file'] . " ";
 		else $caller = "";
 		if (isset($debug[ $i ]["line"])) $line = ":" . $debug[ $i ]["line"];
 		else $line = "";
-		$result .= ( $caller . $debug[ $i ]["function"] . $line . "<br/>");
+		$result .= '#' . $i . ' ' .( $caller . $debug[ $i ]["function"] . $line . "<br/>");
 	}
 	return $result;
 }

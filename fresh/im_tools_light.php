@@ -5,21 +5,14 @@
  * Date: 16/07/15
  * Time: 21:42
  */
-if ( ! defined( "STORE_DIR" ) ) {
-	define( 'STORE_DIR', dirname( dirname( __FILE__ ) ) );
-}
 
 if ( ! defined( "ROOT_DIR" ) ) {
 	define( 'ROOT_DIR', dirname( dirname(
 		__FILE__ ) ) );
 }
 
-if ( ! defined( "TOOLS_DIR" ) ) {
-	define( 'TOOLS_DIR', dirname( __FILE__ ) );
-}
-
-require_once( STORE_DIR . "/im-config.php" );
-require_once( STORE_DIR . "/niver/fund.php" );
+require_once( ROOT_DIR . "/im-config.php" );
+require_once( ROOT_DIR . "/niver/fund.php" );
 require_once( ROOT_DIR . "/niver/data/sql.php" );
 require_once( "vat.php" );
 
@@ -475,11 +468,6 @@ function valid_key( $key ) {
 	return ( $valid == 1 ? 1 : 0 );
 }
 
-function get_project_name( $project_id ) {
-	if ($project_id)
-		return sql_query_single_scalar("SELECT project_name FROM im_projects WHERE id = " . $project_id);
-	return "No project selected";
-}
 
 function get_document_type_name( $type ) {
 	$names = array( "", "הזמנה", "תעודת משלוח", "זיכוי", "חשבונית" );

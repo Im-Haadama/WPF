@@ -6,18 +6,18 @@
  * Time: 19:29
  */
 // require_once( "../r-shop_manager.php" );
-if ( ! defined( 'TOOLS_DIR' ) ) {
-	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
+if ( ! defined( 'ROOT_DIR' ) ) {
+	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) );
 }
 
-require_once( TOOLS_DIR . "/pricing.php" );
-require_once( TOOLS_DIR . "/account/account.php" );
-include_once( TOOLS_DIR . "/orders/orders-common.php" );
+require_once( ROOT_DIR . '/fresh/pricing.php' );
+require_once( ROOT_DIR . '/fresh/account/account.php' );
+include_once( ROOT_DIR . '/fresh/orders/orders-common.php' );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
-include_once( TOOLS_DIR . "/multi-site/imMulti-site.php" );
-require_once( TOOLS_DIR . "/mail.php" );
-require_once( TOOLS_DIR . "/account/gui.php" );
-require_once( TOOLS_DIR . "/inventory/inventory.php" );
+include_once( ROOT_DIR . '/fresh/multi-site/imMulti-site.php');
+require_once( ROOT_DIR . '/fresh/mail.php' );
+require_once( ROOT_DIR . '/fresh/account/gui.php' );
+require_once( ROOT_DIR . '/fresh/inventory/inventory.php' );
 require_once( ROOT_DIR . "/org/business/business.php" );
 require_once( ROOT_DIR . "/fresh/catalog/Basket.php" );
 $debug = false;

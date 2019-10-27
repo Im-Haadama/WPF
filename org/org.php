@@ -1,5 +1,10 @@
 <?php
 
+function worker_get_projects($worker_id)
+{
+	return sql_query_array_scalar("select project_id from im_working where user_id = " . $worker_id);
+}
+
 /**
  * @param $user_id
  *
@@ -19,12 +24,11 @@ function worker_get_companies($user_id)
 /**
  * @param $user_id
  *
- * @return string
+ * @return array
  */
-function worker_get_projects($user_id)
+function worker_get_teams($user_id)
 {
-	return sql_query_single_scalar("select meta_value from wp_usermeta where meta_key = 'team' and user_id = $user_id");
-// 	return sql_query_array_scalar("select project_id from im_working where user_id = " . $user_id);
+	return comma_array_explode(sql_query_single_scalar("select meta_value from wp_usermeta where meta_key = 'team' and user_id = $user_id"));
 }
 
 /**
@@ -32,7 +36,7 @@ function worker_get_projects($user_id)
  *
  * @return string
  */
-function is_volunteer( $uid ) {
+function is_volunteer($uid) {
 	return sql_query_single_scalar( "SELECT volunteer FROM im_working WHERE user_id = " . $uid );
 }
 
@@ -51,10 +55,11 @@ function worker_is_global_company($user_id)
  * @param $team_id
  *
  * @return array|string
+ * @throws Exception
  */
 function team_members($team_id)
 {
-	$sql = "select user_id from im_working where worker_teams(user_id) like '%:" . $team_id . ":%'";
+	$sql = "select distinct user_id from im_working where worker_teams(user_id) like '%:" . $team_id . ":%'";
 	return sql_query_array_scalar($sql);
 }
 
@@ -62,6 +67,7 @@ function team_members($team_id)
  * @param $user_id
  *
  * @return array|string
+ * @throws Exception
  */
 function team_all_members($user_id)
 {
@@ -96,6 +102,10 @@ function team_add($user_id, $team_name)
 	return $team_id;
 }
 
+/**
+ * @param $team_id
+ * @param $user_id
+ */
 function team_add_worker($team_id, $user_id)
 {
 	$current = get_usermeta($user_id, 'teams');
@@ -105,28 +115,66 @@ function team_add_worker($team_id, $user_id)
 	update_usermeta($user_id, 'teams', $current . ":" . $team_id . ":");
 }
 
+/**
+ * @param $team_id
+ *
+ * @return string
+ */
 function team_manager($team_id)
 {
 	return sql_query_single_scalar("select manager from im_working_teams where id = $team_id");
 }
 
+/**
+ * @param $user_id
+ *
+ * @return array|null
+ */
 function team_all_teams($user_id)
 {
-	$t = [];
-	$teams_string = get_usermeta($user_id, 'teams');
-	if (! $teams_string) return null;
-	$teams_string = str_replace("::", ":", $teams_string);
-	$teams = array();
-	while(strlen($teams_string) > 1) {
-		$p = strpos($teams_string, ":", 1);
-		$team = substr($teams_string, 1, $p - 1);
-		// print "Team: $team<br/>";
+	$m = get_usermeta($user_id, 'teams');
+	// var_dump($m);
+	return comma_array_explode($m);
+}
 
-		$t[] = $team;
-//		print "p=$p<br/>";
-		if ($team > 0) array_push($teams, $team);
-		$teams_string = substr($teams_string, $p);
+/**
+ * @param $team_id
+ *
+ * @return bool
+ */
+function team_delete($team_id)
+{
+	// Check for permission;
+	$manager = team_manager($team_id);
+	if ($manager != get_user_id() and ! im_user_can("edit_teams")) {
+		print "no permission."; //  Manager is " . get_user_name($manager);
+		// Todo: audit
+		return false;
 	}
+	$members = team_members($team_id);
+//	print "members: "; var_dump($members); print "<br/>";
+	foreach ($members as $member) team_remove_member($team_id, $member);
+	sql_query("delete from im_working_teams where id = " . $team_id);
+	return true;
 
-	return $teams;
+}
+
+/**
+ * @param $team_id
+ * @param $member
+ */
+function team_remove_member($team_id, $member)
+{
+	$current = get_usermeta($member, 'teams');
+	$teams = comma_array_explode($current);
+	// var_dump($teams); print "<br/>";
+
+	$idx = array_search($team_id, $teams);
+	if (! $idx) return;
+
+	unset ($teams[$idx]);
+
+	// var_dump($teams); print "<br/>";
+	update_usermeta($member, 'teams', $current . ":" . $team_id . ":");
+
 }

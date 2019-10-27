@@ -122,6 +122,9 @@ function execute_url(url, finish_action, obj) {
                 finish_action(xmlhttp3, obj);
         }
     }
+    // xmlhttp3.onloadend = function(){
+    //     alert("Can't load " + url);
+    // }
     xmlhttp3.open("GET", url, true);
     xmlhttp3.send();
 }
@@ -142,6 +145,11 @@ function location_reload(xmlhttp)
         location.reload();
     else
         alert (xmlhttp.response);
+}
+
+function load_page(xmlhttp)
+{
+    window.location = xmlhttp.response;
 }
 
 function get_selected(collection_name)
@@ -171,3 +179,4 @@ function removeParam(key, sourceURL) {
     }
     return rtn;
 }
+

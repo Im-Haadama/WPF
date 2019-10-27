@@ -16,7 +16,6 @@ require_once( ROOT_DIR . "/niver/wp.php" );
 require_once( ROOT_DIR . "/niver/gui/inputs.php" );
 require_once( ROOT_DIR . '/niver/options.php' );
 
-// print TOOLS_DIR . "/multi-site/imMulti-site.php";
 require_once( ROOT_DIR . "/fresh/multi-site/imMulti-site.php" );
 require_once( ROOT_DIR . '/fresh/r-shop_manager.php' );
 
@@ -76,7 +75,7 @@ $col = 0;
 $table[ $row ++ ][ $col ] = gui_header( 2, "אריזה" );
 add_command( $table, $row, $col, "edit_shop_orders", "הזמנות", "orders/orders-get.php", "doc_frame" );
 add_command( $table, $row, $col, "edit_shop_orders", "פריטים להזמנות", "orders/get-total-orders.php", "doc_frame" );
-add_command( $table, $row, $col, "edit_shop_orders", "הדפסה", "delivery/print.php", "print" );
+add_command( $table, $row, $col, "edit_shop_orders", "הדפסה", "/routes/print.php", "print" );
 if ($manage_inventory){
     add_command( $table, $row, $col, "show_supplies", "אספקות", "supplies/supplies-page.php" );
     add_command( $table, $row, $col, "show_supplies", "מצב המלאי", "inventory/display.php" );
@@ -225,9 +224,6 @@ if ( $test_site ) {
 
 <br><br>
 
-<?php
-// require_once( TOOLS_DIR . "/weekly/run.php" );
-?>
 <div align="center">Fresh store powered by Aglamaz.com 2015-2019</div>
 <div align="center">Version <?php print $power_version; ?> </div>
 </body>
