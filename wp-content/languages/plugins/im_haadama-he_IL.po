@@ -451,3 +451,22 @@ msgstr "זמני חזרה"
 msgid "Working hours"
 msgstr "שעות פעילות"
 
+# supplies
+msgid "send"
+msgstr "שלח"
+
+msgid "merge"
+msgstr "מזג"
+
+msgid "delete"
+msgstr "מחק"
+
+msgid "Supplies to send"
+msgstr "הספקות לשליחה לספק"
+
+msgid "Supplies done"
+msgstr "הספקות שהתקבלו"
+
+msgid "Create supply"
+msgstr "צור הספקה"
+

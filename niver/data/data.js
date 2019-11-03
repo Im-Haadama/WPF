@@ -161,7 +161,7 @@ function search_table(table_name, url = null)
 
 function update_list(list_name, obj)
 {
-    if (obj.value.length >= 2)
+    if (obj.value.length >= 2 && obj.value.length <= 7)
         execute_url("/niver/data/data-post.php?operation=auto_list&list=" + list_name + "&prefix=" + obj.value, do_update_list, obj);
     else
         obj.dataset = null;
@@ -173,5 +173,6 @@ function do_update_list(xmlhttp, obj)
         alert(xmlhttp.response);
         return;
     }
+    // obj.list.innerHTML = xmlhttp.response;
     obj.list.innerHTML = xmlhttp.response;
 }

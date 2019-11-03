@@ -126,6 +126,17 @@ function team_manager($team_id)
 }
 
 /**
+ * @param $worker_id
+ *
+ * @return array
+ * @throws Exception
+ */
+function team_managed_teams($worker_id)
+{
+	return sql_query_array_scalar("select id from im_working_teams where manager = " . $worker_id);
+}
+
+/**
  * @param $user_id
  *
  * @return array|null
@@ -141,6 +152,7 @@ function team_all_teams($user_id)
  * @param $team_id
  *
  * @return bool
+ * @throws Exception
  */
 function team_delete($team_id)
 {

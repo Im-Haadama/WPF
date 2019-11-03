@@ -211,14 +211,16 @@ function handle_data_operation($operation)
 		case "auto_list":
 			$prefix = get_param("prefix", true);
 
-			$lists = array("products" => array("table" => "im_products", "field_name" =>'post_title', "include_id" => 1, "id_field" => "ID"),
-				"tasks" => array("table"=>"im_tasklist", "field_name" => "task_description", "include_id" => 1, "id_field" => "id", "query" => " status = 0"));
+			$lists = array("products" => array("table" => "im_products", "field_name" =>'post_title', "include_id" => 0, "id_field" => "ID"),
+				"tasks" => array("table"=>"im_tasklist", "field_name" => "task_description", "include_id" => 1, "id_field" => "id", "query" => " status = 0"),
+				"users" => array("table" => "wp_users", "field_name" => "display_name", "id_field" => "ID"));
 			$list = get_param("list", true);
 			if (! isset($lists[$list])) die ("Error: unknown list " . $list);
 			$table_name = $lists[$list]["table"];
 			$field = $lists[$list]["field_name"];
 
 			$args = $lists[$list];
+			$args["datalist"] = $list . "_list";
 
 			print auto_list($table_name, $field, $prefix, $args);
 			break;
@@ -240,13 +242,14 @@ function auto_list($table_name, $field, $prefix, $args = null)
 	if (!$args) $args = [];
 	$id_field = GetArg($args, "id_field", "id");
 	$include_id = GetArg($args, "include_id", false);
+	$datalist = GetArg($args, "datalist", null);
 
 	$args["sql"] = "select $id_field, $field from $table_name where $field like '%" . $prefix . "%'";
 	$query = GetArg($args, "query", null); 	if ($query) $args["sql"] .= " and " . $query;
-	print $args["sql"] . "<br/>";
+	// print $args["sql"] . "<br/>";
 	$args["field"] = $field;
 	$args["include_id"] = $include_id;
-	$data .= GuiDatalist($table_name . "_$prefix", $table_name, $args );
+	$data .= GuiDatalist($datalist, $table_name, $args);
 
 	return $data;
 }

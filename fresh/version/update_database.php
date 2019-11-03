@@ -585,13 +585,13 @@ BEGIN
 ");
 
 	print "delivery_receipt<br/>";
-	sql_query("drop function delivery_reciept");
+	sql_query("drop function delivery_receipt");
 	sql_query("create function delivery_receipt( _del_id int) returns integer
 	BEGIN
 		declare _receipt integer;
 		select payment_receipt into _receipt 
 	        from im_delivery where id = _del_id; 
-	    return _name;
+	    return _receipt;
 	END;
 ");
 	print "project name<br/>";

@@ -27,6 +27,11 @@ inputs
 New row - field name will be just the field name. Will be handled by save_new or data_save_new.
 Existing row - field name will be <field>_<row_number>. Will be handled by update_entity.
 
+
+Test:
+-=-=-
+Should run without login. Get permission of task owner. No info leakage.
+
 20909791 3b
 1700791 2bs
 22309501

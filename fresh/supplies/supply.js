@@ -8,17 +8,6 @@ function mission_changed(supply_id) {
     execute_url("supplies-post.php?operation=set_mission&supply_id=" + get_supply_id() + "&mission_id=" + mission_id);
 }
 
-function add_item() {
-    let supply_id = get_supply_id();
-    let request_url = "supplies-post.php?operation=add_item&supply_id=" + supply_id;
-    let prod_id = get_value_by_name("itm_");
-    request_url = request_url + "&prod_id=" + prod_id;
-    let _q = 1; // encodeURI(get_value(document . getElementById("qua_")));
-    request_url = request_url + "&quantity=" + _q;
-
-    execute_url(request_url, location_reload);
-}
-
 function save_mission() {
     var mission = get_value(document.getElementById("mission_select"));
     var request = "supplies-post.php?operation=set_mission&mission_id=" + mission + "&supply_id= " + get_supply_id();
@@ -204,4 +193,105 @@ function new_supply_change()
     let upcsv = document.getElementById("upcsv");
     let date = get_value_by_name("date");
     upcsv.action = "/fresh/supplies/supplies-post.php?operation=create_from_file&supplier_id=" + supplier_id + "&date=" + date;
+}
+
+function supply_add_line() {
+    let request_url = "supplies-post.php?operation=add_item&supply_id=<?php print $id; ?>";
+    let prod_id = get_value_by_name("itm_");
+    request_url = request_url + "&prod_id=" + prod_id;
+    let _q = 1; // encodeURI(get_value(document . getElementById("qua_")));
+    request_url = request_url + "&quantity=" + _q;
+    execute_url(request_url, location_reload, this);
+}
+
+function supply_add()
+{
+    disable_btn('btn_add_item');
+
+    let supplier_id = get_value_by_name("supplier_select");
+//            var supplier_id = supplier_name.substr(0, supplier_name.indexOf(")"));
+    if (!(supplier_id > 0)) {
+        alert("יש לבחור ספק, כולל מספר מזהה מהרשימה");
+        document.getElementById('add_item').disabled = false;
+
+        return;
+    }
+    let ids = [];
+
+    let item_table = document.getElementById("supply_items");
+    let line_number = 0;
+
+    for (let i = 1; i < item_table.rows.length; i++) {
+        let prod_id = get_value_by_name("itm_" + i);
+        let q = get_value_by_name("qua_" + i);
+        let u = get_value_by_name("uni_" + i);
+        if (!u > 0) u = 0;
+//                $prod_id  = $ids[ $pos ];
+//                $quantity = $ids[ $pos + 1 ];
+//                $units    = $ids[ $pos + 2 ];
+        if (q > 0) {
+            ids.push(prod_id);
+            ids.push(q);
+            ids.push(u);
+
+            line_number++;
+        }
+        // ids.push(get_value(item_table.rows[i].cells[0].innerHTML));
+    }
+    if (line_number === 0) {
+        alert("יש לבחור מוצרים, כולל כמויות");
+        enable_btn('btn_add_item');
+
+        return;
+    }
+
+    let date = get_value(document.getElementById("date"));
+
+    let request = "supplies-post.php?operation=create_supply" +
+        "&supplier_id=" + supplier_id +
+        "&create_info=" + ids.join() +
+        "&date=" + date;
+
+    reset_message();
+    xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function () {
+        // Wait to get delivery id.
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {  // Request finished
+            add_message(xmlhttp.responseText);
+            let id = xmlhttp.responseText.match(/\d+/)[0];
+            disable_btn("btn_add_item");
+            if (id > 0) {
+                window.location.href = "/fresh/supplies/supplies-page.php?operation=get&id=" + id;
+                // location.reload();
+            }
+        }
+    }
+    xmlhttp.open("GET", request, true);
+    xmlhttp.send();
+}
+
+function supply_new_add_line()
+{
+    let item_table = document.getElementById("supply_items");
+    let line_idx = item_table.rows.length;
+    let new_row = item_table.insertRow(-1);
+    let product = new_row.insertCell(0);
+    // product.innerHTML = "<input id=\"itm_" + line_idx + "\" list=\"items\" \">";
+    product.innerHTML = "<input id=\"itm_" + line_idx + "\" list=\"product_list\" onkeyup=\"update_list('products', this)\"><datalist id=\"product_list\"></datalist>";
+
+    let quantity = new_row.insertCell(1);
+    quantity.innerHTML = "<input id = \"qua_" + line_idx + "\" >"; // onkeypress=\"select_unit(" + line_idx + ")\"
+//    let units = new_row.insertCell(2);
+//    units.innerHTML = "<input id=\"uni_" + line_idx + "\" list=\"units\", onkeypress=\"add_line(" + line_idx + ")\">";
+    product.firstElementChild.focus();
+}
+
+function supply_delete(status) {
+    let params = get_selected(status);
+    if (! params.length) {
+        alert ("select supplies for delete");
+        return
+    }
+    let request = "supplies-post.php?operation=delete_supplies&params=" + params;
+    execute_url(request, location_reload);
 }

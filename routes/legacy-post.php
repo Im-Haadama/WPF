@@ -5,11 +5,20 @@
  * Date: 06/10/18
  * Time: 11:17
  */
-require_once( "../im_tools.php" );
-require_once( "../invoice4u/invoice.php" );
-require_once( "../orders/orders-common.php" );
-require_once( "../orders/Order.php" );
-require_once( "../catalog/catalog.php" );
+
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
+//require_once( "../im_tools.php" );
+
+if ( ! defined( 'ROOT_DIR' ) ) {
+	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) );
+}
+
+require_once( ROOT_DIR . "/fresh/invoice4u/invoice.php" );
+require_once( ROOT_DIR . "/fresh/orders/orders-common.php" );
+require_once( ROOT_DIR . "/fresh/orders/Order.php" );
+require_once( ROOT_DIR . "/fresh/catalog/catalog.php" );
 
 require_once( ROOT_DIR . '/init.php' );
 

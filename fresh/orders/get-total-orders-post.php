@@ -226,15 +226,15 @@ function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero
 		$q_inv = $p->getStock();
 
 		if ( $inventory_managed ) {
-			$row[] = gui_cell( gui_input( "inv_" . $prod_id, $q_inv, array(
+			$row[] = gui_input( "inv_" . $prod_id, $q_inv, array(
 				"onchange=\"change_inv(" . $prod_id . ")\"",
 				"onkeyup=\"moveNext(" . $prod_id . ")\""
-			) ) );
+			) ) ;
 
 			$numeric_quantity = ceil( $quantity - $q_inv );
 
-			$row[] = gui_cell( gui_input( "qua_" . $prod_id, $numeric_quantity,
-				"onchange=\"line_selected('" . $prod_id . '_' . $supplier_id . "')\"" ) );
+			$row[] = gui_input( "qua_" . $prod_id, $numeric_quantity,
+				"onchange=\"line_selected('" . $prod_id . '_' . $supplier_id . "')\"" );
 		}
 
 		$alternatives  = alternatives( $prod_id );
@@ -250,7 +250,7 @@ function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero
 
 		$row[] = $supplier_name;
 
-		$row [] = gui_cell( orders_per_item( $prod_id, 1, true, true, true ) );
+		$row [] = orders_per_item( $prod_id, 1, true, true, true );
 
 		//print "loop5: " .  microtime() . "<br/>";
 		if ( ! $filter_zero or ( $numeric_quantity > 0 ) ) {
@@ -265,7 +265,7 @@ function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero
 
 		$result .= gui_header( 2, $supplier_name );
 
-		$header = array("בחר", "פריט", "כמות נדרשת", "יחידות נוספות");
+		$header = array("בחר", "פריט", "כמות נדרשת");
 
 		if ( $inventory_managed ) {
 			array_push($header, "כמות במלאי");
@@ -282,13 +282,13 @@ function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero
 		global $total_buy;
 		global $total_sale;
 
-		$table_rows = array( array( "", 'סה"כ', "", "", "", "", "", $total_buy, $total_sale ));
 		for ( $i = 0; $i < count( $data_lines ); $i ++ ) {
 			array_push($table_rows, $data_lines[ $i ][1]);
 		}
+		array_push($table_rows, array( array( "", 'סה"כ', "", "", "", "", "", $total_buy, $total_sale )));
 
 		// $result .= gui_table_args(  $table_rows );
-
+		// debug_var($table_rows);
 		$result .= gui_table_args($table_rows, "needed_" . $supplier_id);
 
 		if (! $supplier_id) {

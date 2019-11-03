@@ -93,6 +93,8 @@ function greeting()
 
 	$data .=  ". " . im_translate("the time is:") . " " . Date("G:i", $now ) . ".";
 
+	$data .= gui_hyperlink("logout", "/wp-login.php?action=logout?redirect_to=" . get_url());
+
 	$data .= "<br/>";
 
 	return $data;

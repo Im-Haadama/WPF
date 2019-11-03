@@ -479,12 +479,4 @@ function get_document_type_name( $type ) {
 	return "not set" . isset( $type ) ? $type : "null";
 }
 
-function footer_text() {
-	global $power_version;
-
-	$text = gui_div( "footer", "Fresh store powered by Niver Dri Sol 2015-2019 Version " . $power_version . " עם האדמה 2013", true );
-
-	return $text;
-}
-
 ?>

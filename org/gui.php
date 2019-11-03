@@ -7,6 +7,7 @@ function gui_select_project($id, $value, $args)
 {
 	// print "v=$value<br/>"; 16/10/2019 - default is edit=true.
 	$edit = GetArg($args, "edit", true);
+	$new_row = GetArg($args, "new_row", false);
 
 	if (! $edit)
 	{
@@ -38,14 +39,15 @@ function gui_select_project($id, $value, $args)
 	$args["selected"] = $value;
 	$gui              = GuiSelectTable( $id, "im_projects", $args );
 	$form_table = GetArg($args, "form_table", null);
-	if (! $form_table) die(__FUNCTION__ . ":" . " missing form_table");
-	$gui              .= gui_button( "add_new_project", "add_project('" . $form_table . "', '" . get_url() . "')", "New Project" );
+	if ($form_table and $new_row) { // die(__FUNCTION__ . ":" . " missing form_table");
+		$gui .= gui_button( "add_new_project", "add_project('" . $form_table . "', '" . get_url() . "')", "New Project" );
+	}
 
 	return $gui;
 }
 
-function gui_select_worker( $id = null, $selected = null, $args = null ) {
-
+function gui_select_worker( $id = null, $selected = null, $args = null )
+{
 	// $events = GetArg($args, "events", null);
 	$edit = GetArg($args, "edit", true);
 	$companies = worker_get_companies(get_user_id());

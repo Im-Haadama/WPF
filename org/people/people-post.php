@@ -34,11 +34,6 @@ switch ( $operation ) {
 		print balance_email( $date, $email );
 		break;
 
-	case "display":
-	case "display_all":
-
-		break;
-
 	case "add_sick_leave":
 		$date      = $_GET["date"];
 		$project   = $_GET["project"];
@@ -103,13 +98,23 @@ switch ( $operation ) {
 
 	case "show_all":
 		print header_text(true);
-		$month = $_GET["month"];
+		$month = get_param("month", false, date('Y-m'));
 		$edit = get_param("edit");
 		$args = array();
 		$edit = get_param("edit", false, false);
 		if ($edit)
 			$args["add_checkbox"] = true;
-		show_all( $month, $args );
+		$args["edit"] = $edit;
+		$wp_user = get_user_by( 'id', get_user_id() );
+		$roles = $wp_user->roles;
+		if ( isset( $roles ) and count( array_intersect( array( "hr" ), $roles ) ) >= 1 ) {
+			show_all( $month, $args );
+		} else {	$a = explode( "-", $month );
+			$y = $a[0];
+			$m = $a[1];
+			print print_transactions( get_user_id(), $m, $y, $args);
+		}
+
 		break;
 	case "delete":
 		// $params = explode(',', $_GET["params"]);

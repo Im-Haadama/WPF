@@ -155,6 +155,11 @@ function show_trans( $customer_id, $view = eTransview::default ) {
 
 	$data1 = TableData($sql, $args);
 
+	if (! $data1) {
+		print im_translate("No orders");
+		return;
+	}
+
 //	var_dump($data1);
 	foreach ($data1 as $id => $row)
 	{
@@ -175,7 +180,7 @@ function show_trans( $customer_id, $view = eTransview::default ) {
 	}
 
 	print gui_table_args($data1, "trans_table", $args);
-	die(1);
+	return;
 
 	// Todo: Add open invoices
 

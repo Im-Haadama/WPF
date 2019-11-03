@@ -6,19 +6,12 @@
  * Time: 11:42
  */
 
-
 error_reporting( E_ALL );
 ini_set( 'display_errors', 'on' );
 
 if ( ! defined( "ROOT_DIR" ) ) {
 	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
 }
-
-// require_once( ROOT_DIR . "/niver/gui/inputs.php" );
-// require_once( ROOT_DIR . "/niver/gui/sql_table.php" );
-///require_once( ROOT_DIR . "/org/business/business.php" );
-// require_once( "people.php" );
-// require_once( TOOLS_DIR . "/gui.php" );
 
 require_once(ROOT_DIR . '/im-config.php');
 require_once( ROOT_DIR . "/init.php" );

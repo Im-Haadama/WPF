@@ -69,11 +69,12 @@ function HeaderText($args = null)
 	global $logo_url;
 	global $style_file;
 
-	$rtl = GetArg($args, "rtl", function_exists("is_rtl")) ? is_rtl() : false;
-	$print_logo = GetArg($args, "print_log", true);
+
+	$rtl = GetArg($args, "rtl", (function_exists("is_rtl") ? is_rtl() : false));
+	$print_logo = GetArg($args, "print_logo", true);
 	$script_files = GetArg($args, "script_files", false);
 	$close_header = GetArg($args, "close_header", true);
-	$greeting = GetArg($args, "greeting", function_exists("greeting"));
+	$greeting = GetArg($args, "greeting", false);
 
 	$text = '<html';
 	if ( $rtl ) {
@@ -97,13 +98,16 @@ function HeaderText($args = null)
 	$table = array();
 	$row = array();
 	if ($greeting) $row [] = greeting();
-	if ($print_logo and $logo_url ) $row [] = '<img src=' . $logo_url . '  style="height: 100px; width: auto;">';
-	$table [] = $row;
-	$args["align_table_cells"] = array(array(null, "left"));
-	$text .= gui_table_args($table, "header", $args);
+	if ($print_logo and $logo_url ) {
+		$row [] = '<img src=' . $logo_url . '  style="height: 100px; width: auto;">';
+		$table [] = $row;
+		$args["align_table_cells"] = array(array(null, "left"));
+		$text .= gui_table_args($table, "header", $args);
+	}
 
 	return $text;
 }
+
 
 function header_text( $print_logo = true, $close_header = true, $rtl = true, $script_file = false ) {
 	// $text .= '<p style="text-align:center;">';
@@ -111,10 +115,19 @@ function header_text( $print_logo = true, $close_header = true, $rtl = true, $sc
 	$args["print_logo"] = $print_logo;
 	$args["close_header"] = $close_header;
 	$args["rtl"] = $rtl;
-	$args["script_file"] = $script_file;
+	$args["script_files"] = $script_file;
 
 	return HeaderText($args);
 }
+
+function footer_text() {
+	global $power_version;
+
+	$text = gui_div( "footer", "Fresh store powered by Niver Dri Sol 2015-2019 Version " . $power_version . " עם האדמה 2013", true );
+
+	return $text;
+}
+
 
 /**
  * @param $style_file
@@ -560,4 +573,20 @@ function comma_array_explode($string_array)
 		$string_array = substr($string_array, $p);
 	}
 	return $t;
+}
+
+function debug_var($var)
+{
+	$debug = debug_backtrace();
+	for ($i = 0; $i < count($debug); $i++){
+		if (isset($debug[$i]['file'])) $caller = basename($debug[$i]['file']) . " "; else $caller = "";
+		if (isset($debug[ $i ]["line"])) $line = ":" . $debug[ $i ]["line"]; else $line = "";
+
+		print $i . ")" . $caller . $debug[$i]["function"] . $line . ": <Br/>";
+    }
+
+	if (is_array($var)) var_dump($var);
+	else print $var;
+
+	print "<br/>";
 }

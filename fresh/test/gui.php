@@ -16,7 +16,9 @@ print load_scripts(array("/niver/gui/client_tools.js", "/niver/data/data.js"));
 
 $args = [];
 $args["worker"] = get_user_id();
-//print gui_select_product("product", null, $args);
+print gui_select_product("product", null, $args);
+
+print gui_button("btn_test", "get_value()", "get");
 //
 //print "<br/>";
 //print gui_select_project("project", null, $args);
@@ -27,5 +29,23 @@ $args["worker"] = get_user_id();
 //print "<br/>";
 //print gui_select_task("task", null, $args);
 
-print "<br/>";
+//print "<br/>";
 print gui_select_client("client", "", $args);
+?>
+<script>
+	function get_value()
+	{
+	    let val = document.getElementById("product").value;
+        let list = document.getElementById("product").list.firstElementChild.options;
+        let idx = -1;
+        for (let i = 0; i < list.length; i++)
+            if (val == list[i].value) {
+                idx = i;
+                break;
+            }
+        if (idx >= 0)
+			alert (document.getElementById("product").list.firstElementChild.options[idx].dataset.id);
+        else
+            alert("not found");
+	}
+</script>

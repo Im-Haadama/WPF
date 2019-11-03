@@ -28,5 +28,5 @@ if ( ! $period ) {
 $m = new MultiSite( $hosts_to_sync, 3, 3 );
 
 foreach ( $hosts_to_sync as $host ) {
-	$m->Execute( "tools/auto/" . $period . ".php", "" );
+	$m->Execute( "fresh/auto/" . $period . ".php", "" );
 }

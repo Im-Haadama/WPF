@@ -134,8 +134,8 @@ function worker_get_id($user_id)
  */
 function print_transactions( $user_id = 0, $month = null, $year = null, &$args = null) // , $week = null, $project = null, &$sum = null, $show_salary = false , $edit = false) {
 {
-	$sql = "SELECT id, date, dayofweek(date), start_time, end_time, working_rate(user_id, project_id), project_id, traveling, expense, expense_text, comment FROM im_working_hours WHERE 1 ";
-	$data = "";
+	$sql = "SELECT id, date, dayofweek(date) as weekday, start_time, end_time, working_rate(user_id, project_id) as rate, project_id, traveling, expense, expense_text, comment FROM im_working_hours WHERE 1 ";
+	$show_salary = GetArg($args, "show_salary", false);
 
 	$sql_month = null;
 	if ( isset( $month ) and $month > 0 ) {
@@ -149,24 +149,12 @@ function print_transactions( $user_id = 0, $month = null, $year = null, &$args =
 	}
 	// $month_sum = array();
 
-	if ( isset( $week ) ) {
-		$sql_month = " and date >= '" . $week . "' and date < '" . date( 'y-m-d', strtotime( $week . "+1 week" ) ) . "'";
-		// print $sql_month;
-	}
-	if ( $user_id > 0 ) {
-		$sql .= " and user_id = " . $user_id . " ";
-	}
-
-	if ( isset( $sql_month ) ) {
-		$sql .= $sql_month;
-	}
-
-	if ( isset( $project ) ) {
-		$sql .= " and project_id = " . $project;
-	}
+	if ( isset( $week ) ) $sql_month = " and date >= '" . $week . "' and date < '" . date( 'y-m-d', strtotime( $week . "+1 week" ) ) . "'";
+	if ( $user_id > 0 ) $sql .= " and user_id = " . $user_id . " ";
+	if ( isset( $sql_month ) ) $sql .= $sql_month;
+	if ( isset( $project ) ) $sql .= " and project_id = " . $project;
 
 	$sql .= " order by 2 ";
-	// print $sql;
 	if ( isset( $month ) ) {
 		$sql .= "asc";
 	} else {
@@ -176,13 +164,123 @@ function print_transactions( $user_id = 0, $month = null, $year = null, &$args =
 	// print $sql;
 	$sql           .= " limit 100";
 
-	$args["header_fields"] = array("hidden id", "Date", "Weekday", "Start time", "End time", "Rate", "Project", "Traveling expense", "Other expense", "Expense details", "Comment");
+	$args["header_fields"] = array("date" => "Date", "weekday" => "Weekday", "start_time" => "Start time", "end_time" => "End time", "rate" => "Rate",
+	                               "project_id" => "Project", "traveling" => "Traveling expense", "expense" => "Other expense", "expense_text" => "Expense details", "Comment");
 	$args["selectors"] = array("project_id" => "gui_select_project");
 	$args["skip_id"] = true;
+	// $args["acc"] = array("", "", )
+	// $args["headers"] = array("Date", "Day of week", "Start time", "End time", "Rate", "Project", "Traveling", "Expense", "Expense details", "Comments");
 
-	$data .= GuiTableContent("im_working_hours", $sql, $args);
+	// $data .= GuiTableContent("im_working_hours", $sql, $args);
+	// Add computed rows.
+	$data = TableData($sql);
+	$total_sal = 0;
+	$total_travel = 0;
+	$total_expense = 0;
+	$counters = [];
+if (0)	for ($i = 1; $i < count($data); $i ++)
+	{
+		$start = new DateTime( $data[$i]["start_time"] );
+		$end   = new DateTime( $data[$i]["end_time"] );
 
-	return $data;
+		if ( $end < $start ) {
+			$end->add( DateInterval::createFromDateString( "1 day" ) );
+		}
+		$dur   = $end->diff( $start, true );
+
+		$total_dur = $dur->h + $dur->i / 60;
+		$dur_base  = min( $total_dur, 25 / 3 );
+		$dur_125   = min( 2, $total_dur - $dur_base );
+		$dur_150   = $total_dur - $dur_base - $dur_125;
+		$rate = $data[$i]["rate"];
+
+		$data[$i]["base"] = $dur_base;
+		$data[$i]["dur_125"] = $dur_125;
+		$data[$i]["dur_150"] = $dur_150;
+
+		$counters["base"] += $dur_base;
+		$counters["125"]  += $dur_125;
+		$counters["150"]  += $dur_150;
+
+		$sal  = ( $dur_base + $dur_125 * 1.25 + $dur_150 * 1.5 ) * $rate;
+
+		if ( $show_salary ) $data[$i]["line_salary"] = $sal;
+
+		// print $sal . " " . $total_sal . "<br/>";
+		$total_sal += $sal;
+		// var_dump($total_sal);
+
+		$travel       = $data[$i]["travel"];
+		$total_travel += $travel;
+
+		$expense       = $data[$i]["expense"];
+		$total_expense += $expense;
+
+//		if ( isset( $sum ) and is_array( $sum ) ) {
+//			$line_month = date( 'y-m', strtotime( $row[0] ) );
+//			// print $row[0]. " " . $line_month . "<br/>";
+//			if (! isset ($sum[$line_month])) $sum[$line_month] = 0;
+//			$sum[ $line_month ] += ( $sal + $travel + $expense );
+//		}
+////		}
+//
+//		$line .= gui_cell($comment);
+//
+//		$line .= "</tr>";
+//
+//		$data .= $line;
+	}
+//	$data .= gui_row( array(
+//		"",
+//		"סהכ",
+//		"",
+//		"",
+//		"",
+//		float_to_time( $counters["base"], 2 ),
+//		float_to_time( $counters["125"], 2 ),
+//		float_to_time( $counters["150"], 2 ),
+//		"",
+//		"",
+//		"",
+//		$show_salary ? $total_sal : "",
+//		$show_salary ? $total_expense : "",
+//		$show_salary ? $total_travel : ""
+//	) );
+//
+//	$data      .= "</table>";
+//
+//
+//	$total_sal = round( $total_sal, 1 );
+//
+//	// print "total_sal " . $total_sal ;
+//	if ( $show_salary and $total_sal > 0 and $month ) {
+//		$data      .= gui_header( 2, "חישוב שכר מקורב" ) . "<br/>";
+//		$data      .= "שכר שעות " . $total_sal . "<br/>";
+//		$data      .= "סהכ נסיעה " . $total_travel . "<br/>";
+//		$data      .= "סהכ הוצאות " . $total_expense . "<br/>";
+//		$total_sal += $total_travel;
+//		$total_sal += $total_expense;
+//		$data      .= "סהכ " . $total_sal . "<br/>";
+//		if ( $user_id ) {
+//			$email = get_customer_email( $user_id );
+//			$r     = "people/people-post.php?operation=get_balance_email&date=" .
+//			         date( 'Y-m-j', strtotime( "last day of " . $year . "-" . $month ) ) . "&email=" . $email;
+//			// print $r;
+//			$b = strip_tags( ImMultiSite::sExecute( $r, 4 ) );
+//			//print "basket: " . $b . "<br/>";
+//
+//			if ( $b > 0 ) {
+//				$data .= " חיובי סלים " . round( $b, 2 );
+//			}
+//		}
+//	}
+//
+//	if ( ! is_null( $sum ) and ( ! is_array( $sum ) ) ) {
+//		$sum = $total_sal;
+//	}
+//	}
+
+	return gui_table_args($data, "XX", $args);
 
 	//	print "ss=" . $show_salary . "<br/>";
 	// print "uid=" . $user_id . "<br/>";
@@ -457,10 +555,6 @@ function handle_people_operation($operation)
 
 function show_all( $month, &$args) {
 	$edit_lines = GetArg($args, "edit_lines", false);
-	if ( ! current_user_can( "show_all_hours" ) ) {
-		print "אין הרשאה";
-		die ( 1 );
-	}
 
 	$a = explode( "-", $month );
 	$y = $a[0];
@@ -474,8 +568,6 @@ function show_all( $month, &$args) {
 	       " and h.user_id = w.user_id ";
 	// print $sql;
 	$result = sql_query( $sql);
-
-	$s = array();
 
 	while ( $row = mysqli_fetch_row( $result ) ) {
 		$user_id = $row[0];

@@ -92,6 +92,7 @@ global $pos;
             //product.innerHTML = "<input id=\"nam_" + line_idx + "\" list=\"items\" onchange=\"select_product(" + line_idx + ")\">";
             //var select = "<?php //print gui_select_product( "XX", "products", "onfocusout=\\\"select_product(YYY)\\\"" ); ?>//";
             // product.innerHTML = select.replace("XX", "nam_" + line_idx).replace("YYY", line_idx);
+            product.innerHTML = '<input id="nam_' + line_idx + '" list="product_list"  onkeyup="update_list(\'products\', this)">';
             var quantity = new_row.insertCell(1);
 			<?php
 			//        if ($pos) $event = 'onkeyup=\"quantity_entered(" + line_idx + ")\"'; else
@@ -326,6 +327,8 @@ global $pos;
         }
 
     </script>
+
+    <datalist id="product_list"></datalist>
 
     <label id="log"></label>
 

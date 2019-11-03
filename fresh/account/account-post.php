@@ -175,8 +175,9 @@ function create_invoice( $ids, $user_id ) {
 	}
 }
 
-function create_receipt( $cash, $bank, $check, $credit, $change, $user_id, $date, $row_ids ) {
-
+function create_receipt( $cash, $bank, $check, $credit, $change, $user_id, $date, $row_ids )
+{
+	if (! $date) $date = date('Y-m-d');
 	if ( ! ( $user_id > 0 ) ) {
 		throw  new Exception( "Bad customer id " . __CLASS__ );
 	}

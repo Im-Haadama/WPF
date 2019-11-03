@@ -52,13 +52,35 @@ function GemTable($table_name, $args){
 	$title = GetArg($args, "title", "content of table " . $table_name);
 	$result .= gui_header(2, $title);
 	$args["events"] = 'onchange="update_table_field(\'/niver/data/data-post.php\', \'' . $table_name . '\', \'%d\', \'%s\', check_update)"';
-	$sql = GetArg($args, "sql", "select * from $table_name");
+	$sql = GetArg($args, "sql", null);
 
+	if (! $sql){
+		$fields = GetArg($args, "fields", null);
+		if ($fields) $sql = "select " . comma_implode($fields) . " from $table_name ";
+		else $sql = "select * from $table_name";
+	}
+	$query = GetArg($args, "query", null);
+	if ($query) $sql .= " where $query";
+
+	$order = GetArg($args, "order", null);
+	if ($order) $sql .= " order by $order";
+
+	$args["count"] = 0;
 	$table = GuiTableContent($table_name, $sql, $args);
+
+	$page = GetArg($args, "page", 1);
+	$rows_per_page = GetArg($args, "rows_per_page", 10);
 
 	if (! $table) return null;
 
 	$result .= $table;
+
+	if ($args["count"] == $rows_per_page + 1) { // 1 for the header
+		$result .= gui_hyperlink("Next page", add_to_url("page", $page + 1)) . " ";
+	}
+	if ($page > 1)
+		$result .= gui_hyperlink("Previous page", add_to_url("page", $page - 1));
+
 
 	if ($button_text = GetArg($args, "button_text", null)){
 		$button_function = GetArg($args, "button_function", null);

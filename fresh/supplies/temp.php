@@ -8,7 +8,7 @@
 require_once( '../r-shop_manager.php' );
 // require_once( '../header_no_login.php' );
 require_once( 'supplies-post.php' );
-require_once( ROOT_DIR . "/tools/suppliers/gui.php" );
+require_once( ROOT_DIR . "/fresh/suppliers/gui.php" );
 
 $week = get_param( "week" );
 
@@ -42,7 +42,7 @@ if ( isset( $_GET["week"] ) ) {
             var supplier_id = get_value_by_name("supplier_select");
             var upcsv = document.getElementById("upcsv");
             let date = get_value_by_name("date");
-            upcsv.action = "/tools/supplies/supplies-post.php?operation=create_from_file&supplier_id=" + supplier_id + "&date=" + date;
+            upcsv.action = "/fresh/supplies/supplies-post.php?operation=create_from_file&supplier_id=" + supplier_id + "&date=" + date;
         }
         function show_create_item() {
             var new_order = document.getElementById("new_item");

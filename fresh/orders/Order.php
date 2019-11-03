@@ -9,6 +9,7 @@ require_once( ROOT_DIR . '/niver/data/sql.php' );
 require_once( ROOT_DIR . '/fresh/catalog/bundles.php' );
 require_once( ROOT_DIR . "/fresh/catalog/Basket.php" );
 require_once( ROOT_DIR . "/fresh/orders/orders-common.php" );
+require_once( ROOT_DIR . "/routes/gui.php" );
 
 class Order {
 	private $order_id = 0;
@@ -927,4 +928,36 @@ class Order {
 
 }
 
-// orders/orders-post.php?operation=create_order&user_id=423&prods=288,298,336,153,110&quantities=0.9,0.2,0.6,1.1,1.1&comments=&units=0,0,0,0,0&mission_id=0&type=pos
+function OrdersTable($args)
+{
+	$result = "";
+	$args["id_field"] = "ID";
+	$args["query"] = "post_type = 'shop_order' and post_status in ('wc-awaiting-shipment', 'wc-processing')";
+	$args["order"] = " ID desc";
+	$args["links"] = array("ID" => add_to_url("row_id", "%s"));
+	$args["fields"] = array("ID", "post_date", "post_status" );
+
+	$result .= GemTable("wp_posts", $args);
+
+	return $result;
+}
+
+function handle_order_operation($operation)
+{
+	$page = get_param("page", false, 0);
+	$args = [];
+	if ($page) $args["page"] = $page;
+	switch ($operation){
+//		case "show_new_order":
+//			print
+//			break;
+
+		case "show_orders":
+			print OrdersTable($args);
+			break;
+
+		default:
+			print __FUNCTION__ . " " . $operation . " not handled<br/>";
+	}
+
+}

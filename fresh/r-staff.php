@@ -47,10 +47,5 @@ if ( $multisite or $_SERVER['REMOTE_ADDR'] == "160.153.153.166" or // Aglamaz.co
 	}
 }
 
-$role = 'staff';
-
-if ( isset( $roles ) and count( array_intersect( array( "hr" ), $roles ) ) >= 1 ) {
-	$role = 'hr';
-}
 
 ?>

@@ -55,10 +55,9 @@ $max_row = 8;
 
 print "שלום " . get_user_name( get_user_id() ) . "(" . get_user_id() . "). " . Date("G:i", strtotime("now"));
 print " " . gui_hyperlink("התנתק/י", "/wp-login.php?loggedout=true&redirect_to=/fresh/menu_op.php");
-function add_command( &$table, &$row, $col, $can, $text, $link, $target = "doc_frame" ) {
+function add_command( &$table, &$row, $col, $can, $text, $link, $target = "doc_frame" )
+{
 	global $test_site;
-//    print "can: " . $can . " " . user_can( get_user_id(), $can ) . "<br/>";
-
 
 	if ( ! $can or user_can( get_user_id(), $can ) ) {
 		if ( $test_site ) {
@@ -91,7 +90,7 @@ add_command( $table, $row, $col, "edit_shop_orders", "Today Routes", "/routes/ro
 add_command( $table, $row, $col, "edit_shop_orders", "This week routes", "/routes/routes-page.php?operation=show_routes&week=" . date( "Y-m-d", strtotime( "last sunday" ) ));
 add_command( $table, $row, $col, "edit_shop_orders", "תעודות משלוח", "delivery/delivery-page.php", "doc_frame" );
 add_command( $table, $row, $col, "edit_missions", "ניהול מסלולים", "/routes/missions/missions-page.php" );
-add_command( $table, $row, $col, "edit_shop_orders", "משלוחי המכולת", "delivery/legacy.php" );
+add_command( $table, $row, $col, "edit_shop_orders", "משלוחי המכולת", "/routes/legacy.php" );
 add_command( $table, $row, $col, null, "דיווח חוסרים ללקוח", "delivery/missing.php" );
 
 $m = new ImMultiSite();
@@ -154,7 +153,7 @@ if ($manage_workers) {
     $col ++;
     $row                      = 0;
     $table[ $row ++ ][ $col ] = gui_header( 2, "עובדים" );
-    add_command( $table, $row, $col, null, "דיווח שעות", "http://store.im-haadama.co.il/org/people/entry.php", "doc_frame" );
+    add_command( $table, $row, $col, null, "דיווח שעות", "http://store.im-haadama.co.il/org/people/worker.php", "doc_frame" );
     add_command( $table, $row, $col, "working_hours_all", "ניהול עובדים", "people/c-get-all-working.php" );
 }
 while ( $row < $max_row ) {

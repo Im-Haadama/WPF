@@ -1,14 +1,27 @@
 <?php
+
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
 /**
  * Created by PhpStorm.
  * User: agla
  * Date: 13/03/17
  * Time: 23:29
  */
-require_once( '../r-shop_manager.php' );
+
+if ( ! defined( 'ROOT_DIR' ) ) {
+	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) );
+}
+
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( ROOT_DIR . '/fresh/orders/orders-common.php' );
 require_once( ROOT_DIR . '/fresh/delivery/delivery-common.php' );
+require_once( ROOT_DIR . '/routes/routes.php' );
+require_once(ROOT_DIR . '/im-config.php');
+require_once( ROOT_DIR . "/init.php" );
+
+init();
 
 ?>
 
@@ -143,7 +156,6 @@ if ( strlen( $table ) > 10 ) {
 	print delivery_table_header();
 	print $table;
 	print "</table>";
-
 }
 print gui_button( "btn_create_ship", "create_ship()", "צור תעודת משלוח" );
 

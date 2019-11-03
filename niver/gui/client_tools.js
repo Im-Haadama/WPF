@@ -68,10 +68,16 @@ function get_value(element) {
                 }
                 if (element.list)
                 {
-                    if (element.value.indexOf(")") > -1)
-                        return element.value.substring(0, element.value.indexOf(")"));
-                    else
-                        return element.value;
+                    // if (element.value.indexOf(")") > -1)
+                    //     return element.value.substring(0, element.value.indexOf(")"));
+                    // else {
+                    let val = element.value;
+                    let list = element.list.firstElementChild.options;
+                    if (list){
+                        for (let i = 0; i < list.length; i++)
+                            if (val === list[i].value) return element.list.firstElementChild.options[i].dataset.id;
+                                return element.value;
+                    }
                 }
                 return element.value;
 

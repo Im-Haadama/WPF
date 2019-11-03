@@ -33,13 +33,14 @@ function TableHeader($sql, $args) // $add_checkbox = false, $skip_id = false, $m
 {
 	$debug = 0;
 	$header_fields = GetArg($args, "header_fields", null);
-	$skip_id = GetArg($args, "skip_id", false);
+
 	if ($debug) { var_dump($header_fields); print "<br/>"; }
+
+	$skip_id = GetArg($args, "skip_id", false);
 
 	// Option a - build from given header_fields.
 	if ($header_fields) {
 		if ($fields = GetArg($args, "fields", null)){
-			if ($debug) { print "fields: "; var_dump($fields); print "<br/>"; }
 			$result = [];
 			$fields = array_assoc($fields);
 			foreach ($fields as $field => $v)
@@ -50,7 +51,6 @@ function TableHeader($sql, $args) // $add_checkbox = false, $skip_id = false, $m
 		}
 		return array_assoc($header_fields);
 	}
-
 //	$add_checkbox = GetArg($args, "add_checkbox", false);
 
 	// We need only the header. Remove query and replace with false.
@@ -354,7 +354,7 @@ function RowsData($sql, $id_field, $skip_id, $v_checkbox, $checkbox_class, $h_li
 			print "<br/>field id:" . $id_field . "<br/>";
 			var_dump( $row );
 			print "<br/>";
-			die( __FUNCTION__ . ":" . __LINE__ . "no row id" );
+			die( __FUNCTION__ . ":" . __LINE__ . "no id_field" );
 		}
 		$row_id = $row[ $id_field ];
 
@@ -372,13 +372,13 @@ function RowsData($sql, $id_field, $skip_id, $v_checkbox, $checkbox_class, $h_li
 			}
 			// print "handling header<br/>";
 			// print $skip_id . " " . $key . "<br/>";
-			if ( is_array( $h_line ) and $header_fields ) {
-				$down_key = strtolower( $key );
-				if ( ! $skip_id or $key !== "id" ) {
-					// print "adding $key<br/>";
-					$h_line[ $key ] = isset( $header_fields[ $down_key ] ) ? im_translate( $header_fields[ $down_key ], $args ) : $key;
-				}
-			}
+//			if ( is_array( $h_line ) and $header_fields ) {
+//				$down_key = strtolower( $key );
+//				if ( ! $skip_id or $key !== "id" ) {
+//					// print "adding $key<br/>";
+//					$h_line[ $key ] = isset( $header_fields[ $down_key ] ) ? im_translate( $header_fields[ $down_key ], $args ) : $key;
+//				}
+//			}
 		}
 
 		$row_count ++;
@@ -485,12 +485,23 @@ function TableData($sql, &$args = null)
 {
 	$debug = 0; // (get_user_id() == 1);
 
+	if (!strstr ($sql, "limit")){
+		$page = GetArg($args, "page", 1);
+		$rows_per_page = GetArg($args, "rows_per_page", 10);
+		$offset = ($page - 1) * $rows_per_page;
+
+		$limit = (($page > -1) ? " limit $rows_per_page offset $offset" : "");
+
+		$sql .= $limit;
+	}
+
 	// print __FUNCTION__ . "<br/>";
 	$result = sql_query( $sql );
 	if ( ! $result ) { print "Error"; return null;	}
 
 	$header = GetArg($args, "header", true);
 	$field_list = FieldList($sql, $args);
+	// debug_var($field_list);
 	// print __FUNCTION__ ; var_dump($field_list); print "<br/>";
 	$mandatory_fields = GetArg($args, "mandatory_fields", null);  $mandatory_fields = array_assoc($mandatory_fields);
 	$fields = GetArg($args, "fields", null);  $fields = array_assoc($fields);
@@ -511,9 +522,9 @@ function TableData($sql, &$args = null)
 		$args["table_name"] = $table_names[1][0];
 	}
 
-	$h_line = ($header ?  TableHeader( $sql, $args ) : null);
+	$h_line = ($header ? TableHeader( $sql, $args ) : null);
 
-//	 print "aaaa: "; var_dump($h_line); print "<br/>";
+// 	debug_var($h_line);
 
 	$m_line = $mandatory_fields ? array() : null;
 
@@ -537,22 +548,6 @@ function TableData($sql, &$args = null)
 	}
 
 	if (! count($rows_data)) return null;
-
-	// var_dump($m_line); print "<br/>";
-//	if ($v_line){
-//		$rows_data["checkbox"] = $v_line;
-//		// array_push($rows_data, $v_line);
-//	}
-//
-//	if ($m_line) {
-//		$rows_data["mandatory"] = $m_line;
-//		$args["hide_rows"]["mandatory"] = 1;
-//	}
-//
-//	if ($h_line){
-//		$rows_data['header'] = $h_line;
-//		$h_line = null;
-//	}
 
 	return $rows_data;
 }
@@ -650,6 +645,7 @@ function NewRow($table_name, $args)
 	$args["table_name"] = $table_name;
 	$args['events'] = 'onchange="changed_field(\'%s\')"';
 	$args["add_field_suffix"] = false;
+	$args["new_row"] = true; // Selectors can use that to offer creating of new row. E.g, new project.
 //	$args["skip_id"] =  true;
 //	$args["id_field"] = "ID";
 	if (! isset($args["hide_cols"])) $args["hide_cols"] = [];
@@ -709,8 +705,7 @@ function GuiRowContent($table_name, $row_id, $args)
 
 function GuiTableContent($table_id, $sql, &$args = null)
 {
-	if (! $sql)
-		$sql = "select * from $table_id";
+	if (! $sql)	$sql = "select * from $table_id";
 
 	// Fetch the data from DB or create the new row
 	$rows_data = TableData( $sql, $args);

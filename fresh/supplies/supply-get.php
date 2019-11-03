@@ -75,23 +75,6 @@ $s = new Supply( $id );
         request.open("GET", request_url, true);
         request.send();
     }
-    function add_item() {
-        var request_url = "supplies-post.php?operation=add_item&supply_id=<?php print $id; ?>";
-        var prod_id = get_value_by_name("itm_");
-        request_url = request_url + "&prod_id=" + prod_id;
-        var _q = 1; // encodeURI(get_value(document . getElementById("qua_")));
-        request_url = request_url + "&quantity=" + _q;
-        var request = new XMLHttpRequest();
-        request.onreadystatechange = function () {
-            if (request.readyState === 4 && request.status === 200) {
-                // window.location = window.location;
-                update_display();
-            }
-        }
-
-        request.open("GET", request_url, true);
-        request.send();
-    }
 
 </script>
 <body onload="update_display()">
@@ -328,7 +311,7 @@ print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_missio
 
 <div id="supply_arrived">
 
-		?>
+
 </div>
 
 <div id="supply_document">

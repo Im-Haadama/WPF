@@ -7,7 +7,7 @@
  * Time: 06:25
  */
 
-require_once( STORE_DIR . '/im-config.php' );
+require_once( ROOT_DIR . '/im-config.php' );
 require_once( "Constants.php" );
 
 define( "ApiService", "https://api.invoice4u.co.il/Services" );

@@ -103,6 +103,17 @@ class Tasklist {
 		return $this->priority;
 	}
 
+	/**
+	 * @param mixed $priority
+	 */
+	public function setPriority( $priority ): void {
+		$this->priority = $priority;
+		$sql = "UPDATE im_tasklist SET priority = $priority " .
+		       " WHERE id = " . $this->id;
+		// print $sql;
+		sql_query( $sql );
+	}
+
 
 	public function Ended() {
 		$sql = "UPDATE im_tasklist SET ended = now(), status = " . eTasklist::done .
@@ -295,14 +306,13 @@ function create_tasks( $freqs = null, $verbose = false, $default_owner = 1 )
 	if ( ! $freqs ) $freqs = sql_query_array_scalar( "select DISTINCT repeat_freq from im_task_templates" );
 
 	// TODO: create_tasks_per_mission();
-
 	$verbose_table = array( array( "template_id", "freq", "query", "active", "result", "priority", "new task" ));
 	foreach ( $freqs as $freq ) {
 		my_log("Handling " . $freq, __FUNCTION__, $log_file);
 
 		// if ( date( $freq ) == date( $last_run ) ) {
 
-		$sql = "SELECT id, task_description, task_url, project_id, repeat_freq, repeat_freq_numbers, condition_query, priority, creator, owner " .
+		$sql = "SELECT id, task_description, task_url, project_id, repeat_freq, repeat_freq_numbers, condition_query, priority, creator, team " .
 		       " FROM im_task_templates " .
 		       " where repeat_freq = '" . $freq . "' and ((last_check is null) or (last_check < " . quote_text(date('Y-m-j')) .") or repeat_freq like 'c%')";
 
@@ -340,9 +350,9 @@ function create_tasks( $freqs = null, $verbose = false, $default_owner = 1 )
 				continue;
 			}
 
-			$owner = sql_query_single_scalar("SELECT owner FROM im_task_templates WHERE id = " . $id );
-			if (! $owner)
-				$owner = $default_owner;
+			$team = sql_query_single_scalar("SELECT team FROM im_task_templates WHERE id = " . $id );
+//			if (! $team)
+//				$owner = $default_owner;
 
 			$creator = sql_query_single_scalar("SELECT creator FROM im_task_templates WHERE id = " . $id );
 			if (! $creator)
@@ -359,9 +369,9 @@ function create_tasks( $freqs = null, $verbose = false, $default_owner = 1 )
 			array_push( $verbose_line, $priority);
 
 			$sql = "INSERT INTO im_tasklist " .
-			       "(task_description, task_template, status, date, project_id, priority, owner, creator) VALUES ( " .
+			       "(task_description, task_template, status, date, project_id, priority, team, creator) VALUES ( " .
 			       "'" . $row["task_description"] . "', " . $id . ", " . eTasklist::waiting . ", now(), " . $project_id . ",  " .
-			       $priority . "," . $owner . "," . $creator . ")";
+			       $priority . "," . $team . "," . $creator . ")";
 
 			sql_query( $sql );
 

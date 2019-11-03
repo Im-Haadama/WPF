@@ -23,6 +23,8 @@ require_once( ROOT_DIR . '/fresh/catalog/Basket.php' );
 require_once( ROOT_DIR . '/fresh/invoice4u/invoice.php' );
 require_once( ROOT_DIR . '/fresh/multi-site/imMulti-site.php' );
 require_once( ROOT_DIR . '/niver/web.php');
+require_once( ROOT_DIR . '/routes/gui.php');
+
 
 // BAD: print header_text();
 function orders_item_count( $item_id ) {
@@ -412,7 +414,8 @@ $order_header_fields = array(
 	"אחוז סופק"
 );
 
-function orders_table( $statuses, $build_path = true, $user_id = 0, $week = null ) {
+function orders_table( $statuses = array('wc-processing'), $build_path = true, $user_id = 0, $week = null )
+{
 	debug_time_log( "start" );
 
 	// print "s=" . $statuses;

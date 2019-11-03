@@ -4,6 +4,7 @@ define('ROOT_DIR', dirname(dirname(dirname(__FILE__))));
 require_once 'delivery.php';
 require_once '../orders/orders-common.php';
 require_once( ROOT_DIR . "/init.php" );
+require_once( ROOT_DIR . "/routes/gui.php" );
 
 
 print header_text( false, true, true, array( "/fresh/tools.js", "/niver/gui/client_tools.js" ) );

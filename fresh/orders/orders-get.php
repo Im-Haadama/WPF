@@ -2,11 +2,18 @@
 error_reporting( E_ALL );
 ini_set( 'display_errors', 'on' );
 
-require_once( "../im_tools.php" );
-require_once( '../r-shop_manager.php' );
-require_once '../delivery/delivery.php';
+if ( ! defined( 'ROOT_DIR' ) ) {
+	define( 'ROOT_DIR', dirname(dirname( dirname( __FILE__ ) ) ));
+}
 
-print header_text( false, false, is_rtl(), array("/fresh/delivery/delivery.js", "/niver/gui/client_tools.js") );
+
+require_once( ROOT_DIR . "/fresh/im_tools.php" );
+require_once( ROOT_DIR . '/fresh/r-shop_manager.php' );
+require_once (ROOT_DIR . '/fresh/delivery/delivery.php');
+require_once (ROOT_DIR . '/routes/gui.php');
+
+
+print header_text( false, false, is_rtl(), array("/fresh/delivery/delivery.js", "/niver/gui/client_tools.js", "/niver/data/data.js") );
 
 if ( isset( $_GET["week"] ) ) {
 	$week = $_GET["week"];
@@ -15,12 +22,12 @@ if ( isset( $_GET["week"] ) ) {
 $order_type = get_param( "order_type" ); // comma separated. w - waiting to deliver. p - pending/on-hold
 
 if ( ! $order_type ) {
-    print gui_hyperlink("Add order", "/wp-admin/post-new.php?post_type=shop_order", "_blank" );
+     print gui_hyperlink("Add order", "/wp-admin/post-`new`.php?post_type=shop_order", "_blank" );
 
 	// print gui_button( "btn_new", "show_create_order()", "הזמנה חדשה" );
 }
 
-// require( "new-order.php" );
+require( "new-order.php" );
 
 $operation = get_param( "operation" );
 
@@ -37,120 +44,6 @@ if ( $operation )
 
 <script type="text/javascript" src="/niver/gui/client_tools.js"></script>
 
-    <script>
-        function mission_changed(order_id) {
-            // "mis_"
-            //var order_id = field.name.substr(4);
-            var mis = document.getElementById("mis_" + order_id);
-            var mission_id = get_value(mis);
-//            $mission_id = $_GET["id"];
-//            $order_id   = $_GET["order_id"];
-            execute_url("orders-post.php?operation=mission&order_id=" + order_id + "&id=" + mission_id);
-        }
-
-        function start_handle() {
-            var collection = document.getElementsByClassName("select_order_wc-pending");
-            var order_ids = new Array();
-
-            xmlhttp = new XMLHttpRequest();
-            xmlhttp.onreadystatechange = function () {
-                // Wait to get query result
-                if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
-                {
-                    window.location = window.location;
-                }
-            }
-
-            for (var i = 0; i < collection.length; i++) {
-                var order_id = collection[i].id.substr(4);
-                if (document.getElementById("chk_" + order_id).checked)
-                    order_ids.push(order_id);
-            }
-            collection = document.getElementsByClassName("select_order_wc-on-hold");
-            for (var i = 0; i < collection.length; i++) {
-                order_id = collection[i].id.substr(4);
-                if (document.getElementById("chk_" + order_id).checked)
-                    order_ids.push(order_id);
-            }
-
-            var request = "orders-post.php?operation=start_handle&ids=" + order_ids.join();
-            xmlhttp.open("GET", request, true);
-            xmlhttp.send();
-        }
-
-        function cancel_order() {
-            var classes = ["select_order_wc-pending", "select_order_wc-processing", "select_order_wc-on-hold"];
-            var order_ids = new Array();
-
-            for (var c = 0; c < classes.length; c++) {
-                var collection = document.getElementsByClassName(classes[c]);
-                for (var i = 0; i < collection.length; i++) {
-                    var order_id = collection[i].id.substr(4);
-                    if (document.getElementById("chk_" + order_id).checked)
-                        order_ids.push(order_id);
-                }
-            }
-            xmlhttp = new XMLHttpRequest();
-            xmlhttp.onreadystatechange = function () {
-                // Wait to get query result
-                if (xmlhttp.readyState === 4 && xmlhttp.status === 200)  // Request finished
-                {
-                    window.location = window.location;
-                }
-            }
-            var request = "orders-post.php?operation=cancel_orders&ids=" + order_ids.join();
-            xmlhttp.open("GET", request, true);
-            xmlhttp.send();
-        }
-
-        function select_orders(table_name) {
-            var table = document.getElementById(table_name);
-            for (var i = 1; i < table.rows.length; i++)
-                table.rows[i].firstElementChild.firstElementChild.checked =
-                    table.rows[0].firstElementChild.firstElementChild.checked;
-
-        }
-
-        function complete_status() {
-            xmlhttp = new XMLHttpRequest();
-            xmlhttp.onreadystatechange = function () {
-                // Wait to get delivery id.
-                if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {  // Request finished
-                    location.reload(true);
-                }
-            }
-            var request = "orders_close_all_open.php";
-            xmlhttp.open("GET", request, true);
-            xmlhttp.send();
-        }
-
-        function create_subs() {
-            xmlhttp = new XMLHttpRequest();
-            xmlhttp.onreadystatechange = function () {
-                // Wait to get delivery id.
-                if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {  // Request finished
-                    location.reload(true);
-                }
-            }
-            var request = "orders-create-subs.php";
-            xmlhttp.open("GET", request, true);
-            xmlhttp.send();
-        }
-
-        function replace_baskets() {
-            xmlhttp = new XMLHttpRequest();
-            xmlhttp.onreadystatechange = function () {
-                // Wait to get delivery id.
-                if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {  // Request finished
-                    location.reload(true);
-                }
-            }
-            var request = "orders-post.php?operation=replace_baskets";
-            xmlhttp.open("GET", request, true);
-            xmlhttp.send();
-        }
-
-    </script>
 
 </head>
 
@@ -179,8 +72,6 @@ if ( current_user_can( "edit_shop_orders" ) and
 	if ( ! current_user_can( "edit_shop_orders" ) ) {
 		print "no permission";
 	}
-	// print "ot=" . is_null( $order_type ) . "<br/>";
-	// print "אין הרשאות";
 }
 
 print orders_table( "wc-processing" );

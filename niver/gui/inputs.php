@@ -204,12 +204,12 @@ function doGuiDatalist($id, $values, $id_field, $field_name, $include_id)
 			}
 			$id_text = $row[$id_field] . ")";
 		}
-		$data .= "<option value=\"" . $id_text . htmlspecialchars( $row[ $field_name ] );
-//		foreach ( $row as $key => $data_value ) {
-//			if (  $key != $field_name ) {
-//				$data .= " data-" . $key . '="' . $data_value . '" ';
-//			}
-//		}
+		$data .= "<option value=\"" . $id_text . htmlspecialchars( $row[ $field_name ] ) . "\"";
+		foreach ( $row as $key => $data_value ) {
+			if (  $key != $field_name ) {
+				$data .= " data-" . $key . '="' . $data_value . '" ';
+			}
+		}
 
 		$data .= "\">";
 	}
@@ -250,7 +250,9 @@ function GuiDatalist( $id, $table, $args = null)
 	// print "id_field: $id_field<br/>";
 
 	$result = sql_query( $sql );
+	// print $sql . "<br/>";
 	while ( $row = sql_fetch_assoc($result ) ) {
+//		var_dump($row); print "<br/>";
 		// print "key = " . $row[$id_field];
 		array_push($values, $row);
 		// $values[$row[$id_field]] = $row;
@@ -361,7 +363,7 @@ function gui_input_time( $id, $class, $value = null, $events = null ) {
 function gui_hyperlink( $text, $link, $target = null ) {
 	$data = "<a href='" . $link . "'";
 	if ( $target ) {
-		$data .= 'target="' . $target . '"';
+		$data .= ' target="' . $target . '"';
 	}
 	$data .= ">" . im_translate($text) . "</a>";
 
@@ -779,7 +781,7 @@ function gui_table_args($input_rows, $id = null, $args = null)
 		} else
 			$data .= "<td>" . $line . "</td>";
 
-		$data .= "</tr>";
+		$data .= "</tr>\n";
 	}
 
 	// $data .= gui_row($acc_fields);

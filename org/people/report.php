@@ -5,8 +5,14 @@
  * Date: 26/05/17
  * Time: 13:07
  */
-define( 'WCDI', '' );
-require_once( '../im_tools.php' );
+
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
+if ( ! defined( 'ROOT_DIR' ) ) {
+	define( 'ROOT_DIR', dirname(dirname( dirname( __FILE__ ) ) ));
+}
+
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 $edit = get_param("edit");
 

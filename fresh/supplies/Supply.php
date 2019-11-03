@@ -686,7 +686,8 @@ function supply_delete( $supply_id ) {
 	}
 	$sql = 'UPDATE im_supplies SET status = 9 WHERE id = ' . $supply_id;
 
-	sql_query( $sql );
+	if (sql_query( $sql )) return true;
+	return false;
 }
 
 function supply_sent( $supply_id ) {
@@ -808,8 +809,9 @@ function delete_supplies( $params ) {
 	for ( $pos = 0; $pos < count( $params ); $pos ++ ) {
 		$supply_id = $params[ $pos ];
 		my_log( "delete supply " . $supply_id );
-		supply_delete( $supply_id );
+		if (! supply_delete( $supply_id )) return false;
 	}
+	return true;
 }
 
 function sent_supplies( $params ) {
@@ -968,17 +970,18 @@ function SuppliesTable( $status, $args = null ) {
 	$args["header"] = array("Id", "Supplier", "Date", "Mission");
 	$args["add_checkbox"] = true;
 	$args["selectors"] = array("supplier" => 'gui_select_supplier', "mission_id" => 'gui_select_mission');
-	$args["links"] = array("id" => add_to_url(array("operation" =>"get", "id" => "%s")));
+	$args["links"] = array("id" => add_to_url(array("operation" =>"show", "id" => "%s")));
 	$args["checkbox_class"] = gui_select_supply_status(null, $status);
 	$args["edit"] = false;
 
 	$result = GemTable("im_supplies", $args);
 	if (! $result) return null;
 
-	$result .= gui_button("btn_close", "close_supplies('" . $status_name . "')", "close");
+	// $result .= gui_button("btn_delete", "close_supplies('" . $status_name . "')", "close");
 	if ($status == SupplyStatus::NewSupply){
 		$result .= gui_button("btn_send", "send_supplies()", "send");
 		$result .= gui_button("btn_merge", "merge_supplies()", "merge");
+		$result .= gui_button("btn_delete", "supply_delete('new')", "delete");
 	}
 	return $result;
 
@@ -1202,7 +1205,7 @@ function handle_supplies_operation($operation)
 {
 	switch ( $operation )
 	{
-		case "get":
+		case "show":
 			$id = get_param("id", true);
 			 get_supply($id);
 			 break;
@@ -1316,7 +1319,7 @@ function handle_supplies_operation($operation)
 			print $s->getText();
 			break;
 
-		case "get_all":
+		case "show_all":
 			$args = array();
 			print load_scripts(true);
 			print gui_header(1, "Supply management");
@@ -1331,7 +1334,8 @@ function handle_supplies_operation($operation)
 		case "delete_supplies":
 			my_log( "delete supplies" );
 			$params = explode( ',', $_GET["params"] );
-			delete_supplies( $params );
+			if (delete_supplies( $params ))
+				print "done";
 			break;
 
 		case "sent_supplies":
@@ -1538,11 +1542,12 @@ function supplier_doc()
 	return $data;
 
 }
+
 function new_supply()
 {
 	$data = "";
-	$data .=gui_header( 1, "יצירת אספקה" );
-	$data .=gui_table_args(array(
+	$data .= gui_header( 1, "יצירת אספקה" );
+	$data .= gui_table_args(array(
 		array(
 			gui_header( 2, "בחר ספק" ),
 			gui_header( 2, "בחר מועד" ),
@@ -1563,8 +1568,8 @@ function new_supply()
 	$data .=gui_table_args( array( array( "פריט", "כמות", "קג או יח" ) ),
 			"supply_items" );
 
-	$data .=gui_button( "add_line", "add_line()", "הוסף שורה" );
-	$data .=gui_button( "add_item", "add_item()", "הוסף הספקה" );
+	$data .= gui_button( "btn_add_line", "supply_new_add_line()", "הוסף שורה" );
+	$data .= gui_button( "btn_add_item", "supply_add()", "הוסף הספקה" );
 
 	$data .='<form name="upload_csv" id="upcsv" method="post" enctype="multipart/form-data">
 			טען אספקה מקובץ CSV
@@ -1573,5 +1578,7 @@ function new_supply()
 			<input type="hidden" name="post_type" value="product"/>
 		</form>';
 
+	$data .= "<script> supply_new_add_line(); </script>";
 	return $data;
 }
+

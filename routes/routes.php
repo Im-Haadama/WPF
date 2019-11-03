@@ -607,10 +607,6 @@ function print_driver_tasks( $mission_id = 0 ) {
 	return $data;
 }
 
-//if ( isset( $week )){ // Print links to previous and next
-//	print gui_hyperlink( "Week after", "?operation=show_routes&week=" . date( 'Y-m-d', strtotime( $week . " +1 week" ) ) ) . " ";
-//	// if (date( 'Y-m-d' ) > date( 'Y-m-d', strtotime( $week . "+1 week" ) ) ) {
-//}
 
 function delivery_table_header( $edit = false ) {
 	$data = "";

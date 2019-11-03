@@ -6,34 +6,59 @@
  * Time: 19:48
  */
 // ini_set( 'display_errors', 'on' );
-require_once( '../r-staff.php' );
+
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
+if ( ! defined( 'ROOT_DIR' ) ) {
+	define( 'ROOT_DIR', dirname(dirname( dirname( __FILE__ ) ) ));
+}
+
+require_once(ROOT_DIR . '/im-config.php');
+require_once( ROOT_DIR . "/init.php" );
+
+init();
+
+
+if (! get_user_id())
+{
+    print im_translate("login first") . "<br/>";
+//	print do_shortcode('[miniorange_social_login shape="longbuttonwithtext" theme="default" space="8" width="180" height="35" color="000000"]');
+    print do_shortcode("[miniorange_social_login shape=\"square\" theme=\"default\" space=\"4\" size=\"35\"]");
+    return;
+}
+$wp_user = get_user_by( 'id', get_user_id() );
+$roles = $wp_user->roles;
+//var_dump($roles);
+if ( isset( $roles ) and count( array_intersect( array( "hr" ), $roles ) ) >= 1 ) {
+	$role = 'hr';
+} else {
+	$role = 'staff';
+}
+
 require_once( ROOT_DIR . "/niver/gui/inputs.php" );
-print header_text();
+$args = [];
+$args["greeting"] = true;
+print HeaderText($args);
 
 ?>
 <script type="text/javascript" src="/niver/gui/client_tools.js"></script>
 
 <script>
 
-    function update_display() {
-        table = document.getElementById("list");
+    function do_update(xmlhttp)
+    {
+        let table = document.getElementById("list");
+        table.innerHTML = xmlhttp.response;
+        document.getElementById("btn_add_time").disabled = false;
+        document.getElementById("btn_delete").disabled = false;
+    }
 
-        xmlhttp = new XMLHttpRequest();
-        xmlhttp.onreadystatechange = function () {
-            // Wait to get query result
-            if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
-            {
-                table.innerHTML = xmlhttp.response;
-                document.getElementById("btn_add_time").disabled = false;
-                document.getElementById("btn_delete").disabled = false;
-            }
-        }
-        var request = "people-post.php?operation=display_all";
-	    <? if ( isset( $_GET["month"] ) ) {
-	    print "request = request + \"&month=" . $_GET["month"] . "\";";
-    }?>
-        xmlhttp.open("GET", request, true);
-        xmlhttp.send();
+    function update_display()
+    {
+        let request = "people-post.php?operation=show_all";
+	    <? if ( isset( $_GET["month"] ) ) {	    print "request = request + \"&month=" . $_GET["month"] . "\";";    }?>
+        execute_url(request, do_update);
     }
 
     function del_items() {
@@ -74,33 +99,12 @@ print header_text();
             return;
         }
 
-        xmlhttp = new XMLHttpRequest();
-        xmlhttp.onreadystatechange = function () {
-            // Wait to get query result
-            if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
-            {
-                if (xmlhttp.response.length) // Failed
-                    alert(xmlhttp.response);
-
-                update_display();
-            }
-        }
-        var request = "people-post.php?operation=add_time&start=" + start + '&end=' + end +
+        let request = "people-post.php?operation=add_time&start=" + start + '&end=' + end +
             '&date=' + date + "&project=" + id + "&vol=0" + "&traveling=" + traveling +
             "&extra_text=" + encodeURI(extra_text) +
             "&extra=" + extra;
 
-	    <? if ( $role == 'hr' ) {
-	    print 'var user_name = get_value(document.getElementById("worker_select"));
-;';
-	    print 'var worker_id = user_name.substr(0, user_name.indexOf(")"));
-';
-	    print 'request = request + "&worker_id=" + worker_id;';
-    }
-	    ?>
-        // document.getElementById("debug").innerHTML = request;
-        xmlhttp.open("GET", request, true);
-        xmlhttp.send();
+        execute_url(request, update_display);
     }
 
 </script>
@@ -111,6 +115,7 @@ print header_text();
 <?php
 
 print gui_header( 1, "הוספת פעילות" );
+
 
 $table = array();
 if ( $role == 'hr' ) {

@@ -29,6 +29,8 @@ print HeaderText($args);
 require_once( "focus.php" );
 $operation = get_param("operation", false, "focus_main");
 
+if ($debug) print "op=$operation<br/>";
+
 if ($operation) {
 	handle_focus_operation($operation);
 	return;

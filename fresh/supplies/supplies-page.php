@@ -23,7 +23,9 @@ global $user_ID; // by wordpress.
 $id = get_param("id", false);
 require_once(ROOT_DIR . '/init.php');
 
-$operation = get_param("operation", false, "get_all");
+print gui_div("log");
+
+$operation = get_param("operation", false, "show_all");
 if ($operation) {
     handle_supplies_operation($operation);
     return;
