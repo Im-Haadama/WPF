@@ -1,0 +1,5 @@
+Folder contents.
+
+inputs - create html tags.
+sql_table - gets data from database into arrays.
+input_data - uses the above two files to get data from database and draw it into html.

@@ -255,7 +255,7 @@ function PrepareRow($row, $args, $row_id)
 					die( "selector " . $key . "is empty" );
 				}
 				// print $selector_name;
-				$value = $selector_name( $input_name, $orig_data, $args ); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
+				$value = (function_exists($selector_name) ? $selector_name( $input_name, $orig_data, $args ) : $orig_data); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
 				if ($drill) $value = gui_hyperlink($value, get_url() . "&$key=$value");
 				break;
 			}
@@ -349,7 +349,7 @@ function RowsData($sql, $id_field, $skip_id, $v_checkbox, $checkbox_class, $h_li
 	$rows_data = [];
 	while ( $row = mysqli_fetch_assoc( $result ) ) {
 		$the_row = array();
-		if ( ! isset( $row[ $id_field ] ) ) {
+		if ( ! isset( $row[ $id_field ] )  and ! isset($row[strtoupper($id_field)])) {
 			// Error... We don't have a valid row ID.
 			print "<br/>field id:" . $id_field . "<br/>";
 			var_dump( $row );
@@ -417,42 +417,24 @@ function NewRowData($field_list, $values, &$v_line, &$h_line, &$m_line, $skip_id
 		print "new<br/>";
 	}
 
+	$mandatory_fields = GetArg($args, "mandatory_fields", null);
+	if ($mandatory_fields) $mandatory_fields = array_assoc($mandatory_fields);
+
 	// assert(0); // will fire
 	// assert (! isset($field_list[0]), "field list in seq array" );
 	foreach ( $field_list as $key => $field ) {
+		if (  $skip_id and strtolower($key) === "id" ) continue;
 		assert( isset( $field_list[ $key ] ) );
-		if ( $debug ) {
-			print "handling $key<br/>";
-		}
+		if ( $debug ) print "handling $key<br/>";
 		if ( $values and isset( $values[ $key ] ) ) {
 			$new_row[ $key ] = $values[ $key ];
 		} else {
 			$new_row[ $key ] = null;
 		}
-		if ( $v_line !== null ) {
-			if ( ! $skip_id or ( $key != $id_field ) ) {
-				$v_line[ $key ] = gui_checkbox( "chk_" . $key, $checkbox_class, $new_row[ $key ] != null );
-			}
-		}
-		if ( is_array( $h_line ) and $header_fields ) {
-			if ( ! $skip_id or $key !== "id" ) {
-				$h_line[ $key ] = isset( $header_fields[ $key ] ) ? im_translate( $header_fields[ $key ], $args ) : $key;
-			}
-		}
-		if ( is_array( $m_line ) ) {
-			if ( $debug ) {
-				print "adding " . isset( $mandatory_fields[ $key ] );
-			}
-			if ( isset( $mandatory_fields[ $key ] ) ) {
-				if ( $debug ) {
-					print $key . "<br/>";
-				}
-				$m_line[ $key ] = 1;
-			} else {
-				$m_line[ $key ] = 0;
-			}
-			// array_push($m_line, isset($mandatory_fields[$key]));
-		}
+		if ( $v_line !== null ) $v_line[ $key ] = gui_checkbox( "chk_" . $key, $checkbox_class, $new_row[ $key ] != null );
+
+		if ( is_array( $h_line ) and $header_fields ) $h_line[ $key ] = isset( $header_fields[ $key ] ) ? im_translate( $header_fields[ $key ], $args ) : $key;
+		if ( is_array( $m_line ) ) $m_line[ $key ] = isset( $mandatory_fields[ $key ] );
 	}
 
 	if ($v_line) $rows_data["checkbox"] = $v_line;
@@ -463,12 +445,14 @@ function NewRowData($field_list, $values, &$v_line, &$h_line, &$m_line, $skip_id
 	{
 		$new_row_ordered = array();
 		foreach ($fields as $key => $field){
-			$new_row_ordered[$key] = $new_row[$key];
+			$new_row_ordered[$key] = isset($new_row[$key]) ? $new_row[$key] : null;
 		}
 		$new_row = $new_row_ordered;
 	}
+	// debug_var($new_row);
 	$rows_data["new"] = $new_row;
 
+	// debug_var($new_row);
 	return $rows_data;
 }
 
@@ -485,13 +469,12 @@ function TableData($sql, &$args = null)
 {
 	$debug = 0; // (get_user_id() == 1);
 
-	if (!strstr ($sql, "limit")){
+	if (strstr($sql, "select") and !strstr ($sql, "limit")){
 		$page = GetArg($args, "page", 1);
 		$rows_per_page = GetArg($args, "rows_per_page", 10);
 		$offset = ($page - 1) * $rows_per_page;
 
 		$limit = (($page > -1) ? " limit $rows_per_page offset $offset" : "");
-
 		$sql .= $limit;
 	}
 
@@ -540,6 +523,7 @@ function TableData($sql, &$args = null)
 	{
 		if ($debug) print "creating new row<br/>";
 		$rows_data = NewRowData( $field_list, $values, $v_line, $h_line, $m_line, $skip_id, $id_field, $checkbox_class, $header_fields, $fields, $args );
+		// debug_var($rows_data);
 	} else {
 		if ($debug) print "getting data<br/>";
 		// print "before: "; var_dump($h_line); print "<br/>";
@@ -639,18 +623,7 @@ function HandleAcc(&$acc_fields, $row)
  * @return string|null
  * @throws Exception
  */
-function NewRow($table_name, $args)
-{
-	$args["edit"] = true;
-	$args["table_name"] = $table_name;
-	$args['events'] = 'onchange="changed_field(\'%s\')"';
-	$args["add_field_suffix"] = false;
-	$args["new_row"] = true; // Selectors can use that to offer creating of new row. E.g, new project.
-//	$args["skip_id"] =  true;
-//	$args["id_field"] = "ID";
-	if (! isset($args["hide_cols"])) $args["hide_cols"] = [];
-	return GuiRowContent($table_name, null, $args);
-}
+
 
 /**
  * Get record from the database and display in html table.
@@ -761,4 +734,28 @@ function prepare_text($string)
 //	$string = preg_replace($url, '<a href="$0" target="_blank" title="$0">$0</a>', $string);
 	return $string;
 	// return nl2br($string);
+}
+
+// This function collects values from the table. If sql is not specified - all values are read and sent to doGuiDatalist.
+function TableDatalist( $id, $table, $args = null)
+{
+	$field = GetArg($args, "field", "field");
+	$include_id = GetArg($args, "include_id", false);
+	$sql = GetArg($args, "sql", "select " . $field . ($include_id ? ", id" : "") .	 " from " . $table);
+	$id_field = GetArg($args, "id_field", "id");
+	$values = [];
+
+	// print "id_field: $id_field<br/>";
+
+	$result = sql_query( $sql );
+	// print $sql . "<br/>";
+	while ( $row = sql_fetch_assoc($result ) ) {
+//		var_dump($row); print "<br/>";
+		// print "key = " . $row[$id_field];
+		array_push($values, $row);
+		// $values[$row[$id_field]] = $row;
+		// $row["ID"]] = $row[$field];
+	}
+
+	return GuiDatalist($id, $values, $id_field,  $field, $include_id);
 }

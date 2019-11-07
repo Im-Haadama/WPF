@@ -6,14 +6,14 @@ if ( ! defined( 'ROOT_DIR' ) ) {
 	define( 'ROOT_DIR', dirname(dirname( dirname( __FILE__ ) ) ));
 }
 
-
 require_once( ROOT_DIR . "/fresh/im_tools.php" );
 require_once( ROOT_DIR . '/fresh/r-shop_manager.php' );
 require_once (ROOT_DIR . '/fresh/delivery/delivery.php');
 require_once (ROOT_DIR . '/routes/gui.php');
 
 
-print header_text( false, false, is_rtl(), array("/fresh/delivery/delivery.js", "/niver/gui/client_tools.js", "/niver/data/data.js") );
+print header_text( false, false, is_rtl(),
+    array("/fresh/delivery/delivery.js", "/niver/gui/client_tools.js", "/niver/data/data.js", "/fresh/orders/orders.js") );
 
 if ( isset( $_GET["week"] ) ) {
 	$week = $_GET["week"];

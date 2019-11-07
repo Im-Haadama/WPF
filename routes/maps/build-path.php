@@ -33,7 +33,9 @@ function evaluate_path( $start, $elements, $end ) {
 //	print "size: " . $size . "<br/>";
 	for ( $i = 1; $i < $size; $i ++ ) {
 //		print "i = " . $i . " e[i-1] = " . $elements[$i-1] . " e[i] = " . $elements[$i] . "<br/>";
-		$cost += get_distance( $elements[ $i - 1 ], $elements[ $i ] );
+		$dis = get_distance( $elements[ $i - 1 ], $elements[ $i ] );
+		if ($dis > -1)
+			$cost += $dis;
 	}
 //	print "end = " . $end . "<br/>";
 	$cost += get_distance( $elements[ $size - 1 ], $end );
@@ -186,14 +188,9 @@ function get_distance( $address_a, $address_b ) {
 		return $ds;
 	}
 	$r = do_get_distance( $address_a, $address_b );
-	if ( ! $r ) {
+	if ( $r  == -1) {
 		// One is invalid
-		if ( do_get_distance( $address_a, $address_a ) ) {
-			print "כתובת לא תקינה  " . $address_a;
-		}
-		if ( do_get_distance( $address_b, $address_b ) ) {
-			print "כתובת לא תקינה " . $address_b;
-		}
+		return -1;
 	}
 	$distance = $r[0];
 	$duration = $r[1];
@@ -226,34 +223,9 @@ function do_get_distance( $a, $b ) {
 	if ( $a == $b ) {
 		return 0;
 	}
-	if ( is_null( $a ) or strlen( $a ) < 1 ) {
-		$debug = debug_backtrace();
-		for ( $i = 2; $i < 8 && $i < count( $debug ); $i ++ ) {
-			print "called from " . $debug[ $i ]["function"] . ":" . $debug[ $i ]["line"] . "<br/>";
-		}
+	if ( is_null( $a ) or strlen( $a ) < 1 ) return -1;
 
-		print "a is null";
-		var_dump( $b );
-		print " ";
-		var_dump( $a );
-
-		// print "b is " . $b . "<br/>";
-		return 0;
-	}
-
-	if ( is_null( $b ) or strlen( $b ) < 1 ) {
-		$debug = debug_backtrace();
-		for ( $i = 2; $i < 6 && $i < count( $debug ); $i ++ ) {
-			print "called from " . $debug[ $i ]["function"] . ":" . $debug[ $i ]["line"] . "<br/>";
-		}
-		print "b is null";
-		var_dump( $b );
-		print " ";
-		var_dump( $a );
-		print "<br/>";
-
-		return 0;
-	}
+	if ( is_null( $b ) or strlen( $b ) < 1 ) return -1;
 
 //	debug_time1("google start");
 	$s = "https://maps.googleapis.com/maps/api/directions/json?origin=" . urlencode( $a ) . "&destination=" .

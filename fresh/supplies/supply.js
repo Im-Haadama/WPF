@@ -88,7 +88,7 @@ function closeItems(collection_name)
 }
 function get_supply_id()
 {
-    return get_value_by_name("supply_number");
+    return get_value_by_name("supply_id");
 }
 
 function send_supplies()

@@ -69,7 +69,6 @@ function HeaderText($args = null)
 	global $logo_url;
 	global $style_file;
 
-
 	$rtl = GetArg($args, "rtl", (function_exists("is_rtl") ? is_rtl() : false));
 	$print_logo = GetArg($args, "print_logo", true);
 	$script_files = GetArg($args, "script_files", false);
@@ -107,7 +106,6 @@ function HeaderText($args = null)
 
 	return $text;
 }
-
 
 function header_text( $print_logo = true, $close_header = true, $rtl = true, $script_file = false ) {
 	// $text .= '<p style="text-align:center;">';
@@ -586,7 +584,67 @@ function debug_var($var)
     }
 
 	if (is_array($var)) var_dump($var);
-	else print $var;
+	else
+		if (is_string($var)) print $var;
+		else var_dump($var);
 
 	print "<br/>";
+}
+
+function encodeURIComponent($str) {
+	$revert = array('%21'=>'!', '%2A'=>'*', '%27'=>"'", '%28'=>'(', '%29'=>')');
+	return strtr(rawurlencode($str), $revert);
+}
+
+function boot_no_login($plugin_name, $textdomain, $tz = "Asia/Jerusalem")
+{
+	$conn = get_sql_conn();
+
+	if (! $conn){
+		if (! defined("DB_HOST")) throw new Exception("DB configuration error = host");
+		if (! defined ("DB_USER")) throw new Exception("DB configuration error = user");
+		if (! defined ("DB_PASSWORD")) throw new Exception("DB configuration error = password");
+		if (! defined ("DB_NAME")) throw new Exception("DB configuration error = name");
+		// print "connecting" . __LINE__ . "<br/>";
+
+		$conn = new mysqli( DB_HOST, DB_USER, DB_PASSWORD, DB_NAME );
+		get_sql_conn($conn);
+		sql_set_time_offset();
+		// print IM_CHARSET;
+		$charset = 'utf8';
+		if (defined('IM_CHARSET')) $charset = IM_CHARSET;
+		if (! mysqli_set_charset( $conn, $charset )){
+			my_log("encoding setting failed");
+			die("encoding setting failed");
+		}
+		// Local and international staff...
+		// Todo: get it from user profile
+		date_default_timezone_set( $tz );
+
+		$locale = get_locale();
+		if ($locale != 'en_US'){
+//			$mofile = ROOT_DIR . '/wp-content/languages/plugins/im_haadama-' . $locale . '.mo';
+//			if (! load_textdomain('im-haadama', $mofile))
+			$mofile = ROOT_DIR . '/wp-content/languages/plugins/' . $plugin_name . '-' . $locale . '.mo';
+			if (! load_textdomain($textdomain, $mofile))
+
+				print "load translation failed . $locale: $mofile";
+		}
+	}
+
+	return $conn;
+}
+
+function check_password($user, $password)
+{
+	// For now hardcoded.
+	if ($user != "im-haadama" or $password != "Wer95%pl")
+		return false;
+
+	return true;
+}
+
+function developer()
+{
+	return (get_user_id() == 1);
 }

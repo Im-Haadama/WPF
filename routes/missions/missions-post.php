@@ -13,11 +13,9 @@ require_once(ROOT_DIR . "/niver/fund.php");
 require_once(ROOT_DIR . '/im-config.php');
 require_once( ROOT_DIR . "/init.php" );
 
-
-$operation = get_param("operation", false, null);
+$operation = get_param("operation", false, "show_action");
 if ($operation){
-
-	handle_mission_operation($operation);
+	print handle_mission_operation($operation);
 	return;
 }
 

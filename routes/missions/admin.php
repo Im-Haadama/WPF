@@ -14,7 +14,7 @@ require_once( ROOT_DIR . '/fresh/r-shop_manager.php' );
 
 require_once( ROOT_DIR . '/fresh/im_tools_light.php' );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
-require_once( ROOT_DIR . '/niver/gui/sql_table.php' );
+require_once( ROOT_DIR . '/niver/gui/input_data.php' );
 
 $this_url = "admin.php";
 $entity_name = "מסלול";
@@ -49,7 +49,6 @@ if ( $operation ) {
 }
 $row_id = get_param( "row_id", false );
 
-
 $part_id = get_param( "part_id", false );
 
 if ( $part_id ) {
@@ -65,7 +64,6 @@ if ( $part_id ) {
 
 	return;
 }
-
 
 print gui_header( 1, "ניהול " . $entity_name_plural);
 $sum = null;

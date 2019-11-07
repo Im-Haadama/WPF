@@ -5,18 +5,24 @@
  * Date: 07/10/16
  * Time: 18:11
  */
-if ( ! defined( "TOOLS_DIR" ) ) {
-	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
+
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+if ( ! defined( 'ROOT_DIR' ) ) {
+	define( 'ROOT_DIR',  dirname(dirname( dirname( __FILE__)  ) ));
 }
 
-require_once( '../r-shop_manager.php' );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( ROOT_DIR . '/org/business/business.php' );
-require_once( TOOLS_DIR . '/invoice4u/invoice.php' );
+require_once( ROOT_DIR . '/fresh/invoice4u/invoice.php' );
 require_once( ROOT_DIR . '/niver/data/html2array.php' );
 require_once( ROOT_DIR . '/fresh/multi-site/imMulti-site.php' );
 require_once( ROOT_DIR . '/org/business/BankTransaction.php' );
 require_once( ROOT_DIR . '/fresh/suppliers/gui.php' );
+require_once( ROOT_DIR . '/niver/gui/input_data.php' );
+require_once( ROOT_DIR . '/niver/gui/input_data.php' );
+require_once( ROOT_DIR . '/fresh/account/account.php' );
+
 
 require_once( ROOT_DIR . "/init.php" );
 $multi_site = ImMultiSite::getInstance();
@@ -33,6 +39,13 @@ if ( isset( $_GET["operation"] ) ) {
 	$operation = $_GET["operation"];
 	// print "op=" . $operation . "<br/>";
 	switch ( $operation ) {
+		case "exists_invoice":
+			$bank_id = get_param("bank_id", true);
+			$invoice = get_param("invoice", true);
+			$b = BankTransaction::createFromDB( $bank_id );
+			$b->Update( 0, $invoice, 0 );
+			print "done";
+			break;
 		case "get_amount":
 			$sql = "SELECT amount FROM im_business_info \n" .
 			       " WHERE id = " . get_param( "id", true );
@@ -238,6 +251,10 @@ if ( isset( $_GET["operation"] ) ) {
 				)
 			);
 
+			print gui_header(2, "חשבונית שהופקה");
+			print GuiInput("invoice_id");
+			print gui_button("btn_invoice_exists", "invoice_exists()", "Exists invoice");
+
 			print gui_header( 2, "בחר לקוח" );
 			print gui_select_client_open_account();
 			print '<div id="logging"></div>';
@@ -286,8 +303,8 @@ if ( isset( $_GET["operation"] ) ) {
 			$client_id = get_param( "client_id" );
 			$site_id   = get_param( "site_id" );
 			// $data .= $this->Run( $func, $site_id, $first, $debug );
-			print $multi_site->Run( "account/account-post.php?operation=get_open_trans&client_id=" . $client_id,
-				$site_id );
+			$link = "/fresh/multi-site/multi-get.php?operation=get_open_trans&client_id=" . $client_id;
+			print $multi_site->Run( $link, $site_id );
 			break;
 
 		case "get_open_invoices":
@@ -350,16 +367,23 @@ function business_create_multi_site_receipt( $bank_id, $bank_amount, $date, $cha
 //              "&ids=" + del_ids.join() +
 //              "&user_id=" + <?php print $customer_id; <!--;-->
 
-	$command = "account/account-post.php?operation=create_receipt&row_ids=" . $ids .
+	$command = "/fresh/multi-site/multi-get.php?operation=create_receipt&row_ids=" . $ids .
 	           "&user_id=" . $user_id . "&bank=" . $bank_amount . "&date=" . $date .
 	           "&change=" . $change;
 //	print "ZZZZ" . $command;
 	$result  = $multi_site->Run( $command, $site_id, true, $debug );
 
+	if ($multi_site->getHttpCode($site_id) != 200) {
+		print "can't create<br/>";
+		if (developer()) print "getting $command, status: " . $multi_site->getHttpCode($site_id) . "<br/>";
+		return false;
+	}
+
 	if ( strstr( $result, "כבר" ) ) {
 		die( "already paid" );
 	}
 	if ( strlen( $result ) < 2 ) {
+		if (developer()) print $command . "<br/>";
 		die( "bad response" );
 	}
 	if ( strlen( $result ) > 10 ) {
@@ -375,7 +399,7 @@ function business_create_multi_site_receipt( $bank_id, $bank_amount, $date, $cha
 		// TODO: to parse $id from $result;
 		$b = BankTransaction::createFromDB( $bank_id );
 		$b->Update( $user_id, $receipt, $site_id );
-		print "חשבונית קבלה מספר " . $receipt . " נוצרה ";
+		print "done.$receipt";
 	} else {
 		print $receipt;
 	}
@@ -405,9 +429,18 @@ function gui_select_open_supplier( $id = "supplier" ) {
 	return gui_select_datalist( $id, "im_suppliers", "open_supplier", "name", $open, 'onchange="supplier_selected()"', null, true );
 }
 
-function gui_select_client_open_account( $id = "client" ) {
+function gui_select_client_open_account( $id = "open_account" ) {
+	$output = "";
 	global $multi_site;
-	$values  = html2array( $multi_site->GetAll( "org/business/business-post.php?operation=get_client_open_account" ) );
+	$url = "org/business/business-post.php?operation=get_client_open_account";
+	$result = $multi_site->GetAll( $url );
+	foreach ($multi_site->getHttpCodes() as $side_id => $code){
+		if ($code != 200) {
+			$output .= "Can't get result from " . $multi_site->getSiteName($side_id) . " error: $code <br/>";
+			if (get_user_id()== 1) $output .= $url . "<br/>";
+		}
+	}
+	$values  = html2array( $result );
 	$open    = array();
 	$list_id = 0;
 	foreach ( $values as $value ) {
@@ -419,8 +452,12 @@ function gui_select_client_open_account( $id = "client" ) {
 		$new["balance"]   = $value[3];
 		array_push( $open, $new );
 	}
+	$events = 'onchange="client_selected()"';
+	$datalist_id = $id . "_datalist";
+	$output .= GuiInputDatalist($id, $datalist_id, $events);
+	$output .= GuiDatalist( $datalist_id, $open, "id","name", false);
 
-	return gui_select_datalist( $id, "im_business_info", "open_account",  "name", $open, 'onchange="client_selected()"', null, true );
+	return $output;
 }
 
 function create_makolet( $month_year ) {
@@ -721,3 +758,6 @@ function show_control( $month_year ) {
 	print gui_table( $table, "", true, true, $sums );
 
 }
+
+
+// array(5) { ["id"]=> int(1) ["site_id"]=> string(1) "4" ["client_id"]=> string(1) "0" ["name"]=> string(0) "" ["balance"]=> string(7) "1831.98" } [2]=> array(5)

@@ -34,6 +34,7 @@ function get_url($only_base = false)
  */
 function add_param_to_url($url, $param_name, $param_value = null)
 {
+	$ignore_list = array("page"); // Would be removed from base url.
 	$query_parts = [];
 	if (is_null($param_value) and ! is_array($param_name)) die (__FUNCTION__ . ": bad usage");
 	if ($s = strpos($url,'?')) { // Have previous query
@@ -45,7 +46,7 @@ function add_param_to_url($url, $param_name, $param_value = null)
 			$param = substr($query, 0, $e = strpos($query, '='));
 			$value = $next_amp ? substr($query, $e + 1, $next_amp - $e - 1) : substr($query, $e + 1);
 
-			$query_parts[$param] = $value;
+			if (! in_array($param, $ignore_list)) $query_parts[$param] = $value;
 			if ($next_amp)
 				$query = substr($query, $next_amp + 1); // Not including previous &
 			else

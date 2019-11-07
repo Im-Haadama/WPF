@@ -8,10 +8,9 @@ if ( ! defined( 'ROOT_DIR' ) ) {
 
 require_once(ROOT_DIR . "/niver/gui/inputs.php");
 
-$ignore_list = array("search", "operation", "table_name", "id", "dummy");
+// $ignore_list = array("search", "operation", "table_name", "id", "dummy");
 
-function data_parse_get($table_name) {
-	global $ignore_list;
+function data_parse_get($table_name, $ignore_list) {
 	$debug = false; // (1== get_user_id());
 	$values =array();
 	foreach ( $_GET as $key => $value ) {
@@ -45,7 +44,7 @@ function update_data($table_name)
 	$row_id = intval(get_param("id", true));
 
 	// Prepare sql statements: primary and meta tables;
-	$values = data_parse_get($table_name);
+	$values = data_parse_get($table_name, array("search", "operation", "table_name", "id", "dummy"));
 
 	foreach ($values as $tbl => $changed_values)
 	{
@@ -140,7 +139,8 @@ function data_save_new($table_name)
 function data_search($table_name, $args = null)
 {
 	$result = null;
-	$values = data_parse_get($table_name);
+	$ignore_list = GetArg($args, "ignore_list", array("search", "operation", "table_name", "id", "dummy"));
+	$values = data_parse_get($table_name, $ignore_list);
 
 	$id_field = GetArg($args, "id_field", "id");
 	$sql = "select $id_field from $table_name where 1 ";
@@ -188,7 +188,8 @@ function data_search($table_name, $args = null)
 
 function handle_data_operation($operation)
 {
-	$allowed_tables = array("im_company", "im_tasklist", "im_task_templates", "im_working_teams", "im_projects");
+	// TODO: register allowed tables by config or something
+	$allowed_tables = array("im_company", "im_tasklist", "im_task_templates", "im_working_teams", "im_projects", "im_bank_transaction_types");
 
 	$debug = 0;
 	if ($debug)	print "operation: " . $operation . "<br/>";
@@ -249,7 +250,7 @@ function auto_list($table_name, $field, $prefix, $args = null)
 	// print $args["sql"] . "<br/>";
 	$args["field"] = $field;
 	$args["include_id"] = $include_id;
-	$data .= GuiDatalist($datalist, $table_name, $args);
+	$data .= TableDatalist($datalist, $table_name, $args);
 
 	return $data;
 }

@@ -9,7 +9,7 @@ if ( ! defined( 'ROOT_DIR' ) ) {
 
 require_once(ROOT_DIR . "/niver/web.php" );
 require_once(ROOT_DIR . '/niver/gui/inputs.php' );
-require_once(ROOT_DIR . '/niver/gui/sql_table.php' );
+require_once(ROOT_DIR . '/niver/gui/input_data.php' );
 require_once(ROOT_DIR . "/niver/fund.php");
 require_once(ROOT_DIR . "/niver/gui/gem.php");
 require_once(ROOT_DIR . "/niver/data/data.php");
@@ -19,7 +19,7 @@ require_once(ROOT_DIR . '/org/people/people.php');
 
 require_once (ROOT_DIR . '/im-config.php');
 
-function focus_new_task()
+function focus_new_task($mission = false)
 {
 	if (! focus_check_user()) return;
 	$args = array();
@@ -44,11 +44,13 @@ function focus_new_task()
 	$args['post_file'] = "/focus/focus-post.php";
 	$args['form_table'] = 'im_tasklist';
 
-	// TODO: if missions are available:
-	if (0 and function_exists("gui_select_mission"))
+	if ($mission and function_exists("gui_select_mission"))
 	{
+		$i = new ImMultiSite();
+		$i->UpdateFromRemote( "im_missions", "id", 0, null, null );
 		$args["selectors"]["mission_id"] = "gui_select_mission";
 		$args["header_fields"]["mission_id"] = "Mission";
+		$args["mandatory_fields"]["location_name"] = true; $args["mandatory_fields"]["location_address"] = true;
 		array_push($args["fields"], "mission_id");
 	}
 
@@ -126,6 +128,118 @@ function handle_focus_operation($operation)
 
 	$action_url = "/focus/focus-post.php";
 
+	$handled = true;
+	switch ($operation) { // Handle operation that don't need page header.
+		///////////////////////////
+		// DATA entry and update //
+		///////////////////////////
+		case "del_team":
+			$team_id = get_param("id", true);
+			if (team_delete($team_id)) print "done";
+			break;
+
+		case "end_task":
+			$task_id = get_param( "id" );
+			task_ended($task_id);
+			create_tasks( null, false );
+			break;
+
+		case "cancel_task":
+			$task_id = get_param( "id" );
+			if (task_cancelled($task_id)) print "done";
+			create_tasks( null, false );
+			break;
+
+		case "postpone_task":
+			$task_id = get_param( "id" );
+			$T       = new Tasklist( $task_id );
+			$r = $T->Postpone();
+			create_tasks( null, false );
+			if ($r) print "done";
+			break;
+
+		case "pri_plus_task":
+			$task_id = get_param( "id" );
+			$T       = new Tasklist( $task_id );
+			$T->setPriority($T->getPriority() + 1);
+			create_tasks( null, false );
+			print "done";
+			break;
+
+		case "pri_minus_task":
+			$task_id = get_param( "id" );
+			$T       = new Tasklist( $task_id );
+			$T->setPriority($T->getPriority() -1);
+			create_tasks( null, false );
+			print "done";
+			break;
+
+		case "save_new":
+			$table_name = get_param("table_name", true);
+			if (! in_array($table_name, $allowed_tables))
+				die ("invalid table operation");
+			$result = data_save_new($table_name);
+			if ($result > 0) print "done.table=" . $table_name . '&new=' . $result;
+			break;
+
+		case "update":
+			$table_name = get_param("table_name", true);
+			if (! in_array($table_name, $allowed_tables))
+				die ("invalid table operation");
+			if (update_data($table_name))
+				print "done";
+			break;
+
+		case "cancel":
+			$table_name = get_param("table_name", true);
+			if (! in_array($table_name, $allowed_tables))
+				die ("invalid table operation");
+			if (cancel_data($table_name))
+				print "done";
+			break;
+
+		case "delete_template":
+			$user_id = get_user_id();
+			$id = get_param("row_id", true);
+			if (template_delete($user_id, $id)) print "done";
+			break;
+		case "start_task":
+			// a. set the start time, if not set.
+			$task_id = get_param( "id" );
+			task_started($task_id, get_user_id());
+
+			// If the was query we want to show the result.
+			// And the move to the task_url if exists.
+//			if ($query = task_query($task_id))
+//			{
+////				print im_file_get_html($query);
+//				$url = task_url($task_id);
+//				if (strlen($url)) {
+//					print '<script language="javascript">';
+//					print "window.location.href = '" . $url . "'";
+//					print '</script>';
+//				}
+//				return;
+//			}
+			$url = task_url($task_id);
+			$url_headers = @get_headers($url);
+			if (! $url_headers || strstr($url_headers[0], "404")) {
+				print "/focus/focus-post.php?operation=bad_url&id=" . $task_id;
+				return;
+			}
+			if ( strlen( $url ) > 1 ) print $url;
+			break;
+
+		default:
+			$handled = false;
+			// Don't warn. Will be handled in the second switch
+
+	}
+	if ($handled) return;
+	print_focus_header();
+
+	$args["page"] = get_param("page", false, 1);
+
 	$debug = 0;
 	if ($debug)	print "operation: " . $operation . "<br/>";
 	// show/save <obj_type>
@@ -134,11 +248,14 @@ function handle_focus_operation($operation)
 			print focus_main();
 			break;
 		case "show_templates":
-			show_templates();
+			$args["table"] = true;
+			$args["new"] = get_param("new", false, 0);
+			$new = get_param("new", false, null);
+			print show_templates($args, null,  $new);
 			break;
 		case "show_template":
 			$id = get_param("id", true);
-			show_templates($id);
+			print show_templates($args, $id);
 			break;
 		case "show_task":
 			$id = get_param("id", true);
@@ -150,8 +267,9 @@ function handle_focus_operation($operation)
 			return;
 		case "bad_url":
 			$id = get_param("id");
-			print "Url for task $id is wrong\n";
-			print "Edit template";
+			print "Url for task $id is wrong<br/>";
+			$template_id = task_template($id);
+			print  gui_hyperlink("Edit template $template_id", "?operation=show_template&id=$template_id");
 			break;
 		case "show_new_project":
 			$args = [];
@@ -174,7 +292,8 @@ function handle_focus_operation($operation)
 			break;
 		case "show_new_task":
 			// print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/focus/focus.js" ) );
-			focus_new_task();
+			$mission = get_param("mission", false, null);
+			focus_new_task($mission);
 			break;
 		case "last_entered":
 			if (get_user_id() != 1) return;
@@ -212,15 +331,17 @@ function handle_focus_operation($operation)
 			break;
 
 		case "new_template":
-			print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/fresh/admin/focus.js" ) );
-
 			print gui_header(1, "יצירת תבנית חדשה");
 			$args = array();
-			$args["selectors"] = array("project_id" =>  "gui_select_project", "owner" => "gui_select_worker", "creator" => "gui_select_worker");
+			$args["selectors"] = array("project_id" =>  "gui_select_project", "owner" => "gui_select_worker",
+			                           "creator" => "gui_select_worker", "team" => "gui_select_team", "repeat_freq" => "gui_select_repeat_time" );
 			$args["transpose"] = true;
 			$args["worker"] = get_user_id();
 			$args["companies"] = worker_get_companies(get_user_id());
 			$args["values"] = array("owner" => get_user_id(), "creator" => get_user_id());
+			$args["fields"] = array("task_description", "task_url", "repeat_freq_numbers", "project_id", "repeat_freq",
+				"condition_query", "priority", "working_hours", "path_code", "creator", "team");
+			$args["mandatory_fields"] = array("task_description", "repeat_freq_numbers", "repeat_freq", "project");
 			print NewRow("im_task_templates", $args);
 			print gui_button("btn_template", "data_save_new('/focus/focus-post.php', 'im_task_templates')", "add");
 			break;
@@ -293,102 +414,6 @@ function handle_focus_operation($operation)
 			print "done";
 			break;
 
-		case "start_task":
-			$task_id = get_param( "id" );
-			if (task_started($task_id, get_user_id()) != true){
-				print "started";
-				return;
-			};
-			// Started task...
-			// If the was query we want to show the result.
-			// And the move to the task_url if exists.
-//			if ($query = task_query($task_id))
-//			{
-////				print im_file_get_html($query);
-//				$url = task_url($task_id);
-//				if (strlen($url)) {
-//					print '<script language="javascript">';
-//					print "window.location.href = '" . $url . "'";
-//					print '</script>';
-//				}
-//				return;
-//			}
-			$url = task_url($task_id);
-			$url_headers = @get_headers($url);
-//			var_dump ($url_headers); print "<br/>";
-//			return;
-			if (! $url_headers || strstr($url_headers[0], "404")) {
-				header( "Location: /focus/focus-post.php?operation=bad_url&id=" . $task_id );
-				return;
-			}
-			if ( strlen( $url ) > 1 ) print $url;
-//			{
-//				header( "Location: " . $url );
-//				return;
-//			}
-//			print "done";
-			break;
-
-		case "end_task":
-			$task_id = get_param( "id" );
-			task_ended($task_id);
-			break;
-
-		case "cancel_task":
-			$task_id = get_param( "id" );
-			if (task_cancelled($task_id)) print "done";
-			break;
-
-		case "postpone_task":
-			$task_id = get_param( "id" );
-			$T       = new Tasklist( $task_id );
-			$r = $T->Postpone();
-			create_tasks( null, false );
-			if ($r) print "done";
-			break;
-
-		case "pri_plus_task":
-			$task_id = get_param( "id" );
-			$T       = new Tasklist( $task_id );
-			$T->setPriority($T->getPriority() + 1);
-			print "done";
-			break;
-
-		case "pri_minus_task":
-			$task_id = get_param( "id" );
-			$T       = new Tasklist( $task_id );
-			$T->setPriority($T->getPriority() -1);
-			print "done";
-			break;
-
-		///////////////////////////
-			// DATA entry and update //
-			///////////////////////////
-
-		case "save_new":
-			$table_name = get_param("table_name", true);
-			if (! in_array($table_name, $allowed_tables))
-				die ("invalid table operation");
-			$result = data_save_new($table_name);
-			if ($result > 0) print "done";
-			break;
-
-		case "update":
-			$table_name = get_param("table_name", true);
-			if (! in_array($table_name, $allowed_tables))
-				die ("invalid table operation");
-			if (update_data($table_name))
-				print "done";
-			break;
-
-		case "cancel":
-			$table_name = get_param("table_name", true);
-			if (! in_array($table_name, $allowed_tables))
-				die ("invalid table operation");
-			if (cancel_data($table_name))
-				print "done";
-			break;
-
 		case "edit_teams":
 			$args = [];
 			$args["post_file"] = "/niver/data/data-post.php";
@@ -404,10 +429,6 @@ function handle_focus_operation($operation)
 			print GemAddRow("im_working_teams", "Add a team", $args);
 			break;
 
-		case "del_team":
-			$team_id = get_param("id", true);
-			if (team_delete($team_id)) print "done";
-			break;
 
 		default:
 			print __FUNCTION__ . ": " . $operation . " not handled <br/>";
@@ -415,6 +436,13 @@ function handle_focus_operation($operation)
 			die(1);
 	}
 	return;
+}
+
+function print_focus_header()
+{
+	$args = arraY("print_logo" => true, "rtl" => is_rtl());
+	print HeaderText($args);
+	print load_scripts(array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/focus/focus.js" ));
 }
 
 function show_projects( $url, $owner, $non_zero = true) {
@@ -436,9 +464,10 @@ function show_projects( $url, $owner, $non_zero = true) {
 	print GuiTableContent( "projects", $sql, $args );
 }
 
-function show_templates($template_id = 0 ) {
-	$args              = array();
+function show_templates(&$args, $template_id = 0, $new = null ) {
 	$url = get_url(1);
+
+	$action_url = "/focus/focus-post.php";
 
 	$args["worker"] = get_user_id();
 	$args["companies"] = worker_get_companies(get_user_id());
@@ -446,57 +475,51 @@ function show_templates($template_id = 0 ) {
 	                           "creator" => "gui_select_worker", "repeat_freq" => "gui_select_repeat_time", "team" => "gui_select_team");
 	$args["fields"] = array("id", "task_description", "project_id", "priority", "team", "repeat_freq", "repeat_freq_numbers", "working_hours", "condition_query", "task_url");
 	$args["header_fields"] = array("task_description" => "Task description", "project_id" => "Project", "priority" => "Priority",
-	                                      "team" => "Team", "repeat_freq" => "Repeat Frequency", "repeat_freq_numbers" => "Repeat times", "working_hours" => "Working hours",
-		"Task site");
+	                               "team" => "Team", "repeat_freq" => "Repeat Frequency", "repeat_freq_numbers" => "Repeat times", "working_hours" => "Working hours",
+		                           "Task site");
 
-	$sql         = "select * " .
-	               " from im_task_templates where 1 ";
 	if ($template_id){
 		// print gui_header(1, "משימה חוזרת מספר " . $template_id) ."<br/>";
 		$args["title"] = "Repeating task";
 
-//		$args["transpose"] = true;
-//		$args["edit"] = true;
-//		//	$args["add_checkbox"] = true;
-//		$args["events"] = "onchange=\"changed(this)\"";
-
 		print GemElement("im_task_templates", $template_id, $args);
 
-		// print gui_button( "btn_save", "data_save_entity('/focus/focus-post.php', 'im_task_templates', " . $template_id . ')', "save" );
-		// show last active
 		$tasks_args = array("links" => array("id" => $url . "?row_id=%s"));
 		$table = GuiTableContent("last_tasks", "select * from im_tasklist where task_template = " . $template_id .
 		                                       " order by date desc limit 10", $tasks_args);
 		if ($table)
 		{
-			print gui_header(2, "משימות אחרונות");
-			print $table;
+			$result = gui_header(2, "משימות אחרונות");
+			$result .= $table;
+			return $result;
 		}
 
-		return;
+		return null;
 	}
 
+	if ($page = get_param("page")) { $args["page"] = $page; unset ($_GET["page"]); };
+
+	$query = " 1";
 	foreach ($_GET as $key => $data){
-		if (! in_array($key, array("operation")))
-			$sql .= "where " . $key . '=' . quote_text($data);
+		if (! in_array($key, array("operation", "table_name", "new")))
+			$query .= " and " . $key . '=' . quote_text($data);
 	}
-
-	// print $sql;
-	$sql .= " order by 3 desc";
 
 	$args["class"]     = "sortable";
 	$args["links"]     = array ("id" => $url . "?operation=show_template&id=%s" );
 	$args["header"]    = true;
 	$args["drill"] = true;
 	$args["edit"] = false;
+	$args["actions"] = array(array("delete", $action_url . "?operation=delete_template&row_id=%s;action_hide_row"));
+	$args["query"] = $query;
+	$args["order"] = " id " . ($new ? "desc" : "asc");
 
-	$table = GuiTableContent( "projects", $sql, $args );
+	$result = gui_hyperlink( "Add repeating task", get_url( true ) . "?operation=new_template" );
 
-	print $table;
-}
+	$result .= GemTable("im_task_templates", $args);
+	// $result .= GuiTableContent( "projects", $sql, $args );
 
-if ( ! defined( "ROOT_DIR" ) ) {
-	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
+	return $result;
 }
 
 function show_task($row_id, $edit = 1)
@@ -586,13 +609,13 @@ function active_tasks(&$args = null, $debug = false, $time = false)
 
 	if (! isset($args["fields"])) $args["fields"] = array("id", "task_description", "project_id", "priority", "task_template");
 
-//	if (get_param("limit"))
-//		$limit = "limit " . get_param("limit");
-//	else
-//		$limit = "limit 10";
+	if (get_param("limit"))
+		$limit = "limit " . get_param("limit");
+	else
+		$limit = "limit 10";
 
-//	if (get_param("offset"))
-//		$limit .= " offset " . get_param("offset");
+	if (get_param("offset"))
+		$limit .= " offset " . get_param("offset");
 
 	$links       = array();
 
@@ -677,7 +700,9 @@ function active_tasks(&$args = null, $debug = false, $time = false)
 	}
 	$result .= gui_hyperlink("Not filtered", add_to_url("active_only", 0)); // Not filtered
 
-	$result .= gui_hyperlink("Add task", add_to_url("operation", "show_new_task"));
+	$result .= " " . gui_hyperlink("Add task", add_to_url("operation", "show_new_task"));
+
+	$result .= " " . gui_hyperlink("Add delivery", add_to_url("operation", "show_new_task&mission=1"));
 
 	return $result;
 }
@@ -773,7 +798,6 @@ function show_project($project_id, $args = null)
 	return GemTable("im_tasklist", $args);
 }
 
-
 function focus_main()
 {
 	$debug = 0;
@@ -867,7 +891,6 @@ function not_used1() {
 			"/focus/focus.js"
 		) );
 
-		print gui_hyperlink( "Add repeating task", get_url( true ) . "?operation=new_template" );
 
 		$args = array();
 
@@ -913,4 +936,25 @@ if (im_user_can("edit_teams"))
 //	$sum     = null;
 
 
+}
+
+function template_creator($template_id)
+{
+	return sql_query_single_scalar("select creator from im_task_templates where id = " . $template_id);
+}
+
+function template_delete($user_id, $template_id)
+{
+	$creator_id = template_creator($template_id);
+	if ($creator_id != $user_id) {
+		print "not creator c=$creator_id u=$user_id<br/>";
+		return false;
+	}
+	if ($template_id > 0) {
+		$sql = "delete from im_task_templates where id = " . $template_id;
+
+		return sql_query($sql);
+	}
+
+	return false;
 }

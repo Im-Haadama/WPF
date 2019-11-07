@@ -19,6 +19,7 @@ class MultiSite {
 	private $sites_array;
 	private $master_id;
 	private $local_site_id;
+	private $http_codes;
 
 	/**
 	 * MultiSite constructor.
@@ -35,6 +36,34 @@ class MultiSite {
 		print MultiSite::GetAll( $func );
 	}
 
+	/**
+	 * @return mixed
+	 */
+	public function getSitesArray() {
+		return $this->sites_array;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getMasterId() {
+		return $this->master_id;
+	}
+
+	/**
+	 * @param $site_id
+	 *
+	 * @return mixed
+	 */
+	public function getHttpCode($site_id) {
+		return $this->http_codes[$site_id];
+	}
+
+	public function getHttpCodes() {
+		return $this->http_codes;
+	}
+
+
 	function GetAll( $func, $verbose = false, $debug = false, $strip = false ) {
 		$debug = get_param("debug", false, $debug);
 		$output = "";
@@ -45,13 +74,17 @@ class MultiSite {
 		$first = true;
 		$data  = array( array( "site name", "result" ));
 
+//		if ($debug)
+//			print"running " . gui_hyperlink($this->getSiteName($site_id), $this->getSiteToolsURL($site_id) . "/" . $func) . "<br/>";
+//		if ($debug != 2)
+//	else
+//		$result = "debug = 2. not run<br/>";
+
 		foreach ( $this->sites_array as $site_id => $site ) {
-			if ($debug)
-				print"running " . gui_hyperlink($this->getSiteName($site_id), $this->getSiteToolsURL($site_id) . "/" . $func) . "<br/>";
-			if ($debug != 2)
-				$result = $this->Run( $func, $site_id, $first, $debug );
-			else
-				$result = "debug = 2. not run<br/>";
+			$result = $this->Run( $func, $site_id, $first, $debug );
+			if (! $result) {
+				$output .= "Can't get from " . $this->getSiteName($site_id) . " http code: " . $this->http_codes[$site_id] . "<br/>";
+			}
 			if ( $strip ) {
 				$result = strip_tags( $result, "<div><br><p><table><tr><td>" );
 			}
@@ -81,8 +114,8 @@ class MultiSite {
 		return $result;
 	}
 
-	function Run( $func, $site_id, $first = false, $debug = false ) {
-
+	function Run( $func, $site_id, $first = false, $debug = false )
+	{
 		if ( strstr( $func, "?" ) ) {
 			$glue = "&";
 		} else {
@@ -114,11 +147,10 @@ class MultiSite {
 		curl_setopt($ch, CURLOPT_USERPWD, "$username:$password");
 		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 		$result_text = curl_exec($ch);
-		$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		$this->http_codes[$site_id] = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		curl_close($ch);
 
-		if ($http_code == 404) return false;
-
+		if (in_array($this->http_codes[$site_id], array(404, 500))) return false;
 //		$result_text = im_file_get_html( $file );
 
 		if ( $debug ) {
@@ -143,7 +175,9 @@ class MultiSite {
 	}
 
 	public function getSiteName( $site_id ) {
-		return $this->sites_array[ $site_id ][ FieldIdx::site_name_idx ];
+		if (isset($this->sites_array[ $site_id ][ FieldIdx::site_name_idx ]))
+			return $this->sites_array[ $site_id ][ FieldIdx::site_name_idx ];
+		die ("invalid site_id");
 	}
 
 	function Execute( $request, $site, $debug = false ) {

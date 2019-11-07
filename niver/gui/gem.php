@@ -1,11 +1,12 @@
 <?php
+require_once(ROOT_DIR . '/niver/gui/input_data.php' );
 
 function GemAddRow($table_name, $text, $args){
 	$result = "";
 
 	$result .= gui_header(1, $text);
 	$result .= NewRow($table_name, $args);
-	$post = GetArg($args, "post_file", null);
+	$post = GetArg($args, "post_file", get_url(1));
 	$next_page = GetArg($args, "next_page", null);
 	if (! $post) die(__FUNCTION__ . ":" . $text . "must send post file");
 	if ($next_page){
@@ -45,12 +46,47 @@ function GemElement($table_name, $row_id, $args)
 	return $result;
 }
 
-// Data is updated upon change by the client;
-function GemTable($table_name, $args){
+
+function GemArray($rows_data, $args, $table_id)
+{
 	$result = "";
 
-	$title = GetArg($args, "title", "content of table " . $table_name);
-	$result .= gui_header(2, $title);
+	$title = GetArg($args, "title", null);
+	if ($title) $result .= gui_header(2, $title);
+
+	$page = GetArg($args, "page", 1);
+	$rows_per_page = GetArg($args, "rows_per_page", 10);
+
+	if (! $rows_data) return null;
+
+	$result .= gui_table_args( $rows_data, $table_id, $args );
+
+	if (count($rows_data) == $rows_per_page + 1) { // 1 for the header
+		$result .= gui_hyperlink("Next page", add_to_url("page", $page + 1)) . " ";
+		$result .= gui_hyperlink("All", add_to_url("page", -1)) . " ";
+	}
+	if ($page > 1)
+		$result .= gui_hyperlink("Previous page", add_to_url("page", $page - 1));
+
+	if ($button_text = GetArg($args, "button_text", "add")){
+		$button_function = GetArg($args, "button_function", "show_new('" . get_url(1) . "')");
+
+		$result .= gui_button("btn_" . $button_text, $button_function, $button_text);
+	}
+	$result .= gui_hyperlink("search", add_to_url("search", "1"));
+//	$args = array();
+//	$search_url = "search_table('im_bank', '" . add_param_to_url($url, "search", "1") . "')";
+//	$args["search"] = $search_url; //'/fresh/bank/bank-page.php?operation=do_search')";
+//	GemSearch("im_bank", $args);
+
+	return $result;
+}
+
+// Data is updated upon change by the client;
+function GemTable($table_name, $args)
+{
+	if (! isset($args["title"])) $title = "content of table " . $table_name;
+
 	$args["events"] = 'onchange="update_table_field(\'/niver/data/data-post.php\', \'' . $table_name . '\', \'%d\', \'%s\', check_update)"';
 	$sql = GetArg($args, "sql", null);
 
@@ -66,29 +102,10 @@ function GemTable($table_name, $args){
 	if ($order) $sql .= " order by $order";
 
 	$args["count"] = 0;
-	$table = GuiTableContent($table_name, $sql, $args);
+	// $table = GuiTableContent($table_name, $sql, $args);
+	$rows_data = TableData( $sql, $args);
 
-	$page = GetArg($args, "page", 1);
-	$rows_per_page = GetArg($args, "rows_per_page", 10);
-
-	if (! $table) return null;
-
-	$result .= $table;
-
-	if ($args["count"] == $rows_per_page + 1) { // 1 for the header
-		$result .= gui_hyperlink("Next page", add_to_url("page", $page + 1)) . " ";
-	}
-	if ($page > 1)
-		$result .= gui_hyperlink("Previous page", add_to_url("page", $page - 1));
-
-
-	if ($button_text = GetArg($args, "button_text", null)){
-		$button_function = GetArg($args, "button_function", null);
-
-		$result .= gui_button("btn_gem", $button_function, $button_text);
-	}
-
-	return $result;
+	return GemArray($rows_data, $args, $table_name);
 }
 
 function GemSearch($table_name, $args = null)

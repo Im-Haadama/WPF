@@ -86,13 +86,7 @@ function action_hide_row(xmlhttp, btn)
         alert (xmlhttp.response);
 }
 
-function action_back(xmlhttp)
-{
-    if (xmlhttp.response === "done")
-        location.replace(document.referrer);
-    else
-        alert (xmlhttp.response);
-}
+// After operation completed successfully, send the result to the page before
 
 function update_table_field(post_file, table_name, id, field_name, finish_action) {
     let value = get_value_by_name(field_name);
@@ -175,4 +169,9 @@ function do_update_list(xmlhttp, obj)
     }
     // obj.list.innerHTML = xmlhttp.response;
     obj.list.innerHTML = xmlhttp.response;
+}
+
+function show_new(post_file)
+{
+    window.location = post_file + "?operation=show_new";
 }

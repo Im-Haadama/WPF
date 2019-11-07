@@ -14,7 +14,7 @@ error_reporting( E_ALL );
 ini_set( 'display_errors', 1 );
 
 require_once( ROOT_DIR . '/niver/PivotTable.php' );
-require_once( ROOT_DIR . '/niver/gui/inputs.php' );
+require_once(ROOT_DIR . '/niver/gui/input_data.php' );
 
 
 $this_url = "project_admin.php";

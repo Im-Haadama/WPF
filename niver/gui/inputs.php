@@ -186,7 +186,7 @@ function remove_br($value)
 	return $value;
 }
 
-function doGuiDatalist($id, $values, $id_field, $field_name, $include_id)
+function GuiDatalist($id, $values, $id_field, $field_name, $include_id)
 {
 	$debug = 1;
 
@@ -235,31 +235,7 @@ function gui_datalist($id, $table, $field, $include_id = false)
 	$args["include_id"] = $include_id;
 	$args["field"] = $field;
 
-	return GuiDatalist($id, $table, $args);
-}
-
-// This function collects values from the table. If sql is not specified - all values are read and sent to doGuiDatalist.
-function GuiDatalist( $id, $table, $args = null)
-{
-	$field = GetArg($args, "field", "field");
-	$include_id = GetArg($args, "include_id", false);
-	$sql = GetArg($args, "sql", "select " . $field . ($include_id ? ", id" : "") .	 " from " . $table);
-	$id_field = GetArg($args, "id_field", "id");
-	$values = [];
-
-	// print "id_field: $id_field<br/>";
-
-	$result = sql_query( $sql );
-	// print $sql . "<br/>";
-	while ( $row = sql_fetch_assoc($result ) ) {
-//		var_dump($row); print "<br/>";
-		// print "key = " . $row[$id_field];
-		array_push($values, $row);
-		// $values[$row[$id_field]] = $row;
-		// $row["ID"]] = $row[$field];
-	}
-
-	return doGuiDatalist($id, $values, $id_field,  $field, $include_id);
+	return TableDatalist($id, $table, $args);
 }
 
 /**
@@ -690,7 +666,7 @@ function gui_table_args($input_rows, $id = null, $args = null)
 	$data = "";
 
 	$debug = GetArg($args, "debug", false);
-	$width = GetArg($args, "width", "100%");
+	$width = GetArg($args, "width", null);
 	$align_table_cells = GetArg($args, "align_table_cells", null);
 
 	// add_checkbox should be used on multiple rows view.
@@ -801,7 +777,7 @@ function gui_table_args($input_rows, $id = null, $args = null)
  *
  * @return string
  */
-function gui_input_select_from_datalist( $id, $datalist, $events = null, $value = null ) {
+function GuiInputDatalist( $id, $datalist, $events = null, $value = null ) {
 	$data = "<input id='$id' list='$datalist' ";
 	if ($value)
 		$data .= ' value="' . $value . '"';
@@ -912,6 +888,7 @@ function GuiSelectTable($id, $table, $args)
 
 /**
  * @param $id
+ * @param $table
  * @param $datalist_id
  * @param $name
  * @param $values
@@ -925,12 +902,7 @@ function GuiSelectTable($id, $table, $args)
  */
 function gui_select_datalist( $id, $table, $datalist_id, $name, $values, $events, $selected = null, $include_id = true, $id_key = null, $class = null )
 {
-
-//	print "include_id= " . $include_id . "<br/>";
-//	print "selected = " . $selected . "<br/>";
-
-	if ( ! $id_key )
-		$id_key = "id";
+	if ( ! $id_key ) $id_key = "id";
 
 	$data = "";
 	static $shown_datalist = array();
@@ -939,7 +911,7 @@ function gui_select_datalist( $id, $table, $datalist_id, $name, $values, $events
 	$args["field"] = $name;
 	if (! isset($shown_datalist[$datalist_id])) {
 		$shown_datalist[$datalist_id] = 0;
-		$data = GuiDatalist($datalist_id, $table, $args);
+		$data = TableDatalist($datalist_id, $table, $args);
 		$shown_datalist[$datalist_id]++;
 
 		if ($id == "datalist") return $data; // Just print the datalist.

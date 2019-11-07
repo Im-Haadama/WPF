@@ -4,7 +4,7 @@
 
 
 function selected_client_index() {
-    var client = document.getElementById("client");
+    let client = document.getElementById("open_account");
     return get_value(client);
 }
 
@@ -29,7 +29,7 @@ function selected_supplier_site_id() {
 
 function selected_client_id() {
     let item_id = selected_client_index();
-    let list = document.getElementById("open_account");
+    let list = document.getElementById("open_account").list;
 
     if (list)
         return list.options[item_id].getAttribute("data-client_id");
@@ -38,7 +38,7 @@ function selected_client_id() {
 
 function selected_client_site_id() {
     var item_id = selected_client_index();
-    var list = document.getElementById("open_account");
+    var list = document.getElementById("open_account").list;
 
     if (list)
         return list.options[item_id].getAttribute("data-site_id");
@@ -46,20 +46,19 @@ function selected_client_site_id() {
     return 0;
 }
 
-
 function selected_bank_id() {
     return get_value_by_name("bank_id");
 }
 
 function client_selected() {
-    var item_id = selected_client_index();
+    let item_id = selected_client_index();
 
     if (item_id !== 0 && !(item_id > 0)) {
         document.getElementById("transactions").innerHTML = "";
         return;
     }
-    var site_id = selected_client_site_id();
-    var client_id = selected_client_id();
+    let site_id = selected_client_site_id();
+    let client_id = selected_client_id();
 
     xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = function () {
@@ -69,7 +68,7 @@ function client_selected() {
             document.getElementById("transactions").innerHTML = xmlhttp.response;
         }
     }
-    var request = "business-post.php?operation=get_trans&client_id=" + client_id +
+    let request = "business-post.php?operation=get_trans&client_id=" + client_id +
         "&site_id=" + site_id;
     // alert (request);
     xmlhttp.open("GET", request, true);
@@ -109,17 +108,6 @@ function create_receipt_from_bank() {
     var client_id = selected_client_id();
     var bank_id = selected_bank_id();
 
-    xmlhttp = new XMLHttpRequest();
-    xmlhttp.onreadystatechange = function () {
-        // Wait to get query result
-        if (xmlhttp.readyState === 4 && xmlhttp.status === 200)  // Request finished
-        {
-            add_message(xmlhttp.response);
-            // receipt_id = xmlhttp.responseText.trim();
-            // logging.innerHTML += "חשבונית מספר " + receipt_id;
-            // updateDisplay();
-        }
-    }
     var bank_amount = parseFloat(get_value(document.getElementById("bank")));
     if (isNaN(bank_amount)) bank_amount = 0;
     var date = get_value(document.getElementById("pay_date"));
@@ -131,12 +119,11 @@ function create_receipt_from_bank() {
         "&user_id=" + client_id +
         "&bank_id=" + bank_id;
 
-    var change = get_value_by_name("change");
+    let change = get_value_by_name("change");
     if (change)
         request += "&change=" + change;
 
-    xmlhttp.open("GET", request, true);
-    xmlhttp.send();
+    execute_url(request, action_back);
 }
 
 function link_invoice_bank() {
@@ -187,4 +174,11 @@ function update_display() {
     }
 
     document.getElementById("total").innerHTML = t.toString();
+}
+
+function invoice_exists()
+{
+    let invoice = get_value_by_name("invoice_id");
+    let bank_id = get_value_by_name("bank_id");
+    execute_url("/org/business/business-post.php?operation=exists_invoice&bank_id=" + bank_id + "&invoice=" + invoice, action_back);
 }

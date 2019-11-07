@@ -11,6 +11,10 @@ require_once(ROOT_DIR . '/im-config.php');
 require_once( ROOT_DIR . "/init.php" );
 
 require_once( "im_tools.php" );
+$operation = get_param("operation", false, null);
+if ($operation)
+	handle_menu_operation($operation);
+
 print header_text( false );
 require_once( ROOT_DIR . "/niver/wp.php" );
 require_once( ROOT_DIR . "/niver/gui/inputs.php" );
@@ -28,6 +32,7 @@ $manage_accounting = info_get("manage_accounting");
 if ( ! $test_limit ) {
 	$test_limit = 5;
 }
+
 
 $user = wp_get_current_user();
 if ( $user->ID == "0" ) {
@@ -89,7 +94,7 @@ $table[ $row ++ ][ $col ] = gui_header( 2, "משלוחים" );
 add_command( $table, $row, $col, "edit_shop_orders", "Today Routes", "/routes/routes-page.php?operation=show_routes" );
 add_command( $table, $row, $col, "edit_shop_orders", "This week routes", "/routes/routes-page.php?operation=show_routes&week=" . date( "Y-m-d", strtotime( "last sunday" ) ));
 add_command( $table, $row, $col, "edit_shop_orders", "תעודות משלוח", "delivery/delivery-page.php", "doc_frame" );
-add_command( $table, $row, $col, "edit_missions", "ניהול מסלולים", "/routes/missions/missions-page.php" );
+add_command( $table, $row, $col, "edit_missions", "ניהול מסלולים", "/routes/missions/missions-post.php" );
 add_command( $table, $row, $col, "edit_shop_orders", "משלוחי המכולת", "/routes/legacy.php" );
 add_command( $table, $row, $col, null, "דיווח חוסרים ללקוח", "delivery/missing.php" );
 
@@ -168,7 +173,7 @@ add_command( $table, $row, $col, "edit_pricelist", "משימות פעילות", 
     add_command( $table, $row, $col, "edit_pricelist", "חשבוניות", "/org/business/invoice_table.php" );
 add_command( $table, $row, $col, "edit_pricelist", "פרויקטים", "people/project_admin.php" );
 add_command( $table, $row, $col, "edit_pricelist", "תיבת דואר", "business/inbox-box.php" );
-add_command( $table, $row, $col, "show_bank", "בנק", "bank/bank-page.php" );
+add_command( $table, $row, $col, "show_bank", "בנק", "/org/bank/bank-page.php" );
 add_command( $table, $row, $col, "show_bank", "התאם תשלומים", "/org/business/business-post.php?operation=show_pay_to_link" );
 add_command( $table, $row, $col, "show_bank", "ניתוח שבועי", "business/report.php" );
 
@@ -228,4 +233,17 @@ if ( $test_site ) {
 </body>
 </html>
 
+<?php
 
+function handle_menu_operation($operation)
+{
+    switch ($operation) {
+	    case "logout":
+		    wp_logout();
+		    $back = get_param( "back", false, get_url( 1 ) );
+		    header( "location: " . $back );
+
+		    return;
+		    break;
+    }
+}

@@ -149,15 +149,10 @@ class ImMultiSite extends MultiSite {
 			$remote = self::getMaster();
 		}
 
-		$url = "fresh/multi-site/sync-data.php?table=$table&operation=get";
-		if ( $query ) {
-			$url .= "&query=" . urlencode( $query );
-		}
-		print $url . "<br/>";
+		if ($this->isMaster()) return true;
 
-		// print $url . "<br/>";
-		if ($debug)
-			print $url;
+		$url = "fresh/multi-site/sync-data.php?table=$table&operation=get";
+		if ( $query ) $url .= "&query=" . urlencode( $query );
 
 		$html = ImMultiSite::Execute( $url, $remote, $debug );
 
@@ -185,16 +180,9 @@ class ImMultiSite extends MultiSite {
 		}
 	}
 
-	static private function UpdateTable( $html, $table, $table_key, $query = null, $ignore_fields = null, $debug = false )
+	static private function UpdateTable( $html, $table, $table_key, $query = null, $ignore_fields = null, $verbose = false )
 	{
-		$debug = 1;
-		if ($debug)
-			print "start<br/>";
-
-		// 		print header_text( false, true, false );
 		$dom = im_str_get_html( $html );
-
-		// print "Table key: X" . $table_key . "X<br/>";
 
 		$headers      = array();
 		$fields       = array();
@@ -212,12 +200,10 @@ class ImMultiSite extends MultiSite {
 				$i = 0;
 				foreach ( $row->children() as $html_key ) {
 					$key = $html_key->plaintext;
-					// print "key: " . $key . "<br/>";
 					array_push( $headers, $key );
 
 					if ( ! strcmp( $key, $table_key ) ) {
 						$key_order = $i;
-						print "key order: " . $key_order . "<br/>";
 					}
 					$i ++;
 					if ( ( $ignore_fields == null ) or ( ! in_array( $key, $ignore_fields ) ) ) {
@@ -226,17 +212,14 @@ class ImMultiSite extends MultiSite {
 
 				}
 				$field_list = rtrim( $field_list, ", " );
-				// print $field_list . "<br/>";
 				if ( $key_order == - 1 ) {
-					print "Key $table_key not found<br/>";
-					print "data from server:<br/>";
-					print $html;
+					if ($verbose) {
+						print "Key $table_key not found<br/>";
+						print "data from server:<br/>";
+						print $html;
+					}
 					die( 1 );
 				}
-//				print "key: " . $key_order . "<br/>";
-				// unset($headers[0]);
-//				$field_list = comma_implode( $headers );
-				// print "headers: " . $field_list . "<br/>";
 				$first = false;
 				continue;
 			}
@@ -250,23 +233,14 @@ class ImMultiSite extends MultiSite {
 				$i ++;
 			}
 			$row_key = $fields[ $key_order ];
-//			if (strlen($row_key) < 1){
-//				print "fields: "; var_dump($fields); print "<br/>";
-//				// print "input: " . $html;
-//				print "skipping<br/>";
-//				continue;
-//			}
 
 			array_push( $keys, $row_key );
 			$sql = "SELECT COUNT(*) FROM $table WHERE $table_key=" . quote_text( $row_key );
 
 			$found = sql_query_single_scalar( $sql ) >= 1;
 
-			if ($debug)
-				print "Checking " . $sql . " found= " . $found . "<br/>";
-
 			if ( ! $found ) {
-				print "<br/>handle " . $row_key . " inserted ";
+//				print "<br/>handle " . $row_key . " inserted ";
 				$insert = true;
 			}
 //			else {
@@ -290,25 +264,25 @@ class ImMultiSite extends MultiSite {
 
 			if ( $insert ) {
 				$sql = "INSERT INTO $table (" . $field_list . ") VALUES ( " . rtrim( $insert_values, ", " ) . ")";
-				if ($debug)
-					print $sql . "<br/>";
 				sql_query( $sql );
-//				 die (1);
 			} else {
 				$sql = "UPDATE $table SET " . rtrim( $update_fields, ", " ) .
 				       " WHERE $table_key = " . quote_text( $row_key );
-				// print $sql . "<br/>";
 				sql_query( $sql );
 			}
 		}
 		if ( $i < 3 ) {
-			print "not enough records.<br/>";
-			print $html . "<br/>";
-			print "Aboring<br/>";
+			if ($verbose) {
+				print "not enough records.<br/>";
+				print $html . "<br/>";
+				print "Aboring<br/>";
+			}
 			return false;
 		}
-		print "Update count: " . $update_count . "<br/>";
-		print "Insert count: " . $insert_count . "<br/>";
+		if ($verbose) {
+			 print "Update count: " . $update_count . "<br/>";
+			 print "Insert count: " . $insert_count . "<br/>";
+		}
 
 		// Delete not received keys.
 		$sql = "select $table_key from $table";

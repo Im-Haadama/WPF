@@ -5,6 +5,7 @@
  * User: agla
  * Date: 25/02/19
  * Time: 15:34
+ * Todo: for now - the code is for single company per installation
  */
 class BankTransaction {
 	private $id;
@@ -52,12 +53,15 @@ class BankTransaction {
 	 * @return mixed
 	 */
 	public function getOutAmount( $attached = false ) {
+		debug_var($this->out_amount);
 		if ( ! $attached ) {
 			return $this->out_amount;
 		}
 
 		$attached_amount = sql_query_single_scalar( "SELECT sum(amount) FROM im_bank_lines " .
 		                                            " WHERE line_id = " . $this->id );
+
+		debug_var($attached_amount);
 
 		return $this->out_amount + $attached_amount;
 	}
@@ -86,6 +90,4 @@ class BankTransaction {
 			throw new Exception( "invalid receipt number" );
 		}
 	}
-
-
 }

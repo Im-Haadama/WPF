@@ -230,7 +230,7 @@ print gui_datalist( "items", "im_products", "post_title" );
 			gui_header( 2, "מחיר רגיל" )
 		),
 		array(
-			gui_input_select_from_datalist( "product_name", "products", "onchange=\"calcBundle()\"" ),
+			GuiInputDatalist( "product_name", "products", "onchange=\"calcBundle()\"" ),
 			// '<input id="item_name" list="items" onchange="getPrice()">',
 			'<div id="buy_price">',
 			'<div id="price">',

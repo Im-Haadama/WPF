@@ -19,18 +19,9 @@ if (! get_user_id()){
 	}
 		$user =  $_SERVER['PHP_AUTH_USER'];
 		$password = $_SERVER['PHP_AUTH_PW'];
-	if (0 and ! check_password($user, $password)){
+	if (! check_password($user, $password)){
 		die("invalid password");
 	}
-}
-
-function check_password($user, $password)
-{
-	// For now hardcoded.
-	if ($user != "im-haadama" or $password != "Wer95%pl")
-		return false;
-
-	return true;
 }
 
 require_once( STORE_DIR . "/wp-load.php" );

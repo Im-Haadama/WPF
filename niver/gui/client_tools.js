@@ -72,11 +72,12 @@ function get_value(element) {
                     //     return element.value.substring(0, element.value.indexOf(")"));
                     // else {
                     let val = element.value;
-                    let list = element.list.firstElementChild.options;
+                    let list = element.list.options;
+                    if (list === undefined) list = element.list.firstElementChild.options; // for auto list. the post datalist is child of the datalist.
                     if (list){
                         for (let i = 0; i < list.length; i++)
-                            if (val === list[i].value) return element.list.firstElementChild.options[i].dataset.id;
-                                return element.value;
+                            if (val === list[i].value) return list[i].dataset.id;
+                        return element.value;
                     }
                 }
                 return element.value;
@@ -186,3 +187,19 @@ function removeParam(key, sourceURL) {
     return rtn;
 }
 
+function action_back(xmlhttp)
+{
+    if (xmlhttp.response.substr(0, 4) === "done") {
+        let operation = document.referrer;
+        let data = xmlhttp.response.substr(5); // After .
+        if (data.length) {
+            if (operation.indexOf('?') === -1) operation += "?"; // Make sure this is ?
+            else operation += '&';
+
+            operation += data; // The data coming back from post action will be added to the url of the calling.
+        }
+        location.replace(operation );
+    }
+    else
+        alert (xmlhttp.response);
+}

@@ -16,10 +16,19 @@ admin-post.php handles operations. check auth amd connects to db.
 admin.php - all the functional code. including wont display noting.
 Object.php - code handling a class. e.g focus.php. Shouldn't output nothing when include. E.g. styles and scripts.
 
+New folder stucture
+-=-=-=-=-=-=-=-=-=-
+object.php - code for handling objects. handle_object_operation will be here.
+page.php - select default operation and call handle_object_operation
+
 General
 -=-=-=-
 init.php: Auto and connection to db will be in root folder. init.php. installation specific. Won't load scripts nor styles.
-Will check that the user is known. Checking specific roles will be in the post.php.
+new - in top level files:
+require (../boot-no.php); // will define ROOT_DIR, read wp-config.php, im-config.php, define err if needed.
+require (../boot.php); // All above + check login.
+if (! user_can(RIGHTS)) die ("no permissions");
+
 data-post.php - general update functions
 
 inputs
@@ -27,6 +36,13 @@ inputs
 New row - field name will be just the field name. Will be handled by save_new or data_save_new.
 Existing row - field name will be <field>_<row_number>. Will be handled by update_entity.
 
+handle_XX_operation
+-=-=-=-=-=-=-=-=-=-
+- divided to two: first - functions that might reload page or print header.
+- then page header is printed.
+- then handler of other operations.
+
+function show_XXXX() - will collect result to $result and return it.
 
 Test:
 -=-=-
@@ -36,3 +52,5 @@ Should run without login. Get permission of task owner. No info leakage.
 1700791 2bs
 22309501
 16935261
+
+https://fruity.co.il/fresh/pricelist/pricelist-get.php?supplier_id=100044

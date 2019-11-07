@@ -187,8 +187,14 @@ msgstr "שלום"
 msgid "Good morning"
 msgstr "בוקר טוב"
 
+msgid "logout"
+msgstr "התנתק"
+
 msgid "Repeating tasks"
 msgstr "משימות חוזרות"
+
+msgid "Add repeating tasks"
+msgstr "הוסף משימות חוזרות"
 
 msgid "add tasks"
 msgstr "הוסף משימות"
@@ -461,8 +467,8 @@ msgstr "מזג"
 msgid "delete"
 msgstr "מחק"
 
-msgid "Supplies to send"
-msgstr "הספקות לשליחה לספק"
+msgid "No permissions"
+msgstr "אין הרשאות"
 
 msgid "Supplies done"
 msgstr "הספקות שהתקבלו"

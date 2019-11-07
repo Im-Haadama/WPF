@@ -23,13 +23,15 @@ $debug = get_param("debug", false, false);
 global $style_file;
 init(null, $style_file);
 
-$args = [];
-$args["script_files"] = array("/niver/data/data.js", "/niver/gui/client_tools.js");
-print HeaderText($args);
+//$args = [];
+//$args["script_files"] = array("/niver/data/data.js", "/niver/gui/client_tools.js");
+//print HeaderText($args);
 require_once( "focus.php" );
 $operation = get_param("operation", false, "focus_main");
 
 if ($debug) print "op=$operation<br/>";
+
+if (! $operation and get_param("id", false, null)) $operation = "show_task";
 
 if ($operation) {
 	handle_focus_operation($operation);

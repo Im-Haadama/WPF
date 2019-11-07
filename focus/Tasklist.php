@@ -141,8 +141,10 @@ class eTasklist {
 		canceled = 3;
 }
 
-function task_started($task_id, $owner) {
-	if ( ! sql_query_single_scalar( "select started from im_tasklist where id = " . $task_id ) ) {
+function task_started($task_id, $owner)
+{
+	$started = sql_query_single_scalar( "select started from im_tasklist where id = " . $task_id );
+	if ( ! $started  ) {
 		$sql = "UPDATE im_tasklist SET owner = $owner, started = now(), status = " . eTasklist::started .
 		       " WHERE id = " . $task_id;
 		return sql_query( $sql );

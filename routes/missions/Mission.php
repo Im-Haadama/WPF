@@ -7,7 +7,15 @@
  * Tim7e: 20:00
  */
 
+if ( ! defined( "ROOT_DIR" ) ) {
+	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
+}
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
 require_once (ROOT_DIR . '/niver/data/data.php');
+require_once( ROOT_DIR . '/im-config.php' );
+require_once( ROOT_DIR . "/init.php" );
 
 class Mission {
 	private $id, $start_address, $end_adress, $start_time, $end_time, $date;
@@ -138,6 +146,25 @@ function handle_mission_operation($operation) {
 	if ( $debug ) {
 		print "operation: " . $operation . "<br/>";
 	}
+
+	// Without gui
+	$handled = true;
+	switch ($operation)
+	{
+		case "save_new":
+			$id = data_save_new("im_missions");
+			if ($id > 0) return "done.$id";
+			break;
+		default:
+			$handled = false;
+	}
+
+	if ($handled) return;
+
+	$args = [];
+	$args["script_files"] = array("/niver/gui/client_tools.js", "/niver/data/data.js");
+	print HeaderText($args);
+	// With gui
 	switch ( $operation ) {
 		case "update":
 			$table_name = get_param("table_name", true);
@@ -147,6 +174,14 @@ function handle_mission_operation($operation) {
 				print "done";
 
 			break;
+		case "show_new":
+			$args = [];
+			$args["mandatory_fields"] = array("date", "start_address", "name");
+			print GemAddRow("im_missions", "New mission", $args);
+			return;
+		case "show_action":
+			print active_missions();
+			break;
 		default:
 			print __FUNCTION__ . ": " . $operation . " not handled <br/>";
 
@@ -154,10 +189,29 @@ function handle_mission_operation($operation) {
 	}
 }
 
+$debug = get_param( "debug", false, false );
+
+$operation   = get_param( "operation", false, null );
+$entity_name = "mission";
+$table_name  = "im_missions";
+
+// print "X" . get_param("templates") != null . "X";
+
+
+
+// Tasks I need to handle
+//print gui_header( 1, "$entity_name" );
+//$args["query"]       = " owner = " . get_user_id();
+//$args["limit"]       = get_param( "limit", false, 10 );
+//$args["active_only"] = get_param( "active_only", false, true );
+//print active_missions( $args );
+// if (get_user_id() != 1) return;
+
+
 function active_missions()
 {
 	global $table_name;
-	$query = "where date > date_sub(curdate(), interval 10 day)";
+	$query = " date > date_sub(curdate(), interval 10 day)";
 	$actions = array(
 		array( "שכפל", "/fresh/delivery/missions.php?operation=dup&id=%s" ),
 		array( "מחק", "/fresh/delivery/missions.php?operation=del&id=%s" )
@@ -170,7 +224,9 @@ function active_missions()
 	$args["links"] = $links;
 // $args["first_id"] = true;
 	$args["actions"] = $actions;
+	$args["query"] = $query;
 
-	print GuiTableContent($table_name, "select * from $table_name $query $order", $args);
+	// print GuiTableContent($table_name, "select * from $table_name $query $order", $args);
+	print GemTable($table_name,$args);
 
 }

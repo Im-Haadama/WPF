@@ -1,7 +1,7 @@
 <script>
     function success_message(xmlhttp)
     {
-        if (xmlhttp.response === "done")
+        if (xmlhttp.response.substr(0, 3) === "done")
             alert("<?php print im_translate("Success"); ?>");
         else
             alert (xmlhttp.response);

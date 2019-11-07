@@ -15,6 +15,7 @@ require_once( ROOT_DIR . '/niver/PivotTable.php' );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( ROOT_DIR . '/fresh/im_tools_light.php' );
 require_once( ROOT_DIR . '/niver/web.php' );
+require_once(ROOT_DIR . '/niver/gui/input_data.php' );
 
 print header_text(false, true, true, array("/niver/gui/client_tools.js", "/niver/data/data.js"));
 

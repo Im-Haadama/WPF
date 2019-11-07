@@ -1,5 +1,6 @@
 <?php
-header('Access-Control-Allow-Origin: *');
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
 require( '../r-shop_manager.php' );
 require_once(ROOT_DIR . "/fresh/multi-site/imMulti-site.php");
 $m = ImMultiSite::getInstance();
@@ -71,7 +72,7 @@ $sql = 'select round(sum(ia.transaction_amount),2), ia.client_id, wu.display_nam
        . ' group by client_id '
        . ' order by 5 desc';
 
-//print $sql;
+debug_var($sql);
 
 $result = sql_query($sql);
 

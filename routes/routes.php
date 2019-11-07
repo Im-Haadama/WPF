@@ -4,6 +4,7 @@ require_once(ROOT_DIR . "/niver/data/dom.php");
 require_once(ROOT_DIR . "/fresh/orders/Order.php");
 require_once (ROOT_DIR . "/fresh/suppliers/Supplier.php");
 require_once(ROOT_DIR . "/focus/Tasklist.php");
+require_once(ROOT_DIR . "/fresh/catalog/gui.php");
 
 function handle_routes_operation($operation, $debug = false) {
 	if ( $debug ) {
@@ -11,15 +12,13 @@ function handle_routes_operation($operation, $debug = false) {
 	}
 	switch ( $operation ) {
 		case "show_routes":
-//			function show_route($missions, $update = false, $debug = false, $missing = false, $show_header = true)
-
 		    $edit_route = get_param("edit_route", false, false);
 		    if ($edit_route) {
 		        edit_route(get_param("id", true));
 		        return;
             }
 			if ($id = get_param("id", false)) {
-				print show_route($id, false, false, false, true);
+				print show_route($id, false, false, false);
 				return;
 			}
 		    $week = get_param("week");
@@ -88,10 +87,11 @@ function show_missions($week)
 	    print "missions: "; var_dump($missing); print "<br/>";
     }
 
+	print gui_hyperlink("This week", get_url(1) . "?operation=show_routes&week=" . date( "Y-m-d", strtotime( "last sunday" ))) . " ";
+	print gui_hyperlink("Next week", get_url(1) . "?operation=show_routes&week=" . date( "Y-m-d", strtotime( "next sunday" )));
+
 	if ( ! count( $missions ) ) {
 		print "No deliveries for today ";
-		print gui_hyperlink("This week", get_url(1) . "?operation=show_routes&week=" . date( "Y-m-d", strtotime( "last sunday" ))) . " ";
-		print gui_hyperlink("Next week", get_url(1) . "?operation=show_routes&week=" . date( "Y-m-d", strtotime( "next sunday" )));
 		return;
 	}
 	if (count($missions) == 1) {
@@ -564,7 +564,7 @@ function print_task( $id ) {
 	array_push( $fields, "משימות" );
 	$m = ImMultiSite::getInstance();
 
-	$ref = gui_hyperlink( $id, $m->LocalSiteTools() . "/focus/focus-page.php?row_id=" . $id );
+	$ref = gui_hyperlink( $id, $m->LocalSiteTools() . "/focus/focus-page.php?operation=show_task&id=" . $id );
 
 	array_push( $fields, $ref );
 
