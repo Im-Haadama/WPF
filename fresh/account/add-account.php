@@ -30,7 +30,7 @@ require_once( ROOT_DIR . '/niver/gui/inputs.php' );
         xmlhttp.open("GET", request, true);
         xmlhttp.send();
     }
-    function add_user() {
+    function add_user(legacy) {
         var name = get_value(document.getElementById("name"));
         if (name.length < 5) {
             alert("הכנס שם");
@@ -74,6 +74,8 @@ require_once( ROOT_DIR . '/niver/gui/inputs.php' );
             '&city=' + city +
             '&phone=' + phone +
             '&zip=' + zip;
+        if (legacy) request += '&legacy=1';
+
         xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function () {
             // Wait to get query result
@@ -104,7 +106,7 @@ print gui_table_args(
 		array( "מיקוד", gui_input( "zip", "", "" ) )
 	) );
 
-print gui_button( "btn_add", "add_user()", "הוסף" );
+print gui_button( "btn_add", "add_user(1)", "הוסף" );
 
 ?>
 

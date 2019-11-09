@@ -157,3 +157,54 @@ function login_id() {
 
 	return $user->ID;
 }
+
+
+function add_im_user( $user, $name, $email, $address = null, $city = null, $phone = null, $zip = null)
+{
+	if ( strlen( $email ) < 1 ) {
+		$email = randomPassword() . "@aglamaz.com";
+	}
+
+	if ( $user == "אוטומטי" or strlen( $user ) < 5 ) {
+		$user = substr( $email, 0, 8 );
+		print "user: " . $user . "<br/>";
+	}
+
+	print "email: " . $email . "<br/>";
+	print "user: " . $user . "<br/>";
+
+	$id = wp_create_user( $user, randomPassword(), $email );
+	if ( ! is_numeric( $id ) ) {
+		print "לא מצליח להגדיר יוזר";
+		var_dump( $id );
+
+		return;
+	}
+	$name_part = explode( " ", $name );
+	update_user_meta( $id, 'first_name', $name_part[0] );
+	update_user_meta( $id, 'shipping_first_name', $name_part[0] );
+	unset( $name_part[0] );
+
+	if ($address) {
+		update_user_meta( $id, 'billing_address_1', $address );
+		update_user_meta( $id, 'shipping_address_1', $address );
+	}
+	if ($city) {
+		update_user_meta( $id, 'billing_city', $city );
+		update_user_meta( $id, 'shipping_city', $city );
+	}
+
+	update_user_meta( $id, 'last_name', implode( " ", $name_part ) );
+	update_user_meta( $id, 'shipping_last_name', implode( " ", $name_part ) );
+	if ($phone) update_user_meta( $id, 'billing_phone', $phone );
+	if ($zip) {
+		update_user_meta( $id, 'billing_postcode', $zip );
+		update_user_meta( $id, 'shipping_postcode', $zip );
+	}
+
+	im_set_default_display_name( $id);
+	print "משתמש התווסף בהצלחה";
+
+	return $id;
+
+}

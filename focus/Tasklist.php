@@ -324,6 +324,7 @@ function create_tasks( $freqs = null, $verbose = false, $default_owner = 1 )
 			$verbose_line = array();
 			// if ($row["id"] == 10) var_dump($row);
 			$id         = $row["id"];
+			$last_run = sql_query_single_scalar("select max(date) from im_tasklist where task_template = " . $id);
 			$project_id = $row["project_id"];
 			if ( ! $project_id ) {
 				$project_id = 0;
@@ -331,7 +332,7 @@ function create_tasks( $freqs = null, $verbose = false, $default_owner = 1 )
 			// 		print "project_id= " . $project_id . "<br/>";
 
 			array_push( $verbose_line, $id );
-			array_push( $verbose_line, check_frequency( $row["repeat_freq"], $row["repeat_freq_numbers"] ) );
+			array_push( $verbose_line, check_frequency( $row["repeat_freq"], $row["repeat_freq_numbers"], $last_run ) );
 			array_push( $verbose_line, check_query( $row["condition_query"] ) );
 			array_push( $verbose_line, check_active( $id, $row["repeat_freq"] ) );
 			$test_result = "";
@@ -395,25 +396,30 @@ function create_tasks( $freqs = null, $verbose = false, $default_owner = 1 )
 }
 
 
-function check_frequency( $repeat_freq, $repeat_freq_numbers ) {
-
+function check_frequency( $repeat_freq, $repeat_freq_numbers, $last_run )
+{
+	$result = "";
 	// print "rf=$repeat_freq. rfn=$repeat_freq_numbers<br/>";
-	if ( strlen( $repeat_freq ) == 0 ) {
-		return "1 empty freq passed";
+	if ( strlen( $repeat_freq ) == 0 ) return "1 empty freq passed";
+
+	if (substr($repeat_freq, 0, 1) == 'c') return "1 c passed";
+
+	// Check from day after last run till today
+	$check_date = strtotime($last_run . ' +1 day');
+	$now = strtotime(date('y-m-d'));
+
+	$result .= " checking from " . date('y-m-d', $check_date);
+
+	while ($check_date <= $now){
+		$repeat_freq = explode( " ", $repeat_freq )[0];
+		$result      .= "checking " . date( $repeat_freq, $check_date );
+		if ( in_array( date( $repeat_freq, $check_date ), explode( ",", $repeat_freq_numbers ) ) ) {
+			return "1 " . $result;
+		}
+
+		$check_date += 86400;
 	}
-
-	if (substr($repeat_freq, 0, 1) == 'c') return true;
-
-	$result = $repeat_freq . ". now = " . date( $repeat_freq ) . " " . $repeat_freq_numbers;
-
-	$repeat_freq = explode( " ", $repeat_freq )[0];
-	$passed = 0;
-	$result      .= "checking " . date( $repeat_freq ) . " " . $repeat_freq_numbers;
-	if ( in_array( date( $repeat_freq ), explode( ",", $repeat_freq_numbers ) ) ) {
-		$passed = 1;
-	}
-
-	return $passed . $result;
+	return "0 " . $result;
 }
 
 function check_query( $query ) {
@@ -472,4 +478,9 @@ function task_table( $task_ids ) {
 
 
 	return gui_table_args( $rows );
+}
+
+function check_missed()
+{
+
 }

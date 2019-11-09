@@ -1,3 +1,144 @@
+Version 2.6.3:
+General:
+- boot: do all needed to connect db, auth user, etc. replaces im_tools, init.php
+- boot-no-login: for cases that login is not possible - running queries, multi-site
+
+Niver:
+- need file. input_data.php (calls sql_table to get data, and inputs to draw html).
+- New gem: GemArray. Gets array and draw it, with button, page, etc.
+- bug fix: table width net set by default. Should be set in many col table.
+- bug fix: mandatory fields.
+- bug fix: multisite - check http  code.
+- add_param: remove `page` from base url.
+- bug fix: url to logout. redirect to page.
+
+Org:
+- new folder to handle company staff.
+- bank was moved here.
+- bug fixes: create invoice from bank line.
+- new: allow to link "external" invoice to bank line.
+
+Routes:
+- try to handle when no address is given.
+- new: add mission.
+- mission folder: change to new stucture.
+
+Fresh:
+- new: account - allow query and pages. Todo: change stucture of files.
+- new multi-get: one entry for site to site calls.
+
+Version 2.6.2:
+Focus:
+- change displayed fields.
+- New: add pri+ and pri-.
+- created tasks - use team instead of owner. Owner would be set when starting to handle the task.
+
+Fresh:
+- create invoice: bug fix - null date is today.
+- gui_select client - auto list.
+- delivery_common - remove functions.
+- Get total orders: bug fixes: add table header and table header.
+- new_order: integration not completed. For now woocommeres new order is used.
+- Orders table is moved to Order.php.
+- orders.js: orders' javascript.
+- Orders-page.
+- Supplies: Create new and import, integration to new coding.
+
+Niver
+- Gui datalist - put data inside options instead of including the id.
+- Greeting is disabled, in default. If shown, allow to logout.
+
+Gem:
+- GemTable: new fields - query, order, page.
+
+Org:
+- Use worker.php to submit worker hours.
+
+Routs:
+- Legacy integration.
+
+Version 2.6.1:
+- Fix: Url of start task is handled in the client and not the in the server.
+- Team management - del.
+- More team functionality.
+- Remove TOOLS_DIR from many files.
+- New: (still buggy) - Add project from new task.
+
+Version 2.6:
+- New: autocomplete. For products.
+- Bug fix: gui_select_product didn't show the product on supplies.
+- New task: Fix bugs in mandatory fields. hide row/col.
+- bug fix: start task.
+- Bug fix: ignore second phase of find_route. need to check preq.
+- Bug fix: new order.
+- Bug fix: create tasks after completing a task (was missing).
+- New: handle tasks by last date. Still need to check c - continuous. Add log file.
+- Fields selected for task and template.
+- Table headers - would be sent from application. Default - sql table names.
+- New: team in focus.
+- New order - for now - woocommerces's.
+- Refactor supply-get to supplies-page, post, Supply.php
+-
+
+
+Version 2.5:
+- New in route:
+ * define preq to control the path.
+ * Supply on the go.
+ * route is saved in database. For now just for the usage of edit path (define order preq).
+- New: drill in tables. For selectors that are index of table (using selector), in non edit mode the value becomes link - to filtered table.
+- To allow labels in summing row - selectors should return text if given.
+- trash table_content.
+- Gem - add second parameter.
+- Org - folder for organization related data.
+- New: Close many supplies at once. Not sure will remain. Supplier delivery notes should be filled in.
+- Task query - the query result will be displayed if no task url.
+- Make mission folder by the standard
+
+Version 2.4.1:
+- Bug fix: create and update templates after the fresh-focus split.
+- New: option to update supplier price from supply. (depend on mapping fix).
+- New: Supply on the go and pickup as prerequisite of point in the route. Need to be checked.
+- Refactor supplies.
+- Grrr. Sum fields doesn't work.
+- New show predicted times on path.
+
+
+Version 2.2.3:
+- complete the semi separation of store and focus.
+- New: javascript action to hide completed/finished/canceled tasks.
+- finish actions gets param. Might cause bugs...
+- Change: hide task creator.
+-
+Version 2.2.1:
+- Unite run and execute.
+- add im_inits in missing places.
+- new: update_version to all hosts.
+
+Version 2.2:
+- sql type starting with $ for meta fields.
+- button: translate text.
+- options.txt: start of documenting sql_table and input options.
+- bug fix: glue url.
+- tasklist - show last entered. mainly for debug.
+- bug fix: operation_arguments the control name won't include row id.
+- bug fix: clean / from _GET
+- focus-page: add roles for show task types and projects.
+- task_ended: recover missing function
+- show_basket merged into show_baskets.
+- bug fix: show bundles ordered.
+- bug fix: add product to order by id.
+- bug fix: im_init in entry.php
+- new: add sick leave.
+- multisite function will use r-multisite. Can be auth by wordpress or by php user/password.
+- bug fix: import supply my not have price.
+
+version mamangement: added minor version handling
+
+database changes:
+tasklist - implementation start task_type for required meta.
+functions: product_price, post_status, working_rate functions for gui_table.
+multisite user/password
 Power store, tasks changes history.
 Version 2.2.3:
 - complete the semi separation of store and focus.

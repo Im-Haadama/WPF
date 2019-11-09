@@ -19,7 +19,7 @@ function cancel_entity(post_operation, table_name, id)
         return;
     }
     let operation = post_operation + "?table_name=" + table_name + "&operation=cancel&id=" + id;
-    operation = operation + operation_arguments(table_name, id);
+    //operation = operation + operation_arguments(table_name, id);
     // alert(operation);
     execute_url(operation, action_back);
 }
@@ -28,13 +28,14 @@ function cancel_entity(post_operation, table_name, id)
 function data_save_new(post_operation, table_name, action)
 {
     let operation = post_operation;
+    let table_id = table_name + "_new";
     if (operation.indexOf('?') === -1) operation+="?dummy=1"; // Make sure this is ?
 
     if (post_operation.indexOf("operation=") === -1)
         operation += '&operation=save_new';
 
     operation += '&table_name=' + table_name;
-    let form_params = get_form_params(table_name, true);
+    let form_params = get_form_params(table_id, true);
     if (! form_params) return;
     operation += form_params;
     // alert(operation);
@@ -44,13 +45,13 @@ function data_save_new(post_operation, table_name, action)
         execute_url(operation, action_back);
 }
 
-function get_form_params(table_name, check_mandatory)
+function get_form_params(table_id, check_mandatory)
 {
-    let table = document.getElementById(table_name);
+    let table = document.getElementById(table_id);
     let params = "";
 
     if (! table || ! table.rows){
-        alert("rows of table " + table_name + " not found");
+        alert("rows of table " + table_id + " not found");
         return false;
     }
     let size = table.rows.length;
@@ -171,7 +172,10 @@ function do_update_list(xmlhttp, obj)
     obj.list.innerHTML = xmlhttp.response;
 }
 
-function show_new(post_file)
+function add_element(element_name, table_name, url)
 {
-    window.location = post_file + "?operation=show_new";
+    let table_id = table_name + "_new";
+    let params = get_form_params(table_id, false);
+    let new_loc = "?operation=show_new_" + element_name + "&next_page=" + encodeURIComponent(url + "&params=" + params);
+    window.location = new_loc;
 }

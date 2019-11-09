@@ -8,10 +8,23 @@ $user_id = get_param("user_id", false, null);
 
 if ($user_id) { show_user($user_id); return; }
 
+//$sql = "select id, display_name, client_last_order_date(id) as 'last order date', client_last_order(id) as 'last order' from wp_users
+//order by 2 asc
+//limit 20";
 
-$sql = "select id, client_displayname(id) as client, client_last_order_date(id) as 'last order date', client_last_order(id) as 'last order' from wp_users
-order by 3 desc
-limit 100";
+$page = get_param("page", false, null);
+$rows_per_page = 20;
+if ($page) {
+	$offset = ($page - 1) * $rows_per_page;
+	$limit = (($page > -1) ? " limit $rows_per_page offset $offset" : "");
+} else
+	$limit = $rows_per_page;
+
+$last_users = sql_query_array_scalar("select distinct meta_value from wp_postmeta where meta_key = '_customer_user'  order by post_id desc limit $limit");
+
+// Default view - customer of last 20 orders.
+//$sql = "select distinct
+$sql = "select id, display_name, client_last_order_date(id) as 'last order date', client_last_order(id) as 'last order' from wp_users where id in (" . comma_implode($last_users) . ")";
 
 $args = array();
 
@@ -20,7 +33,8 @@ $args["links"] = array("id" => "admin.php?user_id=%s",
 	"last_order" => "../orders/get-order.php?order_id=%s");
 
 print GuiTableContent("wp_users", $sql, $args);
-
+if ($page > 1) print gui_hyperlink("Next", add_to_url("page", $page - 1));
+print gui_hyperlink("Next", add_to_url("page", $page ? $page + 1 : 1));
 
 function show_user($user_id)
 {

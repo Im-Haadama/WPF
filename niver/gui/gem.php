@@ -40,8 +40,8 @@ function GemElement($table_name, $row_id, $args)
 	$result .= GuiRowContent($table_name, $row_id, $args);
 
 	if (GetArg($args, "edit", false)) {
-		$result .= gui_button( "btn_save", "data_save_entity('/niver/data/data-post.php', '$table_name', " . $row_id . ')', "שמור" );
-		$result .= gui_button( "btn_cancel", "cancel_entity('/focus/focus-post.php', 'im_task_templates', " . $row_id . ')', "cancel" );
+		$result .= gui_button( "btn_save", "data_save_entity('/niver/data/data-post.php', '$table_name', " . $row_id . ')', "save" );
+		$result .= gui_button( "btn_cancel", "cancel_entity('/niver/data/data-post.php', '$table_name', " . $row_id . ')', "delete" );
 	}
 	return $result;
 }
@@ -69,9 +69,9 @@ function GemArray($rows_data, $args, $table_id)
 		$result .= gui_hyperlink("Previous page", add_to_url("page", $page - 1));
 
 	if ($button_text = GetArg($args, "button_text", "add")){
-		$button_function = GetArg($args, "button_function", "show_new('" . get_url(1) . "')");
+		$button_function = GetArg($args, "button_function", null); // "function () { window.location = $button_target; }
 
-		$result .= gui_button("btn_" . $button_text, $button_function, $button_text);
+		if ($button_function) $result .= gui_button("btn_" . $button_text, $button_function, $button_text);
 	}
 	$result .= gui_hyperlink("search", add_to_url("search", "1"));
 //	$args = array();

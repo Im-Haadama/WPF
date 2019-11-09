@@ -39,8 +39,10 @@ if ($operation){
 			$args["selectors"] = array("part_id" => "gui_select_supplier", "document_type" => "gui_select_document_type");
 			$args["fields"] = array("part_id", "date", "ref", "amount", "net_amount", "document_type");
 			$args["mandatory_fields"] = array("part_id" => 1, "date" => 1, "ref" => 1, "amount" => 1, "document_type" => 1, "net_amount" => 1);
-			print NewRow("im_business_info", $args, true);
-			print gui_button("btn_add", "save_new('im_business_info')", "הוסף");
+			$args["post_file"] = "/niver/data/data-post.php";
+			print GemAddRow("im_business_info", "invoices", $args);
+			// print NewRow("im_business_info", $args, true);
+			// print gui_button("btn_add", "data_save_new('im_business_info')", "הוסף");
 			break;
 		case "null_date":
 			$args = array();
@@ -66,8 +68,9 @@ if ($row_id)
 	$args["transpose"] = true;
 	$args["header_fields"] = array("Id", "Supplier", "Date", "Week", "Amount", "Reference", "Delivery fee", "Project", "Is active", "Pay date", "Document type", "Net amount", "Invoice file", "Invoice",
 		"Occasional supplier");
-	print GuiRowContent("im_business_info", $row_id, $args);
-	print gui_button("btn_save", 'data_save_entity(\'im_business_info\', ' . $row_id .')', "שמור");
+	// print GuiRowContent("im_business_info", $row_id, $args);
+	// print gui_button("btn_save", 'data_save_entity(\'im_business_info\', ' . $row_id .')', "שמור");
+	print GemElement("im_business_info", $row_id, $args);
 
 	return;
 }
@@ -105,7 +108,7 @@ print gui_hyperlink("Add invoice", add_param_to_url(get_url(), array("operation"
 
 try {
 	$t = new \Niver\PivotTable( "im_business_info", $page,
-		"month_with_index(DATE)", "part_id", "net_amount" );
+		"date_format(date, '%m')", "part_id", "net_amount" ); // month_with_index(DATE)
 } catch ( Exception $e ) {
 	print $e->getMessage();
 	die (2);

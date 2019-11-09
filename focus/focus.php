@@ -112,7 +112,7 @@ function focus_check_user()
 	$team_ids = team_all_members($user_id);
 //	var_dump($team_ids);
 	if (! count($team_ids)){
-		team_add($user_id, "Personal team");
+		team_add($user_id, im_translate("Personal team") . " " . get_customer_name($user_id));
 	}
 
 	$project_ids = worker_get_projects($user_id);
@@ -190,14 +190,6 @@ function handle_focus_operation($operation)
 				print "done";
 			break;
 
-		case "cancel":
-			$table_name = get_param("table_name", true);
-			if (! in_array($table_name, $allowed_tables))
-				die ("invalid table operation");
-			if (cancel_data($table_name))
-				print "done";
-			break;
-
 		case "delete_template":
 			$user_id = get_user_id();
 			$id = get_param("row_id", true);
@@ -228,6 +220,24 @@ function handle_focus_operation($operation)
 				return;
 			}
 			if ( strlen( $url ) > 1 ) print $url;
+			break;
+
+		case "add_to_company":
+			$company_id = get_param("company_id", true);
+			$email = get_param("email", true);
+			$name = get_param("name", true);
+			$project_id = get_param("project_id", true);
+			if (company_invite_member($company_id, $email, $name, $project_id))
+				print "done";
+			break;
+
+		case "save_add_member":
+			$member = get_param("member", true);
+			$team_id = get_param("team", true);
+			$current = get_usermeta($member, "teams");
+			if (! $current) $current = ":";
+			update_usermeta($member, "teams", ":" . $team_id . $current); // should be :11:22:3:4:
+			print "done";
 			break;
 
 		default:
@@ -288,6 +298,8 @@ function handle_focus_operation($operation)
 			$args = [];
 			$args["next_page"] = get_param("next_page", false, null);
 			$args["post_file"] = "/niver/data/data-post.php";
+			$args["selectors"] = array("manager" => "gui_select_worker");
+			$args["mandatory_fields"] = array("manager", "team_name");
 			print GemAddRow("im_working_teams", "Add a team", $args);
 			break;
 		case "show_new_task":
@@ -346,7 +358,7 @@ function handle_focus_operation($operation)
 			print gui_button("btn_template", "data_save_new('/focus/focus-post.php', 'im_task_templates')", "add");
 			break;
 
-		case "edit_staff":
+		case "edit_staff": // Teams that I manage
 			print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/niver/data/focus.js" ) );
 			print gui_header(1, "Edit staff");
 			edit_staff();
@@ -361,15 +373,18 @@ function handle_focus_operation($operation)
 			break;
 
 		case "edit_team":
-			// temporary - for existing teams.
 			print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/niver/data/focus.js" ) );
 			$team_id = get_param("id", true);
 			team_add_worker($team_id, team_manager($team_id));
-			print gui_header(1, "Edit Team" . team_get_name($team_id));
-			$args = array("selectors" => array("id" => "gui_select_worker"), "edit" => false);
+			print gui_header(1, "Edit team" . team_get_name($team_id));
+			$args = array("selectors" => array("id" => "gui_select_worker"),
+			              "edit" => false,
+//				array( "cancel", $action_url . "?operation=cancel_task&id=%s;action_hide_row" ),
+
+			              "actions" => array(array("remove", add_to_url(array("operation" => "remove_from_team", "user" => "%s")))));
 			print GuiTableContent("im_working_teams",
 				'select id from wp_users where worker_teams(id) like "%:' . $team_id . ':%"', $args);
-			print gui_hyperlink("add member", get_url() . "?operation=show_add_member&id=$team_id");
+			print gui_hyperlink("add member", add_to_url("operation" , "show_add_member"));
 			break;
 
 		case "show_add_member":
@@ -378,15 +393,19 @@ function handle_focus_operation($operation)
 			print gui_select_worker("new_member");
 			print gui_label("team_id", $team_id, true);
 			print gui_button("btn_add_member", "add_member()", "Add");
+
+			print "<br/>";
+			print gui_hyperlink("Invite college to your company", add_to_url(array("operation"=>"show_add_to_company")));
 			break;
 
-		case "save_add_member":
-			$member = get_param("member", true);
-			$team_id = get_param("team", true);
-			$current = get_usermeta($member, "teans");
-			if (! $current) $current = ":";
-			update_usermeta($member, "teams", ":" . $team_id . $current); // should be :11:22:3:4:
-			print "done";
+		case "show_add_to_company":
+			$company_id = get_param("id", true);
+			print gui_header(2, "Invite to company") . " " . gui_label("company_id", $company_id);
+			print im_translate("Enter college email address: ");
+			print gui_table_args(array(array("email", GuiInput("email", "", $args)),
+				                       array("name", GuiInput("name", "", $args)),
+									   array("project", gui_select_project("project_id", null, $args))));
+			print gui_button("btn_add_to_company", "add_to_company()", "Add");
 			break;
 
 		case "projects":
@@ -414,7 +433,8 @@ function handle_focus_operation($operation)
 			print "done";
 			break;
 
-		case "edit_teams":
+		case "edit_all_teams": // System manager -> edit all teams in the system.
+			if (! im_user_can("edit_teams")) print "No permissions";
 			$args = [];
 			$args["post_file"] = "/niver/data/data-post.php";
 			$args["selectors"] = array("manager" => "gui_select_worker");
@@ -422,10 +442,11 @@ function handle_focus_operation($operation)
 //			print "url = " . get_url() . "<br/>";
 //			print add_to_url(array("operation" => "del_team", "id"=>"%s"));
 
-			$args["actions"] = array(array("delete", $action_url . "?operation=del_team&id=%s;location_reload"));
+			$args["actions"] = array(array("delete", $action_url . "?operation=del_team&id=%s;action_hide_row"));
 			print GemTable("im_working_teams", $args);
 
 			unset($args["actions"]);
+			$args["mandatory_fields"] = array("manager", "team_name");
 			print GemAddRow("im_working_teams", "Add a team", $args);
 			break;
 
@@ -441,6 +462,7 @@ function handle_focus_operation($operation)
 function print_focus_header()
 {
 	$args = arraY("print_logo" => true, "rtl" => is_rtl());
+	$args["greeting"] = true;
 	print HeaderText($args);
 	print load_scripts(array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/focus/focus.js" ));
 }
@@ -484,7 +506,8 @@ function show_templates(&$args, $template_id = 0, $new = null ) {
 
 		print GemElement("im_task_templates", $template_id, $args);
 
-		$tasks_args = array("links" => array("id" => $url . "?row_id=%s"));
+		$tasks_args = array("links" => array("id" => get_url(1) . "?operation=show_task&id=%s"));
+
 		$table = GuiTableContent("last_tasks", "select * from im_tasklist where task_template = " . $template_id .
 		                                       " order by date desc limit 10", $tasks_args);
 		if ($table)
@@ -501,7 +524,7 @@ function show_templates(&$args, $template_id = 0, $new = null ) {
 
 	$query = " 1";
 	foreach ($_GET as $key => $data){
-		if (! in_array($key, array("operation", "table_name", "new")))
+		if (! in_array($key, array("operation", "table_name", "new", "table")))
 			$query .= " and " . $key . '=' . quote_text($data);
 	}
 
@@ -579,16 +602,18 @@ function gui_select_repeat_time( $id, $value, $args) {
 		return $values[$selected];
 }
 
-function edit_staff($url)
+function edit_staff() // Edit teams that I manage.
 {
 	$user = wp_get_current_user();
 	print gui_header(2, "teams");
 
-	$args = array("selectors" => array("manager" => "gui_select_worker"),
-	              "links" => array("id" => $url . "?operation=edit_team&id=%s"));
+	$args = [];
+	$args["links"] = array("id" => add_to_url(array("operation" => "edit_team", "id" => "%s")));
+	$args["selectors"] =  array("manager" => "gui_select_worker");
+	$args["edit"] = false;
 	print GuiTableContent("working_teams", "select * from im_working_teams where manager = " . $user->id, $args);
 
-	print gui_hyperlink("add", $url . "?operation=new_team");
+	print gui_hyperlink("add", add_to_url("operation", "show_new_team"));
 	// print GuiTableContent("");
 }
 
@@ -814,7 +839,14 @@ function focus_main()
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	$url = get_url(1);
-	$result .= gui_hyperlink("Repeating tasks", $url . "?operation=show_templates");
+	$result .= gui_hyperlink("Repeating tasks", $url . "?operation=show_templates") . " ";
+
+	if (team_managed_teams(get_user_id())) // Team manager
+		$result .= gui_hyperlink("My teams", $url . "?operation=edit_staff") . " ";
+
+	if (im_user_can("edit_teams")) // System editor
+		$result .= gui_hyperlink("All teams", $url . "?operation=edit_all_teams") . " ";
+
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Tasks I need to handle (owner = me)                                                                       //
@@ -931,8 +963,6 @@ if (im_user_can("edit_task_types"))
 if (im_user_can("edit_projects"))
 	print gui_hyperlink("task types", $url . "?operation=task_types") . " ";
 
-if (im_user_can("edit_teams"))
-	print gui_hyperlink("edit teams", $url . "?operation=edit_teams") . " ";
 //	$sum     = null;
 
 

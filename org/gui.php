@@ -40,7 +40,7 @@ function gui_select_project($id, $value, $args)
 	$gui              = GuiSelectTable( $id, "im_projects", $args );
 	$form_table = GetArg($args, "form_table", null);
 	if ($form_table and $new_row) { // die(__FUNCTION__ . ":" . " missing form_table");
-		$gui .= gui_button( "add_new_project", "add_project('" . $form_table . "', '" . get_url() . "')", "New Project" );
+		$gui .= gui_button( "add_new_project", "add_element('project', '" . $form_table . "', '" . get_url() . "')", "New Project" );
 	}
 
 	return $gui;
@@ -79,7 +79,7 @@ function gui_select_team($id, $selected = null, $args = null)
 
 	if ($edit) {
 		$gui = GuiSelectTable($id, "im_working_teams", $args);
-		$gui .= gui_button("add_new_team", "add_team('" . $form_table . "', '" .get_url() . "')", "New Team");
+		$gui .= gui_button("add_new_team", "add_element('team', '" . $form_table . "', '" .get_url() . "')", "New Team");
 		return $gui;
 	}
 	else

@@ -12,6 +12,7 @@ function NewRow($table_name, $args)
 	$args['events'] = 'onchange="changed_field(\'%s\')"';
 	$args["add_field_suffix"] = false;
 	$args["new_row"] = true; // Selectors can use that to offer creating of new row. E.g, new project.
+	$args["table_id"] = $table_name . "_new";
 //	$args["skip_id"] =  true;
 //	$args["id_field"] = "ID";
 	if (! isset($args["hide_cols"])) $args["hide_cols"] = [];

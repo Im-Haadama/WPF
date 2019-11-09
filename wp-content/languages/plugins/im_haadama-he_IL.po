@@ -152,7 +152,7 @@ msgid "My Tasks"
 msgstr "המשימות שלי"
 
 msgid "My teams"
-msgstr "משימות של צוותים שלי"
+msgstr "צוותים שלי"
 
 msgid "More"
 msgstr "עוד"

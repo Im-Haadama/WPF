@@ -113,6 +113,7 @@ switch ( $operation ) {
 		break;
 
 	case "add_user":
+	case "legacy_user":
 		// print "adding user";
 		$user    = $_GET["user"];
 		$name    = urldecode( $_GET["name"] );
@@ -121,8 +122,12 @@ switch ( $operation ) {
 		$city    = urldecode( $_GET["city"] );
 		$phone   = $_GET["phone"];
 		$zip     = $_GET["zip"];
-		add_im_user( $user, $name, $email, $address, $city, $phone, $zip );
-		break;
+		$id = add_im_user( $user, $name, $email, $address, $city, $phone, $zip );
+
+		if ($operation == "legacy_user")
+			update_user_meta( $id, 'legacy_user', 2 );
+		print "done";
+	break;
 
 	case "table":
 		$customer_id = get_param("customer_id", true);
@@ -198,62 +203,6 @@ function create_invoice( $ids, $user_id ) {
 	}
 }
 
-
-function add_im_user( $user, $name, $email, $address, $city, $phone, $zip ) {
-
-	if ( strlen( $email ) < 1 ) {
-		$email = randomPassword() . "@aglamaz.com";
-	}
-
-
-	if ( $user == "אוטומטי" or strlen( $user ) < 5 ) {
-		$user = substr( $email, 0, 8 );
-		print "user: " . $user . "<br/>";
-	}
-
-	print "email: " . $email . "<br/>";
-	print "user: " . $user . "<br/>";
-
-	$id = wp_create_user( $user, randomPassword(), $email );
-	if ( ! is_numeric( $id ) ) {
-		print "לא מצליח להגדיר יוזר";
-		var_dump( $id );
-
-		return;
-	}
-	$name_part = explode( " ", $name );
-	update_user_meta( $id, 'first_name', $name_part[0] );
-	update_user_meta( $id, 'shipping_first_name', $name_part[0] );
-	unset( $name_part[0] );
-	update_user_meta( $id, 'billing_address_1', $address );
-	update_user_meta( $id, 'billing_city', $city );
-
-	update_user_meta( $id, 'last_name', implode( " ", $name_part ) );
-	update_user_meta( $id, 'shipping_last_name', implode( " ", $name_part ) );
-	update_user_meta( $id, 'billing_phone', $phone );
-	update_user_meta( $id, 'billing_postcode', $zip );
-
-	update_user_meta( $id, 'shipping_address_1', $address );
-	update_user_meta( $id, 'shipping_postcode', $zip );
-	update_user_meta( $id, 'shipping_city', $city );
-	update_user_meta( $id, 'legacy_user', 2 );
-
-	im_set_default_display_name( $id);
-	print "משתמש התווסף בהצלחה";
-
-}
-
-function randomPassword() {
-	$alphabet    = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
-	$pass        = array(); //remember to declare $pass as an array
-	$alphaLength = strlen( $alphabet ) - 1; //put the length -1 in cache
-	for ( $i = 0; $i < 8; $i ++ ) {
-		$n      = rand( 0, $alphaLength );
-		$pass[] = $alphabet[ $n ];
-	}
-
-	return implode( $pass ); //turn the array into a string
-}
 
 // $current_user = 0;
 

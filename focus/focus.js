@@ -9,7 +9,7 @@ function add_member()
 {
     let member = get_value_by_name("new_member");
     let team = get_value_by_name("team_id");
-    execute_url("admin-post.php?operation=save_add_member&member=" + member + "&team=" + team, check_update);
+    execute_url("/focus/focus-post.php?operation=save_add_member&member=" + member + "&team=" + team, action_back);
 }
 
 function addSequenceTask(current)
@@ -52,16 +52,18 @@ function show_project(xmlhttp)
     alert (xmlhttp.response);
 }
 
-function add_team(table_name, url)
-{
-    let params = get_form_params(table_name, false);
-    let new_loc = "?operation=show_new_team&next_page=" + encodeURIComponent(url + "&params=" + params);
-    window.location = new_loc;
-}
-
 function add_project(table_name, url)
 {
     let params = get_form_params(table_name, false);
     let new_loc = "?operation=show_new_project&next_page=" + encodeURIComponent(url + "&params=" + params);
     window.location = new_loc;
+}
+
+function add_to_company() {
+    let email = get_value_by_name("email");
+    let name = get_value_by_name("name");
+    let company_id = get_value_by_name("company_id");
+    let project_id = get_value_by_name("project_id");
+    execute_url("/focus/focus-post.php?operation=add_to_company&email=" + encodeURI(email) + '&company_id=' + company_id
+        + '&name=' + encodeURI(name) + '&project_id=' + project_id, action_back);
 }

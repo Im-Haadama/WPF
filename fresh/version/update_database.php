@@ -79,6 +79,48 @@ die ( 0 );
 
 function version26()
 {
+	print gui_header(1, "worker_teams");
+	sql_query("drop function worker_teams");
+	sql_query("CREATE FUNCTION 	worker_teams(_user_id int)
+	 RETURNS TEXT
+BEGIN
+	declare _result longtext;
+	select meta_value into _result
+	from wp_usermeta
+	where meta_key = 'teams' 
+	and user_id = _user_id;
+	
+	return _result;	   
+END;"
+	);
+
+
+print gui_header(1, "month_with_index");
+	sql_query("drop function month_with_index;");
+	sql_query("CREATE FUNCTION month_with_index(_date date) RETURNS VARCHAR(20) 
+	BEGIN
+		declare _name varchar(20);
+		declare _index varchar(20);
+		select month(_date) into _index;
+		select date_format(_date, '%m') into _index;
+		return con1`t(_index, ' ', _name);
+	END;
+	
+		
+	");
+
+	sql_query("drop function month_with_index;");
+	sql_query("CREATE FUNCTION month_with_index(_date date) RETURNS VARCHAR(20) 
+	BEGIN
+		declare _name varchar(20);
+		declare _index varchar(20);
+		select month(_date) into _index;
+		select monthname(_date) into _name;
+		return concat(_index, ' ', _name);
+	END;
+		
+		
+	");
 
 	print gui_header(1, "task_template team");
 	sql_query("ALTER TABLE im_task_templates ADD team int not null default 1;");
@@ -282,7 +324,7 @@ function version20()
 	sql_query("CREATE FUNCTION 	worker_teams(_user_id int)
 	 RETURNS TEXT
 BEGIN
-	declare _result varchar(200);
+	declare _result longtext;
 	select meta_value into _result
 	from wp_usermeta
 	where meta_key = 'teams' 

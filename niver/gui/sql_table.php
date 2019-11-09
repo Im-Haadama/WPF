@@ -228,6 +228,8 @@ function PrepareRow($row, $args, $row_id)
 		do {
 //			var_dump($links);
 			//print "key=$key " . $links[$key] . "<br/>";
+			if ($links and ! is_array($links))
+				die ("links should be array");
 			if ( $links and  array_key_exists( $key, $links )) {
 				if ($debug) print "Has links for $key";
 				if ( $selectors and array_key_exists( $key, $selectors ) ) {
@@ -640,6 +642,7 @@ function GuiRowContent($table_name, $row_id, $args)
 {
 	$id_key = GetArg($args, "id_key", "id");
 	$fields = GetArg($args, "fields", null);
+	$table_id = GetArg($args, "table_id", $table_name);
 
 	if (! isset($args["skip_id"]))	$args["skip_id"] = true;
 
@@ -661,7 +664,7 @@ function GuiRowContent($table_name, $row_id, $args)
 		else
 			$sql = "describe $table_name";
 	}
-	return GuiTableContent($table_name, $sql, $args);
+	return GuiTableContent($table_id, $sql, $args);
 }
 
 /**

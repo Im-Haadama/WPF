@@ -167,6 +167,7 @@ function sql_bind($table_name, &$stmt, $_values)
 				break;
 			case "dat":
 				$types .= "s";
+				$_values[$key] = date('Y/m/d', strtotime($_values[$key]));
 				break;
 			case "dou":
 			case "flo":

@@ -21,6 +21,13 @@ function worker_get_companies($user_id)
 	return $result;
 }
 
+function worker_add_company($user_id, $company_id, $project_id)
+{
+	$current = worker_get_companies($user_id);
+	if (in_array($user_id, $current)) return true; // already in.
+	return sql_query("insert into im_working (company_id, is_active, user_id, project_id, rate) values ($company_id, 1, $user_id, $project_id, 0)");
+}
+
 /**
  * @param $user_id
  *
@@ -51,28 +58,21 @@ function worker_is_global_company($user_id)
 	return sql_query_single_scalar("select company_id from im_working where user_id = " . $user_id . " and project_id = 0");
 }
 
+///////////////////////
+/// Team functions. ///
+///////////////////////
+
+
 /**
  * @param $team_id
  *
  * @return array|string
  * @throws Exception
  */
-function team_members($team_id)
-{
-	$sql = "select distinct user_id from im_working where worker_teams(user_id) like '%:" . $team_id . ":%'";
-	return sql_query_array_scalar($sql);
-}
-
-/**
- * @param $user_id
- *
- * @return array|string
- * @throws Exception
- */
-function team_all_members($user_id)
+function team_all_members($team_id)
 {
 	// return sql_query_array_scalar("select id from im_working_teams where manager = " . $user_id);
-	return sql_query_array_scalar("select user_id from wp_usermeta where meta_key = 'teams' and meta_value like '%:" . $user_id . ":%'");
+	return sql_query_array_scalar("select user_id from wp_usermeta where meta_key = 'teams' and meta_value like '%:" . $team_id . ":%'");
 //	if (! $teams) return null;
 //	$temp_result = array();
 //	// Change to associative to have each member just once.
@@ -133,7 +133,8 @@ function team_manager($team_id)
  */
 function team_managed_teams($worker_id)
 {
-	return sql_query_array_scalar("select id from im_working_teams where manager = " . $worker_id);
+	$result = sql_query_array_scalar("select id from im_working_teams where manager = " . $worker_id);
+	if (! $result) team_add($worker_id, "");
 }
 
 /**
@@ -163,7 +164,7 @@ function team_delete($team_id)
 		// Todo: audit
 		return false;
 	}
-	$members = team_members($team_id);
+	$members = team_all_members($team_id);
 //	print "members: "; var_dump($members); print "<br/>";
 	foreach ($members as $member) team_remove_member($team_id, $member);
 	sql_query("delete from im_working_teams where id = " . $team_id);
@@ -190,3 +191,23 @@ function team_remove_member($team_id, $member)
 	update_usermeta($member, 'teams', $current . ":" . $team_id . ":");
 
 }
+
+function company_invite_member($company_id, $email,  $name, $project_id)
+{
+	if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+		print "Invalid email format";
+		return false;
+	}
+	$user = get_user_by( "email", $email );
+	$user_id = $user->ID;
+
+	if (! $user_id) $user_id = add_im_user("", $name, $email);
+
+	if ($user_id > 0) {
+		worker_add_company($user_id, $company_id, $project_id);
+		return true;
+	}
+	return false;
+
+}
+

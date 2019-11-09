@@ -104,7 +104,7 @@ function cancel_data($table_name)
 
 function data_save_new($table_name)
 {
-	global $ignore_list;
+	$ignore_list = ["dummy", "operation", "table_name"];
 	$sql    = "INSERT INTO $table_name (";
 	$values = "values (";
 	$first  = true;
@@ -189,11 +189,18 @@ function data_search($table_name, $args = null)
 function handle_data_operation($operation)
 {
 	// TODO: register allowed tables by config or something
-	$allowed_tables = array("im_company", "im_tasklist", "im_task_templates", "im_working_teams", "im_projects", "im_bank_transaction_types");
+	$allowed_tables = array("im_company", "im_tasklist", "im_task_templates", "im_working_teams", "im_projects", "im_bank_transaction_types", "im_business_info");
 
 	$debug = 0;
 	if ($debug)	print "operation: " . $operation . "<br/>";
 	switch ($operation){
+		case "cancel":
+			$table_name = get_param("table_name", true);
+			if (! in_array($table_name, $allowed_tables))
+				die ("invalid table operation");
+			if (cancel_data($table_name))
+				print "done";
+			break;
 		case "save_new":
 			init();
 			$table_name = get_param("table_name", true);
