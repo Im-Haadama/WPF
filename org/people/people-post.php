@@ -27,12 +27,12 @@ switch ( $operation ) {
 		$customer_id = get_param( "customer_id" );
 		$date        = $_GET["date"];
 		print balance( $date, $customer_id );
-		break;
+		return;
 	case "get_balance_email":
 		$email = get_param( "email" );
 		$date  = $_GET["date"];
 		print balance_email( $date, $email );
-		break;
+		return;
 
 	case "add_sick_leave":
 		$date      = $_GET["date"];
@@ -59,7 +59,7 @@ switch ( $operation ) {
 		if ( $result ) {
 			print $result;
 		}
-		break;
+		return;
 
 	case "add_time":
 		$start     = $_GET["start"];
@@ -94,7 +94,7 @@ switch ( $operation ) {
 		if ( $result ) {
 			print $result;
 		}
-		break;
+		return;
 
 	case "show_all":
 		print header_text(true);
@@ -108,6 +108,7 @@ switch ( $operation ) {
 		$wp_user = get_user_by( 'id', get_user_id() );
 		$roles = $wp_user->roles;
 		if ( isset( $roles ) and count( array_intersect( array( "hr" ), $roles ) ) >= 1 ) {
+			$args["show_salary"] = 1;
 			show_all( $month, $args );
 		} else {	$a = explode( "-", $month );
 			$y = $a[0];
@@ -115,7 +116,7 @@ switch ( $operation ) {
 			print print_transactions( get_user_id(), $m, $y, $args);
 		}
 
-		break;
+		return;
 	case "delete":
 		// $params = explode(',', $_GET["params"]);
 		$sql = "DELETE FROM im_working_hours WHERE id IN (" . $_GET["params"] . ")";
@@ -123,10 +124,26 @@ switch ( $operation ) {
 		$result = sql_query($sql );
 		// var_dump($result);
 		print "done delete";
+		return;
+}
+
+$result = "";
+switch($operation)
+{
+	case "edit_worker":
+		$id = get_param("id", true);
+		$result = gui_header(1, "Worker info") . get_user_name($id);
+		$args = [];
+		$args["id_field"] = "id";
+		$args["query"] = "is_active = 1 and user_id = $id";
+		$args["hide_cols"] = array("is_active" => 1, "volunteer" => 1);
+		// $args["selectors"] = array("company_id" =>)
+		$result .= GemTable("im_working",$args);
 		break;
 
 	default:
 		print "bad usage 2";
 		die( 2 );
-
 }
+print HeaderText();
+print $result;

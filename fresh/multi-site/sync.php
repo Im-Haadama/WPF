@@ -19,7 +19,7 @@ require_once( ROOT_DIR . "/fresh/multi-site/imMulti-site.php" );
 
 
 function sync_from_master($debug) {
-	print header_text( false, true, true );
+	// print header_text( false, true, true );
 
 	$i = new ImMultiSite();
 	if ( $i->isMaster() ) {

@@ -41,7 +41,8 @@ function load_scripts($script_file = false )
 			}
 			if ( is_array( $script_file ) ) {
 				foreach ( $script_file as $file ) {
-					$text .= '<script type="text/javascript" src="' . $file . '"></script>';
+					if (strstr($file, 'php')) $text .= curl_get($file);
+					else $text .= '<script type="text/javascript" src="' . $file . '"></script>';
 				}
 				break;
 			}
@@ -75,7 +76,9 @@ function HeaderText($args = null)
 	$close_header = GetArg($args, "close_header", true);
 	$greeting = GetArg($args, "greeting", false);
 
-	$text = '<html';
+	$text = "";
+
+	$text .= '<html';
 	if ( $rtl ) {
 		$text .= ' dir="rtl"';
 	}
@@ -104,7 +107,8 @@ function HeaderText($args = null)
 		$text .= gui_table_args($table, "header", $args);
 	}
 
-	return $text;
+	if (gui_type() == "html") return $text;
+	return strip_tags($text);
 }
 
 function header_text( $print_logo = true, $close_header = true, $rtl = true, $script_file = false ) {
@@ -596,31 +600,37 @@ function encodeURIComponent($str) {
 	return strtr(rawurlencode($str), $revert);
 }
 
+function reconnect_db($tz = null)
+{
+	if (! defined("DB_HOST")) throw new Exception("DB configuration error = host");
+	if (! defined ("DB_USER")) throw new Exception("DB configuration error = user");
+	if (! defined ("DB_PASSWORD")) throw new Exception("DB configuration error = password");
+	if (! defined ("DB_NAME")) throw new Exception("DB configuration error = name");
+	// print "connecting" . __LINE__ . "<br/>";
+
+	$conn = new mysqli( DB_HOST, DB_USER, DB_PASSWORD, DB_NAME );
+	get_sql_conn($conn);
+	sql_set_time_offset();
+	// print IM_CHARSET;
+	$charset = 'utf8';
+	if (defined('IM_CHARSET')) $charset = IM_CHARSET;
+	if (! mysqli_set_charset( $conn, $charset )){
+		my_log("encoding setting failed");
+		die("encoding setting failed");
+	}
+	// Local and international staff...
+	// Todo: get it from user profile
+	if ($tz) date_default_timezone_set( $tz );
+
+	return $conn;
+}
+
 function boot_no_login($plugin_name, $textdomain, $tz = "Asia/Jerusalem")
 {
 	$conn = get_sql_conn();
 
 	if (! $conn){
-		if (! defined("DB_HOST")) throw new Exception("DB configuration error = host");
-		if (! defined ("DB_USER")) throw new Exception("DB configuration error = user");
-		if (! defined ("DB_PASSWORD")) throw new Exception("DB configuration error = password");
-		if (! defined ("DB_NAME")) throw new Exception("DB configuration error = name");
-		// print "connecting" . __LINE__ . "<br/>";
-
-		$conn = new mysqli( DB_HOST, DB_USER, DB_PASSWORD, DB_NAME );
-		get_sql_conn($conn);
-		sql_set_time_offset();
-		// print IM_CHARSET;
-		$charset = 'utf8';
-		if (defined('IM_CHARSET')) $charset = IM_CHARSET;
-		if (! mysqli_set_charset( $conn, $charset )){
-			my_log("encoding setting failed");
-			die("encoding setting failed");
-		}
-		// Local and international staff...
-		// Todo: get it from user profile
-		date_default_timezone_set( $tz );
-
+		$conn = reconnect_db($tz);
 		$locale = get_locale();
 		if ($locale != 'en_US'){
 //			$mofile = ROOT_DIR . '/wp-content/languages/plugins/im_haadama-' . $locale . '.mo';
@@ -659,4 +669,15 @@ function randomPassword() {
 	}
 
 	return implode( $pass ); //turn the array into a string
+}
+
+function curl_get( $url ) {
+	$handle = curl_init();
+	curl_setopt( $handle, CURLOPT_URL, $url );
+	curl_setopt( $handle, CURLOPT_RETURNTRANSFER, true );
+
+	$data = curl_exec( $handle );
+	curl_close( $handle );
+
+	return $data;
 }

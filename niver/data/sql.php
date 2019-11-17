@@ -83,7 +83,6 @@ function sql_type( $table, $field ) {
 	if (substr($field, 0, 1) == "$")
 		return 'varchar';
 
-
 	if (! $table)
 		throw new Exception("No table given");
 
@@ -240,7 +239,7 @@ function sql_query( $sql, $report_error = true ) {
 		if ( $micro_delta > 0.1 ) {
 			$report = sql_trace();
 			$report .= "long executing: " . $sql . " " . $micro_delta . "<br>";
-			my_log($report, "sql performace");
+			my_log($report, "sql performance", "sql_performance" . date('m-j'));
 		}
 		return $result;
 	}
@@ -493,8 +492,12 @@ function sql_set_time_offset()
  */
 function sql_table_id($table_name)
 {
+	// Performance issues. For now hardcoded used tables.
+	$cache = array ("im_tasklist" => "id", "im_working_teams" => "id", "im_task_templates" => "id");
+	if (isset($cache[$table_name])) return $cache[$table_name];
+
 	return sql_query_single_scalar("SELECT COLUMN_NAME 
-FROM information_schema.KEY_COLUMN_USAGE 
-WHERE TABLE_NAME = '$table_name' 
-  AND CONSTRAINT_NAME = 'PRIMARY'");
+		FROM information_schema.KEY_COLUMN_USAGE 
+		WHERE TABLE_NAME = '$table_name' 
+		  AND CONSTRAINT_NAME = 'PRIMARY'");
 }

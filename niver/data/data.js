@@ -18,7 +18,7 @@ function cancel_entity(post_operation, table_name, id)
         alert ("invalid id: " . id);
         return;
     }
-    let operation = post_operation + "?table_name=" + table_name + "&operation=cancel&id=" + id;
+    let operation = post_operation + "?table_name=" + table_name + "&operation=cancel_" + table_name + "&id=" + id;
     //operation = operation + operation_arguments(table_name, id);
     // alert(operation);
     execute_url(operation, action_back);
@@ -29,10 +29,10 @@ function data_save_new(post_operation, table_name, action)
 {
     let operation = post_operation;
     let table_id = table_name + "_new";
-    if (operation.indexOf('?') === -1) operation+="?dummy=1"; // Make sure this is ?
+    let glue = '?';
+    if (operation.indexOf('?') !== -1) glue = '&';
 
-    if (post_operation.indexOf("operation=") === -1)
-        operation += '&operation=save_new';
+    if (post_operation.indexOf("operation=") === -1) operation += glue + 'operation=save_new';
 
     operation += '&table_name=' + table_name;
     let form_params = get_form_params(table_id, true);
@@ -178,4 +178,12 @@ function add_element(element_name, table_name, url)
     let params = get_form_params(table_id, false);
     let new_loc = "?operation=show_new_" + element_name + "&next_page=" + encodeURIComponent(url + "&params=" + params);
     window.location = new_loc;
+}
+
+function delete_items(collection_name, post_file)
+{
+    let ids = get_selected(collection_name);
+    let type = collection_name.substr(9); // Remove checkbox_
+    let url = post_file + "?operation=delete&type=" + type + "&ids=" + ids;
+    execute_url(url, location_reload);
 }

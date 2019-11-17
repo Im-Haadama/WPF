@@ -208,7 +208,6 @@ class Supply {
 				}
 				// print "prod_id: " . $prod_id . " q= " . $quantity_idx . " price = " . $price . "<br/>";
 				$Supply->AddLine( $prod_id, $quantity, $price );
-				// supply_add_line($id, $prod_id, $quantity, $price);
 			}
 
 			print " Supply " . gui_hyperlink($Supply->getID(), "/fresh/supplies/supplies-post.php?id=" . $Supply->getID() . " created <br/>");
@@ -224,7 +223,8 @@ class Supply {
 		return sql_query_single_scalar("select product_id from im_supplies_lines where id = " . $line_id);
 	}
 
-	public static function CreateSupply( $supplier_id, $date ) {
+	public static function CreateSupply( $supplier_id, $date = null ) {
+		if (!$date) $date = date('y-m-d');
 		$sid = create_supply( $supplier_id, $date );
 
 		return new Supply( $sid );
@@ -947,7 +947,7 @@ WHERE status = 1 AND supply_id IN (" . $supply_id . ", " . rtrim( implode( ",", 
 }
 
 function SuppliesTable( $status, $args = null ) {
-	$status_name = gui_select_supply_status(null, $status);
+
 	switch ($status)
 	{
 		case SupplyStatus::NewSupply:
@@ -962,8 +962,9 @@ function SuppliesTable( $status, $args = null ) {
 			break;
 
 		default:
-			$sql = "SELECT id, supplier, date(date), mission_id FROM im_supplies WHERE status = $status " .
+			$sql = "SELECT id, supplier, date(date) FROM im_supplies WHERE status = $status " .
 			       " ORDER BY 3 desc";
+			$args["drill"] = true;
 	}
 
 	$args["sql"] = $sql;
@@ -973,6 +974,7 @@ function SuppliesTable( $status, $args = null ) {
 	$args["links"] = array("id" => add_to_url(array("operation" =>"show", "id" => "%s")));
 	$args["checkbox_class"] = gui_select_supply_status(null, $status);
 	$args["edit"] = false;
+	//
 
 	$result = GemTable("im_supplies", $args);
 	if (! $result) return null;
@@ -1390,34 +1392,11 @@ function handle_supplies_operation($operation)
 			break;
 
 		case "add_item":
-			// print "add_line<br/>";
-			$prod_id = $_GET["prod_id"];
-			// print $name . "<br/>";
-			if ( ! $prod_id > 0 ) {
-				die ( "no product id" );
-			}
-			$q = $_GET["quantity"];
-			// print $q . "<br/>";
-			if ( ! is_numeric( $q ) ) {
-				die ( "no quantity" );
-			}
-			$supply_id = $_GET["supply_id"];
-//			print "supply id = " . $supply_id . "<br/>";
-			if ( ! is_numeric( $supply_id ) ) {
-				die ( "no supply_id" );
-			}
-			// $prod_id = get_product_id_by_name( $name );
-			// print "name = " . $name . ", prod_id = " . $prod_id . "<br/>";
-
-//			if ( ! is_numeric( $prod_id ) ) {
-//				die ( "no prod_id for " . $name . "<br/>" );
-//			}
+			$prod_id = get_param("prod_id", true);
+			$q = get_param("quantity", true);
+			$supply_id = get_param("supply_id", true);
 			$supply = new Supply( $supply_id );
-			// var_dump($supply);
-//			print "prod id=" . $prod_id . '<br/>';
-//			print 'supplier id=' . $supply->getSupplier() . "<br/>";
 			$price = get_buy_price( $prod_id, $supply->getSupplier() );
-//			print "price: " . $price . '<br/>';
 			if (supply_add_line( $supply_id, $prod_id, $q, $price ))
 				print "done";
 			break;
@@ -1459,6 +1438,12 @@ function handle_supplies_operation($operation)
 		case "new_supply":
 			print new_supply();
 			break;
+
+		case "show_archive":
+			$args = [];
+			$args["drill"] = true;
+			print SuppliesTable( SupplyStatus::Supplied, $args );
+			break;
 			
 		default:
 			print $operation . " not handled <br/>";
@@ -1477,19 +1462,19 @@ function get_supply($id)
 	switch ($supply->getStatus())
 	{
 		case SupplyStatus::NewSupply:
-			$footer .= gui_button( "btn_add_line", "add_item()", "add" );
+			$footer .= gui_button( "btn_add_line", "supply_add_item(" . $id . ")", "add" );
 			$footer .= gui_select_product( "itm_" );
 			$footer .= gui_button("btn_del", "deleteItems()", "delete lines");
 			$footer .= gui_button("btn_update", "updateItems()", "update items");
 
-			$footer .= supplier_doc();
+			$footer .= "<br/>" . supplier_doc();
 			break;
 
 		case SupplyStatus::Sent:
-			$invoice_text =  '   <div class="tooltip">' . gui_checkbox( "is_invoice", "" ) .
+			$invoice_text =  '<br/>   <div class="tooltip">' . gui_checkbox( "is_invoice", "" ) .
 			                 '<span class="tooltiptext">יש לסמן עבור חשבונית ולהשאיר לא מסומן עבור תעודת משלוח</span> </div>';
 
-			$footer .= gui_button( "btn_add_line", "add_item()", "הוסף" );
+			$footer .= gui_button( "btn_add_line", "supply_add_item()", "הוסף" );
 			$footer .= gui_select_product( "itm_" );
 			$footer .= gui_button("btn_update", "updateItems()", "update");
 
@@ -1520,12 +1505,13 @@ function get_supply($id)
 	print $supply->Html($internal, $edit);
 	print $footer;
 
+	// print gui_button("btn_delete", "delete_supply(" . $id . ")", "delete");
+
 	return;
 }
 
 function supplier_doc()
 {
-	print "<br/>";
 
 	$data = '<div class="tooltip">' . im_translate("invoice") . gui_checkbox( "is_invoice", "" );
 	$data .= '<span class="tooltiptext">' . im_translate("Check for invoice, and leave uncheck for delivery note") . '</span></div>'; // יש לסמן עבור חשבונית ולהשאיר לא מסומן עבור תעודת משלוח

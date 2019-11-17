@@ -43,3 +43,12 @@ sql_query( "CREATE TABLE `nv_conversion` (
 //) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;");
 
 print "done";
+
+// delivery_receipt
+//BEGIN
+//    declare _receipt varchar(50) CHARSET utf8;
+//    select payment_receipt into _receipt from im_delivery
+//    where id = ref;
+//
+//    return _receipt;
+//  END

@@ -187,6 +187,8 @@ class Catalog {
 	}
 
 	static function UpdateProduct( $prod_id, &$line, $details = false ) {
+		$debug_product = 0;
+
 		$P = new Product( $prod_id );
 		if ( ! ( $prod_id > 0 ) ) {
 			print __METHOD__ . " bad prod_id: " . $prod_id . "<br/>";
@@ -194,8 +196,6 @@ class Catalog {
 		}
 		$line = "<tr>";
 		my_log( "update $prod_id" );
-		global $debug_product;
-		$debug_product = 313;
 		global $debug;
 		if ( $prod_id == $debug_product ) {
 			$print_line = true;
@@ -206,7 +206,7 @@ class Catalog {
 		// Current infoAd
 		$current_supplier_name = get_meta_field( $prod_id, "supplier_name" );
 		$current_price         = get_price( $prod_id );
-		if ( $prod_id == 3518 ) {
+		if ( $prod_id == $debug_product ) {
 			print "CP = " . $current_price . "<br/>";
 		}
 		$line .= gui_cell( $prod_id );

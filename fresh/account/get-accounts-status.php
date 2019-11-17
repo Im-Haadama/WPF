@@ -72,8 +72,6 @@ $sql = 'select round(sum(ia.transaction_amount),2), ia.client_id, wu.display_nam
        . ' group by client_id '
        . ' order by 5 desc';
 
-debug_var($sql);
-
 $result = sql_query($sql);
 
 $data = "<table>";

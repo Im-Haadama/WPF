@@ -67,3 +67,12 @@ function add_to_company() {
     execute_url("/focus/focus-post.php?operation=add_to_company&email=" + encodeURI(email) + '&company_id=' + company_id
         + '&name=' + encodeURI(name) + '&project_id=' + project_id, action_back);
 }
+
+function add_team_member(team_id)
+{
+    let new_member = get_value_by_name("new_member");
+    let operation = "/focus/focus-post.php?operation=add_team_member&team_id=" + team_id +
+        "&new_member=" + new_member;
+
+    execute_url(operation, location_reload);
+}

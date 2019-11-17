@@ -55,13 +55,14 @@
 
     </script>
 	<?php
-	$user    = new WP_User( $user_ID );
+
+	$user    =  get_user_id();
+	print "XXXX". $user;
 	$manager = false;
 	if ( ! empty( $user->roles ) && is_array( $user->roles ) ) {
 		foreach ( $user->roles as $role ) {
 			if ( $role == 'administrator' or $role == 'shop_manager' ) {
 				$manager = true;
-
 			}
 		}
 	}

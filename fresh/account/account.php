@@ -129,7 +129,7 @@ function show_trans( $customer_id, $view = eTransview::default, $args ) {
 			break;
 	}
 	$sql = 'select id, date,
-	 transaction_amount,
+	 round(transaction_amount, 2) as transaction_amount,
 	  client_balance(client_id, date) as balance,
 	   transaction_method,
 	    transaction_ref, 
@@ -159,6 +159,7 @@ function show_trans( $customer_id, $view = eTransview::default, $args ) {
 	$args["page"] = $page;
 	$first = true;
 
+	$args["page"] = -1;// all rows
 	$data1 = TableData($sql, $args);
 
 	if (! $data1) {

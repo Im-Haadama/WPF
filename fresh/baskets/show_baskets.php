@@ -13,10 +13,40 @@ require_once( "../catalog/catalog.php" );
 
 <?php
 
+$operation = get_param("operation", false);
+if ($operation) {
+	if (handle_basket_operation($operation)) print "done";
+	return;
+}
+
 	print header_text( true );
+	print load_scripts(array("/niver/data/data.js", "/niver/gui/client_tools.js"));
+
+?>
+<script>
+    function add_to_basket(basket_id)
+    {
+        let prod_id = get_value_by_name("new_product");
+        execute_url('show_baskets.php?operation=add_to_basket&basket_id=' + basket_id + '&new_product=' + prod_id, location_reload);
+    }
+</script>
+<?
 
 $basket_id = get_param("basket_id", false, 0);
 
+
+function handle_basket_operation($operation)
+{
+    switch ($operation)
+    {
+        case "add_to_basket":
+        $basket_id = get_param("basket_id", true);
+        $new_product = get_param("new_product", true);
+        $sql = 'INSERT INTO im_baskets (basket_id, date, product_id, quantity) VALUES (' . $basket_id . ", '" . date( 'Y/m/d' ) . "', " .
+	               $new_product . ", " . 1 . ')';
+        if (sql_query($sql)) return true;
+    }
+}
 if ( $basket_id > 0 ) {
 	print_basket( $basket_id );
 	return;
@@ -100,17 +130,30 @@ print "<br/>";
 print "השתדללו להקדים הזמנותיכם, ולא יאוחר מיום שני בשעה 18 ";
 print " באתר - http://store.im-haadama.co.il או בהודעה חוזרת.";
 
-
 function print_basket( $basket_id ) {
-	$sql = 'SELECT DISTINCT product_id, quantity, product_price(product_id), quantity * product_price(product_id) FROM im_baskets WHERE basket_id = ' . $basket_id .
+	$sql = 'SELECT DISTINCT product_id, quantity, product_price(product_id) as price, quantity * product_price(product_id) as line_price FROM im_baskets WHERE basket_id = ' . $basket_id .
            " and post_status(product_id) like '%pub%'";
 
 	$args["id_field"] = "product_id";
 	$args["selectors"] = array("product_id" => "gui_select_product");
 	$args["header_fields"] = array("Product", "Quantity", "Price", "Line total");
+	$args["add_checkbox"] = true;
 	// $args["sum_fields"] = array("quantity" => array(0, "sum_numbers"));
 
-	print GuiTableContent("basket_content", $sql, $args);
+    $total = 0;
+    $basket_content = TableData($sql, $args);
+    foreach($basket_content as &$row) {
+        if (is_numeric($row["line_price"])) $total += $row["line_price"];
+    }
+
+    array_push($basket_content, array("product_id" => im_translate("Total"), "price" => "", "quantity" => "", "line_price" => $total));
+
+    print gui_table_args($basket_content, "basket_contents", $args);
+
+    print gui_select_product("new_product");
+
+    print gui_button("add_product", "add_to_basket(" . $basket_id . ")", "add");
+
 
 	$sql = 'SELECT DISTINCT product_id FROM im_baskets WHERE basket_id = ' . $basket_id .
 	       " and post_status(product_id) like '%draft%'";
@@ -118,9 +161,10 @@ function print_basket( $basket_id ) {
 	// print $sql;
     $result = sql_query_array_scalar($sql);
     if ($result){
-	    print gui_header(1, "Not available:");
+	    print gui_header(1, "Not available, and removed:");
         foreach ($result as $prod_id){
             print get_product_name($prod_id) . "<br/>";
+            sql_query("delete from im_baskets where product_id = " . $prod_id);
         }
     }
 	return;

@@ -1,0 +1,8 @@
+#!/bin/bash
+DB=$1
+BACKUP_FILE=$HOME/db_backup/$DB"-"`date '+%Y-%m-%d'`.sql > $HOME/db_backup/log
+# BACKUP_FILE=$HOME/db_backup/$DB.sql
+# echo Create $BACKUP_FILE ...
+mysqldump --defaults-extra-file=$HOME/db_backup/.$DB $DB > $BACKUP_FILE
+# echo Compressing \<br\/\>
+gzip -f $BACKUP_FILE

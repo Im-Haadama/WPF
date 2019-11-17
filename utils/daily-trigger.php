@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Created by PhpStorm.
  * User: agla
@@ -7,17 +8,23 @@
  */
 
 // Run from crontab.
+$html = false;
 
 error_reporting( E_ALL );
 ini_set( 'display_errors', 'on' );
 
 if ( ! defined( "ROOT_DIR" ) ) {
-	define( "ROOT_DIR", dirname( dirname( dirname( __FILE__ ) ) ) );
+	define( "ROOT_DIR", dirname( dirname( __FILE__ ) ) );
 }
 
 require_once( ROOT_DIR . "/niver/MultiSite.php" );
 require_once( ROOT_DIR . "/utils/config.php" );
-require_once( ROOT_DIR . "/niver/gui/inputs.php" );
+require_once( ROOT_DIR . "/niver/system/backup.php" );
+
+if (0)
+	require_once( ROOT_DIR . "/niver/gui/inputs.php" );
+else
+	require_once(ROOT_DIR . "/niver/gui/text_inputs.php");
 
 print header_text( false, true, false );
 
@@ -46,30 +53,27 @@ if ( $op == 'check' ) { // would run on conductor server
 	// Check if we have new files from backuped servers.
 	// print "0 valid backups"; // No attention needed. All ok.
 
-	$results = array( array( "hostname", "result" ) );
+	$results = [];
+	$results["header"] = array( "hostname", "result" );
 
 	foreach ( $hosts_to_sync as $key => $host_info ) {
 		$output = "";
-		$url    = $host_info[2] . "/../utils/backup_manager.php?tabula=145db255-79ea-4e9c-a51d-318a86c999bf";
+		$url    = $host_info[2] . "/utils/backup_manager.php?tabula=145db255-79ea-4e9c-a51d-318a86c999bf";
 		$get_name = $url . "&op=name&date=" . $date;
 		if ($debug) print $get_name . "<br/>";
 		$file_name = curl_get( $get_name );
 		if ( strstr( $file_name, "Fatal" ) or strlen($file_name) < 5) {
-			array_push( $results, array( $host_info[1], "error file name: " . $file_name ) );
+			$results[$key] = array( "hostname" => $host_info[1], "result" => "error file name: " . $file_name );
 			$fail = true;
 			continue;
 		}
-//	print "len = " . strlen($file_name) . "<br/>";
-//		$output .= "filename = " . $file_name . "<br/>";
-//
-//		$output .=  "checking size...";
-
 		$full_path = IM_BACKUP_FOLDER . '/' . $file_name;
 
 		if ( ! file_exists( $full_path ) ) {
 			$fail   = true;
 			$output .= "missing file $full_path";
-			array_push( $results, array( $host_info[1], $file_name, $output ) );
+			$results[$key] = array("hostname" => $host_info[1], "result" => $output);
+			// array_push( $results, array( $host_info[1], $file_name, $output ) );
 			continue;
 		}
 
@@ -87,13 +91,15 @@ if ( $op == 'check' ) { // would run on conductor server
 			$output .= "size= " . filesize( $full_path );
 		}
 
-		array_push( $results, array( $host_info[1], $output ) );
+		$results[$key] = array("hostname" => $host_info[1], "result" => $output);
 	}
 
 	// Todo: Delete old ones.
 	print ( $fail ? "1 failed" : "0 all ok" );
+	if ($fail) print "url=" . $url . "<br/>";
 
-	 print gui_table_args( $results );
+	$args = [];
+	print gui_table_args( $results, "result_table", $args );
 
 //	if ($fail) print im_file_get_html("http://tabula.aglamaz.com/utils/daily.log." . date('d') . ".html");
 
@@ -114,27 +120,17 @@ print $m->GetAll( "multi-site/sync-from-master.php", true );
 print gui_header( 1, "Running daily-all" );
 print $m->GetAll( "auto/daily-all.php", true, false, true );
 
-function curl_get( $url ) {
-	$handle = curl_init();
-	curl_setopt( $handle, CURLOPT_URL, $url );
-	curl_setopt( $handle, CURLOPT_RETURNTRANSFER, true );
-
-	$data = curl_exec( $handle );
-	curl_close( $handle );
-
-	return $data;
-}
-
 print gui_header( 2, "Handling backup collection!" );
+print "backup folder: " . IM_BACKUP_FOLDER . PHP_EOL;
 
 $results = array( array( "hostname", "result" ) );
 
 foreach ( $hosts_to_sync as $key => $host_info ) {
 	$output = "";
-		$url    = $host_info[2] . "/../utils/backup_manager.php?tabula=145db255-79ea-4e9c-a51d-318a86c999bf";
+		$url    = $host_info[2] . "/utils/backup_manager.php?tabula=145db255-79ea-4e9c-a51d-318a86c999bf";
 
 	$file_name = curl_get( $url . "&op=name&date=" . date('Y-m-d') );
-	if ( strstr( $file_name, "Fatal" ) or strlen($file_name) < 2) {
+	if ( strstr( $file_name, "not found" ) or strlen($file_name) < 2) {
 		array_push( $results, array( $host_info[1], "error: " . $file_name ) );
 		continue;
 	}
@@ -152,7 +148,6 @@ foreach ( $hosts_to_sync as $key => $host_info ) {
 	{
 		array_push($results, "Folder " . IM_BACKUP_FOLDER . "   is not writable. run from shell");
 		continue;
-
 	}
 	$file   = fopen( $full_path, "w" );
 	if (! $file)
@@ -172,7 +167,9 @@ foreach ( $hosts_to_sync as $key => $host_info ) {
 		$output .= "delete in origin<br/>";
 		curl_get( $url . "&op=delete" );
 	}
-	array_push( $results, array( $host_info[1], $output ) );
+	array_push( $results, array( "hostname" => $host_info[1], "result" => $output ) );
 }
 
 print gui_table_args( $results );
+
+delete_backup(IM_BACKUP_FOLDER);

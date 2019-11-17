@@ -138,6 +138,11 @@ class MultiSite {
 			print "Getting $file...<br/>";
 		}
 
+		if (! isset($this->sites_array[$site_id][3])){
+			print "username is missing (index 3)";
+			var_dump($this->sites_array);
+			die (1);
+		}
 		$username = $this->sites_array[$site_id][3];
 		$password = $this->sites_array[$site_id][4];
 

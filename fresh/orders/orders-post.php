@@ -141,11 +141,13 @@ switch ( $operation ) {
 
 	case "start_handle":
 		$ids = get_param_array( "ids" );
+		$success = true;
 		foreach ( $ids as $id ) {
 			$o = new Order( $id );
-			$o->ChangeStatus( "wc-processing" );
+			if (! $o->ChangeStatus( "wc-processing" )) $success = false;
 		}
-		break;
+		if ($success) print "done";
+		return;
 
 	case "cancel_orders":
 		$ids = get_param_array( "ids" );

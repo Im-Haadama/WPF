@@ -2,23 +2,41 @@
 
 function worker_get_projects($worker_id)
 {
-	return sql_query_array_scalar("select project_id from im_working where user_id = " . $worker_id);
+	$result = [];
+	foreach (worker_get_companies($worker_id) as $company){
+		if (worker_is_global_company($worker_id, $company)){
+			foreach (sql_query_array_scalar("select id from im_projects where is_active = 1 and company = $company") as $project_id)
+				$result [] = array("project_id" => $project_id, "project_name" => get_project_name($project_id));
+		} else {
+			foreach (sql_query_array_scalar("select project_id from im_working where user_id = $worker_id") as $project_id)
+				if (project_is_active($project_id))
+					$result [] = array("project_id" => $project_id, "project_name" => get_project_name($project_id));
+		}
+	}
+	return $result; // sql_query_array_scalar("select project_id from im_working where user_id = " . $worker_id);
 }
 
 /**
  * @param $user_id
  *
+ * @param bool $is_manager - just companies user is admin
+ *
  * @return array
  * @throws Exception
  */
-function worker_get_companies($user_id)
+function worker_get_companies($user_id, $is_manager = false)
 {
-	$sql = "select company_id from im_working where user_id = " . $user_id .
-	       " union select id from im_company where admin = " . $user_id;
-//	print $sql;
+	$sql = " select id from im_company where admin = " . $user_id;
+	if (!$is_manager) $sql .= " union select company_id from im_working where user_id = " . $user_id;
 	$result = sql_query_array_scalar($sql);
 
 	return $result;
+}
+
+function company_get_name($id)
+{
+	if (! ($id > 0)) die("invalid company_id: $id");
+	return sql_query_single_scalar("select name from im_company where id = " . $id);
 }
 
 function worker_add_company($user_id, $company_id, $project_id)
@@ -49,13 +67,16 @@ function is_volunteer($uid) {
 
 
 /** if the worker is global company worker, return array of companies
+ *
  * @param $user_id
+ *
+ * @param $company
  *
  * @return string
  */
-function worker_is_global_company($user_id)
+function worker_is_global_company($user_id, $company)
 {
-	return sql_query_single_scalar("select company_id from im_working where user_id = " . $user_id . " and project_id = 0");
+	return sql_query_single_scalar("select count(*) from im_working where user_id = " . $user_id . " and project_id = 0 and company_id = $company");
 }
 
 ///////////////////////
@@ -112,7 +133,7 @@ function team_add_worker($team_id, $user_id)
 	if (strstr($current ,":" . $team_id . ":")) return; // Already in.
 	if (!$current or strlen($current) < 1) $current = ":";
 
-	update_usermeta($user_id, 'teams', $current . ":" . $team_id . ":");
+	return update_usermeta($user_id, 'teams', $current . ":" . $team_id . ":");
 }
 
 /**
@@ -134,7 +155,8 @@ function team_manager($team_id)
 function team_managed_teams($worker_id)
 {
 	$result = sql_query_array_scalar("select id from im_working_teams where manager = " . $worker_id);
-	if (! $result) team_add($worker_id, "");
+	return $result;
+	// if (! $result) team_add($worker_id, "");
 }
 
 /**
@@ -174,22 +196,30 @@ function team_delete($team_id)
 
 /**
  * @param $team_id
- * @param $member
+ * @param $members - id or array of ids.
+ *
+ * @return bool
  */
-function team_remove_member($team_id, $member)
+function team_remove_member($team_id, $members)
 {
+	if (is_array($members)){
+		foreach ($members as $member)
+			if (! team_remove_member($team_id, $member)) return false;
+		return true;
+	}
+	$member = $members;
 	$current = get_usermeta($member, 'teams');
 	$teams = comma_array_explode($current);
 	// var_dump($teams); print "<br/>";
 
 	$idx = array_search($team_id, $teams);
-	if (! $idx) return;
+	if (! $idx) return false;
 
 	unset ($teams[$idx]);
 
 	// var_dump($teams); print "<br/>";
 	update_usermeta($member, 'teams', $current . ":" . $team_id . ":");
-
+	return true;
 }
 
 function company_invite_member($company_id, $email,  $name, $project_id)
@@ -211,3 +241,12 @@ function company_invite_member($company_id, $email,  $name, $project_id)
 
 }
 
+function project_company($project_id)
+{
+	return sql_query_single_scalar("select company from im_projects where id = " . $project_id);
+}
+
+function project_is_active($project_id)
+{
+	return sql_query_single_scalar("select is_active from im_projects where id = $project_id");
+}

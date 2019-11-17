@@ -6,17 +6,17 @@
  * Time: 20:55
  */
 
-require_once ("../../im-config.php");
-require_once( ROOT_DIR . "/fresh/im_tools.php" );
-require_once( ROOT_DIR . "/niver/gui/inputs.php" );
-require_once( ROOT_DIR . "/fresh/supplies/Supply.php" );
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
+if ( ! defined( "ROOT_DIR" ) ) {
+	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) ) ;
+}
+require_once(ROOT_DIR . '/im-config.php');
 require_once( ROOT_DIR . "/fresh/multi-site/imMulti-site.php" );
+require_once( ROOT_DIR . "/niver/fund.php" ); // for db reconnect;
 
 $m = ImMultiSite::getInstance();
-
-//$text = show_category_all( false, true, false, false);
-//
-//$rc = send_mail( "da." . date('h:mm'), 'info@im-haadama.co.il', $text );
 
 ob_start();
 
@@ -28,12 +28,11 @@ $buffer = ob_get_contents();
 ob_end_clean();
 
 print $buffer;
-$log_file = ROOT_DIR . "/logs/run-" . date( 'd' ) . ".html";
+$log_file = ROOT_DIR . "/logs/backup-" . date( 'd' ) . ".html";
 $log      = fopen( $log_file, "w" );
 fwrite( $log, $buffer );
 fclose( $log );
 return;
-
 
 function backup_database() {
 	if ( ! defined( 'IM_BACKUP_FOLDER' ) ) {
@@ -80,8 +79,8 @@ function backup_database() {
 		}
 
 		fwrite( $file, "[mysqldump]\n" );
-		fwrite( $file, "user=" . IM_DB_USER . "\n" );
-		fwrite( $file, "password=" . IM_DB_PASSWORD . "\n" );
+		fwrite( $file, "user=" . DB_USER . "\n" );
+		fwrite( $file, "password=" . DB_PASSWORD . "\n" );
 //		fwrite( $file, "single-transaction\n" );
 
 		fclose( $file );
@@ -101,6 +100,7 @@ function backup_database() {
 
 	// Server might gone because of the backup. Reconnect
 	// $conn = new mysqli( IM_DB_HOST, DB_NAME, IM_DB_PASSWORD, DB_NAME );
+	reconnect_db();
 
 	if ( substr( $result, 0, 31 ) == $success ) {
 		print "success<br/>";

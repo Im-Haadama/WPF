@@ -12,8 +12,10 @@ function GemAddRow($table_name, $text, $args){
 	if ($next_page){
 		$result .= '<script>
 		function next_page(xmlhttp) {
-		    if (xmlhttp.response === "done") window.location = "' . $next_page .
-		           '"; else alert(xmlhttp.response);
+		    if (xmlhttp.response.substr(0, 4) === "done") {
+		        let new_id = xmlhttp.response.substr(5);
+		      window.location = "' . $next_page . '&new=" + new_id;  
+		    }  else alert(xmlhttp.response);
 		}
 		</script>';
 		$result .= "\n" . gui_button("add_row", "data_save_new('" . $post . "', '$table_name', next_page)\n", "add");
@@ -29,6 +31,8 @@ function GemElement($table_name, $row_id, $args)
 {
 	$result = "";
 	$title = GetArg($args, "title", null);
+	$post = GetArg($args, "post_file", '/niver/data/data-post.php'); // Default should be used in first stages.
+	// Later, add permissions checks in custom post.
 
 	// Set defaults
 	if (!isset($args["transpose"])) $args["transpose"] = true;
@@ -40,8 +44,8 @@ function GemElement($table_name, $row_id, $args)
 	$result .= GuiRowContent($table_name, $row_id, $args);
 
 	if (GetArg($args, "edit", false)) {
-		$result .= gui_button( "btn_save", "data_save_entity('/niver/data/data-post.php', '$table_name', " . $row_id . ')', "save" );
-		$result .= gui_button( "btn_cancel", "cancel_entity('/niver/data/data-post.php', '$table_name', " . $row_id . ')', "delete" );
+		$result .= gui_button( "btn_save", "data_save_entity('" . $post . "', '$table_name', " . $row_id . ')', "save" );
+		$result .= gui_button( "btn_cancel", "cancel_entity('" . $post . "', '$table_name', " . $row_id . ')', "delete" );
 	}
 	return $result;
 }
@@ -58,6 +62,7 @@ function GemArray($rows_data, $args, $table_id)
 	$rows_per_page = GetArg($args, "rows_per_page", 10);
 
 	if (! $rows_data) return null;
+	$args["checkbox_class"] = "checkbox_" . $table_id; // delete_items depend on that
 
 	$result .= gui_table_args( $rows_data, $table_id, $args );
 
@@ -74,6 +79,11 @@ function GemArray($rows_data, $args, $table_id)
 		if ($button_function) $result .= gui_button("btn_" . $button_text, $button_function, $button_text);
 	}
 	$result .= gui_hyperlink("search", add_to_url("search", "1"));
+	$post_file = GetArg($args, "post_file", null);
+	if ($post_file)
+		$result .= gui_button("btn_delete_$table_id", "delete_items(" . quote_text($args["checkbox_class"]) . "," .
+			quote_text($post_file) . ")", "delete");
+
 //	$args = array();
 //	$search_url = "search_table('im_bank', '" . add_param_to_url($url, "search", "1") . "')";
 //	$args["search"] = $search_url; //'/fresh/bank/bank-page.php?operation=do_search')";

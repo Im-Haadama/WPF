@@ -195,9 +195,11 @@ function new_supply_change()
     upcsv.action = "/fresh/supplies/supplies-post.php?operation=create_from_file&supplier_id=" + supplier_id + "&date=" + date;
 }
 
-function supply_add_line() {
-    let request_url = "supplies-post.php?operation=add_item&supply_id=<?php print $id; ?>";
+function supply_add_item(supply_id) {
+    if (! (supply_id > 0)) { alert ("bad supply_id"); return }
+    let request_url = "supplies-post.php?operation=add_item&supply_id=" + supply_id;
     let prod_id = get_value_by_name("itm_");
+    if (! (prod_id > 0)) { alert ("bad product"); return }
     request_url = request_url + "&prod_id=" + prod_id;
     let _q = 1; // encodeURI(get_value(document . getElementById("qua_")));
     request_url = request_url + "&quantity=" + _q;

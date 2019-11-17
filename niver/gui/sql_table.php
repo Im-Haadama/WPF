@@ -19,6 +19,7 @@ require_once( "inputs.php" );
 
 require_once( ROOT_DIR . "/niver/data/sql.php" );
 require_once( ROOT_DIR . "/niver/data/translate.php");
+require_once( ROOT_DIR . "/niver/gui/gem.php");
 
 /**
  * Table header gets a sql query and returns array to be used as header, usually in html table.
@@ -258,7 +259,7 @@ function PrepareRow($row, $args, $row_id)
 				}
 				// print $selector_name;
 				$value = (function_exists($selector_name) ? $selector_name( $input_name, $orig_data, $args ) : $orig_data); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
-				if ($drill) $value = gui_hyperlink($value, get_url() . "&$key=$value");
+				if ($drill) $value = gui_hyperlink($value, add_to_url(array($key => $value, "operation" => "show_archive")));
 				break;
 			}
 			// print "pp e=" .$edit . " e_c=" . (is_array($edit_cols) ? comma_implode($edit_cols) : $edit_cols) . " ec[k]=" . isset($edit_cols[$key]) . "<br/>";
@@ -356,6 +357,7 @@ function RowsData($sql, $id_field, $skip_id, $v_checkbox, $checkbox_class, $h_li
 			print "<br/>field id:" . $id_field . "<br/>";
 			var_dump( $row );
 			print "<br/>";
+			print $sql . "<br/>";
 			die( __FUNCTION__ . ":" . __LINE__ . "no id_field" );
 		}
 		$row_id = $row[ $id_field ];
@@ -411,7 +413,7 @@ function RowsData($sql, $id_field, $skip_id, $v_checkbox, $checkbox_class, $h_li
 	return $rows_data;
 }
 
-function NewRowData($field_list, $values, &$v_line, &$h_line, &$m_line, $skip_id, $id_field, $checkbox_class, $header_fields, $fields, &$args )
+function NewRowData($field_list, $values, &$v_line, &$h_line, &$m_line, $skip_id, $checkbox_class, $header_fields, $fields, &$args )
 {
 	$new_row = array();
 	$debug   = false;
@@ -491,7 +493,6 @@ function TableData($sql, &$args = null)
 	$mandatory_fields = GetArg($args, "mandatory_fields", null);  $mandatory_fields = array_assoc($mandatory_fields);
 	$fields = GetArg($args, "fields", null);  $fields = array_assoc($fields);
 	if ($debug) {print "fields: "; var_dump($fields); print "<br/>";}
-	$id_field = GetArg($args, "id_field", "id");
 	$skip_id = GetArg($args, "skip_id", false);
 	$meta_fields = GetArg($args, "meta_fields", null);
 	$meta_table = GetArg($args, "meta_table", null);
@@ -504,7 +505,11 @@ function TableData($sql, &$args = null)
 	$table_names = array();
 	if (preg_match_all("/from ([^ ]*)/" , $sql, $table_names))
 	{
-		$args["table_name"] = $table_names[1][0];
+		$table_name = $table_names[1][0];
+		$args["table_name"] = $table_name;
+		$id_field = GetArg($args, "id_field", "id" /* long executing: sql_table_id($table_name) */);
+	} else {
+		$id_field = GetArg($args, "id_field", "id");
 	}
 
 	$h_line = ($header ? TableHeader( $sql, $args ) : null);
@@ -524,7 +529,7 @@ function TableData($sql, &$args = null)
 	if (strstr($sql, "describe") || strstr($sql, "show col")) // New Row
 	{
 		if ($debug) print "creating new row<br/>";
-		$rows_data = NewRowData( $field_list, $values, $v_line, $h_line, $m_line, $skip_id, $id_field, $checkbox_class, $header_fields, $fields, $args );
+		$rows_data = NewRowData( $field_list, $values, $v_line, $h_line, $m_line, $skip_id, $checkbox_class, $header_fields, $fields, $args );
 		// debug_var($rows_data);
 	} else {
 		if ($debug) print "getting data<br/>";
@@ -745,6 +750,7 @@ function TableDatalist( $id, $table, $args = null)
 	$field = GetArg($args, "field", "field");
 	$include_id = GetArg($args, "include_id", false);
 	$sql = GetArg($args, "sql", "select " . $field . ($include_id ? ", id" : "") .	 " from " . $table);
+	if (!strstr($sql, "where")) $sql .= " where " . GetArg ($args, "query", "1");
 	$id_field = GetArg($args, "id_field", "id");
 	$values = [];
 

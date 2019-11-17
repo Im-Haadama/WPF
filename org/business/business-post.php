@@ -35,8 +35,8 @@ function get_env( $var, $default ) {
 	}
 }
 
-if ( isset( $_GET["operation"] ) ) {
-	$operation = $_GET["operation"];
+$operation = get_param("operation", false, null);
+if ( $operation) {
 	// print "op=" . $operation . "<br/>";
 	switch ( $operation ) {
 		case "exists_invoice":
@@ -79,6 +79,7 @@ if ( isset( $_GET["operation"] ) ) {
 				$month = $_GET["month"];
 				show_makolet( $month );
 			} else {
+				print "no permission";
 				my_log( "show_makolet user " . $user->Id );
 			}
 			break;
@@ -426,7 +427,11 @@ function gui_select_open_supplier( $id = "supplier" ) {
 		array_push( $open, $new );
 	}
 
-	return gui_select_datalist( $id, "im_suppliers", "open_supplier", "name", $open, 'onchange="supplier_selected()"', null, true );
+	$datalist_id = "open_supplier";
+	$result = GuiDatalist($datalist_id, $open, "id", "name");
+	$result .= GuiInputDatalist("supplier", $datalist_id, 'onchange="supplier_selected()"');
+	return $result;
+	// return gui_select_datalist( $id, "im_suppliers", "open_supplier", "name", $open, 'onchange="supplier_selected()"', null, true );
 }
 
 function gui_select_client_open_account( $id = "open_account" ) {
@@ -634,6 +639,7 @@ function create_subcontract_invoice( $month, $year, $net_sell, $net_delivery ) {
 
 }
 function show_makolet( $month_year ) {
+	print $month_year;
 	$year  = substr( $month_year, 0, 4 );
 	$month = substr( $month_year, 5, 2 );
 	print gui_header( 1, "משלוחים שבוצעו" );
@@ -710,7 +716,7 @@ function calc_makolet( $year, $month ) {
 
 		// $row = array($id, $row[1]);
 		array_push( $table, $row );
-		$driver_array[ $row[8] ] += $row[6];
+		// $driver_array[ $row[8] ] += $row[6];
 	}
 
 	return $table;

@@ -134,7 +134,7 @@ function worker_get_id($user_id)
  */
 function print_transactions( $user_id = 0, $month = null, $year = null, &$args = null) // , $week = null, $project = null, &$sum = null, $show_salary = false , $edit = false) {
 {
-	$sql = "SELECT id, date, dayofweek(date) as weekday, start_time, end_time, working_rate(user_id, project_id) as rate, project_id, traveling, expense, expense_text, comment FROM im_working_hours WHERE 1 ";
+	$sql = "SELECT id, date, dayofweek(date) as weekday, start_time, end_time, project_id, working_rate(user_id, project_id) as rate, traveling, expense, expense_text, comment FROM im_working_hours WHERE 1 ";
 	$show_salary = GetArg($args, "show_salary", false);
 
 	$sql_month = null;
@@ -168,20 +168,30 @@ function print_transactions( $user_id = 0, $month = null, $year = null, &$args =
 	                               "project_id" => "Project", "traveling" => "Traveling expense", "expense" => "Other expense", "expense_text" => "Expense details", "Comment");
 	$args["selectors"] = array("project_id" => "gui_select_project");
 	$args["skip_id"] = true;
+	$args["hide_cols"] = array("expense" => 1, "expense_text" => 1, "125" => 1, "150" => 1);
+	if (! $show_salary) $args["hide_cols"]["rate"] = 1;
 	// $args["acc"] = array("", "", )
 	// $args["headers"] = array("Date", "Day of week", "Start time", "End time", "Rate", "Project", "Traveling", "Expense", "Expense details", "Comments");
 
 	// $data .= GuiTableContent("im_working_hours", $sql, $args);
 	// Add computed rows.
-	$data = TableData($sql);
+	$data = TableData($sql, $args);
 	$total_sal = 0;
 	$total_travel = 0;
 	$total_expense = 0;
-	$counters = [];
-if (0)	for ($i = 1; $i < count($data); $i ++)
+	$counters = ["base"=>0, "125"=>0, "150"=>0];
+
+	foreach  ($data as $key => &$row)
 	{
-		$start = new DateTime( $data[$i]["start_time"] );
-		$end   = new DateTime( $data[$i]["end_time"] );
+		if ($key == "header") {
+			$row["base"] = im_translate("base");
+			$row["125"] = "125%";
+			$row["150"] = "150%";
+			$row["line_salary"] = im_translate("total");
+			continue;
+		}
+		$start = new DateTime( $row["start_time"] );
+		$end   = new DateTime( $row["end_time"] );
 
 		if ( $end < $start ) {
 			$end->add( DateInterval::createFromDateString( "1 day" ) );
@@ -192,29 +202,33 @@ if (0)	for ($i = 1; $i < count($data); $i ++)
 		$dur_base  = min( $total_dur, 25 / 3 );
 		$dur_125   = min( 2, $total_dur - $dur_base );
 		$dur_150   = $total_dur - $dur_base - $dur_125;
-		$rate = $data[$i]["rate"];
+		$rate = $row["rate"];
 
-		$data[$i]["base"] = $dur_base;
-		$data[$i]["dur_125"] = $dur_125;
-		$data[$i]["dur_150"] = $dur_150;
+		$row["base"] = float_to_time($dur_base);
+		$row["dur_125"] = float_to_time($dur_125);
+		$row["dur_150"] = float_to_time($dur_150);
 
 		$counters["base"] += $dur_base;
-		$counters["125"]  += $dur_125;
-		$counters["150"]  += $dur_150;
+		if ($dur_125 > 0) {	$counters["125"]  += $dur_125; $args["hide_cols"]["125"] = 0; }
+		if ($dur_150 > 0) { $counters["150"]  += $dur_150; $args["hide_cols"]["125"] = 0; }
 
 		$sal  = ( $dur_base + $dur_125 * 1.25 + $dur_150 * 1.5 ) * $rate;
 
-		if ( $show_salary ) $data[$i]["line_salary"] = $sal;
+		if ( $show_salary ) $row["line_salary"] = $sal;
 
 		// print $sal . " " . $total_sal . "<br/>";
 		$total_sal += $sal;
 		// var_dump($total_sal);
 
-		$travel       = $data[$i]["travel"];
+		$travel       = $row["traveling"];
 		$total_travel += $travel;
 
-		$expense       = $data[$i]["expense"];
-		$total_expense += $expense;
+		$expense       = $row["expense"];
+		if ($expense > 0) {
+			$args["hide_cols"]["expense"] = 0;
+			$args["hide_cols"]["expense_text"] = 0;
+			$total_expense += $expense;
+		}
 
 //		if ( isset( $sum ) and is_array( $sum ) ) {
 //			$line_month = date( 'y-m', strtotime( $row[0] ) );
@@ -280,7 +294,31 @@ if (0)	for ($i = 1; $i < count($data); $i ++)
 //	}
 //	}
 
-	return gui_table_args($data, "XX", $args);
+	$data = gui_table_args($data, "XX", $args);
+
+	if ( $show_salary and $total_sal > 0 and $month ) {
+		$data      .= gui_header( 2, "חישוב שכר מקורב" ) . "<br/>";
+		$data      .= "שכר שעות " . $total_sal . "<br/>";
+		$data      .= "סהכ נסיעה " . $total_travel . "<br/>";
+		$data      .= "סהכ הוצאות " . $total_expense . "<br/>";
+		$total_sal += $total_travel;
+		$total_sal += $total_expense;
+		$data      .= "סהכ " . $total_sal . "<br/>";
+		if ( $user_id ) {
+			$email = get_customer_email( $user_id );
+			$r     = "people/people-post.php?operation=get_balance_email&date=" .
+			         date( 'Y-m-j', strtotime( "last day of " . $year . "-" . $month ) ) . "&email=" . $email;
+			// print $r;
+			$b = strip_tags( ImMultiSite::sExecute( $r, 4 ) );
+			//print "basket: " . $b . "<br/>";
+
+			if ( $b > 0 ) {
+				$data .= " חיובי סלים " . round( $b, 2 );
+			}
+		}
+	}
+
+	return $data;
 
 	//	print "ss=" . $show_salary . "<br/>";
 	// print "uid=" . $user_id . "<br/>";
@@ -477,6 +515,19 @@ function project_name( $id ) {
 	return sql_query_single_scalar( $sql );
 }
 
+function project_delete($project_id, $user_id, $force = false)
+{
+	if (! in_array(project_company($project_id), worker_get_companies($user_id)))
+		die ("different company");
+
+	$c = sql_query_single_scalar("select count(*) from im_tasklist where status < 2 and project_id = " . $project_id);
+	if ($c and ! $force) {
+		print get_project_name($project_id) . "(" . $project_id . ")" . im_translate("has") . " " . $c . im_translate("active tasks");
+		return false;
+	}
+	// TODO: handle orphan tasks
+	return sql_query("update im_projects set is_active=0 where id = " . $project_id);
+}
 function project_create($user_id, $project_name, $company, $project_contact = "set later", $project_priority = 5)
 {
 	sql_query("insert into im_projects (project_name, project_contact, project_priority) values (" . quote_text($project_name) .
@@ -519,7 +570,6 @@ function gui_select_template($id, $value, $args)
 
 	if (! $edit) return sql_query_single_scalar("select task");
 
-	$query = GetArg($args, "where", " where 1 ");
 	$length = GetArg($args, "length", 30);
 
 	print "value = $value<br/>";
@@ -574,7 +624,7 @@ function show_all( $month, &$args) {
 		$args["worker"] = $user_id;
 
 		if ( $row[1] ) {
-			print gui_header( 1, get_user_name( $user_id ) . "(" . $user_id . ")" );
+			print gui_header( 1, get_user_name( $user_id ) . "(" . gui_hyperlink($user_id, add_to_url(array("operation"=>"edit_worker", "id" => $user_id))) . ")");
 			print "כתובת מייל של העובד/ת: " . get_customer_email( $user_id ) . "<br/>";
 
 //			print print_transactions( 0, $month, $year, null, null, $s, true  );

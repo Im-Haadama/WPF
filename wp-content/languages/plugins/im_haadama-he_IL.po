@@ -154,6 +154,9 @@ msgstr "המשימות שלי"
 msgid "My teams"
 msgstr "צוותים שלי"
 
+msgid "Edit staff"
+msgstr "עריכת צוות"
+
 msgid "More"
 msgstr "עוד"
 
@@ -341,6 +344,9 @@ msgstr "משימות באחריותי"
 msgid "My teams tasks"
 msgstr "משימות של צוותי"
 
+msgid "All teams"
+msgstr "כל הצוותים"
+
 msgid "Is active"
 msgstr "פעיל"
 
@@ -358,6 +364,9 @@ msgstr "קובץ החשבונית"
 
 msgid "Invoice"
 msgstr "חשבונית"
+
+msgid "Invoices"
+msgstr "חשבוניות"
 
 # bank page
 msgid "Edit transaction types"

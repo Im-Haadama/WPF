@@ -53,7 +53,7 @@ class BankTransaction {
 	 * @return mixed
 	 */
 	public function getOutAmount( $attached = false ) {
-		debug_var($this->out_amount);
+//		debug_var($this->out_amount);
 		if ( ! $attached ) {
 			return $this->out_amount;
 		}
@@ -61,7 +61,7 @@ class BankTransaction {
 		$attached_amount = sql_query_single_scalar( "SELECT sum(amount) FROM im_bank_lines " .
 		                                            " WHERE line_id = " . $this->id );
 
-		debug_var($attached_amount);
+//		debug_var($attached_amount);
 
 		return $this->out_amount + $attached_amount;
 	}

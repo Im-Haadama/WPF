@@ -15,6 +15,7 @@ if ( ! defined( "ROOT_DIR" ) ) {
 
 require_once( ROOT_DIR . '/im-config.php' );
 require_once( ROOT_DIR . '/niver/fund.php' );
+require_once( ROOT_DIR . '/niver/system/backup.php' );
 
 $backup_dir = IM_BACKUP_FOLDER;
 
@@ -47,8 +48,9 @@ if (! file_exists($backup_dir)){
 	switch ( $op ) {
 		case "name":
 			$date = get_param("date", true);
-			if ($debug) print "date=$date<br/>backup_dir=$backup_dir<br/>";
-			print get_file_name($date);
+			$name = DB_NAME . '-' . $date . '.sql.gz';
+			if (file_exists($backup_dir . '/' . $name)) { print $name; return; }
+			print "not found - $name";
 			exit( 0 );
 		case "file":
 			$file_name = get_param("name", true);
@@ -64,49 +66,8 @@ if (! file_exists($backup_dir)){
 			print readfile_chunked( $file_path );
 			exit( 0 );
 		case "delete":
-			if ( count( $content ) > $backup_count ) {
-				unlink( $content[ count( $content ) - 1 ] );
-			}
+			delete_backup($backup_dir);
 			exit( 0 );
 	}
 	// print $file_name;
 
-
-function get_file_name($date)
-{
-	global $backup_dir;
-
-	$content = scandir( $backup_dir, SCANDIR_SORT_DESCENDING );
-	foreach ($content as $c)
-	{
-		print $c . "<br/>";
-		if (substr($c, 0, 1) != "." and ! strstr($c, "err") and strstr($c, $date)) {
-			return $c;
-		}
-	}
-	return "not found";
-}
-
-function readfile_chunked( $filename, $retbytes = true ) {
-	$chunksize = 1 * ( 1024 * 1024 ); // how many bytes per chunk
-	$cnt       = 0;
-	// $handle = fopen($filename, 'rb');
-	$handle = fopen( $filename, 'rb' );
-	if ( $handle === false ) {
-		return false;
-	}
-	while ( ! feof( $handle ) ) {
-		$buffer = fread( $handle, $chunksize );
-		echo $buffer;
-		if ( $retbytes ) {
-			$cnt += strlen( $buffer );
-		}
-	}
-	$status = fclose( $handle );
-	if ( $retbytes && $status ) {
-		return $cnt; // return num. bytes delivered like readfile() does.
-	}
-
-	return $status;
-
-}

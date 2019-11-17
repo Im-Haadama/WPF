@@ -5,12 +5,11 @@
  * Date: 31/08/17
  * Time: 22:51
  */
-if ( ! defined( 'STORE_DIR' ) ) {
-	define( 'STORE_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
+if ( ! defined( 'ROOT_DIR' ) ) {
+	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
 }
 
-require_once( STORE_DIR . "/wp-config.php" );
-require_once( "../r-shop_manager.php" );
+require_once( ROOT_DIR . "/wp-config.php" );
 require_once( ROOT_DIR . "/niver/gui/inputs.php" );
 ?>
 <body onload="show_all()">

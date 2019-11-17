@@ -16,7 +16,7 @@ $sql = "SELECT id, post_title, post_type, post_status
 FROM wp_posts WHERE post_type IN ('product', 'product_variation') order by 1";
 
 $debug         = false;
-$debug_product = 313;
+$debug_product = 10237;
 if ( $debug ) {
 	print "DEBUG<br/>";
 }

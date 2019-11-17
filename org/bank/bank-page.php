@@ -10,7 +10,7 @@ require_once( ROOT_DIR . "/niver/web.php" );
 
 // Params
 $debug = get_param( "debug", false, false );
-$operation = get_param("operation", false, "focus_main");
+$operation = get_param("operation", false, "show_transactions");
 
 if ($debug) print "op=$operation<br/>";
 

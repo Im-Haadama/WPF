@@ -1,8 +1,5 @@
 <?php
 
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
-
 if ( ! defined( 'ROOT_DIR' ) ) {
 	define( 'ROOT_DIR',  dirname( dirname( __FILE__)  ) );
 }
@@ -19,7 +16,7 @@ require_once(ROOT_DIR . '/org/people/people.php');
 
 require_once (ROOT_DIR . '/im-config.php');
 
-function focus_new_task($mission = false)
+function focus_new_task($mission = false, $new_task_id = null)
 {
 	if (! focus_check_user()) return;
 	$args = array();
@@ -40,26 +37,49 @@ function focus_new_task($mission = false)
 	                               "creator" => "Creator");
 	$args["mandatory_fields"] = array("project_id", "priority", "team", "task_description") ;
 
-	$args["fields"] = array("task_description", "project_id", "location_name", "location_address", "priority", "date", "preq", "creator", "team");
+	$args["fields"] = array("task_description", "project_id", "priority", "date", "preq", "creator", "team");
 	$args['post_file'] = "/focus/focus-post.php";
 	$args['form_table'] = 'im_tasklist';
 
+	// Todo: check last update time
 	if ($mission and function_exists("gui_select_mission"))
 	{
+		array_push($args["fields"],"location_name", "location_address", "mission_id");
 		$i = new ImMultiSite();
 		$i->UpdateFromRemote( "im_missions", "id", 0, null, null );
 		$args["selectors"]["mission_id"] = "gui_select_mission";
 		$args["header_fields"]["mission_id"] = "Mission";
 		$args["mandatory_fields"]["location_name"] = true; $args["mandatory_fields"]["location_address"] = true;
-		array_push($args["fields"], "mission_id");
 	}
 
 	$args["worker"] = get_user_id();
 	$args["companies"] = sql_query_single_scalar("select company_id from im_working where user_id = " . get_user_id());
 	$args["hide_cols"] = array("creator" => 1);
+	$args["next_page"] = get_url();
 	set_args_value($args); // Get values from url.
 
-	print GemAddRow("im_tasklist", "New task", $args);
+	$result = ""; $project_tasks = "";
+	if ($new_task_id) $result .= im_translate("Task added") . "<br/>";
+
+	if ($new_task_id) {
+		$project_args = $args;
+		$new_task = new Tasklist($new_task_id);
+		$project_id = $new_task->getProject();
+		$project_args["title"] = "Project " . get_project_name($project_id);
+		$project_args["query"] = "project_id=" . $project_id . " and status < 2";
+		$project_args["order"] = "id desc";
+		unset($project_args["fields"]);
+
+		$project_tasks = GemTable("im_tasklist", $project_args);
+
+		// Set default value for next task, based on new one.
+		$args["values"] = array("project_id" => $project_id, "team" => $new_task->getTeam());
+	}
+
+	$result .= GemAddRow("im_tasklist", "New task", $args);
+	$result .= $project_tasks;
+
+	return $result;
 //	try {
 //		if ($debug) { print "<br/>" . __FUNCTION__. ": "; var_dump(GetArg($args, "fields", null)); print "<br/>"; }
 //		print NewRow( "im_tasklist", $args );
@@ -122,33 +142,71 @@ function focus_check_user()
 	return true;
 }
 
-function handle_focus_operation($operation)
+/**
+ * @param $operation
+ * @param $args
+ *
+ * @return void
+ * @throws Exception
+ */
+function handle_focus_operation($operation, $args)
 {
+	// Actions are performed and return to caller.
+	// Page are $result .= and displayed in the end. (to handle the header just once);
+
 	$allowed_tables = array("im_company", "im_tasklist", "im_task_templates");
+	$header_args = [];
+	$header_args["scripts"] = array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/focus/focus.js", "/focus/gui.php" );
+	$header_args["rtl"] = is_rtl();
 
 	$action_url = "/focus/focus-post.php";
 
-	$handled = true;
 	switch ($operation) { // Handle operation that don't need page header.
 		///////////////////////////
 		// DATA entry and update //
 		///////////////////////////
+		case "new_sequence":
+			if (create_new_sequence())
+				print "done";
+			else
+				print "create failed";
+			return;
+
 		case "del_team":
 			$team_id = get_param("id", true);
 			if (team_delete($team_id)) print "done";
-			break;
+			return;
+
+		case "delete":
+			$type = get_param("type");
+			switch ($type)
+			{
+				case "team_members":
+					$team_id = get_param("team_id", true);
+					$ids = get_param("ids", true);
+					if (team_remove_member($team_id, $ids)) print "done";
+					return;
+			}
+
+			return;
+
+		case "add_team_member":
+			$team_id = get_param("team_id", true);
+			$new_member = get_param("new_member", true);
+			if (team_add_worker($team_id, $new_member)) print "done";
+			return;
 
 		case "end_task":
 			$task_id = get_param( "id" );
 			task_ended($task_id);
 			create_tasks( null, false );
-			break;
+			return;
 
 		case "cancel_task":
 			$task_id = get_param( "id" );
 			if (task_cancelled($task_id)) print "done";
 			create_tasks( null, false );
-			break;
+			return;
 
 		case "postpone_task":
 			$task_id = get_param( "id" );
@@ -156,7 +214,7 @@ function handle_focus_operation($operation)
 			$r = $T->Postpone();
 			create_tasks( null, false );
 			if ($r) print "done";
-			break;
+			return;
 
 		case "pri_plus_task":
 			$task_id = get_param( "id" );
@@ -164,7 +222,7 @@ function handle_focus_operation($operation)
 			$T->setPriority($T->getPriority() + 1);
 			create_tasks( null, false );
 			print "done";
-			break;
+			return;
 
 		case "pri_minus_task":
 			$task_id = get_param( "id" );
@@ -172,15 +230,15 @@ function handle_focus_operation($operation)
 			$T->setPriority($T->getPriority() -1);
 			create_tasks( null, false );
 			print "done";
-			break;
+			return;
 
 		case "save_new":
 			$table_name = get_param("table_name", true);
 			if (! in_array($table_name, $allowed_tables))
 				die ("invalid table operation");
 			$result = data_save_new($table_name);
-			if ($result > 0) print "done.table=" . $table_name . '&new=' . $result;
-			break;
+			if ($result > 0) print "done." . $result;
+			return;
 
 		case "update":
 			$table_name = get_param("table_name", true);
@@ -188,13 +246,14 @@ function handle_focus_operation($operation)
 				die ("invalid table operation");
 			if (update_data($table_name))
 				print "done";
-			break;
+			return;
 
 		case "delete_template":
 			$user_id = get_user_id();
 			$id = get_param("row_id", true);
 			if (template_delete($user_id, $id)) print "done";
-			break;
+			return;
+
 		case "start_task":
 			// a. set the start time, if not set.
 			$task_id = get_param( "id" );
@@ -220,7 +279,7 @@ function handle_focus_operation($operation)
 				return;
 			}
 			if ( strlen( $url ) > 1 ) print $url;
-			break;
+			return;
 
 		case "add_to_company":
 			$company_id = get_param("company_id", true);
@@ -229,7 +288,7 @@ function handle_focus_operation($operation)
 			$project_id = get_param("project_id", true);
 			if (company_invite_member($company_id, $email, $name, $project_id))
 				print "done";
-			break;
+			return;
 
 		case "save_add_member":
 			$member = get_param("member", true);
@@ -238,15 +297,22 @@ function handle_focus_operation($operation)
 			if (! $current) $current = ":";
 			update_usermeta($member, "teams", ":" . $team_id . $current); // should be :11:22:3:4:
 			print "done";
-			break;
+			return;
 
-		default:
-			$handled = false;
-			// Don't warn. Will be handled in the second switch
+		case "logout":
+			wp_logout();
+			$back = get_param( "back", false, get_url( 1 ) );
+			header( "location: " . $back );
+			return;
 
+		case "cancel_im_projects":
+			$id = get_param("id", true);
+			if (project_delete($id, get_user_id()))
+				print "done";
+			return;
 	}
-	if ($handled) return;
-	print_focus_header();
+
+	$result = focus_header($header_args);
 
 	$args["page"] = get_param("page", false, 1);
 
@@ -255,31 +321,32 @@ function handle_focus_operation($operation)
 	// show/save <obj_type>
 	switch ($operation){
 		case "focus_main":
-			print focus_main();
+			$new = get_param("new", false, null);
+			$result .= focus_main($new);
 			break;
 		case "show_templates":
 			$args["table"] = true;
 			$args["new"] = get_param("new", false, 0);
 			$new = get_param("new", false, null);
-			print show_templates($args, null,  $new);
+			$result .= show_templates($args, null,  $new);
 			break;
 		case "show_template":
 			$id = get_param("id", true);
-			print show_templates($args, $id);
+			$result .= show_templates($args, $id);
 			break;
 		case "show_task":
 			$id = get_param("id", true);
-			if ($id) show_task($id);
-			return;
+			if ($id) $result .= show_task($id);
+			break;
 		case "show_project":
 			$id = get_param("id", true);
-			if ($id) print show_project($id);
-			return;
+			if ($id) $result .= show_project($id);
+			break;
 		case "bad_url":
 			$id = get_param("id");
-			print "Url for task $id is wrong<br/>";
+			$result .= "Url for task $id is wrong<br/>";
 			$template_id = task_template($id);
-			print  gui_hyperlink("Edit template $template_id", "?operation=show_template&id=$template_id");
+			$result .=  gui_hyperlink("Edit template $template_id", "?operation=show_template&id=$template_id");
 			break;
 		case "show_new_project":
 			$args = [];
@@ -292,7 +359,19 @@ function handle_focus_operation($operation)
 			$args["fields"] = array("project_name", "project_contact", "project_priority");
 			$args["mandatory_fields"] = array("project_name");
 			$args["header_fields"] = array("project_name" => "Project name", "project_contact" => "Project contact (client)", "project_priority"=> "Priority");
-			print GemAddRow("im_projects", "Add a project", $args);
+			$result .= GemAddRow("im_projects", "Add a project", $args);
+			break;
+		case "show_edit_project":
+			$args = [];
+			$project_id = get_param("id", true);
+			$args["edit_cols"] = array("project_name" => true, "project_contact" => true, "project_priority" => true);
+			$args["post_file"] = get_url(1);
+			// TODO: bug fix... $args["selectors"] = array("company" => "company_get_name");
+			$result .= GemElement("im_projects", $project_id, $args);
+			$args ["query"] = "project_id = $project_id and status < 2";
+			$args["page"] = get_param("page", false, null);
+			$args["links"] = array("id" => add_to_url(array("operation" => "show_task", "id" => "%s")));
+			$result .= GemTable("im_tasklist", $args);
 			break;
 		case "show_new_team":
 			$args = [];
@@ -300,50 +379,42 @@ function handle_focus_operation($operation)
 			$args["post_file"] = "/niver/data/data-post.php";
 			$args["selectors"] = array("manager" => "gui_select_worker");
 			$args["mandatory_fields"] = array("manager", "team_name");
-			print GemAddRow("im_working_teams", "Add a team", $args);
+			$result .= GemAddRow("im_working_teams", "Add a team", $args);
 			break;
 		case "show_new_task":
-			// print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/focus/focus.js" ) );
 			$mission = get_param("mission", false, null);
-			focus_new_task($mission);
+			$new = get_param("new", false);
+			$result .= focus_new_task($mission, $new); // after the first task, the new tasks belongs to the new tasks' project will be displayed.
 			break;
 		case "last_entered":
 			if (get_user_id() != 1) return;
 			$args = array();
 			$args["last_entered"] = 1;
-			print active_tasks($args);
+			$result .= active_tasks($args);
 			break;
 		case "show_new_sequence":
-			print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/focus/focus.js" ) );
 			$args = array();
 //			$args["selectors"] = $task_selectors;
 //			$args["transpose"] = true;
 //			$args["values"] = array("owner" => get_user_id(), "creator" => get_user_id());
 
-			print gui_header(1, "New sequence");
-			print gui_label("explain", "Select the project of the sequence, the default priority of all sequence tasks. Enter text for the tasks");
+			$result .= gui_header(1, "New sequence");
+			$result .= gui_label("explain", "Select the project of the sequence, the default priority of all sequence tasks. Enter text for the tasks");
 			$args["worker"] = get_user_id(); $args["edit"] = true;
 			$table_rows =array(array("project", gui_select_project("project", null, $args)),
 				array("priority", GuiInput("priority", null, $args)),
 				array("task1", GuiInput("task1")),
 				array("task2", GuiInput("task2", null, array("events" => 'onchange="addSequenceTask(2)"')))
 			);
-			print gui_table_args($table_rows, "sequence_table");
+			$result .= gui_table_args($table_rows, "sequence_table");
 
 			// $args["debug"] = true;
 			// print NewRow("im_tasklist", $args);
-			print gui_button("btn_new_sequence", "save_new_sequence()", "Create");
-			break;
-
-		case "new_sequence":
-			if (create_new_sequence())
-				print "done";
-			else
-				print "create failed";
+			$result .= gui_button("btn_new_sequence", "save_new_sequence()", "Create");
 			break;
 
 		case "new_template":
-			print gui_header(1, "יצירת תבנית חדשה");
+			$result .= gui_header(1, "יצירת תבנית חדשה");
 			$args = array();
 			$args["selectors"] = array("project_id" =>  "gui_select_project", "owner" => "gui_select_worker",
 			                           "creator" => "gui_select_worker", "team" => "gui_select_team", "repeat_freq" => "gui_select_repeat_time" );
@@ -354,66 +425,83 @@ function handle_focus_operation($operation)
 			$args["fields"] = array("task_description", "task_url", "repeat_freq_numbers", "project_id", "repeat_freq",
 				"condition_query", "priority", "working_hours", "path_code", "creator", "team");
 			$args["mandatory_fields"] = array("task_description", "repeat_freq_numbers", "repeat_freq", "project");
-			print NewRow("im_task_templates", $args);
-			print gui_button("btn_template", "data_save_new('/focus/focus-post.php', 'im_task_templates')", "add");
+			$result .= NewRow("im_task_templates", $args);
+			$result .= gui_button("btn_template", "data_save_new('/focus/focus-post.php', 'im_task_templates')", "add");
 			break;
 
-		case "edit_staff": // Teams that I manage
-			print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/niver/data/focus.js" ) );
-			print gui_header(1, "Edit staff");
-			edit_staff();
+		case "show_staff": // Teams that I manage
+//			$result .= header_text( false, true, true, array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/niver/data/focus.js" ) );
+			$result .= gui_header(1, "Edit staff");
+			$result .= show_staff();
+			break;
+
+		case "show_edit_projects": // Projects that I manage
+//			$result .= header_text( false, true, true, array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/niver/data/focus.js" ) );
+			$result .= gui_header(1, "Edit projects");
+			$args["worker_id"] = get_user_id();
+			$result .= edit_projects($args);
+			break;
+
+		case "show_edit_all_projects": // Projects that I manage
+			if (! im_user_can("edit_projects")) die("no permissions");
+			$result .= gui_header(1, "Edit all projects");
+			$args["global"] = true;
+			$result .= edit_projects($args);
 			break;
 
 		case "new_team":
-			print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/niver/data/focus.js" ) );
-			print gui_header(1, "Add Team");
+//			$result .= header_text( false, true, true, array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/niver/data/focus.js" ) );
+			$result .= gui_header(1, "Add Team");
 			$args = array("selectors" => array("manager" => "gui_select_worker"));
-			print NewRow("im_working_teams", $args);
-			print gui_button("btn_newteam", "save_new('im_working_teams')", "add");
+			$result .= NewRow("im_working_teams", $args);
+			$result .= gui_button("btn_newteam", "save_new('im_working_teams')", "add");
 			break;
 
-		case "edit_team":
-			print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/niver/data/focus.js" ) );
+		case "show_team":
 			$team_id = get_param("id", true);
 			team_add_worker($team_id, team_manager($team_id));
-			print gui_header(1, "Edit team" . team_get_name($team_id));
-			$args = array("selectors" => array("id" => "gui_select_worker"),
+			$result .= gui_header(1, im_translate("Team") . ": " . team_get_name($team_id));
+			$args = array("selectors" => array("ID" => "gui_select_worker"),
 			              "edit" => false,
 //				array( "cancel", $action_url . "?operation=cancel_task&id=%s;action_hide_row" ),
 
 			              "actions" => array(array("remove", add_to_url(array("operation" => "remove_from_team", "user" => "%s")))));
-			print GuiTableContent("im_working_teams",
-				'select id from wp_users where worker_teams(id) like "%:' . $team_id . ':%"', $args);
-			print gui_hyperlink("add member", add_to_url("operation" , "show_add_member"));
+			$result .= GuiTableContent("im_working_teams",
+				'select ID from wp_users where worker_teams(id) like "%:' . $team_id . ':%"', $args);
+			$result .= gui_hyperlink("add member", add_to_url("operation" , "show_add_member"));
+
+			$args = [];
+			$args["query"] = " team = $team_id";
+			$result .= GemTable("im_tasklist", $args);
 			break;
 
 		case "show_add_member":
 			$team_id = get_param("id", true);
-			print gui_header(1, "Adding memeber to team" . sql_query_single_scalar("select team_name from im_working_teams where id = " . $team_id));
-			print gui_select_worker("new_member");
-			print gui_label("team_id", $team_id, true);
-			print gui_button("btn_add_member", "add_member()", "Add");
+			$result .= gui_header(1, "Adding memeber to team" . sql_query_single_scalar("select team_name from im_working_teams where id = " . $team_id));
+			$result .= gui_select_worker("new_member");
+			$result .= gui_label("team_id", $team_id, true);
+			$result .= gui_button("btn_add_member", "add_member()", "Add");
 
-			print "<br/>";
-			print gui_hyperlink("Invite college to your company", add_to_url(array("operation"=>"show_add_to_company")));
+			$result .= "<br/>";
+			$result .= gui_hyperlink("Invite college to your company", add_to_url(array("operation"=>"show_add_to_company")));
 			break;
 
 		case "show_add_to_company":
 			$company_id = get_param("id", true);
-			print gui_header(2, "Invite to company") . " " . gui_label("company_id", $company_id);
-			print im_translate("Enter college email address: ");
-			print gui_table_args(array(array("email", GuiInput("email", "", $args)),
+			$result .=  gui_header(2, "Invite to company") . " " . gui_label("company_id", $company_id);
+			$result .=  im_translate("Enter college email address: ");
+			$result .=  gui_table_args(array(array("email", GuiInput("email", "", $args)),
 				                       array("name", GuiInput("name", "", $args)),
 									   array("project", gui_select_project("project_id", null, $args))));
-			print gui_button("btn_add_to_company", "add_to_company()", "Add");
+			$result .=  gui_button("btn_add_to_company", "add_to_company()", "Add");
 			break;
 
 		case "projects":
-			print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/niver/data/data.js" ) );
+			$result .=  header_text( false, true, true, array( "/niver/gui/client_tools.js", "/niver/data/data.js" ) );
 
 			if ($id = get_param("project_id")) {
-				print show_project($id);
-				return;
+				$result .=  show_project($id);
+				print $result;
 			}
 			show_projects(get_url(), get_user_id());
 			break;
@@ -421,7 +509,7 @@ function handle_focus_operation($operation)
 		case "task_types":
 			$args = array();
 			$args["title"] = "task types";
-			print GemTable("im_task_type", $args);
+			$result .=  GemTable("im_task_type", $args);
 			break;
 
 		case "new_company_user":
@@ -430,41 +518,85 @@ function handle_focus_operation($operation)
 			$sql = "update im_working set company_id = " . $company_id . " where user_id = " . get_user_id();
 			sql_query($sql);
 
-			print "done";
+			$result .=  "done";
 			break;
 
-		case "edit_all_teams": // System manager -> edit all teams in the system.
-			if (! im_user_can("edit_teams")) print "No permissions";
+		case "show_edit_all_teams": // System manager -> edit all teams in the system.
+			if (! im_user_can("edit_teams")) $result .=  "No permissions";
 			$args = [];
 			$args["post_file"] = "/niver/data/data-post.php";
 			$args["selectors"] = array("manager" => "gui_select_worker");
-			$args["links"] = array("id" => add_to_url(array("operation" => "edit_team", "id" => "%s")));
-//			print "url = " . get_url() . "<br/>";
-//			print add_to_url(array("operation" => "del_team", "id"=>"%s"));
+			$args["links"] = array("id" => add_to_url(array("operation" => "show_edit_team", "id" => "%s")));
+			$args["page"] = get_param("page");
+//			$result .=  "url = " . get_url() . "<br/>";
+//			$result .=  add_to_url(array("operation" => "del_team", "id"=>"%s"));
 
 			$args["actions"] = array(array("delete", $action_url . "?operation=del_team&id=%s;action_hide_row"));
-			print GemTable("im_working_teams", $args);
+			$result .= gui_header(1, "All system teams");
+			$result .=  GemTable("im_working_teams", $args);
 
 			unset($args["actions"]);
 			$args["mandatory_fields"] = array("manager", "team_name");
-			print GemAddRow("im_working_teams", "Add a team", $args);
+			$result .=  GemAddRow("im_working_teams", "Add a team", $args);
 			break;
 
+		case "show_edit_team":
+			$team_id = get_param("id");
+			$result .= gui_header(1, "Edit team");
+			$args["selectors"] = array("manager" => "gui_select_worker");
+			$result .= GemElement("im_working_teams", $team_id, $args);
 
+			$result .= gui_header(2, "Team members");
+			$table = array();
+			$table["header"] = array("name");
+			foreach (team_all_members($team_id) as $member)
+				$table[$member]["name"] = get_user_name($member);
+
+			$args["add_checkbox"] = true;
+			$args["post_file"] = get_url(1) . "?team_id=" . $team_id;
+			$result .= GemArray($table, $args, "team_members");
+
+			$result .= gui_header(1, "add member");
+			$result .= gui_select_worker("new_member", null, $args);
+			$result .= gui_button("btn_add_member", "add_team_member(" . $team_id . ")", "add");
+
+//			$result = gui_header(1, "edit team" . team_get_name($team_id));
+//			$result .=  gui_header(2, "members");
+//			foreach (team_all_members($team_id) as $member) $result .= get_user_name($member) . " ";
+			break;
+
+		case "show_edit_company":
+			$company_id = get_param("company_id", true);
+			$result .= gui_header(1, company_get_name($company_id));
+			$args = [];
+			$args["query"] = "manager = 1";
+			$args["links"] = array("id" => add_to_url(array("operation" => "show_edit_team&id=%s")));
+			$args["selectors"] = array("team_members" => "gui_show_team");
+
+			$teams = TableData("select id, team_name from im_working_teams where manager = " . get_user_id());
+			foreach ($teams as $key => &$row)
+				if ($key == "header") $row [] = im_translate("Team members");
+				else $row["team_members"] = comma_implode(team_all_members($row["id"]));
+				//GemTable("im_working_teams", $args);
+			$result .= GemArray($teams, $args, "company_teams");
+			break;
 		default:
 			print __FUNCTION__ . ": " . $operation . " not handled <br/>";
 
 			die(1);
 	}
+	print $result;
 	return;
 }
 
-function print_focus_header()
+function focus_header($args)
 {
-	$args = arraY("print_logo" => true, "rtl" => is_rtl());
+	$result = "";
+	// $args = array("print_logo" => true, "rtl" => is_rtl());
 	$args["greeting"] = true;
-	print HeaderText($args);
-	print load_scripts(array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/focus/focus.js" ));
+	$result =  HeaderText($args);
+	$result .= load_scripts(GetArg($args, "scripts", null));
+	return $result;
 }
 
 function show_projects( $url, $owner, $non_zero = true) {
@@ -568,9 +700,7 @@ function show_task($row_id, $edit = 1)
 	$args["debug"] = 0; // get_user_id() == 1;
 	$args["worker"] = get_user_id();
 
-	print GemElement($table_name, $row_id, $args);
-
-	return;
+	return GemElement($table_name, $row_id, $args);
 }
 
 /**
@@ -602,18 +732,53 @@ function gui_select_repeat_time( $id, $value, $args) {
 		return $values[$selected];
 }
 
-function edit_staff() // Edit teams that I manage.
+function show_staff() // Edit teams that I manage.
 {
 	$user = wp_get_current_user();
-	print gui_header(2, "teams");
+	$result = gui_header(2, "teams");
 
 	$args = [];
-	$args["links"] = array("id" => add_to_url(array("operation" => "edit_team", "id" => "%s")));
+	$args["links"] = array("id" => add_to_url(array("operation" => "show_team", "id" => "%s")));
 	$args["selectors"] =  array("manager" => "gui_select_worker");
 	$args["edit"] = false;
-	print GuiTableContent("working_teams", "select * from im_working_teams where manager = " . $user->id, $args);
+	$result .= GuiTableContent("working_teams", "select * from im_working_teams where manager = " . $user->id, $args);
 
-	print gui_hyperlink("add", add_to_url("operation", "show_new_team"));
+	$result .= gui_hyperlink("add", add_to_url("operation", "show_new_team"));
+	// print GuiTableContent("");
+
+	return $result;
+}
+
+function edit_projects($args) // Edit projects that I manage.
+{
+	$result = gui_header(2, "Projects");
+
+	$global = GetArg($args, false, "global");
+	$args["links"] = array("ID" => add_to_url(array("operation" => "show_edit_project", "id" => "%s")));
+	$args["selectors"] =  array("manager" => "gui_select_worker");
+	$args["edit"] = false;
+	$args["actions"] = array (array("delete", get_url(1) . "?operation=cancel_im_projects&id=%s;action_hide_row"));
+	$base_query = "is_active = 1 ";
+	$args["fields"] = array("ID", "project_name", "project_contact", "project_priority", "company");
+	if ($global) // A global user can see all projects
+	{
+		$args["query"] = $base_query;
+		$result .= GemTable("im_projects", $args); // "select * from im_projects ", $args);
+	} else { // Ordinary user can see only projects he's working in.
+		$worker_id = GetArg($args,"worker_id", null);
+		if (! $worker_id) die ("no worker_id");
+		$companies = worker_get_companies(get_user_id());
+
+		foreach ($companies as $company){
+			$result .= gui_header(1, company_get_name($company));
+			$args["query"] = $base_query . " and company = $company";
+			$result .= GemTable("im_projects", $args); //"select * from im_projects where company = $company", $args);
+		}
+	}
+
+	$result .= gui_hyperlink("add", add_to_url("operation", "show_new_company"));
+
+	return $result;
 	// print GuiTableContent("");
 }
 
@@ -816,7 +981,7 @@ function show_project($project_id, $args = null)
 	$sql = "select * from im_tasklist where project_id = " . $project_id;
 	if ($active_only) $sql .= " and status = 0 ";
 	$args["sql"] = $sql . $order;
-	$args["links"] = array("id" => add_param_to_url(get_url(), "id", "%s"));
+	$args["links"] = array("id" =>  add_to_url(array("operation" => "show_task", "id" => "%s")));
 	$args["title"] = im_translate("משימות בפרויקט") . " " . get_project_name($project_id);
 
 //	print $sql;
@@ -842,10 +1007,21 @@ function focus_main()
 	$result .= gui_hyperlink("Repeating tasks", $url . "?operation=show_templates") . " ";
 
 	if (team_managed_teams(get_user_id())) // Team manager
-		$result .= gui_hyperlink("My teams", $url . "?operation=edit_staff") . " ";
+		$result .= gui_hyperlink("My teams", $url . "?operation=show_staff") . " ";
 
-	if (im_user_can("edit_teams")) // System editor
-		$result .= gui_hyperlink("All teams", $url . "?operation=edit_all_teams") . " ";
+	$result .= gui_hyperlink("My projects", $url . "?operation=show_edit_projects") . " ";
+
+	$my_companies = worker_get_companies($user_id, true);
+	if ($my_companies) foreach ($my_companies as $company){
+		$result .= gui_hyperlink(company_get_name($company), $url . "?operation=show_edit_company&company_id=" . $company) . " ";
+	}
+
+	if (im_user_can("edit_teams")){ // System editor
+		$result .= "<br/>" . im_translate("System wide:");
+		$result .= gui_hyperlink("All teams", $url . "?operation=show_edit_all_teams") . " ";
+		$result .= gui_hyperlink("All projects", $url . "?operation=show_edit_all_projects") . " ";
+	}
+
 
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -987,4 +1163,12 @@ function template_delete($user_id, $template_id)
 	}
 
 	return false;
+}
+
+function gui_show_team($id, $selected, $args)
+{
+	$members = explode(",", $selected);
+	$result = "";
+	foreach ($members as $member) $result .= get_user_name($member) . ", ";
+	return rtrim($result, ", ");
 }

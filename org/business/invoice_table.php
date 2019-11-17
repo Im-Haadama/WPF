@@ -1,4 +1,12 @@
 <?php
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
+if ( ! defined( "ROOT_DIR" ) ) {
+	define( 'ROOT_DIR', dirname(dirname( dirname( __FILE__ ) ) ) );
+}
+require_once(ROOT_DIR . '/im-config.php');
+require_once(ROOT_DIR . "/init.php" );
 
 /**
  * Created by PhpStorm.
@@ -86,15 +94,9 @@ if ($part_id) {
 	$sql =  "select id, date, amount, net_amount, ref, pay_date, supply_from_business(id)
         from im_business_info where " . $page . " and is_active = 1 order by 2";
 
-	// print $sql;
-	try {
-		print GuiTableContent( "transactions", $sql, $args );
-	} catch ( Exception $e ) {
-		print "Error: " . $e->getMessage();
-		die(1);
-	}
-
-//	print table_content("transactions", $sql, true, true, $links);
+	$args ["sql"] = $sql;
+	$args["page"] = get_param("page");
+	print GemTable( "transactions", $args );
 
 	$date = date('Y-m-d', strtotime("last day of previous month"));
 

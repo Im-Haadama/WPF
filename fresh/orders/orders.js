@@ -85,7 +85,27 @@ function replace_baskets() {
             location.reload(true);
         }
     }
-    var request = "orders-post.php?operation=replace_baskets";
+    let request = "orders-post.php?operation=replace_baskets";
     xmlhttp.open("GET", request, true);
     xmlhttp.send();
+}
+
+function update_email() {
+    let email = get_value_by_name("email");
+
+    let request = "/fresh/orders/orders-post.php?operation=check_email&email=" + email;
+
+    execute_url(request, function(xmlhttp){
+        if (xmlhttp.response === "u") {
+            alert("משתמש לא ידוע. בדוק את כתובת המייל שלך");
+        } else {
+            document.getElementById("user_info").innerHTML = xmlhttp.response;
+        }
+    });
+
+    request = "/fresh/orders/orders-post.php?operation=check_delivery&email=" + email;
+    execute_url(request, function(xmlhttp)
+    {
+        document.getElementById("delivery_info").innerHTML = xmlhttp.response;
+    });
 }

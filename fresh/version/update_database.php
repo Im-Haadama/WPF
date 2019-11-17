@@ -20,6 +20,8 @@ require_once( ROOT_DIR . '/niver/gui/sql_table.php' );
 require_once( ROOT_DIR . "/init.php" );
 init();
 
+if (! is_manager()) die ("no permissions");
+
 $version = get_param( "version" );
 
 switch ( $version ) {
@@ -35,6 +37,9 @@ switch ( $version ) {
 		version16();
 		version17();
 		version18();
+		break;
+	case "27":
+		version27();
 		break;
 	case "26":
 		version26();
@@ -77,6 +82,20 @@ print "done";
 die ( 0 );
 
 
+function version27()
+{
+	print gui_header(1, "add company to project");
+	sql_query("ALTER TABLE im_projects ADD company int not null default 1;");
+
+	print gui_header(1, "add is_active to project");
+	sql_query("ALTER TABLE im_projects ADD is_active int(1) not null default 1;");
+
+	print gui_header(1, "first_day_of_week");
+	sql_query("create function FIRST_DAY_OF_WEEK(day date) returns date
+BEGIN
+  RETURN SUBDATE(day, WEEKDAY(day) + 1);
+END;");
+}
 function version26()
 {
 	print gui_header(1, "worker_teams");

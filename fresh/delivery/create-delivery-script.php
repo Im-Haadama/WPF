@@ -6,8 +6,9 @@ require_once( "../../wp-includes/pluggable.php" );
 require_once( "../account/account.php" );
 
 require_once( ROOT_DIR . "/init.php" );
+require_once(ROOT_DIR . '/fresh/catalog/gui.php');
 
-print gui_select_product("datalist", '', array("datalist" => "im_products"));
+//print gui_select_product("datalist", '', array("datalist" => "im_products"));
 
 $id       = isset( $_GET["id"] ) ? $_GET["id"] : null;
 $order_id = $_GET["order_id"];

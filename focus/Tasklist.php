@@ -24,11 +24,13 @@ class Tasklist {
 	private $repeat_freq;
 	private $repeat_freq_numbers;
 	private $priority;
+	private $project;
+	private $team;
 
 	public function __construct( $_id ) {
 		$this->id = $_id;
 		$row      = sql_query_single( "SELECT location_name, location_address, task_description, mission_id," .
-		                              " task_template, priority " .
+		                              " task_template, priority, project_id, team " .
 		                              " FROM im_tasklist " .
 		                              " WHERE id = " . $this->id );
 
@@ -37,6 +39,9 @@ class Tasklist {
 		$this->task_description = $row[2];
 		$this->mission_id       = $row[3];
 		$this->priority         = $row[5];
+		$this->project = $row[6];
+		$this->team = $row[7];
+
 
 		if ( $row[4] ) {
 			$row = sql_query_single( "SELECT repeat_freq, repeat_freq_numbers " .
@@ -45,6 +50,20 @@ class Tasklist {
 			$this->repeat_freq         = $row[0];
 			$this->repeat_freq_numbers = $row[1];
 		}
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getTeam() {
+		return $this->team;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getProject() {
+		return $this->project;
 	}
 
 	/**

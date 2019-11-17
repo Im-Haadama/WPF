@@ -719,7 +719,6 @@ class PriceList {
 		       . " WHERE id = " . $pricelist_id;
 
 		sql_query( $sql );
-
 		// The mapping stays - in case supplier gets it back.
 
 		// If no other option for this product - make it draft

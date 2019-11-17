@@ -5,6 +5,15 @@
  * Date: 03/07/15
  * Time: 11:53
  */
+
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
+if ( ! defined( "ROOT_DIR" ) ) {
+	define( 'ROOT_DIR', dirname(dirname( dirname( __FILE__ ) ) )) ;
+}
+require_once(ROOT_DIR . '/im-config.php');
+
 require_once( '../r-shop_manager.php' );
 require_once( 'account.php' );
 require_once( '../invoice4u/invoice.php' );
@@ -125,7 +134,7 @@ switch ( $operation ) {
 		$id = add_im_user( $user, $name, $email, $address, $city, $phone, $zip );
 
 		if ($operation == "legacy_user")
-			update_user_meta( $id, 'legacy_user', 2 );
+			update_user_meta( $id, '_client_type', 2 );
 		print "done";
 	break;
 

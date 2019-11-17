@@ -50,7 +50,7 @@ function gui_select_supplier( $id = "supplier_select", $value = null, $args = nu
 	}
 
 	return gui_select_table( $id, "im_suppliers", $value, $events, "", "supplier_name",
-		"where active = 1", true, false, "supplier_name", $class );
+		" where active = 1", true, false, "supplier_name", $class );
 //		$sql_where );
 }
 

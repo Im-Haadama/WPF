@@ -11,9 +11,10 @@ init();
 require_once("focus.php");
 
 $operation = get_param("operation", false, null);
+$args = [];
 
 if ($operation){
-	handle_focus_operation($operation);
+	handle_focus_operation($operation, $args);
 	return;
 }
 

@@ -186,7 +186,7 @@ function remove_br($value)
 	return $value;
 }
 
-function GuiDatalist($id, $values, $id_field, $field_name, $include_id)
+function GuiDatalist($id, $values, $id_field, $field_name, $include_id = false)
 {
 	$debug = 1;
 
@@ -671,6 +671,7 @@ function gui_table_args($input_rows, $id = null, $args = null)
 
 	// add_checkbox should be used on multiple rows view.
 	$add_checkbox = GetArg($args, "add_checkbox", false);
+	// debug_var($add_checkbox . " " . $id);
 	$checkbox_class = GetArg($args, "checkbox_class", null);
 	$checkbox_events = GetArg($args, "checkbox_events", null);
 	$prepare = GetArg($args, "prepare", true);
@@ -818,7 +819,7 @@ function GuiAutoList($id, $list_name, $args)
 
 function DatalistCreate($args, $table, &$values)
 {
-	$where = GetArg($args, "where", null);
+	$query = GetArg($args, "query", null);
 	$id_key = GetArg($args, "id_key", "id");
 
 	$order_by = GetArg($args, "order_by", null);
@@ -827,7 +828,7 @@ function DatalistCreate($args, $table, &$values)
 	$sql = "SELECT distinct " . $id_key . ", " . sprintf($name, $id_key);
 	if ( $order_by ) $sql .= ", " . $order_by;
 	$sql .= " FROM " . $table;
-	if ( $where ) $sql .= " " . $where;
+	if ( $query ) $sql .= " where " . $query;
 
 	if ( $order_by ) $sql .= " order by $order_by ";
 
@@ -879,7 +880,6 @@ function GuiSelectTable($id, $table, $args)
 			$data .= gui_select_datalist( $id, $table, $table . "_values", $name, $values, $events, null, $include_id, $id_key, $class );
 
 		return $data;
-
 	} else {
 		DatalistCreate($args, $table, $values);
 		return gui_select( $id, $name, $values, $events, $selected, $id_key, $class );
@@ -1091,7 +1091,8 @@ function gui_select_table(
 	if ( $where ) {
 		$sql .= " " . $where;
 	}
-	// print $sql;
+	// debug_var($sql);
+
 	if ( $order_by ) {
 		$sql .= " order by 3 ";
 	}

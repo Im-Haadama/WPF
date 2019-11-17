@@ -92,20 +92,12 @@ switch ( $operation ) {
 		break;
 
 	case "delete_price":
-		print "start delete";
 		$params = explode( ',', $_GET["params"] );
 		for ( $pos = 0; $pos < count( $params ); $pos ++ ) {
 			$price_id = $params[ $pos ];
-
-//            $sql = 'SELECT product_name, price FROM im_supplier_price_list'
-//                . ' where id = ' . $price_id;
-//
-//            $export = mysql_query($sql) or die ("Sql error : " . mysql_error());
-//
-//            my_log("delete price " . $price_id . " product " . $row[0] . "price " . $row[1]);
 			$pl->Delete( $price_id );
 		}
-		print "done delete";
+		print "done";
 		break;
 
 	case "delete_map":

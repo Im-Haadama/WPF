@@ -1,6 +1,7 @@
 <?php
 require_once ("../r-shop_manager.php");
 include_once( "delivery.php" );
+
 print header_text( false );
 
 print load_scripts(array("/niver/gui/client_tools.js", "/niver/data/data.js"));

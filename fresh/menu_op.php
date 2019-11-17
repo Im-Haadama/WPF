@@ -158,7 +158,7 @@ if ($manage_workers) {
     $col ++;
     $row                      = 0;
     $table[ $row ++ ][ $col ] = gui_header( 2, "עובדים" );
-    add_command( $table, $row, $col, null, "דיווח שעות", "http://store.im-haadama.co.il/org/people/worker.php", "doc_frame" );
+    add_command( $table, $row, $col, null, "דיווח שעות", "https://store.im-haadama.co.il/org/people/worker.php", "doc_frame" );
     add_command( $table, $row, $col, "working_hours_all", "ניהול עובדים", "people/c-get-all-working.php" );
 }
 while ( $row < $max_row ) {

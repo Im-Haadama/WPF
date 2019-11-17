@@ -26,10 +26,10 @@ ob_start();
 // print gui_header( 1, "Handling auto orders" );
 // auto_mail();
 
-print gui_header( 1, "Handling auto supply" );
-auto_supply();
+// print gui_header( 1, "Handling auto supply" );
+// auto_supply();
 
-require_once( ROOT_DIR . "/fresh/tasklist/Tasklist.php" );
+require_once( ROOT_DIR . "/focus/Tasklist.php" );
 print gui_header( 1, "Creating tasks from templates into tasklist" );
 create_tasks( null, true );
 
