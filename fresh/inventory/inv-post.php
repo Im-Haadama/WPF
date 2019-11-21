@@ -17,9 +17,32 @@ require_once( ROOT_DIR . '/niver/gui/sql_table.php' );
 require_once( "../catalog/bundles.php" );
 require_once( "../orders/orders-common.php" );
 
-$operation = $_GET["operation"];
+$operation = get_param("operation", true);
 
 switch ( $operation ) {
+	case "add_waste":
+		$prod_ids = $_GET["prod_ids"];
+		add_waste( explode( ",", $prod_ids ) );
+		return;
+
+	case "in":
+		show_in( $_GET["id"] );
+		return;
+
+	case "out":
+		show_out( $_GET["id"] );
+		return;
+
+	case "save_inv":
+		$data = get_param_array("data");
+		if (save_inv($data)) print "done";
+		return;
+}
+
+print HeaderText();
+
+switch ($operation)
+{
 	case "show":
 		$debug = false;
 		if ( isset( $_GET["supplier_id"] ) ) {
@@ -27,26 +50,29 @@ switch ( $operation ) {
 
 			return;
 		}
-		show_fresh_inventory();
+		$not_available = get_param("not_available", false, false);
+		show_fresh_inventory($not_available);
 		break;
+}
 
-	case "add_waste":
-		$prod_ids = $_GET["prod_ids"];
-		add_waste( explode( ",", $prod_ids ) );
-		break;
+function show_not_available() {
+	$iter = new ProductIterator();
 
-	case "in":
-		show_in( $_GET["id"] );
-		break;
+	$iter->iteratePublished();
 
-	case "out":
-		show_out( $_GET["id"] );
-		break;
+	$table = array();
+	$table["header"] = array("product_name", "current inventory");
 
-	case "save_inv":
-		$data = get_param_array("data");
-		if (save_inv($data))
-			print "done";
+	while ( $prod_id = $iter->next() ) {
+		$alter = alternatives($prod_id);
+		$p = new Product($prod_id);
+		// print "checking " . get_product_name($prod_id) . "<br/>";
+		if (! count($alter)) {
+			$row = array(get_product_name($prod_id), $p->getStock());
+			$table[$prod_id] = $row;
+		}
+	}
+	print gui_table_args($table);
 }
 
 function show_supplier_inventory( $supplier_id ) {
@@ -81,14 +107,19 @@ function show_supplier_inventory( $supplier_id ) {
 	print $display;
 }
 
-function show_fresh_inventory() {
+function show_fresh_inventory($not_available = false) {
 	$wait = sql_query_single_scalar( "SELECT count(id) FROM wp_posts WHERE post_status IN ('wc-waiting', 'wc-on-hold')" );
 	if ( $wait ) {
 		print gui_header( 1, "יש הזמנות במצב המתנה!" );
 		print "יש לטפל בהן לפני עדכון המלאי";
 	}
 	print gui_header( 1, "פריטים טריים במלאי" );
-	show_inventory();
+	if ($not_available) print gui_header(2, "not available at suppliers");
+	$args = [];
+	$args["not_available"] = $not_available;
+	$args["fresh"] = true;
+	$args["add_checkbox"] = true;
+	show_inventory($args);
 }
 
 function save_inv( $data ) {
@@ -204,41 +235,12 @@ function show_out( $prod_id ) {
 	}
 }
 
-function show_inventory() {
+function show_inventory($args) {
 
 	$needed = array();
-	Order::CalculateNeeded( $needed );
-	print show_category_all( false, false, true, true );
-	// $data = "<table>";
-//	$rows = [];
-
-//	array_push( $rows, array( "מוצר", "כמות נרכשה", "כמות סופקה", "מלאי" ) );
-//	while ( $row = mysqli_fetch_row( $result ) ) {
-//		$prod_id = $row[0];
-//		$p       = new Product( $prod_id );
-//		if ( $p->getStockManaged() != $managed )
-//			continue;
-//		$q_in    = round( $row[1], 1 );
-//		$q_out   = get_out( $prod_id );
-//		$q       = round( $q_in - $q_out, 1 );
-//		if ( $q > 0 or $debug ) {
-//			$line = array(
-//				gui_checkbox( "chk_" . $prod_id, "select"),
-//				get_product_name( $prod_id ),
-//				gui_hyperlink( $q_in, "inv-post.php?operation=in&id=" . $prod_id ),
-//				gui_hyperlink( $q_out, "inv-post.php?operation=out&id=" . $prod_id ),
-//				$q_in - $q_out
-//			);
-//			array_push( $rows, $line );
-//		}
-//	}
-//
-//	// $data .= "</table>";
-//	// $sql = "select product_name as מוצר, round(q, 0) as כמות from i_total where round(q) > 0";
-//	// print table_content($sql);
-//	print gui_table( $rows );
-
-	// print $data;
+	// Order::CalculateNeeded( $needed ); // Not sure why
+	$args["inventory"] = true;
+	print ShowCategoryAll($args);
 }
 
 function do_get_out( $prod_id ) {

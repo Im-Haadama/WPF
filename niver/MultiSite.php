@@ -21,6 +21,8 @@ class MultiSite {
 	private $local_site_id;
 	private $http_codes;
 
+	/// GETTERS
+
 	/**
 	 * MultiSite constructor.
 	 *
@@ -30,10 +32,6 @@ class MultiSite {
 		$this->sites_array   = $sites_array;
 		$this->master_id     = $master_id;
 		$this->local_site_id = $local_site_id;
-	}
-
-	static function RunAll( $func ) {
-		print MultiSite::GetAll( $func );
 	}
 
 	/**
@@ -63,7 +61,63 @@ class MultiSite {
 		return $this->http_codes;
 	}
 
+	function getAllServers()
+	{
+		$result = array();
+		foreach ( $this->sites_array as $site_id => $site ) {
+			$r = parse_url($this->sites_array[$site_id][FieldIdx::site_tools_idx]);
 
+			array_push($result, $r['host']);
+		}
+		return $result;
+	}
+
+	public function getSiteName( $site_id ) {
+		if (isset($this->sites_array[ $site_id ][ FieldIdx::site_name_idx ]))
+			return $this->sites_array[ $site_id ][ FieldIdx::site_name_idx ];
+		die ("invalid site_id");
+	}
+
+	public function getSiteToolsURL( $site_id ) {
+		if ( isset( $this->sites_array[ $site_id ] ) ) {
+			return $this->sites_array[ $site_id ][ FieldIdx::site_tools_idx ];
+		} else {
+			print "site ";
+			var_dump( $site_id );
+			print " not defined!";
+
+			return null;
+		}
+	}
+
+	public function getApiKey( $site_id ) {
+		return $this->sites_array[ $site_id ][ FieldIdx::api_key ];
+	}
+
+	function getMaster() {
+		return $this->master_id;
+	}
+
+	function isMaster() {
+		return $this->master_id == $this->local_site_id;
+	}
+
+	function getLocalSiteName() {
+		return $this->getSiteName( $this->getLocalSiteID() );
+	}
+
+	function getLocalSiteID() {
+		return $this->local_site_id;
+	}
+
+	function getLocalSiteTools() {
+		return $this->getSiteToolsURL( $this->local_site_id );
+	}
+
+	/// REMOTING...
+	/// Run makes the remoting. first parameter use to indicate if it's the first - so we can create one output from several servers (header = true only on first).
+	/// Execute is for single call.
+	/// GetAll will Run on all defined severs.
 	function GetAll( $func, $verbose = false, $debug = false, $strip = false ) {
 		$debug = get_param("debug", false, $debug);
 		$output = "";
@@ -83,7 +137,8 @@ class MultiSite {
 		foreach ( $this->sites_array as $site_id => $site ) {
 			$result = $this->Run( $func, $site_id, $first, $debug );
 			if (! $result) {
-				$output .= "Can't get from " . $this->getSiteName($site_id) . " http code: " . $this->http_codes[$site_id] . "<br/>";
+				$output .= "Can't get from " . $this->getSiteName($site_id) . " http code: " . $this->http_codes[$site_id] . gui_br();
+				$output .= $this->getSiteToolsURL($site_id) . '/' . $func . gui_br();
 			}
 			if ( $strip ) {
 				$result = strip_tags( $result, "<div><br><p><table><tr><td>" );
@@ -101,17 +156,6 @@ class MultiSite {
 		}
 
 		return $output;
-	}
-
-	function getAllServers()
-	{
-		$result = array();
-		foreach ( $this->sites_array as $site_id => $site ) {
-			$r = parse_url($this->sites_array[$site_id][FieldIdx::site_tools_idx]);
-
-			array_push($result, $r['host']);
-		}
-		return $result;
 	}
 
 	function Run( $func, $site_id, $first = false, $debug = false )
@@ -139,8 +183,8 @@ class MultiSite {
 		}
 
 		if (! isset($this->sites_array[$site_id][3])){
-			print "username is missing (index 3)";
-			var_dump($this->sites_array);
+			print "Error #N1: username is missing (index 3), site " . $this->getSiteName($site_id) ;
+			// var_dump($this->sites_array);
 			die (1);
 		}
 		$username = $this->sites_array[$site_id][3];
@@ -165,24 +209,6 @@ class MultiSite {
 
 		// print "id=" . $id . " " . "result: " . $result_text;
 		return $result_text;
-	}
-
-	public function getSiteToolsURL( $site_id ) {
-		if ( isset( $this->sites_array[ $site_id ] ) ) {
-			return $this->sites_array[ $site_id ][ FieldIdx::site_tools_idx ];
-		} else {
-			print "site ";
-			var_dump( $site_id );
-			print " not defined!";
-
-			return null;
-		}
-	}
-
-	public function getSiteName( $site_id ) {
-		if (isset($this->sites_array[ $site_id ][ FieldIdx::site_name_idx ]))
-			return $this->sites_array[ $site_id ][ FieldIdx::site_name_idx ];
-		die ("invalid site_id");
 	}
 
 	function Execute( $request, $site, $debug = false ) {
@@ -223,27 +249,5 @@ class MultiSite {
 //		return $html;
 	}
 
-	public function getApiKey( $site_id ) {
-		return $this->sites_array[ $site_id ][ FieldIdx::api_key ];
-	}
 
-	function getMaster() {
-		return $this->master_id;
-	}
-
-	function isMaster() {
-		return $this->master_id == $this->local_site_id;
-	}
-
-	function getLocalSiteName() {
-		return $this->getSiteName( $this->getLocalSiteID() );
-	}
-
-	function getLocalSiteID() {
-		return $this->local_site_id;
-	}
-
-	function getLocalSiteTools() {
-		return $this->getSiteToolsURL( $this->local_site_id );
-	}
 }

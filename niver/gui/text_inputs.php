@@ -1,5 +1,12 @@
 <?php
 
+define('IM_GUI', 'text gui');
+
+function gui_br()
+{
+	return PHP_EOL;
+}
+
 function gui_header($level, $text) { return $text . PHP_EOL; }
 
 function gui_type() { return "text"; }

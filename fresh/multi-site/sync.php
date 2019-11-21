@@ -34,18 +34,18 @@ function sync_from_master($debug) {
 		die (1);
 	}
 
-	print gui_header( 1, "מסנכרן מיקומים" );
-	$i->UpdateFromRemote( "wp_woocommerce_shipping_zone_locations", "location_id", 0, null, null, $debug );
+//	print gui_header( 1, "מסנכרן מיקומים" );
+//	$i->UpdateFromRemote( "wp_woocommerce_shipping_zone_locations", "location_id", 0, null, null, $debug );
 
-	print gui_header( 1, "מסנכרן שיטות משלוח" );
-	$i->UpdateFromRemote( "wp_woocommerce_shipping_zone_methods", "instance_id", 0, null, null, $debug );
+//	print gui_header( 1, "מסנכרן שיטות משלוח" );
+//	$i->UpdateFromRemote( "wp_woocommerce_shipping_zone_methods", "instance_id", 0, null, null, $debug );
 
-	print gui_header( 1, "מסנכרן איזורי משלוח" );
-	$i->UpdateFromRemote( "wp_woocommerce_shipping_zones", "zone_id", 0, null, null, $debug );
+//	print gui_header( 1, "מסנכרן איזורי משלוח" );
+//	$i->UpdateFromRemote( "wp_woocommerce_shipping_zones", "zone_id", 0, null, null, $debug );
 
 	print gui_header( 1, "מסנכרן משימות" );
 	$i->UpdateFromRemote( "im_missions", "id", 0, null, null, $debug );
 
-	print gui_header( 1, "מסנרכן שיטות משלוח" );
-	$i->UpdateFromRemote( "wp_options", "option_name", 0, "option_name like 'woocommerce_flat_rate_%_settings'", array( 'option_id' ), $debug);
+//	print gui_header( 1, "מסנרכן שיטות משלוח" );
+//	$i->UpdateFromRemote( "wp_options", "option_name", 0, "option_name like 'woocommerce_flat_rate_%_settings'", array( 'option_id' ), $debug);
 }

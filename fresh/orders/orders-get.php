@@ -22,7 +22,9 @@ if ( isset( $_GET["week"] ) ) {
 $order_type = get_param( "order_type" ); // comma separated. w - waiting to deliver. p - pending/on-hold
 
 if ( ! $order_type ) {
-     print gui_hyperlink("Add order", "/wp-admin/post-`new`.php?post_type=shop_order", "_blank" );
+     print gui_hyperlink("Add order", "/wp-admin/post-new.php?post_type=shop_order", "_blank" );
+    print " ";
+	print gui_hyperlink("Paper order", "order-page.php?operation=paper_order", "_blank" );
 
 	// print gui_button( "btn_new", "show_create_order()", "הזמנה חדשה" );
 }

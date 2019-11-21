@@ -38,10 +38,3 @@ function task_focus()
 	print active_tasks();
 }
 
-function task_greeting()
-{
-	global $style_file;
-	global $tasks_scripts;
-	init($tasks_scripts, $style_file);
-	print greeting();
-}

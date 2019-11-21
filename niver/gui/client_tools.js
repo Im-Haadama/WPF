@@ -148,7 +148,7 @@ function enable_btn(id) {
 
 function location_reload(xmlhttp)
 {
-    if (xmlhttp.response === "done")
+    if (xmlhttp.response.substr(0, 4) === "done")
         location.reload();
     else
         alert (xmlhttp.response);

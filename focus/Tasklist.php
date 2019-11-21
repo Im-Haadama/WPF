@@ -315,10 +315,17 @@ function create_tasks_per_mission() {
 		}
 	}
 }
+
+function focus_log_file($full = false) {
+	$file = "";
+	if ($full) $file = '/logs/';
+	return  $file . "tasklist." . date("m-d") . ".log";
+}
+
 // if null = create for all freqs.
 function create_tasks( $freqs = null, $verbose = false, $default_owner = 1 )
 {
-	$log_file = "tasklist." . date("m-d") . ".log";
+	$log_file = focus_log_file();
 	my_log("Creating tasks freqs=" . $freqs, __FUNCTION__, $log_file);
 	ob_start();
 	if ( ! table_exists( "im_task_templates" ) ) {

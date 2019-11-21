@@ -7,11 +7,7 @@
  */
 
 require_once( '../r-shop_manager.php' );
-
 require_once( "../catalog/catalog.php" );
-?>
-
-<?php
 
 $operation = get_param("operation", false);
 if ($operation) {
@@ -29,8 +25,13 @@ if ($operation) {
         let prod_id = get_value_by_name("new_product");
         execute_url('show_baskets.php?operation=add_to_basket&basket_id=' + basket_id + '&new_product=' + prod_id, location_reload);
     }
-</script>
-<?
+
+    function remove_from_basket(basket_id)
+    {
+        let param = get_selected("product_checkbox");
+        execute_url('show_baskets.php?operation=remove_from_basket&basket_id=' + basket_id + '&products=' + param, location_reload);
+    }
+</script> <?
 
 $basket_id = get_param("basket_id", false, 0);
 
@@ -40,11 +41,19 @@ function handle_basket_operation($operation)
     switch ($operation)
     {
         case "add_to_basket":
-        $basket_id = get_param("basket_id", true);
-        $new_product = get_param("new_product", true);
-        $sql = 'INSERT INTO im_baskets (basket_id, date, product_id, quantity) VALUES (' . $basket_id . ", '" . date( 'Y/m/d' ) . "', " .
-	               $new_product . ", " . 1 . ')';
-        if (sql_query($sql)) return true;
+            $basket_id = get_param("basket_id", true);
+            $new_product = get_param("new_product", true);
+            $sql = 'INSERT INTO im_baskets (basket_id, date, product_id, quantity) VALUES (' . $basket_id . ", '" . date( 'Y/m/d' ) . "', " .
+                       $new_product . ", " . 1 . ')';
+            if (sql_query($sql)) return true;
+            break;
+
+        case "remove_from_basket":
+            $basket_id = get_param("basket_id", true);
+            $products = get_param("products", true);
+            $sql = "delete from im_baskets where basket_id = " . $basket_id . " and product_id in ( $products ) ";
+            if (sql_query($sql)) print "done";
+            break;
     }
 }
 if ( $basket_id > 0 ) {
@@ -130,7 +139,9 @@ print "<br/>";
 print "השתדללו להקדים הזמנותיכם, ולא יאוחר מיום שני בשעה 18 ";
 print " באתר - http://store.im-haadama.co.il או בהודעה חוזרת.";
 
-function print_basket( $basket_id ) {
+function print_basket( $basket_id )
+{
+    print gui_header(1, im_translate("basket") . " " . get_product_name($basket_id));
 	$sql = 'SELECT DISTINCT product_id, quantity, product_price(product_id) as price, quantity * product_price(product_id) as line_price FROM im_baskets WHERE basket_id = ' . $basket_id .
            " and post_status(product_id) like '%pub%'";
 
@@ -147,13 +158,16 @@ function print_basket( $basket_id ) {
     }
 
     array_push($basket_content, array("product_id" => im_translate("Total"), "price" => "", "quantity" => "", "line_price" => $total));
+    $args["checkbox_class"] = "product_checkbox";
 
     print gui_table_args($basket_content, "basket_contents", $args);
 
-    print gui_select_product("new_product");
 
-    print gui_button("add_product", "add_to_basket(" . $basket_id . ")", "add");
+	print gui_button("remove_product", "remove_from_basket(" . $basket_id . ")", "remove");
 
+	print "<br/>";
+	print gui_select_product("new_product");
+	print gui_button("add_product", "add_to_basket(" . $basket_id . ")", "add");
 
 	$sql = 'SELECT DISTINCT product_id FROM im_baskets WHERE basket_id = ' . $basket_id .
 	       " and post_status(product_id) like '%draft%'";

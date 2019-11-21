@@ -12,7 +12,6 @@ ini_set( 'display_errors', 'on' );
  require_once( "people.php" );
 
 $operation = get_param("operation", false, "salary_report");
-print load_scripts(array("people.js", "/niver/gui/client_tools.js"));
 
 //$month = null;
 //$year  = null;

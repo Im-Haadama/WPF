@@ -83,6 +83,7 @@ add_command( $table, $row, $col, "edit_shop_orders", "הדפסה", "/routes/prin
 if ($manage_inventory){
     add_command( $table, $row, $col, "show_supplies", "אספקות", "supplies/supplies-page.php" );
     add_command( $table, $row, $col, "show_supplies", "מצב המלאי", "inventory/display.php" );
+	add_command( $table, $row, $col, "show_supplies", "מוצרים לא זמינים", "inventory/display.php?not_available=1" );
 }
 while ( $row < $max_row ) {
 	$table[ $row ++ ][ $col ] = "";
@@ -159,7 +160,7 @@ if ($manage_workers) {
     $row                      = 0;
     $table[ $row ++ ][ $col ] = gui_header( 2, "עובדים" );
     add_command( $table, $row, $col, null, "דיווח שעות", "https://store.im-haadama.co.il/org/people/worker.php", "doc_frame" );
-    add_command( $table, $row, $col, "working_hours_all", "ניהול עובדים", "people/c-get-all-working.php" );
+    add_command( $table, $row, $col, "working_hours_all", "ניהול עובדים", "/org/people/people-page.php?operation=edit_workers" );
 }
 while ( $row < $max_row ) {
 	$table[ $row ++ ][ $col ] = "";

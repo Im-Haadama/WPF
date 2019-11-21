@@ -336,7 +336,7 @@ class Product {
 		$my_post['post_status'] = 'draft';
 
 		// Update the post into the database
-		wp_update_post( $my_post );
+		return wp_update_post( $my_post );
 	}
 
 	function getImageId()

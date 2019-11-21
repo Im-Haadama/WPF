@@ -6,16 +6,35 @@
  * Time: 16:44
  */
 
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
+if ( ! defined( "ROOT_DIR" ) ) {
+	define( 'ROOT_DIR', dirname(dirname( dirname( __FILE__ ) ) ) );
+}
+require_once(ROOT_DIR . '/im-config.php');
+require_once(ROOT_DIR . "/init.php" );
+require_once(ROOT_DIR . "/org/gui.php");
+require_once(ROOT_DIR . "/focus/focus.php");
+
+
+if (! get_user_id()) {
+	$url = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_HOST ) . '/wp-login.php?redirect_to=' . $_SERVER['REQUEST_URI'] . '"';
+
+	print '<script language="javascript">';
+	print "window.location.href = '" . $url . "'";
+	print '</script>';
+	return;
+}
+
+init(null);
+
 if ( ! defined( "ROOT_DIR" ) ) {
 	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
 }
 
-error_reporting( E_ALL );
-ini_set( 'display_errors', 1 );
-
 require_once( ROOT_DIR . '/niver/PivotTable.php' );
 require_once(ROOT_DIR . '/niver/gui/input_data.php' );
-
 
 $this_url = "project_admin.php";
 $entity_name = "חשבונית";
@@ -32,10 +51,20 @@ if ( ! $year ) {
 
 $page = "EXTRACT(YEAR FROM DATE) = " . $year . " and document_type = 4 and is_active=1";
 
-$operation = get_param( "operation", false );
-if ( $operation ) {
+$operation = get_param( "operation", false, "show_projects" );
+
+handle_project_operation($operation);
+
+function handle_project_operation($operation)
+{
+
+	$args = [];
+	$args["greeting"] = true;
 	switch ( $operation ) {
-		case "add":
+		case "show_task":
+			print handle_focus_operation("show_task", $args);
+			break;
+		case "show_add":
 			$args = array();
 			foreach ( $_GET as $key => $data ) {
 				if ( ! in_array( $key, array( "operation", "table_name" ) ) ) {
@@ -49,12 +78,41 @@ if ( $operation ) {
 			print NewRow( "im_business_info", $args, true );
 			print gui_button( "btn_add", "save_new('im_business_info')", "הוסף" );
 			break;
+		case "show_projects":
+			print HeaderText($args);
+			$links = array("ID" => add_to_url(array("operation" => "show_project", "id" => "%s")));
+
+			print gui_header( 1, "ניהול פרויקטים" );
+			$sum = null;
+			$args = array();
+			$args["links"] = $links;
+			$args["class"] = "sortable";
+			$args["drill"] = true;
+			$args["fields"] = array("id", "project_name", "project_contact", "project_priority", "is_active");
+
+			$sql = "select * from im_projects order by project_priority desc";
+			print GuiTableContent("im_projects", $sql, $args);
+
+			break;
+
+		case "show_project":
+			$id = get_param("id", true);
+			$args = [];
+			$args["page"] = get_param("page", false, 1);
+			print GemElement("im_projects", $id, $args);
+
+			$args["project_id"] = $id;
+			print active_tasks($args);
+			break;
+
 		default:
 			die( "$operation not handled" );
 	}
 
 	return;
 }
+
+return;
 $row_id = get_param( "row_id", false );
 
 if ( $row_id ) {
@@ -87,14 +145,3 @@ if ( $part_id ) {
 	return;
 }
 
-$links = array($this_url . "?row_id=%s");
-
-print gui_header( 1, "ניהול פרויקטים" );
-$sum = null;
-$args = array();
-$args["links"] = $links;
-$args["class"] = "sortable";
-
-$sql = "select * 
-from im_projects";
-print GuiTableContent($table_name, $sql, $args);

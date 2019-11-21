@@ -493,7 +493,7 @@ function sql_set_time_offset()
 function sql_table_id($table_name)
 {
 	// Performance issues. For now hardcoded used tables.
-	$cache = array ("im_tasklist" => "id", "im_working_teams" => "id", "im_task_templates" => "id");
+	$cache = array ("im_tasklist" => "id", "im_working_teams" => "id", "im_task_templates" => "id", "im_working" => "id");
 	if (isset($cache[$table_name])) return $cache[$table_name];
 
 	return sql_query_single_scalar("SELECT COLUMN_NAME 

@@ -119,7 +119,8 @@ function team_add($user_id, $team_name)
 {
 	sql_query("insert into im_working_teams (team_name, manager) values (" . quote_text($team_name) . ", $user_id)" );
 	$team_id =sql_insert_id();
-	team_add_worker($team_id, $user_id);
+	// Team manager doesn't have to be part of it.
+	// team_add_worker($team_id, $user_id);
 	return $team_id;
 }
 
@@ -210,16 +211,20 @@ function team_remove_member($team_id, $members)
 	$member = $members;
 	$current = get_usermeta($member, 'teams');
 	$teams = comma_array_explode($current);
-	// var_dump($teams); print "<br/>";
 
 	$idx = array_search($team_id, $teams);
-	if (! $idx) return false;
+	if ($idx === false) {
+		print "not member" . gui_br();
+		return false;
+	}
 
 	unset ($teams[$idx]);
 
-	// var_dump($teams); print "<br/>";
-	update_usermeta($member, 'teams', $current . ":" . $team_id . ":");
-	return true;
+//	debug_var($teams);
+	$new =  ':' . implode(':', $teams) . ':';
+//	debug_var($new);
+//	die(1);
+	 return update_usermeta($member, 'teams', $new);
 }
 
 function company_invite_member($company_id, $email,  $name, $project_id)

@@ -27,6 +27,7 @@ if ( ! defined( 'TOOLS_DIR')) {
 
 require_once (ROOT_DIR . '/im-config.php');
 
+
 // require_once( "functions_im.php" );
 if (file_exists(TOOLS_DIR . "/im_tools_light.php"))
     require_once(TOOLS_DIR . "/im_tools_light.php");
@@ -107,18 +108,40 @@ function show_inventory_func( $atts, $contents, $tag ) {
 //function delivery_options()
 //{
 //
-//}
+//} [basket-content id=1085]
 add_shortcode( 'basket-content', 'content_func' );
+
+// [category-content id=18]
+add_shortcode( 'category-content', 'category_content_func' );
+
+function category_content_func($atts, $content, $tag)
+{
+    if (! file_exists(ROOT_DIR . '/fresh/wp/Product.php')) return "not installed";
+
+	require_once (ROOT_DIR . '/fresh/wp/Product.php');
+
+	$my_atts = shortcode_atts( [ 'id' => get_the_ID() ], $atts, $tag );
+//
+	$id = $my_atts['id'];
+
+	$iter = new ProductIterator();
+	$iter->iterateCategory( $id );
+
+	$result = "";
+	while ( $prod_id = $iter->next()) $result .= get_product_name($prod_id) . ", ";
+
+	return rtrim($result, ", ");
+}
 
 function content_func( $atts, $contents, $tag ) {
 	require_once( ROOT_DIR . '/fresh/catalog/Basket.php' );
 
-//	$my_atts = shortcode_atts( [ 'id' => get_the_ID() ], $atts, $tag );
+	$my_atts = shortcode_atts( [ 'id' => get_the_ID() ], $atts, $tag );
 //
-//	$id = $my_atts['id'];
-//
+	$id = $my_atts['id'];
+
 	$text = "תכולת הסל: ";
-	$text .= get_basket_content( get_the_ID() );;
+	$text .= get_basket_content( $id );
 
 //
 	return $text;

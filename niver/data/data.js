@@ -183,7 +183,12 @@ function add_element(element_name, table_name, url)
 function delete_items(collection_name, post_file)
 {
     let ids = get_selected(collection_name);
+    if (ids.length == 0) {
+        alert ("first select items");
+        return;
+    }
     let type = collection_name.substr(9); // Remove checkbox_
-    let url = post_file + "?operation=delete&type=" + type + "&ids=" + ids;
+    let glue = '?'; if (post_file.indexOf('?') > -1) glue = '&';
+    let url = post_file + glue + "operation=delete&type=" + type + "&ids=" + ids;
     execute_url(url, location_reload);
 }

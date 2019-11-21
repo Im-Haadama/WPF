@@ -9,20 +9,10 @@ require_once( ROOT_DIR . "/niver/options.php" );
 require_once( TOOLS_DIR . "/pricing.php" );
 require_once( TOOLS_DIR . "/orders/form.php" );
 require_once( TOOLS_DIR . "/orders/orders-common.php" );
-// print header_text();
 
 $text    = isset( $_GET["text"] );
 $fresh   = isset( $_GET["fresh"] );
-// $user_id = get_param( "user_id" );
-
-$just_pricelist = false;
-if (isset($user_id))
-{
-    print header_text(true, true, true);
-    print gui_header(1, "מחירון ללקוח " . get_user_name($user_id));
-    $just_pricelist = true;
-}
-// print "text = " . $text;
+$user_id = get_param( "user_id", false, null );
 
 function show_category( $term_name, $sale = false, $text = false ) {
 	$the_term = get_term_by( 'name', $term_name, 'product_cat' );
@@ -194,11 +184,17 @@ function get_form_tables() {
 
 
 <?php
-// print gui_header(1, "פרוטי אקספרס");
 
+$just_pricelist = false;
 if ( $text ) {
 	print header_text( true );
 	print "מוצרים זמינים השבוע</br>";
+	if ($user_id)
+	{
+		print gui_header(1, "מחירון ללקוח " . get_user_name($user_id));
+		$just_pricelist = true;
+	}
+
 } else {
     if (! $just_pricelist){
         print gui_header(1, "פרטי המזמין:");

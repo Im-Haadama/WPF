@@ -20,6 +20,12 @@ require_once (ROOT_DIR . '/niver/data/translate.php');
 require_once (ROOT_DIR . '/niver/gui/inputs.php');
 
 // Postmeta table
+/**
+ * @param $post_id
+ * @param $field_name
+ *
+ * @return string
+ */
 function get_postmeta_field( $post_id, $field_name ) {
 	$sql = 'SELECT meta_value FROM `wp_postmeta` pm'
 	       . ' WHERE pm.post_id = ' . $post_id
@@ -29,6 +35,11 @@ function get_postmeta_field( $post_id, $field_name ) {
 }
 
 
+/**
+ * @param $post_id
+ * @param $field_name
+ * @param $field_value
+ */
 function set_post_meta_field( $post_id, $field_name, $field_value ) {
 	if ( ! add_post_meta( $post_id, $field_name, $field_value, true ) ) {
 		update_post_meta( $post_id, $field_name, $field_value );
@@ -36,6 +47,9 @@ function set_post_meta_field( $post_id, $field_name, $field_value ) {
 	// my_log("Error: can't add meta. Post_id=" . $post_id . "Field_name=" . $field_name . "Field_value=" . $field_value, __FILE__);
 }
 
+/**
+ * @return bool
+ */
 function is_manager() {
 	$user    = new WP_User( wp_get_current_user() );
 	$manager = false;
@@ -50,6 +64,9 @@ function is_manager() {
 	return $manager;
 }
 
+/**
+ * @return bool
+ */
 function is_admin_user() {
 	$user    = new WP_User( wp_get_current_user() );
 	$manager = false;
@@ -64,8 +81,16 @@ function is_admin_user() {
 	return $manager;
 }
 
-function greeting()
+/**
+ * @param null $args
+ *
+ * @return string
+ */
+function greeting($args = null)
 {
+	$extra_text = GetArg($args, "greeting_extra_text", null);
+	$viewing_as = GetArg($args, "view_as", get_user_id());
+
 //	global $no_wp;
 	$data = "";
 
@@ -90,16 +115,24 @@ function greeting()
 		$data .= im_translate("Hello");
 
 	$data .= " " . gui_div("user_id", get_customer_name($user_id), false, $user_id);
+	if ($viewing_as != $user_id) $data .= "( " . im_translate("viewing as") . get_customer_name($viewing_as) . ")";
 
 	$data .=  ". " . im_translate("the time is:") . " " . Date("G:i", $now ) . ".";
 
 	$data .= gui_hyperlink("logout", get_param(1) . "?operation=logout&back=" . encodeURIComponent(get_url()));
+
+	if ($extra_text) $data .= gui_br() . $extra_text;
 
 	$data .= "<br/>";
 
 	return $data;
 }
 
+/**
+ * @param $customer_id
+ *
+ * @return int|string
+ */
 function get_customer_name( $customer_id ) {
 	static $min_supplier = 0;
 	if ( ! $min_supplier ) {
@@ -122,6 +155,9 @@ function get_customer_name( $customer_id ) {
 	return get_supplier_name( $customer_id );
 }
 
+/**
+ * @return int
+ */
 function get_user_id() {
 	if (function_exists('wp_get_current_user'))
 		$current_user = wp_get_current_user();
@@ -131,12 +167,20 @@ function get_user_id() {
 	return $current_user->ID;
 }
 
+/**
+ * @param $permission
+ *
+ * @return bool
+ */
 function im_user_can( $permission ) {
 	global $no_wp;
 	if ($no_wp) return true; // For debugging
 	return ( user_can( login_id(), $permission ) );
 }
 
+/**
+ * @return mixed
+ */
 function login_id() {
 	$user = wp_get_current_user();
 	if ( $user->ID == "0" ) {
@@ -159,6 +203,15 @@ function login_id() {
 }
 
 
+/**
+ * @param $user
+ * @param $name
+ * @param $email
+ * @param null $address
+ * @param null $city
+ * @param null $phone
+ * @param null $zip
+ */
 function add_im_user( $user, $name, $email, $address = null, $city = null, $phone = null, $zip = null)
 {
 	if ( strlen( $email ) < 1 ) {

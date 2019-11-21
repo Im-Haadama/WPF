@@ -259,7 +259,11 @@ function PrepareRow($row, $args, $row_id)
 				}
 				// print $selector_name;
 				$value = (function_exists($selector_name) ? $selector_name( $input_name, $orig_data, $args ) : $orig_data); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
-				if ($drill) $value = gui_hyperlink($value, add_to_url(array($key => $value, "operation" => "show_archive")));
+				if ($drill) {
+					$operation = GetArg($args, "drill_operation", "show_archive");
+					// debug_var($operation . " " . $key);
+					$value = gui_hyperlink($value, add_to_url(array($key => $orig_data, "operation" => $operation)));
+				}
 				break;
 			}
 			// print "pp e=" .$edit . " e_c=" . (is_array($edit_cols) ? comma_implode($edit_cols) : $edit_cols) . " ec[k]=" . isset($edit_cols[$key]) . "<br/>";
@@ -352,7 +356,8 @@ function RowsData($sql, $id_field, $skip_id, $v_checkbox, $checkbox_class, $h_li
 	$rows_data = [];
 	while ( $row = mysqli_fetch_assoc( $result ) ) {
 		$the_row = array();
-		if ( ! isset( $row[ $id_field ] )  and ! isset($row[strtoupper($id_field)])) {
+		if (isset($row[strtoupper($id_field)])) $id_field = strtoupper($id_field);
+		if ( ! isset( $row[ $id_field ] ) ) {
 			// Error... We don't have a valid row ID.
 			print "<br/>field id:" . $id_field . "<br/>";
 			var_dump( $row );
@@ -462,6 +467,7 @@ function NewRowData($field_list, $values, &$v_line, &$h_line, &$m_line, $skip_id
 
 /**
  * Header will be build from query or sent by header_fields. In the later case, this function will transform it from seq array to assoc array.
+ * Option page and rows_per_page will make "pages". Default - not paged.
  *
  * @param $sql
  * @param null $args
@@ -474,17 +480,19 @@ function TableData($sql, &$args = null)
 	$debug = 0; // (get_user_id() == 1);
 
 	if (strstr($sql, "select") and !strstr ($sql, "limit")){
-		$page = GetArg($args, "page", 1);
-		$rows_per_page = GetArg($args, "rows_per_page", 10);
-		$offset = ($page - 1) * $rows_per_page;
+		$page = GetArg($args, "page", null);
+		if ($page) {
+			$rows_per_page = GetArg($args, "rows_per_page", 10);
+			$offset = ($page - 1) * $rows_per_page;
 
-		$limit = (($page > -1) ? " limit $rows_per_page offset $offset" : "");
-		$sql .= $limit;
+			$limit = (($page > -1) ? " limit $rows_per_page offset $offset" : "");
+			$sql .= $limit;
+		}
 	}
 
 	// print __FUNCTION__ . "<br/>";
 	$result = sql_query( $sql );
-	if ( ! $result ) { print "Error"; return null;	}
+	if ( ! $result ) { print "Error #N1"; return null;	}
 
 	$header = GetArg($args, "header", true);
 	$field_list = FieldList($sql, $args);

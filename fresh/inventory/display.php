@@ -5,6 +5,10 @@ require_once( ROOT_DIR . "/niver/gui/sql_table.php" );
 require_once( "../header.php" );
 require_once( ROOT_DIR . "/niver/gui/inputs.php" );
 require_once( ROOT_DIR . '/niver/options.php' );
+
+print header_text( false, true, is_rtl(), array("/fresh/orders/orders.js", "/niver/gui/client_tools.js") );
+
+
 ?>
 <script type="text/javascript" src="/niver/gui/client_tools.js"></script>
 <script>
@@ -56,7 +60,6 @@ require_once( ROOT_DIR . '/niver/options.php' );
 
     }
     function update_display() {
-
         var t = document.getElementById("inventory");
 
         xmlhttp3 = new XMLHttpRequest();
@@ -69,6 +72,8 @@ require_once( ROOT_DIR . '/niver/options.php' );
         }
         var url = "inv-post.php?operation=show";
 	    <?php
+            $not_available = get_param("not_available", false, false);
+            if ($not_available) print "url += '&not_available=1';\n";
 	    if ( isset( $_GET["supplier_id"] ) ) {
 		    print 'url += "&supplier_id=' . $_GET["supplier_id"] . '";';
 	    }
@@ -82,27 +87,7 @@ require_once( ROOT_DIR . '/niver/options.php' );
     //	    execute_url("../weekly/start.php", update_display);
     //	}
 </script>
-<?php
-print header_text( false );
-?>
 <body onload="update_display()">
-<?php
-/**
- * Created by PhpStorm.
- * User: agla
- * Date: 16/01/17
- * Time: 12:37
- */
-
-// print "מציג מאספקה מספר " . info_get( "inventory_in" ) . "<br/>";
-// print " מציג ממשלוח מספר " . info_get( "inventory_out" ) . "<br/>";
-
-// print gui_hyperlink( "איפוס המלאי", "../weekly/start.php" );
-// print gui_button("btn_reset_invetory", "reset_inv()", "אפס מלאי");
-
-//print gui_button( "btn_waste", "add_wasted()", "הוסף לפחת" );
-
-?>
 <div id="inventory">
 </div>
 </body>

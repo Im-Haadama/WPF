@@ -109,3 +109,17 @@ function update_email() {
         document.getElementById("delivery_info").innerHTML = xmlhttp.response;
     });
 }
+
+function draft_products(collect_name)
+{
+    var collection = document.getElementsByClassName(collect_name);
+    var ids = new Array();
+    for (var i = 0; i < collection.length; i++) {
+        if (collection[i].checked) {
+            let prod_id = collection[i].id.substr(4);
+            ids.push(prod_id);
+        }
+    }
+    let request = "../catalog/catalog-update-post.php?operation=draft_items&update_ids=" + ids.join();
+    execute_url(request, location_reload);
+}

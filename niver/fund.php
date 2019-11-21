@@ -56,12 +56,16 @@ function load_scripts($script_file = false )
 }
 
 /**
- * @param bool $print_logo
- * @param bool $close_header
- * @param bool $rtl
- * @param bool $script_file
+ * @param null $args
+ * rtl - right to left
+ * print_logo - print the logo in the greeting block
+ * script_files - java scripts to include in header
+ * close_header - include </head> in the end of the header
+ * greeting - greet the user - includes time, user_id and view_as
+ * view_as - enables manager to see the worker's view (in greeting function)
  *
  * @return string
+ * @throws Exception
  */
 
 function HeaderText($args = null)
@@ -99,7 +103,7 @@ function HeaderText($args = null)
 
 	$table = array();
 	$row = array();
-	if ($greeting) $row [] = greeting();
+	if ($greeting) $row [] = greeting($args);
 	if ($print_logo and $logo_url ) {
 		$row [] = '<img src=' . $logo_url . '  style="height: 100px; width: auto;">';
 		$table [] = $row;
@@ -111,6 +115,19 @@ function HeaderText($args = null)
 	return strip_tags($text);
 }
 
+/**
+ * @return string
+ */
+function gui_type() { return "html"; }
+
+/**
+ * @param bool $print_logo
+ * @param bool $close_header
+ * @param bool $rtl
+ * @param bool $script_file
+ *
+ * @return string
+ */
 function header_text( $print_logo = true, $close_header = true, $rtl = true, $script_file = false ) {
 	// $text .= '<p style="text-align:center;">';
 	$args = [];
@@ -122,6 +139,9 @@ function header_text( $print_logo = true, $close_header = true, $rtl = true, $sc
 	return HeaderText($args);
 }
 
+/**
+ * @return string
+ */
 function footer_text() {
 	global $power_version;
 
@@ -577,8 +597,12 @@ function comma_array_explode($string_array)
 	return $t;
 }
 
+/**
+ * @param $var
+ */
 function debug_var($var)
 {
+	if (get_user_id() !== 1) return;
 	$debug = debug_backtrace();
 	for ($i = 0; $i < count($debug); $i++){
 		if (isset($debug[$i]['file'])) $caller = basename($debug[$i]['file']) . " "; else $caller = "";
@@ -595,11 +619,22 @@ function debug_var($var)
 	print "<br/>";
 }
 
+/**
+ * @param $str
+ *
+ * @return string
+ */
 function encodeURIComponent($str) {
 	$revert = array('%21'=>'!', '%2A'=>'*', '%27'=>"'", '%28'=>'(', '%29'=>')');
 	return strtr(rawurlencode($str), $revert);
 }
 
+/**
+ * @param null $tz
+ *
+ * @return mysqli
+ * @throws Exception
+ */
 function reconnect_db($tz = null)
 {
 	if (! defined("DB_HOST")) throw new Exception("DB configuration error = host");
@@ -625,6 +660,14 @@ function reconnect_db($tz = null)
 	return $conn;
 }
 
+/**
+ * @param $plugin_name
+ * @param $textdomain
+ * @param string $tz
+ *
+ * @return mysqli|null
+ * @throws Exception
+ */
 function boot_no_login($plugin_name, $textdomain, $tz = "Asia/Jerusalem")
 {
 	$conn = get_sql_conn();
@@ -645,6 +688,12 @@ function boot_no_login($plugin_name, $textdomain, $tz = "Asia/Jerusalem")
 	return $conn;
 }
 
+/**
+ * @param $user
+ * @param $password
+ *
+ * @return bool
+ */
 function check_password($user, $password)
 {
 	// For now hardcoded.
@@ -654,11 +703,17 @@ function check_password($user, $password)
 	return true;
 }
 
+/**
+ * @return bool
+ */
 function developer()
 {
 	return (get_user_id() == 1);
 }
 
+/**
+ * @return string
+ */
 function randomPassword() {
 	$alphabet    = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
 	$pass        = array(); //remember to declare $pass as an array
@@ -671,6 +726,11 @@ function randomPassword() {
 	return implode( $pass ); //turn the array into a string
 }
 
+/**
+ * @param $url
+ *
+ * @return bool|string
+ */
 function curl_get( $url ) {
 	$handle = curl_init();
 	curl_setopt( $handle, CURLOPT_URL, $url );

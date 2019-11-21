@@ -1,6 +1,13 @@
 <?php
 require_once(ROOT_DIR . '/niver/gui/input_data.php' );
 
+/**
+ * @param $table_name
+ * @param $text
+ * @param $args
+ *
+ * @return string
+ */
 function GemAddRow($table_name, $text, $args){
 	$result = "";
 
@@ -27,6 +34,14 @@ function GemAddRow($table_name, $text, $args){
 	return $result;
 }
 
+/**
+ * @param $table_name
+ * @param $row_id
+ * @param $args
+ *
+ * @return string
+ * @throws Exception
+ */
 function GemElement($table_name, $row_id, $args)
 {
 	$result = "";
@@ -51,7 +66,16 @@ function GemElement($table_name, $row_id, $args)
 }
 
 
-function GemArray($rows_data, $args, $table_id)
+/**
+ * @param $rows_data
+ * @param $args
+ * page - GemArray gets the data. The page param used only for the next/previous. TODO: Check if next is needed (last page).
+ * @param $table_id
+ *
+ * @return string|null
+ * @throws Exception
+ */
+function GemArray($rows_data, &$args, $table_id)
 {
 	$result = "";
 
@@ -62,7 +86,9 @@ function GemArray($rows_data, $args, $table_id)
 	$rows_per_page = GetArg($args, "rows_per_page", 10);
 
 	if (! $rows_data) return null;
-	$args["checkbox_class"] = "checkbox_" . $table_id; // delete_items depend on that
+	if (! isset($args["checkbox_class"])) $args["checkbox_class"] = "checkbox_" . $table_id; // delete_items depend on that
+
+	$args["count"] = count($rows_data);
 
 	$result .= gui_table_args( $rows_data, $table_id, $args );
 
@@ -89,11 +115,19 @@ function GemArray($rows_data, $args, $table_id)
 //	$args["search"] = $search_url; //'/fresh/bank/bank-page.php?operation=do_search')";
 //	GemSearch("im_bank", $args);
 
+	 // print "XXXX" . $result . "YYYY";
 	return $result;
 }
 
 // Data is updated upon change by the client;
-function GemTable($table_name, $args)
+/**
+ * @param $table_name
+ * @param $args
+ *
+ * @return string|null
+ * @throws Exception
+ */
+function GemTable($table_name, &$args)
 {
 	if (! isset($args["title"])) $title = "content of table " . $table_name;
 
@@ -104,20 +138,29 @@ function GemTable($table_name, $args)
 		$fields = GetArg($args, "fields", null);
 		if ($fields) $sql = "select " . comma_implode($fields) . " from $table_name ";
 		else $sql = "select * from $table_name";
+
+		$query = GetArg($args, "query", null);
+		if ($query) $sql .= " where $query";
+
+		$order = GetArg($args, "order", null);
+		if ($order) $sql .= " order by $order";
 	}
-	$query = GetArg($args, "query", null);
-	if ($query) $sql .= " where $query";
 
-	$order = GetArg($args, "order", null);
-	if ($order) $sql .= " order by $order";
-
-	$args["count"] = 0;
+	// $args["count"] = 0;
 	// $table = GuiTableContent($table_name, $sql, $args);
+
+	// print "c=" . $args["count"] . "<br/>";
 	$rows_data = TableData( $sql, $args);
 
 	return GemArray($rows_data, $args, $table_name);
 }
 
+/**
+ * @param $table_name
+ * @param null $args
+ *
+ * @throws Exception
+ */
 function GemSearch($table_name, $args = null)
 {
 	$search_fields = GetArg($args, "search_fields", null);
@@ -147,6 +190,13 @@ function GemSearch($table_name, $args = null)
 	print gui_button("btn_search", $script_function, "Search");
 }
 
+/**
+ * @param $table_name
+ * @param null $args
+ *
+ * @return string
+ * @throws Exception
+ */
 function GemImport($table_name, $args = null)
 {
 	$result = "";

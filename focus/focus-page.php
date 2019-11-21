@@ -29,7 +29,7 @@ $operation = get_param("operation", false, "focus_main");
 
 if ($debug) print "op=$operation<br/>";
 
-if (! $operation and get_param("id", false, null)) $operation = "show_task";
+// if (! $operation and get_param("id", false, null)) $operation = "show_task";
 
 if ($operation) {
 	$args = [];

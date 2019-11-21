@@ -11,7 +11,7 @@ function gui_select_task( $id, $value, $args ) {
 	$debug = 0; // (1 == get_user_id());
 	$events = GetArg($args, "events", null);
 	$query = GetArg($args, "query", " status = 0 ");
-	$length = GetArg($args, "length", 30);
+//	$length = GetArg($args, "length", 30);
 
 //	if ( $worker ) {
 //		// print "w=" . $worker;

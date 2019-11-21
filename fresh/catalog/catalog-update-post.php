@@ -42,7 +42,7 @@ switch ( $operation ) {
 		$update_ids = $_GET["update_ids"];
 		$ids        = explode( ',', $update_ids );
 		// my_log ($ids, "catalog-update-post.php");
-		catalog::DraftItems( $ids );
+		if (catalog::DraftItems( $ids )) print "done";
 		break;
 	case "publish_items":
 		$update_ids = $_GET["update_ids"];

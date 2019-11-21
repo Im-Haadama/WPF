@@ -10,6 +10,7 @@
 require_once( "../im_tools.php" );
 require_once( "../orders/Order.php" );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
+require_once (ROOT_DIR . '/fresh/orders/orders.js');
 
 $none = true;
 
@@ -47,33 +48,7 @@ while ( $order = sql_fetch_row( $orders ) ) {
 if ( $none ) {
 	print "הידד, אין חוסרים בהזמנות שממתינות למשלוח";
 } else {
-	print gui_button("btn_draft", "draft()", "הפוך לטיוטא מסומנים");
+	print gui_button("btn_draft", "draft_products(\"product_checkbox\")", "הפוך לטיוטא מסומנים");
 }
 
 ?>
-<script>
-function draft()
-{
-    var collection = document.getElementsByClassName("product_checkbox");
-    var ids = new Array();
-    for (var i = 0; i < collection.length; i++) {
-        if (collection[i].checked) {
-            var prod_id = collection[i].id.substr(4);
-            ids.push(prod_id);
-        }
-    }
-    xmlhttp = new XMLHttpRequest();
-    xmlhttp.onreadystatechange = function () {
-        // Wait to get query result
-        if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
-        {
-            alert(xmlhttp.response);
-        }
-    }
-    var request = "../catalog/catalog-update-post.php?operation=draft_items&update_ids=" + ids.join();
-
-    xmlhttp.open("GET", request, true);
-    xmlhttp.send();
-
-}
-</script>

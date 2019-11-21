@@ -13,9 +13,17 @@ require_once(ROOT_DIR . "/niver/data/data.php");
 require_once(ROOT_DIR . '/focus/Tasklist.php');
 require_once(ROOT_DIR . '/niver/gui/gem.php');
 require_once(ROOT_DIR . '/org/people/people.php');
+require_once(ROOT_DIR . '/focus/gui.php');
 
 require_once (ROOT_DIR . '/im-config.php');
 
+/**
+ * @param bool $mission
+ * @param null $new_task_id
+ *
+ * @return string|void
+ * @throws Exception
+ */
 function focus_new_task($mission = false, $new_task_id = null)
 {
 	if (! focus_check_user()) return;
@@ -90,6 +98,10 @@ function focus_new_task($mission = false, $new_task_id = null)
 //	print gui_button("btn_newtask", "data_save_new('/focus/focus-post.php', 'im_tasklist', show_project)", "צור");
 }
 
+/**
+ * @return bool
+ * @throws Exception
+ */
 function focus_check_user()
 {
 //	$worker_id = sql_query_single_scalar("select id from im_working where user_id = " . get_user_id());
@@ -118,7 +130,7 @@ function focus_check_user()
 			print gui_header(1, "Company details");
 			print NewRow( "im_company", $args );
 		} catch ( Exception $e ) {
-			print "Error: " . $e->getMessage();
+			print "Error F1: " . $e->getMessage();
 			return false;
 		}
 
@@ -129,10 +141,12 @@ function focus_check_user()
 	}
 
 	// Check if user has team.
-	$team_ids = team_all_members($user_id);
-//	var_dump($team_ids);
+	$team_ids = team_all_teams($user_id);
 	if (! count($team_ids)){
-		team_add($user_id, im_translate("Personal team") . " " . get_customer_name($user_id));
+		print "uid= $user_id" . gui_br();
+		var_dump($team_ids); gui_br();
+		die ("Error #F2. Please report");
+		// team_add($user_id, im_translate("Personal team") . " " . get_customer_name($user_id));
 	}
 
 	$project_ids = worker_get_projects($user_id);
@@ -173,6 +187,7 @@ function handle_focus_operation($operation, $args)
 			return;
 
 		case "del_team":
+		case "cancel_im_working_teams":
 			$team_id = get_param("id", true);
 			if (team_delete($team_id)) print "done";
 			return;
@@ -185,6 +200,7 @@ function handle_focus_operation($operation, $args)
 					$team_id = get_param("team_id", true);
 					$ids = get_param("ids", true);
 					if (team_remove_member($team_id, $ids)) print "done";
+					print "failed";
 					return;
 			}
 
@@ -244,8 +260,13 @@ function handle_focus_operation($operation, $args)
 			$table_name = get_param("table_name", true);
 			if (! in_array($table_name, $allowed_tables))
 				die ("invalid table operation");
-			if (update_data($table_name))
+			if (update_data($table_name)) {
+				if ($table_name == 'im_task_templates') {
+					$row_id = intval(get_param("id", true));
+					sql_query("update im_task_templates set last_check = null where id = " . $row_id);
+				}
 				print "done";
+			}
 			return;
 
 		case "delete_template":
@@ -321,8 +342,18 @@ function handle_focus_operation($operation, $args)
 	// show/save <obj_type>
 	switch ($operation){
 		case "focus_main":
-			$new = get_param("new", false, null);
-			$result .= focus_main($new);
+			// $new = get_param("new", false, null);
+			$result .= focus_main(get_user_id());
+			break;
+		case "edit_organization":
+			$result .= edit_organization();
+			break;
+		case "show_worker":
+			// $new = get_param("new", false, null);
+			$id = get_param("id", true);
+			$header_args["view_as"] = $id;
+			$result = focus_header($header_args);
+			$result .= focus_main($id);
 			break;
 		case "show_templates":
 			$args["table"] = true;
@@ -457,10 +488,17 @@ function handle_focus_operation($operation, $args)
 			$result .= gui_button("btn_newteam", "save_new('im_working_teams')", "add");
 			break;
 
+		case "remove_from_team":
+			$team_id = get_param("id", true);
+			$worker_id = get_param("user", true);
+			team_remove_member($team_id, $worker_id);
+			handle_focus_operation("show_team", null);
+			break;
+
 		case "show_team":
 			$team_id = get_param("id", true);
-			team_add_worker($team_id, team_manager($team_id));
-			$result .= gui_header(1, im_translate("Team") . ": " . team_get_name($team_id));
+			// team_add_worker($team_id, team_manager($team_id));
+			// $result .= gui_header(1, im_translate("Team") . ": " . team_get_name($team_id));
 			$args = array("selectors" => array("ID" => "gui_select_worker"),
 			              "edit" => false,
 //				array( "cancel", $action_url . "?operation=cancel_task&id=%s;action_hide_row" ),
@@ -471,6 +509,7 @@ function handle_focus_operation($operation, $args)
 			$result .= gui_hyperlink("add member", add_to_url("operation" , "show_add_member"));
 
 			$args = [];
+			$args["page"] = get_param("page", false, 1);
 			$args["query"] = " team = $team_id";
 			$result .= GemTable("im_tasklist", $args);
 			break;
@@ -501,9 +540,8 @@ function handle_focus_operation($operation, $args)
 
 			if ($id = get_param("project_id")) {
 				$result .=  show_project($id);
-				print $result;
 			}
-			show_projects(get_url(), get_user_id());
+			$result .= show_projects(get_url(), get_user_id());
 			break;
 
 		case "task_types":
@@ -542,43 +580,20 @@ function handle_focus_operation($operation, $args)
 
 		case "show_edit_team":
 			$team_id = get_param("id");
-			$result .= gui_header(1, "Edit team");
-			$args["selectors"] = array("manager" => "gui_select_worker");
-			$result .= GemElement("im_working_teams", $team_id, $args);
+			$result .= show_edit_team($team_id);
+			break;
 
-			$result .= gui_header(2, "Team members");
-			$table = array();
-			$table["header"] = array("name");
-			foreach (team_all_members($team_id) as $member)
-				$table[$member]["name"] = get_user_name($member);
-
-			$args["add_checkbox"] = true;
-			$args["post_file"] = get_url(1) . "?team_id=" . $team_id;
-			$result .= GemArray($table, $args, "team_members");
-
-			$result .= gui_header(1, "add member");
-			$result .= gui_select_worker("new_member", null, $args);
-			$result .= gui_button("btn_add_member", "add_team_member(" . $team_id . ")", "add");
-
-//			$result = gui_header(1, "edit team" . team_get_name($team_id));
-//			$result .=  gui_header(2, "members");
-//			foreach (team_all_members($team_id) as $member) $result .= get_user_name($member) . " ";
+		case "show_tasks":
+			$query = data_parse_get("im_tasklist", array("operation"));
+			$ids = data_search("im_tasklist", $query);
+			$result .= show_tasks($ids);
+			// debug_var($query);
 			break;
 
 		case "show_edit_company":
 			$company_id = get_param("company_id", true);
-			$result .= gui_header(1, company_get_name($company_id));
-			$args = [];
-			$args["query"] = "manager = 1";
-			$args["links"] = array("id" => add_to_url(array("operation" => "show_edit_team&id=%s")));
-			$args["selectors"] = array("team_members" => "gui_show_team");
-
-			$teams = TableData("select id, team_name from im_working_teams where manager = " . get_user_id());
-			foreach ($teams as $key => &$row)
-				if ($key == "header") $row [] = im_translate("Team members");
-				else $row["team_members"] = comma_implode(team_all_members($row["id"]));
-				//GemTable("im_working_teams", $args);
-			$result .= GemArray($teams, $args, "company_teams");
+			$page = get_param("page", false, 1);
+			$result .= show_edit_company($company_id, $page);
 			break;
 		default:
 			print __FUNCTION__ . ": " . $operation . " not handled <br/>";
@@ -589,16 +604,115 @@ function handle_focus_operation($operation, $args)
 	return;
 }
 
+/**
+ * @param $ids
+ *
+ * @return string|null
+ */
+function show_tasks($ids)
+{
+	$args = [];
+	$args["query"] = "id in (" . comma_implode($ids) . ")";
+	return active_tasks($args);
+}
+
+/**
+ * @param $team_id
+ *
+ * @return string
+ * @throws Exception
+ */
+function show_edit_team($team_id)
+{
+	$result = gui_header(1, "Edit team");
+	$args["selectors"] = array("manager" => "gui_select_worker");
+	$args["post_file"] = get_url(1) . "?team_id=" . $team_id;
+	$result .= GemElement("im_working_teams", $team_id, $args);
+
+	$result .= gui_header(2, "Team members");
+	$table = array();
+	$table["header"] = array("name");
+	foreach (team_all_members($team_id) as $member){
+		$table[$member]["name"] = get_user_name($member);
+	}
+
+	$args["add_checkbox"] = true;
+	$result .= GemArray($table, $args, "team_members");
+
+	$result .= gui_header(1, "add member");
+	$result .= gui_select_worker("new_member", null, $args);
+	$result .= gui_button("btn_add_member", "add_team_member(" . $team_id . ")", "add");
+
+	$tasks = sql_query_array_scalar("select id from im_tasklist where team = $team_id");
+	if ($tasks)
+		$result .= show_tasks($tasks);
+	else
+		$result .= "No tasks";
+
+
+	return $result;
+//			$result = gui_header(1, "edit team" . team_get_name($team_id));
+//			$result .=  gui_header(2, "members");
+//			foreach (team_all_members($team_id) as $member) $result .= get_user_name($member) . " ";
+
+}
+
+/**
+ * @param $company_id
+ * @param $page
+ *
+ * @return string
+ * @throws Exception
+ */
+function show_edit_company($company_id, $page)
+{
+	$result = gui_header(1, company_get_name($company_id));
+	$args = [];
+	$args["query"] = "manager = 1";
+	$args["links"] = array("id" => add_to_url(array("operation" => "show_edit_team&id=%s")));
+	$args["selectors"] = array("team_members" => "gui_show_team");
+	$args["page"] = $page;
+
+	$teams = TableData("select id, team_name from im_working_teams where manager in \n" .
+	                  "(select user_id from im_working where company_id = $company_id) order by 1", $args);
+	foreach ($teams as $key => &$row)
+		if ($key == "header") $row [] = im_translate("Team members");
+		else $row["team_members"] = comma_implode(team_all_members($row["id"]));
+	//GemTable("im_working_teams", $args);
+	$result .= GemArray($teams, $args, "company_teams");
+
+	return $result;
+}
+
+/**
+ * @param $args
+ * view_as -
+ * developer might add extra info - e.g, log file
+ *
+ *
+ * @return string
+ * @throws Exception
+ */
 function focus_header($args)
 {
 	$result = "";
 	// $args = array("print_logo" => true, "rtl" => is_rtl());
 	$args["greeting"] = true;
+	if (get_user_id() == 1) $args["greeting_extra_text"] = gui_hyperlink("log", focus_log_file(1));
+
 	$result =  HeaderText($args);
 	$result .= load_scripts(GetArg($args, "scripts", null));
 	return $result;
 }
 
+/**
+ * @param $url
+ * @param $owner
+ * @param bool $non_zero
+ *
+ * @return string|null
+ * @throws Exception
+ */
 function show_projects( $url, $owner, $non_zero = true) {
 	$links = array();
 
@@ -615,12 +729,21 @@ function show_projects( $url, $owner, $non_zero = true) {
 	$args["links"]  = $links;
 	$args["header"] = true;
 
-	print GuiTableContent( "projects", $sql, $args );
+	return GuiTableContent( "projects", $sql, $args );
 }
 
+/**
+ * @param $args
+ * @param int $template_id
+ * @param null $new
+ *
+ * @return string
+ * @throws Exception
+ */
 function show_templates(&$args, $template_id = 0, $new = null ) {
 	$url = get_url(1);
 
+	$result = "";
 	$action_url = "/focus/focus-post.php";
 
 	$args["worker"] = get_user_id();
@@ -635,8 +758,9 @@ function show_templates(&$args, $template_id = 0, $new = null ) {
 	if ($template_id){
 		// print gui_header(1, "משימה חוזרת מספר " . $template_id) ."<br/>";
 		$args["title"] = "Repeating task";
+		$args["post_file"] = $url;
 
-		print GemElement("im_task_templates", $template_id, $args);
+		$result .= GemElement("im_task_templates", $template_id, $args);
 
 		$tasks_args = array("links" => array("id" => get_url(1) . "?operation=show_task&id=%s"));
 
@@ -644,12 +768,12 @@ function show_templates(&$args, $template_id = 0, $new = null ) {
 		                                       " order by date desc limit 10", $tasks_args);
 		if ($table)
 		{
-			$result = gui_header(2, "משימות אחרונות");
+			$result .= gui_header(2, "משימות אחרונות");
 			$result .= $table;
 			return $result;
 		}
 
-		return null;
+		return $result;
 	}
 
 	if ($page = get_param("page")) { $args["page"] = $page; unset ($_GET["page"]); };
@@ -677,6 +801,13 @@ function show_templates(&$args, $template_id = 0, $new = null ) {
 	return $result;
 }
 
+/**
+ * @param $row_id
+ * @param int $edit
+ *
+ * @return string
+ * @throws Exception
+ */
 function show_task($row_id, $edit = 1)
 {
 	$table_name = "im_tasklist";
@@ -711,6 +842,13 @@ function show_task($row_id, $edit = 1)
  * @return string
  */
 // $selector_name( $input_name, $orig_data, $args)
+/**
+ * @param $id
+ * @param $value
+ * @param $args
+ *
+ * @return mixed|string
+ */
 function gui_select_repeat_time( $id, $value, $args) {
 //	print "v=" . $value . "<br/>";
 
@@ -732,6 +870,10 @@ function gui_select_repeat_time( $id, $value, $args) {
 		return $values[$selected];
 }
 
+/**
+ * @return string
+ * @throws Exception
+ */
 function show_staff() // Edit teams that I manage.
 {
 	$user = wp_get_current_user();
@@ -749,6 +891,12 @@ function show_staff() // Edit teams that I manage.
 	return $result;
 }
 
+/**
+ * @param $args
+ *
+ * @return string
+ * @throws Exception
+ */
 function edit_projects($args) // Edit projects that I manage.
 {
 	$result = gui_header(2, "Projects");
@@ -782,9 +930,18 @@ function edit_projects($args) // Edit projects that I manage.
 	// print GuiTableContent("");
 }
 
+/**
+ * @param null $args
+ * @param bool $debug
+ * @param bool $time
+ *
+ * @return string|null
+ */
 function active_tasks(&$args = null, $debug = false, $time = false)
 {
 	$args["count"] = 0;
+	$args["drill"] = true;
+	$args["drill_operation"] = "show_tasks";
 
 	$table_name = "im_tasklist";
 	$title = GetArg($args, "title", "");
@@ -799,10 +956,7 @@ function active_tasks(&$args = null, $debug = false, $time = false)
 
 	if (! isset($args["fields"])) $args["fields"] = array("id", "task_description", "project_id", "priority", "task_template");
 
-	if (get_param("limit"))
-		$limit = "limit " . get_param("limit");
-	else
-		$limit = "limit 10";
+	$limit = get_param("limit", false, 10);
 
 	if (get_param("offset"))
 		$limit .= " offset " . get_param("offset");
@@ -847,7 +1001,7 @@ function active_tasks(&$args = null, $debug = false, $time = false)
 
 	$links["task_template"] = $page_url . "?operation=show_template&id=%s";
 	$links["id"] = $page_url . "?operation=show_task&id=%s";
-	$links["project_id"] = $page_url . "?operation=show_project&id=%s";
+	// Use drill, instead - $links["project_id"] = $page_url . "?operation=show_project&id=%s";
 	$args["links"]    = $links;
 
 	$args["actions"]  = $actions;
@@ -862,7 +1016,7 @@ function active_tasks(&$args = null, $debug = false, $time = false)
 //	if ($debug and ! $time)
 //		$more_fields .= ", task_template_time(id) ";
 
-	$sql = "select " . comma_implode($fields) . " from $table_name $query $order $limit";
+	$sql = "select " . comma_implode($fields) . " from $table_name $query $order ";
 
 	if ($debug)
 		print "<br/>" . $sql . "<br/>";
@@ -871,8 +1025,11 @@ function active_tasks(&$args = null, $debug = false, $time = false)
 	$result = "";
 	try {
 		if (isset($_GET["debug"])) print "sql = $sql<br/>";
-		$table = GuiTableContent( $table_name, $sql, $args );
-		if (! $args["count"]) return "";
+		$args["sql"] = $sql;
+		$table = GemTable("im_tasklist", $args);
+//		print "CC=" . $args["count"] . "<br/>";
+		// $table = GuiTableContent( $table_name, $sql, $args );
+		// if (! $args["count"]) return "";
 		if ($table) {
 			if (strlen($title)) $result = gui_header(2, $title);
 			$result .= $table;
@@ -897,6 +1054,10 @@ function active_tasks(&$args = null, $debug = false, $time = false)
 	return $result;
 }
 
+/**
+ * @param $team_id
+ * @param $active_only
+ */
 function show_team($team_id, $active_only)
 {
 	print gui_header(1, "Showing status of team " . team_get_name($team_id));
@@ -911,6 +1072,13 @@ function show_team($team_id, $active_only)
 	print active_tasks($args);
 }
 
+/**
+ * @param $manager_id
+ * @param $url
+ *
+ * @return string
+ * @throws Exception
+ */
 function managed_workers($manager_id, $url)
 {
 	$teams = sql_query_array_scalar("select id from im_working_teams where manager = " . $manager_id);
@@ -926,11 +1094,19 @@ function managed_workers($manager_id, $url)
 	return $result;
 }
 
+/**
+ * @param $team_id
+ *
+ * @return string
+ */
 function team_get_name($team_id)
 {
 	return sql_query_single_scalar("select team_name from im_working_teams where id = " . $team_id);
 }
 
+/**
+ * @return bool
+ */
 function create_new_sequence()
 {
 	$user_id = get_user_id();
@@ -949,6 +1125,15 @@ function create_new_sequence()
 	return true;
 }
 
+/**
+ * @param $user_id
+ * @param $project
+ * @param $priority
+ * @param $description
+ * @param null $preq
+ *
+ * @return int|string
+ */
 function task_new($user_id, $project, $priority, $description, $preq = null)
 {
 	$creator = $user_id;
@@ -972,6 +1157,13 @@ function task_new($user_id, $project, $priority, $description, $preq = null)
 	return sql_insert_id();
 }
 
+/**
+ * @param $project_id
+ * @param null $args
+ *
+ * @return string|null
+ * @throws Exception
+ */
 function show_project($project_id, $args = null)
 {
 	$active_only = GetArg($args, "active_only", true);
@@ -988,10 +1180,41 @@ function show_project($project_id, $args = null)
 	return GemTable("im_tasklist", $args);
 }
 
-function focus_main()
+/**
+ * @return string
+ * @throws Exception
+ */
+function edit_organization()
+{
+	$user_id = get_user_id();
+	$result = "";
+	$result .= gui_hyperlink("Edit organization", add_to_url("operation" , "show_staff")) . " ";
+
+	$result .= gui_hyperlink("My projects", add_to_url("operation", "show_edit_projects")) . " ";
+	$my_companies = worker_get_companies($user_id, true);
+	if ($my_companies) foreach ($my_companies as $company){
+		$result .= gui_hyperlink(company_get_name($company), add_to_url( array("operation" => "show_edit_company", "company_id" => $company))) . " ";
+	}
+
+	if (im_user_can("edit_teams")){ // System editor
+		$result .= "<br/>" . im_translate("System wide:");
+		$result .= gui_hyperlink("All teams", add_to_url("operation" , "show_edit_all_teams")) . " ";
+		$result .= gui_hyperlink("All projects", add_to_url("operation", "show_edit_all_projects")) . " ";
+	}
+
+	return $result;
+}
+
+/**
+ * @param $user_id
+ *
+ * @return string
+ * @throws Exception
+ */
+function focus_main($user_id)
 {
 	$debug = 0;
-	$user_id = get_user_id();
+	// $user_id = get_user_id();
 	$time_filter = false;
 
 	$result = "";
@@ -1006,29 +1229,28 @@ function focus_main()
 	$url = get_url(1);
 	$result .= gui_hyperlink("Repeating tasks", $url . "?operation=show_templates") . " ";
 
-	if (team_managed_teams(get_user_id())) // Team manager
-		$result .= gui_hyperlink("My teams", $url . "?operation=show_staff") . " ";
+	if ($teams = team_managed_teams($user_id)) {// Team manager
+		$result .= gui_hyperlink("Edit organization", $url . "?operation=edit_organization");
+		$result .= "<br/>";
+		$workers = array();
+		foreach ($teams as $team) {
+			foreach (team_all_members($team) as $worker_id) $workers[$worker_id] = 1;
+			$count = 0; // active_task_count("team_id = " . $team);
+			$result .= gui_hyperlink( team_get_name($team) . "(" . $count . ")", "?operation=show_team&id=" . $team );
+		}
+		$result .= "<br/>";
+		foreach ($workers as $worker_id => $c) {
+			$count = 0;
+			$result .= gui_hyperlink(get_user_name($worker_id) . "(" . $count . ")", '?operation=show_worker&id=' . $worker_id) . " ";
+		}
+		$result .= "<br/>";
 
-	$result .= gui_hyperlink("My projects", $url . "?operation=show_edit_projects") . " ";
-
-	$my_companies = worker_get_companies($user_id, true);
-	if ($my_companies) foreach ($my_companies as $company){
-		$result .= gui_hyperlink(company_get_name($company), $url . "?operation=show_edit_company&company_id=" . $company) . " ";
 	}
-
-	if (im_user_can("edit_teams")){ // System editor
-		$result .= "<br/>" . im_translate("System wide:");
-		$result .= gui_hyperlink("All teams", $url . "?operation=show_edit_all_teams") . " ";
-		$result .= gui_hyperlink("All projects", $url . "?operation=show_edit_all_projects") . " ";
-	}
-
-
-
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Tasks I need to handle (owner = me)                                                                       //
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	$args["title"] = im_translate("Tasks assigned to me");
-	$args["query"] = " owner = " . get_user_id();
+	$args["query"] = " owner = " . $user_id;
 	$args["limit"] = get_param("limit", false, 10);
 	$args["active_only"] = get_param("active_only", false, true);
 
@@ -1068,7 +1290,7 @@ function focus_main()
 	// Tasks I've created. Assigned to some else                                                                 //
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	$args["title"] = im_translate("Tasks I've initiated to other teams");
-	$args["query"] = " creator = " . get_user_id() . " and (owner != " . $user_id . ' or isnull(owner)) and team not in (' . comma_implode($teams) . ")";
+	$args["query"] = " creator = " . $user_id . " and (owner != " . $user_id . ' or isnull(owner)) and team not in (' . comma_implode($teams) . ")";
 	$args["limit"] = get_param("limit", false, 10);
 	$args["active_only"] = get_param("active_only", false, true);
 	$result .= active_tasks($args);
@@ -1084,6 +1306,9 @@ function focus_main()
 	return $result;
 }
 
+/**
+ * @throws Exception
+ */
 function not_used1() {
 	$task_template_id = get_param( "task_template_id" );
 	if ( $task_template_id ) {
@@ -1115,6 +1340,9 @@ function not_used1() {
 	}
 }
 
+/**
+ * @throws Exception
+ */
 function not_used(){
 $time_filter = get_param("time", false, true);
 
@@ -1144,11 +1372,22 @@ if (im_user_can("edit_projects"))
 
 }
 
+/**
+ * @param $template_id
+ *
+ * @return string
+ */
 function template_creator($template_id)
 {
 	return sql_query_single_scalar("select creator from im_task_templates where id = " . $template_id);
 }
 
+/**
+ * @param $user_id
+ * @param $template_id
+ *
+ * @return bool|mysqli_result|null
+ */
 function template_delete($user_id, $template_id)
 {
 	$creator_id = template_creator($template_id);
@@ -1165,6 +1404,13 @@ function template_delete($user_id, $template_id)
 	return false;
 }
 
+/**
+ * @param $id
+ * @param $selected
+ * @param $args
+ *
+ * @return string
+ */
 function gui_show_team($id, $selected, $args)
 {
 	$members = explode(",", $selected);

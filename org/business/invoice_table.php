@@ -40,6 +40,7 @@ if ($operation){
 	switch ($operation)
 	{
 		case "show_add_invoice":
+		case "add":
 			$args = array();
 			set_args_value($args);
 			$args["edit"] = true;
@@ -87,6 +88,7 @@ $part_id = get_param("part_id", false);
 
 if ($part_id) {
 	print gui_header(2, get_supplier_name($part_id));
+	print gui_header(3, "year " . $year);
 	$page .= " and part_id = " . $part_id;
 	$links = array("id"=> "invoice_table.php?row_id=%s", "הספקה" => "/fresh/supplies/supply-get.php?id=%s");
 	$args["links"] = $links;
@@ -101,6 +103,9 @@ if ($part_id) {
 	$date = date('Y-m-d', strtotime("last day of previous month"));
 
 	print gui_hyperlink("הוסף" , "invoice_table.php?operation=add&part_id=$part_id&date=$date&document_type=4");
+
+	print gui_hyperlink("last year", add_to_url("year", $year - 1));
+	if ($year < date('Y')) print gui_hyperlink("next year", add_to_url("year", $year + 1));
 	return;
 }
 

@@ -206,6 +206,74 @@ class delivery {
 		return $delivery_id;
 	}
 
+	private function load_line_from_db($line_id, &$P, &$prod_id, &$prod_name, &$quantity_ordered, &$quantity_delivered, &$price, &$delivery_line, &$has_vat, &$line_color)
+	{
+		// Loading from database
+		$sql = "SELECT prod_id, product_name, quantity_ordered, unit_ordered, round(quantity, 1), price, line_price, vat, part_of_basket FROM im_delivery_lines WHERE id = " . $line_id;
+
+		$row = sql_query_single( $sql );
+		if ( ! $row ) {
+			sql_error( $sql );
+			die ( 2 );
+		}
+
+		$prod_id          = $row[0];
+		$P                = new Product( $prod_id );
+		$prod_name        = ($row[8] ? "===>" : "" ) . $row[1];
+		$quantity_ordered = $row[2];
+		$unit_q           = $row[3];
+		$quantity_delivered = $row[4];
+		$price              = $row[5];
+		$delivery_line      = $row[6];
+		$has_vat            = $row[7];
+
+		if ( ($quantity_delivered < ( 0.8 * $quantity_ordered ) or ( $unit_q > 0 and $quantity_delivered == 0 )) and ! is_basket($prod_id) ) {
+			$line_color = "yellow";
+		}
+	}
+
+	private function load_line_from_order($line_ids, $client_type, &$prod_id, &$prod_name, &$quantity_ordered, &$unit_q, &$P, &$price )
+	{
+		$line_id = $line_ids[0];
+		// print "lid=". $line_id . "<br/>";
+		$sql                                = "SELECT order_item_name FROM wp_woocommerce_order_items WHERE order_item_id = " . $line_id;
+		$prod_name                          = sql_query_single_scalar( $sql );
+		$quantity_ordered                   = get_order_itemmeta( $line_ids, '_qty' );
+		$unit_ordered                       = get_order_itemmeta( $line_id, 'unit' );
+		$order_line_total                   = round( get_order_itemmeta( $line_ids, '_line_total' ), 1);
+		$this->order_total                  += $order_line_total;
+		$line[ DeliveryFields::order_line ] = $order_line_total;
+		$prod_id                            = get_order_itemmeta( $line_id, '_product_id' );
+		$P                                  = new Product( $prod_id );
+		// $line_price       = get_order_itemmeta( $line_id, '_line_total' );
+
+		// Todo: handle prices
+		switch ( $client_type ) {
+			case 0:
+				if ( $quantity_ordered )
+					$price = round( $order_line_total / $quantity_ordered, 1 );
+				else
+					$price = get_price( $prod_id);
+				break;
+			case 1:
+				$price = siton_price( $prod_id );
+				break;
+			case 2:
+				$price = get_buy_price( $prod_id );
+				break;
+			default:
+				$price = round( 1.3 * get_buy_price( $prod_id ), 1);
+		}
+
+		if ( $unit_ordered ) {
+			$quantity_ordered = "";
+			$unit_array       = explode( ",", $unit_ordered );
+			$unit_q           = $unit_array[1];
+			// print "unit: " ; var_dump($unit) ; print "<br/>";
+		}
+		return $price;
+	}
+
 	public static function CreateDeliveryHeader(
 		$order_id, $total, $vat, $lines, $edit, $fee, $delivery_id = null,
 		$_draft = false, $reason = null
@@ -407,13 +475,12 @@ class delivery {
 		if ( $operation == ImDocumentOperation::create or $operation == ImDocumentOperation::collect ) {
 			$expand_basket                               = true;
 			$show_fields[ DeliveryFields::packing_info ] = true;
-
 		}
 
 		// All fields:
 		$show_fields[ DeliveryFields::product_name ]  = true;
 		$show_fields[ DeliveryFields::order_q ]       = true;
-		$show_fields[ DeliveryFields::order_q_units ] = true;
+		$show_fields[ DeliveryFields::order_q_units ] = false; // For now ordering by units is not supported
 		$show_fields[ DeliveryFields::price ]         = true;
 
 		$empty_array = array();
@@ -493,17 +560,12 @@ class delivery {
 
 			while ( $row = mysqli_fetch_assoc( $result ) ) {
 				$line_style = $style;
-				if ( $row["product_name"] == "הנחת כמות" ) {
-					$volume_line = true;
-				}
+				if ( $row["product_name"] == "הנחת כמות" ) $volume_line = true;
 
 				// delivery_line( $document_type, $line_ids, $client_type, $operation, $margin = false, $style = null, $show_inventory = false );
 				$prod_id = $row["prod_id"];
 
-				if ($prod_id == -1)  // Discount line.
-				{
-					if ($row["line_price"] == 0) $line_style = "hidden ";
-				}
+				if ($prod_id == -1 and ($row["line_price"] == 0)) $line_style = "hidden ";// Discount line.
 
 				$line = $this->delivery_line(  ImDocumentType::delivery, $row["id"], 0, $operation,
 					$margin, $line_style, $show_inventory);
@@ -533,8 +595,7 @@ class delivery {
 
 				if ( is_basket($prod_id)){
 					$basket_header = array();
-					for ($i = 0; $i < DeliveryFields::max_fields; $i++)
-						$basket_header[$i] = "";
+					for ($i = 0; $i < DeliveryFields::max_fields; $i++)	$basket_header[$i] = "";
 					$basket_header[DeliveryFields::product_name] = get_product_name($prod_id);
 					$basket_header[DeliveryFields::order_q] = get_order_itemmeta( $order_item_ids, '_qty' );
 					$basket_header[DeliveryFields::price] = get_price($prod_id);
@@ -591,7 +652,8 @@ class delivery {
 		if ( $operation != ImDocumentOperation::collect ) {
 			if ( ! $volume_line ) {
 				$delivery_line = $empty_array;
-				$data          .= gui_row( $delivery_line, "dis", $show_fields, $sums, $delivery_fields_names );
+				$dis_line = gui_row( $delivery_line, "dis", $show_fields, $sums, $delivery_fields_names );
+				$data          .= $dis_line;
 			}
 			// Summary
 			// Due VAT
@@ -633,15 +695,8 @@ class delivery {
 
 		$line_color = null;
 
-		$line = array();
-		for ( $i = 0; $i <= DeliveryFields::max_fields; $i ++ ) {
-			$line[ $i ] = "";
-		}
-
-		if ( is_array( $line_ids ) )
-			$line_id = $line_ids[0];
-		else $line_id = $line_ids;
-
+		$line = array(); for ( $i = 0; $i <= DeliveryFields::max_fields; $i ++ ) $line[ $i ] = "";
+		if ( is_array( $line_ids ) )$line_id = $line_ids[0]; else $line_id = $line_ids;
 		$line[ DeliveryFields::line_select ] = gui_checkbox( "chk" . $line_id, "line_chk", false );
 
 		$unit_ordered       = null;
@@ -657,11 +712,7 @@ class delivery {
 				break;
 
 			case ImDocumentType::delivery:
-				if ( $operation == ImDocumentOperation::create or $operation == ImDocumentOperation::collect ) {
-					$load_from_order = true;
-				} else {
-					$load_from_order = false;
-				}
+				$load_from_order = ( $operation == ImDocumentOperation::create or $operation == ImDocumentOperation::collect );
 				// TODO: check price
 				break;
 		}
@@ -670,68 +721,9 @@ class delivery {
 		$P = null;
 
 		if ( $load_from_order ) {
-			// print "lid=". $line_id . "<br/>";
-			$sql                                = "SELECT order_item_name FROM wp_woocommerce_order_items WHERE order_item_id = " . $line_id;
-			$prod_name                          = sql_query_single_scalar( $sql );
-			$quantity_ordered                   = get_order_itemmeta( $line_ids, '_qty' );
-			$unit_ordered                       = get_order_itemmeta( $line_id, 'unit' );
-			$order_line_total                   = round( get_order_itemmeta( $line_ids, '_line_total' ), 1);
-			$this->order_total                  += $order_line_total;
-			$line[ DeliveryFields::order_line ] = $order_line_total;
-			$prod_id                            = get_order_itemmeta( $line_id, '_product_id' );
-			$P                                  = new Product( $prod_id );
-			// $line_price       = get_order_itemmeta( $line_id, '_line_total' );
-
-			// Todo: handle prices
-			switch ( $client_type ) {
-				case 0:
-					if ( $quantity_ordered )
-						$price = round( $order_line_total / $quantity_ordered, 1 );
-					else
-						$price = get_price( $prod_id);
-					break;
-				case 1:
-					$price = siton_price( $prod_id );
-					break;
-				case 2:
-					$price = get_buy_price( $prod_id );
-					break;
-				default:
-					$price = round( 1.3 * get_buy_price( $prod_id ), 1);
-			}
-
-			if ( $unit_ordered ) {
-				$quantity_ordered = "";
-				$unit_array       = explode( ",", $unit_ordered );
-				$unit_q           = $unit_array[1];
-				// print "unit: " ; var_dump($unit) ; print "<br/>";
-			}
+			$this->load_line_from_order($line_ids, $client_type, $prod_id, $prod_name, $quantity_ordered, $unit_q, $P, $price );
 		} else {
-			// Loading from database
-			$sql = "SELECT prod_id, product_name, quantity_ordered, unit_ordered, round(quantity, 1), price, line_price, vat, part_of_basket FROM im_delivery_lines WHERE id = " . $line_id;
-
-			$row = sql_query_single( $sql );
-			if ( ! $row ) {
-				sql_error( $sql );
-				die ( 2 );
-			}
-
-			$prod_id          = $row[0];
-			$P                = new Product( $prod_id );
-			$prod_name        = ($row[8] ? "===>" : "" ) . $row[1];
-			$quantity_ordered = $row[2];
-			$unit_q           = $row[3];
-//			if ( $unit_q > 0 and $quantity_ordered == 0 ) {
-//				$quantity_ordered = "";
-//			}
-			$quantity_delivered = $row[4];
-			$price              = $row[5];
-			$delivery_line      = $row[6];
-			$has_vat            = $row[7];
-
-			if ( ($quantity_delivered < ( 0.8 * $quantity_ordered ) or ( $unit_q > 0 and $quantity_delivered == 0 )) and ! is_basket($prod_id) ) {
-				$line_color = "yellow";
-			}
+			$this->load_line_from_db($line_id, $P, $prod_id, $prod_name, $quantity_ordered, $quantity_delivered, $price, $delivery_line, $has_vat, $line_color);
 		}
 
 		// in Order price is total/q. in delivery get from db.
@@ -740,20 +732,12 @@ class delivery {
 		// Display item name. product_name
 		$line[ DeliveryFields::product_name ] = $prod_name;
 		$line[ DeliveryFields::product_id ]   = $prod_id;
-		// $value .= "<td id='" . $prod_id . "'>" . $prod_name . '</td>'; // 1- name
 
 		// q_quantity_ordered
 		$line[ DeliveryFields::order_q ]       = $quantity_ordered;
 		$line[ DeliveryFields::order_q_units ] = $unit_q;
-		// $value .= "<td>" . $quantity_ordered . "</td>";                             // 2- ordered
 
-		if ( is_null( $has_vat ) ) {
-			if ( $P->getVatPercent() == 0 ) {
-				$has_vat = false;
-			} else {
-				$has_vat = true;
-			}
-		}
+		if ( is_null( $has_vat ) ) $has_vat = ( $P->getVatPercent() != 0 );
 
 		// price
 		if ( $operation == ImDocumentOperation::create and $document_type == ImDocumentType::delivery ) {
@@ -880,6 +864,7 @@ class delivery {
 		if (is_basket($prod_id)) return "bsk";
 		return "prd";
 	}
+
 	function OrderQuery() {
 		if ( is_array( $this->order_id ) ) {
 			return "order_id in (" . comma_implode( $this->order_id ) . ")";
@@ -899,8 +884,7 @@ class delivery {
 			$P        = new Product( $prod_id );
 			$quantity = $row2["quantity"];
 			if ( is_basket( $prod_id ) ) {
-				$this->expand_basket( $prod_id, $quantity_ordered * $quantity, $level + 1, $show_fields,
-					$document_type, $line_id, $client_type, $edit, $data );
+				$this->expand_basket( $prod_id, $quantity_ordered * $quantity, $level + 1, $show_fields, $document_type, $line_id, $client_type, $edit, $data );
 			} else {
 				$line = array();
 				for ( $i = 0; $i <= DeliveryFields::max_fields; $i ++ ) {
@@ -935,8 +919,10 @@ class delivery {
 			$line[DeliveryFields::line_type] = "dis";
 			$line[DeliveryFields::price] = 0;
 			$sums              = null;
-			$data              .= gui_row( $line, "dis" . $this->line_number, $show_fields, $sums, $delivery_fields_names );
 			$this->line_number = $this->line_number + 1;
+			$dis_line = gui_row( $line, $this->line_number, $show_fields, $sums, $delivery_fields_names );
+			// print "<table><tr>" . $dis_line . "</tr></table>";
+			$data .= $dis_line;
 		}
 	}
 
@@ -1165,3 +1151,4 @@ function send_deliveries($ids)
 		$delivery->send_mail( $support_email, false );
 	}
 }
+

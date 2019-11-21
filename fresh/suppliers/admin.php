@@ -44,6 +44,7 @@ $args["links"] = array("id" => add_to_url(array("operation" => "show_supplier", 
 $sum = array();
 $args["page"] = get_param("page", false, -1);
 
+print HeaderText($args);
 print GuiTableContent("im_suppliers",null, $args);
 //print gui_table($suppliers, "tbl_suppliers", true, true, $sum, null,
 //	null, null, $links);

@@ -249,7 +249,7 @@ class Supply {
 		$sql = "INSERT INTO im_supplies_lines (supply_id, product_id, quantity, units, price) VALUES "
 		       . "( " . $this->ID . ", " . $prod_id . ", " . $quantity . ", " . $units . ", " . $price . " )";
 
-		// print $sql;
+		 print $sql;
 		sql_query( $sql );
 		$product = new WC_Product( $prod_id );
 		if ( $product->managing_stock() ) {
@@ -1208,6 +1208,7 @@ function handle_supplies_operation($operation)
 	switch ( $operation )
 	{
 		case "show":
+		case "get":
 			$id = get_param("id", true);
 			 get_supply($id);
 			 break;

@@ -316,14 +316,13 @@ class Catalog {
 	static function DraftItems( $ids ) {
 		my_log( "start draft", "catalog-update-post.php" );
 		for ( $pos = 0; $pos < count( $ids ); $pos ++ ) {
-			print "drafting " . $ids[ $pos ] . "<br/>";
 			my_log( "id = " . $ids[ $pos ] );
 			$product_id = $ids[ $pos ];
 
 			$p = new Product( $product_id );
-			$p->Draft();
-			print "done<br/>";
+			if (!$p->Draft()) { print "fail drafting $product_id"; return false; }
 		}
+		return true;
 	}
 
 	static function SelectOption( $product_id, $pricelist_id ) {

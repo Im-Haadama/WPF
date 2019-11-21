@@ -55,30 +55,11 @@ function del_line(supply_line_id) {
     execute_url("supplies-post.php?operation=delete_lines&params=" + supply_line_id);
 }
 
-function deleteItems() {
-    var table = document.getElementById('del_table');
-
-    var collection = document.getElementsByClassName("supply_checkbox");
-    var params = new Array();
-    for (var i = 0; i < collection.length; i++) {
-        if (collection[i].checked) {
-            // var name = get_value(table.rows[i+1].cells[0].firstChild);
-            var line_id = collection[i].id.substr(4);
-
-            params.push(line_id);
-        }
-    }
-    xmlhttp = new XMLHttpRequest();
-    xmlhttp.onreadystatechange = function () {
-        // Wait to get query result
-        if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
-        {
-            update_display();
-        }
-    }
-    var request = "supplies-post.php?operation=delete_lines&params=" + params;
-    xmlhttp.open("GET", request, true);
-    xmlhttp.send();
+function deleteItems()
+{
+    let params = get_selected("supply_checkbox");
+    let request = "supplies-post.php?operation=delete_lines&params=" + params;
+    execute_url(request, location_reload);
 }
 
 function closeItems(collection_name)
@@ -279,7 +260,8 @@ function supply_new_add_line()
     let new_row = item_table.insertRow(-1);
     let product = new_row.insertCell(0);
     // product.innerHTML = "<input id=\"itm_" + line_idx + "\" list=\"items\" \">";
-    product.innerHTML = "<input id=\"itm_" + line_idx + "\" list=\"product_list\" onkeyup=\"update_list('products', this)\"><datalist id=\"product_list\"></datalist>";
+    let list_name = "product_list_" + item_table.rows.length;
+    product.innerHTML = "<input id=\"itm_" + line_idx + "\" list=\"" + list_name + "\" onkeyup=\"update_list('products', this)\"><datalist id=\"" + list_name + "\"></datalist>";
 
     let quantity = new_row.insertCell(1);
     quantity.innerHTML = "<input id = \"qua_" + line_idx + "\" >"; // onkeypress=\"select_unit(" + line_idx + ")\"

@@ -11,7 +11,7 @@ if ( ! defined( 'ROOT_DIR' ) ) {
 	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) );
 }
 
-require_once( ROOT_DIR . "/im_tools.php" );
+// require_once( ROOT_DIR . "/im_tools.php" );
 require_once( ROOT_DIR . '/niver/data/sql.php' );
 
 // print header_text();

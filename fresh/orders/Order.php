@@ -247,7 +247,7 @@ class Order {
 		$debug_product = 0; // 141;
 		if ( ! $user_id ) {
 			if ( check_cache_validity() ) {
-				print "cache valid<br/>";
+				if (get_user_id() == 1) print "cache valid<br/>";
 				$needed_products = array();
 
 				$sql = " SELECT prod_id, need_q, need_u, prod_get_name(prod_id) FROM im_need ORDER BY 4 ";
@@ -266,7 +266,7 @@ class Order {
 				return $needed_products;
 			}
 
-			print "not valid<br/>";
+			print "cache not valid<br/>";
 			// Cache not vaild.
 			// Clean the im_need_orders, im_need table
 			$sql = "truncate table im_need_orders";
@@ -956,8 +956,90 @@ function handle_order_operation($operation)
 			print OrdersTable($args);
 			break;
 
+
+		case "paper_order":
+			$args = [];
+			$args["print_logo"] = false;
+			print HeaderText($args);
+			print gui_header(2, "הזמנה/אספקה שבועית");
+			$last_delivery = sql_query_single_scalar("select max(delivery_id) from im_delivery_lines");
+			$sql = "select distinct prod_id, sum(quantity_ordered) from im_delivery_lines where delivery_id > $last_delivery - 20 group by prod_id order by 2 desc limit 38";
+			$prods = sql_query_array_scalar($sql);
+
+			$data = [];
+			// array_push($data, array("מוצר", "כמות"));
+			foreach ($prods as $prod) {
+				if(! is_basket($prod) and ! is_bundle($prod)) {
+					$prod_name = get_product_name($prod, true);
+					array_push($data, $prod_name);
+				}
+			}
+
+			sort($data);
+
+			$table_lines = array();
+			$table_lines["header"] = array("מוצר", "כמות", "מוצר", "כמות");
+			$line_number = round((count($prods))/ 2, 0);
+//			print count($data) . "<br/>" . $line_number . "<br/>";
+
+			for ($i = 0; $i < $line_number; $i++){
+				$space = '';
+				$new_line = array($data[$i], $space, isset($data[$i + $line_number]) ? $data[$i + $line_number] : "", $space);
+				$table_lines[$i] = $new_line;
+			}
+			$args = [];
+			$args["width"] = '100%';
+			$args["col_width"] = array('25%', '25%', '25%', '25%');
+			print gui_table_args($table_lines, "products", $args);
+
+			break;
+
 		default:
 			print __FUNCTION__ . " " . $operation . " not handled<br/>";
 	}
+}
+
+function order_page_by_term()
+{
+	for ($i = 0; $i < count($prods); $i++){
+		$prod_id =$prods[$i];
+		$p = new Product($prod_id);
+		if ($p and $p->getTerms()) {
+			$term = $p->getTerms()[0]->term_id;
+			if (! isset($prods_by_term[$term])) $prods_by_term[$term] = [];
+			array_push($prods_by_term[$term], $prod_id);
+		}
+	}
+
+	$data = [];
+	// array_push($data, array("מוצר", "כמות"));
+	foreach ($prods_by_term as $term => $prods_per_term) {
+		$temp_table = [];
+		foreach ($prods_per_term as $prod_id)
+			if (!is_basket($prod_id)) array_push($temp_table, get_product_name($prod_id));
+		if (count($temp_table)){
+			sort ($temp_table);
+			array_push($data, gui_header(3, get_term_name($term)));
+
+			foreach ($temp_table as $prod_name)
+				array_push($data, array($prod_name, ""));
+		}
+		// print get_product_name($prod_id);
+	}
+
+	$table_lines = array();
+	$table_lines["header"] = array("מוצר", "כמות", "מוצר", "כמות");
+//			print gui_table_args($data);
+	$line_number = round((count($prods) + 1)/ 2, 0);
+
+//		print count($prods) . '<br/>';
+//		print $line_number . '<br/>';
+	for ($i = 0; $i < $line_number + 1; $i++){
+		$new_line = array($data[$i], "", $data[$i + $line_number], "");
+//				$line = array(get_product_name($prods[$i]), "", ($i < count($prods) -1 ? get_product_name($prods[$i+1]) : ""), "");
+		$table_lines[$i] = $new_line;
+	}
+	$args = [];
+	print gui_table_args($table_lines, "products", $args);
 
 }

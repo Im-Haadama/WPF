@@ -172,13 +172,17 @@ function get_product_id_by_name( $product_name ) {
 	return sql_query_single_scalar("SELECT id FROM im_products WHERE post_title = '" . $product_name . "'");
 }
 
-function get_product_name( $product_id ) {
+function get_product_name( $product_id, $strip = false) {
 	if ( ! is_numeric( $product_id ) ) {
 		return null;
 	}
 	$sql = 'SELECT post_title FROM wp_posts WHERE id = ' . $product_id;
 
-	return sql_query_single_scalar( $sql );
+	$name = sql_query_single_scalar( $sql );
+	if ($strip and strpos($name, '(')){
+		$name = substr($name, 0, strpos($name, '('));
+	}
+	return $name;
 }
 
 function get_product_parent( $prod_id ) {

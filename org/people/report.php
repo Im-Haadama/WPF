@@ -16,7 +16,7 @@ if ( ! defined( 'ROOT_DIR' ) ) {
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 $edit = get_param("edit");
 
-print header_text(true, true, true);
+print header_text(true, true, true, array("/org/people/people.js", "/niver/gui/client_tools.js"));
 
 ?>
 <header>

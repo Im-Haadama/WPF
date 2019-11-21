@@ -401,15 +401,15 @@ $O = new Order( $order_id );
     }
 
     function calcDelivery() {
-        var table = document.getElementById('del_table');
-        var total = 0;
-        var total_vat = 0;
-        var lines = table.rows.length;
-        var quantity_discount = 0;
-        var due_vat = 0;
-        var basket_sum = 0, basket_price = 0;
+        let table = document.getElementById('del_table');
+        let total = 0;
+        let total_vat = 0;
+        let lines = table.rows.length;
+        let quantity_discount = 0;
+        let due_vat = 0;
+        let basket_sum = 0, basket_price = 0;
 
-        for (var i = 1; i < lines; i++)  // Skip the header. Skip last lines: total, vat, total-vat, discount
+        for (let i = 1; i < lines; i++)  // Skip the header. Skip last lines: total, vat, total-vat, discount
         {
 //            var line_id = table.rows[i].cells[0].id.substr(4);
             let line_type = get_line_type(i);
@@ -422,7 +422,7 @@ $O = new Order( $order_id );
                     basket_price = Number(get_value(document.getElementById("orq_" + i))) * Number(get_value(document.getElementById("prc_" + i)));
                     break;
                 case "dis":  // End of basket.
-                    diff = Math.round(100 * (basket_price - basket_sum), 2) / 100;
+                    let diff = Math.round(100 * (basket_price - basket_sum)) / 100;
                     if (diff < 0) {
                         table.rows[i].cells[q_supply_id].innerHTML = 1;
                         table.rows[i].cells[line_total_id].innerHTML = diff;
@@ -433,7 +433,7 @@ $O = new Order( $order_id );
                         table.rows[i].hidden = true;
                         table.rows[i].cells[price_id].innerHTML = 0;
                     }
-                    total += diff;
+                    // total += diff; Not needed. Will consdired by line_total
                     break;
                 default:
             }
@@ -579,12 +579,9 @@ $O = new Order( $order_id );
 
     function get_line_type(i)
     {
-        let type = "prd";
-
-        if (document.getElementById("typ_" + i))
-            type = get_value_by_name("typ_" + i).substr(0, 3);
-
-        return type;
+        let v = get_value_by_name("typ_" + i);
+        if (v) return v;
+        return "prd";
     }
 </script>
 <style>

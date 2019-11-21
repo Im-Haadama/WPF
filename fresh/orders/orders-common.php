@@ -739,19 +739,47 @@ function total_order( $user_id ) {
 //	return 0;
 //}
 
-function show_category_all( $sale, $text, $fresh = false, $inv = false, $customer_type = "regular", $month = null, $args = null ) {
-//	print "inventory: " . $inventory . "<br/>";
-//	print "fresh: " . $fresh . "<br/>";
+
+/**
+ * @param $sale
+ * @param $text
+ * @param bool $fresh
+ * @param bool $inv
+ * @param string $customer_type
+ * @param null $month
+ * @param null $args
+ * @deprecated use ShowCategoryAll
+ *
+ * @return string
+ */
+function show_category_all($sale, $text, $fresh = false, $inv = false, $customer_type = "regular", $month = null, $args = null )
+{
+	$args["sale"] = $sale;
+	$args["text"] = $text;
+	$args["fresh"] = $fresh;
+	$args["inv"] = $inv;
+	$args["customer_type"] = $customer_type;
+	$args["month"] = $month;
+	return ShowCategoryAll( $args );
+}
+
+function ShowCategoryAll( $args )
+{
+	$sale = GetArg($args, "sale", false);
+	$text = GetArg($args, "text", false);
+	$fresh = GetArg($args, "fresh", false);
+	$inv = GetArg($args, "inventory", false);
+	$customer_type = GetArg($args, "customer_type", "regular");
+	$month = GetArg($args, "month", null);
+
 	$result = "";
 	if ( $fresh ) {
 		$categs = explode( ",", info_get( "fresh" ) );
-//		 var_dump($categs);
 	} else {
 		$sql    = "SELECT term_id FROM wp_term_taxonomy WHERE taxonomy = 'product_cat'";
 		$categs = sql_query_array_scalar( $sql );
 	}
 	foreach ( $categs as $categ ) {
-//		print get_term($categ)->name . "<br/>";
 		$result .= show_category_by_id( $categ, $sale, $text, $customer_type, $inv, $month, $args );
 	}
 
@@ -760,13 +788,12 @@ function show_category_all( $sale, $text, $fresh = false, $inv = false, $custome
 
 function show_category_by_id( $term_id, $sale = false, $text = false, $customer_type = "regular", $inventory = false, $month = null, $args = null )
 {
+	$not_available = GetArg($args, "not_available", false);
 	$just_pricelist = GetArg($args, "just_pricelist", false);
-
-	$result   = "";
-	//print "inventory: " . $inventory . "<br/>";
 
 	$the_term = get_term( $term_id );
 
+	$result   = "";
 	$result .= gui_header( 2, $the_term->name );
 
 	$regular = ($customer_type == "regular");
@@ -808,7 +835,7 @@ function show_category_by_id( $term_id, $sale = false, $text = false, $customer_
 		$header = array( "", "שם מוצר", "מחיר עלות", "כמות במלאי", "תאריך עדכון", "דוח תנועות" ) ;
 	}
 
-	$args = array(
+	$query_args = array(
 		'post_type'      => 'product',
 		'posts_per_page' => 10000,
 		'tax_query'      => array( array( 'taxonomy' => 'product_cat', 'field' => 'term_id', 'terms' => $term_id ) ),
@@ -822,7 +849,7 @@ function show_category_by_id( $term_id, $sale = false, $text = false, $customer_
 
 //	print gui_header(1, $term_id) . "<br/>";
 	// var_dump($args);
-	$loop = new WP_Query( $args );
+	$loop = new WP_Query( $query_args );
 	while ( $loop->have_posts() ) {
 		$loop->the_post();
 		global $product;
@@ -832,26 +859,27 @@ function show_category_by_id( $term_id, $sale = false, $text = false, $customer_
 //			print "skipping " . $prod_id . "<br/>";
 			continue;
 		}
-		$line = product_line( $prod_id, false, $sale, $customer_type, $inventory, $term_id, $month );
-		$price = get_price($prod_id);
-		array_push( $table, array($price, $line) );
-	}
+		if ($not_available and count(alternatives($prod_id))) continue;
 
-	sort($table); // Sort by price.
-	for ($i = 0; $i < count($table); $i++)
-	{
-		$table[$i] = $table[$i][1];
+		$line = product_line( $prod_id, false, $sale, $customer_type, $inventory, $term_id, $month );
+		$table[$prod_id] = $line;
 	}
-	$args = array();
-	$args["show_cols"] = array();
+	if (! count($table)) return null;
+
+//	sort($table); // Sort by price.
+//	for ($i = 0; $i < count($table); $i++)
+//	{
+//		$table[$i] = $table[$i][1];
+//	}
+//	$args["show_cols"] = array();
 	$args["prepare"] = false;
 	if (! $regular){
 		$args["show_cols"][3] = false; // Hide quantity price
 	}
-	if ($just_pricelist){
-		$args["show_cols"][4] = false;
-		$args["show_cols"][5] = false;
-	}
+//	if ($just_pricelist){
+//		$args["show_cols"][4] = false;
+//		$args["show_cols"][5] = false;
+//	}
 
 	if ( $text ) {
 		foreach ($table as $line)
@@ -861,19 +889,18 @@ function show_category_by_id( $term_id, $sale = false, $text = false, $customer_
 		}
 		return $result;
 	} else {
-		array_unshift($table, $header);
+		$args["checkbox_class"] = "not_avail_" . $term_id;
 		$result .= gui_table_args( $table, "table_" . $term_id, $args );
 	}
 
-	if ( $inventory ) {
-		$result .= gui_button( "btn_save_inv" . $term_id, "save_inv(" . $term_id . ")", "שמור מלאי" );
-	}
+	if ( $inventory ) $result .= gui_button( "btn_save_inv" . $term_id, "save_inv(" . $term_id . ")", "שמור מלאי" );
+	if ($not_available) $result .= gui_button( "btn_draft" . $term_id, "draft_products(" . quote_text($args["checkbox_class"]). ")", "draft products" );
 
-//	print "result = " . $result . "<br/>";
 	return $result;
 }
 
-function product_line( $prod_id, $text, $sale, $customer_type, $inv, $term_id, $month = null ) {
+function product_line( $prod_id, $text, $sale, $customer_type, $inv, $term_id, $month = null )
+{
 	$line     = array();
 	$img_size = 40;
 
