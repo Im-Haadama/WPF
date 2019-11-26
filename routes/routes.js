@@ -49,3 +49,11 @@ function delivered(site, id, type) {
     xmlhttp.open("GET", url, true);
     xmlhttp.send();
 }
+
+function create_missions()
+{
+    let param = get_selected('checkbox_im_paths');
+    if (param.length < 1) { alert ("no path selected"); return; }
+    let url = '/routes/routes-post.php?operation=create_mission&param=' + param;
+    execute_url(url, location_reload);
+}

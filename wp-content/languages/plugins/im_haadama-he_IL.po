@@ -52,6 +52,9 @@ msgstr "סכום"
 msgid "delivery fee"
 msgstr "דמי משלוח"
 
+msgid "Add delivery"
+msgstr "הוסף שליחות"
+
 msgid "Delivery fee"
 msgstr "דמי משלוח"
 
@@ -201,6 +204,9 @@ msgstr "הוסף משימות חוזרות"
 
 msgid "add tasks"
 msgstr "הוסף משימות"
+
+msgid "add a task"
+msgstr "הוסף משימה"
 
 msgid "start"
 msgstr "התחל"

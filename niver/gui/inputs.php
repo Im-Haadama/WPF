@@ -122,6 +122,19 @@ if (! function_exists('gui_br')) {
 		return $data;
 	}
 
+	function GuiButtonOrHyperlink($id, $value = null, $args = null) // Value is irrelevant but here to keep the structure: id, value, args.
+	{
+		$action = GetArg($args, "action", null);
+		$text = GetArg($args, "text", null);
+		if ($s = strpos($action, ';')) { // We have javascript command.
+			$server_action = substr($action, 0, $s);
+			$client_action = substr($action, $s + 1);
+			return gui_button($id, "execute_url('" . $server_action . "', $client_action, $id )", $text);
+		} else {
+			return gui_hyperlink($text, $action);
+		}
+	}
+
 	/**
 	 * @param $name
 	 * @param $value
@@ -663,14 +676,6 @@ if (! function_exists('gui_br')) {
 	 */
 	function gui_table_args($input_rows, $id = null, $args = null)
 	{
-		if (0) {
-			print "<table>";
-			foreach ($input_rows as $row) {
-				print "<tr>";
-				foreach ($row as $cell) print "<td>$cell</td>";
-				print "</tr>";
-			}
-		}
 		$data = "";
 
 		$debug = GetArg($args, "debug", false);
@@ -693,12 +698,8 @@ if (! function_exists('gui_br')) {
 		$class = GetArg($args, "class", null);
 
 		$show_cols = GetArg($args, "show_cols", null);
-		if ($debug) var_dump($show_cols);
 
-		if (isset($args["edit_cols"]))
-		{
-			$args["edit_cols"]["id"] = false;
-		}
+		if (isset($args["edit_cols"])) $args["edit_cols"]["id"] = false;
 
 		$transpose = GetArg($args, "transpose", false);
 
@@ -903,6 +904,7 @@ if (! function_exists('gui_br')) {
 		} else {
 			DatalistCreate($args, $table, $values);
 			return gui_select( $id, $name, $values, $events, $selected, $id_key, $class );
+			// gui_select( $id, $name, $values, $events, $selected, $id_key = "id", $class = null, $multiple = false )
 		}
 	}
 
@@ -1009,10 +1011,15 @@ if (! function_exists('gui_br')) {
 	 * @param string $id_key
 	 * @param null $class
 	 *
+	 * @param bool $multiple
+	 *
 	 * @return string
 	 */
-	function gui_select( $id, $name, $values, $events, $selected, $id_key = "id", $class = null ) {
-		$data = "<select id=\"" . $id . "\" ";
+	function gui_select( $id, $name, $values, $events, $selected, $id_key = "id", $class = null, $multiple = false ) {
+
+		$data = "<select ";
+		if ($multiple) $data .= "multiple ";
+		$data .= "id=\"" . $id . "\" ";
 
 		if ( $class ) {
 			$data .= ' class = "' . $class . '" ';
@@ -1036,8 +1043,7 @@ if (! function_exists('gui_br')) {
 	//			die ($id_key . ' offset not set ' . $id);
 			}
 			$data .= "<option value=\"" . $row[ $id_key ] . "\"";
-	//		print "key = $row[$id_key] <br/>";
-			if ( $selected and $selected == $row[ $id_key ] ) {
+			if ( $selected and (($selected == $row[ $id_key ] or ($multiple and strstr(':' . $selected . ':', ':' . $row[$id_key] . ':'))))) {
 				$data .= " selected ";
 			}
 			if ( is_array( $row ) ) {
@@ -1154,6 +1160,8 @@ if (! function_exists('gui_br')) {
 					$value = GuiInput($input_name, $data, $args); // gui_input( $input_name, $data, $field_events, $row_id );
 				}
 				break;
+			case 'fun':  // function
+				return $data;
 			default:
 				// $field_events = sprintf( $events, $row_id, $key );
 				$value        = GuiInput($input_name, $data, $args); //gui_input( $input_name, $data, $field_events, $row_id );
@@ -1163,6 +1171,15 @@ if (! function_exists('gui_br')) {
 	}
 }
 
+//function GuiMultiplySelect($id, $selected, $args)
+//{
+//	$values = GetArg($args, "values", null);
+//
+//	if (! $values) return null;
+//
+//
+//
+//}
 //if ($acc_fields and isset($acc_fields[$idx])){
 //	// print "summing $idx<br/>";
 //	if ( isset( $acc_fields[ $idx ] ) and is_array( $sum = $acc_fields[ $idx ] ) ) {
@@ -1177,3 +1194,23 @@ if (! function_exists('gui_br')) {
 //		}
 //	}
 //}
+
+function gui_select_days($id, $selected, $args)
+{
+	$edit = GetArg($args, "edit", false);
+
+	if (! $edit) {
+		$f = strtok($selected, ":");
+		$result = day_name($f);
+		while ($z = strtok( ":")) $result .= ", " . day_name($z);
+		return $result;
+	}
+	$days = [];
+	for ($i = 0; $i < 7; $i++) $days[$i] = array("id" => $i, "day_name" => day_name($i));
+
+	$args["values"] = $days;
+	$events = GetArg($args, "events", null);
+	$args["multiple"] = true;
+
+	return gui_select( $id, "day_name", $days, $events, $selected, "id", "class", true );
+}

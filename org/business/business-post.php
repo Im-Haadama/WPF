@@ -173,6 +173,7 @@ if ( $operation) {
 			}
 			print gui_table_args( $data );
 			break;
+
 		case "link_invoice_bank":
 			$bank_id      = get_param( "bank_id", true );
 			$supplier_id  = get_param( "supplier_id", true );
@@ -209,6 +210,34 @@ if ( $operation) {
 			       " where id = " . $bank_id;
 
 		     sql_query($sql);
+
+			break;
+
+		case "mark_refund_bank":
+			// TODO: NOT CHECKED
+			$bank_id      = get_param( "bank_id", true );
+			$supplier_id  = get_param( "supplier_id", true );
+			$site_id      = get_param( "site_id", true );
+			$bank         = get_param( "bank" );
+
+			// 1) mark the bank transaction to invoice.
+			$b    = BankTransaction::createFromDB( $bank_id );
+			$date = $b->getDate();
+
+			// 2) mark the invoices to transaction.
+			$command = "org/business/business-post.php?operation=add_refund_bank&supplier_id=" . $supplier_id .
+			           "&bank_id=" . $bank_id . "&date=" . $date .
+			           "&amount=" . $bank;
+//			print $command;
+			print $multi_site->Run( $command, $site_id );
+
+			print "מעדכן שורות<br/>";
+			$sql = "update im_bank " .
+			       " set receipt = \"refund\", " .
+			       " site_id = " . $site_id .
+			       " where id = " . $bank_id;
+
+			sql_query($sql);
 
 			break;
 
@@ -268,6 +297,44 @@ if ( $operation) {
 				array( "עודף", " <div id=\"change\"></div>" )
 			), "payment_table", true, true, $sums, "", "payment_table" );
 
+			break;
+
+		case "mark_return_bank":
+			require_once( ROOT_DIR . '/org/business/BankTransaction.php' );
+			require_once( ROOT_DIR . '/fresh/account/gui.php' );
+			print header_text( false, true, true,
+				array(
+					"business.js",
+					"/niver/gui/client_tools.js",
+					"/fresh/account/account.js"
+				) );
+			$id = get_param( "id" );
+			$b = BankTransaction::createFromDB( $id );
+			print gui_header( 1, "סמן החזר מהספק" );
+
+			print gui_header( 2, "פרטי העברה" );
+			print gui_table_args( array(
+					array( "תאריך", gui_div( "pay_date", $b->getDate() ) ),
+					array( "סכום", gui_div( "bank", $b->getInAmount() ) ),
+					array( "מזהה", gui_div( "bank_id", $id ) )
+				)
+			);
+
+//			print gui_header(2, "חשבונית שהופקה");
+//			print GuiInput("invoice_id");
+//			print gui_button("btn_invoice_exists", "invoice_exists()", "Exists invoice");
+
+			print gui_header( 2, "בחר ספק" );
+			print gui_select_open_supplier();
+			print '<div id="logging"></div>';
+			print '<div id="transactions"></div>';
+			print gui_table( array(
+				array(
+					"תשלום",
+					gui_button( "btn_refund", "mark_refund_bank()", "סמן זיכוי" )
+				),
+				array( "עודף", " <div id=\"change\"></div>" )
+			), "payment_table", true, true, $sums, "", "payment_table" );
 			break;
 
 		case "get_supplier_open_account":

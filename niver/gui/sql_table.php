@@ -48,9 +48,11 @@ function TableHeader($sql, $args) // $add_checkbox = false, $skip_id = false, $m
 				if (! $skip_id or strtolower($field) !== "id"){
 					$result[$field] = (isset($header_fields[$field]) ? $header_fields[$field] : $field);
 				}
-			return $result;
+		} else {
+			$result = $header_fields;
 		}
-		return array_assoc($header_fields);
+		if (GetArg($args, "add_checkbox", false)) array_unshift($result, "");
+		return $result;
 	}
 //	$add_checkbox = GetArg($args, "add_checkbox", false);
 
@@ -195,28 +197,15 @@ function PrepareRow($row, $args, $row_id)
 	// var_dump($row);
 	foreach ( $row as $key => $data )
 	{
-		if (0 and get_user_id() == 1)
-		{
-			print $key  . "<br/>";
-		}
 		// General preparation... decide the field name and save the orig data and default data.
 		$nm = $key; // mnemonic3($key);
-//		print "key=$nm<br/>";
-		if ($add_field_suffix)
-			$input_name = $nm . '_' . $row_id;
-		else
-			$input_name = $nm;
+		if ($add_field_suffix)	$input_name = $nm . '_' . $row_id;
+		else $input_name = $nm;
 
-//		print "in=$input_name<br/>";
 		$orig_data = $data;
 		$value = prepare_text($data); // Default;
 		if ($debug) print  "<br/>handling $key ";
-		if (strtolower($key) == "id" ) {
-			if ($skip_id) {
-				if ($debug) print "skip";
-				continue;
-			}
-		}
+		if (strtolower($key) == "id" and $skip_id) continue;
 
 		if ($events) {
 			if ($transpose)	$field_events = sprintf($events, "'" . $key . "'", $row_id);
@@ -227,10 +216,7 @@ function PrepareRow($row, $args, $row_id)
 
 		// Let's start
 		do {
-//			var_dump($links);
-			//print "key=$key " . $links[$key] . "<br/>";
-			if ($links and ! is_array($links))
-				die ("links should be array");
+			if ($links and ! is_array($links))	die ("links should be array");
 			if ( $links and  array_key_exists( $key, $links )) {
 				if ($debug) print "Has links for $key";
 				if ( $selectors and array_key_exists( $key, $selectors ) ) {
@@ -242,23 +228,13 @@ function PrepareRow($row, $args, $row_id)
 
 				$value = gui_hyperlink( $selected, sprintf( $links[ $key ], $data ) );
 				break;
-			} else {
-				if ($debug){
-					if (! $links or ! array_key_exists($key, $links)) print "no links[" .$key . "]";
-				}
 			}
-			if ($debug and ! $selectors)
-				print "no selectors<br/>";
 			if ( $selectors and array_key_exists( $key, $selectors ) ) {
-				if ( $debug ) {
-					print "has selector ";
-				}
 				$selector_name = $selectors[ $key ];
-				if ( strlen( $selector_name ) < 2 ) {
-					die( "selector " . $key . "is empty" );
-				}
+				if ( strlen( $selector_name ) < 2 ) die( "selector " . $key . "is empty" );
 				// print $selector_name;
 				$value = (function_exists($selector_name) ? $selector_name( $input_name, $orig_data, $args ) : $orig_data); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
+				if (! function_exists($selector_name)) debug_var("function $selector_name does not exists");
 				if ($drill) {
 					$operation = GetArg($args, "drill_operation", "show_archive");
 					// debug_var($operation . " " . $key);
@@ -266,28 +242,23 @@ function PrepareRow($row, $args, $row_id)
 				}
 				break;
 			}
-			// print "pp e=" .$edit . " e_c=" . (is_array($edit_cols) ? comma_implode($edit_cols) : $edit_cols) . " ec[k]=" . isset($edit_cols[$key]) . "<br/>";
 
 			/// 5/9/2019 Change!! edit_cols by default is to edit. if it set, don't edit.
 			/// 23/9/2019  isset($edit_cols[$key]) - set $args["edit_cols"][$key] for fields that need to be edit.
 
 			if ($edit  and (! $edit_cols or (isset($edit_cols[$key]) and $edit_cols[$key]))){
-				if (! $key)
-					continue;
+				if (! $key)	continue;
 				if ($field_events) $args["events"] = $field_events;
 				if ( $table_name ) {
-					if (isset($args["field_types"]))
-						$type = $args["field_types"][$key];
-					else
-						try {
-							$type = sql_type( $table_name, $key );
-						} catch (Exception $e) {
-							print __FUNCTION__ . ": can't find type for $key<br/>";
-							var_dump($row);
-							return null;
-						}
-					// input_by_type($input_name, $type, $args, $data = null)
-					$value = gui_input_by_type($input_name, $type, $args, $value);
+//					if (isset($args["field_types"])) {
+//						$type = $args["field_types"][$key];
+//						$value = gui_input_by_type($input_name, $type, $args, $value);
+//					}
+					if (isset($args["sql_fields"])) {
+						$type = sql_field($args["sql_fields"], $key);
+						$value = gui_input_by_type($input_name, $type, $args, $value);
+					}
+
 				} else {
 					if ( $debug ) {
 						var_dump( $data );
@@ -492,6 +463,10 @@ function TableData($sql, &$args = null)
 
 	// print __FUNCTION__ . "<br/>";
 	$result = sql_query( $sql );
+	if ($args and ! isset($args["sql_fields"])) {
+		$args["sql_fields"] = mysqli_fetch_fields($result);
+//		var_dump(mysqli_fetch_fields($result));
+	}
 	if ( ! $result ) { print "Error #N1"; return null;	}
 
 	$header = GetArg($args, "header", true);
@@ -527,12 +502,6 @@ function TableData($sql, &$args = null)
 	$m_line = $mandatory_fields ? array() : null;
 
 	$v_line = $v_checkbox ? array() : null;
-
-	if ($debug) {
-		print $sql ."<br/>";
-		var_dump($mandatory_fields); print "<br/>";
-		print "m_line: "; var_dump($m_line); print "<br/>";
-	}
 
 	if (strstr($sql, "describe") || strstr($sql, "show col")) // New Row
 	{
@@ -698,24 +667,6 @@ function GuiTableContent($table_id, $sql, &$args = null)
 
 	// Fetch the data from DB or create the new row
 	$rows_data = TableData( $sql, $args);
-
-	$debug = GetArg($args, "debug", false);
-
-	if ($debug)
-	{
-		print "sql: $sql<br/>";
-		print "skip_id:" . GetArg($args, "skip_id", false) ."<br/>";
-		print "<table border=\"1\">";
-		foreach ($rows_data as $key => $row){
-			// var_dump($row);
-			print "<tr>";
-			foreach ($row as $cell_key => $cell){
-				print "<td>". $cell . "</td>";
-			}
-			print "</tr>";
-		}
-		print "</table>";
-	}
 
 	if (! $rows_data)
 		return null;

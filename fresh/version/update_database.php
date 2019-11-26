@@ -14,19 +14,20 @@ if ( ! defined( "ROOT_DIR" ) ) {
 }
 
 require_once (ROOT_DIR . "/im-config.php");
+init();
+
 // print "host=" . DB_HOST . "<br/>";
 require_once( ROOT_DIR . '/niver/gui/sql_table.php' );
 
 require_once( ROOT_DIR . "/init.php" );
-init();
 
 if (! is_manager()) die ("no permissions");
 
 $version = get_param( "version" );
 
 switch ( $version ) {
-	case "utf8":
-		var_dump(sql_query_array_scalar("show create table im_tasklist"));
+	case "28":
+		version28();
 		break;
 	case "aa":
 		aa();
@@ -81,7 +82,33 @@ switch ( $version ) {
 print "done";
 die ( 0 );
 
+function version28()
+{
+	print gui_header(1, "function template_last_task");
+	sql_query("CREATE FUNCTION 	template_last_task(_template_id int)
+	 RETURNS date
+BEGIN
+	declare _result date;
 
+	select max(date) into _result from im_tasklist where task_template = _template_id;
+
+	return _result;	   
+END;");
+
+	print gui_header(1, "shipping codes");
+//	sql_query("drop table im_paths");
+	sql_query( "create table im_paths (
+	id INT NOT NULL AUTO_INCREMENT	PRIMARY KEY,
+	path_code varchar(10) character set utf8 not null,
+    	description VARCHAR(40) CHARACTER SET utf8 NULL,
+    	week_days varchar(40),
+	    zones varchar(200))"
+	);
+
+	sql_query("alter table im_paths add shipping_name varchar(200)");
+	// sql_query("alter table im_paths add end_h time");
+
+}
 function version27()
 {
 	print gui_header(1, "add company to project");

@@ -58,7 +58,7 @@ function add_param_to_url($url, $param_name, $param_value = null)
 	if (is_array($param_name))
 	{
 //		print "is array<br/>";
-		$result = null;
+		// $result = null;
 		foreach ($param_name as $key => $value){
 			$query_parts[$key] = $value;
 		}

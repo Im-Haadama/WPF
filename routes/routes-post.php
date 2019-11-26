@@ -17,6 +17,6 @@ $operation = get_param("operation", false, null);
 $debug = get_param("debug", false, false);
 
 if ($operation) {
-	handle_routes_operation($operation, $debug);
+	print handle_routes_operation($operation, $debug);
 	return;
 }

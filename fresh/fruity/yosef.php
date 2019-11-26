@@ -5,12 +5,14 @@
  * Date: 19/02/19
  * Time: 19:08
  */
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
 
 if ( ! defined( 'ROOT_DIR' ) ) {
-	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) );
+	define( 'ROOT_DIR', dirname(dirname( dirname( __FILE__ ) ) ));
 }
 
-require_once( ROOT_DIR . '/im_tools.php' );
+// require_once( ROOT_DIR . '/im_tools.php' );
 require_once( ROOT_DIR . '/fresh/account/account.php' );
 
 $date  = date( 'Y-m-d', strtotime( "last day of this month" ) );

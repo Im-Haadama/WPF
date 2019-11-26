@@ -170,7 +170,7 @@ function handle_focus_operation($operation, $args)
 
 	$allowed_tables = array("im_company", "im_tasklist", "im_task_templates");
 	$header_args = [];
-	$header_args["scripts"] = array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/focus/focus.js", "/focus/gui.php" );
+	$header_args["scripts"] = array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/focus/focus.js", "/focus/gui.php", "/vendor/sorttable.js" );
 	$header_args["rtl"] = is_rtl();
 
 	$action_url = "/focus/focus-post.php";
@@ -222,6 +222,10 @@ function handle_focus_operation($operation, $args)
 			$task_id = get_param( "id" );
 			if (task_cancelled($task_id)) print "done";
 			create_tasks( null, false );
+			return;
+
+		case "create_tasks":
+			print create_tasks(null, true);
 			return;
 
 		case "postpone_task":
@@ -740,7 +744,8 @@ function show_projects( $url, $owner, $non_zero = true) {
  * @return string
  * @throws Exception
  */
-function show_templates(&$args, $template_id = 0, $new = null ) {
+function show_templates(&$args, $template_id = 0, $new = null )
+{
 	$url = get_url(1);
 
 	$result = "";
@@ -750,7 +755,8 @@ function show_templates(&$args, $template_id = 0, $new = null ) {
 	$args["companies"] = worker_get_companies(get_user_id());
 	$args["selectors"] = array("project_id" =>  "gui_select_project", "owner" => "gui_select_worker",
 	                           "creator" => "gui_select_worker", "repeat_freq" => "gui_select_repeat_time", "team" => "gui_select_team");
-	$args["fields"] = array("id", "task_description", "project_id", "priority", "team", "repeat_freq", "repeat_freq_numbers", "working_hours", "condition_query", "task_url");
+	$args["fields"] = array("id", "task_description", "project_id", "priority", "team", "repeat_freq", "repeat_freq_numbers", "working_hours", "condition_query", "task_url",
+		"template_last_task(id)");
 	$args["header_fields"] = array("task_description" => "Task description", "project_id" => "Project", "priority" => "Priority",
 	                               "team" => "Team", "repeat_freq" => "Repeat Frequency", "repeat_freq_numbers" => "Repeat times", "working_hours" => "Working hours",
 		                           "Task site");
@@ -763,6 +769,16 @@ function show_templates(&$args, $template_id = 0, $new = null ) {
 		$result .= GemElement("im_task_templates", $template_id, $args);
 
 		$tasks_args = array("links" => array("id" => get_url(1) . "?operation=show_task&id=%s"));
+		$task_args["class"] = "sortable";
+
+		if (get_user_id() == 1){
+			$output = "";
+			$row = sql_query_single_assoc("SELECT id, task_description, task_url, project_id, repeat_freq, repeat_freq_numbers, condition_query, priority, creator, team " .
+			       " FROM im_task_templates where id = $template_id");
+
+			create_if_needed($template_id, $row, $output, 1, $verbose_line);
+			$result .= $output;
+		}
 
 		$table = GuiTableContent("last_tasks", "select * from im_tasklist where task_template = " . $template_id .
 		                                       " order by date desc limit 10", $tasks_args);
@@ -779,9 +795,13 @@ function show_templates(&$args, $template_id = 0, $new = null ) {
 	if ($page = get_param("page")) { $args["page"] = $page; unset ($_GET["page"]); };
 
 	$query = " 1";
-	foreach ($_GET as $key => $data){
-		if (! in_array($key, array("operation", "table_name", "new", "table")))
-			$query .= " and " . $key . '=' . quote_text($data);
+	if (get_param("search", false, false)){
+		$ids = data_search("im_task_templates", $args);
+		if (! $ids){
+			$result .= "No templates found" . gui_br();
+			return $result;
+		}
+		$query .= " and id in (" . comma_implode($ids) . ")";
 	}
 
 	$args["class"]     = "sortable";
@@ -1244,7 +1264,6 @@ function focus_main($user_id)
 			$result .= gui_hyperlink(get_user_name($worker_id) . "(" . $count . ")", '?operation=show_worker&id=' . $worker_id) . " ";
 		}
 		$result .= "<br/>";
-
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Tasks I need to handle (owner = me)                                                                       //

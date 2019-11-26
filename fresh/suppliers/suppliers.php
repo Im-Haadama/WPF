@@ -2,7 +2,7 @@
 
 function handle_supplier_operation($operation)
 {
-	$allowed_tables = array("im_suppliers");
+	$allowed_tables = array("im_suppliers", "im_business_info");
 	$result = "";
 	switch ( $operation ) {
 		case "update_type":
@@ -32,9 +32,15 @@ function handle_supplier_operation($operation)
 		case "save_new":
 			$table_name = get_param("table_name", true);
 			if (! in_array($table_name, $allowed_tables))
-				die ("invalid table operation");
+				die (__FUNCTION__ . ": invalid table operation");
 			$result = data_save_new($table_name);
 			if ($result > 0) print "done.table=" . $table_name . '&new=' . $result;
+			return;
+
+		case "add_invoice":
+			$_GET["part_id"] = $_GET["supplier_id"];
+			unset ($_GET["supplier_id"]);
+			data_save_new('im_business_info');
 			return;
 
 	}
@@ -47,6 +53,10 @@ function handle_supplier_operation($operation)
 		case "add":
 			$args = array();
 			$result = GemAddRow( "im_suppliers", "add", $args );
+			break;
+
+		case "show_balance":
+
 			break;
 
 		default:

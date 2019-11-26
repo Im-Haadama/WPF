@@ -9,12 +9,18 @@
 require( '../r-shop_manager.php' );
 print header_text( false, true, is_rtl(), array("/niver/data/data.js") );
 // require_once( "account.php" );
-?>
-
-
-<?php
 
 print header_text(false, true, true, array("suppliers.js", "/niver/gui/client_tools.js"));
+
+$operation = get_param("operation", false, null);
+
+if ($operation) {
+	require_once(ROOT_DIR .'/fresh/suppliers/suppliers.php');
+    print handle_supplier_operation($operation);
+	return;
+}
+
+
 $include_zero = isset( $_GET["zero"] );
 
 $supplier_id = get_param( "supplier_id" );
@@ -23,11 +29,8 @@ if ( $supplier_id ) {
 	return;
 }
 
-
 $sql = "SELECT supplier_balance(part_id, curdate()) as balance, part_id, supplier_displayname(part_id) \n"
-
        . "FROM `im_business_info`\n"
-
        . "where part_id > 10000\n"
        . " and is_active = 1\n"
        . " and document_type in (" . ImDocumentType::invoice . ", " . ImDocumentType::bank . ")\n"
@@ -110,9 +113,6 @@ print "$data";
 <?php
 
 function get_supplier_balance( $supplier_id ) {
-//	$sum       = array( null, null, array( 0, 'sum_numbers' ) );
-//	$links     = array();
-
     print gui_header(1, get_supplier_name($supplier_id));
 	$args = array();
 	$selectors = array();
@@ -134,15 +134,17 @@ function get_supplier_balance( $supplier_id ) {
 
 	print GuiTableContent( "supplier_account", $sql, $args );
 
-//	print gui_header(1, "Add transaction");
-//	print im_translate("Meanwhile solution for returned goods and old transactions (older that bank account in the system");
-//	$new_args = array("values" => array("part_id" => $supplier_id),
-//                      "worker" => get_user_id(), // for gui_select_project
-//                      "company" => worker_get_companies(get_user_id()),
-//                      "selectors" => array("document_type" => "gui_select_document_type")); // , "project_id" => "gui_select_project"
-//
-//	print NewRow("im_business_info", $new_args);
-//	print gui_button("btn_add_row", "save_new('im_business_info')", "הוסף");
+	// print gui_hyperlink("Add invoice", add_to_url(array("operation" => "add_invoice", "supplier_id" => $supplier_id)));
+
+	print gui_header(1, "Add transaction");
+	print im_translate("Meanwhile solution for returned goods and old transactions (older that bank account in the system");
+	$new_args = array("values" => array("part_id" => $supplier_id),
+                      "worker" => get_user_id(), // for gui_select_project
+                      "company" => worker_get_companies(get_user_id()),
+                      "selectors" => array("document_type" => "gui_select_document_type")); // , "project_id" => "gui_select_project"
+
+	print NewRow("im_business_info", $new_args);
+	print gui_button("btn_add_row", "data_save_new('" . get_url() . "', 'im_business_info')", "הוסף");
 }
 
 ?>

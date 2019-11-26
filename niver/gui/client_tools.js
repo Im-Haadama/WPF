@@ -30,7 +30,7 @@ function get_select_text(element_name) {
 }
 
 function get_value_by_name(element_name) {
-    var element = document.getElementById(element_name);
+    let element = document.getElementById(element_name);
     if (element)
         return get_value(element);
     return null;
@@ -86,9 +86,19 @@ function get_value(element) {
                 // alert (element.value);
                 return element.value;
             case "SELECT":
-                var idx = element.selectedIndex;
+                if (element.multiple) {
+                    let result = "";
+                    for ( let i = 0, l = element.options.length, o; i < l; i++ ) {
+                        if (element.options[i].selected) {
+                            if (result.length) result += ":";
+                            result += element.options[i].value;
+                        }
+                    }
+
+                    return result;
+                }
                 // alert(idx);
-                return element.options[idx].value;
+                return element.options[element.selectedIndex].value;
             case "LABEL":
                 return element.textContent;
             case "TD":

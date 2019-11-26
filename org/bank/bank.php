@@ -32,8 +32,13 @@ function handle_bank_operation($operation, $url = null) {
 			$args["actions"]       = array(
 				array(
 					"Receipt",
-					"/org/business/business-post.php?operation=create_invoice_bank&id=%s"
+					"/org/business/business-post.php?operation=1&id=%s"
+				),
+				array(
+					"Return",
+					"/org/business/business-post.php?operation=mark_return_bank&id=%s"
 				)
+
 			);
 			$query                 = "  account_id = " . $account_id . " and receipt is null and in_amount > 0 " .
 			                         " and description not in (select description from im_bank_transaction_types) ";

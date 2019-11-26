@@ -259,5 +259,18 @@ function add_im_user( $user, $name, $email, $address = null, $city = null, $phon
 	print "משתמש התווסף בהצלחה";
 
 	return $id;
+}
+
+function get_wp_option($option_id)
+{
+	$string = sql_query_single_scalar("select option_value from wp_options where option_name = '" . $option_id . "'");
+	return maybe_unserialize($string);
+}
+
+function update_wp_option($option_id, $new_array)
+{
+	$new_string = serialize($new_array);
+	return sql_query("update wp_options set option_value = '" . escape_string($new_string) . "' where option_name = '" . $option_id . "'");
 
 }
+

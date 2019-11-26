@@ -741,3 +741,45 @@ function curl_get( $url ) {
 
 	return $data;
 }
+
+/**
+ * @param $day_of_week
+ *
+ * @return mixed|string
+ */
+function day_name($day_of_week)
+{
+	return date_day_name('2019-09-' . ($day_of_week + 1));
+}
+
+/**
+ * @param $date (string)
+ *
+ * @return mixed|string
+ */
+function date_day_name($date)
+{
+	$day_names = [];
+	$day_names['he_IL'] = array("יום א'", "יום ב'", "יום ג'", "יום ד'", "יום ה'", "יום ו'", "שבת");
+
+	$year = strtok($date, "-"); $month = strtok("-"); $day = strtok("-");
+	if (! ($year > 0 and $month > 0 and $day > 0))
+	{
+		print $year. " " . $month . " " . $day . "<br/>";
+		print sql_trace();
+		die (__FUNCTION__ . ": invalid date $date");
+	}
+//	if (is_numeric($date )) {
+//		print "numeric ";
+//		$date = date('w', $date);
+//	} else {
+//		print "otherwise ";
+//		$date = date('w', strtotime($date));
+//	}
+	print "date=$date<br/>";
+
+	$day = date('w', strtotime($date));
+	$locale = get_locale();
+	if (isset($day_names[$locale][$day])) return $day_names[$locale][$day];
+	return strftime('%A', $date);
+}

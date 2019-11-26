@@ -19,7 +19,7 @@ if ($operation) {
 		handle_order_operation($operation, $args);
 		return;
 	}
-	handle_anonymous_operation($operation, $args);
+	 handle_anonymous_operation($operation, $args);
 	return;
 }
 

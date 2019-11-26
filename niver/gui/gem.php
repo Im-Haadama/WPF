@@ -80,31 +80,39 @@ function GemArray($rows_data, &$args, $table_id)
 	$result = "";
 
 	$title = GetArg($args, "title", null);
+	$no_data_message = GetArg($args, "no_data_message", "No data for now");
 	if ($title) $result .= gui_header(2, $title);
 
 	$page = GetArg($args, "page", 1);
 	$rows_per_page = GetArg($args, "rows_per_page", 10);
 
-	if (! $rows_data) return null;
-	if (! isset($args["checkbox_class"])) $args["checkbox_class"] = "checkbox_" . $table_id; // delete_items depend on that
+	if ($rows_data){
+		if (! isset($args["checkbox_class"])) $args["checkbox_class"] = "checkbox_" . $table_id; // delete_items depend on that
 
-	$args["count"] = count($rows_data);
+		$args["count"] = count($rows_data);
 
-	$result .= gui_table_args( $rows_data, $table_id, $args );
+		$result .= gui_table_args( $rows_data, $table_id, $args );
 
-	if (count($rows_data) == $rows_per_page + 1) { // 1 for the header
-		$result .= gui_hyperlink("Next page", add_to_url("page", $page + 1)) . " ";
-		$result .= gui_hyperlink("All", add_to_url("page", -1)) . " ";
+		if (count($rows_data) == $rows_per_page + 1) { // 1 for the header
+			$result .= gui_hyperlink("Next page", add_to_url("page", $page + 1)) . " ";
+			$result .= gui_hyperlink("All", add_to_url("page", -1)) . " ";
+		}
+		if ($page > 1)
+			$result .= gui_hyperlink("Previous page", add_to_url("page", $page - 1));
+
+		$result .= gui_hyperlink("search", add_to_url("search", "1"));
+
+	} else {
+		$result .=  $no_data_message . gui_br();
 	}
-	if ($page > 1)
-		$result .= gui_hyperlink("Previous page", add_to_url("page", $page - 1));
 
-	if ($button_text = GetArg($args, "button_text", "add")){
-		$button_function = GetArg($args, "button_function", null); // "function () { window.location = $button_target; }
+//	if ($button_text = GetArg($args, "button_text", "add")){
+//		$button_function = GetArg($args, "button_function", "data_save_new('" . get_url() . ", '" . $table_id . "', location_reload)"); // "function () { window.location = $button_target; }
+//
+//		$result .= gui_button("btn_" . $button_text, $button_function, $button_text);
+//	}
+	$result .= gui_hyperlink("Add", add_to_url(array("operation" => "show_add_" . $table_id)));
 
-		if ($button_function) $result .= gui_button("btn_" . $button_text, $button_function, $button_text);
-	}
-	$result .= gui_hyperlink("search", add_to_url("search", "1"));
 	$post_file = GetArg($args, "post_file", null);
 	if ($post_file)
 		$result .= gui_button("btn_delete_$table_id", "delete_items(" . quote_text($args["checkbox_class"]) . "," .
@@ -129,6 +137,7 @@ function GemArray($rows_data, &$args, $table_id)
  */
 function GemTable($table_name, &$args)
 {
+	if (! $table_name) die("Error #N2 no table given");
 	if (! isset($args["title"])) $title = "content of table " . $table_name;
 
 	$args["events"] = 'onchange="update_table_field(\'/niver/data/data-post.php\', \'' . $table_name . '\', \'%d\', \'%s\', check_update)"';

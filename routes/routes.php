@@ -5,24 +5,75 @@ require_once(ROOT_DIR . "/fresh/orders/Order.php");
 require_once (ROOT_DIR . "/fresh/suppliers/Supplier.php");
 require_once(ROOT_DIR . "/focus/Tasklist.php");
 require_once(ROOT_DIR . "/fresh/catalog/gui.php");
+require_once(ROOT_DIR . "/routes/gui.php");
 
-function handle_routes_operation($operation, $debug = false) {
+function handle_routes_operation($operation, $debug = false)
+{
+	$allowed_tables = array( "im_missions");
+
+    switch($operation)
+    {
+        case "save_new";
+            $table_name = get_param("table_name", true);
+            if (! in_array($table_name, array("im_paths")))
+                die ("invalid table $table_name");
+            if (data_save_new($table_name)) print "done";
+            return;
+//	    case "save_new":
+//		    $id = data_save_new("im_missions");
+//		    if ($id > 0) return "done.$id";
+//		    return "done";
+	    case "update":
+		    $table_name = get_param("table_name", true);
+		    if (! in_array($table_name, $allowed_tables))
+			    die ("invalid table operation");
+		    return update_data($table_name) ? "done" : "failed";
+	    case "enable_shipping_method":
+	    case "disable_shipping_method":
+		    $args = ["zone_id" => get_param("zone_id", true), "instance_id" => get_param("instance_id", true),
+		             "is_enabled" => (substr($operation, 0, 3) == "ena" ? '1' : '0')];
+		    update_wp_woocommerce_shipping_zone_methods($args);
+		    return "done";
+        case "create_mission":
+            $param = get_param("param", true);
+            foreach (explode(",", $param) as $path_id)
+                create_missions($path_id);
+            return "done";
+    }
 	if ( $debug ) {
 		print "operation: " . $operation . "<br/>";
 	}
+
+	$result = header_text(true, true, true, array("routes.js", "/niver/data/data.js", "/niver/gui/client_tools.js"));
+//	$id = get_param("id", false, 0);
+
 	switch ( $operation ) {
-		case "show_routes":
+        case "show_add_im_paths":
+            $result .= show_add_paths();
+            return $result;
+
+        case "show_paths":
+            $result .= show_paths();
+            return $result;
+
+        case "show_path":
+            $path_id = get_param("path_id", true);
+            $result .= show_path($path_id);
+            return $result;
+
+		case "show_missions":
 		    $edit_route = get_param("edit_route", false, false);
 		    if ($edit_route) {
 		        edit_route(get_param("id", true));
 		        return;
             }
 			if ($id = get_param("id", false)) {
-				print show_route($id, false, false, false);
-				return;
+				$result .= show_mission($id);
+				return $result;
 			}
 		    $week = get_param("week");
-			show_missions($week);
+			$result .= show_missions($week);
+			return $result;
 			break;
 
         case "update_mission_preq":
@@ -61,15 +112,28 @@ function handle_routes_operation($operation, $debug = false) {
 			    print "delivered";
 			break;
 
-        default:
+		case "show_add_im_missions":
+			return show_add_mission();
+		case "show_active_missions":
+			return show_active_missions();
+		case "show_mission":
+			$mission_id = get_param("row_id", true);
+			return show_mission($mission_id);
+		case "update_shipping_methods":
+			return update_shipping_methods(7, true);
+
+		default:
             die ("operation $operation not handled");
 	}
 }
 
 function show_missions($week)
 {
-    // print __FUNCTION__ . "<br/>";
+    $result = "";
+
     $debug = 0;
+
+    if (! $week) $week = date('y-m-d', strtotime('last sunday'));
 
     if ($debug) print "week: $week <br/>";
 
@@ -87,35 +151,32 @@ function show_missions($week)
 	    print "missions: "; var_dump($missing); print "<br/>";
     }
 
-	print gui_hyperlink("This week", get_url(1) . "?operation=show_routes&week=" . date( "Y-m-d", strtotime( "last sunday" ))) . " ";
-	print gui_hyperlink("Next week", get_url(1) . "?operation=show_routes&week=" . date( "Y-m-d", strtotime( "next sunday" )));
-
-	if ( ! count( $missions ) ) {
-		print "No deliveries for today ";
-		return;
+	if ( count( $missions )  == 0) {
+	    $result .= im_translate("No missions for week starting in") . " " . $week;
+		$result .= gui_hyperlink("Last week", add_to_url("week" , date( "Y-m-d", strtotime( "last sunday" )))) . " ";
+		$result .= gui_hyperlink("This week", add_to_url("week" , date( "Y-m-d", strtotime( "sunday" )))) . " ";
+		$result .= gui_hyperlink("Next week", add_to_url("week", date( "Y-m-d", strtotime( "next sunday" ))));
+		return $result;
 	}
+
 	if (count($missions) == 1) {
-		print show_route($missions[0], false, $debug, $missing);
-		return;
+	    $result .= show_mission($missions[0]);
+	    return $result;
 	}
-	do_show_missions($missions);
-}
-
-function do_show_missions($missions)
-{
 	$args = array();
 	$args["edit"] = true;
 
 	$sql = "select * from im_missions where id in (". comma_implode($missions) . ")";
 
-	$args["links"] = array("id" => get_url(true) . "?operation=show_routes&id=%s");
+	$args["links"] = array("id" => get_url(true) . "?operation=show_missions&id=%s");
 	$args ["edit_cols"] = array(0, 1,1,1,1,1);
 	// $args["events"] = array("mission_id" => "mission_changed(order_id))
 
-	print GuiTableContent("missions", $sql, $args);
-}
+	$result .= GuiTableContent("missions", $sql, $args);
 
-//print gui_hyperlink( "שבוע קודם", "get-driver-multi.php?week=" . date( 'Y-m-d', strtotime( $week . " -1 week" ) ) );
+	return $result;
+
+}
 
 function delivered($site_id, $type, $id, $debug = false)
 {
@@ -162,13 +223,8 @@ function delivered($site_id, $type, $id, $debug = false)
     return false;
 }
 
-?>
-<?php
-
-//show_path($debug, $missing);
-
 // Start collecting data
-function show_route($missions, $update = false, $debug = false, $missing = false)
+function show_mission_route($missions, $update = false, $debug = false, $missing = false)
 {
 	$stop_points = array();
 	$lines_per_station = array();
@@ -744,17 +800,50 @@ function collect_points($data_lines, $mission_id, &$prerequisite, &$supplies_to_
 	}
 }
 
-return;
+function show_paths($args = null)
+{
+    $result = "";
+    $result .= gui_header(1, "Shipping paths");
+    $args["selectors"] = array("zones" => "gui_select_zones", "week_days" => "gui_select_days");
+    $args["id_field"] = "id";
+    $args["links"] = array("id" => add_to_url(array("operation" => "show_path", "path_id" => "%s")));
+    $args["add_checkbox"] = true;
+    $args["header_fields"] = array("checkbox" => "select", "id" => "Id", "path_code" => "Path code", "description" => "Description", "zones" => "Zones", "week_days" => "Week days");
+//    $args["skip_id"] = true;
+    // $args['post_file'] = get_url(1);
+
+    $result .= GemTable("im_paths", $args);
+
+    $result .= gui_button("btn_instance", "create_missions()", "create mission");
+
+    $result .= show_missions(date('Y-m-d', strtotime('last Sunday')));
+
+    return $result;
+}
+
+function show_path($row_id)
+{
+    $result = "";
+    $args = [];
+	$args["selectors"] = array("zones" => "gui_select_zones", "week_days" => "gui_select_days");
+    $result .= GemElement("im_paths", $row_id, $args);
+    return $result;
+}
+
+
+function show_edit_shipping_code($id)
+{
+    $result = "";
+    $result .= gui_header(1, "Editing route") . $id;
+
+    return $result;
+}
+
+function show_add_paths()
+{
+	$args = [];
+	$args["selectors"] = array("zones" => "gui_select_zones");
+	$args["mandatory_fields"] = array("description", "zones");
+	return GemAddRow("im_paths", "Add", $args);
+}
 ?>
-
-
-
-<!--	<style>-->
-<!--		@media print {-->
-<!--			h1 {-->
-<!--				page-break-before: always;-->
-<!--			}-->
-<!--		}-->
-<!--	</style>-->
-
-

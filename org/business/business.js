@@ -160,6 +160,40 @@ function link_invoice_bank() {
     xmlhttp.send();
 }
 
+function mark_refund_bank() {
+    disable_btn('btn_refund');
+
+    let invoice_ids = account_get_row_ids();
+    let site_id = selected_supplier_site_id();
+    let supplier_id = selected_supplier_id();
+    let bank_id = selected_bank_id();
+
+    xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function () {
+        // Wait to get query result
+        if (xmlhttp.readyState === 4 && xmlhttp.status === 200)  // Request finished
+        {
+            add_message(xmlhttp.response);
+            // receipt_id = xmlhttp.responseText.trim();
+            // logging.innerHTML += "חשבונית מספר " + receipt_id;
+            // updateDisplay();
+        }
+    }
+    var bank = parseFloat(get_value(document.getElementById("bank")));
+    if (!(bank > 0)) {
+        alert("שגיאה בסכום");
+        return;
+    }
+    var request = "business-post.php?operation=mark_refund_bank" +
+        "&ids=" + invoice_ids.join() +
+        "&site_id=" + site_id +
+        "&supplier_id=" + supplier_id +
+        "&bank_id=" + bank_id +
+        "&bank=" + bank;
+    xmlhttp.open("GET", request, true);
+    xmlhttp.send();
+}
+
 function update_display() {
     let collection = document.getElementsByClassName("trans_checkbox");
     let t = 0;

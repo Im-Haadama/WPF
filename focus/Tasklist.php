@@ -326,19 +326,16 @@ function focus_log_file($full = false) {
 function create_tasks( $freqs = null, $verbose = false, $default_owner = 1 )
 {
 	$log_file = focus_log_file();
-	my_log("Creating tasks freqs=" . $freqs, __FUNCTION__, $log_file);
-	ob_start();
 	if ( ! table_exists( "im_task_templates" ) ) {
 		return;
 	}
+	$output = gui_header(1, "Creating tasks freqs");
 	if ( ! $freqs ) $freqs = sql_query_array_scalar( "select DISTINCT repeat_freq from im_task_templates" );
 
 	// TODO: create_tasks_per_mission();
 	$verbose_table = array( array( "template_id", "freq", "query", "active", "result", "priority", "new task" ));
 	foreach ( $freqs as $freq ) {
-		my_log("Handling " . $freq, __FUNCTION__, $log_file);
-
-		// if ( date( $freq ) == date( $last_run ) ) {
+		$output .= "Handling " . gui_hyperlink($freq, add_to_url(array("operation" => "show_templates", "search" =>1, "repeat_freq" => $freq))) . gui_br();
 
 		$sql = "SELECT id, task_description, task_url, project_id, repeat_freq, repeat_freq_numbers, condition_query, priority, creator, team " .
 		       " FROM im_task_templates " .
@@ -347,80 +344,68 @@ function create_tasks( $freqs = null, $verbose = false, $default_owner = 1 )
 		$result = sql_query( $sql );
 
 		while ( $row = mysqli_fetch_assoc( $result ) ) {
-			$verbose_line = array();
-			// if ($row["id"] == 10) var_dump($row);
-			$id         = $row["id"];
-			$last_run = sql_query_single_scalar("select max(date) from im_tasklist where task_template = " . $id);
-			$project_id = $row["project_id"];
-			if ( ! $project_id ) {
-				$project_id = 0;
-			}
-			// 		print "project_id= " . $project_id . "<br/>";
-
-			array_push( $verbose_line, $id );
-			array_push( $verbose_line, check_frequency( $row["repeat_freq"], $row["repeat_freq_numbers"], $last_run ) );
-			array_push( $verbose_line, check_query( $row["condition_query"] ) );
-			array_push( $verbose_line, check_active( $id, $row["repeat_freq"] ) );
-			$test_result = "";
-			for ( $i = 1; $i < 4; $i ++ )
-				$test_result .= substr( $verbose_line[ $i ], 0, 1);
-			my_log("template " . $id . "result: $test_result", __FUNCTION__, $log_file);
-
-
-			sql_query("update im_task_templates set last_check = now() where id = " . $id);
-
-			array_push( $verbose_line, $test_result );
-//			 print $test_result . " " . (strpos("1" . $test_result, "0") != false) . "<br/>";
-			if ( strpos(  $test_result, "0" ) !== false) {
-//				print "xxxx";
-				array_push( $verbose_line, "skipped" );
-				array_push( $verbose_table, $verbose_line);
-				my_log(comma_implode($verbose_line), "Template " . $id, $log_file);
-				continue;
-			}
-
-			$team = sql_query_single_scalar("SELECT team FROM im_task_templates WHERE id = " . $id );
-//			if (! $team)
-//				$owner = $default_owner;
-
-			$creator = sql_query_single_scalar("SELECT creator FROM im_task_templates WHERE id = " . $id );
-			if (! $creator)
-				$creator = $default_owner;
-
-			$priority = sql_query_single_scalar( "SELECT priority FROM im_task_templates WHERE id = " . $id );
-			if ( ! $priority ) {
-				$priority = sql_query_single_scalar( "SELECT project_priority FROM im_projects WHERE id = " . $project_id );
-			}
-
-			if ( ! $priority ) {
-				$priority = 0;
-			}
-			array_push( $verbose_line, $priority);
-
-			$sql = "INSERT INTO im_tasklist " .
-			       "(task_description, task_template, status, date, project_id, priority, team, creator) VALUES ( " .
-			       "'" . $row["task_description"] . "', " . $id . ", " . eTasklist::waiting . ", now(), " . $project_id . ",  " .
-			       $priority . "," . $team . "," . $creator . ")";
-
-			sql_query( $sql );
-
-			array_push( $verbose_line, sql_insert_id() );
-
-			my_log("Template " . $id . " " . comma_implode($verbose_line), __FUNCTION__, $log_file);
-
+			create_if_needed($row["id"], $row, $output, $default_owner, $verbose_line);
 			array_push( $verbose_table, $verbose_line);
-			// print $sql;
 		}
 	}
-	if ( $verbose )
-		print gui_table_args( $verbose_table);
-
-	$output = ob_get_contents();
-	ob_end_clean();
+	if ( $verbose ) $output .= gui_table_args( $verbose_table);
 
 	my_log($output, "", $log_file);
+	return $output;
 }
 
+
+function create_if_needed($id, $row, &$output, $default_owner, &$verbose_line)
+{
+	$verbose_line = array();
+	$last_run = sql_query_single_scalar("select max(date) from im_tasklist where task_template = " . $id);
+	$project_id = $row["project_id"];
+	if ( ! $project_id ) {
+		$project_id = 0;
+	}
+
+	array_push( $verbose_line, $id );
+	array_push( $verbose_line, check_frequency( $row["repeat_freq"], $row["repeat_freq_numbers"], $last_run ) );
+	array_push( $verbose_line, check_query( $row["condition_query"] ) );
+	array_push( $verbose_line, check_active( $id, $row["repeat_freq"] ) );
+	$test_result = "";
+	for ( $i = 1; $i < 4; $i ++ )
+		$test_result .= substr( $verbose_line[ $i ], 0, 1);
+
+	$output .= "template " . $id . " result: $test_result" . gui_br();
+
+	sql_query("update im_task_templates set last_check = now() where id = " . $id);
+
+	array_push( $verbose_line, $test_result );
+	if ( strpos(  $test_result, "0" ) !== false) {
+		array_push( $verbose_line, "skipped" );
+		// array_push( $verbose_table, $verbose_line);
+		$output .= comma_implode($verbose_line) . "Template " . $id . gui_br();
+		return;
+	}
+
+	$team = sql_query_single_scalar("SELECT team FROM im_task_templates WHERE id = " . $id );
+
+	$creator = sql_query_single_scalar("SELECT creator FROM im_task_templates WHERE id = " . $id );
+	if (! $creator)
+		$creator = $default_owner;
+
+	$priority = sql_query_single_scalar( "SELECT priority FROM im_task_templates WHERE id = " . $id );
+	if ( ! $priority ) $priority = sql_query_single_scalar( "SELECT project_priority FROM im_projects WHERE id = " . $project_id );
+	if ( ! $priority ) $priority = 0;
+	array_push( $verbose_line, $priority);
+
+	$sql = "INSERT INTO im_tasklist " .
+	       "(task_description, task_template, status, date, project_id, priority, team, creator) VALUES ( " .
+	       "'" . $row["task_description"] . "', " . $id . ", " . eTasklist::waiting . ", now(), " . $project_id . ",  " .
+	       $priority . "," . $team . "," . $creator . ")";
+
+	sql_query( $sql );
+
+	array_push( $verbose_line, sql_insert_id() );
+
+	$output .= "Template " . $id . " " . comma_implode($verbose_line) . gui_br();
+}
 
 function check_frequency( $repeat_freq, $repeat_freq_numbers, $last_run )
 {
@@ -431,14 +416,15 @@ function check_frequency( $repeat_freq, $repeat_freq_numbers, $last_run )
 	if (substr($repeat_freq, 0, 1) == 'c') return "1 c passed";
 
 	// Check from day after last run till today
-	$check_date = strtotime($last_run . ' +1 day');
+	$check_date = ($last_run ? strtotime($last_run . ' +1 day') : strtotime('now'));
 	$now = strtotime(date('y-m-d'));
 
-	$result .= " checking from " . date('y-m-d', $check_date);
+	$result .= "Now= " . date('y-m-d') . " Checking from " . date('y-m-d', $check_date) . "<br/>";
 
-	while ($check_date <= $now){
-		$repeat_freq = explode( " ", $repeat_freq )[0];
-		$result      .= "checking " . date( $repeat_freq, $check_date );
+	while ($check_date <= ($now + 23*60*60)){
+		$repeat_freq = explode( " ", $repeat_freq )[0]; // Change from "w - weekly" to "w"
+//		$result .="rf=$repeat_freq<br/>";
+//		$result .= "checking " . date( $repeat_freq, $check_date ) . "<br/>";
 		if ( in_array( date( $repeat_freq, $check_date ), explode( ",", $repeat_freq_numbers ) ) ) {
 			return "1 " . $result;
 		}

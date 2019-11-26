@@ -77,17 +77,16 @@ function get_sql_conn($new_conn = null)
  * @return mixed|string
  * @throws Exception
  */
-function sql_type( $table, $field ) {
+function sql_type( $table, $field) {
 	global $meta_table_info;
 
+	// Meta fields are all varchar
 	if (substr($field, 0, 1) == "$")
 		return 'varchar';
 
-	if (! $table)
-		throw new Exception("No table given");
+	if (! $table) throw new Exception("No table given");
+	if (! $field) throw new Exception(__CLASS__ . ":". __METHOD__ . "No field given.<br/> " . sql_trace());
 
-	if (! $field)
-		throw new Exception(__CLASS__ . ":". __METHOD__ . "No field given.<br/> " . sql_trace());
 	//	print "checking $table $field<br/>";
 	// For meta fields:
 	if ($sl = strpos($field, '/')){
@@ -102,7 +101,6 @@ function sql_type( $table, $field ) {
 		while ( $row = sql_fetch_row( $result ) ) {
 			$f = $row[0];
 			$t = $row[1];
-//			print $f . " " . $t . "<br/>";
 			$type_cache[ $table ][ $f ] = $t;
 		}
 	}
@@ -161,6 +159,7 @@ function sql_bind($table_name, &$stmt, $_values)
 				break;
 			case "var":
 			case 'lon':
+			case 'tim':
 				$types .= "s";
 				$value = escape_string($value);
 				break;
@@ -500,4 +499,20 @@ function sql_table_id($table_name)
 		FROM information_schema.KEY_COLUMN_USAGE 
 		WHERE TABLE_NAME = '$table_name' 
 		  AND CONSTRAINT_NAME = 'PRIMARY'");
+}
+
+
+function sql_field($fetch_fields, $field_name)
+{
+	foreach($fetch_fields as $field)
+		if ($field->name == $field_name) {
+			switch ($field->type){
+				case 253:
+					return "varchar";
+				case 3:
+					return "int";
+				case 10:
+					return "function";
+			}
+		}
 }
