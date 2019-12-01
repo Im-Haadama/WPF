@@ -197,10 +197,12 @@ class Mission {
 	/**
 	 * @param $path_id
 	 *
+	 * @param $forward_week
+	 *
 	 * @return bool|mysqli_result|null
 	 * @throws Exception
 	 */
-	public static function CreateFromPath($path_id)
+	public static function CreateFromPath($path_id, $forward_week)
 	{
 		$path_info = sql_query_single_assoc("select * from im_paths where id = " . $path_id);
 		if (! $path_info) return false;
@@ -208,28 +210,35 @@ class Mission {
 		// For now assuming just one instance per week.
 		// Get data from path info
 		$weekdays = $path_info['week_days'];
+		if (! $weekdays) die ("path $path_id has no week_days defied");
+
 		$zones = $path_info['zones'];
 
 		// And other details from last mission.
-		$date = date ('y-m-d', strtotime("last sunday +$weekdays days"));
+		$delta_days = $weekdays + ($forward_week * 7);
+		$date = date ('y-m-d', strtotime("last sunday +$delta_days days"));
+//		print "new date $date" . "<br/>"; return;
 		$last_mission = sql_query_single_scalar("select max(id) from im_missions where path_code = $path_id");
 		$time = '9:00';
-		$start_address = '';
-		$end_address = '';
-		$name = $path_info['description'];
 		if ($last_mission) {
 			$m    = new Mission( $last_mission );
 			$time = $m->getStartTime();
 			$start_address = $m->getStartAddress();
 			$end_address = $m->getEndAddress();
 			$name = $m->getMissionName();
+		} else {
+			$start_address = '';
+			$end_address = '';
+			$name = $path_info['description'];
 		}
 
 		// debug_var($path_info);
 		$sql = "insert into im_missions (date, start_h, zones, name, path_code, start_address, end_address) " .
 			" values ('$date', '$time', '$zones', '$name', '$path_id', '$start_address', '$end_address') ";
 
-		return sql_query($sql);
+//		print $sql;
+		sql_query($sql);
+		return sql_insert_id();
 	}
 
 	/**
@@ -350,8 +359,19 @@ function update_shipping_methods($days_forward = 7, $disable_all = false)
 
 	$last_date = strtotime("+ $days_forward days");
 
-	$sql = "select id from im_missions where date < " . quote_text(date('Y-m-d', $last_date)) .
-	                                                               " and date >= " . quote_text(date('Y-m-d'));
+	$day_end = (defined ('IM_DAY_END') ? IM_DAY_END : 16); // Default day end is 4pm.
+	if (date('H') > $day_end) {
+		$first_day = (date('y-m-d', strtotime('now +2 days')));
+		$last_date = date('y-m-d', strtotime ("now +" . ($days_forward +1) . " days"));
+	} else {
+		$first_day = (date('y-m-d', strtotime('now +1 days')));
+		$last_date = date('y-m-d', strtotime ("now +$days_forward days"));
+	}
+
+	$sql = "select id from im_missions \n".
+			" where date >= " . quote_text($first_day) . "\n" .
+	        " and date <= " . quote_text($last_date);
+	print $sql;
 	$missions = sql_query_array_scalar($sql);
 
 	$result .= gui_header(2, "enabling by missions");
@@ -360,7 +380,7 @@ function update_shipping_methods($days_forward = 7, $disable_all = false)
 		$result  .= gui_header( 3, $m->getMissionName() ) . "<br/>";
 		$mission = new Mission( $mission_id );
 		$date    = $mission->getDate();
-		print $date . " " . date_day_name($date);
+		// print $date . " " . date_day_name($date);
 
 		$shipping_ids = $mission->getShippingMethods();
 		if ( $shipping_ids ) {
@@ -404,16 +424,16 @@ function show_mission($mission_id)
 	$zone_table["header"] = array("Zone id", "shipping method");
 	$mission = new Mission($mission_id);
 
-	$shipping_ids = $mission->getShippingMethods();
-	foreach ($shipping_ids as $zone_id => $shipping) {
-		$tog = ($shipping->enabled == "yes") ? "disable" : "enable";
-		$args["action"] = add_to_url(array("operation" => $tog . "_shipping_method&zone_id=" . $zone_id . "&instance_id=" . $shipping->instance_id)) . ";location_reload";
-
-		$args["text"] = $tog;
-		$en_dis = GuiButtonOrHyperlink("btn_" . $zone_id, null, $args);
-
-		 array_push($zone_table, array(zone_get_name($zone_id), $shipping->title, $shipping->enabled, $en_dis));
-	}
+//	$shipping_ids = $mission->getShippingMethods();
+//	foreach ($shipping_ids as $zone_id => $shipping) {
+//		$tog = ($shipping->enabled == "yes") ? "disable" : "enable";
+//		$args["action"] = add_to_url(array("operation" => $tog . "_shipping_method&zone_id=" . $zone_id . "&instance_id=" . $shipping->instance_id)) . ";location_reload";
+//
+//		$args["text"] = $tog;
+//		$en_dis = GuiButtonOrHyperlink("btn_" . $zone_id, null, $args);
+//
+//		 array_push($zone_table, array(zone_get_name($zone_id), $shipping->title, $shipping->enabled, $en_dis));
+//	}
 	// $args["actions"] = array(array("enable", add_to_url(array("operation" => ))));
 //	$zone_table[ $zone_id ] = array(
 //		zone_get_name( $zone_id ),
@@ -473,27 +493,33 @@ function show_active_missions()
 /**
  * @param null $path_id
  *
+ * @param int $forward_week (0 - for this week, 1 - next week, etc.
+ *
  * @return string
  * @throws Exception
  */
-function create_missions($path_id = null)
+function create_missions($path_id = null, $forward_week = 0)
 {
+	$result = "";
 	if ($path_id){
-		Mission::CreateFromPath($path_id);
-		update_shipping_methods();
-		return "done";
-	}	
-	$this_week = date( "Y-m-d", strtotime( "last sunday" ) );
-	$sql       = "SELECT id FROM im_missions WHERE FIRST_DAY_OF_WEEK(date) = '" . $this_week . "' ORDER BY 1";
-
-
-	$result = sql_query( $sql );
-	while ( $row = sql_fetch_row( $result ) ) {
-		$mission_id = $row[0];
-		print "משכפל את משימה " . $mission_id . "<br/>";
-
-		duplicate_mission( $mission_id );
+		$result .= gui_header(1, "Create missions");
+		$new_id = Mission::CreateFromPath($path_id, $forward_week);
+		$result .= "New mission for path $path_id $new_id" . gui_br();
+	} else {
+		return "No path(s) selected";
 	}
+
+	return $result;
+//	$this_week = date( "Y-m-d", strtotime( "last sunday" ) );
+//	$sql       = "SELECT id FROM im_missions WHERE FIRST_DAY_OF_WEEK(date) = '" . $this_week . "' ORDER BY 1";
+//
+//	$result = sql_query( $sql );
+//	while ( $row = sql_fetch_row( $result ) ) {
+//		$mission_id = $row[0];
+//		print "משכפל את משימה " . $mission_id . "<br/>";
+//
+//		duplicate_mission( $mission_id );
+//	}
 }
 /////////
 // OLD //

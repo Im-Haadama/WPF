@@ -18,13 +18,7 @@ require_once( ROOT_DIR . '/niver/wp.php' );
 require_once( ROOT_DIR . '/fresh/pricing.php' );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 
-//if ( ! isset( $woocommerce ) ) {
-//	 print "Woocommerce is not present. Exiting";
-//	return;
-//}
 
-//require_once('../../../../fresh/im_tools.php');
-// require_once ("../../../../niver/wp.php");
 add_action( 'woocommerce_checkout_process', 'wc_minimum_order_amount' );
 add_action( 'woocommerce_before_cart', 'wc_minimum_order_amount' );
 add_action( 'woocommerce_checkout_order_processed', 'wc_minimum_order_amount' );

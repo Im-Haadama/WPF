@@ -187,6 +187,9 @@ msgstr "הוסף והמשך"
 msgid "team"
 msgstr "צוות"
 
+msgid "teams"
+msgstr "צוותים"
+
 msgid "Hello"
 msgstr "שלום"
 
@@ -350,6 +353,9 @@ msgstr "משימות באחריותי"
 msgid "My teams tasks"
 msgstr "משימות של צוותי"
 
+msgid "Teams I manage tasks"
+msgstr "משימות של צוות בניהולי"
+
 msgid "All teams"
 msgstr "כל הצוותים"
 
@@ -491,3 +497,8 @@ msgstr "הספקות שהתקבלו"
 msgid "Create supply"
 msgstr "צור הספקה"
 
+msgid "alerts"
+msgstr "התראות"
+
+msgid "No"
+msgstr "התראות"

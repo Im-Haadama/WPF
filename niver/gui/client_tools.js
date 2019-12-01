@@ -213,3 +213,20 @@ function action_back(xmlhttp)
     else
         alert (xmlhttp.response);
 }
+
+function show_menu(menu_name)
+{
+    document.getElementById(menu_name).classList.toggle("show");
+    // window.onclick = function(event) {
+    //     if (!event.target.matches(menu_name)) {
+    //         let dropdowns = document.getElementsByClassName("dropdown-content");
+    // //         let i;
+    // //         for (i = 0; i < dropdowns.length; i++) {
+    // //             var openDropdown = dropdowns[i];
+    // //             if (openDropdown.classList.contains('show')) {
+    // //                 openDropdown.classList.remove('show');
+    // //             }
+    // //         }
+    //     }
+    // }
+}

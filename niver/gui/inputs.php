@@ -355,13 +355,22 @@ if (! function_exists('gui_br')) {
 	 * @param $link
 	 * @param null $target
 	 *
+	 * @deprecated use GuiHyperlink
 	 * @return string
 	 */
-	function gui_hyperlink( $text, $link, $target = null ) {
+	function gui_hyperlink( $text, $link, $target = null )
+	{
+		return GuiHyperlink($text, $link, $target ? ["target" => $target] : null);
+	}
+
+	function GuiHyperlink($text, $link, $args = null)
+	{
 		$data = "<a href='" . $link . "'";
-		if ( $target ) {
-			$data .= ' target="' . $target . '"';
-		}
+		if ( $target = GetArg($args, "target", null)) $data .= ' target="' . $target . '"';
+		// if ( $color = GetArg($args, "hyperlink_color", null)) $data .= ' style="color:' . $color . '";';
+		if ($class = GetArg($args, "class", null))
+			$data .= " class = " . quote_text($class);
+
 		$data .= ">" . im_translate($text) . "</a>";
 
 		return $data;
@@ -375,6 +384,7 @@ if (! function_exists('gui_br')) {
 	 * @return string
 	 */
 	function gui_header( $level, $text, $center = false, $inline = false ) {
+//		debug_var($text);
 		$data ="";
 		// if ($inline) $data .= "<style>h1 {display: inline;}</style>";
 		$data .= "<h" . $level . " ";
@@ -459,6 +469,37 @@ if (! function_exists('gui_br')) {
 
 		return $data;
 	}
+
+	function GuiImage($logo_url, $height = 0)
+	{
+		return '<img src=' . quote_text($logo_url) . '  style="height: ' . $height . 'px; width: auto;">';
+	}
+
+	function GuiDiv($id, $text = null, $args = null)
+	{
+		$data = "";
+
+		$data .= '<div ';
+
+		if ($style = GetArg($args, "style", null))
+			$data .= "style=\"" . $style . "\"";
+
+		if ($class = GetArg($args, "class", null))
+			$data .= 'class="' . $class . '" ';
+		$data .= 'id="' . $id . '"';
+		if ( GetArg($args, "center", false) ) {
+			$data .= ' style="text-align:center" ';
+		}
+
+		$data .= '>';
+		if ( $text ) $data .= $text;
+		if ($tool_tip = GetArg($args, "tool_tip", false))
+			$data .= '<span class="tooltiptext">' . $tool_tip . '</span>';
+		$data .= "</div>";
+
+		return $data;
+	}
+
 
 	/**
 	 * print string with <br/> at the end.
@@ -680,6 +721,8 @@ if (! function_exists('gui_br')) {
 
 		$debug = GetArg($args, "debug", false);
 		$width = GetArg($args, "width", null);
+		$bordercolor = GetArg($args, "bordercolor", null);
+
 		$align_table_cells = GetArg($args, "align_table_cells", null);
 
 		// add_checkbox should be used on multiple rows view.
@@ -721,7 +764,7 @@ if (! function_exists('gui_br')) {
 
 		if ( $header ) {
 			$data = "<table";
-
+			if ($bordercolor) $data .= " bordercolor=" . $bordercolor;
 			if ( $class ) $data .= " class=\"" . $class . "\"";
 			if ($width) $data .= " width=\"". $width . "\"";
 			if ( ! is_null( $id ) ) {
@@ -742,13 +785,15 @@ if (! function_exists('gui_br')) {
 		{
 			if ($line_id == "header") {
 				$data .= "<tr>";
-				foreach ($line as $col_id => $cell){
-					$data .= "<td";
-					if (isset($args["col_width"][$col_id])) $data .= " width=" . $args["col_width"][$col_id];
-					$data .= ">";
-					$data .= $cell;
-					$data .= "</td>";
-				}
+				if (is_array($line))
+					foreach ($line as $col_id => $cell){
+						$data .= "<td";
+						if (isset($args["col_width"][$col_id])) $data .= " width=" . $args["col_width"][$col_id];
+						$data .= ">";
+						$data .= $cell;
+						$data .= "</td>";
+					}
+				else $data .= "<td>$line</td>";
 				$data .= "</tr>";
 				continue;
 			}
@@ -778,7 +823,6 @@ if (! function_exists('gui_br')) {
 				// $data .= "<td>" . $cell . "</td>";
 			} else
 				$data .= "<td>" . $line . "</td>";
-
 			$data .= "</tr>\n";
 		}
 
@@ -1213,4 +1257,24 @@ function gui_select_days($id, $selected, $args)
 	$args["multiple"] = true;
 
 	return gui_select( $id, "day_name", $days, $events, $selected, "id", "class", true );
+}
+
+function GuiPulldown($id, $text, $args)
+{
+	$result = "";
+	$result .= '
+	<div class="dropdown">
+	<button onclick="show_menu(\'' . $id . '\')" class="dropbtn">' . im_translate($text) . '</button>
+
+	<div id="' . $id . '" class="dropdown-content">';
+	$options = GetArg($args, "menu_options", null);
+	if (! $options) die ("no options for " . __FUNCTION__);
+	foreach ($options as $option) {
+		$link = $option['link'];
+		$text = $option['text'];
+		$result .= '<a href="' . $link . "\">" . $text . '</a>';
+	}
+	$result .= '</div></div>';
+
+	return $result;
 }

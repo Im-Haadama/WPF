@@ -96,7 +96,7 @@ add_command( $table, $row, $col, "edit_shop_orders", "Today Routes", "/routes/ro
 add_command( $table, $row, $col, "edit_shop_orders", "This week routes", "/routes/routes-page.php?operation=show_routes&week=" . date( "Y-m-d", strtotime( "last sunday" ) ));
 add_command( $table, $row, $col, "edit_shop_orders", "תעודות משלוח", "delivery/delivery-page.php", "doc_frame" );
 add_command( $table, $row, $col, "edit_missions", "ניהול מסלולים", "/routes/routes-page.php?operation=show_paths" );
-add_command( $table, $row, $col, "edit_missions", "ניהול משימות", "/routes/routes-page.php?operation=show_missions" );
+add_command( $table, $row, $col, "edit_missions", "Driving missions", "/routes/routes-page.php?operation=show_missions" );
 add_command( $table, $row, $col, "edit_shop_orders", "משלוחי המכולת", "/routes/legacy.php" );
 add_command( $table, $row, $col, null, "דיווח חוסרים ללקוח", "delivery/missing.php" );
 

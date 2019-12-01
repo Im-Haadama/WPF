@@ -105,7 +105,6 @@ END;");
 	    zones varchar(200))"
 	);
 
-	sql_query("alter table im_paths add shipping_name varchar(200)");
 	// sql_query("alter table im_paths add end_h time");
 
 }

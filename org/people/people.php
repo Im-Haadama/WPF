@@ -663,8 +663,8 @@ function handle_people_operation($operation)
 			print gui_header(1, project_name($project_id));
 			$args = [];
 			$args["query"] = "project_id = $project_id";
-			if (file_exists(ROOT_DIR . '/focus/focus.php')){
-				require_once (ROOT_DIR . '/focus/focus.php');
+			if (file_exists(ROOT_DIR . '/focus/focus_class.php')){
+				require_once (ROOT_DIR . '/focus/focus_class.php');
 				$tasks = active_tasks($args);
 				if ($tasks) print gui_header(1, "Active tasks") . $tasks;
 				else print gui_header(1, "No active tasks");

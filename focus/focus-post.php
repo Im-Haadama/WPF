@@ -8,13 +8,13 @@ require_once(ROOT_DIR . '/im-config.php');
 require_once( ROOT_DIR . "/init.php" );
 
 init();
-require_once("focus.php");
+require_once("focus_class.php");
 
 $operation = get_param("operation", false, null);
 $args = [];
 
 if ($operation){
-	handle_focus_operation($operation, $args);
+	print handle_focus_operation($operation, $args);
 	return;
 }
 

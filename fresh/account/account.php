@@ -354,7 +354,6 @@ function im_set_default_display_name( $user_id ) {
 	}
 }
 
-
 function create_receipt( $cash, $bank, $check, $credit, $change, $user_id, $date, $row_ids )
 {
 	if (! $date) $date = date('Y-m-d');

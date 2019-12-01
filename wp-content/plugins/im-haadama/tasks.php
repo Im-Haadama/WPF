@@ -14,7 +14,7 @@ require_once(ROOT_DIR . '/im-config.php');
 require_once( ROOT_DIR . "/init.php" );
 require_once (ROOT_DIR . '/niver/data/sql.php');
 require_once (ROOT_DIR . '/niver/wp.php');
-require_once (ROOT_DIR . '/focus/focus.php');
+require_once (ROOT_DIR . '/focus/focus_class.php');
 
 // require_once( TOOLS_DIR . '/im_tools.php' );
 
@@ -30,11 +30,15 @@ function task_focus()
 	require_once(ROOT_DIR . "/routes/gui.php");
 
 	$operation = get_param("operation", false, "focus_main");
+
+	$args = [];
 	if ($operation) {
-		 handle_focus_operation($operation);
+		 handle_focus_operation($operation, $args);
 		return;
 	}
 	print gui_header(1, "Active Tasks");
 	print active_tasks();
 }
+
+
 

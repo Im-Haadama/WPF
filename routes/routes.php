@@ -35,10 +35,16 @@ function handle_routes_operation($operation, $debug = false)
 		    update_wp_woocommerce_shipping_zone_methods($args);
 		    return "done";
         case "create_mission":
+        	$result = "";
             $param = get_param("param", true);
+            $forward_week = get_param("forward_week", false, 1); // By default, create missions for next week.
             foreach (explode(",", $param) as $path_id)
-                create_missions($path_id);
-            return "done";
+                $result .= create_missions($path_id, $forward_week);
+
+	        $result .= gui_header(2, "updating mission_methods");
+	        $result .= update_shipping_methods(7, true);
+
+	        return $result;
     }
 	if ( $debug ) {
 		print "operation: " . $operation . "<br/>";
@@ -68,7 +74,8 @@ function handle_routes_operation($operation, $debug = false)
 		        return;
             }
 			if ($id = get_param("id", false)) {
-				$result .= show_mission($id);
+				// $result .= show_mission($id);
+				$result .= show_mission_route($id);
 				return $result;
 			}
 		    $week = get_param("week");
@@ -812,6 +819,7 @@ function show_paths($args = null)
 //    $args["skip_id"] = true;
     // $args['post_file'] = get_url(1);
 
+	print "x=" . $args["add_checkbox"];
     $result .= GemTable("im_paths", $args);
 
     $result .= gui_button("btn_instance", "create_missions()", "create mission");

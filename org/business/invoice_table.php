@@ -24,6 +24,7 @@ require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 require_once( ROOT_DIR . '/fresh/im_tools_light.php' );
 require_once( ROOT_DIR . '/niver/web.php' );
 require_once(ROOT_DIR . '/niver/gui/input_data.php' );
+require_once(ROOT_DIR . '/niver/data/data.php' );
 
 print header_text(false, true, true, array("/niver/gui/client_tools.js", "/niver/data/data.js"));
 
@@ -34,7 +35,6 @@ if ( ! $year ) {
 // $month = get_param("monty");
 
 $page ="EXTRACT(YEAR FROM DATE) = " . $year . " and document_type = 4 and is_active=1";
-
 $operation = get_param("operation", false);
 if ($operation){
 	switch ($operation)

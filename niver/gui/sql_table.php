@@ -175,20 +175,6 @@ function PrepareRow($row, $args, $row_id)
 
 	$row_data = array();
 
-	if ($debug and ! $table_name) print "no table name<br/>";
-
-	if ($debug){
-		print "start " . __FUNCTION__ . "<br/>";
-		print "edit=$edit "; var_dump($edit_cols); print "<br/>";
-		if (! $links) print "NO links<br/>";
-		else { print "Links: "; var_dump ($links); print "<br/>"; }
-		if ($selectors) {
-			print "has selectors: "; var_dump($selectors); print "<br/>";
-		}
-		else print "No selectors<br/>";
-		print "edit_cols: " . var_dump($edit_cols); print "<br/>";
-	}
-
 	if (! is_array($row))
 	{
 		my_log( __FUNCTION__ . "invalid row ");
@@ -226,7 +212,7 @@ function PrepareRow($row, $args, $row_id)
 					$selected = $selector_name( $input_name, $orig_data, $args ); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
 				} else $selected = $value;
 
-				$value = gui_hyperlink( $selected, sprintf( $links[ $key ], $data ) );
+				$value = GuiHyperlink($selected, sprintf( $links[ $key ], $data ), $args );
 				break;
 			}
 			if ( $selectors and array_key_exists( $key, $selectors ) ) {
@@ -238,7 +224,7 @@ function PrepareRow($row, $args, $row_id)
 				if ($drill) {
 					$operation = GetArg($args, "drill_operation", "show_archive");
 					// debug_var($operation . " " . $key);
-					$value = gui_hyperlink($value, add_to_url(array($key => $orig_data, "operation" => $operation)));
+					$value = GuiHyperlink($value, add_to_url(array($key => $orig_data, "operation" => $operation)), $args);
 				}
 				break;
 			}
@@ -298,7 +284,7 @@ function PrepareRow($row, $args, $row_id)
 					array_push($row_data, gui_button($btn, "execute_url('" . $action_url . "', $client_action, $btn )", $text));
 				} else {
 					$action_url = sprintf($action[1], $row_id);
-					array_push($row_data, gui_hyperlink($text, $action_url));
+					array_push($row_data, GuiHyperlink($text, $action_url, $args));
 				}
 			} else {
 				$h = sprintf($action, $row_id);

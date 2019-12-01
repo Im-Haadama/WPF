@@ -53,7 +53,8 @@ function worker_add_company($user_id, $company_id, $project_id)
  */
 function worker_get_teams($user_id)
 {
-	return comma_array_explode(sql_query_single_scalar("select meta_value from wp_usermeta where meta_key = 'team' and user_id = $user_id"));
+	return comma_array_explode(sql_query_single_scalar(
+		"select meta_value from wp_usermeta where meta_key = 'teams' and user_id = $user_id"));
 }
 
 /**

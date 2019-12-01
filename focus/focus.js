@@ -76,3 +76,30 @@ function add_team_member(team_id)
 
     execute_url(operation, location_reload);
 }
+
+function search_by_text()
+{
+    let search_box = document.getElementById("search_text");
+    let value = get_value(search_box);
+    if (value == "(search here)") {
+        search_box.value = "";
+        return;
+    }
+    if (value.length > 2)
+        execute_url("/focus/focus-post.php?operation=search_by_text&text=" + value, update_search);
+}
+
+function search_box_reset()
+{
+    let search_box = document.getElementById("search_text");
+    let value = get_value(search_box);
+    if (value == "") search_box.value = "(search here)";
+}
+
+function update_search(xmlhttp)
+{
+    let output = xmlhttp.response;
+
+    let result_div = document.getElementById("search_result");
+    result_div.innerHTML = output;
+}

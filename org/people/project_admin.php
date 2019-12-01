@@ -15,7 +15,7 @@ if ( ! defined( "ROOT_DIR" ) ) {
 require_once(ROOT_DIR . '/im-config.php');
 require_once(ROOT_DIR . "/init.php" );
 require_once(ROOT_DIR . "/org/gui.php");
-require_once(ROOT_DIR . "/focus/focus.php");
+require_once(ROOT_DIR . "/focus/focus_class.php");
 
 
 if (! get_user_id()) {

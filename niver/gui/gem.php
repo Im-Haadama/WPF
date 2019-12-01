@@ -1,6 +1,7 @@
 <?php
 require_once(ROOT_DIR . '/niver/gui/input_data.php' );
 
+// Id, class, $args
 /**
  * @param $table_name
  * @param $text
@@ -238,6 +239,30 @@ function change_import() {
 		upcsv.action = \'' . $action_file . '&selection=\'+ selected;
 		}
 	</script>';
+
+	return $result;
+}
+
+// Header that attach to upper screen.
+// Gets array of elements to display next to logo
+function GemHeader($id, $class, $args)
+{
+	$args["print_logo"] = false;
+
+	$header_elements = $args["header_elements"];
+
+	$result = HeaderText($args); /// Displays <html><header><scripts><styles>
+
+	$div_text = "";
+	if (! $header_elements) $header_elements = [];
+	$i = 0;
+
+	foreach ($header_elements as $element)
+		$div_text .= '<div class="' . $class . '_child" id="element_' . $i++ . '">' . $element . "</div>";
+
+	$args["class"] = $class;
+
+	$result .= GuiDiv($id, $div_text, $args );
 
 	return $result;
 }

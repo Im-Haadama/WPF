@@ -51,17 +51,18 @@ function set_post_meta_field( $post_id, $field_name, $field_value ) {
  * @return bool
  */
 function is_manager() {
-	$user    = new WP_User( wp_get_current_user() );
-	$manager = false;
-	if ( ! empty( $user->roles ) && is_array( $user->roles ) ) {
-		foreach ( $user->roles as $role ) {
-			if ( $role == 'administrator' or $role == 'shop_manager' ) {
-				$manager = true;
-			}
-		}
-	}
+//	$user    = new WP_User( wp_get_current_user() );
+//	$manager = false;
+//	if ( ! empty( $user->roles ) && is_array( $user->roles ) ) {
+//		foreach ( $user->roles as $role ) {
+//			if ( $role == 'administrator' or $role == 'shop_manager' ) {
+//				$manager = true;
+//			}
+//		}
+//	}
 
-	return $manager;
+
+	return get_user_id() === 1;
 }
 
 /**
@@ -109,21 +110,21 @@ function greeting($args = null)
 
 	$now = strtotime("now");
 
-	if ($now < strtotime("12pm"))
-		$data .= im_translate("Good morning");
-	else
-		$data .= im_translate("Hello");
+//	if ($now < strtotime("12pm"))
+//		$data .= im_translate("Good morning");
+//	else
+//		$data .= im_translate("Hello");
 
-	$data .= " " . gui_div("user_id", get_customer_name($user_id), false, $user_id);
+//	$data .= " " . gui_div("user_id", get_customer_name($user_id), false, $user_id);
+	$data .= get_avatar( get_user_id(), 40 );
 	if ($viewing_as != $user_id) $data .= "( " . im_translate("viewing as") . get_customer_name($viewing_as) . ")";
 
-	$data .=  ". " . im_translate("the time is:") . " " . Date("G:i", $now ) . ".";
+	$data .=  Date("G:i", $now );
 
-	$data .= gui_hyperlink("logout", get_param(1) . "?operation=logout&back=" . encodeURIComponent(get_url()));
+	// Would go to dropdown.
+	// $data .= gui_hyperlink("logout", get_param(1) . "?operation=logout&back=" . encodeURIComponent(get_url()));
 
 	if ($extra_text) $data .= gui_br() . $extra_text;
-
-	$data .= "<br/>";
 
 	return $data;
 }
@@ -159,12 +160,19 @@ function get_customer_name( $customer_id ) {
  * @return int
  */
 function get_user_id() {
-	if (function_exists('wp_get_current_user'))
-		$current_user = wp_get_current_user();
-	else
-		return 0;
 
-	return $current_user->ID;
+	if (function_exists('wp_get_current_user'))
+	{
+		$current_user = wp_get_current_user();
+		if ($current_user->ID) return $current_user->ID;
+		$url = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_HOST ) . '/wp-login.php?redirect_to=' . $_SERVER['REQUEST_URI'] . '"';
+
+		print '<script language="javascript">';
+		print "window.location.href = '" . $url . "'";
+		print '</script>';
+		die (1);
+	}
+	print "configuration error. Contact support";
 }
 
 /**

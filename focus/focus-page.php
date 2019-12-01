@@ -24,7 +24,7 @@ $debug = get_param("debug", false, false);
 global $style_file;
 init(null, $style_file);
 
-require_once( "focus.php" );
+require_once( "focus_class.php" );
 $operation = get_param("operation", false, "focus_main");
 
 if ($debug) print "op=$operation<br/>";

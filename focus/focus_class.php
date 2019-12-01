@@ -335,9 +335,13 @@ function handle_focus_operation($operation, $args)
 			if (project_delete($id, get_user_id()))
 				print "done";
 			return;
+
+		case "search_by_text":
+			$text = get_param("text", true);
+			return search_by_text($text);
 	}
 
-	$result = focus_header($header_args);
+	$result = ""; // focus_header($header_args);
 
 	$args["page"] = get_param("page", false, 1);
 
@@ -345,9 +349,12 @@ function handle_focus_operation($operation, $args)
 	if ($debug)	print "operation: " . $operation . "<br/>";
 	// show/save <obj_type>
 	switch ($operation){
+		case "show_settings":
+			$result .= show_settings(get_user_id());
+			break;
 		case "focus_main":
 			// $new = get_param("new", false, null);
-			$result .= focus_main(get_user_id());
+			$result .= focus_main(get_user_id(), $args);
 			break;
 		case "edit_organization":
 			$result .= edit_organization();
@@ -501,21 +508,7 @@ function handle_focus_operation($operation, $args)
 
 		case "show_team":
 			$team_id = get_param("id", true);
-			// team_add_worker($team_id, team_manager($team_id));
-			// $result .= gui_header(1, im_translate("Team") . ": " . team_get_name($team_id));
-			$args = array("selectors" => array("ID" => "gui_select_worker"),
-			              "edit" => false,
-//				array( "cancel", $action_url . "?operation=cancel_task&id=%s;action_hide_row" ),
-
-			              "actions" => array(array("remove", add_to_url(array("operation" => "remove_from_team", "user" => "%s")))));
-			$result .= GuiTableContent("im_working_teams",
-				'select ID from wp_users where worker_teams(id) like "%:' . $team_id . ':%"', $args);
-			$result .= gui_hyperlink("add member", add_to_url("operation" , "show_add_member"));
-
-			$args = [];
-			$args["page"] = get_param("page", false, 1);
-			$args["query"] = " team = $team_id";
-			$result .= GemTable("im_tasklist", $args);
+			print show_team($team_id);
 			break;
 
 		case "show_add_member":
@@ -701,7 +694,7 @@ function focus_header($args)
 {
 	$result = "";
 	// $args = array("print_logo" => true, "rtl" => is_rtl());
-	$args["greeting"] = true;
+	$args["greeting"] = false;
 	if (get_user_id() == 1) $args["greeting_extra_text"] = gui_hyperlink("log", focus_log_file(1));
 
 	$result =  HeaderText($args);
@@ -1051,7 +1044,7 @@ function active_tasks(&$args = null, $debug = false, $time = false)
 		// $table = GuiTableContent( $table_name, $sql, $args );
 		// if (! $args["count"]) return "";
 		if ($table) {
-			if (strlen($title)) $result = gui_header(2, $title);
+			// if (strlen($title)) $result = gui_header(2, $title);
 			$result .= $table;
 		}
 	} catch ( Exception $e ) {
@@ -1077,20 +1070,40 @@ function active_tasks(&$args = null, $debug = false, $time = false)
 /**
  * @param $team_id
  * @param $active_only
+ *
+ * @return string
  */
-function show_team($team_id, $active_only)
+function show_team($team_id, $active_only = true)
 {
-	print gui_header(1, "Showing status of team " . team_get_name($team_id));
-	print gui_hyperlink("Include non active", add_to_url("active_only", 0));
+	$result = "";
+	$result .=  gui_header(1, "Team " . team_get_name($team_id));
+	$result .=  gui_hyperlink("Include non active", add_to_url("active_only", 0));
 
 	// $team_members = team_members($team_id);
 
-//		print gui_header(2, get_customer_name($user_id) . " " . $user_id);
+//		$result .=  gui_header(2, get_customer_name($user_id) . " " . $user_id);
 	$args = array("active_only" => $active_only);
 	$args["query"] = " team=" . $team_id;
 	$args["fields"] = array("id", "task_description", "project_id", "priority", "task_template", "owner");
-	print active_tasks($args);
+	$result .=  active_tasks($args);
+	return $result;
 }
+
+//// team_add_worker($team_id, team_manager($team_id));
+//// $result .= gui_header(1, im_translate("Team") . ": " . team_get_name($team_id));
+//$args = array("selectors" => array("ID" => "gui_select_worker"),
+//              "edit" => false,
+////				array( "cancel", $action_url . "?operation=cancel_task&id=%s;action_hide_row" ),
+//
+//              "actions" => array(array("remove", add_to_url(array("operation" => "remove_from_team", "user" => "%s")))));
+//$result .= GuiTableContent("im_working_teams",
+//	'select ID from wp_users where worker_teams(id) like "%:' . $team_id . ':%"', $args);
+//$result .= gui_hyperlink("add member", add_to_url("operation" , "show_add_member"));
+//
+//$args = [];
+//$args["page"] = get_param("page", false, 1);
+//$args["query"] = " team = $team_id";
+//$result .= GemTable("im_tasklist", $args);
 
 /**
  * @param $manager_id
@@ -1228,10 +1241,12 @@ function edit_organization()
 /**
  * @param $user_id
  *
+ * @param $args
+ *
  * @return string
  * @throws Exception
  */
-function focus_main($user_id)
+function focus_main($user_id, $args)
 {
 	$debug = 0;
 	// $user_id = get_user_id();
@@ -1239,32 +1254,31 @@ function focus_main($user_id)
 
 	$result = "";
 	$ignore_list = [];
-	$args = [];
 	$args["count"] = 0;
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Links: Templates                                                                       //
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	$url = get_url(1);
-	$result .= gui_hyperlink("Repeating tasks", $url . "?operation=show_templates") . " ";
+//	$url = get_url(1);
+//	$result .= gui_hyperlink("Repeating tasks", $url . "?operation=show_templates") . " ";
 
-	if ($teams = team_managed_teams($user_id)) {// Team manager
-		$result .= gui_hyperlink("Edit organization", $url . "?operation=edit_organization");
-		$result .= "<br/>";
-		$workers = array();
-		foreach ($teams as $team) {
-			foreach (team_all_members($team) as $worker_id) $workers[$worker_id] = 1;
-			$count = 0; // active_task_count("team_id = " . $team);
-			$result .= gui_hyperlink( team_get_name($team) . "(" . $count . ")", "?operation=show_team&id=" . $team );
-		}
-		$result .= "<br/>";
-		foreach ($workers as $worker_id => $c) {
-			$count = 0;
-			$result .= gui_hyperlink(get_user_name($worker_id) . "(" . $count . ")", '?operation=show_worker&id=' . $worker_id) . " ";
-		}
-		$result .= "<br/>";
-	}
+//	if ($teams = team_managed_teams($user_id)) {// Team manager
+//		$result .= gui_hyperlink("Edit organization", $url . "?operation=edit_organization");
+//		$result .= "<br/>";
+//		$workers = array();
+//		foreach ($teams as $team) {
+//			foreach (team_all_members($team) as $worker_id) $workers[$worker_id] = 1;
+//			$count = 0; // active_task_count("team_id = " . $team);
+//			$result .= gui_hyperlink( team_get_name($team) . "(" . $count . ")", "?operation=show_team&id=" . $team );
+//		}
+//		$result .= "<br/>";
+//		foreach ($workers as $worker_id => $c) {
+//			$count = 0;
+//			$result .= gui_hyperlink(get_user_name($worker_id) . "(" . $count . ")", '?operation=show_worker&id=' . $worker_id) . " ";
+//		}
+//		$result .= "<br/>";
+//	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Tasks I need to handle (owner = me)                                                                       //
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1436,4 +1450,87 @@ function gui_show_team($id, $selected, $args)
 	$result = "";
 	foreach ($members as $member) $result .= get_user_name($member) . ", ";
 	return rtrim($result, ", ");
+}
+
+
+function alerts_pulldown($user_id, $limit = 10)
+{
+	// TODO: added filtering
+	$menu_options = [];
+
+	$events = sql_query_array("select id, started as event_time, 'started' as event_description from im_tasklist where started is not null
+union
+select id, ended as event_time, 'ended' as event_description from im_tasklist where ended is not null
+order by 2 desc
+limit $limit
+");
+	foreach ($events as $event) {
+		$id = $event[0];
+		$time = $event[1];
+		$event_descripton = $event[2];
+		$t = new Tasklist($id);
+		$text = "task " . $t->getTaskDescription() . " " . $event_descripton . " at " . $time;
+		array_push($menu_options, array("link" => link_to_task($id), "text" => $text));
+	}
+
+	return GuiPulldown("alerts", "alerts", ["menu_options" => $menu_options] );
+}
+
+function link_to_task($id)
+{
+	return add_to_url(array("operation" => "show_task", "id" => $id));
+}
+
+function project_pulldown($user_id)
+{
+	$projects = worker_get_projects($user_id);
+	$menu_options = [];
+	foreach ($projects as $project)
+		array_push($menu_options,
+			array("link" => add_to_url(array("operation"=>"show_project", "id" => $project["project_id"])),
+			"text"=>$project['project_name']));
+	return GuiPulldown("projects", "projects", ["menu_options" => $menu_options] );
+}
+
+function team_pulldown($user_id)
+{
+	$teams = worker_get_teams($user_id);
+	$menu_options = [];
+	if (! $teams) return "";
+	foreach ($teams as $team)
+		array_push($menu_options,
+			array("link" => add_to_url(array("operation"=>"show_team", "id" => $team)),
+			      "text"=>team_get_name($team)));
+	return GuiPulldown("teams", "teams", ["menu_options" => $menu_options] );
+}
+
+function search_by_text($text)
+{
+	$result = [];
+	$result = array_merge($result, project_list_search("project_name like " . quote_percent($text)));
+	$result = array_merge($result, task_list_search("task_description like " . quote_percent($text)));
+
+	if (count($result) < 2) return "No results";
+
+	return gui_table_args($result);
+}
+
+function task_list_search($query)
+{
+	$result = sql_query_array_scalar("select task_description from im_tasklist where $query");
+	// debug_var($result);
+	return $result;
+}
+
+function project_list_search($query)
+{
+	return sql_query_array_scalar("select id from im_projects where $query" );
+}
+
+function show_settings($user_id)
+{
+	$result = gui_header(1, im_translate("Settings for") . " " . get_user_name($user_id));
+
+
+	return $result;
 }

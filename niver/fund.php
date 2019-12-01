@@ -72,7 +72,7 @@ function HeaderText($args = null)
 {
 	global $business_info;
 	global $logo_url;
-	global $style_file;
+	$style_file = GetArg($args, "css", null);
 
 	$rtl = GetArg($args, "rtl", (function_exists("is_rtl") ? is_rtl() : false));
 	$print_logo = GetArg($args, "print_logo", true);
@@ -105,7 +105,7 @@ function HeaderText($args = null)
 	$row = array();
 	if ($greeting) $row [] = greeting($args);
 	if ($print_logo and $logo_url ) {
-		$row [] = '<img src=' . $logo_url . '  style="height: 100px; width: auto;">';
+		$row [] = '<img src=' . $logo_url . '  style="height: 100px; width: auto;">'; // Todo: use GuiImage
 		$table [] = $row;
 		$args["align_table_cells"] = array(array(null, "left"));
 		$text .= gui_table_args($table, "header", $args);
@@ -158,11 +158,13 @@ function footer_text() {
  */
 function load_style($style_file)
 {
-	$text = "<style>";
-	$text .= file_get_contents( $style_file );
-	$text .= "</style>";
+	return '<link rel="stylesheet" type="text/css" href="' . $style_file . '">';
 
-	return $text;
+//	$text = "<style>";
+//	$text .= file_get_contents( $style_file );
+//	$text .= "</style>";
+//
+//	return $text;
 }
 
 /**
@@ -214,14 +216,20 @@ function get_param( $key, $mandory = false, $default = null ) {
 	}
 }
 
+function quote_percent($text)
+{
+	return '"%' . $text . '%"';
+}
+
 /**
  * @param $num_or_text
  *
  * @return string
  */
+
 function quote_text( $num_or_text ) {
 	if ( is_null( $num_or_text ) ) {
-		return "NULL";
+		return '"NULL"';
 	}
 
 	if ( is_numeric( $num_or_text ) ) {
@@ -776,7 +784,6 @@ function date_day_name($date)
 //		print "otherwise ";
 //		$date = date('w', strtotime($date));
 //	}
-	print "date=$date<br/>";
 
 	$day = date('w', strtotime($date));
 	$locale = get_locale();
