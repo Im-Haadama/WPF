@@ -13,15 +13,15 @@ require_once( ROOT_DIR . "/niver/fund.php" ); // requires wp-config.
 boot_no_login( 'im-haadama', 'im-haadama' );
 
 // Auth
-if ( ! get_user_id() ) {
-	$url = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_HOST ) . '/wp-login.php?redirect_to=' . $_SERVER['REQUEST_URI'] . '"';
-
-	print '<script language="javascript">';
-	print "window.location.href = '" . $url . "'";
-	print '</script>';
-
-	return;
-}
+//if ( ! get_user_id() ) {
+//	$url = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_HOST ) . '/wp-login.php?redirect_to=' . $_SERVER['REQUEST_URI'] . '"';
+//
+//	print '<script language="javascript">';
+//	print "window.location.href = '" . $url . "'";
+//	print '</script>';
+//
+//	return;
+//}
 
 // Raise reporting.
 if ( get_user_id() == 1 ) {
@@ -47,12 +47,7 @@ if ( ! im_user_can( "show_bank" ) ) {
 
 // Auth
 	if ( ! get_user_id() ) {
-		$url = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_HOST ) . '/wp-login.php?redirect_to=' . $_SERVER['REQUEST_URI'] . '"';
-
-		print '<script language="javascript">';
-		print "window.location.href = '" . $url . "'";
-		print '</script>';
-
+		print force_login();
 		return;
 	}
 

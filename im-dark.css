@@ -56,7 +56,7 @@ a.light_hyperlink {
     border: none;
     cursor: pointer;
 }
-/* Dropdown button on hover & focus */
+/* Dropdown button on hover & focus */_
 .dropbtn:hover, .dropbtn:focus {
     background-color: #4f221c;
 }

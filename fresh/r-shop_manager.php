@@ -34,13 +34,7 @@ if ( $multisite or $_SERVER['REMOTE_ADDR'] == "160.153.129.234" or // Aglamaz.co
 		// Force login
 		$inclued_files = get_included_files();
 		my_log( __FILE__, $inclued_files[ count( $inclued_files ) - 2 ] );
-		$url = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_HOST ) . '/wp-login.php?redirect_to=' . $_SERVER['REQUEST_URI'] . '"';
-
-		print '<script language="javascript">';
-		print "window.location.href = '" . $url . "'";
-		print '</script>';
-		print $_SERVER['REMOTE_ADDR'] . "<br/>";
-		var_dump( $user );
+		force_login();
 		exit();
 	}
 

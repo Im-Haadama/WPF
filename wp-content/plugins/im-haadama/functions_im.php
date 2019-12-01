@@ -11,13 +11,11 @@ if ( ! defined( "ROOT_DIR" ) ) {
 
 require_once(ROOT_DIR . '/im-config.php');
 require_once(ROOT_DIR . "/init.php");
-
-require_once( ROOT_DIR . '/fresh/im_tools.php' );
-require_once( ROOT_DIR . '/niver/data/sql.php' );
-require_once( ROOT_DIR . '/niver/wp.php' );
-require_once( ROOT_DIR . '/fresh/pricing.php' );
-require_once( ROOT_DIR . '/niver/gui/inputs.php' );
-
+require_once(ROOT_DIR . '/fresh/im_tools.php' );
+require_once(ROOT_DIR . '/niver/data/sql.php' );
+require_once(ROOT_DIR . '/niver/wp.php' );
+require_once(ROOT_DIR . '/fresh/pricing.php' );
+require_once(ROOT_DIR . '/niver/gui/inputs.php' );
 
 add_action( 'woocommerce_checkout_process', 'wc_minimum_order_amount' );
 add_action( 'woocommerce_before_cart', 'wc_minimum_order_amount' );
@@ -37,6 +35,8 @@ function im_footer() {
 }
 
 function get_minimum_order() {
+/// XXXXXXXXX
+    return 0;
 	global $woocommerce;
 
 	$value = 85;
@@ -69,7 +69,6 @@ function get_minimum_order() {
 }
 
 function wc_minimum_order_amount() {
-
 	$minimum = get_minimum_order();
 
 	if ( WC()->cart->total - WC()->cart->shipping_total < $minimum ) {
@@ -186,22 +185,6 @@ function my_show_extra_profile_fields( $user ) { ?>
             </td>
         </tr>
     </table>
-
-    <!--    <h3>פרטי משלוח ברירת מחדל</h3>-->
-    <!---->
-    <!--    <table class="form-table">-->
-    <!--        <tr>-->
-    <!--            <th><label for="shipping_zone">איזור משלוח</label></th>-->
-    <!---->
-    <!--            <td>-->
-    <!--                <input type="text" name="shipping_zone" id="shipping_zone"-->
-    <!--                       value="--><?php //echo esc_attr( get_the_author_meta( 'shipping_zone', $user->ID ) ); ?><!--"-->
-    <!--                       class="regular-text"/><br/>-->
-    <!--                <span class="description">הכנס מספר איזור משלוח.</span>-->
-    <!--            </td>-->
-    <!--        </tr>-->
-    <!---->
-    <!--    </table>-->
 <?php }
 
 add_action( 'personal_options_update', 'my_save_extra_profile_fields' );
@@ -218,7 +201,6 @@ function my_save_extra_profile_fields( $user_id ) {
 	update_usermeta( $user_id, 'print_delivery_note', $_POST['print_delivery_note'] );
     if (isset($_POST['shipping_zone']))	update_usermeta( $user_id, 'shipping_zone', $_POST['shipping_zone'] );
 }
-
 
 ////////////////////////////////////
 // Use decimal in quantity fields //
@@ -356,25 +338,18 @@ function woocommerce_form_field_radio( $key, $args, $value = '' ) {
 	}
 }
 
-
-if ( ! defined( "STORE_DIR" ) ) {
-	define( 'STORE_DIR', dirname( dirname( dirname( dirname( __FILE__ ) ) ) ) );
-}
-
 add_action( 'woocommerce_before_calculate_totals', 'im_woocommerce_update_price', 99 );
 
 function im_woocommerce_update_price() {
 	global $site_id;
-	$debug = (get_user_id() == 1);
-	if ( $site_id != 4 ) {
-		return;
-	}
+	if ( $site_id != 4 ) return;
 
 	my_log( "cart start" );
 	// TWEEK. Don't know why menu_op calls this method.
 	// DONT remove without trying menu.php and cart.
     if (! sql_query_single_scalar("select 1")) {
         my_log ("not connected to db");
+        print "not conneted do db";
         return;
     }
 	$client_type = customer_type( get_user_id() );
@@ -392,10 +367,10 @@ function im_woocommerce_update_price() {
 		$cart_item['data']->set_sale_price( $sell_price );
 		$cart_item['data']->set_price( $sell_price );
 		my_log( $prod_id . " " . $q );
-
 	}
-	//		ob_start();
 }
+
+return;
 
 add_filter( 'woocommerce_cart_item_price', 'im_show_nonsale_price', 10, 2 );
 function im_show_nonsale_price( $newprice, $product ) {
@@ -426,6 +401,8 @@ add_filter( 'woocommerce_order_button_text', 'im_custom_order_button_text' );
 function im_custom_order_button_text() {
 	return __( 'אשר הזמנתך', 'woocommerce' );
 }
+
+
 
 // Delivery based on products.
 // Categories that can be send by post.

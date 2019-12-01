@@ -87,7 +87,7 @@ function is_admin_user() {
  *
  * @return string
  */
-function greeting($args = null)
+function greeting( $args = null, $force_login = false )
 {
 	$extra_text = GetArg($args, "greeting_extra_text", null);
 	$viewing_as = GetArg($args, "view_as", get_user_id());
@@ -99,12 +99,8 @@ function greeting($args = null)
 //	else $user_id = 1; // FOR DEBUG wp_get_current_user()->ID;
 	$user_id = get_user_id();
 
-	if (! $user_id) {
-		$url = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_HOST ) . '/wp-login.php?redirect_to=' . $_SERVER['REQUEST_URI'] . '"';
-
-		print '<script language="javascript">';
-		print "window.location.href = '" . $url . "'";
-		print '</script>';
+	if (! $user_id and $force_login) {
+		print force_login();
 		die (1);
 	}
 
@@ -157,20 +153,20 @@ function get_customer_name( $customer_id ) {
 }
 
 /**
+ * @param bool $force_login
+ *
  * @return int
  */
-function get_user_id() {
-
+function get_user_id($force_login = false)
+{
 	if (function_exists('wp_get_current_user'))
 	{
 		$current_user = wp_get_current_user();
 		if ($current_user->ID) return $current_user->ID;
-		$url = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_HOST ) . '/wp-login.php?redirect_to=' . $_SERVER['REQUEST_URI'] . '"';
-
-		print '<script language="javascript">';
-		print "window.location.href = '" . $url . "'";
-		print '</script>';
-		die (1);
+		if ($force_login) {
+			force_login(); // Redirects to login form.
+		}
+		return 0;
 	}
 	print "configuration error. Contact support";
 }
@@ -183,33 +179,10 @@ function get_user_id() {
 function im_user_can( $permission ) {
 	global $no_wp;
 	if ($no_wp) return true; // For debugging
-	return ( user_can( login_id(), $permission ) );
+	$user_id = get_user_id();
+	if (! $user_id) return false;
+	return ( user_can( $user_id, $permission ) );
 }
-
-/**
- * @return mixed
- */
-function login_id() {
-	$user = wp_get_current_user();
-	if ( $user->ID == "0" ) {
-		// Force login
-//		$inclued_files = get_included_files();
-//		var_dump( $inclued_files );
-//		my_log( __FILE__, $inclued_files[ count( $inclued_files ) - 2 ] );
-		$url = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_HOST ) . '/wp-login.php?redirect_to=' . $_SERVER['REQUEST_URI'] . '"';
-//		die( 1 );
-
-		print '<script language="javascript">';
-		print "window.location.href = '" . $url . "'";
-		print '</script>';
-		print $_SERVER['REMOTE_ADDR'] . "<br/>";
-		var_dump( $user );
-		exit();
-	}
-
-	return $user->ID;
-}
-
 
 /**
  * @param $user
@@ -282,3 +255,11 @@ function update_wp_option($option_id, $new_array)
 
 }
 
+function force_login()
+{
+	$url = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_HOST ) . '/wp-login.php?redirect_to=' . $_SERVER['REQUEST_URI'] . '"';
+
+	print '<script language="javascript">';
+	print "window.location.href = '" . $url . "'";
+	print '</script>';
+}

@@ -218,19 +218,18 @@ function sql_bind($table_name, &$stmt, $_values)
  *
  * @return bool|mysqli_result|null
  */
-function sql_query( $sql, $report_error = true ) {
+function sql_query( $sql, $report_error = true )
+{
 	try {
 		$conn = get_sql_conn();
 	} catch ( Exception $e ) {
 		print "Error (2): " . $e->getMessage() . "<br/>";
 		die(1);
 	}
-
 	if ( ! $conn ) {
 		sql_error("Error (3): not connected");
 		return null;
 	}
-
 	$prev_time         = microtime(true);
 	if ( $result = mysqli_query( $conn, $sql ) ) {
 		$now         = microtime(true);

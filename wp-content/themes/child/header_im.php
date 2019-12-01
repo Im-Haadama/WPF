@@ -6,29 +6,10 @@
  * Time: 15:42
  */
 ?>
-
-<!--<div align="center">-->
-<!--    תוצרת אורגנית בפיקוח או מ-->
-<!--    <a href="http://im-haadama.co.il/about/">-->
-<!--        חקלאות בת קיימא.-->
-<!--    </a>-->
-<!--    לפרטים אודות ה-->
-<!--    <a href="http://store.im-haadama.co.il/about/">שירות והמשלוחים</a>-->
-<!--</div>-->
-
 <div align="center">
 	<?php
 	date_default_timezone_set( "Asia/Jerusalem" );
-
-	// 6 - Saturday, 7 - Sunday, 1 - Monday, 2 - Tuesday
-	//if (date("N") == 6 || date("N") == 7 || (date("N") == 1  && date("G") <= 18 )) {
-	//    echo date("הזמנה זאת תסופק ביום שלישי j/n/Y", mktime(0, 0, 0, date("m"), date("d")+(9 - date("N")) % 7 , date("Y")));
-	//} else {
-	//    echo date("הזמנה זאת תסופק ביום שלישי הבא j/n/Y", mktime(0, 0, 0, date("m"), 9-date("N")+date("d"), date("Y")));
-	//}
-	// האספקה בימים שני-עד רביעי.
 	?>
-    <!--    <h2> לרגל החג, המשלוחים יבצעו ביום ב'. הזמנות עד השעה 18.-->
     <h2> המשלוחים בימים ב' עד ה', בהתאם
         <a href="http://store.im-haadama.co.il/about">לאיזורים</a></h2>
     <script>

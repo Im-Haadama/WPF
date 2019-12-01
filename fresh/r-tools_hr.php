@@ -25,11 +25,7 @@ if ( isset( $multisite ) or $_SERVER['REMOTE_ADDR'] == "160.153.129.234" or // A
 	$user = wp_get_current_user();
 	if ( $user->ID == "0" ) {
 		// Force login
-		$url = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_HOST ) . '/wp-login.php?redirect_to=' . $_SERVER['REQUEST_URI'] . '"';
-
-		print '<script language="javascript">';
-		print "window.location.href = '" . $url . "'";
-		print '</script>';
+		force_login();
 		exit();
 	}
 

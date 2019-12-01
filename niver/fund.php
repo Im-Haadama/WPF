@@ -103,7 +103,7 @@ function HeaderText($args = null)
 
 	$table = array();
 	$row = array();
-	if ($greeting) $row [] = greeting($args);
+	if ($greeting) $row [] = greeting( $args );
 	if ($print_logo and $logo_url ) {
 		$row [] = '<img src=' . $logo_url . '  style="height: 100px; width: auto;">'; // Todo: use GuiImage
 		$table [] = $row;
