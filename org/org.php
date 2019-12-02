@@ -8,7 +8,8 @@ function worker_get_projects($worker_id)
 			foreach (sql_query_array_scalar("select id from im_projects where is_active = 1 and company = $company") as $project_id)
 				$result [] = array("project_id" => $project_id, "project_name" => get_project_name($project_id));
 		} else {
-			foreach (sql_query_array_scalar("select project_id from im_working where user_id = $worker_id") as $project_id)
+//			debug_var(sql_query_single_scalar("select project_id from im_working where is_active = 1 and user_id = $worker_id"));
+			foreach (sql_query_array_scalar("select project_id from im_working where is_active = 1 and user_id = $worker_id") as $project_id)
 				if (project_is_active($project_id))
 					$result [] = array("project_id" => $project_id, "project_name" => get_project_name($project_id));
 		}

@@ -34,6 +34,9 @@ if ($debug) print "op=$operation<br/>";
 if ($operation) {
 	$args = [];
 	if (get_param("page", false, null)) $args ["page"] = get_param("page");
-	handle_focus_operation($operation, $args);
+	if (($result = handle_focus_do($operation)) !== "not handled") {print $result; return; }
+	$args["script_files"] = array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/niver/data/focus.js" );
+	print HeaderText($args);
+	print handle_focus_show($operation, $args);
 	return;
 }

@@ -72,11 +72,15 @@ $O = new Order( $order_id );
         xmlhttp.send();
     }
 
+    function leaveQuantityFocus(my_row)
+    {
+        let current = document.getElementsByName("quantity" + (my_row));
+        current[0].value = Math.round(current[0].value * 10) / 10;
+        calcDelivery();
+    }
+
     function moveNextRow(my_row) {
         if (event.which === 13) {
-            var current = document.getElementsByName("quantity" + (my_row));
-            current[0].value = Math.round(current[0].value * 10) / 10;
-            calcDelivery();
             var i;
             for (i = my_row + 1; i < document.getElementById("del_table").rows.length; i++) {
                 var next = document.getElementById("quantity" + i);
@@ -492,6 +496,7 @@ $O = new Order( $order_id );
                     }
                 }
             }
+            // q = Math.round(10 * q) / 10;
             has_vat = get_value_by_name("hvt_" + prfx);
             if (has_vat) line_vat = Math.round(100 * p * q / (100 + vat_percent) * vat_percent) / 100;
             line_total = Math.round(p * q * 100) / 100;
@@ -565,8 +570,8 @@ $O = new Order( $order_id );
         table.rows[line].cells[line_total_id].innerHTML = (discount < 0) ? discount : "";
 
         // Update totals
-        total = Math.round(100 * total, 2) / 100;
-        due_vat = Math.round(100 * due_vat, 2) / 100;
+        total = Math.round(100 * total) / 100;
+        due_vat = Math.round(100 * due_vat) / 100;
 //    round_total = Math.round(total);
 //    table.rows[table.rows.length - 4].cells[line_total_id].firstChild.nodeValue = Math.round((round_total-total) *100)/100;
         // Due VAT

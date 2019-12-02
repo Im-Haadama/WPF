@@ -257,6 +257,7 @@ function auto_list($table_name, $field, $prefix, $args = null)
 	// print $args["sql"] . "<br/>";
 	$args["field"] = $field;
 	$args["include_id"] = $include_id;
+
 	$data .= TableDatalist($datalist, $table_name, $args);
 
 	return $data;

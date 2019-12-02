@@ -443,6 +443,8 @@ function check_query( $query ) {
 	}
 
 	return strip_tags( im_file_get_html( $query ));
+	// return im_file_get_html( $query );
+
 }
 
 function check_active( $id, $repeat_freq ) {

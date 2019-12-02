@@ -767,7 +767,8 @@ class delivery {
 						if (! is_basket($prod_id))
 							$line[ DeliveryFields::delivery_q ] = gui_input( "quantity" . $this->line_number,
 							( $quantity_delivered > 0 ) ? $quantity_delivered : "",
-							array( 'onkeypress="moveNextRow(' . $this->line_number . ')"' ), null, null, 5 );
+							array( 'onfocusout=leaveQuantityFocus(' . $this->line_number . ')',
+								'onkeypress="moveNextRow(' . $this->line_number . ')"' ), null, null, 5 );
 						break;
 					case ImDocumentOperation::collect:
 						break;

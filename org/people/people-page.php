@@ -22,6 +22,4 @@ $operation = get_param("operation", false, "salary_report");
 //
 //}
 
-handle_people_operation($operation);
-
-
+print handle_people_operation($operation);

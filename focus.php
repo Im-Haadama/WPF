@@ -11,6 +11,11 @@ require_once(ROOT_DIR . '/im-config.php');
 require_once(ROOT_DIR . "/init.php" );
 require_once(ROOT_DIR . "/niver/gui/gem.php");
 
+require_once( "focus/focus_class.php" );
+$operation = get_param("operation", false, "focus_main");
+
+if (handle_focus_do($operation) !== "not handled") return;
+
 $themes = [];
 $height = "80px";
 $dark_brown = "231f20";
@@ -53,18 +58,14 @@ print '<div id="search_result"></div>';
 
 print "<br/>"; // The space of header.
 
-if (! get_user_id(true)) {
-	return;
-}
+if (! get_user_id(true)) return;
 
 $debug = get_param("debug", false, false);
 
-require_once( "focus/focus_class.php" );
-$operation = get_param("operation", false, "focus_main");
 
 if ($operation) {
 	if (get_param("page", false, null)) $args ["page"] = get_param("page");
-	handle_focus_operation($operation, $args);
+	handle_focus_show($operation, $args);
 	return;
 }
 ?>

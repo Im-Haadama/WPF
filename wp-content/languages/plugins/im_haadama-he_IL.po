@@ -31,6 +31,9 @@ msgstr "מחיר עלות"
 msgid "Total"
 msgstr "סך הכל"
 
+msgid "total"
+msgstr "סך הכל"
+
 msgid "ref"
 msgstr "סימוכין"
 
@@ -42,6 +45,12 @@ msgstr "תאריך"
 
 msgid "Date"
 msgstr "תאריך"
+
+msgid "Weekday"
+msgstr "יום בשבוע"
+
+msgid "base"
+msgstr "בסיס"
 
 msgid "amount"
 msgstr "סכום"
@@ -502,3 +511,9 @@ msgstr "התראות"
 
 msgid "No"
 msgstr "התראות"
+
+msgid "Salary data for month"
+msgstr "נתוני שכר לחודש"
+
+msgid "Entered data for month"
+msgstr "מידע לחודש"

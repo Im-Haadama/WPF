@@ -46,7 +46,7 @@ function TableHeader($sql, $args) // $add_checkbox = false, $skip_id = false, $m
 			$fields = array_assoc($fields);
 			foreach ($fields as $field => $v)
 				if (! $skip_id or strtolower($field) !== "id"){
-					$result[$field] = (isset($header_fields[$field]) ? $header_fields[$field] : $field);
+					$result[$field] = im_translate((isset($header_fields[$field]) ? $header_fields[$field] : $field));
 				}
 		} else {
 			$result = $header_fields;
@@ -66,6 +66,7 @@ function TableHeader($sql, $args) // $add_checkbox = false, $skip_id = false, $m
 		return null;
 
 	$headers = array();
+	if (GetArg($args, "add_checkbox", false)) $headers["select"] = im_translate("select");
 	$debug = false;
 
 	// If not sent, create from database fields.
@@ -362,6 +363,7 @@ function RowsData($sql, $id_field, $skip_id, $v_checkbox, $checkbox_class, $h_li
 				}
 				if ( $h_line ) {
 					// print "adding $key<br/>";
+//					print "trans " . $header_fields[$key] . "<br/>";
 					$h_line[ $key ] = im_translate( $header_fields[ $key ++ ], $args );
 				}
 			}
@@ -482,8 +484,6 @@ function TableData($sql, &$args = null)
 	}
 
 	$h_line = ($header ? TableHeader( $sql, $args ) : null);
-
-// 	debug_var($h_line);
 
 	$m_line = $mandatory_fields ? array() : null;
 

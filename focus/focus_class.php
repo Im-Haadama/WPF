@@ -156,24 +156,13 @@ function focus_check_user()
 	return true;
 }
 
-/**
- * @param $operation
- * @param $args
- *
- * @return void
- * @throws Exception
- */
-function handle_focus_operation($operation, $args)
-{
-	// Actions are performed and return to caller.
-	// Page are $result .= and displayed in the end. (to handle the header just once);
 
+function handle_focus_do($operation)
+{
 	$allowed_tables = array("im_company", "im_tasklist", "im_task_templates");
 	$header_args = [];
 	$header_args["scripts"] = array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/focus/focus.js", "/focus/gui.php", "/vendor/sorttable.js" );
 	$header_args["rtl"] = is_rtl();
-
-	$action_url = "/focus/focus-post.php";
 
 	switch ($operation) { // Handle operation that don't need page header.
 		///////////////////////////
@@ -300,7 +289,7 @@ function handle_focus_operation($operation, $args)
 			$url = task_url($task_id);
 			$url_headers = @get_headers($url);
 			if (! $url_headers || strstr($url_headers[0], "404")) {
-				print "/focus/focus-post.php?operation=bad_url&id=" . $task_id;
+				print get_url(1) . "?operation=bad_url&id=" . $task_id;
 				return;
 			}
 			if ( strlen( $url ) > 1 ) print $url;
@@ -340,8 +329,25 @@ function handle_focus_operation($operation, $args)
 			$text = get_param("text", true);
 			return search_by_text($text);
 	}
+	return "not handled";
+}
 
+/**
+ * @param $operation
+ * @param $args
+ *
+ * @return void
+ * @throws Exception
+ */
+function handle_focus_show($operation, $args)
+{
+	if (($done = handle_focus_do($operation, $args)) !== "not handled") return $done;
+
+	// Actions are performed and return to caller.
+	// Page are $result .= and displayed in the end. (to handle the header just once);
+	$action_url = get_url(1);
 	$result = ""; // focus_header($header_args);
+
 
 	$args["page"] = get_param("page", false, 1);
 
@@ -364,7 +370,7 @@ function handle_focus_operation($operation, $args)
 			$id = get_param("id", true);
 			$header_args["view_as"] = $id;
 			$result = focus_header($header_args);
-			$result .= focus_main($id);
+			$result .= focus_main($id, $args);
 			break;
 		case "show_templates":
 			$args["table"] = true;
@@ -742,7 +748,7 @@ function show_templates(&$args, $template_id = 0, $new = null )
 	$url = get_url(1);
 
 	$result = "";
-	$action_url = "/focus/focus-post.php";
+	$action_url = get_url(1);//  "/focus/focus-post.php";
 
 	$args["worker"] = get_user_id();
 	$args["companies"] = worker_get_companies(get_user_id());
@@ -959,7 +965,7 @@ function active_tasks(&$args = null, $debug = false, $time = false)
 	$table_name = "im_tasklist";
 	$title = GetArg($args, "title", "");
 
-	$action_url = "/focus/focus-post.php";
+	$action_url = get_url(1);
 	$page_url = get_url(true);
 
 	$active_only = GetArg($args, "active_only", true);
@@ -1263,22 +1269,22 @@ function focus_main($user_id, $args)
 //	$url = get_url(1);
 //	$result .= gui_hyperlink("Repeating tasks", $url . "?operation=show_templates") . " ";
 
-//	if ($teams = team_managed_teams($user_id)) {// Team manager
-//		$result .= gui_hyperlink("Edit organization", $url . "?operation=edit_organization");
-//		$result .= "<br/>";
-//		$workers = array();
-//		foreach ($teams as $team) {
-//			foreach (team_all_members($team) as $worker_id) $workers[$worker_id] = 1;
-//			$count = 0; // active_task_count("team_id = " . $team);
-//			$result .= gui_hyperlink( team_get_name($team) . "(" . $count . ")", "?operation=show_team&id=" . $team );
-//		}
-//		$result .= "<br/>";
-//		foreach ($workers as $worker_id => $c) {
-//			$count = 0;
-//			$result .= gui_hyperlink(get_user_name($worker_id) . "(" . $count . ")", '?operation=show_worker&id=' . $worker_id) . " ";
-//		}
-//		$result .= "<br/>";
-//	}
+	if ($teams = team_managed_teams($user_id)) {// Team manager
+		$result .= gui_hyperlink("Edit organization", get_url() . "?operation=edit_organization");
+		$result .= "<br/>";
+		$workers = array();
+		foreach ($teams as $team) {
+			foreach (team_all_members($team) as $worker_id) $workers[$worker_id] = 1;
+			$count = 0; // active_task_count("team_id = " . $team);
+			$result .= gui_hyperlink( team_get_name($team) . "(" . $count . ")", "?operation=show_team&id=" . $team );
+		}
+		$result .= "<br/>";
+		foreach ($workers as $worker_id => $c) {
+			$count = 0;
+			$result .= gui_hyperlink(get_user_name($worker_id) . "(" . $count . ")", '?operation=show_worker&id=' . $worker_id) . " ";
+		}
+		$result .= "<br/>";
+	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Tasks I need to handle (owner = me)                                                                       //
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1517,7 +1523,12 @@ function search_by_text($text)
 
 function task_list_search($query)
 {
-	$result = sql_query_array_scalar("select task_description from im_tasklist where $query");
+	$tasks = sql_query_array("select id, task_description from im_tasklist where $query");
+
+	$result = [];
+	foreach ($tasks as $task)
+		array_push($result, GuiHyperlink($task[1], add_to_url(array("operation" => "show_task", "id" => $task[0]))));
+
 	// debug_var($result);
 	return $result;
 }

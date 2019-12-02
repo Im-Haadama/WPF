@@ -15,7 +15,7 @@ function gui_select_project($id, $value, $args)
 		return get_project_name($value);
 	}
 	// Filter by worker if supplied.
-	$user_id = GetArg($args, "worker", get_user_id());
+	$user_id = GetArg($args, "worker_id", get_user_id());
 	if ( !$user_id ) {
 		throw new Exception( __FUNCTION__ .": No user " . $user_id);
 	}

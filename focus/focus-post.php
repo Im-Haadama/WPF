@@ -14,7 +14,7 @@ $operation = get_param("operation", false, null);
 $args = [];
 
 if ($operation){
-	print handle_focus_operation($operation, $args);
+	print handle_focus_show($operation, $args);
 	return;
 }
 

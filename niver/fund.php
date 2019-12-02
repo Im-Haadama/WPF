@@ -145,7 +145,7 @@ function header_text( $print_logo = true, $close_header = true, $rtl = true, $sc
 function footer_text() {
 	global $power_version;
 
-	$text = gui_div( "footer", "Fresh store powered by Niver Dri Sol 2015-2019 Version " . $power_version . " עם האדמה 2013", true );
+	$text = gui_div( "footer", "Fresh store powered by Aglamaz.com 2015-2019 Version " . $power_version . " עם האדמה 2013", true );
 
 	return $text;
 }

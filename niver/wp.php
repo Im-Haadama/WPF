@@ -97,7 +97,7 @@ function greeting( $args = null, $force_login = false )
 
 //	if ($no_wp) $user_id =1;
 //	else $user_id = 1; // FOR DEBUG wp_get_current_user()->ID;
-	$user_id = get_user_id();
+	$user_id = get_user_id($force_login);
 
 	if (! $user_id and $force_login) {
 		print force_login();
@@ -112,7 +112,7 @@ function greeting( $args = null, $force_login = false )
 //		$data .= im_translate("Hello");
 
 //	$data .= " " . gui_div("user_id", get_customer_name($user_id), false, $user_id);
-	$data .= get_avatar( get_user_id(), 40 );
+	$data .= get_avatar( get_user_id(), 40 ) . " " . get_customer_name($user_id) . gui_br() . GuiHyperlink("logout", wp_logout_url(get_permalink()));
 	if ($viewing_as != $user_id) $data .= "( " . im_translate("viewing as") . get_customer_name($viewing_as) . ")";
 
 	$data .=  Date("G:i", $now );

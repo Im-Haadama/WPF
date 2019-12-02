@@ -45,6 +45,18 @@ function people_add_activity_sick( $id, $date, $project_id)
 
 }
 
+/**
+ * @param $id
+ * @param $date
+ * @param $start
+ * @param $end
+ * @param $project_id
+ * @param $traveling
+ * @param $expense_text
+ * @param $expense
+ *
+ * @return int|string
+ */
 function people_add_activity( $id, $date, $start, $end, $project_id, $traveling, $expense_text, $expense ) {
 	if ( strlen( $traveling ) == 0 ) {
 		$traveling = 0;
@@ -119,11 +131,27 @@ function worker_get_id($user_id)
 	return sql_query_array_scalar("select id from im_working where user_id = " . $user_id);
 }
 
-
-
-
-// User id == 0: display all users.
 /**
+ * show_entry - displays salary entries submitted by workers. No salary information.
+ * @param $user_id
+ * @param $month
+ * @param $year
+ *
+ * @return string|null
+ * @throws Exception
+ */
+function show_entry($user_id, $month, $year)
+{
+	$args = [];
+	$args["query"] = " user_id = $user_id and month(date)=" . quote_text($month)  . " and year(date)=" . quote_text($year);
+	$args["hide_cols"] = array("ID", "user_id");
+	$args["edit"] = false;
+	$args["selectors"] = ["project_id" => "gui_select_project"];
+	return GemTable("im_working_hours", $args);
+}
+
+/**
+ * show salary information.
  * @param int $user_id
  * @param null $month
  * @param null $year
@@ -135,8 +163,8 @@ function worker_get_id($user_id)
 function print_transactions( $user_id = 0, $month = null, $year = null, &$args = null) // , $week = null, $project = null, &$sum = null, $show_salary = false , $edit = false) {
 {
 	$sql = "SELECT id, date, dayofweek(date) as weekday, start_time, end_time, project_id, working_rate(user_id, project_id) as rate, traveling, expense, expense_text, comment FROM im_working_hours WHERE 1 ";
-	$show_salary = GetArg($args, "show_salary", false);
-	$edit = GetArg($args, "edit", false);
+	$edit = GetArg($args, "edit_lines", false);
+	unset($args["hide_cols"]); // Remove from previous worker.
 
 	$sql_month = null;
 	if ( isset( $month ) and $month > 0 ) {
@@ -156,146 +184,90 @@ function print_transactions( $user_id = 0, $month = null, $year = null, &$args =
 	if ( isset( $project ) ) $sql .= " and project_id = " . $project;
 
 	$sql .= " order by 2 ";
-	if ( isset( $month ) ) {
-		$sql .= "asc";
-	} else {
-		$sql .= "desc";
-	}
-	// "  order by 1 desc";
-	// print $sql;
+	if ( isset( $month ) ) $sql .= "asc";  else $sql .= "desc";
 	$sql           .= " limit 100";
 
-	$args["header_fields"] = array("date" => "Date", "weekday" => "Weekday", "start_time" => "Start time", "end_time" => "End time", "rate" => "Rate",
-	                               "project_id" => "Project", "traveling" => "Traveling expense", "expense" => "Other expense", "expense_text" => "Expense details", "Comment");
+	$args["header_fields"] = array("date" => "Date", "weekday" => "Weekday", "start_time" => "Start time", "end_time" => "End time",
+	                               "project_id" => "Project", "rate" => "Rate", "traveling" => "Traveling expense", "expense" => "Other expense", "expense_text" => "Expense details", "comment" => "Comment");
 	$args["selectors"] = array("project_id" => "gui_select_project");
 	$args["skip_id"] = true;
-	$args["hide_cols"] = array("expense" => 1, "expense_text" => 1, "125" => 1, "150" => 1);
-	if (! $show_salary) $args["hide_cols"]["rate"] = 1;
-	// $args["acc"] = array("", "", )
-	// $args["headers"] = array("Date", "Day of week", "Start time", "End time", "Rate", "Project", "Traveling", "Expense", "Expense details", "Comments");
+	if ($edit) $args["add_checkbox"] = true;
+// 	 $args["hide_cols"] = array("expense" => 1, "expense_text" => 1, "125" => 1, "150" => 1);
 
-	// $data .= GuiTableContent("im_working_hours", $sql, $args);
-	// Add computed rows.
 	$data = TableData($sql, $args);
+	// Add computed rows.
 	$total_sal = 0;
 	$total_travel = 0;
 	$total_expense = 0;
 	$counters = ["base"=>0, "125"=>0, "150"=>0];
 
+	$show_125 = false;
+	$show_150 = false;
+	$show_expense = false;
+	$show_comment = false;
+
+	if (! $data) return im_translate( "No data") . gui_br();
 	foreach  ($data as $key => &$row)
 	{
 		if ($key == "header") {
 			$row["base"] = im_translate("base");
-			$row["125"] = "125%";
-			$row["150"] = "150%";
+			$row["dur_125"] = "125%";
+			$row["dur_150"] = "150%";
 			$row["line_salary"] = im_translate("total");
 			continue;
 		}
+		$row["weekday"] = day_name($row["weekday"] - 1);
 		$start = new DateTime( $row["start_time"] );
 		$end   = new DateTime( $row["end_time"] );
 
-		if ( $end < $start ) {
-			$end->add( DateInterval::createFromDateString( "1 day" ) );
-		}
+		if ( $end < $start ) $end->add( DateInterval::createFromDateString( "1 day" ) );
 		$dur   = $end->diff( $start, true );
 
-		$total_dur = $dur->h + $dur->i / 60;
+		$total_dur = ($dur->h + $dur->i / 60 );
 		$dur_base  = min( $total_dur, 25 / 3 );
-		$dur_125   = min( 2, $total_dur - $dur_base );
-		$dur_150   = $total_dur - $dur_base - $dur_125;
+		$dur_125   = round(min( 2, $total_dur - $dur_base ), 2);
+		$dur_150   = round($total_dur - $dur_base - $dur_125, 2);
 		$rate = $row["rate"];
+
+		if ($dur_125 > 0) {	$counters["125"]  += $dur_125; $show_125 = true; }
+		if ($dur_150 > 0) { $counters["150"]  += $dur_150; $show_150 = true; }
 
 		$row["base"] = float_to_time($dur_base);
 		$row["dur_125"] = float_to_time($dur_125);
 		$row["dur_150"] = float_to_time($dur_150);
 
 		$counters["base"] += $dur_base;
-		if ($dur_125 > 0) {	$counters["125"]  += $dur_125; $args["hide_cols"]["125"] = 0; }
-		if ($dur_150 > 0) { $counters["150"]  += $dur_150; $args["hide_cols"]["125"] = 0; }
 
-		$sal  = ( $dur_base + $dur_125 * 1.25 + $dur_150 * 1.5 ) * $rate;
+		$sal  = round(( $dur_base + $dur_125 * 1.25 + $dur_150 * 1.5 ) * $rate, 2);
+		$row["line_salary"] = $sal;
 
-		if ( $show_salary ) $row["line_salary"] = $sal;
-
-		// print $sal . " " . $total_sal . "<br/>";
 		$total_sal += $sal;
-		// var_dump($total_sal);
 
 		$travel       = $row["traveling"];
 		$total_travel += $travel;
 
 		$expense       = $row["expense"];
-		if ($expense > 0) {
-			$args["hide_cols"]["expense"] = 0;
-			$args["hide_cols"]["expense_text"] = 0;
-			$total_expense += $expense;
-		}
+		if ($expense > 0 or strlen($row["expense_text"])) $show_expense = true;
+		if (strlen($row['comment'])) $show_comment = true;
 
-		if (0) {
-//		if ( isset( $sum ) and is_array( $sum ) ) {
-//			$line_month = date( 'y-m', strtotime( $row[0] ) );
-//			// print $row[0]. " " . $line_month . "<br/>";
-//			if (! isset ($sum[$line_month])) $sum[$line_month] = 0;
-//			$sum[ $line_month ] += ( $sal + $travel + $expense );
-//		}
-////		}
-//
-//		$line .= gui_cell($comment);
-//
-//		$line .= "</tr>";
-//
-//		$data .= $line;
-
-//	$data .= gui_row( array(
-//		"",
-//		"סהכ",
-//		"",
-//		"",
-//		"",
-//		float_to_time( $counters["base"], 2 ),
-//		float_to_time( $counters["125"], 2 ),
-//		float_to_time( $counters["150"], 2 ),
-//		"",
-//		"",
-//		"",
-//		$show_salary ? $total_sal : "",
-//		$show_salary ? $total_expense : "",
-//		$show_salary ? $total_travel : ""
-//	) );
-//
-//	$data      .= "</table>";
-//
-//
-//	$total_sal = round( $total_sal, 1 );
-//
-//	// print "total_sal " . $total_sal ;
-//	if ( $show_salary and $total_sal > 0 and $month ) {
-//		$data      .= gui_header( 2, "חישוב שכר מקורב" ) . "<br/>";
-//		$data      .= "שכר שעות " . $total_sal . "<br/>";
-//		$data      .= "סהכ נסיעה " . $total_travel . "<br/>";
-//		$data      .= "סהכ הוצאות " . $total_expense . "<br/>";
-//		$total_sal += $total_travel;
-//		$total_sal += $total_expense;
-//		$data      .= "סהכ " . $total_sal . "<br/>";
-//		if ( $user_id ) {
-//			$email = get_customer_email( $user_id );
-//			$r     = "people/people-post.php?operation=get_balance_email&date=" .
-//			         date( 'Y-m-j', strtotime( "last day of " . $year . "-" . $month ) ) . "&email=" . $email;
-//			// print $r;
-//			$b = strip_tags( ImMultiSite::sExecute( $r, 4 ) );
-//			//print "basket: " . $b . "<br/>";
-//
-//			if ( $b > 0 ) {
-//				$data .= " חיובי סלים " . round( $b, 2 );
-//			}
-//		}
-//	}
-//
-//	if ( ! is_null( $sum ) and ( ! is_array( $sum ) ) ) {
-//		$sum = $total_sal;
-//	}
-//	}
-		}
+	}
+	if (! $show_150) {
+		unset ($data["header"]["dur_150"]);
+		$args["hide_cols"]["dur_150"] = 1;
+	}
+	if (! $show_125) {
+		unset ($data["header"]["dur_125"]);
+		$args["hide_cols"]["dur_125"] = 1;
+	}
+	if (! $show_comment){
+		unset($data["header"]["comment"]);
+		$args["hide_cols"]["comment"] = 1;
+	}
+	if (! $show_expense){
+		unset($data['header']["expense"]);
+		unset($data['header']["expense_text"]);
+		$args["hide_cols"]["expense"] = 1;
+		$args["hide_cols"]["expense_text"] = 1;
 	}
 	$args["checkbox_class"] = "working_days";
 	$data = gui_table_args($data, "working_" . $user_id, $args);
@@ -303,222 +275,48 @@ function print_transactions( $user_id = 0, $month = null, $year = null, &$args =
 	if ($edit)
 		$data .= gui_button("btn_delete_from_report", "delete_lines()", "Delete");
 
-	if ( $show_salary and $total_sal > 0 and $month ) {
-		$data      .= gui_header( 2, "חישוב שכר מקורב" ) . "<br/>";
-		$data      .= "שכר שעות " . $total_sal . "<br/>";
-		$data      .= "סהכ נסיעה " . $total_travel . "<br/>";
-		$data      .= "סהכ הוצאות " . $total_expense . "<br/>";
-		$total_sal += $total_travel;
-		$total_sal += $total_expense;
-		$data      .= "סהכ " . $total_sal . "<br/>";
-		if ( $user_id ) {
-			$email = get_customer_email( $user_id );
-			$r     = "people/people-post.php?operation=get_balance_email&date=" .
-			         date( 'Y-m-j', strtotime( "last day of " . $year . "-" . $month ) ) . "&email=" . $email;
-			// print $r;
-			$b = strip_tags( ImMultiSite::sExecute( $r, 4 ) );
-			//print "basket: " . $b . "<br/>";
+	$data      .= gui_header( 2, "חישוב שכר מקורב" ) . "<br/>";
+	$data      .= "שכר שעות " . $total_sal . "<br/>";
+	$data      .= "סהכ נסיעה " . $total_travel . "<br/>";
+	$data      .= "סהכ הוצאות " . $total_expense . "<br/>";
+	$total_sal += $total_travel;
+	$total_sal += $total_expense;
+	$data      .= "סהכ " . $total_sal . "<br/>";
+	if ( $user_id ) {
+		$email = get_customer_email( $user_id );
+		$r     = "people/people-post.php?operation=get_balance_email&date=" .
+		         date( 'Y-m-j', strtotime( "last day of " . $year . "-" . $month ) ) . "&email=" . $email;
+		// print $r;
+		$b = strip_tags( ImMultiSite::sExecute( $r, 4 ) );
+		//print "basket: " . $b . "<br/>";
 
-			if ( $b > 0 ) {
-				$data .= " חיובי סלים " . round( $b, 2 );
-			}
+		if ( $b > 0 ) {
+			$data .= " חיובי סלים " . round( $b, 2 );
 		}
 	}
 
 	return $data;
-
-	if (0) {
-		//	print "ss=" . $show_salary . "<br/>";
-		// print "uid=" . $user_id . "<br/>";
-
-		$counters  = array();
-		$volunteer = false;
-		if ( $user_id > 0 and is_volunteer( $user_id ) ) {
-			$volunteer = true;
-		}
-//	if ( ! $user_id  ) {
-//		$user_id = get_user_id();
-//	}
-
-		// var_dump($volunteer);
-		// print $user_id;
-		$data = "<table id=\"report_" . $user_id . "\" border='1'><tr>";
-		$data .= gui_cell( "בחר" );
-		$data .= "<td>תאריך</td><td>יום בשבוע</td><td>משעה</td><td>עד שעה</td><td>שעות</td><td>125%</td><td>150%</td>";
-		$data .= "<td>פרויקט</td>";
-		if ( $user_id == 0 ) {
-			$data .= "<td>עובד</td>";
-		}
-
-		if ( $show_salary ) {
-			$data .= "<td>תעריף</td>";
-			$data .= "<td>סהכ</td>";
-		}
-		$data .= "<td>הוצאות</td>";
-
-		if ( ! $volunteer ) {
-			$data .= "<td>נסיעה</td>";
-			$data .= gui_cell( "Comments" );
-		}
-
-		$data .= "</tr>";
-
-		$sql = "SELECT date, start_time, end_time, project_id, user_id, traveling, expense, expense_text, id, dayofweek(date), comment FROM im_working_hours WHERE 1 ";
-
-		$result        = sql_query( $sql );
-		$total_sal     = 0;
-		$total_travel  = 0;
-		$total_expense = 0;
-
-		if ( ! $result ) {
-			return "אין מידע";
-		}
-		$counters["base"] = $counters["125"] = $counters["150"] = 0;
-		while ( $row = mysqli_fetch_row( $result ) ) {
-			$user_id = $row[4];
-			//print $row[0];
-			// print "xxx" . $row[5] . $row[6]. $row[7] . $row[8]. "<br/>";
-			$line = "<tr>";
-
-			$line .= gui_cell( gui_checkbox( "chk" . $row[8], "hours_checkbox" ) );
-			$line .= "<td>" . $row[0] . "</td>";
-			$line .= gui_cell( week_day( $row[9] ) );
-
-			$daily = sql_query_single_scalar( "select day_rate from im_working where user_id = " . $user_id ) > 0;
-			$start = new DateTime( $row[1] );
-			$end   = new DateTime( $row[2] );
-
-			if ( $end < $start ) {
-				$end->add( DateInterval::createFromDateString( "1 day" ) );
-			}
-			$dur  = $end->diff( $start, true );
-			$line .= "<td>" . $start->format( "G:i" ) . "</td>";
-			$line .= "<td>" . $end->format( "G:i" ) . "</td>";
-
-			$total_dur = $dur->h + $dur->i / 60;
-			$dur_base  = min( $total_dur, 25 / 3 );
-			$dur_125   = min( 2, $total_dur - $dur_base );
-			$dur_150   = $total_dur - $dur_base - $dur_125;
-			$comment   = $row[10];
-
-			$line             .= "<td>" . float_to_time( $dur_base ) . "</td>";
-			$line             .= "<td>" . float_to_time( $dur_125 ) . "</td>";
-			$line             .= "<td>" . float_to_time( $dur_150 ) . "</td>";
-			$counters["base"] += $dur_base;
-			$counters["125"]  += $dur_125;
-			$counters["150"]  += $dur_150;
-
-			$project_id = $row[3];
-			$line       .= "<td>" . project_name( $project_id ) . "</td>";
-			if ( $user_id == 0 ) {
-				$line .= "<td>" . get_customer_name( $user_id ) . "</td>";
-			}
-//		else{
-			if ( $daily ) {
-				$rate = get_daily_rate( $user_id );
-				$sal  = $rate;
-			} else {
-				$rate = get_rate( $user_id, $project_id );
-				$sal  = ( $dur_base + $dur_125 * 1.25 + $dur_150 * 1.5 ) * $rate;
-			}
-
-			if ( $show_salary ) {
-				$line .= gui_cell( $rate );
-			}
-			// var_dump($dur);
-
-			// print $sal . " " . $total_sal . "<br/>";
-			$total_sal += $sal;
-			// var_dump($total_sal);
-
-			if ( $show_salary ) {
-				$line .= gui_cell( round( $sal, 2 ) );
-			}
-			$travel       = $row[5];
-			$total_travel += $travel;
-
-			$expense       = $row[6];
-			$total_expense += $expense;
-
-			$line .= gui_cell( $expense );
-			$line .= gui_cell( $travel );
-			$line .= gui_cell( $row[7] );
-
-			if ( isset( $sum ) and is_array( $sum ) ) {
-				$line_month = date( 'y-m', strtotime( $row[0] ) );
-				// print $row[0]. " " . $line_month . "<br/>";
-				if ( ! isset ( $sum[ $line_month ] ) ) {
-					$sum[ $line_month ] = 0;
-				}
-				$sum[ $line_month ] += ( $sal + $travel + $expense );
-			}
-//		}
-
-			$line .= gui_cell( $comment );
-
-			$line .= "</tr>";
-
-			$data .= $line;
-		}
-		$data .= gui_row( array(
-			"",
-			"סהכ",
-			"",
-			"",
-			"",
-			float_to_time( $counters["base"], 2 ),
-			float_to_time( $counters["125"], 2 ),
-			float_to_time( $counters["150"], 2 ),
-			"",
-			"",
-			"",
-			$show_salary ? $total_sal : "",
-			$show_salary ? $total_expense : "",
-			$show_salary ? $total_travel : ""
-		) );
-
-		$data      .= "</table>";
-		$total_sal = round( $total_sal, 1 );
-
-		// print "total_sal " . $total_sal ;
-		if ( $show_salary and $total_sal > 0 and $month ) {
-			$data      .= gui_header( 2, "חישוב שכר מקורב" ) . "<br/>";
-			$data      .= "שכר שעות " . $total_sal . "<br/>";
-			$data      .= "סהכ נסיעה " . $total_travel . "<br/>";
-			$data      .= "סהכ הוצאות " . $total_expense . "<br/>";
-			$total_sal += $total_travel;
-			$total_sal += $total_expense;
-			$data      .= "סהכ " . $total_sal . "<br/>";
-			if ( $user_id ) {
-				$email = get_customer_email( $user_id );
-				$r     = "people/people-post.php?operation=get_balance_email&date=" .
-				         date( 'Y-m-j', strtotime( "last day of " . $year . "-" . $month ) ) . "&email=" . $email;
-				// print $r;
-				$b = strip_tags( ImMultiSite::sExecute( $r, 4 ) );
-				//print "basket: " . $b . "<br/>";
-
-				if ( $b > 0 ) {
-					$data .= " חיובי סלים " . round( $b, 2 );
-				}
-			}
-		}
-
-		if ( ! is_null( $sum ) and ( ! is_array( $sum ) ) ) {
-			$sum = $total_sal;
-		}
-
-		return $data;
-	}
 }
 
+/**
+ * @param $time
+ *
+ * @return string
+ */
 function float_to_time( $time ) {
 	if ( $time > 0 ) {
+		$time += 1/120; // 5:20 -> 5.33333333 -> 5:19.
 		return sprintf( '%02d:%02d', (int) $time, fmod( $time, 1 ) * 60 );
 	}
 
 	return "";
 }
 
+/**
+ * @param $id
+ *
+ * @return string
+ */
 function project_name( $id ) {
 	$sql = 'SELECT project_name FROM im_projects '
 	       . ' WHERE id = ' . $id;
@@ -526,6 +324,14 @@ function project_name( $id ) {
 	return sql_query_single_scalar( $sql );
 }
 
+/**
+ * @param $project_id
+ * @param $user_id
+ * @param bool $force
+ *
+ * @return bool|mysqli_result|null
+ * @throws Exception
+ */
 function project_delete($project_id, $user_id, $force = false)
 {
 	if (! in_array(project_company($project_id), worker_get_companies($user_id)))
@@ -539,6 +345,16 @@ function project_delete($project_id, $user_id, $force = false)
 	// TODO: handle orphan tasks
 	return sql_query("update im_projects set is_active=0 where id = " . $project_id);
 }
+
+/**
+ * @param $user_id
+ * @param $project_name
+ * @param $company
+ * @param string $project_contact
+ * @param int $project_priority
+ *
+ * @return int|string
+ */
 function project_create($user_id, $project_name, $company, $project_contact = "set later", $project_priority = 5)
 {
 	sql_query("insert into im_projects (project_name, project_contact, project_priority) values (" . quote_text($project_name) .
@@ -552,12 +368,30 @@ function project_create($user_id, $project_name, $company, $project_contact = "s
 	return $project_id;
 }
 
+/**
+ * @param $project_id
+ *
+ * @return bool
+ */
 function project_cancel($project_id)
 {
 	sql_query("update im_working set is_active = 0 where project_id = " . $project_id);
 	return true;
 }
 
+/**
+ * @param $user_id
+ * @param $date
+ * @param $start
+ * @param $end
+ * @param $project_id
+ * @param bool $vol
+ * @param int $traveling
+ * @param string $extra_text
+ * @param int $extra
+ *
+ * @return int|string
+ */
 function add_activity( $user_id, $date, $start, $end, $project_id, $vol = true, $traveling = 0, $extra_text = "", $extra = 0 ) {
 	my_log( "add_activity", __FILE__ );
 	$result = people_add_activity( $user_id, $date, $start, $end, $project_id, $traveling, $extra_text, $extra );
@@ -580,34 +414,12 @@ function add_activity( $user_id, $date, $start, $end, $project_id, $vol = true, 
 // $selector_name( $key, $data, $args)
 
 
-function gui_select_template($id, $value, $args)
-{
-	// TODO: implement.
-	$edit = GetArg($args, "edit", false);
-
-	if (! $edit) return sql_query_single_scalar("select task");
-
-	$length = GetArg($args, "length", 30);
-
-	print "value = $value<br/>";
-
-//	if ( $worker ) {
-//		// print "w=" . $worker;
-//		// $user_id = sql_query("select user_id from im_working where id = " . $worker);
-//		$query = " where id in (select project_id from im_working where worker_id = " . $worker . ")";
-//	}
-
-//	return gui_select_table( $id, "im_tasklist", $value, $events, "", "task_description",
-//		"where " . $query, true, false );
-
-	$args["value"] = $value;
-	$args["name"] ="substr(task_description, 1," . $length . ")";
-	$args["include_id"] = 1;
-	$args["datalist"] = 1;
-	return GUiSelectTable($id, "im_task_templates", $args);
-
-}
-
+/**
+ * @param $operation
+ *
+ * @return bool|string
+ * @throws Exception
+ */
 function handle_people_operation($operation)
 {
 	switch($operation) {
@@ -622,13 +434,28 @@ function handle_people_operation($operation)
 	print header_text(true, true, is_rtl(), array("people.js", "/niver/gui/client_tools.js", "/niver/data/data.js"));
 
 	switch($operation) {
-		case "show_edit_worker":
-			$id = get_param("id", true);
-			print gui_header(1, "editing worker info");
-			$args = [];
+		case "show_edit_worker": // Get worker info by id or worker_project link.
+			$row_id = get_param("row_id", false);
+			$worker_id = get_param("worker_id", false);
+			if (! $row_id and ! $worker_id) die ("supply row or worker_id");
+			if ($row_id) $worker_id            = sql_query_single_scalar( "select user_id from im_working where id = $row_id" );
+			$result               = gui_header( 1, "editing worker info" );
+			$args                 = [];
+			$args["edit"] = false;
+			$args["selectors"]    = array( "project_id" => "gui_select_project" );
+			$args["query"]        = "user_id=" . $worker_id . " and is_active = 1";
+			$args["add_checkbox"] = true;
+			$args["links"]        = array( "id" => add_to_url( "operation", "show_edit_worker_project" ) );
 
-			print GemElement("im_working", $id, $args);
+			$result .= GemTable( "im_working", $args );
+			return $result;
 			break;
+		case "show_edit_worker_project":
+			$result = gui_header(1, "Project info for worker");
+			$id = get_param("row_id", true);
+			$args = [];
+			$result .= GemElement("im_working", $id, $args);
+			return $result;
 		case "salary_report":
 			$edit = get_param("edit", false, false);
 			$args = array("add_checkbox" => true, "edit_lines" => $edit);
@@ -651,7 +478,7 @@ function handle_people_operation($operation)
 			$args["query"] = "is_active = 1 and company_id = $company";
 			$args["edit"] = false;
 			$args["page"] = get_param("page", false, 1);
-			$args["links"] = array("id" => add_to_url(array("operation" => "show_edit_worker", "id" => "%s")),
+			$args["links"] = array("id" => add_to_url(array("operation" => "show_edit_worker", "row_id" => "%s")),
 				                   "project_id" => add_to_url(array("operation" => "show_project", "id" => "%s")));
 			$result .= GemTable("im_working", $args);
 
@@ -671,14 +498,21 @@ function handle_people_operation($operation)
 				print gui_button( "btn_cancel", "cancel_entity('" . get_url(1) . "', 'im_working', " . $project_id . ')', "delete" );
 			}
 			break;
-
-
 	}
 }
 
-function show_all( $month, &$args) {
+/**
+ * @param $month
+ * @param $args
+ *
+ * @return string
+ * @throws Exception
+ */
+function show_all( $month, &$args)
+{
 	$edit_lines = GetArg($args, "edit_lines", false);
 
+	$output = gui_header(1, im_translate("Salary data for month") . " " . $month);
 	$a = explode( "-", $month );
 	$y = $a[0];
 	$m = $a[1];
@@ -689,25 +523,31 @@ function show_all( $month, &$args) {
 	       " where month(date)=" . $m .
 	       " and year(date) = " . $y .
 	       " and h.user_id = w.user_id ";
-	// print $sql;
+	// $output .= $sql;
 	$result = sql_query( $sql);
+	$has_data = false;
 
 	while ( $row = mysqli_fetch_row( $result ) ) {
 		$user_id = $row[0];
 		$args["worker"] = $user_id;
 
 		if ( $row[1] ) {
-			print gui_header( 1, get_user_name( $user_id ) . "(" . gui_hyperlink($user_id, add_to_url(array("operation"=>"edit_worker", "id" => $user_id))) . ")");
-			print "כתובת מייל של העובד/ת: " . get_customer_email( $user_id ) . "<br/>";
+			$output .= gui_header( 1, get_user_name( $user_id ) . " (" . GuiHyperlink("$user_id", "/org/people/people-page.php?operation=show_edit_worker&" .
+			"worker_id=" . $user_id) . ")" );
 
-//			print print_transactions( 0, $month, $year, null, null, $s, true  );
+			$output .= "כתובת מייל של העובד/ת: " . get_customer_email( $user_id ) . "<br/>";
 
-			print print_transactions( $user_id, $m, $y, $args); // null, null, $s, true, $edit );
+//			$output .= print_transactions( 0, $month, $year, null, null, $s, true  );
+
+			$output .= print_transactions( $user_id, $m, $y, $args); // null, null, $s, true, $edit );
 			if ($edit_lines){
-				print gui_button("btn_delete", "delete_line(" . $user_id . ")", "מחק");
+				$output .= gui_button("btn_delete", "delete_line(" . $user_id . ")", "מחק");
 			}
 		}
+		$has_data = true;
 	}
+	if (! $has_data) $output .= im_translate("No data entered") . gui_br();
+	return $output;
 }
 
 ?>

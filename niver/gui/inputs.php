@@ -381,6 +381,8 @@ if (! function_exists('gui_br')) {
 	 * @param $text
 	 * @param bool $center
 	 *
+	 * @param bool $inline
+	 *
 	 * @return string
 	 */
 	function gui_header( $level, $text, $center = false, $inline = false ) {
