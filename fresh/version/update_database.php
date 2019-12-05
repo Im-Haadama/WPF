@@ -84,6 +84,10 @@ die ( 0 );
 
 function version28()
 {
+	print gui_header(1, "zone_times");
+	sql_query("alter table im_paths change zones zones_times longtext null;");
+	sql_query("alter table im_missions change zones zones_times longtext null;");
+
 	print gui_header(1, "function template_last_task");
 	sql_query("CREATE FUNCTION 	template_last_task(_template_id int)
 	 RETURNS date

@@ -15,19 +15,20 @@ if ( ! defined( 'ROOT_DIR' ) ) {
 require_once( ROOT_DIR . '/niver/data/sql.php' );
 
 // print header_text();
-function show_zone_names( $str_zones, $line_id ) {
-	if ( strlen( $str_zones ) > 1 ) {
-		$zones  = explode( ",", $str_zones );
-		$result = "";
-		foreach ( $zones as $zone ) {
-			$result .= sql_query_single_scalar( "SELECT zone_name FROM wp_woocommerce_shipping_zones WHERE zone_id = " . $zone ) . "(" . $zone . "), ";
-		}
-
-		return rtrim( $result, ", " );
-	}
-
-	return "";
-}
+//function show_zone_names( $str_zones, $line_id )
+//{
+//	if ( strlen( $str_zones ) > 1 ) {
+//		$zones  = explode( ",", $str_zones );
+//		$result = "";
+//		foreach ( $zones as $zone_id ) {
+//			$result .= zone_get_name($zone_id) . "(" . $zone_id . "), ";
+//		}
+//
+//		return rtrim( $result, ", " );
+//	}
+//
+//	return "";
+//}
 
 function get_zones_per_path( $path_code ) {
 	// print $path_code . "<br/>";

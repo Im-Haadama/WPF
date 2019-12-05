@@ -79,7 +79,7 @@ function people_add_activity( $id, $date, $start, $end, $project_id, $traveling,
 		die ( 'Invalid query: ' . $sql . mysql_error() );
 	}
 
-	return 0; // Success
+	return true; // Success
 }
 
 /**
@@ -395,8 +395,9 @@ function project_cancel($project_id)
 function add_activity( $user_id, $date, $start, $end, $project_id, $vol = true, $traveling = 0, $extra_text = "", $extra = 0 ) {
 	my_log( "add_activity", __FILE__ );
 	$result = people_add_activity( $user_id, $date, $start, $end, $project_id, $traveling, $extra_text, $extra );
-	if ( $result ) {
-		return $result;
+	if ( $result !== true) {
+		print $result;
+		return false;
 	}
 	$fend   = strtotime( $end );
 	$fstart = strtotime( $start );
@@ -408,6 +409,7 @@ function add_activity( $user_id, $date, $start, $end, $project_id, $vol = true, 
 	my_log( "before business" );
 	business_add_transaction( $user_id, $date, $amount * 1.1, 0, 0, $project_id );
 	my_log( "end add_activity" );
+	return true;
 }
 
 

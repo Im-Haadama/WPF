@@ -103,6 +103,7 @@ if (! function_exists('gui_br')) {
 			$id = $name;
 		}
 		$data = '<input type="text" name="' . $name . '" id="' . $id . '" ';
+		if (is_array($value)) debug_var($value);
 		if ( strlen( $value ) > 0 ) {
 			$data .= "value=\"$value\" ";
 		}

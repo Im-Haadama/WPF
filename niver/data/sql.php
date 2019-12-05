@@ -505,6 +505,7 @@ function sql_field($fetch_fields, $field_name)
 {
 	foreach($fetch_fields as $field)
 		if ($field->name == $field_name) {
+//			debug_var($field->name . " " . $field->type);
 			switch ($field->type){
 				case 253:
 					return "varchar";
@@ -512,6 +513,14 @@ function sql_field($fetch_fields, $field_name)
 					return "int";
 				case 10:
 					return "function";
+				case 11:
+					return 'time';
+				case 12:
+					return "date";
+				case 252:
+					return 'longtime';
+				default:
+					die($field->type . " not handled " . $field_name);
 			}
 		}
 }

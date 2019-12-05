@@ -14,6 +14,10 @@ require_once( "routes.php" );
 
 $operation = get_param("operation", false, "show_routes");
 
-print handle_routes_operation($operation);
+if (($result = handle_routes_do($operation)) !== "not handled") { print $result; return; }
+
+print header_text(true, true, true, array("routes.js", "/niver/data/data.js", "/niver/gui/client_tools.js"));
+
+print handle_routes_show($operation);
 
 ?>

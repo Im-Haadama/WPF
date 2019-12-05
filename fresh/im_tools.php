@@ -119,6 +119,9 @@ function get_zone_from_postcode( $postcode, $country = null ) {
 }
 
 function zone_get_name( $id ) {
+	if (! ($id > 0)){
+		die ("bad zone id");
+	}
 	return sql_query_single_scalar( "SELECT zone_name FROM wp_woocommerce_shipping_zones WHERE zone_id = " . $id );
 }
 

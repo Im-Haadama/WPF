@@ -54,11 +54,6 @@ function TableHeader($sql, $args) // $add_checkbox = false, $skip_id = false, $m
 		if (GetArg($args, "add_checkbox", false)) array_unshift($result, "");
 		return $result;
 	}
-//	$add_checkbox = GetArg($args, "add_checkbox", false);
-
-	// We need only the header. Remove query and replace with false.
-//	if (strstr($sql, "where"))
-//		$sql = substr($sql, 0, strpos($sql, "where")) . " where 1 = 0";
 
 	$result = sql_query( $sql );
 
@@ -74,7 +69,7 @@ function TableHeader($sql, $args) // $add_checkbox = false, $skip_id = false, $m
 	{
 		while ($row = sql_fetch_row($result))
 		{
-			if (! $skip_id or strtolower($row[0]) !== "id") {
+			if (! $skip_id or strtolower($row[0]) !== "id" and !isset($args["hide_cols"])) {
 				$headers[$row[0]] = im_translate($row[0]);
 				// array_push($headers, im_translate($row[0]));
 			} else {
@@ -84,12 +79,8 @@ function TableHeader($sql, $args) // $add_checkbox = false, $skip_id = false, $m
 	} else { // Select
 		$i      = 0;
 		$fields = mysqli_fetch_fields( $result );
-//		if ( $add_checkbox ) {
-//			array_push( $headers, "" );
-//		} // future option: gui_checkbox("chk_all", ""));
 		foreach ( $fields as $val ) {
-			if (! $skip_id or strtolower($val->name) !== "id") {
-//				print "$skip_id adding " . $val->name . "<br/>";
+			if ((! $skip_id or strtolower($val->name) !== "id") and !isset($args["hide_cols"][$val->name])) {
 				$headers [$val->name] = im_translate($val->name);
 			}
 			$i ++;
@@ -232,7 +223,6 @@ function PrepareRow($row, $args, $row_id)
 
 			/// 5/9/2019 Change!! edit_cols by default is to edit. if it set, don't edit.
 			/// 23/9/2019  isset($edit_cols[$key]) - set $args["edit_cols"][$key] for fields that need to be edit.
-
 			if ($edit  and (! $edit_cols or (isset($edit_cols[$key]) and $edit_cols[$key]))){
 				if (! $key)	continue;
 				if ($field_events) $args["events"] = $field_events;
@@ -245,28 +235,28 @@ function PrepareRow($row, $args, $row_id)
 						$type = sql_field($args["sql_fields"], $key);
 						$value = gui_input_by_type($input_name, $type, $args, $value);
 					}
-
-				} else {
-					if ( $debug ) {
-						var_dump( $data );
-					}
+				} else
 					$value = GuiInput($input_name, $data, $args); //gui_input( $key, $data, $field_events, $row_id);
-//						print "v=$value<br/>";
-				}
+				break;
 			}
-			if ($debug) print "after $key";
 			if ( $selectors and array_key_exists( $key, $selectors )) {
-				if ($debug) print "has selectors ";
 				$selector_name = $selectors[ $key ];
-				if ( strlen( $selector_name ) < 2 ) {
-					die( "selector " . $key . "is empty" );
-				}
+				if ( strlen( $selector_name ) < 2 ) die( "selector " . $key . "is empty" );
 				//////////////////////////////////
 				// Selector ($id, $value, $args //
 				//////////////////////////////////
 				$value = $selector_name( $key, $orig_data, $args); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
+				break;
 			}
-
+			// Format values by type.
+			if (isset($args["sql_fields"])){
+				$type = sql_field($args["sql_fields"], $key);
+				switch ($type) {
+					case 'time':
+						$value = substr($value, 0, 5);
+						break;
+				}
+			}
 		} while (0);
 		if ($debug) print " setting ";
 		$row_data[$key] = $value;

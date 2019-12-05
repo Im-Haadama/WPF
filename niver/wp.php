@@ -50,19 +50,19 @@ function set_post_meta_field( $post_id, $field_name, $field_value ) {
 /**
  * @return bool
  */
-function is_manager() {
-//	$user    = new WP_User( wp_get_current_user() );
-//	$manager = false;
-//	if ( ! empty( $user->roles ) && is_array( $user->roles ) ) {
-//		foreach ( $user->roles as $role ) {
-//			if ( $role == 'administrator' or $role == 'shop_manager' ) {
-//				$manager = true;
-//			}
-//		}
-//	}
+function is_manager()
+{
+	$user    = new WP_User( wp_get_current_user() );
+	$manager = false;
+	if ( ! empty( $user->roles ) && is_array( $user->roles ) ) {
+		foreach ( $user->roles as $role ) {
+			if ( $role == 'administrator' or $role == 'shop_manager' ) {
+				$manager = true;
+			}
+		}
+	}
 
-
-	return get_user_id() === 1;
+	return $manager;
 }
 
 /**

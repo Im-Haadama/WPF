@@ -101,7 +101,7 @@ function GemArray($rows_data, &$args, $table_id)
 		if ($page > 1)
 			$result .= gui_hyperlink("Previous page", add_to_url("page", $page - 1));
 
-		$result .= gui_hyperlink("search", add_to_url("search", "1"));
+		if ($args["count"] > 10) $result .= gui_hyperlink("search", add_to_url("search", "1"));
 
 	} else {
 		$result .=  $no_data_message . gui_br();
@@ -112,7 +112,7 @@ function GemArray($rows_data, &$args, $table_id)
 //
 //		$result .= gui_button("btn_" . $button_text, $button_function, $button_text);
 //	}
-	$result .= gui_hyperlink("Add", add_to_url(array("operation" => "show_add_" . $table_id)));
+	$result .= gui_hyperlink("Add", add_to_url(array("operation" => "show_add_" . $table_id))) . " ";
 
 	$post_file = GetArg($args, "post_file", null);
 	if ($post_file)

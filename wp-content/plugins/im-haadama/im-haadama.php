@@ -27,6 +27,9 @@ if ( ! defined( 'TOOLS_DIR')) {
 
 require_once (ROOT_DIR . '/im-config.php');
 
+////////////////////
+// Parent process //
+////////////////////
 
 // require_once( "functions_im.php" );
 if (file_exists(TOOLS_DIR . "/im_tools_light.php"))
@@ -44,6 +47,7 @@ function store_locator()
 {
 
 }
+
 add_shortcode('pay-page', 'pay_page');
 
 function pay_page($atts, $content = null)

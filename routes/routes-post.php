@@ -16,7 +16,6 @@ require_once( "routes.php" );
 $operation = get_param("operation", false, null);
 $debug = get_param("debug", false, false);
 
-if ($operation) {
-	print handle_routes_operation($operation, $debug);
-	return;
-}
+if (($result = handle_routes_do($operation)) !== "not handled") { print $result; return; }
+
+die ("not handled");

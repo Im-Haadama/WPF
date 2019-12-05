@@ -5,8 +5,6 @@ function delete_lines()
     execute_url(request, location_reload);
 }
 
-<script>
-
 function do_update(xmlhttp)
 {
     let table = document.getElementById("list");
@@ -18,7 +16,6 @@ function do_update(xmlhttp)
 function update_display()
 {
     let request = "people-post.php?operation=show_all";
-<? if ( isset( $_GET["month"] ) ) {	    print "request = request + \"&month=" . $_GET["month"] . "\";";    }?>
     execute_url(request, do_update);
 }
 
@@ -42,7 +39,7 @@ function del_items() {
     execute_url("people-post.php?operation=delete&params=" + params, update_display);
 
 }
-function add_item() {
+function add_item(worker_id) {
     document.getElementById("btn_add_time").disabled = true;
 
     var sel = document.getElementById("project");
@@ -63,7 +60,8 @@ function add_item() {
     let request = "people-post.php?operation=add_time&start=" + start + '&end=' + end +
         '&date=' + date + "&project=" + id + "&vol=0" + "&traveling=" + traveling +
         "&extra_text=" + encodeURI(extra_text) +
-        "&extra=" + extra;
+        "&extra=" + extra +
+    '&worker_id=' + worker_id;
 
-    execute_url(request, update_display);
+    execute_url(request, location_reload);
 }

@@ -105,8 +105,8 @@ class eTransview {
 }
 
 
-function show_trans( $customer_id, $view = eTransview::default, $args ) {
-
+function show_trans( $customer_id, $view = eTransview::default, $args )
+{
 	$page = GetArg($args, "page", null);
 	$query = GetArg($args, "query", null);
 	// $from_last_zero = false, $checkbox = true, $top = 10000

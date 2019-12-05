@@ -92,7 +92,7 @@ function update_data($table_name)
 	return true;
 }
 
-function cancel_data($table_name)
+function data_inactive($table_name)
 {
 	// TODO: adding meta key when needed(?)
 	global $meta_table_info;
@@ -100,6 +100,18 @@ function cancel_data($table_name)
 	$row_id = intval(get_param("id", true));
 
 	return sql_query("update $table_name set is_active = 0 where id = $row_id");
+}
+
+function data_delete($table_name, $row_may_ids)
+{
+	// TODO: adding meta key when needed(?)
+	if (is_array($row_may_ids)) {
+		foreach ( $row_may_ids as $id )
+			if ( ! data_delete( $table_name, $id ) ) return false;
+		return true;
+	}
+	if (! sql_query("delete from $table_name where id = $row_may_ids")) return false;
+	return true;
 }
 
 function data_save_new($table_name)
@@ -198,7 +210,7 @@ function handle_data_operation($operation)
 			$table_name = get_param("table_name", true);
 			if (! in_array($table_name, $allowed_tables))
 				die ("invalid table operation");
-			if (cancel_data($table_name))
+			if (data_inactive($table_name))
 				print "done";
 			break;
 		case "save_new":

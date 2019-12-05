@@ -170,13 +170,21 @@ function load_style($style_file)
 /**
  * @param $key
  *
+ * @param bool $mandatory
+ * @param null $default
+ *
  * @return array|null
  */
-function get_param_array( $key ) {
+function get_param_array( $key, $mandatory = false, $default = null  ) {
 	if ( isset( $_GET[ $key ] ) ) {
 		$k = $_GET[ $key ];
 
 		return explode( ",", $k );
+	}
+	if ( $mandatory ) {
+		die ("Error: " . __FUNCTION__ . " key " . $key . " not supplied" );
+	} else {
+		return $default;
 	}
 
 	return null;

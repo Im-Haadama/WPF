@@ -21,7 +21,7 @@ require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 
 // only if admin can select user. Otherwise get id from login info
 
-$manager = is_manager( $user_ID );
+$manager = is_manager();
 
 if ( $manager and isset( $_GET["customer_id"] ) ) {
 	print header_text( false, true, true, array( "account.js" ) );

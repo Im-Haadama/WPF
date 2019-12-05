@@ -517,3 +517,10 @@ msgstr "נתוני שכר לחודש"
 
 msgid "Entered data for month"
 msgstr "מידע לחודש"
+
+# routes
+msgid "Shipping paths"
+msgstr "מסלולי חלוקה"
+
+msgid "create missions"
+msgstr "צור משימות"

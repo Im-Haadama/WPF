@@ -54,6 +54,38 @@ function create_missions()
 {
     let param = get_selected('checkbox_im_paths');
     if (param.length < 1) { alert ("no path selected"); return; }
-    let url = '/routes/routes-post.php?operation=create_mission&param=' + param;
+    let url = '/routes/routes-post.php?operation=create_missions&path_ids=' + param;
     execute_url(url, location_reload);
+}
+
+function save_path_times(path_id)
+{
+    let table = document.getElementById("zone_times");
+    let params = new Array();
+    for (let i = 1; i < table.rows.length; i++){
+        params.push(get_value(table.rows[i].cells[1]));
+        params.push(get_value(table.rows[i].cells[3]));
+    }
+
+    // alert(params);
+    let request = "/routes/routes-post.php?operation=save_path_times&params=" + params.join() + '&path_id=' + path_id;
+
+    execute_url(request, location_reload);
+}
+
+function delete_path_times(path_id)
+{
+    alert("not implemented");
+    return false;
+    // let table = document.getElementById("zone_times");
+    // let params = new Array();
+    // for (let i = 1; i < table.rows.length; i++){
+    //     params.push(get_value(table.rows[i].cells[1]));
+    //     params.push(get_value(table.rows[i].cells[3]));
+    // }
+    //
+    // // alert(params);
+    // let request = "/routes/routes-post.php?operation=save_path_times&params=" + params.join() + '&path_id=' + path_id;
+    //
+    // execute_url(request, location_reload);
 }

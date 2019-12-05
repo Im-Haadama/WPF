@@ -8,11 +8,16 @@ if ( ! defined( "ROOT_DIR" ) ) {
 }
 
 require_once(ROOT_DIR . '/im-config.php');
-require_once(ROOT_DIR . "/init.php" );
 require_once(ROOT_DIR . "/niver/gui/gem.php");
 
 require_once( "focus/focus_class.php" );
 $operation = get_param("operation", false, "focus_main");
+
+//im_background_processing();
+
+// print "parent contiunes";
+
+require_once(ROOT_DIR . "/init.php" );
 
 if (handle_focus_do($operation) !== "not handled") return;
 

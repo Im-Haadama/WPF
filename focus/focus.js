@@ -85,8 +85,10 @@ function search_by_text()
         search_box.value = "";
         return;
     }
-    if (value.length > 2)
+    if (value.length > 2) {
+        document.getElementById("search_result").innerHTML = "Searching...";
         execute_url("/focus/focus-post.php?operation=search_by_text&text=" + value, update_search);
+    }
 }
 
 function search_box_reset()

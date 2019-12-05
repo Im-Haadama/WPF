@@ -183,7 +183,7 @@ class MultiSite {
 		}
 
 		if (! isset($this->sites_array[$site_id][3])){
-			print "Error #N1: username is missing (index 3), site " . $this->getSiteName($site_id) ;
+			print "Error #N3: username is missing (index 3), site " . $this->getSiteName($site_id) ;
 			// var_dump($this->sites_array);
 			die (1);
 		}

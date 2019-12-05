@@ -340,6 +340,27 @@ function woocommerce_form_field_radio( $key, $args, $value = '' ) {
 
 add_action( 'woocommerce_before_calculate_totals', 'im_woocommerce_update_price', 99 );
 
+function im_background_processing()
+{
+	my_log("trying to fork");
+
+    $pid = pcntl_fork();
+
+    if ($pid == -1) {
+	    my_log("couldn't not fork", __FILE__);
+	    return;
+    }
+    if ($pid) {
+        my_log("parent");
+       // Child process.
+       // pcntl_wait($status);
+       return;
+    }
+	// Child
+    my_log("child");
+    exit(1);
+}
+
 function im_woocommerce_update_price() {
 	global $site_id;
 	if ( $site_id != 4 ) return;
