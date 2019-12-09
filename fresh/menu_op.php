@@ -7,6 +7,7 @@ if ( ! defined( "ROOT_DIR" ) ) {
 error_reporting( E_ALL );
 ini_set( 'display_errors', 'on' );
 
+require_once(ROOT_DIR . '/wp-config.php');
 require_once(ROOT_DIR . '/im-config.php');
 require_once( ROOT_DIR . "/init.php" );
 
@@ -87,8 +88,8 @@ $col ++;
 $row = 0;
 
 $table[ $row ++ ][ $col ] = gui_header( 2, "משלוחים" );
-add_command( $table, $row, $col, "edit_shop_orders", "Today Routes", "/routes/routes-page.php?operation=show_today_missions" );
-add_command( $table, $row, $col, "edit_shop_orders", "This week routes", "/routes/routes-page.php?operation=show_missions&week=" . date( "Y-m-d", strtotime( "last sunday" ) ));
+add_command( $table, $row, $col, "edit_shop_orders", "Today missions", "/routes/routes-page.php?operation=show_today_missions" );
+add_command( $table, $row, $col, "edit_shop_orders", "This week missions", "/routes/routes-page.php?operation=show_missions&week=" . date( "Y-m-d", strtotime( "last sunday" ) ));
 add_command( $table, $row, $col, "edit_shop_orders", "תעודות משלוח", "delivery/delivery-page.php", "doc_frame" );
 add_command( $table, $row, $col, "edit_missions", "ניהול מסלולים", "/routes/routes-page.php?operation=show_paths" );
 add_command( $table, $row, $col, "edit_missions", "Driving missions", "/routes/routes-page.php?operation=show_missions" );

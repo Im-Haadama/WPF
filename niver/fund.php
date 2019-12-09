@@ -118,7 +118,6 @@ function HeaderText($args = null)
 /**
  * @return string
  */
-function gui_type() { return "html"; }
 
 /**
  * @param bool $print_logo
@@ -127,6 +126,7 @@ function gui_type() { return "html"; }
  * @param bool $script_file
  *
  * @return string
+ * @throws Exception
  */
 function header_text( $print_logo = true, $close_header = true, $rtl = true, $script_file = false ) {
 	// $text .= '<p style="text-align:center;">';
@@ -173,13 +173,17 @@ function load_style($style_file)
  * @param bool $mandatory
  * @param null $default
  *
+ * @param string $delimiter
+ *
  * @return array|null
  */
-function get_param_array( $key, $mandatory = false, $default = null  ) {
-	if ( isset( $_GET[ $key ] ) ) {
+function get_param_array( $key, $mandatory = false, $default = null, $delimiter = ","  )
+{
+	if ( isset( $_GET[ $key ] ) )
+	{
 		$k = $_GET[ $key ];
 
-		return explode( ",", $k );
+		return explode( $delimiter, $k );
 	}
 	if ( $mandatory ) {
 		die ("Error: " . __FUNCTION__ . " key " . $key . " not supplied" );

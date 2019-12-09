@@ -118,13 +118,6 @@ function get_zone_from_postcode( $postcode, $country = null ) {
 	return $zone1;
 }
 
-function zone_get_name( $id ) {
-	if (! ($id > 0)){
-		die ("bad zone id");
-	}
-	return sql_query_single_scalar( "SELECT zone_name FROM wp_woocommerce_shipping_zones WHERE zone_id = " . $id );
-}
-
 function get_user_name( $id ) {
 //    var_dump(get_user_meta($id, 'first_name'));
 	return get_user_meta( $id, 'first_name' )[0] . " " . get_user_meta( $id, 'last_name' )[0];

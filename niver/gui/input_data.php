@@ -1,6 +1,5 @@
 <?php
 require_once("sql_table.php");
-require_once("inputs.php");
 
 /// This file contains functions the combines functions that takes data from database and draw html.
 ///
@@ -16,6 +15,8 @@ function NewRow($table_name, $args)
 //	$args["skip_id"] =  true;
 //	$args["id_field"] = "ID";
 	if (! isset($args["hide_cols"])) $args["hide_cols"] = [];
-	return GuiRowContent($table_name, null, $args);
+	$row = GuiRowContent($table_name, null, $args);
+//	debug_var($row);
+	return $row;
 }
 

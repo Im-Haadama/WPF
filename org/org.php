@@ -115,14 +115,16 @@ function team_all_members($team_id)
  * @param $user_id
  * @param $team_name
  *
+ * @param bool $manager_member
+ *
  * @return int|string
  */
-function team_add($user_id, $team_name)
+function team_add($user_id, $team_name, $manager_member = true)
 {
 	sql_query("insert into im_working_teams (team_name, manager) values (" . quote_text($team_name) . ", $user_id)" );
 	$team_id =sql_insert_id();
 	// Team manager doesn't have to be part of it.
-	// team_add_worker($team_id, $user_id);
+	if ($manager_member) team_add_worker($team_id, $user_id);
 	return $team_id;
 }
 

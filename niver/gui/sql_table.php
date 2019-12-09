@@ -15,8 +15,6 @@
  *
  */
 
-require_once( "inputs.php" );
-
 require_once( ROOT_DIR . "/niver/data/sql.php" );
 require_once( ROOT_DIR . "/niver/data/translate.php");
 require_once( ROOT_DIR . "/niver/gui/gem.php");
@@ -147,8 +145,6 @@ function PrepareRow($row, $args, $row_id)
 		return null; // Todo: find why PivotTable creates null rows as in invoice_table.php
 	}
 
-//	if (get_user_id() == 1) return $row;
-
 	// On single row, the id is displayed in the header, and not showing in the table.
 	$skip_id = GetArg($args, "skip_id", false);
 	$links = GetArg($args, "links", null);
@@ -172,9 +168,13 @@ function PrepareRow($row, $args, $row_id)
 		my_log( __FUNCTION__ . "invalid row ");
 		return $row;
 	}
-	// var_dump($row);
-	foreach ( $row as $key => $data )
+//	var_dump($args["fields"]);
+
+	// foreach ( $args["header_fields"] as $key => $ignore ) // $row as $key => $data
+	foreach ($row as $key => $data)
 	{
+		if (isset($row[$key])) $data = $row[$key]; else $data = null;
+
 		// General preparation... decide the field name and save the orig data and default data.
 		$nm = $key; // mnemonic3($key);
 		if ($add_field_suffix)	$input_name = $nm . '_' . $row_id;
@@ -230,6 +230,7 @@ function PrepareRow($row, $args, $row_id)
 //					if (isset($args["field_types"])) {
 //						$type = $args["field_types"][$key];
 //						$value = gui_input_by_type($input_name, $type, $args, $value);
+//						break;
 //					}
 					if (isset($args["sql_fields"])) {
 						$type = sql_field($args["sql_fields"], $key);
@@ -300,6 +301,7 @@ function PrepareRow($row, $args, $row_id)
 function RowsData($sql, $id_field, $skip_id, $v_checkbox, $checkbox_class, $h_line, $v_line, $m_line, $header_fields, $meta_fields, $meta_table, $args)
 {
 	$result = sql_query( $sql );
+	if ($args) $args["sql_fields"] = mysqli_fetch_fields($result);
 	$row_count = 0;
 	$rows_data = [];
 	while ( $row = mysqli_fetch_assoc( $result ) ) {
@@ -364,16 +366,14 @@ function RowsData($sql, $id_field, $skip_id, $v_checkbox, $checkbox_class, $h_li
 
 		$rows_data[$row_id] = $the_row;
 	}
+	if ( ! $result ) { print "Error #N1"; return null;	}
+
 	return $rows_data;
 }
 
 function NewRowData($field_list, $values, &$v_line, &$h_line, &$m_line, $skip_id, $checkbox_class, $header_fields, $fields, &$args )
 {
 	$new_row = array();
-	$debug   = false;
-	if ( $debug ) {
-		print "new<br/>";
-	}
 
 	$mandatory_fields = GetArg($args, "mandatory_fields", null);
 	if ($mandatory_fields) $mandatory_fields = array_assoc($mandatory_fields);
@@ -383,15 +383,12 @@ function NewRowData($field_list, $values, &$v_line, &$h_line, &$m_line, $skip_id
 	foreach ( $field_list as $key => $field ) {
 		if (  $skip_id and strtolower($key) === "id" ) continue;
 		assert( isset( $field_list[ $key ] ) );
-		if ( $debug ) print "handling $key<br/>";
-		if ( $values and isset( $values[ $key ] ) ) {
-			$new_row[ $key ] = $values[ $key ];
-		} else {
-			$new_row[ $key ] = null;
-		}
-		if ( $v_line !== null ) $v_line[ $key ] = gui_checkbox( "chk_" . $key, $checkbox_class, $new_row[ $key ] != null );
 
-		if ( is_array( $h_line ) and $header_fields ) $h_line[ $key ] = isset( $header_fields[ $key ] ) ? im_translate( $header_fields[ $key ], $args ) : $key;
+		if ( $values and isset( $values[ $key ] ) ) $new_row[ $key ] = $values[ $key ];
+		else $new_row[ $key ] = null;
+
+		if ( $v_line !== null ) $v_line[ $key ] = gui_checkbox( "chk_" . $key, $checkbox_class, $new_row[ $key ] != null );
+		if ( is_array( $h_line ) /* and $header_fields */) $h_line[ $key ] = isset( $header_fields[ $key ] ) ? im_translate( $header_fields[ $key ], $args ) : $key;
 		if ( is_array( $m_line ) ) $m_line[ $key ] = isset( $mandatory_fields[ $key ] );
 	}
 
@@ -402,12 +399,9 @@ function NewRowData($field_list, $values, &$v_line, &$h_line, &$m_line, $skip_id
 	if ($fields)
 	{
 		$new_row_ordered = array();
-		foreach ($fields as $key => $field){
-			$new_row_ordered[$key] = isset($new_row[$key]) ? $new_row[$key] : null;
-		}
+		foreach ($fields as $key => $field) $new_row_ordered[$key] = isset($new_row[$key]) ? $new_row[$key] : null;
 		$new_row = $new_row_ordered;
 	}
-	// debug_var($new_row);
 	$rows_data["new"] = $new_row;
 
 	// debug_var($new_row);
@@ -439,17 +433,9 @@ function TableData($sql, &$args = null)
 		}
 	}
 
-	// print __FUNCTION__ . "<br/>";
-	$result = sql_query( $sql );
-	if ($args and ! isset($args["sql_fields"])) {
-		$args["sql_fields"] = mysqli_fetch_fields($result);
-//		var_dump(mysqli_fetch_fields($result));
-	}
-	if ( ! $result ) { print "Error #N1"; return null;	}
-
 	$header = GetArg($args, "header", true);
 	$field_list = FieldList($sql, $args);
-	// debug_var($field_list);
+//	 debug_var($field_list);
 	// print __FUNCTION__ ; var_dump($field_list); print "<br/>";
 	$mandatory_fields = GetArg($args, "mandatory_fields", null);  $mandatory_fields = array_assoc($mandatory_fields);
 	$fields = GetArg($args, "fields", null);  $fields = array_assoc($fields);
@@ -483,7 +469,6 @@ function TableData($sql, &$args = null)
 	{
 		if ($debug) print "creating new row<br/>";
 		$rows_data = NewRowData( $field_list, $values, $v_line, $h_line, $m_line, $skip_id, $checkbox_class, $header_fields, $fields, $args );
-		// debug_var($rows_data);
 	} else {
 		if ($debug) print "getting data<br/>";
 		// print "before: "; var_dump($h_line); print "<br/>";
@@ -622,6 +607,11 @@ function GuiRowContent($table_name, $row_id, $args)
 		else
 			$sql = "describe $table_name";
 	}
+	if ($args /* and ! isset($args["sql_fields"]) */) {
+		$result = sql_query("select * from $table_name");
+		$args["sql_fields"] = mysqli_fetch_fields( $result );
+//		var_dump($args["sql_fields"]);
+	}
 	return GuiTableContent($table_id, $sql, $args);
 }
 
@@ -643,6 +633,7 @@ function GuiTableContent($table_id, $sql, &$args = null)
 
 	// Fetch the data from DB or create the new row
 	$rows_data = TableData( $sql, $args);
+	//debug_var($rows_data);
 
 	if (! $rows_data)
 		return null;

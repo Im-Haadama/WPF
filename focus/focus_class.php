@@ -5,7 +5,6 @@ if ( ! defined( 'ROOT_DIR' ) ) {
 }
 
 require_once(ROOT_DIR . "/niver/web.php" );
-require_once(ROOT_DIR . '/niver/gui/inputs.php' );
 require_once(ROOT_DIR . '/niver/gui/input_data.php' );
 require_once(ROOT_DIR . "/niver/fund.php");
 require_once(ROOT_DIR . "/niver/gui/gem.php");
@@ -26,7 +25,6 @@ require_once (ROOT_DIR . '/im-config.php');
  */
 function focus_new_task($mission = false, $new_task_id = null)
 {
-	if (! focus_check_user()) return;
 	$args = array();
 	$args["selectors"] = array("project_id" =>  "gui_select_project",
 	                           "owner" => "gui_select_worker",
@@ -142,11 +140,11 @@ function focus_check_user()
 
 	// Check if user has team.
 	$team_ids = team_all_teams($user_id);
-	if (! count($team_ids)){
-		print "uid= $user_id" . gui_br();
-		var_dump($team_ids); gui_br();
-		die ("Error #F2. Please report");
-		// team_add($user_id, im_translate("Personal team") . " " . get_customer_name($user_id));
+	if (!$team_ids or ! count($team_ids)){
+//		print "uid= $user_id" . gui_br();
+//		var_dump($team_ids); gui_br();
+//		die ("Error #F2. Please report");
+		 team_add($user_id, im_translate("Personal team") . " " . get_customer_name($user_id));
 	}
 
 	$project_ids = worker_get_projects($user_id);
@@ -156,13 +154,11 @@ function focus_check_user()
 	return true;
 }
 
-
 function handle_focus_do($operation)
 {
 	$allowed_tables = array("im_company", "im_tasklist", "im_task_templates");
 	$header_args = [];
 	$header_args["scripts"] = array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/focus/focus.js", "/focus/gui.php", "/vendor/sorttable.js" );
-	$header_args["rtl"] = is_rtl();
 
 	switch ($operation) { // Handle operation that don't need page header.
 		///////////////////////////
@@ -180,6 +176,12 @@ function handle_focus_do($operation)
 			$team_id = get_param("id", true);
 			if (team_delete($team_id)) print "done";
 			return;
+
+		case "cancel_im_task_templates":
+			$id = get_param("id", true);
+			if (data_delete("im_task_templates", $id)) print "done";
+			return;
+
 
 		case "delete":
 			$type = get_param("type");
@@ -372,10 +374,13 @@ function handle_focus_show($operation, $args)
 			$result = focus_header($header_args);
 			$result .= focus_main($id, $args);
 			break;
+		case "show_repeating_tasks":
 		case "show_templates":
 			$args["table"] = true;
 			$args["new"] = get_param("new", false, 0);
 			$new = get_param("new", false, null);
+			$freq = get_param("freq", false, null);
+			$args["query"] = "repeat_freq like '%$freq%'";
 			$result .= show_templates($args, null,  $new);
 			break;
 		case "show_template":
@@ -765,10 +770,15 @@ function show_templates(&$args, $template_id = 0, $new = null )
 		$args["title"] = "Repeating task";
 		$args["post_file"] = $url;
 
-		$result .= GemElement("im_task_templates", $template_id, $args);
+		$template = GemElement("im_task_templates", $template_id, $args);
+		if (! $template) {
+			$result .= "Not found";
+			return $result;
+		}
+		$result .= $template;
 
 		$tasks_args = array("links" => array("id" => get_url(1) . "?operation=show_task&id=%s"));
-		$task_args["class"] = "sortable";
+		$tasks_args["class"] = "sortable";
 
 		if (get_user_id() == 1){
 			$output = "";
@@ -776,16 +786,17 @@ function show_templates(&$args, $template_id = 0, $new = null )
 			       " FROM im_task_templates where id = $template_id");
 
 			create_if_needed($template_id, $row, $output, 1, $verbose_line);
-			$result .= $output;
+			// $result .= $output;
 		}
 
-		$table = GuiTableContent("last_tasks", "select * from im_tasklist where task_template = " . $template_id .
-		                                       " order by date desc limit 10", $tasks_args);
+		$sql = "select * from im_tasklist where task_template = " . $template_id;
+		$sql .= " order by date desc limit 10";
+		print $sql;
+		$table = GuiTableContent("last_tasks", $sql, $tasks_args);
 		if ($table)
 		{
 			$result .= gui_header(2, "משימות אחרונות");
 			$result .= $table;
-			return $result;
 		}
 
 		return $result;
@@ -793,7 +804,7 @@ function show_templates(&$args, $template_id = 0, $new = null )
 
 	if ($page = get_param("page")) { $args["page"] = $page; unset ($_GET["page"]); };
 
-	$query = " 1";
+	$query = (isset($args["query"]) ? $args["query"] : " 1");
 	if (get_param("search", false, false)){
 		$ids = data_search("im_task_templates", $args);
 		if (! $ids){
@@ -1270,8 +1281,6 @@ function focus_main($user_id, $args)
 //	$result .= gui_hyperlink("Repeating tasks", $url . "?operation=show_templates") . " ";
 
 	if ($teams = team_managed_teams($user_id)) {// Team manager
-		$result .= gui_hyperlink("Edit organization", get_url() . "?operation=edit_organization");
-		$result .= "<br/>";
 		$workers = array();
 		foreach ($teams as $team) {
 			foreach (team_all_members($team) as $worker_id) $workers[$worker_id] = 1;

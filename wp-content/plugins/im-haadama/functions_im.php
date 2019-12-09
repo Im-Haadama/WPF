@@ -93,10 +93,10 @@ function wc_minimum_order_amount() {
 
 function wc_after_cart() {
 //    print "<a href=\"http://store.im-haadama.co.il/"
-	if ( $_SERVER['SERVER_NAME'] == 'fruity.co.il' ) {
-		print "<a href=\"../fresh/baskets/unfold.php\"" .
-		      "class=\"checkout-button button alt wc-forward\">החלף סלים במרכיביו</a>";
-	}
+//	if ( $_SERVER['SERVER_NAME'] == 'fruity.co.il' ) {
+//		print "<a href=\"../fresh/baskets/unfold.php\"" .
+//		      "class=\"checkout-button button alt wc-forward\">החלף סלים במרכיביו</a>";
+//	}
 //המשך לתשלום</a>
 //    print "<input class=\"button alt\" name=\"unfold_basket\" value=\"פרום סל\" />";
 }
@@ -264,7 +264,6 @@ function custom_quantity_field_archive() {
 
 // add_action( 'woocommerce_after_shop_loop_item', 'custom_quantity_field_archive', 31);
 
-
 /**
  * Add requires JavaScript. uzzyraja.com/sourcecodes/
  */
@@ -286,6 +285,7 @@ function custom_add_to_cart_quantity_handler() {
 }
 
 add_action( 'init', 'custom_add_to_cart_quantity_handler' );
+
 
 /**
  * Update the order meta with field value
@@ -339,27 +339,6 @@ function woocommerce_form_field_radio( $key, $args, $value = '' ) {
 }
 
 add_action( 'woocommerce_before_calculate_totals', 'im_woocommerce_update_price', 99 );
-
-function im_background_processing()
-{
-	my_log("trying to fork");
-
-    $pid = pcntl_fork();
-
-    if ($pid == -1) {
-	    my_log("couldn't not fork", __FILE__);
-	    return;
-    }
-    if ($pid) {
-        my_log("parent");
-       // Child process.
-       // pcntl_wait($status);
-       return;
-    }
-	// Child
-    my_log("child");
-    exit(1);
-}
 
 function im_woocommerce_update_price() {
 	global $site_id;

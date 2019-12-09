@@ -20,6 +20,7 @@ function gui_select_zones($id, $selected, $args)
 		return $result;
 	}
 	$wc_zones = WC_Shipping_Zones::get_zones();
+//	var_dump($wc_zones);
 
 	$args["values"] = $wc_zones;
 	$events = GetArg($args, "events", null);

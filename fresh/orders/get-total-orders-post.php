@@ -5,6 +5,16 @@
  * Date: 10/05/16
  * Time: 01:20
  */
+if ( ! defined( "ROOT_DIR" ) ) {
+	define( 'ROOT_DIR', dirname(dirname( dirname( __FILE__ ) ) ) );
+}
+
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
+require_once(ROOT_DIR . '/wp-config.php');
+require_once(ROOT_DIR . '/im-config.php');
+
 require_once( "../im_tools.php" );
 require_once( "orders-common.php" );
 require_once( ROOT_DIR . '/niver/gui/inputs.php' );

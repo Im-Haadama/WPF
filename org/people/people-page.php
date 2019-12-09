@@ -22,4 +22,7 @@ $operation = get_param("operation", false, "salary_report");
 //
 //}
 
+
+if (handle_people_do($operation) !== "not handled") return;
+
 print handle_people_operation($operation);

@@ -15,7 +15,6 @@ ini_set( 'display_errors', 'on' );
 
 require_once (ROOT_DIR . '/niver/data/data.php');
 require_once( ROOT_DIR . '/im-config.php' );
-require_once( ROOT_DIR . "/init.php" );
 require_once( ROOT_DIR . '/routes/gui.php' );
 
 

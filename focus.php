@@ -4,10 +4,12 @@ error_reporting( E_ALL );
 ini_set( 'display_errors', 'on' );
 
 if ( ! defined( "ROOT_DIR" ) ) {
-	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) . '/store');
+	define( 'ROOT_DIR',  dirname( __FILE__ ) ) ;
 }
 
+require_once(ROOT_DIR . '/wp-config.php');
 require_once(ROOT_DIR . '/im-config.php');
+
 require_once(ROOT_DIR . "/niver/gui/gem.php");
 
 require_once( "focus/focus_class.php" );
@@ -52,10 +54,16 @@ $logo = GuiHyperlink(GuiImage(GetArg($args, "logo_image", null), GetArg($args, "
 $search = GuiInput("search_text", "(search here)", array("events" => "onfocus=\"search_by_text()\" onkeyup=\"search_by_text()\" onfocusout=\"search_box_reset()\""));
 //$greeting = greeting();
 $alerts = alerts_pulldown($user_id);
-$setting = GuiHyperlink("settings", add_to_url("operation", "show_settings"), array ("class" => "light_hyperlink"));
+// $setting = GuiHyperlink("settings", add_to_url("operation", "show_settings"), array ("class" => "light_hyperlink"));
+$setting = GuiPulldown("settings", "settings", array("menu_options" => array(array("text" => "Edit organization", "link" => add_to_url("operation", "edit_organization")))));
+$repeating_tasks = GuiPulldown("repeating_tasks", "Repeating tasks", array("menu_options" => array(array("text" => "all", "link" => get_url(1) . "?operation=show_repeating_tasks"),
+	array("text" => "weekly", "link" => get_url(1) . "?operation=show_repeating_tasks&freq=w"),
+	array("text" => "monthly", "link" => get_url(1) . "?operation=show_repeating_tasks&freq=j"),
+	array("text" => "annual", "link" => get_url(1) . "?operation=show_repeating_tasks&freq=z"))));
+
 $teams = team_pulldown($user_id);
 //$circle = '<div id="avatar_circle"
-$header_elements = array($logo, $search, get_avatar(get_user_id(), 40), $alerts, $projects, $teams, $setting);
+$header_elements = array($logo, $search, get_avatar(get_user_id(), 40), $repeating_tasks, $alerts, $projects, $teams, $setting);
 $args["header_elements"] = $header_elements;
 print GemHeader("header_div", "header_div", $args); // Opens the body with style definitions and menus.
 
@@ -64,9 +72,7 @@ print '<div id="search_result"></div>';
 print "<br/>"; // The space of header.
 
 if (! get_user_id(true)) return;
-
-$debug = get_param("debug", false, false);
-
+if (! focus_check_user()) return;
 
 if ($operation) {
 	if (get_param("page", false, null)) $args ["page"] = get_param("page");

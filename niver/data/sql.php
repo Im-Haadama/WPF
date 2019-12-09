@@ -503,24 +503,30 @@ function sql_table_id($table_name)
 
 function sql_field($fetch_fields, $field_name)
 {
-	foreach($fetch_fields as $field)
+	foreach($fetch_fields as $field) {
+//		print $field->name . " " . $field->type . "<br/>";
 		if ($field->name == $field_name) {
 //			debug_var($field->name . " " . $field->type);
 			switch ($field->type){
-				case 253:
-					return "varchar";
 				case 3:
 					return "int";
+				case 5:
+					return "float";
 				case 10:
-					return "function";
+					return "date";
 				case 11:
 					return 'time';
-				case 12:
-					return "date";
+//				case 12:
+//					return "date";
+				case 16:
+					return 'bit';
 				case 252:
 					return 'longtime';
+				case 253:
+					return "varchar";
 				default:
-					die($field->type . " not handled " . $field_name);
+					die(__FUNCTION__ . ":" . $field->type . " not handled " . $field_name);
 			}
 		}
+	}
 }

@@ -802,6 +802,7 @@ if (! function_exists('gui_br')) {
 			}
 			// print "line$line_id<br/>";
 			$data .="<tr>";
+
 			if (is_array($line)) {
 				$add_checkbox_line = $add_checkbox;
 				foreach ($line as $cell_id => $cell){
@@ -823,7 +824,7 @@ if (! function_exists('gui_br')) {
 					$data .= gui_cell($cell, $field . "_" . $row_id, $show,
 						isset($align_table_cells[$line_id][$cell_id]) ? $align_table_cells[$line_id][$cell_id] : null);
 				}
-				// $data .= "<td>" . $cell . "</td>";
+//				 $data .= "<td>" . $cell . "</td>";
 			} else
 				$data .= "<td>" . $line . "</td>";
 			$data .= "</tr>\n";
@@ -1281,3 +1282,5 @@ function GuiPulldown($id, $text, $args)
 
 	return $result;
 }
+
+function gui_type() { return "html"; }

@@ -89,3 +89,12 @@ function delete_path_times(path_id)
     //
     // execute_url(request, location_reload);
 }
+
+function add_zone_times(path_id)
+{
+    let zones = get_value_by_name("zone_id");
+    let times = get_value_by_name("zone_time");
+
+    let request = "/routes/routes-post.php?operation=add_zone_times&path_id=" + path_id + "&zones=" + zones + "&time="+times;
+    execute_url(request, location_reload);
+}

@@ -19,6 +19,7 @@ function cancel_entity(post_operation, table_name, id)
         return;
     }
     let operation = post_operation + "?table_name=" + table_name + "&operation=cancel_" + table_name + "&id=" + id;
+    
     //operation = operation + operation_arguments(table_name, id);
     // alert(operation);
     execute_url(operation, action_back);

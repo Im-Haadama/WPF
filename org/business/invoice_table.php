@@ -25,6 +25,8 @@ require_once( ROOT_DIR . '/fresh/im_tools_light.php' );
 require_once( ROOT_DIR . '/niver/web.php' );
 require_once(ROOT_DIR . '/niver/gui/input_data.php' );
 require_once(ROOT_DIR . '/niver/data/data.php' );
+require_once(ROOT_DIR . '/fresh/suppliers/gui.php' );
+require_once(ROOT_DIR . '/fresh/gui.php' );
 
 print header_text(false, true, true, array("/niver/gui/client_tools.js", "/niver/data/data.js"));
 
@@ -34,7 +36,7 @@ if ( ! $year ) {
 }
 // $month = get_param("monty");
 
-$page ="EXTRACT(YEAR FROM DATE) = " . $year . " and document_type = 4 and is_active=1";
+$page ="EXTRACT(YEAR FROM DATE) = " . $year . " and document_type in (4, 8) and is_active=1";
 $operation = get_param("operation", false);
 if ($operation){
 	switch ($operation)
@@ -44,7 +46,7 @@ if ($operation){
 			$args = array();
 			set_args_value($args);
 			$args["edit"] = true;
-			// $args["]
+			$args["header_fields"] = array("part_id" => "supplier", "date"=> "date", "reference" => "Document number", "amount" => "Amount", "net_amount" => "amount without taxes", "document_type" => "Document type");
 			$args["selectors"] = array("part_id" => "gui_select_supplier", "document_type" => "gui_select_document_type");
 			$args["fields"] = array("part_id", "date", "ref", "amount", "net_amount", "document_type");
 			$args["mandatory_fields"] = array("part_id" => 1, "date" => 1, "ref" => 1, "amount" => 1, "document_type" => 1, "net_amount" => 1);

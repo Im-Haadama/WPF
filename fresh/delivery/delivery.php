@@ -99,7 +99,8 @@ class ImDocumentType {
 		supply = 5, // Supplier
 		ship = 6,  // Legacy
 		bank = 7,
-		count = 8;
+		invoice_refund = 8, // Supplier
+		count = 9;
 }
 
 $DocumentTypeNames = array(
@@ -107,10 +108,11 @@ $DocumentTypeNames = array(
 	"הזמנה",
 	"משלוח",
 	"זיכוי",
-	"חשבונית קבלה",
+	"חשבונית מס קבלה",
 	"אספקה",
 	"תעודת משלוח",
-	"העברה"
+	"העברה",
+	"חשבונית מס זיכוי"
 );
 
 

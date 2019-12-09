@@ -13,77 +13,108 @@ if ( ! defined( "ROOT_DIR" ) ) {
 	define( 'ROOT_DIR', dirname( dirname( dirname( __FILE__ ) ) ) );
 }
 
+require_once (ROOT_DIR . "/wp-config.php");
 require_once (ROOT_DIR . "/im-config.php");
-init();
 
 // print "host=" . DB_HOST . "<br/>";
 require_once( ROOT_DIR . '/niver/gui/sql_table.php' );
+require_once( ROOT_DIR . '/niver/gui/inputs.php' );
 
 require_once( ROOT_DIR . "/init.php" );
+init();
 
-if (! is_manager()) die ("no permissions");
+if (! get_user_id()) {
+	$url = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_HOST ) . '/wp-login.php?redirect_to=' . $_SERVER['REQUEST_URI'] . '"';
+
+	print '<script language="javascript">';
+	print "window.location.href = '" . $url . "'";
+	print '</script>';
+	return;
+}
+
+if (get_user_id() !== 1) die ("no permissions: " . get_user_id());
+
+$current_version = get_versions();
+
+print "Last version = $current_version<br/>";
 
 $version = get_param( "version" );
+$force = get_param("force", false, false);
 
-switch ( $version ) {
-	case "28":
-		version28();
-		break;
-	case "aa":
-		aa();
-		break;
-	case "all":
-		basic();
-		create_tasklist();
-		version16();
-		version17();
-		version18();
-		break;
-	case "27":
-		version27();
-		break;
-	case "26":
-		version26();
-		break;
-	case "22":
-		version22();
-		break;
-	case "21":
-		version21();
-		break;
-	case "20":
-		version20();
-		break;
-	case "check2":
-		print GuiTableContent( "a", "SELECT * FROM im_task_templates" );
-		break;
-	case "check":
-		check();
-		break;
-	case "basic":
-		basic();
-		break;
-	case "16":
-		version16();
-		break;
-	case "17":
-		version17();
-		break;
-	case "18":
-		version18();
-		break;
-	case "tasklist":
-		create_tasklist();
-		break;
-	default:
-		die( "no valid option selected" );
+add_version($version, $force);
 
+function add_version($version, $force = false)
+{
+	if (! $force){
+		$exists = sql_query_single_scalar("select count(*) from im_versions where version = '$version'");
+		if ($exists >= 1) return true;
+		print $exists;
+	}
+	$description = null;
+
+	switch ( $version ) {
+		case "29":
+			$description = version29();
+			break;
+		case "28":
+			$description = version28();
+			break;
+		case "aa":
+			$description = aa();
+			break;
+		case "27":
+			$description = version27();
+			break;
+		case "26":
+			$description = version26();
+			break;
+		case "22":
+			$description = version22();
+			break;
+		case "21":
+			$description = version21();
+			break;
+		case "20":
+			$description = version20();
+			break;
+		case "check2":
+			print GuiTableContent( "a", "SELECT * FROM im_task_templates" );
+			break;
+		case "check":
+			check();
+			break;
+		case "basic":
+			$description = basic();
+			break;
+		case "16":
+			$description = version16();
+			break;
+		case "17":
+			$description = version17();
+			break;
+		case "18":
+			$description = version18();
+			break;
+		case "tasklist":
+			$description = create_tasklist();
+			break;
+		default:
+			die( "no valid option selected: $version" );
+	}
+	if ($description) sql_query("insert into im_versions(version, description, install_date) values ('$version', '$description', now())");
+	return true;
 }
+
 print "done";
 die ( 0 );
 
 function version28()
 {
+	if (! add_version("27"))
+		die ("can't install 2.7");
+	print gui_header(1, "install date");
+	sql_query("alter table im_versions add install_date date;");
+
 	print gui_header(1, "zone_times");
 	sql_query("alter table im_paths change zones zones_times longtext null;");
 	sql_query("alter table im_missions change zones zones_times longtext null;");
@@ -110,10 +141,13 @@ END;");
 	);
 
 	// sql_query("alter table im_paths add end_h time");
-
+	return "Update shipping methods";
 }
 function version27()
 {
+	if (! add_version("26"))
+		die ("can't install 2.6");
+
 	print gui_header(1, "add company to project");
 	sql_query("ALTER TABLE im_projects ADD company int not null default 1;");
 
@@ -125,9 +159,13 @@ function version27()
 BEGIN
   RETURN SUBDATE(day, WEEKDAY(day) + 1);
 END;");
+	return "Focus: project-company, isactive";
 }
 function version26()
 {
+	if (! add_version("22"))
+		die ("can't install 2.2");
+
 	print gui_header(1, "worker_teams");
 	sql_query("drop function worker_teams");
 	sql_query("CREATE FUNCTION 	worker_teams(_user_id int)
@@ -143,7 +181,6 @@ BEGIN
 END;"
 	);
 
-
 print gui_header(1, "month_with_index");
 	sql_query("drop function month_with_index;");
 	sql_query("CREATE FUNCTION month_with_index(_date date) RETURNS VARCHAR(20) 
@@ -153,10 +190,7 @@ print gui_header(1, "month_with_index");
 		select month(_date) into _index;
 		select date_format(_date, '%m') into _index;
 		return con1`t(_index, ' ', _name);
-	END;
-	
-		
-	");
+	END; ");
 
 	sql_query("drop function month_with_index;");
 	sql_query("CREATE FUNCTION month_with_index(_date date) RETURNS VARCHAR(20) 
@@ -166,10 +200,7 @@ print gui_header(1, "month_with_index");
 		select month(_date) into _index;
 		select monthname(_date) into _name;
 		return concat(_index, ' ', _name);
-	END;
-		
-		
-	");
+	END;	");
 
 	print gui_header(1, "task_template team");
 	sql_query("ALTER TABLE im_task_templates ADD team int not null default 1;");
@@ -205,7 +236,7 @@ BEGIN
     
 	return projectList;	   
 END;");
-
+	return "Focus: project, template last_check, invoice_table sort";
 }
 function version22()
 {
@@ -216,6 +247,9 @@ function version22()
 //       LENGTH(SUBSTRING_INDEX(str, delim, pos-1)) + 1),
 //       delim, '');");
 
+
+	if (! add_version("21"))
+		die ("can't install 2.1");
 
 	sql_query("drop function preq_done");
 	sql_query("CREATE FUNCTION 	preq_done(_task_id int)
@@ -284,9 +318,7 @@ BEGIN
     declare _price varchar(100) CHARSET 'utf8';
     select meta_value into _price from wp_postmeta where meta_key = '_price' and post_id = _id;
     return _price;
-  END;
-
-");
+  END; ");
 
 
 	sql_query("CREATE FUNCTION 	post_status(_post_id int)
@@ -308,7 +340,6 @@ END;");
 	sql_query("create
     function working_rate(_worker int, _project int) returns float
 BEGIN
-	
     declare _rate float;
 
 	select round(rate, 2) into _rate  
@@ -326,18 +357,20 @@ BEGIN
 	          and project_id = _project;
 
     return _rate;
-  END;
-
-");
-
+  END; ");
 
 	print gui_header(1, "multisite");
 	sql_query("ALTER TABLE im_multisite ADD user varchar(100);");
 	sql_query("ALTER TABLE im_multisite ADD password varchar(100);");
 
+	return "Multisite user/password, task_type(unfinished), task preq";
 }
+
 function version21()
 {
+	if (! add_version("20"))
+		die ("can't install 2.0");
+
 	print gui_header(1, "transaction types");
 
 	if (! table_exists("im_bank_transaction_types")) {
@@ -354,9 +387,14 @@ function version21()
 
 	sql_query("ALTER TABLE im_delivery_lines ADD a int;");
 
+	return "transaction types";
 }
+
 function version20()
 {
+	if (! add_version("18"))
+		die ("can't install 1.8");
+
 	print gui_header(1, "company_id");
 	sql_query("ALTER TABLE im_working ADD company_id int;");
 
@@ -382,6 +420,7 @@ BEGIN
 	return _result;	   
 END;"
 	);
+	return "working teams";
 }
 
 function check() {
@@ -457,8 +496,9 @@ function basic() {
 charset=utf8;
 
 ");
-
+	return "basic";
 }
+
 function create_tasklist() {
 
 	if (! table_exists ("im_working"))
@@ -516,6 +556,9 @@ function create_tasklist() {
 
 function version18()
 {
+	if (! add_version("17"))
+		die ("can't install 1.7");
+
 	print "task_template_time<br/>";
 
 	sql_query( "drop function task_active_time;" );
@@ -613,8 +656,6 @@ BEGIN
 	return _result;
 END;
 ");
-
-	//    
 
 	print "client_last_order, date<br/>";
 	sql_query("drop function client_last_order_date");
@@ -742,10 +783,13 @@ and status = 0;
 
 return _count;
 END;" );
-
+	return "task times, suppliers balance, more";
 }
 
 function version17() {
+	if (! add_version("16"))
+		die ("can't install 1.6");
+
 	print "tasklist<br/>";
 	sql_query( "ALTER TABLE im_tasklist " .
 	           "ADD creator INT(11), " .
@@ -945,14 +989,20 @@ BEGIN
   END;
 
 " );
+	return "draft products (for late delivery notes), bank account";
 }
 // Version 1.6
 function version16() {
 
+	if ( ! add_version( "basic" ) ) {
+		die ( "can't install basic" );
+	}
+
+
 	sql_query( "ALTER TABLE im_business_info
 ADD net_amount DOUBLE;
 " );
-}
+
 //
 //sql_query( "ALTER TABLE im_delivery
 //ADD draft_reason VARCHAR(50);
@@ -963,53 +1013,56 @@ ADD net_amount DOUBLE;
 //drop invoice_email;
 //" );
 
-sql_query( "ALTER TABLE im_supplies
+	sql_query( "ALTER TABLE im_supplies
 ADD picked BIT  
 " );
 
-sql_query( "ALTER TABLE im_suppliers
+	sql_query( "ALTER TABLE im_suppliers
 ADD invoice_email VARCHAR(50)  
   CHARACTER SET utf8
   COLLATE utf8_general_ci;
 " );
 
-sql_query( "ALTER TABLE im_business_info
+	sql_query( "ALTER TABLE im_business_info
 ADD invoice_file VARCHAR(200)  
   CHARACTER SET utf8
   COLLATE utf8_general_ci
 
 " );
 
-sql_query( "ALTER TABLE im_business_info
+	sql_query( "ALTER TABLE im_business_info
    add `occasional_supplier` varchar(50) CHARACTER SET utf8 DEFAULT NULL;
 
 " );
 
-sql_query( "ALTER TABLE im_business_info
+	sql_query( "ALTER TABLE im_business_info
 ADD invoice INTEGER(10);  
 " );
 
-sql_query( "ALTER TABLE im_business_info
+	sql_query( "ALTER TABLE im_business_info
 ADD document_type INT(2) DEFAULT '1' NOT NULL;
 " );
 
-sql_query( "ALTER TABLE im_business_info
+	sql_query( "ALTER TABLE im_business_info
 MODIFY week DATE;
 " );
 
-sql_query( "ALTER TABLE im_business_info
+	sql_query( "ALTER TABLE im_business_info
 MODIFY delivery_fee FLOAT;
 " );
 
-sql_query( "ALTER TABLE im_suppliers
+	sql_query( "ALTER TABLE im_suppliers
 ADD auto_order_day INT(11),
 add invoice_email VARCHAR(50);
 " );
 
-sql_query( "ALTER TABLE im_suppliers
+	sql_query( "ALTER TABLE im_suppliers
 ADD auto_order_day INT(11),
 ADD invoice_email VARCHAR(50);
 " );
+
+	return "business_info";
+}
 
 function drop_im_projects()
 {
@@ -1035,3 +1088,49 @@ END;";
 
 print "done";
 
+function get_versions()
+{
+	$versions = sql_query_array("select version, description from im_versions");
+	if ($versions == "Error"){
+		sql_query( "create table im_versions (
+	id INT NOT NULL AUTO_INCREMENT
+		PRIMARY KEY,
+		version varchar(20),
+    	description VARCHAR(40) CHARACTER SET utf8 NULL,
+    	install_date date)" );
+		return "init";
+	}
+	return gui_table_args($versions);
+}
+
+function version29()
+{
+	print gui_header(1, "Herbal");
+
+	sql_query( "create table me_clients ( " . // Client record
+	           "id INT NOT NULL AUTO_INCREMENT	PRIMARY KEY, " .
+	           "user_id int(11), " .
+	           "symptoms longtext); " );
+
+//	sql_query( "create table pl_plants ( " . // Plants
+//	           "id INT NOT NULL AUTO_INCREMENT	PRIMARY KEY, " .
+//	           "latin_name varchar(200) charset utf8, " .
+//	           "hebrew_name varchar(200) charset utf8); " );
+//
+//	sql_query( "create table he_symptoms (" . // Health
+//	           "id INT NOT NULL AUTO_INCREMENT	PRIMARY KEY, " .
+//	           "latin_name varchar(200) charset utf8, " .
+//	           "hebrew_name varchar(200) charset utf8); " );
+//
+//	sql_query( "create table he_affects (" . // How the plant affects us
+//	           "id INT NOT NULL AUTO_INCREMENT	PRIMARY KEY, " .
+//	           "hebrew_name varchar(200) charset utf8); " );
+//
+//	sql_query( "create table hc_symptoms (" . // Relation between plant, symptom and affect
+//	           "id INT(11), " .
+//	           "symptom_id int(11), " .
+//	           "affect_id int(11), " .
+//	           "plant_id int(11)); " );
+
+
+}

@@ -17,6 +17,8 @@ require_once( ROOT_DIR . '/org/gui.php' );
 // require_once( TOOLS_DIR . "/business/business.php" );
 // require_once( TOOLS_DIR . "/account/gui.php" );
 
+require_once( ROOT_DIR . '/org/gui.php' );
+
 /**
  * @param $id
  * @param $date
@@ -249,7 +251,6 @@ function print_transactions( $user_id = 0, $month = null, $year = null, &$args =
 		$expense       = $row["expense"];
 		if ($expense > 0 or strlen($row["expense_text"])) $show_expense = true;
 		if (strlen($row['comment'])) $show_comment = true;
-
 	}
 	if (! $show_150) {
 		unset ($data["header"]["dur_150"]);
@@ -270,6 +271,7 @@ function print_transactions( $user_id = 0, $month = null, $year = null, &$args =
 		$args["hide_cols"]["expense_text"] = 1;
 	}
 	$args["checkbox_class"] = "working_days";
+	$data["totals"] = $counters;
 	$data = gui_table_args($data, "working_" . $user_id, $args);
 
 	if ($edit)
@@ -415,6 +417,23 @@ function add_activity( $user_id, $date, $start, $end, $project_id, $vol = true, 
 
 // $selector_name( $key, $data, $args)
 
+function handle_people_do($operation)
+{
+	$allowed_tables = array("im_working");
+	switch ($operation)
+	{
+		case "save_new":
+			$table_name = get_param("table_name", true);
+			if (! in_array($table_name, $allowed_tables))
+				die ("invalid table operation");
+			$result = data_save_new($table_name);
+			if ($result > 0) print "done." . $result;
+			break;
+	}
+	return "not handled";
+}
+
+
 
 /**
  * @param $operation
@@ -500,6 +519,21 @@ function handle_people_operation($operation)
 				print gui_button( "btn_cancel", "cancel_entity('" . get_url(1) . "', 'im_working', " . $project_id . ')', "delete" );
 			}
 			break;
+		default:
+			$result = "";
+			$args = [];
+			$args["selectors"] = array("user_id" => "gui_select_user", "project_id" => "gui_select_project");
+			if (function_exists($operation)) { $result .= $operation(); break; }
+			if (substr($operation, 0, 4) == "show") {
+				if (substr($operation, 5,3) == "add") {
+					$table_name = substr($operation, 9);
+					$result .= GemAddRow($table_name, "Add", $args);
+					print $result;
+					break;
+				}
+			}
+			return;
+
 	}
 }
 

@@ -6,8 +6,6 @@ if ( ! defined( 'ROOT_DIR' ) ) {
 	define( 'ROOT_DIR',  dirname(dirname( dirname( __FILE__)  ) ));
 }
 
-require_once(ROOT_DIR . "/niver/gui/inputs.php");
-
 // $ignore_list = array("search", "operation", "table_name", "id", "dummy");
 
 function data_parse_get($table_name, $ignore_list) {

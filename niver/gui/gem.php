@@ -57,7 +57,8 @@ function GemElement($table_name, $row_id, $args)
 	if ($title)
 		$result .= gui_header(1, $title, true, true) . " " . gui_label("id", $row_id);
 
-	$result .= GuiRowContent($table_name, $row_id, $args);
+	if (! ($row = GuiRowContent($table_name, $row_id, $args))) return null;
+	$result .= $row;
 
 	if (GetArg($args, "edit", false)) {
 		$result .= gui_button( "btn_save", "data_save_entity('" . $post . "', '$table_name', " . $row_id . ')', "save" );
@@ -112,7 +113,8 @@ function GemArray($rows_data, &$args, $table_id)
 //
 //		$result .= gui_button("btn_" . $button_text, $button_function, $button_text);
 //	}
-	$result .= gui_hyperlink("Add", add_to_url(array("operation" => "show_add_" . $table_id))) . " ";
+	if (GetArg($args, "add_button", true))
+		$result .= gui_hyperlink("Add", add_to_url(array("operation" => "show_add_" . $table_id))) . " ";
 
 	$post_file = GetArg($args, "post_file", null);
 	if ($post_file)

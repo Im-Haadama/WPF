@@ -70,6 +70,9 @@ msgstr "דמי משלוח"
 msgid "Select Supplier"
 msgstr "בחר ספק"
 
+msgid "invoices"
+msgstr "חשבוניות"
+
 msgid "Add invoice"
 msgstr "הוסף חשבונית"
 
@@ -165,6 +168,9 @@ msgstr "המשימות שלי"
 
 msgid "My teams"
 msgstr "צוותים שלי"
+
+msgid "settings"
+msgstr "הגדרות"
 
 msgid "Edit staff"
 msgstr "עריכת צוות"
@@ -377,7 +383,7 @@ msgstr "סוג מסמך"
 msgid "Occasional supplier"
 msgstr "ספק מזדמן"
 
-msgid "Net amount"
+msgid "amount without taxes"
 msgstr "סכום ללא מיסים"
 
 msgid "Invoice file"
@@ -524,3 +530,9 @@ msgstr "מסלולי חלוקה"
 
 msgid "create missions"
 msgstr "צור משימות"
+
+msgid "Today routes"
+msgstr "חלוקות היום"
+
+msgid "This week routes"
+msgstr "חלוקות השבוע"

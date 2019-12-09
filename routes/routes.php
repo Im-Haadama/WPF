@@ -18,6 +18,14 @@ function handle_routes_do($operation)
 	$allowed_tables = array( "im_missions");
 	switch ($operation)
 	{
+		case "add_zone_times":
+			$path_id= get_param("path_id", true);
+			$zones = get_param_array("zones", true, null, ":");
+			$time = get_param("time", true);
+			if (path_add_zone($path_id, $zones, $time))
+				return "done";
+			return;
+
 		case "delete":
 			$type = get_param("type");
 			switch ($type)
@@ -34,7 +42,7 @@ function handle_routes_do($operation)
 			return create_missions($path_ids);
 	    case "save_path_times":
 	    	$path_id = get_param("path_id", true);
-	    	if (save_path_times($path_id, get_param_array("params", true))) print "done";
+	    	if (path_save_times($path_id, get_param_array("params", true))) print "done";
 	    	return "done";
         case "save_new";
             $table_name = get_param("table_name", true);
@@ -76,6 +84,9 @@ function handle_routes_show($operation, $debug = false)
 {
 	$result = "";
 	switch ( $operation ) {
+		case "show_add_zone_times":
+			$result .= show_add_zone_times();
+			return $result;
         case "show_add_im_paths":
             $result .= show_add_paths();
             return $result;
@@ -88,6 +99,9 @@ function handle_routes_show($operation, $debug = false)
             $path_id = get_param("path_id", true);
             $result .= show_path($path_id);
             return $result;
+
+		case "show_today_missions":
+			return show_today_missions();
 
 		case "show_missions":
 			$id = get_param("id", true, null);
@@ -968,6 +982,16 @@ function path_get_zones($path_id, $sorted = true)
 	return rtrim($result, ", ");
 }
 
+function path_add_zone($path_id, $zones, $time)
+{
+	$time_zones = path_get_zone_times($path_id);
+	foreach($zones as $zone)
+		$time_zones[$zone] = $time;
+	$s = serialize($time_zones);
+	$sql = "update im_paths set zones_times = '" . $s . "' where id = " . $path_id;
+	return sql_query($sql);
+}
+
 function path_get_all()
 {
 	return sql_query_array_scalar("select id from im_paths");
@@ -1022,6 +1046,7 @@ function path_get_zone_time_table($path_id, $args)
 	}
 	array_unshift($table, array("Id", "Zone name", "Zone times"));
 	$args["add_checkbox"] = true;
+	$args["add_button"] = false;
 	return GemArray($table, $args, "zone_times");
 }
 
@@ -1046,6 +1071,12 @@ function show_path($path_id)
 
     print gui_br();
 
+    $result .= gui_table_args(array("header" => array("zone_id" => "Zone", "zone_times" => "Times"),
+	    array("zone_id" => gui_select_zones("zone_id", null, array("edit"=> true)),
+	          "zone_times" => GuiInput("zone_time", "13-16"))));
+
+    $result .= gui_button("btn_add_zone_times", "add_zone_times(" . $path_id . ")", "Add");
+
     return $result;
 }
 
@@ -1055,7 +1086,7 @@ function show_path($path_id)
  *
  * @return bool|mysqli_result|null
  */
-function save_path_times($path_id, $params)
+function path_save_times($path_id, $params)
 {
 	$path_times = array();
 	for ($i = 0; $i < count($params); $i += 2) {
@@ -1064,7 +1095,7 @@ function save_path_times($path_id, $params)
 		$path_times[$zone_id] = $times;
 	}
 	$sql =  "update im_paths set zones_times = " . quote_text(escape_string(serialize($path_times))) . ' where id = ' . $path_id ;
-	 return sql_query($sql);
+	return sql_query($sql);
 }
 
 
@@ -1077,4 +1108,28 @@ function show_add_paths()
 	$args["selectors"] = array("zones" => "gui_select_zones");
 	$args["mandatory_fields"] = array("description", "zones");
 	return GemAddRow("im_paths", "Add", $args);
+}
+
+//function show_add_zone_times()
+//{
+//	$args = [];
+////	$args["selectors"] = array("zones" => "gui_select_zones");
+////	$args["mandatory_fields"] = array("description", "zones");
+//	return GemAddRow("im_paths", "Add", $args);
+//}
+
+
+function show_today_missions()
+{
+	$missions = sql_query_array_scalar("select id from im_missions where date = " . date("Y-m-d"));
+	if (count($missions) == 1) return show_missions("id = $missions");
+	if (count($missions) == 0) return im_translate("No missions today");
+}
+
+function zone_get_name( $id ) {
+	if (! ($id > 0)){
+		print sql_trace();
+		die ("bad zone id");
+	}
+	return sql_query_single_scalar( "SELECT zone_name FROM wp_woocommerce_shipping_zones WHERE zone_id = " . $id );
 }
