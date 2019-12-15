@@ -1,5 +1,6 @@
 <?php
 
+return;
 error_reporting( E_ALL );
 ini_set( 'display_errors', 'on' );
 
@@ -12,9 +13,9 @@ if ( ! defined( 'ROOT_DIR' ) ) {
 
 require_once(ROOT_DIR . '/im-config.php');
 require_once( ROOT_DIR . "/init.php" );
-require_once (ROOT_DIR . '/niver/data/sql.php');
-require_once (ROOT_DIR . '/niver/wp.php');
-require_once (ROOT_DIR . '/focus/focus_class.php');
+require_once( ROOT_DIR . '/niver/data/sql.php' );
+require_once( ROOT_DIR . '/niver/wp.php' );
+require_once( ROOT_DIR . '/focus/focus_class.php' );
 
 // require_once( TOOLS_DIR . '/im_tools.php' );
 
@@ -25,9 +26,9 @@ function task_focus()
 	global $tasks_scripts;
 
 	init($tasks_scripts, $style_file);
-	require_once(ROOT_DIR . "/focus/gui.php");
-	require_once(ROOT_DIR . '/org/gui.php');
-	require_once(ROOT_DIR . "/routes/gui.php");
+	require_once( ROOT_DIR . "/focus/gui.php" );
+	require_once( ROOT_DIR . '/org/gui.php' );
+	require_once( ROOT_DIR . "/routes/gui.php" );
 
 	$operation = get_param("operation", false, "focus_main");
 

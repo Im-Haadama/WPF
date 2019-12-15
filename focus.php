@@ -1,8 +1,5 @@
 <?php
 
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
-
 if ( ! defined( "ROOT_DIR" ) ) {
 	define( 'ROOT_DIR',  dirname( __FILE__ ) ) ;
 }
@@ -10,16 +7,17 @@ if ( ! defined( "ROOT_DIR" ) ) {
 require_once(ROOT_DIR . '/wp-config.php');
 require_once(ROOT_DIR . '/im-config.php');
 
-require_once(ROOT_DIR . "/niver/gui/gem.php");
+require_once( ROOT_DIR . "/niver/gui/gem.php" );
 
 require_once( "focus/focus_class.php" );
 $operation = get_param("operation", false, "focus_main");
 
-//im_background_processing();
-
-// print "parent contiunes";
-
 require_once(ROOT_DIR . "/init.php" );
+
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
+if (! get_user_id(true)) return;
 
 if (handle_focus_do($operation) !== "not handled") return;
 
@@ -71,7 +69,6 @@ print '<div id="search_result"></div>';
 
 print "<br/>"; // The space of header.
 
-if (! get_user_id(true)) return;
 if (! focus_check_user()) return;
 
 if ($operation) {

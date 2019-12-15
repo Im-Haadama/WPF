@@ -1,4 +1,7 @@
 <?php
+
+return;
+
 /**
  * Created by PhpStorm.
  * User: agla

@@ -83,7 +83,7 @@ msgid "Week"
 msgstr "שבוע"
 
 msgid "Creating supply for"
-msgstr "יוצר הספקה לספק"
+msgstr "יוצר אספקה לספק"
 
 msgid "Document number"
 msgstr "מספר מסמך"
@@ -450,10 +450,10 @@ msgstr "תעריף"
 
 # supply
 msgid "Supply"
-msgstr "הספקה"
+msgstr "אספקה"
 
 msgid "Supply management"
-msgstr "ניהול הספקות"
+msgstr "ניהול אספקות"
 
 msgid "Supplies to get"
 msgstr "סחורה בדרך"
@@ -507,10 +507,10 @@ msgid "No permissions"
 msgstr "אין הרשאות"
 
 msgid "Supplies done"
-msgstr "הספקות שהתקבלו"
+msgstr "אספקות שהתקבלו"
 
 msgid "Create supply"
-msgstr "צור הספקה"
+msgstr "צור אספקה"
 
 msgid "alerts"
 msgstr "התראות"
@@ -536,3 +536,34 @@ msgstr "חלוקות היום"
 
 msgid "This week routes"
 msgstr "חלוקות השבוע"
+
+# Status
+msgid "Store status"
+msgstr "תמונת מצב"
+
+msgid "Orders"
+msgstr "הזמנות"
+
+msgid "Count"
+msgstr "מספר"
+
+msgid "Awaiting document"
+msgstr "ממתין לתיעוד"
+
+msgid "Awaiting shipment"
+msgstr "ממתין למשלוח"
+
+msgid "Pending"
+msgstr "ממתין לאישור"
+
+msgid "Processing"
+msgstr "בטיפול"
+
+msgid "New"
+msgstr "חדש"
+
+msgid "Sent"
+msgstr "נשלח"
+
+msgid "Supplies in status"
+msgstr "הספקות במצב"

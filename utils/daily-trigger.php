@@ -24,7 +24,7 @@ require_once( ROOT_DIR . "/niver/system/backup.php" );
 if (0)
 	require_once( ROOT_DIR . "/niver/gui/inputs.php" );
 else
-	require_once(ROOT_DIR . "/niver/gui/text_inputs.php");
+	require_once( ROOT_DIR . "/niver/gui/text_inputs.php" );
 
 print header_text( false, true, false );
 

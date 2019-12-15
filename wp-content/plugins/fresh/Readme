@@ -1,0 +1,7 @@
+Classes
+-=-=-=-
+
+Fresh - main plugin class. Loads other classes.
+Fresh_Status - status panel (shown by shortcode).
+Fresh_Supplies - handle supplies
+Fresh_Orders - handle orders

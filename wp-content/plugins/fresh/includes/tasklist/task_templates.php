@@ -1,0 +1,32 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: agla
+ * Date: 15/10/17
+ * Time: 08:01
+ */
+
+if ( ! defined( "FRESH_INCLUDES" ) ) {
+	define( 'FRESH_INCLUDES', dirname( dirname( dirname( __FILE__ ) ) ) );
+}
+
+require_once( FRESH_INCLUDES . "/niver/data/sql.php" );
+require_once( FRESH_INCLUDES . "/niver/fund.php" );
+require_once( FRESH_INCLUDES . "/fresh/people/people.php" );
+require_once( FRESH_INCLUDES . '/niver/gui/window.php' );
+
+
+$operation = get_param( "operation" );
+
+switch ( $operation ) {
+	case "cancel":
+		$id = get_param( "id" );
+		if ( ! is_numeric( $id ) ) {
+			print "must send numeric id to cancel";
+			die( 1 );
+		}
+		sql_query( "DELETE FROM im_task_templates WHERE " .
+		           " id = " . $id );
+		redirect_back();
+		break;
+}
