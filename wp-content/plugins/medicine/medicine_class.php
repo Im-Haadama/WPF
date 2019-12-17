@@ -4,13 +4,13 @@ if ( ! defined( 'ROOT_DIR' ) ) {
 	define( 'ROOT_DIR',  dirname( dirname( __FILE__)  ) );
 }
 
-require_once( ROOT_DIR . "/niver/web.php" );
-require_once( ROOT_DIR . '/niver/gui/input_data.php' );
-require_once( ROOT_DIR . "/niver/fund.php" );
-require_once( ROOT_DIR . "/niver/gui/gem.php" );
-require_once( ROOT_DIR . "/niver/data/data.php" );
+require_once( ROOT_DIR . "/core/web.php" );
+require_once( ROOT_DIR . '/core/gui/input_data.php' );
+require_once( ROOT_DIR . "/core/fund.php" );
+require_once( ROOT_DIR . "/core/gui/gem.php" );
+require_once( ROOT_DIR . "/core/data/data.php" );
 require_once( ROOT_DIR . '/focus/Tasklist.php' );
-require_once( ROOT_DIR . '/niver/gui/gem.php' );
+require_once( ROOT_DIR . '/core/gui/gem.php' );
 require_once( ROOT_DIR . '/org/people/people.php' );
 require_once( ROOT_DIR . '/focus/gui.php' );
 
@@ -20,7 +20,7 @@ function handle_medicine_do($operation)
 {
 // 	$allowed_tables = array("im_company", "im_tasklist", "im_task_templates");
 	$header_args = [];
-	$header_args["scripts"] = array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/vendor/sorttable.js" );
+	$header_args["scripts"] = array( "/core/gui/client_tools.js", "/core/data/data.js", "/vendor/sorttable.js" );
 
 	switch ($operation) { // Handle operation that don't need page header.
 		///////////////////////////

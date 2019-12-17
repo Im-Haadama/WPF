@@ -8,10 +8,10 @@ if ( ! defined( "FRESH_INCLUDES" ) ) {
 }
 require_once(FRESH_INCLUDES . '/im-config.php');
 require_once(FRESH_INCLUDES . "/init.php" );
-require_once( FRESH_INCLUDES . "/niver/web.php" );
+require_once( FRESH_INCLUDES . "/core/web.php" );
 require_once( "suppliers.php" );
-require_once( FRESH_INCLUDES . '/niver/gui/gem.php' );
-require_once( FRESH_INCLUDES . "/niver/data/data.php" );
+require_once( FRESH_INCLUDES . '/core/gui/gem.php' );
+require_once( FRESH_INCLUDES . "/core/data/data.php" );
 
 $operation = get_param("operation", false, null);
 if ($operation) {

@@ -12,7 +12,7 @@ if ( ! defined( "FRESH_INCLUDES" ) ) {
 require_once( FRESH_INCLUDES . "/fresh/multi-site/imMulti-site.php" );
 // header( ImMultiSite::CORS() );
 
-require_once( FRESH_INCLUDES . "/niver/fund.php" );
+require_once( FRESH_INCLUDES . "/core/fund.php" );
 require_once( FRESH_INCLUDES . "/focus/Tasklist.php" );
 
 require_once( FRESH_INCLUDES . "/init.php" );
@@ -28,7 +28,7 @@ switch ( $operation ) {
 	case "delivered": // Done
 		$ids = get_param_array( "ids" );
 		foreach ( $ids as $id ) {
-			$T = new Tasklist( $id );
+			$T = new Focus_Tasklist( $id );
 			$T->ended();
 			print "delivered";
 		}
@@ -36,7 +36,7 @@ switch ( $operation ) {
 	case "end":
 		$task_id = get_param( "id" );
 		print $task_id . "<br/>";
-		$T       = new Tasklist( $task_id );
+		$T       = new Focus_Tasklist( $task_id );
 		$T->ended();
 //		if ( is_array( $T->getRepeatFreq() ) ) {
 		create_tasks( $T->getRepeatFreq() );
@@ -53,7 +53,7 @@ switch ( $operation ) {
 		break;
 	case "postpone":
 		$task_id = get_param( "id" );
-		$T       = new Tasklist( $task_id );
+		$T       = new Focus_Tasklist( $task_id );
 		$T->Postpone();
 		create_tasks( null, false );
 		redirect_back();

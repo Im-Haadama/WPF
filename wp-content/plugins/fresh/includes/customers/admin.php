@@ -2,7 +2,7 @@
 
 require_once( "../r-shop_manager.php" );
 
-print header_text(false, true, true, array('/vendor/sorttable.js', '/fresh/admin/data.js', '/niver/gui/client_tools.js'));
+print header_text(false, true, true, array('/vendor/sorttable.js', '/fresh/admin/data.js', '/core/gui/client_tools.js'));
 
 $user_id = get_param("user_id", false, null);
 

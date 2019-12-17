@@ -6,7 +6,7 @@
  * Time: 07:37
  */
 include_once( "../r-shop_manager.php" );
-require_once( FRESH_INCLUDES . '/niver/gui/inputs.php' );
+require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 
 print header_text( true );
 ?>

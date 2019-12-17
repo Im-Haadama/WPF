@@ -11,10 +11,10 @@ if ( ! defined( 'FRESH_INCLUDES' ) ) {
 }
 
 require_once(FRESH_INCLUDES . '/im-config.php');
-require_once( FRESH_INCLUDES . '/niver/gui/inputs.php' );
+require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 $edit = get_param("edit", false, false);
 
-print header_text(true, true, true, array("/org/people/people.js", "/niver/gui/client_tools.js"));
+print header_text(true, true, true, array("/org/people/people.js", "/core/gui/client_tools.js"));
 $user_id = get_user_id(true);
 
 if (! user_can($user_id, 'working_hours_all')) {

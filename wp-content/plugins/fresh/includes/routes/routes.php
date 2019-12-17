@@ -1,6 +1,6 @@
 <?php
 
-require_once( FRESH_INCLUDES . "/niver/data/dom.php" );
+require_once( FRESH_INCLUDES . "/core/data/dom.php" );
 require_once( FRESH_INCLUDES . "/fresh/orders/Order.php" );
 require_once( FRESH_INCLUDES . "/fresh/suppliers/Supplier.php" );
 require_once( FRESH_INCLUDES . "/focus/Tasklist.php" );
@@ -248,7 +248,7 @@ function delivered($site_id, $type, $id, $debug = false)
                 return true;
             break;
         case "tasklist":
-            $t = new Tasklist( $id );
+            $t = new Focus_Tasklist( $id );
             $t->Ended();
             return true;
             break;
@@ -720,7 +720,7 @@ function print_task( $id ) {
 
 	array_push( $fields, $ref );
 
-	$T = new Tasklist( $id );
+	$T = new Focus_Tasklist( $id );
 
 	array_push( $fields, "" ); // client number
 	array_push( $fields, $T->getLocationName() ); // name

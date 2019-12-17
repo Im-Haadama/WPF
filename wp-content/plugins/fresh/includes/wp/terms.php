@@ -7,12 +7,6 @@
  */
 //print header_text(false);
 
-if ( ! defined( 'FRESH_INCLUDES' ) ) {
-	define( 'FRESH_INCLUDES', dirname(dirname(dirname( __FILE__ ) ) )) ;
-}
-//print FRESH_INCLUDES;
-// require_once(  . '/wp-admin/includes/taxonomy.php' );
-
 function terms_add_category( $object_id, $term ) {
 	wp_set_object_terms( $object_id, $term, "product_cat", true );
 }

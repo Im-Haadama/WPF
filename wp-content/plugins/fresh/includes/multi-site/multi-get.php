@@ -7,7 +7,7 @@ ini_set( 'display_errors', 'on' );
 if ( ! defined( 'FRESH_INCLUDES' ) ) define( 'FRESH_INCLUDES', dirname(dirname( dirname( __FILE__ ) ) ));
 
 require_once( FRESH_INCLUDES . "/im-config.php" ); // requires wp-config.
-require_once( FRESH_INCLUDES . "/niver/fund.php" ); // requires wp-config.
+require_once( FRESH_INCLUDES . "/core/fund.php" ); // requires wp-config.
 require_once( FRESH_INCLUDES . "/fresh/account/account.php" );
 require_once( FRESH_INCLUDES . '/fresh/invoice4u/invoice.php' );
 

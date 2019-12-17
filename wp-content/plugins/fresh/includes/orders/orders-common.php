@@ -12,7 +12,7 @@ if ( ! defined( 'FRESH_INCLUDES' ) ) {
 	define( 'FRESH_INCLUDES', dirname( dirname( __FILE__ ) ) );
 }
 
-require_once( FRESH_INCLUDES . "/niver/fund.php" );
+require_once( FRESH_INCLUDES . "/core/fund.php" );
 require_once( FRESH_INCLUDES . "/catalog/bundles.php" );
 require_once( FRESH_INCLUDES . '/routes/maps/build-path.php' );
 require_once( FRESH_INCLUDES . '/account/gui.php' );
@@ -22,7 +22,7 @@ require_once( FRESH_INCLUDES . '/orders/Order.php' );
 require_once( FRESH_INCLUDES . '/catalog/Basket.php' );
 require_once( FRESH_INCLUDES . '/invoice4u/invoice.php' );
 require_once( FRESH_INCLUDES . '/multi-site/imMulti-site.php' );
-require_once( FRESH_INCLUDES . '/niver/web.php');
+require_once( FRESH_INCLUDES . '/core/web.php' );
 require_once( FRESH_INCLUDES . '/routes/gui.php');
 
 

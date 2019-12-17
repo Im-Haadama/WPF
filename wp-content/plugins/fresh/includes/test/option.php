@@ -7,7 +7,7 @@ if ( ! defined( 'FRESH_INCLUDES' ) ) {
 }
 require_once(FRESH_INCLUDES . '/im-config.php');
 
-require_once( FRESH_INCLUDES . '/niver/wp.php' );
+require_once( FRESH_INCLUDES . '/core/wp.php' );
 require_once( FRESH_INCLUDES . "/init.php" );
 
 init();

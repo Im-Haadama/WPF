@@ -16,7 +16,7 @@ require_once(FRESH_INCLUDES . '/wp-config.php');
 require_once(FRESH_INCLUDES . '/im-config.php');
 require_once( FRESH_INCLUDES . "/init.php" );
 
-require_once( FRESH_INCLUDES . '/niver/gui/inputs.php' );
+require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 
 print header_text( false );
 
@@ -25,7 +25,7 @@ $supplier_id = get_param("supplier_id");
 ?>
 <html dir="rtl" lang="he">
 <header>
-    <script type="text/javascript" src="/niver/gui/client_tools.js"></script>
+    <script type="text/javascript" src="/core/gui/client_tools.js"></script>
     <script>
         function moveNext(prod_id) {
             if (window.event.keyCode !== 13) return;

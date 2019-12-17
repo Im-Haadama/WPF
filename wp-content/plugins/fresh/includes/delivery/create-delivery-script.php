@@ -1,6 +1,6 @@
 <?php
 require_once( "../multi-site/imMulti-site.php" );
-require_once( FRESH_INCLUDES . '/niver/gui/inputs.php' );
+require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 require_once( "../../wp-includes/pluggable.php" );
 require_once( "../account/account.php" );
 

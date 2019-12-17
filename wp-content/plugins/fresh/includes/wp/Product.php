@@ -6,7 +6,7 @@
  * Date: 18/05/18
  * Time: 08:01
  */
-require_once( FRESH_INCLUDES . "/niver/options.php" );
+require_once( FRESH_INCLUDES . "/core/options.php" );
 require_once( FRESH_INCLUDES . "/supplies/Supply.php" );
 
 class Product {

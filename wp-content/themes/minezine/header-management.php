@@ -19,7 +19,7 @@
   <meta name="viewport" content="width=device-width" />
 <?php if ( ! function_exists( '_wp_render_title_tag' ) ) { ?><title><?php wp_title( '|', true, 'right' ); ?></title><?php } ?> 
   <link rel="pingback" href="<?php bloginfo( 'pingback_url' ); ?>"> 
-<?php wp_head(); ?>
+<?php wp_head();  ?>
     <noscript><img height="1" width="1" style="display:none"
                    src="https://www.facebook.com/tr?id=470498869809213&ev=PageView&noscript=1"
         /></noscript>
@@ -75,7 +75,7 @@
     <div class="menu-box">
       <div class="navigation-pattern"></div>
       <a class="link-home" href="<?php echo esc_url( home_url( '/' ) ); ?>"></a>
-<?php wp_nav_menu( array( 'menu'=>'management', 'theme_location'=> 'main-fresh' ) ); ?>
+<?php wp_nav_menu( array( 'menu'=> Focus_Views::instance()->get_nav(), 'theme_location'=> 'main-fresh' ) ); ?>
 
     </div>
 <?php } ?>    

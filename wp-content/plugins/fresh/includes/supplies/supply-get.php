@@ -8,12 +8,12 @@
 
 require '../r-shop_manager.php';
 require_once( "Supply.php" );
-require_once( FRESH_INCLUDES . '/niver/gui/inputs.php' );
+require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 require_once( "../account/gui.php" );
 require_once("../catalog/gui.php");
 
 print header_text( false, true, true,
-    array("/vendor/sorttable.js",	"/niver/gui/client_tools.js")
+    array("/vendor/sorttable.js",	"/core/gui/client_tools.js")
 );
 
 $print = false;
@@ -38,7 +38,7 @@ if ( isset( $_GET["business_id"] ) ) {
 $s = new Supply( $id );
 
 ?>
-<script type="text/javascript" src="/niver/gui/client_tools.js"></script>
+<script type="text/javascript" src="/core/gui/client_tools.js"></script>
 <script type="text/javascript" src="supply.js"></script>
 
 <script>
@@ -141,7 +141,7 @@ print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_missio
 	?>
     <!--    <input id="itm_" list="prods">-->
 </div>
-<script type="text/javascript" src="/niver/gui/client_tools.js"></script>
+<script type="text/javascript" src="/core/gui/client_tools.js"></script>
 <script type="text/javascript" src="supply.js"></script>
 
 <script>

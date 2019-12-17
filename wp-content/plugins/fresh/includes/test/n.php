@@ -5,7 +5,7 @@ ini_set( 'display_errors', 'on' );
 
 require_once( "../r-shop_manager.php" );
 
-require_once( "../../niver/gui/sql_table.php" );
+require_once( "../../core/gui/sql_table.php" );
 
 require_once( FRESH_INCLUDES . "/init.php" );
 

@@ -5,14 +5,8 @@
  * Date: 27/01/19
  * Time: 19:05
  */
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
 
-if ( ! defined( "FRESH_INCLUDES" ) ) {
-	define( 'FRESH_INCLUDES', dirname(dirname( dirname( __FILE__ ) ) ) );
-}
-
-require_once( FRESH_INCLUDES . '/niver/gui/text_inputs.php' );
+require_once( FRESH_INCLUDES . '/core/gui/text_inputs.php' );
 require_once(FRESH_INCLUDES . '/im-config.php');
 require_once( FRESH_INCLUDES . "/init.php" );
 require_once( FRESH_INCLUDES . "/fresh/delivery/missions.php" );

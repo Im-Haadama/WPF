@@ -11,7 +11,7 @@ if ( ! defined( 'FRESH_INCLUDES' ) ) {
 }
 
 require_once( FRESH_INCLUDES . '/orders/orders-common.php' );
-require_once( FRESH_INCLUDES . '/niver/gui/inputs.php' );
+require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 
 #############################
 # legacy_users              #

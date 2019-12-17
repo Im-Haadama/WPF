@@ -212,7 +212,54 @@ class Fresh {
 
 			case "update":
 				return handle_data_operation($operation);
+
+			case "new_customer":
+				$order_id = get_param("order_id", true);
+				return self::new_customer($order_id);
+
+			case "show_order":
+
 		}
+	}
+
+	static function new_customer($order_id)
+	{
+		$result = "";
+		$result .= gui_header( 1, "לקוח חדש" );
+
+		$O         = new Order( $order_id );
+		$client_id = $O->getCustomerId();
+
+
+		$result .= "1) צור קשר טלפוני עם הלקוח. עדכן אותו שהתקבלה ההזמנה.<br/>";
+		$result .= "2) אמת את השם לחשבונית.<br/>";
+		$result .= "3) אמת את הכתובת למשלוח. בדוק האם יש אינטרקום או קוד לגישה לדלת.<br/>";
+
+		$step      = 4;
+
+		$invoice_client_id = get_user_meta( $client_id, 'invoice_id', 1 );
+
+		$result .= gui_table_args( array(
+			$O->info_right_box_input( "shipping_city", true, "עיר" ),
+			$O->info_right_box_input( "shipping_address_1", true, "רחוב ומספר" ),
+			$O->info_right_box_input( "shipping_address_2", true, "כניסה, קוד אינטרקום, קומה ומספר דירה" )
+		) );
+
+		if ( ! $invoice_client_id ) {
+			$result .=$step ++ . ") לחץ על צור משתמש - במערכת invoice4u";
+			$result .=gui_button( "btn_create_user", "create_user()", "צור משתמש" );
+			$result .=gui_button( "btn_update_user", "update_user()", "קשר משתמש" );
+			$result .="<br/>";
+		}
+
+		$result .=$step ++ . ") קח/י פרטי תשלום" . gui_hyperlink( "כאן", "https://private.invoice4u.co.il/he/Customers/CustomerAddNew.aspx?type=edit&id=" . $client_id . "#tab-tokens" ) . "<br/>";
+		$result .="<br/>";
+
+		$result .=$O->infoBox();
+
+		$result .= GuiHyperlink("לפתיחת ההזמנה", add_to_url(array("operation" => "show_order", "order_id" => $order_id)));
+
+		print $result;
 	}
 	/**
 	 * Include required core files used in admin and on the frontend.
@@ -222,11 +269,12 @@ class Fresh {
 		 * Class autoloader.
 		 */
 		require_once FRESH_INCLUDES . 'class-fresh-autoloader.php';
-		require_once FRESH_INCLUDES . 'niver/fund.php';
-		require_once FRESH_INCLUDES . 'niver/data/sql.php';
+		require_once FRESH_INCLUDES . 'core/fund.php';
+		require_once FRESH_INCLUDES . 'core/data/sql.php';
 		require_once FRESH_INCLUDES . 'supplies/Supply.php';
 		require_once FRESH_INCLUDES . 'orders/orders.php';
-		require_once FRESH_INCLUDES . 'niver/data/data.php';
+		require_once FRESH_INCLUDES . 'core/data/data.php';
+		require_once FRESH_INCLUDES . 'core/wp.php';
 
 		/**
 		 * Interfaces.

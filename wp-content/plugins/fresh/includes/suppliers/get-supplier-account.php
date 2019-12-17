@@ -7,7 +7,7 @@ if ( ! defined( "FRESH_INCLUDES" ) ) {
 }
 
 
-require_once( FRESH_INCLUDES . '/niver/gui/sql_table.php' );
+require_once( FRESH_INCLUDES . '/core/gui/sql_table.php' );
 
 $supplier_id = get_param( "supplier_id", true );
 

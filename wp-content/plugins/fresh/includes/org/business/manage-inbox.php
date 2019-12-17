@@ -13,9 +13,9 @@ if ( ! defined( "FRESH_INCLUDES" ) ) {
 error_reporting( E_ALL );
 ini_set( 'display_errors', 'on' );
 
-require_once( FRESH_INCLUDES . '/niver/data/attachment_folder.php' );
+require_once( FRESH_INCLUDES . '/core/data/attachment_folder.php' );
 
-require_once( FRESH_INCLUDES . '/niver/gui/inputs.php' );
+require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 require_once( FRESH_INCLUDES . '/fresh-public/suppliers/Supplier.php' );
 require_once( FRESH_INCLUDES . '/org/business/business.php' );
 
@@ -69,7 +69,7 @@ if ( isset( $operation ) ) {
 }
 
 ?>
-    <script type="text/javascript" src="/niver/gui/client_tools.js"></script>
+    <script type="text/javascript" src="/core/gui/client_tools.js"></script>
 
     <script>
         function insert_invoice(index, supplier_id) {

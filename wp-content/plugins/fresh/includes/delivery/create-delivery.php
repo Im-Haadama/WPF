@@ -4,7 +4,7 @@ include_once( "delivery.php" );
 
 print header_text( false );
 
-print load_scripts(array("/niver/gui/client_tools.js", "/niver/data/data.js"));
+print load_scripts(array("/core/gui/client_tools.js", "/core/data/data.js"));
 
 $script_file = ImMultiSite::LocalSiteTools() . "/fresh/delivery/create-delivery-script.php?i=1";
 

@@ -16,7 +16,7 @@ if ($operation) {
 }
 
 	print header_text( true );
-	print load_scripts(array("/niver/data/data.js", "/niver/gui/client_tools.js"));
+	print load_scripts(array("/core/data/data.js", "/core/gui/client_tools.js"));
 
 ?>
 <script>

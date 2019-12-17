@@ -14,7 +14,7 @@ $O         = new Order( $order_id );
 $client_id = $O->getCustomerId();
 
 ?>
-<script type="text/javascript" src="/niver/gui/client_tools.js"></script>
+<script type="text/javascript" src="/core/gui/client_tools.js"></script>
 <script type="text/javascript" src="/fresh/tools.js"></script>
 <body onload="update_display();">
 

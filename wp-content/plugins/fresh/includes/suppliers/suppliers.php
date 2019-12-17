@@ -62,7 +62,7 @@ function handle_supplier_operation($operation, $args = [])
 			print "$operation ". im_translate("not handled");
 	}
 	$args = [];
-//	$args["script_files"] = array("/niver/gui/client_tools.js", "/niver/data/data.js");
+//	$args["script_files"] = array("/core/gui/client_tools.js", "/core/data/data.js");
 //	print HeaderText($args);
 	print $result;
 

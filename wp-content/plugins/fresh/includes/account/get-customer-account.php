@@ -15,7 +15,7 @@ require_once( "account.php" );
 require_once( "../multi-site/imMulti-site.php" );
 require_once( '../invoice4u/invoice.php' );
 require_once( "../account/gui.php" );
-require_once( FRESH_INCLUDES . '/niver/gui/inputs.php' );
+require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 
 // $start_time =  microtime(true);
 
@@ -290,7 +290,7 @@ if ( $manager ) {
 ?>
 <br>
 
-<script type="text/javascript" src="/niver/gui/client_tools.js"></script>
+<script type="text/javascript" src="/core/gui/client_tools.js"></script>
 
 <script>
     function save_payment_method() {

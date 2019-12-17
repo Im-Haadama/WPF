@@ -50,3 +50,4 @@ class Fresh_Shortcode_Management {
 		print Fresh::instance()->handle_operation($operation);
 	}
 }
+

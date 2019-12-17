@@ -7,7 +7,7 @@ if ( ! defined( 'FRESH_INCLUDES' ) ) {
 
 // Read configuartion
 require_once(FRESH_INCLUDES . "/im-config.php"); // requires wp-config.
-require_once( FRESH_INCLUDES . "/niver/fund.php" ); // requires wp-config.
+require_once( FRESH_INCLUDES . "/core/fund.php" ); // requires wp-config.
 
 // Connect to DB
 boot_no_login('im-haadama', 'im-haadama');

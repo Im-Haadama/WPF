@@ -27,14 +27,14 @@ if ( ! defined( "FRESH_INCLUDES" ) ) {
 	define( 'FRESH_INCLUDES', dirname( dirname( dirname( __FILE__ ) ) ) );
 }
 
-require_once( FRESH_INCLUDES . '/niver/PivotTable.php' );
-require_once( FRESH_INCLUDES . '/niver/gui/input_data.php' );
+require_once( FRESH_INCLUDES . '/core/PivotTable.php' );
+require_once( FRESH_INCLUDES . '/core/gui/input_data.php' );
 
 $this_url = "project_admin.php";
 $entity_name = "חשבונית";
 $table_name = "im_projects";
 
-print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/niver/data/data.js",
+print header_text( false, true, true, array( "/core/gui/client_tools.js", "/core/data/data.js",
 	"/vendor/sorttable.js") );
 
 $year = get_param( "year" );
@@ -96,7 +96,7 @@ function handle_project_operation($operation)
 			print GemElement("im_projects", $id, $args);
 
 			$args["project_id"] = $id;
-			print active_tasks($args);
+			print Focus_Views::active_tasks($args);
 			break;
 
 		default:

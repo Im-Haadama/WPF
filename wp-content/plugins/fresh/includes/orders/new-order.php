@@ -5,7 +5,7 @@
  * Date: 31/05/18
  * Time: 17:29
  */
-require_once( FRESH_INCLUDES . "/niver/gui/inputs.php" );
+require_once( FRESH_INCLUDES . "/core/gui/inputs.php" );
 require_once( "../account/gui.php" );
 
 global $pos;

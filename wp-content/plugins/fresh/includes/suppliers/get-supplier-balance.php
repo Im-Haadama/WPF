@@ -7,10 +7,10 @@
  */
 
 require( '../r-shop_manager.php' );
-print header_text( false, true, is_rtl(), array("/niver/data/data.js") );
+print header_text( false, true, is_rtl(), array("/core/data/data.js") );
 // require_once( "account.php" );
 
-print header_text(false, true, true, array("suppliers.js", "/niver/gui/client_tools.js"));
+print header_text(false, true, true, array("suppliers.js", "/core/gui/client_tools.js"));
 
 $operation = get_param("operation", false, null);
 

@@ -16,7 +16,7 @@ require_once(FRESH_INCLUDES . '/wp-config.php');
 require_once(FRESH_INCLUDES . '/im-config.php');
 
 require_once( "orders-common.php" );
-require_once( FRESH_INCLUDES . '/niver/gui/inputs.php' );
+require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 require_once( "Order.php" );
 
 if ( ! defined( "STORE_DIR" ) ) {

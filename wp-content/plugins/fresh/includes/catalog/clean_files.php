@@ -4,7 +4,7 @@ error_reporting( E_ALL );
 ini_set( 'display_errors', 'on' );
 
 define('FRESH_INCLUDES', dirname(dirname(dirname(__FILE__))));
-require_once( "../../niver/gui/inputs.php" );
+require_once( "../../core/gui/inputs.php" );
 
 $result = array();
 $dir = '/home/fruityco/public_html/wp-content/uploads/2018';

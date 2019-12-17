@@ -10,10 +10,10 @@ if ( ! defined( "FRESH_INCLUDES" ) ) {
 	define( 'FRESH_INCLUDES', dirname( dirname( dirname( __FILE__ ) ) ) );
 }
 
-require_once( FRESH_INCLUDES . "/niver/data/sql.php" );
-require_once( FRESH_INCLUDES . "/niver/fund.php" );
+require_once( FRESH_INCLUDES . "/core/data/sql.php" );
+require_once( FRESH_INCLUDES . "/core/fund.php" );
 require_once( FRESH_INCLUDES . "/fresh/people/people.php" );
-require_once( FRESH_INCLUDES . '/niver/gui/window.php' );
+require_once( FRESH_INCLUDES . '/core/gui/window.php' );
 
 
 $operation = get_param( "operation" );

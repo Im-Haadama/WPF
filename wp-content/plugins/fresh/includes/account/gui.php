@@ -9,8 +9,8 @@ if ( ! defined( 'FRESH_INCLUDES' ) ) {
 	define( 'FRESH_INCLUDES', dirname( dirname( __FILE__ ) ) );
 }
 
-require_once(FRESH_INCLUDES . "/niver/fund.php");
-require_once(FRESH_INCLUDES . "/niver/gui/inputs.php");
+require_once( FRESH_INCLUDES . "/core/fund.php" );
+require_once( FRESH_INCLUDES . "/core/gui/inputs.php" );
 
 
 

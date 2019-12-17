@@ -7,7 +7,7 @@
  */
 define( 'STORE_DIR', dirname( dirname( __FILE__ ) ) );
 
-require_once( STORE_DIR . '/niver/data/im_simple_html_dom.php' );
+require_once( STORE_DIR . '/core/data/im_simple_html_dom.php' );
 $filename = STORE_DIR . '/imap/mail-config.php';
 
 if ( ! file_exists( $filename ) ) {
@@ -23,7 +23,7 @@ if (! defined('IM_ATTACHMENTS')) {
 
 // print __FILE__;
 require_once( STORE_DIR . '/fresh-public/gui/inputs.php' );
-require_once( STORE_DIR . '/niver/fund.php' );
+require_once( STORE_DIR . '/core/fund.php' );
 
 $debug = get_param( "debug" );
 if ( $debug ) {

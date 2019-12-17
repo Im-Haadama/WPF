@@ -13,13 +13,13 @@ if ( ! defined( 'ROOT_DIR' ) ) {
 
 require_once(ROOT_DIR . '/im-config.php');
 require_once( ROOT_DIR . "/init.php" );
-require_once( ROOT_DIR . '/niver/data/sql.php' );
-require_once( ROOT_DIR . '/niver/wp.php' );
+require_once( ROOT_DIR . '/core/data/sql.php' );
+require_once( ROOT_DIR . '/core/wp.php' );
 require_once( ROOT_DIR . '/focus/focus_class.php' );
 
 // require_once( TOOLS_DIR . '/im_tools.php' );
 
-$tasks_scripts = array("/niver/gui/client_tools.js", "/niver/data/data.js", "/focus/focus.js");
+$tasks_scripts = array("/core/gui/client_tools.js", "/core/data/data.js", "/focus/focus.js");
 function task_focus()
 {
 	global $style_file;
@@ -38,7 +38,7 @@ function task_focus()
 		return;
 	}
 	print gui_header(1, "Active Tasks");
-	print active_tasks();
+	print Focus_Views::active_tasks();
 }
 
 

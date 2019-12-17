@@ -5,12 +5,12 @@
  * Date: 06/10/18
  * Time: 17:03
  */
-require_once( FRESH_INCLUDES . '/niver/data/sql.php' );
+require_once( FRESH_INCLUDES . '/core/data/sql.php' );
 require_once( FRESH_INCLUDES . '/catalog/bundles.php' );
 require_once( FRESH_INCLUDES . "/catalog/Basket.php" );
 require_once( FRESH_INCLUDES . "/orders/orders-common.php" );
 require_once( FRESH_INCLUDES . "/routes/gui.php" );
-require_once( FRESH_INCLUDES . "/niver/wp.php" );
+//require_once( FRESH_INCLUDES . "/core/wp.php" );
 
 class Order {
 	private $order_id = 0;
@@ -679,7 +679,7 @@ class Order {
 		$data = gui_header( 1, $header, true );
 		// $data  .= gui_header( 2, $order->order_date, true);
 
-		$d_id = get_delivery_id( $this->order_id );
+		$d_id = Order::get_delivery_id( $this->order_id );
 		if ( $d_id > 0 ) {
 			$d          = new delivery( $d_id );
 			$draft_text = "";
@@ -719,6 +719,46 @@ class Order {
 		$data .= "</table>";
 
 		return $data;
+	}
+
+	function GetMissionId( $debug = false )
+	{
+		if ( ! is_numeric( $this->order_id ) ) {
+			print "Bad order id: $this->order_id<br/>";
+			die( 1 );
+		}
+		$mission = get_post_meta( $this->order_id, 'mission_id', true );
+		if ( $debug ) {
+			var_dump( $mission );
+			print "<br/>";
+		}
+		if ( is_array( $mission ) ) {
+			$mission_id = $mission[0];
+		} else {
+			$mission_id = $mission;
+		}
+		if ( ! is_numeric( $mission_id ) ) {
+			return 0;
+		}
+
+		return $mission_id;
+	}
+
+	static function get_delivery_id( $order_id_or_array ) {
+		$order_id = 0;
+
+		if ( is_array( $order_id_or_array ) ) {
+			$order_id = $order_id_or_array[0];
+		} else if ( is_numeric( $order_id_or_array ) ) {
+			$order_id = $order_id_or_array;
+		}
+		if ( is_numeric( $order_id ) ) {
+			return sql_query_single_scalar( 'SELECT id FROM im_delivery WHERE order_id = ' . $order_id );
+		}
+
+		print "Must send a number to get_delivery_id!";
+
+		return 0;
 	}
 
 	function infoRightBox( $edit = false ) {
@@ -783,7 +823,7 @@ class Order {
 //		"ימים: ",
 //		sql_query_single_scalar( "SELECT delivery_days FROM wp_woocommerce_shipping_zones WHERE zone_id =" . $zone )
 //	) );
-		$mission = order_get_mission_id( $this->order_id );
+		$mission = $this->GetMissionId();
 //	 print "XCXmission: " . $mission . "<br/>";
 		$data .= gui_row( array( gui_select_mission( "mission_select", $mission, "onchange=\"save_mission()\"" ) ) );
 
@@ -1091,7 +1131,7 @@ function OrdersTable1($statuses = array('wc-processing'), $build_path = true, $u
 		$show_fields[ OrderFields::good_costs ]  = false;
 	}
 
-	$all_tables = ""; // load_scripts(array("/wp-content/plugins/fresh/includes/orders/orders.js", "/wp-content/plugins/fresh/includes/niver/gui/client_tools.js"));
+	$all_tables = ""; // load_scripts(array("/wp-content/plugins/fresh/includes/orders/orders.js", "/wp-content/plugins/fresh/includes/core/gui/client_tools.js"));
 	if ( ! is_array( $statuses ) ) {
 		$statuses = array( $statuses );
 	}
@@ -1148,7 +1188,7 @@ function OrdersTable1($statuses = array('wc-processing'), $build_path = true, $u
 			if ( $invoice_user_id ) {
 				$line [ OrderFields::line_select ] = gui_checkbox( "chk_" . $order_id, "select_order_" . $status );
 			} else {
-				$line [ OrderFields::line_select ] = gui_hyperlink( "לקוח חדש", "/fresh/account/new-customer.php?order_id=" . $order_id );
+				$line [ OrderFields::line_select ] = gui_hyperlink( "לקוח חדש", "/fresh/?operation=new_customer&order_id=" . $order_id );
 			}
 
 			debug_time_log( "a1" );

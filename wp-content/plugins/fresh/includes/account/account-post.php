@@ -143,7 +143,7 @@ switch ( $operation ) {
 		$page = get_param("page", false, 1);
 		$search = get_param("search", false, null);
 		if ($search){
-			print load_scripts(array("/niver/gui/client_tools.js", "/niver/data/data.js"));
+			print load_scripts(array("/core/gui/client_tools.js", "/core/data/data.js"));
 			$args = array();
 			$search_url = "search_table('im_client_accounts', '" . add_param_to_url($url, array("operation" => "search", "customer_id" => $customer_id)) . "')";
 			$args["search"] = $search_url; //'/fresh/bank/bank-page.php?operation=do_search')";

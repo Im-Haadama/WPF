@@ -1,10 +1,6 @@
 <?php
 
 
-if ( ! defined( "FRESH_INCLUDES" ) ) {
-	define( 'FRESH_INCLUDES', dirname( dirname( __FILE__ ) ) ) ;
-}
-
 require_once(FRESH_INCLUDES . '/im-config.php');
 require_once( FRESH_INCLUDES . "/init.php" );
 require_once( FRESH_INCLUDES . '/routes/missions/Mission.php' );

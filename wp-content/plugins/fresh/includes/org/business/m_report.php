@@ -10,14 +10,14 @@ if ( ! defined( 'FRESH_INCLUDES' ) ) {
 }
 
 require_once( FRESH_INCLUDES . "/wp-config.php" );
-require_once( FRESH_INCLUDES . "/niver/gui/inputs.php" );
+require_once( FRESH_INCLUDES . "/core/gui/inputs.php" );
 ?>
 <body onload="show_all()">
 <?php
 print header_text( true );
 
 ?>
-<script type="text/javascript" src="/niver/gui/client_tools.js"></script>
+<script type="text/javascript" src="/core/gui/client_tools.js"></script>
 <script>
 
     function create_invoice() {

@@ -5,7 +5,7 @@
 define ('FRESH_INCLUDES', dirname(dirname(dirname(__FILE__))));
 
 require_once( '../r-shop_manager.php' );
-require_once( FRESH_INCLUDES . '/niver/web.php' );
+require_once( FRESH_INCLUDES . '/core/web.php' );
 require_once(FRESH_INCLUDES . '/fresh/supplies/Supply.php');
 require_once(FRESH_INCLUDES . '/fresh/catalog/gui.php');
 
@@ -14,9 +14,9 @@ $table_name = "im_supplies";
 $general_selectors = array("supplier" => "gui_select_supplier");
 // function update_table_field(post_file, table_name, id, field_name, finish_action) {
 
-$update_event = 'onchange="update_table_field(\'/niver/data/data.php\', \'' . $table_name . '\', \'%d\', \'%s\', check_update)"';
+$update_event = 'onchange="update_table_field(\'/core/data/data.php\', \'' . $table_name . '\', \'%d\', \'%s\', check_update)"';
 
-print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/fresh/supplies/supply.js" ) );
+print header_text( false, true, true, array( "/core/gui/client_tools.js", "/core/data/data.js", "/fresh/supplies/supply.js" ) );
 
 global $user_ID; // by wordpress.
 

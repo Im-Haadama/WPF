@@ -13,7 +13,7 @@ require_once( "../gui/inputs.php" );
 
 <html>
 <header>
-    <script type="text/javascript" src="/niver/gui/client_tools.js"></script>
+    <script type="text/javascript" src="/core/gui/client_tools.js"></script>
     <script>
 
         function update_display() {

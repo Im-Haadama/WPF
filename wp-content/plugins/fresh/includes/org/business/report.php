@@ -10,10 +10,10 @@ if ( ! defined( "FRESH_INCLUDES" ) ) {
 	define( 'FRESH_INCLUDES', dirname( dirname( dirname( __FILE__ ) ) ) );
 }
 
-require_once( FRESH_INCLUDES . '/niver/fund.php' );
+require_once( FRESH_INCLUDES . '/core/fund.php' );
 require_once( FRESH_INCLUDES . '/fresh-public/multi-site/imMulti-site.php' );
 //require_once( "../r-shop_manager.php" );
-require_once( FRESH_INCLUDES . "/niver/gui/sql_table.php" );
+require_once( FRESH_INCLUDES . "/core/gui/sql_table.php" );
 //require_once( "../people/people.php" );
 
 print header_text();

@@ -15,7 +15,7 @@ if ( ! defined( 'FRESH_INCLUDES' ) ) {
 //require_once( '../orders/orders-common.php' );
 //require_once( '../supplies/Supply.php' );
 //require_once( '../pricelist/pricelist.php' );
-//require_once( FRESH_INCLUDES . '/niver/gui/inputs.php' );
+//require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 require_once( "../delivery/missions.php" );
 //require_once( "start.php" );
 

@@ -6,7 +6,7 @@
  * Time: 06:12
  */
 
-require_once( FRESH_INCLUDES . '/niver/gui/inputs.php' );
+require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 require_once( STORE_DIR . "/fresh/pricing.php" );
 function show_inventory_client() {
 	foreach ( array( 18, 19, 84 ) as $term_id ) {

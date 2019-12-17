@@ -8,7 +8,7 @@
 
 
 require_once( "../orders/Order.php" );
-require_once( FRESH_INCLUDES . '/niver/gui/inputs.php' );
+require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 require_once (FRESH_INCLUDES . '/fresh/orders/orders.js');
 
 $none = true;

@@ -7,7 +7,7 @@ if ( ! defined( 'FRESH_INCLUDES' ) ) {
 	define( 'FRESH_INCLUDES',  dirname(dirname( dirname( __FILE__)  ) ));
 }
 
-require_once( FRESH_INCLUDES . '/niver/gui/sql_table.php' );
+require_once( FRESH_INCLUDES . '/core/gui/sql_table.php' );
 require_once (FRESH_INCLUDES . '/im-config.php');
 
 update_user_meta( 10147, '_client_type', 'legacy' );

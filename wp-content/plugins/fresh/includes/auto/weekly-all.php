@@ -13,7 +13,7 @@ if ( ! defined( 'FRESH_INCLUDES' ) ) {
 	define( 'FRESH_INCLUDES', dirname( dirname( dirname( __FILE__ ) ) ) );
 }
 
-require_once( FRESH_INCLUDES . "/niver/gui/inputs.php" );
+require_once( FRESH_INCLUDES . "/core/gui/inputs.php" );
 require_once( FRESH_INCLUDES . "/fresh/supplies/Supply.php" );
 
 print gui_header( 1, "Handling local operations" );

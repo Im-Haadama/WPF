@@ -7,7 +7,7 @@ function handle_anonymous_operation($operation, $args)
 	{
 	}
 
-	$args["script_files"] = array("/niver/gui/client_tools.js", "orders.js");
+	$args["script_files"] = array("/core/gui/client_tools.js", "orders.js");
 	print HeaderText($args);
 	switch ($operation)
 	{

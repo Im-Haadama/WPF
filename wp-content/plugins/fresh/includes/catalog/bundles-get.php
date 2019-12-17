@@ -6,7 +6,7 @@
  * Time: 15:25
  */
 require_once( '../r-shop_manager.php' );
-require_once( FRESH_INCLUDES . "/niver/gui/inputs.php" );
+require_once( FRESH_INCLUDES . "/core/gui/inputs.php" );
 
 print header_text( false );
 print gui_button( "btn_new", "show_create_new()", "מארז חדש" );
@@ -15,7 +15,7 @@ print gui_button( "btn_new", "show_create_new()", "מארז חדש" );
 
 <html dir="rtl">
 <header>
-    <script type="text/javascript" src="/niver/gui/client_tools.js"></script>
+    <script type="text/javascript" src="/core/gui/client_tools.js"></script>
     <script>
         function getPrice() {
             var product_name = get_value(document.getElementById("item_name"));

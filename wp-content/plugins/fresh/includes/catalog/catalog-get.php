@@ -1,13 +1,13 @@
 <?php
 //ini_set( 'display_errors', 'on' );
 require_once( '../r-shop_manager.php' );
-require_once( FRESH_INCLUDES . '/niver/gui/wp_inputs.php' );
-require_once( FRESH_INCLUDES . '/niver/gui/inputs.php' );
+require_once( FRESH_INCLUDES . '/core/gui/wp_inputs.php' );
+require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 
 print header_text( false );
 ?>
 
-<script type="text/javascript" src="/niver/gui/client_tools.js"></script>
+<script type="text/javascript" src="/core/gui/client_tools.js"></script>
     <script>
 
         function select_category() {

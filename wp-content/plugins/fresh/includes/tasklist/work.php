@@ -21,7 +21,7 @@ if ( ! $u ) {
 
 $u_id = $u->id;
 
-print header_text( false, true, true, array( "/niver/gui/client_tools.js", "work.js" ) );
+print header_text( false, true, true, array( "/core/gui/client_tools.js", "work.js" ) );
 // Show last 5 new tasks.
 // Allow priority change. Set date.
 

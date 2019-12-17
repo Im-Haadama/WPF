@@ -11,7 +11,7 @@ require_once( "delivery.php" );
 
 $debug = get_param("debug", false, false);
 
-print header_text(true, true, is_rtl(), array("/niver/data/data.js", "/niver/gui/client_tools.js"));
+print header_text(true, true, is_rtl(), array("/core/data/data.js", "/core/gui/client_tools.js"));
 
 $operation = get_param("operation", false, "show_this_week");
 

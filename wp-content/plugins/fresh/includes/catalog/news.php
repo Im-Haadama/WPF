@@ -5,7 +5,7 @@
  * Date: 27/10/18
  * Time: 18:44
  */
-require_once( "../../niver/gui/inputs.php" );
+require_once( "../../core/gui/inputs.php" );
 
 $sql_products = "SELECT id FROM wp_posts WHERE post_type = 'product' ";
 

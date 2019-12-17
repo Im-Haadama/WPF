@@ -17,8 +17,8 @@ require_once(ABSPATH . 'wp-config.php');
 //require_once (FRESH_INCLUDES . "/im-config.php");
 
 // print "host=" . DB_HOST . "<br/>";
-//require_once( FRESH_INCLUDES . '/niver/gui/sql_table.php' );
-//require_once( FRESH_INCLUDES . '/niver/gui/inputs.php' );
+//require_once( FRESH_INCLUDES . '/core/gui/sql_table.php' );
+//require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 
 //require_once( FRESH_INCLUDES . "/init.php" );
 //init();

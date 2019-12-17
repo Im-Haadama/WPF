@@ -8,7 +8,7 @@
  */
 
 require_once( '../r-multisite.php' );
-require_once( FRESH_INCLUDES . '/niver/gui/inputs.php' );
+require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 require_once( '../pricing.php' );
 require_once( "../wp/terms.php" );
 

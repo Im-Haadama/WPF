@@ -11,9 +11,9 @@ if ( ! defined( 'FRESH_INCLUDES' ) ) {
 }
 
 require_once( FRESH_INCLUDES . '/wp-config.php' );
-require_once( FRESH_INCLUDES . "/niver/data/sql.php" );
+require_once( FRESH_INCLUDES . "/core/data/sql.php" );
 require_once( FRESH_INCLUDES . "/fresh/tasklist/tasklist.php" );
-require_once( FRESH_INCLUDES . "/niver/data/im_simple_html_dom.php" );
+require_once( FRESH_INCLUDES . "/core/data/im_simple_html_dom.php" );
 
 print header_text( false, true, false );
 

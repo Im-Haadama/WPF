@@ -1,16 +1,16 @@
 <?php
 
 require_once "../r-shop_manager.php";
-require_once( FRESH_INCLUDES . "/niver/gui/sql_table.php" );
+require_once( FRESH_INCLUDES . "/core/gui/sql_table.php" );
 require_once( "../header.php" );
-require_once( FRESH_INCLUDES . "/niver/gui/inputs.php" );
-require_once( FRESH_INCLUDES . '/niver/options.php' );
+require_once( FRESH_INCLUDES . "/core/gui/inputs.php" );
+require_once( FRESH_INCLUDES . '/core/options.php' );
 
-print header_text( false, true, is_rtl(), array("/fresh/orders/orders.js", "/niver/gui/client_tools.js") );
+print header_text( false, true, is_rtl(), array("/fresh/orders/orders.js", "/core/gui/client_tools.js") );
 
 
 ?>
-<script type="text/javascript" src="/niver/gui/client_tools.js"></script>
+<script type="text/javascript" src="/core/gui/client_tools.js"></script>
 <script>
 
     function save_inv(term) {

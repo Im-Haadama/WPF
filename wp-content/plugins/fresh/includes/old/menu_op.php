@@ -1,9 +1,5 @@
 <?php
 
-if ( ! defined( "FRESH_INCLUDES" ) ) {
-	define( 'FRESH_INCLUDES', dirname( dirname( __FILE__ ) ) ) ;
-}
-
 error_reporting( E_ALL );
 ini_set( 'display_errors', 'on' );
 
@@ -17,9 +13,9 @@ if ($operation)
 	handle_menu_operation($operation);
 
 print header_text( false );
-require_once( FRESH_INCLUDES . "/niver/wp.php" );
-require_once( FRESH_INCLUDES . "/niver/gui/inputs.php" );
-require_once( FRESH_INCLUDES . '/niver/options.php' );
+require_once( FRESH_INCLUDES . "/core/wp.php" );
+require_once( FRESH_INCLUDES . "/core/gui/inputs.php" );
+require_once( FRESH_INCLUDES . '/core/options.php' );
 
 require_once( FRESH_INCLUDES . "/fresh/multi-site/imMulti-site.php" );
 require_once( FRESH_INCLUDES . '/fresh/r-shop_manager.php' );

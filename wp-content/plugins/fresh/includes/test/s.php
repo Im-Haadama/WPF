@@ -4,7 +4,7 @@ define ('FRESH_INCLUDES', dirname(dirname(dirname(__FILE__))));
 require_once (FRESH_INCLUDES . '/im-config.php');
 
 require_once( FRESH_INCLUDES . '/init.php' );
-require_once( FRESH_INCLUDES . '/niver/gui/inputs.php' );
+require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 //
 //$s = new Supply(72);
 //print $s->Html(true, true, true);

@@ -7,7 +7,7 @@
  */
 require_once( '../r-shop_manager.php' );
 require_once( '../header.php' );
-require_once( FRESH_INCLUDES . '/niver/gui/inputs.php' );
+require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 require_once( '../gui/sql_table.php' );
 require_once( '../pricelist/pricelist.php' );
 print "<br/>";

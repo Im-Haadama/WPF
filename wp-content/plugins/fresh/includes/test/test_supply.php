@@ -2,7 +2,7 @@
 
 require '../r-shop_manager.php';
 require_once( FRESH_INCLUDES . "/fresh/supplies/Supply.php" );
-require_once( FRESH_INCLUDES . '/niver/gui/inputs.php' );
+require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 require_once( "../account/gui.php" );
 require_once( "../catalog/gui.php" );
 

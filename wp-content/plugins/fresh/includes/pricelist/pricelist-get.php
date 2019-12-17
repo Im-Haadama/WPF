@@ -9,7 +9,7 @@
 //ini_set( 'display_errors', 'on' );
 
 require_once( '../r-shop_manager.php' );
-require_once( FRESH_INCLUDES . '/niver/gui/inputs.php' );
+require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 require_once( "../suppliers/gui.php" );
 require_once( "../multi-site/imMulti-site.php" );
 require_once( "../suppliers/Supplier.php" );
@@ -42,7 +42,7 @@ function set_supplier_id() {
 <html dir="rtl" lang="he">
 <header>
     <meta charset="UTF-8">
-    <script type="text/javascript" src="/niver/gui/client_tools.js"></script>
+    <script type="text/javascript" src="/core/gui/client_tools.js"></script>
 	<?php
 	$map_table = "price_list";
 	require_once( "../catalog/mapping.php" );

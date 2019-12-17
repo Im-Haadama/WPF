@@ -1,8 +1,8 @@
 <?php
-require_once( FRESH_INCLUDES . '/niver/gui/gem.php' );
-require_once( FRESH_INCLUDES . '/niver/data/data.php' );
+require_once( FRESH_INCLUDES . '/core/gui/gem.php' );
+require_once( FRESH_INCLUDES . '/core/data/data.php' );
 
-// $admin_scripts = array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/fresh/admin/admin.js" );
+// $admin_scripts = array( "/core/gui/client_tools.js", "/core/data/data.js", "/fresh/admin/admin.js" );
 
 function handle_bank_operation($operation, $url = null) {
 	$account_id = 1;
@@ -100,7 +100,7 @@ function handle_bank_operation($operation, $url = null) {
 		case "add_transaction_types":
 			$args              = array();
 			$args["selectors"] = array( "part_id" => "gui_select_supplier" );
-			$args["post_file"] = "/niver/data/data-post.php";
+			$args["post_file"] = "/core/data/data-post.php";
 
 			print GemAddRow( "im_bank_transaction_types", "Transaction types", $args );
 
@@ -136,7 +136,7 @@ function handle_bank_operation($operation, $url = null) {
 			break;
 
 		case 'import_from_file':
-			require_once( FRESH_INCLUDES . "/niver/data/Importer.php" );
+			require_once( FRESH_INCLUDES . "/core/data/Importer.php" );
 			$file_name = $_FILES["fileToUpload"]["tmp_name"];
 			print "Trying to import $file_name<br/>";
 			$I                    = new Importer();

@@ -22,6 +22,7 @@ function gui_select_project($id, $value, $args)
 
 	$form_table = GetArg($args, "form_table", null);
 	$events = GetArg($args,"events", null);
+	die (1);// Need to fix projects list
 	$result =  gui_select( $id, "project_name", worker_get_projects($user_id), $events, $value, "project_id" );
 	if ($form_table and $new_row) { // die(__FUNCTION__ . ":" . " missing form_table");
 		$result .= gui_button( "add_new_project", "add_element('project', '" . $form_table . "', '" . get_url() . "')", "New Project" );

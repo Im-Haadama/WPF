@@ -6,7 +6,7 @@
  * Time: 12:14
  */
 
-require_once( FRESH_INCLUDES . "/niver/gui/inputs.php" );
+require_once( FRESH_INCLUDES . "/core/gui/inputs.php" );
 
 // $selector_name( $key, $data, $args)
 function gui_select_product( $id, $data = null, $args = null)

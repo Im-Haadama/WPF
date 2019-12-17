@@ -7,7 +7,7 @@ require_once( FRESH_INCLUDES . "/init.php" );
 require_once( FRESH_INCLUDES . "/routes/gui.php" );
 
 
-print header_text( false, true, true, array( "/fresh/tools.js", "/niver/gui/client_tools.js" ) );
+print header_text( false, true, true, array( "/fresh/tools.js", "/core/gui/client_tools.js" ) );
 $id     = $_GET["id"];
 $send   = isset( $_GET["send"] );
 $margin = isset( $_GET["margin"] );

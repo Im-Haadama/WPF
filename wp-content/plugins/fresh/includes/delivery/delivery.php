@@ -14,9 +14,9 @@ if ( ! defined( 'FRESH_INCLUDES' ) ) {
 require_once( FRESH_INCLUDES . '/catalog/pricing.php' );
 require_once( FRESH_INCLUDES . '/account/account.php' );
 include_once( FRESH_INCLUDES . '/orders/orders-common.php' );
-require_once( FRESH_INCLUDES . '/niver/gui/inputs.php' );
+require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 include_once( FRESH_INCLUDES . '/multi-site/imMulti-site.php');
-require_once( FRESH_INCLUDES . '/niver/mail.php' );
+require_once( FRESH_INCLUDES . '/core/mail.php' );
 require_once( FRESH_INCLUDES . '/account/gui.php' );
 require_once( FRESH_INCLUDES . '/inventory/inventory.php' );
 require_once( FRESH_INCLUDES . "/org/business/business.php" );

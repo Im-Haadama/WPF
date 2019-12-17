@@ -14,9 +14,9 @@ require_once( FRESH_INCLUDES . "/init.php" );
 
 init();
 
-print load_scripts( '/niver/gui/client_tools.js');
+print load_scripts( '/core/gui/client_tools.js');
 print header_text();
-require_once( FRESH_INCLUDES . '/niver/gui/inputs.php' );
+require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 
 //$args = [];
 //$args["edit"] = true;

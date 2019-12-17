@@ -14,7 +14,7 @@ if ( ! defined( 'ROOT_DIR' ) ) {
 }
 require_once( ROOT_DIR . '/wp-load.php' );
 require_once( ROOT_DIR . '/im-config.php' );
-require_once( ROOT_DIR . '/niver/data/sql.php' );
+require_once( ROOT_DIR . '/core/data/sql.php' );
 
 function tag_st( $str ) {
 	return "'" . $str . "'";

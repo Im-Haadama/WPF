@@ -8,10 +8,10 @@
 //ini_set( 'display_errors', 'on' );
 
 require_once( "../r-shop_manager.php" );
-require_once( FRESH_INCLUDES . '/niver/gui/inputs.php' );
+require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 
 ?>
-<script type="text/javascript" src="/niver/gui/client_tools.js"></script>
+<script type="text/javascript" src="/core/gui/client_tools.js"></script>
 <script>
     function check_email() {
         var email = get_value(document.getElementById("email"));

@@ -452,7 +452,7 @@ function handle_people_operation($operation)
 			return true;
 	}
 
-	print header_text(true, true, is_rtl(), array("people.js", "/niver/gui/client_tools.js", "/niver/data/data.js"));
+	print header_text(true, true, is_rtl(), array("people.js", "/core/gui/client_tools.js", "/core/data/data.js"));
 
 	switch($operation) {
 		case "show_edit_worker": // Get worker info by id or worker_project link.
@@ -513,7 +513,7 @@ function handle_people_operation($operation)
 			$args["query"] = "project_id = $project_id";
 			if (file_exists(FRESH_INCLUDES . '/focus/focus_class.php')){
 				require_once( FRESH_INCLUDES . '/focus/focus_class.php' );
-				$tasks = active_tasks($args);
+				$tasks = Focus_Views::active_tasks($args);
 				if ($tasks) print gui_header(1, "Active tasks") . $tasks;
 				else print gui_header(1, "No active tasks");
 				print gui_button( "btn_cancel", "cancel_entity('" . get_url(1) . "', 'im_working', " . $project_id . ')', "delete" );

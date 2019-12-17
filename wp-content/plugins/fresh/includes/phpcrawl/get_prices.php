@@ -4,7 +4,7 @@ $sites = array("fruity.co.il", "nizat.com", "shufersal.co.il", "super-organi.co.
 
 $products = array("עגבניה", "מלפפון", "גזר", "בצל", "מנגו");
 
-require_once( "../../niver/data/im_simple_html_dom.php" );
+require_once( "../../core/data/im_simple_html_dom.php" );
 
 // Loop on all sites
 foreach ($sites as $site)

@@ -20,7 +20,7 @@ class Fresh_Shortcodes {
 	public static function init() {
 		$shortcodes = array(
 			'fresh_management'           => __CLASS__ . '::fresh_management',
-			'fresh_suppliers'            => __CLASS__ . '::suppliers',
+			'fresh_suppliers'            => __CLASS__ . '::suppliers', // [fresh_suppliers]
 //			'product_page'               => __CLASS__ . '::product_page',
 //			'product_category'           => __CLASS__ . '::product_category',
 //			'product_categories'         => __CLASS__ . '::product_categories',
@@ -655,3 +655,5 @@ class Fresh_Shortcodes {
 //		return ob_get_clean();
 //	}
 }
+
+

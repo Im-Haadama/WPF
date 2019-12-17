@@ -10,15 +10,11 @@
 // Major version.
 $power_version = file_get_contents(dirname(dirname(__FILE__)) . "/version");
 
-if ( ! defined( "FRESH_INCLUDES" ) ) {
-	define( 'FRESH_INCLUDES', dirname( dirname( __FILE__ ) ) ) ;
-}
-
 require_once( FRESH_INCLUDES . "/im-config.php" );
 require_once( "im_tools_light.php" );
 # require_once( STORE_DIR . "/wp-config.php" );
 # require_once( STORE_DIR . "/wp-load.php" );
-# require_once( FRESH_INCLUDES . "/niver/wp.php" );
+# require_once( FRESH_INCLUDES . "/core/wp.php" );
 
 //if ( (get_user_id() == 1) or ! isset( $_SERVER['SERVER_NAME'] ) or ( $_SERVER['SERVER_NAME'] == "127.0.0.1" ) ) {
 ////	 print "debug";

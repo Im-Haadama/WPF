@@ -8,8 +8,8 @@
 
 // require_once( 'im_simple_html_dom.php' );
 
-require_once( FRESH_INCLUDES . '/niver/gui/sql_table.php' );
-require_once( FRESH_INCLUDES . '/niver/MultiSite.php' );
+require_once( FRESH_INCLUDES . '/core/gui/sql_table.php' );
+require_once( FRESH_INCLUDES . '/core/MultiSite.php' );
 
 $local_site_id = - 1;
 

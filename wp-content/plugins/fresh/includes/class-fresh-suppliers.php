@@ -1,6 +1,6 @@
 <?php
 
-require_once dirname(FRESH_PLUGIN_FILE) . '/includes/niver/gui/inputs.php';
+require_once dirname( FRESH_PLUGIN_FILE ) . '/includes/core/gui/inputs.php';
 require_once dirname(FRESH_PLUGIN_FILE) . '/includes/suppliers/suppliers.php';
 
 class Fresh_Suppliers {
@@ -99,7 +99,7 @@ class Fresh_Suppliers {
 
 
 	public function enqueue_scripts() {
-		$file = plugin_dir_url( __FILE__ ) . 'niver/gui/client_tools.js';
+		$file = plugin_dir_url( __FILE__ ) . 'core/gui/client_tools.js';
 //		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'orders/orders.js', array( 'jquery' ), $this->version, false );
 ////		wp_localize_script( $this->plugin_name, 'WPaAjax', array( 'ajaxurl' => admin_url( 'admin-ajax.php' ) ) );
 ////		if (! file_exists($file) and get_user_id() == 1) print $file . " not exists <br/>";

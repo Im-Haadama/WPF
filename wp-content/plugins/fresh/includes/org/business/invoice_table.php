@@ -19,16 +19,16 @@ if ( ! defined( "FRESH_INCLUDES" ) ) {
 	define( 'FRESH_INCLUDES', dirname( dirname( dirname( __FILE__ ) ) ) );
 }
 
-require_once( FRESH_INCLUDES . '/niver/PivotTable.php' );
-require_once( FRESH_INCLUDES . '/niver/gui/inputs.php' );
+require_once( FRESH_INCLUDES . '/core/PivotTable.php' );
+require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 require_once( FRESH_INCLUDES . '/fresh-public/im_tools_light.php' );
-require_once( FRESH_INCLUDES . '/niver/web.php' );
-require_once( FRESH_INCLUDES . '/niver/gui/input_data.php' );
-require_once( FRESH_INCLUDES . '/niver/data/data.php' );
+require_once( FRESH_INCLUDES . '/core/web.php' );
+require_once( FRESH_INCLUDES . '/core/gui/input_data.php' );
+require_once( FRESH_INCLUDES . '/core/data/data.php' );
 require_once( FRESH_INCLUDES . '/fresh-public/suppliers/gui.php' );
 require_once( FRESH_INCLUDES . '/fresh-public/gui.php' );
 
-print header_text(false, true, true, array("/niver/gui/client_tools.js", "/niver/data/data.js"));
+print header_text(false, true, true, array("/core/gui/client_tools.js", "/core/data/data.js"));
 
 $year = get_param( "year" );
 if ( ! $year ) {
@@ -50,7 +50,7 @@ if ($operation){
 			$args["selectors"] = array("part_id" => "gui_select_supplier", "document_type" => "gui_select_document_type");
 			$args["fields"] = array("part_id", "date", "ref", "amount", "net_amount", "document_type");
 			$args["mandatory_fields"] = array("part_id" => 1, "date" => 1, "ref" => 1, "amount" => 1, "document_type" => 1, "net_amount" => 1);
-			$args["post_file"] = "/niver/data/data-post.php";
+			$args["post_file"] = "/core/data/data-post.php";
 			print GemAddRow("im_business_info", "invoices", $args);
 			// print NewRow("im_business_info", $args, true);
 			// print gui_button("btn_add", "data_save_new('im_business_info')", "הוסף");
@@ -116,7 +116,7 @@ print gui_header (1, "ריכוז חשבוניות");
 print gui_hyperlink("Add invoice", add_param_to_url(get_url(), array("operation" => "show_add_invoice", "document_type" =>"4")));
 
 try {
-	$t = new \Niver\PivotTable( "im_business_info", $page,
+	$t = new \core\PivotTable( "im_business_info", $page,
 		"date_format(date, '%m')", "part_id", "net_amount" ); // month_with_index(DATE)
 } catch ( Exception $e ) {
 	print $e->getMessage();

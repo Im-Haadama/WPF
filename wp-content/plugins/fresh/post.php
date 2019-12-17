@@ -13,8 +13,8 @@ require_once(ABSPATH . 'wp-config.php');
 //require_once( FRESH_ABSPATH . '/org/gui.php' );
 //require_once( FRESH_ABSPATH . '/routes/gui.php' );
 
-if ( ! get_user_id(true) ) die('Not connected');
-
 $operation = get_param('operation', true);
 $fresh = Fresh::instance();
+if ( ! get_user_id(true) ) die('Not connected');
+
 print $fresh->handle_operation($operation);

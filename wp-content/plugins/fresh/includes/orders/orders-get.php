@@ -12,7 +12,7 @@ require_once( FRESH_INCLUDES . '/routes/gui.php' );
 
 
 print header_text( false, false, is_rtl(),
-    array("/fresh/delivery/delivery.js", "/niver/gui/client_tools.js", "/niver/data/data.js", "/fresh/orders/orders.js") );
+    array("/fresh/delivery/delivery.js", "/core/gui/client_tools.js", "/core/data/data.js", "/fresh/orders/orders.js") );
 
 if ( isset( $_GET["week"] ) ) {
 	$week = $_GET["week"];
@@ -43,7 +43,7 @@ if ( $operation )
 
 ?>
 
-<script type="text/javascript" src="/niver/gui/client_tools.js"></script>
+<script type="text/javascript" src="/core/gui/client_tools.js"></script>
 
 
 </head>

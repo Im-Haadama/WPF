@@ -12,7 +12,7 @@ if ( ! defined( "FRESH_INCLUDES" ) ) {
 }
 
 require_once( FRESH_INCLUDES . "/fresh-public/account/account.php" );
-require_once( FRESH_INCLUDES . "/niver/gui/inputs.php" );
+require_once( FRESH_INCLUDES . "/core/gui/inputs.php" );
 require_once( "people.php" );
 
 if ( ! isset( $_GET["operation"] ) ) {

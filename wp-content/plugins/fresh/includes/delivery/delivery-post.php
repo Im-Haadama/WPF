@@ -10,7 +10,7 @@ require_once( '../r-multisite.php' );
 require_once( "../orders/orders-common.php" );
 
 require_once( FRESH_INCLUDES . "/org/business/business.php" );
-require_once( FRESH_INCLUDES . "/niver/fund.php" );
+require_once( FRESH_INCLUDES . "/core/fund.php" );
 require_once( "../supplies/Supply.php" );
 require_once( FRESH_INCLUDES . '/org/business/business_info.php' );
 

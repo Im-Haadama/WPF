@@ -9,9 +9,11 @@
 
 function add_stylesheet_to_head() {
     global $post;
-    require_once (ABSPATH . 'wp-content/plugins/fresh/includes/niver/fund.php');
+    require_once( ABSPATH . 'wp-content/plugins/fresh/includes/core/fund.php' );
 
-    if (strstr($post->post_content, 'fresh')) {
+    if ($post and (strstr($post->post_content, 'fresh') ||
+        strstr($post->post_content, 'focus'))
+    ) {
 
         print load_style(  get_template_directory_uri() . '/css/management.css'); // Hides logo, search and white area contains them.
 //        register_nav_menus(array('main-fresh' => __ ('Primary Menu', 'minezine')));
@@ -52,10 +54,10 @@ if ( ! defined( "ROOT_DIR" ) ) {
 
 require_once(ROOT_DIR . '/im-config.php');
 require_once( ROOT_DIR . "/init.php" );
-require_once( ROOT_DIR . '/niver/data/sql.php' );
-require_once( ROOT_DIR . '/niver/wp.php' );
+require_once( ROOT_DIR . '/core/data/sql.php' );
+require_once( ROOT_DIR . '/core/wp.php' );
 require_once(ROOT_DIR . '/fresh/pricing.php' );
-require_once( ROOT_DIR . '/niver/gui/inputs.php' );
+require_once( ROOT_DIR . '/core/gui/inputs.php' );
 
 add_action( 'woocommerce_checkout_process', 'wc_minimum_order_amount' );
 add_action( 'woocommerce_before_cart', 'wc_minimum_order_amount' );

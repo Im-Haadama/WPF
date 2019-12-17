@@ -19,8 +19,8 @@ if ( ! defined( "FRESH_INCLUDES" ) ) {
 
 
 require_once( FRESH_INCLUDES . '/catalog/catalog.php' );
-require_once( FRESH_INCLUDES . '/niver/gui/inputs.php' );
-require_once( FRESH_INCLUDES . '/niver/gui/wp_inputs.php' );
+require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
+require_once( FRESH_INCLUDES . '/core/gui/wp_inputs.php' );
 require_once( FRESH_INCLUDES . '/multi-site/imMulti-site.php' );
 require_once( FRESH_INCLUDES . '/wp/Product.php' );
 require_once( FRESH_INCLUDES . "/orders/orders-common.php" );

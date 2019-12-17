@@ -7,12 +7,12 @@
  */
 
 require_once( "../r-shop_manager.php" );
-require_once( FRESH_INCLUDES . '/niver/gui/inputs.php' );
-require_once( FRESH_INCLUDES . "/niver/gui/sql_table.php" );
+require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
+require_once( FRESH_INCLUDES . "/core/gui/sql_table.php" );
 require_once( "gui.php" );
 
 ?>
-    <script type="text/javascript" src="/niver/gui/client_tools.js"></script>
+    <script type="text/javascript" src="/core/gui/client_tools.js"></script>
     <script>
         function update_client_type(id) {
             var type = get_value_by_name("select_type_" + id);

@@ -35,10 +35,10 @@ if ( isset( $roles ) and count( array_intersect( array( "hr" ), $roles ) ) >= 1 
 	$role = 'staff';
 }
 
-require_once( FRESH_INCLUDES . "/niver/gui/inputs.php" );
+require_once( FRESH_INCLUDES . "/core/gui/inputs.php" );
 $args = [];
 $args["greeting"] = true;
-$args["script_files"] = array("/niver/gui/client_tools.js", "/org/people/people.js");
+$args["script_files"] = array("/core/gui/client_tools.js", "/org/people/people.js");
 // $project_list = sql_query_array_scalar("select project_id from im_working where user_id = " . $user_id);
 print HeaderText($args);
 

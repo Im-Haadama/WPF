@@ -6,7 +6,7 @@
  * Time: 18:02
  */
 require_once( "../r-shop_manager.php" );
-require_once( FRESH_INCLUDES . "/niver/gui/sql_table.php" );
+require_once( FRESH_INCLUDES . "/core/gui/sql_table.php" );
 require_once( FRESH_INCLUDES . "/fresh/supplies/Supply.php" );
 
 print header_text();

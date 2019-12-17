@@ -13,9 +13,9 @@ if ( ! defined( "FRESH_INCLUDES" ) ) {
 	define( "FRESH_INCLUDES", dirname( dirname( dirname( __FILE__ ) ) ) );
 }
 
-require_once( FRESH_INCLUDES . "/niver/MultiSite.php" );
+require_once( FRESH_INCLUDES . "/core/MultiSite.php" );
 require_once( FRESH_INCLUDES . "/utils/config.php" );
-require_once( FRESH_INCLUDES . "/niver/gui/text_inputs.php" );
+require_once( FRESH_INCLUDES . "/core/gui/text_inputs.php" );
 
 if ( ! isset( $hosts_to_sync ) ) {
 	die ( "define hosts_to_sync in config file" );

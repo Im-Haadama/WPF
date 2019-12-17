@@ -1,6 +1,6 @@
 <?php
 require_once 'orders-common.php';
-require_once( FRESH_INCLUDES . '/niver/gui/inputs.php' );
+require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 require_once( '../delivery/delivery.php' );
 
 require_once( FRESH_INCLUDES . "/init.php" );
@@ -17,7 +17,7 @@ if ( $manager and isset( $_GET["margin"] ) ) {
 	$margin = true;
 }
 
-print header_text(true, true, is_rtl(), array("/niver/gui/client_tools.js", "/fresh/tools.js", "/niver/data/data.js"))
+print header_text(true, true, is_rtl(), array("/core/gui/client_tools.js", "/fresh/tools.js", "/core/data/data.js"))
 ?>
     <script>
 

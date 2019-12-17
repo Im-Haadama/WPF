@@ -1,6 +1,6 @@
 <?php
 
-require_once dirname(FRESH_PLUGIN_FILE) . '/includes/niver/gui/inputs.php';
+require_once dirname( FRESH_PLUGIN_FILE ) . '/includes/core/gui/inputs.php';
 
 class Fresh_Status {
 

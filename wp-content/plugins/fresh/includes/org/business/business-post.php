@@ -12,15 +12,15 @@ if ( ! defined( 'FRESH_INCLUDES' ) ) {
 	define( 'FRESH_INCLUDES',  dirname(dirname( dirname( __FILE__)  ) ));
 }
 
-require_once( FRESH_INCLUDES . '/niver/gui/inputs.php' );
+require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 require_once( FRESH_INCLUDES . '/org/business/business.php' );
 require_once( FRESH_INCLUDES . '/fresh-public/invoice4u/invoice.php' );
-require_once( FRESH_INCLUDES . '/niver/data/html2array.php' );
+require_once( FRESH_INCLUDES . '/core/data/html2array.php' );
 require_once( FRESH_INCLUDES . '/fresh-public/multi-site/imMulti-site.php' );
 require_once( FRESH_INCLUDES . '/org/business/BankTransaction.php' );
 require_once( FRESH_INCLUDES . '/fresh-public/suppliers/gui.php' );
-require_once( FRESH_INCLUDES . '/niver/gui/input_data.php' );
-require_once( FRESH_INCLUDES . '/niver/gui/input_data.php' );
+require_once( FRESH_INCLUDES . '/core/gui/input_data.php' );
+require_once( FRESH_INCLUDES . '/core/gui/input_data.php' );
 require_once( FRESH_INCLUDES . '/fresh-public/account/account.php' );
 
 
@@ -115,7 +115,7 @@ if ( $operation) {
 			print header_text( false, true, true,
 				array(
 					"business.js",
-					"/niver/gui/client_tools.js",
+					"/core/gui/client_tools.js",
 					"/fresh/account/account.js"
 				) );
 			$id = get_param( "id" );
@@ -266,7 +266,7 @@ if ( $operation) {
 			print header_text( false, true, true,
 				array(
 					"business.js",
-					"/niver/gui/client_tools.js",
+					"/core/gui/client_tools.js",
 					"/fresh/account/account.js"
 				) );
 			$id = get_param( "id" );
@@ -305,7 +305,7 @@ if ( $operation) {
 			print header_text( false, true, true,
 				array(
 					"business.js",
-					"/niver/gui/client_tools.js",
+					"/core/gui/client_tools.js",
 					"/fresh/account/account.js"
 				) );
 			$id = get_param( "id" );

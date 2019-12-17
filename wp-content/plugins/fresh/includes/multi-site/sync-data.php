@@ -7,7 +7,7 @@
  */
 
 require_once( '../r-multisite.php' );
-require_once( FRESH_INCLUDES . '/niver/gui/sql_table.php' );
+require_once( FRESH_INCLUDES . '/core/gui/sql_table.php' );
 require_once( "../multi-site/imMulti-site.php" );
 require_once( FRESH_INCLUDES . "/init.php" );
 

@@ -13,15 +13,15 @@ if ( ! defined( "FRESH_INCLUDES" ) ) {
 require_once( FRESH_INCLUDES . '/fresh-public/r-shop_manager.php' );
 
 require_once( FRESH_INCLUDES . '/fresh-public/im_tools_light.php' );
-require_once( FRESH_INCLUDES . '/niver/gui/inputs.php' );
-require_once( FRESH_INCLUDES . '/niver/gui/input_data.php' );
+require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
+require_once( FRESH_INCLUDES . '/core/gui/input_data.php' );
 
 $this_url = "admin.php";
 $entity_name = "מסלול";
 $entity_name_plural = "מסלולים";
 $table_name = "im_missions";
 
-print header_text( false, true, true, array( "/niver/gui/client_tools.js", "/niver/data/data.js",
+print header_text( false, true, true, array( "/core/gui/client_tools.js", "/core/data/data.js",
 	"/vendor/sorttable.js") );
 
 $operation = get_param( "operation", false );

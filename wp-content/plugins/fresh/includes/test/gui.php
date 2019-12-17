@@ -10,7 +10,7 @@ require_once(FRESH_INCLUDES . '/focus/gui.php');
 
 require_once(FRESH_INCLUDES . '/fresh/catalog/gui.php');
 
-print load_scripts(array("/niver/gui/client_tools.js", "/niver/data/data.js"));
+print load_scripts(array("/core/gui/client_tools.js", "/core/data/data.js"));
 // print gui_select_supplier("supplier", 100051, array("edit"=>true));
 
 $args = [];

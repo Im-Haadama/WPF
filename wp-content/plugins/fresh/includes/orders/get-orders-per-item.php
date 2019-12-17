@@ -1,7 +1,7 @@
 <?php
 require '../r-shop_manager.php';
 require_once( 'orders-common.php' );
-require_once( FRESH_INCLUDES . '/niver/gui/inputs.php' );
+require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 ?>
 <html dir="rtl" lang="he">
 <head>

@@ -7,15 +7,15 @@
  */
 
 require_once( "tasklist.php" );
-require_once( FRESH_INCLUDES . "/niver/web.php" );
-require_once( FRESH_INCLUDES . '/niver/gui/inputs.php' );
-require_once( FRESH_INCLUDES . '/niver/gui/sql_table.php' );
+require_once( FRESH_INCLUDES . "/core/web.php" );
+require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
+require_once( FRESH_INCLUDES . '/core/gui/sql_table.php' );
 require_once( FRESH_INCLUDES . '/fresh/people/people.php' );
-require_once( FRESH_INCLUDES . "/niver/fund.php" );
+require_once( FRESH_INCLUDES . "/core/fund.php" );
 require_once( FRESH_INCLUDES . "/account/gui.php" );
 require_once( FRESH_INCLUDES . '/people/people.php' );
 require_once( FRESH_INCLUDES . "/gui.php" );
-require_once( FRESH_INCLUDES . "/niver/gui/gem.php" );
+require_once( FRESH_INCLUDES . "/core/gui/gem.php" );
 
 require_once( "common.php" );
 require_once( "data.php" );
@@ -58,7 +58,7 @@ require_once( "data.php" );
 // Selection:
 global $user_ID; // by wordpress.
 
-$admin_scripts = array( "/niver/gui/client_tools.js", "/niver/data/data.js", "/fresh/admin/admin.js" );
+$admin_scripts = array( "/core/gui/client_tools.js", "/core/data/data.js", "/fresh/admin/admin.js" );
 
 
 

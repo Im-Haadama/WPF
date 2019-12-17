@@ -10,11 +10,7 @@ ini_set( 'display_errors', 'on' );
  * Time: 23:29
  */
 
-if ( ! defined( 'FRESH_INCLUDES' ) ) {
-	define( 'FRESH_INCLUDES', dirname( dirname( __FILE__ ) ) );
-}
-
-require_once( FRESH_INCLUDES . '/niver/gui/inputs.php' );
+require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 require_once( FRESH_INCLUDES . '/fresh-public/orders/orders-common.php' );
 require_once( FRESH_INCLUDES . '/fresh-public/delivery/delivery-common.php' );
 require_once( FRESH_INCLUDES . '/routes/routes.php' );
@@ -25,7 +21,7 @@ init();
 
 ?>
 
-    <script type="text/javascript" src="/niver/gui/client_tools.js"></script>
+    <script type="text/javascript" src="/core/gui/client_tools.js"></script>
     <script>
         function done() {
             var collection = document.getElementsByClassName("user_chk");

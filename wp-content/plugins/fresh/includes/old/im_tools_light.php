@@ -12,8 +12,8 @@ if ( ! defined( "FRESH_INCLUDES" ) ) {
 }
 
 require_once( FRESH_INCLUDES . "/im-config.php" );
-require_once( FRESH_INCLUDES . "/niver/fund.php" );
-require_once( FRESH_INCLUDES . "/niver/data/sql.php" );
+require_once( FRESH_INCLUDES . "/core/fund.php" );
+require_once( FRESH_INCLUDES . "/core/data/sql.php" );
 require_once( "vat.php" );
 
 if (!defined("IM_CHARSET"))
@@ -103,24 +103,6 @@ function get_delivery_vat( $delivery_id ) {
 
 		return 0;
 	}
-}
-
-function get_delivery_id( $order_id_or_array ) {
-//	print "get_delivery_id";
-	$order_id = 0;
-
-	if ( is_array( $order_id_or_array ) ) {
-		$order_id = $order_id_or_array[0];
-	} else if ( is_numeric( $order_id_or_array ) ) {
-		$order_id = $order_id_or_array;
-	}
-	if ( is_numeric( $order_id ) ) {
-		return sql_query_single_scalar( 'SELECT id FROM im_delivery WHERE order_id = ' . $order_id );
-	}
-
-	print "Must send a number to get_delivery_id!";
-
-	return 0;
 }
 
 function get_supply_status_name( $supplier_id ) {

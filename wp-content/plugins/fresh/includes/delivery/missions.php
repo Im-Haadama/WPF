@@ -5,14 +5,7 @@
  * Date: 16/10/17
  * Time: 16:18
  */
-// require_once( "../r-shop_manager.php" );
-
-if ( ! defined( 'FRESH_INCLUDES' ) ) {
-	define( 'FRESH_INCLUDES', dirname( dirname( __FILE__ ) ) );
-}
-
-//
-require_once( FRESH_INCLUDES . '/niver/data/sql.php' );
+require_once( FRESH_INCLUDES . 'core/data/sql.php' );
 
 // print header_text();
 //function show_zone_names( $str_zones, $line_id )
