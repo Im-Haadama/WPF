@@ -77,7 +77,7 @@ class Focus_Views {
 				break;
 			case "focus_main":
 				// $new = get_param("new", false, null);
-				$id = get_user_id();
+				$id = get_user_id(true);
 				if ( ! $id > 0 ) {
 					$result .= " No user ";
 				} else {
@@ -333,40 +333,13 @@ class Focus_Views {
 				$result .= "done";
 				break;
 
-			case "show_edit_all_teams": // System manager -> edit all teams in the system.
-				if ( ! im_user_can( "edit_teams" ) ) {
-					$result .= "No permissions";
-				}
-				$args              = [];
-				$args["post_file"] = "/wp-content/plugins/focus/post.php";
-				$args["selectors"] = array( "manager" => "gui_select_worker" );
-				$args["links"]     = array(
-					"id" => add_to_url( array(
-						"operation" => "show_edit_team",
-						"id"        => "%s"
-					) )
-				);
-				$args["page"]      = get_param( "page" );
-//			$result .=  "url = " . get_url() . "<br/>";
-//			$result .=  add_to_url(array("operation" => "del_team", "id"=>"%s"));
-
-				$args["actions"] = array(
-					array(
-						"delete",
-						$action_url . "?operation=del_team&id=%s;action_hide_row"
-					)
-				);
-				$result          .= gui_header( 1, "All system teams" );
-				$result          .= GemTable( "im_working_teams", $args );
-
-				unset( $args["actions"] );
-				$args["mandatory_fields"] = array( "manager", "team_name" );
-				$result                   .= GemAddRow( "im_working_teams", "Add a team", $args );
+			case "show_teams": // System manager -> edit all teams in the system.
+				$result .= self::show_teams();
 				break;
 
 			case "show_edit_team":
 				$team_id = get_param( "id" );
-				$result  .= show_edit_team( $team_id );
+				$result  .= self::show_edit_team( $team_id );
 				break;
 
 			case "show_tasks":
@@ -390,6 +363,77 @@ class Focus_Views {
 		print $result;
 
 		return;
+	}
+
+	static function show_edit_team($team_id)
+	{
+		$result = gui_header(1, "Edit team");
+		$args["selectors"] = array("manager" => "gui_select_worker");
+		$args["post_file"] = get_url(1) . "?team_id=" . $team_id;
+		$result .= GemElement("im_working_teams", $team_id, $args);
+
+		$result .= gui_header(2, "Team members");
+		$table = array();
+		$table["header"] = array("name");
+		foreach (Org_Team::team_all_members($team_id) as $member){
+			$table[$member]["name"] = get_user_name($member);
+		}
+
+		$args["add_checkbox"] = true;
+		$result .= GemArray($table, $args, "team_members");
+
+		$result .= gui_header(1, "add member");
+		$result .= gui_select_worker("new_member", null, $args);
+		$result .= gui_button("btn_add_member", "add_team_member(" . $team_id . ")", "add");
+
+		$tasks = sql_query_array_scalar("select id from im_tasklist where team = $team_id");
+		if ($tasks)
+			$result .= self::show_tasks($tasks);
+		else
+			$result .= "No tasks";
+
+
+		return $result;
+//			$result = gui_header(1, "edit team" . team_get_name($team_id));
+//			$result .=  gui_header(2, "members");
+//			foreach (team_all_members($team_id) as $member) $result .= get_user_name($member) . " ";
+
+	}
+
+	static function show_teams()
+	{
+		$action_url = "/wp-content/plugins/focus/post.php";
+		$result = "";
+		if ( ! im_user_can( "edit_teams" ) ) {
+			$result .= "No permissions";
+		}
+		$args              = [];
+		$args["post_file"] = "/wp-content/plugins/focus/post.php";
+		$args["selectors"] = array( "manager" => "gui_select_worker" );
+		$args["links"]     = array(
+			"id" => add_to_url( array(
+				"operation" => "show_edit_team",
+				"id"        => "%s"
+			) )
+		);
+		$args["page"]      = get_param( "page" );
+//			$result .=  "url = " . get_url() . "<br/>";
+//			$result .=  add_to_url(array("operation" => "del_team", "id"=>"%s"));
+
+		$args["actions"] = array(
+			array(
+				"delete",
+				$action_url . "?operation=del_team&id=%s;action_hide_row"
+			)
+		);
+		$result          .= gui_header( 1, "All system teams" );
+		$result          .= GemTable( "im_working_teams", $args );
+
+		unset( $args["actions"] );
+		$args["mandatory_fields"] = array( "manager", "team_name" );
+		$result                   .= GemAddRow( "im_working_teams", "Add a team", $args );
+
+		return $result;
 	}
 
 	static function show_new_task($mission = false, $new_task_id = null)
@@ -574,8 +618,9 @@ class Focus_Views {
 					case "team_members":
 						$team_id = get_param( "team_id", true );
 						$ids     = get_param( "ids", true );
-						if ( team_remove_member( $team_id, $ids ) ) {
+						if ( Org_Team::team_remove_member( $team_id, $ids ) ) {
 							print "done";
+							return;
 						}
 						print "failed";
 

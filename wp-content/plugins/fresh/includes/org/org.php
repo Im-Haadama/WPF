@@ -119,31 +119,6 @@ function team_delete($team_id)
  *
  * @return bool
  */
-function team_remove_member($team_id, $members)
-{
-	if (is_array($members)){
-		foreach ($members as $member)
-			if (! team_remove_member($team_id, $member)) return false;
-		return true;
-	}
-	$member = $members;
-	$current = get_usermeta($member, 'teams');
-	$teams = comma_array_explode($current);
-
-	$idx = array_search($team_id, $teams);
-	if ($idx === false) {
-		print "not member" . gui_br();
-		return false;
-	}
-
-	unset ($teams[$idx]);
-
-//	debug_var($teams);
-	$new =  ':' . implode(':', $teams) . ':';
-//	debug_var($new);
-//	die(1);
-	 return update_usermeta($member, 'teams', $new);
-}
 
 function company_invite_member($company_id, $email,  $name, $project_id)
 {

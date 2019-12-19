@@ -97,40 +97,6 @@ function focus_check_user()
  * @return string
  * @throws Exception
  */
-function show_edit_team($team_id)
-{
-	$result = gui_header(1, "Edit team");
-	$args["selectors"] = array("manager" => "gui_select_worker");
-	$args["post_file"] = get_url(1) . "?team_id=" . $team_id;
-	$result .= GemElement("im_working_teams", $team_id, $args);
-
-	$result .= gui_header(2, "Team members");
-	$table = array();
-	$table["header"] = array("name");
-	foreach (team_all_members($team_id) as $member){
-		$table[$member]["name"] = get_user_name($member);
-	}
-
-	$args["add_checkbox"] = true;
-	$result .= GemArray($table, $args, "team_members");
-
-	$result .= gui_header(1, "add member");
-	$result .= gui_select_worker("new_member", null, $args);
-	$result .= gui_button("btn_add_member", "add_team_member(" . $team_id . ")", "add");
-
-	$tasks = sql_query_array_scalar("select id from im_tasklist where team = $team_id");
-	if ($tasks)
-		$result .= show_tasks($tasks);
-	else
-		$result .= "No tasks";
-
-
-	return $result;
-//			$result = gui_header(1, "edit team" . team_get_name($team_id));
-//			$result .=  gui_header(2, "members");
-//			foreach (team_all_members($team_id) as $member) $result .= get_user_name($member) . " ";
-
-}
 
 /**
  * @param $company_id
