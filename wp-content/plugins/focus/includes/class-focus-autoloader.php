@@ -69,18 +69,21 @@ class Focus_Autoloader {
 	 * @param string $class Class name.
 	 */
 	public function autoload( $class ) {
+//		print "loading " . $class . "<br/>";
 		$class = strtolower( $class );
 		$file = $this->get_file_name_from_class( $class );
 		if (0 === strpos ($class, 'focus_')) {
 			$path = $this->include_path;
-		} else
-		if ( 0 === strpos( $class, 'focus_shortcode_' ) ) {
+		} elseif ( 0 === strpos( $class, 'focus_shortcode_' ) ) {
 			$path = $this->include_path . 'shortcodes/';
 		} elseif ( 0 === strpos( $class, 'org' ) ) {
 			$path = $this->include_path . 'org/';
-		} else {
+		} elseif (0 === strpos($class, "core")) {
+			$path = $this->include_path . 'core/';
+		} else
 			return;
-		}
+
+//		print "path=$path";
 //		} elseif ( 0 === strpos( $class, 'wc_admin' ) ) {
 //			$path = $this->include_path . 'admin/';
 //		} elseif ( 0 === strpos( $class, 'wc_payment_token_' ) ) {

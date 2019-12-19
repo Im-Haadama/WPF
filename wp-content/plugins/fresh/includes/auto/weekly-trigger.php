@@ -21,7 +21,7 @@ if ( ! isset( $hosts_to_sync ) ) {
 	die ( "define hosts_to_sync in config file" );
 }
 
-$m = new MultiSite( $hosts_to_sync, $master, 3 );
+$m = new Core_MultiSite( $hosts_to_sync, $master, 3 );
 
 // Run daily on master.
 print gui_header(1, "Running on master") . gui_br();

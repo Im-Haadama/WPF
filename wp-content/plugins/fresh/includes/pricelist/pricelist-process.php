@@ -46,13 +46,13 @@ function pricelist_remote_site_process( $supplier_id, &$results, $inc = false ) 
 
 	$remote = "/catalog/get-as-pricelist.php";
 	if ( $inc ) {
-		$remote .= "?incremental&site_id=" . ImMultiSite::LocalSiteID();
+		$remote .= "?incremental&site_id=" . Core_Db_MultiSite::LocalSiteID();
 	}
 
 	print gui_header( 2, "מבקש נתונים" );
 	flush();
 	print $remote . "<br/>";
-	$html = ImMultiSite::sExecute( $remote, $site_id );
+	$html = Core_Db_MultiSite::sExecute( $remote, $site_id );
 //	print $html;
 //	die(1);
 	if ( strlen( $html ) < 500 ) {

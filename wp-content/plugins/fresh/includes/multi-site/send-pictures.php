@@ -60,12 +60,12 @@ while ( $r = mysqli_fetch_assoc( $result ) ) {
 	if ( strlen( $req ) >= 1500 ) {
 		$req = rtrim( $req, ',' );
 		// print $req . "<br/>";
-		print ImMultiSite::sExecute( $req, 2 ) . "<br/>";
+		print Core_Db_MultiSite::sExecute( $req, 2 ) . "<br/>";
 		$req = $req_prefix;
 	}
 }
 if ( strlen( $req ) > strlen( $req_prefix ) ) {
 	$req = rtrim( $req, ',' );
 	// print $req . "<br/>";
-	print ImMultiSite::sExecute( $req, 2 ) . "<br/>";
+	print Core_Db_MultiSite::sExecute( $req, 2 ) . "<br/>";
 }

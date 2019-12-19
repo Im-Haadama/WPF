@@ -9,7 +9,7 @@ define("FRESH_INCLUDES", dirname(dirname(__FILE__)));
 print header_text(true, true, false);
 require_once( 'multi-site/imMulti-site.php' );
 
-$i = new ImMultiSite();
+$i = new Core_Db_MultiSite();
 
 print system("uname -a") . "<br/>";
 

@@ -4,6 +4,7 @@ require_once (FOCUS_INCLUDES . 'gui.php');
 
 class Focus_Views {
 	private $post_file;
+	private $version;
 	protected static $_instance = null;
 	protected $nav_menu_name;
 
@@ -14,6 +15,7 @@ class Focus_Views {
 	 */
 	public function __construct( $post_file ) {
 		$this->post_file = $post_file;
+		$this->version = "1.0";
 		add_action( 'get_header', array( $this, 'create_nav' ) );
 	}
 
@@ -33,6 +35,11 @@ class Focus_Views {
 	}
 
 	public function enqueue_scripts() {
+		$file = plugin_dir_url( __FILE__ ) . 'org/people/people.js';
+		wp_enqueue_script( 'data', $file, null, $this->version, false );
+
+		$file = plugin_dir_url( __FILE__ ) . 'core/gui/client_tools.js';
+		wp_enqueue_script( 'client_tools', $file, null, $this->version, false );
 
 	}
 
@@ -209,7 +216,7 @@ class Focus_Views {
 				);
 				$args["transpose"]        = true;
 				$args["worker"]           = get_user_id();
-				$args["companies"]        = worker_get_companies( get_user_id() );
+				$args["companies"]        = Org_Worker::GetCompanies( get_user_id() );
 				$args["values"]           = array( "owner" => get_user_id(), "creator" => get_user_id() );
 				$args["fields"]           = array(
 					"task_description",
@@ -371,6 +378,7 @@ class Focus_Views {
 				$page       = get_param( "page", false, 1 );
 				$result     .= show_edit_company( $company_id, $page );
 				break;
+
 			default:
 				print __FUNCTION__ . ": " . $operation . " not handled <br/>";
 
@@ -450,25 +458,9 @@ class Focus_Views {
 		return $result;
 	}
 
-	static function Report()
-	{
-		$user_id = get_user_id(true);
-
-		if (! user_can($user_id, 'working_hours_all')) {
-			print im_translate("No permissions");
-			return;
-		}
-
-		$month = get_param("month", false, date( 'Y-m', strtotime( 'last month' ) ));
-
-		$args["show_salary"] = true;
-		$args["edit_lines"] = $edit;
-		print show_all($month,$args);
-		print GuiHyperlink("Previous month", add_to_url("month", date('Y-m', strtotime($month . '-1 -1 month'))));
-	}
 
 	static function handle_focus_do( $operation ) {
-		$allowed_tables         = array( "im_company", "im_tasklist", "im_task_templates", "im_projects" );
+		$allowed_tables         = array( "im_company", "im_tasklist", "im_task_templates", "im_projects", "im_working" );
 		$header_args            = [];
 		$header_args["scripts"] = array(
 			"/core/gui/client_tools.js",
@@ -725,10 +717,10 @@ class Focus_Views {
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Links: Templates                                                                       //
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		if ( $teams = team_managed_teams( $user_id ) ) {// Team manager
+		if ( $teams = Org_Team::team_managed_teams( $user_id ) ) {// Team manager
 			$workers = array();
 			foreach ( $teams as $team ) {
-				foreach ( team_all_members( $team ) as $worker_id ) {
+				foreach ( Org_Team::team_all_members( $team ) as $worker_id ) {
 					$workers[ $worker_id ] = 1;
 				}
 				$count  = 0; // active_task_count("team_id = " . $team);
@@ -768,7 +760,7 @@ class Focus_Views {
 		// Tasks of teams I manage. Not assigned to me                                                               //
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		$args["title"] = im_translate( "Teams I manage tasks" );
-		$teams         = team_managed_teams( $user_id );
+		$teams         = Org_Team::team_managed_teams( $user_id );
 		// print "teams: " . comma_implode($teams) . "<br/>";
 		$args["fields"][]          = "team";
 		$args["selectors"]["team"] = "gui_select_team";
@@ -781,7 +773,7 @@ class Focus_Views {
 		// Tasks teams I'm a member of (team in my_teams). Not assigned                                              //
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		$args["title"] = im_translate( "My teams tasks" );
-		$teams         = team_all_teams( $user_id );
+		$teams         = Org_Worker::GetTeams( $user_id );
 		// print "teams: " . comma_implode($teams) . "<br/>";
 		$args["fields"][]          = "team";
 		$args["selectors"]["team"] = "gui_select_team";
@@ -1007,7 +999,7 @@ class Focus_Views {
 		);
 
 		$args["worker"]    = get_user_id();
-		$args["companies"] = worker_get_companies( get_user_id() );
+		$args["companies"] = Org_Worker::GetCompanies( get_user_id() );
 		$args["debug"]     = 0; // get_user_id() == 1;
 		$args["worker"]    = get_user_id();
 		$args["post_file"] = self::instance()->post_file;
@@ -1015,173 +1007,22 @@ class Focus_Views {
 		return GemElement( $table_name, $row_id, $args );
 	}
 
-	function get_nav() {
+	function get_nav_name() {
 		return $this->nav_menu_name;
 	}
 
-	private function set_toplevel_nav( $menu_id ) {
-		print "reset";
-		// Set up default menu items
-		// Back to fresh. Todo: check if fresh installed.
-		wp_update_nav_menu_item( $menu_id, 0, array(
-			'menu-item-title'   => __( 'Fresh' ),
-			'menu-item-classes' => 'home',
-			'menu-item-url'     => home_url( '/fresh' ),
-			'menu-item-status'  => 'publish'
-		) );
-
-		wp_update_nav_menu_item( $menu_id, 0, array(
-			'menu-item-title'  => __( 'Active tasks' ),
-			'menu-item-url'    => home_url( '/focus' ),
-			'menu-item-status' => 'publish'
-		) );
-
-		wp_update_nav_menu_item( $menu_id, 0, array(
-			'menu-item-title'  => __( 'Projects' ),
-			'menu-item-url'    => home_url( '/focus?operation=show_projects' ),
-			'menu-item-status' => 'publish'
-		) );
-
-		wp_update_nav_menu_item( $menu_id, 0, array(
-			'menu-item-title'  => __( 'Teams' ),
-			'menu-item-url'    => home_url( '/focus' ),
-			'menu-item-status' => 'publish'
-		) );
-
-	}
-
-	private function update_nav_projects($menu_id, $parent, $user_id) {
-		// Add new ones.
-		$projects    = worker_get_projects( $user_id );
-		$menu_items = wp_get_nav_menu_items( $menu_id );
-		foreach ($projects as $project_id => $project_name){
-			$found = false;
-			if ($menu_items){
-				foreach ($menu_items as $item) {
-					if ($item->post_title == $project_name) {
-						$found = true;
-						continue;
-					}
-				}
-			}
-			if (! $found) {
-				wp_update_nav_menu_item( $menu_id, 0, array(
-					'menu-item-title'   => __( $project_name ),
-					'menu-item-classes' => 'home',
-					'menu-item-url'     => home_url( '/focus?operation=show_project&project_id=' .  $project_id),
-					'menu-item-status'  => 'publish',
-					'menu-item-parent-id' => $parent
-				) );
-			}
-		}
-
-		// Remove redundant or not active
-//		foreach ($menu_items as $item) {
-//			$found_id = 0;
-//			foreach ($projects as $project_id => $project_name) {
-//				if ($item->post_title == $project_name) {
-//					$found_id = $project_id;
-//					continue;
-//				}
-//			}
-//			if ($found_id) unset ($projects[$found_id]); // First time - just remove from list.
-//			else wp_delete_post($item->ID); // second time or inactive project
-//		}
-
-//		foreach ($add as $project_id){
-//			$index = array_search($project_id, $projects);
-//			$project_id = $projects[$index]['project_id'];
-//			$project_name = $projects[$index]['project_name'];
-//			print $index . " adding $project_id " . $project_name . "<br/>";
-//
-//		}
-//
-//		$remove = array_diff($menu_projects, $project_ids);
-//		if ($remove) die ("need to complete");
-//
-//		foreach ( $menu_items as $menu_item ) {
-//			var_dump($menu_item);
-//			die (1);
-//
-//		}
-	}
-
-	private function update_nav_teams($menu_id, $parent, $user_id) {
-		// Add new ones.
-		$teams   = worker_get_teams( $user_id );
-		$menu_items = wp_get_nav_menu_items( $menu_id );
-		foreach ( $teams as $team_id ) {
-			$team_name = Org_Team::team_get_name($team_id);
-			$found = false;
-			if ( $menu_items ) {
-				foreach ( $menu_items as $item ) {
-					if ( $item->post_title == $team_name ) {
-						$found = true;
-						continue;
-					}
-				}
-			}
-			if ( ! $found ) {
-				wp_update_nav_menu_item( $menu_id, 0, array(
-					'menu-item-title'     => __( $team_name ),
-					'menu-item-classes'   => 'home',
-					'menu-item-url'       => home_url( '/focus?operation=show_team&team_id=' . $team_id ),
-					'menu-item-status'    => 'publish',
-					'menu-item-parent-id' => $parent
-				) );
-			}
-		}
-	}
-
-	private function set_nav_details($menu_nav, $user_id, $reset = false)
-	{
-		$menu_items = wp_get_nav_menu_items($menu_nav);
-		foreach  ($menu_items as $menu_item){
-			switch ($menu_item->post_title){
-				case "Projects":
-					$project_menu_id = $menu_item->ID;
-					self::update_nav_projects($menu_nav, $project_menu_id, $user_id);
-					break;
-				case "Fresh":
-					break;
-				case "Teams":
-					$team_menu_id = $menu_item->ID;
-					self::update_nav_teams($menu_nav, $team_menu_id, $user_id);
-					break;
-				default:
-
-			}
-		}
-
-//			array_push($menu_options,
-//				array("link" => add_to_url(array("operation"=>"show_project", "id" => $project["project_id"])),
-//				      "text"=>$project['project_name']));
-
-	}
-
-	function create_nav()
-	{
+	function create_nav() {
 		$user_id = get_user_id();
 		if (! $user_id) return;
 
-		$this->nav_menu_name = 'management.' . $user_id;
+		$this->nav_menu_name = "management." . $user_id;
 
-		$menu_nav = null;
-		$menu_nav_id = 0;
+		Focus_Nav::instance()->create_nav($this->nav_menu_name, $user_id);
+	}
 
-		// Reset menu - remove all and build from scatch.
-		$reset_menu = get_param("reset_menu", false, false);
-		if ($reset_menu) wp_delete_nav_menu($this->nav_menu_name);
-		else {
-			$menu_nav = wp_get_nav_menu_object( $this->nav_menu_name);
-			$menu_nav_id = $menu_nav->term_id;
-		}
-
-		if (! $menu_nav) {  /// Brand new or reset requested.
-			$menu_nav_id = wp_create_nav_menu($this->nav_menu_name); // Create
-			self::set_toplevel_nav($menu_nav_id);
-		}
-		self::set_nav_details($menu_nav_id, $user_id);
+	function get_nav()
+	{
+		return Focus_Nav::instance()->get_nav();
 	}
 //if ($menu_nav) $menu_nav_id = $menu_nav->term_id;
 

@@ -13,7 +13,7 @@ require_once( FRESH_INCLUDES . "/core/gui/inputs.php" );
 require_once( FRESH_INCLUDES . "/fresh/supplies/Supply.php" );
 require_once( FRESH_INCLUDES . "/fresh/multi-site/imMulti-site.php" );
 
-$m = ImMultiSite::getInstance();
+$m = Core_Db_MultiSite::getInstance();
 
 //$text = show_category_all( false, true, false, false);
 //

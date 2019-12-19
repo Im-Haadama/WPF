@@ -20,7 +20,7 @@ class Focus_Shortcodes {
 	public static function init() {
 		$shortcodes = array(
 			'focus_main'           => __CLASS__ . '::focus_main',
-			'focus_salary_report'        => __CLASS__ . '::focus_salary_report',
+			'salary_main'        => __CLASS__ . '::salary_main',
 //			'focus_suppliers'            => __CLASS__ . '::suppliers', // [focus_suppliers]
 //			'product_page'               => __CLASS__ . '::product_page',
 //			'product_category'           => __CLASS__ . '::product_category',
@@ -43,7 +43,7 @@ class Focus_Shortcodes {
 		);
 
 		foreach ( $shortcodes as $shortcode => $function ) {
-			// print "{$shortcode}_shortcode_tag" . " ". $shortcode ." " . $function . "<br/>";
+//			 print "{$shortcode}_shortcode_tag" . " ". $shortcode ." " . $function . "<br/>";
 			add_shortcode( apply_filters( "{$shortcode}_shortcode_tag", $shortcode ), $function );
 		}
 
@@ -253,6 +253,11 @@ class Focus_Shortcodes {
 	public static function focus_main( $atts ) {
 		$operation = get_param("operation", false, "focus_main");
 		return self::shortcode_wrapper( array( 'Focus_Views', 'handle_focus_show' ), $operation );
+	}
+
+	public static function salary_main($atts) {
+		$operation = get_param("operation", false, "salary_main");
+		return self::shortcode_wrapper( array( 'Focus_Salary', 'handle_salary_show' ), $operation );
 	}
 
 //

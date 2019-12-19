@@ -85,7 +85,7 @@ $table[ $i ++ ][ $col ] = gui_hyperlink( "הוספת פריטים", "../catalog/
 $i                         = 0;
 $table[ $i ++ ][ ++ $col ] = gui_header( 1, "משלוחים" );
 
-if ( MultiSite::LocalSiteID() == 2 ) {
+if ( Core_MultiSite::LocalSiteID() == 2 ) {
 	$table[ $i ++ ][ $col ] = gui_header( 2, "מכולת" );
 	$table[ $i ++ ][ $col ] = gui_hyperlink( "מורשת", "../delivery/legacy.php" );
 }

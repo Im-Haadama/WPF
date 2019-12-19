@@ -36,7 +36,7 @@ if ( ! defined( 'IM_BACKUP_FOLDER' ) ) {
 	die ( "define IM_BACKUP_FOLDER" );
 }
 
-$m = new MultiSite( $hosts_to_sync, $master, 3 );
+$m = new Core_MultiSite( $hosts_to_sync, $master, 3 );
 
 $op = get_param( "op" );
 // $backup_run_time = shell_exec(`crontab -l | grep backup.sh | cut -f 2 -d' '`);

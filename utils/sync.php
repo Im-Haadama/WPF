@@ -25,7 +25,7 @@ if ( ! $period ) {
 }
 
 // Working on behalf of master - fruity.
-$m = new MultiSite( $hosts_to_sync, 3, 3 );
+$m = new Core_MultiSite( $hosts_to_sync, 3, 3 );
 
 foreach ( $hosts_to_sync as $host ) {
 	$m->Execute( "fresh/auto/" . $period . ".php", "" );

@@ -16,7 +16,7 @@
 
 if (! function_exists("my_log")) {
 	function my_log( $msg, $title = '', $file = null ) {
-		$error_file = FRESH_INCLUDES . '/logs/' . ( $file ? $file : 'php_error.log' );
+		$error_file = ABSPATH . '/logs/' . ( $file ? $file : 'php_error.log' );
 //    print $error_file;
 		$date = date( 'd.m.Y h:i:s' );
 		$msg  = print_r( $msg, true );
@@ -209,43 +209,6 @@ if (! function_exists("my_log")) {
 
 // Return reference is useful for summing table, e.g.
 
-	/**
-	 * @param $args
-	 * @param $key
-	 * @param $default
-	 *
-	 * @return mixed
-	 */
-	function &GetArg( $args, $key, $default ) {
-		if ( ! $args or ! isset( $args[ $key ] ) ) {
-			return $default;
-		}
-
-		return $args[ $key ];
-	}
-
-	/**
-	 * @param $key
-	 * @param bool $mandory
-	 * @param null $default
-	 *
-	 * @return mixed|null
-	 */
-	function get_param( $key, $mandory = false, $default = null ) {
-		if ( isset( $_GET[ $key ] ) ) {
-			return $_GET[ $key ];
-		}
-
-		if ( $mandory ) {
-			die ( "Error: " . __FUNCTION__ . " key " . $key . " not supplied" );
-		} else {
-			return $default;
-		}
-	}
-
-	function quote_percent( $text ) {
-		return '"%' . $text . '%"';
-	}
 
 	/**
 	 * @param $num_or_text
@@ -648,6 +611,7 @@ if (! function_exists("my_log")) {
 	 * @param $var
 	 */
 	function debug_var( $var ) {
+		print "debug";
 		if ( get_user_id() !== 1 ) {
 			return;
 		}

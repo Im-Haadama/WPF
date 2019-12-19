@@ -10,47 +10,6 @@
 
 require_once( "sql.php" );
 
-function disable_translate()
-{
-	im_translate("DisableTranslate");
-}
-
-function im_translate($text, $arg = null)
-{
-	static $translate_enabled = true; // Had problems with global variable changed somehow.
-
-	if ($text === "DisableTranslate") { $translate_enabled = false; return; }
-
-	if (! $translate_enabled) return $text;
-
-	$textdomain = GetArg($arg, "textdomain", 'im_haadama');
-
-	if (is_array($text)){
-		$result = "";
-		foreach ($text as $text_part)
-			$result .= im_translate($text_part, $arg);
-		return $result;
-	}
-
-//	print "translating $text to " . get_locale() . "...";
-	if (function_exists('translate'))
-		$t = translate($text, $textdomain);
-	else {
-		print "no translate function";
-		$t = $text;
-	}
-//	print $t . "<br/>";
-	// print $t . " " . strlen($t);
-	if (strlen($t))
-	{
-		if (strstr($t, "%s")){
-			return $arg ? sprintf($t, $arg) : $t;
-		}
-		return $t;
-	} else {
-		return $text;
-	}
-}
 
 function im_translate_arr($texts, $arg = null)
 {

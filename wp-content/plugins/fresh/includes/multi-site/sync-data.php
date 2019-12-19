@@ -85,7 +85,7 @@ switch ( $operation ) {
 		}
 		$source = $_GET["source"];
 
-		ImMultiSite::UpdateFromRemote( $table, $key, $source );
+		Core_Db_MultiSite::UpdateFromRemote( $table, $key, $source );
 }
 
 function get_decorated_diff( $old, $new ) {

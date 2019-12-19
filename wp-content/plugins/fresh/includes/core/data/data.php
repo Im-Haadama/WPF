@@ -102,7 +102,9 @@ function data_delete($table_name, $row_may_ids)
 			if ( ! data_delete( $table_name, $id ) ) return false;
 		return true;
 	}
-	if (! sql_query("delete from $table_name where id = $row_may_ids")) return false;
+	$sql = "delete from $table_name where id = $row_may_ids";
+//	print $sql;
+	if (! sql_query($sql)) return false;
 	return true;
 }
 

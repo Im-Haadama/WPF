@@ -33,6 +33,6 @@ $hosts_to_sync[4] = array( 4, "super-organi", "http://super-organi.co.il" );
 
 
 // Working on behalf of master - fruity.
-$m = new MultiSite( $hosts_to_sync, 3, 3 );
+$m = new Core_MultiSite( $hosts_to_sync, 3, 3 );
 
 $m->Execute( "tasklist/create.php?freq=" . $freq, 1 );

@@ -31,7 +31,7 @@ function set_supplier_id() {
 		print 'var supplier_id = ' . $id . ';';
 		if ( $site_id > 0 ) {
 			print 'var site_id = ' . $site_id . ';';
-			print 'var tools = \'' . ImMultiSite::SiteTools( $site_id ) . "';";
+			print 'var tools = \'' . Core_Db_MultiSite::SiteTools( $site_id ) . "';";
 		} else {
 			print 'var site_id = "";';
 			print 'var tools = "";';

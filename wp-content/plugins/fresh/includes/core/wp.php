@@ -8,8 +8,6 @@
 
 $no_wp = 0;
 
-require_once( FRESH_INCLUDES . '/core/data/translate.php' );
-require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 
 // Postmeta table
 /**

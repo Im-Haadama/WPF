@@ -3,7 +3,7 @@ error_reporting( E_ALL );
 ini_set( 'display_errors', 'on' );
 require( '../r-shop_manager.php' );
 require_once(FRESH_INCLUDES . "/fresh/multi-site/imMulti-site.php");
-$m = ImMultiSite::getInstance();
+$m = Core_Db_MultiSite::getInstance();
 
 	print header_text( false );
 require_once( "account.php" );

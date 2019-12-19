@@ -216,7 +216,7 @@ function im_open_orders( $atts, $contents, $tag ) {
 				print "הזמנה " . $order . " עברה לטיפול. צור קשר עם שירות הלקוחות" . "<br/>";
 			} else {
 				print "הזמנה " . $order . " עדיין לא הוכנה. במידה ויתאפשר נוסיף מוצרים. נא לא לבטל פריטים טריים זמן קצר לפני האספקה. לחץ לשינוי ";
-				print gui_hyperlink( "הזמנה " . $order, ImMultiSite::LocalSiteTools() . "/fresh/orders/get-order.php?order_id=" . $order );
+				print gui_hyperlink( "הזמנה " . $order, Core_Db_MultiSite::LocalSiteTools() . "/fresh/orders/get-order.php?order_id=" . $order );
 				print ".<br/>";
 			}
 		}

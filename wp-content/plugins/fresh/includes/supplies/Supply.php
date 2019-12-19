@@ -1188,12 +1188,12 @@ function send_supply_as_order( $id ) {
 	$remote = "orders/orders-post.php?operation=create_order&user_id=" . $user_id .
 	          "&prods=" . implode( ",", $prods ) .
 	          "&quantities=" . implode( ",", $quantities ) .
-	          "&comments=" . urlencode( "נשלח מאתר " . ImMultiSite::LocalSiteName() ) .
+	          "&comments=" . urlencode( "נשלח מאתר " . Core_Db_MultiSite::LocalSiteName() ) .
 	          "&units=" . implode( ",", $units ) . // TODO: support units.
 	          "&mission_id=" . $mission_id;
 
 	print $remote . " site: " . $site_id . "<br/>";
-	print ImMultiSite::sExecute( $remote, $site_id );
+	print Core_Db_MultiSite::sExecute( $remote, $site_id );
 }
 
 function handle_supplies_operation($operation)

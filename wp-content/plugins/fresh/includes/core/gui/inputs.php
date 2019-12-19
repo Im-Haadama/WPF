@@ -17,7 +17,7 @@
 // GUI elements
 // cast: function gui_<html code>($params) { return $text; }
 
-require_once( FRESH_INCLUDES . '/core/gui/sql_table.php' );
+require_once( 'sql_table.php' );
 
 /// To have textual output first include text_inputs.php
 if (! function_exists('gui_br')) {
@@ -720,8 +720,6 @@ if (! function_exists('gui_br')) {
 	 */
 	function gui_table_args($input_rows, $id = null, $args = null)
 	{
-		$data = "";
-
 		$debug = GetArg($args, "debug", false);
 		$width = GetArg($args, "width", null);
 		$bordercolor = GetArg($args, "bordercolor", null);
@@ -754,7 +752,6 @@ if (! function_exists('gui_br')) {
 			return null;
 		}
 
-		if ($debug) print "row count: " . count($input_rows) . "<br/>";
 		$rows = array();
 		foreach ($input_rows as $key => $input_row) {
 			if ( !$prepare || in_array( $key, array( "checkbox", "header", "mandatory", "sums" ) ) ) {

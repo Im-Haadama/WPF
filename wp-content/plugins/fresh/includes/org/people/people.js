@@ -1,7 +1,9 @@
+let post_file = '/wp-content/plugins/focus/post.php';
+
 function delete_lines()
 {
     let params = get_selected("working_days");
-    let request = "people-post.php?operation=delete&params=" + params;
+    let request = post_file + "?operation=salary_delete&params=" + params;
     execute_url(request, location_reload);
 }
 

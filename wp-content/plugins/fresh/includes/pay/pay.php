@@ -89,7 +89,7 @@ print header_text();
         }
     </script>
 <?php
-if ( ImMultiSite::LocalSiteID() == 3 ) {
+if ( Core_Db_MultiSite::LocalSiteID() == 3 ) {
 	$cc     = "4580000000000000";
 	$cvv    = "144";
 	$id     = "000000000";

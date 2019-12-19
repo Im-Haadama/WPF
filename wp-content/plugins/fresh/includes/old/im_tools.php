@@ -158,30 +158,6 @@ function get_customer_by_email( $email ) {
 	return $user->ID;
 }
 
-function get_customer_email( $customer_id ) {
-	if ( $customer_id > 0 ) {
-		$user = get_user_by( "id", $customer_id );
-
-		return $user->user_email;
-	}
-	throw new Exception( "Bad customer_id " . __METHOD__ );
-}
-
-//function gui_select_creator( $id = null, $selected = null, $args ) {
-//	global $user_ID;
-//	if ( is_manager( $user_ID ) ) {
-////		$id, $table, $selected = null, $events = null, $more_values = null, $name = null, $where = null,
-////	$include_id = false, $datalist = false, $order_by = null, $id_key = null
-//
-////		$args = array("selected"=>$selected, "events"=>$events, ,
-////			"where" => "where is_active=1", "include_id" => 1, "datalist" => 0, "id_key" => "worker_id");
-//		$args["name"] = "client_displayname(worker_id)";
-//		$args["selected"] = $selected;
-//		return GuiSelectTable( $id, "im_working", $args);
-//	} else {
-//		return $user_ID;
-//	}
-//}
 
 function get_term_name($term_id)
 {

@@ -21,7 +21,7 @@ require_once( FRESH_INCLUDES . "/fresh/multi-site/imMulti-site.php" );
 function sync_from_master($debug) {
 	// print header_text( false, true, true );
 
-	$i = new ImMultiSite();
+	$i = new Core_Db_MultiSite();
 	if ( $i->isMaster() ) {
 		return "Master, no need to sync";
 	}

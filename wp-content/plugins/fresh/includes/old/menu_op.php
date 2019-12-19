@@ -92,7 +92,7 @@ add_command( $table, $row, $col, "edit_missions", "Driving missions", "/routes/r
 add_command( $table, $row, $col, "edit_shop_orders", "משלוחי המכולת", "/routes/legacy.php" );
 add_command( $table, $row, $col, null, "דיווח חוסרים ללקוח", "delivery/missing.php" );
 
-$m = new ImMultiSite();
+$m = new Core_Db_MultiSite();
 // print MultiSite::LocalSiteID();
 if ( ! $m->isMaster() ) {
 //	add_command( $table, $row, $col, "edit_shop_orders", "סנכרן איזורים", "/fresh/multi-site/sync-data.php?table=wp_woocommerce_shipping_zone_locations&operation=update&source=4" );

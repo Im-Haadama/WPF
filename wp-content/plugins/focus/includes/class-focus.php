@@ -119,6 +119,8 @@ class Focus {
 		add_action( 'init', array( $this, 'init' ), 0 );
 		add_action( 'init', array( 'Focus_Shortcodes', 'init' ) );
 
+		get_sql_conn(reconnect_db());
+
 //		add_action( 'init', array( 'Focus_Emails', 'init_transactional_emails' ) );
 		// add_action( 'init', array( $this, 'wpdb_table_fix' ), 0 );
 		// add_action( 'init', array( $this, 'add_image_sizes' ) );
@@ -137,7 +139,7 @@ class Focus {
 	public function log_errors() {
 		$error = error_get_last();
 		if ( in_array( $error['type'], array( E_ERROR, E_PARSE, E_COMPILE_ERROR, E_USER_ERROR, E_RECOVERABLE_ERROR ) ) ) {
-			$logger = focus_get_logger();
+			$logger = self::focus_get_logger();
 			$logger->critical(
 			/* translators: 1: error message 2: file name and path 3: line number */
 				sprintf( __( '%1$s in %2$s on line %3$s', 'focus' ), $error['message'], $error['file'], $error['line'] ) . PHP_EOL,
@@ -201,8 +203,16 @@ class Focus {
 
 	function handle_operation($operation)
 	{
-		$focus = Focus_Views::instance();
-		return $focus->handle_focus_show($operation);
+		$module = strtok($operation, "_");
+		switch ($module){
+			case "salary":
+				$salary = Focus_Salary::instance();
+				$salary->handle_operation($operation);
+				break;
+			default:
+				$focus = Focus_Views::instance();
+				return $focus->handle_focus_show($operation);
+		}
 //		switch ($operation)
 //		{
 //			case "order_set_mission":
@@ -224,12 +234,19 @@ class Focus {
 		 * Class autoloader.
 		 */
 		require_once FOCUS_INCLUDES . 'class-focus-autoloader.php';
-//		require_once FOCUS_INCLUDES . 'core/fund.php';
-//		require_once FOCUS_INCLUDES . 'core/data/sql.php';
-//		require_once FOCUS_INCLUDES . 'core/data/data.php';
+		require_once FOCUS_INCLUDES . 'core/data/sql.php';
+		require_once FOCUS_INCLUDES . 'core/data/data.php';
+		require_once FOCUS_INCLUDES . 'core/fund.php';
+		require_once FOCUS_INCLUDES . 'core/gui/inputs.php';
+		require_once FOCUS_INCLUDES . 'core/gui/gem.php';
+		require_once FOCUS_INCLUDES . 'core/web.php';
+		require_once FOCUS_INCLUDES . 'core/wp.php';
+		require_once FOCUS_INCLUDES . 'org/gui.php';
+		require_once FOCUS_INCLUDES . 'gui.php';
+
+		//		require_once FOCUS_INCLUDES . 'core/data/data.php';
 //		require_once FOCUS_INCLUDES . 'core/wp.php';
 //		require_once FOCUS_INCLUDES . 'focus_class_1.php'; // Pre plugin code. To be merged into plugin;
-//		require_once FOCUS_INCLUDES . 'gui.php';
 //		require_once FOCUS_INCLUDES . 'routes/gui.php';
 		/**
 		 * Interfaces.
@@ -439,6 +456,11 @@ class Focus {
 //		include_once WC_FOCUS_INCLUDES . 'includes/focus-template-functions.php';
 	}
 
+
+	public function focus_get_logger()
+	{
+		return new Focus_Logger();
+	}
 	/**
 	 * Init WooCommerce when WordPress Initialises.
 	 */
@@ -684,6 +706,7 @@ class Focus {
 //	public function mailer() {
 //		return WC_Emails::instance();
 //	}
+
 
 	public function run ()
 	{

@@ -47,4 +47,4 @@ require_once( 'simple_html_dom.php' );
 ////                    $url = substr($url, 10);
 //}
 
-print ImMultiSite::GetAll( "multi-site/pp.php" );
+print Core_Db_MultiSite::GetAll( "multi-site/pp.php" );

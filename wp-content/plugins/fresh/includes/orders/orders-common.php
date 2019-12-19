@@ -430,7 +430,7 @@ function total_order( $user_id ) {
 		$order_id = $row[0];
 		array_push( $order_ids, $order_id );
 		array_push( $order_clients, gui_hyperlink( get_postmeta_field( $order_id, '_shipping_first_name' ),
-			ImMultiSite::LocalSiteTools() . "/fresh/orders/get-order.php?order_id=" . $order_id ) );
+			Core_Db_MultiSite::LocalSiteTools() . "/fresh/orders/get-order.php?order_id=" . $order_id ) );
 
 		$totals[ $order_id ] = 0;
 

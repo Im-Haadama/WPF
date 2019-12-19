@@ -99,14 +99,6 @@ switch ( $operation ) {
 		}
 
 		return;
-	case "delete":
-		// $params = explode(',', $_GET["params"]);
-		$sql = "DELETE FROM im_working_hours WHERE id IN (" . $_GET["params"] . ")";
-//		 print $sql;
-		sql_query($sql );
-		// var_dump($result);
-		print "done";
-		return;
 }
 
 $result = "";

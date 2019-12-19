@@ -1,18 +1,15 @@
 <?php
 
-require_once( FRESH_INCLUDES . '/org/org.php' );
 
 /// Parameters are required - we need to show the allowed projects to the given user.
 function gui_select_project($id, $value, $args)
 {
-	// print "v=$value<br/>"; 16/10/2019 - default is edit=true.
 	$edit = GetArg($args, "edit", true);
 	$new_row = GetArg($args, "new_row", false);
 
 	if (! $edit)
 	{
-//		print "v= " . $value . "<br/>";
-		return get_project_name($value);
+		return Org_Project::GetName($value);
 	}
 	// Filter by worker if supplied.
 	$user_id = GetArg($args, "worker_id", get_user_id());
@@ -22,8 +19,11 @@ function gui_select_project($id, $value, $args)
 
 	$form_table = GetArg($args, "form_table", null);
 	$events = GetArg($args,"events", null);
-	die (1);// Need to fix projects list
-	$result =  gui_select( $id, "project_name", worker_get_projects($user_id), $events, $value, "project_id" );
+
+	$projects = Org_Project::GetProjects($user_id);
+	$projects_list = [];
+	foreach($projects as $project_id => $project_name) $projects_list[] = array("project_id" => $project_id, "project_name" => $project_name);
+	$result =  gui_select( $id, "project_name", $projects_list, $events, $value, "project_id" );
 	if ($form_table and $new_row) { // die(__FUNCTION__ . ":" . " missing form_table");
 		$result .= gui_button( "add_new_project", "add_element('project', '" . $form_table . "', '" . get_url() . "')", "New Project" );
 	}
@@ -35,7 +35,7 @@ function gui_select_worker( $id = null, $selected = null, $args = null )
 {
 	// $events = GetArg($args, "events", null);
 	$edit = GetArg($args, "edit", true);
-	$companies = worker_get_companies(get_user_id());
+	$companies = Org_Worker::GetCompanies(get_user_id());
 
 	$debug = false; // (get_user_id() == 1);
 	$args["debug"] = $debug;
@@ -73,7 +73,7 @@ function gui_select_user( $id = null, $selected = null, $args = null )
 function gui_select_team($id, $selected = null, $args = null)
 {
 	$edit = GetArg($args, "edit", true);
-	$companies = worker_get_companies(get_user_id());
+	$companies = Org_Worker::GetCompanies(get_user_id());
 	$debug = false; // (get_user_id() == 1);
 	$args["debug"] = $debug;
 	$args["name"] = "team_name";
@@ -92,11 +92,4 @@ function gui_select_team($id, $selected = null, $args = null)
 	else
 		return ($selected > 0) ? sql_query_single_scalar("select team_name from im_working_teams where id = " . $selected) : "";
 
-}
-
-function get_project_name($project_id)
-{
-	if ($project_id)
-		return sql_query_single_scalar("SELECT project_name FROM im_projects WHERE id = " . $project_id);
-	return "No project selected";
 }

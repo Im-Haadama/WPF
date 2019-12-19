@@ -930,7 +930,7 @@ class Order {
 	}
 
 	function PrintHtml( $selectable = false ) {
-		$site_tools = ImMultiSite::LocalSiteTools();
+		$site_tools = Core_Db_MultiSite::LocalSiteTools();
 
 		$fields = array();
 
@@ -938,7 +938,7 @@ class Order {
 			array_push( $fields, gui_checkbox( "chk" . $this->order_id, "deliveries", true ) );
 		}
 
-		array_push( $fields, ImMultiSite::LocalSiteName() );
+		array_push( $fields, Core_Db_MultiSite::LocalSiteName() );
 
 		$client_id     = $this->getCustomerId();
 		$ref           = "<a href=\"" . $site_tools . "/fresh/orders/get-order.php?order_id=" . $this->order_id . "\">" . $this->order_id . "</a>";
@@ -966,7 +966,7 @@ class Order {
 
 		array_push( $fields, order_get_mission_id( $this->order_id ) );
 
-		array_push( $fields, ImMultiSite::LocalSiteID() );
+		array_push( $fields, Core_Db_MultiSite::LocalSiteID() );
 		// array_push($fields, get_delivery_id($order_id));
 
 		$line = "<tr> " . delivery_table_line( 1, $fields ) . "</tr>";
@@ -1205,7 +1205,7 @@ function OrdersTable1($statuses = array('wc-processing'), $build_path = true, $u
 			$line[ OrderFields::order_id ] = gui_hyperlink( $order_id, "/fresh/orders/get-order.php?order_id=" . $order_id );
 
 			// 2) Customer name with link to his deliveries
-			$line[ OrderFields::customer ] = gui_hyperlink( get_customer_name( $customer_id ), ImMultiSite::LocalSiteTools() .
+			$line[ OrderFields::customer ] = gui_hyperlink( get_customer_name( $customer_id ), Core_Db_MultiSite::LocalSiteTools() .
 			                                                                                   "/fresh/account/get-customer-account.php?customer_id=" . $customer_id );
 
 

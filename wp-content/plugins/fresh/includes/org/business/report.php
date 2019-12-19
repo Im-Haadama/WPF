@@ -78,7 +78,7 @@ function print_weekly_report( $week ) {
 
 	$outputs = GuiTableContent("table", $sql, $supplies_args);
 
-	$salary_text = ImMultiSite::sExecute( "people/report-trans.php?week=" . $week . "&project=3", 1 );
+	$salary_text = Core_Db_MultiSite::sExecute( "people/report-trans.php?week=" . $week . "&project=3", 1 );
 
 	$dom         = im_str_get_html( $salary_text );
 	$row         = "";
@@ -89,7 +89,7 @@ function print_weekly_report( $week ) {
 	$travel        = - (int) $row->find( 'td', 13 )->plaintext;
 	$extra         = - (int) $row->find( 'td', 12 )->plaintext;
 
-	$salary_text .= ImMultiSite::sExecute( "people/report-trans.php?week=" . $week . "&project=11", 1 );
+	$salary_text .= Core_Db_MultiSite::sExecute( "people/report-trans.php?week=" . $week . "&project=11", 1 );
 	$dom         = im_str_get_html( $salary_text );
 	$row         = "";
 	foreach ( $dom->find( 'tr' ) as $row ) {

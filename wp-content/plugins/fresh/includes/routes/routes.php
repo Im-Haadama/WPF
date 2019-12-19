@@ -221,7 +221,7 @@ function delivered($site_id, $type, $id, $debug = false)
     if ( $debug ) {
         print "start<br/>";
     }
-    if ( $site_id != ImMultiSite::LocalSiteID() ) {
+    if ( $site_id != Core_Db_MultiSite::LocalSiteID() ) {
         if ( $debug ) {
             print "remote.. ";
         }
@@ -231,7 +231,7 @@ function delivered($site_id, $type, $id, $debug = false)
             $request .= "&debug=1";
             print $request;
         }
-        if (ImMultiSite::sExecute( $request, $site_id, $debug ) == "delivered")  return true;
+        if ( Core_Db_MultiSite::sExecute( $request, $site_id, $debug ) == "delivered")  return true;
         print "failed:<br/>";
         print $request;
         return false;
@@ -275,7 +275,7 @@ function show_mission_route($the_mission, $update = false, $debug = false, $miss
 {
 	$stop_points = array();
 	$lines_per_station = array();
-	$m      = ImMultiSite::getInstance();
+	$m      = Core_Db_MultiSite::getInstance();
 
 	$prerequisite = array();
 	$data = '<div id="route_div">';
@@ -698,7 +698,7 @@ function print_supply( $id ) {
 	array_push( $fields, sql_query_single_scalar( "select supplier_contact_phone from im_suppliers where id = " . $supplier_id ) );
 	array_push( $fields, "" );
 	array_push( $fields, sql_query_single_scalar( "select mission_id from im_supplies where id = " . $id ) );
-	array_push( $fields, imMultiSite::LocalSiteID() );
+	array_push( $fields, Core_Db_MultiSite::LocalSiteID() );
 
 	$line = "<tr> " . delivery_table_line( 1, $fields ) . "</tr>";
 
@@ -714,7 +714,7 @@ function print_supply( $id ) {
 function print_task( $id ) {
 	$fields = array();
 	array_push( $fields, "משימות" );
-	$m = ImMultiSite::getInstance();
+	$m = Core_Db_MultiSite::getInstance();
 
 	$ref = gui_hyperlink( $id, $m->LocalSiteTools() . "/focus/focus-page.php?operation=show_task&id=" . $id );
 
@@ -729,7 +729,7 @@ function print_task( $id ) {
 	array_push( $fields, "" ); // phone
 	array_push( $fields, "" ); // payment
 	array_push( $fields, $T->getMissionId() ); // payment
-	array_push( $fields, ImMultiSite::LocalSiteID() );
+	array_push( $fields, Core_Db_MultiSite::LocalSiteID() );
 
 	$line = gui_row( $fields );
 
@@ -867,7 +867,7 @@ function get_maps_url($mission, $path)
  */
 function collect_points($data_lines, $mission_id, &$prerequisite, &$supplies_to_collect, &$lines_per_station, &$stop_points)
 {
-    $multisite = ImMultiSite::getInstance();
+    $multisite = Core_Db_MultiSite::getInstance();
     $stop_points = array();
 
 	$mission = new Mission($mission_id);
@@ -884,7 +884,7 @@ function collect_points($data_lines, $mission_id, &$prerequisite, &$supplies_to_
 		$site_id    = table_get_text( $row[0], 8 );
 		$order_id   = table_get_text( $row[0], 1 );
 		$customer   = table_get_text( $row[0], 2 );
-		$pickup_address = ImMultiSite::getPickupAddress( $site_id );
+		$pickup_address = Core_Db_MultiSite::getPickupAddress( $site_id );
 
 		// Deliveries created in other place
 		if ( $site != "משימות" and $site != "supplies" and $pickup_address != $mission->getStartAddress() ) {

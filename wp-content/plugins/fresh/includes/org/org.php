@@ -1,39 +1,6 @@
 <?php
 
-function worker_get_projects($worker_id)
-{
-	$result = [];
-	foreach (worker_get_companies($worker_id) as $company){
-		if (worker_is_global_company($worker_id, $company)){
-			foreach (sql_query_array_scalar("select id from im_projects where is_active = 1 and company = $company") as $project_id)
-				$result [$project_id] = get_project_name($project_id);
-		} else {
-//			debug_var(sql_query_single_scalar("select project_id from im_working where is_active = 1 and user_id = $worker_id"));
-			foreach (sql_query_array_scalar("select project_id from im_working where is_active = 1 and user_id = $worker_id") as $project_id)
-				if (project_is_active($project_id))
-					$result [$project_id] = get_project_name($project_id); // array("project_id" => $project_id, "project_name" => get_project_name($project_id));
-		}
-	}
-	return $result; // sql_query_array_scalar("select project_id from im_working where user_id = " . $worker_id);
-}
-
 /**
- * @param $user_id
- *
- * @param bool $is_manager - just companies user is admin
- *
- * @return array
- * @throws Exception
- */
-function worker_get_companies($user_id, $is_manager = false)
-{
-	$sql = " select id from im_company where admin = " . $user_id;
-	if (!$is_manager) $sql .= " union select company_id from im_working where user_id = " . $user_id;
-	$result = sql_query_array_scalar($sql);
-
-	return $result;
-}
-
 function company_get_name($id)
 {
 	if (! ($id > 0)) die("invalid company_id: $id");
@@ -42,7 +9,7 @@ function company_get_name($id)
 
 function worker_add_company($user_id, $company_id, $project_id)
 {
-	$current = worker_get_companies($user_id);
+	$current = Org_Project::worker_get_companies($user_id);
 	if (in_array($user_id, $current)) return true; // already in.
 	return sql_query("insert into im_working (company_id, is_active, user_id, project_id, rate) values ($company_id, 1, $user_id, $project_id, 0)");
 }
@@ -52,11 +19,6 @@ function worker_add_company($user_id, $company_id, $project_id)
  *
  * @return array
  */
-function worker_get_teams($user_id)
-{
-	return comma_array_explode(sql_query_single_scalar(
-		"select meta_value from wp_usermeta where meta_key = 'teams' and user_id = $user_id"));
-}
 
 /**
  * @param $uid
@@ -68,18 +30,6 @@ function is_volunteer($uid) {
 }
 
 
-/** if the worker is global company worker, return array of companies
- *
- * @param $user_id
- *
- * @param $company
- *
- * @return string
- */
-function worker_is_global_company($user_id, $company)
-{
-	return sql_query_single_scalar("select count(*) from im_working where user_id = " . $user_id . " and project_id = 0 and company_id = $company");
-}
 
 ///////////////////////
 /// Team functions. ///
@@ -92,24 +42,6 @@ function worker_is_global_company($user_id, $company)
  * @return array|string
  * @throws Exception
  */
-function team_all_members($team_id)
-{
-	// return sql_query_array_scalar("select id from im_working_teams where manager = " . $user_id);
-	return sql_query_array_scalar("select user_id from wp_usermeta where meta_key = 'teams' and meta_value like '%:" . $team_id . ":%'");
-//	if (! $teams) return null;
-//	$temp_result = array();
-//	// Change to associative to have each member just once.
-//	foreach ($teams as $team) {
-//		$members = team_members($team);
-//		foreach ($members as $member)
-//			$temp_result[$member] = 1;
-//	}
-//	// Switch to simple array
-//	$result = array();
-//	foreach ($temp_result as $member => $x)
-//		array_push($result, $member);
-//	return $result;
-}
 
 /**
  * @param $user_id
@@ -151,30 +83,12 @@ function team_manager($team_id)
 	return sql_query_single_scalar("select manager from im_working_teams where id = $team_id");
 }
 
-/**
- * @param $worker_id
- *
- * @return array
- * @throws Exception
- */
-function team_managed_teams($worker_id)
-{
-	$result = sql_query_array_scalar("select id from im_working_teams where manager = " . $worker_id);
-	return $result;
-	// if (! $result) team_add($worker_id, "");
-}
 
 /**
  * @param $user_id
  *
  * @return array|null
  */
-function team_all_teams($user_id)
-{
-	$m = get_usermeta($user_id, 'teams');
-	// var_dump($m);
-	return comma_array_explode($m);
-}
 
 /**
  * @param $team_id
@@ -255,7 +169,3 @@ function project_company($project_id)
 	return sql_query_single_scalar("select company from im_projects where id = " . $project_id);
 }
 
-function project_is_active($project_id)
-{
-	return sql_query_single_scalar("select is_active from im_projects where id = $project_id");
-}

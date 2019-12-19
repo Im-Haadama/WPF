@@ -6,10 +6,6 @@
  * Time: 05:19
  */
 
-if ( ! function_exists( "my_log" ) ) {
-	require_once( FRESH_INCLUDES . "/core/fund.php" );
-}
-
 // TODO: move meta table information to somewhere else. Maybe read from database.
 $meta_table_info = array();
 $meta_table_info["wp_usermeta"] = array("id" => "user_id", "key" => "meta_key", "value" => "meta_value");
@@ -517,6 +513,8 @@ function sql_field($fetch_fields, $field_name)
 				case 4:
 				case 5:
 					return "float($length)";
+				case 8:
+					return "long($length)";
 				case 10:
 					return "date($length)";
 				case 11:
@@ -527,7 +525,7 @@ function sql_field($fetch_fields, $field_name)
 					return "bit($length)";
 				case 252:
 					return "longtime($length)";
-				case 253:
+				case MYSQLI_TYPE_VAR_STRING:
 					return "varchar($length)";
 				default:
 					die(__FUNCTION__ . ":" . $field->type . " not handled " . $field_name);

@@ -34,7 +34,7 @@ while ( $r = mysqli_fetch_assoc( $result ) ) {
 $req = rtrim( $req, "," );
 print $req . "<br/>";
 
-$info = ImMultiSite::sExecute( $req, 2 );
+$info = Core_Db_MultiSite::sExecute( $req, 2 );
 
 foreach ( preg_split( "/<br\/>/", $info ) as $line ) {
 	if ( strlen( $line ) > 2 ) {

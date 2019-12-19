@@ -108,7 +108,7 @@ function map_products( $remote_id, $ids ) {
 		$local_prod_id  = $ids[ $pos ];
 		$remote_prod_id = $ids[ $pos + 1 ];
 		// my_log("product_id = " . $product_id . ", supplier_id=" . $supplier_id . ", product_name=" . $product_name);
-		ImMultiSite::map( $remote_id, $local_prod_id, $remote_prod_id );
+		Core_Db_MultiSite::map( $remote_id, $local_prod_id, $remote_prod_id );
 	}
 }
 

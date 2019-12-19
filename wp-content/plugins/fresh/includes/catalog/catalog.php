@@ -28,9 +28,9 @@ class Catalog {
 			$pricelist = new PriceList( $supplier_id );
 			$id = Catalog::CreateProduct( $pricelist_id, $category_name );
 			// Create link to supplier price list
-			Catalog::AddMapping( $id, $pricelist_id, ImMultiSite::LocalSiteID() );
+			Catalog::AddMapping( $id, $pricelist_id, Core_Db_MultiSite::LocalSiteID() );
 			/// my_log ("add mapp done. Site id = " . $pricelist->SiteId() . " " . MultiSite::LocalSiteID());
-			if ( $pricelist->SiteId() != ImMultiSite::LocalSiteID() ) {
+			if ( $pricelist->SiteId() != Core_Db_MultiSite::LocalSiteID() ) {
 				// Map to remote
 				my_log( "map to remote" );
 				$pricelist_item = PriceList::Get( $pricelist_id );
@@ -39,10 +39,10 @@ class Catalog {
 //             //   $pricelist_item["supplier_product_code"]);
 				$site_id = $pricelist->SiteId();
 //				print "site_id: " . $site_id . "<br/>";
-				if ( is_numeric( $site_id ) and $site_id != ImMultiSite::LocalSiteID() ) {
+				if ( is_numeric( $site_id ) and $site_id != Core_Db_MultiSite::LocalSiteID() ) {
 					// Copy information from remote site
 					$remote_id = $pricelist_item["supplier_product_code"];
-					ImMultiSite::map( $site_id, $id, $remote_id );
+					Core_Db_MultiSite::map( $site_id, $id, $remote_id );
 					// MultiSite::CopyImage( $id, $remote_id, $pricelist->SiteId() );
 				}
 			}
@@ -539,7 +539,7 @@ class Catalog {
 
 		// Otherwise need to add map to -1
 		if ( sql_affected_rows( ) < 1 ) {
-			$this->AddMapping( - 1, $pricelist_id, ImMultiSite::LocalSiteID() );
+			$this->AddMapping( - 1, $pricelist_id, Core_Db_MultiSite::LocalSiteID() );
 		}
 	}
 

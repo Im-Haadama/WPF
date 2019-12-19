@@ -1,5 +1,4 @@
 <?php
-require_once( FRESH_INCLUDES . '/core/gui/input_data.php' );
 
 // Id, class, $args
 /**
@@ -48,7 +47,7 @@ function GemElement($table_name, $row_id, $args)
 	$result = "";
 	$title = GetArg($args, "title", null);
 	$post = GetArg($args, "post_file", null);
-	var_dump($post);
+//	var_dump($post);
 	// Later, add permissions checks in custom post.
 
 	// Set defaults

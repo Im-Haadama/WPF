@@ -75,7 +75,7 @@
     <div class="menu-box">
       <div class="navigation-pattern"></div>
       <a class="link-home" href="<?php echo esc_url( home_url( '/' ) ); ?>"></a>
-<?php wp_nav_menu( array( 'menu'=> Focus_Views::instance()->get_nav(), 'theme_location'=> 'main-fresh' ) ); ?>
+<?php wp_nav_menu( array( 'menu'=> Focus_Nav::instance()->get_nav(), 'theme_location'=> 'main-fresh' ) ); ?>
 
     </div>
 <?php } ?>    

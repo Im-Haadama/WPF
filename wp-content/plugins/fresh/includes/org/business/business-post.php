@@ -25,7 +25,7 @@ require_once( FRESH_INCLUDES . '/fresh-public/account/account.php' );
 
 
 require_once( FRESH_INCLUDES . "/init.php" );
-$multi_site = ImMultiSite::getInstance();
+$multi_site = Core_Db_MultiSite::getInstance();
 
 function get_env( $var, $default ) {
 	if ( isset( $_GET[ $var ] ) ) {

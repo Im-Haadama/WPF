@@ -15,9 +15,9 @@
  *
  */
 
-require_once( FRESH_INCLUDES . "/core/data/sql.php" );
-require_once( FRESH_INCLUDES . "/core/data/translate.php" );
-require_once( FRESH_INCLUDES . "/core/gui/gem.php" );
+//require_once( "sql.php" );
+// require_once( FRESH_INCLUDES . "/core/data/translate.php" );
+// require_once( FRESH_INCLUDES . "/core/gui/gem.php" );
 
 /**
  * Table header gets a sql query and returns array to be used as header, usually in html table.
@@ -168,12 +168,10 @@ function PrepareRow($row, $args, $row_id)
 		my_log( __FUNCTION__ . "invalid row ");
 		return $row;
 	}
-//	var_dump($args["fields"]);
 
-	// foreach ( $args["header_fields"] as $key => $ignore ) // $row as $key => $data
 	foreach ($row as $key => $data)
 	{
-		if (isset($row[$key])) $data = $row[$key]; else $data = null;
+		if (isset($row[$key])) $data = $row[$key]; else $data = "X";
 
 		// General preparation... decide the field name and save the orig data and default data.
 		$nm = $key; // mnemonic3($key);
@@ -212,7 +210,7 @@ function PrepareRow($row, $args, $row_id)
 				if ( strlen( $selector_name ) < 2 ) die( "selector " . $key . "is empty" );
 				// print $selector_name;
 				$value = (function_exists($selector_name) ? $selector_name( $input_name, $orig_data, $args ) : $orig_data); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
-				if (! function_exists($selector_name)) debug_var("function $selector_name does not exists");
+				if (! function_exists($selector_name)) print("function $selector_name does not exists");
 				if ($drill) {
 					$operation = GetArg($args, "drill_operation", "show_archive");
 					// debug_var($operation . " " . $key);
@@ -246,13 +244,17 @@ function PrepareRow($row, $args, $row_id)
 				//////////////////////////////////
 				// Selector ($id, $value, $args //
 				//////////////////////////////////
-				$value = $selector_name( $key, $orig_data, $args); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
+				if (function_exists($selector_name))
+					$value = $selector_name( $key, $orig_data, $args); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
+				else
+					$value = "selector $selector_name not found";
 				break;
 			}
 			// Format values by type.
 			if (isset($args["sql_fields"])){
 				$type = sql_field($args["sql_fields"], $key);
-				switch ($type) {
+//				print $key . " " . $type . "<br/>";
+				switch (strtok($type, "(")) {
 					case 'time':
 						$value = substr($value, 0, 5);
 						break;
@@ -298,7 +300,7 @@ function PrepareRow($row, $args, $row_id)
 //	if ($links) $data = sprintf($links[$key], $value)
 //}
 
-function RowsData($sql, $id_field, $skip_id, $v_checkbox, $checkbox_class, $h_line, $v_line, $m_line, $header_fields, $meta_fields, $meta_table, $args)
+function RowsData($sql, $id_field, $skip_id, $v_checkbox, $checkbox_class, $h_line, $v_line, $m_line, $header_fields, $meta_fields, $meta_table, &$args)
 {
 	$result = sql_query( $sql );
 	if ($args) $args["sql_fields"] = mysqli_fetch_fields($result);
@@ -639,7 +641,6 @@ function GuiTableContent($table_id, $sql, &$args = null)
 
 	// Fetch the data from DB or create the new row
 	$rows_data = TableData( $sql, $args);
-	//debug_var($rows_data);
 
 	if (! $rows_data)
 		return null;

@@ -25,7 +25,7 @@ switch ( $operation ) {
 			die ( 1 );
 		}
 		$source = $_GET["source"];
-		$html   = ImMultiSite::sExecute( "multi-site/sync-zones.php?operation=get", $source );
+		$html   = Core_Db_MultiSite::sExecute( "multi-site/sync-zones.php?operation=get", $source );
 
 		print $html;
 		update_zone_table( $html );

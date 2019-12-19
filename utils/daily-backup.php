@@ -16,7 +16,7 @@ require_once(ROOT_DIR . '/im-config.php');
 require_once( ROOT_DIR . "/fresh/multi-site/imMulti-site.php" );
 require_once( ROOT_DIR . "/niver/fund.php" ); // for db reconnect;
 
-$m = ImMultiSite::getInstance();
+$m = Core_Db_MultiSite::getInstance();
 
 ob_start();
 

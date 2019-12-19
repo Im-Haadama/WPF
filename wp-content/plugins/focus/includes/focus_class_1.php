@@ -52,7 +52,7 @@ function focus_new_task($mission = false, $new_task_id = null)
 	if ($mission and function_exists("gui_select_mission"))
 	{
 		array_push($args["fields"],"location_name", "location_address", "mission_id");
-		$i = new ImMultiSite();
+		$i = new Core_Db_MultiSite();
 		$i->UpdateFromRemote( "im_missions", "id", 0, null, null );
 		$args["selectors"]["mission_id"] = "gui_select_mission";
 		$args["header_fields"]["mission_id"] = "Mission";
@@ -140,7 +140,7 @@ function focus_check_user()
 	}
 
 	// Check if user has team.
-	$team_ids = team_all_teams($user_id);
+	$team_ids =  Org_Worker::GetTeams($user_id);
 	if (!$team_ids or ! count($team_ids)){
 //		print "uid= $user_id" . gui_br();
 //		var_dump($team_ids); gui_br();
