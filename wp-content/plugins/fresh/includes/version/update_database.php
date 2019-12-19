@@ -36,7 +36,7 @@ if (get_user_id() !== 1 and get_user_id() !== 2) die ("no permissions: " . get_u
 
 $current_version = get_versions();
 
-print "Last version = $current_version<br/>";
+print "Installation info: $current_version<br/>";
 
 $version = get_param( "version" );
 $force = get_param("force", false, false);
@@ -47,14 +47,20 @@ function add_version($version, $force = false)
 {
 	if (! $force){
 		$exists = sql_query_single_scalar("select count(*) from im_versions where version = '$version'");
-		if ($exists >= 1) return true;
-		print $exists;
+		if ($exists >= 1) {
+			print "Version already installed<br/>";
+			return true;
+		}
 	}
 	$description = null;
 
+	print "version = $version<br/>";
 	switch ( $version ) {
 		case "29":
+			print "start";
 			$description = version29();
+			print "after";
+			var_dump($description);
 			break;
 		case "28":
 			$description = version28();
@@ -101,7 +107,8 @@ function add_version($version, $force = false)
 		default:
 			die( "no valid option selected: $version" );
 	}
-	if ($description) sql_query("insert into im_versions(version, description, install_date) values ('$version', '$description', now())");
+	if (is_string($description))
+		sql_query("insert into im_versions(version, description, install_date) values ('$version', '$description', now())");
 	return true;
 }
 
@@ -301,7 +308,7 @@ END;");
 	sql_query( "create table im_task_type (
 	id INT NOT NULL AUTO_INCREMENT
 		PRIMARY KEY,
-    	description VARCHAR(40) CHARACTER SET utf8 NULL,
+    	description longtext CHARACTER SET utf8 NULL,
 	    meta_fields varchar(200))" );
 
 	sql_query( "create table im_task_meta (
@@ -1090,8 +1097,8 @@ print "done";
 
 function get_versions()
 {
-	$versions = sql_query_array("select version, description, date from im_versions");
-	if ($versions == "Error"){
+	$versions = sql_query_array("select version, description, install_date from im_versions");
+	if (is_string($versions) and substr($versions, 0, 5) === "Error"){
 		sql_query( "create table im_versions (
 	id INT NOT NULL AUTO_INCREMENT
 		PRIMARY KEY,
@@ -1105,6 +1112,10 @@ function get_versions()
 
 function version29()
 {
+	print gui_header(1, "bank owner");
+	sql_query("alter table im_bank_account
+    add owner int(11)");
+
 	print gui_header(1, "supplier_description");
 	sql_query("alter table im_suppliers 
     add supplier_description varchar(200)");
@@ -1140,5 +1151,5 @@ function version29()
 //	           "affect_id int(11), " .
 //	           "plant_id int(11)); " );
 
-
+	return "bank owner, supplier_description and herbal medical";
 }

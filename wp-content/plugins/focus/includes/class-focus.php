@@ -209,9 +209,13 @@ class Focus {
 				$salary = Focus_Salary::instance();
 				$salary->handle_operation($operation);
 				break;
+			case "data":
+				$data = Core_Data::instance();
+				$data -> handle_operation($operation);
+				break;
 			default:
 				$focus = Focus_Views::instance();
-				return $focus->handle_focus_show($operation);
+				 $focus->handle_focus_show($operation);
 		}
 //		switch ($operation)
 //		{

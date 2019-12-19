@@ -14,7 +14,9 @@ function gui_select_task( $id, $value, $args ) {
 //	return gui_select_table( $id, "im_tasklist", $value, $events, "", "task_description",
 //		"where " . $query, true, false );
 
-	$args = array("selected" => $value,
+	$t = new Focus_Tasklist($value);
+	$selected = $value . ")" . $t->getTaskDescription();
+	$args = array("selected" => $selected,
 	              "events"=>$events,
 	              "name"=>"task_description", // "SUBSTR(task_description, 1, " . $length . ")",
 	              "query"=> $query,

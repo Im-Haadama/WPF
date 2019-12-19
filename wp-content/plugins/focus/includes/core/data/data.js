@@ -1,4 +1,4 @@
-
+// let post_file = '/wp-content/plugins/focus/post.php';
 // Save entity from single row view - chk_ new fields.
 function data_save_entity(post_operation, table_name, id)
 {
@@ -6,7 +6,7 @@ function data_save_entity(post_operation, table_name, id)
         alert ("invalid id: " . id);
         return;
     }
-    let operation = post_operation + "?table_name=" + table_name + "&operation=update&id=" + id;
+    let operation = post_operation + "?table_name=" + table_name + "&operation=data_update&id=" + id;
     let operands = operation_arguments(table_name, id);;
     if (operands.length < 1) {
         alert ("no changes");
@@ -156,7 +156,7 @@ function search_table(table_name, url = null)
 function update_list(list_name, obj)
 {
     if (obj.value.length >= 2 && obj.value.length <= 7)
-        execute_url("/core/data/data-post.php?operation=auto_list&list=" + list_name + "&prefix=" + obj.value, do_update_list, obj);
+        execute_url(post_file +"?operation=data_auto_list&list=" + list_name + "&prefix=" + obj.value, do_update_list, obj);
     else
         obj.dataset = null;
 }

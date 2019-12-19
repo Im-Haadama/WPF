@@ -711,12 +711,12 @@ class Focus_Views {
 				if ( update_data( $table_name ) ) {
 					if ( $table_name == 'im_task_templates' ) {
 						$row_id = intval( get_param( "id", true ) );
-						sql_query( "update im_task_templates set last_check = null where id = " . $row_id );
+						if (sql_query( "update im_task_templates set last_check = null where id = " . $row_id ))
+							return "done";
 					}
-					print "done";
 				}
 
-				return;
+				return "not handled";
 
 			case "delete_template":
 				$user_id = get_user_id();

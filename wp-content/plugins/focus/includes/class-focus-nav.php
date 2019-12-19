@@ -18,7 +18,7 @@ class Focus_Nav {
 		return self::$_instance;
 	}
 
-	private function set_toplevel_nav( $menu_id ) {
+	private function set_toplevel_nav( $menu_id, $user_id ) {
 		// Set up default menu items
 		// Back to fresh. Todo: check if fresh installed.
 		wp_update_nav_menu_item( $menu_id, 0, array(
@@ -59,6 +59,15 @@ class Focus_Nav {
 				'menu-item-status'    => 'publish',
 				'menu-item-parent-id' => $menu_id
 			) );
+
+		if (user_can($user_id, "show_bank")){
+			wp_update_nav_menu_item( $menu_id, 0, array(
+				'menu-item-title'  => __( 'Bank' ),
+				'menu-item-url'    => home_url( '/bank?operation=show_main' ),
+				'menu-item-status' => 'publish'
+			) );
+		}
+
 	}
 
 	private function update_nav_projects($menu_id, $parent, $user_id) {
@@ -188,7 +197,7 @@ class Focus_Nav {
 
 		if (! $menu_nav) {  /// Brand new or reset requested.
 			$menu_nav_id = wp_create_nav_menu($this->nav_menu_name); // Create
-			self::set_toplevel_nav($menu_nav_id);
+			self::set_toplevel_nav($menu_nav_id, $user_id);
 		}
 		self::set_nav_details($menu_nav_id, $user_id);
 	}
