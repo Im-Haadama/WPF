@@ -507,18 +507,27 @@ function sql_field($fetch_fields, $field_name)
 		if ($field->name == $field_name) {
 //			debug_var($field->name . " " . $field->type);
 			switch ($field->type){
-				case 253:
-					return "varchar";
+				case 1:
+					return "tinyint";
 				case 3:
 					return "int";
+				case 4:
+				case 5:
+					return "float";
+				case 8:
+					return "long";
 				case 10:
-					return "function";
-				case 11:
-					return 'time';
-				case 12:
 					return "date";
+				case 11:
+					return "time";
+				case 12:
+					return "datetime";
+				case 16:
+					return "bit";
 				case 252:
-					return 'longtime';
+					return "longtime";
+				case MYSQLI_TYPE_VAR_STRING:
+					return "varchar";
 				default:
 					die($field->type . " not handled " . $field_name);
 			}
