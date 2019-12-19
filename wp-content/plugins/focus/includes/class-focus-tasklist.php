@@ -11,11 +11,6 @@ if ( ! defined( "ROOT_DIR" ) ) {
 	define( "ROOT_DIR", dirname( dirname( dirname( __FILE__ ) ) ) );
 }
 
-
-require_once( FRESH_INCLUDES . '/core/data/sql.php' );
-require_once( FRESH_INCLUDES . '/core/gui/window.php' );
-require_once( FRESH_INCLUDES . '/routes/missions/Mission.php' );
-
 class Focus_Tasklist {
 	private $id;
 	private $location_name;
@@ -167,7 +162,7 @@ class Focus_Tasklist {
 //		print "done";
 //	}
 
-	function task_cancelled($task_id) {
+	static function task_cancelled($task_id) {
 		$sql = "UPDATE im_tasklist SET status = " . eTasklist::canceled .", status = " . eTasklist::done .
 		       " WHERE id = " . $task_id;
 		return sql_query( $sql );
@@ -483,8 +478,6 @@ class Focus_Tasklist {
 
 }
 
-require_once( FRESH_INCLUDES . "/core/data/im_simple_html_dom.php" );
-require_once( FRESH_INCLUDES . "/core/options.php" );
 
 class eTasklist {
 	const

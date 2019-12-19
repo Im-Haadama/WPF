@@ -261,7 +261,7 @@ function add_activity( $user_id, $date, $start, $end, $project_id, $vol = true, 
 	$amount = - get_rate( $user_id, $project_id ) * ( $fend - $fstart ) / 3600;
 	my_log( "add_trans" . $amount, __FILE__ );
 	if ( $vol ) {
-		account_add_transaction( $user_id, $date, $amount, 1, get_project_name( $project_id ) );
+		account_add_transaction( $user_id, $date, $amount, 1, Org_Project::GetName( $project_id ) );
 	}
 	my_log( "before business" );
 	business_add_transaction( $user_id, $date, $amount * 1.1, 0, 0, $project_id );

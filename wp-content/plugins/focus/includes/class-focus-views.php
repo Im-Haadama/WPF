@@ -35,8 +35,11 @@ class Focus_Views {
 	}
 
 	public function enqueue_scripts() {
-		$file = plugin_dir_url( __FILE__ ) . 'org/people/people.js';
+		$file = plugin_dir_url( __FILE__ ) . 'core/data/data.js';
 		wp_enqueue_script( 'data', $file, null, $this->version, false );
+
+		$file = plugin_dir_url( __FILE__ ) . 'org/people/people.js';
+		wp_enqueue_script( 'people', $file, null, $this->version, false );
 
 		$file = plugin_dir_url( __FILE__ ) . 'core/gui/client_tools.js';
 		wp_enqueue_script( 'client_tools', $file, null, $this->version, false );
@@ -130,7 +133,7 @@ class Focus_Views {
 			case "show_new_project":
 				$args              = [];
 				$args["next_page"] = get_param( "next_page", false, null );
-				$args["post_file"] = "/core/data/data-post.php";
+				$args["post_file"] = "/wp-content/plugins/focus/post.php";
 //			$user_id = get_user_id();
 //			$args["user_id"] = $user_id;
 //			$args["hide_cols"] = array("user_id" => 1, "company_id" => 1);
@@ -163,7 +166,7 @@ class Focus_Views {
 			case "show_new_team":
 				$args                     = [];
 				$args["next_page"]        = get_param( "next_page", false, null );
-				$args["post_file"]        = "/core/data/data-post.php";
+				$args["post_file"]        = "/wp-content/plugins/focus/post.php";
 				$args["selectors"]        = array( "manager" => "gui_select_worker" );
 				$args["mandatory_fields"] = array( "manager", "team_name" );
 				$result                   .= GemAddRow( "im_working_teams", "Add a team", $args );
@@ -171,7 +174,7 @@ class Focus_Views {
 			case "show_new_task":
 				$mission = get_param( "mission", false, null );
 				$new     = get_param( "new", false );
-				$result  .= focus_new_task( $mission, $new ); // after the first task, the new tasks belongs to the new tasks' project will be displayed.
+				$result  .= self::show_new_task( $mission, $new ); // after the first task, the new tasks belongs to the new tasks' project will be displayed.
 				break;
 			case "last_entered":
 				if ( get_user_id() != 1 ) {
@@ -335,7 +338,7 @@ class Focus_Views {
 					$result .= "No permissions";
 				}
 				$args              = [];
-				$args["post_file"] = "/core/data/data-post.php";
+				$args["post_file"] = "/wp-content/plugins/focus/post.php";
 				$args["selectors"] = array( "manager" => "gui_select_worker" );
 				$args["links"]     = array(
 					"id" => add_to_url( array(
@@ -387,6 +390,71 @@ class Focus_Views {
 		print $result;
 
 		return;
+	}
+
+	static function show_new_task($mission = false, $new_task_id = null)
+	{
+		$args = array();
+		$args["selectors"] = array("project_id" =>  "gui_select_project",
+		                           "owner" => "gui_select_worker",
+		                           "creator" => "gui_select_worker",
+		                           "preq" => "gui_select_task",
+		                           "team" => "gui_select_team"	);
+		$args["values"] = array("owner" => get_user_id(), "creator" => get_user_id());
+		$args["header"] = true;
+		$args["header_fields"] = array("date"=>"Start after",
+		                               "task_description" => "Task description",
+		                               "project_id" => "Project",
+		                               "location_address" => "Address",
+		                               "location_name" => "Location name",
+		                               "priority" => "Priority",
+		                               "preq" => "Prerequisite",
+		                               "creator" => "Creator");
+		$args["mandatory_fields"] = array("project_id", "priority", "team", "task_description") ;
+
+		$args["fields"] = array("task_description", "project_id", "priority", "date", "preq", "creator", "team");
+		$args['post_file'] = "/wp-content/plugins/focus/post.php";
+		$args['form_table'] = 'im_tasklist';
+
+		// Todo: check last update time
+		if ($mission and function_exists("gui_select_mission"))
+		{
+			array_push($args["fields"],"location_name", "location_address", "mission_id");
+			$i = new Core_Db_MultiSite();
+			$i->UpdateFromRemote( "im_missions", "id", 0, null, null );
+			$args["selectors"]["mission_id"] = "gui_select_mission";
+			$args["header_fields"]["mission_id"] = "Mission";
+			$args["mandatory_fields"]["location_name"] = true; $args["mandatory_fields"]["location_address"] = true;
+		}
+
+		$args["worker"] = get_user_id();
+		$args["companies"] = sql_query_single_scalar("select company_id from im_working where user_id = " . get_user_id());
+		$args["hide_cols"] = array("creator" => 1);
+		$args["next_page"] = get_url();
+		set_args_value($args); // Get values from url.
+
+		$result = ""; $project_tasks = "";
+		if ($new_task_id) $result .= im_translate("Task added") . "<br/>";
+
+		if ($new_task_id) {
+			$project_args = $args;
+			$new_task = new Focus_Tasklist($new_task_id);
+			$project_id = $new_task->getProject();
+			$project_args["title"] = "Project " . Org_Project::GetName($project_id);
+			$project_args["query"] = "project_id=" . $project_id . " and status < 2";
+			$project_args["order"] = "id desc";
+			unset($project_args["fields"]);
+
+			$project_tasks = GemTable("im_tasklist", $project_args);
+
+			// Set default value for next task, based on new one.
+			$args["values"] = array("project_id" => $project_id, "team" => $new_task->getTeam());
+		}
+
+		$result .= GemAddRow("im_tasklist", "New task", $args);
+		$result .= $project_tasks;
+
+		return $result;
 	}
 
 	/**
@@ -449,7 +517,7 @@ class Focus_Views {
 		}
 		$args["sql"]   = $sql . $order;
 		$args["links"] = array( "id" => add_to_url( array( "operation" => "show_task", "id" => "%s" ) ) );
-		$args["title"] = im_translate( "משימות בפרויקט" ) . " " . get_project_name( $project_id );
+		$args["title"] = im_translate( "משימות בפרויקט" ) . " " . Org_Project::GetName( $project_id );
 
 //	print $sql;
 		$result = GemTable( "im_tasklist", $args );
@@ -537,15 +605,15 @@ class Focus_Views {
 
 			case "cancel_task":
 				$task_id = get_param( "id" );
-				if ( task_cancelled( $task_id ) ) {
+				if ( Focus_Tasklist::task_cancelled( $task_id ) ) {
 					print "done";
 				}
-				create_tasks( null, false );
+				Focus_Tasklist::create_tasks( null, false );
 
 				return;
 
 			case "create_tasks":
-				print create_tasks( null, true );
+				print Focus_Tasklist::create_tasks( null, true );
 
 				return;
 
@@ -553,7 +621,7 @@ class Focus_Views {
 				$task_id = get_param( "id" );
 				$T       = new Focus_Tasklist( $task_id );
 				$r       = $T->Postpone();
-				create_tasks( null, false );
+				Focus_Tasklist::create_tasks( null, false );
 				if ( $r ) {
 					print "done";
 				}
@@ -564,7 +632,7 @@ class Focus_Views {
 				$task_id = get_param( "id" );
 				$T       = new Focus_Tasklist( $task_id );
 				$T->setPriority( $T->getPriority() + 1 );
-				create_tasks( null, false );
+				Focus_Tasklist::create_tasks( null, false );
 				print "done";
 
 				return;
@@ -811,7 +879,7 @@ class Focus_Views {
 		$table_name = "im_tasklist";
 		$title      = GetArg( $args, "title", "" );
 
-		$action_url = get_url( 1 );
+		$action_url = "/wp-content/plugins/focus/post.php";
 		$page_url   = get_url( true );
 
 		$active_only = GetArg( $args, "active_only", true );
@@ -838,7 +906,7 @@ class Focus_Views {
 
 		$project_id = GetArg( $args, "project_id", null );
 		if ( $project_id ) {
-			$title = im_translate( "Project" ) . " " . get_project_name( $project_id );
+			$title = im_translate( "Project" ) . " " . Org_Project::GetName( $project_id );
 			if ( $f = array_search( "project_id", $args["fields"] ) ) {
 				unset( $args["fields"][ $f ] );
 			}
@@ -932,6 +1000,13 @@ class Focus_Views {
 		$result .= " " . gui_hyperlink( "Add delivery", add_to_url( "operation", "show_new_task&mission=1" ) );
 
 		return $result;
+	}
+
+	static function show_tasks($ids)
+	{
+		$args = [];
+		$args["query"] = "id in (" . comma_implode($ids) . ")";
+		return Focus_Views::active_tasks($args);
 	}
 
 	/**

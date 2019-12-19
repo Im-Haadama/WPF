@@ -24,78 +24,6 @@ require_once( FOCUS_INCLUDES . 'org/people/people.php' );
  * @return string|void
  * @throws Exception
  */
-function focus_new_task($mission = false, $new_task_id = null)
-{
-	$args = array();
-	$args["selectors"] = array("project_id" =>  "gui_select_project",
-	                           "owner" => "gui_select_worker",
-	                           "creator" => "gui_select_worker",
-	                           "preq" => "gui_select_task",
-							   "team" => "gui_select_team"	);
-	$args["values"] = array("owner" => get_user_id(), "creator" => get_user_id());
-	$args["header"] = true;
-	$args["header_fields"] = array("date"=>"Start after",
-	                               "task_description" => "Task description",
-	                               "project_id" => "Project",
-	                               "location_address" => "Address",
-	                               "location_name" => "Location name",
-	                               "priority" => "Priority",
-	                               "preq" => "Prerequisite",
-	                               "creator" => "Creator");
-	$args["mandatory_fields"] = array("project_id", "priority", "team", "task_description") ;
-
-	$args["fields"] = array("task_description", "project_id", "priority", "date", "preq", "creator", "team");
-	$args['post_file'] = "/focus/focus-post.php";
-	$args['form_table'] = 'im_tasklist';
-
-	// Todo: check last update time
-	if ($mission and function_exists("gui_select_mission"))
-	{
-		array_push($args["fields"],"location_name", "location_address", "mission_id");
-		$i = new Core_Db_MultiSite();
-		$i->UpdateFromRemote( "im_missions", "id", 0, null, null );
-		$args["selectors"]["mission_id"] = "gui_select_mission";
-		$args["header_fields"]["mission_id"] = "Mission";
-		$args["mandatory_fields"]["location_name"] = true; $args["mandatory_fields"]["location_address"] = true;
-	}
-
-	$args["worker"] = get_user_id();
-	$args["companies"] = sql_query_single_scalar("select company_id from im_working where user_id = " . get_user_id());
-	$args["hide_cols"] = array("creator" => 1);
-	$args["next_page"] = get_url();
-	set_args_value($args); // Get values from url.
-
-	$result = ""; $project_tasks = "";
-	if ($new_task_id) $result .= im_translate("Task added") . "<br/>";
-
-	if ($new_task_id) {
-		$project_args = $args;
-		$new_task = new Focus_Tasklist($new_task_id);
-		$project_id = $new_task->getProject();
-		$project_args["title"] = "Project " . get_project_name($project_id);
-		$project_args["query"] = "project_id=" . $project_id . " and status < 2";
-		$project_args["order"] = "id desc";
-		unset($project_args["fields"]);
-
-		$project_tasks = GemTable("im_tasklist", $project_args);
-
-		// Set default value for next task, based on new one.
-		$args["values"] = array("project_id" => $project_id, "team" => $new_task->getTeam());
-	}
-
-	$result .= GemAddRow("im_tasklist", "New task", $args);
-	$result .= $project_tasks;
-
-	return $result;
-//	try {
-//		if ($debug) { print "<br/>" . __FUNCTION__. ": "; var_dump(GetArg($args, "fields", null)); print "<br/>"; }
-//		print NewRow( "im_tasklist", $args );
-//	} catch ( Exception $e ) {
-//		print $e->getMessage();
-//		return;
-//	}
-//	print gui_button("btn_newtask", "data_save_new('/focus/focus-post.php', 'im_tasklist', show_project)", "צור");
-}
 
 /**
  * @return bool
@@ -162,12 +90,6 @@ function focus_check_user()
  *
  * @return string|null
  */
-function show_tasks($ids)
-{
-	$args = [];
-	$args["query"] = "id in (" . comma_implode($ids) . ")";
-	return Focus_Views::active_tasks($args);
-}
 
 /**
  * @param $team_id

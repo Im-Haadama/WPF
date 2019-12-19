@@ -31,7 +31,7 @@ if ( isset( $_GET["project"] ) ) {
 print_weekly_report( date( "Y-m-d", strtotime( "last sunday" ) ) );
 
 function print_project_report( $role, $project_id ) {
-	print gui_header( 1, "מציג סיכום עלויות פרויקט " . get_project_name( $project_id ) );
+	print gui_header( 1, "מציג סיכום עלויות פרויקט " . Org_Project::GetName( $project_id ) );
 
 	$month_sum = array();
 	$lines     = print_transactions( $role, 0, 0, 0, null, $project_id, $month_sum );
