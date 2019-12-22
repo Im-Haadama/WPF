@@ -3,53 +3,80 @@
 /**
  * Shortcodes
  *
- * @package WooCommerce/Classes
+ * @package Core/Shortcodes
  * @version 3.2.0
  */
 
-defined( 'FOCUS_INCLUDES' ) || exit;
+//defined( 'CORE_INCLUDES' ) || exit;
 
 /**
- * Focus Shortcodes class.
+ * Core Shortcodes class.
  */
-class Focus_Shortcodes {
+if (class_exists('Core_Shortcodes')) return;
+
+class Core_Shortcodes {
+
+	protected $shortcodes;
+	private static $_instance = null;
+
+	public static function instance() {
+		if ( is_null( self::$_instance ) ) {
+			die (__CLASS__ . " call constructor with shortcodes");
+//			self::$_instance = new self("Focus");
+		}
+		return self::$_instance;
+	}
+
+	/**
+	 * Core_Shortcodes constructor.
+	 *
+	 * @param $shortcodes
+	 */
+	public function __construct( $shortcodes ) {
+		// var_dump($shortcodes);
+		$this->shortcodes = $shortcodes;
+		self::$_instance = $this;
+	}
 
 	/**
 	 * Init shortcodes.
 	 */
-	public static function init() {
-		$shortcodes = array(
-			'focus_main'           => __CLASS__ . '::focus_main',
-			'salary_main'        => __CLASS__ . '::salary_main',
-			'roles_main'    => __CLASS__ . '::roles_main'
-//			'focus_suppliers'            => __CLASS__ . '::suppliers', // [focus_suppliers]
-//			'product_page'               => __CLASS__ . '::product_page',
-//			'product_category'           => __CLASS__ . '::product_category',
-//			'product_categories'         => __CLASS__ . '::product_categories',
-//			'add_to_cart'                => __CLASS__ . '::product_add_to_cart',
-//			'add_to_cart_url'            => __CLASS__ . '::product_add_to_cart_url',
-//			'products'                   => __CLASS__ . '::products',
-//			'recent_products'            => __CLASS__ . '::recent_products',
-//			'sale_products'              => __CLASS__ . '::sale_products',
-//			'best_selling_products'      => __CLASS__ . '::best_selling_products',
-//			'top_rated_products'         => __CLASS__ . '::top_rated_products',
-//			'featured_products'          => __CLASS__ . '::featured_products',
-//			'product_attribute'          => __CLASS__ . '::product_attribute',
-//			'related_products'           => __CLASS__ . '::related_products',
-//			'shop_messages'              => __CLASS__ . '::shop_messages',
-//			'woocommerce_order_tracking' => __CLASS__ . '::order_tracking',
-//			'woocommerce_cart'           => __CLASS__ . '::cart',
-//			'woocommerce_checkout'       => __CLASS__ . '::checkout',
-//			'woocommerce_my_account'     => __CLASS__ . '::my_account',
-		);
+	static public function init() {
+		self::instance()->do_init();
+//		$shortcodes = array(
+//			'core_management'           => __CLASS__ . '::core_management',
+//			'core_suppliers'            => __CLASS__ . '::suppliers', // [core_suppliers]
+////			'product_page'               => __CLASS__ . '::product_page',
+////			'product_category'           => __CLASS__ . '::product_category',
+////			'product_categories'         => __CLASS__ . '::product_categories',
+////			'add_to_cart'                => __CLASS__ . '::product_add_to_cart',
+////			'add_to_cart_url'            => __CLASS__ . '::product_add_to_cart_url',
+////			'products'                   => __CLASS__ . '::products',
+////			'recent_products'            => __CLASS__ . '::recent_products',
+////			'sale_products'              => __CLASS__ . '::sale_products',
+////			'best_selling_products'      => __CLASS__ . '::best_selling_products',
+////			'top_rated_products'         => __CLASS__ . '::top_rated_products',
+////			'featured_products'          => __CLASS__ . '::featured_products',
+////			'product_attribute'          => __CLASS__ . '::product_attribute',
+////			'related_products'           => __CLASS__ . '::related_products',
+////			'shop_messages'              => __CLASS__ . '::shop_messages',
+////			'woocommerce_order_tracking' => __CLASS__ . '::order_tracking',
+////			'woocommerce_cart'           => __CLASS__ . '::cart',
+////			'woocommerce_checkout'       => __CLASS__ . '::checkout',
+////			'woocommerce_my_account'     => __CLASS__ . '::my_account',
+//		);
+	}
 
-		foreach ( $shortcodes as $shortcode => $function ) {
-//			 print "{$shortcode}_shortcode_tag" . " ". $shortcode ." " . $function . "<br/>";
+	function do_init()
+	{
+		foreach ( $this->shortcodes as $shortcode => $function ) {
+//			 print $shortcode . " " . $function . "<br/>";
+			// print "{$shortcode}_shortcode_tag" . " ". $shortcode ." " . $function . "<br/>";
 			add_shortcode( apply_filters( "{$shortcode}_shortcode_tag", $shortcode ), $function );
 		}
 
 		// Alias for pre 2.1 compatibility.
-//		add_shortcode( 'focus_messages', __CLASS__ . '::shop_messages' );
+//		add_shortcode( 'core_messages', __CLASS__ . '::shop_messages' );
 	}
 
 	/**
@@ -65,7 +92,7 @@ class Focus_Shortcodes {
 		$function,
 		$atts = array(),
 		$wrapper = array(
-			'class'  => 'focus',
+			'class'  => 'core',
 			'before' => null,
 			'after'  => null,
 		)
@@ -251,20 +278,20 @@ class Focus_Shortcodes {
 //	 * @param array $atts Attributes.
 //	 * @return string
 //	 */
-	public static function focus_main( $atts ) {
-		$operation = get_param("operation", false, "focus_main");
-		return self::shortcode_wrapper( array( 'Focus_Views', 'handle_focus_show' ), $operation );
+	public static function core_management( $atts ) {
+		return self::shortcode_wrapper( array( 'Core_Shortcode_Management', 'output' ), $atts );
 	}
 
-	public static function salary_main($atts) {
-		$operation = get_param("operation", false, "salary_main");
-		return self::shortcode_wrapper( array( 'Focus_Salary', 'handle_salary_show' ), $operation );
+	public static function suppliers( $atts ) {
+		$atts = [];
+		foreach ($_GET as $param => $value)
+		{
+			$atts[$param] = $value;
+		}
+
+		return self::shortcode_wrapper( array( 'Core_Suppliers', 'handle' ), $atts );
 	}
 
-	public static function roles_main($atts) {
-		$operation = get_param("operation", false, "salary_main");
-		return self::shortcode_wrapper( array( 'Focus_Salary', 'handle_salary_show' ), $operation );
-	}
 //
 //	/**
 //	 * Display a single product.

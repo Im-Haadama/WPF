@@ -75,7 +75,16 @@
     <div class="menu-box">
       <div class="navigation-pattern"></div>
       <a class="link-home" href="<?php echo esc_url( home_url( '/' ) ); ?>"></a>
-<?php wp_nav_menu( array( 'menu'=> Focus_Nav::instance()->get_nav(), 'theme_location'=> 'main-fresh' ) ); ?>
+<?php
+//$menu_name = "Top";
+// wp_nav_menu( array( 'menu'=> Focus_Nav::instance()->get_nav(), 'theme_location'=> 'main-fresh' ) );
+$menu_location = "main-navigation";
+$menu_name = "nav";
+if (class_exists('Focus_Nav')) $menu_name = Focus_Nav::instance()->get_nav();
+wp_nav_menu( array( 'menu'=> $menu_name, 'theme_location'=> $menu_location ) );
+//  wp_nav_menu( array( 'menu_id'=>'nav', 'theme_location'=>'main-navigation' ) );
+
+?>
 
     </div>
 <?php } ?>    

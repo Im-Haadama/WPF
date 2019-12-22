@@ -8,7 +8,7 @@
 
 $no_wp = 0;
 
-
+if (! function_exists('get_user_name')) {
 // Postmeta table
 /**
  * @param $post_id
@@ -151,7 +151,7 @@ function get_customer_name( $customer_id )
 function im_user_can( $permission ) {
 	global $no_wp;
 	if ($no_wp) return true; // For debugging
-	$user_id = get_user_id();
+	$user_id = get_current_user_id();
 	if (! $user_id) return false;
 	return ( user_can( $user_id, $permission ) );
 }
@@ -238,7 +238,15 @@ function force_login()
 
 function get_user_name( $id ) {
 //    var_dump(get_user_meta($id, 'first_name'));
-	$user_name = get_user_meta( $id, 'first_name' )[0] . " " . get_user_meta( $id, 'last_name' )[0];
-//	print "un=$user_name";
-	return $user_name;
+	$result = (get_user_meta( $id, 'first_name' )[0] . " " . get_user_meta( $id, 'last_name' )[0]);
+	if (strlen ($result) > 1) return $result;
+	return "user $id";
+}
+	/**
+	 * @param bool $force_login
+	 *
+	 * @return int
+	 */
+
+
 }

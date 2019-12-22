@@ -14,6 +14,9 @@ if ( ! defined( "ABSPATH" ) ) {
 }
 
 require_once(ABSPATH . 'wp-config.php');
+require_once (dirname(dirname(dirname(__FILE__))) . '/includes/core/wp.php');
+// wp-content/plugins/fresh/includes/version/update_database.php
+
 //require_once (FRESH_INCLUDES . "/im-config.php");
 
 // print "host=" . DB_HOST . "<br/>";
@@ -1112,6 +1115,27 @@ function get_versions()
 
 function version29()
 {
+	print gui_header(1, "im_bank");
+	if (! table_exists("im_bank"))
+		sql_query("create table im_bank
+(
+	id int auto_increment
+		primary key,
+	account_id int(20) not null,
+	date date not null,
+	description varchar(200) charset utf8 not null,
+	reference int not null,
+	out_amount float null,
+	in_amount float null,
+	balance float not null,
+	tmp_client_name varchar(40) charset utf8 null,
+	customer_id int null,
+	receipt varchar(100) charset utf8 null,
+	site_id int null,
+	transaction_type int null
+);
+
+");
 	print gui_header(1, "bank owner");
 	sql_query("alter table im_bank_account
     add owner int(11)");

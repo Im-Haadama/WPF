@@ -1,5 +1,8 @@
 <?php
 
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
 /**
  * Created by PhpStorm.
  * User: agla
@@ -9,13 +12,14 @@
 
 function add_stylesheet_to_head() {
     global $post;
-    require_once( ABSPATH . 'wp-content/plugins/fresh/includes/core/fund.php' );
+//    require_once( ABSPATH . 'wp-content/plugins/fresh/includes/core/fund.php' );
 
     if ($post and (strstr($post->post_content, 'fresh') ||
         strstr($post->post_content, 'focus') ||
-        strstr($post->post_content, 'salary'))) {
+        strstr($post->post_content, 'salary') ||
+                   strstr($post->post_content, 'finance'))) {
 
-        print load_style(  get_template_directory_uri() . '/css/management.css'); // Hides logo, search and white area contains them.
+        print '<link rel="stylesheet" type="text/css" href="' .  get_template_directory_uri() . '/css/management.css'.  '">'; // Hides logo, search and white area contains them.
 //        register_nav_menus(array('main-fresh' => __ ('Primary Menu', 'minezine')));
 
 //	    add_action( 'after_setup_theme', 'register_my_menu' );

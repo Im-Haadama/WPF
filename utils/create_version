@@ -1,7 +1,7 @@
 #!/bin/bash
 # set -o xtrace
 product_name=fresh_store
-folders="wp-content/plugins/fresh"
+folders="wp-content/plugins"
 if [ "$#" -lt 1 ]; then
 	echo Usage [-f] major/minor/patch
 	echo full or major:  creates tar of all version file. updates the version file.
@@ -56,7 +56,7 @@ if [ -z $current_version ]; then
 fi
 
   if [ $full ]; then
-    find $folders \( -name '*.php' -o -name '*.mo' -o -name '*.js' \) -exec echo {}  \;  > tar_files
+    find -L $folders \( -name '*.php' -o -name '*.mo' -o -name '*.js' \) -exec echo {}  \;  > tar_files
     else
   find $folders \( -name '*.php' -o -name '*.mo' -o -name '*.js' \) -newer versions/$product_name-$current_version.tar.gz -exec echo {}  \; > tar_files
     fi

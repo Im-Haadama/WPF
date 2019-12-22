@@ -5,9 +5,15 @@ TODO: Find a way to allow running older version.
 
 Library names
 -=-=-=-=-=-=-
-niver - fund, data, gui. Not sure about this name.
-fresh - store functionality.
+core - fund, data, gui. Not sure about this name.
 org   - organization - teams, worker, projects, etc.
+
+Plugins
+-=-=-=-
+fresh - store functionality: supplies, clients
+focus - task management: projects, teams
+finance - load page bank
+capabilities - show all capabilities.
 
 Folder structure
 -=-=-=-=-=-=-=-=
@@ -54,3 +60,9 @@ Should run without login. Get permission of task owner. No info leakage.
 16935261
 15692721
 https://fruity.co.il/fresh/pricelist/pricelist-get.php?supplier_id=100044
+
+
+Sharing code between plugins.
+In develop, core library is linked between the projects. Fresh is the main, and others link includes/core to fresh.
+In runtime - wp-setting loads the plugins. Core libraries appear in each of them. require_once doesn't helps. We'll check
+!class_exists (or function_exists).

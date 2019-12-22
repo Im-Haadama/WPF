@@ -424,7 +424,7 @@ class Focus_Tasklist {
 			return "0 short or bad query. " . $query . " failed";
 		}
 
-		return strip_tags( im_file_get_html( $query ));
+		return strip_tags( Core_Get_File::im_file_get_html( $query ));
 		// return im_file_get_html( $query );
 
 	}
