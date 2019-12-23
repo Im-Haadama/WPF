@@ -46,3 +46,9 @@ function run_fresh() {
 }
 
 run_fresh();
+
+function fresh_cron_hook()
+{
+	$f = fopen("temp_log", "a");
+	fwrite ($f, "cron running" . date('y-m-t'));
+}
