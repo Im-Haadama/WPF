@@ -1115,7 +1115,48 @@ function get_versions()
 
 function version29()
 {
+
 	print gui_header(1, "im_bank");
+	sql_query("create table im_bank
+(
+	id int auto_increment
+		primary key,
+	account_id int(20) not null,
+	date date not null,
+	description varchar(200) charset utf8 not null,
+	reference int not null,
+	out_amount float null,
+	in_amount float null,
+	balance float not null,
+	tmp_client_name varchar(40) charset utf8 null,
+	customer_id int null,
+	receipt varchar(100) charset utf8 null,
+	site_id int null,
+	transaction_type int null
+);
+
+");
+	sql_query("drop function last_bank_transaction");
+	sql_query("create function last_bank_transaction(_account_id int)
+	returns date
+BEGIN
+		declare _result date;
+		
+
+	select max(date) into _result from im_bank where id = _account_id;
+
+	return _result;	   
+END	");
+	sql_query("drop function account_name");
+	sql_query("CREATE FUNCTION 	account_name(_account_id int)
+	 RETURNS varchar(200) charset utf8
+BEGIN
+	declare _result varchar(200) charset utf8;
+
+	select name into _result from im_bank_account where id = _account_id;
+
+	return _result;	   
+END");
 	if (! table_exists("im_bank"))
 		sql_query("create table im_bank
 (
