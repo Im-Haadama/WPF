@@ -53,6 +53,12 @@ switch ($operation)
 		$not_available = get_param("not_available", false, false);
 		show_fresh_inventory($not_available);
 		break;
+	case "show_all":
+		$suppliers = sql_query_array_scalar("select id from im_suppliers");
+		foreach ($suppliers as $sup) {
+			show_supplier_inventory($sup);
+		}
+		break;
 }
 
 function show_not_available() {
@@ -78,9 +84,8 @@ function show_not_available() {
 function show_supplier_inventory( $supplier_id ) {
 	$table = array( array( "", "מוצר", "מחיר עלות", "כמות במלאי" ) );
 
-	print gui_header( 1, "מלאי לספק " . get_supplier_name( $supplier_id ) );
+	$display = gui_header( 1, "מלאי לספק " . get_supplier_name( $supplier_id ) );
 	$catalog = new Catalog();
-	$display = "";
 
 	$sql = 'SELECT product_name, price, date, pl.id, supplier_product_code, s.factor ' .
 	       ' FROM im_supplier_price_list pl ' .
@@ -98,6 +103,10 @@ function show_supplier_inventory( $supplier_id ) {
 			$line    = product_line( $prod_id, false, false, null, true, $supplier_id );
 			array_push( $table, $line );
 		}
+	}
+
+	if (count($table) == 1) { // Just the header
+		return null;
 	}
 
 	$display .= gui_table_args( $table, "table_" . $supplier_id );
