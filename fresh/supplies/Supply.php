@@ -311,6 +311,8 @@ class Supply {
 			array_push( $row, get_mission_name($this->getMissionID()) );
 		}
 
+		array_push($rows, array(__("status"), get_supply_status($this->getStatus())));
+
 		array_push( $rows, $row );
 
 		$args = array();
@@ -353,7 +355,10 @@ class Supply {
 			          "checkbox_class" => "supply_checkbox", "events"=>"onchange='changed(this)'");
 
 		if ($internal) $args["show_cols"]['$buyers'] = true;
-		if ($edit) $args["edit_cols"] = array("quantity" => true, '$buy' => true);
+		if ($edit) {
+			$args["edit_cols"] = array("quantity" => true, '$buy' => true);
+			$args["edit"] = 1;
+		}
 
 		$args['fields'] = array("product_id" => 0, "quantity" => 1, '$buy' => 2, '$total' => 3, '$buyers' => 4);
 		$args["header_fields"] = array("product_id" => "Product", "quantity" => "Quantity");
