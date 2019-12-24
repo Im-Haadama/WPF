@@ -9,13 +9,25 @@ if ( ! defined( "ROOT_DIR" ) ) {
 	define( 'ROOT_DIR', dirname( dirname( dirname( dirname( __FILE__ ) ) ) ) );
 }
 
+function fresh_cron_hook($k = 0)
+{
+//	print "running cron";
+	print "trying to open";
+	$f = fopen("/tmp/temp_log", "a");
+	if (! $f) print "can't open file for writing";
+	fwrite ($f, "cron running $k " . date('y-m-t h:i') . "\n");
+	fclose($f);
+}
+
+// fresh_cron_hook(1);
+
 require_once(ROOT_DIR . '/im-config.php');
 require_once(ROOT_DIR . "/init.php");
-require_once(ROOT_DIR . '/fresh/im_tools.php' );
-require_once(ROOT_DIR . '/niver/data/sql.php' );
-require_once(ROOT_DIR . '/niver/wp.php' );
-require_once(ROOT_DIR . '/fresh/pricing.php' );
-require_once(ROOT_DIR . '/niver/gui/inputs.php' );
+//require_once(ROOT_DIR . '/fresh/im_tools.php' );
+//require_once(ROOT_DIR . '/niver/data/sql.php' );
+//require_once(ROOT_DIR . '/niver/wp.php' );
+//require_once(ROOT_DIR . '/fresh/pricing.php' );
+//require_once(ROOT_DIR . '/niver/gui/inputs.php' );
 
 add_action( 'woocommerce_checkout_process', 'wc_minimum_order_amount' );
 add_action( 'woocommerce_before_cart', 'wc_minimum_order_amount' );
@@ -122,11 +134,11 @@ function sk_wcmenucart( $menu, $args ) {
 	global $woocommerce;
 	$viewing_cart        = __( 'View your shopping cart', 'your-theme-slug' );
 	$start_shopping      = __( 'Start shopping', 'your-theme-slug' );
-	$cart_url            = $woocommerce->cart->get_cart_url();
-	$shop_page_url       = get_permalink( woocommerce_get_page_id( 'shop' ) );
-	$cart_contents_count = $woocommerce->cart->cart_contents_count;
+	$cart_url            = ($woocommerce ? $woocommerce->cart->get_cart_url() : null);
+	$shop_page_url       = ($woocommerce ? get_permalink( woocommerce_get_page_id( 'shop' ) ) : null);
+	$cart_contents_count = ($woocommerce ? $woocommerce->cart->cart_contents_count : null);
 	$cart_contents       = sprintf( _n( '%d item', '%d ', $cart_contents_count, 'your-theme-slug' ), $cart_contents_count );
-	$cart_total          = $woocommerce->cart->get_cart_total();
+	$cart_total          = ($woocommerce ? $woocommerce->cart->get_cart_total() : null);
 	// Uncomment the line below to hide nav menu cart item when there are no items in the cart
 	// if ( $cart_contents_count > 0 ) {
 	if ( $cart_contents_count == 0 ) {
@@ -497,15 +509,9 @@ function fresh_store_packing_page() {
 }
 
 function fresh_store_supplier_account_page() {
-	?>
-
-	<?php
-
 	print gui_table_args( array(
 		array( "supplier_account" )
 	) );
-
-	// require_once("../fresh/menu_op.php");
 }
 
 
@@ -519,4 +525,5 @@ function fresh_store_supplier_account_page() {
 //    var_dump($fields);
 //	return $fields;
 //}
+
 ?>

@@ -1285,6 +1285,7 @@ function focus_main($user_id, $args)
 		}
 		$result .= "<br/>";
 	}
+
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Tasks I need to handle (owner = me)                                                                       //
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1329,7 +1330,8 @@ function focus_main($user_id, $args)
 	// Tasks I've created. Assigned to some else                                                                 //
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	$args["title"] = im_translate("Tasks I've initiated to other teams");
-	$args["query"] = " creator = " . $user_id . " and (owner != " . $user_id . ' or isnull(owner)) and team not in (' . comma_implode($teams) . ")";
+	$args["query"] = " creator = " . $user_id . " and (owner != " . $user_id . ' or isnull(owner))';
+	if (is_array($teams) and count($teams)) $args["query"] .= 'and team not in (' . comma_implode($teams) . ")";
 	$args["limit"] = get_param("limit", false, 10);
 	$args["active_only"] = get_param("active_only", false, true);
 	$result .= active_tasks($args);

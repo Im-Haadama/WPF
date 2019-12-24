@@ -947,6 +947,9 @@ function show_paths($args = null)
     $result .= gui_header(2, "Coming missions");
     $result .= show_missions("date > " . quote_text(date('Y-m-d')));
 
+    $result .= "<br/>";
+    $result .= GuiHyperlink("עדכון שיטות משלוח", "/routes/routes-page.php?operation=update_shipping_methods");
+
     return $result;
 }
 
