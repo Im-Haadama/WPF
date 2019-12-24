@@ -13,17 +13,18 @@ class Finance_Bank
 		return sql_query_array();
 	}
 
-	public function  show_status()
+	public function bank_status()
 	{
 		$result = gui_header(2, "last bank load");
 
-		$sql = "select id, name, last_bank_transaction(id) from im_bank_account";
+		$sql = "select id, name, bank_last_transaction(id) from im_bank_account";
 
 		$args = [];
-//		$args["id_field"] = "ccount_id";
+		$args["links"] = array("account_id" => add_to_url(array("operation" => "show_bank", "id" => "%s")));
+//		$args["id_field"] = "count_id";
 		$action_url = get_url(1); // plugin_dir_url(dirname(__FILE__)) . "post.php";
 		$args["actions"] =
-			array(array( "load", $action_url . "?operation=import&id=%s" ));
+			array(array( "load", $action_url . "?operation=bank_show_import&id=%s" ));
 
 		$accounts = TableData($sql, $args);
 		if (! $accounts) {

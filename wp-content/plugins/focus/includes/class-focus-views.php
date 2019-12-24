@@ -64,7 +64,7 @@ class Focus_Views {
 		$result     = ""; // focus_header($header_args);
 
 
-		$args["page"] = get_param( "page", false, 1 );
+		$args["page"] = get_param( "_page", false, 1 );
 
 		$debug = 0;
 		if ( $debug ) {
@@ -100,11 +100,11 @@ class Focus_Views {
 				$new           = get_param( "new", false, null );
 				$freq          = get_param( "freq", false, null );
 				$args["query"] = "repeat_freq like '%$freq%'";
-				$result        .= show_templates( $args, null, $new );
+				$result        .= self::show_templates( $args, null, $new );
 				break;
 			case "show_template":
 				$id     = get_param( "id", true );
-				$result .= show_templates( $args, $id );
+				$result .= self::show_templates( $args, $id );
 				break;
 			case "show_task":
 				$id = get_param( "id", true );
@@ -343,7 +343,7 @@ class Focus_Views {
 				break;
 
 			case "show_tasks":
-				$query  = data_parse_get( "im_tasklist", array( "operation" ) );
+				$query  = Core_Data::data_parse_get( "im_tasklist", array( "operation" ) );
 				$ids    = data_search( "im_tasklist", $query );
 				$result .= self::show_tasks( $ids );
 				// debug_var($query);
@@ -488,6 +488,7 @@ class Focus_Views {
 			$project_args["query"] = "project_id=" . $project_id . " and status < 2";
 			$project_args["order"] = "id desc";
 			unset($project_args["fields"]);
+			$project_args["page"] = 1;
 
 			$project_tasks = GemTable("im_tasklist", $project_args);
 
@@ -572,6 +573,11 @@ class Focus_Views {
 
 
 	static function handle_focus_do( $operation ) {
+//		print "focus: $operation";
+
+		if (strpos($operation, "data_") === 0)
+			return handle_data_operation($operation);
+
 		$allowed_tables         = array( "im_company", "im_tasklist", "im_task_templates", "im_projects", "im_working" );
 		$header_args            = [];
 		$header_args["scripts"] = array(
@@ -642,9 +648,10 @@ class Focus_Views {
 				$task_id = get_param( "id" );
 				if ($task_id > 0) {
 					$t = new Focus_Tasklist($task_id);
-					$t->Ended();
-
-					Focus_Tasklist::create_tasks( null, false );
+					if ($t->Ended()) {
+						Focus_Tasklist::create_tasks( null, false );
+						print "done";
+					}
 				}
 				return;
 
@@ -708,7 +715,7 @@ class Focus_Views {
 				if ( ! in_array( $table_name, $allowed_tables ) ) {
 					die ( "invalid table operation" );
 				}
-				if ( update_data( $table_name ) ) {
+				if ( Core_Data::update_data( $table_name ) ) {
 					if ( $table_name == 'im_task_templates' ) {
 						$row_id = intval( get_param( "id", true ) );
 						if (sql_query( "update im_task_templates set last_check = null where id = " . $row_id ))
@@ -1146,4 +1153,513 @@ class Focus_Views {
 	}
 //if ($menu_nav) $menu_nav_id = $menu_nav->term_id;
 
+	/**
+	 * @return bool
+	 * @throws Exception
+	 */
+	function focus_check_user()
+	{
+//	$worker_id = sql_query_single_scalar("select id from im_working where user_id = " . get_user_id());
+//
+//	print "worker_id=$worker_id<br/>";
+//
+//	if (! $worker_id) {
+//		sql_query( "insert into im_working (user_id, project_id, rate, report, volunteer, day_rate, is_active, company_id) " .
+//		           " values ( " . get_user_id() . ", 0, 0, 0, 0, 0, 1, 0)" );
+//		$worker_id = sql_insert_id();
+//		if ( ! $worker_id ) {
+//			print "can't insert worker info";
+//
+//			return false;
+//		}
+//	}
+//	print "worker id: " . $worker_id . "<br/>";
+
+		// Check if user has company
+		$user_id = get_user_id();
+		$company_ids = worker_get_companies($user_id);
+		if (! count($company_ids)){
+			print "Ne need some information to get started!<br/>";
+			$args = array("values" => array("admin" => get_user_id()));
+			try {
+				print gui_header(1, "Company details");
+				print NewRow( "im_company", $args );
+			} catch ( Exception $e ) {
+				print "Error F1: " . $e->getMessage();
+				return false;
+			}
+
+			print gui_button( "btn_add", "data_save_new('/focus/focus-post.php?operation=new_company_user', 'im_company', location_reload)", "Add" );
+
+			// print gui_input("company", )
+			return false;
+		}
+
+		// Check if user has team.
+		$team_ids =  Org_Worker::GetTeams($user_id);
+		if (!$team_ids or ! count($team_ids)){
+//		print "uid= $user_id" . gui_br();
+//		var_dump($team_ids); gui_br();
+//		die ("Error #F2. Please report");
+			team_add($user_id, im_translate("Personal team") . " " . get_customer_name($user_id));
+		}
+
+		$project_ids = worker_get_projects($user_id);
+		if (is_null($project_ids) or ! count($project_ids)) {
+			project_create($user_id, im_translate("first project"), $company_ids[0]);
+		}
+		return true;
+	}
+
+	/**
+	 * @param $ids
+	 *
+	 * @return string|null
+	 */
+
+	/**
+	 * @param $team_id
+	 *
+	 * @return string
+	 * @throws Exception
+	 */
+
+	/**
+	 * @param $company_id
+	 * @param $page
+	 *
+	 * @return string
+	 * @throws Exception
+	 */
+	function show_edit_company($company_id, $page)
+	{
+		$result = gui_header(1, company_get_name($company_id));
+		$args = [];
+		$args["query"] = "manager = 1";
+		$args["links"] = array("id" => add_to_url(array("operation" => "show_edit_team&id=%s")));
+		$args["selectors"] = array("team_members" => "gui_show_team");
+		$args["page"] = $page;
+
+		$teams = TableData("select id, team_name from im_working_teams where manager in \n" .
+		                   "(select user_id from im_working where company_id = $company_id) order by 1", $args);
+		foreach ($teams as $key => &$row)
+			if ($key == "header") $row [] = im_translate("Team members");
+			else $row["team_members"] = comma_implode(team_all_members($row["id"]));
+		//GemTable("im_working_teams", $args);
+		$result .= GemArray($teams, $args, "company_teams");
+
+		return $result;
+	}
+
+
+	/**
+	 * @param $args
+	 * @param int $template_id
+	 * @param null $new
+	 *
+	 * @return string
+	 * @throws Exception
+	 */
+	static function show_templates(&$args, $template_id = 0, $new = null )
+	{
+		$url = get_url(1);
+
+		$result = "";
+		$action_url = get_url(1);//  "/focus/focus-post.php";
+
+		$args["worker"] = get_user_id();
+		$args["companies"] =  Org_Worker::GetCompanies(get_user_id());
+		$args["selectors"] = array("project_id" =>  "gui_select_project", "owner" => "gui_select_worker",
+		                           "creator" => "gui_select_worker", "repeat_freq" => "gui_select_repeat_time", "team" => "gui_select_team");
+		$args["fields"] = array("id", "task_description", "project_id", "priority", "team", "repeat_freq", "repeat_freq_numbers", "working_hours", "condition_query", "task_url",
+			"template_last_task(id)");
+		$args["header_fields"] = array("task_description" => "Task description", "project_id" => "Project", "priority" => "Priority",
+		                               "team" => "Team", "repeat_freq" => "Repeat Frequency", "repeat_freq_numbers" => "Repeat times", "working_hours" => "Working hours",
+			"Task site");
+
+		if ($template_id){
+			// print gui_header(1, "משימה חוזרת מספר " . $template_id) ."<br/>";
+			$args["title"] = "Repeating task";
+			$args["post_file"] = $url;
+
+			$template = GemElement("im_task_templates", $template_id, $args);
+			if (! $template) {
+				$result .= "Not found";
+				return $result;
+			}
+			$result .= $template;
+
+			$tasks_args = array("links" => array("id" => get_url(1) . "?operation=show_task&id=%s"));
+			$tasks_args["class"] = "sortable";
+
+			if (get_user_id() == 1){
+				$output = "";
+				$row = sql_query_single_assoc("SELECT id, task_description, task_url, project_id, repeat_freq, repeat_freq_numbers, condition_query, priority, creator, team " .
+				                              " FROM im_task_templates where id = $template_id");
+
+				Focus_Tasklist::create_if_needed($template_id, $row, $output, 1, $verbose_line);
+				// $result .= $output;
+			}
+
+			$sql = "select * from im_tasklist where task_template = " . $template_id;
+			$sql .= " order by date desc limit 10";
+//			print $sql;
+			$table = GuiTableContent("last_tasks", $sql, $tasks_args);
+			if ($table)
+			{
+				$result .= gui_header(2, "משימות אחרונות");
+				$result .= gui_header(2, "משימות אחרונות");
+				$result .= $table;
+			}
+
+			return $result;
+		}
+
+		if ($page = get_param("page")) { $args["page"] = $page; unset ($_GET["page"]); };
+
+		$query = (isset($args["query"]) ? $args["query"] : " 1");
+		if (get_param("search", false, false)){
+			$ids = data_search("im_task_templates", $args);
+			if (! $ids){
+				$result .= "No templates found" . gui_br();
+				return $result;
+			}
+			$query .= " and id in (" . comma_implode($ids) . ")";
+		}
+
+		$args["class"]     = "sortable";
+		$args["links"]     = array ("id" => $url . "?operation=show_template&id=%s" );
+		$args["header"]    = true;
+		$args["drill"] = true;
+		$args["edit"] = false;
+		$args["actions"] = array(array("delete", $action_url . "?operation=delete_template&row_id=%s;action_hide_row"));
+		$args["query"] = $query;
+		$args["order"] = " id " . ($new ? "desc" : "asc");
+
+		$result = gui_hyperlink( "Add repeating task", get_url( true ) . "?operation=new_template" );
+
+		$result .= GemTable("im_task_templates", $args);
+		// $result .= GuiTableContent( "projects", $sql, $args );
+
+		return $result;
+	}
+
+
+	/**
+	 * @param $id
+	 * @param $value
+	 * @param $args
+	 *
+	 * @return string
+	 */
+// $selector_name( $input_name, $orig_data, $args)
+
+
+	/**
+	 * @return string
+	 * @throws Exception
+	 */
+	function show_staff() // Edit teams that I manage.
+	{
+		$user = wp_get_current_user();
+		$result = gui_header(2, "teams");
+
+		$args = [];
+		$args["links"] = array("id" => add_to_url(array("operation" => "show_team", "id" => "%s")));
+		$args["selectors"] =  array("manager" => "gui_select_worker");
+		$args["edit"] = false;
+		$result .= GuiTableContent("working_teams", "select * from im_working_teams where manager = " . $user->id, $args);
+
+		$result .= gui_hyperlink("add", add_to_url("operation", "show_new_team"));
+		// print GuiTableContent("");
+
+		return $result;
+	}
+
+	/**
+	 * @param $args
+	 *
+	 * @return string
+	 * @throws Exception
+	 */
+	function edit_projects($args) // Edit projects that I manage.
+	{
+		$result = gui_header(2, "Projects");
+
+		$global = GetArg($args, false, "global");
+		$args["links"] = array("ID" => add_to_url(array("operation" => "show_edit_project", "id" => "%s")));
+		$args["selectors"] =  array("manager" => "gui_select_worker");
+		$args["edit"] = false;
+		$args["actions"] = array (array("delete", get_url(1) . "?operation=cancel_im_projects&id=%s;action_hide_row"));
+		$base_query = "is_active = 1 ";
+		$args["fields"] = array("ID", "project_name", "project_contact", "project_priority", "company");
+		if ($global) // A global user can see all projects
+		{
+			$args["query"] = $base_query;
+			$result .= GemTable("im_projects", $args); // "select * from im_projects ", $args);
+		} else { // Ordinary user can see only projects he's working in.
+			$worker_id = GetArg($args,"worker_id", null);
+			if (! $worker_id) die ("no worker_id");
+			$companies = worker_get_companies(get_user_id());
+
+			foreach ($companies as $company){
+				$result .= gui_header(1, company_get_name($company));
+				$args["query"] = $base_query . " and company = $company";
+				$result .= GemTable("im_projects", $args); //"select * from im_projects where company = $company", $args);
+			}
+		}
+
+		$result .= gui_hyperlink("add", add_to_url("operation", "show_new_company"));
+
+		return $result;
+		// print GuiTableContent("");
+	}
+
+	/**
+	 * @param null $args
+	 *
+	 * @return string|null
+	 */
+
+//// team_add_worker($team_id, team_manager($team_id));
+//// $result .= gui_header(1, im_translate("Team") . ": " . team_get_name($team_id));
+//$args = array("selectors" => array("ID" => "gui_select_worker"),
+//              "edit" => false,
+////				array( "cancel", $action_url . "?operation=cancel_task&id=%s;action_hide_row" ),
+//
+//              "actions" => array(array("remove", add_to_url(array("operation" => "remove_from_team", "user" => "%s")))));
+//$result .= GuiTableContent("im_working_teams",
+//	'select ID from wp_users where worker_teams(id) like "%:' . $team_id . ':%"', $args);
+//$result .= gui_hyperlink("add member", add_to_url("operation" , "show_add_member"));
+//
+//$args = [];
+//$args["page"] = get_param("page", false, 1);
+//$args["query"] = " team = $team_id";
+//$result .= GemTable("im_tasklist", $args);
+
+	/**
+	 * @param $manager_id
+	 * @param $url
+	 *
+	 * @return string
+	 * @throws Exception
+	 */
+	function managed_workers($manager_id, $url)
+	{
+		$teams = sql_query_array_scalar("select id from im_working_teams where manager = " . $manager_id);
+
+		if (!$teams) return "";
+
+		$result = "";
+
+		foreach ($teams as $team_id)
+		{
+			$result .= gui_hyperlink(Org_Team::team_get_name($team_id), $url . "?team=" . $team_id);
+		}
+		return $result;
+	}
+
+	/**
+	 * @param $team_id
+	 *
+	 * @return string
+	 */
+
+	/**
+	 * @return bool
+	 */
+	function create_new_sequence()
+	{
+		$user_id = get_user_id();
+		$project = get_param("project", true);
+		$priorty = get_param("priority", true);
+
+		$i = 1;
+		$description = null;
+		$preq = null;
+		while (isset($_GET["task" . $i]))
+		{
+			$description = get_param("task" . $i);
+			$preq = task_new($user_id, $project, $priorty, $description, $preq);
+			$i ++;
+		}
+		return true;
+	}
+
+	/**
+	 * @param $user_id
+	 * @param $project
+	 * @param $priority
+	 * @param $description
+	 * @param null $preq
+	 *
+	 * @return int|string
+	 */
+	function task_new($user_id, $project, $priority, $description, $preq = null)
+	{
+		$creator = $user_id;
+		$owner = $user_id; // For now
+		is_numeric($priority) or die("bad project id");
+		is_numeric($priority) or die ("bad priority");
+		strlen($description) > 2 or die ("short description");
+
+		$sql = "insert into im_tasklist (task_description, project_id, priority";
+
+		if ($preq) $sql .= ", preq";
+
+		$sql .= ", creator, owner) values (" .
+		        quote_text($description) . "," .
+		        $project . "," .
+		        $priority . ",";
+		if ($preq) $sql .=  $preq . ",";
+		$sql .= $user_id . "," . $owner .")";
+
+		sql_query($sql);
+		return sql_insert_id();
+	}
+
+	/**
+	 * @return string
+	 * @throws Exception
+	 */
+	function edit_organization()
+	{
+		$user_id = get_user_id();
+		$result = "";
+		$result .= gui_hyperlink("Edit organization", add_to_url("operation" , "show_staff")) . " ";
+
+		$result .= gui_hyperlink("My projects", add_to_url("operation", "show_edit_projects")) . " ";
+		$my_companies = worker_get_companies($user_id, true);
+		if ($my_companies) foreach ($my_companies as $company){
+			$result .= gui_hyperlink(company_get_name($company), add_to_url( array("operation" => "show_edit_company", "company_id" => $company))) . " ";
+		}
+
+		if (im_user_can("edit_teams")){ // System editor
+			$result .= "<br/>" . im_translate("System wide:");
+			$result .= gui_hyperlink("All teams", add_to_url("operation" , "show_edit_all_teams")) . " ";
+			$result .= gui_hyperlink("All projects", add_to_url("operation", "show_edit_all_projects")) . " ";
+		}
+
+		return $result;
+	}
+
+	/**
+	 * @param $template_id
+	 *
+	 * @return string
+	 */
+	function template_creator($template_id)
+	{
+		return sql_query_single_scalar("select creator from im_task_templates where id = " . $template_id);
+	}
+
+	/**
+	 * @param $user_id
+	 * @param $template_id
+	 *
+	 * @return bool|mysqli_result|null
+	 */
+	function template_delete($user_id, $template_id)
+	{
+		$creator_id = template_creator($template_id);
+		if ($creator_id != $user_id) {
+			print "not creator c=$creator_id u=$user_id<br/>";
+			return false;
+		}
+		if ($template_id > 0) {
+			$sql = "delete from im_task_templates where id = " . $template_id;
+
+			return sql_query($sql);
+		}
+
+		return false;
+	}
+
+	/**
+	 * @param $id
+	 * @param $selected
+	 * @param $args
+	 *
+	 * @return string
+	 */
+	function gui_show_team($id, $selected, $args)
+	{
+		$members = explode(",", $selected);
+		$result = "";
+		foreach ($members as $member) $result .= get_user_name($member) . ", ";
+		return rtrim($result, ", ");
+	}
+
+	function link_to_task($id)
+	{
+		return add_to_url(array("operation" => "show_task", "id" => $id));
+	}
+
+	function search_by_text($text)
+	{
+		$result = [];
+		$result = array_merge($result, project_list_search("project_name like " . quote_percent($text)));
+		$result = array_merge($result, task_list_search("task_description like " . quote_percent($text)));
+
+		if (count($result) < 2) return "No results";
+
+		return gui_table_args($result);
+	}
+
+	function task_list_search($query)
+	{
+		$tasks = sql_query_array("select id, task_description from im_tasklist where $query");
+
+		$result = [];
+		foreach ($tasks as $task)
+			array_push($result, GuiHyperlink($task[1], add_to_url(array("operation" => "show_task", "id" => $task[0]))));
+
+		// debug_var($result);
+		return $result;
+	}
+
+	function project_list_search($query)
+	{
+		return sql_query_array_scalar("select id from im_projects where $query" );
+	}
+
+	function show_settings($user_id)
+	{
+		$result = gui_header(1, im_translate("Settings for") . " " . get_user_name($user_id));
+
+
+		return $result;
+	}
+
+
+}
+
+/**
+ * TODO: change action to be array(class_name, method_name);
+ * till then using functions and not methods.
+ * @param $id
+ * @param $value
+ * @param $args
+ *
+ * @return mixed|string
+ */
+function gui_select_repeat_time( $id, $value, $args) {
+//	print "v=" . $value . "<br/>";
+
+	$edit = GetArg($args, "edit", false);
+	$events = GetArg($args, "events", null);
+	$values = array( "w - weekly", "j - monthly", "z - annual", "c - continuous");
+
+	$selected = 1;
+	for ( $i = 0; $i < count( $values ); $i ++ ) {
+		if ( substr( $values[ $i ], 0, 1 ) == substr($value, 0, 1) ) {
+			$selected = $i;
+		}
+	}
+
+	// return gui_select( $id, null, $values, $events, $selected );
+	if ($edit)
+		return gui_simple_select( $id, $values, $events, $selected );
+	else
+		return $values[$selected];
 }

@@ -244,7 +244,7 @@ class Focus {
 		require_once FOCUS_INCLUDES . 'core/gui/inputs.php';
 		require_once FOCUS_INCLUDES . 'core/data/input_data.php';
 		require_once FOCUS_INCLUDES . 'core/gui/gem.php';
-		require_once FOCUS_INCLUDES . 'core/web.php';
+//		require_once FOCUS_INCLUDES . 'core/web.php';
 		require_once FOCUS_INCLUDES . 'core/wp.php';
 		require_once FOCUS_INCLUDES . 'org/gui.php';
 		require_once FOCUS_INCLUDES . 'gui.php';

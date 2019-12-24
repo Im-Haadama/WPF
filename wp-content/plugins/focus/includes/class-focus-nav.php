@@ -28,11 +28,20 @@ class Focus_Nav {
 			'menu-item-status'  => 'publish'
 		) );
 
-		wp_update_nav_menu_item( $menu_id, 0, array(
-			'menu-item-title'  => __( 'Active tasks' ),
+		$focus_id = wp_update_nav_menu_item( $menu_id, 0, array(
+			'menu-item-title'  => __( 'Focus' ),
 			'menu-item-url'    => home_url( '/focus' ),
 			'menu-item-status' => 'publish'
 		) );
+		{
+			wp_update_nav_menu_item( $menu_id, 0, array(
+				'menu-item-title'     => __( "Repeating tasks" ),
+				'menu-item-classes'   => 'home',
+				'menu-item-url'       => home_url( '/focus?operation=show_repeating_tasks' ),
+				'menu-item-status'    => 'publish',
+				'menu-item-parent-id' => $focus_id
+			) );
+		}
 
 		wp_update_nav_menu_item( $menu_id, 0, array(
 			'menu-item-title'  => __( 'Projects' ),
@@ -46,24 +55,26 @@ class Focus_Nav {
 			'menu-item-status' => 'publish'
 		) );
 
-		wp_update_nav_menu_item( $menu_id, 0, array(
+		$salary_id = wp_update_nav_menu_item( $menu_id, 0, array(
 			'menu-item-title'  => __( 'Salary' ),
 			'menu-item-url'    => home_url( '/salary?operation=show_main' ),
 			'menu-item-status' => 'publish'
 		) );
 
+		{
 			wp_update_nav_menu_item( $menu_id, 0, array(
 				'menu-item-title'     => __( "Month report" ),
 				'menu-item-classes'   => 'home',
 				'menu-item-url'       => home_url( '/salaray?operation=show_salary' ),
 				'menu-item-status'    => 'publish',
-				'menu-item-parent-id' => $menu_id
+				'menu-item-parent-id' => $salary_id
 			) );
+		}
 
 		if (user_can($user_id, "show_bank")){
 			wp_update_nav_menu_item( $menu_id, 0, array(
-				'menu-item-title'  => __( 'Bank' ),
-				'menu-item-url'    => home_url( '/bank?operation=show_main' ),
+				'menu-item-title'  => __( 'Finance' ),
+				'menu-item-url'    => home_url( '/finance?operation=show_main' ),
 				'menu-item-status' => 'publish'
 			) );
 		}

@@ -134,7 +134,7 @@ class Focus_Tasklist {
 		$sql = "UPDATE im_tasklist SET ended = now(), status = " . eTasklist::done .
 		       " WHERE id = " . $this->id;
 		// print $sql;
-		sql_query( $sql );
+		return sql_query( $sql );
 	}
 
 	public function Postpone() {

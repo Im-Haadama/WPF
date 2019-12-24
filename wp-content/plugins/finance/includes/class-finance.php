@@ -387,7 +387,7 @@ class Finance {
 			$result .= gui_header(1, "Main finance");
 			$result .= gui_header(2, "Bank");
 
-			$result .= $bank->show_status();
+			$result .= $bank->bank_status();
 		}
 
 		if (im_user_can("show_bank")) {
@@ -413,6 +413,7 @@ class Finance {
 		}
 
 		switch ( $operation ) {
+			case "bank_receipts":
 			case "receipts":
 				$args = array();
 				print gui_header( 1, "Receipts" );
@@ -441,6 +442,8 @@ class Finance {
 				print bank_transactions( $query, $args );
 
 				return;
+
+			case "bank_payments":
 			case "payments":
 				$args = array();
 				print gui_header( 1, "Payments" );
@@ -513,12 +516,14 @@ class Finance {
 				print bank_transactions( "id in (" . comma_implode( $ids ) . ")" );
 				return;
 
+			case "bank_show_import":
 			case "import":
 				$args                  = array();
 				$args["selector"]      = "gui_select_bank_account";
 				$args["import_action"] = $post_file . '?operation=bank_import_from_file';
 
-				$args["limit"] = "top 10";
+				$args["page"] = 1;
+				$args["order"] = "3 desc";
 				print GemTable("im_bank", $args);
 
 				print GemImport( "im_bank", $args );

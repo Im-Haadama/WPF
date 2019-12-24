@@ -43,34 +43,12 @@ class Core_Shortcodes {
 	 */
 	static public function init() {
 		self::instance()->do_init();
-//		$shortcodes = array(
-//			'core_management'           => __CLASS__ . '::core_management',
-//			'core_suppliers'            => __CLASS__ . '::suppliers', // [core_suppliers]
-////			'product_page'               => __CLASS__ . '::product_page',
-////			'product_category'           => __CLASS__ . '::product_category',
-////			'product_categories'         => __CLASS__ . '::product_categories',
-////			'add_to_cart'                => __CLASS__ . '::product_add_to_cart',
-////			'add_to_cart_url'            => __CLASS__ . '::product_add_to_cart_url',
-////			'products'                   => __CLASS__ . '::products',
-////			'recent_products'            => __CLASS__ . '::recent_products',
-////			'sale_products'              => __CLASS__ . '::sale_products',
-////			'best_selling_products'      => __CLASS__ . '::best_selling_products',
-////			'top_rated_products'         => __CLASS__ . '::top_rated_products',
-////			'featured_products'          => __CLASS__ . '::featured_products',
-////			'product_attribute'          => __CLASS__ . '::product_attribute',
-////			'related_products'           => __CLASS__ . '::related_products',
-////			'shop_messages'              => __CLASS__ . '::shop_messages',
-////			'woocommerce_order_tracking' => __CLASS__ . '::order_tracking',
-////			'woocommerce_cart'           => __CLASS__ . '::cart',
-////			'woocommerce_checkout'       => __CLASS__ . '::checkout',
-////			'woocommerce_my_account'     => __CLASS__ . '::my_account',
-//		);
 	}
 
 	function do_init()
 	{
 		foreach ( $this->shortcodes as $shortcode => $function ) {
-//			 print $shortcode . " " . $function . "<br/>";
+			 // print $shortcode . " " . $function . "<br/>";
 			// print "{$shortcode}_shortcode_tag" . " ". $shortcode ." " . $function . "<br/>";
 			add_shortcode( apply_filters( "{$shortcode}_shortcode_tag", $shortcode ), $function );
 		}

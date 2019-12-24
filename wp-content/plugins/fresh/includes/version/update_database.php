@@ -1136,14 +1136,13 @@ function version29()
 );
 
 ");
-	sql_query("drop function last_bank_transaction");
-	sql_query("create function last_bank_transaction(_account_id int)
+	sql_query("drop function bank_last_transaction");
+	sql_query("create function bank_last_transaction(_account_id int)
 	returns date
 BEGIN
 		declare _result date;
-		
 
-	select max(date) into _result from im_bank where id = _account_id;
+	select max(date) into _result from im_bank where account_id = _account_id;
 
 	return _result;	   
 END	");

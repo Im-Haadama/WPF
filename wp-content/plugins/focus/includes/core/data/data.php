@@ -3,7 +3,8 @@
 if (! function_exists('data_inactive')) {
 // $ignore_list = array("search", "operation", "table_name", "id", "dummy");
 
-function data_inactive($table_name)
+
+	function data_inactive($table_name)
 {
 	// TODO: adding meta key when needed(?)
 	global $meta_table_info;
@@ -65,7 +66,7 @@ function data_search($table_name, $args = null)
 {
 	$result = null;
 	$ignore_list = GetArg($args, "ignore_list", array("search", "operation", "table_name", "id", "dummy"));
-	$values = data_parse_get($table_name, $ignore_list);
+	$values = Core_Data::data_parse_get($table_name, $ignore_list);
 
 	$id_field = GetArg($args, "id_field", "id");
 	$sql = "select $id_field from $table_name where 1 ";
@@ -136,6 +137,7 @@ function handle_data_operation($operation)
 			break;
 
 		case "update":
+		case "data_update":
 			$table_name = get_param("table_name", true);
 			if (update_data($table_name))
 				print "done";
@@ -185,3 +187,4 @@ function set_args_value(&$args, $ignore_list = null)
 	}
 }
 }
+

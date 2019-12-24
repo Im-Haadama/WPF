@@ -85,7 +85,7 @@ function GemArray($rows_data, &$args, $table_id)
 	$no_data_message = GetArg($args, "no_data_message", "No data for now");
 	if ($title) $result .= gui_header(2, $title);
 
-	$page = GetArg($args, "page", 1);
+	$page = GetArg($args, "_page", 1);
 	$rows_per_page = GetArg($args, "rows_per_page", 10);
 
 	if ($rows_data){
@@ -97,10 +97,10 @@ function GemArray($rows_data, &$args, $table_id)
 
 		if (count($rows_data) == $rows_per_page + 1) { // 1 for the header
 			$result .= gui_hyperlink("Next page", add_to_url("page", $page + 1)) . " ";
-			$result .= gui_hyperlink("All", add_to_url("page", -1)) . " ";
+			$result .= gui_hyperlink("All", add_to_url("_page", -1)) . " ";
 		}
 		if ($page > 1)
-			$result .= gui_hyperlink("Previous page", add_to_url("page", $page - 1));
+			$result .= gui_hyperlink("Previous page", add_to_url("_page", $page - 1));
 
 		if ($args["count"] > 10) $result .= gui_hyperlink("search", add_to_url("search", "1"));
 
