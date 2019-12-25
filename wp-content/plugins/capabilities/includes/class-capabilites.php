@@ -437,7 +437,8 @@ class Capabilites {
 
 		// Set up localisation.
 		$this->load_plugin_textdomain();
-		new Core_Shortcodes(array('capabilites_main'  => __CLASS__ . '::capabilites_main'));
+		$shortcodes = Core_Shortcodes::instance();
+		$shortcodes->add(array('capabilites_main'  => __CLASS__ . '::capabilites_main'));
 
 		// Load class instances.
 //		$this->product_factory                     = new WC_Product_Factory();

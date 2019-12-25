@@ -21,8 +21,7 @@ class Core_Shortcodes {
 
 	public static function instance() {
 		if ( is_null( self::$_instance ) ) {
-			die (__CLASS__ . " call constructor with shortcodes");
-//			self::$_instance = new self("Focus");
+			self::$_instance = new self();
 		}
 		return self::$_instance;
 	}
@@ -32,12 +31,18 @@ class Core_Shortcodes {
 	 *
 	 * @param $shortcodes
 	 */
-	public function __construct( $shortcodes ) {
-		// var_dump($shortcodes);
-		$this->shortcodes = $shortcodes;
+	public function __construct( ) {
+//		 var_dump($shortcodes);
+//		$this->shortcodes = $shortcodes;
 		self::$_instance = $this;
 	}
 
+
+	public function add($new_shortcodes) {
+		foreach ( $new_shortcodes as $code => $result ) {
+			$this->shortcodes[ $code ] = $result;
+		}
+	}
 	/**
 	 * Init shortcodes.
 	 */
@@ -47,11 +52,12 @@ class Core_Shortcodes {
 
 	function do_init()
 	{
-		foreach ( $this->shortcodes as $shortcode => $function ) {
-			 // print $shortcode . " " . $function . "<br/>";
-			// print "{$shortcode}_shortcode_tag" . " ". $shortcode ." " . $function . "<br/>";
-			add_shortcode( apply_filters( "{$shortcode}_shortcode_tag", $shortcode ), $function );
-		}
+		if ($this->shortcodes)
+			foreach ( $this->shortcodes as $shortcode => $function ) {
+				 // print $shortcode . " " . $function . "<br/>";
+				// print "{$shortcode}_shortcode_tag" . " ". $shortcode ." " . $function . "<br/>";
+				add_shortcode( apply_filters( "{$shortcode}_shortcode_tag", $shortcode ), $function );
+			}
 
 		// Alias for pre 2.1 compatibility.
 //		add_shortcode( 'core_messages', __CLASS__ . '::shop_messages' );

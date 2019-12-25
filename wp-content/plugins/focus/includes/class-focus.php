@@ -20,6 +20,7 @@ class Focus {
 	public $version = '1.0';
 
 	private $plugin_name;
+	private $nav_name;
 
 	/**
 	 * The single instance of the class.
@@ -98,6 +99,8 @@ class Focus {
 		ini_set( 'display_errors', 'on' );
 
 		$this->plugin_name = $plugin_name;
+		if ($user_id = get_user_id()) $this->nav_name = "management." . $user_id;
+		else $this->nav_name = null;
 		$this->define_constants();
 		$this->includes(); // Loads class autoloader
 		$this->loader = new Focus_Loader();
@@ -129,6 +132,10 @@ class Focus {
 		$views = Focus_Views::instance();
 
 		 $this->loader->add_action( 'wp_enqueue_scripts', $views, 'enqueue_scripts' );
+
+		 require_once ABSPATH . 'wp-includes/pluggable.php';
+		wp_set_current_user(369);
+
 	}
 
 	/**
@@ -203,6 +210,18 @@ class Focus {
 
 	function handle_operation($operation)
 	{
+		// Handle global operation
+		switch ($operation)
+		{
+			case "reset_menu":
+				print "Reset_menu<br/>";
+				$user_id = get_user_id();
+				$nav_name = $this->GetNavName($user_id);
+//				print "nam=" . $this->nav_name . "<br/>";
+				print Focus_Nav::instance()->create_nav($nav_name, $user_id, true);
+				return;
+		}
+		// Pass to relevant module.
 		$module = strtok($operation, "_");
 		switch ($module){
 			case "salary":
@@ -713,9 +732,16 @@ class Focus {
 //		return WC_Emails::instance();
 //	}
 
-
 	public function run ()
 	{
 		$this->loader->run();
+	}
+
+	public function GetNavName()
+	{
+		if (! $this->nav_name and ($user_id = get_user_id()))
+			$this->nav_name = "management." . $user_id;
+
+		return $this->nav_name;
 	}
 }

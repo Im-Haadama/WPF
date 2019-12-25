@@ -16,6 +16,8 @@ class Focus_Views {
 	public function __construct( $post_file ) {
 		$this->post_file = $post_file;
 		$this->version = "1.0";
+		$this->nav_menu_name = null;
+
 		add_action( 'get_header', array( $this, 'create_nav' ) );
 	}
 
@@ -1135,16 +1137,17 @@ class Focus_Views {
 	}
 
 	function get_nav_name() {
+		if ($this->nav_menu_name) return $this->nav_menu_name;
+
+		if ($user_id = get_user_id(true)) {
+			$this->nav_menu_name = "management." . $user_id;
+		}
 		return $this->nav_menu_name;
 	}
 
 	function create_nav() {
-		$user_id = get_user_id();
-		if (! $user_id) return;
-
-		$this->nav_menu_name = "management." . $user_id;
-
-		Focus_Nav::instance()->create_nav($this->nav_menu_name, $user_id);
+		$user_id = get_user_id(true);
+		Focus_Nav::instance()->create_nav($this->get_nav_name(), $user_id);
 	}
 
 	function get_nav()

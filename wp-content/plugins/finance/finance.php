@@ -49,7 +49,7 @@ function run_finance() {
 //	print "runner: ". FINANCE_INCLUDES . "<br/>";
 	$instance = finance();
 
-	var_dump($instance);
+//	var_dump($instance);
 //	$instance->run();
 }
 

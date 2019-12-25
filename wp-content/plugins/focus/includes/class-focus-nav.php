@@ -57,10 +57,11 @@ class Focus_Nav {
 
 		$salary_id = wp_update_nav_menu_item( $menu_id, 0, array(
 			'menu-item-title'  => __( 'Salary' ),
-			'menu-item-url'    => home_url( '/salary?operation=show_main' ),
+			'menu-item-url'    => home_url( '/salary?operation=salary_main' ),
 			'menu-item-status' => 'publish'
 		) );
 
+		if (user_can( $user_id, 'show_salary' ))
 		{
 			wp_update_nav_menu_item( $menu_id, 0, array(
 				'menu-item-title'     => __( "Month report" ),
@@ -191,26 +192,53 @@ class Focus_Nav {
 
 	}
 
-	function create_nav($name, $user_id)
+	function create_nav($name, $user_id, $reset_menu = false)
 	{
+		$result = "";
 		$this->nav_menu_name = $name;
 
 		$menu_nav = null;
-		$menu_nav_id = 0;
-
-		// Reset menu - remove all and build from scatch.
-		$reset_menu = get_param("reset_menu", false, false);
-		if ($reset_menu) wp_delete_nav_menu($this->nav_menu_name);
-		else {
+		if ($reset_menu){ // Reset menu - remove all and build from scratch.
+			$result .= "deleting " . $this->nav_menu_name;
+			$rc = wp_delete_nav_menu($this->nav_menu_name);
+			if ($rc === false){
+				$result .= " delete failed";
+				return $result;
+			}
+			if ($rc !== true) {
+				$result .= $rc->get_error_messages();
+				return $result;
+			}
+		} else {
 			$menu_nav = wp_get_nav_menu_object( $this->nav_menu_name);
-			$menu_nav_id = $menu_nav->term_id;
 		}
 
 		if (! $menu_nav) {  /// Brand new or reset requested.
 			$menu_nav_id = wp_create_nav_menu($this->nav_menu_name); // Create
+			var_dump($menu_nav);
 			self::set_toplevel_nav($menu_nav_id, $user_id);
+		} else {
+			$menu_nav_id = $menu_nav->term_id;
 		}
 		self::set_nav_details($menu_nav_id, $user_id);
+		return $result;
+
+
+//
+//		$menu_nav_id = 0;
+//
+//
+////		$reset_menu = get_param("reset_menu", false, false);
+//		if ($reset_menu) {
+//			$result .= "deleting " . $this->nav_menu_name;
+//
+//			return $result;
+//		} else {
+//			die(1);
+//
+//
+//		}
+//
 	}
 
 	function get_nav()

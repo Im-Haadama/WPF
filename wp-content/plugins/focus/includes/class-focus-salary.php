@@ -38,18 +38,20 @@ class Focus_Salary {
 		return false;
 	}
 
-	public static function handle_salary_show() {
-		$operation = get_param( "operation", false, "show_main" );
+	public static function handle_salary_show($operation) {
+		// $operation = get_param( "operation", false, "show_main" );
+//		print "op=$operation";
 		if ( get_user_id( true ) ) {
 			switch($operation)
 			{
-				case "show_main":
+				case "salary_main":
 					print self::salary_main();
 					break;
 
 				case "show_worker":
 					$worker_id = get_param("worker_id", true);
-					print self::show_worker($worker_id);
+					self::get_month_year($y, $m);
+					print self::show_worker($worker_id, $y, $m);
 					break;
 
 				case "show_salary":
@@ -65,17 +67,42 @@ class Focus_Salary {
 	static function salary_main()
 	{
 		$result = gui_header(1, "Salary info");
-
-		$args = [];
-		$args["sql"] = "select distinct id, user_id, client_displayname(user_id) from im_working where is_active = 1";
-		$args["id_field"] = "id";
-		$args["links"] = array("id" => add_to_url(array("operation" => "show_worker", "worker_id" => "%s")));
-		$result .= GemTable("im_working", $args);
+		if (im_user_can("show_salary")){
+			$args = [];
+			$args["sql"] = "select distinct id, user_id, client_displayname(user_id) from im_working where is_active = 1";
+			$args["id_field"] = "id";
+			$args["links"] = array("id" => add_to_url(array("operation" => "show_worker", "worker_id" => "%s")));
+			$result .= GemTable("im_working", $args);
+		} else {
+			self::get_month_year($y, $m);
+			$result .= self::show_report_worker(get_user_id(), $y, $m);
+		}
 
 		return $result;
 	}
 
-	static function show_worker($row_id)
+	static private function get_month_year(&$y, &$m)
+	{
+		$year_month = get_param("month", false, date('Y-m'));
+		$y = strtok($year_month, "-");
+		$m = strtok("");
+	}
+
+	static function show_report_worker($user_id, $y = 0, $m = 0)
+	{
+		if (! $m) $m = date('m');
+		if (! $y) $y = date('Y');
+		$result = gui_header(1, __("Salary info for worker") . " " . get_user_name($user_id)) . __("for month") . " " . $m . '/' . $y;
+		$data = self::print_transactions($user_id, $m, $y);
+		if (! $data) $result .= __("No data for month") . " " . $m . '/' . $y . "<br/>";
+		else $result .= $data;
+		$result .= "<br/>" . GuiHyperlink("Previouse month",
+			add_to_url("month", date('Y-m', strtotime($y . '-' . $m . '-1 -1 month'))));
+
+		return $result;
+	}
+
+	static function show_worker($row_id, $y = 0, $m = 0)
 	{
 		$user_id = sql_query_single_scalar("select user_id from im_working where id = $row_id");
 		$result = gui_header(1, Focus_Salary::worker_get_name($user_id));
@@ -83,6 +110,8 @@ class Focus_Salary {
 		$args = [];
 		$args["post_file"] = self::instance()->post_file;
 		$result .= GemElement("im_working", $row_id, $args);
+
+		$result .= self::show_report_worker($user_id, $y, $m);
 
 		return $result;
 	}
@@ -105,15 +134,15 @@ class Focus_Salary {
 
 		$args["show_salary"] = true;
 		$args["edit_lines"] = $edit;
-		$result .= self::show_all($month,$args);
+		$result .= self::salary_report($month,$args);
 		$result .= "<br/>";
 		$result .= GuiHyperlink("Previous month", add_to_url("month", date('Y-m', strtotime($month . '-1 -1 month'))));
 		if (strtotime($month . '-1') < strtotime('now')) $result .= " " . GuiHyperlink("Next month", add_to_url("month", date('Y-m', strtotime($month . '-1 +1 month'))));
 
-		print $result;
+		return $result;
 	}
 
-	static function show_all( $month, &$args)
+	static function salary_report( $month, &$args)
 	{
 		$edit_lines = GetArg($args, "edit_lines", false);
 
@@ -162,9 +191,8 @@ class Focus_Salary {
 		$sql_month = null;
 		if ( isset( $month ) and $month > 0 ) {
 			if ( ! ( $year > 2016 ) ) {
-				print " לא נבחרה שנה";
-
-				return "אין מידע";
+				return " לא נבחרה שנה $year<br/>" .
+				       "אין מידע";
 			}
 			// print "מציג נתונים לחודש " . $month . " מזהה " . $user_id . "<br/>";
 			$sql_month = " and month(date)=" . $month . " and year(date)=" . $year;

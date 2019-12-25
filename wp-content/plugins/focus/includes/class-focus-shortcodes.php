@@ -258,6 +258,7 @@ class Focus_Shortcodes {
 
 	public static function salary_main($atts) {
 		$operation = get_param("operation", false, "salary_main");
+//		print "operation=" . $operation;
 		return self::shortcode_wrapper( array( 'Focus_Salary', 'handle_salary_show' ), $operation );
 	}
 

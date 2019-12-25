@@ -15,6 +15,7 @@ require_once(ABSPATH . 'wp-config.php');
 
 $operation = get_param('operation', true);
 $focus = Focus::instance();
+
 if ( ! get_user_id(true) ) die('Not connected');
 
 print $focus->handle_operation($operation);

@@ -341,6 +341,9 @@ class Finance {
 		$this->shortcodes = new Core_Shortcodes(array("finance_main" => __CLASS__ . '::finance_main' ));
 		$this->shortcodes->do_init();
 
+		// For testing:
+//		wp_set_current_user(369);
+
 		// Load class instances.
 //		$this->product_factory                     = new WC_Product_Factory();
 //		$this->order_factory                       = new WC_Order_Factory();
