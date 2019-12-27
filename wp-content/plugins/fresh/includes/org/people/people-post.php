@@ -62,20 +62,6 @@ switch ( $operation ) {
 		return;
 
 	case "add_time":
-		$start     = $_GET["start"];
-		$end       = $_GET["end"];
-		$date      = $_GET["date"];
-		$project   = $_GET["project"];
-		$worker_id = get_param( "worker_id", true );
-		// print "wid=" . $worker_id . "<br/>";
-		$vol        = $_GET["vol"];
-		$traveling  = $_GET["traveling"];
-		$extra_text = $_GET["extra_text"];
-		$extra      = $_GET["extra"];
-
-		// if ($user_id = 1) $user_id = 238;
-		$result = add_activity( $worker_id, $date, $start, $end, $project, $vol, $traveling, $extra_text, $extra );
-		if ($result === true) print "done";
 		return;
 
 	case "show_all":

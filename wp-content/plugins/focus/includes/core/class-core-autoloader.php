@@ -73,21 +73,23 @@ if (! class_exists('Core_Autoloader')) {
 		 * @param string $class Class name.
 		 */
 		public function autoload( $class ) {
+			$path = $this->include_path;
 			$class = strtolower( $class );
 //		print "loading " . $class . " " . strpos($class, "core_") . "<br/>";
 			$file = $this->get_file_name_from_class( $class );
 
 			if ( 0 === strpos( $class, 'core_' ) ) {
 				$path = $this->include_path . "core/";
+//				print "CORE";
 			} elseif ( 0 === strpos( $class, 'core_shortcode_' ) ) {
 				$path = $this->include_path . 'shortcodes/';
 			} elseif ( 0 === strpos( $class, 'org' ) ) {
 				$path = $this->include_path . 'org/';
 			}
 
-//		print "looking for " . $this->include_path . $file . "<br/>";
+//		print "looking for " . $path . $file . "<br/>";
 			if ( empty( $path ) || ! $this->load_file( $path . $file ) ) {
-				$this->load_file( $this->include_path . $file );
+				$this->load_file( $path . $file );
 			}
 		}
 

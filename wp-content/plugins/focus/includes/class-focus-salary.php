@@ -10,7 +10,7 @@ class Focus_Salary {
 	 */
 	public function __construct( $post_file ) {
 		$this->post_file = $post_file;
-		add_action( 'get_header', array( $this, 'create_nav' ) );
+//		add_action( 'get_header', array( $this, 'create_nav' ) );
 	}
 
 	public static function instance() {
@@ -27,13 +27,29 @@ class Focus_Salary {
 		strtok($module_operation, "_");
 		$operation = strtok(null);
 
+//		print $operation;
+
 		if (! $operation) die ("invalid activation");
 		switch ($operation)
 		{
 			case "delete":
 				$lines = get_param("params");
-				if (data_delete("im_working_hours", $lines)) print "done";
-				break;
+				return (data_delete("im_working_hours", $lines));
+
+			case "add_time":
+				$start     = get_param("start", true);
+				$end       = get_param("end", true);
+				$date      = get_param("date", true);
+				$project   = get_param("project", true);
+				$worker_id = get_param( "worker_id", true );
+				// print "wid=" . $worker_id . "<br/>";
+				$vol        = get_param("vol", true);
+				$traveling  = get_param("traveling", true);
+				$extra_text = get_param("extra_text", true);
+				$extra      = get_param("extra", true);
+
+				// if ($user_id = 1) $user_id = 238;
+				return self::add_activity( $worker_id, $date, $start, $end, $project, $vol, $traveling, $extra_text, $extra );
 		}
 		return false;
 	}
@@ -69,13 +85,17 @@ class Focus_Salary {
 		$result = gui_header(1, "Salary info");
 		if (im_user_can("show_salary")){
 			$args = [];
-			$args["sql"] = "select distinct id, user_id, client_displayname(user_id) from im_working where is_active = 1";
+			$args["sql"] = "select distinct id, client_displayname(user_id) as name, project_id from im_working where is_active = 1";
 			$args["id_field"] = "id";
 			$args["links"] = array("id" => add_to_url(array("operation" => "show_worker", "worker_id" => "%s")));
+			$args["selectors"] = array("project_id" => "gui_select_project");
+
 			$result .= GemTable("im_working", $args);
 		} else {
 			self::get_month_year($y, $m);
+			$result .= self::hours_entry();
 			$result .= self::show_report_worker(get_user_id(), $y, $m);
+
 		}
 
 		return $result;
@@ -88,12 +108,124 @@ class Focus_Salary {
 		$m = strtok("");
 	}
 
+	static function people_add_activity( $id, $date, $start, $end, $project_id, $traveling, $expense_text, $expense ) {
+		if ( strlen( $traveling ) == 0 ) {
+			$traveling = 0;
+		}
+		if ( strlen( $expense ) == 0 ) {
+			$expense = 0;
+		}
+		my_log( "people_add_activity", __FILE__ );
+		if ( time() - strtotime( $date ) < 0 ) {
+			return "לא ניתן להזין תאריכים עתידיים";
+		}
+		$sql = "INSERT INTO im_working_hours (user_id, date, start_time, end_time, project_id, traveling,
+			expense_text, expense) VALUES (" .
+		       $id . ", \"" . $date . "\", \"" . $start . "\", \"" . $end . "\", " . $project_id .
+		       "," . $traveling . ", \"" . $expense_text . "\", " . $expense . ")";
+		// print header_text();
+		// print $sql;
+		$export = sql_query( $sql );
+		if ( ! $export ) {
+			die ( 'Invalid query: ' . $sql . mysql_error() );
+		}
+
+		return true; // Success
+	}
+
+	static function add_activity( $user_id, $date, $start, $end, $project_id, $vol = true, $traveling = 0, $extra_text = "", $extra = 0 ) {
+		my_log( "add_activity", __FILE__ );
+		$result = self::people_add_activity( $user_id, $date, $start, $end, $project_id, $traveling, $extra_text, $extra );
+		if ( $result !== true) {
+			print $result;
+			return false;
+		}
+//		$fend   = strtotime( $end );
+//		$fstart = strtotime( $start );
+//		$amount = - self::get_rate( $user_id, $project_id ) * ( $fend - $fstart ) / 3600;
+//		my_log( "add_trans" . $amount, __FILE__ );
+//		if ( $vol ) {
+//			account_add_transaction( $user_id, $date, $amount, 1, Org_Project::GetName( $project_id ) );
+//		}
+//		my_log( "before business" );
+//		business_add_transaction( $user_id, $date, $amount * 1.1, 0, 0, $project_id );
+//		my_log( "end add_activity" );
+		return true;
+	}
+
+	static function get_rate( $user_id, $project_id ) {
+		// Check project specific rate
+		$sql = 'select rate '
+		       . ' from im_working '
+		       . ' where user_id = ' . $user_id
+		       . ' and project_id = ' . $project_id;
+
+		$rate = sql_query_single_scalar( $sql );
+
+		if ( $rate ) {
+			return round( $rate, 2 );
+		}
+
+		// Check global rate.
+		$sql    = 'select rate '
+		          . ' from im_working '
+		          . ' where user_id = ' . $user_id
+		          . ' and project_id = 0';
+
+		$rate = sql_query_single_scalar( $sql );
+		if ( $rate )
+			return round( $rate, 2);
+
+		print "no default rate for " . $user_id . " ";
+
+		return 0;
+	}
+
+	static private function hours_entry()
+	{
+		$result = "";
+		$user_id = get_user_id();
+		$roles =
+
+		$table = array();
+		if ( user_has_role($user_id, 'hr') ) array_push( $table, array( "בחר עובד", gui_select_worker() ) );
+
+		array_push( $table, ( array( "תאריך", gui_input_date( "date", 'date', date( 'Y-m-d' ) ) ) ) );
+		array_push( $table, ( array(	"משעה",
+			'<input id="start_h" type="time" value="09:00" pattern="([1]?[0-9]|2[0-3]):[0-5][0-9]">'
+		) ) );
+		array_push( $table, ( array(
+			"עד שעה",
+			'<input id="end_h" type="time" value="13:00" pattern="([1]?[0-9]|2[0-3]):[0-5][0-9]">'
+		) ) );
+		$args["worker_id"] = $user_id;
+		array_push( $table, ( array( "פרויקט", gui_select_project("project", null, $args))));
+
+		$result .= gui_table_args( $table );
+
+		$result .= gui_header( 2, "הוצאות נסיעה" );
+		$result .= gui_input( "traveling", "" ) . "<br/>";
+		$result .= gui_header( 2, "הוצאות נוספות/משלוחים" );
+		$result .= "תיאור";
+		$result .= gui_input( "extra_text", "" ) . "<br/>";
+		$result .= "סכום";
+		$result .= gui_input( "extra", "" ) . "<br/>";
+
+		$result .= gui_button("btn_add_time", 'salary_add_item(' . $user_id . ')', 'הוסף פעילות');
+		$result .= gui_button("btn_delete", 'salary_del_items()', 'מחק פעילות');
+
+		return $result;
+	}
+
 	static function show_report_worker($user_id, $y = 0, $m = 0)
 	{
 		if (! $m) $m = date('m');
 		if (! $y) $y = date('Y');
 		$result = gui_header(1, __("Salary info for worker") . " " . get_user_name($user_id)) . __("for month") . " " . $m . '/' . $y;
-		$data = self::print_transactions($user_id, $m, $y);
+		$args = array("add_checkbox" => true, "checkbox_class" => "hours_checkbox");
+
+
+		$data = self::print_transactions($user_id, $m, $y, $args);
 		if (! $data) $result .= __("No data for month") . " " . $m . '/' . $y . "<br/>";
 		else $result .= $data;
 		$result .= "<br/>" . GuiHyperlink("Previouse month",
@@ -109,9 +241,12 @@ class Focus_Salary {
 
 		$args = [];
 		$args["post_file"] = self::instance()->post_file;
+		$args["selectors"] = array("project_id" => "gui_select_project", "company_id" => "gui_select_company");
 		$result .= GemElement("im_working", $row_id, $args);
 
 		$result .= self::show_report_worker($user_id, $y, $m);
+		$result .= self::hours_entry();
+
 
 		return $result;
 	}
@@ -331,19 +466,12 @@ class Focus_Salary {
 		return $this->nav_menu_name;
 	}
 
-	function create_nav() {
-		$user_id = get_user_id();
-		if (! $user_id) return;
-
-		$this->nav_menu_name = "management." . $user_id;
-
-		Focus_Nav::instance()->create_nav($this->nav_menu_name, $user_id);
-	}
-
+//	function create_nav() {
+//		$user_id = get_user_id();
+//		if (! $user_id) return;
+//
+//		$this->nav_menu_name = "management." . $user_id;
+//
+//		Focus_Nav::instance()->create_nav($this->nav_menu_name, $user_id);
+//	}
 }
-
-//function load_focus_salary() {
-//	new Focus_Salary("/wp-content/plugins/focus/post.php");
-//}
-
-// load_focus_salary();

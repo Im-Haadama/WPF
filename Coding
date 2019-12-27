@@ -42,13 +42,15 @@ inputs
 New row - field name will be just the field name. Will be handled by save_new or data_save_new.
 Existing row - field name will be <field>_<row_number>. Will be handled by update_entity.
 
-handle_XX_operation
--=-=-=-=-=-=-=-=-=-
-- divided to two: first - functions that might reload page or print header.
-- then page header is printed.
-- then handler of other operations.
+post (Ajax)
+-=-=-=-=-=-
+Shortcodes initiates content retrieval. operation codes will be append to get specific form (e.g show_new) or data. (?project_id=).
+Command to alter data will be sent to plugin's post.php.
+post.php will handle plugin specific actions. if not handled:
+-> take of module name from the module name and pass it to processing.
 
-function show_XXXX() - will collect result to $result and return it.
+handle functions will return true if processed.
+if additional data is required to the caller (e.g - insert_id) it will be returned. and the top caller will print done.###
 
 Test:
 -=-=-
@@ -61,7 +63,6 @@ Should run without login. Get permission of task owner. No info leakage.
 15692721
 13900711
 https://fruity.co.il/fresh/pricelist/pricelist-get.php?supplier_id=100044
-
 
 Sharing code between plugins.
 In develop, core library is linked between the projects. Fresh is the main, and others link includes/core to fresh.

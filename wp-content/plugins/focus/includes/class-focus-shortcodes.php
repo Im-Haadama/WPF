@@ -21,7 +21,8 @@ class Focus_Shortcodes {
 		$shortcodes = array(
 			'focus_main'           => __CLASS__ . '::focus_main',
 			'salary_main'        => __CLASS__ . '::salary_main',
-			'roles_main'    => __CLASS__ . '::roles_main'
+			'roles_main'    => __CLASS__ . '::roles_main',
+			'show_settings' => __CLASS__ . '::show_settings'
 //			'focus_suppliers'            => __CLASS__ . '::suppliers', // [focus_suppliers]
 //			'product_page'               => __CLASS__ . '::product_page',
 //			'product_category'           => __CLASS__ . '::product_category',
@@ -253,7 +254,7 @@ class Focus_Shortcodes {
 //	 */
 	public static function focus_main( $atts ) {
 		$operation = get_param("operation", false, "focus_main");
-		return self::shortcode_wrapper( array( 'Focus_Views', 'handle_focus_show' ), $operation );
+		print self::shortcode_wrapper( array( 'Focus_Views', 'handle_focus_show' ), $operation );
 	}
 
 	public static function salary_main($atts) {
@@ -266,6 +267,12 @@ class Focus_Shortcodes {
 		$operation = get_param("operation", false, "salary_main");
 		return self::shortcode_wrapper( array( 'Focus_Salary', 'handle_salary_show' ), $operation );
 	}
+
+	public static function show_settings($atts) {
+		$operation = get_param("operation", false, "show_settings");
+		return self::shortcode_wrapper( array( 'Core_Settings', 'show_settings' ), $operation );
+	}
+
 //
 //	/**
 //	 * Display a single product.

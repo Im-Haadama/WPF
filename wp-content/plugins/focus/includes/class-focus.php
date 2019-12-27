@@ -1,6 +1,9 @@
 <?php
 
 
+/**
+ * Class Focus
+ */
 class Focus {
 	/**
 	 * The loader that's responsible for maintaining and registering all hooks that power
@@ -19,8 +22,14 @@ class Focus {
 	 */
 	public $version = '1.0';
 
+	/**
+	 * @var
+	 */
 	private $plugin_name;
-	private $nav_name;
+	/**
+	 * @var null
+	 */
+	private $nav;
 
 	/**
 	 * The single instance of the class.
@@ -36,11 +45,17 @@ class Focus {
 	 */
 	public $focus = null;
 
+	/**
+	 * @return mixed
+	 */
 	public function get_plugin_name()
 	{
 		return $this->plugin_name;
 	}
 
+	/**
+	 * @return string
+	 */
 	public function get_version() {
 		return $this->version;
 	}
@@ -99,8 +114,8 @@ class Focus {
 		ini_set( 'display_errors', 'on' );
 
 		$this->plugin_name = $plugin_name;
-		if ($user_id = get_user_id()) $this->nav_name = "management." . $user_id;
-		else $this->nav_name = null;
+//		if (function_exists("get_user_id") and $user_id = get_user_id()) $this->nav_name = "management." . $user_id;
+//		else $this->nav_name = null;
 		$this->define_constants();
 		$this->includes(); // Loads class autoloader
 		$this->loader = new Focus_Loader();
@@ -134,7 +149,7 @@ class Focus {
 		 $this->loader->add_action( 'wp_enqueue_scripts', $views, 'enqueue_scripts' );
 
 		 require_once ABSPATH . 'wp-includes/pluggable.php';
-		wp_set_current_user(369);
+//		 wp_set_current_user(369);
 
 	}
 
@@ -208,53 +223,51 @@ class Focus {
 		}
 	}
 
+	/**
+	 * @param $operation
+	 *
+	 *
+	 * @return string|void
+	 * true if success, false if failed, integer if insert was made.
+	 * if error occurred, it'll be output.
+	 * operation can also output dynamic queried values- autolist.
+	 * @throws Exception
+	 */
 	function handle_operation($operation)
 	{
 		// Handle global operation
 		switch ($operation)
 		{
-			case "reset_menu":
-				print "Reset_menu<br/>";
-				$user_id = get_user_id();
-				$nav_name = $this->GetNavName($user_id);
-//				print "nam=" . $this->nav_name . "<br/>";
-				print Focus_Nav::instance()->create_nav($nav_name, $user_id, true);
-				return;
+//			case "reset_menu":
+//				print "Reset_menu<br/>";
+//				$user_id = get_user_id();
+//				$nav_name = $this->GetNavName($user_id);
+////				print "nam=" . $this->nav_name . "<br/>";
+//				return Focus_Nav::instance()->create_nav($nav_name, $user_id, true);
 		}
 		// Pass to relevant module.
 		$module = strtok($operation, "_");
 		switch ($module){
 			case "salary":
 				$salary = Focus_Salary::instance();
-				$salary->handle_operation($operation);
+				print ($salary->handle_operation($operation));
 				break;
 			case "data":
 				$data = Core_Data::instance();
-				$data -> handle_operation($operation);
+				print ($data -> handle_operation($operation));
 				break;
 			default:
 				$focus = Focus_Views::instance();
-				 $focus->handle_focus_show($operation);
+				print $focus->handle_focus_show($operation);
 		}
-//		switch ($operation)
-//		{
-//			case "order_set_mission":
-//				$order_id = get_param("order_id", true);
-//				$mission_id = get_param("mission_id", true);
-//				$order = new Order($order_id);
-//				$order->setMissionID($mission_id);
-//				return "done";
-//
-//			case "update":
-//				return handle_data_operation($operation);
-//		}
+		return;
 	}
 	/**
 	 * Include required core files used in admin and on the frontend.
 	 */
 	public function includes() {
 		/**
-		 * Class autoloader.
+		 * Class autoload`er.
 		 */
 		require_once FOCUS_INCLUDES . 'class-focus-autoloader.php';
 		require_once FOCUS_INCLUDES . 'core/data/sql.php';
@@ -267,7 +280,7 @@ class Focus {
 		require_once FOCUS_INCLUDES . 'core/wp.php';
 		require_once FOCUS_INCLUDES . 'org/gui.php';
 		require_once FOCUS_INCLUDES . 'gui.php';
-		require_once FOCUS_INCLUDES . 'routes/gui.php';
+//		require_once FOCUS_INCLUDES . 'routes/gui.php'; not found
 
 		//		require_once FOCUS_INCLUDES . 'core/data/data.php';
 //		require_once FOCUS_INCLUDES . 'core/wp.php';
@@ -477,11 +490,17 @@ class Focus {
 //	/**
 //	 * Function used to Init WooCommerce Template Functions - This makes them pluggable by plugins and themes.
 //	 */
+	/**
+	 *
+	 */
 	public function include_template_functions() {
 //		include_once WC_FOCUS_INCLUDES . 'includes/focus-template-functions.php';
 	}
 
 
+	/**
+	 * @return Focus_Logger
+	 */
 	public function focus_get_logger()
 	{
 		return new Focus_Logger();
@@ -490,8 +509,15 @@ class Focus {
 	 * Init WooCommerce when WordPress Initialises.
 	 */
 	public function init() {
+//		print __CLASS__ . ':' . __FUNCTION__;
+
 		// Before init action.
 		do_action( 'before_focus_init' );
+//		print __FUNCTION__;
+
+//		new Focus_Nav("management." . get_user_id());
+
+//		print Focus_Nav::instance()->get_nav();
 
 		// Set up localisation.
 		$this->load_plugin_textdomain();
@@ -536,18 +562,28 @@ class Focus {
 //	 *      - WP_LANG_DIR/woocommerce/woocommerce-LOCALE.mo
 //	 *      - WP_LANG_DIR/plugins/woocommerce-LOCALE.mo
 //	 */
+	/**
+	 *
+	 */
 	public function load_plugin_textdomain() {
 		$locale = is_admin() && function_exists( 'get_user_locale' ) ? get_user_locale() : get_locale();
 		$locale = apply_filters( 'plugin_locale', $locale, 'focus' );
 
-		unload_textdomain( 'focus' );
-//		load_textdomain( 'focus', FERSH_LANG_DIR . '/focus/focus-' . $locale . '.mo' );
+//		unload_textdomain( 'focus' );
+		$file = WP_LANG_DIR . '/im-haadama-' . $locale . '.mo';
+//		print "trying to load $file <br/>";
+		// wp-content/languages/plugins/im_haadama-he_IL.po
+		$rc = load_textdomain( 'im-haadama', $file );
+//		print "rc=$rc<br/>";
 //		load_plugin_textdomain( 'focus', false, plugin_basename( dirname( FOCUS_PLUGIN_FILE ) ) . '/i18n/languages' );
 	}
 //
 //	/**
 //	 * Ensure theme and server variable compatibility and setup image sizes.
 //	 */
+	/**
+	 *
+	 */
 	public function setup_environment() {
 		/* @deprecated 2.2 Use WC()->template_path() instead. */
 		$this->define( 'FOCUS_TEMPLATE_PATH', $this->template_path() );
@@ -617,6 +653,9 @@ class Focus {
 //	 *
 //	 * @return string
 //	 */
+	/**
+	 * @return mixed
+	 */
 	public function template_path() {
 		return apply_filters( 'focus_template_path', 'focus/' );
 	}
@@ -732,16 +771,22 @@ class Focus {
 //		return WC_Emails::instance();
 //	}
 
+	/**
+	 *
+	 */
 	public function run ()
 	{
 		$this->loader->run();
 	}
 
-	public function GetNavName()
-	{
-		if (! $this->nav_name and ($user_id = get_user_id()))
-			$this->nav_name = "management." . $user_id;
-
-		return $this->nav_name;
-	}
+	/**
+	 * @return string|null
+	 */
+//	public function GetNav()
+//	{
+//		if (! $this->nav and ($user_id = get_user_id()))
+//			$this->nav = new Focus_Nav("management." . $user_id);
+//
+//		return $this->nav;
+//	}
 }

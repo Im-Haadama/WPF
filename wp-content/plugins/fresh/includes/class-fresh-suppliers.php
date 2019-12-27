@@ -78,6 +78,7 @@ class Fresh_Suppliers {
 		$args["fields"] = array("id", "supplier_name", "supplier_description");
 		$args["links"] = array("id"=> add_to_url(array("operation" => "show_supplier", "id" => "%s")));
 		$args["where"] = "active = 1";
+		$args["header_fields"] = array("supplier_name" => "Name", "supplier_description" => "Description");
 
 		$result .= GuiTableContent("im_suppliers",null, $args);
 

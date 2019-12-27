@@ -1,13 +1,3 @@
-
-FOLDER_LIST=tools,niver
-
-# major version
-VERSION := $(shell cat version)
-# the current tar file
-BUILD_VERSION := $(shell ./build_version_number)
-# the next file
-PREVIOUS_TAR := $(shell ./last_build_file)
-
 all: .languages
 
 #######################

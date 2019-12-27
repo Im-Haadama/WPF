@@ -205,6 +205,9 @@ msgstr "צוות"
 msgid "teams"
 msgstr "צוותים"
 
+msgid "Teams"
+msgstr "צוותים"
+
 msgid "Hello"
 msgstr "שלום"
 
@@ -246,6 +249,9 @@ msgstr "הוסף פרויקט"
 
 msgid "Project name"
 msgstr "שם הפרויקט"
+
+msgid "Projects"
+msgstr "פרויקטים"
 
 msgid "Project contact (client)"
 msgstr "איש קשר (לקוח)"
@@ -382,6 +388,9 @@ msgstr "סוג מסמך"
 
 msgid "Occasional supplier"
 msgstr "ספק מזדמן"
+
+msgid "Description"
+msgstr "תיאור"
 
 msgid "amount without taxes"
 msgstr "סכום ללא מיסים"
@@ -567,3 +576,14 @@ msgstr "נשלח"
 
 msgid "Supplies in status"
 msgstr "הספקות במצב"
+
+# finance
+msgid "Finance"
+msgstr "כספים"
+
+msgid "Salary"
+msgstr "שכר"
+
+msgid "Salary info"
+msgstr "נתוני שכר"
+

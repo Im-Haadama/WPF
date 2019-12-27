@@ -148,6 +148,24 @@ function execute_url(url, finish_action, obj) {
     xmlhttp3.send();
 }
 
+// Use this when the delete button is outside the table and the lines are indicated by the checkbox class
+function action_hide_rows(xmlhttp, checkbox_class)
+{
+    if (xmlhttp.response === "done"){
+        var collection = document.getElementsByClassName(checkbox_class);
+        for (var i = 0; i < collection.length; i++) {
+            if (collection[i].checked) {
+                collection[i].parentElement.parentElement.style.display = 'none';
+            }
+        }
+            // btn.parentElement.parentElement.style.display = 'none';
+    }
+
+    else
+        alert (xmlhttp.response);
+}
+
+// Use this when the delete button is inline.
 function action_hide_row(xmlhttp, btn)
 {
     if (xmlhttp.response === "done")
@@ -239,4 +257,26 @@ function show_menu(menu_name)
     // //         }
     //     }
     // }
+}
+
+function selectTab(event, selected, tab_class)
+{
+    // Declare all variables
+    var i, tabcontent, tablinks;
+
+    // Get all elements with class="tabcontent" and hide them
+    tabcontent = document.getElementsByClassName(tab_class);
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+
+    // Get all elements with class="tablinks" and remove the class "active"
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+
+    // Show the current tab, and add an "active" class to the button that opened the tab
+    document.getElementById(selected).style.display = "block";
+    event.currentTarget.className += " active";
 }

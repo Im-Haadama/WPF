@@ -24,33 +24,6 @@ function get_daily_rate( $user_id ) {
 	return sql_query_single_scalar( "SELECT day_rate FROM im_working WHERE user_id = " . $user_id );
 }
 
-function get_rate( $user_id, $project_id ) {
-	// Check project specific rate
-	$sql = 'select rate '
-	       . ' from im_working '
-	       . ' where user_id = ' . $user_id
-	       . ' and project_id = ' . $project_id;
-
-	$rate = sql_query_single_scalar( $sql );
-
-	if ( $rate ) {
-		return round( $rate, 2 );
-	}
-
-	// Check global rate.
-	$sql    = 'select rate '
-	          . ' from im_working '
-	          . ' where user_id = ' . $user_id
-	          . ' and project_id = 0';
-
-	$rate = sql_query_single_scalar( $sql );
-	if ( $rate )
-		return round( $rate, 2);
-
-	print "no default rate for " . $user_id . " ";
-
-	return 0;
-}
 
 function account_add_transaction( $client_id, $date, $amount, $ref, $type ) {
 	$sql = "INSERT INTO im_client_accounts (client_id, date, transaction_amount, transaction_method, transaction_ref) "

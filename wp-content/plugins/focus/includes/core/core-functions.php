@@ -21,6 +21,16 @@ function get_user_id($force_login = false)
 	return 0;
 }
 
+function user_has_role($user_id, $role)
+{
+	$user_meta = get_userdata($user_id);
+	$user_roles = $user_meta->roles;
+
+	if ( in_array( $role, $user_roles, true ) ) {
+		return true;
+	}
+	return false;
+}
 
 /**
  * @return string

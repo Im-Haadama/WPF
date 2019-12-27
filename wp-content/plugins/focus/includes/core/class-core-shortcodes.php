@@ -54,7 +54,7 @@ class Core_Shortcodes {
 	{
 		if ($this->shortcodes)
 			foreach ( $this->shortcodes as $shortcode => $function ) {
-				 // print $shortcode . " " . $function . "<br/>";
+//				  print $shortcode . " " . $function . "<br/>";
 				// print "{$shortcode}_shortcode_tag" . " ". $shortcode ." " . $function . "<br/>";
 				add_shortcode( apply_filters( "{$shortcode}_shortcode_tag", $shortcode ), $function );
 			}

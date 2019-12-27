@@ -132,6 +132,16 @@ if (! function_exists('gui_br')) {
 		return $data;
 	}
 
+	function GuiButton($id, $text, $args)
+	{
+		$result = "<button id=\"$id\"";
+		if ($class = GetArg($args, "class", null)) $result .= " class=\"$class\"";
+		if ($events = GetArg($args, "events", null)) $result .= " $events ";
+		$result .= ">$text";
+		$result .= "</button>";
+
+		return $result;
+	}
 	function GuiButtonOrHyperlink( $id, $value = null, $args = null ) // Value is irrelevant but here to keep the structure: id, value, args.
 	{
 		$action = GetArg( $args, "action", null );
@@ -1374,4 +1384,31 @@ if (! function_exists('gui_br')) {
 		return "html";
 	}
 
+	function GuiTabs($tabs)
+	{
+		$result = '<div class="tab">';
+
+		$args = [];
+		$args["class"] = "tablinks";
+		$contents = "";
+		$div_args = array("class" => "tabcontent");
+
+		foreach ($tabs as $tab)
+		{
+			$name = $tab[0];
+			$display_name = $tab[1];
+			$contents .= GuiDiv($name, gui_header(2, $name) . $tab[2], $div_args);
+
+			$args["events"] = "onclick=\"selectTab(event, '$name', 'tabcontent')\"";
+			$result .= GuiButton("btn_tab_$name", $display_name, $args);
+		}
+		$result .= "</div>";
+
+		$result .= $contents;
+		return $result;
+	}
+
 }
+
+
+//<button                    class="tablinks" onclick="openCity(event, 'Paris')">Paris</button>

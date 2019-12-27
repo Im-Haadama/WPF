@@ -1,5 +1,9 @@
 <?php
-
+/********************************************
+ * Class Focus_Nav
+ * handles focus plugin navigation menus
+ * created: Dec 2019
+ *******************************************/
 
 class Focus_Nav {
 	protected static $_instance = null;
@@ -7,12 +11,15 @@ class Focus_Nav {
 	/**
 	 * @var string
 	 */
-	public function __construct( ) {
+	public function __construct($nav_name) {
+		$this->nav_menu_name = $nav_name;
+		self::$_instance = $this;
 	}
 
 	public static function instance() {
 		if ( is_null( self::$_instance ) ) {
-			self::$_instance = new self();
+			sql_trace();
+//			die("use constructor" . __CLASS__);
 		}
 
 		return self::$_instance;
@@ -165,7 +172,7 @@ class Focus_Nav {
 		}
 	}
 
-	private function set_nav_details($menu_nav, $user_id, $reset = false)
+	private function set_nav_details($menu_nav, $user_id)
 	{
 		$menu_items = wp_get_nav_menu_items($menu_nav);
 		foreach  ($menu_items as $menu_item){
@@ -199,6 +206,8 @@ class Focus_Nav {
 
 		$menu_nav = null;
 		if ($reset_menu){ // Reset menu - remove all and build from scratch.
+			print __("Id");
+			die (1);
 			$result .= "deleting " . $this->nav_menu_name;
 			$rc = wp_delete_nav_menu($this->nav_menu_name);
 			if ($rc === false){

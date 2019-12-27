@@ -28,39 +28,6 @@ function data_delete($table_name, $row_may_ids)
 	return true;
 }
 
-function data_save_new($table_name)
-{
-	$ignore_list = ["dummy", "operation", "table_name"];
-	$sql    = "INSERT INTO $table_name (";
-	$values = "values (";
-	$first  = true;
-	$sql_values = array();
-	foreach ( $_GET as $key => $value ) {
-		if (in_array($key, $ignore_list))
-			continue;
-		if ( ! $first ) {
-			$sql    .= ", ";
-			$values .= ", ";
-		}
-		$sql    .= $key;
-		$values .= "?"; // "\"" . $value . "\"";
-		$first  = false;
-
-		$sql_values[$key] = $value;
-	}
-	$sql    .= ") ";
-	$values .= ") ";
-	$sql    .= $values;
-
-	$stmt = sql_prepare($sql);
-	sql_bind($table_name, $stmt, $sql_values);
-	if (!$stmt -> execute())
-		sql_error($sql);
-
-	$id = sql_insert_id();
-	return $id;
-}
-
 // For now use escape_string and not bind. Uncaught Error: Call to undefined method mysqli_stmt::get_result
 function data_search($table_name, $args = null)
 {
@@ -139,7 +106,7 @@ function handle_data_operation($operation)
 		case "update":
 		case "data_update":
 			$table_name = get_param("table_name", true);
-			if (update_data($table_name))
+			if (Core_Data::update_data($table_name))
 				print "done";
 			break;
 

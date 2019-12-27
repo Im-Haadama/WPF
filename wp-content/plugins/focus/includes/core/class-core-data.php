@@ -35,13 +35,48 @@ class Core_Data
 				$args["datalist"] = $list . "_list";
 
 				print auto_list($table_name, $field, $prefix, $args);
-				break;
+				return true;
 			case "data_update":
 				$table_name = get_param("table_name", true);
-				if (self::update_data($table_name)) print "done";
-				return;
+				return self::update_data($table_name);
+
+			case "data_save_new":
+				$table_name = get_param("table_name");
+				return self::SaveNew($table_name);
 
 		}
+	}
+
+	static function SaveNew($table_name)
+	{
+		$ignore_list = ["dummy", "operation", "table_name"];
+		$sql    = "INSERT INTO $table_name (";
+		$values = "values (";
+		$first  = true;
+		$sql_values = array();
+		foreach ( $_GET as $key => $value ) {
+			if (in_array($key, $ignore_list))
+				continue;
+			if ( ! $first ) {
+				$sql    .= ", ";
+				$values .= ", ";
+			}
+			$sql    .= $key;
+			$values .= "?"; // "\"" . $value . "\"";
+			$first  = false;
+
+			$sql_values[$key] = $value;
+		}
+		$sql    .= ") ";
+		$values .= ") ";
+		$sql    .= $values;
+
+		$stmt = sql_prepare($sql);
+		sql_bind($table_name, $stmt, $sql_values);
+		if (!$stmt -> execute())
+			sql_error($sql);
+
+		return sql_insert_id();
 	}
 
 	static function update_data($table_name)

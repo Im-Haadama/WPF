@@ -59,30 +59,6 @@ function people_add_activity_sick( $id, $date, $project_id)
  *
  * @return int|string
  */
-function people_add_activity( $id, $date, $start, $end, $project_id, $traveling, $expense_text, $expense ) {
-	if ( strlen( $traveling ) == 0 ) {
-		$traveling = 0;
-	}
-	if ( strlen( $expense ) == 0 ) {
-		$expense = 0;
-	}
-	my_log( "people_add_activity", __FILE__ );
-	if ( time() - strtotime( $date ) < 0 ) {
-		return "לא ניתן להזין תאריכים עתידיים";
-	}
-	$sql = "INSERT INTO im_working_hours (user_id, date, start_time, end_time, project_id, traveling,
-			expense_text, expense) VALUES (" .
-	       $id . ", \"" . $date . "\", \"" . $start . "\", \"" . $end . "\", " . $project_id .
-	       "," . $traveling . ", \"" . $expense_text . "\", " . $expense . ")";
-	// print header_text();
-	// print $sql;
-	$export = sql_query( $sql );
-	if ( ! $export ) {
-		die ( 'Invalid query: ' . $sql . mysql_error() );
-	}
-
-	return true; // Success
-}
 
 /**
  * @param $id
@@ -249,25 +225,6 @@ function project_cancel($project_id)
  *
  * @return int|string
  */
-function add_activity( $user_id, $date, $start, $end, $project_id, $vol = true, $traveling = 0, $extra_text = "", $extra = 0 ) {
-	my_log( "add_activity", __FILE__ );
-	$result = people_add_activity( $user_id, $date, $start, $end, $project_id, $traveling, $extra_text, $extra );
-	if ( $result !== true) {
-		print $result;
-		return false;
-	}
-	$fend   = strtotime( $end );
-	$fstart = strtotime( $start );
-	$amount = - get_rate( $user_id, $project_id ) * ( $fend - $fstart ) / 3600;
-	my_log( "add_trans" . $amount, __FILE__ );
-	if ( $vol ) {
-		account_add_transaction( $user_id, $date, $amount, 1, Org_Project::GetName( $project_id ) );
-	}
-	my_log( "before business" );
-	business_add_transaction( $user_id, $date, $amount * 1.1, 0, 0, $project_id );
-	my_log( "end add_activity" );
-	return true;
-}
 
 
 // $selector_name( $key, $data, $args)

@@ -201,6 +201,10 @@ class Fresh {
 
 	function handle_operation($operation)
 	{
+		$module = strtok($operation, "_");
+		if ($module === "data")
+			return handle_data_operation($operation);
+
 		switch ($operation)
 		{
 			case "order_set_mission":
@@ -217,9 +221,35 @@ class Fresh {
 				$order_id = get_param("order_id", true);
 				return self::new_customer($order_id);
 
-			case "show_order":
+			case "show_settings":
+				print self::show_settings($operation);
+				return;
+
+			case "nav_add":
+				$module = get_param("module", true);
+//				Core_Nav::instance();
+//			print sql_trace();
+//			 	$nav = Fresh_Nav::instance();
+//				var_dump($nav);
+				Fresh_Nav::instance()->AddModule($module);
+				break;
 
 		}
+	}
+
+	static function show_settings()
+	{
+		print __CLASS__ . ':' . __FUNCTION__ ."<br/>";
+
+		print Focus_Nav::instance()->get_nav();
+
+		$result = gui_header(1, "Add to menu");
+		$main_menu = array("Suppliers");
+		foreach ($main_menu as $item)
+		{
+			$result .= GuiHyperlink("Add $item", add_to_url(array("operation" =>"nav_add", "module"=>$item)));
+		}
+		print $result;
 	}
 
 	static function new_customer($order_id)
@@ -279,112 +309,20 @@ class Fresh {
 		/**
 		 * Interfaces.
 		 */
-//		include_once WC_FRESH_INCLUDES . 'includes/interfaces/class-wc-abstract-order-data-store-interface.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/interfaces/class-wc-coupon-data-store-interface.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/interfaces/class-wc-customer-data-store-interface.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/interfaces/class-wc-customer-download-data-store-interface.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/interfaces/class-wc-customer-download-log-data-store-interface.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/interfaces/class-wc-object-data-store-interface.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/interfaces/class-wc-order-data-store-interface.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/interfaces/class-wc-order-item-data-store-interface.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/interfaces/class-wc-order-item-product-data-store-interface.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/interfaces/class-wc-order-item-type-data-store-interface.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/interfaces/class-wc-order-refund-data-store-interface.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/interfaces/class-wc-payment-token-data-store-interface.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/interfaces/class-wc-product-data-store-interface.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/interfaces/class-wc-product-variable-data-store-interface.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/interfaces/class-wc-shipping-zone-data-store-interface.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/interfaces/class-wc-logger-interface.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/interfaces/class-wc-log-handler-interface.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/interfaces/class-wc-webhooks-data-store-interface.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/interfaces/class-wc-queue-interface.php';
 
 		/**
 		 * Abstract classes.
 		 */
-//		include_once WC_FRESH_INCLUDES . 'includes/abstracts/abstract-wc-data.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/abstracts/abstract-wc-object-query.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/abstracts/abstract-wc-payment-token.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/abstracts/abstract-wc-product.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/abstracts/abstract-wc-order.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/abstracts/abstract-wc-settings-api.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/abstracts/abstract-wc-shipping-method.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/abstracts/abstract-wc-payment-gateway.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/abstracts/abstract-wc-integration.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/abstracts/abstract-wc-log-handler.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/abstracts/abstract-wc-deprecated-hooks.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/abstracts/abstract-wc-session.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/abstracts/abstract-wc-privacy.php';
 
 		/**
 		 * Core classes.
 		 */
-//		include_once WC_FRESH_INCLUDES . 'includes/wc-core-functions.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-datetime.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-post-types.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-install.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-geolocation.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-download-handler.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-comments.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-post-data.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-ajax.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-emails.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-data-exception.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-query.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-meta-data.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-order-factory.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-order-query.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-product-factory.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-product-query.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-payment-tokens.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-shipping-zone.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/gateways/class-wc-payment-gateway-cc.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/gateways/class-wc-payment-gateway-echeck.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-countries.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-integrations.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-cache-helper.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-https.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-deprecated-action-hooks.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-deprecated-filter-hooks.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-background-emailer.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-discounts.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-cart-totals.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/customizer/class-wc-shop-customizer.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-regenerate-images.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-privacy.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-structured-data.php';
 		include_once FRESH_INCLUDES . 'class-fresh-shortcodes.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-logger.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/queue/class-wc-action-queue.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/queue/class-wc-queue.php';
 
 		/**
 		 * Data stores - used to store and retrieve CRUD object data from the database.
 		 */
 //		include_once WC_FRESH_INCLUDES . 'includes/class-wc-data-store.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/data-stores/class-wc-data-store-wp.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/data-stores/class-wc-coupon-data-store-cpt.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/data-stores/class-wc-product-data-store-cpt.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/data-stores/class-wc-product-grouped-data-store-cpt.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/data-stores/class-wc-product-variable-data-store-cpt.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/data-stores/class-wc-product-variation-data-store-cpt.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/data-stores/abstract-wc-order-item-type-data-store.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/data-stores/class-wc-order-item-data-store.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/data-stores/class-wc-order-item-coupon-data-store.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/data-stores/class-wc-order-item-fee-data-store.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/data-stores/class-wc-order-item-product-data-store.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/data-stores/class-wc-order-item-shipping-data-store.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/data-stores/class-wc-order-item-tax-data-store.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/data-stores/class-wc-payment-token-data-store.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/data-stores/class-wc-customer-data-store.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/data-stores/class-wc-customer-data-store-session.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/data-stores/class-wc-customer-download-data-store.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/data-stores/class-wc-customer-download-log-data-store.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/data-stores/class-wc-shipping-zone-data-store.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/data-stores/abstract-wc-order-data-store-cpt.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/data-stores/class-wc-order-data-store-cpt.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/data-stores/class-wc-order-refund-data-store-cpt.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/data-stores/class-wc-webhook-data-store.php';
 
 		/**
 		 * REST API.
@@ -489,51 +427,19 @@ class Fresh {
 	 */
 	public function init() {
 		// Before init action.
+//		print __CLASS__ . ':' . __FUNCTION__ . "<br/>";
 		do_action( 'before_fresh_init' );
 
 		// Set up localisation.
 		$this->load_plugin_textdomain();
 
-
-		// Load class instances.
-//		$this->product_factory                     = new WC_Product_Factory();
-//		$this->order_factory                       = new WC_Order_Factory();
-//		$this->countries                           = new WC_Countries();
-//		$this->integrations                        = new WC_Integrations();
-//		$this->structured_data                     = new WC_Structured_Data();
-//		$this->deprecated_hook_handlers['actions'] = new WC_Deprecated_Action_Hooks();
-//		$this->deprecated_hook_handlers['filters'] = new WC_Deprecated_Filter_Hooks();
-
-		// Classes/actions loaded for the frontend and for ajax requests.
-//		if ( $this->is_request( 'frontend' ) ) {
-//			// Session class, handles session data for users - can be overwritten if custom handler is needed.
-//			$session_class = apply_filters( 'woocommerce_session_handler', 'WC_Session_Handler' );
-//			$this->session = new $session_class();
-//			$this->session->init();
-//
-//			$this->customer = new WC_Customer( get_current_user_id(), true );
-//			// Cart needs the customer info.
-//			$this->cart = new WC_Cart();
-//
-//			// Customer should be saved during shutdown.
-//			add_action( 'shutdown', array( $this->customer, 'save' ), 10 );
-//		}
-//
-//		$this->load_webhooks();
+//		var_dump(Fresh_Nav::instance());
+//		print "nav = " . Focus_Nav::instance()->get_nav() ."<br/>";
 
 		// Init action.
 		do_action( 'fresh_init' );
 	}
 
-//	/**
-//	 * Load Localisation files.
-//	 *
-//	 * Note: the first-loaded translation file overrides any following ones if the same translation is present.
-//	 *
-//	 * Locales found in:
-//	 *      - WP_LANG_DIR/woocommerce/woocommerce-LOCALE.mo
-//	 *      - WP_LANG_DIR/plugins/woocommerce-LOCALE.mo
-//	 */
 	public function load_plugin_textdomain() {
 		$locale = is_admin() && function_exists( 'get_user_locale' ) ? get_user_locale() : get_locale();
 		$locale = apply_filters( 'plugin_locale', $locale, 'fresh' );
@@ -542,196 +448,22 @@ class Fresh {
 //		load_textdomain( 'fresh', FERSH_LANG_DIR . '/fresh/fresh-' . $locale . '.mo' );
 //		load_plugin_textdomain( 'fresh', false, plugin_basename( dirname( FRESH_PLUGIN_FILE ) ) . '/i18n/languages' );
 	}
-//
-//	/**
-//	 * Ensure theme and server variable compatibility and setup image sizes.
-//	 */
 	public function setup_environment() {
 		/* @deprecated 2.2 Use WC()->template_path() instead. */
 		$this->define( 'FRESH_TEMPLATE_PATH', $this->template_path() );
-
-		// $this->add_thumbnail_support();
 	}
-//
-//	/**
-//	 * Ensure post thumbnail support is turned on.
-//	 */
-//	private function add_thumbnail_support() {
-//		if ( ! current_theme_supports( 'post-thumbnails' ) ) {
-//			add_theme_support( 'post-thumbnails' );
-//		}
-//		add_post_type_support( 'product', 'thumbnail' );
-//	}
-//
-//	/**
-//	 * Add WC Image sizes to WP.
-//	 *
-//	 * As of 3.3, image sizes can be registered via themes using add_theme_support for woocommerce
-//	 * and defining an array of args. If these are not defined, we will use defaults. This is
-//	 * handled in wc_get_image_size function.
-//	 *
-//	 * 3.3 sizes:
-//	 *
-//	 * woocommerce_thumbnail - Used in product listings. We assume these work for a 3 column grid layout.
-//	 * woocommerce_single - Used on single product pages for the main image.
-//	 *
-//	 * @since 2.3
-//	 */
-//	public function add_image_sizes() {
-//		$thumbnail         = wc_get_image_size( 'thumbnail' );
-//		$single            = wc_get_image_size( 'single' );
-//		$gallery_thumbnail = wc_get_image_size( 'gallery_thumbnail' );
-//
-//		add_image_size( 'woocommerce_thumbnail', $thumbnail['width'], $thumbnail['height'], $thumbnail['crop'] );
-//		add_image_size( 'woocommerce_single', $single['width'], $single['height'], $single['crop'] );
-//		add_image_size( 'woocommerce_gallery_thumbnail', $gallery_thumbnail['width'], $gallery_thumbnail['height'], $gallery_thumbnail['crop'] );
-//
-//		// Registered for bw compat. @todo remove in 4.0.
-//		add_image_size( 'shop_catalog', $thumbnail['width'], $thumbnail['height'], $thumbnail['crop'] );
-//		add_image_size( 'shop_single', $single['width'], $single['height'], $single['crop'] );
-//		add_image_size( 'shop_thumbnail', $gallery_thumbnail['width'], $gallery_thumbnail['height'], $gallery_thumbnail['crop'] );
-//	}
-//
-//	/**
-//	 * Get the plugin url.
-//	 *
-//	 * @return string
-//	 */
-//	public function plugin_url() {
-//		return untrailingslashit( plugins_url( '/', WC_PLUGIN_FILE ) );
-//	}
-//
-//	/**
-//	 * Get the plugin path.
-//	 *
-//	 * @return string
-//	 */
-//	public function plugin_path() {
-//		return untrailingslashit( plugin_dir_path( WC_PLUGIN_FILE ) );
-//	}
-//
-//	/**
-//	 * Get the template path.
-//	 *
-//	 * @return string
-//	 */
+
 	public function template_path() {
 		return apply_filters( 'fresh_template_path', 'fresh/' );
 	}
-//
-//	/**
-//	 * Get Ajax URL.
-//	 *
-//	 * @return string
-//	 */
-//	public function ajax_url() {
-//		return admin_url( 'admin-ajax.php', 'relative' );
-//	}
-//
-//	/**
-//	 * Return the WC API URL for a given request.
-//	 *
-//	 * @param string    $request Requested endpoint.
-//	 * @param bool|null $ssl     If should use SSL, null if should auto detect. Default: null.
-//	 * @return string
-//	 */
-//	public function api_request_url( $request, $ssl = null ) {
-//		if ( is_null( $ssl ) ) {
-//			$scheme = wp_parse_url( home_url(), PHP_URL_SCHEME );
-//		} elseif ( $ssl ) {
-//			$scheme = 'https';
-//		} else {
-//			$scheme = 'http';
-//		}
-//
-//		if ( strstr( get_option( 'permalink_structure' ), '/index.php/' ) ) {
-//			$api_request_url = trailingslashit( home_url( '/index.php/wc-api/' . $request, $scheme ) );
-//		} elseif ( get_option( 'permalink_structure' ) ) {
-//			$api_request_url = trailingslashit( home_url( '/wc-api/' . $request, $scheme ) );
-//		} else {
-//			$api_request_url = add_query_arg( 'wc-api', $request, trailingslashit( home_url( '', $scheme ) ) );
-//		}
-//
-//		return esc_url_raw( apply_filters( 'woocommerce_api_request_url', $api_request_url, $request, $ssl ) );
-//	}
-//
-//	/**
-//	 * Load & enqueue active webhooks.
-//	 *
-//	 * @since 2.2
-//	 */
-//	private function load_webhooks() {
-//
-//		if ( ! is_blog_installed() ) {
-//			return;
-//		}
-//
-//		wc_load_webhooks();
-//	}
-//
-//	/**
-//	 * WooCommerce Payment Token Meta API and Term/Order item Meta - set table names.
-//	 */
-//	public function wpdb_table_fix() {
-//		global $wpdb;
-//		$wpdb->payment_tokenmeta = $wpdb->prefix . 'woocommerce_payment_tokenmeta';
-//		$wpdb->order_itemmeta    = $wpdb->prefix . 'woocommerce_order_itemmeta';
-//		$wpdb->tables[]          = 'woocommerce_payment_tokenmeta';
-//		$wpdb->tables[]          = 'woocommerce_order_itemmeta';
-//
-//		if ( get_option( 'db_version' ) < 34370 ) {
-//			$wpdb->woocommerce_termmeta = $wpdb->prefix . 'woocommerce_termmeta';
-//			$wpdb->tables[]             = 'woocommerce_termmeta';
-//		}
-//	}
-//
-//	/**
-//	 * Get queue instance.
-//	 *
-//	 * @return WC_Queue_Interface
-//	 */
-//	public function queue() {
-//		return WC_Queue::instance();
-//	}
-//
-//	/**
-//	 * Get Checkout Class.
-//	 *
-//	 * @return WC_Checkout
-//	 */
-//	public function checkout() {
-//		return WC_Checkout::instance();
-//	}
-//
-//	/**
-//	 * Get gateways class.
-//	 *
-//	 * @return WC_Payment_Gateways
-//	 */
-//	public function payment_gateways() {
-//		return WC_Payment_Gateways::instance();
-//	}
-//
-//	/**
-//	 * Get shipping class.
-//	 *
-//	 * @return WC_Shipping
-//	 */
-//	public function shipping() {
-//		return WC_Shipping::instance();
-//	}
-//
-//	/**
-//	 * Email Class.
-//	 *
-//	 * @return WC_Emails
-//	 */
-//	public function mailer() {
-//		return WC_Emails::instance();
-//	}
 
 	public function run ()
 	{
 		$this->loader->run();
+	}
+
+	public function SettingPage()
+	{
+		print "Fresh Settings";
 	}
 }

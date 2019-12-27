@@ -15,20 +15,14 @@ function do_update(xmlhttp)
     document.getElementById("btn_delete").disabled = false;
 }
 
-function update_display()
-{
-    let request = "people-post.php?operation=show_all";
-    execute_url(request, do_update);
-}
-
-function del_items() {
+function salary_del_items() {
     document.getElementById("btn_delete").disabled = true;
 
-    var collection = document.getElementsByClassName("hours_checkbox");
+    var collection = document.getElementsByClassName("working_days");
     var params = new Array();
     for (var i = 0; i < collection.length; i++) {
         if (collection[i].checked) {
-            var id = collection[i].id.substr(3);
+            var id = collection[i].id.substr(4);
 //                var name = get_value(table.rows[i+1].cells[1].firstChild);
 //                var sel = document.getElementById("supplier_id");
 //                var supplier_id = sel.options[sel.selectedIndex].value;
@@ -38,10 +32,11 @@ function del_items() {
         }
     }
 //     document.getElementById("debug").innerHTML = "people-post.php?operation=delete&params=" + params;
-    execute_url("people-post.php?operation=delete&params=" + params, update_display);
+    execute_url(post_file + "?operation=salary_delete&params=" + params, action_hide_rows, "working_days");
 
 }
-function add_item(worker_id) {
+function salary_add_item(worker_id)
+{
     document.getElementById("btn_add_time").disabled = true;
 
     var sel = document.getElementById("project");
@@ -59,7 +54,7 @@ function add_item(worker_id) {
         return;
     }
 
-    let request = "people-post.php?operation=add_time&start=" + start + '&end=' + end +
+    let request = post_file + "?operation=salary_add_time&start=" + start + '&end=' + end +
         '&date=' + date + "&project=" + id + "&vol=0" + "&traveling=" + traveling +
         "&extra_text=" + encodeURI(extra_text) +
         "&extra=" + extra +

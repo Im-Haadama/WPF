@@ -33,12 +33,8 @@ if ( ! class_exists( 'Focus' ) ) {
  * @return Focus
  */
 
-function focus() {
-	return Focus::instance();
-}
-
 // Global for backwards compatibility.
-$GLOBALS['focus'] = focus();
+// $GLOBALS['focus'] = focus();
 
 function run_focus() {
 	$plugin = new Focus("Focus");

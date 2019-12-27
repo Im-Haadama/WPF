@@ -1,6 +1,7 @@
 <?php
 
 
+if (! function_exists("gui_select_project")){
 /// Parameters are required - we need to show the allowed projects to the given user.
 function gui_select_project($id, $value, $args)
 {
@@ -27,6 +28,35 @@ function gui_select_project($id, $value, $args)
 	if ($form_table and $new_row) { // die(__FUNCTION__ . ":" . " missing form_table");
 		$result .= gui_button( "add_new_project", "add_element('project', '" . $form_table . "', '" . get_url() . "')", "New Project" );
 	}
+
+	return $result;
+}
+
+function gui_select_company($id, $value, $args)
+{
+	$edit = GetArg($args, "edit", true);
+	$new_row = GetArg($args, "new_row", false);
+
+	if (! $edit)
+	{
+		return Org_Company::GetName($value);
+	}
+	// Filter by worker if supplied.
+	$user_id = GetArg($args, "worker_id", get_user_id());
+	if ( !$user_id ) {
+		throw new Exception( __FUNCTION__ .": No user " . $user_id);
+	}
+
+	$form_table = GetArg($args, "form_table", null);
+	$events = GetArg($args,"events", null);
+
+	$companies = Org_Company::GetCompanies($user_id);
+	$companies_list = [];
+	foreach($companies as $company_id => $company_name) $companies_list[] = array("company_id" => $company_id, "company_name" => $company_name);
+	$result =  gui_select( $id, "company_name", $companies_list, $events, $value, "company_id" );
+//	if ($form_table and $new_row) { // die(__FUNCTION__ . ":" . " missing form_table");
+//		$result .= gui_button( "add_new_project", "add_element('project', '" . $form_table . "', '" . get_url() . "')", "New Project" );
+//	}
 
 	return $result;
 }
@@ -92,4 +122,5 @@ function gui_select_team($id, $selected = null, $args = null)
 	else
 		return ($selected > 0) ? sql_query_single_scalar("select team_name from im_working_teams where id = " . $selected) : "";
 
+}
 }
