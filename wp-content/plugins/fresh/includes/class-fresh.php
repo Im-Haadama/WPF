@@ -221,35 +221,11 @@ class Fresh {
 				$order_id = get_param("order_id", true);
 				return self::new_customer($order_id);
 
-			case "show_settings":
-				print self::show_settings($operation);
-				return;
-
-			case "nav_add":
+			case "fresh_nav_add":
 				$module = get_param("module", true);
-//				Core_Nav::instance();
-//			print sql_trace();
-//			 	$nav = Fresh_Nav::instance();
-//				var_dump($nav);
-				Fresh_Nav::instance()->AddModule($module);
-				break;
+				return self::AddNav($module);
 
 		}
-	}
-
-	static function show_settings()
-	{
-		print __CLASS__ . ':' . __FUNCTION__ ."<br/>";
-
-		print Focus_Nav::instance()->get_nav();
-
-		$result = gui_header(1, "Add to menu");
-		$main_menu = array("Suppliers");
-		foreach ($main_menu as $item)
-		{
-			$result .= GuiHyperlink("Add $item", add_to_url(array("operation" =>"nav_add", "module"=>$item)));
-		}
-		print $result;
 	}
 
 	static function new_customer($order_id)
@@ -464,6 +440,31 @@ class Fresh {
 
 	public function SettingPage()
 	{
-		print "Fresh Settings";
+		$result = "";
+		$module_list = array( "Suppliers" );
+
+		foreach ($module_list as $item){
+			$args = [];
+			$args ["text"] = __("Add") . " " . __($item);
+			$args["action"] = add_param_to_url(self::getPost() , array( "operation" => "fresh_nav_add", "module" => $item )) . ";location_reload";
+			$result .= GuiButtonOrHyperlink("btn_add_" . $item, null, $args);
+		}
+
+//			$result .= $module . "<br/>";
+
+		return $result;
+	}
+
+	static private function getPost()
+	{
+		return "/wp-content/plugins/flavor/post.php";
+	}
+
+	public function AddNav($module)
+	{
+		$flavor = Flavor::instance();
+		$nav = $flavor->getNav();
+		$menu_item = array("title" =>$module, 'url' => "/$module");
+		return $nav->AddMain($menu_item);
 	}
 }

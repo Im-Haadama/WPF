@@ -41,7 +41,6 @@ class Flavor {
 	 */
 	protected $nav = null;
 
-
 	/**
 	 * flavor instance.
 	 *
@@ -224,65 +223,34 @@ class Flavor {
 		}
 	}
 
+	static function static_handle_show()
+	{
+		$instance = self::instance();
+		$instance->handle_operation();
+	}
+
 	/**
 	 * @param $operation
 	 *
 	 * @return string|void
 	 */
-	function handle_operation( $operation ) {
+	function handle_operation(  ) {
+		$operation = get_param("operation", false, "flavor_main");
 		$module = strtok( $operation, "_" );
 		if ( $module === "data" ) {
 			return handle_data_operation( $operation );
 		}
 
+		if ( $module === "fresh" ) {
+			return Fresh::instance()->handle_operation( $operation );
+		}
+
 		switch ( $operation ) {
-			case "order_set_mission":
-				$order_id   = get_param( "order_id", true );
-				$mission_id = get_param( "mission_id", true );
-				$order      = new Order( $order_id );
-				$order->setMissionID( $mission_id );
-
-				return "done";
-
-			case "update":
-				return handle_data_operation( $operation );
-
-			case "new_customer":
-				$order_id = get_param( "order_id", true );
-
-				return self::new_customer( $order_id );
-
-			case "show_settings":
-				print self::show_settings( $operation );
-
+			case "flavor_main":
+				self::show_main();
 				return;
 
-			case "nav_add":
-				$module = get_param( "module", true );
-//				Core_Nav::instance();
-//			print sql_trace();
-//			 	$nav = Flavor_Nav::instance();
-//				var_dump($nav);
-				Flavor_Nav::instance()->AddModule( $module );
-				break;
-
 		}
-	}
-
-	/**
-	 *
-	 */
-	static function show_settings() {
-//		print __CLASS__ . ':' . __FUNCTION__ . "<br/>";
-
-		print Focus_Nav::instance()->get_nav();
-
-		$result    = gui_header( 1, "Add to menu" );
-		$main_menu = array( "Suppliers" );
-		foreach ( $main_menu as $item ) {
-			$result .= GuiHyperlink( "Add $item", add_to_url( array( "operation" => "nav_add", "module" => $item ) ) );
-		}
-		print $result;
 	}
 
 	/**
@@ -326,92 +294,8 @@ class Flavor {
 //		include_once WC_FLAVOR_INCLUDES . 'includes/class-wc-auth.php';
 //		include_once WC_FLAVOR_INCLUDES . 'includes/class-wc-register-wp-admin-settings.php';
 
-		/**
-		 * Libraries
-		 */
-//		include_once WC_FLAVOR_INCLUDES . 'includes/libraries/action-scheduler/action-scheduler.php';
-//
-//		if ( defined( 'WP_CLI' ) && WP_CLI ) {
-//			include_once WC_FLAVOR_INCLUDES . 'includes/class-wc-cli.php';
-//		}
-//
-//		if ( $this->is_request( 'admin' ) ) {
-//			include_once WC_FLAVOR_INCLUDES . 'includes/admin/class-wc-admin.php';
-//		}
-//
-//		if ( $this->is_request( 'frontend' ) ) {
-//			$this->frontend_includes();
-//		}
-//
-//		if ( $this->is_request( 'cron' ) && 'yes' === get_option( 'woocommerce_allow_tracking', 'no' ) ) {
-//			include_once WC_FLAVOR_INCLUDES . 'includes/class-wc-tracker.php';
-//		}
-//
-//		$this->theme_support_includes();
-//		$this->query = new WC_Query();
-//		$this->api   = new WC_API();
 	}
 
-	/**
-	 * Include classes for theme support.
-	 *
-	 * @since 3.3.0
-	 */
-//	private function theme_support_includes() {
-//		if ( wc_is_active_theme( array( 'twentynineteen', 'twentyseventeen', 'twentysixteen', 'twentyfifteen', 'twentyfourteen', 'twentythirteen', 'twentyeleven', 'twentytwelve', 'twentyten' ) ) ) {
-//			switch ( get_template() ) {
-//				case 'twentyten':
-//					include_once WC_FLAVOR_INCLUDES . 'includes/theme-support/class-wc-twenty-ten.php';
-//					break;
-//				case 'twentyeleven':
-//					include_once WC_FLAVOR_INCLUDES . 'includes/theme-support/class-wc-twenty-eleven.php';
-//					break;
-//				case 'twentytwelve':
-//					include_once WC_FLAVOR_INCLUDES . 'includes/theme-support/class-wc-twenty-twelve.php';
-//					break;
-//				case 'twentythirteen':
-//					include_once WC_FLAVOR_INCLUDES . 'includes/theme-support/class-wc-twenty-thirteen.php';
-//					break;
-//				case 'twentyfourteen':
-//					include_once WC_FLAVOR_INCLUDES . 'includes/theme-support/class-wc-twenty-fourteen.php';
-//					break;
-//				case 'twentyfifteen':
-//					include_once WC_FLAVOR_INCLUDES . 'includes/theme-support/class-wc-twenty-fifteen.php';
-//					break;
-//				case 'twentysixteen':
-//					include_once WC_FLAVOR_INCLUDES . 'includes/theme-support/class-wc-twenty-sixteen.php';
-//					break;
-//				case 'twentyseventeen':
-//					include_once WC_FLAVOR_INCLUDES . 'includes/theme-support/class-wc-twenty-seventeen.php';
-//					break;
-//				case 'twentynineteen':
-//					include_once WC_FLAVOR_INCLUDES . 'includes/theme-support/class-wc-twenty-nineteen.php';
-//					break;
-//			}
-//		}
-//	}
-//
-//	/**
-//	 * Include required frontend files.
-//	 */
-//	public function frontend_includes() {
-//		include_once WC_FLAVOR_INCLUDES . 'includes/wc-cart-functions.php';
-//		include_once WC_FLAVOR_INCLUDES . 'includes/wc-notice-functions.php';
-//		include_once WC_FLAVOR_INCLUDES . 'includes/wc-template-hooks.php';
-//		include_once WC_FLAVOR_INCLUDES . 'includes/class-wc-template-loader.php';
-//		include_once WC_FLAVOR_INCLUDES . 'includes/class-wc-frontend-scripts.php';
-//		include_once WC_FLAVOR_INCLUDES . 'includes/class-wc-form-handler.php';
-//		include_once WC_FLAVOR_INCLUDES . 'includes/class-wc-cart.php';
-//		include_once WC_FLAVOR_INCLUDES . 'includes/class-wc-tax.php';
-//		include_once WC_FLAVOR_INCLUDES . 'includes/class-wc-shipping-zones.php';
-//		include_once WC_FLAVOR_INCLUDES . 'includes/class-wc-customer.php';
-//		include_once WC_FLAVOR_INCLUDES . 'includes/class-wc-embed.php';
-//		include_once WC_FLAVOR_INCLUDES . 'includes/class-wc-session-handler.php';
-//	}
-//
-//	/**
-//	 * Function used to Init WooCommerce Template Functions - This makes them pluggable by plugins and themes.
-//	 */
 	/**
 	 *
 	 */
@@ -424,16 +308,12 @@ class Flavor {
 	 */
 	public function init() {
 		// Before init action.
-//		print __CLASS__ . ':' . __FUNCTION__ . "<br/>";
 		do_action( 'before_flavor_init' );
 
 		// Set up localisation.
 		$this->load_plugin_textdomain();
 		$shortcodes = Core_Shortcodes::instance();
-		$shortcodes->add(array('flavor'  => __CLASS__ . '::show_main'));
-
-//		var_dump( Flavor_Nav::instance() );
-//		print "nav = " . Focus_Nav::instance()->get_nav() . "<br/>";
+		$shortcodes->add(array('flavor'  => __CLASS__ . '::static_handle_show'));
 
 		// Init action.
 		do_action( 'flavor_init' );
@@ -473,19 +353,24 @@ class Flavor {
 //		$this->loader->run();
 	}
 
-	/**
-	 * @return string|null
-	 */
-	public function get_nav()
+	public function getNav()
 	{
 		if ($this->nav) return $this->nav;
 		if (function_exists("get_user_id")) {
-			$this->nav = "management." . get_user_id();
+			$this->nav = new Core_Nav("management." . get_user_id());
 			return $this->nav;
 		}
+		return null;
+	}
+//	/**
+//	 * @return string|null
+//	 */
+	public function getNavName()
+	{
+		if ($nav = $this->getNav()) return $nav->getNavMenuName();
 		die (__FILE__ . ':' . __LINE__);
 	}
-
+//
 
 	/**
 	 * used by template to decide if to load management css.

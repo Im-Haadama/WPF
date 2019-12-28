@@ -142,6 +142,7 @@ if (! function_exists('gui_br')) {
 
 		return $result;
 	}
+
 	function GuiButtonOrHyperlink( $id, $value = null, $args = null ) // Value is irrelevant but here to keep the structure: id, value, args.
 	{
 		$action = GetArg( $args, "action", null );
