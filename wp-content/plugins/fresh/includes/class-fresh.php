@@ -277,6 +277,8 @@ class Fresh {
 		 * Class autoloader.
 		 */
 		require_once FRESH_INCLUDES . 'class-fresh-autoloader.php';
+		require_once FRESH_INCLUDES . 'core/core-functions.php';
+
 		require_once FRESH_INCLUDES . 'core/fund.php';
 		require_once FRESH_INCLUDES . 'core/data/sql.php';
 //		require_once FRESH_INCLUDES . 'supplies/Supply.php';
