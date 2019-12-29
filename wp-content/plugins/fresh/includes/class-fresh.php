@@ -125,9 +125,12 @@ class Fresh {
 		// add_action( 'init', array( $this, 'add_image_sizes' ) );
 		// add_action( 'switch_blog', array( $this, 'wpdb_table_fix' ), 0 );
 		$orders = new Fresh_Orders( $this->get_plugin_name(), $this->get_version() );
+		$inventory = new Fresh_Inventory( $this->get_plugin_name(), $this->get_version() );
 
 		$this->loader->add_action( 'wp_enqueue_scripts', $orders, 'enqueue_scripts' );
+		$this->loader->add_action( 'wp_enqueue_scripts', $inventory, 'enqueue_scripts' );
 	}
+
 
 	/**
 	 * Ensures fatal errors are logged so they can be picked up in the status report.
@@ -206,6 +209,9 @@ class Fresh {
 		$module = strtok($operation, "_");
 		if ($module === "data")
 			return Core_Data::handle_operation($operation);
+
+		if (strstr($operation, "inv"))
+			return Fresh_Inventory::handle_operation($operation);
 
 		switch ($operation)
 		{
@@ -470,5 +476,12 @@ class Fresh {
 		$nav = $flavor->getNav();
 		$menu_item = array("title" =>$module, 'url' => "/$module");
 		return $nav->AddMain($menu_item);
+	}
+
+	public function enqueue_scripts() {
+		die (1);
+		$file = plugin_dir_url( __FILE__ ) . 'inventory.js';
+		wp_enqueue_script( $this->plugin_name, $file, array( 'jquery' ), $this->version, false );
+
 	}
 }

@@ -81,40 +81,6 @@ function show_not_available() {
 	print gui_table_args($table);
 }
 
-function show_supplier_inventory( $supplier_id ) {
-	$table = array( array( "", "מוצר", "מחיר עלות", "כמות במלאי" ) );
-
-	$display = gui_header( 1, "מלאי לספק " . get_supplier_name( $supplier_id ) );
-	$catalog = new Catalog();
-
-	$sql = 'SELECT product_name, price, date, pl.id, supplier_product_code, s.factor ' .
-	       ' FROM im_supplier_price_list pl ' .
-	       ' Join im_suppliers s '
-	       . ' where supplier_id = ' . $supplier_id
-	       . ' and s.id = pl.supplier_id '
-	       . ' order by 1';
-
-	$result = sql_query( $sql );
-	while ( $row = sql_fetch_row( $result ) ) {
-		$pl_id     = $row[3];
-		$link_data = $catalog->GetProdID( $pl_id );
-		if ( $link_data ) {
-			$prod_id = $link_data[0];
-			$line    = product_line( $prod_id, false, false, null, true, $supplier_id );
-			array_push( $table, $line );
-		}
-	}
-
-	if (count($table) == 1) { // Just the header
-		return null;
-	}
-
-	$display .= gui_table_args( $table, "table_" . $supplier_id );
-
-	$display .= gui_button( "btn_save_inv" . $supplier_id, "save_inv(" . $supplier_id . ")", "שמור מלאי" );
-
-	print $display;
-}
 
 function show_fresh_inventory($not_available = false) {
 	$wait = sql_query_single_scalar( "SELECT count(id) FROM wp_posts WHERE post_status IN ('wc-waiting', 'wc-on-hold')" );
@@ -131,18 +97,6 @@ function show_fresh_inventory($not_available = false) {
 	show_inventory($args);
 }
 
-function save_inv( $data ) {
-	for ( $i = 0; $i < count( $data ); $i += 2 ) {
-		$id = $data[ $i ];
-		$q  = $data[ $i + 1 ];
-
-		my_log( "set inv " . $data[ $i ] . " " . $data [ $i + 1 ] );
-		$p = new Product( $id );
-		if (! $p->setStock( $q ))
-			return false;
-	}
-	return true;
-}
 
 function add_waste( $prod_ids ) {
 	$user = sql_query_single_scalar( "SELECT user_id FROM wp_usermeta WHERE meta_key = 'nickname' AND meta_value = 'waste'" );

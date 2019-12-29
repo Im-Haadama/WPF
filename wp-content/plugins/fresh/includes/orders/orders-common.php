@@ -394,10 +394,7 @@ class OrderFields {
 		percentage = 13,
 		field_count = 14;
 }
-
 ;
-
-
 
 //function order_good_costs( $order_id ) {
 //	$order = new WC_Order( $order_id );
@@ -793,5 +790,4 @@ function month_availability( $prod_id, $month ) {
 	}
 
 	return round( $supplied / $ordered, 1);
-
 }

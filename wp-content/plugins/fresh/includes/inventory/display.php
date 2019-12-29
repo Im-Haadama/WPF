@@ -13,29 +13,6 @@ print header_text( false, true, is_rtl(), array("/fresh/orders/orders.js", "/cor
 <script type="text/javascript" src="/core/gui/client_tools.js"></script>
 <script>
 
-    function save_inv(term) {
-        var collection = document.getElementsByName("term_" + term);
-        var prod_ids = new Array();
-
-        xmlhttp = new XMLHttpRequest();
-        xmlhttp.onreadystatechange = function () {
-            // Wait to get query result
-            if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
-            {
-                window.location = window.location;
-            }
-        }
-
-        for (var i = 0; i < collection.length; i++) {
-            var prod_id = collection[i].id.substr(4);
-            var q = get_value_by_name("inv_" + prod_id);
-            prod_ids.push(prod_id, q);
-        }
-        var request = "inv-post.php?operation=save_inv&data=" + prod_ids.join();
-        xmlhttp.open("GET", request, true);
-        xmlhttp.send();
-
-    }
     function add_wasted() {
         var collection = document.getElementsByClassName("select");
         var prod_ids = new Array();
