@@ -3,7 +3,7 @@
 /**
  * Plugin Name: fresh (full)
  * Plugin URI: https://aglamaz.com
- * Description: Backoffice for store that sells fresh goods.
+ * Description:  wp-f backoffice for fresh goods store management.
  * Version: 1.0
  * Author: agla
  * Author URI: http://aglamaz.com

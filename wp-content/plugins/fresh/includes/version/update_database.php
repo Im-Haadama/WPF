@@ -62,8 +62,8 @@ function add_version($version, $force = false)
 		case "29":
 			print "start";
 			$description = version29();
-			print "after";
-			var_dump($description);
+//			print "after";
+//			var_dump($description);
 			break;
 		case "28":
 			$description = version28();
@@ -1115,7 +1115,16 @@ function get_versions()
 
 function version29()
 {
-
+	print gui_header(1, "inventory");
+	sql_query("create table im_inventory_count (
+	id int auto_increment
+		primary key,
+	count_date date not null,
+	supplier_id int(11),
+	product_id int(11),
+	product_name varchar(200),
+    quantity int(11) not null
+)");
 	print gui_header(1, "im_bank");
 	sql_query("create table im_bank
 (

@@ -23,4 +23,11 @@ class Fresh_Shortcodes {
 		if (get_user_id(true))
 			print Fresh::instance()->handle_operation($operation);
 	}
+
+	public static function inventory_count( $atts ) {
+		$operation = get_param("operation", false, "inventory");
+		if (get_user_id(true))
+			print Fresh::instance()->handle_operation($operation);
+	}
+
 }
