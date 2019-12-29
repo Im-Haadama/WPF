@@ -239,6 +239,10 @@ class Focus {
 		// Handle global operation
 		switch ($operation)
 		{
+			case "bad_url":
+				$template_id = get_param("id", true);
+				return Focus_Views::show_task($template_id);
+				break;
 //			case "reset_menu":
 //				print "Reset_menu<br/>";
 //				$user_id = get_user_id();
