@@ -623,7 +623,7 @@ class Focus_Views {
 					$t = new Focus_Tasklist($task_id);
 					if ($t->Ended()) {
 						Focus_Tasklist::create_tasks( null, false );
-						print "done";
+						return true;
 					}
 				}
 				return;

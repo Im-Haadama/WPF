@@ -168,8 +168,13 @@ function action_hide_rows(xmlhttp, checkbox_class)
 // Use this when the delete button is inline.
 function action_hide_row(xmlhttp, btn)
 {
-    if (xmlhttp.response === "done")
-        btn.parentElement.parentElement.style.display = 'none';
+    if (xmlhttp.response === "done"){
+        if (btn[0] != 'undefined')
+            for (let i=0; i < count(btn); i++)
+                btn[i].parentElement.parentElement.style.display = 'none';
+        else
+            btn.parentElement.parentElement.style.display = 'none';
+    }
     else
         alert (xmlhttp.response);
 }
