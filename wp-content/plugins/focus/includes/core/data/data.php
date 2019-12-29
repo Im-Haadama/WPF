@@ -1,5 +1,9 @@
 <?php
 
+print sql_trace();
+
+die ("don't");
+
 if (! function_exists('data_inactive')) {
 // $ignore_list = array("search", "operation", "table_name", "id", "dummy");
 
@@ -82,7 +86,8 @@ function data_search($table_name, $args = null)
 function handle_data_operation($operation)
 {
 	// TODO: register allowed tables by config or something
-	$allowed_tables = array("im_company", "im_tasklist", "im_task_templates", "im_working_teams", "im_projects", "im_bank_transaction_types", "im_business_info");
+	$allowed_tables = array("im_company", "im_tasklist", "im_task_templates", "im_working_teams", "im_projects",
+		"im_bank_transaction_types", "im_business_info", "im_suppliers");
 
 	$debug = 0;
 	if ($debug)	print "operation: " . $operation . "<br/>";
@@ -94,12 +99,13 @@ function handle_data_operation($operation)
 			if (data_inactive($table_name))
 				print "done";
 			break;
+		case "data_save_new":
 		case "save_new":
-			init();
+//			init();
 			$table_name = get_param("table_name", true);
 			if (! in_array($table_name, $allowed_tables))
 				die ("invalid table operation");
-			$result = data_save_new($table_name);
+			$result = Core_Data::data_save_new($table_name);
 			if ($result > 0) print "done";
 			break;
 

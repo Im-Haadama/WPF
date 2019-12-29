@@ -13,7 +13,7 @@ function print_select_supplier( $id, $source ) {
 	}
 	print ">";
 
-	$sql = 'SELECT id, supplier_name, site_id FROM im_suppliers WHERE active = 1 ORDER BY 2';
+	$sql = 'SELECT id, supplier_name, site_id FROM im_suppliers WHERE is_active = 1 ORDER BY 2';
 
 	// Get line options
 	$found  = false;

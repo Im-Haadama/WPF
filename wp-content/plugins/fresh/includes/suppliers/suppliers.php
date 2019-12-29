@@ -4,6 +4,14 @@ function handle_supplier_operation($operation, $args = [])
 {
 	$allowed_tables = array("im_suppliers", "im_business_info");
 	$result = "";
+	if (substr($operation, 0, 4) == "show") {
+		if (substr($operation, 5,3) == "add") {
+			$table_name = substr($operation, 9);
+			print GemAddRow($table_name, "Add", $args);
+			return;
+		}
+	}
+
 	switch ( $operation ) {
 		case "update_type":
 			$business_id = get_param( "id" );

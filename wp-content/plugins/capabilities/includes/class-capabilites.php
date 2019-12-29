@@ -216,7 +216,7 @@ class Capabilites {
 		require_once CAPABILITES_INCLUDES . 'core/class-core-autoloader.php';
 		require_once CAPABILITES_INCLUDES . 'core/fund.php';
 		require_once CAPABILITES_INCLUDES . 'core/data/sql.php';
-		require_once CAPABILITES_INCLUDES . 'core/data/data.php';
+//		require_once CAPABILITES_INCLUDES . 'core/data/data.php';
 		require_once CAPABILITES_INCLUDES . 'core/wp.php';
 		require_once CAPABILITES_INCLUDES . 'core/gui/inputs.php';
 

@@ -610,10 +610,17 @@ function GuiRowContent($table_name, $row_id, $args)
 		else
 			$sql = "describe $table_name";
 	}
+	if (! defined('NOT_NULL_FLAG')) define ('NOT_NULL_FLAG', 1);
 	if ($args /* and ! isset($args["sql_fields"]) */) {
 		$result = sql_query("select * from $table_name");
 		$args["sql_fields"] = mysqli_fetch_fields( $result );
-//		var_dump($args["sql_fields"]);
+		if (! isset($args["mandatory_fields"])){
+			$args["mandatory_fields"] = [];
+			foreach ($args["sql_fields"] as $field){
+				if ($field->flags & NOT_NULL_FLAG)
+					$args["mandatory_fields"][$field->name] = 1;
+			}
+		}
 	}
 	return GuiTableContent($table_id, $sql, $args);
 }

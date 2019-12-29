@@ -87,7 +87,7 @@ switch ( $operation ) {
 		print "Remove lines from list->draft items<br/>";
 		$pl->RemoveLines( 1 );
 		print "Remove the list<br/>";
-		$sql = "UPDATE im_suppliers SET active = 0 WHERE id = " . $supplier_id;
+		$sql = "UPDATE im_suppliers SET is_active = 0 WHERE id = " . $supplier_id;
 		sql_query( $sql );
 		break;
 

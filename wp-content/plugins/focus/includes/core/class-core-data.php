@@ -41,10 +41,22 @@ class Core_Data
 				return self::update_data($table_name);
 
 			case "data_save_new":
-				$table_name = get_param("table_name");
+				$table_name = get_param("table_name", true);
 				return self::SaveNew($table_name);
 
+			case "data_inactive":
+				$table_name = get_param("table_name", true);
+				$row_id = get_param("id", true);
+				return self::Inactive($table_name, $row_id);
+
 		}
+	}
+
+	static function Inactive($table_name, $row_id)
+	{
+		$row_id = intval($row_id);
+
+		return sql_query("update $table_name set is_active = 0 where id = $row_id");
 	}
 
 	static function SaveNew($table_name)

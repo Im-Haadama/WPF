@@ -144,7 +144,7 @@ class Focus_Tasklist {
 		return false;
 	}
 
-	function task_started($task_id, $owner)
+	static function task_started($task_id, $owner)
 	{
 		$started = sql_query_single_scalar( "select started from im_tasklist where id = " . $task_id );
 		if ( ! $started  ) {
@@ -191,7 +191,7 @@ class Focus_Tasklist {
 		return "";
 	}
 
-	function task_url($task_id)
+	static function task_url($task_id)
 	{
 		$sql = "SELECT task_url FROM im_task_templates WHERE id = "
 		       . " (SELECT task_template FROM im_tasklist WHERE id = " . $task_id . ")";

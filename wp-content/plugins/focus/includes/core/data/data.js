@@ -17,13 +17,13 @@ function data_save_entity(post_operation, table_name, id)
     execute_url(operation, action_back);
 }
 
-function cancel_entity(post_operation, table_name, id)
+function inactive_entity(post_operation, table_name, id)
 {
     if (!Number.isInteger(id)) {
         alert ("invalid id: " . id);
         return;
     }
-    let operation = post_operation + "?table_name=" + table_name + "&operation=cancel_" + table_name + "&id=" + id;
+    let operation = post_operation + "?table_name=" + table_name + "&operation=data_inactive&id=" + id;
     
     //operation = operation + operation_arguments(table_name, id);
     // alert(operation);
@@ -38,7 +38,7 @@ function data_save_new(post_operation, table_name, action)
     let glue = '?';
     if (operation.indexOf('?') !== -1) glue = '&';
 
-    if (post_operation.indexOf("operation=") === -1) operation += glue + 'operation=save_new';
+    if (post_operation.indexOf("operation=") === -1) operation += glue + 'operation=data_save_new';
 
     operation += '&table_name=' + table_name;
     let form_params = get_form_params(table_id, true);
@@ -95,7 +95,7 @@ function update_table_field(post_file, table_name, id, field_name, finish_action
         alert ("no value found");
         return;
     }
-    let request = post_file + "?operation=update" +
+    let request = post_file + "?operation=data_update" +
         "&table_name=" + table_name +
         "&" + field_name + '=' +
         encodeURI(value) +
@@ -140,7 +140,7 @@ function search_table(table_name, url = null)
         alert("Select fields to search with");
         return;
     }
-    if (! url) url = "/core/data/data.php?table_name=" + table_name + "&operation=search";
+    if (! url) url = "/core/data/data.php?table_name=" + table_name + "&operation=data_search";
     window.location =  url + args;
 }
 // function update_field(post_file, id, field_name, finish_action) {
@@ -188,6 +188,6 @@ function delete_items(collection_name, post_file)
     }
     let type = collection_name.substr(9); // Remove checkbox_
     let glue = '?'; if (post_file.indexOf('?') > -1) glue = '&';
-    let url = post_file + glue + "operation=delete&type=" + type + "&ids=" + ids;
+    let url = post_file + glue + "operation=data_delete&type=" + type + "&ids=" + ids;
     execute_url(url, location_reload);
 }

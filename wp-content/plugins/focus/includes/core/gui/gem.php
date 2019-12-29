@@ -62,7 +62,7 @@ function GemElement($table_name, $row_id, $args)
 
 	if (GetArg($args, "edit", false) and $post) {
 		$result .= gui_button( "btn_save", "data_save_entity('" . $post . "', '$table_name', " . $row_id . ')', "save" );
-		$result .= gui_button( "btn_cancel", "cancel_entity('" . $post . "', '$table_name', " . $row_id . ')', "delete" );
+		$result .= gui_button( "btn_inactive", "inactive_entity('" . $post . "', '$table_name', " . $row_id . ')', "inactive" );
 	}
 	return $result;
 }

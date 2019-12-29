@@ -62,6 +62,7 @@ Should run without login. Get permission of task owner. No info leakage.
 16935261
 15692721
 13900711
+25941711
 https://fruity.co.il/fresh/pricelist/pricelist-get.php?supplier_id=100044
 
 Sharing code between plugins.

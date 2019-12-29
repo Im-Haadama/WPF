@@ -67,7 +67,6 @@ class Focus_Views {
 		$action_url = get_url( 1 );
 		$result     = ""; // focus_header($header_args);
 
-
 		$args["page"] = get_param( "_page", false, 1 );
 
 		$debug = 0;
@@ -648,11 +647,8 @@ class Focus_Views {
 				$T       = new Focus_Tasklist( $task_id );
 				$r       = $T->Postpone();
 				Focus_Tasklist::create_tasks( null, false );
-				if ( $r ) {
-					print "done";
-				}
 
-				return;
+				return $r;
 
 			case "pri_plus_task":
 				$task_id = get_param( "id" );
@@ -711,7 +707,7 @@ class Focus_Views {
 			case "start_task":
 				// a. set the start time, if not set.
 				$task_id = get_param( "id" );
-				task_started( $task_id, get_user_id() );
+				Focus_Tasklist::task_started( $task_id, get_user_id() );
 
 				// If the was query we want to show the result.
 				// And the move to the task_url if exists.
@@ -726,7 +722,7 @@ class Focus_Views {
 //				}
 //				return;
 //			}
-				$url = task_url( $task_id );
+				$url = Focus_Tasklist::task_url( $task_id );
 				if ( ! $url ) {
 					$url = get_url( 1 );
 				}
@@ -734,13 +730,13 @@ class Focus_Views {
 				if ( ! $url_headers || strstr( $url_headers[0], "404" ) ) {
 					print get_url( 1 ) . "?operation=bad_url&id=" . $task_id;
 
-					return;
+					return false;
 				}
 				if ( strlen( $url ) > 1 ) {
 					print $url;
 				}
 
-				return;
+				return true;
 
 			case "add_to_company":
 				$company_id = get_param( "company_id", true );

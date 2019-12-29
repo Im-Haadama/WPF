@@ -34,7 +34,7 @@ if ($id)
 }
 
 
-$suppliers = sql_query_array("select * from im_suppliers where active = 1", true);
+$suppliers = sql_query_array("select * from im_suppliers where is_active = 1", true);
 
 $args["links"] = array("id" => add_to_url(array("operation" => "show_supplier", "id"=>"%s")));
 

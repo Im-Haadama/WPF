@@ -201,9 +201,11 @@ class Fresh {
 
 	function handle_operation($operation)
 	{
+//		print __FILE__ . __FUNCTION__;
+
 		$module = strtok($operation, "_");
 		if ($module === "data")
-			return handle_data_operation($operation);
+			return Core_Data::handle_operation($operation);
 
 		switch ($operation)
 		{
@@ -279,7 +281,7 @@ class Fresh {
 		require_once FRESH_INCLUDES . 'core/data/sql.php';
 		require_once FRESH_INCLUDES . 'supplies/Supply.php';
 		require_once FRESH_INCLUDES . 'orders/orders.php';
-		require_once FRESH_INCLUDES . 'core/data/data.php';
+//		require_once FRESH_INCLUDES . 'core/data/data.php';
 		require_once FRESH_INCLUDES . 'core/wp.php';
 
 		/**

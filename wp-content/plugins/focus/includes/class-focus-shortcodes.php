@@ -71,15 +71,18 @@ class Focus_Shortcodes {
 			'after'  => null,
 		)
 	) {
-		ob_start();
+//		ob_start();
 
 		// @codingStandardsIgnoreStart
-		echo empty( $wrapper['before'] ) ? '<div class="' . esc_attr( $wrapper['class'] ) . '">' : $wrapper['before'];
-		call_user_func( $function, $atts );
-		echo empty( $wrapper['after'] ) ? '</div>' : $wrapper['after'];
+		$result = (empty( $wrapper['before'] ) ? '<div class="' . esc_attr( $wrapper['class'] ) . '">' : $wrapper['before']);
+		$result .= call_user_func( $function, $atts );
+		$result .= (empty( $wrapper['after'] ) ? '</div>' : $wrapper['after']);
 		// @codingStandardsIgnoreEnd
 
-		return ob_get_clean();
+//		$result = ob_get_clean();
+
+//		print "r" . $result . "r"; var_dump($function);
+		return $result;
 	}
 
 	/**

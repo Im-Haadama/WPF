@@ -235,6 +235,7 @@ class Focus {
 	 */
 	function handle_operation($operation)
 	{
+//		print __FILE__ . __FUNCTION__;
 		// Handle global operation
 		switch ($operation)
 		{
@@ -250,15 +251,15 @@ class Focus {
 		switch ($module){
 			case "salary":
 				$salary = Focus_Salary::instance();
-				print ($salary->handle_operation($operation));
+				return ($salary->handle_operation($operation));
 				break;
 			case "data":
 				$data = Core_Data::instance();
-				print ($data -> handle_operation($operation));
+				return ($data->handle_operation($operation));
 				break;
 			default:
 				$focus = Focus_Views::instance();
-				print $focus->handle_focus_show($operation);
+				return $focus->handle_focus_do($operation);
 		}
 		return;
 	}
@@ -271,7 +272,7 @@ class Focus {
 		 */
 		require_once FOCUS_INCLUDES . 'class-focus-autoloader.php';
 		require_once FOCUS_INCLUDES . 'core/data/sql.php';
-		require_once FOCUS_INCLUDES . 'core/data/data.php';
+//		require_once FOCUS_INCLUDES . 'core/data/data.php';
 		require_once FOCUS_INCLUDES . 'core/fund.php';
 		require_once FOCUS_INCLUDES . 'core/gui/inputs.php';
 		require_once FOCUS_INCLUDES . 'core/data/input_data.php';

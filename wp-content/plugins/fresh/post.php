@@ -17,4 +17,10 @@ $operation = get_param('operation', true);
 $fresh = Fresh::instance();
 if ( ! get_user_id(true) ) die('Not connected');
 
-print $fresh->handle_operation($operation);
+$rc = $fresh->handle_operation($operation);
+
+if ($rc === true) { print "done"; return; }
+if (is_numeric($rc)) { print "done.$rc"; return; }
+// Something went wrong. The procssing would print something.
+
+print "failed";
