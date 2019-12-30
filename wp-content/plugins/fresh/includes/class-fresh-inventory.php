@@ -57,7 +57,7 @@ class Fresh_Inventory
 	{
 		$result = gui_header(1, "Inventory for 31 Dec $year");
 
-		$suppliers = sql_query_array_scalar("select id from im_suppliers");
+		$suppliers = sql_query_array_scalar("select id from im_suppliers where active = 1");
 		$status_table = array(array("supplier id", "status"));
 
 		foreach ($suppliers as $supplier_id) {
