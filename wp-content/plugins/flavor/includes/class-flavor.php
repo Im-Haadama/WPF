@@ -250,6 +250,10 @@ class Flavor {
 				self::show_main();
 				return;
 
+			case "add_nav":
+				print "XXXX";
+				return;
+
 		}
 	}
 
@@ -393,7 +397,7 @@ class Flavor {
 		$result = gui_header(1, "Settings");
 
 		$tabs = [];
-		foreach (array("Fresh", "Finance") as $plugin)
+		foreach (array("Fresh", "Finance", "Flavor") as $plugin)
 		{
 			if (class_exists($plugin)){ // Todo: need to check permissions
 				array_push($tabs, array($plugin, __($plugin), $plugin::instance()->settingPage()));
@@ -403,4 +407,25 @@ class Flavor {
 
 		print $result;
 	}
+
+	static private function getPost()
+	{
+		return "/wp-content/plugins/flavor/post.php";
+	}
+
+	public function SettingPage()
+	{
+		$result = "";
+		$module_list = array( "Flavor" );
+
+		foreach ($module_list as $item){
+			$args = [];
+			$args ["text"] = __("Add") . " " . __($item);
+			$args["action"] = add_param_to_url(self::getPost() , array( "operation" => "add_nav", "module" => $item )) . ";location_reload";
+			$result .= GuiButtonOrHyperlink("btn_add_" . $item, null, $args);
+		}
+
+		return $result;
+	}
+
 }
