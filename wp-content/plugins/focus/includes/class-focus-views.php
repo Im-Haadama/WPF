@@ -41,9 +41,6 @@ class Focus_Views {
 		$file = plugin_dir_url( __FILE__ ) . 'core/data/data.js';
 		wp_enqueue_script( 'data', $file, null, $this->version, false );
 
-		$file = plugin_dir_url( __FILE__ ) . 'org/people.js';
-		wp_enqueue_script( 'people', $file, null, $this->version, false );
-
 		$file = plugin_dir_url( __FILE__ ) . 'core/gui/client_tools.js';
 		wp_enqueue_script( 'client_tools', $file, null, $this->version, false );
 

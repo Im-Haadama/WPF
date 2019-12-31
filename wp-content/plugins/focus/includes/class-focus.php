@@ -144,9 +144,13 @@ class Focus {
 		// add_action( 'init', array( $this, 'add_image_sizes' ) );
 		// add_action( 'switch_blog', array( $this, 'wpdb_table_fix' ), 0 );
 		// $orders = new Focus_Orders( $this->get_plugin_name(), $this->get_version() );
-		$views = Focus_Views::instance();
 
-		 $this->loader->add_action( 'wp_enqueue_scripts', $views, 'enqueue_scripts' );
+//		print "AAAAA";
+		$views = Focus_Views::instance();
+		$salary = Focus_Salary::instance();
+
+		$this->loader->add_action( 'wp_enqueue_scripts', $views, 'enqueue_scripts' );
+		$this->loader->add_action( 'wp_enqueue_scripts', $salary, 'enqueue_scripts' );
 
 		 require_once ABSPATH . 'wp-includes/pluggable.php';
 //		 wp_set_current_user(369);
@@ -781,6 +785,7 @@ class Focus {
 	 */
 	public function run ()
 	{
+//		print "running loader";
 		$this->loader->run();
 	}
 

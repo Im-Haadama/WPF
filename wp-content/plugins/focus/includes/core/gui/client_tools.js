@@ -170,7 +170,7 @@ function action_hide_row(xmlhttp, btn)
 {
     if (xmlhttp.response === "done"){
         if (btn[0] != 'undefined')
-            for (let i=0; i < count(btn); i++)
+            for (let i=0; i < btn.length; i++)
                 btn[i].parentElement.parentElement.style.display = 'none';
         else
             btn.parentElement.parentElement.style.display = 'none';

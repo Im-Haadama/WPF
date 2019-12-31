@@ -3,6 +3,7 @@
 
 class Focus_Salary {
 	protected static $_instance = null;
+	protected static $version = "1.0";
 	private $post_file;
 
 	/**
@@ -10,9 +11,16 @@ class Focus_Salary {
 	 */
 	public function __construct( $post_file ) {
 		$this->post_file = $post_file;
+
 //		add_action( 'get_header', array( $this, 'create_nav' ) );
 	}
 
+	function enqueue_scripts()
+	{
+		$file = plugin_dir_url( __FILE__ ) . 'org/people.js';
+//		print "script $file";
+		wp_enqueue_script( 'people', $file, null, self::$version, false );
+	}
 	public static function instance() {
 		if ( is_null( self::$_instance ) ) {
 			self::$_instance = new self( "/wp-content/plugins/focus/post.php" ); // Todo: fix this
@@ -54,7 +62,7 @@ class Focus_Salary {
 		return false;
 	}
 
-	public static function handle_salary_show($operation) {
+	public function handle_salary_show($operation) {
 		// $operation = get_param( "operation", false, "show_main" );
 //		print "op=$operation";
 		if ( get_user_id( true ) ) {
@@ -80,7 +88,7 @@ class Focus_Salary {
 		}
 	}
 
-	static function salary_main()
+	function salary_main()
 	{
 		$result = gui_header(1, "Salary info");
 		if (im_user_can("show_salary")){
@@ -212,7 +220,6 @@ class Focus_Salary {
 		$result .= gui_input( "extra", "" ) . "<br/>";
 
 		$result .= gui_button("btn_add_time", 'salary_add_item(' . $user_id . ')', 'הוסף פעילות');
-		$result .= gui_button("btn_delete", 'salary_del_items()', 'מחק פעילות');
 
 		return $result;
 	}
@@ -223,13 +230,16 @@ class Focus_Salary {
 		if (! $y) $y = date('Y');
 		$result = gui_header(1, __("Salary info for worker") . " " . get_user_name($user_id)) . __("for month") . " " . $m . '/' . $y;
 		$args = array("add_checkbox" => true, "checkbox_class" => "hours_checkbox");
-
-
+		$args["edit_lines"] = 1;
 		$data = self::print_transactions($user_id, $m, $y, $args);
 		if (! $data) $result .= __("No data for month") . " " . $m . '/' . $y . "<br/>";
-		else $result .= $data;
+		else {
+			$result .= $data;
+			$result .= gui_button("btn_delete", 'salary_del_items()', 'מחק פעילות');
+		}
 		$result .= "<br/>" . GuiHyperlink("Previouse month",
 			add_to_url("month", date('Y-m', strtotime($y . '-' . $m . '-1 -1 month'))));
+
 
 		return $result;
 	}

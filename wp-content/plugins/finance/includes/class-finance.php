@@ -679,6 +679,7 @@ class Finance {
 //
 
 	public function enqueue_scripts() {
+
 		$file = plugin_dir_url( __FILE__ ) . 'core/data/data.js';
 		wp_enqueue_script( 'data', $file, null, $this->version, false );
 

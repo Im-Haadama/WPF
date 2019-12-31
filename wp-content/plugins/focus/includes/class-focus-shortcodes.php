@@ -18,9 +18,10 @@ class Focus_Shortcodes {
 	 * Init shortcodes.
 	 */
 	public static function init() {
+		$salary_instance = Focus_Salary::instance();
 		$shortcodes = array(
 			'focus_main'           => __CLASS__ . '::focus_main',
-			'salary_main'        => __CLASS__ . '::salary_main',
+			'salary_main'        => array($salary_instance, 'salary_main'),
 			'roles_main'    => __CLASS__ . '::roles_main',
 			'show_settings' => __CLASS__ . '::show_settings'
 //			'focus_suppliers'            => __CLASS__ . '::suppliers', // [focus_suppliers]
@@ -75,6 +76,7 @@ class Focus_Shortcodes {
 
 		// @codingStandardsIgnoreStart
 		$result = (empty( $wrapper['before'] ) ? '<div class="' . esc_attr( $wrapper['class'] ) . '">' : $wrapper['before']);
+//		var_dump($function);
 		$result .= call_user_func( $function, $atts );
 		$result .= (empty( $wrapper['after'] ) ? '</div>' : $wrapper['after']);
 		// @codingStandardsIgnoreEnd
