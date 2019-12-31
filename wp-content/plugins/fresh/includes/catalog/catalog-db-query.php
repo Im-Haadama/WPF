@@ -162,7 +162,7 @@ function show_pos_pricelist() {
 
 	while ( $row = sql_fetch_row( $results ) ) {
 		$prod_id = $row[0];
-		$p       = new Product( $prod_id );
+		$p       = new Fresh_Product( $prod_id );
 		if ( ! $p->isPublished() ) {
 			continue;
 		}
@@ -355,7 +355,7 @@ function show_catalog(
 
 		$fields[ CatalogFields::line_select ] = "<input id=\"chk" . $prod_id . "\" class=\"product_checkbox\" type=\"checkbox\">";
 		$fields[ CatalogFields::id ]          = gui_hyperlink( $prod_id, "../../wp-admin/post.php?post=" . $prod_id . " &action=edit" );
-		$p                                    = new Product( $prod_id );
+		$p                                    = new Fresh_Product( $prod_id );
 
 		// price
 		$price = get_postmeta_field( $prod_id, '_price' );

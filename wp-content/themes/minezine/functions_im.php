@@ -10,11 +10,12 @@ ini_set( 'display_errors', 'on' );
  * Time: 18:22
  */
 
+
 function add_stylesheet_to_head() {
 //    require_once( ABSPATH . 'wp-content/plugins/fresh/includes/core/fund.php' );
 
     if (class_exists("Flavor") and Flavor::isManagementPage()){
-        print '<link rel="stylesheet" type="text/css" href="' .  get_template_directory_uri() . '/css/management.css'.  '">'; // Hides logo, search and white area contains them.
+    	print '<link rel="stylesheet" type="text/css" href="' .  get_template_directory_uri() . '/css/management.css'.  '">'; // Hides logo, search and white area contains them.
 //        register_nav_menus(array('main-fresh' => __ ('Primary Menu', 'minezine')));
 
 //	    add_action( 'after_setup_theme', 'register_my_menu' );

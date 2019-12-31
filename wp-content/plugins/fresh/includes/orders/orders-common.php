@@ -143,7 +143,7 @@ function orders_per_item( $prod_id, $multiply, $short = false, $include_basket =
 			$quantity *= $b->GetQuantity();
 		} else
 		if ( is_basket( $pid ) ) {
-			$b        = new Basket( $pid );
+			$b        = new Fresh_Basket( $pid );
 			$quantity *= $b->GetQuantity( $prod_id );
 		}
 		$first_name    = get_postmeta_field( $order_id, '_shipping_first_name' );
@@ -665,7 +665,7 @@ function product_line( $prod_id, $text, $sale, $customer_type, $inv, $term_id, $
 	$img_size = 40;
 
 //	print "ct=" . $customer_type . "<br/>";
-	$p = new Product( $prod_id );
+	$p = new Fresh_Product( $prod_id );
 	if ( $text ) {
 		$line = get_product_name( $prod_id ) . " - " . get_price_by_type( $prod_id, $customer_type ) . "<br/>";
 		// print "line = " . $line . "<br/>";

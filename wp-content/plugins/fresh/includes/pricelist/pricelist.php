@@ -284,7 +284,7 @@ class PriceList {
 			$map_id    = "";
 			if ( $link_data ) {
 				$prod_id = $link_data[0];
-				$p       = new Product( $prod_id );
+				$p       = new Fresh_Product( $prod_id );
 				$map_id  = null;
 
 				if ( isset( $link_data[1] ) ) {
@@ -372,7 +372,7 @@ class PriceList {
 
 		} else
 		if ( $linked_prod_id > 0 ) {
-			$p = new Product( $linked_prod_id );
+			$p = new Fresh_Product( $linked_prod_id );
 			array_push( $line, get_product_name( $linked_prod_id ) );
 			array_push( $line, get_price( $linked_prod_id ) );
 			array_push( $line, get_sale_price( $linked_prod_id ) );

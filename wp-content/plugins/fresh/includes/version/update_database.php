@@ -1115,6 +1115,15 @@ function get_versions()
 
 function version29()
 {
+	print gui_header(1, "order_mission");
+	sql_query("create
+    function order_mission(_order_id int) returns int(11)
+BEGIN
+    declare _mission int(11);
+    select meta_value into _mission from wp_postmeta where meta_key = 'mission_id' and post_id = _order_id;
+    return _mission;
+  END; ");
+
 	print gui_header(1, "inventory");
 	sql_query("create table im_inventory_count (
 	id int auto_increment

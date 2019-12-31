@@ -5,14 +5,14 @@
  * Date: 06/10/18
  * Time: 17:03
  */
-require_once( FRESH_INCLUDES . '/core/data/sql.php' );
-require_once( FRESH_INCLUDES . '/catalog/bundles.php' );
-require_once( FRESH_INCLUDES . "/catalog/Basket.php" );
-require_once( FRESH_INCLUDES . "/orders/orders-common.php" );
-require_once( FRESH_INCLUDES . "/routes/gui.php" );
+//require_once( FRESH_INCLUDES . '/core/data/sql.php' );
+//require_once( FRESH_INCLUDES . '/catalog/bundles.php' );
+//require_once( FRESH_INCLUDES . "/catalog/Basket.php" );
+//require_once( FRESH_INCLUDES . "/orders/orders-common.php" );
+//require_once( FRESH_INCLUDES . "/routes/gui.php" );
 //require_once( FRESH_INCLUDES . "/core/wp.php" );
 
-class Order {
+class Fresh_Order {
 	private $order_id = 0;
 	private $WC_Order = null;
 	private $mission_id = 0;
@@ -258,7 +258,7 @@ class Order {
 		$result = array();
 		self::CalculateNeeded( $needed_products );
 		foreach ( $needed_products as $prod_id => $product ) {
-			$p = new Product( $prod_id );
+			$p = new Fresh_Product( $prod_id );
 			if ( $p->getStock() < $needed_products[ $prod_id ][0] ) {
 				array_push( $result, $product );
 			}
@@ -520,7 +520,7 @@ class Order {
 		$suppliers = null;
 		$this->CalculateNeeded( $needed, $this->getCustomerId() );
 		foreach ( $needed as $prod_id => $p ) {
-			$P = new Product($prod_id);
+			$P = new Fresh_Product($prod_id);
 			if ($s = $P->PendingSupplies()){
 //				print "s:"; var_dump($s); print "<br/>";
 				if (!$suppliers) $suppliers = array();
@@ -550,7 +550,7 @@ class Order {
 		if ( $c ) { // legacy
 			$new_status = "wc-awaiting-document";
 		} else {
-			$d = delivery::CreateFromOrder( $this->order_id );
+			$d = Fresh_Delivery::CreateFromOrder( $this->order_id );
 			if (! $d->getID()) {
 				$message = "no delivery note";
 				return false;
@@ -605,7 +605,7 @@ class Order {
 		foreach ( $order_items as $item ) {
 			$prod_or_var  = $item['product_id'];
 			$q_in_ordered = $item->get_quantity();
-			$p            = new Product( $prod_or_var );
+			$p            = new Fresh_Product( $prod_or_var );
 			$q_supplied   = sql_query( "SELECT quantity FROM im_delivery_lines" .
 			                           " WHERE prod_id = " . $prod_or_var .
 			                           " AND delivery_id = " . $d_id );
@@ -653,7 +653,7 @@ class Order {
 			$prod_or_var = $item['product_id'];
 			$q           = $item->get_quantity();
 
-			$p = new Product($prod_or_var);
+			$p = new Fresh_Product($prod_or_var);
 			if ( is_numeric( $q ) and is_numeric( $p->getBuyPrice() ) ) {
 				$total += $q * $p->getBuyPrice();
 			}
@@ -662,6 +662,53 @@ class Order {
 		return $total;
 	}
 
+	function checkInfoBox()
+	{
+		$result = gui_header(1, __("Order number") . ":" . $this->order_id) . "<br/>";
+		$result .= __("Client") . ":" . $this->getOrderInfo( '_billing_first_name' ) . ' '
+		                                                                      . $this->getOrderInfo( '_billing_last_name') . "<br/>";
+
+		$result .= __("Client comments") . ":" . $this->GetComments() . "<br/>";
+		return $result;
+
+//		$row_data = [];
+//		$row_data["header"] = array_assoc(array("client_name" => "Client name", "order_id" => "Order number", "comments"=>"Comments"));
+//		$row_data[$this->order_id] = array("value" =>,
+//			"comments" => $this->GetComments());
+////		$row_data[$this->order_id] = array("info" =>  ));
+//
+//		$args = [];
+////		$args = ["transpose" => true, "include_id" => true];
+//		return gui_table_args($row_data, "order_" . $this->order_id . "_info", $args);
+//		$data      = "<table><tr><td rowspan='4'>";
+//		$data      .= '<table>';
+//		$client_id = $this->getCustomerId();
+//		// Client info
+//		$user_edit = "../";
+//		$row_text  = '<tr><td>לקוח:</td><td>' . gui_hyperlink( , $user_edit ) . '</td><tr>';
+//		$data      .= $row_text;
+//		$data      .= '<tr><td>טלפון:</td><td>' . $this->getOrderInfo( '_billing_phone' ) . '</td><tr>';
+//		$data      .= '<tr><td>הוזמן:</td><td>' . $this->GetOrderDate() . '</td><tr>';
+//
+//		// Shipping info
+//		$row_text = '<tr><td>משלוח:</td><td>' . $this->getOrderInfo( '_shipping_first_name' ) . ' '
+//		            . $this->getOrderInfo( '_shipping_last_name' ) . '</td><tr>';
+//		$data     .= $row_text;
+////	$row_text = '<tr><td>כתובת:</td><td>' . order_info( $order_id, '_shipping_address_1' ) . ' '
+////	            . order_info( $order_id, '_shipping_address_2' ) . '</td><tr>';
+////	$data     .= $row_text;
+//
+//		//		$row_text = '<tr><td>כתובת:</td><td>' .
+//		$row_text .= $this->info_right_box_input( "shipping_city", $edit, "עיר" );
+//		$row_text .= $this->info_right_box_input( "shipping_address_1", $edit, "רחוב ומספר" );
+//		$row_text .= $this->info_right_box_input( "shipping_address_2", $edit, "כניסה, קוד אינטרקום, קומה ומספר דירה" );
+//		$row_text .= gui_row(array("מזהה לקוח", get_user_meta( $client_id, 'invoice_id', 1)));
+//		$row_text .= $this->user_info_right_box_input( "preference", $edit, "העדפות לקוח" );
+//		$data     .= $row_text;
+//
+//
+//		$rows = array("client", )
+	}
 	function infoBox( $edit_order = false, $operation = null, $addition_orders = null ) {
 		if ( ! $this->WC_Order ) {
 			throw new Exception( "no WC_Order" );
@@ -679,9 +726,9 @@ class Order {
 		$data = gui_header( 1, $header, true );
 		// $data  .= gui_header( 2, $order->order_date, true);
 
-		$d_id = Order::get_delivery_id( $this->order_id );
+		$d_id = self::get_delivery_id( $this->order_id );
 		if ( $d_id > 0 ) {
-			$d          = new delivery( $d_id );
+			$d          = new Fresh_Delivery( $d_id );
 			$draft_text = "";
 			if ( $d->isDraft() ) {
 				$draft_text = " טיוטא " . $d->draftReason();
@@ -969,7 +1016,7 @@ class Order {
 		array_push( $fields, Core_Db_MultiSite::LocalSiteID() );
 		// array_push($fields, get_delivery_id($order_id));
 
-		$line = "<tr> " . delivery_table_line( 1, $fields ) . "</tr>";
+		$line = "<tr> " . self::delivery_table_line( 1, $fields ) . "</tr>";
 
 //	print "line=  " . $line ."<br/>";
 		// get_field($order_id, '_shipping_city');
@@ -977,338 +1024,353 @@ class Order {
 		return $line;
 	}
 
-}
+	static function delivery_table_line( $ref, $fields, $edit = false ) {
+		//"onclick=\"close_orders()\""
+		$row_text = "";
+		if ( $edit ) {
+			$row_text = gui_cell( gui_checkbox( "chk_" . $ref, "", "", null ) );
+		}
 
-function OrdersTable($args)
-{
-	$result = "";
-	$args["id_field"] = "ID";
-	$args["query"] = "post_type = 'shop_order' and post_status in ('wc-awaiting-shipment', 'wc-processing')";
-	$args["order"] = " ID desc";
-	$args["links"] = array("ID" => add_to_url("row_id", "%s"));
-	$args["fields"] = array("ID", "post_date", "post_status" );
+		foreach ( $fields as $field ) // display customer name
+		{
+			$row_text .= gui_cell( $field );
+		}
 
-	$result .= GemTable("wp_posts", $args);
+		return $row_text;
+	}
 
-	return $result;
-}
+	function OrdersTable($args)
+	{
+		$result = "";
+		$args["id_field"] = "ID";
+		$args["query"] = "post_type = 'shop_order' and post_status in ('wc-awaiting-shipment', 'wc-processing')";
+		$args["order"] = " ID desc";
+		$args["links"] = array("ID" => add_to_url("row_id", "%s"));
+		$args["fields"] = array("ID", "post_date", "post_status" );
 
-function handle_order_operation($operation)
-{
-	$page = get_param("page", false, 0);
-	$args = [];
-	if ($page) $args["page"] = $page;
-	switch ($operation){
+		$result .= GemTable("wp_posts", $args);
+
+		return $result;
+	}
+	function handle_order_operation($operation)
+	{
+		$page = get_param("page", false, 0);
+		$args = [];
+		if ($page) $args["page"] = $page;
+		switch ($operation){
 //		case "show_new_order":
 //			print
 //			break;
 
-		case "show_orders":
-			print OrdersTable($args);
-			break;
+			case "show_orders":
+				print OrdersTable($args);
+				break;
 
 
-		case "paper_order":
-			$args = [];
-			$args["print_logo"] = false;
-			print HeaderText($args);
-			print gui_header(2, "הזמנה/אספקה שבועית");
-			$last_delivery = sql_query_single_scalar("select max(delivery_id) from im_delivery_lines");
-			$sql = "select distinct prod_id, sum(quantity_ordered) from im_delivery_lines where delivery_id > $last_delivery - 20 group by prod_id order by 2 desc limit 38";
-			$prods = sql_query_array_scalar($sql);
+			case "paper_order":
+				$args = [];
+				$args["print_logo"] = false;
+				print HeaderText($args);
+				print gui_header(2, "הזמנה/אספקה שבועית");
+				$last_delivery = sql_query_single_scalar("select max(delivery_id) from im_delivery_lines");
+				$sql = "select distinct prod_id, sum(quantity_ordered) from im_delivery_lines where delivery_id > $last_delivery - 20 group by prod_id order by 2 desc limit 38";
+				$prods = sql_query_array_scalar($sql);
 
-			$data = [];
-			// array_push($data, array("מוצר", "כמות"));
-			foreach ($prods as $prod) {
-				if(! is_basket($prod) and ! is_bundle($prod)) {
-					$prod_name = get_product_name($prod, true);
-					array_push($data, $prod_name);
+				$data = [];
+				// array_push($data, array("מוצר", "כמות"));
+				foreach ($prods as $prod) {
+					if(! is_basket($prod) and ! is_bundle($prod)) {
+						$prod_name = get_product_name($prod, true);
+						array_push($data, $prod_name);
+					}
 				}
-			}
 
-			sort($data);
+				sort($data);
 
-			$table_lines = array();
-			$table_lines["header"] = array("מוצר", "כמות", "מוצר", "כמות");
-			$line_number = round((count($prods))/ 2, 0);
+				$table_lines = array();
+				$table_lines["header"] = array("מוצר", "כמות", "מוצר", "כמות");
+				$line_number = round((count($prods))/ 2, 0);
 //			print count($data) . "<br/>" . $line_number . "<br/>";
 
-			for ($i = 0; $i < $line_number; $i++){
-				$space = '';
-				$new_line = array($data[$i], $space, isset($data[$i + $line_number]) ? $data[$i + $line_number] : "", $space);
-				$table_lines[$i] = $new_line;
+				for ($i = 0; $i < $line_number; $i++){
+					$space = '';
+					$new_line = array($data[$i], $space, isset($data[$i + $line_number]) ? $data[$i + $line_number] : "", $space);
+					$table_lines[$i] = $new_line;
+				}
+				$args = [];
+				$args["width"] = '100%';
+				$args["col_width"] = array('25%', '25%', '25%', '25%');
+				print gui_table_args($table_lines, "products", $args);
+
+				break;
+
+			default:
+				print __FUNCTION__ . " " . $operation . " not handled<br/>";
+		}
+	}
+
+	function order_page_by_term()
+	{
+		for ($i = 0; $i < count($prods); $i++){
+			$prod_id =$prods[$i];
+			$p = new Fresh_Product($prod_id);
+			if ($p and $p->getTerms()) {
+				$term = $p->getTerms()[0]->term_id;
+				if (! isset($prods_by_term[$term])) $prods_by_term[$term] = [];
+				array_push($prods_by_term[$term], $prod_id);
 			}
-			$args = [];
-			$args["width"] = '100%';
-			$args["col_width"] = array('25%', '25%', '25%', '25%');
-			print gui_table_args($table_lines, "products", $args);
-
-			break;
-
-		default:
-			print __FUNCTION__ . " " . $operation . " not handled<br/>";
-	}
-}
-
-function order_page_by_term()
-{
-	for ($i = 0; $i < count($prods); $i++){
-		$prod_id =$prods[$i];
-		$p = new Product($prod_id);
-		if ($p and $p->getTerms()) {
-			$term = $p->getTerms()[0]->term_id;
-			if (! isset($prods_by_term[$term])) $prods_by_term[$term] = [];
-			array_push($prods_by_term[$term], $prod_id);
 		}
-	}
 
-	$data = [];
-	// array_push($data, array("מוצר", "כמות"));
-	foreach ($prods_by_term as $term => $prods_per_term) {
-		$temp_table = [];
-		foreach ($prods_per_term as $prod_id)
-			if (!is_basket($prod_id)) array_push($temp_table, get_product_name($prod_id));
-		if (count($temp_table)){
-			sort ($temp_table);
-			array_push($data, gui_header(3, get_term_name($term)));
+		$data = [];
+		// array_push($data, array("מוצר", "כמות"));
+		foreach ($prods_by_term as $term => $prods_per_term) {
+			$temp_table = [];
+			foreach ($prods_per_term as $prod_id)
+				if (!is_basket($prod_id)) array_push($temp_table, get_product_name($prod_id));
+			if (count($temp_table)){
+				sort ($temp_table);
+				array_push($data, gui_header(3, get_term_name($term)));
 
-			foreach ($temp_table as $prod_name)
-				array_push($data, array($prod_name, ""));
+				foreach ($temp_table as $prod_name)
+					array_push($data, array($prod_name, ""));
+			}
+			// print get_product_name($prod_id);
 		}
-		// print get_product_name($prod_id);
-	}
 
-	$table_lines = array();
-	$table_lines["header"] = array("מוצר", "כמות", "מוצר", "כמות");
+		$table_lines = array();
+		$table_lines["header"] = array("מוצר", "כמות", "מוצר", "כמות");
 //			print gui_table_args($data);
-	$line_number = round((count($prods) + 1)/ 2, 0);
+		$line_number = round((count($prods) + 1)/ 2, 0);
 
 //		print count($prods) . '<br/>';
 //		print $line_number . '<br/>';
-	for ($i = 0; $i < $line_number + 1; $i++){
-		$new_line = array($data[$i], "", $data[$i + $line_number], "");
+		for ($i = 0; $i < $line_number + 1; $i++){
+			$new_line = array($data[$i], "", $data[$i + $line_number], "");
 //				$line = array(get_product_name($prods[$i]), "", ($i < count($prods) -1 ? get_product_name($prods[$i+1]) : ""), "");
-		$table_lines[$i] = $new_line;
-	}
-	$args = [];
-	print gui_table_args($table_lines, "products", $args);
+			$table_lines[$i] = $new_line;
+		}
+		$args = [];
+		print gui_table_args($table_lines, "products", $args);
 
-}
-
-function OrderHeaderFields() {
-return array(
-	"בחר", // replaced in loop
-	"סוג משלוח",
-	"משימה",
-	"מספר הזמנה",
-	"שם המזמין",
-	"עבור",
-	"סכום הזמנה",
-	"עלות מוצרים",
-	"מרווח",
-	"דמי משלוח",
-	"ישוב",
-	"אמצעי תשלום",
-	"תעודת משלוח",
-	"אחוז סופק"
-);
-}
-
-function OrdersTable1($statuses = array('wc-processing'), $build_path = true, $user_id = 0, $week = null)
-{
-
-	$order_header_fields = OrderHeaderFields();
-
-	$show_fields = array();
-	$empty_line  = array();
-	for ( $i = 0; $i < OrderFields::field_count; $i ++ ) {
-		$empty_line[ $i ]  = "";
-		$show_fields[ $i ] = true;
-	}
-	if ( ! current_user_can( "show_business_info" ) ) {
-		$show_fields[ OrderFields::total_order ] = false; // current_user_can("show_business_info");
-		$show_fields[ OrderFields::margin ]      = false;
-		$show_fields[ OrderFields::good_costs ]  = false;
 	}
 
-	$all_tables = ""; // load_scripts(array("/wp-content/plugins/fresh/includes/orders/orders.js", "/wp-content/plugins/fresh/includes/core/gui/client_tools.js"));
-	if ( ! is_array( $statuses ) ) {
-		$statuses = array( $statuses );
+	function OrderHeaderFields() {
+		return array(
+			"בחר", // replaced in loop
+			"סוג משלוח",
+			"משימה",
+			"מספר הזמנה",
+			"שם המזמין",
+			"עבור",
+			"סכום הזמנה",
+			"עלות מוצרים",
+			"מרווח",
+			"דמי משלוח",
+			"ישוב",
+			"אמצעי תשלום",
+			"תעודת משלוח",
+			"אחוז סופק"
+		);
 	}
-	debug_time_log( "1" );
 
-	foreach ( $statuses as $status ) {
-		$order_header_fields[0] = gui_checkbox( "select_all_" . $status, "table", 0, "onclick=\"select_all_toggle('select_all_" . $status . "', 'select_order_" . $status . "')\"" );
-		$rows                   = array( $order_header_fields );
-		$sql                    = 'SELECT posts.id'
-		                          . ' FROM `wp_posts` posts'
-		                          . " WHERE post_status = '" . $status . "'";
+	function OrdersTable1($statuses = array('wc-processing'), $build_path = true, $user_id = 0, $week = null)
+	{
 
-		if ( $week ) {
-			$sql = "select order_id from im_delivery where FIRST_DAY_OF_WEEK(date) = '" . $week . "'";
+		$order_header_fields = OrderHeaderFields();
+
+		$show_fields = array();
+		$empty_line  = array();
+		for ( $i = 0; $i < OrderFields::field_count; $i ++ ) {
+			$empty_line[ $i ]  = "";
+			$show_fields[ $i ] = true;
+		}
+		if ( ! current_user_can( "show_business_info" ) ) {
+			$show_fields[ OrderFields::total_order ] = false; // current_user_can("show_business_info");
+			$show_fields[ OrderFields::margin ]      = false;
+			$show_fields[ OrderFields::good_costs ]  = false;
 		}
 
-		if ( $user_id ) {
-			$sql .= " and order_user(id) = " . $user_id;
+		$all_tables = ""; // load_scripts(array("/wp-content/plugins/fresh/includes/orders/orders.js", "/wp-content/plugins/fresh/includes/core/gui/client_tools.js"));
+		if ( ! is_array( $statuses ) ) {
+			$statuses = array( $statuses );
 		}
-		$sql .= " order by 1";
+		debug_time_log( "1" );
 
-		// print $sql;
-		// Build path
-		$order_ids = sql_query_array_scalar( $sql );
+		foreach ( $statuses as $status ) {
+			$order_header_fields[0] = gui_checkbox( "select_all_" . $status, "table", 0, "onclick=\"select_all_toggle('select_all_" . $status . "', 'select_order_" . $status . "')\"" );
+			$rows                   = array( $order_header_fields );
+			$sql                    = 'SELECT posts.id'
+			                          . ' FROM `wp_posts` posts'
+			                          . " WHERE post_status = '" . $status . "'";
 
-		// If no orders in this status, move on.
-		if ( sizeof( $order_ids ) < 1 ) {
-			continue;
-		}
-
-		$result                = sql_query( $sql );
-		$total_delivery_total  = 0;
-		$total_order_total     = 0;
-		$total_order_delivered = 0;
-
-		if ( ! $result ) {
-			continue;
-		}
-
-		$count = 0;
-
-		debug_time_log( "before loop" );
-		while ( $row = mysqli_fetch_row( $result ) ) {
-			debug_time_log( "after fetch" );
-			$count ++;
-			$order_id = $row[0];
-			$order    = new Order( $order_id );
-
-			$customer_id = $order->getCustomerId( $order_id );
-
-			$line            = $empty_line;
-			$invoice_user_id = get_user_meta( $customer_id, 'invoice_id', 1 );
-
-			if ( $invoice_user_id ) {
-				$line [ OrderFields::line_select ] = gui_checkbox( "chk_" . $order_id, "select_order_" . $status );
-			} else {
-				$line [ OrderFields::line_select ] = gui_hyperlink( "לקוח חדש", "/fresh/?operation=new_customer&order_id=" . $order_id );
+			if ( $week ) {
+				$sql = "select order_id from im_delivery where FIRST_DAY_OF_WEEK(date) = '" . $week . "'";
 			}
 
-			debug_time_log( "a1" );
-			$line[ OrderFields::type ]         = $order->GetShipping(  );
+			if ( $user_id ) {
+				$sql .= " and order_user(id) = " . $user_id;
+			}
+			$sql .= " order by 1";
 
-			// display order_id with link to display it.
-			// 1) order ID with link to the order
-			$mission_id = $order->getMission();
-			// print $order_id. " ". $mission . "<br/>";
+			// print $sql;
+			// Build path
+			$order_ids = sql_query_array_scalar( $sql );
 
-			$args = array();
-			$args["events"] = "onchange=\"mission_changed(" . $order_id . ")\"";
-			$line[ OrderFields::mission ]  = gui_select_mission( "mis_" . $order_id, $mission_id,  $args);
-			$line[ OrderFields::order_id ] = gui_hyperlink( $order_id, "/fresh/orders/get-order.php?order_id=" . $order_id );
-
-			// 2) Customer name with link to his deliveries
-			$line[ OrderFields::customer ] = gui_hyperlink( get_customer_name( $customer_id ), Core_Db_MultiSite::LocalSiteTools() .
-			                                                                                   "/fresh/account/get-customer-account.php?customer_id=" . $customer_id );
-
-
-			$line[ OrderFields::recipient ] = get_postmeta_field( $order_id, '_shipping_first_name' ) . ' ' .
-			                                  get_postmeta_field( $order_id, '_shipping_last_name' );
-
-			debug_time_log( "middle" );
-
-			$order_total = 0;
-			// 3) Order total
-			if ( $show_fields[ OrderFields::total_order ] ) {
-				$order_total = $order->GetTotal();
-				// get_postmeta_field( $order_id, '_order_total' );
-				$line[ OrderFields::total_order ] = $order_total;
-				$total_order_total                += $order_total;
-				debug_time_log( "total" );
+			// If no orders in this status, move on.
+			if ( sizeof( $order_ids ) < 1 ) {
+				continue;
 			}
 
-			// 4) Delivery note
-			$delivery_id = $order->getDeliveryId(); // get_delivery_id( $order_id );
+			$result                = sql_query( $sql );
+			$total_delivery_total  = 0;
+			$total_order_total     = 0;
+			$total_order_delivered = 0;
 
-			if ( $delivery_id > 0 ) {
-				$delivery                           = new Delivery( $delivery_id );
-				$line[ OrderFields::delivery_note ] = gui_hyperlink( $delivery_id, "/fresh/delivery/get-delivery.php?id=" . $delivery_id );
-				//if ( $delivery_id > 0 ) {
-				if ( isset( $orders_total ) ) {
+			if ( ! $result ) {
+				continue;
+			}
+
+			$count = 0;
+
+			debug_time_log( "before loop" );
+			while ( $row = mysqli_fetch_row( $result ) ) {
+				debug_time_log( "after fetch" );
+				$count ++;
+				$order_id = $row[0];
+				$order    = new Order( $order_id );
+
+				$customer_id = $order->getCustomerId( $order_id );
+
+				$line            = $empty_line;
+				$invoice_user_id = get_user_meta( $customer_id, 'invoice_id', 1 );
+
+				if ( $invoice_user_id ) {
+					$line [ OrderFields::line_select ] = gui_checkbox( "chk_" . $order_id, "select_order_" . $status );
+				} else {
+					$line [ OrderFields::line_select ] = gui_hyperlink( "לקוח חדש", "/fresh/?operation=new_customer&order_id=" . $order_id );
+				}
+
+				debug_time_log( "a1" );
+				$line[ OrderFields::type ]         = $order->GetShipping(  );
+
+				// display order_id with link to display it.
+				// 1) order ID with link to the order
+				$mission_id = $order->getMission();
+				// print $order_id. " ". $mission . "<br/>";
+
+				$args = array();
+				$args["events"] = "onchange=\"mission_changed(" . $order_id . ")\"";
+				$line[ OrderFields::mission ]  = gui_select_mission( "mis_" . $order_id, $mission_id,  $args);
+				$line[ OrderFields::order_id ] = gui_hyperlink( $order_id, "/fresh/orders/get-order.php?order_id=" . $order_id );
+
+				// 2) Customer name with link to his deliveries
+				$line[ OrderFields::customer ] = gui_hyperlink( get_customer_name( $customer_id ), Core_Db_MultiSite::LocalSiteTools() .
+				                                                                                   "/fresh/account/get-customer-account.php?customer_id=" . $customer_id );
+
+
+				$line[ OrderFields::recipient ] = get_postmeta_field( $order_id, '_shipping_first_name' ) . ' ' .
+				                                  get_postmeta_field( $order_id, '_shipping_last_name' );
+
+				debug_time_log( "middle" );
+
+				$order_total = 0;
+				// 3) Order total
+				if ( $show_fields[ OrderFields::total_order ] ) {
+					$order_total = $order->GetTotal();
+					// get_postmeta_field( $order_id, '_order_total' );
 					$line[ OrderFields::total_order ] = $order_total;
-				} // $delivery->Price();
-				$line[ OrderFields::delivery_fee ] = $delivery->DeliveryFee();
-				$percent                           = "";
-				if ( ( $order_total - $delivery->DeliveryFee() ) > 0 ) {
-					$percent = round( 100 * ( $delivery->Price() - $delivery->DeliveryFee() ) / ( $order_total - $delivery->DeliveryFee() ), 0 ) . "%";
+					$total_order_total                += $order_total;
+					debug_time_log( "total" );
 				}
-				$line[ OrderFields::percentage ] = $percent;
-				$total_delivery_total            += $delivery->Price();
-				$total_delivery_fee                  = $delivery->DeliveryFee();
-				$total_order_delivered           += $order_total;
-				if ( $delivery->isDraft() ) {
-					$line [ OrderFields::line_select ] = "טיוטא";
-				}
-				//	}
-			} else {
-				// print "status = " . $order->getStatus() . "<br/>";
-				if ($order -> getStatus() == 'wc-processing')
-					$line[ OrderFields::delivery_note ] = gui_hyperlink( "צור",  "/fresh/delivery/create-delivery.php?order_id=" . $order_id, "_blank" );
-				$line[ OrderFields::percentage ]    = gui_hyperlink( "בטל", $_SERVER['PHP_SELF'] . "?operation=cancel_order&id=" . $order_id );
-				$total_delivery_fee                 = $order->getShipping();
-			}
-			$line[ OrderFields::city ]         = $order->getOrderInfo( '_shipping_city' );
-			$line[ OrderFields::payment_type ] = get_payment_method_name( $customer_id );
-			if ( current_user_can( "show_business_info" ) ) {
-				$line[ OrderFields::good_costs ] = $order->GetBuyTotal();
-				$line[ OrderFields::margin ]     = round( ( $line[ OrderFields::total_order ] - $line[ OrderFields::good_costs ] ), 0 );
-			}
-			$line[ OrderFields::delivery_fee ] = $total_delivery_fee; //
 
-			array_push( $rows, $line );
-			debug_time_log( "loop end" );
+				// 4) Delivery note
+				$delivery_id = $order->getDeliveryId(); // get_delivery_id( $order_id );
+
+				if ( $delivery_id > 0 ) {
+					$delivery                           = new Fresh_Delivery( $delivery_id );
+					$line[ OrderFields::delivery_note ] = gui_hyperlink( $delivery_id, "/fresh/delivery/get-delivery.php?id=" . $delivery_id );
+					//if ( $delivery_id > 0 ) {
+					if ( isset( $orders_total ) ) {
+						$line[ OrderFields::total_order ] = $order_total;
+					} // $delivery->Price();
+					$line[ OrderFields::delivery_fee ] = $delivery->DeliveryFee();
+					$percent                           = "";
+					if ( ( $order_total - $delivery->DeliveryFee() ) > 0 ) {
+						$percent = round( 100 * ( $delivery->Price() - $delivery->DeliveryFee() ) / ( $order_total - $delivery->DeliveryFee() ), 0 ) . "%";
+					}
+					$line[ OrderFields::percentage ] = $percent;
+					$total_delivery_total            += $delivery->Price();
+					$total_delivery_fee                  = $delivery->DeliveryFee();
+					$total_order_delivered           += $order_total;
+					if ( $delivery->isDraft() ) {
+						$line [ OrderFields::line_select ] = "טיוטא";
+					}
+					//	}
+				} else {
+					// print "status = " . $order->getStatus() . "<br/>";
+					if ($order -> getStatus() == 'wc-processing')
+						$line[ OrderFields::delivery_note ] = gui_hyperlink( "צור",  "/fresh/delivery/create-delivery.php?order_id=" . $order_id, "_blank" );
+					$line[ OrderFields::percentage ]    = gui_hyperlink( "בטל", $_SERVER['PHP_SELF'] . "?operation=cancel_order&id=" . $order_id );
+					$total_delivery_fee                 = $order->getShipping();
+				}
+				$line[ OrderFields::city ]         = $order->getOrderInfo( '_shipping_city' );
+				$line[ OrderFields::payment_type ] = get_payment_method_name( $customer_id );
+				if ( current_user_can( "show_business_info" ) ) {
+					$line[ OrderFields::good_costs ] = $order->GetBuyTotal();
+					$line[ OrderFields::margin ]     = round( ( $line[ OrderFields::total_order ] - $line[ OrderFields::good_costs ] ), 0 );
+				}
+				$line[ OrderFields::delivery_fee ] = $total_delivery_fee; //
+
+				array_push( $rows, $line );
+				debug_time_log( "loop end" );
+			}
+
+			//   $data .= "<tr> " . trim($line) . "</tr>";
+
+			debug_time_log( "before sort" );
+
+			// sort( $lines );
+
+			debug_time_log( "2" );
+
+			if ( $count > 0 ) {
+				$sums = null;
+
+				if ( current_user_can( "show_business_info" ) ) {
+					$sums = array(
+						"סה\"כ",
+						'',
+						'',
+						'',
+						'',
+						'',
+						array( 0, 'sum_numbers' ),
+						array( 0, 'sum_numbers' ),
+						array( 0, 'sum_numbers' ),
+						array( 0, 'sum_numbers' ),
+						0
+					);
+				}
+				$data       = gui_header( 2, get_status_name($status) );
+				// gui_table( $rows, $id = null, $header = true, $footer = true, &$sum_fields = null, $style = null, $class = null, $links = null)
+				$data       .= gui_table( $rows, $status, true, true, $sums, null, null, $show_fields );
+				$all_tables .= $data;
+			}
 		}
 
-		//   $data .= "<tr> " . trim($line) . "</tr>";
+		debug_time_log( "end" );
 
-		debug_time_log( "before sort" );
-
-		// sort( $lines );
-
-		debug_time_log( "2" );
-
-		if ( $count > 0 ) {
-			$sums = null;
-
-			if ( current_user_can( "show_business_info" ) ) {
-				$sums = array(
-					"סה\"כ",
-					'',
-					'',
-					'',
-					'',
-					'',
-					array( 0, 'sum_numbers' ),
-					array( 0, 'sum_numbers' ),
-					array( 0, 'sum_numbers' ),
-					array( 0, 'sum_numbers' ),
-					0
-				);
-			}
-			$data       = gui_header( 2, get_status_name($status) );
-			// gui_table( $rows, $id = null, $header = true, $footer = true, &$sum_fields = null, $style = null, $class = null, $links = null)
-			$data       .= gui_table( $rows, $status, true, true, $sums, null, null, $show_fields );
-			$all_tables .= $data;
-		}
+		return $all_tables;
 	}
 
-	debug_time_log( "end" );
 
-	return $all_tables;
+	function get_status_name($status)
+	{
+		$status_names = wc_get_order_statuses();
+
+		if (isset($status_names[ $status ])) return $status_names[$status];
+		else return $status;
+	}
 }
 
 
-function get_status_name($status)
-{
-	$status_names = wc_get_order_statuses();
-
-	if (isset($status_names[ $status ])) return $status_names[$status];
-	else return $status;
-}

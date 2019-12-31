@@ -347,7 +347,7 @@ function invoices_table( $statuses, $week = null ) {
 			$delivery_id = get_delivery_id( $order_id );
 
 			if ( $delivery_id > 0 ) {
-				$delivery                           = new Delivery( $delivery_id );
+				$delivery                           = new Fresh_Delivery( $delivery_id );
 				$line[ OrderFields::delivery_note ] = gui_hyperlink( $delivery_id,
 					Core_Db_MultiSite::LocalSiteTools() . "/fresh/delivery/get-delivery.php?id=" . $delivery_id );
 				//if ( $delivery_id > 0 ) {

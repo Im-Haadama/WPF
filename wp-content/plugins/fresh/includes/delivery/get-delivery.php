@@ -12,7 +12,7 @@ $id     = $_GET["id"];
 $send   = isset( $_GET["send"] );
 $margin = isset( $_GET["margin"] );
 $print  = isset( $_GET["print"] );
-$d      = new Delivery( $id );
+$d      = new Fresh_Delivery( $id );
 
 $order_id = get_order_id( $id );
 $O        = new Order( $order_id );

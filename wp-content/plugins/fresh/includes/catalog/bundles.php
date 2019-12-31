@@ -252,7 +252,7 @@ class Bundle {
 	}
 
 	function Add() {
-		$p              = new Product( $this->prod_id );
+		$p              = new Fresh_Product( $this->prod_id );
 		$regular_price  = $this->quantity * $p->getPrice();
 
 		print "reg=$regular_price sal= " . $this->CalculatePrice() . "<br/>";
@@ -272,7 +272,7 @@ class Bundle {
 
 	function Disable() {
 		// Draft the bundle.
-		$p = new Product( $this->bundle_prod_id );
+		$p = new Fresh_Product( $this->bundle_prod_id );
 		$p->draft();
 
 		$sql = "UPDATE im_bundles SET is_active = FALSE WHERE id = " . $this->id;

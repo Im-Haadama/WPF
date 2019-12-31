@@ -30,4 +30,10 @@ class Fresh_Shortcodes {
 			print Fresh::instance()->handle_operation($operation);
 	}
 
+	public static function packing_control( $atts ) {
+		$operation = get_param("operation", false, "inventory");
+		if (get_user_id(true))
+			print Fresh_Packing::instance()->handle_operation($operation);
+	}
+
 }

@@ -78,7 +78,7 @@ switch ( $operation ) {
 		};
 		$prod_id    = $_GET["prod_id"];
 		$is_managed = $_GET["is_managed"] == "1";
-		$P          = new Product( $prod_id );
+		$P          = new Fresh_Product( $prod_id );
 //		print "fresh? " . $P->isFresh() . "<br/>";
 		$P->setStockManaged( $is_managed, $P->isFresh() ? "yes" : "no" );
 		break;

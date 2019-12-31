@@ -63,7 +63,7 @@ if ( $id > 0 ) {
 //	print gui_header( 3, "הזמנה מספר " . get_order_id( $id ) );
 	print $O->infoBox();
 
-	$d = new Delivery( $id );
+	$d = new Fresh_Delivery( $id );
 	$d->PrintDeliveries( ImDocumentType::delivery, ImDocumentOperation::edit, false, $show_inventory );
 
 	//$d = new delivery( $id );
@@ -85,11 +85,11 @@ if ( $id > 0 ) {
 			die ( 1 );
 		}
 		print " הזמנות " . comma_implode( $order_ids );
-		$d = delivery::CreateFromOrders( $order_ids );
+		$d = Fresh_Delivery::CreateFromOrders( $order_ids );
 		print $d->OrderInfoBox( $order_ids, false, "יצירת תעודת משלוח ל" );
 	} else {
 		print $O->infoBox( false, "יצירת תעודת משלוח ל" );
-		$d = delivery::CreateFromOrder( $order_id );
+		$d = Fresh_Delivery::CreateFromOrder( $order_id );
 
 	}
 
@@ -106,7 +106,7 @@ if ( ! $edit ) { // New
 	$show_save_draft = true;
 } else {
 	// Still draft
-	$d               = delivery::CreateFromOrder( $order_id );
+	$d               = Fresh_Delivery::CreateFromOrder( $order_id );
 	$show_save_draft = $d->isDraft();
 }
 

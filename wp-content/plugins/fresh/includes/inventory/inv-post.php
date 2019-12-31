@@ -71,7 +71,7 @@ function show_not_available() {
 
 	while ( $prod_id = $iter->next() ) {
 		$alter = alternatives($prod_id);
-		$p = new Product($prod_id);
+		$p = new Fresh_Product($prod_id);
 		// print "checking " . get_product_name($prod_id) . "<br/>";
 		if (! count($alter)) {
 			$row = array(get_product_name($prod_id), $p->getStock());
@@ -114,7 +114,7 @@ function add_waste( $prod_ids ) {
 	$order_id = create_order( $user, 0, $prod_ids, $quantities, "פחת" );
 	// print $order_id;
 
-	$del_id = delivery::CreateDeliveryFromOrder( $order_id, 2 );
+	$del_id = Fresh_Delivery::CreateDeliveryFromOrder( $order_id, 2 );
 	print "del id: " . $del_id;
 }
 

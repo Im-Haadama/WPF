@@ -16,12 +16,6 @@ defined( 'FRESH_INCLUDES' ) || exit;
 class Fresh_Shortcode_Management {
 
 	/**
-	 * Calculate shipping for the cart.
-	 *
-	 * @throws Exception When some data is invalid.
-	 */
-
-	/**
 	 * Output the management shortcode.
 	 *
 	 * @param array $atts Shortcode attributes.

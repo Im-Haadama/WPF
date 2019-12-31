@@ -189,7 +189,7 @@ class Catalog {
 	static function UpdateProduct( $prod_id, &$line, $details = false ) {
 		$debug_product = 0;
 
-		$P = new Product( $prod_id );
+		$P = new Fresh_Product( $prod_id );
 		if ( ! ( $prod_id > 0 ) ) {
 			print __METHOD__ . " bad prod_id: " . $prod_id . "<br/>";
 			die ( 1 );
@@ -319,7 +319,7 @@ class Catalog {
 			my_log( "id = " . $ids[ $pos ] );
 			$product_id = $ids[ $pos ];
 
-			$p = new Product( $product_id );
+			$p = new Fresh_Product( $product_id );
 			if (!$p->Draft()) { print "fail drafting $product_id"; return false; }
 		}
 		return true;
@@ -609,7 +609,7 @@ class Catalog {
 			$iter->iteratePublished($categ );
 
 			while ( $prod_id = $iter->next() ) {
-				$p = new Product( $prod_id );
+				$p = new Fresh_Product( $prod_id );
 				if ($p->getStock() < 0.5){
 					$p->setStock(0);
 				}

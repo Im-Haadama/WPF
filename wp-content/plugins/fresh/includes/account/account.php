@@ -210,7 +210,7 @@ function show_trans( $customer_id, $view = eTransview::default, $args )
 		if ( $checkbox ) {
 			do {
 				if ( $is_delivery ) {
-					$d = new Delivery( $doc_id );
+					$d = new Fresh_Delivery( $doc_id );
 					if ( $d->isDraft() ) {
 						$line .= gui_cell( "טיוטא" );
 						break;

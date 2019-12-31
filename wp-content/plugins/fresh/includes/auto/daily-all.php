@@ -88,7 +88,7 @@ function auto_supply() {
 		$total        = 0;
 		foreach ( $sold as $k => $product ) {
 			$prod_id  = $sold[ $k ][0];
-			$p = new Product($prod_id);
+			$p = new Fresh_Product($prod_id);
 			$quantity = $sold[ $k ][1];
 			$price    = $p->getBuyPrice(  $supplier_id );
 			if ( $quantity > 0 ) {

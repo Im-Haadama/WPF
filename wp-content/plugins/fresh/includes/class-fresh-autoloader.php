@@ -70,25 +70,14 @@ class Fresh_Autoloader {
 	 */
 	public function autoload( $class ) {
 		$class = strtolower( $class );
-
-		if ( 0 !== strpos( $class, 'fresh_' ) ) {
+		$file  = $this->get_file_name_from_class( $class );
+		if ( 0 === strpos( $class, 'fresh_' ) ) {
+			$path = $this->include_path;
+		} elseif ( 0 === strpos( $class, "core" ) ) {
+			$path = $this->include_path . 'core/';
+		} else {
 			return;
 		}
-
-		$file = $this->get_file_name_from_class( $class );
-		$path = '';
-		if ( 0 === strpos( $class, 'fresh_shortcode_' ) ) {
-			$path = $this->include_path . 'shortcodes/';
-		}
-//		elseif ( 0 === strpos( $class, 'wc_meta_box' ) ) {
-//			$path = $this->include_path . 'admin/meta-boxes/';
-//		} elseif ( 0 === strpos( $class, 'wc_admin' ) ) {
-//			$path = $this->include_path . 'admin/';
-//		} elseif ( 0 === strpos( $class, 'wc_payment_token_' ) ) {
-//			$path = $this->include_path . 'payment-tokens/';
-//		} elseif ( 0 === strpos( $class, 'wc_log_handler_' ) ) {
-//			$path = $this->include_path . 'log-handlers/';
-//		}
 
 //		print "looking for " . $this->include_path . $file . "<br/>";
 		if ( empty( $path ) || ! $this->load_file( $path . $file ) ) {

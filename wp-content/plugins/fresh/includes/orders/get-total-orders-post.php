@@ -203,7 +203,7 @@ function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero
 	$data_lines = array();
 
 	foreach ( $needed_products as $prod_id => $quantity_array ) {
-		$P = new Product( $prod_id );
+		$P = new Fresh_Product( $prod_id );
 		if ( ! $P ) {
 			continue;
 		}
@@ -231,7 +231,7 @@ function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero
 //		}
 		$quantity = isset( $quantity_array[0] ) ? $quantity_array[0] : 0;
 
-		$p     = new Product( $prod_id );
+		$p     = new Fresh_Product( $prod_id );
 		$q_inv = $p->getStock();
 
 		if ( $inventory_managed ) {

@@ -39,7 +39,7 @@ switch ( $operation ) {
 			$delivery_id = $_GET["delivery_id"];
 		}
 		$reason = get_param( "reason" );
-		print delivery::CreateDeliveryHeader( $order_id, $total, $vat, $lines, $edit, $fee, $delivery_id, $draft, $reason );
+		print Fresh_Delivery::CreateDeliveryHeader( $order_id, $total, $vat, $lines, $edit, $fee, $delivery_id, $draft, $reason );
 		// create_delivery_header( $order_id, $total, $vat, $lines, $edit, $fee );
 		break;
 
@@ -63,7 +63,7 @@ switch ( $operation ) {
 			$id   = sql_query_single_scalar( $sql );
 			// print "id: " . $id;
 		}
-		$p = new Product( $id );
+		$p = new Fresh_Product( $id );
 		operation_get_price( $id );
 		print ',';
 		print $p->GetVatPercent();
@@ -85,7 +85,7 @@ switch ( $operation ) {
 		if ( ! ( $id > 0 ) ) {
 			die ( "send delivery_id" );
 		}
-		$d = new delivery( $id );
+		$d = new Fresh_Delivery( $id );
 		$d->Delete();
 
 		business_delete_transaction( $id );
@@ -123,7 +123,7 @@ function clear_legacy() {
 function add_delivery_lines( $delivery_id, $lines, $edit ) {
 	print header_text();
 	if ( $edit ) {
-		$d = new delivery( $delivery_id );
+		$d = new Fresh_Delivery( $delivery_id );
 		$d->DeleteLines();
 	}
 
@@ -160,6 +160,6 @@ function add_delivery_lines( $delivery_id, $lines, $edit ) {
 //        my_log("product_id = " . $product_id . ", supplier_id=" . $supplier_id . ", product_name=" . $product_name);
 		print "<div style=\"direction: ltr;\"> id: " . $prod_id . ", name: " . $product_name . " delivery_id: " . $delivery_id . " quantity: " . $quantity . " quantity_ordred: " . $quantity_ordered .
 		      "units: " . $unit_ordered . " vat: " . $vat . " price: " . $price . " line_price: " . $line_price . "</div>";
-		delivery::AddDeliveryLine( $product_name, $delivery_id, $quantity, $quantity_ordered, $unit_ordered, $vat, $price, $line_price, $prod_id, $part_of_basket );
+		Fresh_Delivery::AddDeliveryLine( $product_name, $delivery_id, $quantity, $quantity_ordered, $unit_ordered, $vat, $price, $line_price, $prod_id, $part_of_basket );
 	}
 }

@@ -25,7 +25,7 @@ switch ( $operation ) {
 
 	case "calculate":
 		$product_id = $_GET["product_id"];
-		$p          = new Product( $product_id );
+		$p          = new Fresh_Product( $product_id );
 		$q          = $_GET["quantity"];
 		if ( ! $q > 0 ) {
 			$q = 0;

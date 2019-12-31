@@ -45,7 +45,7 @@ class Fresh_Inventory
 			$q  = $data[ $i + 1 ];
 
 			my_log( "set inv " . $data[ $i ] . " " . $data [ $i + 1 ] );
-			$p = new Product( $id );
+			$p = new Fresh_Product( $id );
 			if (! $p->setStock( $q ))
 				return false;
 		}

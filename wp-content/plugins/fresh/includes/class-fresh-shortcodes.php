@@ -21,6 +21,7 @@ class Fresh_Shortcodes {
 		$shortcodes = array(
 			'fresh_management'           => __CLASS__ . '::fresh_management',
 			'fresh_suppliers'            => __CLASS__ . '::suppliers', // [fresh_suppliers]
+			'fresh_control'            => __CLASS__ . '::packing_control', // [fresh_suppliers]
 			'fresh_inventory'    => __CLASS__ . '::inventory'
 //			'product_page'               => __CLASS__ . '::product_page',
 //			'product_category'           => __CLASS__ . '::product_category',
@@ -274,6 +275,16 @@ class Fresh_Shortcodes {
 		return self::shortcode_wrapper( array( 'Fresh_Inventory', 'handle' ), $atts );
 	}
 
+
+	public static function packing_control( $atts ) {
+		$atts = [];
+		foreach ($_GET as $param => $value)
+		{
+			$atts[$param] = $value;
+		}
+
+		return self::shortcode_wrapper( array( 'Fresh_Control', 'handle' ), $atts );
+	}
 
 //
 //	/**

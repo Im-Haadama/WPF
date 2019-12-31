@@ -620,20 +620,6 @@ function print_deliveries( $query, $selectable = false, $debug = false ) {
  *
  * @return string
  */
-function delivery_table_line( $ref, $fields, $edit = false ) {
-	//"onclick=\"close_orders()\""
-	$row_text = "";
-	if ( $edit ) {
-		$row_text = gui_cell( gui_checkbox( "chk_" . $ref, "", "", null ) );
-	}
-
-	foreach ( $fields as $field ) // display customer name
-	{
-		$row_text .= gui_cell( $field );
-	}
-
-	return $row_text;
-}
 
 /**
  * @param int $mission_id

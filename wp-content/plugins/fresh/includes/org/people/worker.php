@@ -24,8 +24,6 @@ if ($user_id == 1){
     ini_set( 'display_errors', 'on' );
 }
 
-// $user_id = 369; // get_user_id(true);
-
 $wp_user = get_user_by( 'id', $user_id );
 $roles = $wp_user->roles;
 //var_dump($roles);

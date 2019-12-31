@@ -9,7 +9,7 @@ require_once( TOOLS_DIR . '/wp/Product.php' );
 $prod_ids = sql_query_array_scalar("select id from wp_posts where post_type = 'product'");
 
 foreach ($prod_ids as $prod) {
-	$p = new Product( $prod );
+	$p = new Fresh_Product( $prod );
 
 	$post_thumbnail_id = $p->getImageId();
 

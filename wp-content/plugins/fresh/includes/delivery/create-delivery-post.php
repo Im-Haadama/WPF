@@ -29,7 +29,7 @@ switch ( $operation ) {
 		if ( $edit ) {
 			$delivery_id = $_GET["delivery_id"];
 		}
-		print delivery::CreateDeliveryHeader( $order_id, $total, $vat, $lines, $edit, $fee, $delivery_id, $draft );
+		print Fresh_Delivery::CreateDeliveryHeader( $order_id, $total, $vat, $lines, $edit, $fee, $delivery_id, $draft );
 		// create_delivery_header( $order_id, $total, $vat, $lines, $edit, $fee );
 		break;
 
@@ -48,7 +48,7 @@ switch ( $operation ) {
 function add_delivery_lines( $delivery_id, $lines, $edit ) {
 	print header_text();
 	if ( $edit ) {
-		$d = new delivery( $delivery_id );
+		$d = new Fresh_Delivery( $delivery_id );
 		$d->DeleteLines();
 	}
 
@@ -75,7 +75,7 @@ function add_delivery_lines( $delivery_id, $lines, $edit ) {
 //        my_log("product_id = " . $product_id . ", supplier_id=" . $supplier_id . ", product_name=" . $product_name);
 		print "<div style=\"direction: ltr;\"> id: " . $prod_id . ", name: " . $product_name . " delivery_id: " . $delivery_id . " quantity: " . $quantity . " quantity_ordred: " . $quantity_ordered .
 		      "units: " . $unit_ordered . " vat: " . $vat . " price: " . $price . " line_price: " . $line_price . "</div>";
-		delivery::AddDeliveryLine( $product_name, $delivery_id, $quantity, $quantity_ordered, $unit_ordered, $vat, $price, $line_price, $prod_id, $part_of_basket );
+		Fresh_Delivery::AddDeliveryLine( $product_name, $delivery_id, $quantity, $quantity_ordered, $unit_ordered, $vat, $price, $line_price, $prod_id, $part_of_basket );
 	}
 }
 

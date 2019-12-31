@@ -6,10 +6,10 @@
  * Date: 18/05/18
  * Time: 08:01
  */
-require_once( FRESH_INCLUDES . "/core/options.php" );
-require_once( FRESH_INCLUDES . "/supplies/Supply.php" );
+//require_once( FRESH_INCLUDES . "/core/options.php" );
+//require_once( FRESH_INCLUDES . "/supplies/Supply.php" );
 
-class Product {
+class Fresh_Product {
 	private $id;
 	private $p;
 
@@ -92,6 +92,10 @@ class Product {
 		           " and meta_key = '_stock'" );
 		return true;
 		// return $this->p->set_stock_quantity($q);
+	}
+
+	function is_basket( ) {
+		return sql_query_single_scalar('SELECT count(product_id) FROM im_baskets WHERE basket_id = ' . $this->id);
 	}
 
 	function getStock( $arrived = false ) {

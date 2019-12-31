@@ -11,16 +11,16 @@ if ( ! defined( 'FRESH_INCLUDES' ) ) {
 	define( 'FRESH_INCLUDES', dirname( dirname( __FILE__ ) ) );
 }
 
-require_once( FRESH_INCLUDES . '/catalog/pricing.php' );
-require_once( FRESH_INCLUDES . '/account/account.php' );
-include_once( FRESH_INCLUDES . '/orders/orders-common.php' );
-require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
-include_once( FRESH_INCLUDES . '/multi-site/imMulti-site.php');
-require_once( FRESH_INCLUDES . '/core/mail.php' );
-require_once( FRESH_INCLUDES . '/account/gui.php' );
-require_once( FRESH_INCLUDES . '/inventory/inventory.php' );
-require_once( FRESH_INCLUDES . "/org/business/business.php" );
-require_once( FRESH_INCLUDES . "/catalog/Basket.php" );
+//require_once( FRESH_INCLUDES . '/catalog/pricing.php' );
+//require_once( FRESH_INCLUDES . '/account/account.php' );
+//include_once( FRESH_INCLUDES . '/orders/orders-common.php' );
+//require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
+//include_once( FRESH_INCLUDES . '/multi-site/imMulti-site.php');
+//require_once( FRESH_INCLUDES . '/core/mail.php' );
+//require_once( FRESH_INCLUDES . '/account/gui.php' );
+//require_once( FRESH_INCLUDES . '/inventory/inventory.php' );
+//require_once( FRESH_INCLUDES . "/org/business/business.php" );
+//require_once( FRESH_INCLUDES . "/catalog/Basket.php" );
 $debug = false;
 
 class DeliveryFields {
@@ -50,48 +50,48 @@ class DeliveryFields {
 		line_type = 17,
 		max_fields = 18;
 }
-
-$delivery_fields_names = array(
-	"chk", // 0
-	"nam", // 1
-	"pid", // 2
-	"ter", // 3
-	"orq", // 4
-	"oru", // 5
-	"deq", // 6
-	"prc", // 7
-	"orl", // 8
-	"hvt", // 9
-	"lvt", // 10
-	"del", // 11
-	"req", // 12
-	"ret",  // 13
-	"buy", //14
-	"mar", // 15
-	"pac", // 16,
-	"typ" // 17
-);
-
-$header_fields = array(
-	"בחר",
-	"פריט",
-	"ID",
-	"קטגוריה",
-	"כמות הוזמן",
-	"יחידות הוזמנו",
-	"כמות סופק",
-	"מחיר",
-	"סה\"כ להזמנה",
-	"חייב מע\"מ",
-	"מע\"מ",
-	"סה\"כ",
-	"כמות לזיכוי",
-	"סה\"כ זיכוי",
-	"מחיר עלות",
-	"סה\"כ מרווח שורה",
-	"הערות"
-);
-
+//
+//$delivery_fields_names = array(
+//	"chk", // 0
+//	"nam", // 1
+//	"pid", // 2
+//	"ter", // 3
+//	"orq", // 4
+//	"oru", // 5
+//	"deq", // 6
+//	"prc", // 7
+//	"orl", // 8
+//	"hvt", // 9
+//	"lvt", // 10
+//	"del", // 11
+//	"req", // 12
+//	"ret",  // 13
+//	"buy", //14
+//	"mar", // 15
+//	"pac", // 16,
+//	"typ" // 17
+//);
+//
+//$header_fields = array(
+//	"בחר",
+//	"פריט",
+//	"ID",
+//	"קטגוריה",
+//	"כמות הוזמן",
+//	"יחידות הוזמנו",
+//	"כמות סופק",
+//	"מחיר",
+//	"סה\"כ להזמנה",
+//	"חייב מע\"מ",
+//	"מע\"מ",
+//	"סה\"כ",
+//	"כמות לזיכוי",
+//	"סה\"כ זיכוי",
+//	"מחיר עלות",
+//	"סה\"כ מרווח שורה",
+//	"הערות"
+//);
+//
 class ImDocumentType {
 	const order = 1, // Client
 		delivery = 2, // Client
@@ -103,31 +103,32 @@ class ImDocumentType {
 		invoice_refund = 8, // Supplier
 		count = 9;
 }
-
-$DocumentTypeNames = array(
-	"",
-	"הזמנה",
-	"משלוח",
-	"זיכוי",
-	"חשבונית מס קבלה",
-	"אספקה",
-	"תעודת משלוח",
-	"העברה",
-	"חשבונית מס זיכוי"
-);
-
-
+//
+//$DocumentTypeNames = array(
+//	"",
+//	"הזמנה",
+//	"משלוח",
+//	"זיכוי",
+//	"חשבונית מס קבלה",
+//	"אספקה",
+//	"תעודת משלוח",
+//	"העברה",
+//	"חשבונית מס זיכוי"
+//);
+//
+//
 class ImDocumentOperation {
 	const
 		collect = 0, // From order to delivery, before collection
 		create = 1, // From order to delivery. Expand basket
 		show = 2,     // Load from db
-		edit = 3;     // Load and edit
+		edit = 3,    // Load and edit
+		check = 4;  // Checkup
 	// packing = 4;
 
 }
 
-class delivery {
+class Fresh_Delivery {
 	private $ID = 0;
 	private $order_id = 0;
 	private $AdditionalOrders = null;
@@ -169,7 +170,7 @@ class delivery {
 			$prod['product_name'] = $product["name"];
 			switch ( $q ) {
 				case 1:
-					print "q=" . $product["quantity"];
+//					print "q=" . $product["quantity"];
 					$prod['quantity'] = $product["quantity"];
 					break;
 				case 2:
@@ -191,11 +192,11 @@ class delivery {
 			array_push( $prods, $prod );
 		}
 
-		$delivery_id = delivery::CreateDeliveryHeader( $order_id, $total, $vat, $lines, false, 0, 0, false );
+		$delivery_id = Fresh_Delivery::CreateDeliveryHeader( $order_id, $total, $vat, $lines, false, 0, 0, false );
 		// print " מספר " . $delivery_id;
 
 		foreach ( $prods as $prod ) {
-			delivery::AddDeliveryLine( $prod['product_name'], $delivery_id, $prod['quantity'], $prod['quantity_ordered'], 0,
+			Fresh_Delivery::AddDeliveryLine( $prod['product_name'], $delivery_id, $prod['quantity'], $prod['quantity_ordered'], 0,
 				$prod['vat'], $prod['price'], $prod['line_price'], $prod['prod_id'], 0 );
 		}
 
@@ -221,7 +222,7 @@ class delivery {
 		}
 
 		$prod_id          = $row[0];
-		$P                = new Product( $prod_id );
+		$P                = new Fresh_Product( $prod_id );
 		$prod_name        = ($row[8] ? "===>" : "" ) . $row[1];
 		$quantity_ordered = $row[2];
 		$unit_q           = $row[3];
@@ -230,7 +231,7 @@ class delivery {
 		$delivery_line      = $row[6];
 		$has_vat            = $row[7];
 
-		if ( ($quantity_delivered < ( 0.8 * $quantity_ordered ) or ( $unit_q > 0 and $quantity_delivered == 0 )) and ! is_basket($prod_id) ) {
+		if ( ($quantity_delivered < ( 0.8 * $quantity_ordered ) or ( $unit_q > 0 and $quantity_delivered == 0 )) and ! $P->is_basket($prod_id) ) {
 			$line_color = "yellow";
 		}
 	}
@@ -247,7 +248,7 @@ class delivery {
 		$this->order_total                  += $order_line_total;
 		$line[ DeliveryFields::order_line ] = $order_line_total;
 		$prod_id                            = get_order_itemmeta( $line_id, '_product_id' );
-		$P                                  = new Product( $prod_id );
+		$P                                  = new Fresh_Product( $prod_id );
 		// $line_price       = get_order_itemmeta( $line_id, '_line_total' );
 
 		// Todo: handle prices
@@ -452,7 +453,7 @@ class delivery {
 
 	private function getOrder() {
 		if ( ! $this->order ) {
-			$this->order = new Order( $this->OrderId() );
+			$this->order = new Fresh_Order( $this->OrderId() );
 		}
 
 		return $this->order;
@@ -461,7 +462,6 @@ class delivery {
 	function delivery_text( $document_type, $operation = ImDocumentOperation::show, $margin = false, $show_inventory = false ) {
 		global $delivery_fields_names;
 		global $header_fields;
-		global $debug;
 		if ( false ) {
 			print "Document type " . $document_type . "<br/>";
 			print "operation: " . $operation . "<br/>";
@@ -506,7 +506,7 @@ class delivery {
 				break;
 			case ImDocumentType::delivery:
 				$show_fields[ DeliveryFields::delivery_q ] = true;
-				if ( $operation != ImDocumentOperation::collect ) {
+				if ( $operation != ImDocumentOperation::collect) {
 					$show_fields[ DeliveryFields::has_vat ]       = true;
 					$show_fields[ DeliveryFields::line_vat ]      = true;
 					$show_fields[ DeliveryFields::delivery_line ] = true;
@@ -527,6 +527,7 @@ class delivery {
 				print "Document type " . $document_type . " not handled " . __FILE__ . " " . __LINE__ . "<br/>";
 				die( 1 );
 		}
+
 
 		$data = "";
 
@@ -572,6 +573,15 @@ class delivery {
 
 				$line = $this->delivery_line(  ImDocumentType::delivery, $row["id"], 0, $operation,
 					$margin, $line_style, $show_inventory);
+
+				if ($operation == ImDocumentOperation::check) { // Todo: Need to rewrite this function;
+					for($i = 0; $i < DeliveryFields::max_fields; $i ++)
+						$show_fields[$i] = false;
+
+					$show_fields[DeliveryFields::product_name] = true;
+					$show_fields[DeliveryFields::order_q] = true;
+					$show_fields[DeliveryFields::delivery_q] = true;
+				}
 
 				$data .= gui_row( $line, ++$this->line_number, $show_fields, $sums, $delivery_fields_names, $line_style );
 			}
@@ -647,6 +657,7 @@ class delivery {
 
 			$sums = null;
 			global $delivery_fields_names;
+
 			$data                  .= gui_row( $delivery_line, "del", $show_fields, $sums, $delivery_fields_names );
 			$this->order_vat_total += $del_vat;
 			// Spare line for volume discount
@@ -856,7 +867,7 @@ class delivery {
 			// " אספקות:" . ;
 		}
 
-		$line[DeliveryFields::line_type] = Delivery::line_type($prod_id);
+		$line[DeliveryFields::line_type] = Fresh_Delivery::line_type($prod_id);
 
 		// return gui_row( $line, $this->line_number, $show_fields, $sums, $delivery_fields_names, $style );
 		return $line;
@@ -865,7 +876,8 @@ class delivery {
 	private static function line_type($prod_id)
 	{
 		if ($prod_id == -1) return "dis";
-		if (is_basket($prod_id)) return "bsk";
+		$b = new Fresh_Basket($prod_id);
+		if ($b->is_basket($prod_id)) return "bsk";
 		return "prd";
 	}
 
@@ -885,9 +897,10 @@ class delivery {
 		while ( $row2 = mysqli_fetch_assoc( $result2 ) ) {
 			$prod_id  = $row2["product_id"];
 			// print $prod_id . "<br/>";
-			$P        = new Product( $prod_id );
+			$P        = new Fresh_Product( $prod_id );
 			$quantity = $row2["quantity"];
-			if ( is_basket( $prod_id ) ) {
+			$basket_or_prod = new Fresh_Basket($prod_id);
+			if ( $basket_or_prod->is_basket( $prod_id ) ) {
 				$this->expand_basket( $prod_id, $quantity_ordered * $quantity, $level + 1, $show_fields, $document_type, $line_id, $client_type, $edit, $data );
 			} else {
 				$line = array();
@@ -942,7 +955,7 @@ class delivery {
 
 	public static function CreateFromOrders( $order_ids ) {
 		$order_id = array_shift( $order_ids );
-		$instance = delivery::CreateFromOrder( $order_id );
+		$instance = Fresh_Delivery::CreateFromOrder( $order_id );
 
 		$instance->AdditionalOrders = $order_ids;
 
@@ -1102,57 +1115,53 @@ class delivery {
 
 		return sql_query_single_scalar( $sql);
 	}
-}
 
-function handle_delivery_operation($operation)
-{
-	$debug = 0;
-	if ($debug)	print "operation: " . $operation . "<br/>";
-	switch ($operation){
-		case "show_this_week":
-			$args = [];
-			// Links to prev/next week
-			$date_format = 'Y-m-j';
-			$date = get_param("week", false, date($date_format, strtotime("last sunday")));
-			print gui_hyperlink("last week", add_param_to_url(get_url(), "week", date($date_format, strtotime($date . " -1 week")))) . " ";
-			print gui_hyperlink("next week", add_param_to_url(get_url(), "week", date($date_format, strtotime($date . " +1 week"))));
+	function handle_delivery_operation($operation)
+	{
+		$debug = 0;
+		if ($debug)	print "operation: " . $operation . "<br/>";
+		switch ($operation){
+			case "show_this_week":
+				$args = [];
+				// Links to prev/next week
+				$date_format = 'Y-m-j';
+				$date = get_param("week", false, date($date_format, strtotime("last sunday")));
+				print gui_hyperlink("last week", add_param_to_url(get_url(), "week", date($date_format, strtotime($date . " -1 week")))) . " ";
+				print gui_hyperlink("next week", add_param_to_url(get_url(), "week", date($date_format, strtotime($date . " +1 week"))));
 
-			print "<br/>";
+				print "<br/>";
 
-			// Show selected week
-			$args["sql"] = "select ID, date, order_id, client_from_delivery(ID) from im_delivery where first_day_of_week(date) = " . quote_text($date);
-//			print $args["sql"];
-			$args["id_field"] = "ID";
+				// Show selected week
+				$args["sql"] = "select ID, date, order_id, client_from_delivery(ID) from im_delivery where first_day_of_week(date) = " . quote_text($date);
+				$args["id_field"] = "ID";
 
-			// $args["links"] = array("ID" => add_param_to_url(get_url(), "operation", "show_id", "row_id", "%s"));
-		    $args["links"] = array("ID" => "/fresh/delivery/get-delivery.php?id=%s");
-			$table =  GemTable("im_delivery", $args);
-			if (strlen($table) < 100)
-				print "No deliveries done this week<br/>";
-			else
-				print $table;
-			break;
+				// $args["links"] = array("ID" => add_param_to_url(get_url(), "operation", "show_id", "row_id", "%s"));
+				$args["links"] = array("ID" => "/fresh/delivery/get-delivery.php?id=%s");
+				$table =  GemTable("im_delivery", $args);
+				if (strlen($table) < 100)
+					print "No deliveries done this week<br/>";
+				else
+					print $table;
+				break;
 
-//		case "show_id":
-//			$d = new
-//
-//			break;
+			default:
+				print __FUNCTION__ . ": " . $operation . " not handled <br/>";
 
-		default:
-			print __FUNCTION__ . ": " . $operation . " not handled <br/>";
-
-			die(1);
+				die(1);
+		}
+		return;
 	}
-	return;
+
+	function send_deliveries($ids)
+	{
+		global $support_email;
+		if (!is_array($ids)) $ids = array($ids);
+		foreach ($ids as $delivery_id){
+			$delivery = new Fresh_Delivery( $delivery_id );
+			$delivery->send_mail( $support_email, false );
+		}
+	}
+
 }
 
-function send_deliveries($ids)
-{
-	global $support_email;
-	if (!is_array($ids)) $ids = array($ids);
-	foreach ($ids as $delivery_id){
-		$delivery = new delivery( $delivery_id );
-		$delivery->send_mail( $support_email, false );
-	}
-}
 

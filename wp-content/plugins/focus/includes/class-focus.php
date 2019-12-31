@@ -145,7 +145,6 @@ class Focus {
 		// add_action( 'switch_blog', array( $this, 'wpdb_table_fix' ), 0 );
 		// $orders = new Focus_Orders( $this->get_plugin_name(), $this->get_version() );
 
-//		print "AAAAA";
 		$views = Focus_Views::instance();
 		$salary = Focus_Salary::instance();
 

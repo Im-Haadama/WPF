@@ -349,7 +349,7 @@ $O = new Order( $order_id );
                             xmlhttp_send.open("GET", request);
                             xmlhttp_send.send();
 	                        <?php
-	                        $d = new delivery( $id );
+	                        $d = new Fresh_Delivery( $id );
 	                        if ( strstr( $d->getPrintDeliveryOption(), "P" ) ) {
 		                        //   print 'logging.style.display="false";';
 		                        print 'location.replace("get-delivery.php?id=" + delivery_id + "&print"); return;';

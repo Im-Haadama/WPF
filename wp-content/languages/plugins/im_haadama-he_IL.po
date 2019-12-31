@@ -550,6 +550,9 @@ msgstr "חלוקות השבוע"
 msgid "Store status"
 msgstr "תמונת מצב"
 
+msgid "Order"
+msgstr "הזמנה"
+
 msgid "Orders"
 msgstr "הזמנות"
 

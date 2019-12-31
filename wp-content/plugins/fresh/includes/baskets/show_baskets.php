@@ -196,7 +196,7 @@ function print_basket( $basket_id )
 		$prod_id  = $row[0];
 		$quantity = $row[1];
 
-		$p = new Product($prod_id);
+		$p = new Fresh_Product($prod_id);
 
 		if (! $p->isPublished()) {
 		    $line = gui_row(array($line_idx . ")" . $p->getName(), "not available"));

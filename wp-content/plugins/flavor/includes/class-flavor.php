@@ -265,7 +265,7 @@ class Flavor {
 
 		require_once FLAVOR_INCLUDES . 'core/fund.php';
 		require_once FLAVOR_INCLUDES . 'core/data/sql.php';
-		require_once FLAVOR_INCLUDES . 'core/data/data.php';
+		// require_once FLAVOR_INCLUDES . 'core/data/data.php';
 		require_once FLAVOR_INCLUDES . 'core/wp.php';
 
 		/**

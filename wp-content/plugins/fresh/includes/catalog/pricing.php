@@ -50,7 +50,7 @@ function get_price_by_type( $prod_id, $client_type = "", $quantity = 1, $variati
 	// string - type name
 	// number - type id
 	// print "CT=" . $client_type;
-	$p    = new Product( $prod_id );
+	$p    = new Fresh_Product( $prod_id );
 	$type = ( $p->isFresh() ) ? "rate" : "dry_rate";
 
 	$sql = "SELECT min($type) FROM im_client_types WHERE type = '" . $client_type . "' AND (q_min <= " . $quantity . " OR q_min = 0)";

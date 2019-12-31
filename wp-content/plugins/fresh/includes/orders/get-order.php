@@ -135,7 +135,7 @@ if ( $printed ) {
 	print "הזמנה נארזה ולא ניתנת לעריכה";
 }
 
-$d = delivery::CreateFromOrder( $order_id );
+$d = Fresh_Delivery::CreateFromOrder( $order_id );
 $d->PrintDeliveries( ImDocumentType::order, ImDocumentOperation::edit, $margin );
 
 if ( current_user_can( "edit_shop_orders" ) ) {

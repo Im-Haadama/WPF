@@ -50,7 +50,7 @@ switch ( $operation ) {
 	case "create_delivery":
 //		$order_id = $_GET["order_id"];
 
-		delivery::CreateDeliveryFromOrder( $order_id, 1 );
+		Fresh_Delivery::CreateDeliveryFromOrder( $order_id, 1 );
 		break;
 
 	case "close_order":

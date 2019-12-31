@@ -390,7 +390,7 @@ print "</table>";
         <td>
 			<?php
 
-			print delivery::GuiCreateNewNoOrder();
+			print Fresh_Delivery::GuiCreateNewNoOrder();
 			?>
         </td>
     </tr>
