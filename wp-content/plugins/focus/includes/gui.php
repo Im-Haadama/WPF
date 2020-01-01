@@ -1,5 +1,6 @@
 <?php
 
+if (! function_exists('gui_select_task')){
 function gui_select_task( $id, $value, $args ) {
 	$debug = 0; // (1 == get_user_id());
 	$events = GetArg($args, "events", null);
@@ -62,4 +63,5 @@ function gui_select_zones($id, $selected, $args)
 	$args["multiple"] = true;
 
 	return gui_select( $id, "zone_name", $wc_zones, $events, $selected, "id", "class", true );
+}
 }

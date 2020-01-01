@@ -18,7 +18,7 @@ if ( ! defined( "FRESH_INCLUDES" ) ) {
 }
 
 
-require_once( FRESH_INCLUDES . '/catalog/catalog.php' );
+//require_once( FRESH_INCLUDES . '/catalog/catalog.php' );
 require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 //require_once( FRESH_INCLUDES . '/core/gui/wp_inputs.php' );
 //require_once( FRESH_INCLUDES . '/multi-site/imMulti-site.php' );

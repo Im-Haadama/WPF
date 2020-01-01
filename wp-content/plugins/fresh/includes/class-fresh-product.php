@@ -152,7 +152,7 @@ class Fresh_Product {
 	}
 
 	function is_fresh( $term_id, $debug = false ) {
-		$fresh = explode( ",", info_get( "fresh" ) );
+		$fresh = explode( info_get( "fresh" ), "," );
 //		if ($debug) {
 //			print "<br/>Fresh: ";
 //			var_dump( $fresh );

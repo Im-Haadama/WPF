@@ -1115,6 +1115,36 @@ function get_versions()
 
 function version29()
 {
+	print gui_header(1, "preq");
+
+	sql_query("drop function preq_done");
+	sql_query("CREATE FUNCTION 	preq_done(_task_id int)
+	 RETURNS varchar(200)
+BEGIN 
+	declare _preq varchar(200) charset utf8;
+	declare _status int;
+	declare _comma_pos int;
+	declare _preq_task varchar(200) charset utf8;
+	select preq into _preq
+	from im_tasklist
+	where id = _task_id;
+	
+	while (length(_preq)) do
+		set _comma_pos = locate(',', _preq);
+		if (_comma_pos != 0) then
+			set _preq_task =  substring(_preq, 1, _comma_pos - 1);
+			set _preq = substr(_preq, _comma_pos+1); 
+		else
+			set _preq_task = _preq;
+			set _preq = null;
+		end if;
+		if (task_status(_preq_task) < 2) then 
+			return 0; 
+		end if;
+	end while;
+	return 1;	   
+END;");
+
 	print gui_header(1, "order_mission");
 	sql_query("create
     function order_mission(_order_id int) returns int(11)

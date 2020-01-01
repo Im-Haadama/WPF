@@ -10,11 +10,11 @@ if ( ! defined( 'FRESH_INCLUDES' ) ) {
 	define( 'FRESH_INCLUDES', dirname( dirname( __FILE__ ) ) );
 }
 require_once( FRESH_INCLUDES . '/pricelist/pricelist.php' );
-require_once( FRESH_INCLUDES . '/wp/terms.php' );
-require_once( FRESH_INCLUDES . '/catalog/pricing.php' );
-require_once( 'bundles.php' );
+//require_once( FRESH_INCLUDES . '/wp/terms.php' );
+//require_once( FRESH_INCLUDES . '/catalog/pricing.php' );
+//require_once( 'bundles.php' );
 
-class Catalog {
+class Fresh_Catalog {
 	static function CreateProducts( $category_name, $ids ) {
 		my_log( "Create_products. Category = " . $category_name );
 

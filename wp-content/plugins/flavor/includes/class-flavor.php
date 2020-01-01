@@ -432,5 +432,9 @@ class Flavor {
 
 		return $result;
 	}
+}
 
+function flavor_get_logger()
+{
+	return Core_Logger::instance();
 }

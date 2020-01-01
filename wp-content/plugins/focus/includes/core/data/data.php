@@ -125,26 +125,6 @@ function handle_data_operation($operation)
 }
 
 //($table_name, $field, $prefix, $args);
-function auto_list($table_name, $field, $prefix, $args = null)
-{
-	$data = "";
-
-	// print "field=$field<br/>";
-	if (!$args) $args = [];
-	$id_field = GetArg($args, "id_field", "id");
-	$include_id = GetArg($args, "include_id", false);
-	$datalist = GetArg($args, "datalist", null);
-
-	$args["sql"] = "select $id_field, $field from $table_name where $field like '%" . $prefix . "%'";
-	$query = GetArg($args, "query", null); 	if ($query) $args["sql"] .= " and " . $query;
-	// print $args["sql"] . "<br/>";
-	$args["field"] = $field;
-	$args["include_id"] = $include_id;
-
-	$data .= TableDatalist($datalist, $table_name, $args);
-
-	return $data;
-}
 
 }
 

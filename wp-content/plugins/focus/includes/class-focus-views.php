@@ -1607,23 +1607,26 @@ class Focus_Views {
  *
  * @return mixed|string
  */
-function gui_select_repeat_time( $id, $value, $args) {
+if (!function_exists('gui_select_repeat_time')) {
+	function gui_select_repeat_time( $id, $value, $args ) {
 //	print "v=" . $value . "<br/>";
 
-	$edit = GetArg($args, "edit", false);
-	$events = GetArg($args, "events", null);
-	$values = array( "w - weekly", "j - monthly", "z - annual", "c - continuous");
+		$edit   = GetArg( $args, "edit", false );
+		$events = GetArg( $args, "events", null );
+		$values = array( "w - weekly", "j - monthly", "z - annual", "c - continuous" );
 
-	$selected = 1;
-	for ( $i = 0; $i < count( $values ); $i ++ ) {
-		if ( substr( $values[ $i ], 0, 1 ) == substr($value, 0, 1) ) {
-			$selected = $i;
+		$selected = 1;
+		for ( $i = 0; $i < count( $values ); $i ++ ) {
+			if ( substr( $values[ $i ], 0, 1 ) == substr( $value, 0, 1 ) ) {
+				$selected = $i;
+			}
+		}
+
+		// return gui_select( $id, null, $values, $events, $selected );
+		if ( $edit ) {
+			return gui_simple_select( $id, $values, $events, $selected );
+		} else {
+			return $values[ $selected ];
 		}
 	}
-
-	// return gui_select( $id, null, $values, $events, $selected );
-	if ($edit)
-		return gui_simple_select( $id, $values, $events, $selected );
-	else
-		return $values[$selected];
 }
