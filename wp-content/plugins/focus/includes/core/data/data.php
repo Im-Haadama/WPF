@@ -146,18 +146,5 @@ function auto_list($table_name, $field, $prefix, $args = null)
 	return $data;
 }
 
-function set_args_value(&$args, $ignore_list = null)
-{
-	if (! $ignore_list) $ignore_list = array("operation", "table_name");
-	foreach ($_GET as $key => $data)
-	{
-		if (! in_array($key, $ignore_list))
-		{
-			if (! isset($args["fields"]))
-				$args["fields"] = array();
-		}
-		$args["values"][$key] = $data;
-	}
-}
 }
 

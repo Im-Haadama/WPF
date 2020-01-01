@@ -445,7 +445,7 @@ class Focus_Views {
 		$args["companies"] = sql_query_single_scalar("select company_id from im_working where user_id = " . get_user_id());
 		$args["hide_cols"] = array("creator" => 1);
 		$args["next_page"] = get_url();
-		set_args_value($args); // Get values from url.
+		Core_Data::set_args_value($args); // Get values from url.
 
 		$result = ""; $project_tasks = "";
 		if ($new_task_id) $result .= im_translate("Task added") . "<br/>";
