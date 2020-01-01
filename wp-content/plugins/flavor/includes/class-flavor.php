@@ -251,9 +251,10 @@ class Flavor {
 				return;
 
 			case "add_nav":
-				print "XXXX";
-				return;
-
+				$flavor = Flavor::instance();
+				$nav = $flavor->getNav();
+				$menu_item = array("title" => 'Flavor', 'url' => "/flavor");
+				return $nav->AddMain($menu_item);
 		}
 	}
 
@@ -269,6 +270,7 @@ class Flavor {
 
 		require_once FLAVOR_INCLUDES . 'core/fund.php';
 		require_once FLAVOR_INCLUDES . 'core/data/sql.php';
+		require_once FLAVOR_INCLUDES . 'core/gui/inputs.php';
 		// require_once FLAVOR_INCLUDES . 'core/data/data.php';
 		require_once FLAVOR_INCLUDES . 'core/wp.php';
 
@@ -363,6 +365,8 @@ class Flavor {
 		if (function_exists("get_user_id")) {
 			$this->nav = new Core_Nav("management." . get_user_id());
 			return $this->nav;
+		} else {
+			print "not connected";
 		}
 		return null;
 	}
@@ -383,12 +387,13 @@ class Flavor {
 	 */
 	static public function isManagementPage() {
 		global $post;
-
-		return ( strstr( $post->post_content, '[fresh' ) ||
-		         strstr( $post->post_content, '[focus' ) ||
-		         strstr( $post->post_content, '[salary' ) ||
-		         strstr( $post->post_content, '[flavor' ) ||
-		         strstr( $post->post_content, '[finance' ) );
+		if ($post)
+			return ( strstr( $post->post_content, '[fresh' ) ||
+			         strstr( $post->post_content, '[focus' ) ||
+			         strstr( $post->post_content, '[salary' ) ||
+			         strstr( $post->post_content, '[flavor' ) ||
+			         strstr( $post->post_content, '[finance' ) );
+		return false;
 
 	}
 

@@ -124,7 +124,7 @@ class Fresh {
 		// add_action( 'init', array( $this, 'wpdb_table_fix' ), 0 );
 		// add_action( 'init', array( $this, 'add_image_sizes' ) );
 		// add_action( 'switch_blog', array( $this, 'wpdb_table_fix' ), 0 );
-		$orders = new Fresh_Orders( $this->get_plugin_name(), $this->get_version() );
+		$orders = new Fresh_Order_Management( $this->get_plugin_name(), $this->get_version() );
 		$inventory = new Fresh_Inventory( $this->get_plugin_name(), $this->get_version() );
 
 		$this->loader->add_action( 'wp_enqueue_scripts', $orders, 'enqueue_scripts' );
@@ -204,8 +204,6 @@ class Fresh {
 
 	function handle_operation($operation)
 	{
-//		print __FILE__ . __FUNCTION__;
-
 		$module = strtok($operation, "_");
 		if ($module === "data")
 			return Core_Data::handle_operation($operation);
@@ -232,7 +230,6 @@ class Fresh {
 			case "fresh_nav_add":
 				$module = get_param("module", true);
 				return self::AddNav($module);
-
 		}
 	}
 
@@ -451,17 +448,22 @@ class Fresh {
 	public function SettingPage()
 	{
 		$result = "";
-		$module_list = array( "Suppliers" );
+		$module_list = array( "Suppliers" => array(),
+		                      "Orders" => array(array("Total ordered", "total_ordered")));
 
-		foreach ($module_list as $item){
+		foreach ($module_list as $item => $sub_menu_items){
 			$args = [];
 			$args ["text"] = __("Add") . " " . __($item);
 			$args["action"] = add_param_to_url(self::getPost() , array( "operation" => "fresh_nav_add", "module" => $item )) . ";location_reload";
-			$result .= GuiButtonOrHyperlink("btn_add_" . $item, null, $args);
+			$result .= GuiButtonOrHyperlink("btn_add_" . $item, null, $args) . "<br/>";
+			foreach ($sub_menu_items as $sub_menu_item) {
+				$operation = $sub_menu_item[1];
+				$sub_args = [];
+				$sub_args["text"] = __($sub_menu_item[0]);
+				$sub_args["action"] = add_param_to_url(self::getPost() , array( "operation" => "fresh_nav_add", "module" => $item, "sub_module" => $sub_menu_item[1] )) . ";location_reload";
+				$result .= "===>" . GuiButtonOrHyperlink( "btn_add_" . $operation, null, $sub_args ) . "<br/>";
+			}
 		}
-
-//			$result .= $module . "<br/>";
-
 		return $result;
 	}
 
@@ -470,18 +472,23 @@ class Fresh {
 		return "/wp-content/plugins/flavor/post.php";
 	}
 
-	public function AddNav($module)
+	public function AddNav($module, $sub_menu = null)
 	{
+		print "add nav $module<br/>";
 		$flavor = Flavor::instance();
 		$nav = $flavor->getNav();
 		$menu_item = array("title" =>$module, 'url' => "/$module");
-		return $nav->AddMain($menu_item);
+
+		print "about to add main<br/>";
+		$module_id = $nav->AddMain($menu_item);
+
+		if (! $module_id) return $module_id; // failed.
+
+		return $nav->AddSub($module_id, array('title' => $sub_menu, 'url' => "/$module&operation=" . $sub_menu));
 	}
 
 	public function enqueue_scripts() {
-		die (1);
 		$file = plugin_dir_url( __FILE__ ) . 'inventory.js';
 		wp_enqueue_script( $this->plugin_name, $file, array( 'jquery' ), $this->version, false );
-
 	}
 }

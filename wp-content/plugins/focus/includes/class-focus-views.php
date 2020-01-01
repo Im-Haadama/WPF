@@ -720,9 +720,7 @@ class Focus_Views {
 //				return;
 //			}
 				$url = Focus_Tasklist::task_url( $task_id );
-				if ( ! $url ) {
-					$url = get_url( 1 );
-				}
+				if ( ! $url ) return true;
 				$url_headers = @get_headers( $url );
 				if ( ! $url_headers || strstr( $url_headers[0], "404" ) ) {
 					print get_url( 1 ) . "?operation=bad_url&id=" . $task_id;

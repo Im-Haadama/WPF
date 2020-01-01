@@ -11,8 +11,8 @@ class Core_Nav {
 	/**
 	 * @var
 	 */
-	private $nav_menu_name;
-	private $nav_menu;
+	private $nav_menu_name; // String
+	private $nav_menu; // Object
 
 	/**
 	 * @return mixed
@@ -24,9 +24,15 @@ class Core_Nav {
 	/**
 	 * @var string
 	 */
-	public function __construct($nav_menu_name) {
+	public function __construct($nav_menu_name = null) {
 		$this->nav_menu_name = $nav_menu_name;
 		$this->nav_menu = wp_get_nav_menu_object( $this->nav_menu_name );
+		if (! $this->nav_menu) {
+			$menu_id = wp_create_nav_menu($this->nav_menu_name);
+			if (! $menu_id) die("can't create menu " . $this->nav_menu_name);
+
+			$this->nav_menu = wp_get_nav_menu_object( $this->nav_menu_name );
+		}
 	}
 
 	public function getMenuId()
@@ -50,11 +56,20 @@ class Core_Nav {
 	function AddMain($item)
 	{
 		$menu_id = self::getMenuId();
+		$title = $item['title'];
+		$url = $item['url'];
 
+		$exists = wp_get_nav_menu_items($menu_id);
+//		var_dump($exists);
+		foreach ($exists as $key => $n)
+			if ($title == $exists[$key]->post_title){
+//				print "found $title at $key<br/>";
+				return $exists[$key]->ID;
+			}
 		$new_item = wp_update_nav_menu_item( $menu_id, 0, array(
-			'menu-item-title'   => __( $item['title'] ),
+			'menu-item-title'   => __( $title ),
 			'menu-item-classes' => 'home',
-			'menu-item-url'     => $item['url'],
+			'menu-item-url'     => $url,
 			'menu-item-status'  => 'publish'
 		) );
 //		if (isset($items['childs'])) foreach ($item['childs'] as $menu_child)
@@ -66,6 +81,19 @@ class Core_Nav {
 //				'menu-item-parent-id' => $new_item
 //			) );
 		return $new_item;
+	}
+
+	function AddSub($parent_id, $item)
+	{
+		$menu_id = self::getMenuId();
+
+		return wp_update_nav_menu_item( $menu_id, 0, array(
+			'menu-item-title'   => __( $item['title'] ),
+			'menu-item-classes' => 'home',
+			'menu-item-url'     => $item['url'],
+			'menu-item-status'  => 'publish',
+			'menu-item-parent-id' => $parent_id
+		) );
 	}
 
 	/**

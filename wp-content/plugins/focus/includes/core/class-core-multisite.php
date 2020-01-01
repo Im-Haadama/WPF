@@ -6,12 +6,12 @@
  * Date: 07/01/19
  * Time: 11:42
  */
-//abstract class FieldIdx {
-//	const site_id_idx = 0;
-//	const site_name_idx = 1;
-//	const site_tools_idx = 2;
-//	const api_key = 3;
-//}
+abstract class FieldIdx {
+	const site_id_idx = 0;
+	const site_name_idx = 1;
+	const site_tools_idx = 2;
+	const api_key = 3;
+}
 
 //require_once( "data/im_simple_html_dom.php" );
 

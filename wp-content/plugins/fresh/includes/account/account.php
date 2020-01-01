@@ -271,31 +271,6 @@ function show_trans( $customer_id, $view = eTransview::default, $args )
 }
 
 // [displa-posts][su_posts posts_per_page="3"][su_posts posts_per_page="3" tax_term="21" order="desc"]
-function get_payment_method_name( $client_id ) {
-	if ( $client_id > 0 ) {
-		$p = get_payment_method( $client_id );
-		if ( $p > 0 ) {
-			return sql_query_single_scalar( "SELECT name FROM im_payments WHERE `id` = " . $p );
-		}
-		print "לא נבחר אמצעי ברירת מחדל<br/>";
-	} else {
-		return "לא נבחר לקוח";
-	}
-}
-
-function get_payment_method( $client_id ) {
-	$m = get_user_meta( $client_id, "payment_method", true );
-	if ( $m ) {
-		return $m;
-	}
-
-	$p = sql_query_single_scalar( "SELECT id FROM im_payments WHERE `default` = 1" );
-	if ( $p ) {
-		return $p;
-	} else {
-		return "לא נבחר אמצעי ברירת מחדל";
-	}
-}
 
 function payment_get_accountants($payment_id)
 {

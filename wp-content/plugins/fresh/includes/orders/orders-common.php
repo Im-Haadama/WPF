@@ -375,27 +375,6 @@ function set_order_itemmeta( $order_item_id, $meta_key, $meta_value ) {
 	sql_query( $sql );
 }
 
-class OrderFields {
-	const
-		/// User interface
-		line_select = 0,
-		type = 1,
-		mission = 2,
-		order_id = 3,
-		customer = 4,
-		recipient = 5,
-		total_order = 6,
-		good_costs = 7,
-		margin = 8,
-		delivery_fee = 9,
-		city = 10,
-		payment_type = 11,
-		delivery_note = 12,
-		percentage = 13,
-		field_count = 14;
-}
-;
-
 //function order_good_costs( $order_id ) {
 //	$order = new WC_Order( $order_id );
 //	$total = 0;

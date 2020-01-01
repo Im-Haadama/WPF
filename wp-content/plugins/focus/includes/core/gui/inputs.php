@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Created by PhpStorm.
  * User: agla
@@ -1311,31 +1312,6 @@ if (! function_exists('gui_br')) {
 		return $value;
 	}
 
-
-//function GuiMultiplySelect($id, $selected, $args)
-//{
-//	$values = GetArg($args, "values", null);
-//
-//	if (! $values) return null;
-//
-//
-//
-//}
-//if ($acc_fields and isset($acc_fields[$idx])){
-//	// print "summing $idx<br/>";
-//	if ( isset( $acc_fields[ $idx ] ) and is_array( $sum = $acc_fields[ $idx ] ) ) {
-//		// var_dump($sum[1]);
-//		if ( function_exists( $sum[1] ) ) {
-//			print "processing: " . $cell . strip_tags($cell) ."X<br/>";
-//
-//			$sum[1]( $acc_fields[ $idx ][0], strip_tags($cell) );
-//			//	print "summed: $cell <br/>";
-//		} else {
-//			print $sum[1] . " is not a function<br/>";
-//		}
-//	}
-//}
-
 	function gui_select_days( $id, $selected, $args ) {
 		$edit = GetArg( $args, "edit", false );
 
@@ -1384,32 +1360,30 @@ if (! function_exists('gui_br')) {
 	function gui_type() {
 		return "html";
 	}
-
-	function GuiTabs($tabs)
-	{
-		$result = '<div class="tab">';
-
-		$args = [];
-		$args["class"] = "tablinks";
-		$contents = "";
-		$div_args = array("class" => "tabcontent");
-
-		foreach ($tabs as $tab)
-		{
-			$name = $tab[0];
-			$display_name = $tab[1];
-			$contents .= GuiDiv($name, gui_header(2, $name) . $tab[2], $div_args);
-
-			$args["events"] = "onclick=\"selectTab(event, '$name', 'tabcontent')\"";
-			$result .= GuiButton("btn_tab_$name", $display_name, $args);
-		}
-		$result .= "</div>";
-
-		$result .= $contents;
-		return $result;
-	}
-
 }
 
+function GuiTabs($tabs)
+{
+	$result = '<div class="tab">';
+
+	$args = [];
+	$args["class"] = "tablinks";
+	$contents = "";
+	$div_args = array("class" => "tabcontent");
+
+	foreach ($tabs as $tab)
+	{
+		$name = $tab[0];
+		$display_name = $tab[1];
+		$contents .= GuiDiv($name, gui_header(2, $name) . $tab[2], $div_args);
+
+		$args["events"] = "onclick=\"selectTab(event, '$name', 'tabcontent')\"";
+		$result .= GuiButton("btn_tab_$name", $display_name, $args);
+	}
+	$result .= "</div>";
+
+	$result .= $contents;
+	return $result;
+}
 
 //<button                    class="tablinks" onclick="openCity(event, 'Paris')">Paris</button>
