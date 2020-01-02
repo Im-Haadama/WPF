@@ -62,7 +62,7 @@ switch ($operation)
 }
 
 function show_not_available() {
-	$iter = new ProductIterator();
+	$iter = new Fresh_ProductIterator();
 
 	$iter->iteratePublished();
 

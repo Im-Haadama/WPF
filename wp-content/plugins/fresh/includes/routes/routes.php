@@ -128,9 +128,9 @@ function handle_routes_show($operation, $debug = false)
             $preq = get_param("preq", true);
             $key = "mission_preq_" . $mission . "." . $point;
             if ($preq == "select")
-                info_update($key, null);
+                InfoUpdate($key, null);
             else
-                info_update($key, $preq);
+                InfoUpdate($key, $preq);
             print "done";
             break;
 

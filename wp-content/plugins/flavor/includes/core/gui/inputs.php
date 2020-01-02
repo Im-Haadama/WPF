@@ -1,8 +1,29 @@
 <?php
 
+/**
+ * Created by PhpStorm.
+ * User: agla
+ * Date: 15/11/16
+ * Time: 00:26
+ */
+/*
+ * GUI - HTML
+ *-=-=-=-=-=-
+ * GuiRowContent - header+row data -> gui (html)
+ * GuiTableContent - gui (html) with id. Adds actions
+ *
+ *
+ */
 
-class Core_Html {
-	function Br() {
+// GUI elements
+// cast: function gui_<html code>($params) { return $text; }
+
+/// To have textual output first include text_inputs.php
+if (function_exists('gui_br')){
+	// hook for debug
+	} else {
+
+	function gui_br() {
 		return '<br/>';
 	}
 
@@ -110,17 +131,6 @@ class Core_Html {
 		$data .= ">";
 
 		return $data;
-	}
-
-	function GuiButton($id, $text, $args)
-	{
-		$result = "<button id=\"$id\"";
-		if ($class = GetArg($args, "class", null)) $result .= " class=\"$class\"";
-		if ($events = GetArg($args, "events", null)) $result .= " $events ";
-		$result .= ">$text";
-		$result .= "</button>";
-
-		return $result;
 	}
 
 	function GuiButtonOrHyperlink( $id, $value = null, $args = null ) // Value is irrelevant but here to keep the structure: id, value, args.
@@ -794,7 +804,7 @@ class Core_Html {
 				}
 				$rows[ $key ] = $input_row;
 			} else {
-				$rows[ $key ] = PrepareRow( $input_row, $args, $key );
+				$rows[ $key ] = Core_Data::PrepareRow( $input_row, $args, $key );
 			}
 		}
 
@@ -1336,7 +1346,7 @@ class Core_Html {
 		return $result;
 	}
 
-	function gui_type() {
+	function GuiType() {
 		return "html";
 	}
 }
@@ -1364,3 +1374,4 @@ function GuiTabs($tabs)
 	$result .= $contents;
 	return $result;
 }
+//<button                    class="tablinks" onclick="openCity(event, 'Paris')">Paris</button>

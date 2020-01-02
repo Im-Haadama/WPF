@@ -632,7 +632,7 @@ function show_category_by_id( $term_id, $sale = false, $text = false, $customer_
 		$result .= gui_table_args( $table, "table_" . $term_id, $args );
 	}
 
-	if ( $inventory ) $result .= gui_button( "btn_save_inv" . $term_id, "save_inv(" . $term_id . ")", "שמור מלאי" );
+	if ( $inventory ) $result .= gui_button( "btn_save_inv" . $term_id, "save_inv(term_" . $term_id . ")", "שמור מלאי" );
 	if ($not_available) $result .= gui_button( "btn_draft" . $term_id, "draft_products(" . quote_text($args["checkbox_class"]). ")", "draft products" );
 
 	return $result;

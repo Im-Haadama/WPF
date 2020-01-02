@@ -24,7 +24,7 @@ function get_missing_pictures($categ)
 {
 
 	$result = array();
-	$iter = new ProductIterator();
+	$iter = new Fresh_ProductIterator();
 	$iter->iterateCategory( $categ );
 
 	while ( $prod_id = $iter->next() )

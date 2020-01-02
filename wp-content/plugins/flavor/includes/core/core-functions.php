@@ -64,13 +64,14 @@ if (! function_exists('get_user_id')) {
 	 *
 	 * @return mixed
 	 */
-	function &GetArg( $args, $key, $default ) {
-		if ( ! $args or ! isset( $args[ $key ] ) ) {
-			return $default;
-		}
+	if (! function_exists('GetArg')){
+		function &GetArg( $args, $key, $default ) {
+			if ( ! $args or ! isset( $args[ $key ] ) ) {
+				return $default;
+			}
 
-		return $args[ $key ];
-	}
+			return $args[ $key ];
+		}
 
 	/**
 	 * @param $key
@@ -118,34 +119,26 @@ if (! function_exists('get_user_id')) {
 
 		if ( $text === "DisableTranslate" ) {
 			$translate_enabled = false;
-
 			return;
 		}
 
-		if ( ! $translate_enabled ) {
-			return $text;
-		}
+		if ( ! $translate_enabled ) return $text;
 
-		$textdomain = GetArg( $arg, "textdomain", 'im_haadama' );
+		$textdomain = GetArg( $arg, "textdomain", 'wpf' );
 
 		if ( is_array( $text ) ) {
 			$result = "";
-			foreach ( $text as $text_part ) {
-				$result .= im_translate( $text_part, $arg );
-			}
+			foreach ( $text as $text_part )  $result .= im_translate( $text_part, $arg );
 
 			return $result;
 		}
 
-//	print "translating $text to " . get_locale() . "...";
 		if ( function_exists( 'translate' ) ) {
 			$t = translate( $text, $textdomain );
 		} else {
 			print "no translate function";
 			$t = $text;
 		}
-//	print $t . "<br/>";
-		// print $t . " " . strlen($t);
 		if ( strlen( $t ) ) {
 			if ( strstr( $t, "%s" ) ) {
 				return $arg ? sprintf( $t, $arg ) : $t;
@@ -172,7 +165,7 @@ if (! function_exists('get_user_id')) {
 
 		return "";
 	}
-	function info_get( $key, $create = false, $default = null ) {
+	function InfoGet( $key, $create = false, $default = null ) {
 		$sql = "SELECT info_data FROM im_info WHERE info_key = '" . $key . "'";
 
 //      print $sql ."<br/>";
@@ -181,7 +174,7 @@ if (! function_exists('get_user_id')) {
 
 		if ( is_null( $result ) ) {
 			if ( $create ) {
-				info_update( $key, $default );
+				InfoUpdate( $key, $default );
 
 				return $default;
 			}
@@ -190,7 +183,7 @@ if (! function_exists('get_user_id')) {
 		return $result;
 	}
 
-	function info_update( $key, $data ) {
+	function InfoUpdate( $key, $data ) {
 		$sql = "SELECT info_data FROM im_info WHERE info_key = '" . $key . "'";
 //      print "s1=" . $sql . "<br/>";
 
@@ -205,6 +198,7 @@ if (! function_exists('get_user_id')) {
 		$sql = "UPDATE im_info SET info_data = '" . $data . "' WHERE info_key = '" . $key . "'";
 //              print $sql;
 		sql_query( $sql );
+	}
 	}
 
 }

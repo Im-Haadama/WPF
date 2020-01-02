@@ -1238,7 +1238,7 @@ function handle_supplies_operation($operation)
 			$net_amount    = get_param( "net_amount" );
 			$is_invoice    = get_param( "is_invoice" );
 //			print "ii=" . $is_invoice . "<br/>";
-			$doc_type      = $is_invoice ? ImDocumentType::invoice : ImDocumentType::supply;
+			$doc_type      = $is_invoice ? FreshDocumentType::invoice : FreshDocumentType::supply;
 //			print "dt=" . $doc_type;
 //			die(1);
 			$document_date = get_param( "document_date" );

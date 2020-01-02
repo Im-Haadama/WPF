@@ -158,7 +158,11 @@ class Capabilites {
 		$this->define( 'CAPABILITES_PLUGIN_BASENAME', plugin_basename( CAPABILITES_PLUGIN_FILE ) );
 		$this->define( 'CAPABILITES_VERSION', $this->version );
 		$this->define( 'CAPABILITES_INCLUDES', CAPABILITES_WC_ABSPATH . '/includes/' );
-//		$this->define( 'CAPABILITES_ROUNDING_PRECISION', 6 );
+
+		$this->define( 'FLAVOR_INCLUDES_URL', plugins_url() . '/flavor/includes/' ); // For js
+		$this->define( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path(__FILE__) . '../../flavor/includes/' );  // for php
+
+		//		$this->define( 'CAPABILITES_ROUNDING_PRECISION', 6 );
 //		$this->define( 'CAPABILITES_DISCOUNT_ROUNDING_MODE', 2 );
 //		$this->define( 'CAPABILITES_TAX_ROUNDING_MODE', 'yes' === get_option( 'woocommerce_prices_include_tax', 'no' ) ? 2 : 1 );
 		$this->define( 'CAPABILITES_DELIMITER', '|' );
@@ -213,12 +217,11 @@ class Capabilites {
 		/**
 		 * Class autoloader.
 		 */
-		require_once CAPABILITES_INCLUDES . 'core/class-core-autoloader.php';
-		require_once CAPABILITES_INCLUDES . 'core/fund.php';
-		require_once CAPABILITES_INCLUDES . 'core/data/sql.php';
-//		require_once CAPABILITES_INCLUDES . 'core/data/data.php';
-		require_once CAPABILITES_INCLUDES . 'core/wp.php';
-		require_once CAPABILITES_INCLUDES . 'core/gui/inputs.php';
+		require_once FLAVOR_INCLUDES_ABSPATH . 'core/class-core-autoloader.php';
+		require_once FLAVOR_INCLUDES_ABSPATH . 'core/fund.php';
+		require_once FLAVOR_INCLUDES_ABSPATH . 'core/data/sql.php';
+		require_once FLAVOR_INCLUDES_ABSPATH . 'core/wp.php';
+		require_once FLAVOR_INCLUDES_ABSPATH . 'core/gui/inputs.php';
 
 		/**
 		 * Interfaces.
@@ -297,7 +300,7 @@ class Capabilites {
 //		include_once WC_CAPABILITES_INCLUDES . 'includes/class-wc-regenerate-images.php';
 //		include_once WC_CAPABILITES_INCLUDES . 'includes/class-wc-privacy.php';
 //		include_once WC_CAPABILITES_INCLUDES . 'includes/class-wc-structured-data.php';
-		include_once CAPABILITES_INCLUDES . 'core/class-core-shortcodes.php';
+		include_once FLAVOR_INCLUDES_ABSPATH . 'core/class-core-shortcodes.php';
 //		include_once WC_CAPABILITES_INCLUDES . 'includes/class-wc-logger.php';
 //		include_once WC_CAPABILITES_INCLUDES . 'includes/queue/class-wc-action-queue.php';
 //		include_once WC_CAPABILITES_INCLUDES . 'includes/queue/class-wc-queue.php';

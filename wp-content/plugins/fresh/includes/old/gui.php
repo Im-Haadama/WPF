@@ -8,14 +8,23 @@
 
 require_once(FRESH_INCLUDES . '/fresh/delivery/delivery.php' );
 
-
 // $key, $data, $args
 function gui_select_document_type( $id = null, $selected = null, $args = null ) {
-	global $DocumentTypeNames;
+$DocumentTypeNames = array(
+	"",
+	"הזמנה",
+	"משלוח",
+	"זיכוי",
+	"חשבונית מס קבלה",
+	"אספקה",
+	"תעודת משלוח",
+	"העברה",
+	"חשבונית מס זיכוי"
+);
 
 	$events = GetArg($args, "events", null);
 	$types = array();
-	for ( $i = 1; $i < ImDocumentType::count; $i ++ ) {
+	for ( $i = 1; $i < FreshDocumentType::count; $i ++ ) {
 		$value["id"]   = $i;
 		$value["name"] = $DocumentTypeNames[ $i ];
 		array_push( $types, $value );

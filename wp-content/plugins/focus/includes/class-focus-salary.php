@@ -252,7 +252,7 @@ class Focus_Salary {
 		$args = [];
 		$args["post_file"] = self::instance()->post_file;
 		$args["selectors"] = array("project_id" => "gui_select_project", "company_id" => "gui_select_company");
-		$result .= GemElement("im_working", $row_id, $args);
+		$result .= Core_Gem::GemElement("im_working", $row_id, $args);
 
 		$result .= self::show_report_worker($user_id, $y, $m);
 		$result .= self::hours_entry();

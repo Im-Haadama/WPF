@@ -16,7 +16,7 @@
 
 if (! function_exists("my_log")) {
 	function my_log( $msg, $title = '', $file = null ) {
-		$error_file = ABSPATH . '/logs/' . ( $file ? $file : 'php_error.log' );
+		$error_file = ABSPATH . 'logs/' . ( $file ? $file : 'php_error.log' );
 //    print $error_file;
 		$date = date( 'd.m.Y h:i:s' );
 		$msg  = print_r( $msg, true );
@@ -213,10 +213,12 @@ if (! function_exists("my_log")) {
 	/**
 	 * @param $num_or_text
 	 *
+	 * @param bool $sql_escape
+	 *
 	 * @return string
 	 */
 
-	function quote_text( $num_or_text ) {
+	function quote_text( $num_or_text, $sql_escape = false ) {
 		if ( is_null( $num_or_text ) ) {
 			return '"NULL"';
 		}
@@ -225,6 +227,8 @@ if (! function_exists("my_log")) {
 			return $num_or_text;
 		}
 
+//		print escape_string($num_or_text) . "<br/>";
+		if ($sql_escape) return "'" . escape_string($num_or_text) . "'";
 		return "'" . $num_or_text . "'";
 	}
 

@@ -133,12 +133,12 @@ function print_mission( $mission_id_filter = null ) {
 		if ( array_key_exists( $user_id, $grouped_orders ) ) {
 			print $O->infoBox( true, null, $grouped_orders[ $user_id ][0] );
 			$d = Fresh_Delivery::CreateFromOrder( $grouped_orders[ $user_id ] );
-			$d->PrintDeliveries( ImDocumentType::delivery, ImDocumentOperation::collect );
+			$d->PrintDeliveries( FreshDocumentType::delivery, Fresh_DocumentOperation::collect );
 
 		} else {
 			print $O->infoBox( false );
 			$D = Fresh_Delivery::CreateFromOrder( $id );
-			$D->PrintDeliveries( ImDocumentType::delivery, ImDocumentOperation::collect, 0, false );
+			$D->PrintDeliveries( FreshDocumentType::delivery, Fresh_DocumentOperation::collect, 0, false );
 		}
 	}
 }

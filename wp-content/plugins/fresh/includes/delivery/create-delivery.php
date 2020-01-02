@@ -64,7 +64,7 @@ if ( $id > 0 ) {
 	print $O->infoBox();
 
 	$d = new Fresh_Delivery( $id );
-	$d->PrintDeliveries( ImDocumentType::delivery, ImDocumentOperation::edit, false, $show_inventory );
+	$d->PrintDeliveries( FreshDocumentType::delivery, Fresh_DocumentOperation::edit, false, $show_inventory );
 
 	//$d = new delivery( $id );
 	print "</form>";
@@ -93,7 +93,7 @@ if ( $id > 0 ) {
 
 	}
 
-	$d->PrintDeliveries( ImDocumentType::delivery, ImDocumentOperation::create, false, $show_inventory );
+	$d->PrintDeliveries( FreshDocumentType::delivery, Fresh_DocumentOperation::create, false, $show_inventory );
 	print "</form>";
 }
 

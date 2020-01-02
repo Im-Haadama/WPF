@@ -17,13 +17,13 @@ function data_save_entity(post_operation, table_name, id)
     execute_url(operation, action_back);
 }
 
-function inactive_entity(post_operation, table_name, id)
+function active_entity(active, post_operation, table_name, id)
 {
     if (!Number.isInteger(id)) {
         alert ("invalid id: " . id);
         return;
     }
-    let operation = post_operation + "?table_name=" + table_name + "&operation=data_inactive&id=" + id;
+    let operation = post_operation + "?table_name=" + table_name + "&operation=data_active&id=" + id + "&active=" + active;
     
     //operation = operation + operation_arguments(table_name, id);
     // alert(operation);

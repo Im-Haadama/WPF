@@ -1,5 +1,9 @@
 <?php
 
+print "don't use";
+print sql_trace();
+die(1);
+
 // Id, class, $args
 /**
  * @param $table_name
@@ -57,12 +61,18 @@ function GemElement($table_name, $row_id, $args)
 	if ($title)
 		$result .= gui_header(1, $title, true, true) . " " . gui_label("id", $row_id);
 
-	if (! ($row = GuiRowContent($table_name, $row_id, $args))) return null;
+	$sql = "select is_active from $table_name where id = $row_id";
+	$active = sql_query_single_scalar($sql);
+//	print $sql;
+	if (! $active) $result .= " not active ";
+
+	if (! ($row = Core_Data::GuiRowContent($table_name, $row_id, $args))) return null;
 	$result .= $row;
 
 	if (GetArg($args, "edit", false) and $post) {
 		$result .= gui_button( "btn_save", "data_save_entity('" . $post . "', '$table_name', " . $row_id . ')', "save" );
-		$result .= gui_button( "btn_inactive", "inactive_entity('" . $post . "', '$table_name', " . $row_id . ')', "inactive" );
+		$result .= gui_button( "btn_active", "active_entity(" . ! $active ."," . $post . "', '$table_name', " . $row_id . ')', $active ? "inactive" : "activate" );
+
 	}
 	return $result;
 }
@@ -162,7 +172,7 @@ function GemTable($table_name, &$args)
 	// $table = GuiTableContent($table_name, $sql, $args);
 
 	// print "c=" . $args["count"] . "<br/>";
-	$rows_data = TableData( $sql, $args);
+	$rows_data = Core_Data::TableData( $sql, $args);
 
 	return GemArray($rows_data, $args, $table_name);
 }

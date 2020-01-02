@@ -104,9 +104,9 @@ function backup_database() {
 
 	if ( substr( $result, 0, 31 ) == $success ) {
 		print "success<br/>";
-		info_update( "backup_date", date( 'z' ) );
+		InfoUpdate( "backup_date", date( 'z' ) );
 //		print "s=" . $success ."<br/>";
-		info_update( "backup_result", $success );
+		InfoUpdate( "backup_result", $success );
 	} else {
 		print $result;
 	}

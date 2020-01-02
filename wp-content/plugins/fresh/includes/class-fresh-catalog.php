@@ -605,7 +605,7 @@ class Fresh_Catalog {
 
 		foreach ($categs as $categ){
 //			print gui_header(1, get_term_name($categ)) . "<br/>";
-			$iter = new ProductIterator();
+			$iter = new Fresh_ProductIterator();
 			$iter->iteratePublished($categ );
 
 			while ( $prod_id = $iter->next() ) {

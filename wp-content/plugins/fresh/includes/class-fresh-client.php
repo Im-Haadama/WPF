@@ -2,37 +2,24 @@
 
 
 class Fresh_Client {
-	private $client_id;
 
-	public function __construct($id) {
-		$this->client_id = $id;;
+	private $user_id;
+
+	/**
+	 * Fresh_Client constructor.
+	 *
+	 * @param $user_id
+	 */
+	public function __construct( $user_id ) {
+		$this->user_id = $user_id;
 	}
 
-	function get_payment_method_name( ) {
-		if ( $this->client_id > 0 ) {
-			$p = self::get_payment_method( $this->client_id );
-			if ( $p > 0 ) {
-				return sql_query_single_scalar( "SELECT name FROM im_payments WHERE `id` = " . $p );
-			}
-			print "לא נבחר אמצעי ברירת מחדל<br/>";
-		} else {
-			return "לא נבחר לקוח";
-		}
+	public function balance() {
+		$sql = 'select sum(transaction_amount) '
+		       . ' from im_client_accounts '
+		       . ' where client_id = ' . $this->user_id;
+
+		return round( sql_query_single_scalar( $sql ), 2 );
 	}
-
-	function get_payment_method( ) {
-		$m = get_user_meta( $this->client_id, "payment_method", true );
-		if ( $m ) {
-			return $m;
-		}
-
-		$p = sql_query_single_scalar( "SELECT id FROM im_payments WHERE `default` = 1" );
-		if ( $p ) {
-			return $p;
-		} else {
-			return "לא נבחר אמצעי ברירת מחדל";
-		}
-	}
-
-
 }
+

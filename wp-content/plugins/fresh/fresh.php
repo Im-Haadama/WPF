@@ -7,7 +7,7 @@
  * Version: 1.0
  * Author: agla
  * Author URI: http://aglamaz.com
- * Text Domain: im-haadama
+ * Text Domain: wpf
  *
  * @package Fresh
  */

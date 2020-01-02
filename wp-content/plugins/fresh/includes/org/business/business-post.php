@@ -248,7 +248,7 @@ if ( $operation) {
 			$date        = get_param( "date", true );
 			$amount      = get_param( "amount", true );
 			$sql         = "INSERT INTO im_business_info (part_id, date, amount, ref, document_type)\n" .
-			               "VALUES(" . $supplier_id . ", '" . $date . "' ," . $amount . ", " . $bank_id . ", " . ImDocumentType::bank . ")";
+			               "VALUES(" . $supplier_id . ", '" . $date . "' ," . $amount . ", " . $bank_id . ", " . FreshDocumentType::bank . ")";
 			sql_query( $sql );
 			print "התווסף תשלום בסך " . $amount . " לספק " . get_supplier_name( $supplier_id ) . "<br/>";
 

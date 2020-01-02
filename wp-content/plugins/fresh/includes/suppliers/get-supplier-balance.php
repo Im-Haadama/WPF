@@ -33,8 +33,8 @@ $sql = "SELECT supplier_balance(part_id, curdate()) as balance, part_id, supplie
        . "FROM `im_business_info`\n"
        . "where part_id > 10000\n"
        . " and is_active = 1\n"
-       . " and document_type in (" . ImDocumentType::invoice . ", " . ImDocumentType::bank . ")\n"
-       . " and document_type in (" . ImDocumentType::invoice . ", " . ImDocumentType::bank . ")\n"
+       . " and document_type in (" . FreshDocumentType::invoice . ", " . FreshDocumentType::bank . ")\n"
+       . " and document_type in (" . FreshDocumentType::invoice . ", " . FreshDocumentType::bank . ")\n"
        . "group by part_id";
 
 if ( ! $include_zero ) {
@@ -128,7 +128,7 @@ function get_supplier_balance( $supplier_id ) {
 
     $sql = "SELECT id, date, amount, ref, pay_date, document_type, supplier_balance($supplier_id, date) as balance FROM im_business_info " .
            " WHERE part_id = " . $supplier_id .
-           " AND document_type IN ( " . ImDocumentType::bank . "," . ImDocumentType::invoice ."," . ImDocumentType::refund . ") " .
+           " AND document_type IN ( " . FreshDocumentType::bank . "," . FreshDocumentType::invoice . "," . FreshDocumentType::refund . ") " .
            " and is_active = 1" .
            " ORDER BY date DESC ";
 

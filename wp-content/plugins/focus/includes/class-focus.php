@@ -180,19 +180,17 @@ class Focus {
 	 * Define WC Constants.
 	 */
 	private function define_constants() {
-		$upload_dir = wp_upload_dir( null, false );
 
-		$this->define( 'FOCUS_WC_ABSPATH', dirname( FOCUS_PLUGIN_FILE ) . '/' );
-		$this->define( 'FOCUS_PLUGIN_BASENAME', plugin_basename( FOCUS_PLUGIN_FILE ) );
+		// wp_plugin_directory_constants();
+		$this->define( 'FOCUS_ABSPATH', dirname( FOCUS_PLUGIN_FILE ) . '/' );
 		$this->define( 'FOCUS_VERSION', $this->version );
-		$this->define( 'FOCUS_INCLUDES', FOCUS_WC_ABSPATH . 'includes/' );
-//		$this->define( 'FOCUS_ROUNDING_PRECISION', 6 );
-//		$this->define( 'FOCUS_DISCOUNT_ROUNDING_MODE', 2 );
-//		$this->define( 'FOCUS_TAX_ROUNDING_MODE', 'yes' === get_option( 'woocommerce_prices_include_tax', 'no' ) ? 2 : 1 );
+		$this->define( 'FOCUS_INCLUDES', FOCUS_ABSPATH . 'includes/' );
+		$this->define( 'FLAVOR_INCLUDES_URL', plugins_url() . '/flavor/includes/' ); // For js
+		$this->define( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path(__FILE__) . '../../flavor/includes/' );  // for php
 		$this->define( 'FOCUS_DELIMITER', '|' );
+
+		$upload_dir = wp_upload_dir( null, false );
 		$this->define( 'FOCUS_LOG_DIR', $upload_dir['basedir'] . '/focus-logs/' );
-		/// $this->define( 'FOCUS_SESSION_CACHE_GROUP', 'wc_session_id' );
-		// $this->define( 'FOCUS_TEMPLATE_DEBUG_MODE', false );
 	}
 
 	/**
@@ -278,164 +276,18 @@ class Focus {
 		 * Class autoload`er.
 		 */
 		require_once FOCUS_INCLUDES . 'class-focus-autoloader.php';
-		require_once FOCUS_INCLUDES . 'core/data/sql.php';
-//		require_once FOCUS_INCLUDES . 'core/data/data.php';
-		require_once FOCUS_INCLUDES . 'core/fund.php';
-//		equire_once FOCUS_INCLUDES . 'core/gui/inputs.php'; Use Core_Html instead
-//		require_once FOCUS_INCLUDES . 'core/data/input_data.php';
-//		require_once FOCUS_INCLUDES . 'core/gui/gem.php';
-//		require_once FOCUS_INCLUDES . 'core/web.php';
-		require_once FOCUS_INCLUDES . 'core/wp.php';
-//		require_once FOCUS_INCLUDES . 'org/gui.php';
-		require_once FOCUS_INCLUDES . 'gui.php';
-//		require_once FOCUS_INCLUDES . 'routes/gui.php'; not found
-
-		//		require_once FOCUS_INCLUDES . 'core/data/data.php';
-//		require_once FOCUS_INCLUDES . 'core/wp.php';
-//		require_once FOCUS_INCLUDES . 'focus_class_1.php'; // Pre plugin code. To be merged into plugin;
-//		require_once FOCUS_INCLUDES . 'routes/gui.php';
-		/**
-		 * Interfaces.
-		 */
-//		include_once WC_FOCUS_INCLUDES . 'includes/interfaces/class-wc-abstract-order-data-store-interface.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/interfaces/class-wc-coupon-data-store-interface.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/interfaces/class-wc-customer-data-store-interface.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/interfaces/class-wc-customer-download-data-store-interface.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/interfaces/class-wc-customer-download-log-data-store-interface.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/interfaces/class-wc-object-data-store-interface.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/interfaces/class-wc-order-data-store-interface.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/interfaces/class-wc-order-item-data-store-interface.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/interfaces/class-wc-order-item-product-data-store-interface.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/interfaces/class-wc-order-item-type-data-store-interface.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/interfaces/class-wc-order-refund-data-store-interface.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/interfaces/class-wc-payment-token-data-store-interface.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/interfaces/class-wc-product-data-store-interface.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/interfaces/class-wc-product-variable-data-store-interface.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/interfaces/class-wc-shipping-zone-data-store-interface.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/interfaces/class-wc-logger-interface.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/interfaces/class-wc-log-handler-interface.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/interfaces/class-wc-webhooks-data-store-interface.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/interfaces/class-wc-queue-interface.php';
-
-		/**
-		 * Abstract classes.
-		 */
-//		include_once WC_FOCUS_INCLUDES . 'includes/abstracts/abstract-wc-data.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/abstracts/abstract-wc-object-query.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/abstracts/abstract-wc-payment-token.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/abstracts/abstract-wc-product.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/abstracts/abstract-wc-order.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/abstracts/abstract-wc-settings-api.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/abstracts/abstract-wc-shipping-method.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/abstracts/abstract-wc-payment-gateway.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/abstracts/abstract-wc-integration.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/abstracts/abstract-wc-log-handler.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/abstracts/abstract-wc-deprecated-hooks.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/abstracts/abstract-wc-session.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/abstracts/abstract-wc-privacy.php';
+		require_once FLAVOR_INCLUDES_ABSPATH . 'core/data/sql.php';
+		require_once FLAVOR_INCLUDES_ABSPATH . 'core/org_gui.php';
+		require_once FLAVOR_INCLUDES_ABSPATH . 'core/fund.php';
+		require_once FLAVOR_INCLUDES_ABSPATH . 'core/wp.php';
 
 		/**
 		 * Core classes.
 		 */
-		include_once FOCUS_INCLUDES . 'core/core-functions.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-datetime.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-post-types.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-install.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-geolocation.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-download-handler.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-comments.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-post-data.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-ajax.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-emails.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-data-exception.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-query.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-meta-data.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-order-factory.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-order-query.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-product-factory.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-product-query.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-payment-tokens.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-shipping-zone.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/gateways/class-wc-payment-gateway-cc.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/gateways/class-wc-payment-gateway-echeck.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-countries.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-integrations.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-cache-helper.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-https.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-deprecated-action-hooks.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-deprecated-filter-hooks.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-background-emailer.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-discounts.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-cart-totals.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/customizer/class-wc-shop-customizer.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-regenerate-images.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-privacy.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-structured-data.php';
+		include_once FLAVOR_INCLUDES_ABSPATH . 'core/core-functions.php';
 		include_once FOCUS_INCLUDES . 'class-focus-shortcodes.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-logger.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/queue/class-wc-action-queue.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/queue/class-wc-queue.php';
 
-		/**
-		 * Data stores - used to store and retrieve CRUD object data from the database.
-		 */
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-data-store.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/data-stores/class-wc-data-store-wp.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/data-stores/class-wc-coupon-data-store-cpt.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/data-stores/class-wc-product-data-store-cpt.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/data-stores/class-wc-product-grouped-data-store-cpt.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/data-stores/class-wc-product-variable-data-store-cpt.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/data-stores/class-wc-product-variation-data-store-cpt.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/data-stores/abstract-wc-order-item-type-data-store.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/data-stores/class-wc-order-item-data-store.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/data-stores/class-wc-order-item-coupon-data-store.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/data-stores/class-wc-order-item-fee-data-store.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/data-stores/class-wc-order-item-product-data-store.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/data-stores/class-wc-order-item-shipping-data-store.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/data-stores/class-wc-order-item-tax-data-store.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/data-stores/class-wc-payment-token-data-store.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/data-stores/class-wc-customer-data-store.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/data-stores/class-wc-customer-data-store-session.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/data-stores/class-wc-customer-download-data-store.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/data-stores/class-wc-customer-download-log-data-store.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/data-stores/class-wc-shipping-zone-data-store.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/data-stores/abstract-wc-order-data-store-cpt.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/data-stores/class-wc-order-data-store-cpt.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/data-stores/class-wc-order-refund-data-store-cpt.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/data-stores/class-wc-webhook-data-store.php';
 
-		/**
-		 * REST API.
-		 */
-//		include_once WC_FOCUS_INCLUDES . 'includes/legacy/class-wc-legacy-api.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-api.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-auth.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-register-wp-admin-settings.php';
-
-		/**
-		 * Libraries
-		 */
-//		include_once WC_FOCUS_INCLUDES . 'includes/libraries/action-scheduler/action-scheduler.php';
-//
-//		if ( defined( 'WP_CLI' ) && WP_CLI ) {
-//			include_once WC_FOCUS_INCLUDES . 'includes/class-wc-cli.php';
-//		}
-//
-//		if ( $this->is_request( 'admin' ) ) {
-//			include_once WC_FOCUS_INCLUDES . 'includes/admin/class-wc-admin.php';
-//		}
-//
-//		if ( $this->is_request( 'frontend' ) ) {
-//			$this->frontend_includes();
-//		}
-//
-//		if ( $this->is_request( 'cron' ) && 'yes' === get_option( 'woocommerce_allow_tracking', 'no' ) ) {
-//			include_once WC_FOCUS_INCLUDES . 'includes/class-wc-tracker.php';
-//		}
-//
-//		$this->theme_support_includes();
-//		$this->query = new WC_Query();
-//		$this->api   = new WC_API();
 	}
 
 	/**
@@ -443,61 +295,6 @@ class Focus {
 	 *
 	 * @since 3.3.0
 	 */
-//	private function theme_support_includes() {
-//		if ( wc_is_active_theme( array( 'twentynineteen', 'twentyseventeen', 'twentysixteen', 'twentyfifteen', 'twentyfourteen', 'twentythirteen', 'twentyeleven', 'twentytwelve', 'twentyten' ) ) ) {
-//			switch ( get_template() ) {
-//				case 'twentyten':
-//					include_once WC_FOCUS_INCLUDES . 'includes/theme-support/class-wc-twenty-ten.php';
-//					break;
-//				case 'twentyeleven':
-//					include_once WC_FOCUS_INCLUDES . 'includes/theme-support/class-wc-twenty-eleven.php';
-//					break;
-//				case 'twentytwelve':
-//					include_once WC_FOCUS_INCLUDES . 'includes/theme-support/class-wc-twenty-twelve.php';
-//					break;
-//				case 'twentythirteen':
-//					include_once WC_FOCUS_INCLUDES . 'includes/theme-support/class-wc-twenty-thirteen.php';
-//					break;
-//				case 'twentyfourteen':
-//					include_once WC_FOCUS_INCLUDES . 'includes/theme-support/class-wc-twenty-fourteen.php';
-//					break;
-//				case 'twentyfifteen':
-//					include_once WC_FOCUS_INCLUDES . 'includes/theme-support/class-wc-twenty-fifteen.php';
-//					break;
-//				case 'twentysixteen':
-//					include_once WC_FOCUS_INCLUDES . 'includes/theme-support/class-wc-twenty-sixteen.php';
-//					break;
-//				case 'twentyseventeen':
-//					include_once WC_FOCUS_INCLUDES . 'includes/theme-support/class-wc-twenty-seventeen.php';
-//					break;
-//				case 'twentynineteen':
-//					include_once WC_FOCUS_INCLUDES . 'includes/theme-support/class-wc-twenty-nineteen.php';
-//					break;
-//			}
-//		}
-//	}
-//
-//	/**
-//	 * Include required frontend files.
-//	 */
-//	public function frontend_includes() {
-//		include_once WC_FOCUS_INCLUDES . 'includes/wc-cart-functions.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/wc-notice-functions.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/wc-template-hooks.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-template-loader.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-frontend-scripts.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-form-handler.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-cart.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-tax.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-shipping-zones.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-customer.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-embed.php';
-//		include_once WC_FOCUS_INCLUDES . 'includes/class-wc-session-handler.php';
-//	}
-//
-//	/**
-//	 * Function used to Init WooCommerce Template Functions - This makes them pluggable by plugins and themes.
-//	 */
 	/**
 	 *
 	 */
@@ -532,30 +329,6 @@ class Focus {
 
 
 		// Load class instances.
-//		$this->product_factory                     = new WC_Product_Factory();
-//		$this->order_factory                       = new WC_Order_Factory();
-//		$this->countries                           = new WC_Countries();
-//		$this->integrations                        = new WC_Integrations();
-//		$this->structured_data                     = new WC_Structured_Data();
-//		$this->deprecated_hook_handlers['actions'] = new WC_Deprecated_Action_Hooks();
-//		$this->deprecated_hook_handlers['filters'] = new WC_Deprecated_Filter_Hooks();
-
-		// Classes/actions loaded for the frontend and for ajax requests.
-//		if ( $this->is_request( 'frontend' ) ) {
-//			// Session class, handles session data for users - can be overwritten if custom handler is needed.
-//			$session_class = apply_filters( 'woocommerce_session_handler', 'WC_Session_Handler' );
-//			$this->session = new $session_class();
-//			$this->session->init();
-//
-//			$this->customer = new WC_Customer( get_current_user_id(), true );
-//			// Cart needs the customer info.
-//			$this->cart = new WC_Cart();
-//
-//			// Customer should be saved during shutdown.
-//			add_action( 'shutdown', array( $this->customer, 'save' ), 10 );
-//		}
-//
-//		$this->load_webhooks();
 
 		// Init action.
 		do_action( 'focus_init' );

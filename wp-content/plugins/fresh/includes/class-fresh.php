@@ -162,13 +162,12 @@ class Fresh {
 		$this->define( 'FRESH_PLUGIN_BASENAME', plugin_basename( FRESH_PLUGIN_FILE ) );
 		$this->define( 'FRESH_VERSION', $this->version );
 		$this->define( 'FRESH_INCLUDES', FRESH_WC_ABSPATH . '/includes/' );
-//		$this->define( 'FRESH_ROUNDING_PRECISION', 6 );
-//		$this->define( 'FRESH_DISCOUNT_ROUNDING_MODE', 2 );
-//		$this->define( 'FRESH_TAX_ROUNDING_MODE', 'yes' === get_option( 'woocommerce_prices_include_tax', 'no' ) ? 2 : 1 );
 		$this->define( 'FRESH_DELIMITER', '|' );
 		$this->define( 'FRESH_LOG_DIR', $upload_dir['basedir'] . '/fresh-logs/' );
-		/// $this->define( 'FRESH_SESSION_CACHE_GROUP', 'wc_session_id' );
-		// $this->define( 'FRESH_TEMPLATE_DEBUG_MODE', false );
+
+		$this->define( 'FLAVOR_INCLUDES_URL', plugins_url() . '/flavor/includes/' ); // For js
+		$this->define( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path(__FILE__) . '../../flavor/includes/' );  // for php
+
 	}
 
 	/**
@@ -280,14 +279,11 @@ class Fresh {
 		 * Class autoloader.
 		 */
 		require_once FRESH_INCLUDES . 'class-fresh-autoloader.php';
-		require_once FRESH_INCLUDES . 'core/core-functions.php';
+		require_once FLAVOR_INCLUDES_ABSPATH . 'core/core-functions.php';
 
-		require_once FRESH_INCLUDES . 'core/fund.php';
-		require_once FRESH_INCLUDES . 'core/data/sql.php';
-//		require_once FRESH_INCLUDES . 'supplies/Supply.php';
-//		require_once FRESH_INCLUDES . 'orders/orders.php';
-//		require_once FRESH_INCLUDES . 'core/data/data.php';
-		require_once FRESH_INCLUDES . 'core/wp.php';
+		require_once FLAVOR_INCLUDES_ABSPATH . 'core/fund.php';
+		require_once FLAVOR_INCLUDES_ABSPATH . 'core/data/sql.php';
+		require_once FLAVOR_INCLUDES_ABSPATH . 'core/wp.php';
 
 		/**
 		 * Interfaces.
@@ -427,10 +423,20 @@ class Fresh {
 		$locale = is_admin() && function_exists( 'get_user_locale' ) ? get_user_locale() : get_locale();
 		$locale = apply_filters( 'plugin_locale', $locale, 'fresh' );
 
-		unload_textdomain( 'fresh' );
-//		load_textdomain( 'fresh', FERSH_LANG_DIR . '/fresh/fresh-' . $locale . '.mo' );
-//		load_plugin_textdomain( 'fresh', false, plugin_basename( dirname( FRESH_PLUGIN_FILE ) ) . '/i18n/languages' );
+		unload_textdomain( 'wpf' );
+		$file = FRESH_WC_ABSPATH . 'languages/wpf-' . $locale . '.mo';
+		$rc = load_textdomain( 'wfp', $file );
+//		print "loaded $file $rc <br/>";
+//		$rc1 = load_plugin_textdomain( 'wfp');
+		if (get_user_id() == 1) {
+			if (! $rc) print "can't load textdomain";
+//			if (! $rc1) print "can't load plugin_textdomain";
+			if (! file_exists($file)) print "file $file not found";
+//			print $file . "<br/>";
+//			print "Rc= $rc";
+		}
 	}
+
 	public function setup_environment() {
 		/* @deprecated 2.2 Use WC()->template_path() instead. */
 		$this->define( 'FRESH_TEMPLATE_PATH', $this->template_path() );

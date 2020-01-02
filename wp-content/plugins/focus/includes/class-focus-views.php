@@ -38,12 +38,14 @@ class Focus_Views {
 	}
 
 	public function enqueue_scripts() {
-		$file = plugin_dir_url( __FILE__ ) . 'core/data/data.js';
+		$file = FLAVOR_INCLUDES_URL . 'core/data/data.js';
 		wp_enqueue_script( 'data', $file, null, $this->version, false );
 
-		$file = plugin_dir_url( __FILE__ ) . 'core/gui/client_tools.js';
+		$file = FLAVOR_INCLUDES_URL . 'core/gui/client_tools.js';
 		wp_enqueue_script( 'client_tools', $file, null, $this->version, false );
 
+		$file = FLAVOR_INCLUDES_URL . 'core/data/data.js';
+		wp_enqueue_script( 'client_tools', $file, null, $this->version, false );
 	}
 
 	/**
@@ -144,7 +146,7 @@ class Focus_Views {
 				);
 				$args["post_file"] = get_url( 1 );
 				// TODO: bug fix... $args["selectors"] = array("company" => "company_get_name");
-				$result         .= GemElement( "im_projects", $project_id, $args );
+				$result         .= Core_Gem::GemElement( "im_projects", $project_id, $args );
 				$args ["query"] = "project_id = $project_id and status < 2";
 				$args["page"]   = get_param( "page", false, null );
 				$args["links"]  = array( "id" => add_to_url( array( "operation" => "show_task", "id" => "%s" ) ) );
@@ -340,7 +342,7 @@ class Focus_Views {
 		$result = gui_header(1, "Edit team");
 		$args["selectors"] = array("manager" => "gui_select_worker");
 		$args["post_file"] = get_url(1) . "?team_id=" . $team_id;
-		$result .= GemElement("im_working_teams", $team_id, $args);
+		$result .= Core_Gem::GemElement("im_working_teams", $team_id, $args);
 
 		$result .= gui_header(2, "Team members");
 		$table = array();
@@ -518,7 +520,7 @@ class Focus_Views {
 		if ( $edit ) {
 			$args["post_file"] = self::instance()->post_file;
 
-			return GemElement( "im_projects", $project_id, $args );
+			return Core_Gem::GemElement( "im_projects", $project_id, $args );
 		}
 		$active_only = GetArg( $args, "active_only", true );
 		$order       = GetArg( $args, "order", "order by priority desc" );
@@ -990,7 +992,7 @@ class Focus_Views {
 				print "sql = $sql<br/>";
 			}
 			$args["sql"] = $sql;
-			$table       = GemTable( "im_tasklist", $args );
+			$table       = Core_Gem::GemTable( "im_tasklist", $args );
 //		print "CC=" . $args["count"] . "<br/>";
 			// $table = GuiTableContent( $table_name, $sql, $args );
 			// if (! $args["count"]) return "";
@@ -1096,7 +1098,7 @@ class Focus_Views {
 		$args["worker"]    = get_user_id();
 		$args["post_file"] = self::instance()->post_file;
 
-		return GemElement( $table_name, $row_id, $args );
+		return Core_Gem::GemElement( $table_name, $row_id, $args );
 	}
 
 //	function get_nav_name() {
@@ -1231,7 +1233,7 @@ class Focus_Views {
 		$url = get_url(1);
 
 		$result = "";
-		$action_url = get_url(1);//  "/focus/focus-post.php";
+		$action_url = "/wp-content/plugins/focus/post.php"; // get_url(1);//  "/focus/focus-post.php";
 
 		$args["worker"] = get_user_id();
 		$args["companies"] =  Org_Worker::GetCompanies(get_user_id());
@@ -1246,9 +1248,9 @@ class Focus_Views {
 		if ($template_id){
 			// print gui_header(1, "משימה חוזרת מספר " . $template_id) ."<br/>";
 			$args["title"] = "Repeating task";
-			$args["post_file"] = $url;
+			$args["post_file"] = $action_url;
 
-			$template = GemElement("im_task_templates", $template_id, $args);
+			$template = Core_Gem::GemElement("im_task_templates", $template_id, $args);
 			if (! $template) {
 				$result .= "Not found";
 				return $result;
@@ -1270,7 +1272,7 @@ class Focus_Views {
 			$sql = "select * from im_tasklist where task_template = " . $template_id;
 			$sql .= " order by date desc limit 10";
 //			print $sql;
-			$table = GuiTableContent("last_tasks", $sql, $tasks_args);
+			$table = Core_Data::GuiTableContent("last_tasks", $sql, $tasks_args);
 			if ($table)
 			{
 				$result .= gui_header(2, "משימות אחרונות");

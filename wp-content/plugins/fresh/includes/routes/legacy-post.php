@@ -126,7 +126,7 @@ function invoice_create_ship( $customer_id, $order_ids ) {
 	// print "create<br/>";
 	$doc_id = $invoice->CreateDocument( $doc );
 	business_add_transaction( $customer_id, date( 'Y-m-d' ), $total_lines, 0, $doc_id, 1, $net_total,
-		ImDocumentType::ship );
+		FreshDocumentType::ship );
 
 	// var_dump($doc);
 	return $doc_id;
@@ -177,7 +177,7 @@ function invoice_create_subcontract_invoice( $invoice_client_id ) {
 	       " from im_business_info " .
 	       " where part_id = " . $legacy_user .
 	       " and invoice is null " .
-	       " and document_type = " . ImDocumentType::ship;
+	       " and document_type = " . FreshDocumentType::ship;
 
 	$result = sql_query( $sql );
 
@@ -218,7 +218,7 @@ function invoice_create_subcontract_invoice( $invoice_client_id ) {
 
 	if ( $doc_id ) {
 		business_add_transaction( $legacy_user, date( 'Y-m-d' ), $total_lines, 0, $doc_id, 1, $net_total,
-			ImDocumentType::invoice );
+			FreshDocumentType::invoice );
 
 		sql_query( "UPDATE im_business_info SET invoice = " . $doc_id .
 		           " WHERE id IN ( " . comma_implode( $business_ids ) . " )" );

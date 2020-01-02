@@ -36,7 +36,7 @@ class Core_Gem {
 	 * @return string
 	 * @throws Exception
 	 */
-	function GemElement($table_name, $row_id, $args)
+	static function GemElement($table_name, $row_id, $args)
 	{
 		$result = "";
 		$title = GetArg($args, "title", null);
@@ -51,12 +51,16 @@ class Core_Gem {
 		if ($title)
 			$result .= gui_header(1, $title, true, true) . " " . gui_label("id", $row_id);
 
-		if (! ($row = GuiRowContent($table_name, $row_id, $args))) return null;
+		$sql = "select is_active from $table_name where id = $row_id";
+		$active = sql_query_single_scalar($sql);
+		if (! $active) $result .= " not active ";
+
+		if (! ($row = Core_Data::GuiRowContent($table_name, $row_id, $args))) return null;
 		$result .= $row;
 
 		if (GetArg($args, "edit", false) and $post) {
 			$result .= gui_button( "btn_save", "data_save_entity('" . $post . "', '$table_name', " . $row_id . ')', "save" );
-			$result .= gui_button( "btn_inactive", "inactive_entity('" . $post . "', '$table_name', " . $row_id . ')', "inactive" );
+			$result .= gui_button( "btn_active", "active_entity(" . (1 - $active) .", '" . $post . "', '$table_name', " . $row_id . ')', $active ? "inactive" : "activate" );
 		}
 		return $result;
 	}
@@ -71,7 +75,7 @@ class Core_Gem {
 	 * @return string|null
 	 * @throws Exception
 	 */
-	function GemArray($rows_data, &$args, $table_id)
+	static function GemArray($rows_data, &$args, $table_id)
 	{
 		$result = "";
 
@@ -132,7 +136,7 @@ class Core_Gem {
 	 * @return string|null
 	 * @throws Exception
 	 */
-	function GemTable($table_name, &$args)
+	static function GemTable($table_name, &$args)
 	{
 		if (! $table_name) die("Error #N2 no table given");
 		if (! isset($args["title"])) $title = "content of table " . $table_name;
@@ -156,9 +160,9 @@ class Core_Gem {
 		// $table = GuiTableContent($table_name, $sql, $args);
 
 		// print "c=" . $args["count"] . "<br/>";
-		$rows_data = TableData( $sql, $args);
+		$rows_data = Core_Data::TableData( $sql, $args);
 
-		return GemArray($rows_data, $args, $table_name);
+		return Core_Gem::GemArray($rows_data, $args, $table_name);
 	}
 
 	/**

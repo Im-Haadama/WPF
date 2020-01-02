@@ -36,6 +36,10 @@ class Fresh_Inventory
 				$data = get_param_array("data", true);
 				return self::save_inv($data);
 				break;
+			case "inv_save_count":
+				$supplier_id = get_param("supplier_id", true);
+				return self::save_count($supplier_id);
+				break;
 		}
 	}
 
@@ -46,12 +50,40 @@ class Fresh_Inventory
 
 			my_log( "set inv " . $data[ $i ] . " " . $data [ $i + 1 ] );
 			$p = new Fresh_Product( $id );
+			if (! $p) continue; // Product not found;
 			if (! $p->setStock( $q ))
 				return false;
 		}
 		return true;
 	}
 
+	static function save_count($supplier_id)
+	{
+		$catalog = new Fresh_Catalog();
+
+		$sql = 'SELECT pl.id ' .
+		       ' FROM im_supplier_price_list pl ' .
+		       ' Join im_suppliers s '
+		       . ' where supplier_id = ' . $supplier_id
+		       . ' and s.id = pl.supplier_id '
+		       . ' order by 1';
+
+		$pricelist_ids = sql_query_array_scalar( $sql );
+
+		foreach ($pricelist_ids as $pl_id){
+			$link_data = $catalog->GetProdID( $pl_id );
+			if ( $link_data ) {
+				$product_id = $link_data[0];
+				$p = new Fresh_Product($product_id);
+				$sql = "insert into im_inventory_count (count_date, supplier_id, product_id, product_name, quantity) values  
+				          (" . quote_text(date('Y-m-d')) .", " . $supplier_id . ", " .$product_id . ", '" . get_product_name(escape_string($product_id)) . "', " . $p->getStock() . ")";
+//				print $sql . "<br/>";
+				if (! sql_query($sql)) return false;
+//				print get_product_name($product_id) . "<br/>";
+			}
+			// escape_string(quote_text($p->getName()))
+		}
+	}
 
 	static function show_status($year)
 	{
@@ -75,6 +107,7 @@ class Fresh_Inventory
 	static function show_supplier($year, $supplier_id)
 	{
 		$result = gui_header(1, __("Inventory of supplier")); // . " " . get_supplier_name($supplier_id) ." " . __("for year ending in") . " " . $year);
+		$result .= Core_Html::GuiLabel("supplier_id", $supplier_id, array("hidden" => true));
 
 		$sql = "select count(*) from im_inventory_count where year(count_date) = " . $year . " and supplier_id = " . $supplier_id;
 //		print $sql;
@@ -86,6 +119,7 @@ class Fresh_Inventory
 		} else {
 			$result .= self::show_supplier_inventory($supplier_id);
 		}
+		$result .= Core_Html::GuiButton("btn_save_count", "Save count", array("action" => "inventory_save_count(" . $supplier_id . ")"));
 
 		return $result;
 	}
@@ -120,7 +154,7 @@ class Fresh_Inventory
 
 		$display .= gui_table_args( $table, "table_" . $supplier_id );
 
-		$display .= gui_button( "btn_save_inv" . $supplier_id, "save_inv(" . $supplier_id . ")", "שמור מלאי" );
+		$display .= gui_button( "btn_save_inv" . $supplier_id, "save_inv(\"term_" . $supplier_id . "\")", "שמור מלאי" );
 
 		return $display;
 	}
@@ -138,6 +172,7 @@ class Fresh_Inventory
 
 //	print "ct=" . $customer_type . "<br/>";
 		$p = new Fresh_Product( $prod_id );
+		if (! $p) return "";
 		if ( $text ) {
 			$line = get_product_name( $prod_id ) . " - " . get_price_by_type( $prod_id, $customer_type ) . "<br/>";
 			// print "line = " . $line . "<br/>";

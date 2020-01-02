@@ -24,7 +24,7 @@ function get_form_tables() {
 	$key         = "form_categs";
 	$categs_info = info_get( $key );
 	if ( ! $categs_info ) {
-		info_update( $key, "" );
+		InfoUpdate( $key, "" );
 		$categs_info = "";
 	}
 	$categs = explode( ",", $categs_info );

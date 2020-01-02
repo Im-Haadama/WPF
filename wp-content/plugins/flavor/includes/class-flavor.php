@@ -181,8 +181,10 @@ class Flavor {
 		$this->define( 'FLAVOR_ABSPATH', dirname( FLAVOR_PLUGIN_FILE ) . '/' );
 		$this->define( 'FLAVOR_PLUGIN_BASENAME', plugin_basename( FLAVOR_PLUGIN_FILE ) );
 		$this->define( 'FLAVOR_VERSION', $this->version );
-		$this->define( 'FLAVOR_INCLUDES', FLAVOR_ABSPATH . '/includes/' );
-//		$this->define( 'FLAVOR_ROUNDING_PRECISION', 6 );
+		$this->define( 'FLAVOR_INCLUDES_URL', plugins_url() . '/flavor/includes/' ); // For js
+		$this->define( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path('flavor/includes/') );  // for php
+
+		//		$this->define( 'FLAVOR_ROUNDING_PRECISION', 6 );
 //		$this->define( 'FLAVOR_DISCOUNT_ROUNDING_MODE', 2 );
 //		$this->define( 'FLAVOR_TAX_ROUNDING_MODE', 'yes' === get_option( 'woocommerce_prices_include_tax', 'no' ) ? 2 : 1 );
 		$this->define( 'FLAVOR_DELIMITER', '|' );
@@ -266,13 +268,13 @@ class Flavor {
 		 * Class autoloader.
 		 */
 		if (! class_exists('Core_Autoloader'))
-			require_once FLAVOR_INCLUDES . 'core/class-core-autoloader.php';
+			require_once FLAVOR_INCLUDES_ABSPATH . 'core/class-core-autoloader.php';
 
-		require_once FLAVOR_INCLUDES . 'core/fund.php';
-		require_once FLAVOR_INCLUDES . 'core/data/sql.php';
-		require_once FLAVOR_INCLUDES . 'core/gui/inputs.php';
+		require_once FLAVOR_INCLUDES_ABSPATH . 'core/fund.php';
+		require_once FLAVOR_INCLUDES_ABSPATH . 'core/data/sql.php';
+		require_once FLAVOR_INCLUDES_ABSPATH . 'core/gui/inputs.php';
 		// require_once FLAVOR_INCLUDES . 'core/data/data.php';
-		require_once FLAVOR_INCLUDES . 'core/wp.php';
+		require_once FLAVOR_INCLUDES_ABSPATH . 'core/wp.php';
 
 		/**
 		 * Interfaces.
@@ -285,7 +287,7 @@ class Flavor {
 		/**
 		 * Core classes.
 		 */
-		include_once FLAVOR_INCLUDES . 'core/class-core-shortcodes.php';
+		include_once FLAVOR_INCLUDES_ABSPATH . 'core/class-core-shortcodes.php';
 
 		/**
 		 * Data stores - used to store and retrieve CRUD object data from the database.

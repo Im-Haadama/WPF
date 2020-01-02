@@ -23,7 +23,8 @@ class Fresh_Product {
 		try {
 			$this->p = new WC_Product( $id );
 		} catch ( Exception $e ) {
-			print "can't create prod " . $id . $e->getMessage() . " " . $this->getName() . "<br/>";
+			return null;
+//			print "can't create prod " . $id . $e->getMessage() . " " . $this->getName() . "<br/>";
 		}
 	}
 
@@ -365,7 +366,7 @@ class Fresh_Product {
 	}
 }
 
-class ProductIterator implements  Iterator {
+class Fresh_ProductIterator implements  Iterator {
 	private $position = 0;
 
 	private $array;

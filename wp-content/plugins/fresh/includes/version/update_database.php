@@ -21,7 +21,7 @@ require_once (dirname(dirname(dirname(__FILE__))) . '/includes/core/wp.php');
 
 // print "host=" . DB_HOST . "<br/>";
 //require_once( FRESH_INCLUDES . '/core/gui/sql_table.php' );
-//require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
+require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 
 //require_once( FRESH_INCLUDES . "/init.php" );
 //init();
@@ -1088,7 +1088,7 @@ select sum(amount) into _amount from im_business_info
 where part_id = _supplier_id
 and date <= _date
 and is_active = 1
-and document_type in (" . ImDocumentType::bank . "," . ImDocumentType::invoice . "," . ImDocumentType::refund . "); 
+and document_type in (" . FreshDocumentType::bank . "," . FreshDocumentType::invoice . "," . FreshDocumentType::refund . "); 
 
 return round(_amount, 0);
 END;";
@@ -1115,6 +1115,37 @@ function get_versions()
 
 function version29()
 {
+
+	print gui_header(1, "last delivery");
+	sql_query("create function client_id_from_delivery(del_id int) returns text
+BEGIN
+  declare _order_id int;
+  declare _user_id int;
+  declare _display varchar(50) CHARSET utf8;
+  SELECT order_id INTO _order_id FROM im_delivery where id = del_id;
+  select meta_value into _user_id from wp_postmeta
+  where post_id = _order_id and
+  meta_key = '_customer_user';
+  
+  return _order_id;
+END;
+
+");
+	print gui_header(1, "user_id from del id");
+	sql_query("create function client_id_from_delivery(del_id int) returns integer
+BEGIN
+  declare _order_id int;
+  declare _user_id int;
+  declare _display varchar(50) CHARSET utf8;
+  SELECT order_id INTO _order_id FROM im_delivery where id = del_id;
+  select meta_value into _user_id from wp_postmeta
+  where post_id = _order_id and
+  meta_key = '_customer_user';
+  return _user_id;
+END;
+
+");
+
 	print gui_header(1, "preq");
 
 	sql_query("drop function preq_done");

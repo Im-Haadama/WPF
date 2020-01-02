@@ -38,7 +38,7 @@ class Finance_Bank
 
 function business_add_transaction(
 	$part_id, $date, $amount, $delivery_fee, $ref, $project, $net_amount = 0,
-	$document_type = ImDocumentType::delivery,
+	$document_type = FreshDocumentType::delivery,
 	$document_file = null
 ) {
 	// print $date . "<br/>";
@@ -95,7 +95,7 @@ function business_open_ship( $part_id ) {
 	       " from im_business_info " .
 	       " where part_id = " . $part_id .
 	       " and invoice is null " .
-	       " and document_type = " . ImDocumentType::ship;
+	       " and document_type = " . FreshDocumentType::ship;
 
 	// print $sql;
 

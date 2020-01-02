@@ -34,7 +34,7 @@ if ( ( ! current_user_can( "edit_shop_orders" ) ) and ( $O->getCustomerId() != g
 
 print $O->infoBox( $order_id );
 
-print $d->delivery_text( ImDocumentType::delivery, ImDocumentOperation::show, $margin );
+print $d->delivery_text( FreshDocumentType::delivery, Fresh_DocumentOperation::show, $margin );
 
 if ( ! $send ) {
 	if ( sql_query_single_scalar( "SELECT payment_receipt FROM im_delivery WHERE id = " . $id ) ) {

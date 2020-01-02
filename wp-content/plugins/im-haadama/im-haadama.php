@@ -190,55 +190,6 @@ add_shortcode( 'im-haadama-front', 'content_func_front' );
 add_shortcode( 'im-haadama-account-status', 'im_account_status' );
 add_shortcode( 'im-haadama-open-orders', 'im_open_orders' );
 
-function im_open_orders( $atts, $contents, $tag ) {
-	$user = wp_get_current_user();
-
-	$open = false;
-	if ( $user->ID ) {
-		require_once( TOOLS_DIR . "/account/account.php" );
-
-		$sql = "select id from wp_posts where order_user(id) = " . $user->ID . " and post_status in 
-		('wc-processing', 'wc-on-hold', 'wc-pending')";
-
-		$orders = sql_query_array_scalar( $sql );
-
-		if ( ! $orders ) {
-			print "אין הזמנות בטיפול" . "<br/>";
-
-			return "";
-		}
-
-		print gui_header( 2, "הזמנות פתוחות" ) . "<br/>";
-
-		foreach ( $orders as $order ) {
-			$open = true;
-			if ( get_post_meta( $order, 'printed' ) ) {
-				print "הזמנה " . $order . " עברה לטיפול. צור קשר עם שירות הלקוחות" . "<br/>";
-			} else {
-				print "הזמנה " . $order . " עדיין לא הוכנה. במידה ויתאפשר נוסיף מוצרים. נא לא לבטל פריטים טריים זמן קצר לפני האספקה. לחץ לשינוי ";
-				print gui_hyperlink( "הזמנה " . $order, Core_Db_MultiSite::LocalSiteTools() . "/fresh/orders/get-order.php?order_id=" . $order );
-				print ".<br/>";
-			}
-		}
-
-
-	} else {
-		return "עליך להתחבר תחילה";
-	}
-}
-
-function im_account_status( $atts, $contents, $tag ) {
-	$user = wp_get_current_user();
-
-	if ( strlen( $user->user_login ) > 2 ) {
-		require_once( TOOLS_DIR . "/account/account.php" );
-
-		return show_trans( $user->id, eTransview::from_last_zero );
-	} else {
-		return "עליך להתחבר תחילה";
-	}
-	// print "xxx";
-}
 
 add_shortcode( 'beth', 'beth_sign' );
 

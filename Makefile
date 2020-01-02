@@ -7,7 +7,7 @@ all: .languages
 .fresh: .languages
 	touch $@
 
-.languages: wp-content/languages/plugins/im_haadama-he_IL.mo
+.languages: wp-content/plugins/fresh/languages/wpf-he_IL.mo
 	touch $@
 
 %.mo: %.po

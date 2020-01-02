@@ -136,7 +136,7 @@ if ( $printed ) {
 }
 
 $d = Fresh_Delivery::CreateFromOrder( $order_id );
-$d->PrintDeliveries( ImDocumentType::order, ImDocumentOperation::edit, $margin );
+$d->PrintDeliveries( FreshDocumentType::order, Fresh_DocumentOperation::edit, $margin );
 
 if ( current_user_can( "edit_shop_orders" ) ) {
 	if ( is_numeric( $delivery_id ) ) {

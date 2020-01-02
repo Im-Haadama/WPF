@@ -1,29 +1,7 @@
 <?php
 
-/**
- * Created by PhpStorm.
- * User: agla
- * Date: 15/11/16
- * Time: 00:26
- */
-/*
- * GUI - HTML
- *-=-=-=-=-=-
- * GuiRowContent - header+row data -> gui (html)
- * GuiTableContent - gui (html) with id. Adds actions
- *
- *
- */
-
-// GUI elements
-// cast: function gui_<html code>($params) { return $text; }
-
-require_once( 'sql_table.php' );
-
-/// To have textual output first include text_inputs.php
-if (! function_exists('gui_br')) {
-
-	function gui_br() {
+class Core_Html {
+	function Br() {
 		return '<br/>';
 	}
 
@@ -53,21 +31,23 @@ if (! function_exists('gui_br')) {
 	 * create html button
 	 *
 	 * @param $id
-	 * @param $func
 	 * @param $text
-	 * @param bool $disabled
+	 * @param $args
 	 *
 	 * @return string
 	 */
-	function gui_button( $id, $func, $text, $disabled = false ) {
-		$btn = "<button id=\"" . $id . "\" onclick=\"" . $func . "\"";
-		if ( $disabled ) {
-			$btn .= " disabled";
-		}
-		$btn .= "> " . __( $text ) . "</button>";
+	static function GuiButton($id, $text, $args)
+	{
+		$result = "<button id=\"$id\"";
+		if ($class = GetArg($args, "class", null)) $result .= " class=\"$class\"";
+		if ($events = GetArg($args, "events", null)) $result .= " $events ";
+		if ($action = GetArg($args, "action", null)) $result .= " onclick=$action ";
+		$result .= ">$text";
+		$result .= "</button>";
 
-		return $btn;
+		return $result;
 	}
+
 
 	/**
 	 * @param $id
@@ -131,17 +111,6 @@ if (! function_exists('gui_br')) {
 		$data .= ">";
 
 		return $data;
-	}
-
-	function GuiButton($id, $text, $args)
-	{
-		$result = "<button id=\"$id\"";
-		if ($class = GetArg($args, "class", null)) $result .= " class=\"$class\"";
-		if ($events = GetArg($args, "events", null)) $result .= " $events ";
-		$result .= ">$text";
-		$result .= "</button>";
-
-		return $result;
 	}
 
 	function GuiButtonOrHyperlink( $id, $value = null, $args = null ) // Value is irrelevant but here to keep the structure: id, value, args.
@@ -417,7 +386,7 @@ if (! function_exists('gui_br')) {
 	 *
 	 * @return string
 	 */
-	function gui_header( $level, $text, $center = false, $inline = false ) {
+	static function gui_header( $level, $text, $center = false, $inline = false ) {
 //		debug_var($text);
 		$data = "";
 		// if ($inline) $data .= "<style>h1 {display: inline;}</style>";
@@ -572,7 +541,7 @@ if (! function_exists('gui_br')) {
 	 *
 	 * @return string
 	 */
-	function gui_cell( $cell, $id = null, $show = true, $align = null ) {
+	static function gui_cell( $cell, $id = null, $show = true, $align = null ) {
 		// Preformating...
 		// a) replace \n with <br/>
 		// b) make url from strings start with http:// or https://
@@ -768,7 +737,7 @@ if (! function_exists('gui_br')) {
 	 * @return string
 	 * @throws Exception
 	 */
-	function gui_table_args( $input_rows, $id = null, $args = null ) {
+	static function gui_table_args( $input_rows, $id = null, $args = null ) {
 		$debug       = GetArg( $args, "debug", false );
 		$width       = GetArg( $args, "width", null );
 		$bordercolor = GetArg( $args, "bordercolor", null );
@@ -815,7 +784,7 @@ if (! function_exists('gui_br')) {
 				}
 				$rows[ $key ] = $input_row;
 			} else {
-				$rows[ $key ] = PrepareRow( $input_row, $args, $key );
+				$rows[ $key ] = Core_Data::PrepareRow( $input_row, $args, $key );
 			}
 		}
 
@@ -888,7 +857,7 @@ if (! function_exists('gui_br')) {
 
 					// print "f=$field r=$row_id $show is=" . isset($args["hide_cols"][$row_id]) . "<br/>";
 					// print "$line_id $cell_id<br/>";
-					$data .= gui_cell( $cell, $field . "_" . $row_id, $show,
+					$data .= self::gui_cell( $cell, $field . "_" . $row_id, $show,
 						isset( $align_table_cells[ $line_id ][ $cell_id ] ) ? $align_table_cells[ $line_id ][ $cell_id ] : null );
 				}
 //				 $data .= "<td>" . $cell . "</td>";
@@ -1336,7 +1305,7 @@ if (! function_exists('gui_br')) {
 		return gui_select( $id, "day_name", $days, $events, $selected, "id", "class", true );
 	}
 
-	function GuiPulldown( $id, $text, $args ) {
+	static function GuiPulldown( $id, $text, $args ) {
 		$result  = "";
 		$result  .= '
 	<div class="dropdown">
@@ -1360,30 +1329,40 @@ if (! function_exists('gui_br')) {
 	function gui_type() {
 		return "html";
 	}
-}
 
-function GuiTabs($tabs)
-{
-	$result = '<div class="tab">';
-
-	$args = [];
-	$args["class"] = "tablinks";
-	$contents = "";
-	$div_args = array("class" => "tabcontent");
-
-	foreach ($tabs as $tab)
+	static function GuiLabel($id, $text, $args)
 	{
-		$name = $tab[0];
-		$display_name = $tab[1];
-		$contents .= GuiDiv($name, gui_header(2, $name) . $tab[2], $div_args);
+		$result = "<label id=" . $id . " ";
+		if ( GetArg($args, "hidden", false) ) {
+			$result .= 'style="display: none"';
+		}
+		$result .= ">" . $text . "</label>";
 
-		$args["events"] = "onclick=\"selectTab(event, '$name', 'tabcontent')\"";
-		$result .= GuiButton("btn_tab_$name", $display_name, $args);
+		return $result;
 	}
-	$result .= "</div>";
+	function GuiTabs($tabs)
+	{
+		$result = '<div class="tab">';
 
-	$result .= $contents;
-	return $result;
+		$args = [];
+		$args["class"] = "tablinks";
+		$contents = "";
+		$div_args = array("class" => "tabcontent");
+
+		foreach ($tabs as $tab)
+		{
+			$name = $tab[0];
+			$display_name = $tab[1];
+			$contents .= GuiDiv($name, gui_header(2, $name) . $tab[2], $div_args);
+
+			$args["events"] = "onclick=\"selectTab(event, '$name', 'tabcontent')\"";
+			$result .= GuiButton("btn_tab_$name", $display_name, $args);
+		}
+		$result .= "</div>";
+
+		$result .= $contents;
+		return $result;
+	}
+
 }
 
-//<button                    class="tablinks" onclick="openCity(event, 'Paris')">Paris</button>

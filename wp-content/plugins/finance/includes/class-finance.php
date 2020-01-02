@@ -157,7 +157,8 @@ class Finance {
 		$this->define( 'FINANCE_PLUGIN_BASENAME', plugin_basename( FINANCE_PLUGIN_FILE ) );
 		$this->define( 'FINANCE_VERSION', $this->version );
 		$this->define( 'FINANCE_INCLUDES', FINANCE_ABSPATH . 'includes/' );
-		// print "ffff= " . FINANCE_INCLUDES . "<br/>";
+		$this->define( 'FLAVOR_INCLUDES_URL', plugins_url() . '/flavor/includes/' ); // For js
+		$this->define( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path(__FILE__) . '../../flavor/includes/' );  // for php
 		$this->define( 'FINANCE_DELIMITER', '|' );
 		$this->define( 'FINANCE_LOG_DIR', $upload_dir['basedir'] . '/finance-logs/' );
 	}
@@ -216,13 +217,12 @@ class Finance {
 		 */
 		if (! class_exists('Core_Autoloader'))
 			require_once FINANCE_INCLUDES . 'core/class-core-autoloader.php';
-		require_once FINANCE_INCLUDES . 'core/core-functions.php';
-		require_once FINANCE_INCLUDES . 'core/fund.php';
-		require_once FINANCE_INCLUDES . 'core/data/sql.php';
+		require_once FLAVOR_INCLUDES_ABSPATH . 'core/core-functions.php';
+		require_once FLAVOR_INCLUDES_ABSPATH . 'core/fund.php';
+		require_once FLAVOR_INCLUDES_ABSPATH . 'core/data/sql.php';
 //		require_once FINANCE_INCLUDES . 'core/data/data.php';
-		require_once FINANCE_INCLUDES . 'core/wp.php';
-		require_once FINANCE_INCLUDES . 'core/gui/inputs.php';
-		require_once FINANCE_INCLUDES . 'core/gui/gem.php';
+		require_once FLAVOR_INCLUDES_ABSPATH . 'core/wp.php';
+		require_once FLAVOR_INCLUDES_ABSPATH . 'core/gui/inputs.php';
 
 		/**
 		 * Interfaces.
@@ -679,11 +679,10 @@ class Finance {
 //
 
 	public function enqueue_scripts() {
-
-		$file = plugin_dir_url( __FILE__ ) . 'core/data/data.js';
+		$file = FLAVOR_INCLUDES_URL . 'core/data/data.js';
 		wp_enqueue_script( 'data', $file, null, $this->version, false );
 
-		$file = plugin_dir_url( __FILE__ ) . 'core/gui/client_tools.js';
+		$file = FLAVOR_INCLUDES_URL . 'core/gui/client_tools.js';
 		wp_enqueue_script( 'client_tools', $file, null, $this->version, false );
 
 	}

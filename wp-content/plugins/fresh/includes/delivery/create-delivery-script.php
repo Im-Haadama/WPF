@@ -24,19 +24,19 @@ $O = new Order( $order_id );
 ?>
 
 <script>
-    const line_select_id = <?php print DeliveryFields::line_select; ?>;
-    const product_name_id = <?php print DeliveryFields::product_name; ?>;
-    const q_quantity_ordered_id = <?php print DeliveryFields::order_q; ?>;
-    const q_units = <?php print DeliveryFields::order_q_units; ?>;
-    const q_supply_id = <?php print DeliveryFields::delivery_q; ?>;
-    const has_vat_id = <?php print DeliveryFields::has_vat; ?>;
-    const line_vat_id = <?php print DeliveryFields::line_vat; ?>;
-    const price_id = <?php print DeliveryFields::price; ?>;
-    const line_total_id = <?php print DeliveryFields::delivery_line; ?>;
-    const term_id = <?php print DeliveryFields::term; ?>;
-    const q_refund_id = <?php print DeliveryFields::refund_q ?>;
-    const refund_total_id = <?php print DeliveryFields::refund_line; ?>;
-    const line_type_id = <? print DeliveryFields::line_type; ?>;
+    const line_select_id = <?php print eDeliveryFields::line_select; ?>;
+    const product_name_id = <?php print eDeliveryFields::product_name; ?>;
+    const q_quantity_ordered_id = <?php print eDeliveryFields::order_q; ?>;
+    const q_units = <?php print eDeliveryFields::order_q_units; ?>;
+    const q_supply_id = <?php print eDeliveryFields::delivery_q; ?>;
+    const has_vat_id = <?php print eDeliveryFields::has_vat; ?>;
+    const line_vat_id = <?php print eDeliveryFields::line_vat; ?>;
+    const price_id = <?php print eDeliveryFields::price; ?>;
+    const line_total_id = <?php print eDeliveryFields::delivery_line; ?>;
+    const term_id = <?php print eDeliveryFields::term; ?>;
+    const q_refund_id = <?php print eDeliveryFields::refund_q ?>;
+    const refund_total_id = <?php print eDeliveryFields::refund_line; ?>;
+    const line_type_id = <? print eDeliveryFields::line_type; ?>;
 
     function getPrice(my_row) {
         // var product_info = get_value(document.getElementById("nam_" + my_row));

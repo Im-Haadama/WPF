@@ -142,6 +142,9 @@ msgstr "הזמנה אחרונה"
 msgid "last order date"
 msgstr "תאריך הזמנה אחרונה"
 
+msgid "Order date"
+msgstr "תאריך הזמנה"
+
 msgid "Status"
 msgstr "מצב"
 
@@ -590,3 +593,12 @@ msgstr "שכר"
 msgid "Salary info"
 msgstr "נתוני שכר"
 
+# fresh personal area
+msgid "Balance"
+msgstr "יתרה לתשלםו"
+
+msgid "No pending orders"
+msgstr "כל ההזמנות סופקו"
+
+msgid "POPO"
+msgstr "פהפה"

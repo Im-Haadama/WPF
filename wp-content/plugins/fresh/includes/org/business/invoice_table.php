@@ -59,8 +59,8 @@ if ($operation){
 			$args = array();
 			$args["selectors"] = array("part_id" => "gui_select_supplier", "document_type" => "gui_select_document_type");
 			$args["edit"] = true;
-			print GuiTableContent("invoices", "select * from im_business_info where document_type = ". ImDocumentType::invoice .
-				" and date is null", $args );
+			print GuiTableContent("invoices", "select * from im_business_info where document_type = " . FreshDocumentType::invoice .
+			                                  " and date is null", $args );
 				break;
 		default:
 			die("$operation not handled");
