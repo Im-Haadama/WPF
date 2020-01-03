@@ -952,7 +952,7 @@ class Fresh_Delivery {
 				$line[ $i ] = "";
 			}
 			$line[0]                               = "dis"; // Discount line
-			$line[ eDeliveryFields::product_name ] = gui_label( "ba", "הנחת סל" );
+			$line[ eDeliveryFields::product_name ] =Core_Html::gui_label( "ba", "הנחת סל" );
 			$line [eDeliveryFields::product_id]    = -1;
 			$line[eDeliveryFields::line_type]      = "dis";
 			$line[eDeliveryFields::price]          = 0;

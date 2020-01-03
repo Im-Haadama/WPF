@@ -60,8 +60,6 @@ function pay_page($atts, $content = null)
 	print im_translate("You can use existing user or create local user in the form below.") . "<br/>";
 	print do_shortcode('[miniorange_social_login shape="longbuttonwithtext" theme="default" space="8" width="180" height="35" color="000000"]');
 
-	// print im_translate("In order to complete your order, register to this site.") . "<br/>";
-    // print gui_hyperlink("Create local user (and password)", "/wp-login.php?action=register&redirect_to=" . get_url()) . "<br/>";
     print do_shortcode('[woocommerce_checkout]');
 
     print im_translate("Or with one of the following.") . "<br/>";

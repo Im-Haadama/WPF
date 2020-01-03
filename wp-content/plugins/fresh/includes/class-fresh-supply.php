@@ -1453,7 +1453,7 @@ function handle_supplies_operation($operation)
 function get_supply($id)
 {
 	$supply = new Fresh_Supply($id);
-	print Core_Html::gui_header(1, "Supply", true, true). " " . gui_label("supply_id", $id);
+	print Core_Html::gui_header(1, "Supply", true, true). " " .Core_Html::gui_label("supply_id", $id);
 	$edit =($supply->getStatus() == SupplyStatus::NewSupply || $supply->getStatus() == SupplyStatus::Sent);
 	$internal = true;
 

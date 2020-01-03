@@ -96,7 +96,7 @@ class Focus_Salary {
 			$args["sql"] = "select distinct id, client_displayname(user_id) as name, project_id from im_working where is_active = 1";
 			$args["id_field"] = "id";
 			$args["links"] = array("id" => add_to_url(array("operation" => "show_worker", "worker_id" => "%s")));
-			$args["selectors"] = array("project_id" => "gui_select_project");
+			$args["selectors"] = array("project_id" => "Focus_Views::gui_select_project");
 
 			$result .= Core_Gem::GemTable("im_working", $args);
 		} else {
@@ -251,7 +251,7 @@ class Focus_Salary {
 
 		$args = [];
 		$args["post_file"] = self::instance()->post_file;
-		$args["selectors"] = array("project_id" => "gui_select_project", "company_id" => "gui_select_company");
+		$args["selectors"] = array("project_id" => "Focus_Views::gui_select_project", "company_id" => "gui_select_company");
 		$result .= Core_Gem::GemElement("im_working", $row_id, $args);
 
 		$result .= self::show_report_worker($user_id, $y, $m);
@@ -355,7 +355,7 @@ class Focus_Salary {
 
 		$args["header_fields"] = array("date" => "Date", "weekday" => "Weekday", "start_time" => "Start time", "end_time" => "End time",
 		                               "project_id" => "Project", "rate" => "Rate", "traveling" => "Traveling expense", "expense" => "Other expense", "expense_text" => "Expense details", "comment" => "Comment");
-		$args["selectors"] = array("project_id" => "gui_select_project");
+		$args["selectors"] = array("project_id" => "Focus_Views::gui_select_project");
 		$args["skip_id"] = true;
 		if ($edit) $args["add_checkbox"] = true;
 // 	 $args["hide_cols"] = array("expense" => 1, "expense_text" => 1, "125" => 1, "150" => 1);

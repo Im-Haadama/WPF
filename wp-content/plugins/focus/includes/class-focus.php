@@ -180,8 +180,6 @@ class Focus {
 	 * Define WC Constants.
 	 */
 	private function define_constants() {
-
-		// wp_plugin_directory_constants();
 		$this->define( 'FOCUS_ABSPATH', dirname( FOCUS_PLUGIN_FILE ) . '/' );
 		$this->define( 'FOCUS_VERSION', $this->version );
 		$this->define( 'FOCUS_INCLUDES', FOCUS_ABSPATH . 'includes/' );

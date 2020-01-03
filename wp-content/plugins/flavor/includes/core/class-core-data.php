@@ -389,8 +389,13 @@ class Core_Data
 					$selector_name = $selectors[ $key ];
 					if ( strlen( $selector_name ) < 2 ) die( "selector " . $key . "is empty" );
 					// print $selector_name;
-					$value = (function_exists($selector_name) ? $selector_name( $input_name, $orig_data, $args ) : $orig_data); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
-					if (! function_exists($selector_name)) print("function $selector_name does not exists");
+					$value = $selector_name( $input_name, $orig_data, $args );
+					// $value = (function_exists($selector_name) ? $selector_name( $input_name, $orig_data, $args ) : $orig_data); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
+//					if (! function_exists($selector_name)) {
+//						print( "function $selector_name does not exists" );
+//						print sql_trace();
+//						die(1);
+//					}
 					if ($drill) {
 						$operation = GetArg($args, "drill_operation", "show_archive");
 						$value = Core_Html::GuiHyperlink($value, add_to_url(array($key => $orig_data, "operation" => $operation)), $args);

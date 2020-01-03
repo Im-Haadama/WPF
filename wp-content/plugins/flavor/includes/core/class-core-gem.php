@@ -49,18 +49,18 @@ class Core_Gem {
 		if (!isset($args["edit"])) $args["edit"] = true;
 
 		if ($title)
-			$result .= Core_Html::gui_header(1, $title, true, true) . " " . gui_label("id", $row_id);
+			$result .= Core_Html::gui_header(1, $title, true, true) . " " .Core_Html::gui_label("id", $row_id);
 
 		$sql = "select is_active from $table_name where id = $row_id";
 		$active = sql_query_single_scalar($sql);
 		if (! $active) $result .= " not active ";
 
-		if (! ($row = Core_Data::GuiRowContent($table_name, $row_id, $args))) return null;
+		if (! ($row = Core_Html::GuiRowContent($table_name, $row_id, $args))) return null;
 		$result .= $row;
 
 		if (GetArg($args, "edit", false) and $post) {
-			$result .= Core_Html::GuiButton( "btn_save", "data_save_entity('" . $post . "', '$table_name', " . $row_id . ')', "save" );
-			$result .= Core_Html::GuiButton( "btn_active", "active_entity(" . (1 - $active) .", '" . $post . "', '$table_name', " . $row_id . ')', $active ? "inactive" : "activate" );
+			$result .= Core_Html::GuiButton( "btn_save", "save", array("action" => "data_save_entity('" . $post . "', '$table_name', " . $row_id . ')'));
+			$result .= Core_Html::GuiButton( "btn_active", $active ? "inactive" : "activate", array("action" => "active_entity(" . (1 - $active) .", '" . $post . "', '$table_name', " . $row_id . ')') );
 		}
 		return $result;
 	}

@@ -158,17 +158,10 @@ class Capabilites {
 		$this->define( 'CAPABILITES_PLUGIN_BASENAME', plugin_basename( CAPABILITES_PLUGIN_FILE ) );
 		$this->define( 'CAPABILITES_VERSION', $this->version );
 		$this->define( 'CAPABILITES_INCLUDES', CAPABILITES_WC_ABSPATH . '/includes/' );
-
 		$this->define( 'FLAVOR_INCLUDES_URL', plugins_url() . '/flavor/includes/' ); // For js
 		$this->define( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path(__FILE__) . '../../flavor/includes/' );  // for php
-
-		//		$this->define( 'CAPABILITES_ROUNDING_PRECISION', 6 );
-//		$this->define( 'CAPABILITES_DISCOUNT_ROUNDING_MODE', 2 );
-//		$this->define( 'CAPABILITES_TAX_ROUNDING_MODE', 'yes' === get_option( 'woocommerce_prices_include_tax', 'no' ) ? 2 : 1 );
 		$this->define( 'CAPABILITES_DELIMITER', '|' );
 		$this->define( 'CAPABILITES_LOG_DIR', $upload_dir['basedir'] . '/capabilites-logs/' );
-		/// $this->define( 'CAPABILITES_SESSION_CACHE_GROUP', 'wc_session_id' );
-		// $this->define( 'CAPABILITES_TEMPLATE_DEBUG_MODE', false );
 	}
 
 	/**

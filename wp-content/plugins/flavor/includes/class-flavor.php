@@ -183,16 +183,8 @@ class Flavor {
 		$this->define( 'FLAVOR_VERSION', $this->version );
 		$this->define( 'FLAVOR_INCLUDES_URL', plugins_url() . '/flavor/includes/' ); // For js
 		$this->define( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path(__FILE__) . '../../flavor/includes/' );  // for php
-//		print "url=" . FLAVOR_INCLUDES_URL . "<br/>";
-//		print "abs=" . FLAVOR_INCLUDES_ABSPATH . "<br/>";
-
-		//		$this->define( 'FLAVOR_ROUNDING_PRECISION', 6 );
-//		$this->define( 'FLAVOR_DISCOUNT_ROUNDING_MODE', 2 );
-//		$this->define( 'FLAVOR_TAX_ROUNDING_MODE', 'yes' === get_option( 'woocommerce_prices_include_tax', 'no' ) ? 2 : 1 );
 		$this->define( 'FLAVOR_DELIMITER', '|' );
 		$this->define( 'FLAVOR_LOG_DIR', $upload_dir['basedir'] . '/flavor-logs/' );
-		/// $this->define( 'FLAVOR_SESSION_CACHE_GROUP', 'wc_session_id' );
-		// $this->define( 'FLAVOR_TEMPLATE_DEBUG_MODE', false );
 	}
 
 	/**

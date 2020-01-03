@@ -70,9 +70,8 @@ function GemElement($table_name, $row_id, $args)
 	$result .= $row;
 
 	if (GetArg($args, "edit", false) and $post) {
-		$result .= Core_Html::GuiButton( "btn_save", "data_save_entity('" . $post . "', '$table_name', " . $row_id . ')', "save" );
-		$result .= Core_Html::GuiButton( "btn_active", "active_entity(" . ! $active ."," . $post . "', '$table_name', " . $row_id . ')', $active ? "inactive" : "activate" );
-
+		$result .= Core_Html::GuiButton( "btn_save", "save", array("action"=>"data_save_entity('" . $post . "', '$table_name', " . $row_id . ')'));
+		$result .= Core_Html::GuiButton( "btn_active", $active ? "inactive" : "activate", array("action" => "active_entity(" . ! $active ."," . $post . "', '$table_name', " . $row_id . ')'));
 	}
 	return $result;
 }
