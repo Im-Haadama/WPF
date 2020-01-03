@@ -101,7 +101,7 @@ if ( Core_Db_MultiSite::LocalSiteID() == 3 ) {
 	$amount = 0;
 }
 
-print gui_header( 1, "ביצוע תשלום" );
+print Core_Html::gui_header( 1, "ביצוע תשלום" );
 print gui_table_args( array(
 	array( "מספר כרטיס", gui_input( "card", $cc, array( "onkeydown=\"check_num(event)\"" ), "card" ) ),
 	array( "תוקף", gui_input_month( "valid", "", "", null ) ),
@@ -110,4 +110,4 @@ print gui_table_args( array(
 	array( "סכום לתשלום", gui_input( "amount", $amount ) )
 ) );
 
-print gui_button( "btn_pay", "pay()", "בצע תשלום" );
+print Core_Html::GuiButton( "btn_pay", "pay()", "בצע תשלום" );

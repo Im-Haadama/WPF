@@ -24,9 +24,9 @@ function gui_select_project($id, $value, $args)
 	$projects = Org_Project::GetProjects($user_id);
 	$projects_list = [];
 	foreach($projects as $project_id => $project_name) $projects_list[] = array("project_id" => $project_id, "project_name" => $project_name);
-	$result =  gui_select( $id, "project_name", $projects_list, $events, $value, "project_id" );
+	$result = Core_Html::gui_select( $id, "project_name", $projects_list, $events, $value, "project_id" );
 	if ($form_table and $new_row) { // die(__FUNCTION__ . ":" . " missing form_table");
-		$result .= gui_button( "add_new_project", "add_element('project', '" . $form_table . "', '" . get_url() . "')", "New Project" );
+		$result .= Core_Html::GuiButton( "add_new_project", "New Project", array("action" => "add_element('project', '" . $form_table . "', '" . get_url() . "')", "New Project" ));
 	}
 
 	return $result;
@@ -55,7 +55,7 @@ function gui_select_company($id, $value, $args)
 	foreach($companies as $company_id => $company_name) $companies_list[] = array("company_id" => $company_id, "company_name" => $company_name);
 	$result =  gui_select( $id, "company_name", $companies_list, $events, $value, "company_id" );
 //	if ($form_table and $new_row) { // die(__FUNCTION__ . ":" . " missing form_table");
-//		$result .= gui_button( "add_new_project", "add_element('project', '" . $form_table . "', '" . get_url() . "')", "New Project" );
+//		$result .= Core_Html::GuiButton( "add_new_project", "add_element('project', '" . $form_table . "', '" . get_url() . "')", "New Project" );
 //	}
 
 	return $result;
@@ -76,7 +76,7 @@ function gui_select_worker( $id = null, $selected = null, $args = null )
 	$args["query"] = (isset($args["query_team"]) ? $args["query_worker"] : null);
 
 	if ($edit) {
-		$gui = GuiSelectTable($id, "im_working", $args);
+		$gui = Core_Html::GuiSelectTable($id, "im_working", $args);
 		return $gui;
 	} else
 		return ($selected > 0) ? sql_query_single_scalar("select client_displayname(user_id) from im_working where user_id = " . $selected) :
@@ -115,8 +115,8 @@ function gui_select_team($id, $selected = null, $args = null)
 	$form_table = GetArg($args, "form_table", null);
 
 	if ($edit) {
-		$gui = GuiSelectTable($id, "im_working_teams", $args);
-		$gui .= gui_button("add_new_team", "add_element('team', '" . $form_table . "', '" .get_url() . "')", "New Team");
+		$gui = Core_Html::GuiSelectTable($id, "im_working_teams", $args);
+		$gui .= Core_Html::GuiButton("add_new_team", "New Team", array("action" => "add_element('team', '" . $form_table . "', '" .get_url() . "')", "New Team"));
 		return $gui;
 	}
 	else

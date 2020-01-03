@@ -6,11 +6,17 @@
  * Date: 01/01/19
  * Time: 19:43
  */
-class Supplier {
+class Fresh_Supplier {
 	private $id;
 
 	public function __construct( $_id ) {
+		if (! $_id) die("invalid supplier id");
 		$this->id = $_id;
+	}
+
+	function getSupplierName(  ) {
+		// my_log("sid=" . $supplier_id);
+		return sql_query_single_scalar( 'SELECT supplier_name FROM im_suppliers WHERE id = ' . $this->id );
 	}
 
 	static function getByInvoiceSender( $email ) {
@@ -21,7 +27,7 @@ class Supplier {
 			return null;
 		}
 
-		return new Supplier( $id );
+		return new Fresh_Supplier( $id );
 	}
 
 	/**
@@ -39,5 +45,14 @@ class Supplier {
 	{
 		$sql = "select address from im_suppliers where id = " . $this->id;
 		return sql_query_single_scalar( $sql);
+	}
+
+	function getCountStatus($year) {
+		$status = "not entered";
+		if ( sql_query_single_scalar( "select count(*) from im_inventory_count where supplier_id = " . $this->id . " and year(count_date) = $year" ) ) {
+			$status = "entered";
+		}
+
+		return $status;
 	}
 }

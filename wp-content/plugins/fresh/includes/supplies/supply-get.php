@@ -35,7 +35,7 @@ if ( isset( $_GET["business_id"] ) ) {
 	$id = $_GET["id"];
 }
 
-$s = new Supply( $id );
+$s = new Fresh_Supply( $id );
 
 ?>
 <script type="text/javascript" src="/core/gui/client_tools.js"></script>
@@ -115,7 +115,7 @@ if ( ! $send ) {
 	print '<div id="buttons">';
 	print '<button id="btn_print" onclick="printDeliveryNotes()">הדפס תעודה</button>';
 	if ( $s->getStatus() == 1 ) {
-		print gui_button( "btn_send", "sendSupply()", "שלח לספק" );
+		print Core_Html::GuiButton( "btn_send", "sendSupply()", "שלח לספק" );
 	}
 	print '</div>';
 }
@@ -136,7 +136,7 @@ print gui_select_mission( "mission_select", $mission_id, "onchange=\"save_missio
 
 <div id="add_items">
 	<?php
-	print gui_button( "btn_add_line", "add_item()", "הוסף" );
+	print Core_Html::GuiButton( "btn_add_line", "add_item()", "הוסף" );
 	print gui_select_product( "itm_" );
 	?>
     <!--    <input id="itm_" list="prods">-->

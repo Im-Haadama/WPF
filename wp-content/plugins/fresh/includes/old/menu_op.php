@@ -45,13 +45,13 @@ if ( $user->ID == "0" ) {
 
 
 <?php
-print gui_header(1, "ממשק לניהול החנות", true);
+print Core_Html::gui_header(1, "ממשק לניהול החנות", true);
 $table = array();
 
 $max_row = 8;
 
 print "שלום " . get_user_name( get_user_id() ) . "(" . get_user_id() . "). " . Date("G:i", strtotime("now"));
-print " " . gui_hyperlink("התנתק/י", "/wp-login.php?loggedout=true&redirect_to=/fresh/menu_op.php");
+print " " . Core_Html::GuiHyperlink("התנתק/י", "/wp-login.php?loggedout=true&redirect_to=/fresh/menu_op.php");
 function add_command( &$table, &$row, $col, $can, $text, $link, $target = "doc_frame" )
 {
 	global $test_site;
@@ -60,7 +60,7 @@ function add_command( &$table, &$row, $col, $can, $text, $link, $target = "doc_f
 		if ( $test_site ) {
 			$table[ $row ++ ][ $col ] = $link;
 		} else {
-			$table[ $row ++ ][ $col ] = gui_hyperlink( $text, $link, $target );
+			$table[ $row ++ ][ $col ] = Core_Html::GuiHyperlink( $text, $link, $target );
 		}
 	}
 }
@@ -68,7 +68,7 @@ function add_command( &$table, &$row, $col, $can, $text, $link, $target = "doc_f
 $row = 0;
 $col = 0;
 
-$table[ $row ++ ][ $col ] = gui_header( 2, "אריזה" );
+$table[ $row ++ ][ $col ] = Core_Html::gui_header( 2, "אריזה" );
 add_command( $table, $row, $col, "edit_shop_orders", "הזמנות", "orders/orders-get.php", "doc_frame" );
 add_command( $table, $row, $col, "edit_shop_orders", "פריטים להזמנות", "orders/get-total-orders.php", "doc_frame" );
 add_command( $table, $row, $col, "edit_shop_orders", "הדפסה", "/routes/print.php", "print" );
@@ -83,7 +83,7 @@ while ( $row < $max_row ) {
 $col ++;
 $row = 0;
 
-$table[ $row ++ ][ $col ] = gui_header( 2, "משלוחים" );
+$table[ $row ++ ][ $col ] = Core_Html::gui_header( 2, "משלוחים" );
 add_command( $table, $row, $col, "edit_shop_orders", "Today routes", "/routes/routes-page.php?operation=show_today_routes" );
 add_command( $table, $row, $col, "edit_shop_orders", "This week missions", "/routes/routes-page.php?operation=show_missions&week=" . date( "Y-m-d", strtotime( "last sunday" ) ));
 add_command( $table, $row, $col, "edit_shop_orders", "תעודות משלוח", "delivery/delivery-page.php", "doc_frame" );
@@ -106,7 +106,7 @@ while ( $row < $max_row ) {
 
 $col ++;
 $row                      = 0;
-$table[ $row ++ ][ $col ] = gui_header( 2, "לקוחות" );
+$table[ $row ++ ][ $col ] = Core_Html::gui_header( 2, "לקוחות" );
 add_command( $table, $row, $col, "edit_shop_orders", "אריזה", "orders/orders-get.php?order_type", "orders" );
 add_command( $table, $row, $col, "edit_shop_orders", "מעקב תשלומים", "account/get-accounts-status.php", "doc_frame" );
 add_command( $table, $row, $col, "edit_shop_orders", "הוספת לקוח", "account/add-account.php", "doc_frame" );
@@ -119,7 +119,7 @@ while ( $row < $max_row ) {
 
 $col ++;
 $row                      = 0;
-$table[ $row ++ ][ $col ] = gui_header( 2, "מחירון" );
+$table[ $row ++ ][ $col ] = Core_Html::gui_header( 2, "מחירון" );
 add_command( $table, $row, $col, null, "סלי השבוע", "baskets/show_baskets.php" );
 add_command( $table, $row, $col, "show_pricelist", "מחירון ספקים", "pricelist/pricelist-get.php" );
 add_command( $table, $row, $col, "edit_shop_orders", "כל הפריטים", "catalog/cost-price-list.php", "doc_frame" );
@@ -135,7 +135,7 @@ while ( $row < $max_row ) {
 $col ++;
 $row                      = 0;
 
-$table[ $row ++ ][ $col ] = gui_header( 2, "ספקים" );
+$table[ $row ++ ][ $col ] = Core_Html::gui_header( 2, "ספקים" );
 add_command( $table, $row, $col, "edit_suppliers", "ספקים", "suppliers/admin.php", "doc_frame" );
 add_command( $table, $row, $col, "edit_shop_orders", "אספקות", "supplies/supplies-page.php", "doc_frame" );
 if ($manage_inventory){
@@ -151,7 +151,7 @@ while ( $row < $max_row ) {
 if ($manage_workers) {
     $col ++;
     $row                      = 0;
-    $table[ $row ++ ][ $col ] = gui_header( 2, "עובדים" );
+    $table[ $row ++ ][ $col ] = Core_Html::gui_header( 2, "עובדים" );
     add_command( $table, $row, $col, null, "דיווח שעות", "https://store.im-haadama.co.il/org/people/worker.php", "doc_frame" );
     add_command( $table, $row, $col, "working_hours_all", "ניהול עובדים", "/org/people/people-page.php?operation=edit_workers" );
 }
@@ -161,7 +161,7 @@ while ( $row < $max_row ) {
 
 $col ++;
 $row                      = 0;
-$table[ $row ++ ][ $col ] = gui_header( 2, "ניהול" );
+$table[ $row ++ ][ $col ] = Core_Html::gui_header( 2, "ניהול" );
 add_command( $table, $row, $col, "edit_pricelist", "תבנית", "tasklist/c-get-all-task_templates.php", "doc_frame" );
 add_command( $table, $row, $col, "edit_pricelist", "משימות פעילות", $m->getSiteToolsURL( 1 ) . "/focus/focus-page.php", "tasks" );
     add_command( $table, $row, $col, "edit_pricelist", "חשבוניות", "/org/business/invoice_table.php" );

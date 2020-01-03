@@ -68,10 +68,10 @@ require( "new-order.php" );
 <?php
 
 // This button create order, delivery note and invoice.
-// print gui_button("pay_order", "pay_order()", "שולם במזומן");
+// print Core_Html::GuiButton("pay_order", "pay_order()", "שולם במזומן");
 
 // This button create order, delivery note.
-// print gui_button("create_delivery_note", "add_order(2)", "קניה בהקפה");
+// print Core_Html::GuiButton("create_delivery_note", "add_order(2)", "קניה בהקפה");
 
 print gui_table_args( array(
 	array( "מזומן", gui_input( "cash", "" ) ),

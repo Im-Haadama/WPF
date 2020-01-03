@@ -39,7 +39,7 @@ class Org_Team {
 
 		$idx = array_search($team_id, $teams);
 		if ($idx === false) {
-			print "not member" . gui_br();
+			print "not member" . Core_Html::Br();
 			return false;
 		}
 

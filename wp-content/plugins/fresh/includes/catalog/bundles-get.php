@@ -9,7 +9,7 @@ require_once( '../r-shop_manager.php' );
 require_once( FRESH_INCLUDES . "/core/gui/inputs.php" );
 
 print header_text( false );
-print gui_button( "btn_new", "show_create_new()", "מארז חדש" );
+print Core_Html::GuiButton( "btn_new", "show_create_new()", "מארז חדש" );
 
 ?>
 
@@ -218,16 +218,16 @@ print gui_datalist( "items", "im_products", "post_title" );
 
 <div id="new_item" style="display: none">
 	<?php
-	print gui_header( 1, "יצירת מארז" );
+	print Core_Html::gui_header( 1, "יצירת מארז" );
 	print gui_table_args( array(
 		array(
-			gui_header( 2, "בחר מוצר" ),
-			gui_header( 2, "מחיר עלות" ),
-			gui_header( 2, "מחיר יחידה" ),
-			gui_header( 2, "כמות במארז" ),
-			gui_header( 2, "רוווח %/שח" ),
-			gui_header( 2, "מחיר מארז" ),
-			gui_header( 2, "מחיר רגיל" )
+			Core_Html::gui_header( 2, "בחר מוצר" ),
+			Core_Html::gui_header( 2, "מחיר עלות" ),
+			Core_Html::gui_header( 2, "מחיר יחידה" ),
+			Core_Html::gui_header( 2, "כמות במארז" ),
+			Core_Html::gui_header( 2, "רוווח %/שח" ),
+			Core_Html::gui_header( 2, "מחיר מארז" ),
+			Core_Html::gui_header( 2, "מחיר רגיל" )
 		),
 		array(
 			GuiInputDatalist( "product_name", "products", "onchange=\"calcBundle()\"" ),
@@ -240,7 +240,7 @@ print gui_datalist( "items", "im_products", "post_title" );
 			'<div id="regular_price">'
 		)
 	) );
-	print gui_button( "btn_create_bundle", "createBundle()", "צור" );
+	print Core_Html::GuiButton( "btn_create_bundle", "createBundle()", "צור" );
 	print gui_datalist( "products", "im_products", "post_title", true );
 
 	?>

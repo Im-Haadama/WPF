@@ -68,7 +68,7 @@ while ( $row = sql_fetch_row( $result ) ) {
 
 	$line = gui_cell( gui_checkbox( "chk_" . $supplier_id, "supplier_chk" ) );
 	// $line .= "<td><a href = \"get-supplier-account.php?supplier_id=" . $supplier_id . "\">" . $supplier_name . "</a></td>";
-	$line .= gui_cell( gui_hyperlink( get_supplier_name( $supplier_id ),
+	$line .= gui_cell( Core_Html::GuiHyperlink( get_supplier_name( $supplier_id ),
 		"get-supplier-balance.php?supplier_id=" . $supplier_id ) );
 
 	$line .= "<td>" . $supplier_total . "</td>";
@@ -113,7 +113,7 @@ print "$data";
 <?php
 
 function get_supplier_balance( $supplier_id ) {
-    print gui_header(1, get_supplier_name($supplier_id));
+    print Core_Html::gui_header(1, get_supplier_name($supplier_id));
 	$args = array();
 	$selectors = array();
     $selectors["document_type"] = "gui_select_document_type";
@@ -134,9 +134,9 @@ function get_supplier_balance( $supplier_id ) {
 
 	print GuiTableContent( "supplier_account", $sql, $args );
 
-	// print gui_hyperlink("Add invoice", add_to_url(array("operation" => "add_invoice", "supplier_id" => $supplier_id)));
+	// print Core_Html::GuiHyperlink("Add invoice", add_to_url(array("operation" => "add_invoice", "supplier_id" => $supplier_id)));
 
-	print gui_header(1, "Add transaction");
+	print Core_Html::gui_header(1, "Add transaction");
 	print im_translate("Meanwhile solution for returned goods and old transactions (older that bank account in the system");
 	$new_args = array("values" => array("part_id" => $supplier_id),
                       "worker" => get_user_id(), // for gui_select_project
@@ -144,7 +144,7 @@ function get_supplier_balance( $supplier_id ) {
                       "selectors" => array("document_type" => "gui_select_document_type")); // , "project_id" => "gui_select_project"
 
 	print NewRow("im_business_info", $new_args);
-	print gui_button("btn_add_row", "data_save_new('" . get_url() . "', 'im_business_info')", "הוסף");
+	print Core_Html::GuiButton("btn_add_row", "data_save_new('" . get_url() . "', 'im_business_info')", "הוסף");
 }
 
 ?>

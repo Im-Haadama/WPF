@@ -334,24 +334,24 @@ global $pos;
 
     <div id="new_order" style="display: none">
 		<?php
-		print gui_header( 1, "New Order" );
+		print Core_Html::gui_header( 1, "New Order" );
 
 		$header = array(
-			array( gui_header( 2, "Select client" ) ),
+			array( Core_Html::gui_header( 2, "Select client" ) ),
 			array( gui_select_client( "client_select", "", array("events" => "onchange=\"client_changed()\"") ) )
 		);
 
 		if ( ! $pos ) {
-			array_push( $header[0], gui_header( 2, "Select delivery" ) );
+			array_push( $header[0], Core_Html::gui_header( 2, "Select delivery" ) );
 			array_push( $header[1], gui_select_mission( "mis_new" ) );
 		}
-		array_push( $header[0], gui_header( 2, "הערה/שם לקוח" ) );
+		array_push( $header[0], Core_Html::gui_header( 2, "הערה/שם לקוח" ) );
 		array_push( $header[1], GuiInput( "order_excerpt", "" ) );
 		print gui_table_args( $header );
 
 		print gui_label( "rate", $pos ? "pos" : "" );
 
-		print gui_header( 2, "בחר מוצרים" );
+		print Core_Html::gui_header( 2, "בחר מוצרים" );
 
 		$show_fields = array( true, true, ! $pos, true, true );
 		$sum         = array();
@@ -359,7 +359,7 @@ global $pos;
 			"order_items", true, true, $sum, null, null, $show_fields );
 
 		print "<br/>";
-		print gui_button( "add_line", "add_line()", "הוסף שורה" );
+		print Core_Html::GuiButton( "add_line", "add_line()", "הוסף שורה" );
 		print "<br/>";
 
 		print gui_label( "", 'סה"כ הזמנה ' );
@@ -381,9 +381,9 @@ global $pos;
 		printbr();
 
 		//	if (! $pos)
-		//	    print gui_button( "add_order", "add_order(0)", "הוסף הזמנה" );
+		//	    print Core_Html::GuiButton( "add_order", "add_order(0)", "הוסף הזמנה" );
 
-		print gui_button( "add_order", "add_order()", "הוסף עסקה" );
+		print Core_Html::GuiButton( "add_order", "add_order()", "הוסף עסקה" );
 		?>
 
     </div>

@@ -366,14 +366,14 @@ function update_shipping_methods()
 		}
 	}
 
-	$result .= gui_header(1, "Updating all shipping methods");
+	$result .= Core_Html::gui_header(1, "Updating all shipping methods");
 	$wc_zones = WC_Shipping_Zones::get_zones();
 
 	foreach ($wc_zones as $wc_zone)
 	{
 		$zone_id = $wc_zone['id'];
 //		print "handling $zone_id<br/>";
-		$result .= gui_header(2, "Updating zone " . $wc_zone['zone_name']);
+		$result .= Core_Html::gui_header(2, "Updating zone " . $wc_zone['zone_name']);
 
 		foreach ($wc_zone['shipping_methods'] as $shipping){
 			if (!isset($zone_times[$zone_id])) { // No zone times. Disabling.
@@ -404,7 +404,7 @@ function update_shipping_methods()
 		if ($all_missions) {
 			foreach ($all_missions as $mission_id) {
 				$m       = new Mission( $mission_id );
-				$result  .= gui_header( 3, $m->getMissionName() ) . "<br/>";
+				$result  .= Core_Html::gui_header( 3, $m->getMissionName() ) . "<br/>";
 				$mission = new Mission( $mission_id );
 				$date    = $mission->getDate();
 				// print $date . " " . date_day_name($date);
@@ -427,7 +427,7 @@ function update_shipping_methods()
 						update_wp_woocommerce_shipping_zone_methods( $args );
 						$has_missions = true;
 					}
-					$result .= "updated mission " . gui_hyperlink($mission_id, add_to_url(array("operation" => "show_mission", "mission_id" => $mission_id))) . "<br/>";
+					$result .= "updated mission " . Core_Html::GuiHyperlink($mission_id, add_to_url(array("operation" => "show_mission", "mission_id" => $mission_id))) . "<br/>";
 				}
 			}
 		}
@@ -442,7 +442,7 @@ function update_shipping_methods()
 		}
 	}
 
-//	$result .= gui_header(2, "disabling all");
+//	$result .= Core_Html::gui_header(2, "disabling all");
 //	$zones = WC_Shipping_Zones::get_zones();
 //	$args =[];
 //	if ($disable_all)
@@ -472,7 +472,7 @@ function update_shipping_methods()
 ////	print $sql;
 //	$missions = sql_query_array_scalar($sql);
 //
-//	$result .= gui_header(2, "enabling by missions");
+//	$result .= Core_Html::gui_header(2, "enabling by missions");
 	return $result;
 }
 
@@ -485,7 +485,7 @@ function update_shipping_methods()
 function show_mission($mission_id)
 {
 	if (! ($mission_id > 0)) die ("bad mission_id " .$mission_id);
-	$result = gui_header(1, im_translate("mission") . " $mission_id");
+	$result = Core_Html::gui_header(1, im_translate("mission") . " $mission_id");
 
 	$args = [];
 	$args["selectors"] = array("path_code" => "gui_select_path");
@@ -512,7 +512,7 @@ function show_mission($mission_id)
 
 	$result .= gui_table_args($zone_table, "", $args);
 
-	$result .= gui_hyperlink("update", add_to_url(array("operation" => "update_shipping_methods")));
+	$result .= Core_Html::GuiHyperlink("update", add_to_url(array("operation" => "update_shipping_methods")));
 	return $result;
 }
 
@@ -573,7 +573,7 @@ function create_missions($path_ids = null, $forward_week = 0)
 	$result = "";
 	if (! $path_ids) $path_ids = sql_query_array_scalar("select distinct path_id from im_paths");
 	foreach ($path_ids as $path_id){
-		$result .= gui_header(1, "Create missions");
+		$result .= Core_Html::gui_header(1, "Create missions");
 		if (! Mission::CreateFromPath($path_id, 8)) return "failed";
 	}
 	return "done";

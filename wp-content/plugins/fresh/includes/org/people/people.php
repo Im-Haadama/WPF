@@ -272,7 +272,7 @@ function handle_people_operation($operation)
 			$worker_id = get_param("worker_id", false);
 			if (! $row_id and ! $worker_id) die ("supply row or worker_id");
 			if ($row_id) $worker_id            = sql_query_single_scalar( "select user_id from im_working where id = $row_id" );
-			$result               = gui_header( 1, "editing worker info" );
+			$result               = Core_Html::gui_header( 1, "editing worker info" );
 			$args                 = [];
 			$args["edit"] = false;
 			$args["selectors"]    = array( "project_id" => "gui_select_project" );
@@ -284,7 +284,7 @@ function handle_people_operation($operation)
 			return $result;
 			break;
 		case "show_edit_worker_project":
-			$result = gui_header(1, "Project info for worker");
+			$result = Core_Html::gui_header(1, "Project info for worker");
 			$id = get_param("row_id", true);
 			$args = [];
 			$result .= GemElement("im_working", $id, $args);
@@ -305,7 +305,7 @@ function handle_people_operation($operation)
 			if (count ($companies) != 1) $result .= "Manage more than one company. showing first one<br/>";
 
 			$company = $companies[0];
-			$result .= gui_header(1, "workers for company " . company_get_name($company));
+			$result .= Core_Html::gui_header(1, "workers for company " . company_get_name($company));
 			$args = [];
 			$args["selectors"] = array("user_id" => "gui_select_worker", "project_id" => "gui_select_project");
 			$args["query"] = "is_active = 1 and company_id = $company";
@@ -320,15 +320,15 @@ function handle_people_operation($operation)
 
 		case "show_project":
 			$project_id = get_param("id", true);
-			print gui_header(1, project_name($project_id));
+			print Core_Html::gui_header(1, project_name($project_id));
 			$args = [];
 			$args["query"] = "project_id = $project_id";
 			if (file_exists(FRESH_INCLUDES . '/focus/focus_class.php')){
 				require_once( FRESH_INCLUDES . '/focus/focus_class.php' );
 				$tasks = Focus_Views::active_tasks($args);
-				if ($tasks) print gui_header(1, "Active tasks") . $tasks;
-				else print gui_header(1, "No active tasks");
-				print gui_button( "btn_cancel", "cancel_entity('" . get_url(1) . "', 'im_working', " . $project_id . ')', "delete" );
+				if ($tasks) print Core_Html::gui_header(1, "Active tasks") . $tasks;
+				else print Core_Html::gui_header(1, "No active tasks");
+				print Core_Html::GuiButton( "btn_cancel", "cancel_entity('" . get_url(1) . "', 'im_working', " . $project_id . ')', "delete" );
 			}
 			break;
 		default:

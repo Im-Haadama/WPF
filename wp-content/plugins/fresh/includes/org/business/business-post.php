@@ -119,10 +119,10 @@ if ( $operation) {
 					"/fresh/account/account.js"
 				) );
 			$id = get_param( "id" );
-			print gui_header( 1, "רישום העברה שבוצעה " );
+			print Core_Html::gui_header( 1, "רישום העברה שבוצעה " );
 
 			$b = BankTransaction::createFromDB( $id );
-			print gui_header( 2, "פרטי העברה" );
+			print Core_Html::gui_header( 2, "פרטי העברה" );
 			$free_amount = $b->getOutAmount( true );
 			print gui_table_args( array(
 					array( "תאריך", gui_div( "pay_date", $b->getDate() ) ),
@@ -134,14 +134,14 @@ if ( $operation) {
 
 			$lines = $b->getAttached();
 			if ( $lines ) {
-				print gui_header( 2, "שורות מתואמות" );
+				print Core_Html::gui_header( 2, "שורות מתואמות" );
 
 				print gui_table_args( $lines );
 			}
 
 			if ( $free_amount > 0 ) {
 //				print "a=" . $amount . "<br/>";
-				print gui_header( 2, "Select Supplier" );
+				print Core_Html::gui_header( 2, "Select Supplier" );
 				print gui_select_open_supplier();
 			}
 			print '<div id="logging"></div>';
@@ -149,7 +149,7 @@ if ( $operation) {
 			print gui_table( array(
 				array(
 					"קשר",
-					gui_button( "btn_receipt", "link_invoice_bank()", "קשר תשלום לחשבוני/ות" )
+					Core_Html::GuiButton( "btn_receipt", "link_invoice_bank()", "קשר תשלום לחשבוני/ות" )
 				),
 				array( "סה\"כ", " <div id=\"total\"></div>" )
 			), "payment_table", true, true, $sums, "", "payment_table" );
@@ -168,7 +168,7 @@ if ( $operation) {
 				$id = $data[ $key ][0];
 				$b  = BankTransaction::createFromDB( $id );
 				if ( $b->getOutAmount( true ) ) {
-					array_push( $data[ $key ], gui_hyperlink( "קשר", "business-post.php?operation=create_pay_bank&id=" . $id ) );
+					array_push( $data[ $key ], Core_Html::GuiHyperlink( "קשר", "business-post.php?operation=create_pay_bank&id=" . $id ) );
 				}
 			}
 			print gui_table_args( $data );
@@ -271,9 +271,9 @@ if ( $operation) {
 				) );
 			$id = get_param( "id" );
 			$b = BankTransaction::createFromDB( $id );
-			print gui_header( 1, "הפקת חשבונית קבלה להפקדה מבנק " );
+			print Core_Html::gui_header( 1, "הפקת חשבונית קבלה להפקדה מבנק " );
 
-			print gui_header( 2, "פרטי העברה" );
+			print Core_Html::gui_header( 2, "פרטי העברה" );
 			print gui_table_args( array(
 					array( "תאריך", gui_div( "pay_date", $b->getDate() ) ),
 					array( "סכום", gui_div( "bank", $b->getInAmount() ) ),
@@ -281,18 +281,18 @@ if ( $operation) {
 				)
 			);
 
-			print gui_header(2, "חשבונית שהופקה");
+			print Core_Html::gui_header(2, "חשבונית שהופקה");
 			print GuiInput("invoice_id");
-			print gui_button("btn_invoice_exists", "invoice_exists()", "Exists invoice");
+			print Core_Html::GuiButton("btn_invoice_exists", "invoice_exists()", "Exists invoice");
 
-			print gui_header( 2, "בחר לקוח" );
+			print Core_Html::gui_header( 2, "בחר לקוח" );
 			print gui_select_client_open_account();
 			print '<div id="logging"></div>';
 			print '<div id="transactions"></div>';
 			print gui_table( array(
 				array(
 					"תשלום",
-					gui_button( "btn_receipt", "create_receipt_from_bank()", "הפק חשבונית מס קבלה" )
+					Core_Html::GuiButton( "btn_receipt", "create_receipt_from_bank()", "הפק חשבונית מס קבלה" )
 				),
 				array( "עודף", " <div id=\"change\"></div>" )
 			), "payment_table", true, true, $sums, "", "payment_table" );
@@ -310,9 +310,9 @@ if ( $operation) {
 				) );
 			$id = get_param( "id" );
 			$b = BankTransaction::createFromDB( $id );
-			print gui_header( 1, "סמן החזר מהספק" );
+			print Core_Html::gui_header( 1, "סמן החזר מהספק" );
 
-			print gui_header( 2, "פרטי העברה" );
+			print Core_Html::gui_header( 2, "פרטי העברה" );
 			print gui_table_args( array(
 					array( "תאריך", gui_div( "pay_date", $b->getDate() ) ),
 					array( "סכום", gui_div( "bank", $b->getInAmount() ) ),
@@ -320,18 +320,18 @@ if ( $operation) {
 				)
 			);
 
-//			print gui_header(2, "חשבונית שהופקה");
+//			print Core_Html::gui_header(2, "חשבונית שהופקה");
 //			print GuiInput("invoice_id");
-//			print gui_button("btn_invoice_exists", "invoice_exists()", "Exists invoice");
+//			print Core_Html::GuiButton("btn_invoice_exists", "invoice_exists()", "Exists invoice");
 
-			print gui_header( 2, "בחר ספק" );
+			print Core_Html::gui_header( 2, "בחר ספק" );
 			print gui_select_open_supplier();
 			print '<div id="logging"></div>';
 			print '<div id="transactions"></div>';
 			print gui_table( array(
 				array(
 					"תשלום",
-					gui_button( "btn_refund", "mark_refund_bank()", "סמן זיכוי" )
+					Core_Html::GuiButton( "btn_refund", "mark_refund_bank()", "סמן זיכוי" )
 				),
 				array( "עודף", " <div id=\"change\"></div>" )
 			), "payment_table", true, true, $sums, "", "payment_table" );
@@ -709,7 +709,7 @@ function show_makolet( $month_year ) {
 	print $month_year;
 	$year  = substr( $month_year, 0, 4 );
 	$month = substr( $month_year, 5, 2 );
-	print gui_header( 1, "משלוחים שבוצעו" );
+	print Core_Html::gui_header( 1, "משלוחים שבוצעו" );
 
 	$sums  = array(
 		"סה\"כ",
@@ -728,7 +728,7 @@ function show_makolet( $month_year ) {
 //		print $key . " " . $value . "<br/>";
 //	}
 
-	print gui_header( 1, "ריכוז חיוב" );
+	print Core_Html::gui_header( 1, "ריכוז חיוב" );
 	print "עמלה: " . $sums[7][0] * 0.2 . "<br/>";
 	print "משלוחים: " . $sums[6][0] . "<br/>";
 
@@ -741,7 +741,7 @@ function show_makolet( $month_year ) {
 	if ( $doc_id ) {
 		print "הופקה חשבונית מספר  " . $doc_id . "<br/>";
 	} else {
-		print gui_button( "btn_create_invoice", "create_invoice()", "הפק חשבונית" );
+		print Core_Html::GuiButton( "btn_create_invoice", "create_invoice()", "הפק חשבונית" );
 	}
 }
 
@@ -772,7 +772,7 @@ function calc_makolet( $year, $month ) {
 	$driver_array = array();
 
 	while ( $row = mysqli_fetch_row( $result ) ) {
-		$row[0] = gui_hyperlink( $row[0], "/fresh/delivery/get-delivery.php?id=" . $row[0] );
+		$row[0] = Core_Html::GuiHyperlink( $row[0], "/fresh/delivery/get-delivery.php?id=" . $row[0] );
 		if ( $row[6] == 0 ) {
 			print $row[0] . "<br/>";
 			$sql1   = "SELECT round(reduce_vat(line_price),2) FROM im_delivery_lines WHERE delivery_id = " . $row[0] . " AND product_name LIKE '%משלוח%'";
@@ -799,7 +799,7 @@ function show_control( $month_year ) {
 	if ( ! $month ) {
 		die ( "bad month" );
 	}
-	print gui_header( 1, "תשלומים באשראי" );
+	print Core_Html::gui_header( 1, "תשלומים באשראי" );
 
 	$sql = "SELECT id, client_id, date, transaction_amount, transaction_ref FROM im_client_accounts WHERE month(date) = " . $month .
 	       " AND year(date) = " . $year .

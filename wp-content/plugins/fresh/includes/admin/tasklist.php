@@ -74,7 +74,7 @@ function tasklist_page_actions() {
 }
 
 function tasklist_add_link( $text, $link ) {
-	print gui_button( "btn" . $text, "location.href='" . $link . "'", $text );
+	print Core_Html::GuiButton( "btn" . $text, "location.href='" . $link . "'", $text );
 }
 
 ?>

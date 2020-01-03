@@ -78,7 +78,7 @@ require_once( "../gui/inputs.php" );
 
 	?>
 	<?php
-	print gui_header( 1, "נתוני התנדבות - עם האדמה", true );
+	print Core_Html::gui_header( 1, "נתוני התנדבות - עם האדמה", true );
 	if ( is_admin_user() ) {
 		print gui_select_table( "user_id", "i_people", 0, "onchange=\"update_display()\"", array(
 			array(

@@ -53,7 +53,7 @@ if ($operation){
 			$args["post_file"] = "/core/data/data-post.php";
 			print GemAddRow("im_business_info", "invoices", $args);
 			// print NewRow("im_business_info", $args, true);
-			// print gui_button("btn_add", "data_save_new('im_business_info')", "הוסף");
+			// print Core_Html::GuiButton("btn_add", "data_save_new('im_business_info')", "הוסף");
 			break;
 		case "null_date":
 			$args = array();
@@ -71,7 +71,7 @@ $row_id = get_param("row_id", false);
 
 if ($row_id)
 {
-	print gui_header(1, "חשבונית מס " . $row_id);
+	print Core_Html::gui_header(1, "חשבונית מס " . $row_id);
 	$args = array();
 	$args["edit"] = 1;
 	$args["skip_id"] = true;
@@ -80,7 +80,7 @@ if ($row_id)
 	$args["header_fields"] = array("Id", "Supplier", "Date", "Week", "Amount", "Reference", "Delivery fee", "Project", "Is active", "Pay date", "Document type", "Net amount", "Invoice file", "Invoice",
 		"Occasional supplier");
 	// print GuiRowContent("im_business_info", $row_id, $args);
-	// print gui_button("btn_save", 'data_save_entity(\'im_business_info\', ' . $row_id .')', "שמור");
+	// print Core_Html::GuiButton("btn_save", 'data_save_entity(\'im_business_info\', ' . $row_id .')', "שמור");
 	print GemElement("im_business_info", $row_id, $args);
 
 	return;
@@ -89,8 +89,8 @@ if ($row_id)
 $part_id = get_param("part_id", false);
 
 if ($part_id) {
-	print gui_header(2, get_supplier_name($part_id));
-	print gui_header(3, "year " . $year);
+	print Core_Html::gui_header(2, get_supplier_name($part_id));
+	print Core_Html::gui_header(3, "year " . $year);
 	$page .= " and part_id = " . $part_id;
 	$links = array("id"=> "invoice_table.php?row_id=%s", "אספקה" => "/fresh/supplies/supply-get.php?id=%s");
 	$args["links"] = $links;
@@ -104,16 +104,16 @@ if ($part_id) {
 
 	$date = date('Y-m-d', strtotime("last day of previous month"));
 
-	print gui_hyperlink("הוסף" , "invoice_table.php?operation=add&part_id=$part_id&date=$date&document_type=4");
+	print Core_Html::GuiHyperlink("הוסף" , "invoice_table.php?operation=add&part_id=$part_id&date=$date&document_type=4");
 
-	print gui_hyperlink("last year", add_to_url("year", $year - 1));
-	if ($year < date('Y')) print gui_hyperlink("next year", add_to_url("year", $year + 1));
+	print Core_Html::GuiHyperlink("last year", add_to_url("year", $year - 1));
+	if ($year < date('Y')) print Core_Html::GuiHyperlink("next year", add_to_url("year", $year + 1));
 	return;
 }
 
-print gui_header (1, "ריכוז חשבוניות");
+print Core_Html::gui_header (1, "ריכוז חשבוניות");
 
-print gui_hyperlink("Add invoice", add_param_to_url(get_url(), array("operation" => "show_add_invoice", "document_type" =>"4")));
+print Core_Html::GuiHyperlink("Add invoice", add_param_to_url(get_url(), array("operation" => "show_add_invoice", "document_type" =>"4")));
 
 try {
 	$t = new \core\PivotTable( "im_business_info", $page,
@@ -146,4 +146,4 @@ try {
 	die (4);
 }
 
-print gui_hyperlink( "שנה קודמת", "invoice_table.php?year=" . ( $year - 1 ) );
+print Core_Html::GuiHyperlink( "שנה קודמת", "invoice_table.php?year=" . ( $year - 1 ) );

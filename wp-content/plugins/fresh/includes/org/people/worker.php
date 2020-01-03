@@ -40,7 +40,7 @@ $args["script_files"] = array("/core/gui/client_tools.js", "/org/people/people.j
 // $project_list = sql_query_array_scalar("select project_id from im_working where user_id = " . $user_id);
 print HeaderText($args);
 
-print gui_header( 1, "הוספת פעילות" );
+print Core_Html::gui_header( 1, "הוספת פעילות" );
 
 $table = array();
 if ( $role == 'hr' ) array_push( $table, array( "בחר עובד", gui_select_worker() ) );
@@ -60,9 +60,9 @@ print gui_table_args( $table );
 ?>
 <div>
 	<?php
-	print gui_header( 2, "הוצאות נסיעה" );
+	print Core_Html::gui_header( 2, "הוצאות נסיעה" );
 	print gui_input( "traveling", "" ) . "<br/>";
-	print gui_header( 2, "הוצאות נוספות/משלוחים" );
+	print Core_Html::gui_header( 2, "הוצאות נוספות/משלוחים" );
 	print "תיאור";
 	print gui_input( "extra_text", "" ) . "<br/>";
 	print "סכום";
@@ -75,8 +75,8 @@ print gui_table_args( $table );
 <div id="debug"></div>
 <?php
 $month = get_param("month", false, date('Y-m'));
-print gui_header( 1, "Entered data for month", true, true );
-print  " " . $month . gui_br();
+print Core_Html::gui_header( 1, "Entered data for month", true, true );
+print  " " . $month . Core_Html::Br();
 $a = explode( "-", $month ); $y = $a[0]; $m = $a[1];
 print show_entry($user_id, $m, $y, $args);
 print GuiHyperlink("previous month", add_to_url("month", date('Y-m', strtotime($month . '-1 -1 month'))));

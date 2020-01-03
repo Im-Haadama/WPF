@@ -312,13 +312,13 @@ class Focus_Tasklist {
 		if ( ! table_exists( "im_task_templates" ) ) {
 			return;
 		}
-		$output = gui_header(1, "Creating tasks freqs");
+		$output = Core_Html::gui_header(1, "Creating tasks freqs");
 		if ( ! $freqs ) $freqs = sql_query_array_scalar( "select DISTINCT repeat_freq from im_task_templates" );
 
 		// TODO: create_tasks_per_mission();
 		$verbose_table = array( array( "template_id", "freq", "query", "active", "result", "priority", "new task" ));
 		foreach ( $freqs as $freq ) {
-			$output .= "Handling " . gui_hyperlink($freq, add_to_url(array("operation" => "show_templates", "search" =>1, "repeat_freq" => $freq))) . gui_br();
+			$output .= "Handling " . Core_Html::GuiHyperlink($freq, add_to_url(array("operation" => "show_templates", "search" =>1, "repeat_freq" => $freq))) . Core_Html::Br();
 
 			$sql = "SELECT id, task_description, task_url, project_id, repeat_freq, repeat_freq_numbers, condition_query, priority, creator, team " .
 			       " FROM im_task_templates " .
@@ -331,7 +331,7 @@ class Focus_Tasklist {
 				array_push( $verbose_table, $verbose_line);
 			}
 		}
-		if ( $verbose ) $output .= gui_table_args( $verbose_table);
+		if ( $verbose ) $output .= Core_Html::gui_table_args( $verbose_table);
 
 		my_log($output, "", $log_file);
 		return $output;
@@ -354,7 +354,7 @@ class Focus_Tasklist {
 		for ( $i = 1; $i < 4; $i ++ )
 			$test_result .= substr( $verbose_line[ $i ], 0, 1);
 
-		$output .= "template " . $id . " result: $test_result" . gui_br();
+		$output .= "template " . $id . " result: $test_result" . Core_Html::Br();
 
 		sql_query("update im_task_templates set last_check = now() where id = " . $id);
 
@@ -362,7 +362,7 @@ class Focus_Tasklist {
 		if ( strpos(  $test_result, "0" ) !== false) {
 			array_push( $verbose_line, "skipped" );
 			// array_push( $verbose_table, $verbose_line);
-			$output .= comma_implode($verbose_line) . "Template " . $id . gui_br();
+			$output .= comma_implode($verbose_line) . "Template " . $id . Core_Html::Br();
 			return;
 		}
 
@@ -386,7 +386,7 @@ class Focus_Tasklist {
 
 		array_push( $verbose_line, sql_insert_id() );
 
-		$output .= "Template " . $id . " " . comma_implode($verbose_line) . gui_br();
+		$output .= "Template " . $id . " " . comma_implode($verbose_line) . Core_Html::Br();
 	}
 
 	static function check_frequency( $repeat_freq, $repeat_freq_numbers, $last_run )
@@ -464,7 +464,7 @@ class Focus_Tasklist {
 			$t = new Focus_Tasklist( $task_id );
 
 			$row = array(
-				gui_hyperlink( $t->getId(), "c-get-tasklist.php?id=" . $t->getId() ),
+				Core_Html::GuiHyperlink( $t->getId(), "c-get-tasklist.php?id=" . $t->getId() ),
 				$t->getPriority(),
 				$t->getTaskDescription()
 			);

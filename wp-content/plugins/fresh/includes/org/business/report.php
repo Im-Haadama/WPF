@@ -31,7 +31,7 @@ if ( isset( $_GET["project"] ) ) {
 print_weekly_report( date( "Y-m-d", strtotime( "last sunday" ) ) );
 
 function print_project_report( $role, $project_id ) {
-	print gui_header( 1, "מציג סיכום עלויות פרויקט " . Org_Project::GetName( $project_id ) );
+	print Core_Html::gui_header( 1, "מציג סיכום עלויות פרויקט " . Org_Project::GetName( $project_id ) );
 
 	$month_sum = array();
 	$lines     = print_transactions( $role, 0, 0, 0, null, $project_id, $month_sum );
@@ -48,13 +48,13 @@ function print_project_report( $role, $project_id ) {
 }
 
 function print_weekly_report( $week ) {
-	print gui_header( 1, "מציג תוצאות לשבוע המתחיל ביום " . $week );
+	print Core_Html::gui_header( 1, "מציג תוצאות לשבוע המתחיל ביום " . $week );
 // print date('Y-m-d', strtotime($week . " -1 week")) . "<br/>";
 	if ( date( 'Y-m-d' ) > date( 'Y-m-d', strtotime( $week . "+1 week" ) ) ) {
-		print gui_hyperlink( "שבוע הבא", "report.php?week=" . date( 'Y-m-d', strtotime( $week . " +1 week" ) ) ) . " ";
+		print Core_Html::GuiHyperlink( "שבוע הבא", "report.php?week=" . date( 'Y-m-d', strtotime( $week . " +1 week" ) ) ) . " ";
 	}
 
-	print gui_hyperlink( "שבוע קודם", "report.php?week=" . date( 'Y-m-d', strtotime( $week . " -1 week" ) ) );
+	print Core_Html::GuiHyperlink( "שבוע קודם", "report.php?week=" . date( 'Y-m-d', strtotime( $week . " -1 week" ) ) );
 
 	$sql = "SELECT ref, date, amount, delivery_fee as 'delivery fee', client_from_delivery(ref) as client,
 		delivery_receipt(ref) AS קבלה
@@ -99,7 +99,7 @@ function print_weekly_report( $week ) {
 	$travel          -= (int) $row->find( 'td', 13 )->plaintext;
 	$extra           -= (int) $row->find( 'td', 12 )->plaintext;
 
-	print gui_header( 1, "סיכום" );
+	print Core_Html::gui_header( 1, "סיכום" );
 	$total_sums = array( "סיכום", array( 0, 'sum_numbers' ) );
 	print gui_table( array(
 		array( "סעיף", "סכום" ),
@@ -112,12 +112,12 @@ function print_weekly_report( $week ) {
 		array( "הוצ עובדים נוספות", $extra)
 	), "totals", true, true, $total_sums );
 
-	print gui_header( 2, "הכנסות" );
+	print Core_Html::gui_header( 2, "הכנסות" );
 	print $inputs;
 
-	print gui_header( 2, "אספקות" );
+	print Core_Html::gui_header( 2, "אספקות" );
 	print $outputs;
 
-	print gui_header( 2, "שכר" );
+	print Core_Html::gui_header( 2, "שכר" );
 	print $salary_text;
 }

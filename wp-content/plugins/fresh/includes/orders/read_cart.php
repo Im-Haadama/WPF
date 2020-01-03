@@ -32,6 +32,6 @@ print header_text( false );
 
 print gui_textarea( "cart", "", "" );
 
-print gui_button( "", "load_cart()", "טען עגלת קניות" );
+print Core_Html::GuiButton( "", "load_cart()", "טען עגלת קניות" );
 
 ?>

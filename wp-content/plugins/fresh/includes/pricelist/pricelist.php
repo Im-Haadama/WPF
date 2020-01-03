@@ -17,15 +17,6 @@ if ( ! defined( "FRESH_INCLUDES" ) ) {
 	define( 'FRESH_INCLUDES', dirname(dirname( dirname( __FILE__ ) ) ));
 }
 
-
-//require_once( FRESH_INCLUDES . '/catalog/catalog.php' );
-require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
-//require_once( FRESH_INCLUDES . '/core/gui/wp_inputs.php' );
-//require_once( FRESH_INCLUDES . '/multi-site/imMulti-site.php' );
-//require_once( FRESH_INCLUDES . '/wp/Product.php' );
-//require_once( FRESH_INCLUDES . "/orders/orders-common.php" );
-//require_once( FRESH_INCLUDES . "/orders/Order.php" );
-
 class PricelistItem {
 	private $id;
 	private $product_name;
@@ -205,7 +196,7 @@ class PriceList {
 	function PrintHTML( $ordered_only = false, $need_supply_only = false, $args = null) {
 		$create_option = false;
 		if (isset($args) and isset($args["create_products"])){
-			print gui_header(1, "יצירת מוצרים");
+			print Core_Html::gui_header(1, "יצירת מוצרים");
 			print gui_datalist( "category", "im_categories", "name", 0 );
 			$create_option = true;
 		}
@@ -310,9 +301,9 @@ class PriceList {
 			$line = $this->Line( $row[0], $row[1], $row[2], $pl_id, $row[4], $row[5], $prod_id, true, $args );
 			if ( ! $ordered_only and ! $need_supply_only ) {
 				if ($create_option)
-					array_push( $line, gui_button( "cre_" . $pl_id, "create_product(" . $pl_id . ")", "צור מוצר", true ) );
+					array_push( $line, Core_Html::GuiButton( "cre_" . $pl_id, "create_product(" . $pl_id . ")", "צור מוצר", true ) );
 				else
-					array_push( $line, gui_button( "del_" . $pl_id, "del_line(" . $pl_id . ")", "מחק" ) );
+					array_push( $line, Core_Html::GuiButton( "del_" . $pl_id, "del_line(" . $pl_id . ")", "מחק" ) );
 			}
 			array_unshift( $line, $pl_id );
 
@@ -332,7 +323,7 @@ class PriceList {
 			array( "שם מוצר", gui_input( "product_name", "" ) ),
 			array( "מחיר", gui_input( "price", "" ) )
 		) );
-		$data .= "<td>" . gui_button( "add", "add_item()", "הוסף" ) . "</td>";
+		$data .= "<td>" . Core_Html::GuiButton( "add", "add_item()", "הוסף" ) . "</td>";
 
 		print $data;
 	}
@@ -379,7 +370,7 @@ class PriceList {
 			array_push( $line, $linked_prod_id );
 			$stockManaged = $p->getStockManaged();
 			array_push( $line, gui_checkbox( "chm_" . $linked_prod_id, "stock", $stockManaged, "onchange=\"change_managed(this)\")" ) );
-			array_push( $line, gui_label( "stk_" . $linked_prod_id, gui_hyperlink( $p->getStock(), "../orders/get-orders-per-item.php?prod_id=" . $linked_prod_id ) ) );
+			array_push( $line, gui_label( "stk_" . $linked_prod_id, Core_Html::GuiHyperlink( $p->getStock(), "../orders/get-orders-per-item.php?prod_id=" . $linked_prod_id ) ) );
 			$n = orders_per_item( $linked_prod_id, 1, true, true, true );
 //			if (isset($needed[$linked_prod_id][0]))
 //				$n .= $needed[$linked_prod_id][0];

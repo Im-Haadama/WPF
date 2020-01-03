@@ -30,7 +30,7 @@ print GuiTableContent( "table", $sql, true, true, $links );
 $count = count_unmapped();
 if ( $count > 0 ) {
 	print "<h2>מיפויים</h2>";
-	print gui_hyperlink( $count . " פריטים לא ממופים ", "../catalog/catalog-map.php" );
+	print Core_Html::GuiHyperlink( $count . " פריטים לא ממופים ", "../catalog/catalog-map.php" );
 }
 
 

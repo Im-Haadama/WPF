@@ -115,7 +115,8 @@ class Fresh_Product {
 		}
 		// BUG: some products, maybe just variables can't create WC_Product.
 		if ( $this->p ) {
-			return $this->p->get_stock_quantity();
+			$value = $this->p->get_stock_quantity();
+			return $value ? $value : 0;
 		} else {
 			return 0;
 		}
@@ -153,7 +154,7 @@ class Fresh_Product {
 	}
 
 	function is_fresh( $term_id, $debug = false ) {
-		$fresh = explode( info_get( "fresh" ), "," );
+		$fresh = explode(InfoGet( "fresh" ), "," );
 //		if ($debug) {
 //			print "<br/>Fresh: ";
 //			var_dump( $fresh );
@@ -300,8 +301,14 @@ class Fresh_Product {
 		return get_post_status( $this->id ) == "publish";
 	}
 
-	function getName() {
-		return get_product_name( $this->id );
+	function getName($strip = false) {
+		$sql = 'SELECT post_title FROM wp_posts WHERE id = ' . $this->id;
+
+		$name = sql_query_single_scalar( $sql );
+		if ($strip and strpos($name, '(')){
+			$name = substr($name, 0, strpos($name, '('));
+		}
+		return $name;
 	}
 
 	function GetVatPercent() {

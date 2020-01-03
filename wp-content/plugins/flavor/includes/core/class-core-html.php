@@ -1,10 +1,6 @@
 <?php
 
 class Core_Html {
-	function Br() {
-		return '<br/>';
-	}
-
 	/**
 	 * Create html <label>
 	 *
@@ -17,7 +13,7 @@ class Core_Html {
 	 *
 	 * @return string
 	 */
-	function gui_label( $id, $text, $hidden = false ) {
+	static function gui_label( $id, $text, $hidden = false ) {
 		$result = "<label id=" . $id . " ";
 		if ( $hidden ) {
 			$result .= 'style="display: none"';
@@ -41,7 +37,7 @@ class Core_Html {
 		$result = "<button id=\"$id\"";
 		if ($class = GetArg($args, "class", null)) $result .= " class=\"$class\"";
 		if ($events = GetArg($args, "events", null)) $result .= " $events ";
-		if ($action = GetArg($args, "action", null)) $result .= " onclick=$action ";
+		if ($action = GetArg($args, "action", null)) $result .= " onclick=\"$action\" ";
 		$result .= ">$text";
 		$result .= "</button>";
 
@@ -57,7 +53,7 @@ class Core_Html {
 	 *
 	 * @return string
 	 */
-	function gui_checkbox( $id, $class, $value = false, $events = null ) {
+	static function gui_checkbox( $id, $class, $value = false, $events = null ) {
 		$data = "<input id=\"$id\" class=\"$class\" type=\"checkbox\" ";
 		if ( $value ) {
 			$data .= "checked ";
@@ -76,7 +72,7 @@ class Core_Html {
 	}
 
 	// $key, $data, $args
-	function GuiInput( $id, $value = null, $args = null ) {
+	static function GuiInput( $id, $value = null, $args = null ) {
 		//	print __FUNCTION__ . "<br/>";
 		$name   = GetArg( $args, "name", $id );
 		$events = GetArg( $args, "events", null );
@@ -113,7 +109,7 @@ class Core_Html {
 		return $data;
 	}
 
-	function GuiButtonOrHyperlink( $id, $value = null, $args = null ) // Value is irrelevant but here to keep the structure: id, value, args.
+	static function GuiButtonOrHyperlink( $id, $value = null, $args = null ) // Value is irrelevant but here to keep the structure: id, value, args.
 	{
 		$action = GetArg( $args, "action", null );
 		$text   = GetArg( $args, "text", null );
@@ -121,9 +117,9 @@ class Core_Html {
 			$server_action = substr( $action, 0, $s );
 			$client_action = substr( $action, $s + 1 );
 
-			return gui_button( $id, "execute_url('" . $server_action . "', $client_action, $id )", $text );
+			return Core_Html::GuiButton( $id, "execute_url('" . $server_action . "', $client_action, $id )", $text );
 		} else {
-			return gui_hyperlink( $text, $action );
+			return Core_Html::GuiHyperlink( $text, $action );
 		}
 	}
 
@@ -140,7 +136,7 @@ class Core_Html {
 	 *
 	 */
 
-	function gui_input( $name, $value, $events = null, $id = null, $class = null, $size = null ) {
+	static function gui_input( $name, $value, $events = null, $id = null, $class = null, $size = null ) {
 		if ( is_null( $id ) ) {
 			$id = $name;
 		}
@@ -177,7 +173,7 @@ class Core_Html {
 	 *
 	 * @return string
 	 */
-	function gui_textarea( $name, $value, $events = null, $rows = 0, $cols = 0 ) {
+	static function gui_textarea( $name, $value, $events = null, $rows = 0, $cols = 0 ) {
 		$data = '<textarea name="' . $name . '" id="' . $name . '"';
 		if ( strlen( $events ) > 0 ) {
 			$data .= $events;
@@ -196,7 +192,7 @@ class Core_Html {
 		return $data;
 	}
 
-	function remove_br( $value ) {
+	static function remove_br( $value ) {
 		$to_replace = array( "<br/>", "<br>" );
 		foreach ( $to_replace as $rep ) {
 			$value = str_replace( $rep, '\n', $value );
@@ -205,7 +201,7 @@ class Core_Html {
 		return $value;
 	}
 
-	function GuiDatalist( $id, $values, $id_field, $field_name, $include_id = false ) {
+	static function GuiDatalist( $id, $values, $id_field, $field_name, $include_id = false ) {
 		$debug = 1;
 
 		$data = "<datalist id=\"" . $id . "\">";
@@ -249,7 +245,7 @@ class Core_Html {
 	 *
 	 */
 
-	function gui_datalist( $id, $table, $field, $include_id = false ) {
+	static function gui_datalist( $id, $table, $field, $include_id = false ) {
 		$args               = [];
 		$args["include_id"] = $include_id;
 		$args["field"]      = $field;
@@ -265,7 +261,7 @@ class Core_Html {
 	 *
 	 * @return string
 	 */
-	function gui_input_month( $name, $class, $value, $events ) {
+	static function gui_input_month( $name, $class, $value, $events ) {
 		$data = '<input type="month" name="' . $name . '" ';
 		if ( strlen( $value ) > 0 ) {
 			$data .= "value=\"$value\" ";
@@ -290,7 +286,7 @@ class Core_Html {
 	 *
 	 * @return string
 	 */
-	function gui_input_date( $id, $class, $value = null, $events = null ) {
+	static function gui_input_date( $id, $class, $value = null, $events = null ) {
 		$data = '<input type="date" id="' . $id . '" ';
 		// 09/09/2019. It's ok to show null - not selected value. E.g - task date.
 		//	if ( is_null( $value ) ) {
@@ -330,7 +326,7 @@ class Core_Html {
 	 *
 	 * @return string
 	 */
-	function gui_input_time( $id, $class, $value = null, $events = null ) {
+	static function gui_input_time( $id, $class, $value = null, $events = null ) {
 		$data = '<input type="time" id="' . $id . '" ';
 		if ( is_null( $value ) ) {
 			$value = "8:00";
@@ -350,19 +346,7 @@ class Core_Html {
 		return $data;
 	}
 
-	/**
-	 * @param $text
-	 * @param $link
-	 * @param null $target
-	 *
-	 * @return string
-	 * @deprecated use GuiHyperlink
-	 */
-	function gui_hyperlink( $text, $link, $target = null ) {
-		return GuiHyperlink( $text, $link, $target ? [ "target" => $target ] : null );
-	}
-
-	function GuiHyperlink( $text, $link, $args = null ) {
+	static function GuiHyperlink( $text, $link, $args = null ) {
 		$data = "<a href='" . $link . "'";
 		if ( $target = GetArg( $args, "target", null ) ) {
 			$data .= ' target="' . $target . '"';
@@ -411,7 +395,7 @@ class Core_Html {
 	 *
 	 * @return string
 	 */
-	function gui_list( $text ) {
+	static function gui_list( $text ) {
 		return "<li>" . $text . "</li>";
 	}
 
@@ -420,7 +404,7 @@ class Core_Html {
 	 *
 	 * @return string
 	 */
-	function gui_bold( $text ) {
+	static function gui_bold( $text ) {
 		return "<B>" . $text . "</B>";
 	}
 
@@ -431,7 +415,7 @@ class Core_Html {
 	 *
 	 * @return string
 	 */
-	function gui_image( $url, $x = 0, $y = 0 ) {
+	static function gui_image( $url, $x = 0, $y = 0 ) {
 		$val = "<img src=\"" . $url . "\"";
 		if ( $x > 0 || $y > 0 ) {
 			$val .= "style=\"";
@@ -459,7 +443,7 @@ class Core_Html {
 	 *
 	 * @return string
 	 */
-	function gui_div( $id, $text = null, $center = false, $tool_tip = null ) {
+	static function gui_div( $id, $text = null, $center = false, $tool_tip = null ) {
 		$data = '<div ';
 		if ( $tool_tip ) {
 			$data .= 'class="tooltip" ';
@@ -481,11 +465,11 @@ class Core_Html {
 		return $data;
 	}
 
-	function GuiImage( $logo_url, $height = 0 ) {
+	static function GuiImage( $logo_url, $height = 0 ) {
 		return '<img src=' . quote_text( $logo_url ) . '  style="height: ' . $height . 'px; width: auto;">';
 	}
 
-	function GuiDiv( $id, $text = null, $args = null ) {
+	static function GuiDiv( $id, $text = null, $args = null ) {
 		$data = "";
 
 		$data .= '<div ';
@@ -520,7 +504,7 @@ class Core_Html {
 	 *
 	 * @param null $text
 	 */
-	function printbr( $text = null ) {
+	static function printbr( $text = null ) {
 		if ( $text ) {
 			print $text;
 		}
@@ -595,7 +579,7 @@ class Core_Html {
 	 *
 	 * @return string
 	 */
-	function gui_row(
+	static function gui_row(
 		$cells, $row_id = null, $show = null, &$acc_fields = null, $col_ids = null, $style = null, $add_checkbox = false, $checkbox_class = false,
 		$checkbox_events = null
 	) {
@@ -653,7 +637,7 @@ class Core_Html {
 	/**
 	 * @deprecated use gui_table_args
 	 */
-	function gui_table(
+	static function gui_table(
 		$rows, $id = null, $header = true, $footer = true, &$acc_fields = null, $style = null, $class = null, $show_fields = null,
 		$links = null, $col_ids = null, $first_id = false, $actions = null
 	) {
@@ -689,7 +673,7 @@ class Core_Html {
 							if ( is_array( $action ) ) {
 								$text   = $action[0];
 								$action = sprintf( $action[1], $row_id );
-								array_push( $row, gui_hyperlink( $text, $action ) );
+								array_push( $row, Core_Html::GuiHyperlink( $text, $action ) );
 
 							} else {
 								$h = sprintf( $action, $row_id );
@@ -884,7 +868,7 @@ class Core_Html {
 	 *
 	 * @return string
 	 */
-	function GuiInputDatalist( $id, $datalist, $events = null, $value = null ) {
+	static function GuiInputDatalist( $id, $datalist, $events = null, $value = null ) {
 		$data = "<input id='$id' list='$datalist' ";
 		if ( $value ) {
 			$data .= ' value="' . $value . '"';
@@ -897,7 +881,7 @@ class Core_Html {
 		return $data;
 	}
 
-	function GuiAutoList( $id, $list_name, $args ) {
+	static function GuiAutoList( $id, $list_name, $args ) {
 		if ( ! $args ) {
 			$args = [];
 		}
@@ -927,7 +911,7 @@ class Core_Html {
 		return $data;
 	}
 
-	function DatalistCreate( $args, $table, &$values ) {
+	static function DatalistCreate( $args, $table, &$values ) {
 		$query  = GetArg( $args, "query", null );
 		$id_key = GetArg( $args, "id_key", "id" );
 
@@ -964,7 +948,7 @@ class Core_Html {
 	 *
 	 * @return string
 	 */
-	function GuiSelectTable( $id, $table, $args ) {
+	static function GuiSelectTable( $id, $table, $args ) {
 		//	print __FUNCTION__ . "<br/>";
 		$selected             = GetArg( $args, "selected", null );
 		$events               = GetArg( $args, "events", null );
@@ -1000,9 +984,9 @@ class Core_Html {
 
 			return $data;
 		} else {
-			DatalistCreate( $args, $table, $values );
+			self::DatalistCreate( $args, $table, $values );
 
-			return gui_select( $id, $name, $values, $events, $selected, $id_key, $class );
+			return self::gui_select( $id, $name, $values, $events, $selected, $id_key, $class );
 			// gui_select( $id, $name, $values, $events, $selected, $id_key = "id", $class = null, $multiple = false )
 		}
 	}
@@ -1021,7 +1005,7 @@ class Core_Html {
 	 *
 	 * @return string
 	 */
-	function gui_select_datalist( $id, $table, $datalist_id, $name, $values, $events, $selected = null, $include_id = true, $id_key = null, $class = null ) {
+	static function gui_select_datalist( $id, $table, $datalist_id, $name, $values, $events, $selected = null, $include_id = true, $id_key = null, $class = null ) {
 		if ( ! $id_key ) {
 			$id_key = "id";
 		}
@@ -1073,7 +1057,7 @@ class Core_Html {
 	 * @return string
 	 */
 
-	function GuiSimpleSelect( $id, $value, $args ) {
+	static function GuiSimpleSelect( $id, $value, $args ) {
 		$values = GetArg( $args, "values", array( "Send values thru args" ) );
 		$events = GetArg( $args, "events", null );
 		$edit   = GetArg( $args, "edit", true );
@@ -1084,7 +1068,7 @@ class Core_Html {
 		return gui_simple_select( $id, $values, $events, $value );
 	}
 
-	function gui_simple_select( $id, $values, $events, $selected_key = null, $selected_value = null ) {
+	static function gui_simple_select( $id, $values, $events, $selected_key = null, $selected_value = null ) {
 		$data = "<select id=\"" . $id . "\" ";
 		if ( $events ) {
 			$data .= $events;
@@ -1120,7 +1104,7 @@ class Core_Html {
 	 *
 	 * @return string
 	 */
-	function gui_select( $id, $name, $values, $events, $selected, $id_key = "id", $class = null, $multiple = false ) {
+	static function gui_select( $id, $name, $values, $events, $selected, $id_key = "id", $class = null, $multiple = false ) {
 
 		$data = "<select ";
 		if ( $multiple ) {
@@ -1193,7 +1177,7 @@ class Core_Html {
 	 * @deprecated use GuiSelectTable
 	 */
 
-	function gui_select_table(
+	static function gui_select_table(
 		$id, $table, $selected = null, $events = null, $more_values = null, $name = null, $where = null,
 		$include_id = false, $datalist = false, $order_by = null, $id_key = null
 	) {
@@ -1251,12 +1235,12 @@ class Core_Html {
 		}
 	}
 
-	function gui_input_by_type( $input_name, $type = null, $args = null, $data = null ) {
+	static function gui_input_by_type( $input_name, $type = null, $args = null, $data = null ) {
 		$events = GetArg( $args, "events", null );
 //		print "type=$type<br/>";
 		switch ( substr( $type, 0, 3 ) ) {
 			case 'dat':
-				$value = gui_input_date( $input_name, null, $data, $events );
+				$value = Core_Html::gui_input_date( $input_name, null, $data, $events );
 				break;
 			case 'var':
 				$length = 10;
@@ -1265,7 +1249,7 @@ class Core_Html {
 					$length = $r[1][0];
 				}
 				if ( $length > 100 ) {
-					$value = gui_textarea( $input_name, $data, $events );
+					$value = Core_Html::gui_textarea( $input_name, $data, $events );
 				} else {
 					$value = GuiInput( $input_name, $data, $args ); // gui_input( $input_name, $data, $field_events, $row_id );
 				}
@@ -1274,14 +1258,14 @@ class Core_Html {
 				return $data;
 			default:
 				// $field_events = sprintf( $events, $row_id, $key );
-				$value = GuiInput( $input_name, $data, $args ); //gui_input( $input_name, $data, $field_events, $row_id );
+				$value = Core_Html::GuiInput( $input_name, $data, $args ); //gui_input( $input_name, $data, $field_events, $row_id );
 				break;
 		}
 
 		return $value;
 	}
 
-	function gui_select_days( $id, $selected, $args ) {
+	static function gui_select_days( $id, $selected, $args ) {
 		$edit = GetArg( $args, "edit", false );
 
 		if ( ! $edit ) {
@@ -1326,11 +1310,11 @@ class Core_Html {
 		return $result;
 	}
 
-	function gui_type() {
+	static function gui_type() {
 		return "html";
 	}
 
-	static function GuiLabel($id, $text, $args)
+	static function GuiLabel($id, $text, $args= null)
 	{
 		$result = "<label id=" . $id . " ";
 		if ( GetArg($args, "hidden", false) ) {
@@ -1340,6 +1324,7 @@ class Core_Html {
 
 		return $result;
 	}
+
 	function GuiTabs($tabs)
 	{
 		$result = '<div class="tab">';
@@ -1353,7 +1338,7 @@ class Core_Html {
 		{
 			$name = $tab[0];
 			$display_name = $tab[1];
-			$contents .= GuiDiv($name, gui_header(2, $name) . $tab[2], $div_args);
+			$contents .= GuiDiv($name, Core_Html::gui_header(2, $name) . $tab[2], $div_args);
 
 			$args["events"] = "onclick=\"selectTab(event, '$name', 'tabcontent')\"";
 			$result .= GuiButton("btn_tab_$name", $display_name, $args);
@@ -1363,6 +1348,149 @@ class Core_Html {
 		$result .= $contents;
 		return $result;
 	}
+	/**
+	 * Get record from the database and display in html table.
+	 * This function defines the args for TableContent
+	 *
+	 * @param $table_name
+	 * @param $row_id
+	 * @param $args
+	 *
+	 * @return string|null
+	 * @throws Exception
+	 */
+	static function GuiRowContent($table_name, $row_id, $args)
+	{
+		$id_key = GetArg($args, "id_key", "id");
+		$fields = GetArg($args, "fields", null);
+		$table_id = GetArg($args, "table_id", $table_name);
 
+		if (! isset($args["skip_id"]))	$args["skip_id"] = true;
+
+		if (GetArg($args, "headers", null) and isset($args["headers"][0])) $args["headers"] = array_assoc($args["headers"]);
+
+		$edit = GetArg($args, "edit", false);
+		if ($edit) {
+			$args["v_checkbox"] = 1;
+			if (! isset($args["transpose"])) $args["transpose"] = 1;
+			$args["events"] = "onchange=changed_field(%s)";
+		}
+		if ($row_id) { // Show specific record
+			$sql = "select " . ($fields ? comma_implode($fields) : "*") . " from $table_name where " . $id_key . " = " . $row_id;
+			$args["row_id"] = $row_id;
+		} else { // Create new one.
+			if ($fields) {
+				$sql = "show columns from $table_name where field in ( " . comma_implode($fields, true) . ")";
+			}
+			else
+				$sql = "describe $table_name";
+		}
+		if (! defined('NOT_NULL_FLAG')) define ('NOT_NULL_FLAG', 1);
+		if ($args /* and ! isset($args["sql_fields"]) */) {
+			$result = sql_query("select * from $table_name");
+			$args["sql_fields"] = mysqli_fetch_fields( $result );
+			if (! isset($args["mandatory_fields"])){
+				$args["mandatory_fields"] = [];
+				foreach ($args["sql_fields"] as $field){
+					if ($field->flags & NOT_NULL_FLAG)
+						$args["mandatory_fields"][$field->name] = 1;
+				}
+			}
+		}
+		return self::GuiTableContent($table_id, $sql, $args);
+	}
+
+	/**
+	 * Execute SQL. If data return, return html table with the data. Otherwise return null.
+	 *
+	 * @param $table_id
+	 * @param $sql
+	 * @param $args
+	 * @param null $sum_links
+	 *
+	 * @return string|null
+	 * @throws Exception
+	 */
+
+	static function GuiTableContent($table_id, $sql, &$args = null)
+	{
+		if (! $sql)	{
+			$fields = GetArg($args, "fields", '*');
+			$where = GetArg($args, "where", null);
+			if (is_array($fields)) $fields = comma_implode($fields);
+			$sql = "select $fields from $table_id";
+			if ($where) $sql .= " where $where";
+		}
+
+		// Fetch the data from DB or create the new row
+		$rows_data = Core_Data::TableData( $sql, $args);
+
+		if (! $rows_data)
+			return null;
+
+		$id_field = GetArg($args, "id_field", "id");
+		if (isset($args["edit_cols"]))
+			$args["edit_cols"][$id_field] = 0;
+
+		if (! isset($args["form_table"])) $args["form_table"] = $table_id;
+
+		$row_count = count( $rows_data);
+		if (isset($args["count"])) $args["count"] += $row_count;
+
+		// Convert to table if data returned.
+		if ( $row_count >= 1 ) {
+			$html = Core_Html::gui_table_args( $rows_data, $table_id, $args );
+			return $html;
+		}
+
+		return null;
+	}
+
+	/**
+	 * @param $string
+	 *
+	 * @return mixed
+	 */
+
+// This function collects values from the table. If sql is not specified - all values are read and sent to doGuiDatalist.
+	static function TableDatalist( $id, $table, $args = null)
+	{
+		$field = GetArg($args, "field", "field");
+		$include_id = GetArg($args, "include_id", false);
+		$sql = GetArg($args, "sql", "select " . $field . ($include_id ? ", id" : "") .	 " from " . $table);
+		if (!strstr($sql, "where")) $sql .= " where " . GetArg ($args, "query", "1");
+		$id_field = GetArg($args, "id_field", "id");
+		$values = [];
+
+		// print "id_field: $id_field<br/>";
+
+		$result = sql_query( $sql );
+		// print $sql . "<br/>";
+		while ( $row = sql_fetch_assoc($result ) ) {
+//		var_dump($row); print "<br/>";
+			// print "key = " . $row[$id_field];
+			array_push($values, $row);
+			// $values[$row[$id_field]] = $row;
+			// $row["ID"]] = $row[$field];
+		}
+
+		return GuiDatalist($id, $values, $id_field,  $field, $include_id);
+	}
+
+	static function NewRow($table_name, $args)
+	{
+		$args["edit"] = true;
+		$args["table_name"] = $table_name;
+		$args['events'] = 'onchange="changed_field(\'%s\')"';
+		$args["add_field_suffix"] = false;
+		$args["new_row"] = true; // Selectors can use that to offer creating of new row. E.g, new project.
+		$args["table_id"] = $table_name . "_new";
+		if (! isset($args["hide_cols"])) $args["hide_cols"] = [];
+		$row = self::GuiRowContent($table_name, null, $args);
+		return $row;
+	}
+
+	static function Br() {
+		return '<br/>';
+	}
 }
-

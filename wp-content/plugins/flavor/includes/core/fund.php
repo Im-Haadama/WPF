@@ -121,10 +121,10 @@ if (! function_exists("my_log")) {
 			$row []                    = '<img src=' . $logo_url . '  style="height: 100px; width: auto;">'; // Todo: use GuiImage
 			$table []                  = $row;
 			$args["align_table_cells"] = array( array( null, "left" ) );
-			$text                      .= gui_table_args( $table, "header", $args );
+			$text                      .= Core_Html::gui_table_args( $table, "header", $args );
 		}
 
-		if ( gui_type() == "html" ) {
+		if ( function_exists('gui_type') and gui_type() == "html" ) {
 			return $text;
 		}
 

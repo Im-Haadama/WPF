@@ -6,7 +6,7 @@ require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 require_once( "../account/gui.php" );
 require_once( "../catalog/gui.php" );
 
-$s = new Supply(941);
+$s = new Fresh_Supply(941);
 
  print $s->HtmlLines(true);
 

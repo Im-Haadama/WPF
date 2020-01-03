@@ -379,11 +379,10 @@ class Core_Data
 					if ( $selectors and array_key_exists( $key, $selectors ) ) {
 						if ($debug) print " and also selector";
 						$selector_name = $selectors[ $key ];
-						// print $selector_name;
 						$selected = $selector_name( $input_name, $orig_data, $args ); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
 					} else $selected = $value;
 
-					$value = GuiHyperlink($selected, sprintf( $links[ $key ], $data ), $args ); // TODO: if links contains encoded url - it will warn about missing parameter and create bad link. %d...
+					$value = Core_Html::GuiHyperlink($selected, sprintf( $links[ $key ], $data ), $args ); // TODO: if links contains encoded url - it will warn about missing parameter and create bad link. %d...
 					break;
 				}
 				if ( $selectors and array_key_exists( $key, $selectors ) ) {
@@ -394,8 +393,7 @@ class Core_Data
 					if (! function_exists($selector_name)) print("function $selector_name does not exists");
 					if ($drill) {
 						$operation = GetArg($args, "drill_operation", "show_archive");
-						// debug_var($operation . " " . $key);
-						$value = GuiHyperlink($value, add_to_url(array($key => $orig_data, "operation" => $operation)), $args);
+						$value = Core_Html::GuiHyperlink($value, add_to_url(array($key => $orig_data, "operation" => $operation)), $args);
 					}
 					break;
 				}
@@ -409,11 +407,9 @@ class Core_Data
 //					if (isset($args["field_types"])) {
 //						$type = $args["field_types"][$key];
 //						$value = gui_input_by_type($input_name, $type, $args, $value);
-//						break;
-//					}
 						if (isset($args["sql_fields"])) {
 							$type = sql_field($args["sql_fields"], $key);
-							$value = gui_input_by_type($input_name, $type, $args, $value);
+							$value = Core_Html::gui_input_by_type($input_name, $type, $args, $value);
 						}
 					} else
 						$value = GuiInput($input_name, $data, $args); //gui_input( $key, $data, $field_events, $row_id);
@@ -456,10 +452,10 @@ class Core_Data
 						$action_url = sprintf($server_action, $row_id);
 						$client_action = substr($action[1], $s + 1);
 						$btn = "btn_$text" . "_" . $row_id;
-						array_push($row_data, gui_button($btn, "execute_url('" . $action_url . "', $client_action, $btn )", $text));
+						array_push($row_data, Core_Html::GuiButton($btn, $text, array("action" => "execute_url('" . $action_url . "', $client_action, $btn )", $text)));
 					} else {
 						$action_url = sprintf($action[1], $row_id);
-						array_push($row_data, GuiHyperlink($text, $action_url, $args));
+						array_push($row_data, Core_Html::GuiHyperlink($text, $action_url, $args));
 					}
 				} else {
 					$h = sprintf($action, $row_id);
@@ -469,6 +465,15 @@ class Core_Data
 		}
 
 		return $row_data;
+	}
+
+	static function prepare_text($string)
+	{
+		// Todo: convert text to url, only if not already hyperlink.
+//	$url = '~(?:(https?)://([^\s<]+)|(www\.[^\s<]+?\.[^\s<]+))(?<![\.,:])~i';
+//	$string = preg_replace($url, '<a href="$0" target="_blank" title="$0">$0</a>', $string);
+		return $string;
+		// return nl2br($string);
 	}
 
 //function PrepareCell($key, $orig_data, $edit_cols, $selectors, $links)
@@ -509,11 +514,9 @@ class Core_Data
 				}
 				if ( $v_checkbox ) {
 					if ( ! $skip_id or ( $key != $id_field ) ) {
-						$v_line[ $key ] = gui_checkbox( "chk_" . $key, $checkbox_class, false );
+						$v_line[ $key ] = Core_Html::gui_checkbox( "chk_" . $key, $checkbox_class, false );
 					}
 				}
-				// print "handling header<br/>";
-				// print $skip_id . " " . $key . "<br/>";
 //			if ( is_array( $h_line ) and $header_fields ) {
 //				$down_key = strtolower( $key );
 //				if ( ! $skip_id or $key !== "id" ) {
@@ -534,7 +537,7 @@ class Core_Data
 					$the_row[ $key ] = $meta_value;
 
 					if ( $v_checkbox ) {
-						$v_line[ $key ] = gui_checkbox( "chk_" . $key, $checkbox_class, false );
+						$v_line[ $key ] = Core_Html::gui_checkbox( "chk_" . $key, $checkbox_class, false );
 					}
 					if ( $h_line ) {
 						// print "adding $key<br/>";
@@ -554,7 +557,7 @@ class Core_Data
 		return $rows_data;
 	}
 
-	function NewRowData($field_list, $values, &$v_line, &$h_line, &$m_line, $skip_id, $checkbox_class, $header_fields, $fields, &$args )
+	static function NewRowData($field_list, $values, &$v_line, &$h_line, &$m_line, $skip_id, $checkbox_class, $header_fields, $fields, &$args )
 	{
 		$new_row = array();
 
@@ -570,7 +573,7 @@ class Core_Data
 			if ( $values and isset( $values[ $key ] ) ) $new_row[ $key ] = $values[ $key ];
 			else $new_row[ $key ] = null;
 
-			if ( $v_line !== null ) $v_line[ $key ] = gui_checkbox( "chk_" . $key, $checkbox_class, $new_row[ $key ] != null );
+			if ( $v_line !== null ) $v_line[ $key ] = Core_Html::gui_checkbox( "chk_" . $key, $checkbox_class, $new_row[ $key ] != null );
 			if ( is_array( $h_line ) /* and $header_fields */) $h_line[ $key ] = isset( $header_fields[ $key ] ) ? im_translate( $header_fields[ $key ], $args ) : $key;
 			if ( is_array( $m_line ) ) $m_line[ $key ] = isset( $mandatory_fields[ $key ] );
 		}
@@ -651,7 +654,7 @@ class Core_Data
 		if (strstr($sql, "describe") || strstr($sql, "show col")) // New Row
 		{
 			if ($debug) print "creating new row<br/>";
-			$rows_data = NewRowData( $field_list, $values, $v_line, $h_line, $m_line, $skip_id, $checkbox_class, $header_fields, $fields, $args );
+			$rows_data = self::NewRowData( $field_list, $values, $v_line, $h_line, $m_line, $skip_id, $checkbox_class, $header_fields, $fields, $args );
 		} else {
 			if ($debug) print "getting data<br/>";
 			// print "before: "; var_dump($h_line); print "<br/>";
@@ -709,7 +712,7 @@ class Core_Data
 	 *
 	 * @return array
 	 */
-	function HandleTableAcc($total_line, $rows_data, $fields)
+	static function HandleTableAcc($total_line, $rows_data, $fields)
 	{
 		foreach ($rows_data as $key => $row)
 			if ($key != 'header')
@@ -729,7 +732,7 @@ class Core_Data
 	 * @param $acc_fields
 	 * @param $row
 	 */
-	function HandleAcc(&$acc_fields, $row)
+	static function HandleAcc(&$acc_fields, $row)
 	{
 		// if (function_exists("sum_numbers")) print "AAAA";
 //	var_dump($acc_fields); print "<br/>";
@@ -752,141 +755,4 @@ class Core_Data
 	 * @throws Exception
 	 */
 
-
-	/**
-	 * Get record from the database and display in html table.
-	 * This function defines the args for TableContent
-	 *
-	 * @param $table_name
-	 * @param $row_id
-	 * @param $args
-	 *
-	 * @return string|null
-	 * @throws Exception
-	 */
-	static function GuiRowContent($table_name, $row_id, $args)
-	{
-		$id_key = GetArg($args, "id_key", "id");
-		$fields = GetArg($args, "fields", null);
-		$table_id = GetArg($args, "table_id", $table_name);
-
-		if (! isset($args["skip_id"]))	$args["skip_id"] = true;
-
-		if (GetArg($args, "headers", null) and isset($args["headers"][0])) $args["headers"] = array_assoc($args["headers"]);
-
-		$edit = GetArg($args, "edit", false);
-		if ($edit) {
-			$args["v_checkbox"] = 1;
-			if (! isset($args["transpose"])) $args["transpose"] = 1;
-			$args["events"] = "onchange=changed_field(%s)";
-		}
-		if ($row_id) { // Show specific record
-			$sql = "select " . ($fields ? comma_implode($fields) : "*") . " from $table_name where " . $id_key . " = " . $row_id;
-			$args["row_id"] = $row_id;
-		} else { // Create new one.
-			if ($fields) {
-				$sql = "show columns from $table_name where field in ( " . comma_implode($fields, true) . ")";
-			}
-			else
-				$sql = "describe $table_name";
-		}
-		if (! defined('NOT_NULL_FLAG')) define ('NOT_NULL_FLAG', 1);
-		if ($args /* and ! isset($args["sql_fields"]) */) {
-			$result = sql_query("select * from $table_name");
-			$args["sql_fields"] = mysqli_fetch_fields( $result );
-			if (! isset($args["mandatory_fields"])){
-				$args["mandatory_fields"] = [];
-				foreach ($args["sql_fields"] as $field){
-					if ($field->flags & NOT_NULL_FLAG)
-						$args["mandatory_fields"][$field->name] = 1;
-				}
-			}
-		}
-		return Core_Data::GuiTableContent($table_id, $sql, $args);
-	}
-
-	/**
-	 * Execute SQL. If data return, return html table with the data. Otherwise return null.
-	 *
-	 * @param $table_id
-	 * @param $sql
-	 * @param $args
-	 * @param null $sum_links
-	 *
-	 * @return string|null
-	 * @throws Exception
-	 */
-
-	static function GuiTableContent($table_id, $sql, &$args = null)
-	{
-		if (! $sql)	{
-			$fields = GetArg($args, "fields", '*');
-			$where = GetArg($args, "where", null);
-			if (is_array($fields)) $fields = comma_implode($fields);
-			$sql = "select $fields from $table_id";
-			if ($where) $sql .= " where $where";
-		}
-
-		// Fetch the data from DB or create the new row
-		$rows_data = self::TableData( $sql, $args);
-
-		if (! $rows_data)
-			return null;
-
-		$id_field = GetArg($args, "id_field", "id");
-		if (isset($args["edit_cols"]))
-			$args["edit_cols"][$id_field] = 0;
-
-		if (! isset($args["form_table"])) $args["form_table"] = $table_id;
-
-		$row_count = count( $rows_data);
-		if (isset($args["count"])) $args["count"] += $row_count;
-
-		// Convert to table if data returned.
-		if ( $row_count >= 1 ) {
-			$html = gui_table_args( $rows_data, $table_id, $args );
-			return $html;
-		}
-
-		return null;
-	}
-
-	/**
-	 * @param $string
-	 *
-	 * @return mixed
-	 */
-	static function prepare_text($string)
-	{
-		// Todo: convert text to url, only if not already hyperlink.
-//	$url = '~(?:(https?)://([^\s<]+)|(www\.[^\s<]+?\.[^\s<]+))(?<![\.,:])~i';
-//	$string = preg_replace($url, '<a href="$0" target="_blank" title="$0">$0</a>', $string);
-		return $string;
-		// return nl2br($string);
-	}
-
-// This function collects values from the table. If sql is not specified - all values are read and sent to doGuiDatalist.
-	function TableDatalist( $id, $table, $args = null)
-	{
-		$field = GetArg($args, "field", "field");
-		$include_id = GetArg($args, "include_id", false);
-		$sql = GetArg($args, "sql", "select " . $field . ($include_id ? ", id" : "") .	 " from " . $table);
-		if (!strstr($sql, "where")) $sql .= " where " . GetArg ($args, "query", "1");
-		$id_field = GetArg($args, "id_field", "id");
-		$values = [];
-
-		// print "id_field: $id_field<br/>";
-
-		$result = sql_query( $sql );
-		// print $sql . "<br/>";
-		while ( $row = sql_fetch_assoc($result ) ) {
-//		var_dump($row); print "<br/>";
-			// print "key = " . $row[$id_field];
-			array_push($values, $row);
-			// $values[$row[$id_field]] = $row;
-			// $row["ID"]] = $row[$field];
-		}
-
-		return GuiDatalist($id, $values, $id_field,  $field, $include_id);
-	}
 }

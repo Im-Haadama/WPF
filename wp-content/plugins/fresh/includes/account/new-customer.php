@@ -20,7 +20,7 @@ $client_id = $O->getCustomerId();
 
 <?php
 print header_text( false, true, true );
-print gui_header( 1, "לקוח חדש" );
+print Core_Html::gui_header( 1, "לקוח חדש" );
 
 print "1) צור קשר טלפוני עם הלקוח. עדכן אותו שהתקבלה ההזמנה.<br/>";
 print "2) אמת את השם לחשבונית.<br/>";
@@ -55,12 +55,12 @@ print gui_table_args( array(
 
 if ( ! $invoice_client_id ) {
 	print $step ++ . ") לחץ על צור משתמש - במערכת invoice4u";
-	print gui_button( "btn_create_user", "create_user()", "צור משתמש" );
-	print gui_button( "btn_update_user", "update_user()", "קשר משתמש" );
+	print Core_Html::GuiButton( "btn_create_user", "create_user()", "צור משתמש" );
+	print Core_Html::GuiButton( "btn_update_user", "update_user()", "קשר משתמש" );
 	print "<br/>";
 }
 
-print $step ++ . ") קח/י פרטי תשלום" . gui_hyperlink( "כאן", "https://private.invoice4u.co.il/he/Customers/CustomerAddNew.aspx?type=edit&id=" . $client_id . "#tab-tokens" ) . "<br/>";
+print $step ++ . ") קח/י פרטי תשלום" . Core_Html::GuiHyperlink( "כאן", "https://private.invoice4u.co.il/he/Customers/CustomerAddNew.aspx?type=edit&id=" . $client_id . "#tab-tokens" ) . "<br/>";
 print "<br/>";
 print "מספר הזמנה " . $order_id . "<br/>";
 print $O->infoBox();

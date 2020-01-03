@@ -493,7 +493,7 @@ class Fresh_Order {
 		{
 			$o = new Order($order);
 			if (strlen($o->GetComments()))
-				array_push($table, array(gui_hyperlink($order, "get-order.php?order_id=" . $order), $o->CustomerName(), $o->GetComments()));
+				array_push($table, array(Core_Html::GuiHyperlink($order, "get-order.php?order_id=" . $order), $o->CustomerName(), $o->GetComments()));
 		}
 		print gui_table_args($table);
 	}
@@ -506,7 +506,7 @@ class Fresh_Order {
 
 		// var_dump($needed); print "<br/>";
 		foreach ( $needed as $id => $p ) {
-			array_push($result, array(gui_checkbox("chk_" . $id, "product_checkbox") .  get_product_name($id), round($p[0], 1)));
+			array_push($result, array(Core_Html::gui_checkbox("chk_" . $id, "product_checkbox") .  get_product_name($id), round($p[0], 1)));
 			// $result .= get_product_name( $id ) . " " . round( $p[0], 1 ) . "<br/>";
 			// if ($p[0]) $result .= "x" . $p[0] . "<br/>";
 		}
@@ -664,7 +664,7 @@ class Fresh_Order {
 
 	function checkInfoBox()
 	{
-		$result = gui_header(1, __("Order number") . ":" . $this->order_id) . "<br/>";
+		$result = Core_Html::gui_header(1, __("Order number") . ":" . $this->order_id) . "<br/>";
 		$result .= __("Client") . ":" . $this->getOrderInfo( '_billing_first_name' ) . ' '
 		                                                                      . $this->getOrderInfo( '_billing_last_name') . "<br/>";
 
@@ -685,7 +685,7 @@ class Fresh_Order {
 //		$client_id = $this->getCustomerId();
 //		// Client info
 //		$user_edit = "../";
-//		$row_text  = '<tr><td>לקוח:</td><td>' . gui_hyperlink( , $user_edit ) . '</td><tr>';
+//		$row_text  = '<tr><td>לקוח:</td><td>' . Core_Html::GuiHyperlink( , $user_edit ) . '</td><tr>';
 //		$data      .= $row_text;
 //		$data      .= '<tr><td>טלפון:</td><td>' . $this->getOrderInfo( '_billing_phone' ) . '</td><tr>';
 //		$data      .= '<tr><td>הוזמן:</td><td>' . $this->GetOrderDate() . '</td><tr>';
@@ -723,8 +723,8 @@ class Fresh_Order {
 		if ( $addition_orders ) {
 			$header .= comma_implode( $addition_orders );
 		}
-		$data = gui_header( 1, $header, true );
-		// $data  .= gui_header( 2, $order->order_date, true);
+		$data = Core_Html::gui_header( 1, $header, true );
+		// $data  .= Core_Html::gui_header( 2, $order->order_date, true);
 
 		$d_id = self::get_delivery_id( $this->order_id );
 		if ( $d_id > 0 ) {
@@ -734,17 +734,17 @@ class Fresh_Order {
 				$draft_text = " טיוטא " . $d->draftReason();
 			}
 
-			$data .= gui_header( 2, "משלוח מספר " . $d_id . $draft_text );
+			$data .= Core_Html::gui_header( 2, "משלוח מספר " . $d_id . $draft_text );
 		}
 		$data     .= $this->infoRightBox( $edit_order );
 		$data     .= "</td>";
 		$data     .= '<tr><td><img src=' . $logo_url . ' height="100"></td></tr>';
-		$data     .= "<td height='16'>" . gui_header( 2, "הערות לקוח להזמנה" ) . "</td></tr>";
+		$data     .= "<td height='16'>" . Core_Html::gui_header( 2, "הערות לקוח להזמנה" ) . "</td></tr>";
 		$excerpt  = $this->GetComments();
 // TODO: find why save excerpt cause window reload
 		if ( $edit_order ) {
 			$data .= gui_cell( gui_textarea( "order_excerpt", htmlspecialchars( $excerpt ) ) );
-			$data .= gui_cell( gui_button( "btn_save_excerpt", "save_excerpt(" . $this->order_id . ")", "שמור הערה" ) );
+			$data .= gui_cell( Core_Html::GuiButton( "btn_save_excerpt", "save_excerpt(" . $this->order_id . ")", "שמור הערה" ) );
 		} else {
 			$data .= "<tr><td valign='top'>" . nl2br( $excerpt ) . "</td></tr>";
 
@@ -755,7 +755,7 @@ class Fresh_Order {
 		} else {
 			$days = get_postmeta_field( $this->order_id, "pack_day" );
 			if ( strlen( $days ) > 1 ) {
-				$data .= "<tr><td>" . gui_header( 2, "יום ביצוע" . $days ) . "</td></tr>";
+				$data .= "<tr><td>" . Core_Html::gui_header( 2, "יום ביצוע" . $days ) . "</td></tr>";
 			} else {
 				$options = array( array( "id" => 1, "name" => 'א' ), array( "id" => 2, "name" => 'ב' ) );
 				$select  = gui_select( "day", "name", $options, "onchange=save_day()", null );
@@ -818,7 +818,7 @@ class Fresh_Order {
 		$client_id = $this->getCustomerId();
 		// Client info
 		$user_edit = "../";
-		$row_text  = '<tr><td>לקוח:</td><td>' . gui_hyperlink( $this->getOrderInfo( '_billing_first_name' ) . ' '
+		$row_text  = '<tr><td>לקוח:</td><td>' . Core_Html::GuiHyperlink( $this->getOrderInfo( '_billing_first_name' ) . ' '
 		                                                       . $this->getOrderInfo( '_billing_last_name' ), $user_edit ) . '</td><tr>';
 		$data      .= $row_text;
 		$data      .= '<tr><td>טלפון:</td><td>' . $this->getOrderInfo( '_billing_phone' ) . '</td><tr>';
@@ -982,7 +982,7 @@ class Fresh_Order {
 		$fields = array();
 
 		if ( $selectable ) {
-			array_push( $fields, gui_checkbox( "chk" . $this->order_id, "deliveries", true ) );
+			array_push( $fields, Core_Html::gui_checkbox( "chk" . $this->order_id, "deliveries", true ) );
 		}
 
 		array_push( $fields, Core_Db_MultiSite::LocalSiteName() );
@@ -1029,7 +1029,7 @@ class Fresh_Order {
 		//"onclick=\"close_orders()\""
 		$row_text = "";
 		if ( $edit ) {
-			$row_text = gui_cell( gui_checkbox( "chk_" . $ref, "", "", null ) );
+			$row_text = gui_cell( Core_Html::gui_checkbox( "chk_" . $ref, "", "", null ) );
 		}
 
 		foreach ( $fields as $field ) // display customer name
@@ -1049,7 +1049,7 @@ class Fresh_Order {
 		$args["links"] = array("ID" => add_to_url("row_id", "%s"));
 		$args["fields"] = array("ID", "post_date", "post_status" );
 
-		$result .= GemTable("wp_posts", $args);
+		$result .= Core_Gem::GemTable("wp_posts", $args);
 
 		return $result;
 	}
@@ -1072,7 +1072,7 @@ class Fresh_Order {
 				$args = [];
 				$args["print_logo"] = false;
 				print HeaderText($args);
-				print gui_header(2, "הזמנה/אספקה שבועית");
+				print Core_Html::gui_header(2, "הזמנה/אספקה שבועית");
 				$last_delivery = sql_query_single_scalar("select max(delivery_id) from im_delivery_lines");
 				$sql = "select distinct prod_id, sum(quantity_ordered) from im_delivery_lines where delivery_id > $last_delivery - 20 group by prod_id order by 2 desc limit 38";
 				$prods = sql_query_array_scalar($sql);
@@ -1130,7 +1130,7 @@ class Fresh_Order {
 				if (!is_basket($prod_id)) array_push($temp_table, get_product_name($prod_id));
 			if (count($temp_table)){
 				sort ($temp_table);
-				array_push($data, gui_header(3, get_term_name($term)));
+				array_push($data, Core_Html::gui_header(3, get_term_name($term)));
 
 				foreach ($temp_table as $prod_name)
 					array_push($data, array($prod_name, ""));

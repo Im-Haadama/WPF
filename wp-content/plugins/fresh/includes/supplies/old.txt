@@ -18,7 +18,7 @@ function show_last_supplies($supplier_id = null)
 		"links" => array("id" => get_url(1) . "?id=%s", "supplier" => get_url(1) . "?supplier=%s"),
 		"selectors" => array("status" => "gui_select_supply_status", "supplier" => "gui_select_supplier"));
 
-	print gui_header( 1, "ניהול " . $entity_name_plural );
+	print Core_Html::gui_header( 1, "ניהול " . $entity_name_plural );
 
 	$sql = "select id, status, date(date), supplier, text, business_id, paid_date from $table_name where status != " . SupplyStatus::Deleted;
 
@@ -166,7 +166,7 @@ if ( ! $send ) {
 	print '<div id="buttons">';
 	print '<button id="btn_print" onclick="printDeliveryNotes()">הדפס תעודה</button>';
 	if ( $s->getStatus() == 1 ) {
-		print gui_button( "btn_send", "sendSupply()", "שלח לספק" );
+		print Core_Html::GuiButton( "btn_send", "sendSupply()", "שלח לספק" );
 	}
 	print '</div>';
 }

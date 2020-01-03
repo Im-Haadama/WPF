@@ -7,7 +7,7 @@ class Fresh_Suppliers {
 
 	static function status()
 	{
-//		$result = gui_header(1, "Suppliers");
+//		$result = Core_Html::gui_header(1, "Suppliers");
 		$result = self::SuppliersTable();
 
 //		$result .= $this->SupplyStatus();
@@ -35,7 +35,7 @@ class Fresh_Suppliers {
 //			$order_status[$status] [0] = GuiHyperlink($order_status[$status][0], add_to_url(array("operation" => "show_orders", "status" => $info[1])));
 //			$order_status[ $status ][1] = $text_status;
 //		}
-//		$result .= gui_header(2, "Orders");
+//		$result .= Core_Html::gui_header(2, "Orders");
 //
 //		array_unshift($order_status, array(im_translate("Count"), im_translate("Status")));
 //
@@ -61,7 +61,7 @@ class Fresh_Suppliers {
 //			$supply_status[$row_number] [0] = GuiHyperlink($supply_status[$row_number][0], add_to_url(array("operation" => "show_supplies", "status" => $status)));
 //			$supply_status[ $row_number ][1] = im_translate(get_supply_status($status));
 //		}
-//		$result .= gui_header(2, "Supply");
+//		$result .= Core_Html::gui_header(2, "Supply");
 //
 //		array_unshift($supply_status, array(im_translate("Count"), im_translate("Status")));
 //
@@ -72,7 +72,7 @@ class Fresh_Suppliers {
 
 	static function SuppliersTable()
 	{
-		$result = gui_header(1, "Active suppliers");
+		$result = Core_Html::gui_header(1, "Active suppliers");
 
 		$args = [];
 		$args["fields"] = array("id", "supplier_name", "supplier_description");
@@ -80,7 +80,7 @@ class Fresh_Suppliers {
 		$args["query"] = "is_active = 1";
 		$args["header_fields"] = array("supplier_name" => "Name", "supplier_description" => "Description");
 
-		$result .= GemTable("im_suppliers", $args);
+		$result .= Core_Gem::GemTable("im_suppliers", $args);
 
 		// $result .= GuiTableContent("im_suppliers",null, $args);
 

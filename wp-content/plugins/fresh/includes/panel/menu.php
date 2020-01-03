@@ -29,19 +29,19 @@ $links[1] = "../../wp-admin/edit.php?post_status=%s&post_type=shop_order";
 
 $col = 0;
 
-$table[0][ $col ] = gui_header( 1, "הזמנות" );
+$table[0][ $col ] = Core_Html::gui_header( 1, "הזמנות" );
 $table[1][ $col ] = GuiTableContent( "table", $sql, true, true, $links );
-$table[2][ $col ] = gui_hyperlink( "צור הזננות למנויים", "../weekly/create-subs.php" );
+$table[2][ $col ] = Core_Html::GuiHyperlink( "צור הזננות למנויים", "../weekly/create-subs.php" );
 $table[3][ $col ] = "";
 $table[4][ $col ] = "";
 
 // Supplies
 $i = 0;
 $col ++;
-$table[ $i ++ ][ $col ] = gui_header( 1, "אספקות" );
-$table[ $i ++ ][ $col ] = gui_header( 2, "פריטים להזמין" );
+$table[ $i ++ ][ $col ] = Core_Html::gui_header( 1, "אספקות" );
+$table[ $i ++ ][ $col ] = Core_Html::gui_header( 2, "פריטים להזמין" );
 $table[ $i ++ ][ $col ] = calculate_total_products();
-$table[ $i ++ ][ $col ] = gui_hyperlink( "תכנון אספקה", "../orders/get-total-orders.php", "doc_frame" );
+$table[ $i ++ ][ $col ] = Core_Html::GuiHyperlink( "תכנון אספקה", "../orders/get-total-orders.php", "doc_frame" );
 $sql                    = "SELECT count(*) AS 'כמות', 
 CASE
   WHEN status = 1 THEN \"חדש\"
@@ -54,11 +54,11 @@ $table[ $i ++ ][ $col ] = GuiTableContent( "table", $sql, true, true, $links );
 // Catalog
 $i = 0;
 $col ++;
-$table[ $i ++ ][ $col ] = gui_header( 1, "קטלוג" );
+$table[ $i ++ ][ $col ] = Core_Html::gui_header( 1, "קטלוג" );
 $count                  = count_unmapped();
 if ( $count > 0 ) {
-	$table[ $i ++ ][ $col ] = gui_header( 2, "מיפויים" );
-	$table[ $i ++ ][ $col ] = gui_hyperlink( $count . " פריטים לא ממופים ", "../catalog/catalog-map.php" );
+	$table[ $i ++ ][ $col ] = Core_Html::gui_header( 2, "מיפויים" );
+	$table[ $i ++ ][ $col ] = Core_Html::GuiHyperlink( $count . " פריטים לא ממופים ", "../catalog/catalog-map.php" );
 }
 $first = true;
 foreach ( sql_query_single( "SELECT id FROM im_suppliers WHERE machine_update = TRUE " ) as $supplier_id ) {
@@ -70,7 +70,7 @@ foreach ( sql_query_single( "SELECT id FROM im_suppliers WHERE machine_update = 
 
 	if ( $day_diff > 3 ) {
 		if ( $first ) {
-			$table[ $i ++ ][ $col ] = gui_header( 2, "מחירונים לא מעודכנים" );
+			$table[ $i ++ ][ $col ] = Core_Html::gui_header( 2, "מחירונים לא מעודכנים" );
 			$first                  = false;
 		}
 		// print $i . " "  . $col . "<br/>";
@@ -78,25 +78,25 @@ foreach ( sql_query_single( "SELECT id FROM im_suppliers WHERE machine_update = 
 	}
 }
 
-$table[ $i ++ ][ $col ] = gui_hyperlink( "עדכן קטלוג", "../catalog/catalog-auto-update.php" );
-$table[ $i ++ ][ $col ] = gui_hyperlink( "עדכן מכולת", "../pricelist/update-makolet.php" );
-$table[ $i ++ ][ $col ] = gui_hyperlink( "הוספת פריטים", "../catalog/add-products.php" );
+$table[ $i ++ ][ $col ] = Core_Html::GuiHyperlink( "עדכן קטלוג", "../catalog/catalog-auto-update.php" );
+$table[ $i ++ ][ $col ] = Core_Html::GuiHyperlink( "עדכן מכולת", "../pricelist/update-makolet.php" );
+$table[ $i ++ ][ $col ] = Core_Html::GuiHyperlink( "הוספת פריטים", "../catalog/add-products.php" );
 
 $i                         = 0;
-$table[ $i ++ ][ ++ $col ] = gui_header( 1, "משלוחים" );
+$table[ $i ++ ][ ++ $col ] = Core_Html::gui_header( 1, "משלוחים" );
 
 if ( Core_MultiSite::LocalSiteID() == 2 ) {
-	$table[ $i ++ ][ $col ] = gui_header( 2, "מכולת" );
-	$table[ $i ++ ][ $col ] = gui_hyperlink( "מורשת", "../delivery/legacy.php" );
+	$table[ $i ++ ][ $col ] = Core_Html::gui_header( 2, "מכולת" );
+	$table[ $i ++ ][ $col ] = Core_Html::GuiHyperlink( "מורשת", "../delivery/legacy.php" );
 }
 
 $i                         = 0;
-$table[ $i ++ ][ ++ $col ] = gui_header( 1, "מלאי" );
-$table[ $i ++ ][ $col ]    = gui_hyperlink( "איפוס", "../weekly/start.php" );
+$table[ $i ++ ][ ++ $col ] = Core_Html::gui_header( 1, "מלאי" );
+$table[ $i ++ ][ $col ]    = Core_Html::GuiHyperlink( "איפוס", "../weekly/start.php" );
 
 $i                         = 0;
-$table[ $i ++ ][ ++ $col ] = gui_header( 1, "לקוחות" );
-$table[ $i ++ ][ $col ]    = gui_hyperlink( "צור לקוח", "../account/add-account.php" );
+$table[ $i ++ ][ ++ $col ] = Core_Html::gui_header( 1, "לקוחות" );
+$table[ $i ++ ][ $col ]    = Core_Html::GuiHyperlink( "צור לקוח", "../account/add-account.php" );
 
 for ( $i = 0; $i < sizeof( $table ); $i ++ ) {
 	for ( $j = 0; $j < sizeof( $table[0] ); $j ++ ) {

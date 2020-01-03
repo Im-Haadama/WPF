@@ -87,19 +87,19 @@ function handle_medicine_show($operation, $args)
 
 function medicine_main()
 {
-	$result = gui_header(1, "Main medicine");
-	$result .= gui_header(2, "Data entry");
-//	$result .= GuiHyperlink("plants", add_to_url("operation", "show_plants")) . gui_br();
-//	$result .= GuiHyperlink("symptoms", add_to_url("operation", "show_symptoms")) . gui_br();
-//	$result .= GuiHyperlink("affects", add_to_url("operation", "show_affects")) . gui_br();
-	$result .= GuiHyperlink("clients", add_to_url("operation", "show_clients")) . gui_br();
+	$result = Core_Html::gui_header(1, "Main medicine");
+	$result .= Core_Html::gui_header(2, "Data entry");
+//	$result .= GuiHyperlink("plants", add_to_url("operation", "show_plants")) . Core_Html::Br();
+//	$result .= GuiHyperlink("symptoms", add_to_url("operation", "show_symptoms")) . Core_Html::Br();
+//	$result .= GuiHyperlink("affects", add_to_url("operation", "show_affects")) . Core_Html::Br();
+	$result .= GuiHyperlink("clients", add_to_url("operation", "show_clients")) . Core_Html::Br();
 
 	return $result;
 }
 
 function show_plants()
 {
-	$result = gui_header(1, "Plants");
+	$result = Core_Html::gui_header(1, "Plants");
 	$result .= GemTable("pl_plants", $args);
 
 	return $result;
@@ -107,7 +107,7 @@ function show_plants()
 
 function show_clients()
 {
-	$result = gui_header(1, "Clients");
+	$result = Core_Html::gui_header(1, "Clients");
 	$args = [];
 	$args["query"] = "ID in (select user_id from wp_usermeta where meta_key = 'medicine')";
 	$args["links"] = array("ID" => add_to_url("operation", "show_user&id=%s"));
@@ -118,9 +118,9 @@ function show_clients()
 
 function show_add_wp_users()
 {
-	$result = gui_header(1, "select user");
+	$result = Core_Html::gui_header(1, "select user");
 	$result .= gui_select_user("user_id");
-	$result .= gui_button("btn_add_medicine_user", "add_medicine()", "Add");
+	$result .= Core_Html::GuiButton("btn_add_medicine_user", "add_medicine()", "Add");
 
 	return $result;
 }
@@ -129,7 +129,7 @@ function show_user($user_id = 0)
 {
 	if (! $user_id) $user_id = get_param("id", true);
 	$result = "";
-	$result .= gui_header(1, get_user_name($user_id));
+	$result .= Core_Html::gui_header(1, get_user_name($user_id));
 
 	$result .= GemTable("me_clients", $args);
 
@@ -141,7 +141,7 @@ function show_add_me_clients($user_id = 0)
 	if (! $user_id) $user_id = get_param("id", true);
 
 	$result = "";
-	$result .= gui_header(1, "Medical info") . " " . get_user_name($user_id);
+	$result .= Core_Html::gui_header(1, "Medical info") . " " . get_user_name($user_id);
 	$args = [];
 	$args["hide_id"] = array("user_id" => 1);
 	$args["selectors"] = array("symptoms" => "gui_select_symptom");

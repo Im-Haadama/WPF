@@ -15,7 +15,7 @@ die(1);
 function GemAddRow($table_name, $text, $args){
 	$result = "";
 
-	$result .= gui_header(1, $text);
+	$result .= Core_Html::gui_header(1, $text);
 	$result .= NewRow($table_name, $args);
 	$post = GetArg($args, "post_file", get_url(1));
 	$next_page = GetArg($args, "next_page", null);
@@ -29,10 +29,10 @@ function GemAddRow($table_name, $text, $args){
 		    }  else alert(xmlhttp.response);
 		}
 		</script>';
-		$result .= "\n" . gui_button("add_row", "data_save_new('" . $post . "', '$table_name', next_page)\n", "add");
+		$result .= "\n" . Core_Html::GuiButton("add_row", "data_save_new('" . $post . "', '$table_name', next_page)\n", "add");
 	} else {
-		$result .= gui_button("add_row", "data_save_new('" . $post . "', '$table_name')", "add");
-		$result .= gui_button("add_row", "data_save_new('" . $post . "', '$table_name', success_message)", "add and continue");
+		$result .= Core_Html::GuiButton("add_row", "data_save_new('" . $post . "', '$table_name')", "add");
+		$result .= Core_Html::GuiButton("add_row", "data_save_new('" . $post . "', '$table_name', success_message)", "add and continue");
 	}
 
 	return $result;
@@ -59,7 +59,7 @@ function GemElement($table_name, $row_id, $args)
 	if (!isset($args["edit"])) $args["edit"] = true;
 
 	if ($title)
-		$result .= gui_header(1, $title, true, true) . " " . gui_label("id", $row_id);
+		$result .= Core_Html::gui_header(1, $title, true, true) . " " . gui_label("id", $row_id);
 
 	$sql = "select is_active from $table_name where id = $row_id";
 	$active = sql_query_single_scalar($sql);
@@ -70,8 +70,8 @@ function GemElement($table_name, $row_id, $args)
 	$result .= $row;
 
 	if (GetArg($args, "edit", false) and $post) {
-		$result .= gui_button( "btn_save", "data_save_entity('" . $post . "', '$table_name', " . $row_id . ')', "save" );
-		$result .= gui_button( "btn_active", "active_entity(" . ! $active ."," . $post . "', '$table_name', " . $row_id . ')', $active ? "inactive" : "activate" );
+		$result .= Core_Html::GuiButton( "btn_save", "data_save_entity('" . $post . "', '$table_name', " . $row_id . ')', "save" );
+		$result .= Core_Html::GuiButton( "btn_active", "active_entity(" . ! $active ."," . $post . "', '$table_name', " . $row_id . ')', $active ? "inactive" : "activate" );
 
 	}
 	return $result;
@@ -93,7 +93,7 @@ function GemArray($rows_data, &$args, $table_id)
 
 	$title = GetArg($args, "title", null);
 	$no_data_message = GetArg($args, "no_data_message", "No data for now");
-	if ($title) $result .= gui_header(2, $title);
+	if ($title) $result .= Core_Html::gui_header(2, $title);
 
 	$page = GetArg($args, "_page", 1);
 	$rows_per_page = GetArg($args, "rows_per_page", 10);
@@ -103,32 +103,32 @@ function GemArray($rows_data, &$args, $table_id)
 
 		$args["count"] = count($rows_data);
 
-		$result .= gui_table_args( $rows_data, $table_id, $args );
+		$result .= Core_Html::gui_table_args( $rows_data, $table_id, $args );
 
 		if (count($rows_data) == $rows_per_page + 1) { // 1 for the header
-			$result .= gui_hyperlink("Next page", add_to_url("page", $page + 1)) . " ";
-			$result .= gui_hyperlink("All", add_to_url("_page", -1)) . " ";
+			$result .= Core_Html::GuiHyperlink("Next page", add_to_url("page", $page + 1)) . " ";
+			$result .= Core_Html::GuiHyperlink("All", add_to_url("_page", -1)) . " ";
 		}
 		if ($page > 1)
-			$result .= gui_hyperlink("Previous page", add_to_url("_page", $page - 1));
+			$result .= Core_Html::GuiHyperlink("Previous page", add_to_url("_page", $page - 1));
 
-		if ($args["count"] > 10) $result .= gui_hyperlink("search", add_to_url("search", "1"));
+		if ($args["count"] > 10) $result .= Core_Html::GuiHyperlink("search", add_to_url("search", "1"));
 
 	} else {
-		$result .=  $no_data_message . gui_br();
+		$result .=  $no_data_message . Core_Html::Br();
 	}
 
 //	if ($button_text = GetArg($args, "button_text", "add")){
 //		$button_function = GetArg($args, "button_function", "data_save_new('" . get_url() . ", '" . $table_id . "', location_reload)"); // "function () { window.location = $button_target; }
 //
-//		$result .= gui_button("btn_" . $button_text, $button_function, $button_text);
+//		$result .= Core_Html::GuiButton("btn_" . $button_text, $button_function, $button_text);
 //	}
 	if (GetArg($args, "add_button", true))
-		$result .= gui_hyperlink("Add", add_to_url(array("operation" => "show_add_" . $table_id))) . " ";
+		$result .= Core_Html::GuiHyperlink("Add", add_to_url(array("operation" => "show_add_" . $table_id))) . " ";
 
 	$post_file = GetArg($args, "post_file", null);
 	if ($post_file)
-		$result .= gui_button("btn_delete_$table_id", "delete_items(" . quote_text($args["checkbox_class"]) . "," .
+		$result .= Core_Html::GuiButton("btn_delete_$table_id", "delete_items(" . quote_text($args["checkbox_class"]) . "," .
 			quote_text($post_file) . ")", "delete");
 
 //	$args = array();
@@ -209,7 +209,7 @@ function GemSearch($table_name, $args = null)
 
 	$script_function = GetArg($args, "search", "search_table('".  $table_name . "')");
 
-	print gui_button("btn_search", $script_function, "Search");
+	print Core_Html::GuiButton("btn_search", $script_function, "Search");
 }
 
 /**
@@ -226,7 +226,7 @@ function GemImport($table_name, $args = null)
 	$action_file = GetArg($args, "import_action", null);
 	if (! $action_file) throw new Exception("must supply import action");
 
-	$result .= gui_header(1, $header);
+	$result .= Core_Html::gui_header(1, $header);
 
 	$selector = GetArg($args, "selector", null);
 

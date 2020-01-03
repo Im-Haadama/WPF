@@ -122,14 +122,14 @@ function version28()
 {
 	if (! add_version("27"))
 		die ("can't install 2.7");
-	print gui_header(1, "install date");
+	print Core_Html::gui_header(1, "install date");
 	sql_query("alter table im_versions add install_date date;");
 
-	print gui_header(1, "zone_times");
+	print Core_Html::gui_header(1, "zone_times");
 	sql_query("alter table im_paths change zones zones_times longtext null;");
 	sql_query("alter table im_missions change zones zones_times longtext null;");
 
-	print gui_header(1, "function template_last_task");
+	print Core_Html::gui_header(1, "function template_last_task");
 	sql_query("CREATE FUNCTION 	template_last_task(_template_id int)
 	 RETURNS date
 BEGIN
@@ -140,7 +140,7 @@ BEGIN
 	return _result;	   
 END;");
 
-	print gui_header(1, "shipping codes");
+	print Core_Html::gui_header(1, "shipping codes");
 //	sql_query("drop table im_paths");
 	sql_query( "create table im_paths (
 	id INT NOT NULL AUTO_INCREMENT	PRIMARY KEY,
@@ -158,13 +158,13 @@ function version27()
 	if (! add_version("26"))
 		die ("can't install 2.6");
 
-	print gui_header(1, "add company to project");
+	print Core_Html::gui_header(1, "add company to project");
 	sql_query("ALTER TABLE im_projects ADD company int not null default 1;");
 
-	print gui_header(1, "add is_active to project");
+	print Core_Html::gui_header(1, "add is_active to project");
 	sql_query("ALTER TABLE im_projects ADD is_active int(1) not null default 1;");
 
-	print gui_header(1, "first_day_of_week");
+	print Core_Html::gui_header(1, "first_day_of_week");
 	sql_query("create function FIRST_DAY_OF_WEEK(day date) returns date
 BEGIN
   RETURN SUBDATE(day, WEEKDAY(day) + 1);
@@ -176,7 +176,7 @@ function version26()
 	if (! add_version("22"))
 		die ("can't install 2.2");
 
-	print gui_header(1, "worker_teams");
+	print Core_Html::gui_header(1, "worker_teams");
 	sql_query("drop function worker_teams");
 	sql_query("CREATE FUNCTION 	worker_teams(_user_id int)
 	 RETURNS TEXT
@@ -191,7 +191,7 @@ BEGIN
 END;"
 	);
 
-print gui_header(1, "month_with_index");
+print Core_Html::gui_header(1, "month_with_index");
 	sql_query("drop function month_with_index;");
 	sql_query("CREATE FUNCTION month_with_index(_date date) RETURNS VARCHAR(20) 
 	BEGIN
@@ -212,14 +212,14 @@ print gui_header(1, "month_with_index");
 		return concat(_index, ' ', _name);
 	END;	");
 
-	print gui_header(1, "task_template team");
+	print Core_Html::gui_header(1, "task_template team");
 	sql_query("ALTER TABLE im_task_templates ADD team int not null default 1;");
 
-	print gui_header(1, "template check info");
+	print Core_Html::gui_header(1, "template check info");
 	sql_query("alter table im_task_templates add last_check datetime;");
-	print gui_header(1, "template working hours");
+	print Core_Html::gui_header(1, "template working hours");
 	sql_query("alter table im_task_templates add working_hours varchar(50);");
-	print gui_header(1, "worker projects");
+	print Core_Html::gui_header(1, "worker projects");
 	sql_query("drop function worker_projects");
 	sql_query("CREATE FUNCTION 	worker_projects(_user_id int)
 	 RETURNS TEXT
@@ -250,7 +250,7 @@ END;");
 }
 function version22()
 {
-//	print gui_header(1, "preq done");
+//	print Core_Html::gui_header(1, "preq done");
 //	sql_query("CREATE FUNCTION SPLIT_STRING(str VARCHAR(255), delim VARCHAR(12), pos INT)
 //RETURNS VARCHAR(255)
 //RETURN REPLACE(SUBSTRING(SUBSTRING_INDEX(str, delim, pos),
@@ -289,22 +289,22 @@ BEGIN
 	return 1;	   
 END;");
 
-	print gui_header(1, "varchar preq");
+	print Core_Html::gui_header(1, "varchar preq");
 	sql_query("ALTER TABLE im_tasklist modify preq varchar(200) null;");
 
-	print gui_header(1, "is_active");
+	print Core_Html::gui_header(1, "is_active");
 	sql_query("ALTER TABLE im_task_templates ADD is_active bit not null default 1;");
 	sql_query("ALTER TABLE im_tasklist ADD is_active bit not null default 1;");
 	sql_query("ALTER TABLE im_tasklist ADD team int not null default 1;");
 	sql_query("ALTER TABLE im_working ADD is_active bit not null default 1;");
 
-	print gui_header(1, "save mission path");
+	print Core_Html::gui_header(1, "save mission path");
 	sql_query("ALTER TABLE im_missions ADD path varchar(4000);");
 
-	print gui_header(1, "part of basket");
+	print Core_Html::gui_header(1, "part of basket");
 	sql_query("ALTER TABLE im_delivery_lines ADD part_of_basket int;");
 
-	print gui_header(1, "bug management");
+	print Core_Html::gui_header(1, "bug management");
 
 	sql_query("ALTER TABLE im_tasklist ADD task_type int;");
 
@@ -342,10 +342,10 @@ BEGIN
 	return _result;	   
 END;");
 
-	print gui_header(2, "entry comment");
+	print Core_Html::gui_header(2, "entry comment");
 	sql_query("ALTER TABLE im_working_hours ADD comment varchar(200);");
 
-	print gui_header(1, "Working rate");
+	print Core_Html::gui_header(1, "Working rate");
 	sql_query("drop function working_rate");
 	sql_query("create
     function working_rate(_worker int, _project int) returns float
@@ -369,7 +369,7 @@ BEGIN
     return _rate;
   END; ");
 
-	print gui_header(1, "multisite");
+	print Core_Html::gui_header(1, "multisite");
 	sql_query("ALTER TABLE im_multisite ADD user varchar(100);");
 	sql_query("ALTER TABLE im_multisite ADD password varchar(100);");
 
@@ -381,7 +381,7 @@ function version21()
 	if (! add_version("20"))
 		die ("can't install 2.0");
 
-	print gui_header(1, "transaction types");
+	print Core_Html::gui_header(1, "transaction types");
 
 	if (! table_exists("im_bank_transaction_types")) {
 		sql_query("ALTER TABLE im_bank ADD transaction_type int;");
@@ -405,12 +405,12 @@ function version20()
 	if (! add_version("18"))
 		die ("can't install 1.8");
 
-	print gui_header(1, "company_id");
+	print Core_Html::gui_header(1, "company_id");
 	sql_query("ALTER TABLE im_working ADD company_id int;");
 
 	sql_query("ALTER TABLE im_working rename worker_id user_id");
 
-	print gui_header(1, "management");
+	print Core_Html::gui_header(1, "management");
 
 	if (! table_exists("im_working_teams")) sql_query("create table im_working_teams (
 	id INT NOT NULL AUTO_INCREMENT
@@ -1116,7 +1116,7 @@ function get_versions()
 function version29()
 {
 
-	print gui_header(1, "last delivery");
+	print Core_Html::gui_header(1, "last delivery");
 	sql_query("create function client_id_from_delivery(del_id int) returns text
 BEGIN
   declare _order_id int;
@@ -1131,7 +1131,7 @@ BEGIN
 END;
 
 ");
-	print gui_header(1, "user_id from del id");
+	print Core_Html::gui_header(1, "user_id from del id");
 	sql_query("create function client_id_from_delivery(del_id int) returns integer
 BEGIN
   declare _order_id int;
@@ -1146,7 +1146,7 @@ END;
 
 ");
 
-	print gui_header(1, "preq");
+	print Core_Html::gui_header(1, "preq");
 
 	sql_query("drop function preq_done");
 	sql_query("CREATE FUNCTION 	preq_done(_task_id int)
@@ -1176,7 +1176,7 @@ BEGIN
 	return 1;	   
 END;");
 
-	print gui_header(1, "order_mission");
+	print Core_Html::gui_header(1, "order_mission");
 	sql_query("create
     function order_mission(_order_id int) returns int(11)
 BEGIN
@@ -1185,7 +1185,7 @@ BEGIN
     return _mission;
   END; ");
 
-	print gui_header(1, "inventory");
+	print Core_Html::gui_header(1, "inventory");
 	sql_query("create table im_inventory_count (
 	id int auto_increment
 		primary key,
@@ -1195,7 +1195,7 @@ BEGIN
 	product_name varchar(200),
     quantity int(11) not null
 )");
-	print gui_header(1, "im_bank");
+	print Core_Html::gui_header(1, "im_bank");
 	sql_query("create table im_bank
 (
 	id int auto_increment
@@ -1255,19 +1255,19 @@ END");
 );
 
 ");
-	print gui_header(1, "bank owner");
+	print Core_Html::gui_header(1, "bank owner");
 	sql_query("alter table im_bank_account
     add owner int(11)");
 
-	print gui_header(1, "supplier_description");
+	print Core_Html::gui_header(1, "supplier_description");
 	sql_query("alter table im_suppliers 
     add supplier_description varchar(200)");
 
-	print gui_header(1, "mission_accepting");
+	print Core_Html::gui_header(1, "mission_accepting");
 	sql_query("alter table im_missions add accepting bit default 1;");
 
 
-	print gui_header(1, "Herbal");
+	print Core_Html::gui_header(1, "Herbal");
 
 	sql_query( "create table me_clients ( " . // Client record
 	           "id INT NOT NULL AUTO_INCREMENT	PRIMARY KEY, " .

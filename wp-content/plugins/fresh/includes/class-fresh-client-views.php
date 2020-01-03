@@ -69,7 +69,7 @@ class Fresh_Client_Views {
 					$result .= "הזמנה " . $order . " עברה לטיפול. צור קשר עם שירות הלקוחות" . "<br/>";
 				} else {
 					$result .= "הזמנה " . $order . " עדיין לא הוכנה. במידה ויתאפשר נוסיף מוצרים. נא לא לבטל פריטים טריים זמן קצר לפני האספקה. לחץ לשינוי ";
-					$result .= gui_hyperlink( "הזמנה " . $order, Core_Db_MultiSite::LocalSiteTools() . "/fresh/orders/get-order.php?order_id=" . $order );
+					$result .= Core_Html::GuiHyperlink( "הזמנה " . $order, Core_Db_MultiSite::LocalSiteTools() . "/fresh/orders/get-order.php?order_id=" . $order );
 					$result .= ".<br/>";
 				}
 			}
@@ -182,7 +182,7 @@ class Fresh_Client_Views {
 			if ($first) { $first = false; $value = "בחר";}
 			else {
 				if ($data1[$id]['transaction_method'] == "משלוח" and ! $data1[$id]['receipt']){ // Just unpaid deliveries
-					$value =  gui_checkbox("chk_" . $row_id, "trans_checkbox", false, "onchange=update_sum()");
+					$value =  Core_Html::gui_checkbox("chk_" . $row_id, "trans_checkbox", false, "onchange=update_sum()");
 				}
 			}
 			array_unshift($data1[$id], $value);

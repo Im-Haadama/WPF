@@ -87,10 +87,10 @@ if ( isset( $_GET["week"] ) ) {
 }
 
 if ( date( 'Y-m-d' ) > date( 'Y-m-d', strtotime( $week . "+1 week" ) ) ) {
-	print gui_hyperlink( "שבוע הבא", "get_all.php?week=" . date( 'Y-m-d', strtotime( $week . " +1 week" ) ) ) . " ";
+	print Core_Html::GuiHyperlink( "שבוע הבא", "get_all.php?week=" . date( 'Y-m-d', strtotime( $week . " +1 week" ) ) ) . " ";
 }
 
-print gui_hyperlink( "שבוע קודם", "get_all.php?week=" . date( 'Y-m-d', strtotime( $week . " -1 week" ) ) );
+print Core_Html::GuiHyperlink( "שבוע קודם", "get_all.php?week=" . date( 'Y-m-d', strtotime( $week . " -1 week" ) ) );
 
 // Build the query
 // $sql   = "SELECT id, date, amount, delivery_fee FROM im_business_info WHERE ";
@@ -161,7 +161,7 @@ function print_col( $hdr, $key = null ) {
 	global $new_url;
 	if ( $key ) {
 		$url = $new_url . "&sort=" . $key;
-		print "<td>" . gui_hyperlink( $hdr, $url ) . "</td>";
+		print "<td>" . Core_Html::GuiHyperlink( $hdr, $url ) . "</td>";
 	} else {
 		print "<td>" . $hdr . "</td>";
 	}

@@ -73,10 +73,10 @@ function show_menu() {
 		}
 	}
 	foreach ( $missions as $mission ) {
-		print gui_hyperlink( get_mission_name( $mission ), "print.php?operation=mission&mission_id=" . $mission );
+		print Core_Html::GuiHyperlink( get_mission_name( $mission ), "print.php?operation=mission&mission_id=" . $mission );
 		print "<br/>";
 	}
-	print gui_hyperlink( "אספקות", "print.php?operation=supplies" );
+	print Core_Html::GuiHyperlink( "אספקות", "print.php?operation=supplies" );
 }
 
 // print $sql;

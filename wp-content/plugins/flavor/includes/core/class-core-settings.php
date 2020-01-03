@@ -4,7 +4,6 @@
 class Core_Settings {
 	static public function show_settings()
 	{
-		// $result = gui_header(1, "main");
 		print __CLASS__ . ':' . __FUNCTION__;
 		$result = "";
 		$classes = array("Focus", "Fresh");

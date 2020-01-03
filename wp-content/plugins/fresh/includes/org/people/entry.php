@@ -189,7 +189,7 @@ print header_text( false, true, true );
 <?php
 print header_text(false, true, true);
 
-print gui_header( 1, "הזנת נתוני שכר עם האדמה" );
+print Core_Html::gui_header( 1, "הזנת נתוני שכר עם האדמה" );
 
 $table = array();
 $args = array("events" => "onchange=worker_changed()");
@@ -213,17 +213,17 @@ array_push( $table, ( array( "פרויקט", gui_select_project( "project",3, $a
 
 print gui_table_args( $table );
 
-print gui_header( 2, "הוצאות נסיעה" );
+print Core_Html::gui_header( 2, "הוצאות נסיעה" );
 print gui_input( "traveling", "" ) . "<br/>";
-print gui_header( 2, "הוצאות נוספות/משלוחים" );
+print Core_Html::gui_header( 2, "הוצאות נוספות/משלוחים" );
 print "תיאור";
 print gui_input( "extra_text", "" ) . "<br/>";
 print "סכום";
 print gui_input( "extra", "" ) . "<br/>";
 
-print gui_button("btn_add_time", "add_item()", "Add activity", true);
+print Core_Html::GuiButton("btn_add_time", "add_item()", "Add activity", true);
 
-print gui_button("btn_add_sick_leave", "add_sick_leave()", "Add sick leave", true);
+print Core_Html::GuiButton("btn_add_sick_leave", "add_sick_leave()", "Add sick leave", true);
 
 ?>
 

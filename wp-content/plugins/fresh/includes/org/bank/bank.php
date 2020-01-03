@@ -11,11 +11,11 @@ function bank_transactions($query = null, $args = null)
 
 	$account_id = 1;
 
-	print gui_hyperlink('Create Receipts', add_to_url("operation" , "receipts")); print " ";
-	print gui_hyperlink('Mark payments', add_to_url("operation", "payments")); print " ";
-	print gui_hyperlink('Import bank pages', add_to_url("operation" ,"import")); print " ";
-	print gui_hyperlink('Edit transaction types', add_to_url("operation" ,"transaction_types")); print " ";
-	print gui_hyperlink('Search transaction', add_to_url("operation" ,"search")); print " ";
+	print Core_Html::GuiHyperlink('Create Receipts', add_to_url("operation" , "receipts")); print " ";
+	print Core_Html::GuiHyperlink('Mark payments', add_to_url("operation", "payments")); print " ";
+	print Core_Html::GuiHyperlink('Import bank pages', add_to_url("operation" ,"import")); print " ";
+	print Core_Html::GuiHyperlink('Edit transaction types', add_to_url("operation" ,"transaction_types")); print " ";
+	print Core_Html::GuiHyperlink('Search transaction', add_to_url("operation" ,"search")); print " ";
 
 	$page = get_param("page", false, 1);
 	$rows_per_page = 20;
@@ -30,7 +30,7 @@ function bank_transactions($query = null, $args = null)
 
 	$result .= GuiTableContent("im_banking", $sql, $args);
 
-	$result .= gui_hyperlink("Older", add_to_url("page", $page + 1));
+	$result .= Core_Html::GuiHyperlink("Older", add_to_url("page", $page + 1));
 
 	return $result;
 }

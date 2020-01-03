@@ -33,7 +33,7 @@ function gui_select_task( $id, $value, $args ) {
 	if ($debug) {
 		print "where: " . $query . "<br/>";
 	}
-	return GuiAutoList($id, "tasks", $args);
+	return Core_Html::GuiAutoList($id, "tasks", $args);
 }
 
 function gui_select_mission( $id, $selected = 0, $args = null ) {

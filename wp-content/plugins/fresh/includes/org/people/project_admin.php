@@ -70,13 +70,13 @@ function handle_project_operation($operation)
 			}
 			$args["edit"] = true;
 			print NewRow( "im_business_info", $args, true );
-			print gui_button( "btn_add", "save_new('im_business_info')", "הוסף" );
+			print Core_Html::GuiButton( "btn_add", "save_new('im_business_info')", "הוסף" );
 			break;
 		case "show_projects":
 			print HeaderText($args);
 			$links = array("ID" => add_to_url(array("operation" => "show_project", "id" => "%s")));
 
-			print gui_header( 1, "ניהול פרויקטים" );
+			print Core_Html::gui_header( 1, "ניהול פרויקטים" );
 			$sum = null;
 			$args = array();
 			$args["links"] = $links;
@@ -110,7 +110,7 @@ return;
 $row_id = get_param( "row_id", false );
 
 if ( $row_id ) {
-	print gui_header( 1, $entity_name . " " . $row_id );
+	print Core_Html::gui_header( 1, $entity_name . " " . $row_id );
 	$args                 = array();
 	$args["edit"]         = 1;
 	$args["add_checkbox"] = true;
@@ -118,7 +118,7 @@ if ( $row_id ) {
 	$args["transpose"] = true;
 
 	print GuiRowContent( $table_name, $row_id, $args );
-	print gui_button( "btn_save", "data_save_entity('$table_name', " . $row_id . ')', "שמור" );
+	print Core_Html::GuiButton( "btn_save", "data_save_entity('$table_name', " . $row_id . ')', "שמור" );
 
 	return;
 }
@@ -126,7 +126,7 @@ if ( $row_id ) {
 $part_id = get_param( "part_id", false );
 
 if ( $part_id ) {
-	print gui_header( 2, get_supplier_name( $part_id ) );
+	print Core_Html::gui_header( 2, get_supplier_name( $part_id ) );
 	$page  .= " and part_id = " . $part_id;
 	$links = array( "invoice_table.php?row_id=%s" );
 	print GuiTableContent( "transactions", "select id, date as 'תאריך', amount as 'סכום', net_amount as 'סכום נקי', ref as 'סימוכין', pay_date as 'תאריך תשלום'
@@ -134,7 +134,7 @@ if ( $part_id ) {
 
 	$date = date( 'Y-m-d', strtotime( "last day of previous month" ) );
 
-	print gui_hyperlink( "הוסף", "invoice_table.php?operation=add&part_id=$part_id&date=$date&document_type=4" );
+	print Core_Html::GuiHyperlink( "הוסף", "invoice_table.php?operation=add&part_id=$part_id&date=$date&document_type=4" );
 
 	return;
 }

@@ -102,15 +102,15 @@ function greeting( $args = null, $force_login = false )
 //		$data .= im_translate("Hello");
 
 //	$data .= " " . gui_div("user_id", get_customer_name($user_id), false, $user_id);
-	$data .= get_avatar( get_user_id(), 40 ) . " " . get_customer_name($user_id) . gui_br() . GuiHyperlink("logout", wp_logout_url(get_permalink()));
+	$data .= get_avatar( get_user_id(), 40 ) . " " . get_customer_name($user_id) . Core_Html::Br() . GuiHyperlink("logout", wp_logout_url(get_permalink()));
 	if ($viewing_as != $user_id) $data .= "( " . im_translate("viewing as") . get_customer_name($viewing_as) . ")";
 
 	$data .=  Date("G:i", $now );
 
 	// Would go to dropdown.
-	// $data .= gui_hyperlink("logout", get_param(1) . "?operation=logout&back=" . encodeURIComponent(get_url()));
+	// $data .= Core_Html::GuiHyperlink("logout", get_param(1) . "?operation=logout&back=" . encodeURIComponent(get_url()));
 
-	if ($extra_text) $data .= gui_br() . $extra_text;
+	if ($extra_text) $data .= Core_Html::Br() . $extra_text;
 
 	return $data;
 }

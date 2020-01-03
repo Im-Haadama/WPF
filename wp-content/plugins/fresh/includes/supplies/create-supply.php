@@ -105,7 +105,7 @@ while ( ( $data = fgetcsv( $file ) ) !== false ) {
 $comments = "ליקופן";
 if ( count( $lines ) ) {
 	$supplier_id = get_supplier_id( $supplier_name );
-	$Supply      = Supply::CreateSupply( $supplier_id ); // create_supply( $supplier_id );
+	$Supply      = Fresh_Supply::CreateSupply( $supplier_id ); // create_supply( $supplier_id );
 	if ( ! ( $Supply->getID() > 0 ) ) {
 		die ( "שגיאה " );
 	}

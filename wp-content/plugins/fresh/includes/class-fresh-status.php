@@ -6,7 +6,7 @@ class Fresh_Status {
 
 	function status()
 	{
-		$result = gui_header(1, "Store status");
+		$result = Core_Html::gui_header(1, "Store status");
 		$result .= $this->OrdersStatus();
 		$result .= $this->SupplyStatus();
 //		$result .= $this->PaymentStatus();
@@ -33,7 +33,7 @@ group by post_status");
 			$order_status[$status] [0] = GuiHyperlink($order_status[$status][0], add_to_url(array("operation" => "show_orders", "status" => $info[1])));
 			$order_status[ $status ][1] = $text_status;
 		}
-		$result .= gui_header(2, "Orders");
+		$result .= Core_Html::gui_header(2, "Orders");
 
 		array_unshift($order_status, array(im_translate("Count"), im_translate("Status")));
 
@@ -59,7 +59,7 @@ group by status");
 			$supply_status[$row_number] [0] = GuiHyperlink($supply_status[$row_number][0], add_to_url(array("operation" => "show_supplies", "status" => $status)));
 			$supply_status[ $row_number ][1] = im_translate(get_supply_status($status));
 		}
-		$result .= gui_header(2, "Supply");
+		$result .= Core_Html::gui_header(2, "Supply");
 
 		array_unshift($supply_status, array(im_translate("Count"), im_translate("Status")));
 
@@ -71,7 +71,7 @@ group by status");
 	function SupplyTable()
 	{
 		$status = get_param("status", false, 1);
-		$result = gui_header(1, im_translate("Supplies in status") . " '" . im_translate(get_supply_status($status)) . "'");
+		$result = Core_Html::gui_header(1, im_translate("Supplies in status") . " '" . im_translate(get_supply_status($status)) . "'");
 
 		$result .= SuppliesTable($status);
 

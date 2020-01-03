@@ -1,5 +1,8 @@
 <?php
 
+print sql_trace();
+die("don't use");
+
 /**
  * Created by PhpStorm.
  * User: agla
@@ -19,11 +22,11 @@
 // cast: function gui_<html code>($params) { return $text; }
 
 /// To have textual output first include text_inputs.php
-if (function_exists('gui_br')){
+if (function_exists('Core_Html::Br')){
 	// hook for debug
 	} else {
 
-	function gui_br() {
+	function Core_Html::Br() {
 		return '<br/>';
 	}
 
@@ -59,7 +62,7 @@ if (function_exists('gui_br')){
 	 *
 	 * @return string
 	 */
-	function gui_button( $id, $func, $text, $disabled = false ) {
+	function Core_Html::GuiButton( $id, $func, $text, $disabled = false ) {
 		$btn = "<button id=\"" . $id . "\" onclick=\"" . $func . "\"";
 		if ( $disabled ) {
 			$btn .= " disabled";
@@ -141,9 +144,9 @@ if (function_exists('gui_br')){
 			$server_action = substr( $action, 0, $s );
 			$client_action = substr( $action, $s + 1 );
 
-			return gui_button( $id, "execute_url('" . $server_action . "', $client_action, $id )", $text );
+			return Core_Html::GuiButton( $id, "execute_url('" . $server_action . "', $client_action, $id )", $text );
 		} else {
-			return gui_hyperlink( $text, $action );
+			return Core_Html::GuiHyperlink( $text, $action );
 		}
 	}
 
@@ -378,7 +381,7 @@ if (function_exists('gui_br')){
 	 * @return string
 	 * @deprecated use GuiHyperlink
 	 */
-	function gui_hyperlink( $text, $link, $target = null ) {
+	function Core_Html::GuiHyperlink( $text, $link, $target = null ) {
 		return GuiHyperlink( $text, $link, $target ? [ "target" => $target ] : null );
 	}
 
@@ -406,7 +409,7 @@ if (function_exists('gui_br')){
 	 *
 	 * @return string
 	 */
-	function gui_header( $level, $text, $center = false, $inline = false ) {
+	function Core_Html::gui_header( $level, $text, $center = false, $inline = false ) {
 //		debug_var($text);
 		$data = "";
 		// if ($inline) $data .= "<style>h1 {display: inline;}</style>";
@@ -709,7 +712,7 @@ if (function_exists('gui_br')){
 							if ( is_array( $action ) ) {
 								$text   = $action[0];
 								$action = sprintf( $action[1], $row_id );
-								array_push( $row, gui_hyperlink( $text, $action ) );
+								array_push( $row, Core_Html::GuiHyperlink( $text, $action ) );
 
 							} else {
 								$h = sprintf( $action, $row_id );
@@ -1364,7 +1367,7 @@ function GuiTabs($tabs)
 	{
 		$name = $tab[0];
 		$display_name = $tab[1];
-		$contents .= GuiDiv($name, gui_header(2, $name) . $tab[2], $div_args);
+		$contents .= GuiDiv($name, Core_Html::gui_header(2, $name) . $tab[2], $div_args);
 
 		$args["events"] = "onclick=\"selectTab(event, '$name', 'tabcontent')\"";
 		$result .= GuiButton("btn_tab_$name", $display_name, $args);

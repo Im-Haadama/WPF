@@ -235,7 +235,7 @@ class Fresh {
 	static function new_customer($order_id)
 	{
 		$result = "";
-		$result .= gui_header( 1, "לקוח חדש" );
+		$result .= Core_Html::gui_header( 1, "לקוח חדש" );
 
 		$O         = new Order( $order_id );
 		$client_id = $O->getCustomerId();
@@ -257,12 +257,12 @@ class Fresh {
 
 		if ( ! $invoice_client_id ) {
 			$result .=$step ++ . ") לחץ על צור משתמש - במערכת invoice4u";
-			$result .=gui_button( "btn_create_user", "create_user()", "צור משתמש" );
-			$result .=gui_button( "btn_update_user", "update_user()", "קשר משתמש" );
+			$result .=Core_Html::GuiButton( "btn_create_user", "create_user()", "צור משתמש" );
+			$result .=Core_Html::GuiButton( "btn_update_user", "update_user()", "קשר משתמש" );
 			$result .="<br/>";
 		}
 
-		$result .=$step ++ . ") קח/י פרטי תשלום" . gui_hyperlink( "כאן", "https://private.invoice4u.co.il/he/Customers/CustomerAddNew.aspx?type=edit&id=" . $client_id . "#tab-tokens" ) . "<br/>";
+		$result .=$step ++ . ") קח/י פרטי תשלום" . Core_Html::GuiHyperlink( "כאן", "https://private.invoice4u.co.il/he/Customers/CustomerAddNew.aspx?type=edit&id=" . $client_id . "#tab-tokens" ) . "<br/>";
 		$result .="<br/>";
 
 		$result .=$O->infoBox();
@@ -280,10 +280,10 @@ class Fresh {
 		 */
 		require_once FRESH_INCLUDES . 'class-fresh-autoloader.php';
 		require_once FLAVOR_INCLUDES_ABSPATH . 'core/core-functions.php';
-
-		require_once FLAVOR_INCLUDES_ABSPATH . 'core/fund.php';
-		require_once FLAVOR_INCLUDES_ABSPATH . 'core/data/sql.php';
-		require_once FLAVOR_INCLUDES_ABSPATH . 'core/wp.php';
+//
+//		require_once FLAVOR_INCLUDES_ABSPATH . 'core/fund.php';
+//		require_once FLAVOR_INCLUDES_ABSPATH . 'core/data/sql.php';
+//		require_once FLAVOR_INCLUDES_ABSPATH . 'core/wp.php';
 
 		/**
 		 * Interfaces.

@@ -118,21 +118,21 @@ function not_used(){
 
 	print " ";
 
-	print gui_hyperlink("add tasks", $url . "?operation=show_new_task");
+	print Core_Html::GuiHyperlink("add tasks", $url . "?operation=show_new_task");
 
 	print " ";
 
-	print gui_hyperlink("add sequence", $url . "?operation=new_sequence");
+	print Core_Html::GuiHyperlink("add sequence", $url . "?operation=new_sequence");
 
 	print " ";
 
 	print managed_workers(get_user_id(), $_SERVER['REQUEST_URI']) . " ";
 
 	if (im_user_can("edit_task_types"))
-		print gui_hyperlink("projects", $url . "?operation=projects") . " ";
+		print Core_Html::GuiHyperlink("projects", $url . "?operation=projects") . " ";
 
 	if (im_user_can("edit_projects"))
-		print gui_hyperlink("task types", $url . "?operation=task_types") . " ";
+		print Core_Html::GuiHyperlink("task types", $url . "?operation=task_types") . " ";
 
 //	$sum     = null;
 
@@ -153,7 +153,7 @@ function focus_header($args)
 	$result = "";
 	// $args = array("print_logo" => true, "rtl" => is_rtl());
 	$args["greeting"] = false;
-	if (get_user_id() == 1) $args["greeting_extra_text"] = gui_hyperlink("log", focus_log_file(1));
+	if (get_user_id() == 1) $args["greeting_extra_text"] = Core_Html::GuiHyperlink("log", focus_log_file(1));
 
 	$result =  HeaderText($args);
 	$result .= load_scripts(GetArg($args, "scripts", null));

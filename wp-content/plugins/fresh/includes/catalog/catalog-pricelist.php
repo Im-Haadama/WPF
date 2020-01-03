@@ -28,7 +28,7 @@ $data .= "</tr>";
 
 // Add new item fields
 $data .= "<tr>";
-$data .= "<td>" . gui_button( "add", "add_item()", "הוסף" ) . "</td>";
+$data .= "<td>" . Core_Html::GuiButton( "add", "add_item()", "הוסף" ) . "</td>";
 $data .= gui_cell( gui_input( "product_name", "", "" ) );
 $data .= gui_cell( gui_input( "price", "", "" ) );
 $data .= "</tr>";

@@ -135,30 +135,30 @@ $table = print_deliveries( "`post_status` in ('wc-awaiting-shipment', 'wc-proces
                            " and post_excerpt like '%משלוח המכולת%'", true );
 
 if ( strlen( $table ) > 10 ) {
-	print gui_header( 1, "משלוחים לביצוע" );
+	print Core_Html::gui_header( 1, "משלוחים לביצוע" );
 // $sql = "select post_id from wp_posts where post_status = 'wc-
 	print delivery_table_header();
 	print $table;
 
 	print "</table>";
 } else {
-	print gui_header( 1, "כל המשלוחים בוצעו" );
+	print Core_Html::gui_header( 1, "כל המשלוחים בוצעו" );
 }
 
 $table = print_deliveries( "post_status = 'wc-awaiting-document'", true );
 
 if ( strlen( $table ) > 10 ) {
-	print gui_header( 1, "משלוחים שבוצעו" );
+	print Core_Html::gui_header( 1, "משלוחים שבוצעו" );
 	print delivery_table_header();
 	print $table;
 	print "</table>";
 }
-print gui_button( "btn_create_ship", "create_ship()", "צור תעודת משלוח" );
+print Core_Html::GuiButton( "btn_create_ship", "create_ship()", "צור תעודת משלוח" );
 
 print '<div id="logging">';
 
 
-print gui_header( 1, "הוספת משלוחים" );
+print Core_Html::gui_header( 1, "הוספת משלוחים" );
 
 print "אנא בחר משלוחים לשבוע זה" . "<br/>";
 
@@ -176,9 +176,9 @@ while ( $row = mysqli_fetch_row( $result ) ) {
 }
 print "</table>";
 
-print gui_button( "btn_done", "done()", "בצע" );
+print Core_Html::GuiButton( "btn_done", "done()", "בצע" );
 
-print gui_button( "btn_clear", "clear_legacy()", "נקה" );
+print Core_Html::GuiButton( "btn_clear", "clear_legacy()", "נקה" );
 
 global $legacy_user;
 
@@ -186,14 +186,14 @@ $data = business_open_ship( $legacy_user );
 
  // print $data . " " . strlen($data);
 if ( strlen( $data ) > 182 ) {
-	print gui_header( 1, "תעודות משלוח פתוחות" );
+	print Core_Html::gui_header( 1, "תעודות משלוח פתוחות" );
 
 	print $data;
 
-	print gui_button( "id_legacy_invoice", "create_subcontract_invoice()", "הפק חשבונית מס" );
+	print Core_Html::GuiButton( "id_legacy_invoice", "create_subcontract_invoice()", "הפק חשבונית מס" );
 
 } else {
-    print gui_header(1, "כל תעודות המשלוח הוכנסו לחשבוניות");
+    print Core_Html::gui_header(1, "כל תעודות המשלוח הוכנסו לחשבוניות");
 }
 
 $sql = "select * from im_business_info where part_id = " . $legacy_user .
@@ -203,7 +203,7 @@ $args = array();
 $table = GuiTableContent("open_invoices", $sql, $args);
 
 if ($table){
-    print gui_header(1, "חשבוניות פתוחות");
+    print Core_Html::gui_header(1, "חשבוניות פתוחות");
      print $table;
 }
 

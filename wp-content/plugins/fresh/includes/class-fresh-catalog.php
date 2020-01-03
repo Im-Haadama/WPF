@@ -604,7 +604,7 @@ class Fresh_Catalog {
 		$categs = self::GetFreshCategories();
 
 		foreach ($categs as $categ){
-//			print gui_header(1, get_term_name($categ)) . "<br/>";
+//			print Core_Html::gui_header(1, get_term_name($categ)) . "<br/>";
 			$iter = new Fresh_ProductIterator();
 			$iter->iteratePublished($categ );
 

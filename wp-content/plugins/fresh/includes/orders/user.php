@@ -103,6 +103,6 @@ function prod_line( $prod_id ) {
 print "<br/>";
 print gui_textarea( "comments", "הערות", "", 5, 80 );
 print "<br/>";
-print gui_button( "order", "send_order()", "הזמן" );
+print Core_Html::GuiButton( "order", "send_order()", "הזמן" );
 
 print gui_label( "result", "" );

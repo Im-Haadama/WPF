@@ -142,7 +142,7 @@ foreach ( $table as $row ) {
 	$date           = $row[3];
 	$message_number = $row[4];
 	//print "mn=" . $row[4]. "<br/>";
-	$supplier = Supplier::getByInvoiceSender( $sender );
+	$supplier = Fresh_Supplier::getByInvoiceSender( $sender );
 
 	if ( $supplier ) {
 		$supplier_id = $supplier->getId();
@@ -163,7 +163,7 @@ foreach ( $table as $row ) {
 		array_push( $line, gui_input( "ref_" . $message_number, "" ) );
 		array_push( $line, gui_input( "tot_" . $message_number, "" ) );
 		array_push( $line, gui_input( "net_" . $message_number, "" ) );
-		array_push( $line, gui_button( "btn_" . $message_number, "insert_invoice(" . $message_number . "," . $supplier_id . ")", "הזן" ) );
+		array_push( $line, Core_Html::GuiButton( "btn_" . $message_number, "insert_invoice(" . $message_number . "," . $supplier_id . ")", "הזן" ) );
 	}
 	array_push( $message_table, $line );
 }

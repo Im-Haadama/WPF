@@ -161,7 +161,7 @@ switch ( $operation ) {
 		$args = [];
 		$args["ignore_list"] = array("search", "operation", "table_name", "id", "dummy", "customer_id");
 		$ids=data_search("im_client_accounts",$args);
-		gui_header(1, "Results");
+		Core_Html::gui_header(1, "Results");
 		if (! $ids){
 			print im_translate("Nothing found");
 			return;
@@ -307,7 +307,7 @@ function send_month_summary( $user_ids ) {
 }
 
 function replace_shortcode( $text, $id ) {
-	$new_text = gui_header( 1, "מצב חשבון" );
+	$new_text = Core_Html::gui_header( 1, "מצב חשבון" );
 	$new_text .= "יתרה לתשלום " . client_balance( $id ) . "<br/>";
 	$new_text .= show_trans( $id, eTransview::read_last ) . "<br/>";
 	$new_text = str_replace( "[im-haadama-account-summary]", $new_text, $text );

@@ -32,12 +32,12 @@ while ( $order = sql_fetch_row( $orders ) ) {
 	$delivery_id = $order->getDeliveryId();
 	$m           = $order->Missing();
 	if ( strlen( $m ) ) {
-		$link = gui_hyperlink( $order_id, "../orders/get-order.php?order_id=" . $order_id );
+		$link = Core_Html::GuiHyperlink( $order_id, "../orders/get-order.php?order_id=" . $order_id );
 		if ( $delivery_id ) {
-			$link = gui_hyperlink( "ת.מ " . $delivery_id, "create-delivery.php?id=" . $delivery_id );
+			$link = Core_Html::GuiHyperlink( "ת.מ " . $delivery_id, "create-delivery.php?id=" . $delivery_id );
 		}
 
-		print gui_header( 1, $order->CustomerName() . " " . $link );
+		print Core_Html::gui_header( 1, $order->CustomerName() . " " . $link );
 		print $m;
 		$none = false;
 	}
@@ -47,7 +47,7 @@ while ( $order = sql_fetch_row( $orders ) ) {
 if ( $none ) {
 	print "הידד, אין חוסרים בהזמנות שממתינות למשלוח";
 } else {
-	print gui_button("btn_draft", "draft_products(\"product_checkbox\")", "הפוך לטיוטא מסומנים");
+	print Core_Html::GuiButton("btn_draft", "draft_products(\"product_checkbox\")", "הפוך לטיוטא מסומנים");
 }
 
 ?>

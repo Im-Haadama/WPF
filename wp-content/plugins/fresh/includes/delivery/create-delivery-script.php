@@ -655,7 +655,7 @@ $O = new Order( $order_id );
 	    //	    print gui_select( "draft_reason", "reason",
 	    //		    $select_options, "", "" );
 
-	    //	    print gui_button( "save_draft_modal", "", "בצע" );
+	    //	    print Core_Html::GuiButton( "save_draft_modal", "", "בצע" );
 	    ?>
 
     </div>

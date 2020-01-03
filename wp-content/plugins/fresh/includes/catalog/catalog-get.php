@@ -163,8 +163,8 @@ print header_text( false );
 <!--<button id="publish" onclick="publish()">פרסם</button>-->
 <?php
 
-print gui_button( "btn_add_terms", "add_category()", "הוסף קטגוריות" );
-print gui_button( "btn_set_terms", "set_category()", "החלף קטגוריה" );
+print Core_Html::GuiButton( "btn_add_terms", "add_category()", "הוסף קטגוריות" );
+print Core_Html::GuiButton( "btn_set_terms", "set_category()", "החלף קטגוריה" );
 print gui_select_category( 1, true );
 ?>
 

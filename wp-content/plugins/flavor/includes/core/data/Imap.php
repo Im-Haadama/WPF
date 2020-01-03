@@ -116,7 +116,7 @@ class Imap {
 	function read_inbox( $host, $user, $pass ) {
 		$count = 0;
 
-		print gui_header( 1, $user );
+		print Core_Html::gui_header( 1, $user );
 
 		if ( ! $inbox ) {
 			print "can't open mailbox<br/>";

@@ -29,7 +29,7 @@ if ($id)
 	$args["transpose"] = true;
 
 	print GuiRowContent("im_suppliers", $id, $args);
-	print gui_button("btn_save", 'data_save_entity(\'im_suppliers\', ' . $id .')', "שמור");
+	print Core_Html::GuiButton("btn_save", 'data_save_entity(\'im_suppliers\', ' . $id .')', "שמור");
 	return;
 }
 
@@ -47,6 +47,6 @@ print GuiTableContent("im_suppliers",null, $args);
 //print gui_table($suppliers, "tbl_suppliers", true, true, $sum, null,
 //	null, null, $links);
 
-print gui_hyperlink("add", add_to_url("operation", "add"));
+print Core_Html::GuiHyperlink("add", add_to_url("operation", "add"));
 
 ?>

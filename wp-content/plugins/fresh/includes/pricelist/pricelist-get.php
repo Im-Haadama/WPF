@@ -26,7 +26,7 @@ function set_supplier_id() {
                 ';
 	} else {
 		$id      = $_GET["supplier_id"];
-		$supp    = new Supplier( $id );
+		$supp    = new Fresh_Supplier( $id );
 		$site_id = $supp->getSiteId();
 		print 'var supplier_id = ' . $id . ';';
 		if ( $site_id > 0 ) {
@@ -505,7 +505,7 @@ print "הצג רק מוזמנים<br/>";
 print gui_checkbox( "chk_need_supply", "", "", "onchange=change_supplier()" );
 print "הצג רק פריטים להזמין<br/>";
 
-//print gui_button("download", "download_csv()","הורד"); ?>
+//print Core_Html::GuiButton("download", "download_csv()","הורד"); ?>
 
 <!--<form id="downcsv" method="get" action="download_csv.php">-->
 <!--    <button type="submit">הורד</button>-->

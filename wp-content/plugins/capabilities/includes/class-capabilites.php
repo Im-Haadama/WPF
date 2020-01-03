@@ -221,7 +221,6 @@ class Capabilites {
 		require_once FLAVOR_INCLUDES_ABSPATH . 'core/fund.php';
 		require_once FLAVOR_INCLUDES_ABSPATH . 'core/data/sql.php';
 		require_once FLAVOR_INCLUDES_ABSPATH . 'core/wp.php';
-		require_once FLAVOR_INCLUDES_ABSPATH . 'core/gui/inputs.php';
 
 		/**
 		 * Interfaces.
@@ -702,7 +701,7 @@ class Capabilites {
 		}
 		foreach ($capabilities as $cap => $not_used)
 		{
-			$cap_result = gui_header(1, $cap);
+			$cap_result = Core_Html::gui_header(1, $cap);
 			$users = $capabilities[$cap];
 			foreach ($users as $user)
 				$cap_result .= get_user_name($user) . ", ";

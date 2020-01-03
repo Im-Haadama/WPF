@@ -133,7 +133,7 @@ class Fresh_Delivery {
 		$result = "";
 		$order = $this->getOrder();
 
-		$result .= Core_Html::gui_header(1, __("הזמנה") . " " . $this->OrderId()) . "<br/>";
+		$result .= Core_Html::Core_Html::gui_header(1, __("הזמנה") . " " . $this->OrderId()) . "<br/>";
 		$result .= im_translate("Order date") . ": " . $order->GetOrderDate() . "<br/>";
 		$result .= __("Supply date") . ": " . $this->GetDate() . "<br/>";
 
@@ -421,7 +421,7 @@ class Fresh_Delivery {
 		$message .= "<br> היתרה המעודכנת במערכת " . client_balance( $client_id );
 
 		$message .= "<br /> לפרטים אודות מצב החשבון והמשלוח האחרון הכנס " .
-		            gui_hyperlink( "מצב חשבון", get_site_url() . '/balance' ) .
+		            Core_Html::GuiHyperlink( "מצב חשבון", get_site_url() . '/balance' ) .
 		            "
  <br/>
  העברות בנקאיות מתעדכנות בחשבונכם אצלנו עד עשרה ימים לאחר התשלום.
@@ -516,7 +516,7 @@ class Fresh_Delivery {
 			case FreshDocumentType::order:
 				$header_fields[ eDeliveryFields::delivery_line ] = "סה\"כ למשלוח";
 				if ( $operation == Fresh_DocumentOperation::edit ) {
-					$header_fields[ eDeliveryFields::line_select ] = gui_checkbox( "chk", "line_chk", false );
+					$header_fields[ eDeliveryFields::line_select ] = Core_Html::gui_checkbox( "chk", "line_chk", false );
 					$show_fields[ eDeliveryFields::line_select ]   = true;
 				}
 				$show_fields[ eDeliveryFields::order_line ] = true;
@@ -671,7 +671,7 @@ class Fresh_Delivery {
 			$delivery_line[ eDeliveryFields::delivery_q ]    = 1;
 			$delivery_line[ eDeliveryFields::price ]         = $operation ?
 				gui_input( "delivery", $del_price > 0 ? $del_price : "", "", null, null, 5 ) : $del_price;
-			$delivery_line[ eDeliveryFields::has_vat ]       = gui_checkbox( "hvt_del", "vat", true );
+			$delivery_line[ eDeliveryFields::has_vat ]       = Core_Html::gui_checkbox( "hvt_del", "vat", true );
 			$delivery_line[ eDeliveryFields::line_vat ]      = $del_vat;
 			$delivery_line[ eDeliveryFields::delivery_line ] = $del_price;
 			$delivery_line[ eDeliveryFields::order_line ]    = $del_price;
@@ -732,7 +732,7 @@ class Fresh_Delivery {
 
 		$line = array(); for ( $i = 0; $i <= eDeliveryFields::max_fields; $i ++ ) $line[ $i ] = "";
 		if ( is_array( $line_ids ) )$line_id = $line_ids[0]; else $line_id = $line_ids;
-		$line[ eDeliveryFields::line_select ] = gui_checkbox( "chk" . $line_id, "line_chk", false );
+		$line[ eDeliveryFields::line_select ] = Core_Html::gui_checkbox( "chk" . $line_id, "line_chk", false );
 
 		$unit_ordered       = null;
 		$quantity_delivered = 0;
@@ -782,7 +782,7 @@ class Fresh_Delivery {
 		}
 
 		// has_vat
-		$line[ eDeliveryFields::has_vat ] = gui_checkbox( "hvt_" . $prod_id, "has_vat", $has_vat > 0 ); // 6 - has vat
+		$line[ eDeliveryFields::has_vat ] = Core_Html::gui_checkbox( "hvt_" . $prod_id, "has_vat", $has_vat > 0 ); // 6 - has vat
 
 		// q_supply
 		switch ( $document_type ) {
@@ -875,11 +875,11 @@ class Fresh_Delivery {
 				foreach ( $pending as $p ) {
 					if ( $p[1] == SupplyStatus::NewSupply ) {
 						$line[ eDeliveryFields::packing_info ] .= "<br/>" . "יש לשלוח אספקה מספר " .
-						                                          gui_hyperlink( $p[0], "../supplies/supply-get.php?id=" . $p[0] ) . "!<br/>";
+						                                          Core_Html::GuiHyperlink( $p[0], "../supplies/supply-get.php?id=" . $p[0] ) . "!<br/>";
 					}
 
 					if ( $p[1] == SupplyStatus::Sent ) {
-						$line[ eDeliveryFields::packing_info ] .= " אספקה מספר  " . gui_hyperlink( $p[0], "../supplies/supply-get.php?id=" . $p[0] ) . " בביצוע<br/>";
+						$line[ eDeliveryFields::packing_info ] .= " אספקה מספר  " . Core_Html::GuiHyperlink( $p[0], "../supplies/supply-get.php?id=" . $p[0] ) . " בביצוע<br/>";
 					}
 				}
 			} else {
@@ -937,7 +937,7 @@ class Fresh_Delivery {
 					$has_vat = false;
 				}
 				$line[ eDeliveryFields::product_id ] = $prod_id;
-				$line[ eDeliveryFields::has_vat ]    = gui_checkbox( "hvt_" . $prod_id, "has_vat", $has_vat > 0 );
+				$line[ eDeliveryFields::has_vat ]    = Core_Html::gui_checkbox( "hvt_" . $prod_id, "has_vat", $has_vat > 0 );
 				$line[ eDeliveryFields::order_q ]    = $quantity_ordered;
 				$line[ eDeliveryFields::delivery_q ] = gui_input( "quantity" . $this->line_number, "",
 					array( 'onkeypress="moveNextRow(' . $this->line_number . ')"' ) );
@@ -968,7 +968,7 @@ class Fresh_Delivery {
 		$data = gui_table_args( array(
 			array( "לקוח:", gui_select_client("client", null, null) ),
 			array( "תאריך", gui_input_date( "delivery_date", "" ) ),
-			array( gui_button( "btn_add_delivery", "", "הוסף תעודת משלוח" ) )
+			array( Core_Html::GuiButton( "btn_add_delivery", "", "הוסף תעודת משלוח" ) )
 		) );
 
 		return $data;
@@ -1153,8 +1153,8 @@ class Fresh_Delivery {
 				// Links to prev/next week
 				$date_format = 'Y-m-j';
 				$date = get_param("week", false, date($date_format, strtotime("last sunday")));
-				print gui_hyperlink("last week", add_param_to_url(get_url(), "week", date($date_format, strtotime($date . " -1 week")))) . " ";
-				print gui_hyperlink("next week", add_param_to_url(get_url(), "week", date($date_format, strtotime($date . " +1 week"))));
+				print Core_Html::GuiHyperlink("last week", add_param_to_url(get_url(), "week", date($date_format, strtotime($date . " -1 week")))) . " ";
+				print Core_Html::GuiHyperlink("next week", add_param_to_url(get_url(), "week", date($date_format, strtotime($date . " +1 week"))));
 
 				print "<br/>";
 
@@ -1164,7 +1164,7 @@ class Fresh_Delivery {
 
 				// $args["links"] = array("ID" => add_param_to_url(get_url(), "operation", "show_id", "row_id", "%s"));
 				$args["links"] = array("ID" => "/fresh/delivery/get-delivery.php?id=%s");
-				$table =  GemTable("im_delivery", $args);
+				$table =  Core_Gem::GemTable("im_delivery", $args);
 				if (strlen($table) < 100)
 					print "No deliveries done this week<br/>";
 				else

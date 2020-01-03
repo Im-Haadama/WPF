@@ -42,7 +42,7 @@ require_once( "data.php" );
 ////			}
 ////			$args["edit"] = true;
 ////			print NewRow( "im_business_info", $args, true );
-////			print gui_button( "btn_add", "save_new('im_business_info')", "הוסף" );
+////			print Core_Html::GuiButton( "btn_add", "save_new('im_business_info')", "הוסף" );
 ////			break;
 //
 //		case "templates":
@@ -63,15 +63,15 @@ $admin_scripts = array( "/core/gui/client_tools.js", "/core/data/data.js", "/fre
 
 
 
-//	print gui_header( 1, $title );
+//	print Core_Html::gui_header( 1, $title );
 
 //	print greeting();
 
-//	print gui_hyperlink("repeating tasks", $url . "?operation=templates");
+//	print Core_Html::GuiHyperlink("repeating tasks", $url . "?operation=templates");
 
 //	print " ";
 
-//	print gui_hyperlink("add tasks", $url . "?operation=new_task");
+//	print Core_Html::GuiHyperlink("add tasks", $url . "?operation=new_task");
 
 //	print " ";
 
@@ -79,6 +79,6 @@ $admin_scripts = array( "/core/gui/client_tools.js", "/core/data/data.js", "/fre
 
 //	print " ";
 
-//	print gui_hyperlink("projects", $url . "?operation=projects");
+//	print Core_Html::GuiHyperlink("projects", $url . "?operation=projects");
 
 //	$sum     = null;

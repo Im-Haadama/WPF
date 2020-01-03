@@ -64,7 +64,7 @@ require_once( "gui.php" );
 <?php
 print header_text( false, true );
 
-print gui_header( 1, "שיוך לקוחות למחירון" );
+print Core_Html::gui_header( 1, "שיוך לקוחות למחירון" );
 
 $sql = "SELECT user_id, meta_value FROM wp_usermeta WHERE meta_key = '_client_type'";
 
@@ -87,7 +87,7 @@ while ( $row = sql_fetch_row( $result ) ) {
 
 print gui_table_args( $table );
 
-print gui_header( 2, "הוסף שיוך" );
+print Core_Html::gui_header( 2, "הוסף שיוך" );
 
 print gui_table_args( array(
 	array( "בחר לקוח", gui_select_client() ),
@@ -97,9 +97,9 @@ print gui_table_args( array(
 	)
 ) );
 
-print gui_button( "btn_save", "add_client_type()", "שמור" );
+print Core_Html::GuiButton( "btn_save", "add_client_type()", "שמור" );
 ?>
 <?php
-print gui_header( 2, "מחירונים" );
+print Core_Html::gui_header( 2, "מחירונים" );
 
 print GuiTableContent("table", "SELECT rate, dry_rate AS מרווח, type AS 'שם מחירון' FROM im_client_types");

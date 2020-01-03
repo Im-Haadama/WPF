@@ -16,7 +16,7 @@ function show_inventory_client() {
 
 function show_inventory_term( $term_id ) {
 	$term = get_term( $term_id );
-	print gui_header( 2, $term->name );
+	print Core_Html::gui_header( 2, $term->name );
 
 	// $the_term = get_term_by("name", $term, "product_cat");
 

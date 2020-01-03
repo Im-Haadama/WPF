@@ -80,7 +80,7 @@ function print_fresh_category() {
 //	$fields = array();
 //	array_push( $fields, "משימות" );
 //
-//	$ref = gui_hyperlink( $id, "../tasklist/c-get-tasklist.php?id=" . $id );
+//	$ref = Core_Html::GuiHyperlink( $id, "../tasklist/c-get-tasklist.php?id=" . $id );
 //
 //	array_push( $fields, $ref );
 //
@@ -112,7 +112,7 @@ function print_fresh_category() {
 //	$address = "";
 //
 //	$supplier_id = supply_get_supplier_id( $id );
-//	$ref         = gui_hyperlink( $id, "../supplies/supply-get.php?id=" . $id );
+//	$ref         = Core_Html::GuiHyperlink( $id, "../supplies/supply-get.php?id=" . $id );
 //	$address     = sql_query_single_scalar( "select address from im_suppliers where id = " . $supplier_id );
 ////	$receiver_name = get_meta_field( $order_id, '_shipping_first_name' ) . " " .
 ////	                 get_meta_field( $order_id, '_shipping_last_name' );

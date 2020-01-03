@@ -38,7 +38,7 @@ switch ( $operation ) {
 		create_supply_single();
 		break;
 	case "show_required":
-		print gui_header(1, "הערות לקוח");
+		print Core_Html::gui_header(1, "הערות לקוח");
 		Order::GetAllComments();
 		get_total_orders( $filter_zero, false, $filter_stock, $supplier_id );
 		break;
@@ -169,7 +169,7 @@ tr:nth-child(even) {
 		}
 		print get_total_orders_supplier( $supplier_id, $supplier_needed[ $supplier_id ], $filter_zero, $filter_stock, $history );
 
-		print gui_button( "btn_supplier_" . $supplier_id, "createSupply(" . $supplier_id . ")", "צור אספקה" );
+		print Core_Html::GuiButton( "btn_supplier_" . $supplier_id, "createSupply(" . $supplier_id . ")", "צור אספקה" );
 
 		return;
 	}
@@ -189,7 +189,7 @@ tr:nth-child(even) {
 		$supplier_id = $row[0];
 		print get_total_orders_supplier( $supplier_id, $supplier_needed[ $supplier_id ], $filter_zero, $filter_stock, $history );
 
-		print gui_button( "btn_supplier_" . $supplier_id, "createSupply(" . $supplier_id . ")", "צור אספקה" );
+		print Core_Html::GuiButton( "btn_supplier_" . $supplier_id, "createSupply(" . $supplier_id . ")", "צור אספקה" );
 //		$time = debug_time("after supplier", $time);
 
 	}
@@ -220,7 +220,7 @@ function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero
 			$row[] = gui_checkbox("chk" . $prod_id. '_' . $supplier_id, "product_checkbox". $supplier_id);
 		}
 		$row[] = get_product_name($prod_id);
-		$row[] = gui_hyperlink(isset( $quantity_array[0] ) ? round( $quantity_array[0], 1 ) : 0,
+		$row[] = Core_Html::GuiHyperlink(isset( $quantity_array[0] ) ? round( $quantity_array[0], 1 ) : 0,
 			"get-orders-per-item.php?prod_id=" . $prod_id . ($history ? "&history" : ""));
 
 	// Units. disabbled for now.
@@ -272,7 +272,7 @@ function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero
 			$supplier_name = get_supplier_name( $supplier_id );
 		else $supplier_name = "מוצרים לא זמינים";
 
-		$result .= gui_header( 2, $supplier_name );
+		$result .= Core_Html::gui_header( 2, $supplier_name );
 
 		$header = array("בחר", "פריט", "כמות נדרשת");
 
@@ -302,7 +302,7 @@ function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero
 
 		if (! $supplier_id) {
 			$result .= "יש להפוך לטיוטא רק לאחר שמוצר אזל מהמלאי והוצע ללקוחות תחליף<br/>";
-			$result .= gui_button("btn_draft_products", "draft_products()", "הפוך לטיוטא");
+			$result .= Core_Html::GuiButton("btn_draft_products", "draft_products()", "הפוך לטיוטא");
 		}
 	}
 	return $result;

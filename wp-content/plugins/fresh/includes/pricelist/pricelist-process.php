@@ -24,11 +24,11 @@ function pricelist_remote_site_process( $supplier_id, &$results, $inc = false ) 
 	$PL = new PriceList( $supplier_id );
 
 	if ( $inc ) {
-		print gui_header( 1, "עדכון חלקי" );
+		print Core_Html::gui_header( 1, "עדכון חלקי" );
 		print gui_list( " רק הפריטים שהוספו או עודכן מחיר יעודכנו" );
 		print gui_list( "פריטים שנמחקו לא יורדו" );
 	} else {
-		print gui_header( 1, "משנה פריטים למצב המתנה" );
+		print Core_Html::gui_header( 1, "משנה פריטים למצב המתנה" );
 		$PL->ChangeStatus( 2 );
 	}
 
@@ -49,7 +49,7 @@ function pricelist_remote_site_process( $supplier_id, &$results, $inc = false ) 
 		$remote .= "?incremental&site_id=" . Core_Db_MultiSite::LocalSiteID();
 	}
 
-	print gui_header( 2, "מבקש נתונים" );
+	print Core_Html::gui_header( 2, "מבקש נתונים" );
 	flush();
 	print $remote . "<br/>";
 	$html = Core_Db_MultiSite::sExecute( $remote, $site_id );
@@ -62,7 +62,7 @@ function pricelist_remote_site_process( $supplier_id, &$results, $inc = false ) 
 		die ( 1 );
 	}
 
-	print gui_header( 2, "התקבלו נתונים" );
+	print Core_Html::gui_header( 2, "התקבלו נתונים" );
 	flush();
 	$item_count = 0;
 	$var_count  = 0;
@@ -179,7 +179,7 @@ function pricelist_remote_site_process( $supplier_id, &$results, $inc = false ) 
 	if ( ! $inc and ( $item_count <= 4 ) ) {
 		print "לא התקבלו מספיק שורות!" . "<br/>";
 	} else {
-		print gui_header( 1, "מוריד פריטים במצב המתנה" );
+		print Core_Html::gui_header( 1, "מוריד פריטים במצב המתנה" );
 		$PL->RemoveLines( 2 );
 	}
 

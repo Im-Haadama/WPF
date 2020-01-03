@@ -156,7 +156,7 @@ function orders_per_item( $prod_id, $multiply, $short = false, $include_basket =
 			$lines .= $quantity . " " . $last_name . ", ";
 		} else {
 //			print "long<br/>";
-			$line  = "<tr>" . "<td> " . gui_hyperlink( $order_id, "get-order.php?order_id=" . $order_id ) . "</td>";
+			$line  = "<tr>" . "<td> " . Core_Html::GuiHyperlink( $order_id, "get-order.php?order_id=" . $order_id ) . "</td>";
 			$line .= "<td>" . $quantity * $multiply . "</td><td>" . $first_name . "</td><td>" . $last_name . "</td></tr>";
 			$lines .= $line;
 		}
@@ -405,7 +405,7 @@ function total_order( $user_id ) {
 	while ( $row = sql_fetch_row( $result ) ) {
 		$order_id = $row[0];
 		array_push( $order_ids, $order_id );
-		array_push( $order_clients, gui_hyperlink( get_postmeta_field( $order_id, '_shipping_first_name' ),
+		array_push( $order_clients, Core_Html::GuiHyperlink( get_postmeta_field( $order_id, '_shipping_first_name' ),
 			Core_Db_MultiSite::LocalSiteTools() . "/fresh/orders/get-order.php?order_id=" . $order_id ) );
 
 		$totals[ $order_id ] = 0;
@@ -533,7 +533,7 @@ function show_category_by_id( $term_id, $sale = false, $text = false, $customer_
 	$the_term = get_term( $term_id );
 
 	$result   = "";
-	$result .= gui_header( 2, $the_term->name );
+	$result .= Core_Html::gui_header( 2, $the_term->name );
 
 	$regular = ($customer_type == "regular");
 	$header =null;
@@ -544,7 +544,7 @@ function show_category_by_id( $term_id, $sale = false, $text = false, $customer_
 	} else {
 		$header = array( "", "מוצר" ) ;
 		if ( ! $month )
-			array_push( $header, "מחיר", gui_hyperlink( "מחיר לכמות", "", "" ), "כמות", "סה\"כ" );
+			array_push( $header, "מחיר", Core_Html::GuiHyperlink( "מחיר לכמות", "", "" ), "כמות", "סה\"כ" );
 		else
 			array_push( $header, "מדד זמינות"  );
 	}
@@ -586,7 +586,7 @@ function show_category_by_id( $term_id, $sale = false, $text = false, $customer_
 		$args['post_status'] = array( 'draft', 'publish' );
 	}
 
-//	print gui_header(1, $term_id) . "<br/>";
+//	print Core_Html::gui_header(1, $term_id) . "<br/>";
 	// var_dump($args);
 	$loop = new WP_Query( $query_args );
 	while ( $loop->have_posts() ) {
@@ -632,8 +632,8 @@ function show_category_by_id( $term_id, $sale = false, $text = false, $customer_
 		$result .= gui_table_args( $table, "table_" . $term_id, $args );
 	}
 
-	if ( $inventory ) $result .= gui_button( "btn_save_inv" . $term_id, "save_inv(term_" . $term_id . ")", "שמור מלאי" );
-	if ($not_available) $result .= gui_button( "btn_draft" . $term_id, "draft_products(" . quote_text($args["checkbox_class"]). ")", "draft products" );
+	if ( $inventory ) $result .= Core_Html::GuiButton( "btn_save_inv" . $term_id, "save_inv(term_" . $term_id . ")", "שמור מלאי" );
+	if ($not_available) $result .= Core_Html::GuiButton( "btn_draft" . $term_id, "draft_products(" . quote_text($args["checkbox_class"]). ")", "draft products" );
 
 	return $result;
 }

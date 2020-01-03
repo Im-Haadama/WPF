@@ -9,10 +9,10 @@ require_once( "../../core/gui/inputs.php" );
 
 $sql_products = "SELECT id FROM wp_posts WHERE post_type = 'product' ";
 
-print gui_header( 1, "מוצרים פופלריים" );
+print Core_Html::gui_header( 1, "מוצרים פופלריים" );
 print popular_products( 10 );
 
-print gui_header( 1, "מוצרים שיצאו" );
+print Core_Html::gui_header( 1, "מוצרים שיצאו" );
 print non_available();
 
 function non_available( $count = 0 ) {

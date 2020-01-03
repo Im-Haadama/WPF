@@ -13,7 +13,7 @@ require_once( FRESH_INCLUDES . "/fresh/delivery/missions.php" );
 
 // print header_text();
 
-print gui_header(1, "Running weekly master");
+print Core_Html::gui_header(1, "Running weekly master");
 
 create_missions();
 

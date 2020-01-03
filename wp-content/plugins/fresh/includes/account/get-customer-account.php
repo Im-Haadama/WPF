@@ -271,7 +271,7 @@ if ( $manager ) {
 	$new_tran  = gui_table_args( array(
 		array(
 			"תשלום",
-			gui_button( "btn_receipt", "create_receipt()", "הפק חשבונית מס קבלה" )
+			Core_Html::GuiButton( "btn_receipt", "create_receipt()", "הפק חשבונית מס קבלה" )
 		),
 		array( "תאריך", gui_input_date( "pay_date", "" ) ),
 		array( "מזומן", gui_input( "cash", "", array( 'onkeyup="update_sum()"' ) ) ),
@@ -282,7 +282,7 @@ if ( $manager ) {
 	), "payment_table");
 
 	print gui_table_args( array(
-		array( gui_header( 2, "פרטי לקוח", true ), gui_header( 2, "קבלה", true ) ),
+		array( Core_Html::gui_header( 2, "פרטי לקוח", true ), Core_Html::gui_header( 2, "קבלה", true ) ),
 		array( $user_info, $new_tran )
 	) );
 }
@@ -435,7 +435,7 @@ if ( $manager ) {
 if ( $manager ) {
 	require_once( '../invoice4u/invoice.php' );
 	print '<div id="logging"></div>';
-	print gui_button( "btn_create_user", "create_user()", "צור משתמש" );
+	print Core_Html::GuiButton( "btn_create_user", "create_user()", "צור משתמש" );
 }
 
 ?>
@@ -455,8 +455,8 @@ print gui_table_args( array(
 	)
 ) );
 print '<button id="btn_add" onclick="addTransaction()">הוסף תנועה</button>';
-print gui_button( "btn_invoice", "create_invoice()", "הפק חשבונית מס" );
-print gui_button( "btn_send", "send_deliveries()", "שלח תעודות משלוח" );
+print Core_Html::GuiButton( "btn_invoice", "create_invoice()", "הפק חשבונית מס" );
+print Core_Html::GuiButton( "btn_send", "send_deliveries()", "שלח תעודות משלוח" );
 
 function print_fresh_category() {
 	$list = "";

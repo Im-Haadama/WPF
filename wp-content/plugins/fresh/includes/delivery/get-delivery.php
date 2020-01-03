@@ -40,9 +40,9 @@ if ( ! $send ) {
 	if ( sql_query_single_scalar( "SELECT payment_receipt FROM im_delivery WHERE id = " . $id ) ) {
 		print "תעודה שולמה ולא ניתנת לעריכה או למחיקה";
 	} else {
-	    print gui_button("btn_del", "deleteDelivery()", "delete document");
-	    print gui_button("btn_edit", "editDelivery()", "edit document");
-	    print gui_button("btn_send", "sendDelivery()", "send delivery");
+	    print Core_Html::GuiButton("btn_del", "deleteDelivery()", "delete document");
+	    print Core_Html::GuiButton("btn_edit", "editDelivery()", "edit document");
+	    print Core_Html::GuiButton("btn_send", "sendDelivery()", "send delivery");
 	}
 }
 

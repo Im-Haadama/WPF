@@ -190,13 +190,13 @@ if ( $text ) {
 	print "מוצרים זמינים השבוע</br>";
 	if ($user_id)
 	{
-		print gui_header(1, "מחירון ללקוח " . get_user_name($user_id));
+		print Core_Html::gui_header(1, "מחירון ללקוח " . get_user_name($user_id));
 		$just_pricelist = true;
 	}
 
 } else {
     if (! $just_pricelist){
-        print gui_header(1, "פרטי המזמין:");
+        print Core_Html::gui_header(1, "פרטי המזמין:");
 	    try {
 		    print gui_table_args( array(
 				    array( "כתובת המייל של המזמין:", gui_input( "email", "", array( "onchange=update_email()" ) ) ),
@@ -209,7 +209,7 @@ if ( $text ) {
 	        my_log(__FILE__ . ":" . __LINE__ . $e->getMessage());
 	    }
 
-	    print gui_button( "btn_add_order_1", "add_order(0)", "הוסף הזמנה" );
+	    print Core_Html::GuiButton( "btn_add_order_1", "add_order(0)", "הוסף הזמנה" );
     }
 }
 ?>
@@ -237,7 +237,7 @@ if ( $categs ) {
 print "<br/>";
 
 if ( ! $text and ! $just_pricelist) {
-	print gui_button( "btn_add_order_2", "add_order(0)", "הוסף הזמנה" );
+	print Core_Html::GuiButton( "btn_add_order_2", "add_order(0)", "הוסף הזמנה" );
 }
 
 ?>

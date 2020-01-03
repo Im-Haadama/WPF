@@ -33,8 +33,8 @@ $args["links"] = array("id" => "admin.php?user_id=%s",
 	"last_order" => "../orders/get-order.php?order_id=%s");
 
 print GuiTableContent("wp_users", $sql, $args);
-if ($page > 1) print gui_hyperlink("Next", add_to_url("page", $page - 1));
-print gui_hyperlink("Next", add_to_url("page", $page ? $page + 1 : 1));
+if ($page > 1) print Core_Html::GuiHyperlink("Next", add_to_url("page", $page - 1));
+print Core_Html::GuiHyperlink("Next", add_to_url("page", $page ? $page + 1 : 1));
 
 function show_user($user_id)
 {
@@ -61,9 +61,9 @@ function show_user($user_id)
 			"Billing first name", "Billing last name", "Phone", "Shipping first name", "Shipping last name", "Shipping address - street and number",
 			"Shipping address - entrance code, floor and flat number", "Shipping city", "Shipping post code"));
 
-	print gui_header(1, "משתמש מספר " . $user_id);
+	print Core_Html::gui_header(1, "משתמש מספר " . $user_id);
 	print GuiRowContent("wp_users", $user_id, $args);
-	print gui_button("btn_save",
+	print Core_Html::GuiButton("btn_save",
 		"data_save_entity('wp_users', $user_id)",
 		"שמור");
 }

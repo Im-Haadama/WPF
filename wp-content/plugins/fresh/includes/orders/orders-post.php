@@ -218,7 +218,7 @@ switch ( $operation ) {
 //		print load_scripts("/fresh/delivery/delivery.js");
 //
 //		print orders_table("wc-awaiting-shipment");
-//		print gui_button( "btn_delivered", "delivered_table()", "Delivered" ) . "<br/>";
+//		print Core_Html::GuiButton( "btn_delivered", "delivered_table()", "Delivered" ) . "<br/>";
 
 		break;
 

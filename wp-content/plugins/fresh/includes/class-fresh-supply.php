@@ -9,11 +9,11 @@
 error_reporting( E_ALL );
 ini_set( 'display_errors', 'on' );
 
-require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
-require_once( FRESH_INCLUDES . '/supplies/gui.php' );
-
-require_once( FRESH_INCLUDES . "/catalog/catalog.php" );
-require_once( FRESH_INCLUDES . "/org/business/business_info.php" );
+//require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
+//require_once( FRESH_INCLUDES . '/supplies/gui.php' );
+//
+//require_once( FRESH_INCLUDES . "/catalog/catalog.php" );
+//require_once( FRESH_INCLUDES . "/org/business/business_info.php" );
 
 // print header_text(false);
 
@@ -28,7 +28,7 @@ abstract class SupplyStatus {
 	const Deleted = 9;
 }
 
-class Supply {
+class Fresh_Supply {
 	private $ID = 0;
 	private $Status;
 	private $Date;
@@ -169,7 +169,7 @@ class Supply {
 		$comments = "";
 		if ( count( $lines ) ) {
 //			$supplier_id = get_supplier_id($supplier_name);
-			$Supply = Supply::CreateSupply( $supplier_id, $date ); // create_supply( $supplier_id );
+			$Supply = Fresh_Supply::CreateSupply( $supplier_id, $date ); // create_supply( $supplier_id );
 			if ( ! ( $Supply->getID() > 0 ) ) {
 				die ( "שגיאה " );
 			}
@@ -203,7 +203,7 @@ class Supply {
 				$Supply->AddLine( $prod_id, $quantity, $price );
 			}
 
-			print " Supply " . gui_hyperlink($Supply->getID(), "/fresh/supplies/supplies-post.php?id=" . $Supply->getID() . " created <br/>");
+			print " Supply " . Core_Html::GuiHyperlink($Supply->getID(), "/fresh/supplies/supplies-post.php?id=" . $Supply->getID() . " created <br/>");
 
 			$Supply->setText( $comments );
 
@@ -220,7 +220,7 @@ class Supply {
 		if (!$date) $date = date('y-m-d');
 		$sid = create_supply( $supplier_id, $date );
 
-		return new Supply( $sid );
+		return new Fresh_Supply( $sid );
 	}
 
 	/**
@@ -496,7 +496,7 @@ class Supply {
 				$line       .= "<td>" . sprintf( '%0.2f', $sell_price ) . "</td>";
 				$line       .= "<td>" . orders_per_item( $prod_id, 1, true, true, true ) . "</td>";
 				if ( $edit ) {
-					$line .= gui_cell( gui_button( "del_" . $line_id, 'del_line(' . $line_id . ')"', "מחק" ) );
+					$line .= gui_cell( Core_Html::GuiButton( "del_" . $line_id, 'del_line(' . $line_id . ')"', "מחק" ) );
 				}
 			}
 			$line  .= "</tr>";
@@ -592,7 +592,7 @@ class Supply {
 	}
 
 	public function getSupplierName() {
-		return get_supplier_name( $this->getSupplier() );
+		return sql_query_single_scalar( 'SELECT supplier_name FROM im_suppliers WHERE id = ' . $this->Supplier );
 	}
 
 	/**
@@ -637,7 +637,7 @@ function create_supply( $supplierID, $date = null ) {
 
 function supply_add_line( $supply_id, $prod_id, $quantity, $price, $units = 0 ) {
 	// For backward
-	$s = new Supply( $supply_id );
+	$s = new Fresh_Supply( $supply_id );
 
 	return $s->AddLine( $prod_id, $quantity, $price, $units = 0 );
 }
@@ -752,7 +752,7 @@ function send_supplies( $ids ) {
 		print '</html>';
 
 		$message = " If you cannot read, please press " .
-		           gui_hyperlink( "<b>here</b>", get_site_tools_url( 1 ) . "/supplies/supply-get-open.php?id=" . $id );
+		           Core_Html::GuiHyperlink( "<b>here</b>", get_site_tools_url( 1 ) . "/supplies/supply-get-open.php?id=" . $id );
 
 		$message .= ob_get_contents();
 
@@ -768,9 +768,9 @@ function print_supplies_table( $ids, $internal ) {
 //    print "<html dir=\"rtl\">";
 	foreach ( $ids as $id ) {
 		print "<h1>";
-		print "אספקה מספר " . gui_hyperlink( $id, "../supplies/supply-get.php?id= " . $id ) . " " . supply_get_supplier( $id ) . " " . date( "Y-m-d" );
+		print "אספקה מספר " . Core_Html::GuiHyperlink( $id, "../supplies/supply-get.php?id= " . $id ) . " " . supply_get_supplier( $id ) . " " . date( "Y-m-d" );
 		print "</h1>";
-		$s = new Supply( $id );
+		$s = new Fresh_Supply( $id );
 		print $s->Html( $internal, false );
 		print "<p style=\"page-break-after:always;\"></p>";
 	}
@@ -832,7 +832,7 @@ function delete_supply_lines( $params ) {
 function update_supply_lines( $supply_id, $params ) {
 	$result = "";
 	$supplier_id = supply_get_supplier_id($supply_id);
-	$Supply = new Supply($supply_id);
+	$Supply = new Fresh_Supply($supply_id);
 	$pricelist = new PriceList($supplier_id);
 	// Double update - the supply and also the pricelist
 	for ( $pos = 0; $pos < count( $params ); $pos += 3 ) {
@@ -977,11 +977,11 @@ function SuppliesTable( $status, $args = null ) {
 	$result = GemTable("im_supplies", $args);
 	if (! $result) return null;
 
-	// $result .= gui_button("btn_delete", "close_supplies('" . $status_name . "')", "close");
+	// $result .= Core_Html::GuiButton("btn_delete", "close_supplies('" . $status_name . "')", "close");
 	if ($status == SupplyStatus::NewSupply){
-		$result .= gui_button("btn_send", "send_supplies()", "send");
-		$result .= gui_button("btn_merge", "merge_supplies()", "merge");
-		$result .= gui_button("btn_delete", "supply_delete('new')", "delete");
+		$result .= Core_Html::GuiButton("btn_send", "send_supplies()", "send");
+		$result .= Core_Html::GuiButton("btn_merge", "merge_supplies()", "merge");
+		$result .= Core_Html::GuiButton("btn_delete", "supply_delete('new')", "delete");
 	}
 	return $result;
 
@@ -1008,7 +1008,7 @@ function DoSuppliesTable( $sql )
 		$status      = $row[5];
 		$line        = array(
 			gui_checkbox( "chk" . $supply_id, "supply_checkbox", "", "" ),
-			gui_hyperlink( $supply_id, "supply-get.php?id=" . $supply_id ),
+			Core_Html::GuiHyperlink( $supply_id, "supply-get.php?id=" . $supply_id ),
 			$row[3],
 			gui_select_mission( "mis_" . $supply_id, supply_get_mission_id( $supply_id ), array("events"=>"onchange=mission_changed(" . $supply_id . ")" )),
 			get_supplier_name( $supplier_id ),
@@ -1074,7 +1074,7 @@ function create_delta() {
 
 function create_supplier_order( $supplier_id, $ids, $date = null ) {
 	$supply_id = create_supply( $supplier_id, $date );
-	print "creating supply " . gui_hyperlink( $supply_id, "supply-get.php?id=" . $supply_id) . "...";
+	print "creating supply " . Core_Html::GuiHyperlink( $supply_id, "supply-get.php?id=" . $supply_id) . "...";
 
 	for ( $pos = 0; $pos < count( $ids ); $pos += 3 ) {
 		$prod_id  = $ids[ $pos ];
@@ -1272,7 +1272,7 @@ function handle_supplies_operation($operation)
 
 			$create_info = $_GET["create_info"];
 			$ids         = explode( ',', $create_info );
-			$supply      = Supply::CreateSupply( $supplier_id, $date );
+			$supply      = Fresh_Supply::CreateSupply( $supplier_id, $date );
 			if ( ! $supply->getID() ) {
 				return false;
 			}
@@ -1303,7 +1303,7 @@ function handle_supplies_operation($operation)
 			$supply_id   = $_GET["id"];
 			$internal    = isset( $_GET["internal"] );
 			$categ_group = get_param( "categ_group" );
-			$Supply      = new Supply( $supply_id );
+			$Supply      = new Fresh_Supply( $supply_id );
 			// print header_text(true);
 			print $Supply->Html( $internal, true, $categ_group );
 			break;
@@ -1316,17 +1316,17 @@ function handle_supplies_operation($operation)
 
 		case "get_comment":
 			$supply_id = $_GET["id"];
-			$s         = new Supply( $supply_id );
+			$s         = new Fresh_Supply( $supply_id );
 			print $s->getText();
 			break;
 
 		case "show_all":
 			$args = array();
 			print load_scripts(true);
-			print gui_header(1, "Supply management");
+			print Core_Html::gui_header(1, "Supply management");
 			print gui_div("results");
 			$args["title"] = "Supplies to send";      print SuppliesTable( SupplyStatus::NewSupply, $args );
-			print gui_hyperlink("Create supply", get_url(1) . "?operation=new_supply");
+			print Core_Html::GuiHyperlink("Create supply", get_url(1) . "?operation=new_supply");
 			$args["title"] = "Supplies to get";       print SuppliesTable( SupplyStatus::Sent, $args );
 			$args["title"] = "Supplies to collect";   print SuppliesTable( SupplyStatus::OnTheGo, $args );
 			$args["title"] = "Supplies done";         print SuppliesTable( SupplyStatus::Supplied, $args );
@@ -1373,7 +1373,7 @@ function handle_supplies_operation($operation)
 			$field_name = get_param( "field_name" );
 			$value      = get_param( "value" );
 			$id         = get_param( "id" );
-			$s          = new Supply( $id );
+			$s          = new Fresh_Supply( $id );
 			$s->UpdateField( $field_name, $value );
 
 			break;
@@ -1394,7 +1394,7 @@ function handle_supplies_operation($operation)
 			$prod_id = get_param("prod_id", true);
 			$q = get_param("quantity", true);
 			$supply_id = get_param("supply_id", true);
-			$supply = new Supply( $supply_id );
+			$supply = new Fresh_Supply( $supply_id );
 			$price = get_buy_price( $prod_id, $supply->getSupplier() );
 			if (supply_add_line( $supply_id, $prod_id, $q, $price ))
 				print "done";
@@ -1403,7 +1403,7 @@ function handle_supplies_operation($operation)
 		case "set_mission":
 			$supply_id  = $_GET["supply_id"];
 			$mission_id = $_GET["mission_id"];
-			$s          = new Supply( $supply_id );
+			$s          = new Fresh_Supply( $supply_id );
 			$s->setMissionID( $mission_id);
 			break;
 
@@ -1424,7 +1424,7 @@ function handle_supplies_operation($operation)
 			$tmp_file = $_FILES["fileToUpload"]["tmp_name"];
 			$date = get_param("date", true);
 			$args = array("needed_fields" => array ("name" => 1, "quantity"=> 1));
-			$s        = Supply::CreateFromFile( $tmp_file, $supplier_id, $date, $args );
+			$s        = Fresh_Supply::CreateFromFile( $tmp_file, $supplier_id, $date, $args );
 			if ( $s ) {
 				$s->EditSupply( true );
 			}
@@ -1452,8 +1452,8 @@ function handle_supplies_operation($operation)
 
 function get_supply($id)
 {
-	$supply = new Supply($id);
-	print gui_header(1, "Supply", true, true). " " . gui_label("supply_id", $id);
+	$supply = new Fresh_Supply($id);
+	print Core_Html::gui_header(1, "Supply", true, true). " " . gui_label("supply_id", $id);
 	$edit =($supply->getStatus() == SupplyStatus::NewSupply || $supply->getStatus() == SupplyStatus::Sent);
 	$internal = true;
 
@@ -1461,10 +1461,10 @@ function get_supply($id)
 	switch ($supply->getStatus())
 	{
 		case SupplyStatus::NewSupply:
-			$footer .= gui_button( "btn_add_line", "supply_add_item(" . $id . ")", "add" );
+			$footer .= Core_Html::GuiButton( "btn_add_line", "supply_add_item(" . $id . ")", "add" );
 			$footer .= gui_select_product( "itm_" );
-			$footer .= gui_button("btn_del", "deleteItems()", "delete lines");
-			$footer .= gui_button("btn_update", "updateItems()", "update items");
+			$footer .= Core_Html::GuiButton("btn_del", "deleteItems()", "delete lines");
+			$footer .= Core_Html::GuiButton("btn_update", "updateItems()", "update items");
 
 			$footer .= "<br/>" . supplier_doc();
 			break;
@@ -1473,9 +1473,9 @@ function get_supply($id)
 			$invoice_text =  '<br/>   <div class="tooltip">' . gui_checkbox( "is_invoice", "" ) .
 			                 '<span class="tooltiptext">יש לסמן עבור חשבונית ולהשאיר לא מסומן עבור תעודת משלוח</span> </div>';
 
-			$footer .= gui_button( "btn_add_line", "supply_add_item()", "הוסף" );
+			$footer .= Core_Html::GuiButton( "btn_add_line", "supply_add_item()", "הוסף" );
 			$footer .= gui_select_product( "itm_" );
-			$footer .= gui_button("btn_update", "updateItems()", "update");
+			$footer .= Core_Html::GuiButton("btn_update", "updateItems()", "update");
 
 			$footer .= gui_table_args( array(
 				array( "חשבונית", $invoice_text ),
@@ -1486,7 +1486,7 @@ function get_supply($id)
 			) );
 			$footer .= "<br/>";
 
-			$footer .= gui_button( "btn_got_supply", "got_supply()", "סחורה התקבלה" );
+			$footer .= Core_Html::GuiButton( "btn_got_supply", "got_supply()", "סחורה התקבלה" );
 			break;
 
 		case SupplyStatus::Supplied:
@@ -1504,7 +1504,7 @@ function get_supply($id)
 	print $supply->Html($internal, $edit);
 	print $footer;
 
-	// print gui_button("btn_delete", "delete_supply(" . $id . ")", "delete");
+	// print Core_Html::GuiButton("btn_delete", "delete_supply(" . $id . ")", "delete");
 
 	return;
 }
@@ -1523,7 +1523,7 @@ function supplier_doc()
 		array( "תאריך", gui_input_date( "document_date", "" ) )
 	) );
 
-	$data .= gui_button("btn_got", "got_supply()", "Supply arrived");
+	$data .= Core_Html::GuiButton("btn_got", "got_supply()", "Supply arrived");
 	return $data;
 
 }
@@ -1531,12 +1531,12 @@ function supplier_doc()
 function new_supply()
 {
 	$data = "";
-	$data .= gui_header( 1, "יצירת אספקה" );
+	$data .= Core_Html::gui_header( 1, "יצירת אספקה" );
 	$data .= gui_table_args(array(
 		array(
-			gui_header( 2, "בחר ספק" ),
-			gui_header( 2, "בחר מועד" ),
-			gui_header( 2, "בחר משימה" )
+			Core_Html::gui_header( 2, "בחר ספק" ),
+			Core_Html::gui_header( 2, "בחר מועד" ),
+			Core_Html::gui_header( 2, "בחר משימה" )
 		),
 		array(
 			gui_select_supplier( "supplier_select", null, array("events" => 'onchange="new_supply_change()"')),
@@ -1548,13 +1548,13 @@ function new_supply()
 		"supply_info",
 		array("edit" => 1, "prepare"=>false));
 
-	$data .=gui_header( 2, "בחר מוצרים" );
+	$data .=Core_Html::gui_header( 2, "בחר מוצרים" );
 
 	$data .=gui_table_args( array( array( "פריט", "כמות", "קג או יח" ) ),
 			"supply_items" );
 
-	$data .= gui_button( "btn_add_line", "supply_new_add_line()", "הוסף שורה" );
-	$data .= gui_button( "btn_add_item", "supply_add()", "הוסף אספקה" );
+	$data .= Core_Html::GuiButton( "btn_add_line", "supply_new_add_line()", "הוסף שורה" );
+	$data .= Core_Html::GuiButton( "btn_add_item", "supply_add()", "הוסף אספקה" );
 
 	$data .='<form name="upload_csv" id="upcsv" method="post" enctype="multipart/form-data">
 			טען אספקה מקובץ CSV
@@ -1574,14 +1574,3 @@ function get_supply_status( $status ) {
 	return $status_names[ $status - 1 ];
 }
 
-function get_supplier_name( $supplier_id ) {
-	// my_log("sid=" . $supplier_id);
-	if ( is_numeric( $supplier_id ) ) {
-		return sql_query_single_scalar( 'SELECT supplier_name FROM im_suppliers WHERE id = ' . $supplier_id );
-	} else {
-		print "Must send a number to get_supplier_name! ";
-		var_dump($supplier_id);
-
-		return 0;
-	}
-}

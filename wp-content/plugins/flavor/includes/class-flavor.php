@@ -182,7 +182,9 @@ class Flavor {
 		$this->define( 'FLAVOR_PLUGIN_BASENAME', plugin_basename( FLAVOR_PLUGIN_FILE ) );
 		$this->define( 'FLAVOR_VERSION', $this->version );
 		$this->define( 'FLAVOR_INCLUDES_URL', plugins_url() . '/flavor/includes/' ); // For js
-		$this->define( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path('flavor/includes/') );  // for php
+		$this->define( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path(__FILE__) . '../../flavor/includes/' );  // for php
+//		print "url=" . FLAVOR_INCLUDES_URL . "<br/>";
+//		print "abs=" . FLAVOR_INCLUDES_ABSPATH . "<br/>";
 
 		//		$this->define( 'FLAVOR_ROUNDING_PRECISION', 6 );
 //		$this->define( 'FLAVOR_DISCOUNT_ROUNDING_MODE', 2 );
@@ -272,7 +274,7 @@ class Flavor {
 
 		require_once FLAVOR_INCLUDES_ABSPATH . 'core/fund.php';
 		require_once FLAVOR_INCLUDES_ABSPATH . 'core/data/sql.php';
-		require_once FLAVOR_INCLUDES_ABSPATH . 'core/gui/inputs.php';
+//		require_once FLAVOR_INCLUDES_ABSPATH . 'core/gui/inputs.php';
 		// require_once FLAVOR_INCLUDES . 'core/data/data.php';
 		require_once FLAVOR_INCLUDES_ABSPATH . 'core/wp.php';
 
@@ -401,7 +403,7 @@ class Flavor {
 
 	static public function show_main()
 	{
-		$result = gui_header(1, "Settings");
+		$result = Core_Html::gui_header(1, "Settings");
 
 		$tabs = [];
 		foreach (array("Fresh", "Finance", "Flavor") as $plugin)

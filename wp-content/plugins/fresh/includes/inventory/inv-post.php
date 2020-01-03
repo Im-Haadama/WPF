@@ -85,11 +85,11 @@ function show_not_available() {
 function show_fresh_inventory($not_available = false) {
 	$wait = sql_query_single_scalar( "SELECT count(id) FROM wp_posts WHERE post_status IN ('wc-waiting', 'wc-on-hold')" );
 	if ( $wait ) {
-		print gui_header( 1, "יש הזמנות במצב המתנה!" );
+		print Core_Html::gui_header( 1, "יש הזמנות במצב המתנה!" );
 		print "יש לטפל בהן לפני עדכון המלאי";
 	}
-	print gui_header( 1, "פריטים טריים במלאי" );
-	if ($not_available) print gui_header(2, "not available at suppliers");
+	print Core_Html::gui_header( 1, "פריטים טריים במלאי" );
+	if ($not_available) print Core_Html::gui_header(2, "not available at suppliers");
 	$args = [];
 	$args["not_available"] = $not_available;
 	$args["fresh"] = true;
@@ -120,7 +120,7 @@ function add_waste( $prod_ids ) {
 
 function show_in( $prod_id ) {
 	print header_text();
-	print gui_header( 1, "הספקות לפריט " . get_product_name( $prod_id ) );
+	print Core_Html::gui_header( 1, "הספקות לפריט " . get_product_name( $prod_id ) );
 	$inventory_in = sql_query_single_scalar( "SELECT info_data FROM im_info WHERE info_key = 'inventory_in'" );
 
 	$sql = "select supply_id as אספקה, quantity as כמות, supplier_name as ספק " .
@@ -146,7 +146,7 @@ function show_out( $prod_id ) {
 		'',
 	);
 	print header_text();
-	print gui_header( 1, "משלוחים לפריט " . get_product_name( $prod_id ) );
+	print Core_Html::gui_header( 1, "משלוחים לפריט " . get_product_name( $prod_id ) );
 	$inventory_out = sql_query_single_scalar( "SELECT info_data FROM im_info WHERE info_key = 'inventory_out'" );
 
 	$sql = "select delivery_id as משלוח, quantity as כמות, client_from_delivery(delivery_id) as לקוח" . //, supplier_name as לקוח " .
@@ -177,7 +177,7 @@ function show_out( $prod_id ) {
 		while ( $row = mysqli_fetch_assoc( $result ) ) {
 			$b_id = $row["id"];
 			$B    = Bundle::CreateFromDb( $b_id );
-			print gui_header( 2, "במארזים " . get_product_name( $b_id ) );
+			print Core_Html::gui_header( 2, "במארזים " . get_product_name( $b_id ) );
 
 			$sql = "select delivery_id as משלוח, quantity as כמות, client_from_delivery(delivery_id) as לקוח" . //, supplier_name as לקוח " .
 			       " from im_delivery_lines dl " .

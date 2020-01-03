@@ -44,10 +44,10 @@ foreach ($result as $file)
 $handle .= "</table>";
 $not_handle .= "</table>";
 
-print gui_header(1, "handle");
+print Core_Html::gui_header(1, "handle");
 print $handle;
 
-print gui_header(1, "not handle");
+print Core_Html::gui_header(1, "not handle");
 print $not_handle;
 
 function getDirContents($dir, &$results = array()){

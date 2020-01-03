@@ -185,9 +185,9 @@ function show_missions($query = null)
 
 	if ( count( $missions )  == 0) {
 	    $result .= im_translate("No missions for given period");
-		$result .= gui_hyperlink("Last week", add_to_url("week" , date( "Y-m-d", strtotime( "last sunday" )))) . " ";
-		$result .= gui_hyperlink("This week", add_to_url("week" , date( "Y-m-d", strtotime( "sunday" )))) . " ";
-		$result .= gui_hyperlink("Next week", add_to_url("week", date( "Y-m-d", strtotime( "next sunday" ))));
+		$result .= Core_Html::GuiHyperlink("Last week", add_to_url("week" , date( "Y-m-d", strtotime( "last sunday" )))) . " ";
+		$result .= Core_Html::GuiHyperlink("This week", add_to_url("week" , date( "Y-m-d", strtotime( "sunday" )))) . " ";
+		$result .= Core_Html::GuiHyperlink("Next week", add_to_url("week", date( "Y-m-d", strtotime( "next sunday" ))));
 		return $result;
 	}
 
@@ -253,7 +253,7 @@ function delivered($site_id, $type, $id, $debug = false)
             return true;
             break;
         case "supplies":
-            $s = new Supply( $id );
+            $s = new Fresh_Supply( $id );
             $s->picked();
             return true;
             break;
@@ -303,11 +303,11 @@ function show_mission_route($the_mission, $update = false, $debug = false, $miss
 					$table_header .= $row->find( 'td', $i );
 				}
 			}
-			$table_header .= gui_cell( gui_header( 3, "מספר ארגזים, קירור" ) );
-			$table_header .= gui_cell( gui_header( 3, "נמסר" ));
-			$table_header .= gui_cell( gui_header( 3, "ק\"מ ליעד" ) );
-			$table_header .= gui_cell( gui_header( 3, "דקות" ) );
-			$table_header .= gui_cell( gui_header( 3, "דקות מצטבר" ));
+			$table_header .= gui_cell( Core_Html::gui_header( 3, "מספר ארגזים, קירור" ) );
+			$table_header .= gui_cell( Core_Html::gui_header( 3, "נמסר" ));
+			$table_header .= gui_cell( Core_Html::gui_header( 3, "ק\"מ ליעד" ) );
+			$table_header .= gui_cell( Core_Html::gui_header( 3, "דקות" ) );
+			$table_header .= gui_cell( Core_Html::gui_header( 3, "דקות מצטבר" ));
 			continue;
 		}
 		// $key_fields = $row->find( 'td', 11 )->plaintext;
@@ -376,7 +376,7 @@ function show_mission_route($the_mission, $update = false, $debug = false, $miss
 		$mission = Mission::getMission( $mission_id);
 
 		if (! $update) {
-			print gui_header( 1, get_mission_name( $mission_id ), true, true ) . "(" . gui_label("mission_id", $mission_id) . ")";
+			print Core_Html::gui_header( 1, get_mission_name( $mission_id ), true, true ) . "(" . gui_label("mission_id", $mission_id) . ")";
 
 			$events = "onfocusout='update()'";
 			$args   = array( "events" => $events );
@@ -405,7 +405,7 @@ function show_mission_route($the_mission, $update = false, $debug = false, $miss
 //		$data .= $header;
 
         $data .= "<table>";
-        $data .= gui_hyperlink("Edit route", add_to_url(array("edit_route" => 1, "id" => $mission_id)));
+        $data .= Core_Html::GuiHyperlink("Edit route", add_to_url(array("edit_route" => 1, "id" => $mission_id)));
         $data .= gui_list( "באחריות הנהג להעמיס את הרכב ולסמן את מספר האריזות והאם יש קירור." );
         $data .= gui_list( "אם יש ללקוח מוצרים קפואים או בקירור, יש לבדוק זמינות לקבלת המסלול (לעדכן את יעקב)." );
         $data .= gui_list( "יש לוודא שכל המשלוחים הועמסו." );
@@ -491,8 +491,8 @@ function show_mission_route($the_mission, $update = false, $debug = false, $miss
 				if ( $site_id != $m->getLocalSiteID() ) {
 					print $m->Run( "supplies/supplies-post.php?operation=print&id=" . $supply_id, $site_id );
 				} else {
-					$s = new Supply( $supply_id );
-					$data .= gui_header( 1, "אספקה  " . $supply_id . " מספק " . $s->getSupplierName() );
+					$s = new Fresh_Supply( $supply_id );
+					$data .= Core_Html::gui_header( 1, "אספקה  " . $supply_id . " מספק " . $s->getSupplierName() );
 					$data .= $s->Html( true, 0 );
 				}
 			}
@@ -664,7 +664,7 @@ function print_driver_supplies( $mission_id = 0 ) {
  * @throws Exception
  */
 function print_supply( $id ) {
-    $s = new Supply($id);
+    $s = new Fresh_Supply($id);
 	if ( ! ( $id > 0 ) ) {
 		throw new Exception( "bad id: " . $id );
 	}
@@ -673,7 +673,7 @@ function print_supply( $id ) {
 	array_push( $fields, "supplies" );
 
 	$supplier_id = supply_get_supplier_id( $id );
-	$ref         = gui_hyperlink( $id, "../supplies/supply-get.php?id=" . $id );
+	$ref         = Core_Html::GuiHyperlink( $id, "../supplies/supply-get.php?id=" . $id );
 	$address     = $s->getAddress();
 
 	array_push( $fields, $ref );
@@ -702,7 +702,7 @@ function print_task( $id ) {
 	array_push( $fields, "משימות" );
 	$m = Core_Db_MultiSite::getInstance();
 
-	$ref = gui_hyperlink( $id, $m->LocalSiteTools() . "/focus/focus-page.php?operation=show_task&id=" . $id );
+	$ref = Core_Html::GuiHyperlink( $id, $m->LocalSiteTools() . "/focus/focus-page.php?operation=show_task&id=" . $id );
 
 	array_push( $fields, $ref );
 
@@ -799,7 +799,7 @@ function edit_route($mission)
 {
     if (! $mission) die ("no mission");
 
-    print gui_header(1, "Mission", true, true); print gui_label("mission_id", $mission);
+    print Core_Html::gui_header(1, "Mission", true, true); print gui_label("mission_id", $mission);
 	$m = new Mission($mission);
     $path = sql_query_single_scalar("select path from im_missions where id = $mission");
 
@@ -838,7 +838,7 @@ function get_maps_url($mission, $path)
 		$dynamic_url .= "/" . $path[ $i ];
 	}
 	$url .= "/" . $mission->getEndAddress();
-	return gui_hyperlink( "Maps", $url ) . " " . gui_hyperlink("Dyn", $dynamic_url);
+	return Core_Html::GuiHyperlink( "Maps", $url ) . " " . Core_Html::GuiHyperlink("Dyn", $dynamic_url);
 }
 
 /**
@@ -911,7 +911,7 @@ function collect_points($data_lines, $mission_id, &$prerequisite, &$supplies_to_
 //                print "handle $order_id<br/>";
 			$order = new Order($order_id);
 			if ($supply_points = $order->SuppliersOnTheGo()){
-				$supplier = new Supplier($supply_points[0]);
+				$supplier = new Fresh_Supplier($supply_points[0]);
 				$prerequisite[$stop_point] = $supplier->getAddress();
 			}
 		}
@@ -928,7 +928,7 @@ function collect_points($data_lines, $mission_id, &$prerequisite, &$supplies_to_
 function show_paths($args = null)
 {
     $result = "";
-    $result .= gui_header(1, "Shipping paths");
+    $result .= Core_Html::gui_header(1, "Shipping paths");
     $args["selectors"] = array(/* "zones" => "gui_select_zones", */"week_days" => "gui_select_days");
     $args["id_field"] = "id";
     $args["links"] = array("id" => add_to_url(array("operation" => "show_path", "path_id" => "%s")));
@@ -942,9 +942,9 @@ function show_paths($args = null)
 		$path_info['zones_times'] = path_get_zones($path_id, $args);
 	}
 	$result .= GemArray($paths_data, $args, "im_paths");
-    $result .= gui_button("btn_instance", "create_missions()", "create missions");
+    $result .= Core_Html::GuiButton("btn_instance", "create_missions()", "create missions");
 
-    $result .= gui_header(2, "Coming missions");
+    $result .= Core_Html::gui_header(2, "Coming missions");
     $result .= show_missions("date > " . quote_text(date('Y-m-d')));
 
     $result .= "<br/>";
@@ -1055,16 +1055,16 @@ function show_path($path_id)
     $table = array();
     // $events = 'onchange=onchange=changed_field(%s)';
 	$result .= path_get_zone_time_table($path_id, $args);
-    $result .= gui_button("btn_save", "save_path_times(" . $path_id .")", "Save");
-	$result .= gui_button("btn_delete", "delete_path_times(" . $path_id .")", "Delete");
+    $result .= Core_Html::GuiButton("btn_save", "save_path_times(" . $path_id .")", "Save");
+	$result .= Core_Html::GuiButton("btn_delete", "delete_path_times(" . $path_id .")", "Delete");
 
-    print gui_br();
+    print Core_Html::Br();
 
     $result .= gui_table_args(array("header" => array("zone_id" => "Zone", "zone_times" => "Times"),
 	    array("zone_id" => gui_select_zones("zone_id", null, array("edit"=> true)),
 	          "zone_times" => GuiInput("zone_time", "13-16"))));
 
-    $result .= gui_button("btn_add_zone_times", "add_zone_times(" . $path_id . ")", "Add");
+    $result .= Core_Html::GuiButton("btn_add_zone_times", "add_zone_times(" . $path_id . ")", "Add");
 
     return $result;
 }
@@ -1101,7 +1101,7 @@ function show_add_paths()
 
 function show_today_routes()
 {
-	$result = gui_header(1, "today routes");
+	$result = Core_Html::gui_header(1, "today routes");
 	$sql = "select id from im_missions where date = '" . date("Y-m-d") . "'";
 	$missions = sql_query_array_scalar($sql);
 

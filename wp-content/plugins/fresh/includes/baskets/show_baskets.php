@@ -141,7 +141,7 @@ print " באתר - http://store.im-haadama.co.il או בהודעה חוזרת.";
 
 function print_basket( $basket_id )
 {
-    print gui_header(1, im_translate("basket") . " " . get_product_name($basket_id));
+    print Core_Html::gui_header(1, im_translate("basket") . " " . get_product_name($basket_id));
 	$sql = 'SELECT DISTINCT product_id, quantity, product_price(product_id) as price, quantity * product_price(product_id) as line_price FROM im_baskets WHERE basket_id = ' . $basket_id .
            " and post_status(product_id) like '%pub%'";
 
@@ -163,11 +163,11 @@ function print_basket( $basket_id )
     print gui_table_args($basket_content, "basket_contents", $args);
 
 
-	print gui_button("remove_product", "remove_from_basket(" . $basket_id . ")", "remove");
+	print Core_Html::GuiButton("remove_product", "remove_from_basket(" . $basket_id . ")", "remove");
 
 	print "<br/>";
 	print gui_select_product("new_product");
-	print gui_button("add_product", "add_to_basket(" . $basket_id . ")", "add");
+	print Core_Html::GuiButton("add_product", "add_to_basket(" . $basket_id . ")", "add");
 
 	$sql = 'SELECT DISTINCT product_id FROM im_baskets WHERE basket_id = ' . $basket_id .
 	       " and post_status(product_id) like '%draft%'";
@@ -175,7 +175,7 @@ function print_basket( $basket_id )
 	// print $sql;
     $result = sql_query_array_scalar($sql);
     if ($result){
-	    print gui_header(1, "Not available, and removed:");
+	    print Core_Html::gui_header(1, "Not available, and removed:");
         foreach ($result as $prod_id){
             print get_product_name($prod_id) . "<br/>";
             sql_query("delete from im_baskets where product_id = " . $prod_id);

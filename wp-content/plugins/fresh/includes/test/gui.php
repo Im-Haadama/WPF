@@ -17,7 +17,7 @@ $args = [];
 $args["worker"] = get_user_id();
 print gui_select_product("product", null, $args);
 
-print gui_button("btn_test", "get_value()", "get");
+print Core_Html::GuiButton("btn_test", "get_value()", "get");
 //
 //print "<br/>";
 //print gui_select_project("project", null, $args);

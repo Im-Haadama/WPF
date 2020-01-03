@@ -22,7 +22,7 @@ if ( isset( $_GET["week"] ) ) {
 	$week = $_GET["week"];
 }
 
-print gui_button( "btn_new", "show_create_invoice()", "חשבונית חדשה" );
+print Core_Html::GuiButton( "btn_new", "show_create_invoice()", "חשבונית חדשה" );
 
 // require( "new-business.php" );
 
@@ -188,7 +188,7 @@ print gui_button( "btn_new", "show_create_invoice()", "חשבונית חדשה" 
 
 <?php
 
-print gui_header( 1, "חשבוניות" );
+print Core_Html::gui_header( 1, "חשבוניות" );
 
 print invoices_table();
 
@@ -309,7 +309,7 @@ function invoices_table( $statuses, $week = null ) {
 			if ( $invoice->GetInvoiceUserId( $customer_id ) ) {
 				$line [ OrderFields::line_select ] = gui_checkbox( "chk_" . $order_id, "select_order_" . $status );
 			} else {
-				$line [ OrderFields::line_select ] = gui_hyperlink( "לקוח חדש", "../account/new-customer.php?order_id=" . $order_id );
+				$line [ OrderFields::line_select ] = Core_Html::GuiHyperlink( "לקוח חדש", "../account/new-customer.php?order_id=" . $order_id );
 			}
 
 			debug_time_log( "a1" );
@@ -321,10 +321,10 @@ function invoices_table( $statuses, $week = null ) {
 			// print $order_id. " ". $mission . "<br/>";
 
 			$line[ OrderFields::mission ]  = gui_select_mission( "mis_" . $order_id, $mission_id, "onchange=\"mission_changed(" . $order_id . ")\"" );
-			$line[ OrderFields::order_id ] = gui_hyperlink( $order_id, Core_Db_MultiSite::LocalSiteTools() . "/fresh/orders/get-order.php?order_id=" . $order_id );
+			$line[ OrderFields::order_id ] = Core_Html::GuiHyperlink( $order_id, Core_Db_MultiSite::LocalSiteTools() . "/fresh/orders/get-order.php?order_id=" . $order_id );
 
 			// 2) Customer name with link to his deliveries
-			$line[ OrderFields::customer ] = gui_hyperlink( get_customer_name( $customer_id ), Core_Db_MultiSite::LocalSiteTools() .
+			$line[ OrderFields::customer ] = Core_Html::GuiHyperlink( get_customer_name( $customer_id ), Core_Db_MultiSite::LocalSiteTools() .
 			                                                                                   "/fresh/account/get-customer-account.php?customer_id=" . $customer_id );
 
 
@@ -348,7 +348,7 @@ function invoices_table( $statuses, $week = null ) {
 
 			if ( $delivery_id > 0 ) {
 				$delivery                           = new Fresh_Delivery( $delivery_id );
-				$line[ OrderFields::delivery_note ] = gui_hyperlink( $delivery_id,
+				$line[ OrderFields::delivery_note ] = Core_Html::GuiHyperlink( $delivery_id,
 					Core_Db_MultiSite::LocalSiteTools() . "/fresh/delivery/get-delivery.php?id=" . $delivery_id );
 				//if ( $delivery_id > 0 ) {
 				$line[ OrderFields::total_order ]  = $order_total; // $delivery->Price();
@@ -366,8 +366,8 @@ function invoices_table( $statuses, $week = null ) {
 				}
 				//	}
 			} else {
-				$line[ OrderFields::delivery_note ] = gui_hyperlink( "צור", "../delivery/create-delivery.php?order_id=" . $order_id ) .
-				                                      gui_hyperlink( "בטל", "orders-post.php?operation=cancel_orders&ids=" . $order_id );
+				$line[ OrderFields::delivery_note ] = Core_Html::GuiHyperlink( "צור", "../delivery/create-delivery.php?order_id=" . $order_id ) .
+				                                      Core_Html::GuiHyperlink( "בטל", "orders-post.php?operation=cancel_orders&ids=" . $order_id );
 				$total_delivery_fee                 = order_get_shipping_fee( $order_id );
 			}
 			$line[ OrderFields::city ]         = order_info( $order_id, '_shipping_city' );
@@ -411,7 +411,7 @@ function invoices_table( $statuses, $week = null ) {
 					0
 				);
 			}
-			$data = gui_header( 2, $status_names[ $status ] );
+			$data = Core_Html::gui_header( 2, $status_names[ $status ] );
 			// gui_table( $rows, $id = null, $header = true, $footer = true, &$sum_fields = null, $style = null, $class = null, $links = null)
 			$data       .= gui_table( $rows, $status, true, true, $sums, null, null, $show_fields );
 			$all_tables .= $data;

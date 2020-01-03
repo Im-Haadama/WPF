@@ -65,7 +65,7 @@ class Fresh_Order_Management {
 		debug_time_log( "1" );
 
 		foreach ( $statuses as $status ) {
-			$order_header_fields[0] = gui_checkbox( "select_all_" . $status, "table", 0, "onclick=\"select_all_toggle('select_all_" . $status . "', 'select_order_" . $status . "')\"" );
+			$order_header_fields[0] = Core_Html::gui_checkbox( "select_all_" . $status, "table", 0, "onclick=\"select_all_toggle('select_all_" . $status . "', 'select_order_" . $status . "')\"" );
 			$rows                   = array( $order_header_fields );
 			$sql                    = 'SELECT posts.id'
 			                          . ' FROM `wp_posts` posts'
@@ -114,9 +114,9 @@ class Fresh_Order_Management {
 				$invoice_user_id = get_user_meta( $customer_id, 'invoice_id', 1 );
 
 				if ( $invoice_user_id ) {
-					$line [ OrderFields::line_select ] = gui_checkbox( "chk_" . $order_id, "select_order_" . $status );
+					$line [ OrderFields::line_select ] = Core_Html::gui_checkbox( "chk_" . $order_id, "select_order_" . $status );
 				} else {
-					$line [ OrderFields::line_select ] = gui_hyperlink( "לקוח חדש", "/fresh/?operation=new_customer&order_id=" . $order_id );
+					$line [ OrderFields::line_select ] = Core_Html::GuiHyperlink( "לקוח חדש", "/fresh/?operation=new_customer&order_id=" . $order_id );
 				}
 
 				debug_time_log( "a1" );
@@ -130,10 +130,10 @@ class Fresh_Order_Management {
 				$args = array();
 				$args["events"] = "onchange=\"mission_changed(" . $order_id . ")\"";
 				$line[ OrderFields::mission ]  = gui_select_mission( "mis_" . $order_id, $mission_id,  $args);
-				$line[ OrderFields::order_id ] = gui_hyperlink( $order_id, "/fresh/orders/get-order.php?order_id=" . $order_id );
+				$line[ OrderFields::order_id ] = Core_Html::GuiHyperlink( $order_id, "/fresh/orders/get-order.php?order_id=" . $order_id );
 
 				// 2) Customer name with link to his deliveries
-				$line[ OrderFields::customer ] = gui_hyperlink( get_customer_name( $customer_id ), Core_Db_MultiSite::LocalSiteTools() .
+				$line[ OrderFields::customer ] = Core_Html::GuiHyperlink( get_customer_name( $customer_id ), Core_Db_MultiSite::LocalSiteTools() .
 				                                                                                   "/fresh/account/get-customer-account.php?customer_id=" . $customer_id );
 
 
@@ -157,7 +157,7 @@ class Fresh_Order_Management {
 
 				if ( $delivery_id > 0 ) {
 					$delivery                           = new Fresh_Delivery( $delivery_id );
-					$line[ OrderFields::delivery_note ] = gui_hyperlink( $delivery_id, "/fresh/delivery/get-delivery.php?id=" . $delivery_id );
+					$line[ OrderFields::delivery_note ] = Core_Html::GuiHyperlink( $delivery_id, "/fresh/delivery/get-delivery.php?id=" . $delivery_id );
 					//if ( $delivery_id > 0 ) {
 					if ( isset( $orders_total ) ) {
 						$line[ OrderFields::total_order ] = $order_total;
@@ -178,8 +178,8 @@ class Fresh_Order_Management {
 				} else {
 					// print "status = " . $order->getStatus() . "<br/>";
 					if ($order -> getStatus() == 'wc-processing')
-						$line[ OrderFields::delivery_note ] = gui_hyperlink( "צור",  "/fresh/delivery/create-delivery.php?order_id=" . $order_id, "_blank" );
-					$line[ OrderFields::percentage ]    = gui_hyperlink( "בטל", $_SERVER['PHP_SELF'] . "?operation=cancel_order&id=" . $order_id );
+						$line[ OrderFields::delivery_note ] = Core_Html::GuiHyperlink( "צור",  "/fresh/delivery/create-delivery.php?order_id=" . $order_id, "_blank" );
+					$line[ OrderFields::percentage ]    = Core_Html::GuiHyperlink( "בטל", $_SERVER['PHP_SELF'] . "?operation=cancel_order&id=" . $order_id );
 					$total_delivery_fee                 = $order->getShipping();
 				}
 				$line[ OrderFields::city ]         = $order->getOrderInfo( '_shipping_city' );
@@ -220,7 +220,7 @@ class Fresh_Order_Management {
 						0
 					);
 				}
-				$data       = gui_header( 2, Fresh_Order::get_status_name($status) );
+				$data       = Core_Html::gui_header( 2, Fresh_Order::get_status_name($status) );
 				// gui_table( $rows, $id = null, $header = true, $footer = true, &$sum_fields = null, $style = null, $class = null, $links = null)
 				$data       .= gui_table( $rows, $status, true, true, $sums, null, null, $show_fields );
 				$all_tables .= $data;

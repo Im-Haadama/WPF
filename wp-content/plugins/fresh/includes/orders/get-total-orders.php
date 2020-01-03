@@ -294,8 +294,8 @@ $supplier_id = get_param("supplier_id");
 <div id="ordered_items"></div>
 
 <?php
-print gui_button( "btn_create_delta", "create_delta()", "השלם פערים" );
-print gui_button( "btn_create_supplies", "create_supplies()", "צור הספקות" ); ?>
+print Core_Html::GuiButton( "btn_create_delta", "create_delta()", "השלם פערים" );
+print Core_Html::GuiButton( "btn_create_supplies", "create_supplies()", "צור הספקות" ); ?>
 
 <br/>
 צור הזמנה לספק

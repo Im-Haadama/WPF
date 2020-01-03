@@ -9,7 +9,7 @@ require_once( '../r-shop_manager.php' );
 require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 
 print header_text( false );
-print gui_header( 1, 'טעינת רשימת השף' );
+print Core_Html::gui_header( 1, 'טעינת רשימת השף' );
 
 print gui_list( "יש להכנס לניהול השף" );
 print gui_list( "בתפריט מוצרים/כל המוצרים" );

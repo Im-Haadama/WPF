@@ -15,7 +15,7 @@ class Finance_Bank
 
 	public function bank_status()
 	{
-		$result = gui_header(2, "last bank load");
+		$result = Core_Html::gui_header(2, "last bank load");
 
 		$sql = "select id, name, bank_last_transaction(id) from im_bank_account";
 
@@ -32,7 +32,7 @@ class Finance_Bank
 			return $result;
 		}
 
-		$result .= gui_table_args($accounts, "bank_accounts", $args);
+		$result .= Core_Html::gui_table_args($accounts, "bank_accounts", $args);
 		return $result;
 	}
 

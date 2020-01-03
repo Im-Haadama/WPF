@@ -11,7 +11,7 @@ require_once( FRESH_INCLUDES . '/core/gui/sql_table.php' );
 
 $supplier_id = get_param( "supplier_id", true );
 
-print gui_header( 1, "מצב חשבון " . get_supplier_name( $supplier_id ), true );
+print Core_Html::gui_header( 1, "מצב חשבון " . get_supplier_name( $supplier_id ), true );
 
 $sql = "select id, amount, date\n" .
        "from im_business_info\n" .

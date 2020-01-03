@@ -93,7 +93,7 @@ require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 
 <?php
 print header_text( true );
-print gui_header( 2, "הוסף לקוח חדש" );
+print Core_Html::gui_header( 2, "הוסף לקוח חדש" );
 
 print gui_table_args(
 	array(
@@ -106,7 +106,7 @@ print gui_table_args(
 		array( "מיקוד", gui_input( "zip", "", "" ) )
 	) );
 
-print gui_button( "btn_add", "add_user(1)", "הוסף" );
+print Core_Html::GuiButton( "btn_add", "add_user(1)", "הוסף" );
 
 ?>
 

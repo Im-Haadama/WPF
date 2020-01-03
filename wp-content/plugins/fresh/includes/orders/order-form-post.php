@@ -98,12 +98,12 @@ function order_form( $params, $name, $phone, $group, $user, $method, $email ) {
 	}
 
 	$data .= "הזמנה " . $order_id . " נקלטה בהצלחה." . "<br/>";
-	// $data .= "ההזמנה תסופק לפי ימי החלוקה לאזורך. " . gui_hyperlink( "לפרטים", $_POST["SERVER_NAME"] . "/deliveries" ) . "<br/>";
+	// $data .= "ההזמנה תסופק לפי ימי החלוקה לאזורך. " . Core_Html::GuiHyperlink( "לפרטים", $_POST["SERVER_NAME"] . "/deliveries" ) . "<br/>";
 
 	if ( $found ) {
 		$data .= "מועד החלוקה שנבחר " . order_get_shipping( $order_id ) . "<br/>";
 		$data .= "עם אישור ההזמנה על ידינו, תקבל מייל עם העתק ההזמנה<br/>";
-		$data .= "תוכל לראות את ההזמנה ולבצע בה שינויים באתר: " . gui_hyperlink( "החשבון שלי", "/balance" ) . "<br/>";
+		$data .= "תוכל לראות את ההזמנה ולבצע בה שינויים באתר: " . Core_Html::GuiHyperlink( "החשבון שלי", "/balance" ) . "<br/>";
 	}
 	$data .= $message . "<br/>";
 	$data .= " טלפון שירות הלקוחות " . $support_phone . "<br/>";

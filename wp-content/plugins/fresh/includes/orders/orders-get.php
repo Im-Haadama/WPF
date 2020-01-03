@@ -21,11 +21,11 @@ if ( isset( $_GET["week"] ) ) {
 $order_type = get_param( "order_type" ); // comma separated. w - waiting to deliver. p - pending/on-hold
 
 if ( ! $order_type ) {
-     print gui_hyperlink("Add order", "/wp-admin/post-new.php?post_type=shop_order", "_blank" );
+     print Core_Html::GuiHyperlink("Add order", "/wp-admin/post-new.php?post_type=shop_order", "_blank" );
     print " ";
-	print gui_hyperlink("Paper order", "order-page.php?operation=paper_order", "_blank" );
+	print Core_Html::GuiHyperlink("Paper order", "order-page.php?operation=paper_order", "_blank" );
 
-	// print gui_button( "btn_new", "show_create_order()", "הזמנה חדשה" );
+	// print Core_Html::GuiButton( "btn_new", "show_create_order()", "הזמנה חדשה" );
 }
 
 require( "new-order.php" );
@@ -56,7 +56,7 @@ if ( isset( $week ) ) {
 	die ( 0 );
 }
 
-print gui_header( 1, "הזמנות" );
+print Core_Html::gui_header( 1, "הזמנות" );
 
 debug_time_log( "reset" );
 
@@ -66,8 +66,8 @@ if ( current_user_can( "edit_shop_orders" ) and
 	$pending = orders_table( array( "wc-pending", "wc-on-hold" ) );
 	if ( strlen( $pending ) > 4 ) {
 		print $pending;
-		print gui_button( "btn_start", "start_handle()", "התחל טיפול" );
-		print gui_button( "btn_cancel", "cancel_order()", "בטל" ) . "<br/>";
+		print Core_Html::GuiButton( "btn_start", "start_handle()", "התחל טיפול" );
+		print Core_Html::GuiButton( "btn_cancel", "cancel_order()", "בטל" ) . "<br/>";
 	}
 } else {
 	if ( ! current_user_can( "edit_shop_orders" ) ) {
@@ -84,7 +84,7 @@ if ( current_user_can( "edit_shop_orders" ) and
 
 	if ( strlen( $shipment ) > 5 ) {
 		print $shipment;
-		print gui_button( "btn_delivered", "delivered_table()", "Delivered" ) . "<br/>";
+		print Core_Html::GuiButton( "btn_delivered", "delivered_table()", "Delivered" ) . "<br/>";
 	}
 }
 

@@ -16,7 +16,7 @@ if ( ! defined( 'FRESH_INCLUDES' ) ) {
 require_once( FRESH_INCLUDES . "/core/gui/inputs.php" );
 require_once( FRESH_INCLUDES . "/fresh/supplies/Supply.php" );
 
-print gui_header( 1, "Handling local operations" );
+print Core_Html::gui_header( 1, "Handling local operations" );
 auto_local();
 
 function auto_local() {
@@ -48,7 +48,7 @@ function auto_local() {
 			}
 		}
 		if ( $total > sql_query_single_scalar( "SELECT min_order FROM im_suppliers WHERE id = " . $supplier_id ) ) {
-			$supply = Supply::CreateSupply( $supplier_id );
+			$supply = Fresh_Supply::CreateSupply( $supplier_id );
 			foreach ( $supply_lines as $line ) {
 				$supply->AddLine( $line[0], $line[1], get_buy_price( $line[0] ) );
 			}

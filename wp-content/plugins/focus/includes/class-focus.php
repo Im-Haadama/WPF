@@ -276,10 +276,10 @@ class Focus {
 		 * Class autoload`er.
 		 */
 		require_once FOCUS_INCLUDES . 'class-focus-autoloader.php';
-		require_once FLAVOR_INCLUDES_ABSPATH . 'core/data/sql.php';
-		require_once FLAVOR_INCLUDES_ABSPATH . 'core/org_gui.php';
-		require_once FLAVOR_INCLUDES_ABSPATH . 'core/fund.php';
-		require_once FLAVOR_INCLUDES_ABSPATH . 'core/wp.php';
+//		require_once FLAVOR_INCLUDES_ABSPATH . 'core/data/sql.php';
+//		require_once FLAVOR_INCLUDES_ABSPATH . 'core/org_gui.php';
+//		require_once FLAVOR_INCLUDES_ABSPATH . 'core/fund.php';
+//		require_once FLAVOR_INCLUDES_ABSPATH . 'core/wp.php';
 
 		/**
 		 * Core classes.

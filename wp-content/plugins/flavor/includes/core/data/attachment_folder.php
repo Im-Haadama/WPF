@@ -57,7 +57,7 @@ function inbox_files( $hostname, $mail_user, $password, $attach_folder, $folder_
 			if ( ! ( strlen( $file ) > 3 ) ) {
 				$text = "אין מסמך";
 			} else {
-				$text = gui_hyperlink( substr( basename( $file ), 0, 20 ), $url . '/' . $file, "right" );
+				$text = Core_Html::GuiHyperlink( substr( basename( $file ), 0, 20 ), $url . '/' . $file, "right" );
 			}
 			$row = array(
 				substr( $message->getSubject(), 0, 20 ),
@@ -66,10 +66,8 @@ function inbox_files( $hostname, $mail_user, $password, $attach_folder, $folder_
 				$message->getDate(),
 				$message->getIndex()
 			);
-			// gui_hyperlink("הורד קבצים", "admin-post.php?operation=download&id=" . $message->getI()));
 
 			array_push( $rows, $row );
-			// print $message->getSubject() . " " . $message->getSender();
 		}
 	}
 

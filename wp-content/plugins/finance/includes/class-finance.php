@@ -220,9 +220,7 @@ class Finance {
 		require_once FLAVOR_INCLUDES_ABSPATH . 'core/core-functions.php';
 		require_once FLAVOR_INCLUDES_ABSPATH . 'core/fund.php';
 		require_once FLAVOR_INCLUDES_ABSPATH . 'core/data/sql.php';
-//		require_once FINANCE_INCLUDES . 'core/data/data.php';
 		require_once FLAVOR_INCLUDES_ABSPATH . 'core/wp.php';
-		require_once FLAVOR_INCLUDES_ABSPATH . 'core/gui/inputs.php';
 
 		/**
 		 * Interfaces.
@@ -387,14 +385,14 @@ class Finance {
 				return;
 			}
 
-			$result .= gui_header(1, "Main finance");
-			$result .= gui_header(2, "Bank");
+			$result .= Core_Html::gui_header(1, "Main finance");
+			$result .= Core_Html::gui_header(2, "Bank");
 
 			$result .= $bank->bank_status();
 		}
 
 		if (im_user_can("show_bank")) {
-			print gui_header(2, "Bank");
+			print Core_Html::gui_header(2, "Bank");
 		}
 
 		print $result;
@@ -408,7 +406,7 @@ class Finance {
 		// Todo: change to operation
 		if (get_param("search", false, 0)){
 			$ids=data_search("im_bank");
-			gui_header(1, "Results");
+			Core_Html::gui_header(1, "Results");
 			if (! $ids){
 				print im_translate("Nothing found");
 				return;
@@ -419,7 +417,7 @@ class Finance {
 			case "bank_receipts":
 			case "receipts":
 				$args = array();
-				print gui_header( 1, "Receipts" );
+				print Core_Html::gui_header( 1, "Receipts" );
 				$args["header_fields"] = array( "Id", "Date", "Description", "Amount" );
 				$args["actions"]       = array(
 					array(
@@ -449,7 +447,7 @@ class Finance {
 			case "bank_payments":
 			case "payments":
 				$args = array();
-				print gui_header( 1, "Payments" );
+				print Core_Html::gui_header( 1, "Payments" );
 				$args["header_fields"] = array( "Id", "Date", "Description", "Amount" );
 				$args["actions"]       = array(
 					array(
@@ -476,7 +474,7 @@ class Finance {
 
 				//		print GuiTableContent( "im_banking", $sql, $args);
 
-				//		print gui_hyperlink("Older", add_to_url("page", $page + 1));
+				//		print Core_Html::GuiHyperlink("Older", add_to_url("page", $page + 1));
 
 				print bank_transactions( $query, $args );
 
@@ -486,8 +484,8 @@ class Finance {
 				$args = array();
 				// $args["selectors"] = array("part_id" => "gui_select_supplier");
 
-				print GuiTableContent( "im_bank_transaction_types", null, $args );
-				print gui_hyperlink( "add", add_to_url( "operation", "add_transaction_types" ) );
+				print Core_Html::GuiTableContent( "im_bank_transaction_types", null, $args );
+				print Core_Html::GuiHyperlink( "add", add_to_url( "operation", "add_transaction_types" ) );
 
 				return;
 
@@ -496,7 +494,7 @@ class Finance {
 				$args["selectors"] = array( "part_id" => "gui_select_supplier" );
 				$args["post_file"] = "/core/data/data-post.php";
 
-				print GemAddRow( "im_bank_transaction_types", "Transaction types", $args );
+				print Core_Gem::GemAddRow( "im_bank_transaction_types", "Transaction types", $args );
 
 				return;
 
@@ -510,7 +508,7 @@ class Finance {
 
 			case "do_search":
 				$ids = data_search( "im_bank" );
-				gui_header( 1, "Results" );
+				Core_Html::gui_header( 1, "Results" );
 				if ( ! $ids ) {
 					print im_translate( "Nothing found" );
 
@@ -527,9 +525,9 @@ class Finance {
 
 				$args["page"] = 1;
 				$args["order"] = "3 desc";
-				print GemTable("im_bank", $args);
+				print Core_Gem::GemTable("im_bank", $args);
 
-				print GemImport( "im_bank", $args );
+				print Core_Gem::GemImport( "im_bank", $args );
 				print '<script> window.onload = change_import;</script>';
 				break;
 

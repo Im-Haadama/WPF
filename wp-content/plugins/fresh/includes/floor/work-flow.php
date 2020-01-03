@@ -17,7 +17,7 @@ print header_text( true, true, true );
 check_user();
 
 // Greeting
-print gui_header( 1, "בוקר טוב" );
+print Core_Html::gui_header( 1, "בוקר טוב" );
 
 // Display the overview. POS manager will open new window to handle.
 // When finished will come back to here.
@@ -27,8 +27,8 @@ $sql = "select count(id) from wp_posts where post_status in ('wc-pending', 'wc-o
 $c   = sql_query_single_scalar( $sql );
 // print orders_table('wc-pending');
 if ( $c ) {
-	print gui_header( 2, $c . " הזמנות ממתינות לאישור" );
-	print gui_hyperlink( "לטיפול", "../orders/orders-get.php" );
+	print Core_Html::gui_header( 2, $c . " הזמנות ממתינות לאישור" );
+	print Core_Html::GuiHyperlink( "לטיפול", "../orders/orders-get.php" );
 }
 
 // Check if there are orders in the mail.
@@ -39,8 +39,8 @@ Order::NeedToOrder( $needed );
 //var_dump($needed);
 $c = count( $needed );
 if ( $c ) {
-	print gui_header( 2, $c . " סוגי פריטים ממתינים להזמנה " );
-	print gui_hyperlink( "לטיפול", "../orders/get-total-orders.php" );
+	print Core_Html::gui_header( 2, $c . " סוגי פריטים ממתינים להזמנה " );
+	print Core_Html::GuiHyperlink( "לטיפול", "../orders/get-total-orders.php" );
 }
 
 // Pack.

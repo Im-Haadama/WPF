@@ -205,7 +205,7 @@ function show_fresh_siton() {
 	foreach ( array( 62, 18, 19, 66 ) as $categ ) {
 		$term = get_term( $categ );
 
-		print gui_header( 1, $term->name );
+		print Core_Html::gui_header( 1, $term->name );
 		show_catalog( 0, "", false, true, true, false, array( $term->term_id ), false );
 	}
 
@@ -354,7 +354,7 @@ function show_catalog(
 		// print "XXX" . CatalogFields::name . "XXX<br/>";
 
 		$fields[ CatalogFields::line_select ] = "<input id=\"chk" . $prod_id . "\" class=\"product_checkbox\" type=\"checkbox\">";
-		$fields[ CatalogFields::id ]          = gui_hyperlink( $prod_id, "../../wp-admin/post.php?post=" . $prod_id . " &action=edit" );
+		$fields[ CatalogFields::id ]          = Core_Html::GuiHyperlink( $prod_id, "../../wp-admin/post.php?post=" . $prod_id . " &action=edit" );
 		$p                                    = new Fresh_Product( $prod_id );
 
 		// price

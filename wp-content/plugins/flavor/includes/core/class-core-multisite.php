@@ -128,17 +128,11 @@ class Core_MultiSite {
 		$first = true;
 		$data  = array( array( "site name", "result" ));
 
-//		if ($debug)
-//			print"running " . gui_hyperlink($this->getSiteName($site_id), $this->getSiteToolsURL($site_id) . "/" . $func) . "<br/>";
-//		if ($debug != 2)
-//	else
-//		$result = "debug = 2. not run<br/>";
-
 		foreach ( $this->sites_array as $site_id => $site ) {
 			$result = $this->Run( $func, $site_id, $first, $debug );
 			if (! $result) {
-				$output .= "Can't get from " . $this->getSiteName($site_id) . " http code: " . $this->http_codes[$site_id] . gui_br();
-				$output .= $this->getSiteToolsURL($site_id) . '/' . $func . gui_br();
+				$output .= "Can't get from " . $this->getSiteName($site_id) . " http code: " . $this->http_codes[$site_id] . Core_Html::Br();
+				$output .= $this->getSiteToolsURL($site_id) . '/' . $func . Core_Html::Br();
 			}
 			if ( $strip ) {
 				$result = strip_tags( $result, "<div><br><p><table><tr><td>" );
@@ -152,7 +146,7 @@ class Core_MultiSite {
 		}
 
 		if ( $verbose ) {
-			return gui_table_args( $data );
+			return Core_Html::gui_table_args( $data );
 		}
 
 		return $output;

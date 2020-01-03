@@ -31,10 +31,10 @@ $last_tasks = sql_query_array_scalar( "SELECT id FROM im_tasklist " .
                                       " ORDER BY id DESC " .
                                       " LIMIT 5 " );
 
-print gui_header( 1, "משימות חדשות");
+print Core_Html::gui_header( 1, "משימות חדשות");
 print task_table( $last_tasks );
 
-print gui_header( 1, "התחל עבודה" );
+print Core_Html::gui_header( 1, "התחל עבודה" );
 print gui_select_project( "project", null, "project_selected()");
 
 // Show next task to handle

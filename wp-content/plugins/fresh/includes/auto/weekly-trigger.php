@@ -24,11 +24,11 @@ if ( ! isset( $hosts_to_sync ) ) {
 $m = new Core_MultiSite( $hosts_to_sync, $master, 3 );
 
 // Run daily on master.
-print gui_header(1, "Running on master") . gui_br();
+print Core_Html::gui_header(1, "Running on master") . Core_Html::Br();
 print $m->Run( "fresh/auto/weekly-master.php", $master );
 
 // Now sync to slaves.
-print gui_header(1, "Syncing from master") . gui_br();
+print Core_Html::gui_header(1, "Syncing from master") . Core_Html::Br();
 print $m->GetAll( "fresh/multi-site/sync-from-master.php" );
 
 // print $m->GetAll( "auto/weekly.php" );

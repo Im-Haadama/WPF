@@ -59,8 +59,8 @@ if (info_get("manage_inventory") and get_param("show_inv", false, 1))
 
 if ( $id > 0 ) {
 	print "<form name=\"delivery\" action= \"\">";
-//	print gui_header( 2, "עריכת תעודת משלוח מספר  " . $id );
-//	print gui_header( 3, "הזמנה מספר " . get_order_id( $id ) );
+//	print Core_Html::gui_header( 2, "עריכת תעודת משלוח מספר  " . $id );
+//	print Core_Html::gui_header( 3, "הזמנה מספר " . get_order_id( $id ) );
 	print $O->infoBox();
 
 	$d = new Fresh_Delivery( $id );
@@ -71,7 +71,7 @@ if ( $id > 0 ) {
 } else {
 	$client_id = $O->getCustomerId();
 	print "<form name=\"delivery\" action= \"\">";
-	// print gui_header( 2, "יצירת תעודת משלוח להזמנה מספר " . $order_id, true );
+	// print Core_Html::gui_header( 2, "יצירת תעודת משלוח להזמנה מספר " . $order_id, true );
 
 	if ( sql_query_single_scalar( "select order_is_group(" . $order_id . ")" ) == 1 ) {
 //		 print "הזמנה קבוצתית";
@@ -111,7 +111,7 @@ if ( ! $edit ) { // New
 }
 
 if ( $show_save_draft ) {
-	print gui_button( "btn_save_draft", "addDelivery(1)", "שמור טיוטא" );
+	print Core_Html::GuiButton( "btn_save_draft", "addDelivery(1)", "שמור טיוטא" );
 }
 
 ?>

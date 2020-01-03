@@ -19,9 +19,9 @@ if ( isset( $_GET["week"] ) ) {
 			$args .= "&" . $k . '=' . $v;
 		}
 	}
-	print gui_hyperlink( "שבוע קודם", "report.php?week=" . date( 'Y-m-d', strtotime( $week . " -1 week" ) ) . $args );
+	print Core_Html::GuiHyperlink( "שבוע קודם", "report.php?week=" . date( 'Y-m-d', strtotime( $week . " -1 week" ) ) . $args );
 
-	print gui_hyperlink( "שבוע עוקב", "report.php?week=" . date( 'Y-m-d', strtotime( $week . " +1 week" ) ) . $args );
+	print Core_Html::GuiHyperlink( "שבוע עוקב", "report.php?week=" . date( 'Y-m-d', strtotime( $week . " +1 week" ) ) . $args );
 }
 if ( isset( $week ) and isset( $_GET["prod_id"] ) ) {
 	print_prod_report( $_GET["prod_id"], $week );
@@ -79,10 +79,10 @@ if ( isset( $_GET["project"] ) ) {
 }
 
 function supplier_report( $supplier_id, $week ) {
-	print gui_header( 1, "נתוני מכירה לספק " . get_supplier_name( $supplier_id ) );
+	print Core_Html::gui_header( 1, "נתוני מכירה לספק " . get_supplier_name( $supplier_id ) );
 	$end   = $week;
 	$start = date( 'Y-m-d', strtotime( $week . ' -1 week' ) );
-	print gui_header( 2, "בין התאריכים " . $start . " - " . $end );
+	print Core_Html::gui_header( 2, "בין התאריכים " . $start . " - " . $end );
 	$sum = array();
 
 	print gui_table( supplier_report_data( $supplier_id, $start, $end ), null, true, true, $sum, null, null,
@@ -101,7 +101,7 @@ function client_report( $customer_id, $last = 5 ) {
 		return;
 	}
 	foreach ( $rows as $delivery_id ) {
-		print gui_header( 1, $delivery_id );
+		print Core_Html::gui_header( 1, $delivery_id );
 		$sql = "select product_name from im_delivery_lines where delivery_id = " . $delivery_id;
 
 		$items = sql_query_array_scalar( $sql );
@@ -114,11 +114,11 @@ function client_report( $customer_id, $last = 5 ) {
 // print_weekly_report( date( "Y-m-d", strtotime( "last sunday" ) ) );
 function print_prod_report( $prod_id, $week = null, $user_id = null ) {
 	if ( $week ) {
-		print gui_header( 1, "מציג תוצאות לשבוע המתחיל ביום " . $week );
+		print Core_Html::gui_header( 1, "מציג תוצאות לשבוע המתחיל ביום " . $week );
 	}
-	print gui_header( 2, "מוצר " . get_product_name( $prod_id ) );
+	print Core_Html::gui_header( 2, "מוצר " . get_product_name( $prod_id ) );
 	if ( $user_id ) {
-		print gui_header( 2, "לקוח " . get_customer_name( $user_id ) );
+		print Core_Html::gui_header( 2, "לקוח " . get_customer_name( $user_id ) );
 	}
 
 	$sql      = "SELECT delivery_id, product_name, round(quantity, 1), order_id, date, prod_id";
@@ -168,7 +168,7 @@ function print_prod_report( $prod_id, $week = null, $user_id = null ) {
 			$q = $q * $b->GetQuantity();
 		}
 		$line     = array(
-			gui_hyperlink( $row[0], "get-delivery.php?id=" . $row[0] ),
+			Core_Html::GuiHyperlink( $row[0], "get-delivery.php?id=" . $row[0] ),
 			$q,
 			get_customer_name( $o->getCustomerId() )
 		);
@@ -183,13 +183,13 @@ function print_prod_report( $prod_id, $week = null, $user_id = null ) {
 }
 
 function print_weekly_report( $week, $sort = 4 ) {
-	print gui_header( 1, "מציג תוצאות לשבוע המתחיל ביום " . $week );
+	print Core_Html::gui_header( 1, "מציג תוצאות לשבוע המתחיל ביום " . $week );
 // print date('Y-m-d', strtotime($week . " -1 week")) . "<br/>";
 	if ( date( 'Y-m-d' ) > date( 'Y-m-d', strtotime( $week . "+1 week" ) ) ) {
-		print gui_hyperlink( "שבוע הבא", "report.php?week=" . date( 'Y-m-d', strtotime( $week . " +1 week" ) ) ) . " ";
+		print Core_Html::GuiHyperlink( "שבוע הבא", "report.php?week=" . date( 'Y-m-d', strtotime( $week . " +1 week" ) ) ) . " ";
 	}
 
-	print gui_hyperlink( "שבוע קודם", "report.php?week=" . date( 'Y-m-d', strtotime( $week . " -1 week" ) ) );
+	print Core_Html::GuiHyperlink( "שבוע קודם", "report.php?week=" . date( 'Y-m-d', strtotime( $week . " -1 week" ) ) );
 
 	print "<br/>";
 
@@ -210,7 +210,7 @@ function print_weekly_report( $week, $sort = 4 ) {
 		$prod_id   = $row[2];
 		$prod_name = $row[0];
 		$suppliers = archive_get_supplier( $prod_id, $week );
-		$q         = gui_hyperlink( $quantity, "report.php?prod_id=" . $prod_id . "&week=" . $week );
+		$q         = Core_Html::GuiHyperlink( $quantity, "report.php?prod_id=" . $prod_id . "&week=" . $week );
 		array_push( $lines, array( $prod_id, $suppliers, $prod_name, $q ) );
 	}
 
@@ -222,7 +222,7 @@ function print_weekly_report( $week, $sort = 4 ) {
 		"מזהה מוצר",
 		"ספקים",
 		"שם מוצר",
-		gui_hyperlink( "כמות", $actual_link . "&sort=2d" )
+		Core_Html::GuiHyperlink( "כמות", $actual_link . "&sort=2d" )
 	) );
 
 	print gui_table_args( $lines );
@@ -244,7 +244,7 @@ function print_weekly_report( $week, $sort = 4 ) {
 //	$salary      = - $salary;
 //
 //
-//	print gui_header( 1, "סיכום" );
+//	print Core_Html::gui_header( 1, "סיכום" );
 //	$total_sums = array( "סיכום", array( 0, sums ) );
 //	print gui_table( array(
 //		array( "סעיף", "סכום" ),
@@ -254,13 +254,13 @@ function print_weekly_report( $week, $sort = 4 ) {
 //		array( "שכר", $salary )
 //	), "totals", true, true, $total_sums );
 //
-//	print gui_header( 2, "הכנסות" );
+//	print Core_Html::gui_header( 2, "הכנסות" );
 //	print $inputs;
 //
-//	print gui_header( 2, "הוצאות" );
+//	print Core_Html::gui_header( 2, "הוצאות" );
 //	print $outputs;
 //
-//	print gui_header( 2, "שכר" );
+//	print Core_Html::gui_header( 2, "שכר" );
 //	print $salary_text;
 }
 

@@ -20,7 +20,7 @@ print "<center>פירוט הזמנות ומלאי לפריט " . get_product_nam
 
 $data = "";
 
-$data .= gui_header( 1, "הזמנות פתוחות" );
+$data .= Core_Html::gui_header( 1, "הזמנות פתוחות" );
 
 $data .= "<table>";
 
@@ -71,7 +71,7 @@ if ( strlen( $bundle ) ) {
 	$data .= "</table>";
 }
 
-$data .= "<br />" . gui_header( 1, "אספקות אחרונות");
+$data .= "<br />" . Core_Html::gui_header( 1, "אספקות אחרונות");
 
 $data .= "<table>";
 $data .= "<tr><td>אספקה</td><td>כמות</td></tr>";

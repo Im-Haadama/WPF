@@ -205,16 +205,16 @@ require_once( '../gui.php' );
 <?php
 gui_select_category( "product_cat" );
 
-print gui_header( 1, "יצירת מוצרים" );
+print Core_Html::gui_header( 1, "יצירת מוצרים" );
 
 print gui_select( "create_term", "", array(), "", "" );
 // print gui_select_datalist("term", "t", array(), "");
 
-print gui_button( "btn_select_term_items", "select_term_products()", "בחר" );
+print Core_Html::GuiButton( "btn_select_term_items", "select_term_products()", "בחר" );
 
-print gui_button( "btn_create_term", "create_term()", "צור קטגוריה" );
+print Core_Html::GuiButton( "btn_create_term", "create_term()", "צור קטגוריה" );
 
-print gui_header( 1, "פריטים לא ממופים" );
+print Core_Html::gui_header( 1, "פריטים לא ממופים" );
 
 ?>
 

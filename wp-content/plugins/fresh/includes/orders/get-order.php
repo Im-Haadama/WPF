@@ -148,9 +148,9 @@ if ( current_user_can( "edit_shop_orders" ) ) {
 print "<br/>";
 print gui_datalist( "items", "im_products", "post_title" );
 print "<br/>";
-//print gui_button("btn_cancel", "cancel_order()", "בטל הזמנה");
+//print Core_Html::GuiButton("btn_cancel", "cancel_order()", "בטל הזמנה");
 
-print gui_button( "btn_del_item", "del_item()", "מחק פריטים מסומנים" );
+print Core_Html::GuiButton( "btn_del_item", "del_item()", "מחק פריטים מסומנים" );
 print "<br/>";
 ?>
 
@@ -169,13 +169,13 @@ if ( current_user_can( "edit_shop_orders" ) or
 
 	if ( $for_edit ) {
 	    $args = array();
-		print gui_header( 1, "Add items" );
+		print Core_Html::gui_header( 1, "Add items" );
 		print gui_table_args( array(
 			array( "Select item", "quantity" ),
 			array( gui_select_product("new_product", null, $args),
                 "<input id=\"qua_\">" )));
-		print gui_button( "btn_add_item", "add_item()", "הוסף" );
-		print gui_button( "btn_replace", "replace()", "החלף סלים במרכיבים" );
+		print Core_Html::GuiButton( "btn_add_item", "add_item()", "הוסף" );
+		print Core_Html::GuiButton( "btn_replace", "replace()", "החלף סלים במרכיבים" );
 	}
 }
 ?>

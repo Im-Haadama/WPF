@@ -69,7 +69,7 @@ if ( ! isset( $_GET["client_id"] ) ) {
 <body onload="searchProducts()">
 <center><h2>מחירון לחנות טבע</h2></center>
 <?php
-print gui_button( "btn_place_order", "place_order()", "צור הזמנה" );
+print Core_Html::GuiButton( "btn_place_order", "place_order()", "צור הזמנה" );
 ?>
 <table id="results_table">
     <tr>

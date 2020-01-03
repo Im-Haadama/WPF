@@ -90,7 +90,7 @@ class Focus_Salary {
 
 	function salary_main()
 	{
-		$result = gui_header(1, "Salary info");
+		$result = Core_Html::gui_header(1, "Salary info");
 		if (im_user_can("show_salary")){
 			$args = [];
 			$args["sql"] = "select distinct id, client_displayname(user_id) as name, project_id from im_working where is_active = 1";
@@ -98,7 +98,7 @@ class Focus_Salary {
 			$args["links"] = array("id" => add_to_url(array("operation" => "show_worker", "worker_id" => "%s")));
 			$args["selectors"] = array("project_id" => "gui_select_project");
 
-			$result .= GemTable("im_working", $args);
+			$result .= Core_Gem::GemTable("im_working", $args);
 		} else {
 			self::get_month_year($y, $m);
 			$result .= self::hours_entry();
@@ -209,17 +209,17 @@ class Focus_Salary {
 		$args["worker_id"] = $user_id;
 		array_push( $table, ( array( "פרויקט", gui_select_project("project", null, $args))));
 
-		$result .= gui_table_args( $table );
+		$result .= Core_Html::gui_table_args( $table );
 
-		$result .= gui_header( 2, "הוצאות נסיעה" );
+		$result .= Core_Html::gui_header( 2, "הוצאות נסיעה" );
 		$result .= gui_input( "traveling", "" ) . "<br/>";
-		$result .= gui_header( 2, "הוצאות נוספות/משלוחים" );
+		$result .= Core_Html::gui_header( 2, "הוצאות נוספות/משלוחים" );
 		$result .= "תיאור";
 		$result .= gui_input( "extra_text", "" ) . "<br/>";
 		$result .= "סכום";
 		$result .= gui_input( "extra", "" ) . "<br/>";
 
-		$result .= gui_button("btn_add_time", 'salary_add_item(' . $user_id . ')', 'הוסף פעילות');
+		$result .= Core_Html::GuiButton("btn_add_time", 'salary_add_item(' . $user_id . ')', 'הוסף פעילות');
 
 		return $result;
 	}
@@ -228,14 +228,14 @@ class Focus_Salary {
 	{
 		if (! $m) $m = date('m');
 		if (! $y) $y = date('Y');
-		$result = gui_header(1, __("Salary info for worker") . " " . get_user_name($user_id)) . __("for month") . " " . $m . '/' . $y;
+		$result = Core_Html::gui_header(1, __("Salary info for worker") . " " . get_user_name($user_id)) . __("for month") . " " . $m . '/' . $y;
 		$args = array("add_checkbox" => true, "checkbox_class" => "hours_checkbox");
 		$args["edit_lines"] = 1;
 		$data = self::print_transactions($user_id, $m, $y, $args);
 		if (! $data) $result .= __("No data for month") . " " . $m . '/' . $y . "<br/>";
 		else {
 			$result .= $data;
-			$result .= gui_button("btn_delete", 'salary_del_items()', 'מחק פעילות');
+			$result .= Core_Html::GuiButton("btn_delete", 'salary_del_items()', 'מחק פעילות');
 		}
 		$result .= "<br/>" . GuiHyperlink("Previouse month",
 			add_to_url("month", date('Y-m', strtotime($y . '-' . $m . '-1 -1 month'))));
@@ -247,7 +247,7 @@ class Focus_Salary {
 	static function show_worker($row_id, $y = 0, $m = 0)
 	{
 		$user_id = sql_query_single_scalar("select user_id from im_working where id = $row_id");
-		$result = gui_header(1, Focus_Salary::worker_get_name($user_id));
+		$result = Core_Html::gui_header(1, Focus_Salary::worker_get_name($user_id));
 
 		$args = [];
 		$args["post_file"] = self::instance()->post_file;
@@ -291,7 +291,7 @@ class Focus_Salary {
 	{
 		$edit_lines = GetArg($args, "edit_lines", false);
 
-		$output = gui_header(1, im_translate("Salary data for month") . " " . $month);
+		$output = Core_Html::gui_header(1, im_translate("Salary data for month") . " " . $month);
 		$a = explode( "-", $month );
 		$y = $a[0];
 		$m = $a[1];
@@ -311,19 +311,19 @@ class Focus_Salary {
 			$args["worker"] = $user_id;
 
 			if ( $row[1] ) {
-				$output .= gui_header( 1, get_user_name( $user_id ) . " (" . GuiHyperlink("$user_id", "/org/people/people-page.php?operation=show_edit_worker&" .
+				$output .= Core_Html::gui_header( 1, get_user_name( $user_id ) . " (" . GuiHyperlink("$user_id", "/org/people/people-page.php?operation=show_edit_worker&" .
 				                                                                                      "worker_id=" . $user_id) . ")" );
 				$output .= "כתובת מייל של העובד/ת: " . Core_Users::CustomerEmail( $user_id ) . "<br/>";
 
 				$output .= self::print_transactions( $user_id, $m, $y, $args); // null, null, $s, true, $edit );
 
 				if ($edit_lines){
-					$output .= gui_button("btn_delete", "delete_line(" . $user_id . ")", "מחק");
+					$output .= Core_Html::GuiButton("btn_delete", "delete_line(" . $user_id . ")", "מחק");
 				}
 			}
 			$has_data = true;
 		}
-		if (! $has_data) $output .= im_translate("No data entered") . gui_br();
+		if (! $has_data) $output .= im_translate("No data entered") . Core_Html::Br();
 		return $output;
 	}
 
@@ -373,7 +373,7 @@ class Focus_Salary {
 		$show_expense = false;
 		$show_comment = false;
 
-		if (! $data) return im_translate( "No data") . gui_br();
+		if (! $data) return im_translate( "No data") . Core_Html::Br();
 		foreach  ($data as $key => &$row)
 		{
 			if ($key == "header") {
@@ -444,12 +444,12 @@ class Focus_Salary {
 		}
 
 //		print "after: " . $data["totals"]["dur_125"] . "<br/>";
-		$data = gui_table_args($data, "working_" . $user_id, $args);
+		$data = Core_Html::gui_table_args($data, "working_" . $user_id, $args);
 
 		if ($edit)
-			$data .= gui_button("btn_delete_from_report", "delete_lines()", "Delete");
+			$data .= Core_Html::GuiButton("btn_delete_from_report", "delete_lines()", "Delete");
 
-		$data      .= gui_header( 2, "חישוב שכר מקורב" ) . "<br/>";
+		$data      .= Core_Html::gui_header( 2, "חישוב שכר מקורב" ) . "<br/>";
 		$data      .= "שכר שעות " . $total_sal . "<br/>";
 		$data      .= "סהכ נסיעה " . $total_travel . "<br/>";
 		$data      .= "סהכ הוצאות " . $total_expense . "<br/>";

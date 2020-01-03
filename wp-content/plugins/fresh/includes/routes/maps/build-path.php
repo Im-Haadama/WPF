@@ -279,7 +279,7 @@ function do_get_distance( $a, $b ) {
 //			$url .= "&loc" . ( $i + 1 ) . "=" . $rest[ $i ];
 //			$url2 .= "/" . $rest[$i];
 //		}
-//		print gui_hyperlink( "Optimap", $url );
-//		print gui_hyperlink("Maps", $url2);
+//		print Core_Html::GuiHyperlink( "Optimap", $url );
+//		print Core_Html::GuiHyperlink("Maps", $url2);
 //		print "<br/>";
 //	}

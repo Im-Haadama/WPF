@@ -22,14 +22,14 @@ $m = Core_Db_MultiSite::getInstance();
 ob_start();
 
 // For now not working on fruity.co.il. Need to check if it's configuration or other problem.
-// print gui_header( 1, "Handling auto orders" );
+// print Core_Html::gui_header( 1, "Handling auto orders" );
 // auto_mail();
 
-// print gui_header( 1, "Handling auto supply" );
+// print Core_Html::gui_header( 1, "Handling auto supply" );
 // auto_supply();
 
 require_once( FRESH_INCLUDES . "/focus/Tasklist.php" );
-print gui_header( 1, "Creating tasks from templates into tasklist" );
+print Core_Html::gui_header( 1, "Creating tasks from templates into tasklist" );
 create_tasks( null, true );
 
 // Local scripts - active from task_template
@@ -37,7 +37,7 @@ create_tasks( null, true );
 //$local_dir = FRESH_INCLUDES . '/fresh/' . $site_name;
 //if (file_exists($local_dir))
 //{
-//	print gui_header( 1, "Running site specific" );
+//	print Core_Html::gui_header( 1, "Running site specific" );
 //
 //	$scripts = scandir($local_dir);
 //
@@ -98,7 +98,7 @@ function auto_supply() {
 			}
 		}
 		if ( $total > sql_query_single_scalar( "SELECT min_order FROM im_suppliers WHERE id = " . $supplier_id ) ) {
-			$supply = Supply::CreateSupply( $supplier_id );
+			$supply = Fresh_Supply::CreateSupply( $supplier_id );
 			foreach ( $supply_lines as $line ) {
 				$supply->AddLine( $line[0], $line[1], get_buy_price( $line[0] ) );
 			}
