@@ -135,7 +135,7 @@ class Focus {
 		add_action( 'after_setup_theme', array( $this, 'setup_environment' ) );
 		add_action( 'after_setup_theme', array( $this, 'include_template_functions' ), 11 );
 		add_action( 'init', array( $this, 'init' ), 0 );
-		add_action( 'init', array( 'Focus_Shortcodes', 'init' ) );
+		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
 
 		get_sql_conn(reconnect_db());
 
@@ -283,9 +283,6 @@ class Focus {
 		 * Core classes.
 		 */
 		include_once FLAVOR_INCLUDES_ABSPATH . 'core/core-functions.php';
-		include_once FOCUS_INCLUDES . 'class-focus-shortcodes.php';
-
-
 	}
 
 	/**
@@ -312,11 +309,8 @@ class Focus {
 	 * Init WooCommerce when WordPress Initialises.
 	 */
 	public function init() {
-//		print __CLASS__ . ':' . __FUNCTION__;
-
 		// Before init action.
 		do_action( 'before_focus_init' );
-//		print __FUNCTION__;
 
 //		new Focus_Nav("management." . get_user_id());
 
@@ -324,6 +318,12 @@ class Focus {
 
 		// Set up localisation.
 		$this->load_plugin_textdomain();
+		$shortcodes = Core_Shortcodes::instance();
+		$shortcodes->add(array('focus_main'           =>'Focus_Views::handle_focus_show'
+//		                       'salary_main'        => array($salary_instance, 'salary_main'),
+//		                       'roles_main'    => __CLASS__ . '::roles_main',
+//		                       'show_settings' => __CLASS__ . '::show_settings'
+		));
 
 
 		// Load class instances.
@@ -344,6 +344,13 @@ class Focus {
 	/**
 	 *
 	 */
+
+	public static function salary_main($atts) {
+		$operation = get_param("operation", false, "salary_main");
+		print "operation=" . $operation;
+		return self::shortcode_wrapper( array( 'Focus_Salary', 'handle_salary_show' ), $operation );
+	}
+
 	public function load_plugin_textdomain() {
 		$locale = is_admin() && function_exists( 'get_user_locale' ) ? get_user_locale() : get_locale();
 		$locale = apply_filters( 'plugin_locale', $locale, 'focus' );
@@ -570,3 +577,4 @@ class Focus {
 //		return $this->nav;
 //	}
 }
+

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .last {
+            display: block;
+        }
+        div {
+            display: inline-block;
+        }
+    </style>
+    <script>
+        // When page loads, draw is run to fill with random numbers.
+        // Then compute is running:
+        // -- count adjacent number.
+        // -- if count >= 3
+        // ------ mark equal with order.
+        // ------ replace the pivot with pivot +1,
+        // ------ remove the adjacent (let the above numbers to fall).
+        // ------ fill the top with new numbers;
+        //// X - is the line number
+        //// Y - is the col number
+
+        let size = 5;
+        let sleep_time = 2000;
+
+        function rand()
+        {
+            let max_random = 6;
+            return Math.ceil(Math.random() * max_random);
+        }
+
+        function get_value(x, y)
+        {
+            return document.getElementById("cell_" + x + "_" + y).innerHTML;
+        }
+
+        function set_value(x, y, v)
+        {
+            document.getElementById("cell_" + x + "_" + y).innerHTML = v;
+        }
+
+        let control = [[]];
+        function reset_control()
+        {
+            for (let i =0; i<size; i++) {
+                control[i] = [];
+                for (let j=0; j<size; j++)
+                    control[i][j] = 0;
+            }
+        }
+        
+        function adj_number(x, y)
+        {
+            reset_control();
+            return do_adj_number(x, y);
+        }
+        
+        function do_adj_number(x, y) // check the number of equal adj number.
+        {
+            control[x][y] = 1;
+            let me = get_value(x, y);
+            let count = 1;
+            if (x > 0 && (me === get_value(x-1, y)) && (control[x-1][y] !== 1)) count += do_adj_number(x-1, y);
+            if (x < size - 1 && (me === get_value(x+1, y)) && (control[x+1][y] !== 1)) count += do_adj_number(x+1, y);
+            if (y > 0 && (me === get_value(x, y - 1)) && (control[x][y-1] !== 1)) count += do_adj_number(x, y - 1);
+            if (y < size - 1 && (me === get_value(x, y + 1)) && (control[x][y+1] !== 1)) count += do_adj_number(x, y +1);
+
+            return count;
+        }
+
+        function delete_equal()
+        {
+            for (let i = 0; i < size; i++)
+                for (let j = 0; j < size; j++)
+                    if (control[i][j] === 1)
+                        set_value(i, j, '*');
+        }
+
+        function compute()
+        {
+            let changed = 0;
+            for (let i = 0; i < size; i++) {
+                for (let j = 0; j < size; j++) {
+                    if (adj_number(i, j) >= 3){
+                        let val = get_value(i, j);
+                        // Now the control is marked with 1 in the location of the adj number.
+                        set_value(i, j, Number(val) + 1); // +1 the pivot
+                        control[i][j] = 0;
+                        delete_equal();
+                        replace_equal();
+                        changed = 1;
+                        // draw_control();
+                        break; // Stop and start over.
+                    }
+                }
+            }
+            // if (changed) compute();
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        async function del_cell(x, y) // Line x, row y
+        {
+
+        }
+        async function replace_equal() // Delete * and fall others
+        {
+            for (let y = 0; y < size; y++)
+                for (let x = size-1; x; x--)
+                    if (get_value(x, y) === '*') {
+                        let up = x;
+                        while (up >= 0 && get_value(up, y) === '*') up--;
+                        if (up >= 0) { // Fall
+                            set_value(x, y, get_value(x, up));
+                            set_value(x, up, rand()); // New
+                        } else {
+                            set_value(x, y, rand()); // just new
+                        }
+                    }
+        }
+
+        function draw()
+        {
+            // let temp = [[1, 2, 3, 4, 5],
+            // [1, 1, 1, 2, 3],
+            // [1, 2, 3, 4, 5],
+            // [1, 1, 1, 1, 1],
+            // [2, 3, 1, 2, 2]];
+
+            let board_content =  "<table>";
+            for (let i = 0; i < size; i++) {
+                // board_content += "<div id='row_" + i + "'>";
+                board_content += "<tr>";
+                for (let j = 0; j < size; j++) {
+//                    board_content+= '<td id="cell_' + i + '_' + j + '">' + temp[i][j] + "</td>";
+                    board_content+= '<td id="cell_' + i + '_' + j + '">' + rand() + "</td>";
+                }
+                // board_content += "</div>";
+                board_content += "</tr>";
+            }
+            board_content += "</table>";
+            let board = document.getElementById("board");
+            board.innerHTML = board_content;
+
+            compute();
+
+            // board.innerHTML += "lala<br/>";
+            // let computed = "<table>";
+            // for (let i = 0; i < size; i ++) {
+            //     computed += "<tr>";
+            //     for (let j = 0; j < size; j++) {
+            //         reset_control();
+            //         computed += "<td>" + adj_number(i, j) + "</td>";
+            //     }
+            //     computed += "</tr>";
+            // }
+            // computed += "</table>";
+            //
+            // board.innerHTML += computed;
+        }
+        function draw_control()
+        {
+            let board_content =  "<table>";
+            for (let i = 0; i < size; i++) {
+                // board_content += "<div id='row_" + i + "'>";
+                board_content += "<tr>";
+                for (let j = 0; j < size; j++) {
+//                    board_content+= '<td id="cell_' + i + '_' + j + '">' + temp[i][j] + "</td>";
+                    board_content+= '<td id="cell_' + i + '_' + j + '">' + control[i][j] + "</td>";
+                }
+                // board_content += "</div>";
+                board_content += "</tr>";
+            }
+            board_content += "</table>";
+            document.getElementById("control").innerHTML = board_content;
+        }
+    </script>
+</head>
+<body onload="draw()">
+<div id="board"></div>
+<div id="control"></div>
+</body>
+</html>
+

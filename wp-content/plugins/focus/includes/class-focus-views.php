@@ -55,7 +55,8 @@ class Focus_Views {
 	 * @return string
 	 * @throws Exception
 	 */
-	static function handle_focus_show( $operation, $args = null ) {
+	static function handle_focus_show( $operation) {
+		$args = [];
 //		print __FUNCTION__ . ':' . $operation ."<br/>";
 //		if ( ( $done = Focus_Views::handle_focus_do( $operation, $args ) ) !== "not handled" ) {
 //			return $done;
@@ -791,6 +792,8 @@ class Focus_Views {
 	 * @throws Exception
 	 */
 	static function focus_main( $user_id, $args = null ) {
+		if (! $args) $args = [];
+
 		$o             = new Org_Team(); // To invoke auto_load;
 		$result        = "";
 		$ignore_list   = [];
