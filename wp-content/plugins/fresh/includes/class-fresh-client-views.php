@@ -39,7 +39,7 @@ class Fresh_Client_Views {
 				print "del: " . $del_id . " me: " . get_user_id() . " del: " . $delivery->getUserId() . "<br/>";
 				if (($delivery->getUserId() != get_user_id()) and
 				    1) // here we need to check if the user is a manager with permissions.
-					return "no permissions";
+					return "no permissions " . __FUNCTION__;
 				return $delivery->CustomerView(); // (FreshDocumentType::delivery, Fresh_DocumentOperation::show);
 		}
 		return $operation . " not handled " . __FUNCTION__ . "<br/>";

@@ -116,7 +116,7 @@ class Fresh_Shortcodes {
 		if (get_user_id(true) and im_user_can("show_orders"))
 			print Fresh_Order::instance()->handle_operation($operation);
 		else
-			print "no permissions";
+			print "no permissions "  . __FUNCTION__;
 	}
 
 	public static function client_balance( $atts ) {

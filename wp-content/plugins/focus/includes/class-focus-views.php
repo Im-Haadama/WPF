@@ -262,7 +262,7 @@ class Focus_Views {
 
 			case "show_edit_all_projects": // Projects that I manage
 				if ( ! im_user_can( "edit_projects" ) ) {
-					die( "no permissions" );
+					die( "no permissions "  . __FUNCTION__);
 				}
 				$result         .= Core_Html::gui_header( 1, "Edit all projects" );
 				$args["global"] = true;
