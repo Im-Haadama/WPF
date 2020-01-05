@@ -315,7 +315,7 @@ class Flavor {
 		// Set up localisation.
 		$this->load_plugin_textdomain();
 		$shortcodes = Core_Shortcodes::instance();
-		$shortcodes->add(array('flavor'  => __CLASS__ . '::static_handle_show'));
+		$shortcodes->add(array('flavor'  => array(__CLASS__ . '::static_handle_show', "read")));
 
 		// Init action.
 		do_action( 'flavor_init' );

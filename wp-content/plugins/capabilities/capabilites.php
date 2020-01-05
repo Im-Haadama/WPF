@@ -1,10 +1,5 @@
 <?php
 
-
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
-
-
 /**
  * Plugin Name: capabilites (full)
  * Plugin URI: https://aglamaz.com
@@ -43,9 +38,12 @@ function capabilites() {
 //// Global for backwards compatibility.
 //$GLOBALS['capabilites'] = capabilites();
 
+error_reporting( E_ALL );
+ini_set( 'display_errors', 'on' );
+
 function run_capabilites() {
 	$plugin = new Capabilites("Capabilites");
-//	$plugin->run();
+	$plugin->run();
 }
 
 run_capabilites();

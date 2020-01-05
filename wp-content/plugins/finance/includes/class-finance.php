@@ -336,7 +336,8 @@ class Finance {
 		// Set up localisation.
 		$this->load_plugin_textdomain();
 
-		$this->shortcodes = new Core_Shortcodes(array("finance_main" => __CLASS__ . '::finance_main' ));
+		$this->shortcodes = Core_Shortcodes::instance();
+		$this->shortcodes->add(array("finance_main" => array(__CLASS__ . '::finance_main', "show_business_info" )));
 		$this->shortcodes->do_init();
 
 		// For testing:

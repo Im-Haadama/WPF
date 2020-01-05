@@ -130,8 +130,9 @@ class Focus {
 	 * @since 2.3
 	 */
 	private function init_hooks() {
+//		print "<br/>init_hooks<br/>";
 		// register_activation_hook( WC_PLUGIN_FILE, array( 'Focus_Install', 'install' ) );
-		register_shutdown_function( array( $this, 'log_errors' ) );
+//		register_shutdown_function( array( $this, 'log_errors' ) );
 		add_action( 'after_setup_theme', array( $this, 'setup_environment' ) );
 		add_action( 'after_setup_theme', array( $this, 'include_template_functions' ), 11 );
 		add_action( 'init', array( $this, 'init' ), 0 );
@@ -319,12 +320,14 @@ class Focus {
 		// Set up localisation.
 		$this->load_plugin_textdomain();
 		$shortcodes = Core_Shortcodes::instance();
-		$shortcodes->add(array('focus_main'           =>'Focus_Views::handle_focus_show'
-//		                       'salary_main'        => array($salary_instance, 'salary_main'),
-//		                       'roles_main'    => __CLASS__ . '::roles_main',
-//		                       'show_settings' => __CLASS__ . '::show_settings'
-		));
-
+		//                      code                           function                  capablity (not checked, for now).
+		$shortcodes->add(array('focus_main'           => array('Focus_Views::show_main', 'show_tasks'),
+		                       'focus_task'           => array('Focus_views::show_task', 'show_tasks'),
+			                   'focus_repeating_task' => array('Focus_views::show_repeating_task', 'show_tasks'),
+			                   'focus_team'           => array('Focus_views::show_team', 'show_teams'),
+			                   'focus_project'        => array('Focus_views::show_project', 'show_projects'),
+			                   'focus_project_tasks'  => array('Focus_views::show_project_tasks', 'show_projects'),
+			                   'focus_salary'         => array('Focus_Salary::show_salary', 'show_salary')));
 
 		// Load class instances.
 

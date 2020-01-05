@@ -427,13 +427,14 @@ class Capabilites {
 	 * Init WooCommerce when WordPress Initialises.
 	 */
 	public function init() {
+//		print "init " . __CLASS__ . "<br/>";
 		// Before init action.
 		do_action( 'before_capabilites_init' );
 
 		// Set up localisation.
 		$this->load_plugin_textdomain();
 		$shortcodes = Core_Shortcodes::instance();
-		$shortcodes->add(array('capabilites_main'  => __CLASS__ . '::capabilites_main'));
+		$shortcodes->add(array('capabilites_main'  => array(__CLASS__ . '::capabilites_main', "edit_users")));
 
 		// Load class instances.
 //		$this->product_factory                     = new WC_Product_Factory();

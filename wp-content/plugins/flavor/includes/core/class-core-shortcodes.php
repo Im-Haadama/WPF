@@ -30,7 +30,7 @@ class Core_Shortcodes {
 	 *
 	 * @param $shortcodes
 	 */
-	public function __construct( ) {
+	protected function __construct( ) {
 //		 var_dump($shortcodes);
 //		$this->shortcodes = $shortcodes;
 		self::$_instance = $this;
@@ -51,10 +51,29 @@ class Core_Shortcodes {
 
 	function do_init()
 	{
+//		print __FUNCTION__ . "<br/>";
 		if ($this->shortcodes)
-			foreach ( $this->shortcodes as $shortcode => $function ) {
-//				 print "{$shortcode}_shortcode_tag" . " ". $shortcode ." " . $function . "<br/>";
-				add_shortcode( apply_filters( "{$shortcode}_shortcode_tag", $shortcode ), $function );
+			foreach ( $this->shortcodes as $shortcode => $function_couple ) {
+//				print "<br/>handling $shortcode ";
+				$function = $function_couple[0];
+				$capability = $function_couple[1];
+//				if (! im_user_can($capability)) {
+//					print "can't $capability";
+//					continue;
+//				}
+//				 print "adding {$shortcode}_shortcode_tag" . " ". $shortcode ." " . $function;
+				if (is_callable($function . "_wrapper")) {
+//					print "adding wrapper: " . $function . "_wrapper";
+					add_shortcode( apply_filters( "{$shortcode}_shortcode_tag", $shortcode ), $function. "_wrapper" );
+					continue;
+				}
+
+				if (is_callable($function)) {
+//					print "adding function";
+					add_shortcode( apply_filters( "{$shortcode}_shortcode_tag", $shortcode ), $function );
+					continue;
+				}
+//				print "<br/>not callable: $function";
 			}
 
 		// Alias for pre 2.1 compatibility.
@@ -72,7 +91,7 @@ class Core_Shortcodes {
 	 */
 	public static function shortcode_wrapper(
 		$function,
-		$atts = array(),
+		$atts = null,
 		$wrapper = array(
 			'class'  => 'core',
 			'before' => null,
@@ -80,7 +99,12 @@ class Core_Shortcodes {
 		)
 	) {
 		ob_start();
+		print "ASDF";
 
+		if (! $atts) {
+			$atts = array();
+			foreach ($_GET as $key => $value) $atts[$key] = $value;
+		}
 		// @codingStandardsIgnoreStart
 		echo empty( $wrapper['before'] ) ? '<div class="' . esc_attr( $wrapper['class'] ) . '">' : $wrapper['before'];
 		call_user_func( $function, $atts );

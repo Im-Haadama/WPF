@@ -57,6 +57,15 @@ if (! function_exists('get_user_id')) {
 		return $result;
 	}
 
+	function GetParams($ignore_list = array())
+	{
+		$atts = [];
+		foreach ($_GET as $param => $value)
+		{
+			if (!in_array($param, $ignore_list)) $atts[$param] = $value;
+		}
+		return $atts;
+	}
 	/**
 	 * @param $args
 	 * @param $key

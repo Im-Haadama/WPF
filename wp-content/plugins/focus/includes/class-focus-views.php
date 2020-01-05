@@ -48,6 +48,23 @@ class Focus_Views {
 		wp_enqueue_script( 'client_tools', $file, null, $this->version, false );
 	}
 
+	static function show_main_wrapper()
+	{
+		$user_id = get_user_id(true);
+		$atts = GetParams();
+		if ($user_id) return self::main($user_id, $atts);
+	}
+
+	static function show_repeating_task()
+	{
+		return "repeating";
+	}
+
+	static function show_project_tasks()
+	{
+		return __FUNCTION__;
+	}
+
 	/**
 	 * @param $operation
 	 * @param $args
@@ -57,7 +74,7 @@ class Focus_Views {
 	 */
 	static function handle_focus_show( $operation) {
 		$args = [];
-//		print __FUNCTION__ . ':' . $operation ."<br/>";
+		print __FUNCTION__ . ':' . $operation ."<br/>";
 //		if ( ( $done = Focus_Views::handle_focus_do( $operation, $args ) ) !== "not handled" ) {
 //			return $done;
 //		}
@@ -150,7 +167,7 @@ class Focus_Views {
 				$result         .= Core_Gem::GemElement( "im_projects", $project_id, $args );
 				$args ["query"] = "project_id = $project_id and status < 2";
 				$args["page"]   = get_param( "page", false, null );
-				$args["links"]  = array( "id" => add_to_url( array( "operation" => "show_task", "id" => "%s" ) ) );
+				$args["links"]  = array( "id" => get_page_name("focus_task") . "?task_id=%s" );
 				return Core_Gem::GemTable( "im_tasklist", $args );
 			case "show_new_team":
 				$args                     = [];
@@ -534,7 +551,7 @@ class Focus_Views {
 			$sql .= " and status = 0 ";
 		}
 		$args["sql"]   = $sql . $order;
-		$args["links"] = array( "id" => add_to_url( array( "operation" => "show_task", "id" => "%s" ) ) );
+		$args["links"] = array( "id" => self::task_link("%s") );
 		$args["title"] = im_translate( "משימות בפרויקט" ) . " " . Org_Project::GetName( $project_id );
 
 //	print $sql;
@@ -791,7 +808,7 @@ class Focus_Views {
 	 * @return string
 	 * @throws Exception
 	 */
-	static function focus_main( $user_id, $args = null ) {
+	static function main( $user_id, $args = null ) {
 		if (! $args) $args = [];
 
 		$o             = new Org_Team(); // To invoke auto_load;
@@ -962,7 +979,7 @@ class Focus_Views {
 		$order   = "order by priority desc ";
 
 		$links["task_template"] = $page_url . "?operation=show_template&id=%s";
-		$links["id"]            = $page_url . "?operation=show_task&id=%s";
+		$links["id"]            = self::get_link("task", "%s");
 		// Use drill, instead - $links["project_id"] = $page_url . "?operation=show_project&id=%s";
 		$args["links"] = $links;
 
@@ -1053,6 +1070,11 @@ class Focus_Views {
 		return $result;
 	}
 
+	static function show_task_wrapper()
+	{
+		$row_id = get_param("id", true);
+		return self::show_task($row_id);
+	}
 	/**
 	 * @param $row_id
 	 * @param int $edit
@@ -1061,6 +1083,7 @@ class Focus_Views {
 	 * @throws Exception
 	 */
 	static function show_task( $row_id, $edit = 1 ) {
+		if (! $row_id) return self::show_new_task();
 		$table_name  = "im_tasklist";
 		$entity_name = "task";
 
@@ -1260,7 +1283,7 @@ class Focus_Views {
 			}
 			$result .= $template;
 
-			$tasks_args = array("links" => array("id" => get_url(1) . "?operation=show_task&id=%s"));
+			$tasks_args = array("links" => self::get_link("task", "%s"));
 			$tasks_args["class"] = "sortable";
 
 			if (get_user_id() == 1){
@@ -1583,7 +1606,7 @@ class Focus_Views {
 
 		$result = [];
 		foreach ($tasks as $task)
-			array_push($result, GuiHyperlink($task[1], add_to_url(array("operation" => "show_task", "id" => $task[0]))));
+			array_push($result, GuiHyperlink($task[1], self::get_link("task", $task[0])));
 
 		// debug_var($result);
 		return $result;
@@ -1722,6 +1745,15 @@ class Focus_Views {
 
 	}
 
+	static function get_link($type, $id)
+	{
+		switch ($type)
+        {
+			case "task":
+				return "/task?id=$id";
+
+		}
+	}
 }
 
 /**
@@ -1756,3 +1788,6 @@ if (!function_exists('gui_select_repeat_time')) {
 		}
 	}
 }
+
+// Allow later users to set page name.
+// For now just the default.
