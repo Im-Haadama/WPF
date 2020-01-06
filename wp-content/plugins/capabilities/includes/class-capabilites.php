@@ -434,47 +434,12 @@ class Capabilites {
 		// Set up localisation.
 		$this->load_plugin_textdomain();
 		$shortcodes = Core_Shortcodes::instance();
-		$shortcodes->add(array('capabilites_main'  => array(__CLASS__ . '::capabilites_main', "edit_users")));
-
-		// Load class instances.
-//		$this->product_factory                     = new WC_Product_Factory();
-//		$this->order_factory                       = new WC_Order_Factory();
-//		$this->countries                           = new WC_Countries();
-//		$this->integrations                        = new WC_Integrations();
-//		$this->structured_data                     = new WC_Structured_Data();
-//		$this->deprecated_hook_handlers['actions'] = new WC_Deprecated_Action_Hooks();
-//		$this->deprecated_hook_handlers['filters'] = new WC_Deprecated_Filter_Hooks();
-
-		// Classes/actions loaded for the frontend and for ajax requests.
-//		if ( $this->is_request( 'frontend' ) ) {
-//			// Session class, handles session data for users - can be overwritten if custom handler is needed.
-//			$session_class = apply_filters( 'woocommerce_session_handler', 'WC_Session_Handler' );
-//			$this->session = new $session_class();
-//			$this->session->init();
-//
-//			$this->customer = new WC_Customer( get_current_user_id(), true );
-//			// Cart needs the customer info.
-//			$this->cart = new WC_Cart();
-//
-//			// Customer should be saved during shutdown.
-//			add_action( 'shutdown', array( $this->customer, 'save' ), 10 );
-//		}
-//
-//		$this->load_webhooks();
+		$shortcodes->add(array('capabilities'  => array(__CLASS__ . '::main', "edit_users")));
 
 		// Init action.
 		do_action( 'capabilites_init' );
 	}
 
-//	/**
-//	 * Load Localisation files.
-//	 *
-//	 * Note: the first-loaded translation file overrides any following ones if the same translation is present.
-//	 *
-//	 * Locales found in:
-//	 *      - WP_LANG_DIR/woocommerce/woocommerce-LOCALE.mo
-//	 *      - WP_LANG_DIR/plugins/woocommerce-LOCALE.mo
-//	 */
 	public function load_plugin_textdomain() {
 		$locale = is_admin() && function_exists( 'get_user_locale' ) ? get_user_locale() : get_locale();
 		$locale = apply_filters( 'plugin_locale', $locale, 'capabilites' );
@@ -676,7 +641,7 @@ class Capabilites {
 		// $this->loader->run();
 	}
 
-	static public function capabilites_main()
+	static public function main()
 	{
 		$result = "";
 		$capabilities = [];

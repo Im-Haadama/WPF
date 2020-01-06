@@ -376,6 +376,7 @@ function israelpost_get_city_postcode( $city ) {
 }
 
 
+if (!function_exists('customer_type_name')) {
 function customer_type_name( $client_id ) {
 	$key = get_user_meta( $client_id, '_client_type', true );
 	// print "YY" . $key . "<br/>";
@@ -387,17 +388,7 @@ function customer_type_name( $client_id ) {
 	return $key;
 	// return sql_query_single_scalar( "SELECT name FROM im_client_types WHERE type = " . quote_text( $key ) );
 }
-
-function customer_type( $client_id ) {
-	$key = get_user_meta( $client_id, '_client_type', true );
-
-	if ( is_null( $key ) ) {
-		return 0;
-	}
-
-	return $key;
 }
-
 function valid_key( $key ) {
 	$valid = sql_query_single_scalar( "SELECT timestamp >
           DATE_SUB(now(), INTERVAL 10 MINUTE) FROM im_auth WHERE dynamic_key = '" . $key . "'" );

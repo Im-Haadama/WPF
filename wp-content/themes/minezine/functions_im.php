@@ -40,13 +40,14 @@ function wpf_custom_nav_menu_item( $title, $url, $order, $parent = 0 ){
 }
 
 function custom_nav_menu_items( $items, $menu ){
+//	print "ms=" . $menu->slug . "<br/>";
 	// only add item to a specific menu
-	if ( $menu->slug == 'info_site' ){
+	if ( $menu->slug == 'info_site' || $menu->slug == 'main' ){
 		// only add profile link if user is logged in, and user is a staff member.
 //	add_filter( 'wp_nav_menu_items', 'wpf_nav', 10, 2 );
 		if ( get_current_user_id() ){
 			$current_user = wp_get_current_user();
-				if (in_array('staff_memeber', $current_user->roles))
+				if (in_array('staff', $current_user->roles))
 					$items[] = wpf_custom_nav_menu_item( 'Office', "/focus", 0 );
 		}
 	}

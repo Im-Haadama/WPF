@@ -73,46 +73,6 @@ function data_search($table_name, $args = null)
 	return $result;
 }
 
-function handle_data_operation($operation)
-{
-	// TODO: register allowed tables by config or something
-	$allowed_tables = array("im_company", "im_tasklist", "im_task_templates", "im_working_teams", "im_projects",
-		"im_bank_transaction_types", "im_business_info", "im_suppliers");
-
-	$debug = 0;
-	if ($debug)	print "operation: " . $operation . "<br/>";
-	switch ($operation){
-		case "cancel":
-			$table_name = get_param("table_name", true);
-			if (! in_array($table_name, $allowed_tables))
-				die ("invalid table operation");
-			if (data_inactive($table_name))
-				print "done";
-			break;
-		case "data_save_new":
-		case "save_new":
-//			init();
-			$table_name = get_param("table_name", true);
-			if (! in_array($table_name, $allowed_tables))
-				die ("invalid table operation");
-			$result = Core_Data::data_save_new($table_name);
-			if ($result > 0) print "done";
-			break;
-
-		case "update":
-		case "data_update":
-			$table_name = get_param("table_name", true);
-			if (Core_Data::update_data($table_name))
-				print "done";
-			break;
-
-		default:
-			print __FUNCTION__ . ": " . $operation . " not handled <br/>";
-
-			die(1);
-	}
-	return;
-}
 
 //($table_name, $field, $prefix, $args);
 

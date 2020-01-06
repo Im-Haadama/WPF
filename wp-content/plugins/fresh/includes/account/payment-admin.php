@@ -18,5 +18,3 @@ require_once( FRESH_INCLUDES . '/core/gui/gem.php' );
 print header_text(true, true, is_rtl());
 print load_scripts(array( "/core/gui/client_tools.js", "/core/data/data.js" ));
 
-$args["edit"] = 1;
-print GemTable("im_payments", $args);

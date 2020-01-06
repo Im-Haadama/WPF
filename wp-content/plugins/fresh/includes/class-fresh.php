@@ -118,6 +118,27 @@ class Fresh {
 		add_action( 'after_setup_theme', array( $this, 'include_template_functions' ), 11 );
 		add_action( 'init', array( $this, 'init' ), 0 );
 		add_action( 'init', array( 'Fresh_Shortcodes', 'init' ) );
+		add_shortcode('pay-page', 'pay_page');
+		add_shortcode( 'im-page', 'im_page' );
+		add_action( 'init', 'register_awaiting_shipment_order_status' );
+		add_action( 'woocommerce_checkout_process', 'wc_minimum_order_amount' );
+		add_action( 'woocommerce_before_cart', 'wc_minimum_order_amount' );
+		add_action( 'woocommerce_checkout_order_processed', 'wc_minimum_order_amount' );
+//		add_action( 'woocommerce_after_cart_table', 'wc_after_cart' );
+		add_action( 'woocommerce_checkout_process', 'wc_minimum_order_amount' );
+		add_action( 'woocommerce_before_cart', 'wc_minimum_order_amount' );
+		add_action( 'woocommerce_checkout_order_processed', 'wc_minimum_order_amount' );
+		add_action( 'admin_menu', 'im_admin_menu' );
+		add_filter( 'woocommerce_available_shipping_methods', 'hide_shipping_if_cat_is_orange', 10, 1 );
+		add_action( 'woocommerce_before_calculate_totals', 'im_woocommerce_update_price', 99 );
+		add_filter( 'woocommerce_cart_item_price', 'im_show_nonsale_price', 10, 2 );
+		add_filter( 'woocommerce_order_button_text', 'im_custom_order_button_text' );
+		add_action( 'init', 'custom_add_to_cart_quantity_handler' );
+		add_action( 'woocommerce_checkout_update_order_meta', 'my_custom_checkout_field_update_order_meta' );
+
+//		add_action( 'wp_footer', 'im_footer' );
+//		if (get_user_id() == 1) print __CLASS__ ."<br/>";
+
 
 		get_sql_conn(reconnect_db());
 //		add_action( 'init', array( 'Fresh_Emails', 'init_transactional_emails' ) );
@@ -522,4 +543,127 @@ function content_func( $atts, $contents, $tag ) {
 
 //
 	return $text;
+}
+
+function get_minimum_order() {
+	global $woocommerce;
+
+	$value = 85;
+
+	$country  = $woocommerce->customer->get_shipping_country();
+	// $state    = $woocommerce->customer->get_shipping_state();
+	$postcode = $woocommerce->customer->get_shipping_postcode();
+
+	$zone1 = WC_Shipping_Zones::get_zone_matching_package( array(
+		'destination' => array(
+			'country'  => $country,
+			'state'    => '',
+			'postcode' => $postcode,
+		),
+	) );
+//    my_log ("zone_id = " . $zone1->get_id());
+
+	$sql    = "SELECT min_order FROM wp_woocommerce_shipping_zones WHERE zone_id = " . $zone1->get_id();
+	$result = sql_query( $sql );
+	if ( $result ) {
+		$row = mysqli_fetch_assoc( $result );
+		//    my_log($row["min_order"]);
+
+		if ( is_numeric( $row["min_order"] ) ) {
+			$value = $row["min_order"];
+		}
+	}
+
+	return $value;
+}
+
+function im_woocommerce_update_price() {
+
+	my_log( "cart start" );
+	// TWEEK. Don't know why menu_op calls this method.
+	// DONT remove without trying menu.php and cart.
+	if (! sql_query_single_scalar("select 1")) {
+		my_log ("not connected to db");
+		return;
+	}
+	$client_type = customer_type( get_user_id() );
+//	if (get_user_id() == 1) $client_type = "siton";
+
+	foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+		$prod_id = $cart_item['product_id'];
+		$variation_id = $cart_item['variation_id'];
+		if ( ! ( $prod_id > 0 ) ) {
+			my_log( "cart - no prod_id" );
+			continue;
+		}
+		$q          = $cart_item['quantity'];
+		$sell_price = Fresh_Pricing::get_price_by_type( $prod_id, $client_type, $q, $variation_id );
+		//my_log("set " . $sell_price);
+		$cart_item['data']->set_sale_price( $sell_price );
+		$cart_item['data']->set_price( $sell_price );
+		my_log( $prod_id . " " . $q );
+
+	}
+	//		ob_start();
+}
+
+function im_show_nonsale_price( $newprice, $product ) {
+	global $site_id;
+	if ( $site_id != 4 ) {
+		return $newprice;
+	}
+	$_product   = $product['data'];
+	$sale_price = $_product->get_sale_price();
+	if ( ( $sale_price > 0 ) and ( $_product->get_sale_price() < $_product->get_regular_price() ) ) {
+		$newprice = '';
+		$newprice .= '<del><small style="color:#000000;">';
+		$newprice .= wc_price( $_product->get_regular_price() );
+		$newprice .= '</small></del> <strong>';
+		$newprice .= wc_price( $sale_price );
+		$newprice .= '</strong>';
+
+		return $newprice;
+	} else {
+		$newprice = wc_price( $_product->price );
+
+		return $newprice;
+	}
+}
+
+function custom_add_to_cart_quantity_handler() {
+	if ( function_exists( 'wc_enqueue_js' ) ) {
+		wc_enqueue_js( '
+		jQuery( ".input-text.qty.text" ).on( "change input", ".quantity", function() {
+			var add_to_cart_button = jQuery( this ).parents( ".product" ).find( ".add_to_cart_button" );
+
+			// For AJAX add-to-cart actions
+			add_to_cart_button.attr( "data-quantity", jQuery( this ).val() );
+			alert("XX");
+
+			// For non-AJAX add-to-cart actions
+			add_to_cart_button.attr( "href", "?add-to-cart=" + add_to_cart_button.attr( "data-product_id" ) + "&XXXX&quantity=" + jQuery( this ).val() );
+		});
+	' );
+	}
+}
+
+if (!function_exists('customer_type')) {
+function customer_type( $client_id ) {
+	$key = get_user_meta( $client_id, '_client_type', true );
+
+	if ( is_null( $key ) ) {
+		return 0;
+	}
+
+	return $key;
+}
+}
+
+function im_admin_menu() {
+//	add_menu_page( 'Fresh Store', 'Fresh Store', 'manage_options', 'im-haadama/admin.php', 'fresh_store_admin_page',
+//        'dashicons-tickets', 6 );
+	add_menu_page( 'Fresh Store', 'תפריט אריזה', 'manage_options', 'im-haadama/packing.php', 'fresh_store_packing_page',
+		'dashicons-tickets', 6 );
+	add_menu_page( 'Fresh Store', 'ניהול ספקים', 'manage_options', 'im-haadama/supplier_account.php', 'fresh_store_supplier_account_page',
+		'dashicons-tickets', 6 );
 }

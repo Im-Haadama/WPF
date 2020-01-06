@@ -81,6 +81,8 @@ class Core_Gem {
 		$result = "";
 
 		$title = GetArg($args, "title", null);
+		$edit = GetArg($args, "edit", false);
+
 		$no_data_message = GetArg($args, "no_data_message", "No data for now");
 		if ($title) $result .= Core_Html::gui_header(2, $title);
 
@@ -117,9 +119,9 @@ class Core_Gem {
 
 		$post_file = GetArg($args, "post_file", null);
 //		var_dump($post_file);
-		if ($post_file)
-			$result .= Core_Html::GuiButton("btn_delete_$table_id", "delete_items(" . quote_text($args["checkbox_class"]) . "," .
-			                                              quote_text($post_file) . ")", "delete");
+		if ($post_file and $edit)
+			$result .= Core_Html::GuiButton("btn_delete_$table_id", "delete",
+				array("action" => "delete_items(" . quote_text($args["checkbox_class"]) . "," . quote_text($post_file) . ")"));
 
 //	$args = array();
 //	$search_url = "search_table('im_bank', '" . add_param_to_url($url, "search", "1") . "')";
@@ -142,8 +144,13 @@ class Core_Gem {
 	{
 		if (! $table_name) die("Error #N2 no table given");
 		if (! isset($args["title"])) $title = "content of table " . $table_name;
+		$post_file = GetArg($args, "post_file", null);
+		if (! $post_file) {
+			print sql_trace();
+			print "must send post_file";
+		}
 
-		$args["events"] = 'onchange="update_table_field(\'/core/data/data-post.php\', \'' . $table_name . '\', \'%d\', \'%s\', check_update)"';
+		$args["events"] = 'onchange="update_table_field(\'' . $post_file . '\', \'' . $table_name . '\', \'%d\', \'%s\', check_update)"';
 		$sql = GetArg($args, "sql", null);
 
 		if (! $sql){

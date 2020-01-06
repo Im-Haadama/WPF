@@ -13,6 +13,7 @@ class Finance {
 	 */
 	protected $loader;
 	protected $shortcodes;
+	protected $payments;
 
 	/**
 	 * Plugin version.
@@ -101,6 +102,7 @@ class Finance {
 		$this->includes(); // Loads class autoloader
 		if (! defined('FINANCE_ABSPATH')) die ("not defined");
 		$this->loader = new Core_Autoloader(FINANCE_ABSPATH);
+
 		$this->init_hooks();
 
 		do_action( 'finance_loaded' );
@@ -198,8 +200,9 @@ class Finance {
 	{
 		switch ($operation)
 		{
+			case "data_update":
 			case "update":
-				return handle_data_operation($operation);
+				return Core_Data::handle_operation($operation);
 
 			case "new_customer":
 				$order_id = get_param("order_id", true);
@@ -336,9 +339,13 @@ class Finance {
 		// Set up localisation.
 		$this->load_plugin_textdomain();
 
+		$this->payments = Finance_Payments::instance();
 		$this->shortcodes = Core_Shortcodes::instance();
-		$this->shortcodes->add(array("finance_main" => array(__CLASS__ . '::finance_main', "show_business_info" )));
+		$this->shortcodes->add($this->payments->getShortcodes());
+
 		$this->shortcodes->do_init();
+
+
 
 		// For testing:
 //		wp_set_current_user(369);

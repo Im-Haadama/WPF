@@ -197,6 +197,8 @@ function location_reload(xmlhttp)
         alert (xmlhttp.response);
 }
 
+// Good for start task. If URL received as response, the URL will be loaded.
+// Otherwise the page will be reloaded.
 function load_page(xmlhttp)
 {
     if (xmlhttp.response.substr(0, 4) !== "done") {
@@ -206,6 +208,8 @@ function load_page(xmlhttp)
     let url = xmlhttp.response.substr(5);
     if (url.length)
         window.location = url;
+    else
+        location.reload();
 }
 
 function get_selected(collection_name)
