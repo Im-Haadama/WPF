@@ -152,7 +152,7 @@ function print_basket( $basket_id )
 	// $args["sum_fields"] = array("quantity" => array(0, "sum_numbers"));
 
     $total = 0;
-    $basket_content = TableData($sql, $args);
+    $basket_content = Core_Data::TableData($sql, $args);
     foreach($basket_content as &$row) {
         if (is_numeric($row["line_price"])) $total += $row["line_price"];
     }

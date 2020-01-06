@@ -7,9 +7,9 @@ class Core_Gem {
 
 		$result .= Core_Html::gui_header(1, $text);
 		$result .= Core_Html::NewRow($table_name, $args);
-		$post = GetArg($args, "post_file", get_url(1));
+		$post = GetArg($args, "post_file", null);
 		$next_page = GetArg($args, "next_page", null);
-		if (! $post) die(__FUNCTION__ . ":" . $text . "must send post file");
+		if (! $post) die(__FUNCTION__ . ":" . $text . "must send post_file");
 		if ($next_page){
 			$result .= '<script>
 		function next_page(xmlhttp) {
@@ -115,6 +115,7 @@ class Core_Gem {
 			$result .= Core_Html::GuiHyperlink("Add", add_to_url(array("operation" => "show_add_" . $table_id))) . " ";
 
 		$post_file = GetArg($args, "post_file", null);
+//		var_dump($post_file);
 		if ($post_file)
 			$result .= Core_Html::GuiButton("btn_delete_$table_id", "delete_items(" . quote_text($args["checkbox_class"]) . "," .
 			                                              quote_text($post_file) . ")", "delete");

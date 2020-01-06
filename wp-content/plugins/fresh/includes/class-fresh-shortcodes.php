@@ -48,25 +48,25 @@ class Fresh_Shortcodes {
 	 *
 	 * @return string
 	 */
-	public static function shortcode_wrapper(
-		$function,
-		$atts = array(),
-		$wrapper = array(
-			'class'  => 'fresh',
-			'before' => null,
-			'after'  => null,
-		)
-	) {
-		ob_start();
-
-		// @codingStandardsIgnoreStart
-		echo empty( $wrapper['before'] ) ? '<div class="' . esc_attr( $wrapper['class'] ) . '">' : $wrapper['before'];
-		call_user_func( $function, $atts );
-		echo empty( $wrapper['after'] ) ? '</div>' : $wrapper['after'];
-		// @codingStandardsIgnoreEnd
-
-		return ob_get_clean();
-	}
+//	public static function shortcode_wrapper(
+//		$function,
+//		$atts = array(),
+//		$wrapper = array(
+//			'class'  => 'fresh',
+//			'before' => null,
+//			'after'  => null,
+//		)
+//	) {
+//		ob_start();
+//
+//		// @codingStandardsIgnoreStart
+//		echo empty( $wrapper['before'] ) ? '<div class="' . esc_attr( $wrapper['class'] ) . '">' : $wrapper['before'];
+//		call_user_func( $function, $atts );
+//		echo empty( $wrapper['after'] ) ? '</div>' : $wrapper['after'];
+//		// @codingStandardsIgnoreEnd
+//
+//		return ob_get_clean();
+//	}
 
 	public static function delivery()
 	{

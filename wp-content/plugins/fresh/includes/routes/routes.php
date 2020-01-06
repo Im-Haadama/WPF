@@ -935,7 +935,7 @@ function show_paths($args = null)
     $args["add_checkbox"] = true;
     $args["header_fields"] = array("checkbox" => "select", "id" => "Id", "path_code" => "Path code", "description" => "Description", "zones_times" => "Zones", "week_days" => "Week days");
 
-	$paths_data = TableData("select * from im_paths", $args);
+	$paths_data = Core_Data::TableData("select * from im_paths", $args);
 	$args["edit"] = false;
 	foreach ($paths_data as $path_id => &$path_info){
 		if ($path_id == "header") continue;

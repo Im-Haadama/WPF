@@ -26,7 +26,7 @@ class Finance_Bank
 		$args["actions"] =
 			array(array( "load", $action_url . "?operation=bank_show_import&id=%s" ));
 
-		$accounts = TableData($sql, $args);
+		$accounts = Core_Data::TableData($sql, $args);
 		if (! $accounts) {
 			$result .= "No transactions yet";
 			return $result;

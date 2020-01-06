@@ -199,7 +199,13 @@ function location_reload(xmlhttp)
 
 function load_page(xmlhttp)
 {
-    window.location = xmlhttp.response;
+    if (xmlhttp.response.substr(0, 4) !== "done") {
+        alert (xmlhttp.response);
+        return false;
+    }
+    let url = xmlhttp.response.substr(5);
+    if (url.length)
+        window.location = url;
 }
 
 function get_selected(collection_name)

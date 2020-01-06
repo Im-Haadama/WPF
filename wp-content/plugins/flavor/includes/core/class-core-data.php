@@ -53,6 +53,19 @@ class Core_Data
 		}
 	}
 
+	static function Inactive($table_name, $rows)
+	{
+		// TODO: adding meta key when needed(?)
+//		global $meta_table_info;
+
+//		$row_id = intval(get_param("id", true));
+		if (! is_array($rows)) $rows = array($rows);
+
+		foreach($rows as $row_id)
+			if (! sql_query("update $table_name set is_active = 0 where id = $row_id")) return false;
+		return true;
+	}
+
 	static function Active($table_name, $row_id, $active)
 	{
 		$row_id = intval($row_id);
@@ -205,7 +218,7 @@ class Core_Data
 	$args["field"] = $field;
 	$args["include_id"] = $include_id;
 
-	$data .= TableDatalist($datalist, $table_name, $args);
+	$data .= Core_Html::TableDatalist($datalist, $table_name, $args);
 
 	return $data;
 }
@@ -519,7 +532,7 @@ class Core_Data
 				}
 				if ( $v_checkbox ) {
 					if ( ! $skip_id or ( $key != $id_field ) ) {
-						$v_line[ $key ] = Core_Html::gui_checkbox( "chk_" . $key, $checkbox_class, false );
+						$v_line[ $key ] = Core_Html::GuiCheckbox( "chk_" . $key, false, array("class"=>$checkbox_class));
 					}
 				}
 //			if ( is_array( $h_line ) and $header_fields ) {
@@ -542,7 +555,7 @@ class Core_Data
 					$the_row[ $key ] = $meta_value;
 
 					if ( $v_checkbox ) {
-						$v_line[ $key ] = Core_Html::gui_checkbox( "chk_" . $key, $checkbox_class, false );
+						$v_line[ $key ] = Core_Html::GuiCheckbox( "chk_" . $key, false , array("class" => $checkbox_class) );
 					}
 					if ( $h_line ) {
 						// print "adding $key<br/>";
@@ -578,7 +591,7 @@ class Core_Data
 			if ( $values and isset( $values[ $key ] ) ) $new_row[ $key ] = $values[ $key ];
 			else $new_row[ $key ] = null;
 
-			if ( $v_line !== null ) $v_line[ $key ] = Core_Html::gui_checkbox( "chk_" . $key, $checkbox_class, $new_row[ $key ] != null );
+			if ( $v_line !== null ) $v_line[ $key ] = Core_Html::GuiCheckbox( "chk_" . $key, $new_row[ $key ] != null, array("class" => $checkbox_class) );
 			if ( is_array( $h_line ) /* and $header_fields */) $h_line[ $key ] = isset( $header_fields[ $key ] ) ? im_translate( $header_fields[ $key ], $args ) : $key;
 			if ( is_array( $m_line ) ) $m_line[ $key ] = isset( $mandatory_fields[ $key ] );
 		}

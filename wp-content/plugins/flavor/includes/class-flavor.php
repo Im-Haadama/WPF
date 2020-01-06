@@ -398,13 +398,13 @@ class Flavor {
 		$result = Core_Html::gui_header(1, "Settings");
 
 		$tabs = [];
-		foreach (array("Fresh", "Finance", "Flavor") as $plugin)
+		foreach (array("Fresh", "Finance", "Flavor", "Focus") as $plugin)
 		{
 			if (class_exists($plugin)){ // Todo: need to check permissions
 				array_push($tabs, array($plugin, __($plugin), $plugin::instance()->settingPage()));
 			}
 		}
-		$result .= GuiTabs($tabs);
+		$result .= Core_Html::GuiTabs($tabs);
 
 		print $result;
 	}
@@ -417,15 +417,35 @@ class Flavor {
 	public function SettingPage()
 	{
 		$result = "";
-		$module_list = array( "Flavor" );
+		$module_list = array( "Flavor" => array());
 
-		foreach ($module_list as $item){
+		$result .= self::ClassSettingPage($module_list);
+//		foreach ($module_list as $item){
+//			$args = [];
+//			$args ["text"] = __("Add") . " " . __($item);
+//			$args["action"] = add_param_to_url(self::getPost() , array( "operation" => "add_nav", "module" => $item )) . ";location_reload";
+//			$result .= Core_Html::GuiButtonOrHyperlink("btn_add_" . $item, null, $args);
+//		}
+
+		return $result;
+	}
+
+	static function ClassSettingPage($module_list)
+	{
+		$result = "";
+		foreach ($module_list as $item => $sub_menu_items){
 			$args = [];
 			$args ["text"] = __("Add") . " " . __($item);
-			$args["action"] = add_param_to_url(self::getPost() , array( "operation" => "add_nav", "module" => $item )) . ";location_reload";
-			$result .= GuiButtonOrHyperlink("btn_add_" . $item, null, $args);
+			$args["action"] = add_param_to_url(self::getPost() , array( "operation" => "fresh_nav_add", "module" => $item )) . ";location_reload";
+			$result .= Core_Html::GuiButtonOrHyperlink("btn_add_" . $item, null, $args) . "<br/>";
+			foreach ($sub_menu_items as $sub_menu_item) {
+				$operation = $sub_menu_item[1];
+				$sub_args = [];
+				$sub_args["text"] = __($sub_menu_item[0]);
+				$sub_args["action"] = add_param_to_url(self::getPost() , array( "operation" => "fresh_nav_add", "module" => $item, "sub_module" => $sub_menu_item[1] )) . ";location_reload";
+				$result .= "===>" . Core_Html::GuiButtonOrHyperlink( "btn_add_" . $operation, null, $sub_args ) . "<br/>";
+			}
 		}
-
 		return $result;
 	}
 }

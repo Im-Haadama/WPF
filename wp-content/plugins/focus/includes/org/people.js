@@ -35,7 +35,7 @@ function salary_del_items() {
     execute_url(post_file + "?operation=salary_delete&params=" + params, action_hide_rows, "working_days");
 
 }
-function salary_add_item(worker_id)
+function salary_add_item(user_id)
 {
     document.getElementById("btn_add_time").disabled = true;
 
@@ -58,7 +58,7 @@ function salary_add_item(worker_id)
         '&date=' + date + "&project=" + id + "&vol=0" + "&traveling=" + traveling +
         "&extra_text=" + encodeURI(extra_text) +
         "&extra=" + extra +
-    '&worker_id=' + worker_id;
+    '&user_id=' + user_id;
 
     execute_url(request, location_reload);
 }

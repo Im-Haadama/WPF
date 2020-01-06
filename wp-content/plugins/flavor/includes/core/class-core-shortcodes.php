@@ -54,30 +54,26 @@ class Core_Shortcodes {
 //		print __FUNCTION__ . "<br/>";
 		if ($this->shortcodes)
 			foreach ( $this->shortcodes as $shortcode => $function_couple ) {
-//				print "<br/>handling $shortcode ";
+//				print "handling $shortcode <br/>";
 				$function = $function_couple[0];
 				$capability = $function_couple[1];
-//				if (! im_user_can($capability)) {
+				if ($capability and ! im_user_can($capability)) {
 //					print "can't $capability";
-//					continue;
-//				}
+					continue;
+				}
 //				 print "adding {$shortcode}_shortcode_tag" . " ". $shortcode ." " . $function;
 				if (is_callable($function . "_wrapper")) {
-//					print "adding wrapper: " . $function . "_wrapper";
+//					print "adding $shortcode => wrapper: " . $function . "_wrapper<br/>";
 					add_shortcode( apply_filters( "{$shortcode}_shortcode_tag", $shortcode ), $function. "_wrapper" );
 					continue;
 				}
-
 				if (is_callable($function)) {
-//					print "adding function";
+//					print "adding function $function<br/>";
 					add_shortcode( apply_filters( "{$shortcode}_shortcode_tag", $shortcode ), $function );
 					continue;
 				}
-//				print "<br/>not callable: $function";
+				if (get_user_id() == 1) print "not callable: $function<br/>";
 			}
-
-		// Alias for pre 2.1 compatibility.
-//		add_shortcode( 'core_messages', __CLASS__ . '::shop_messages' );
 	}
 
 	/**

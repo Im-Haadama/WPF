@@ -456,19 +456,7 @@ class Fresh {
 		$module_list = array( "Suppliers" => array(),
 		                      "Orders" => array(array("Total ordered", "total_ordered")));
 
-		foreach ($module_list as $item => $sub_menu_items){
-			$args = [];
-			$args ["text"] = __("Add") . " " . __($item);
-			$args["action"] = add_param_to_url(self::getPost() , array( "operation" => "fresh_nav_add", "module" => $item )) . ";location_reload";
-			$result .= GuiButtonOrHyperlink("btn_add_" . $item, null, $args) . "<br/>";
-			foreach ($sub_menu_items as $sub_menu_item) {
-				$operation = $sub_menu_item[1];
-				$sub_args = [];
-				$sub_args["text"] = __($sub_menu_item[0]);
-				$sub_args["action"] = add_param_to_url(self::getPost() , array( "operation" => "fresh_nav_add", "module" => $item, "sub_module" => $sub_menu_item[1] )) . ";location_reload";
-				$result .= "===>" . GuiButtonOrHyperlink( "btn_add_" . $operation, null, $sub_args ) . "<br/>";
-			}
-		}
+		$result .= Flavor::ClassSettingPage($module_list);
 		return $result;
 	}
 
@@ -496,4 +484,42 @@ class Fresh {
 		$file = plugin_dir_url( __FILE__ ) . 'inventory.js';
 		wp_enqueue_script( $this->plugin_name, $file, array( 'jquery' ), $this->version, false );
 	}
+}
+
+add_shortcode( 'basket-content', 'content_func' );
+
+// [category-content id=18]
+add_shortcode( 'category-content', 'category_content_func' );
+
+function category_content_func($atts, $content, $tag)
+{
+	if (! file_exists(ROOT_DIR . '/fresh/wp/Product.php')) return "not installed";
+
+	require_once (ROOT_DIR . '/fresh/wp/Product.php');
+
+	$my_atts = shortcode_atts( [ 'id' => get_the_ID() ], $atts, $tag );
+//
+	$id = $my_atts['id'];
+
+	$iter = new ProductIterator();
+	$iter->iterateCategory( $id );
+
+	$result = "";
+	while ( $prod_id = $iter->next()) $result .= get_product_name($prod_id) . ", ";
+
+	return rtrim($result, ", ");
+}
+
+function content_func( $atts, $contents, $tag ) {
+	require_once( ROOT_DIR . '/fresh/catalog/Basket.php' );
+
+	$my_atts = shortcode_atts( [ 'id' => get_the_ID() ], $atts, $tag );
+//
+	$id = $my_atts['id'];
+
+	$text = "תכולת הסל: ";
+	$text .= get_basket_content( $id );
+
+//
+	return $text;
 }

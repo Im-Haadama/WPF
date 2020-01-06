@@ -98,7 +98,7 @@ class Core_Nav {
 
 	/**
 	 * @param $menu_id
-	 * Create nav menu from items memeber. It's array of the first level with values for 'title', 'url'.
+	 * Create nav menu from items member. It's array of the first level with values for 'title', 'url'.
 	 * Optional childs is array for the second level with 'title', 'url' for the childs.
 	 * Called by reset
 	 */

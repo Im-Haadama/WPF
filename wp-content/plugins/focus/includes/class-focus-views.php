@@ -21,9 +21,9 @@ class Focus_Views {
 //		add_action( 'get_header', array( $this, 'create_nav' ) );
 	}
 
-	public static function instance() {
+	public static function instance($post = null) {
 		if ( is_null( self::$_instance ) ) {
-			self::$_instance = new self( "/wp-content/plugins/focus/post.php" ); // Todo: fix this
+			self::$_instance = new self( $post );
 		}
 
 		return self::$_instance;
@@ -65,6 +65,59 @@ class Focus_Views {
 		return __FUNCTION__;
 	}
 
+	static function gui_select_worker($id, $selected, $args){
+		// $events = GetArg($args, "events", null);
+		$edit = GetArg($args, "edit", true);
+		$companies = Org_Worker::GetCompanies(get_user_id());
+
+		$debug = false; // (get_user_id() == 1);
+		$args["debug"] = $debug;
+		$args["name"] = "client_displayname(user_id)";
+		$args["where"] = "where is_active=1 and company_id in (" . comma_implode($companies) . ")";
+		$args["id_key"] = "user_id";
+		$args["selected"] = $selected;
+		$args["query"] = (isset($args["query_team"]) ? $args["query_worker"] : null);
+
+		if ($edit) {
+			$gui = Core_Html::GuiSelectTable($id, "im_working", $args);
+			return $gui;
+		} else
+			return ($selected > 0) ? sql_query_single_scalar("select client_displayname(user_id) from im_working where user_id = " . $selected) :
+				"";
+	}
+	static function gui_select_project($id, $value, $args)
+	{
+		$edit = GetArg($args, "edit", true);
+		$new_row = GetArg($args, "new_row", false);
+
+		if (! $edit)
+		{
+			return Org_Project::GetName($value);
+		}
+		// Filter by worker if supplied.
+		$user_id = GetArg($args, "worker_id", get_user_id());
+		if ( !$user_id ) {
+			throw new Exception( __FUNCTION__ .": No user " . $user_id);
+		}
+
+		$form_table = GetArg($args, "form_table", null);
+		$events = GetArg($args,"events", null);
+
+		$projects = Org_Project::GetProjects($user_id);
+		$projects_list = [];
+		foreach($projects as $project_id => $project_name) $projects_list[] = array("project_id" => $project_id, "project_name" => $project_name);
+		$result = Core_Html::gui_select( $id, "project_name", $projects_list, $events, $value, "project_id" );
+		if ($form_table and $new_row) { // die(__FUNCTION__ . ":" . " missing form_table");
+			$result .= Core_Html::GuiButton( "add_new_project", "New Project", array("action" => "add_element('project', '" . $form_table . "', '" . get_url() . "')", "New Project" ));
+		}
+
+		return $result;
+	}
+
+	static function getPost()
+	{
+		return self::instance()->post_file;
+	}
 	/**
 	 * @param $operation
 	 * @param $args
@@ -123,9 +176,6 @@ class Focus_Views {
 					return self::show_task( $id );
 				}
 				break;
-			case "show_projects":
-				$result .= self::show_projects( get_url(), get_user_id() );
-				break;
 
 			case "show_project":
 				$id           = get_param( "project_id", true );
@@ -141,7 +191,7 @@ class Focus_Views {
 			case "show_new_project":
 				$args              = [];
 				$args["next_page"] = get_param( "next_page", false, null );
-				$args["post_file"] = "/wp-content/plugins/focus/post.php";
+				$args["post_file"] = getPost();
 //			$user_id = get_user_id();
 //			$args["user_id"] = $user_id;
 //			$args["hide_cols"] = array("user_id" => 1, "company_id" => 1);
@@ -290,7 +340,7 @@ class Focus_Views {
 
 			case "show_add_member":
 				$team_id = get_param( "id", true );
-				$result  .= Core_Html::gui_header( 1, "Adding memeber to team" . sql_query_single_scalar( "select team_name from im_working_teams where id = " . $team_id ) );
+				$result  .= Core_Html::gui_header( 1, "Adding member to team" . sql_query_single_scalar( "select team_name from im_working_teams where id = " . $team_id ) );
 				$result  .= gui_select_worker( "new_member" );
 				$result  .= gui_label( "team_id", $team_id, true );
 				$result  .= Core_Html::GuiButton( "btn_add_member", "add_member()", "Add" );
@@ -353,6 +403,18 @@ class Focus_Views {
 			default:
 				return false;
 		}
+	}
+
+	static function show_project_wrapper()
+	{
+		$new = get_param("new");
+		if ($new) {
+			$project = Focus_Project::create_from_task($new);
+			return $project->getId();
+
+		}
+
+		return self::show_project( get_user_id() );
 	}
 
 	static function show_edit_team($team_id)
@@ -464,7 +526,7 @@ class Focus_Views {
 		$args["worker"] = get_user_id();
 		$args["companies"] = sql_query_single_scalar("select company_id from im_working where user_id = " . get_user_id());
 		$args["hide_cols"] = array("creator" => 1);
-		$args["next_page"] = get_url();
+		$args["next_page"] = self::get_link("project");
 		Core_Data::set_args_value($args); // Get values from url.
 
 		$result = ""; $project_tasks = "";
@@ -500,7 +562,7 @@ class Focus_Views {
 	 * @return string|null
 	 * @throws Exception
 	 */
-	static function show_projects( $url, $owner, $non_zero = false, $is_active = true ) {
+	static function show_projects($owner, $non_zero = false, $is_active = true ) {
 		$links = array();
 
 		$links["id"] = add_to_url( array(
@@ -1034,7 +1096,7 @@ class Focus_Views {
 		}
 		$result .= Core_Html::GuiHyperlink( "Not filtered", add_to_url( "active_only", 0 ) ); // Not filtered
 
-		$result .= " " . Core_Html::GuiHyperlink( "Add task", add_to_url( "operation", "show_new_task" ) );
+		$result .= " " . Core_Html::GuiHyperlink( "Add task", self::get_link("task") ); // id == 0 -> new
 
 		$result .= " " . Core_Html::GuiHyperlink( "Add delivery", add_to_url( "operation", "show_new_task&mission=1" ) );
 
@@ -1072,7 +1134,8 @@ class Focus_Views {
 
 	static function show_task_wrapper()
 	{
-		$row_id = get_param("id", true);
+		$row_id = get_param("id", false);
+		if (! $row_id) return self::show_new_task();
 		return self::show_task($row_id);
 	}
 	/**
@@ -1234,7 +1297,7 @@ class Focus_Views {
 		$args["selectors"] = array("team_members" => "gui_show_team");
 		$args["page"] = $page;
 
-		$teams = TableData("select id, team_name from im_working_teams where manager in \n" .
+		$teams = Core_Data::TableData("select id, team_name from im_working_teams where manager in \n" .
 		                   "(select user_id from im_working where company_id = $company_id) order by 1", $args);
 		foreach ($teams as $key => &$row)
 			if ($key == "header") $row [] = im_translate("Team members");
@@ -1621,35 +1684,6 @@ class Focus_Views {
 	{
 		$result = Core_Html::gui_header(1, im_translate("Settings for") . " " . get_user_name($user_id));
 
-
-		return $result;
-	}
-	static function gui_select_project($id, $value, $args)
-	{
-		$edit = GetArg($args, "edit", true);
-		$new_row = GetArg($args, "new_row", false);
-
-		if (! $edit)
-		{
-			return Org_Project::GetName($value);
-		}
-		// Filter by worker if supplied.
-		$user_id = GetArg($args, "worker_id", get_user_id());
-		if ( !$user_id ) {
-			throw new Exception( __FUNCTION__ .": No user " . $user_id);
-		}
-
-		$form_table = GetArg($args, "form_table", null);
-		$events = GetArg($args,"events", null);
-
-		$projects = Org_Project::GetProjects($user_id);
-		$projects_list = [];
-		foreach($projects as $project_id => $project_name) $projects_list[] = array("project_id" => $project_id, "project_name" => $project_name);
-		$result = Core_Html::gui_select( $id, "project_name", $projects_list, $events, $value, "project_id" );
-		if ($form_table and $new_row) { // die(__FUNCTION__ . ":" . " missing form_table");
-			$result .= Core_Html::GuiButton( "add_new_project", "New Project", array("action" => "add_element('project', '" . $form_table . "', '" . get_url() . "')", "New Project" ));
-		}
-
 		return $result;
 	}
 
@@ -1671,37 +1705,15 @@ class Focus_Views {
 		$form_table = GetArg($args, "form_table", null);
 		$events = GetArg($args,"events", null);
 
-		$companies = Org_Company::GetCompanies($user_id);
+		$companies = array(1); // Org_Company::GetCompanies($user_id);
 		$companies_list = [];
 		foreach($companies as $company_id => $company_name) $companies_list[] = array("company_id" => $company_id, "company_name" => $company_name);
-		$result =  gui_select( $id, "company_name", $companies_list, $events, $value, "company_id" );
+		$result =  Core_Html::gui_select( $id, "company_name", $companies_list, $events, $value, "company_id" );
 //	if ($form_table and $new_row) { // die(__FUNCTION__ . ":" . " missing form_table");
 //		$result .= Core_Html::GuiButton( "add_new_project", "add_element('project', '" . $form_table . "', '" . get_url() . "')", "New Project" );
 //	}
 
 		return $result;
-	}
-
-	static function gui_select_worker( $id = null, $selected = null, $args = null )
-	{
-		// $events = GetArg($args, "events", null);
-		$edit = GetArg($args, "edit", true);
-		$companies = Org_Worker::GetCompanies(get_user_id());
-
-		$debug = false; // (get_user_id() == 1);
-		$args["debug"] = $debug;
-		$args["name"] = "client_displayname(user_id)";
-		$args["where"] = "where is_active=1 and company_id in (" . comma_implode($companies) . ")";
-		$args["id_key"] = "user_id";
-		$args["selected"] = $selected;
-		$args["query"] = (isset($args["query_team"]) ? $args["query_worker"] : null);
-
-		if ($edit) {
-			$gui = Core_Html::GuiSelectTable($id, "im_working", $args);
-			return $gui;
-		} else
-			return ($selected > 0) ? sql_query_single_scalar("select client_displayname(user_id) from im_working where user_id = " . $selected) :
-				"";
 	}
 
 	static function gui_select_user( $id = null, $selected = null, $args = null )
@@ -1745,14 +1757,29 @@ class Focus_Views {
 
 	}
 
-	static function get_link($type, $id)
+	static function get_link($type, $id = 0)
 	{
 		switch ($type)
         {
 			case "task":
 				return "/task?id=$id";
 
+			case "project":
+				return "/project?new_task=$id";
+
 		}
+	}
+
+	function getShortcodes()
+	{
+		//             code                           function                  capablity (not checked, for now).
+		return (array('focus_main'           => array('Focus_Views::show_main', 'show_tasks'),
+                       'focus_task'           => array('Focus_views::show_task', 'show_tasks'),
+	                   'focus_repeating_task' => array('Focus_views::show_repeating_task', 'show_tasks'),
+	                   'focus_team'           => array('Focus_views::show_team', 'show_teams'),
+	                   'focus_project'        => array('Focus_views::show_project', 'show_projects'),
+	                   'focus_project_tasks'  => array('Focus_views::show_project_tasks', 'show_projects')));
+
 	}
 }
 
@@ -1791,3 +1818,13 @@ if (!function_exists('gui_select_repeat_time')) {
 
 // Allow later users to set page name.
 // For now just the default.
+
+function gui_select_worker( $id = null, $selected = null, $args = null )
+{
+	return Focus_Views::gui_select_worker($id, $selected, $args);
+}
+
+function gui_select_project($id, $value, $args)
+{
+	return Focus_Views::gui_select_project($id, $value, $args);
+}

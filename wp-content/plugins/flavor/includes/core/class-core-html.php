@@ -53,7 +53,11 @@ class Core_Html {
 	 *
 	 * @return string
 	 */
-	static function gui_checkbox( $id, $class, $value = false, $events = null ) {
+	static function GuiCheckbox($id, $value = false, $args = array())
+	{
+//	static function gui_checkbox( $id, $class, $value = false, $events = null ) {
+		$class = GetArG($args, "class", "class");
+		$events = GetArG($args, "events", null);
 		$data = "<input id=\"$id\" class=\"$class\" type=\"checkbox\" ";
 		if ( $value ) {
 			$data .= "checked ";
@@ -117,7 +121,7 @@ class Core_Html {
 			$server_action = substr( $action, 0, $s );
 			$client_action = substr( $action, $s + 1 );
 
-			return Core_Html::GuiButton( $id, "execute_url('" . $server_action . "', $client_action, $id )", $text );
+			return Core_Html::GuiButton( $id, $text, array("action" => "execute_url('" . $server_action . "', $client_action, $id )"));
 		} else {
 			return Core_Html::GuiHyperlink( $text, $action );
 		}
@@ -1017,7 +1021,7 @@ class Core_Html {
 		$args["field"] = $name;
 		if ( ! isset( $shown_datalist[ $datalist_id ] ) ) {
 			$shown_datalist[ $datalist_id ] = 0;
-			$data                           = TableDatalist( $datalist_id, $table, $args );
+			$data                           = Core_Html::TableDatalist( $datalist_id, $table, $args );
 			$shown_datalist[ $datalist_id ] ++;
 
 			if ( $id == "datalist" ) {
@@ -1325,7 +1329,7 @@ class Core_Html {
 		return $result;
 	}
 
-	function GuiTabs($tabs)
+	static function GuiTabs($tabs)
 	{
 		$result = '<div class="tab">';
 
@@ -1338,10 +1342,10 @@ class Core_Html {
 		{
 			$name = $tab[0];
 			$display_name = $tab[1];
-			$contents .= GuiDiv($name, Core_Html::gui_header(2, $name) . $tab[2], $div_args);
+			$contents .= Core_Html::GuiDiv($name, Core_Html::gui_header(2, $name) . $tab[2], $div_args);
 
 			$args["events"] = "onclick=\"selectTab(event, '$name', 'tabcontent')\"";
-			$result .= GuiButton("btn_tab_$name", $display_name, $args);
+			$result .= Core_Html::GuiButton("btn_tab_$name", $display_name, $args);
 		}
 		$result .= "</div>";
 
@@ -1474,7 +1478,7 @@ class Core_Html {
 			// $row["ID"]] = $row[$field];
 		}
 
-		return GuiDatalist($id, $values, $id_field,  $field, $include_id);
+		return self::GuiDatalist($id, $values, $id_field,  $field, $include_id);
 	}
 
 	static function NewRow($table_name, $args)
@@ -1492,5 +1496,13 @@ class Core_Html {
 
 	static function Br() {
 		return '<br/>';
+	}
+}
+
+if (!function_exists('gui_checkbox'))
+{
+
+	function gui_checkbox( $id, $class, $value = false, $events = null ) {
+		return Core_Html::GuiCheckbox($id, $value, array("events" => $events, "class" => $class));
 	}
 }

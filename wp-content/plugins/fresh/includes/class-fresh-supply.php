@@ -359,7 +359,7 @@ class Fresh_Supply {
 		                              "quantity" => array( "func" => 'sum_numbers', "val" => 0 ),
 		                              '$total' => array("func" => 'sum_numbers' , "val" => 0) );
 
-		$rows_data = TableData( $sql, $args);
+		$rows_data = Core_Data::TableData( $sql, $args);
 
 //		var_dump($sums);
 		/// array_push($rows_data, $sums);

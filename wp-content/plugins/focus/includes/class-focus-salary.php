@@ -1,26 +1,49 @@
 <?php
 
 
+/**
+ * Class Focus_Salary
+ */
 class Focus_Salary {
+	/**
+	 * @var null
+	 */
 	protected static $_instance = null;
+
+	/**
+	 * @var string
+	 */
 	protected static $version = "1.0";
+
+	/**
+	 * @var string post file
+	 */
 	private $post_file;
 
 	/**
 	 * Focus_Salary constructor.
+	 * gets the post file.
 	 */
 	public function __construct( $post_file ) {
+//		print "post: $post_file<br/>";
 		$this->post_file = $post_file;
 
 //		add_action( 'get_header', array( $this, 'create_nav' ) );
 	}
 
-	function enqueue_scripts()
-	{
+	/**
+	 * enqueue_scripts - add scripts to be loaded.
+	 */
+	function enqueue_scripts() {
 		$file = plugin_dir_url( __FILE__ ) . 'org/people.js';
 //		print "script $file";
 		wp_enqueue_script( 'people', $file, null, self::$version, false );
 	}
+
+	/**
+	 * @return Focus_Salary|null
+	 * single instance.
+	 */
 	public static function instance() {
 		if ( is_null( self::$_instance ) ) {
 			self::$_instance = new self( "/wp-content/plugins/focus/post.php" ); // Todo: fix this
@@ -29,93 +52,206 @@ class Focus_Salary {
 		return self::$_instance;
 	}
 
-	public function handle_operation($module_operation)
-	{
+	/**
+	 * @param $module_operation
+	 *
+	 * @return bool
+	 */
+	static public function handle_operation( $operation ) {
 		// Take the operation from module_operation.
-		strtok($module_operation, "_");
-		$operation = strtok(null);
-
-//		print $operation;
-
-		if (! $operation) die ("invalid activation");
-		switch ($operation)
-		{
+		switch ( $operation ) {
 			case "delete":
-				$lines = get_param("params");
-				return (data_delete("im_working_hours", $lines));
+				$lines = get_param_array( "params" );
+
+				return ( Core_Data::Inactive( "im_working_hours", $lines ) );
 
 			case "add_time":
-				$start     = get_param("start", true);
-				$end       = get_param("end", true);
-				$date      = get_param("date", true);
-				$project   = get_param("project", true);
-				$worker_id = get_param( "worker_id", true );
+				$start     = get_param( "start", true );
+				$end       = get_param( "end", true );
+				$date      = get_param( "date", true );
+				$project   = get_param( "project", true );
+				$worker_id = get_param( "user_id", true );
 				// print "wid=" . $worker_id . "<br/>";
-				$vol        = get_param("vol", true);
-				$traveling  = get_param("traveling", true);
-				$extra_text = get_param("extra_text", true);
-				$extra      = get_param("extra", true);
+				$vol        = get_param( "vol", true );
+				$traveling  = get_param( "traveling", true );
+				$extra_text = get_param( "extra_text", true );
+				$extra      = get_param( "extra", true );
 
 				// if ($user_id = 1) $user_id = 238;
 				return self::add_activity( $worker_id, $date, $start, $end, $project, $vol, $traveling, $extra_text, $extra );
+
+			case "show_add_im_working":
+				$args = [];
+				$args["selectors"] = array("user_id" => "gui_select_client", "project_id" => "gui_select_project");
+				$args["post_file"] = self::getPost();
+				return Core_Gem::GemAddRow("im_working", "Add", $args);
 		}
+
 		return false;
 	}
 
-	public function handle_salary_show($operation) {
-		// $operation = get_param( "operation", false, "show_main" );
-//		print "op=$operation";
-		if ( get_user_id( true ) ) {
-			switch($operation)
-			{
-				case "salary_main":
-					print self::salary_main();
-					break;
+	static function getPost()
+	{
+		return self::instance()->post_file;
+	}
+	//* Shortcode handling
+	//* 1) Main - list of employees
 
-				case "show_worker":
-					$worker_id = get_param("worker_id", true);
-					self::get_month_year($y, $m);
-					print self::show_worker($worker_id, $y, $m);
-					break;
-
-				case "show_salary":
-					$month = get_param("month", false, date( 'Y-m', strtotime( 'last month' ) ));
-					$edit = get_param("edit", false, false);
-
-					print self::show_salary($month, $edit);
-					break;
-			}
-		}
+	/**
+	 * @return string
+	 * @throws Exception
+	 */
+	static function main_wrapper()
+	{
+		$me = self::instance();
+		if ($operation = get_param("operation", false))
+			return self::handle_operation($operation);
+		return $me->main();
 	}
 
-	function salary_main()
-	{
-		$result = Core_Html::gui_header(1, "Salary info");
-		if (im_user_can("show_salary")){
-			$args = [];
-			$args["sql"] = "select distinct id, client_displayname(user_id) as name, project_id from im_working where is_active = 1";
-			$args["id_field"] = "id";
-			$args["links"] = array("id" => add_to_url(array("operation" => "show_worker", "worker_id" => "%s")));
-			$args["selectors"] = array("project_id" => "Focus_Views::gui_select_project");
+	/**
+	 * @return string
+	 * @throws Exception
+	 */
+	function main() {
+		$result = Core_Html::gui_header( 1, "Salary info" );
+		if ( im_user_can( "show_salary" ) ) {
+			$args              = [];
+			$args["sql"]       = "select distinct user_id, client_displayname(user_id) as name, project_id from im_working where is_active = 1";
+			$args["id_field"]  = "user_id";
+			$args["links"]     = array(
+				"user_id" => self::get_link("worker_data", "%s")
+			);
+			$args["selectors"] = array( "project_id" => "Focus_Views::gui_select_project" );
 
-			$result .= Core_Gem::GemTable("im_working", $args);
+			$result .= Core_Gem::GemTable( "im_working", $args );
 		} else {
-			self::get_month_year($y, $m);
+			$year_month = get_param( "month", false, date( 'Y-m' ) );
+			$y          = intval(strtok( $year_month, "-" ));
+			$m          = intval(strtok( "" ));
 			$result .= self::hours_entry();
-			$result .= self::show_report_worker(get_user_id(), $y, $m);
-
+			$result .= self::show_report_worker( get_user_id(), $y, $m );
 		}
 
 		return $result;
 	}
 
-	static private function get_month_year(&$y, &$m)
+	// 2) Report - data to salary accountant
+	/**
+	 * @return string
+	 * @throws Exception
+	 *
+	 */
+	static function report_wrapper()
 	{
-		$year_month = get_param("month", false, date('Y-m'));
-		$y = strtok($year_month, "-");
-		$m = strtok("");
+		$year_month = get_param( "month", false, date( 'Y-m', strtotime('-15 days') ) );
+
+		return self::salary_report($year_month, $args);
 	}
 
+	/**
+	 * @param $month
+	 * @param $args
+	 *
+	 * @return string
+	 * @throws Exception
+	 */
+	static function salary_report( $month, &$args ) {
+		$edit_lines = GetArg( $args, "edit_lines", false );
+
+		$output = Core_Html::gui_header( 1, im_translate( "Salary data for month" ) . " " . $month );
+		$a      = explode( "-", $month );
+		$y      = $a[0];
+		$m      = $a[1];
+
+		$sql = "select distinct h.user_id, report " .
+		       " from im_working_hours h " .
+		       " join im_working w " .
+		       " where month(date)=" . $m .
+		       " and year(date) = " . $y .
+		       " and h.is_active = 1 " .
+		       " and h.user_id = w.user_id ";
+
+//		print $sql;
+		// $output .= $sql;
+		$result   = sql_query( $sql );
+		$has_data = false;
+
+		while ( $row = mysqli_fetch_row( $result ) ) {
+			$user_id        = $row[0];
+			$user           = new Core_Users( $user_id );
+			$args["worker"] = $user_id;
+
+			if ( $row[1] ) {
+				$output .= Core_Html::gui_header( 1, get_user_name( $user_id ) . " (" .
+				                                     Core_Html::GuiHyperlink( "$user_id", self::get_link("worker_data", $user_id )) . ")" );
+				$output .= "כתובת מייל של העובד/ת: " . $user->CustomerEmail() . "<br/>";
+
+				$output .= self::print_transactions( $user_id, $m, $y, $args ); // null, null, $s, true, $edit );
+
+				if ( $edit_lines ) {
+					$output .= Core_Html::GuiButton( "btn_delete", "delete_line(" . $user_id . ")", "מחק" );
+				}
+			}
+			$has_data = true;
+		}
+		if ( ! $has_data ) {
+			$output .= im_translate( "No data entered" ) . Core_Html::Br();
+		}
+
+		return $output;
+	}
+
+	// 3) Worker - data about the worker.
+	/**
+	 * @return string
+	 * @throws Exception
+	 */
+	static function worker_wrapper() {
+		$user_id = get_param("user_id", true);
+		if (! $user_id) return __FUNCTION__ . ": no worker id";
+		$result  = "";
+		$year_month = get_param( "month", false, date( 'Y-m' ) );
+		$y          = intval(strtok( $year_month, "-" ));
+		$m          = intval(strtok( "" ));
+		$me = self::instance();
+		$result .= $me->show_report_worker( $user_id, $y, $m );
+		$result .= $me->hours_entry($user_id);
+		return $result;
+	}
+
+	// 4) Entry - what workers use for data entry.
+	/**
+	 * @return string
+	 * @throws Exception
+	 */
+	static function entry_wrapper()
+	{
+		$result = "";
+		$user_id = get_user_id(true);
+		$result .= self::hours_entry($user_id);
+		$year_month = get_param( "month", false, date( 'Y-m' ) );
+		$y          = intval(strtok( $year_month, "-" ));
+		$m          = intval(strtok( "" ));
+
+		$result .= self::show_report_worker($user_id, $y, $m);
+
+		return $result;
+	}
+
+	// Actions
+	/**
+	 * @param $id
+	 * @param $date
+	 * @param $start
+	 * @param $end
+	 * @param $project_id
+	 * @param $traveling
+	 * @param $expense_text
+	 * @param $expense
+	 *
+	 * @return bool|string
+	 */
 	static function people_add_activity( $id, $date, $start, $end, $project_id, $traveling, $expense_text, $expense ) {
 		if ( strlen( $traveling ) == 0 ) {
 			$traveling = 0;
@@ -141,11 +277,25 @@ class Focus_Salary {
 		return true; // Success
 	}
 
+	/**
+	 * @param $user_id
+	 * @param $date
+	 * @param $start
+	 * @param $end
+	 * @param $project_id
+	 * @param bool $vol
+	 * @param int $traveling
+	 * @param string $extra_text
+	 * @param int $extra
+	 *
+	 * @return bool
+	 */
 	static function add_activity( $user_id, $date, $start, $end, $project_id, $vol = true, $traveling = 0, $extra_text = "", $extra = 0 ) {
 		my_log( "add_activity", __FILE__ );
 		$result = self::people_add_activity( $user_id, $date, $start, $end, $project_id, $traveling, $extra_text, $extra );
-		if ( $result !== true) {
+		if ( $result !== true ) {
 			print $result;
+
 			return false;
 		}
 //		$fend   = strtotime( $end );
@@ -161,6 +311,13 @@ class Focus_Salary {
 		return true;
 	}
 
+	// Get data
+	/**
+	 * @param $user_id
+	 * @param $project_id
+	 *
+	 * @return false|float|int
+	 */
 	static function get_rate( $user_id, $project_id ) {
 		// Check project specific rate
 		$sql = 'select rate '
@@ -175,31 +332,41 @@ class Focus_Salary {
 		}
 
 		// Check global rate.
-		$sql    = 'select rate '
-		          . ' from im_working '
-		          . ' where user_id = ' . $user_id
-		          . ' and project_id = 0';
+		$sql = 'select rate '
+		       . ' from im_working '
+		       . ' where user_id = ' . $user_id
+		       . ' and project_id = 0';
 
 		$rate = sql_query_single_scalar( $sql );
-		if ( $rate )
-			return round( $rate, 2);
+		if ( $rate ) {
+			return round( $rate, 2 );
+		}
 
 		print "no default rate for " . $user_id . " ";
 
 		return 0;
 	}
 
-	static private function hours_entry()
-	{
-		$result = "";
-		$user_id = get_user_id();
-		$roles =
+	// Forms used by shortcodes //
+	/**
+	 * @param $user_id
+	 *
+	 * @return string
+	 * @throws Exception
+	 */
+	static private function hours_entry($user_id) {
+		$result  = "";
+//		$user_id = get_user_id();
+		$roles   =
 
 		$table = array();
-		if ( user_has_role($user_id, 'hr') ) array_push( $table, array( "בחר עובד", gui_select_worker() ) );
+//		if ( user_has_role( $user_id, 'hr' ) ) {
+//			array_push( $table, array( "בחר עובד", gui_select_worker() ) );
+//		}
 
-		array_push( $table, ( array( "תאריך", gui_input_date( "date", 'date', date( 'Y-m-d' ) ) ) ) );
-		array_push( $table, ( array(	"משעה",
+		array_push( $table, ( array( "תאריך", Core_Html::gui_input_date( "date", 'date', date( 'Y-m-d' ) ) ) ) );
+		array_push( $table, ( array(
+			"משעה",
 			'<input id="start_h" type="time" value="09:00" pattern="([1]?[0-9]|2[0-3]):[0-5][0-9]">'
 		) ) );
 		array_push( $table, ( array(
@@ -207,131 +374,152 @@ class Focus_Salary {
 			'<input id="end_h" type="time" value="13:00" pattern="([1]?[0-9]|2[0-3]):[0-5][0-9]">'
 		) ) );
 		$args["worker_id"] = $user_id;
-		array_push( $table, ( array( "פרויקט", gui_select_project("project", null, $args))));
+		array_push( $table, ( array( "פרויקט", gui_select_project( "project", null, $args ) ) ) );
 
 		$result .= Core_Html::gui_table_args( $table );
 
 		$result .= Core_Html::gui_header( 2, "הוצאות נסיעה" );
-		$result .= gui_input( "traveling", "" ) . "<br/>";
+		$result .= Core_Html::GuiInput( "traveling", "" ) . "<br/>";
 		$result .= Core_Html::gui_header( 2, "הוצאות נוספות/משלוחים" );
 		$result .= "תיאור";
-		$result .= gui_input( "extra_text", "" ) . "<br/>";
+		$result .= Core_Html::GuiInput( "extra_text", "" ) . "<br/>";
 		$result .= "סכום";
-		$result .= gui_input( "extra", "" ) . "<br/>";
+		$result .= Core_Html::GuiInput( "extra", "" ) . "<br/>";
 
-		$result .= Core_Html::GuiButton("btn_add_time", 'salary_add_item(' . $user_id . ')', 'הוסף פעילות');
+		$result .= Core_Html::GuiButton( "btn_add_time", 'add item', array("action" => 'salary_add_item(' . $user_id . ')' ));
 
 		return $result;
 	}
 
-	static function show_report_worker($user_id, $y = 0, $m = 0)
-	{
-		if (! $m) $m = date('m');
-		if (! $y) $y = date('Y');
-		$result = Core_Html::gui_header(1, __("Salary info for worker") . " " . get_user_name($user_id)) . __("for month") . " " . $m . '/' . $y;
-		$args = array("add_checkbox" => true, "checkbox_class" => "hours_checkbox");
-		$args["edit_lines"] = 1;
-		$data = self::print_transactions($user_id, $m, $y, $args);
-		if (! $data) $result .= __("No data for month") . " " . $m . '/' . $y . "<br/>";
-		else {
-			$result .= $data;
-			$result .= Core_Html::GuiButton("btn_delete", 'salary_del_items()', 'מחק פעילות');
+	/**
+	 * @param $user_id
+	 * @param int $y
+	 * @param int $m
+	 *
+	 * @return string
+	 * @throws Exception
+	 */
+	static function show_report_worker( $user_id, $y = 0, $m = 0 ) {
+		if ( ! $m ) {
+			$m = date( 'm' );
 		}
-		$result .= "<br/>" . GuiHyperlink("Previouse month",
-			add_to_url("month", date('Y-m', strtotime($y . '-' . $m . '-1 -1 month'))));
+		if ( ! $y ) {
+			$y = date( 'Y' );
+		}
+
+		$result             = Core_Html::gui_header( 1, __( "Salary info for worker" ) . " " . get_user_name( $user_id ) ) . __( "for month" ) . " " . $m . '/' . $y;
+		$args               = array( "add_checkbox" => true, "checkbox_class" => "hours_checkbox" );
+		$args["edit_lines"] = 1;
+		$data               = self::print_transactions( $user_id, $m, $y, $args );
+		if ( ! $data ) {
+			$result .= __( "No data for month" ) . " " . $m . '/' . $y . "<br/>";
+		} else {
+			$result .= $data;
+			$result .= Core_Html::GuiButton( "btn_delete",'מחק פעילות', array("action" => 'salary_del_items()') );
+		}
+		$result .= "<br/>" . Core_Html::GuiHyperlink( "Previous month",
+				add_to_url( "month", date( 'Y-m', strtotime( $y . '-' . $m . '-1 -1 month' ) ) ) );
 
 
 		return $result;
 	}
 
-	static function show_worker($row_id, $y = 0, $m = 0)
+	/**
+	 * @param $user_id
+	 * @param int $y
+	 * @param int $m
+	 *
+	 * @return string
+	 * @throws Exception
+	 */
+	function worker_data($user_id, $y = 0, $m = 0)
 	{
-		$user_id = sql_query_single_scalar("select user_id from im_working where id = $row_id");
-		$result = Core_Html::gui_header(1, Focus_Salary::worker_get_name($user_id));
+		$result  = Core_Html::gui_header( 1, Focus_Salary::worker_get_name( $user_id ) );
 
-		$args = [];
+		$args              = [];
 		$args["post_file"] = self::instance()->post_file;
-		$args["selectors"] = array("project_id" => "Focus_Views::gui_select_project", "company_id" => "gui_select_company");
-		$result .= Core_Gem::GemElement("im_working", $row_id, $args);
+		$args["selectors"] = array(
+			"project_id" => "Focus_Views::gui_select_project",
+			"company_id" => "Focus_Views::gui_select_company",
+			"post_file" => $this->post_file
+		);
+		$args["hide_cols"] = array("volunteer", "company_id");
+		$args["header_fields"] = array("user_id" => "User id", "project_id" => "Main project", "rate" => "Hour rate",
+		                        "report" => "Include in report", "day_rate" => "Day rate", "is_active" => "Active?");
 
-		$result .= self::show_report_worker($user_id, $y, $m);
-		$result .= self::hours_entry();
+		$row_id = sql_query_single_scalar("select min(id) from im_working where user_id = $user_id");
+		$result            .= Core_Gem::GemElement( "im_working", $row_id, $args );
 
+		$result .= self::show_report_worker( $user_id, $y, $m );
+		$result .= self::hours_entry($user_id);
 
 		return $result;
 	}
 
-	static function worker_get_name($worker_id)
-	{
-		return sql_query_single_scalar("select client_displayname(" . $worker_id . ")");
+
+	/**
+	 * @param $worker_id
+	 *
+	 * @return string
+	 */
+	static function worker_get_name( $worker_id ) {
+		return sql_query_single_scalar( "select client_displayname(" . $worker_id . ")" );
 	}
 
-	static function show_salary($month, $edit = false)
-	{
-		$user_id = get_user_id(true);
+	/**
+	 * @param $month
+	 * @param bool $edit
+	 *
+	 * @return string|void
+	 */
+	static function show_salary( $month, $edit = false ) {
+		$user_id = get_user_id( true );
 
-		if (! user_can($user_id, 'working_hours_all')) {
-			print im_translate("No permissions");
+		if ( ! user_can( $user_id, 'working_hours_all' ) ) {
+			print im_translate( "No permissions" );
+
 			return;
 		}
 
 		$result = "";
 
 		$args["show_salary"] = true;
-		$args["edit_lines"] = $edit;
-		$result .= self::salary_report($month,$args);
-		$result .= "<br/>";
-		$result .= GuiHyperlink("Previous month", add_to_url("month", date('Y-m', strtotime($month . '-1 -1 month'))));
-		if (strtotime($month . '-1') < strtotime('now')) $result .= " " . GuiHyperlink("Next month", add_to_url("month", date('Y-m', strtotime($month . '-1 +1 month'))));
+		$args["edit_lines"]  = $edit;
+		$result              .= self::salary_report( $month, $args );
+		$result              .= "<br/>";
+		$result              .= Core_Html::GuiHyperlink( "Previous month", add_to_url( "month", date( 'Y-m', strtotime( $month . '-1 -1 month' ) ) ) );
+		if ( strtotime( $month . '-1' ) < strtotime( 'now' ) ) {
+			$result .= " " . Core_Html::GuiHyperlink( "Next month", add_to_url( "month", date( 'Y-m', strtotime( $month . '-1 +1 month' ) ) ) );
+		}
 
 		return $result;
 	}
 
-	static function salary_report( $month, &$args)
+	// Short codes handlers
+	// Main - show all workers names
+	//
+
+	/**
+	 * @param int $user_id
+	 * @param null $month
+	 * @param null $year
+	 * @param null $args
+	 *
+	 * @return string
+	 * @throws Exception
+	 */
+	static function print_transactions( $user_id = 0, $month = null, $year = null, &$args = null ) // , $week = null, $project = null, &$sum = null, $show_salary = false , $edit = false) {
 	{
-		$edit_lines = GetArg($args, "edit_lines", false);
+		$day_rate = sql_query_single_scalar("select day_rate from im_working where user_id = $user_id");
 
-		$output = Core_Html::gui_header(1, im_translate("Salary data for month") . " " . $month);
-		$a = explode( "-", $month );
-		$y = $a[0];
-		$m = $a[1];
+		$result = "";
+		if ($day_rate) $result .= Core_Html::gui_header(2, "Daily worker");
 
-		$sql = "select distinct h.user_id, report " .
-		       " from im_working_hours h " .
-		       " join im_working w " .
-		       " where month(date)=" . $m .
-		       " and year(date) = " . $y .
-		       " and h.user_id = w.user_id ";
-		// $output .= $sql;
-		$result = sql_query( $sql);
-		$has_data = false;
-
-		while ( $row = mysqli_fetch_row( $result ) ) {
-			$user_id = $row[0];
-			$args["worker"] = $user_id;
-
-			if ( $row[1] ) {
-				$output .= Core_Html::gui_header( 1, get_user_name( $user_id ) . " (" . GuiHyperlink("$user_id", "/org/people/people-page.php?operation=show_edit_worker&" .
-				                                                                                      "worker_id=" . $user_id) . ")" );
-				$output .= "כתובת מייל של העובד/ת: " . Core_Users::CustomerEmail( $user_id ) . "<br/>";
-
-				$output .= self::print_transactions( $user_id, $m, $y, $args); // null, null, $s, true, $edit );
-
-				if ($edit_lines){
-					$output .= Core_Html::GuiButton("btn_delete", "delete_line(" . $user_id . ")", "מחק");
-				}
-			}
-			$has_data = true;
-		}
-		if (! $has_data) $output .= im_translate("No data entered") . Core_Html::Br();
-		return $output;
-	}
-
-	static function print_transactions( $user_id = 0, $month = null, $year = null, &$args = null) // , $week = null, $project = null, &$sum = null, $show_salary = false , $edit = false) {
-	{
-		$sql = "SELECT id, date, dayofweek(date) as weekday, start_time, end_time, project_id, working_rate(user_id, project_id) as rate, traveling, expense, expense_text, comment FROM im_working_hours WHERE 1 ";
-		$edit = GetArg($args, "edit_lines", false);
-		unset($args["hide_cols"]); // Remove from previous worker.
+//		print $day_rate . "<br/>";
+		$rate = ($day_rate ? '' : ', working_rate(user_id, project_id) as rate');
+		$sql  = "SELECT id, date, dayofweek(date) as weekday, start_time, end_time, project_id $rate, traveling, expense, expense_text, comment FROM im_working_hours WHERE 1 ";
+		$edit = GetArg( $args, "edit_lines", false );
+		unset( $args["hide_cols"] ); // Remove from previous worker.
 
 		$sql_month = null;
 		if ( isset( $month ) and $month > 0 ) {
@@ -344,120 +532,170 @@ class Focus_Salary {
 		}
 		// $month_sum = array();
 
-		if ( isset( $week ) ) $sql_month = " and date >= '" . $week . "' and date < '" . date( 'y-m-d', strtotime( $week . "+1 week" ) ) . "'";
-		if ( $user_id > 0 ) $sql .= " and user_id = " . $user_id . " ";
-		if ( isset( $sql_month ) ) $sql .= $sql_month;
-		if ( isset( $project ) ) $sql .= " and project_id = " . $project;
+		if ( isset( $week ) ) {
+			$sql_month = " and date >= '" . $week . "' and date < '" . date( 'y-m-d', strtotime( $week . "+1 week" ) ) . "'";
+		}
+		if ( $user_id > 0 ) {
+			$sql .= " and user_id = " . $user_id . " ";
+		}
+		if ( isset( $sql_month ) ) {
+			$sql .= $sql_month;
+		}
+		if ( isset( $project ) ) {
+			$sql .= " and project_id = " . $project;
+		}
 
-		$sql .= " order by 2 ";
-		if ( isset( $month ) ) $sql .= "asc";  else $sql .= "desc";
-		$sql           .= " limit 100";
+		$sql .= " and is_active = 1 order by 2 ";
+		if ( isset( $month ) ) {
+			$sql .= "asc";
+		} else {
+			$sql .= "desc";
+		}
+		$sql .= " limit 100";
 
-		$args["header_fields"] = array("date" => "Date", "weekday" => "Weekday", "start_time" => "Start time", "end_time" => "End time",
-		                               "project_id" => "Project", "rate" => "Rate", "traveling" => "Traveling expense", "expense" => "Other expense", "expense_text" => "Expense details", "comment" => "Comment");
-		$args["selectors"] = array("project_id" => "Focus_Views::gui_select_project");
-		$args["skip_id"] = true;
-		if ($edit) $args["add_checkbox"] = true;
+		$args["header_fields"] = array(
+			"date"         => "Date",
+			"weekday"      => "Weekday",
+			"start_time"   => "Start time",
+			"end_time"     => "End time",
+			"project_id"   => "Project",
+			"rate"         => "Rate",
+			"traveling"    => "Traveling expense",
+			"expense"      => "Other expense",
+			"expense_text" => "Expense details",
+			"comment"      => "Comment"
+		);
+		$args["selectors"]     = array( "project_id" => "gui_select_project" );
+		$args["skip_id"]       = true;
+		if ( $edit ) {
+			$args["add_checkbox"] = true;
+		}
 // 	 $args["hide_cols"] = array("expense" => 1, "expense_text" => 1, "125" => 1, "150" => 1);
 
-		$data = TableData($sql, $args);
+		$rows = Core_Data::TableData( $sql, $args );
 
 		// Add computed rows.
-		$total_sal = 0;
-		$total_travel = 0;
+		$total_sal     = 0;
+		$total_travel  = 0;
 		$total_expense = 0;
-		$counters = ["base"=>0, "dur_125"=>0, "dur_150"=>0];
+		$counters      = [ "base" => 0, "dur_125" => 0, "dur_150" => 0 ];
 
-		$show_125 = false;
-		$show_150 = false;
+		$show_base = ! $day_rate;
+		$show_125     = false;
+		$show_150     = false;
 		$show_expense = false;
 		$show_comment = false;
 
-		if (! $data) return im_translate( "No data") . Core_Html::Br();
-		foreach  ($data as $key => &$row)
-		{
-			if ($key == "header") {
-				$row["base"] = im_translate("base");
-				$row["dur_125"] = "125%";
-				$row["dur_150"] = "150%";
-				$row["line_salary"] = im_translate("total");
+		if ( ! $rows ) {
+			$result .= im_translate( "No data" ) . Core_Html::Br();
+			return $result;
+		}
+		foreach ( $rows as $key => &$row ) {
+			if ( $key == "header" ) {
+				$row["base"]        = im_translate( "base" );
+				$row["dur_125"]     = "125%";
+				$row["dur_150"]     = "150%";
+				$row["line_salary"] = im_translate( "total" );
 				continue;
 			}
-			$row["weekday"] = day_name($row["weekday"] - 1);
-			$start = new DateTime( $row["start_time"] );
-			$end   = new DateTime( $row["end_time"] );
+			$row["weekday"] = day_name( $row["weekday"] - 1 );
+			$start          = new DateTime( $row["start_time"] );
+			$end            = new DateTime( $row["end_time"] );
 
-			if ( $end < $start ) $end->add( DateInterval::createFromDateString( "1 day" ) );
-			$dur   = $end->diff( $start, true );
+			if ( $end < $start ) {
+				$end->add( DateInterval::createFromDateString( "1 day" ) );
+			}
+			$dur = $end->diff( $start, true );
 
-			$total_dur = ($dur->h + $dur->i / 60 );
-			$dur_base  = min( $total_dur, 25 / 3 );
-			$dur_125   = min( 2, $total_dur - $dur_base );
-			$dur_150   = $total_dur - $dur_base - $dur_125;
-			$rate = $row["rate"];
+			if ($day_rate){
+				$row["total"] = $day_rate;
+				$total_sal += $day_rate;
+			} else {
+				$total_dur = ( $dur->h + $dur->i / 60 );
+				$dur_base  = min( $total_dur, 25 / 3 );
+				$dur_125   = min( 2, $total_dur - $dur_base );
+				$dur_150   = $total_dur - $dur_base - $dur_125;
+				$rate      = $row["rate"];
 
-			if ($dur_125 > 0) {	$counters["dur_125"]  += $dur_125; $show_125 = true; }
-			if ($dur_150 > 0) { $counters["dur_150"]  += $dur_150; $show_150 = true; }
+				if ( $dur_125 > 0 ) {
+					$counters["dur_125"] += $dur_125;
+					$show_125            = true;
+				}
+				if ( $dur_150 > 0 ) {
+					$counters["dur_150"] += $dur_150;
+					$show_150            = true;
+				}
 
-			$row["base"] = float_to_time($dur_base);
-			$row["dur_125"] = float_to_time($dur_125);
-			$row["dur_150"] = float_to_time($dur_150);
+				$row["base"]    = float_to_time( $dur_base );
+				$row["dur_125"] = float_to_time( $dur_125 );
+				$row["dur_150"] = float_to_time( $dur_150 );
 
-			$counters["base"] += $dur_base;
+				$counters["base"] += $dur_base;
 
-			$sal  = round(( $dur_base + $dur_125 * 1.25 + $dur_150 * 1.5 ) * $rate, 2);
-			$row["line_salary"] = $sal;
+				$sal                = round( ( $dur_base + $dur_125 * 1.25 + $dur_150 * 1.5 ) * $rate, 2 );
+				$row["line_salary"] = $sal;
 
-			$total_sal += $sal;
+				$total_sal += $sal;
+			}
 
 			$travel       = $row["traveling"];
 			$total_travel += $travel;
 
-			$expense       = $row["expense"];
-			if ($expense > 0 or strlen($row["expense_text"])) $show_expense = true;
-			if (strlen($row['comment'])) $show_comment = true;
+			$expense = $row["expense"];
+			if ( $expense > 0 or strlen( $row["expense_text"] ) ) {
+				$show_expense = true;
+			}
+			if ( strlen( $row['comment'] ) ) {
+				$show_comment = true;
+			}
 		}
-		if (! $show_150) {
-			unset ($data["header"]["dur_150"]);
+		if ( ! $show_150 ) {
+			unset ( $rows["header"]["dur_150"] );
 			$args["hide_cols"]["dur_150"] = 1;
 		}
-		if (! $show_125) {
-			unset ($data["header"]["dur_125"]);
+		if ( ! $show_125 ) {
+			unset ( $rows["header"]["dur_125"] );
 			$args["hide_cols"]["dur_125"] = 1;
 		}
-		if (! $show_comment){
-			unset($data["header"]["comment"]);
+		if (! $show_base) {
+			unset($rows["header"]["base"]);
+			$args["hide_cols"]["base"] =1;
+		}
+		if ( ! $show_comment ) {
+			unset( $rows["header"]["comment"] );
 			$args["hide_cols"]["comment"] = 1;
 		}
 
-		if (! $show_expense){
-			unset($data['header']["expense"]);
-			unset($data['header']["expense_text"]);
-			$args["hide_cols"]["expense"] = 1;
+		if ( ! $show_expense ) {
+			unset( $rows['header']["expense"] );
+			unset( $rows['header']["expense_text"] );
+			$args["hide_cols"]["expense"]      = 1;
 			$args["hide_cols"]["expense_text"] = 1;
 		}
 		$args["checkbox_class"] = "working_days";
 
-		foreach ($data['header'] as $key => $not_used){
+		foreach ( $rows['header'] as $key => $not_used ) {
 //			print "key: $key<br/>";
-			$data["totals"][$key] = (isset($counters[$key]) ? float_to_time($counters[$key]) : "");
+			$data["totals"][ $key ] = ( isset( $counters[ $key ] ) ? float_to_time( $counters[ $key ] ) : "" );
 		}
 
 //		print "after: " . $data["totals"]["dur_125"] . "<br/>";
-		$data = Core_Html::gui_table_args($data, "working_" . $user_id, $args);
+		$result .= Core_Html::gui_table_args( $rows, "working_" . $user_id, $args );
 
-		if ($edit)
-			$data .= Core_Html::GuiButton("btn_delete_from_report", "delete_lines()", "Delete");
+		if ( $edit ) {
+			$result .= Core_Html::GuiButton( "btn_delete_from_report", "Delete" , array("action" => "delete_lines()") );
+		}
 
-		$data      .= Core_Html::gui_header( 2, "חישוב שכר מקורב" ) . "<br/>";
-		$data      .= "שכר שעות " . $total_sal . "<br/>";
-		$data      .= "סהכ נסיעה " . $total_travel . "<br/>";
-		$data      .= "סהכ הוצאות " . $total_expense . "<br/>";
+		$result      .= Core_Html::gui_header( 2, "חישוב שכר מקורב" ) . "<br/>";
+		$result      .= "שכר שעות " . $total_sal . "<br/>";
+		$result      .= "סהכ נסיעה " . $total_travel . "<br/>";
+		$result      .= "סהכ הוצאות " . $total_expense . "<br/>";
 		$total_sal += $total_travel;
 		$total_sal += $total_expense;
-		$data      .= "סהכ " . $total_sal . "<br/>";
+		$result      .= "סהכ " . $total_sal . "<br/>";
 		if ( $user_id ) {
-			$email = Core_Users::CustomerEmail( $user_id );
+			$u     = new Core_Users( $user_id );
+			$email = $u->CustomerEmail();
 			$r     = "people/people-post.php?operation=get_balance_email&date=" .
 			         date( 'Y-m-j', strtotime( "last day of " . $year . "-" . $month ) ) . "&email=" . $email;
 			// print $r;
@@ -465,23 +703,93 @@ class Focus_Salary {
 			//print "basket: " . $b . "<br/>";
 
 			if ( $b > 0 ) {
-				$data .= " חיובי סלים " . round( $b, 2 );
+				$result .= " חיובי סלים " . round( $b, 2 );
 			}
 		}
 
-		return $data;
+		return $result;
 	}
 
+	/**
+	 * @return mixed
+	 */
 	function get_nav_name() {
 		return $this->nav_menu_name;
 	}
 
-//	function create_nav() {
-//		$user_id = get_user_id();
-//		if (! $user_id) return;
-//
-//		$this->nav_menu_name = "management." . $user_id;
-//
-//		Focus_Nav::instance()->create_nav($this->nav_menu_name, $user_id);
-//	}
+	/**
+	 * @return string
+	 * @throws Exception
+	 */
+	static public function worker_data_wrapper()
+	{
+		$user_id = get_param("user_id", false);
+		if (! $user_id) $user_id = get_user_id(true);
+		if (! $user_id) return "Not connected";
+		$instance = self::instance();
+		$year_month = get_param( "month", false, date( 'Y-m' ) );
+		$y          = intval(strtok( $year_month, "-" ));
+		$m          = intval(strtok( "" ));
+
+		return $instance->worker_data($user_id, $y, $m);
+	}
+
+	/**
+	 * @param $type
+	 * @param $id
+	 *
+	 * @return string
+	 */
+	static public function get_link($type, $id)
+	{
+		switch ($type) {
+			case "worker_monthly":
+				return "/salary_worker?user_id=$id";
+			case "worker_data":
+				return "/salary_worker_data?user_id=$id";
+		}
+	}
+
+	/**
+	 * @return array
+	 */
+	function getShortcodes() {
+//		print "get";
+		//           code                   function                              capablity (not checked, for now).
+		return array( 'salary_main'        => array( 'Focus_Salary::main',        'show_salary' ), // Workers list for now. ניהול פרטי שכר
+		              'salary_report'      => array( 'Focus_Salary::report',      'show_salary' ), // Report - all workers דוח שכר
+					  'salary_worker_data' => array( 'Focus_Salary::worker_data', 'show_salary' ), // Personal worker card פרטי עובד
+		              'salary_entry'       => array("Focus_Salary::entry",        null));          // Salary data entry
+	}
+}
+
+if (! function_exists("gui_select_client"))
+{
+	function gui_select_client( $id, $value, $args = null )
+	{
+		if ( ! $id ) {
+			$id = "client_select";
+		}
+
+		$events = GetArg($args, "events", null);
+		$active_days = GetArg($args, "active_days", null);
+		$new = GetArg($args, "new", false);
+
+		if ( $active_days > 0 ) {
+			$sql_where = "where id in (select client_id from im_client_accounts where DATEDIFF(now(), date) < " . $active_days;
+			if ( $new ) {
+				$sql_where .= " union select id from wp_users where DATEDIFF(now(), user_registered) < 3";
+			}
+			$sql_where .= ")";
+			$sql_where .= "order by 2";
+		} else {
+			$sql_where = "where 1 order by 2";
+		}
+
+		$select_args = array("name" => "client_displayname(id)", "include_id" => 1, "where"=> $sql_where, "events" => $events, "value"=>$value, "datalist" => 1);
+		// var_dump($select_args);
+		// return GuiSelectTable( $id, "wp_users", $select_args);
+		return Core_Html::GuiAutoList( $id, "users", $select_args);
+	}
+
 }

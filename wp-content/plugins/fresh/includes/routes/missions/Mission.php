@@ -500,7 +500,7 @@ function show_mission($mission_id)
 		$args["action"] = add_to_url(array("operation" => $tog . "_shipping_method&zone_id=" . $zone_id . "&instance_id=" . $shipping->instance_id)) . ";location_reload";
 
 		$args["text"] = $tog;
-		$en_dis = GuiButtonOrHyperlink("btn_" . $zone_id, null, $args);
+		$en_dis = Core_Html::GuiButtonOrHyperlink("btn_" . $zone_id, null, $args);
 
 		 array_push($zone_table, array(zone_get_name($zone_id), $shipping->title, $shipping->enabled, $en_dis));
 	}

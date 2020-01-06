@@ -1,8 +1,7 @@
 <?php
-
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
-
+// Theme functions:
+// 1) If it is a management page, load management.css - to remove unneeded elements.
+// 2) Add nav to office.
 /**
  * Created by PhpStorm.
  * User: agla
@@ -10,52 +9,47 @@ ini_set( 'display_errors', 'on' );
  * Time: 18:22
  */
 
-
 function add_stylesheet_to_head() {
-//    require_once( ABSPATH . 'wp-content/plugins/fresh/includes/core/fund.php' );
-
     if (class_exists("Flavor") and Flavor::isManagementPage()){
     	print '<link rel="stylesheet" type="text/css" href="' .  get_template_directory_uri() . '/css/management.css'.  '">'; // Hides logo, search and white area contains them.
-//        register_nav_menus(array('main-fresh' => __ ('Primary Menu', 'minezine')));
-
-//	    add_action( 'after_setup_theme', 'register_my_menu' );
-
-
-//	    $menu_id = wp_get_nav_menu_object('top-nav');
-
-//	    var_dump($menu_id);
-
-	    // Set up default menu items
-//	    wp_update_nav_menu_item($menu_id, 0, array(
-//		    'menu-item-title' =>  __('Home'),
-//		    'menu-item-classes' => 'home',
-//		    'menu-item-url' => home_url( '/' ),
-//		    'menu-item-status' => 'publish'));
-
-//	    wp_update_nav_menu_item($menu_id, 0, array(
-//		    'menu-item-title' =>  __('Custom Page'),
-//		    'menu-item-url' => home_url( '/custom/' ),
-//		    'menu-item-status' => 'publish'));
     }
-
 }
-
-
 
 add_action( 'wp_head', 'add_stylesheet_to_head' );
 
 
-return;
-
-if ( ! defined( "ROOT_DIR" ) ) {
-	define( 'ROOT_DIR', dirname( dirname( dirname( dirname( __FILE__ ) ) ) ) );
+add_filter( 'wp_get_nav_menu_items', 'custom_nav_menu_items', 20, 2 );
+function wpf_custom_nav_menu_item( $title, $url, $order, $parent = 0 ){
+	$item = new stdClass();
+	$item->ID = 1000000 + $order + $parent;
+	$item->db_id = $item->ID;
+	$item->title = $title;
+	$item->url = $url;
+	$item->menu_order = $order;
+	$item->menu_item_parent = $parent;
+	$item->type = '';
+	$item->object = '';
+	$item->object_id = '';
+	$item->classes = array();
+	$item->target = '';
+	$item->attr_title = '';
+	$item->description = '';
+	$item->xfn = '';
+	$item->status = '';
+	return $item;
 }
 
+function custom_nav_menu_items( $items, $menu ){
+	// only add item to a specific menu
+	if ( $menu->slug == 'info_site' ){
+		// only add profile link if user is logged in, and user is a staff member.
+//	add_filter( 'wp_nav_menu_items', 'wpf_nav', 10, 2 );
+		if ( get_current_user_id() ){
+			$current_user = wp_get_current_user();
+				if (in_array('staff_memeber', $current_user->roles))
+					$items[] = wpf_custom_nav_menu_item( 'Office', "/focus", 0 );
+		}
+	}
 
-require_once(ROOT_DIR . '/im-config.php');
-require_once( ROOT_DIR . "/init.php" );
-require_once( ROOT_DIR . '/core/data/sql.php' );
-require_once( ROOT_DIR . '/core/wp.php' );
-require_once(ROOT_DIR . '/fresh/pricing.php' );
-require_once( ROOT_DIR . '/core/gui/inputs.php' );
-
+	return $items;
+}

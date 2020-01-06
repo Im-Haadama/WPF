@@ -8,16 +8,6 @@ if (! function_exists('data_inactive')) {
 // $ignore_list = array("search", "operation", "table_name", "id", "dummy");
 
 
-	function data_inactive($table_name)
-{
-	// TODO: adding meta key when needed(?)
-	global $meta_table_info;
-
-	$row_id = intval(get_param("id", true));
-
-	return sql_query("update $table_name set is_active = 0 where id = $row_id");
-}
-
 function data_delete($table_name, $row_may_ids)
 {
 	// TODO: adding meta key when needed(?)

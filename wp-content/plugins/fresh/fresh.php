@@ -114,7 +114,7 @@ add_action( 'woocommerce_checkout_process', 'wc_minimum_order_amount' );
 add_action( 'woocommerce_before_cart', 'wc_minimum_order_amount' );
 add_action( 'woocommerce_checkout_order_processed', 'wc_minimum_order_amount' );
 add_action( 'woocommerce_after_cart_table', 'wc_after_cart' );
-add_action( 'wp_footer', 'im_footer' );
+//add_action( 'wp_footer', 'im_footer' );
 
 
 // wp_enqueue_style( $handle, $src, $deps, $ver, $media );
@@ -155,7 +155,7 @@ add_action( 'wp_footer', 'im_footer' );
 //}
 
 // in functions_im thema
-/*function wc_minimum_order_amount() {
+function wc_minimum_order_amount() {
 	$minimum = get_minimum_order();
 
 	if ( WC()->cart->total - WC()->cart->shipping_total < $minimum ) {
@@ -176,7 +176,7 @@ add_action( 'wp_footer', 'im_footer' );
 			);
 		}
 	}
-}*/
+}
 
 //function wc_after_cart() {
 ////    print "<a href=\"http://store.im-haadama.co.il/"

@@ -182,7 +182,7 @@ class Fresh_Client_Views {
 			if ($first) { $first = false; $value = "בחר";}
 			else {
 				if ($data1[$id]['transaction_method'] == "משלוח" and ! $data1[$id]['receipt']){ // Just unpaid deliveries
-					$value =  Core_Html::gui_checkbox("chk_" . $row_id, "trans_checkbox", false, "onchange=update_sum()");
+					$value =  Core_Html::GuiCheckbox("chk_" . $row_id, false, array("class" => "trans_checkbox", "events" => "onchange=update_sum()"));
 				}
 			}
 			array_unshift($data1[$id], $value);

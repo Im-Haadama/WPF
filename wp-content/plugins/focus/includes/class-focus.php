@@ -14,6 +14,8 @@ class Focus {
 	 * @var      Delivery_Drivers_Loader    $loader    Maintains and registers all hooks for the plugin.
 	 */
 	protected $loader;
+	protected $salary;
+	protected $views;
 
 	/**
 	 * Plugin version.
@@ -29,7 +31,6 @@ class Focus {
 	/**
 	 * @var null
 	 */
-	private $nav;
 
 	/**
 	 * The single instance of the class.
@@ -146,15 +147,14 @@ class Focus {
 		// add_action( 'switch_blog', array( $this, 'wpdb_table_fix' ), 0 );
 		// $orders = new Focus_Orders( $this->get_plugin_name(), $this->get_version() );
 
-		$views = Focus_Views::instance();
-		$salary = Focus_Salary::instance();
+		$views = Focus_Views::instance($this);
+		$salary = Focus_Salary::instance($this);
 
 		$this->loader->add_action( 'wp_enqueue_scripts', $views, 'enqueue_scripts' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $salary, 'enqueue_scripts' );
 
 		 require_once ABSPATH . 'wp-includes/pluggable.php';
-//		 wp_set_current_user(369);
-
+//		 if (get_user_id() == 1) wp_set_current_user(369);
 	}
 
 	/**
@@ -313,21 +313,14 @@ class Focus {
 		// Before init action.
 		do_action( 'before_focus_init' );
 
-//		new Focus_Nav("management." . get_user_id());
-
-//		print Focus_Nav::instance()->get_nav();
+		$this->salary = Focus_Salary::instance();
+		$this->views = Focus_Views::instance();
 
 		// Set up localisation.
 		$this->load_plugin_textdomain();
 		$shortcodes = Core_Shortcodes::instance();
-		//                      code                           function                  capablity (not checked, for now).
-		$shortcodes->add(array('focus_main'           => array('Focus_Views::show_main', 'show_tasks'),
-		                       'focus_task'           => array('Focus_views::show_task', 'show_tasks'),
-			                   'focus_repeating_task' => array('Focus_views::show_repeating_task', 'show_tasks'),
-			                   'focus_team'           => array('Focus_views::show_team', 'show_teams'),
-			                   'focus_project'        => array('Focus_views::show_project', 'show_projects'),
-			                   'focus_project_tasks'  => array('Focus_views::show_project_tasks', 'show_projects'),
-			                   'focus_salary'         => array('Focus_Salary::show_salary', 'show_salary')));
+		$shortcodes->add($this->salary->getShortcodes());
+		$shortcodes->add($this->views->getShortcodes());
 
 		// Load class instances.
 
@@ -579,5 +572,20 @@ class Focus {
 //
 //		return $this->nav;
 //	}
+
+	public function SettingPage()
+	{
+		$result = "";
+		$module_list = array( "Tasks" => array(array("Total ordered", "total_ordered")));
+
+		$result .= Flavor::ClassSettingPage($module_list);
+		return $result;
+	}
+
+	static function getPost()
+	{
+		return "/wp-content/plugins/focus/post.php";
+	}
 }
+
 
