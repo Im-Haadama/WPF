@@ -60,11 +60,13 @@ class Focus_Salary {
 	static public function handle_operation( $operation ) {
 		// Take the operation from module_operation.
 		switch ( $operation ) {
+			case "salary_delete":
 			case "delete":
 				$lines = get_param_array( "params" );
 
 				return ( Core_Data::Inactive( "im_working_hours", $lines ) );
 
+			case "salary_add_time":
 			case "add_time":
 				$start     = get_param( "start", true );
 				$end       = get_param( "end", true );
@@ -122,7 +124,7 @@ class Focus_Salary {
 			$args["links"]     = array(
 				"user_id" => self::get_link("worker_data", "%s")
 			);
-			$args["selectors"] = array( "project_id" => "Focus_Views::gui_select_project" );
+			$args["selectors"] = array( "project_id" => "Focus_Tasks::gui_select_project" );
 
 			$result .= Core_Gem::GemTable( "im_working", $args );
 		} else {
@@ -439,8 +441,8 @@ class Focus_Salary {
 		$args              = [];
 		$args["post_file"] = self::instance()->post_file;
 		$args["selectors"] = array(
-			"project_id" => "Focus_Views::gui_select_project",
-			"company_id" => "Focus_Views::gui_select_company",
+			"project_id" => "Focus_Tasks::gui_select_project",
+			"company_id" => "Focus_Tasks::gui_select_company",
 			"post_file" => $this->post_file
 		);
 		$args["hide_cols"] = array("volunteer", "company_id");

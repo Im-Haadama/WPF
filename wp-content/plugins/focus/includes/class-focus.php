@@ -15,7 +15,7 @@ class Focus {
 	 */
 	protected $loader;
 	protected $salary;
-	protected $views;
+	protected $tasks;
 
 	/**
 	 * Plugin version.
@@ -147,10 +147,10 @@ class Focus {
 		// add_action( 'switch_blog', array( $this, 'wpdb_table_fix' ), 0 );
 		// $orders = new Focus_Orders( $this->get_plugin_name(), $this->get_version() );
 
-		$views = Focus_Views::instance($this);
-		$salary = Focus_Salary::instance($this);
+		$tasks = Focus_Tasks::instance(self::getPost());
+		$salary = Focus_Salary::instance(self::getPost());
 
-		$this->loader->add_action( 'wp_enqueue_scripts', $views, 'enqueue_scripts' );
+		$this->loader->add_action( 'wp_enqueue_scripts', $tasks, 'enqueue_scripts' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $salary, 'enqueue_scripts' );
 
 		 require_once ABSPATH . 'wp-includes/pluggable.php';
@@ -241,7 +241,7 @@ class Focus {
 		{
 			case "bad_url":
 				$template_id = get_param("id", true);
-				return Focus_Views::show_task($template_id);
+				return Focus_Tasks::show_task($template_id);
 				break;
 //			case "reset_menu":
 //				print "Reset_menu<br/>";
@@ -262,7 +262,7 @@ class Focus {
 				return ($data->handle_operation($operation));
 				break;
 			default:
-				$focus = Focus_Views::instance();
+				$focus = Focus_Tasks::instance();
 				return $focus->handle_focus_do($operation);
 		}
 		return;
@@ -314,13 +314,13 @@ class Focus {
 		do_action( 'before_focus_init' );
 
 		$this->salary = Focus_Salary::instance();
-		$this->views = Focus_Views::instance();
+		$this->tasks = Focus_Tasks::instance();
 
 		// Set up localisation.
 		$this->load_plugin_textdomain();
 		$shortcodes = Core_Shortcodes::instance();
 		$shortcodes->add($this->salary->getShortcodes());
-		$shortcodes->add($this->views->getShortcodes());
+		$shortcodes->add($this->tasks->getShortcodes());
 
 		// Load class instances.
 
@@ -587,5 +587,3 @@ class Focus {
 		return "/wp-content/plugins/focus/post.php";
 	}
 }
-
-

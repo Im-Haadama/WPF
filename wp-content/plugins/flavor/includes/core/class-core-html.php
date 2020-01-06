@@ -1255,7 +1255,7 @@ class Core_Html {
 				if ( $length > 100 ) {
 					$value = Core_Html::gui_textarea( $input_name, $data, $events );
 				} else {
-					$value = GuiInput( $input_name, $data, $args ); // gui_input( $input_name, $data, $field_events, $row_id );
+					$value = self::GuiInput( $input_name, $data, $args ); // gui_input( $input_name, $data, $field_events, $row_id );
 				}
 				break;
 			case 'fun':  // function

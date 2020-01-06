@@ -59,6 +59,7 @@ class Core_Gem {
 		$result .= $row;
 
 		if (GetArg($args, "edit", false) and $post) {
+//			if (get_user_id() == 1) var_dump($post);
 			$result .= Core_Html::GuiButton( "btn_save", "save", array("action" => "data_save_entity('" . $post . "', '$table_name', " . $row_id . ')'));
 			$result .= Core_Html::GuiButton( "btn_active", $active ? "inactive" : "activate", array("action" => "active_entity(" . (1 - $active) .", '" . $post . "', '$table_name', " . $row_id . ')') );
 		}
