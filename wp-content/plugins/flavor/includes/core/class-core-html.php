@@ -1329,6 +1329,34 @@ class Core_Html {
 		return $result;
 	}
 
+	static private function GuiTreeBranch($branch, $args)
+	{
+		$class = GetArg($args, "class", "caret");
+		$nested_class = GetArg($args, "nested_class", "nested");
+		$result = "<li><span class='$class'>". $branch['title'] . "</span>";
+		$result .= '<ul class="' . $nested_class . '">';
+		foreach ($branch['childs'] as $child){
+			if (is_array($child))
+				$result .= self::GuiTreeBranch($child, $args);
+			else
+				$result .= "<li>" . $child . "</li>";
+		}
+		$result .= "</ul>";
+
+		return $result;
+	}
+
+	static function GuiTree($tree, $id)
+	{
+		$result = "<ul id = $id>";
+		foreach ($tree as $branch)
+			$result .= self::GuiTreeBranch($branch, $args = array());
+
+		$result .= "</ul>";
+
+		return $result;
+	}
+
 	static function GuiTabs($tabs)
 	{
 		$result = '<div class="tab">';
