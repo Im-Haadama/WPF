@@ -919,7 +919,7 @@ class Focus_Tasks {
 		// Tasks I've created. Assigned to some else                                                                 //
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		$args["title"]       = im_translate( "Tasks I've initiated to other teams" );
-		$args["query"]       = " creator = " . $user_id . " and (owner != " . $user_id . ' or isnull(owner)) and team not in (' . comma_implode( $teams ) . ")";
+		$args["query"]       = " creator = " . $user_id . " and (owner != " . $user_id . ' or isnull(owner)) ' . ($teams ? ' and team not in (' . comma_implode( $teams ) . ")" : '');
 		$args["limit"]       = get_param( "limit", false, 10 );
 		$args["active_only"] = get_param( "active_only", false, true );
 		$result              .= Focus_Tasks::active_tasks( $args );
@@ -1008,7 +1008,7 @@ class Focus_Tasks {
 		$links["id"]            = self::get_link("task", "%s");
 		// Use drill, instead - $links["project_id"] = $page_url . "?operation=show_project&id=%s";
 		$args["links"] = $links;
-
+		$args["post_file"] = self::getPost();
 		$args["actions"]       = $actions;
 		$args["id_field"]      = "id";
 		$args["edit"]          = false;
@@ -1038,7 +1038,7 @@ class Focus_Tasks {
 				print "sql = $sql<br/>";
 			}
 			$args["sql"] = $sql;
-			$table       = Core_Gem::GemTable( "im_tasklist", $args );
+			$table       = Core_Gem::GemTable("im_tasklist", $args );
 //		print "CC=" . $args["count"] . "<br/>";
 			// $table = GuiTableContent( $table_name, $sql, $args );
 			// if (! $args["count"]) return "";

@@ -9,7 +9,7 @@ class Core_Gem {
 		$result .= Core_Html::NewRow($table_name, $args);
 		$post = GetArg($args, "post_file", null);
 		$next_page = GetArg($args, "next_page", null);
-		if (! $post) die(__FUNCTION__ . ":" . $text . "must send post_file");
+		if (! $post) die(__FUNCTION__ . ":" . $text . "must send post_file " . $table_name);
 		if ($next_page){
 			$result .= '<script>
 		function next_page(xmlhttp) {
@@ -146,8 +146,9 @@ class Core_Gem {
 		if (! isset($args["title"])) $title = "content of table " . $table_name;
 		$post_file = GetArg($args, "post_file", null);
 		if (! $post_file) {
+			print "must send post_file " . $table_name . "<br/>";
 			print sql_trace();
-			print "must send post_file";
+			die(1);
 		}
 
 		$args["events"] = 'onchange="update_table_field(\'' . $post_file . '\', \'' . $table_name . '\', \'%d\', \'%s\', check_update)"';

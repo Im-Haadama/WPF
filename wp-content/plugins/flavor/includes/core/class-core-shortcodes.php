@@ -58,7 +58,7 @@ class Core_Shortcodes {
 				$function = $function_couple[0];
 				$capability = $function_couple[1];
 				if ($capability and ! im_user_can($capability)) {
-//					print "can't $capability";
+					add_shortcode( apply_filters( "{$shortcode}_shortcode_tag", $shortcode ), 'Core_Shortcodes::missing_capability' );
 					continue;
 				}
 //				 print "adding {$shortcode}_shortcode_tag" . " ". $shortcode ." " . $function;
@@ -122,5 +122,10 @@ class Core_Shortcodes {
 		}
 
 		return self::shortcode_wrapper( array( 'Core_Suppliers', 'handle' ), $atts );
+	}
+
+	public static function missing_capability()
+	{
+		return "Capability is missing";
 	}
 }
