@@ -133,7 +133,7 @@ class Fresh_Delivery {
 		$result = "";
 		$order = $this->getOrder();
 
-		$result .= Core_Html::Core_Html::gui_header(1, __("הזמנה") . " " . $this->OrderId()) . "<br/>";
+		$result .= Core_Html::gui_header(1, __("הזמנה") . " " . $this->OrderId()) . "<br/>";
 		$result .= im_translate("Order date") . ": " . $order->GetOrderDate() . "<br/>";
 		$result .= __("Supply date") . ": " . $this->GetDate() . "<br/>";
 
@@ -985,7 +985,7 @@ class Fresh_Delivery {
 
 	public static function CreateFromOrder( $order_id ) {
 
-		$id = get_delivery_id( $order_id );
+		$id = Fresh_Order::get_delivery_id( $order_id );
 
 		$instance = new self( $id );
 

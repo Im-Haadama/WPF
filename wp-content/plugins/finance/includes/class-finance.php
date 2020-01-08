@@ -14,6 +14,7 @@ class Finance {
 	protected $loader;
 	protected $shortcodes;
 	protected $payments;
+	protected $bank;
 
 	/**
 	 * Plugin version.
@@ -159,7 +160,7 @@ class Finance {
 		$this->define( 'FINANCE_PLUGIN_BASENAME', plugin_basename( FINANCE_PLUGIN_FILE ) );
 		$this->define( 'FINANCE_VERSION', $this->version );
 		$this->define( 'FINANCE_INCLUDES', FINANCE_ABSPATH . 'includes/' );
-		$this->define( 'FLAVOR_INCLUDES_URL', plugins_url() . '/flavor/includes/' ); // For js
+		$this->define( 'FINANCE_INCLUDES_URL', plugins_url() . '/finance/includes/' ); // For js
 		$this->define( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path(__FILE__) . '../../flavor/includes/' );  // for php
 		$this->define( 'FINANCE_DELIMITER', '|' );
 		$this->define( 'FINANCE_LOG_DIR', $upload_dir['basedir'] . '/finance-logs/' );
@@ -208,7 +209,32 @@ class Finance {
 				$order_id = get_param("order_id", true);
 				return self::new_customer($order_id);
 
+			case 'bank_import_from_file':
+//				require_once( FINANCE_INCLUDES . "/core/data/Importer.php" );
+//				var_dump($_FILES);
+				$file_name = $_FILES["fileToUpload"]["tmp_name"];
+				print "Trying to import $file_name<br/>";
+				$I                    = new Core_Importer();
+				$fields               = null;
+				$fields               = array();
+				$fields['account_id'] = get_param( 'selection' );
+				if ( ! $fields['account_id'] ) {
+					die( "not account given" );
+				}
+				try {
+					$result = $I->Import( $file_name, "im_bank", $fields, 'Finance_Bank::bank_check_dup' );
+				} catch ( Exception $e ) {
+					print $e->getMessage();
+
+					return;
+				}
+				print $result[0] . " rows imported<br/>";
+				print $result[1] . " duplicate rows <br/>";
+				print $result[2] . " failed rows <br/>";
+				return true;
+				break;
 		}
+		return false;
 	}
 
 	/**
@@ -339,9 +365,11 @@ class Finance {
 		// Set up localisation.
 		$this->load_plugin_textdomain();
 
+		$this->bank = Finance_Bank::instance();
 		$this->payments = Finance_Payments::instance();
 		$this->shortcodes = Core_Shortcodes::instance();
 		$this->shortcodes->add($this->payments->getShortcodes());
+		$this->shortcodes->add($this->bank->getShortcodes());
 
 		$this->shortcodes->do_init();
 
@@ -385,7 +413,7 @@ class Finance {
 		$result = "";
 
 		if (im_user_can("show_bank")) {
-			$bank = new Finance_Bank();
+			$bank = new Finance_Bank(FINANCE_PLUGIN_DIR . '/post.php');
 			$operation = get_param("operation", false, null);
 			print "operation: $operation<br/>";
 			if ($operation) {
@@ -406,166 +434,6 @@ class Finance {
 		print $result;
 	}
 
-	static function handle_bank_operation($operation, $url = null) {
-		$account_id = 1;
-		$ids = null;
-		$post_file = get_url(1);
-
-		// Todo: change to operation
-		if (get_param("search", false, 0)){
-			$ids=data_search("im_bank");
-			Core_Html::gui_header(1, "Results");
-			if (! $ids){
-				print im_translate("Nothing found");
-				return;
-			}
-		}
-
-		switch ( $operation ) {
-			case "bank_receipts":
-			case "receipts":
-				$args = array();
-				print Core_Html::gui_header( 1, "Receipts" );
-				$args["header_fields"] = array( "Id", "Date", "Description", "Amount" );
-				$args["actions"]       = array(
-					array(
-						"Receipt",
-						"/org/business/business-post.php?operation=1&id=%s"
-					),
-					array(
-						"Return",
-						"/org/business/business-post.php?operation=mark_return_bank&id=%s"
-					)
-
-				);
-				$query                 = "  account_id = " . $account_id . " and receipt is null and in_amount > 0 " .
-				                         " and description not in (select description from im_bank_transaction_types) ";
-
-				if ( $ids ) {
-					$query .= " and id in (" . comma_implode( $ids ) . ")";
-				}
-				// " order by date desc limit $rows_per_page offset $offset";
-
-				$args["fields"] = array( "id", "date", "description", "in_amount", "reference" );
-
-				print bank_transactions( $query, $args );
-
-				return;
-
-			case "bank_payments":
-			case "payments":
-				$args = array();
-				print Core_Html::gui_header( 1, "Payments" );
-				$args["header_fields"] = array( "Id", "Date", "Description", "Amount" );
-				$args["actions"]       = array(
-					array(
-						"Mark payment",
-						"/org/business/business-post.php?operation=create_pay_bank&id=%s"
-					)
-				);
-				$page                  = get_param( "page", false, 1 );
-				$rows_per_page         = 20;
-				$offset                = ( $page - 1 ) * $rows_per_page;
-				$query                 = "  account_id = " . $account_id . " and receipt is null and out_amount > 0 " .
-				                         " and description not in (select description from im_bank_transaction_types) ";
-
-				if ( $ids ) {
-					$query .= " and id in (" . comma_implode( $ids ) . ")";
-				}
-				// " order by date desc limit $rows_per_page offset $offset";
-
-				$args["fields"] = array( "id", "date", "description", "out_amount", "reference" );
-//			$sql = "select id, date, description, out_amount, reference from im_bank where account_id = " . $account_id .
-//			       " and receipt is null and out_amount > 0 " .
-//			       " and description not in (select description from im_bank_transaction_types) " .
-//			       " order by date desc limit $rows_per_page offset $offset";
-
-				//		print GuiTableContent( "im_banking", $sql, $args);
-
-				//		print Core_Html::GuiHyperlink("Older", add_to_url("page", $page + 1));
-
-				print bank_transactions( $query, $args );
-
-				return;
-
-			case "transaction_types":
-				$args = array();
-				// $args["selectors"] = array("part_id" => "gui_select_supplier");
-
-				print Core_Html::GuiTableContent( "im_bank_transaction_types", null, $args );
-				print Core_Html::GuiHyperlink( "add", add_to_url( "operation", "add_transaction_types" ) );
-
-				return;
-
-			case "add_transaction_types":
-				$args              = array();
-				$args["selectors"] = array( "part_id" => "gui_select_supplier" );
-				$args["post_file"] = "/core/data/data-post.php";
-
-				print Core_Gem::GemAddRow( "im_bank_transaction_types", "Transaction types", $args );
-
-				return;
-
-			case "search":
-				$args           = array();
-				$search_url     = "search_table('im_bank', '" . add_param_to_url( $url, "search", "1" ) . "')";
-				$args["search"] = $search_url; //'/fresh/bank/bank-page.php?operation=do_search')";
-				GemSearch( "im_bank", $args );
-
-				return;
-
-			case "do_search":
-				$ids = data_search( "im_bank" );
-				Core_Html::gui_header( 1, "Results" );
-				if ( ! $ids ) {
-					print im_translate( "Nothing found" );
-
-					return;
-				}
-				print bank_transactions( "id in (" . comma_implode( $ids ) . ")" );
-				return;
-
-			case "bank_show_import":
-			case "import":
-				$args                  = array();
-				$args["selector"]      = "gui_select_bank_account";
-				$args["import_action"] = $post_file . '?operation=bank_import_from_file';
-
-				$args["page"] = 1;
-				$args["order"] = "3 desc";
-				print Core_Gem::GemTable("im_bank", $args);
-
-				print Core_Gem::GemImport( "im_bank", $args );
-				print '<script> window.onload = change_import;</script>';
-				break;
-
-			case 'bank_import_from_file':
-				require_once( FINANCE_INCLUDES . "/core/data/Importer.php" );
-				$file_name = $_FILES["fileToUpload"]["tmp_name"];
-				print "Trying to import $file_name<br/>";
-				$I                    = new Importer();
-				$fields               = null;
-				$fields               = array();
-				$fields['account_id'] = get_param( 'selection' );
-				if ( ! $fields['account_id'] ) {
-					die( "not account given" );
-				}
-				try {
-					$result = $I->Import( $file_name, "im_bank", $fields, 'bank_check_dup' );
-				} catch ( Exception $e ) {
-					print $e->getMessage();
-
-					return;
-				}
-				print $result[0] . " rows imported<br/>";
-				print $result[1] . " duplicate rows <br/>";
-				print $result[2] . " failed rows <br/>";
-				break;
-
-			case "show_transactions":
-				print bank_transactions( $ids ? "id in (" . comma_implode( $ids ) . ")" : null );
-		}
-	}
 
 //	/**
 //	 * Load Localisation files.
@@ -691,6 +559,8 @@ class Finance {
 		$file = FLAVOR_INCLUDES_URL . 'core/gui/client_tools.js';
 		wp_enqueue_script( 'client_tools', $file, null, $this->version, false );
 
+		$file = FINANCE_INCLUDES_URL . 'finance.js';
+		wp_enqueue_script( 'finance', $file, null, $this->version, false );
 	}
 
 

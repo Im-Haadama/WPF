@@ -14,14 +14,15 @@ if ( ! defined( "ABSPATH" ) ) {
 }
 
 require_once(ABSPATH . 'wp-config.php');
-require_once (dirname(dirname(dirname(__FILE__))) . '/includes/core/wp.php');
+require_once(ABSPATH . 'wp-content/plugins/flavor/includes/core/class-core-html.php');
+//require_once (dirname(dirname(dirname(__FILE__))) . '/includes/core/wp.php');
 // wp-content/plugins/fresh/includes/version/update_database.php
 
 //require_once (FRESH_INCLUDES . "/im-config.php");
 
 // print "host=" . DB_HOST . "<br/>";
 //require_once( FRESH_INCLUDES . '/core/gui/sql_table.php' );
-require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
+//require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 
 //require_once( FRESH_INCLUDES . "/init.php" );
 //init();
@@ -1110,12 +1111,23 @@ function get_versions()
     	install_date date)" );
 		return "init";
 	}
-	return gui_table_args($versions);
+	return Core_Html::gui_table_args($versions);
 }
 
 function version29()
 {
+	print Core_Html::gui_header(1, "bank balance");
+	sql_query("drop function bank_balance");
+	sql_query("create function bank_balance(account_id int) returns float
+BEGIN
+  declare _balance float;
+  SELECT balance INTO _balance FROM im_bank 
+where date = (select max(date) from im_bank where account_id = 1) and account_id = 1;
+  
+  return _balance;
+END;
 
+");
 	print Core_Html::gui_header(1, "last delivery");
 	sql_query("create function client_id_from_delivery(del_id int) returns text
 BEGIN

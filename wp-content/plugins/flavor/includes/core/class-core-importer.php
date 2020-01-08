@@ -6,7 +6,7 @@
  * Date: 18/02/19
  * Time: 18:23
  */
-class Importer {
+class Core_Importer {
 	// conversion look like $conversion["name"] = array("שם", "תיאור")...
 	// $conversion["price"] = array("מחיר")...
 	// $map created. Looks like: $map["name"] = 1, $map["price"] = 2. etc.

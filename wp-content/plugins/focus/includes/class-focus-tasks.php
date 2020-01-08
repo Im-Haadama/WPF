@@ -51,8 +51,8 @@ class Focus_Tasks {
 	static function show_main_wrapper()
 	{
 		$user_id = get_user_id(true);
-		$atts = GetParams();
-		if ($user_id) return self::main($user_id, $atts);
+		$args = self::Args();
+		if ($user_id) return self::main($user_id, $args);
 	}
 
 	static function show_repeating_task()
@@ -112,6 +112,12 @@ class Focus_Tasks {
 		}
 
 		return $result;
+	}
+
+	static function Args()
+	{
+		return array("page" => get_param("page", false, -1),
+			"post_file" => self::getPost());
 	}
 
 	static function getPost()

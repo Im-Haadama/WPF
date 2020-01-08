@@ -228,28 +228,24 @@ class Core_Gem {
 
 		$selector = GetArg($args, "selector", null);
 
-		$args["events"] = "onchange='change_import'";
+		$form_id = 'gem_import_' . $table_name;
+		$args["events"] = "onchange='change_import(\"" . $action_file . "\", \"$form_id\")'";
+
 		if ($selector) $result .= $selector("import_select", null, $args);
 
 		// Selecting gui
-		$result .= '<form name="upload_csv" id="upcsv" method="post" enctype="multipart/form-data">'.
+		$result .= '<form name="gem_import" id="' . $form_id . '" method="post" enctype="multipart/form-data">'.
 		           im_translate('Load from csv file') .
 		           '<input type="file" name="fileToUpload" id="fileToUpload">
         <input type="submit" value="טען" name="submit">
 
         <input type="hidden" name="post_type" value="product"/>
-    </form>';
+    </form>
+		<script>
+		wait_for_selection();
+       </script>';
 
 		// Setting the action upon selection
-		$result .= '
-<script>
-function change_import() {
-		let selected = get_value_by_name("import_select");
-		let upcsv = document.getElementById("upcsv");
-		upcsv.action = \'' . $action_file . '&selection=\'+ selected;
-		}
-	</script>';
-
 		return $result;
 	}
 

@@ -43,7 +43,7 @@ class Fresh_Control {
 			$rows   = sql_query_array( "select product_name, quantity_ordered, quantity from im_delivery_lines where delivery_id = " . $d->getID() );
 //			print "row count: " . count($rows) ."<br/>";
 			$result .= "<table>";
-			$result .= gui_row( array(
+			$result .= Core_Html::gui_row( array(
 				"Product name",
 				"Ordered",
 				"Delivered",
@@ -61,7 +61,7 @@ class Fresh_Control {
 						$row[ $j * 3 + 2 ] = $rows[ $i + $j][2]; // supplied
 					}
 				}
-				$result .= gui_row($row);
+				$result .= Core_Html::gui_row($row);
 			}
 			$result .= "</table>";
 //			for ( $i = 0; $i < $col_number; $i ++ ) {

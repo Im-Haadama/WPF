@@ -627,7 +627,7 @@ class Core_Html {
 					$show_cell = $show[ $i ];
 					//				print $i . " " . $show_cell . "<br/>";
 				}
-				$data .= gui_cell( $cell, $cell_id, $show_cell );
+				$data .= Core_Html::gui_cell( $cell, $cell_id, $show_cell );
 				$i ++;
 			}
 		} else {
@@ -953,6 +953,10 @@ class Core_Html {
 	 * @return string
 	 */
 	static function GuiSelectTable( $id, $table, $args ) {
+
+		if (! $table)
+			die (__FUNCTION__ . ": table is missing");
+
 		//	print __FUNCTION__ . "<br/>";
 		$selected             = GetArg( $args, "selected", null );
 		$events               = GetArg( $args, "events", null );
@@ -1189,6 +1193,8 @@ class Core_Html {
 			$id_key = "id";
 		}
 
+		if (! $table)
+			die (__FUNCTION__ . " table is missing");
 		$values = array();
 
 		if ( $more_values ) {

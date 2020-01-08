@@ -108,7 +108,7 @@ class Fresh_Shortcodes {
 	public static function packing_control( $atts ) {
 		$operation = get_param("operation", false, "inventory");
 		if (get_user_id(true))
-			print Fresh_Packing::instance()->handle_operation($operation);
+			print Fresh_Control::handle($operation);
 	}
 
 	public static function orders( $atts ) {

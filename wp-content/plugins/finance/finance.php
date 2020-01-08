@@ -25,6 +25,10 @@ if ( ! defined( 'FINANCE_PLUGIN_FILE' ) ) {
 	define( 'FINANCE_PLUGIN_FILE', __FILE__ );
 }
 
+if ( ! defined( 'FINANCE_PLUGIN_DIR' ) ) {
+	define( 'FINANCE_PLUGIN_DIR', dirname(FINANCE_PLUGIN_FILE) );
+}
+
 // Include the main WooCommerce class.
 if ( ! class_exists( 'Finance' ) ) {
 	include_once dirname( __FILE__ ) . '/includes/class-finance.php';
