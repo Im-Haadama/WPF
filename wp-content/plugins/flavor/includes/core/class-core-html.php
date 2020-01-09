@@ -725,7 +725,8 @@ class Core_Html {
 	 * @return string
 	 * @throws Exception
 	 */
-	static function gui_table_args( $input_rows, $id = null, $args = null ) {
+	static function gui_table_args( $input_rows, $id = null, $args = null )
+	{
 		$debug       = GetArg( $args, "debug", false );
 		$width       = GetArg( $args, "width", null );
 		$bordercolor = GetArg( $args, "bordercolor", null );

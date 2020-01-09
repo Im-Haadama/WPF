@@ -848,7 +848,7 @@ if (! function_exists("my_log")) {
 	 *
 	 * @return string|null
 	 */
-	function add_param_to_url($url, $param_name, $param_value = null) {
+	function add_param_to_url($url, $param_name, $param_value = null, $encode = true) {
 		$ignore_list = array( "page" ); // Would be removed from base url.
 		$query_parts = [];
 		if ( is_null( $param_value ) and ! is_array( $param_name ) ) {
@@ -892,7 +892,7 @@ if (! function_exists("my_log")) {
 		$glue = '?';
 		// $result .= "?";
 		foreach ( $query_parts as $param => $value ) {
-			$result .= $glue . $param . '=' . encodeURIComponent($value);
+			$result .= $glue . $param . '=' . ($encode ? encodeURIComponent($value) : $value);
 			$glue   = "&";
 		}
 
@@ -910,6 +910,12 @@ if (! function_exists("my_log")) {
 	{
 		return add_param_to_url(get_url(), $param_name, $param_value);
 	}
+
+	function add_to_url_no_encode($param_name, $param_value = null)
+	{
+		return add_param_to_url(get_url(), $param_name, $param_value, false);
+	}
+
 
 }
 

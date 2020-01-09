@@ -12,16 +12,16 @@ if ( ! defined( 'FRESH_INCLUDES' ) ) {
 	define( 'FRESH_INCLUDES',  dirname(dirname( dirname( __FILE__)  ) ));
 }
 
-require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
-require_once( FRESH_INCLUDES . '/org/business/business.php' );
-require_once( FRESH_INCLUDES . '/fresh-public/invoice4u/invoice.php' );
-require_once( FRESH_INCLUDES . '/core/data/html2array.php' );
-require_once( FRESH_INCLUDES . '/fresh-public/multi-site/imMulti-site.php' );
-require_once( FRESH_INCLUDES . '/org/business/BankTransaction.php' );
-require_once( FRESH_INCLUDES . '/fresh-public/suppliers/gui.php' );
-require_once( FRESH_INCLUDES . '/core/gui/input_data.php' );
-require_once( FRESH_INCLUDES . '/core/gui/input_data.php' );
-require_once( FRESH_INCLUDES . '/fresh-public/account/account.php' );
+//require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
+//require_once( FRESH_INCLUDES . '/org/business/business.php' );
+//require_once( FRESH_INCLUDES . '/fresh-public/invoice4u/invoice.php' );
+//require_once( FRESH_INCLUDES . '/core/data/html2array.php' );
+//require_once( FRESH_INCLUDES . '/fresh-public/multi-site/imMulti-site.php' );
+//require_once( FRESH_INCLUDES . '/org/business/BankTransaction.php' );
+//require_once( FRESH_INCLUDES . '/fresh-public/suppliers/gui.php' );
+//require_once( FRESH_INCLUDES . '/core/gui/input_data.php' );
+//require_once( FRESH_INCLUDES . '/core/gui/input_data.php' );
+//require_once( FRESH_INCLUDES . '/fresh-public/account/account.php' );
 
 
 require_once( FRESH_INCLUDES . "/init.php" );
@@ -42,7 +42,7 @@ if ( $operation) {
 		case "exists_invoice":
 			$bank_id = get_param("bank_id", true);
 			$invoice = get_param("invoice", true);
-			$b = BankTransaction::createFromDB( $bank_id );
+			$b = Finance_Bank_Transaction::createFromDB( $bank_id );
 			$b->Update( 0, $invoice, 0 );
 			print "done";
 			break;
@@ -121,7 +121,7 @@ if ( $operation) {
 			$id = get_param( "id" );
 			print Core_Html::gui_header( 1, "רישום העברה שבוצעה " );
 
-			$b = BankTransaction::createFromDB( $id );
+			$b = Finance_Bank_Transaction::createFromDB( $id );
 			print Core_Html::gui_header( 2, "פרטי העברה" );
 			$free_amount = $b->getOutAmount( true );
 			print gui_table_args( array(
@@ -166,7 +166,7 @@ if ( $operation) {
 
 			foreach ( $data as $key => $row ) {
 				$id = $data[ $key ][0];
-				$b  = BankTransaction::createFromDB( $id );
+				$b  = Finance_Bank_Transaction::createFromDB( $id );
 				if ( $b->getOutAmount( true ) ) {
 					array_push( $data[ $key ], Core_Html::GuiHyperlink( "קשר", "business-post.php?operation=create_pay_bank&id=" . $id ) );
 				}
@@ -193,7 +193,7 @@ if ( $operation) {
 
 				sql_query($sql);
 			}
-			$b    = BankTransaction::createFromDB( $bank_id );
+			$b    = Finance_Bank_Transaction::createFromDB( $bank_id );
 			$date = $b->getDate();
 
 			// 2) mark the invoices to transaction.
@@ -221,7 +221,7 @@ if ( $operation) {
 			$bank         = get_param( "bank" );
 
 			// 1) mark the bank transaction to invoice.
-			$b    = BankTransaction::createFromDB( $bank_id );
+			$b    = Finance_Bank_Transaction::createFromDB( $bank_id );
 			$date = $b->getDate();
 
 			// 2) mark the invoices to transaction.
@@ -261,41 +261,6 @@ if ( $operation) {
 			break;
 
 		case "create_invoice_bank":
-			require_once( FRESH_INCLUDES . '/org/business/BankTransaction.php' );
-			require_once( FRESH_INCLUDES . '/fresh-public/account/gui.php' );
-			print header_text( false, true, true,
-				array(
-					"business.js",
-					"/core/gui/client_tools.js",
-					"/fresh/account/account.js"
-				) );
-			$id = get_param( "id" );
-			$b = BankTransaction::createFromDB( $id );
-			print Core_Html::gui_header( 1, "הפקת חשבונית קבלה להפקדה מבנק " );
-
-			print Core_Html::gui_header( 2, "פרטי העברה" );
-			print gui_table_args( array(
-					array( "תאריך", gui_div( "pay_date", $b->getDate() ) ),
-					array( "סכום", gui_div( "bank", $b->getInAmount() ) ),
-					array( "מזהה", gui_div( "bank_id", $id ) )
-				)
-			);
-
-			print Core_Html::gui_header(2, "חשבונית שהופקה");
-			print GuiInput("invoice_id");
-			print Core_Html::GuiButton("btn_invoice_exists", "invoice_exists()", "Exists invoice");
-
-			print Core_Html::gui_header( 2, "בחר לקוח" );
-			print gui_select_client_open_account();
-			print '<div id="logging"></div>';
-			print '<div id="transactions"></div>';
-			print gui_table( array(
-				array(
-					"תשלום",
-					Core_Html::GuiButton( "btn_receipt", "create_receipt_from_bank()", "הפק חשבונית מס קבלה" )
-				),
-				array( "עודף", " <div id=\"change\"></div>" )
-			), "payment_table", true, true, $sums, "", "payment_table" );
 
 			break;
 
@@ -309,7 +274,7 @@ if ( $operation) {
 					"/fresh/account/account.js"
 				) );
 			$id = get_param( "id" );
-			$b = BankTransaction::createFromDB( $id );
+			$b = Finance_Bank_Transaction::createFromDB( $id );
 			print Core_Html::gui_header( 1, "סמן החזר מהספק" );
 
 			print Core_Html::gui_header( 2, "פרטי העברה" );
@@ -465,7 +430,7 @@ function business_create_multi_site_receipt( $bank_id, $bank_amount, $date, $cha
 
 	if ( $receipt > 0 ) {
 		// TODO: to parse $id from $result;
-		$b = BankTransaction::createFromDB( $bank_id );
+		$b = Finance_Bank_Transaction::createFromDB( $bank_id );
 		$b->Update( $user_id, $receipt, $site_id );
 		print "done.$receipt";
 	} else {
@@ -501,36 +466,6 @@ function gui_select_open_supplier( $id = "supplier" ) {
 	// return gui_select_datalist( $id, "im_suppliers", "open_supplier", "name", $open, 'onchange="supplier_selected()"', null, true );
 }
 
-function gui_select_client_open_account( $id = "open_account" ) {
-	$output = "";
-	global $multi_site;
-	$url = "org/business/business-post.php?operation=get_client_open_account";
-	$result = $multi_site->GetAll( $url );
-	foreach ($multi_site->getHttpCodes() as $side_id => $code){
-		if ($code != 200) {
-			$output .= "Can't get result from " . $multi_site->getSiteName($side_id) . " error: $code <br/>";
-			if (get_user_id()== 1) $output .= $url . "<br/>";
-		}
-	}
-	$values  = html2array( $result );
-	$open    = array();
-	$list_id = 0;
-	foreach ( $values as $value ) {
-		$new              = array();
-		$new["id"]        = $list_id ++;
-		$new["site_id"]   = $value[0];
-		$new["client_id"] = $value[1];
-		$new["name"]      = $value[2];
-		$new["balance"]   = $value[3];
-		array_push( $open, $new );
-	}
-	$events = 'onchange="client_selected()"';
-	$datalist_id = $id . "_datalist";
-	$output .= GuiInputDatalist($id, $datalist_id, $events);
-	$output .= GuiDatalist( $datalist_id, $open, "id","name", false);
-
-	return $output;
-}
 
 function create_makolet( $month_year ) {
 	print "מפיק חשבונית לחודש " . $month_year . "<br/>";

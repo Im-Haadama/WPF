@@ -199,6 +199,12 @@ class Finance {
 
 	function handle_operation($operation)
 	{
+		$module = strtok($operation, "_");
+		switch ($module)
+		{
+			case "bank":
+				return $this->bank->handle_bank_operation($operation);
+		}
 		switch ($operation)
 		{
 			case "data_update":

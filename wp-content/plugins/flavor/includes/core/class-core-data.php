@@ -472,7 +472,10 @@ class Core_Data
 						$btn = "btn_$text" . "_" . $row_id;
 						array_push($row_data, Core_Html::GuiButton($btn, $text, array("action" => "execute_url('" . $action_url . "', $client_action, $btn )", $text)));
 					} else {
-						$action_url = sprintf($action[1], $row_id);
+//						$action_url = $row_id . $action[1];
+						if (! $row_id) $action_url = ($action[1] . "row id missing");
+						else $action_url = sprintf($action[1], $row_id);
+						print $action[1] . " action=$action_url<br/>";
 						array_push($row_data, Core_Html::GuiHyperlink($text, $action_url, $args));
 					}
 				} else {

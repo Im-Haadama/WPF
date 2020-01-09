@@ -90,7 +90,8 @@ class Fresh_Shortcodes {
 			$atts[$param] = $value;
 		}
 
-		return self::shortcode_wrapper( array( 'Fresh_Inventory', 'handle' ), $atts );
+		return Fresh_Inventory::handle();
+//		return self::shortcode_wrapper( array( 'Fresh_Inventory', 'handle' ), $atts );
 	}
 
 	public static function suppliers( $atts ) {

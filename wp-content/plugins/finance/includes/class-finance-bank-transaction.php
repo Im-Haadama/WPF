@@ -7,7 +7,7 @@
  * Time: 15:34
  * Todo: for now - the code is for single company per installation
  */
-class BankTransaction {
+class Finance_Bank_Transaction {
 	private $id;
 	private $in_amount;
 	private $out_amount;
@@ -25,7 +25,7 @@ class BankTransaction {
 		if ( ! $row ) {
 			throw new Exception( "Transaction not found" );
 		}
-		$r = new BankTransaction();
+		$r = new Finance_Bank_Transaction();
 
 		$r->id         = $id;
 		$r->in_amount  = $row[0];

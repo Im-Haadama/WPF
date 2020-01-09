@@ -68,6 +68,10 @@ class Finance_Bank
 			case "bank_status":
 				return self::bank_status();
 
+			case "bank_create_invoice":
+				$id = get_param( "id" );
+				return $this->create_invoice($id);
+
 			case "bank_receipts":
 			case "receipts":
 				$args = $this->Args();
@@ -76,11 +80,11 @@ class Finance_Bank
 				$args["actions"]       = array(
 					array(
 						"Receipt",
-						"/org/business/business-post.php?operation=1&id=%s"
+						add_to_url_no_encode(array("operation" => "bank_create_invoice", "id" => "%s"))
 					),
 					array(
 						"Return",
-						"/org/business/business-post.php?operation=mark_return_bank&id=%s"
+						self::getPost() . "?operation=bank_mark_return&id=%s"
 					)
 
 				);
@@ -236,6 +240,40 @@ class Finance_Bank
 		return $result;
 	}
 
+	function create_invoice($id)
+	{
+		$b = Finance_Bank_Transaction::createFromDB( $id );
+		$result = "";
+		$result .= Core_Html::gui_header( 1, "הפקת חשבונית קבלה להפקדה מבנק " );
+
+		$result .= Core_Html::gui_header( 2, "פרטי העברה" );
+		$result .= Core_Html::gui_table_args( array(
+				array( "תאריך", Core_Html::gui_div( "pay_date", $b->getDate() ) ),
+				array( "סכום", Core_Html::gui_div( "bank", $b->getInAmount() ) ),
+				array( "מזהה", Core_Html::gui_div( "bank_id", $id ) )
+			)
+		);
+
+		$result .= Core_Html::gui_header(2, "חשבונית שהופקה");
+		$result .= Core_Html::GuiInput("invoice_id");
+		$result .= Core_Html::GuiButton("btn_invoice_exists", "invoice_exists()", "Exists invoice");
+
+		$result .= Core_Html::gui_header( 2, "בחר לקוח" );
+		$result .= gui_select_client_open_account();
+		$result .= '<div id="logging"></div>';
+		$result .= '<div id="transactions"></div>';
+//		function gui_table(	$rows, $id = null, $header = true, $footer = true, &$acc_fields = null, $style = null, $class = null, $show_fields = null,
+//			$links = null, $col_ids = null, $first_id = false, $actions = null
+
+		$result .= Core_Html::gui_table_args(array(
+			array("תשלום",	Core_Html::GuiButton( "btn_receipt", "create_receipt_from_bank()", "הפק חשבונית מס קבלה" )),
+			array( "עודף", " <div id=\"change\"></div>" ), "payment_table", "class" => "payment_table"));
+
+//		$result .= gui_table( , "payment_table", true, true, $sums, "", "payment_table" );
+
+		return $result;
+
+	}
 	static public function bank_status()
 	{
 		$result = Core_Html::gui_header(2, "last bank load");
@@ -358,7 +396,6 @@ function business_open_ship( $part_id ) {
 }
 
 static function bank_check_dup( $fields, $values ) {
-// 	var_dump($values);
 	$account_idx = array_search( "account_id", $fields );
 	$date_idx    = array_search( "date", $fields );
 	$balance_idx = array_search( "balance", $fields );
@@ -397,3 +434,52 @@ function gui_select_bank_account( $id, $value, $args ) {
 //print gui_hyperlink('Import bank pages', add_to_url("operation" ,"import")); print " ";
 //print gui_hyperlink('Edit transaction types', add_to_url("operation" ,"transaction_types")); print " ";
 //print gui_hyperlink('Search transaction', add_to_url("operation" ,"search")); print " ";
+
+function gui_select_client_open_account( $id = "open_account" ) {
+	$output = "";
+	$multi_site = Core_Db_MultiSite::getInstance();
+	$url = "org/business/business-post.php?operation=get_client_open_account";
+	$result = $multi_site->GetAll( $url );
+	foreach ($multi_site->getHttpCodes() as $side_id => $code){
+		if ($code != 200) {
+			$output .= "Can't get result from " . $multi_site->getSiteName($side_id) . " error: $code <br/>";
+			if (get_user_id()== 1) $output .= $url . "<br/>";
+		}
+	}
+	$values  = html2array( $result );
+	$open    = array();
+	$list_id = 0;
+	foreach ( $values as $value ) {
+		$new              = array();
+		$new["id"]        = $list_id ++;
+		$new["site_id"]   = $value[0];
+		$new["client_id"] = $value[1];
+		$new["name"]      = $value[2];
+		$new["balance"]   = $value[3];
+		array_push( $open, $new );
+	}
+	$events = 'onchange="client_selected()"';
+	$datalist_id = $id . "_datalist";
+	$output .= Core_Html::GuiInputDatalist($id, $datalist_id, $events);
+	$output .= Core_Html::GuiDatalist( $datalist_id, $open, "id","name", false);
+
+	return $output;
+}
+
+function html2array( $text )
+{
+	require_once("wp-content/plugins/flavor/includes/core/data/im_simple_html_dom.php");
+
+	$dom   = im_str_get_html( $text );
+	$array = array();
+
+	foreach ( $dom->find( 'tr' ) as $row ) {
+		$new_row = array();
+		foreach ( $row->find( 'td' ) as $cell ) {
+			array_push( $new_row, $cell->plaintext );
+		}
+		array_push( $array, $new_row );
+	}
+
+	return $array;
+}
