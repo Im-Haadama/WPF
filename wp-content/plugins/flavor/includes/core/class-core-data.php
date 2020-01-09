@@ -475,7 +475,6 @@ class Core_Data
 //						$action_url = $row_id . $action[1];
 						if (! $row_id) $action_url = ($action[1] . "row id missing");
 						else $action_url = sprintf($action[1], $row_id);
-						print $action[1] . " action=$action_url<br/>";
 						array_push($row_data, Core_Html::GuiHyperlink($text, $action_url, $args));
 					}
 				} else {

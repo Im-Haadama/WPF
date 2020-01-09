@@ -915,7 +915,5 @@ if (! function_exists("my_log")) {
 	{
 		return add_param_to_url(get_url(), $param_name, $param_value, false);
 	}
-
-
 }
 

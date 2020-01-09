@@ -1031,11 +1031,6 @@ class Focus_Tasks {
 		);
 		$fields                = $args["fields"];
 
-//	$more_fields = "";
-
-//	if ($debug and ! $time)
-//		$more_fields .= ", task_template_time(id) ";
-
 		$sql = "select " . comma_implode( $fields ) . " from $table_name $query $order ";
 
 		$result = "";
