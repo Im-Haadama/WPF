@@ -21,5 +21,16 @@ class Fresh_Client {
 
 		return round( sql_query_single_scalar( $sql ), 2 );
 	}
+
+	function customer_type( ) {
+		$key = get_user_meta( $this->user_id, '_client_type', true );
+
+		if ( is_null( $key ) ) {
+			return 0;
+		}
+
+		return $key;
+	}
+
 }
 

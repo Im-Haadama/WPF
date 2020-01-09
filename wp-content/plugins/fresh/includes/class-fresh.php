@@ -651,18 +651,6 @@ function custom_add_to_cart_quantity_handler() {
 	}
 }
 
-if (!function_exists('customer_type')) {
-function customer_type( $client_id ) {
-	$key = get_user_meta( $client_id, '_client_type', true );
-
-	if ( is_null( $key ) ) {
-		return 0;
-	}
-
-	return $key;
-}
-}
-
 function im_admin_menu() {
 //	add_menu_page( 'Fresh Store', 'Fresh Store', 'manage_options', 'im-haadama/admin.php', 'fresh_store_admin_page',
 //        'dashicons-tickets', 6 );
