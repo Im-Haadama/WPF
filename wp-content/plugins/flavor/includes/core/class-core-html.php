@@ -1533,6 +1533,25 @@ class Core_Html {
 	static function Br() {
 		return '<br/>';
 	}
+
+	static function html2array( $text )
+	{
+		require_once("wp-content/plugins/flavor/includes/core/data/im_simple_html_dom.php");
+
+		$dom   = im_str_get_html( $text );
+		$array = array();
+
+		foreach ( $dom->find( 'tr' ) as $row ) {
+			$new_row = array();
+			foreach ( $row->find( 'td' ) as $cell ) {
+				array_push( $new_row, $cell->plaintext );
+			}
+			array_push( $array, $new_row );
+		}
+
+		return $array;
+	}
+
 }
 
 if (!function_exists('gui_checkbox'))
