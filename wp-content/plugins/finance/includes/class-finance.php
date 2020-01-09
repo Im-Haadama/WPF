@@ -200,17 +200,17 @@ class Finance {
 	function handle_operation($operation)
 	{
 		$module = strtok($operation, "_");
+		$multi_site = Core_Db_MultiSite::getInstance();
+
 		switch ($module)
 		{
 			case "bank":
 				return $this->bank->handle_bank_operation($operation);
+			case "data":
+				return Core_Data::handle_operation($operation);
 		}
 		switch ($operation)
 		{
-			case "data_update":
-			case "update":
-				return Core_Data::handle_operation($operation);
-
 			case "new_customer":
 				$order_id = get_param("order_id", true);
 				return self::new_customer($order_id);
@@ -239,6 +239,14 @@ class Finance {
 				print $result[2] . " failed rows <br/>";
 				return true;
 				break;
+			case "get_trans":
+				$client_id = get_param( "client_id" );
+				$site_id   = get_param( "site_id" );
+				// $data .= $this->Run( $func, $site_id, $first, $debug );
+				$link = "/fresh/multi-site/multi-get.php?operation=get_open_trans&client_id=" . $client_id;
+				print $multi_site->Run( $link, $site_id );
+				break;
+
 		}
 		return false;
 	}
@@ -568,6 +576,9 @@ class Finance {
 
 		$file = FINANCE_INCLUDES_URL . 'business.js';
 		wp_enqueue_script( 'business', $file, null, $this->version, false );
+
+		$file = FINANCE_INCLUDES_URL . 'account.js';
+		wp_enqueue_script( 'account', $file, null, $this->version, false );
 	}
 
 
@@ -583,7 +594,8 @@ class Finance {
 		//                     Top nav                  Sub nav             target,                              capability
 		$module_list = array( "Finance" => array(array("Bank transactions", "/finance_bank",                     "show_bank"),
 								                 array("Bank Receipts",     "/finance_bank?operation=receipts",  "show_bank"),
-												 array("Bank payments]",    "/finance_bank?operation=payments",  "show_bank")));
+												 array("Bank payments]",    "/finance_bank?operation=payments",  "show_bank"),
+												 array("Transactions types", "/finance_bank?operation=bank_transaction_types", "cfo")));
 
 		$result .= Flavor::ClassSettingPage($module_list);
 		return $result;

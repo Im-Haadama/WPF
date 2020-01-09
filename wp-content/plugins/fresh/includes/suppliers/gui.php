@@ -37,21 +37,5 @@ function print_select_supplier( $id, $source ) {
 
 // function gui_select_supplier( $id = "supplier_select", $value = null, $events = null ) {
 
-function gui_select_supplier( $id = "supplier_select", $value = null, $args = null )
-{
-	$events = null;
-	$events = GetArg($args, "events", null);
-	$class = GetArg($args, "class", null);
-	$edit = GetArg($args, "edit", true);
-
-	if (! $edit){
-		if ($value) return get_supplier_name($value);
-		return "supplier not selected";
-	}
-
-	return gui_select_table( $id, "im_suppliers", $value, $events, "", "supplier_name",
-		" where active = 1", true, false, "supplier_name", $class );
-//		$sql_where );
-}
 
 // Selector ($id, $value, $args)

@@ -295,3 +295,11 @@ function selectTab(event, selected, tab_class)
     document.getElementById(selected).style.display = "block";
     event.currentTarget.className += " active";
 }
+
+function success_message(xmlhttp)
+{
+    if (xmlhttp.response.substr(0, 3) === "done")
+        alert("Success");
+    else
+        alert (xmlhttp.response);
+}

@@ -112,7 +112,7 @@ function create_receipt_from_bank() {
     var bank_amount = parseFloat(get_value(document.getElementById("bank")));
     if (isNaN(bank_amount)) bank_amount = 0;
     var date = get_value(document.getElementById("pay_date"));
-    var request = "business-post.php?operation=create_receipt" +
+    var request = finance_post_file + "?operation=bank_create_receipt" +
         "&bank=" + bank_amount +
         "&date=" + date +
         "&ids=" + del_ids.join() +

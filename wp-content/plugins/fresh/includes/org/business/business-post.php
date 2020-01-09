@@ -369,74 +369,9 @@ if ( $operation) {
 //				"trans_checkbox", "onchange=\"update_display()\"" );
 			break;
 
-		case "create_receipt":
-			$bank_amount = get_param( "bank" );
-			$date        = get_param( "date" );
-			$change      = get_param( "change" );
-			$ids         = get_param( "ids", true );
-			$site_id     = get_param( "site_id" );
-			$user_id     = get_param( "user_id" );
-			$bank_id     = get_param( "bank_id" );
-
-			business_create_multi_site_receipt( $bank_id, $bank_amount, $date, $change, $ids, $site_id, $user_id );
-			break;
 	}
 }
 
-function business_create_multi_site_receipt( $bank_id, $bank_amount, $date, $change, $ids, $site_id, $user_id ) {
-	// IDS sent as string.
-
-	// $msg = $bank . " " . $date . " " . $change . " " . comma_implode($ids) . " " . $site_id . " " . $user_id . "<br/>";
-	global $multi_site;
-	$debug = false;
-
-//var request = "account-post.php?operation=create_receipt" +
-//              "&cash=" + cash +
-//              "&credit=" + credit +
-//              "&bank=" + bank +
-//              "&check=" + check +
-//              "&date=" + date +
-//              "&change=" + change.innerHTML +
-//              "&ids=" + del_ids.join() +
-//              "&user_id=" + <?php print $customer_id; <!--;-->
-
-	$command = "/fresh/multi-site/multi-get.php?operation=create_receipt&row_ids=" . $ids .
-	           "&user_id=" . $user_id . "&bank=" . $bank_amount . "&date=" . $date .
-	           "&change=" . $change;
-//	print "ZZZZ" . $command;
-	$result  = $multi_site->Run( $command, $site_id, true, $debug );
-
-	if ($multi_site->getHttpCode($site_id) != 200) {
-		print "can't create<br/>";
-		if (developer()) print "getting $command, status: " . $multi_site->getHttpCode($site_id) . "<br/>";
-		return false;
-	}
-
-	if ( strstr( $result, "כבר" ) ) {
-		die( "already paid" );
-	}
-	if ( strlen( $result ) < 2 ) {
-		if (developer()) print $command . "<br/>";
-		die( "bad response" );
-	}
-	if ( strlen( $result ) > 10 ) {
-		die( $result );
-	}
-	// print "r=" . $result . "<br/>";
-
-	$receipt = intval( trim( $result ) );
-
-	// print "re=" . $receipt . '<br/>';
-
-	if ( $receipt > 0 ) {
-		// TODO: to parse $id from $result;
-		$b = Finance_Bank_Transaction::createFromDB( $bank_id );
-		$b->Update( $user_id, $receipt, $site_id );
-		print "done.$receipt";
-	} else {
-		print $receipt;
-	}
-}
 
 function gui_select_open_supplier( $id = "supplier" ) {
 	global $multi_site;

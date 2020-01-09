@@ -55,4 +55,23 @@ class Fresh_Supplier {
 
 		return $status;
 	}
+
+	// gui_select_table( $id, "im_suppliers", $value, $events, "", "supplier_name",
+	// " where active = 1", true, false, "supplier_name", $class );
+
+	static function gui_select_supplier( $id = "supplier_select", $value = null, $args = null )
+	{
+		$events = null;
+		$edit = GetArg($args, "edit", true);
+
+		if (! $edit){
+			if ($value) return get_supplier_name($value);
+			return "supplier not selected";
+		}
+		$args["name"] = "supplier_name";
+
+		return Core_Html::GuiSelectTable($id, "im_suppliers", $args);
+//		$sql_where );
+	}
+
 }
