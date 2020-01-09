@@ -203,6 +203,37 @@ class Finance_Bank
 		}
 	}
 
+	function gui_select_client_open_account( $id = "open_account" ) {
+		$output = "";
+		$multi_site = Core_Db_MultiSite::getInstance();
+		$url = "org/business/business-post.php?operation=get_client_open_account";
+		$result = $multi_site->GetAll( $url );
+		foreach ($multi_site->getHttpCodes() as $side_id => $code){
+			if ($code != 200) {
+				$output .= "Can't get result from " . $multi_site->getSiteName($side_id) . " error: $code <br/>";
+				if (get_user_id()== 1) $output .= $url . "<br/>";
+			}
+		}
+		$values  = html2array( $result );
+		$open    = array();
+		$list_id = 0;
+		foreach ( $values as $value ) {
+			$new              = array();
+			$new["id"]        = $list_id ++;
+			$new["site_id"]   = $value[0];
+			$new["client_id"] = $value[1];
+			$new["name"]      = $value[2];
+			$new["balance"]   = $value[3];
+			array_push( $open, $new );
+		}
+		$events = 'onchange="client_selected()"';
+		$datalist_id = $id . "_datalist";
+		$output .= Core_Html::GuiInputDatalist($id, $datalist_id, $events);
+		$output .= Core_Html::GuiDatalist( $datalist_id, $open, "id","name", false);
+
+		return $output;
+	}
+
 	static public function bank_wrapper()
 	{
 		$operation = get_param("operation", false, "bank_status");
@@ -424,11 +455,11 @@ function user_is_business_owner() {
 
 }
 
-function gui_select_bank_account( $id, $value, $args ) {
-	return Core_Html::GuiSelectTable($id, "im_bank_account", $args);
-//	return Core_Html::gui_select_table( $id, "im_bank_account", $value,
-//		GetArg( $args, "events", null ), null, "name" );
-}
+//function gui_select_bank_account( $id, $value, $args ) {
+//	return Core_Html::GuiSelectTable($id, "im_bank_account", $args);
+////	return Core_Html::gui_select_table( $id, "im_bank_account", $value,
+////		GetArg( $args, "events", null ), null, "name" );
+//}
 
 //print gui_hyperlink('Create Receipts', add_to_url("operation" , "receipts")); print " ";
 //print gui_hyperlink('Mark payments', add_to_url("operation", "payments")); print " ";
@@ -436,36 +467,6 @@ function gui_select_bank_account( $id, $value, $args ) {
 //print gui_hyperlink('Edit transaction types', add_to_url("operation" ,"transaction_types")); print " ";
 //print gui_hyperlink('Search transaction', add_to_url("operation" ,"search")); print " ";
 
-function gui_select_client_open_account( $id = "open_account" ) {
-	$output = "";
-	$multi_site = Core_Db_MultiSite::getInstance();
-	$url = "org/business/business-post.php?operation=get_client_open_account";
-	$result = $multi_site->GetAll( $url );
-	foreach ($multi_site->getHttpCodes() as $side_id => $code){
-		if ($code != 200) {
-			$output .= "Can't get result from " . $multi_site->getSiteName($side_id) . " error: $code <br/>";
-			if (get_user_id()== 1) $output .= $url . "<br/>";
-		}
-	}
-	$values  = html2array( $result );
-	$open    = array();
-	$list_id = 0;
-	foreach ( $values as $value ) {
-		$new              = array();
-		$new["id"]        = $list_id ++;
-		$new["site_id"]   = $value[0];
-		$new["client_id"] = $value[1];
-		$new["name"]      = $value[2];
-		$new["balance"]   = $value[3];
-		array_push( $open, $new );
-	}
-	$events = 'onchange="client_selected()"';
-	$datalist_id = $id . "_datalist";
-	$output .= Core_Html::GuiInputDatalist($id, $datalist_id, $events);
-	$output .= Core_Html::GuiDatalist( $datalist_id, $open, "id","name", false);
-
-	return $output;
-}
 
 function html2array( $text )
 {
