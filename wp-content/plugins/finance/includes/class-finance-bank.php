@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Created by PhpStorm.
  * User: agla
@@ -266,7 +267,7 @@ class Finance_Bank
 //			$links = null, $col_ids = null, $first_id = false, $actions = null
 
 		$result .= Core_Html::gui_table_args(array(
-			array("תשלום",	Core_Html::GuiButton( "btn_receipt", "create_receipt_from_bank()", "הפק חשבונית מס קבלה" )),
+			array("תשלום",	Core_Html::GuiButton( "btn_receipt", "הפק חשבונית מס קבלה", array("action" => "create_receipt_from_bank()") )),
 			array( "עודף", " <div id=\"change\"></div>" ), "payment_table", "class" => "payment_table"));
 
 //		$result .= gui_table( , "payment_table", true, true, $sums, "", "payment_table" );

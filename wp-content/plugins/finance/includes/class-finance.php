@@ -565,6 +565,9 @@ class Finance {
 
 		$file = FINANCE_INCLUDES_URL . 'finance.js';
 		wp_enqueue_script( 'finance', $file, null, $this->version, false );
+
+		$file = FINANCE_INCLUDES_URL . 'business.js';
+		wp_enqueue_script( 'business', $file, null, $this->version, false );
 	}
 
 

@@ -2,6 +2,7 @@
  * Created by agla on 26/02/19.
  */
 
+finance_post_file = "/wp-content/plugins/finance/post.php";
 
 function selected_client_index() {
     let client = document.getElementById("open_account");
@@ -68,7 +69,7 @@ function client_selected() {
             document.getElementById("transactions").innerHTML = xmlhttp.response;
         }
     }
-    let request = "business-post.php?operation=get_trans&client_id=" + client_id +
+    let request = finance_post_file + "?operation=get_trans&client_id=" + client_id +
         "&site_id=" + site_id;
     // alert (request);
     xmlhttp.open("GET", request, true);
