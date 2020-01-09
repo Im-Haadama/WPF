@@ -892,7 +892,7 @@ if (! function_exists("my_log")) {
 		$glue = '?';
 		// $result .= "?";
 		foreach ( $query_parts as $param => $value ) {
-			$result .= $glue . $param . '=' . $value;
+			$result .= $glue . $param . '=' . encodeURIComponent($value);
 			$glue   = "&";
 		}
 

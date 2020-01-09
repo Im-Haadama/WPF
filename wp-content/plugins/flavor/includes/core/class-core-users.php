@@ -25,4 +25,10 @@ class Core_Users {
 		if (! $u = self::getUser()) return false;
 		return in_array($role, $u->roles);
 	}
+
+	function can($capability)
+	{
+		return ( user_can( $this->id, $capability ) );
+	}
 }
+

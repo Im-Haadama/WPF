@@ -11,10 +11,12 @@ class Finance_Bank
 	static private $_instance;
 	private $post_file;
 	private $version;
+	private $user;
 
 	public function __construct( $post_file ) {
 		$this->post_file = $post_file;
 		$this->version   = "1.0";
+		$this->user = new Core_Users();
 	}
 
 	public static function instance() {
@@ -35,9 +37,18 @@ class Finance_Bank
 		return sql_query_array();
 	}
 
-	static function handle_bank_operation($operation, $url = null) {
+	/**
+	 * @return Core_Users
+	 */
+	public function getUser(): Core_Users {
+		return $this->user;
+	}
+
+	function handle_bank_operation($operation, $url = null)
+	{
 //		print __FILE__ . ':' .$operation . "<br/>";
-		if (! im_user_can("show_bank"))
+		$u = new Core_Users();
+		if (! $u->can("show_bank"))
 			return "no permissions";
 		$account_id = 1;
 		$ids = null;
@@ -59,7 +70,7 @@ class Finance_Bank
 
 			case "bank_receipts":
 			case "receipts":
-				$args = array();
+				$args = $this->Args();
 				print Core_Html::gui_header( 1, "Receipts" );
 				$args["header_fields"] = array( "Id", "Date", "Description", "Amount" );
 				$args["actions"]       = array(
@@ -83,7 +94,7 @@ class Finance_Bank
 
 				$args["fields"] = array( "id", "date", "description", "in_amount", "reference" );
 
-				print bank_transactions( $query, $args );
+				print self::bank_transactions( $query, $args );
 
 				return;
 
@@ -161,10 +172,10 @@ class Finance_Bank
 				return;
 
 			case "show_bank":
-				$args                  = self::Args();
+				$args                  = self::Args($u);
 				$args["selector"]      = "gui_select_bank_account";
 				$args["order"] = "3 desc";
-				$args["hide_cols"] = array("id" => 1, "account_id" => 1, "tmp_client_name" =>1, "customer_id"=>1);
+				$args["hide_cols"] = array_merge($args["hide_cols"], array("id" => 1, "account_id" => 1, "tmp_client_name" =>1, "customer_id"=>1));
 				print Core_Gem::GemTable("im_bank", $args);
 
 			case "bank_show_import":
@@ -190,8 +201,39 @@ class Finance_Bank
 	static public function bank_wrapper()
 	{
 		$operation = get_param("operation", false, "bank_status");
+		$instance = self::instance();
 
-		return self::handle_bank_operation($operation);
+		return $instance->handle_bank_operation($operation);
+	}
+
+	static function bank_transactions($query = null, $args = null)
+	{
+		$result = "";
+
+		$account_id = 1;
+
+//		print Core_Html::GuiHyperlink('Create Receipts', add_to_url("operation" , "receipts")); print " ";
+//		print Core_Html::GuiHyperlink('Mark payments', add_to_url("operation", "payments")); print " ";
+//		print Core_Html::GuiHyperlink('Import bank pages', add_to_url("operation" ,"import")); print " ";
+//		print Core_Html::GuiHyperlink('Edit transaction types', add_to_url("operation" ,"transaction_types")); print " ";
+//		print Core_Html::GuiHyperlink('Search transaction', add_to_url("operation" ,"search")); print " ";
+
+		$page = get_param("page", false, 1);
+		$rows_per_page = 20;
+// $args["debug"] = (get_user_id() == 1);
+		$offset = ($page - 1) * $rows_per_page;
+
+		$fields = GetArg($args, "fields", array("id", "date", "description", "out_amount", "in_amount", "balance", "receipt"));
+
+		$sql = "select " . comma_implode($fields) . " from im_bank where account_id = " . $account_id;
+		if ($query) $sql .= " and " . $query;
+		$sql .= " order by date desc limit $rows_per_page offset $offset ";
+
+		$result .= Core_Html::GuiTableContent("im_banking", $sql, $args);
+
+		$result .= Core_Html::GuiHyperlink("Older", add_to_url("page", $page + 1));
+
+		return $result;
 	}
 
 	static public function bank_status()
@@ -226,10 +268,23 @@ class Finance_Bank
 		return array( 'finance_bank'      => array( 'Finance_Bank::bank',    null ));          // Payments data entry
 	}
 
-	static function Args()
+	function Args($user = null)
 	{
-		return array("page" => get_param("page", false, -1),
+		if (! $user) $user = self::getUser();
+		$args = array("page" => get_param("page", false, -1),
 		             "post_file" => self::getPost());
+
+		if (! $user->hasRole("cfo")) {
+			$args["hide_cols"] = array("balance" => 1);
+			// TOdo: get from transaction_types
+
+			$args["query"] = "1 ";
+			foreach (array("פרעון הלוואה", "מסלול מורחב", "הלואה") as $type)
+				$args["query"] .= " and description not like " . quote_text('%' . $type . '%');
+
+			print $args["query"];
+		}
+		return $args;
 	}
 
 function business_add_transaction(
@@ -336,3 +391,9 @@ function gui_select_bank_account( $id, $value, $args ) {
 //	return Core_Html::gui_select_table( $id, "im_bank_account", $value,
 //		GetArg( $args, "events", null ), null, "name" );
 }
+
+//print gui_hyperlink('Create Receipts', add_to_url("operation" , "receipts")); print " ";
+//print gui_hyperlink('Mark payments', add_to_url("operation", "payments")); print " ";
+//print gui_hyperlink('Import bank pages', add_to_url("operation" ,"import")); print " ";
+//print gui_hyperlink('Edit transaction types', add_to_url("operation" ,"transaction_types")); print " ";
+//print gui_hyperlink('Search transaction', add_to_url("operation" ,"search")); print " ";

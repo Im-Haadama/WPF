@@ -373,8 +373,6 @@ class Finance {
 
 		$this->shortcodes->do_init();
 
-
-
 		// For testing:
 //		wp_set_current_user(369);
 
@@ -570,10 +568,15 @@ class Finance {
 //		$this->loader->run();
 	}
 
-	public function settingPage()
+	static public function settingPage()
 	{
-		$result = "Finance Setting";
+		$result = "";
+		//                     Top nav                  Sub nav             target,                              capability
+		$module_list = array( "Finance" => array(array("Bank transactions", "/finance_bank",                     "show_bank"),
+								                 array("Bank Receipts",     "/finance_bank?operation=receipts",  "show_bank"),
+												 array("Bank payments]",    "/finance_bank?operation=payments",  "show_bank")));
 
+		$result .= Flavor::ClassSettingPage($module_list);
 		return $result;
 	}
 }

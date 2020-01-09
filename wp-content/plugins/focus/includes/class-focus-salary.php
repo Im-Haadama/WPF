@@ -118,7 +118,7 @@ class Focus_Salary {
 	function main() {
 		$result = Core_Html::gui_header( 1, "Salary info" );
 		if ( im_user_can( "show_salary" ) ) {
-			$args              = [];
+			$args              = self::Args();
 			$args["sql"]       = "select distinct user_id, client_displayname(user_id) as name, project_id from im_working where is_active = 1";
 			$args["id_field"]  = "user_id";
 			$args["links"]     = array(
@@ -763,6 +763,13 @@ class Focus_Salary {
 					  'salary_worker_data' => array( 'Focus_Salary::worker_data', 'show_salary' ), // Personal worker card פרטי עובד
 		              'salary_entry'       => array("Focus_Salary::entry",        null));          // Salary data entry
 	}
+
+	static function Args()
+	{
+		return array("page" => get_param("page", false, -1),
+		             "post_file" => self::getPost());
+	}
+
 }
 
 if (! function_exists("gui_select_client"))
@@ -793,5 +800,4 @@ if (! function_exists("gui_select_client"))
 		// return GuiSelectTable( $id, "wp_users", $select_args);
 		return Core_Html::GuiAutoList( $id, "users", $select_args);
 	}
-
 }

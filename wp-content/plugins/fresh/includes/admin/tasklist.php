@@ -18,14 +18,6 @@ function preset_query( $preset ) {
 
 	global $preset_basic_query;
 
-	//$preset_query       = array(
-//	"",
-//	$preset_basic_query,
-//	$preset_basic_query . " and owner = 1",
-//	$preset_basic_query . " and owner = 369 or creator = 369",
-//	$preset_basic_query . " and owner = 369"
-//);
-
 	global $user_ID;
 	if ( $preset > 100 ) {
 		$q = $preset_basic_query . " and owner = " . ( $preset - 100 );

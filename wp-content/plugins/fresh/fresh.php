@@ -89,7 +89,6 @@ function im_page() {
 
 
 // wp_enqueue_style( $handle, $src, $deps, $ver, $media );
-
 // in functions_im
 //function get_minimum_order() {
 ///// XXXXXXXXX

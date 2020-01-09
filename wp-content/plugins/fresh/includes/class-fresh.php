@@ -475,7 +475,7 @@ class Fresh {
 		$this->loader->run();
 	}
 
-	public function SettingPage()
+	static public function SettingPage()
 	{
 		$result = "";
 		$module_list = array( "Suppliers" => array(),
@@ -502,7 +502,7 @@ class Fresh {
 
 		if (! $module_id) return $module_id; // failed.
 
-		return $nav->AddSub($module_id, array('title' => $sub_menu, 'url' => "/$module&operation=" . $sub_menu));
+		return $nav->doAddSub($module_id, array( 'title' => $sub_menu, 'url' => "/$module&operation=" . $sub_menu));
 	}
 
 	public function enqueue_scripts() {

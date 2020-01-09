@@ -143,10 +143,134 @@ class Flavor {
 		// add_action( 'init', array( $this, 'add_image_sizes' ) );
 		// add_action( 'switch_blog', array( $this, 'wpdb_table_fix' ), 0 );
 
+		add_action( 'admin_enqueue_scripts', array($this, 'admin_scripts' ));
+
 //		$this->loader->add_action( 'wp_enqueue_scripts', $orders, 'enqueue_scripts' );
 	}
 
+	public static function add_settings_tab( $settings_tabs ) {
+		$settings_tabs['wpf'] = esc_html__( 'Wordpress-f', 'wpf' );
+		return $settings_tabs;
+	}
+
 	/**
+	 * Uses the WooCommerce admin fields API to output settings via the @see woocommerce_admin_fields() function.
+	 *
+	 * @uses woocommerce_admin_fields()
+	 * @uses self::get_settings()
+	 */
+	public static function settings_tab() {
+		$result = "";
+		foreach (self::plugins_setting() as $module_name => $setting) {
+			$result .= Core_Html::gui_header(2, $module_name);
+			$result .= $setting;
+		}
+
+		print  $result;
+//		$args = [];
+//
+//		print Core_Html::GuiCheckbox("aa", false, $args);
+		// woocommerce_admin_fields( self::get_settings() );
+	}
+
+	/**
+	 * Uses the WooCommerce options API to save settings via the @see woocommerce_update_options() function.
+	 *
+	 * @uses woocommerce_update_options()
+	 * @uses self::get_settings()
+	 */
+	public static function update_settings() {
+		woocommerce_update_options( self::get_settings() );
+	}
+
+	/**
+	 * Get all the settings for this plugin for @see woocommerce_admin_fields() function.
+	 *
+	 * @return array Array of settings for @see woocommerce_admin_fields() function.
+	 */
+	public static function get_settings() {
+
+		// Get loop of all Pages.
+		$args = array(
+			'sort_column'  => 'post_title',
+			'hierarchical' => 1,
+			'post_type'    => 'page',
+			'post_status'  => 'publish'
+		);
+		$pages = get_pages( $args );
+
+		// Create data array.
+		$pages_array = array( 'none' => '' );
+
+		// Loop through pages.
+		foreach ( $pages as $page ) {
+			$pages_array[ $page->ID ] = $page->post_title;
+		}
+
+		// Go Pro.
+		$go_pro = '';
+
+//		if ( ! function_exists( 'wpf_pro_all_settings' ) ) {
+//			$go_pro = ' | <a href="https://deviodigital.com/product/delivery-drivers-for-woocommerce-pro" target="_blank" style="font-weight:700;">' . esc_html__( 'Go Pro', 'wpf' ) . '</a>';
+//		}
+
+		$settings = array(
+			// Section title.
+			'wpf_settings_section_title' => array(
+				'name' => esc_html__( 'Wordpress-F plugins for Wordpress', 'wpf' ),
+				'type' => 'title',
+				'desc' => esc_html__( 'Brought to you by', 'wpf' ) . " " . Core_Html::GuiHyperlink("WP-F", "https://wordpress-f.com/"), // ' <a href="https://www.deviodigital.com" target="_blank">Devio Digital</a>' . $go_pro,
+				'id'   => 'wpf_settings_section_title'
+			),
+			// Dispatch phone number.
+			'dispatch_phone_number' => array(
+				'name' => esc_html__( 'Dispatch phone number', 'wpf' ),
+				'type' => 'text',
+				'desc' => esc_html__( 'Allow your drivers to call if they have questions about an order.', 'wpf' ),
+				'id'   => 'wpf_settings_dispatch_phone_number'
+			),
+//			// Google Maps API key.
+//			'google_maps_api_key' => array(
+//				'name' => esc_html__( 'Google Maps API key', 'wpf' ),
+//				'type' => 'text',
+//				'desc' => esc_html__( 'Add a map to the order directions for your drivers.', 'wpf' ),
+//				'id'   => 'wpf_settings_google_maps_api_key'
+//			),
+//			// Driver ratings.
+//			'driver_ratings' => array(
+//				'name' => esc_html__( 'Driver ratings', 'wpf' ),
+//				'type' => 'select',
+//				'desc' => esc_html__( 'Add driver details with delivery star ratings to order details page.', 'wpf' ),
+//				'id'   => 'wpf_settings_driver_ratings',
+//				'options' => array(
+//					'yes' => 'Yes',
+//					'no'  => 'No',
+//				),
+//			),
+//			// Driver phone number.
+//			'driver_phone_number' => array(
+//				'name' => esc_html__( 'Driver phone number', 'wpf' ),
+//				'type' => 'select',
+//				'desc' => esc_html__( 'Add a button for customers to call driver in the driver details.', 'wpf' ),
+//				'id'   => 'wpf_settings_driver_phone_number',
+//				'options' => array(
+//					'yes' => 'Yes',
+//					'no'  => 'No',
+//				),
+//			),
+//			// Section End.
+			'section_end' => array(
+				'type' => 'sectionend',
+				'id'   => 'wpf_settings_section_end'
+			),
+		);
+//		var_dump($settings);
+	//	$settings = self::plugins_setting();
+		return apply_filters( 'wpf_settings', $settings );
+	}
+
+
+/**
 	 * Ensures fatal errors are logged so they can be picked up in the status report.
 	 *
 	 * @since 3.2.0
@@ -230,8 +354,8 @@ class Flavor {
 	 *
 	 * @return string|void
 	 */
-	function handle_operation(  ) {
-		$operation = get_param("operation", false, "flavor_main");
+	function handle_operation($operation) {
+//		print __FUNCTION__. ': ' . $operation . "<br/>";
 		$module = strtok( $operation, "_" );
 		if ( $module === "data" ) {
 			return handle_data_operation( $operation );
@@ -245,12 +369,14 @@ class Flavor {
 			case "flavor_main":
 				self::show_main();
 				return;
-
-			case "add_nav":
-				$flavor = Flavor::instance();
-				$nav = $flavor->getNav();
-				$menu_item = array("title" => 'Flavor', 'url' => "/flavor");
-				return $nav->AddMain($menu_item);
+				// http://store.im-haadama.co.il/wp-content/plugins/flavor/post.php?operation=nav_add&main=Flavor&sub=Bank%20transactions&target=%2Ffinance_bank
+			case "nav_add":
+				$main = get_param("main", true);
+				$sub = get_param("sub", false);
+				$target = get_param("target", true);
+				$nav = $this->getNav();
+				if ($sub) return $nav->AddSub($main, array( 'title' => $sub, 'url' => $target));
+				return $nav->AddMain(array('title' => $main, 'url' => $target));
 		}
 	}
 
@@ -311,6 +437,11 @@ class Flavor {
 	public function init() {
 		// Before init action.
 		do_action( 'before_flavor_init' );
+		add_filter( 'woocommerce_settings_tabs_array', __CLASS__ . '::add_settings_tab', 50 );
+		add_action( 'woocommerce_settings_tabs_wpf', __CLASS__ . '::settings_tab' );
+		add_action( 'woocommerce_update_options_wpf', __CLASS__ . '::update_settings' );
+		// Add custom type.
+		add_action( 'woocommerce_admin_field_custom_type', __CLASS__ . '::output_custom_type', 10, 1 );
 
 		// Set up localisation.
 		$this->load_plugin_textdomain();
@@ -393,20 +524,26 @@ class Flavor {
 
 	}
 
-	static public function show_main()
+	static public function plugins_setting()
 	{
-		$result = Core_Html::gui_header(1, "Settings");
+//		$result = Core_Html::gui_header(1, "Settings");
 
-		$tabs = [];
+		$sections = [];
 		foreach (array("Fresh", "Finance", "Flavor", "Focus") as $plugin)
 		{
 			if (class_exists($plugin)){ // Todo: need to check permissions
-				array_push($tabs, array($plugin, __($plugin), $plugin::instance()->settingPage()));
+				$call = array($plugin, "settingPage");
+				if (is_callable($call)){
+					$section = call_user_func($call);
+//					var_dump($section);
+					$sections[$plugin] = $section;
+//					array_push($sections, $section);
+				}
 			}
 		}
-		$result .= Core_Html::GuiTabs($tabs);
+//		$result .= Core_Html::GuiTabs($tabs);
 
-		print $result;
+		return $sections;
 	}
 
 	static private function getPost()
@@ -414,7 +551,7 @@ class Flavor {
 		return "/wp-content/plugins/flavor/post.php";
 	}
 
-	public function SettingPage()
+	static public function SettingPage()
 	{
 		$result = "";
 		$module_list = array( "Flavor" => array());
@@ -432,25 +569,46 @@ class Flavor {
 
 	static function ClassSettingPage($module_list)
 	{
+		$u = new Core_Users();
 		$result = "";
 		foreach ($module_list as $item => $sub_menu_items){
-			$args = [];
+//			$args = ($item => array(
+//				'name' => 'Create navigation items for ' . $item,
+//				'type' => ''
+//			)
 			$args ["text"] = __("Add") . " " . __($item);
 			$args["action"] = add_param_to_url(self::getPost() , array( "operation" => "fresh_nav_add", "module" => $item )) . ";location_reload";
 			$result .= Core_Html::GuiButtonOrHyperlink("btn_add_" . $item, null, $args) . "<br/>";
 			foreach ($sub_menu_items as $sub_menu_item) {
-				$operation = $sub_menu_item[1];
+				$main_nav = __CLASS__;
+				$sub_nav =  $sub_menu_item[0];
+				$target = $sub_menu_item[1];
+				if (! isset($sub_menu_item[2]) or (! $u->can($capability = $sub_menu_item[2]))) continue;
+
 				$sub_args = [];
-				$sub_args["text"] = __($sub_menu_item[0]);
-				$sub_args["action"] = add_param_to_url(self::getPost() , array( "operation" => "fresh_nav_add", "module" => $item, "sub_module" => $sub_menu_item[1] )) . ";location_reload";
-				$result .= "===>" . Core_Html::GuiButtonOrHyperlink( "btn_add_" . $operation, null, $sub_args ) . "<br/>";
+				$sub_args["text"] = __($sub_nav);
+
+				$sub_args["action"] = add_param_to_url(self::getPost() , array( "operation" => "nav_add",
+				                                                                "main" => $main_nav,
+				                                                                "sub" => $sub_nav,
+				                                                                "target" => $target )) . ";location_reload";
+				//print $sub_args["action"] . "<br/>";
+				$result .= "===>" . Core_Html::GuiButtonOrHyperlink( "btn_add_" . $sub_nav, null, $sub_args ) . "<br/>";
 			}
 		}
 		return $result;
 	}
+
+	public function admin_scripts() {
+		$file = FLAVOR_INCLUDES_URL . 'core/gui/client_tools.js';
+		wp_enqueue_script( 'client_tools', $file, null, $this->version, false );
+	}
+
 }
 
 function flavor_get_logger()
 {
 	return Core_Logger::instance();
 }
+
+?>

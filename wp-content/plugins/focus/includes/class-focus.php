@@ -573,7 +573,7 @@ class Focus {
 //		return $this->nav;
 //	}
 
-	public function SettingPage()
+	static public function SettingPage()
 	{
 		$result = "";
 		$module_list = array( "Tasks" => array(array("Total ordered", "total_ordered")));

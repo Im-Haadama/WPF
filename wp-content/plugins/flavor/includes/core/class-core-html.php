@@ -121,7 +121,7 @@ class Core_Html {
 			$server_action = substr( $action, 0, $s );
 			$client_action = substr( $action, $s + 1 );
 
-			return Core_Html::GuiButton( $id, $text, array("action" => "execute_url('" . $server_action . "', $client_action, $id )"));
+			return Core_Html::GuiButton( $id, $text, array("action" => "execute_url('" . $server_action . "', $client_action)"));
 		} else {
 			return Core_Html::GuiHyperlink( $text, $action );
 		}
@@ -1341,12 +1341,13 @@ class Core_Html {
 		$nested_class = GetArg($args, "nested_class", "nested");
 		$result = "<li><span class='$class'>". $branch['title'] . "</span>";
 		$result .= '<ul class="' . $nested_class . '">';
-		foreach ($branch['childs'] as $child){
-			if (is_array($child))
-				$result .= self::GuiTreeBranch($child, $args);
-			else
-				$result .= "<li>" . $child . "</li>";
-		}
+		if (isset($branch['childs']))
+			foreach ($branch['childs'] as $child){
+				if (is_array($child))
+					$result .= self::GuiTreeBranch($child, $args);
+				else
+					$result .= "<li>" . $child . "</li>";
+			}
 		$result .= "</ul>";
 
 		return $result;
