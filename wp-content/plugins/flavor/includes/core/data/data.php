@@ -23,55 +23,6 @@ function data_delete($table_name, $row_may_ids)
 }
 
 // For now use escape_string and not bind. Uncaught Error: Call to undefined method mysqli_stmt::get_result
-function data_search($table_name, $args = null)
-{
-	$result = null;
-	$ignore_list = GetArg($args, "ignore_list", array("search", "operation", "table_name", "id", "dummy"));
-	$values = Core_Data::data_parse_get($table_name, $ignore_list);
-
-	$id_field = GetArg($args, "id_field", "id");
-	$sql = "select $id_field from $table_name where 1 ";
-	$count = 0;
-
-	$params = array();
-
-	foreach ($values as $tbl => $changed_values)
-	{
-		foreach ($changed_values as $field => $pair){
-			$is_meta = $pair[1]; if ($is_meta) die("not implemeted yet");
-
-			$sql .= " and $field =? "; // " . quote_text($changed_value);
-			$count ++;
-			$params[$field] = $pair[0];
-//			if ($is_meta){
-//				if (! isset($meta_table_info)) return false;
-//				$sql = "update $tbl set " . $meta_table_info[$tbl]['value'] . "=?" .
-//				       " where " . $meta_table_info[$tbl]['key'] . "=? " .
-//				       " and " . $meta_table_info[$tbl]['id'] . "=?";
-//			}
-//			else
-//				$sql = "update $table_name set $changed_field =? where id =?";
-
-			// print $sql;
-		}
-//		print $sql; print "<br/>";
-
-		$stmt = sql_prepare($sql);
-		sql_bind($tbl, $stmt, $params);
-		if (! $stmt->execute())
-		{
-			return "no results";
-		}
-		$id = 0;
-		$stmt->bind_result($id);
-
-		$result = array();
-		while ($stmt->fetch()){
-			$result[] = $id;
-		}
-	}
-	return $result;
-}
 
 
 //($table_name, $field, $prefix, $args);

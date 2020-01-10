@@ -59,6 +59,9 @@ class Core_Nav {
 		$title = $item['title'];
 		$url = $item['url'];
 
+		print "title: " . $title . "<br/>";
+		die (1);
+
 		$exists = wp_get_nav_menu_items($menu_id);
 
 		foreach ($exists as $key => $n)

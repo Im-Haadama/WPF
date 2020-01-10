@@ -110,7 +110,7 @@ class Finance_Bank
 					$query .= " and id in (" . comma_implode( $ids ) . ")";
 				}
 				// " order by date desc limit $rows_per_page offset $offset";
-				$args["query"] .= " and " . $query;
+				$args["query"] = $query;
 				$args["fields"] = array( "id", "date", "description", "in_amount", "reference" );
 
 				print self::bank_transactions( $args );

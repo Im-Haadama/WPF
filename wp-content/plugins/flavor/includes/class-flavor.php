@@ -375,8 +375,11 @@ class Flavor {
 				$sub = get_param("sub", false);
 				$target = get_param("target", true);
 				$nav = $this->getNav();
-				if ($sub) return $nav->AddSub($main, array( 'title' => $sub, 'url' => $target));
-				return $nav->AddMain(array('title' => $main, 'url' => $target));
+				$main_id = $nav->AddMain(array('title' => $main, 'url' => $target));
+				if (! $main_id) return $main_id;
+//				print "$main $sub $target<br/>";
+				if ($sub) return $nav->AddSub($main_id, array( 'title' => $sub, 'url' => $target));
+				return $main_id;
 		}
 	}
 
@@ -577,7 +580,7 @@ class Flavor {
 //				'type' => ''
 //			)
 			$args ["text"] = __("Add") . " " . __($item);
-			$args["action"] = add_param_to_url(self::getPost() , array( "operation" => "fresh_nav_add", "module" => $item )) . ";location_reload";
+			$args["action"] = add_param_to_url(self::getPost(), array( "operation" => "fresh_nav_add", "main" => $item ), null, false) . ";location_reload";
 			$result .= Core_Html::GuiButtonOrHyperlink("btn_add_" . $item, null, $args) . "<br/>";
 			foreach ($sub_menu_items as $sub_menu_item) {
 				$main_nav = __CLASS__;
@@ -591,7 +594,7 @@ class Flavor {
 				$sub_args["action"] = add_param_to_url(self::getPost() , array( "operation" => "nav_add",
 				                                                                "main" => $main_nav,
 				                                                                "sub" => $sub_nav,
-				                                                                "target" => $target )) . ";location_reload";
+				                                                                "target" => $target ), false) . ";location_reload";
 				//print $sub_args["action"] . "<br/>";
 				$result .= "===>" . Core_Html::GuiButtonOrHyperlink( "btn_add_" . $sub_nav, null, $sub_args ) . "<br/>";
 			}

@@ -341,12 +341,6 @@ class Focus {
 	 *
 	 */
 
-	public static function salary_main($atts) {
-		$operation = get_param("operation", false, "salary_main");
-		print "operation=" . $operation;
-		return self::shortcode_wrapper( array( 'Focus_Salary', 'handle_salary_show' ), $operation );
-	}
-
 	public function load_plugin_textdomain() {
 		$locale = is_admin() && function_exists( 'get_user_locale' ) ? get_user_locale() : get_locale();
 		$locale = apply_filters( 'plugin_locale', $locale, 'focus' );
@@ -372,186 +366,12 @@ class Focus {
 
 		// $this->add_thumbnail_support();
 	}
-//
-//	/**
-//	 * Ensure post thumbnail support is turned on.
-//	 */
-//	private function add_thumbnail_support() {
-//		if ( ! current_theme_supports( 'post-thumbnails' ) ) {
-//			add_theme_support( 'post-thumbnails' );
-//		}
-//		add_post_type_support( 'product', 'thumbnail' );
-//	}
-//
-//	/**
-//	 * Add WC Image sizes to WP.
-//	 *
-//	 * As of 3.3, image sizes can be registered via themes using add_theme_support for woocommerce
-//	 * and defining an array of args. If these are not defined, we will use defaults. This is
-//	 * handled in wc_get_image_size function.
-//	 *
-//	 * 3.3 sizes:
-//	 *
-//	 * woocommerce_thumbnail - Used in product listings. We assume these work for a 3 column grid layout.
-//	 * woocommerce_single - Used on single product pages for the main image.
-//	 *
-//	 * @since 2.3
-//	 */
-//	public function add_image_sizes() {
-//		$thumbnail         = wc_get_image_size( 'thumbnail' );
-//		$single            = wc_get_image_size( 'single' );
-//		$gallery_thumbnail = wc_get_image_size( 'gallery_thumbnail' );
-//
-//		add_image_size( 'woocommerce_thumbnail', $thumbnail['width'], $thumbnail['height'], $thumbnail['crop'] );
-//		add_image_size( 'woocommerce_single', $single['width'], $single['height'], $single['crop'] );
-//		add_image_size( 'woocommerce_gallery_thumbnail', $gallery_thumbnail['width'], $gallery_thumbnail['height'], $gallery_thumbnail['crop'] );
-//
-//		// Registered for bw compat. @todo remove in 4.0.
-//		add_image_size( 'shop_catalog', $thumbnail['width'], $thumbnail['height'], $thumbnail['crop'] );
-//		add_image_size( 'shop_single', $single['width'], $single['height'], $single['crop'] );
-//		add_image_size( 'shop_thumbnail', $gallery_thumbnail['width'], $gallery_thumbnail['height'], $gallery_thumbnail['crop'] );
-//	}
-//
-//	/**
-//	 * Get the plugin url.
-//	 *
-//	 * @return string
-//	 */
-//	public function plugin_url() {
-//		return untrailingslashit( plugins_url( '/', WC_PLUGIN_FILE ) );
-//	}
-//
-//	/**
-//	 * Get the plugin path.
-//	 *
-//	 * @return string
-//	 */
-//	public function plugin_path() {
-//		return untrailingslashit( plugin_dir_path( WC_PLUGIN_FILE ) );
-//	}
-//
-//	/**
-//	 * Get the template path.
-//	 *
-//	 * @return string
-//	 */
 	/**
 	 * @return mixed
 	 */
 	public function template_path() {
 		return apply_filters( 'focus_template_path', 'focus/' );
 	}
-//
-//	/**
-//	 * Get Ajax URL.
-//	 *
-//	 * @return string
-//	 */
-//	public function ajax_url() {
-//		return admin_url( 'admin-ajax.php', 'relative' );
-//	}
-//
-//	/**
-//	 * Return the WC API URL for a given request.
-//	 *
-//	 * @param string    $request Requested endpoint.
-//	 * @param bool|null $ssl     If should use SSL, null if should auto detect. Default: null.
-//	 * @return string
-//	 */
-//	public function api_request_url( $request, $ssl = null ) {
-//		if ( is_null( $ssl ) ) {
-//			$scheme = wp_parse_url( home_url(), PHP_URL_SCHEME );
-//		} elseif ( $ssl ) {
-//			$scheme = 'https';
-//		} else {
-//			$scheme = 'http';
-//		}
-//
-//		if ( strstr( get_option( 'permalink_structure' ), '/index.php/' ) ) {
-//			$api_request_url = trailingslashit( home_url( '/index.php/wc-api/' . $request, $scheme ) );
-//		} elseif ( get_option( 'permalink_structure' ) ) {
-//			$api_request_url = trailingslashit( home_url( '/wc-api/' . $request, $scheme ) );
-//		} else {
-//			$api_request_url = add_query_arg( 'wc-api', $request, trailingslashit( home_url( '', $scheme ) ) );
-//		}
-//
-//		return esc_url_raw( apply_filters( 'woocommerce_api_request_url', $api_request_url, $request, $ssl ) );
-//	}
-//
-//	/**
-//	 * Load & enqueue active webhooks.
-//	 *
-//	 * @since 2.2
-//	 */
-//	private function load_webhooks() {
-//
-//		if ( ! is_blog_installed() ) {
-//			return;
-//		}
-//
-//		wc_load_webhooks();
-//	}
-//
-//	/**
-//	 * WooCommerce Payment Token Meta API and Term/Order item Meta - set table names.
-//	 */
-//	public function wpdb_table_fix() {
-//		global $wpdb;
-//		$wpdb->payment_tokenmeta = $wpdb->prefix . 'woocommerce_payment_tokenmeta';
-//		$wpdb->order_itemmeta    = $wpdb->prefix . 'woocommerce_order_itemmeta';
-//		$wpdb->tables[]          = 'woocommerce_payment_tokenmeta';
-//		$wpdb->tables[]          = 'woocommerce_order_itemmeta';
-//
-//		if ( get_option( 'db_version' ) < 34370 ) {
-//			$wpdb->woocommerce_termmeta = $wpdb->prefix . 'woocommerce_termmeta';
-//			$wpdb->tables[]             = 'woocommerce_termmeta';
-//		}
-//	}
-//
-//	/**
-//	 * Get queue instance.
-//	 *
-//	 * @return WC_Queue_Interface
-//	 */
-//	public function queue() {
-//		return WC_Queue::instance();
-//	}
-//
-//	/**
-//	 * Get Checkout Class.
-//	 *
-//	 * @return WC_Checkout
-//	 */
-//	public function checkout() {
-//		return WC_Checkout::instance();
-//	}
-//
-//	/**
-//	 * Get gateways class.
-//	 *
-//	 * @return WC_Payment_Gateways
-//	 */
-//	public function payment_gateways() {
-//		return WC_Payment_Gateways::instance();
-//	}
-//
-//	/**
-//	 * Get shipping class.
-//	 *
-//	 * @return WC_Shipping
-//	 */
-//	public function shipping() {
-//		return WC_Shipping::instance();
-//	}
-//
-//	/**
-//	 * Email Class.
-//	 *
-//	 * @return WC_Emails
-//	 */
-//	public function mailer() {
-//		return WC_Emails::instance();
-//	}
 
 	/**
 	 *
@@ -565,18 +385,14 @@ class Focus {
 	/**
 	 * @return string|null
 	 */
-//	public function GetNav()
-//	{
-//		if (! $this->nav and ($user_id = get_user_id()))
-//			$this->nav = new Focus_Nav("management." . $user_id);
-//
-//		return $this->nav;
-//	}
 
-	static public function SettingPage()
+	static public function settingPage()
 	{
 		$result = "";
-		$module_list = array( "Tasks" => array(array("Total ordered", "total_ordered")));
+		//                     Top nav                  Sub nav    target,                                        capability
+		$module_list = array( "Focus" => array(array("Repeating weekly", "/focus?operation=show_repeating_tasks&freq=w","show_tasks"),
+			                                   array("Repeating monthly", "/focus?operation=show_repeating_tasks&freq=j","show_tasks"),
+			                                   array("Repeating annual", "/focus?operation=show_repeating_tasks&freq=z","show_tasks")));
 
 		$result .= Flavor::ClassSettingPage($module_list);
 		return $result;

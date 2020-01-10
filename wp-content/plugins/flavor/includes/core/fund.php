@@ -620,7 +620,7 @@ if (! function_exists("my_log")) {
 			return;
 		}
 		$debug = debug_backtrace();
-		for ( $i = 0; $i < count( $debug ); $i ++ ) {
+		for ( $i = count($debug) -2 ; $i < count( $debug ); $i ++ ) {
 			if ( isset( $debug[ $i ]['file'] ) ) {
 				$caller = basename( $debug[ $i ]['file'] ) . " ";
 			} else {
@@ -752,7 +752,7 @@ if (! function_exists("my_log")) {
 	 * @return string
 	 */
 	function randomPassword() {
-		$alphabet    = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
+		$alphabet    = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789`10';
 		$pass        = array(); //remember to declare $pass as an array
 		$alphaLength = strlen( $alphabet ) - 1; //put the length -1 in cache
 		for ( $i = 0; $i < 8; $i ++ ) {
@@ -846,9 +846,11 @@ if (! function_exists("my_log")) {
 	 *
 	 * Usage add_param_to_url($url, $param, $value) or ($url, array(param1 => value1, param2 => value2 ...)
 	 *
+	 * @param bool $encode
+	 *
 	 * @return string|null
 	 */
-	function add_param_to_url($url, $param_name, $param_value = null, $encode = true) {
+	function add_param_to_url($url, $param_name, $param_value = null, $encode= true) {
 		$ignore_list = array( "page" ); // Would be removed from base url.
 		$query_parts = [];
 		if ( is_null( $param_value ) and ! is_array( $param_name ) ) {
@@ -892,6 +894,8 @@ if (! function_exists("my_log")) {
 		$glue = '?';
 		// $result .= "?";
 		foreach ( $query_parts as $param => $value ) {
+			if (is_array($param)) { print __FUNCTION__ . ":param is array<br/>"; var_dump($param); die(1); }
+			if (is_array($value)) { print __FUNCTION__ . ":value is array<br/>"; var_dump($value); die(1); }
 			$result .= $glue . $param . '=' . ($encode ? encodeURIComponent($value) : $value);
 			$glue   = "&";
 		}

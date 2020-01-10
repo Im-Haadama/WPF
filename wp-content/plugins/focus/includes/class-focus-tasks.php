@@ -50,6 +50,8 @@ class Focus_Tasks {
 
 	static function show_main_wrapper()
 	{
+		if ($operation = get_param("operation", false, null))
+			return self::handle_focus_show($operation);
 		$user_id = get_user_id(true);
 		$args = self::Args();
 		if ($user_id) return self::main($user_id, $args);
@@ -132,8 +134,8 @@ class Focus_Tasks {
 	 * @throws Exception
 	 */
 	static function handle_focus_show( $operation) {
-		$args = [];
-		print __FUNCTION__ . ':' . $operation ."<br/>";
+		$args = self::Args();
+//		print __FUNCTION__ . ':' . $operation ."<br/>";
 //		if ( ( $done = Focus_Tasks::handle_focus_do( $operation, $args ) ) !== "not handled" ) {
 //			return $done;
 //		}
@@ -362,7 +364,7 @@ class Focus_Tasks {
 
 			case "show_tasks":
 				$query  = Core_Data::data_parse_get( "im_tasklist", array( "operation" ) );
-				$ids    = data_search( "im_tasklist", $query );
+				$ids    = Core_Data::data_search( "im_tasklist", $query );
 				return self::show_tasks( $ids );
 
 			case "show_edit_company":
@@ -1390,7 +1392,7 @@ class Focus_Tasks {
 
 		$query = (isset($args["query"]) ? $args["query"] : " 1");
 		if (get_param("search", false, false)){
-			$ids = data_search("im_task_templates", $args);
+			$ids = Core_Data::data_search("im_task_templates", $args);
 			if (! $ids){
 				$result .= "No templates found" . Core_Html::Br();
 				return $result;
