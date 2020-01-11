@@ -17,6 +17,7 @@ class Core_Data
 	public function __construct() {
 	}
 
+
 	static function handle_operation( $operation )
 	{
 		switch ($operation){

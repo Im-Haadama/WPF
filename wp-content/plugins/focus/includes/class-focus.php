@@ -275,9 +275,9 @@ class Focus {
 		 * Class autoload`er.
 		 */
 		require_once FOCUS_INCLUDES . 'class-focus-autoloader.php';
-//		require_once FLAVOR_INCLUDES_ABSPATH . 'core/data/sql.php';
+		require_once FLAVOR_INCLUDES_ABSPATH . 'core/data/sql.php';
 //		require_once FLAVOR_INCLUDES_ABSPATH . 'core/org_gui.php';
-//		require_once FLAVOR_INCLUDES_ABSPATH . 'core/fund.php';
+		require_once FLAVOR_INCLUDES_ABSPATH . 'core/fund.php';
 //		require_once FLAVOR_INCLUDES_ABSPATH . 'core/wp.php';
 
 		/**
@@ -310,6 +310,14 @@ class Focus {
 	 * Init WooCommerce when WordPress Initialises.
 	 */
 	public function init() {
+//		print __CLASS__ . ':' .__FUNCTION__ . "<br/>";
+//		var_dump());
+		$plugins = get_option( 'active_plugins', array());
+		$plugin = "focus/focus.php";
+		if (! in_array("flavor/flavor.php", $plugins)) {
+			unset ( $plugins[ $plugin ] );
+			return false;
+		}
 		// Before init action.
 		do_action( 'before_focus_init' );
 
@@ -318,6 +326,7 @@ class Focus {
 
 		// Set up localisation.
 		$this->load_plugin_textdomain();
+
 		$shortcodes = Core_Shortcodes::instance();
 		$shortcodes->add($this->salary->getShortcodes());
 		$shortcodes->add($this->tasks->getShortcodes());
