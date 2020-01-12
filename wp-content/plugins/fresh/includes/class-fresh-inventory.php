@@ -77,14 +77,22 @@ class Fresh_Inventory
 
 		$sql = "select product_id, product_name, quantity " .
 		       " from im_inventory_count " .
-		       " where count_date > " . quote_text($year . '-12-1') . ' and count_date < ' . quote_text(($year +1 . '-2-1')) . ' and quantity > 0' . ', ' . get_buy_price($prod_id);
+		       " where count_date > " . quote_text($year . '-12-1') . ' and count_date < ' . quote_text(($year +1 . '-2-1')) . ' and quantity > 0';
 
 //		print $sql;
 
 		$rows = sql_query($sql);
-		while ($row = sql_fetch_row($rows))
+		if (! $rows) return;
+		$buffer = "Product id, Product name, quantity, price, total\n";
+		while ($row = sql_fetch_assoc($rows))
 		{
-			$buffer .= $row["product_id"] . ", " . $row["product_name"] . ", " . $row["quantity"] . "\n";
+			$prod_id = $row["product_id"];
+			$quantity = $row["quantity"];
+			$buy_price = Fresh_Pricing::get_buy_price($prod_id);
+			$total = ((is_numeric($buy_price) and is_numeric($quantity)) ? ($quantity * $buy_price) : 'error');
+
+			$buffer .=  $prod_id . ", " . $row["product_name"] . ", " . $quantity . ", ". $buy_price . "," . $total.
+			            "\n";
 		}
 		$size = strlen($buffer);
 

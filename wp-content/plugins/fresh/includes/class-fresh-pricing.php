@@ -74,17 +74,37 @@ class Fresh_Pricing {
 		switch ( $client_type ) {
 			case 0:
 				if ( $quantity >= 8 ) {
-					return round( get_buy_price( $prod_id ) * 1.4, 1 );
+					return round( self::get_buy_price( $prod_id ) * 1.4, 1 );
 				}
 
 				return get_postmeta_field( $prod_id, '_price' );
 			case 1:
 				return siton_price( $prod_id );
 			case 2:
-				return get_buy_price( $prod_id );
+				return self::get_buy_price( $prod_id );
 			case 5:
-				return min( get_price( $prod_id ), round( get_buy_price( $prod_id ) * 1.3, 1 ) );
+				return min( self::get_price( $prod_id ), round( self::get_buy_price( $prod_id ) * 1.3, 1 ) );
 		}
+	}
+
+	static function get_buy_price( $prod_id, $supplier_id = 0 ) {
+		// print $supplier_id . "<br/>";
+		if ( $prod_id > 0 ) {
+			if ( $supplier_id > 0 ) {
+//			print "supplier: " . $supplier_id . "<br/>";
+				$a = alternatives( $prod_id );
+				foreach ( $a as $s ) {
+					//		print $s->getSupplierId() . "<br/>";
+					if ( $s->getSupplierId() == $supplier_id ) {
+						return $s->getPrice();
+					}
+				}
+			}
+
+			return get_postmeta_field( $prod_id, 'buy_price' );
+		}
+
+		return - 1;
 	}
 
 	static function get_sale_price( $prod_id ) {
