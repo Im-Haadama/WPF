@@ -104,8 +104,7 @@ class Fresh_Client_Views {
 		}
 	}
 
-
-	static private function show_trans( $customer_id, $view = eTransview::default, $args =null )
+	static function show_trans( $customer_id, $view = eTransview::default, $args =null )
 	{
 		$page = GetArg($args, "page", null);
 		$query = GetArg($args, "query", null);
