@@ -150,7 +150,7 @@ class Fresh {
 		// add_action( 'init', array( $this, 'add_image_sizes' ) );
 		// add_action( 'switch_blog', array( $this, 'wpdb_table_fix' ), 0 );
 		$orders = new Fresh_Order_Management( $this->get_plugin_name(), $this->get_version() );
-		$inventory = new Fresh_Inventory( $this->get_plugin_name(), $this->get_version() );
+		$inventory = new Fresh_Inventory( $this->get_plugin_name(), $this->get_version(), self::getPost());
 
 		$this->loader->add_action( 'wp_enqueue_scripts', $orders, 'enqueue_scripts' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $inventory, 'enqueue_scripts' );
@@ -487,7 +487,7 @@ class Fresh {
 
 	static private function getPost()
 	{
-		return "/wp-content/plugins/flavor/post.php";
+		return "/wp-content/plugins/fresh/post.php";
 	}
 
 	public function AddNav($module, $sub_menu = null)
@@ -590,7 +590,8 @@ function im_woocommerce_update_price() {
 		my_log ("not connected to db");
 		return;
 	}
-	$client_type = customer_type( get_user_id() );
+	$user = new Fresh_Client();
+	$client_type = $user-customer_type( get_user_id() );
 //	if (get_user_id() == 1) $client_type = "siton";
 
 	foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {

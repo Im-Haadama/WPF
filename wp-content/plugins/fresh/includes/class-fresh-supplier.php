@@ -47,17 +47,12 @@ class Fresh_Supplier {
 		return sql_query_single_scalar( $sql);
 	}
 
-	function getCountStatus($year) {
-		$status = "not entered";
-		if ( sql_query_single_scalar( "select count(*) from im_inventory_count where supplier_id = " . $this->id . " and year(count_date) = $year" ) ) {
-			$status = "entered";
-		}
-
-		return $status;
+	function getLastCount() {
+		//  year(date_sub(count_date, interval 30 day)) from im_inventory_count
+		$result = sql_query_single_scalar( "select max(count_date) from im_inventory_count where supplier_id = " . $this->id);
+		if (strlen($result) < 5) return null;
+		return $result;
 	}
-
-	// gui_select_table( $id, "im_suppliers", $value, $events, "", "supplier_name",
-	// " where active = 1", true, false, "supplier_name", $class );
 
 	static function gui_select_supplier( $id = "supplier_select", $value = null, $args = null )
 	{

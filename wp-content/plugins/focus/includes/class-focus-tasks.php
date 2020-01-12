@@ -166,7 +166,9 @@ class Focus_Tasks {
 				// $new = get_param("new", false, null);
 				$id                     = get_param( "id", true );
 				$header_args["view_as"] = $id;
-				return self::focus_main( $id, $args );
+				$args = self::Args();
+				return self::active_tasks($args);
+				// return self::show_main_wrapper( $id, $args );
 			case "show_repeating_tasks":
 			case "show_templates":
 				$args["table"] = true;

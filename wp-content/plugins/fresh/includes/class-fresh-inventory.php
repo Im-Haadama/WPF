@@ -5,6 +5,15 @@ class Fresh_Inventory
 {
 	private $version = null;
 	private $plugin_name = null;
+	private $post_file = null;
+	static private $_instance = null;
+
+	public static function instance() {
+		if ( is_null( self::$_instance ) ) {
+			die ("Create instance with parameters");
+		}
+		return self::$_instance;
+	}
 
 	static function handle()
 	{
@@ -13,19 +22,32 @@ class Fresh_Inventory
 		print self::handle_operation($operation);
 	}
 
-	public function __construct($name, $version)
+	public function __construct($name, $version, $post_file)
 	{
 		$this->version = $version;
 		$this->plugin_name = $name;
+		$this->post_file = $post_file;
+		self::$_instance = $this;
 //		add_action( 'wp_enqueue_scripts', array('Fresh_Inventory', 'enqueue_styles' ));
+	}
+
+	static function getPost()
+	{
+//		print "post_file= " . self::instance()->post_file;;
+		return self::instance()->post_file;
 	}
 
 	static function handle_operation($operation)
 	{
 		switch ($operation){
+			case "download_inventory_count":
+				$year = (date('m') < 12 ? date('Y') - 1 : date('Y'));
+				return self::download_inventory($year);
+				break;
 			case "show_status":
 				$year = (date('m') < 12 ? date('Y') - 1 : date('Y'));
-				return self::show_status($year);
+				$include_counted = get_param("include_counted", false, false);
+				return self::show_status($year, $include_counted);
 				break;
 			case "show":
 				$year = get_param("year");
@@ -40,9 +62,47 @@ class Fresh_Inventory
 				$supplier_id = get_param("supplier_id", true);
 				return self::save_count($supplier_id);
 				break;
+
+			case "inventory_zero":
+				$supplier_id = get_param("supplier_id", true);
+				return self::zero_count($supplier_id);
+				break;
 		}
 	}
 
+	static function download_inventory($year)
+	{
+		$File = "inventory-$year.csv";
+		$buffer = "";
+
+		$sql = "select product_id, product_name, quantity " .
+		       " from im_inventory_count " .
+		       " where count_date > " . quote_text($year . '-12-1') . ' and count_date < ' . quote_text(($year +1 . '-2-1')) . ' and quantity > 0' . ', ' . get_buy_price($prod_id);
+
+//		print $sql;
+
+		$rows = sql_query($sql);
+		while ($row = sql_fetch_row($rows))
+		{
+			$buffer .= $row["product_id"] . ", " . $row["product_name"] . ", " . $row["quantity"] . "\n";
+		}
+		$size = strlen($buffer);
+
+		header("Content-Disposition: attachment; filename=\"" . basename($File) . "\"");
+		header("Content-Type: application/octet-stream");
+		header("Content-Length: " . $size);
+		header("Connection: close");
+
+		print $buffer;
+		return true;
+	}
+	static function zero_count($supplier_id)
+	{
+		$sql = sprintf( "insert into im_inventory_count (count_date, supplier_id, product_id, product_name, quantity) values  
+				          (%s, %s, 0 , 'zero count', 0)", quote_text( date( 'Y-m-d' ) ), $supplier_id );
+
+		return sql_query($sql);
+	}
 	static function save_inv( $data ) {
 		for ( $i = 0; $i < count( $data ); $i += 2 ) {
 			$id = $data[ $i ];
@@ -92,23 +152,29 @@ class Fresh_Inventory
 		return true;
 	}
 
-	static function show_status($year)
+	static function show_status($year, $include_counted = false)
 	{
 		$result = Core_Html::gui_header(1, "Inventory status for 31 Dec $year");
+		$result .= Core_Html::GuiHyperlink("include counted", add_to_url("include_counted", 1)) . " ";
+		$result .= Core_Html::GuiHyperlink("download count", self::getPost() . "?operation=download_inventory_count");
+
 
 		$suppliers = sql_query_array_scalar("select id from im_suppliers where active = 1");
-		$status_table = array(array("supplier id", "status"));
+		$status_table = array(array("supplier id", "Supplier name", "Count Date", "Zero"));
 
 		foreach ($suppliers as $supplier_id) {
 			if (! $supplier_id > 0) {
-				print "skipping imvalied supplier. $supplier_id<br/>";
+				print "skipping invalid supplier. $supplier_id<br/>";
 				continue;
 			}
 			$Supplier = new Fresh_Supplier($supplier_id);
-			array_push($status_table, array("id" => $supplier_id, "supplier_name" => $Supplier->getSupplierName(), "status" => $Supplier->getCountStatus($year)));
+
+			if ($include_counted or !$Supplier->getLastCount() or ((strtotime('now') - strtotime($Supplier->getLastCount())) > 2592000)) // One month
+				$status_table[$supplier_id] = array("id" => $supplier_id, "supplier_name" => $Supplier->getSupplierName(), "count_date" => $Supplier->getLastCount());
 		}
 
 		$args = array("links" => array("id" => "?operation=show&supplier_id=%d&year=$year"));
+		$args["actions"] = array(array("Zero", self::getPost() . "?operation=inventory_zero&supplier_id=%d;action_hide_row"));
 
 		$result .= Core_Html::gui_table_args($status_table, "inventory_status", $args);
 		return $result;
@@ -168,7 +234,6 @@ class Fresh_Inventory
 		if (count($table) == 1) { // Just the header
 			return null;
 		}
-//		var_dump($table);
 
 		$display .= Core_Html::gui_table_args( $table, "table_" . $supplier_id );
 

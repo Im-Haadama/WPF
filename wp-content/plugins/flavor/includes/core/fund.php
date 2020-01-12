@@ -232,6 +232,11 @@ if (! function_exists("my_log")) {
 		return "'" . $num_or_text . "'";
 	}
 
+	function quote_date($date, $format = 'Y-m-d')
+	{
+		return "'" . date($format, $date) . "'";
+	}
+
 	/**
 	 * @param $url
 	 * @param $addition
