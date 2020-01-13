@@ -376,7 +376,7 @@ class Fresh_Delivery {
 
 // print $sql . "<br/>";
 
-		my_log( $sql, "db-add-delivery-line.php" );
+		MyLog( $sql, "db-add-delivery-line.php" );
 
 		sql_query( $sql );
 	}
@@ -397,13 +397,13 @@ class Fresh_Delivery {
 			die ( "can't get client id from order " . $this->OrderId() );
 		}
 
-		my_log( __FILE__, "client_id = " . $client_id );
+		MyLog( __FILE__, "client_id = " . $client_id );
 
 		$sql = "SELECT dlines FROM im_delivery WHERE id = " . $this->ID;
 
 		$dlines = sql_query_single_scalar( $sql );
 
-		my_log( __FILE__, "dlines = " . $dlines );
+		MyLog( __FILE__, "dlines = " . $dlines );
 
 		$del_user = $this->getOrder()->getOrderInfo( '_billing_first_name' );
 		$message  = header_text( true, true, true );
@@ -440,7 +440,7 @@ class Fresh_Delivery {
 </html>";
 
 		$user_info = get_userdata( $client_id );
-		my_log( $user_info->user_email );
+		MyLog( $user_info->user_email );
 		$to = $user_info->user_email;
 		// print "To: " . $to . "<br/>";
 		if ( $more_email ) {

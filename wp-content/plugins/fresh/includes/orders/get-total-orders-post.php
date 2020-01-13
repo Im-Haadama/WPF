@@ -440,7 +440,7 @@ function table_line( $prod_id, $prod_quantity, $filter_zero, $history = false ) 
 
 	// debug_time("end table_line");
 
-	my_log( __FILE__, "prod_id=" . $prod_id . ": ordered = " . $numeric_quantity . ", in supplies " . $supplied_q );
+	MyLog( __FILE__, "prod_id=" . $prod_id . ": ordered = " . $numeric_quantity . ", in supplies " . $supplied_q );
 	// return $line;
 	if ( $numeric_quantity > 0 || ! $filter_zero ) {
 		return $line;

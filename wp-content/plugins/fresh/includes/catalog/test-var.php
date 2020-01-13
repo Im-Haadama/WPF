@@ -40,7 +40,7 @@ $supplier  = 100005;
 foreach ( $var as $v ) {
 	print_r( $v );
 	print "<br/>";
-	my_log( "updating variation " . $v . " to pricelist " . $pricelist_id . " price " . $price );
+	MyLog( "updating variation " . $v . " to pricelist " . $pricelist_id . " price " . $price );
 	$var = new WC_Product_Variation( $v );
 	update_post_meta( $v, "supplier_name", get_supplier_name( $supplier ) );
 	update_post_meta( $v, "_regular_price", $price );

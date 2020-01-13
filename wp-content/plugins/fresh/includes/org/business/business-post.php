@@ -68,7 +68,7 @@ if ( $operation) {
 
 		case "delete_items":
 			$ids = $_GET["ids"];
-			my_log( "Deleting ids: " . $ids );
+			MyLog( "Deleting ids: " . $ids );
 			business_logical_delete( $ids );
 			break;
 
@@ -80,7 +80,7 @@ if ( $operation) {
 				show_makolet( $month );
 			} else {
 				print "no permission";
-				my_log( "show_makolet user " . $user->Id );
+				MyLog( "show_makolet user " . $user->Id );
 			}
 			break;
 
@@ -91,7 +91,7 @@ if ( $operation) {
 				$month = $_GET["month"];
 				create_makolet( $month );
 			} else {
-				my_log( "show_makolet user $user" );
+				MyLog( "show_makolet user $user" );
 			}
 			break;
 
@@ -105,7 +105,7 @@ if ( $operation) {
 				$month = $_GET["month"];
 				show_control( $month );
 			} else {
-				my_log( "show_control user $user" );
+				MyLog( "show_control user $user" );
 			}
 			break;
 

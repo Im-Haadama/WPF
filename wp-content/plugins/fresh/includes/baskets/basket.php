@@ -14,19 +14,19 @@ require_once( '../r-shop_manager.php' );
 $basket_id = $_GET["basket_id"];
 $operation = $_GET["op"];
 
-my_log( __FILE__, "operation = " . $operation );
+MyLog( __FILE__, "operation = " . $operation );
 
 switch ( $operation ) {
 	case "save":
-		my_log( "save basket " . $basket_id );
+		MyLog( "save basket " . $basket_id );
 		save_basket( $basket_id );
 		break;
 	case "load":
-		my_log( "load basket " . $basket_id );
+		MyLog( "load basket " . $basket_id );
 		load_basket( $basket_id );
 		break;
 	case "empty":
-		my_log( "empty basket" );
+		MyLog( "empty basket" );
 		empty_basket();
 		break;
 }
@@ -54,7 +54,7 @@ function save_basket( $basket_id ) {
 }
 
 function load_basket( $basket_id ) {
-	my_log( __METHOD__ );
+	MyLog( __METHOD__ );
 	WC()->cart->empty_cart( true );
 	$sql    = "SELECT product_id, quantity FROM im_baskets WHERE basket_id=" . $basket_id;
 	$result = sql_query( $sql );

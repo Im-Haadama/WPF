@@ -586,11 +586,11 @@ function get_minimum_order() {
 
 function im_woocommerce_update_price()
 {
-	my_log( "cart start" );
+	MyLog( "cart start" );
 	// TWEEK. Don't know why menu_op calls this method.
 	// DONT remove without trying menu.php and cart.
 	if (! sql_query_single_scalar("select 1")) {
-		my_log ("not connected to db");
+		MyLog ("not connected to db");
 		return;
 	}
 	if (! function_exists('get_user_id') or ! get_user_id()) return;
@@ -602,7 +602,7 @@ function im_woocommerce_update_price()
 		$prod_id = $cart_item['product_id'];
 		$variation_id = $cart_item['variation_id'];
 		if ( ! ( $prod_id > 0 ) ) {
-			my_log( "cart - no prod_id" );
+			MyLog( "cart - no prod_id" );
 			continue;
 		}
 		$q          = $cart_item['quantity'];
@@ -610,7 +610,7 @@ function im_woocommerce_update_price()
 		//my_log("set " . $sell_price);
 		$cart_item['data']->set_sale_price( $sell_price );
 		$cart_item['data']->set_price( $sell_price );
-		my_log( $prod_id . " " . $q );
+		MyLog( $prod_id . " " . $q );
 
 	}
 	//		ob_start();

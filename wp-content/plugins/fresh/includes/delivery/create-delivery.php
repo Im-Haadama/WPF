@@ -50,7 +50,7 @@ if ( isset( $_GET["refund"] ) ) {
 	$refund = true;
 }
 
-my_log( __FILE__, "order=" . $order_id . " id = " . $id );
+MyLog( __FILE__, "order=" . $order_id . " id = " . $id );
 
 $show_inventory = false;
 if (info_get("manage_inventory") and get_param("show_inv", false, 1))

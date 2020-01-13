@@ -29,7 +29,7 @@ function account_add_transaction( $client_id, $date, $amount, $ref, $type ) {
 	$sql = "INSERT INTO im_client_accounts (client_id, date, transaction_amount, transaction_method, transaction_ref) "
 	       . "VALUES (" . $client_id . ", \"" . $date . "\", " . $amount . ", \"" . $type . "\", " . $ref . ")";
 
-	my_log( $sql, "account_add_transaction" );
+	MyLog( $sql, "account_add_transaction" );
 	sql_query( $sql );
 }
 
@@ -37,7 +37,7 @@ function account_update_transaction( $total, $delivery_id, $client_id ) {
 	$sql = "UPDATE im_client_accounts SET transaction_amount = " . $total .
 	       " WHERE transaction_ref = " . $delivery_id . " and client_id = " . $client_id;
 
-	my_log( $sql, "account_update_transaction" );
+	MyLog( $sql, "account_update_transaction" );
 	sql_query( $sql );
 }
 

@@ -608,7 +608,7 @@ class Finance_Bank
 	$sql = "INSERT INTO im_business_info (" . $fields . ") "
 	       . "VALUES (" . $values . " )";
 
-	my_log( $sql, __FILE__ );
+	MyLog( $sql, __FILE__ );
 
 	sql_query( $sql );
 
@@ -619,7 +619,7 @@ function business_delete_transaction( $ref ) {
 	$sql = "DELETE FROM im_business_info "
 	       . " WHERE ref = " . $ref;
 
-	my_log( $sql, __FILE__ );
+	MyLog( $sql, __FILE__ );
 	sql_query( $sql );
 }
 
@@ -628,14 +628,14 @@ function business_update_transaction( $delivery_id, $total, $fee ) {
 	       " delivery_fee = " . $fee .
 	       " WHERE ref = " . $delivery_id;
 
-	my_log( $sql, __FILE__ );
+	MyLog( $sql, __FILE__ );
 	sql_query( $sql );
 }
 
 function business_logical_delete( $ids ) {
 	$sql = "UPDATE im_business_info SET is_active = 0 WHERE id IN (" . $ids . ")";
 	sql_query( $sql );
-	my_log( $sql );
+	MyLog( $sql );
 }
 
 function business_open_ship( $part_id ) {

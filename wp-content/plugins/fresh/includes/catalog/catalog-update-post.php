@@ -16,7 +16,7 @@ require_once( FRESH_INCLUDES . "/fresh/catalog/Basket.php" );
 // in im_supplier_products
 
 $operation = $_GET["operation"];
-my_log( "operation = " . $operation, "catalog-update-post.php" );
+MyLog( "operation = " . $operation, "catalog-update-post.php" );
 
 switch ( $operation ) {
 	case "get_prices_change":
@@ -35,7 +35,7 @@ switch ( $operation ) {
 	case "select_suppliers":
 		$update_ids = $_GET["update_ids"];
 		$ids        = explode( ',', $update_ids );
-		my_log( $ids, "catalog-update-post.php" );
+		MyLog( $ids, "catalog-update-post.php" );
 		select_suppliers( $ids );
 		break;
 	case "draft_items":
@@ -55,7 +55,7 @@ switch ( $operation ) {
 
 function select_suppliers( $update_ids ) {
 	// $bl = new Bundles();
-	my_log( "start update", "catalog-update-post.php" );
+	MyLog( "start update", "catalog-update-post.php" );
 	for ( $pos = 0; $pos < count( $update_ids ); $pos += 2 ) {
 		$product_id    = $update_ids[ $pos ];
 		$priceslist_id = $update_ids[ $pos + 1 ];
@@ -113,7 +113,7 @@ function get_items_to_remove() {
 			continue;
 		}
 		$product_name = $row[1];
-		my_log( "to remove " . $product_name );
+		MyLog( "to remove " . $product_name );
 
 		$line = "<tr>";
 		$line .= "<td><input id=\"chk" . $product_id . "\" class=\"remove_product_checkbox\" type=\"checkbox\"></td>";
@@ -149,7 +149,7 @@ function get_items_to_publish() {
 	while ( $row = mysqli_fetch_row( $result ) ) {
 		$product_id   = $row[0];
 		$product_name = $row[1];
-		my_log( "to publish " . $product_name );
+		MyLog( "to publish " . $product_name );
 
 		$line = "<tr>";
 		$line .= "<td><input id=\"chk" . $product_id . "\" class=\"publish_product_checkbox\" type=\"checkbox\"></td>";
@@ -236,7 +236,7 @@ function get_changed_prices( $include_sale ) {
 		$line       .= '</select></td>';
 		$line       .= "</tr>";
 		$curr_price = get_price( $product_id );
-		my_log( "name = " . $product_name . ", price = " . $curr_price . " min price = " . $min_new_price, "catalog-update-post.php" );
+		MyLog( "name = " . $product_name . ", price = " . $curr_price . " min price = " . $min_new_price, "catalog-update-post.php" );
 		$display_product = false;
 		if ( $min_new_price != 9999 ) { // We have options from suppliers
 			if ( $curr_price == "" or $curr_price > 0 ) { // Product has price

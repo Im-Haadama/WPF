@@ -19,10 +19,10 @@ require_once( "../gui/inputs.php" );
 $operation = $_GET["operation"];
 $remote_id = $_GET["remote_id"];
 
-my_log( __FILE__, $operation );
+MyLog( __FILE__, $operation );
 switch ( $operation ) {
 	case "get_unmapped":
-		my_log( "get_unmapped" );
+		MyLog( "get_unmapped" );
 		multi_search_unmapped_products( $remote_id );
 		break;
 
@@ -44,13 +44,13 @@ switch ( $operation ) {
 
 	case "create_products":
 		$category_name = $_GET["category_name"];
-		my_log( "category: " . $category_name );
+		MyLog( "category: " . $category_name );
 		$map_triplets = $_GET["create_info"];
 		$ids          = explode( ',', $map_triplets );
 		Catalog::CreateProducts( $category_name, $ids );
 		break;
 	default:
-		my_log( __FILE__, "unhandled" );
+		MyLog( __FILE__, "unhandled" );
 }
 
 //function create_products($category_name, $ids)
@@ -80,16 +80,16 @@ switch ( $operation ) {
 //}
 
 function create_product( $sell_price, $supplier_id, $product_name, $category_name ) {
-	my_log( "title= " . $product_name . ", supplier_id=" . $supplier_id . ", sell_price=" . $sell_price, __METHOD__ );
+	MyLog( "title= " . $product_name . ", supplier_id=" . $supplier_id . ", sell_price=" . $sell_price, __METHOD__ );
 	$post_information = array(
 		'post_title'  => $product_name,
 		// 'post_content' => 'this is new item shop',
 		'post_status' => 'publish',
 		'post_type'   => "product"
 	);
-	my_log( "calling wp_insert_post" );
+	MyLog( "calling wp_insert_post" );
 	$post_id = wp_insert_post( $post_information, true );
-	my_log( "after" );
+	MyLog( "after" );
 	update_post_meta( $post_id, "_regular_price", $sell_price );
 	update_post_meta( $post_id, "_price", $sell_price );
 //    update_post_meta($post_id, "supplier_name", get_supplier_name($supplier_id));
@@ -103,7 +103,7 @@ function create_product( $sell_price, $supplier_id, $product_name, $category_nam
 
 
 function map_products( $remote_id, $ids ) {
-	my_log( __METHOD__, __FILE__ );
+	MyLog( __METHOD__, __FILE__ );
 	for ( $pos = 0; $pos < count( $ids ); $pos += 2 ) {
 		$local_prod_id  = $ids[ $pos ];
 		$remote_prod_id = $ids[ $pos + 1 ];
@@ -158,7 +158,7 @@ function multi_search_unmapped_products( $site_id ) {
 		array_push( $remote_prods[ $product_name_prf ], array( $id, $name, $price, $supplier ) );
 	}
 
-	my_log( "multi_search_unmaaped_products" );
+	MyLog( "multi_search_unmaaped_products" );
 	// Purpose: read supplier items and map them to our database.
 	// First get all unmapped items
 	$sql = " SELECT id, post_title as product_name " .

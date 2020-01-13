@@ -35,7 +35,7 @@ function handle_multi_operation($operation)
 	switch ($operation)
 	{
 		case "create_receipt":
-			my_log( "create_receipt" );
+			MyLog( "create_receipt" );
 			$cash         = get_param( "cash" );
 			$bank         = get_param( "bank" );
 			$check        = get_param( "check" );

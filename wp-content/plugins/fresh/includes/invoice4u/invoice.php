@@ -165,11 +165,11 @@ class Invoice4u {
 
 		$client_email = get_customer_email( $customer_id );
 		// print $client_email;
-		my_log( "performance - seaching customer by email", __METHOD__ );
+		MyLog( "performance - seaching customer by email", __METHOD__ );
 		$client = $this->GetCustomerByEmail( $client_email );
 
 		if ( ! $client ) {
-			my_log( "performance - seaching customer by name", __METHOD__ );
+			MyLog( "performance - seaching customer by name", __METHOD__ );
 			$client = $this->GetCustomerByName( get_customer_name( $customer_id ) );
 		}
 
@@ -258,7 +258,7 @@ class Invoice4u {
 
 		if ( ! $this->result->Errors ) {
 			// print $this->result->Errors;
-			my_log( __METHOD__, $this->result->Errors );
+			MyLog( __METHOD__, $this->result->Errors );
 		}
 		// var_dump($this->result);
 	}

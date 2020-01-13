@@ -59,7 +59,7 @@ switch ( $operation ) {
 			$price = $params[ $pos + 1 ];
 //                        $product_name_code = $params[$pos];
 //            my_log("supplier_id " . $supplier_id, "pricelist-post.php");
-			my_log( "price " . $price, "pricelist-post.php" );
+			MyLog( "price " . $price, "pricelist-post.php" );
 //            my_log("product_name " . $product_name_code, "pricelist-post.php");
 //			$regular_price, $sale_price = 0, $product_name = null, $code = 10, $category = null, &$id, $parent_id = null,
 //		$picture_path = null
@@ -112,16 +112,16 @@ switch ( $operation ) {
 		break;
 
 	case "dont_price":
-		my_log( "start dont sell" );
+		MyLog( "start dont sell" );
 		$params = explode( ',', $_GET["params"] );
 		for ( $pos = 0; $pos < count( $params ); $pos ++ ) {
 			$price_id = $params[ $pos ];
 
-			my_log( "hiding " . $price_id );
+			MyLog( "hiding " . $price_id );
 
 			$cat->HideProduct( $price_id );
 		}
-		my_log( print "done dont sell" );
+		MyLog( print "done dont sell" );
 		break;
 	case "is_slave":
 		$id  = $_GET["supplier_id"];
@@ -193,7 +193,7 @@ switch ( $operation ) {
 		$product_name = $_GET["product_name"];
 		$price        = $_GET["price"];
 		$line_id      = $_GET["line_id"];
-		my_log( "update in slave" . $product_name . " " . $price . " " . $line_id );
+		MyLog( "update in slave" . $product_name . " " . $price . " " . $line_id );
 //        my_log("supplier_id " . $supplier_id, "pricelist-post.php");
 //        my_log("price " . $price, "pricelist-post.php");
 //        my_log("product_name " . $product_name, "pricelist-post.php");

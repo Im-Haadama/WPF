@@ -11,7 +11,7 @@ require_once( "people.php" );
 require_once( "../account/account.php" );
 
 $operation = $_GET["operation"];
-my_log( "Operation: " . $operation, __FILE__ );
+MyLog( "Operation: " . $operation, __FILE__ );
 
 switch ( $operation ) {
 	case "add_item":
@@ -28,7 +28,7 @@ switch ( $operation ) {
 }
 
 function driver_add( $user_id, $date, $quantity, $sender ) {
-	my_log( "driver_add", __FILE__ );
+	MyLog( "driver_add", __FILE__ );
 	driver_add_activity( $user_id, $date, $quantity, $sender );
 	account_add_transaction( $user_id, $date, - 21.4 * ( $quantity ), 1, "שילוח" );
 }

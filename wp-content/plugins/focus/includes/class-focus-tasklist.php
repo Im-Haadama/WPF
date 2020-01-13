@@ -333,7 +333,7 @@ class Focus_Tasklist {
 		}
 		if ( $verbose ) $output .= Core_Html::gui_table_args( $verbose_table);
 
-		my_log($output, "", $log_file);
+		MyLog($output, "", $log_file);
 		return $output;
 	}
 

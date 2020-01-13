@@ -40,7 +40,7 @@ function history_total_orders() {
 		// If item is basket, store the quantity.
 		if ( is_basket( $prod_id ) ) {
 			$basket_quantities[ $prod_id ] = $prod_quantity;
-			my_log( "basket id " . $prod_id . " quan= " . $basket_quantities[ $prod_id ] );
+			MyLog( "basket id " . $prod_id . " quan= " . $basket_quantities[ $prod_id ] );
 		}
 	}
 

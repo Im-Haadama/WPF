@@ -33,7 +33,7 @@ if ( $multisite or $_SERVER['REMOTE_ADDR'] == "160.153.129.234" or // Aglamaz.co
 	if ( $user->ID == "0" ) {
 		// Force login
 		$inclued_files = get_included_files();
-		my_log( __FILE__, $inclued_files[ count( $inclued_files ) - 2 ] );
+		MyLog( __FILE__, $inclued_files[ count( $inclued_files ) - 2 ] );
 		force_login();
 		exit();
 	}
@@ -50,7 +50,7 @@ if ( $multisite or $_SERVER['REMOTE_ADDR'] == "160.153.129.234" or // Aglamaz.co
 		}
 		var_dump( $roles );
 		die ( 1 );
-		my_log( __FILE__ . " " . $user->name );
+		MyLog( __FILE__ . " " . $user->name );
 		// No relevant role - send to store.
 		// < 1! (in_array("shop_manager", $roles) or in_array("administrator", $roles))) {
 		print '<script language="javascript">';

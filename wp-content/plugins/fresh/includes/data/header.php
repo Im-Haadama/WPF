@@ -83,7 +83,7 @@ function parse_header(
 			$filter_idx = $i;
 		}
 		if ( strstr( $key, "מחיר" ) and ! in_array( $i, $price_idx ) ) {
-			my_log( "key: $key, price: " . $i, __FILE__ );
+			MyLog( "key: $key, price: " . $i, __FILE__ );
 			array_push( $price_idx, $i );
 		}
 

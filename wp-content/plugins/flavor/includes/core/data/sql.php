@@ -235,7 +235,7 @@ function sql_query( $sql, $report_error = true )
 		if ( $micro_delta > 0.1 ) {
 			$report = sql_trace();
 			$report .= "long executing: " . $sql . " " . $micro_delta . "<br>";
-			my_log($report, "sql performance", "sql_performance" . date('m-j'));
+			MyLog($report, "sql performance", "sql_performance" . date('m-j'));
 		}
 		return $result;
 	}
@@ -423,7 +423,7 @@ function sql_error( $sql ) {
 		$message = $sql->error;
 		// $message = "sql not string";
 	}
-	my_log( $message );
+	MyLog( $message );
 	print "<div style=\"direction: ltr;\">" . $message . "</div>";
 }
 

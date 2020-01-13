@@ -17,7 +17,7 @@ $order_id                         = isset( $_GET["order_id"] ) ? $_GET["order_id
 $operation                        = $_GET["operation"];
 
 //$operation = $_GET["operation"];
-my_log( "Operation: " . $operation, __FILE__ );
+MyLog( "Operation: " . $operation, __FILE__ );
 switch ( $operation ) {
 	case "pay_cash":
 //		$order_id = $_GET["order_id"];

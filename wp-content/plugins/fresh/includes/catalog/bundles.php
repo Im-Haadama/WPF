@@ -152,17 +152,17 @@ class Bundle {
 	}
 
 	function Delete() {
-		my_log( "delete bundle", __CLASS__ );
+		MyLog( "delete bundle", __CLASS__ );
 		$sql = "SELECT bundle_prod_id FROM im_bundles WHERE id = " . $this->id;
-		my_log( $sql, __CLASS__ );
+		MyLog( $sql, __CLASS__ );
 		$bundle_prod_id = sql_query_single_scalar( $sql );
-		my_log( $bundle_prod_id, __CLASS__ );
+		MyLog( $bundle_prod_id, __CLASS__ );
 
 		Catalog::DraftItems( array( $bundle_prod_id ) );
 
 		$sql = "DELETE FROM im_bundles WHERE id = " . $this->id;
 
-		my_log( "sql = " . $sql );
+		MyLog( "sql = " . $sql );
 
 		sql_query( $sql );
 	}
@@ -209,7 +209,7 @@ class Bundle {
 		$sale_price    = $this->CalculatePrice();
 		print "price: $sale_price <br/>";
 
-		my_log( "Bundle::Update $product_id $regular_price $sale_price " . $this->quantity );
+		MyLog( "Bundle::Update $product_id $regular_price $sale_price " . $this->quantity );
 
 		update_post_meta( $product_id, "_regular_price", $regular_price );
 		update_post_meta( $product_id, "_sale_price", $sale_price );

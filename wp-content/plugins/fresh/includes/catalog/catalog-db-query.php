@@ -44,7 +44,7 @@ $header_fields = array(
 
 // Check connection
 
-my_log( $operation, "catalog-db-query.php" );
+MyLog( $operation, "catalog-db-query.php" );
 switch ( $operation ) {
 	case "monthly":
 		print show_monthly();
@@ -267,7 +267,7 @@ function show_catalog(
 	}
 
 	$count = 0;
-	my_log( "search_text = " . $search_text, "catalog-db-query.php" );
+	MyLog( "search_text = " . $search_text, "catalog-db-query.php" );
 	$sql = 'select '
 	       . ' id, post_title '
 	       . ' from wp_posts '

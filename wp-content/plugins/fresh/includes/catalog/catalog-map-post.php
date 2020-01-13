@@ -22,18 +22,18 @@ $operation = $_GET["operation"];
 
 switch ( $operation ) {
 	case "get_unmapped":
-		my_log( "get_unmapped" );
+		MyLog( "get_unmapped" );
 		search_unmapped_products();
 		break;
 
 	case "create_term":
-		my_log( $operation );
+		MyLog( $operation );
 		$category_name = $_GET["category_name"];
 		terms_create( $category_name );
 		break;
 
 	case "get_unmapped_terms":
-		my_log( "get_unmapped_terms" );
+		MyLog( "get_unmapped_terms" );
 		search_unmapped_terms();
 		break;
 
@@ -48,7 +48,7 @@ switch ( $operation ) {
 		break;
 
 	case "hide":
-		my_log( "hide" );
+		MyLog( "hide" );
 		$id_ = $_GET["ids"];
 		$ids = explode( ',', $id_ );
 		hide_product( $ids );
@@ -62,7 +62,7 @@ switch ( $operation ) {
 
 	case "create_products":
 		$category_name = $_GET["category_name"];
-		my_log( "category: " . $category_name );
+		MyLog( "category: " . $category_name );
 		$create_info = get_param_array( "create_info" );
 		//var_dump($ids);
 		Catalog::CreateProducts( $category_name, $create_info );
@@ -94,7 +94,7 @@ function remove_map( $ids ) {
 
 // Hide this items.
 function hide_product( $ids ) {
-	my_log( "start hide" );
+	MyLog( "start hide" );
 //    print "hide";
 	$catalog = new Catalog();
 

@@ -443,7 +443,7 @@ class PriceList {
 //		print "code: " . $code . "<br/>";
 //		print "start";
 //		print "AddOrUpdate: " . $product_name . " " . $regular_price . "<br/>";
-		my_log( __METHOD__, __FILE__ );
+		MyLog( __METHOD__, __FILE__ );
 		if ( mb_strlen( $product_name ) > 40 ) {
 			$product_name = mb_substr( $product_name, 0, 40 );
 		}
@@ -575,7 +575,7 @@ class PriceList {
 	// ID: output the pricelist id
 
 	function Update( $id, $price, $sale_price = 0 ) {
-		my_log( __METHOD__, "update line $id, price $price, sale price $sale_price" );
+		MyLog( __METHOD__, "update line $id, price $price, sale price $sale_price" );
 		$sql = "UPDATE im_supplier_price_list SET price = " . $price .
 		       ", sale_price = " . $sale_price .
 		       ", date = '" . date( 'y/m/d' ) . "' " .
@@ -600,9 +600,9 @@ class PriceList {
 				if ( $debug ) {
 					print $prod_id . " ";
 				}
-				my_log( __METHOD__, "update product $prod_id" );
+				MyLog( __METHOD__, "update product $prod_id" );
 				Catalog::UpdateProduct( $prod_id, $line );
-				my_log( $line );
+				MyLog( $line );
 			}
 		}
 	}
@@ -680,7 +680,7 @@ class PriceList {
 		foreach ($items_to_remove as $row) {
 			$id = $row[0];
 			print "removing " . $id . "<br/>";
-			my_log( "Remove " . $id );
+			MyLog( "Remove " . $id );
 			$this->Delete( $id );
 			$removed[] = array( $row[2], $row[1] );
 			// var_dump($ids);
@@ -693,7 +693,7 @@ class PriceList {
 	}
 
 	function Delete( $pricelist_id ) {
-		my_log( __METHOD__ . $pricelist_id );
+		MyLog( __METHOD__ . $pricelist_id );
 
 		// Check if this product linked.
 		$prod_info = catalog::GetProdID( $pricelist_id );
@@ -702,10 +702,10 @@ class PriceList {
 		} else {
 			$prod_id = 0;
 		}
-		my_log( "Delete $pricelist_id $prod_id" );
+		MyLog( "Delete $pricelist_id $prod_id" );
 
-		my_log( "Delete. id = " . $pricelist_id );
-		my_log( "catalog_delete_price", "pricelist-post.php" );
+		MyLog( "Delete. id = " . $pricelist_id );
+		MyLog( "catalog_delete_price", "pricelist-post.php" );
 		$sql = "DELETE FROM im_supplier_price_list  "
 		       . " WHERE id = " . $pricelist_id;
 

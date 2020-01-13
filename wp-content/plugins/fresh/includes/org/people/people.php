@@ -67,16 +67,16 @@ function people_add_activity_sick( $id, $date, $project_id)
  * @param $sender
  */
 function driver_add_activity( $id, $date, $quantity, $sender ) {
-	my_log( "driver_add_activity", __FILE__ );
+	MyLog( "driver_add_activity", __FILE__ );
 	$sql = "INSERT INTO im_driver_deliveries (user_id, date, quantity, sender) VALUES (" .
 	       $id . ", \"" . $date . "\", " . $quantity . ", " . $sender . ")";
 
-	my_log( "quantity = " . $quantity );
-	my_log( "sender = " . $sender );
-	my_log( $sql );
+	MyLog( "quantity = " . $quantity );
+	MyLog( "sender = " . $sender );
+	MyLog( $sql );
 	$export = mysql_query( $sql );
 	if ( ! $export ) {
-		my_log( 'Invalid query: ' . $sql . mysql_error() );
+		MyLog( 'Invalid query: ' . $sql . mysql_error() );
 	}
 }
 

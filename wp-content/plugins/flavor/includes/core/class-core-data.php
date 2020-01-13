@@ -359,7 +359,7 @@ class Core_Data
 
 		if (! is_array($row))
 		{
-			my_log( __FUNCTION__ . "invalid row ");
+			MyLog( __FUNCTION__ . "invalid row ");
 			return $row;
 		}
 

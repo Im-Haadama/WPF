@@ -261,7 +261,7 @@ class Finance {
 		if (! class_exists('Core_Autoloader'))
 			require_once FINANCE_INCLUDES . 'core/class-core-autoloader.php';
 		require_once FLAVOR_INCLUDES_ABSPATH . 'core/core-functions.php';
-		require_once FLAVOR_INCLUDES_ABSPATH . 'core/fund.php';
+//	collides with old pages.	require_once FLAVOR_INCLUDES_ABSPATH . 'core/fund.php';
 		require_once FLAVOR_INCLUDES_ABSPATH . 'core/data/sql.php';
 		require_once FLAVOR_INCLUDES_ABSPATH . 'core/wp.php';
 

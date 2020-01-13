@@ -35,7 +35,7 @@ $user = wp_get_current_user();
 if ( $user->ID == "0" ) {
 	// Force login
 	$inclued_files = get_included_files();
-	my_log( __FILE__, $inclued_files[ count( $inclued_files ) - 2 ] );
+	MyLog( __FILE__, $inclued_files[ count( $inclued_files ) - 2 ] );
 	force_login();
 	var_dump( $user );
 	exit();

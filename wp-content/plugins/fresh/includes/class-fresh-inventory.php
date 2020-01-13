@@ -116,7 +116,7 @@ class Fresh_Inventory
 			$id = $data[ $i ];
 			$q  = $data[ $i + 1 ];
 
-			my_log( "set inv " . $data[ $i ] . " " . $data [ $i + 1 ] );
+			MyLog( "set inv " . $data[ $i ] . " " . $data [ $i + 1 ] );
 			$p = new Fresh_Product( $id );
 			if (! $p) continue; // Product not found;
 			if (! $p->setStock( $q ))

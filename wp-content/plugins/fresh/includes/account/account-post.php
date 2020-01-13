@@ -22,7 +22,7 @@ require_once( '../delivery/delivery.php' );
 $debug = true;
 
 $operation = $_GET["operation"];
-my_log( __FILE__, "operation = " . $operation );
+MyLog( __FILE__, "operation = " . $operation );
 global $invoice_user;
 global $invoice_password;
 
@@ -47,12 +47,12 @@ switch ( $operation ) {
 		break;
 
 	case "zero_near_zero":
-		my_log( "zero_near_zero" );
+		MyLog( "zero_near_zero" );
 		zero_near_zero();
 		break;
 
 	case "create_invoice":
-		my_log( "create_invoice" );
+		MyLog( "create_invoice" );
 		$delivery_ids = $_GET["ids"];
 		$user_id      = $_GET["user_id"];
 		$ids          = explode( ',', $delivery_ids );
@@ -61,7 +61,7 @@ switch ( $operation ) {
 		break;
 
 	case "create_receipt":
-		my_log( "create_receipt" );
+		MyLog( "create_receipt" );
 		$cash         = get_param( "cash" );
 		$bank         = get_param( "bank" );
 		$check        = get_param( "check" );

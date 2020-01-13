@@ -74,11 +74,11 @@ class Core_Db_MultiSite extends Core_MultiSite {
 
 
 	static function map( $remote_site_id, $local_prod_id, $remote_prod_id ) {
-		my_log( __FILE__, __METHOD__ );
+		MyLog( __FILE__, __METHOD__ );
 		$sql = "INSERT INTO im_multisite_map (remote_site_id, local_prod_id, remote_prod_id) " .
 		       " VALUES (" . $remote_site_id . ", " . $local_prod_id . ", " . $remote_prod_id . ")";
 
-		my_log( $sql );
+		MyLog( $sql );
 
 		sql_query( $sql );
 	}

@@ -65,7 +65,7 @@ function get_zone_from_postcode( $postcode, $country = null ) {
 			'postcode' => $postcode,
 		),
 	) )->get_id();
-	my_log( "zone: " . $zone1 );
+	MyLog( "zone: " . $zone1 );
 
 //	print $zone1;
 

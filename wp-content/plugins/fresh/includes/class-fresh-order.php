@@ -80,7 +80,7 @@ class Fresh_Order {
 		$total = 0;
 
 		if (! count($prods)) {
-			my_log("empty order requested and refused");
+			MyLog("empty order requested and refused");
 			print "הזמנה ריקה לא נקלטה";
 			return null;
 		}
@@ -92,7 +92,7 @@ class Fresh_Order {
 				$total += $o->AddProduct( $prod_id, $quantities[ $i ], false, $user_id, $units[ $i ], $type );
 			} else {
 				print "פריט לא נמצא " . $prods[ $i ] . "<br/>";
-				my_log( "can't prod id for " . $prods[ $i ] );
+				MyLog( "can't prod id for " . $prods[ $i ] );
 			}
 		}
 
@@ -167,10 +167,10 @@ class Fresh_Order {
 			$customer_type = customer_type( $client_id );
 		}
 
-		my_log( __METHOD__, __FILE__ );
-		my_log( "product = " . $product_id, __METHOD__ );
+		MyLog( __METHOD__, __FILE__ );
+		MyLog( "product = " . $product_id, __METHOD__ );
 		if ( $replace and ( is_basket( $product_id ) ) ) {
-			my_log( "Add basket products " . $product_id );
+			MyLog( "Add basket products " . $product_id );
 			$sql = 'SELECT DISTINCT product_id, quantity FROM im_baskets WHERE basket_id = ' . $product_id;
 
 			$result = sql_query( $sql );
@@ -180,7 +180,7 @@ class Fresh_Order {
 				$total   += $this->AddProduct( $prod_id, $q * $quantity, true, $client_id, $customer_type );
 			}
 		} else {
-			my_log( __METHOD__ . ": adding product " . $product_id, __FILE__ );
+			MyLog( __METHOD__ . ": adding product " . $product_id, __FILE__ );
 			if ( ! user_dislike( $client_id, $product_id ) ) {
 				$has_units = false;
 				if ( $unit and strlen( $unit ) > 0 ) {
@@ -577,7 +577,7 @@ class Fresh_Order {
 		}
 		foreach ( $args as $id ) {
 			$order = new WC_Order( $id );
-			my_log( __METHOD__, $id . " changed to " . $status );
+			MyLog( __METHOD__, $id . " changed to " . $status );
 			// var_dump($order);
 			switch ( $status ) {
 				case 'wc-processing';
@@ -610,7 +610,7 @@ class Fresh_Order {
 			                           " WHERE prod_id = " . $prod_or_var .
 			                           " AND delivery_id = " . $d_id );
 			if ( $q_in_ordered != $q_supplied ) {
-				my_log( __METHOD__ . " change stock by " . $q_supplied - $q_in_ordered );
+				MyLog( __METHOD__ . " change stock by " . $q_supplied - $q_in_ordered );
 				$p->setStock( $q_supplied - $q_in_ordered );
 			}
 		}

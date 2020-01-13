@@ -29,7 +29,7 @@ function get_zones_per_path( $path_code ) {
 	$sql    = "SELECT zone_id, codes FROM wp_woocommerce_shipping_zones";
 	$result = sql_query_array( $sql );
 	if ( ! is_array( $result ) ) {
-		my_log( __METHOD__ . " " . $result );
+		MyLog( __METHOD__ . " " . $result );
 
 		return "error";
 	}

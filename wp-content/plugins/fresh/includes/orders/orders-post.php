@@ -26,7 +26,7 @@ $order_id = get_param( "order_id" );
 // in im_supplier_products
 
 $operation = $_GET["operation"];
-my_log( "Operation: " . $operation, __FILE__ );
+MyLog( "Operation: " . $operation, __FILE__ );
 switch ( $operation ) {
 
 	case "update_address":
@@ -87,7 +87,7 @@ switch ( $operation ) {
 		// print "creating order for " . get_user_name( $user_id );
 //		print "pos: " . $pos . "<br/>";
 		if (!$prods){
-			my_log("empty order requested and refused");
+			MyLog("empty order requested and refused");
 			print "הזמנה ריקה לא נקלטה";
 			return null;
 
@@ -164,7 +164,7 @@ switch ( $operation ) {
 //		print ( "change mission" );
 		$mission_id = $_GET["id"];
 		$order_id   = $_GET["order_id"];
-		my_log( "mission=" . $mission_id . " order_id=" . $order_id );
+		MyLog( "mission=" . $mission_id . " order_id=" . $order_id );
 		$o = new Order( $order_id );
 		$o->setMissionID( $mission_id );
 		break;

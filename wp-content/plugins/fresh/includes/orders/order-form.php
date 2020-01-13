@@ -206,7 +206,7 @@ if ( $text ) {
 			    )
 		    );
 	    } catch ( Exception $e ) {
-	        my_log(__FILE__ . ":" . __LINE__ . $e->getMessage());
+	        MyLog( __FILE__ . ":" . __LINE__ . $e->getMessage());
 	    }
 
 	    print Core_Html::GuiButton( "btn_add_order_1", "add_order(0)", "הוסף הזמנה" );

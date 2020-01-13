@@ -14,8 +14,7 @@
  * @param null $file - default is php_error.log
  */
 
-if (! function_exists("my_log")) {
-	function my_log( $msg, $title = '', $file = null ) {
+	function MyLog( $msg, $title = '', $file = null ) {
 		$error_file = ABSPATH . 'logs/' . ( $file ? $file : 'php_error.log' );
 //    print $error_file;
 		$date = date( 'd.m.Y h:i:s' );
@@ -25,93 +24,8 @@ if (! function_exists("my_log")) {
 	}
 
 	/**
-	 * @param bool $script_file
-	 *
 	 * @return string
 	 */
-	function load_scripts( $script_file = false ) {
-		$text = "";
-		if ( $script_file ) {
-			// print "Debug: " . $script_file . '<br/>';
-			// var_dump($script_file);
-			do {
-				if ( $script_file === true ) {
-					$text .= '<script type="text/javascript" src="/core/gui/client_tools.js"></script>';
-					break;
-				}
-				if ( is_string( $script_file ) ) {
-					$text .= '<script type="text/javascript" src="' . $script_file . '"></script>';
-					break;
-				}
-				if ( is_array( $script_file ) ) {
-					foreach ( $script_file as $file ) {
-						if ( strstr( $file, 'php' ) ) {
-							$text .= curl_get( $file );
-						} else {
-							$text .= '<script type="text/javascript" src="' . $file . '"></script>';
-						}
-					}
-					break;
-				}
-				print $script_file . " not added<br/>";
-			} while ( 0 );
-		}
-
-//	print $text;
-
-		return $text;
-
-	}
-
-	/**
-	 * @param null $args
-	 * rtl - right to left
-	 * print_logo - print the logo in the greeting block
-	 * script_files - java scripts to include in header
-	 * close_header - include </head> in the end of the header
-	 * greeting - greet the user - includes time, user_id and view_as
-	 * view_as - enables manager to see the worker's view (in greeting function)
-	 *
-	 * @return string
-	 * @throws Exception
-	 */
-
-
-	/**
-	 * @return string
-	 */
-
-	/**
-	 * @param bool $print_logo
-	 * @param bool $close_header
-	 * @param bool $rtl
-	 * @param bool $script_file
-	 *
-	 * @return string
-	 * @throws Exception
-	 */
-//	function header_text( $print_logo = true, $close_header = true, $rtl = true, $script_file = false ) {
-//		// $text .= '<p style="text-align:center;">';
-//		$args                 = [];
-//		$args["print_logo"]   = $print_logo;
-//		$args["close_header"] = $close_header;
-//		$args["rtl"]          = $rtl;
-//		$args["script_files"] = $script_file;
-//
-//		return HeaderText( $args );
-//	}
-
-	/**
-	 * @return string
-	 */
-	function footer_text() {
-		global $power_version;
-
-		$text = gui_div( "footer", "Fresh store powered by Aglamaz.com 2015-2019 Version " . $power_version . " עם האדמה 2013", true );
-
-		return $text;
-	}
-
 
 	/**
 	 * @param $style_file
@@ -301,7 +215,7 @@ if (! function_exists("my_log")) {
 		$date_array  = explode( " ", $micro_delta );
 		$date        = date( "s", $date_array[1] );
 		if ( $micro_delta > 0.05 ) {
-			my_log( "$str $date:" . $date_array[0] . "<br>", "performance" );
+			MyLog( "$str $date:" . $date_array[0] . "<br>", "performance" );
 		}
 		$prev_time = $now;
 	}
@@ -638,7 +552,7 @@ if (! function_exists("my_log")) {
 			$charset = IM_CHARSET;
 		}
 		if ( ! mysqli_set_charset( $conn, $charset ) ) {
-			my_log( "encoding setting failed" );
+			MyLog( "encoding setting failed" );
 			die( "encoding setting failed" );
 		}
 		// Local and international staff...
@@ -870,5 +784,3 @@ if (! function_exists("my_log")) {
 	{
 		return add_param_to_url(get_url(), $param_name, $param_value, false);
 	}
-}
-

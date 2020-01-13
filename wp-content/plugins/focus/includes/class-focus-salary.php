@@ -261,7 +261,7 @@ class Focus_Salary {
 		if ( strlen( $expense ) == 0 ) {
 			$expense = 0;
 		}
-		my_log( "people_add_activity", __FILE__ );
+		MyLog( "people_add_activity", __FILE__ );
 		if ( time() - strtotime( $date ) < 0 ) {
 			return "לא ניתן להזין תאריכים עתידיים";
 		}
@@ -293,7 +293,7 @@ class Focus_Salary {
 	 * @return bool
 	 */
 	static function add_activity( $user_id, $date, $start, $end, $project_id, $vol = true, $traveling = 0, $extra_text = "", $extra = 0 ) {
-		my_log( "add_activity", __FILE__ );
+		MyLog( "add_activity", __FILE__ );
 		$result = self::people_add_activity( $user_id, $date, $start, $end, $project_id, $traveling, $extra_text, $extra );
 		if ( $result !== true ) {
 			print $result;

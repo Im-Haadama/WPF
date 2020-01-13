@@ -16,7 +16,7 @@ require_once( FRESH_INCLUDES . '/pricelist/pricelist.php' );
 
 class Fresh_Catalog {
 	static function CreateProducts( $category_name, $ids ) {
-		my_log( "Create_products. Category = " . $category_name );
+		MyLog( "Create_products. Category = " . $category_name );
 
 		for ( $pos = 0; $pos < count( $ids ); $pos += 2 ) {
 			// $product_name          = urldecode( $ids[ $pos ] );
@@ -32,7 +32,7 @@ class Fresh_Catalog {
 			/// my_log ("add mapp done. Site id = " . $pricelist->SiteId() . " " . MultiSite::LocalSiteID());
 			if ( $pricelist->SiteId() != Core_Db_MultiSite::LocalSiteID() ) {
 				// Map to remote
-				my_log( "map to remote" );
+				MyLog( "map to remote" );
 				$pricelist_item = PriceList::Get( $pricelist_id );
 				// my_log("got");
 				// my_log("calling MultiSite " . $pricelist->SiteId(). " " . $id .
@@ -101,7 +101,7 @@ class Fresh_Catalog {
 	}
 
 	static function AddMapping( $product_id, $pricelist_id, $site_id ) {
-		my_log( "add_mapping" . $product_id, "catalog-map.php" );
+		MyLog( "add_mapping" . $product_id, "catalog-map.php" );
 
 		catalog::RemoveOldMap( $product_id, $pricelist_id );
 
@@ -154,11 +154,11 @@ class Fresh_Catalog {
 	}
 
 	static function DeleteMapping( $map_id ) {
-		my_log( "delete_mapping", "catalog-map.php" );
+		MyLog( "delete_mapping", "catalog-map.php" );
 
 		$sql = "delete from im_supplier_mapping where id = $map_id";
 
-		my_log( $sql, "catalog-map.php" );
+		MyLog( $sql, "catalog-map.php" );
 
 		sql_query( $sql );
 	}
@@ -170,7 +170,7 @@ class Fresh_Catalog {
 		$my_post['post_status'] = 'publish';
 
 		// Update the post into the database
-		my_log( "publish prod id: " . $product_id, "catalog-update-post.php" );
+		MyLog( "publish prod id: " . $product_id, "catalog-update-post.php" );
 		wp_update_post( $my_post );
 
 //        print "end<br/>";
@@ -195,7 +195,7 @@ class Fresh_Catalog {
 			die ( 1 );
 		}
 		$line = "<tr>";
-		my_log( "update $prod_id" );
+		MyLog( "update $prod_id" );
 		global $debug;
 		if ( $prod_id == $debug_product ) {
 			$print_line = true;
@@ -314,9 +314,9 @@ class Fresh_Catalog {
 	}
 
 	static function DraftItems( $ids ) {
-		my_log( "start draft", "catalog-update-post.php" );
+		MyLog( "start draft", "catalog-update-post.php" );
 		for ( $pos = 0; $pos < count( $ids ); $pos ++ ) {
-			my_log( "id = " . $ids[ $pos ] );
+			MyLog( "id = " . $ids[ $pos ] );
 			$product_id = $ids[ $pos ];
 
 			$p = new Fresh_Product( $product_id );
@@ -373,7 +373,7 @@ class Fresh_Catalog {
 		$var = get_product_variations( $product_id );
 
 		foreach ( $var as $v ) {
-			my_log( "updating variation " . $v . " to pricelist " . $pricelist_id );
+			MyLog( "updating variation " . $v . " to pricelist " . $pricelist_id );
 			$var = new WC_Product_Variation( $v );
 			update_post_meta( $v, "supplier_name", get_supplier_name( $supplier ) );
 			update_post_meta( $v, "_regular_price", $regular_price );
@@ -387,7 +387,7 @@ class Fresh_Catalog {
 		$bundles = sql_query_single( $sql );
 		if ( $bundles ) {
 			foreach ( $bundles as $bundle_id ) {
-				my_log( "updating bundle " . $bundle_id );
+				MyLog( "updating bundle " . $bundle_id );
 				// TODO: update bundle
 				$b = Bundle::CreateFromDb( $bundle_id );
 				$b->Update();
@@ -406,7 +406,7 @@ class Fresh_Catalog {
 	}
 
 	static function PublishItems( $ids ) {
-		my_log( "start publish. ids count " . count( $ids ), "catalog-update-post.php" );
+		MyLog( "start publish. ids count " . count( $ids ), "catalog-update-post.php" );
 		for ( $pos = 0; $pos < count( $ids ); $pos ++ ) {
 			Catalog::PublishItem( $ids[ $pos ] );
 		}
@@ -433,8 +433,8 @@ class Fresh_Catalog {
 				array_push( $result_ids, $row[0] );
 			}
 			if ( $debug ) {
-				my_log( "direct link to $pricelist_id " . implode( ",", $result_ids ) );
-				my_log( $sql );
+				MyLog( "direct link to $pricelist_id " . implode( ",", $result_ids ) );
+				MyLog( $sql );
 			}
 		}
 
@@ -460,7 +460,7 @@ class Fresh_Catalog {
 							array_push( $result_ids, $row[0] );
 						}
 						if ( $debug ) {
-							my_log( "name link to $pricelist_id " . $row[0] );
+							MyLog( "name link to $pricelist_id " . $row[0] );
 						}
 					}
 				}
@@ -521,18 +521,18 @@ class Fresh_Catalog {
 	}
 
 	function DeleteMappingByPricelistId( $pricelist_id ) {
-		my_log( "delete_mapping", "catalog-map.php" );
+		MyLog( "delete_mapping", "catalog-map.php" );
 
 		$sql = "delete from im_supplier_mapping where pricelist_id = $pricelist_id";
 
-		my_log( $sql, "catalog-map.php" );
+		MyLog( $sql, "catalog-map.php" );
 
 		sql_query( $sql );
 	}
 
 	function HideProduct( $pricelist_id )
 	{
-		my_log( "null_mapping", "catalog-map.php" );
+		MyLog( "null_mapping", "catalog-map.php" );
 
 		// Good if already mapped
 		sql_query( "UPDATE im_supplier_mapping SET product_id =-1 WHERE pricelist_id = " . $pricelist_id );
@@ -624,7 +624,7 @@ class Fresh_Catalog {
 }
 
 function best_alternatives( $alternatives, $debug = false ) {
-	my_log( "best_alternatives" );
+	MyLog( "best_alternatives" );
 	$min  = 1111111;
 	$best = null;
 	for ( $i = 0; $i < count( $alternatives ); $i ++ ) {
@@ -632,7 +632,7 @@ function best_alternatives( $alternatives, $debug = false ) {
 		$price = calculate_price( $alternatives[ $i ]->getPrice(), $alternatives[ $i ]->getSupplierId(),
 			$alternatives[ $i ]->getSalePrice());
 //		print "price: " . $alternatives[ $i ]->getSupplierId() . " " . $price . "<br/>";
-		my_log( "price $price" );
+		MyLog( "price $price" );
 		if ( $price < $min ) {
 			$best = $alternatives[ $i ];
 			// my_log( "best $best[0]" );

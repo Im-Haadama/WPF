@@ -13,7 +13,7 @@ require_once( '../catalog/bundles.php' );
 // in im_supplier_products
 
 $operation = $_GET["operation"];
-my_log( "Operation: " . $operation, __FILE__ );
+MyLog( "Operation: " . $operation, __FILE__ );
 
 $bl = new Bundles();
 
@@ -56,7 +56,7 @@ switch ( $operation ) {
 		break;
 
 	case "delete_item":
-		my_log( "operation delete bundle", __FILE__ );
+		MyLog( "operation delete bundle", __FILE__ );
 		$params = explode( ',', $_GET["params"] );
 		for ( $pos = 0; $pos < count( $params ); $pos ++ ) {
 			$item_id = $params[ $pos ];

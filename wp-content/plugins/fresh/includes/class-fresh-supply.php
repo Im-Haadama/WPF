@@ -627,7 +627,7 @@ function create_supply( $supplierID, $date = null ) {
 
 	if ( ! $date )
 		$date = date('Y-m-d');
-	my_log( __METHOD__ . $supplierID );
+	MyLog( __METHOD__ . $supplierID );
 	$sql = "INSERT INTO im_supplies (date, supplier, status) VALUES " . "('" . $date . "' , " . $supplierID . ", 1)";
 
 	sql_query( $sql );
@@ -806,7 +806,7 @@ function supply_business_info( $supply_id ) {
 function delete_supplies( $params ) {
 	for ( $pos = 0; $pos < count( $params ); $pos ++ ) {
 		$supply_id = $params[ $pos ];
-		my_log( "delete supply " . $supply_id );
+		MyLog( "delete supply " . $supply_id );
 		if (! supply_delete( $supply_id )) return false;
 	}
 	return true;
@@ -815,7 +815,7 @@ function delete_supplies( $params ) {
 function sent_supplies( $params ) {
 	for ( $pos = 0; $pos < count( $params ); $pos ++ ) {
 		$supply_id = $params[ $pos ];
-		my_log( "sent supply " . $supply_id );
+		MyLog( "sent supply " . $supply_id );
 		supply_sent( $supply_id );
 	}
 }
@@ -823,7 +823,7 @@ function sent_supplies( $params ) {
 function delete_supply_lines( $params ) {
 	for ( $pos = 0; $pos < count( $params ); $pos ++ ) {
 		$line_id = $params[ $pos ];
-		my_log( "delete supply line" . $line_id );
+		MyLog( "delete supply line" . $line_id );
 		supply_delete_line( $line_id );
 		print "deleted " . $line_id . "<br/>";
 	}
@@ -839,7 +839,7 @@ function update_supply_lines( $supply_id, $params ) {
 		$line_id = $params[ $pos ];
 		$q       = $params[ $pos + 1 ];
 		$price = $params[$pos + 2];
-		my_log( "update supply line" . $line_id . " q= " . $q );
+		MyLog( "update supply line" . $line_id . " q= " . $q );
 //		print "line_id: " . $line_id . " new q: " . $q . "<br/>";
 		$Supply->UpdateLine($line_id, $q);
 
@@ -991,7 +991,7 @@ function SuppliesTable( $status, $args = null ) {
 function DoSuppliesTable( $sql )
 {
 	$result = sql_query( $sql );
-	my_log( $sql);
+	MyLog( $sql);
 	$has_lines = false;
 
 	if ( ! $result ) {
@@ -1095,7 +1095,7 @@ function create_supplier_order( $supplier_id, $ids, $date = null ) {
 }
 
 function create_supplies( $params ) {
-	my_log( __METHOD__);
+	MyLog( __METHOD__);
 	$supplies = array();
 	for ( $i = 0; $i < count( $params ); $i += 4 ) {
 		$prod_id  = $params[ $i + 0 ];
@@ -1268,7 +1268,7 @@ function handle_supplies_operation($operation)
 
 			$date        = get_param( "date" );
 			$supplier_id = $_GET["supplier_id"];
-			my_log( "supplier_id=" . $supplier_id );
+			MyLog( "supplier_id=" . $supplier_id );
 
 			$create_info = $_GET["create_info"];
 			$ids         = explode( ',', $create_info );
@@ -1333,32 +1333,32 @@ function handle_supplies_operation($operation)
 			break;
 
 		case "delete_supplies":
-			my_log( "delete supplies" );
+			MyLog( "delete supplies" );
 			$params = explode( ',', $_GET["params"] );
 			if (delete_supplies( $params ))
 				print "done";
 			break;
 
 		case "sent_supplies":
-			my_log( "sent supplies" );
+			MyLog( "sent supplies" );
 			$params = explode( ',', $_GET["params"] );
 			sent_supplies( $params );
 			break;
 
 		case "delete_lines":
-			my_log( "delete lines" );
+			MyLog( "delete lines" );
 			$params = get_param_array( "params" );
 			delete_supply_lines( $params );
 			break;
 
 		case "merge_supplies":
-			my_log( "merge supplies" );
+			MyLog( "merge supplies" );
 			$params = explode( ',', $_GET["params"] );
 			merge_supplies( $params );
 			break;
 
 		case 'update_lines':
-			my_log( "update lines" );
+			MyLog( "update lines" );
 			$params = explode( ',', $_GET["params"] );
 			$supply_id = get_param("supply_id", true);
 			print update_supply_lines( $supply_id, $params );

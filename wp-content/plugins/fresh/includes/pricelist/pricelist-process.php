@@ -261,7 +261,7 @@ function do_pricelist_process( $file, $supplier_id, $add, $picture_prefix = null
 
 	$line_number = 0;
 
-	my_log( "supplier_id = " . $supplier_id );
+	MyLog( "supplier_id = " . $supplier_id );
 
 	$PL = new PriceList( $supplier_id );
 

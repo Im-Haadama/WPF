@@ -19,7 +19,7 @@ $sql = 'select '
        . ' and woi.order_item_id = woim.order_item_id and woim.`meta_key` = \'_product_id\''
        . ' group by woi.order_item_name order by 1'
        . ' ';
-my_log( $sql, "get-order.php" );
+MyLog( $sql, "get-order.php" );
 
 $export = mysql_query( $sql ) or die ( "Sql error : " . mysql_error() );
 
