@@ -76,6 +76,14 @@ class Core_Html {
 	}
 
 	// $key, $data, $args
+
+	/**
+	 * @param $id
+	 * @param null $value
+	 * @param null $args
+	 *
+	 * @return string
+	 */
 	static function GuiInput( $id, $value = null, $args = null ) {
 		//	print __FUNCTION__ . "<br/>";
 		$name   = GetArg( $args, "name", $id );
@@ -113,6 +121,13 @@ class Core_Html {
 		return $data;
 	}
 
+	/**
+	 * @param $id
+	 * @param null $value
+	 * @param null $args
+	 *
+	 * @return string
+	 */
 	static function GuiButtonOrHyperlink( $id, $value = null, $args = null ) // Value is irrelevant but here to keep the structure: id, value, args.
 	{
 		$action = GetArg( $args, "action", null );
@@ -196,6 +211,11 @@ class Core_Html {
 		return $data;
 	}
 
+	/**
+	 * @param $value
+	 *
+	 * @return string|string[]
+	 */
 	static function remove_br( $value ) {
 		$to_replace = array( "<br/>", "<br>" );
 		foreach ( $to_replace as $rep ) {
@@ -205,6 +225,15 @@ class Core_Html {
 		return $value;
 	}
 
+	/**
+	 * @param $id
+	 * @param $values
+	 * @param $id_field
+	 * @param $field_name
+	 * @param bool $include_id
+	 *
+	 * @return string
+	 */
 	static function GuiDatalist( $id, $values, $id_field, $field_name, $include_id = false ) {
 		$debug = 1;
 
@@ -350,6 +379,13 @@ class Core_Html {
 		return $data;
 	}
 
+	/**
+	 * @param $text
+	 * @param $link
+	 * @param null $args
+	 *
+	 * @return string
+	 */
 	static function GuiHyperlink( $text, $link, $args = null ) {
 		$data = "<a href='" . $link . "'";
 		if ( $target = GetArg( $args, "target", null ) ) {
@@ -469,10 +505,23 @@ class Core_Html {
 		return $data;
 	}
 
+	/**
+	 * @param $logo_url
+	 * @param int $height
+	 *
+	 * @return string
+	 */
 	static function GuiImage( $logo_url, $height = 0 ) {
 		return '<img src=' . QuoteText( $logo_url ) . '  style="height: ' . $height . 'px; width: auto;">';
 	}
 
+	/**
+	 * @param $id
+	 * @param null $text
+	 * @param null $args
+	 *
+	 * @return string
+	 */
 	static function GuiDiv( $id, $text = null, $args = null ) {
 		$data = "";
 
@@ -886,6 +935,13 @@ class Core_Html {
 		return $data;
 	}
 
+	/**
+	 * @param $id
+	 * @param $list_name
+	 * @param $args
+	 *
+	 * @return string
+	 */
 	static function GuiAutoList( $id, $list_name, $args ) {
 		if ( ! $args ) {
 			$args = [];
@@ -916,6 +972,11 @@ class Core_Html {
 		return $data;
 	}
 
+	/**
+	 * @param $args
+	 * @param $table
+	 * @param $values
+	 */
 	static function DatalistCreate( $args, $table, &$values ) {
 		$query  = GetArg( $args, "query", null );
 		$id_key = GetArg( $args, "id_key", "id" );
@@ -1077,6 +1138,15 @@ class Core_Html {
 		return gui_simple_select( $id, $values, $events, $value );
 	}
 
+	/**
+	 * @param $id
+	 * @param $values
+	 * @param $events
+	 * @param null $selected_key
+	 * @param null $selected_value
+	 *
+	 * @return string
+	 */
 	static function gui_simple_select( $id, $values, $events, $selected_key = null, $selected_value = null ) {
 		$data = "<select id=\"" . $id . "\" ";
 		if ( $events ) {
@@ -1246,6 +1316,14 @@ class Core_Html {
 		}
 	}
 
+	/**
+	 * @param $input_name
+	 * @param null $type
+	 * @param null $args
+	 * @param null $data
+	 *
+	 * @return string|null
+	 */
 	static function gui_input_by_type( $input_name, $type = null, $args = null, $data = null ) {
 		$events = GetArg( $args, "events", null );
 //		print "type=$type<br/>";
@@ -1276,6 +1354,13 @@ class Core_Html {
 		return $value;
 	}
 
+	/**
+	 * @param $id
+	 * @param $selected
+	 * @param $args
+	 *
+	 * @return mixed|string
+	 */
 	static function gui_select_days( $id, $selected, $args ) {
 		$edit = GetArg( $args, "edit", false );
 
@@ -1300,6 +1385,13 @@ class Core_Html {
 		return gui_select( $id, "day_name", $days, $events, $selected, "id", "class", true );
 	}
 
+	/**
+	 * @param $id
+	 * @param $text
+	 * @param $args
+	 *
+	 * @return string|null
+	 */
 	static function GuiPulldown( $id, $text, $args ) {
 		$result  = "";
 		$result  .= '
@@ -1321,10 +1413,20 @@ class Core_Html {
 		return $result;
 	}
 
+	/**
+	 * @return string
+	 */
 	static function gui_type() {
 		return "html";
 	}
 
+	/**
+	 * @param $id
+	 * @param $text
+	 * @param null $args
+	 *
+	 * @return string
+	 */
 	static function GuiLabel($id, $text, $args= null)
 	{
 		$result = "<label id=" . $id . " ";
@@ -1336,6 +1438,12 @@ class Core_Html {
 		return $result;
 	}
 
+	/**
+	 * @param $branch
+	 * @param $args
+	 *
+	 * @return string
+	 */
 	static private function GuiTreeBranch($branch, $args)
 	{
 		$class = GetArg($args, "class", "caret");
@@ -1354,6 +1462,12 @@ class Core_Html {
 		return $result;
 	}
 
+	/**
+	 * @param $tree
+	 * @param $id
+	 *
+	 * @return string
+	 */
 	static function GuiTree($tree, $id)
 	{
 		$result = "<ul id = $id>";
@@ -1365,6 +1479,11 @@ class Core_Html {
 		return $result;
 	}
 
+	/**
+	 * @param $tabs
+	 *
+	 * @return string
+	 */
 	static function GuiTabs($tabs)
 	{
 		$result = '<div class="tab">';
@@ -1373,15 +1492,23 @@ class Core_Html {
 		$args["class"] = "tablinks";
 		$contents = "";
 		$div_args = array("class" => "tabcontent");
-
+		$shown_tab = GetArg($args, "show_tab", 0);
+		$tab_index = 0;
 		foreach ($tabs as $tab)
 		{
+			if (! is_array($tab) or count($tab) < 3){
+				return "Tab elements should be indexed array with 3 elements: name, display_name, and content";
+			}
 			$name = $tab[0];
 			$display_name = $tab[1];
+//			$result .= 'style="display: none"';
+
+			$div_args["style"] = (($tab_index == $shown_tab) ? 'display: block': "");
 			$contents .= Core_Html::GuiDiv($name, Core_Html::gui_header(2, $name) . $tab[2], $div_args);
 
 			$args["events"] = "onclick=\"selectTab(event, '$name', 'tabcontent')\"";
 			$result .= Core_Html::GuiButton("btn_tab_$name", $display_name, $args);
+			$tab_index++;
 		}
 		$result .= "</div>";
 
@@ -1493,6 +1620,13 @@ class Core_Html {
 	 */
 
 // This function collects values from the table. If sql is not specified - all values are read and sent to doGuiDatalist.
+	/**
+	 * @param $id
+	 * @param $table
+	 * @param null $args
+	 *
+	 * @return string
+	 */
 	static function TableDatalist( $id, $table, $args = null)
 	{
 		$field = GetArg($args, "field", "field");
@@ -1517,6 +1651,13 @@ class Core_Html {
 		return self::GuiDatalist($id, $values, $id_field,  $field, $include_id);
 	}
 
+	/**
+	 * @param $table_name
+	 * @param $args
+	 *
+	 * @return string|null
+	 * @throws Exception
+	 */
 	static function NewRow($table_name, $args)
 	{
 		$args["edit"] = true;
@@ -1530,10 +1671,18 @@ class Core_Html {
 		return $row;
 	}
 
+	/**
+	 * @return string
+	 */
 	static function Br() {
 		return '<br/>';
 	}
 
+	/**
+	 * @param $text
+	 *
+	 * @return array
+	 */
 	static function html2array( $text )
 	{
 		require_once("wp-content/plugins/flavor/includes/core/data/im_simple_html_dom.php");
