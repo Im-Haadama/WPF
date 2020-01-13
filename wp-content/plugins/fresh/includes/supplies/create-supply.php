@@ -22,7 +22,7 @@ print "d= " . $debug . "<br/>";
 
 
 $supplier_name = $_GET["supplier_name"];
-$file          = get_param( "file" );
+$file          = GetParam( "file" );
 
 // inbox manager activation
 $filename = "http://tabula.aglamaz.com/attachments/" . $_GET["file"];

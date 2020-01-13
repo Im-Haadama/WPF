@@ -38,13 +38,13 @@ if ( ! defined( 'IM_BACKUP_FOLDER' ) ) {
 
 $m = new Core_MultiSite( $hosts_to_sync, $master, 3 );
 
-$op = get_param( "op" );
+$op = GetParam( "op" );
 // $backup_run_time = shell_exec(`crontab -l | grep backup.sh | cut -f 2 -d' '`);
 $backup_run_time = 12;
 
 $d =  (date("H") > $backup_run_time) ? date('y-m-d') : date('y-m-d',strtotime("-1 days"));
-$date = get_param("date", false, $d);
-$debug = get_param("debug", false, false);
+$date = GetParam("date", false, $d);
+$debug = GetParam("debug", false, false);
 
 if ( $op == 'check' ) { // would run on conductor server
 	$fail = false;
@@ -61,7 +61,7 @@ if ( $op == 'check' ) { // would run on conductor server
 		$url    = $host_info[2] . "/utils/backup_manager.php?tabula=145db255-79ea-4e9c-a51d-318a86c999bf";
 		$get_name = $url . "&op=name&date=" . $date;
 		if ($debug) print $get_name . "<br/>";
-		$file_name = curl_get( $get_name );
+		$file_name = CurlGet( $get_name );
 		if ( strstr( $file_name, "Fatal" ) or strlen($file_name) < 5) {
 			$results[$key] = array( "hostname" => $host_info[1], "result" => "error file name: " . $file_name );
 			$fail = true;
@@ -129,7 +129,7 @@ foreach ( $hosts_to_sync as $key => $host_info ) {
 	$output = "";
 		$url    = $host_info[2] . "/utils/backup_manager.php?tabula=145db255-79ea-4e9c-a51d-318a86c999bf";
 
-	$file_name = curl_get( $url . "&op=name&date=" . date('Y-m-d') );
+	$file_name = CurlGet( $url . "&op=name&date=" . date('Y-m-d') );
 	if ( strstr( $file_name, "not found" ) or strlen($file_name) < 2) {
 		array_push( $results, array( $host_info[1], "error: " . $file_name ) );
 		continue;
@@ -155,7 +155,7 @@ foreach ( $hosts_to_sync as $key => $host_info ) {
 		array_push($results, "Can't open file. check disk usage and permission.");
 		continue;
 	}
-	$backup = curl_get( $url . "&op=file&name=" . $file_name);
+	$backup = CurlGet( $url . "&op=file&name=" . $file_name);
 	fwrite( $file, $backup );
 	fclose( $file );
 	$output .= "done<br/>";
@@ -165,7 +165,7 @@ foreach ( $hosts_to_sync as $key => $host_info ) {
 
 	if ( $size > 500000 ) {
 		$output .= "delete in origin<br/>";
-		curl_get( $url . "&op=delete" );
+		CurlGet( $url . "&op=delete" );
 	}
 	array_push( $results, array( "hostname" => $host_info[1], "result" => $output ) );
 }

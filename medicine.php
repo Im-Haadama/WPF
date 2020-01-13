@@ -13,7 +13,7 @@ require_once( ROOT_DIR . '/im-config.php' );
 require_once( ROOT_DIR . "/niver/gui/gem.php" );
 
 require_once( "medicine/medicine_class.php" );
-$operation = get_param( "operation", false, "medicine_main" );
+$operation = GetParam( "operation", false, "medicine_main" );
 
 require_once( ROOT_DIR . "/init.php" );
 
@@ -46,7 +46,7 @@ $setting = GuiPulldown( "settings", "settings", array(
 	"menu_options" => array(
 		array(
 			"text" => "Edit organization",
-			"link" => add_to_url( "operation", "edit_organization" )
+			"link" => AddToUrl( "operation", "edit_organization" )
 		)
 	)
 ) );
@@ -77,8 +77,8 @@ if ( ! focus_check_user() ) {
 }
 
 if ( $operation ) {
-	if ( get_param( "page", false, null ) ) {
-		$args ["page"] = get_param( "page" );
+	if ( GetParam( "page", false, null ) ) {
+		$args ["page"] = GetParam( "page" );
 	}
 	handle_medicine_show( $operation, $args );
 

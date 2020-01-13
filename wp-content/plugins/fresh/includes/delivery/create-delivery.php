@@ -53,7 +53,7 @@ if ( isset( $_GET["refund"] ) ) {
 MyLog( __FILE__, "order=" . $order_id . " id = " . $id );
 
 $show_inventory = false;
-if (info_get("manage_inventory") and get_param("show_inv", false, 1))
+if ( info_get("manage_inventory") and GetParam("show_inv", false, 1))
       $show_inventory = true;
 
 
@@ -84,7 +84,7 @@ if ( $id > 0 ) {
 			print "אין הזמנות ללקוח הזמנות במצב טיפול<br/>";
 			die ( 1 );
 		}
-		print " הזמנות " . comma_implode( $order_ids );
+		print " הזמנות " . CommaImplode( $order_ids );
 		$d = Fresh_Delivery::CreateFromOrders( $order_ids );
 		print $d->OrderInfoBox( $order_ids, false, "יצירת תעודת משלוח ל" );
 	} else {

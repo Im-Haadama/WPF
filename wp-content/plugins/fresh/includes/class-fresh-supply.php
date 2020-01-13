@@ -188,7 +188,7 @@ class Fresh_Supply {
 				// $prod_id = get_product_id_by_name( $name );
 				$prod_id = sql_query_single_scalar( "select product_id \n" .
 				                                    " from im_supplier_mapping\n" .
-				                                    " where supplier_product_name = " . quote_text( pricelist_strip_product_name( $name ) ) );
+				                                    " where supplier_product_name = " . QuoteText( pricelist_strip_product_name( $name ) ) );
 //				print "prod_id: " . $prod_id . "<br/>";
 
 				if ( ! ( $prod_id > 0 ) ) {
@@ -259,7 +259,7 @@ class Fresh_Supply {
 
 	public function UpdateField( $field_name, $value ) {
 		sql_query( "update im_supplies " .
-		           "set " . $field_name . '=' . quote_text( $value ) .
+		           "set " . $field_name . '=' . QuoteText( $value ) .
 		           " where id = " . $this->ID );
 	}
 
@@ -569,7 +569,7 @@ class Fresh_Supply {
 	 */
 	public function setText( $Text ) {
 		$this->Text = $Text;
-		sql_query( "UPDATE im_supplies SET text = " . quote_text( $Text ) .
+		sql_query( "UPDATE im_supplies SET text = " . QuoteText( $Text ) .
 		           " WHERE id = " . $this->ID );
 	}
 
@@ -969,7 +969,7 @@ function SuppliesTable( $status, $args = null ) {
 	$args["header"] = array("Id", "Supplier", "Date", "Mission");
 	$args["add_checkbox"] = true;
 	$args["selectors"] = array("supplier" => 'gui_select_supplier', "mission_id" => 'gui_select_mission');
-	$args["links"] = array("id" => add_to_url(array("operation" =>"show", "id" => "%s")));
+	$args["links"] = array("id" => AddToUrl(array( "operation" =>"show", "id" => "%s")));
 	$args["checkbox_class"] = gui_select_supply_status(null, $status);
 	$args["edit"] = false;
 	//
@@ -1207,7 +1207,7 @@ function handle_supplies_operation($operation)
 	{
 		case "show":
 		case "get":
-			$id = get_param("id", true);
+			$id = GetParam("id", true);
 			 get_supply($id);
 			 break;
 
@@ -1225,23 +1225,23 @@ function handle_supplies_operation($operation)
 			break;
 
 		case "supplied":
-			$supply_ids = get_param_array("ids");
+			$supply_ids = GetParamArray("ids");
 			foreach ($supply_ids as $supply_id)
 				supply_supplied($supply_id);
 			print "done";
 			break;
 
 		case "got_supply":
-			$supply_id     = get_param("supply_id", true); // מספר אספקה שלנו
+			$supply_id     = GetParam("supply_id", true); // מספר אספקה שלנו
 			$supply_total  = $_GET["supply_total"]; // סכום
 			$supply_number = $_GET["supply_number"]; // מספר תעודת משלוח
-			$net_amount    = get_param( "net_amount" );
-			$is_invoice    = get_param( "is_invoice" );
+			$net_amount    = GetParam( "net_amount" );
+			$is_invoice    = GetParam( "is_invoice" );
 //			print "ii=" . $is_invoice . "<br/>";
 			$doc_type      = $is_invoice ? FreshDocumentType::invoice : FreshDocumentType::supply;
 //			print "dt=" . $doc_type;
 //			die(1);
-			$document_date = get_param( "document_date" );
+			$document_date = GetParam( "document_date" );
 			$bid           = got_supply( $supply_id, $supply_total, $supply_number, $net_amount, $doc_type, $document_date );
 			if ( $bid > 0) print "done";
 			break;
@@ -1254,7 +1254,7 @@ function handle_supplies_operation($operation)
 			break;
 
 		case "print":
-			$params = get_param("id", true);
+			$params = GetParam("id", true);
 			$ids    = explode( ',', $params );
 			print_supplies_table( $ids, true );
 			break;
@@ -1266,7 +1266,7 @@ function handle_supplies_operation($operation)
 		case "create_supply":
 			print "create supply ";
 
-			$date        = get_param( "date" );
+			$date        = GetParam( "date" );
 			$supplier_id = $_GET["supplier_id"];
 			MyLog( "supplier_id=" . $supplier_id );
 
@@ -1287,7 +1287,7 @@ function handle_supplies_operation($operation)
 				}
 			}
 			print $supply->getID();
-			$mission_id = get_param( "mission_id" );
+			$mission_id = GetParam( "mission_id" );
 			if ( $mission_id ) {
 				$s->setMissionID( $mission_id );
 			}
@@ -1302,7 +1302,7 @@ function handle_supplies_operation($operation)
 		case "get_supply":
 			$supply_id   = $_GET["id"];
 			$internal    = isset( $_GET["internal"] );
-			$categ_group = get_param( "categ_group" );
+			$categ_group = GetParam( "categ_group" );
 			$Supply      = new Fresh_Supply( $supply_id );
 			// print header_text(true);
 			print $Supply->Html( $internal, true, $categ_group );
@@ -1326,7 +1326,7 @@ function handle_supplies_operation($operation)
 			print Core_Html::gui_header(1, "Supply management");
 			print gui_div("results");
 			$args["title"] = "Supplies to send";      print SuppliesTable( SupplyStatus::NewSupply, $args );
-			print Core_Html::GuiHyperlink("Create supply", get_url(1) . "?operation=new_supply");
+			print Core_Html::GuiHyperlink("Create supply", GetUrl(1) . "?operation=new_supply");
 			$args["title"] = "Supplies to get";       print SuppliesTable( SupplyStatus::Sent, $args );
 			$args["title"] = "Supplies to collect";   print SuppliesTable( SupplyStatus::OnTheGo, $args );
 			$args["title"] = "Supplies done";         print SuppliesTable( SupplyStatus::Supplied, $args );
@@ -1347,7 +1347,7 @@ function handle_supplies_operation($operation)
 
 		case "delete_lines":
 			MyLog( "delete lines" );
-			$params = get_param_array( "params" );
+			$params = GetParamArray( "params" );
 			delete_supply_lines( $params );
 			break;
 
@@ -1360,7 +1360,7 @@ function handle_supplies_operation($operation)
 		case 'update_lines':
 			MyLog( "update lines" );
 			$params = explode( ',', $_GET["params"] );
-			$supply_id = get_param("supply_id", true);
+			$supply_id = GetParam("supply_id", true);
 			print update_supply_lines( $supply_id, $params );
 			break;
 
@@ -1370,9 +1370,9 @@ function handle_supplies_operation($operation)
 //			              "&id=" + id;
 
 		case 'update_field':
-			$field_name = get_param( "field_name" );
-			$value      = get_param( "value" );
-			$id         = get_param( "id" );
+			$field_name = GetParam( "field_name" );
+			$value      = GetParam( "value" );
+			$id         = GetParam( "id" );
 			$s          = new Fresh_Supply( $id );
 			$s->UpdateField( $field_name, $value );
 
@@ -1391,9 +1391,9 @@ function handle_supplies_operation($operation)
 			break;
 
 		case "add_item":
-			$prod_id = get_param("prod_id", true);
-			$q = get_param("quantity", true);
-			$supply_id = get_param("supply_id", true);
+			$prod_id = GetParam("prod_id", true);
+			$q = GetParam("quantity", true);
+			$supply_id = GetParam("supply_id", true);
 			$supply = new Fresh_Supply( $supply_id );
 			$price = get_buy_price( $prod_id, $supply->getSupplier() );
 			if (supply_add_line( $supply_id, $prod_id, $q, $price ))
@@ -1417,12 +1417,12 @@ function handle_supplies_operation($operation)
 			break;
 
 		case "create_from_file":
-			$supplier_id = get_param( "supplier_id" );
+			$supplier_id = GetParam( "supplier_id" );
 			print header_text(false);
 			print im_translate("Creating supply for") . " " . get_supplier_name($supplier_id) . " <br/>";
 
 			$tmp_file = $_FILES["fileToUpload"]["tmp_name"];
-			$date = get_param("date", true);
+			$date = GetParam("date", true);
 			$args = array("needed_fields" => array ("name" => 1, "quantity"=> 1));
 			$s        = Fresh_Supply::CreateFromFile( $tmp_file, $supplier_id, $date, $args );
 			if ( $s ) {

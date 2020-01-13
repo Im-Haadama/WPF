@@ -35,20 +35,20 @@ function get_env( $var, $default ) {
 	}
 }
 
-$operation = get_param("operation", false, null);
+$operation = GetParam("operation", false, null);
 if ( $operation) {
 	// print "op=" . $operation . "<br/>";
 	switch ( $operation ) {
 		case "exists_invoice":
-			$bank_id = get_param("bank_id", true);
-			$invoice = get_param("invoice", true);
+			$bank_id = GetParam("bank_id", true);
+			$invoice = GetParam("invoice", true);
 			$b = Finance_Bank_Transaction::createFromDB( $bank_id );
 			$b->Update( 0, $invoice, 0 );
 			print "done";
 			break;
 		case "get_amount":
 			$sql = "SELECT amount FROM im_business_info \n" .
-			       " WHERE id = " . get_param( "id", true );
+			       " WHERE id = " . GetParam( "id", true );
 			print sql_query_single_scalar( $sql );
 			break;
 
@@ -118,7 +118,7 @@ if ( $operation) {
 					"/core/gui/client_tools.js",
 					"/fresh/account/account.js"
 				) );
-			$id = get_param( "id" );
+			$id = GetParam( "id" );
 			print Core_Html::gui_header( 1, "רישום העברה שבוצעה " );
 
 			$b = Finance_Bank_Transaction::createFromDB( $id );
@@ -175,11 +175,11 @@ if ( $operation) {
 			break;
 
 		case "link_invoice_bank":
-			$bank_id      = get_param( "bank_id", true );
-			$supplier_id  = get_param( "supplier_id", true );
-			$site_id      = get_param( "site_id", true );
-			$ids          = get_param_array( "ids" );
-			$bank         = get_param( "bank" );
+			$bank_id      = GetParam( "bank_id", true );
+			$supplier_id  = GetParam( "supplier_id", true );
+			$site_id      = GetParam( "site_id", true );
+			$ids          = GetParamArray( "ids" );
+			$bank         = GetParam( "bank" );
 
 			// 1) mark the bank transaction to invoice.
 			foreach ( $ids as $id ) {
@@ -205,7 +205,7 @@ if ( $operation) {
 
 			print "מעדכן שורות<br/>";
 			$sql = "update im_bank " .
-			       " set receipt = \"" . comma_implode($ids) . "\", " .
+			       " set receipt = \"" . CommaImplode($ids) . "\", " .
 			       " site_id = " . $site_id .
 			       " where id = " . $bank_id;
 
@@ -215,10 +215,10 @@ if ( $operation) {
 
 		case "mark_refund_bank":
 			// TODO: NOT CHECKED
-			$bank_id      = get_param( "bank_id", true );
-			$supplier_id  = get_param( "supplier_id", true );
-			$site_id      = get_param( "site_id", true );
-			$bank         = get_param( "bank" );
+			$bank_id      = GetParam( "bank_id", true );
+			$supplier_id  = GetParam( "supplier_id", true );
+			$site_id      = GetParam( "site_id", true );
+			$bank         = GetParam( "bank" );
 
 			// 1) mark the bank transaction to invoice.
 			$b    = Finance_Bank_Transaction::createFromDB( $bank_id );
@@ -242,11 +242,11 @@ if ( $operation) {
 			break;
 
 		case "add_payment":
-			$supplier_id = get_param( "supplier_id", true );
-			$bank_id     = get_param( "bank_id", true );
-			$ids         = get_param_array( "ids" );
-			$date        = get_param( "date", true );
-			$amount      = get_param( "amount", true );
+			$supplier_id = GetParam( "supplier_id", true );
+			$bank_id     = GetParam( "bank_id", true );
+			$ids         = GetParamArray( "ids" );
+			$date        = GetParam( "date", true );
+			$amount      = GetParam( "amount", true );
 			$sql         = "INSERT INTO im_business_info (part_id, date, amount, ref, document_type)\n" .
 			               "VALUES(" . $supplier_id . ", '" . $date . "' ," . $amount . ", " . $bank_id . ", " . FreshDocumentType::bank . ")";
 			sql_query( $sql );
@@ -254,10 +254,10 @@ if ( $operation) {
 
 			$sql = "update im_business_info\n" .
 			       "set pay_date = '" . $date . "'\n" .
-			       "where id in (" . comma_implode( $ids ) . ")";
+			       "where id in (" . CommaImplode( $ids ) . ")";
 
 			sql_query( $sql );
-			print "מסמכים מספר  " . comma_implode( $ids ) . " סומנו כמשולמים<br/>";
+			print "מסמכים מספר  " . CommaImplode( $ids ) . " סומנו כמשולמים<br/>";
 			break;
 
 		case "create_invoice_bank":
@@ -273,7 +273,7 @@ if ( $operation) {
 					"/core/gui/client_tools.js",
 					"/fresh/account/account.js"
 				) );
-			$id = get_param( "id" );
+			$id = GetParam( "id" );
 			$b = Finance_Bank_Transaction::createFromDB( $id );
 			print Core_Html::gui_header( 1, "סמן החזר מהספק" );
 
@@ -333,26 +333,26 @@ if ( $operation) {
 			break;
 
 		case "get_trans":
-			$client_id = get_param( "client_id" );
-			$site_id   = get_param( "site_id" );
+			$client_id = GetParam( "client_id" );
+			$site_id   = GetParam( "site_id" );
 			// $data .= $this->Run( $func, $site_id, $first, $debug );
 			$link = "/fresh/multi-site/multi-get.php?operation=get_open_trans&client_id=" . $client_id;
 			print $multi_site->Run( $link, $site_id );
 			break;
 
 		case "get_open_invoices":
-			$debug = get_param("debug");
-			$supplier_id = get_param( "supplier_id", true );
-			$site_id     = get_param( "site_id", true );
+			$debug = GetParam("debug");
+			$supplier_id = GetParam( "supplier_id", true );
+			$site_id     = GetParam( "site_id", true );
 			// $func, $site_id, $first = false, $debug = false ) {
 			print $multi_site->Run( "/org/business/business-post.php?operation=get_open_site_invoices&supplier_id=" . $supplier_id,
 				$site_id, true, $debug);
 			break;
 
 		case "get_open_site_invoices":
-			$debug = get_param("debug");
+			$debug = GetParam("debug");
 			$sum         = array();
-			$supplier_id = get_param( "supplier_id", true );
+			$supplier_id = GetParam( "supplier_id", true );
 			$sql         = "SELECT id, ref, amount, date FROM im_business_info WHERE part_id=" . $supplier_id .
 			               " AND document_type = 4\n" .
 			               " and pay_date is null " .

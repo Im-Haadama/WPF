@@ -8,7 +8,7 @@ require_once(FRESH_INCLUDES . '/im-config.php');
 require_once( FRESH_INCLUDES . "/init.php" );
 
 
-$operation = get_param("operation", false, null);
+$operation = GetParam("operation", false, null);
 if ($operation)
 	handle_menu_operation($operation);
 
@@ -20,8 +20,8 @@ require_once( FRESH_INCLUDES . '/core/options.php' );
 require_once( FRESH_INCLUDES . "/fresh/multi-site/imMulti-site.php" );
 require_once( FRESH_INCLUDES . '/fresh/r-shop_manager.php' );
 
-$test_site  = get_param( "test_site" );
-$test_limit = get_param( "test_limit" );
+$test_site  = GetParam( "test_site" );
+$test_limit = GetParam( "test_limit" );
 $manage_inventory = info_get("manage_inventory");
 $manage_workers = info_get("manage_workers");
 $manage_accounting = info_get("manage_accounting");
@@ -234,7 +234,7 @@ function handle_menu_operation($operation)
     switch ($operation) {
 	    case "logout":
 		    wp_logout();
-		    $back = get_param( "back", false, get_url( 1 ) );
+		    $back = GetParam( "back", false, GetUrl( 1 ) );
 		    header( "location: " . $back );
 
 		    return;

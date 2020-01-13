@@ -72,7 +72,7 @@ class Fresh_Shortcodes {
 	{
 		$user_id = get_user_id(true);
 		$last_delivery = Fresh_Delivery::CustomerLast($user_id);
-		$delivery_id = get_param("id", false, $last_delivery);
+		$delivery_id = GetParam("id", false, $last_delivery);
 		if (! $delivery_id) return __("No deliveries yet");
 
 		$delivery = new Fresh_Delivery($delivery_id);
@@ -95,25 +95,25 @@ class Fresh_Shortcodes {
 	}
 
 	public static function suppliers( $atts ) {
-		$operation = get_param("operation", false, "show_status");
+		$operation = GetParam("operation", false, "show_status");
 		if (get_user_id(true))
 			print Fresh::instance()->handle_operation($operation);
 	}
 
 	public static function inventory_count( $atts ) {
-		$operation = get_param("operation", false, "inventory");
+		$operation = GetParam("operation", false, "inventory");
 		if (get_user_id(true))
 			print Fresh::instance()->handle_operation($operation);
 	}
 
 	public static function packing_control( $atts ) {
-		$operation = get_param("operation", false, "inventory");
+		$operation = GetParam("operation", false, "inventory");
 		if (get_user_id(true))
 			print Fresh_Control::handle($operation);
 	}
 
 	public static function orders( $atts ) {
-		$operation = get_param("operation", false, "orders");
+		$operation = GetParam("operation", false, "orders");
 		if (get_user_id(true) and im_user_can("show_orders"))
 			print Fresh_Order::instance()->handle_operation($operation);
 		else
@@ -121,24 +121,24 @@ class Fresh_Shortcodes {
 	}
 
 	public static function client_balance( $atts ) {
-		$operation = get_param("operation", false, "client_balance");
+		$operation = GetParam("operation", false, "client_balance");
 		return Fresh_Client_Views::handle_operation($operation);
 	}
 
 	public static function open_orders( $atts ) {
-		$operation = get_param("operation", false, "open_orders");
+		$operation = GetParam("operation", false, "open_orders");
 		return Fresh_Client_Views::handle_operation($operation);
 	}
 
 	public static function client_archive( $atts ) {
-		$operation = get_param("operation", false, "client_archive");
+		$operation = GetParam("operation", false, "client_archive");
 		return Fresh_Client_Views::handle_operation($operation);
 	}
 
 	public static function output( $atts ) {
 		$status = new Fresh_Status();
 
-		$operation = get_param("operation", false, "show_status");
+		$operation = GetParam("operation", false, "show_status");
 		if (! get_user_id(true)) { print "Must login"; return; };
 
 		switch ($operation){
@@ -147,11 +147,11 @@ class Fresh_Shortcodes {
 				return;
 
 			case "show_orders":
-				print $status->ShowOrders(get_param("status", false, 'wc-pending'));
+				print $status->ShowOrders(GetParam("status", false, 'wc-pending'));
 				return;
 
 			case "show_supplies":
-				print $status->SupplyTable(get_param("status", false, 1));
+				print $status->SupplyTable(GetParam("status", false, 1));
 				return;
 
 		}

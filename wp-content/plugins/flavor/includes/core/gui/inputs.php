@@ -392,7 +392,7 @@ if (function_exists('Core_Html::Br')){
 		}
 		// if ( $color = GetArg($args, "hyperlink_color", null)) $data .= ' style="color:' . $color . '";';
 		if ( $class = GetArg( $args, "class", null ) ) {
-			$data .= " class = " . quote_text( $class );
+			$data .= " class = " . QuoteText( $class );
 		}
 
 		$data .= ">" . __( $text ) . "</a>";
@@ -505,7 +505,7 @@ if (function_exists('Core_Html::Br')){
 	}
 
 	function GuiImage( $logo_url, $height = 0 ) {
-		return '<img src=' . quote_text( $logo_url ) . '  style="height: ' . $height . 'px; width: auto;">';
+		return '<img src=' . QuoteText( $logo_url ) . '  style="height: ' . $height . 'px; width: auto;">';
 	}
 
 	function GuiDiv( $id, $text = null, $args = null ) {
@@ -586,7 +586,7 @@ if (function_exists('Core_Html::Br')){
 		if ( function_exists( '__' ) ) {
 			$data .= __( $cell );
 		} else if ( is_array( $cell ) ) {
-			$data .= comma_implode( $cell );
+			$data .= CommaImplode( $cell );
 		} else {
 			$data .= $cell;
 		}
@@ -1309,16 +1309,16 @@ if (function_exists('Core_Html::Br')){
 
 		if ( ! $edit ) {
 			$f      = strtok( $selected, ":" );
-			$result = day_name( $f );
+			$result = DayName( $f );
 			while ( $z = strtok( ":" ) ) {
-				$result .= ", " . day_name( $z );
+				$result .= ", " . DayName( $z );
 			}
 
 			return $result;
 		}
 		$days = [];
 		for ( $i = 0; $i < 7; $i ++ ) {
-			$days[ $i ] = array( "id" => $i, "day_name" => day_name( $i ) );
+			$days[ $i ] = array( "id" => $i, "day_name" => DayName( $i ) );
 		}
 
 		$args["values"]   = $days;

@@ -14,7 +14,7 @@ require_once( "../suppliers/gui.php" );
 require_once( "../multi-site/imMulti-site.php" );
 require_once( "../suppliers/Supplier.php" );
 
-$option = get_param("option");
+$option = GetParam("option");
 
 function set_supplier_id() {
 	if ( ! isset( $_GET["supplier_id"] ) ) {

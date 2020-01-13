@@ -10,7 +10,7 @@ require_once( ROOT_DIR . "/init.php" );
 init();
 require_once( "focus_class.php" );
 
-$operation = get_param("operation", false, null);
+$operation = GetParam("operation", false, null);
 $args = [];
 
 if ($operation){

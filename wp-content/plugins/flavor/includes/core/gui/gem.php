@@ -17,7 +17,7 @@ function GemAddRow($table_name, $text, $args){
 
 	$result .= Core_Html::gui_header(1, $text);
 	$result .= NewRow($table_name, $args);
-	$post = GetArg($args, "post_file", get_url(1));
+	$post = GetArg($args, "post_file", GetUrl(1));
 	$next_page = GetArg($args, "next_page", null);
 	if (! $post) die(__FUNCTION__ . ":" . $text . "must send post file");
 	if ($next_page){
@@ -105,13 +105,13 @@ function GemArray($rows_data, &$args, $table_id)
 		$result .= Core_Html::gui_table_args( $rows_data, $table_id, $args );
 
 		if (count($rows_data) == $rows_per_page + 1) { // 1 for the header
-			$result .= Core_Html::GuiHyperlink("Next page", add_to_url("page", $page + 1)) . " ";
-			$result .= Core_Html::GuiHyperlink("All", add_to_url("_page", -1)) . " ";
+			$result .= Core_Html::GuiHyperlink("Next page", AddToUrl("page", $page + 1)) . " ";
+			$result .= Core_Html::GuiHyperlink("All", AddToUrl("_page", -1)) . " ";
 		}
 		if ($page > 1)
-			$result .= Core_Html::GuiHyperlink("Previous page", add_to_url("_page", $page - 1));
+			$result .= Core_Html::GuiHyperlink("Previous page", AddToUrl("_page", $page - 1));
 
-		if ($args["count"] > 10) $result .= Core_Html::GuiHyperlink("search", add_to_url("search", "1"));
+		if ($args["count"] > 10) $result .= Core_Html::GuiHyperlink("search", AddToUrl("search", "1"));
 
 	} else {
 		$result .=  $no_data_message . Core_Html::Br();
@@ -123,12 +123,12 @@ function GemArray($rows_data, &$args, $table_id)
 //		$result .= Core_Html::GuiButton("btn_" . $button_text, $button_function, $button_text);
 //	}
 	if (GetArg($args, "add_button", true))
-		$result .= Core_Html::GuiHyperlink("Add", add_to_url(array("operation" => "show_add_" . $table_id))) . " ";
+		$result .= Core_Html::GuiHyperlink("Add", AddToUrl(array( "operation" => "show_add_" . $table_id))) . " ";
 
 	$post_file = GetArg($args, "post_file", null);
 	if ($post_file)
-		$result .= Core_Html::GuiButton("btn_delete_$table_id", "delete_items(" . quote_text($args["checkbox_class"]) . "," .
-			quote_text($post_file) . ")", "delete");
+		$result .= Core_Html::GuiButton("btn_delete_$table_id", "delete_items(" . QuoteText($args["checkbox_class"]) . "," .
+		                                                        QuoteText($post_file) . ")", "delete");
 
 //	$args = array();
 //	$search_url = "search_table('im_bank', '" . add_param_to_url($url, "search", "1") . "')";
@@ -157,7 +157,7 @@ function GemTable($table_name, &$args)
 
 	if (! $sql){
 		$fields = GetArg($args, "fields", null);
-		if ($fields) $sql = "select " . comma_implode($fields) . " from $table_name ";
+		if ($fields) $sql = "select " . CommaImplode($fields) . " from $table_name ";
 		else $sql = "select * from $table_name";
 
 		$query = GetArg($args, "query", null);

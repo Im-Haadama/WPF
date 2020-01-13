@@ -120,7 +120,7 @@ class Capabilites {
 		add_action( 'init', array( $this, 'init' ), 0 );
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
 
-		get_sql_conn(reconnect_db());
+		get_sql_conn(ReconnectDb());
 //		add_action( 'init', array( 'Capabilites_Emails', 'init_transactional_emails' ) );
 		// add_action( 'init', array( $this, 'wpdb_table_fix' ), 0 );
 		// add_action( 'init', array( $this, 'add_image_sizes' ) );
@@ -211,7 +211,7 @@ class Capabilites {
 		 * Class autoloader.
 		 */
 		require_once FLAVOR_INCLUDES_ABSPATH . 'core/class-core-autoloader.php';
-		require_once FLAVOR_INCLUDES_ABSPATH . 'core/fund.php';
+		require_once FLAVOR_INCLUDES_ABSPATH . 'core/core-functions.php';
 		require_once FLAVOR_INCLUDES_ABSPATH . 'core/data/sql.php';
 		require_once FLAVOR_INCLUDES_ABSPATH . 'core/wp.php';
 

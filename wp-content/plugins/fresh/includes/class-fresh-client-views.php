@@ -34,7 +34,7 @@ class Fresh_Client_Views {
 
 			case "show_delivery":
 				die(1);
-				$del_id = get_param("id", true);
+				$del_id = GetParam("id", true);
 				$delivery = new Fresh_Delivery($del_id);
 				print "del: " . $del_id . " me: " . get_user_id() . " del: " . $delivery->getUserId() . "<br/>";
 				if (($delivery->getUserId() != get_user_id()) and

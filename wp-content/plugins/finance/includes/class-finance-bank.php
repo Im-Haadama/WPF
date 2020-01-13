@@ -58,7 +58,7 @@ class Finance_Bank
 		$post_file = self::getPost();
 
 		// Todo: change to operation
-		if (get_param("search", false, 0)){
+		if (GetParam("search", false, 0)){
 			$ids=data_search("im_bank");
 			Core_Html::gui_header(1, "Results");
 			if (! $ids){
@@ -72,17 +72,17 @@ class Finance_Bank
 				return self::bank_status();
 
 			case "bank_create_invoice":
-				$id = get_param( "id" );
+				$id = GetParam( "id" );
 				return $this->create_invoice($id);
 
 			case "bank_create_receipt":
-				$bank_amount = get_param( "bank" );
-				$date        = get_param( "date" );
-				$change      = get_param( "change" );
-				$ids         = get_param( "ids", true );
-				$site_id     = get_param( "site_id" );
-				$user_id     = get_param( "user_id" );
-				$bank_id     = get_param( "bank_id" );
+				$bank_amount = GetParam( "bank" );
+				$date        = GetParam( "date" );
+				$change      = GetParam( "change" );
+				$ids         = GetParam( "ids", true );
+				$site_id     = GetParam( "site_id" );
+				$user_id     = GetParam( "user_id" );
+				$bank_id     = GetParam( "bank_id" );
 
 				return $this->create_multi_site_receipt( $bank_id, $bank_amount, $date, $change, $ids, $site_id, $user_id );
 				break;
@@ -107,7 +107,7 @@ class Finance_Bank
 				                         " and description not in (select description from im_bank_transaction_types) ";
 
 				if ( $ids ) {
-					$query .= " and id in (" . comma_implode( $ids ) . ")";
+					$query .= " and id in (" . CommaImplode( $ids ) . ")";
 				}
 				// " order by date desc limit $rows_per_page offset $offset";
 				$args["query"] = $query;
@@ -126,7 +126,7 @@ class Finance_Bank
 						"/core/gui/client_tools.js",
 						"/fresh/account/account.js"
 					) );
-				$id = get_param( "id" );
+				$id = GetParam( "id" );
 				print Core_Html::gui_header( 1, "רישום העברה שבוצעה " );
 
 				$b = Finance_Bank_Transaction::createFromDB( $id );
@@ -164,11 +164,11 @@ class Finance_Bank
 
 				break;
 			case "link_invoice_bank":
-				$bank_id      = get_param( "bank_id", true );
-				$supplier_id  = get_param( "supplier_id", true );
-				$site_id      = get_param( "site_id", true );
-				$ids          = get_param_array( "ids" );
-				$bank         = get_param( "bank" );
+				$bank_id      = GetParam( "bank_id", true );
+				$supplier_id  = GetParam( "supplier_id", true );
+				$site_id      = GetParam( "site_id", true );
+				$ids          = GetParamArray( "ids" );
+				$bank         = GetParam( "bank" );
 
 				// 1) mark the bank transaction to invoice.
 				foreach ( $ids as $id ) {
@@ -194,7 +194,7 @@ class Finance_Bank
 
 				print "מעדכן שורות<br/>";
 				$sql = "update im_bank " .
-				       " set receipt = \"" . comma_implode($ids) . "\", " .
+				       " set receipt = \"" . CommaImplode($ids) . "\", " .
 				       " site_id = " . $site_id .
 				       " where id = " . $bank_id;
 
@@ -204,10 +204,10 @@ class Finance_Bank
 
 			case "mark_refund_bank":
 				// TODO: NOT CHECKED
-				$bank_id      = get_param( "bank_id", true );
-				$supplier_id  = get_param( "supplier_id", true );
-				$site_id      = get_param( "site_id", true );
-				$bank         = get_param( "bank" );
+				$bank_id      = GetParam( "bank_id", true );
+				$supplier_id  = GetParam( "supplier_id", true );
+				$site_id      = GetParam( "site_id", true );
+				$bank         = GetParam( "bank" );
 
 				// 1) mark the bank transaction to invoice.
 				$b    = Finance_Bank_Transaction::createFromDB( $bank_id );
@@ -242,7 +242,7 @@ class Finance_Bank
 						"/core/gui/client_tools.js",
 						"/fresh/account/account.js"
 					) );
-				$id = get_param( "id" );
+				$id = GetParam( "id" );
 				$b = Finance_Bank_Transaction::createFromDB( $id );
 				print Core_Html::gui_header( 1, "סמן החזר מהספק" );
 
@@ -282,14 +282,14 @@ class Finance_Bank
 						"/org/business/business-post.php?operation=create_pay_bank&id=%s"
 					)
 				);
-				$page                  = get_param( "page", false, 1 );
+				$page                  = GetParam( "page", false, 1 );
 				$rows_per_page         = 20;
 				$offset                = ( $page - 1 ) * $rows_per_page;
 				$query                 = "  account_id = " . $account_id . " and receipt is null and out_amount > 0 " .
 				                         " and description not in (select description from im_bank_transaction_types) ";
 
 				if ( $ids ) {
-					$query .= " and id in (" . comma_implode( $ids ) . ")";
+					$query .= " and id in (" . CommaImplode( $ids ) . ")";
 				}
 				// " order by date desc limit $rows_per_page offset $offset";
 
@@ -314,7 +314,7 @@ class Finance_Bank
 				// $args["selectors"] = array("part_id" => "gui_select_supplier");
 
 				print Core_Html::GuiTableContent( "im_bank_transaction_types", null, $args );
-				print Core_Html::GuiHyperlink( "add", add_to_url( "operation", "add_transaction_types" ) );
+				print Core_Html::GuiHyperlink( "add", AddToUrl( "operation", "add_transaction_types" ) );
 
 				return;
 
@@ -330,7 +330,7 @@ class Finance_Bank
 
 			case "search":
 				$args           = array();
-				$search_url     = "search_table('im_bank', '" . add_param_to_url( $url, "search", "1" ) . "')";
+				$search_url     = "search_table('im_bank', '" . AddParamToUrl( $url, "search", "1" ) . "')";
 				$args["search"] = $search_url; //'/fresh/bank/bank-page.php?operation=do_search')";
 				GemSearch( "im_bank", $args );
 
@@ -344,7 +344,7 @@ class Finance_Bank
 
 					return;
 				}
-				print bank_transactions( "id in (" . comma_implode( $ids ) . ")" );
+				print bank_transactions( "id in (" . CommaImplode( $ids ) . ")" );
 				return;
 
 			case "show_bank":
@@ -370,7 +370,7 @@ class Finance_Bank
 
 
 			case "show_transactions":
-				print bank_transactions( $ids ? "id in (" . comma_implode( $ids ) . ")" : null );
+				print bank_transactions( $ids ? "id in (" . CommaImplode( $ids ) . ")" : null );
 		}
 	}
 
@@ -407,7 +407,7 @@ class Finance_Bank
 
 	static public function bank_wrapper()
 	{
-		$operation = get_param("operation", false, "bank_status");
+		$operation = GetParam("operation", false, "bank_status");
 		$instance = self::instance();
 
 		return $instance->handle_bank_operation($operation);
@@ -419,20 +419,20 @@ class Finance_Bank
 
 		$account_id = 1;
 
-		$page = get_param("page", false, 1);
+		$page = GetParam("page", false, 1);
 		$rows_per_page = 20;
 		$offset = ($page - 1) * $rows_per_page;
 
 		$fields = GetArg($args, "fields", array("id", "date", "description", "out_amount", "in_amount", "balance", "receipt"));
 
 //		print "args=" . $args["query"] . "<br/>";
-		$sql = "select " . comma_implode($fields) . " from im_bank ";
+		$sql = "select " . CommaImplode($fields) . " from im_bank ";
 		$sql .= " where " . $args["query"] . " and account_id = " . $account_id;
 		$sql .= " order by date desc limit $rows_per_page offset $offset ";
 
 		$result .= Core_Html::GuiTableContent("im_banking", $sql, $args);
 
-		$result .= Core_Html::GuiHyperlink("Older", add_to_url("page", $page + 1));
+		$result .= Core_Html::GuiHyperlink("Older", AddToUrl("page", $page + 1));
 
 		return $result;
 	}
@@ -483,10 +483,10 @@ class Finance_Bank
 		$sql .= " from im_bank_account";
 
 		$args = [];
-		$args["links"] = array("account_id" => add_to_url(array("operation" => "show_bank_load", "id" => "%s")),
-			"id" => add_to_url("operation", "show_bank"));
+		$args["links"] = array("account_id" => AddToUrl(array( "operation" => "show_bank_load", "id" => "%s")),
+			"id" => AddToUrl("operation", "show_bank"));
 //		$args["id_field"] = "count_id";
-		$action_url = get_url(1); // plugin_dir_url(dirname(__FILE__)) . "post.php";
+		$action_url = GetUrl(1); // plugin_dir_url(dirname(__FILE__)) . "post.php";
 		$args["actions"] =
 			array(array( "load", $action_url . "?operation=bank_show_import&id=%s" ));
 
@@ -508,7 +508,7 @@ class Finance_Bank
 	function Args($user = null)
 	{
 		if (! $user) $user = self::getUser();
-		$args = array("page" => get_param("page", false, -1),
+		$args = array("page" => GetParam("page", false, -1),
 		             "post_file" => self::getPost());
 
 		if (! $user->hasRole("cfo")) {
@@ -603,7 +603,7 @@ class Finance_Bank
 
 	if ( $document_file ) {
 		$fields .= ", invoice_file";
-		$values .= ", " . quote_text( $document_file );
+		$values .= ", " . QuoteText( $document_file );
 	}
 	$sql = "INSERT INTO im_business_info (" . $fields . ") "
 	       . "VALUES (" . $values . " )";
@@ -664,7 +664,7 @@ static function bank_check_dup( $fields, $values ) {
 //	print "a=" . $account . " d=" . $date . " b=" . $balance;
 
 	$sql = "SELECT count(*) FROM im_bank WHERE account_id = " . $account .
-	       " AND date = " . quote_text( $date ) .
+	       " AND date = " . QuoteText( $date ) .
 	       " AND round(balance, 2) = " . round( $balance, 2 );
 	// print sql_query($sql) . "<br/>";
 	$c = sql_query_single_scalar( $sql );

@@ -13,13 +13,13 @@ require_once( "suppliers.php" );
 require_once( FRESH_INCLUDES . '/core/gui/gem.php' );
 require_once( FRESH_INCLUDES . "/core/data/data.php" );
 
-$operation = get_param("operation", false, null);
+$operation = GetParam("operation", false, null);
 if ($operation) {
 	handle_supplier_operation($operation);
 	return;
 }
 
-$id = get_param("id");
+$id = GetParam("id");
 
 if ($id)
 {
@@ -36,17 +36,17 @@ if ($id)
 
 $suppliers = sql_query_array("select * from im_suppliers where is_active = 1", true);
 
-$args["links"] = array("id" => add_to_url(array("operation" => "show_supplier", "id"=>"%s")));
+$args["links"] = array("id" => AddToUrl(array( "operation" => "show_supplier", "id" =>"%s")));
 
 // $links = array("admin.php?id=%s");
 $sum = array();
-$args["page"] = get_param("page", false, -1);
+$args["page"] = GetParam("page", false, -1);
 
 print HeaderText($args);
 print GuiTableContent("im_suppliers",null, $args);
 //print gui_table($suppliers, "tbl_suppliers", true, true, $sum, null,
 //	null, null, $links);
 
-print Core_Html::GuiHyperlink("add", add_to_url("operation", "add"));
+print Core_Html::GuiHyperlink("add", AddToUrl("operation", "add"));
 
 ?>

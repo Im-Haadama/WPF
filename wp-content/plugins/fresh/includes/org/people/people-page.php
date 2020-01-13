@@ -11,7 +11,7 @@ ini_set( 'display_errors', 'on' );
  require_once( FRESH_INCLUDES . "/core/fund.php" );
  require_once( "people.php" );
 
-$operation = get_param("operation", false, "salary_report");
+$operation = GetParam("operation", false, "salary_report");
 
 //$month = null;
 //$year  = null;

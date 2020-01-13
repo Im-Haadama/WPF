@@ -396,7 +396,7 @@ function show_catalog(
 		$show_in_list = 1;
 
 		// $fields[CatalogFields::order] =gui_cell( gui_input( "prod_quantity" . $prod_id, "", null, "q_" . $prod_id ) );
-		$fields[ CatalogFields::category ] = comma_implode( $terms );
+		$fields[ CatalogFields::category ] = CommaImplode( $terms );
 
 		if ( ! is_null( $inv ) ) {
 			if ( ! $p->getStockManaged() or $p->getStock() > $inv ) {

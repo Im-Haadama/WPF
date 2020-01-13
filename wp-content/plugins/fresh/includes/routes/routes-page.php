@@ -8,7 +8,7 @@ require_once( FRESH_INCLUDES . "/init.php" );
 
 require_once( "routes.php" );
 
-$operation = get_param("operation", false, "show_routes");
+$operation = GetParam("operation", false, "show_routes");
 
 if (($result = handle_routes_do($operation)) !== "not handled") { print $result; return; }
 

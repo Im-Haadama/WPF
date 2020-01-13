@@ -24,7 +24,7 @@ $table_name = "im_missions";
 print header_text( false, true, true, array( "/core/gui/client_tools.js", "/core/data/data.js",
 	"/vendor/sorttable.js") );
 
-$operation = get_param( "operation", false );
+$operation = GetParam( "operation", false );
 if ( $operation ) {
 	switch ( $operation ) {
 		case "add":
@@ -47,9 +47,9 @@ if ( $operation ) {
 
 	return;
 }
-$row_id = get_param( "row_id", false );
+$row_id = GetParam( "row_id", false );
 
-$part_id = get_param( "part_id", false );
+$part_id = GetParam( "part_id", false );
 
 if ( $part_id ) {
 	print Core_Html::gui_header( 2, get_supplier_name( $part_id ) );

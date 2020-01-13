@@ -119,7 +119,7 @@ class Core_MultiSite {
 	/// Execute is for single call.
 	/// GetAll will Run on all defined severs.
 	function GetAll( $func, $verbose = false, $debug = false, $strip = false ) {
-		$debug = get_param("debug", false, $debug);
+		$debug = GetParam("debug", false, $debug);
 		$output = "";
 		if ( $debug ) {
 			print "s= " . $strip . "<br/>";

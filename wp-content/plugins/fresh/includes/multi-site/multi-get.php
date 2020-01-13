@@ -26,7 +26,7 @@ if (! check_password($user, $password)){
 }
 
 // check user/password
-$operation = get_param("operation", true);
+$operation = GetParam("operation", true);
 
 handle_multi_operation($operation);
 
@@ -36,14 +36,14 @@ function handle_multi_operation($operation)
 	{
 		case "create_receipt":
 			MyLog( "create_receipt" );
-			$cash         = get_param( "cash" );
-			$bank         = get_param( "bank" );
-			$check        = get_param( "check" );
-			$credit       = get_param( "credit" );
-			$change       = get_param( "change" );
-			$row_ids      = get_param_array( "row_ids" );
-			$user_id      = get_param( "user_id", true );
-			$date         = get_param( "date" );
+			$cash         = GetParam( "cash" );
+			$bank         = GetParam( "bank" );
+			$check        = GetParam( "check" );
+			$credit       = GetParam( "credit" );
+			$change       = GetParam( "change" );
+			$row_ids      = GetParamArray( "row_ids" );
+			$user_id      = GetParam( "user_id", true );
+			$date         = GetParam( "date" );
 
 			//print "create receipt<br/>";
 			// (NULL, '709.6', NULL, NULL, '205.44', '', '2019-01-22', Array)
@@ -52,7 +52,7 @@ function handle_multi_operation($operation)
 			break;
 
 		case "get_open_trans":
-			$client_id = get_param( "client_id" );
+			$client_id = GetParam( "client_id" );
 			print show_trans( $client_id, eTransview::not_paid );
 			break;
 	}

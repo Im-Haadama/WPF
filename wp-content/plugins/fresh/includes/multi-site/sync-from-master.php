@@ -20,5 +20,5 @@ init();
 
 require_once( FRESH_INCLUDES . '/fresh/multi-site/sync.php' );
 
-$debug = get_param("debug", false, false);
+$debug = GetParam("debug", false, false);
 sync_from_master($debug);

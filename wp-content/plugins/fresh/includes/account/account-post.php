@@ -62,14 +62,14 @@ switch ( $operation ) {
 
 	case "create_receipt":
 		MyLog( "create_receipt" );
-		$cash         = get_param( "cash" );
-		$bank         = get_param( "bank" );
-		$check        = get_param( "check" );
-		$credit       = get_param( "credit" );
-		$change       = get_param( "change" );
-		$row_ids      = get_param_array( "row_ids" );
-		$user_id      = get_param( "user_id", true );
-		$date         = get_param( "date" );
+		$cash         = GetParam( "cash" );
+		$bank         = GetParam( "bank" );
+		$check        = GetParam( "check" );
+		$credit       = GetParam( "credit" );
+		$change       = GetParam( "change" );
+		$row_ids      = GetParamArray( "row_ids" );
+		$user_id      = GetParam( "user_id", true );
+		$date         = GetParam( "date" );
 
 		//print "create receipt<br/>";
 		// (NULL, '709.6', NULL, NULL, '205.44', '', '2019-01-22', Array)
@@ -139,13 +139,13 @@ switch ( $operation ) {
 	break;
 
 	case "table":
-		$customer_id = get_param("customer_id", true);
-		$page = get_param("page", false, 1);
-		$search = get_param("search", false, null);
+		$customer_id = GetParam("customer_id", true);
+		$page = GetParam("page", false, 1);
+		$search = GetParam("search", false, null);
 		if ($search){
 			print load_scripts(array("/core/gui/client_tools.js", "/core/data/data.js"));
 			$args = array();
-			$search_url = "search_table('im_client_accounts', '" . add_param_to_url($url, array("operation" => "search", "customer_id" => $customer_id)) . "')";
+			$search_url = "search_table('im_client_accounts', '" . AddParamToUrl($url, array( "operation" => "search", "customer_id" => $customer_id)) . "')";
 			$args["search"] = $search_url; //'/fresh/bank/bank-page.php?operation=do_search')";
 			GemSearch("im_client_accounts", $args);
 			return;
@@ -166,8 +166,8 @@ switch ( $operation ) {
 			print im_translate("Nothing found");
 			return;
 		}
-		$args["query"] = "id in (" . comma_implode($ids) . ")";
-		$customer_id = get_param("customer_id", true);
+		$args["query"] = "id in (" . CommaImplode($ids) . ")";
+		$customer_id = GetParam("customer_id", true);
 		print show_trans($customer_id, eTransview::default, $args);
 		return;
 
@@ -177,7 +177,7 @@ switch ( $operation ) {
 		break;
 
 	case "send":
-		$del_ids = get_param("del_ids", true);
+		$del_ids = GetParam("del_ids", true);
 		send_deliveries($del_ids);
 		print "done";
 		break;
@@ -203,7 +203,7 @@ function create_invoice( $ids, $user_id ) {
 	}
 
 	if ( is_numeric( $doc_id ) && $doc_id > 0 ) {
-		$sql = "UPDATE im_delivery SET payment_receipt = " . $doc_id . " WHERE id IN (" . comma_implode( $ids ) . " ) ";
+		$sql = "UPDATE im_delivery SET payment_receipt = " . $doc_id . " WHERE id IN (" . CommaImplode( $ids ) . " ) ";
 		sql_query( $sql );
 
 		return $doc_id;

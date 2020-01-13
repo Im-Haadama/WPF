@@ -32,7 +32,7 @@ if ( ! isset( $_GET["op"] ) ) {
 	die ( 2 );
 }
 
-$debug = get_param("debug", false, false);
+$debug = GetParam("debug", false, false);
 
 $op = $_GET["op"];
 if ($debug) print "op=$op<br/>";
@@ -47,13 +47,13 @@ if (! file_exists($backup_dir)){
 
 	switch ( $op ) {
 		case "name":
-			$date = get_param("date", true);
+			$date = GetParam("date", true);
 			$name = DB_NAME . '-' . $date . '.sql.gz';
 			if (file_exists($backup_dir . '/' . $name)) { print $name; return; }
 			print "not found - $name";
 			exit( 0 );
 		case "file":
-			$file_name = get_param("name", true);
+			$file_name = GetParam("name", true);
 			$file_path = $backup_dir . '/' . $file_name;
 			if (! file_exists($file_path))
 			{

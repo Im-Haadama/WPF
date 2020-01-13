@@ -8,7 +8,7 @@ require_once( FRESH_INCLUDES . "/org/gui.php" );
 
 $user_id = get_user_id();
 
-print comma_implode( Org_Worker::GetTeams($user_id));
+print CommaImplode( Org_Worker::GetTeams($user_id));
 die (1);
 
 $teams_string = get_usermeta($user_id, 'teams');

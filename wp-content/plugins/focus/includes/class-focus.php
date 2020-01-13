@@ -139,7 +139,7 @@ class Focus {
 		add_action( 'init', array( $this, 'init' ), 0 );
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
 
-		get_sql_conn(reconnect_db());
+		get_sql_conn(ReconnectDb());
 
 //		add_action( 'init', array( 'Focus_Emails', 'init_transactional_emails' ) );
 		// add_action( 'init', array( $this, 'wpdb_table_fix' ), 0 );
@@ -240,7 +240,7 @@ class Focus {
 		switch ($operation)
 		{
 			case "bad_url":
-				$template_id = get_param("id", true);
+				$template_id = GetParam("id", true);
 				return Focus_Tasks::show_task($template_id);
 				break;
 //			case "reset_menu":

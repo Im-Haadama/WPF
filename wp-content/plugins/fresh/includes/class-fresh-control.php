@@ -4,12 +4,12 @@
 class Fresh_Control {
 	static public function handle($att)
 	{
-		$operation = get_param("operation", false, "control_report");
+		$operation = GetParam("operation", false, "control_report");
 
 		switch ($operation)
 		{
 			case "control_report":
-				$missions =  sql_query_array_scalar("select id from im_missions where date = " . quote_text(date('Y-m-d')));
+				$missions =  sql_query_array_scalar( "select id from im_missions where date = " . QuoteText(date('Y-m-d')));
 				if (count($missions) == 1) {
 					print self::control_mission($missions[0]);
 					return;

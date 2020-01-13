@@ -19,33 +19,33 @@ function handle_routes_do($operation)
 	switch ($operation)
 	{
 		case "add_zone_times":
-			$path_id= get_param("path_id", true);
-			$zones = get_param_array("zones", true, null, ":");
-			$time = get_param("time", true);
+			$path_id= GetParam("path_id", true);
+			$zones = GetParamArray("zones", true, null, ":");
+			$time = GetParam("time", true);
 			if (path_add_zone($path_id, $zones, $time))
 				return "done";
 			return;
 
 		case "delete":
-			$type = get_param("type");
+			$type = GetParam("type");
 			switch ($type)
 			{
 				case "missions":
-					$ids = get_param_array("ids", true);
+					$ids = GetParamArray("ids", true);
 					if (!data_delete("im_missions", $ids)) return "fail";
 					return "done";
 			}
 
 			return;
 		case "create_missions":
-			$path_ids = get_param_array("path_ids", true); // Path ids.
+			$path_ids = GetParamArray("path_ids", true); // Path ids.
 			return create_missions($path_ids);
 	    case "save_path_times":
-	    	$path_id = get_param("path_id", true);
-	    	if (path_save_times($path_id, get_param_array("params", true))) print "done";
+	    	$path_id = GetParam("path_id", true);
+	    	if (path_save_times($path_id, GetParamArray("params", true))) print "done";
 	    	return "done";
         case "save_new";
-            $table_name = get_param("table_name", true);
+            $table_name = GetParam("table_name", true);
             if (! in_array($table_name, array("im_paths")))
                 die ("invalid table $table_name");
             if (data_save_new($table_name)) print "done";
@@ -55,19 +55,19 @@ function handle_routes_do($operation)
 //		    if ($id > 0) return "done.$id";
 //		    return "done";
 	    case "update":
-		    $table_name = get_param("table_name", true);
+		    $table_name = GetParam("table_name", true);
 		    if (! in_array($table_name, $allowed_tables))
 			    die ("invalid table operation");
 		    return update_data($table_name) ? "done" : "failed";
 	    case "enable_shipping_method":
 	    case "disable_shipping_method":
-		    $args = ["zone_id" => get_param("zone_id", true), "instance_id" => get_param("instance_id", true),
-		             "is_enabled" => (substr($operation, 0, 3) == "ena" ? '1' : '0')];
+		    $args = [ "zone_id"    => GetParam("zone_id", true), "instance_id" => GetParam("instance_id", true),
+		              "is_enabled" => (substr($operation, 0, 3) == "ena" ? '1' : '0')];
 		    update_wp_woocommerce_shipping_zone_methods($args);
 		    return "done";
 		case "get_local": // Is a do action because is called from show_route. (no header).
-			$mission_ids = get_param("mission_ids", true);
-			$header = get_param("header", false, false);
+			$mission_ids = GetParam("mission_ids", true);
+			$header = GetParam("header", false, false);
 			return get_missions($mission_ids, $header, false);
 	}
 	return "not handled";
@@ -96,7 +96,7 @@ function handle_routes_show($operation, $debug = false)
             return $result;
 
         case "show_path":
-            $path_id = get_param("path_id", true);
+            $path_id = GetParam("path_id", true);
             $result .= show_path($path_id);
             return $result;
 
@@ -104,28 +104,28 @@ function handle_routes_show($operation, $debug = false)
 			return show_today_routes();
 
 		case "show_missions":
-			$id = get_param("id", true, null);
+			$id = GetParam("id", true, null);
 			if ($id) $query = "id = $id";
-			else $query = 'date = ' . quote_text(date('Y-m-d'));
+			else $query = 'date = ' . QuoteText(date('Y-m-d'));
 			return show_missions($query);
 		case "show_mission_route":
-		    $edit_route = get_param("edit_route", false, false);
+		    $edit_route = GetParam("edit_route", false, false);
 		    if ($edit_route) {
-		        edit_route(get_param("id", true));
+		        edit_route(GetParam("id", true));
 		        return;
             }
-			if ($id = get_param("id", false)) {
+			if ($id = GetParam("id", false)) {
 				// $result .= show_mission($id);
 				$result .= show_mission_route($id);
 				return $result;
 			}
-			return show_missions("FIRST_DAY_OF_WEEK(date) = " . quote_text(get_param("week", date('Y-m-d', strtotime('last sunday')))));
+			return show_missions( "FIRST_DAY_OF_WEEK(date) = " . QuoteText(GetParam("week", date('Y-m-d', strtotime('last sunday')))));
 			break;
 
         case "update_mission_preq":
-            $mission = get_param("id", true);
-            $point = get_param("point", true);
-            $preq = get_param("preq", true);
+            $mission = GetParam("id", true);
+            $point = GetParam("point", true);
+            $preq = GetParam("preq", true);
             $key = "mission_preq_" . $mission . "." . $point;
             if ($preq == "select")
                 InfoUpdate($key, null);
@@ -135,9 +135,9 @@ function handle_routes_show($operation, $debug = false)
             break;
 
         case "update_mission":
-            $id = get_param("id");
-            $start = get_param("start");
-            $start_point = get_param("start_point");
+            $id = GetParam("id");
+            $start = GetParam("start");
+            $start_point = GetParam("start_point");
             $m = new Mission($id);
             $m->setStartTime($start);
             $m->setStartAddress($start_point);
@@ -145,9 +145,9 @@ function handle_routes_show($operation, $debug = false)
             break;
 
 		case "delivered":
-			$site_id = get_param( "site_id" );
-			$type    = get_param( "type" );
-			$id      = get_param( "id" );
+			$site_id = GetParam( "site_id" );
+			$type    = GetParam( "type" );
+			$id      = GetParam( "id" );
 			if (delivered($site_id, $type, $id, $debug))
 			    print "delivered";
 			break;
@@ -157,7 +157,7 @@ function handle_routes_show($operation, $debug = false)
 		case "show_active_missions":
 			return show_active_missions();
 		case "show_mission":
-			$mission_id = get_param("id", true);
+			$mission_id = GetParam("id", true);
 			return show_mission($mission_id);
 		case "update_shipping_methods":
 			return update_shipping_methods();
@@ -185,20 +185,20 @@ function show_missions($query = null)
 
 	if ( count( $missions )  == 0) {
 	    $result .= im_translate("No missions for given period");
-		$result .= Core_Html::GuiHyperlink("Last week", add_to_url("week" , date( "Y-m-d", strtotime( "last sunday" )))) . " ";
-		$result .= Core_Html::GuiHyperlink("This week", add_to_url("week" , date( "Y-m-d", strtotime( "sunday" )))) . " ";
-		$result .= Core_Html::GuiHyperlink("Next week", add_to_url("week", date( "Y-m-d", strtotime( "next sunday" ))));
+		$result .= Core_Html::GuiHyperlink("Last week", AddToUrl("week" , date( "Y-m-d", strtotime( "last sunday" )))) . " ";
+		$result .= Core_Html::GuiHyperlink("This week", AddToUrl("week" , date( "Y-m-d", strtotime( "sunday" )))) . " ";
+		$result .= Core_Html::GuiHyperlink("Next week", AddToUrl("week", date( "Y-m-d", strtotime( "next sunday" ))));
 		return $result;
 	}
 
 	$args = array();
 	$args["edit"] = false;
 	$args["add_checkbox"] = true;
-	$args["post_file"] = get_url(1);
+	$args["post_file"] = GetUrl(1);
 
-	$sql = "select * from im_missions where id in (". comma_implode($missions) . ")";
+	$sql = "select * from im_missions where id in (" . CommaImplode($missions) . ")";
 
-	$args["links"] = array("id" => get_url(true) . "?operation=show_mission&id=%s");
+	$args["links"] = array("id" => GetUrl(true) . "?operation=show_mission&id=%s");
 
 	// $args["events"] = array("mission_id" => "mission_changed(order_id))
 	$args["sql"] = $sql;
@@ -405,7 +405,7 @@ function show_mission_route($the_mission, $update = false, $debug = false, $miss
 //		$data .= $header;
 
         $data .= "<table>";
-        $data .= Core_Html::GuiHyperlink("Edit route", add_to_url(array("edit_route" => 1, "id" => $mission_id)));
+        $data .= Core_Html::GuiHyperlink("Edit route", AddToUrl(array( "edit_route" => 1, "id" => $mission_id)));
         $data .= gui_list( "באחריות הנהג להעמיס את הרכב ולסמן את מספר האריזות והאם יש קירור." );
         $data .= gui_list( "אם יש ללקוח מוצרים קפואים או בקירור, יש לבדוק זמינות לקבלת המסלול (לעדכן את יעקב)." );
         $data .= gui_list( "יש לוודא שכל המשלוחים הועמסו." );
@@ -787,7 +787,7 @@ function save_route($missions, $path) {
 //    print "path=" . var_dump($path);
 	! is_array( $missions ) or die ( "missions array" );
 
-	sql_query( "update im_missions set path = \"" . comma_implode($path, true) . "\" where id = " . $missions );
+	sql_query( "update im_missions set path = \"" . CommaImplode($path, true) . "\" where id = " . $missions );
 }
 
 /**
@@ -931,7 +931,7 @@ function show_paths($args = null)
     $result .= Core_Html::gui_header(1, "Shipping paths");
     $args["selectors"] = array(/* "zones" => "gui_select_zones", */"week_days" => "gui_select_days");
     $args["id_field"] = "id";
-    $args["links"] = array("id" => add_to_url(array("operation" => "show_path", "path_id" => "%s")));
+    $args["links"] = array("id" => AddToUrl(array( "operation" => "show_path", "path_id" => "%s")));
     $args["add_checkbox"] = true;
     $args["header_fields"] = array("checkbox" => "select", "id" => "Id", "path_code" => "Path code", "description" => "Description", "zones_times" => "Zones", "week_days" => "Week days");
 
@@ -945,7 +945,7 @@ function show_paths($args = null)
     $result .= Core_Html::GuiButton("btn_instance", "create_missions()", "create missions");
 
     $result .= Core_Html::gui_header(2, "Coming missions");
-    $result .= show_missions("date > " . quote_text(date('Y-m-d')));
+    $result .= show_missions( "date > " . QuoteText(date('Y-m-d')));
 
     $result .= "<br/>";
     $result .= GuiHyperlink("עדכון שיטות משלוח", "/routes/routes-page.php?operation=update_shipping_methods");
@@ -1083,7 +1083,7 @@ function path_save_times($path_id, $params)
 		$times = $params[$i + 1];
 		$path_times[$zone_id] = $times;
 	}
-	$sql =  "update im_paths set zones_times = " . quote_text(escape_string(serialize($path_times))) . ' where id = ' . $path_id ;
+	$sql = "update im_paths set zones_times = " . QuoteText(escape_string(serialize($path_times))) . ' where id = ' . $path_id ;
 	return sql_query($sql);
 }
 

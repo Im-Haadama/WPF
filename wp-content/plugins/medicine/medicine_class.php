@@ -28,10 +28,10 @@ function handle_medicine_do($operation)
 		///////////////////////////
 
 		case "search_by_text":
-			$text = get_param("text", true);
+			$text = GetParam("text", true);
 			return search_by_text($text);
 		case "add_user":
-			$user_id = get_param("id", true);
+			$user_id = GetParam("id", true);
 			if (update_user_meta($user_id, "medicine", 1))
 				print "done";
 			return;
@@ -45,11 +45,11 @@ function handle_medicine_show($operation, $args)
 
 	// Actions are performed and return to caller.
 	// Page are $result .= and displayed in the end. (to handle the header just once);
-	$action_url = get_url(1);
+	$action_url = GetUrl(1);
 	$result = ""; // focus_header($header_args);
 
 
-	$args["page"] = get_param("page", false, 1);
+	$args["page"] = GetParam("page", false, 1);
 
 	$debug = 0;
 	if ($debug)	print "operation: " . $operation . "<br/>";
@@ -92,7 +92,7 @@ function medicine_main()
 //	$result .= GuiHyperlink("plants", add_to_url("operation", "show_plants")) . Core_Html::Br();
 //	$result .= GuiHyperlink("symptoms", add_to_url("operation", "show_symptoms")) . Core_Html::Br();
 //	$result .= GuiHyperlink("affects", add_to_url("operation", "show_affects")) . Core_Html::Br();
-	$result .= GuiHyperlink("clients", add_to_url("operation", "show_clients")) . Core_Html::Br();
+	$result .= GuiHyperlink("clients", AddToUrl("operation", "show_clients")) . Core_Html::Br();
 
 	return $result;
 }
@@ -110,7 +110,7 @@ function show_clients()
 	$result = Core_Html::gui_header(1, "Clients");
 	$args = [];
 	$args["query"] = "ID in (select user_id from wp_usermeta where meta_key = 'medicine')";
-	$args["links"] = array("ID" => add_to_url("operation", "show_user&id=%s"));
+	$args["links"] = array("ID" => AddToUrl("operation", "show_user&id=%s"));
 	$result .= GemTable("wp_users", $args);
 
 	return $result;
@@ -127,7 +127,7 @@ function show_add_wp_users()
 
 function show_user($user_id = 0)
 {
-	if (! $user_id) $user_id = get_param("id", true);
+	if (! $user_id) $user_id = GetParam("id", true);
 	$result = "";
 	$result .= Core_Html::gui_header(1, get_user_name($user_id));
 
@@ -138,7 +138,7 @@ function show_user($user_id = 0)
 
 function show_add_me_clients($user_id = 0)
 {
-	if (! $user_id) $user_id = get_param("id", true);
+	if (! $user_id) $user_id = GetParam("id", true);
 
 	$result = "";
 	$result .= Core_Html::gui_header(1, "Medical info") . " " . get_user_name($user_id);

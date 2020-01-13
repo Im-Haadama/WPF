@@ -18,7 +18,7 @@ if ( isset( $_GET["week"] ) ) {
 	$week = $_GET["week"];
 }
 
-$order_type = get_param( "order_type" ); // comma separated. w - waiting to deliver. p - pending/on-hold
+$order_type = GetParam( "order_type" ); // comma separated. w - waiting to deliver. p - pending/on-hold
 
 if ( ! $order_type ) {
      print Core_Html::GuiHyperlink("Add order", "/wp-admin/post-new.php?post_type=shop_order", "_blank" );
@@ -30,12 +30,12 @@ if ( ! $order_type ) {
 
 require( "new-order.php" );
 
-$operation = get_param( "operation" );
+$operation = GetParam( "operation" );
 
 if ( $operation )
 	switch ( $operation ) {
 		case "cancel_order":
-			$id = get_param( "id" );
+			$id = GetParam( "id" );
 			$o  = new Order( $id );
 			$o->ChangeStatus( "wc-cancelled" );
 			break;
@@ -58,7 +58,7 @@ if ( isset( $week ) ) {
 
 print Core_Html::gui_header( 1, "הזמנות" );
 
-debug_time_log( "reset" );
+DebugTimeLog( "reset" );
 
 if ( current_user_can( "edit_shop_orders" ) and
      ( is_null( $order_type ) or in_array( "p", explode( ",", $order_type ) ) )

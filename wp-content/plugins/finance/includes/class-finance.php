@@ -122,7 +122,7 @@ class Finance {
 		add_action( 'init', array( $this, 'init' ), 0 );
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
 
-		get_sql_conn(reconnect_db());
+		get_sql_conn(ReconnectDb());
 //		add_action( 'init', array( 'Finance_Emails', 'init_transactional_emails' ) );
 		// add_action( 'init', array( $this, 'wpdb_table_fix' ), 0 );
 		// add_action( 'init', array( $this, 'add_image_sizes' ) );
@@ -212,7 +212,7 @@ class Finance {
 		switch ($operation)
 		{
 			case "new_customer":
-				$order_id = get_param("order_id", true);
+				$order_id = GetParam("order_id", true);
 				return self::new_customer($order_id);
 
 			case 'bank_import_from_file':
@@ -223,7 +223,7 @@ class Finance {
 				$I                    = new Core_Importer();
 				$fields               = null;
 				$fields               = array();
-				$fields['account_id'] = get_param( 'selection' );
+				$fields['account_id'] = GetParam( 'selection' );
 				if ( ! $fields['account_id'] ) {
 					die( "not account given" );
 				}
@@ -240,8 +240,8 @@ class Finance {
 				return true;
 				break;
 			case "get_trans":
-				$client_id = get_param( "client_id" );
-				$site_id   = get_param( "site_id" );
+				$client_id = GetParam( "client_id" );
+				$site_id   = GetParam( "site_id" );
 				// $data .= $this->Run( $func, $site_id, $first, $debug );
 				$link = "/fresh/multi-site/multi-get.php?operation=get_open_trans&client_id=" . $client_id;
 				print $multi_site->Run( $link, $site_id );
@@ -426,10 +426,10 @@ class Finance {
 
 		if (im_user_can("show_bank")) {
 			$bank = new Finance_Bank(FINANCE_PLUGIN_DIR . '/post.php');
-			$operation = get_param("operation", false, null);
+			$operation = GetParam("operation", false, null);
 			print "operation: $operation<br/>";
 			if ($operation) {
-				self::handle_bank_operation($operation, get_url(1));
+				self::handle_bank_operation($operation, GetUrl(1));
 				return;
 			}
 

@@ -9,7 +9,7 @@ if ( ! defined( "FRESH_INCLUDES" ) ) {
 
 require_once( FRESH_INCLUDES . '/core/gui/sql_table.php' );
 
-$supplier_id = get_param( "supplier_id", true );
+$supplier_id = GetParam( "supplier_id", true );
 
 print Core_Html::gui_header( 1, "מצב חשבון " . get_supplier_name( $supplier_id ), true );
 

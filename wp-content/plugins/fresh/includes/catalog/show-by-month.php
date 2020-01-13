@@ -13,7 +13,7 @@ if ( ! defined( "FRESH_INCLUDES" ) ) {
 print header_text( true );
 // todo: show availability info
 
-$m = get_param( "month" );
+$m = GetParam( "month" );
 
 if ( $m ) {
 	$year = date( 'Y' );

@@ -117,10 +117,10 @@ function orders_per_item( $prod_id, $multiply, $short = false, $include_basket =
 	        . ' and (woim.meta_key = \'_product_id\' or woim.meta_key = \'_variation_id\')
 	         and woim.meta_value in (' . $prod_id;
 	if ( $baskets ) {
-		$sql .= ", " . comma_implode( $baskets );
+		$sql .= ", " . CommaImplode( $baskets );
 	}
 	if ( $bundles ) {
-		$sql .= ", " . comma_implode( $bundles );
+		$sql .= ", " . CommaImplode( $bundles );
 	}
 	$sql .= ")";
 
@@ -633,7 +633,7 @@ function show_category_by_id( $term_id, $sale = false, $text = false, $customer_
 	}
 
 	if ( $inventory ) $result .= Core_Html::GuiButton( "btn_save_inv" . $term_id, "save_inv(term_" . $term_id . ")", "שמור מלאי" );
-	if ($not_available) $result .= Core_Html::GuiButton( "btn_draft" . $term_id, "draft_products(" . quote_text($args["checkbox_class"]). ")", "draft products" );
+	if ($not_available) $result .= Core_Html::GuiButton( "btn_draft" . $term_id, "draft_products(" . QuoteText($args["checkbox_class"]) . ")", "draft products" );
 
 	return $result;
 }
@@ -642,7 +642,7 @@ function show_category_by_id( $term_id, $sale = false, $text = false, $customer_
 function get_order_itemmeta( $order_item_id, $meta_key ) {
 	if ( is_array( $order_item_id ) ) {
 		$sql = "SELECT sum(meta_value) FROM wp_woocommerce_order_itemmeta "
-		       . ' WHERE order_item_id IN ( ' . comma_implode( $order_item_id ) . ") "
+		       . ' WHERE order_item_id IN ( ' . CommaImplode( $order_item_id ) . ") "
 		       . ' AND meta_key = \'' . escape_string( $meta_key ) . '\'';
 
 		return sql_query_single_scalar( $sql );
@@ -684,7 +684,7 @@ function month_availability( $prod_id, $month ) {
 	$result = sql_query( "select sum(quantity), sum(quantity_ordered) " .
 	                     " from im_delivery_lines " .
 	                     " where prod_id  = " . $prod_id .
-	                     " and delivery_id in (" . comma_implode( $orders_per_month[ $month ] ) . ")" );
+	                     " and delivery_id in (" . CommaImplode( $orders_per_month[ $month ] ) . ")" );
 
 	if ( ! $result ) {
 		die( 1 );

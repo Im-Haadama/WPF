@@ -212,7 +212,7 @@ class Mission {
 		$path_days = sql_query_single_scalar("select week_days from im_paths where id = " . $path_id);
 		for ($day = strtotime('tomorrow') ; $day < strtotime("tomorrow +$forward_days days");  $day += 86400) {
 			if (in_array(date('w', $day), explode(",", $path_days))){
-				$sql = "select count(*) from im_missions where path_code = " . $path_id . " and date = ". quote_text(date('Y-m-d', $day));
+				$sql = "select count(*) from im_missions where path_code = " . $path_id . " and date = " . QuoteText(date('Y-m-d', $day));
 				if (sql_query_single_scalar($sql) > 0) continue;
 				if (! $last_mission->create_mission_path_date($path_id, date('Y-m-d',$day))) return false;
 			}
@@ -249,7 +249,7 @@ class Mission {
 	 */
 	public function getShippingMethods() {
 		$ids = [];
-		$mission_day = date_day_name( $this->getDate() );
+		$mission_day = DateDayName( $this->getDate() );
 		$path_id     = sql_query_single_scalar( "select path_code from im_missions where id = $this->id" );
 
 		if (! ($path_id > 0)) return null;
@@ -321,7 +321,7 @@ function update_wp_woocommerce_shipping_zone_methods($args) {
 			$update_option = true;
 			continue;
 		}
-		$sql          .= $k . "=" . quote_text( $v ) . ", ";
+		$sql          .= $k . "=" . QuoteText( $v ) . ", ";
 		$update_table = true;
 	}
 	if ( $update_table ) {
@@ -387,11 +387,11 @@ function update_shipping_methods()
 			}
 			foreach ($zone_times[$zone_id] as $date => $times) {
 //				$result .= "date = $date<br/>";
-				if ( strstr( $shipping->title, date_day_name( $date ) ) ) {
+				if ( strstr( $shipping->title, DateDayName( $date ) ) ) {
 					$args                = [];
 					$args["is_enabled"]  = 1;
 					$args["instance_id"] = $shipping->instance_id;
-					$args["title"]       = date_day_name( $date ) . " " . date( 'd/m/Y', strtotime( $date ) ) . ' ' . $times;
+					$args["title"]       = DateDayName( $date ) . " " . date( 'd/m/Y', strtotime( $date ) ) . ' ' . $times;
 					$result .= "title: " . $args["title"] . "<br/>";
 					update_wp_woocommerce_shipping_zone_methods( $args );
 				}
@@ -414,7 +414,7 @@ function update_shipping_methods()
 				if ( $shipping_ids ) {
 					foreach ( $shipping_ids as $zone_id => $shipping ) {
 						$result .= $shipping->title . ", ";
-						if ( ! strstr( $shipping->title, date_day_name( $date ) ) ) {
+						if ( ! strstr( $shipping->title, DateDayName( $date ) ) ) {
 							continue;
 						}
 						//debug_var($shipping->get_data_store());
@@ -422,12 +422,12 @@ function update_shipping_methods()
 						$args                = [];
 						$args["is_enabled"]  = 1;
 						$args["instance_id"] = $shipping->instance_id;
-						$args["title"]       = date_day_name( $date ) . " " . date('d/m/Y', strtotime($date)) . ' ' . strtok( $mission->getStartTime(), ":" ) . '-' . strtok( $mission->getEndTime(), ":" );
+						$args["title"]       = DateDayName( $date ) . " " . date('d/m/Y', strtotime($date)) . ' ' . strtok( $mission->getStartTime(), ":" ) . '-' . strtok( $mission->getEndTime(), ":" );
 						// $args[""] = ;
 						update_wp_woocommerce_shipping_zone_methods( $args );
 						$has_missions = true;
 					}
-					$result .= "updated mission " . Core_Html::GuiHyperlink($mission_id, add_to_url(array("operation" => "show_mission", "mission_id" => $mission_id))) . "<br/>";
+					$result .= "updated mission " . Core_Html::GuiHyperlink($mission_id, AddToUrl(array( "operation" => "show_mission", "mission_id" => $mission_id))) . "<br/>";
 				}
 			}
 		}
@@ -497,7 +497,7 @@ function show_mission($mission_id)
 	$shipping_ids = $mission->getShippingMethods();
 	foreach ($shipping_ids as $zone_id => $shipping) {
 		$tog = ($shipping->enabled == "yes") ? "disable" : "enable";
-		$args["action"] = add_to_url(array("operation" => $tog . "_shipping_method&zone_id=" . $zone_id . "&instance_id=" . $shipping->instance_id)) . ";location_reload";
+		$args["action"] = AddToUrl(array( "operation" => $tog . "_shipping_method&zone_id=" . $zone_id . "&instance_id=" . $shipping->instance_id)) . ";location_reload";
 
 		$args["text"] = $tog;
 		$en_dis = Core_Html::GuiButtonOrHyperlink("btn_" . $zone_id, null, $args);
@@ -512,7 +512,7 @@ function show_mission($mission_id)
 
 	$result .= gui_table_args($zone_table, "", $args);
 
-	$result .= Core_Html::GuiHyperlink("update", add_to_url(array("operation" => "update_shipping_methods")));
+	$result .= Core_Html::GuiHyperlink("update", AddToUrl(array( "operation" => "update_shipping_methods")));
 	return $result;
 }
 
@@ -548,7 +548,7 @@ function show_active_missions()
 	$order        = "order by 2 ";
 
 	$args = array();
-	$links = array(); $links["id"] = add_to_url(array("operation" => "show_mission", "row_id" => "%s"));
+	$links = array(); $links["id"] = AddToUrl(array( "operation" => "show_mission", "row_id" => "%s"));
 
 	$args["links"] = $links;
 // $args["first_id"] = true;

@@ -17,7 +17,7 @@ require_once( FRESH_INCLUDES . "/focus/Tasklist.php" );
 
 require_once( FRESH_INCLUDES . "/init.php" );
 
-$operation = get_param( "operation" );
+$operation = GetParam( "operation" );
 // print "op=" . $operation . "<br/>";
 switch ( $operation ) {
 	case "create":
@@ -26,7 +26,7 @@ switch ( $operation ) {
 		create_tasks( null, true );
 		break;
 	case "delivered": // Done
-		$ids = get_param_array( "ids" );
+		$ids = GetParamArray( "ids" );
 		foreach ( $ids as $id ) {
 			$T = new Focus_Tasklist( $id );
 			$T->ended();
@@ -34,7 +34,7 @@ switch ( $operation ) {
 		}
 		break;
 	case "end":
-		$task_id = get_param( "id" );
+		$task_id = GetParam( "id" );
 		print $task_id . "<br/>";
 		$T       = new Focus_Tasklist( $task_id );
 		$T->ended();
@@ -44,7 +44,7 @@ switch ( $operation ) {
 		redirect_back();
 		break;
 	case "cancel":
-		$task_id = get_param( "id" );
+		$task_id = GetParam( "id" );
 		$sql     = "UPDATE im_tasklist SET ended = now(), status = " . eTasklist::canceled .
 		           " WHERE id = " . $task_id;
 		sql_query( $sql );
@@ -52,7 +52,7 @@ switch ( $operation ) {
 		redirect_back();
 		break;
 	case "postpone":
-		$task_id = get_param( "id" );
+		$task_id = GetParam( "id" );
 		$T       = new Focus_Tasklist( $task_id );
 		$T->Postpone();
 		create_tasks( null, false );

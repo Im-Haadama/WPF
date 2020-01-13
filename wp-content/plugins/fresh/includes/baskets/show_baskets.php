@@ -9,7 +9,7 @@
 require_once( '../r-shop_manager.php' );
 require_once( "../catalog/catalog.php" );
 
-$operation = get_param("operation", false);
+$operation = GetParam("operation", false);
 if ($operation) {
 	if (handle_basket_operation($operation)) print "done";
 	return;
@@ -33,7 +33,7 @@ if ($operation) {
     }
 </script> <?
 
-$basket_id = get_param("basket_id", false, 0);
+$basket_id = GetParam("basket_id", false, 0);
 
 
 function handle_basket_operation($operation)
@@ -41,16 +41,16 @@ function handle_basket_operation($operation)
     switch ($operation)
     {
         case "add_to_basket":
-            $basket_id = get_param("basket_id", true);
-            $new_product = get_param("new_product", true);
+            $basket_id = GetParam("basket_id", true);
+            $new_product = GetParam("new_product", true);
             $sql = 'INSERT INTO im_baskets (basket_id, date, product_id, quantity) VALUES (' . $basket_id . ", '" . date( 'Y/m/d' ) . "', " .
                        $new_product . ", " . 1 . ')';
             if (sql_query($sql)) return true;
             break;
 
         case "remove_from_basket":
-            $basket_id = get_param("basket_id", true);
-            $products = get_param("products", true);
+            $basket_id = GetParam("basket_id", true);
+            $products = GetParam("products", true);
             $sql = "delete from im_baskets where basket_id = " . $basket_id . " and product_id in ( $products ) ";
             if (sql_query($sql)) print "done";
             break;

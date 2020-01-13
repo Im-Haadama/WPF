@@ -20,12 +20,12 @@ print header_text( false, true, true, array( "/core/gui/client_tools.js", "/core
 
 global $user_ID; // by wordpress.
 
-$id = get_param("id", false);
+$id = GetParam("id", false);
 require_once(FRESH_INCLUDES . '/init.php');
 
 print gui_div("log");
 
-$operation = get_param("operation", false, "show_all");
+$operation = GetParam("operation", false, "show_all");
 if ($operation) {
     handle_supplies_operation($operation);
     return;

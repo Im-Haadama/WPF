@@ -100,7 +100,7 @@ function backup_database() {
 
 	// Server might gone because of the backup. Reconnect
 	// $conn = new mysqli( IM_DB_HOST, DB_NAME, IM_DB_PASSWORD, DB_NAME );
-	reconnect_db();
+	ReconnectDb();
 
 	if ( substr( $result, 0, 31 ) == $success ) {
 		print "success<br/>";

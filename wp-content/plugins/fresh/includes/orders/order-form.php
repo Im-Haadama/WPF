@@ -11,7 +11,7 @@ require_once( TOOLS_DIR . "/orders/orders-common.php" );
 
 $text    = isset( $_GET["text"] );
 $fresh   = isset( $_GET["fresh"] );
-$user_id = get_param( "user_id", false, null );
+$user_id = GetParam( "user_id", false, null );
 
 function show_category( $term_name, $sale = false, $text = false ) {
 	$the_term = get_term_by( 'name', $term_name, 'product_cat' );

@@ -721,7 +721,7 @@ class Fresh_Order {
 		}
 		$header .= " מספר הזמנה " . $this->order_id;
 		if ( $addition_orders ) {
-			$header .= comma_implode( $addition_orders );
+			$header .= CommaImplode( $addition_orders );
 		}
 		$data = Core_Html::gui_header( 1, $header, true );
 		// $data  .= Core_Html::gui_header( 2, $order->order_date, true);
@@ -883,7 +883,7 @@ class Fresh_Order {
 		$sql = 'SELECT meta_value FROM `wp_postmeta` pm'
 		       . ' WHERE pm.post_id = ' . $this->order_id
 		       . ' AND (`meta_key` = \'' . $field_name . '\'' .
-		       ' or meta_key = ' . quote_text( '_' . $field_name ) . ')';
+		       ' or meta_key = ' . QuoteText( '_' . $field_name ) . ')';
 
 		$value = sql_query_single_scalar( $sql );
 
@@ -1046,7 +1046,7 @@ class Fresh_Order {
 		$args["id_field"] = "ID";
 		$args["query"] = "post_type = 'shop_order' and post_status in ('wc-awaiting-shipment', 'wc-processing')";
 		$args["order"] = " ID desc";
-		$args["links"] = array("ID" => add_to_url("row_id", "%s"));
+		$args["links"] = array("ID" => AddToUrl("row_id", "%s"));
 		$args["fields"] = array("ID", "post_date", "post_status" );
 
 		$result .= Core_Gem::GemTable("wp_posts", $args);
@@ -1055,7 +1055,7 @@ class Fresh_Order {
 	}
 	function handle_order_operation($operation)
 	{
-		$page = get_param("page", false, 0);
+		$page = GetParam("page", false, 0);
 		$args = [];
 		if ($page) $args["page"] = $page;
 		switch ($operation){

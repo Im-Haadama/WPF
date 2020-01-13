@@ -262,7 +262,7 @@ class Focus_Tasklist {
 				continue;
 			}
 
-			$template_ids = sql_query_array_scalar( "SELECT id FROM im_task_templates WHERE path_code = " . quote_text( $path_code ) );
+			$template_ids = sql_query_array_scalar( "SELECT id FROM im_task_templates WHERE path_code = " . QuoteText( $path_code ) );
 
 			foreach ( $template_ids as $template_id ) {
 				$sql    = "SELECT task_description, task_url, project_id, repeat_freq, repeat_freq_numbers, condition_query, priority " . "
@@ -318,11 +318,11 @@ class Focus_Tasklist {
 		// TODO: create_tasks_per_mission();
 		$verbose_table = array( array( "template_id", "freq", "query", "active", "result", "priority", "new task" ));
 		foreach ( $freqs as $freq ) {
-			$output .= "Handling " . Core_Html::GuiHyperlink($freq, add_to_url(array("operation" => "show_templates", "search" =>1, "repeat_freq" => $freq))) . Core_Html::Br();
+			$output .= "Handling " . Core_Html::GuiHyperlink($freq, AddToUrl(array( "operation" => "show_templates", "search" =>1, "repeat_freq" => $freq))) . Core_Html::Br();
 
 			$sql = "SELECT id, task_description, task_url, project_id, repeat_freq, repeat_freq_numbers, condition_query, priority, creator, team " .
 			       " FROM im_task_templates " .
-			       " where repeat_freq = '" . $freq . "' and ((last_check is null) or (last_check < " . quote_text(date('Y-m-j')) .") or repeat_freq like 'c%')";
+			       " where repeat_freq = '" . $freq . "' and ((last_check is null) or (last_check < " . QuoteText(date('Y-m-j')) . ") or repeat_freq like 'c%')";
 
 			$result = sql_query( $sql );
 
@@ -362,7 +362,7 @@ class Focus_Tasklist {
 		if ( strpos(  $test_result, "0" ) !== false) {
 			array_push( $verbose_line, "skipped" );
 			// array_push( $verbose_table, $verbose_line);
-			$output .= comma_implode($verbose_line) . "Template " . $id . Core_Html::Br();
+			$output .= CommaImplode($verbose_line) . "Template " . $id . Core_Html::Br();
 			return;
 		}
 
@@ -386,7 +386,7 @@ class Focus_Tasklist {
 
 		array_push( $verbose_line, sql_insert_id() );
 
-		$output .= "Template " . $id . " " . comma_implode($verbose_line) . Core_Html::Br();
+		$output .= "Template " . $id . " " . CommaImplode($verbose_line) . Core_Html::Br();
 	}
 
 	static function check_frequency( $repeat_freq, $repeat_freq_numbers, $last_run )

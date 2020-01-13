@@ -24,12 +24,12 @@ require_once( FRESH_INCLUDES . "/init.php" );
 
 switch ( $operation ) {
 	case "get_balance":
-		$customer_id = get_param( "customer_id" );
+		$customer_id = GetParam( "customer_id" );
 		$date        = $_GET["date"];
 		print balance( $date, $customer_id );
 		return;
 	case "get_balance_email":
-		$email = get_param( "email" );
+		$email = GetParam( "email" );
 		$date  = $_GET["date"];
 		print balance_email( $date, $email );
 		return;
@@ -37,7 +37,7 @@ switch ( $operation ) {
 	case "add_sick_leave":
 		$date      = $_GET["date"];
 		$project   = $_GET["project"];
-		$worker_id = get_param( "worker_id" );
+		$worker_id = GetParam( "worker_id" );
 		if ( isset( $_GET["user_id"] ) ) {
 			$user_id = $_GET["user_id"];
 		} else {
@@ -66,10 +66,10 @@ switch ( $operation ) {
 
 	case "show_all":
 		print header_text(true);
-		$month = get_param("month", false, date('Y-m'));
-		$edit = get_param("edit");
+		$month = GetParam("month", false, date('Y-m'));
+		$edit = GetParam("edit");
 		$args = array();
-		$edit = get_param("edit", false, false);
+		$edit = GetParam("edit", false, false);
 		if ($edit)
 			$args["add_checkbox"] = true;
 		$args["edit"] = $edit;
@@ -91,7 +91,7 @@ $result = "";
 switch($operation)
 {
 	case "edit_worker":
-		$id = get_param("id", true);
+		$id = GetParam("id", true);
 		$result = Core_Html::gui_header(1, "Worker info") . get_user_name($id);
 		$args = [];
 		$args["id_field"] = "id";

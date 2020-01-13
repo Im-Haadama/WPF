@@ -17,7 +17,7 @@ require_once( FRESH_INCLUDES . '/core/gui/sql_table.php' );
 require_once( "../catalog/bundles.php" );
 require_once( "../orders/orders-common.php" );
 
-$operation = get_param("operation", true);
+$operation = GetParam("operation", true);
 
 switch ( $operation ) {
 	case "add_waste":
@@ -34,7 +34,7 @@ switch ( $operation ) {
 		return;
 
 	case "save_inv":
-		$data = get_param_array("data");
+		$data = GetParamArray("data");
 		if (save_inv($data)) print "done";
 		return;
 }
@@ -50,7 +50,7 @@ switch ($operation)
 
 			return;
 		}
-		$not_available = get_param("not_available", false, false);
+		$not_available = GetParam("not_available", false, false);
 		show_fresh_inventory($not_available);
 		break;
 	case "show_all":

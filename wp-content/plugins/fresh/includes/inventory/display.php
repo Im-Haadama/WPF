@@ -49,7 +49,7 @@ print header_text( false, true, is_rtl(), array("/fresh/orders/orders.js", "/cor
         }
         var url = "inv-post.php?operation=show";
 	    <?php
-            $not_available = get_param("not_available", false, false);
+            $not_available = GetParam("not_available", false, false);
             if ($not_available) print "url += '&not_available=1';\n";
 	    if ( isset( $_GET["supplier_id"] ) ) {
 		    print 'url += "&supplier_id=' . $_GET["supplier_id"] . '";';

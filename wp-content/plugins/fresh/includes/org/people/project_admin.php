@@ -37,7 +37,7 @@ $table_name = "im_projects";
 print header_text( false, true, true, array( "/core/gui/client_tools.js", "/core/data/data.js",
 	"/vendor/sorttable.js") );
 
-$year = get_param( "year" );
+$year = GetParam( "year" );
 if ( ! $year ) {
 	$year = date( "Y" );
 }
@@ -45,7 +45,7 @@ if ( ! $year ) {
 
 $page = "EXTRACT(YEAR FROM DATE) = " . $year . " and document_type = 4 and is_active=1";
 
-$operation = get_param( "operation", false, "show_projects" );
+$operation = GetParam( "operation", false, "show_projects" );
 
 handle_project_operation($operation);
 
@@ -74,7 +74,7 @@ function handle_project_operation($operation)
 			break;
 		case "show_projects":
 			print HeaderText($args);
-			$links = array("ID" => add_to_url(array("operation" => "show_project", "id" => "%s")));
+			$links = array("ID" => AddToUrl(array( "operation" => "show_project", "id" => "%s")));
 
 			print Core_Html::gui_header( 1, "ניהול פרויקטים" );
 			$sum = null;
@@ -90,9 +90,9 @@ function handle_project_operation($operation)
 			break;
 
 		case "show_project":
-			$id = get_param("id", true);
+			$id = GetParam("id", true);
 			$args = [];
-			$args["page"] = get_param("page", false, 1);
+			$args["page"] = GetParam("page", false, 1);
 			print GemElement("im_projects", $id, $args);
 
 			$args["project_id"] = $id;
@@ -107,7 +107,7 @@ function handle_project_operation($operation)
 }
 
 return;
-$row_id = get_param( "row_id", false );
+$row_id = GetParam( "row_id", false );
 
 if ( $row_id ) {
 	print Core_Html::gui_header( 1, $entity_name . " " . $row_id );
@@ -123,7 +123,7 @@ if ( $row_id ) {
 	return;
 }
 
-$part_id = get_param( "part_id", false );
+$part_id = GetParam( "part_id", false );
 
 if ( $part_id ) {
 	print Core_Html::gui_header( 2, get_supplier_name( $part_id ) );

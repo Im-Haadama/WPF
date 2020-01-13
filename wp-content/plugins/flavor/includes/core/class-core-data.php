@@ -21,12 +21,12 @@ class Core_Data
 	{
 		switch ($operation){
 			case "data_auto_list":
-				$prefix = get_param("prefix", true);
+				$prefix = GetParam("prefix", true);
 
 				$lists = array("products" => array("table" => "im_products", "field_name" =>'post_title', "include_id" => 0, "id_field" => "ID"),
 				"tasks" => array("table"=>"im_tasklist", "field_name" => "task_description", "include_id" => 1, "id_field" => "id", "query" => " status = 0"),
 				"users" => array("table" => "wp_users", "field_name" => "display_name", "id_field" => "ID"));
-				$list = get_param("list", true);
+				$list = GetParam("list", true);
 				if (! isset($lists[$list])) die ("Error: unknown list " . $list);
 				$table_name = $lists[$list]["table"];
 				$field = $lists[$list]["field_name"];
@@ -37,17 +37,17 @@ class Core_Data
 				print Core_Data::auto_list($table_name, $field, $prefix, $args);
 				return true;
 			case "data_update":
-				$table_name = get_param("table_name", true);
+				$table_name = GetParam("table_name", true);
 				return self::update_data($table_name);
 
 			case "data_save_new":
-				$table_name = get_param("table_name", true);
+				$table_name = GetParam("table_name", true);
 				return self::SaveNew($table_name);
 
 			case "data_active":
-				$active = get_param("active", true);
-				$table_name = get_param("table_name", true);
-				$row_id = get_param("id", true);
+				$active = GetParam("active", true);
+				$table_name = GetParam("table_name", true);
+				$row_id = GetParam("id", true);
 				return self::Active($table_name, $row_id, $active);
 
 		}
@@ -110,7 +110,7 @@ class Core_Data
 		// TODO: adding meta key when needed(?)
 		global $meta_table_info;
 
-		$row_id = intval(get_param("id", true));
+		$row_id = intval(GetParam("id", true));
 
 		// Prepare sql statements: primary and meta tables;
 		$values = self::data_parse_get($table_name, array("search", "operation", "table_name", "id", "dummy"));
@@ -411,7 +411,7 @@ class Core_Data
 //					}
 					if ($drill) {
 						$operation = GetArg($args, "drill_operation", "show_archive");
-						$value = Core_Html::GuiHyperlink($value, add_to_url(array($key => $orig_data, "operation" => $operation)), $args);
+						$value = Core_Html::GuiHyperlink($value, AddToUrl(array( $key => $orig_data, "operation" => $operation)), $args);
 					}
 					break;
 				}
@@ -551,7 +551,7 @@ class Core_Data
 			if ( $meta_fields and is_array( $meta_fields ) ) {
 				foreach ( $meta_fields as $meta_key ) {
 					$meta_value = sql_query_single_scalar( "select meta_value from " . $meta_table . " where " . $meta_key_field . " = $row_id " .
-					                                       " and meta_key = " . quote_text( $meta_key ) );
+					                                       " and meta_key = " . QuoteText( $meta_key ) );
 
 					$key             = $meta_table . '/' . $meta_key;
 					$the_row[ $key ] = $meta_value;

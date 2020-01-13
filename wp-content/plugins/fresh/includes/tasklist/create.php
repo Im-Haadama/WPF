@@ -20,6 +20,6 @@ print header_text( false, true, false );
 print "Creating tasks from templates<br/>";
 
 // create_tasks( get_param( "verbose" ), get_param( "force" ) );
-$freq = get_param_array( "freq" );
+$freq = GetParamArray( "freq" );
 
 create_tasks( $freq, true );

@@ -88,13 +88,13 @@ add_shortcode( 'form-order', 'create_order_form' );
 
 function create_order_form( $atts, $contents, $tag ) {
 	require_once( TOOLS_DIR . "/orders/order-form-post.php" );
-	$params = get_param_array( "params" );
-	$name   = get_param( "name" );
-	$phone  = get_param( "phone" );
-	$group  = get_param( "group" );
-	$user   = get_param( "user" );
-	$method = get_param( "method" );
-	$email  = get_param( "email" );
+	$params = GetParamArray( "params" );
+	$name   = GetParam( "name" );
+	$phone  = GetParam( "phone" );
+	$group  = GetParam( "group" );
+	$user   = GetParam( "user" );
+	$method = GetParam( "method" );
+	$email  = GetParam( "email" );
 
 	return order_form( $params, $name, $phone, $group, $user, $method, $email );
 }

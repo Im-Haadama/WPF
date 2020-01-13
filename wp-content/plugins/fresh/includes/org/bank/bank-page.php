@@ -9,8 +9,8 @@ require_once( "bank.php" );
 require_once( FRESH_INCLUDES . "/core/web.php" );
 
 // Params
-$debug = get_param( "debug", false, false );
-$operation = get_param("operation", false, "show_transactions");
+$debug = GetParam( "debug", false, false );
+$operation = GetParam("operation", false, "show_transactions");
 
 if ($debug) print "op=$operation<br/>";
 

@@ -25,10 +25,10 @@ if ( ! defined( "STORE_DIR" ) ) {
 
 require_once( STORE_DIR . "/fresh/supplies/Supply.php" );
 
-$filter_zero = get_param("filter_zero", false, false);
-$filter_stock = get_param("filter_stock", false, false);
-$supplier_id = get_param("supplier_id");
-$operation = get_param("operation", true);
+$filter_zero = GetParam("filter_zero", false, false);
+$filter_stock = GetParam("filter_stock", false, false);
+$supplier_id = GetParam("supplier_id");
+$operation = GetParam("operation", true);
 
 //$basket_quantities;
 $basket_ordered = array();
@@ -179,7 +179,7 @@ tr:nth-child(even) {
 		print get_total_orders_supplier( $supplier_id, $supplier_needed["missing" ], $filter_zero, $filter_stock, $history );
 
 	}
-	$sql = "SELECT id, supplier_priority FROM im_suppliers WHERE id IN (" . comma_implode( $suppliers ) . ")" .
+	$sql = "SELECT id, supplier_priority FROM im_suppliers WHERE id IN (" . CommaImplode( $suppliers ) . ")" .
 	       " AND active " .
 	       " ORDER BY 2";
 

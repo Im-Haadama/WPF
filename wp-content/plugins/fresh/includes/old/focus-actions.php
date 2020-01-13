@@ -2,7 +2,7 @@
 
 require_once(FRESH_INCLUDES . '/im-config.php');
 require_once( FRESH_INCLUDES . "/init.php" );
-$operation = get_param("operation", true);
+$operation = GetParam("operation", true);
 
 switch ($operation)
 {

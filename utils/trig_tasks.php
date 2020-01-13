@@ -18,7 +18,7 @@ require_once( ROOT_DIR . "/agla/MultiSite.php" );
 //const site_tools_idx = 2;
 //const api_key = 3;
 
-$freq = get_param( "freq" );
+$freq = GetParam( "freq" );
 
 $hosts_to_sync = array();
 

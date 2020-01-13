@@ -21,7 +21,7 @@ class Fresh_Supplier {
 
 	static function getByInvoiceSender( $email ) {
 		$id = sql_query_single_scalar( "SELECT id FROM im_suppliers WHERE " .
-		                               " invoice_email = " . quote_text( $email ) );
+		                               " invoice_email = " . QuoteText( $email ) );
 
 		if ( ! $id ) {
 			return null;

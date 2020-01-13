@@ -17,7 +17,7 @@ class Fresh_Order_Management {
 
 	static function handle()
 	{
-		$operation = get_param("operation", false, "show_orders");
+		$operation = GetParam("operation", false, "show_orders");
 
 		print self::handle_operation($operation);
 	}
@@ -62,7 +62,7 @@ class Fresh_Order_Management {
 		if ( ! is_array( $statuses ) ) {
 			$statuses = array( $statuses );
 		}
-		debug_time_log( "1" );
+		DebugTimeLog( "1" );
 
 		foreach ( $statuses as $status ) {
 			$order_header_fields[0] = Core_Html::gui_checkbox( "select_all_" . $status, "table", 0, "onclick=\"select_all_toggle('select_all_" . $status . "', 'select_order_" . $status . "')\"" );
@@ -100,9 +100,9 @@ class Fresh_Order_Management {
 
 			$count = 0;
 
-			debug_time_log( "before loop" );
+			DebugTimeLog( "before loop" );
 			while ( $row = mysqli_fetch_row( $result ) ) {
-				debug_time_log( "after fetch" );
+				DebugTimeLog( "after fetch" );
 				$count ++;
 				$order_id = $row[0];
 				$order    = new Fresh_Order( $order_id );
@@ -119,7 +119,7 @@ class Fresh_Order_Management {
 					$line [ OrderFields::line_select ] = Core_Html::GuiHyperlink( "לקוח חדש", "/fresh/?operation=new_customer&order_id=" . $order_id );
 				}
 
-				debug_time_log( "a1" );
+				DebugTimeLog( "a1" );
 				$line[ OrderFields::type ]         = $order->GetShipping(  );
 
 				// display order_id with link to display it.
@@ -140,7 +140,7 @@ class Fresh_Order_Management {
 				$line[ OrderFields::recipient ] = get_postmeta_field( $order_id, '_shipping_first_name' ) . ' ' .
 				                                  get_postmeta_field( $order_id, '_shipping_last_name' );
 
-				debug_time_log( "middle" );
+				DebugTimeLog( "middle" );
 
 				$order_total = 0;
 				// 3) Order total
@@ -149,7 +149,7 @@ class Fresh_Order_Management {
 					// get_postmeta_field( $order_id, '_order_total' );
 					$line[ OrderFields::total_order ] = $order_total;
 					$total_order_total                += $order_total;
-					debug_time_log( "total" );
+					DebugTimeLog( "total" );
 				}
 
 				// 4) Delivery note
@@ -191,16 +191,16 @@ class Fresh_Order_Management {
 				$line[ OrderFields::delivery_fee ] = $total_delivery_fee; //
 
 				array_push( $rows, $line );
-				debug_time_log( "loop end" );
+				DebugTimeLog( "loop end" );
 			}
 
 			//   $data .= "<tr> " . trim($line) . "</tr>";
 
-			debug_time_log( "before sort" );
+			DebugTimeLog( "before sort" );
 
 			// sort( $lines );
 
-			debug_time_log( "2" );
+			DebugTimeLog( "2" );
 
 			if ( $count > 0 ) {
 				$sums = null;
@@ -227,7 +227,7 @@ class Fresh_Order_Management {
 			}
 		}
 
-		debug_time_log( "end" );
+		DebugTimeLog( "end" );
 
 		return $all_tables;
 	}

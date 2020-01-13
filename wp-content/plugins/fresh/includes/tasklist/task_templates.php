@@ -16,11 +16,11 @@ require_once( FRESH_INCLUDES . "/fresh/people/people.php" );
 require_once( FRESH_INCLUDES . '/core/gui/window.php' );
 
 
-$operation = get_param( "operation" );
+$operation = GetParam( "operation" );
 
 switch ( $operation ) {
 	case "cancel":
-		$id = get_param( "id" );
+		$id = GetParam( "id" );
 		if ( ! is_numeric( $id ) ) {
 			print "must send numeric id to cancel";
 			die( 1 );

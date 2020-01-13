@@ -124,7 +124,7 @@ function duplicate_mission( $id ) {
 	$date      = sql_query_single_scalar( $sql );
 
 	for ( $i = 1; $i <= $max_weeks; $i ++ ) {
-		$sql = "select count(id) from im_missions where path_code = " . quote_text( $path_code ) .
+		$sql = "select count(id) from im_missions where path_code = " . QuoteText( $path_code ) .
 		       " and date = ADDDATE(' " . $date . "', interval " . $i * 7 . " DAY) ";
 		// print $sql . "<br/>";
 		$c = sql_query_single_scalar( $sql );

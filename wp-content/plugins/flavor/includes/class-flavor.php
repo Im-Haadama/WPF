@@ -137,7 +137,7 @@ class Flavor {
 		add_action( 'init', array( $this, 'init' ), 0 );
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
 
-		get_sql_conn( reconnect_db() );
+		get_sql_conn( ReconnectDb() );
 //		add_action( 'init', array( 'Flavor_Emails', 'init_transactional_emails' ) );
 		// add_action( 'init', array( $this, 'wpdb_table_fix' ), 0 );
 		// add_action( 'init', array( $this, 'add_image_sizes' ) );
@@ -371,9 +371,9 @@ class Flavor {
 				return;
 				// http://store.im-haadama.co.il/wp-content/plugins/flavor/post.php?operation=nav_add&main=Flavor&sub=Bank%20transactions&target=%2Ffinance_bank
 			case "nav_add":
-				$main = get_param("main", true);
-				$sub = get_param("sub", false);
-				$target = get_param("target", true);
+				$main = GetParam("main", true);
+				$sub = GetParam("sub", false);
+				$target = GetParam("target", true);
 //				print "$main $sub $target<br/>";
 				$nav = $this->getNav();
 				$main_id = $nav->AddMain(array('title' => $main, 'url' => $target));
@@ -581,7 +581,7 @@ class Flavor {
 //				'type' => ''
 //			)
 			$args ["text"] = __("Add") . " " . __($item);
-			$args["action"] = add_param_to_url(self::getPost(), array( "operation" => "fresh_nav_add", "main" => $item ), null, false) . ";location_reload";
+			$args["action"] = AddParamToUrl(self::getPost(), array( "operation" => "fresh_nav_add", "main" => $item ), null, false) . ";location_reload";
 			$result .= Core_Html::GuiButtonOrHyperlink("btn_add_" . $item, null, $args) . "<br/>";
 			foreach ($sub_menu_items as $sub_menu_item) {
 				$main_nav = $item;
@@ -592,10 +592,10 @@ class Flavor {
 				$sub_args = [];
 				$sub_args["text"] = __($sub_nav);
 
-				$sub_args["action"] = add_param_to_url(self::getPost() , array( "operation" => "nav_add",
-				                                                                "main" => $main_nav,
-				                                                                "sub" => $sub_nav,
-				                                                                "target" => $target ), false) . ";location_reload";
+				$sub_args["action"] = AddParamToUrl(self::getPost() , array( "operation" => "nav_add",
+				                                                             "main"      => $main_nav,
+				                                                             "sub"       => $sub_nav,
+				                                                             "target"    => $target ), false) . ";location_reload";
 				//print $sub_args["action"] . "<br/>";
 				$result .= "===>" . Core_Html::GuiButtonOrHyperlink( "btn_add_" . $sub_nav, null, $sub_args ) . "<br/>";
 			}

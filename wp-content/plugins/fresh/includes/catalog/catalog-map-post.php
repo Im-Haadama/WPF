@@ -63,7 +63,7 @@ switch ( $operation ) {
 	case "create_products":
 		$category_name = $_GET["category_name"];
 		MyLog( "category: " . $category_name );
-		$create_info = get_param_array( "create_info" );
+		$create_info = GetParamArray( "create_info" );
 		//var_dump($ids);
 		Catalog::CreateProducts( $category_name, $create_info );
 		break;

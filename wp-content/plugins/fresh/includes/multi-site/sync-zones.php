@@ -59,7 +59,7 @@ function update_zone_table( $table ) {
 				array_push( $headers, $key->plaintext );
 			}
 			// unset($headers[0]);
-			$field_list = comma_implode( $headers );
+			$field_list = CommaImplode( $headers );
 			print "headers: " . $field_list . "<br/>";
 			$first = false;
 			continue;
@@ -93,9 +93,9 @@ function update_zone_table( $table ) {
 				continue;
 			}
 			if ( $insert ) {
-				$insert_values .= quote_text( $fields[ $i ] ) . ", ";
+				$insert_values .= QuoteText( $fields[ $i ] ) . ", ";
 			} else { // Update
-				$update_fields .= $headers[ $i ] . "=" . quote_text( $fields[ $i ] ) . ", ";
+				$update_fields .= $headers[ $i ] . "=" . QuoteText( $fields[ $i ] ) . ", ";
 			}
 			$i ++;
 		}

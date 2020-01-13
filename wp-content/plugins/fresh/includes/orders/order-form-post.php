@@ -13,19 +13,19 @@ if ( ! defined( 'FRESH_INCLUDES' ) ) {
 require_once( "orders-common.php" );
 
 print header_text( false, true );
-$operation = get_param( "operation" );
+$operation = GetParam( "operation" );
 // my_log( "Operation: " . $operation, __FILE__ );
 
 if ( isset( $operation ) )
 switch ( $operation ) {
 	case "create_order":
-		$params = get_param_array( "params" );
-		$name   = get_param( "name" );
-		$phone  = get_param( "phone" );
-		$group  = get_param( "group" );
-		$user   = get_param( "user" );
-		$method = get_param( "method" );
-		$email  = get_param( "email" );
+		$params = GetParamArray( "params" );
+		$name   = GetParam( "name" );
+		$phone  = GetParam( "phone" );
+		$group  = GetParam( "group" );
+		$user   = GetParam( "user" );
+		$method = GetParam( "method" );
+		$email  = GetParam( "email" );
 
 		print order_form( $params, $name, $phone, $group, $user, $method, $email );
 		break;

@@ -357,7 +357,7 @@ class Core_Html {
 		}
 		// if ( $color = GetArg($args, "hyperlink_color", null)) $data .= ' style="color:' . $color . '";';
 		if ( $class = GetArg( $args, "class", null ) ) {
-			$data .= " class = " . quote_text( $class );
+			$data .= " class = " . QuoteText( $class );
 		}
 
 		$data .= ">" . __( $text ) . "</a>";
@@ -470,7 +470,7 @@ class Core_Html {
 	}
 
 	static function GuiImage( $logo_url, $height = 0 ) {
-		return '<img src=' . quote_text( $logo_url ) . '  style="height: ' . $height . 'px; width: auto;">';
+		return '<img src=' . QuoteText( $logo_url ) . '  style="height: ' . $height . 'px; width: auto;">';
 	}
 
 	static function GuiDiv( $id, $text = null, $args = null ) {
@@ -551,7 +551,7 @@ class Core_Html {
 		if ( function_exists( '__' ) ) {
 			$data .= __( $cell );
 		} else if ( is_array( $cell ) ) {
-			$data .= comma_implode( $cell );
+			$data .= CommaImplode( $cell );
 		} else {
 			$data .= $cell;
 		}
@@ -1281,16 +1281,16 @@ class Core_Html {
 
 		if ( ! $edit ) {
 			$f      = strtok( $selected, ":" );
-			$result = day_name( $f );
+			$result = DayName( $f );
 			while ( $z = strtok( ":" ) ) {
-				$result .= ", " . day_name( $z );
+				$result .= ", " . DayName( $z );
 			}
 
 			return $result;
 		}
 		$days = [];
 		for ( $i = 0; $i < 7; $i ++ ) {
-			$days[ $i ] = array( "id" => $i, "day_name" => day_name( $i ) );
+			$days[ $i ] = array( "id" => $i, "day_name" => DayName( $i ) );
 		}
 
 		$args["values"]   = $days;
@@ -1416,11 +1416,11 @@ class Core_Html {
 			$args["events"] = "onchange=changed_field(%s)";
 		}
 		if ($row_id) { // Show specific record
-			$sql = "select " . ($fields ? comma_implode($fields) : "*") . " from $table_name where " . $id_key . " = " . $row_id;
+			$sql = "select " . ($fields ? CommaImplode($fields) : "*") . " from $table_name where " . $id_key . " = " . $row_id;
 			$args["row_id"] = $row_id;
 		} else { // Create new one.
 			if ($fields) {
-				$sql = "show columns from $table_name where field in ( " . comma_implode($fields, true) . ")";
+				$sql = "show columns from $table_name where field in ( " . CommaImplode($fields, true) . ")";
 			}
 			else
 				$sql = "describe $table_name";
@@ -1457,7 +1457,7 @@ class Core_Html {
 		if (! $sql)	{
 			$fields = GetArg($args, "fields", '*');
 			$where = GetArg($args, "where", null);
-			if (is_array($fields)) $fields = comma_implode($fields);
+			if (is_array($fields)) $fields = CommaImplode($fields);
 			$sql = "select $fields from $table_id";
 			if ($where) $sql .= " where $where";
 		}

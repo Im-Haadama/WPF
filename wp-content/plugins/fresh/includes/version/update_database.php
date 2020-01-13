@@ -42,8 +42,8 @@ $current_version = get_versions();
 
 print "Installation info: $current_version<br/>";
 
-$version = get_param( "version" );
-$force = get_param("force", false, false);
+$version = GetParam( "version" );
+$force = GetParam("force", false, false);
 
 add_version($version, $force);
 

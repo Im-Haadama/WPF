@@ -144,7 +144,7 @@ class Fresh {
 //		if (get_user_id() == 1) print __CLASS__ ."<br/>";
 
 
-		get_sql_conn(reconnect_db());
+		get_sql_conn(ReconnectDb());
 //		add_action( 'init', array( 'Fresh_Emails', 'init_transactional_emails' ) );
 		// add_action( 'init', array( $this, 'wpdb_table_fix' ), 0 );
 		// add_action( 'init', array( $this, 'add_image_sizes' ) );
@@ -237,8 +237,8 @@ class Fresh {
 		switch ($operation)
 		{
 			case "order_set_mission":
-				$order_id = get_param("order_id", true);
-				$mission_id = get_param("mission_id", true);
+				$order_id = GetParam("order_id", true);
+				$mission_id = GetParam("mission_id", true);
 				$order = new Order($order_id);
 				$order->setMissionID($mission_id);
 				return "done";
@@ -247,11 +247,11 @@ class Fresh {
 				return handle_data_operation($operation);
 
 			case "new_customer":
-				$order_id = get_param("order_id", true);
+				$order_id = GetParam("order_id", true);
 				return self::new_customer($order_id);
 
 			case "fresh_nav_add":
-				$module = get_param("module", true);
+				$module = GetParam("module", true);
 				return self::AddNav($module);
 		}
 	}
@@ -291,7 +291,7 @@ class Fresh {
 
 		$result .=$O->infoBox();
 
-		$result .= GuiHyperlink("לפתיחת ההזמנה", add_to_url(array("operation" => "show_order", "order_id" => $order_id)));
+		$result .= GuiHyperlink("לפתיחת ההזמנה", AddToUrl(array( "operation" => "show_order", "order_id" => $order_id)));
 
 		print $result;
 	}

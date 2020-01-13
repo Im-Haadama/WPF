@@ -92,7 +92,7 @@ function invoice_create_ship( $customer_id, $order_ids ) {
 	$doc->DocumentType = DocumentType::InvoiceShip;
 
 	// Set the subject
-	$subject      = "משלוחים " . " " . comma_implode( $order_ids );
+	$subject      = "משלוחים " . " " . CommaImplode( $order_ids );
 	$doc->Subject = $subject;
 
 	// Add the deliveries
@@ -210,7 +210,7 @@ function invoice_create_subcontract_invoice( $invoice_client_id ) {
 // print "del id " . $del_id;
 
 	// Set the subject
-	$subject      = "חשבונית לתעודת משלוח " . " " . comma_implode( $ship_ids );
+	$subject      = "חשבונית לתעודת משלוח " . " " . CommaImplode( $ship_ids );
 	$doc->Subject = $subject;
 
 	// print "create<br/>";
@@ -221,7 +221,7 @@ function invoice_create_subcontract_invoice( $invoice_client_id ) {
 			FreshDocumentType::invoice );
 
 		sql_query( "UPDATE im_business_info SET invoice = " . $doc_id .
-		           " WHERE id IN ( " . comma_implode( $business_ids ) . " )" );
+		           " WHERE id IN ( " . CommaImplode( $business_ids ) . " )" );
 	}
 
 	// var_dump($doc);

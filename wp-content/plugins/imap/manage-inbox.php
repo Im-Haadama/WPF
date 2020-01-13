@@ -25,7 +25,7 @@ if (! defined('IM_ATTACHMENTS')) {
 require_once( STORE_DIR . '/fresh-public/gui/inputs.php' );
 require_once( STORE_DIR . '/core/fund.php' );
 
-$debug = get_param( "debug" );
+$debug = GetParam( "debug" );
 if ( $debug ) {
 	print "Debug mode<br/>";
 }

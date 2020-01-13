@@ -20,6 +20,6 @@ if (! get_user_id()) {
 
 require_once("new-order.php");
 
-$operation = get_param("operation", false, "show_orders");
+$operation = GetParam("operation", false, "show_orders");
 handle_order_operation($operation);
 

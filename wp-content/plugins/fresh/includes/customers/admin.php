@@ -4,7 +4,7 @@ require_once( "../r-shop_manager.php" );
 
 print header_text(false, true, true, array('/vendor/sorttable.js', '/fresh/admin/data.js', '/core/gui/client_tools.js'));
 
-$user_id = get_param("user_id", false, null);
+$user_id = GetParam("user_id", false, null);
 
 if ($user_id) { show_user($user_id); return; }
 
@@ -12,7 +12,7 @@ if ($user_id) { show_user($user_id); return; }
 //order by 2 asc
 //limit 20";
 
-$page = get_param("page", false, null);
+$page = GetParam("page", false, null);
 $rows_per_page = 20;
 if ($page) {
 	$offset = ($page - 1) * $rows_per_page;
@@ -24,7 +24,7 @@ $last_users = sql_query_array_scalar("select distinct meta_value from wp_postmet
 
 // Default view - customer of last 20 orders.
 //$sql = "select distinct
-$sql = "select id, display_name, client_last_order_date(id) as 'last order date', client_last_order(id) as 'last order' from wp_users where id in (" . comma_implode($last_users) . ")";
+$sql = "select id, display_name, client_last_order_date(id) as 'last order date', client_last_order(id) as 'last order' from wp_users where id in (" . CommaImplode($last_users) . ")";
 
 $args = array();
 
@@ -33,8 +33,8 @@ $args["links"] = array("id" => "admin.php?user_id=%s",
 	"last_order" => "../orders/get-order.php?order_id=%s");
 
 print GuiTableContent("wp_users", $sql, $args);
-if ($page > 1) print Core_Html::GuiHyperlink("Next", add_to_url("page", $page - 1));
-print Core_Html::GuiHyperlink("Next", add_to_url("page", $page ? $page + 1 : 1));
+if ($page > 1) print Core_Html::GuiHyperlink("Next", AddToUrl("page", $page - 1));
+print Core_Html::GuiHyperlink("Next", AddToUrl("page", $page ? $page + 1 : 1));
 
 function show_user($user_id)
 {

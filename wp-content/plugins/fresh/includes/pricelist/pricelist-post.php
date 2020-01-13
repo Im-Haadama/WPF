@@ -18,7 +18,7 @@ require_once( '../multi-site/imMulti-site.php' );
 // in im_supplier_products
 
 $operation = $_GET["operation"];
-$option = get_param("option");
+$option = GetParam("option");
 
 ///my_log("Operation: " . $operation, __FILE__);
 

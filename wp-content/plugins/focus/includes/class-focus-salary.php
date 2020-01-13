@@ -62,22 +62,22 @@ class Focus_Salary {
 		switch ( $operation ) {
 			case "salary_delete":
 			case "delete":
-				$lines = get_param_array( "params" );
+				$lines = GetParamArray( "params" );
 
 				return ( Core_Data::Inactive( "im_working_hours", $lines ) );
 
 			case "salary_add_time":
 			case "add_time":
-				$start     = get_param( "start", true );
-				$end       = get_param( "end", true );
-				$date      = get_param( "date", true );
-				$project   = get_param( "project", true );
-				$worker_id = get_param( "user_id", true );
+				$start     = GetParam( "start", true );
+				$end       = GetParam( "end", true );
+				$date      = GetParam( "date", true );
+				$project   = GetParam( "project", true );
+				$worker_id = GetParam( "user_id", true );
 				// print "wid=" . $worker_id . "<br/>";
-				$vol        = get_param( "vol", true );
-				$traveling  = get_param( "traveling", true );
-				$extra_text = get_param( "extra_text", true );
-				$extra      = get_param( "extra", true );
+				$vol        = GetParam( "vol", true );
+				$traveling  = GetParam( "traveling", true );
+				$extra_text = GetParam( "extra_text", true );
+				$extra      = GetParam( "extra", true );
 
 				// if ($user_id = 1) $user_id = 238;
 				return self::add_activity( $worker_id, $date, $start, $end, $project, $vol, $traveling, $extra_text, $extra );
@@ -106,7 +106,7 @@ class Focus_Salary {
 	static function main_wrapper()
 	{
 		$me = self::instance();
-		if ($operation = get_param("operation", false))
+		if ($operation = GetParam("operation", false))
 			return self::handle_operation($operation);
 		return $me->main();
 	}
@@ -128,7 +128,7 @@ class Focus_Salary {
 
 			$result .= Core_Gem::GemTable( "im_working", $args );
 		} else {
-			$year_month = get_param( "month", false, date( 'Y-m' ) );
+			$year_month = GetParam( "month", false, date( 'Y-m' ) );
 			$y          = intval(strtok( $year_month, "-" ));
 			$m          = intval(strtok( "" ));
 			$result .= self::hours_entry();
@@ -146,7 +146,7 @@ class Focus_Salary {
 	 */
 	static function report_wrapper()
 	{
-		$year_month = get_param( "month", false, date( 'Y-m', strtotime('-15 days') ) );
+		$year_month = GetParam( "month", false, date( 'Y-m', strtotime('-15 days') ) );
 
 		return self::salary_report($year_month, $args);
 	}
@@ -210,10 +210,10 @@ class Focus_Salary {
 	 * @throws Exception
 	 */
 	static function worker_wrapper() {
-		$user_id = get_param("user_id", true);
+		$user_id = GetParam("user_id", true);
 		if (! $user_id) return __FUNCTION__ . ": no worker id";
 		$result  = "";
-		$year_month = get_param( "month", false, date( 'Y-m' ) );
+		$year_month = GetParam( "month", false, date( 'Y-m' ) );
 		$y          = intval(strtok( $year_month, "-" ));
 		$m          = intval(strtok( "" ));
 		$me = self::instance();
@@ -232,7 +232,7 @@ class Focus_Salary {
 		$result = "";
 		$user_id = get_user_id(true);
 		$result .= self::hours_entry($user_id);
-		$year_month = get_param( "month", false, date( 'Y-m' ) );
+		$year_month = GetParam( "month", false, date( 'Y-m' ) );
 		$y          = intval(strtok( $year_month, "-" ));
 		$m          = intval(strtok( "" ));
 
@@ -420,7 +420,7 @@ class Focus_Salary {
 			$result .= Core_Html::GuiButton( "btn_delete",'מחק פעילות', array("action" => 'salary_del_items()') );
 		}
 		$result .= "<br/>" . Core_Html::GuiHyperlink( "Previous month",
-				add_to_url( "month", date( 'Y-m', strtotime( $y . '-' . $m . '-1 -1 month' ) ) ) );
+				AddToUrl( "month", date( 'Y-m', strtotime( $y . '-' . $m . '-1 -1 month' ) ) ) );
 
 
 		return $result;
@@ -489,9 +489,9 @@ class Focus_Salary {
 		$args["edit_lines"]  = $edit;
 		$result              .= self::salary_report( $month, $args );
 		$result              .= "<br/>";
-		$result              .= Core_Html::GuiHyperlink( "Previous month", add_to_url( "month", date( 'Y-m', strtotime( $month . '-1 -1 month' ) ) ) );
+		$result              .= Core_Html::GuiHyperlink( "Previous month", AddToUrl( "month", date( 'Y-m', strtotime( $month . '-1 -1 month' ) ) ) );
 		if ( strtotime( $month . '-1' ) < strtotime( 'now' ) ) {
-			$result .= " " . Core_Html::GuiHyperlink( "Next month", add_to_url( "month", date( 'Y-m', strtotime( $month . '-1 +1 month' ) ) ) );
+			$result .= " " . Core_Html::GuiHyperlink( "Next month", AddToUrl( "month", date( 'Y-m', strtotime( $month . '-1 +1 month' ) ) ) );
 		}
 
 		return $result;
@@ -600,7 +600,7 @@ class Focus_Salary {
 				$row["line_salary"] = im_translate( "total" );
 				continue;
 			}
-			$row["weekday"] = day_name( $row["weekday"] - 1 );
+			$row["weekday"] = DayName( $row["weekday"] - 1 );
 			$start          = new DateTime( $row["start_time"] );
 			$end            = new DateTime( $row["end_time"] );
 
@@ -725,11 +725,11 @@ class Focus_Salary {
 	 */
 	static public function worker_data_wrapper()
 	{
-		$user_id = get_param("user_id", false);
+		$user_id = GetParam("user_id", false);
 		if (! $user_id) $user_id = get_user_id(true);
 		if (! $user_id) return "Not connected";
 		$instance = self::instance();
-		$year_month = get_param( "month", false, date( 'Y-m' ) );
+		$year_month = GetParam( "month", false, date( 'Y-m' ) );
 		$y          = intval(strtok( $year_month, "-" ));
 		$m          = intval(strtok( "" ));
 
@@ -766,7 +766,7 @@ class Focus_Salary {
 
 	static function Args()
 	{
-		return array("page" => get_param("page", false, -1),
+		return array("page" => GetParam("page", false, -1),
 		             "post_file" => self::getPost());
 	}
 

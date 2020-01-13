@@ -147,7 +147,7 @@ class Fresh_Delivery {
 		                               "quantity"=>"Quantity", "price" => "Price", "line_price" => "Line total");
 		$args["hide_col"] = array("id");
 
-		$sql = "select " . comma_implode($args["fields"]) . " from im_delivery_lines where delivery_id = " . $this->getID();
+		$sql = "select " . CommaImplode($args["fields"]) . " from im_delivery_lines where delivery_id = " . $this->getID();
 		$rows = Core_Data::TableData($sql, $args);
 
 		$total_fields = array("quantity", "quantity_ordered", "line_price");
@@ -322,7 +322,7 @@ class Fresh_Delivery {
 			       . $lines . ', '
 			       . $fee . ', '
 			       . $draft . ', '
-			       . quote_text( $reason )
+			       . QuoteText( $reason )
 			       . ')';
 			sql_query( $sql );
 			$delivery_id = sql_insert_id();
@@ -904,7 +904,7 @@ class Fresh_Delivery {
 
 	function OrderQuery() {
 		if ( is_array( $this->order_id ) ) {
-			return "order_id in (" . comma_implode( $this->order_id ) . ")";
+			return "order_id in (" . CommaImplode( $this->order_id ) . ")";
 		} else {
 			return "order_id = " . $this->order_id;
 		}
@@ -1152,14 +1152,14 @@ class Fresh_Delivery {
 				$args = [];
 				// Links to prev/next week
 				$date_format = 'Y-m-j';
-				$date = get_param("week", false, date($date_format, strtotime("last sunday")));
-				print Core_Html::GuiHyperlink("last week", add_param_to_url(get_url(), "week", date($date_format, strtotime($date . " -1 week")))) . " ";
-				print Core_Html::GuiHyperlink("next week", add_param_to_url(get_url(), "week", date($date_format, strtotime($date . " +1 week"))));
+				$date = GetParam("week", false, date($date_format, strtotime("last sunday")));
+				print Core_Html::GuiHyperlink("last week", AddParamToUrl(GetUrl(), "week", date($date_format, strtotime( $date . " -1 week")))) . " ";
+				print Core_Html::GuiHyperlink("next week", AddParamToUrl(GetUrl(), "week", date($date_format, strtotime( $date . " +1 week"))));
 
 				print "<br/>";
 
 				// Show selected week
-				$args["sql"] = "select ID, date, order_id, client_from_delivery(ID) from im_delivery where first_day_of_week(date) = " . quote_text($date);
+				$args["sql"] = "select ID, date, order_id, client_from_delivery(ID) from im_delivery where first_day_of_week(date) = " . QuoteText($date);
 				$args["id_field"] = "ID";
 
 				// $args["links"] = array("ID" => add_param_to_url(get_url(), "operation", "show_id", "row_id", "%s"));

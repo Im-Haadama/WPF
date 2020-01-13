@@ -76,7 +76,7 @@ class Fresh_Suppliers {
 
 		$args = [];
 		$args["fields"] = array("id", "supplier_name", "supplier_description");
-		$args["links"] = array("id"=> add_to_url(array("operation" => "show_supplier", "id" => "%s")));
+		$args["links"] = array("id"=> AddToUrl(array( "operation" => "show_supplier", "id" => "%s")));
 		$args["query"] = "is_active = 1";
 		$args["header_fields"] = array("supplier_name" => "Name", "supplier_description" => "Description");
 
@@ -89,7 +89,7 @@ class Fresh_Suppliers {
 
 	static function handle()
 	{
-		$operation = get_param("operation", false, null);
+		$operation = GetParam("operation", false, null);
 
 		if (! $operation) {
 			print self::SuppliersTable();

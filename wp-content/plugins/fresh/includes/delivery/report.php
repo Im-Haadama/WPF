@@ -130,7 +130,7 @@ function print_prod_report( $prod_id, $week = null, $user_id = null ) {
 	array_push( $prod_ids, $prod_id );
 
 	$sql .= " FROM im_delivery_lines dl JOIN im_delivery d " .
-	        " WHERE dl.delivery_id = d.id AND prod_id in (" . comma_implode( $prod_ids ) . ") AND delivery_id IN (SELECT id FROM im_delivery";
+	        " WHERE dl.delivery_id = d.id AND prod_id in (" . CommaImplode( $prod_ids ) . ") AND delivery_id IN (SELECT id FROM im_delivery";
 
 	$query = null;
 	if ( $week ) {
@@ -150,7 +150,7 @@ function print_prod_report( $prod_id, $week = null, $user_id = null ) {
 
 //	var_dump($order_by);
 	if ( count( $order_by ) )
-		$sql .= "order by " . comma_implode( $order_by );
+		$sql .= "order by " . CommaImplode( $order_by );
 
 	// print $sql;
 

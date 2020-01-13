@@ -30,14 +30,14 @@ require_once( FRESH_INCLUDES . '/fresh-public/gui.php' );
 
 print header_text(false, true, true, array("/core/gui/client_tools.js", "/core/data/data.js"));
 
-$year = get_param( "year" );
+$year = GetParam( "year" );
 if ( ! $year ) {
 	$year = date( "Y" );
 }
 // $month = get_param("monty");
 
 $page ="EXTRACT(YEAR FROM DATE) = " . $year . " and document_type in (4, 8) and is_active=1";
-$operation = get_param("operation", false);
+$operation = GetParam("operation", false);
 if ($operation){
 	switch ($operation)
 	{
@@ -67,7 +67,7 @@ if ($operation){
 	}
 	return;
 }
-$row_id = get_param("row_id", false);
+$row_id = GetParam("row_id", false);
 
 if ($row_id)
 {
@@ -86,7 +86,7 @@ if ($row_id)
 	return;
 }
 
-$part_id = get_param("part_id", false);
+$part_id = GetParam("part_id", false);
 
 if ($part_id) {
 	print Core_Html::gui_header(2, get_supplier_name($part_id));
@@ -99,21 +99,21 @@ if ($part_id) {
         from im_business_info where " . $page . " and is_active = 1 order by 2";
 
 	$args ["sql"] = $sql;
-	$args["page"] = get_param("page");
+	$args["page"] = GetParam("page");
 	print GemTable( "transactions", $args );
 
 	$date = date('Y-m-d', strtotime("last day of previous month"));
 
 	print Core_Html::GuiHyperlink("הוסף" , "invoice_table.php?operation=add&part_id=$part_id&date=$date&document_type=4");
 
-	print Core_Html::GuiHyperlink("last year", add_to_url("year", $year - 1));
-	if ($year < date('Y')) print Core_Html::GuiHyperlink("next year", add_to_url("year", $year + 1));
+	print Core_Html::GuiHyperlink("last year", AddToUrl("year", $year - 1));
+	if ($year < date('Y')) print Core_Html::GuiHyperlink("next year", AddToUrl("year", $year + 1));
 	return;
 }
 
 print Core_Html::gui_header (1, "ריכוז חשבוניות");
 
-print Core_Html::GuiHyperlink("Add invoice", add_param_to_url(get_url(), array("operation" => "show_add_invoice", "document_type" =>"4")));
+print Core_Html::GuiHyperlink("Add invoice", AddParamToUrl(GetUrl(), array( "operation" => "show_add_invoice", "document_type" =>"4")));
 
 try {
 	$t = new \core\PivotTable( "im_business_info", $page,

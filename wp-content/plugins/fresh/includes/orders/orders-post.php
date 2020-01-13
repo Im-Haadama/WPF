@@ -18,7 +18,7 @@ require_once(FRESH_INCLUDES . '/im-config.php');
 require_once( "../multi-site/imMulti-site.php" );
 require_once( 'orders-common.php' );
 
-$order_id = get_param( "order_id" );
+$order_id = GetParam( "order_id" );
 
 
 // To map item from price list to our database the shop manager select item from the price list
@@ -30,12 +30,12 @@ MyLog( "Operation: " . $operation, __FILE__ );
 switch ( $operation ) {
 
 	case "update_address":
-		$address   = get_param( "address", true );
-		$field     = get_param( "f", true );
-		$client_id = get_param( "client_id", true );
+		$address   = GetParam( "address", true );
+		$field     = GetParam( "f", true );
+		$client_id = GetParam( "client_id", true );
 		update_usermeta( $client_id, $field, $address );
 
-		$order_id = get_param( "order_id" );
+		$order_id = GetParam( "order_id" );
 
 		if ( $order_id ) {
 			update_post_meta( $order_id, "_" . $field, $address );
@@ -47,8 +47,8 @@ switch ( $operation ) {
 		break;
 
 	case "update_preference":
-		$preference = get_param( "preference", true );
-		$client_id  = get_param( "client_id", true );
+		$preference = GetParam( "preference", true );
+		$client_id  = GetParam( "client_id", true );
 		update_usermeta( $client_id, "preference", $preference );
 		break;
 
@@ -100,7 +100,7 @@ switch ( $operation ) {
 		break;
 
 	case "add_item":
-		$prod_id = get_param("prod_id", true);
+		$prod_id = GetParam("prod_id", true);
 		$q = $_GET["quantity"];
 		if ( ! is_numeric( $q ) ) {
 			die ( "no quantity" );
@@ -126,14 +126,14 @@ switch ( $operation ) {
 		if ( ! is_numeric( $order_id ) ) {
 			die ( "no order_id" );
 		}
-		$lines = get_param_array( "params" );
+		$lines = GetParamArray( "params" );
 		// var_dump($lines);
 		$o     = new Order( $order_id );
 		$o->DeleteLines($lines);
 		break;
 
 	case "start_handle":
-		$ids = get_param_array( "ids" );
+		$ids = GetParamArray( "ids" );
 		$success = true;
 		foreach ( $ids as $id ) {
 			$o = new Order( $id );
@@ -143,7 +143,7 @@ switch ( $operation ) {
 		return;
 
 	case "cancel_orders":
-		$ids = get_param_array( "ids" );
+		$ids = GetParamArray( "ids" );
 		foreach ( $ids as $id ) {
 			$o = new Order( $id );
 			$o->ChangeStatus( "wc-cancelled" );
@@ -174,7 +174,7 @@ switch ( $operation ) {
 		break;
 
 	case "check_email":
-		$email = get_param( "email" );
+		$email = GetParam( "email" );
 		if ( ! $email or strlen( $email ) < 5 ) {
 			print "u"; // unknown
 
@@ -190,7 +190,7 @@ switch ( $operation ) {
 		break;
 
 	case "check_delivery":
-		$email = get_param( "email" );
+		$email = GetParam( "email" );
 		if ( ! $email or strlen( $email ) < 5 ) {
 			print "u"; // unknown
 

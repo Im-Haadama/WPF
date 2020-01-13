@@ -22,7 +22,7 @@ require_once( FRESH_INCLUDES . "/init.php" );
 // and product_id. The triplet: product_id, supplier_id and product_code are sent as saved
 // in im_supplier_products
 
-$debug = get_param( "debug" );
+$debug = GetParam( "debug" );
 
 $operation = $_GET["operation"];
 switch ( $operation ) {
@@ -38,7 +38,7 @@ switch ( $operation ) {
 		if ( $edit ) {
 			$delivery_id = $_GET["delivery_id"];
 		}
-		$reason = get_param( "reason" );
+		$reason = GetParam( "reason" );
 		print Fresh_Delivery::CreateDeliveryHeader( $order_id, $total, $vat, $lines, $edit, $fee, $delivery_id, $draft, $reason );
 		// create_delivery_header( $order_id, $total, $vat, $lines, $edit, $fee );
 		break;

@@ -124,9 +124,9 @@ function create_receipt( $cash, $bank, $check, $credit, $change, $user_id, $date
 //        if (abs($c) < 0) $c =0;
 	//      if (round($c,0) < 1 or round($c,0) < 1)
 	// Check if paid (some bug cause double invoice).
-	$sql = "SELECT count(payment_receipt) FROM im_delivery WHERE id IN (" . comma_implode( $del_ids ) . " )";
+	$sql = "SELECT count(payment_receipt) FROM im_delivery WHERE id IN (" . CommaImplode( $del_ids ) . " )";
 	if ( sql_query_single_scalar( $sql ) > 0 ) {
-		print " כבר שולם" . comma_implode( $del_ids ) . " <br/>";
+		print " כבר שולם" . CommaImplode( $del_ids ) . " <br/>";
 
 		return false;
 	}
@@ -135,9 +135,9 @@ function create_receipt( $cash, $bank, $check, $credit, $change, $user_id, $date
 
 	$pay_type = pay_type( $cash, $bank, $credit, $check );
 	if ( is_numeric( $doc_id ) && $doc_id > 0 ) {
-		$pay_description = $pay_type . " " . comma_implode( $del_ids );
+		$pay_description = $pay_type . " " . CommaImplode( $del_ids );
 
-		$sql = "UPDATE im_delivery SET payment_receipt = " . $doc_id . " WHERE id IN (" . comma_implode( $del_ids ) . " ) ";
+		$sql = "UPDATE im_delivery SET payment_receipt = " . $doc_id . " WHERE id IN (" . CommaImplode( $del_ids ) . " ) ";
 		sql_query( $sql );
 
 		account_add_transaction( $user_id, $date, $change - ( $cash + $bank + $credit + $check ), $doc_id, $pay_description );
@@ -200,7 +200,7 @@ function invoice_create_document( $type, $ids, $customer_id, $date, $cash = 0, $
 
 	// Set the subject
 	if ( ! $subject ) {
-		$subject = "סלים" . " " . comma_implode( $ids );
+		$subject = "סלים" . " " . CommaImplode( $ids );
 	}
 	$doc->Subject = $subject;
 

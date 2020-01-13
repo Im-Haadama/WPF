@@ -54,7 +54,7 @@ switch ( $operation ) {
 		break;
 
 	case "close_order":
-		$ids = get_param_array("ids");
+		$ids = GetParamArray("ids");
 		if ($ids){
 			foreach ($ids as $id){
 				$o = new Order($id);

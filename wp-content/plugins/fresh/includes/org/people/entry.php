@@ -18,13 +18,13 @@ require_once( FRESH_INCLUDES . "/init.php" );
 
 $role = "";
 
-$operation = get_param( "operation" );
+$operation = GetParam( "operation" );
 
 if ( isset( $operation ) ) {
 	switch ( $operation ) {
 		case "get_projects":
 //            print "aa";
-			$worker_id = get_param( "id" );
+			$worker_id = GetParam( "id" );
 //            print "w=" . $worker_id . "<br/>";
         $args = array("edit" => true, "worker" => $worker_id);
 			print gui_select_project( "select_project", 3, $args );

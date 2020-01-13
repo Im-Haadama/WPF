@@ -74,11 +74,11 @@ print gui_table_args( $table );
 </div>
 <div id="debug"></div>
 <?php
-$month = get_param("month", false, date('Y-m'));
+$month = GetParam("month", false, date('Y-m'));
 print Core_Html::gui_header( 1, "Entered data for month", true, true );
 print  " " . $month . Core_Html::Br();
 $a = explode( "-", $month ); $y = $a[0]; $m = $a[1];
 print show_entry($user_id, $m, $y, $args);
-print GuiHyperlink("previous month", add_to_url("month", date('Y-m', strtotime($month . '-1 -1 month'))));
+print GuiHyperlink("previous month", AddToUrl("month", date('Y-m', strtotime( $month . '-1 -1 month'))));
 
 ?>

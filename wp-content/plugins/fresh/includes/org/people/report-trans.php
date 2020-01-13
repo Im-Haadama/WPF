@@ -9,7 +9,7 @@
 require_once( "../r-multisite.php" );
 require_once( "people.php" );
 $week    = $_GET["week"];
-$project = get_param( "project" );
+$project = GetParam( "project" );
 
 // print $week;
 

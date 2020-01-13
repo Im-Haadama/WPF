@@ -10,7 +10,7 @@ class Core_Settings {
 		foreach ($classes as $class){
 			print "check for $class<br/>";
 			if (class_exists($class)) {
-				$operation = get_param("operation", false, "show_settings");
+				$operation = GetParam("operation", false, "show_settings");
 
 				$result .= $class::instance()->handle_operation($operation);
 			}

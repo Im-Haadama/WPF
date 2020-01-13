@@ -121,7 +121,7 @@ function worker_get_id($user_id)
 function show_entry($user_id, $month, $year)
 {
 	$args = [];
-	$args["query"] = " user_id = $user_id and month(date)=" . quote_text($month)  . " and year(date)=" . quote_text($year);
+	$args["query"] = " user_id = $user_id and month(date)=" . QuoteText($month) . " and year(date)=" . QuoteText($year);
 	$args["hide_cols"] = array("ID", "user_id");
 	$args["edit"] = false;
 	$args["selectors"] = ["project_id" => "gui_select_project"];
@@ -190,8 +190,8 @@ function project_delete($project_id, $user_id, $force = false)
  */
 function project_create($user_id, $project_name, $company, $project_contact = "set later", $project_priority = 5)
 {
-	sql_query("insert into im_projects (project_name, project_contact, project_priority) values (" . quote_text($project_name) .
-	"," . quote_text($project_contact) . "," . $project_priority . ")");
+	sql_query( "insert into im_projects (project_name, project_contact, project_priority) values (" . QuoteText($project_name) .
+	           "," . QuoteText($project_contact) . "," . $project_priority . ")");
 
 	$project_id = sql_insert_id();
 	
@@ -235,7 +235,7 @@ function handle_people_do($operation)
 	switch ($operation)
 	{
 		case "save_new":
-			$table_name = get_param("table_name", true);
+			$table_name = GetParam("table_name", true);
 			if (! in_array($table_name, $allowed_tables))
 				die ("invalid table operation");
 			$result = data_save_new($table_name);
@@ -257,7 +257,7 @@ function handle_people_operation($operation)
 {
 	switch($operation) {
 		case "cancel_im_working":
-			$id = get_param( "id", true );
+			$id = GetParam( "id", true );
 			if ( project_cancel( $id ) ) {
 				print "done";
 			}
@@ -268,8 +268,8 @@ function handle_people_operation($operation)
 
 	switch($operation) {
 		case "show_edit_worker": // Get worker info by id or worker_project link.
-			$row_id = get_param("row_id", false);
-			$worker_id = get_param("worker_id", false);
+			$row_id = GetParam("row_id", false);
+			$worker_id = GetParam("worker_id", false);
 			if (! $row_id and ! $worker_id) die ("supply row or worker_id");
 			if ($row_id) $worker_id            = sql_query_single_scalar( "select user_id from im_working where id = $row_id" );
 			$result               = Core_Html::gui_header( 1, "editing worker info" );
@@ -278,19 +278,19 @@ function handle_people_operation($operation)
 			$args["selectors"]    = array( "project_id" => "gui_select_project" );
 			$args["query"]        = "user_id=" . $worker_id . " and is_active = 1";
 			$args["add_checkbox"] = true;
-			$args["links"]        = array( "id" => add_to_url( "operation", "show_edit_worker_project" ) );
+			$args["links"]        = array( "id" => AddToUrl( "operation", "show_edit_worker_project" ) );
 
 			$result .= GemTable( "im_working", $args );
 			return $result;
 			break;
 		case "show_edit_worker_project":
 			$result = Core_Html::gui_header(1, "Project info for worker");
-			$id = get_param("row_id", true);
+			$id = GetParam("row_id", true);
 			$args = [];
 			$result .= GemElement("im_working", $id, $args);
 			return $result;
 		case "salary_report":
-			$edit = get_param("edit", false, false);
+			$edit = GetParam("edit", false, false);
 			$args = array("add_checkbox" => true, "edit_lines" => $edit);
 			show_all("2019-09", $args);
 			break;
@@ -310,16 +310,16 @@ function handle_people_operation($operation)
 			$args["selectors"] = array("user_id" => "gui_select_worker", "project_id" => "gui_select_project");
 			$args["query"] = "is_active = 1 and company_id = $company";
 			$args["edit"] = false;
-			$args["page"] = get_param("page", false, 1);
-			$args["links"] = array("id" => add_to_url(array("operation" => "show_edit_worker", "row_id" => "%s")),
-				                   "project_id" => add_to_url(array("operation" => "show_project", "id" => "%s")));
+			$args["page"] = GetParam("page", false, 1);
+			$args["links"] = array("id" => AddToUrl(array( "operation" => "show_edit_worker", "row_id" => "%s")),
+				                   "project_id" => AddToUrl(array( "operation" => "show_project", "id" => "%s")));
 			$result .= GemTable("im_working", $args);
 
 			print $result;
 			break;
 
 		case "show_project":
-			$project_id = get_param("id", true);
+			$project_id = GetParam("id", true);
 			print Core_Html::gui_header(1, project_name($project_id));
 			$args = [];
 			$args["query"] = "project_id = $project_id";
@@ -328,7 +328,7 @@ function handle_people_operation($operation)
 				$tasks = Focus_Views::active_tasks($args);
 				if ($tasks) print Core_Html::gui_header(1, "Active tasks") . $tasks;
 				else print Core_Html::gui_header(1, "No active tasks");
-				print Core_Html::GuiButton( "btn_cancel", "cancel_entity('" . get_url(1) . "', 'im_working', " . $project_id . ')', "delete" );
+				print Core_Html::GuiButton( "btn_cancel", "cancel_entity('" . GetUrl(1) . "', 'im_working', " . $project_id . ')', "delete" );
 			}
 			break;
 		default:

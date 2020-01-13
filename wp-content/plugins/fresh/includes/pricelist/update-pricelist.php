@@ -13,7 +13,7 @@ print "<body>";
 
 $supplier_name = $_GET["supplier_name"];
 
-$debug = get_param( "debug" );
+$debug = GetParam( "debug" );
 if ( $debug ) {
 	print "Debug mode<br/>";
 }

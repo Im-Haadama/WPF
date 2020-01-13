@@ -18,7 +18,7 @@ $hosts_to_sync = array(
 	array( 4, "super-organi", "http://super-organi.co.il" )
 );
 
-$period = get_param( "period" );
+$period = GetParam( "period" );
 
 if ( ! $period ) {
 	die ( "period should be set" );

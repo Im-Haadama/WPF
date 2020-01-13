@@ -17,7 +17,7 @@ require_once(ABSPATH . '/im-config.php');
 require_once( ROOT_DIR . "/core/gui/gem.php" );
 
 require_once( "focus/focus_class.php" );
-$operation = get_param("operation", false, "focus_main");
+$operation = GetParam("operation", false, "focus_main");
 
 require_once( ROOT_DIR . "/init.php" );
 
@@ -60,11 +60,11 @@ $search = GuiInput("search_text", "(search here)", array("events" => "onfocus=\"
 //$greeting = greeting();
 $alerts = alerts_pulldown($user_id);
 // $setting = GuiHyperlink("settings", add_to_url("operation", "show_settings"), array ("class" => "light_hyperlink"));
-$setting = GuiPulldown("settings", "settings", array("menu_options" => array(array("text" => "Edit organization", "link" => add_to_url("operation", "edit_organization")))));
-$repeating_tasks = GuiPulldown("repeating_tasks", "Repeating tasks", array("menu_options" => array(array("text" => "all", "link" => get_url(1) . "?operation=show_repeating_tasks"),
-	array("text" => "weekly", "link" => get_url(1) . "?operation=show_repeating_tasks&freq=w"),
-	array("text" => "monthly", "link" => get_url(1) . "?operation=show_repeating_tasks&freq=j"),
-	array("text" => "annual", "link" => get_url(1) . "?operation=show_repeating_tasks&freq=z"))));
+$setting = GuiPulldown("settings", "settings", array("menu_options" => array(array("text" => "Edit organization", "link" => AddToUrl("operation", "edit_organization")))));
+$repeating_tasks = GuiPulldown("repeating_tasks", "Repeating tasks", array("menu_options" => array(array("text" => "all", "link" => GetUrl(1) . "?operation=show_repeating_tasks"),
+	array("text" => "weekly", "link" => GetUrl(1) . "?operation=show_repeating_tasks&freq=w"),
+	array("text" => "monthly", "link" => GetUrl(1) . "?operation=show_repeating_tasks&freq=j"),
+	array("text" => "annual", "link" => GetUrl(1) . "?operation=show_repeating_tasks&freq=z"))));
 
 $teams = team_pulldown($user_id);
 //$circle = '<div id="avatar_circle"
@@ -79,7 +79,7 @@ print "<br/>"; // The space of header.
 if (! focus_check_user()) return;
 
 if ($operation) {
-	if (get_param("page", false, null)) $args ["page"] = get_param("page");
+	if (GetParam("page", false, null)) $args ["page"] = GetParam("page");
 	handle_focus_show($operation, $args);
 	return;
 }

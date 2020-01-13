@@ -11,7 +11,7 @@ if ( ! defined( "ABSPATH" ) ) {
 
 require_once(ABSPATH . 'wp-config.php');
 
-$operation = get_param('operation', true);
+$operation = GetParam('operation', true);
 $flavor = Flavor::instance();
 
 if ( ! get_user_id(true) ) die('Not connected');

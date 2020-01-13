@@ -69,7 +69,7 @@ class Core_Importer {
 		}
 
 		$sql = "SELECT col, header FROM nv_conversion \n" .
-		       "WHERE table_name = " . quote_text( $table_name );
+		       "WHERE table_name = " . QuoteText( $table_name );
 
 		$result = sql_query( $sql );
 
@@ -171,8 +171,8 @@ class Core_Importer {
 			}
 		}
 
-		$sql = "insert into $table_name (" . comma_implode( $insert_fields ) .
-		       ") values (" . comma_implode( $values, true ) . ")";
+		$sql = "insert into $table_name (" . CommaImplode( $insert_fields ) .
+		       ") values (" . CommaImplode( $values, true ) . ")";
 
 
 		if ( ! sql_query( $sql ) ) {

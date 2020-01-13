@@ -30,7 +30,7 @@ function task_focus()
 	require_once( ROOT_DIR . '/org/gui.php' );
 	require_once( ROOT_DIR . "/routes/gui.php" );
 
-	$operation = get_param("operation", false, "focus_main");
+	$operation = GetParam("operation", false, "focus_main");
 
 	$args = [];
 	if ($operation) {

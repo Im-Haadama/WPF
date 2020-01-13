@@ -9,7 +9,7 @@
 require_once( '../r-shop_manager.php' );
 require_once( "suppliers.php" );
 
-$operation = get_param("operation", true);
+$operation = GetParam("operation", true);
 
 if ($operation)
 	handle_supplier_operation($operation);

@@ -12,7 +12,7 @@ print header_text( false, true, is_rtl(), array("/core/data/data.js") );
 
 print header_text(false, true, true, array("suppliers.js", "/core/gui/client_tools.js"));
 
-$operation = get_param("operation", false, null);
+$operation = GetParam("operation", false, null);
 
 if ($operation) {
 	require_once(FRESH_INCLUDES .'/fresh/suppliers/suppliers.php');
@@ -23,7 +23,7 @@ if ($operation) {
 
 $include_zero = isset( $_GET["zero"] );
 
-$supplier_id = get_param( "supplier_id" );
+$supplier_id = GetParam( "supplier_id" );
 if ( $supplier_id ) {
     get_supplier_balance( $supplier_id );
 	return;
@@ -144,7 +144,7 @@ function get_supplier_balance( $supplier_id ) {
                       "selectors" => array("document_type" => "gui_select_document_type")); // , "project_id" => "gui_select_project"
 
 	print NewRow("im_business_info", $new_args);
-	print Core_Html::GuiButton("btn_add_row", "data_save_new('" . get_url() . "', 'im_business_info')", "הוסף");
+	print Core_Html::GuiButton("btn_add_row", "data_save_new('" . GetUrl() . "', 'im_business_info')", "הוסף");
 }
 
 ?>

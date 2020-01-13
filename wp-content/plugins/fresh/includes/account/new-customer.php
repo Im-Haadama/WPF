@@ -9,7 +9,7 @@
 require_once( '../r-shop_manager.php' );
 require_once( "../orders/orders-common.php" );
 
-$order_id  = get_param( "order_id" );
+$order_id  = GetParam( "order_id" );
 $O         = new Order( $order_id );
 $client_id = $O->getCustomerId();
 

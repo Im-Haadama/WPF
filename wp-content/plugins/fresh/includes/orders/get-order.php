@@ -6,7 +6,7 @@ require_once( '../delivery/delivery.php' );
 require_once( FRESH_INCLUDES . "/init.php" );
 $user_id =  get_user_id(true);
 $manager = user_can( $user_id, "edit_shop_orders" );
-$order_id = get_param("order_id", true);
+$order_id = GetParam("order_id", true);
 $o        = new Order( $order_id );
 if ( $o->getCustomerId() != $user_id and ! $manager ) {
 	die ( "no permission" );

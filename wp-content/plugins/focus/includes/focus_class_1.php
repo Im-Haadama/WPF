@@ -34,7 +34,7 @@ function team_pulldown($user_id)
 	if (! $teams) return "";
 	foreach ($teams as $team)
 		array_push($menu_options,
-			array("link" => add_to_url(array("operation"=>"show_team", "id" => $team)),
+			array("link" => AddToUrl(array( "operation" =>"show_team", "id" => $team)),
 			      "text"=>team_get_name($team)));
 	return GuiPulldown("teams", "teams", ["menu_options" => $menu_options] );
 }
@@ -45,7 +45,7 @@ function project_pulldown($user_id)
 	$menu_options = [];
 	foreach ($projects as $project)
 		array_push($menu_options,
-			array("link" => add_to_url(array("operation"=>"show_project", "id" => $project["project_id"])),
+			array("link" => AddToUrl(array( "operation" =>"show_project", "id" => $project["project_id"])),
 			      "text"=>$project['project_name']));
 	return GuiPulldown("projects", "projects", ["menu_options" => $menu_options] );
 }
@@ -77,14 +77,14 @@ limit $limit
  * @throws Exception
  */
 function not_used1() {
-	$task_template_id = get_param( "task_template_id" );
+	$task_template_id = GetParam( "task_template_id" );
 	if ( $task_template_id ) {
-		show_templates( get_url( 1 ), $task_template_id );
+		show_templates( GetUrl( 1 ), $task_template_id );
 
 		return;
 	}
 
-	if ( get_param( "templates", false, "none" ) !== "none" ) {
+	if ( GetParam( "templates", false, "none" ) !== "none" ) {
 		print header_text( false, true, true, array(
 			"/core/gui/client_tools.js",
 			"/core/data/data.js",
@@ -94,14 +94,14 @@ function not_used1() {
 
 		$args = array();
 
-		show_templates( get_url( 1 ) );
+		show_templates( GetUrl( 1 ) );
 
 		return;
 	}
 
-	if ( $team_id = get_param( "team" ) ) {
+	if ( $team_id = GetParam( "team" ) ) {
 		global $admin_scripts;
-		show_team( $team_id, get_param( "active_only", false, true ) );
+		show_team( $team_id, GetParam( "active_only", false, true ) );
 
 		return;
 	}
@@ -111,7 +111,7 @@ function not_used1() {
  * @throws Exception
  */
 function not_used(){
-	$time_filter = get_param("time", false, true);
+	$time_filter = GetParam("time", false, true);
 
 	$args["url"] = basename(__FILE__);
 

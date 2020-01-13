@@ -230,7 +230,7 @@ class Core_Db_MultiSite extends Core_MultiSite {
 			$row_key = $fields[ $key_order ];
 
 			array_push( $keys, $row_key );
-			$sql = "SELECT COUNT(*) FROM $table WHERE $table_key=" . quote_text( $row_key );
+			$sql = "SELECT COUNT(*) FROM $table WHERE $table_key=" . QuoteText( $row_key );
 
 			$found = sql_query_single_scalar( $sql ) >= 1;
 
@@ -247,11 +247,11 @@ class Core_Db_MultiSite extends Core_MultiSite {
 					if ( $insert ) {
 //						if (strlen($fields[$i] == 0)) $insert_values .= "NULL, ";
 //						else // print strlen($fields[$i]) . " " . $fields[$i] . "<br/>";
-						$insert_values .= quote_text( escape_string( $fields[ $i ] ) ) . ", ";
+						$insert_values .= QuoteText( escape_string( $fields[ $i ] ) ) . ", ";
 						$insert_count ++;
 
 					} else { // Update
-						$update_fields .= $headers[ $i ] . "=" . quote_text( escape_string( $fields[ $i ] ) ) . ", ";
+						$update_fields .= $headers[ $i ] . "=" . QuoteText( escape_string( $fields[ $i ] ) ) . ", ";
 						$update_count ++;
 					}
 				}
@@ -262,7 +262,7 @@ class Core_Db_MultiSite extends Core_MultiSite {
 				sql_query( $sql );
 			} else {
 				$sql = "UPDATE $table SET " . rtrim( $update_fields, ", " ) .
-				       " WHERE $table_key = " . quote_text( $row_key );
+				       " WHERE $table_key = " . QuoteText( $row_key );
 				sql_query( $sql );
 			}
 		}
@@ -290,7 +290,7 @@ class Core_Db_MultiSite extends Core_MultiSite {
 			// print "checking $key...";
 			if ( ! in_array( $key, $keys ) ) {
 //				print "delete key " . $key . "<br/>";
-				$for_delete .= quote_text( $key ) . ", ";
+				$for_delete .= QuoteText( $key ) . ", ";
 			}
 //			print "<br/>";
 		}

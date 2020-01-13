@@ -76,7 +76,7 @@ class Finance_Payments {
 	static function main_wrapper()
 	{
 		$me = self::instance();
-		if ($operation = get_param("operation", false))
+		if ($operation = GetParam("operation", false))
 			return self::handle_operation($operation);
 		return $me->main();
 	}
@@ -101,7 +101,7 @@ class Finance_Payments {
 	 */
 	static function payments_wrapper()
 	{
-		$year_month = get_param( "month", false, date( 'Y-m', strtotime('-15 days') ) );
+		$year_month = GetParam( "month", false, date( 'Y-m', strtotime('-15 days') ) );
 
 		return self::payments();
 	}

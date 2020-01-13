@@ -16,6 +16,6 @@ require_once("../catalog/gui.php");
 
 // my_log(__FILE__);
 // print header_text(false, true, false);
-if ( $operation = get_param("operation", false, null) ) {
+if ( $operation = GetParam("operation", false, null) ) {
 	handle_supplies_operation($operation);
 }

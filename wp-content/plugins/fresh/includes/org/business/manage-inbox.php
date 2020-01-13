@@ -28,8 +28,8 @@ if ( ! file_exists( $filename ) ) {
 
 require_once( $filename );
 
-$suppler_id = get_param( "supplier_id" );
-$operation  = get_param( "operation" );
+$suppler_id = GetParam( "supplier_id" );
+$operation  = GetParam( "operation" );
 
 if ( isset( $operation ) ) {
 	switch ( $operation ) {
@@ -41,12 +41,12 @@ if ( isset( $operation ) ) {
 			}
 			$m->Read();
 
-			$supplier_id = get_param( "supplier_id" );
-			$date        = get_param( "date" );
-			$amount      = get_param( "amount" );
-			$net_amount  = get_param( "net_amount" );
-			$ref         = get_param( "ref" );
-			$index       = get_param( "index" );
+			$supplier_id = GetParam( "supplier_id" );
+			$date        = GetParam( "date" );
+			$amount      = GetParam( "amount" );
+			$net_amount  = GetParam( "net_amount" );
+			$ref         = GetParam( "ref" );
+			$index       = GetParam( "index" );
 
 			// print "reading message $index<br/>";
 			$mm = $m->ReadMessage( $index );

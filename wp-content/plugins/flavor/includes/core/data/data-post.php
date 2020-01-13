@@ -12,7 +12,7 @@ require_once( FRESH_INCLUDES . "/init.php" );
 init();
 require_once( "data.php" );
 
-$operation = get_param("operation", false, null);
+$operation = GetParam("operation", false, null);
 
 if ($operation){
 	require_once(FRESH_INCLUDES . '/im-config.php');

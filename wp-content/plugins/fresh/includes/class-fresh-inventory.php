@@ -17,7 +17,7 @@ class Fresh_Inventory
 
 	static function handle()
 	{
-		$operation = get_param("operation", false, "show_status");
+		$operation = GetParam("operation", false, "show_status");
 
 		print self::handle_operation($operation);
 	}
@@ -46,25 +46,25 @@ class Fresh_Inventory
 				break;
 			case "show_status":
 				$year = (date('m') < 12 ? date('Y') - 1 : date('Y'));
-				$include_counted = get_param("include_counted", false, false);
+				$include_counted = GetParam("include_counted", false, false);
 				return self::show_status($year, $include_counted);
 				break;
 			case "show":
-				$year = get_param("year");
-				$supplier_id = get_param("supplier_id");
+				$year = GetParam("year");
+				$supplier_id = GetParam("supplier_id");
 				return self::show_supplier($year, $supplier_id);
 				break;
 			case "save_inv":
-				$data = get_param_array("data", true);
+				$data = GetParamArray("data", true);
 				return self::save_inv($data);
 				break;
 			case "inv_save_count":
-				$supplier_id = get_param("supplier_id", true);
+				$supplier_id = GetParam("supplier_id", true);
 				return self::save_count($supplier_id);
 				break;
 
 			case "inventory_zero":
-				$supplier_id = get_param("supplier_id", true);
+				$supplier_id = GetParam("supplier_id", true);
 				return self::zero_count($supplier_id);
 				break;
 		}
@@ -77,7 +77,7 @@ class Fresh_Inventory
 
 		$sql = "select product_id, product_name, quantity " .
 		       " from im_inventory_count " .
-		       " where count_date > " . quote_text($year . '-12-1') . ' and count_date < ' . quote_text(($year +1 . '-2-1')) . ' and quantity > 0';
+		       " where count_date > " . QuoteText( $year . '-12-1') . ' and count_date < ' . QuoteText(( $year + 1 . '-2-1')) . ' and quantity > 0';
 
 //		print $sql;
 
@@ -107,7 +107,7 @@ class Fresh_Inventory
 	static function zero_count($supplier_id)
 	{
 		$sql = sprintf( "insert into im_inventory_count (count_date, supplier_id, product_id, product_name, quantity) values  
-				          (%s, %s, 0 , 'zero count', 0)", quote_text( date( 'Y-m-d' ) ), $supplier_id );
+				          (%s, %s, 0 , 'zero count', 0)", QuoteText( date( 'Y-m-d' ) ), $supplier_id );
 
 		return sql_query($sql);
 	}
@@ -152,7 +152,7 @@ class Fresh_Inventory
 				$count = $p->getStock();
 				if ($count) {
 					$sql = "insert into im_inventory_count (count_date, supplier_id, product_id, product_name, quantity) values  
-				          (" . quote_text(date('Y-m-d')) .", " . $supplier_id . ", " .$product_id . ", '" . $p->getName() . "'," . $count . ")";
+				          (" . QuoteText(date('Y-m-d')) . ", " . $supplier_id . ", " . $product_id . ", '" . $p->getName() . "'," . $count . ")";
 					if (! sql_query($sql)) return false;
 				}
 			}
@@ -163,7 +163,7 @@ class Fresh_Inventory
 	static function show_status($year, $include_counted = false)
 	{
 		$result = Core_Html::gui_header(1, "Inventory status for 31 Dec $year");
-		$result .= Core_Html::GuiHyperlink("include counted", add_to_url("include_counted", 1)) . " ";
+		$result .= Core_Html::GuiHyperlink("include counted", AddToUrl("include_counted", 1)) . " ";
 		$result .= Core_Html::GuiHyperlink("download count", self::getPost() . "?operation=download_inventory_count");
 
 

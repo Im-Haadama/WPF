@@ -20,7 +20,7 @@ require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 
 print header_text( false );
 
-$supplier_id = get_param("supplier_id");
+$supplier_id = GetParam("supplier_id");
 
 ?>
 <html dir="rtl" lang="he">

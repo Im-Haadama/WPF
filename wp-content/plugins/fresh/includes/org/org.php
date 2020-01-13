@@ -53,7 +53,7 @@ function is_volunteer($uid) {
  */
 function team_add($user_id, $team_name, $manager_member = true)
 {
-	sql_query("insert into im_working_teams (team_name, manager) values (" . quote_text($team_name) . ", $user_id)" );
+	sql_query( "insert into im_working_teams (team_name, manager) values (" . QuoteText($team_name) . ", $user_id)" );
 	$team_id =sql_insert_id();
 	// Team manager doesn't have to be part of it.
 	if ($manager_member) team_add_worker($team_id, $user_id);

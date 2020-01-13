@@ -19,13 +19,13 @@ if (! get_user_id()) {
 	return;
 }
 
-$debug = get_param("debug", false, false);
+$debug = GetParam("debug", false, false);
 
 global $style_file;
 init(null, $style_file);
 
 require_once( "focus_class.php" );
-$operation = get_param("operation", false, "focus_main");
+$operation = GetParam("operation", false, "focus_main");
 
 if ($debug) print "op=$operation<br/>";
 
@@ -33,7 +33,7 @@ if ($debug) print "op=$operation<br/>";
 
 if ($operation) {
 	$args = [];
-	if (get_param("page", false, null)) $args ["page"] = get_param("page");
+	if (GetParam("page", false, null)) $args ["page"] = GetParam("page");
 	if (($result = handle_focus_do($operation)) !== "not handled") { print $result; return; }
 	$args["script_files"] = array( "/core/gui/client_tools.js", "/core/data/data.js", "/core/data/focus.js" );
 	print HeaderText($args);
