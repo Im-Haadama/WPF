@@ -901,11 +901,12 @@ class Focus_Tasks {
 
 		$tabs = array();
 		$mine = self::my_tasks($args, $user_id);
+		if ($mine) array_push($tabs, array("my_tasks", "My tasks", $mine));
 		$my_teams = self::teams_i_manage($args, $user_id);
-//		if ($mine) array_push($tabs, array("my_tasks", "My tasks", $mine));
+		if ($my_teams) array_push($tabs, array("my_teams", "My teams", $my_teams));
 
-		return $mine . $my_teams;
-//		return Core_Html::GuiTabs( $tabs );
+//		return $mine . $my_teams;
+		return Core_Html::GuiTabs( $tabs );
 	}
 
 	static function my_tasks( $args, $user_id ) {
@@ -939,9 +940,8 @@ class Focus_Tasks {
 		return $result;
 	}
 
-	static function teams_i_manage($args, $user_id)
-	{
-		$o             = new Org_Team(); // To invoke auto_load;
+	static function teams_i_manage($args, $user_id) {
+		$o      = new Org_Team(); // To invoke auto_load;
 		$result = "";
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Tasks of teams I manage. Not assigned to me                                                               //
@@ -956,6 +956,10 @@ class Focus_Tasks {
 			$result        .= Focus_Tasks::tasks_list( $args );
 		}
 
+		return $result;
+	}
+	function not_used()
+	{
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Tasks teams I'm a member of (team in my_teams). Not assigned                                              //
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1079,28 +1083,12 @@ class Focus_Tasks {
 		$sql = "select " . comma_implode( $fields ) . " from $table_name $query $order ";
 
 		$result = "";
-		try {
-			if ( isset( $_GET["debug"] ) ) {
-				print "sql = $sql<br/>";
-			}
-			$args["sql"] = $sql;
-			$table       = Core_Gem::GemTable("im_tasklist", $args );
-//		print "CC=" . $args["count"] . "<br/>";
-			// $table = GuiTableContent( $table_name, $sql, $args );
-			// if (! $args["count"]) return "";
-			if ( $table ) {
-				// if (strlen($title)) $result = Core_Html::gui_header(2, $title);
-				$result .= $table;
-			}
-		} catch ( Exception $e ) {
-			print "can't load tasks." . $e->getMessage();
-
-			return null;
-		}
+		$args["sql"] = $sql;
+		$table       = Core_Gem::GemTable("im_tasklist", $args );
+		if ( $table ) $result .= $table;
 		$count = $args["count"];
 		$page  = get_param( "page", false, 1 );
 		if ( $count === $page ) {
-			// $args["page"] = $page;
 			$result .= Core_Html::GuiHyperlink( "More", add_to_url( "page", $page + 1 ) ) . " ";
 			$result .= Core_Html::GuiHyperlink( "Not paged", add_to_url( "page", - 1 ) ) . " "; // All pages
 		}
