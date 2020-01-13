@@ -374,6 +374,7 @@ class Flavor {
 				$main = get_param("main", true);
 				$sub = get_param("sub", false);
 				$target = get_param("target", true);
+//				print "$main $sub $target<br/>";
 				$nav = $this->getNav();
 				$main_id = $nav->AddMain(array('title' => $main, 'url' => $target));
 				if (! $main_id) return $main_id;
@@ -583,7 +584,7 @@ class Flavor {
 			$args["action"] = add_param_to_url(self::getPost(), array( "operation" => "fresh_nav_add", "main" => $item ), null, false) . ";location_reload";
 			$result .= Core_Html::GuiButtonOrHyperlink("btn_add_" . $item, null, $args) . "<br/>";
 			foreach ($sub_menu_items as $sub_menu_item) {
-				$main_nav = __CLASS__;
+				$main_nav = $item;
 				$sub_nav =  $sub_menu_item[0];
 				$target = $sub_menu_item[1];
 				if (! isset($sub_menu_item[2]) or (! $u->can($capability = $sub_menu_item[2]))) continue;

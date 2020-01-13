@@ -6,7 +6,7 @@
  * Date: 07/01/19
  * Time: 11:42
  */
-abstract class FieldIdx {
+abstract class Core_Multisite_Fields {
 	const site_id_idx = 0;
 	const site_name_idx = 1;
 	const site_tools_idx = 2;
@@ -65,7 +65,7 @@ class Core_MultiSite {
 	{
 		$result = array();
 		foreach ( $this->sites_array as $site_id => $site ) {
-			$r = parse_url($this->sites_array[$site_id][FieldIdx::site_tools_idx]);
+			$r = parse_url($this->sites_array[$site_id][Core_Multisite_Fields::site_tools_idx]);
 
 			array_push($result, $r['host']);
 		}
@@ -73,14 +73,14 @@ class Core_MultiSite {
 	}
 
 	public function getSiteName( $site_id ) {
-		if (isset($this->sites_array[ $site_id ][ FieldIdx::site_name_idx ]))
-			return $this->sites_array[ $site_id ][ FieldIdx::site_name_idx ];
+		if (isset($this->sites_array[ $site_id ][ Core_Multisite_Fields::site_name_idx ]))
+			return $this->sites_array[ $site_id ][ Core_Multisite_Fields::site_name_idx ];
 		die ("invalid site_id");
 	}
 
 	public function getSiteToolsURL( $site_id ) {
 		if ( isset( $this->sites_array[ $site_id ] ) ) {
-			return $this->sites_array[ $site_id ][ FieldIdx::site_tools_idx ];
+			return $this->sites_array[ $site_id ][ Core_Multisite_Fields::site_tools_idx ];
 		} else {
 			print "site ";
 			var_dump( $site_id );
@@ -91,7 +91,7 @@ class Core_MultiSite {
 	}
 
 	public function getApiKey( $site_id ) {
-		return $this->sites_array[ $site_id ][ FieldIdx::api_key ];
+		return $this->sites_array[ $site_id ][ Core_Multisite_Fields::api_key ];
 	}
 
 	function getMaster() {
@@ -138,7 +138,7 @@ class Core_MultiSite {
 				$result = strip_tags( $result, "<div><br><p><table><tr><td>" );
 			}
 			if ( $verbose ) {
-				array_push( $data, array( $this->sites_array[ $site_id ][ FieldIdx::site_name_idx ], $result ) );
+				array_push( $data, array( $this->sites_array[ $site_id ][ Core_Multisite_Fields::site_name_idx ], $result ) );
 			} else {
 				$output .= $result;
 			}

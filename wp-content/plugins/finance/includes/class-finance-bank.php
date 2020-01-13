@@ -580,6 +580,10 @@ class Finance_Bank
 		}
 	}
 
+	function gui_select_bank_account( $id, $value, $args ) {
+		return Core_Html::GuiSelectTable($id, "im_bank_account", $args);
+	}
+
 	function business_add_transaction(
 	$part_id, $date, $amount, $delivery_fee, $ref, $project, $net_amount = 0,
 	$document_type = FreshDocumentType::delivery,
@@ -678,9 +682,6 @@ function user_is_business_owner() {
 
 }
 
-function gui_select_bank_account( $id, $value, $args ) {
-	return Core_Html::GuiSelectTable($id, "im_bank_account", $args);
-}
 
 //print gui_hyperlink('Create Receipts', add_to_url("operation" , "receipts")); print " ";
 //print gui_hyperlink('Mark payments', add_to_url("operation", "payments")); print " ";

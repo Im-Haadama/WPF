@@ -530,7 +530,10 @@ function category_content_func($atts, $content, $tag)
 	$iter->iterateCategory( $id );
 
 	$result = "";
-	while ( $prod_id = $iter->next()) $result .= get_product_name($prod_id) . ", ";
+	while ( $prod_id = $iter->next()) {
+		$prod_name = strtok (get_product_name($prod_id), "(");
+		$result .= trim($prod_name) . ", ";
+	}
 
 	return rtrim($result, ", ");
 }
