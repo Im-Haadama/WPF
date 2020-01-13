@@ -76,60 +76,6 @@ if (! function_exists("my_log")) {
 	 * @throws Exception
 	 */
 
-	function HeaderText( $args = null ) {
-		global $business_info;
-		global $logo_url;
-		$style_file = GetArg( $args, "css", null );
-
-		$rtl          = GetArg( $args, "rtl", ( function_exists( "is_rtl" ) ? is_rtl() : false ) );
-		$print_logo   = GetArg( $args, "print_logo", true );
-		$script_files = GetArg( $args, "script_files", false );
-		$close_header = GetArg( $args, "close_header", true );
-		$greeting     = GetArg( $args, "greeting", false );
-
-		$text = "";
-
-		$text .= '<html';
-		if ( $rtl ) {
-			$text .= ' dir="rtl"';
-		}
-		$text .= '>';
-		$text .= '<head>';
-		$text .= '<meta http-equiv="content-type" content="text/html; charset=utf-8">';
-		$text .= '<title>';
-		if ( defined( $business_info ) ) {
-			$text .= $business_info;
-		}
-		$text .= '</title>';
-
-		// print "loading..."; var_dump($script_files); print "<br/>";
-		$text .= load_scripts( $script_files );
-		if ( isset( $style_file ) ) {
-			$text .= load_style( $style_file );
-		}
-
-		if ( $close_header ) {
-			$text .= '</head>';
-		}
-
-		$table = array();
-		$row   = array();
-		if ( $greeting ) {
-			$row [] = greeting( $args );
-		}
-		if ( $print_logo and $logo_url ) {
-			$row []                    = '<img src=' . $logo_url . '  style="height: 100px; width: auto;">'; // Todo: use GuiImage
-			$table []                  = $row;
-			$args["align_table_cells"] = array( array( null, "left" ) );
-			$text                      .= Core_Html::gui_table_args( $table, "header", $args );
-		}
-
-		if ( function_exists('gui_type') and gui_type() == "html" ) {
-			return $text;
-		}
-
-		return strip_tags( $text );
-	}
 
 	/**
 	 * @return string
