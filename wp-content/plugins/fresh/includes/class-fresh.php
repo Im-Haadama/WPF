@@ -132,7 +132,7 @@ class Fresh {
 		add_filter( 'woocommerce_available_shipping_methods', 'hide_shipping_if_cat_is_orange', 10, 1 );
 		add_action( 'woocommerce_before_calculate_totals', 'im_woocommerce_update_price', 99 );
 		add_filter( 'woocommerce_cart_item_price', 'im_show_nonsale_price', 10, 2 );
-		add_filter( 'woocommerce_order_button_text', 'im_custom_order_button_text' );
+//		add_filter( 'woocommerce_order_button_text', 'im_custom_order_button_text' );
 		add_action( 'init', 'custom_add_to_cart_quantity_handler' );
 		add_action( 'woocommerce_checkout_update_order_meta', 'my_custom_checkout_field_update_order_meta' );
 		add_action( 'init', 'register_awaiting_shipment_order_status' );
@@ -584,8 +584,8 @@ function get_minimum_order() {
 	return $value;
 }
 
-function im_woocommerce_update_price() {
-
+function im_woocommerce_update_price()
+{
 	my_log( "cart start" );
 	// TWEEK. Don't know why menu_op calls this method.
 	// DONT remove without trying menu.php and cart.
@@ -593,6 +593,7 @@ function im_woocommerce_update_price() {
 		my_log ("not connected to db");
 		return;
 	}
+	if (! function_exists('get_user_id') or ! get_user_id()) return;
 	$user = new Fresh_Client();
 	$client_type = $user->customer_type( get_user_id() );
 //	if (get_user_id() == 1) $client_type = "siton";

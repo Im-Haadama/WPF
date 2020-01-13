@@ -11,7 +11,8 @@ class Fresh_Client {
 	 * @param $user_id
 	 */
 	public function __construct( $user_id = 0 ) {
-		if (! $user_id) $user_id = get_user_id(true);
+		if (! get_user_id()) return null;
+		if (! $user_id) $user_id = get_user_id();
 		$this->user_id = $user_id;
 	}
 
