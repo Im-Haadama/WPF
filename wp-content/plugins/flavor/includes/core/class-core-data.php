@@ -522,6 +522,7 @@ class Core_Data
 				var_dump( $row );
 				print "<br/>";
 				print $sql . "<br/>";
+				print sql_trace();
 				die( __FUNCTION__ . ":" . __LINE__ . "no id_field" );
 			}
 			$row_id = $row[ $id_field ];
