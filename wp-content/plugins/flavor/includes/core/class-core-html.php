@@ -1492,7 +1492,8 @@ class Core_Html {
 		$args["class"] = "tablinks";
 		$contents = "";
 		$div_args = array("class" => "tabcontent");
-
+		$shown_tab = GetArg($args, "show_tab", 0);
+		$tab_index = 0;
 		foreach ($tabs as $tab)
 		{
 			if (! is_array($tab) or count($tab) < 3){
@@ -1500,10 +1501,14 @@ class Core_Html {
 			}
 			$name = $tab[0];
 			$display_name = $tab[1];
+//			$result .= 'style="display: none"';
+
+			$div_args["style"] = (($tab_index == $shown_tab) ? 'display: block': "");
 			$contents .= Core_Html::GuiDiv($name, Core_Html::gui_header(2, $name) . $tab[2], $div_args);
 
 			$args["events"] = "onclick=\"selectTab(event, '$name', 'tabcontent')\"";
 			$result .= Core_Html::GuiButton("btn_tab_$name", $display_name, $args);
+			$tab_index++;
 		}
 		$result .= "</div>";
 
