@@ -513,7 +513,7 @@
 		foreach ( $query_parts as $param => $value ) {
 			if (is_array($param)) { print __FUNCTION__ . ":param is array<br/>"; var_dump($param); die(1); }
 			if (is_array($value)) { print __FUNCTION__ . ":value is array<br/>"; var_dump($value); die(1); }
-			$result .= $glue . $param . '=' . ($encode ? encodeURIComponent($value) : $value);
+			$result .= $glue . $param . '=' . ($encode ? urldecode($value) : $value);
 			$glue   = "&";
 		}
 
@@ -532,7 +532,7 @@
 		return AddParamToUrl(GetUrl(), $param_name, $param_value);
 	}
 
-	function add_to_url_no_encode($param_name, $param_value = null)
+	function AddToUrlNoEncode($param_name, $param_value = null)
 	{
 		return AddParamToUrl(GetUrl(), $param_name, $param_value, false);
 	}

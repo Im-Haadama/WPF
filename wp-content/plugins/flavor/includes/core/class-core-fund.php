@@ -162,7 +162,7 @@ class Core_Fund {
 	 * @return array
 	 * @throws Exception
 	 */
-	function array_transpose( $rows ) {
+	static function array_transpose( $rows ) {
 		$target = array();
 		foreach ( $rows as $i => $row ) {
 			if ( isset( $row[0] ) ) { // sequential
@@ -181,7 +181,7 @@ class Core_Fund {
 	 *
 	 * @return array|null
 	 */
-	function array_assoc( $array ) {
+	static function array_assoc( $array ) {
 		if ( ! $array ) {
 			return null;
 		}
@@ -250,29 +250,6 @@ class Core_Fund {
 	 *
 	 * @return array|null
 	 */
-	function comma_array_explode( $string_array ) {
-		if ( ! $string_array ) {
-			return null;
-		}
-		$string_array = str_replace( "::", ":", $string_array );
-		$teams        = array();
-		$t            = [];
-
-		while ( strlen( $string_array ) > 1 ) {
-			$p    = strpos( $string_array, ":", 1 );
-			$team = substr( $string_array, 1, $p - 1 );
-			// print "Team: $team<br/>";
-
-			$t[] = $team;
-//		print "p=$p<br/>";
-			if ( $team > 0 ) {
-				array_push( $teams, $team );
-			}
-			$string_array = substr( $string_array, $p );
-		}
-
-		return $t;
-	}
 
 	/**
 	 * @param $var
@@ -402,3 +379,4 @@ class Core_Fund {
 	}
 
 }
+

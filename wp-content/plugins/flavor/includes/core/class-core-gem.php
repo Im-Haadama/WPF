@@ -109,26 +109,14 @@ class Core_Gem {
 			$result .=  $no_data_message . Core_Html::Br();
 		}
 
-//	if ($button_text = GetArg($args, "button_text", "add")){
-//		$button_function = GetArg($args, "button_function", "data_save_new('" . get_url() . ", '" . $table_id . "', location_reload)"); // "function () { window.location = $button_target; }
-//
-//		$result .= Core_Html::GuiButton("btn_" . $button_text, $button_function, $button_text);
-//	}
 		if (GetArg($args, "add_button", true))
 			$result .= Core_Html::GuiHyperlink("Add", AddToUrl(array( "operation" => "show_add_" . $table_id))) . " ";
 
 		$post_file = GetArg($args, "post_file", null);
-//		var_dump($post_file);
 		if ($post_file and $edit)
 			$result .= Core_Html::GuiButton("btn_delete_$table_id", "delete",
 				array("action" => "delete_items(" . QuoteText($args["checkbox_class"]) . "," . QuoteText($post_file) . ")"));
 
-//	$args = array();
-//	$search_url = "search_table('im_bank', '" . add_param_to_url($url, "search", "1") . "')";
-//	$args["search"] = $search_url; //'/fresh/bank/bank-page.php?operation=do_search')";
-//	GemSearch("im_bank", $args);
-
-		// print "XXXX" . $result . "YYYY";
 		return $result;
 	}
 

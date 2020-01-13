@@ -578,6 +578,36 @@ class Core_Html {
 	 *
 	 * @return string
 	 */
+	static function GuiCell($cell, $args)
+	{
+		$cell = str_replace( '\n', '<br/>', $cell );
+
+		$data = "<td";
+		$id = GetArg($args, "id", null);
+		if ($id) $data .= " id=\"" . $id . "\"";
+
+		$show = GetArg($args, "show", true);
+		if ( ! $show ) $data .= " style=\"display:none;\"";
+
+		$align = GetArg($args, "align", false);
+		if ( $align ) $data .= ' style="text-align: ' . $align . '";';
+
+		$width = GetArg($args, "col_width", null);
+		if ($width) $data .= ' style="width:' . $args["col_width"] . '"'; // Seems not workling
+		$data .= ">";
+
+		if ( function_exists( '__' ) ) {
+			$data .= __( $cell );
+		} else if ( is_array( $cell ) ) {
+			$data .= CommaImplode( $cell );
+		} else {
+			$data .= $cell;
+		}
+		$data .= "</td>";
+
+		return $data;
+
+	}
 	static function gui_cell( $cell, $id = null, $show = true, $align = null ) {
 		// Preformating...
 		// a) replace \n with <br/>
@@ -651,7 +681,7 @@ class Core_Html {
 
 		if ( is_array( $cells ) ) {
 			$i = 0;
-			foreach ( $cells as $cell ) {
+			foreach ( $cells as $col_id => $cell ) {
 				// Accumulate
 				if ( isset( $acc_fields[ $i ] ) and is_array( $acc = $acc_fields[ $i ] ) ) {
 					if ( function_exists( $acc[1] ) ) {
@@ -776,7 +806,6 @@ class Core_Html {
 	 */
 	static function gui_table_args( $input_rows, $id = null, $args = null )
 	{
-		$debug       = GetArg( $args, "debug", false );
 		$width       = GetArg( $args, "width", null );
 		$bordercolor = GetArg( $args, "bordercolor", null );
 
@@ -799,31 +828,19 @@ class Core_Html {
 
 		$show_cols = GetArg( $args, "show_cols", null );
 
-		if ( isset( $args["edit_cols"] ) ) {
-			$args["edit_cols"]["id"] = false;
-		}
+		if ( isset( $args["edit_cols"] ) ) $args["edit_cols"]["id"] = false;
 
 		$transpose = GetArg( $args, "transpose", false );
 
-		if ( ! $input_rows ) {
-			if ( $debug ) {
-				print "no input rows";
-			}
-
-			return null;
-		}
+		if ( ! $input_rows ) return null;
 
 		$rows = array();
 
 		foreach ( $input_rows as $key => $input_row ) {
 			if ( ! $prepare || in_array( $key, array( "checkbox", "header", "mandatory", "sums" ) ) ) {
-				if ( isset( $input_row['checkbox'] ) ) {
-					$input_row['checkbox'] = '';
-				}
+				if ( isset( $input_row['checkbox'] ) ) $input_row['checkbox'] = '';
 				$rows[ $key ] = $input_row;
-			} else {
-				$rows[ $key ] = Core_Data::PrepareRow( $input_row, $args, $key );
-			}
+			} else $rows[ $key ] = Core_Data::PrepareRow( $input_row, $args, $key );
 		}
 
 		if ( $header ) {
@@ -848,13 +865,12 @@ class Core_Html {
 		}
 		$action_line = null;
 
-		if ( $style ) {
-			$data .= "<style>" . $style . "</style>";
-		}
+		if ( $style ) $data .= "<style>" . $style . "</style>";
 		if ( is_array( $rows ) and $transpose ) {
-			$rows = array_transpose( $rows );
+			$rows = Core_Fund::array_transpose( $rows );
 		}
 
+//		var_dump($args);
 		foreach ( $rows as $line_id => $line ) {
 			if ( $line_id == "header" ) {
 				$data .= "<tr>";
@@ -862,7 +878,8 @@ class Core_Html {
 					foreach ( $line as $col_id => $cell ) {
 						$data .= "<td";
 						if ( isset( $args["col_width"][ $col_id ] ) ) {
-							$data .= " width=" . $args["col_width"][ $col_id ];
+							$data .= ' style="overflow: auto; width:' . $args["col_width"][ $col_id ] . '" ';
+//							$data .= " width=" . $args["col_width"][ $col_id ];
 						}
 						$data .= ">";
 						$data .= $cell;
@@ -895,8 +912,15 @@ class Core_Html {
 
 					// print "f=$field r=$row_id $show is=" . isset($args["hide_cols"][$row_id]) . "<br/>";
 					// print "$line_id $cell_id<br/>";
-					$data .= self::gui_cell( $cell, $field . "_" . $row_id, $show,
-						isset( $align_table_cells[ $line_id ][ $cell_id ] ) ? $align_table_cells[ $line_id ][ $cell_id ] : null );
+					$cell_args = [];
+					$cell_args["cell_id"] = $field . "_" . $row_id;
+					$cell_args["show"] = $show;
+					$cell_args["align"] = isset( $align_table_cells[ $line_id ][ $cell_id ] ) ? $align_table_cells[ $line_id ][ $cell_id ] : null;
+					if (isset($args["col_width"][$cell_id])) $cell_args["col_width"] = $args["col_width"][$cell_id];
+//					var_dump($cell_args); print "<br/>";
+					$data .= self::GuiCell($cell, $cell_args);
+//					$data .= self::gui_cell( $cell, $field . "_" . $row_id, $show,
+//						isset( $align_table_cells[ $line_id ][ $cell_id ] ) ? $align_table_cells[ $line_id ][ $cell_id ] : null );
 				}
 //				 $data .= "<td>" . $cell . "</td>";
 			} else {
@@ -1238,7 +1262,6 @@ class Core_Html {
 		return $data;
 	}
 
-
 	/**
 	 * @param $id
 	 * @param $table
@@ -1501,10 +1524,9 @@ class Core_Html {
 			}
 			$name = $tab[0];
 			$display_name = $tab[1];
-//			$result .= 'style="display: none"';
 
 			$div_args["style"] = (($tab_index == $shown_tab) ? 'display: block': "");
-			$contents .= Core_Html::GuiDiv($name, Core_Html::gui_header(2, $name) . $tab[2], $div_args);
+			$contents .= Core_Html::GuiDiv($name, $tab[2], $div_args);
 
 			$args["events"] = "onclick=\"selectTab(event, '$name', 'tabcontent')\"";
 			$result .= Core_Html::GuiButton("btn_tab_$name", $display_name, $args);

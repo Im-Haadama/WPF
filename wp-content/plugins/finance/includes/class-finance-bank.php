@@ -95,7 +95,7 @@ class Finance_Bank
 				$args["actions"]       = array(
 					array(
 						"Receipt",
-						add_to_url_no_encode(array("operation" => "bank_create_invoice", "id" => "%s"))
+						AddToUrlNoEncode(array( "operation" => "bank_create_invoice", "id" => "%s"))
 					),
 					array(
 						"Return",
@@ -529,7 +529,7 @@ class Finance_Bank
 	function create_multi_site_receipt( $bank_id, $bank_amount, $date, $change, $ids, $site_id, $user_id ) {
 		// IDS sent as string.
 
-		// $msg = $bank . " " . $date . " " . $change . " " . comma_implode($ids) . " " . $site_id . " " . $user_id . "<br/>";
+		// $msg = $bank . " " . $date . " " . $change . " " . CommaImplode($ids) . " " . $site_id . " " . $user_id . "<br/>";
 		$debug = false;
 
 //var request = "account-post.php?operation=create_receipt" +

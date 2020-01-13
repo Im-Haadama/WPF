@@ -236,7 +236,7 @@ class Core_Data
 		if ($header_fields) {
 			if ($fields = GetArg($args, "fields", null)){
 				$result = [];
-				$fields = array_assoc($fields);
+				$fields = Core_Fund::array_assoc($fields);
 				foreach ($fields as $field => $v)
 					if (! $skip_id or strtolower($field) !== "id"){
 						$result[$field] = im_translate((isset($header_fields[$field]) ? $header_fields[$field] : $field));
@@ -584,7 +584,7 @@ class Core_Data
 		$new_row = array();
 
 		$mandatory_fields = GetArg($args, "mandatory_fields", null);
-		if ($mandatory_fields) $mandatory_fields = array_assoc($mandatory_fields);
+		if ($mandatory_fields) $mandatory_fields = Core_Fund::array_assoc($mandatory_fields);
 
 		// assert(0); // will fire
 		// assert (! isset($field_list[0]), "field list in seq array" );
@@ -645,8 +645,8 @@ class Core_Data
 		$field_list = self::FieldList($sql, $args);
 //	 debug_var($field_list);
 		// print __FUNCTION__ ; var_dump($field_list); print "<br/>";
-		$mandatory_fields = GetArg($args, "mandatory_fields", null);  $mandatory_fields = array_assoc($mandatory_fields);
-		$fields = GetArg($args, "fields", null);  $fields = array_assoc($fields);
+		$mandatory_fields = GetArg($args, "mandatory_fields", null);  $mandatory_fields = Core_Fund::array_assoc($mandatory_fields);
+		$fields = GetArg($args, "fields", null);  $fields = Core_Fund::array_assoc($fields);
 		if ($debug) {print "fields: "; var_dump($fields); print "<br/>";}
 		$skip_id = GetArg($args, "skip_id", false);
 		$meta_fields = GetArg($args, "meta_fields", null);
@@ -655,7 +655,7 @@ class Core_Data
 		$values = GetArg($args, "values", null);
 		$v_checkbox = GetArg($args, "v_checkbox", null);
 		$checkbox_class = GetArg($args, "checkbox_class", "checkbox");
-		$header_fields = GetArg($args, "header_fields", null);	 $header_fields = array_assoc($header_fields);
+		$header_fields = GetArg($args, "header_fields", null);	 $header_fields = Core_Fund::array_assoc($header_fields);
 
 		$table_names = array();
 		if (preg_match_all("/from ([^ ]*)/" , $sql, $table_names))
@@ -699,7 +699,7 @@ class Core_Data
 	{
 //	print "field list $sql";
 		$fields = GetArg($args, "fields", null);
-		if (isset($fields[0])) $fields = array_assoc($fields);
+		if (isset($fields[0])) $fields = Core_Fund::array_assoc($fields);
 //	print "1:"; var_dump($fields); print "<br/>";
 //	 print "fields: "; var_dump($fields) . "<br/>";
 		if ($fields) return $fields;

@@ -337,13 +337,14 @@ class Fresh_Product {
 		if ( $this->id > 0 ) {
 			if ( $supplier_id > 0 ) {
 				$a = alternatives( $this->id );
+//				if ($this->id == 3380) var_dump($a);
 				foreach ( $a as $s ) {
 					if ( $s->getSupplierId() == $supplier_id ) {
 						return $s->getPrice();
 					}
 				}
 			}
-
+//			print "not found in alter" . $this->id . "<br/>";
 			return get_postmeta_field( $this->id, 'buy_price' );
 		}
 

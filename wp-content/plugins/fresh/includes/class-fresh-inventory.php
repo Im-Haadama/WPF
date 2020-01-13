@@ -152,7 +152,7 @@ class Fresh_Inventory
 				$count = $p->getStock();
 				if ($count) {
 					$sql = "insert into im_inventory_count (count_date, supplier_id, product_id, product_name, quantity) values  
-				          (" . QuoteText(date('Y-m-d')) . ", " . $supplier_id . ", " . $product_id . ", '" . $p->getName() . "'," . $count . ")";
+				          (" . QuoteText(date('Y-m-d')) . ", " . $supplier_id . ", " . $product_id . ", '" . escape_string($p->getName()) . "'," . $count . ")";
 					if (! sql_query($sql)) return false;
 				}
 			}
@@ -198,7 +198,7 @@ class Fresh_Inventory
 		$sql = "select count(*) from im_inventory_count where year(count_date) = " . $year . " and supplier_id = " . $supplier_id;
 //		print $sql;
 		$count = sql_query_single_scalar($sql);
-//		print $count;
+//		print "count = $count<br/>";
 		if ($count) {
 			$args = [];
 			$result .= Core_Gem::GemTable("im_inventory_count", $args);
@@ -211,6 +211,7 @@ class Fresh_Inventory
 	}
 
 	static function show_supplier_inventory( $supplier_id ) {
+		$img_size = 40;
 		$display = "";
 		$table = array( array( "", "מוצר", "מחיר עלות", "כמות במלאי" ) );
 
@@ -231,11 +232,16 @@ class Fresh_Inventory
 			$link_data = $catalog->GetProdID( $pl_id );
 			if ( $link_data ) {
 				$prod_id = $link_data[0];
-//				$p = new Fresh_Product($prod_id);
+				$p = new Fresh_Product($prod_id);
 //				print $p->getName() . "<br/>";
-				$line    = self::product_line( $prod_id, false, false, null, true, $supplier_id );
-				$table[$prod_id] = $line;
+//				 $line    = self::product_line( $prod_id, false, false, null, true, $supplier_id );
 //				array_push( $table, $line );
+				$table[$prod_id] = array(
+					(has_post_thumbnail( $prod_id ) ? get_the_post_thumbnail( $prod_id, array( $img_size, $img_size ) ) : ""),
+					$p->getName(),
+					$p->getBuyPrice($supplier_id),
+					Core_Html::GuiInput( "inv_" . $prod_id, $p->getStock(), array("name" =>"term_" . $supplier_id )),
+					$p->getStockDate());
 			}
 		}
 

@@ -837,7 +837,7 @@ if (function_exists('Core_Html::Br')){
 			$data .= "<style>" . $style . "</style>";
 		}
 		if ( is_array( $rows ) and $transpose ) {
-			$rows = array_transpose( $rows );
+			$rows = Core_Fund::array_transpose( $rows );
 		}
 
 		foreach ( $rows as $line_id => $line ) {

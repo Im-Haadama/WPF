@@ -57,7 +57,7 @@ function find_route_1( $node, $rest, &$path, $print, $end, $prerequisite )
 	{
 		die("invalid points");
 	}
-	// print "find route 1. node = " . $node . " rest = " . comma_implode($path) . "<br/>";
+	// print "find route 1. node = " . $node . " rest = " . CommaImplode($path) . "<br/>";
 	if ( count( $rest ) == 1 ) {
 		array_push( $path, $rest[0] );
 

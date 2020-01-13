@@ -23,7 +23,32 @@
 		error_log( $log, 3, $error_file );
 	}
 
-	/**
+function comma_array_explode( $string_array ) {
+	if ( ! $string_array ) {
+		return null;
+	}
+	$string_array = str_replace( "::", ":", $string_array );
+	$teams        = array();
+	$t            = [];
+
+	while ( strlen( $string_array ) > 1 ) {
+		$p    = strpos( $string_array, ":", 1 );
+		$team = substr( $string_array, 1, $p - 1 );
+		// print "Team: $team<br/>";
+
+		$t[] = $team;
+//		print "p=$p<br/>";
+		if ( $team > 0 ) {
+			array_push( $teams, $team );
+		}
+		$string_array = substr( $string_array, $p );
+	}
+
+	return $t;
+}
+
+
+/**
 	 * @return string
 	 */
 
