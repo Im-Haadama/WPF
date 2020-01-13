@@ -144,16 +144,16 @@ if (! function_exists("my_log")) {
 	 * @return string
 	 * @throws Exception
 	 */
-	function header_text( $print_logo = true, $close_header = true, $rtl = true, $script_file = false ) {
-		// $text .= '<p style="text-align:center;">';
-		$args                 = [];
-		$args["print_logo"]   = $print_logo;
-		$args["close_header"] = $close_header;
-		$args["rtl"]          = $rtl;
-		$args["script_files"] = $script_file;
-
-		return HeaderText( $args );
-	}
+//	function header_text( $print_logo = true, $close_header = true, $rtl = true, $script_file = false ) {
+//		// $text .= '<p style="text-align:center;">';
+//		$args                 = [];
+//		$args["print_logo"]   = $print_logo;
+//		$args["close_header"] = $close_header;
+//		$args["rtl"]          = $rtl;
+//		$args["script_files"] = $script_file;
+//
+//		return HeaderText( $args );
+//	}
 
 	/**
 	 * @return string
