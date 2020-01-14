@@ -1,7 +1,8 @@
 <?php
 
 /**
- * @param bool $force_login
+ * @param bool $force_login - only good in post actions (no header are sent prior to action).
+ * inside shortcode processing, add action to check login - unlogged_guest_posts_redirect.
  *
  * @return int
  */
@@ -536,3 +537,4 @@
 	{
 		return AddParamToUrl(GetUrl(), $param_name, $param_value, false);
 	}
+

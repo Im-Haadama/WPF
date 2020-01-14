@@ -414,9 +414,9 @@ function version20()
 	print Core_Html::gui_header(1, "management");
 
 	if (! table_exists("im_working_teams")) sql_query("create table im_working_teams (
-	id INT NOT NULL AUTO_INCREMENT
-		PRIMARY KEY,
+	id INT NOT NULL AUTO_INCREMENT	PRIMARY KEY,
     	team_name VARCHAR(40) CHARACTER SET utf8 NULL,
+    	is_active bit default 1,
 	    manager int(11))");
 
 	sql_query("CREATE FUNCTION 	worker_teams(_user_id int)

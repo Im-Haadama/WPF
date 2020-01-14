@@ -229,11 +229,11 @@ function update_wp_option($option_id, $new_array)
 
 function force_login()
 {
-	$url = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_HOST ) . '/wp-login.php?redirect_to=' . $_SERVER['REQUEST_URI'] . '"';
-
-	print '<script language="javascript">';
-	print "window.location.href = '" . $url . "'";
-	print '</script>';
+	auth_redirect();
+//	$url = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_HOST ) . '/wp-login.php?redirect_to=' . $_SERVER['REQUEST_URI'] . '"';
+//	print '<script language="javascript">';
+//	print "window.location.href = '" . $url . "'";
+//	print '</script>';
 }
 
 function get_user_name( $id ) {

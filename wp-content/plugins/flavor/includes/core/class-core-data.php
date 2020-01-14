@@ -396,11 +396,13 @@ class Core_Data
 						$selected = $selector_name( $input_name, $orig_data, $args ); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
 					} else $selected = $value;
 
+//					print $links[$key] . "<br/>";
 					$value = Core_Html::GuiHyperlink($selected, sprintf( $links[ $key ], $data ), $args ); // TODO: if links contains encoded url - it will warn about missing parameter and create bad link. %d...
 					break;
 				}
 				if ( $selectors and array_key_exists( $key, $selectors ) ) {
 					$selector_name = $selectors[ $key ];
+//					print "sel=" . $selector_name . "<br/>";
 					if ( strlen( $selector_name ) < 2 ) die( "selector " . $key . "is empty" );
 					// print $selector_name;
 					$value = $selector_name( $input_name, $orig_data, $args );

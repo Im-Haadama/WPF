@@ -594,9 +594,9 @@ function im_woocommerce_update_price()
 		return;
 	}
 	if (! function_exists('get_user_id') or ! get_user_id()) return;
-	$user = new Fresh_Client();
-	$client_type = $user->customer_type( get_user_id() );
-//	if (get_user_id() == 1) $client_type = "siton";
+	$user_id = get_user_id();
+	$user = new Fresh_Client($user_id );
+	$client_type = $user->customer_type( );
 
 	foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 		$prod_id = $cart_item['product_id'];

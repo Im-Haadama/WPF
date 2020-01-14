@@ -136,6 +136,7 @@ class Flavor {
 		add_action( 'after_setup_theme', array( $this, 'include_template_functions' ), 11 );
 		add_action( 'init', array( $this, 'init' ), 0 );
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
+		add_action('wp', 'unlogged_guest_posts_redirect');
 
 		get_sql_conn( ReconnectDb() );
 //		add_action( 'init', array( 'Flavor_Emails', 'init_transactional_emails' ) );
@@ -530,8 +531,6 @@ class Flavor {
 
 	static public function plugins_setting()
 	{
-//		$result = Core_Html::gui_header(1, "Settings");
-
 		$sections = [];
 		foreach (array("Fresh", "Finance", "Flavor", "Focus") as $plugin)
 		{
@@ -539,13 +538,10 @@ class Flavor {
 				$call = array($plugin, "settingPage");
 				if (is_callable($call)){
 					$section = call_user_func($call);
-//					var_dump($section);
 					$sections[$plugin] = $section;
-//					array_push($sections, $section);
 				}
 			}
 		}
-//		$result .= Core_Html::GuiTabs($tabs);
 
 		return $sections;
 	}
@@ -561,12 +557,6 @@ class Flavor {
 		$module_list = array( "Flavor" => array());
 
 		$result .= self::ClassSettingPage($module_list);
-//		foreach ($module_list as $item){
-//			$args = [];
-//			$args ["text"] = __("Add") . " " . __($item);
-//			$args["action"] = add_param_to_url(self::getPost() , array( "operation" => "add_nav", "module" => $item )) . ";location_reload";
-//			$result .= Core_Html::GuiButtonOrHyperlink("btn_add_" . $item, null, $args);
-//		}
 
 		return $result;
 	}
@@ -576,10 +566,6 @@ class Flavor {
 		$u = new Core_Users();
 		$result = "";
 		foreach ($module_list as $item => $sub_menu_items){
-//			$args = ($item => array(
-//				'name' => 'Create navigation items for ' . $item,
-//				'type' => ''
-//			)
 			$args ["text"] = __("Add") . " " . __($item);
 			$args["action"] = AddParamToUrl(self::getPost(), array( "operation" => "fresh_nav_add", "main" => $item ), null, false) . ";location_reload";
 			$result .= Core_Html::GuiButtonOrHyperlink("btn_add_" . $item, null, $args) . "<br/>";
@@ -614,5 +600,13 @@ function flavor_get_logger()
 {
 	return Core_Logger::instance();
 }
+
+function unlogged_guest_posts_redirect()
+{
+	if (Flavor::isManagementPage() && !is_user_logged_in()) {
+			auth_redirect();
+		}
+}
+
 
 ?>

@@ -75,7 +75,9 @@ if (! class_exists('Core_Autoloader')) {
 		public function autoload( $class ) {
 			$path = $this->include_path;
 			$class = strtolower( $class );
-//		print "loading " . $class . " " . strpos($class, "core_") . "<br/>";
+			$debug = 0;
+//		if (substr($class, 0, 3) == 'wpf') $debug = 1;
+		if ($debug) print "loading " . $class . " " . strpos($class, "core_") . "<br/>";
 			$file = $this->get_file_name_from_class( $class );
 
 			if ( 0 === strpos( $class, 'core_' ) ) {
@@ -87,7 +89,7 @@ if (! class_exists('Core_Autoloader')) {
 				$path = $this->include_path . 'org/';
 			}
 
-//		print "looking for " . $path . $file . "<br/>";
+			if ($debug) print "looking for " . $path . $file . "<br/>";
 			if ( empty( $path ) || ! $this->load_file( $path . $file ) ) {
 				$this->load_file( $path . $file );
 			}

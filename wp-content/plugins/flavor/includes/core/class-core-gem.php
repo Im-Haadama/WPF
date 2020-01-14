@@ -41,12 +41,13 @@ class Core_Gem {
 		$result = "";
 		$title = GetArg($args, "title", null);
 		$post = GetArg($args, "post_file", null);
-//	var_dump($post);
 		// Later, add permissions checks in custom post.
 
 		// Set defaults
 		if (!isset($args["transpose"])) $args["transpose"] = true;
 		if (!isset($args["edit"])) $args["edit"] = true;
+		if (!isset($args["hide_cols"])) $args["hide_cols"] = array();
+		$args["hide_cols"]["is_active"] = 1;
 
 		if ($title)
 			$result .= Core_Html::gui_header(1, $title, true, true) . " " .Core_Html::gui_label("id", $row_id);
@@ -59,7 +60,6 @@ class Core_Gem {
 		$result .= $row;
 
 		if (GetArg($args, "edit", false) and $post) {
-//			if (get_user_id() == 1) var_dump($post);
 			$result .= Core_Html::GuiButton( "btn_save", "save", array("action" => "data_save_entity('" . $post . "', '$table_name', " . $row_id . ')'));
 			$result .= Core_Html::GuiButton( "btn_active", $active ? "inactive" : "activate", array("action" => "active_entity(" . (1 - $active) .", '" . $post . "', '$table_name', " . $row_id . ')') );
 		}

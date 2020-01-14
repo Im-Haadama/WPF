@@ -39,45 +39,6 @@ function GemAddRow($table_name, $text, $args){
 }
 
 /**
- * @param $table_name
- * @param $row_id
- * @param $args
- *
- * @return string
- * @throws Exception
- */
-function GemElement($table_name, $row_id, $args)
-{
-	$result = "";
-	$title = GetArg($args, "title", null);
-	$post = GetArg($args, "post_file", null);
-//	var_dump($post);
-	// Later, add permissions checks in custom post.
-
-	// Set defaults
-	if (!isset($args["transpose"])) $args["transpose"] = true;
-	if (!isset($args["edit"])) $args["edit"] = true;
-
-	if ($title)
-		$result .= Core_Html::gui_header(1, $title, true, true) . " " . gui_label("id", $row_id);
-
-	$sql = "select is_active from $table_name where id = $row_id";
-	$active = sql_query_single_scalar($sql);
-//	print $sql;
-	if (! $active) $result .= " not active ";
-
-	if (! ($row = Core_Data::GuiRowContent($table_name, $row_id, $args))) return null;
-	$result .= $row;
-
-	if (GetArg($args, "edit", false) and $post) {
-		$result .= Core_Html::GuiButton( "btn_save", "save", array("action"=>"data_save_entity('" . $post . "', '$table_name', " . $row_id . ')'));
-		$result .= Core_Html::GuiButton( "btn_active", $active ? "inactive" : "activate", array("action" => "active_entity(" . ! $active ."," . $post . "', '$table_name', " . $row_id . ')'));
-	}
-	return $result;
-}
-
-
-/**
  * @param $rows_data
  * @param $args
  * page - GemArray gets the data. The page param used only for the next/previous. TODO: Check if next is needed (last page).

@@ -14,6 +14,7 @@ class Focus {
 	 * @var      Delivery_Drivers_Loader    $loader    Maintains and registers all hooks for the plugin.
 	 */
 	protected $loader;
+	protected $auto_loader;
 	protected $salary;
 	protected $tasks;
 
@@ -120,6 +121,7 @@ class Focus {
 		$this->define_constants();
 		$this->includes(); // Loads class autoloader
 		$this->loader = new Focus_Loader();
+		$this->auto_loader = new Core_Autoloader(FOCUS_ABSPATH);
 		$this->init_hooks();
 
 		do_action( 'focus_loaded' );

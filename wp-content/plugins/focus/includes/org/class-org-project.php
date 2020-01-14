@@ -6,6 +6,7 @@ class Org_Project {
 	{
 		$result = [];
 		foreach (Org_Worker::GetCompanies($worker_id) as $company){
+//			print "company: " . $company;
 			if (Org_Worker::IsGlobalCompanyWorker($worker_id, $company)){
 				foreach (sql_query_array_scalar("select id from im_projects where is_active = 1 and company = $company") as $project_id)
 					$result [$project_id] = self::GetName($project_id);
