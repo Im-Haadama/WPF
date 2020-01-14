@@ -69,7 +69,8 @@ class Focus_Tasks {
 	static function gui_select_worker($id, $selected, $args){
 		// $events = GetArg($args, "events", null);
 		$edit = GetArg($args, "edit", true);
-		$companies = Org_Worker::GetCompanies(get_user_id());
+		$worker = new Org_Worker(get_user_id());
+		$companies = $worker->GetCompanies();
 
 		$debug = false; // (get_user_id() == 1);
 		$args["debug"] = $debug;
@@ -861,6 +862,7 @@ class Focus_Tasks {
 			die( "no args " . __FUNCTION__ );
 		}
 
+		$worker = new Org_Worker($user_id);
 		$tabs = array();
 
 		// My work queue
@@ -878,7 +880,7 @@ class Focus_Tasks {
 		$repeating = self::show_templates($args); // Todo: limit to what user can see
 		if ($repeating) array_push($tabs, array("repeating tasks", "Repeating tasks", $repeating));
 
-		if ($companies = Org_Worker::GetCompanies($user_id, true))
+		if ($companies = $worker->GetCompanies(true))
 		{
 			foreach ($companies as $company)
 				array_push($tabs, array("company_settings", "Company settings", self::show_edit_company($company, $user_id)));
@@ -893,19 +895,21 @@ class Focus_Tasks {
 	static function user_work($args, $user_id)
 	{
 		$result        = "";
-		$ignore_list   = [];
 
 		if ( !( $user_id > 0) ) {
 			print sql_trace();
 			die ( "bad user id $user_id" );
 		}
 
+		$worker = new Org_Worker($user_id);
+
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Tasks I need to handle (owner = me)                                                                       //
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		$args["count"] = 0;
-		$args["title"]       = im_translate( "Active tasks assigned to me" );
-		$args["query"]       = " owner = " . $user_id;
+		$args["title"]       = im_translate( "Active tasks assigned to me or my teams" );
+		$teams         = $worker->AllTeams();
+		$args["query"]       = " (owner = " . $user_id . ($teams ? " or team in (" . CommaImplode($teams) . ")" : "") . ")";
 		if (GetArg($args, "active_only", true))
 			 $args["query"] .= " and " . self::ActiveQuery($args);
 		$args["limit"]       = GetParam( "limit", false, 10 );
@@ -923,12 +927,13 @@ class Focus_Tasks {
 
 	static function my_teams($args, $user_id)
 	{
+		$worker = new Org_Worker($user_id);
 		$result = "";
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Tasks teams I'm a member of (team in my_teams). Not assigned                                              //
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		$args["title"] = im_translate( "My teams tasks" );
-		$teams         = Org_Worker::GetTeams( $user_id );
+		$teams         = $worker->AllTeams();
 
 		// print "teams: " . CommaImplode($teams) . "<br/>";
 		$args["extra_fields"] = array("team");
@@ -1179,6 +1184,7 @@ class Focus_Tasks {
 	{
 		$result = "";
 //		$result                   .= Core_Html::gui_header( 1, "יצירת תבנית חדשה" );
+		$worker = new Org_Worker(get_user_id());
 		$args                     = array();
 		$args["selectors"]        = array(
 			"project_id"  => "Focus_Tasks::gui_select_project",
@@ -1189,7 +1195,7 @@ class Focus_Tasks {
 		);
 		$args["transpose"]        = true;
 		$args["worker"]           = get_user_id();
-		$args["companies"]        = Org_Worker::GetCompanies( get_user_id() );
+		$args["companies"]        = $worker->GetCompanies();
 		$args["values"]           = array( "owner" => get_user_id(), "creator" => get_user_id() );
 		$args["fields"]           = array(
 			"task_description",
@@ -1225,6 +1231,8 @@ class Focus_Tasks {
 	 */
 	static function show_task( $row_id, $edit = 1 ) {
 		if (! $row_id) return self::show_new_task();
+		$worker = new Org_Worker(get_user_id());
+
 		$table_name  = "im_tasklist";
 		$entity_name = "task";
 
@@ -1259,10 +1267,9 @@ class Focus_Tasks {
 			"mission_id"       => "Mission"
 		);
 
-		$args["worker"]    = get_user_id();
-		$args["companies"] = Org_Worker::GetCompanies( get_user_id() );
+		$args["worker"]    = $worker->getId();
+		$args["companies"] = $worker->GetCompanies( );
 		$args["debug"]     = 0; // get_user_id() == 1;
-		$args["worker"]    = get_user_id();
 		$args["post_file"] = self::instance()->post_file;
 		// if (get_user_id() == 1) var_dump(self::instance()->post_file);
 
@@ -1295,25 +1302,10 @@ class Focus_Tasks {
 	 */
 	function focus_check_user()
 	{
-//	$worker_id = sql_query_single_scalar("select id from im_working where user_id = " . get_user_id());
-//
-//	print "worker_id=$worker_id<br/>";
-//
-//	if (! $worker_id) {
-//		sql_query( "insert into im_working (user_id, project_id, rate, report, volunteer, day_rate, is_active, company_id) " .
-//		           " values ( " . get_user_id() . ", 0, 0, 0, 0, 0, 1, 0)" );
-//		$worker_id = sql_insert_id();
-//		if ( ! $worker_id ) {
-//			print "can't insert worker info";
-//
-//			return false;
-//		}
-//	}
-//	print "worker id: " . $worker_id . "<br/>";
-
 		// Check if user has company
 		$user_id = get_user_id();
-		$company_ids = worker_get_companies($user_id);
+		$worker = new Org_Worker($user_id);
+		$company_ids = $worker->GetCompanies();
 		if (! count($company_ids)){
 			print "Ne need some information to get started!<br/>";
 			$args = array("values" => array("admin" => get_user_id()));
@@ -1332,7 +1324,7 @@ class Focus_Tasks {
 		}
 
 		// Check if user has team.
-		$team_ids =  Org_Worker::GetTeams($user_id);
+		$team_ids =  $worker->AllTeams();
 		if (!$team_ids or ! count($team_ids)){
 //		print "uid= $user_id" . Core_Html::Br();
 //		var_dump($team_ids); Core_Html::Br();
@@ -1403,8 +1395,9 @@ class Focus_Tasks {
 		$result = "";
 		$action_url = "/wp-content/plugins/focus/post.php"; // GetUrl(1);//  "/focus/focus-post.php";
 
-		$args["worker"] = get_user_id();
-		$args["companies"] =  Org_Worker::GetCompanies(get_user_id());
+		$worker = new Org_Worker(get_user_id());
+		$args["worker"] = $worker->getId();
+		$args["companies"] =  $worker->GetCompanies();
 		$args["selectors"] = array("project_id" =>  "Focus_Tasks::gui_select_project", "owner" => "Focus_Tasks::gui_select_worker",
 		                           "creator" => "Focus_Tasks::gui_select_worker", "repeat_freq" => "gui_select_repeat_time", "team" => "Focus_Tasks::gui_select_team");
 		$args["fields"] = array("id", "task_description", "project_id", "priority", "team", "repeat_freq", "repeat_freq_numbers", "working_hours", "condition_query", "task_url",
@@ -1813,7 +1806,8 @@ class Focus_Tasks {
 	static function gui_select_team($id, $selected = null, $args = null)
 	{
 		$edit = GetArg($args, "edit", true);
-		$companies = Org_Worker::GetCompanies(get_user_id());
+		$worker = new Org_Worker(get_user_id());
+		$companies = $worker->GetCompanies();
 		$debug = false; // (get_user_id() == 1);
 		$args["debug"] = $debug;
 		$args["name"] = "team_name";

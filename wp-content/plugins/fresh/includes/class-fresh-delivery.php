@@ -987,6 +987,8 @@ class Fresh_Delivery {
 
 		$id = Fresh_Order::get_delivery_id( $order_id );
 
+		if (! $id) return null;
+
 		$instance = new self( $id );
 
 		$instance->SetOrderId( $order_id );

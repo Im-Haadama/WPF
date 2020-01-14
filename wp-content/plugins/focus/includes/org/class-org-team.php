@@ -2,6 +2,23 @@
 
 
 class Org_Team {
+	private $id;
+
+	/**
+	 * Org_Team constructor.
+	 *
+	 * @param $id
+	 */
+	public function __construct( $id ) {
+		$this->id = $id;
+	}
+
+	function getName()
+	{
+		return sql_query_single_scalar("select team_name from im_working_teams where id = " . $this->id);
+
+	}
+
 	static function team_get_name($team_id)
 	{
 		return sql_query_single_scalar("select team_name from im_working_teams where id = " . $team_id);

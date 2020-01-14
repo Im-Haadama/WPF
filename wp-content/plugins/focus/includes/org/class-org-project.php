@@ -4,10 +4,11 @@
 class Org_Project {
 	static function GetProjects($worker_id)
 	{
+		$worker = new Org_Worker($worker_id);
 		$result = [];
-		foreach (Org_Worker::GetCompanies($worker_id) as $company){
+		foreach ($worker->GetCompanies($worker_id) as $company){
 //			print "company: " . $company;
-			if (Org_Worker::IsGlobalCompanyWorker($worker_id, $company)){
+			if ($worker->IsGlobalCompanyWorker($company)){
 				foreach (sql_query_array_scalar("select id from im_projects where is_active = 1 and company = $company") as $project_id)
 					$result [$project_id] = self::GetName($project_id);
 			} else {

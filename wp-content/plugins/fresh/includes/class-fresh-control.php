@@ -40,6 +40,10 @@ class Fresh_Control {
 			$result .= $o->checkInfoBox( true );
 
 			$d      = Fresh_Delivery::CreateFromOrder( $order_id );
+			if (!$d) {
+				$result .= "Order $order_id not packed yet<br/>";
+				continue;
+			}
 			$rows   = sql_query_array( "select product_name, quantity_ordered, quantity from im_delivery_lines where delivery_id = " . $d->getID() );
 //			print "row count: " . count($rows) ."<br/>";
 			$result .= "<table>";

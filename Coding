@@ -69,3 +69,5 @@ Sharing code between plugins.
 In develop, core library is linked between the projects. Fresh is the main, and others link includes/core to fresh.
 In runtime - wp-setting loads the plugins. Core libraries appear in each of them. require_once doesn't helps. We'll check
 !class_exists (or function_exists).
+
+max=5074

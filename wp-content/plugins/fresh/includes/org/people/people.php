@@ -255,6 +255,7 @@ function handle_people_do($operation)
  */
 function handle_people_operation($operation)
 {
+	$worker = new Org_Worker(get_user_id());
 	switch($operation) {
 		case "cancel_im_working":
 			$id = GetParam( "id", true );
@@ -296,8 +297,7 @@ function handle_people_operation($operation)
 			break;
 
 		case "edit_workers":
-			$worker_id = get_user_id();
-			$companies = Org_Worker::GetCompanies($worker_id);
+			$companies = $worker->GetCompanies();
 			$result = "";
 			if (! $companies) {
 				return "no managed companies found";

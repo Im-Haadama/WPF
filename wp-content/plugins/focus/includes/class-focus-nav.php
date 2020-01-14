@@ -147,7 +147,8 @@ class Focus_Nav {
 
 	private function update_nav_teams($menu_id, $parent, $user_id) {
 		// Add new ones.
-		$teams   = Org_Worker::GetTeams( $user_id );
+		$user = new Org_Worker($user_id);
+		$teams   = $user->AllTeams( );
 		$menu_items = wp_get_nav_menu_items( $menu_id );
 		foreach ( $teams as $team_id ) {
 			$team_name = Org_Team::team_get_name($team_id);

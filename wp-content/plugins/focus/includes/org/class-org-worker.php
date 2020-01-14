@@ -2,36 +2,53 @@
 
 
 class Org_Worker {
-	static function IsGlobalCompanyWorker($user_id, $company)
-	{
-		return sql_query_single_scalar("select count(*) from im_working where user_id = " . $user_id . " and project_id = 0 and company_id = $company");
+	private $id;
+
+	/**
+	 * Org_Worker constructor.
+	 *
+	 * @param $id
+	 */
+	public function __construct( $id ) {
+		$this->id = $id;
 	}
 
-	static function GetTeams($user_id)
-	{
-		return comma_array_explode(sql_query_single_scalar(
-			"select meta_value from wp_usermeta where meta_key = 'teams' and user_id = $user_id"));
+	/**
+	 * @return mixed
+	 */
+	public function getId() {
+		return $this->id;
 	}
 
-	static function GetCompanies($user_id, $is_manager = false){
-		$sql = " select id from im_company where admin = " . $user_id;
-		if (!$is_manager) $sql .= " union select company_id from im_working where user_id = " . $user_id;
+	function IsGlobalCompanyWorker($company)
+	{
+		return sql_query_single_scalar("select count(*) from im_working where user_id = " . $this->id . " and project_id = 0 and company_id = $company");
+	}
+
+	function GetCompanies($is_manager = false){
+		$sql = " select id from im_company where admin = " . $this->id;
+		if (!$is_manager) $sql .= " union select company_id from im_working where user_id = " . $this->id;
 		$result = sql_query_array_scalar($sql);
 
 		return $result;
 	}
 
-	static function AllTeams($user_id)
+	function getPersonalTeam()
 	{
-		$m = get_usermeta($user_id, 'teams');
-		// var_dump($m);
-		return comma_array_explode($m);
+//		$teams =
+//		foreach ($teams as $team)
+//			if (strstr(, "Personal"))
+	}
+
+	function AllTeams()
+	{
+		return comma_array_explode(get_usermeta($this->id, 'teams'));
 	}
 
 
 	function worker_add_company($user_id, $company_id, $project_id)
 	{
-		$current = Org_Project::worker_get_companies($user_id);
+		$current = $this->GetCompanies();
 		if (in_array($user_id, $current)) return true; // already in.
 		return sql_query("insert into im_working (company_id, is_active, user_id, project_id, rate) values ($company_id, 1, $user_id, $project_id, 0)");
 	}
