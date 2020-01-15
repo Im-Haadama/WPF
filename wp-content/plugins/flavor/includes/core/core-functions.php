@@ -446,10 +446,7 @@
 			$url = $_SERVER['REQUEST_URI'];
 			if ( $only_base ) {
 				$r = parse_url( $url, PHP_URL_PATH );
-				if ( ! $r ) {
-					return "error";
-				}
-
+				if ( ! $r ) return "error";
 				return $r;
 			}
 			return $url;
@@ -468,7 +465,7 @@
 	 *
 	 * @return string|null
 	 */
-	function AddParamToUrl($url, $param_name, $param_value = null, $encode= true) {
+	function AddParamToUrl($url, $param_name, $param_value = null) {
 		$ignore_list = array( "page" ); // Would be removed from base url.
 		$query_parts = [];
 		if ( is_null( $param_value ) and ! is_array( $param_name ) ) {
@@ -514,7 +511,7 @@
 		foreach ( $query_parts as $param => $value ) {
 			if (is_array($param)) { print __FUNCTION__ . ":param is array<br/>"; var_dump($param); die(1); }
 			if (is_array($value)) { print __FUNCTION__ . ":value is array<br/>"; var_dump($value); die(1); }
-			$result .= $glue . $param . '=' . ($encode ? urldecode($value) : $value);
+			$result .= $glue . $param . '=' . $value;
 			$glue   = "&";
 		}
 
@@ -533,8 +530,12 @@
 		return AddParamToUrl(GetUrl(), $param_name, $param_value);
 	}
 
-	function AddToUrlNoEncode($param_name, $param_value = null)
+	function execute_url($post, $after = "location_reload")
 	{
-		return AddParamToUrl(GetUrl(), $param_name, $param_value, false);
+		return "execute_url('". $post . "', " . $after . ")";
 	}
 
+	function AddAction($tag, $function_to_add, int $priority = 10, int $accepted_args = 1)
+	{
+		return add_action($tag, $function_to_add, $priority, $accepted_args);
+	}

@@ -598,7 +598,7 @@ class Core_Data
 			else $new_row[ $key ] = null;
 
 			if ( $v_line !== null ) $v_line[ $key ] = Core_Html::GuiCheckbox( "chk_" . $key, $new_row[ $key ] != null, array("class" => $checkbox_class) );
-			if ( is_array( $h_line ) /* and $header_fields */) $h_line[ $key ] = isset( $header_fields[ $key ] ) ? im_translate( $header_fields[ $key ], $args ) : $key;
+			if ( is_array( $h_line ) and ! isset($h_line[$key])) $h_line[$key] = $key;   ////* and $header_fields */) $h_line[ $key ] = isset( $header_fields[ $key ] ) ? im_translate( $header_fields[ $key ], $args ) : $key;
 			if ( is_array( $m_line ) ) $m_line[ $key ] = isset( $mandatory_fields[ $key ] );
 		}
 

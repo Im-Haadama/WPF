@@ -187,6 +187,7 @@ class Focus {
 		$this->define( 'FOCUS_VERSION', $this->version );
 		$this->define( 'FOCUS_INCLUDES', FOCUS_ABSPATH . 'includes/' );
 		$this->define( 'FLAVOR_INCLUDES_URL', plugins_url() . '/flavor/includes/' ); // For js
+		$this->define( 'FOCUS_INCLUDES_URL', plugins_url() . '/focus/includes/' ); // For js
 		$this->define( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path(__FILE__) . '../../flavor/includes/' );  // for php
 		$this->define( 'FOCUS_DELIMITER', '|' );
 
@@ -237,7 +238,6 @@ class Focus {
 	 */
 	function handle_operation($operation)
 	{
-//		print __FILE__ . __FUNCTION__;
 		// Handle global operation
 		switch ($operation)
 		{
@@ -255,6 +255,8 @@ class Focus {
 		// Pass to relevant module.
 		$module = strtok($operation, "_");
 		switch ($module){
+			case "gem":
+				return Core_Gem::handle_operation($operation);
 			case "salary":
 				$salary = Focus_Salary::instance();
 				return ($salary->handle_operation($operation));
@@ -311,6 +313,7 @@ class Focus {
 	/**
 	 * Init WooCommerce when WordPress Initialises.
 	 */
+
 	public function init() {
 //		print __CLASS__ . ':' .__FUNCTION__ . "<br/>";
 //		var_dump());
@@ -332,6 +335,8 @@ class Focus {
 		$shortcodes = Core_Shortcodes::instance();
 		$shortcodes->add($this->salary->getShortcodes());
 		$shortcodes->add($this->tasks->getShortcodes());
+
+		$this->tasks->init();
 
 		// Load class instances.
 

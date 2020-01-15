@@ -2,9 +2,33 @@
 
 
 class Core_Gem {
-	static function GemAddRow($table_name, $text, $args){
+	private $object_types;
+
+	/**
+	 * Core_Gem constructor.
+	 *
+	 * @param $object_types
+	 */
+	public function __construct( ) {
+		$this->object_types = null;
+	}
+
+	static function AddTable($table)
+	{
+//		print "gem_add_" . $table . "<br/>";
+		AddAction("gem_add_" . $table, array('Core_Gem', 'add_wrapper'), 10, 3);
+	}
+
+	static function add_wrapper($operation, $text, $args)
+	{
+		$table_name = substr($operation, 8);
+		return self::GemAddRow($table_name, $text, $args);
+	}
+
+	static function GemAddRow($table_name, $text = null, $args = null){
 		$result = "";
 
+		if (! $text) $text = __("Add"). " " . $table_name;
 		$result .= Core_Html::gui_header(1, $text);
 		$result .= Core_Html::NewRow($table_name, $args);
 		$post = GetArg($args, "post_file", null);
@@ -28,6 +52,10 @@ class Core_Gem {
 		return $result;
 	}
 
+	static function GemNewElement($table_name, $args)
+	{
+		return Core_Html::NewRow($table_name, $args);
+	}
 	/**
 	 * @param $table_name
 	 * @param $row_id
@@ -110,7 +138,7 @@ class Core_Gem {
 		}
 
 		if (GetArg($args, "add_button", true))
-			$result .= Core_Html::GuiHyperlink("Add", AddToUrl(array( "operation" => "show_add_" . $table_id))) . " ";
+			$result .= Core_Html::GuiHyperlink("Add", AddToUrl(array( "operation" => "gem_add_" . $table_id))) . " ";
 
 		$post_file = GetArg($args, "post_file", null);
 		if ($post_file and $edit)
@@ -235,6 +263,18 @@ class Core_Gem {
 
 		// Setting the action upon selection
 		return $result;
+	}
+
+	static function handle_operation($operation)
+	{
+		print __CLASS__;
+		if (substr($operation, 0, 3) == "gem") $operation = strtok($operation, "_"); // remove gem_ if exist
+		$operator = strtok($operation, "_"); // add
+		$table = strtok();
+		switch ($operator){
+			case "add":
+				return self::GemAddRow($table);
+		}
 	}
 
 // Header that attach to upper screen.

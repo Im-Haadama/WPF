@@ -38,21 +38,34 @@ class Focus_Tasks {
 	}
 
 	public function enqueue_scripts() {
+
+		print "<script>let focus_post_url = \"/wp-content/plugins/focus/post.php\"; </script>";
+
 		$file = FLAVOR_INCLUDES_URL . 'core/data/data.js';
 		wp_enqueue_script( 'data', $file, null, $this->version, false );
 
 		$file = FLAVOR_INCLUDES_URL . 'core/gui/client_tools.js';
 		wp_enqueue_script( 'client_tools', $file, null, $this->version, false );
 
-		$file = FLAVOR_INCLUDES_URL . 'core/data/data.js';
-		wp_enqueue_script( 'client_tools', $file, null, $this->version, false );
+		$file = FOCUS_INCLUDES_URL . 'focus.js';
+		wp_enqueue_script( 'focus', $file, null, $this->version, false );
 	}
 
 	static function show_main_wrapper()
 	{
-		$operation = GetParam("operation", false, "default");
 		$user_id = get_user_id();
 		if (! $user_id) return "unauth";
+
+		$operation = GetParam("operation", false, "default");
+		$table_name = substr($operation, 8);
+
+		// Planing to move all processing to filter.
+//		print $table_name;
+//		var_dump(self::Args($table_name));
+		$result = apply_filters($operation, $operation, null, self::Args($table_name));
+		if ($result) return $result;
+
+		// If no filter yet, handle the old way.
 		return self::handle_focus_show($operation, $user_id);
 	}
 
@@ -93,10 +106,8 @@ class Focus_Tasks {
 		$edit = GetArg($args, "edit", true);
 		$new_row = GetArg($args, "new_row", false);
 
-		if (! $edit)
-		{
-			return Org_Project::GetName($value);
-		}
+		if (! $edit) return Org_Project::GetName($value);
+
 		// Filter by worker if supplied.
 		$user_id = GetArg($args, "worker_id", get_user_id());
 		if ( !$user_id ) {
@@ -107,10 +118,9 @@ class Focus_Tasks {
 		$events = GetArg($args,"events", null);
 
 		$projects = Org_Project::GetProjects($user_id);
-		var_dump($projects);
 		$projects_list = [];
 		foreach($projects as $project_id => $project_name) $projects_list[] = array("project_id" => $project_id, "project_name" => $project_name);
-		$result = Core_Html::gui_select( $id, "project_name", $projects_list, $events, $value, "project_id" );
+		$result = Core_Html::gui_select( $id, "project_name", $projects_list, $events, $value, "`project_id" );
 		if ($form_table and $new_row) { // die(__FUNCTION__ . ":" . " missing form_table");
 			$result .= Core_Html::GuiButton( "add_new_project", "New Project", array("action" => "add_element('project', '" . $form_table . "', '" . GetUrl() . "')", "New Project" ));
 		}
@@ -118,7 +128,7 @@ class Focus_Tasks {
 		return $result;
 	}
 
-	static function Args()
+	static function Args($table_name = null)
 	{
 		$ignore_list = [];
 		$args = array("page" => GetParam("page", false, -1),
@@ -128,6 +138,19 @@ class Focus_Tasks {
 			if ( ! in_array( $param, $ignore_list ) ) {
 				$args[ $param ] = $value;
 			}
+		}
+
+		if ($table_name) switch($table_name)
+		{
+			case "im_task_templates":
+				$args["selectors"] = array("project_id" =>  "Focus_Tasks::gui_select_project", "owner" => "Focus_Tasks::gui_select_worker",
+				"creator" => "Focus_Tasks::gui_select_worker", "repeat_freq" => "gui_select_repeat_time", "team" => "Focus_Tasks::gui_select_team");
+				$args["fields"] = array("id", "task_description", "project_id", "priority", "team", "repeat_freq", "repeat_freq_numbers", "working_hours", "condition_query", "task_url",
+				"template_last_task(id)");
+				$args["header_fields"] = array("task_description" => "Task description", "project_id" => "Project", "priority" => "Priority",
+				"team" => "Team", "repeat_freq" => "Repeat Frequency", "repeat_freq_numbers" => "Repeat times", "working_hours" => "Working hours",
+				"Task site");
+
 		}
 		return $args;
 	}
@@ -153,10 +176,6 @@ class Focus_Tasks {
 	 */
 	static function handle_focus_show( $operation, $user_id) {
 		$args = self::Args();
-//		print __FUNCTION__ . ':' . $operation ."<br/>";
-//		if ( ( $done = Focus_Tasks::handle_focus_do( $operation, $args ) ) !== "not handled" ) {
-//			return $done;
-//		}
 
 		// Actions are performed and return to caller.
 		// Page are $result .= and displayed in the end. (to handle the header just once);
@@ -233,7 +252,7 @@ class Focus_Tasks {
 				$result         .= Core_Gem::GemElement( "im_projects", $project_id, $args );
 				$args ["query"] = "project_id = $project_id and status < 2";
 				$args["page"]   = GetParam( "page", false, null );
-				$args["links"]  = array( "id" => get_page_name("focus_task") . "?task_id=%s" );
+				$args["links"]  = array( "id" => self::get_link("focus_task") . "?task_id=%s" );
 				return Core_Gem::GemTable( "im_tasklist", $args );
 			case "show_new_team":
 				$args                     = [];
@@ -843,7 +862,7 @@ class Focus_Tasks {
 			case "search_by_text":
 				$text = GetParam( "text", true );
 
-				return search_by_text( $text );
+				return self::search_by_text( $text );
 		}
 
 		return "not handled";
@@ -864,6 +883,11 @@ class Focus_Tasks {
 
 		$worker = new Org_Worker($user_id);
 		$tabs = array();
+
+		$result = "";
+
+		$result .= self::search_box();
+		$result .= self::new_task();
 
 		// My work queue
 		$mine = self::user_work($args, $user_id);
@@ -889,7 +913,26 @@ class Focus_Tasks {
 //		$my_teams = self::teams($args, $user_id);
 //		if ($my_teams) array_push($tabs, array("my teams", "My Teams", $my_teams));
 		
-		return Core_Html::GuiTabs( $tabs );
+		$result .= Core_Html::GuiTabs( $tabs );
+
+		return $result;
+	}
+
+	static function search_box()
+	{
+		$result = "";
+		$result .= Core_Html::GuiInput("search_text", "(search here)",
+			array("events"=>"onfocus=\"search_by_text()\" onkeyup=\"search_by_text()\" onfocusout=\"search_box_reset()\""));
+
+		$result .= Core_Html::GuiDiv("search_result");
+
+		return $result;
+	}
+
+	static function new_task()
+	{
+		return Core_Html::GuiButton("btn_new_task", "Add",
+			array("action"=>execute_url(AddToUrl("operation", "show_new_task"))));
 	}
 
 	static function user_work($args, $user_id)
@@ -1421,22 +1464,20 @@ class Focus_Tasks {
 			$tasks_args = array("links" => array("template_id" => self::get_link("task", "%s")));
 			$tasks_args["class"] = "sortable";
 
-			if (get_user_id() == 1){
-				$output = "";
-				$row = sql_query_single_assoc("SELECT id, task_description, task_url, project_id, repeat_freq, repeat_freq_numbers, condition_query, priority, creator, team " .
-				                              " FROM im_task_templates where id = $template_id");
-
-				Focus_Tasklist::create_if_needed($template_id, $row, $output, 1, $verbose_line);
-				// $result .= $output;
-			}
+//			if (get_user_id() == 1){
+//				$output = "";
+//				$row = sql_query_single_assoc("SELECT id, task_description, task_url, project_id, repeat_freq, repeat_freq_numbers, condition_query, priority, creator, team " .
+//				                              " FROM im_task_templates where id = $template_id");
+//
+//				Focus_Tasklist::create_if_needed($template_id, $row, $output, 1, $verbose_line);
+//				// $result .= $output;
+//			}
 
 			$sql = "select * from im_tasklist where task_template = " . $template_id;
 			$sql .= " order by date desc limit 10";
-//			print $sql;
 			$table = Core_Html::GuiTableContent("last_tasks", $sql, $tasks_args);
 			if ($table)
 			{
-				$result .= Core_Html::gui_header(2, "משימות אחרונות");
 				$result .= Core_Html::gui_header(2, "משימות אחרונות");
 				$result .= $table;
 			}
@@ -1465,7 +1506,7 @@ class Focus_Tasks {
 		$args["query"] = $query;
 		$args["order"] = " id " . ($new ? "desc" : "asc");
 
-		$result = Core_Html::GuiHyperlink( "Add repeating task", GetUrl( true ) . "?operation=new_template" );
+//		$result = Core_Html::GuiHyperlink( "Add repeating task", GetUrl( true ) . "?operation=new_template" );
 
 		$result .= Core_Gem::GemTable("im_task_templates", $args);
 		// $result .= GuiTableContent( "projects", $sql, $args );
@@ -1722,30 +1763,29 @@ class Focus_Tasks {
 		return AddToUrl(array("operation" => "show_task", "id" => $id));
 	}
 
-	function search_by_text($text)
+	static function search_by_text($text)
 	{
 		$result = [];
-		$result = array_merge($result, project_list_search("project_name like " . quote_percent($text)));
-		$result = array_merge($result, task_list_search("task_description like " . quote_percent($text)));
+		$result = array_merge($result, self::project_list_search("project_name like " . QuotePercent($text)));
+		$result = array_merge($result, self::task_list_search("status < 2 and task_description like " . QuotePercent($text)));
 
-		if (count($result) < 2) return "No results";
-
+		if (count($result) < 1) return "No results";
 		return Core_Html::gui_table_args($result);
 	}
 
-	function task_list_search($query)
+	static function task_list_search($query)
 	{
 		$tasks = sql_query_array("select id, task_description from im_tasklist where $query");
 
 		$result = [];
 		foreach ($tasks as $task)
-			array_push($result, GuiHyperlink($task[1], self::get_link("task", $task[0])));
+			array_push($result, Core_Html::GuiHyperlink($task[1], self::get_link("task", $task[0])));
 
 		// debug_var($result);
 		return $result;
 	}
 
-	function project_list_search($query)
+	static function project_list_search($query)
 	{
 		return sql_query_array_scalar("select id from im_projects where $query" );
 	}
@@ -1841,6 +1881,9 @@ class Focus_Tasks {
 			case "template":
 				return "/template?id=$id";
 
+			case "new_task":
+				return AddToUrl("operation", "show_new_template");
+
 		}
 	}
 
@@ -1856,6 +1899,11 @@ class Focus_Tasks {
 	                   'focus_project_tasks'  => array('Focus_tasks::show_project_tasks', 'show_projects')));
 
 	}
+	function init()
+	{
+		Core_Gem::AddTable("im_task_templates");
+	}
+
 }
 
 /**
@@ -1889,6 +1937,7 @@ if (!function_exists('gui_select_repeat_time')) {
 			return $values[ $selected ];
 		}
 	}
+
 }
 
 // Allow later users to set page name.

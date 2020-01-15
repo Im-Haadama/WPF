@@ -21,8 +21,8 @@ if ( ! get_user_id(true) ) die('Not connected');
 
 $rc = $focus->handle_operation($operation);
 //print "rc=$rc";
-if ($rc === true) { print "done"; return; }
+if ($rc === false) { print "failed"; return; }
 if (is_numeric($rc)) { print "done.$rc"; return; }
 // Something went wrong. The procssing would print something.
 
-print "failed";
+print $rc;

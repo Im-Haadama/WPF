@@ -95,7 +95,7 @@ class Finance_Bank
 				$args["actions"]       = array(
 					array(
 						"Receipt",
-						AddToUrlNoEncode(array( "operation" => "bank_create_invoice", "id" => "%s"))
+						AddToUrl(array( "operation" => "bank_create_invoice", "id" => "%s"))
 					),
 					array(
 						"Return",

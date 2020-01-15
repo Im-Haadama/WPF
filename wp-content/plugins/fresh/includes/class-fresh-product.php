@@ -154,38 +154,13 @@ class Fresh_Product {
 	}
 
 	function is_fresh( $term_id, $debug = false ) {
-		$fresh = explode(InfoGet( "fresh" ), "," );
-//		if ($debug) {
-//			print "<br/>Fresh: ";
-//			var_dump( $fresh );
-//			print "<br/>";
-//		}
-		if ( ! $fresh ) {
-			print "no fresh terms<br/>";
+		$terms = InfoGet( "fresh" );
+		if (! $terms) return false;
+		$fresh = explode($terms, "," );
 
-			return false;
-		}
-
-		if ( $debug ) {
-			print "term:" . $term_id . "<br/>";
-			print "fresh: ";
-			var_dump( $fresh );
-			print( "<br/>" );
-		}
-		if ( in_array( $term_id, $fresh ) ) {
-			if ( $debug ) {
-				print "fresh!<br/>";
-			}
-
-			return true;
-		}
+		if ( in_array( $term_id, $fresh ) ) return true;
 
 		$parents = get_ancestors( $term_id, "product_cat", 'taxonomy' );
-		if ( $debug ) {
-			print "parents: ";
-			var_dump( $parents );
-			print "<br/>";
-		}
 		foreach ( $parents as $parent ) {
 			if ( $this->is_fresh( $parent, $debug ) ) {
 				return true;

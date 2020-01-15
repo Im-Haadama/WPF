@@ -87,7 +87,7 @@ function search_by_text()
     }
     if (value.length > 2) {
         document.getElementById("search_result").innerHTML = "Searching...";
-        execute_url("/focus/focus-post.php?operation=search_by_text&text=" + value, update_search);
+        execute_url(focus_post_url + "?operation=search_by_text&text=" + value, update_search);
     }
 }
 

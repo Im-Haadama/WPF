@@ -870,7 +870,6 @@ class Core_Html {
 			$rows = Core_Fund::array_transpose( $rows );
 		}
 
-//		var_dump($args);
 		foreach ( $rows as $line_id => $line ) {
 			if ( $line_id == "header" ) {
 				$data .= "<tr>";
