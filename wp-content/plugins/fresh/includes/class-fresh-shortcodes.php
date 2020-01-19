@@ -91,7 +91,6 @@ class Fresh_Shortcodes {
 		}
 
 		return Fresh_Inventory::handle();
-//		return self::shortcode_wrapper( array( 'Fresh_Inventory', 'handle' ), $atts );
 	}
 
 	public static function suppliers( $atts ) {

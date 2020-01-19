@@ -23,7 +23,7 @@
 		error_log( $log, 3, $error_file );
 	}
 
-function comma_array_explode( $string_array ) {
+function CommaArrayExplode( $string_array ) {
 	if ( ! $string_array ) {
 		return null;
 	}
@@ -47,51 +47,23 @@ function comma_array_explode( $string_array ) {
 	return $t;
 }
 
+function DebugVar($var)
+{
+	if (get_user_id() != 1) return;
+	print debug_trace();
+	var_dump($var);
+}
 
-/**
-	 * @return string
-	 */
-
-	/**
-	 * @param $style_file
-	 *
-	 * @return string
-	 */
-
-	/**
-	 * @param $key
-	 *
-	 * @param bool $mandatory
-	 * @param null $default
-	 *
-	 * @param string $delimiter
-	 *
-	 * @return array|null
-	 */
-
-// Return reference is useful for summing table, e.g.
-
-
-	/**
-	 * @param $num_or_text
-	 *
-	 * @param bool $sql_escape
-	 *
-	 * @return string
-	 */
-
-
-	/**
-	 * @param $url
-	 * @param $addition
-	 *
-	 * @return string
-	 */
-
-
-	/**
-	 * @param mixed ...$elems
-	 *
-	 * @return array|string
-	 */
-
+function debug_trace($deep = 2)
+{
+	$result = "";
+	$debug = debug_backtrace();
+	for ( $i = 1; ($i < $deep) and ($i < count( $debug )); $i ++ ) {
+		if (isset($debug[$i]['file'])) $caller = "called from " . $debug[$i]['file'] . " ";
+		else $caller = "";
+		if (isset($debug[ $i ]["line"])) $line = ":" . $debug[ $i ]["line"];
+		else $line = "";
+		$result .= '#' . $i . ' ' .( $caller . $debug[ $i ]["function"] . $line . "<br/>");
+	}
+	return $result;
+}

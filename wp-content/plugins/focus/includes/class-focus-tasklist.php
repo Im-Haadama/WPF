@@ -22,6 +22,7 @@ class Focus_Tasklist {
 	private $priority;
 	private $project;
 	private $team;
+	private $timezone;
 
 	public function __construct( $_id ) {
 		$this->id = $_id;
@@ -35,16 +36,17 @@ class Focus_Tasklist {
 		$this->task_description = $row[2];
 		$this->mission_id       = $row[3];
 		$this->priority         = $row[5];
-		$this->project = $row[6];
-		$this->team = $row[7];
+		$this->project          = $row[6];
+		$this->team             = $row[7];
 
 
 		if ( $row[4] ) {
-			$row = sql_query_single( "SELECT repeat_freq, repeat_freq_numbers " .
+			$row = sql_query_single( "SELECT repeat_freq, repeat_freq_numbers, timezone " .
 			                         " from im_task_templates where id = " . $row[4] );
 
 			$this->repeat_freq         = $row[0];
 			$this->repeat_freq_numbers = $row[1];
+			$this->timezone = $row[2];
 		}
 	}
 
@@ -123,8 +125,9 @@ class Focus_Tasklist {
 	 */
 	public function setPriority( $priority ) {
 		$this->priority = $priority;
-		$sql = "UPDATE im_tasklist SET priority = $priority " .
-		       " WHERE id = " . $this->id;
+		$sql            = "UPDATE im_tasklist SET priority = $priority " .
+		                  " WHERE id = " . $this->id;
+
 		// print $sql;
 		return sql_query( $sql );
 	}
@@ -133,6 +136,7 @@ class Focus_Tasklist {
 	public function Ended() {
 		$sql = "UPDATE im_tasklist SET ended = now(), status = " . eTasklist::done .
 		       " WHERE id = " . $this->id;
+
 		// print $sql;
 		return sql_query( $sql );
 	}
@@ -140,19 +144,27 @@ class Focus_Tasklist {
 	public function Postpone() {
 		$sql = "UPDATE im_tasklist set date = NOW() + INTERVAL 1 DAY\n" .
 		       " where id = " . $this->id;
-		if (sql_query( $sql )) return true;
+		if ( sql_query( $sql ) ) {
+			return true;
+		}
+
 		return false;
 	}
 
-	static function task_started($task_id, $owner)
-	{
-		$started = sql_query_single_scalar( "select started from im_tasklist where id = " . $task_id );
-		if ( ! $started  ) {
-			$sql = "UPDATE im_tasklist SET owner = $owner, started = now(), status = " . eTasklist::started .
-			       " WHERE id = " . $task_id;
-			return sql_query( $sql );
+	function task_started( $owner ) {
+		$started = sql_query_single_scalar( "select started from im_tasklist where id = " . $this->id );
+		if ( ! $started ) {
+			$this->update_status(eTasklist::started, $owner);
 		}
+
 		return true;
+	}
+
+	function update_status( $status, $owner = 0 )
+	{
+		$sql = "UPDATE im_tasklist SET owner = $owner, started = now(), status = $status " .
+		       " WHERE id = " . $this->id;
+		return sql_query( $sql );
 	}
 
 //	function task_ended($task_id) {
@@ -168,10 +180,9 @@ class Focus_Tasklist {
 		return sql_query( $sql );
 	}
 
-
-	function task_template($task_id)
+	function task_template()
 	{
-		return sql_query_single_scalar("select task_template from im_tasklist where id = " . $task_id);
+		return sql_query_single_scalar("select task_template from im_tasklist where id = " . $this->id);
 	}
 
 	function task_query($task_id)
@@ -191,14 +202,12 @@ class Focus_Tasklist {
 		return "";
 	}
 
-	static function task_url($task_id)
+	function task_url()
 	{
-		$sql = "SELECT task_url FROM im_task_templates WHERE id = "
-		       . " (SELECT task_template FROM im_tasklist WHERE id = " . $task_id . ")";
-		$r = sql_query_single_scalar( $sql );
-		// print $r;
-		return $r;
+		$sql = "SELECT task_url FROM im_task_templates WHERE id = " . self::task_template();
+		return sql_query_single_scalar( $sql );
 	}
+
 	function get_task_status( $status ) {
 		switch ( $status ) {
 			case eTasklist::waiting:
@@ -215,8 +224,6 @@ class Focus_Tasklist {
 				break;
 		}
 	}
-
-//
 
 	function check_condition() {
 		if ( ! isset( $_GET["condition"] ) ) {
@@ -305,40 +312,10 @@ class Focus_Tasklist {
 		return  $file . "tasklist." . date("m-d") . ".log";
 	}
 
-// if null = create for all freqs.
-	static function create_tasks( $freqs = null, $verbose = false, $default_owner = 1 )
-	{
-		$log_file = Focus_Tasklist::focus_log_file();
-		if ( ! table_exists( "im_task_templates" ) ) {
-			return;
-		}
-		$output = Core_Html::gui_header(1, "Creating tasks freqs");
-		if ( ! $freqs ) $freqs = sql_query_array_scalar( "select DISTINCT repeat_freq from im_task_templates" );
-
-		// TODO: create_tasks_per_mission();
-		$verbose_table = array( array( "template_id", "freq", "query", "active", "result", "priority", "new task" ));
-		foreach ( $freqs as $freq ) {
-			$output .= "Handling " . Core_Html::GuiHyperlink($freq, AddToUrl(array( "operation" => "show_templates", "search" =>1, "repeat_freq" => $freq))) . Core_Html::Br();
-
-			$sql = "SELECT id, task_description, task_url, project_id, repeat_freq, repeat_freq_numbers, condition_query, priority, creator, team " .
-			       " FROM im_task_templates " .
-			       " where repeat_freq = '" . $freq . "' and ((last_check is null) or (last_check < " . QuoteText(date('Y-m-j')) . ") or repeat_freq like 'c%')";
-
-			$result = sql_query( $sql );
-
-			while ( $row = mysqli_fetch_assoc( $result ) ) {
-				Focus_Tasklist::create_if_needed($row["id"], $row, $output, $default_owner, $verbose_line);
-				array_push( $verbose_table, $verbose_line);
-			}
-		}
-		if ( $verbose ) $output .= Core_Html::gui_table_args( $verbose_table);
-
-		MyLog($output, "", $log_file);
-		return $output;
-	}
-
 	static function create_if_needed($id, $row, &$output, $default_owner, &$verbose_line)
 	{
+		if (get_user_id() != 1) return; // DEBUG
+		print "tz=" . date_default_timezone_get() . "<br/>";
 		$verbose_line = array();
 		$last_run = sql_query_single_scalar("select max(date) from im_tasklist where task_template = " . $id);
 		$project_id = $row["project_id"];
@@ -476,6 +453,35 @@ class Focus_Tasklist {
 		return gui_table_args( $rows );
 	}
 
+	function working_time() {
+		$template = self::task_template();
+		if (! $template) return true; // For now just templates has working time.
+		$working_hours = sql_query_single_scalar("select working_hours from im_task_templates where id = $template");
+		if (! $working_hours) return true;
+
+		// For now allow just start-end format;
+		$start = strtok($working_hours, "-");
+		$end = strtok(null);
+
+		if (! $start or ! $end) return true;
+		if (date('G') < $start) return false;
+		if (date('G') > $end) return false;
+		return true;
+	}
+
+	function run()
+	{
+		$task_url = self::task_url();
+		print "task: $task_url";
+		if (! $task_url) {
+			self::update_status( eTasklist::bad_url );
+			return;
+		}
+		$rc = CurlGet($task_url);
+		if (! $rc) self::update_status(eTasklist::failed);
+		else self::update_status(eTasklist::done);
+		return $rc;
+	}
 }
 
 
@@ -484,6 +490,8 @@ class eTasklist {
 		waiting = 0,
 		started = 1,
 		done = 2,
-		canceled = 3;
+		canceled = 3,
+		bad_url = 4,
+		failed = 5;
 }
 

@@ -222,22 +222,15 @@ class Mission {
 
 	private function create_mission_path_date($path_id, $date)
 	{
-		$path_info = sql_query_single_assoc("select * from im_paths where id = " . $path_id);
-		$name = $path_info['description'];
-		if (! $path_info) return false;
+		$path = new Fresh_Path($path_id);
+		if (! $path) return false;
 
 		// Set mission times
-		$start_hour = 23;
-		$end_hour = 0;
-		$zone_times = path_get_zone_times($path_id);
-		foreach ($zone_times as $zone_id => $zone_time){
-			$start = strtok($zone_time, "-");
-			if ($start < $start_hour) $start_hour = $start;
-			$end = strtok("");
-			if ($end > $end_hour) $end_hour = $end;
-		}
+		$start_hour = $path->getStart();
+		$end_hour = $path->getEnd();
+		$zones = $path->getZones();
+		$name = $path->getDescription();
 
-		$zones = $path_info['zones_times'];
 		$sql = "insert into im_missions (date, start_h, end_h, zones_times, name, path_code, start_address, end_address) " .
 			" values ('$date', '$start_hour:00', '$end_hour:00', '$zones', '$name', '$path_id', '" . $this->getStartAddress(). "', '" . $this->getEndAddress()."') ";
 
@@ -337,144 +330,6 @@ function update_wp_woocommerce_shipping_zone_methods($args) {
 	}
 }
 
-/**
- * @param int $days_forward
- * @param bool $disable_all
- *
- * @return string
- * @throws Exception
- */
-
-function update_shipping_methods()
-{
-	$result = "";
-
-	$paths = path_get_all();
-	$zone_times = []; // [zone][date] = times
-	foreach ($paths as $path)
-	{
-		$missions = sql_query_array_scalar("select id from im_missions where path_code = $path and date > curdate() and accepting = 1");
-		foreach ($missions as $mission_id){
-			$m = new Mission($mission_id);
-			$date = $m->getDate();
-			$mission_zone_times = $m->getZoneTimes();
-			foreach($mission_zone_times as $zone_id => $zone_time){
-				if (! isset($zone_times[$zone_id])) $zone_times[$zone_id] = [];
-				if (! isset($zone_times[$zone_id][$date])) $zone_times[$zone_id][$date] = [];
-				$zone_times[$zone_id][$date] = $zone_time;
-			}
-		}
-	}
-
-	$result .= Core_Html::gui_header(1, "Updating all shipping methods");
-	$wc_zones = WC_Shipping_Zones::get_zones();
-
-	foreach ($wc_zones as $wc_zone)
-	{
-		$zone_id = $wc_zone['id'];
-//		print "handling $zone_id<br/>";
-		$result .= Core_Html::gui_header(2, "Updating zone " . $wc_zone['zone_name']);
-
-		foreach ($wc_zone['shipping_methods'] as $shipping){
-			if (!isset($zone_times[$zone_id])) { // No zone times. Disabling.
-				$result .= "No missions to zone " . $wc_zone['zone_name'] . " Disabling shipping methods<br/>";
-				$args                = [];
-				$args["is_enabled"]  = 0;
-				$args["instance_id"] = $shipping->instance_id;
-				// $args[""] = ;
-				update_wp_woocommerce_shipping_zone_methods( $args );
-				break;
-			}
-			foreach ($zone_times[$zone_id] as $date => $times) {
-//				$result .= "date = $date<br/>";
-				if ( strstr( $shipping->title, DateDayName( $date ) ) ) {
-					$args                = [];
-					$args["is_enabled"]  = 1;
-					$args["instance_id"] = $shipping->instance_id;
-					$args["title"]       = DateDayName( $date ) . " " . date( 'd/m/Y', strtotime( $date ) ) . ' ' . $times;
-					$result .= "title: " . $args["title"] . "<br/>";
-					update_wp_woocommerce_shipping_zone_methods( $args );
-				}
-			}
-		}
-		continue;
-		// There are times. Update the shipping methods.
-
-		$has_missions = false;
-		if ($all_missions) {
-			foreach ($all_missions as $mission_id) {
-				$m       = new Mission( $mission_id );
-				$result  .= Core_Html::gui_header( 3, $m->getMissionName() ) . "<br/>";
-				$mission = new Mission( $mission_id );
-				$date    = $mission->getDate();
-				// print $date . " " . date_day_name($date);
-
-				$shipping_ids = $mission->getShippingMethods();
-				var_dump($shipping_ids);
-				if ( $shipping_ids ) {
-					foreach ( $shipping_ids as $zone_id => $shipping ) {
-						$result .= $shipping->title . ", ";
-						if ( ! strstr( $shipping->title, DateDayName( $date ) ) ) {
-							continue;
-						}
-						//debug_var($shipping->get_data_store());
-						//die(1);
-						$args                = [];
-						$args["is_enabled"]  = 1;
-						$args["instance_id"] = $shipping->instance_id;
-						$args["title"]       = DateDayName( $date ) . " " . date('d/m/Y', strtotime($date)) . ' ' . strtok( $mission->getStartTime(), ":" ) . '-' . strtok( $mission->getEndTime(), ":" );
-						// $args[""] = ;
-						update_wp_woocommerce_shipping_zone_methods( $args );
-						$has_missions = true;
-					}
-					$result .= "updated mission " . Core_Html::GuiHyperlink($mission_id, AddToUrl(array( "operation" => "show_mission", "mission_id" => $mission_id))) . "<br/>";
-				}
-			}
-		}
-		if (! $has_missions) {
-			 $result .= "No future missions for path. Disabling shipping zones: ";
-			 foreach ( $wc_zone['shipping_methods'] as $shipping_method ) {
-				 $result              .= $shipping_method->title . ", ";
-				 $args["is_enabled"]  = 0;
-				 $args["instance_id"] = $shipping_method->instance_id;
-				 update_wp_woocommerce_shipping_zone_methods( $args );
-			 }
-		}
-	}
-
-//	$result .= Core_Html::gui_header(2, "disabling all");
-//	$zones = WC_Shipping_Zones::get_zones();
-//	$args =[];
-//	if ($disable_all)
-//		foreach ($zones as $zone) {
-//			foreach ( $zone['shipping_methods'] as $shipping_method ) {
-//				$result .= $shipping_method->title . ", ";
-//				$args["is_enabled"]  = 0;
-//				$args["instance_id"] = $shipping_method->instance_id;
-//				update_wp_woocommerce_shipping_zone_methods( $args );
-//			}
-//		}
-
-//	$last_date = strtotime("+ $days_forward days");
-
-//	$day_end = (defined ('IM_DAY_END') ? IM_DAY_END : 16); // Default day end is 4pm.
-//	if (date('H') > $day_end) {
-//		$first_day = (date('y-m-d', strtotime('now +2 days')));
-//		$last_date = date('y-m-d', strtotime ("now +" . ($days_forward +1) . " days"));
-//	} else {
-//		$first_day = (date('y-m-d', strtotime('now +1 days')));
-//		$last_date = date('y-m-d', strtotime ("now +$days_forward days"));
-//	}
-//
-//	$sql = "select id from im_missions \n".
-//			" where date >= " . quote_text($first_day) . "\n" .
-//	        " and date <= " . quote_text($last_date);
-////	print $sql;
-//	$missions = sql_query_array_scalar($sql);
-//
-//	$result .= Core_Html::gui_header(2, "enabling by missions");
-	return $result;
-}
 
 /**
  * @param $mission_id
@@ -568,26 +423,6 @@ function show_active_missions()
  * @return string
  * @throws Exception
  */
-function create_missions($path_ids = null, $forward_week = 0)
-{
-	$result = "";
-	if (! $path_ids) $path_ids = sql_query_array_scalar("select distinct path_id from im_paths");
-	foreach ($path_ids as $path_id){
-		$result .= Core_Html::gui_header(1, "Create missions");
-		if (! Mission::CreateFromPath($path_id, 8)) return "failed";
-	}
-	return "done";
-//	$this_week = date( "Y-m-d", strtotime( "last sunday" ) );
-//	$sql       = "SELECT id FROM im_missions WHERE FIRST_DAY_OF_WEEK(date) = '" . $this_week . "' ORDER BY 1";
-//
-//	$result = sql_query( $sql );
-//	while ( $row = sql_fetch_row( $result ) ) {
-//		$mission_id = $row[0];
-//		print "משכפל את משימה " . $mission_id . "<br/>";
-//
-//		duplicate_mission( $mission_id );
-//	}
-}
 /////////
 // OLD //
 /////////

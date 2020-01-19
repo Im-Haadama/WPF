@@ -50,7 +50,10 @@ class Fresh_Basket {
 			if ( $quantity <> 1 ) {
 				$basket_content .= $quantity . " ";
 			}
-			$basket_content .= get_product_name( $prod_id ) . ", ";
+			if ($prod_id > 0){
+				$b = new Fresh_Product($prod_id);
+				if ($b) $basket_content .= $b->getName(true) . ", ";
+			}
 		}
 
 		return chop( $basket_content, ", " ) . ".";

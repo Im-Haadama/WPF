@@ -1116,6 +1116,19 @@ function get_versions()
 
 function version29()
 {
+	print Core_Html::gui_header(1, "project manager");
+	sql_query("ALTER TABLE im_projects ADD manager int not null default 1;");
+
+	print Core_Html::gui_header(1, "log");
+	sql_query("create table im_log (
+	id int auto_increment
+		primary key,
+	source varchar(30),
+	time datetime not null,
+	severity int(11),
+	message varchar(2000)
+                    );");
+
 	print Core_Html::gui_header(1, "bank balance");
 	sql_query("drop function bank_balance");
 	sql_query("create function bank_balance(account_id int) returns float

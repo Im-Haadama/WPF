@@ -11,6 +11,9 @@ class Fresh {
 	 * @var      Delivery_Drivers_Loader    $loader    Maintains and registers all hooks for the plugin.
 	 */
 	protected $loader;
+	protected $auto_loader;
+	protected $delivery_manager;
+	protected $shortcodes;
 
 	/**
 	 * Plugin version.
@@ -101,6 +104,8 @@ class Fresh {
 		$this->define_constants();
 		$this->includes(); // Loads class autoloader
 		$this->loader = new Fresh_Loader();
+		$this->auto_loader = new Core_Autoloader(FRESH_ABSPATH);
+
 		$this->init_hooks();
 
 		do_action( 'fresh_loaded' );
@@ -183,10 +188,10 @@ class Fresh {
 	private function define_constants() {
 		$upload_dir = wp_upload_dir( null, false );
 
-		$this->define( 'FRESH_WC_ABSPATH', dirname( FRESH_PLUGIN_FILE ) . '/' );
+		$this->define( 'FRESH_ABSPATH', dirname( FRESH_PLUGIN_FILE ) . '/' );
 		$this->define( 'FRESH_PLUGIN_BASENAME', plugin_basename( FRESH_PLUGIN_FILE ) );
 		$this->define( 'FRESH_VERSION', $this->version );
-		$this->define( 'FRESH_INCLUDES', FRESH_WC_ABSPATH . '/includes/' );
+		$this->define( 'FRESH_INCLUDES', FRESH_ABSPATH . '/includes/' );
 		$this->define( 'FRESH_DELIMITER', '|' );
 		$this->define( 'FRESH_LOG_DIR', $upload_dir['basedir'] . '/fresh-logs/' );
 
@@ -253,6 +258,8 @@ class Fresh {
 			case "fresh_nav_add":
 				$module = GetParam("module", true);
 				return self::AddNav($module);
+			case "update_shipping_methods":
+				return $this->delivery_manager->update_shipping_methods();
 		}
 	}
 
@@ -435,9 +442,12 @@ class Fresh {
 
 		// Set up localisation.
 		$this->load_plugin_textdomain();
+		$this->delivery_manager = new Fresh_Delivery_Manager();
 
-//		var_dump(Fresh_Nav::instance());
-//		print "nav = " . Focus_Nav::instance()->get_nav() ."<br/>";
+		$shortcodes = Core_Shortcodes::instance();
+		$shortcodes->add($this->delivery_manager->getShortcodes());
+
+//		$this->shortcodes->do_init();
 
 		// Init action.
 		do_action( 'fresh_init' );
@@ -448,7 +458,7 @@ class Fresh {
 		$locale = apply_filters( 'plugin_locale', $locale, 'fresh' );
 
 		unload_textdomain( 'wpf' );
-		$file = FRESH_WC_ABSPATH . 'languages/wpf-' . $locale . '.mo';
+		$file = FRESH_ABSPATH . 'languages/wpf-' . $locale . '.mo';
 		$rc = load_textdomain( 'wfp', $file );
 //		print "loaded $file $rc <br/>";
 //		$rc1 = load_plugin_textdomain( 'wfp');
@@ -518,37 +528,40 @@ add_shortcode( 'category-content', 'category_content_func' );
 
 function category_content_func($atts, $content, $tag)
 {
-	if (! file_exists(ROOT_DIR . '/fresh/wp/Product.php')) return "not installed";
+//	if (! file_exists(FRESH_ABSPATH . '/fresh/wp/Product.php')) return "not installed";
 
-	require_once (ROOT_DIR . '/fresh/wp/Product.php');
-
+//	require_once (FRESH_ABSPATH . '/fresh/wp/Product.php');
+//
 	$my_atts = shortcode_atts( [ 'id' => get_the_ID() ], $atts, $tag );
 //
 	$id = $my_atts['id'];
 
-	$iter = new ProductIterator();
+	new Fresh_Product(1); // To load the class.
+	$iter = new Fresh_ProductIterator();
 	$iter->iterateCategory( $id );
 
 	$result = "";
 	while ( $prod_id = $iter->next()) {
-		$prod_name = strtok (get_product_name($prod_id), "(");
+		$p = new Fresh_Product($prod_id);
+		$prod_name = $p->getName(true);
 		$result .= trim($prod_name) . ", ";
 	}
 
 	return rtrim($result, ", ");
 }
 
-function content_func( $atts, $contents, $tag ) {
-	require_once( ROOT_DIR . '/fresh/catalog/Basket.php' );
+function content_func( $atts, $contents, $tag )
+{
 
 	$my_atts = shortcode_atts( [ 'id' => get_the_ID() ], $atts, $tag );
 //
 	$id = $my_atts['id'];
 
-	$text = "תכולת הסל: ";
-	$text .= get_basket_content( $id );
+	$b = new Fresh_Basket($id);
 
-//
+	$text = "תכולת הסל: ";
+	$text .= $b->get_basket_content( $id );
+
 	return $text;
 }
 

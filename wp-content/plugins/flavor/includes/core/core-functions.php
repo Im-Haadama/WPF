@@ -530,12 +530,13 @@
 		return AddParamToUrl(GetUrl(), $param_name, $param_value);
 	}
 
-	function execute_url($post, $after = "location_reload")
+	function execute_url($post, $after = null)
 	{
-		return "execute_url('". $post . "', " . $after . ")";
+		return "execute_url('". $post . "'" . ($after ? ", " . $after : "") . ")";
 	}
 
 	function AddAction($tag, $function_to_add, int $priority = 10, int $accepted_args = 1)
 	{
+//		print "adding $tag $function_to_add<br/>";
 		return add_action($tag, $function_to_add, $priority, $accepted_args);
 	}

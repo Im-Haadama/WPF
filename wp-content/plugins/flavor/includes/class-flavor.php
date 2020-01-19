@@ -347,7 +347,9 @@ class Flavor {
 	static function static_handle_show()
 	{
 		$instance = self::instance();
-		$instance->handle_operation();
+//		print "YYY:"; var_dump($_GET); print "<br/>";
+		$operation = GetParam("operation", false, "default");
+		$instance->handle_operation($operation);
 	}
 
 	/**
@@ -413,6 +415,8 @@ class Flavor {
 		 * Core classes.
 		 */
 		include_once FLAVOR_INCLUDES_ABSPATH . 'core/class-core-shortcodes.php';
+		include_once FLAVOR_INCLUDES_ABSPATH . 'core/core-functions.php';
+
 
 		/**
 		 * Data stores - used to store and retrieve CRUD object data from the database.
@@ -451,7 +455,8 @@ class Flavor {
 		// Set up localisation.
 		$this->load_plugin_textdomain();
 		$shortcodes = Core_Shortcodes::instance();
-		$shortcodes->add(array('flavor'  => array(__CLASS__ . '::static_handle_show', "read")));
+		$shortcodes->add(array('flavor'  => array(__CLASS__ . '::static_handle_show', "read"),
+			'log_viewer' => array('Core_Logger::log_viewer', 'view_logs')));
 
 		// Init action.
 		do_action( 'flavor_init' );

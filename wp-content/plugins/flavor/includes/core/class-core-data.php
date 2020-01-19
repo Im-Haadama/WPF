@@ -51,6 +51,11 @@ class Core_Data
 				$row_id = GetParam("id", true);
 				return self::Active($table_name, $row_id, $active);
 
+			case "data_delete":
+				$team_id = GetParam("team_id", true);
+				$team = new Org_Team($team_id);
+				return $team->removeMember(GetParam("ids"));
+
 		}
 	}
 
@@ -164,7 +169,6 @@ class Core_Data
 	}
 
 	static function data_parse_get($table_name, $ignore_list) {
-		$debug = false; // (1== get_user_id());
 		$values =array();
 		foreach ( $_GET as $key => $value ) {
 			$value = stripcslashes($value);
@@ -183,7 +187,6 @@ class Core_Data
 				$values[ $tbl ]  = array();
 			}
 
-			if ($debug) print "parse: $key $value<br/>";
 			$values[ $tbl ][ $field ] = array( $value, $meta );
 		}
 		return $values;
@@ -225,10 +228,7 @@ class Core_Data
 }
 	static function TableHeader($sql, $args) // $add_checkbox = false, $skip_id = false, $meta_fields = null)
 	{
-		$debug = 0;
 		$header_fields = GetArg($args, "header_fields", null);
-
-		if ($debug) { var_dump($header_fields); print "<br/>"; }
 
 		$skip_id = GetArg($args, "skip_id", false);
 
@@ -255,7 +255,6 @@ class Core_Data
 
 		$headers = array();
 		if (GetArg($args, "add_checkbox", false)) $headers["select"] = im_translate("select");
-		$debug = false;
 
 		// If not sent, create from database fields.
 		if (strstr($sql, "describe") or strstr($sql, "show"))
@@ -265,8 +264,6 @@ class Core_Data
 				if (! $skip_id or strtolower($row[0]) !== "id" and !isset($args["hide_cols"])) {
 					$headers[$row[0]] = im_translate($row[0]);
 					// array_push($headers, im_translate($row[0]));
-				} else {
-					if ($debug) print "skip header";
 				}
 			}
 		} else { // Select
@@ -350,7 +347,6 @@ class Core_Data
 		$edit_cols = GetArg($args, "edit_cols", null);
 		$transpose = GetArg($args, "transpose", null);
 		$add_field_suffix = GetArg($args, "add_field_suffix", true);
-		$debug = GetArg($args, "debug", false);
 
 		$events = GetArg($args, "events", null); // $edit ? "onchange='changed_field(" . $row_id . ")'" : null); // Valid for grid. In transposed single row it will be replaced.
 		$field_events = null;
@@ -375,7 +371,6 @@ class Core_Data
 
 			$orig_data = $data;
 			$value = self::prepare_text($data); // Default;
-			if ($debug) print  "<br/>handling $key ";
 			if (strtolower($key) == "id" and $skip_id) continue;
 
 			if ($events) {
@@ -389,9 +384,7 @@ class Core_Data
 			do {
 				if ($links and ! is_array($links))	die ("links should be array");
 				if ( $links and  array_key_exists( $key, $links )) {
-					if ($debug) print "Has links for $key";
 					if ( $selectors and array_key_exists( $key, $selectors ) ) {
-						if ($debug) print " and also selector";
 						$selector_name = $selectors[ $key ];
 						$selected = $selector_name( $input_name, $orig_data, $args ); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
 					} else $selected = $value;
@@ -433,7 +426,7 @@ class Core_Data
 							$value = Core_Html::gui_input_by_type($input_name, $type, $args, $value);
 						}
 					} else
-						$value = GuiInput($input_name, $data, $args); //gui_input( $key, $data, $field_events, $row_id);
+						$value = Core_Html::GuiInput($input_name, $data, $args); //gui_input( $key, $data, $field_events, $row_id);
 					break;
 				}
 				if ( $selectors and array_key_exists( $key, $selectors )) {
@@ -459,7 +452,6 @@ class Core_Data
 					}
 				}
 			} while (0);
-			if ($debug) print " setting ";
 			$row_data[$key] = $value;
 		}
 
@@ -630,8 +622,6 @@ class Core_Data
 	 */
 	static function TableData($sql, &$args = null)
 	{
-		$debug = 0; // (get_user_id() == 1);
-
 		if (strstr($sql, "select") and !strstr ($sql, "limit")){
 			$page = GetArg($args, "page", null);
 			if ($page) {
@@ -649,7 +639,6 @@ class Core_Data
 		// print __FUNCTION__ ; var_dump($field_list); print "<br/>";
 		$mandatory_fields = GetArg($args, "mandatory_fields", null);  $mandatory_fields = Core_Fund::array_assoc($mandatory_fields);
 		$fields = GetArg($args, "fields", null);  $fields = Core_Fund::array_assoc($fields);
-		if ($debug) {print "fields: "; var_dump($fields); print "<br/>";}
 		$skip_id = GetArg($args, "skip_id", false);
 		$meta_fields = GetArg($args, "meta_fields", null);
 		$meta_table = GetArg($args, "meta_table", null);
@@ -677,10 +666,8 @@ class Core_Data
 
 		if (strstr($sql, "describe") || strstr($sql, "show col")) // New Row
 		{
-			if ($debug) print "creating new row<br/>";
 			$rows_data = self::NewRowData( $field_list, $values, $v_line, $h_line, $m_line, $skip_id, $checkbox_class, $header_fields, $fields, $args );
 		} else {
-			if ($debug) print "getting data<br/>";
 			// print "before: "; var_dump($h_line); print "<br/>";
 			$rows_data = self::RowsData($sql, $id_field, $skip_id, $v_checkbox, $checkbox_class, $h_line, $v_line, $m_line, $header_fields, $meta_fields, $meta_table, $args);
 			// print "after: "; var_dump($h_line); print "<br/>";
@@ -763,7 +750,6 @@ class Core_Data
 		foreach ($row as $key => $cell)
 		{
 			if (isset($acc_fields[$key]) and is_array($acc_fields[$key]) and function_exists($acc_fields[$key]['func'])) {
-				// if ($debug) print "summing " . $acc_fields[$key][0][2] . "<br/>";
 				$acc_fields[$key]['func']($acc_fields[$key]['val'], $cell);
 			} else {
 //			print "not summing " . is_array($acc_fields[$key]) . " " . function_exists($acc_fields[$key][1]) . "<br/>";

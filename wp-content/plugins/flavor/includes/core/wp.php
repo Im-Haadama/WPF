@@ -214,17 +214,22 @@ function add_im_user( $user, $name, $email, $address = null, $city = null, $phon
 	return $id;
 }
 
-function get_wp_option($option_id)
+function get_wp_option($option_id, $default = null)
 {
 	$string = sql_query_single_scalar("select option_value from wp_options where option_name = '" . $option_id . "'");
+	if (! $string) return $default;
 	return maybe_unserialize($string);
 }
 
 function update_wp_option($option_id, $new_array)
 {
+	if (! get_wp_option($option_id)) {
+		$sql = sprintf("insert into wp_options (option_name, option_value) values ('%s', '%s')",
+			$option_id, serialize($new_array));
+		return sql_query($sql);
+	}
 	$new_string = serialize($new_array);
 	return sql_query("update wp_options set option_value = '" . escape_string($new_string) . "' where option_name = '" . $option_id . "'");
-
 }
 
 function force_login()

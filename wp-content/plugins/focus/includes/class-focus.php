@@ -16,6 +16,7 @@ class Focus {
 	protected $loader;
 	protected $auto_loader;
 	protected $salary;
+	protected $manager;
 	protected $tasks;
 
 	/**
@@ -120,8 +121,7 @@ class Focus {
 //		else $this->nav_name = null;
 		$this->define_constants();
 		$this->includes(); // Loads class autoloader
-		$this->loader = new Focus_Loader();
-		$this->auto_loader = new Core_Autoloader(FOCUS_ABSPATH);
+		$this->init();
 		$this->init_hooks();
 
 		do_action( 'focus_loaded' );
@@ -133,12 +133,12 @@ class Focus {
 	 * @since 2.3
 	 */
 	private function init_hooks() {
-//		print "<br/>init_hooks<br/>";
+//		print __CLASS__ . ": init_hooks<br/>";
 		// register_activation_hook( WC_PLUGIN_FILE, array( 'Focus_Install', 'install' ) );
 //		register_shutdown_function( array( $this, 'log_errors' ) );
 		add_action( 'after_setup_theme', array( $this, 'setup_environment' ) );
 		add_action( 'after_setup_theme', array( $this, 'include_template_functions' ), 11 );
-		add_action( 'init', array( $this, 'init' ), 0 );
+//		add_action( 'init', array( $this, 'init' ), 0 );
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
 
 		get_sql_conn(ReconnectDb());
@@ -149,13 +149,16 @@ class Focus {
 		// add_action( 'switch_blog', array( $this, 'wpdb_table_fix' ), 0 );
 		// $orders = new Focus_Orders( $this->get_plugin_name(), $this->get_version() );
 
-		$tasks = Focus_Tasks::instance(self::getPost());
-		$salary = Focus_Salary::instance(self::getPost());
+//		$manager = Focus_Manager::instance(self::getPost());
+//		$salary = Focus_Salary::instance(self::getPost());
+//		$tasks = Focus_Salary::instance(self::getPost());
 
-		$this->loader->add_action( 'wp_enqueue_scripts', $tasks, 'enqueue_scripts' );
-		$this->loader->add_action( 'wp_enqueue_scripts', $salary, 'enqueue_scripts' );
+		$this->loader->add_action( 'wp_enqueue_scripts', $this->manager, 'enqueue_scripts' );
+		$this->loader->add_action( 'wp_enqueue_scripts', $this->salary, 'enqueue_scripts' );
+		$this->loader->add_action( 'wp_enqueue_scripts', $this->tasks, 'enqueue_scripts' );
 
-		 require_once ABSPATH . 'wp-includes/pluggable.php';
+
+		require_once ABSPATH . 'wp-includes/pluggable.php';
 //		 if (get_user_id() == 1) wp_set_current_user(383);
 	}
 
@@ -245,12 +248,6 @@ class Focus {
 				$template_id = GetParam("id", true);
 				return Focus_Tasks::show_task($template_id);
 				break;
-//			case "reset_menu":
-//				print "Reset_menu<br/>";
-//				$user_id = get_user_id();
-//				$nav_name = $this->GetNavName($user_id);
-////				print "nam=" . $this->nav_name . "<br/>";
-//				return Focus_Nav::instance()->create_nav($nav_name, $user_id, true);
 		}
 		// Pass to relevant module.
 		$module = strtok($operation, "_");
@@ -315,8 +312,9 @@ class Focus {
 	 */
 
 	public function init() {
-//		print __CLASS__ . ':' .__FUNCTION__ . "<br/>";
-//		var_dump());
+		$this->loader = new Focus_Loader();
+		$this->auto_loader = new Core_Autoloader(FOCUS_ABSPATH);
+
 		$plugins = get_option( 'active_plugins', array());
 		$plugin = "focus/focus.php";
 		if (! in_array("flavor/flavor.php", $plugins)) {
@@ -326,8 +324,9 @@ class Focus {
 		// Before init action.
 		do_action( 'before_focus_init' );
 
+		$this->manager = new Focus_Manager(self::getPost());
 		$this->salary = Focus_Salary::instance();
-		$this->tasks = Focus_Tasks::instance();
+		$this->tasks = Focus_Tasks::instance(self::getPost());
 
 		// Set up localisation.
 		$this->load_plugin_textdomain();
@@ -335,8 +334,10 @@ class Focus {
 		$shortcodes = Core_Shortcodes::instance();
 		$shortcodes->add($this->salary->getShortcodes());
 		$shortcodes->add($this->tasks->getShortcodes());
+		$shortcodes->add($this->manager->getShortcodes());
 
 		$this->tasks->init();
+//		$this->manager->init();
 
 		// Load class instances.
 
@@ -392,10 +393,12 @@ class Focus {
 	/**
 	 *
 	 */
-	public function run ()
+	public function run()
 	{
-//		print "running loader";
+//		print "run " . __CLASS__;
 		$this->loader->run();
+		$this->manager->run();
+//		self::create_tasks();
 	}
 
 	/**

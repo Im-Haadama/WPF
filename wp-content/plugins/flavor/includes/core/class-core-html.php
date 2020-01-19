@@ -96,7 +96,7 @@ class Core_Html {
 		}
 		$data = '<input type="text" name="' . $name . '" id="' . $id . '" ';
 		if ( is_array( $value ) ) {
-			debug_var( $value );
+			DebugVar( $value );
 		}
 		if ( strlen( $value ) > 0 ) {
 			$data .= "value=\"$value\" ";
@@ -235,15 +235,13 @@ class Core_Html {
 	 * @return string
 	 */
 	static function GuiDatalist( $id, $values, $id_field, $field_name, $include_id = false ) {
-		$debug = 1;
-
 		$data = "<datalist id=\"" . $id . "\">";
 
 		foreach ( $values as $row ) {
 			// var_dump($row); print "<br/>";
 			$id_text = "";
 			if ( $include_id ) {
-				if ( ! isset( $row[ $id_field ] ) and $debug ) {
+				if ( ! isset( $row[ $id_field ] )  ) {
 					print __FUNCTION__ . ": " . $id_field . " is missing. ";
 					var_dump( $row );
 					print "<br/>";
@@ -817,6 +815,7 @@ class Core_Html {
 		$checkbox_class  = GetArg( $args, "checkbox_class", null );
 		$checkbox_events = GetArg( $args, "checkbox_events", null );
 		$prepare         = GetArg( $args, "prepare", true );
+		$reverse = GetArg($args, "reverse", false);
 
 		// Table start and end
 		$header = true;
@@ -835,6 +834,13 @@ class Core_Html {
 		if ( ! $input_rows ) return null;
 
 		$rows = array();
+
+		if ($reverse){
+			$header = $input_rows["header"];
+			if ($header) unset($input_rows["header"]);
+			$input_rows = array_reverse($input_rows, true);
+			if ($header) array_unshift($input_rows, $header);
+		}
 
 		foreach ( $input_rows as $key => $input_row ) {
 			if ( ! $prepare || in_array( $key, array( "checkbox", "header", "mandatory", "sums" ) ) ) {

@@ -281,7 +281,7 @@ class Fresh_Product {
 
 		$name = sql_query_single_scalar( $sql );
 		if ($strip and strpos($name, '(')){
-			$name = substr($name, 0, strpos($name, '('));
+			$name = trim(substr($name, 0, strpos($name, '(')));
 		}
 		return $name;
 	}

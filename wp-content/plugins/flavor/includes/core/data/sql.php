@@ -391,11 +391,11 @@ function sql_query_single_assoc( $sql ) {
 /**
  * @return string
  */
-function sql_trace()
+function sql_trace($deep = 2)
 {
 	$result = "";
 	$debug = debug_backtrace();
-	for ( $i = 1; $i < 10 && $i < count( $debug ); $i ++ ) {
+	for ( $i = 1; ($i < $deep) and ($i < count( $debug )); $i ++ ) {
 		if (isset($debug[$i]['file'])) $caller = "called from " . $debug[$i]['file'] . " ";
 		else $caller = "";
 		if (isset($debug[ $i ]["line"])) $line = ":" . $debug[ $i ]["line"];

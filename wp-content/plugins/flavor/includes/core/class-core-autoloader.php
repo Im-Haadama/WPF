@@ -26,16 +26,12 @@ if (! class_exists('Core_Autoloader')) {
 		 * The Constructor.
 		 */
 		public function __construct( $plugin_dir ) {
-//		print $plugin_dir . "<br/>";
-			if ( function_exists( '__autoload' ) ) {
+			if ( function_exists( '__autoload' ) )
 				spl_autoload_register( '__autoload' );
-			}
 
 			spl_autoload_register( array( $this, 'autoload' ) );
 
 			$this->include_path = untrailingslashit( $plugin_dir ) . '/includes/';
-
-//		print $this->include_path . "<br/>";
 		}
 
 		/**
@@ -75,24 +71,24 @@ if (! class_exists('Core_Autoloader')) {
 		public function autoload( $class ) {
 			$path = $this->include_path;
 			$class = strtolower( $class );
-			$debug = 0;
-//		if (substr($class, 0, 3) == 'wpf') $debug = 1;
-		if ($debug) print "loading " . $class . " " . strpos($class, "core_") . "<br/>";
+			$debug = false; // (get_user_id() == 1); // and ($class==="Mission"));
+
+			if ($debug) print "loading " . $class . " " . strpos($class, "core_") . "<br/>";
+
 			$file = $this->get_file_name_from_class( $class );
 
 			if ( 0 === strpos( $class, 'core_' ) ) {
 				$path = $this->include_path . "core/";
-//				print "CORE";
 			} elseif ( 0 === strpos( $class, 'core_shortcode_' ) ) {
 				$path = $this->include_path . 'shortcodes/';
 			} elseif ( 0 === strpos( $class, 'org' ) ) {
 				$path = $this->include_path . 'org/';
 			}
 
-			if ($debug) print "looking for " . $path . $file . "<br/>";
-			if ( empty( $path ) || ! $this->load_file( $path . $file ) ) {
-				$this->load_file( $path . $file );
-			}
+			if (file_exists($path.$file))
+				$this->load_file($path.$file);
+			else
+				if ($debug) print "not found  $path".$file . "<br/>";
 		}
 
 		/**

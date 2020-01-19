@@ -42,7 +42,16 @@ class Org_Worker {
 
 	function AllTeams()
 	{
-		return comma_array_explode(get_usermeta($this->id, 'teams'));
+		return CommaArrayExplode(get_usermeta($this->id, 'teams'));
+	}
+
+	function AllProjects()
+	{
+		$projects = CommaArrayExplode(get_usermeta($this->id, 'projects'));
+		if (! $projects) $projects = array();
+		$managed = sql_query_array_scalar("select id from im_projects where manager = " . $this->id);
+
+		return array_merge($projects, $managed);
 	}
 
 

@@ -13,8 +13,6 @@
 function add_stylesheet_to_head() {
     if (class_exists("Flavor") and Flavor::isManagementPage()){
     	print '<link rel="stylesheet" type="text/css" href="' .  get_template_directory_uri() . '/css/management.css'.  '">'; // Hides logo, search and white area contains them.
-    } else {
-    	print "ASDFASDF";
     }
 }
 

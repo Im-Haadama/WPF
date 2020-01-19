@@ -981,38 +981,12 @@ function path_add_zone($path_id, $zones, $time)
 	return sql_query($sql);
 }
 
-function path_get_all()
-{
-	return sql_query_array_scalar("select id from im_paths");
-}
 /**
  * @param $path_id
  * @param bool $sorted
  *
  * @return array|mixed
  */
-function path_get_zone_times($path_id, $sorted = true)
-{
-	// $zones =
-	$zone_times = unserialize($raw = sql_query_single_scalar("select zones_times from im_paths where id = $path_id"));
-	if (! $zone_times) { // Backward compatibility
-		$zone_times = array();
-		$zone = strtok($raw, ":");
-		while ($zone)
-		{
-			$zone_times[$zone] = "9-13";
-			$zone = strtok(":");
-		}
-	}
-	if ($sorted) uasort($zone_times,
-		function($a, $b) {
-			$start_a = strtok($a, "-");
-			$start_b = strtok($b, "-");
-			return $start_a <=> $start_b;
-	});
-
-	return $zone_times;
-}
 
 /**
  * @param $path_id

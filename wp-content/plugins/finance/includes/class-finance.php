@@ -258,8 +258,13 @@ class Finance {
 		/**
 		 * Class autoloader.
 		 */
-		if (! class_exists('Core_Autoloader'))
-			require_once FINANCE_INCLUDES . 'core/class-core-autoloader.php';
+		if (! class_exists('Core_Autoloader')){
+			$f = FINANCE_INCLUDES . 'core/class-core-autoloader.php';
+			if (! file_exists($f)) return false;
+
+				require_once $f;
+
+		}
 		require_once FLAVOR_INCLUDES_ABSPATH . 'core/core-functions.php';
 //	collides with old pages.	require_once FLAVOR_INCLUDES_ABSPATH . 'core/fund.php';
 		require_once FLAVOR_INCLUDES_ABSPATH . 'core/data/sql.php';

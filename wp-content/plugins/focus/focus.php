@@ -27,14 +27,8 @@ if ( ! class_exists( 'Focus' ) ) {
 }
 /**
  * Main instance of Focus.
- *
- * Returns the main instance of WC to prevent the need to use globals.
- *
  * @return Focus
  */
-
-// Global for backwards compatibility.
-// $GLOBALS['focus'] = focus();
 
 function run_focus() {
 	$plugin = new Focus("Focus");

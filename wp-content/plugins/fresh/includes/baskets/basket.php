@@ -1,18 +1,10 @@
 <?php
-require_once( '../r-shop_manager.php' );
-// require_once('../header.php');
-?>
-<?php
 /**
  * Created by PhpStorm.
  * User: agla
  * Date: 22/07/15
  * Time: 21:49
  */
-
-
-$basket_id = $_GET["basket_id"];
-$operation = $_GET["op"];
 
 MyLog( __FILE__, "operation = " . $operation );
 

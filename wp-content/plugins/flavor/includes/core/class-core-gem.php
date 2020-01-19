@@ -17,12 +17,21 @@ class Core_Gem {
 	{
 //		print "gem_add_" . $table . "<br/>";
 		AddAction("gem_add_" . $table, array('Core_Gem', 'add_wrapper'), 10, 3);
+		AddAction("gem_edi_" . $table, array('Core_Gem', 'show_wrapper'), 10, 3);
 	}
 
 	static function add_wrapper($operation, $text, $args)
 	{
 		$table_name = substr($operation, 8);
 		return self::GemAddRow($table_name, $text, $args);
+	}
+
+	static function show_wrapper($operation, $text, $args)
+	{
+		$table_name = substr($operation, 8);
+		$id = GetParam("id", true, null);
+		if (! $id) return "id is missing";
+		return self::GemElement($table_name, $id, $args);
 	}
 
 	static function GemAddRow($table_name, $text = null, $args = null){
@@ -80,16 +89,19 @@ class Core_Gem {
 		if ($title)
 			$result .= Core_Html::gui_header(1, $title, true, true) . " " .Core_Html::gui_label("id", $row_id);
 
-		$sql = "select is_active from $table_name where id = $row_id";
-		$active = sql_query_single_scalar($sql);
-		if (! $active) $result .= " not active ";
+		$check_active = GetArg($args, "cheeck_active", false);
+		if ($check_active) {
+			$sql = "select is_active from $table_name where id = $row_id";
+			$active = sql_query_single_scalar($sql);
+			if (! $active) $result .= " not active ";
+		}
 
 		if (! ($row = Core_Html::GuiRowContent($table_name, $row_id, $args))) return null;
 		$result .= $row;
 
 		if (GetArg($args, "edit", false) and $post) {
 			$result .= Core_Html::GuiButton( "btn_save", "save", array("action" => "data_save_entity('" . $post . "', '$table_name', " . $row_id . ')'));
-			$result .= Core_Html::GuiButton( "btn_active", $active ? "inactive" : "activate", array("action" => "active_entity(" . (1 - $active) .", '" . $post . "', '$table_name', " . $row_id . ')') );
+			if ($check_active) $result .= Core_Html::GuiButton( "btn_active", $active ? "inactive" : "activate", array("action" => "active_entity(" . (1 - $active) .", '" . $post . "', '$table_name', " . $row_id . ')') );
 		}
 		return $result;
 	}

@@ -13,10 +13,24 @@ class Org_Team {
 		$this->id = $id;
 	}
 
+	/**
+	 * @return mixed
+	 */
+	public function getId() {
+		return $this->id;
+	}
+
 	function getName()
 	{
 		return sql_query_single_scalar("select team_name from im_working_teams where id = " . $this->id);
+	}
 
+	static function getByName($name)
+	{
+		$id = sql_query_single_scalar("select id from im_working_teams where team_name = " . QuoteText($name));
+		if ($id)
+			return new self($id);
+		return null;
 	}
 
 	static function team_get_name($team_id)
@@ -43,16 +57,17 @@ class Org_Team {
 		return sql_query_array_scalar("select user_id from wp_usermeta where meta_key = 'teams' and meta_value like '%:" . $team_id . ":%'");
 	}
 
-	static function team_remove_member($team_id, $members)
+	function RemoveMember($members)
 	{
+		$team_id = $this->id;
 		if (is_array($members)){
 			foreach ($members as $member)
-				if (! team_remove_member($team_id, $member)) return false;
+				if (! self::RemoveMember($member)) return false;
 			return true;
 		}
 		$member = $members;
 		$current = get_usermeta($member, 'teams');
-		$teams = comma_array_explode($current);
+		$teams = CommaArrayExplode($current);
 
 		$idx = array_search($team_id, $teams);
 		if ($idx === false) {
