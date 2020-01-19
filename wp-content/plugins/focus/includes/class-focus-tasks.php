@@ -59,9 +59,8 @@ class Focus_Tasks {
 		$table_name = substr( $operation, 8 );
 
 		// Todo: move all processing to filter.
-
-//		print "opop=$operation<br/>";
-		$result = apply_filters( $operation, $operation, null, self::Args( $table_name ) );
+		$id = GetParam("id", false, null);
+		$result = apply_filters( $operation, $operation, $id, self::Args( $table_name ) );
 		if ( $result != $operation ) {
 			return $result;
 		}
@@ -517,7 +516,6 @@ class Focus_Tasks {
 			$project = Focus_Project::create_from_task( $new );
 
 			return $project->getId();
-
 		}
 
 		return self::show_project( get_user_id() );
@@ -1765,21 +1763,6 @@ class Focus_Tasks {
 	 * @return string|null
 	 */
 
-//// team_add_worker($team_id, team_manager($team_id));
-//// $result .= Core_Html::gui_header(1, im_translate("Team") . ": " . team_get_name($team_id));
-//$args = array("selectors" => array("ID" => "Focus_Tasks::gui_select_worker"),
-//              "edit" => false,
-////				array( "cancel", $action_url . "?operation=cancel_task&id=%s;action_hide_row" ),
-//
-//              "actions" => array(array("remove", add_to_url(array("operation" => "remove_from_team", "user" => "%s")))));
-//$result .= GuiTableContent("im_working_teams",
-//	'select ID from wp_users where worker_teams(id) like "%:' . $team_id . ':%"', $args);
-//$result .= Core_Html::GuiHyperlink("add member", add_to_url("operation" , "show_add_member"));
-//
-//$args = [];
-//$args["page"] = GetParam("page", false, 1);
-//$args["query"] = " team = $team_id";
-//$result .= GemTable("im_tasklist", $args);
 
 	/**
 	 * @param $manager_id
@@ -2090,6 +2073,62 @@ class Focus_Tasks {
 	function init() {
 		Core_Gem::AddTable( "im_task_templates" );
 		Core_Gem::AddTable( "im_projects" );
+		AddAction("gem_add_team_members", array(__CLASS__, 'SelectMember'), 10, 3);
+		AddAction("gem_add_project_members", array(__CLASS__, 'ShowProjectMembers'), 11, 3);
+	}
+
+	static function ShowProjectMembers($i, $id, $args)
+	{
+		$result = $i . "<br/>";
+		$result .= self::doShowProjectMembers($id);
+		return $result;
+	}
+
+	static public function SelectMember($i, $project_id, $args)
+	{
+		print "pid=" . $project_id. "<Br/>";
+		$project = new Org_Project($project_id);
+		var_dump($project);
+		$result = Core_Html::gui_header(1, $project->getName());
+
+		return $result;
+	}
+
+	static public function doShowProjectMembers($project_id)
+	{
+		$args = self::Args("im_");
+		$args["post_file"] .= "?team_id=" . $project_id;
+		$project = new Org_Project($project_id);
+
+		$result = "";
+//		$result            = Core_Html::gui_header( 1, "Edit project" );
+//		$args["selectors"] = array( "manager" => "Focus_Tasks::gui_select_worker" );
+		// $args["post_file"] = GetUrl( 1 ) . "?team_id=" . $team_id;
+//		$result            .= Core_Gem::GemElement( "im_working_teams", $project_id, $args );
+//
+		$result          .= Core_Html::gui_header( 2, "Project members" );
+		$table           = array();
+		$table["header"] = array( "name" );
+		$members = $project->all_members();
+		foreach ($members as $member)
+		{
+			$table[ $member ]["name"] = get_user_name( $member );
+		}
+
+		$args["add_checkbox"] = true;
+		$args["edit"] = true;
+		$result               .= Core_Gem::GemArray( $table, $args, "project_members" );
+//
+//		$result .= Core_Html::gui_header( 1, "add member" );
+//		$result .= gui_select_worker( "new_member", null, $args );
+//		$result .= Core_Html::GuiButton( "btn_add_member", "add_project_member(" . $project_id . ")", "add" );
+//
+//		$args = self::Args();
+
+		//GemTable("im_");
+
+		return $result;
+
 	}
 
 }

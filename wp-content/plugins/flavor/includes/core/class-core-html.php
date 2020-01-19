@@ -1555,6 +1555,7 @@ class Core_Html {
 	 */
 	static function GuiRowContent($table_name, $row_id, $args)
 	{
+		if (! $table_name) return null;
 		$id_key = GetArg($args, "id_key", "id");
 		$fields = GetArg($args, "fields", null);
 		$table_id = GetArg($args, "table_id", $table_name);

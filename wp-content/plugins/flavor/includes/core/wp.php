@@ -245,6 +245,11 @@ function get_user_name( $id ) {
 //    var_dump(get_user_meta($id, 'first_name'));
 	$result = (get_user_meta( $id, 'first_name' )[0] . " " . get_user_meta( $id, 'last_name' )[0]);
 	if (strlen ($result) > 1) return $result;
+	if (is_array($id)){
+		var_dump($id);
+		print __FUNCTION__ . ': bad id';
+		return;
+	}
 	return "user $id";
 }
 	/**

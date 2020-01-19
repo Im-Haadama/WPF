@@ -18,7 +18,6 @@ class Focus_Project {
 		$id = sql_query_single_scalar("select project_id from im_tasklist where id = $task_id");
 		if ($id) return new Focus_Tasklist($id);
 		return null;
-
 	}
 
 	/**
@@ -27,5 +26,4 @@ class Focus_Project {
 	public function getId() {
 		return $this->id;
 	}
-
 }
