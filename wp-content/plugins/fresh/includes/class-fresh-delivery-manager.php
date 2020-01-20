@@ -75,7 +75,7 @@ class Fresh_Delivery_Manager
 		$zone_times = []; // [zone][date] = times
 		foreach ($paths as $path)
 		{
-			$missions = sql_query_array_scalar("select id from im_missions where path_code = $path and date > curdate() and accepting = 1");
+			$missions = sql_query_array_scalar("select min(id) from im_missions where path_code = $path and date > curdate() and accepting = 1");
 			foreach ($missions as $mission_id){
 				$m = new Mission($mission_id);
 				$date = $m->getDate();

@@ -15,9 +15,23 @@ class Core_Gem {
 
 	static function AddTable($table)
 	{
-//		print "gem_add_" . $table . "<br/>";
+		$debug = 0; //  (get_user_id() == 1);
+		// if (get_user_id() == 1) print __CLASS__ . ":" . $table;
+		// New Row
 		AddAction("gem_add_" . $table, array('Core_Gem', 'add_wrapper'), 10, 3);
-		AddAction("gem_edi_" . $table, array('Core_Gem', 'show_wrapper'), 10, 3);
+
+		// Edit
+		AddAction("gem_edit_" . $table, array('Core_Gem', 'edit_wrapper'), 10, 3);
+
+		// Show
+		AddAction("gem_show_" . $table, array('Core_Gem', 'show_wrapper'), 10, 3, $debug);
+	}
+
+	static function edit_wrapper($operation, $text, $args)
+	{
+		$table_name = substr($operation, 8);
+//		$args["edit"] = true;
+		return self::GemAddRow($table_name, $text, $args);
 	}
 
 	static function add_wrapper($operation, $text, $args)
@@ -26,12 +40,11 @@ class Core_Gem {
 		return self::GemAddRow($table_name, $text, $args);
 	}
 
-	static function show_wrapper($operation, $text, $args)
+	static function show_wrapper($operation, $id, $args)
 	{
-		$table_name = substr($operation, 8);
-		$id = GetParam("id", true, null);
+		$table_name = substr($operation, 9);
 		if (! $id) return "id is missing";
-		return self::GemElement($table_name, $id, $args);
+		return self::GemElement("im_" . $table_name, $id, $args);
 	}
 
 	static function GemAddRow($table_name, $text = null, $args = null){

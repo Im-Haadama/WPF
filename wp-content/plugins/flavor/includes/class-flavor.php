@@ -572,7 +572,10 @@ class Flavor {
 		$result = "";
 		foreach ($module_list as $item => $sub_menu_items){
 			$args ["text"] = __("Add") . " " . __($item);
-			$args["action"] = AddParamToUrl(self::getPost(), array( "operation" => "fresh_nav_add", "main" => $item ), null, false) . ";location_reload";
+			$args["action"] = AddParamToUrl(self::getPost(),
+					array( "operation" => "nav_add",
+					       "main" => $item,
+						"target" => $sub_menu_items['target'])) . ";location_reload";
 			$result .= Core_Html::GuiButtonOrHyperlink("btn_add_" . $item, null, $args) . "<br/>";
 			foreach ($sub_menu_items as $sub_menu_item) {
 				$main_nav = $item;

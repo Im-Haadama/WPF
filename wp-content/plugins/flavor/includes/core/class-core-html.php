@@ -1199,6 +1199,60 @@ class Core_Html {
 		return $data;
 	}
 
+	static function GuiSelect($id, $selected, $args)
+	{
+		$data = "<select ";
+		if ( $multiple = GetArg($args, "multiple", false) ) {
+			$data .= "multiple ";
+		}
+		$data .= "id=\"" . $id . "\" ";
+
+		if ( $class = GetArg($args, "class", null) ) {
+			$data .= ' class = "' . $class . '" ';
+		}
+
+		$events = GetArg($args, "events", null);
+		if ( is_array( $events ) ) {
+			sql_error( "bad events in $id" );
+			var_dump( $events );
+			die( 1 );
+		}
+
+		if ( $events ) $data .= $events;
+
+		$data .= ">";
+
+		$values = GetArg($args, "values", null);
+		$id_key = GetArg($args, "id_key", "id");
+		$name = GetArg($args, "name", "name");
+
+		if ( $values ) {
+			foreach ( $values as $row ) {
+				$data .= "<option value=\"" . $row[ $id_key ] . "\"";
+				if ( $selected and ( ( $selected == $row[ $id_key ] or ( $multiple and strstr( ':' . $selected . ':', ':' . $row[ $id_key ] . ':' ) ) ) ) ) {
+					$data .= " selected ";
+				}
+				if ( is_array( $row ) ) {
+					foreach ( $row as $k => $f ) {
+						if ( substr( $k, 0, 4 ) == "data" ) {
+							$data .= $k . "=" . '"' . $f . '"';
+						}
+					}
+				}
+				// print $selected . " " . $row["$id"] . "<br/>";
+				$data .= ">";
+				if ( $name ) {
+					$data .= $row[ $name ] . "</option>";
+				}
+			}
+		}
+
+		$data .= "</select>";
+
+		return $data;
+	}
+
+
 	/**
 	 * @param $id
 	 * @param $name
@@ -1213,7 +1267,6 @@ class Core_Html {
 	 * @return string
 	 */
 	static function gui_select( $id, $name, $values, $events, $selected, $id_key = "id", $class = null, $multiple = false ) {
-
 		$data = "<select ";
 		if ( $multiple ) {
 			$data .= "multiple ";

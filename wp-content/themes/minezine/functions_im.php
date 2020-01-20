@@ -49,7 +49,7 @@ function custom_nav_menu_items( $items, $menu ){
 		if ( get_current_user_id() ){
 			$current_user = wp_get_current_user();
 				if (in_array('staff', $current_user->roles))
-					$items[] = wpf_custom_nav_menu_item( 'Office', "/focus", 0 );
+					$items[] = wpf_custom_nav_menu_item( 'Office', "/focus_main", 0 );
 		}
 	}
 

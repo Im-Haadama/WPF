@@ -13,6 +13,7 @@ class Fresh {
 	protected $loader;
 	protected $auto_loader;
 	protected $delivery_manager;
+	protected $suppliers;
 	protected $shortcodes;
 
 	/**
@@ -143,6 +144,8 @@ class Fresh {
 		add_action( 'init', 'register_awaiting_shipment_order_status' );
 
 		add_filter( 'wc_order_statuses', 'add_awaiting_shipment_to_order_statuses' );
+		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
+
 
 
 //		add_action( 'wp_footer', 'im_footer' );
@@ -255,9 +258,6 @@ class Fresh {
 				$order_id = GetParam("order_id", true);
 				return self::new_customer($order_id);
 
-			case "fresh_nav_add":
-				$module = GetParam("module", true);
-				return self::AddNav($module);
 			case "update_shipping_methods":
 				return $this->delivery_manager->update_shipping_methods();
 		}
@@ -443,11 +443,14 @@ class Fresh {
 		// Set up localisation.
 		$this->load_plugin_textdomain();
 		$this->delivery_manager = new Fresh_Delivery_Manager();
+		$this->suppliers = new Fresh_Suppliers();
 
 		$shortcodes = Core_Shortcodes::instance();
 		$shortcodes->add($this->delivery_manager->getShortcodes());
+		$shortcodes->add($this->suppliers->getShortcodes());
 
 //		$this->shortcodes->do_init();
+		$this->suppliers->init();
 
 		// Init action.
 		do_action( 'fresh_init' );
@@ -488,7 +491,11 @@ class Fresh {
 	static public function SettingPage()
 	{
 		$result = "";
-		$module_list = array( "Suppliers" => array(),
+		$pages = array(array("name" => "Suppliers", "target" => "/suppliers", "shortcode" => "fresh_suppliers"));
+		foreach ($pages as $page)
+			Core_Pages::CreateIfNeeded($page['name'], $page['target'], $page['shortcode']);
+
+		$module_list = array( "Suppliers" => array("target"=>"/suppliers"),
 		                      "Orders" => array(array("Total ordered", "total_ordered")));
 
 		$result .= Flavor::ClassSettingPage($module_list);
@@ -498,21 +505,6 @@ class Fresh {
 	static private function getPost()
 	{
 		return "/wp-content/plugins/fresh/post.php";
-	}
-
-	public function AddNav($module, $sub_menu = null)
-	{
-		print "add nav $module<br/>";
-		$flavor = Flavor::instance();
-		$nav = $flavor->getNav();
-		$menu_item = array("title" =>$module, 'url' => "/$module");
-
-		print "about to add main<br/>";
-		$module_id = $nav->AddMain($menu_item);
-
-		if (! $module_id) return $module_id; // failed.
-
-		return $nav->doAddSub($module_id, array( 'title' => $sub_menu, 'url' => "/$module&operation=" . $sub_menu));
 	}
 
 	public function enqueue_scripts() {

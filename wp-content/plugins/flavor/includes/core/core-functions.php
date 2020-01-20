@@ -535,8 +535,9 @@
 		return "execute_url('". $post . "'" . ($after ? ", " . $after : "") . ")";
 	}
 
-	function AddAction($tag, $function_to_add, int $priority = 10, int $accepted_args = 1)
+	function AddAction($tag, $function_to_add, int $priority = 10, int $accepted_args = 1, $debug = 0)
 	{
-//		print "adding $tag $function_to_add<br/>";
+		if ($debug)	print "adding $tag<br/>";
+
 		return add_action($tag, $function_to_add, $priority, $accepted_args);
 	}

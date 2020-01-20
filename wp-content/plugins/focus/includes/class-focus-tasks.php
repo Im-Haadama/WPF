@@ -126,15 +126,19 @@ class Focus_Tasks {
 		$events     = GetArg( $args, "events", null );
 
 		$projects      = $user->AllProjects( );
-//		var_dump($projects);
 		if ($projects) {
 			$projects_list = [];
-			foreach ( $projects as $project_id ) {
-				$p = new Org_Project($project_id);
-				$projects_list[] = array( "project_id" => $project_id, "project_name" => $p->getName() );
+			foreach ( $projects as $p_id ) {
+				$p = new Org_Project($p_id);
+				$projects_list[] = array( "project_id" => $p_id, "project_name" => $p->getName() );
 			}
 
-			$result .= Core_Html::gui_select( $id, "project_name", $projects_list, $events, $project_id, "project_id" );
+			$args["values"] = $projects_list;
+			$args["id_key"] = "project_id";
+			$args["name"] = "project_name";
+			$result .= Core_Html::GuiSelect($id, $project_id, $args);
+
+			// $result .= Core_Html::gui_select( $id, "project_name", $projects_list, $events, $project_id, "project_id" );
 			if ( $form_table and $new_row ) { // die(__FUNCTION__ . ":" . " missing form_table");
 				$result .= Core_Html::GuiButton( "add_new_project", "New Project", array(
 					"action" => "add_element('project', '" . $form_table . "', '" . GetUrl() . "')",
@@ -240,7 +244,7 @@ class Focus_Tasks {
 
 				case "im_projects":
 					$args["hide_cols"] = array("is_active"=>1, "manager"=>1);
-					$args["links"]     = array( "ID" => AddToUrl( array( "operation" => "gem_edi_im_projects&id=%s" ) ) );
+					$args["links"]     = array( "ID" => AddToUrl( array( "operation" => "gem_edit_im_projects&id=%s" ) ) );
 
 					break;
 			}

@@ -174,8 +174,6 @@ class Focus_Salary {
 		       " and h.is_active = 1 " .
 		       " and h.user_id = w.user_id ";
 
-//		print $sql;
-		// $output .= $sql;
 		$result   = sql_query( $sql );
 		$has_data = false;
 
@@ -517,7 +515,6 @@ class Focus_Salary {
 		$result = "";
 		if ($day_rate) $result .= Core_Html::gui_header(2, "Daily worker");
 
-//		print $day_rate . "<br/>";
 		$rate = ($day_rate ? '' : ', working_rate(user_id, project_id) as rate');
 		$sql  = "SELECT id, date, dayofweek(date) as weekday, start_time, end_time, project_id $rate, traveling, expense, expense_text, comment FROM im_working_hours WHERE 1 ";
 		$edit = GetArg( $args, "edit_lines", false );
@@ -573,7 +570,6 @@ class Focus_Salary {
 			$args["add_checkbox"] = true;
 		}
 // 	 $args["hide_cols"] = array("expense" => 1, "expense_text" => 1, "125" => 1, "150" => 1);
-
 		$rows = Core_Data::TableData( $sql, $args );
 
 		// Add computed rows.

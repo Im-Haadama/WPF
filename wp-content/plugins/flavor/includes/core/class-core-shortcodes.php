@@ -51,28 +51,31 @@ class Core_Shortcodes {
 
 	function do_init()
 	{
-//		print __FUNCTION__ . "<br/>";
+		$debug = 0; // (get_user_id() == 1);
 		if ($this->shortcodes)
 			foreach ( $this->shortcodes as $shortcode => $function_couple ) {
-//				print "handling $shortcode <br/>";
 				$function = $function_couple[0];
 				$capability = $function_couple[1];
+				if ($debug == 2) print "<br/>handling $shortcode $capability<br/>";
 				if ($capability and ! im_user_can($capability)) {
+					if ($debug >= 1) print "capability $capability is missing";
 					add_shortcode( apply_filters( "{$shortcode}_shortcode_tag", $shortcode ), 'Core_Shortcodes::missing_capability' );
 					continue;
 				}
-//				 print "adding {$shortcode}_shortcode_tag" . " ". $shortcode ." " . $function;
+				if ($debug == 2) print " going to add";
 				if (is_callable($function . "_wrapper")) {
-//					print "adding $shortcode => wrapper: " . $function . "_wrapper<br/>";
+					if ($debug == 2) print "adding $shortcode => wrapper: " . $function . "_wrapper<br/>";
 					add_shortcode( apply_filters( "{$shortcode}_shortcode_tag", $shortcode ), $function. "_wrapper" );
 					continue;
 				}
+				if ($debug == 2) print " no wrapper";
+
 				if (is_callable($function)) {
-//					print "adding function $function<br/>";
+					if ($debug == 2)	print "adding function $function<br/>";
 					add_shortcode( apply_filters( "{$shortcode}_shortcode_tag", $shortcode ), $function );
 					continue;
 				}
-				if (get_user_id() == 1) print "not callable: $function<br/>";
+				if ($debug >= 1) print "not callable: $function<br/>";
 			}
 	}
 
