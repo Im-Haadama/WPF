@@ -342,7 +342,7 @@ class Focus {
 		$shortcodes->add($this->manager->getShortcodes());
 
 		$this->tasks->init();
-//		$this->manager->init();
+		$this->manager->init();
 
 		// Load class instances.
 

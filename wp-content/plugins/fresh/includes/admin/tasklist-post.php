@@ -45,7 +45,7 @@ switch ( $operation ) {
 		break;
 	case "cancel":
 		$task_id = GetParam( "id" );
-		$sql     = "UPDATE im_tasklist SET ended = now(), status = " . eTasklist::canceled .
+		$sql     = "UPDATE im_tasklist SET ended = now(), status = " . enumTasklist::canceled .
 		           " WHERE id = " . $task_id;
 		sql_query( $sql );
 		create_tasks( null, false );

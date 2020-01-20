@@ -24,8 +24,19 @@ class Focus_Manager {
 		return self::$_instance;
 	}
 
+	function init()
+	{
+		self::create_tasks();
+	}
+
 	function create_tasks( $freqs = null, $verbose = false, $default_owner = 1 )
 	{
+		$last_run = get_wp_option("focus_create_tasks_last_run");
+		$run_period = get_wp_option("focus_create_tasks_run_period", 5*60); // every 5 min
+		if ($last_run and ((time() - $last_run) < $run_period)) return;
+
+		update_wp_option("Focus_create_tasks_last_run", time()); // Immediate update so won't be activated in parallel
+
 		if ( ! table_exists( "im_task_templates" ) ) {
 			self::$logger->fatal("no table");
 			return false;
@@ -51,12 +62,13 @@ class Focus_Manager {
 		}
 		if ( $verbose ) $output .= Core_Html::gui_table_args( $verbose_table);
 
-		self::$logger->trace($output);
+		self::$logger->info($output);
 		return true;
 	}
 
 	function run()
 	{
+//		self::create_tasks();
 		self::run_robot();
 	}
 
@@ -72,17 +84,15 @@ class Focus_Manager {
 
 	function run_robot()
 	{
-		if (get_user_id() != 1) return; // for debug
-
 		// Default time zone for repeating tasks is the system timezone.
 		// To override, user can set timezone in the im_task_templates. (not implemented completely).
 		date_default_timezone_set( get_option('timezone_string'));
 
-		$last_run = get_wp_option("Focus_last_run");
-		$run_period = get_wp_option("focus_run_period", 5*60); // every 5 min
+		$last_run = get_wp_option("focus_robot_last_run");
+		$run_period = get_wp_option("focus_robot_run_period", 5*60); // every 5 min
 		if ($last_run and ((time() - $last_run) < $run_period)) return;
 
-		update_wp_option("Focus_last_run", time()); // Immediate update so won't be activated in parallel
+		update_wp_option("focus_robot_last_run", time()); // Immediate update so won't be activated in parallel
 		self::$logger->info("create tasks");
 
 		self::$logger->trace("start robot");
@@ -110,7 +120,6 @@ class Focus_Manager {
 			self::execute_task( $task_id );
 			break;
 		}
-		// self::$logger->info("done " . (self::create_tasks() ? "successfully" : "failed"));
 	}
 
 	function execute_task($id)
@@ -118,6 +127,7 @@ class Focus_Manager {
 		$task = new Focus_Tasklist($id);
 		self::$logger->trace("going to run $id");
 		$rc = $task->run();
+		self::$logger->info($rc);
 		if (! ($rc === true))
 			self::$logger->fatal("running task $id: $rc");
 	}

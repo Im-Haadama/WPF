@@ -2010,7 +2010,6 @@ class Focus_Tasks {
 		AddAction("gem_edi_im_projects", array(__CLASS__, 'ShowProjectMembers'), 11, 3);
 		AddAction("gem_add_project_members", array(__CLASS__, 'AddProjectMember'), 11, 3);
 		AddAction("project_add_member", array(__CLASS__, 'ProjectAddMember'), 11, 3);
-
 	}
 
 	static function ProjectAddMember()

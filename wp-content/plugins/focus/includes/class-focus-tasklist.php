@@ -134,7 +134,7 @@ class Focus_Tasklist {
 
 
 	public function Ended() {
-		$sql = "UPDATE im_tasklist SET ended = now(), status = " . eTasklist::done .
+		$sql = "UPDATE im_tasklist SET ended = now(), status = " . enumTasklist::done .
 		       " WHERE id = " . $this->id;
 
 		// print $sql;
@@ -154,7 +154,7 @@ class Focus_Tasklist {
 	function task_started( $owner ) {
 		$started = sql_query_single_scalar( "select started from im_tasklist where id = " . $this->id );
 		if ( ! $started ) {
-			$this->update_status(eTasklist::started, $owner);
+			$this->update_status(enumTasklist::started, $owner);
 		}
 
 		return true;
@@ -175,7 +175,7 @@ class Focus_Tasklist {
 //	}
 
 	static function task_cancelled($task_id) {
-		$sql = "UPDATE im_tasklist SET status = " . eTasklist::canceled .", status = " . eTasklist::done .
+		$sql = "UPDATE im_tasklist SET status = " . enumTasklist::canceled . ", status = " . enumTasklist::done .
 		       " WHERE id = " . $task_id;
 		return sql_query( $sql );
 	}
@@ -210,16 +210,16 @@ class Focus_Tasklist {
 
 	function get_task_status( $status ) {
 		switch ( $status ) {
-			case eTasklist::waiting:
+			case enumTasklist::waiting:
 				print "ממתין";
 				break;
-			case eTasklist::started:
+			case enumTasklist::started:
 				print "התחיל";
 				break;
-			case eTasklist::done:
+			case enumTasklist::done:
 				print "הסתיים";
 				break;
-			case eTasklist::canceled:
+			case enumTasklist::canceled:
 				print "בוטל";
 				break;
 		}
@@ -297,19 +297,13 @@ class Focus_Tasklist {
 
 				$sql = "INSERT INTO im_tasklist " .
 				       "(task_description, task_template, status, date, project_id, priority, owner) VALUES ( " .
-				       "'" . $row["task_description"] . "', " . $template_id . ", " . eTasklist::waiting . ", now(), " . $project_id . ",  " .
+				       "'" . $row["task_description"] . "', " . $template_id . ", " . enumTasklist::waiting . ", now(), " . $project_id . ",  " .
 				       $priority . "," . $owner . ")";
 
 				// sql_query( $sql );
 				print $sql;
 			}
 		}
-	}
-
-	static function focus_log_file($full = false) {
-		$file = "";
-		if ($full) $file = '/logs/';
-		return  $file . "tasklist." . date("m-d") . ".log";
 	}
 
 	static function create_if_needed($id, $row, &$output, $default_owner, &$verbose_line)
@@ -356,7 +350,7 @@ class Focus_Tasklist {
 
 		$sql = "INSERT INTO im_tasklist " .
 		       "(task_description, task_template, status, date, project_id, priority, team, creator) VALUES ( " .
-		       "'" . $row["task_description"] . "', " . $id . ", " . eTasklist::waiting . ", now(), " . $project_id . ",  " .
+		       "'" . $row["task_description"] . "', " . $id . ", " . enumTasklist::waiting . ", now(), " . $project_id . ",  " .
 		       $priority . "," . $team . "," . $creator . ")";
 
 		sql_query( $sql );
@@ -472,20 +466,24 @@ class Focus_Tasklist {
 	function run()
 	{
 		$task_url = self::task_url();
-		print "task: $task_url";
-		if (! $task_url) {
-			self::update_status( eTasklist::bad_url );
-			return;
+
+		if (get_user_id() == 1) var_dump($task_url);
+		if ((! is_string($task_url)) or (strlen($task_url) < 5)) {
+			print "bad url" . is_string($task_url) . " " . strlen($task_url) . "<br/>";
+			self::update_status( enumTasklist::bad_url );
+			return false;
 		}
 		$rc = CurlGet($task_url);
-		if (! $rc) self::update_status(eTasklist::failed);
-		else self::update_status(eTasklist::done);
+		var_dump($rc);
+
+		if (! $rc) self::update_status(enumTasklist::failed);
+		else self::update_status(enumTasklist::done);
 		return $rc;
 	}
 }
 
 
-class eTasklist {
+class enumTasklist {
 	const
 		waiting = 0,
 		started = 1,

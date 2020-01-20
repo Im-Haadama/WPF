@@ -26,7 +26,7 @@ print header_text( false, true, true, array( "/core/gui/client_tools.js", "work.
 // Allow priority change. Set date.
 
 $last_tasks = sql_query_array_scalar( "SELECT id FROM im_tasklist " .
-                                      " WHERE status = " . eTasklist::waiting .
+                                      " WHERE status = " . enumTasklist::waiting .
                                       " AND owner = " . $u_id .
                                       " ORDER BY id DESC " .
                                       " LIMIT 5 " );

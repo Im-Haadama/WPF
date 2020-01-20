@@ -126,16 +126,12 @@
 	}
 
 		function QuoteText( $num_or_text, $sql_escape = false ) {
-			if ( is_null( $num_or_text ) ) {
-				return '"NULL"';
-			}
+			if ( is_null( $num_or_text ) ) return '"NULL"';
 
-			if ( is_numeric( $num_or_text ) ) {
-				return $num_or_text;
-			}
+			if ( is_numeric( $num_or_text ) ) return $num_or_text;
 
-//		print escape_string($num_or_text) . "<br/>";
 			if ($sql_escape) return "'" . escape_string($num_or_text) . "'";
+
 			return "'" . $num_or_text . "'";
 		}
 
@@ -433,6 +429,7 @@
 
 		$day    = date( 'w', strtotime( $date ) );
 		$locale = get_locale();
+//		print "locale= " . get_locale() . "<br/>";
 		if ( isset( $day_names[ $locale ][ $day ] ) ) {
 			return $day_names[ $locale ][ $day ];
 		}

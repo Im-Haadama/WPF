@@ -221,15 +221,21 @@ function get_wp_option($option_id, $default = null)
 	return maybe_unserialize($string);
 }
 
-function update_wp_option($option_id, $new_array)
+function update_wp_option($option_id, $array_or_string)
 {
-	if (! get_wp_option($option_id)) {
-		$sql = sprintf("insert into wp_options (option_name, option_value) values ('%s', '%s')",
-			$option_id, serialize($new_array));
-		return sql_query($sql);
-	}
-	$new_string = serialize($new_array);
-	return sql_query("update wp_options set option_value = '" . escape_string($new_string) . "' where option_name = '" . $option_id . "'");
+//	var_dump($array_or_string);
+	if (is_array($array_or_string))
+		$sql = sprintf("insert into wp_options (option_name, option_value) values ('%s', '%s')" .
+		               " on duplicate key update option_value = VALUES(option_value)",
+			$option_id, escape_string(serialize($array_or_string)));
+	else
+		$sql = sprintf("insert into wp_options (option_name, option_value) values ('%s', '%s')" .
+		               " on duplicate key update option_value = VALUES(option_value)",
+			$option_id, escape_string($array_or_string));
+
+ return sql_query($sql);
+//	$new_string = serialize($new_array);
+//	return sql_query("update wp_options set option_value = '" . escape_string($new_string) . "' where option_name = '" . $option_id . "'");
 }
 
 function force_login()

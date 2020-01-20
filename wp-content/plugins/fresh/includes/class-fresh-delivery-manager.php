@@ -71,16 +71,20 @@ class Fresh_Delivery_Manager
 	{
 		$result = "";
 
+		// Collect time from active missions into $zone_times;
 		$paths = Fresh_Path::getAll();
 		$zone_times = []; // [zone][date] = times
 		foreach ($paths as $path)
 		{
-			$missions = sql_query_array_scalar("select min(id) from im_missions where path_code = $path and date > curdate() and accepting = 1");
+			$missions = sql_query_array_scalar("select id from im_missions where path_code = $path and date > curdate() and accepting = 1");
 			foreach ($missions as $mission_id){
 				$m = new Mission($mission_id);
 				$date = $m->getDate();
 				$mission_zone_times = $m->getZoneTimes();
+//				$result .= "<br/> reading $mission_id $date ";
+
 				foreach($mission_zone_times as $zone_id => $zone_time){
+//					$result .= $zone_id .":" . $zone_time . " ";
 					if (! isset($zone_times[$zone_id])) $zone_times[$zone_id] = [];
 					if (! isset($zone_times[$zone_id][$date])) $zone_times[$zone_id][$date] = [];
 					$zone_times[$zone_id][$date] = $zone_time;
@@ -88,16 +92,20 @@ class Fresh_Delivery_Manager
 			}
 		}
 
+		// Foreach zone
+		///// foreach method
+		///////   if not times -> disable method.
+		////////  else enable + change displayed times.
 		$result .= Core_Html::gui_header(1, "Updating all shipping methods");
 		$wc_zones = WC_Shipping_Zones::get_zones();
 
 		foreach ($wc_zones as $wc_zone)
 		{
 			$zone_id = $wc_zone['id'];
-//		print "handling $zone_id<br/>";
 			$result .= Core_Html::gui_header(2, "Updating zone " . $wc_zone['zone_name']);
 
 			foreach ($wc_zone['shipping_methods'] as $shipping){
+				// var_dump($zone_times[$zone_id]); print "<br/";
 				if (!isset($zone_times[$zone_id])) { // No zone times. Disabling.
 					$result .= "No missions to zone " . $wc_zone['zone_name'] . " Disabling shipping methods<br/>";
 					$args                = [];
@@ -108,7 +116,7 @@ class Fresh_Delivery_Manager
 					break;
 				}
 				foreach ($zone_times[$zone_id] as $date => $times) {
-//				$result .= "date = $date<br/>";
+					$result .= "ship = " . $shipping->title . " ddn=" . DateDayName($date) . "<br/>";
 					if ( strstr( $shipping->title, DateDayName( $date ) ) ) {
 						$args                = [];
 						$args["is_enabled"]  = 1;
@@ -120,8 +128,8 @@ class Fresh_Delivery_Manager
 				}
 			}
 			continue;
-			// There are times. Update the shipping methods.
 
+			// There are times. Update the shipping methods.
 			$has_missions = false;
 			if ($all_missions) {
 				foreach ($all_missions as $mission_id) {
@@ -164,8 +172,16 @@ class Fresh_Delivery_Manager
 			}
 		}
 		// For debug use $result.
+		print $result;
 
 		return true;
 	}
-
 }
+
+//function zone_get_name( $id ) {
+//	if (! ($id > 0)){
+//		print sql_trace();
+//		die ("bad zone id");
+//	}
+//	return sql_query_single_scalar( "SELECT zone_name FROM wp_woocommerce_shipping_zones WHERE zone_id = " . $id );
+//}
