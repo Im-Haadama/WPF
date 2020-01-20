@@ -17,7 +17,7 @@ class Fresh_Path {
 		$this->id = $id;
 		$path_info = sql_query_single_assoc("select * from im_paths where id = " . $id);
 		$this->description = $path_info['description'];
-		$this->zones = $path_info['zones_times'];
+		$this->zones = unserialize($path_info['zones_times']);
 
 		$this->start = 23;
 		$this->end = 0;

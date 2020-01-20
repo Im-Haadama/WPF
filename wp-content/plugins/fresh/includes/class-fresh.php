@@ -260,6 +260,9 @@ class Fresh {
 
 			case "update_shipping_methods":
 				return $this->delivery_manager->update_shipping_methods();
+
+			case "mission_stop_accept":
+				return $this->delivery_manager->stop_accept();
 		}
 	}
 

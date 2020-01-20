@@ -237,6 +237,11 @@ class Mission {
 		sql_query($sql);
 		return sql_insert_id();
 	}
+
+	public function stopAccept()
+	{
+		sql_query("update im_missions set accepting = 0 where id =" . $this->id);
+	}
 	/**
 	 * @return array|null
 	 */
