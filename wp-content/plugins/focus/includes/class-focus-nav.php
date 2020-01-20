@@ -89,7 +89,8 @@ class Focus_Nav {
 
 	}
 
-	private function update_nav_projects($menu_id, $parent, $user_id) {
+	private function update_nav_projects($menu_id, $parent, $user_id)
+	{
 		// Add new ones.
 		$projects    = Org_Project::GetProjects( $user_id );
 		$menu_items = wp_get_nav_menu_items( $menu_id );
@@ -151,7 +152,8 @@ class Focus_Nav {
 		$teams   = $user->AllTeams( );
 		$menu_items = wp_get_nav_menu_items( $menu_id );
 		foreach ( $teams as $team_id ) {
-			$team_name = Org_Team::team_get_name($team_id);
+			$team = new Org_Team($team_id);
+			$team_name = $team->getName();
 			$found = false;
 			if ( $menu_items ) {
 				foreach ( $menu_items as $item ) {

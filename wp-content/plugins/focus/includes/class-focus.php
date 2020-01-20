@@ -241,6 +241,11 @@ class Focus {
 	 */
 	function handle_operation($operation)
 	{
+		$result = apply_filters( $operation, null );
+		if ( $result ) {
+			return $result;
+		}
+
 		// Handle global operation
 		switch ($operation)
 		{

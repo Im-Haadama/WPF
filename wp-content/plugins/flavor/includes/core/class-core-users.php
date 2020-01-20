@@ -30,5 +30,10 @@ class Core_Users {
 	{
 		return ( user_can( $this->id, $capability ) );
 	}
+
+	function getName()
+	{
+		return $this->wp_user->display_name;
+	}
 }
 

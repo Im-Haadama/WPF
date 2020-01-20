@@ -33,11 +33,6 @@ class Org_Team {
 		return null;
 	}
 
-	static function team_get_name($team_id)
-	{
-		return sql_query_single_scalar("select team_name from im_working_teams where id = " . $team_id);
-	}
-
 	/**
 	 * @param $worker_id
 	 *
@@ -48,13 +43,12 @@ class Org_Team {
 	{
 		$result = sql_query_array_scalar("select id from im_working_teams where manager = " . $worker_id);
 		return $result;
-		// if (! $result) team_add($worker_id, "");
 	}
 
-	static function team_all_members($team_id)
+	function AllMembers()
 	{
 		// return sql_query_array_scalar("select id from im_working_teams where manager = " . $user_id);
-		return sql_query_array_scalar("select user_id from wp_usermeta where meta_key = 'teams' and meta_value like '%:" . $team_id . ":%'");
+		return sql_query_array_scalar("select user_id from wp_usermeta where meta_key = 'teams' and meta_value like '%:" . $this->id . ":%'");
 	}
 
 	function RemoveMember($members)
@@ -82,6 +76,61 @@ class Org_Team {
 //	debug_var($new);
 //	die(1);
 		return update_usermeta($member, 'teams', $new);
+	}
+
+	function Delete($team_id)
+	{
+		// Check for permission;
+		if (self::GetManager() != get_user_id() and ! im_user_can("edit_teams")) {
+			print "no permission."; //  Manager is " . get_user_name($manager);
+			// Todo: audit
+			return false;
+		}
+		$members = self::AllMembers();
+		foreach ($members as $member) team_remove_member($team_id, $member);
+		sql_query("delete from im_working_teams where id = " . $team_id);
+		return true;
+	}
+
+	/**
+	 * @param $user_id
+	 * @param $team_name
+	 *
+	 * @param bool $manager_member
+	 *
+	 * @return int|string
+	 */
+	static function Create($user_id, $team_name, $manager_member = true)
+	{
+		sql_query( "insert into im_working_teams (team_name, manager) values (" . QuoteText($team_name) . ", $user_id)" );
+		$team_id = sql_insert_id();
+		$team = new Org_Team($team_id);
+		// Team manager doesn't have to be part of it.
+		if ($manager_member) $team->AddWorker($user_id);
+		return $team_id;
+	}
+
+	/**
+	 * @param $team_id
+	 * @param $user_id
+	 */
+	function AddWorker($user_id)
+	{
+		$current = get_usermeta($user_id, 'teams');
+		if (strstr($current ,":" . $this->id . ":")) return; // Already in.
+		if (!$current or strlen($current) < 1) $current = ":";
+
+		return update_usermeta($user_id, 'teams', $current . ":" . $this->id . ":");
+	}
+
+	/**
+	 * @param $team_id
+	 *
+	 * @return string
+	 */
+	function GetManager()
+	{
+		return sql_query_single_scalar("select manager from im_working_teams where id = " . $this->id);
 	}
 
 }

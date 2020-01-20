@@ -12,10 +12,15 @@ class Org_Project {
 	 * @param $id
 	 */
 	public function __construct( $id ) {
+		if (! ($id > 0)) {
+			print debug_trace(3);
+			die ("bad project id");
+		}
 		$this->id = $id;
 		$row = sql_query_single("select project_name, manager from im_projects where id=$id");
-		$this->manager = $row[0];
-		$this->name = $row[1];
+		$this->name = $row[0];
+		$this->manager = $row[1];
+//		print "manager=" . $this->manager . "<br/>name=".$this->name ."<br/>";
 	}
 
 	/**
@@ -40,23 +45,6 @@ class Org_Project {
 		return $this->name;
 	}
 
-	static function GetProjects($worker_id)
-	{
-		$worker = new Org_Worker($worker_id);
-		$result = [];
-		foreach ($worker->GetCompanies($worker_id) as $company){
-			if ($worker->IsGlobalCompanyWorker($company)){
-				foreach (sql_query_array_scalar("select id from im_projects where is_active = 1 and company = $company") as $project_id)
-					$result [$project_id] = self::GetName($project_id);
-			} else {
-				foreach (sql_query_array_scalar("select project_id from im_working where is_active = 1 and user_id = $worker_id") as $project_id)
-					if (self::IsActive($project_id))
-						$result [$project_id] = self::GetName($project_id);
-			}
-		}
-		return $result;
-	}
-
 /* @param $user_id
 *
 * @param bool $is_manager - just companies user is admin
@@ -79,4 +67,14 @@ class Org_Project {
 
 		return $members;
 	}
+
+	function AddWorker($user_id)
+	{
+		$current = get_usermeta($user_id, 'projects');
+		if (strstr($current ,":" . $this->id . ":")) return true; // Already in.
+		if (!$current or strlen($current) < 1) $current = ":";
+
+		return update_usermeta($user_id, 'projects', $current . ":" . $this->id . ":");
+	}
+
 }

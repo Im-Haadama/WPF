@@ -1,7 +1,8 @@
 <?php
 
 
-class Org_Worker {
+class Org_Worker extends Core_users
+{
 	private $id;
 
 	/**
@@ -20,6 +21,11 @@ class Org_Worker {
 		return $this->id;
 	}
 
+	public function getName()
+	{
+
+	}
+
 	function IsGlobalCompanyWorker($company)
 	{
 		return sql_query_single_scalar("select count(*) from im_working where user_id = " . $this->id . " and project_id = 0 and company_id = $company");
@@ -29,6 +35,8 @@ class Org_Worker {
 		$sql = " select id from im_company where admin = " . $this->id;
 		if (!$is_manager) $sql .= " union select company_id from im_working where user_id = " . $this->id;
 		$result = sql_query_array_scalar($sql);
+
+//		print "companies: " . CommaImplode($result) . "<br/>";
 
 		return $result;
 	}
@@ -82,53 +90,6 @@ class Org_Worker {
 ///////////////////////
 
 
-	/**
-	 * @param $team_id
-	 *
-	 * @return array|string
-	 * @throws Exception
-	 */
-
-	/**
-	 * @param $user_id
-	 * @param $team_name
-	 *
-	 * @param bool $manager_member
-	 *
-	 * @return int|string
-	 */
-	function team_add($user_id, $team_name, $manager_member = true)
-	{
-		sql_query( "insert into im_working_teams (team_name, manager) values (" . QuoteText($team_name) . ", $user_id)" );
-		$team_id =sql_insert_id();
-		// Team manager doesn't have to be part of it.
-		if ($manager_member) team_add_worker($team_id, $user_id);
-		return $team_id;
-	}
-
-	/**
-	 * @param $team_id
-	 * @param $user_id
-	 */
-	function team_add_worker($team_id, $user_id)
-	{
-		$current = get_usermeta($user_id, 'teams');
-		if (strstr($current ,":" . $team_id . ":")) return; // Already in.
-		if (!$current or strlen($current) < 1) $current = ":";
-
-		return update_usermeta($user_id, 'teams', $current . ":" . $team_id . ":");
-	}
-
-	/**
-	 * @param $team_id
-	 *
-	 * @return string
-	 */
-	function team_manager($team_id)
-	{
-		return sql_query_single_scalar("select manager from im_working_teams where id = $team_id");
-	}
-
 
 	/**
 	 * @param $user_id
@@ -142,22 +103,6 @@ class Org_Worker {
 	 * @return bool
 	 * @throws Exception
 	 */
-	function team_delete($team_id)
-	{
-		// Check for permission;
-		$manager = team_manager($team_id);
-		if ($manager != get_user_id() and ! im_user_can("edit_teams")) {
-			print "no permission."; //  Manager is " . get_user_name($manager);
-			// Todo: audit
-			return false;
-		}
-		$members = team_all_members($team_id);
-//	print "members: "; var_dump($members); print "<br/>";
-		foreach ($members as $member) team_remove_member($team_id, $member);
-		sql_query("delete from im_working_teams where id = " . $team_id);
-		return true;
-
-	}
 
 	/**
 	 * @param $team_id
@@ -190,5 +135,39 @@ class Org_Worker {
 		return sql_query_single_scalar("select company from im_projects where id = " . $project_id);
 	}
 
+//	function GetProjects()
+//	{
+//		return get_usermeta($this->id, 'teams'
+//		$worker_id = $this->id;
+//		$worker = new Org_Worker($worker_id);
+//		$result = [];
+//		$companies = $worker->GetCompanies($worker_id);
+//		if (!$companies) {
+//			print "Doesn't belong to any company";
+//			print "user= $worker_id<Br/>";
+//			return null;
+//		}
+////		print "companies: "; var_dump($co); print "<br/>";
+//		foreach ($worker->GetCompanies($worker_id) as $company){
+////			print "com=$company<br/>";
+//			if ($worker->IsGlobalCompanyWorker($company)){
+//				foreach (sql_query_array_scalar("select id from im_projects where is_active = 1 and company = $company") as $project_id)
+//					$result [$project_id] = self::GetName($project_id);
+//			}
+//			$direct_projects = $worker->GetProjects();
+////			var_dump($direct_projects);
+//			foreach ($direct_projects as $p_id){
+//				print "p_id=$p_id<br/>";
+//				$pr = new Org_Project($p_id);
+//				$result[$p_id] = $pr->getName();
+//			}
+//			else {
+//				foreach (sql_query_array_scalar("select project_id from im_working where is_active = 1 and user_id = $worker_id") as $project_id)
+//					if (self::IsActive($project_id))
+//						$result [$project_id] = self::GetName($project_id);
+//			}
+//		}
+//		return $result;
+//	}
 
 }

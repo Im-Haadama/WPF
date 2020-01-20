@@ -9,7 +9,7 @@ function add_member()
 {
     let member = get_value_by_name("new_member");
     let team = get_value_by_name("team_id");
-    execute_url("/focus/focus-post.php?operation=save_add_member&member=" + member + "&team=" + team, action_back);
+    execute_url(focus_post_url + "?operation=save_add_member&member=" + member + "&team=" + team, action_back);
 }
 
 function addSequenceTask(current)
@@ -25,7 +25,7 @@ function save_new_sequence()
 {
     let project = get_value_by_name("project");
     let priority = get_value_by_name("priority");
-    let request = '/focus/focus-post.php?operation=new_sequence&project=' + project + "&priority=" + priority;
+    let request = focus_post_url + '?operation=new_sequence&project=' + project + "&priority=" + priority;
     for (let i = 1; i < document.getElementById("sequence_table").rows.length - 2; i ++){
         let text = get_value_by_name("task"+ i);
         request = request + '&task' + i + '=' + encodeURI(text);
@@ -59,19 +59,26 @@ function add_project(table_name, url)
     window.location = new_loc;
 }
 
+function project_add_worker(post_file, project_id)
+{
+    let worker_id = get_value_by_name("new_worker");
+    execute_url(focus_post_url + "?operation=project_add_member&project_id=" + project_id +
+                           "&user=" + worker_id);
+}
+
 function add_to_company() {
     let email = get_value_by_name("email");
     let name = get_value_by_name("name");
     let company_id = get_value_by_name("company_id");
     let project_id = get_value_by_name("project_id");
-    execute_url("/focus/focus-post.php?operation=add_to_company&email=" + encodeURI(email) + '&company_id=' + company_id
+    execute_url(focus_post_url + "?operation=add_to_company&email=" + encodeURI(email) + '&company_id=' + company_id
         + '&name=' + encodeURI(name) + '&project_id=' + project_id, action_back);
 }
 
 function add_team_member(team_id)
 {
     let new_member = get_value_by_name("new_member");
-    let operation = "/focus/focus-post.php?operation=add_team_member&team_id=" + team_id +
+    let operation = focus_post_url + "?operation=add_team_member&team_id=" + team_id +
         "&new_member=" + new_member;
 
     execute_url(operation, location_reload);
