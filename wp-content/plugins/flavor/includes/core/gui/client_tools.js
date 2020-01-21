@@ -303,3 +303,17 @@ function success_message(xmlhttp)
     else
         alert (xmlhttp.response);
 }
+
+
+// function add_param_to_url(url, param, value)
+// {
+//     let base = url;
+//     let has = url.indexOf("&" + param);
+//     if (! (has > 0)) has = url.indexOf("?" + param);
+//     if (has) {
+//         base = url.substr(0, has);
+//         if (url.length > (has + param.length)
+//             base += url.substr(url.indexOf('?'));
+//     }
+//     return base + param + "=" + value;
+// }

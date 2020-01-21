@@ -529,6 +529,7 @@ class Flavor {
 			         strstr( $post->post_content, '[focus' ) ||
 			         strstr( $post->post_content, '[salary' ) ||
 			         strstr( $post->post_content, '[flavor' ) ||
+			         strstr( $post->post_content, '[suppliers' ) ||
 			         strstr( $post->post_content, '[finance' ) );
 		return false;
 

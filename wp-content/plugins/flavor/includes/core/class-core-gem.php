@@ -147,10 +147,11 @@ class Core_Gem {
 
 			$args["count"] = count($rows_data);
 
-			$result .= Core_Html::gui_table_args( $rows_data, $table_id, $args );
+			$result .= Core_Html::gui_div($table_id . "_container", Core_Html::gui_table_args( $rows_data, $table_id, $args ));
 
 			if (count($rows_data) == $rows_per_page + 1) { // 1 for the header
-				$result .= Core_Html::GuiHyperlink("Next page", AddToUrl("page", $page + 1)) . " ";
+				// $result .= Core_Html::GuiHyperlink("Next page", AddToUrl("page", $page + 1)) . " ";
+				$result .= Core_Html::GuiButton("btn_gem_next_" . $table_id, "next", array("action" => "gem_next_page(" . $table_id . ")"));
 				$result .= Core_Html::GuiHyperlink("All", AddToUrl("_page", -1)) . " ";
 			}
 			if ($page > 1)
