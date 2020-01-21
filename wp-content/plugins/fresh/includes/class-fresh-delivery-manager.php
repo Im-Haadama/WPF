@@ -121,6 +121,10 @@ class Fresh_Delivery_Manager
 			$result .= Core_Html::gui_header(2, $wc_zone['zone_name']);
 			foreach ( $wc_zone['shipping_methods'] as $shipping ) {
 				$result .= "<br/>checking " . $shipping->title;
+				if ($shipping->id == 'local_pickup') {
+					$result .= " local_pickup unchanged";
+					continue;
+				}
 				if ( ! in_array( $shipping->instance_id, $instances_updated ) ) {
 					$result .= "disable ";
 					$args = [];
