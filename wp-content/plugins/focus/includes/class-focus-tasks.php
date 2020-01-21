@@ -715,52 +715,29 @@ class Focus_Tasks {
 				$task_id = GetParam( "id" );
 				if ( $task_id > 0 ) {
 					$t = new Focus_Tasklist( $task_id );
-					if ( $t->Ended() ) {
-						Focus_Tasklist::create_tasks( null, false );
-
-						return true;
-					}
+					return  $t->Ended();
 				}
 
-				return;
+				return false;
 
 			case "cancel_task":
 				$task_id = GetParam( "id" );
-				if ( Focus_Tasklist::task_cancelled( $task_id ) ) {
-					print "done";
-				}
-				Focus_Tasklist::create_tasks( null, false );
-
-				return;
-
-			case "create_tasks":
-				print Focus_Tasklist::create_tasks( null, true );
-
-				return;
+				return  Focus_Tasklist::task_cancelled( $task_id );
 
 			case "postpone_task":
 				$task_id = GetParam( "id" );
 				$T       = new Focus_Tasklist( $task_id );
-				$r       = $T->Postpone();
-				Focus_Tasklist::create_tasks( null, false );
-
-				return $r;
+				return        $T->Postpone();
 
 			case "pri_plus_task":
 				$task_id = GetParam( "id" );
 				$T       = new Focus_Tasklist( $task_id );
-				$rc      = $T->setPriority( $T->getPriority() + 1 );
-				Focus_Tasklist::create_tasks( null, false );
-
-				return $rc;
+				return   $T->setPriority( $T->getPriority() + 1 );
 
 			case "pri_minus_task":
 				$task_id = GetParam( "id" );
 				$T       = new Focus_Tasklist( $task_id );
-				$rc      = $T->setPriority( $T->getPriority() - 1 );
-				create_tasks( null, false );
-
-				return $rc;
+				return $T->setPriority( $T->getPriority() - 1 );
 
 			case "save_new":
 				$table_name = GetParam( "table_name", true );
@@ -793,11 +770,7 @@ class Focus_Tasks {
 			case "delete_template":
 				$user_id = get_user_id();
 				$id      = GetParam( "row_id", true );
-				if ( template_delete( $user_id, $id ) ) {
-					print "done";
-				}
-
-				return;
+				return template_delete( $user_id, $id );
 
 			case "start_task":
 				// a. set the start time, if not set.
@@ -835,11 +808,7 @@ class Focus_Tasks {
 				$email      = GetParam( "email", true );
 				$name       = GetParam( "name", true );
 				$project_id = GetParam( "project_id", true );
-				if ( company_invite_member( $company_id, $email, $name, $project_id ) ) {
-					print "done";
-				}
-
-				return;
+				return company_invite_member( $company_id, $email, $name, $project_id );
 
 			case "save_add_member":
 				$member  = GetParam( "member", true );
@@ -849,9 +818,7 @@ class Focus_Tasks {
 					$current = ":";
 				}
 				update_usermeta( $member, "teams", ":" . $team_id . $current ); // should be :11:22:3:4:
-				print "done";
-
-				return;
+				return true;
 
 			case "logout":
 				wp_logout();

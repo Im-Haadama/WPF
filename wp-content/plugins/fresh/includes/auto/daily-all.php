@@ -30,7 +30,6 @@ ob_start();
 
 require_once( FRESH_INCLUDES . "/focus/Tasklist.php" );
 print Core_Html::gui_header( 1, "Creating tasks from templates into tasklist" );
-create_tasks( null, true );
 
 // Local scripts - active from task_template
 //$site_name = $m->getLocalSiteName();

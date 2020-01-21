@@ -20,11 +20,6 @@ require_once( FRESH_INCLUDES . "/init.php" );
 $operation = GetParam( "operation" );
 // print "op=" . $operation . "<br/>";
 switch ( $operation ) {
-	case "create":
-	case "create_tasks":
-		print "creating tasks<br/>";
-		create_tasks( null, true );
-		break;
 	case "delivered": // Done
 		$ids = GetParamArray( "ids" );
 		foreach ( $ids as $id ) {
@@ -38,9 +33,6 @@ switch ( $operation ) {
 		print $task_id . "<br/>";
 		$T       = new Focus_Tasklist( $task_id );
 		$T->ended();
-//		if ( is_array( $T->getRepeatFreq() ) ) {
-		create_tasks( $T->getRepeatFreq() );
-//		}
 		redirect_back();
 		break;
 	case "cancel":
@@ -48,14 +40,12 @@ switch ( $operation ) {
 		$sql     = "UPDATE im_tasklist SET ended = now(), status = " . enumTasklist::canceled .
 		           " WHERE id = " . $task_id;
 		sql_query( $sql );
-		create_tasks( null, false );
 		redirect_back();
 		break;
 	case "postpone":
 		$task_id = GetParam( "id" );
 		$T       = new Focus_Tasklist( $task_id );
 		$T->Postpone();
-		create_tasks( null, false );
 		redirect_back();
 		break;
 
