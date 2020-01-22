@@ -274,7 +274,7 @@ function show_menu(menu_name)
     // }
 }
 
-function selectTab(event, selected, tab_class)
+function selectTab(event, selected, tab_class, tab_links_class)
 {
     // Declare all variables
     var i, tabcontent, tablinks;
@@ -286,7 +286,7 @@ function selectTab(event, selected, tab_class)
     }
 
     // Get all elements with class="tablinks" and remove the class "active"
-    tablinks = document.getElementsByClassName("tablinks");
+    tablinks = document.getElementsByClassName(tab_links_class);
     for (i = 0; i < tablinks.length; i++) {
         tablinks[i].className = tablinks[i].className.replace(" active", "");
     }
@@ -305,15 +305,19 @@ function success_message(xmlhttp)
 }
 
 
-// function add_param_to_url(url, param, value)
-// {
-//     let base = url;
-//     let has = url.indexOf("&" + param);
-//     if (! (has > 0)) has = url.indexOf("?" + param);
-//     if (has) {
-//         base = url.substr(0, has);
-//         if (url.length > (has + param.length)
-//             base += url.substr(url.indexOf('?'));
-//     }
-//     return base + param + "=" + value;
-// }
+function add_param_to_url(url, param, value)
+{
+    let base = url;
+    // Lets search &param = or ?param=
+    let has = url.indexOf("&" + param);
+    if (! (has > 0))
+        has = url.indexOf("?" + param);
+    if (has > 0) { // if found, remove them
+        base = url.substr(0, has); // Take before part
+        if (url.length > (has + param.length)) // If there is after the value
+            base += url.substr(url.indexOf('&'));
+    }
+    if (base.indexOf('?') === -1) base += '?';
+    else base += '&';
+    return base + param + "=" + value;
+}

@@ -24,11 +24,9 @@ class Focus_Salary {
 	 * Focus_Salary constructor.
 	 * gets the post file.
 	 */
-	public function __construct( $post_file ) {
-//		print "post: $post_file<br/>";
+	public function __construct( $post_file )
+	{
 		$this->post_file = $post_file;
-
-//		add_action( 'get_header', array( $this, 'create_nav' ) );
 	}
 
 	/**

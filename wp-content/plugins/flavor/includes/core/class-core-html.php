@@ -1565,14 +1565,22 @@ class Core_Html {
 	 *
 	 * @return string
 	 */
-	static function GuiTabs($tabs)
+	static function GuiTabs($tabs, $args = null)
 	{
 		$result = '<div class="tab">';
 
-		$args = [];
-		$args["class"] = "tablinks";
+//		$args["class"] = "tablinks";
 		$contents = "";
-		$div_args = array("class" => "tabcontent");
+		$class = GetArg($args, "class", "tab");
+
+		$div_args = $args;
+		$div_class = "div_$class";
+		$div_args["class"] = $div_class;
+
+		$button_args = $args;
+		$btn_class = "btn_$class";
+		$button_args["class"] = $btn_class;
+
 		$shown_tab = GetArg($args, "show_tab", 0);
 		$tab_index = 0;
 		foreach ($tabs as $tab)
@@ -1586,8 +1594,8 @@ class Core_Html {
 			$div_args["style"] = (($tab_index == $shown_tab) ? 'display: block': "");
 			$contents .= Core_Html::GuiDiv($name, $tab[2], $div_args);
 
-			$args["events"] = "onclick=\"selectTab(event, '$name', 'tabcontent')\"";
-			$result .= Core_Html::GuiButton("btn_tab_$name", $display_name, $args);
+			$button_args["events"] = "onclick=\"selectTab(event, '$name', '$div_class', '$btn_class')\"";
+			$result .= Core_Html::GuiButton("btn_tab_$name", $display_name, $button_args);
 			$tab_index++;
 		}
 		$result .= "</div>";

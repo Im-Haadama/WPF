@@ -47,6 +47,10 @@ class Focus_Tasks {
 
 		$file = FOCUS_INCLUDES_URL . 'focus.js';
 		wp_enqueue_script( 'focus', $file, null, $this->version, false );
+
+		$file = FLAVOR_INCLUDES_URL . 'core/gem.js';
+		wp_enqueue_script( 'gem', $file, null, $this->version, false );
+
 	}
 
 	static function show_main_wrapper() {
@@ -895,11 +899,12 @@ class Focus_Tasks {
 		}
 
 		if ( $companies = $worker->GetCompanies( true ) ) {
+			$args = self::Args();
 			foreach ( $companies as $company ) {
 				array_push( $tabs, array(
 					"company_settings",
 					"Company settings",
-					self::show_edit_company( $company, $user_id )
+					self::CompanyTabs($company)
 				) );
 			}
 		}
@@ -912,6 +917,27 @@ class Focus_Tasks {
 		return $result;
 	}
 
+	static function CompanyTabs($company)
+	{
+		$args = self::Args();
+		$tabs = [];
+
+		array_push( $tabs, array(
+			"teams",
+			"Teams",
+			self::company_teams( $company, $args )
+		) );
+
+		array_push( $tabs, array(
+			"workers",
+			"Workers",
+			self::company_workers( $company, $args )
+		) );
+
+
+		$args["class"] = "company_tabs";
+		return Core_Html::GuiTabs($tabs, $args);
+	}
 	static function search_box() {
 		$result = "";
 		$result .= Core_Html::GuiInput( "search_text", "(search here)",
@@ -1420,19 +1446,18 @@ class Focus_Tasks {
 
 	/**
 	 * @param $company_id
-	 * @param $page
+	 * @param $args
 	 *
 	 * @return string
 	 * @throws Exception
 	 */
-	static function show_edit_company( $company_id, $page ) {
+	static function company_teams( $company_id, $args ) {
 		$c                 = new WPF_Company( $company_id );
 		$result            = Core_Html::gui_header( 1, $c->getName() );
-		$args              = [];
 		$args["query"]     = "manager = 1";
 		$args["links"]     = array( "id" => AddToUrl( array( "operation" => "show_edit_team&id=%s" ) ) );
 		$args["selectors"] = array( "team_members" => __CLASS__ . "::gui_show_team" );
-		$args["page"]      = $page;
+		//$args["post_file"] .= "operation=company_teams";
 
 		$teams = Core_Data::TableData( "select id, team_name from im_working_teams where manager in \n" .
 		                               "(select user_id from im_working where company_id = $company_id) order by 1", $args );
@@ -1451,6 +1476,35 @@ class Focus_Tasks {
 
 		return $result;
 	}
+
+	static function company_workers( $company_id, $args ) {
+		$c                 = new WPF_Company( $company_id );
+		$result            = Core_Html::gui_header( 1, $c->getName() );
+		$args["query"]     = "manager = 1";
+		$args["links"]     = array( "id" => AddToUrl( array( "operation" => "show_edit_worker&id=%s" ) ) );
+//		$args["selectors"] = array( "team_members" => __CLASS__ . "::gui_show_team" );
+		//$args["post_file"] .= "operation=company_teams";
+
+		$workers = Core_Data::TableData( "select id, team_name from im_working_teams where manager in \n" .
+		                               "(select user_id from im_working where company_id = $company_id) order by 1", $args );
+		if ( $workers ) {
+			foreach ( $workers as $key => &$row ) {
+				if ( $key == "header" ) {
+					$row [] = im_translate( "Team members" );
+				} else {
+					$team = new Org_Team($row["id"]);
+					$row["team_members"] = CommaImplode( $team->AllMembers());
+				}
+			}
+		} else {
+			return null;
+		}
+		//GemTable("im_working_teams", $args);
+		$result .= Core_Gem::GemArray( $workers, $args, "company_workers" );
+
+		return $result;
+	}
+
 
 	/**
 	 * @param $args
@@ -1974,7 +2028,7 @@ class Focus_Tasks {
 
 		// Project related actions.
 		Core_Gem::AddTable( "im_projects" ); // add + edit
-		AddAction("gem_edi_im_projects", array(__CLASS__, 'ShowProjectMembers'), 11, 3);
+		AddAction("gem_edit_im_projects", array(__CLASS__, 'ShowProjectMembers'), 11, 3);
 		AddAction("gem_add_project_members", array(__CLASS__, 'AddProjectMember'), 11, 3);
 		AddAction("project_add_member", array(__CLASS__, 'ProjectAddMember'), 11, 3);
 	}

@@ -47,64 +47,6 @@ $date = GetParam("date", false, $d);
 $debug = GetParam("debug", false, false);
 
 if ( $op == 'check' ) { // would run on conductor server
-	$fail = false;
-	if ($debug) print "checking backup files<br/>";
-
-	// Check if we have new files from backuped servers.
-	// print "0 valid backups"; // No attention needed. All ok.
-
-	$results = [];
-	$results["header"] = array( "hostname", "result" );
-
-	foreach ( $hosts_to_sync as $key => $host_info ) {
-		$output = "";
-		$url    = $host_info[2] . "/utils/backup_manager.php?tabula=145db255-79ea-4e9c-a51d-318a86c999bf";
-		$get_name = $url . "&op=name&date=" . $date;
-		if ($debug) print $get_name . "<br/>";
-		$file_name = CurlGet( $get_name );
-		if ( strstr( $file_name, "Fatal" ) or strlen($file_name) < 5) {
-			$results[$key] = array( "hostname" => $host_info[1], "result" => "error file name: " . $file_name );
-			$fail = true;
-			continue;
-		}
-		$full_path = IM_BACKUP_FOLDER . '/' . $file_name;
-
-		if ( ! file_exists( $full_path ) ) {
-			$fail   = true;
-			$output .= "missing file $full_path";
-			$results[$key] = array("hostname" => $host_info[1], "result" => $output);
-			// array_push( $results, array( $host_info[1], $file_name, $output ) );
-			continue;
-		}
-
-		if ( time() - filemtime( $full_path ) > 24 * 3600 ) {
-			$fail   = true;
-			$output .= "old file: " . date( 'Y-m-d', filemtime( $full_path ) );
-		} else {
-			$output .= date( 'Y-m-d', filemtime( $full_path ) ) . " ";
-		}
-
-		if ( filesize( $full_path ) < 20000 ) {
-			$fail   = true;
-			$output .= "small file: " . filesize( $full_path );
-		} else {
-			$output .= "size= " . filesize( $full_path );
-		}
-
-		$results[$key] = array("hostname" => $host_info[1], "result" => $output);
-	}
-
-	// Todo: Delete old ones.
-	print ( $fail ? "1 failed" : "0 all ok" );
-	if ($fail) print "url=" . $url . "<br/>";
-
-	$args = [];
-	print gui_table_args( $results, "result_table", $args );
-
-//	if ($fail) print im_file_get_html("http://tabula.aglamaz.com/utils/daily.log." . date('d') . ".html");
-
-//	print "going to die";
-	die(0);
 }
 
 print gui_header( 1, "Running daily on master" );

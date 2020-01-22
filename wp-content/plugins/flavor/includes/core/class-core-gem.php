@@ -13,18 +13,18 @@ class Core_Gem {
 		$this->object_types = null;
 	}
 
-	static function AddTable($table)
+	static function AddTable($table, $class = 'Core_Gen')
 	{
 		$debug = 0; //  (get_user_id() == 1);
 		// if (get_user_id() == 1) print __CLASS__ . ":" . $table;
 		// New Row
-		AddAction("gem_add_" . $table, array('Core_Gem', 'add_wrapper'), 10, 3);
+		AddAction("gem_add_" . $table, array($class, 'add_wrapper'), 10, 3);
 
 		// Edit
-		AddAction("gem_edit_" . $table, array('Core_Gem', 'edit_wrapper'), 10, 3);
+		AddAction("gem_edit_" . $table, array($class, 'edit_wrapper'), 10, 3);
 
 		// Show
-		AddAction("gem_show_" . $table, array('Core_Gem', 'show_wrapper'), 10, 3, $debug);
+		AddAction("gem_show_" . $table, array($class, 'show_wrapper'), 10, 3, $debug);
 	}
 
 	static function edit_wrapper($operation, $text, $args)
@@ -74,10 +74,12 @@ class Core_Gem {
 		return $result;
 	}
 
-	static function GemNewElement($table_name, $args)
+	function NewElement($table_name, $args)
 	{
 		return Core_Html::NewRow($table_name, $args);
 	}
+
+
 	/**
 	 * @param $table_name
 	 * @param $row_id
@@ -135,6 +137,11 @@ class Core_Gem {
 
 		$title = GetArg($args, "title", null);
 		$edit = GetArg($args, "edit", false);
+		$post_file = GetArg($args, "post_file", null);
+		if (! $post_file) {
+			return debug_trace(1) . "<br/>".
+			       "post_file is missing";
+		}
 
 		$no_data_message = GetArg($args, "no_data_message", "No data for now");
 		if ($title) $result .= Core_Html::gui_header(2, $title);
@@ -147,17 +154,22 @@ class Core_Gem {
 
 			$args["count"] = count($rows_data);
 
-			$result .= Core_Html::gui_div($table_id . "_container", Core_Html::gui_table_args( $rows_data, $table_id, $args ));
+			$div_content = "";
 
 			if (count($rows_data) == $rows_per_page + 1) { // 1 for the header
+				$div_content .= Core_Html::gui_header(1, "page", true, true) . " " . Core_Html::gui_label("gem_page_" . $table_id, $page) . "<br/>";
 				// $result .= Core_Html::GuiHyperlink("Next page", AddToUrl("page", $page + 1)) . " ";
-				$result .= Core_Html::GuiButton("btn_gem_next_" . $table_id, "next", array("action" => "gem_next_page(" . $table_id . ")"));
-				$result .= Core_Html::GuiHyperlink("All", AddToUrl("_page", -1)) . " ";
+				$div_content .= Core_Html::GuiButton("btn_gem_next_" . $table_id, "next", array("action" => "gem_next_page(" . QuoteText($post_file."?operation=gem_show&table=".$table_id)  . "," . QuoteText($table_id) . ")"));
+				$div_content .= Core_Html::GuiHyperlink("All", AddToUrl("_page", -1)) . " ";
 			}
 			if ($page > 1)
-				$result .= Core_Html::GuiHyperlink("Previous page", AddToUrl("_page", $page - 1));
+				$div_content .= Core_Html::GuiHyperlink("Previous page", AddToUrl("_page", $page - 1));
 
-			if ($args["count"] > 10) $result .= Core_Html::GuiHyperlink("search", AddToUrl("search", "1"));
+			if ($args["count"] > 10) $div_content .= Core_Html::GuiHyperlink("search", AddToUrl("search", "1"));
+
+			$div_content .= Core_Html::gui_table_args( $rows_data, $table_id, $args );
+
+			$result .= Core_Html::gui_div("gem_div_" . $table_id, $div_content);
 
 		} else {
 			$result .=  $no_data_message . Core_Html::Br();
@@ -291,15 +303,19 @@ class Core_Gem {
 		return $result;
 	}
 
-	static function handle_operation($operation)
+	static function handle_operation($operation, $args)
 	{
-		print __CLASS__;
-		if (substr($operation, 0, 3) == "gem") $operation = strtok($operation, "_"); // remove gem_ if exist
-		$operator = strtok($operation, "_"); // add
-		$table = strtok();
-		switch ($operator){
+		if (substr($operation, 0, 3) == "gem") {
+			strtok($operation, "_");  // remove gem_ if exist
+			$operation = strtok("_");
+		}
+
+		$table = GetParam("table");
+		switch ($operation){
 			case "add":
 				return self::GemAddRow($table);
+			case "page":
+				return self::GemTable($table, $args);
 		}
 	}
 

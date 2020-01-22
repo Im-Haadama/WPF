@@ -242,9 +242,7 @@ class Focus {
 	function handle_operation($operation)
 	{
 		$result = apply_filters( $operation, null );
-		if ( $result ) {
-			return $result;
-		}
+		if ( $result ) return $result;
 
 		// Handle global operation
 		switch ($operation)
@@ -254,11 +252,13 @@ class Focus {
 				return Focus_Tasks::show_task($template_id);
 				break;
 		}
+		$args = [];
+		$args["post_file"] = GetUrl(1);
 		// Pass to relevant module.
 		$module = strtok($operation, "_");
 		switch ($module){
 			case "gem":
-				return Core_Gem::handle_operation($operation);
+				return Core_Gem::handle_operation($operation, $args);
 			case "salary":
 				$salary = Focus_Salary::instance();
 				return ($salary->handle_operation($operation));
@@ -332,6 +332,7 @@ class Focus {
 		$this->manager = new Focus_Manager(self::getPost());
 		$this->salary = Focus_Salary::instance();
 		$this->tasks = Focus_Tasks::instance(self::getPost());
+		WPF_Organization::init();
 
 		// Set up localisation.
 		$this->load_plugin_textdomain();
@@ -343,6 +344,7 @@ class Focus {
 
 		$this->tasks->init();
 		$this->manager->init();
+		Core_Gem::AddTable("company_teams", 'Focus_Tasks');
 
 		// Load class instances.
 
