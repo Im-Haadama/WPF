@@ -90,7 +90,7 @@ function greeting( $args = null, $force_login = false )
 	$user_id = get_user_id($force_login);
 
 	if (! $user_id and $force_login) {
-		print force_login();
+		print auth_redirect();
 		die (1);
 	}
 
@@ -236,15 +236,6 @@ function update_wp_option($option_id, $array_or_string)
  return sql_query($sql);
 //	$new_string = serialize($new_array);
 //	return sql_query("update wp_options set option_value = '" . escape_string($new_string) . "' where option_name = '" . $option_id . "'");
-}
-
-function force_login()
-{
-	auth_redirect();
-//	$url = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_HOST ) . '/wp-login.php?redirect_to=' . $_SERVER['REQUEST_URI'] . '"';
-//	print '<script language="javascript">';
-//	print "window.location.href = '" . $url . "'";
-//	print '</script>';
 }
 
 function get_user_name( $id ) {

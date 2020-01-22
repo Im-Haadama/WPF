@@ -47,7 +47,7 @@ if ( ! im_user_can( "show_bank" ) ) {
 
 // Auth
 	if ( ! get_user_id() ) {
-		print force_login();
+		print auth_redirect();
 		return;
 	}
 

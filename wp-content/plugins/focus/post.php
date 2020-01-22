@@ -18,6 +18,6 @@ $rc = $focus->handle_operation($operation);
 if ($rc === false) { print "failed"; return; }
 if ($rc === true) { print "done"; return; }
 if (is_numeric($rc)) { print "done.$rc"; return; }
-// Something went wrong. The procssing would print something.
+// Something went wrong. The processing would print something.
 
 print $rc;

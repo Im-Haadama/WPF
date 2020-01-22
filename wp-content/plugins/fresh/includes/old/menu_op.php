@@ -36,7 +36,7 @@ if ( $user->ID == "0" ) {
 	// Force login
 	$inclued_files = get_included_files();
 	MyLog( __FILE__, $inclued_files[ count( $inclued_files ) - 2 ] );
-	force_login();
+	auth_redirect();
 	var_dump( $user );
 	exit();
 }

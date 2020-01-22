@@ -58,8 +58,23 @@ class Org_Worker extends Core_users
 		return array_merge($projects, $managed);
 	}
 
+	function AllCompanies()
+	{
+		// return CommaArrayExplode(get_usermeta($this->id, 'teams'));
+		unserialize(get_usermeta($this->id, 'companies'));
+	}
 
-	function worker_add_company($user_id, $company_id, $project_id)
+	function AddCompany($company_id)
+	{
+		$current = unserialize(get_usermeta($this->id, 'companies'));
+		if (! $current) $current = array();
+		if (! in_array($company_id, $current)) {
+			array_push($current, $company_id);
+			update_usermeta($this->id, 'companies', serialize($current));
+		}
+	}
+
+	function AddWorkingProject($user_id, $company_id, $project_id)
 	{
 		$current = $this->GetCompanies();
 		if (in_array($user_id, $current)) return true; // already in.

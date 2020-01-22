@@ -14,7 +14,7 @@ require_once( "Order.php" );
 //require_once(FRESH_INCLUDES . "/routes/gui.php");
 
 if (! get_user_id()) {
-	force_login();
+	auth_redirect();
 	return;
 }
 

@@ -63,7 +63,7 @@ function project_add_worker(post_file, project_id)
 {
     let worker_id = get_value_by_name("new_worker");
     execute_url(focus_post_url + "?operation=project_add_member&project_id=" + project_id +
-                           "&user=" + worker_id);
+                           "&user=" + worker_id, location_reload);
 }
 
 function add_to_company() {
@@ -111,4 +111,18 @@ function update_search(xmlhttp)
 
     let result_div = document.getElementById("search_result");
     result_div.innerHTML = output;
+}
+
+function company_add_worker(post, company)
+{
+    let worker = get_value_by_name("worker_email");
+    let message = get_value_by_name("welcome_message");
+
+    if (worker.length < 5 || worker.indexOf("@") === -1) {
+        alert("enter valid worker email");
+        return;
+    }
+    let url = post + "?operation=add_worker&company_id=" + company + "&worker_email=" + worker +
+        "&message=" + encodeURI(message);
+    execute_url(url, action_back);
 }

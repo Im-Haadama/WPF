@@ -25,7 +25,7 @@ if ( isset( $multisite ) or $_SERVER['REMOTE_ADDR'] == "160.153.129.234" or // A
 	$user = wp_get_current_user();
 	if ( $user->ID == "0" ) {
 		// Force login
-		force_login();
+		auth_redirect();
 		exit();
 	}
 

@@ -13,7 +13,7 @@
 				return $current_user->ID;
 			}
 			if ( $force_login ) {
-				force_login(); // Redirects to login form.
+				auth_redirect(); // Redirects to login form.
 			}
 
 			return 0;

@@ -587,7 +587,6 @@ class Focus_Tasks {
 		return $result;
 	}
 
-
 	/**
 	 * @param $url
 	 * @param $owner
@@ -904,7 +903,7 @@ class Focus_Tasks {
 				array_push( $tabs, array(
 					"company_settings",
 					"Company settings",
-					self::CompanyTabs($company)
+					self::CompanySettings($company)
 				) );
 			}
 		}
@@ -917,7 +916,7 @@ class Focus_Tasks {
 		return $result;
 	}
 
-	static function CompanyTabs($company)
+	static function CompanySettings($company)
 	{
 		$args = self::Args();
 		$tabs = [];
@@ -934,10 +933,10 @@ class Focus_Tasks {
 			self::company_workers( $company, $args )
 		) );
 
-
 		$args["class"] = "company_tabs";
 		return Core_Html::GuiTabs($tabs, $args);
 	}
+
 	static function search_box() {
 		$result = "";
 		$result .= Core_Html::GuiInput( "search_text", "(search here)",
@@ -1467,7 +1466,16 @@ class Focus_Tasks {
 					$row [] = im_translate( "Team members" );
 				} else {
 					$team = new Org_Team($row["id"]);
-					$row["team_members"] = CommaImplode( $team->AllMembers());
+					$all = $team->AllMembers();
+					if ($all)
+						$row["team_members"] = CommaImplode( $all);
+					else
+						continue;
+					// Temp:
+//					foreach ($all as $worker){
+//						$w = new Org_Worker($worker);
+//						$w->AddCompany($company_id);
+//					}
 				}
 			}
 		}
@@ -1485,22 +1493,29 @@ class Focus_Tasks {
 //		$args["selectors"] = array( "team_members" => __CLASS__ . "::gui_show_team" );
 		//$args["post_file"] .= "operation=company_teams";
 
-		$workers = Core_Data::TableData( "select id, team_name from im_working_teams where manager in \n" .
-		                               "(select user_id from im_working where company_id = $company_id) order by 1", $args );
-		if ( $workers ) {
-			foreach ( $workers as $key => &$row ) {
-				if ( $key == "header" ) {
-					$row [] = im_translate( "Team members" );
-				} else {
-					$team = new Org_Team($row["id"]);
-					$row["team_members"] = CommaImplode( $team->AllMembers());
-				}
-			}
-		} else {
-			return null;
-		}
+		$worker_ids = $c->GetWorkers(); // Should return the admin at least.
+		if (! $worker_ids) return null;
+
+		$workers = Core_Data::TableData("select id, client_displayname(id) from wp_users where id in ("
+		. CommaImplode($worker_ids) . ")");
+		$args["post_file"] .= "?company=" . $company_id;
+//		if ( $workers ) {
+//			foreach ( $workers as $key => &$row ) {
+//				if ( $key == "header" ) {
+//					// Add col to header, if needed later
+//				} else {
+//					$team = new Org_Team($row["id"]);
+//					$row["team_members"] = CommaImplode( $team->AllMembers());
+//				}
+//			}
+//		} else {
+//			return null;
+//		}
+//		if (get_user_id() == 1) var_dump($workers);
 		//GemTable("im_working_teams", $args);
+		$args["add_button"] = false;
 		$result .= Core_Gem::GemArray( $workers, $args, "company_workers" );
+		$result .= Core_Html::GuiHyperlink("Add", AddToUrl(array("operation"=>"show_add_company_worker", "company" => $company_id)));
 
 		return $result;
 	}
@@ -2031,6 +2046,47 @@ class Focus_Tasks {
 		AddAction("gem_edit_im_projects", array(__CLASS__, 'ShowProjectMembers'), 11, 3);
 		AddAction("gem_add_project_members", array(__CLASS__, 'AddProjectMember'), 11, 3);
 		AddAction("project_add_member", array(__CLASS__, 'ProjectAddMember'), 11, 3);
+
+		// Company
+		AddAction("show_add_company_worker", array(__CLASS__, 'AddCompanyWorker'), 11, 3);
+		AddAction("add_worker", array(__CLASS__, 'doAddCompanyWorker'), 11, 3);
+	}
+
+	static function DoAddCompanyWorker()
+	{
+		$user_id = get_user_id();
+		if (! $user_id) {
+			print "need to connect first";
+			return false;
+		}
+		$User = new Org_Worker($user_id);
+
+		$company_id = GetParam("company_id");
+//		var_dump($User->GetCompanies());
+//		print "<br/>co=$company_id";
+		if (!in_array($company_id, $User->GetCompanies())){
+			print "not your company!";
+			return false;
+		}
+
+		$worker_email = GetParam("worker_email");
+		$new_user = get_user_by('email', $worker_email);
+		if (! $new_user) {
+			$name = strtok($worker_email, "@");
+			$new_user_id = wp_create_user($name, $name, $worker_email);
+			if (! ($new_user > 0)) {
+				var_dump($new_user);
+				return false;
+			}
+		} else
+			$new_user_id = $new_user->ID;
+
+		$U = new Org_Worker($new_user_id);
+		$U->AddCompany($company_id);
+
+		$message = GetParam("message");
+		$company = new Org_Company($company_id);
+		return mail($worker_email, "Welcome to Focus!, company " . $company->getName(), $message);
 	}
 
 	static function ProjectAddMember()
@@ -2042,10 +2098,42 @@ class Focus_Tasks {
 		return $project->addWorker($worker_id);
 	}
 
+	static function AddCompanyWorker($operation)
+	{
+		$args = [];
+		$company_id = GetParam("company", true);
+		$result = "";
+		$result .= Core_Html::gui_header(1, "New worker!");
+		$result .= Core_Html::gui_header(2, "Enter worker email address");
+		$result .= Core_Html::GuiInput("worker_email", null, $args) . "<br/>";
+		$message = sql_query_single_scalar("select post_content from wp_posts where post_title = 'welcome_message'");
+		if (! $message) {
+			$message = "Welcome to work with me in Focus management tool!\n" .
+			           get_user_name( get_user_id() );
+			$result .= "You can create default message as a private post with title welcome_message" . "\n" .
+			           Core_Html::GuiHyperlink( "here", "/wp-admin/post-new.php" );
+		}
+		else {
+			$message =strip_tags($message);
+			$post_id = sql_query_single_scalar("select id from wp_posts where post_title = 'welcome_message'");
+			$result .= Core_Html::GuiHyperlink("Edit this message here","/wp-admin/post.php?post=$post_id&action=edit");
+		}
+		$result .= Core_Html::gui_textarea("welcome_message", $message);
+		$result .= Core_Html::GuiButton("btn_add_worker", "Add",
+			array("action" => 'company_add_worker(' . QuoteText(self::getPost()) . "," . $company_id . ')'));
+
+		return $result;
+	}
+
 	static function ShowProjectMembers($i, $id, $args)
 	{
-		$result = $i . "<br/>";
+		$u = new Org_Project($id);
+		$result = Core_Html::gui_header(1, $u->getName());
 		$result .= self::doShowProjectMembers($id);
+		$result .= Core_html::gui_header(2, "Add member");
+		$result .= gui_select_worker("new_worker", null, $args);
+		$result .= Core_Html::GuiButton("btn_add_worker", "Add",
+			array("action" => 'project_add_worker(' . QuoteText(self::getPost()) . "," . $id . ')'));
 		return $result;
 	}
 

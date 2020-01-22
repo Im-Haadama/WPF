@@ -13,7 +13,7 @@ class Core_Gem {
 		$this->object_types = null;
 	}
 
-	static function AddTable($table, $class = 'Core_Gen')
+	static function AddTable($table, $class = 'Core_Gem')
 	{
 		$debug = 0; //  (get_user_id() == 1);
 		// if (get_user_id() == 1) print __CLASS__ . ":" . $table;
@@ -29,7 +29,7 @@ class Core_Gem {
 
 	static function edit_wrapper($operation, $text, $args)
 	{
-		$table_name = substr($operation, 8);
+		$table_name = substr($operation, 9);
 //		$args["edit"] = true;
 		return self::GemAddRow($table_name, $text, $args);
 	}
@@ -176,9 +176,9 @@ class Core_Gem {
 		}
 
 		if (GetArg($args, "add_button", true))
-			$result .= Core_Html::GuiHyperlink("Add", AddToUrl(array( "operation" => "gem_add_" . $table_id))) . " ";
+			// $result .= Core_Html::GuiHyperlink("Add", $post_file . "&operation=gem_add_" . $table_id) . " ";
+			$result .= Core_Html::GuiHyperlink("Add", GetUrl(1) . "?operation=gem_add_" . $table_id) . " ";
 
-		$post_file = GetArg($args, "post_file", null);
 		if ($post_file and $edit)
 			$result .= Core_Html::GuiButton("btn_delete_$table_id", "delete",
 				array("action" => "delete_items(" . QuoteText($args["checkbox_class"]) . "," . QuoteText($post_file) . ")"));

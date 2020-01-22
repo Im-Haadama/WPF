@@ -60,7 +60,7 @@ function check_user() {
 		// Force login
 		$inclued_files = get_included_files();
 		MyLog( __FILE__, $inclued_files[ count( $inclued_files ) - 2 ] );
-		force_login();
+		auth_redirect();
 		exit();
 	}
 

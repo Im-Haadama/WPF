@@ -34,7 +34,7 @@ if ( $multisite or $_SERVER['REMOTE_ADDR'] == "160.153.129.234" or // Aglamaz.co
 		// Force login
 		$inclued_files = get_included_files();
 		MyLog( __FILE__, $inclued_files[ count( $inclued_files ) - 2 ] );
-		force_login();
+		auth_redirect();
 		exit();
 	}
 
