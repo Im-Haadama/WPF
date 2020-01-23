@@ -1117,12 +1117,13 @@ class Focus_Tasks {
 		}
 
 		if ( ! isset( $args["fields"] ) ) {
-			$args["fields"] = array( "id", "task_description", "project_id", "priority", "task_template" );
+			$args["fields"] = array( "id", "task_title", "task_description", "project_id", "priority", "task_template" );
 		}
 		if ( isset( $args["extra_fields"] ) ) {
 			$args["fields"] = array_merge( $args["fields"], $args["extra_fields"] );
 		}
 
+		$args["hide_cols"] = array("task_description" => 1);
 		$limit = GetParam( "limit", false, 10 );
 
 		if ( GetParam( "offset" ) ) {
@@ -1194,6 +1195,7 @@ class Focus_Tasks {
 		$args["sql"] = $sql;
 
 		$args["col_width"] = array( "task_description" => '30%' );
+		$args["prepare_plug"] = __CLASS__ . "::prepare_row";
 		$table             = Core_Gem::GemTable( "im_tasklist", $args );
 		if ( $table ) {
 			// if (strlen($title)) $result = Core_Html::gui_header(2, $title);
@@ -1216,6 +1218,22 @@ class Focus_Tasks {
 		return $result;
 	}
 
+	static function prepare_row($task_row)
+	{
+		$max_len = 40;
+		if (! strlen($task_row['task_title'])){
+			$description = explode(" ", $task_row["task_description"]);
+			$title = $description[0];
+			unset($description[0]);
+
+			foreach($description as $word) {
+				if (strlen($title) + strlen($word) > $max_len) break;
+				$title .= " " . $word;
+			}
+			$task_row["task_title"] = $title;
+		}
+		return $task_row;
+	}
 	static function show_tasks( $ids ) {
 		$args          = [];
 		$args["query"] = "id in (" . CommaImplode( $ids ) . ")";

@@ -39,13 +39,6 @@ $operation = GetParam("operation", false, null);
 if ( $operation) {
 	// print "op=" . $operation . "<br/>";
 	switch ( $operation ) {
-		case "exists_invoice":
-			$bank_id = GetParam("bank_id", true);
-			$invoice = GetParam("invoice", true);
-			$b = Finance_Bank_Transaction::createFromDB( $bank_id );
-			$b->Update( 0, $invoice, 0 );
-			print "done";
-			break;
 		case "get_amount":
 			$sql = "SELECT amount FROM im_business_info \n" .
 			       " WHERE id = " . GetParam( "id", true );

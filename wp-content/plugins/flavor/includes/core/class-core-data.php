@@ -352,6 +352,9 @@ class Core_Data
 		$field_events = null;
 		$table_name = GetArg($args, "table_name", null);
 
+		$prepare_plug = GetArg($args, "prepare_plug", null);
+		if (is_callable($prepare_plug)) $row = call_user_func($prepare_plug, $row);
+
 		$row_data = array();
 
 		if (! is_array($row))

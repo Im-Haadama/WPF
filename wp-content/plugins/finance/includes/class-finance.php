@@ -224,6 +224,11 @@ class Finance {
 				print $multi_site->Run( $link, $site_id );
 				break;
 
+			case "exists_invoice":
+				$bank_id = GetParam("bank_id", true);
+				$invoice = GetParam("invoice", true);
+				$b = Finance_Bank_Transaction::createFromDB( $bank_id );
+				return $b->Update( 0, $invoice, 0 );
 		}
 		return false;
 	}

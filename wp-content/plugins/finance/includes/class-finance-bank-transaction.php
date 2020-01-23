@@ -85,7 +85,7 @@ class Finance_Bank_Transaction {
 			       ", site_id = " . $site_id .
 			       " WHERE id = " . $this->id;
 
-			sql_query( $sql );
+			return sql_query( $sql );
 		} else {
 			throw new Exception( "invalid receipt number" );
 		}

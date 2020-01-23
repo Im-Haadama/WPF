@@ -141,14 +141,7 @@ class Fresh_Supplier_Balance {
 //print ">הצג גם חשבונות מאופסים</a>";
 //
 //
-//?>
-<!--<button id="btn_zero" onclick="zero()">אפס קרובים לאפס</button>-->
-<!--<button id="btn_remind" onclick="send_month_summary()">שלח תזכורת</button>-->
-<!--<div id="logging"></div>-->
-<!--</body>-->
-<!--</html>-->
-<!---->
-<?php
+//
 //
 //function get_supplier_balance( $supplier_id ) {
 //    print Core_Html::gui_header(1, get_supplier_name($supplier_id));
@@ -186,4 +179,3 @@ class Fresh_Supplier_Balance {
 //}
 //
 //?>
-

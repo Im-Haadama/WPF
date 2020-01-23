@@ -94,7 +94,7 @@ function supplier_selected() {
             document.getElementById("transactions").innerHTML = xmlhttp.response;
         }
     }
-    var request = "business-post.php?operation=get_open_invoices&supplier_id=" + supplier_id +
+    var request = finance_post_file + "?operation=get_open_invoices&supplier_id=" + supplier_id +
         "&site_id=" + site_id;
     // alert (request);
     xmlhttp.open("GET", request, true);
@@ -151,7 +151,7 @@ function link_invoice_bank() {
         alert("שגיאה בסכום");
         return;
     }
-    var request = "business-post.php?operation=link_invoice_bank" +
+    var request = finance_post_file + "?operation=link_invoice_bank" +
         "&ids=" + invoice_ids.join() +
         "&site_id=" + site_id +
         "&supplier_id=" + supplier_id +
@@ -185,7 +185,7 @@ function mark_refund_bank() {
         alert("שגיאה בסכום");
         return;
     }
-    var request = "business-post.php?operation=mark_refund_bank" +
+    var request = finance_post_file + "?operation=mark_refund_bank" +
         "&ids=" + invoice_ids.join() +
         "&site_id=" + site_id +
         "&supplier_id=" + supplier_id +
@@ -215,5 +215,5 @@ function invoice_exists()
 {
     let invoice = get_value_by_name("invoice_id");
     let bank_id = get_value_by_name("bank_id");
-    execute_url("/org/business/business-post.php?operation=exists_invoice&bank_id=" + bank_id + "&invoice=" + invoice, action_back);
+    execute_url(finance_post_file + "?operation=exists_invoice&bank_id=" + bank_id + "&invoice=" + invoice, action_back);
 }

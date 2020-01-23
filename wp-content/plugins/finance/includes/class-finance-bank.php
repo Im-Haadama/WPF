@@ -475,7 +475,7 @@ class Finance_Bank
 
 		$result .= Core_Html::gui_header(2, "חשבונית שהופקה");
 		$result .= Core_Html::GuiInput("invoice_id");
-		$result .= Core_Html::GuiButton("btn_invoice_exists", "invoice_exists()", "Exists invoice");
+		$result .= Core_Html::GuiButton("btn_invoice_exists", "Exists invoice", array("action" => "invoice_exists()"));
 
 		$result .= Core_Html::gui_header( 2, "בחר לקוח" );
 		$result .= self::gui_select_client_open_account();
