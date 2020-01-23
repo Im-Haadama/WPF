@@ -129,7 +129,7 @@ function show_user($user_id = 0)
 {
 	if (! $user_id) $user_id = GetParam("id", true);
 	$result = "";
-	$result .= Core_Html::gui_header(1, GetuserName($user_id));
+	$result .= Core_Html::gui_header(1, GetUserName($user_id));
 
 	$result .= GemTable("me_clients", $args);
 
@@ -141,7 +141,7 @@ function show_add_me_clients($user_id = 0)
 	if (! $user_id) $user_id = GetParam("id", true);
 
 	$result = "";
-	$result .= Core_Html::gui_header(1, "Medical info") . " " . GetuserName($user_id);
+	$result .= Core_Html::gui_header(1, "Medical info") . " " . GetUserName($user_id);
 	$args = [];
 	$args["hide_id"] = array("user_id" => 1);
 	$args["selectors"] = array("symptoms" => "gui_select_symptom");

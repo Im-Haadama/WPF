@@ -210,6 +210,6 @@ if ($table){
 function user_checkbox( $id ) {
 	return gui_row( array(
 		gui_checkbox( "chk_" . $id, "user_chk" ),
-		GetuserName( $id )
+		GetUserName( $id )
 	) );
 }

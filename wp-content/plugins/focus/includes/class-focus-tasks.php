@@ -538,7 +538,7 @@ class Focus_Tasks {
 		$table["header"] = array( "name" );
 		$team = new Org_Team($team_id);
 		foreach ( $team->AllMembers() as $member ) {
-			$table[ $member ]["name"] = GetuserName( $member );
+			$table[ $member ]["name"] = GetUserName( $member );
 		}
 
 		$args["add_checkbox"] = true;
@@ -796,13 +796,10 @@ class Focus_Tasks {
 //			}
 				$url = $task->task_url( );
 				if ( ! $url ) return true;
-				$url_headers = @get_headers( $url );
-				if ( ! $url_headers || strstr( $url_headers[0], "404" ) ) {
-					print GetUrl( 1 ) . "?operation=bad_url&id=" . $task_id;
-
-					return false;
-				}
-				if ( strlen( $url ) > 1 ) print $url;
+				$url_headers = @get_headers($url);
+				if ( ! $url_headers || strstr( $url_headers[0], "404" ) )
+					return GetUrl( 1 ) . "?operation=bad_url&id=" . $task_id;
+				if ( strlen( $url ) > 1 ) return $url;
 
 				return true;
 
@@ -1055,7 +1052,7 @@ class Focus_Tasks {
 				foreach ( $workers as $worker_id => $c ) {
 					$count = 0;
 
-					$result .= Core_Html::GuiHyperlink( GetuserName( $worker_id ) . "(" . $count . ")", '?operation=show_worker&id=' . $worker_id ) . " ";
+					$result .= Core_Html::GuiHyperlink( GetUserName( $worker_id ) . "(" . $count . ")", '?operation=show_worker&id=' . $worker_id ) . " ";
 				}
 			}
 			$result .= "<br/>";
@@ -1583,7 +1580,9 @@ class Focus_Tasks {
 			}
 			$result .= $template;
 
-			$tasks_args          = array( "links" => array( "template_id" => self::get_link( "task", "%s" ) ) );
+			$tasks_args          = array( "links" => array( "template_id" => self::get_link( "task", "%s" ),
+															"id" => self::get_link("task", "%s")
+				) );
 			$tasks_args["class"] = "sortable";
 
 //			if (get_user_id() == 1){
@@ -1886,7 +1885,7 @@ class Focus_Tasks {
 		$members = explode( ",", $selected );
 		$result  = "";
 		foreach ( $members as $member ) {
-			$result .= GetuserName( $member ) . ", ";
+			$result .= (new Core_Users( $member ))->getName() . ", ";
 		}
 
 		return rtrim( $result, ", " );
@@ -1925,7 +1924,7 @@ class Focus_Tasks {
 	}
 
 	static function show_settings( $user_id ) {
-		$result = Core_Html::gui_header( 1, im_translate( "Settings for" ) . " " . GetuserName( $user_id ) );
+		$result = Core_Html::gui_header( 1, im_translate( "Settings for" ) . " " . GetUserName( $user_id ) );
 
 		return $result;
 	}
@@ -2109,7 +2108,7 @@ class Focus_Tasks {
 		$message = sql_query_single_scalar("select post_content from wp_posts where post_title = 'welcome_message'");
 		if (! $message) {
 			$message = "Welcome to work with me in Focus management tool!\n" .
-			           GetuserName( get_user_id() );
+			           GetUserName( get_user_id() );
 			$result .= "You can create default message as a private post with title welcome_message" . "\n" .
 			           Core_Html::GuiHyperlink( "here", "/wp-admin/post-new.php" );
 		}
@@ -2193,7 +2192,7 @@ class Focus_Tasks {
 		$members = $project->all_members();
 		foreach ($members as $member)
 		{
-			$table[ $member ]["name"] = GetuserName( $member );
+			$table[ $member ]["name"] = GetUserName( $member );
 		}
 
 		$args["add_checkbox"] = true;

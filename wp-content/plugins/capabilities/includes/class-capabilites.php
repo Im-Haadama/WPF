@@ -663,7 +663,7 @@ class Capabilites {
 			$cap_result = Core_Html::gui_header(1, $cap);
 			$users = $capabilities[$cap];
 			foreach ($users as $user)
-				$cap_result .= GetuserName($user) . ", ";
+				$cap_result .= GetUserName($user) . ", ";
 			$result .= rtrim($cap_result, ", ");
 		}
 		print $result;

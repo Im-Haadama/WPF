@@ -332,6 +332,7 @@ class Focus {
 		$this->manager = new Focus_Manager(self::getPost());
 		$this->salary = Focus_Salary::instance();
 		$this->tasks = Focus_Tasks::instance(self::getPost());
+
 		WPF_Organization::init();
 
 		// Set up localisation.

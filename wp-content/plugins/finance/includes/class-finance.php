@@ -215,29 +215,6 @@ class Finance {
 				$order_id = GetParam("order_id", true);
 				return self::new_customer($order_id);
 
-			case 'bank_import_from_file':
-//				require_once( FINANCE_INCLUDES . "/core/data/Importer.php" );
-//				var_dump($_FILES);
-				$file_name = $_FILES["fileToUpload"]["tmp_name"];
-				print "Trying to import $file_name<br/>";
-				$I                    = new Core_Importer();
-				$fields               = null;
-				$fields               = array();
-				$fields['account_id'] = GetParam( 'selection' );
-				if ( ! $fields['account_id'] ) {
-					die( "not account given" );
-				}
-				try {
-					$result = $I->Import( $file_name, "im_bank", $fields, 'Finance_Bank::bank_check_dup' );
-				} catch ( Exception $e ) {
-					print $e->getMessage();
-
-					return;
-				}
-				print $result[0] . " rows imported<br/>";
-				print $result[1] . " duplicate rows <br/>";
-				print $result[2] . " failed rows <br/>";
-				return true;
 				break;
 			case "get_trans":
 				$client_id = GetParam( "client_id" );

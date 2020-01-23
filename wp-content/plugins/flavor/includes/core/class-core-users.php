@@ -33,7 +33,7 @@ class Core_Users {
 
 	function getName()
 	{
-		return $this->wp_user->display_name;
+		return self::getUser()->display_name;
 	}
 }
 

@@ -205,7 +205,7 @@ function load_page(xmlhttp)
         alert (xmlhttp.response);
         return false;
     }
-    let url = xmlhttp.response.substr(5);
+    let url = xmlhttp.response.substr(5); // Skip "."
     if (url.length)
         window.location = url;
     else

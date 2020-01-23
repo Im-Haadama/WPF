@@ -1131,11 +1131,13 @@ function version29()
 
 	print Core_Html::gui_header(1, "bank balance");
 	sql_query("drop function bank_balance");
-	sql_query("create function bank_balance(account_id int) returns float
+	sql_query("create function bank_balance(_account_id int) returns float
 BEGIN
   declare _balance float;
   SELECT balance INTO _balance FROM im_bank 
-where date = (select max(date) from im_bank where account_id = 1) and account_id = 1;
+where date = (select max(date) from im_bank where account_id = _account_id) and account_id = _account_id
+order by id
+limit 1;
   
   return _balance;
 END;

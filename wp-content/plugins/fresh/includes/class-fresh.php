@@ -14,6 +14,7 @@ class Fresh {
 	protected $auto_loader;
 	protected $delivery_manager;
 	protected $suppliers;
+	protected $supplier_balance;
 	protected $shortcodes;
 
 	/**
@@ -447,10 +448,13 @@ class Fresh {
 		$this->load_plugin_textdomain();
 		$this->delivery_manager = new Fresh_Delivery_Manager();
 		$this->suppliers = new Fresh_Suppliers();
+		$this->supplier_balance = Fresh_Supplier_Balance::instance();
+
 
 		$shortcodes = Core_Shortcodes::instance();
 		$shortcodes->add($this->delivery_manager->getShortcodes());
 		$shortcodes->add($this->suppliers->getShortcodes());
+		$shortcodes->add($this->supplier_balance->getShortcodes());
 
 //		$this->shortcodes->do_init();
 		$this->suppliers->init();

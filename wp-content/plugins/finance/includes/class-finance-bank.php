@@ -349,7 +349,7 @@ class Finance_Bank
 
 			case "show_bank":
 				$args                  = self::Args($u);
-				$args["selector"]      = "gui_select_bank_account";
+				$args["selector"]      = __CLASS__ . "::gui_select_bank_account";
 				$args["order"] = "3 desc";
 				$args["hide_cols"] = array_merge($args["hide_cols"], array("id" => 1, "account_id" => 1, "tmp_client_name" =>1, "customer_id"=>1));
 				print Core_Gem::GemTable("im_bank", $args);
@@ -357,7 +357,7 @@ class Finance_Bank
 			case "bank_show_import":
 			case "import":
 				$args                  = array();
-				$args["selector"]      = "gui_select_bank_account";
+				$args["selector"]      = __CLASS__ . "::gui_select_bank_account";
 				$args["import_action"] = $post_file . '?operation=bank_import_from_file';
 
 				$args["page"] = 1;
@@ -368,9 +368,31 @@ class Finance_Bank
 				print Core_Gem::GemImport( "im_bank", $args );
 				break;
 
-
 			case "show_transactions":
 				print bank_transactions( $ids ? "id in (" . CommaImplode( $ids ) . ")" : null );
+				break;
+			case 'bank_import_from_file':
+				$file_name = $_FILES["fileToUpload"]["tmp_name"];
+				print "Trying to import $file_name<br/>";
+				$I                    = new Core_Importer();
+				$fields               = null;
+				$fields               = array();
+				$fields['account_id'] = GetParam( 'selection' );
+				if ( ! $fields['account_id'] ) {
+					die( "not account given" );
+				}
+				try {
+					$result = $I->Import( $file_name, "im_bank", $fields, 'Finance_Bank::bank_check_dup' );
+				} catch ( Exception $e ) {
+					print $e->getMessage();
+
+					return;
+				}
+				print $result[0] . " rows imported<br/>";
+				print $result[1] . " duplicate rows <br/>";
+				print $result[2] . " failed rows <br/>";
+				return true;
+
 		}
 	}
 
@@ -580,7 +602,7 @@ class Finance_Bank
 		}
 	}
 
-	function gui_select_bank_account( $id, $value, $args ) {
+	static function gui_select_bank_account( $id, $value, $args ) {
 		return Core_Html::GuiSelectTable($id, "im_bank_account", $args);
 	}
 

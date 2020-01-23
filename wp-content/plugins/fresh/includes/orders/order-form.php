@@ -190,7 +190,7 @@ if ( $text ) {
 	print "מוצרים זמינים השבוע</br>";
 	if ($user_id)
 	{
-		print Core_Html::gui_header(1, "מחירון ללקוח " . GetuserName($user_id));
+		print Core_Html::gui_header(1, "מחירון ללקוח " . GetUserName($user_id));
 		$just_pricelist = true;
 	}
 

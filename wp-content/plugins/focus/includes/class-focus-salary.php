@@ -181,7 +181,7 @@ class Focus_Salary {
 			$args["worker"] = $user_id;
 
 			if ( $row[1] ) {
-				$output .= Core_Html::gui_header( 1, GetuserName( $user_id ) . " (" .
+				$output .= Core_Html::gui_header( 1, GetUserName( $user_id ) . " (" .
 				                                     Core_Html::GuiHyperlink( "$user_id", self::get_link("worker_data", $user_id )) . ")" );
 				$output .= "כתובת מייל של העובד/ת: " . $user->CustomerEmail() . "<br/>";
 
@@ -405,7 +405,7 @@ class Focus_Salary {
 			$y = date( 'Y' );
 		}
 
-		$result             = Core_Html::gui_header( 1, __( "Salary info for worker" ) . " " . GetuserName( $user_id ) ) . __( "for month" ) . " " . $m . '/' . $y;
+		$result             = Core_Html::gui_header( 1, __( "Salary info for worker" ) . " " . GetUserName( $user_id ) ) . __( "for month" ) . " " . $m . '/' . $y;
 		$args               = array( "add_checkbox" => true, "checkbox_class" => "hours_checkbox" );
 		$args["edit_lines"] = 1;
 		$data               = self::print_transactions( $user_id, $m, $y, $args );
