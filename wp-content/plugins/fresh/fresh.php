@@ -48,7 +48,7 @@ function run_fresh() {
 run_fresh();
 
 
-function pay_page($atts, $content = null)
+function PayPage($atts, $content = null)
 {
 	if (get_user_id()) {
 		print do_shortcode("[woocommerce_checkout]");
@@ -72,14 +72,6 @@ function pay_page($atts, $content = null)
 //    }
 }
 
-function im_page() {
-	$img_size = 50;
-	$data     = "XXX";
-	$data     .= gui_hyperlink( get_the_post_thumbnail( 4209, array( $img_size, $img_size ) ), "/how_to_use" );
-
-	return $data;
-	// [im-page]
-}
 
 // -#-#-#-#-#-#-#-#-#-#-#-
 // Shipment Order Status #

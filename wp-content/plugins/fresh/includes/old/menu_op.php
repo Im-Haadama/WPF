@@ -50,7 +50,7 @@ $table = array();
 
 $max_row = 8;
 
-print "שלום " . get_user_name( get_user_id() ) . "(" . get_user_id() . "). " . Date("G:i", strtotime("now"));
+print "שלום " . GetuserName( get_user_id() ) . "(" . get_user_id() . "). " . Date("G:i", strtotime("now"));
 print " " . Core_Html::GuiHyperlink("התנתק/י", "/wp-login.php?loggedout=true&redirect_to=/fresh/menu_op.php");
 function add_command( &$table, &$row, $col, $can, $text, $link, $target = "doc_frame" )
 {

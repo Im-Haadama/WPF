@@ -218,7 +218,7 @@ function create_invoice( $ids, $user_id ) {
 function sc_display_name( $atts ) {
 	global $current_user;
 
-	return get_user_name( $current_user );
+	return GetuserName( $current_user );
 }
 
 function sc_id( $atts ) {

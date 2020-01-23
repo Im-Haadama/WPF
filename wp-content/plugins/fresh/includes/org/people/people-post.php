@@ -92,7 +92,7 @@ switch($operation)
 {
 	case "edit_worker":
 		$id = GetParam("id", true);
-		$result = Core_Html::gui_header(1, "Worker info") . get_user_name($id);
+		$result = Core_Html::gui_header(1, "Worker info") . GetuserName($id);
 		$args = [];
 		$args["id_field"] = "id";
 		$args["query"] = "is_active = 1 and user_id = $id";

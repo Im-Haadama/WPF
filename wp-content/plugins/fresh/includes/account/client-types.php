@@ -79,7 +79,7 @@ while ( $row = sql_fetch_row( $result ) ) {
 	$client_type_id = sql_query_single_scalar( "SELECT id FROM im_client_types WHERE type = '" . $row[1] . "'" );
 	array_push( $table, array(
 		$user_id,
-		get_user_name( $user_id ),
+		GetuserName( $user_id ),
 		gui_select_client_type( "select_type_" . $user_id,
 			$client_type_id, "onchange=update_client_type(" . $user_id . ")" )
 	) );

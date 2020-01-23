@@ -168,10 +168,6 @@ class Flavor {
 		}
 
 		print  $result;
-//		$args = [];
-//
-//		print Core_Html::GuiCheckbox("aa", false, $args);
-		// woocommerce_admin_fields( self::get_settings() );
 	}
 
 	/**
@@ -347,7 +343,6 @@ class Flavor {
 	static function static_handle_show()
 	{
 		$instance = self::instance();
-//		print "YYY:"; var_dump($_GET); print "<br/>";
 		$operation = GetParam("operation", false, "default");
 		$instance->handle_operation($operation);
 	}
@@ -358,7 +353,6 @@ class Flavor {
 	 * @return string|void
 	 */
 	function handle_operation($operation) {
-//		print __FUNCTION__. ': ' . $operation . "<br/>";
 		$module = strtok( $operation, "_" );
 		if ( $module === "data" ) {
 			return handle_data_operation( $operation );
@@ -377,11 +371,9 @@ class Flavor {
 				$main = GetParam("main", true);
 				$sub = GetParam("sub", false);
 				$target = GetParam("target", true);
-//				print "$main $sub $target<br/>";
 				$nav = $this->getNav();
 				$main_id = $nav->AddMain(array('title' => $main, 'url' => $target));
 				if (! $main_id) return $main_id;
-//				print "$main $sub $target<br/>";
 				if ($sub) return $nav->AddSub($main_id, array( 'title' => $sub, 'url' => $target));
 				return $main_id;
 		}
@@ -591,7 +583,6 @@ class Flavor {
 				                                                             "main"      => $main_nav,
 				                                                             "sub"       => $sub_nav,
 				                                                             "target"    => $target ), false) . ";location_reload";
-				//print $sub_args["action"] . "<br/>";
 				$result .= "===>" . Core_Html::GuiButtonOrHyperlink( "btn_add_" . $sub_nav, null, $sub_args ) . "<br/>";
 			}
 		}

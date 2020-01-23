@@ -538,7 +538,7 @@ class Focus_Tasks {
 		$table["header"] = array( "name" );
 		$team = new Org_Team($team_id);
 		foreach ( $team->AllMembers() as $member ) {
-			$table[ $member ]["name"] = get_user_name( $member );
+			$table[ $member ]["name"] = GetuserName( $member );
 		}
 
 		$args["add_checkbox"] = true;
@@ -1055,7 +1055,7 @@ class Focus_Tasks {
 				foreach ( $workers as $worker_id => $c ) {
 					$count = 0;
 
-					$result .= Core_Html::GuiHyperlink( get_user_name( $worker_id ) . "(" . $count . ")", '?operation=show_worker&id=' . $worker_id ) . " ";
+					$result .= Core_Html::GuiHyperlink( GetuserName( $worker_id ) . "(" . $count . ")", '?operation=show_worker&id=' . $worker_id ) . " ";
 				}
 			}
 			$result .= "<br/>";
@@ -1886,7 +1886,7 @@ class Focus_Tasks {
 		$members = explode( ",", $selected );
 		$result  = "";
 		foreach ( $members as $member ) {
-			$result .= get_user_name( $member ) . ", ";
+			$result .= GetuserName( $member ) . ", ";
 		}
 
 		return rtrim( $result, ", " );
@@ -1925,7 +1925,7 @@ class Focus_Tasks {
 	}
 
 	static function show_settings( $user_id ) {
-		$result = Core_Html::gui_header( 1, im_translate( "Settings for" ) . " " . get_user_name( $user_id ) );
+		$result = Core_Html::gui_header( 1, im_translate( "Settings for" ) . " " . GetuserName( $user_id ) );
 
 		return $result;
 	}
@@ -2109,7 +2109,7 @@ class Focus_Tasks {
 		$message = sql_query_single_scalar("select post_content from wp_posts where post_title = 'welcome_message'");
 		if (! $message) {
 			$message = "Welcome to work with me in Focus management tool!\n" .
-			           get_user_name( get_user_id() );
+			           GetuserName( get_user_id() );
 			$result .= "You can create default message as a private post with title welcome_message" . "\n" .
 			           Core_Html::GuiHyperlink( "here", "/wp-admin/post-new.php" );
 		}
@@ -2193,7 +2193,7 @@ class Focus_Tasks {
 		$members = $project->all_members();
 		foreach ($members as $member)
 		{
-			$table[ $member ]["name"] = get_user_name( $member );
+			$table[ $member ]["name"] = GetuserName( $member );
 		}
 
 		$args["add_checkbox"] = true;

@@ -8,7 +8,7 @@
 
 $no_wp = 0;
 
-if (! function_exists('get_user_name')) {
+if (! function_exists( 'GetuserName' )) {
 // Postmeta table
 /**
  * @param $post_id
@@ -238,7 +238,7 @@ function update_wp_option($option_id, $array_or_string)
 //	return sql_query("update wp_options set option_value = '" . escape_string($new_string) . "' where option_name = '" . $option_id . "'");
 }
 
-function get_user_name( $id ) {
+function GetuserName( $id ) {
 //    var_dump(get_user_meta($id, 'first_name'));
 	$result = (get_user_meta( $id, 'first_name' )[0] . " " . get_user_meta( $id, 'last_name' )[0]);
 	if (strlen ($result) > 1) return $result;
