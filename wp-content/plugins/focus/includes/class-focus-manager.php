@@ -24,6 +24,14 @@ class Focus_Manager {
 		return self::$_instance;
 	}
 
+	/**
+	 * @return Core_Logger|null
+	 */
+	public static function getLogger(): ?Core_Logger {
+		return self::$logger;
+	}
+
+
 	function init()
 	{
 		self::create_tasks();
@@ -33,7 +41,7 @@ class Focus_Manager {
 	{
 		$last_run = get_wp_option("focus_create_tasks_last_run");
 		$run_period = get_wp_option("focus_create_tasks_run_period", 5*60); // every 5 min
-		if ($last_run and ((time() - $last_run) < $run_period)) return;
+		if ($last_run and ((time() - $last_run) < $run_period)) return true;
 
 		update_wp_option("Focus_create_tasks_last_run", time()); // Immediate update so won't be activated in parallel
 
@@ -106,11 +114,14 @@ class Focus_Manager {
 		       " where team = " . $team->getId() .
 		       ' and status < 2 ';
 
+		$debug_message = "";
 		$result = sql_query($sql);
 		while ($row = sql_fetch_assoc($result)) {
 			$task_id = $row["id"];
-			$task    = new Focus_Tasklist( $task_id );
+			$debug_message .= "task $task_id ";
+			$task    = new Focus_Tasklist( $task_id, self::$logger );
 			if ( ! $task->working_time() ) {
+				$debug_message .= " not working_time";
 				continue;
 			}
 
@@ -118,8 +129,10 @@ class Focus_Manager {
 
 			self::$logger->trace( "running $task_id" );
 			self::execute_task( $task_id );
+			$debug_message .= " run. ";
 			break;
 		}
+		self::$logger->trace($debug_message);
 	}
 
 	function execute_task($id)

@@ -1,0 +1,16 @@
+#!/bin/bash
+config_file=$1
+db=`grep \(\'DB_NAME $config_file | cut -d\' -f4`
+user=`grep DB_USER $config_file | cut -d\' -f4`
+password=`grep DB_PASSWORD $config_file | cut -d\' -f4`
+
+folder=~/db_backup
+file=$folder/.$db
+if [ -f "$file" ]; then
+	echo $file exists
+	exit
+fi
+
+echo "[mysqldump]" > $file
+echo "user=$user" >> $file
+echo "password=$password" >> $file

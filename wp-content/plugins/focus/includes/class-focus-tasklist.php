@@ -23,8 +23,9 @@ class Focus_Tasklist {
 	private $project;
 	private $team;
 	private $timezone;
+	private $logger;
 
-	public function __construct( $_id ) {
+	public function __construct( $_id) {
 		$this->id = $_id;
 		$row      = sql_query_single( "SELECT location_name, location_address, task_description, mission_id," .
 		                              " task_template, priority, project_id, team " .
@@ -39,7 +40,6 @@ class Focus_Tasklist {
 		$this->project          = $row[6];
 		$this->team             = $row[7];
 
-
 		if ( $row[4] ) {
 			$row = sql_query_single( "SELECT repeat_freq, repeat_freq_numbers, timezone " .
 			                         " from im_task_templates where id = " . $row[4] );
@@ -48,6 +48,7 @@ class Focus_Tasklist {
 			$this->repeat_freq_numbers = $row[1];
 			$this->timezone = $row[2];
 		}
+		$this->logger = Focus_Manager::instance()->getLogger();
 	}
 
 	/**
@@ -278,7 +279,6 @@ class Focus_Tasklist {
 				$result = sql_query( $sql );
 
 				$row = mysqli_fetch_assoc( $result );
-				// if ($row["id"] == 10) var_dump($row);
 				$project_id = $row["project_id"];
 
 				$priority = sql_query_single_scalar( "SELECT priority FROM im_task_templates WHERE id = " . $template_id );
@@ -308,8 +308,6 @@ class Focus_Tasklist {
 
 	static function create_if_needed($id, $row, &$output, $default_owner, &$verbose_line)
 	{
-		if (get_user_id() != 1) return; // DEBUG
-		print "tz=" . date_default_timezone_get() . "<br/>";
 		$verbose_line = array();
 		$last_run = sql_query_single_scalar("select max(date) from im_tasklist where task_template = " . $id);
 		$project_id = $row["project_id"];
@@ -428,6 +426,19 @@ class Focus_Tasklist {
 		return gui_select_task( $id, $value, $events, $query );
 	}
 
+	static function gui_select_mission( $id, $selected = 0, $args = null ) {
+		$events = GetArg( $args, "events", null );
+
+		$args = array( "events"   => $events,
+		               "selected" => $selected,
+		               "where"    => $sql_where = " where date >= curdate() or date is null"
+		);
+
+		// "ifnull(concat (name, ' ', DAYOFMONTH(date), '/', month(date)), name)");
+
+		return Core_Html::GuiSelectTable( $id, "im_missions", $args );
+	}
+
 	function task_table( $task_ids ) {
 		$rows = array( array( "מזהה", "עדיפות", "תיאור" ) );
 
@@ -467,21 +478,21 @@ class Focus_Tasklist {
 	{
 		$task_url = self::task_url();
 
-		if (get_user_id() == 1) var_dump($task_url);
+		$this->logger->info("start run ". $this->id);
 		if ((! is_string($task_url)) or (strlen($task_url) < 5)) {
-			print "bad url" . is_string($task_url) . " " . strlen($task_url) . "<br/>";
 			self::update_status( enumTasklist::bad_url );
 			return false;
 		}
-		$rc = CurlGet($task_url);
-		var_dump($rc);
+		$rc = GetContent($task_url);
 
-		if (! $rc) self::update_status(enumTasklist::failed);
+		if (! $rc) {
+			if ($this->logger) $this->logger->fatal($rc);
+			self::update_status(enumTasklist::failed);
+		}
 		else self::update_status(enumTasklist::done);
 		return $rc;
 	}
 }
-
 
 class enumTasklist {
 	const
@@ -492,4 +503,3 @@ class enumTasklist {
 		bad_url = 4,
 		failed = 5;
 }
-

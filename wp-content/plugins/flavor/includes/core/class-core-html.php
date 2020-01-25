@@ -836,8 +836,11 @@ class Core_Html {
 		$rows = array();
 
 		if ($reverse){
-			$header = $input_rows["header"];
-			if ($header) unset($input_rows["header"]);
+			$header = null;
+			if (isset($input_rows["header"])) {
+				$header = $input_rows["header"];
+				unset( $input_rows["header"] );
+			}
 			$input_rows = array_reverse($input_rows, true);
 			if ($header) array_unshift($input_rows, $header);
 		}
@@ -849,26 +852,25 @@ class Core_Html {
 			} else $rows[ $key ] = Core_Data::PrepareRow( $input_row, $args, $key );
 		}
 
-		if ( $header ) {
-			$data = "<table";
-			if ( $bordercolor ) {
-				$data .= " bordercolor=" . $bordercolor;
-			}
-			if ( $class ) {
-				$data .= " class=\"" . $class . "\"";
-			}
-			if ( $width ) {
-				$data .= " width=\"" . $width . "\"";
-			}
-			if ( ! is_null( $id ) ) {
-				if ( ! is_string( $id ) ) {
-					return "bad table id";
-				}
-				$data .= ' id="' . $id . '"';
-			}
-			$data .= " border=\"1\"";
-			$data .= ">";
+		$data = "<table";
+		if ( $bordercolor ) {
+			$data .= " bordercolor=" . $bordercolor;
 		}
+		if ( $class ) {
+			$data .= " class=\"" . $class . "\"";
+		}
+		if ( $width ) {
+			$data .= " width=\"" . $width . "\"";
+		}
+		if ( ! is_null( $id ) ) {
+			if ( ! is_string( $id ) ) {
+				return "bad table id";
+			}
+			$data .= ' id="' . $id . '"';
+		}
+		$data .= " border=\"1\"";
+		$data .= ">";
+
 		$action_line = null;
 
 		if ( $style ) $data .= "<style>" . $style . "</style>";

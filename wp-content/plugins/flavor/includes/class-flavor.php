@@ -564,6 +564,7 @@ class Flavor {
 		$u = new Core_Users();
 		$result = "";
 		foreach ($module_list as $item => $sub_menu_items){
+			if (! isset($sub_menu_items['target'])) continue;
 			$args ["text"] = __("Add") . " " . __($item);
 			$args["action"] = AddParamToUrl(self::getPost(),
 					array( "operation" => "nav_add",

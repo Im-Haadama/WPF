@@ -24,7 +24,7 @@ class Flavor_System {
 			if ( $debug ) {
 				print $get_name . "<br/>";
 			}
-			$file_name = CurlGet( $get_name );
+			$file_name = GetContent( $get_name );
 			if ( strstr( $file_name, "Fatal" ) or strlen( $file_name ) < 5 ) {
 				$results[ $key ] = array( "hostname" => $host_info[1], "result" => "error file name: " . $file_name );
 				$fail            = true;

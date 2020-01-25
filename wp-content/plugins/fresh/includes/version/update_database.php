@@ -60,6 +60,9 @@ function add_version($version, $force = false)
 
 	print "version = $version<br/>";
 	switch ( $version ) {
+		case "293":
+			$description = version293();
+			break;
 		case "29":
 			print "start";
 			$description = version29();
@@ -118,6 +121,20 @@ function add_version($version, $force = false)
 
 print "done";
 die ( 0 );
+
+function version293()
+{
+	if (! add_version("29"))
+		die ("can't install 2.9");
+
+	print Core_Html::gui_header(1, "city database");
+	sql_query( "create table im_cities (
+		id INT NOT NULL AUTO_INCREMENT	PRIMARY KEY,
+		city_name varchar(50) character set utf8 not null,
+    	zipcode VARCHAR(10) CHARACTER SET utf8 NULL,
+	    zone int)"
+	);
+}
 
 function version28()
 {

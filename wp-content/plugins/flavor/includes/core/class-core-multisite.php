@@ -9,7 +9,7 @@
 abstract class Core_Multisite_Fields {
 	const site_id_idx = 0;
 	const site_name_idx = 1;
-	const site_tools_idx = 2;
+	const site_url_idx = 2;
 	const api_key = 3;
 }
 
@@ -65,7 +65,7 @@ class Core_MultiSite {
 	{
 		$result = array();
 		foreach ( $this->sites_array as $site_id => $site ) {
-			$r = parse_url($this->sites_array[$site_id][Core_Multisite_Fields::site_tools_idx]);
+			$r = parse_url($this->sites_array[$site_id][Core_Multisite_Fields::site_url_idx]);
 
 			array_push($result, $r['host']);
 		}
@@ -78,9 +78,9 @@ class Core_MultiSite {
 		die ("invalid site_id");
 	}
 
-	public function getSiteToolsURL( $site_id ) {
+	public function getSiteURL( $site_id ) {
 		if ( isset( $this->sites_array[ $site_id ] ) ) {
-			return $this->sites_array[ $site_id ][ Core_Multisite_Fields::site_tools_idx ];
+			return $this->sites_array[ $site_id ][ Core_Multisite_Fields::site_url_idx ];
 		} else {
 			print "site ";
 			var_dump( $site_id );
@@ -110,8 +110,8 @@ class Core_MultiSite {
 		return $this->local_site_id;
 	}
 
-	function getLocalSiteTools() {
-		return $this->getSiteToolsURL( $this->local_site_id );
+	function getLocalSiteUrl() {
+		return $this->getSiteURL( $this->local_site_id );
 	}
 
 	/// REMOTING...
@@ -132,7 +132,7 @@ class Core_MultiSite {
 			$result = $this->Run( $func, $site_id, $first, $debug );
 			if (! $result) {
 				$output .= "Can't get from " . $this->getSiteName($site_id) . " http code: " . $this->http_codes[$site_id] . Core_Html::Br();
-				$output .= $this->getSiteToolsURL($site_id) . '/' . $func . Core_Html::Br();
+				$output .= $this->getSiteURL($site_id) . '/' . $func . Core_Html::Br();
 			}
 			if ( $strip ) {
 				$result = strip_tags( $result, "<div><br><p><table><tr><td>" );
@@ -160,7 +160,7 @@ class Core_MultiSite {
 			$glue = "?";
 		}
 
-		$url = $this->getSiteToolsURL( $site_id );
+		$url = $this->getSiteURL( $site_id );
 
 		if ( strstr( $func, "?" ) ) {
 			$glue = "&";

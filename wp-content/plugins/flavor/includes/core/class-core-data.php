@@ -237,10 +237,12 @@ class Core_Data
 			if ($fields = GetArg($args, "fields", null)){
 				$result = [];
 				$fields = Core_Fund::array_assoc($fields);
-				foreach ($fields as $field => $v)
-					if (! $skip_id or strtolower($field) !== "id"){
-						$result[$field] = im_translate((isset($header_fields[$field]) ? $header_fields[$field] : $field));
+				foreach ($fields as $field => $v) {
+					if ($as_pos = strpos($field, " as ")) $field = substr($field, $as_pos + 4);
+					if ( ! $skip_id or strtolower( $field ) !== "id" ) {
+						$result[ $field ] = im_translate( ( isset( $header_fields[ $field ] ) ? $header_fields[ $field ] : $field ) );
 					}
+				}
 			} else {
 				$result = $header_fields;
 			}

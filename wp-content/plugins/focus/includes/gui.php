@@ -36,18 +36,6 @@ function gui_select_task( $id, $value, $args ) {
 	return Core_Html::GuiAutoList($id, "tasks", $args);
 }
 
-function gui_select_mission( $id, $selected = 0, $args = null ) {
-	$events = GetArg( $args, "events", null );
-
-	$args = array( "events"   => $events,
-	               "selected" => $selected,
-	               "where"    => $sql_where = " where date >= curdate() or date is null"
-	);
-
-	// "ifnull(concat (name, ' ', DAYOFMONTH(date), '/', month(date)), name)");
-
-	return Core_Html::GuiSelectTable( $id, "im_missions", $args );
-}
 
 
 function gui_select_zones($id, $selected, $args)

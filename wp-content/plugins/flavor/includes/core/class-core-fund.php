@@ -19,7 +19,7 @@ class Core_Fund {
 				if ( is_array( $script_file ) ) {
 					foreach ( $script_file as $file ) {
 						if ( strstr( $file, 'php' ) ) {
-							$text .= CurlGet( $file );
+							$text .= GetContent( $file );
 						} else {
 							$text .= '<script type="text/javascript" src="' . $file . '"></script>';
 						}

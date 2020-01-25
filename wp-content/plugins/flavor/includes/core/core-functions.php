@@ -294,14 +294,19 @@
 	 *
 	 * @return bool|string
 	 */
-	function CurlGet( $url ) {
-		$handle = curl_init();
-		curl_setopt( $handle, CURLOPT_URL, $url );
-		curl_setopt( $handle, CURLOPT_RETURNTRANSFER, true );
+	function GetContent( $url ) {
+		print "url: $url<br/>";
+//		$handle = curl_init();
+//		curl_setopt( $handle, CURLOPT_URL, $url );
+//		curl_setopt( $handle, CURLOPT_RETURNTRANSFER, true );
+//
+//		var_dump($handle);
+//		$data = curl_exec( $handle );
+//
+//		curl_close( $handle );
 
-		$data = curl_exec( $handle );
-		curl_close( $handle );
-
+		$data = file_get_contents($url);
+		var_dump($data);
 		return $data;
 	}
 
@@ -377,19 +382,9 @@
 	 * @param $a
 	 */
 	function SumNumbers( &$s, $a ) {
-//	if (strstr($a, "<a")){
-//		print strstr("'</a>", $a) . "<br/>";
-//		print strstr("'>", $a) . "<br/>";
-//		print "h";
-//		 $n = substr($a, strstr("'>", $a), strstr("'</a>", $a) - strstr("'>", $a));
-//		 print $n;
-//	} else
 		$n = floatval( $a );
-//	var_dump($s); print "<br/>";
-//	var_dump($a); print "<br/>";
 		if ( is_numeric( $s ) and is_numeric( $n ) ) {
 			$s = round( $s + $n, 2 );
-//		 print "a=" . $a . " s=" . $s . " n=" . $n . "<br/>";
 		}
 	}
 
@@ -500,7 +495,6 @@
 		} else {
 			$query_parts[ $param_name ] = $param_value;
 		}
-		// var_dump($query_parts);
 
 		// Build the url
 		$glue = '?';
@@ -512,7 +506,6 @@
 			$glue   = "&";
 		}
 
-//      var_dump($query_parts);
 		return $result;
 	}
 

@@ -63,4 +63,15 @@ In develop, core library is linked between the projects. Fresh is the main, and 
 In runtime - wp-setting loads the plugins. Core libraries appear in each of them. require_once doesn't helps. We'll check
 !class_exists (or function_exists).
 
-max=5074
+Args:
+=-=-=
+Args() - gets the type of displayed type and sets the args for that type.
+The functions that call core/gem preset args using Args. The can get args from the caller - only effective for non object
+parameters like post_file, page, etc.
+Args used by Core to affect display of controls, data rows, etc.
+
+Robot: Running scripts given from the user:
++ Random users can trigger the robot. More users will make the robot run more times. Non active server when be triggered to run the robot.
++ No users: no need for the data to be updated.
+Javascript or PHP as the trigger? Keep it simple. Just PHP.
+

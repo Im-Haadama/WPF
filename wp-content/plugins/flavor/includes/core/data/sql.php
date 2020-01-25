@@ -153,7 +153,7 @@ function sql_bind($table_name, &$stmt, $_values)
 			case "int":
 			case "big":
 				$types .= "i";
-				$value = $value ? $value : null;
+				$value = ((strlen($value) > 0) ? $value : null);
 				break;
 			case "var":
 			case 'lon':
@@ -175,6 +175,7 @@ function sql_bind($table_name, &$stmt, $_values)
 		}
 		array_push($values, $value);
 	}
+	// var_dump($values);
 
 	switch (count($values))
 	{

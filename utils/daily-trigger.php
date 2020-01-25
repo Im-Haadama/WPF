@@ -71,7 +71,7 @@ foreach ( $hosts_to_sync as $key => $host_info ) {
 	$output = "";
 		$url    = $host_info[2] . "/utils/backup_manager.php?tabula=145db255-79ea-4e9c-a51d-318a86c999bf";
 
-	$file_name = CurlGet( $url . "&op=name&date=" . date('Y-m-d') );
+	$file_name = GetContent( $url . "&op=name&date=" . date('Y-m-d') );
 	if ( strstr( $file_name, "not found" ) or strlen($file_name) < 2) {
 		array_push( $results, array( $host_info[1], "error: " . $file_name ) );
 		continue;
@@ -97,7 +97,7 @@ foreach ( $hosts_to_sync as $key => $host_info ) {
 		array_push($results, "Can't open file. check disk usage and permission.");
 		continue;
 	}
-	$backup = CurlGet( $url . "&op=file&name=" . $file_name);
+	$backup = GetContent( $url . "&op=file&name=" . $file_name);
 	fwrite( $file, $backup );
 	fclose( $file );
 	$output .= "done<br/>";
@@ -107,7 +107,7 @@ foreach ( $hosts_to_sync as $key => $host_info ) {
 
 	if ( $size > 500000 ) {
 		$output .= "delete in origin<br/>";
-		CurlGet( $url . "&op=delete" );
+		GetContent( $url . "&op=delete" );
 	}
 	array_push( $results, array( "hostname" => $host_info[1], "result" => $output ) );
 }

@@ -259,10 +259,11 @@ class Fresh {
 				$order_id = GetParam("order_id", true);
 				return self::new_customer($order_id);
 
-			case "update_shipping_methods":
+				// Robot operations:
+			case "update_shipping_methods_anonymous":
 				return $this->delivery_manager->update_shipping_methods();
 
-			case "mission_stop_accept":
+			case "mission_stop_accept_anonymous":
 				return $this->delivery_manager->stop_accept();
 		}
 	}
