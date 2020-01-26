@@ -1035,7 +1035,7 @@ function show_path($path_id)
     print Core_Html::Br();
 
     $result .= gui_table_args(array("header" => array("zone_id" => "Zone", "zone_times" => "Times"),
-	    array("zone_id" => gui_select_zones("zone_id", null, array("edit"=> true)),
+	    array("zone_id" => GuiSelectZones("zone_id", null, array( "edit" => true)),
 	          "zone_times" => GuiInput("zone_time", "13-16"))));
 
     $result .= Core_Html::GuiButton("btn_add_zone_times", "add_zone_times(" . $path_id . ")", "Add");

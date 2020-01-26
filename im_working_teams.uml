@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>DATABASE</ID>
+  <OriginalElement>eb351bb7-2fbd-4d8d-a273-e46b8722cc87.TABLE:fruity.im_working_teams</OriginalElement>
+  <nodes>
+    <node x="293.0" y="187.0">eb351bb7-2fbd-4d8d-a273-e46b8722cc87.TABLE:fruity.im_working_teams</node>
+    <node x="0.0" y="0.0">eb351bb7-2fbd-4d8d-a273-e46b8722cc87.TABLE:fruity.wp_users</node>
+    <node x="-339.0" y="-1.0">eb351bb7-2fbd-4d8d-a273-e46b8722cc87.TABLE:fruity.wp_usermeta</node>
+  </nodes>
+  <notes />
+  <edges />
+  <settings layout="Hierarchic Group" zoom="1.0" x="99.0" y="61.5" />
+  <SelectedNodes>
+    <node>eb351bb7-2fbd-4d8d-a273-e46b8722cc87.TABLE:fruity.wp_usermeta</node>
+  </SelectedNodes>
+  <Categories>
+    <Category>Key columns</Category>
+    <Category>Columns</Category>
+  </Categories>
+</Diagram>
+

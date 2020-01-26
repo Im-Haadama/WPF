@@ -263,7 +263,6 @@ class Focus_Tasks {
 		// Page are $result .= and displayed in the end. (to handle the header just once);
 		$result = ""; // focus_header($header_args);
 
-		//		print __FUNCTION__ . ":" . $operation . "<br/>";
 		switch ( $operation ) {
 			case "default":
 				return self::default( $user_id);
@@ -272,14 +271,6 @@ class Focus_Tasks {
 				return self::show_settings( get_user_id() );
 			case "edit_organization":
 				return edit_organization();
-			case "show_worker":
-//				$args = self::Args();
-//				$id                     = GetParam( "id", true );
-//				$header_args["view_as"] = $id;
-//
-//				return self::work( $id, $args );
-				print __FILE__ . ":" . __LINE__;
-				return;
 			case "show_repeating_tasks":
 			case "show_templates":
 				$args = self::Args();
@@ -847,6 +838,13 @@ class Focus_Tasks {
 
 		$result .= self::search_box();
 		$result .= self::new_task();
+		$result .= self::show_new_template();
+		$result .= Core_html::GuiButton("btn_cancel", "Cancel", array( "action" => "new_task.style.display = 'none';
+								new_task_template.style.display = 'none'; 
+			                     btn_new_template.style.display = 'block';
+			                     btn_new_task.style.display = 'block';
+			                     btn_cancel.style.display='none';",
+		                                                               "style" => "display: none;") );
 
 		// My work queue
 		$mine = self::user_work( $args, $user_id );
@@ -925,7 +923,10 @@ class Focus_Tasks {
 	static function new_task() {
 		$result = "";
 		$result .= Core_Html::GuiButton( "btn_new_task", "Add",
-			array( "action" => "new_task.style.display = 'block';" ) );
+			array( "action" => "new_task.style.display = 'block'; 
+			                     btn_new_template.style.display = 'none';
+			                     btn_new_task.style.display = 'none';
+			                     btn_cancel.style.display='block';" ) );
 
 		$args          = self::Args( "im_tasklist", "new" );
 		$args["style"] = "display:none";
@@ -974,9 +975,14 @@ class Focus_Tasks {
 		// Tasks teams I'm a member of (team in my_teams). Not assigned                                              //
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		$args["title"] = im_translate( "My teams tasks" );
-		$teams         = $worker->AllTeams();
 
-		// print "teams: " . CommaImplode($teams) . "<br/>";
+		$teams         = $worker->AllTeams();
+		if (! $teams) return "No teams";
+		$workers = $worker->AllWorkers();
+
+		var_dump($workers);
+
+			// print "teams: " . CommaImplode($teams) . "<br/>";
 		$args["extra_fields"]      = array( "team" );
 		$args["selectors"]["team"] = "Focus_Tasks::gui_select_team";
 		if ( $teams and count( $teams ) ) {
@@ -1299,7 +1305,13 @@ class Focus_Tasks {
 		$result                   .= Core_Html::GuiButton( "btn_template", "add",
 			array( "action" => "data_save_new('" . self::getPost() . "', 'im_task_templates')" ) );
 
-		return $result;
+		// Core_Gem::GemAddRow( "im_tasklist", __( "Add" ), $args )
+		$args["style"] = "display:none";
+
+		return  Core_Html::GuiButton( "btn_new_template", "Add repeating",
+			array( "action" => "new_task_template.style.display = 'block'; btn_new_template.style.display ='none'; btn_new_task.style.display = 'none'; btn_cancel.style.display='block';" ) ) .
+
+		 Core_Html::GuiDiv( "new_task_template", $result, $args );
 	}
 
 	/**
@@ -1459,15 +1471,9 @@ class Focus_Tasks {
 						$row["team_members"] = CommaImplode( $all);
 					else
 						continue;
-					// Temp:
-//					foreach ($all as $worker){
-//						$w = new Org_Worker($worker);
-//						$w->AddCompany($company_id);
-//					}
 				}
 			}
 		}
-		//GemTable("im_working_teams", $args);
 		$result .= Core_Gem::GemArray( $teams, $args, "company_teams" );
 
 		return $result;
@@ -1935,9 +1941,6 @@ class Focus_Tasks {
 			$companies_list[] = array( "company_id" => $company_id, "company_name" => $company_name );
 		}
 		$result = Core_Html::gui_select( $id, "company_name", $companies_list, $events, $value, "company_id" );
-//	if ($form_table and $new_row) { // die(__FUNCTION__ . ":" . " missing form_table");
-//		$result .= Core_Html::GuiButton( "add_new_project", "add_element('project', '" . $form_table . "', '" . GetUrl() . "')", "New Project" );
-//	}
 
 		return $result;
 	}
@@ -2171,7 +2174,7 @@ class Focus_Tasks {
 		$result          .= Core_Html::gui_header( 2, "Project members" );
 		$table           = array();
 		$table["header"] = array( "name" );
-		$members = $project->all_members();
+		$members = $project->AllMembers_members();
 		foreach ($members as $member)
 		{
 			$table[ $member ]["name"] = GetUserName( $member );

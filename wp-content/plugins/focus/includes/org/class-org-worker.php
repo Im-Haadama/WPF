@@ -4,6 +4,8 @@
 class Org_Worker extends Core_users
 {
 	private $id;
+	private $teams;
+	private $workers;
 
 	/**
 	 * Org_Worker constructor.
@@ -12,6 +14,8 @@ class Org_Worker extends Core_users
 	 */
 	public function __construct( $id ) {
 		$this->id = $id;
+		$teams = null;
+		$workers = null;
 	}
 
 	/**
@@ -46,7 +50,28 @@ class Org_Worker extends Core_users
 
 	function AllTeams()
 	{
-		return CommaArrayExplode(get_usermeta($this->id, 'teams'));
+		if ($this->teams) return $this->teams;
+
+		$this->teams = CommaArrayExplode(get_usermeta($this->id, 'teams'));
+		return $this->teams;
+	}
+
+	function AllWorkers()
+	{
+		if ($this->workers) return $this->workers;
+
+		$teams = self::AllTeams();
+		if (! $teams) return null;
+
+		$this->workers = array();
+
+		foreach ($teams as $team) {
+			$team = new Org_Team($team);
+			foreach($team->AllMembers() as $member) {
+				if ( ! in_array( $member, $this->workers ) ) array_push( $this->workers, $member );
+			}
+		}
+		return $this->workers;
 	}
 
 	function AllProjects()

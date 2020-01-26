@@ -35,6 +35,7 @@ class Core_Html {
 	static function GuiButton($id, $text, $args)
 	{
 		$result = "<button id=\"$id\"";
+		if ($style = GetArg($args, "style", null)) $result .= " style=\"$style\"";
 		if ($class = GetArg($args, "class", null)) $result .= " class=\"$class\"";
 		if ($events = GetArg($args, "events", null)) $result .= " $events ";
 		if ($action = GetArg($args, "action", null)) $result .= " onclick=\"$action\" ";

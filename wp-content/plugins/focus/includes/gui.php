@@ -38,7 +38,7 @@ function gui_select_task( $id, $value, $args ) {
 
 
 
-function gui_select_zones($id, $selected, $args)
+function GuiSelectZones($id, $selected, $args)
 {
 	$edit = GetArg($args, "edit", false);
 

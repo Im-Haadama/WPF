@@ -254,7 +254,8 @@
 	 *
 	 * @return array|string
 	 */
-	function CommaImplode( $array, $quote = false ) {
+	function CommaImplode( $array, $quote = false )
+	{
 		if ( is_null( $array ) ) {
 			return "";
 		}

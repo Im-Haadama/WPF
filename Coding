@@ -1,7 +1,6 @@
 Folder symbols
 -=-=-=-=-=-=-=
 ROOT_DIR - store folder.
-TODO: Find a way to allow running older version.
 
 Library names
 -=-=-=-=-=-=-
@@ -74,4 +73,13 @@ Robot: Running scripts given from the user:
 + Random users can trigger the robot. More users will make the robot run more times. Non active server when be triggered to run the robot.
 + No users: no need for the data to be updated.
 Javascript or PHP as the trigger? Keep it simple. Just PHP.
+
+Organization info
+=-=-=-=-=-=-=-=-=
+people are 'users' (meta info in usermeta)
+teams are 'working_teams'. For now getting team members search all usermeta/teams. future optimization: create serialized array of users in the working_teams.
+projects are 'projects'. For now getting team members search all usermeta/projects. future optimization: create serialized array of users in the working_projects.
+companies are 'company'.
+
+5o6MSNekdrE*L6RB
 

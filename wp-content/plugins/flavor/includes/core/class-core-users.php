@@ -17,7 +17,8 @@ class Core_Users {
 
 	private function getUser()
 	{
-		if (! $this->wp_user) $this->wp_user = wp_get_current_user();
+		if (! $this->wp_user)
+			$this->wp_user = get_user_by("id", $this->id);
 		return $this->wp_user;
 	}
 

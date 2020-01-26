@@ -58,7 +58,7 @@ class Org_Project {
 		return sql_query_single_scalar("select is_active from im_projects where id = $project_id");
 	}
 
-	public function all_members()
+	public function AllWorkers()
 	{
 		$members = sql_query_array_scalar("select user_id from wp_usermeta where meta_key = 'projects' and meta_value like '%:" . $this->id . ":%'");
 		$manager = $this->manager;
