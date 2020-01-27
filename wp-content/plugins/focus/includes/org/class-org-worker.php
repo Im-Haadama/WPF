@@ -3,7 +3,6 @@
 
 class Org_Worker extends Core_users
 {
-	private $id;
 	private $teams;
 	private $workers;
 
@@ -12,8 +11,9 @@ class Org_Worker extends Core_users
 	 *
 	 * @param $id
 	 */
+
 	public function __construct( $id ) {
-		$this->id = $id;
+		Core_Users::__construct($id);
 		$teams = null;
 		$workers = null;
 	}
@@ -23,11 +23,6 @@ class Org_Worker extends Core_users
 	 */
 	public function getId() {
 		return $this->id;
-	}
-
-	public function getName()
-	{
-
 	}
 
 	function IsGlobalCompanyWorker($company)
@@ -60,27 +55,48 @@ class Org_Worker extends Core_users
 	{
 		if ($this->workers) return $this->workers;
 
-		$teams = self::AllTeams();
-		if (! $teams) return null;
-
-		$this->workers = array();
-
-		foreach ($teams as $team) {
-			$team = new Org_Team($team);
-			foreach($team->AllMembers() as $member) {
-				if ( ! in_array( $member, $this->workers ) ) array_push( $this->workers, $member );
+		$companies = self::GetCompanies(true);
+		if ($companies) {
+			$this->workers = array();
+			foreach ($companies as $company_id){
+				$company = new Org_Company($company_id);
+				$this->workers = array_merge($this->workers, $company->getWorkers());
 			}
+
+			return $this->workers;
 		}
-		return $this->workers;
+
+		return null;
+//		die("need to complete for teams");
+//		$teams = self::AllTeams();
+//		if (! $teams) return null;
+//
+//		$this->workers = array();
+//
+//		foreach ($teams as $team) {
+//			$team = new Org_Team($team);
+//			foreach($team->AllMembers() as $member) {
+//				if ( ! in_array( $member, $this->workers ) ) array_push( $this->workers, $member );
+//			}
+//		}
+//		return $this->workers;
 	}
 
-	function AllProjects()
+	function AllProjects($just_active = true)
 	{
 		$projects = CommaArrayExplode(get_usermeta($this->id, 'projects'));
 		if (! $projects) $projects = array();
-		$managed = sql_query_array_scalar("select id from im_projects where manager = " . $this->id);
+		$managed = sql_query_array_scalar("select id from im_projects where manager = " . $this->id );
 
-		return array_merge($projects, $managed);
+		$result = array();
+		if ($just_active)
+			foreach(array_merge($projects, $managed) as $project_id)
+			{
+				$p = new Org_Project($project_id);
+				if ($p->IsActive()) array_push($result, $project_id);
+			}
+
+		return $result;
 	}
 
 	function AllCompanies()

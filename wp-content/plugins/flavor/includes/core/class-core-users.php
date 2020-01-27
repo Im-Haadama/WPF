@@ -1,7 +1,7 @@
 <?php
 
 class Core_Users {
-	private $id;
+	protected $id;
 	private $wp_user;
 
 	public function __construct($id = 0) {

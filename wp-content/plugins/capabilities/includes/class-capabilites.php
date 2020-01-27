@@ -651,7 +651,6 @@ class Capabilites {
 			$user = $info[0];
 			$capability_serialize = $info[1];
 			$capability_array = unserialize($capability_serialize);
-//			print $user . " " . var_dump($capability_array); print "<br/>";
 			foreach ($capability_array as $capability => $flag)
 			{
 				if (! isset($capabilities[$capability])) $capabilities[$capability] = [];

@@ -53,7 +53,7 @@ class Focus_Tasks {
 		}
 
 		$operation  = GetParam( "operation", false, "default" );
-		$table_name = substr( $operation, 8 );
+		$table_name = self::TableFromOperation($operation);
 
 		// Todo: move all processing to filter.
 		$id = GetParam("id", false, null);
@@ -66,6 +66,12 @@ class Focus_Tasks {
 		return self::focus_main( $operation, $user_id );
 	}
 
+	static function TableFromOperation($operation)
+	{
+		strtok($operation, "_"); // remove gem
+		strtok("_"); // remove edit/show/add
+		return strtok(null);
+	}
 	static function gui_select_worker( $id, $selected, $args ) {
 		$edit      = GetArg( $args, "edit", true );
 		$worker    = new Org_Worker( get_user_id() );
@@ -233,6 +239,7 @@ class Focus_Tasks {
 				case "im_projects":
 					$args["hide_cols"] = array("is_active"=>1, "manager"=>1);
 					$args["links"]     = array( "ID" => AddToUrl( array( "operation" => "gem_edit_im_projects&id=%s" ) ) );
+					$args["check_active"] = true;
 					break;
 			}
 		return $args;
@@ -979,15 +986,23 @@ class Focus_Tasks {
 		$teams         = $worker->AllTeams();
 		if (! $teams) return "No teams";
 		$workers = $worker->AllWorkers();
+		if (! $workers) return null;
 
-		var_dump($workers);
-
-			// print "teams: " . CommaImplode($teams) . "<br/>";
-		$args["extra_fields"]      = array( "team" );
-		$args["selectors"]["team"] = "Focus_Tasks::gui_select_team";
-		if ( $teams and count( $teams ) ) {
-			$result .= Focus_Tasks::Taskslist( $args );
+		// Todo: if more than 6 workers need to organize differently.
+		$tab_data = array();
+		foreach($workers as $worker_id) {
+			$args["worker_id"] = $worker_id;
+			$w = new Org_Worker($worker_id);
+			array_push ($tab_data, array( $w->getName(), $w->getName(), self::user_work($args, $worker_id)));
 		}
+		$args["class"] = "team";
+		$result .= Core_Html::GuiTabs($tab_data, $args);
+			// print "teams: " . CommaImplode($teams) . "<br/>";
+//		$args["extra_fields"]      = array( "team" );
+//		$args["selectors"]["team"] = "Focus_Tasks::gui_select_team";
+//		if ( $teams and count( $teams ) ) {
+//			$result .= Focus_Tasks::Taskslist( $args );
+//		}
 
 		return $result;
 	}
@@ -999,8 +1014,9 @@ class Focus_Tasks {
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Tasks projects I'm a member of (team in my_projects). Not assigned                                              //
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		$args["title"] = im_translate( "My projects tasks" );
-		$args["where"] = " id in (" . CommaImplode($worker->AllProjects()) . ")";
+		$args["title"] = im_translate( "My projects" );
+		// DebugVar(CommaImplode($worker->AllProjects()));
+		$args["query"] = " id in (" . CommaImplode($worker->AllProjects()) . ")";
 
 		$result .= Core_Gem::GemTable("im_projects", $args);
 
@@ -1090,15 +1106,8 @@ class Focus_Tasks {
 		$args["drill_operation"] = "show_tasks";
 
 		$table_name = "im_tasklist";
-		$title      = GetArg( $args, "title", "" );
 
 		$action_url = "/wp-content/plugins/focus/post.php";
-		$page_url   = GetUrl( true );
-
-		$active_only = GetArg( $args, "active_only", true );
-		if ( $active_only ) {
-			$title .= " (" . im_translate( "active only" ) . ")";
-		}
 
 		if ( ! isset( $args["fields"] ) ) {
 			$args["fields"] = array( "id", "task_title", "task_description", "project_id", "priority", "task_template" );
@@ -1108,11 +1117,6 @@ class Focus_Tasks {
 		}
 
 		$args["hide_cols"] = array("task_description" => 1);
-		$limit = GetParam( "limit", false, 10 );
-
-		if ( GetParam( "offset" ) ) {
-			$limit .= " offset " . GetParam( "offset" );
-		}
 
 		$links = array();
 
@@ -1123,7 +1127,6 @@ class Focus_Tasks {
 
 		$project_id = GetArg( $args, "project_id", null );
 		if ( $project_id ) {
-			$title = im_translate( "Project" ) . " " . Org_Project::GetName( $project_id );
 			if ( $f = array_search( "project_id", $args["fields"] ) ) {
 				unset( $args["fields"][ $f ] );
 			}
@@ -1181,15 +1184,11 @@ class Focus_Tasks {
 		$args["col_width"] = array( "task_description" => '30%' );
 		$args["prepare_plug"] = __CLASS__ . "::prepare_row";
 		$table             = Core_Gem::GemTable( "im_tasklist", $args );
-		if ( $table ) {
-			// if (strlen($title)) $result = Core_Html::gui_header(2, $title);
-			$result .= $table;
-		}
+		if ( $table ) $result .= $table;
 
 		$count = $args["count"];
 		$page  = GetParam( "page", false, 1 );
 		if ( $count === $page ) {
-			// $args["page"] = $page;
 			$result .= Core_Html::GuiHyperlink( "More", AddToUrl( "page", $page + 1 ) ) . " ";
 			$result .= Core_Html::GuiHyperlink( "Not paged", AddToUrl( "page", - 1 ) ) . " "; // All pages
 		}
@@ -1451,7 +1450,7 @@ class Focus_Tasks {
 	 * @throws Exception
 	 */
 	static function company_teams( $company_id, $args ) {
-		$c                 = new WPF_Company( $company_id );
+		$c                 = new Org_Company( $company_id );
 		$result            = Core_Html::gui_header( 1, $c->getName() );
 		$args["query"]     = "manager = 1";
 		$args["links"]     = array( "id" => AddToUrl( array( "operation" => "show_edit_team&id=%s" ) ) );
@@ -1480,7 +1479,7 @@ class Focus_Tasks {
 	}
 
 	static function company_workers( $company_id, $args ) {
-		$c                 = new WPF_Company( $company_id );
+		$c                 = new Org_Company( $company_id );
 		$result            = Core_Html::gui_header( 1, $c->getName() );
 		$args["query"]     = "manager = 1";
 		$args["links"]     = array( "id" => AddToUrl( array( "operation" => "show_edit_worker&id=%s" ) ) );
@@ -2029,7 +2028,7 @@ class Focus_Tasks {
 
 		// Project related actions.
 		Core_Gem::AddTable( "im_projects" ); // add + edit
-		AddAction("gem_edit_im_projects", array(__CLASS__, 'ShowProjectMembers'), 11, 3);
+//		AddAction("gem_edit_im_projects", array(__CLASS__, 'ShowProjectMembers'), 11, 3);
 		AddAction("gem_add_project_members", array(__CLASS__, 'AddProjectMember'), 11, 3);
 		AddAction("project_add_member", array(__CLASS__, 'ProjectAddMember'), 11, 3);
 
@@ -2174,7 +2173,7 @@ class Focus_Tasks {
 		$result          .= Core_Html::gui_header( 2, "Project members" );
 		$table           = array();
 		$table["header"] = array( "name" );
-		$members = $project->AllMembers_members();
+		$members = $project->AllWorkers();
 		foreach ($members as $member)
 		{
 			$table[ $member ]["name"] = GetUserName( $member );

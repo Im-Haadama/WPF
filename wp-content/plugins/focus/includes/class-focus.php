@@ -241,6 +241,7 @@ class Focus {
 	 */
 	function handle_operation($operation)
 	{
+		// called by post.php
 		$result = apply_filters( $operation, null );
 		if ( $result ) return $result;
 

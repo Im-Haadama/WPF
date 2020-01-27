@@ -80,6 +80,8 @@ people are 'users' (meta info in usermeta)
 teams are 'working_teams'. For now getting team members search all usermeta/teams. future optimization: create serialized array of users in the working_teams.
 projects are 'projects'. For now getting team members search all usermeta/projects. future optimization: create serialized array of users in the working_projects.
 companies are 'company'.
+all_workers - if company manager: all members. if team(s) manager: all team members. otherwise null;
+
+classes Org_Company, Org_Team, Org_Worker, Org_Project in org folder.
 
 5o6MSNekdrE*L6RB
-

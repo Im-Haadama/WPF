@@ -112,13 +112,11 @@ function find_route( $node, $rest, &$path, $prerequisite = null ) {
 	$min     = - 1;
 	$min_seq = 0;
 	for ( $i = 0; $i < sizeof( $rest ); $i ++ ) {
-		// print $rest[$i]  . " ";
 		$d = get_distance( $node, $rest[ $i ] );
 		if ( ( $min == - 1 ) or ( $d < $min ) ) { // ( $node == $rest[ $i ] ) or
 			// If we didn't visit previous location for collecting, skip.
 			// var_dump($path); print "<br/>";
 			if ($prerequisite and isset($prerequisite[$rest[ $i ]]) and strlen ($prerequisite[$rest[$i]])){
-				// print "<br/>checking preq for " . $rest[ $i ] . " ";
 				if (! in_array($prerequisite[$rest[ $i ]], $path)) {
 					print "X" . $prerequisite[$rest[ $i ]] . "X not yet. skipping<br/>";
 

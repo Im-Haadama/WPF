@@ -72,7 +72,6 @@ function show_not_available() {
 	while ( $prod_id = $iter->next() ) {
 		$alter = alternatives($prod_id);
 		$p = new Fresh_Product($prod_id);
-		// print "checking " . get_product_name($prod_id) . "<br/>";
 		if (! count($alter)) {
 			$row = array(get_product_name($prod_id), $p->getStock());
 			$table[$prod_id] = $row;

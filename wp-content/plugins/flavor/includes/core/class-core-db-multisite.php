@@ -126,7 +126,6 @@ class Core_Db_MultiSite extends Core_MultiSite {
 
 	static function sExecute( $request, $site, $debug = false ) {
 		$i = self::getInstance();
-		//	var_dump ($i);
 		$r = $i->Execute( $request, $site, $debug );
 		if ( $debug ) {
 			print "<br/>Result: " . $r;
@@ -284,22 +283,16 @@ class Core_Db_MultiSite extends Core_MultiSite {
 		if ( $query ) {
 			$sql .= " where " . $query;
 		}
-//		print $sql . "<br/>";
 		$for_delete = "";
 		foreach ( sql_query_array_scalar( $sql ) as $key ) {
-			// print "checking $key...";
 			if ( ! in_array( $key, $keys ) ) {
-//				print "delete key " . $key . "<br/>";
 				$for_delete .= QuoteText( $key ) . ", ";
 			}
-//			print "<br/>";
 		}
 
 		if ( strlen( $for_delete ) ) {
 			print "for delete: " . $for_delete;
 			$sql = "DELETE FROM $table WHERE $table_key IN (" . rtrim( $for_delete, ", " ) . ")";
-			// if ($query) $sql .= " and " . $query;
-//			print $sql;
 
 			sql_query( $sql );
 		}

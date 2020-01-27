@@ -790,8 +790,6 @@ if (! function_exists("gui_select_client"))
 		}
 
 		$select_args = array("name" => "client_displayname(id)", "include_id" => 1, "where"=> $sql_where, "events" => $events, "value"=>$value, "datalist" => 1);
-		// var_dump($select_args);
-		// return GuiSelectTable( $id, "wp_users", $select_args);
 		return Core_Html::GuiAutoList( $id, "users", $select_args);
 	}
 }

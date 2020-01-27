@@ -1589,7 +1589,7 @@ class Core_Html {
 		foreach ($tabs as $tab)
 		{
 			if (! is_array($tab) or count($tab) < 3){
-				return "Tab elements should be indexed array with 3 elements: name, display_name, and content";
+				return "Tab elements should be seq array with 3 elements: [0]name, [1]display_name, and [2]content";
 			}
 			$name = $tab[0];
 			$display_name = $tab[1];

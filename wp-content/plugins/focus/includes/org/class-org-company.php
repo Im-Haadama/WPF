@@ -24,4 +24,32 @@ class Org_Company {
 		return sql_query_single_scalar("select name from im_company where id = " .$this->id);
 	}
 
+	public function getWorkers()
+	{
+		return sql_query_array_scalar("select user_id from wp_usermeta where meta_key = 'companies' and meta_value like '%:" . $this->id . ":%'");
+
+	}
+
 }
+
+//class WPF_Company {
+//
+//	function Manager() {
+//		return sql_query_single_scalar( " select admin from im_company where id = " . $this->id );
+//	}
+//
+//	function getName() {
+//		return sql_query_single_scalar( "select name from im_company where id = " . $this->id );
+//	}
+//
+//	function GetWorkers() {
+//		$array = sql_query_array_scalar( "select user_id from wp_usermeta " .
+//		                                 " where meta_key = 'companies' and meta_value like '%:" . $this->id . ":%'" );
+//
+//		if ( $array ) {
+//			return $array;
+//		}
+//
+//		return self::Manager();
+//	}
+//}

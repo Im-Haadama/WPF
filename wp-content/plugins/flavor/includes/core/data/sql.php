@@ -85,7 +85,6 @@ function sql_type( $table, $field) {
 	if (! $table) throw new Exception("No table given");
 	if (! $field) throw new Exception(__CLASS__ . ":". __METHOD__ . "No field given.<br/> " . sql_trace());
 
-	//	print "checking $table $field<br/>";
 	// For meta fields:
 	if ($sl = strpos($field, '/')){
 		$table = substr($field, 0, $sl);

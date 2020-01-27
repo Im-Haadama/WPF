@@ -261,8 +261,6 @@ class Flavor {
 				'id'   => 'wpf_settings_section_end'
 			),
 		);
-//		var_dump($settings);
-	//	$settings = self::plugins_setting();
 		return apply_filters( 'wpf_settings', $settings );
 	}
 

@@ -374,8 +374,6 @@ class Focus_Tasklist {
 
 		while ($check_date <= ($now + 23*60*60)){
 			$repeat_freq = explode( " ", $repeat_freq )[0]; // Change from "w - weekly" to "w"
-//		$result .="rf=$repeat_freq<br/>";
-//		$result .= "checking " . date( $repeat_freq, $check_date ) . "<br/>";
 			if ( in_array( date( $repeat_freq, $check_date ), explode( ",", $repeat_freq_numbers ) ) ) {
 				return "1 " . $result;
 			}

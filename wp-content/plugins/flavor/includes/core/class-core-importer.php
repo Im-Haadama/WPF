@@ -164,9 +164,8 @@ class Core_Importer {
 			}
 		}
 		if ( $check_dup ) {
-			// print "checking dup ";
-			if ( $check_dup( $insert_fields, $values ) ) {
-				// print "dup";
+
+			if ( call_user_func($check_dup, $insert_fields, $values ) ) {
 				return - 1; // Already exists.
 			}
 		}

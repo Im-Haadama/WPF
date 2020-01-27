@@ -27,11 +27,10 @@ class Core_Gem {
 		AddAction("gem_show_" . $table, array($class, 'show_wrapper'), 10, 3, $debug);
 	}
 
-	static function edit_wrapper($operation, $text, $args)
+	static function edit_wrapper($operation, $id, $args)
 	{
 		$table_name = substr($operation, 9);
-//		$args["edit"] = true;
-		return self::GemAddRow($table_name, $text, $args);
+		return self::GemElement($table_name, $id, $args);
 	}
 
 	static function add_wrapper($operation, $text, $args)
@@ -104,7 +103,7 @@ class Core_Gem {
 		if ($title)
 			$result .= Core_Html::gui_header(1, $title, true, true) . " " .Core_Html::gui_label("id", $row_id);
 
-		$check_active = GetArg($args, "cheeck_active", false);
+		$check_active = GetArg($args, "check_active", false);
 		if ($check_active) {
 			$sql = "select is_active from $table_name where id = $row_id";
 			$active = sql_query_single_scalar($sql);

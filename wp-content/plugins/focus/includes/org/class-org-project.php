@@ -45,17 +45,10 @@ class Org_Project {
 		return $this->name;
 	}
 
-/* @param $user_id
-*
-* @param bool $is_manager - just companies user is admin
-*
-* @return array
-* @throws Exception
-*/
-
-	static function IsActive($project_id)
+	function IsActive()
 	{
-		return sql_query_single_scalar("select is_active from im_projects where id = $project_id");
+		$sql = "select is_active from im_projects where id = " . $this->id;
+		return sql_query_single_scalar($sql);
 	}
 
 	public function AllWorkers()

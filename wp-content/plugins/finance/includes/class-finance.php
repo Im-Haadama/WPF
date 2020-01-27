@@ -571,8 +571,6 @@ class Finance {
 
 	public function run ()
 	{
-//		var_dump($this->shortcodes);
-//		$this->loader->run();
 	}
 
 	static public function settingPage()
