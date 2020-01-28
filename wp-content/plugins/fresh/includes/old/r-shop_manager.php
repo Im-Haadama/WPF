@@ -41,7 +41,7 @@ if ( $multisite or $_SERVER['REMOTE_ADDR'] == "160.153.129.234" or // Aglamaz.co
 	$roles = $user->roles;
 	if ( count( array_intersect( array( "shop_manager", "administrator" ), $roles ) ) < 1 ) {
 		print greeting();
-		print im_translate("No permissions") . "<br/>";
+		print ImTranslate("No permissions") . "<br/>";
 
 		die ( 1 );
 		$inclued_files = get_included_files();

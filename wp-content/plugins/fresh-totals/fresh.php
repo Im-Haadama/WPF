@@ -1,12 +1,12 @@
 <?php
 /**
- * Plugin Name: fresh
+ * Plugin Name: fresh-totals
  * Plugin URI: http://www.aglamaz.com/fresh
- * Description: Addon to woocommerce to summerize open orders - how many products are in active orders. Use shortcode [fresh-total].
+ * Description: Addon to woocommerce to summerize open orders - how many products are in active orders. Use shortcode [fresh-totals].
  * Version: 1.0
- * Author: aglamaz.com
- * Author URI: https://aglamaz.com
- * Text Domain: im-haadama
+ * Author: WPF
+ * Author URI: http://wordpress-f.com
+ * Text Domain: wpf
  *
  * @package fresh
  */
@@ -40,6 +40,10 @@ function fresh() {
 	return fresh::instance();
 }
 
-// Global for backwards compatibility.
-$GLOBALS['fresh'] = fresh();
+function run_fresh() {
+	$plugin = new Fresh("Fresh");
+	$plugin->run();
+}
+
+run_fresh();
 

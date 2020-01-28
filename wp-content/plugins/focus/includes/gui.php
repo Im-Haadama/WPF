@@ -36,8 +36,6 @@ function gui_select_task( $id, $value, $args ) {
 	return Core_Html::GuiAutoList($id, "tasks", $args);
 }
 
-
-
 function GuiSelectZones($id, $selected, $args)
 {
 	$edit = GetArg($args, "edit", false);

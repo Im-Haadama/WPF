@@ -141,7 +141,7 @@ print " באתר - http://store.im-haadama.co.il או בהודעה חוזרת.";
 
 function print_basket( $basket_id )
 {
-    print Core_Html::gui_header(1, im_translate("basket") . " " . get_product_name($basket_id));
+    print Core_Html::gui_header(1, ImTranslate("basket") . " " . get_product_name($basket_id));
 	$sql = 'SELECT DISTINCT product_id, quantity, product_price(product_id) as price, quantity * product_price(product_id) as line_price FROM im_baskets WHERE basket_id = ' . $basket_id .
            " and post_status(product_id) like '%pub%'";
 
@@ -157,7 +157,7 @@ function print_basket( $basket_id )
         if (is_numeric($row["line_price"])) $total += $row["line_price"];
     }
 
-    array_push($basket_content, array("product_id" => im_translate("Total"), "price" => "", "quantity" => "", "line_price" => $total));
+    array_push($basket_content, array( "product_id" => ImTranslate("Total"), "price" => "", "quantity" => "", "line_price" => $total));
     $args["checkbox_class"] = "product_checkbox";
 
     print gui_table_args($basket_content, "basket_contents", $args);

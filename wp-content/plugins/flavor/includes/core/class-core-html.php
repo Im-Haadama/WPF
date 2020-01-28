@@ -1594,7 +1594,7 @@ class Core_Html {
 			$name = $tab[0];
 			$display_name = $tab[1];
 
-			$div_args["style"] = (($tab_index == $shown_tab) ? 'display: block': "");
+			$div_args["style"] = (($tab_index == $shown_tab) ? 'display: block' : "display: none");
 			$contents .= Core_Html::GuiDiv($name, $tab[2], $div_args);
 
 			$button_args["events"] = "onclick=\"selectTab(event, '$name', '$div_class', '$btn_class')\"";

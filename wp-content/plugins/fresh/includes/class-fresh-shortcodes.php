@@ -158,3 +158,15 @@ class Fresh_Shortcodes {
 		print Fresh::instance()->handle_operation($operation);
 	}
 }
+
+add_filter('woocommerce_product_query_meta_query', 'products_with_thumbs', 10);
+
+function products_with_thumbs()
+{
+	return array(
+		'relation' => 'OR',
+		array('key' => '_thumbnail_id',
+		'compare' => '>',
+		'value' => '0')
+	);
+}

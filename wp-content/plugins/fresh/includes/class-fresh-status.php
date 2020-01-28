@@ -35,7 +35,7 @@ group by post_status");
 		}
 		$result .= Core_Html::gui_header(2, "Orders");
 
-		array_unshift($order_status, array(im_translate("Count"), im_translate("Status")));
+		array_unshift($order_status, array(ImTranslate("Count"), ImTranslate("Status")));
 
 		$result .= gui_table_args($order_status, "orders_status", $args);
 
@@ -57,11 +57,11 @@ group by status");
 		foreach ($supply_status as $row_number => $info) {
 			$status = $supply_status[$row_number][1];
 			$supply_status[$row_number] [0] = GuiHyperlink($supply_status[$row_number][0], AddToUrl(array( "operation" => "show_supplies", "status" => $status)));
-			$supply_status[ $row_number ][1] = im_translate(get_supply_status($status));
+			$supply_status[ $row_number ][1] = ImTranslate(get_supply_status($status));
 		}
 		$result .= Core_Html::gui_header(2, "Supply");
 
-		array_unshift($supply_status, array(im_translate("Count"), im_translate("Status")));
+		array_unshift($supply_status, array(ImTranslate("Count"), ImTranslate("Status")));
 
 		$result .= gui_table_args($supply_status, "orders_status", $args);
 
@@ -71,7 +71,7 @@ group by status");
 	function SupplyTable()
 	{
 		$status = GetParam("status", false, 1);
-		$result = Core_Html::gui_header(1, im_translate("Supplies in status") . " '" . im_translate(get_supply_status($status)) . "'");
+		$result = Core_Html::gui_header(1, ImTranslate("Supplies in status") . " '" . ImTranslate(get_supply_status($status)) . "'");
 
 		$result .= SuppliesTable($status);
 

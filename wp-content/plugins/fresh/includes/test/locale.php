@@ -23,4 +23,4 @@ if (! load_textdomain('im-haadama', $mofile))
 	print "can't load $mofile";
 
 // print esc_html( translate('Product Name', 'im_haadama') );
-print im_translate('Product Name');
+print ImTranslate('Product Name');

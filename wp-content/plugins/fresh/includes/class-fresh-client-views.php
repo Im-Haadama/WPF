@@ -169,7 +169,7 @@ class Fresh_Client_Views {
 		$data1 = Core_Data::TableData($sql, $args);
 
 		if (! $data1) {
-			print im_translate("No orders");
+			print ImTranslate("No orders");
 			return;
 		}
 

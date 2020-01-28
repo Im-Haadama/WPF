@@ -85,7 +85,7 @@ class Fresh_Delivery {
 		$order = $this->getOrder();
 
 		$result .= Core_Html::gui_header(1, __("הזמנה") . " " . $this->OrderId()) . "<br/>";
-		$result .= im_translate("Order date") . ": " . $order->GetOrderDate() . "<br/>";
+		$result .= ImTranslate("Order date") . ": " . $order->GetOrderDate() . "<br/>";
 		$result .= __("Supply date") . ": " . $this->GetDate() . "<br/>";
 
 		$args = [];

@@ -74,7 +74,7 @@ switch ( $operation ) {
 				print "table $table not exportable.<br/>";
 				die (1);
 		}
-		disable_translate();
+		DisableTranslate();
 		print GuiTableContent( "table", $sql, $args );
 		break;
 

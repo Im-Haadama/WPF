@@ -253,8 +253,8 @@ class Focus {
 				return Focus_Tasks::show_task($template_id);
 				break;
 		}
-		$args = [];
 		$args["post_file"] = GetUrl(1);
+		$args["page"] = GetParam("page", false, 1);
 		// Pass to relevant module.
 		$module = strtok($operation, "_");
 		switch ($module){

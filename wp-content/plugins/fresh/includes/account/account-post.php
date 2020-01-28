@@ -163,7 +163,7 @@ switch ( $operation ) {
 		$ids=data_search("im_client_accounts",$args);
 		Core_Html::gui_header(1, "Results");
 		if (! $ids){
-			print im_translate("Nothing found");
+			print ImTranslate("Nothing found");
 			return;
 		}
 		$args["query"] = "id in (" . CommaImplode($ids) . ")";

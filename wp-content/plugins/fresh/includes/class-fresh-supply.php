@@ -83,7 +83,7 @@ class Fresh_Supply {
 		}
 		// Name is mandatory.
 		if ( ! count( $name_idx ) ) {
-			print im_translate(array("Error: ", "name column is missing."));
+			print ImTranslate(array("Error: ", "name column is missing."));
 			print "<br/>";
 
 			return null;
@@ -91,26 +91,26 @@ class Fresh_Supply {
 		// Quantity is needed in supply (and orders).
 		if ( ! count( $quantity_idx ) ) {
 			if ($needed_fields["quantity"]) {
-				print im_translate( array("Error: ", "quantity column is missing." ));
+				print ImTranslate( array("Error: ", "quantity column is missing." ));
 
 				return null;
 			}
-			print im_translate(array("Info: ", "quantity column is missing."));
+			print ImTranslate(array("Info: ", "quantity column is missing."));
 		}
 
 		// Optional
 		if ( ! count( $item_code_idx ) ) {
-			print im_translate(array("Info: ", "can't find item code header")) . "<br/>";
+			print ImTranslate(array("Info: ", "can't find item code header")) . "<br/>";
 		}
 
 		// Price is needed in pricelist.
 		if ( ! count( $price_idx ) ) {
 			if (isset($needed_fields["price"])){
-				print im_translate(array("Error: ",  "can't find price header")) ."<br/>";
+				print ImTranslate(array("Error: ",  "can't find price header")) . "<br/>";
 
 				return null;
 			}
-			print im_translate(array("Info: ", "can't find price header"));
+			print ImTranslate(array("Info: ", "can't find price header"));
 		}
 		if ( $debug ) {
 			print "headers: <br/>";
@@ -1419,7 +1419,7 @@ function handle_supplies_operation($operation)
 		case "create_from_file":
 			$supplier_id = GetParam( "supplier_id" );
 			print header_text(false);
-			print im_translate("Creating supply for") . " " . get_supplier_name($supplier_id) . " <br/>";
+			print ImTranslate("Creating supply for") . " " . get_supplier_name($supplier_id) . " <br/>";
 
 			$tmp_file = $_FILES["fileToUpload"]["tmp_name"];
 			$date = GetParam("date", true);
@@ -1512,8 +1512,8 @@ function get_supply($id)
 function supplier_doc()
 {
 
-	$data = '<div class="tooltip">' . im_translate("invoice") . gui_checkbox( "is_invoice", "" );
-	$data .= '<span class="tooltiptext">' . im_translate("Check for invoice, and leave uncheck for delivery note") . '</span></div>'; // יש לסמן עבור חשבונית ולהשאיר לא מסומן עבור תעודת משלוח
+	$data = '<div class="tooltip">' . ImTranslate("invoice") . gui_checkbox( "is_invoice", "" );
+	$data .= '<span class="tooltiptext">' . ImTranslate("Check for invoice, and leave uncheck for delivery note") . '</span></div>'; // יש לסמן עבור חשבונית ולהשאיר לא מסומן עבור תעודת משלוח
 
 	$data .= gui_table_args( array(
 		// array( "חשבונית", $invoice_text ),

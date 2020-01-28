@@ -18,7 +18,7 @@ print header_text(true, true, true, array("/org/people/people.js", "/core/gui/cl
 $user_id = get_user_id(true);
 
 if (! user_can($user_id, 'working_hours_all')) {
-    print im_translate("No permissions");
+    print ImTranslate("No permissions");
 	return;
 }
 

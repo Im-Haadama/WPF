@@ -103,7 +103,7 @@ function greeting( $args = null, $force_login = false )
 
 //	$data .= " " . gui_div("user_id", get_customer_name($user_id), false, $user_id);
 	$data .= get_avatar( get_user_id(), 40 ) . " " . get_customer_name($user_id) . Core_Html::Br() . GuiHyperlink("logout", wp_logout_url(get_permalink()));
-	if ($viewing_as != $user_id) $data .= "( " . im_translate("viewing as") . get_customer_name($viewing_as) . ")";
+	if ($viewing_as != $user_id) $data .= "( " . ImTranslate("viewing as") . get_customer_name($viewing_as) . ")";
 
 	$data .=  Date("G:i", $now );
 

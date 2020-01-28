@@ -62,7 +62,7 @@ class Finance_Bank
 			$ids=data_search("im_bank");
 			Core_Html::gui_header(1, "Results");
 			if (! $ids){
-				print im_translate("Nothing found");
+				print ImTranslate("Nothing found");
 				return;
 			}
 		}
@@ -340,7 +340,7 @@ class Finance_Bank
 				$ids = data_search( "im_bank" );
 				Core_Html::gui_header( 1, "Results" );
 				if ( ! $ids ) {
-					print im_translate( "Nothing found" );
+					print ImTranslate( "Nothing found" );
 
 					return;
 				}

@@ -184,7 +184,7 @@ function show_missions($query = null)
 	$missions = sql_query_array_scalar($sql);
 
 	if ( count( $missions )  == 0) {
-	    $result .= im_translate("No missions for given period");
+	    $result .= ImTranslate("No missions for given period");
 		$result .= Core_Html::GuiHyperlink("Last week", AddToUrl("week" , date( "Y-m-d", strtotime( "last sunday" )))) . " ";
 		$result .= Core_Html::GuiHyperlink("This week", AddToUrl("week" , date( "Y-m-d", strtotime( "sunday" )))) . " ";
 		$result .= Core_Html::GuiHyperlink("Next week", AddToUrl("week", date( "Y-m-d", strtotime( "next sunday" ))));
@@ -1080,7 +1080,7 @@ function show_today_routes()
 	$missions = sql_query_array_scalar($sql);
 
 	if (count($missions) == 1) $result .= show_mission_route($missions[0]);
-	if (count($missions) == 0) $result .= im_translate("No missions today");
+	if (count($missions) == 0) $result .= ImTranslate("No missions today");
 	return $result;
 
 }

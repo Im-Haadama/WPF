@@ -194,8 +194,8 @@ function GemImport($table_name, $args = null)
 	if ($selector) $result .= $selector("import_select", null, $args);
 
 	// Selecting gui
-	$result .= '<form name="upload_csv" id="upcsv" method="post" enctype="multipart/form-data">'.
-	           im_translate('Load from csv file') .
+	$result .= '<form name="upload_csv" id="upcsv" method="post" enctype="multipart/form-data">' .
+	           ImTranslate('Load from csv file') .
 	           '<input type="file" name="fileToUpload" id="fileToUpload">
         <input type="submit" value="טען" name="submit">
 

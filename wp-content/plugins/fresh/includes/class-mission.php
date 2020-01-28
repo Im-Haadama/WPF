@@ -345,7 +345,7 @@ function update_wp_woocommerce_shipping_zone_methods($args) {
 function show_mission($mission_id)
 {
 	if (! ($mission_id > 0)) die ("bad mission_id " .$mission_id);
-	$result = Core_Html::gui_header(1, im_translate("mission") . " $mission_id");
+	$result = Core_Html::gui_header(1, ImTranslate("mission") . " $mission_id");
 
 	$args = [];
 	$args["selectors"] = array("path_code" => "gui_select_path");
@@ -414,7 +414,7 @@ function show_active_missions()
 // $args["first_id"] = true;
 	$args["actions"] = $actions;
 	$args["query"] = $query;
-	$args["no_data_message"] = im_translate("No active missions (today and further)");
+	$args["no_data_message"] = ImTranslate("No active missions (today and further)");
 
 
 	return GemTable($table_name,$args);

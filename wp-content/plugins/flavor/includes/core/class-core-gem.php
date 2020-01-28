@@ -145,7 +145,7 @@ class Core_Gem {
 		$no_data_message = GetArg($args, "no_data_message", "No data for now");
 		if ($title) $result .= Core_Html::gui_header(2, $title);
 
-		$page = GetArg($args, "_page", 1);
+		$page = GetArg($args, "page", 1);
 		$rows_per_page = GetArg($args, "rows_per_page", 10);
 
 		if ($rows_data){
@@ -158,13 +158,15 @@ class Core_Gem {
 			if (count($rows_data) == $rows_per_page + 1) { // 1 for the header
 				$div_content .= Core_Html::gui_header(1, "page", true, true) . " " . Core_Html::gui_label("gem_page_" . $table_id, $page) . "<br/>";
 				// $result .= Core_Html::GuiHyperlink("Next page", AddToUrl("page", $page + 1)) . " ";
-				$div_content .= Core_Html::GuiButton("btn_gem_next_" . $table_id, "next", array("action" => "gem_next_page(" . QuoteText($post_file."?operation=gem_show&table=".$table_id)  . "," . QuoteText($table_id) . ")"));
-				$div_content .= Core_Html::GuiHyperlink("All", AddToUrl("_page", -1)) . " ";
+				$div_content .= Core_Html::GuiButton("btn_gem_next_" . $table_id, "Next", array("action" => "gem_next_page(" . QuoteText($post_file."?operation=gem_show&table=".$table_id)  . "," . QuoteText($table_id) . ")"));
+				$div_content .= Core_Html::GuiButton("btn_gem_all__" . $table_id, "All", array("action" => "gem_all_page(" . QuoteText($post_file."?operation=gem_show&table=".$table_id)  . "," . QuoteText($table_id) . ")"));
+//				$div_content .= Core_Html::GuiHyperlink("All", AddToUrl("_page", -1)) . " ";
 			}
 			if ($page > 1)
-				$div_content .= Core_Html::GuiHyperlink("Previous page", AddToUrl("_page", $page - 1));
+				$div_content .= Core_Html::GuiButton("btn_gem_prev_" . $table_id, "Previous", array("action" => "gem_previous_page(" . QuoteText($post_file."?operation=gem_show&table=".$table_id)  . "," . QuoteText($table_id) . ")"));
+				// $div_content .= Core_Html::GuiButton("Previous, AddToUrl("page", $page - 1));
 
-			if ($args["count"] > 10) $div_content .= Core_Html::GuiHyperlink("search", AddToUrl("search", "1"));
+			// if ($args["count"] > 10) $div_content .= Core_Html::GuiHyperlink("search", AddToUrl("search", "1"));
 
 			$div_content .= Core_Html::gui_table_args( $rows_data, $table_id, $args );
 
@@ -287,8 +289,8 @@ class Core_Gem {
 		if ($selector) $result .= $selector("import_select", null, $args);
 
 		// Selecting gui
-		$result .= '<form name="gem_import" id="' . $form_id . '" method="post" enctype="multipart/form-data">'.
-		           im_translate('Load from csv file') .
+		$result .= '<form name="gem_import" id="' . $form_id . '" method="post" enctype="multipart/form-data">' .
+		           ImTranslate('Load from csv file') .
 		           '<input type="file" name="fileToUpload" id="fileToUpload">
         <input type="submit" value="טען" name="submit">
 
@@ -308,11 +310,11 @@ class Core_Gem {
 			strtok($operation, "_");  // remove gem_ if exist
 			$operation = strtok("_");
 		}
-
 		$table = GetParam("table");
 		switch ($operation){
 			case "add":
 				return self::GemAddRow($table);
+			case "show":
 			case "page":
 				return self::GemTable($table, $args);
 		}

@@ -148,7 +148,7 @@ class Focus_Tasks {
 	static function Args( $table_name = null, $action = null ) {
 		$ignore_list = [];
 		$args        = array(
-			"page"      => GetParam( "page", false, - 1 ),
+			"page"      => GetParam( "page", false,  1 ),
 			"post_file" => self::getPost()
 		);
 		if ( GetParam( "non_active", false, false ) ) {
@@ -180,8 +180,7 @@ class Focus_Tasks {
 						"repeat_freq_numbers",
 						"working_hours",
 						"condition_query",
-						"task_url",
-						"template_last_task(id) as last_create"
+						"task_url"
 					);
 					$args["header_fields"] = array(
 						"task_description" => "Task description",
@@ -192,8 +191,7 @@ class Focus_Tasks {
 						"repeat_freq_numbers" => "Repeat times",
 						"working_hours"       => "Working hours",
 						"task_url"=>"Task Url",
-						"condition_query" => "Condition query",
-						"last_create" => "Last created"
+						"condition_query" => "Condition query"
 					);
 					break;
 				case "im_tasklist":
@@ -242,6 +240,12 @@ class Focus_Tasks {
 					$args["check_active"] = true;
 					break;
 			}
+
+		if ($action == 'new')
+		{
+			$args["fields"]["last_create"] = "template_last_task(id) as last_create";
+			$args["header_fields"]["last_create"] =  "Last created";
+		}
 		return $args;
 	}
 
@@ -427,7 +431,7 @@ class Focus_Tasks {
 				$args = self::Args();
 				$company_id = GetParam( "id", true );
 				$result     .= Core_Html::gui_header( 2, "Invite to company" ) . " " . gui_label( "company_id", $company_id );
-				$result     .= im_translate( "Enter college email address: " );
+				$result     .= ImTranslate( "Enter college email address: " );
 				$result     .= Core_Html::gui_table_args( array(
 					array( "email", GuiInput( "email", "", $args ) ),
 					array( "name", GuiInput( "name", "", $args ) ),
@@ -629,7 +633,7 @@ class Focus_Tasks {
 		}
 		$args["sql"]   = $sql . $order;
 		$args["links"] = array( "id" => self::task_link( "%s" ) );
-		$args["title"] = im_translate( "משימות בפרויקט" ) . " " . Org_Project::GetName( $project_id );
+		$args["title"] = ImTranslate( "משימות בפרויקט" ) . " " . Org_Project::GetName( $project_id );
 
 //	print $sql;
 		$result = Core_Gem::GemTable( "im_tasklist", $args );
@@ -839,19 +843,19 @@ class Focus_Tasks {
 	{
 		$worker = new Org_Worker( $user_id );
 		$tabs   = array();
-		$args = null;
+		$args = self::Args();
 
 		$result = "";
 
 		$result .= self::search_box();
 		$result .= self::new_task();
 		$result .= self::show_new_template();
-		$result .= Core_html::GuiButton("btn_cancel", "Cancel", array( "action" => "new_task.style.display = 'none';
-								new_task_template.style.display = 'none'; 
-			                     btn_new_template.style.display = 'block';
-			                     btn_new_task.style.display = 'block';
-			                     btn_cancel.style.display='none';",
-		                                                               "style" => "display: none;") );
+//		$result .= Core_html::GuiButton("btn_cancel", "Cancel", array( "action" => "new_task.style.display = 'none';
+//								new_task_template.style.display = 'none';
+//			                     btn_new_template.style.display = 'block';
+//			                     btn_new_task.style.display = 'block';
+//			                     btn_cancel.style.display='none';",
+//		                                                               "style" => "display: none;") );
 
 		// My work queue
 		$mine = self::user_work( $args, $user_id );
@@ -929,11 +933,11 @@ class Focus_Tasks {
 
 	static function new_task() {
 		$result = "";
-		$result .= Core_Html::GuiButton( "btn_new_task", "Add",
-			array( "action" => "new_task.style.display = 'block'; 
-			                     btn_new_template.style.display = 'none';
-			                     btn_new_task.style.display = 'none';
-			                     btn_cancel.style.display='block';" ) );
+//		$result .= Core_Html::GuiButton( "btn_new_task", "Add",
+//			array( "action" => "new_task.style.display = 'block';
+//			                     btn_new_template.style.display = 'none';
+//			                     btn_new_task.style.display = 'none';
+//			                     btn_cancel.style.display='block';" ) );
 
 		$args          = self::Args( "im_tasklist", "new" );
 		$args["style"] = "display:none";
@@ -956,7 +960,7 @@ class Focus_Tasks {
 		// Tasks I need to handle (owner = me)                                                                       //
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		$args["count"] = 0;
-		$args["title"] = im_translate( "Active tasks assigned to me or my teams" );
+		$args["title"] = ImTranslate( "Active tasks assigned to me or my teams" );
 		$teams         = $worker->AllTeams();
 		$args["query"] = " (owner = " . $user_id . ( $teams ? " or team in (" . CommaImplode( $teams ) . ")" : "" ) . ")";
 		if ( GetArg( $args, "active_only", true ) ) {
@@ -981,7 +985,7 @@ class Focus_Tasks {
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Tasks teams I'm a member of (team in my_teams). Not assigned                                              //
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		$args["title"] = im_translate( "My teams tasks" );
+		$args["title"] = ImTranslate( "My teams tasks" );
 
 		$teams         = $worker->AllTeams();
 		if (! $teams) return "No teams";
@@ -1014,7 +1018,7 @@ class Focus_Tasks {
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Tasks projects I'm a member of (team in my_projects). Not assigned                                              //
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		$args["title"] = im_translate( "My projects" );
+		$args["title"] = ImTranslate( "My projects" );
 		// DebugVar(CommaImplode($worker->AllProjects()));
 		$args["query"] = " id in (" . CommaImplode($worker->AllProjects()) . ")";
 
@@ -1061,7 +1065,7 @@ class Focus_Tasks {
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Tasks I need to handle (owner = me)                                                                       //
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		$args["title"]       = im_translate( "Tasks assigned to me" );
+		$args["title"]       = ImTranslate( "Tasks assigned to me" );
 		$args["query"]       = " owner = " . $user_id;
 		$args["limit"]       = GetParam( "limit", false, 10 );
 		$args["active_only"] = GetParam( "active_only", false, true );
@@ -1084,7 +1088,7 @@ class Focus_Tasks {
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Tasks I've created. Assigned to some else                                                                 //
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		$args["title"] = im_translate( "Tasks I've initiated to other teams" );
+		$args["title"] = ImTranslate( "Tasks I've initiated to other teams" );
 		$args["query"] = " creator = " . $user_id; // . " and (owner != " . $user_id . ' or isnull(owner)) ' . ($teams ? ' and team not in (' . CommaImplode( $teams ) . ")" : '');
 //		$args["limit"]       = GetParam( "limit", false, 10 );
 //		$args["active_only"] = GetParam( "active_only", false, true );
@@ -1092,8 +1096,8 @@ class Focus_Tasks {
 
 		//print "c=" . $args["count"];
 		if ( ! $args["count"] ) {
-			$result .= im_translate( "No active tasks!" ) . "<br/>";
-			$result .= im_translate( "Let's create first one!" ) . " ";
+			$result .= ImTranslate( "No active tasks!" ) . "<br/>";
+			$result .= ImTranslate( "Let's create first one!" ) . " ";
 			$result .= Core_Html::GuiHyperlink( "create task", "?operation=show_new_task" ) . "<br/>";
 		}
 
@@ -1307,8 +1311,8 @@ class Focus_Tasks {
 		// Core_Gem::GemAddRow( "im_tasklist", __( "Add" ), $args )
 		$args["style"] = "display:none";
 
-		return  Core_Html::GuiButton( "btn_new_template", "Add repeating",
-			array( "action" => "new_task_template.style.display = 'block'; btn_new_template.style.display ='none'; btn_new_task.style.display = 'none'; btn_cancel.style.display='block';" ) ) .
+//		return  Core_Html::GuiButton( "btn_new_template", "Add repeating",
+//			array( "action" => "new_task_template.style.display = 'block'; btn_new_template.style.display ='none'; btn_new_task.style.display = 'none'; btn_cancel.style.display='block';" ) ) .
 
 		 Core_Html::GuiDiv( "new_task_template", $result, $args );
 	}
@@ -1418,12 +1422,12 @@ class Focus_Tasks {
 		// Check if user has team.
 		$team_ids = $worker->AllTeams();
 		if ( ! $team_ids or ! count( $team_ids ) ) {
-			Org_Team::Create($user_id, im_translate( "Personal team" ) . " " . get_customer_name( $user_id ) );
+			Org_Team::Create($user_id, ImTranslate( "Personal team" ) . " " . get_customer_name( $user_id ) );
 		}
 
 		$project_ids = worker_get_projects( $user_id );
 		if ( is_null( $project_ids ) or ! count( $project_ids ) ) {
-			project_create( $user_id, im_translate( "first project" ), $company_ids[0] );
+			project_create( $user_id, ImTranslate( "first project" ), $company_ids[0] );
 		}
 
 		return true;
@@ -1462,7 +1466,7 @@ class Focus_Tasks {
 		if ( $teams ) {
 			foreach ( $teams as $key => &$row ) {
 				if ( $key == "header" ) {
-					$row [] = im_translate( "Team members" );
+					$row [] = ImTranslate( "Team members" );
 				} else {
 					$team = new Org_Team($row["id"]);
 					$all = $team->AllMembers();
@@ -1824,7 +1828,7 @@ class Focus_Tasks {
 		}
 
 		if ( im_user_can( "edit_teams" ) ) { // System editor
-			$result .= "<br/>" . im_translate( "System wide:" );
+			$result .= "<br/>" . ImTranslate( "System wide:" );
 			$result .= Core_Html::GuiHyperlink( "All teams", AddToUrl( "operation", "show_edit_all_teams" ) ) . " ";
 			$result .= Core_Html::GuiHyperlink( "All projects", AddToUrl( "operation", "show_edit_all_projects" ) ) . " ";
 		}
@@ -1913,7 +1917,7 @@ class Focus_Tasks {
 	}
 
 	static function show_settings( $user_id ) {
-		$result = Core_Html::gui_header( 1, im_translate( "Settings for" ) . " " . GetUserName( $user_id ) );
+		$result = Core_Html::gui_header( 1, ImTranslate( "Settings for" ) . " " . GetUserName( $user_id ) );
 
 		return $result;
 	}

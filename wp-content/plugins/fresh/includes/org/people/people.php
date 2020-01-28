@@ -35,7 +35,7 @@ require_once( FRESH_INCLUDES . '/org/gui.php' );
 function people_add_activity_sick( $id, $date, $project_id)
 {
 	$sql = "INSERT INTO im_working_hours (user_id, date, project_id, start_time, end_time, comment) VALUES (" .
-	       $id . ", \"" . $date . '", ' . $project_id . ", 0, 0, \"" . im_translate("Sick leave") ."\")";
+	       $id . ", \"" . $date . '", ' . $project_id . ", 0, 0, \"" . ImTranslate("Sick leave") . "\")";
 	// print header_text();
 	// print $sql;
 	$export = sql_query( $sql );
@@ -172,7 +172,7 @@ function project_delete($project_id, $user_id, $force = false)
 
 	$c = sql_query_single_scalar("select count(*) from im_tasklist where status < 2 and project_id = " . $project_id);
 	if ($c and ! $force) {
-		print get_project_name($project_id) . "(" . $project_id . ")" . im_translate("has") . " " . $c . im_translate("active tasks");
+		print get_project_name($project_id) . "(" . $project_id . ")" . ImTranslate("has") . " " . $c . ImTranslate("active tasks");
 		return false;
 	}
 	// TODO: handle orphan tasks

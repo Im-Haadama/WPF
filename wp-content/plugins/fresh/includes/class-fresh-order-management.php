@@ -48,14 +48,14 @@ class Fresh_Order_Management {
 
 		$show_fields = array();
 		$empty_line  = array();
-		for ( $i = 0; $i < OrderFields::field_count; $i ++ ) {
+		for ( $i = 0; $i < Fresh_OrderFields::field_count; $i ++ ) {
 			$empty_line[ $i ]  = "";
 			$show_fields[ $i ] = true;
 		}
 		if ( ! current_user_can( "show_business_info" ) ) {
-			$show_fields[ OrderFields::total_order ] = false; // current_user_can("show_business_info");
-			$show_fields[ OrderFields::margin ]      = false;
-			$show_fields[ OrderFields::good_costs ]  = false;
+			$show_fields[ Fresh_OrderFields::total_order ] = false; // current_user_can("show_business_info");
+			$show_fields[ Fresh_OrderFields::margin ]      = false;
+			$show_fields[ Fresh_OrderFields::good_costs ]  = false;
 		}
 
 		$all_tables = ""; // load_scripts(array("/wp-content/plugins/fresh/includes/orders/orders.js", "/wp-content/plugins/fresh/includes/core/gui/client_tools.js"));
@@ -114,41 +114,41 @@ class Fresh_Order_Management {
 				$invoice_user_id = get_user_meta( $customer_id, 'invoice_id', 1 );
 
 				if ( $invoice_user_id ) {
-					$line [ OrderFields::line_select ] = Core_Html::gui_checkbox( "chk_" . $order_id, "select_order_" . $status );
+					$line [ Fresh_OrderFields::line_select ] = Core_Html::gui_checkbox( "chk_" . $order_id, "select_order_" . $status );
 				} else {
-					$line [ OrderFields::line_select ] = Core_Html::GuiHyperlink( "לקוח חדש", "/fresh/?operation=new_customer&order_id=" . $order_id );
+					$line [ Fresh_OrderFields::line_select ] = Core_Html::GuiHyperlink( "לקוח חדש", "/fresh/?operation=new_customer&order_id=" . $order_id );
 				}
 
 				DebugTimeLog( "a1" );
-				$line[ OrderFields::type ]         = $order->GetShipping(  );
+				$line[ Fresh_OrderFields::type ] = $order->GetShipping(  );
 
 				// display order_id with link to display it.
 				// 1) order ID with link to the order
 				$mission_id = $order->getMission();
 				// print $order_id. " ". $mission . "<br/>";
 
-				$args = array();
-				$args["events"] = "onchange=\"mission_changed(" . $order_id . ")\"";
-				$line[ OrderFields::mission ]  = gui_select_mission( "mis_" . $order_id, $mission_id,  $args);
-				$line[ OrderFields::order_id ] = Core_Html::GuiHyperlink( $order_id, "/fresh/orders/get-order.php?order_id=" . $order_id );
+				$args                                = array();
+				$args["events"]                      = "onchange=\"mission_changed(" . $order_id . ")\"";
+				$line[ Fresh_OrderFields::mission ]  = gui_select_mission( "mis_" . $order_id, $mission_id,  $args);
+				$line[ Fresh_OrderFields::order_id ] = Core_Html::GuiHyperlink( $order_id, "/fresh/orders/get-order.php?order_id=" . $order_id );
 
 				// 2) Customer name with link to his deliveries
-				$line[ OrderFields::customer ] = Core_Html::GuiHyperlink( get_customer_name( $customer_id ), Core_Db_MultiSite::LocalSiteTools() .
-				                                                                                   "/fresh/account/get-customer-account.php?customer_id=" . $customer_id );
+				$line[ Fresh_OrderFields::customer ] = Core_Html::GuiHyperlink( get_customer_name( $customer_id ), Core_Db_MultiSite::LocalSiteTools() .
+				                                                                                                   "/fresh/account/get-customer-account.php?customer_id=" . $customer_id );
 
 
-				$line[ OrderFields::recipient ] = get_postmeta_field( $order_id, '_shipping_first_name' ) . ' ' .
-				                                  get_postmeta_field( $order_id, '_shipping_last_name' );
+				$line[ Fresh_OrderFields::recipient ] = get_postmeta_field( $order_id, '_shipping_first_name' ) . ' ' .
+				                                        get_postmeta_field( $order_id, '_shipping_last_name' );
 
 				DebugTimeLog( "middle" );
 
 				$order_total = 0;
 				// 3) Order total
-				if ( $show_fields[ OrderFields::total_order ] ) {
+				if ( $show_fields[ Fresh_OrderFields::total_order ] ) {
 					$order_total = $order->GetTotal();
 					// get_postmeta_field( $order_id, '_order_total' );
-					$line[ OrderFields::total_order ] = $order_total;
-					$total_order_total                += $order_total;
+					$line[ Fresh_OrderFields::total_order ] = $order_total;
+					$total_order_total                      += $order_total;
 					DebugTimeLog( "total" );
 				}
 
@@ -156,39 +156,39 @@ class Fresh_Order_Management {
 				$delivery_id = $order->getDeliveryId(); // get_delivery_id( $order_id );
 
 				if ( $delivery_id > 0 ) {
-					$delivery                           = new Fresh_Delivery( $delivery_id );
-					$line[ OrderFields::delivery_note ] = Core_Html::GuiHyperlink( $delivery_id, "/fresh/delivery/get-delivery.php?id=" . $delivery_id );
+					$delivery                                 = new Fresh_Delivery( $delivery_id );
+					$line[ Fresh_OrderFields::delivery_note ] = Core_Html::GuiHyperlink( $delivery_id, "/fresh/delivery/get-delivery.php?id=" . $delivery_id );
 					//if ( $delivery_id > 0 ) {
 					if ( isset( $orders_total ) ) {
-						$line[ OrderFields::total_order ] = $order_total;
+						$line[ Fresh_OrderFields::total_order ] = $order_total;
 					} // $delivery->Price();
-					$line[ OrderFields::delivery_fee ] = $delivery->DeliveryFee();
-					$percent                           = "";
+					$line[ Fresh_OrderFields::delivery_fee ] = $delivery->DeliveryFee();
+					$percent                                 = "";
 					if ( ( $order_total - $delivery->DeliveryFee() ) > 0 ) {
 						$percent = round( 100 * ( $delivery->Price() - $delivery->DeliveryFee() ) / ( $order_total - $delivery->DeliveryFee() ), 0 ) . "%";
 					}
-					$line[ OrderFields::percentage ] = $percent;
-					$total_delivery_total            += $delivery->Price();
-					$total_delivery_fee                  = $delivery->DeliveryFee();
-					$total_order_delivered           += $order_total;
+					$line[ Fresh_OrderFields::percentage ] = $percent;
+					$total_delivery_total                  += $delivery->Price();
+					$total_delivery_fee                    = $delivery->DeliveryFee();
+					$total_order_delivered                 += $order_total;
 					if ( $delivery->isDraft() ) {
-						$line [ OrderFields::line_select ] = "טיוטא";
+						$line [ Fresh_OrderFields::line_select ] = "טיוטא";
 					}
 					//	}
 				} else {
 					// print "status = " . $order->getStatus() . "<br/>";
 					if ($order -> getStatus() == 'wc-processing')
-						$line[ OrderFields::delivery_note ] = Core_Html::GuiHyperlink( "צור",  "/fresh/delivery/create-delivery.php?order_id=" . $order_id, "_blank" );
-					$line[ OrderFields::percentage ]    = Core_Html::GuiHyperlink( "בטל", $_SERVER['PHP_SELF'] . "?operation=cancel_order&id=" . $order_id );
-					$total_delivery_fee                 = $order->getShipping();
+						$line[ Fresh_OrderFields::delivery_note ] = Core_Html::GuiHyperlink( "צור", "/fresh/delivery/create-delivery.php?order_id=" . $order_id, "_blank" );
+					$line[ Fresh_OrderFields::percentage ] = Core_Html::GuiHyperlink( "בטל", $_SERVER['PHP_SELF'] . "?operation=cancel_order&id=" . $order_id );
+					$total_delivery_fee                    = $order->getShipping();
 				}
-				$line[ OrderFields::city ]         = $order->getOrderInfo( '_shipping_city' );
-				$line[ OrderFields::payment_type ] = $customer->get_payment_method_name( );
+				$line[ Fresh_OrderFields::city ]         = $order->getOrderInfo( '_shipping_city' );
+				$line[ Fresh_OrderFields::payment_type ] = $customer->get_payment_method_name( );
 				if ( current_user_can( "show_business_info" ) ) {
-					$line[ OrderFields::good_costs ] = $order->GetBuyTotal();
-					$line[ OrderFields::margin ]     = round( ( $line[ OrderFields::total_order ] - $line[ OrderFields::good_costs ] ), 0 );
+					$line[ Fresh_OrderFields::good_costs ] = $order->GetBuyTotal();
+					$line[ Fresh_OrderFields::margin ]     = round( ( $line[ Fresh_OrderFields::total_order ] - $line[ Fresh_OrderFields::good_costs ] ), 0 );
 				}
-				$line[ OrderFields::delivery_fee ] = $total_delivery_fee; //
+				$line[ Fresh_OrderFields::delivery_fee ] = $total_delivery_fee; //
 
 				array_push( $rows, $line );
 				DebugTimeLog( "loop end" );
@@ -252,7 +252,7 @@ class Fresh_Order_Management {
 	}
 }
 
-class OrderFields {
+class Fresh_OrderFields {
 	const
 		/// User interface
 		line_select = 0,

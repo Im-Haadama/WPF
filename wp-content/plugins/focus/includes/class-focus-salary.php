@@ -159,7 +159,7 @@ class Focus_Salary {
 	static function salary_report( $month, &$args ) {
 		$edit_lines = GetArg( $args, "edit_lines", false );
 
-		$output = Core_Html::gui_header( 1, im_translate( "Salary data for month" ) . " " . $month );
+		$output = Core_Html::gui_header( 1, ImTranslate( "Salary data for month" ) . " " . $month );
 		$a      = explode( "-", $month );
 		$y      = $a[0];
 		$m      = $a[1];
@@ -194,7 +194,7 @@ class Focus_Salary {
 			$has_data = true;
 		}
 		if ( ! $has_data ) {
-			$output .= im_translate( "No data entered" ) . Core_Html::Br();
+			$output .= ImTranslate( "No data entered" ) . Core_Html::Br();
 		}
 
 		return $output;
@@ -474,7 +474,7 @@ class Focus_Salary {
 		$user_id = get_user_id( true );
 
 		if ( ! user_can( $user_id, 'working_hours_all' ) ) {
-			print im_translate( "No permissions" );
+			print ImTranslate( "No permissions" );
 
 			return;
 		}
@@ -583,15 +583,15 @@ class Focus_Salary {
 		$show_comment = false;
 
 		if ( ! $rows ) {
-			$result .= im_translate( "No data" ) . Core_Html::Br();
+			$result .= ImTranslate( "No data" ) . Core_Html::Br();
 			return $result;
 		}
 		foreach ( $rows as $key => &$row ) {
 			if ( $key == "header" ) {
-				$row["base"]        = im_translate( "base" );
+				$row["base"]        = ImTranslate( "base" );
 				$row["dur_125"]     = "125%";
 				$row["dur_150"]     = "150%";
-				$row["line_salary"] = im_translate( "total" );
+				$row["line_salary"] = ImTranslate( "total" );
 				continue;
 			}
 			$row["weekday"] = DayName( $row["weekday"] - 1 );
@@ -622,9 +622,9 @@ class Focus_Salary {
 					$show_150            = true;
 				}
 
-				$row["base"]    = float_to_time( $dur_base );
-				$row["dur_125"] = float_to_time( $dur_125 );
-				$row["dur_150"] = float_to_time( $dur_150 );
+				$row["base"]    = FloatToTime( $dur_base );
+				$row["dur_125"] = FloatToTime( $dur_125 );
+				$row["dur_150"] = FloatToTime( $dur_150 );
 
 				$counters["base"] += $dur_base;
 
@@ -672,7 +672,7 @@ class Focus_Salary {
 
 		foreach ( $rows['header'] as $key => $not_used ) {
 //			print "key: $key<br/>";
-			$data["totals"][ $key ] = ( isset( $counters[ $key ] ) ? float_to_time( $counters[ $key ] ) : "" );
+			$data["totals"][ $key ] = ( isset( $counters[ $key ] ) ? FloatToTime( $counters[ $key ] ) : "" );
 		}
 
 //		print "after: " . $data["totals"]["dur_125"] . "<br/>";

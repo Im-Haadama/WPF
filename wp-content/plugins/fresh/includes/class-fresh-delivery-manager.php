@@ -36,7 +36,8 @@ class Fresh_Delivery_Manager
 
 	function getShortcodes() {
 		//           code                   function                              capablity (not checked, for now).
-		return array( 'delivery_manager_update' => array( 'Fresh_Delivery_Manager::update_shipping_methods',    null ));          // Payments data entry
+		return array( 'delivery_manager_update' => array( 'Fresh_Delivery_Manager::update_shipping_methods',    null ),
+			'fresh_deliveries' => array('Fresh_Delivery_Manager::show_shipping_methods', null));
 	}
 
 	static function update_shipping_methods()
@@ -137,6 +138,51 @@ class Fresh_Delivery_Manager
 			}
 		}
 		return $result;
+	}
+
+	static function show_shipping_methods()
+	{
+		$result = "<table><tr><td>Zone</td><td>Shipping method</td><td>Cost</td></tr>";
+
+		$wc_zones = WC_Shipping_Zones::get_zones();
+
+		foreach ($wc_zones as $wc_zone)
+		{
+			$first = true;
+			foreach ( $wc_zone['shipping_methods'] as $shipping ) {
+				$instance_id = $shipping->instance_id;
+				if (get_class($shipping) == 'WC_Shipping_Local_Pickup'
+				or !$shipping->is_enabled()) continue;
+
+
+				$result .= "<tr>";
+				$zone_name = $wc_zone['zone_name'];
+				if ($first) {
+					 $result .= "<td rowspan='" . self::count_without_pickup($wc_zone) . "'>". $zone_name . "</td>";
+					 $first = false;
+				}
+				$result .= "<td>" . Core_Html::GuiHyperlink($shipping->title, "/wp-admin/admin.php?page=wc-settings&tab=shipping&instance_id={$instance_id}") . "</td>";
+				$result .= "<td>" . self::get_shipping_cost($instance_id) . "</td>";
+			}
+			$result .= "</tr>";
+		}
+		$result .= "</table>";
+
+		return $result;
+	}
+	static function count_without_pickup($wc_zone){
+		$count = 0;
+		foreach ( $wc_zone['shipping_methods'] as $shipping )
+			if (get_class($shipping) != 'WC_Shipping_Local_Pickup' and
+			$shipping->is_enabled())
+				$count ++;
+		return $count;
+	}
+	static function get_shipping_cost($instance_id)
+	{
+		$option = get_wp_option("woocommerce_flat_rate_{$instance_id}_settings");
+		if (isset($option["cost"])) return $option["cost"];
+		return "not found";
 	}
 }
 

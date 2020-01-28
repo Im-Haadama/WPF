@@ -22,7 +22,7 @@ if (! defined('IM_ATTACHMENTS')) {
 }
 
 // print __FILE__;
-require_once( STORE_DIR . '/fresh-public/gui/inputs.php' );
+require_once( STORE_DIR . '/fresh-totals/gui/inputs.php' );
 require_once( STORE_DIR . '/core/fund.php' );
 
 $debug = GetParam( "debug" );

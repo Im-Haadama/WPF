@@ -143,8 +143,8 @@
 		/**
 	 *
 	 */
-	function disable_translate() {
-		im_translate( "DisableTranslate" );
+	function DisableTranslate() {
+		ImTranslate( "DisableTranslate" );
 	}
 
 	/**
@@ -153,7 +153,7 @@
 	 *
 	 * @return string|void
 	 */
-	function im_translate( $text, $arg = null ) {
+	function ImTranslate( $text, $arg = null ) {
 		static $translate_enabled = true; // Had problems with global variable changed somehow.
 
 		if ( $text === "DisableTranslate" ) {
@@ -167,7 +167,7 @@
 
 		if ( is_array( $text ) ) {
 			$result = "";
-			foreach ( $text as $text_part )  $result .= im_translate( $text_part, $arg );
+			foreach ( $text as $text_part )  $result .= ImTranslate( $text_part, $arg );
 
 			return $result;
 		}
@@ -194,7 +194,7 @@
 	 *
 	 * @return string
 	 */
-	function float_to_time( $time ) {
+	function FloatToTime( $time ) {
 //	print $time . ", ";
 		if ( $time > 0 ) {
 			$time += 0.00001; // 5:20 -> 5.33333333 -> 5:19.

@@ -240,7 +240,7 @@ class Core_Data
 				foreach ($fields as $field => $v) {
 					if ($as_pos = strpos($field, " as ")) $field = substr($field, $as_pos + 4);
 					if ( ! $skip_id or strtolower( $field ) !== "id" ) {
-						$result[ $field ] = im_translate( ( isset( $header_fields[ $field ] ) ? $header_fields[ $field ] : $field ) );
+						$result[ $field ] = ImTranslate( ( isset( $header_fields[ $field ] ) ? $header_fields[ $field ] : $field ) );
 					}
 				}
 			} else {
@@ -256,7 +256,7 @@ class Core_Data
 			return null;
 
 		$headers = array();
-		if (GetArg($args, "add_checkbox", false)) $headers["select"] = im_translate("select");
+		if (GetArg($args, "add_checkbox", false)) $headers["select"] = ImTranslate("select");
 
 		// If not sent, create from database fields.
 		if (strstr($sql, "describe") or strstr($sql, "show"))
@@ -264,7 +264,7 @@ class Core_Data
 			while ($row = sql_fetch_row($result))
 			{
 				if (! $skip_id or strtolower($row[0]) !== "id" and !isset($args["hide_cols"])) {
-					$headers[$row[0]] = im_translate($row[0]);
+					$headers[$row[0]] = ImTranslate($row[0]);
 					// array_push($headers, im_translate($row[0]));
 				}
 			}
@@ -273,7 +273,7 @@ class Core_Data
 			$fields = mysqli_fetch_fields( $result );
 			foreach ( $fields as $val ) {
 				if ((! $skip_id or strtolower($val->name) !== "id") and !isset($args["hide_cols"][$val->name])) {
-					$headers [$val->name] = im_translate($val->name);
+					$headers [$val->name] = ImTranslate($val->name);
 				}
 				$i ++;
 			}
@@ -563,7 +563,7 @@ class Core_Data
 					if ( $h_line ) {
 						// print "adding $key<br/>";
 //					print "trans " . $header_fields[$key] . "<br/>";
-						$h_line[ $key ] = im_translate( $header_fields[ $key ++ ], $args );
+						$h_line[ $key ] = ImTranslate( $header_fields[ $key ++ ], $args );
 					}
 				}
 			}
@@ -588,6 +588,9 @@ class Core_Data
 		// assert(0); // will fire
 		// assert (! isset($field_list[0]), "field list in seq array" );
 		foreach ( $field_list as $key => $field ) {
+			if (strstr($key, " as ")) continue;
+//			if (get_user_id() == 1) print "key=$key<br/>";
+//
 			if (  $skip_id and strtolower($key) === "id" ) continue;
 			assert( isset( $field_list[ $key ] ) );
 
@@ -691,11 +694,8 @@ class Core_Data
 	 */
 	static function FieldList($sql, &$args)
 	{
-//	print "field list $sql";
 		$fields = GetArg($args, "fields", null);
 		if (isset($fields[0])) $fields = Core_Fund::array_assoc($fields);
-//	print "1:"; var_dump($fields); print "<br/>";
-//	 print "fields: "; var_dump($fields) . "<br/>";
 		if ($fields) return $fields;
 
 		$fields = array();
@@ -703,16 +703,13 @@ class Core_Data
 		$result = sql_query($sql);
 		if (strstr($sql, "describe") or strstr($sql, "show cols")){
 			while ( $row = mysqli_fetch_assoc( $result ) ) {
-//			var_dump($row);
 				$fields[$row['Field']] = 1;
 			}
-//		print "2:"; var_dump($fields); print "<br/>";
 		} else {
 			$row = sql_fetch_assoc($result);
 			$skip_id = GetArg($args, "skip_id", false);
 			$id_field = GetArg($args, "id_field", "id");
 			if ($row) foreach ($row as $key => $cell) if (! $skip_id or ($key != $id_field)) $fields[$key] = 1;
-//		print "3:"; var_dump($fields); print "<br/>";
 		}
 
 		$args["fields"] = $fields;
