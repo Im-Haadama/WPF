@@ -1,6 +1,6 @@
 <?php
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
+
+
 require( '../r-shop_manager.php' );
 require_once(FRESH_INCLUDES . "/fresh/multi-site/imMulti-site.php");
 $m = Core_Db_MultiSite::getInstance();

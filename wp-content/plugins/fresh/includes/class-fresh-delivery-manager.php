@@ -154,7 +154,6 @@ class Fresh_Delivery_Manager
 				if (get_class($shipping) == 'WC_Shipping_Local_Pickup'
 				or !$shipping->is_enabled()) continue;
 
-
 				$result .= "<tr>";
 				$zone_name = $wc_zone['zone_name'];
 				if ($first) {
@@ -162,6 +161,10 @@ class Fresh_Delivery_Manager
 					 $first = false;
 				}
 				$result .= "<td>" . Core_Html::GuiHyperlink($shipping->title, "/wp-admin/admin.php?page=wc-settings&tab=shipping&instance_id={$instance_id}") . "</td>";
+				preg_match_all('/\d{2}\/\d{2}\/\d{4}/', $shipping->title,$matches);
+				$date = str_replace('/', '-', $matches[0][0]);
+				print $matches[0][0] . " " . strtotime($date) . "<br/>";
+
 				$result .= "<td>" . self::get_shipping_cost($instance_id) . "</td>";
 			}
 			$result .= "</tr>";

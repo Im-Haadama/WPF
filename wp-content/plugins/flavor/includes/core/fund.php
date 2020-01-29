@@ -54,6 +54,13 @@ function DebugVar($var)
 	var_dump($var);
 }
 
+function StringVar($var)
+{
+	ob_start();
+	var_dump($var);
+	return ob_get_clean();
+}
+
 function debug_trace($deep = 2)
 {
 	$result = "";

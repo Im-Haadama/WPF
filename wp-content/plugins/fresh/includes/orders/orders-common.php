@@ -5,8 +5,8 @@
  * Date: 25/10/15
  * Time: 08:00
  */
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
+
+
 
 if ( ! defined( 'FRESH_INCLUDES' ) ) {
 	define( 'FRESH_INCLUDES', dirname( dirname( __FILE__ ) ) );

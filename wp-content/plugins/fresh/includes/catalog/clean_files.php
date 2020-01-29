@@ -1,7 +1,7 @@
 <?php
 return;
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
+
+
 
 define('FRESH_INCLUDES', dirname(dirname(dirname(__FILE__))));
 require_once( "../../core/gui/inputs.php" );

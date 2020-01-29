@@ -6,8 +6,8 @@
  * Time: 11:58
  */
 
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
+
+
 
 //require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 //require_once( FRESH_INCLUDES . '/supplies/gui.php' );

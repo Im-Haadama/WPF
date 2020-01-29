@@ -24,8 +24,8 @@ boot_no_login('im-haadama', 'im-haadama');
 
 // Raise reporting.
 if (get_user_id() == 1){
-	error_reporting( E_ALL );
-	ini_set( 'display_errors', 'on' );
+
+
 }
 
 // Check general capabilities. More specific should be made in context.

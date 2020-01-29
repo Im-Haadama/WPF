@@ -14,8 +14,8 @@ $debug = 0;
 if ( $debug ) {
 	print "Debugging mode<br/>";
 
-	error_reporting( E_ALL );
-	ini_set( 'display_errors', 'on' );
+
+
 }
 
 print "d= " . $debug . "<br/>";

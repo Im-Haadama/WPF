@@ -5,7 +5,7 @@
  * Date: 08/05/16
  * Time: 19:48
  */
-// ini_set( 'display_errors', 'on' );
+//
 
 
 if ( ! defined( 'FRESH_INCLUDES' ) ) {
@@ -20,8 +20,8 @@ init();
 $user_id = get_user_id();
 
 if ($user_id == 1){
-    error_reporting( E_ALL );
-    ini_set( 'display_errors', 'on' );
+
+
 }
 
 $wp_user = get_user_by( 'id', $user_id );

@@ -1,6 +1,6 @@
 <?php
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
+
+
 
 // This page is open to clients.
 if ( ! defined( 'FRESH_INCLUDES' ) ) {

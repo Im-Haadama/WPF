@@ -5,8 +5,8 @@
  * Date: 27/12/18
  * Time: 08:16
  */
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
+
+
 
 // require_once 'orders-common.php';
 require_once '../delivery/delivery.php';

@@ -5,8 +5,8 @@
  * Date: 08/04/18
  * Time: 10:42
  */
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
+
+
 
 require_once( "r-multisite.php" );
 

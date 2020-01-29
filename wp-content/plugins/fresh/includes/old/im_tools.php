@@ -18,8 +18,8 @@ require_once( "im_tools_light.php" );
 
 //if ( (get_user_id() == 1) or ! isset( $_SERVER['SERVER_NAME'] ) or ( $_SERVER['SERVER_NAME'] == "127.0.0.1" ) ) {
 ////	 print "debug";
-//	error_reporting( E_ALL );
-//	ini_set( 'display_errors', 'on' );
+//
+//
 //}
 
 function order_get_shipping_fee( $order_id ) {

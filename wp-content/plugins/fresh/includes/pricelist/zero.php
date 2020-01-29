@@ -5,8 +5,8 @@
  * Date: 30/10/18
  * Time: 19:44
  */
-// error_reporting( E_ALL );
-// ini_set( 'display_errors', 'on' );
+//
+//
 
 require_once( "pricelist.php" );
 

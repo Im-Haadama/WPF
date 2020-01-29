@@ -1,5 +1,5 @@
 <?php
-//ini_set( 'display_errors', 'on' );
+//
 require_once( '../r-shop_manager.php' );
 require_once( FRESH_INCLUDES . '/core/gui/wp_inputs.php' );
 require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );

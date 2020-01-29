@@ -1,7 +1,7 @@
 <?php
 
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
+
+
 
 // require_once ("../../focus/gui.php");
 if ( ! defined( 'FRESH_INCLUDES' ) ) {

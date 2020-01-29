@@ -6,8 +6,8 @@
  * Time: 11:36
  */
 
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
+
+
 
 if ( ! defined( "ABSPATH" ) ) {
 	define( 'ABSPATH', dirname(dirname(dirname(dirname(dirname( dirname( __FILE__ ) ) )))) . '/');

@@ -99,8 +99,8 @@ class Fresh {
 	 */
 	public function __construct($plugin_name)
 	{
-		error_reporting( E_ALL );
-		ini_set( 'display_errors', 'on' );
+
+
 
 		$this->plugin_name = $plugin_name;
 		$this->define_constants();
@@ -146,6 +146,8 @@ class Fresh {
 
 		add_filter( 'wc_order_statuses', 'add_awaiting_shipment_to_order_statuses' );
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
+		add_filter( 'woocommerce_package_rates' , 'im_sort_shipping_services_by_date', 10, 2 );
+
 
 
 
@@ -715,4 +717,26 @@ function add_awaiting_shipment_to_order_statuses( $order_statuses ) {
 	}
 
 	return $new_order_statuses;
+}
+
+function im_sort_shipping_services_by_date($rates, $package)
+{
+
+	$logger = new Core_Logger("check");
+	if ( ! $rates )  return;
+
+	$logger->info("check1");
+
+	$rate_date = array();
+	foreach( $rates as $rate ) {
+		preg_match_all('/\d{2}\/\d{2}\/\d{4}/', $rate->label,$matches);
+		$date = str_replace('/', '-', $matches[0][0]);
+		if (! $date) $date = '1/2/2030'; // Show local pickup in the end of the list.
+		$rate_date[] = strtotime($date);
+	}
+
+	// using rate_cost, sort rates.
+	array_multisort( $rate_date, $rates );
+
+	return $rates;
 }

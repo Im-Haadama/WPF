@@ -10,8 +10,8 @@ if ( ! defined( "TOOLS_DIR" ) ) {
 }
 require_once( FRESH_INCLUDES . '/org/gui.php' );
 
-// error_reporting( E_ALL );
-// ini_set( 'display_errors', 'on' );
+//
+//
 
 // require_once( TOOLS_DIR . "/account/account.php" );
 // require_once( TOOLS_DIR . "/business/business.php" );

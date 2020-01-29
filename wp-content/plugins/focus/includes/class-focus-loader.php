@@ -115,8 +115,8 @@ class Focus_Loader {
 	 */
 	public function run()
 	{
-//	error_reporting( E_ALL );
-//	ini_set( 'display_errors', 'on' );
+//
+//
 		foreach ( $this->filters as $hook ) {
 			add_filter( $hook['hook'], array( $hook['component'], $hook['callback'] ), $hook['priority'], $hook['accepted_args'] );
 		}

@@ -1,7 +1,7 @@
 <?php
 return;
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
+
+
 
 require_once( "../suppliers/gui.php" );
 require_once(FRESH_INCLUDES . '/im-config.php');

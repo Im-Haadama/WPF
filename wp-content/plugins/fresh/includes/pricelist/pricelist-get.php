@@ -5,8 +5,8 @@
  * Date: 16/07/15
  * Time: 15:25
  */
-//error_reporting( E_ALL );
-//ini_set( 'display_errors', 'on' );
+//
+//
 
 require_once( '../r-shop_manager.php' );
 require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );

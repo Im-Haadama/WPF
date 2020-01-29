@@ -113,8 +113,8 @@ class Focus {
 	 */
 	public function __construct($plugin_name)
 	{
-		error_reporting( E_ALL );
-		ini_set( 'display_errors', 'on' );
+
+
 
 		$this->plugin_name = $plugin_name;
 //		if (function_exists("get_user_id") and $user_id = get_user_id()) $this->nav_name = "management." . $user_id;

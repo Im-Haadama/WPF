@@ -5,7 +5,7 @@
  * Date: 26/05/17
  * Time: 14:13
  */
-// ini_set( 'display_errors', 'on' );
+//
 
 if ( ! defined( "FRESH_INCLUDES" ) ) {
 	define( 'FRESH_INCLUDES', dirname( dirname( dirname( __FILE__ ) ) ) );

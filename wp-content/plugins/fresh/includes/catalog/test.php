@@ -10,8 +10,8 @@ require_once( 'catalog.php' );
 
 print header_text( false, true, false );
 
-//error_reporting( E_ALL );
-//ini_set( 'display_errors', 'on' );
+//
+//
 
 $sql = 'select '
        . ' id, post_title '

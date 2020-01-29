@@ -1,7 +1,7 @@
 <?php
 
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
+
+
 
 if ( ! defined( "ROOT_DIR" ) ) {
 	define( 'ROOT_DIR',  dirname( __FILE__ ) ) ;
@@ -21,8 +21,8 @@ $operation = GetParam("operation", false, "focus_main");
 
 require_once( ROOT_DIR . "/init.php" );
 
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
+
+
 
 if (! get_user_id(true)) return;
 

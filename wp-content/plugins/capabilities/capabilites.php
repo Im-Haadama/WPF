@@ -38,9 +38,6 @@ function capabilites() {
 //// Global for backwards compatibility.
 //$GLOBALS['capabilites'] = capabilites();
 
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
-
 function run_capabilites() {
 	$plugin = new Capabilites("Capabilites");
 	$plugin->run();

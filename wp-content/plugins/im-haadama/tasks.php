@@ -1,8 +1,8 @@
 <?php
 
 return;
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
+
+
 
 add_shortcode( 'task_focus', 'task_focus' ); // [task_focus]
 add_shortcode( 'task_greeting', 'task_greeting' );

@@ -47,3 +47,8 @@ function run_flavor() {
 }
 
 run_flavor();
+
+if (get_user_id() == 1) {
+	ini_set( 'display_errors', 'on' );
+	error_reporting( E_ALL );
+}

@@ -95,9 +95,6 @@ class Capabilites {
 	 */
 	public function __construct($plugin_name)
 	{
-		error_reporting( E_ALL );
-		ini_set( 'display_errors', 'on' );
-
 		$this->plugin_name = $plugin_name;
 		$this->define_constants();
 		$this->includes(); // Loads class autoloader
