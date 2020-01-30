@@ -40,6 +40,10 @@ function salary_add_item(user_id)
     document.getElementById("btn_add_time").disabled = true;
 
     var sel = document.getElementById("project");
+    if (! sel) {
+        alert("first define project for this worker");
+        return false;
+    }
     var id = sel.options[sel.selectedIndex].value;
     var start = get_value(document.getElementById("start_h"));
     var end = get_value(document.getElementById("end_h"));

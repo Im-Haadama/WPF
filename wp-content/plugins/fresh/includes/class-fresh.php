@@ -730,8 +730,9 @@ function im_sort_shipping_services_by_date($rates, $package)
 	$rate_date = array();
 	foreach( $rates as $rate ) {
 		preg_match_all('/\d{2}\/\d{2}\/\d{4}/', $rate->label,$matches);
-		$date = str_replace('/', '-', $matches[0][0]);
-		if (! $date) $date = '1/2/2030'; // Show local pickup in the end of the list.
+		if (isset($matches[0][0])) {
+			$date = str_replace( '/', '-', $matches[0][0] );
+		} else $date = '1/2/2030'; // Show local pickup in the end of the list.
 		$rate_date[] = strtotime($date);
 	}
 

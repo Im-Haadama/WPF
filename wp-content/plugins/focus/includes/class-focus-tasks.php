@@ -57,8 +57,9 @@ class Focus_Tasks {
 
 		// Todo: move all processing to filter.
 		$id = GetParam("id", false, null);
-		$result = apply_filters( $operation, $operation, $id, self::Args( $table_name ) );
-		if ( $result != $operation ) {
+
+		$result = apply_filters( $operation, "", $id, self::Args( $table_name ) );
+		if ( $result != "" ) {
 			return $result;
 		}
 
@@ -2032,7 +2033,7 @@ class Focus_Tasks {
 
 		// Project related actions.
 		Core_Gem::AddTable( "im_projects" ); // add + edit
-//		AddAction("gem_edit_im_projects", array(__CLASS__, 'ShowProjectMembers'), 11, 3);
+		AddAction("gem_edit_im_projects", array(__CLASS__, 'ShowProjectMembers'), 11, 3);
 		AddAction("gem_add_project_members", array(__CLASS__, 'AddProjectMember'), 11, 3);
 		AddAction("project_add_member", array(__CLASS__, 'ProjectAddMember'), 11, 3);
 
@@ -2114,8 +2115,12 @@ class Focus_Tasks {
 
 	static function ShowProjectMembers($i, $id, $args)
 	{
+		$result = $i;
+		if (! ($id > 0)) {
+			return $i . " bad id $id";
+		}
 		$u = new Org_Project($id);
-		$result = Core_Html::gui_header(1, $u->getName());
+		$result .= Core_Html::gui_header(1, $u->getName());
 		$result .= self::doShowProjectMembers($id);
 		$result .= Core_html::gui_header(2, "Add member");
 		$result .= gui_select_worker("new_worker", null, $args);
@@ -2145,9 +2150,11 @@ class Focus_Tasks {
 
 	static public function AddProjectMember($i, $project_id, $args)
 	{
+		return $i;
+
 		$args = self::Args();
 		$project = new Org_Project($project_id);
-		$result = Core_Html::gui_header(1, $project->getName());
+		$result = $i . Core_Html::gui_header(1, $project->getName());
 		$result .= self::gui_select_worker("new_worker", null, $args);
 		$args["action"] = "project_add_worker('" . self::getPost() ."', " .$project_id . ")";
 

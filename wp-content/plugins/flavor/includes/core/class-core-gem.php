@@ -27,10 +27,20 @@ class Core_Gem {
 		AddAction("gem_show_" . $table, array($class, 'show_wrapper'), 10, 3, $debug);
 	}
 
-	static function edit_wrapper($operation, $id, $args)
+	static function edit_wrapper($result, $id, $args)
 	{
+//		var_dump($prev); print "<br/>";
+//		var_dump($table_name); print "<br/>";
+//		var_dump($args); print "<br/>";
+//		return;
+//		$id = GetArg($args, "id", null);
+		if (! ($id > 0)) return __FUNCTION__ . ":bad id";
+
+		$operation = GetArg($args, "operation", null);
+		if (! $operation)  return __FUNCTION__ . ":no operation";
+
 		$table_name = substr($operation, 9);
-		return self::GemElement($table_name, $id, $args);
+		return $result . self::GemElement($table_name, $id, $args);
 	}
 
 	static function add_wrapper($operation, $text, $args)
