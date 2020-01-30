@@ -2021,9 +2021,8 @@ class Focus_Tasks {
 			'focus_repeating_task' => array( 'Focus_tasks::show_repeating_task', 'show_tasks' ),
 			'focus_team'           => array( 'Focus_tasks::show_team', 'show_teams' ),
 			'focus_project'        => array( 'Focus_tasks::show_project', 'show_projects' ),
-			'focus_project_tasks'  => array( 'Focus_tasks::show_project_tasks', 'show_projects' )
+			'focus_project_tasks'  => array( 'Focus_tasks::show_project_tasks', 'show_tasks' )
 		) );
-
 	}
 
 	function init() {
@@ -2169,93 +2168,7 @@ class Focus_Tasks {
 		return $result;
 	}
 
-	static public function doShowProjectMembers($project_id)
-	{
-		$args = self::Args("im_");
-		$args["post_file"] .= "?team_id=" . $project_id;
-		$project = new Org_Project($project_id);
-
-		$result = "";
-//		$result            = Core_Html::gui_header( 1, "Edit project" );
-//		$args["selectors"] = array( "manager" => "Focus_Tasks::gui_select_worker" );
-		// $args["post_file"] = GetUrl( 1 ) . "?team_id=" . $team_id;
-//		$result            .= Core_Gem::GemElement( "im_working_teams", $project_id, $args );
-//
-		$result          .= Core_Html::gui_header( 2, "Project members" );
-		$table           = array();
-		$table["header"] = array( "name" );
-		$members = $project->AllWorkers();
-		foreach ($members as $member)
-		{
-			$table[ $member ]["name"] = GetUserName( $member );
-		}
-
-		$args["add_checkbox"] = true;
-		$args["edit"] = true;
-		$result               .= Core_Gem::GemArray( $table, $args, "project_members" );
-//
-//		$result .= Core_Html::gui_header( 1, "add member" );
-//		$result .= gui_select_worker( "new_member", null, $args );
-//		$result .= Core_Html::GuiButton( "btn_add_member", "add_project_member(" . $project_id . ")", "add" );
-//
-//		$args = self::Args();
-
-		//GemTable("im_");
-
-		return $result;
-
-	}
-}
-
-/**
- * TODO: change action to be array(class_name, method_name);
- * till then using functions and not methods.
- *
- * @param $id
- * @param $value
- * @param $args
- *
- * @return mixed|string
- */
-if ( ! function_exists( 'gui_select_repeat_time' ) ) {
-	function gui_select_repeat_time( $id, $value, $args ) {
-//	print "v=" . $value . "<br/>";
-
-		$edit   = GetArg( $args, "edit", false );
-		$events = GetArg( $args, "events", null );
-		$values = array( "w - weekly", "j - monthly", "z - annual", "c - continuous" );
-
-		$selected = 1;
-		for ( $i = 0; $i < count( $values ); $i ++ ) {
-			if ( substr( $values[ $i ], 0, 1 ) == substr( $value, 0, 1 ) ) {
-				$selected = $i;
-			}
-		}
-
-		// return gui_select( $id, null, $values, $events, $selected );
-		if ( $edit ) {
-			return Core_Html::gui_simple_select( $id, $values, $events, $selected );
-		} else {
-			return $values[ $selected ];
-		}
-	}
-
-}
-
-// Allow later users to set page name.
-// For now just the default.
-
-function gui_select_worker( $id = null, $selected = null, $args = null ) {
-	return Focus_Tasks::gui_select_worker( $id, $selected, $args );
-}
-
-function gui_select_project( $id, $value, $args ) {
-	return Focus_Tasks::gui_select_project( $id, $value, $args );
-}
-
-/*
- * 	static function show_new_task( $mission = false, $new_task_id = null ) {
-		die(1);
+	static function show_new_task( $mission = false, $new_task_id = null ) {
 		$args                     = array();
 		$args["selectors"]        = array(
 			"project_id" => "Focus_Tasks::gui_select_project",
@@ -2328,6 +2241,91 @@ function gui_select_project( $id, $value, $args ) {
 		return $result;
 	}
 
+	static public function doShowProjectMembers($project_id)
+	{
+		$args = self::Args("im_");
+		$args["post_file"] .= "?team_id=" . $project_id;
+		$project = new Org_Project($project_id);
+
+		$result = "";
+//		$result            = Core_Html::gui_header( 1, "Edit project" );
+//		$args["selectors"] = array( "manager" => "Focus_Tasks::gui_select_worker" );
+		// $args["post_file"] = GetUrl( 1 ) . "?team_id=" . $team_id;
+//		$result            .= Core_Gem::GemElement( "im_working_teams", $project_id, $args );
+//
+		$result          .= Core_Html::gui_header( 2, "Project members" );
+		$table           = array();
+		$table["header"] = array( "name" );
+		$members = $project->AllWorkers();
+		foreach ($members as $member)
+		{
+			$table[ $member ]["name"] = GetUserName( $member );
+		}
+
+		$args["add_checkbox"] = true;
+		$args["edit"] = true;
+		$result               .= Core_Gem::GemArray( $table, $args, "project_members" );
+//
+//		$result .= Core_Html::gui_header( 1, "add member" );
+//		$result .= gui_select_worker( "new_member", null, $args );
+//		$result .= Core_Html::GuiButton( "btn_add_member", "add_project_member(" . $project_id . ")", "add" );
+//
+//		$args = self::Args();
+
+		//GemTable("im_");
+
+		return $result;
+
+	}
+}
+
+/**
+ * TODO: change action to be array(class_name, method_name);
+ * till then using functions and not methods.
+ *
+ * @param $id
+ * @param $value
+ * @param $args
+ *
+ * @return mixed|string
+ */
+if ( ! function_exists( 'gui_select_repeat_time' ) ) {
+	function gui_select_repeat_time( $id, $value, $args ) {
+//	print "v=" . $value . "<br/>";
+
+		$edit   = GetArg( $args, "edit", false );
+		$events = GetArg( $args, "events", null );
+		$values = array( "w - weekly", "j - monthly", "z - annual", "c - continuous" );
+
+		$selected = 1;
+		for ( $i = 0; $i < count( $values ); $i ++ ) {
+			if ( substr( $values[ $i ], 0, 1 ) == substr( $value, 0, 1 ) ) {
+				$selected = $i;
+			}
+		}
+
+		// return gui_select( $id, null, $values, $events, $selected );
+		if ( $edit ) {
+			return Core_Html::gui_simple_select( $id, $values, $events, $selected );
+		} else {
+			return $values[ $selected ];
+		}
+	}
+}
+
+// Allow later users to set page name.
+// For now just the default.
+
+function gui_select_worker( $id = null, $selected = null, $args = null ) {
+	return Focus_Tasks::gui_select_worker( $id, $selected, $args );
+}
+
+function gui_select_project( $id, $value, $args ) {
+	return Focus_Tasks::gui_select_project( $id, $value, $args );
+}
+
+
+/*
 			case "show_new_team":
 				$args                     = [];
 				$args["next_page"]        = GetParam( "next_page", false, null );

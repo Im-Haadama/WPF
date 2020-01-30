@@ -594,8 +594,8 @@ function fresh_store_supplier_account_page() {
 //}
 
 }
-ini_set( 'display_errors', 'on' );
 
+ini_set( 'display_errors', 'on' );
 error_reporting( E_ALL );
 
 add_shortcode('pay-page', 'pay_page');
