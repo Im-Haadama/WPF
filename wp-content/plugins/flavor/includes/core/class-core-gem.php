@@ -46,6 +46,10 @@ class Core_Gem {
 	static function add_wrapper($operation, $text, $args)
 	{
 		$table_name = substr($operation, 8);
+		if (! $table_name or ! strlen($table_name)){
+			print __FUNCTION__ . ": coding error. invalid table in '$operation'.<br/>";
+			return false;
+		}
 		return self::GemAddRow($table_name, $text, $args);
 	}
 
@@ -58,6 +62,7 @@ class Core_Gem {
 
 	static function GemAddRow($table_name, $text = null, $args = null){
 		$result = "";
+		if (! $table_name or ! strlen($table_name)) return __FUNCTION__ . ": No table selected";
 
 		if (! $text) $text = __("Add"). " " . $table_name;
 		$result .= Core_Html::gui_header(1, $text);
@@ -79,7 +84,6 @@ class Core_Gem {
 			$result .= Core_Html::GuiButton("add_row", "add", array("action" => "data_save_new('" . $post . "', '$table_name')", "add"));
 			$result .= Core_Html::GuiButton("add_row", "add and continue", array("action" => "data_save_new('" . $post . "', '$table_name', success_message)", "add and continue"));
 		}
-
 		return $result;
 	}
 

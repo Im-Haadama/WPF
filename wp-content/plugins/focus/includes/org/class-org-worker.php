@@ -82,21 +82,33 @@ class Org_Worker extends Core_users
 //		return $this->workers;
 	}
 
-	function AllProjects($just_active = true)
+	function AllProjects($query = "is_active = 1", $field_list = "id")
 	{
-		$projects = CommaArrayExplode(get_usermeta($this->id, 'projects'));
-		if (! $projects) $projects = array();
-		$managed = sql_query_array_scalar("select id from im_projects where manager = " . $this->id );
+		// Managed projects
+		$sql =  "select " . CommaImplode($field_list) . " from im_projects " .
+		        " where manager = " . $this->id . ($query ? " and $query " : "");
 
-		$result = array();
-		if ($just_active)
-			foreach(array_merge($projects, $managed) as $project_id)
-			{
-				$p = new Org_Project($project_id);
-				if ($p->IsActive()) array_push($result, $project_id);
-			}
+		// or direct member.
+		if ($direct_projects = get_usermeta($this->id, 'projects')){
+			$sql .= " or id in (" . CommaImplode(CommaArrayExplode($direct_projects)) . ")";
+		}
 
-		return $result;
+		if (is_array($field_list) and (count($field_list) > 1))
+			return SqlQueryAssoc($sql);
+		else
+			return sql_query_array_scalar($sql);
+//		if (! $projects) $projects = array();
+//		$managed = sql_query_array_scalar("select $field_list from im_projects where manager = " . $this->id . ($query ? " and $query " : ""));
+//
+//		$result = array();
+//		if ($just_active)
+//			foreach(array_merge($projects, $managed) as $project_id)
+//			{
+//				$p = new Org_Project($project_id);
+//				if ($p->IsActive()) array_push($result, $project_id);
+//			}
+//
+//		return $result;
 	}
 
 	function AllCompanies()

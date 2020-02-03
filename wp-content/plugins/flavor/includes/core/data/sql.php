@@ -537,3 +537,20 @@ function sql_field($fetch_fields, $field_name)
 }
 
 }
+
+function SqlQueryAssoc($sql)
+{
+	$result = sql_query( $sql );
+	if ( ! $result ) {
+		sql_error( $sql );
+
+		return "Error";
+	}
+	$rows = array();
+	while ( $row = mysqli_fetch_assoc( $result ) ) {
+		array_push( $rows, $row );
+	}
+
+	return $rows;
+
+}

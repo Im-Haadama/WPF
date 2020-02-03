@@ -44,6 +44,9 @@ class Focus_Tasks {
 		$file = FLAVOR_INCLUDES_URL . 'core/gem.js';
 		wp_enqueue_script( 'gem', $file, null, $this->version, false );
 
+		// <script src="https://kit.fontawesome.com/f666c528bc.js" crossorigin="anonymous"></script>
+		$awesome = "https://kit.fontawesome.com/f666c528bc.js";
+		wp_enqueue_script( 'awesome', $awesome, null, $this->version, false );
 	}
 
 	static function focus_main_wrapper() {
@@ -120,16 +123,10 @@ class Focus_Tasks {
 		$form_table = GetArg( $args, "form_table", null );
 		$events     = GetArg( $args, "events", null );
 
-		$projects      = $user->AllProjects( );
-		if ($projects) {
-			$projects_list = [];
-			foreach ( $projects as $p_id ) {
-				$p = new Org_Project($p_id);
-				$projects_list[] = array( "project_id" => $p_id, "project_name" => $p->getName() );
-			}
-
+		$projects_list      = $user->AllProjects("is_active = 1" , array("id", "project_name") );
+		if ($projects_list) {
 			$args["values"] = $projects_list;
-			$args["id_key"] = "project_id";
+			$args["id_key"] = "id";
 			$args["name"] = "project_name";
 			$result .= Core_Html::GuiSelect($id, $project_id, $args);
 
@@ -702,34 +699,6 @@ class Focus_Tasks {
 				$team = new Org_Team($team_id);
 				return $team->AddWorker($new_member);
 
-			case "end_task":
-				$task_id = GetParam( "id" );
-				if ( $task_id > 0 ) {
-					$t = new Focus_Tasklist( $task_id );
-					return  $t->Ended();
-				}
-
-				return false;
-
-			case "cancel_task":
-				$task_id = GetParam( "id" );
-				return  Focus_Tasklist::task_cancelled( $task_id );
-
-			case "postpone_task":
-				$task_id = GetParam( "id" );
-				$T       = new Focus_Tasklist( $task_id );
-				return        $T->Postpone();
-
-			case "pri_plus_task":
-				$task_id = GetParam( "id" );
-				$T       = new Focus_Tasklist( $task_id );
-				return   $T->setPriority( $T->getPriority() + 1 );
-
-			case "pri_minus_task":
-				$task_id = GetParam( "id" );
-				$T       = new Focus_Tasklist( $task_id );
-				return $T->setPriority( $T->getPriority() - 1 );
-
 			case "save_new":
 				$table_name = GetParam( "table_name", true );
 				if ( ! in_array( $table_name, $allowed_tables ) ) {
@@ -763,11 +732,6 @@ class Focus_Tasks {
 				$id      = GetParam( "row_id", true );
 				return template_delete( $user_id, $id );
 
-			case "start_task":
-				// a. set the start time, if not set.
-				$task_id = GetParam( "id" );
-				$task = new Focus_Tasklist($task_id);
-				$task->task_started(get_user_id());
 
 				// If the was query we want to show the result.
 				// And the move to the task_url if exists.
@@ -826,11 +790,72 @@ class Focus_Tasks {
 			case "search_by_text":
 				$text = GetParam( "text", true );
 
-				return self::search_by_text( $text );
+				return self::search_by_text( get_user_id(), $text );
 		}
 
 		return "not handled";
 	}
+
+	static function Start($args) {
+		$task_id = GetArg( $args, "id", 0 );
+		if ( ! ( $task_id > 0 ) ) {
+			return false;
+		}
+
+		$task = new Focus_Tasklist( $task_id );
+
+		return $task->task_started( get_user_id() );
+	}
+
+	static function End($input, $args) {
+		$task_id = GetArg( $args, "id", 0 );
+		if ( ! ( $task_id > 0 ) ) {
+			print "no id";
+			return false;
+		}
+
+		$t = new Focus_Tasklist( $task_id );
+
+		return $t->Ended();
+	}
+
+	static function Cancel($args) {
+		$task_id = GetArg( $args, "id", 0 );
+		if ( ! ( $task_id > 0 ) ) {
+			return false;
+		}
+
+		return Focus_Tasklist::task_cancelled( $task_id );
+	}
+
+	static function Postpone($args) {
+		$task_id = GetArg( $args, "id", 0 );
+		if ( ! ( $task_id > 0 ) ) {
+			return false;
+		}
+		$T = new Focus_Tasklist( $task_id );
+
+		return $T->Postpone();
+	}
+
+	static function PriPlus($args)
+	{
+		$task_id=GetArg($args, "id", 0);
+		if (! ($task_id > 0)) return false;
+
+		$T       = new Focus_Tasklist( $task_id );
+		return   $T->setPriority( $T->getPriority() + 1 );
+	}
+
+	static function PriMinus($args)
+	{
+		$task_id=GetArg($args, "id", 0);
+		if (! ($task_id > 0)) return false;
+
+		$T       = new Focus_Tasklist( $task_id );
+		return $T->setPriority( $T->getPriority() - 1 );
+	}
+
 
 	/**
 	 * @param $user_id
@@ -842,6 +867,7 @@ class Focus_Tasks {
 	 */
 	static function default( $user_id )
 	{
+		if (! ($user_id > 0)) return "'$user_id' is not valid user";
 		$worker = new Org_Worker( $user_id );
 		$tabs   = array();
 		$args = self::Args();
@@ -849,8 +875,8 @@ class Focus_Tasks {
 		$result = "";
 
 		$result .= self::search_box();
-		$result .= self::new_task();
-		$result .= self::show_new_template();
+//		$result .= self::new_task();
+//		$result .= self::show_new_template();
 //		$result .= Core_html::GuiButton("btn_cancel", "Cancel", array( "action" => "new_task.style.display = 'none';
 //								new_task_template.style.display = 'none';
 //			                     btn_new_template.style.display = 'block';
@@ -1013,15 +1039,19 @@ class Focus_Tasks {
 	}
 
 	static function my_projects( $args, $user_id ) {
+		$user_id = 383;
 		$args = self::Args("im_projects");
 		$worker = new Org_Worker( $user_id );
 		$result = "";
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// Tasks projects I'm a member of (team in my_projects). Not assigned                                              //
+		// Tasks projects I'm a member of (team in my_projects). Not assigned                                        //
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		$args["title"] = ImTranslate( "My projects" );
 		// DebugVar(CommaImplode($worker->AllProjects()));
-		$args["query"] = " id in (" . CommaImplode($worker->AllProjects()) . ")";
+		$projects = $worker->AllProjects();
+		if (! $projects) return "no projects for user " . $worker->getName();
+
+		$args["query"] = " id in (" . CommaImplode($projects) . ")";
 
 		$result .= Core_Gem::GemTable("im_projects", $args);
 
@@ -1150,12 +1180,13 @@ class Focus_Tasks {
 
 		// The first part is action to server. If it replies with done, the second part is executed in the client (usually hiding the row).
 		$actions = array(
-			array( "start", $action_url . "?operation=start_task&id=%s;load_page" ),
-			array( "finished", $action_url . "?operation=end_task&id=%s;action_hide_row" ),
-			array( "cancel", $action_url . "?operation=cancel_task&id=%s;action_hide_row" ),
-			array( "postpone", $action_url . "?operation=postpone_task&id=%s;action_hide_row" ),
-			array( "pri_plus", $action_url . "?operation=pri_plus_task&id=%s" ),
-			array( "pri_minus", $action_url . "?operation=pri_minus_task&id=%s;action_hide_row" )
+			//    text, action,                                                class,               tooltip
+			array( "", $action_url . "?operation=task_start&id=%s;load_page", "fas fa-play-circle", "start" ),
+			array( "", $action_url . "?operation=task_end&id=%s;action_hide_row","fas fa-stop-circle", "stop"   ),
+			array( "", $action_url . "?operation=task_cancel&id=%s;action_hide_row", "fas fa-window-close", "cancel" ),
+			array( "", $action_url . "?operation=task_postpone&id=%s;action_hide_row", "fas fa-clock", "tomorrow" ),
+			array( "", $action_url . "?operation=task_pri_plus&id=%s;", "fas fa-arrow-alt-circle-up", "increase priority" ),
+			array( "", $action_url . "?operation=task_pri_minus&id=%s;action_hide_row", "fas fa-arrow-alt-circle-down", "decrease priority" )
 
 		);
 		$order   = "order by priority desc ";
@@ -1315,7 +1346,7 @@ class Focus_Tasks {
 //		return  Core_Html::GuiButton( "btn_new_template", "Add repeating",
 //			array( "action" => "new_task_template.style.display = 'block'; btn_new_template.style.display ='none'; btn_new_task.style.display = 'none'; btn_cancel.style.display='block';" ) ) .
 
-		 Core_Html::GuiDiv( "new_task_template", $result, $args );
+		 return Core_Html::GuiDiv( "new_task_template", $result, $args );
 	}
 
 	/**
@@ -1889,9 +1920,9 @@ class Focus_Tasks {
 		return AddToUrl( array( "operation" => "show_task", "id" => $id ) );
 	}
 
-	static function search_by_text( $text ) {
+	static function search_by_text( $user_id, $text ) {
 		$result = [];
-		$result = array_merge( $result, self::project_list_search( "project_name like " . QuotePercent( $text ) ) );
+		$result = array_merge( $result, self::project_list_search($user_id,  "project_name like'%$text%'"));
 		$result = array_merge( $result, self::task_list_search( "status < 2 and task_description like " . QuotePercent( $text ) ) );
 
 		if ( count( $result ) < 1 ) {
@@ -1913,8 +1944,14 @@ class Focus_Tasks {
 		return $result;
 	}
 
-	static function project_list_search( $query ) {
-		return sql_query_array_scalar( "select id from im_projects where $query" );
+	static function project_list_search($user_id, $query ) {
+		$user = new Org_Worker($user_id);
+
+		$projects = $user->AllProjects("is_active = 1" , array("id", "project_name"));
+//		var_dump($projects);
+		foreach ( $projects as $project ) {
+			array_push( $result, Core_Html::GuiHyperlink( $project["project_name"], self::get_link( "project", $project["id"] ) ) );
+		}
 	}
 
 	static function show_settings( $user_id ) {
@@ -2039,6 +2076,13 @@ class Focus_Tasks {
 		// Company
 		AddAction("show_add_company_worker", array(__CLASS__, 'AddCompanyWorker'), 11, 3);
 		AddAction("add_worker", array(__CLASS__, 'doAddCompanyWorker'), 11, 3);
+
+		AddAction("task_start", array(__CLASS__, "Start"), 10, 2);
+		AddAction("task_end", array(__CLASS__, "End"), 10, 2);
+		AddAction("task_cancel", array(__CLASS__, "Cancel"), 10, 2);
+		AddAction("task_postpone", array(__CLASS__, "Postpone"), 10, 2);
+		AddAction("task_pri_plus", array(__CLASS__, "PriPlus"), 10, 2);
+		AddAction("task_pri_minus", array(__CLASS__, "PriMinus"), 10, 2);
 	}
 
 	static function DoAddCompanyWorker()

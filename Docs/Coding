@@ -49,7 +49,12 @@ post.php will handle plugin specific actions. if not handled:
 -> take of module name from the module name and pass it to processing.
 
 handle functions will return true if processed.
-if additional data is required to the caller (e.g - insert_id) it will be returned. and the top caller will print done.###
+if additional data is required to the caller (e.g - insert_id) it will be returned. and the top caller will print done
+optional outputs:
+done (for command without expected output)
+failed
+done.#### (for insert)
+result text
 
 Test:
 -=-=-

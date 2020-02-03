@@ -469,8 +469,11 @@ class Core_Data
 						$server_action = substr($action[1], 0, $s);
 						$action_url = sprintf($server_action, $row_id);
 						$client_action = substr($action[1], $s + 1);
-						$btn = "btn_$text" . "_" . $row_id;
-						array_push($row_data, Core_Html::GuiButton($btn, $text, array("action" => "execute_url('" . $action_url . "', $client_action, $btn )", $text)));
+						$btn_id = "btn_$text" . "_" . $row_id;
+						$action_args = array("action" => "execute_url('" . $action_url . "', $client_action, $btn_id )");
+						if (isset($action[2])) $action_args["class"] = $action[2];
+						if (isset($action[3])) $action_args["tooltip"] = $action[3];
+						array_push($row_data, Core_Html::GuiButton($btn_id, $text, $action_args));
 					} else {
 //						$action_url = $row_id . $action[1];
 						if (! $row_id) $action_url = ($action[1] . "row id missing");

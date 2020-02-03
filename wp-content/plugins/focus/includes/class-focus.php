@@ -157,6 +157,7 @@ class Focus {
 		$this->loader->add_action( 'wp_enqueue_scripts', $this->salary, 'enqueue_scripts' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $this->tasks, 'enqueue_scripts' );
 
+		Focus_Project::init();
 
 		require_once ABSPATH . 'wp-includes/pluggable.php';
 //		 if (get_user_id() == 1) wp_set_current_user(383);
@@ -241,8 +242,13 @@ class Focus {
 	 */
 	function handle_operation($operation)
 	{
-		// called by post.php
-		$result = apply_filters( $operation, null );
+		$ignore_list = array("operation");
+		$input = null;
+
+		////////////////////////
+		// called by post.php //
+		////////////////////////
+		$result = apply_filters( $operation, $input, GetParams($ignore_list));
 		if ( $result ) return $result;
 
 		// Handle global operation
@@ -269,10 +275,11 @@ class Focus {
 				return ($data->handle_operation($operation));
 				break;
 			default:
+//				print "fault";
+//				return "no handler found for $operation";
 				$focus = Focus_Tasks::instance();
 				return $focus->handle_focus_do($operation);
 		}
-		return;
 	}
 	/**
 	 * Include required core files used in admin and on the frontend.
@@ -346,7 +353,8 @@ class Focus {
 
 		$this->tasks->init();
 		$this->manager->init();
-		Core_Gem::AddTable("company_teams", 'Focus_Tasks');
+
+		Core_Gem::AddTable("company_teams");
 
 		// Load class instances.
 

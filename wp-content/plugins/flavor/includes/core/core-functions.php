@@ -283,6 +283,10 @@
 				$result .= $var->name;
 				$result .= ", ";
 			} else {
+				if (is_array($var)){
+					print debug_trace(5);
+					exit;
+				}
 				$result .= $var . ", ";
 			}
 		}
