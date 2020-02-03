@@ -556,10 +556,15 @@ class Flavor {
 
 	static function ClassSettingPage($module_list)
 	{
+		$debug = (get_user_id() == 1);
+
 		$u = new Core_Users();
 		$result = "";
 		foreach ($module_list as $item => $sub_menu_items){
-			if (! isset($sub_menu_items['target'])) continue;
+			if (! isset($sub_menu_items[2])) {
+				if ($debug) print "$item: coding error: expecting index array 0 - name, 1 - target, 2 - capability<br/>";
+				continue;
+			}
 			$args ["text"] = __("Add") . " " . __($item);
 			$args["action"] = AddParamToUrl(self::getPost(),
 					array( "operation" => "nav_add",
@@ -570,7 +575,15 @@ class Flavor {
 				$main_nav = $item;
 				$sub_nav =  $sub_menu_item[0];
 				$target = $sub_menu_item[1];
-				if (! isset($sub_menu_item[2]) or (! $u->can($capability = $sub_menu_item[2]))) continue;
+				if (! isset($sub_menu_item[2]))
+				{
+					if ($debug) print "index 2 is missing in " . $sub_menu_item[0] . "<br/>";
+					continue;
+				}
+				if (! $u->can($capability = $sub_menu_item[2])){
+					if ($debug) print "capability $capability is missing for $sub_nav<br/>";
+					continue;
+				}
 
 				$sub_args = [];
 				$sub_args["text"] = __($sub_nav);
