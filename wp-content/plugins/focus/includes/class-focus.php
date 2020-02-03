@@ -354,7 +354,7 @@ class Focus {
 		$this->tasks->init();
 		$this->manager->init();
 
-		Core_Gem::AddTable("company_teams");
+		Core_Gem::AddTable("working_teams");
 
 		// Load class instances.
 

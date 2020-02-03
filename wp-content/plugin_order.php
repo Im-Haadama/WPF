@@ -14,10 +14,13 @@ get_sql_conn(ReconnectDb());
 $plugins_s = sql_query_single_scalar("select option_value from wp_options where option_name='active_plugins'");
 $plugins = unserialize($plugins_s);
 show_order($plugins);
-if (! isset($_GET["change"])) return;
+if (! isset($_GET["change"])) {
+	print '<a href="' . AddToUrl("change", 1) . '">Change</a>';
+	return;
+}
 $c = in_array("flavor/flavor.php", $plugins);
 if ($c) {
-	print "found. chaning order<br/>";
+	print "found. changing order<br/>";
 	unset( $plugins[ $c ] );
 	array_unshift( $plugins, "flavor/flavor.php" );
 	$sql = "update wp_options set option_value = " .
@@ -30,5 +33,7 @@ if ($c) {
 
 function show_order($plugins)
 {
+	print "current order:<br/>";
 	foreach ($plugins as $plugin) print $plugin . "<br/>";
+	return;
 }

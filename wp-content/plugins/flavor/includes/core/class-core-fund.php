@@ -182,12 +182,9 @@ class Core_Fund {
 	 * @return array|null
 	 */
 	static function array_assoc( $array ) {
-		if ( ! $array ) {
-			return null;
-		}
-		if ( ! isset( $array[0] ) ) {
-			return $array;
-		}
+		if ( ! $array ) return null;
+		if ( ! isset( $array[0] ) ) return $array;
+
 		$new = array();
 
 		foreach ( $array as $cell ) {

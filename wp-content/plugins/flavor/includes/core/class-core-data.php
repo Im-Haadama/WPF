@@ -238,10 +238,11 @@ class Core_Data
 				$result = [];
 				$fields = Core_Fund::array_assoc($fields);
 				foreach ($fields as $field => $v) {
-					if ($as_pos = strpos($field, " as ")) $field = substr($field, $as_pos + 4);
-					if ( ! $skip_id or strtolower( $field ) !== "id" ) {
-						$result[ $field ] = ImTranslate( ( isset( $header_fields[ $field ] ) ? $header_fields[ $field ] : $field ) );
+					if ($as_pos = strpos($field, " as ")) {
+						$field = substr($field, $as_pos + 4);
 					}
+					if ( ! $skip_id or strtolower( $field ) !== "id" )
+						$result[ $field ] = ImTranslate( ( isset( $header_fields[ $field ] ) ? $header_fields[ $field ] : $field ) );
 				}
 			} else {
 				$result = $header_fields;
@@ -646,8 +647,6 @@ class Core_Data
 
 		$header = GetArg($args, "header", true);
 		$field_list = self::FieldList($sql, $args);
-//	 debug_var($field_list);
-		// print __FUNCTION__ ; var_dump($field_list); print "<br/>";
 		$mandatory_fields = GetArg($args, "mandatory_fields", null);  $mandatory_fields = Core_Fund::array_assoc($mandatory_fields);
 		$fields = GetArg($args, "fields", null);  $fields = Core_Fund::array_assoc($fields);
 		$skip_id = GetArg($args, "skip_id", false);

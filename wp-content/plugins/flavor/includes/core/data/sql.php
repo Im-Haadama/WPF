@@ -554,3 +554,9 @@ function SqlQueryAssoc($sql)
 	return $rows;
 
 }
+
+function get_table_prefix()
+{
+	global $im_table_prefix;
+	return ($im_table_prefix ? $im_table_prefix : "im_");
+}

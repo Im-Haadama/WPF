@@ -185,7 +185,7 @@ class Focus_Salary {
 				                                     Core_Html::GuiHyperlink( "$user_id", self::get_link("worker_data", $user_id )) . ")" );
 				$output .= "כתובת מייל של העובד/ת: " . $user->CustomerEmail() . "<br/>";
 
-				$output .= self::print_transactions( $user_id, $m, $y, $args ); // null, null, $s, true, $edit );
+				$output .= self::print_transactions( $user_id, $m, $y ); // null, null, $s, true, $edit );
 
 				if ( $edit_lines ) {
 					$output .= Core_Html::GuiButton( "btn_delete", "delete_line(" . $user_id . ")", "מחק" );
@@ -513,8 +513,10 @@ class Focus_Salary {
 		$result = "";
 		if ($day_rate) $result .= Core_Html::gui_header(2, "Daily worker");
 
-		$rate = ($day_rate ? '' : ', working_rate(user_id, project_id) as rate');
-		$sql  = "SELECT id, date, dayofweek(date) as weekday, start_time, end_time, project_id $rate, traveling, expense, expense_text, comment FROM im_working_hours WHERE 1 ";
+		$rate_field = ($day_rate ? '' : ', working_rate(user_id, project_id) as rate');
+		$sql  = "SELECT id, date, dayofweek(date) as weekday, start_time, end_time, project_id $rate_field, traveling, expense, expense_text, comment FROM im_working_hours WHERE 1 ";
+
+		// print $sql ."<br/>";
 		$edit = GetArg( $args, "edit_lines", false );
 		unset( $args["hide_cols"] ); // Remove from previous worker.
 
@@ -529,26 +531,14 @@ class Focus_Salary {
 		}
 		// $month_sum = array();
 
-		if ( isset( $week ) ) {
-			$sql_month = " and date >= '" . $week . "' and date < '" . date( 'y-m-d', strtotime( $week . "+1 week" ) ) . "'";
-		}
-		if ( $user_id > 0 ) {
-			$sql .= " and user_id = " . $user_id . " ";
-		}
-		if ( isset( $sql_month ) ) {
-			$sql .= $sql_month;
-		}
-		if ( isset( $project ) ) {
-			$sql .= " and project_id = " . $project;
-		}
+		if ( isset( $week ) ) $sql_month = " and date >= '" . $week . "' and date < '" . date( 'y-m-d', strtotime( $week . "+1 week" ) ) . "'";
+		if ( $user_id > 0 ) 			$sql .= " and user_id = " . $user_id . " ";
 
-		$sql .= " and is_active = 1 order by 2 ";
-		if ( isset( $month ) ) {
-			$sql .= "asc";
-		} else {
-			$sql .= "desc";
-		}
-		$sql .= " limit 100";
+		if ( isset( $sql_month ) )		$sql .= $sql_month;
+			if ( isset( $project ) )		$sql .= " and project_id = " . $project;
+
+
+		$sql .= " and is_active = 1 order by 2 " . ( isset($month) ? "asc" : "desc") ." limit 100";
 
 		$args["header_fields"] = array(
 			"date"         => "Date",
@@ -560,7 +550,8 @@ class Focus_Salary {
 			"traveling"    => "Traveling expense",
 			"expense"      => "Other expense",
 			"expense_text" => "Expense details",
-			"comment"      => "Comment"
+			"comment"      => "Comment",
+			"line_salary" => "Total"
 		);
 		$args["selectors"]     = array( "project_id" => "gui_select_project" );
 		$args["skip_id"]       = true;
@@ -582,10 +573,8 @@ class Focus_Salary {
 		$show_expense = false;
 		$show_comment = false;
 
-		if ( ! $rows ) {
-			$result .= ImTranslate( "No data" ) . Core_Html::Br();
-			return $result;
-		}
+		if ( ! $rows ) return $result . ImTranslate( "No data" ) . Core_Html::Br();
+
 		foreach ( $rows as $key => &$row ) {
 			if ( $key == "header" ) {
 				$row["base"]        = ImTranslate( "base" );
@@ -598,9 +587,7 @@ class Focus_Salary {
 			$start          = new DateTime( $row["start_time"] );
 			$end            = new DateTime( $row["end_time"] );
 
-			if ( $end < $start ) {
-				$end->add( DateInterval::createFromDateString( "1 day" ) );
-			}
+			if ( $end < $start ) $end->add( DateInterval::createFromDateString( "1 day" ) );
 			$dur = $end->diff( $start, true );
 
 			if ($day_rate){
@@ -613,14 +600,8 @@ class Focus_Salary {
 				$dur_150   = $total_dur - $dur_base - $dur_125;
 				$rate      = $row["rate"];
 
-				if ( $dur_125 > 0 ) {
-					$counters["dur_125"] += $dur_125;
-					$show_125            = true;
-				}
-				if ( $dur_150 > 0 ) {
-					$counters["dur_150"] += $dur_150;
-					$show_150            = true;
-				}
+				if ( $dur_125 > 0 ) { $counters["dur_125"] += $dur_125; $show_125            = true; }
+				if ( $dur_150 > 0 ) { $counters["dur_150"] += $dur_150; $show_150            = true; }
 
 				$row["base"]    = FloatToTime( $dur_base );
 				$row["dur_125"] = FloatToTime( $dur_125 );
@@ -670,10 +651,15 @@ class Focus_Salary {
 		}
 		$args["checkbox_class"] = "working_days";
 
+		//////////////////
+		// Totals lines //
+		//////////////////
+
 		foreach ( $rows['header'] as $key => $not_used ) {
-//			print "key: $key<br/>";
-			$data["totals"][ $key ] = ( isset( $counters[ $key ] ) ? FloatToTime( $counters[ $key ] ) : "" );
+			$rows["sums"][ $key ] = ( isset( $counters[ $key ] ) ? FloatToTime( $counters[ $key ] ) : "" );
 		}
+		$rows["sums"]["line_salary"] = $total_sal;
+		$rows["sums"]["traveling"] = $total_travel;
 
 //		print "after: " . $data["totals"]["dur_125"] . "<br/>";
 		$result .= Core_Html::gui_table_args( $rows, "working_" . $user_id, $args );

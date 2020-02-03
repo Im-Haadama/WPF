@@ -483,9 +483,6 @@ class Focus_Tasks {
 			case "new_template":
 				return self::show_new_template();
 
-			case "show_add_company_teams":
-				return self::show_new_team();
-
 			default:
 				return false;
 		}
@@ -796,7 +793,7 @@ class Focus_Tasks {
 		return "not handled";
 	}
 
-	static function Start($args) {
+	static function Start($input, $args) {
 		$task_id = GetArg( $args, "id", 0 );
 		if ( ! ( $task_id > 0 ) ) {
 			return false;
@@ -819,7 +816,7 @@ class Focus_Tasks {
 		return $t->Ended();
 	}
 
-	static function Cancel($args) {
+	static function Cancel($input, $args) {
 		$task_id = GetArg( $args, "id", 0 );
 		if ( ! ( $task_id > 0 ) ) {
 			return false;
@@ -828,7 +825,7 @@ class Focus_Tasks {
 		return Focus_Tasklist::task_cancelled( $task_id );
 	}
 
-	static function Postpone($args) {
+	static function Postpone($input, $args) {
 		$task_id = GetArg( $args, "id", 0 );
 		if ( ! ( $task_id > 0 ) ) {
 			return false;
@@ -1491,7 +1488,6 @@ class Focus_Tasks {
 		$args["query"]     = "manager = 1";
 		$args["links"]     = array( "id" => AddToUrl( array( "operation" => "show_edit_team&id=%s" ) ) );
 		$args["selectors"] = array( "team_members" => __CLASS__ . "::gui_show_team" );
-		//$args["post_file"] .= "operation=company_teams";
 
 		$teams = Core_Data::TableData( "select id, team_name from im_working_teams where manager in \n" .
 		                               "(select user_id from im_working where company_id = $company_id) order by 1", $args );
@@ -1509,7 +1505,7 @@ class Focus_Tasks {
 				}
 			}
 		}
-		$result .= Core_Gem::GemArray( $teams, $args, "company_teams" );
+		$result .= Core_Gem::GemArray( $teams, $args, "working_teams" );
 
 		return $result;
 	}

@@ -43,14 +43,20 @@ class Core_Gem {
 		return $result . self::GemElement($table_name, $id, $args);
 	}
 
-	static function add_wrapper($operation, $text, $args)
+	static function add_wrapper($result, $id, $args)
 	{
+
+		$operation = GetArg($args, "operation", null);
+		if (! $operation)  return __FUNCTION__ . ":no operation";
+
 		$table_name = substr($operation, 8);
 		if (! $table_name or ! strlen($table_name)){
 			print __FUNCTION__ . ": coding error. invalid table in '$operation'.<br/>";
 			return false;
 		}
-		return self::GemAddRow($table_name, $text, $args);
+		$im_table_prefix = get_table_prefix();
+
+		return self::GemAddRow($im_table_prefix . $table_name, null, $args);
 	}
 
 	static function show_wrapper($operation, $id, $args)
