@@ -267,6 +267,8 @@ class Fresh {
 
 			case "mission_stop_accept_anonymous":
 				return $this->delivery_manager->stop_accept();
+
+
 		}
 	}
 
@@ -462,6 +464,8 @@ class Fresh {
 //		$this->shortcodes->do_init();
 		$this->suppliers->init();
 
+		$this->enqueue_scripts();
+
 		// Init action.
 		do_action( 'fresh_init' );
 	}
@@ -471,6 +475,8 @@ class Fresh {
 		$locale = apply_filters( 'plugin_locale', $locale, 'fresh' );
 
 		unload_textdomain( 'wpf' );
+		if ($locale == 'en_US') return;
+
 		$file = FRESH_ABSPATH . 'languages/wpf-' . $locale . '.mo';
 		$rc = load_textdomain( 'wfp', $file );
 //		print "loaded $file $rc <br/>";
@@ -518,6 +524,12 @@ class Fresh {
 	}
 
 	public function enqueue_scripts() {
+		$file = FLAVOR_INCLUDES_URL . 'core/data/data.js';
+		wp_enqueue_script( 'data', $file, null, $this->version, false );
+
+		$file = FLAVOR_INCLUDES_URL . 'core/gui/client_tools.js';
+		wp_enqueue_script( 'client_tools', $file, null, $this->version, false );
+
 		$file = plugin_dir_url( __FILE__ ) . 'inventory.js';
 		wp_enqueue_script( $this->plugin_name, $file, array( 'jquery' ), $this->version, false );
 	}

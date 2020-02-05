@@ -3,6 +3,7 @@
 
 class Core_Gem {
 	private $object_types;
+	protected static $_instance = null;
 
 	/**
 	 * Core_Gem constructor.
@@ -10,7 +11,24 @@ class Core_Gem {
 	 * @param $object_types
 	 */
 	public function __construct( ) {
-		$this->object_types = null;
+		$this->object_types = array();
+		self::$_instance = $this;
+	}
+
+	/**
+	 * @return Core_Gem|null
+	 */
+	public static function getInstance(): ?Core_Gem {
+		return self::$_instance;
+	}
+
+	public function AddVirtualTable($table, $args, $class = __CLASS__)
+	{
+		$this->object_types[$table] = $args;
+
+		AddAction("gem_v_add_" . $table, array($class, "v_add_wrapper"), 10, 3);
+		AddAction("gem_v_edit_" . $table, array($class, "v_edit_wrapper"), 10, 3);
+		AddAction("gem_v_show_" . $table, array($class, "v_show_wrapper"), 10, 3);
 	}
 
 	static function AddTable($table, $class = 'Core_Gem')
@@ -59,9 +77,20 @@ class Core_Gem {
 		return self::GemAddRow($im_table_prefix . $table_name, null, $args);
 	}
 
+	static function v_show_wrapper($operation, $id, $args)
+	{
+		$table_name = substr($operation, 11);
+		if (! $id) return "id is missing";
+		$instance = self::getInstance();
+		if (! $instance) return __CLASS__ . ":" . __FUNCTION__ . " no instance. Call constructor first";
+		return $instance->GemVirtualTable($table_name, $args);
+
+		// return self::GemElement("im_" . $table_name, $id, $args);
+	}
+
 	static function show_wrapper($operation, $id, $args)
 	{
-		$table_name = substr($operation, 9);
+		$table_name = substr($operation, 10);
 		if (! $id) return "id is missing";
 		return self::GemElement("im_" . $table_name, $id, $args);
 	}
@@ -140,7 +169,6 @@ class Core_Gem {
 		return $result;
 	}
 
-
 	/**
 	 * @param $rows_data
 	 * @param $args
@@ -197,7 +225,6 @@ class Core_Gem {
 		}
 
 		if (GetArg($args, "add_button", true))
-			// $result .= Core_Html::GuiHyperlink("Add", $post_file . "&operation=gem_add_" . $table_id) . " ";
 			$result .= Core_Html::GuiHyperlink("Add", GetUrl(1) . "?operation=gem_add_" . $table_id) . " ";
 
 		if ($post_file and $edit)
@@ -249,6 +276,26 @@ class Core_Gem {
 		$rows_data = Core_Data::TableData( $sql, $args);
 
 		return Core_Gem::GemArray($rows_data, $args, $table_name);
+	}
+
+	function GemVirtualTable($table_name, $args)
+	{
+		if (! $table_name) die("no table given:" . __FUNCTION__);
+
+		if (! isset($this->object_types[$table_name])) return __FUNCTION__ . ": coding error $table_name wasn't added";
+
+		// $args["table_prefix"] = (isset($this->object_types[$table_name]['prefix']) ? $this->object_types[$table_name]['prefix'] : get_table_prefix());
+		$query_part = GetArg( $this->object_types["$table_name"], 'query_part', null);
+		if (! $query_part) return "Query part for $table_name is missing";
+
+		$query_id = GetArg($args, "id", null);
+		if (! $query_id) return "id is missing";
+		$query = sprintf($query_part, $query_id);
+		$fields = GetArg($args, "fields", '*');
+
+		$args["sql"] = "select $fields $query";
+
+		return self::GemTable($table_name, $args);
 	}
 
 	/**

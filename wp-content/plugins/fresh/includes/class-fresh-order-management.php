@@ -31,15 +31,6 @@ class Fresh_Order_Management {
 	}
 
 	public function enqueue_scripts() {
-//		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'orders/orders.js', array( 'jquery' ), $this->version, false );
-//		wp_localize_script( $this->plugin_name, 'WPaAjax', array( 'ajaxurl' => admin_url( 'admin-ajax.php' ) ) );
-//		if (! file_exists($file) and get_user_id() == 1) print $file . " not exists <br/>";
-		$file = plugin_dir_url( __FILE__ ) . 'core/data/data.js';
-		wp_enqueue_script( 'data', $file, null, $this->version, false );
-
-		$file = plugin_dir_url( __FILE__ ) . 'core/gui/client_tools.js';
-		wp_enqueue_script( 'client_tools', $file, null, $this->version, false );
-
 	}
 
 	static function OrdersTable1($statuses = array('wc-processing'), $build_path = true, $user_id = 0, $week = null)
@@ -58,7 +49,7 @@ class Fresh_Order_Management {
 			$show_fields[ Fresh_OrderFields::good_costs ]  = false;
 		}
 
-		$all_tables = ""; // load_scripts(array("/wp-content/plugins/fresh/includes/orders/orders.js", "/wp-content/plugins/fresh/includes/core/gui/client_tools.js"));
+		$all_tables = "";
 		if ( ! is_array( $statuses ) ) {
 			$statuses = array( $statuses );
 		}

@@ -6,10 +6,22 @@
 //add_shortcode('bla', 'Fresh_Suppliers::status');
 
 class Fresh_Suppliers {
+	private $gem;
 
 	function init()
 	{
 		Core_Gem::AddTable( "suppliers" );
+		$args = array("query_part" => "from wp_posts p,
+                     wp_postmeta m
+                where post_type = 'product'
+                and post_status = 'publish'
+                and p.id = m.post_id
+                and m.meta_key = 'supplier_id'
+                and m.meta_value = %d");
+
+		$this->gem = new Core_Gem();
+
+		$this->gem->AddVirtualTable( "products", $args );
 	}
 
 	static function page()
@@ -37,8 +49,8 @@ class Fresh_Suppliers {
 		// $args["links"] = array("id"=> AddToUrl(array( "operation" => "show_supplier", "id" => "%s")));
 		$args["query"] = "is_active = 1";
 		$args["header_fields"] = array("supplier_name" => "Name", "supplier_description" => "Description");
-
-		$result .= Core_Gem::GemTable("im_suppliers", $args);
+		$args["actions"] = array(array("Show products", AddToUrl(array("operation" => "gem_v_show_products", "id" => "%s"))));
+		$result .= Core_Gem::GemTable("suppliers", $args);
 
 		// $result .= GuiTableContent("im_suppliers",null, $args);
 
@@ -59,11 +71,6 @@ class Fresh_Suppliers {
 	}
 
 	public function enqueue_scripts() {
-		$file = plugin_dir_url( __FILE__ ) . 'core/gui/client_tools.js';
-//		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'orders/orders.js', array( 'jquery' ), $this->version, false );
-////		wp_localize_script( $this->plugin_name, 'WPaAjax', array( 'ajaxurl' => admin_url( 'admin-ajax.php' ) ) );
-////		if (! file_exists($file) and get_user_id() == 1) print $file . " not exists <br/>";
-//		wp_enqueue_script( 'client_tools', $file, array( 'jquery' ), $this->version, false );
 
 	}
 

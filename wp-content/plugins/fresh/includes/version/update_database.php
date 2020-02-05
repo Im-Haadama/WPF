@@ -6,9 +6,6 @@
  * Time: 11:36
  */
 
-
-
-
 if ( ! defined( "ABSPATH" ) ) {
 	define( 'ABSPATH', dirname(dirname(dirname(dirname(dirname( dirname( __FILE__ ) ) )))) . '/');
 }
@@ -126,6 +123,33 @@ function version293()
 {
 	if (! add_version("29"))
 		die ("can't install 2.9");
+
+//	sql_query("drop table im_suppliers");
+	sql_query("create table im_suppliers
+(
+	id bigint auto_increment
+		primary key,
+	supplier_name varchar(20) not null,
+	supplier_contact_name varchar(20) not null,
+	supplier_contact_phone varchar(20) not null,
+	factor float default 3 null,
+	site_id int null,
+	email varchar(50) null,
+	supplier_priority int(2) default 5 null,
+	machine_update bit default b'0' null,
+	category int null,
+	eng_name varchar(40) null,
+	print tinyint(1) default 0 null,
+	is_active bit default b'1' null,
+	address varchar(100) null,
+	self_collect bit default b'0' null,
+	source_path varchar(500) null,
+	auto_order_day int(1) null,
+	min_order int null,
+	invoice_email varchar(50) null,
+	supplier_description varchar(200) null
+) charset=utf8;");
+
 
 	print Core_Html::gui_header(1, "city database");
 	sql_query( "create table im_cities (
@@ -1340,3 +1364,6 @@ END");
 
 	return "bank owner, supplier_description and herbal medical";
 }
+
+
+
