@@ -39,18 +39,20 @@ class Focus_Manager {
 
 	function create_tasks( $freqs = null, $verbose = false, $default_owner = 1 )
 	{
+		$table_prefix = get_table_prefix();
+
 		$last_run = get_wp_option("focus_create_tasks_last_run");
 		$run_period = get_wp_option("focus_create_tasks_run_period", 5*60); // every 5 min
 		if ($last_run and ((time() - $last_run) < $run_period)) return true;
 
 		update_wp_option("Focus_create_tasks_last_run", time()); // Immediate update so won't be activated in parallel
 
-		if ( ! table_exists( "im_task_templates" ) ) {
+		if ( ! table_exists( "${table_prefix}task_templates" ) ) {
 			self::$logger->fatal("no table");
 			return false;
 		}
 		$output = Core_Html::gui_header(1, "Creating tasks freqs");
-		if ( ! $freqs ) $freqs = sql_query_array_scalar( "select DISTINCT repeat_freq from im_task_templates" );
+		if ( ! $freqs ) $freqs = sql_query_array_scalar( "select DISTINCT repeat_freq from ${table_prefix}task_templates" );
 
 		// TODO: create_tasks_per_mission();
 		$verbose_table = array( array( "template_id", "freq", "query", "active", "result", "priority", "new task" ));
@@ -58,11 +60,12 @@ class Focus_Manager {
 			$output .= "Handling " . Core_Html::GuiHyperlink($freq, AddToUrl(array( "operation" => "show_templates", "search" =>1, "repeat_freq" => $freq))) . Core_Html::Br();
 
 			$sql = "SELECT id, task_description, task_url, project_id, repeat_freq, repeat_freq_numbers, condition_query, priority, creator, team " .
-			       " FROM im_task_templates " .
+			       " FROM ${table_prefix}task_templates " .
 			       " where repeat_freq = '" . $freq . "' and ((last_check is null) or (last_check < " . QuoteText(date('Y-m-j')) . ") or repeat_freq like 'c%')";
 
 			$result = sql_query( $sql );
 
+			$verbose_line = "";
 			while ( $row = mysqli_fetch_assoc( $result ) ) {
 				Focus_Tasklist::create_if_needed($row["id"], $row, $output, $default_owner, $verbose_line);
 				array_push( $verbose_table, $verbose_line);

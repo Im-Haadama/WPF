@@ -39,7 +39,7 @@ function update_sum() {
         if (change)
             change.innerHTML = cash_delta;
 
-        if ((total_pay > 0) && Math.abs(cash_delta) <= 400) {
+        if ((total_pay > 0) && Math.abs(cash_delta) <= 1400) {
             disable_btn('btn_invoice');
             enable_btn('btn_receipt');
         } else {

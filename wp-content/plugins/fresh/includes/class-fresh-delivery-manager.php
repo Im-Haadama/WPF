@@ -134,7 +134,6 @@ class Fresh_Delivery_Manager
 					$args["title"]       = $shipping->title;
 					update_wp_woocommerce_shipping_zone_methods( $args );
 				}
-
 			}
 		}
 		return $result;
@@ -163,7 +162,7 @@ class Fresh_Delivery_Manager
 				$result .= "<td>" . Core_Html::GuiHyperlink($shipping->title, "/wp-admin/admin.php?page=wc-settings&tab=shipping&instance_id={$instance_id}") . "</td>";
 				preg_match_all('/\d{2}\/\d{2}\/\d{4}/', $shipping->title,$matches);
 				$date = str_replace('/', '-', $matches[0][0]);
-				print $matches[0][0] . " " . strtotime($date) . "<br/>";
+//				print $matches[0][0] . " " . strtotime($date) . "<br/>";
 
 				$result .= "<td>" . self::get_shipping_cost($instance_id) . "</td>";
 			}

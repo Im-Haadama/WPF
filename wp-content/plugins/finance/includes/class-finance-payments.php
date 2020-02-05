@@ -88,7 +88,7 @@ class Finance_Payments {
 	static function payments() {
 		$args["edit"] = 1;
 		$args["post_file"] = self::instance()->post_file;
-		$result = Core_Gem::GemTable("im_payments", $args);
+		$result = Core_Gem::GemTable("payments", $args);
 
 		return $result;
 	}

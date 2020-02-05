@@ -1,7 +1,5 @@
 <?php
 
-
-
 if ( ! defined( "ABSPATH" ) ) {
 	define( 'ABSPATH', dirname(dirname(dirname( dirname( __FILE__ ) ) )) . '/');
 }

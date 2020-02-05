@@ -9,7 +9,7 @@ class Fresh_Suppliers {
 
 	function init()
 	{
-		Core_Gem::AddTable( "im_suppliers" );
+		Core_Gem::AddTable( "suppliers" );
 	}
 
 	static function page()

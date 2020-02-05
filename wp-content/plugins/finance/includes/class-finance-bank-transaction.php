@@ -14,7 +14,9 @@ class Finance_Bank_Transaction {
 	private $date;
 
 	static function createFromDB( $id ) {
-		$sql    = "SELECT in_amount, date, out_amount FROM im_bank WHERE id = " . $id;
+		$table_prefix = get_table_prefix();
+
+		$sql    = "SELECT in_amount, date, out_amount FROM ${table_prefix}bank WHERE id = " . $id;
 		$result = sql_query( $sql );
 		if ( ! $result ) {
 			throw new Exception( "Transaction not found" );
@@ -53,12 +55,13 @@ class Finance_Bank_Transaction {
 	 * @return mixed
 	 */
 	public function getOutAmount( $attached = false ) {
+		$table_prefix = get_table_prefix();
 //		debug_var($this->out_amount);
 		if ( ! $attached ) {
 			return $this->out_amount;
 		}
 
-		$attached_amount = sql_query_single_scalar( "SELECT sum(amount) FROM im_bank_lines " .
+		$attached_amount = sql_query_single_scalar( "SELECT sum(amount) FROM ${table_prefix}bank_lines " .
 		                                            " WHERE line_id = " . $this->id );
 
 //		debug_var($attached_amount);
@@ -67,7 +70,9 @@ class Finance_Bank_Transaction {
 	}
 
 	public function getAttached() {
-		return sql_query_array( "SELECT * FROM im_bank_lines WHERE line_id = " . $this->id );
+		$table_prefix = get_table_prefix();
+
+		return sql_query_array( "SELECT * FROM ${table_prefix}bank_lines WHERE line_id = " . $this->id );
 	}
 
 
@@ -78,9 +83,12 @@ class Finance_Bank_Transaction {
 		return $this->date;
 	}
 
-	public function Update( $customer_id, $receipt, $site_id ) {
+	public function Update( $customer_id, $receipt, $site_id )
+	{
+		$table_prefix = get_table_prefix();
+
 		if ( is_numeric( $receipt ) ) {
-			$sql = "UPDATE im_bank SET customer_id = " . $customer_id .
+			$sql = "UPDATE ${table_prefix}bank SET customer_id = " . $customer_id .
 			       ", receipt = " . $receipt .
 			       ", site_id = " . $site_id .
 			       " WHERE id = " . $this->id;

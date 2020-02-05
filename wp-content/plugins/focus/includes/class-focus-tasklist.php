@@ -24,12 +24,15 @@ class Focus_Tasklist {
 	private $team;
 	private $timezone;
 	private $logger;
+	private $table_prefix;
 
 	public function __construct( $_id) {
 		$this->id = $_id;
+		$this->table_prefix = get_table_prefix();
+
 		$row      = sql_query_single( "SELECT location_name, location_address, task_description, mission_id," .
 		                              " task_template, priority, project_id, team " .
-		                              " FROM im_tasklist " .
+		                              " FROM {$this->table_prefix}tasklist " .
 		                              " WHERE id = " . $this->id );
 
 		$this->location_name    = $row[0];
@@ -192,12 +195,14 @@ class Focus_Tasklist {
 
 		if (! $task_template) return null;
 
-		return sql_query_single_scalar("select condition_query from im_task_templates where id = " . $task_template);
+		return sql_query_single_scalar("select condition_query from {$this->table_prefix}task_templates where id = " . $task_template);
 	}
 
 	function get_task_link( $template_id ) {
+		$table_prefix = get_table_prefix();
+
 		if ( $template_id > 0 ) {
-			return sql_query_single_scalar( "SELECT task_url FROM im_task_templates WHERE id = " . $template_id );
+			return sql_query_single_scalar( "SELECT task_url FROM {$this->table_prefix}task_templates WHERE id = " . $template_id );
 		}
 
 		return "";
@@ -205,7 +210,7 @@ class Focus_Tasklist {
 
 	function task_url()
 	{
-		$sql = "SELECT task_url FROM im_task_templates WHERE id = " . self::task_template();
+		$sql = "SELECT task_url FROM {$this->table_prefix}task_templates WHERE id = " . self::task_template();
 		return sql_query_single_scalar( $sql );
 	}
 
@@ -270,18 +275,18 @@ class Focus_Tasklist {
 				continue;
 			}
 
-			$template_ids = sql_query_array_scalar( "SELECT id FROM im_task_templates WHERE path_code = " . QuoteText( $path_code ) );
+			$template_ids = sql_query_array_scalar( "SELECT id FROM {$this->table_prefix}task_templates WHERE path_code = " . QuoteText( $path_code ) );
 
 			foreach ( $template_ids as $template_id ) {
 				$sql    = "SELECT task_description, task_url, project_id, repeat_freq, repeat_freq_numbers, condition_query, priority " . "
-		   		 FROM im_task_templates " .
+		   		 FROM {$this->table_prefix}task_templates " .
 				          " where id = " . $template_id;
 				$result = sql_query( $sql );
 
 				$row = mysqli_fetch_assoc( $result );
 				$project_id = $row["project_id"];
 
-				$priority = sql_query_single_scalar( "SELECT priority FROM im_task_templates WHERE id = " . $template_id );
+				$priority = sql_query_single_scalar( "SELECT priority FROM {$this->table_prefix}task_templates WHERE id = " . $template_id );
 
 				if ( ! $priority and ( $project_id > 0 ) ) {
 					$priority = sql_query_single_scalar( "SELECT project_priority FROM im_projects WHERE id = " . $project_id );
@@ -308,6 +313,7 @@ class Focus_Tasklist {
 
 	static function create_if_needed($id, $row, &$output, $default_owner, &$verbose_line)
 	{
+		$table_prefix = get_table_prefix();
 		$verbose_line = array();
 		$last_run = sql_query_single_scalar("select max(date) from im_tasklist where task_template = " . $id);
 		$project_id = $row["project_id"];
@@ -325,7 +331,7 @@ class Focus_Tasklist {
 
 		$output .= "template " . $id . " result: $test_result" . Core_Html::Br();
 
-		sql_query("update im_task_templates set last_check = now() where id = " . $id);
+		sql_query("update {$table_prefix}task_templates set last_check = now() where id = " . $id);
 
 		array_push( $verbose_line, $test_result );
 		if ( strpos(  $test_result, "0" ) !== false) {
@@ -335,13 +341,13 @@ class Focus_Tasklist {
 			return;
 		}
 
-		$team = sql_query_single_scalar("SELECT team FROM im_task_templates WHERE id = " . $id );
+		$team = sql_query_single_scalar("SELECT team FROM {$table_prefix}task_templates WHERE id = " . $id );
 
-		$creator = sql_query_single_scalar("SELECT creator FROM im_task_templates WHERE id = " . $id );
+		$creator = sql_query_single_scalar("SELECT creator FROM {$table_prefix}task_templates WHERE id = " . $id );
 		if (! $creator)
 			$creator = $default_owner;
 
-		$priority = sql_query_single_scalar( "SELECT priority FROM im_task_templates WHERE id = " . $id );
+		$priority = sql_query_single_scalar( "SELECT priority FROM {$table_prefix}task_templates WHERE id = " . $id );
 		if ( ! $priority ) $priority = sql_query_single_scalar( "SELECT project_priority FROM im_projects WHERE id = " . $project_id );
 		if ( ! $priority ) $priority = 0;
 		array_push( $verbose_line, $priority);
@@ -459,7 +465,7 @@ class Focus_Tasklist {
 	function working_time() {
 		$template = self::task_template();
 		if (! $template) return true; // For now just templates has working time.
-		$working_hours = sql_query_single_scalar("select working_hours from im_task_templates where id = $template");
+		$working_hours = sql_query_single_scalar("select working_hours from {$this->table_prefix}task_templates where id = $template");
 		if (! $working_hours) return true;
 
 		// For now allow just start-end format;

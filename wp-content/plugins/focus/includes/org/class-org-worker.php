@@ -84,8 +84,10 @@ class Org_Worker extends Core_users
 
 	function AllProjects($query = "is_active = 1", $field_list = "id")
 	{
+		$table_prefix = get_table_prefix();
+
 		// Managed projects
-		$sql =  "select " . CommaImplode($field_list) . " from im_projects " .
+		$sql =  "select " . CommaImplode($field_list) . " from ${table_prefix}projects " .
 		        " where manager = " . $this->id . ($query ? " and $query " : "");
 
 		// or direct member.
@@ -129,9 +131,11 @@ class Org_Worker extends Core_users
 
 	function AddWorkingProject($user_id, $company_id, $project_id)
 	{
+		$table_prefix = get_table_prefix();
+
 		$current = $this->GetCompanies();
 		if (in_array($user_id, $current)) return true; // already in.
-		return sql_query("insert into im_working (company_id, is_active, user_id, project_id, rate) values ($company_id, 1, $user_id, $project_id, 0)");
+		return sql_query("insert into ${table_prefix}working (company_id, is_active, user_id, project_id, rate) values ($company_id, 1, $user_id, $project_id, 0)");
 	}
 
 	/**

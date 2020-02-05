@@ -771,12 +771,14 @@ class Core_Data
 	 */
 	static function data_search($table_name, $args = null)
 	{
+		$table_prefix = get_table_prefix();
+
 		$result = null;
 		$ignore_list = GetArg($args, "ignore_list", array("search", "operation", "table_name", "id", "dummy"));
 		$values = Core_Data::data_parse_get($table_name, $ignore_list);
 
 		$id_field = GetArg($args, "id_field", "id");
-		$sql = "select $id_field from $table_name where 1 ";
+		$sql = "select $id_field from ${table_prefix}$table_name where 1 ";
 		$count = 0;
 
 		$params = array();

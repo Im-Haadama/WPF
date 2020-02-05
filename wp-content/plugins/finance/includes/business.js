@@ -76,7 +76,8 @@ function client_selected() {
     xmlhttp.send();
 }
 
-function supplier_selected() {
+function supplier_selected()
+{
     var item_id = selected_supplier_index();
 
     if (item_id !== 0 && !(item_id > 0)) {
@@ -86,19 +87,18 @@ function supplier_selected() {
     var site_id = selected_supplier_site_id();
     var supplier_id = selected_supplier_id();
 
-    xmlhttp = new XMLHttpRequest();
-    xmlhttp.onreadystatechange = function () {
-        // Wait to get query result
-        if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
-        {
-            document.getElementById("transactions").innerHTML = xmlhttp.response;
-        }
-    }
     var request = finance_post_file + "?operation=get_open_invoices&supplier_id=" + supplier_id +
         "&site_id=" + site_id;
-    // alert (request);
-    xmlhttp.open("GET", request, true);
-    xmlhttp.send();
+
+    execute_url(request, update_transactions);
+}
+
+function update_transactions(xmlhttp, btn)
+{
+    if (xmlhttp.response.substr(0, 4) == "done")
+        document.getElementById("transactions").innerHTML = xmlhttp.response.substr(5);
+    else
+        alert(xmlhttp.response);
 }
 
 function create_receipt_from_bank() {
@@ -151,7 +151,7 @@ function link_invoice_bank() {
         alert("שגיאה בסכום");
         return;
     }
-    var request = finance_post_file + "?operation=link_invoice_bank" +
+    var request = finance_post_file + "?operation=bank_link_invoice" +
         "&ids=" + invoice_ids.join() +
         "&site_id=" + site_id +
         "&supplier_id=" + supplier_id +

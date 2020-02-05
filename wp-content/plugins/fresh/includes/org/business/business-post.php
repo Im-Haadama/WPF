@@ -34,6 +34,8 @@ function get_env( $var, $default ) {
 		return $default;
 	}
 }
+$table_prefix = get_table_prefix();
+
 
 $operation = GetParam("operation", false, null);
 if ( $operation) {
@@ -180,7 +182,7 @@ if ( $operation) {
 				$amount = doubleval(strip_tags($multi_site->Run($command , $site_id)));
 				$line_amount = min ($amount, $bank);
 
-				$sql    = "INSERT INTO im_bank_lines (line_id, amount, site_id, part_id, invoice)\n" .
+				$sql    = "INSERT INTO ${table_prefix}bank_lines (line_id, amount, site_id, part_id, invoice)\n" .
 				          "VALUES (" . $bank_id . ", " . $line_amount . ", " . $site_id . ", " . $supplier_id . ", " .
 				          $id . ")";
 
@@ -197,7 +199,7 @@ if ( $operation) {
 			print $multi_site->Run( $command, $site_id );
 
 			print "מעדכן שורות<br/>";
-			$sql = "update im_bank " .
+			$sql = "update ${table_prefix}bank " .
 			       " set receipt = \"" . CommaImplode($ids) . "\", " .
 			       " site_id = " . $site_id .
 			       " where id = " . $bank_id;
@@ -225,7 +227,7 @@ if ( $operation) {
 			print $multi_site->Run( $command, $site_id );
 
 			print "מעדכן שורות<br/>";
-			$sql = "update im_bank " .
+			$sql = "update ${table_prefix}bank " .
 			       " set receipt = \"refund\", " .
 			       " site_id = " . $site_id .
 			       " where id = " . $bank_id;
@@ -333,14 +335,6 @@ if ( $operation) {
 			print $multi_site->Run( $link, $site_id );
 			break;
 
-		case "get_open_invoices":
-			$debug = GetParam("debug");
-			$supplier_id = GetParam( "supplier_id", true );
-			$site_id     = GetParam( "site_id", true );
-			// $func, $site_id, $first = false, $debug = false ) {
-			print $multi_site->Run( "/org/business/business-post.php?operation=get_open_site_invoices&supplier_id=" . $supplier_id,
-				$site_id, true, $debug);
-			break;
 
 		case "get_open_site_invoices":
 			$debug = GetParam("debug");
@@ -364,36 +358,6 @@ if ( $operation) {
 
 	}
 }
-
-
-function gui_select_open_supplier( $id = "supplier" ) {
-	global $multi_site;
-
-	$values  = html2array( $multi_site->GetAll( "org/business/business-post.php?operation=get_supplier_open_account" ) );
-
-	if (! $values) {
-		 return "nothing found";
-	}
-	// var_dump($values);
-	$open    = array();
-	$list_id = 0;
-	foreach ( $values as $value ) {
-		$new                = array();
-		$new["id"]          = $list_id ++;
-		$new["site_id"]     = $value[0];
-		$new["supplier_id"] = $value[1];
-		$new["name"]        = $value[2];
-		$new["balance"]     = $value[3];
-		array_push( $open, $new );
-	}
-
-	$datalist_id = "open_supplier";
-	$result = GuiDatalist($datalist_id, $open, "id", "name");
-	$result .= GuiInputDatalist("supplier", $datalist_id, 'onchange="supplier_selected()"');
-	return $result;
-	// return gui_select_datalist( $id, "im_suppliers", "open_supplier", "name", $open, 'onchange="supplier_selected()"', null, true );
-}
-
 
 function create_makolet( $month_year ) {
 	print "מפיק חשבונית לחודש " . $month_year . "<br/>";

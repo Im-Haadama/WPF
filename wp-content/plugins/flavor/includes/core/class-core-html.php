@@ -767,7 +767,7 @@ class Core_Html {
 					$first_row = false;
 
 					//				print "id= " . $id ."<br/>";
-					$data .= gui_row( $row, $row_id, $show_fields, $acc_fields, $col_ids, null );
+					$data .= Core_Html::gui_row( $row, $row_id, $show_fields, $acc_fields, $col_ids, null );
 				}
 			}
 		} else {

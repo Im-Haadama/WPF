@@ -229,6 +229,16 @@ class Finance {
 				$invoice = GetParam("invoice", true);
 				$b = Finance_Bank_Transaction::createFromDB( $bank_id );
 				return $b->Update( 0, $invoice, 0 );
+
+			case "get_open_invoices":
+				$debug = GetParam("debug");
+				$supplier_id = GetParam( "supplier_id", true );
+				$site_id     = GetParam( "site_id", true );
+				// $func, $site_id, $first = false, $debug = false ) {
+				return $multi_site->Run( "/org/business/business-post.php?operation=get_open_site_invoices&supplier_id=" . $supplier_id,
+					$site_id, true, $debug);
+				break;
+
 		}
 		return false;
 	}
@@ -579,7 +589,7 @@ class Finance {
 		//                     Top nav                  Sub nav             target,                              capability
 		$module_list = array( "Finance" => array(array("Bank transactions", "/finance_bank",                     "show_bank"),
 								                 array("Bank Receipts",     "/finance_bank?operation=receipts",  "show_bank"),
-												 array("Bank payments]",    "/finance_bank?operation=payments",  "show_bank"),
+												 array("Bank payments",    "/finance_bank?operation=payments",  "show_bank"),
 												 array("Transactions types", "/finance_bank?operation=bank_transaction_types", "cfo")));
 
 		$result .= Flavor::ClassSettingPage($module_list);

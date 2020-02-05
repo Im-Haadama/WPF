@@ -7,6 +7,7 @@ class Focus_Tasks {
 	private $version;
 	protected static $_instance = null;
 	protected $nav_menu_name;
+	private $table_prefix;
 
 	/**
 	 * Focus_Tasks constructor.
@@ -19,6 +20,7 @@ class Focus_Tasks {
 		$this->post_file     = $post_file;
 		$this->version       = "1.0";
 		$this->nav_menu_name = null;
+		$this->table_prefix = get_table_prefix();
 	}
 
 	public static function instance( $post = null ) {
@@ -160,7 +162,7 @@ class Focus_Tasks {
 
 		if ( $table_name )
 			switch ( $table_name ) {
-				case "im_task_templates":
+				case "task_templates":
 					$args["selectors"]     = array(
 						"project_id"  => "Focus_Tasks::gui_select_project",
 						"owner"       => "Focus_Tasks::gui_select_worker",
@@ -637,17 +639,17 @@ class Focus_Tasks {
 		return $result;
 	}
 
-	static function handle_focus_do( $operation ) {
+	function handle_focus_do( $operation ) {
 		if ( strpos( $operation, "data_" ) === 0 ) {
 			return handle_data_operation( $operation );
 		}
 
 		$allowed_tables         = array(
-			"im_company",
-			"im_tasklist",
-			"im_task_templates",
-			"im_projects",
-			"im_working"
+			"company",
+			"tasklist",
+			"task_templates",
+			"projects",
+			"working"
 		);
 		$header_args            = [];
 		$header_args["scripts"] = array(
@@ -680,9 +682,9 @@ class Focus_Tasks {
 
 				return;
 
-			case "cancel_im_task_templates":
+			case "cancel_task_templates":
 				$id = GetParam( "id", true );
-				if ( data_delete( "im_task_templates", $id ) ) {
+				if ( data_delete( "${table_prefix}task_templates", $id ) ) {
 					print "done";
 				}
 
@@ -714,9 +716,9 @@ class Focus_Tasks {
 					die ( "invalid table operation" );
 				}
 				if ( Core_Data::update_data( $table_name ) ) {
-					if ( $table_name == 'im_task_templates' ) {
+					if ( $table_name == "{$this->table_prefix}task_templates" ) {
 						$row_id = intval( GetParam( "id", true ) );
-						if ( sql_query( "update im_task_templates set last_check = null where id = " . $row_id ) ) {
+						if ( sql_query( "update {$this->table_prefix}task_templates set last_check = null where id = " . $row_id ) ) {
 							return "done";
 						}
 					}
@@ -1036,7 +1038,8 @@ class Focus_Tasks {
 	}
 
 	static function my_projects( $args, $user_id ) {
-		$user_id = 383;
+		$table_prefix = get_table_prefix();
+
 		$args = self::Args("im_projects");
 		$worker = new Org_Worker( $user_id );
 		$result = "";
@@ -1050,7 +1053,7 @@ class Focus_Tasks {
 
 		$args["query"] = " id in (" . CommaImplode($projects) . ")";
 
-		$result .= Core_Gem::GemTable("im_projects", $args);
+		$result .= Core_Gem::GemTable("projects", $args);
 
 		return $result;
 	}
@@ -1333,9 +1336,9 @@ class Focus_Tasks {
 			"repeat_freq",
 			"project"
 		);
-		$result                   .= Core_Html::NewRow( "im_task_templates", $args );
+		$result                   .= Core_Html::NewRow( "task_templates", $args );
 		$result                   .= Core_Html::GuiButton( "btn_template", "add",
-			array( "action" => "data_save_new('" . self::getPost() . "', 'im_task_templates')" ) );
+			array( "action" => "data_save_new('" . self::getPost() . "', 'task_templates')" ) );
 
 		// Core_Gem::GemAddRow( "im_tasklist", __( "Add" ), $args )
 		$args["style"] = "display:none";
@@ -1579,7 +1582,7 @@ class Focus_Tasks {
 //		);
 
 		$worker                = new Org_Worker( get_user_id() );
-		$template_args = self::Args("im_task_templates");
+		$template_args = self::Args("task_templates");
 		$template_args["worker"]        = $worker->getId();
 		$template_args["companies"]     = $worker->GetCompanies();
 
@@ -1588,7 +1591,7 @@ class Focus_Tasks {
 			$template_args["title"]     = "Repeating task";
 			$template_args["post_file"] = $action_url;
 
-			$template = Core_Gem::GemElement( "im_task_templates", $template_id, $template_args );
+			$template = Core_Gem::GemElement( "task_templates", $template_id, $template_args );
 			if ( ! $template ) {
 				$result .= "Not found";
 
@@ -1632,7 +1635,7 @@ class Focus_Tasks {
 
 		$query = ( isset( $template_args["query"] ) ? $template_args["query"] : " 1" );
 		if ( GetParam( "search", false, false ) ) {
-			$ids = Core_Data::data_search( "im_task_templates", $template_args );
+			$ids = Core_Data::data_search( "task_templates", $template_args );
 			if ( ! $ids ) {
 				$result .= "No templates found" . Core_Html::Br();
 
@@ -1658,7 +1661,7 @@ class Focus_Tasks {
 
 //		$result = Core_Html::GuiHyperlink( "Add repeating task", GetUrl( true ) . "?operation=new_template" );
 
-		$result .= Core_Gem::GemTable( "im_task_templates", $template_args );
+		$result .= Core_Gem::GemTable( "task_templates", $template_args );
 
 		// $result .= GuiTableContent( "projects", $sql, $args );
 
@@ -1870,7 +1873,7 @@ class Focus_Tasks {
 	 * @return string
 	 */
 	function template_creator( $template_id ) {
-		return sql_query_single_scalar( "select creator from im_task_templates where id = " . $template_id );
+		return sql_query_single_scalar( "select creator from {$this->table_prefix}task_templates where id = " . $template_id );
 	}
 
 	/**
@@ -2059,13 +2062,13 @@ class Focus_Tasks {
 	}
 
 	function init() {
-		Core_Gem::AddTable( "im_task_templates" );
+		Core_Gem::AddTable( "task_templates" );
 		AddAction("gem_add_team_members", array(__CLASS__, 'show_edit_team'), 10, 3);
 		AddAction("show_edit_team", array(__CLASS__, 'show_edit_team'), 10, 3);
 
 		// Project related actions.
-		Core_Gem::AddTable( "im_projects" ); // add + edit
-		AddAction("gem_edit_im_projects", array(__CLASS__, 'ShowProjectMembers'), 11, 3);
+		Core_Gem::AddTable( "projects" ); // add + edit
+		AddAction("gem_edit_projects", array(__CLASS__, 'ShowProjectMembers'), 11, 3);
 		AddAction("gem_add_project_members", array(__CLASS__, 'AddProjectMember'), 11, 3);
 		AddAction("project_add_member", array(__CLASS__, 'ProjectAddMember'), 11, 3);
 

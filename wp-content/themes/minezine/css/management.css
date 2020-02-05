@@ -56,7 +56,3 @@
     display: table;
     clear: both;
 }
-
-/* Tables */
-tr:nth-child(even) {background: #ffffff}
-tr:nth-child(odd) {background: #f1f0ec}

@@ -225,14 +225,15 @@ class Core_Gem {
 			print sql_trace();
 			die(1);
 		}
+		$table_prefix = get_table_prefix();
 
 		$args["events"] = 'onchange="update_table_field(\'' . $post_file . '\', \'' . $table_name . '\', \'%d\', \'%s\', check_update)"';
 		$sql = GetArg($args, "sql", null);
 
 		if (! $sql){
 			$fields = GetArg($args, "fields", null);
-			if ($fields) $sql = "select " . CommaImplode($fields) . " from $table_name ";
-			else $sql = "select * from $table_name";
+			if ($fields) $sql = "select " . CommaImplode($fields) . " from ${table_prefix}$table_name ";
+			else $sql = "select * from ${table_prefix}$table_name";
 
 			$query = GetArg($args, "query", null);
 			if ($query) $sql .= " where $query";
