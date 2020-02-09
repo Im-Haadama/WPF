@@ -72,9 +72,7 @@ class Core_Gem {
 			print __FUNCTION__ . ": coding error. invalid table in '$operation'.<br/>";
 			return false;
 		}
-		$im_table_prefix = get_table_prefix();
-
-		return self::GemAddRow($im_table_prefix . $table_name, null, $args);
+		return self::GemAddRow(get_table_prefix() . $table_name, null, $args);
 	}
 
 	static function v_show_wrapper($operation, $id, $args)
@@ -84,15 +82,13 @@ class Core_Gem {
 		$instance = self::getInstance();
 		if (! $instance) return __CLASS__ . ":" . __FUNCTION__ . " no instance. Call constructor first";
 		return $instance->GemVirtualTable($table_name, $args);
-
-		// return self::GemElement("im_" . $table_name, $id, $args);
 	}
 
 	static function show_wrapper($operation, $id, $args)
 	{
 		$table_name = substr($operation, 10);
 		if (! $id) return "id is missing";
-		return self::GemElement("im_" . $table_name, $id, $args);
+		return self::GemElement($table_name, $id, $args);
 	}
 
 	static function GemAddRow($table_name, $text = null, $args = null){

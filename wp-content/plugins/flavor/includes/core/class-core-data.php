@@ -396,7 +396,7 @@ class Core_Data
 					} else $selected = $value;
 
 //					print $links[$key] . "<br/>";
-					$value = Core_Html::GuiHyperlink($selected, sprintf( $links[ $key ], $data ), $args ); // TODO: if links contains encoded url - it will warn about missing parameter and create bad link. %d...
+					$value = Core_Html::GuiHyperlink($selected, sprintf( urldecode($links[ $key ]), $data ), $args );
 					break;
 				}
 				if ( $selectors and array_key_exists( $key, $selectors ) ) {

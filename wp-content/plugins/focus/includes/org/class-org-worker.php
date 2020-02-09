@@ -238,4 +238,38 @@ class Org_Worker extends Core_users
 //		return $result;
 //	}
 
+	function myWorkQuery($status) // 1 - ready, 0 - not ready, 2 - both, 3- not finished
+	{
+		$teams         = self::AllTeams();
+//		if ($status 3) $query .= " and (status < 2) ";
+		switch ($status) {
+			case 0: // Not active.
+				$query = " (owner = " . $this->id . ( $teams ? " or team in (" . CommaImplode( $teams ) . ")" : "" ) . ")";
+				$query .= " and !(" . Focus_Tasks::ActiveQuery() . ") and status < 2";
+				break;
+			case 1: // Active
+				$query = " (owner = " . $this->id . ( $teams ? " or team in (" . CommaImplode( $teams ) . ")" : "" ) . ")";
+				$query .= " and " . Focus_Tasks::ActiveQuery() . " and status < 2";
+				break;
+			case 2: // Done;
+				$query = " (owner = " . $this->id . ")";
+				$query .= " and status = 2";
+				break;
+		}
+		return $query;
+	}
+
+	function tasksCount($status)
+	{
+		$prefix = get_table_prefix();
+		return sql_query_single_scalar("select count(*) from ${prefix}tasklist where " . self::myWorkQuery($status));
+	//	return Core_Html::GuiHyperlink($count, Focus_Tasks::get_link("tasks"));
+	}
+
+	function doneTask($period = "7 day")
+	{
+		$prefix = get_table_prefix();
+		return sql_query_single_scalar("select count(*) from ${prefix}tasklist where owner = " . $this->id . " and " .
+		                 " ended >= curdate() - INTERVAL $period ");
+	}
 }

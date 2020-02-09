@@ -151,6 +151,7 @@ function sql_bind($table_name, &$stmt, $_values)
 			case 'bit':
 			case "int":
 			case "big":
+			case "med":
 				$types .= "i";
 				$value = ((strlen($value) > 0) ? $value : null);
 				break;

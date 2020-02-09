@@ -137,8 +137,11 @@ class Focus_Tasklist {
 	}
 
 
-	public function Ended() {
-		$sql = "UPDATE im_tasklist SET ended = now(), status = " . enumTasklist::done .
+	public function Ended($user_id) {
+		$sql = "UPDATE im_tasklist 
+				SET ended = now(),
+				    owner = $user_id,
+				    status = " . enumTasklist::done .
 		       " WHERE id = " . $this->id;
 
 		// print $sql;

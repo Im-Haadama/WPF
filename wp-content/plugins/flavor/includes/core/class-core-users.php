@@ -36,5 +36,6 @@ class Core_Users {
 	{
 		return self::getUser()->display_name;
 	}
+
 }
 

@@ -441,6 +441,7 @@ class Focus_Salary {
 			"company_id" => "Focus_Tasks::gui_select_company",
 			"post_file" => $this->post_file
 		);
+		$args["check_active"] = true;
 		$args["hide_cols"] = array("volunteer", "company_id");
 		$args["header_fields"] = array("user_id" => "User id", "project_id" => "Main project", "rate" => "Hour rate",
 		                        "report" => "Include in report", "day_rate" => "Day rate", "is_active" => "Active?");
