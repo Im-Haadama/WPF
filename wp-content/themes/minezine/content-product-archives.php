@@ -18,7 +18,7 @@
     }
     ?>
     <?php if ( has_post_thumbnail() ) { 
-    the_post_thumbnail(); 
+      echo get_the_post_thumbnail( $product_id, 'thumbnail', array( 'class' => '' ) );
     } ?>
     <h2 class="woocommerce-loop-product__title"><?php the_title(); ?></h2> 
     <span class="price">
