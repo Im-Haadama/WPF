@@ -69,7 +69,7 @@ class Core_Shortcodes {
 					add_shortcode( apply_filters( "{$shortcode}_shortcode_tag", $shortcode ), $function. "_wrapper" );
 					continue;
 				}
-				if ($debug == 2) print " no wrapper";
+				if ($debug == 2) print " no wrapper ";
 
 				if (is_callable($function)) {
 					if ($debug == 2)	print "adding function $function<br/>";
