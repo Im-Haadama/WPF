@@ -15,6 +15,7 @@ class Finance {
 	protected $shortcodes;
 	protected $payments;
 	protected $bank;
+	protected $invoices;
 
 	/**
 	 * Plugin version.
@@ -378,9 +379,11 @@ class Finance {
 
 		$this->bank = Finance_Bank::instance();
 		$this->payments = Finance_Payments::instance();
+		$this->invoices = Finance_Invoices::instance();
 		$this->shortcodes = Core_Shortcodes::instance();
 		$this->shortcodes->add($this->payments->getShortcodes());
 		$this->shortcodes->add($this->bank->getShortcodes());
+		$this->shortcodes->add($this->invoices->getShortcodes());
 
 		$this->shortcodes->do_init();
 

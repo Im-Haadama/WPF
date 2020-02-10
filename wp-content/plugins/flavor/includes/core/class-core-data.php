@@ -129,7 +129,7 @@ class Core_Data
 				$is_meta = $changed_pair[1];
 				if (sql_type($table_name, $changed_field) == 'date' and strstr($changed_value, "0001")) {
 					$sql = "update $table_name set $changed_field = null where id = " . $row_id;
-					// print $sql;
+
 					if ($row_id) sql_query($sql);
 					continue;
 				}
@@ -142,7 +142,7 @@ class Core_Data
 				else
 					$sql = "update $table_name set $changed_field =? where id =?";
 
-//				 print $sql;
+//				if (get_user_id() == 1) print $sql;
 				$stmt = sql_prepare($sql);
 				if (! $stmt) return false;
 				if ($is_meta){

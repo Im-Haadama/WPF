@@ -140,7 +140,7 @@ function sql_prepare($sql)
 function sql_bind($table_name, &$stmt, $_values)
 {
 //	print "table: $table_name<br/>";
-	$debug = 0;
+	$debug = 0;//  (get_user_id() == 1);
 	$types = "";
 	$values = array();
 	foreach ($_values as $key => $value){
@@ -151,13 +151,13 @@ function sql_bind($table_name, &$stmt, $_values)
 			case 'bit':
 			case "int":
 			case "big":
-			case "med":
 				$types .= "i";
 				$value = ((strlen($value) > 0) ? $value : null);
 				break;
 			case "var":
 			case 'lon':
 			case 'tim':
+			case "med":
 				$types .= "s";
 				$value = escape_string($value);
 				break;
@@ -175,7 +175,7 @@ function sql_bind($table_name, &$stmt, $_values)
 		}
 		array_push($values, $value);
 	}
-	// var_dump($values);
+//	if (get_user_id() == 1) var_dump($values);
 
 	switch (count($values))
 	{

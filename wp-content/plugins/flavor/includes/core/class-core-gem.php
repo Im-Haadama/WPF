@@ -180,8 +180,16 @@ class Core_Gem {
 
 		$title = GetArg($args, "title", null);
 		$edit = GetArg($args, "edit", false);
-		$post_file = GetArg($args, "post_file", null);
-		if (! $post_file) {
+
+		$post_action = null;
+		$post_file = null;
+		do {
+			if ($post_action = GetArg($args, "post_action", null)) break;
+			if ($post_file = GetArg($args, "post_file", null)) // For regular next_page and all post.
+				$post_action = $post_file."?operation=gem_show&table=".$table_id;
+		} while (0);
+
+		if (! $post_action) {
 			return debug_trace(1) . "<br/>".
 			       "post_file is missing";
 		}
@@ -202,8 +210,8 @@ class Core_Gem {
 			if (count($rows_data) == $rows_per_page + 1) { // 1 for the header
 				$div_content .= Core_Html::gui_header(1, "page", true, true) . " " . Core_Html::gui_label("gem_page_" . $table_id, $page) . "<br/>";
 				// $result .= Core_Html::GuiHyperlink("Next page", AddToUrl("page", $page + 1)) . " ";
-				$div_content .= Core_Html::GuiButton("btn_gem_next_" . $table_id, "Next", array("action" => "gem_next_page(" . QuoteText($post_file."?operation=gem_show&table=".$table_id)  . "," . QuoteText($table_id) . ")"));
-				$div_content .= Core_Html::GuiButton("btn_gem_all__" . $table_id, "All", array("action" => "gem_all_page(" . QuoteText($post_file."?operation=gem_show&table=".$table_id)  . "," . QuoteText($table_id) . ")"));
+				$div_content .= Core_Html::GuiButton("btn_gem_next_" . $table_id, "Next", array("action" => "gem_next_page(" . QuoteText($post_action)  . "," . QuoteText($table_id) . ")"));
+				$div_content .= Core_Html::GuiButton("btn_gem_all__" . $table_id, "All", array("action" => "gem_all_page(" . QuoteText($post_action)  . "," . QuoteText($table_id) . ")"));
 //				$div_content .= Core_Html::GuiHyperlink("All", AddToUrl("_page", -1)) . " ";
 			}
 			if ($page > 1)

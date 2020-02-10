@@ -245,6 +245,7 @@ class Focus {
 		$ignore_list = array("operation");
 		$input = null;
 
+
 		////////////////////////
 		// called by post.php //
 		////////////////////////

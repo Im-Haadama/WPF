@@ -630,7 +630,7 @@ class Focus_Tasks {
 		$args["links"] = array( "id" => self::task_link( "%s" ) );
 		$args["title"] = ImTranslate( "משימות בפרויקט" ) . " " . Org_Project::GetName( $project_id );
 
-		$result = Core_Gem::GemTable( "im_tasklist", $args );
+		$result = Core_Gem::GemTable( "tasklist", $args );
 		$result .= GuiHyperlink( "Edit project", AddToUrl( "edit", 1 ) );
 
 		return $result;
@@ -834,7 +834,7 @@ class Focus_Tasks {
 		return $T->Postpone();
 	}
 
-	static function PriPlus($args)
+	static function PriPlus($input, $args)
 	{
 		$task_id=GetArg($args, "id", 0);
 		if (! ($task_id > 0)) return false;
@@ -843,7 +843,7 @@ class Focus_Tasks {
 		return   $T->setPriority( $T->getPriority() + 1 );
 	}
 
-	static function PriMinus($args)
+	static function PriMinus($input, $args)
 	{
 		$task_id=GetArg($args, "id", 0);
 		if (! ($task_id > 0)) return false;
@@ -995,6 +995,7 @@ class Focus_Tasks {
 		}
 
 		$args["limit"] = GetParam( "limit", false, 10 );
+		$args["post_action"] = self::getPost() . "?operation=tasklist_worker&worker_id=" . $user_id . "&action_only=" . $active_only;
 
 		$table = self::Taskslist( $args );
 		if ( $args["count"] ) {
@@ -1225,8 +1226,9 @@ class Focus_Tasks {
 
 		$args["col_width"] = array( "task_description" => '30%' );
 		$args["prepare_plug"] = __CLASS__ . "::prepare_row";
+		$args["post_action"] = self::getPost() .
 
-		$table             = Core_Gem::GemTable( "im_tasklist", $args );
+		$table             = Core_Gem::GemTable( "tasklist", $args );
 		if ( $table ) $result .= $table;
 
 		$count = $args["count"];
@@ -1249,6 +1251,7 @@ class Focus_Tasks {
 		$max_len = 60;
 		if (! strlen($task_row['task_title'])){
 			$description = explode(" ", $task_row["task_description"]);
+			// Start with the first word and add until max_len is reached.
 			$title = $description[0];
 			unset($description[0]);
 
@@ -1260,6 +1263,7 @@ class Focus_Tasks {
 		}
 		return $task_row;
 	}
+
 	static function show_tasks( $ids ) {
 		$args          = [];
 		$args["query"] = "id in (" . CommaImplode( $ids ) . ")";
@@ -1927,7 +1931,7 @@ class Focus_Tasks {
 
 	static function search_by_text( $user_id, $text ) {
 		$result = [];
-		$result = array_merge( $result, self::project_list_search($user_id,  "project_name like'%$text%'"));
+		$result = array_merge( $result, self::project_list_search($user_id,  $text));
 		$result = array_merge( $result, self::task_list_search( "status < 2 and task_description like " . QuotePercent( $text ) ) );
 
 		if ( count( $result ) < 1 ) {
@@ -1950,13 +1954,20 @@ class Focus_Tasks {
 	}
 
 	static function project_list_search($user_id, $query ) {
+		$result = [];
 		$user = new Org_Worker($user_id);
 
 		$projects = $user->AllProjects("is_active = 1" , array("id", "project_name"));
-//		var_dump($projects);
-		foreach ( $projects as $project ) {
-			array_push( $result, Core_Html::GuiHyperlink( $project["project_name"], self::get_link( "project", $project["id"] ) ) );
+		if ($projects) {
+			foreach ( $projects as $project ) {
+//				var_dump($project);
+				// print $project['project_name'] . " " . $query . " " . strpos( $project['project_name'], $query )."<br/>";
+				if ( strpos( $project['project_name'], $query ) !== false ) {
+					array_push( $result, "Project " . Core_Html::GuiHyperlink( $project["project_name"], self::get_link( "project", $project["id"] ) ) );
+				}
+			}
 		}
+		return $result;
 	}
 
 	static function show_settings( $user_id ) {
@@ -2092,6 +2103,7 @@ class Focus_Tasks {
 		AddAction("task_postpone", array(__CLASS__, "Postpone"), 10, 2);
 		AddAction("task_pri_plus", array(__CLASS__, "PriPlus"), 10, 2);
 		AddAction("task_pri_minus", array(__CLASS__, "PriMinus"), 10, 2);
+		AddAction("tasklist_worker", array(__CLASS__, "show_worker_wrapper"), 10, 2);
 	}
 
 	static function DoAddCompanyWorker()
@@ -2138,18 +2150,22 @@ class Focus_Tasks {
 
 		$operation  = GetParam( "operation", false, null );
 		$worker_id = GetParam("worker_id", false, null);
+
+//		print "op=$operation wid=$worker_id uid=$user_id<br/>";
 		$user = new Org_Worker($user_id);
-		if (! in_array($worker_id, $user->AllWorkers())) return  "not privileged";
+//		var_dump($user->AllWorkers());
+		if (! in_array($worker_id, $user->AllWorkers()))
+			return  "not privileged";
 
 		// Todo: move all processing to filter.
 		$id = GetParam("id", false, null);
 		$args = self::Args( "tasklist" );
 
-		if ($operation)	{	$result = apply_filters( $operation, "", $id, $args );
-			if ( $result != "" ) {
-				return $result;
-			}
-		}
+//		if ($operation)	{	$result = apply_filters( $operation, "", $id, $args );
+//			if ( $result != "" ) {
+//				return $result;
+//			}
+//		}
 
 		// If no filter yet, handle the old way.
 		return self::user_work( $args, $worker_id );

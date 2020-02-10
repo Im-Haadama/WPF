@@ -126,13 +126,14 @@ class Focus_Tasklist {
 
 	/**
 	 * @param mixed $priority
+	 *
+	 * @return bool|mysqli_result|null
 	 */
 	public function setPriority( $priority ) {
 		$this->priority = $priority;
 		$sql            = "UPDATE im_tasklist SET priority = $priority " .
 		                  " WHERE id = " . $this->id;
 
-		// print $sql;
 		return sql_query( $sql );
 	}
 
