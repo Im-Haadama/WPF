@@ -1661,3 +1661,17 @@ a.remove:hover{
   color:white!important;
   background:#ec7f00
 }
+
+.woocommerce.cutm_srh ul.products li.first, .woocommerce-page ul.products li.first {
+    clear: none !important;
+}
+.woocommerce.cutm_srh ul.products li:nth-child(4n+4) {
+  margin-right: 0;
+}
+.woocommerce-Price-amount.amount.block_price {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+.woocommerce.cutm_srh{
+  display: block;
+}
