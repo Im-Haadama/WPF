@@ -694,3 +694,40 @@ function custom_enqueue_script() {
 add_action('wp_enqueue_scripts', 'custom_enqueue_script');
 
 /*-- End custom add to cart search product --*/
+
+/*-- Start remove product sorting option --*/
+add_filter( 'woocommerce_catalog_orderby', 'sm_remove_sorting_option_woocommerce_shop' );
+  
+function sm_remove_sorting_option_woocommerce_shop( $options ) {
+   unset( $options['rating'] );
+   unset( $options['price'] ); 
+   unset( $options['date'] ); 
+   unset( $options['price-desc'] ); 
+   return $options;
+}
+/*-- End remove product sorting option --*/
+
+/*-- Start add alphabetical product sort option --*/
+
+add_filter( 'woocommerce_get_catalog_ordering_args', 'sm_alphabetical_woocommerce_shop_ordering' );
+function sm_alphabetical_woocommerce_shop_ordering( $sort_args ) {
+  $orderby_value = isset( $_GET['orderby'] ) ? woocommerce_clean( $_GET['orderby'] ) : apply_filters( 'woocommerce_default_catalog_orderby', get_option( 'woocommerce_default_catalog_orderby' ) );
+ 
+    if ( 'alphabetical' == $orderby_value ) {
+        $sort_args['orderby'] = 'title';
+        $sort_args['order'] = 'asc';
+        $sort_args['meta_key'] = '';
+    }
+ 
+    return $sort_args;
+}
+
+
+add_filter( 'woocommerce_default_catalog_orderby_options', 'sm_custom_woocommerce_catalog_orderby' );
+add_filter( 'woocommerce_catalog_orderby', 'sm_custom_woocommerce_catalog_orderby' );
+function sm_custom_woocommerce_catalog_orderby( $sortby ) {
+    $sortby['alphabetical'] = 'Sort by name';
+    return $sortby;
+}
+
+/*-- End add alphabetical product sort option --*/
