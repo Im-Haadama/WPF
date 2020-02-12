@@ -78,7 +78,7 @@ class Core_PivotTable {
 				}
 
 				if ( isset( $row_url ) ) {
-					$table[ $row ][0] = gui_hyperlink( $label, sprintf( $row_url, $row ) );
+					$table[ $row ][0] = Core_Html::GuiHyperlink( $label, sprintf( $row_url, $row ) );
 				} else {
 					$table[ $row ][0] = $label;
 				}
@@ -100,7 +100,7 @@ class Core_PivotTable {
 			foreach ( $cols as $col ) {
 				if ( ! isset ( $table[ $row ][ $col ] ) ) {
 					$u                     = sprintf( $add_url, $row, $col );
-					$table[ $row ][ $col ] = gui_hyperlink( "0", $u);
+					$table[ $row ][ $col ] = Core_Html::GuiHyperlink( "0", $u);
 				}
 			}
 			ksort( $table[ $row ] );

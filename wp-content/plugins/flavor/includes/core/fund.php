@@ -58,7 +58,10 @@ function StringVar($var)
 {
 	ob_start();
 	var_dump($var);
-	return ob_get_clean();
+	$output = ob_get_contents();
+	print "o=$output";
+	ob_end_clean();
+	return $output;
 }
 
 function debug_trace($deep = 2)

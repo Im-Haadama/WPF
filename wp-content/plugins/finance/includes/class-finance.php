@@ -387,6 +387,8 @@ class Finance {
 
 		$this->shortcodes->do_init();
 
+		$this->invoices->init(FINANCE_INCLUDES_URL . '../post.php');
+
 		// For testing:
 //		wp_set_current_user(369);
 
@@ -592,6 +594,7 @@ class Finance {
 		//                     Top nav                  Sub nav             target,                              capability
 		$module_list = array( "Finance" => array(array("Bank transactions", "/finance_bank",                     "show_bank"),
 								                 array("Bank Receipts",     "/finance_bank?operation=receipts",  "show_bank"),
+										   		 array("Invoices",          "/invoices",  "edit_pricelist"),
 												 array("Bank payments",    "/finance_bank?operation=payments",  "show_bank"),
 												 array("Transactions types", "/finance_bank?operation=bank_transaction_types", "cfo")));
 

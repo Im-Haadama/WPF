@@ -63,7 +63,6 @@ class Core_Gem {
 
 	static function add_wrapper($result, $id, $args)
 	{
-
 		$operation = GetArg($args, "operation", null);
 		if (! $operation)  return __FUNCTION__ . ":no operation";
 
@@ -231,9 +230,12 @@ class Core_Gem {
 		if (GetArg($args, "add_button", true))
 			$result .= Core_Html::GuiHyperlink("Add", GetUrl(1) . "?operation=gem_add_" . $table_id) . " ";
 
-		if ($post_file and $edit)
-			$result .= Core_Html::GuiButton("btn_delete_$table_id", "delete",
-				array("action" => "delete_items(" . QuoteText($args["checkbox_class"]) . "," . QuoteText($post_file) . ")"));
+		if ($post_file and $edit) {
+			$checkbox_class = GetArg($args, "checkbox_class", "class");
+			$result .= Core_Html::GuiButton( "btn_delete_$table_id", "delete",
+				array( "action" => "delete_items(" . QuoteText( $checkbox_class ) . "," . QuoteText( $post_file ) . ")" ) );
+			$result .= Core_Gem::GemImport( $table_id, $args );
+		}
 
 		return $result;
 	}
@@ -348,8 +350,16 @@ class Core_Gem {
 	{
 		$result = "";
 		$header = GetArg($args, "header", "Import to $table_name");
-		$action_file = GetArg($args, "import_action", null);
-		if (! $action_file) throw new Exception("must supply import action");
+		$post_file = GetArg($args, "post_file", null);
+		do {
+			$action_file = GetArg($args, "import_action", null);
+			if ($action_file) break;
+			if ($post_file) {
+				$action_file = $post_file . "?operation=gem_import&table_name=$table_name";
+				break;
+			}
+			throw new Exception("must supply import action or post_file");
+		} while (0);
 
 		$result .= Core_Html::gui_header(1, $header);
 
@@ -368,9 +378,14 @@ class Core_Gem {
 
         <input type="hidden" name="post_type" value="product"/>
     </form>
-		<script>
-		wait_for_selection();
-       </script>';
+		<script> ';
+		if ($selector) $result .= '	wait_for_selection();';
+		else $result .= 'let forms = document.getElementsByName("submit");
+        forms.forEach(element => element.disabled = false);
+        let upcsv = document.getElementById("' .$form_id . '");
+        upcsv.action = "' . $action_file . '"';
+
+		$result .= '</script>';
 
 		// Setting the action upon selection
 		return $result;

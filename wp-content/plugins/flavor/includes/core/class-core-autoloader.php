@@ -71,7 +71,7 @@ if (! class_exists('Core_Autoloader')) {
 		public function autoload( $class ) {
 			$path = $this->include_path;
 			$class = strtolower( $class );
-			$debug = false; // (get_user_id() == 1); // and ($class==="Mission"));
+			$debug = 0; // (get_user_id() == 1); // and ($class==="Mission"));
 
 			if ($debug) print "loading " . $class . " " . strpos($class, "core_") . "<br/>";
 
@@ -83,12 +83,17 @@ if (! class_exists('Core_Autoloader')) {
 				$path = $this->include_path . 'shortcodes/';
 			} elseif ( 0 === strpos( $class, 'org' ) ) {
 				$path = $this->include_path . 'org/';
+			} elseif ( 0 === strpos ($class, "fresh"))
+				$path = realpath($this->include_path . '/../../fresh/includes/');
+
+			if (0 and $class == "fresh_supplier") {
+				print "inc=" . $this->include_path . "<br/>";
+				print "path=$path<br/>";
+				print "file=$file" . "<br/>";
 			}
 
-			if (file_exists($path.$file))
-				$this->load_file($path.$file);
-			else
-				if ($debug) print "not found  $path".$file . "<br/>";
+			if (file_exists($path.'/'.$file))
+				$this->load_file($path.'/'.$file);
 		}
 
 		/**
@@ -97,8 +102,6 @@ if (! class_exists('Core_Autoloader')) {
 		public function getIncludePath(): string {
 			return $this->include_path;
 		}
-
-
 	}
 
 // new Core_Autoloader();

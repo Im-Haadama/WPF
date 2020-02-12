@@ -54,6 +54,8 @@ class Core_Shortcodes {
 		$debug = 0; // (get_user_id() == 1);
 		if ($this->shortcodes)
 			foreach ( $this->shortcodes as $shortcode => $function_couple ) {
+				if (! is_array($function_couple)) print $function_couple . " is not array";
+				if (count($function_couple) < 2) print $function_couple[0] . " not a couple";
 				$function = $function_couple[0];
 				$capability = $function_couple[1];
 				if ($debug) print "<br/>handling $shortcode $capability<br/>";

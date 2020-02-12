@@ -99,9 +99,6 @@ class Fresh {
 	 */
 	public function __construct($plugin_name)
 	{
-
-
-
 		$this->plugin_name = $plugin_name;
 		$this->define_constants();
 		$this->includes(); // Loads class autoloader
@@ -119,6 +116,7 @@ class Fresh {
 	 * @since 2.3
 	 */
 	private function init_hooks() {
+
 		// register_activation_hook( WC_PLUGIN_FILE, array( 'Fresh_Install', 'install' ) );
 		register_shutdown_function( array( $this, 'log_errors' ) );
 		add_action( 'after_setup_theme', array( $this, 'setup_environment' ) );
@@ -146,7 +144,7 @@ class Fresh {
 
 		add_filter( 'wc_order_statuses', 'add_awaiting_shipment_to_order_statuses' );
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
-		add_filter( 'woocommerce_package_rates' , 'im_sort_shipping_services_by_date', 10, 2 );
+		// add_filter( 'woocommerce_package_rates' , 'im_sort_shipping_services_by_date', 10, 2 );
 
 
 
@@ -455,7 +453,6 @@ class Fresh {
 		$this->suppliers = new Fresh_Suppliers();
 		$this->supplier_balance = Fresh_Supplier_Balance::instance();
 
-
 		$shortcodes = Core_Shortcodes::instance();
 		$shortcodes->add($this->delivery_manager->getShortcodes());
 		$shortcodes->add($this->suppliers->getShortcodes());
@@ -733,10 +730,10 @@ function add_awaiting_shipment_to_order_statuses( $order_statuses ) {
 
 function im_sort_shipping_services_by_date($rates, $package)
 {
-
 	$logger = new Core_Logger("check");
 	if ( ! $rates )  return;
 
+//	if ($package) $logger->info(StringVar($package));
 	$logger->info("check1");
 
 	$rate_date = array();

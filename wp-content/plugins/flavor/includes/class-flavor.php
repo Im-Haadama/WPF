@@ -147,7 +147,7 @@ class Flavor {
 	}
 
 	public static function add_settings_tab( $settings_tabs ) {
-		$settings_tabs['wpf'] = esc_html__( 'Wordpress-f', 'wpf' );
+		$settings_tabs['wpf'] = esc_html__( 'WPF', 'wpf' );
 		return $settings_tabs;
 	}
 
