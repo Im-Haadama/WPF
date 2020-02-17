@@ -38,7 +38,8 @@ function israelZones() {
 }
 
 function run_israel_zones() {
-	new Israel_Zones("Fresh");
+	$i = new Israel_Zones("Fresh");
+	$i->run(5); // find next 5 zipcodes
 }
 
 run_israel_zones();

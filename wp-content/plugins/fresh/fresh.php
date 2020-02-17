@@ -731,3 +731,9 @@ function sm_custom_woocommerce_catalog_orderby( $sortby ) {
 }
 
 /*-- End add alphabetical product sort option --*/
+
+function wcs_users_logged_in_longer( $expire ) {
+	// 1 month in seconds
+	return 2628000;
+}
+add_filter( 'auth_cookie_expiration', 'wcs_users_logged_in_longer' );

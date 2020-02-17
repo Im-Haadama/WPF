@@ -43,8 +43,17 @@ class Fresh_Totals {
 	function getShortcodes() {
 		//             code                           function                  capablity (not checked, for now).
 		return ( array(
-			'fresh_totals'         => array( 'Fresh_Totals::totals', 'show_orders' )
+			'fresh_totals'         => array( 'Fresh_Totals::totals', 'edit_shop_orders' ),
+			'fresh_total_table' => array('Fresh_Totals::total_table', 'edit_shop_orders')
 		) );
+	}
+
+	static function total_table($args)
+	{
+		$needed_products = array();
+		Fresh_Order::CalculateNeeded( $needed_products );
+
+		var_dump($needed_products);
 
 	}
 

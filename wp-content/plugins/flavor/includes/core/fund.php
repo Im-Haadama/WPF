@@ -14,8 +14,9 @@
  * @param null $file - default is php_error.log
  */
 
-	function MyLog( $msg, $title = '', $file = null ) {
-		$error_file = ABSPATH . 'logs/' . ( $file ? $file : 'php_error.log' );
+	function MyLog( $msg, $title = '', $file = null )
+	{
+		$error_file = WC_LOG_DIR . ( $file ? $file : 'fresh.log' );
 //    print $error_file;
 		$date = date( 'd.m.Y h:i:s' );
 		$msg  = print_r( $msg, true );

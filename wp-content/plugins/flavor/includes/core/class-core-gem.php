@@ -43,6 +43,9 @@ class Core_Gem {
 
 		// Show
 		AddAction("gem_show_" . $table, array($class, 'show_wrapper'), 10, 3, $debug);
+
+		// Import
+//		AddAction("gem_import_$table", array($class, "import_wrapper"), 10, 3);
 	}
 
 	static function edit_wrapper($result, $id, $args)
@@ -72,6 +75,13 @@ class Core_Gem {
 			return false;
 		}
 		return self::GemAddRow(get_table_prefix() . $table_name, null, $args);
+	}
+
+	static function import_wrapper($result, $id, $args)
+	{
+		$table = GetArg($args, "table_name", null);
+		if (! $table) return "no table selected";
+		self::GemImport($table);
 	}
 
 	static function v_show_wrapper($operation, $id, $args)
@@ -179,6 +189,7 @@ class Core_Gem {
 
 		$title = GetArg($args, "title", null);
 		$edit = GetArg($args, "edit", false);
+		$enable_import = GetArg($args, "enable_import", false);
 
 		$post_action = null;
 		$post_file = null;
@@ -230,7 +241,7 @@ class Core_Gem {
 		if (GetArg($args, "add_button", true))
 			$result .= Core_Html::GuiHyperlink("Add", GetUrl(1) . "?operation=gem_add_" . $table_id) . " ";
 
-		if ($post_file and $edit) {
+		if ($post_file and $edit or $enable_import) {
 			$checkbox_class = GetArg($args, "checkbox_class", "class");
 			$result .= Core_Html::GuiButton( "btn_delete_$table_id", "delete",
 				array( "action" => "delete_items(" . QuoteText( $checkbox_class ) . "," . QuoteText( $post_file ) . ")" ) );
@@ -355,7 +366,7 @@ class Core_Gem {
 			$action_file = GetArg($args, "import_action", null);
 			if ($action_file) break;
 			if ($post_file) {
-				$action_file = $post_file . "?operation=gem_import&table_name=$table_name";
+				$action_file = $post_file . "?operation=import_$table_name";
 				break;
 			}
 			throw new Exception("must supply import action or post_file");

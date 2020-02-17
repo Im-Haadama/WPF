@@ -271,7 +271,7 @@ class Fresh_Order {
 		/// print "user id " . $user_id . "<br/>";
 		$debug_product = 0; // 141;
 		if ( ! $user_id ) {
-			if ( check_cache_validity() ) {
+			if ( self::check_cache_validity() ) {
 				if (get_user_id() == 1) print "cache valid<br/>";
 				$needed_products = array();
 
@@ -1162,6 +1162,33 @@ class Fresh_Order {
 		if (isset($status_names[ $status ])) return $status_names[$status];
 		else return $status;
 	}
+
+	static function check_cache_validity() {
+//	$sql = "SELECT count(p.id)
+//	FROM wp_posts p
+//	 LEFT JOIN im_need_orders o
+//	  ON p.id = o.order_id
+//	  WHERE p.id IS NULL OR o.order_id IS NULL AND post_status LIKE '%wc-processing%'";
+		$sql = "SELECT count(id)
+	FROM wp_posts p
+  	where post_status like '%wc-processing%'
+  	and id not in (select order_id from im_need_orders)";
+		$new = sql_query_single_scalar( $sql );
+//	print "new: " . $new . "<br/>";
+
+		$sql  = "SELECT count(id)
+	  FROM im_need_orders
+	  WHERE order_id NOT IN (SELECT id FROM wp_posts WHERE post_status LIKE '%wc-processing%')";
+		$done = sql_query_single_scalar( $sql );
+//	print "done: " . $done . "<br/>";
+
+		if ( $done > 0 or $new > 0 ) {
+			return false;
+		}
+
+		return true;
+	}
+
 }
 
 

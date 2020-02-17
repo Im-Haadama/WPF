@@ -93,5 +93,4 @@ class Fresh_Path {
 	{
 		return sql_query_array_scalar("select id from im_paths");
 	}
-
 }

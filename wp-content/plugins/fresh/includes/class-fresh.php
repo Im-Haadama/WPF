@@ -15,6 +15,7 @@ class Fresh {
 	protected $delivery_manager;
 	protected $suppliers;
 	protected $supplier_balance;
+	protected $totals;
 	protected $shortcodes;
 
 	/**
@@ -116,7 +117,6 @@ class Fresh {
 	 * @since 2.3
 	 */
 	private function init_hooks() {
-
 		// register_activation_hook( WC_PLUGIN_FILE, array( 'Fresh_Install', 'install' ) );
 		register_shutdown_function( array( $this, 'log_errors' ) );
 		add_action( 'after_setup_theme', array( $this, 'setup_environment' ) );
@@ -452,11 +452,13 @@ class Fresh {
 		$this->delivery_manager = new Fresh_Delivery_Manager();
 		$this->suppliers = new Fresh_Suppliers();
 		$this->supplier_balance = Fresh_Supplier_Balance::instance();
+		$this->totals = Fresh_Totals::instance();
 
 		$shortcodes = Core_Shortcodes::instance();
 		$shortcodes->add($this->delivery_manager->getShortcodes());
 		$shortcodes->add($this->suppliers->getShortcodes());
 		$shortcodes->add($this->supplier_balance->getShortcodes());
+		$shortcodes->add($this->totals->getShortcodes());
 
 //		$this->shortcodes->do_init();
 		$this->suppliers->init();
@@ -579,7 +581,7 @@ function content_func( $atts, $contents, $tag )
 function get_minimum_order() {
 	global $woocommerce;
 
-	$value = 85;
+	$value = 0; // No min.
 
 	$country  = $woocommerce->customer->get_shipping_country();
 	// $state    = $woocommerce->customer->get_shipping_state();
@@ -595,7 +597,7 @@ function get_minimum_order() {
 //    my_log ("zone_id = " . $zone1->get_id());
 
 	$sql    = "SELECT min_order FROM wp_woocommerce_shipping_zones WHERE zone_id = " . $zone1->get_id();
-	$result = sql_query( $sql );
+	$result = sql_query( $sql, false );
 	if ( $result ) {
 		$row = mysqli_fetch_assoc( $result );
 		//    my_log($row["min_order"]);

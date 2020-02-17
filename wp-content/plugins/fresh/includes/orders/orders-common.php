@@ -319,33 +319,6 @@ function calculate_total_products() {
 	return $variety . " סוגי מוצרים" . "<br/>" . $total . " פריטים ";
 }
 
-function check_cache_validity() {
-//	$sql = "SELECT count(p.id)
-//	FROM wp_posts p
-//	 LEFT JOIN im_need_orders o
-//	  ON p.id = o.order_id
-//	  WHERE p.id IS NULL OR o.order_id IS NULL AND post_status LIKE '%wc-processing%'";
-	$sql = "SELECT count(id)
-	FROM wp_posts p
-  	where post_status like '%wc-processing%'
-  	and id not in (select order_id from im_need_orders)";
-	$new = sql_query_single_scalar( $sql );
-//	print "new: " . $new . "<br/>";
-
-	$sql  = "SELECT count(id)
-	  FROM im_need_orders
-	  WHERE order_id NOT IN (SELECT id FROM wp_posts WHERE post_status LIKE '%wc-processing%')";
-	$done = sql_query_single_scalar( $sql );
-//	print "done: " . $done . "<br/>";
-
-	if ( $done > 0 or $new > 0 ) {
-		return false;
-	}
-
-	return true;
-}
-
-
 /// print "התקבלה הזמנה של סל " . get_product_name($basket_id) . " עבור " . get_customer_name($user_id);
 
 function copy_meta_field( $source, $destination, $meta_key ) {
