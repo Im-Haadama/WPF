@@ -57,6 +57,13 @@
 		return $result;
 	}
 
+	function unset_by_value(&$array, $del_val)
+	{
+		if (($key = array_search($del_val, $array)) !== false) {
+			unset($array[$key]);
+		}
+	}
+
 	function GetParams($ignore_list = array())
 	{
 		$atts = [];

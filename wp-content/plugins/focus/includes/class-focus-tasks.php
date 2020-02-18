@@ -208,6 +208,7 @@ class Focus_Tasks {
 					);
 
 					$args["header_fields"] = array(
+						"task_title" => "Task Title",
 						"date"             => "Date",
 						"task_description" => "Task description",
 						"task_template"    => "Repeating task",
@@ -228,7 +229,7 @@ class Focus_Tasks {
 					$args["fields"] = array(
 						"id",
 						"task_title",
-						"task_description",
+						"task_description", // Needed for task title
 						"team",
 						"project_id",
 						"priority"
@@ -240,9 +241,11 @@ class Focus_Tasks {
 					break;
 
 				case "im_projects":
+				case "projects":
 					$args["hide_cols"] = array("is_active"=>1, "manager"=>1);
 					$args["links"]     = array( "ID" => AddToUrl( array( "operation" => "gem_edit_im_projects&id=%s" ) ) );
 					$args["check_active"] = true;
+					// $args["fields"] =
 					break;
 			}
 
@@ -495,12 +498,13 @@ class Focus_Tasks {
 		return Core_Gem::GemAddRow( "im_working_teams", "New team", $args );
 	}
 
-	static function show_project_wrapper() {
+	static function show_project_wrapper()
+	{
 		$new = GetParam( "new" );
 		if ( $new ) {
 			$project = Focus_Project::create_from_task( $new );
 
-			return $project->getId();
+			return self::show_project($project->getId());
 		}
 
 		return self::show_project( get_user_id() );
@@ -610,28 +614,48 @@ class Focus_Tasks {
 	 * @throws Exception
 	 */
 	static function show_project( $project_id, $args = null ) {
-		$edit = GetArg( $args, "edit", false );
-		if ( $edit ) {
-			$args["post_file"] = self::instance()->post_file;
+		if (! ($project_id > 0))
+			return "bad project id $project_id";
 
-			return Core_Gem::GemElement( "im_projects", $project_id, $args );
+		if ($operation = GetParam("operation", false, null))
+		{
+			$args = self::Args("tasklist");
+			$args["project_id"] = $project_id;
+			$result = apply_filters( $operation, "", $project_id,  $args);
+			if ( $result != "" ) {
+				return $result;
+			}
 		}
-		$active_only = GetArg( $args, "active_only", true );
-		$order       = GetArg( $args, "order", "order by priority desc" );
+
+		$P = new Org_Project($project_id);
+//		$edit = GetArg( $args, "edit", false );
+//		if ( $edit ) {
+//			$args["post_file"] = self::instance()->post_file;
+//
+//			return Core_Gem::GemElement( "im_projects", $project_id, $args );
+//		}
+//		$active_only = GetArg( $args, "active_only", true );
+//		$order       = GetArg( $args, "order", "order by priority desc" );
 		if ( is_null( $args ) ) {
-			$args = [];
+			$args = self::Args("tasklist");
 		}
 
-		$sql = "select * from im_tasklist where project_id = " . $project_id;
-		if ( $active_only ) {
-			$sql .= " and status = 0 ";
-		}
-		$args["sql"]   = $sql . $order;
-		$args["links"] = array( "id" => self::task_link( "%s" ) );
-		$args["title"] = ImTranslate( "משימות בפרויקט" ) . " " . Org_Project::GetName( $project_id );
+//		$sql = "select * from im_tasklist where project_id = " . $project_id;
+//		if ( $active_only ) {
+//			$sql .= " and status = 0 ";
+//		}
+//		$args["sql"]   = $sql . $order;
+		$args["links"] = array( "id" => self::get_link( "task", "%s" ) );
+		$args["title"] = __("Tasks in project") . " " . $P->getName();
+		$args["prepare_plug"] = __CLASS__ . "::prepare_row";
+		$args["query"] = " project_id=$project_id";
+		$args["hide_cols"] = array("task_description" => 1);
+		// $args["post_file"] .= "project_id=$project_id";
+
+		unset_by_value($args["fields"], "project_id");
 
 		$result = Core_Gem::GemTable( "tasklist", $args );
-		$result .= GuiHyperlink( "Edit project", AddToUrl( "edit", 1 ) );
+		$result .= Core_Html::GuiHyperlink( "Edit project", AddToUrl( "edit", 1 ) );
 
 		return $result;
 	}
@@ -1249,7 +1273,7 @@ class Focus_Tasks {
 	static function prepare_row($task_row)
 	{
 		$max_len = 60;
-		if (! strlen($task_row['task_title'])){
+		if (! isset($task_row["task_title"]) or ! strlen($task_row['task_title'])){
 			$description = explode(" ", $task_row["task_description"]);
 			// Start with the first word and add until max_len is reached.
 			$title = $description[0];
@@ -2076,13 +2100,14 @@ class Focus_Tasks {
 			'focus_template'       => array( 'Focus_tasks::show_template', 'show_tasks' ),
 			'focus_repeating_task' => array( 'Focus_tasks::show_repeating_task', 'show_tasks' ),
 			'focus_team'           => array( 'Focus_tasks::show_team', 'show_teams' ),
-			'focus_project'        => array( 'Focus_tasks::show_project', 'show_projects' ),
+			'focus_project'        => array( 'Focus_tasks::show_project', 'edit_projects' ),
 			'focus_project_tasks'  => array( 'Focus_tasks::show_project_tasks', 'show_tasks' ),
 			'focus_worker'         => array( 'Focus_tasks::show_worker', 'show_tasks' )
 		) );
 	}
 
 	function init() {
+//		print __FUNCTION__;
 		Core_Gem::AddTable( "task_templates" );
 		AddAction("gem_add_team_members", array(__CLASS__, 'show_edit_team'), 10, 3);
 		AddAction("show_edit_team", array(__CLASS__, 'show_edit_team'), 10, 3);
@@ -2092,6 +2117,9 @@ class Focus_Tasks {
 		AddAction("gem_edit_projects", array(__CLASS__, 'ShowProjectMembers'), 11, 3);
 		AddAction("gem_add_project_members", array(__CLASS__, 'AddProjectMember'), 11, 3);
 		AddAction("project_add_member", array(__CLASS__, 'ProjectAddMember'), 11, 3);
+
+		// Tasklist
+		Core_Gem::AddTable( "tasklist" ); // add + edit
 
 		// Company
 		AddAction("show_add_company_worker", array(__CLASS__, 'AddCompanyWorker'), 11, 3);
@@ -2269,29 +2297,31 @@ class Focus_Tasks {
 	}
 
 	static function show_new_task( $mission = false, $new_task_id = null ) {
-		$args                     = array();
-		$args["selectors"]        = array(
-			"project_id" => "Focus_Tasks::gui_select_project",
-			"owner"      => "Focus_Tasks::gui_select_worker",
-			"creator"    => "Focus_Tasks::gui_select_worker",
-			"preq"       => "gui_select_task",
-			"team"       => "Focus_Tasks::gui_select_team"
-		);
+		$table_prefix = get_table_prefix();
+
+		$args                     = self::Args("tasklist");
+//		$args["selectors"]        = array(
+//			"project_id" => "Focus_Tasks::gui_select_project",
+//			"owner"      => "Focus_Tasks::gui_select_worker",
+//			"creator"    => "Focus_Tasks::gui_select_worker",
+//			"preq"       => "gui_select_task",
+//			"team"       => "Focus_Tasks::gui_select_team"
+//		);
 		$args["values"]           = array( "owner" => get_user_id(), "creator" => get_user_id() );
 		$args["header"]           = true;
-		$args["header_fields"]    = array(
-			"date"             => "Start after",
-			"task_description" => "Task description",
-			"project_id"       => "Project",
-			"location_address" => "Address",
-			"location_name"    => "Location name",
-			"priority"         => "Priority",
-			"preq"             => "Prerequisite",
-			"creator"          => "Creator"
-		);
+//		$args["header_fields"]    = array(
+//			"date"             => "Start after",
+//			"task_description" => "Task description",
+//			"project_id"       => "Project",
+//			"location_address" => "Address",
+//			"location_name"    => "Location name",
+//			"priority"         => "Priority",
+//			"preq"             => "Prerequisite",
+//			"creator"          => "Creator"
+//		);
 		$args["mandatory_fields"] = array( "project_id", "priority", "team", "task_description" );
 
-		$args["fields"]     = array( "task_description", "project_id", "priority", "date", "preq", "creator", "team" );
+//		$args["fields"]     = array( "task_description", "project_id", "priority", "date", "preq", "creator", "team" );
 		$args['post_file']  = "/wp-content/plugins/focus/post.php";
 		$args['form_table'] = 'im_tasklist';
 
@@ -2308,7 +2338,7 @@ class Focus_Tasks {
 
 		$args["worker"]    = get_user_id();
 		$result        = "";
-		$result .= "w=" . $args["worker"];
+
 		$args["companies"] = sql_query_single_scalar( "select company_id from im_working where user_id = " . get_user_id() );
 		$args["hide_cols"] = array( "creator" => 1 );
 		$args["next_page"] = self::get_link( "project" );
@@ -2329,13 +2359,14 @@ class Focus_Tasks {
 			unset( $project_args["fields"] );
 			$project_args["page"] = 1;
 
-			$project_tasks = Core_Gem::GemTable( "im_tasklist", $project_args );
+			$project_tasks = Core_Gem::GemTable( "${table_prefix}tasklist", $project_args );
 
 			// Set default value for next task, based on new one.
 			$args["values"] = array( "project_id" => $project_id, "team" => $new_task->getTeam() );
 		}
 
-		$result .= Core_Gem::GemAddRow( "im_tasklist", "New task", $args );
+		$result .= Core_Gem::GemAddRow("${table_prefix}tasklist", "New Task", $args);
+		// $result .= Core_Gem::GemAddRow( "im_tasklist", "New task", $args );
 		$result .= $project_tasks;
 
 		return $result;

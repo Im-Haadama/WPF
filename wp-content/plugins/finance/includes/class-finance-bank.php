@@ -131,13 +131,14 @@ class Finance_Bank
 				$b = Finance_Bank_Transaction::createFromDB( $id );
 				print Core_Html::gui_header( 2, "פרטי העברה" );
 				$free_amount = $b->getOutAmount( true );
+				$client_name = $b->getClientName();
 				print Core_Html::gui_table_args( array(
 						array( "תאריך", Core_Html::gui_div( "pay_date", $b->getDate() ) ),
 						array( "סכום", Core_Html::gui_div( "bank", $b->getOutAmount() ) ),
 						array( "סכום לתיאום", Core_Html::gui_div( "bank", $free_amount ) ),
-						array( "מזהה", Core_Html::gui_div( "bank_id", $id ) )
-					)
-				);
+						array( "מזהה", Core_Html::gui_div( "bank_id", $id )),
+						array( "Comment", $client_name	)
+						));
 
 				$lines = $b->getAttached();
 				if ( $lines ) {
@@ -290,7 +291,7 @@ class Finance_Bank
 				}
 				// " order by date desc limit $rows_per_page offset $offset";
 
-				$args["fields"] = array( "id", "date", "description", "out_amount", "reference" );
+				$args["fields"] = array( "id", "date", "description", "out_amount", "reference", "client_name" );
 //			$sql = "select id, date, description, out_amount, reference from im_bank where account_id = " . $account_id .
 //			       " and receipt is null and out_amount > 0 " .
 //			       " and description not in (select description from im_bank_transaction_types) " .

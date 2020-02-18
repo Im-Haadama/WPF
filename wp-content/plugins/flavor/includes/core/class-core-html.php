@@ -88,6 +88,12 @@ class Core_Html {
 	static function GuiInput( $id, $value = null, $args = null ) {
 		//	print __FUNCTION__ . "<br/>";
 		$name   = GetArg( $args, "name", $id );
+
+		if (is_array($name))
+		{
+			var_dump($value);
+			return __FUNCTION__ . " got array";
+		}
 		$events = GetArg( $args, "events", null );
 		$class  = GetArg( $args, "class", null );
 		$size   = GetArg( $args, "size", null );
@@ -410,6 +416,10 @@ class Core_Html {
 	 * @return string
 	 */
 	static function gui_header( $level, $text, $center = false, $inline = false ) {
+		if (is_array($text)) {
+			var_dump($text);
+			return "got array";
+		}
 //		debug_var($text);
 		$data = "";
 		// if ($inline) $data .= "<style>h1 {display: inline;}</style>";
@@ -1410,18 +1420,20 @@ class Core_Html {
 	 */
 	static function gui_input_by_type( $input_name, $type = null, $args = null, $data = null ) {
 		$events = GetArg( $args, "events", null );
-//		print "type=$type<br/>";
+//		print "name=$input_name type=$type<br/>";
 		switch ( substr( $type, 0, 3 ) ) {
 			case 'dat':
 				$value = Core_Html::gui_input_date( $input_name, null, $data, $events );
 				break;
 			case 'var':
+			case 'med':
+			case 'lon':
 				$length = 10;
 				$r      = array();
-				if ( preg_match_all( '/\(([0-9]*)\)/', $type, $r ) ) {
+				if ( preg_match_all( '/\(([0-9]*)\)/', $type, $r )) {
 					$length = $r[1][0];
 				}
-				if ( $length > 100 ) {
+				if ( $length > 100 or substr($type, 0, 3) == 'med') {
 					$value = Core_Html::gui_textarea( $input_name, $data, $events );
 				} else {
 					$value = self::GuiInput( $input_name, $data, $args ); // gui_input( $input_name, $data, $field_events, $row_id );

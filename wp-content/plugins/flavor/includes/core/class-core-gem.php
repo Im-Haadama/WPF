@@ -74,7 +74,7 @@ class Core_Gem {
 			print __FUNCTION__ . ": coding error. invalid table in '$operation'.<br/>";
 			return false;
 		}
-		return self::GemAddRow(get_table_prefix() . $table_name, null, $args);
+		return $result . self::GemAddRow(get_table_prefix() . $table_name, null, $args);
 	}
 
 	static function import_wrapper($result, $id, $args)
@@ -239,7 +239,7 @@ class Core_Gem {
 		}
 
 		if (GetArg($args, "add_button", true))
-			$result .= Core_Html::GuiHyperlink("Add", GetUrl(1) . "?operation=gem_add_" . $table_id) . " ";
+			$result .= Core_Html::GuiHyperlink("Add", AddToUrl("operation" , "gem_add_" . $table_id)) . " ";
 
 		if ($post_file and $edit or $enable_import) {
 			$checkbox_class = GetArg($args, "checkbox_class", "class");

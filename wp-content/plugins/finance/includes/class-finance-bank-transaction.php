@@ -12,11 +12,12 @@ class Finance_Bank_Transaction {
 	private $in_amount;
 	private $out_amount;
 	private $date;
+	private $client_name;
 
 	static function createFromDB( $id ) {
 		$table_prefix = get_table_prefix();
 
-		$sql    = "SELECT in_amount, date, out_amount FROM ${table_prefix}bank WHERE id = " . $id;
+		$sql    = "SELECT in_amount, date, out_amount, client_name FROM ${table_prefix}bank WHERE id = " . $id;
 		$result = sql_query( $sql );
 		if ( ! $result ) {
 			throw new Exception( "Transaction not found" );
@@ -33,6 +34,7 @@ class Finance_Bank_Transaction {
 		$r->in_amount  = $row[0];
 		$r->date       = $row[1];
 		$r->out_amount = $row[2];
+		$r->client_name = $row[3];
 
 		return $r;
 	}
@@ -67,6 +69,11 @@ class Finance_Bank_Transaction {
 //		debug_var($attached_amount);
 
 		return $this->out_amount + $attached_amount;
+	}
+
+	public function getClientName()
+	{
+		return $this->client_name;
 	}
 
 	public function getAttached() {
