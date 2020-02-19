@@ -197,7 +197,7 @@ class WC_Other_Payment_Gateway extends WC_Payment_Gateway{
 			    </select>
 			</p>
 			<div class="clear"></div>
-			<p class="form-row form-row-first validate-required">
+			<p class="form-row validate-required">
 			    <?php
 			    $cvv_field_placeholder	 = __( 'Card Verification Number (CVV)', 'woocommerce-fruity-payment-gateway' );
 			    $cvv_field_placeholder	 = apply_filters( 'wcpprog_cvv_field_placeholder', $cvv_field_placeholder );
