@@ -558,8 +558,8 @@ class Fresh {
 		$file = FLAVOR_INCLUDES_URL . 'core/gui/client_tools.js';
 		wp_enqueue_script( 'client_tools', $file, null, $this->version, false );
 
-		$file = plugin_dir_url( __FILE__ ) . 'inventory.js';
-		wp_enqueue_script( $this->plugin_name, $file, array( 'jquery' ), $this->version, false );
+//		$file = plugin_dir_url( __FILE__ ) . 'inventory.js';
+//		wp_enqueue_script( $this->plugin_name, $file, array( 'jquery' ), $this->version, false );
 
 		wp_enqueue_script( 'my_custom_script', plugin_dir_url( __FILE__ ) . 'js/add_to_cart_on_search.js' );
 		wp_enqueue_script( 'custom_script', plugin_dir_url( __FILE__ ) . 'js/custom_script.js' );
@@ -1455,7 +1455,7 @@ function sm_custom_woocommerce_catalog_orderby( $sortby ) {
 
 /*-- Start add menu page-- */
 function payment_list() {
-	include('payment_list.php');
+	include( FRESH_INCLUDES . 'payment_list.php' );
 }
 function payment_list_menu()
 {
@@ -1490,11 +1490,11 @@ function wp_payment_list_admin_styles()
 
 function wp_payment_list_admin_script() {
 
-	wp_enqueue_script( 'dataTables.min', plugins_url(). '/fresh/js/jquery.dataTables.min.js',array('jquery') );
+	wp_enqueue_script( 'dataTables.min', plugins_url(). '/fresh/includes/js/jquery.dataTables.min.js',array('jquery') );
 
-	wp_enqueue_script( 'dataTables.bootstrap.min', plugins_url(). '/fresh/js/dataTables.bootstrap.min.js' );
+	wp_enqueue_script( 'dataTables.bootstrap.min', plugins_url(). '/fresh/includes/js/dataTables.bootstrap.min.js' );
 
-	wp_enqueue_script( 'dataTables.buttons.min', plugins_url(). '/fresh/js/dataTables.buttons.min.js' );
+	wp_enqueue_script( 'dataTables.buttons.min', plugins_url(). '/fresh/includes/js/dataTables.buttons.min.js' );
 
 }
 /*-- End add css & js-- */
