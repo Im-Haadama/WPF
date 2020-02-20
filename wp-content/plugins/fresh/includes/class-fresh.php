@@ -1583,7 +1583,7 @@ if(fresh_custom_payment_is_woocommerce_active()){
 
 	add_action('plugins_loaded', 'init_other_payment_gateway');
 	function init_other_payment_gateway(){
-		// require 'includes/class-fresh-payment-gateway.php'; Use auto_loader
+		 require 'includes/class-fresh-payment-gateway.php';
 	}
 
 	add_action( 'plugins_loaded', 'other_payment_load_plugin_textdomain' );

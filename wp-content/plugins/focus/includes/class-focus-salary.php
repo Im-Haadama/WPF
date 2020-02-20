@@ -94,6 +94,7 @@ class Focus_Salary {
 	{
 		return self::instance()->post_file;
 	}
+
 	//* Shortcode handling
 	//* 1) Main - list of employees
 

@@ -31,7 +31,6 @@ class Focus_Manager {
 		return self::$logger;
 	}
 
-
 	function init()
 	{
 		self::create_tasks();
@@ -39,11 +38,20 @@ class Focus_Manager {
 
 	function create_tasks( $freqs = null, $verbose = false, $default_owner = 1 )
 	{
+		$debug = 2;
+		if ($debug == 2) $verbose = 1;
+
 		$table_prefix = get_table_prefix();
 
 		$last_run = get_wp_option("focus_create_tasks_last_run");
 		$run_period = get_wp_option("focus_create_tasks_run_period", 5*60); // every 5 min
-		if ($last_run and ((time() - $last_run) < $run_period)) return true;
+		if ($debug < 2 and $last_run and ((time() - $last_run) < $run_period)) {
+			if ( $debug ) {
+				print "run before " . ( time() - $last_run ) . "seconds";
+			}
+
+			return true;
+		}
 
 		update_wp_option("Focus_create_tasks_last_run", time()); // Immediate update so won't be activated in parallel
 
@@ -64,6 +72,8 @@ class Focus_Manager {
 			       " where repeat_freq = '" . $freq . "' and ((last_check is null) or (last_check < " . QuoteText(date('Y-m-j')) . ") or repeat_freq like 'c%')";
 
 			$result = sql_query( $sql );
+
+//			var_dump($result);
 
 			$verbose_line = "";
 			while ( $row = mysqli_fetch_assoc( $result ) ) {

@@ -1551,7 +1551,7 @@ class Focus_Tasks {
 		$c                 = new Org_Company( $company_id );
 		$result            = Core_Html::gui_header( 1, $c->getName() );
 		$args["query"]     = "manager = 1";
-		$args["links"]     = array( "id" => AddToUrl( array( "operation" => "show_edit_worker&id=%s" ) ) );
+		$args["links"]     = array( "id" => AddToUrl( array( "operation" => "show_edit_worker&worker_id=%s" ) ) );
 //		$args["selectors"] = array( "team_members" => __CLASS__ . "::gui_show_team" );
 		//$args["post_file"] .= "operation=company_teams";
 

@@ -443,7 +443,7 @@ class Flavor {
 		$this->load_plugin_textdomain();
 		$shortcodes = Core_Shortcodes::instance();
 		$shortcodes->add(array('flavor'  => array(__CLASS__ . '::static_handle_show', "read"),
-			'log_viewer' => array('Core_Logger::log_viewer', 'view_logs')));
+			'log_viewer' => array('Core_Logger::log_viewer', 'edit_shop_orders')));
 
 		// Init action.
 		do_action( 'flavor_init' );

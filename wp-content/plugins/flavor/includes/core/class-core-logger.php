@@ -89,7 +89,7 @@ class Core_Logger
 		$result = "";
 		$args = self::Args();
 		if (isset($args["row_id"])) return Core_Gem::GemElement("im_log", $args["row_id"], $args);
-		$result .= Core_Gem::GemTable("im_log", $args);
+		$result .= Core_Gem::GemTable("log", $args);
 		return $result;
 	}
 }
