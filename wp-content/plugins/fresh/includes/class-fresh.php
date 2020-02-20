@@ -561,7 +561,7 @@ class Fresh {
 //		$file = plugin_dir_url( __FILE__ ) . 'inventory.js';
 //		wp_enqueue_script( $this->plugin_name, $file, array( 'jquery' ), $this->version, false );
 
-		wp_enqueue_script( 'my_custom_script', plugin_dir_url( __FILE__ ) . 'js/add_to_cart_on_search.js' );
+		wp_enqueue_script( 'my_custom_script', plugin_dir_url( __FILE__ ) . 'js/add_to_cart_on_search.js', array('jquery') );
 		wp_enqueue_script( 'custom_script', plugin_dir_url( __FILE__ ) . 'js/custom_script.js' );
 
 	}
