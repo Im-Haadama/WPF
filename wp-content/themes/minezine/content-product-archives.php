@@ -57,7 +57,7 @@
     $max_price = $product->get_variation_price( 'max' );
     $price_range = esc_attr($currency).''.$min_price.' - '.esc_attr($currency).''.$max_price;
     ?>
-    <a href="<?php echo get_permalink($product_id); ?>" data-quantity="1" class="button product_type_simple add_to_cart_button ajax_add_to_cart srh_addto_cart" data-product_id="8" data-product_sku="" aria-label="Add “banana” to your cart" rel="nofollow">Select options</a>
+    <a href="<?php echo get_permalink($product_id); ?>" data-quantity="1" class="button" data-product_id="<?php echo $product_id; ?>" data-product_sku="" aria-label="Add “banana” to your cart" rel="nofollow">Select options</a>
     <?php 
   } ?>
 </li>
