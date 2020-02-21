@@ -172,7 +172,8 @@ class Fresh {
 		// remove unneeded sorting
 		add_filter( 'woocommerce_catalog_orderby', 'sm_remove_sorting_option_woocommerce_shop' );
 
-
+		add_action( 'init', array( $this, 'fresh_quantity_handler' ) );
+		add_filter( 'woocommerce_loop_add_to_cart_link', array( $this, 'fresh_add_quantity_fields' ), 10, 2 );
 
 
 
@@ -558,13 +559,41 @@ class Fresh {
 		$file = FLAVOR_INCLUDES_URL . 'core/gui/client_tools.js';
 		wp_enqueue_script( 'client_tools', $file, null, $this->version, false );
 
-//		$file = plugin_dir_url( __FILE__ ) . 'inventory.js';
-//		wp_enqueue_script( $this->plugin_name, $file, array( 'jquery' ), $this->version, false );
+	//		$file = plugin_dir_url( __FILE__ ) . 'inventory.js';
+	//		wp_enqueue_script( $this->plugin_name, $file, array( 'jquery' ), $this->version, false );
 
 		wp_enqueue_script( 'my_custom_script', plugin_dir_url( __FILE__ ) . 'js/add_to_cart_on_search.js' );
 		wp_enqueue_script( 'custom_script', plugin_dir_url( __FILE__ ) . 'js/custom_script.js' );
 
 	}
+
+	/*-- Start product quantity +/- on listing -- */
+	public function fresh_add_quantity_fields($html, $product) {
+		if ( $product && $product->is_type( 'simple' ) && $product->is_purchasable() && $product->is_in_stock() && ! $product->is_sold_individually() ) {
+			$html = '<form action="' . esc_url( $product->add_to_cart_url() ) . '" class="cart" method="post" enctype="multipart/form-data">';
+			$html .= woocommerce_quantity_input( array(), $product, false );
+			$html .= '<button type="submit" data-quantity="1" data-product_id="' . $product->id . '" class="button alt ajax_add_to_cart add_to_cart_button product_type_simple">' . esc_html( $product->add_to_cart_text() ) . '</button>';
+			$html .= '</form>';
+		}
+		return $html;
+	}
+
+	public function fresh_quantity_handler() {
+		wc_enqueue_js( '
+		jQuery(function($) {
+		$("form.cart").on("change", "input.qty", function() {
+        $(this.form).find("[data-quantity]").data("quantity", this.value);
+		});
+		' );
+
+		wc_enqueue_js( '
+		$(document.body).on("adding_to_cart", function() {
+			$("a.added_to_cart").remove();
+		});
+		});
+		' );
+	}
+	/*-- End product quantity +/- on listing -- */
 }
 
 

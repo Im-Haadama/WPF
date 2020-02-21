@@ -1679,3 +1679,54 @@ a.remove:hover{
 
 /*-- sort by wider --*/
 .woocommerce-ordering .orderby{width:150px;}
+
+ul.products.columns-4 {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.products.columns-4 .quantity input[type=number]::-webkit-inner-spin-button, 
+.products.columns-4 .quantity input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: textfield;
+  margin: 0; 
+}
+
+.products.columns-4 .quantity input[type=number] {
+  -moz-appearance:textfield;
+}
+
+.quantity .input-text.qty.text{width:60px;box-sizing: border-box;}
+
+.products .add_to_cart_button{ background-color: #ebe9eb !important; }
+
+.quantity .plus {
+  position: absolute;
+  left: 60px;
+  background: none;
+  border: none;
+  color: green;
+  font-weight: bold;
+  font-size: 20px;
+  cursor: pointer;
+  margin-top: -6px;
+  width: 26px;
+  padding: 0;
+  height: 24px;
+}
+.quantity .minus {
+  position: absolute;
+  margin-top: 14px;
+  background: no-repeat;
+  color: green;
+  border: none;
+  font-size: 25px;
+  font-weight: bold;
+  margin-left: 2px;
+  cursor: pointer;
+  line-height: 15px;
+  padding: 0;
+  margin-left: 0;
+  width: 25px;
+  height: 17px;
+  left:61px;
+}

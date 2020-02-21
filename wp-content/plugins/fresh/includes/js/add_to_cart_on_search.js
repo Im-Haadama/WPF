@@ -70,3 +70,39 @@ jQuery(document).ready(function($) {
      }); 
 
 });
+
+jQuery(document).ready(function($){
+
+    $(document).on('click', '.plus', function(e) { 
+
+        $input = $(this).next('input.qty');
+
+        var val = parseInt($input.val());
+
+        var step = $input.attr('step');
+
+        step = 'undefined' !== typeof(step) ? parseInt(step) : 1;
+
+        $input.val( val + step ).change();
+
+    });
+
+    $(document).on('click', '.minus', function(e) {
+
+        $input = $(this).prev('input.qty');
+
+        var val = parseInt($input.val());
+
+        var step = $input.attr('step');
+
+        step = 'undefined' !== typeof(step) ? parseInt(step) : 1;
+
+        if (val > 0) {
+
+            $input.val( val - step ).change();
+
+        }
+
+    });
+    
+});
