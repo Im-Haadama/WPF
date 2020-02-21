@@ -1679,3 +1679,11 @@ a.remove:hover{
 
 /*-- sort by wider --*/
 .woocommerce-ordering .orderby{width:150px;}
+
+.woocommerce .products ul, .woocommerce ul.products{
+  display:flex;
+  flex-wrap: wrap;
+}
+.woocommerce ul.products li.product, .woocommerce-page ul.products li.product{
+  margin-left:2.95%
+}
