@@ -1730,3 +1730,26 @@ ul.products.columns-4 {
   height: 17px;
   left:61px;
 }
+
+/* for 4 products in the search */
+
+.woocommerce .products ul, .woocommerce ul.products{
+  display:flex;
+  flex-wrap: wrap;
+}
+.woocommerce ul.products li.product, .woocommerce-page ul.products li.product{
+  margin-left:2.95%
+}
+
+/* remove arrows from quantity */
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance:textfield;
+}

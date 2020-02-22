@@ -39,7 +39,7 @@ class Core_Data
 				return true;
 			case "data_update":
 				$table_name = GetParam("table_name", true);
-				return self::update_data($table_name);
+				return self::data_update($table_name);
 
 			case "data_save_new":
 				$table_name = GetParam("table_name", true);
@@ -111,7 +111,7 @@ class Core_Data
 		return sql_insert_id();
 	}
 
-	static function update_data($table_name)
+	static function data_update($table_name)
 	{
 		// TODO: adding meta key when needed(?)
 		global $meta_table_info;

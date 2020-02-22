@@ -501,10 +501,11 @@ class Focus_Tasks {
 	static function show_project_wrapper()
 	{
 		$new = GetParam( "new" );
-		if ( $new ) {
+		if ( $new  ) {
 			$project = Focus_Project::create_from_task( $new );
-
-			return self::show_project($project->getId());
+			if ($project)
+				return self::show_project($project->getId());
+			return "project not found";
 		}
 
 		return self::show_project( get_user_id() );
@@ -736,7 +737,7 @@ class Focus_Tasks {
 				if ( ! in_array( $table_name, $allowed_tables ) ) {
 					die ( "invalid table operation" );
 				}
-				if ( Core_Data::update_data( $table_name ) ) {
+				if ( Core_Data::data_update( $table_name ) ) {
 					if ( $table_name == "{$this->table_prefix}task_templates" ) {
 						$row_id = intval( GetParam( "id", true ) );
 						if ( sql_query( "update {$this->table_prefix}task_templates set last_check = null where id = " . $row_id ) ) {
@@ -2100,7 +2101,7 @@ class Focus_Tasks {
 			'focus_template'       => array( 'Focus_tasks::show_template', 'show_tasks' ),
 			'focus_repeating_task' => array( 'Focus_tasks::show_repeating_task', 'show_tasks' ),
 			'focus_team'           => array( 'Focus_tasks::show_team', 'show_teams' ),
-			'focus_project'        => array( 'Focus_tasks::show_project', 'edit_projects' ),
+			'focus_project'        => array( 'Focus_tasks::show_project', null ), // 'edit_projects' ),
 			'focus_project_tasks'  => array( 'Focus_tasks::show_project_tasks', 'show_tasks' ),
 			'focus_worker'         => array( 'Focus_tasks::show_worker', 'show_tasks' )
 		) );

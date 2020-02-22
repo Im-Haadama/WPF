@@ -1434,7 +1434,8 @@ class Core_Html {
 					$length = $r[1][0];
 				}
 				if ( $length > 100 or substr($type, 0, 3) == 'med') {
-					$value = Core_Html::gui_textarea( $input_name, $data, $events );
+					$prepare_data = preg_replace('#<br\s*/?>#i', "\n", $data);
+					$value = Core_Html::gui_textarea( $input_name, $prepare_data, $events );
 				} else {
 					$value = self::GuiInput( $input_name, $data, $args ); // gui_input( $input_name, $data, $field_events, $row_id );
 				}

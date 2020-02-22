@@ -159,7 +159,7 @@ function sql_bind($table_name, &$stmt, $_values)
 			case 'tim':
 			case "med":
 				$types .= "s";
-				$value = escape_string($value);
+				// $value = escape_string($value);
 				break;
 			case "dat":
 				$types .= "s";
