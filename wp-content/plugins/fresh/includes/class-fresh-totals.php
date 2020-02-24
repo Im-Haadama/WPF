@@ -44,7 +44,8 @@ class Fresh_Totals {
 		//             code                           function                  capablity (not checked, for now).
 		return ( array(
 			'fresh_totals'         => array( 'Fresh_Totals::totals', 'edit_shop_orders' ),
-			'fresh_total_table' => array('Fresh_Totals::total_table', 'edit_shop_orders')
+			'fresh_total_table' => array('Fresh_Totals::total_table', 'edit_shop_orders'),
+			'fresh_test' => array("Fresh_Totals::test", null)
 		) );
 	}
 
@@ -124,14 +125,22 @@ class Fresh_Totals {
 			print Core_Html::GuiButton( "btn_supplier_" . $supplier_id, "createSupply(" . $supplier_id . ")", "צור אספקה" );
 		}
 	}
+
+	static function test()
+	{
+		if (get_user_id() == 1)
+		{
+			$order = WC_Order_Factory::get_order(12905);
+			var_dump($order);
+		}
+	}
 }
 
 //
 //		print "<style>
 //table {
 //    font-family: arial, sans-serif;
-//    border-collapse: collapse;
-//}
+//    border-collapse: colb
 //
 //td, th {
 //    border: 1px solid #dddddd;

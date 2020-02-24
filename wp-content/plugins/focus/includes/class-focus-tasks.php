@@ -472,8 +472,8 @@ class Focus_Tasks {
 
 
 			case "show_tasks":
-				$query = Core_Data::data_parse_get( "im_tasklist", array( "operation" ) );
-				$ids   = Core_Data::data_search( "im_tasklist", $query );
+				$query = Core_Data::data_parse_get( "tasklist", array( "operation" ) );
+				$ids   = Core_Data::data_search( "tasklist", $query );
 
 				return self::show_tasks( $ids );
 

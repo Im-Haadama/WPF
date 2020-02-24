@@ -175,10 +175,6 @@ class Fresh {
 		add_action( 'init', array( $this, 'fresh_quantity_handler' ) );
 		add_filter( 'woocommerce_loop_add_to_cart_link', array( $this, 'fresh_add_quantity_fields' ), 10, 2 );
 
-
-
-
-
 //		add_action( 'wp_footer', 'im_footer' );
 //		if (get_user_id() == 1) print __CLASS__ ."<br/>";
 
@@ -194,7 +190,6 @@ class Fresh {
 		$this->loader->add_action( 'wp_enqueue_scripts', $orders, 'enqueue_scripts' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $inventory, 'enqueue_scripts' );
 	}
-
 
 	/**
 	 * Ensures fatal errors are logged so they can be picked up in the status report.
@@ -795,9 +790,6 @@ function im_sort_shipping_services_by_date($rates, $package)
 	$logger = new Core_Logger("check");
 	if ( ! $rates )  return;
 
-//	if ($package) $logger->info(StringVar($package));
-	$logger->info("check1");
-
 	$rate_date = array();
 	foreach( $rates as $rate ) {
 		preg_match_all('/\d{2}\/\d{2}\/\d{4}/', $rate->label,$matches);
@@ -1390,8 +1382,9 @@ function pay_page($atts, $content = null)
 }
 
 /*-- Start product search filter --*/
-function searchfilter($query) {
-
+function searchfilter($query)
+{
+    return $query; // Agla - include post in the messages.
 	if ($query->is_search && !is_admin() ) {
 		$query->set('post_type',array('product'));
 	}
@@ -1552,11 +1545,9 @@ function payment_info_table(){
 /*-- End create payment table --*/
 
 /*-- Start save payment info --*/
-function insert_payment_info( $order_id ) {
-
-
-	if ( ! $order_id )
-		return;
+function insert_payment_info( $order_id )
+{
+	if ( ! $order_id ) return;
 	if( ! get_post_meta( $order_id, '_thankyou_action_done', true ) ) {
 
 		$order = wc_get_order( $order_id );
@@ -1636,4 +1627,12 @@ function fresh_custom_payment_is_woocommerce_active()
 function wcs_users_logged_in_longer( $expire ) {
 	// 1 month in seconds
 	return 2628000;
+}
+
+add_filter( 'woocommerce_register_post_type_product', 'cinch_add_revision_support' );
+
+function cinch_add_revision_support( $args ) {
+	$args['supports'][] = 'revisions';
+
+	return $args;
 }

@@ -13,17 +13,17 @@
   ?>
 
   <a href="<?php echo get_permalink(); ?>" class="woocommerce-LoopProduct-link woocommerce-loop-product__link">
-    <?php if( $product->is_on_sale() ) { 
+    <?php if( $product and $product->is_on_sale() ) { // Allow non product to display. i.e - posts
     echo '<span class="onsale"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">s a l e!</font></font></span>';
     }
     ?>
-    <?php if ( has_post_thumbnail() ) { 
+    <?php if ( 1 or has_post_thumbnail() ) { // Allow non thumb to be displayed
       echo get_the_post_thumbnail( $product_id, 'thumbnail', array( 'class' => '' ) );
     } ?>
-    <h2 class="woocommerce-loop-product__title"><?php the_title(); ?></h2> 
+    <h2 class="woocommerce-loop-product__title"><?php the_title(); ?></h2>
     <span class="price">
-      <?php 
-      if( $product->is_type( 'simple' ) ){ 
+      <?php
+      if( $product and $product->is_type( 'simple' ) ){
         $sale_price = $product->get_sale_price();
         $reg_price = $product->get_regular_price();
         if( $product->is_on_sale() ) {
@@ -31,7 +31,7 @@
         }else{
           echo '<span class="woocommerce-Price-amount amount"><span class="woocommerce-Price-currencySymbol">'.$currency.'</span>'.$reg_price.'</span>';
        }  
-      } elseif( $product->is_type( 'variable' ) ){ 
+      } elseif( $product and $product->is_type( 'variable' ) ){
         $min_price = $product->get_variation_price( 'min' );
         $max_price = $product->get_variation_price( 'max' );
         if($min_price != $max_price) {
@@ -44,7 +44,7 @@
   </span>
   </a>          
   <?php 
-  if( $product->is_type( 'simple' ) ){  ?>
+  if( $product and $product->is_type( 'simple' ) ){  ?>
 
     <form class="cart" id="crt-form"  method="post" enctype="multipart/form-data">
       <div class="quantity">
@@ -56,7 +56,7 @@
       <button type="submit" name="add-to-cart" value="<?php echo $product_id; ?>" class="button product_type_simple add_to_cart_button ajax_add_to_cart srh_addto_cart"><?php echo esc_html( $product->single_add_to_cart_text() ); ?></button>
     </form> 
     <?php 
-  } elseif( $product->is_type( 'variable' ) ){
+  } elseif( $product and $product->is_type( 'variable' ) ){
     $min_price = $product->get_variation_price( 'min' );
     $max_price = $product->get_variation_price( 'max' );
     $price_range = esc_attr($currency).''.$min_price.' - '.esc_attr($currency).''.$max_price;
