@@ -472,10 +472,9 @@ class Fresh_Catalog {
 
 	static function GetBuyPrice( $product_id, $supplier ) {
 		// print "prod_id = " . $product_id . " supplier = " . $supplier . "<br/>";
-
 		$alternatives = alternatives( $product_id );
 		for ( $i = 0; $i < count( $alternatives ); $i ++ ) {
-			if ( $alternatives[ $i ]->getSupplierId() == $supplier ) {
+			if ( $supplier == -1 or $alternatives[ $i ]->getSupplierId() == $supplier) {
 				return $alternatives[ $i ]->getPrice();
 			}
 		}

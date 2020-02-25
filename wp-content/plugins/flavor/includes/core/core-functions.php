@@ -470,7 +470,7 @@
 	 * @return string|null
 	 */
 	function AddParamToUrl($url, $param_name, $param_value = null) {
-		$ignore_list = array( "page" ); // Would be removed from base url.
+		$ignore_list = array( "page_number" ); // Would be removed from base url.
 		$query_parts = [];
 		if ( is_null( $param_value ) and ! is_array( $param_name ) ) {
 			die ( __FUNCTION__ . ": bad usage" );

@@ -245,11 +245,10 @@ class Focus {
 		$ignore_list = array("operation");
 		$input = null;
 
-
 		////////////////////////
 		// called by post.php //
 		////////////////////////
-		$result = apply_filters( $operation, $input, GetParams($ignore_list));
+		$result = apply_filters( $operation, $input, null);
 		if ( $result ) return $result;
 
 		// Handle global operation

@@ -1530,6 +1530,8 @@ function supplier_doc()
 
 function new_supply()
 {
+	$post_file = "wp-content/plugins/fresh/post.php";
+
 	$data = "";
 	$data .= Core_Html::gui_header( 1, "יצירת אספקה" );
 	$data .= gui_table_args(array(
@@ -1553,7 +1555,7 @@ function new_supply()
 	$data .=gui_table_args( array( array( "פריט", "כמות", "קג או יח" ) ),
 			"supply_items" );
 
-	$data .= Core_Html::GuiButton( "btn_add_line", "supply_new_add_line()", "הוסף שורה" );
+	$data .= Core_Html::GuiButton( "btn_add_line", "supply_new_add_line('". $post_file . "')", "הוסף שורה" );
 	$data .= Core_Html::GuiButton( "btn_add_item", "supply_add()", "הוסף אספקה" );
 
 	$data .='<form name="upload_csv" id="upcsv" method="post" enctype="multipart/form-data">
@@ -1563,7 +1565,7 @@ function new_supply()
 			<input type="hidden" name="post_type" value="product"/>
 		</form>';
 
-	$data .= "<script> supply_new_add_line(); </script>";
+	$data .= "<script> supply_new_add_line('" . $post_file . "'); </script>";
 	return $data;
 }
 

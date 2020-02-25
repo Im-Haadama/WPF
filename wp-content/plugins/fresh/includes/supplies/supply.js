@@ -253,7 +253,7 @@ function supply_add()
     xmlhttp.send();
 }
 
-function supply_new_add_line()
+function supply_new_add_line(post_file)
 {
     let item_table = document.getElementById("supply_items");
     let line_idx = item_table.rows.length;
@@ -261,7 +261,7 @@ function supply_new_add_line()
     let product = new_row.insertCell(0);
     // product.innerHTML = "<input id=\"itm_" + line_idx + "\" list=\"items\" \">";
     let list_name = "product_list_" + item_table.rows.length;
-    product.innerHTML = "<input id=\"itm_" + line_idx + "\" list=\"" + list_name + "\" onkeyup=\"update_list('products', this)\"><datalist id=\"" + list_name + "\"></datalist>";
+    product.innerHTML = "<input id=\"itm_" + line_idx + "\" list=\"" + list_name + "\" onkeyup=\"update_list('" +post_file + "', 'products', this)\"><datalist id=\"" + list_name + "\"></datalist>";
 
     let quantity = new_row.insertCell(1);
     quantity.innerHTML = "<input id = \"qua_" + line_idx + "\" >"; // onkeypress=\"select_unit(" + line_idx + ")\"

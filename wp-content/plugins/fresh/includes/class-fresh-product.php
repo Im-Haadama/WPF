@@ -296,7 +296,7 @@ class Fresh_Product {
 	}
 
 	function getPrice($customer_type = "regular") {
-		return get_price_by_type( $this->id, $customer_type );
+		return Fresh_Pricing::get_price_by_type( $this->id, $customer_type );
 	}
 
 	function getRegularPrice() {
@@ -347,6 +347,35 @@ class Fresh_Product {
 		if (is_array($r)) return $r[0];
 		return $r;
 	}
+
+	static function gui_select_product( $id, $data = null, $args = null)
+// $events, $datalist = "products" ) // 'onchange="select_product(' . $line_id . ')"'
+	{
+		//	print "data=$data<br/>";
+		if (! $args)
+			$args = array();
+
+		if ($data > 0)
+		{
+//			print "has id";
+			$p = new Fresh_Product($data);
+			$product_name = $p->getName();
+		} else {
+			$product_name = $data;
+		}
+		if (isset($args["edit"]) and !$args["edit"]) return $product_name;
+		$args["selected"] = $data;
+		$args["name"] = "post_title";
+		$args["value"] = $product_name;
+		$args["datalist"] = true;
+		$args["id_field"] = "ID";
+		$args["include_id"] = true;
+		$args["post_file"] = "/wp-content/plugins/fresh/post.php";
+
+		// return GuiSelectTable( $id, "im_products", $args);
+		return Core_Html::GuiAutoList($id, "products", $args);
+	}
+
 }
 
 class Fresh_ProductIterator implements  Iterator {

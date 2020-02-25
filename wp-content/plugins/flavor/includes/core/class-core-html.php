@@ -985,12 +985,13 @@ class Core_Html {
 	 * @return string
 	 */
 	static function GuiAutoList( $id, $list_name, $args ) {
-		if ( ! $args ) {
-			$args = [];
+		$post_file = GetArg($args, "post_file", null);
+		if ( ! $post_file ) {
+			return __FUNCTION__ . ": Must send post_file";
 		}
 		// var_dump($args);
 		// //	$selected = GetArg($args, "selected", null);
-		$events         = GetArg( $args, "events", "" ) . ' onkeyup="update_list(\'' . $list_name . '\', this)"';
+		$events         = GetArg( $args, "events", "" ) . ' onkeyup="update_list(\'' . $post_file . '\', \'' . $list_name . '\', this)"';
 		$args["events"] = $events;
 		$value          = GetArg( $args, "selected", null );
 
@@ -1572,6 +1573,26 @@ class Core_Html {
 			$result .= self::GuiTreeBranch($branch, $args = array());
 
 		$result .= "</ul>";
+
+		return $result;
+	}
+
+	static function NavTabs($links, $args = null)
+	{
+		$nav_class = GetArg($args, "nav_tab_wrapper", "nav-tab-wrapper");
+		$result = '<nav class=' . $nav_class . '"tab">';
+
+		$args = [];
+		$args["class"] = GetArg($args, "nav_tab", "nav-tab");
+
+		foreach($links as $key => $link)
+		{
+			if (! is_array($link) or count($link) < 2){
+				return "Tab elements should be seq array with 2 elements: [0]name, [1]link";
+			}
+			$result .= Core_Html::GuiHyperlink($link[0], $link[1], $args);
+		}
+		$result .= "</nav>";
 
 		return $result;
 	}

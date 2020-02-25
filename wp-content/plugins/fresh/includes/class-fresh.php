@@ -117,6 +117,9 @@ class Fresh {
 	 * @since 2.3
 	 */
 	private function init_hooks() {
+	    // Admin scripts
+		add_action('admin_enqueue_scripts', array($this, 'admin_scripts'));
+
 		// register_activation_hook( WC_PLUGIN_FILE, array( 'Fresh_Install', 'install' ) );
 		register_shutdown_function( array( $this, 'log_errors' ) );
 		add_action( 'after_setup_theme', array( $this, 'setup_environment' ) );
@@ -216,9 +219,9 @@ class Fresh {
 
 		$menu->AddMenu('General', 'Fresh', 'show_manager', 'fresh', __CLASS__ . '::general_settings');
 		$menu->AddSubMenu('fresh', 'edit_shop_orders',
-			array(array('page_title' => 'General setting',
-				'menu_title' => 'General setting',
-				'menu_slug' => 'general',
+			array(array('page_title' => 'Settings',
+				'menu_title' => 'Settings',
+				'menu_slug' => 'settings',
 				'function' => __CLASS__ . '::general_settings'),
 			array('page_title' => 'Payment List',
 			      'menu_title' => 'Payment list',
@@ -248,6 +251,7 @@ class Fresh {
 		$this->define( 'FRESH_INCLUDES', FRESH_ABSPATH . '/includes/' );
 		$this->define( 'FRESH_DELIMITER', '|' );
 		$this->define( 'FRESH_LOG_DIR', $upload_dir['basedir'] . '/fresh-logs/' );
+		$this->define( 'FRESH_INCLUDES_URL', plugins_url() . '/fresh/includes/' ); // For js
 
 		$this->define( 'FLAVOR_INCLUDES_URL', plugins_url() . '/flavor/includes/' ); // For js
 		$this->define( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path(__FILE__) . '../../flavor/includes/' );  // for php
@@ -286,6 +290,11 @@ class Fresh {
 
 	function handle_operation($operation)
 	{
+		$input = null;
+
+		$result = apply_filters( $operation, $input, null);
+		if ( $result ) return $result;
+
 		$module = strtok($operation, "_");
 		if ($module === "data")
 			return Core_Data::handle_operation($operation);
@@ -315,9 +324,8 @@ class Fresh {
 
 			case "mission_stop_accept_anonymous":
 				return $this->delivery_manager->stop_accept();
-
-
 		}
+		return false;
 	}
 
 	static function new_customer($order_id)
@@ -512,6 +520,7 @@ class Fresh {
 
 //		$this->shortcodes->do_init();
 		$this->suppliers->init();
+		Fresh_Basket::init();
 
 		$this->enqueue_scripts();
 
@@ -585,7 +594,23 @@ class Fresh {
 		wp_enqueue_script( 'my_custom_script', plugin_dir_url( __FILE__ ) . 'js/add_to_cart_on_search.js', array('jquery') );
 		wp_enqueue_script( 'custom_script', plugin_dir_url( __FILE__ ) . 'js/custom_script.js' );
 
+
+
 	}
+
+	public function admin_scripts()
+    {
+        $file = FRESH_INCLUDES_URL . 'js/admin.js';
+
+	    wp_register_script( 'fresh_admin', $file);
+
+	    $params = array(
+	    	'admin_post' => '/wp-content/plugins/fresh/post.php'
+	    );
+	    wp_localize_script('fresh_admin', 'fresh_admin_params', $params);
+
+	    wp_enqueue_script('fresh_admin');
+    }
 
 	/*-- Start product quantity +/- on listing -- */
 	public function fresh_add_quantity_fields($html, $product) {
@@ -618,6 +643,36 @@ class Fresh {
 	static function general_settings()
 	{
 		$result = Core_Html::gui_header(1, "general settings");
+		$url = AddToUrl(array("tab" => "baskets", "page" => "settings"));
+		$tabs = [];
+		$args = [];
+
+		$tab = GetParam("tab", false, "baskets");
+
+		$tabs["baskets"] = array(
+			"baskets",
+			AddToUrl(array("page" => "settings","tab" => "baskets")),
+			Fresh_Basket::settings($url)
+		 );
+
+		$tabs["paths"] = array(
+			"paths",
+			AddToUrl(array("page" => "settings","tab" => "paths")),
+			Fresh_Basket::settings($url)
+		);
+
+//		array_push( $tabs, array(
+//			"workers",
+//			"Workers",
+//			self::company_workers( $company, $args )
+//		) );
+
+		$args["btn_class"] = "nav-tab";
+		$args["tabs_load_all"] = true;
+        $args["nav_tab_wrapper"] = "nav-tab-wrapper woo-nav-tab-wrapper";
+
+		$result .= Core_Html::NavTabs($tabs, $args);
+		$result .= $tabs[$tab][2];
 
 		print $result;
 	}

@@ -153,7 +153,7 @@ function search_table(table_name, url = null)
 //     execute_url(request, finish_action);
 // }
 
-function update_list(list_name, obj)
+function update_list(post_file, list_name, obj)
 {
     if (obj.value.length >= 2 && obj.value.length <= 7)
         execute_url(post_file +"?operation=data_auto_list&list=" + list_name + "&prefix=" + obj.value, do_update_list, obj);
