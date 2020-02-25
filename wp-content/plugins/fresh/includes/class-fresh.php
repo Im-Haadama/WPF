@@ -133,7 +133,6 @@ class Fresh {
 		add_action( 'woocommerce_checkout_process', 'wc_minimum_order_amount' );
 		add_action( 'woocommerce_before_cart', 'wc_minimum_order_amount' );
 		add_action( 'woocommerce_checkout_order_processed', 'wc_minimum_order_amount' );
-		add_action( 'admin_menu', 'im_admin_menu' );
 		add_filter( 'woocommerce_available_shipping_methods', 'hide_shipping_if_cat_is_orange', 10, 1 );
 		add_action( 'woocommerce_before_calculate_totals', 'im_woocommerce_update_price', 99 );
 		add_filter( 'woocommerce_cart_item_price', 'im_show_nonsale_price', 10, 2 );
@@ -163,7 +162,7 @@ class Fresh {
 		register_activation_hook(__FILE__, 'payment_info_table');
 		add_action('admin_init', 'wp_payment_list_admin_script');
 		add_action('admin_print_styles', 'wp_payment_list_admin_styles');
-		add_action('admin_menu', 'payment_list_menu');
+		add_action('admin_menu', __CLASS__ . '::admin_menu');
 
 		// Product order in category
 		add_filter( 'woocommerce_default_catalog_orderby_options', 'sm_custom_woocommerce_catalog_orderby' );
@@ -209,6 +208,32 @@ class Fresh {
 			);
 			do_action( 'fresh_shutdown_error', $error );
 		}
+	}
+
+	static function admin_menu()
+	{
+		$menu = new Core_Admin_Menu();
+
+		$menu->AddMenu('General', 'Fresh', 'show_manager', 'fresh', __CLASS__ . '::general_settings');
+		$menu->AddSubMenu('fresh', 'edit_shop_orders',
+			array(array('page_title' => 'General setting',
+				'menu_title' => 'General setting',
+				'menu_slug' => 'general',
+				'function' => __CLASS__ . '::general_settings'),
+			array('page_title' => 'Payment List',
+			      'menu_title' => 'Payment list',
+			      'menu_slug' => 'payment_list',
+			      'function' => 'payment_list')
+			));
+
+			//               parent_slug, page_title,    menu_title,      capability,        memu_slug,     function, position
+//			add_submenu_page('fresh',    'Packing',      'Packing',      'edit_shop_orders', 'fresh_packing', __CLASS__ . '::fresh_store_packing_page',
+//				'dashicons-tickets', 6 );
+//			add_menu_page( 'Fresh Store', 'ניהול ספקים', 'manage_options', 'im-haadama/supplier_account.php', 'fresh_store_supplier_account_page',
+//				'dashicons-tickets', 6 );
+
+			//	add_menu_page( 'Fresh Store', 'Fresh Store', 'manage_options', 'im-haadama/admin.php', 'fresh_store_admin_page',
+//        'dashicons-tickets', 6 );
 	}
 
 	/**
@@ -589,6 +614,13 @@ class Fresh {
 		' );
 	}
 	/*-- End product quantity +/- on listing -- */
+
+	static function general_settings()
+	{
+		$result = Core_Html::gui_header(1, "general settings");
+
+		print $result;
+	}
 }
 
 
@@ -735,15 +767,6 @@ function custom_add_to_cart_quantity_handler() {
 		});
 	' );
 	}
-}
-
-function im_admin_menu() {
-//	add_menu_page( 'Fresh Store', 'Fresh Store', 'manage_options', 'im-haadama/admin.php', 'fresh_store_admin_page',
-//        'dashicons-tickets', 6 );
-	add_menu_page( 'Fresh Store', 'תפריט אריזה', 'manage_options', 'im-haadama/packing.php', 'fresh_store_packing_page',
-		'dashicons-tickets', 6 );
-	add_menu_page( 'Fresh Store', 'ניהול ספקים', 'manage_options', 'im-haadama/supplier_account.php', 'fresh_store_supplier_account_page',
-		'dashicons-tickets', 6 );
 }
 
 function register_awaiting_shipment_order_status() {
@@ -1478,13 +1501,6 @@ function sm_custom_woocommerce_catalog_orderby( $sortby ) {
 /*-- Start add menu page-- */
 function payment_list() {
 	include( FRESH_INCLUDES . 'payment_list.php' );
-}
-function payment_list_menu()
-{
-	if(current_user_can('administrator'))
-	{
-		add_menu_page('Payment', 'Payment List', 'administrator', 'payment_list','payment_list');
-	}
 }
 /*-- end menu page-- */
 

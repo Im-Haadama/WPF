@@ -805,7 +805,7 @@ class Core_Data
 //		print $sql; print "<br/>";
 
 			$stmt = sql_prepare($sql);
-			sql_bind($tbl, $stmt, $params);
+			sql_bind($table_prefix . $tbl, $stmt, $params);
 			if (! $stmt->execute())
 			{
 				return "no results";

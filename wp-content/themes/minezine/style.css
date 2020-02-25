@@ -1697,7 +1697,10 @@ ul.products.columns-4 {
 
 .quantity .input-text.qty.text{width:60px;box-sizing: border-box;}
 
-.products .add_to_cart_button{ background-color: #ebe9eb !important; }
+.products .add_to_cart_button{
+  background-color: #8cc540 !important;
+  color: #ec1e28;
+}
 
 .quantity .plus {
   position: absolute;
