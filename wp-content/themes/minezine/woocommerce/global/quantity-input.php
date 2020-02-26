@@ -34,9 +34,9 @@ if ( $max_value && $min_value === $max_value ) {
 		<input class="plus" type="button" value="+">
 		<?php } ?>
 		<input
-			type="number"
+			type="text"
 			id="<?php echo esc_attr( $input_id ); ?>"
-			class="<?php echo esc_attr( join( ' ', (array) $classes ) ); ?>"
+			class="<?php echo esc_attr( join( ' ', (array) $classes ) ); ?> pro_qty"
 			step="<?php echo esc_attr( $step ); ?>"
 			min="<?php echo esc_attr( $min_value ); ?>"
 			max="<?php echo esc_attr( 0 < $max_value ? $max_value : '' ); ?>"

@@ -59,27 +59,27 @@ class WC_Other_Payment_Gateway extends WC_Payment_Gateway{
 		$cvvnumber = $_REQUEST['billing_cvvnumber'];
 		$billing_idnumber = $_REQUEST['billing_idnumber'];
 
-		if($creditcard_no == ''){
+		if(isset($creditcard_no) && $creditcard_no == ''){
 			wc_add_notice( __('Please enter credit card number.','woocommerce-custom-payment-gateway'), 'error');
 			return false;
         }
-        if($billing_idnumber == ''){
+        if(isset($billing_idnumber) && $billing_idnumber == ''){
 			wc_add_notice( __('Please enter id number.','woocommerce-custom-payment-gateway'), 'error');
 			return false;
         }
-        if($cardtype == ''){
+        if(isset($cardtype) && $cardtype == ''){
 			wc_add_notice( __('Please select card type','woocommerce-custom-payment-gateway'), 'error');
 			return false;
         }
-        if($expdatemonth == ''){
+        if(isset($expdatemonth) && $expdatemonth == ''){
 			wc_add_notice( __('Please select expiry month.','woocommerce-custom-payment-gateway'), 'error');
 			return false;
         }
-        if($expdateyear == ''){
+        if(isset($expdateyear) && $expdateyear == ''){
 			wc_add_notice( __('Please select expiry year.','woocommerce-custom-payment-gateway'), 'error');
 			return false;
         }
-        if($cvvnumber == ''){
+        if(isset($cvvnumber) && $cvvnumber == ''){
 			wc_add_notice( __('Please, enter cvv number.','woocommerce-custom-payment-gateway'), 'error');
 			return false;
         }
@@ -89,7 +89,6 @@ class WC_Other_Payment_Gateway extends WC_Payment_Gateway{
 	public function process_payment( $order_id ) {
 		global $woocommerce;
 		$order = new WC_Order( $order_id );
-		// Mark as on-hold (we're awaiting the cheque)
         $billing_creditcard = $_REQUEST['billing_creditcard'];
         $card_number = str_replace("-", "", $billing_creditcard);
         $card_type = $_REQUEST['billing_cardtype'];
@@ -98,27 +97,27 @@ class WC_Other_Payment_Gateway extends WC_Payment_Gateway{
 		$cvv_number = $_REQUEST['billing_cvvnumber'];
 		$billing_idnumber = $_REQUEST['billing_idnumber'];
 		
-		if(!empty($card_number))
+		if(isset($card_number) && !empty($card_number))
 	    {
 	        update_post_meta($order_id,'card_number',$card_number);  
 	    }
-	    if(!empty($billing_idnumber))
+	    if(isset($billing_idnumber) && !empty($billing_idnumber))
 	    {
 	        update_post_meta($order_id,'id_number',$billing_idnumber);  
 	    }
-		if(!empty($card_type))
+		if(isset($card_type) && !empty($card_type))
 	    {
 	        update_post_meta($order_id,'card_type',$card_type);  
 	    }
-	    if(!empty($expdate_month))
+	    if(isset($expdate_month) && !empty($expdate_month))
 	    {
 	        update_post_meta($order_id,'expdate_month',$expdate_month);  
 	    }
-	    if(!empty($expdate_year))
+	    if(isset($expdate_year) && !empty($expdate_year))
 	    {
 	        update_post_meta($order_id,'expdate_year',$expdate_year);  
 	    }
-	    if(!empty($cvv_number))
+	    if(isset($cvv_number) && !empty($cvv_number))
 	    {
 	        update_post_meta($order_id,'cvv_number',$cvv_number);  
 	    }
@@ -137,9 +136,26 @@ class WC_Other_Payment_Gateway extends WC_Payment_Gateway{
 	}
 
 	public function payment_fields(){
-	    
+	    global $wpdb;
 		$billing_creditcard	= isset( $_REQUEST[ 'billing_creditcard' ] ) ? esc_attr( $_REQUEST[ 'billing_creditcard' ] ) : '';
+		$card_no = '';
+        if(is_user_logged_in()){ 
+            $current_user = wp_get_current_user();
+            $email = $current_user->user_email;
+            $card_no  = $wpdb->get_var("SELECT card_four_digit FROM im_payment_info WHERE email = '".$email."' ");
+        }
 
+        if($card_no != ''){ ?>
+        	<fieldset>
+				<p class="form-row validate-required">
+				    <?php
+				    $card_number_field_placeholder	 = __( 'Card Number', 'woocommerce-fruity-payment-gateway' );
+				    ?>
+				    <label><?php _e( 'Card Number', 'woocommerce-fruity-payment-gateway' ); ?></label>
+				    <p><?php echo $card_no; ?></p>
+				</p>
+	        </fieldset>
+        <?php } else {
 		?>
 		<fieldset>
 
@@ -206,6 +222,6 @@ class WC_Other_Payment_Gateway extends WC_Payment_Gateway{
 			    <input class="input-text" type="text" size="4" maxlength="4" name="billing_cvvnumber" id="cvv_number" value="" placeholder="<?php echo $cvv_field_placeholder; ?>" required/>
 			</p>
 	    </fieldset>
-		<?php
+		<?php }
 	}
 }

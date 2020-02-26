@@ -1599,7 +1599,13 @@ input[type="reset"]:hover {
 @media screen and (max-width: 782px) {
   .admin-bar #header .sticky-nav {
     top: 46px !important;
-} 
+  }
+
+  /*-- equal height for product name and image on listing on mobile --*/ 
+  .woocommerce ul.products[class*="columns-"] li.product, .woocommerce-page ul.products[class*="columns-"] li.product {
+    width: 42%;
+    margin: 0 4% 2.992em;
+  }
 }
 
 @media screen and (max-width: 600px) {
@@ -1685,6 +1691,7 @@ ul.products.columns-4 {
   flex-wrap: wrap;
 }
 
+/* product listing +/- quantity input */
 .products.columns-4 .quantity input[type=number]::-webkit-inner-spin-button, 
 .products.columns-4 .quantity input[type=number]::-webkit-outer-spin-button { 
   -webkit-appearance: textfield;
@@ -1755,4 +1762,19 @@ input::-webkit-inner-spin-button {
 /* Firefox */
 input[type=number] {
   -moz-appearance:textfield;
+}
+
+/*-- equal height for product name and image on listing --*/
+.woocommerce ul.products li.product, .woocommerce-page ul.products li.product {
+  display: flex;
+  flex-direction: column;
+}
+.woocommerce ul.products li.product a {
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+.woocommerce ul.products li.product a h2 {
+  flex-grow: 1;
 }

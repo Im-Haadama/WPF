@@ -50,7 +50,7 @@
       <div class="quantity">
         <input type="hidden" name="product_id" id="product_id" value="<?php $product_id; ?>">
         <input class="plus" type="button" value="+">
-        <input  type="number" step="1" min="1" name="quantity" value="1" title="Qty" class="input-text qty text">
+        <input  type="text" step="1" min="1" name="quantity" value="1" title="Qty" class="input-text qty text pro_qty">
         <input class="minus" type="button" value="-">
       </div>
       <button type="submit" name="add-to-cart" value="<?php echo $product_id; ?>" class="button product_type_simple add_to_cart_button ajax_add_to_cart srh_addto_cart"><?php echo esc_html( $product->single_add_to_cart_text() ); ?></button>
