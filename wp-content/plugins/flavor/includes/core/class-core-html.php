@@ -259,6 +259,7 @@ class Core_Html {
 			}
 			$data .= "<option value=\"" . $id_text . htmlspecialchars( $row[ $field_name ] ) . "\"";
 			foreach ( $row as $key => $data_value ) {
+				if ($key == $id_field) $key = "id";
 				if ( $key != $field_name ) {
 					$data .= " data-" . $key . '="' . $data_value . '" ';
 				}

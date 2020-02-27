@@ -23,7 +23,9 @@ class Fresh_Basket {
 		AddAction( "add_to_basket", __CLASS__ . "::add_to_basket" );
 		AddAction( "remove_from_basket", __CLASS__ . "::remove_from_basket" );
 		AddAction( "basket_create", __CLASS__ . "::create" );
+		AddAction( "basket_delete", __CLASS__ . "::delete" );
 	}
+
 	public function GetQuantity( $prod_id ) {
 		$sql = "SELECT quantity FROM im_baskets WHERE basket_id = " . $this->id .
 		       " AND product_id = " . $prod_id;
@@ -31,6 +33,7 @@ class Fresh_Basket {
 		// print $sql;
 		return sql_query_single_scalar( $sql );
 	}
+
 	function get_basket_date( $basket_id ) {
 		$sql = 'SELECT max(date) FROM im_baskets WHERE basket_id = ' . $basket_id;
 
@@ -134,6 +137,8 @@ class Fresh_Basket {
 			} else
 				$line .= "<td></td><td></td>";
 			$line .= "<td>" . $p->getTerms(true);
+			$line .= "<td>" . Core_Html::GuiHyperlink("edit", "/wp-admin/post.php?post=$basket_id&action=edit") . "</td>";
+			$line .= "<td>" . Core_Html::GuiButton("btn_delete_" . $basket_id, "Delete", array("action"=>"basket_delete(" . $basket_id . ")")) . "</td>";
 			$line .= "</tr>";
 
 			$data .= $line;
@@ -162,7 +167,6 @@ class Fresh_Basket {
 	}
 
 	static function get_total_sellprice( $basket_id ) {
-		return 0;
 		if (! ($basket_id > 0)) {
 			print "bad basket: $basket_id";
 			return 0;
@@ -271,12 +275,31 @@ class Fresh_Basket {
 		$categ = GetParam("basket_categ", false, null);
 		$prefix = get_table_prefix();
 
-		$basket_id = Fresh_Catalog::DoCreateProduct($name, $price, null, $categ);
+		$cate_name = null;
+		if ($categ) {
+			$c = new Fresh_Category($categ);
+			$categ_name = $c->getName();
+		}
+
+		// $product_name, $sell_price, $supplier_name, $categ = null, $image_path = null, $sale_price = 0
+		$basket_id = Fresh_Catalog::DoCreateProduct($name, $price, null, $categ_name);
 		if (sql_query("insert into ${prefix}baskets (basket_id, date, product_id, quantity) values ($basket_id, NOW(), 0, 0)")){
 			return sql_insert_id();
 		}
 
 
 		// $new_prod = Fresh_Product::
+	}
+
+	static function delete()
+	{
+		$basket_id = GetParam("basket_id", true);
+		$prefix = get_table_prefix();
+
+		// Remove from baskets table
+		return sql_query("delete from {$prefix}baskets where basket_id = " . $basket_id) and
+
+		// Remove the product
+		Fresh_Catalog::DraftItems( array( $basket_id ) );
 	}
 }

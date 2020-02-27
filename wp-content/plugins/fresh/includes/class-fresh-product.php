@@ -386,7 +386,6 @@ class Fresh_Product {
 		// return GuiSelectTable( $id, "im_products", $args);
 		return Core_Html::GuiAutoList($id, "products", $args);
 	}
-
 }
 
 class Fresh_ProductIterator implements  Iterator {

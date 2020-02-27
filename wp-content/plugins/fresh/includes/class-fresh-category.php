@@ -23,15 +23,17 @@ class Fresh_Category {
 
 		$datalist_id = $id . "_datalist";
 		$prefix = get_table_prefix();
-//		return Core_Html::TableDatalist($datalist_id , "{$prefix}categories", $args ) .
-//		        Core_Html::GuiInputDatalist($id, $datalist_id);
+		return Core_Html::TableDatalist($datalist_id , "{$prefix}categories", $args ) .
+		        Core_Html::GuiInputDatalist($id, $datalist_id);
 
-		return Core_Html::GuiAutoList($id, "categories", $args);
+//		return Core_Html::GuiAutoList($id, "categories", $args);
 	}
 
 	function get_missing_pictures()
 	{
 		$result = array();
+		if (! class_exists('Fresh_ProductIterator')) new Fresh_Product(1); // Initiate auto load
+
 		$iter = new Fresh_ProductIterator();
 		$iter->iterateCategory( $this->term->term_id );
 

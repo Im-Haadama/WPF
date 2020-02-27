@@ -69,6 +69,8 @@ class Fresh_Catalog {
 		return $post_id;
 	}
 
+	// "/wp-content/plugins/fresh/post.php?operation=basket_create&basket_name=%D7%9E%D7%95%D7%A1%D7%99%D7%A3&basket_price=99&categ=19"
+	// מוסיף, 99, ירקות אורגניים - 19
 	static function DoCreateProduct( $product_name, $sell_price, $supplier_name, $categ = null, $image_path = null, $sale_price = 0 ) {
 		$post_information = array(
 			'post_title'  => $product_name,
@@ -564,8 +566,6 @@ class Fresh_Catalog {
 			$setting = get_user_meta( $client_id, 'auto_mail', true );
 			$day     = strtok( $setting, ":" );
 			$categ   = strtok( ":" );
-			print "day: " . $day . "<br/>";
-			print "categ: " . $categ . "<br/>";
 			$customer_type = customer_type( $client_id );
 
 			if ( $day == date( 'w' ) or $client_id == 1) {

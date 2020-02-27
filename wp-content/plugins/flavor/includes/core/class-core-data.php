@@ -27,7 +27,7 @@ class Core_Data
 				$lists = array("products" => array("table" => "im_products", "field_name" =>'post_title', "include_id" => 0, "id_field" => "ID"),
 				"tasks" => array("table"=>"im_tasklist", "field_name" => "task_description", "include_id" => 1, "id_field" => "id", "query" => " status = 0"),
 				"users" => array("table" => "wp_users", "field_name" => "display_name", "id_field" => "ID"),
-					"categ" => array("table"=>"im_categories", "include_id" => 0, "id_field"=>"term_id"));
+					"categories" => array("table"=>"im_categories", "include_id" => 0, "id_field"=>"term_id", "field_name" => "name"));
 				$list = GetParam("list", true);
 				if (! isset($lists[$list])) die ("Error: unknown list " . $list);
 				$table_name = $lists[$list]["table"];
@@ -208,25 +208,26 @@ class Core_Data
 	}
 
 	static function auto_list($table_name, $field, $prefix, $args = null)
-{
-	$data = "";
+	{
+		$data = "";
 
-	// print "field=$field<br/>";
-	if (!$args) $args = [];
-	$id_field = GetArg($args, "id_field", "id");
-	$include_id = GetArg($args, "include_id", false);
-	$datalist = GetArg($args, "datalist", null);
+		// print "field=$field<br/>";
+		if (!$args) $args = [];
+		$id_field = GetArg($args, "id_field", "id");
+		$include_id = GetArg($args, "include_id", false);
+		$datalist = GetArg($args, "datalist", null);
 
-	$args["sql"] = "select $id_field, $field from $table_name where $field like '%" . $prefix . "%'";
-	$query = GetArg($args, "query", null); 	if ($query) $args["sql"] .= " and " . $query;
-	// print $args["sql"] . "<br/>";
-	$args["field"] = $field;
-	$args["include_id"] = $include_id;
+		$args["sql"] = "select $id_field, $field from $table_name where $field like '%" . $prefix . "%'";
+		$query = GetArg($args, "query", null); 	if ($query) $args["sql"] .= " and " . $query;
+		// print $args["sql"] . "<br/>";
+		$args["field"] = $field;
+		$args["include_id"] = $include_id;
 
-	$data .= Core_Html::TableDatalist($datalist, $table_name, $args);
+		$data .= Core_Html::TableDatalist($datalist, $table_name, $args);
 
-	return $data;
-}
+		return $data;
+	}
+
 	static function TableHeader($sql, $args) // $add_checkbox = false, $skip_id = false, $meta_fields = null)
 	{
 		$header_fields = GetArg($args, "header_fields", null);

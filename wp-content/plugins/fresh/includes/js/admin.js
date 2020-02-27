@@ -26,6 +26,14 @@ function basket_create_new()
 
     let url = admin_post() + '?operation=basket_create&basket_name=' + encodeURI(basket_name) + '&basket_price=' + price;
 
-    if (categ) url += '&categ=' + categ;
+    if (categ) url += '&basket_categ=' + categ;
     execute_url(url, action_back);
+}
+
+function basket_delete(basket_id)
+{
+    let url = admin_post() + "?operation=basket_delete&basket_id=" + basket_id;
+    let btn = document.getElementById("btn_delete_" + basket_id);
+
+    execute_url(url, action_hide_row, btn);
 }
