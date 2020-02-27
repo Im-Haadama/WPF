@@ -473,6 +473,7 @@ class Fresh_Catalog {
 	static function GetBuyPrice( $product_id, $supplier ) {
 		// print "prod_id = " . $product_id . " supplier = " . $supplier . "<br/>";
 		$alternatives = alternatives( $product_id );
+		if (! $alternatives) return 0;
 		for ( $i = 0; $i < count( $alternatives ); $i ++ ) {
 			if ( $supplier == -1 or $alternatives[ $i ]->getSupplierId() == $supplier) {
 				return $alternatives[ $i ]->getPrice();
@@ -620,6 +621,30 @@ class Fresh_Catalog {
 	{
 		return explode(",", info_get( "fresh"));
 	}
+
+	static function missing_pictures()
+	{
+		$result = "";
+		$sql    = "SELECT term_id FROM wp_term_taxonomy WHERE taxonomy = 'product_cat'";
+		$categs = sql_query_array_scalar( $sql );
+
+		$result .= Core_Html::gui_header(1, "השלמת תמונות לאתר");
+
+		foreach ($categs as $categ){
+			$c = new Fresh_Category($categ);
+			$missing_pictures = $c->get_missing_pictures();
+			if ($missing_pictures and count($missing_pictures)){
+				$result .= Core_Html::gui_header(2, $c->getName());
+
+				foreach ($missing_pictures as $prod_id){
+					// https://fruity.co.il/wp-admin/post.php?post=7015&action=edit
+					$p = new Fresh_Product($prod_id);
+					$result .= Core_Html::GuiHyperlink($p->getName(), "/wp-admin/post.php?post=$prod_id&action=edit") . "<br/>";
+				}
+			}
+		}
+		return $result;
+	}
 }
 
 function best_alternatives( $alternatives, $debug = false ) {
@@ -725,7 +750,7 @@ function alternatives( $prod_id, $details = false, $supplier_id = null )
 
 	// prof_flag("start " . $id);
 	if ( ! ( $prod_id > 0 ) ) {
-		print __METHOD__ . "! (id>0) " . $prod_id . "</br>";
+		return null;
 	}
 
 	if ( $prod_id == $debug_product ) {

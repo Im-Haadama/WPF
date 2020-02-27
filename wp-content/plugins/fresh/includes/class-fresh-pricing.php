@@ -29,6 +29,10 @@ class Fresh_Pricing {
 
 	static function get_price_by_type( $prod_id, $client_type = "", $quantity = 1, $variation_id = null )
 	{
+		if (! ($prod_id > 0)){
+			print "bad prod $prod_id<br/>";
+			return 0;
+		}
 		static $configured = -1;
 		if ($configured == -1) {
 			$prefix = get_table_prefix();
@@ -119,7 +123,6 @@ class Fresh_Pricing {
 
 	static function get_regular_price( $prod_id ) {
 		return get_postmeta_field( $prod_id, '_regular_price' );
-
 	}
 
 	static function set_price( $prod_id, $price ) {

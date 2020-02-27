@@ -147,8 +147,19 @@ class Fresh_Product {
 		return false;
 	}
 
-	function getTerms() {
+	function getTerms($as_string = false) {
 		$terms = get_the_terms( $this->id, 'product_cat' );
+
+		if ($as_string) {
+			if (! $terms) return "(no terms)";
+			$result = "";
+			foreach($terms as $term_id)
+			{
+				$term = get_term($term_id);
+				$result .= $term->name . ", ";
+			}
+			return rtrim($result, ", ");
+		}
 
 		return $terms;
 	}
@@ -411,7 +422,7 @@ class Fresh_ProductIterator implements  Iterator {
 		}
 	}
 
-	public function iterateCategory($term_id) {
+	public function iterateCategory($term_id, $post_status = 'publish') {
 		$args = array(
 			'post_type' => 'product',
 			'posts_per_page' => 10000,
@@ -425,8 +436,11 @@ class Fresh_ProductIterator implements  Iterator {
 			'orderby' => 'name',
 			'order' => 'ASC'
 		);
+		if ($post_status)
+			$args["post_status"] = $post_status;
 
 		$this->position = 0;
+		$this->array = [];
 
 		$loop = new WP_Query( $args );
 
@@ -458,6 +472,10 @@ class Fresh_ProductIterator implements  Iterator {
 	public function next() {
 		// TODO: Implement next() method.
 		$c = $this->position;
+		if ( ! is_countable( $this->array ) )
+		{
+			return null;
+		}
 		if ($c < count($this->array)) {
 			$this->position++;
 			return $this->array[$c];

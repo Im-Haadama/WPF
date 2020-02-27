@@ -646,19 +646,20 @@ class Fresh {
 		$url = AddToUrl(array("tab" => "baskets", "page" => "settings"));
 		$tabs = [];
 		$args = [];
+		$args["post_file"] = self::getPost();
 
 		$tab = GetParam("tab", false, "baskets");
 
 		$tabs["baskets"] = array(
 			"baskets",
 			AddToUrl(array("page" => "settings","tab" => "baskets")),
-			Fresh_Basket::settings($url)
+			Fresh_Basket::settings($url, $args)
 		 );
 
-		$tabs["paths"] = array(
-			"paths",
-			AddToUrl(array("page" => "settings","tab" => "paths")),
-			Fresh_Basket::settings($url)
+		$tabs["missing_pictures"] = array(
+			"missing_pictures",
+			AddToUrl(array("page" => "settings","tab" => "missing_pictures")),
+			Fresh_Catalog::missing_pictures()
 		);
 
 //		array_push( $tabs, array(

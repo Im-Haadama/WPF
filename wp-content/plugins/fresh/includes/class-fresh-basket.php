@@ -22,6 +22,7 @@ class Fresh_Basket {
 	{
 		AddAction( "add_to_basket", __CLASS__ . "::add_to_basket" );
 		AddAction( "remove_from_basket", __CLASS__ . "::remove_from_basket" );
+		AddAction( "basket_create", __CLASS__ . "::create" );
 	}
 	public function GetQuantity( $prod_id ) {
 		$sql = "SELECT quantity FROM im_baskets WHERE basket_id = " . $this->id .
@@ -85,13 +86,11 @@ class Fresh_Basket {
 		return sql_query_single_scalar('SELECT count(product_id) FROM im_baskets WHERE basket_id = ' . $this->id);
 	}
 
-	static function Settings($url)
+	static function Settings($url, $args)
 	{
 		$basket_id = GetParam("basket_id", false, null);
-		if ($basket_id)
-		{
-			return self::show_basket($basket_id);
-		}
+		if ($basket_id > 0) return self::show_basket($basket_id);
+		if ($basket_id === "0") return self::new_basket($args);
 		$result = Core_Html::gui_header(1, "This week's baskets");
 
 		$result .= self::current_baskets($url);
@@ -105,7 +104,7 @@ class Fresh_Basket {
 
 		$result = sql_query( $sql );
 
-		$data = "<table><tr><td><h3>שם הסל</h3></td><td><h3>עלות קניה</h3></td><td><h3>מכירה</h3></td><td><h3>מחיר בנפרד</h3></td><td><h3>אחוזי הנחה</h3></td></tr>";
+		$data = "<table border='1'><tr><td><h3>שם הסל</h3></td><td><h3>עלות קניה</h3></td><td><h3>מכירה</h3></td><td><h3>מחיר בנפרד</h3></td><td><h3>אחוזי הנחה</h3></td></tr>";
 
 		while ( $row = mysqli_fetch_row( $result ) ) {
 			$basket_id = $row[0];
@@ -118,23 +117,56 @@ class Fresh_Basket {
 			$line            .= "<td>" . $total_listprice . "</td>";
 			$basket_price    = $p->getPrice();
 			if ( $basket_price > 0 ) {
-				$line .= "<td>" . $basket_price . '(' . round( 100 * $basket_price / $total_listprice, 1 ) . "%)</td>";
+				$line .= "<td>" . $basket_price;
+				if ($total_listprice > 0) $line .= '(' . round( 100 * $basket_price / $total_listprice, 1 ) . "%)";
+				$line .= "</td>";
+				$total_sellprice = self::get_total_sellprice( $basket_id );
+
+				if ($total_sellprice)
+					$line            .= "<td>" . $total_sellprice . '(' . round( 100 * $total_sellprice / $total_listprice, 1 ) . "%)</td>";
+				else
+					$line .= "<td></td>";
 			} else {
 				$line .= "<td></td>";
 			}
-			$total_sellprice = self::get_total_sellprice( $basket_id );
-			$line            .= "<td>" . $total_sellprice . '(' . round( 100 * $total_sellprice / $total_listprice, 1 ) . "%)</td>";
 			if ( $basket_price > 0 ) {
 				$line .= "<td>" . round( 100 * ( $total_sellprice - $basket_price ) / $basket_price, 1 ) . "%</td>";
-			}
+			} else
+				$line .= "<td></td><td></td>";
+			$line .= "<td>" . $p->getTerms(true);
 			$line .= "</tr>";
 
 			$data .= $line;
 		}
+		$data .= "</table>";
+		$data .= Core_Html::GuiHyperlink("New", AddParamToUrl($url, "basket_id", 0));
+
+		return $data;
+	}
+
+	static function new_basket($args)
+	{
+		$data = Core_Html::gui_header(1, "New basket");
+		$form = array(
+			array("Basket name", Core_Html::GuiInput("basket_name", null)),
+		    array("Basket price", Core_Html::GuiInput("basket_price", 0)),
+			array("Basket categ", Fresh_Category::gui_select_category("basket_categ", $args))
+		);
+
+		$args = array();
+		$data .= Core_Html::gui_table_args($form, "new_basket", $args);
+
+
+		$data .= Core_Html::GuiButton("btn_add_basket", "Add", array("action" => "basket_create_new()"));
 		return $data;
 	}
 
 	static function get_total_sellprice( $basket_id ) {
+		return 0;
+		if (! ($basket_id > 0)) {
+			print "bad basket: $basket_id";
+			return 0;
+		}
 		$total_price = 0;
 		$sql         = 'SELECT product_id FROM im_baskets WHERE basket_id = ' . $basket_id;
 
@@ -179,14 +211,18 @@ class Fresh_Basket {
 
 		$total = 0;
 		$basket_content = Core_Data::TableData($sql, $args);
-		foreach($basket_content as &$row) {
-			if (is_numeric($row["line_price"])) $total += $row["line_price"];
+		if ($basket_content) {
+			foreach($basket_content as &$row) {
+				if (is_numeric($row["line_price"])) $total += $row["line_price"];
+			}
+
+			array_push($basket_content, array( "product_id" => ImTranslate("Total"), "price" => "", "quantity" => "", "line_price" => $total));
+			$args["checkbox_class"] = "product_checkbox";
+
+			$data .= Core_Html::gui_table_args($basket_content, "basket_contents", $args);
+		} else {
+			$data .= __("Basket is empty") . "<br/>";
 		}
-
-		array_push($basket_content, array( "product_id" => ImTranslate("Total"), "price" => "", "quantity" => "", "line_price" => $total));
-		$args["checkbox_class"] = "product_checkbox";
-
-		$data .= Core_Html::gui_table_args($basket_content, "basket_contents", $args);
 
 
 		$data .= Core_Html::GuiButton("remove_product", "remove", array("action" => "remove_from_basket(" . $basket_id . ")", "remove"));
@@ -226,5 +262,21 @@ class Fresh_Basket {
 		$sql       = "delete from im_baskets where basket_id = " . $basket_id . " and product_id in ( $products ) ";
 
 		return sql_query( $sql );
+	}
+
+	static function create()
+	{
+		$name = urldecode(GetParam("basket_name", true));
+		$price = GetParam("basket_price", true);
+		$categ = GetParam("basket_categ", false, null);
+		$prefix = get_table_prefix();
+
+		$basket_id = Fresh_Catalog::DoCreateProduct($name, $price, null, $categ);
+		if (sql_query("insert into ${prefix}baskets (basket_id, date, product_id, quantity) values ($basket_id, NOW(), 0, 0)")){
+			return sql_insert_id();
+		}
+
+
+		// $new_prod = Fresh_Product::
 	}
 }

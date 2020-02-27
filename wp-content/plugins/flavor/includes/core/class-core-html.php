@@ -1766,10 +1766,11 @@ class Core_Html {
 	static function TableDatalist( $id, $table, $args = null)
 	{
 		$field = GetArg($args, "field", "field");
-		$include_id = GetArg($args, "include_id", false);
-		$sql = GetArg($args, "sql", "select " . $field . ($include_id ? ", id" : "") .	 " from " . $table);
-		if (!strstr($sql, "where")) $sql .= " where " . GetArg ($args, "query", "1");
+		$include_id = GetArg($args, "include_id", true);
 		$id_field = GetArg($args, "id_field", "id");
+
+		$sql = GetArg($args, "sql", "select " . $field . ($include_id ? ", $id_field" : "") .	 " from " . $table);
+		if (!strstr($sql, "where")) $sql .= " where " . GetArg ($args, "query", "1");
 		$values = [];
 
 		// print "id_field: $id_field<br/>";

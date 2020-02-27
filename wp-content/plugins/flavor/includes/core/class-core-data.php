@@ -26,7 +26,8 @@ class Core_Data
 
 				$lists = array("products" => array("table" => "im_products", "field_name" =>'post_title', "include_id" => 0, "id_field" => "ID"),
 				"tasks" => array("table"=>"im_tasklist", "field_name" => "task_description", "include_id" => 1, "id_field" => "id", "query" => " status = 0"),
-				"users" => array("table" => "wp_users", "field_name" => "display_name", "id_field" => "ID"));
+				"users" => array("table" => "wp_users", "field_name" => "display_name", "id_field" => "ID"),
+					"categ" => array("table"=>"im_categories", "include_id" => 0, "id_field"=>"term_id"));
 				$list = GetParam("list", true);
 				if (! isset($lists[$list])) die ("Error: unknown list " . $list);
 				$table_name = $lists[$list]["table"];

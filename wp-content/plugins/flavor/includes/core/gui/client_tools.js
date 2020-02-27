@@ -76,7 +76,8 @@ function get_value(element) {
                     if (list === undefined) list = element.list.firstElementChild.options; // for auto list. the post datalist is child of the datalist.
                     if (list){
                         for (let i = 0; i < list.length; i++)
-                            if (val === list[i].value) return list[i].dataset.id;
+                            if (val === list[i].value)
+                                return list[i].dataset.id;
                         return element.value;
                     }
                 }

@@ -158,13 +158,6 @@ function get_customer_by_email( $email ) {
 	return $user->ID;
 }
 
-
-function get_term_name($term_id)
-{
-	$term = get_term($term_id);
-
-	return $term->name;
-}
 //function is_manager( $user_id ) {
 //	$user    = new WP_User( $user_id );
 //	$manager = false;
