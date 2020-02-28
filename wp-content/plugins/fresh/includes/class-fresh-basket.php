@@ -68,7 +68,7 @@ class Fresh_Basket {
 		return chop( $basket_content, ", " ) . ".";
 	}
 
-	function get_basket_content_array( $basket_id ) {
+	static function get_basket_content_array( $basket_id ) {
 		$result = array();
 
 		$sql = 'SELECT DISTINCT product_id, quantity, id FROM im_baskets WHERE basket_id = ' . $basket_id .

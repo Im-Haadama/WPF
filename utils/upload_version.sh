@@ -4,7 +4,7 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 
-for host in $(cat hosts.txt | cut -f 1 -d " ")
+for host in $(cat ../hosts.txt | cut -f 1 -d " ")
 do
   ./utils/upload.sh $host $1
 done

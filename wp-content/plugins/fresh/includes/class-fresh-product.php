@@ -99,6 +99,13 @@ class Fresh_Product {
 		return sql_query_single_scalar('SELECT count(product_id) FROM im_baskets WHERE basket_id = ' . $this->id);
 	}
 
+	function is_bundle( ) {
+		$sql = 'SELECT count(bundle_prod_id) FROM im_bundles WHERE bundle_prod_id = ' . $this->id;
+
+		return sql_query_single_scalar( $sql );
+	}
+
+
 	function getStock( $arrived = false ) {
 		if ( $this->isFresh() ) {
 //			print "<br/> fresh " . $this -> q_in() . " " . $this->q_out() . " ";
@@ -318,6 +325,10 @@ class Fresh_Product {
 		return get_sale_price( $this->id );
 	}
 
+	function getSupplierName()
+	{
+		return sql_query_single_scalar("select meta_value from wp_postmeta where post_id = " . $this->id . " and meta_key = 'supplier_name'");
+	}
 	function getBuyPrice($supplier_id = 0)
 	{
 		if ( $this->id > 0 ) {

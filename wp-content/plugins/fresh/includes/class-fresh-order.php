@@ -291,7 +291,7 @@ class Fresh_Order {
 				return $needed_products;
 			}
 
-			print "cache not valid<br/>";
+//			print "cache not valid<br/>";
 			// Cache not vaild.
 			// Clean the im_need_orders, im_need table
 			$sql = "truncate table im_need_orders";
@@ -366,7 +366,7 @@ class Fresh_Order {
 						print "proccessing " . $qty . " ";
 					}
 					// Adds with bundle consideration
-					Order::AddProducts( $key, $qty, $needed_products );
+					Fresh_Order::AddProducts( $key, $qty, $needed_products );
 				} else {
 					// Check if order line supplied.
 					$sql = "SELECT sum(quantity) FROM im_delivery_lines WHERE prod_id = " . $prod_or_var .
@@ -380,7 +380,7 @@ class Fresh_Order {
 					if ( round( $supplied, 1 ) < round( $qty, 1 ) ) {
 						// print get_product_name($prod_or_var) . " " . $qty . " " . $needed_products[0] . "<br/>";
 						// if ($prod_or_var == $debug_product) print " adding " . $qty;
-						Order::AddProducts( $key, $qty - $supplied, $needed_products );
+						Fresh_Order::AddProducts( $key, $qty - $supplied, $needed_products );
 					}
 					// print $prod_or_var . " " . $c . "<br/>";
 				}
@@ -414,13 +414,14 @@ class Fresh_Order {
 
 		// Handle baskets recursively
 		$prod_or_var = $prod_key[0];
-		if ( is_basket( $prod_or_var ) ) {
+		$p = new Fresh_Product($prod_or_var);
+		if ( $p->is_basket( $prod_or_var ) ) {
 //                print $prod_id . " is basket ";
 			foreach (
-				get_basket_content_array( $prod_or_var ) as $basket_prod =>
+				Fresh_Basket::get_basket_content_array( $prod_or_var ) as $basket_prod =>
 				$basket_q
 			) {
-				Order::AddProducts( array( $basket_prod, '' ), $qty * $basket_q, $needed_products );
+				Fresh_Order::AddProducts( array( $basket_prod, '' ), $qty * $basket_q, $needed_products );
 			}
 		} else {
 			$unit_key = '';
@@ -440,7 +441,7 @@ class Fresh_Order {
 			}
 
 			// Check if this product
-			if ( is_bundle( $prod_or_var ) ) {
+			if ( $p->is_bundle( ) ) {
 				// print get_product_name($prod_or_var) . " is bundle " . "<br/>";
 				$b = Bundle::CreateFromBundleProd( $prod_or_var );
 				$p = $b->GetProdId();
@@ -485,17 +486,15 @@ class Fresh_Order {
 
 		$orders = sql_query_array_scalar($sql);
 
-		print header_text(false, true, true);
-
 		$table = array(array("מספר הזמנה", "מזמין", "הערות"));
 
 		foreach ($orders as $order)
 		{
-			$o = new Order($order);
+			$o = new Fresh_Order($order);
 			if (strlen($o->GetComments()))
 				array_push($table, array(Core_Html::GuiHyperlink($order, "get-order.php?order_id=" . $order), $o->CustomerName(), $o->GetComments()));
 		}
-		print gui_table_args($table);
+		print Core_Html::gui_table_args($table);
 	}
 
 	public function Missing() {

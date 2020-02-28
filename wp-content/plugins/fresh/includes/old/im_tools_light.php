@@ -155,15 +155,6 @@ function siton_price( $prod_id ) {
 }
 
 
-function is_bundle( $prod_id ) {
-	// my_log(__METHOD__, __FILE__);
-	$sql = 'SELECT count(bundle_prod_id) FROM im_bundles WHERE bundle_prod_id = ' . $prod_id;
-
-	// print $sql;
-	// my_log(__METHOD__, $sql);
-
-	return sql_query_single_scalar( $sql );
-}
 
 function is_order( $id ) {
 //    my_log(__METHOD__, __FILE__);

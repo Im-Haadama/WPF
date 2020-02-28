@@ -227,9 +227,11 @@ class Fresh {
 			      'menu_title' => 'Payment list',
 			      'menu_slug' => 'payment_list',
 			      'function' => 'payment_list')
-			));
+            ));
 
-			//               parent_slug, page_title,    menu_title,      capability,        memu_slug,     function, position
+		Fresh_Packing::add_admin($menu);
+
+		//               parent_slug, page_title,    menu_title,      capability,        memu_slug,     function, position
 //			add_submenu_page('fresh',    'Packing',      'Packing',      'edit_shop_orders', 'fresh_packing', __CLASS__ . '::fresh_store_packing_page',
 //				'dashicons-tickets', 6 );
 //			add_menu_page( 'Fresh Store', 'ניהול ספקים', 'manage_options', 'im-haadama/supplier_account.php', 'fresh_store_supplier_account_page',
@@ -652,7 +654,7 @@ class Fresh {
 
 		$tabs["baskets"] = array(
 			"baskets",
-			AddToUrl(array("page" => "settings","tab" => "baskets")),
+			AddParamToUrl(GetUrl(1), array("page" => "settings","tab" => "baskets")),
 			Fresh_Basket::settings($url, $args)
 		 );
 

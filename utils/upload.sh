@@ -9,9 +9,9 @@ if [ ! -f "$FILE" ]; then
   echo "file $FILE not found"
   exit 2
 fi
-USER=$(grep $HOST hosts.txt | awk '{ print $2}')
-PASSWORD=$(grep $HOST hosts.txt | awk '{ print $3}')
-REMOTE_DIR=$(grep $HOST hosts.txt | awk '{ print $4}')
+USER=$(grep $HOST ../hosts.txt | awk '{ print $2}')
+PASSWORD=$(grep $HOST ../hosts.txt | awk '{ print $3}')
+REMOTE_DIR=$(grep $HOST ../hosts.txt | awk '{ print $4}')
 ftp -inv $HOST << EOF
 user $USER $PASSWORD
 bin

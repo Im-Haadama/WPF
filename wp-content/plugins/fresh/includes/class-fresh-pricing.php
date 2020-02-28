@@ -31,7 +31,7 @@ class Fresh_Pricing {
 	{
 		if (! ($prod_id > 0)){
 			print "bad prod $prod_id<br/>";
-			return 0;
+			return -1000;
 		}
 		static $configured = -1;
 		if ($configured == -1) {
@@ -80,22 +80,25 @@ class Fresh_Pricing {
 		// Non fresh
 //	return get_postmeta_field( $prod_id, '_price' );
 	}
-	static function get_price( $prod_id, $client_type = 0, $quantity = 1 ) {
-		switch ( $client_type ) {
-			case 0:
-				if ( $quantity >= 8 ) {
-					return round( self::get_buy_price( $prod_id ) * 1.4, 1 );
-				}
-
-				return get_postmeta_field( $prod_id, '_price' );
-			case 1:
-				return siton_price( $prod_id );
-			case 2:
-				return self::get_buy_price( $prod_id );
-			case 5:
-				return min( self::get_price( $prod_id ), round( self::get_buy_price( $prod_id ) * 1.3, 1 ) );
-		}
+	static function get_price( $prod_id) {
+		return self::get_price_by_type( $prod_id );
 	}
+
+//		switch ( $client_type ) {
+//			case 0:
+//				if ( $quantity >= 8 ) {
+//					return round( self::get_buy_price( $prod_id ) * 1.4, 1 );
+//				}
+//
+//				return get_postmeta_field( $prod_id, '_price' );
+//			case 1:
+//				return siton_price( $prod_id );
+//			case 2:
+//				return self::get_buy_price( $prod_id );
+//			case 5:
+//				return min( self::get_price( $prod_id ), round( self::get_buy_price( $prod_id ) * 1.3, 1 ) );
+//		}
+//	}
 
 	static function get_buy_price( $prod_id, $supplier_id = 0 ) {
 		// print $supplier_id . "<br/>";

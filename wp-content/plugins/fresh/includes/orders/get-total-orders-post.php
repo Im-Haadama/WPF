@@ -37,10 +37,7 @@ switch ( $operation ) {
 	case "create_single":
 		create_supply_single();
 		break;
-	case "show_required":
-		print Core_Html::gui_header(1, "הערות לקוח");
-		Order::GetAllComments();
-		get_total_orders( $filter_zero, false, $filter_stock, $supplier_id );
+//	case "show_required":
 		break;
 	default:
 		print $operation . " not handled ";
@@ -99,120 +96,6 @@ function create_supply_single() {
 	}
 }
 
-
-
-function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero, $filter_stock, $history )
-{
-	$result = "";
-	$inventory_managed = info_get( "inventory" );
-
-	$data_lines = array();
-
-	foreach ( $needed_products as $prod_id => $quantity_array ) {
-		$P = new Fresh_Product( $prod_id );
-		if ( ! $P ) {
-			continue;
-		}
-
-		$row = array();
-
-		if ( $filter_stock and $P->getStockManaged() and $P->getStock() > $quantity_array[0] ) {
-			continue;
-		}
-
-		if ($P->isDraft()){
-			$row[] = "טיוטא";
-		} else {
-			$row[] = gui_checkbox("chk" . $prod_id. '_' . $supplier_id, "product_checkbox". $supplier_id);
-		}
-		$row[] = get_product_name($prod_id);
-		$row[] = Core_Html::GuiHyperlink(isset( $quantity_array[0] ) ? round( $quantity_array[0], 1 ) : 0,
-			"get-orders-per-item.php?prod_id=" . $prod_id . ($history ? "&history" : ""));
-
-	// Units. disabbled for now.
-	//		if ( isset( $quantity_array[1] ) ) {
-//			$line .= "<td>" . $quantity_array[1] . "</td>";
-//		} else {
-//			$line .= "<td></td>";
-//		}
-		$quantity = isset( $quantity_array[0] ) ? $quantity_array[0] : 0;
-
-		$p     = new Fresh_Product( $prod_id );
-		$q_inv = $p->getStock();
-
-		if ( $inventory_managed ) {
-			$row[] = gui_input( "inv_" . $prod_id, $q_inv, array(
-				"onchange=\"change_inv(" . $prod_id . ")\"",
-				"onkeyup=\"moveNext(" . $prod_id . ")\""
-			) ) ;
-
-			$numeric_quantity = ceil( $quantity - $q_inv );
-
-			$row[] = gui_input( "qua_" . $prod_id, $numeric_quantity,
-				"onchange=\"line_selected('" . $prod_id . '_' . $supplier_id . "')\"" );
-		}
-
-		$alternatives  = alternatives( $prod_id );
-		$suppliers     = array( array( "id" => 0, "option" => "בחר" ) );
-		foreach ( $alternatives as $alter ) {
-			$option = $alter->getSupplierName() . " " . $alter->getPrice();
-
-			array_push( $suppliers, array( "id" => $alter->getSupplierId(), "option" => $option ) );
-		}
-
-		// if ($prod_id == 1002) {print "XX"; var_dump($suppliers); }
-		$supplier_name = gui_select( "sup_" . $prod_id, "option", $suppliers, "onchange=selectSupplier(this)", "" );
-
-		$row[] = $supplier_name;
-
-		$row [] = orders_per_item( $prod_id, 1, true, true, true );
-
-		//print "loop5: " .  microtime() . "<br/>";
-		if ( ! $filter_zero or ( $numeric_quantity > 0 ) ) {
-			array_push( $data_lines, array( get_product_name( $prod_id ), $row ) );
-		}
-	}
-
-	if ( count( $data_lines ) ) {
-		if ($supplier_id)
-			$supplier_name = get_supplier_name( $supplier_id );
-		else $supplier_name = "מוצרים לא זמינים";
-
-		$result .= Core_Html::gui_header( 2, $supplier_name );
-
-		$header = array("בחר", "פריט", "כמות נדרשת");
-
-		if ( $inventory_managed ) {
-			array_push($header, "כמות במלאי");
-			array_push($header, "כמות להזמיןי");
-			array_push($header, "ספק");
-			array_push($header, "לקוחות");
-		}
-		$table_rows = array();
-
-		array_push($table_rows, $header);
-
-		sort( $data_lines );
-
-		global $total_buy;
-		global $total_sale;
-
-		for ( $i = 0; $i < count( $data_lines ); $i ++ ) {
-			array_push($table_rows, $data_lines[ $i ][1]);
-		}
-		array_push($table_rows, array( array( "", 'סה"כ', "", "", "", "", "", $total_buy, $total_sale )));
-
-		// $result .= gui_table_args(  $table_rows );
-		// debug_var($table_rows);
-		$result .= gui_table_args($table_rows, "needed_" . $supplier_id);
-
-		if (! $supplier_id) {
-			$result .= "יש להפוך לטיוטא רק לאחר שמוצר אזל מהמלאי והוצע ללקוחות תחליף<br/>";
-			$result .= Core_Html::GuiButton("btn_draft_products", "draft_products()", "הפוך לטיוטא");
-		}
-	}
-	return $result;
-}
 
 
 function basket_ordered( $basket_id ) {

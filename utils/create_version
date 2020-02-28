@@ -1,7 +1,7 @@
 #!/bin/bash
 # set -o xtrace
 product_name=fresh_store
-folders="wp-content/plugins"
+folders="wp-content/plugins/flavor wp-content/plugins/fresh wp-content/plugins/capabilities wp-content/plugins/finance wp-content/plugins/israel-zones wp-content/plugins/focus"
 if [ "$#" -lt 1 ]; then
 	echo Usage [-f] major/minor/patch
 	echo full or major:  creates tar of all version file. updates the version file.
