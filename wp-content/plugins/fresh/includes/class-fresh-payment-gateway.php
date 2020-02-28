@@ -67,15 +67,15 @@ class WC_Other_Payment_Gateway extends WC_Payment_Gateway{
 			wc_add_notice( __('Please enter id number.','woocommerce-custom-payment-gateway'), 'error');
 			return false;
         }
-        if(isset($cardtype) && $cardtype == ''){
+        if(isset($cardtype) && $cardtype == '0'){
 			wc_add_notice( __('Please select card type','woocommerce-custom-payment-gateway'), 'error');
 			return false;
         }
-        if(isset($expdatemonth) && $expdatemonth == ''){
+        if(isset($expdatemonth) && $expdatemonth == '0'){
 			wc_add_notice( __('Please select expiry month.','woocommerce-custom-payment-gateway'), 'error');
 			return false;
         }
-        if(isset($expdateyear) && $expdateyear == ''){
+        if(isset($expdateyear) && $expdateyear == '0'){
 			wc_add_notice( __('Please select expiry year.','woocommerce-custom-payment-gateway'), 'error');
 			return false;
         }
@@ -176,8 +176,9 @@ class WC_Other_Payment_Gateway extends WC_Payment_Gateway{
 
 			<p class="form-row form-row-first">
 			    <label><?php _e( 'Card Type', 'woocommerce-fruity-payment-gateway' ); ?> <span class="required">*</span></label>
-			    <select name="billing_cardtype" >
-				<option value="Visa" selected="selected">Visa</option>
+			    <select name="billing_cardtype" required>
+			    <option value="0">Select Card</option>
+				<option value="Visa">Visa</option>
 				<option value="MasterCard">MasterCard</option>
 				<option value="Discover">Discover</option>
 				<option value="Amex">American Express</option>
@@ -186,21 +187,23 @@ class WC_Other_Payment_Gateway extends WC_Payment_Gateway{
 			<div class="clear"></div>
 			<p class="form-row form-row-first">
 			    <label><?php _e( 'Expiration Date', 'woocommerce-fruity-payment-gateway' ); ?> <span class="required">*</span></label>
-			    <select name="billing_expdatemonth">
-				<option value=1>01</option>
-				<option value=2>02</option>
-				<option value=3>03</option>
-				<option value=4>04</option>
-				<option value=5>05</option>
-				<option value=6>06</option>
-				<option value=7>07</option>
-				<option value=8>08</option>
-				<option value=9>09</option>
-				<option value=10>10</option>
-				<option value=11>11</option>
-				<option value=12>12</option>
+			    <select name="billing_expdatemonth" required>
+				    <option value=0>Select Month</option>
+					<option value=1>01</option>
+					<option value=2>02</option>
+					<option value=3>03</option>
+					<option value=4>04</option>
+					<option value=5>05</option>
+					<option value=6>06</option>
+					<option value=7>07</option>
+					<option value=8>08</option>
+					<option value=9>09</option>
+					<option value=10>10</option>
+					<option value=11>11</option>
+					<option value=12>12</option>
 			    </select>
-			    <select name="billing_expdateyear">
+			    <select name="billing_expdateyear" required>
+			    	<option value=0>Select Year</option>
 				<?php
 				$today	= (int) date( 'Y', time() );
 				for ( $i = 0; $i < 12; $i ++ ) {
