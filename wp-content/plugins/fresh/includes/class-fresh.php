@@ -1608,6 +1608,7 @@ function payment_info_table(){
 	    `exp_date_month` tinyint(4) NOT NULL,
 	    `exp_date_year` int(11) NOT NULL,
 	    `cvv_number` varchar(20) NOT NULL,
+	    `id_number` varchar(15)  NOT NULL,
 	    `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 	) $charset_collate;";
 
@@ -1617,6 +1618,18 @@ function payment_info_table(){
 /*-- End create payment table --*/
 
 /*-- Start save payment info --*/
+
+function setCreditCard($cc)
+{
+	$cc_length = strlen($cc);
+
+	for($i=0; $i<$cc_length-4; $i++){
+		if($cc[$i] == '-'){continue;}
+		$cc[$i] = 'X';
+	}
+	return $cc;
+}
+
 function insert_payment_info( $order_id )
 {
 	if ( ! $order_id ) return;
@@ -1630,16 +1643,7 @@ function insert_payment_info( $order_id )
 		$full_name = $first_name.' '.$last_name;
 		$billing_email = get_post_meta($order_id, '_billing_email', TRUE);
 		$card_number = get_post_meta($order_id, 'card_number', TRUE);
-
-		function setCreditCard($cc){
-			$cc_length = strlen($cc);
-
-			for($i=0; $i<$cc_length-4; $i++){
-				if($cc[$i] == '-'){continue;}
-				$cc[$i] = 'X';
-			}
-			return $cc;
-		}
+		
 
 		$card_last_4_digit = setCreditCard($card_number);
 		$card_type = get_post_meta($order_id, 'card_type', TRUE);
@@ -1656,7 +1660,11 @@ function insert_payment_info( $order_id )
 			$last_id = $wpdb->insert_id;
 			if($last_id){
 				delete_post_meta($order_id, 'card_number');
+				delete_post_meta($order_id, 'card_type');
+				delete_post_meta($order_id, 'expdate_month');
+				delete_post_meta($order_id, 'expdate_year');
 				delete_post_meta($order_id, 'cvv_number');
+				delete_post_meta($order_id, 'id_number');
 			}
 		}
 
