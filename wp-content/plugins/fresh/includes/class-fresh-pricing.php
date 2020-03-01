@@ -106,7 +106,7 @@ class Fresh_Pricing {
 		if ( $prod_id > 0 ) {
 			if ( $supplier_id > 0 ) {
 //			print "supplier: " . $supplier_id . "<br/>";
-				$a = alternatives( $prod_id );
+				$a = Fresh_Catalog::alternatives( $prod_id );
 				foreach ( $a as $s ) {
 					//		print $s->getSupplierId() . "<br/>";
 					if ( $s->getSupplierId() == $supplier_id ) {

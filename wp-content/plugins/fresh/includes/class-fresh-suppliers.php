@@ -124,7 +124,7 @@ class Fresh_Suppliers {
 			from im_supplies 
 			where supplier = $supplier_id 
 			  and date = curdate()
-				and status = " . SupplyStatus::NewSupply .
+				and status = " . eSupplyStatus::NewSupply .
 		       " order by id desc limit 1";
 
 		return sql_query_single_scalar($sql);

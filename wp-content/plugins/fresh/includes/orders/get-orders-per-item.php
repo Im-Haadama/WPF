@@ -56,7 +56,7 @@ $result = sql_query( $sql );
 
 while ( $row = mysqli_fetch_row( $result ) ) {
     // print $row[0]. " " . $row[1]. " " . $row[2] . "<br/>";
-	$b    = Bundle::CreateFromDb( $row[2] );
+	$b    = Fresh_Bundle::CreateFromDb( $row[2] );
 	$o    = orders_per_item( $b->GetBundleProdId(), 1 );
 	if ( strlen( $o ) )
 		$bundle .= "<tr> " . trim( $o ) . "</tr>";

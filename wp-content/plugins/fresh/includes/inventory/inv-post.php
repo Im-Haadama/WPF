@@ -175,7 +175,7 @@ function show_out( $prod_id ) {
 
 		while ( $row = mysqli_fetch_assoc( $result ) ) {
 			$b_id = $row["id"];
-			$B    = Bundle::CreateFromDb( $b_id );
+			$B    = Fresh_Bundle::CreateFromDb( $b_id );
 			print Core_Html::gui_header( 2, "במארזים " . get_product_name( $b_id ) );
 
 			$sql = "select delivery_id as משלוח, quantity as כמות, client_from_delivery(delivery_id) as לקוח" . //, supplier_name as לקוח " .
@@ -219,7 +219,7 @@ function get_out( $prod_id ) {
 		return 0;
 	}
 	$r = do_get_out( $prod_id );
-	$b = Bundle::CreateFromProd( $prod_id );
+	$b = Fresh_Bundle::CreateFromProd( $prod_id );
 	if ( $b and $b->GetProdId() > 0 ) { // We have a bundle
 		// var_dump($b);
 ////		print "bundle " . $b- . "<br/>";

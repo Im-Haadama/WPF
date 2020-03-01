@@ -62,8 +62,12 @@ class Fresh_Packing {
 		$result .= Fresh_Order::GetAllComments();
 		$args["tabs_load_all"] = true;
 		$totals = self::needed_totals(false);
-		$args["selected_tab"] = array_key_first($totals);
-		$result .= Core_Html::GuiTabs($totals, $args);
+		if (! is_array($totals)){
+			$result .= $totals;
+		} else {
+			$args["selected_tab"] = array_key_first( $totals );
+			$result               .= Core_Html::GuiTabs( $totals, $args );
+		}
 
 		print $result;
 	}
@@ -71,7 +75,7 @@ class Fresh_Packing {
 	static function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero, $filter_stock, $history )
 	{
 		$result = "";
-		$inventory_managed = info_get( "inventory" );
+		$inventory_managed = InfoGet( "inventory" );
 		$supplier = new Fresh_Supplier($supplier_id);
 
 		$data_lines = array();
@@ -118,7 +122,7 @@ class Fresh_Packing {
 					"onchange=\"line_selected('" . $prod_id . "')\"" );
 			}
 
-			$row [] = orders_per_item( $prod_id, 1, true, true, true );
+			$row [] = self::orders_per_item( $prod_id, 1, true, true, true );
 
 			if ( ! $filter_zero or ( $numeric_quantity > 0 ) ) {
 				array_push( $data_lines, array( $p->getName(), $row ) );
@@ -235,9 +239,8 @@ class Fresh_Packing {
 	static function init_hooks()
 	{
 	}
-}
 
-function orders_per_item( $prod_id, $multiply, $short = false, $include_basket = false, $include_bundle = false, $just_total = false, $month = null ) {
+	static function orders_per_item( $prod_id, $multiply, $short = false, $include_basket = false, $include_bundle = false, $just_total = false, $month = null ) {
 	// my_log( "prod_id=" . $prod_id, __METHOD__ );
 
 	$sql = 'select woi.order_item_id, order_id'
@@ -290,12 +293,12 @@ function orders_per_item( $prod_id, $multiply, $short = false, $include_basket =
 	while ( $row = mysqli_fetch_row( $result ) ) {
 		$order_item_id = $row[0];
 		$order_id      = $row[1];
-		$quantity      = get_order_itemmeta( $order_item_id, '_qty' );
+		$quantity      = self::get_order_itemmeta( $order_item_id, '_qty' );
 		// consider quantity in the basket or bundle
-		$pid = get_order_itemmeta( $order_item_id, '_product_id' );
+		$pid = self::get_order_itemmeta( $order_item_id, '_product_id' );
 		$p = new Fresh_Product($pid);
 		if ( $p->is_bundle( ) ) {
-			$b        = Bundle::CreateFromBundleProd( $pid );
+			$b        = Fresh_Bundle::CreateFromBundleProd( $pid );
 			$quantity *= $b->GetQuantity();
 		} else
 			if ( $p->is_basket( ) ) {
@@ -326,22 +329,26 @@ function orders_per_item( $prod_id, $multiply, $short = false, $include_basket =
 	return $lines;
 }
 
-function get_order_itemmeta( $order_item_id, $meta_key ) {
-	if ( is_array( $order_item_id ) ) {
-		$sql = "SELECT sum(meta_value) FROM wp_woocommerce_order_itemmeta "
-		       . ' WHERE order_item_id IN ( ' . comma_implode( $order_item_id ) . ") "
-		       . ' AND meta_key = \'' . escape_string( $meta_key ) . '\'';
+	static function get_order_itemmeta( $order_item_id, $meta_key ) {
+		if ( is_array( $order_item_id ) ) {
+			$sql = "SELECT sum(meta_value) FROM wp_woocommerce_order_itemmeta "
+			       . ' WHERE order_item_id IN ( ' . comma_implode( $order_item_id ) . ") "
+			       . ' AND meta_key = \'' . escape_string( $meta_key ) . '\'';
 
-		return sql_query_single_scalar( $sql );
+			return sql_query_single_scalar( $sql );
+		}
+		if ( is_numeric( $order_item_id ) ) {
+			$sql2 = 'SELECT meta_value FROM wp_woocommerce_order_itemmeta'
+			        . ' WHERE order_item_id = ' . $order_item_id
+			        . ' AND meta_key = \'' . escape_string( $meta_key ) . '\''
+			        . ' ';
+
+			return sql_query_single_scalar( $sql2 );
+		}
+
+		return - 1;
 	}
-	if ( is_numeric( $order_item_id ) ) {
-		$sql2 = 'SELECT meta_value FROM wp_woocommerce_order_itemmeta'
-		        . ' WHERE order_item_id = ' . $order_item_id
-		        . ' AND meta_key = \'' . escape_string( $meta_key ) . '\''
-		        . ' ';
 
-		return sql_query_single_scalar( $sql2 );
-	}
-
-	return - 1;
 }
+
+

@@ -25,7 +25,7 @@ function fix_bundles() {
 			continue;
 		} // Handle publish products.
 
-		$b              = Bundle::CreateFromDb( $id );             // load the bundle
+		$b              = Fresh_Bundle::CreateFromDb( $id );             // load the bundle
 		$bundle_prod_id = $b->GetBundleProdId();      // Check the bundle status
 		$status         = get_post_status( $bundle_prod_id );
 		if ( $status == 'publish' ) {
@@ -60,7 +60,7 @@ function update_bundle_prices() {
 		$id      = $row[0];
 		$prod_id = $row[1];
 
-		$b = Bundle::CreateFromDb( $id );
+		$b = Fresh_Bundle::CreateFromDb( $id );
 		if ( get_price( $b->GetBundleProdId() ) != $b->CalculatePrice() ) {
 			$b->Update();
 		}

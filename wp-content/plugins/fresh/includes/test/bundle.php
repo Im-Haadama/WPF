@@ -3,7 +3,7 @@
 require_once( '../r-shop_manager.php' );
 require_once( "../catalog/bundles.php" );
 
-$b = Bundle::CreateFromDb(18);
+$b = Fresh_Bundle::CreateFromDb(18);
 
 $b->CreateOrUpdate();
 

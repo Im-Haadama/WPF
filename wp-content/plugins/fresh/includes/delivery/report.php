@@ -126,7 +126,7 @@ function print_prod_report( $prod_id, $week = null, $user_id = null ) {
 	if ( ! $week ) {
 		$sql .= ", date";
 	}
-	$prod_ids = Bundle::GetBundles( $prod_id );
+	$prod_ids = Fresh_Bundle::GetBundles( $prod_id );
 	array_push( $prod_ids, $prod_id );
 
 	$sql .= " FROM im_delivery_lines dl JOIN im_delivery d " .
@@ -164,7 +164,7 @@ function print_prod_report( $prod_id, $week = null, $user_id = null ) {
 		$q        = $row[2];
 		$prod_id  = $row[5];
 		if ( is_bundle( $prod_id ) ) {
-			$b = Bundle::CreateFromBundleProd( $prod_id );
+			$b = Fresh_Bundle::CreateFromBundleProd( $prod_id );
 			$q = $q * $b->GetQuantity();
 		}
 		$line     = array(

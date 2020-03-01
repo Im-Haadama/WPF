@@ -272,7 +272,7 @@ class Fresh_Order {
 		$debug_product = 0; // 141;
 		if ( ! $user_id ) {
 			if ( self::check_cache_validity() ) {
-				if (get_user_id() == 1) print "cache valid<br/>";
+//				if (get_user_id() == 1) print "cache valid<br/>";
 				$needed_products = array();
 
 				$sql = " SELECT prod_id, need_q, need_u, prod_get_name(prod_id) FROM im_need ORDER BY 4 ";
@@ -443,7 +443,7 @@ class Fresh_Order {
 			// Check if this product
 			if ( $p->is_bundle( ) ) {
 				// print get_product_name($prod_or_var) . " is bundle " . "<br/>";
-				$b = Bundle::CreateFromBundleProd( $prod_or_var );
+				$b = Fresh_Bundle::CreateFromBundleProd( $prod_or_var );
 				$p = $b->GetProdId();
 				if ( ! ( $p > 0 ) ) {
 					print "bad prod id for $prod_or_var<br/>";

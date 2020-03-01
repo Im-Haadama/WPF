@@ -9,7 +9,7 @@
 if ( ! defined( 'FRESH_INCLUDES' ) ) {
 	define( 'FRESH_INCLUDES', dirname( dirname( __FILE__ ) ) );
 }
-require_once( FRESH_INCLUDES . '/pricelist/pricelist.php' );
+//require_once( FRESH_INCLUDES . '/pricelist/pricelist.php' );
 //require_once( FRESH_INCLUDES . '/wp/terms.php' );
 //require_once( FRESH_INCLUDES . '/catalog/pricing.php' );
 //require_once( 'bundles.php' );
@@ -391,7 +391,7 @@ class Fresh_Catalog {
 			foreach ( $bundles as $bundle_id ) {
 				MyLog( "updating bundle " . $bundle_id );
 				// TODO: update bundle
-				$b = Bundle::CreateFromDb( $bundle_id );
+				$b = Fresh_Bundle::CreateFromDb( $bundle_id );
 				$b->Update();
 			}
 		}
@@ -474,7 +474,7 @@ class Fresh_Catalog {
 
 	static function GetBuyPrice( $product_id, $supplier ) {
 		// print "prod_id = " . $product_id . " supplier = " . $supplier . "<br/>";
-		$alternatives = alternatives( $product_id );
+		$alternatives = Fresh_Catalog::alternatives( $product_id );
 		if (! $alternatives) return 0;
 		for ( $i = 0; $i < count( $alternatives ); $i ++ ) {
 			if ( $supplier == -1 or $alternatives[ $i ]->getSupplierId() == $supplier) {
@@ -645,27 +645,111 @@ class Fresh_Catalog {
 		}
 		return $result;
 	}
-}
 
-function best_alternatives( $alternatives, $debug = false ) {
-	MyLog( "best_alternatives" );
-	$min  = 1111111;
-	$best = null;
-	for ( $i = 0; $i < count( $alternatives ); $i ++ ) {
-		//$price, $supplier, $sale_price = '', $terms = null
-		$price = calculate_price( $alternatives[ $i ]->getPrice(), $alternatives[ $i ]->getSupplierId(),
-			$alternatives[ $i ]->getSalePrice());
-//		print "price: " . $alternatives[ $i ]->getSupplierId() . " " . $price . "<br/>";
-		MyLog( "price $price" );
-		if ( $price < $min ) {
-			$best = $alternatives[ $i ];
-			// my_log( "best $best[0]" );
-			$min = $price;
+	static function alternatives( $prod_id, $details = false, $supplier_id = null )
+	{
+		global $debug_product;
+		$debug_product = 0;
+
+		// prof_flag("start " . $id);
+		if ( ! ( $prod_id > 0 ) ) {
+			return null;
 		}
+
+		if ( $prod_id == $debug_product ) {
+			print "Alternatives<br/>";
+		}
+		// Search by pricelist_id
+		$sql = "select price, supplier_id, id, sale_price from
+			im_supplier_price_list where id in (select pricelist_id from im_supplier_mapping where product_id = $prod_id)";
+
+//    print "<br/>" . $sql . "<br/>";
+		$result = sql_query( $sql );
+		$output = "";
+		if ( ! $result ) {
+			sql_error( $sql );
+
+			return null;
+		} else {
+			$rows = array();
+			while ( $row = mysqli_fetch_row( $result ) ) {
+				if ( $details ) {
+					$output .= get_supplier_name( $row[1] ) . " " . $row[0] . ", ";
+				}
+				// Todo: handle priority
+				// array_push($row, get_supplier_priority($row[1]));
+				// array_push( $rows, $row );
+				$n = new Fresh_Pricelist_Item( $row[2] );
+				array_push( $rows, $n);
+			}
+		}
+
+		// prof_flag("mid " . $id);
+		$output .= "by name: ";
+		// Search by product_name and supplier_id
+		$sql = " SELECT pl.price, pl.supplier_id, pl.id, pl.sale_price
+  		FROM im_supplier_price_list pl
+    	JOIN im_supplier_mapping m
+  		WHERE m.supplier_product_name = pl.product_name
+  		AND m.supplier_id = pl.supplier_id
+		AND m.product_id = " . $prod_id;
+
+		$result = sql_query( $sql );
+		$c      = 0;
+		while ( $row = mysqli_fetch_row( $result ) ) {
+			$supplier_id = $row[1];
+			if ( $prod_id == $debug_product ) {
+				print $c ++ . ")";
+				var_dump( $row );
+				print "<br/>";
+			}
+			$found = false;
+			// Don't repeat alternatives
+			for ( $i = 0; $i < count( $rows ); $i ++ ) {
+				if ( $rows[ $i ]->getSupplierId() == $supplier_id ) {
+					$found = true;
+				}
+			}
+			if ( ! $found ) {
+				if ( $details ) {
+					$output .= get_supplier_name( $row[1] ) . " " . $row[0] . ", ";
+				}
+				// array_push( $rows, $row );
+				array_push( $rows, new Fresh_Pricelist_Item( $row[2]));
+			}
+		}
+
+		if ( $details ) {
+			print rtrim( $output, ", ");
+		}
+		return $rows;
 	}
 
-	return $best;
+	function name_prefix( $name ) {
+		return strtok( $name, "-()" );
+	}
+
 }
+
+//function best_alternatives( $alternatives, $debug = false ) {
+//	MyLog( "best_alternatives" );
+//	$min  = 1111111;
+//	$best = null;
+//	for ( $i = 0; $i < count( $alternatives ); $i ++ ) {
+//		//$price, $supplier, $sale_price = '', $terms = null
+//		$price = calculate_price( $alternatives[ $i ]->getPrice(), $alternatives[ $i ]->getSupplierId(),
+//			$alternatives[ $i ]->getSalePrice());
+////		print "price: " . $alternatives[ $i ]->getSupplierId() . " " . $price . "<br/>";
+//		MyLog( "price $price" );
+//		if ( $price < $min ) {
+//			$best = $alternatives[ $i ];
+//			// my_log( "best $best[0]" );
+//			$min = $price;
+//		}
+//	}
+//
+//	return $best;
+//}
 
 //function prof_flag( $str ) {
 //	global $prof_timing, $prof_names;
@@ -683,145 +767,63 @@ function best_alternatives( $alternatives, $debug = false ) {
 //	}
 //	echo "<b>{$prof_names[$size-1]}</b><br>";
 //}
-require_once( ABSPATH . '/wp-admin/includes/image.php' );
-
-function upload_image( $post_id, $image ) {
-	print "post id: " . $post_id . "<br/>";
-	print "image: " . $image . "<br/>";
-	$get = wp_remote_get( $image );
-
-	$type = wp_remote_retrieve_header( $get, 'content-type' );
-
-	print "type: $type<br/>";
-	if ( $type ) {
-		$mirror = wp_upload_bits( basename( $image ), '', wp_remote_retrieve_body( $get ) );
-		print "mirror: <br/>";
-		var_dump( $mirror );
-		print "<br/>";
-
-		$attachment = array(
-			'post_title'     => basename( $image ),
-			'post_mime_type' => $type
-		);
-
-		$attachment_id = wp_insert_attachment( $attachment, $mirror['file'], $post_id );
-
-		print "attach_id: " . $attachment_id . "<br/>";
-
-		wp_generate_attachment_metadata( $attachment_id, $mirror['file'] );
-
-		set_post_meta_field( $post_id, '_thumbnail_id', $attachment_id );
-//		var_dump ($meta); print "<br/>";
-//		$r = wp_update_attachment_metadata($attachment_id, $meta);
-//		var_dump($r); print "<br/>";
-//		$r = add_post_meta($attachment_id, '_wp_attachment_context', $image);
-//		var_dump($r); print "<br/>";
-
-//		$attach_data = wp_generate_attachment_metadata( $attach_id, $mirror['file'] );
+//require_once( ABSPATH . '/wp-admin/includes/image.php' );
 //
-//		var_dump($attach_data);
+//function upload_image( $post_id, $image ) {
+//	print "post id: " . $post_id . "<br/>";
+//	print "image: " . $image . "<br/>";
+//	$get = wp_remote_get( $image );
 //
+//	$type = wp_remote_retrieve_header( $get, 'content-type' );
+//
+//	print "type: $type<br/>";
+//	if ( $type ) {
+//		$mirror = wp_upload_bits( basename( $image ), '', wp_remote_retrieve_body( $get ) );
+//		print "mirror: <br/>";
+//		var_dump( $mirror );
 //		print "<br/>";
 //
-//		print wp_update_attachment_metadata( $post_id, $attach_data );
-	}
-}
-
-function supplier_prod_id( $prod_id, $supplier_id ) {
-	$a = alternatives( $prod_id, false );
-
-//	print "<br/>";
-//	print "supplier: " . $supplier_id . "<br/>";
-	foreach ( $a as $s ) {
-//		print "option: " . $s->getSupplierID() . "<br/>";
-		if ( $s->getSupplierId() == $supplier_id ) {
-			// print "found<br/>";
-			return $s->getSupplierProductCode();
-		}
-	}
-
-	return 0;
-}
-
-function alternatives( $prod_id, $details = false, $supplier_id = null )
-{
-	global $debug_product;
-	$debug_product = 0;
-
-	// prof_flag("start " . $id);
-	if ( ! ( $prod_id > 0 ) ) {
-		return null;
-	}
-
-	if ( $prod_id == $debug_product ) {
-		print "Alternatives<br/>";
-	}
-	// Search by pricelist_id
-	$sql = "select price, supplier_id, id, sale_price from 
-			im_supplier_price_list where id in (select pricelist_id from im_supplier_mapping where product_id = $prod_id)";
-
-//    print "<br/>" . $sql . "<br/>";
-	$result = sql_query( $sql );
-	$output = "";
-	if ( ! $result ) {
-		sql_error( $sql );
-
-		return null;
-	} else {
-		$rows = array();
-		while ( $row = mysqli_fetch_row( $result ) ) {
-			if ( $details ) {
-				$output .= get_supplier_name( $row[1] ) . " " . $row[0] . ", ";
-			}
-			// Todo: handle priority
-			// array_push($row, get_supplier_priority($row[1]));
-			// array_push( $rows, $row );
-			$n = new PricelistItem( $row[2] );
-			array_push( $rows, $n);
-		}
-	}
-
-	// prof_flag("mid " . $id);
-	$output .= "by name: ";
-	// Search by product_name and supplier_id
-	$sql = " SELECT pl.price, pl.supplier_id, pl.id, pl.sale_price
-  		FROM im_supplier_price_list pl
-    	JOIN im_supplier_mapping m
-  		WHERE m.supplier_product_name = pl.product_name
-  		AND m.supplier_id = pl.supplier_id
-		AND m.product_id = " . $prod_id;
-
-	$result = sql_query( $sql );
-	$c      = 0;
-	while ( $row = mysqli_fetch_row( $result ) ) {
-		$supplier_id = $row[1];
-		if ( $prod_id == $debug_product ) {
-			print $c ++ . ")";
-			var_dump( $row );
-			print "<br/>";
-		}
-		$found = false;
-		// Don't repeat alternatives
-		for ( $i = 0; $i < count( $rows ); $i ++ ) {
-			if ( $rows[ $i ]->getSupplierId() == $supplier_id ) {
-				$found = true;
-			}
-		}
-		if ( ! $found ) {
-			if ( $details ) {
-				$output .= get_supplier_name( $row[1] ) . " " . $row[0] . ", ";
-			}
-			// array_push( $rows, $row );
-			array_push( $rows, new PricelistItem( $row[2]));
-		}
-	}
-
-	if ( $details ) {
-		print rtrim( $output, ", ");
-	}
-	return $rows;
-}
-
-function name_prefix( $name ) {
-	return strtok( $name, "-()" );
-}
+//		$attachment = array(
+//			'post_title'     => basename( $image ),
+//			'post_mime_type' => $type
+//		);
+//
+//		$attachment_id = wp_insert_attachment( $attachment, $mirror['file'], $post_id );
+//
+//		print "attach_id: " . $attachment_id . "<br/>";
+//
+//		wp_generate_attachment_metadata( $attachment_id, $mirror['file'] );
+//
+//		set_post_meta_field( $post_id, '_thumbnail_id', $attachment_id );
+////		var_dump ($meta); print "<br/>";
+////		$r = wp_update_attachment_metadata($attachment_id, $meta);
+////		var_dump($r); print "<br/>";
+////		$r = add_post_meta($attachment_id, '_wp_attachment_context', $image);
+////		var_dump($r); print "<br/>";
+//
+////		$attach_data = wp_generate_attachment_metadata( $attach_id, $mirror['file'] );
+////
+////		var_dump($attach_data);
+////
+////		print "<br/>";
+////
+////		print wp_update_attachment_metadata( $post_id, $attach_data );
+//	}
+//}
+//
+//function supplier_prod_id( $prod_id, $supplier_id ) {
+//	$a = alternatives( $prod_id, false );
+//
+////	print "<br/>";
+////	print "supplier: " . $supplier_id . "<br/>";
+//	foreach ( $a as $s ) {
+////		print "option: " . $s->getSupplierID() . "<br/>";
+//		if ( $s->getSupplierId() == $supplier_id ) {
+//			// print "found<br/>";
+//			return $s->getSupplierProductCode();
+//		}
+//	}
+//
+//	return 0;
+//}
+//

@@ -544,20 +544,3 @@
 		return add_action($tag, $function_to_add, $priority, $accepted_args);
 	}
 
-function info_get( $key, $create = false, $default = null ) {
-	$sql = "SELECT info_data FROM im_info WHERE info_key = '" . $key . "'";
-
-//	print $sql ."<br/>";
-
-	$result = sql_query_single_scalar( $sql );
-
-	if ( is_null( $result ) ) {
-		if ( $create ) {
-			info_update( $key, $default );
-
-			return $default;
-		}
-	}
-
-	return $result;
-}

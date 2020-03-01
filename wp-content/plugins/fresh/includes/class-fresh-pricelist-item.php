@@ -17,7 +17,7 @@ if ( ! defined( "FRESH_INCLUDES" ) ) {
 	define( 'FRESH_INCLUDES', dirname(dirname( dirname( __FILE__ ) ) ));
 }
 
-class PricelistItem {
+class Fresh_Pricelist_Item {
 	private $id;
 	private $product_name;
 	private $supplier_id;

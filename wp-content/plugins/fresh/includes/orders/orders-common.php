@@ -139,7 +139,7 @@ function orders_per_item( $prod_id, $multiply, $short = false, $include_basket =
 		// consider quantity in the basket or bundle
 		$pid = get_order_itemmeta( $order_item_id, '_product_id' );
 		if ( is_bundle( $pid ) ) {
-			$b        = Bundle::CreateFromBundleProd( $pid );
+			$b        = Fresh_Bundle::CreateFromBundleProd( $pid );
 			$quantity *= $b->GetQuantity();
 		} else
 		if ( is_basket( $pid ) ) {

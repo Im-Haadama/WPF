@@ -34,7 +34,7 @@ switch ( $operation ) {
 		if ( ! ( $margin > 0 ) and ! strstr( $margin, "%" ) ) {
 			$margin = 0;
 		}
-		$b = Bundle::CreateNew( $product_id, $q, $margin );
+		$b = Fresh_Bundle::CreateNew( $product_id, $q, $margin );
 		print $p->getBuyPrice() . "," . $p->getPrice() . "," . $b->CalculatePrice();
 		break;
 
@@ -60,7 +60,7 @@ switch ( $operation ) {
 		$params = explode( ',', $_GET["params"] );
 		for ( $pos = 0; $pos < count( $params ); $pos ++ ) {
 			$item_id = $params[ $pos ];
-			$b       = Bundle::CreateFromDb( $item_id );
+			$b       = Fresh_Bundle::CreateFromDb( $item_id );
 			$b->Delete();
 		}
 		break;
@@ -72,7 +72,7 @@ switch ( $operation ) {
 		// print $product_id . " " . $quantity . " " . $margin . "<br/>";
 
 		// Create in memory
-		$bundle = Bundle::CreateNew( $product_id, $quantity, $margin );
+		$bundle = Fresh_Bundle::CreateNew( $product_id, $quantity, $margin );
 
 		// var_dump($bundle);
 
@@ -84,7 +84,7 @@ switch ( $operation ) {
 		$result = sql_query( $sql );
 		while ( $row = mysqli_fetch_row( $result ) ) {
 			print $row[0] . "<br/>";
-			$b = Bundle::CreateFromDb( $row[0] );
+			$b = Fresh_Bundle::CreateFromDb( $row[0] );
 			$b->Update();
 		}
 		break;
@@ -95,7 +95,7 @@ switch ( $operation ) {
 			$item_id  = $params[ $pos ];
 			$quantity = $params[ $pos + 1 ];
 			$margin   = $params[ $pos + 2 ];
-			$b        = Bundle::CreateFromDb( $item_id );
+			$b        = Fresh_Bundle::CreateFromDb( $item_id );
 			$b->Update( $quantity, $margin );
 		}
 		break;
@@ -105,7 +105,7 @@ switch ( $operation ) {
 		if ( ! ( $id > 0 ) ) {
 			die( "no id" );
 		}
-		$b = Bundle::CreateFromDb( $id );
+		$b = Fresh_Bundle::CreateFromDb( $id );
 		// var_dump($b);
 		$b->disable();
 

@@ -10,7 +10,7 @@ if ( ! defined( "FRESH_INCLUDES" ) ) {
  * Time: 16:31
  */
 // require_once( '../r-shop_manager.php' );
-require_once( "catalog.php" );
+//require_once( "catalog.php" );
 // require_once( "gui.php" );
 
 class Bundles {
@@ -45,7 +45,7 @@ class Bundles {
 			$quantity     = $row[2];
 			$margin       = $row[3];
 			$id           = $row[4];
-			$b            = Bundle::CreateFromDb( $id );
+			$b            = Fresh_Bundle::CreateFromDb( $id );
 
 			$line = "<tr>";
 			$line .= gui_cell( gui_checkbox( "chk_" . $id, $this->get_class_name() ) );
@@ -70,7 +70,7 @@ class Bundles {
 class NotFoundException extends Exception {
 }
 
-class Bundle {
+class Fresh_Bundle {
 	private $id;
 	private $bundle_prod_id;
 	private $prod_id;
@@ -78,7 +78,7 @@ class Bundle {
 	private $margin;
 
 	static function CreateNew( $product_id, $q, $margin ) {
-		$b           = new Bundle();
+		$b           = new Fresh_Bundle();
 		$b->prod_id  = $product_id;
 		$b->quantity = $q;
 		$b->margin   = $margin;
@@ -113,14 +113,14 @@ class Bundle {
 
 		$_id = sql_query_single_scalar( $sql );
 		if ( $_id ) {
-			return Bundle::CreateFromDb( $_id );
+			return Fresh_Bundle::CreateFromDb( $_id );
 		}
 
 		return null;
 	}
 
 	static function CreateFromDb( $_id ) {
-		$b     = new Bundle();
+		$b     = new Fresh_Bundle();
 		$b->id = $_id;
 		$sql   = "select prod_id, quantity, margin, bundle_prod_id from im_bundles where id = $_id";
 		$row   = sql_query_single_assoc( $sql );
