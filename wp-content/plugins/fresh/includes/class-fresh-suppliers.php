@@ -8,6 +8,11 @@
 class Fresh_Suppliers {
 	private $gem;
 
+	static function init_hooks()
+	{
+		AddAction("create_supplies", __CLASS__ . "::create_supplies");
+	}
+
 	function init()
 	{
 		Core_Gem::AddTable( "suppliers" );
@@ -22,6 +27,10 @@ class Fresh_Suppliers {
 		$this->gem = new Core_Gem();
 
 		$this->gem->AddVirtualTable( "products", $args );
+
+		// load classes
+		new Fresh_supply(0);
+		new Fresh_Catalog();
 	}
 
 	static function page()
@@ -109,6 +118,42 @@ class Fresh_Suppliers {
 		return array( 'suppliers' => array( __CLASS__ .'::page', 'edit_suppliers' ));          // Suppliers.
 	}
 
+	static function TodaySupply($supplier_id)
+	{
+		$sql = "select id 
+			from im_supplies 
+			where supplier = $supplier_id 
+			  and date = curdate()
+				and status = " . SupplyStatus::NewSupply .
+		       " order by id desc limit 1";
+
+		return sql_query_single_scalar($sql);
+	}
+
+	static function create_supplies()
+	{
+		$date        = GetParam( "date", false, date('Y-m-d'));
+		$supplier_id = GetParam("supplier_id", true);
+
+		$ids = GetParamArray("params");
+		$supply      = Fresh_Supply::CreateSupply( $supplier_id, $date );
+		if ( ! $supply->getID() ) {
+			return false;
+		}
+		for ( $pos = 0; $pos < count( $ids ); $pos += 2 ) {
+			$prod_id  = $ids[ $pos ];
+			$quantity = $ids[ $pos + 1 ];
+			$price = Fresh_Pricing::get_buy_price( $prod_id, $supplier_id );
+			if ( ! $supply->AddLine( $prod_id, $quantity, $price) ) {
+				return false;
+			}
+		}
+//		$mission_id = GetParam( "mission_id" );
+//		if ( $mission_id ) {
+//			$s->setMissionID( $mission_id );
+//		}
+		return $supply->getID();
+	}
 }
 
 

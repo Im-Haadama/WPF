@@ -19,6 +19,10 @@ class Fresh_Supplier {
 		return sql_query_single_scalar( 'SELECT supplier_name FROM im_suppliers WHERE id = ' . $this->id );
 	}
 
+	static function getSupplierId( $supplier_name ) {
+		return sql_query_single_scalar( 'SELECT id FROM im_suppliers WHERE supplier_name = \'' . $supplier_name . '\'' );
+	}
+
 	static function getByInvoiceSender( $email ) {
 		$id = sql_query_single_scalar( "SELECT id FROM im_suppliers WHERE " .
 		                               " invoice_email = " . QuoteText( $email ) );

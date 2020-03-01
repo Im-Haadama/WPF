@@ -401,8 +401,7 @@ class Core_Html {
 		if ( $class = GetArg( $args, "class", null ) ) {
 			$data .= " class = " . QuoteText( $class );
 		}
-
-		$data .= ">" . __( $text ) . "</a>";
+		$data .= ">" . (is_numeric($text) ? $text : __( $text )) . "</a>";
 
 		return $data;
 	}
@@ -607,6 +606,7 @@ class Core_Html {
 		$data .= ">";
 
 		if ( function_exists( '__' ) ) {
+			if (! is_string($cell)) $cell = xdebug_var_dump($cell);
 			$data .= __( $cell );
 		} else if ( is_array( $cell ) ) {
 			$data .= CommaImplode( $cell );
@@ -1636,6 +1636,7 @@ class Core_Html {
 
 			if ($all_loaded or ($selected_tab == $name)){
 				$contents .= Core_Html::GuiDiv($name, $tab[2], $div_args);
+				$selected_tab = null;
 			}
 
 			if ($all_loaded)
@@ -1647,6 +1648,7 @@ class Core_Html {
 			$tab_index++;
 		}
 		$result .= "</div>";
+		$result .= "<hr>";
 
 		$result .= $contents;
 		return $result;

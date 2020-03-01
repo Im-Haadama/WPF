@@ -61,9 +61,6 @@ function uptime_log( $msg, $title = '' ) {
 	error_log( $log, 3, $error_file );
 }
 
-function get_supplier_id( $supplier_name ) {
-	return sql_query_single_scalar( 'SELECT id FROM im_suppliers WHERE supplier_name = \'' . $supplier_name . '\'' );
-}
 
 // IM_Delivery table
 function get_order_id( $delivery_id ) {

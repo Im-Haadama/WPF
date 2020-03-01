@@ -39,26 +39,31 @@ class Fresh_Product {
 	function setStock( $q ) {
 		$debug = false;
 
-		if ($debug) print get_product_name($this->id);
+		if ( $debug ) {
+			print get_product_name( $this->id );
+		}
 
 		if ( $q == $this->getStock() ) {
 			return true;
 		}
 //		print "start ";
 		if ( $this->isFresh() ) {
-			if ($debug)
+			if ( $debug ) {
 				print "fresh ";
+			}
 
 			$delta = $q + $this->q_out() - $this->q_in();
-			if ($debug)
+			if ( $debug ) {
 				print " " . $delta;
+			}
 //			print "delta: " . $this->id . " " . $delta . "<br/>";
 			if ( is_null( sql_query_single_scalar( "select meta_value " .
 			                                       " from wp_postmeta " .
 			                                       " where post_id = " . $this->id .
 			                                       " and meta_key = 'im_stock_delta'" ) ) ) {
-				if ($debug)
+				if ( $debug ) {
 					print " insert";
+				}
 				sql_query( "insert into wp_postmeta (post_id, meta_key, meta_value) " .
 				           " values (" . $this->id . ", 'im_stock_delta', $delta)" );
 
@@ -68,8 +73,9 @@ class Fresh_Product {
 				return true;
 			}
 
-			if ($debug)
+			if ( $debug ) {
 				print " update";
+			}
 
 			sql_query( "update wp_postmeta set meta_value = " . $delta .
 			           " where meta_key = 'im_stock_delta' and post_id = " . $this->id );
@@ -84,6 +90,7 @@ class Fresh_Product {
 				sql_query( "UPDATE wp_postmeta SET meta_value = '" . date( 'd/m/Y' ) . "'" .
 				           " WHERE meta_key = 'im_stock_delta_date' AND post_id = " . $this->id );
 			}
+
 			return true;
 		}
 		// print "set stock ";
@@ -91,15 +98,16 @@ class Fresh_Product {
 		sql_query( "update wp_postmeta set meta_value = " . $q .
 		           " where post_id = " . $this->id .
 		           " and meta_key = '_stock'" );
+
 		return true;
 		// return $this->p->set_stock_quantity($q);
 	}
 
-	function is_basket( ) {
-		return sql_query_single_scalar('SELECT count(product_id) FROM im_baskets WHERE basket_id = ' . $this->id);
+	function is_basket() {
+		return sql_query_single_scalar( 'SELECT count(product_id) FROM im_baskets WHERE basket_id = ' . $this->id );
 	}
 
-	function is_bundle( ) {
+	function is_bundle() {
 		$sql = 'SELECT count(bundle_prod_id) FROM im_bundles WHERE bundle_prod_id = ' . $this->id;
 
 		return sql_query_single_scalar( $sql );
@@ -123,6 +131,7 @@ class Fresh_Product {
 		// BUG: some products, maybe just variables can't create WC_Product.
 		if ( $this->p ) {
 			$value = $this->p->get_stock_quantity();
+
 			return $value ? $value : 0;
 		} else {
 			return 0;
@@ -140,7 +149,7 @@ class Fresh_Product {
 		}
 		// print "checking .. ";
 
-		if ( $terms )
+		if ( $terms ) {
 			foreach ( $terms as $term ) {
 				$term_id = $term->term_id;
 				// print "term: " . $term_id . " ";
@@ -150,22 +159,25 @@ class Fresh_Product {
 					return true;
 				}
 			}
+		}
 
 		return false;
 	}
 
-	function getTerms($as_string = false) {
+	function getTerms( $as_string = false ) {
 		$terms = get_the_terms( $this->id, 'product_cat' );
 
-		if ($as_string) {
-			if (! $terms) return "(no terms)";
+		if ( $as_string ) {
+			if ( ! $terms ) {
+				return "(no terms)";
+			}
 			$result = "";
-			foreach($terms as $term_id)
-			{
-				$term = get_term($term_id);
+			foreach ( $terms as $term_id ) {
+				$term   = get_term( $term_id );
 				$result .= $term->name . ", ";
 			}
-			return rtrim($result, ", ");
+
+			return rtrim( $result, ", " );
 		}
 
 		return $terms;
@@ -173,10 +185,14 @@ class Fresh_Product {
 
 	function is_fresh( $term_id, $debug = false ) {
 		$terms = InfoGet( "fresh" );
-		if (! $terms) return false;
-		$fresh = explode($terms, "," );
+		if ( ! $terms ) {
+			return false;
+		}
+		$fresh = explode( $terms, "," );
 
-		if ( in_array( $term_id, $fresh ) ) return true;
+		if ( in_array( $term_id, $fresh ) ) {
+			return true;
+		}
 
 		$parents = get_ancestors( $term_id, "product_cat", 'taxonomy' );
 		foreach ( $parents as $parent ) {
@@ -247,10 +263,11 @@ class Fresh_Product {
 		       "where product_id = " . $this->id . "\n" .
 		       " and s.status in (" . SupplyStatus::Sent . "," . SupplyStatus::NewSupply . ")\n" .
 		       " and l.supply_id = s.id\n" .
-		" and sup.id = s.supplier";
+		       " and sup.id = s.supplier";
 
 		// print $sql;
 		$result = sql_query_array( $sql );
+
 		// var_dump($result);
 		return $result;
 	}
@@ -294,13 +311,14 @@ class Fresh_Product {
 		return get_post_status( $this->id ) == "publish";
 	}
 
-	function getName($strip = false) {
+	function getName( $strip = false ) {
 		$sql = 'SELECT post_title FROM wp_posts WHERE id = ' . $this->id;
 
 		$name = sql_query_single_scalar( $sql );
-		if ($strip and strpos($name, '(')){
-			$name = trim(substr($name, 0, strpos($name, '(')));
+		if ( $strip and strpos( $name, '(' ) ) {
+			$name = trim( substr( $name, 0, strpos( $name, '(' ) ) );
 		}
+
 		return $name;
 	}
 
@@ -313,7 +331,7 @@ class Fresh_Product {
 		return $global_vat;
 	}
 
-	function getPrice($customer_type = "regular") {
+	function getPrice( $customer_type = "regular" ) {
 		return Fresh_Pricing::get_price_by_type( $this->id, $customer_type );
 	}
 
@@ -325,10 +343,20 @@ class Fresh_Product {
 		return get_sale_price( $this->id );
 	}
 
-	function getSupplierName()
-	{
-		return sql_query_single_scalar("select meta_value from wp_postmeta where post_id = " . $this->id . " and meta_key = 'supplier_name'");
+	function getSupplierName() {
+		return sql_query_single_scalar( "select meta_value from wp_postmeta where post_id = " . $this->id . " and meta_key = 'supplier_name'" );
 	}
+
+	function getSupplierId()
+	{
+		// For now create post saves the supplier name.
+		// Planned to save there the supplier id.
+		$supplier_id = sql_query_single_scalar( "select meta_value from wp_postmeta where post_id = " . $this->id . " and meta_key = 'supplier_id'" );
+		if ($supplier_id) return $supplier_id;
+
+		return Fresh_Supplier::getSupplierId(self::getSupplierName());
+	}
+
 	function getBuyPrice($supplier_id = 0)
 	{
 		if ( $this->id > 0 ) {

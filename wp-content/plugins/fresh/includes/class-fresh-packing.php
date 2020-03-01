@@ -5,7 +5,7 @@ class Fresh_Packing {
 
 	static function add_admin($menu)
 	{
-		$menu->AddMenu('Packing', 'Packing', 'show_manager', 'packing', 'Fresh_Packing::admin');
+		$menu->AddMenu('Fresh Packing', 'Packing', 'show_manager', 'packing', 'Fresh_Packing::admin');
 		$menu->AddSubMenu('packing', 'edit_shop_orders',
 			array(array('page_title' => 'Needed products',
 			            'menu_title' => 'Needed Products',
@@ -60,8 +60,10 @@ class Fresh_Packing {
 		$result .= Core_Html::gui_header(1, "Needed products");
 		$result .= Core_Html::gui_header(1, "הערות לקוח");
 		$result .= Fresh_Order::GetAllComments();
-		$result .= self::needed_totals(false);
-
+		$args["tabs_load_all"] = true;
+		$totals = self::needed_totals(false);
+		$args["selected_tab"] = array_key_first($totals);
+		$result .= Core_Html::GuiTabs($totals, $args);
 
 		print $result;
 	}
@@ -70,14 +72,13 @@ class Fresh_Packing {
 	{
 		$result = "";
 		$inventory_managed = info_get( "inventory" );
+		$supplier = new Fresh_Supplier($supplier_id);
 
 		$data_lines = array();
 
 		foreach ( $needed_products as $prod_id => $quantity_array ) {
 			$P = new Fresh_Product( $prod_id );
-			if ( ! $P ) {
-				continue;
-			}
+			if ( ! $P ) continue;
 
 			$row = array();
 
@@ -88,9 +89,9 @@ class Fresh_Packing {
 			if ($P->isDraft()){
 				$row[] = "טיוטא";
 			} else {
-				$row[] = gui_checkbox("chk" . $prod_id. '_' . $supplier_id, "product_checkbox". $supplier_id);
+				$row[] = gui_checkbox("chk" . $prod_id, "product_checkbox". $supplier_id);
 			}
-			$row[] = get_product_name($prod_id);
+			$row[] = $P->getName();
 			$row[] = Core_Html::GuiHyperlink(isset( $quantity_array[0] ) ? round( $quantity_array[0], 1 ) : 0,
 				"get-orders-per-item.php?prod_id=" . $prod_id . ($history ? "&history" : ""));
 
@@ -106,41 +107,27 @@ class Fresh_Packing {
 			$q_inv = $p->getStock();
 
 			if ( $inventory_managed ) {
-				$row[] = gui_input( "inv_" . $prod_id, $q_inv, array(
+				$row[] = Core_Html::GuiInput( "inv_" . $prod_id, $q_inv, array(
 					"onchange=\"change_inv(" . $prod_id . ")\"",
 					"onkeyup=\"moveNext(" . $prod_id . ")\""
 				) ) ;
 
 				$numeric_quantity = ceil( $quantity - $q_inv );
 
-				$row[] = gui_input( "qua_" . $prod_id, $numeric_quantity,
-					"onchange=\"line_selected('" . $prod_id . '_' . $supplier_id . "')\"" );
+				$row[] = Core_Html::GuiInput( "qua_" . $prod_id, $numeric_quantity,
+					"onchange=\"line_selected('" . $prod_id . "')\"" );
 			}
-
-			$alternatives  = alternatives( $prod_id );
-			$suppliers     = array( array( "id" => 0, "option" => "בחר" ) );
-			foreach ( $alternatives as $alter ) {
-				$option = $alter->getSupplierName() . " " . $alter->getPrice();
-
-				array_push( $suppliers, array( "id" => $alter->getSupplierId(), "option" => $option ) );
-			}
-
-			// if ($prod_id == 1002) {print "XX"; var_dump($suppliers); }
-			$supplier_name = gui_select( "sup_" . $prod_id, "option", $suppliers, "onchange=selectSupplier(this)", "" );
-
-			$row[] = $supplier_name;
 
 			$row [] = orders_per_item( $prod_id, 1, true, true, true );
 
-			//print "loop5: " .  microtime() . "<br/>";
 			if ( ! $filter_zero or ( $numeric_quantity > 0 ) ) {
-				array_push( $data_lines, array( get_product_name( $prod_id ), $row ) );
+				array_push( $data_lines, array( $p->getName(), $row ) );
 			}
 		}
 
 		if ( count( $data_lines ) ) {
 			if ($supplier_id)
-				$supplier_name = get_supplier_name( $supplier_id );
+				$supplier_name = $supplier->getSupplierName();
 			else $supplier_name = "מוצרים לא זמינים";
 
 			$result .= Core_Html::gui_header( 2, $supplier_name );
@@ -149,8 +136,7 @@ class Fresh_Packing {
 
 			if ( $inventory_managed ) {
 				array_push($header, "כמות במלאי");
-				array_push($header, "כמות להזמיןי");
-				array_push($header, "ספק");
+				array_push($header, "כמות להזמין");
 				array_push($header, "לקוחות");
 			}
 			$table_rows = array();
@@ -159,17 +145,12 @@ class Fresh_Packing {
 
 			sort( $data_lines );
 
-			global $total_buy;
-			global $total_sale;
-
 			for ( $i = 0; $i < count( $data_lines ); $i ++ ) {
 				array_push($table_rows, $data_lines[ $i ][1]);
 			}
-			array_push($table_rows, array( array( "", 'סה"כ', "", "", "", "", "", $total_buy, $total_sale )));
+			//array_push($table_rows, array( array( "", 'סה"כ', "", "", "", "", "", $total_buy, $total_sale )));
 
-			// $result .= gui_table_args(  $table_rows );
-			// debug_var($table_rows);
-			$result .= gui_table_args($table_rows, "needed_" . $supplier_id);
+			$result .= Core_Html::gui_table_args($table_rows, "needed_" . $supplier_id);
 
 			if (! $supplier_id) {
 				$result .= "יש להפוך לטיוטא רק לאחר שמוצר אזל מהמלאי והוצע ללקוחות תחליף<br/>";
@@ -179,7 +160,7 @@ class Fresh_Packing {
 		return $result;
 	}
 
-	static function needed_totals( $filter_zero, $history = false, $filter_stock = false, $supplier_id = null )
+	static function needed_totals( $filter_zero, $history = false, $filter_stock = false, $limit_to_supplier_id = null )
 	{
 		$result = "";
 		$needed_products = array();
@@ -192,23 +173,20 @@ class Fresh_Packing {
 			return $result;
 		}
 
+		$supplier_tabs = [];
 		$suppliers       = array();
 		$supplier_needed = array();
 
 		// Find out which suppliers are relevant
 		foreach ( $needed_products as $prod_id => $product_info ) {
-			$found_supplier = false;
-//			foreach ( alternatives( $prod_id ) as $alter ) {
 			$prod = new Fresh_Product($prod_id);
-			$supplier = $prod->getSupplierName();
-			if ( ! in_array( $supplier, $suppliers ) ) {
-				array_push( $suppliers, $supplier );
-				$supplier_needed[ $supplier ] = array();
+			$supplier_id = $prod->getSupplierId();
+			if ( ! in_array( $supplier_id, $suppliers ) ) {
+				array_push( $suppliers, $supplier_id );
+				$supplier_needed[ $supplier_id ] = array();
 			}
-			$supplier_needed[ $supplier ][ $prod_id ] = $product_info;
-			$found_supplier = true;
-//			}
-			if (! $found_supplier){
+			$supplier_needed[ $supplier_id ][ $prod_id ] = $product_info;
+			if (! $supplier_id){
 				if (! isset($supplier_needed["missing"]))
 					$supplier_needed["missing"] = array();
 
@@ -216,41 +194,154 @@ class Fresh_Packing {
 			}
 		}
 
-		if ($supplier_id) {
-			if (! isset($supplier_needed[ $supplier_id ]))
+		if ($limit_to_supplier_id) {
+			if (! isset($supplier_needed[ $limit_to_supplier_id ]))
 			{
-				print "אין מוצרים רלוונטים לספק " . get_supplier_name($supplier_id);
+				print "אין מוצרים רלוונטים לספק " . get_supplier_name($limit_to_supplier_id);
 				return;
 			}
-			print get_total_orders_supplier( $supplier_id, $supplier_needed[ $supplier_id ], $filter_zero, $filter_stock, $history );
+			print self::get_total_orders_supplier( $limit_to_supplier_id, $supplier_needed[ $supplier_id ], $filter_zero, $filter_stock, $history );
 
-			print Core_Html::GuiButton( "btn_supplier_" . $supplier_id, "createSupply(" . $supplier_id . ")", "צור אספקה" );
+			print Core_Html::GuiButton( "btn_create_supply_" . $supplier_id, "createSupply(" . $supplier_id . ")", "צור אספקה" );
 
 			return;
 		}
 
-//		if ($supplier_needed["missing"]) {
-////		var_dump($supplier_needed["missing"]);
-//			print get_total_orders_supplier( $supplier_id, $supplier_needed["missing" ], $filter_zero, $filter_stock, $history );
-//		}
-		print "handle missing";
-		$suppliers_ids = [];
-		foreach ($suppliers as $supplier_name)
-		{
-			$suppliers_ids[] = sql_query_single_scalar("select id from im_suppliers where supplier_name = '" . $supplier_name . "'");
-		}
-		$sql = "SELECT id, supplier_priority FROM im_suppliers WHERE id IN (" . CommaImplode( $suppliers_ids ) . ")" .
-//		       " AND active " .
+		$sql = "SELECT id, supplier_priority FROM im_suppliers WHERE id IN (" . CommaImplode( $suppliers ) . ")" .
 		       " ORDER BY 2";
 
 		$result = sql_query( $sql );
 
 		while ( $row = sql_fetch_row( $result ) ) {
-			$supplier_id = $row[0];
-			print self::get_total_orders_supplier( $supplier_id, $supplier_needed[ $supplier_id ], $filter_zero, $filter_stock, $history );
+			$supplier = new Fresh_Supplier($row[0]);
+			$tab_content =
+				self::get_total_orders_supplier( $supplier->getId(), $supplier_needed[ $supplier->getId() ], $filter_zero, $filter_stock, $history );
 
-			print Core_Html::GuiButton( "btn_supplier_" . $supplier_id, "createSupply(" . $supplier_id . ")", "צור אספקה" );
+			if ($supply_id = Fresh_Suppliers::TodaySupply($supplier->getId()))
+				$tab_content .= Core_Html::GuiHyperlink("Supply " . $supply_id, "get") . "<br/>";
+
+//
+
+			$tab_content .= Core_Html::GuiButton( "btn_create_supply_" . $supplier->getId(), "Create a supply", array("action" => "needed_create_supplies(" . $supplier->getId() . ")") );
+
+			$supplier_tabs[$supplier->getId()] =
+				array($supplier->getId(),
+					$supplier->getSupplierName(), $tab_content);
+
 		}
+		return $supplier_tabs;
 	}
 
+	static function init_hooks()
+	{
+	}
+}
+
+function orders_per_item( $prod_id, $multiply, $short = false, $include_basket = false, $include_bundle = false, $just_total = false, $month = null ) {
+	// my_log( "prod_id=" . $prod_id, __METHOD__ );
+
+	$sql = 'select woi.order_item_id, order_id'
+	       . ' from wp_woocommerce_order_items woi join wp_woocommerce_order_itemmeta woim'
+	       . ' where order_id in';
+
+	if ( ! $month )
+		$sql .= '(select order_id from im_need_orders) ';
+	else {
+		$year = date( 'Y' );
+		if ( $month >= date( 'n' ) ) {
+			$year --;
+		}
+		$sql .= "(SELECT id FROM wp_posts WHERE post_date like '" . $year . "-" . sprintf( "%02s", $month ) . "-%'" .
+		        " and post_status = 'wc-completed')";
+//		print $sql;
+//		die (1);
+	}
+
+	$baskets = null;
+	if ( $include_basket ) {
+		$sql1    = "select basket_id from im_baskets where product_id = $prod_id";
+		$baskets = sql_query_array_scalar( $sql1 );
+	}
+	$bundles = null;
+	if ( $include_bundle ) {
+		$sql2    = "select bundle_prod_id from im_bundles where prod_id = " . $prod_id;
+		$bundles = sql_query_array_scalar( $sql2 );
+		// if ($bundles) var_dump($bundles);
+	}
+	$sql .= ' and woi.order_item_id = woim.order_item_id '
+	        . ' and (woim.meta_key = \'_product_id\' or woim.meta_key = \'_variation_id\')
+	         and woim.meta_value in (' . $prod_id;
+	if ( $baskets ) {
+		$sql .= ", " . CommaImplode( $baskets );
+	}
+	if ( $bundles ) {
+		$sql .= ", " . CommaImplode( $bundles );
+	}
+	$sql .= ")";
+
+//	print $sql . "<br/>";
+
+	// my_log( $sql, "get-orders-per-item.php" );
+
+	$result = sql_query( $sql);
+	$lines = "";
+	$total_quantity = 0;
+
+	while ( $row = mysqli_fetch_row( $result ) ) {
+		$order_item_id = $row[0];
+		$order_id      = $row[1];
+		$quantity      = get_order_itemmeta( $order_item_id, '_qty' );
+		// consider quantity in the basket or bundle
+		$pid = get_order_itemmeta( $order_item_id, '_product_id' );
+		$p = new Fresh_Product($pid);
+		if ( $p->is_bundle( ) ) {
+			$b        = Bundle::CreateFromBundleProd( $pid );
+			$quantity *= $b->GetQuantity();
+		} else
+			if ( $p->is_basket( ) ) {
+				$b        = new Fresh_Basket( $pid );
+				$quantity *= $b->GetQuantity( $prod_id );
+			}
+		$first_name    = get_postmeta_field( $order_id, '_shipping_first_name' );
+		$last_name     = get_postmeta_field( $order_id, '_shipping_last_name' );
+
+		$total_quantity += $quantity;
+
+		if ( $short ) {
+//			print "short $first_name<br/>";
+			$lines .= $quantity . " " . $last_name . ", ";
+		} else {
+//			print "long<br/>";
+			$line  = "<tr>" . "<td> " . Core_Html::GuiHyperlink( $order_id, "get-order.php?order_id=" . $order_id ) . "</td>";
+			$line .= "<td>" . $quantity * $multiply . "</td><td>" . $first_name . "</td><td>" . $last_name . "</td></tr>";
+			$lines .= $line;
+		}
+	}
+	if ( $just_total ) {
+		return $total_quantity;
+	}
+	if ( $short and $total_quantity ) {
+		$lines = $total_quantity . ": " . rtrim( $lines, ", ");
+	}
+	return $lines;
+}
+
+function get_order_itemmeta( $order_item_id, $meta_key ) {
+	if ( is_array( $order_item_id ) ) {
+		$sql = "SELECT sum(meta_value) FROM wp_woocommerce_order_itemmeta "
+		       . ' WHERE order_item_id IN ( ' . comma_implode( $order_item_id ) . ") "
+		       . ' AND meta_key = \'' . escape_string( $meta_key ) . '\'';
+
+		return sql_query_single_scalar( $sql );
+	}
+	if ( is_numeric( $order_item_id ) ) {
+		$sql2 = 'SELECT meta_value FROM wp_woocommerce_order_itemmeta'
+		        . ' WHERE order_item_id = ' . $order_item_id
+		        . ' AND meta_key = \'' . escape_string( $meta_key ) . '\''
+		        . ' ';
+
+		return sql_query_single_scalar( $sql2 );
+	}
+
+	return - 1;
 }

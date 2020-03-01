@@ -123,51 +123,6 @@ $supplier_id = GetParam("supplier_id");
             }
         }
 
-        function create_supplies() {
-            document.getElementById("btn_create_supplies").disabled = true;
-            var table = document.getElementById('ordered_items');
-            // var lines = table.rows.length;
-            var collection = document.getElementsByClassName("product_checkbox");
-
-            var sel = document.getElementById("supplier_id");
-            var supplier_id = sel.options[sel.selectedIndex].value;
-
-            // Request header
-            var request = "../supplies/supplies-post.php?operation=create_supplies&params=";
-            var params = new Array();
-
-            // Add the data.
-            for (var i = 0; i < collection.length; i++) {
-                if (collection[i].checked) { // Add to suppplies
-                    var prod_id = collection[i].id.substring(3);
-                    params.push(prod_id);
-
-                    var supplier = get_value_by_name("sup_" + prod_id);
-                    params.push(supplier);
-
-                    var quantity = get_value_by_name("qua_" + prod_id);
-                    params.push(quantity);
-
-                    var units = 0;
-//                    var units_text = get_value(table.rows[i + 1].cells[3].innerText);
-//                    if (units_text.length >= 1) units = eval(units_text);
-                    params.push(units);
-                }
-            }
-            // Call the server to save the supply
-
-            request = request + params.join();
-
-            xmlhttp = new XMLHttpRequest();
-            xmlhttp.open("GET", request, true);
-            xmlhttp.onreadystatechange = function () {
-                document.getElementById("logging").innerHTML = xmlhttp.response;
-                show_totals();
-                // location.reload();
-            }
-
-            xmlhttp.send();
-        }
 
         function create_delta() {
             document.getElementById("btn_create_delta").disabled = true;

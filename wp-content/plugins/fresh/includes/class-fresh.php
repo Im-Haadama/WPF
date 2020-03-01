@@ -191,6 +191,9 @@ class Fresh {
 
 		$this->loader->add_action( 'wp_enqueue_scripts', $orders, 'enqueue_scripts' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $inventory, 'enqueue_scripts' );
+
+		Fresh_Packing::init_hooks();
+		Fresh_Suppliers::init_hooks();
 	}
 
 	/**
@@ -217,7 +220,7 @@ class Fresh {
 	{
 		$menu = new Core_Admin_Menu();
 
-		$menu->AddMenu('General', 'Fresh', 'show_manager', 'fresh', __CLASS__ . '::general_settings');
+		$menu->AddMenu('Fresh Settings', 'Fresh', 'show_manager', 'fresh', __CLASS__ . '::general_settings');
 		$menu->AddSubMenu('fresh', 'edit_shop_orders',
 			array(array('page_title' => 'Settings',
 				'menu_title' => 'Settings',

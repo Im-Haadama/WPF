@@ -37,3 +37,30 @@ function basket_delete(basket_id)
 
     execute_url(url, action_hide_row, btn);
 }
+
+function needed_create_supplies(supplier_id) {
+    document.getElementById("btn_create_supply_" + supplier_id).disabled = true;
+    // let table = document.getElementById('needed_' + supplier_id);
+    // var lines = table.rows.length;
+    let collection = document.getElementsByClassName("product_checkbox" + supplier_id);
+
+    // Request header
+    let request = admin_post() + "?operation=create_supplies&params=";
+    let params = new Array();
+
+    // Add the data.
+    for (let i = 0; i < collection.length; i++) {
+        if (collection[i].checked) { // Add to suppplies
+            var prod_id = collection[i].id.substring(3);
+            params.push(prod_id);
+
+            var quantity = get_value_by_name("qua_" + prod_id);
+            params.push(quantity);
+        }
+    }
+    // Call the server to save the supply
+
+    request = request + params.join() + '&supplier_id=' + supplier_id;
+
+    execute_url(request, location_reload);
+}

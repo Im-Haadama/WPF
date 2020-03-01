@@ -6,9 +6,6 @@
  * Time: 11:58
  */
 
-
-
-
 //require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 //require_once( FRESH_INCLUDES . '/supplies/gui.php' );
 //
@@ -242,7 +239,6 @@ class Fresh_Supply {
 		$sql = "INSERT INTO im_supplies_lines (supply_id, product_id, quantity, units, price) VALUES "
 		       . "( " . $this->ID . ", " . $prod_id . ", " . $quantity . ", " . $units . ", " . $price . " )";
 
-		 print $sql;
 		sql_query( $sql );
 		$product = new WC_Product( $prod_id );
 		if ( $product->managing_stock() ) {
@@ -1261,37 +1257,6 @@ function handle_supplies_operation($operation)
 
 		case "create_delta":
 			create_delta();
-			break;
-
-		case "create_supply":
-			print "create supply ";
-
-			$date        = GetParam( "date" );
-			$supplier_id = $_GET["supplier_id"];
-			MyLog( "supplier_id=" . $supplier_id );
-
-			$create_info = $_GET["create_info"];
-			$ids         = explode( ',', $create_info );
-			$supply      = Fresh_Supply::CreateSupply( $supplier_id, $date );
-			if ( ! $supply->getID() ) {
-				return false;
-			}
-			for ( $pos = 0; $pos < count( $ids ); $pos += 3 ) {
-				$prod_id  = $ids[ $pos ];
-				$quantity = $ids[ $pos + 1 ];
-				$units    = $ids[ $pos + 2 ];
-				// print "adding " . $prod_id . " quantity " . $quantity . " units " . $units . "<br/>";
-				$price = get_buy_price( $prod_id, $supplier_id );
-				if ( ! $supply->AddLine( $prod_id, $quantity, $price, $units ) ) {
-					return false;
-				}
-			}
-			print $supply->getID();
-			$mission_id = GetParam( "mission_id" );
-			if ( $mission_id ) {
-				$s->setMissionID( $mission_id );
-			}
-			print " done";
 			break;
 
 		case "create_supplies":

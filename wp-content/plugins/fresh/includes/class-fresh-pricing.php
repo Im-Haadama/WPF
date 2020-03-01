@@ -2,6 +2,7 @@
 
 
 class Fresh_Pricing {
+
 	static function calculate_price( $price, $supplier, $sale_price = '', $terms = null ) {
 		$factor = sql_query_single_scalar( "SELECT factor FROM im_suppliers WHERE id = " . $supplier);
 

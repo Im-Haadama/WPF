@@ -494,7 +494,7 @@ class Fresh_Order {
 			if (strlen($o->GetComments()))
 				array_push($table, array(Core_Html::GuiHyperlink($order, "get-order.php?order_id=" . $order), $o->CustomerName(), $o->GetComments()));
 		}
-		print Core_Html::gui_table_args($table);
+		return Core_Html::gui_table_args($table);
 	}
 
 	public function Missing() {
