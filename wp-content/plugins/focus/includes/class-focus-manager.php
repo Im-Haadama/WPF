@@ -1,5 +1,6 @@
 <?php
 
+include_once FLAVOR_INCLUDES_ABSPATH . 'core/core-functions.php';
 
 class Focus_Manager {
 	protected static $_instance = null;
@@ -36,6 +37,7 @@ class Focus_Manager {
 		self::create_tasks();
 	}
 
+
 	function create_tasks( $freqs = null, $verbose = false, $default_owner = 1 )
 	{
 		$debug = 2;
@@ -64,6 +66,7 @@ class Focus_Manager {
 
 		// TODO: create_tasks_per_mission();
 		$verbose_table = array( array( "template_id", "freq", "query", "active", "result", "priority", "new task" ));
+
 		foreach ( $freqs as $freq ) {
 			$output .= "Handling " . Core_Html::GuiHyperlink($freq, AddToUrl(array( "operation" => "show_templates", "search" =>1, "repeat_freq" => $freq))) . Core_Html::Br();
 

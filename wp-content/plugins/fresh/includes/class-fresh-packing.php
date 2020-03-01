@@ -78,6 +78,8 @@ class Fresh_Packing {
 		$inventory_managed = InfoGet( "inventory" );
 		$supplier = new Fresh_Supplier($supplier_id);
 
+		$checkbox_class = "product_checkbox". $supplier_id;
+
 		$data_lines = array();
 
 		foreach ( $needed_products as $prod_id => $quantity_array ) {
@@ -93,7 +95,7 @@ class Fresh_Packing {
 			if ($P->isDraft()){
 				$row[] = "טיוטא";
 			} else {
-				$row[] = gui_checkbox("chk" . $prod_id, "product_checkbox". $supplier_id);
+				$row[] = gui_checkbox("chk" . $prod_id, $checkbox_class);
 			}
 			$row[] = $P->getName();
 			$row[] = Core_Html::GuiHyperlink(isset( $quantity_array[0] ) ? round( $quantity_array[0], 1 ) : 0,
@@ -136,7 +138,9 @@ class Fresh_Packing {
 
 			$result .= Core_Html::gui_header( 2, $supplier_name );
 
-			$header = array("בחר", "פריט", "כמות נדרשת");
+			$header = array(Core_Html::GuiCheckbox("chk_toggle",
+				"",
+				array("events" => 'onchange="select_all_toggle(this, \'' . $checkbox_class . '\')"' )), "פריט", "כמות נדרשת");
 
 			if ( $inventory_managed ) {
 				array_push($header, "כמות במלאי");
@@ -222,7 +226,7 @@ class Fresh_Packing {
 				self::get_total_orders_supplier( $supplier->getId(), $supplier_needed[ $supplier->getId() ], $filter_zero, $filter_stock, $history );
 
 			if ($supply_id = Fresh_Suppliers::TodaySupply($supplier->getId()))
-				$tab_content .= Core_Html::GuiHyperlink("Supply " . $supply_id, "get") . "<br/>";
+				$tab_content .= Core_Html::GuiHyperlink("Supply " . $supply_id, "/fresh/supplies/supplies-page.php?operation=show&id=" . $supply_id ). "<br/>";
 
 //
 

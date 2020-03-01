@@ -60,6 +60,10 @@ function needed_create_supplies(supplier_id) {
     }
     // Call the server to save the supply
 
+    if (params.length < 1) {
+        alert("select products");
+        return;
+    }
     request = request + params.join() + '&supplier_id=' + supplier_id;
 
     execute_url(request, location_reload);

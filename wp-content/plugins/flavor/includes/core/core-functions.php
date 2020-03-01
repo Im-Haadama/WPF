@@ -6,6 +6,22 @@
  *
  * @return int
  */
+
+function QuoteText( $num_or_text, $sql_escape = false ) {
+	if ( is_null( $num_or_text ) ) return '"NULL"';
+
+	if ( is_numeric( $num_or_text ) ) return $num_or_text;
+
+	if ($sql_escape) return "'" . escape_string($num_or_text) . "'";
+
+	return "'" . $num_or_text . "'";
+}
+
+function QuoteDate($date, $format = 'Y-m-d')
+{
+	return "'" . date($format, $date) . "'";
+}
+
 	function get_user_id( $force_login = false ) {
 		if ( function_exists( 'wp_get_current_user' ) ) {
 			$current_user = wp_get_current_user();
@@ -132,20 +148,6 @@
 		return '"%' . $text . '%"';
 	}
 
-		function QuoteText( $num_or_text, $sql_escape = false ) {
-			if ( is_null( $num_or_text ) ) return '"NULL"';
-
-			if ( is_numeric( $num_or_text ) ) return $num_or_text;
-
-			if ($sql_escape) return "'" . escape_string($num_or_text) . "'";
-
-			return "'" . $num_or_text . "'";
-		}
-
-		function QuoteDate($date, $format = 'Y-m-d')
-		{
-			return "'" . date($format, $date) . "'";
-		}
 
 		/**
 	 *
