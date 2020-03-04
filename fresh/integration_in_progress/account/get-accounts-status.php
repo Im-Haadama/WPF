@@ -83,7 +83,7 @@ $data .= "<td>יתרה לתשלום</td>";
 $data .= "<td>הזמנה אחרונה</td>";
 $data .= "</tr>";
 
-print "<a href=\"get-accounts-status.php?zero\">הצג גם חשבונות מאופסים</a>";
+print ">הצג גם חשבונות מאופסים</a>";
 
 $data_lines         = array();
 $data_lines_credits = array();

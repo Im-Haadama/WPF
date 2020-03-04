@@ -1,2 +1,0 @@
-תעודת משלוח מס called from business_update_transaction<br/>called from create_delivery_header<br/>
-Error: sql = `UPDATE im_business_info SET amount = 145.95,  delivery_fee = 10 WHERE ref = 2387`. Sql error : Truncated incorrect DOUBLE value: '000425/17'<br/><br/>2387נשמרת ... הסתיים

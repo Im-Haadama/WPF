@@ -18,11 +18,12 @@ class Fresh_Client_Views {
 
 	static function handle_operation($operation)
 	{
+		$args = self::Args();
 		switch ($operation)
 		{
 			case "client_archive":
 				$user_id = get_user_id(true);
-				return self::show_trans($user_id);
+				return self::show_trans($user_id, eTransview::default, $args);
 
 			case "client_balance":
 				$user_id = get_user_id(true);
@@ -43,6 +44,21 @@ class Fresh_Client_Views {
 				return $delivery->CustomerView(); // (FreshDocumentType::delivery, Fresh_DocumentOperation::show);
 		}
 		return $operation . " not handled " . __FUNCTION__ . "<br/>";
+	}
+
+	static private function getPost()
+	{
+		return "/wp-content/plugins/fresh/post.php";
+	}
+
+	static function Args()
+	{
+		$args = [];
+		$args["post_file"] = self::getPost();
+		$args["page_number"] = GetParam("page_number");
+		$query["query"] = GetParam("query");
+
+		return $args;
 	}
 
 	static function client_balance($user_id)
@@ -68,8 +84,8 @@ class Fresh_Client_Views {
 				if ( get_post_meta( $order, '$result .=ed' ) ) {
 					$result .= "הזמנה " . $order . " עברה לטיפול. צור קשר עם שירות הלקוחות" . "<br/>";
 				} else {
-					$result .= "הזמנה " . $order . " עדיין לא הוכנה. במידה ויתאפשר נוסיף מוצרים. נא לא לבטל פריטים טריים זמן קצר לפני האספקה. לחץ לשינוי ";
-					$result .= Core_Html::GuiHyperlink( "הזמנה " . $order, Core_Db_MultiSite::LocalSiteTools() . "/fresh/orders/get-order.php?order_id=" . $order );
+					$result .= __("Order") . $order . " " . __("before process") . ". " . __("Edit here:") . " ";
+					$result .= Core_Html::GuiHyperlink( __("Order") . " " . $order, "/orders?id=" . $order );
 					$result .= ".<br/>";
 				}
 			}
@@ -106,9 +122,8 @@ class Fresh_Client_Views {
 
 	static function show_trans( $customer_id, $view = eTransview::default, $args =null )
 	{
-		$page = GetArg($args, "page", null);
-		$query = GetArg($args, "query", null);
 		// $from_last_zero = false, $checkbox = true, $top = 10000
+		$query = GetArg($args, "param", null);
 
 		// Show open deliveries
 		$from_last_zero = false;
@@ -148,14 +163,12 @@ class Fresh_Client_Views {
 			$sql .= " limit " . $top;
 		}
 
-		$args = array();
 		$args["links"] = array();
 		$args["links"]["transaction_ref"] = "/delivery?id=%s";
 //		$args["links"]["order"] = "/delivery/order_id=%s";
 		$args["col_ids"] = array("chk", "id", "dat", "amo", "bal", "des", "del", "ord");
 //	$args["show_cols"] = array(); $args["show_cols"]['id'] = 0;
 		$args["add_checkbox"] = false; // Checkbox will be added only to unpaid rows
-		$args["page"] = $page;
 		$first = true;
 
 		$args["page"] = -1;// all rows
@@ -173,7 +186,6 @@ class Fresh_Client_Views {
 			return;
 		}
 
-//	var_dump($data1);
 		foreach ($data1 as $id => $row)
 		{
 			$row_id = $row['id'];

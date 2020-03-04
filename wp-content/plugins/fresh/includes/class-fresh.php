@@ -17,6 +17,7 @@ class Fresh {
 	protected $supplier_balance;
 	protected $totals;
 	protected $shortcodes;
+	protected $order;
 
 	/**
 	 * Plugin version.
@@ -516,12 +517,14 @@ class Fresh {
 		$this->suppliers = new Fresh_Suppliers();
 		$this->supplier_balance = Fresh_Supplier_Balance::instance();
 		$this->totals = Fresh_Totals::instance();
+		$this->order = Fresh_Order_Management::instance();
 
 		$shortcodes = Core_Shortcodes::instance();
 		$shortcodes->add($this->delivery_manager->getShortcodes());
 		$shortcodes->add($this->suppliers->getShortcodes());
 		$shortcodes->add($this->supplier_balance->getShortcodes());
 		$shortcodes->add($this->totals->getShortcodes());
+		$shortcodes->add($this->order->getShortcodes());
 
 //		$this->shortcodes->do_init();
 		$this->suppliers->init();

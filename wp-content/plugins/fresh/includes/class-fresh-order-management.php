@@ -4,15 +4,31 @@
 class Fresh_Order_Management {
 	private $plugin_name;
 	private $version;
+	static private $_instance;
 
 	/**
 	 * Fresh_Orders constructor.
 	 *
 	 * @param $plugin_name
 	 */
-	public function __construct($plugin_name, $version) {
+	public function __construct($plugin_name = "Fresh", $version = "1.0") {
 		$this->plugin_name = $plugin_name;
 		$this->version = '1.0';
+	}
+
+	public static function instance() {
+		if ( is_null( self::$_instance ) ) {
+			self::$_instance = new self();
+		}
+		return self::$_instance;
+	}
+
+	public static function getShortcodes()
+	{
+		return array(
+		'fresh_totals'         => array( 'Fresh_Totals::totals', 'edit_shop_orders' ),
+			'fresh_orders' => array(__CLASS__ . '::EditOrder', null)
+		);
 	}
 
 	static function handle()
@@ -33,6 +49,13 @@ class Fresh_Order_Management {
 	public function enqueue_scripts() {
 	}
 
+	static function EditOrder()
+	{
+		$id = GetParam("order_id", true, null);
+		$result = Core_Html::gui_header(1, __("Order number") . " " . $id);
+
+		return $result;
+	}
 	static function OrdersTable1($statuses = array('wc-processing'), $build_path = true, $user_id = 0, $week = null)
 	{
 		$order_header_fields = self::OrderHeaderFields();

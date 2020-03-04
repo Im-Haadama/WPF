@@ -22,7 +22,7 @@ class Fresh_Shortcodes {
 			'fresh_management'           => __CLASS__ . '::fresh_management',
 			'fresh_suppliers'            => __CLASS__ . '::suppliers', // [fresh_suppliers]
 			'fresh_control'            => __CLASS__ . '::packing_control', // [fresh_suppliers]
-			'fresh_orders'    => __CLASS__ . '::orders',
+//			'fresh_orders'    => __CLASS__ . '::orders',
 			'fresh_account_status'    => __CLASS__ . '::fresh_account_status',
 			'fresh_inventory'    => __CLASS__ . '::inventory',
 			/// Personal area

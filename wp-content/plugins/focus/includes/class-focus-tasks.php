@@ -297,7 +297,7 @@ class Focus_Tasks {
 				$args = self::Args();
 				$id = GetParam( "id", true );
 
-				return self::show_templates( $args, $id );
+				return $me->show_templates( $args, $id );
 			case "show_task":
 				$id = GetParam( "id", true );
 				if ( $id ) {

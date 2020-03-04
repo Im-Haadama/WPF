@@ -189,7 +189,7 @@ class Fresh_Packing {
 		foreach ( $needed_products as $prod_id => $product_info ) {
 			$prod = new Fresh_Product($prod_id);
 			$supplier_id = $prod->getSupplierId();
-			if ( ! in_array( $supplier_id, $suppliers ) ) {
+			if ( ! in_array( $supplier_id, $suppliers )  and ($supplier_id > 0)) {
 				array_push( $suppliers, $supplier_id );
 				$supplier_needed[ $supplier_id ] = array();
 			}
@@ -206,13 +206,11 @@ class Fresh_Packing {
 			if (! isset($supplier_needed[ $limit_to_supplier_id ]))
 			{
 				print "אין מוצרים רלוונטים לספק " . get_supplier_name($limit_to_supplier_id);
-				return;
+				return null;
 			}
-			print self::get_total_orders_supplier( $limit_to_supplier_id, $supplier_needed[ $supplier_id ], $filter_zero, $filter_stock, $history );
+			return self::get_total_orders_supplier( $limit_to_supplier_id, $supplier_needed[ $limit_to_supplier_id ], $filter_zero, $filter_stock, $history ) .
 
-			print Core_Html::GuiButton( "btn_create_supply_" . $supplier_id, "createSupply(" . $supplier_id . ")", "צור אספקה" );
-
-			return;
+			 Core_Html::GuiButton( "btn_create_supply_" . $supplier_id, "createSupply(" . $supplier_id . ")", "צור אספקה" );
 		}
 
 		$sql = "SELECT id, supplier_priority FROM im_suppliers WHERE id IN (" . CommaImplode( $suppliers ) . ")" .
