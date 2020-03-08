@@ -61,7 +61,7 @@ class Core_Gem {
 		if (! $operation)  return __FUNCTION__ . ":no operation";
 
 		$table_name = substr($operation, 9);
-		return $result . self::GemElement($table_name, $id, $args);
+		return $result . self::GemElement(get_table_prefix() .$table_name, $id, $args);
 	}
 
 	static function add_wrapper($result, $id, $args)
@@ -95,9 +95,10 @@ class Core_Gem {
 
 	static function show_wrapper($operation, $id, $args)
 	{
-		$table_name = substr($operation, 10);
+		$table_name = substr($operation, strlen("gem_show_"));
+//		print "op=$operation tbl=$table_name id=$id args=$args<br/>";
 		if (! $id) return "id is missing";
-		return self::GemElement($table_name, $id, $args);
+		return self::GemElement(get_table_prefix() .$table_name, $id, $args);
 	}
 
 	static function GemAddRow($table_name, $text = null, $args = null){
@@ -308,9 +309,10 @@ class Core_Gem {
 		$query_id = GetArg($args, "id", null);
 		if (! $query_id) return "id is missing";
 		$query = sprintf($query_part, $query_id);
-		$fields = GetArg($args, "fields", '*');
+		$fields = GetArg($this->object_types["$table_name"], "fields", '*');
 
 		$args["sql"] = "select $fields $query";
+		$args["prepare_plug"] = $this->object_types["$table_name"]["prepare_plug"];
 
 		return self::GemTable($table_name, $args);
 	}

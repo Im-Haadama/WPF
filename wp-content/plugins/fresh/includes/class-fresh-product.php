@@ -340,7 +340,7 @@ class Fresh_Product {
 	}
 
 	function getSalePrice() {
-		return get_sale_price( $this->id );
+		return get_postmeta_field( $this->id, '_sale_price' );
 	}
 
 	function getSupplierName() {
@@ -420,7 +420,7 @@ class Fresh_Product {
 		$args["datalist"] = true;
 		$args["id_field"] = "ID";
 		$args["include_id"] = true;
-		$args["post_file"] = "/wp-content/plugins/fresh/post.php";
+		$args["post_file"] = get_site_url() . "/wp-content/plugins/fresh/post.php";
 
 		// return GuiSelectTable( $id, "im_products", $args);
 		return Core_Html::GuiAutoList($id, "products", $args);

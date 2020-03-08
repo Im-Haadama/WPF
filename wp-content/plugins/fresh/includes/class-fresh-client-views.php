@@ -84,8 +84,8 @@ class Fresh_Client_Views {
 				if ( get_post_meta( $order, '$result .=ed' ) ) {
 					$result .= "הזמנה " . $order . " עברה לטיפול. צור קשר עם שירות הלקוחות" . "<br/>";
 				} else {
-					$result .= __("Order") . $order . " " . __("before process") . ". " . __("Edit here:") . " ";
-					$result .= Core_Html::GuiHyperlink( __("Order") . " " . $order, "/orders?id=" . $order );
+					$result .= __("Order number") . $order . " " . __("before process") . ". " . __("Edit here:") . " ";
+					$result .= Core_Html::GuiHyperlink( __("Order") . " " . $order, "/my-account/view-order/" . $order );
 					$result .= ".<br/>";
 				}
 			}

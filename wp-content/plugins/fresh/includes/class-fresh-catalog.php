@@ -639,7 +639,7 @@ class Fresh_Catalog {
 				foreach ($missing_pictures as $prod_id){
 					// https://fruity.co.il/wp-admin/post.php?post=7015&action=edit
 					$p = new Fresh_Product($prod_id);
-					$result .= Core_Html::GuiHyperlink($p->getName(), "/wp-admin/post.php?post=$prod_id&action=edit") . "<br/>";
+					$result .= Core_Html::GuiHyperlink($p->getName(), get_site_url() . "/wp-admin/post.php?post=$prod_id&action=edit") . "<br/>";
 				}
 			}
 		}

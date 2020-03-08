@@ -51,7 +51,7 @@ class Fresh_Order_Management {
 
 	static function EditOrder()
 	{
-		$id = GetParam("order_id", true, null);
+		$id = GetParam("id", true, null);
 		$result = Core_Html::gui_header(1, __("Order number") . " " . $id);
 
 		return $result;

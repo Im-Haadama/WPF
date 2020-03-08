@@ -38,9 +38,10 @@ class Core_Shortcodes {
 
 
 	public function add($new_shortcodes) {
-		foreach ( $new_shortcodes as $code => $result ) {
-			$this->shortcodes[ $code ] = $result;
-		}
+		if ($new_shortcodes)
+			foreach ( $new_shortcodes as $code => $result ) {
+				$this->shortcodes[ $code ] = $result;
+			}
 	}
 	/**
 	 * Init shortcodes.

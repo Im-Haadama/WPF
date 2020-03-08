@@ -406,37 +406,42 @@ class Core_Html {
 		return $data;
 	}
 
+	static function GuiHeader($level, $text, $args = null)
+	{
+		$inline = GetArg($args, "inline", false);
+		$center = GetArg($args, "center", false);
+		$class = GetArg($args, "class", null);
+		$close = GetArg($args, "close", true);
+		if (is_array($text)) {
+			var_dump($text);
+			return "got array";
+		}
+		$data = "";
+		$data  .= "<h" . $level . " ";
+		if ($class) {
+			$data .= "class=\"$class\"";
+		} else {
+			$style = "";
+			if ( $inline ) $style .= 'display:inline; ';
+			if ( $center ) $style .= 'text-align:center; ';
+			if ( strlen( $style ) ) $data .= 'style="' . $style . '"';
+		}
+		$data .= ">" . __( $text );
+		if ($close) $data .= "</h" . $level . ">";
+
+		return $data;
+	}
 	/**
 	 * @param $level
 	 * @param $text
 	 * @param bool $center
 	 *
 	 * @param bool $inline
-	 *
+	 * @deprecated. use GuiHeader
 	 * @return string
 	 */
 	static function gui_header( $level, $text, $center = false, $inline = false ) {
-		if (is_array($text)) {
-			var_dump($text);
-			return "got array";
-		}
-//		debug_var($text);
-		$data = "";
-		// if ($inline) $data .= "<style>h1 {display: inline;}</style>";
-		$data  .= "<h" . $level . " ";
-		$style = "";
-		if ( $inline ) {
-			$style .= 'display:inline; ';
-		}
-		if ( $center ) {
-			$style .= 'text-align:center; ';
-		}
-		if ( strlen( $style ) ) {
-			$data .= 'style="' . $style . '"';
-		}
-		$data .= ">" . __( $text ) . "</h" . $level . ">";
-
-		return $data;
+		return self::GuiHeader($level, $text, array("center"=>$center, "inline"=>$inline));
 	}
 
 	/**
@@ -1694,6 +1699,7 @@ class Core_Html {
 		if (! defined('NOT_NULL_FLAG')) define ('NOT_NULL_FLAG', 1);
 		if ($args /* and ! isset($args["sql_fields"]) */) {
 			$result = sql_query("select * from $table_name");
+			if (! $result) return null;
 			$args["sql_fields"] = mysqli_fetch_fields( $result );
 			if (! isset($args["mandatory_fields"])){
 				$args["mandatory_fields"] = [];

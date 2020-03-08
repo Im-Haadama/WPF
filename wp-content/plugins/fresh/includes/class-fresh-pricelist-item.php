@@ -119,6 +119,44 @@ class Fresh_Pricelist_Item {
 	public function getSupplierName() {
 		return get_supplier_name( $this->supplier_id );
 	}
+	
+	static public function add_prod_info($row) {
+		$catalog = new Fresh_Catalog();
+		$pl_id   = $row["id"];
+
+		$link_data = $catalog->GetProdID( $pl_id );
+		$linked_prod_id   = "";
+		$map_id    = "";
+		if ( $link_data ) {
+			$linked_prod_id = $link_data[0];
+			$p       = new Fresh_Product( $linked_prod_id );
+			$map_id  = null;
+
+			if ( isset( $link_data[1] ) ) {
+				$map_id = $link_data[1];
+			}
+			// print $prod_id . " " . $map_id . "<br/>";
+//			if ($create_option)
+//				continue; // Show only non linked products.
+
+//			if ( $ordered_only and ! isset( $needed_products[ $prod_id ][0] ) and ! isset( $needed_products[ $prod_id ][1] ) )
+//				continue;
+
+//			if ( $need_supply_only and ( $needed_products[ $prod_id ][0] <= $p->getStock() ) ) {
+//				continue;
+//			}
+
+			array_push( $row, $p->getName() );
+			array_push( $row, $p->getPrice() );
+			array_push( $row, $p->getSalePrice() );
+			$stockManaged = $p->getStockManaged();
+			array_push( $row, gui_checkbox( "chm_" . $linked_prod_id, "stock", $stockManaged, "onchange=\"change_managed(this)\")" ) );
+			array_push( $row, Core_Html::GuiLabel( "stk_" . $linked_prod_id, Core_Html::GuiHyperlink( $p->getStock(), "../orders/get-orders-per-item.php?prod_id=" . $linked_prod_id ) ) );
+			$n = orders_per_item( $linked_prod_id, 1, true, true, true );
+			array_push( $row, $n );
+		}
+		return $row;
+	}
 }
 
 
@@ -755,6 +793,115 @@ function product_other_suppliers( $prod_id, $supplier_id ) {
 	}
 
 	return rtrim( $result, ", " );
+}
+
+function orders_per_item( $prod_id, $multiply, $short = false, $include_basket = false, $include_bundle = false, $just_total = false, $month = null ) {
+	// my_log( "prod_id=" . $prod_id, __METHOD__ );
+
+	$sql = 'select woi.order_item_id, order_id'
+	       . ' from wp_woocommerce_order_items woi join wp_woocommerce_order_itemmeta woim'
+	       . ' where order_id in';
+
+	if ( ! $month )
+		$sql .= '(select order_id from im_need_orders) ';
+	else {
+		$year = date( 'Y' );
+		if ( $month >= date( 'n' ) ) {
+			$year --;
+		}
+		$sql .= "(SELECT id FROM wp_posts WHERE post_date like '" . $year . "-" . sprintf( "%02s", $month ) . "-%'" .
+		        " and post_status = 'wc-completed')";
+//		print $sql;
+//		die (1);
+	}
+
+	$baskets = null;
+	if ( $include_basket ) {
+		$sql1    = "select basket_id from im_baskets where product_id = $prod_id";
+		$baskets = sql_query_array_scalar( $sql1 );
+	}
+	$bundles = null;
+	if ( $include_bundle ) {
+		$sql2    = "select bundle_prod_id from im_bundles where prod_id = " . $prod_id;
+		$bundles = sql_query_array_scalar( $sql2 );
+		// if ($bundles) var_dump($bundles);
+	}
+	$sql .= ' and woi.order_item_id = woim.order_item_id '
+	        . ' and (woim.meta_key = \'_product_id\' or woim.meta_key = \'_variation_id\')
+	         and woim.meta_value in (' . $prod_id;
+	if ( $baskets ) {
+		$sql .= ", " . CommaImplode( $baskets );
+	}
+	if ( $bundles ) {
+		$sql .= ", " . CommaImplode( $bundles );
+	}
+	$sql .= ")";
+
+//	print $sql . "<br/>";
+
+	// my_log( $sql, "get-orders-per-item.php" );
+
+	$result = sql_query( $sql);
+	$lines = "";
+	$total_quantity = 0;
+
+	while ( $row = mysqli_fetch_row( $result ) ) {
+		$order_item_id = $row[0];
+		$order_id      = $row[1];
+		$quantity      = get_order_itemmeta( $order_item_id, '_qty' );
+		// consider quantity in the basket or bundle
+		$pid = get_order_itemmeta( $order_item_id, '_product_id' );
+		$p = new Fresh_Product($pid);
+		if ( $p->is_bundle( ) ) {
+			$b        = Fresh_Bundle::CreateFromBundleProd( $pid );
+			$quantity *= $b->GetQuantity();
+		} else
+			if ( $p->is_basket( ) ) {
+				$b        = new Fresh_Basket( $pid );
+				$quantity *= $b->GetQuantity( $prod_id );
+			}
+		$first_name    = get_postmeta_field( $order_id, '_shipping_first_name' );
+		$last_name     = get_postmeta_field( $order_id, '_shipping_last_name' );
+
+		$total_quantity += $quantity;
+
+		if ( $short ) {
+//			print "short $first_name<br/>";
+			$lines .= $quantity . " " . $last_name . ", ";
+		} else {
+//			print "long<br/>";
+			$line  = "<tr>" . "<td> " . Core_Html::GuiHyperlink( $order_id, "get-order.php?order_id=" . $order_id ) . "</td>";
+			$line .= "<td>" . $quantity * $multiply . "</td><td>" . $first_name . "</td><td>" . $last_name . "</td></tr>";
+			$lines .= $line;
+		}
+	}
+	if ( $just_total ) {
+		return $total_quantity;
+	}
+	if ( $short and $total_quantity ) {
+		$lines = $total_quantity . ": " . rtrim( $lines, ", ");
+	}
+	return $lines;
+}
+
+function get_order_itemmeta( $order_item_id, $meta_key ) {
+	if ( is_array( $order_item_id ) ) {
+		$sql = "SELECT sum(meta_value) FROM wp_woocommerce_order_itemmeta "
+		       . ' WHERE order_item_id IN ( ' . CommaImplode( $order_item_id ) . ") "
+		       . ' AND meta_key = \'' . escape_string( $meta_key ) . '\'';
+
+		return sql_query_single_scalar( $sql );
+	}
+	if ( is_numeric( $order_item_id ) ) {
+		$sql2 = 'SELECT meta_value FROM wp_woocommerce_order_itemmeta'
+		        . ' WHERE order_item_id = ' . $order_item_id
+		        . ' AND meta_key = \'' . escape_string( $meta_key ) . '\''
+		        . ' ';
+
+		return sql_query_single_scalar( $sql2 );
+	}
+
+	return - 1;
 }
 
 ?>

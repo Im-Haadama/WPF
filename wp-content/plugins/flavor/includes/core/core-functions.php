@@ -541,7 +541,14 @@ function QuoteDate($date, $format = 'Y-m-d')
 
 	function AddAction($tag, $function_to_add, int $priority = 10, int $accepted_args = 1, $debug = 0)
 	{
-		if ($debug)	print "adding $tag<br/>";
+		$debug = 0;
+		if ($debug) {
+			$f = $function_to_add;
+			if ( is_array( $f ) ) {
+				$f = $f[0] . "::" . $f[1];
+			}
+			print "adding $tag $f<br/>";
+		}
 
 		return add_action($tag, $function_to_add, $priority, $accepted_args);
 	}

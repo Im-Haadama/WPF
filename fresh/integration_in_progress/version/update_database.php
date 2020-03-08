@@ -1,4 +1,7 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 /**
  * Created by PhpStorm.
  * User: agla
@@ -1415,5 +1418,119 @@ END");
 	return "bank owner, supplier_description and herbal medical";
 }
 
+// TODO: add to fresh tables: baskets, category, suppliers.
+// TODO: mkdir logdir
+// version22
+// grantall
+// view_products
+// supplier_price_list
 
+function create_baskets()
+{
+	sql_query("create table im_baskets
+(
+	id int auto_increment
+		primary key,
+	basket_id bigint not null,
+	date datetime not null,
+	product_id int null,
+	quantity tinyint(1) unsigned default 1 not null
+)
+engine=MyISAM charset=utf8;
 
+");
+}
+
+function category_views()
+{
+	sql_query("create view im_categories as select `wp_terms`.`term_id`    AS `term_id`,
+       `wp_terms`.`name`       AS `name`,
+       `wp_terms`.`slug`       AS `slug`,
+       `wp_terms`.`term_group` AS `term_group`
+from `wp_terms`
+where `wp_terms`.`term_id` in (select `wp_term_taxonomy`.`term_id`
+                                                from `wp_term_taxonomy`
+                                                where `wp_term_taxonomy`.`taxonomy` = 'product_cat');
+
+");
+}
+
+function view_products() {
+
+	sql_query( "
+create  view im_products as select `wp_posts`.`ID`                    AS `ID`,
+       `wp_posts`.`post_author`           AS `post_author`,
+       `wp_posts`.`post_date`             AS `post_date`,
+       `wp_posts`.`post_date_gmt`         AS `post_date_gmt`,
+       `wp_posts`.`post_content`          AS `post_content`,
+       `wp_posts`.`post_title`            AS `post_title`,
+       `wp_posts`.`post_excerpt`          AS `post_excerpt`,
+       `wp_posts`.`post_status`           AS `post_status`,
+       `wp_posts`.`comment_status`        AS `comment_status`,
+       `wp_posts`.`ping_status`           AS `ping_status`,
+       `wp_posts`.`post_password`         AS `post_password`,
+       `wp_posts`.`post_name`             AS `post_name`,
+       `wp_posts`.`to_ping`               AS `to_ping`,
+       `wp_posts`.`pinged`                AS `pinged`,
+       `wp_posts`.`post_modified`         AS `post_modified`,
+       `wp_posts`.`post_modified_gmt`     AS `post_modified_gmt`,
+       `wp_posts`.`post_content_filtered` AS `post_content_filtered`,
+       `wp_posts`.`post_parent`           AS `post_parent`,
+       `wp_posts`.`guid`                  AS `guid`,
+       `wp_posts`.`menu_order`            AS `menu_order`,
+       `wp_posts`.`post_type`             AS `post_type`,
+       `wp_posts`.`post_mime_type`        AS `post_mime_type`,
+       `wp_posts`.`comment_count`         AS `comment_count`
+from `wp_posts`
+where `wp_posts`.`post_type` in ('product', 'product_variation')
+                                              and `wp_posts`.`post_status` = 'publish';
+" );
+}
+
+function create_supplier_pricelist()
+{
+	sql_query("create table im_supplier_price_list
+(
+	ID bigint auto_increment,
+	product_name varchar(40) not null,
+	supplier_id bigint not null,
+	date date not null,
+	price float not null,
+	supplier_product_code varchar(100) default '10' null,
+	line_status int default 1 null,
+	variation bit default b'0' null,
+	parent_id int null,
+	sale_price float null,
+	category varchar(100) null,
+	picture_path varchar(200) null,
+	constraint ID_3
+		unique (ID)
+)
+charset=utf8;
+
+");
+}
+
+function supplier_mapping()
+{
+	sql_query("create table im_supplier_mapping
+(
+	id bigint auto_increment
+		primary key,
+	product_id bigint not null,
+	supplier_id bigint not null,
+	supplier_product_name varchar(40) not null,
+	pricelist_id int(4) default 0 not null,
+	supplier_product_code int null,
+	selected tinyint(1) null
+)
+engine=MyISAM charset=utf8;
+
+create index mapping
+	on im_supplier_mapping (supplier_product_name, supplier_id, product_id);
+
+create index mapping_prod_id
+	on im_supplier_mapping (product_id);
+
+");
+}

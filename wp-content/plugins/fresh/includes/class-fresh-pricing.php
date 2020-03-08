@@ -121,9 +121,6 @@ class Fresh_Pricing {
 		return - 1;
 	}
 
-	static function get_sale_price( $prod_id ) {
-		return get_postmeta_field( $prod_id, '_sale_price' );
-	}
 
 	static function get_regular_price( $prod_id ) {
 		return get_postmeta_field( $prod_id, '_regular_price' );

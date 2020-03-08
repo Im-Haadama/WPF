@@ -101,6 +101,7 @@ class Fresh {
 	 */
 	public function __construct($plugin_name)
 	{
+	    self::$_instance = $this;
 		$this->plugin_name = $plugin_name;
 		$this->define_constants();
 		$this->includes(); // Loads class autoloader
@@ -118,8 +119,9 @@ class Fresh {
 	 * @since 2.3
 	 */
 	private function init_hooks() {
-	    // Admin scripts
+	    // Admin scripts and styles. Todo: Check if needed.
 		add_action('admin_enqueue_scripts', array($this, 'admin_scripts'));
+
 
 		// register_activation_hook( WC_PLUGIN_FILE, array( 'Fresh_Install', 'install' ) );
 		register_shutdown_function( array( $this, 'log_errors' ) );
@@ -163,7 +165,6 @@ class Fresh {
 
 		// Save payment info
 		add_action('woocommerce_thankyou', 'insert_payment_info', 10, 1);
-		register_activation_hook(__FILE__, 'payment_info_table');
 		add_action('admin_init', 'wp_payment_list_admin_script');
 		add_action('admin_print_styles', 'wp_payment_list_admin_styles');
 		add_action('admin_menu', __CLASS__ . '::admin_menu');
@@ -258,6 +259,7 @@ class Fresh {
 		$this->define( 'FRESH_DELIMITER', '|' );
 		$this->define( 'FRESH_LOG_DIR', $upload_dir['basedir'] . '/fresh-logs/' );
 		$this->define( 'FRESH_INCLUDES_URL', plugins_url() . '/fresh/includes/' ); // For js
+		$this->define( 'WC_URL', plugins_url() . '/woocommerce/' ); // For css
 
 		$this->define( 'FLAVOR_INCLUDES_URL', plugins_url() . '/flavor/includes/' ); // For js
 		$this->define( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path(__FILE__) . '../../flavor/includes/' );  // for php
@@ -275,6 +277,42 @@ class Fresh {
 		}
 	}
 
+	/*-- Start create payment table --*/
+	static function payment_info_table(){
+		global $wpdb;
+		$charset_collate = $wpdb->get_charset_collate();
+
+		$sql = "CREATE TABLE `im_payment_info` (
+	    `id` int(11) NOT NULL AUTO_INCREMENT  PRIMARY KEY,
+	    `full_name` varchar(255) NOT NULL,
+	    `email` varchar(255) NOT NULL,
+	    `card_number` varchar(50) NOT NULL,
+	    `card_four_digit` varchar(50) NOT NULL,
+	    `card_type` varchar(100) NOT NULL,
+	    `exp_date_month` tinyint(4) NOT NULL,
+	    `exp_date_year` int(11) NOT NULL,
+	    `cvv_number` varchar(20) NOT NULL,
+	    `id_number` varchar(15)  NOT NULL,
+	    `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
+	) $charset_collate;";
+
+		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+		dbDelta( $sql );
+	}
+	/*-- End create payment table --*/
+
+    /* temp: convert supplier name to id in products */
+    static function convert_supplier_name_to_id()
+    {
+        $suppliers = sql_query_array("select id, supplier_name from im_suppliers");
+        foreach ($suppliers as $supplier_tuple){
+            $supplier_id = $supplier_tuple[0];
+            $supplier_name = $supplier_tuple[1];
+            sql_query("update wp_postmeta set meta_value = $supplier_id, meta_key = 'supplier_id' ".
+            " where meta_key = 'supplier_name' and meta_value = '" . $supplier_name . "'");
+        }
+    }
+    
 	/**
 	 * What type of request is this?
 	 *
@@ -601,9 +639,6 @@ class Fresh {
 
 		wp_enqueue_script( 'my_custom_script', plugin_dir_url( __FILE__ ) . 'js/add_to_cart_on_search.js', array('jquery') );
 		wp_enqueue_script( 'custom_script', plugin_dir_url( __FILE__ ) . 'js/custom_script.js' );
-
-
-
 	}
 
 	public function admin_scripts()
@@ -613,11 +648,18 @@ class Fresh {
 	    wp_register_script( 'fresh_admin', $file);
 
 	    $params = array(
-	    	'admin_post' => '/wp-content/plugins/fresh/post.php'
+	    	'admin_post' => get_site_url() . '/wp-content/plugins/fresh/post.php'
 	    );
 	    wp_localize_script('fresh_admin', 'fresh_admin_params', $params);
 
 	    wp_enqueue_script('fresh_admin');
+
+	    wp_register_style( 'woocommerce_admin_menu_styles', WC_URL . '/assets/css/menu.css', array(), WC_VERSION );
+	    wp_register_style( 'woocommerce_admin_styles', WC_URL . '/assets/css/admin.css', array(), WC_VERSION );
+
+	    wp_enqueue_style('woocommerce_admin_menu_styles');
+	    wp_enqueue_style('woocommerce_admin_styles');
+
     }
 
 	/*-- Start product quantity +/- on listing -- */
@@ -650,23 +692,32 @@ class Fresh {
 
 	static function general_settings()
 	{
-		$result = Core_Html::gui_header(1, "general settings");
-		$url = AddToUrl(array("tab" => "baskets", "page" => "settings"));
+		$result = ""; // Core_Html::gui_header(1, "general settings");
 		$tabs = [];
 		$args = [];
 		$args["post_file"] = self::getPost();
 
 		$tab = GetParam("tab", false, "baskets");
+		$url = GetUrl(1) . "?page=settings&tab=";
+
+		$basket_url = $url . "baskets";
 
 		$tabs["baskets"] = array(
-			"baskets",
-			AddParamToUrl(GetUrl(1), array("page" => "settings","tab" => "baskets")),
-			Fresh_Basket::settings($url, $args)
+			"Baskets",
+			$basket_url,
+			Fresh_Basket::settings($basket_url, $args)
 		 );
 
+		$tabs["suppliers"] = array(
+			"Suppliers",
+			$url . "suppliers",
+			Fresh_Suppliers::admin_page()
+			//Fresh_Suppliers::SuppliersTable()
+		);
+
 		$tabs["missing_pictures"] = array(
-			"missing_pictures",
-			AddToUrl(array("page" => "settings","tab" => "missing_pictures")),
+			"Missing Pictures",
+			$url . "missing_pictures",
 			Fresh_Catalog::missing_pictures()
 		);
 
@@ -1601,29 +1652,6 @@ function wp_payment_list_admin_script() {
 }
 /*-- End add css & js-- */
 
-/*-- Start create payment table --*/
-function payment_info_table(){
-	global $wpdb;
-	$charset_collate = $wpdb->get_charset_collate();
-
-	$sql = "CREATE TABLE `im_payment_info` (
-	    `id` int(11) NOT NULL AUTO_INCREMENT  PRIMARY KEY,
-	    `full_name` varchar(255) NOT NULL,
-	    `email` varchar(255) NOT NULL,
-	    `card_number` varchar(50) NOT NULL,
-	    `card_four_digit` varchar(50) NOT NULL,
-	    `card_type` varchar(100) NOT NULL,
-	    `exp_date_month` tinyint(4) NOT NULL,
-	    `exp_date_year` int(11) NOT NULL,
-	    `cvv_number` varchar(20) NOT NULL,
-	    `id_number` varchar(15)  NOT NULL,
-	    `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-	) $charset_collate;";
-
-	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-	dbDelta( $sql );
-}
-/*-- End create payment table --*/
 
 /*-- Start save payment info --*/
 

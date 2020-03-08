@@ -10,12 +10,16 @@ class Fresh_Suppliers {
 
 	static function init_hooks()
 	{
-		AddAction("create_supplies", __CLASS__ . "::create_supplies");
+		AddAction("create_supplies",  "Fresh_Supply::create_supplies");
 	}
 
 	function init()
 	{
 		Core_Gem::AddTable( "suppliers" );
+
+		$this->gem = new Core_Gem();
+
+		// Products
 		$args = array("query_part" => "from wp_posts p,
                      wp_postmeta m
                 where post_type = 'product'
@@ -23,17 +27,23 @@ class Fresh_Suppliers {
                 and p.id = m.post_id
                 and m.meta_key = 'supplier_id'
                 and m.meta_value = %d");
-
-		$this->gem = new Core_Gem();
-
 		$this->gem->AddVirtualTable( "products", $args );
+
+		// Pricelist
+		$args = array("query_part" => "from im_supplier_price_list
+                where supplier_id = %d",
+			"fields" => "id, supplier_product_code, product_name, price, date",
+			"order"=>"product_name",
+			"prepare" => "Fresh_Pricelist_Item::add_prod_info",
+			"prepare_plug" => "Fresh_Pricelist_Item::add_prod_info");
+		$this->gem->AddVirtualTable( "pricelist", $args );
 
 		// load classes
 		new Fresh_supply(0);
 		new Fresh_Catalog();
 	}
 
-	static function page()
+	static function admin_page()
 	{
 		$operation = GetParam("operation");
 
@@ -46,19 +56,19 @@ class Fresh_Suppliers {
 		}
 
 		$result = self::SuppliersTable();
-		print $result;
+		return $result;
 	}
 
 	static function SuppliersTable()
 	{
-		$result = Core_Html::gui_header(1, "Active suppliers");
+		$result = Core_Html::GuiHeader(2, "Active suppliers", array("class"=>"wc-shipping-zones-heading", "close"=>false)) . Core_Html::GuiHyperlink("Add supplier", "link", array("class"=> "page-title-action")) .'</h2>';
 
-		$args = self::Args();
+		$args = self::Args("suppliers");
 		$args["fields"] = array("id", "supplier_name", "supplier_description");
 		// $args["links"] = array("id"=> AddToUrl(array( "operation" => "show_supplier", "id" => "%s")));
 		$args["query"] = "is_active = 1";
 		$args["header_fields"] = array("supplier_name" => "Name", "supplier_description" => "Description");
-		$args["actions"] = array(array("Show products", AddToUrl(array("operation" => "gem_v_show_products", "id" => "%s"))));
+		$args["actions"] = array(array("Show products", AddToUrl(array("operation" => "gem_v_show_pricelist", "id" => "%s"))));
 		$result .= Core_Gem::GemTable("suppliers", $args);
 
 		// $result .= GuiTableContent("im_suppliers",null, $args);
@@ -68,10 +78,11 @@ class Fresh_Suppliers {
 
 	static function handle()
 	{
+		return "lalal";
 		$operation = GetParam("operation", false, null);
 
 		if (! $operation) {
-			print self::SuppliersTable();
+			// print self::SuppliersTable();
 			return;
 		}
 		$args = array("post_file" => plugin_dir_url(dirname(__FILE__)) . "post.php");
@@ -86,7 +97,7 @@ class Fresh_Suppliers {
 	static function Args( $table_name = null, $action = null ) {
 		$ignore_list = [];
 		$args        = array(
-			"page"      => GetParam( "page", false, - 1 ),
+			"page"      => GetParam( "page_number", false, - 1 ),
 			"post_file" => self::getPost()
 		);
 		if ( GetParam( "non_active", false, false ) ) {
@@ -98,24 +109,44 @@ class Fresh_Suppliers {
 			}
 		}
 
-		$args["links"] = array("id"=>"?operation=gem_show_suppliers&id=%s");
+		// $args["links"] = array("id" => AddToUrl("operation=supplier_pricelist&id", "%d"));
 
 		if ( $table_name )
 			switch ( $table_name ) {
+				case "suppliers":
+					$args["prepare_plug"] = __CLASS__ . "::prepare_row";
+					break;
 			}
 
 		return $args;
 	}
 
+	static public function prepare_row($row)
+	{
+		// id, supplier_name, supplier_description
+//		$args["links"] = array("id" => AddToUrl(array("operation" => "gem_show_suppliers" , "id" => "%d")));
+		$event = "on";
+
+
+		$edit_target = AddToUrl(array("operation" => "gem_show_suppliers" , "id" => $row['id']));
+		return array(
+			"name" => Core_Html::GuiHyperlink($row["supplier_name"],  $edit_target) . "<br/>" .
+			          Core_Html::GuiHyperlink("delete", "remove"),
+			"description" => $row['supplier_description']
+		);
+
+//		return $new_row;
+	}
 	static private function getPost()
 	{
-		return "/wp-content/plugins/fresh/post.php";
+		return get_site_url() . "/wp-content/plugins/fresh/post.php";
 	}
 
 
 	function getShortcodes() {
+		return null;
 		//           code                   function                              capablity (not checked, for now).
-		return array( 'suppliers' => array( __CLASS__ .'::page', 'edit_suppliers' ));          // Suppliers.
+//		return array( 'suppliers' => array( __CLASS__ .'::page', 'edit_suppliers' ));          // Suppliers.
 	}
 
 	static function TodaySupply($supplier_id)
@@ -128,31 +159,6 @@ class Fresh_Suppliers {
 		       " order by id desc limit 1";
 
 		return sql_query_single_scalar($sql);
-	}
-
-	static function create_supplies()
-	{
-		$date        = GetParam( "date", false, date('Y-m-d'));
-		$supplier_id = GetParam("supplier_id", true);
-
-		$ids = GetParamArray("params");
-		$supply      = Fresh_Supply::CreateSupply( $supplier_id, $date );
-		if ( ! $supply->getID() ) {
-			return false;
-		}
-		for ( $pos = 0; $pos < count( $ids ); $pos += 2 ) {
-			$prod_id  = $ids[ $pos ];
-			$quantity = $ids[ $pos + 1 ];
-			$price = Fresh_Pricing::get_buy_price( $prod_id, $supplier_id );
-			if ( ! $supply->AddLine( $prod_id, $quantity, $price) ) {
-				return false;
-			}
-		}
-//		$mission_id = GetParam( "mission_id" );
-//		if ( $mission_id ) {
-//			$s->setMissionID( $mission_id );
-//		}
-		return $supply->getID();
 	}
 }
 

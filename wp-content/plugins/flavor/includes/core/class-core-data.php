@@ -515,6 +515,7 @@ class Core_Data
 	static function RowsData($sql, $id_field, $skip_id, $v_checkbox, $checkbox_class, $h_line, $v_line, $m_line, $header_fields, $meta_fields, $meta_table, &$args)
 	{
 		$result = sql_query( $sql );
+		if (! $result) return null;
 		if ($args) $args["sql_fields"] = mysqli_fetch_fields($result);
 		$row_count = 0;
 		$rows_data = [];
@@ -637,7 +638,7 @@ class Core_Data
 	static function TableData($sql, &$args = null)
 	{
 		if (strstr($sql, "select") and !strstr ($sql, "limit")){
-			$page = GetArg($args, "page", null);
+			$page = GetArg($args, "page_number", null);
 			if ($page) {
 				$rows_per_page = GetArg($args, "rows_per_page", 10);
 				$offset = ($page - 1) * $rows_per_page;
@@ -685,7 +686,7 @@ class Core_Data
 			// print "after: "; var_dump($h_line); print "<br/>";
 		}
 
-		if (! count($rows_data)) return null;
+		if (! $rows_data or ! count($rows_data)) return null;
 
 		return $rows_data;
 	}

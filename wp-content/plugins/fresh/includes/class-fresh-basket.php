@@ -94,7 +94,7 @@ class Fresh_Basket {
 		$basket_id = GetParam("basket_id", false, null);
 		if ($basket_id > 0) return self::show_basket($basket_id);
 		if ($basket_id === "0") return self::new_basket($args);
-		$result = Core_Html::gui_header(1, "This week's baskets");
+		$result = Core_Html::GuiHeader(1, "This week's baskets");
 
 		$result .= self::current_baskets($url);
 
@@ -125,7 +125,7 @@ class Fresh_Basket {
 				$line .= "</td>";
 				$total_sellprice = self::get_total_sellprice( $basket_id );
 
-				if ($total_sellprice)
+				if ($total_sellprice > 0)
 					$line            .= "<td>" . $total_sellprice . '(' . round( 100 * $total_sellprice / $total_listprice, 1 ) . "%)</td>";
 				else
 					$line .= "<td></td>";
@@ -137,7 +137,7 @@ class Fresh_Basket {
 			} else
 				$line .= "<td></td><td></td>";
 			$line .= "<td>" . $p->getTerms(true);
-			$line .= "<td>" . Core_Html::GuiHyperlink("edit", "/wp-admin/post.php?post=$basket_id&action=edit") . "</td>";
+			$line .= "<td>" . Core_Html::GuiHyperlink("edit", get_site_url() . "/wp-admin/post.php?post=$basket_id&action=edit") . "</td>";
 			$line .= "<td>" . Core_Html::GuiButton("btn_delete_" . $basket_id, "Delete", array("action"=>"basket_delete(" . $basket_id . ")")) . "</td>";
 			$line .= "</tr>";
 

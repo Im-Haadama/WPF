@@ -389,21 +389,24 @@ function sql_query_single_assoc( $sql ) {
 	return null;
 }
 
-/**
- * @return string
- */
+	/**
+	 * @param int $deep
+	 *
+	 * @return string
+	 */
 function sql_trace($deep = 2)
 {
-	$result = "";
-	$debug = debug_backtrace();
-	for ( $i = 1; ($i < $deep) and ($i < count( $debug )); $i ++ ) {
-		if (isset($debug[$i]['file'])) $caller = "called from " . $debug[$i]['file'] . " ";
-		else $caller = "";
-		if (isset($debug[ $i ]["line"])) $line = ":" . $debug[ $i ]["line"];
-		else $line = "";
-		$result .= '#' . $i . ' ' .( $caller . $debug[ $i ]["function"] . $line . "<br/>");
-	}
-	return $result;
+	print 1/0; // Print formatted (By xdebug?)
+//	$result = "";
+//	$debug = debug_backtrace();
+//	for ( $i = 1; ($i < $deep) and ($i < count( $debug )); $i ++ ) {
+//		if (isset($debug[$i]['file'])) $caller = "called from " . $debug[$i]['file'] . " ";
+//		else $caller = "";
+//		if (isset($debug[ $i ]["line"])) $line = ":" . $debug[ $i ]["line"];
+//		else $line = "";
+//		$result .= '#' . $i . ' ' .( $caller . $debug[ $i ]["function"] . $line . "<br/>");
+//	}
+//	return $result;
 }
 
 /**
@@ -419,7 +422,7 @@ function sql_error( $sql ) {
 		$message = "Error: sql = `" . $sql;
 		if ($conn) $message .= "`. Sql error : " . mysqli_error( $conn ) . "<br/>";
 		else $message .= "not connected";
-		print sql_trace();
+		print sql_trace(6);
 	} else {
 		$message = $sql->error;
 		// $message = "sql not string";

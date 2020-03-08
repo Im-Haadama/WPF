@@ -643,6 +643,32 @@ class Fresh_Supply {
 
 		return $s->AddLine( $prod_id, $quantity, $price, $units = 0 );
 	}
+
+	static function create_supplies()
+	{
+		$date        = GetParam( "date", false, date('Y-m-d'));
+		$supplier_id = GetParam("supplier_id", true);
+
+		$ids = GetParamArray("params");
+		$supply      = self::CreateSupply( $supplier_id, $date );
+		if ( ! $supply->getID() ) {
+			return false;
+		}
+		for ( $pos = 0; $pos < count( $ids ); $pos += 2 ) {
+			$prod_id  = $ids[ $pos ];
+			$quantity = $ids[ $pos + 1 ];
+			$price = Fresh_Pricing::get_buy_price( $prod_id, $supplier_id );
+			if ( ! $supply->AddLine( $prod_id, $quantity, $price) ) {
+				return false;
+			}
+		}
+//		$mission_id = GetParam( "mission_id" );
+//		if ( $mission_id ) {
+//			$s->setMissionID( $mission_id );
+//		}
+		return $supply->getID();
+	}
+
 }
 
 

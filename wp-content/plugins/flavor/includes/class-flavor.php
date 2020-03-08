@@ -443,10 +443,28 @@ class Flavor {
 		$this->load_plugin_textdomain();
 		$shortcodes = Core_Shortcodes::instance();
 		$shortcodes->add(array('flavor'  => array(__CLASS__ . '::static_handle_show', "read"),
-			'log_viewer' => array('Core_Logger::log_viewer', 'edit_shop_orders')));
+			'log_viewer' => array('Core_Logger::log_viewer', 'edit_shop_orders'),
+			'check_system' => array(__CLASS__ . '::check_system', null)));
 
 		// Init action.
 		do_action( 'flavor_init' );
+	}
+
+	static public function check_system()
+	{
+		$result = "שלום<br/>";
+		$result .= sql_query_single_scalar("select \"אהא\"") . "<br/>";
+		$result .= sql_query("SET collation_connection = utf8_general_ci;") . "<br/>";
+		$conn = get_sql_conn();
+		$conn->set_charset("utf8");
+		// $result .= sql_query()
+		$result .= sql_query_single_scalar("select post_title from wp_posts where id = 14");
+
+//		ob_start();
+//		phpinfo();
+//		$result .= ob_get_contents();
+
+		return $result;
 	}
 
 	/**
