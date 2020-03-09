@@ -1027,17 +1027,6 @@ CREATE FUNCTION task_active_time(`_id` INT)
   END;
 " );
 
-	sql_query( "drop function prod_get_name;" );
-	sql_query( "CREATE FUNCTION `prod_get_name`(`prod_id` INT)
-	 RETURNS varchar(200) CHARSET utf8
-   NO SQL
-BEGIN
-   declare _name varchar(50) CHARSET utf8;
-   select post_title into _name from im_products
-   where id = prod_id;
-
-   return _name;
- END" );
 	sql_query( "drop view im_products_draft" );
 
 	sql_query( "create view im_products_draft as 

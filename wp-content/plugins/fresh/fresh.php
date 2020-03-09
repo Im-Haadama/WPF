@@ -44,6 +44,3 @@ function run_fresh() {
 
 run_fresh();
 
-register_activation_hook(__FILE__, 'Fresh::payment_info_table');
-register_activation_hook(__FILE__, 'Fresh::convert_supplier_name_to_id');
-
