@@ -93,6 +93,15 @@ class Core_Gem {
 		return $instance->GemVirtualTable($table_name, $args);
 	}
 
+	static function v_add_wrapper($operation, $id, $args)
+	{
+		$table_name = substr($operation, 11);
+		if (! $id) return "id is missing";
+		$instance = self::getInstance();
+		if (! $instance) return __CLASS__ . ":" . __FUNCTION__ . " no instance. Call constructor first";
+		return "lalal"; // $instance->GemVirtualTable($table_name, $args);
+	}
+
 	static function show_wrapper($operation, $id, $args)
 	{
 		$table_name = substr($operation, strlen("gem_show_"));

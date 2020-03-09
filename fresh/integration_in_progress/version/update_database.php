@@ -1534,3 +1534,29 @@ create index mapping_prod_id
 
 ");
 }
+
+function needed_orders()
+{
+	sql_query("create table im_need_orders
+(
+	id int auto_increment
+		primary key,
+	order_id int null
+)
+engine=MyISAM charset=utf8;
+
+");
+
+	sql_query("create table im_need
+(
+	id int auto_increment
+		primary key,
+	prod_id int null,
+	need_q float null,
+	need_u int null
+)
+engine=MyISAM charset=utf8;
+
+");
+}
+
