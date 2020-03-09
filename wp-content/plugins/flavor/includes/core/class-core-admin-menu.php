@@ -11,7 +11,10 @@ class Core_Admin_Menu {
 	{
 		foreach ($pages as $page)
 		{
-			add_submenu_page($parent, $page['page_title'], $page['menu_title'], $capability, $page['menu_slug'], $page['function']);
+			$title= $page['page_title'];
+			$menu_title = ( isset($page['menu_title']) ? $page['menu_title'] : $title);
+			$slug = ( isset($page['menu_slug']) ? $page['menu_slug'] :  str_replace(' ', '-', strtolower($menu_title)));
+			add_submenu_page($parent, $title, $menu_title, $capability, $slug, $page['function']);
 		}
 	}
 }

@@ -1,7 +1,5 @@
 <?php
 
-
-
 if ( ! defined( 'FRESH_INCLUDES' ) ) {
 	define( 'FRESH_INCLUDES', dirname(dirname( dirname( __FILE__ ) ) ));
 }
@@ -9,7 +7,6 @@ if ( ! defined( 'FRESH_INCLUDES' ) ) {
 require_once( FRESH_INCLUDES . '/fresh/r-shop_manager.php' );
 require_once (FRESH_INCLUDES . '/fresh/delivery/delivery.php');
 require_once( FRESH_INCLUDES . '/routes/gui.php' );
-
 
 print header_text( false, false, is_rtl(),
     array("/fresh/delivery/delivery.js", "/core/gui/client_tools.js", "/core/data/data.js", "/fresh/orders/orders.js") );
@@ -63,29 +60,16 @@ DebugTimeLog( "reset" );
 if ( current_user_can( "edit_shop_orders" ) and
      ( is_null( $order_type ) or in_array( "p", explode( ",", $order_type ) ) )
 ) {
-	$pending = orders_table( array( "wc-pending", "wc-on-hold" ) );
-	if ( strlen( $pending ) > 4 ) {
-		print $pending;
-		print Core_Html::GuiButton( "btn_start", "start_handle()", "התחל טיפול" );
-		print Core_Html::GuiButton( "btn_cancel", "cancel_order()", "בטל" ) . "<br/>";
-	}
 } else {
 	if ( ! current_user_can( "edit_shop_orders" ) ) {
 		print "no permission";
 	}
 }
 
-print orders_table( "wc-processing" );
 
 if ( current_user_can( "edit_shop_orders" ) and
      ( is_null( $order_type ) or in_array( "w", explode( ",", $order_type ) ) )
 ) {
-	$shipment = orders_table( "wc-awaiting-shipment" );
-
-	if ( strlen( $shipment ) > 5 ) {
-		print $shipment;
-		print Core_Html::GuiButton( "btn_delivered", "delivered_table()", "Delivered" ) . "<br/>";
-	}
 }
 
 // This month active users

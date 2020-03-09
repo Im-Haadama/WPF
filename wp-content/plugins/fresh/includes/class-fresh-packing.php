@@ -10,47 +10,10 @@ class Fresh_Packing {
 			array(array('page_title' => 'Needed products',
 			            'menu_title' => 'Needed Products',
 			            'menu_slug' => 'needed_products',
-			            'function' => __CLASS__ . '::needed_products')
-			));
-	}
-
-	static function admin()
-	{
-		$result = Core_Html::gui_header(1, "Packing");
-		$url = AddToUrl(array("tab" => "needed", "page" => "packing"));
-		$tabs = [];
-		$args = [];
-		$args["post_file"] = self::getPost();
-
-		$tab = GetParam("tab", false, "needed");
-
-		$tabs["needed"] = array(
-			"needed",
-			AddParamToUrl(GetUrl(1), array("page" => "settings","tab" => "needed")),
-			self::NeededProducts()
-		);
-
-//		$tabs["missing_pictures"] = array(
-//			"missing_pictures",
-//			AddToUrl(array("page" => "settings","tab" => "missing_pictures")),
-//			Fresh_Catalog::missing_pictures()
-//		);
-
-//		array_push( $tabs, array(
-//			"workers",
-//			"Workers",
-//			self::company_workers( $company, $args )
-//		) );
-
-		$args["btn_class"] = "nav-tab";
-		$args["tabs_load_all"] = true;
-		$args["nav_tab_wrapper"] = "nav-tab-wrapper woo-nav-tab-wrapper";
-
-		$result .= Core_Html::NavTabs($tabs, $args);
-		$result .= $tabs[$tab][2];
-
-		print $result;
-
+			            'function' => __CLASS__ . '::needed_products'),
+				array('page_title'=>'Orders to handle',
+				      'function' => __CLASS__ . '::OrdersToHandle')
+		));
 	}
 
 	static function needed_products()
@@ -351,6 +314,26 @@ class Fresh_Packing {
 		return - 1;
 	}
 
+	static function OrdersToHandle()
+	{
+		$result = Core_Html::GuiHeader(1, "Orders to handle");
+
+		$pending = orders_table( array( "wc-pending", "wc-on-hold" ) );
+		if ( strlen( $pending ) > 4 ) {
+			$result .= $pending;
+			$result .= Core_Html::GuiButton( "btn_start", "start_handle()", "התחל טיפול" );
+			$result .= Core_Html::GuiButton( "btn_cancel", "cancel_order()", "בטל" ) . "<br/>";
+		}
+
+		$result .= orders_table( "wc-processing" );
+
+		$shipment = orders_table( "wc-awaiting-shipment" );
+
+		if ( strlen( $shipment ) > 5 ) {
+			$result .= $shipment;
+			$result .= Core_Html::GuiButton( "btn_delivered", "delivered_table()", "Delivered" ) . "<br/>";
+		}
+
+		print $result;
+	}
 }
-
-
