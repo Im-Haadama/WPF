@@ -17,7 +17,7 @@ class Fresh {
 	protected $supplier_balance;
 	protected $totals;
 	protected $shortcodes;
-	protected $order;
+//	protected $order;
 
 	/**
 	 * Plugin version.
@@ -307,6 +307,9 @@ class Fresh {
 		if ($module === "data")
 			return Core_Data::handle_operation($operation);
 
+		if ($module === "order")
+			return Fresh_Order::handle_operation($operation);
+
 		if (strstr($operation, "inv"))
 			return Fresh_Inventory::handle_operation($operation);
 
@@ -315,7 +318,7 @@ class Fresh {
 			case "order_set_mission":
 				$order_id = GetParam("order_id", true);
 				$mission_id = GetParam("mission_id", true);
-				$order = new Order($order_id);
+				$order = new Fresh_Order($order_id);
 				$order->setMissionID($mission_id);
 				return "done";
 
@@ -519,14 +522,14 @@ class Fresh {
 		$this->suppliers = new Fresh_Suppliers();
 		$this->supplier_balance = Fresh_Supplier_Balance::instance();
 		$this->totals = Fresh_Totals::instance();
-		$this->order = Fresh_Order_Management::instance();
+//		$this->order = Fresh_Order_Management::instance();
 
 		$shortcodes = Core_Shortcodes::instance();
 		$shortcodes->add($this->delivery_manager->getShortcodes());
 		$shortcodes->add($this->suppliers->getShortcodes());
 		$shortcodes->add($this->supplier_balance->getShortcodes());
 		$shortcodes->add($this->totals->getShortcodes());
-		$shortcodes->add($this->order->getShortcodes());
+//		$shortcodes->add($this->order->getShortcodes());
 
 //		$this->shortcodes->do_init();
 		$this->suppliers->init();
@@ -626,6 +629,9 @@ class Fresh {
 	    wp_localize_script('fresh_admin', 'fresh_admin_params', $params);
 
 	    wp_enqueue_script('fresh_admin');
+
+	    wp_register_script( 'orders', FRESH_INCLUDES_URL . 'js/orders.js');
+	    wp_enqueue_script('orders');
 
 	    wp_register_style( 'woocommerce_admin_menu_styles', WC_URL . '/assets/css/menu.css', array(), WC_VERSION );
 	    wp_register_style( 'woocommerce_admin_styles', WC_URL . '/assets/css/admin.css', array(), WC_VERSION );
@@ -1105,7 +1111,7 @@ if (0) {
 	function im_footer() {
 		global $power_version;
 		$data = '<div style="color:#95bd3e" align="center">';
-		$data .= 'Fresh store powered by ' . gui_hyperlink( "Niver Dri Sol",
+		$data .= 'Fresh store powered by ' . Core_Html::GuiHyperlink( "Niver Dri Sol",
 				"http://niver-dri-sol.com" ) . ' 2015-2019 ';
 		$data .= 'Version ' . $power_version;
 		$data .= "</div>";

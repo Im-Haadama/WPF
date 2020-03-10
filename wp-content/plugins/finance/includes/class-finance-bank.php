@@ -737,11 +737,11 @@ function user_is_business_owner() {
 }
 
 
-//print gui_hyperlink('Create Receipts', add_to_url("operation" , "receipts")); print " ";
-//print gui_hyperlink('Mark payments', add_to_url("operation", "payments")); print " ";
-//print gui_hyperlink('Import bank pages', add_to_url("operation" ,"import")); print " ";
-//print gui_hyperlink('Edit transaction types', add_to_url("operation" ,"transaction_types")); print " ";
-//print gui_hyperlink('Search transaction', add_to_url("operation" ,"search")); print " ";
+//print Core_Html::GuiHyperlink('Create Receipts', add_to_url("operation" , "receipts")); print " ";
+//print Core_Html::GuiHyperlink('Mark payments', add_to_url("operation", "payments")); print " ";
+//print Core_Html::GuiHyperlink('Import bank pages', add_to_url("operation" ,"import")); print " ";
+//print Core_Html::GuiHyperlink('Edit transaction types', add_to_url("operation" ,"transaction_types")); print " ";
+//print Core_Html::GuiHyperlink('Search transaction', add_to_url("operation" ,"search")); print " ";
 
 
 //		print Core_Html::GuiHyperlink('Create Receipts', add_to_url("operation" , "receipts")); print " ";

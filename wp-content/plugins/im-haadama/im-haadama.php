@@ -78,7 +78,7 @@ add_shortcode( 'im-page', 'im_page' );
 function im_page() {
 	$img_size = 50;
 	$data     = "XXX";
-	$data     .= gui_hyperlink( get_the_post_thumbnail( 4209, array( $img_size, $img_size ) ), "/how_to_use" );
+	$data     .= Core_Html::GuiHyperlink( get_the_post_thumbnail( 4209, array( $img_size, $img_size ) ), "/how_to_use" );
 
 	return $data;
 	// [im-page]

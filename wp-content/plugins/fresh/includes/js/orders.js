@@ -1,5 +1,6 @@
 
-let orders_post = '/wp-content/plugins/fresh/post.php';
+let orders_post = admin_post();
+// '/wp-content/plugins/fresh/post.php';
 
 function mission_changed(order_id) {
     // "mis_"
@@ -25,7 +26,7 @@ function start_handle() {
             order_ids.push(order_id);
     }
 
-    var request = "orders-post.php?operation=start_handle&ids=" + order_ids.join();
+    var request = admin_post() + "?operation=order_start_handle&ids=" + order_ids.join();
     execute_url(request, location_reload);
 }
 
@@ -41,7 +42,7 @@ function cancel_order() {
                 order_ids.push(order_id);
         }
     }
-    var request = "orders-post.php?operation=cancel_orders&ids=" + order_ids.join();
+    var request = "orders-post.php?operation=order_cancel_orders&ids=" + order_ids.join();
     execute_url(request, location_reload);
 }
 
@@ -87,7 +88,7 @@ function replace_baskets() {
             location.reload(true);
         }
     }
-    let request = "orders-post.php?operation=replace_baskets";
+    let request = "orders-post.php?operation=order_replace_baskets";
     xmlhttp.open("GET", request, true);
     xmlhttp.send();
 }
@@ -95,7 +96,7 @@ function replace_baskets() {
 function update_email() {
     let email = get_value_by_name("email");
 
-    let request = "/fresh/orders/orders-post.php?operation=check_email&email=" + email;
+    let request = admin_post() + "?operation=order_check_email&email=" + email;
 
     execute_url(request, function(xmlhttp){
         if (xmlhttp.response === "u") {
@@ -105,7 +106,7 @@ function update_email() {
         }
     });
 
-    request = "/fresh/orders/orders-post.php?operation=check_delivery&email=" + email;
+    request = admin_post() + "?operation=order_check_delivery&email=" + email;
     execute_url(request, function(xmlhttp)
     {
         document.getElementById("delivery_info").innerHTML = xmlhttp.response;
@@ -122,6 +123,6 @@ function draft_products(collect_name)
             ids.push(prod_id);
         }
     }
-    let request = "../catalog/catalog-update-post.php?operation=draft_items&update_ids=" + ids.join();
+    let request = admin_post() + "?operation=order_draft_items&update_ids=" + ids.join();
     execute_url(request, location_reload);
 }

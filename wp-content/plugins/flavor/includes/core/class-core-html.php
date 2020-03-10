@@ -1085,7 +1085,7 @@ class Core_Html {
 
 		if ( $autocomplete_letters ) {
 			// print "auto";
-			return GuiInput( $id, null, $args );
+			return Core_Html::GuiInput( $id, null, $args );
 		}
 
 		if ( $datalist ) {
