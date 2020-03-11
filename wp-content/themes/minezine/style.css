@@ -1778,3 +1778,9 @@ input[type=number] {
 .woocommerce ul.products li.product a h2 {
   flex-grow: 1;
 }
+
+/* - Start Product Comment-- */
+.pro-comment .wc-item-meta {list-style-type: none;}
+.pro-comment .wc-item-meta .wc-item-meta-label {display: none;}
+.coupon .input-text { width: 120px !important; }
+/* - End Product Comment-- */
