@@ -186,7 +186,8 @@ class Focus {
 	/**
 	 * Define WC Constants.
 	 */
-	private function define_constants() {
+	private function define_constants()
+	{
 		$this->define( 'FOCUS_ABSPATH', dirname( FOCUS_PLUGIN_FILE ) . '/' );
 		$this->define( 'FOCUS_VERSION', $this->version );
 		$this->define( 'FOCUS_INCLUDES', FOCUS_ABSPATH . 'includes/' );
@@ -248,7 +249,7 @@ class Focus {
 		////////////////////////
 		// called by post.php //
 		////////////////////////
-		$result = apply_filters( $operation, $input, null);
+		$result = apply_filters( $operation, $input, GetParams($ignore_list));
 		if ( $result ) return $result;
 
 		// Handle global operation

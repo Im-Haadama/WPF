@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Plugin Name: israel shop
+ * Plugin Name: Fresh
  * Plugin URI: https://aglamaz.com
- * Description:  Israel shop matters: 1) manage vat-free categories, 2) Cities, zipcodes and zones.
+ * Description:  fresh store management
  * Version: 1.0
  * Author: agla
  * Author URI: http://aglamaz.com
@@ -16,7 +16,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-// Define IM_PLUGIN_FILE.
 if ( ! defined( 'FRESH_PLUGIN_FILE' ) ) {
 	define( 'FRESH_PLUGIN_FILE', __FILE__ );
 }

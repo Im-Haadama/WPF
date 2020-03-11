@@ -14,6 +14,13 @@
  * @param null $file - default is php_error.log
  */
 
+if (!defined('WC_LOG_DIR')) {
+	if (function_exists('wp_get_upload_dir'))
+		define ("WC_LOG_DIR", wp_get_upload_dir()['basedir'] . '/wc-logs/');
+	else
+		define ("WC_LOG_DIR", '/wp-content/uploads/wc-logs/');
+}
+
 	function MyLog( $msg, $title = '', $file = null )
 	{
 		$error_file = WC_LOG_DIR . ( $file ? $file : 'fresh.log' );

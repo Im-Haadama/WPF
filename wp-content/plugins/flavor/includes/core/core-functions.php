@@ -7,6 +7,24 @@
  * @return int
  */
 
+function InfoGet( $key, $create = false, $default = null ) {
+	$sql = "SELECT info_data FROM im_info WHERE info_key = '" . $key . "'";
+
+//      print $sql ."<br/>";
+
+	$result = sql_query_single_scalar( $sql, false );
+
+	if ( is_null( $result ) ) {
+		if ( $create ) {
+			InfoUpdate( $key, $default );
+
+			return $default;
+		}
+	}
+
+	return $result;
+}
+
 function QuoteText( $num_or_text, $sql_escape = false ) {
 	if ( is_null( $num_or_text ) ) return '"NULL"';
 
@@ -212,23 +230,6 @@ function QuoteDate($date, $format = 'Y-m-d')
 		}
 
 		return "";
-	}
-	function InfoGet( $key, $create = false, $default = null ) {
-		$sql = "SELECT info_data FROM im_info WHERE info_key = '" . $key . "'";
-
-//      print $sql ."<br/>";
-
-		$result = sql_query_single_scalar( $sql );
-
-		if ( is_null( $result ) ) {
-			if ( $create ) {
-				InfoUpdate( $key, $default );
-
-				return $default;
-			}
-		}
-
-		return $result;
 	}
 
 	function InfoUpdate( $key, $data ) {

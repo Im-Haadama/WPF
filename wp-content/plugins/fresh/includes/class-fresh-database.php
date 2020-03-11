@@ -3,9 +3,18 @@
 
 class Fresh_Database extends Core_Database
 {
-	static function Upgrade($version, $force = false)
+	static function install($version, $force = false)
 	{
+		// Create im_info table if missing.
+		self::CreateInfo();
+
 		self::CreateFunctions($version, $force);
+		self::CreateTables($version, $force);
+	}
+
+	static function CreateTables($version, $force)
+	{
+
 	}
 
 	static function CreateFunctions($version, $force = false)
@@ -43,6 +52,7 @@ BEGIN
 
 	/*-- Start create payment table --*/
 	static function payment_info_table(){
+		print 1/0;
 		global $wpdb;
 		$charset_collate = $wpdb->get_charset_collate();
 
@@ -64,5 +74,4 @@ BEGIN
 		dbDelta( $sql );
 	}
 	/*-- End create payment table --*/
-
 }

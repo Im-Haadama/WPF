@@ -252,7 +252,7 @@ class Finance {
 		 * Class autoloader.
 		 */
 		if (! class_exists('Core_Autoloader')){
-			$f = FINANCE_INCLUDES . 'core/class-core-autoloader.php';
+			$f = FLAVOR_INCLUDES_ABSPATH . 'core/class-core-autoloader.php';
 			if (! file_exists($f)) return false;
 
 				require_once $f;

@@ -1,0 +1,16 @@
+This plugin handles two topic:
+1) Israel cities and zones.
+a) Create zones in the woocommerce settings.
+b)
+Prepare israel_zones.csv. Take from https://data.gov.il/dataset/citiesandsettelments. UTF format. Add zone field at the end.
+טבלה,סמל_ישוב,שם_ישוב,שם_ישוב_לועזי,סמל_נפה,שם_נפה,סמל_לשכת_מנא,לשכה,סמל_מועצה_איזורית,שם_מועצה,אזור
+Decided for each city the zone for it. (Use zone ids from woocommerce).
+
+c)
+In the system: (currently the admin page is under the [israel_zones] shortcode. should be a private page).
+1) inflate im_cities table.
+load israel_zones.csv.
+The system fetches in the background zip codes for the cities.
+
+2) Create wc_shipping zones.
+From the [israel_zones] press the zone code. page with the shortcode [israel_zone]. permalink /zone

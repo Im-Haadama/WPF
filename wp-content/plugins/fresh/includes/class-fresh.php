@@ -122,8 +122,9 @@ class Fresh {
 	    // Admin scripts and styles. Todo: Check if needed.
 		add_action('admin_enqueue_scripts', array($this, 'admin_scripts'));
 
+		// Can't make that work: register_activation_hook( __FILE__, array( $this, 'install' ) );
+        self::install($this->version);
 
-		// register_activation_hook( WC_PLUGIN_FILE, array( 'Fresh_Install', 'install' ) );
 		register_shutdown_function( array( $this, 'log_errors' ) );
 		add_action( 'after_setup_theme', array( $this, 'setup_environment' ) );
 		add_action( 'after_setup_theme', array( $this, 'include_template_functions' ), 11 );
@@ -167,6 +168,8 @@ class Fresh {
 		add_action('woocommerce_thankyou', 'insert_payment_info', 10, 1);
 		add_action('admin_init', 'wp_payment_list_admin_script');
 		add_action('admin_print_styles', 'wp_payment_list_admin_styles');
+
+		// Admin menu
 		add_action('admin_menu', __CLASS__ . '::admin_menu');
 
 		// Product order in category
@@ -570,18 +573,33 @@ class Fresh {
 		return apply_filters( 'fresh_template_path', 'fresh/' );
 	}
 
-	public function run ()
+	public function run()
 	{
 		$this->loader->run();
 
 		// Install tables
-		register_activation_hook(__FILE__, 'Fresh_Database::payment_info_table');
-		// Temp migration.
-		register_activation_hook(__FILE__, 'Fresh_Database::convert_supplier_name_to_id');
+		self::register_activation(dirname(__FILE__) . '/class-fresh-database.php', array('Fresh_Database', 'payment_info_table'));
+
+		// Temp migration. run once on each installation
+        // Fresh_Database::convert_supplier_name_to_id();
 
 		// Create functions, tables, etc.
-		Fresh_Database::Upgrade(Fresh::instance()->get_version());
+		Fresh_Database::install(Fresh::instance()->get_version());
+	}
 
+	static function register_activation($file, $function)
+	{
+		if (! file_exists($file)){
+			print 1/0;
+			print "file $file not exists";
+			return;
+		}
+		if (! is_callable($function)){
+			print 1/0;
+			print "function is not callable";
+			return;
+		}
+		register_activation_hook($file, $function);
 	}
 
 	static public function SettingPage()
@@ -714,6 +732,17 @@ class Fresh {
 		$result .= $tabs[$tab][2];
 
 		print $result;
+	}
+
+	function install($version, $force = false)
+	{
+        if (Fresh_Database::CheckInstalled("Fresh", $this->version) == $version and ! $force) return;
+
+        // Install common tables
+        Fresh_Database::install($this->version);
+
+        // Install more specific
+
 	}
 }
 
@@ -1682,10 +1711,10 @@ function insert_payment_info( $order_id )
 				delete_post_meta($order_id, 'id_number');
 			}
 		}
-
 	}
 }
 /*-- End save payment info --*/
+
 
 /*-- Start payment gateway--*/
 $active_plugins = apply_filters('active_plugins', get_option('active_plugins'));
@@ -1705,6 +1734,11 @@ if(fresh_custom_payment_is_woocommerce_active()){
 	function other_payment_load_plugin_textdomain() {
 		load_plugin_textdomain( 'woocommerce-other-payment-gateway', FALSE, basename( dirname( __FILE__ ) ) . '/languages/' );
 	}
+
+	function install()
+    {
+        print 1/0;
+    }
 }
 
 function fresh_custom_payment_is_woocommerce_active()

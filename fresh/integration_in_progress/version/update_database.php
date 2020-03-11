@@ -127,18 +127,6 @@ die ( 0 );
 
 function cities() {
 
-	print Core_Html::gui_header( 1, "conversion" );
-	sql_query( "create table nv_conversion
-(
-	id int auto_increment
-		primary key,
-	table_name varchar(20) not null,
-	col varchar(40) not null,
-	header varchar(20) not null
-)
-engine=MyISAM charset=utf8;
-
-" );
 	sql_query( "INSERT INTO nv_conversion (id, table_name, col, header) VALUES (1, 'im_bank', 'date', 'תאריך')" );
 	sql_query( "INSERT INTO nv_conversion (id, table_name, col, header) VALUES (2, 'im_bank', 'description', 'תיאור')" );
 	sql_query( "INSERT INTO nv_conversion (id, table_name, col, header) VALUES (3, 'im_bank', 'reference', 'אסמכתא')" );
@@ -146,20 +134,6 @@ engine=MyISAM charset=utf8;
 	sql_query( "INSERT INTO nv_conversion (id, table_name, col, header) VALUES (5, 'im_bank', 'out_amount', 'חובה')" );
 	sql_query( "INSERT INTO nv_conversion (id, table_name, col, header) VALUES (6, 'im_bank', 'balance', 'יתרה בש\"ח')" );
 	sql_query( "INSERT INTO nv_conversion (id, table_name, col, header) VALUES (7, 'im_bank', 'part_id', 'לקוח')" );
-	sql_query( "
-INSERT INTO nv_conversion (id, table_name, col, header) VALUES (8, 'im_cities', 'city_name', 'שם_ישוב')" );
-	sql_query( "
-INSERT INTO nv_conversion (id, table_name, col, header) VALUES (9, 'im_cities', 'code', 'סמל_ישוב')" );
-	sql_query( "
-INSERT INTO nv_conversion (id, table_name, col, header) VALUES (10, 'im_cities', 'latin_name', 'שם_ישוב_לועזי')" );
-	sql_query( "
-INSERT INTO nv_conversion (id, table_name, col, header) VALUES (11, 'im_cities', 'region_number', 'סמל_מועצה_איזורית')" );
-	sql_query( "
-INSERT INTO nv_conversion (id, table_name, col, header) VALUES (12, 'im_cities', 'region_name', 'שם_מועצה')" );
-	sql_query( "
-INSERT INTO nv_conversion (id, table_name, col, header) VALUES (13, 'im_cities', 'regional_council_code', 'סמל_לשכת_מנא')" );
-	sql_query( "
-INSERT INTO nv_conversion (id, table_name, col, header) VALUES (14, 'im_cities', 'zone', 'אזור')" );
 
 	print "done";
 	return "city conversion";
@@ -170,21 +144,6 @@ function version293()
 
 	sql_query("drop table im_cities");
 	
-	sql_query("create table im_cities
-(
-	id int auto_increment
-		primary key,
-	city_name varchar(50) charset utf8 not null,
-	zipcode mediumtext charset utf8 null,
-	zone int null,
-	code int null,
-	latin_name varchar(50) null,
-	region_number int null,
-	region_name varchar(50) charset utf8 null,
-	regional_council_code int null
-);
-
-");
 //	sql_query("drop table im_suppliers");
 	sql_query("create table im_suppliers
 (
@@ -539,14 +498,6 @@ function check() {
 }
 
 function basic() {
-	if (! table_exists("im_info"))
-	sql_query( "CREATE TABLE im_info (
-		info_key VARCHAR(200) NULL,
-		info_data VARCHAR(200) NULL,
-		id INT NOT NULL AUTO_INCREMENT
-			PRIMARY KEY
-	)
-	;" );
 
 	if (! table_exists("im_projects"))
 	{

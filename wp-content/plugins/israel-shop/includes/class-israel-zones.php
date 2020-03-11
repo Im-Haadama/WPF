@@ -3,9 +3,9 @@
 
 class Israel_Zones {
 
-	protected $shortcodes;
 	protected $auto_loader;
 	protected $table_prefix;
+	protected $shortcodes;
 
 	protected static $_instance = null;
 
@@ -32,6 +32,7 @@ class Israel_Zones {
 
 		$this->init_hooks();
 
+		// Todo: move to admin page
 		$this->shortcodes = Core_Shortcodes::instance();
 		$this->shortcodes->add(array("israel_zones" => array("Israel_Zones::main", null),
 			                          "israel_zone"=>array("Israel_Zones::zone", null)));
@@ -40,6 +41,8 @@ class Israel_Zones {
 	}
 
 	private function init_hooks() {
+		add_action('admin_menu', __CLASS__ . '::admin_menu');
+
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
 		add_action('import_cities', array(__CLASS__, 'import_wrapper'));
 		Core_Gem::AddTable("cities");
@@ -58,8 +61,19 @@ class Israel_Zones {
 	{
 		$id = GetParam("id", true);
 		$zone = WC_Shipping_Zones::get_zone_by( 'zone_id', $id );
+		$operation = GetParam("operation", false, null);
 
-		if (! $zone) return "Zone $id not found";
+		if ($operation){
+			switch ($operation)
+			{
+				case "create":
+					$zone = self::create_zone();
+					break;
+			}
+		}
+		if (! $zone)
+			return "Zone $id not found<br/>" .
+				Core_Html::GuiHyperlink("Create", AddToUrl("operation", "create"));
 
 		$result = "";
 		$result .= Core_Html::gui_header(1, $zone->get_zone_name());
@@ -72,6 +86,15 @@ class Israel_Zones {
 		$zone = new WC_Shipping_Zone($id);
 		$zone->set_zone_locations($prefixes);
 		return $result;
+	}
+
+	static function create_zone()
+	{
+		$zone = new WC_Shipping_Zone();
+		$store = new WC_Shipping_Zone_Data_Store();
+		$store->create($zone);
+
+		return $zone;
 	}
 
 	static function CommonPrefix($zipcodes, $zone_id)
@@ -105,6 +128,7 @@ class Israel_Zones {
 
 		return $prefix_array;
 	}
+
 	static function main_wrapper()
 	{
 		$args = self::Args();
@@ -231,6 +255,13 @@ class Israel_Zones {
 		}
 
 		return - 2;
+	}
+
+	static function admin_menu()
+	{
+		$menu = new Core_Admin_Menu();
+
+		$menu->AddMenu('Import cities', 'Cities', 'show_manager', 'cities', __CLASS__ . '::main_wrapper');
 	}
 
 }
