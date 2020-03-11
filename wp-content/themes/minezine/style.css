@@ -1778,6 +1778,7 @@ input[type=number] {
 .woocommerce ul.products li.product a h2 {
   flex-grow: 1;
 }
+.added_to_cart{position: absolute;}
 
 /* - Start Product Comment-- */
 .pro-comment .wc-item-meta {list-style-type: none;}
