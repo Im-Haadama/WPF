@@ -182,6 +182,13 @@ class Fresh {
 		add_action( 'init', array( $this, 'fresh_quantity_handler' ) );
 		add_filter( 'woocommerce_loop_add_to_cart_link', array( $this, 'fresh_add_quantity_fields' ), 10, 2 );
 
+		/* - Start Product Comment Hooks-- */
+        add_action( 'woocommerce_update_cart_action_cart_updated', 'on_action_cart_updated', 20, 1 );
+		add_action( 'woocommerce_checkout_create_order_line_item', 'checkout_create_order_line_item', 10, 4 );
+		add_filter( 'woocommerce_get_sections_products' , 'product_comment_add_settings_tab' );
+		add_filter( 'woocommerce_get_settings_products' , 'product_comment_get_settings');
+        /* -- End Product Comment Hooks-- */
+
 //		add_action( 'wp_footer', 'im_footer' );
 //		if (get_user_id() == 1) print __CLASS__ ."<br/>";
 
@@ -1765,3 +1772,86 @@ function cinch_add_revision_support( $args ) {
 
 	return $args;
 }
+
+/* - Start Product Comment-- */
+
+function on_action_cart_updated( $cart_updated ){
+    global $wpdb;
+
+    $cart = WC()->cart;
+    if ( ! $cart->is_empty()) {
+		foreach ($cart->get_cart() as $cart_item_key => $cart_item ) {
+			$product_comment = '';
+            foreach($_REQUEST['cart'] as $key => $val){
+	            if($key == $cart_item_key)	
+                {
+               	   $product_comment = $val['product_comment'];
+                }
+	        } 
+            $cart_item['product_comment'] = $product_comment; 
+            $cart->cart_contents[$cart_item_key] = $cart_item;
+            $current_user = wp_get_current_user();
+			$user_id = $current_user->ID;
+			$remove_comment = delete_user_meta($user_id,$cart_item['product_id']);
+		}
+		$cart->set_session();
+	}	
+   
+}
+
+function checkout_create_order_line_item( $item, $cart_item_key, $values, $order ){
+	foreach( $item as $cart_item_key=>$cart_item ) {
+		if( isset( $cart_item['product_comment'] ) ) {
+		   $item->add_meta_data( 'product_comment', $cart_item['product_comment'], true );
+		    if(is_user_logged_in()){ 
+	            $current_user = wp_get_current_user();
+	            $user_id = $current_user->ID;
+	            if($cart_item['product_comment'] != ''){
+	                update_user_meta($user_id,$cart_item['product_id'],$cart_item['product_comment']);
+	            }
+            }
+		   
+		}
+	}
+}
+
+function product_comment_add_settings_tab( $settings_tab ){
+     $settings_tab['product_comment'] = __( 'Enable Product Comments ' );
+     return $settings_tab;
+}
+
+function product_comment_get_settings( $settings, $current_section ) {
+	
+    $custom_settings = array();
+
+    if( 'product_comment' == $current_section ) {
+
+    	$custom_settings =  array(
+
+			array(
+				'name' => __( '' ),
+				'type' => 'checkbox',
+				'desc' => __( 'Enable Product Comments on Cart'),
+				'id'	=> 'product_comment_view'
+
+			),
+			array(
+				'name' => __( 'Activate' ),
+				'type' => 'button',
+				'desc' => __( 'Activate plugin'),
+				'desc_tip' => true,
+				'class' => 'button-secondary',
+				'id'	=> 'activate',
+
+			)
+	    );
+		
+
+        return $custom_settings;
+    } else {
+        return $settings;
+    }
+
+}
+
+/* -- End Product Comment-- */
