@@ -1780,6 +1780,11 @@ input[type=number] {
 }
 .added_to_cart{position: absolute;}
 
+.woocommerce ul.products li.product a img {
+  height: 138px;
+  object-fit: contain;
+}
+
 /* - Start Product Comment-- */
 .pro-comment .wc-item-meta {list-style-type: none;}
 .pro-comment .wc-item-meta .wc-item-meta-label {display: none;}
