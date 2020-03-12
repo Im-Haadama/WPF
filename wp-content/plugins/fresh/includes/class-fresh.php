@@ -1792,7 +1792,7 @@ function on_action_cart_updated( $cart_updated ){
             $cart->cart_contents[$cart_item_key] = $cart_item;
             $current_user = wp_get_current_user();
 			$user_id = $current_user->ID;
-			$remove_comment = delete_user_meta($user_id,$cart_item['product_id']);
+			$remove_comment = delete_user_meta($user_id,'product_comment_'.$cart_item['product_id']);
 		}
 		$cart->set_session();
 	}	
@@ -1801,13 +1801,13 @@ function on_action_cart_updated( $cart_updated ){
 
 function checkout_create_order_line_item( $item, $cart_item_key, $values, $order ){
 	foreach( $item as $cart_item_key=>$cart_item ) {
-		if( isset( $cart_item['product_comment'] ) ) {
+		if( isset( $cart_item['product_comment'] ) && $cart_item['product_comment'] != '') {
 		   $item->add_meta_data( 'product_comment', $cart_item['product_comment'], true );
 		    if(is_user_logged_in()){ 
 	            $current_user = wp_get_current_user();
 	            $user_id = $current_user->ID;
 	            if($cart_item['product_comment'] != ''){
-	                update_user_meta($user_id,$cart_item['product_id'],$cart_item['product_comment']);
+	                update_user_meta($user_id,'product_comment_'.$cart_item['product_id'],$cart_item['product_comment']);
 	            }
             }
 		   

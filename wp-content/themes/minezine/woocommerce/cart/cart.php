@@ -143,7 +143,7 @@ do_action( 'woocommerce_before_cart' ); ?>
 			               $user_id = $current_user->ID;
 			               $cart_item['product_id'];
 			               $cart_item['product_id'];
-			               $pro_comment = get_user_meta($user_id,$cart_item['product_id'], true );
+			               $pro_comment = get_user_meta($user_id,'product_comment_'.$cart_item['product_id'], true );
 
 
 			                if($pro_comment != ''){ 
@@ -152,13 +152,20 @@ do_action( 'woocommerce_before_cart' ); ?>
                             
                                 <?php 
                                 if(isset($cart_item['product_comment'])){
+
                                 	if($cart_item['product_comment'] == $pro_comment){
-                                	$notes = $pro_comment;
+                                	    $notes = $pro_comment;
+                                	
 	                                }else{
 	                                    $notes = $cart_item['product_comment'];
 	                                }
+	                               
                                 }else{
+                                	
                                     $notes = $pro_comment; 
+                                    $cart_item['product_comment'] = $notes;
+                                	WC()->cart->cart_contents[$cart_item_key] = $cart_item;
+		                            WC()->cart->set_session();
                                 } 
                                 
                                 
