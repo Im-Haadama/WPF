@@ -183,7 +183,9 @@ class Fresh {
         add_action( 'woocommerce_update_cart_action_cart_updated', 'on_action_cart_updated', 20, 1 );
 		add_action( 'woocommerce_checkout_create_order_line_item', 'checkout_create_order_line_item', 10, 4 );
 		add_filter( 'woocommerce_get_sections_products' , 'product_comment_add_settings_tab' );
-		add_filter( 'woocommerce_get_settings_products' , 'product_comment_get_settings');
+		add_filter( 'woocommerce_get_settings_products' , 'product_comment_get_settings', 10, 2);
+
+
         /* -- End Product Comment Hooks-- */
 
 //		add_action( 'wp_footer', 'im_footer' );
