@@ -52,12 +52,3 @@ function run_fresh() {
 }
 
 run_fresh();
-
-add_filter( 'woocommerce_get_sections_products' , 'product_comments_tab');
-//add_filter( 'woocommerce_get_settings_products' , 'product_comment_get_settings', 10, 2);
-//
-function product_comments_tab()
-{
-	$settings_tab['product_comment'] = __( 'Enable Product Comments ' );
-	return $settings_tab;
-}

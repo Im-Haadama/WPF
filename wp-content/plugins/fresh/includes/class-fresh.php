@@ -186,14 +186,7 @@ class Fresh {
 		/* - Start Product Comment Hooks-- */
         add_action( 'woocommerce_update_cart_action_cart_updated', 'on_action_cart_updated', 20, 1 );
 		add_action( 'woocommerce_checkout_create_order_line_item', 'checkout_create_order_line_item', 10, 4 );
-		add_filter( 'woocommerce_get_sections_products' , 'product_comment_add_settings_tab' );
-		add_filter( 'woocommerce_get_settings_products' , 'product_comment_get_settings', 10, 2);
-
-
         /* -- End Product Comment Hooks-- */
-
-//		add_action( 'wp_footer', 'im_footer' );
-//		if (get_user_id() == 1) print __CLASS__ ."<br/>";
 
 
 		get_sql_conn(ReconnectDb());
@@ -600,12 +593,10 @@ class Fresh {
 	static function register_activation($file, $function)
 	{
 		if (! file_exists($file)){
-			print 1/0;
 			print "file $file not exists";
 			return;
 		}
 		if (! is_callable($function)){
-			print 1/0;
 			print "function is not callable";
 			return;
 		}
@@ -759,7 +750,6 @@ class Fresh {
 	{
 		new Fresh_Settings();
 	}
-
 }
 
 
@@ -1824,11 +1814,6 @@ function checkout_create_order_line_item( $item, $cart_item_key, $values, $order
 	}
 }
 
-function product_comment_add_settings_tab( $settings_tab ){
-     $settings_tab['product_comment'] = __( 'Enable Product Comments ' );
-     return $settings_tab;
-}
-
 //$y = new Yaad_Pay('b6589fc6ab0dc82cf12099d1c2d40ab994e8410c', '0010142214');
 //
 //if (!$y->SignIn()) die ("can't sign in");
@@ -1842,35 +1827,5 @@ function product_comment_add_settings_tab( $settings_tab ){
 //foreach ($y->Pay($token, 333) as $k => $r)
 //	print $k . "=" . $r . "<Br/>";
 
-function product_comment_get_settings( $settings, $current_section )
-{
-    $custom_settings = array();
-
-    if ('product_comment' == $current_section ) {
-    	$custom_settings =  array(
-
-			array(
-				'name' => __( '' ),
-				'type' => 'checkbox',
-				'desc' => __( 'Enable Product Comments on Cart'),
-				'id'	=> 'product_comment_view'
-
-			),
-			array(
-				'name' => __( 'Activate' ),
-				'type' => 'button',
-				'desc' => __( 'Activate plugin'),
-				'desc_tip' => true,
-				'class' => 'button-secondary',
-				'id'	=> 'activate',
-
-			)
-	    );
-
-        return $custom_settings;
-    } else {
-        return $settings;
-    }
-}
 
 /* -- End Product Comment-- */
