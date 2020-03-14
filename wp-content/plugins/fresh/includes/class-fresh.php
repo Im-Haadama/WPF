@@ -612,14 +612,14 @@ class Fresh {
 	static public function SettingPage()
 	{
 		$result = "";
-		$pages = array(array("name" => "Suppliers", "target" => "/suppliers", "shortcode" => "fresh_suppliers"));
-		foreach ($pages as $page)
-			Core_Pages::CreateIfNeeded($page['name'], $page['target'], $page['shortcode']);
+//		$pages = array(array("name" => "Suppliers", "target" => "/suppliers", "shortcode" => "fresh_suppliers"));
+//		foreach ($pages as $page)
+//			Core_Pages::CreateIfNeeded($page['name'], $page['target'], $page['shortcode']);
+//
+//		$module_list = array( "Suppliers" => array("target"=>"/suppliers"),
+//		                      "Orders" => array(array("Total ordered", "total_ordered")));
 
-		$module_list = array( "Suppliers" => array("target"=>"/suppliers"),
-		                      "Orders" => array(array("Total ordered", "total_ordered")));
-
-		$result .= Flavor::ClassSettingPage($module_list);
+//		$result .= Flavor::ClassSettingPage($module_list);
 		return $result;
 	}
 
@@ -1820,12 +1820,24 @@ function product_comment_add_settings_tab( $settings_tab ){
      return $settings_tab;
 }
 
+//$y = new Yaad_Pay('b6589fc6ab0dc82cf12099d1c2d40ab994e8410c', '0010142214');
+//
+//if (!$y->SignIn()) die ("can't sign in");
+//
+////foreach($result as $k => $r)
+////	print $k . "=" . $r . "<br/>";
+//
+//$token = "2818986124534250000";
+//
+////var_dump($y->GetToken("16123298"));
+//foreach ($y->Pay($token, 333) as $k => $r)
+//	print $k . "=" . $r . "<Br/>";
+
 function product_comment_get_settings( $settings, $current_section ) {
 	
     $custom_settings = array();
 
-    if( 'product_comment' == $current_section ) {
-
+    if ('product_comment' == $current_section ) {
     	$custom_settings =  array(
 
 			array(
@@ -1845,7 +1857,6 @@ function product_comment_get_settings( $settings, $current_section ) {
 
 			)
 	    );
-		
 
         return $custom_settings;
     } else {

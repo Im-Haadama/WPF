@@ -592,13 +592,13 @@ class Finance {
 	{
 		$result = "";
 		//                     Top nav                  Sub nav             target,                              capability
-		$module_list = array( "Finance" => array(array("Bank transactions", "/finance_bank",                     "show_bank"),
-								                 array("Bank Receipts",     "/finance_bank?operation=receipts",  "show_bank"),
-										   		 array("Invoices",          "/invoices",  "edit_pricelist"),
-												 array("Bank payments",    "/finance_bank?operation=payments",  "show_bank"),
-												 array("Transactions types", "/finance_bank?operation=bank_transaction_types", "cfo")));
+//		$module_list = array( "Finance" => array(array("Bank transactions", "/finance_bank",                     "show_bank"),
+//								                 array("Bank Receipts",     "/finance_bank?operation=receipts",  "show_bank"),
+//										   		 array("Invoices",          "/invoices",  "edit_pricelist"),
+//												 array("Bank payments",    "/finance_bank?operation=payments",  "show_bank"),
+//												 array("Transactions types", "/finance_bank?operation=bank_transaction_types", "cfo")));
 
-		$result .= Flavor::ClassSettingPage($module_list);
+//		$result .= Flavor::ClassSettingPage($module_list);
 		return $result;
 	}
 }

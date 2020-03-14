@@ -159,10 +159,10 @@ class Flavor {
 	 */
 	public static function settings_tab() {
 		$result = "";
-		foreach (self::plugins_setting() as $module_name => $setting) {
-			$result .= Core_Html::GuiHeader(2, $module_name);
-			$result .= $setting;
-		}
+//		foreach (self::plugins_setting() as $module_name => $setting) {
+//			$result .= Core_Html::GuiHeader(2, $module_name);
+//			$result .= $setting;
+//		}
 
 		print  $result;
 	}
@@ -178,12 +178,26 @@ class Flavor {
 	}
 
 	/**
-	 * Get all the settings for this plugin for @see woocommerce_admin_fields() function.
-	 *
+	 * Get all the settings for this plugin for @param string $current_section
 	 * @return array Array of settings for @see woocommerce_admin_fields() function.
+	 * @see woocommerce_admin_fields() function.
+	 *
 	 */
-	public static function get_settings() {
+	public function get_settings($current_section = '')
+	{
+		print 1/0;
+		switch ($current_section){
+			case "Fresh":
+				$settings = "lalalala";
+				$id = 'Fresh';
+				break;
+			default:
+				$settings = "noting selected";
+				$id = 'aa';
+				break;
 
+		}
+		return apply_filters('woocommerce_get_settings_' . $id, $settings, $current_section);
 		// Get loop of all Pages.
 		$args = array(
 			'sort_column'  => 'post_title',
@@ -565,9 +579,9 @@ class Flavor {
 	static public function SettingPage()
 	{
 		$result = "";
-		$module_list = array( "Flavor" => array());
+//		$module_list = array( "Flavor" => array());
 
-		$result .= self::ClassSettingPage($module_list);
+//		$result .= self::ClassSettingPage($module_list);
 
 		return $result;
 	}

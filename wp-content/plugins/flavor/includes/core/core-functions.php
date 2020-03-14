@@ -461,6 +461,26 @@ function QuoteDate($date, $format = 'Y-m-d')
 		return "unknown";
 	}
 
+	function ParseQuery($query, $ignore_list = null)
+	{
+		$query_parts = [];
+		while ( strlen( $query ) ) {
+			$next_amp = strpos( $query, '&' );
+			$param    = substr( $query, 0, $e = strpos( $query, '=' ) );
+			$value    = $next_amp ? substr( $query, $e + 1, $next_amp - $e - 1 ) : substr( $query, $e + 1 );
+
+			if (! $ignore_list or ! in_array( $param, $ignore_list ) ) {
+				$query_parts[ $param ] = $value;
+			}
+			if ( $next_amp ) {
+				$query = substr( $query, $next_amp + 1 );
+			} // Not including previous &
+			else {
+				$query = "";
+			}
+		}
+		return $query_parts;
+	}
 	/**
 	 * @param $url
 	 * @param $param_name
@@ -474,7 +494,6 @@ function QuoteDate($date, $format = 'Y-m-d')
 	 */
 	function AddParamToUrl($url, $param_name, $param_value = null) {
 		$ignore_list = array( "page_number" ); // Would be removed from base url.
-		$query_parts = [];
 		if ( is_null( $param_value ) and ! is_array( $param_name ) ) {
 			die ( __FUNCTION__ . ": bad usage" );
 		}
@@ -482,21 +501,7 @@ function QuoteDate($date, $format = 'Y-m-d')
 			// Remove url part
 			$result = substr( $url, 0, $s ); // not including the ?
 			$query  = substr( $url, $s + 1 ); // not including the ?
-			while ( strlen( $query ) ) {
-				$next_amp = strpos( $query, '&' );
-				$param    = substr( $query, 0, $e = strpos( $query, '=' ) );
-				$value    = $next_amp ? substr( $query, $e + 1, $next_amp - $e - 1 ) : substr( $query, $e + 1 );
-
-				if ( ! in_array( $param, $ignore_list ) ) {
-					$query_parts[ $param ] = $value;
-				}
-				if ( $next_amp ) {
-					$query = substr( $query, $next_amp + 1 );
-				} // Not including previous &
-				else {
-					$query = "";
-				}
-			}
+			$query_parts = ParseQuery($query, $ignore_list);
 		} else {
 			$result = $url;
 		}

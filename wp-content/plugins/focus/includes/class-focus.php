@@ -427,9 +427,9 @@ class Focus {
 	{
 		$result = "";
 		//                     Top nav                  Sub nav    target,                                        capability
-		$module_list = array( "Focus" => array(array("Repeating weekly", "/focus?operation=show_repeating_tasks&freq=w","show_tasks"),
-			                                   array("Repeating monthly", "/focus?operation=show_repeating_tasks&freq=j","show_tasks"),
-			                                   array("Repeating annual", "/focus?operation=show_repeating_tasks&freq=z","show_tasks")));
+//		$module_list = array( "Focus" => array(array("Repeating weekly", "/focus?operation=show_repeating_tasks&freq=w","show_tasks"),
+//			                                   array("Repeating monthly", "/focus?operation=show_repeating_tasks&freq=j","show_tasks"),
+//			                                   array("Repeating annual", "/focus?operation=show_repeating_tasks&freq=z","show_tasks")));
 
 		$result .= Flavor::ClassSettingPage($module_list);
 		return $result;
