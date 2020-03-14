@@ -24,6 +24,13 @@ if ( ! defined( 'CAPABILITES_PLUGIN_FILE' ) ) {
 if ( ! class_exists( 'Capabilites' ) ) {
 	include_once dirname( __FILE__ ) . '/includes/class-capabilites.php';
 }
+
+// Require parent plugin
+if ( ! is_plugin_active( 'flavor/flavor.php' ) and current_user_can( 'activate_plugins' ) ) {
+	// Stop activation redirect and show error
+	wp_die('Sorry, but this plugin requires the Parent Plugin to be installed and active. <br><a href="' . admin_url( 'plugins.php' ) . '">&laquo; Return to Plugins</a>');
+}
+
 /**
  * Main instance of Capabilites.
  *

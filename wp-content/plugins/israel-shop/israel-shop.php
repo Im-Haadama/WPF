@@ -21,10 +21,20 @@ if ( ! defined( 'ISRAEL_ZONES_PLUGIN_FILE' ) ) {
 	define( 'ISRAEL_ZONES_PLUGIN_FILE', __FILE__ );
 }
 
+require_once(ABSPATH . 'wp-admin/includes/plugin.php');
+
+if ( ! is_plugin_active( 'flavor/flavor.php' ) /* and current_user_can( 'activate_plugins' ) */ ) {
+	// Stop activation redirect and show error
+	deactivate_plugins(__FILE__);
+	return;
+}
+
 // Include the main class.
 if ( ! class_exists( 'Israel_Shop' ) ) {
 	include_once dirname( __FILE__ ) . '/includes/class-israel-shop.php';
 }
+
+
 /**
  * Main instance of Fresh.
  *

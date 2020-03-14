@@ -167,6 +167,7 @@ class Fresh {
 		// Save payment info
 		add_action('woocommerce_thankyou', 'insert_payment_info', 10, 1);
 		add_action('admin_init', 'wp_payment_list_admin_script');
+		add_action("admin_init", array(__CLASS__, "admin_load"));
 		add_action('admin_print_styles', 'wp_payment_list_admin_styles');
 
 		// Admin menu
@@ -753,6 +754,12 @@ class Fresh {
         // Install more specific
 
 	}
+
+	static public function admin_load()
+	{
+		new Fresh_Settings();
+	}
+
 }
 
 
@@ -1835,8 +1842,8 @@ function product_comment_add_settings_tab( $settings_tab ){
 //foreach ($y->Pay($token, 333) as $k => $r)
 //	print $k . "=" . $r . "<Br/>";
 
-function product_comment_get_settings( $settings, $current_section ) {
-	
+function product_comment_get_settings( $settings, $current_section )
+{
     $custom_settings = array();
 
     if ('product_comment' == $current_section ) {
@@ -1864,7 +1871,6 @@ function product_comment_get_settings( $settings, $current_section ) {
     } else {
         return $settings;
     }
-
 }
 
 /* -- End Product Comment-- */

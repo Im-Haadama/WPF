@@ -5,3 +5,11 @@ Fresh - main plugin class. Loads other classes.
 Fresh_Status - status panel (shown by shortcode).
 Fresh_Supplies - handle supplies
 Fresh_Orders - handle orders
+
+Settings:
+-=-=-=-=
+
+Fresh setting tab is handled by Fresh_Settings.
+Class that has settings that don't belong to other pages will add them using Fresh_Settings.
+
+Class that connects to other parts will be added by Fresh_Settings::add_tab and add_settings.

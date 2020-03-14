@@ -26,6 +26,13 @@ if ( ! defined( 'FINANCE_PLUGIN_DIR' ) ) {
 	define( 'FINANCE_PLUGIN_DIR', dirname(FINANCE_PLUGIN_FILE) );
 }
 
+require_once(ABSPATH . 'wp-admin/includes/plugin.php');
+if ( ! is_plugin_active( 'flavor/flavor.php' ) /* and current_user_can( 'activate_plugins' ) */ ) {
+	// Stop activation redirect and show error
+	deactivate_plugins(__FILE__);
+	return;
+}
+
 // Include the main WooCommerce class.
 if ( ! class_exists( 'Finance' ) ) {
 	include_once dirname( __FILE__ ) . '/includes/class-finance.php';

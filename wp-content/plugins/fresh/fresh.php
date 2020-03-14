@@ -20,6 +20,16 @@ if ( ! defined( 'FRESH_PLUGIN_FILE' ) ) {
 	define( 'FRESH_PLUGIN_FILE', __FILE__ );
 }
 
+require_once(ABSPATH . 'wp-admin/includes/plugin.php');
+
+// Require parent plugin
+if ( ! is_plugin_active( 'flavor/flavor.php' ) /* and current_user_can( 'activate_plugins' ) */ ) {
+	// Deactivate this plugin
+	deactivate_plugins(__FILE__);
+	return;
+}
+
+
 // Include the main WooCommerce class.
 if ( ! class_exists( 'Fresh' ) ) {
 	include_once dirname( __FILE__ ) . '/includes/class-fresh.php';
@@ -43,3 +53,11 @@ function run_fresh() {
 
 run_fresh();
 
+add_filter( 'woocommerce_get_sections_products' , 'product_comments_tab');
+//add_filter( 'woocommerce_get_settings_products' , 'product_comment_get_settings', 10, 2);
+//
+function product_comments_tab()
+{
+	$settings_tab['product_comment'] = __( 'Enable Product Comments ' );
+	return $settings_tab;
+}
