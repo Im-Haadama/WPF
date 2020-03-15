@@ -159,10 +159,10 @@ class Flavor {
 	 */
 	public static function settings_tab() {
 		$result = "";
-//		foreach (self::plugins_setting() as $module_name => $setting) {
-//			$result .= Core_Html::GuiHeader(2, $module_name);
-//			$result .= $setting;
-//		}
+		foreach (self::plugins_setting() as $module_name => $setting) {
+			$result .= Core_Html::GuiHeader(2, $module_name);
+			$result .= $setting;
+		}
 
 		print  $result;
 	}

@@ -7,14 +7,12 @@ class Core_Admin_Menu {
 		return add_menu_page($page_title, $menu_title, $capability, $menu_slug, $function);
 	}
 
-	public function AddSubMenu($parent, $capability, $pages)
+	public function AddSubMenu($parent, $capability, $page)
 	{
-		foreach ($pages as $page)
-		{
-			$title= $page['page_title'];
+			$title = (isset($page['page_title']) ? $page['page_title'] : 'not set');
 			$menu_title = ( isset($page['menu_title']) ? $page['menu_title'] : $title);
 			$slug = ( isset($page['menu_slug']) ? $page['menu_slug'] :  str_replace(' ', '-', strtolower($menu_title)));
-			add_submenu_page($parent, $title, $menu_title, $capability, $slug, $page['function']);
-		}
+			$function  = (isset($page['function']) ? $page['function'] : null);
+			add_submenu_page($parent, $title, $menu_title, $capability, $slug, $function);
 	}
 }

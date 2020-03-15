@@ -47,16 +47,17 @@ class Fresh_Suppliers {
 	{
 		$operation = GetParam("operation");
 
+		$result = null;
 		if ($operation){
 			$id = GetParam("id", false, 0);
 			$args = self::Args();
 
 			$result = apply_filters( $operation, $operation, $id, $args );
-			if ( $result ) 	return $result;
 		}
 
-		$result = self::SuppliersTable();
-		return $result;
+		if ( !$result )
+			$result = self::SuppliersTable();
+		print $result;
 	}
 
 	static function SuppliersTable()

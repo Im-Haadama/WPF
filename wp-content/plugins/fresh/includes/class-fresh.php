@@ -226,21 +226,7 @@ class Fresh {
 
 	static function admin_menu()
 	{
-		$menu = new Core_Admin_Menu();
-
-		$menu->AddMenu('Fresh Settings', 'Fresh', 'show_manager', 'fresh', __CLASS__ . '::general_settings');
-		$menu->AddSubMenu('fresh', 'edit_shop_orders',
-			array(array('page_title' => 'Settings',
-				'menu_title' => 'Settings',
-				'menu_slug' => 'settings',
-				'function' => __CLASS__ . '::general_settings'),
-			array('page_title' => 'Payment List',
-			      'menu_title' => 'Payment list',
-			      'menu_slug' => 'payment_list',
-			      'function' => 'payment_list')
-            ));
-
-		Fresh_Packing::add_admin($menu);
+	    Fresh_Settings::admin_menu();
 
 		//               parent_slug, page_title,    menu_title,      capability,        memu_slug,     function, position
 //			add_submenu_page('fresh',    'Packing',      'Packing',      'edit_shop_orders', 'fresh_packing', __CLASS__ . '::fresh_store_packing_page',
@@ -587,7 +573,7 @@ class Fresh {
         // Fresh_Database::convert_supplier_name_to_id();
 
 		// Create functions, tables, etc.
-		Fresh_Database::install(Fresh::instance()->get_version());
+		Fresh_Database::install(Fresh::instance()->get_version(), true);
 	}
 
 	static function register_activation($file, $function)
@@ -743,7 +729,6 @@ class Fresh {
         Fresh_Database::install($this->version);
 
         // Install more specific
-
 	}
 
 	static public function admin_load()

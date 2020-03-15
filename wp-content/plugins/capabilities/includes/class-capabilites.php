@@ -663,6 +663,5 @@ class Capabilites {
 			$result .= rtrim($cap_result, ", ");
 		}
 		print $result;
-
 	}
 }

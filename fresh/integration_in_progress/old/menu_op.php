@@ -1,12 +1,8 @@
 <?php
 
-
-
-
 require_once(FRESH_INCLUDES . '/wp-config.php');
 require_once(FRESH_INCLUDES . '/im-config.php');
 require_once( FRESH_INCLUDES . "/init.php" );
-
 
 $operation = GetParam("operation", false, null);
 if ($operation)

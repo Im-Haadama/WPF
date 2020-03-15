@@ -25,7 +25,6 @@
 		{
 			add_filter( 'woocommerce_get_sections_products' , array(__CLASS__, 'product_comment_add_settings_tab') );
 			add_filter( 'woocommerce_get_settings_products' , array(__CLASS__, 'product_comment_get_settings'), 10, 2);
-
 		}
 
 		static public function product_comment_add_settings_tab( $settings_tab ){
@@ -43,7 +42,6 @@
 						'type' => 'checkbox',
 						'desc' => __( 'Enable Product Comments on Cart'),
 						'id'	=> 'product_comment_view'
-
 					),
 					array(
 						'name' => __( 'Activate' ),
@@ -51,8 +49,7 @@
 						'desc' => __( 'Activate plugin'),
 						'desc_tip' => true,
 						'class' => 'button-secondary',
-						'id'	=> 'activate',
-
+						'id'	=> 'activate'
 					)
 				);
 
@@ -62,12 +59,32 @@
 			}
 		}
 
-		// Product comments
-//	static function product_comments_tab()
-//	{
-//		print 1/0;
-//		$settings_tab['product_comment'] = __( 'Enable Product Comments ' );
-//		return $settings_tab;
-//	}
+		static function admin_menu()
+		{
+			$menu = new Core_Admin_Menu();
 
-}
+			$menu->AddMenu('Fresh Settings', 'Fresh', 'show_manager', 'fresh', __CLASS__ . '::general_settings');
+			$menu->AddSubMenu('fresh', 'edit_shop_orders',
+				array('page_title' => 'Settings',
+				            'menu_title' => 'Settings',
+				            'menu_slug' => 'settings',
+				            'function' => __CLASS__ . '::general_settings'));
+			$menu->AddSubMenu('fresh', 'edit_shop_orders',
+					array('page_title' => 'Payment List',
+					      'menu_title' => 'Payment list',
+					      'menu_slug' => 'payment_list',
+					      'function' => 'payment_list')
+				);
+
+			$menu->AddSubMenu("woocommerce", "edit_suppliers",
+				array('page_title' => 'Suppliers', 'function' => array("Fresh_Suppliers" , 'admin_page' )));
+
+			Fresh_Packing::add_admin($menu);
+		}
+
+		static function suppliers() {
+			$result = '<h3>Suppliers</h3>';
+
+			print $result;
+		}
+	}
