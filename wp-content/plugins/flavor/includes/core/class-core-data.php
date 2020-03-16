@@ -17,7 +17,6 @@ class Core_Data
 	public function __construct() {
 	}
 
-
 	static function handle_operation( $operation )
 	{
 		switch ($operation){
@@ -82,8 +81,10 @@ class Core_Data
 
 	static function SaveNew($table_name)
 	{
+		$db_prefix = get_table_prefix();
+
 		$ignore_list = ["dummy", "operation", "table_name"];
-		$sql    = "INSERT INTO $table_name (";
+		$sql    = "INSERT INTO ${db_prefix}$table_name (";
 		$values = "values (";
 		$first  = true;
 		$sql_values = array();
@@ -114,6 +115,7 @@ class Core_Data
 
 	static function data_update($table_name)
 	{
+		$db_prefix = get_table_prefix();
 		// TODO: adding meta key when needed(?)
 		global $meta_table_info;
 
@@ -129,7 +131,7 @@ class Core_Data
 				$changed_value = $changed_pair[0];
 				$is_meta = $changed_pair[1];
 				if (sql_type($table_name, $changed_field) == 'date' and strstr($changed_value, "0001")) {
-					$sql = "update $table_name set $changed_field = null where id = " . $row_id;
+					$sql = "update ${db_prefix}$table_name set $changed_field = null where id = " . $row_id;
 
 					if ($row_id) sql_query($sql);
 					continue;
@@ -141,9 +143,9 @@ class Core_Data
 					       " and " . $meta_table_info[$tbl]['id'] . "=?";
 				}
 				else
-					$sql = "update $table_name set $changed_field =? where id =?";
+					$sql = "update ${db_prefix}$table_name set $changed_field =? where id =?";
 
-//				if (get_user_id() == 1) print $sql;
+				// if (get_user_id() == 1) print $sql;
 				$stmt = sql_prepare($sql);
 				if (! $stmt) return false;
 				if ($is_meta){
@@ -168,6 +170,7 @@ class Core_Data
 		}
 		return true;
 	}
+
 
 	static function data_parse_get($table_name, $ignore_list) {
 		$values =array();
@@ -410,7 +413,7 @@ class Core_Data
 					// $value = (function_exists($selector_name) ? $selector_name( $input_name, $orig_data, $args ) : $orig_data); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
 //					if (! function_exists($selector_name)) {
 //						print( "function $selector_name does not exists" );
-//						print sql_trace();
+//						print debug_trace();
 //						die(1);
 //					}
 					if ($drill) {
@@ -528,7 +531,7 @@ class Core_Data
 				var_dump( $row );
 				print "<br/>";
 				print $sql . "<br/>";
-				print sql_trace();
+				print debug_trace();
 				die( __FUNCTION__ . ":" . __LINE__ . "no id_field" );
 			}
 			$row_id = $row[ $id_field ];

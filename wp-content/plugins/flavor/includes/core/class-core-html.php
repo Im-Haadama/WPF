@@ -252,7 +252,7 @@ class Core_Html {
 					print __FUNCTION__ . ": " . $id_field . " is missing. ";
 					var_dump( $row );
 					print "<br/>";
-					print sql_trace();
+					print debug_trace();
 					die( 1 );
 				}
 				$id_text = $row[ $id_field ] . ")";
@@ -1671,6 +1671,7 @@ class Core_Html {
 	 */
 	static function GuiRowContent($table_name, $row_id, $args)
 	{
+		$prefix = get_table_prefix();
 		if (! $table_name) return null;
 		$id_key = GetArg($args, "id_key", "id");
 		$fields = GetArg($args, "fields", null);
@@ -1698,7 +1699,7 @@ class Core_Html {
 		}
 		if (! defined('NOT_NULL_FLAG')) define ('NOT_NULL_FLAG', 1);
 		if ($args /* and ! isset($args["sql_fields"]) */) {
-			$result = sql_query("select * from $table_name");
+			$result = sql_query("select * from ${prefix}$table_name");
 			if (! $result) return null;
 			$args["sql_fields"] = mysqli_fetch_fields( $result );
 			if (! isset($args["mandatory_fields"])){

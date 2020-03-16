@@ -426,7 +426,7 @@ function QuoteDate($date, $format = 'Y-m-d')
 		$day   = strtok( "-" );
 		if ( ! ( $year > 0 and $month > 0 and $day > 0 ) ) {
 			print $year . " " . $month . " " . $day . "<br/>";
-			print sql_trace();
+			print debug_trace();
 			die ( __FUNCTION__ . ": invalid date $date" );
 		}
 //	if (is_numeric($date )) {

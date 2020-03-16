@@ -30,11 +30,13 @@ class Fresh_Suppliers {
 		$this->gem->AddVirtualTable( "products", $args );
 
 		// Pricelist
-		$args = array("query_part" => "from im_supplier_price_list
+		$args = array("database_table" => "supplier_price_list",
+		              "query_part" => "from im_supplier_price_list
                 where supplier_id = %d",
-			"fields" => "id, supplier_product_code, product_name, price, date",
+			"fields" => array("id", "product_name", "price", "date"),
 			"order"=>"product_name",
 			"prepare" => "Fresh_Pricelist_Item::add_prod_info",
+//			"header_fields" => array("supplier_product_code" => "code", "product_name" => "name"),
 			"prepare_plug" => "Fresh_Pricelist_Item::add_prod_info");
 		$this->gem->AddVirtualTable( "pricelist", $args );
 
@@ -50,7 +52,7 @@ class Fresh_Suppliers {
 		$result = null;
 		if ($operation){
 			$id = GetParam("id", false, 0);
-			$args = self::Args();
+			$args = self::Args("pricelist");
 
 			$result = apply_filters( $operation, $operation, $id, $args );
 		}
@@ -116,6 +118,10 @@ class Fresh_Suppliers {
 			switch ( $table_name ) {
 				case "suppliers":
 					$args["prepare_plug"] = __CLASS__ . "::prepare_row";
+					break;
+				case "pricelist":
+					$args["edit"] = true;
+					$args["hide_cols"] = array("id"=>1);
 					break;
 			}
 

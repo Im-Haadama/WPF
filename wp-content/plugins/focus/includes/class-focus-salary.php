@@ -84,7 +84,7 @@ class Focus_Salary {
 				$args = [];
 				$args["selectors"] = array("user_id" => "gui_select_client", "project_id" => "gui_select_project");
 				$args["post_file"] = self::getPost();
-				return Core_Gem::GemAddRow("im_working", "Add", $args);
+				return Core_Gem::GemAddRow("working", "Add", $args);
 		}
 
 		return false;

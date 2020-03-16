@@ -18,7 +18,7 @@ class Focus_Nav {
 
 	public static function instance() {
 		if ( is_null( self::$_instance ) ) {
-			sql_trace();
+			debug_trace();
 //			die("use constructor" . __CLASS__);
 		}
 

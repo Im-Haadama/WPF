@@ -54,8 +54,7 @@ class Finance_Bank
 		$table_prefix = get_table_prefix();
 		$multi_site = Core_Db_MultiSite::getInstance();
 
-
-//		print __FILE__ . ':' .$operation . "<br/>";
+		//		print __FILE__ . ':' .$operation . "<br/>";
 		$u = new Core_Users();
 		if (! $u->can("show_bank"))
 			return "no permissions";
@@ -312,7 +311,7 @@ class Finance_Bank
 				$args = array();
 				// $args["selectors"] = array("part_id" => "gui_select_supplier");
 
-				print Core_Html::GuiTableContent( "${table_prefix}bank_transaction_types", null, $args );
+				print Core_Html::GuiTableContent( "bank_transaction_types", null, $args );
 				print Core_Html::GuiHyperlink( "add", AddToUrl( "operation", "add_transaction_types" ) );
 
 				return;
@@ -323,7 +322,7 @@ class Finance_Bank
 				$args              = self::Args();
 				$args["selectors"] = array( "part_id" => "Fresh_Supplier::gui_select_supplier" );
 
-				print Core_Gem::GemAddRow( "${table_prefix}bank_transaction_types", "Transaction types", $args );
+				print Core_Gem::GemAddRow( "bank_transaction_types", "Transaction types", $args );
 
 				return;
 
@@ -331,7 +330,7 @@ class Finance_Bank
 				$args           = array();
 				$search_url     = "search_table('${table_prefix}bank', '" . AddParamToUrl( $url, "search", "1" ) . "')";
 				$args["search"] = $search_url; //'/fresh/bank/bank-page.php?operation=do_search')";
-				GemSearch( "${table_prefix}bank", $args );
+				GemSearch( "bank", $args );
 
 				return;
 
@@ -382,7 +381,7 @@ class Finance_Bank
 					die( "not account given" );
 				}
 				try {
-					$result = $I->Import( $file_name, "{$this->table_prefix}bank", $fields, 'Finance_Bank::bank_check_dup' );
+					$result = $I->Import( $file_name, "bank", $fields, 'Finance_Bank::bank_check_dup' );
 				} catch ( Exception $e ) {
 					print $e->getMessage();
 
@@ -750,3 +749,13 @@ function user_is_business_owner() {
 //		print Core_Html::GuiHyperlink('Edit transaction types', add_to_url("operation" ,"transaction_types")); print " ";
 //		print Core_Html::GuiHyperlink('Search transaction', add_to_url("operation" ,"search")); print " ";
 
+function insert_leumi_conversion() {
+	sql_query( "INSERT INTO nv_conversion ( table_name, col, header) VALUES ( 'bank', 'date', 'תאריך')" );
+	sql_query( "INSERT INTO nv_conversion ( table_name, col, header) VALUES ( 'bank', 'description', 'תיאור')" );
+	sql_query( "INSERT INTO nv_conversion ( table_name, col, header) VALUES ( 'bank', 'reference', 'אסמכתא')" );
+	sql_query( "INSERT INTO nv_conversion ( table_name, col, header) VALUES ( 'bank', 'in_amount', 'בזכות')" );
+	sql_query( "INSERT INTO nv_conversion ( table_name, col, header) VALUES ( 'bank', 'out_amount', 'בחובה')" );
+	sql_query( "INSERT INTO nv_conversion ( table_name, col, header) VALUES ( 'bank', 'balance', 'היתרה בש\"ח')" );
+	sql_query( "INSERT INTO nv_conversion ( table_name, col, header) VALUES ( 'bank', 'part_id', 'לקוח')" );
+	sql_query( "INSERT INTO nv_conversion ( table_name, col, header) VALUES ( 'bank', 'client_name', 'תאור מורחב')");
+}

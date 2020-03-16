@@ -187,6 +187,8 @@ class Core_Fund {
 
 		$new = array();
 
+		if (! is_array($array)) return $array;
+
 		foreach ( $array as $cell ) {
 			// print "adding $cell<br/>";
 			$new[ $cell ] = $cell;

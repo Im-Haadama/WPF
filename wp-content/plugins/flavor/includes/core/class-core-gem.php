@@ -74,7 +74,7 @@ class Core_Gem {
 			print __FUNCTION__ . ": coding error. invalid table in '$operation'.<br/>";
 			return false;
 		}
-		return $result . self::GemAddRow(get_table_prefix() . $table_name, null, $args);
+		return $result . self::GemAddRow($table_name, null, $args);
 	}
 
 	static function import_wrapper($result, $id, $args)
@@ -276,13 +276,15 @@ class Core_Gem {
 		$post_file = GetArg($args, "post_file", null);
 		if (! $post_file) {
 			print "must send post_file " . $table_name . "<br/>";
-			print sql_trace();
+			print debug_trace();
 			die(1);
 		}
 		$table_prefix = get_table_prefix();
 
 		$args["events"] = 'onchange="update_table_field(\'' . $post_file . '\', \'' . $table_name . '\', \'%d\', \'%s\', check_update)"';
 		$sql = GetArg($args, "sql", null);
+
+//		print $sql . " " . $args["fields"] . "<br/>";
 
 		if (! $sql){
 			$fields = GetArg($args, "fields", null);
@@ -310,6 +312,8 @@ class Core_Gem {
 		if (! $table_name) die("no table given:" . __FUNCTION__);
 
 		if (! isset($this->object_types[$table_name])) return __FUNCTION__ . ": coding error $table_name wasn't added";
+//		var_dump($this->object_types[$table_name]);
+		$database_table = $this->object_types[$table_name]['database_table'];
 
 		// $args["table_prefix"] = (isset($this->object_types[$table_name]['prefix']) ? $this->object_types[$table_name]['prefix'] : get_table_prefix());
 		$query_part = GetArg( $this->object_types["$table_name"], 'query_part', null);
@@ -320,10 +324,10 @@ class Core_Gem {
 		$query = sprintf($query_part, $query_id);
 		$fields = GetArg($this->object_types["$table_name"], "fields", '*');
 
-		$args["sql"] = "select $fields $query";
-		$args["prepare_plug"] = $this->object_types["$table_name"]["prepare_plug"];
+		$args["sql"] = "select " . CommaImplode($fields) . " $query";
+		$args = array_merge($this->object_types["$table_name"], $args);
 
-		return self::GemTable($table_name, $args);
+		return self::GemTable($database_table, $args);
 	}
 
 	/**

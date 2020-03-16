@@ -188,13 +188,7 @@ class Fresh_Delivery_Manager
 	}
 }
 
-//function zone_get_name( $id ) {
-//	if (! ($id > 0)){
-//		print sql_trace();
-//		die ("bad zone id");
-//	}
-//	return sql_query_single_scalar( "SELECT zone_name FROM wp_woocommerce_shipping_zones WHERE zone_id = " . $id );
-//}
+
 
 //static function do_update_shipping_methods()
 //{

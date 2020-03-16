@@ -90,8 +90,9 @@ class Core_Importer {
 	private function ReadHeader( &$file, $conversion, &$map, $table_name ) {
 		// First line(s) may be empty.
 		$done = false;
+		$db_prefix = get_table_prefix();
 
-		$sql    = "describe $table_name";
+		$sql    = "describe ${db_prefix}$table_name";
 		$result = sql_query( $sql );
 		while ( $row = sql_fetch_row( $result ) ) {
 			$map[ $row[0] ] = - 1; // Init - not found;
@@ -126,7 +127,9 @@ class Core_Importer {
 		return true;
 	}
 
-	private function ImportLine( $line, $table_name, $map, $fields = null, $check_dup = null ) {
+	private function ImportLine( $line, $table_name, $map, $fields = null, $check_dup = null )
+	{
+		$db_prefix = get_table_prefix();
 		$insert_fields = array();
 		$values        = array();
 		if ( $fields ) {
@@ -170,7 +173,7 @@ class Core_Importer {
 			}
 		}
 
-		$sql = "insert into $table_name (" . CommaImplode( $insert_fields ) .
+		$sql = "insert into ${db_prefix}$table_name (" . CommaImplode( $insert_fields ) .
 		       ") values (" . CommaImplode( $values, true ) . ")";
 
 

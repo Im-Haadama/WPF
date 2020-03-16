@@ -120,7 +120,8 @@ class Fresh_Pricelist_Item {
 		return get_supplier_name( $this->supplier_id );
 	}
 	
-	static public function add_prod_info($row) {
+	static public function add_prod_info($row, $edit = true)
+	{
 		$catalog = new Fresh_Catalog();
 		$pl_id   = $row["id"];
 
@@ -147,10 +148,11 @@ class Fresh_Pricelist_Item {
 //			}
 
 			array_push( $row, $p->getName() );
-			array_push( $row, $p->getPrice() );
+//			array_push( $row, ($edit ? Core_Html::GuiInput("prc_$pl_id", $p->getPrice()) : $p->getPrice()));
+			array_push( $row, $p->getPrice());
 			array_push( $row, $p->getSalePrice() );
 			$stockManaged = $p->getStockManaged();
-			array_push( $row, gui_checkbox( "chm_" . $linked_prod_id, "stock", $stockManaged, "onchange=\"change_managed(this)\")" ) );
+//			array_unshift( $row, gui_checkbox( "chm_" . $linked_prod_id, "stock", $stockManaged, "onchange=\"change_managed(this)\")" ) );
 			array_push( $row, Core_Html::GuiLabel( "stk_" . $linked_prod_id, Core_Html::GuiHyperlink( $p->getStock(), "../orders/get-orders-per-item.php?prod_id=" . $linked_prod_id ) ) );
 			$n = orders_per_item( $linked_prod_id, 1, true, true, true );
 			array_push( $row, $n );

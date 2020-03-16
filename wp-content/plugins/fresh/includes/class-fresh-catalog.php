@@ -9,10 +9,6 @@
 if ( ! defined( 'FRESH_INCLUDES' ) ) {
 	define( 'FRESH_INCLUDES', dirname( dirname( __FILE__ ) ) );
 }
-//require_once( FRESH_INCLUDES . '/pricelist/pricelist.php' );
-//require_once( FRESH_INCLUDES . '/wp/terms.php' );
-//require_once( FRESH_INCLUDES . '/catalog/pricing.php' );
-//require_once( 'bundles.php' );
 
 class Fresh_Catalog {
 	static function CreateProducts( $category_name, $ids ) {
@@ -34,11 +30,7 @@ class Fresh_Catalog {
 				// Map to remote
 				MyLog( "map to remote" );
 				$pricelist_item = PriceList::Get( $pricelist_id );
-				// my_log("got");
-				// my_log("calling MultiSite " . $pricelist->SiteId(). " " . $id .
-//             //   $pricelist_item["supplier_product_code"]);
 				$site_id = $pricelist->SiteId();
-//				print "site_id: " . $site_id . "<br/>";
 				if ( is_numeric( $site_id ) and $site_id != Core_Db_MultiSite::LocalSiteID() ) {
 					// Copy information from remote site
 					$remote_id = $pricelist_item["supplier_product_code"];

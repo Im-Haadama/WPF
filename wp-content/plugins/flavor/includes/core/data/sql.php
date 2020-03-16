@@ -76,6 +76,7 @@ function get_sql_conn($new_conn = null)
  * @throws Exception
  */
 function sql_type( $table, $field) {
+	$db_prefix = get_table_prefix();
 	global $meta_table_info;
 
 	// Meta fields are all varchar
@@ -83,7 +84,7 @@ function sql_type( $table, $field) {
 		return 'varchar';
 
 	if (! $table) throw new Exception("No table given");
-	if (! $field) throw new Exception(__CLASS__ . ":". __METHOD__ . "No field given.<br/> " . sql_trace());
+	if (! $field) throw new Exception(__CLASS__ . ":". __METHOD__ . "No field given.<br/> " . debug_trace());
 
 	// For meta fields:
 	if ($sl = strpos($field, '/')){
@@ -93,7 +94,7 @@ function sql_type( $table, $field) {
 	static $type_cache = array();
 
 	if ( ! isset( $type_cache[ $table ][ $field ] ) ) {
-		$result               = sql_query( "describe $table" );
+		$result               = sql_query( "describe ${db_prefix}$table" );
 		$type_cache[ $table ] = array();
 		while ( $row = sql_fetch_row( $result ) ) {
 			$f = $row[0];
@@ -144,6 +145,7 @@ function sql_bind($table_name, &$stmt, $_values)
 	$types = "";
 	$values = array();
 	foreach ($_values as $key => $value){
+		if (! $key) { print "key is empty" . debug_trace(5); die (1);}
 		if ($debug) print "binding $value to $key <br/>";
 		$type = sql_type($table_name, $key);
 		switch(substr($type, 0, 3))
@@ -234,7 +236,7 @@ function sql_query( $sql, $report_error = true )
 		$now         = microtime(true);
 		$micro_delta = $now - $prev_time;
 		if ( $micro_delta > 0.1 ) {
-			$report = sql_trace();
+			$report = debug_trace();
 			$report .= "long executing: " . $sql . " " . $micro_delta . "<br>";
 			MyLog($report, "sql performance", "sql_performance" . date('m-j'));
 		}
@@ -388,27 +390,6 @@ function sql_query_single_assoc( $sql ) {
 
 	return null;
 }
-
-	/**
-	 * @param int $deep
-	 *
-	 * @return string
-	 */
-function sql_trace($deep = 2)
-{
-	print 1/0; // Print formatted (By xdebug?)
-//	$result = "";
-//	$debug = debug_backtrace();
-//	for ( $i = 1; ($i < $deep) and ($i < count( $debug )); $i ++ ) {
-//		if (isset($debug[$i]['file'])) $caller = "called from " . $debug[$i]['file'] . " ";
-//		else $caller = "";
-//		if (isset($debug[ $i ]["line"])) $line = ":" . $debug[ $i ]["line"];
-//		else $line = "";
-//		$result .= '#' . $i . ' ' .( $caller . $debug[ $i ]["function"] . $line . "<br/>");
-//	}
-//	return $result;
-}
-
 /**
  * @param $sql
  */
@@ -422,7 +403,7 @@ function sql_error( $sql ) {
 		$message = "Error: sql = `" . $sql;
 		if ($conn) $message .= "`. Sql error : " . mysqli_error( $conn ) . "<br/>";
 		else $message .= "not connected";
-		print sql_trace(6);
+		print debug_trace(6);
 	} else {
 		$message = $sql->error;
 		// $message = "sql not string";
@@ -492,14 +473,22 @@ function sql_set_time_offset()
  */
 function sql_table_id($table_name)
 {
+	$db_prefix = get_table_prefix();
 	// Performance issues. For now hardcoded used tables.
-	$cache = array ("tasklist" => "id", "working_teams" => "id", "task_templates" => "id", "working" => "id");
+	$cache = array ("tasklist" => "id",
+	                "working_teams" => "id",
+	                "task_templates" => "id",
+	                "working" => "id");
 	if (isset($cache[$table_name])) return $cache[$table_name];
 
-	return sql_query_single_scalar("SELECT COLUMN_NAME 
+	$sql = "SELECT COLUMN_NAME 
 		FROM information_schema.KEY_COLUMN_USAGE 
-		WHERE TABLE_NAME = '$table_name' 
-		  AND CONSTRAINT_NAME = 'PRIMARY'");
+		WHERE TABLE_NAME = '${db_prefix}$table_name' 
+		  AND CONSTRAINT_NAME = 'PRIMARY'";
+	$rc = sql_query_single_scalar($sql);
+
+	if (! $rc) die("no primary key for table $table_name");
+	return $rc;
 }
 
 

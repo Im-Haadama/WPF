@@ -121,7 +121,7 @@ class Finance_Invoices {
 		);
 		$args["post_file"]        = self::getPost();
 
-		return Core_Gem::GemAddRow( "im_business_info", "invoices", $args );
+		return Core_Gem::GemAddRow( "business_info", "invoices", $args );
 	}
 
 	static function gui_select_document_type( $id = null, $selected = null, $args = null ) {

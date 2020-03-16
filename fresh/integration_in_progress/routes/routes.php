@@ -1087,7 +1087,7 @@ function show_today_routes()
 
 function zone_get_name( $id ) {
 	if (! ($id > 0)){
-		print sql_trace();
+		print debug_trace();
 		die ("bad zone id");
 	}
 	return sql_query_single_scalar( "SELECT zone_name FROM wp_woocommerce_shipping_zones WHERE zone_id = " . $id );

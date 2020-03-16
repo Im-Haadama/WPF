@@ -336,7 +336,7 @@ class Focus_Tasks {
 					"project_priority" => "Priority"
 				);
 
-				return Core_Gem::GemAddRow( "im_projects", "Add a project", $args );
+				return Core_Gem::GemAddRow( "projects", "Add a project", $args );
 
 			case "last_entered":
 				if ( get_user_id() != 1 ) {
@@ -459,7 +459,7 @@ class Focus_Tasks {
 				return Core_Gem::GemTable( "im_task_type", $args );
 
 			case "new_company_user":
-				$company_id = data_save_new( "im_company" );
+				$company_id = data_save_new( "company" );
 				//			$worker_id = worker_get_id(get_user_id());
 				$sql = "update im_working set company_id = " . $company_id . " where user_id = " . get_user_id();
 				sql_query( $sql );
@@ -495,7 +495,7 @@ class Focus_Tasks {
 		$args              = self::Args();
 		$args["selectors"] = array( "manager" => __CLASS__ . "::gui_select_worker" );
 
-		return Core_Gem::GemAddRow( "im_working_teams", "New team", $args );
+		return Core_Gem::GemAddRow( "working_teams", "New team", $args );
 	}
 
 	static function show_project_wrapper()
@@ -569,7 +569,7 @@ class Focus_Tasks {
 
 		unset( $args["actions"] );
 		$args["mandatory_fields"] = array( "manager", "team_name" );
-		$result                   .= Core_Gem::GemAddRow( "im_working_teams", "Add a team", $args );
+		$result                   .= Core_Gem::GemAddRow( "working_teams", "Add a team", $args );
 
 		return $result;
 	}
@@ -990,7 +990,7 @@ class Focus_Tasks {
 
 		$args          = self::Args( "im_tasklist", "new" );
 		$args["style"] = "display:none";
-		$result        .= Core_Html::GuiDiv( "new_task", Core_Gem::GemAddRow( "im_tasklist", __( "Add" ), $args ), $args );
+		$result        .= Core_Html::GuiDiv( "new_task", Core_Gem::GemAddRow( "tasklist", __( "Add" ), $args ), $args );
 
 		return $result;
 	}
@@ -999,7 +999,7 @@ class Focus_Tasks {
 		$result = "";
 
 		if ( ! ( $user_id > 0 ) ) {
-			print sql_trace();
+			print debug_trace();
 			die ( "bad user id $user_id" );
 		}
 
@@ -1095,7 +1095,7 @@ class Focus_Tasks {
 		$args["count"] = 0;
 
 		if ( ! $user_id > 0 ) {
-			print sql_trace();
+			print debug_trace();
 			die ( "bad user id $user_id" );
 		}
 
@@ -1480,7 +1480,7 @@ class Focus_Tasks {
 				return false;
 			}
 
-			print Core_Html::GuiButton( "btn_add", "Add", array( "action" => "data_save_new('/focus/focus-post.php?operation=new_company_user', 'im_company', location_reload)" ) );
+			print Core_Html::GuiButton( "btn_add", "Add", array( "action" => "data_save_new('/focus/focus-post.php?operation=new_company_user', 'company', location_reload)" ) );
 
 			// print gui_input("company", )
 			return false;
@@ -2366,7 +2366,7 @@ class Focus_Tasks {
 			$args["values"] = array( "project_id" => $project_id, "team" => $new_task->getTeam() );
 		}
 
-		$result .= Core_Gem::GemAddRow("${table_prefix}tasklist", "New Task", $args);
+		$result .= Core_Gem::GemAddRow("tasklist", "New Task", $args);
 		// $result .= Core_Gem::GemAddRow( "im_tasklist", "New task", $args );
 		$result .= $project_tasks;
 

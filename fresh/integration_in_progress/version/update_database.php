@@ -127,13 +127,6 @@ die ( 0 );
 
 function cities() {
 
-	sql_query( "INSERT INTO nv_conversion (id, table_name, col, header) VALUES (1, 'im_bank', 'date', 'תאריך')" );
-	sql_query( "INSERT INTO nv_conversion (id, table_name, col, header) VALUES (2, 'im_bank', 'description', 'תיאור')" );
-	sql_query( "INSERT INTO nv_conversion (id, table_name, col, header) VALUES (3, 'im_bank', 'reference', 'אסמכתא')" );
-	sql_query( "INSERT INTO nv_conversion (id, table_name, col, header) VALUES (4, 'im_bank', 'in_amount', 'זכות')" );
-	sql_query( "INSERT INTO nv_conversion (id, table_name, col, header) VALUES (5, 'im_bank', 'out_amount', 'חובה')" );
-	sql_query( "INSERT INTO nv_conversion (id, table_name, col, header) VALUES (6, 'im_bank', 'balance', 'יתרה בש\"ח')" );
-	sql_query( "INSERT INTO nv_conversion (id, table_name, col, header) VALUES (7, 'im_bank', 'part_id', 'לקוח')" );
 
 	print "done";
 	return "city conversion";

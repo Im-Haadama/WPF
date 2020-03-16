@@ -81,7 +81,7 @@
 $menu_location = "main-navigation";
 $menu_name = "nav";
 if (class_exists('Flavor')) $menu_name = Flavor::instance()->getNavName();
-//print sql_trace();
+//print debug_trace();
 wp_nav_menu( array( 'menu'=> $menu_name, 'theme_location'=> $menu_location ) );
 //  wp_nav_menu( array( 'menu_id'=>'nav', 'theme_location'=>'main-navigation' ) );
 

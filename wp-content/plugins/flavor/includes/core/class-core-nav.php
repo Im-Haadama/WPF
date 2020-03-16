@@ -46,7 +46,7 @@ class Core_Nav {
 	 */
 	public static function instance() {
 		if ( is_null( self::$_instance ) ) {
-			print sql_trace();
+			print debug_trace();
 //			die ("call constructor" . __CLASS__);
 		}
 
