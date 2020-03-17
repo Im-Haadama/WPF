@@ -14,7 +14,7 @@ $local_site_id = - 1;
 class Core_Db_MultiSite extends Core_MultiSite {
 
 	public function __construct() {
-		if ( ! table_exists( "im_multisite" ) ) {
+		if ( ! table_exists( "multisite" ) ) {
 			return;
 		}
 		$sql           = "select id, site_name, tools_url, local, display_name, active, master, user, password " .
@@ -115,7 +115,7 @@ class Core_Db_MultiSite extends Core_MultiSite {
 	}
 
 	static function CORS() {
-		if (! table_exists("im_multisite")) return "";
+		if (! table_exists("multisite")) return "";
 		$sql    = "SELECT tools_url FROM im_multisite WHERE master = 1";
 		$row    = sql_query_single_scalar( $sql );
 		$result = "Access-Control-Allow-Origin: http://";

@@ -1026,7 +1026,9 @@ class Core_Html {
 	 * @param $table
 	 * @param $values
 	 */
-	static function DatalistCreate( $args, $table, &$values ) {
+	static function DatalistCreate( $args, $table, &$values )
+	{
+		$prefix = get_table_prefix();
 		$query  = GetArg( $args, "query", null );
 		$id_key = GetArg( $args, "id_key", "id" );
 
@@ -1037,7 +1039,7 @@ class Core_Html {
 		if ( $order_by ) {
 			$sql .= ", " . $order_by;
 		}
-		$sql .= " FROM " . $table;
+		$sql .= " FROM " . $prefix . $table;
 		if ( $query ) {
 			$sql .= " where " . $query;
 		}
@@ -1671,7 +1673,7 @@ class Core_Html {
 	 */
 	static function GuiRowContent($table_name, $row_id, $args)
 	{
-		$prefix = get_table_prefix();
+		$db_prefix = get_table_prefix();
 		if (! $table_name) return null;
 		$id_key = GetArg($args, "id_key", "id");
 		$fields = GetArg($args, "fields", null);
@@ -1688,7 +1690,7 @@ class Core_Html {
 			$args["events"] = "onchange=changed_field(%s)";
 		}
 		if ($row_id) { // Show specific record
-			$sql = "select " . ($fields ? CommaImplode($fields) : "*") . " from $table_name where " . $id_key . " = " . $row_id;
+			$sql = "select " . ($fields ? CommaImplode($fields) : "*") . " from ${db_prefix}$table_name where " . $id_key . " = " . $row_id;
 			$args["row_id"] = $row_id;
 		} else { // Create new one.
 			if ($fields) {
@@ -1699,7 +1701,7 @@ class Core_Html {
 		}
 		if (! defined('NOT_NULL_FLAG')) define ('NOT_NULL_FLAG', 1);
 		if ($args /* and ! isset($args["sql_fields"]) */) {
-			$result = sql_query("select * from ${prefix}$table_name");
+			$result = sql_query("select * from ${db_prefix}$table_name");
 			if (! $result) return null;
 			$args["sql_fields"] = mysqli_fetch_fields( $result );
 			if (! isset($args["mandatory_fields"])){

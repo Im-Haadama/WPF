@@ -731,7 +731,7 @@ function print_task( $id ) {
  */
 function print_driver_tasks( $mission_id = 0 ) {
 	$data = "";
-	if ( ! table_exists( 'im_tasklist' ) ) {
+	if ( ! table_exists( 'tasklist' ) ) {
 		return "";
 	}
 

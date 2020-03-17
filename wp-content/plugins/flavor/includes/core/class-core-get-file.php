@@ -78,6 +78,7 @@ class Core_Get_File {
 		// We DO force the tags to be terminated.
 		$dom = new im_simple_html_dom( null, $lowercase, $forceTagsClosed, $target_charset, $stripRN, $defaultBRText, $defaultSpanText );
 		// For sourceforge users: uncomment the next line and comment the retreive_url_contents line 2 lines down if it is not already done.
+		// Todo: replace with curl or something with time limit. For now, check unexist server cause general timeout (Sql error : MySQL server has gone away)
 		$contents = file_get_contents( $url, $use_include_path, $context, $offset );
 		// Paperg - use our own mechanism for getting the contents as we want to control the timeout.
 		//$contents = retrieve_url_contents($url);

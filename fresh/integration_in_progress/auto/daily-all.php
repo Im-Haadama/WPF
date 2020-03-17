@@ -66,7 +66,7 @@ return;
 
 function auto_supply() {
 	//	Run once a week, but considered daily because each supplier has it's day.
-	if ( ! table_exists( "im_suppliers" ) ) {
+	if ( ! table_exists( "suppliers" ) ) {
 		return;
 	}
 	$sql = "SELECT id FROM im_suppliers WHERE  auto_order_day = " . date( "w" );

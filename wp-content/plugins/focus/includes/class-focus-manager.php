@@ -37,7 +37,6 @@ class Focus_Manager {
 		self::create_tasks();
 	}
 
-
 	function create_tasks( $freqs = null, $verbose = false, $default_owner = 1 )
 	{
 		$debug = 2;
@@ -57,7 +56,7 @@ class Focus_Manager {
 
 		update_wp_option("Focus_create_tasks_last_run", time()); // Immediate update so won't be activated in parallel
 
-		if ( ! table_exists( "${table_prefix}task_templates" ) ) {
+		if ( ! table_exists( "task_templates" ) ) {
 			self::$logger->fatal("no table");
 			return false;
 		}
@@ -75,8 +74,6 @@ class Focus_Manager {
 			       " where repeat_freq = '" . $freq . "' and ((last_check is null) or (last_check < " . QuoteText(date('Y-m-j')) . ") or repeat_freq like 'c%')";
 
 			$result = sql_query( $sql );
-
-//			var_dump($result);
 
 			$verbose_line = "";
 			while ( $row = mysqli_fetch_assoc( $result ) ) {

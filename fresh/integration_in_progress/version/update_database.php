@@ -49,8 +49,10 @@ add_version($version, $force);
 
 function add_version($version, $force = false)
 {
+	$db_prefix = get_table_prefix();
+
 	if (! $force){
-		$exists = sql_query_single_scalar("select count(*) from im_versions where version = '$version'");
+		$exists = sql_query_single_scalar("select count(*) from ${db_prefix}versions where version = '$version'");
 		if ($exists >= 1) {
 			print "Version already installed<br/>";
 			return true;
@@ -94,7 +96,7 @@ function add_version($version, $force = false)
 			$description = version20();
 			break;
 		case "check2":
-			print GuiTableContent( "a", "SELECT * FROM im_task_templates" );
+			print GuiTableContent( "a", "SELECT * FROM ${db_prefix}task_templates" );
 			break;
 		case "check":
 			check();
@@ -118,7 +120,7 @@ function add_version($version, $force = false)
 			die( "no valid option selected: $version" );
 	}
 	if (is_string($description))
-		sql_query("insert into im_versions(version, description, install_date) values ('$version', '$description', now())");
+		sql_query("insert into ${db_prefix}versions(version, description, install_date) values ('$version', '$description', now())");
 	return true;
 }
 
@@ -134,22 +136,22 @@ function cities() {
 
 function version293()
 {
-
-	sql_query("drop table im_cities");
-	
-//	sql_query("drop table im_suppliers");
+$db_prefix = get_table_prefix();
+	sql_query("drop table ${db_prefix}cities");
 }
 
 function version28()
 {
+	$db_prefix = get_table_prefix();
+
 	if (! add_version("27"))
 		die ("can't install 2.7");
 	print Core_Html::gui_header(1, "install date");
-	sql_query("alter table im_versions add install_date date;");
+	sql_query("alter table ${db_prefix}versions add install_date date;");
 
 	print Core_Html::gui_header(1, "zone_times");
-	sql_query("alter table im_paths change zones zones_times longtext null;");
-	sql_query("alter table im_missions change zones zones_times longtext null;");
+	sql_query("alter table ${db_prefix}paths change zones zones_times longtext null;");
+	sql_query("alter table ${db_prefix}missions change zones zones_times longtext null;");
 
 	print Core_Html::gui_header(1, "function template_last_task");
 	sql_query("CREATE FUNCTION 	template_last_task(_template_id int)
@@ -157,14 +159,13 @@ function version28()
 BEGIN
 	declare _result date;
 
-	select max(date) into _result from im_tasklist where task_template = _template_id;
+	select max(date) into _result from ${db_prefix}tasklist where task_template = _template_id;
 
 	return _result;	   
 END;");
 
 	print Core_Html::gui_header(1, "shipping codes");
-//	sql_query("drop table im_paths");
-	sql_query( "create table im_paths (
+	sql_query( "create table ${db_prefix}paths (
 	id INT NOT NULL AUTO_INCREMENT	PRIMARY KEY,
 	path_code varchar(10) character set utf8 not null,
     	description VARCHAR(40) CHARACTER SET utf8 NULL,
@@ -172,19 +173,20 @@ END;");
 	    zones varchar(200))"
 	);
 
-	// sql_query("alter table im_paths add end_h time");
 	return "Update shipping methods";
 }
 function version27()
 {
+	$db_prefix = get_table_prefix();
+
 	if (! add_version("26"))
 		die ("can't install 2.6");
 
 	print Core_Html::gui_header(1, "add company to project");
-	sql_query("ALTER TABLE im_projects ADD company int not null default 1;");
+	sql_query("ALTER TABLE ${db_prefix}projects ADD company int not null default 1;");
 
 	print Core_Html::gui_header(1, "add is_active to project");
-	sql_query("ALTER TABLE im_projects ADD is_active int(1) not null default 1;");
+	sql_query("ALTER TABLE ${db_prefix}projects ADD is_active int(1) not null default 1;");
 
 	print Core_Html::gui_header(1, "first_day_of_week");
 	sql_query("create function FIRST_DAY_OF_WEEK(day date) returns date
@@ -197,6 +199,8 @@ function version26()
 {
 	if (! add_version("22"))
 		die ("can't install 2.2");
+
+	$db_prefix = get_table_prefix();
 
 	print Core_Html::gui_header(1, "worker_teams");
 	sql_query("drop function worker_teams");
@@ -235,12 +239,12 @@ print Core_Html::gui_header(1, "month_with_index");
 	END;	");
 
 	print Core_Html::gui_header(1, "task_template team");
-	sql_query("ALTER TABLE im_task_templates ADD team int not null default 1;");
+	sql_query("ALTER TABLE ${db_prefix}task_templates ADD team int not null default 1;");
 
 	print Core_Html::gui_header(1, "template check info");
-	sql_query("alter table im_task_templates add last_check datetime;");
+	sql_query("alter table ${db_prefix}task_templates add last_check datetime;");
 	print Core_Html::gui_header(1, "template working hours");
-	sql_query("alter table im_task_templates add working_hours varchar(50);");
+	sql_query("alter table ${db_prefix}task_templates add working_hours varchar(50);");
 	print Core_Html::gui_header(1, "worker projects");
 	sql_query("drop function worker_projects");
 	sql_query("CREATE FUNCTION 	worker_projects(_user_id int)
@@ -252,7 +256,7 @@ BEGIN
 	
 	DEClARE curProject 
     CURSOR FOR 
-            SELECT project_id from im_working where user_id = _user_id;
+            SELECT project_id from ${db_prefix}working where user_id = _user_id;
  
     DECLARE CONTINUE HANDLER 
         FOR NOT FOUND SET finished = 1;
@@ -272,6 +276,8 @@ END;");
 }
 function version22()
 {
+	$db_prefix = get_table_prefix();
+
 //	print Core_Html::gui_header(1, "preq done");
 //	sql_query("CREATE FUNCTION SPLIT_STRING(str VARCHAR(255), delim VARCHAR(12), pos INT)
 //RETURNS VARCHAR(255)
@@ -292,7 +298,7 @@ BEGIN
 	declare _comma_pos int;
 	declare _preq_task varchar(200);
 	select preq into _preq
-	from im_tasklist
+	from ${db_prefix}tasklist
 	where id = _task_id;
 	
 	while (length(_preq)) do
@@ -312,31 +318,31 @@ BEGIN
 END;");
 
 	print Core_Html::gui_header(1, "varchar preq");
-	sql_query("ALTER TABLE im_tasklist modify preq varchar(200) null;");
+	sql_query("ALTER TABLE ${db_prefix}tasklist modify preq varchar(200) null;");
 
 	print Core_Html::gui_header(1, "is_active");
-	sql_query("ALTER TABLE im_task_templates ADD is_active bit not null default 1;");
-	sql_query("ALTER TABLE im_tasklist ADD is_active bit not null default 1;");
-	sql_query("ALTER TABLE im_tasklist ADD team int not null default 1;");
-	sql_query("ALTER TABLE im_working ADD is_active bit not null default 1;");
+	sql_query("ALTER TABLE ${db_prefix}task_templates ADD is_active bit not null default 1;");
+	sql_query("ALTER TABLE ${db_prefix}tasklist ADD is_active bit not null default 1;");
+	sql_query("ALTER TABLE ${db_prefix}tasklist ADD team int not null default 1;");
+	sql_query("ALTER TABLE ${db_prefix}working ADD is_active bit not null default 1;");
 
 	print Core_Html::gui_header(1, "save mission path");
-	sql_query("ALTER TABLE im_missions ADD path varchar(4000);");
+	sql_query("ALTER TABLE ${db_prefix}missions ADD path varchar(4000);");
 
 	print Core_Html::gui_header(1, "part of basket");
-	sql_query("ALTER TABLE im_delivery_lines ADD part_of_basket int;");
+	sql_query("ALTER TABLE ${db_prefix}delivery_lines ADD part_of_basket int;");
 
 	print Core_Html::gui_header(1, "bug management");
 
-	sql_query("ALTER TABLE im_tasklist ADD task_type int;");
+	sql_query("ALTER TABLE ${db_prefix}tasklist ADD task_type int;");
 
-	sql_query( "create table im_task_type (
+	sql_query( "create table ${db_prefix}task_type (
 	id INT NOT NULL AUTO_INCREMENT
 		PRIMARY KEY,
     	description longtext CHARACTER SET utf8 NULL,
 	    meta_fields varchar(200))" );
 
-	sql_query( "create table im_task_meta (
+	sql_query( "create table ${db_prefix}task_meta (
 	meta_id INT NOT NULL AUTO_INCREMENT
 		PRIMARY KEY,
 		task_id int,
@@ -365,7 +371,7 @@ BEGIN
 END;");
 
 	print Core_Html::gui_header(2, "entry comment");
-	sql_query("ALTER TABLE im_working_hours ADD comment varchar(200);");
+	sql_query("ALTER TABLE ${db_prefix}working_hours ADD comment varchar(200);");
 
 	print Core_Html::gui_header(1, "Working rate");
 	sql_query("drop function working_rate");
@@ -375,7 +381,7 @@ BEGIN
     declare _rate float;
 
 	select round(rate, 2) into _rate  
-	       from im_working 
+	       from ${db_prefix}working 
 	        where user_id = _worker
 	       and project_id = _project;
 
@@ -384,7 +390,7 @@ BEGIN
     END IF;
 
 	select round(rate, 2) into _rate
-	          from im_working
+	          from ${db_prefix}working
 	          where user_id = _worker
 	          and project_id = _project;
 
@@ -392,32 +398,33 @@ BEGIN
   END; ");
 
 	print Core_Html::gui_header(1, "multisite");
-	sql_query("ALTER TABLE im_multisite ADD user varchar(100);");
-	sql_query("ALTER TABLE im_multisite ADD password varchar(100);");
+	sql_query("ALTER TABLE ${db_prefix}multisite ADD user varchar(100);");
+	sql_query("ALTER TABLE ${db_prefix}multisite ADD password varchar(100);");
 
 	return "Multisite user/password, task_type(unfinished), task preq";
 }
 
 function version21()
 {
+	$db_prefix = get_table_prefix();
 	if (! add_version("20"))
 		die ("can't install 2.0");
 
 	print Core_Html::gui_header(1, "transaction types");
 
-	if (! table_exists("im_bank_transaction_types")) {
-		sql_query("ALTER TABLE im_bank ADD transaction_type int;");
+	if (! table_exists("ibank_transaction_types")) {
+		sql_query("ALTER TABLE ${db_prefix}bank ADD transaction_type int;");
 
-		sql_query( "create table im_bank_transaction_types (
+		sql_query( "create table ${db_prefix}bank_transaction_types (
 	id INT NOT NULL AUTO_INCREMENT
 		PRIMARY KEY,
     	description VARCHAR(40) CHARACTER SET utf8 NULL,
 	    part_id int(11))" );
 	}
 
-	sql_query("ALTER TABLE im_payments ADD accountants varchar(100);");
+	sql_query("ALTER TABLE ${db_prefix}payments ADD accountants varchar(100);");
 
-	sql_query("ALTER TABLE im_delivery_lines ADD a int;");
+	sql_query("ALTER TABLE ${db_prefix}delivery_lines ADD a int;");
 
 	return "transaction types";
 }
@@ -427,14 +434,16 @@ function version20()
 	if (! add_version("18"))
 		die ("can't install 1.8");
 
-	print Core_Html::gui_header(1, "company_id");
-	sql_query("ALTER TABLE im_working ADD company_id int;");
+	$db_prefix = get_table_prefix();
 
-	sql_query("ALTER TABLE im_working rename worker_id user_id");
+	print Core_Html::gui_header(1, "company_id");
+	sql_query("ALTER TABLE ${db_prefix}working ADD company_id int;");
+
+	sql_query("ALTER TABLE ${db_prefix}working rename worker_id user_id");
 
 	print Core_Html::gui_header(1, "management");
 
-	if (! table_exists("im_working_teams")) sql_query("create table im_working_teams (
+	if (! table_exists("working_teams")) sql_query("create table ${db_prefix}working_teams (
 	id INT NOT NULL AUTO_INCREMENT	PRIMARY KEY,
     	team_name VARCHAR(40) CHARACTER SET utf8 NULL,
     	is_active bit default 1,
@@ -456,20 +465,21 @@ END;"
 }
 
 function check() {
-	sql_query( "alter table im_tasklist collate 	utf8_general_ci" );
-	$result = sql_query( "show create table im_tasklist" );
+	$db_prefix = get_table_prefix();
+
+	sql_query( "alter table ${db_prefix}tasklist collate 	utf8_general_ci" );
+	$result = sql_query( "show create table ${db_prefix}tasklist" );
 	$row    = sql_fetch_row( $result );
 	print $row[1];
-	/*
-		print sql_query_single_scalar("show create table im_task_templates");*/
 
 }
 
-function basic() {
-
-	if (! table_exists("im_projects"))
+function basic()
+{
+	$db_prefix = get_table_prefix();
+	if (! table_exists("projects"))
 	{
-		sql_query("create table im_projects
+		sql_query("create table ${db_prefix}projects
 (
 	ID int auto_increment
 		primary key,
@@ -480,8 +490,8 @@ function basic() {
 ");
 	}
 
-	if (!table_exists("im_business_info"))
-		sql_query("create table im_business_info
+	if (!table_exists("business_info"))
+		sql_query("create table ${db_prefix}business_info
 (
 	id bigint auto_increment
 		primary key,
@@ -503,8 +513,8 @@ function basic() {
 ");
 
 
-	if (! table_exists("im_missions"))
-		sql_query("create table im_missions
+	if (! table_exists("missions"))
+		sql_query("create table ${db_prefix}missions
 (
 	id int auto_increment
 		primary key,
@@ -523,10 +533,11 @@ charset=utf8;
 	return "basic";
 }
 
-function create_tasklist() {
-
-	if (! table_exists ("im_working"))
-		sql_query("create table im_working
+function create_tasklist()
+{
+$db_prefix = get_table_prefix();
+	if (! table_exists ("working"))
+		sql_query("create table ${db_prefix}working
 (
 	id int auto_increment,
 	user_id int not null,
@@ -542,7 +553,7 @@ function create_tasklist() {
 );
 
 ");
-	if (! table_exists("im_company")) sql_query("create table im_company
+	if (! table_exists("company")) sql_query("create table ${db_prefix}company
 (
 	id int not null AUTO_INCREMENT PRIMARY KEY,
 	name varchar(60) not null,
@@ -550,7 +561,7 @@ function create_tasklist() {
 );
 
 ");
-	if (! table_exists("im_tasklist"))  sql_query( "CREATE TABLE `im_tasklist` (
+	if (! table_exists("tasklist"))  sql_query( "CREATE TABLE `${db_prefix}tasklist` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
   `date` DATETIME DEFAULT NULL,
   `task_description` VARCHAR(100) CHARACTER SET utf8 DEFAULT NULL,
@@ -569,17 +580,17 @@ function create_tasklist() {
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1" );
 
-	sql_query( "ALTER TABLE im_tasklist
+	sql_query( "ALTER TABLE ${db_prefix}tasklist
 	MODIFY `location_name` VARCHAR(50) CHARACTER SET utf8 DEFAULT NULL;
 	" );
 
 }
 
-// $receipt     = sql_query_single_scalar( "SELECT payment_receipt FROM im_delivery WHERE id = " . $doc_id );
-
 
 function version18()
 {
+	$db_prefix = get_table_prefix();
+
 	if (! add_version("17"))
 		die ("can't install 1.7");
 
@@ -595,17 +606,17 @@ CREATE FUNCTION task_active_time(`_id` INT)
     declare _now integer;
     
     select task_template into _template_id
-      from im_tasklist
+      from ${db_prefix}tasklist
       where id = _id;
 
     select (curtime() + 0) / 100 into _now;
     
     select task_template into _template_id
-      from im_tasklist
+      from ${db_prefix}tasklist
       where id = _id;
 
     select working_hours into _working_hours
-    from im_task_templates
+    from ${db_prefix}task_templates
     where id = _template_id;
 
     if (_working_hours is Null) THEN
@@ -613,11 +624,11 @@ CREATE FUNCTION task_active_time(`_id` INT)
     END IF;
 
     select substring_index(working_hours, \"-\", 1) * 100 into _start_hour
-    from im_task_templates
+    from ${db_prefix}task_templates
       where id = _template_id;
 
     select substring_index(working_hours, \"-\", -1) *100 into _end_hour
-    from im_task_templates
+    from ${db_prefix}task_templates
     where id = _template_id;
     
     if (_now <  _start_hour) then
@@ -644,11 +655,11 @@ BEGIN
     select (curtime() + 0) / 100 into _now;
     
     select task_template into _template_id
-      from im_tasklist
+      from ${db_prefix}tasklist
       where id = _id;
 
     select working_hours into _working_hours
-    from im_task_templates
+    from ${db_prefix}task_templates
     where id = _template_id;
 
     if (_working_hours is Null) THEN
@@ -657,12 +668,12 @@ BEGIN
 
     select substring_index(working_hours, \"-\", 1) * 100 into _start_hour
 
-    from im_task_templates
+    from ${db_prefix}task_templates
       where id = _template_id;
 
     select substring_index(working_hours, \"-\", -1) *100 into _end_hour
 
-    from im_task_templates
+    from ${db_prefix}task_templates
     where id = _template_id;
     
     set _result = concat(_now, '<br/>');
@@ -735,7 +746,7 @@ BEGIN
 	BEGIN
 		declare _supply_id integer;
 		select id into _supply_id 
-	        from im_supplies where business_id = _business_id; 
+	        from ${db_prefix}supplies where business_id = _business_id; 
 	    return _supply_id;
 	END;
 ");
@@ -746,7 +757,7 @@ BEGIN
 	BEGIN
 		declare _receipt integer;
 		select payment_receipt into _receipt 
-	        from im_delivery where id = _del_id; 
+	        from ${db_prefix}delivery where id = _del_id; 
 	    return _receipt;
 	END;
 ");
@@ -756,7 +767,7 @@ BEGIN
 	BEGIN
 		declare _name varchar(100) charset utf8;
 		select project_name into _name 
-	        from im_projects where id = _project_id; 
+	        from ${db_prefix}projects where id = _project_id; 
 	    return _name;
 	END;
 ");
@@ -767,13 +778,13 @@ BEGIN
 	BEGIN
 	declare _amount float;
 		select sum(transaction_amount) into _amount 
-	        from im_client_accounts where date <= _date 
+	        from ${db_prefix}client_accounts where date <= _date 
 	        and client_id = _client_id;
 	    return round(_amount, 0);
 	END;
 ");
 	print "pay_date<br/>";
-	sql_query("ALTER TABLE im_business_info ADD pay_date date;");
+	sql_query("ALTER TABLE ${db_prefix}business_info ADD pay_date date;");
 	print "month name<br/>";
 	sql_query("drop function month_with_index;");
 	sql_query("CREATE FUNCTION month_with_index(_date date) RETURNS VARCHAR(20) 
@@ -791,7 +802,7 @@ BEGIN
 
 
 	print "template onwer";
-	sql_query("alter table im_task_templates " .
+	sql_query("alter table ${db_prefix}task_templates " .
 	" add owner int(11), " .
 	" add creator int(11); ");
 
@@ -800,7 +811,7 @@ BEGIN
 	sql_query( "create function project_count (_project_id int, _owner_id int) returns int   
 BEGIN
 declare _count int;
-select count(*) into _count from im_tasklist
+select count(*) into _count from ${db_prefix}tasklist
 where project_id = _project_id
 and owner = _owner_id
 and status = 0;
@@ -814,25 +825,27 @@ function version17() {
 	if (! add_version("16"))
 		die ("can't install 1.6");
 
+	$db_prefix = get_table_prefix();
+
 	print "tasklist<br/>";
-	sql_query( "ALTER TABLE im_tasklist " .
+	sql_query( "ALTER TABLE ${db_prefix}tasklist " .
 	           "ADD creator INT(11), " .
 	           "ADD preq INT(11), " .
 	           "ADD owner INT(11); " );
 	print "project priority<br/>";
-	sql_query( "ALTER TABLE im_projects ADD project_priority INT(11);" );
+	sql_query( "ALTER TABLE ${db_prefix}projects ADD project_priority INT(11);" );
 	print "auto_order_day<br/>";
-	sql_query( "ALTER TABLE im_suppliers ADD auto_order_day INT(11);" );
+	sql_query( "ALTER TABLE ${db_prefix}suppliers ADD auto_order_day INT(11);" );
 	sql_query( "drop function bank_amount_to_link" );
 	sql_query( "create function bank_amount_to_link (_line_id int) returns float   
 BEGIN
 declare _sum int;
 declare _amount float;
 declare _linked float;
-select out_amount into _amount from im_bank
+select out_amount into _amount from ${db_prefix}bank
 where id = _line_id;
 
-select sum(amount) into _linked from im_bank_lines
+select sum(amount) into _linked from ${db_prefix}bank_lines
 where line_id = _line_id;
 
 IF(_linked IS NULL) then set _linked = 0;
@@ -842,28 +855,15 @@ return round(_amount + _linked, 2);
 END;" );
 
 
-	sql_query( "alter table im_suppliers
+	sql_query( "alter table ${db_prefix}suppliers
 	add supplier_priority INT(2) DEFAULT '5';" );
-//	print "tasklist<br/>";
-//	sql_query("alter table
-//	im_tasklist
-//	add mission_id INT(11) DEFAULT '0' NOT NULL;");
 
 	sql_query( "alter table 
-	im_task_templates
+	${db_prefix}task_templates
 	add priority INT(11) DEFAULT '0' NOT NULL;" );
 
-//	sql_query("alter table
-//	im_task_templates
-//	add repeat_freq_numbers VARCHAR(200);");
-//	print "task_template<br/>";
-//
-//	sql_query("alter table
-//	im_task_templates
-//	add repeat_freq VARCHAR(20);");
-
 	print "bank_account";
-	sql_query( "create table im_bank_account
+	sql_query( "create table ${db_prefix}bank_account
 (
 	id int not null auto_increment
 		primary key,
@@ -879,7 +879,7 @@ END;" );
 BEGIN
 declare _user_id int;
 declare _display varchar(50) CHARSET utf8;
-select supplier_name into _display from im_suppliers
+select supplier_name into _display from ${db_prefix}suppliers
 where id = supplier_id;
 
 return _display;
@@ -887,7 +887,7 @@ END;
 
 " );
 	print "bank_lines<br/>";
-	sql_query( "create table im_bank_lines
+	sql_query( "create table ${db_prefix}bank_lines
 (
 	id int not null auto_increment
 		primary key,
@@ -910,17 +910,17 @@ CREATE FUNCTION task_active_time(`_id` INT)
     declare _template_id int;
     declare _working_hours, _start_hour, _end_hour varchar(50);
     select task_template into _template_id
-      from im_tasklist
+      from ${db_prefix}tasklist
       where id = _id;
 
     select (curtime() + 0) / 100 into _now;
     
     select task_template into _template_id
-      from im_tasklist
+      from ${db_prefix}tasklist
       where id = _id;
 
     select working_hours into _working_hours
-    from im_task_templates
+    from ${db_prefix}task_templates
     where id = _template_id;
 
     if (_working_hours is Null) THEN
@@ -928,11 +928,11 @@ CREATE FUNCTION task_active_time(`_id` INT)
     END IF;
 
     select substring_index(working_hours, \"-\", 1) * 100 into _start_hour
-    from im_task_templates
+    from ${db_prefix}task_templates
       where id = _template_id;
 
     select substring_index(working_hours, \"-\", -1) *100 into _end_hour
-    from im_task_templates
+    from ${db_prefix}task_templates
     where id = _template_id;
     
     if (_now <  _start_hour) then
@@ -946,9 +946,9 @@ CREATE FUNCTION task_active_time(`_id` INT)
   END;
 " );
 
-	sql_query( "drop view im_products_draft" );
+	sql_query( "drop view ${db_prefix}products_draft" );
 
-	sql_query( "create view im_products_draft as 
+	sql_query( "create view ${db_prefix}products_draft as 
 	SELECT
     `wp_posts`.`ID`                    AS `ID`,
     `wp_posts`.`post_author`           AS `post_author`,
@@ -984,7 +984,7 @@ CREATE FUNCTION task_active_time(`_id` INT)
   RETURNS TEXT CHARSET 'utf8'
   BEGIN
     declare _status int;
-    select status into _status from im_tasklist
+    select status into _status from ${db_prefix}tasklist
     where id = task_id;
 
     return _status;
@@ -1006,70 +1006,61 @@ BEGIN
 }
 // Version 1.6
 function version16() {
+	$db_prefix = get_table_prefix();
 
 	if ( ! add_version( "basic" ) ) {
 		die ( "can't install basic" );
 	}
 
 
-	sql_query( "ALTER TABLE im_business_info
+	sql_query( "ALTER TABLE ${db_prefix}business_info
 ADD net_amount DOUBLE;
 " );
 
-//
-//sql_query( "ALTER TABLE im_delivery
-//ADD draft_reason VARCHAR(50);
-//" );
-
-// Version 1.7
-//sql_query( "ALTER TABLE im_suppliers
-//drop invoice_email;
-//" );
-
-	sql_query( "ALTER TABLE im_supplies
+	sql_query( "ALTER TABLE ${db_prefix}supplies
 ADD picked BIT  
 " );
 
-	sql_query( "ALTER TABLE im_suppliers
+	sql_query( "ALTER TABLE ${db_prefix}suppliers
 ADD invoice_email VARCHAR(50)  
   CHARACTER SET utf8
   COLLATE utf8_general_ci;
 " );
 
-	sql_query( "ALTER TABLE im_business_info
+	sql_query( "ALTER TABLE ${db_prefix}business_info
 ADD invoice_file VARCHAR(200)  
   CHARACTER SET utf8
   COLLATE utf8_general_ci
 
 " );
 
-	sql_query( "ALTER TABLE im_business_info
+	sql_query( "ALTER TABLE ${db_prefix}business_info
    add `occasional_supplier` varchar(50) CHARACTER SET utf8 DEFAULT NULL;
 
 " );
 
-	sql_query( "ALTER TABLE im_business_info
+	sql_query( "ALTER TABLE ${db_prefix}business_info
 ADD invoice INTEGER(10);  
 " );
 
-	sql_query( "ALTER TABLE im_business_info
+	sql_query( "ALTER TABLE ${db_prefix}business_info
 ADD document_type INT(2) DEFAULT '1' NOT NULL;
 " );
 
-	sql_query( "ALTER TABLE im_business_info
+	sql_query( "ALTER TABLE ${db_prefix}business_info
 MODIFY week DATE;
 " );
 
-	sql_query( "ALTER TABLE im_business_info
+	sql_query( "ALTER TABLE ${db_prefix}business_info
 MODIFY delivery_fee FLOAT;
 " );
 
-	sql_query( "ALTER TABLE im_suppliers
+	sql_query( "ALTER TABLE ${db_prefix}suppliers
 ADD auto_order_day INT(11),
 add invoice_email VARCHAR(50);
 " );
 
-	sql_query( "ALTER TABLE im_suppliers
+	sql_query( "ALTER TABLE ${db_prefix}suppliers
 ADD auto_order_day INT(11),
 ADD invoice_email VARCHAR(50);
 " );
@@ -1077,17 +1068,21 @@ ADD invoice_email VARCHAR(50);
 	return "business_info";
 }
 
-function drop_im_projects()
+function drop_projects()
 {
-	sql_query("drop table im_projects");
+	$db_prefix = get_table_prefix();
+
+	sql_query("drop table ${db_prefix}projects");
 }
 function aa()
 {
+	$db_prefix = get_table_prefix();
+
 	sql_query("drop function supplier_balance");
 	$sql = "create function supplier_balance (_supplier_id int, _date date) returns float   
 BEGIN
 declare _amount float;
-select sum(amount) into _amount from im_business_info
+select sum(amount) into _amount from ${db_prefix}business_info
 where part_id = _supplier_id
 and date <= _date
 and is_active = 1
@@ -1103,9 +1098,11 @@ print "done";
 
 function get_versions()
 {
-	$versions = sql_query_array("select version, description, install_date from im_versions");
+	$db_prefix = get_table_prefix();
+
+	$versions = sql_query_array("select version, description, install_date from ${db_prefix}versions");
 	if (is_string($versions) and substr($versions, 0, 5) === "Error"){
-		sql_query( "create table im_versions (
+		sql_query( "create table ${db_prefix}versions (
 	id INT NOT NULL AUTO_INCREMENT
 		PRIMARY KEY,
 		version varchar(20),
@@ -1118,11 +1115,12 @@ function get_versions()
 
 function version29()
 {
+	$db_prefix = get_table_prefix();
 	print Core_Html::gui_header(1, "project manager");
-	sql_query("ALTER TABLE im_projects ADD manager int not null default 1;");
+	sql_query("ALTER TABLE ${db_prefix}projects ADD manager int not null default 1;");
 
 	print Core_Html::gui_header(1, "log");
-	sql_query("create table im_log (
+	sql_query("create table ${db_prefix}log (
 	id int auto_increment
 		primary key,
 	source varchar(30),
@@ -1136,8 +1134,8 @@ function version29()
 	sql_query("create function bank_balance(_account_id int) returns float
 BEGIN
   declare _balance float;
-  SELECT balance INTO _balance FROM im_bank 
-where date = (select max(date) from im_bank where account_id = _account_id) and account_id = _account_id
+  SELECT balance INTO _balance FROM ${db_prefix}bank 
+where date = (select max(date) from ${db_prefix}bank where account_id = _account_id) and account_id = _account_id
 order by id
 limit 1;
   
@@ -1151,7 +1149,7 @@ BEGIN
   declare _order_id int;
   declare _user_id int;
   declare _display varchar(50) CHARSET utf8;
-  SELECT order_id INTO _order_id FROM im_delivery where id = del_id;
+  SELECT order_id INTO _order_id FROM ${db_prefix}delivery where id = del_id;
   select meta_value into _user_id from wp_postmeta
   where post_id = _order_id and
   meta_key = '_customer_user';
@@ -1166,7 +1164,7 @@ BEGIN
   declare _order_id int;
   declare _user_id int;
   declare _display varchar(50) CHARSET utf8;
-  SELECT order_id INTO _order_id FROM im_delivery where id = del_id;
+  SELECT order_id INTO _order_id FROM ${db_prefix}delivery where id = del_id;
   select meta_value into _user_id from wp_postmeta
   where post_id = _order_id and
   meta_key = '_customer_user';
@@ -1186,7 +1184,7 @@ BEGIN
 	declare _comma_pos int;
 	declare _preq_task varchar(200) charset utf8;
 	select preq into _preq
-	from im_tasklist
+	from ${db_prefix}tasklist
 	where id = _task_id;
 	
 	while (length(_preq)) do
@@ -1215,7 +1213,7 @@ BEGIN
   END; ");
 
 	print Core_Html::gui_header(1, "inventory");
-	sql_query("create table im_inventory_count (
+	sql_query("create table ${db_prefix}inventory_count (
 	id int auto_increment
 		primary key,
 	count_date date not null,
@@ -1224,8 +1222,8 @@ BEGIN
 	product_name varchar(200),
     quantity int(11) not null
 )");
-	print Core_Html::gui_header(1, "im_bank");
-	sql_query("create table im_bank
+	print Core_Html::gui_header(1, "bank");
+	sql_query("create table ${db_prefix}bank
 (
 	id int auto_increment
 		primary key,
@@ -1250,7 +1248,7 @@ BEGIN
 BEGIN
 		declare _result date;
 
-	select max(date) into _result from im_bank where account_id = _account_id;
+	select max(date) into _result from ${db_prefix}bank where account_id = _account_id;
 
 	return _result;	   
 END	");
@@ -1260,12 +1258,12 @@ END	");
 BEGIN
 	declare _result varchar(200) charset utf8;
 
-	select name into _result from im_bank_account where id = _account_id;
+	select name into _result from ${db_prefix}bank_account where id = _account_id;
 
 	return _result;	   
 END");
-	if (! table_exists("im_bank"))
-		sql_query("create table im_bank
+	if (! table_exists("${db_prefix}bank"))
+		sql_query("create table ${db_prefix}bank
 (
 	id int auto_increment
 		primary key,
@@ -1285,15 +1283,15 @@ END");
 
 ");
 	print Core_Html::gui_header(1, "bank owner");
-	sql_query("alter table im_bank_account
+	sql_query("alter table ${db_prefix}bank_account
     add owner int(11)");
 
 	print Core_Html::gui_header(1, "supplier_description");
-	sql_query("alter table im_suppliers 
+	sql_query("alter table ${db_prefix}suppliers 
     add supplier_description varchar(200)");
 
 	print Core_Html::gui_header(1, "mission_accepting");
-	sql_query("alter table im_missions add accepting bit default 1;");
+	sql_query("alter table ${db_prefix}missions add accepting bit default 1;");
 
 
 	print Core_Html::gui_header(1, "Herbal");
@@ -1335,7 +1333,9 @@ END");
 
 function create_baskets()
 {
-	sql_query("create table im_baskets
+	$db_prefix = get_table_prefix();
+
+	sql_query("create table ${db_prefix}baskets
 (
 	id int auto_increment
 		primary key,
@@ -1351,7 +1351,9 @@ engine=MyISAM charset=utf8;
 
 function category_views()
 {
-	sql_query("create view im_categories as select `wp_terms`.`term_id`    AS `term_id`,
+	$db_prefix = get_table_prefix();
+
+	sql_query("create view ${db_prefix}categories as select `wp_terms`.`term_id`    AS `term_id`,
        `wp_terms`.`name`       AS `name`,
        `wp_terms`.`slug`       AS `slug`,
        `wp_terms`.`term_group` AS `term_group`
@@ -1366,7 +1368,7 @@ where `wp_terms`.`term_id` in (select `wp_term_taxonomy`.`term_id`
 function view_products() {
 
 	sql_query( "
-create  view im_products as select `wp_posts`.`ID`                    AS `ID`,
+create  view ${db_prefix}products as select `wp_posts`.`ID`                    AS `ID`,
        `wp_posts`.`post_author`           AS `post_author`,
        `wp_posts`.`post_date`             AS `post_date`,
        `wp_posts`.`post_date_gmt`         AS `post_date_gmt`,
@@ -1397,7 +1399,9 @@ where `wp_posts`.`post_type` in ('product', 'product_variation')
 
 function supplier_mapping()
 {
-	sql_query("create table im_supplier_mapping
+	$db_prefix = get_table_prefix();
+
+	sql_query("create table ${db_prefix}supplier_mapping
 (
 	id bigint auto_increment
 		primary key,
@@ -1411,17 +1415,19 @@ function supplier_mapping()
 engine=MyISAM charset=utf8;
 
 create index mapping
-	on im_supplier_mapping (supplier_product_name, supplier_id, product_id);
+	on ${db_prefix}supplier_mapping (supplier_product_name, supplier_id, product_id);
 
 create index mapping_prod_id
-	on im_supplier_mapping (product_id);
+	on ${db_prefix}supplier_mapping (product_id);
 
 ");
 }
 
 function needed_orders()
 {
-	sql_query("create table im_need_orders
+	$db_prefix = get_table_prefix();
+
+	sql_query("create table ${db_prefix}need_orders
 (
 	id int auto_increment
 		primary key,
@@ -1431,7 +1437,7 @@ engine=MyISAM charset=utf8;
 
 ");
 
-	sql_query("create table im_need
+	sql_query("create table ${db_prefix}need
 (
 	id int auto_increment
 		primary key,

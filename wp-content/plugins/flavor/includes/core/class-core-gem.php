@@ -153,6 +153,7 @@ class Core_Gem {
 	 */
 	static function GemElement($table_name, $row_id, $args)
 	{
+		$db_prefix = get_table_prefix();
 		$result = "";
 		$title = GetArg($args, "title", null);
 		$post = GetArg($args, "post_file", null);
@@ -169,7 +170,7 @@ class Core_Gem {
 
 		$check_active = GetArg($args, "check_active", false);
 		if ($check_active) {
-			$sql = "select is_active from $table_name where id = $row_id";
+			$sql = "select is_active from ${db_prefix}$table_name where id = $row_id";
 			$active = sql_query_single_scalar($sql);
 			if (! $active) $result .= " not active ";
 		}

@@ -310,7 +310,8 @@ function sql_query_single_scalar( $sql, $report_error = true ) {
  * @return bool
  */
 function table_exists( $table ) {
-	$sql = 'SELECT 1 FROM ' . $table . ' LIMIT 1';
+	$db_prefix = get_table_prefix();
+	$sql = 'SELECT 1 FROM ' . $db_prefix .$table . ' LIMIT 1';
 //	print $sql;
 	return sql_query( $sql, false) != null;
 //	print "r= $result<br/>";

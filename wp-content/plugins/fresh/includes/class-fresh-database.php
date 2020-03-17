@@ -18,7 +18,7 @@ class Fresh_Database extends Core_Database
 
 		if ($current == $version and ! $force) return true;
 
-		if (! table_exists("im_suppliers")) {
+		if (! table_exists("suppliers")) {
 			sql_query( "create table im_suppliers
 (
 	id bigint auto_increment
@@ -47,7 +47,7 @@ class Fresh_Database extends Core_Database
 	sql_query("ALTER TABLE im_suppliers AUTO_INCREMENT = 100001");
 }
 
-		if (! table_exists("im_supplier_price_list"))
+		if (! table_exists("supplier_price_list"))
 				sql_query("create table im_supplier_price_list
 (
 	ID bigint auto_increment,

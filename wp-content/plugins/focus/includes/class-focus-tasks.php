@@ -78,6 +78,7 @@ class Focus_Tasks {
 		strtok("_"); // remove edit/show/add
 		return strtok(null);
 	}
+
 	static function gui_select_worker( $id, $selected, $args ) {
 		$db_prefix = get_table_prefix();
 		$edit      = GetArg( $args, "edit", true );
@@ -97,8 +98,7 @@ class Focus_Tasks {
 
 			return $gui;
 		} else {
-			return ( $selected > 0 ) ? sql_query_single_scalar( "select client_displayname(user_id) from $db_prefix where user_id = " . $selected ) :
-				"";
+			return ( $selected > 0 ) ? sql_query_single_scalar( "select client_displayname($selected)") : "";
 		}
 	}
 
@@ -1632,7 +1632,7 @@ class Focus_Tasks {
 			$template_args["title"]     = "Repeating task";
 			$template_args["post_file"] = $action_url;
 
-			$template = Core_Gem::GemElement( "{$this->table_prefix}task_templates", $template_id, $template_args );
+			$template = Core_Gem::GemElement( "task_templates", $template_id, $template_args );
 			if ( ! $template ) {
 				$result .= "Not found";
 
@@ -2078,7 +2078,7 @@ class Focus_Tasks {
 		$form_table = GetArg( $args, "form_table", null );
 
 		if ( $edit ) {
-			$gui = Core_Html::GuiSelectTable( $id, "${db_prefix}working_teams", $args );
+			$gui = Core_Html::GuiSelectTable( $id, "working_teams", $args );
 			$gui .= Core_Html::GuiButton( "add_new_team", "New Team", array(
 				"action" => "add_element('team', '" . $form_table . "', '" . GetUrl() . "')",
 				"New Team"

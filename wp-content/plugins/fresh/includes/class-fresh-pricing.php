@@ -37,7 +37,7 @@ class Fresh_Pricing {
 		static $configured = -1;
 		if ($configured == -1) {
 			$prefix = get_table_prefix();
-			$configured = table_exists("${prefix}client_types");
+			$configured = table_exists("client_types");
 		}
 		if (! $configured) return get_postmeta_field( $prod_id, '_price' );
 		$debug = 0;

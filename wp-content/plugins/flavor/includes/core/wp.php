@@ -124,7 +124,7 @@ function get_customer_name( $customer_id )
 {
 	static $min_supplier = 0;
 	if ( ! $min_supplier ) {
-		if (table_exists("im_suppliers"))
+		if (table_exists("suppliers"))
 			$min_supplier = sql_query_single_scalar( "SELECT min(id) FROM im_suppliers" );
 		else
 			$min_supplier = 1000000;

@@ -26,10 +26,12 @@ class Israel_Database extends  Core_Database
 	}
 
 	static private function create_conversion() {
-		if ( ! table_exists( "nv_conversion" ) ) {
+		$db_prefix = get_table_prefix();
+
+		if ( ! table_exists( "conversion" ) ) {
 			print "creating conversion<br/>";
 
-			sql_query( "create table nv_conversion
+			sql_query( "create table ${db_prefix}conversion
 (
 	id int auto_increment
 		primary key,

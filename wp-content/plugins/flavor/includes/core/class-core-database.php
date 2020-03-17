@@ -3,8 +3,9 @@
 class Core_Database {
 	static function CreateInfo()
 	{
-		if (! table_exists("im_info"))
-			sql_query( "CREATE TABLE im_info (
+		$db_prefix = get_table_prefix();
+		if (! table_exists("info"))
+			sql_query( "CREATE TABLE ${db_prefix}info (
 		info_key VARCHAR(200) NULL,
 		info_data VARCHAR(200) NULL,
 		id INT NOT NULL AUTO_INCREMENT
