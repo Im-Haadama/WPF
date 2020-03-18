@@ -313,7 +313,7 @@ class Fresh_Packing {
 	static function get_order_itemmeta( $order_item_id, $meta_key ) {
 		if ( is_array( $order_item_id ) ) {
 			$sql = "SELECT sum(meta_value) FROM wp_woocommerce_order_itemmeta "
-			       . ' WHERE order_item_id IN ( ' . comma_implode( $order_item_id ) . ") "
+			       . ' WHERE order_item_id IN ( ' . CommaImplode( $order_item_id ) . ") "
 			       . ' AND meta_key = \'' . escape_string( $meta_key ) . '\'';
 
 			return sql_query_single_scalar( $sql );
@@ -502,7 +502,12 @@ class Fresh_Packing {
 
 		// "ifnull(concat (name, ' ', DAYOFMONTH(date), '/', month(date)), name)");
 
-		return Core_Html::GuiSelectTable( $id, "im_missions", $args );
+		return Core_Html::GuiSelectTable( $id, "missions", $args );
+	}
+
+	static function admin()
+	{
+		return "lalala";
 	}
 }
 

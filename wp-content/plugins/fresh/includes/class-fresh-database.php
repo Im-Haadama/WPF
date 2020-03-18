@@ -15,11 +15,12 @@ class Fresh_Database extends Core_Database
 	static function CreateTables($version, $force)
 	{
 		$current = self::CheckInstalled("Fresh", "functions");
+		$db_prefix = get_table_prefix();
 
 		if ($current == $version and ! $force) return true;
 
 		if (! table_exists("suppliers")) {
-			sql_query( "create table im_suppliers
+			sql_query( "create table ${db_prefix}suppliers
 (
 	id bigint auto_increment
 		primary key,
@@ -68,6 +69,61 @@ class Fresh_Database extends Core_Database
 charset=utf8;
 
 ");
+
+		if (! table_exists("delivery"))
+			sql_query("create table ${db_prefix}delivery
+(
+	ID bigint auto_increment
+		primary key,
+	date date not null,
+	order_id bigint not null,
+	vat float not null,
+	total float not null,
+	dlines int(5) default 0 not null,
+	fee float not null,
+	payment_receipt int null,
+	driver int not null,
+	draft bit default b'0' not null,
+	draft_reason varchar(50) null
+)
+charset=utf8;
+
+");
+
+		if (! table_exists("missions"))
+		{
+			sql_query("create table ${db_prefix}missions
+(
+	id int auto_increment
+		primary key,
+	date date null,
+	start_h time(6) null,
+	end_h time(6) null,
+	zones_times longtext null,
+	name varchar(200) null,
+	path_code varchar(10) null,
+	start_address varchar(50) null,
+	end_address varchar(50) null,
+	path varchar(4000) null,
+	accepting bit default b'1' null
+)
+charset=utf8;
+");
+		}
+
+		if (! table_exists("baskets"))
+			sql_query("create table ${db_prefix}baskets
+(
+	id int auto_increment
+		primary key,
+	basket_id bigint not null,
+	date datetime not null,
+	product_id int null,
+	quantity tinyint(1) unsigned default 1 not null
+)
+charset=utf8;
+
+");
 	}
 
 	static function CreateFunctions($version, $force = false)
@@ -105,7 +161,6 @@ BEGIN
 
 	/*-- Start create payment table --*/
 	static function payment_info_table(){
-		print 1/0;
 		global $wpdb;
 		$charset_collate = $wpdb->get_charset_collate();
 

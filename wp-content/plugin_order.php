@@ -36,7 +36,9 @@ foreach ($plugins as $plugin)
 }
 usort($p_i, function($a, $b) { return $a[0] > $b[0]; });
 $plugins = [];
-foreach ($p_i as $p) array_push($plugins, $p[1]);
+foreach ($p_i as $p)
+	if (! in_array($p[1], $plugins))
+		array_push($plugins, $p[1]);
 print "changing order<br/>";
 $sql = "update wp_options set option_value = " .
        QuoteText(serialize($plugins)) . " where option_name='active_plugins'";
@@ -44,7 +46,6 @@ $sql = "update wp_options set option_value = " .
 sql_query($sql);
 print "done";
 show_order($plugins);
-
 
 function show_order($plugins)
 {

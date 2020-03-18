@@ -57,8 +57,8 @@ class Core_Html {
 	static function GuiCheckbox($id, $value = false, $args = array())
 	{
 //	static function gui_checkbox( $id, $class, $value = false, $events = null ) {
-		$class = GetArG($args, "class", "class");
-		$events = GetArG($args, "events", null);
+		$class = GetArg($args, "class", "class");
+		$events = GetArg($args, "events", null);
 		$data = "<input id=\"$id\" class=\"$class\" type=\"checkbox\" ";
 		if ( $value ) {
 			$data .= "checked ";

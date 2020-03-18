@@ -1,6 +1,7 @@
 <?php
 
 class Core_Database {
+
 	static function CreateInfo()
 	{
 		$db_prefix = get_table_prefix();

@@ -722,7 +722,7 @@ class Fresh_Order {
 		if ( $addition_orders ) {
 			$header .= CommaImplode( $addition_orders );
 		}
-		$data = Core_Html::gui_header( 1, $header, true );
+		$data = Core_Html::GuiHeader( 1, $header, true );
 		// $data  .= Core_Html::gui_header( 2, $order->order_date, true);
 
 		$d_id = self::get_delivery_id( $this->order_id );
@@ -763,8 +763,7 @@ class Fresh_Order {
 		}
 
 		$data .= "</table>";
-
-		return $data;
+		print  $data;
 	}
 
 	function GetMissionId( $debug = false )
@@ -835,7 +834,7 @@ class Fresh_Order {
 		$row_text .= $this->info_right_box_input( "shipping_city", $edit, "עיר" );
 		$row_text .= $this->info_right_box_input( "shipping_address_1", $edit, "רחוב ומספר" );
 		$row_text .= $this->info_right_box_input( "shipping_address_2", $edit, "כניסה, קוד אינטרקום, קומה ומספר דירה" );
-		$row_text .= gui_row(array("מזהה לקוח", get_user_meta( $client_id, 'invoice_id', 1)));
+		$row_text .= Core_Html::gui_row(array("מזהה לקוח", get_user_meta( $client_id, 'invoice_id', 1)));
 		$row_text .= $this->user_info_right_box_input( "preference", $edit, "העדפות לקוח" );
 		$data     .= $row_text;
 
@@ -871,7 +870,7 @@ class Fresh_Order {
 //	) );
 		$mission = $this->GetMissionId();
 //	 print "XCXmission: " . $mission . "<br/>";
-		$data .= gui_row( array( gui_select_mission( "mission_select", $mission, "onchange=\"save_mission()\"" ) ) );
+		$data .= Core_Html::gui_row( array( Fresh_Packing::gui_select_mission( "mission_select", $mission, "onchange=\"save_mission()\"" ) ) );
 
 		$data .= '</table>';
 
@@ -907,7 +906,7 @@ class Fresh_Order {
 			array_push( $data, $this->getOrderInfo( $field ) );
 		}
 
-		return gui_row( $data );
+		return Core_Html::gui_row( $data );
 	}
 
 	public function GetID() {
@@ -923,7 +922,7 @@ class Fresh_Order {
 			array_push( $data, get_user_meta( $this->getCustomerId(), "preference", 1 ) );
 		}
 
-		return gui_row( $data );
+		return Core_Html::gui_row( $data );
 	}
 
 	function GetComments() {
@@ -1066,7 +1065,6 @@ class Fresh_Order {
 			case "show_orders":
 				print OrdersTable($args);
 				break;
-
 
 			case "paper_order":
 				$args = [];

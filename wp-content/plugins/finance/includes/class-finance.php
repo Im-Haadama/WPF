@@ -118,10 +118,19 @@ class Finance {
 	private function init_hooks() {
 		// register_activation_hook( WC_PLUGIN_FILE, array( 'Finance_Install', 'install' ) );
 		register_shutdown_function( array( $this, 'log_errors' ) );
+
+		get_sql_conn(ReconnectDb());
+
+		self::install($this->version);
+
+
 		add_action( 'after_setup_theme', array( $this, 'setup_environment' ) );
 		add_action( 'after_setup_theme', array( $this, 'include_template_functions' ), 11 );
 		add_action( 'init', array( $this, 'init' ), 0 );
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
+
+		// Admin menu
+		add_action('admin_menu', __CLASS__ . '::admin_menu');
 
 		get_sql_conn(ReconnectDb());
 //		add_action( 'init', array( 'Finance_Emails', 'init_transactional_emails' ) );
@@ -129,6 +138,8 @@ class Finance {
 		// add_action( 'init', array( $this, 'add_image_sizes' ) );
 		// add_action( 'switch_blog', array( $this, 'wpdb_table_fix' ), 0 );
 		add_action( 'wp_enqueue_scripts', array($this, 'enqueue_scripts' ));
+
+		self::install($this->version);
 	}
 
 	/**
@@ -244,6 +255,11 @@ class Finance {
 		return false;
 	}
 
+	static function admin_menu()
+	{
+		Finance_Settings::admin_menu();
+	}
+
 	/**
 	 * Include required core files used in admin and on the frontend.
 	 */
@@ -258,6 +274,7 @@ class Finance {
 				require_once $f;
 
 		}
+		require_once FLAVOR_INCLUDES_ABSPATH . 'core/fund.php';
 		require_once FLAVOR_INCLUDES_ABSPATH . 'core/core-functions.php';
 //	collides with old pages.	require_once FLAVOR_INCLUDES_ABSPATH . 'core/fund.php';
 		require_once FLAVOR_INCLUDES_ABSPATH . 'core/data/sql.php';
@@ -586,6 +603,14 @@ class Finance {
 
 	public function run ()
 	{
+	}
+
+	function install($version, $force = false)
+	{
+		require_once(FINANCE_ABSPATH . '../flavor/includes/core/class-core-database.php' );
+		if (Core_Database::CheckInstalled("Finance", $this->version) == $version and ! $force) return;
+
+		Finance_Clients::install();
 	}
 
 	static public function settingPage()

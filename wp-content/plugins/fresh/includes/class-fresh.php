@@ -188,7 +188,6 @@ class Fresh {
 		add_action( 'woocommerce_checkout_create_order_line_item', 'checkout_create_order_line_item', 10, 4 );
         /* -- End Product Comment Hooks-- */
 
-
 		get_sql_conn(ReconnectDb());
 //		add_action( 'init', array( 'Fresh_Emails', 'init_transactional_emails' ) );
 		// add_action( 'init', array( $this, 'wpdb_table_fix' ), 0 );
@@ -202,6 +201,7 @@ class Fresh {
 
 		Fresh_Packing::init_hooks();
 		Fresh_Suppliers::init_hooks();
+		Fresh_Order_Management::init_hooks();
 	}
 
 	/**
@@ -573,7 +573,6 @@ class Fresh {
         // Fresh_Database::convert_supplier_name_to_id();
 
 		// Create functions, tables, etc.
-		Fresh_Database::install(Fresh::instance()->get_version(), true);
 	}
 
 	static function register_activation($file, $function)
@@ -1452,9 +1451,6 @@ if (0) {
 
 
 	function fresh_store_packing_page() {
-		?>
-
-		<?php
 
 		print gui_table_args( array(//array("אריזה", "גביה", "קטלוג"),
 			array( "packing" )

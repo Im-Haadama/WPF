@@ -1,6 +1,5 @@
 <?php
 
-
 class Flavor_System {
 
 	// System to check if we collected all backup files
