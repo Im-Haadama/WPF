@@ -631,40 +631,8 @@ class Finance_Bank
 	}
 
 	static function gui_select_bank_account( $id, $value, $args ) {
-		$table_prefix = self::instance()->table_prefix;
-		return Core_Html::GuiSelectTable($id, "${table_prefix}bank_account", $args);
+		return Core_Html::GuiSelectTable($id, "bank_account", $args);
 	}
-
-	function business_add_transaction(
-	$part_id, $date, $amount, $delivery_fee, $ref, $project, $net_amount = 0,
-	$document_type = FreshDocumentType::delivery,
-	$document_file = null
-) {
-	// print $date . "<br/>";
-	$sunday = sunday( $date );
-	if ( ! $part_id ) {
-		die ( "no supplier" );
-	}
-
-	$fields = "part_id, date, week, amount, delivery_fee, ref, project_id, net_amount, document_type ";
-	$values = $part_id . ", \"" . $date . "\", " .
-	          "\"" . $sunday->format( "Y-m-d" ) .
-	          "\", " . ( $amount - $delivery_fee ) . ", " . $delivery_fee . ", '" . $ref . "', '" . $project . "', " .
-	          $net_amount . ", " . $document_type;
-
-	if ( $document_file ) {
-		$fields .= ", invoice_file";
-		$values .= ", " . QuoteText( $document_file );
-	}
-	$sql = "INSERT INTO im_business_info (" . $fields . ") "
-	       . "VALUES (" . $values . " )";
-
-	MyLog( $sql, __FILE__ );
-
-	sql_query( $sql );
-
-	return sql_insert_id();
-}
 
 function business_delete_transaction( $ref ) {
 	$sql = "DELETE FROM im_business_info "

@@ -312,11 +312,7 @@ function sql_query_single_scalar( $sql, $report_error = true ) {
 function table_exists( $table ) {
 	$db_prefix = get_table_prefix();
 	$sql = 'SELECT 1 FROM ' . $db_prefix .$table . ' LIMIT 1';
-//	print $sql;
 	return sql_query( $sql, false) != null;
-//	print "r= $result<br/>";
-
-//	return $result == 1;
 }
 
 /**

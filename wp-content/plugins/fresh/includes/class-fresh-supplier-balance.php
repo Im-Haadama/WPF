@@ -6,8 +6,6 @@
  * Time: 20:39
  */
 
-require_once FRESH_INCLUDES . 'fresh_delivery_enum.php';
-
 //if (! function_exists('gui_cell'))
 //{
 //	function gui_cell($cell)

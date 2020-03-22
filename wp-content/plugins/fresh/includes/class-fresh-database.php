@@ -10,8 +10,33 @@ class Fresh_Database extends Core_Database
 
 		self::CreateFunctions($version, $force);
 		self::CreateTables($version, $force);
+		self::CreateViews($version, $force);
 	}
 
+	static function CreateViews($version, $force )
+	{
+		$current = self::CheckInstalled("Fresh", "functions");
+		$db_prefix = get_table_prefix();
+
+		if ($current == $version and ! $force) return true;
+
+		sql_query("
+		create view i_in as select `l`.`product_id` AS `product_id`, sum(`l`.`quantity`) AS `q_in`
+from (`im_supplies_lines` `l`
+         join .`im_supplies` `s`)
+where `l`.`supply_id` > 393
+      and `l`.`status` < 8
+          and `s`.`status` < 9
+              and `s`.`id` = `l`.`supply_id`
+group by 1;");
+
+		sql_query("create view i_out as select `dl`.`prod_id` AS `prod_id`, round(sum(`dl`.`quantity`), 1) AS `q_out`
+from `im_delivery_lines` `dl`
+where `dl`.`delivery_id` > 503
+group by 1
+order by 1;");
+
+	}
 	static function CreateTables($version, $force)
 	{
 		$current = self::CheckInstalled("Fresh", "functions");
@@ -124,6 +149,43 @@ charset=utf8;
 charset=utf8;
 
 ");
+
+		if (!table_exists("business_info"))
+			sql_query("create table ${db_prefix}business_info
+(
+	id bigint auto_increment
+		primary key,
+	part_id int not null,
+	date date not null,
+	week date not null,
+	amount double not null,
+	ref varchar(20) not null,
+	delivery_fee float null,
+	project_id int default 3 not null,
+	is_active bit default b'1' null,
+	document_type int(2) default 1 not null,
+	net_amount double null,
+	invoice_file varchar(200) charset utf8 null,
+	invoice int(10) null,
+	pay_date date null
+);");
+
+		if (! table_exists("missions"))
+			sql_query("create table ${db_prefix}missions
+(
+	id int auto_increment
+		primary key,
+	date date null,
+	name varchar(200) null,
+	path_code varchar(20) null,
+	start_address varchar(50) null,
+	end_address varchar(50) null,
+	start_h time null,
+	end_h time null,
+	zones varchar(100) null
+)
+charset=utf8;");
+
 	}
 
 	static function CreateFunctions($version, $force = false)
@@ -132,6 +194,33 @@ charset=utf8;
 
 		if ($current == $version and ! $force) return true;
 
+		sql_query("drop function order_is_group");
+		sql_query("create function order_is_group(order_id int) returns bit
+BEGIN
+    declare _customer_type varchar(20);
+    declare _user_id int;
+    declare _customer_is_group bit;
+    
+SELECT meta_value 
+INTO _user_id 
+FROM wp_postmeta 
+where post_id = order_id and meta_key = '_customer_user';
+
+select meta_value 
+into _customer_type
+from wp_usermeta
+where user_id = _user_id and meta_key = '_client_type';
+
+select is_group
+into _customer_is_group
+from im_client_types
+where type = _customer_type;
+
+return _customer_is_group;
+
+END;
+
+");
 		sql_query( "drop function prod_get_name;" );
 		sql_query( "CREATE FUNCTION `prod_get_name`(`prod_id` INT)
 	 RETURNS varchar(200) CHARSET utf8
@@ -144,6 +233,17 @@ BEGIN
    return _name;
  END" );
 
+		sql_query("create function order_line_get_variation(_order_item_id int) RETURNS text
+BEGIN
+    declare _variation int;
+    select meta_value into _variation from wp_woocommerce_order_itemmeta
+    where order_item_id = _order_item_id
+      and meta_key = '_variation_id';
+
+    return _variation;
+  END;
+
+");
 		self::UpdateInstalled("Fresh", "functions", $version);
 	}
 

@@ -681,8 +681,23 @@ class Core_Html {
 		$cells, $row_id = null, $show = null, &$acc_fields = null, $col_ids = null, $style = null, $add_checkbox = false, $checkbox_class = false,
 		$checkbox_events = null
 	) {
-
 		$data = "<tr";
+
+		if (0) { // for debug
+			$data .= ">";
+			if ( is_array( $cells ) ) {
+				foreach ( $cells as $key => $cell ) {
+					print $key . ")" . $col_ids[ $key ] . " " . $cell . "<br/>";
+
+					$data .= "<td>$cell</td>";
+				}
+			} else {
+				$data .= "<td>$cells</td>";
+			}
+			$data .= "</tr>";
+
+			return $data;
+		}
 
 		if ( $style ) {
 			$data .= " " . $style;

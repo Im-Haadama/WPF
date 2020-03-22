@@ -2,7 +2,7 @@
 
 
 class Core_Fund {
-	function load_scripts( $script_file = false ) {
+	static function load_scripts( $script_file = false ) {
 		$text = "";
 		if ( $script_file ) {
 			// print "Debug: " . $script_file . '<br/>';

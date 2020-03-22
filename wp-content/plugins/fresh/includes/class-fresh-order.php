@@ -738,7 +738,7 @@ class Fresh_Order {
 		$data     .= $this->infoRightBox( $edit_order );
 		$data     .= "</td>";
 		$data     .= '<tr><td><img src=' . $logo_url . ' height="100"></td></tr>';
-		$data     .= "<td height='16'>" . Core_Html::gui_header( 2, "הערות לקוח להזמנה" ) . "</td></tr>";
+		$data     .= "<td height='16'>" . Core_Html::GuiHeader( 2, "הערות לקוח להזמנה" ) . "</td></tr>";
 		$excerpt  = $this->GetComments();
 // TODO: find why save excerpt cause window reload
 		if ( $edit_order ) {

@@ -85,6 +85,5 @@ class Fresh_Autoloader {
 		}
 	}
 }
-
 new Fresh_Autoloader();
 

@@ -6,8 +6,7 @@
  * Date: 07/11/18
  * Time: 07:22
  */
-class Fresh_Basket {
-	private $id;
+class Fresh_Basket extends  Fresh_Product  {
 
 	/**
 	 * Basket constructor.
@@ -15,7 +14,7 @@ class Fresh_Basket {
 	 * @param $id
 	 */
 	public function __construct( $id ) {
-		$this->id = $id;
+		parent::__construct($id);
 	}
 
 	static public function init()

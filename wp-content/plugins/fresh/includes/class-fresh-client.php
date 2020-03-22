@@ -34,5 +34,21 @@ class Fresh_Client {
 		return $key;
 	}
 
+	function add_transaction( $date, $amount, $ref, $type ) {
+		$sql = "INSERT INTO im_client_accounts (client_id, date, transaction_amount, transaction_method, transaction_ref) "
+		       . "VALUES (" . $this->user_id . ", \"" . $date . "\", " . $amount . ", \"" . $type . "\", " . $ref . ")";
+
+		MyLog( $sql, "account_add_transaction" );
+		sql_query( $sql );
+	}
+
+
 }
 
+function Sunday( $date ) {
+	$datetime = new DateTime( $date );
+	$interval = new DateInterval( "P" . $datetime->format( "w" ) . "D" );
+	$datetime->sub( $interval );
+
+	return $datetime;
+}

@@ -5,7 +5,7 @@ class Core_Database {
 	static function CreateInfo()
 	{
 		$db_prefix = get_table_prefix();
-		if (! table_exists("info"))
+		if (! self::table_exists("info"))
 			sql_query( "CREATE TABLE ${db_prefix}info (
 		info_key VARCHAR(200) NULL,
 		info_data VARCHAR(200) NULL,
@@ -23,4 +23,11 @@ class Core_Database {
 	{
 		InfoUpdate("version_${plugin}_$subsystem", $version);
 	}
+
+	static function table_exists( $table ) {
+		$db_prefix = get_table_prefix();
+		$sql = 'SELECT 1 FROM ' . $db_prefix .$table . ' LIMIT 1';
+		return sql_query( $sql, false) != null;
+	}
+
 }

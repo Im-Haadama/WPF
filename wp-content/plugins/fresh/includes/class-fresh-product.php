@@ -10,7 +10,7 @@
 //require_once( FRESH_INCLUDES . "/supplies/Supply.php" );
 
 class Fresh_Product {
-	private $id;
+	protected $id;
 	private $p;
 
 	/**

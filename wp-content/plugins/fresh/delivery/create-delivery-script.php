@@ -1,26 +1,9 @@
 <?php
-require_once( "../multi-site/imMulti-site.php" );
-require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
-require_once( "../../wp-includes/pluggable.php" );
-require_once( "../account/account.php" );
-
-require_once( FRESH_INCLUDES . "/init.php" );
-require_once(FRESH_INCLUDES . '/fresh/catalog/gui.php');
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 //print gui_select_product("datalist", '', array("datalist" => "im_products"));
-
-$id       = isset( $_GET["id"] ) ? $_GET["id"] : null;
-$order_id = $_GET["order_id"];
-$edit     = false;
-if ( $id > 0 ) {
-	$edit     = true;
-	$order_id = get_order_id( $id );
-}
-
-$O = new Order( $order_id );
-
-//print gui_datalist( "items", "im_products", "post_title", true );
-//print gui_datalist( "draft_items", "im_products_draft", "post_title", true );
 ?>
 
 <script>
@@ -36,19 +19,13 @@ $O = new Order( $order_id );
     const term_id = <?php print eDeliveryFields::term; ?>;
     const q_refund_id = <?php print eDeliveryFields::refund_q ?>;
     const refund_total_id = <?php print eDeliveryFields::refund_line; ?>;
-    const line_type_id = <? print eDeliveryFields::line_type; ?>;
+    const line_type_id = <?php print eDeliveryFields::line_type; ?>;
 
     function getPrice(my_row) {
         // var product_info = get_value(document.getElementById("nam_" + my_row));
         // if (!product_info.indexOf(")")) return;
         var product_id = get_value_by_name("nam_" + my_row); // product_info.substr(0, product_info.indexOf(")"));
         var request = "delivery-post.php?operation=get_price_vat&id=" + product_id; //encodeURI(product_name);
-
-	    <?php
-	    if ( $type = get_client_type( $O->getCustomerId() ) ) {
-		    print 'request = request + "&type=" + \'' . $type . '\';';
-	    }
-	    ?>
 
         xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function () {
@@ -111,8 +88,8 @@ $O = new Order( $order_id );
 //        row.insertCell(0).style.visibility = false;              // 0 - select
         var list = "items";
         if (draft) list = "draft_items";
-        var input = "<?php $args = array("events" => "onchange=\"getPrice(XX)\"", "datalist" => "YYY");
-            print escape_string(gui_select_product( "nam_XX", '', $args )); ?>";
+        //var input = "<?php //$args = array("events" => "onchange=\"getPrice(XX)\"", "datalist" => "YYY");
+        //    print escape_string(gui_select_product( "nam_XX", '', $args )); ?>//";
         input = input.replace(/XX/g, line_id);
         input = input.replace(/YYY/g, list);
 
@@ -174,6 +151,7 @@ $O = new Order( $order_id );
 		    print 'if (xmlhttp.response != "none") { alert ("תעודה נשמרה במקום אחר. יש לסגור ולפתוח מחדש"); return; }';
 	    }
 	    ?>
+
         do_add(1);
     }
 
@@ -200,9 +178,7 @@ $O = new Order( $order_id );
         var line_number = 0;
         var is_edit = false;
 
-	    <?php if ( $edit ) {
-	    print "is_edit = true;";
-    } ?>
+	    <?php if ( $edit ) {  print "is_edit = true;"; } ?>
 
         // Enter delivery note to db.
         var request = "delivery-post.php?operation=add_header&order_id=" + order_id
@@ -350,11 +326,11 @@ $O = new Order( $order_id );
                             xmlhttp_send.send();
 	                        <?php
 	                        $d = new Fresh_Delivery( $id );
-	                        if ( strstr( $d->getPrintDeliveryOption(), "P" ) ) {
-		                        //   print 'logging.style.display="false";';
-		                        print 'location.replace("get-delivery.php?id=" + delivery_id + "&print"); return;';
-		                        // print 'logging.style.display="true";';
-	                        }
+//	                        if ( strstr( $d->getPrintDeliveryOption(), "P" ) ) {
+//		                        //   print 'logging.style.display="false";';
+//		                        print 'location.replace("get-delivery.php?id=" + delivery_id + "&print"); return;';
+//		                        // print 'logging.style.display="true";';
+//	                        }
 
 	                        ?>
                         }
@@ -476,7 +452,7 @@ $O = new Order( $order_id );
             var q = 0;
             var p = 0;
             var line_total = 0;
-            var vat_percent = <?php global $global_vat; print $global_vat; ?>;
+            var vat_percent = 17; // <?php global $global_vat; print $global_vat; ?>;
             var line_vat = 0;
             var has_vat = true;
             var prfx = table.rows[i].cells[0].id.substr(4);
@@ -499,8 +475,8 @@ $O = new Order( $order_id );
             has_vat = get_value_by_name("hvt_" + prfx);
             if (has_vat) line_vat = Math.round(100 * p * q / (100 + vat_percent) * vat_percent) / 100;
             line_total = Math.round(p * q * 100) / 100;
-            basket_sum += line_total;
-            document.getElementById("del_" + prfx).innerHTML = line_total.toString();
+            // basket_sum += line_total;
+            document.getElementById("orl_" + prfx).innerHTML = line_total.toString();
             document.getElementById("lvt_" + prfx).innerHTML = line_vat.toString();
 
             if (line_vat) due_vat += line_total;
@@ -534,22 +510,10 @@ $O = new Order( $order_id );
 //            }
         }
 
-        var employee_discount = false;
-	    <?php
-	    $customer_id = $O->getCustomerId();
-	    $wp_user = get_user_by( 'id', $customer_id );
-	    $roles = $wp_user->roles;
-	    if ( $roles and customer_type( $customer_id ) == 0 // Not owner or siton
-	         and count( array_intersect( array( "staff" ), $roles ) )
-	    ) {
-		    print "employee_discount = true;";
-	    }
-
-	    ?>
         // Show discount line or hide
         var line = table.rows.length - 4;
         var discount = 0;
-        if (employee_discount) {
+        if (0) { // employee_discount) {
             var discount_gross = Math.round(total, 0); /// todo: get delivery_fee
             discount = -Math.round(discount_gross * 10) / 100;
             table.rows[line].cells[product_name_id].innerHTML = (discount_gross > 0) ? "הנחת עובד" : "";
@@ -626,10 +590,6 @@ $O = new Order( $order_id );
         cursor: pointer;
     }
 </style>
-
-<!-- Trigger/Open The Modal -->
-<!--<button id="myBtn">Open Modal</button>-->
-
 <!-- The Modal -->
 <div id="myModal" class="modal">
 
@@ -655,13 +615,11 @@ $O = new Order( $order_id );
 	    //	    print gui_select( "draft_reason", "reason",
 	    //		    $select_options, "", "" );
 
-	    //	    print Core_Html::GuiButton( "save_draft_modal", "", "בצע" );
+	    //	    print gui_button( "save_draft_modal", "", "בצע" );
 	    ?>
 
     </div>
-
 </div>
-
 <script>
     var modal = document.getElementById('myModal');
 

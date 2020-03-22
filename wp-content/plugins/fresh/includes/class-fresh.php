@@ -643,6 +643,9 @@ class Fresh {
 	    wp_enqueue_style('woocommerce_admin_menu_styles');
 	    wp_enqueue_style('woocommerce_admin_styles');
 
+	    $file = FRESH_INCLUDES_URL . 'js/delivery.js';
+	    wp_enqueue_script( 'delivery', $file, null, $this->version, false );
+
     }
 
 	/*-- Start product quantity +/- on listing -- */
@@ -1807,6 +1810,5 @@ function checkout_create_order_line_item( $item, $cart_item_key, $values, $order
 ////var_dump($y->GetToken("16123298"));
 //foreach ($y->Pay($token, 333) as $k => $r)
 //	print $k . "=" . $r . "<Br/>";
-
 
 /* -- End Product Comment-- */

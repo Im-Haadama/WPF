@@ -24,15 +24,6 @@ function get_daily_rate( $user_id ) {
 	return sql_query_single_scalar( "SELECT day_rate FROM im_working WHERE user_id = " . $user_id );
 }
 
-
-function account_add_transaction( $client_id, $date, $amount, $ref, $type ) {
-	$sql = "INSERT INTO im_client_accounts (client_id, date, transaction_amount, transaction_method, transaction_ref) "
-	       . "VALUES (" . $client_id . ", \"" . $date . "\", " . $amount . ", \"" . $type . "\", " . $ref . ")";
-
-	MyLog( $sql, "account_add_transaction" );
-	sql_query( $sql );
-}
-
 function account_update_transaction( $total, $delivery_id, $client_id ) {
 	$sql = "UPDATE im_client_accounts SET transaction_amount = " . $total .
 	       " WHERE transaction_ref = " . $delivery_id . " and client_id = " . $client_id;

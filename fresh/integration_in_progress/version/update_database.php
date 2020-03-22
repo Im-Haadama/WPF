@@ -490,46 +490,6 @@ function basic()
 ");
 	}
 
-	if (!table_exists("business_info"))
-		sql_query("create table ${db_prefix}business_info
-(
-	id bigint auto_increment
-		primary key,
-	part_id int not null,
-	date date not null,
-	week date not null,
-	amount double not null,
-	ref varchar(20) not null,
-	delivery_fee float null,
-	project_id int default 3 not null,
-	is_active bit default b'1' null,
-	document_type int(2) default 1 not null,
-	net_amount double null,
-	invoice_file varchar(200) charset utf8 null,
-	invoice int(10) null,
-	pay_date date null
-);
-
-");
-
-
-	if (! table_exists("missions"))
-		sql_query("create table ${db_prefix}missions
-(
-	id int auto_increment
-		primary key,
-	date date null,
-	name varchar(200) null,
-	path_code varchar(20) null,
-	start_address varchar(50) null,
-	end_address varchar(50) null,
-	start_h time null,
-	end_h time null,
-	zones varchar(100) null
-)
-charset=utf8;
-
-");
 	return "basic";
 }
 

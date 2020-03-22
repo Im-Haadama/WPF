@@ -13,52 +13,6 @@ if ( ! defined( 'FRESH_INCLUDES' ) ) {
 
 $debug = false;
 
-require_once FRESH_INCLUDES . 'fresh_delivery_enum.php';
-
-//
-//$delivery_fields_names = array(
-//	"chk", // 0
-//	"nam", // 1
-//	"pid", // 2
-//	"ter", // 3
-//	"orq", // 4
-//	"oru", // 5
-//	"deq", // 6
-//	"prc", // 7
-//	"orl", // 8
-//	"hvt", // 9
-//	"lvt", // 10
-//	"del", // 11
-//	"req", // 12
-//	"ret",  // 13
-//	"buy", //14
-//	"mar", // 15
-//	"pac", // 16,
-//	"typ" // 17
-//);
-//
-//$header_fields = array(
-//	"בחר",
-//	"פריט",
-//	"ID",
-//	"קטגוריה",
-//	"כמות הוזמן",
-//	"יחידות הוזמנו",
-//	"כמות סופק",
-//	"מחיר",
-//	"סה\"כ להזמנה",
-//	"חייב מע\"מ",
-//	"מע\"מ",
-//	"סה\"כ",
-//	"כמות לזיכוי",
-//	"סה\"כ זיכוי",
-//	"מחיר עלות",
-//	"סה\"כ מרווח שורה",
-//	"הערות"
-//);
-//
-
-
 class Fresh_Delivery {
 	private $ID = 0;
 	private $order_id = 0;
@@ -74,9 +28,32 @@ class Fresh_Delivery {
 	private $delivery_total_vat = 0;
 	private $margin_total = 0;
 	private $user_id = 0;
+	private $delivery_fields_names;
 
 	public function __construct( $id ) {
 		$this->ID = $id;
+		$this->delivery_fields_names = array(
+			"chk", // 0
+			// product
+			"nam", // 1
+			"com", // 2
+			"pid", // 3
+			"ter", // 4
+			"orq", // 5
+			"oru", // 6
+			"deq", // 7
+			"prc", // 8
+			"orl", // 9
+			"hvt", // 10
+			"lvt", // 11
+			"del", // 12
+			"req", // 13
+			"ret",  // 14
+			"buy", // 15
+			"mar", // 16
+			"pac", // 17,
+			"typ" // 18
+		);
 	}
 
 	public function CustomerView()
@@ -216,6 +193,8 @@ class Fresh_Delivery {
 		$prod_name                           = sql_query_single_scalar( $sql );
 		$quantity_ordered                    = Fresh_Packing::get_order_itemmeta( $line_ids, '_qty' );
 		$unit_ordered                        = Fresh_Packing::get_order_itemmeta( $line_id, 'unit' );
+		$prod_comment = Fresh_Packing::get_order_itemmeta($line_id, 'product_comment');
+
 		$order_line_total                    = round( Fresh_Packing::get_order_itemmeta( $line_ids, '_line_total' ), 1);
 		$this->order_total                   += $order_line_total;
 		$line[ eDeliveryFields::order_line ] = $order_line_total;
@@ -265,7 +244,7 @@ class Fresh_Delivery {
 			       " WHERE order_id = " . $order_id;
 			sql_query( $sql );
 		} else {
-			$sql = "INSERT INTO im_delivery (date, order_id, vat, total, dlines, fee, draft, draft_reason) "
+			$sql = "INSERT INTO im_delivery (date, order_id, vat, total, dlines, fee, draft, draft_reason, driver) "
 			       . "VALUES ( CURRENT_TIMESTAMP, "
 			       . $order_id . ", "
 			       . $vat . ', '
@@ -273,7 +252,8 @@ class Fresh_Delivery {
 			       . $lines . ', '
 			       . $fee . ', '
 			       . $draft . ', '
-			       . QuoteText( $reason )
+			       . QuoteText( $reason ) . ', '
+			       . "driver"
 			       . ')';
 			sql_query( $sql );
 			$delivery_id = sql_insert_id();
@@ -282,8 +262,10 @@ class Fresh_Delivery {
 		if ( ! ( $delivery_id > 0 ) ) {
 			die ( "Error!" );
 		}
-		$order     = new Order( $order_id );
+		$order     = new Fresh_Order( $order_id );
 		$client_id = $order->getCustomerId();
+
+		$user = new Fresh_Client($client_id);
 
 		if ( $edit ) {
 			account_update_transaction( $total, $delivery_id, $client_id );
@@ -291,8 +273,8 @@ class Fresh_Delivery {
 		} else { // New!
 			$date = date( "Y-m-d" );
 
-			account_add_transaction( $client_id, $date, $total, $delivery_id, "משלוח" );
-			business_add_transaction( $client_id, $date, $total, $fee, $delivery_id, 3 );
+			$user->add_transaction( $date, $total, $delivery_id, "משלוח" );
+			Finance::add_transaction( $client_id, $date, $total, $fee, $delivery_id, 3 );
 		}
 		// $order = new WC_Order( $order_id );
 		if ( ! $order->ChangeStatus( 'wc-awaiting-shipment' ) ) {
@@ -423,6 +405,10 @@ class Fresh_Delivery {
 		return $this->getOrder()->getCustomerID();
 	}
 
+	public function getCustomerType() {
+		return $this->getOrder()->getCustomer()->getCustomerType();
+	}
+
 	private function getOrder() {
 		if ( ! $this->order ) {
 			$this->order = new Fresh_Order( $this->OrderId() );
@@ -432,8 +418,27 @@ class Fresh_Delivery {
 	}
 
 	function delivery_text( $document_type, $operation = Fresh_DocumentOperation::show, $margin = false, $show_inventory = false ) {
-		global $delivery_fields_names;
-		global $header_fields;
+		$header_fields = array(
+			"בחר",
+			"פריט",
+			"הערה",
+			"ID",
+			"קטגוריה",
+			"כמות הוזמן",
+			"יחידות הוזמנו",
+			"כמות סופק",
+			"מחיר",
+			"סה\"כ להזמנה",
+			"חייב מע\"מ",
+			"מע\"מ",
+			"סה\"כ",
+			"כמות לזיכוי",
+			"סה\"כ זיכוי",
+			"מחיר עלות",
+			"סה\"כ מרווח שורה",
+			"הערות"
+		);
+
 		if ( false ) {
 			print "Document type " . $document_type . "<br/>";
 			print "operation: " . $operation . "<br/>";
@@ -457,6 +462,8 @@ class Fresh_Delivery {
 		$show_fields[ eDeliveryFields::order_q ]       = true;
 		$show_fields[ eDeliveryFields::order_q_units ] = false; // For now ordering by units is not supported
 		$show_fields[ eDeliveryFields::price ]         = true;
+		$show_fields[ eDeliveryFields::client_comment ]         = true;
+
 
 		$empty_array = array();
 		for ( $i = 0; $i < eDeliveryFields::max_fields; $i ++ ) {
@@ -480,7 +487,7 @@ class Fresh_Delivery {
 				$show_fields[ eDeliveryFields::delivery_q ] = true;
 				if ( $operation != Fresh_DocumentOperation::collect) {
 					$show_fields[ eDeliveryFields::has_vat ]       = true;
-					$show_fields[ eDeliveryFields::line_vat ]      = true;
+//					$show_fields[ eDeliveryFields::line_vat ]      = true;
 					$show_fields[ eDeliveryFields::delivery_line ] = true;
 				}
 				if ( $operation == Fresh_DocumentOperation::create or $operation == Fresh_DocumentOperation::collect )
@@ -502,6 +509,8 @@ class Fresh_Delivery {
 		$data = "";
 
 		$client_id = $this->GetCustomerID();
+		$client = new Fresh_Client($client_id);
+		$client_type = $client->customer_type();
 
 		$delivery_loaded = false;
 		$volume_line = false;
@@ -553,7 +562,7 @@ class Fresh_Delivery {
 					$show_fields[eDeliveryFields::delivery_q]   = true;
 				}
 
-				$data .= gui_row( $line, ++$this->line_number, $show_fields, $sums, $delivery_fields_names, $line_style );
+				$data .= Core_Html::gui_row( $line, ++$this->line_number, $show_fields, $sums, $this->delivery_fields_names, $line_style );
 			}
 		} else {
 			// For group orders - first we get the needed products and then accomulate the quantities.
@@ -580,22 +589,24 @@ class Fresh_Delivery {
 				if ( $b->is_basket()){
 					$basket_header = array();
 					for ($i = 0; $i < eDeliveryFields::max_fields; $i++)	$basket_header[$i] = "";
-					$basket_header[eDeliveryFields::product_name] = get_product_name($prod_id);
-					$basket_header[eDeliveryFields::order_q]      = get_order_itemmeta( $order_item_ids, '_qty' );
-					$basket_header[eDeliveryFields::price]        = get_price($prod_id);
+					$basket_header[eDeliveryFields::product_name] = $b->getName();
+					$basket_header[eDeliveryFields::order_q]      = Fresh_Packing::get_order_itemmeta( $order_item_ids, '_qty' );
+					$basket_header[eDeliveryFields::price]        = $b->getPrice();
 					$basket_header[eDeliveryFields::line_type]    = "bsk";
 					$basket_header[eDeliveryFields::product_id]   = $prod_id;
+					$basket_header[eDeliveryFields::client_comment] = Fresh_Packing::get_order_itemmeta($order_item_ids[0], 'product_comment');
 
-					$data .= gui_row($basket_header, ++$this->line_number, $show_fields, $sums, $delivery_fields_names, $style);
+
+					$data .= Core_Html::gui_row($basket_header, ++$this->line_number, $show_fields, $sums, $this->delivery_fields_names, $style);
 				} else {
-					$line = $this->delivery_line( $document_type, $order_item_ids, 0, $operation, $margin, $style, $show_inventory );
-					$data .= Core_Html::gui_row( $line, ++$this->line_number, $show_fields, $sums, $delivery_fields_names, $style );
+					$line = $this->delivery_line( $document_type, $order_item_ids, $client_type, $operation, $margin, $style, $show_inventory );
+					$data .= Core_Html::gui_row( $line, ++$this->line_number, $show_fields, $sums, $this->delivery_fields_names, $style );
 				}
 				if ( $expand_basket && $b->is_basket() ) {
-					$quantity_ordered = get_order_itemmeta( $order_item_ids, '_qty' ); //, $client_type, $operation, $data );
+					$quantity_ordered = Fresh_Packing::get_order_itemmeta( $order_item_ids, '_qty' ); //, $client_type, $operation, $data );
 
 					$this->expand_basket( $prod_id, $quantity_ordered, 0, $show_fields, $document_type,
-						$order_item_ids, customer_type( $client_id ), $operation, $data );
+						$order_item_ids, $client_type, $operation, $data );
 				}
 			}
 
@@ -627,9 +638,8 @@ class Fresh_Delivery {
 			$delivery_line[ eDeliveryFields::order_line ]    = $del_price;
 
 			$sums = null;
-			global $delivery_fields_names;
 
-			$data                  .= Core_Html::gui_row( $delivery_line, "del", $show_fields, $sums, $delivery_fields_names );
+			$data                  .= Core_Html::gui_row( $delivery_line, "del", $show_fields, $sums, $this->delivery_fields_names );
 			$this->order_vat_total += $del_vat;
 			// Spare line for volume discount
 		}
@@ -637,7 +647,7 @@ class Fresh_Delivery {
 		if ( $operation != Fresh_DocumentOperation::collect ) {
 			if ( ! $volume_line ) {
 				$delivery_line = $empty_array;
-				$dis_line = Core_Html::gui_row( $delivery_line, "dis", $show_fields, $sums, $delivery_fields_names );
+				$dis_line = Core_Html::gui_row( $delivery_line, "dis", $show_fields, $sums, $this->delivery_fields_names );
 				$data          .= $dis_line;
 			}
 			// Summary
@@ -646,14 +656,14 @@ class Fresh_Delivery {
 			$summary_line[ eDeliveryFields::product_name ]  = 'סה"כ חייב במע"מ';
 			$summary_line[ eDeliveryFields::delivery_line ] = $this->delivery_due_vat;
 			$summary_line[ eDeliveryFields::order_line ]    = $this->order_due_vat;
-			$data                                           .= Core_Html::gui_row( $summary_line, "due", $show_fields, $sum, $delivery_fields_names, $style );
+			$data                                           .= Core_Html::gui_row( $summary_line, "due", $show_fields, $sum, $this->delivery_fields_names, $style );
 
 			// Total VAT
 			$summary_line                                   = $empty_array;
 			$summary_line[ eDeliveryFields::product_name ]  = 'מע"מ 17%';
 			$summary_line[ eDeliveryFields::delivery_line ] = $this->delivery_total_vat;
 			$summary_line[ eDeliveryFields::order_line ]    = $this->order_vat_total;
-			$data                                           .= Core_Html::gui_row( $summary_line, "vat", $show_fields, $sum, $delivery_fields_names, $style );
+			$data                                           .= Core_Html::gui_row( $summary_line, "vat", $show_fields, $sum, $this->delivery_fields_names, $style );
 
 			// Total
 			$summary_line                                   = $empty_array;
@@ -661,7 +671,7 @@ class Fresh_Delivery {
 			$summary_line[ eDeliveryFields::delivery_line ] = $this->delivery_total;
 			$summary_line[ eDeliveryFields::order_line ]    = $this->order_total;
 			$summary_line[ eDeliveryFields::line_margin ]   = $this->margin_total;
-			$data                                           .= Core_Html::gui_row( $summary_line, "tot", $show_fields, $sum, $delivery_fields_names, $style );
+			$data                                           .= Core_Html::gui_row( $summary_line, "tot", $show_fields, $sum, $this->delivery_fields_names, $style );
 		}
 
 		$data = str_replace( "\r", "", $data );
@@ -704,6 +714,7 @@ class Fresh_Delivery {
 		$has_vat = null;
 
 		$P = null;
+		$prod_comment = "";
 
 		if ( $load_from_order ) {
 			$this->load_line_from_order($line_ids, $client_type, $prod_id, $prod_name, $quantity_ordered, $unit_q, $P, $price );
@@ -728,7 +739,7 @@ class Fresh_Delivery {
 
 		// price
 		if ( $operation == Fresh_DocumentOperation::create and $document_type == FreshDocumentType::delivery ) {
-			$line[ eDeliveryFields::price ] = Core_Html::GuiInput("");// gui_input( "", $price, null, null, null, 5 );
+			$line[ eDeliveryFields::price ] = Core_Html::gui_input( "", $price, null, null, null, 5 );
 		} else {
 			$line[ eDeliveryFields::price ] = $price;
 		}
@@ -841,6 +852,7 @@ class Fresh_Delivery {
 		}
 
 		$line[eDeliveryFields::line_type] = Fresh_Delivery::line_type($prod_id);
+		$line[eDeliveryFields::client_comment] = $prod_comment;
 
 		// return gui_row( $line, $this->line_number, $show_fields, $sums, $delivery_fields_names, $style );
 		return $line;
@@ -863,7 +875,6 @@ class Fresh_Delivery {
 	}
 
 	function expand_basket( $basket_id, $quantity_ordered, $level, $show_fields, $document_type, $line_id, $client_type, $edit, &$data ) {
-		global $delivery_fields_names;
 		$sql2 = 'SELECT DISTINCT product_id, quantity FROM im_baskets WHERE basket_id = ' . $basket_id;
 
 		$result2 = sql_query( $sql2 );
@@ -881,21 +892,21 @@ class Fresh_Delivery {
 					$line[ $i ] = "";
 				}
 
-				$line[ eDeliveryFields::product_name ] = "===> " . get_product_name( $prod_id );
-				$line[ eDeliveryFields::price ]        = get_price_by_type( $prod_id, $client_type );
+				$line[ eDeliveryFields::product_name ] = "===> " . $P->getName();
+				$line[ eDeliveryFields::price ]        = $P->getPrice($client_type );
 				$has_vat                               = true;
 
 				if ( ! $P->getVatPercent() ) {
 					$has_vat = false;
 				}
 				$line[ eDeliveryFields::product_id ] = $prod_id;
-				$line[ eDeliveryFields::has_vat ]    = Core_Html::gui_checkbox( "hvt_" . $prod_id, "has_vat", $has_vat > 0 );
+				$line[ eDeliveryFields::has_vat ]    = Core_Html::GuiCheckbox( "hvt_" . $prod_id, "has_vat", $has_vat > 0 );
 				$line[ eDeliveryFields::order_q ]    = $quantity_ordered;
-				$line[ eDeliveryFields::delivery_q ] = gui_input( "quantity" . $this->line_number, "",
-					array( 'onkeypress="moveNextRow(' . $this->line_number . ')"' ) );
+				$line[ eDeliveryFields::delivery_q ] = Core_Html::gui_input( "quantity" . $this->line_number, "",
+					array( 'onkeypress="moveNextRow(' . $this->line_number . ')"', 'onfocusout="leaveQuantityFocus(' . $this->line_number . ')" ' ) );
 
 				$this->line_number = $this->line_number + 1;
-				$data              .= gui_row( $line, $this->line_number, $show_fields, $sums, $delivery_fields_names );
+				$data              .= Core_Html::gui_row( $line, $this->line_number, $show_fields, $sums, $this->delivery_fields_names );
 			}
 		}
 		if ( $level == 0 ) {
@@ -910,7 +921,7 @@ class Fresh_Delivery {
 			$line[eDeliveryFields::price]          = 0;
 			$sums                                  = null;
 			$this->line_number                     = $this->line_number + 1;
-			$dis_line                              = gui_row( $line, $this->line_number, $show_fields, $sums, $delivery_fields_names );
+			$dis_line                              = Core_Html::gui_row( $line, $this->line_number, $show_fields, $sums, $this->delivery_fields_names );
 			// print "<table><tr>" . $dis_line . "</tr></table>";
 			$data .= $dis_line;
 		}
@@ -1155,4 +1166,57 @@ class Fresh_Delivery {
 	{
 		return sql_query_single_scalar("select max(id) from im_delivery where client_id_from_delivery(id) = " . $user_id);
 	}
+}
+
+
+class FreshDocumentType {
+	const order = 1, // Client
+		delivery = 2, // Client
+		refund = 3, // Client
+		invoice = 4, // Supplier
+		supply = 5, // Supplier
+		ship = 6,  // Legacy
+		bank = 7,
+		invoice_refund = 8, // Supplier
+		count = 9;
+}
+
+class Fresh_DocumentOperation {
+	const
+		collect = 0, // From order to delivery, before collection
+		create = 1, // From order to delivery. Expand basket
+		show = 2,     // Load from db
+		edit = 3,    // Load and edit
+		check = 4;  // Checkup
+	// packing = 4;
+
+}
+
+class eDeliveryFields {
+	const
+		/// User interface
+		line_select = 0,
+		/// Product info
+		product_name = 1,
+		client_comment = 2,
+		product_id = 3,
+		term = 4,
+		// Order info
+		order_q = 5, // Only display
+		order_q_units = 6,
+		delivery_q = 7,
+		price = 8,
+		order_line = 9,
+		// Delivery info
+		has_vat = 10,
+		line_vat = 11,
+		delivery_line = 12,
+		// Refund info
+		refund_q = 13,
+		refund_line = 14,
+		buy_price = 15,
+		line_margin = 16,
+		packing_info = 17,
+		line_type = 18,
+		max_fields = 19;
 }

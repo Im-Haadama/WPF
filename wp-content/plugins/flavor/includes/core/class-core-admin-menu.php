@@ -16,3 +16,6 @@ class Core_Admin_Menu {
 			add_submenu_page($parent, $title, $menu_title, $capability, $slug, $function);
 	}
 }
+
+//[products limit="4 columns="4" category="סלי השבוע"]
+//[products limit="4" columns="4" category="117"]

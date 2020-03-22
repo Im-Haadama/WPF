@@ -234,16 +234,9 @@ function get_customer_phone( $user_id ) {
 }
 
 // Days...
-function sunday( $date ) {
-	$datetime = new DateTime( $date );
-	$interval = new DateInterval( "P" . $datetime->format( "w" ) . "D" );
-	$datetime->sub( $interval );
-
-	return $datetime;
-}
 
 function get_week( $str_date ) {
-	$s = sunday( $str_date );
+	$s = Sunday( $str_date );
 
 	return $s->format( 'Y-m-j' );
 }

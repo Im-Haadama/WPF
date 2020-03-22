@@ -52,4 +52,3 @@ function run_fresh() {
 }
 
 run_fresh();
-

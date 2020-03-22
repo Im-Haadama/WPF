@@ -47,12 +47,12 @@ class Fresh_Order_Management {
 
 	static public function add_order_action( $actions, $order)
 	{
-//		print "stat=" . $order->status;
 		switch ($order->status)
 		{
 			case "processing":
 					$actions['delivery_note'] = array(
-						'url'    => wp_nonce_url( admin_url( 'admin-post.php?post=' . $order->get_id() . '&action=delivery' ), 'woocommerce-mark-order-status' ),
+//						'url'    => wp_nonce_url( admin_url( 'admin-post.php?post=' . $order->get_id() . '&action=delivery' ), 'woocommerce-mark-order-status' ),
+					'url' => '/wp-content/plugins/fresh/delivery/create-delivery.php?order_id=' . $order->get_id(),
 						'name'   => __( 'Delivery', 'woocommerce' ),
 						'action' => 'delivery',
 					);
@@ -76,9 +76,6 @@ class Fresh_Order_Management {
 	}
 
 	public function enqueue_scripts() {
-		$file = FRESH_INCLUDES_URL . 'js/delivery.js';
-		print $file;
-		wp_enqueue_script( 'delivery', $file, null, $this->version, false );
 	}
 }
 
