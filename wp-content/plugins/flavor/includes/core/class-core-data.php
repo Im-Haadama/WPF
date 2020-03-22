@@ -222,7 +222,6 @@ class Core_Data
 
 		$args["sql"] = "select $id_field, $field from $table_name where $field like '%" . $prefix . "%'";
 		$query = GetArg($args, "query", null); 	if ($query) $args["sql"] .= " and " . $query;
-		// print $args["sql"] . "<br/>";
 		$args["field"] = $field;
 		$args["include_id"] = $include_id;
 

@@ -630,7 +630,7 @@ class Fresh_Supply {
 		if ( ! $date )
 			$date = date('Y-m-d');
 		MyLog( __METHOD__ . $supplierID );
-		$sql = "INSERT INTO im_supplies (date, supplier, status) VALUES " . "('" . $date . "' , " . $supplierID . ", 1)";
+		$sql = "INSERT INTO im_supplies (date, supplier, status, paid_date) VALUES " . "('" . $date . "' , " . $supplierID . ", 1, '1000-01-01')";
 
 		sql_query( $sql );
 

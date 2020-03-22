@@ -836,12 +836,12 @@ class Fresh_Delivery {
 			$pending                               = $P->PendingSupplies();
 			if ( $pending ) {
 				foreach ( $pending as $p ) {
-					if ( $p[1] == SupplyStatus::NewSupply ) {
+					if ( $p[1] == eSupplyStatus::NewSupply ) {
 						$line[ eDeliveryFields::packing_info ] .= "<br/>" . "יש לשלוח אספקה מספר " .
 						                                          Core_Html::GuiHyperlink( $p[0], "../supplies/supply-get.php?id=" . $p[0] ) . "!<br/>";
 					}
 
-					if ( $p[1] == SupplyStatus::Sent ) {
+					if ( $p[1] == eSupplyStatus::Sent ) {
 						$line[ eDeliveryFields::packing_info ] .= " אספקה מספר  " . Core_Html::GuiHyperlink( $p[0], "../supplies/supply-get.php?id=" . $p[0] ) . " בביצוע<br/>";
 					}
 				}

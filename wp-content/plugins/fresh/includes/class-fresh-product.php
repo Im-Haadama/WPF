@@ -261,7 +261,7 @@ class Fresh_Product {
 		       "from im_supplies_lines l\n" .
 		       "join im_supplies s, im_suppliers sup\n" .
 		       "where product_id = " . $this->id . "\n" .
-		       " and s.status in (" . SupplyStatus::Sent . "," . SupplyStatus::NewSupply . ")\n" .
+		       " and s.status in (" . eSupplyStatus::Sent . "," . eSupplyStatus::NewSupply . ")\n" .
 		       " and l.supply_id = s.id\n" .
 		       " and sup.id = s.supplier";
 
@@ -274,12 +274,11 @@ class Fresh_Product {
 
 	function getOrdered() {
 //		print "id: " . $this->id . "<br/>";
-		return orders_per_item( $this->id, 1, true, true, true, true );
+		return Fresh_Packing::orders_per_item( $this->id, 1, true, true, true, true );
 	}
 
 	function getOrderedDetails() {
-		return orders_per_item( $this->id, 1, true, true, true );
-
+		return Fresh_Packing::orders_per_item( $this->id, 1, true, true, true );
 	}
 
 	function setStockManaged( $managed, $backorder ) {
