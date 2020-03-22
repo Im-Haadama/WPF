@@ -59,7 +59,7 @@ class Fresh_Suppliers {
 
 		if ( !$result )
 			$result = self::SuppliersTable();
-		print $result;
+		return $result;
 	}
 
 	static function SuppliersTable()

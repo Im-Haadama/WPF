@@ -349,26 +349,7 @@ END;");
     	meta_key VARCHAR(40) CHARACTER SET utf8 NULL,
 	    meta_value varchar(200))" );
 
-	sql_query("drop function product_price");
-	sql_query("create
-    function product_price(_id int) returns varchar(100) charset 'utf8'
-BEGIN
-    declare _price varchar(100) CHARSET 'utf8';
-    select meta_value into _price from wp_postmeta where meta_key = '_price' and post_id = _id;
-    return _price;
-  END; ");
 
-
-	sql_query("CREATE FUNCTION 	post_status(_post_id int)
-	 RETURNS TEXT
-BEGIN
-	declare _result varchar(200);
-	select post_status into _result
-	from wp_posts
-	where id = _post_id; 
-	
-	return _result;	   
-END;");
 
 	print Core_Html::gui_header(2, "entry comment");
 	sql_query("ALTER TABLE ${db_prefix}working_hours ADD comment varchar(200);");
@@ -831,19 +812,6 @@ END;" );
 	number varchar(20) not null
 )
 ;
-
-" );
-	print "supplier_display_name" . '<br/>';
-	sql_query( "drop function supplier_displayname" );
-	sql_query( "create function supplier_displayname (supplier_id int) returns text charset utf8  
-BEGIN
-declare _user_id int;
-declare _display varchar(50) CHARSET utf8;
-select supplier_name into _display from ${db_prefix}suppliers
-where id = supplier_id;
-
-return _display;
-END;
 
 " );
 	print "bank_lines<br/>";

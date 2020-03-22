@@ -676,53 +676,6 @@ class Fresh {
 	}
 	/*-- End product quantity +/- on listing -- */
 
-	static function general_settings()
-	{
-		$result = ""; // Core_Html::gui_header(1, "general settings");
-		$tabs = [];
-		$args = [];
-		$args["post_file"] = self::getPost();
-
-		$tab = GetParam("tab", false, "baskets");
-		$url = GetUrl(1) . "?page=settings&tab=";
-
-		$basket_url = $url . "baskets";
-
-		$tabs["baskets"] = array(
-			"Baskets",
-			$basket_url,
-			Fresh_Basket::settings($basket_url, $args)
-		 );
-
-		$tabs["suppliers"] = array(
-			"Suppliers",
-			$url . "suppliers",
-			Fresh_Suppliers::admin_page()
-			//Fresh_Suppliers::SuppliersTable()
-		);
-
-		$tabs["missing_pictures"] = array(
-			"Missing Pictures",
-			$url . "missing_pictures",
-			Fresh_Catalog::missing_pictures()
-		);
-
-//		array_push( $tabs, array(
-//			"workers",
-//			"Workers",
-//			self::company_workers( $company, $args )
-//		) );
-
-		$args["btn_class"] = "nav-tab";
-		$args["tabs_load_all"] = true;
-        $args["nav_tab_wrapper"] = "nav-tab-wrapper woo-nav-tab-wrapper";
-
-		$result .= Core_Html::NavTabs($tabs, $args);
-		$result .= $tabs[$tab][2];
-
-		print $result;
-	}
-
 	function install($version, $force = false)
 	{
         if (Fresh_Database::CheckInstalled("Fresh", $this->version) == $version and ! $force) return;

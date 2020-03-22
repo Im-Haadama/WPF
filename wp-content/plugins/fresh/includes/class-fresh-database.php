@@ -191,8 +191,43 @@ charset=utf8;");
 	static function CreateFunctions($version, $force = false)
 	{
 		$current = self::CheckInstalled("Fresh", "functions");
+		$db_prefix = get_table_prefix();
 
 		if ($current == $version and ! $force) return true;
+
+		sql_query("drop function post_status");
+		sql_query("CREATE FUNCTION 	post_status(_post_id int)
+	 RETURNS TEXT
+BEGIN
+	declare _result varchar(200);
+	select post_status into _result
+	from wp_posts
+	where id = _post_id; 
+	
+	return _result;	   
+END;");
+
+		sql_query("drop function product_price");
+		sql_query("create
+    function product_price(_id int) returns varchar(100) charset 'utf8'
+BEGIN
+    declare _price varchar(100) CHARSET 'utf8';
+    select meta_value into _price from wp_postmeta where meta_key = '_price' and post_id = _id;
+    return _price;
+  END; ");
+
+		sql_query("drop function supplier_displayname");
+		sql_query( "create function supplier_displayname (supplier_id int) returns text charset utf8  
+BEGIN
+declare _user_id int;
+declare _display varchar(50) CHARSET utf8;
+select supplier_name into _display from ${db_prefix}suppliers
+where id = supplier_id;
+
+return _display;
+END;
+
+" );
 
 		sql_query("drop function order_is_group");
 		sql_query("create function order_is_group(order_id int) returns bit
@@ -233,6 +268,7 @@ BEGIN
    return _name;
  END" );
 
+		sql_query("drop function order_line_get_variation");
 		sql_query("create function order_line_get_variation(_order_item_id int) RETURNS text
 BEGIN
     declare _variation int;
