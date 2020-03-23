@@ -15,6 +15,24 @@ class Fresh_Delivery_Manager
 		$this->logger = new Core_Logger(__CLASS__);
 	}
 
+	public function init()
+	{
+		AddAction("delivery_delete", array(__CLASS__, "delete"));
+	}
+
+	public function delete()
+	{
+		$id = GetParam("delivery_id", true);
+		$d = new Fresh_Delivery( $id );
+		$client = $d->getCustomerId();
+		if (get_user_id() != $client and ! im_user_can("delete_orders"))
+			die("no permission");
+
+		$d->Delete();
+
+		Finance::business_delete_transaction( $id );
+	}
+
 	public static function instance() {
 		if ( is_null( self::$_instance ) ) {
 			return new self();

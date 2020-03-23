@@ -436,7 +436,8 @@ class Fresh_Delivery {
 			"סה\"כ זיכוי",
 			"מחיר עלות",
 			"סה\"כ מרווח שורה",
-			"הערות"
+			"מידע לאריזה",
+			"סוג שורה"
 		);
 
 		if ( false ) {
@@ -491,7 +492,7 @@ class Fresh_Delivery {
 					$show_fields[ eDeliveryFields::delivery_line ] = true;
 				}
 				if ( $operation == Fresh_DocumentOperation::create or $operation == Fresh_DocumentOperation::collect )
-					$show_fields[ eDeliveryFields::order_line ] = true;
+					$show_fields[ eDeliveryFields::order_line ] = false;
 				if ( $margin ) {
 					$show_fields[ eDeliveryFields::buy_price ]   = true;
 					$show_fields[ eDeliveryFields::line_margin ] = true;
@@ -739,7 +740,7 @@ class Fresh_Delivery {
 
 		// price
 		if ( $operation == Fresh_DocumentOperation::create and $document_type == FreshDocumentType::delivery ) {
-			$line[ eDeliveryFields::price ] = Core_Html::gui_input( "", $price, null, null, null, 5 );
+			$line[ eDeliveryFields::price ] = Core_Html::gui_input( "prc_" .  $prod_id, $price, null, null, null, 5 );
 		} else {
 			$line[ eDeliveryFields::price ] = $price;
 		}
@@ -757,7 +758,7 @@ class Fresh_Delivery {
 				break;
 
 			case FreshDocumentType::delivery:
-				// $line[DeliveryFields::order_line] = $order_line_total;
+				 $line[eDeliveryFields::order_line] = 99; // $order_line_total;
 				switch ( $operation ) {
 					case Fresh_DocumentOperation::edit:
 					case Fresh_DocumentOperation::create:
@@ -1031,7 +1032,6 @@ class Fresh_Delivery {
 		$sql = 'DELETE FROM im_delivery_lines WHERE delivery_id = ' . $this->ID;
 
 		sql_query( $sql );
-
 	}
 
 	public function DeleteLines() {

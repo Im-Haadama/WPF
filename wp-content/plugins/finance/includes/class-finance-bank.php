@@ -634,14 +634,6 @@ class Finance_Bank
 		return Core_Html::GuiSelectTable($id, "bank_account", $args);
 	}
 
-function business_delete_transaction( $ref ) {
-	$sql = "DELETE FROM im_business_info "
-	       . " WHERE ref = " . $ref;
-
-	MyLog( $sql, __FILE__ );
-	sql_query( $sql );
-}
-
 function business_update_transaction( $delivery_id, $total, $fee ) {
 	$sql = "UPDATE im_business_info SET amount = " . $total . ", " .
 	       " delivery_fee = " . $fee .

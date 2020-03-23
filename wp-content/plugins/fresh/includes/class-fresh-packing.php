@@ -263,10 +263,6 @@ class Fresh_Packing {
 		}
 		$sql .= ")";
 
-//	print $sql . "<br/>";
-
-		// my_log( $sql, "get-orders-per-item.php" );
-
 		$result         = sql_query( $sql );
 		$lines          = "";
 		$total_quantity = 0;
@@ -274,6 +270,7 @@ class Fresh_Packing {
 		while ( $row = mysqli_fetch_row( $result ) ) {
 			$order_item_id = $row[0];
 			$order_id      = $row[1];
+			$o = new Fresh_Order($order_id);
 			$quantity      = self::get_order_itemmeta( $order_item_id, '_qty' );
 			// consider quantity in the basket or bundle
 			$pid = self::get_order_itemmeta( $order_item_id, '_product_id' );
@@ -291,11 +288,9 @@ class Fresh_Packing {
 			$total_quantity += $quantity;
 
 			if ( $short ) {
-//			print "short $first_name<br/>";
 				$lines .= $quantity . " " . $last_name . ", ";
 			} else {
-//			print "long<br/>";
-				$line  = "<tr>" . "<td> " . Core_Html::GuiHyperlink( $order_id, "get-order.php?order_id=" . $order_id ) . "</td>";
+				$line  = "<tr>" . "<td> " . $o->getLink() . "</td>";
 				$line  .= "<td>" . $quantity * $multiply . "</td><td>" . $first_name . "</td><td>" . $last_name . "</td></tr>";
 				$lines .= $line;
 			}

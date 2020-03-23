@@ -5,7 +5,8 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 require_once ('../../flavor/includes/core/class-core-fund.php');
-print Core_Fund::load_scripts('/wp-content/plugins/flavor/includes/core/gui/client_tools.js');
+print Core_Fund::load_scripts(array('/wp-content/plugins/flavor/includes/core/gui/client_tools.js',
+	'/wp-content/plugins/fresh/includes/js/delivery.js'));
 
 //print gui_datalist( "items", "im_products", "post_title", true );
 //print gui_datalist( "draft_items", "im_products_draft", "post_title", true );
@@ -90,12 +91,9 @@ if ( $id > 0 ) {
 		print $d->OrderInfoBox( $order_ids, false, "יצירת תעודת משלוח ל" );
 	} else {
 		print $O->infoBox( false, "יצירת תעודת משלוח ל" );
+
 		$d = Fresh_Delivery::CreateFromOrder( $order_id );
 	}
-	?>
-
-<?php
-
 	$d->PrintDeliveries( FreshDocumentType::delivery, Fresh_DocumentOperation::create, false, $show_inventory );
 	print "</form>";
 }

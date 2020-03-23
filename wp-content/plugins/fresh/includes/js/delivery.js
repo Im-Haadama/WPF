@@ -146,3 +146,22 @@ function calcDelivery() {
     // Total
     document.getElementById("del_tot").innerHTML = total;
 }
+
+function deleteDelivery(id) {
+    var request = "/wp-content/plugins/fresh.php?operation=delivery-delete&delivery_id=" + id;
+
+    xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function () {
+        // Wait to get delivery id.
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+        {
+            if (window.history)
+                window.history.back();
+            else {
+                alert("תעודה נמחקה. יש לסגור את החלון");
+            }
+        }
+    }
+    xmlhttp.open("GET", request, true);
+    xmlhttp.send();
+}

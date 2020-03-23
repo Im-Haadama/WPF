@@ -85,7 +85,8 @@ class Fresh_Basket extends  Fresh_Product  {
 	}
 
 	function is_basket( ) {
-		return sql_query_single_scalar('SELECT count(product_id) FROM im_baskets WHERE basket_id = ' . $this->id);
+		$sql = 'SELECT count(product_id) FROM im_baskets WHERE basket_id = ' . $this->id;
+		return sql_query_single_scalar($sql);
 	}
 
 	static function Settings($url, $args)

@@ -56,7 +56,15 @@ class Fresh_Order_Management {
 						'name'   => __( 'Delivery', 'woocommerce' ),
 						'action' => 'delivery',
 					);
-
+					break;
+			case "awaiting-shipment":
+				$actions['delivery_note'] = array(
+//						'url'    => wp_nonce_url( admin_url( 'admin-post.php?post=' . $order->get_id() . '&action=delivery' ), 'woocommerce-mark-order-status' ),
+					'url' => '/wp-content/plugins/fresh/delivery/get-delivery.php?order_id=' . $order->get_id(),
+					'name'   => __( 'Delivery', 'woocommerce' ),
+					'action' => 'delivery',
+				);
+				break;
 		}
 		return $actions;
 	}

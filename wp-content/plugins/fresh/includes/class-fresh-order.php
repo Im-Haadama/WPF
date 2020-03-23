@@ -492,7 +492,7 @@ class Fresh_Order {
 		{
 			$o = new Fresh_Order($order);
 			if (strlen($o->GetComments()))
-				array_push($table, array(Core_Html::GuiHyperlink($order, "get-order.php?order_id=" . $order), $o->CustomerName(), $o->GetComments()));
+				array_push($table, array($o->getLink($o->order_id), $o->CustomerName(), $o->GetComments()));
 		}
 		return Core_Html::gui_table_args($table);
 	}
@@ -742,8 +742,8 @@ class Fresh_Order {
 		$excerpt  = $this->GetComments();
 // TODO: find why save excerpt cause window reload
 		if ( $edit_order ) {
-			$data .= gui_cell( gui_textarea( "order_excerpt", htmlspecialchars( $excerpt ) ) );
-			$data .= gui_cell( Core_Html::GuiButton( "btn_save_excerpt", "save_excerpt(" . $this->order_id . ")", "שמור הערה" ) );
+			$data .= Core_Html::gui_cell( Core_Html::gui_textarea( "order_excerpt", htmlspecialchars( $excerpt ) ) );
+			$data .= Core_Html::gui_cell( Core_Html::GuiButton( "btn_save_excerpt","שמור הערה", array("action"=> "save_excerpt(" . $this->order_id . ")") ));
 		} else {
 			$data .= "<tr><td valign='top'>" . nl2br( $excerpt ) . "</td></tr>";
 
@@ -900,7 +900,7 @@ class Fresh_Order {
 	function info_right_box_input( $field, $edit, $title ) {
 		$data = array( $title );
 		if ( $edit ) {
-			array_push( $data, gui_input( $field, $this->getOrderInfo( '_' . $field ),
+			array_push( $data, Core_Html::gui_input( $field, $this->getOrderInfo( '_' . $field ),
 				"onchange=\"update_address('" . $field . "', " . $this->getCustomerId() . ", " . $this->GetID() . ")\"" ) );
 		} else {
 			array_push( $data, $this->getOrderInfo( $field ) );
@@ -916,7 +916,7 @@ class Fresh_Order {
 	function user_info_right_box_input( $field, $edit, $title ) {
 		$data = array( $title );
 		if ( $edit ) {
-			array_push( $data, gui_input( $field, get_user_meta( $this->getCustomerId(), "preference", 1 ),
+			array_push( $data, Core_Html::gui_input( $field, get_user_meta( $this->getCustomerId(), "preference", 1 ),
 				"onchange=\"update_preference(" . $this->getCustomerId() . ")\"" ) );
 		} else {
 			array_push( $data, get_user_meta( $this->getCustomerId(), "preference", 1 ) );
@@ -987,7 +987,7 @@ class Fresh_Order {
 
 		$client_id     = $this->getCustomerId();
 		$client = new Fresh_Client($client_id);
-		$ref           = "<a href=\"" . $site_tools . "/fresh/orders/get-order.php?order_id=" . $this->order_id . "\">" . $this->order_id . "</a>";
+		$ref           = $this->getLink();
 		$address       = order_get_address( $this->order_id );
 		$receiver_name = get_meta_field( $this->order_id, '_shipping_first_name' ) . " " .
 		                 get_meta_field( $this->order_id, '_shipping_last_name' );
@@ -1376,6 +1376,12 @@ class Fresh_Order {
 		}
 
 		return true;
+	}
+
+	function getLink($text = null)
+	{
+		if (! $text) $text = __("Order number") . " " . $this->order_id;
+		return Core_Html::GuiHyperlink($text, "/wp-admin/post.php?post=". $this->order_id . "&action=edit");
 	}
 
 }

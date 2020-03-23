@@ -1,22 +1,40 @@
+<html dir="rtl">
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 define('ROOT_DIR', dirname(dirname(dirname(__FILE__))));
 
-require_once 'delivery.php';
-require_once '../orders/orders-common.php';
-require_once( ROOT_DIR . "/init.php" );
-require_once( ROOT_DIR . "/routes/gui.php" );
+require_once(dirname(dirname(ROOT_DIR)) . '/wp-config.php');
+//require_once 'delivery.php';
+//require_once '../orders/orders-common.php';
+//require_once( ROOT_DIR . "/init.php" );
+//require_once( ROOT_DIR . "/routes/gui.php" );
 
 
-print HeaderText(array("script_files"=>array( "/fresh/tools.js", "/niver/gui/client_tools.js" )));
+//print HeaderText(array("script_files"=>array( "/fresh/tools.js", "/niver/gui/client_tools.js" )));
 //print header_text( false, true, true,  );
-$id     = $_GET["id"];
+//$id     = $_GET["id"];
+$order_id = GetParam("order_id", false, null);
+
 $send   = isset( $_GET["send"] );
 $margin = isset( $_GET["margin"] );
 $print  = isset( $_GET["print"] );
-$d      = new Delivery( $id );
+$d = null;
+$O = null;
 
-$order_id = get_order_id( $id );
-$O        = new Order( $order_id );
+if ($order_id){
+	$O        = new Fresh_Order( $order_id );
+	$id = $O->getDeliveryId();
+	$d = new Fresh_Delivery($id);
+//	print "del_id=" . $O->getDeliveryId() . "<br/>";
+} else {
+	$id = GetParam("id", false, null);
+}
+//$d      = ($id ? new Fresh_Delivery( $id ) : null);
+
+//$order_id = get_order_id( $id );
 
 if ( ! ( $order_id > 0 ) ) {
 	print "תעודה לא קיימת";
@@ -33,17 +51,17 @@ if ( ( ! current_user_can( "edit_shop_orders" ) ) and ( $O->getCustomerId() != g
 	die( 0 );
 }
 
-print $O->infoBox( $order_id );
+$O->infoBox( $order_id );
 
-print $d->delivery_text( ImDocumentType::delivery, ImDocumentOperation::show, $margin );
+print $d->delivery_text( FreshDocumentType::delivery, Fresh_DocumentOperation::show, $margin );
 
 if ( ! $send ) {
 	if ( sql_query_single_scalar( "SELECT payment_receipt FROM im_delivery WHERE id = " . $id ) ) {
 		print "תעודה שולמה ולא ניתנת לעריכה או למחיקה";
 	} else {
-	    print gui_button("btn_del", "deleteDelivery()", "delete document");
-	    print gui_button("btn_edit", "editDelivery()", "edit document");
-	    print gui_button("btn_send", "sendDelivery()", "send delivery");
+	    print Core_Html::GuiButton("btn_del", "delete document", array("action" => "deleteDelivery($id)") );
+	    print Core_Html::GuiButton("btn_edit", "edit document", array("action" =>"editDelivery()"));
+	    print Core_Html::GuiButton("btn_send", "send delivery", array("action" =>"sendDelivery()"));
 	}
 }
 
@@ -60,25 +78,6 @@ if ( ! $send ) {
 
     function sendDelivery() {
         window.location.href = "/fresh/account/account-post.php?operation=send&del_ids=<?php print $id; ?>";
-    }
-
-    function deleteDelivery() {
-        var request = "delivery-post.php?operation=delete_delivery&delivery_id=<?php print $id; ?>";
-
-        xmlhttp = new XMLHttpRequest();
-        xmlhttp.onreadystatechange = function () {
-            // Wait to get delivery id.
-            if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
-            {
-                if (window.history)
-                    window.history.back();
-                else {
-                    alert("תעודה נמחקה. יש לסגור את החלון");
-                }
-            }
-        }
-        xmlhttp.open("GET", request, true);
-        xmlhttp.send();
     }
 
 </script>

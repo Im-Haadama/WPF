@@ -255,6 +255,14 @@ class Finance {
 		return false;
 	}
 
+	static function business_delete_transaction( $ref ) {
+		$sql = "DELETE FROM im_business_info "
+		       . " WHERE ref = " . $ref;
+
+		MyLog( $sql, __FILE__ );
+		sql_query( $sql );
+	}
+
 	static function admin_menu()
 	{
 		Finance_Settings::admin_menu();

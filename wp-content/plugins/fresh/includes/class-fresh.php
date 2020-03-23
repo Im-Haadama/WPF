@@ -526,6 +526,7 @@ class Fresh {
 //		$this->shortcodes->do_init();
 		$this->suppliers->init();
 		Fresh_Basket::init();
+		$this->delivery_manager->init();
 
 		$this->enqueue_scripts();
 
@@ -645,7 +646,6 @@ class Fresh {
 
 	    $file = FRESH_INCLUDES_URL . 'js/delivery.js';
 	    wp_enqueue_script( 'delivery', $file, null, $this->version, false );
-
     }
 
 	/*-- Start product quantity +/- on listing -- */

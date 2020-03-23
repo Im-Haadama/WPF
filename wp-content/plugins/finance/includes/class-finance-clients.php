@@ -76,6 +76,7 @@ class Finance_Clients {
 
 	static function install()
 	{
+		return;
 		$db_prefix = get_table_prefix();
 		if (! table_exists("client_accounts"))
 			sql_query("create table ${db_prefix}client_accounts

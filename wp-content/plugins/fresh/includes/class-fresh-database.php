@@ -19,32 +19,44 @@ class Fresh_Database extends Core_Database
 		$db_prefix = get_table_prefix();
 
 		if ($current == $version and ! $force) return true;
-		sql_query("create view im_products as select `fruity`.`wp_posts`.`ID`                    AS `ID`,
-       `fruity`.`wp_posts`.`post_author`           AS `post_author`,
-       `fruity`.`wp_posts`.`post_date`             AS `post_date`,
-       `fruity`.`wp_posts`.`post_date_gmt`         AS `post_date_gmt`,
-       `fruity`.`wp_posts`.`post_content`          AS `post_content`,
-       `fruity`.`wp_posts`.`post_title`            AS `post_title`,
-       `fruity`.`wp_posts`.`post_excerpt`          AS `post_excerpt`,
-       `fruity`.`wp_posts`.`post_status`           AS `post_status`,
-       `fruity`.`wp_posts`.`comment_status`        AS `comment_status`,
-       `fruity`.`wp_posts`.`ping_status`           AS `ping_status`,
-       `fruity`.`wp_posts`.`post_password`         AS `post_password`,
-       `fruity`.`wp_posts`.`post_name`             AS `post_name`,
-       `fruity`.`wp_posts`.`to_ping`               AS `to_ping`,
-       `fruity`.`wp_posts`.`pinged`                AS `pinged`,
-       `fruity`.`wp_posts`.`post_modified`         AS `post_modified`,
-       `fruity`.`wp_posts`.`post_modified_gmt`     AS `post_modified_gmt`,
-       `fruity`.`wp_posts`.`post_content_filtered` AS `post_content_filtered`,
-       `fruity`.`wp_posts`.`post_parent`           AS `post_parent`,
-       `fruity`.`wp_posts`.`guid`                  AS `guid`,
-       `fruity`.`wp_posts`.`menu_order`            AS `menu_order`,
-       `fruity`.`wp_posts`.`post_type`             AS `post_type`,
-       `fruity`.`wp_posts`.`post_mime_type`        AS `post_mime_type`,
-       `fruity`.`wp_posts`.`comment_count`         AS `comment_count`
-from `fruity`.`wp_posts`
-where ((`fruity`.`wp_posts`.`post_type` in ('product', 'product_variation')) and
-       (`fruity`.`wp_posts`.`post_status` = 'publish'));
+
+		sql_query("create view ${db_prefix}categories as select `wp_terms`.`term_id`    AS `term_id`,
+       `wp_terms`.`name`       AS `name`,
+       `wp_terms`.`slug`       AS `slug`,
+       `wp_terms`.`term_group` AS `term_group`
+from `wp_terms`
+where `wp_terms`.`term_id` in (select `wp_term_taxonomy`.`term_id`
+                                        from `wp_term_taxonomy`
+                                        where (`wp_term_taxonomy`.`taxonomy` = 'product_cat'));
+
+");
+
+		sql_query("create view im_products as select `wp_posts`.`ID`                    AS `ID`,
+       `wp_posts`.`post_author`           AS `post_author`,
+       `wp_posts`.`post_date`             AS `post_date`,
+       `wp_posts`.`post_date_gmt`         AS `post_date_gmt`,
+       `wp_posts`.`post_content`          AS `post_content`,
+       `wp_posts`.`post_title`            AS `post_title`,
+       `wp_posts`.`post_excerpt`          AS `post_excerpt`,
+       `wp_posts`.`post_status`           AS `post_status`,
+       `wp_posts`.`comment_status`        AS `comment_status`,
+       `wp_posts`.`ping_status`           AS `ping_status`,
+       `wp_posts`.`post_password`         AS `post_password`,
+       `wp_posts`.`post_name`             AS `post_name`,
+       `wp_posts`.`to_ping`               AS `to_ping`,
+       `wp_posts`.`pinged`                AS `pinged`,
+       `wp_posts`.`post_modified`         AS `post_modified`,
+       `wp_posts`.`post_modified_gmt`     AS `post_modified_gmt`,
+       `wp_posts`.`post_content_filtered` AS `post_content_filtered`,
+       `wp_posts`.`post_parent`           AS `post_parent`,
+       `wp_posts`.`guid`                  AS `guid`,
+       `wp_posts`.`menu_order`            AS `menu_order`,
+       `wp_posts`.`post_type`             AS `post_type`,
+       `wp_posts`.`post_mime_type`        AS `post_mime_type`,
+       `wp_posts`.`comment_count`         AS `comment_count`
+from `wp_posts`
+where ((`wp_posts`.`post_type` in ('product', 'product_variation')) and
+       (`wp_posts`.`post_status` = 'publish'));
 
 ");
 
@@ -71,6 +83,24 @@ order by 1;");
 		$db_prefix = get_table_prefix();
 
 		if ($current == $version and ! $force) return true;
+
+		sql_query("create table ${db_prefix}delivery_lines
+(
+	id bigint auto_increment
+		primary key,
+	delivery_id bigint not null,
+	product_name varchar(40) not null,
+	quantity float not null,
+	quantity_ordered float not null,
+	vat float not null,
+	price float not null,
+	line_price float not null,
+	prod_id int null,
+	unit_ordered float null,
+	part_of_basket int null,
+	a int null
+) charset=utf8;
+");
 
 		if (! table_exists("suppliers")) {
 			sql_query( "create table ${db_prefix}suppliers

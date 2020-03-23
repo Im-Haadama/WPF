@@ -12,19 +12,6 @@ error_reporting(E_ALL);
 
 require_once ("../../../../wp-config.php");
 
-//require_once( ROOT_DIR . "/org/business/business.php" );
-//require_once( ROOT_DIR . "/niver/fund.php" );
-//require_once( "../supplies/Supply.php" );
-//require_once( ROOT_DIR . '/org/business/business_info.php' );
-
-//require_once( ROOT_DIR . "/init.php" );
-//require_once('catalog.php');
-
-// print header_text(false);
-// To map item from price list to our database the shop manager select item from the price list
-// and product_id. The triplet: product_id, supplier_id and product_code are sent as saved
-// in im_supplier_products
-
 $debug = GetParam( "debug" );
 
 $operation = $_GET["operation"];
@@ -82,17 +69,6 @@ switch ( $operation ) {
 		operation_get_price( $id );
 		break;
 
-	case "delete_delivery":
-		$id = $_GET["delivery_id"];
-		if ( ! ( $id > 0 ) ) {
-			die ( "send delivery_id" );
-		}
-		$d = new delivery( $id );
-		$d->Delete();
-
-		business_delete_transaction( $id );
-		break;
-
 	case "check_delivery":
 		$order_id = $_GET["order_id"];
 		$id       = sql_query_single_scalar( "SELECT id FROM im_delivery WHERE order_id = " . $order_id );
@@ -123,7 +99,6 @@ function clear_legacy() {
 }
 
 function add_delivery_lines( $delivery_id, $lines, $edit ) {
-	print header_text();
 	if ( $edit ) {
 		$d = new delivery( $delivery_id );
 		$d->DeleteLines();
@@ -131,13 +106,15 @@ function add_delivery_lines( $delivery_id, $lines, $edit ) {
 
 	for ( $pos = 0; $pos < count( $lines ); $pos += 8 ) {
 		$prod_id = $lines[ $pos ];
+
+		$p = new Fresh_Product($prod_id);
 //		print "<br/>" . $prod_id;
 		if ($prod_id == -1)
 			$product_name = "הנחת סל";
 		else
 			if ( is_numeric( $prod_id ) ) {
 	//			print "int";
-				$product_name = get_product_name( $prod_id );
+				$product_name = $p->getName();
 			} else {
 	//			print "str";
 				if ( strstr( $prod_id, ")" ) ) {
@@ -162,8 +139,6 @@ function add_delivery_lines( $delivery_id, $lines, $edit ) {
 //        my_log("product_id = " . $product_id . ", supplier_id=" . $supplier_id . ", product_name=" . $product_name);
 		print "<div style=\"direction: ltr;\"> id: " . $prod_id . ", name: " . $product_name . " delivery_id: " . $delivery_id . " quantity: " . $quantity . " quantity_ordred: " . $quantity_ordered .
 		      "units: " . $unit_ordered . " vat: " . $vat . " price: " . $price . " line_price: " . $line_price . "</div>";
-		delivery::AddDeliveryLine( $product_name, $delivery_id, $quantity, $quantity_ordered, $unit_ordered, $vat, $price, $line_price, $prod_id, $part_of_basket );
+		Fresh_Delivery::AddDeliveryLine( $product_name, $delivery_id, $quantity, $quantity_ordered, $unit_ordered, $vat, $price, $line_price, $prod_id, $part_of_basket );
 	}
 }
-
-https://fruity.co.il/fresh/delivery/delivery-post.php?operation=add_lines&delivery_id=4304&lines=%D7%A1%D7%9C%20%D7%A4%D7%99%D7%A8%D7%95%D7%AA,0,1,0,0,80,0,0,%20-%20%D7%A2%D7%9D%20%D7%94%D7%90%D7%93%D7%9E%D7%94,1,1,0,0,3,3,0,),1,1,0,0,22.3,22.3,0,),1,1,0,0,8.1,8.1,0,),1,1,0,0,10.7,10.7,0,),1,1,0,0,14.4,14.4,0,),1,1,0,0,24.6,24.6,0,%D7%94%D7%A0%D7%97%D7%AA%20%D7%A1%D7%9C,1,0,0,0,-3.1,-3.1,0,%D7%A1%D7%9C%20%D7%91%D7%A1%D7%99%D7%A1%D7%99,0,1,0,0,85,0,0,),1,1,0,0,10.7,10.7,0,%20-%20%D7%A2%D7%9D%20%D7%94%D7%90%D7%93%D7%9E%D7%94,1,1,0,0,5.4,5.4,0,),1,1,0,0,11.8,11.8,0,),1,1,0,0,5.4,5.4,0,),1,1,0,0,14.4,14.4,0,),1,1,0,0,9.9,9.9,0,),1,1,0,0,16.9,16.9,0,),1,1,0,0,10.2,10.2,0,),1,1,0,0,9.6,9.6,0,%D7%94%D7%A0%D7%97%D7%AA%20%D7%A1%D7%9C,1,0,0,0,-9.3,-9.3,0,%D7%93%D7%9E%D7%99%20%D7%9E%D7%A9%D7%9C%D7%95%D7%97,1,0,0,1.45,10.00,10,0
