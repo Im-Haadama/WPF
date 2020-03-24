@@ -255,7 +255,7 @@ class Finance {
 		return false;
 	}
 
-	static function business_delete_transaction( $ref ) {
+	static function delete_transaction( $ref ) {
 		$sql = "DELETE FROM im_business_info "
 		       . " WHERE ref = " . $ref;
 
@@ -665,5 +665,15 @@ class Finance {
 
 		return sql_insert_id();
 	}
+
+	static function update_transaction( $delivery_id, $total, $fee ) {
+		$sql = "UPDATE im_business_info SET amount = " . $total . ", " .
+		       " delivery_fee = " . $fee .
+		       " WHERE ref = " . $delivery_id;
+
+		MyLog( $sql, __FILE__ );
+		sql_query( $sql );
+	}
+
 
 }

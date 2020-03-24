@@ -20,6 +20,25 @@ class Fresh_Database extends Core_Database
 
 		if ($current == $version and ! $force) return true;
 
+		sql_query("create table ${db_prefix}delivery_lines
+(
+	id bigint auto_increment
+		primary key,
+	delivery_id bigint not null,
+	product_name varchar(40) not null,
+	quantity float not null,
+	quantity_ordered float not null,
+	vat float not null,
+	price float not null,
+	line_price float not null,
+	prod_id int null,
+	unit_ordered float null,
+	part_of_basket int null,
+	a int null
+);
+
+");
+
 		sql_query("create view ${db_prefix}categories as select `wp_terms`.`term_id`    AS `term_id`,
        `wp_terms`.`name`       AS `name`,
        `wp_terms`.`slug`       AS `slug`,

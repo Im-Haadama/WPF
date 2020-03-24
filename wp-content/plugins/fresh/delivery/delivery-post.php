@@ -52,7 +52,7 @@ switch ( $operation ) {
 			$sql  = "SELECT id FROM wp_posts WHERE post_title = '" . urldecode( $name ) . "' and post_status = 'publish'";
 			$id   = sql_query_single_scalar( $sql );
 		}
-		$p = new Product( $id );
+		$p = new Fresh_Product( $id );
 		operation_get_price( $id );
 		print ',';
 		print $p->GetVatPercent();
@@ -90,7 +90,8 @@ function operation_get_price( $id ) {
 	}
 	$type = isset( $_GET["type"] ) ? $_GET["type"] : null;
 //	 print $id . " " . $type . "<br/>";
-	print get_price_by_type( $id, $type, $q );
+
+	print Fresh_Pricing::get_price_by_type( $id, $type, $q );
 
 }
 function clear_legacy() {
@@ -100,7 +101,7 @@ function clear_legacy() {
 
 function add_delivery_lines( $delivery_id, $lines, $edit ) {
 	if ( $edit ) {
-		$d = new delivery( $delivery_id );
+		$d = new Fresh_Delivery( $delivery_id );
 		$d->DeleteLines();
 	}
 

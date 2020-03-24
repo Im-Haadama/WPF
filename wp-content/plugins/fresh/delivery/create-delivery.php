@@ -6,39 +6,41 @@ error_reporting(E_ALL);
 
 require_once ('../../flavor/includes/core/class-core-fund.php');
 print Core_Fund::load_scripts(array('/wp-content/plugins/flavor/includes/core/gui/client_tools.js',
-	'/wp-content/plugins/fresh/includes/js/delivery.js'));
+	'/wp-content/plugins/fresh/includes/js/delivery.js',
+	'/wp-content/plugins/flavor/includes/core/data/data.js'));
 
 //print gui_datalist( "items", "im_products", "post_title", true );
 //print gui_datalist( "draft_items", "im_products_draft", "post_title", true );
 
 require_once ("../../../../wp-config.php");
+require_once ("../../../../im-config.php");
 
-//include_once( "delivery.php" );
 new Fresh_Delivery(0); // load delivery classes
 
 $edit     = false;
 $order_id = -1;
 $id = null; // delivery id
 
-
 /// If id is set -> edit. get order_id from id.
 /// Otherwise order_id should be set.
 if ( isset( $_GET["id"] ) ) {
 	$id          = $_GET["id"];
+	$d = new Fresh_Delivery($id);
 	if ( $id > 0 ) {
 		$edit     = true;
-		$order_id = get_order_id( $id );
+		$order_id = $d->OrderId();
+		$O = $d->getOrder();
 	}
 } else {
 	if ( isset( $_GET["order_id"] ) ) {
 		$order_id = $_GET["order_id"];
+		$O = new Fresh_Order($order_id);
 	} else {
 		print "nothing to work with<br/>";
 		die ( 1 );
 	}
 }
 
-$O = new Fresh_Order( $order_id );
 
 require ('create-delivery-script.php');
 
@@ -65,8 +67,8 @@ if ( $id > 0 ) {
 	print "<form name=\"delivery\" action= \"\">";
 	$O->infoBox();
 
-	$d = new Delivery( $id );
-	$d->PrintDeliveries( ImDocumentType::delivery, ImDocumentOperation::edit, false, $show_inventory );
+	$d = new Fresh_Delivery( $id );
+	$d->PrintDeliveries( FreshDocumentType::delivery, Fresh_DocumentOperation::edit, false, $show_inventory );
 
 	//$d = new delivery( $id );
 	print "</form>";
@@ -107,7 +109,7 @@ if ( ! $edit ) { // New
 	$show_save_draft = true;
 } else {
 	// Still draft
-	$d               = delivery::CreateFromOrder( $order_id );
+//	$d               = delivery::CreateFromOrder( $order_id );
 	$show_save_draft = $d->isDraft();
 }
 

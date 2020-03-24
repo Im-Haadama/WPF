@@ -268,8 +268,8 @@ class Fresh_Delivery {
 		$user = new Fresh_Client($client_id);
 
 		if ( $edit ) {
-			account_update_transaction( $total, $delivery_id, $client_id );
-			business_update_transaction( $delivery_id, $total, $fee );
+			$user->update_transaction( $total, $delivery_id);
+			Finance::update_transaction( $delivery_id, $total, $fee );
 		} else { // New!
 			$date = date( "Y-m-d" );
 
@@ -409,7 +409,7 @@ class Fresh_Delivery {
 		return $this->getOrder()->getCustomer()->getCustomerType();
 	}
 
-	private function getOrder() {
+	public function getOrder() {
 		if ( ! $this->order ) {
 			$this->order = new Fresh_Order( $this->OrderId() );
 		}
@@ -766,7 +766,7 @@ class Fresh_Delivery {
 						if (! $p->is_basket())
 							$line[ eDeliveryFields::delivery_q ] = Core_Html::GuiInput("quantity" . $this->line_number,
 							( $quantity_delivered > 0 ) ? $quantity_delivered : "",
-							array( "events" => 'onfocusout=leaveQuantityFocus(' . $this->line_number . ')" ' .
+							array( "events" => 'onfocusout="leaveQuantityFocus(' . $this->line_number . ')" ' .
 								'onkeypress="moveNextRow(' . $this->line_number . ')"')  );
 						break;
 					case Fresh_DocumentOperation::collect:
@@ -855,7 +855,6 @@ class Fresh_Delivery {
 		$line[eDeliveryFields::line_type] = Fresh_Delivery::line_type($prod_id);
 		$line[eDeliveryFields::client_comment] = $prod_comment;
 
-		// return gui_row( $line, $this->line_number, $show_fields, $sums, $delivery_fields_names, $style );
 		return $line;
 	}
 

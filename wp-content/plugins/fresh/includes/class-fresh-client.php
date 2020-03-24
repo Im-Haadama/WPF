@@ -11,8 +11,10 @@ class Fresh_Client {
 	 * @param $user_id
 	 */
 	public function __construct( $user_id = 0 ) {
-		if (! get_user_id()) return null;
-		if (! $user_id) $user_id = get_user_id();
+		if (! $user_id) {
+			if (! get_user_id()) die("no user");
+			$user_id = get_user_id();
+		}
 		$this->user_id = $user_id;
 	}
 
@@ -42,6 +44,13 @@ class Fresh_Client {
 		sql_query( $sql );
 	}
 
+	function update_transaction( $total, $delivery_id) {
+		$sql = "UPDATE im_client_accounts SET transaction_amount = " . $total .
+		       " WHERE transaction_ref = " . $delivery_id . " and client_id = " . $this->user_id;
+
+		MyLog( $sql, "account_update_transaction" );
+		sql_query( $sql );
+	}
 
 }
 

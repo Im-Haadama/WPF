@@ -88,8 +88,8 @@ error_reporting(E_ALL);
 //        row.insertCell(0).style.visibility = false;              // 0 - select
         var list = "items";
         if (draft) list = "draft_items";
-        //var input = "<?php //$args = array("events" => "onchange=\"getPrice(XX)\"", "datalist" => "YYY");
-        //    print escape_string(gui_select_product( "nam_XX", '', $args )); ?>//";
+        let input = "<?php $args = array("events" => "onchange=\"getPrice(XX)\"", "datalist" => "YYY");
+            print escape_string(Fresh_Product::gui_select_product( "nam_XX", '', $args )); ?>";
         input = input.replace(/XX/g, line_id);
         input = input.replace(/YYY/g, list);
 
