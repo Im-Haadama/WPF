@@ -103,6 +103,53 @@ order by 1;");
 
 		if ($current == $version and ! $force) return true;
 
+
+		sql_query("create table im_supplies
+(
+	id bigint(10) unsigned auto_increment
+		primary key,
+	status tinyint(2) not null,
+	date datetime not null,
+	supplier int(4) not null,
+	text varchar(500) null,
+	business_id int null,
+	paid_date date null,
+	mission_id int null,
+	picked bit default b'0' not null
+)
+");
+
+
+		sql_query("create table im_bundles
+(
+	id bigint(10) unsigned auto_increment
+		primary key,
+	prod_id bigint(10) unsigned not null,
+	quantity float unsigned not null,
+	margin varchar(10) not null,
+	bundle_prod_id int(10) not null,
+	is_active bit not null
+)
+
+");
+
+		sql_query("create table im_need
+(
+	id int auto_increment
+		primary key,
+	prod_id int null,
+	need_q float null,
+	need_u int null
+)
+");
+		sql_query("create table ${db_prefix}need_orders
+(
+	id int auto_increment
+		primary key,
+	order_id int null
+)
+");
+
 		sql_query("create table ${db_prefix}delivery_lines
 (
 	id bigint auto_increment

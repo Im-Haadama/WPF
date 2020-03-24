@@ -79,6 +79,9 @@
 			$menu->AddSubMenu("woocommerce", "edit_suppliers",
 				array('page_title' => 'Suppliers', 'function' => array("Fresh_Suppliers" , 'admin_page' )));
 
+			$menu->AddSubMenu("woocommerce", "edit_suppliers",
+				array('page_title' => 'Needed', 'function' => array("Fresh_Packing" , 'needed_products' )));
+
 			Fresh_Packing::add_admin($menu);
 		}
 

@@ -31,7 +31,8 @@ class Fresh_Packing {
 		if ( ! is_array( $totals ) ) {
 			$result .= $totals;
 		} else {
-			$args["selected_tab"] = array_key_first( $totals );
+//			foreach ($totals)
+			$args["selected_tab"] = 0; // array_key_first( $totals );
 			$result               .= Core_Html::GuiTabs( $totals, $args );
 		}
 
