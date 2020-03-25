@@ -45,11 +45,6 @@ function balance( $date, $client_id ) {
 
 // [displa-posts][su_posts posts_per_page="3"][su_posts posts_per_page="3" tax_term="21" order="desc"]
 
-function payment_get_accountants($payment_id)
-{
-	return sql_query_single_scalar("select accountants from im_payments where id = " . $payment_id);
-}
-
 function im_set_default_display_name( $user_id ) {
 	// $user = get_userdata( $user_id );
 	$user = get_user_by( "id", $user_id );

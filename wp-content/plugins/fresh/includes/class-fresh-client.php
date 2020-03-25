@@ -26,6 +26,20 @@ class Fresh_Client {
 		return round( sql_query_single_scalar( $sql ), 2 );
 	}
 
+	function get_payment_method( ) {
+		$m = get_user_meta( $this->user_id, "payment_method", true );
+		if ( $m ) {
+			return $m;
+		}
+
+		$p = sql_query_single_scalar( "SELECT id FROM im_payments WHERE `default` = 1" );
+		if ( $p ) {
+			return $p;
+		} else {
+			return "לא נבחר אמצעי ברירת מחדל";
+		}
+	}
+
 	function customer_type( ) {
 		$key = get_user_meta( $this->user_id, '_client_type', true );
 

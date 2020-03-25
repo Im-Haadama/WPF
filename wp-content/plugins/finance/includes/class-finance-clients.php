@@ -35,18 +35,19 @@ class Finance_Clients {
 			$customer_total = $row[0];
 			$customer_id    = $row[1];
 			$customer_name  = $row[2];
+			$C = new Fresh_Client($customer_id);
 
-			$line = gui_cell( gui_checkbox( "chk_" . $customer_id, "user_chk" ) );
+			$line = Core_Html::gui_cell( gui_checkbox( "chk_" . $customer_id, "user_chk" ) );
 			$line .= "<td><a href = \"get-customer-account.php?customer_id=" . $customer_id . "\">" . $customer_name . "</a></td>";
 
 			$line           .= "<td>" . $customer_total . "</td>";
-			$payment_method = get_payment_method( $customer_id );
-			$accountants = payment_get_accountants($payment_method);
+			$payment_method = $C->get_payment_method( );
+			$accountants = self::payment_get_accountants($payment_method);
 			// print $accountants . " " . get_user_id() . "<br/>";
 			if (!strstr($accountants, (string) get_user_id())) continue;
 
 			$line           .= "<td>" . $row[4] . "</td>";
-			$line           .= "<td>" . get_payment_method_name( $customer_id ) . "</td>";
+			$line           .= "<td>" . Finance_Payment_Methods::get_payment_method_name($payment_method) . "</td>";
 			if ( $include_zero || $customer_total > 0 ) {
 				//array_push( $data_lines, array( - $customer_total, $line ) );
 				array_push( $data_lines, array( $payment_method, $line ) );
@@ -67,11 +68,15 @@ class Finance_Clients {
 
 		print "<center><h1>יתרת לקוחות לתשלום</h1></center>";
 
-
 		$data .= "</table>";
 
 		print "$data";
 
+	}
+
+	static function payment_get_accountants($payment_id)
+	{
+		return sql_query_single_scalar("select accountants from im_payments where id = " . $payment_id);
 	}
 
 	static function install()

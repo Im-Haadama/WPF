@@ -103,6 +103,17 @@ order by 1;");
 
 		if ($current == $version and ! $force) return true;
 
+		sql_query("create table im_payments
+(
+	id int auto_increment,
+	name varchar(20) null,
+	`default` bit default b'0' null,
+	accountants varchar(100) null,
+	constraint im_payments_id_uindex
+		unique (id)
+)
+
+");
 
 		sql_query("create table im_supplies
 (
@@ -318,6 +329,17 @@ charset=utf8;");
 		$db_prefix = get_table_prefix();
 
 		if ($current == $version and ! $force) return true;
+
+		sql_query("drop function order_user");
+		sql_query("create function order_user(order_id int) returns int
+BEGIN
+    declare _user_id int;
+    SELECT meta_value INTO _user_id FROM wp_postmeta where post_id = order_id and meta_key = '_customer_user';
+
+    return _user_id;
+  END;
+
+");
 
 		sql_query("drop function supplier_balance");
 
