@@ -202,6 +202,7 @@ class Fresh {
 		Fresh_Packing::init_hooks();
 		Fresh_Suppliers::init_hooks();
 		Fresh_Order_Management::init_hooks();
+		// if (get_user_id() == 1) wp_set_current_user(474);
 	}
 
 	/**
@@ -211,7 +212,7 @@ class Fresh {
 	 */
 	public function log_errors() {
 		$error = error_get_last();
-		if ( in_array( $error['type'], array( E_ERROR, E_PARSE, E_COMPILE_ERROR, E_USER_ERROR, E_RECOVERABLE_ERROR ) ) ) {
+		if ( isset($error['type']) and  in_array( $error['type'], array( E_ERROR, E_PARSE, E_COMPILE_ERROR, E_USER_ERROR, E_RECOVERABLE_ERROR ) ) ) {
 			$logger = fresh_get_logger();
 			$logger->critical(
 			/* translators: 1: error message 2: file name and path 3: line number */

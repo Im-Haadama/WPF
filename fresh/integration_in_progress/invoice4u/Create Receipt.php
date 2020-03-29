@@ -28,7 +28,6 @@ class Document {
 		$this->AssociatedEmails = array( new Email() );
 		$this->Payments         = array( new Payment() );
 	}
-
 }
 
 class Discount {

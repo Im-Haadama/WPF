@@ -779,8 +779,7 @@ class Core_Data
 		$table_prefix = get_table_prefix();
 
 		$result = null;
-		$ignore_list = GetArg($args, "ignore_list", array("search", "operation", "table_name", "id", "dummy"));
-		$values = Core_Data::data_parse_get($table_name, $ignore_list);
+		$query_array = GetArg($args, "query_array", null); //Core_Data::data_parse_get($table_name, $ignore_list);
 
 		$id_field = GetArg($args, "id_field", "id");
 		$sql = "select $id_field from ${table_prefix}$table_name where 1 ";
@@ -788,10 +787,10 @@ class Core_Data
 
 		$params = array();
 
-		foreach ($values as $tbl => $changed_values)
+		foreach ($query_array as $tbl => $changed_values)
 		{
 			foreach ($changed_values as $field => $pair){
-				$is_meta = $pair[1]; if ($is_meta) die("not implemeted yet");
+				$is_meta = $pair[1]; if ($is_meta) die("$field: not implemeted yet: is_meta=" . $pair[1]);
 
 				$sql .= " and $field =? "; // " . quote_text($changed_value);
 				$count ++;
@@ -810,7 +809,7 @@ class Core_Data
 //		print $sql; print "<br/>";
 
 			$stmt = sql_prepare($sql);
-			sql_bind($table_prefix . $tbl, $stmt, $params);
+			sql_bind( $tbl, $stmt, $params);
 			if (! $stmt->execute())
 			{
 				return "no results";

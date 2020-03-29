@@ -50,11 +50,11 @@ function delivered(site, id, type) {
     xmlhttp.send();
 }
 
-function create_missions()
+function create_missions(post_file)
 {
-    let param = get_selected('checkbox_im_paths');
+    let param = get_selected('checkbox_paths');
     if (param.length < 1) { alert ("no path selected"); return; }
-    let url = '/routes/routes-post.php?operation=create_missions&path_ids=' + param;
+    let url = post_file + '?operation=create_missions&path_ids=' + param;
     execute_url(url, location_reload);
 }
 
@@ -62,6 +62,7 @@ function save_path_times(path_id)
 {
     let table = document.getElementById("zone_times");
     let params = new Array();
+
     for (let i = 1; i < table.rows.length; i++){
         params.push(get_value(table.rows[i].cells[1]));
         params.push(get_value(table.rows[i].cells[3]));
@@ -73,28 +74,37 @@ function save_path_times(path_id)
     execute_url(request, location_reload);
 }
 
-function delete_path_times(path_id)
+function delete_path_times(path_id, post_file)
 {
-    alert("not implemented");
-    return false;
-    // let table = document.getElementById("zone_times");
-    // let params = new Array();
+    let params = new Array();
+
+    var collection = document.getElementsByClassName("checkbox_zone_times");
+    for (var i = 0; i < collection.length; i++) {
+        var zone_name = collection[i].id.substr(4);
+        if (document.getElementById("chk_" + zone_name).checked)
+            params.push(encodeURI(zone_name));
+    }
+
     // for (let i = 1; i < table.rows.length; i++){
+    //     if ()
     //     params.push(get_value(table.rows[i].cells[1]));
     //     params.push(get_value(table.rows[i].cells[3]));
     // }
-    //
-    // // alert(params);
-    // let request = "/routes/routes-post.php?operation=save_path_times&params=" + params.join() + '&path_id=' + path_id;
-    //
-    // execute_url(request, location_reload);
+
+    // alert(params);
+    let request = post_file + "?operation=path_remove_times&params=" + params.join() + '&path_id=' + path_id;
+
+    execute_url(request, location_reload);
 }
 
-function add_zone_times(path_id)
+function add_zone_times(path_id, post_file)
 {
     let zones = get_value_by_name("zone_id");
     let times = get_value_by_name("zone_time");
 
-    let request = "/routes/routes-post.php?operation=add_zone_times&path_id=" + path_id + "&zones=" + zones + "&time="+times;
-    execute_url(request, location_reload);
+    let request = add_param_to_url(post_file, "operation", "add_zone_times");
+    request = add_param_to_url(request, "path_id", path_id);
+    request = add_param_to_url(request, "time", times);
+    request = add_param_to_url(request, "zones", zones)
+    window.location.href = request;
 }

@@ -171,10 +171,6 @@ switch ( $operation ) {
 		print show_trans($customer_id, eTransview::default, $args);
 		return;
 
-	case "total":
-		$customer_id = $_GET["customer_id"];
-		print "יתרה: " . sql_query_single_scalar( "SELECT round(sum(transaction_amount), 1) FROM im_client_accounts WHERE client_id = " . $customer_id );
-		break;
 
 	case "send":
 		$del_ids = GetParam("del_ids", true);

@@ -472,8 +472,12 @@ class Focus_Tasks {
 
 
 			case "show_tasks":
-				$query = Core_Data::data_parse_get( "tasklist", array( "operation" ) );
-				$ids   = Core_Data::data_search( "tasklist", $query );
+
+				$query_array = Core_Data::data_parse_get( "tasklist", array("search", "operation", "table_name", "id", "dummy") );
+				// Todo: handle default values
+				$query_array["tasklist"]["status"] = array(0, false);
+				$args["query_array"] = $query_array;
+				$ids   = Core_Data::data_search( "tasklist", $args );
 
 				return self::show_tasks( $ids );
 
@@ -650,8 +654,9 @@ class Focus_Tasks {
 		$args["links"] = array( "id" => self::get_link( "task", "%s" ) );
 		$args["title"] = __("Tasks in project") . " " . $P->getName();
 		$args["prepare_plug"] = __CLASS__ . "::prepare_row";
-		$args["query"] = " project_id=$project_id";
+		$args["query"] = " project_id=$project_id and status < 2";
 		$args["hide_cols"] = array("task_description" => 1);
+		$args["order"] = " id desc";
 		// $args["post_file"] .= "project_id=$project_id";
 
 		unset_by_value($args["fields"], "project_id");
@@ -2466,13 +2471,17 @@ if ( ! function_exists( 'gui_select_repeat_time' ) ) {
 // Allow later users to set page name.
 // For now just the default.
 
-function gui_select_worker( $id = null, $selected = null, $args = null ) {
-	return Focus_Tasks::gui_select_worker( $id, $selected, $args );
-}
+// Conflicts with 2.8.4.1
+// 0-==-=--=-=-=-=-=-==-=-=\
 
-function gui_select_project( $id, $value, $args ) {
-	return Focus_Tasks::gui_select_project( $id, $value, $args );
-}
+
+//function gui_select_worker( $id = null, $selected = null, $args = null ) {
+//	return Focus_Tasks::gui_select_worker( $id, $selected, $args );
+//}
+
+//function gui_select_project( $id, $value, $args ) {
+//	return Focus_Tasks::gui_select_project( $id, $value, $args );
+//}
 
 
 /*

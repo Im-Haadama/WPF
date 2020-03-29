@@ -30,4 +30,12 @@ class Core_Database {
 		return sql_query( $sql, false) != null;
 	}
 
+	static function view_exists( $table ) {
+		$db_prefix = get_table_prefix();
+		$sql = 'SELECT 1 FROM ' . $db_prefix .$table . ' LIMIT 1';
+		return sql_query( $sql, false) != null;
+	}
+
+
+
 }

@@ -38,8 +38,6 @@ function handle_routes_do($operation)
 
 			return;
 		case "create_missions":
-			$path_ids = GetParamArray("path_ids", true); // Path ids.
-			return create_missions($path_ids);
 	    case "save_path_times":
 	    	$path_id = GetParam("path_id", true);
 	    	if (path_save_times($path_id, GetParamArray("params", true))) print "done";
@@ -173,40 +171,6 @@ function handle_routes_show($operation, $debug = false)
  * @return string
  * @throws Exception
  */
-function show_missions($query = null)
-{
-    $result = "";
-
-    if (! $query) $week = date('Y-m-d', strtotime('last sunday'));
-
-    $sql = "select id from im_missions where " . $query; // FIRST_DAY_OF_WEEK(date) = " . quote_text($week);
-
-	$missions = sql_query_array_scalar($sql);
-
-	if ( count( $missions )  == 0) {
-	    $result .= ImTranslate("No missions for given period");
-		$result .= Core_Html::GuiHyperlink("Last week", AddToUrl("week" , date( "Y-m-d", strtotime( "last sunday" )))) . " ";
-		$result .= Core_Html::GuiHyperlink("This week", AddToUrl("week" , date( "Y-m-d", strtotime( "sunday" )))) . " ";
-		$result .= Core_Html::GuiHyperlink("Next week", AddToUrl("week", date( "Y-m-d", strtotime( "next sunday" ))));
-		return $result;
-	}
-
-	$args = array();
-	$args["edit"] = false;
-	$args["add_checkbox"] = true;
-	$args["post_file"] = GetUrl(1);
-
-	$sql = "select * from im_missions where id in (" . CommaImplode($missions) . ")";
-
-	$args["links"] = array("id" => GetUrl(true) . "?operation=show_mission&id=%s");
-
-	// $args["events"] = array("mission_id" => "mission_changed(order_id))
-	$args["sql"] = $sql;
-	$args["hide_cols"] = array("zones_times"=>1);
-	$result .= GemTable("missions", $args);
-
-	return $result;
-}
 
 /**
  * @param $site_id
@@ -925,33 +889,6 @@ function collect_points($data_lines, $mission_id, &$prerequisite, &$supplies_to_
  * @return string
  * @throws Exception
  */
-function show_paths($args = null)
-{
-    $result = "";
-    $result .= Core_Html::gui_header(1, "Shipping paths");
-    $args["selectors"] = array(/* "zones" => "gui_select_zones", */"week_days" => "gui_select_days");
-    $args["id_field"] = "id";
-    $args["links"] = array("id" => AddToUrl(array( "operation" => "show_path", "path_id" => "%s")));
-    $args["add_checkbox"] = true;
-    $args["header_fields"] = array("checkbox" => "select", "id" => "Id", "path_code" => "Path code", "description" => "Description", "zones_times" => "Zones", "week_days" => "Week days");
-
-	$paths_data = Core_Data::TableData("select * from im_paths", $args);
-	$args["edit"] = false;
-	foreach ($paths_data as $path_id => &$path_info){
-		if ($path_id == "header") continue;
-		$path_info['zones_times'] = path_get_zones($path_id, $args);
-	}
-	$result .= GemArray($paths_data, $args, "im_paths");
-    $result .= Core_Html::GuiButton("btn_instance", "create_missions()", "create missions");
-
-    $result .= Core_Html::gui_header(2, "Coming missions");
-    $result .= show_missions( "date > " . QuoteText(date('Y-m-d')));
-
-    $result .= "<br/>";
-    $result .= GuiHyperlink("עדכון שיטות משלוח", "/routes/routes-page.php?operation=update_shipping_methods");
-
-    return $result;
-}
 
 
 /**
@@ -960,26 +897,7 @@ function show_paths($args = null)
  *
  * @return string
  */
-function path_get_zones($path_id, $sorted = true)
-{
-	$zone_times = path_get_zone_times($path_id);
 
-	$result = "";
-	foreach ($zone_times as $zone_id => $zone)
-		$result .= zone_get_name($zone_id) . ", ";
-
-	return rtrim($result, ", ");
-}
-
-function path_add_zone($path_id, $zones, $time)
-{
-	$time_zones = path_get_zone_times($path_id);
-	foreach($zones as $zone)
-		$time_zones[$zone] = $time;
-	$s = serialize($time_zones);
-	$sql = "update im_paths set zones_times = '" . $s . "' where id = " . $path_id;
-	return sql_query($sql);
-}
 
 /**
  * @param $path_id
@@ -995,23 +913,6 @@ function path_add_zone($path_id, $zones, $time)
  * @return string|null
  * @throws Exception
  */
-function path_get_zone_time_table($path_id, $args)
-{
-	$table = [];
-	$sorted = GetArg($args, "sort", true);
-	$zone_times = path_get_zone_times($path_id, $sorted);
-	foreach (path_get_zone_times($path_id) as $zone_id => $zone_time) {
-		// $row_event = sprintf($events, $zone_id);
-		// $args["events"] = $row_event;
-		$table[$zone_id] = array("id" => $zone_id,
-		                         "name" => zone_get_name($zone_id),
-		                         "times" => GuiInput("times_" . $zone_id, $zone_times[$zone_id], $args));
-	}
-	array_unshift($table, array("Id", "Zone name", "Zone times"));
-	$args["add_checkbox"] = true;
-	$args["add_button"] = false;
-	return GemArray($table, $args, "zone_times");
-}
 
 /**
  * @param $path_id
@@ -1019,29 +920,6 @@ function path_get_zone_time_table($path_id, $args)
  * @return string
  * @throws Exception
  */
-function show_path($path_id)
-{
-    $result = "";
-    $args = [];
-	$args["selectors"] = array("week_days" => "gui_select_days");
-	$args["hide_cols"] = array("zones_times" => 1);
-    $result .= GemElement("im_paths", $path_id, $args);
-    $table = array();
-    // $events = 'onchange=onchange=changed_field(%s)';
-	$result .= path_get_zone_time_table($path_id, $args);
-    $result .= Core_Html::GuiButton("btn_save", "save_path_times(" . $path_id .")", "Save");
-	$result .= Core_Html::GuiButton("btn_delete", "delete_path_times(" . $path_id .")", "Delete");
-
-    print Core_Html::Br();
-
-    $result .= gui_table_args(array("header" => array("zone_id" => "Zone", "zone_times" => "Times"),
-	    array("zone_id" => GuiSelectZones("zone_id", null, array( "edit" => true)),
-	          "zone_times" => GuiInput("zone_time", "13-16"))));
-
-    $result .= Core_Html::GuiButton("btn_add_zone_times", "add_zone_times(" . $path_id . ")", "Add");
-
-    return $result;
-}
 
 /**
  * @param $path_id
@@ -1049,17 +927,6 @@ function show_path($path_id)
  *
  * @return bool|mysqli_result|null
  */
-function path_save_times($path_id, $params)
-{
-	$path_times = array();
-	for ($i = 0; $i < count($params); $i += 2) {
-		$zone_id = $params[$i];
-		$times = $params[$i + 1];
-		$path_times[$zone_id] = $times;
-	}
-	$sql = "update im_paths set zones_times = " . QuoteText(escape_string(serialize($path_times))) . ' where id = ' . $path_id ;
-	return sql_query($sql);
-}
 
 
 /**
@@ -1085,10 +952,4 @@ function show_today_routes()
 
 }
 
-function zone_get_name( $id ) {
-	if (! ($id > 0)){
-		print debug_trace();
-		die ("bad zone id");
-	}
-	return sql_query_single_scalar( "SELECT zone_name FROM wp_woocommerce_shipping_zones WHERE zone_id = " . $id );
-}
+

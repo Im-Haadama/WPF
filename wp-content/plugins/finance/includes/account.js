@@ -5,6 +5,7 @@
 function update_sum() {
     var collection = document.getElementsByClassName("trans_checkbox");
     var total = 0;
+    if (isNaN(total)) total = 0;
     var credit = parseFloat(get_value(document.getElementById("credit")));
     if (isNaN(credit)) credit = 0;
     var bank = parseFloat(get_value(document.getElementById("bank")));
@@ -64,3 +65,29 @@ function account_get_row_ids() {
     return row_ids;
 }
 
+function create_receipt(post_file, customer_id) {
+    disable_btn('btn_receipt');
+
+    let row_ids = account_get_row_ids();
+
+    let credit = parseFloat(get_value(document.getElementById("credit")));
+    if (isNaN(credit)) credit = 0;
+    let bank = parseFloat(get_value(document.getElementById("bank")));
+    if (isNaN(bank)) bank = 0;
+    let cash = parseFloat(get_value(document.getElementById("cash")));
+    if (isNaN(cash)) cash = 0;
+    let check = parseFloat(get_value(document.getElementById("check")));
+    if (isNaN(check)) check = 0;
+    let date = get_value(document.getElementById("pay_date"));
+    let request = post_file + "?operation=create_receipt" +
+    "&cash=" + cash +
+    "&credit=" + credit +
+    "&bank=" + bank +
+    "&check=" + check +
+    "&date=" + date +
+    "&change=" + change.innerHTML +
+    "&row_ids=" + row_ids.join() +
+    "&user_id=" + customer_id;
+
+    execute_url(request, location_reload);
+}

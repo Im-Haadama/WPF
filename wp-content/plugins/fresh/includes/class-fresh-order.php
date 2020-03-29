@@ -609,7 +609,7 @@ class Fresh_Order {
 			                           " WHERE prod_id = " . $prod_or_var .
 			                           " AND delivery_id = " . $d_id );
 			if ( $q_in_ordered != $q_supplied ) {
-				MyLog( __METHOD__ . " change stock by " . $q_supplied - $q_in_ordered );
+				MyLog( __METHOD__ . " change stock by " . ($q_supplied - $q_in_ordered) );
 				$p->setStock( $q_supplied - $q_in_ordered );
 			}
 		}

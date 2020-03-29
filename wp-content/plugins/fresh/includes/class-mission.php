@@ -50,6 +50,9 @@ class Mission {
 	 */
 	public function __construct( $id ) {
 		$this->id = $id;
+		if (! $id) return; // New mission.
+
+		// Load from db
 		$sql      = "select name, hour(start_h), MINUTE(start_h), start_address, end_address, end_h, date from im_missions where id = " . $id;
 		$result   = sql_query_single( $sql );
 		if ( ! $result ) {
@@ -208,10 +211,15 @@ class Mission {
 	public static function CreateFromPath($path_id, $forward_days = 8) // from tomorrow till tomorrow+forward_days
 	{
 		$last_mission_id = sql_query_single_scalar("select max(id) from im_missions where path_code = $path_id");
-		$last_mission = new Mission($last_mission_id);
+		if ($last_mission_id)
+			$last_mission = new Mission($last_mission_id);
+		else
+			$last_mission = new Mission(0);
+
 		$path_days = sql_query_single_scalar("select week_days from im_paths where id = " . $path_id);
+
 		for ($day = strtotime('tomorrow') ; $day < strtotime("tomorrow +$forward_days days");  $day += 86400) {
-			if (in_array(date('w', $day), explode(",", $path_days))){
+			if (in_array(date('w', $day), explode(":", $path_days))){
 				$sql = "select count(*) from im_missions where path_code = " . $path_id . " and date = " . QuoteText(date('Y-m-d', $day));
 				if (sql_query_single_scalar($sql) > 0) continue;
 				if (! $last_mission->create_mission_path_date($path_id, date('Y-m-d',$day))) return false;
@@ -222,6 +230,7 @@ class Mission {
 
 	private function create_mission_path_date($path_id, $date)
 	{
+		global $store_address;
 		$path = new Fresh_Path($path_id);
 		if (! $path) return false;
 
@@ -231,8 +240,11 @@ class Mission {
 		$zones = $path->getZones();
 		$name = $path->getDescription();
 
+		$s_address = ($this->getId() ? $this->getStartAddress() : $store_address);
+		$e_address = ($this->getId() ? $this->getEndAddress() : $store_address);
+
 		$sql = "insert into im_missions (date, start_h, end_h, zones_times, name, path_code, start_address, end_address) " .
-			" values ('$date', '$start_hour:00', '$end_hour:00', '$zones', '$name', '$path_id', '" . $this->getStartAddress(). "', '" . $this->getEndAddress()."') ";
+			" values ('$date', '$start_hour:00', '$end_hour:00', '" . serialize($zones) . "', '$name', '$path_id', '" . $s_address. "', '" . $e_address ."') ";
 
 		sql_query($sql);
 		return sql_insert_id();
@@ -282,58 +294,6 @@ class Mission {
  *
  * @return bool
  */
-function update_wp_woocommerce_shipping_zone_methods($args) {
-//	$ignore_list = array("id");
-	$instance_id = GetArg( $args, "instance_id", null );
-	if ( ! ( $instance_id > 0 ) ) {
-		die ( "Error: #R1 invalid instance_id" );
-	}
-
-// Coundn't find out how to do that....
-//	$zone_id = GetArg($args, "zone_id", null);
-//	if (! ($zone_id > 0)) die ("Error: #R1 invalid id");
-//	$enable = GetArg($args, "is_enabled", null);
-	//	$z = WC_Shipping_Zones::get_zone( $zone_id );
-//	$methods = $z->get_shipping_methods();
-
-//	$methods[$instance_id]->enabled = $enable;
-
-//	$methods[$instance_id]->shipping_zone_methods_save_changes();
-//
-//
-//	$z1 = WC_Shipping_Zones::get_zone( $zone_id );
-//	$methods1 = $z1->get_shipping_methods();
-
-	// Updating directly to db. and prepare array to wp_options
-	$options       = [];
-	$sql           = "update wp_woocommerce_shipping_zone_methods set ";
-	$table_list    = array( "is_enabled", "method_order" ); // Stored in the wp_woocommerce_shipping_zone_methods table
-	$update_table  = false;
-	$update_option = false;
-	$option_id     = 'woocommerce_flat_rate_' . $instance_id . '_settings';
-	$options       = get_wp_option( $option_id );
-
-	foreach ( $args as $k => $v ) {
-		if ( ! in_array( $k, $table_list ) ) {
-			$options[ $k ] = $v;
-			$update_option = true;
-			continue;
-		}
-		$sql          .= $k . "=" . QuoteText( $v ) . ", ";
-		$update_table = true;
-	}
-	if ( $update_table ) {
-		$sql = rtrim( $sql, ", " );
-		$sql .= " where instance_id = " . $instance_id;
-		if ( ! sql_query( $sql ) ) {
-			return false;
-		}
-	}
-
-	if ( $update_option ) {
-		update_wp_option( 'woocommerce_flat_rate_' . $instance_id . '_settings', $options );
-	}
-}
 
 
 /**

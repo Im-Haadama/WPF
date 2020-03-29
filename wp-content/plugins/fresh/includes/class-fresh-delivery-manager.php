@@ -60,6 +60,8 @@ class Fresh_Delivery_Manager
 
 	static function update_shipping_methods()
 	{
+		print 1/0;
+		return;
 		if (! self::create_missions()) return false;
 		return self::do_update_shipping_methods();
 	}
@@ -69,6 +71,7 @@ class Fresh_Delivery_Manager
 		$result = "";
 		if (! $path_ids) $path_ids = sql_query_array_scalar("select distinct id from im_paths");
 		foreach ($path_ids as $path_id){
+//			print "handling $path_id<br/>";
 			$result .= Core_Html::gui_header(1, "Create missions");
 			if (! Mission::CreateFromPath($path_id, 8)) return false;
 		}
@@ -119,14 +122,8 @@ class Fresh_Delivery_Manager
 				$start = strtok($zone_info, "-");
 				$end = strtok(",");
 				$instance_id = strtok(null);
+				$result .= self::update_shipping_method($instance_id, $date, $start, $end);
 
-				$args                = [];
-				$args["is_enabled"]  = 1;
-				$args["instance_id"] = $instance_id;
-				$args["title"]       = DateDayName( $date ) . " " . date('d/m/Y', strtotime($date)) . ' ' . $start . "-". $end;
-				$result .= $args["title"] . "<br/>";
-				$result .= "$start $end $instance_id<br/>";
-				update_wp_woocommerce_shipping_zone_methods( $args );
 				array_push($instances_updated, $instance_id);
 			}
 		}
@@ -155,6 +152,19 @@ class Fresh_Delivery_Manager
 			}
 		}
 		return $result;
+	}
+
+	static function update_shipping_method($instance_id, $date, $start, $end)
+	{
+		$args                = [];
+		$args["is_enabled"]  = 1;
+		$args["instance_id"] = $instance_id;
+		$args["title"]       = DateDayName( $date ) . " " . date('d/m/Y', strtotime($date)) . ' ' . $start . "-". $end;
+//		$result .= "$start $end $instance_id<br/>";
+		if (update_wp_woocommerce_shipping_zone_methods( $args ))
+			return $args["title"];
+		else
+			return "failed";
 	}
 
 	static function show_shipping_methods()
@@ -318,3 +328,57 @@ class Fresh_Delivery_Manager
 //
 //	return true;
 //}
+
+function update_wp_woocommerce_shipping_zone_methods($args) {
+//	$ignore_list = array("id");
+	$instance_id = GetArg( $args, "instance_id", null );
+	if ( ! ( $instance_id > 0 ) ) {
+		print __ ( "Error: #R1 invalid instance_id" );
+		return false;
+	}
+
+// Coundn't find out how to do that....
+//	$zone_id = GetArg($args, "zone_id", null);
+//	if (! ($zone_id > 0)) die ("Error: #R1 invalid id");
+//	$enable = GetArg($args, "is_enabled", null);
+	//	$z = WC_Shipping_Zones::get_zone( $zone_id );
+//	$methods = $z->get_shipping_methods();
+
+//	$methods[$instance_id]->enabled = $enable;
+
+//	$methods[$instance_id]->shipping_zone_methods_save_changes();
+//
+//
+//	$z1 = WC_Shipping_Zones::get_zone( $zone_id );
+//	$methods1 = $z1->get_shipping_methods();
+
+	// Updating directly to db. and prepare array to wp_options
+	$options       = [];
+	$sql           = "update wp_woocommerce_shipping_zone_methods set ";
+	$table_list    = array( "is_enabled", "method_order" ); // Stored in the wp_woocommerce_shipping_zone_methods table
+	$update_table  = false;
+	$update_option = false;
+	$option_id     = 'woocommerce_flat_rate_' . $instance_id . '_settings';
+	$options       = get_wp_option( $option_id );
+
+	foreach ( $args as $k => $v ) {
+		if ( ! in_array( $k, $table_list ) ) {
+			$options[ $k ] = $v;
+			$update_option = true;
+			continue;
+		}
+		$sql          .= $k . "=" . QuoteText( $v ) . ", ";
+		$update_table = true;
+	}
+	if ( $update_table ) {
+		$sql = rtrim( $sql, ", " );
+		$sql .= " where instance_id = " . $instance_id;
+		if ( ! sql_query( $sql ) ) {
+			return false;
+		}
+	}
+
+	if ( $update_option ) {
+		update_wp_option( 'woocommerce_flat_rate_' . $instance_id . '_settings', $options );
+	}
+}

@@ -7,8 +7,6 @@
  * Time: 06:25
  */
 
-require_once( "Constants.php" );
-
 define( "ApiService", "https://api.invoice4u.co.il/Services" );
 
 class Customer {
@@ -23,7 +21,7 @@ class Customer {
 
 }
 
-class Invoice4u {
+class Finance_Invoice4u {
 	public $token;
 	public $result;
 	private $user, $password;
@@ -49,14 +47,11 @@ class Invoice4u {
 	}
 
 	private function DoLogin( $invoice_user, $invoice_password ) {
-		// print "EWE invoice login<br/>";
 		$wsdl = ApiService . "/LoginService.svc?wsdl";
 		$user = array( 'username' => $invoice_user, 'password' => $invoice_password, 'isPersistent' => false );
-		// $user = array('username' => 'Test@test.com', 'password' => '123456', 'isPersistent' => false);
 
 		$this->requestWS( $wsdl, "VerifyLogin", $user );
 		$this->token = $this->result;
-		// var_dump ($this->token);
 	}
 
 	private function requestWS( $wsdl, $service, $params ) {
@@ -151,7 +146,7 @@ class Invoice4u {
 //        $this->result = $this->requestWS($wsdl, "CreateDocument", array('doc' => $this->doc, 'token' => $this->token));
 //    }
 
-	public function GetInvoiceUserId( $customer_id ) {
+	public function GetInvoiceUserId( $customer_id, $client_email = null) {
 		if ( ! ( $customer_id > 0 ) ) {
 			throw new Exception( "Bad customer id " . __CLASS__ . " " . $customer_id );
 		}
@@ -163,7 +158,9 @@ class Invoice4u {
 			return $id;
 		}
 
-		$client_email = get_customer_email( $customer_id );
+		if (! $client_email) return null;
+
+//		$client_email = get_customer_email( $customer_id );
 		// print $client_email;
 		MyLog( "performance - seaching customer by email", __METHOD__ );
 		$client = $this->GetCustomerByEmail( $client_email );
@@ -389,6 +386,30 @@ public $PaymentType = 5; // Credit*/
 class Email {
 	public $Mail; // = "yaakov@im-haadama.co.il";
 	public $IsUserMail = false;// means that this is the user email, and this is the email that sends the document to all associated email
+}
+
+abstract class Language {
+	const Hebrew = 1;
+	const English = 2;
+}
+
+abstract class DocumentType {
+	const Invoice = 1;
+	const Receipt = 2;
+	const InvoiceReceipt = 3;
+	const InvoiceCredit = 4;
+	const ProformaInvoice = 5;
+	const InvoiceOrder = 6;
+	const InvoiceShip = 8;
+	const Deposits = 9;
+}
+
+abstract class PaymentType {
+	const CreditCard = 1;
+	const Check = 2;
+	const MoneyTransfer = 3;
+	const Cash = 4;
+	const Credit = 5;
 }
 
 ?>

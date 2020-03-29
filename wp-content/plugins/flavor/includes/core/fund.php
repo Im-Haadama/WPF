@@ -24,7 +24,6 @@ if (!defined('WC_LOG_DIR')) {
 	function MyLog( $msg, $title = '', $file = null )
 	{
 		$error_file = WC_LOG_DIR . ( $file ? $file : 'fresh.log' );
-//    print $error_file;
 		$date = date( 'd.m.Y h:i:s' );
 		$msg  = print_r( $msg, true );
 		$log  = $date . ": " . $title . "  |  " . $msg . "\n";

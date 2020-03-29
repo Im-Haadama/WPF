@@ -46,10 +46,12 @@ class Core_Logger
 
 	function log($severity, $message)
 	{
+		$db_prefix = get_table_prefix();
+
 		if (isset($this->filter_levels[$severity])) return true;
 		switch (self::$mode){
 			case "db":
-				$sql = sprintf("insert into im_log (time, source, severity, message) \n" .
+				$sql = sprintf("insert into ${db_prefix}log (time, source, severity, message) \n" .
 				               "values(NOW(), '%s', %d, '%s')", $this->source, $severity, escape_string($message));
 
 				return sql_query($sql);
@@ -88,7 +90,7 @@ class Core_Logger
 	{
 		$result = "";
 		$args = self::Args();
-		if (isset($args["row_id"])) return Core_Gem::GemElement("im_log", $args["row_id"], $args);
+		if (isset($args["row_id"])) return Core_Gem::GemElement("log", $args["row_id"], $args);
 		$result .= Core_Gem::GemTable("log", $args);
 		return $result;
 	}

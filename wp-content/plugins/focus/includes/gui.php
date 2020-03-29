@@ -35,24 +35,4 @@ function gui_select_task( $id, $value, $args ) {
 	}
 	return Core_Html::GuiAutoList($id, "tasks", $args);
 }
-
-function GuiSelectZones($id, $selected, $args)
-{
-	$edit = GetArg($args, "edit", false);
-
-	if (! $edit) {
-		$f = strtok($selected, ":");
-		$result = zone_get_name($f);
-		while ($z = strtok( ":")) $result .= ", " . zone_get_name($z);
-		return $result;
-	}
-	$wc_zones = WC_Shipping_Zones::get_zones();
-//	var_dump($wc_zones);
-
-	$args["values"] = $wc_zones;
-	$events = GetArg($args, "events", null);
-	$args["multiple"] = true;
-
-	return gui_select( $id, "zone_name", $wc_zones, $events, $selected, "id", "class", true );
-}
 }

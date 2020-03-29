@@ -89,6 +89,10 @@ class Fresh_Path {
 		return $zone_times;
 	}
 
+	function AddShipping($instance_id, $time)
+	{
+
+	}
 	static function getAll()
 	{
 		return sql_query_array_scalar("select id from im_paths");

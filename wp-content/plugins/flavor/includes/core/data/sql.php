@@ -300,6 +300,8 @@ function sql_query_single_scalar( $sql, $report_error = true ) {
 		die( 2 );
 	}
 	$arr = mysqli_fetch_row( $result );
+	if (! $arr)
+		return null;
 
 	return $arr[0];
 }

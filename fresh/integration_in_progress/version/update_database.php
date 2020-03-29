@@ -1002,25 +1002,6 @@ function drop_projects()
 
 	sql_query("drop table ${db_prefix}projects");
 }
-function aa()
-{
-	$db_prefix = get_table_prefix();
-
-	sql_query("drop function supplier_balance");
-	$sql = "create function supplier_balance (_supplier_id int, _date date) returns float   
-BEGIN
-declare _amount float;
-select sum(amount) into _amount from ${db_prefix}business_info
-where part_id = _supplier_id
-and date <= _date
-and is_active = 1
-and document_type in (" . FreshDocumentType::bank . "," . FreshDocumentType::invoice . "," . FreshDocumentType::refund . "); 
-
-return round(_amount, 0);
-END;";
-	sql_query($sql);
-
-}
 
 print "done";
 

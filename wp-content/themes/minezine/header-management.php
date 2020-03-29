@@ -94,7 +94,7 @@ wp_nav_menu( array( 'menu'=> $menu_name, 'theme_location'=> $menu_location ) );
 <!--    <div class="header-image"><img src="--><?php //header_image(); ?><!--" alt="--><?php //bloginfo( 'name' ); ?><!--" /></div>-->
 <?php } ?>
 <?php } else { ?>
-<?php if ( get_header_image() != '' && get_theme_mod('minezine_display_header_image', minezine_default_options('minezine_display_header_image')) != 'Only on Homepage' ) { ?>    
+<?php if ( get_header_image() != '' && get_theme_mod('minezine_display_header_image', minezine_default_options('minezine_display_header_image')) != 'Only on Homepage' ) { ?>
     <div class="header-image"><img src="<?php header_image(); ?>" alt="<?php bloginfo( 'name' ); ?>" /></div>
 <?php } ?>
 <?php } ?>

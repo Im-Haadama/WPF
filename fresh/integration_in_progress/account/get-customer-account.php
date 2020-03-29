@@ -252,39 +252,6 @@ print  "</h1> </center>";
 
 if ( $manager ) {
 
-	$invoice   = new Invoice4u( $invoice_user, $invoice_password );
-	$client_id = $invoice->GetInvoiceUserId( $customer_id );
-//	var_dump($client);
-
-	$user_info = gui_table_args( array(
-		array( "דואל", get_customer_email( $customer_id ) ),
-		array( "טלפון", get_customer_phone( $customer_id ) ),
-		array( "מספר מזהה", gui_label( "invoice_client_id", $client_id ) ),
-		array(
-			"אמצעי תשלום",
-			gui_select_payment( "payment", "onchange=\"save_payment_method()\"", get_payment_method( $customer_id ) )
-		)
-	) );
-	$style     = "table.payment_table { border-collapse: collapse; } " .
-	             " table.payment_table, td.change, th.change { border: 1px solid black; } ";
-	$args = array("style" => $style, "class" => "payment_table");
-	$new_tran  = gui_table_args( array(
-		array(
-			"תשלום",
-			Core_Html::GuiButton( "btn_receipt", "create_receipt()", "הפק חשבונית מס קבלה" )
-		),
-		array( "תאריך", gui_input_date( "pay_date", "" ) ),
-		array( "מזומן", gui_input( "cash", "", array( 'onkeyup="update_sum()"' ) ) ),
-		array( "אשראי", gui_input( "credit", "", array( 'onkeyup="update_sum()"' ) ) ),
-		array( "העברה", gui_input( "bank", "", array( 'onkeyup="update_sum()"' ) ) ),
-		array( "המחאה", gui_input( "check", "", array( 'onkeyup="update_sum()"' ) ) ),
-		array( "עודף", " <div id=\"change\"></div>" )
-	), "payment_table");
-
-	print gui_table_args( array(
-		array( Core_Html::gui_header( 2, "פרטי לקוח", true ), Core_Html::gui_header( 2, "קבלה", true ) ),
-		array( $user_info, $new_tran )
-	) );
 }
 
 ?>
@@ -312,44 +279,6 @@ if ( $manager ) {
         xmlhttp.send();
     }
     //קבלה
-    function create_receipt() {
-        disable_btn('btn_receipt');
-
-        var row_ids = account_get_row_ids();
-
-        xmlhttp = new XMLHttpRequest();
-        xmlhttp.onreadystatechange = function () {
-            // Wait to get query result
-            if (xmlhttp.readyState === 4 && xmlhttp.status === 200)  // Request finished
-            {
-                receipt_id = xmlhttp.responseText.trim();
-                logging.innerHTML += "חשבונית מספר " + receipt_id;
-                updateDisplay();
-            }
-        }
-        var credit = parseFloat(get_value(document.getElementById("credit")));
-        if (isNaN(credit)) credit = 0;
-        var bank = parseFloat(get_value(document.getElementById("bank")));
-        if (isNaN(bank)) bank = 0;
-        var cash = parseFloat(get_value(document.getElementById("cash")));
-        if (isNaN(cash)) cash = 0;
-        var check = parseFloat(get_value(document.getElementById("check")));
-        if (isNaN(check)) check = 0;
-        var date = get_value(document.getElementById("pay_date"));
-        var request = "account-post.php?operation=create_receipt" +
-            "&cash=" + cash +
-            "&credit=" + credit +
-            "&bank=" + bank +
-            "&check=" + check +
-            "&date=" + date +
-            "&change=" + change.innerHTML +
-            "&row_ids=" + row_ids.join() +
-            "&user_id=" + <?php print $customer_id; ?>;
-//        alert("fire");
-        // alert(request);
-        xmlhttp.open("GET", request, true);
-        xmlhttp.send();
-    }
 
     function create_invoice() {
         document.getElementById('btn_invoice').disabled = true;

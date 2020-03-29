@@ -403,13 +403,15 @@ function QuoteDate($date, $format = 'Y-m-d')
 		}
 	}
 
-	/**
-	 * @param $day_of_week
-	 *
-	 * @return mixed|string
-	 */
-	function DayName( $day_of_week ) {
-		return DateDayName( '2019-09-' . ( $day_of_week + 1 ) );
+/**
+ * @param $day_of_week
+ *
+ * @param null $locale
+ *
+ * @return mixed|string
+ */
+	function DayName( $day_of_week, $locale = null) {
+		return DateDayName( '2019-09-' . ( $day_of_week + 1 ), $locale );
 	}
 
 	/**
@@ -417,13 +419,15 @@ function QuoteDate($date, $format = 'Y-m-d')
 	 *
 	 * @return mixed|string
 	 */
-	function DateDayName( $date ) {
+	function DateDayName( $date, $locale = null ) {
 		$day_names          = [];
 		$day_names['he_IL'] = array( "יום א'", "יום ב'", "יום ג'", "יום ד'", "יום ה'", "יום ו'", "שבת" );
+		$day_names['he_IL'] = array( "יום א'", "יום ב'", "יום ג'", "יום ד'", "יום ה'", "יום ו'", "שבת" );
 
-		$year  = strtok( $date, "-" );
-		$month = strtok( "-" );
-		$day   = strtok( "-" );
+		$date_parts = explode("-", $date);
+		$year  = $date_parts[0]; // strtok( $date, "-" );
+		$month = $date_parts[1]; // strtok( "-" );
+		$day   = $date_parts[2]; // strtok( "-" );
 		if ( ! ( $year > 0 and $month > 0 and $day > 0 ) ) {
 			print $year . " " . $month . " " . $day . "<br/>";
 			print debug_trace();
@@ -438,13 +442,15 @@ function QuoteDate($date, $format = 'Y-m-d')
 //	}
 
 		$day    = date( 'w', strtotime( $date ) );
-		$locale = get_locale();
-//		print "locale= " . get_locale() . "<br/>";
+		if (! $locale)
+			$locale = get_locale();
+
 		if ( isset( $day_names[ $locale ][ $day ] ) ) {
 			return $day_names[ $locale ][ $day ];
 		}
 
-		return strftime( '%A', $date );
+		return strftime( '%A', strtotime($date) );
+
 	}
 
 	function GetUrl($only_base = false)

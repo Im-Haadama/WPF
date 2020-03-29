@@ -4,6 +4,7 @@
 class Fresh_Client {
 
 	private $user_id;
+	private $user;
 
 	/**
 	 * Fresh_Client constructor.
@@ -64,6 +65,34 @@ class Fresh_Client {
 
 		MyLog( $sql, "account_update_transaction" );
 		sql_query( $sql );
+	}
+
+	function get_customer_email()
+	{
+		return self::get_user()->user_email;
+	}
+
+	function get_phone_number()
+	{
+		return get_post_meta( self::get_last_order( ), '_billing_phone', true );
+	}
+
+	function get_last_order( ) {
+		return sql_query_single_scalar( " SELECT max(meta.post_id) " .
+		                                " FROM `wp_posts` posts, wp_postmeta meta" .
+		                                " where meta.meta_key = '_customer_user'" .
+		                                " and meta.meta_value = " . $this->user_id .
+		                                " and meta.post_id = posts.ID");
+	}
+
+
+	private function get_user()
+	{
+		if (! $this->user) {
+			$this->user = get_user_by('id', $this->user_id);
+		}
+		if (! $this->user) return null;
+		return $this->user;
 	}
 
 }

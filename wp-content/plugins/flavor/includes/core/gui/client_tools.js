@@ -315,8 +315,9 @@ function add_param_to_url(url, param, value)
         has = url.indexOf("?" + param);
     if (has > 0) { // if found, remove them
         base = url.substr(0, has); // Take before part
-        if (url.length > (has + param.length)) // If there is after the value
-            base += url.substr(url.indexOf('&'));
+        // If there more params after, add them
+        if (url.length > (has + param.length))
+            base += url.substr(has + url.substr(has+1).indexOf("&") + 1);
     }
     if (base.indexOf('?') === -1) base += '?';
     else base += '&';

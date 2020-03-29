@@ -51,6 +51,3 @@ function gui_select_path( $id, $selected = 0, $args = null )
 }
 
 
-function gui_select_payment( $id, $events, $default ) {
-	return gui_select_table( $id, "im_payments", $default, $events );
-}

@@ -611,7 +611,7 @@ class Core_Html {
 		$data .= ">";
 
 		if ( function_exists( '__' ) ) {
-			if (! is_string($cell)) $cell = xdebug_var_dump($cell);
+			if (! is_string($cell)) $cell = StringVar($cell);
 			$data .= __( $cell );
 		} else if ( is_array( $cell ) ) {
 			$data .= CommaImplode( $cell );
@@ -845,6 +845,7 @@ class Core_Html {
 		$add_checkbox = GetArg( $args, "add_checkbox", false );
 		// debug_var($add_checkbox . " " . $id);
 		$checkbox_class  = GetArg( $args, "checkbox_class", null );
+		// print "cc= $checkbox_class id=$id<br/>";
 		$checkbox_events = GetArg( $args, "checkbox_events", null );
 		$prepare         = GetArg( $args, "prepare", true );
 		$reverse = GetArg($args, "reverse", false);
@@ -952,7 +953,7 @@ class Core_Html {
 					// print "f=$field r=$row_id $show is=" . isset($args["hide_cols"][$row_id]) . "<br/>";
 					// print "$line_id $cell_id<br/>";
 					$cell_args = [];
-					$cell_args["cell_id"] = $field . "_" . $row_id;
+					$cell_args["id"] = $field . "_" . $row_id;
 					$cell_args["show"] = $show;
 					$cell_args["align"] = isset( $align_table_cells[ $line_id ][ $cell_id ] ) ? $align_table_cells[ $line_id ][ $cell_id ] : null;
 					if (isset($args["col_width"][$cell_id])) $cell_args["col_width"] = $args["col_width"][$cell_id];
@@ -1430,7 +1431,12 @@ class Core_Html {
 		if ( $datalist ) {
 			return gui_select_datalist( $id, $table, $table, $name, $values, $events, $selected, $include_id, $id_key );
 		} else {
-			return gui_select( $id, $name, $values, $events, $selected, $id_key );
+			$args = array("values"=>$values,
+				"events"=> $events,
+				"id_key" => $id_key,
+				"name"=> $name
+				);
+			return self::GuiSelect( $id, $selected, $args );
 		}
 	}
 
@@ -1486,13 +1492,12 @@ class Core_Html {
 		$edit = GetArg( $args, "edit", false );
 
 		if ( ! $edit ) {
-			$f      = strtok( $selected, ":" );
-			$result = DayName( $f );
-			while ( $z = strtok( ":" ) ) {
-				$result .= ", " . DayName( $z );
-			}
+			$result = "";
+			$days = explode(":", $selected);
+			foreach ($days as $day)
+				$result .= DayName($day) . ", ";
 
-			return $result;
+			return rtrim($result, ", ");
 		}
 		$days = [];
 		for ( $i = 0; $i < 7; $i ++ ) {
@@ -1503,7 +1508,7 @@ class Core_Html {
 		$events           = GetArg( $args, "events", null );
 		$args["multiple"] = true;
 
-		return gui_select( $id, "day_name", $days, $events, $selected, "id", "class", true );
+		return Core_Html::gui_select( $id, "day_name", $days, $events, $selected, "id", "class", true );
 	}
 
 	/**
@@ -1709,10 +1714,10 @@ class Core_Html {
 			$args["row_id"] = $row_id;
 		} else { // Create new one.
 			if ($fields) {
-				$sql = "show columns from $table_name where field in ( " . CommaImplode($fields, true) . ")";
+				$sql = "show columns from ${db_prefix}$table_name where field in ( " . CommaImplode($fields, true) . ")";
 			}
 			else
-				$sql = "describe $table_name";
+				$sql = "describe ${db_prefix}$table_name";
 		}
 		if (! defined('NOT_NULL_FLAG')) define ('NOT_NULL_FLAG', 1);
 		if ($args /* and ! isset($args["sql_fields"]) */) {

@@ -16,6 +16,7 @@ class Finance {
 	protected $payments;
 	protected $bank;
 	protected $invoices;
+	protected $post_file;
 
 	/**
 	 * Plugin version.
@@ -104,11 +105,20 @@ class Finance {
 		$this->includes(); // Loads class autoloader
 		if (! defined('FINANCE_ABSPATH')) die ("not defined");
 		$this->loader = new Core_Autoloader(FINANCE_ABSPATH);
+		$this->post_file = "/wp-content/plugins/finance/post.php";
 
 		$this->init_hooks();
 
 		do_action( 'finance_loaded' );
 	}
+
+	/**
+	 * @return string
+	 */
+	static public function getPostFile(): string {
+		return self::instance()->post_file;
+	}
+
 
 	/**
 	 * Hook into actions and filters.
@@ -123,7 +133,6 @@ class Finance {
 
 		self::install($this->version);
 
-
 		add_action( 'after_setup_theme', array( $this, 'setup_environment' ) );
 		add_action( 'after_setup_theme', array( $this, 'include_template_functions' ), 11 );
 		add_action( 'init', array( $this, 'init' ), 0 );
@@ -137,9 +146,7 @@ class Finance {
 		// add_action( 'init', array( $this, 'wpdb_table_fix' ), 0 );
 		// add_action( 'init', array( $this, 'add_image_sizes' ) );
 		// add_action( 'switch_blog', array( $this, 'wpdb_table_fix' ), 0 );
-		add_action( 'wp_enqueue_scripts', array($this, 'enqueue_scripts' ));
-
-		self::install($this->version);
+		add_action( 'admin_enqueue_scripts', array($this, 'admin_scripts' ));
 	}
 
 	/**
@@ -149,7 +156,7 @@ class Finance {
 	 */
 	public function log_errors() {
 		$error = error_get_last();
-		if ( in_array( $error['type'], array( E_ERROR, E_PARSE, E_COMPILE_ERROR, E_USER_ERROR, E_RECOVERABLE_ERROR ) ) ) {
+		if ( isset($error['type']) and in_array( $error['type'], array( E_ERROR, E_PARSE, E_COMPILE_ERROR, E_USER_ERROR, E_RECOVERABLE_ERROR ) ) ) {
 			$logger = finance_get_logger();
 			$logger->critical(
 			/* translators: 1: error message 2: file name and path 3: line number */
@@ -250,7 +257,21 @@ class Finance {
 				return $multi_site->Run( "/org/business/business-post.php?operation=get_open_site_invoices&supplier_id=" . $supplier_id,
 					$site_id, true, $debug);
 				break;
+				
+			case "create_receipt":
+				$cash         = GetParam( "cash" );
+				$bank         = GetParam( "bank" );
+				$check        = GetParam( "check" );
+				$credit       = GetParam( "credit" );
+				$change       = GetParam( "change" );
+				$row_ids      = GetParamArray( "row_ids" );
+				$user_id      = GetParam( "user_id", true );
+				$date         = GetParam( "date" );
 
+				//print "create receipt<br/>";
+				// (NULL, '709.6', NULL, NULL, '205.44', '', '2019-01-22', Array)
+				return Finance_Clients::create_receipt( $cash, $bank, $check, $credit, $change, $user_id, $date, $row_ids );
+				break;
 		}
 		return false;
 	}
@@ -591,7 +612,7 @@ class Finance {
 //	}
 //
 
-	public function enqueue_scripts() {
+	public function admin_scripts() {
 		$file = FLAVOR_INCLUDES_URL . 'core/data/data.js';
 		wp_enqueue_script( 'data', $file, null, $this->version, false );
 

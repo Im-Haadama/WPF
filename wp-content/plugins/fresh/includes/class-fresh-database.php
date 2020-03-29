@@ -20,26 +20,7 @@ class Fresh_Database extends Core_Database
 
 		if ($current == $version and ! $force) return true;
 
-		sql_query("create table ${db_prefix}delivery_lines
-(
-	id bigint auto_increment
-		primary key,
-	delivery_id bigint not null,
-	product_name varchar(40) not null,
-	quantity float not null,
-	quantity_ordered float not null,
-	vat float not null,
-	price float not null,
-	line_price float not null,
-	prod_id int null,
-	unit_ordered float null,
-	part_of_basket int null,
-	a int null
-);
-
-");
-
-		sql_query("create view ${db_prefix}categories as select `wp_terms`.`term_id`    AS `term_id`,
+		sql_query("CREATE OR REPLACE view ${db_prefix}categories as select `wp_terms`.`term_id`    AS `term_id`,
        `wp_terms`.`name`       AS `name`,
        `wp_terms`.`slug`       AS `slug`,
        `wp_terms`.`term_group` AS `term_group`
@@ -50,7 +31,7 @@ where `wp_terms`.`term_id` in (select `wp_term_taxonomy`.`term_id`
 
 ");
 
-		sql_query("create view im_products as select `wp_posts`.`ID`                    AS `ID`,
+		sql_query("create OR REPLACE view im_products as select `wp_posts`.`ID`                    AS `ID`,
        `wp_posts`.`post_author`           AS `post_author`,
        `wp_posts`.`post_date`             AS `post_date`,
        `wp_posts`.`post_date_gmt`         AS `post_date_gmt`,
@@ -80,7 +61,7 @@ where ((`wp_posts`.`post_type` in ('product', 'product_variation')) and
 ");
 
 		sql_query("
-		create view i_in as select `l`.`product_id` AS `product_id`, sum(`l`.`quantity`) AS `q_in`
+		create OR REPLACE view i_in as select `l`.`product_id` AS `product_id`, sum(`l`.`quantity`) AS `q_in`
 from (`im_supplies_lines` `l`
          join .`im_supplies` `s`)
 where `l`.`supply_id` > 393
@@ -89,13 +70,14 @@ where `l`.`supply_id` > 393
               and `s`.`id` = `l`.`supply_id`
 group by 1;");
 
-		sql_query("create view i_out as select `dl`.`prod_id` AS `prod_id`, round(sum(`dl`.`quantity`), 1) AS `q_out`
+		sql_query("create OR REPLACE view i_out as select `dl`.`prod_id` AS `prod_id`, round(sum(`dl`.`quantity`), 1) AS `q_out`
 from `im_delivery_lines` `dl`
 where `dl`.`delivery_id` > 503
 group by 1
 order by 1;");
-
 	}
+
+
 	static function CreateTables($version, $force)
 	{
 		$current = self::CheckInstalled("Fresh", "functions");
@@ -103,7 +85,77 @@ order by 1;");
 
 		if ($current == $version and ! $force) return true;
 
-		sql_query("create table im_payments
+		sql_query("drop function delivery_receipt");
+		sql_query("create function delivery_receipt(_del_id int) returns int
+BEGIN
+		declare _receipt integer;
+		select payment_receipt into _receipt 
+	        from im_delivery where id = _del_id; 
+	    return _receipt;
+	END;
+
+");
+
+		sql_query("drop function order_from_delivery");
+		sql_query("create function order_from_delivery(del_id int) returns text
+BEGIN
+    declare _order_id int;
+    SELECT order_id INTO _order_id FROM im_delivery where id = del_id;
+
+    return _order_id;
+END;
+
+");
+
+		sql_query("drop function client_balance");
+		sql_query("create function client_balance(_client_id int, _date date) returns float
+BEGIN
+    declare _amount float;
+select sum(transaction_amount) into _amount
+from im_client_accounts where date <= _date
+                          and client_id = _client_id;
+return round(_amount, 0);
+END;
+
+");
+
+		sql_query("drop function client_payment_method");
+		sql_query("create function client_payment_method(_user_id int) returns text
+BEGIN
+    declare _method_id int;
+    declare _name VARCHAR(50) CHARSET 'utf8';
+    select meta_value into _method_id from wp_usermeta where user_id = _user_id and meta_key = 'payment_method';
+    select name into _name from im_payments where id = _method_id;
+
+    return _name;
+  END;
+
+");
+
+
+		if (! table_exists("delivery_lines"))
+		sql_query("create table ${db_prefix}delivery_lines
+(
+	id bigint auto_increment
+		primary key,
+	delivery_id bigint not null,
+	product_name varchar(40) not null,
+	quantity float not null,
+	quantity_ordered float not null,
+	vat float not null,
+	price float not null,
+	line_price float not null,
+	prod_id int null,
+	unit_ordered float null,
+	part_of_basket int null,
+	a int null
+);
+
+");
+
+
+		if (! table_exists("payments"))
+		sql_query("create table ${db_prefix}payments
 (
 	id int auto_increment,
 	name varchar(20) null,
@@ -115,7 +167,9 @@ order by 1;");
 
 ");
 
-		sql_query("create table im_supplies
+		if (! table_exists("supplies"))
+
+		sql_query("create table ${db_prefix}supplies
 (
 	id bigint(10) unsigned auto_increment
 		primary key,
@@ -131,7 +185,8 @@ order by 1;");
 ");
 
 
-		sql_query("create table im_bundles
+		if (! table_exists("bundles"))
+		sql_query("create table ${db_prefix}bundles
 (
 	id bigint(10) unsigned auto_increment
 		primary key,
@@ -144,7 +199,8 @@ order by 1;");
 
 ");
 
-		sql_query("create table im_need
+		if (!table_exists("need"))
+		sql_query("create table ${db_prefix}need
 (
 	id int auto_increment
 		primary key,
@@ -153,6 +209,8 @@ order by 1;");
 	need_u int null
 )
 ");
+
+		if (! table_exists("need_orders"))
 		sql_query("create table ${db_prefix}need_orders
 (
 	id int auto_increment
@@ -161,6 +219,7 @@ order by 1;");
 )
 ");
 
+		if (! table_exists("delivery_lines"))
 		sql_query("create table ${db_prefix}delivery_lines
 (
 	id bigint auto_increment
@@ -328,9 +387,76 @@ charset=utf8;");
 		$current = self::CheckInstalled("Fresh", "functions");
 		$db_prefix = get_table_prefix();
 
+		sql_query("drop function client_id_from_delivery");
+		sql_query("create  function client_id_from_delivery(del_id int) returns text
+BEGIN
+  declare _order_id int;
+  declare _user_id int;
+  declare _display varchar(50) CHARSET utf8;
+  SELECT order_id INTO _order_id FROM im_delivery where id = del_id;
+  select meta_value into _user_id from wp_postmeta
+  where post_id = _order_id and
+  meta_key = '_customer_user';
+  
+  return _order_id;
+END;
+
+");
 		if ($current == $version and ! $force) return true;
 
-		sql_query("drop function order_user");
+		new Fresh_Delivery(0); // Load classes
+		sql_query("drop function if exists supplier_balance");
+		$sql = "create function supplier_balance (_supplier_id int, _date date) returns float   
+BEGIN
+declare _amount float;
+select sum(amount) into _amount from ${db_prefix}business_info
+where part_id = _supplier_id
+and date <= _date
+and is_active = 1
+and document_type in (" . FreshDocumentType::bank . "," . FreshDocumentType::invoice . "," . FreshDocumentType::refund . "); 
+
+return round(_amount, 0);
+END;";
+		sql_query($sql);
+
+		sql_query("drop function client_from_delivery");
+		sql_query("create function client_from_delivery(del_id int) returns text CHARSET 'utf8'
+BEGIN
+  declare _order_id int;
+  declare _user_id int;
+  declare _display varchar(50) CHARSET utf8;
+  SELECT order_id INTO _order_id FROM im_delivery where id = del_id;
+  select meta_value into _user_id from wp_postmeta
+  where post_id = _order_id and
+  meta_key = '_customer_user';
+  select display_name into _display from wp_users where id = _user_id;
+
+  return _display;
+END;
+
+");
+
+		sql_query("drop function if exists  first_day_of_week");
+		sql_query("create function FIRST_DAY_OF_WEEK(day date) returns date
+BEGIN
+  RETURN SUBDATE(day, WEEKDAY(day) + 1);
+END;
+
+");
+
+		sql_query("create function client_displayname(user_id int) returns text CHARSET 'utf8'
+BEGIN
+    declare _user_id int;
+    declare _display varchar(50) CHARSET utf8;
+    select display_name into _display from wp_users
+    where id = user_id;
+
+    return _display;
+  END;
+
+");
+
+		sql_query("drop function if exists  order_user");
 		sql_query("create function order_user(order_id int) returns int
 BEGIN
     declare _user_id int;
@@ -341,9 +467,7 @@ BEGIN
 
 ");
 
-		sql_query("drop function supplier_balance");
-
-		sql_query("drop function post_status");
+		sql_query("drop function if exists  post_status");
 		sql_query("CREATE FUNCTION 	post_status(_post_id int)
 	 RETURNS TEXT
 BEGIN
@@ -355,7 +479,7 @@ BEGIN
 	return _result;	   
 END;");
 
-		sql_query("drop function product_price");
+		sql_query("drop function if exists  product_price");
 		sql_query("create
     function product_price(_id int) returns varchar(100) charset 'utf8'
 BEGIN
@@ -364,7 +488,7 @@ BEGIN
     return _price;
   END; ");
 
-		sql_query("drop function supplier_displayname");
+		sql_query("drop function if exists  supplier_displayname");
 		sql_query( "create function supplier_displayname (supplier_id int) returns text charset utf8  
 BEGIN
 declare _user_id int;
@@ -377,7 +501,7 @@ END;
 
 " );
 
-		sql_query("drop function order_is_group");
+		sql_query("drop function if exists  order_is_group");
 		sql_query("create function order_is_group(order_id int) returns bit
 BEGIN
     declare _customer_type varchar(20);
@@ -404,7 +528,7 @@ return _customer_is_group;
 END;
 
 ");
-		sql_query( "drop function prod_get_name;" );
+		sql_query( "drop function if exists  prod_get_name;" );
 		sql_query( "CREATE FUNCTION `prod_get_name`(`prod_id` INT)
 	 RETURNS varchar(200) CHARSET utf8
    NO SQL
@@ -416,7 +540,7 @@ BEGIN
    return _name;
  END" );
 
-		sql_query("drop function order_line_get_variation");
+		sql_query("drop function if exists  order_line_get_variation");
 		sql_query("create function order_line_get_variation(_order_item_id int) RETURNS text
 BEGIN
     declare _variation int;

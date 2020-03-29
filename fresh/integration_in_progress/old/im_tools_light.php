@@ -191,13 +191,6 @@ function get_meta_field( $post_id, $field_name ) {
 	return "Bad post id";
 }
 
-function get_last_order( $user_id ) {
-	return sql_query_single_scalar( " SELECT max(meta.post_id) " .
-	       " FROM `wp_posts` posts, wp_postmeta meta" .
-	       " where meta.meta_key = '_customer_user'" .
-	       " and meta.meta_value = " . $user_id .
-	       " and meta.post_id = posts.ID");
-}
 
 function get_logo_url() {
 	global $logo_url;

@@ -128,6 +128,7 @@ class Flavor {
 	 */
 	private function init_hooks() {
 		// register_activation_hook( WC_PLUGIN_FILE, array( 'Flavor_Install', 'install' ) );
+		Flavor_Database::install($this->version);
 		register_shutdown_function( array( $this, 'log_errors' ) );
 		add_action( 'after_setup_theme', array( $this, 'setup_environment' ) );
 		add_action( 'after_setup_theme', array( $this, 'include_template_functions' ), 11 );
@@ -283,7 +284,7 @@ class Flavor {
 	 */
 	public function log_errors() {
 		$error = error_get_last();
-		if ( in_array( $error['type'], array(
+		if ( isset($error['type']) and in_array( $error['type'], array(
 			E_ERROR,
 			E_PARSE,
 			E_COMPILE_ERROR,
@@ -475,7 +476,7 @@ class Flavor {
 		$result .= sql_query_single_scalar("select post_title from wp_posts where id = 14");
 
 //		ob_start();
-//		phpinfo();
+//		print phpinfo();
 //		$result .= ob_get_contents();
 
 		return $result;
@@ -648,6 +649,5 @@ function unlogged_guest_posts_redirect()
 			auth_redirect();
 		}
 }
-
 
 ?>
