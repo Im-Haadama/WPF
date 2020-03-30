@@ -110,7 +110,7 @@
 			$tabs["paths"] = array(
 				"Paths",
 				$url . "paths",
-				Freight_Zones::settings($args, $operation)
+				Freight_Paths::settings($args, $operation)
 			);
 
 //			$tabs["suppliers"] = array(

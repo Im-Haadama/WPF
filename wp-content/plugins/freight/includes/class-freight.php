@@ -131,7 +131,7 @@ class Freight {
 
 
 		get_sql_conn(ReconnectDb());
-		Freight_Zones::init();
+		Freight_Paths::init();
 	}
 
 	/**

@@ -435,8 +435,10 @@ class Core_Data
 							$type = sql_field($args["sql_fields"], $key);
 							$value = Core_Html::gui_input_by_type($input_name, $type, $args, $value);
 						}
-					} else
-						$value = Core_Html::GuiInput($input_name, $data, $args); //gui_input( $key, $data, $field_events, $row_id);
+					} else {
+						// ??? 30/3/2020
+						// $value = Core_Html::GuiInput( $input_name, $data, $args ); //gui_input( $key, $data, $field_events, $row_id);
+					}
 					break;
 				}
 				if ( $selectors and array_key_exists( $key, $selectors )) {
@@ -825,4 +827,9 @@ class Core_Data
 		return $result;
 	}
 
+	static function UpdateTableFieldEvent($post_file, $table_name, $id, $field_name)
+	{
+		return
+		'update_table_field(\'' . $post_file . '\', \'' . $table_name . "', $id, '$field_name', check_update)";
+	}
 }

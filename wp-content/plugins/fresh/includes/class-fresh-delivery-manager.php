@@ -329,6 +329,12 @@ class Fresh_Delivery_Manager
 //	return true;
 //}
 
+function delete_wp_woocommerce_shipping_zone_methods($instance_id)
+{
+	if ($instance_id > 0)
+		delete_wp_option('woocommerce_flat_rate_' . $instance_id . '_settings');
+}
+
 function update_wp_woocommerce_shipping_zone_methods($args) {
 //	$ignore_list = array("id");
 	$instance_id = GetArg( $args, "instance_id", null );

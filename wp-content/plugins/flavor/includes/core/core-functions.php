@@ -411,6 +411,7 @@ function QuoteDate($date, $format = 'Y-m-d')
  * @return mixed|string
  */
 	function DayName( $day_of_week, $locale = null) {
+		if (! ($day_of_week >= 0)) return $day_of_week;
 		return DateDayName( '2019-09-' . ( $day_of_week + 1 ), $locale );
 	}
 

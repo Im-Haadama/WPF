@@ -58,6 +58,22 @@ function create_missions(post_file)
     execute_url(url, location_reload);
 }
 
+function save_paths()
+{
+    let selected = get_selected("checkbox_paths");
+    if (selected.length == 0) {
+        alert ("first select items");
+        return;
+    }
+    let params = [];
+    for (let i = 0; i < selected.length; i++)
+    {
+        params.push(selected[i]);
+        params.push(get_value_by_name("zones_" + selected[i]));
+    }
+    alert(params);
+}
+
 function save_path_times(path_id)
 {
     let table = document.getElementById("zone_times");
@@ -107,4 +123,16 @@ function add_zone_times(path_id, post_file)
     request = add_param_to_url(request, "time", times);
     request = add_param_to_url(request, "zones", zones)
     window.location.href = request;
+}
+
+function path_add_day(post_file, path)
+{
+    let day = get_value_by_name("day_to_add");
+
+    execute_url(post_file + "?operation=path_add_day&path_id="+path+"&day=" + day, location_reload);
+}
+
+function update_shipment_instance(post_file, id)
+{
+    execute_url(post_file + "?operation=update_shipment_instance&id=" + id, fail_message);
 }

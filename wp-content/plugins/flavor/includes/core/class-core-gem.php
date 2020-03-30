@@ -74,6 +74,7 @@ class Core_Gem {
 			print __FUNCTION__ . ": coding error. invalid table in '$operation'.<br/>";
 			return false;
 		}
+		Core_Data::set_args_value($args);
 		return $result . self::GemAddRow($table_name, null, $args);
 	}
 
@@ -252,7 +253,7 @@ class Core_Gem {
 		if (GetArg($args, "add_button", true))
 			$result .= Core_Html::GuiHyperlink("Add", AddToUrl("operation" , "gem_add_" . $table_id)) . " ";
 
-		if ($post_file and $edit or $enable_import) {
+		if ($post_file and $enable_import) {
 			$checkbox_class = GetArg($args, "checkbox_class", "class");
 			$result .= Core_Html::GuiButton( "btn_delete_$table_id", "delete",
 				array( "action" => "delete_items(" . QuoteText( $checkbox_class ) . "," . QuoteText( $post_file ) . ")" ) );
@@ -272,6 +273,7 @@ class Core_Gem {
 	 */
 	static function GemTable($table_name, &$args)
 	{
+//		var_dump($args["prepare_plug"]);
 		if (! $table_name) die("Error #N2 no table given");
 		if (! isset($args["title"])) $title = "content of table " . $table_name;
 		$post_file = GetArg($args, "post_file", null);

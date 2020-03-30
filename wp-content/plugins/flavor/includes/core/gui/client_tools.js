@@ -215,7 +215,7 @@ function load_page(xmlhttp)
 
 function get_selected(collection_name)
 {
-    let param = new Array();
+    let param = [];
     let collection = document.getElementsByClassName(collection_name);
     for (let i = 0; i < collection.length; i++) {
         if (collection[i].checked) param.push(collection[i].id.substr(4));
@@ -303,6 +303,13 @@ function success_message(xmlhttp)
         alert("Success");
     else
         alert (xmlhttp.response);
+}
+
+function fail_message(xmlhttp)
+{
+    if (xmlhttp.response.substr(0, 3) === "done") return;
+
+    alert (xmlhttp.response);
 }
 
 

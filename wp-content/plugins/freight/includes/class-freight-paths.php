@@ -1,35 +1,44 @@
 <?php
 
 
-class Freight_Zones {
+class Freight_Paths {
 
 	/**
 	 * Freight_Zones constructor.
 	 */
 	static public function init() {
-		Core_Gem::AddTable("paths");
+		Core_Gem::AddTable("path_shipments");
 		add_action("show_path", __CLASS__ . "::show_path_wrap");
 		add_action("add_zone_times", __CLASS__ . "::add_zone_times");
 		add_action("path_remove_times", __CLASS__ . "::remove_zone_times");
 		add_action("create_missions", __CLASS__ . "::create_missions");
 		add_action("update_shipping_methods",  "Fresh_Delivery_Manager::update_shipping_methods");
 		add_action("create_shipping_method", __CLASS__ . "::create_shipping_method");
+		add_action("path_add_day", __CLASS__ . "::path_add_day");
+		add_action("path_create_instance", __CLASS__ . "::path_create_instance");
+		add_action("path_create_instance", __CLASS__ . "::show_path_wrap");
+		add_action("update_shipment_instance", __CLASS__ . "::update_shipment_instance");
+		add_action("delete_shipment_instance", __CLASS__ . "::delete_shipment_instance");
 	}
 
 	static function settings($args = null, $operation = null) {
 		$db_prefix = get_table_prefix();
 		$result                = "";
-		$result                .= Core_Html::gui_header( 1, "Shipping paths" );
 		$args["post_file"] = Freight::getPost();
 
 		if ($operation) {
 			$id = GetParam( "id", false, null );
 			$args["operation"] = $operation;
 
-			$result .= apply_filters( $operation, "", $id, $args, null );
+			$output = apply_filters( $operation, "", $id, $args, null );
+			if ($output)
+				return $result . $output;
 		}
-		$args["selectors"]     = array(/* "zones" => "gui_select_zones", */
-			"week_days" => "Core_Html::gui_select_days"
+		$result                .= Core_Html::gui_header( 1, "Shipping paths" );
+
+		$args["edit"] = true;
+		$args["selectors"]     = array("zones" => "gui_select_zones"
+//			"week_days" => "Core_Html::gui_select_days"
 		);
 		$args["id_field"]      = "id";
 		$args["links"]         = array( "id" => AddToUrl( array( "operation" => "show_path", "path_id" => "%s" ) ) );
@@ -39,21 +48,26 @@ class Freight_Zones {
 		                                "path_code"   => "Path code",
 		                                "description" => "Description",
 		                                "zones_times" => "Zones",
-		                                "week_days"   => "Week days"
+		                                "week_days"   => "Week days",
 		);
+		$args["class"] = "widefat";
+//		$args["events"] = 'onchange="changed(this)"';
 
-		$paths_data   = Core_Data::TableData( "select * from ${db_prefix}paths", $args );
-		$args["edit"] = false;
-		if ( $paths_data ) {
-			foreach ( $paths_data as $path_id => &$path_info ) {
-				if ( $path_id == "header" ) {
-					continue;
-				}
-				$path_info['zones_times'] = path_get_zones( $path_id, $args );
-			}
-		}
+//		$paths_data   = Core_Data::TableData( "select * from ${db_prefix}paths", $args );
+////		$args["edit"] = false;
+//		if ( $paths_data ) {
+//			foreach ( $paths_data as $path_id => &$path_info ) {
+//				if ( $path_id == "header" ) {
+//					continue;
+//				}
+//				//$path_info['zones_times'] = path_get_zones( $path_id, $args );
+//			}
+//		}
 
-		$result .= Core_Gem::GemArray($paths_data, $args, "paths");
+		$result .= Core_Gem::GemTable("paths", $args);
+//		$result .= Core_Html::GuiButton("btn_save", "save", array("action" => "save_paths()"));
+
+		return $result;
 
 		$result .= "<br/>";
 		$result .= Core_Html::GuiButton("btn_instance", "Create Missions", array("action" => "create_missions('" . Freight::getPost() . "')"));
@@ -65,6 +79,31 @@ class Freight_Zones {
 		$result .= Core_Html::GuiHyperlink("עדכון שיטות משלוח", AddToUrl("operation", "update_shipping_methods"));
 
 		return $result;
+	}
+
+	static function prepare_path_line($line)
+	{
+		$id = $line['id'];
+		if (! $line['instance']) {
+			$line['instance'] = Core_Html::GuiHyperlink("Add", AddToUrl(array("operation" => "path_create_instance", "id"=> $line['id'])));
+		} else {
+			$line['hours'] = Core_Html::GuiInput("hours_" . $line['id'], $line['hours'], 
+				array("events" => 'onchange="' . Core_Data::UpdateTableFieldEvent(Freight::getPost(), "path_shipments", $line['id'], "hours") .
+					';update_shipment_instance(\'' . Freight::getPost() . "', ". $line['id'] .")\""));
+
+			$line['instance'] = Core_Html::GuiHyperlink($line['instance'], "/wp-admin/admin.php?page=wc-settings&tab=shipping&instance_id=" . $line['instance']) . "<br/>" .
+			                    Core_Html::GuiHyperlink("delete", Freight::getPost() . "?operation=delete_shipment_instance&id=" . $line['id']);
+		}
+
+		return $line;
+	}
+
+	static function path_create_instance()
+	{
+		$method_id = GetParam("id", true);
+		$P = new Freight_Shipment($method_id);
+
+		$P->CreateInstance();
 	}
 
 	static function show_path_wrap()
@@ -108,14 +147,14 @@ class Freight_Zones {
 		return $result;
 	}
 
-	static function add_zone_times()
-	{
-		$zones = GetParamArray("zones", true, null, ":");
-		$time = GetParam("time");
-		$path_id = GetParam("path_id");
-
-		path_add_zone($path_id, $zones, $time);
-	}
+//	static function add_zone_times()
+//	{
+//		$zones = GetParamArray("zones", true, null, ":");
+//		$time = GetParam("time");
+//		$path_id = GetParam("path_id");
+//
+//		path_add_zone($path_id, $zones, $time);
+//	}
 
 	static function remove_zone_times()
 	{
@@ -133,30 +172,31 @@ class Freight_Zones {
 		return Fresh_Delivery_Manager::create_missions($path_ids);
 	}
 
-	static function create_shipping_method()
+	static function update_shipment_instance()
 	{
-		$zone_id = GetParam("zone_id");
-		$zone        = WC_Shipping_Zones::get_zone( $zone_id );
+		$id = GetParam("id", true);
+		$s = new Freight_Shipment($id);
+		$s->update_instance();
+	}
 
-		$path_id = GetParam("path_id");
+	static function delete_shipment_instance()
+	{
+		$id = GetParam("id", true);
+		$s = new Freight_Shipment($id);
+		$s->delete_instance();
+	}
 
-		$path_info = sql_query_single_assoc("select * from im_paths where id = $path_id");
-//		var_dump($path_info);
-		$week_days = explode(':', $path_info['week_days']);
-		$times = unserialize($path_info['zones_times'])[$zone_id];
+	static function path_add_day()
+	{
+		$days = explode(":", GetParam("day", true));
+		$path = GetParam("path_id", true);
+		$P = new Freight_Path($path);
+		foreach ($days as $weekday)
+			foreach ($P->getZones() as $zone) {
+				if (Freight_Shipment::exists($path, $zone, $weekday)) continue;
 
-//		var_dump($times);
-		foreach ($week_days as $day_of_week) {
-			print "handling $day_of_week<br/>";
-			$date = date('Y-m-d', strtotime('next ' . DayName($day_of_week, 'en_US')));
-			$instance_id = $zone->add_shipping_method( 'flat_rate' );
-			$zone->save();
-			$start = strtok($times, "-");
-			$end = strtok(",");
-			print "changing $instance_id $date $start $end<br/>";
-			Fresh_Delivery_Manager::update_shipping_method( $instance_id, $date, $start, $end );
-		}
-		print "done $instance_id";
+				Freight_Shipment::AddMethod($path, $zone, $weekday);
+			}
 	}
 }
 
@@ -172,16 +212,11 @@ function path_get_zones($path_id, $sorted = true)
 	return rtrim($result, ", ");
 }
 
-function path_add_zone($path_id, $zones, $time)
+function path_add_zone($path_id, $zone, $week_day)
 {
-	$time_zones = path_get_zone_times($path_id);
+	$db_prefix = get_table_prefix();
 
-	foreach($zones as $zone)
-		$time_zones[$zone] = $time;
-
-	$s = serialize($time_zones);
-	$sql = "update im_paths set zones_times = '" . $s . "' where id = " . $path_id;
-	return sql_query($sql);
+	return sql_query("insert into ${db_prefix}path_shipments (path_id, zone, week_day) values ($path_id, $zone, $week_day)");
 }
 
 function path_get_zone_times($path_id, $sorted = true)
@@ -213,26 +248,47 @@ function path_get_zone_times($path_id, $sorted = true)
 
 function show_path($path_id)
 {
+	$P = new Freight_Path($path_id);
 	$result = "";
 	$args = [];
 	$args["selectors"] = array("week_days" => "Core_Html::gui_select_days");
 	$args["hide_cols"] = array("zones_times" => 1);
 	$args["post_file"] = Freight::getPost();
-	$result .= Core_Gem::GemElement("paths", $path_id, $args);
+	$args["selectors"] = array("week_day" => "Core_Html::gui_select_days", "zone" => "gui_select_zones");
+	$args["query"] = "path_id = $path_id";
+	$args["fields"] = array("id", "zone", "week_day", "hours", "instance");
+	$args["prepare_plug"] = array("Freight_Paths", "prepare_path_line");
 
-	$result .= path_get_zone_time_table($path_id, $args);
-	$result .= Core_Html::GuiButton("btn_save", "Save", array("action" => "save_path_times(" . $path_id .")"));
-	$result .= Core_Html::GuiButton("btn_delete", "Delete", array("action"=>"delete_path_times(" . $path_id .", '" . Freight::getPost() . "')"));
+	$result .= Core_Html::GuiHeader(1, __("Path") . " " . $P->getDescription());
 
-	$result .= Core_Html::Br();
+	$result .= Core_Gem::GemTable("path_shipments", $args);
 
-	$result .= Core_Html::GuiHeader(2, "Add zones (with times)");
+	/////////////
+	// Add day //
+	/////////////
+	$result .= "<div>";
+	$args = [];
+	$args["edit"] = true;
+	$result .= Core_Html::GuiHeader(1, "Add path day");
+	$result .= Core_Html::gui_select_days("day_to_add", __("select"), $args);
+	$result .= Core_Html::GuiButton("btn_add", "Add", array("action" => "path_add_day('" . Freight::getPost() . "', $path_id)"));
 
-	$result .= Core_Html::gui_table_args(array("header" => array("zone_id" => "Zone", "zone_times" => "Times"),
-		array("zone_id" => GuiSelectZones("zone_id", null, array( "edit" => true)),
-		      "zone_times" => Core_Html::GuiInput("zone_time", "13-16"))));
+	$result .="</div>";
+//	$result .= Core_Gem::GemElement("path_shipments", $path_id, $args);
 
-	$result .= Core_Html::GuiButton("btn_add_zone_times", "Add", array("action"=>"add_zone_times(" . $path_id . ", '" . GetUrl() . "')"));
+//	$result .= path_get_zone_time_table($path_id, $args);
+//	$result .= Core_Html::GuiButton("btn_save", "Save", array("action" => "save_path_times(" . $path_id .")"));
+//	$result .= Core_Html::GuiButton("btn_delete", "Delete", array("action"=>"delete_path_times(" . $path_id .", '" . Freight::getPost() . "')"));
+
+//	$result .= Core_Html::Br();
+
+//	$result .= Core_Html::GuiHeader(2, "Add zones (with times)");
+
+//	$result .= Core_Html::gui_table_args(array("header" => array("zone_id" => "Zone", "zone_times" => "Times"),
+//		array("zone_id" => GuiSelectZones("zone_id", null, array( "edit" => true)),
+//		      "zone_times" => Core_Html::GuiInput("zone_time", "13-16"))));
+
+//	$result .= Core_Html::GuiButton("btn_add_zone_times", "Add", array("action"=>"add_zone_times(" . $path_id . ", '" . GetUrl() . "')"));
 
 	return $result;
 }
@@ -332,11 +388,21 @@ function gui_select_shipping_methods($zone_id, $selected)
 	       Core_Html::GuiHyperlink("Create", AddToUrl(array("operation" => "create_shipping_method", "zone_id"=>$zone_id)));
 }
 
-Path 1
-a:5:{
-	i:18;s:8:"10-12,31"; Zone 18, 10-12. instance 31.
-	i:4;s:8:"12-14,35"; zone 4, 12-14, instance 35,...
-	i:20;s:8:"12-14,33";
-	i:1;s:8:"14-16,37";
-	i:2;s:7:"14-16,2";
+function gui_select_zones($id, $selected, $args)
+{
+	$edit = GetArg($args, "edit", false);
+
+	if (! $edit) {
+		$f = strtok($selected, ":");
+		$result = zone_get_name($f);
+		while ($z = strtok( ":")) $result .= ", " . zone_get_name($z);
+		return $result;
+	}
+	$wc_zones = WC_Shipping_Zones::get_zones();
+
+	$args["values"] = $wc_zones;
+	$events = GetArg($args, "events", null);
+	$args["multiple"] = true;
+
+	return Core_Html::gui_select( $id, "zone_name", $wc_zones, $events, $selected, "id", "class", true );
 }
