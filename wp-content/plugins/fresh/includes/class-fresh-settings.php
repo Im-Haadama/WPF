@@ -63,7 +63,8 @@
 		{
 			$menu = new Core_Admin_Menu();
 
-//			$menu->AddMenu('Fresh Settings', 'Fresh', 'show_manager', 'fresh', __CLASS__ . '::general_settings');
+
+			// General Settings
 			$menu->AddSubMenu('fresh', 'edit_shop_orders',
 				array('page_title' => 'Settings',
 				            'menu_title' => 'Settings',
@@ -76,15 +77,31 @@
 					      'function' => 'payment_list')
 				);
 
+			/////////////////////
+			// WOO menu        //
+			////////////////////
+
+			// Suppliers
 			$menu->AddSubMenu("woocommerce", "edit_suppliers",
 				array('page_title' => 'Suppliers', 'function' => array("Fresh_Suppliers" , 'admin_page' )));
 
+			// Needed products
 			$menu->AddSubMenu("woocommerce", "edit_suppliers",
 				array('page_title' => 'Needed', 'function' => array("Fresh_Packing" , 'needed_products' )));
 
-			Fresh_Basket::add_admin($menu);
+			// Deliveries
+			$menu->AddSubMenu("woocommerce", "edit_suppliers",
+				array('page_title' => 'Deliveries', 'function' => array("Fresh_Delivery" , 'admin_page' )));
 
-			Fresh_Packing::add_admin($menu);
+
+			//////////////
+			// Products //
+			//////////////
+
+			// Baskets
+			$menu->AddSubMenu("edit.php?post_type=product", "edit_shop_orders",
+				array('page_title' => 'Baskets', 'function' => array("Fresh_Basket" , 'SettingsWrap' )));
+
 		}
 
 		static function suppliers() {

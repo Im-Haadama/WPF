@@ -1115,9 +1115,17 @@ class Fresh_Delivery {
 		return sql_query_single_scalar( $sql);
 	}
 
-	function handle_delivery_operation($operation)
+	static function admin_page()
+	{
+		$operation = GetParam("operation", false, "show_this_week");
+
+		print self::handle_delivery_operation($operation);
+	}
+	static function handle_delivery_operation($operation)
 	{
 		$debug = 0;
+		$post_file = Fresh::getPost();
+
 		if ($debug)	print "operation: " . $operation . "<br/>";
 		switch ($operation){
 			case "show_this_week":
@@ -1133,10 +1141,11 @@ class Fresh_Delivery {
 				// Show selected week
 				$args["sql"] = "select ID, date, order_id, client_from_delivery(ID) from im_delivery where first_day_of_week(date) = " . QuoteText($date);
 				$args["id_field"] = "ID";
+				$args["post_file"] = $post_file;
 
 				// $args["links"] = array("ID" => add_param_to_url(get_url(), "operation", "show_id", "row_id", "%s"));
 				$args["links"] = array("ID" => "/fresh/delivery/get-delivery.php?id=%s");
-				$table =  Core_Gem::GemTable("im_delivery", $args);
+				$table =  Core_Gem::GemTable("delivery", $args);
 				if (strlen($table) < 100)
 					print "No deliveries done this week<br/>";
 				else

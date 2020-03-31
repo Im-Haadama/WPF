@@ -70,18 +70,18 @@
 				            'menu_title' => 'Settings',
 				            'menu_slug' => 'settings',
 				            'function' => __CLASS__ . '::general_settings'));
-			$menu->AddSubMenu('freight', 'edit_shop_orders',
-					array('page_title' => 'Payment List',
-					      'menu_title' => 'Payment list',
-					      'menu_slug' => 'payment_list',
-					      'function' => 'payment_list')
-				);
+//			$menu->AddSubMenu('freight', 'edit_shop_orders',
+//					array('page_title' => 'Payment List',
+//					      'menu_title' => 'Payment list',
+//					      'menu_slug' => 'payment_list',
+//					      'function' => 'payment_list')
+//				);
 
-			$menu->AddSubMenu("woocommerce", "edit_suppliers",
-				array('page_title' => 'Suppliers', 'function' => array("Freight_Suppliers" , 'admin_page' )));
-
-			$menu->AddSubMenu("woocommerce", "edit_suppliers",
-				array('page_title' => 'Needed', 'function' => array("Freight_Packing" , 'needed_products' )));
+//			$menu->AddSubMenu("woocommerce", "edit_suppliers",
+//				array('page_title' => 'Suppliers', 'function' => array("Freight_Suppliers" , 'admin_page' )));
+//
+//			$menu->AddSubMenu("woocommerce", "edit_suppliers",
+//				array('page_title' => 'Needed', 'function' => array("Freight_Packing" , 'needed_products' )));
 
 //			Freight_Packing::add_admin($menu);
 		}
