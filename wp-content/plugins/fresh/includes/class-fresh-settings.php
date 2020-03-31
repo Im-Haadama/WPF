@@ -63,7 +63,7 @@
 		{
 			$menu = new Core_Admin_Menu();
 
-			$menu->AddMenu('Fresh Settings', 'Fresh', 'show_manager', 'fresh', __CLASS__ . '::general_settings');
+//			$menu->AddMenu('Fresh Settings', 'Fresh', 'show_manager', 'fresh', __CLASS__ . '::general_settings');
 			$menu->AddSubMenu('fresh', 'edit_shop_orders',
 				array('page_title' => 'Settings',
 				            'menu_title' => 'Settings',

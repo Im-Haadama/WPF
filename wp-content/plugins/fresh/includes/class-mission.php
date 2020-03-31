@@ -322,7 +322,7 @@ function show_mission($mission_id)
 		$args["text"] = $tog;
 		$en_dis = Core_Html::GuiButtonOrHyperlink("btn_" . $zone_id, null, $args);
 
-		 array_push($zone_table, array(zone_get_name($zone_id), $shipping->title, $shipping->enabled, $en_dis));
+		 array_push($zone_table, array(ZoneGetName($zone_id), $shipping->title, $shipping->enabled, $en_dis));
 	}
 //	 $args["actions"] = array(array("enable", add_to_url(array("operation" => ))));
 //	$zone_table[ $zone_id ] = array(

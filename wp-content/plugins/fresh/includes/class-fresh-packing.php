@@ -4,7 +4,7 @@
 class Fresh_Packing {
 
 	static function add_admin( $menu ) {
-		$menu->AddMenu( 'Fresh Packing', 'Packing', 'show_manager', 'packing', 'Fresh_Packing::admin' );
+//		$menu->AddMenu( 'Fresh Packing', 'Packing', 'show_manager', 'packing', 'Fresh_Packing::admin' );
 		$menu->AddSubMenu( 'packing', 'edit_shop_orders',
 			array(
 				array(

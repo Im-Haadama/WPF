@@ -147,7 +147,7 @@ class Fresh_Delivery_Manager
 					$args["is_enabled"]  = 0;
 					$args["instance_id"] = $shipping->instance_id;
 					$args["title"]       = $shipping->title;
-					update_wp_woocommerce_shipping_zone_methods( $args );
+					updateWp_woocommerce_shipping_zone_methods( $args );
 				}
 			}
 		}
@@ -161,7 +161,7 @@ class Fresh_Delivery_Manager
 		$args["instance_id"] = $instance_id;
 		$args["title"]       = DateDayName( $date ) . " " . date('d/m/Y', strtotime($date)) . ' ' . $start . "-". $end;
 //		$result .= "$start $end $instance_id<br/>";
-		if (update_wp_woocommerce_shipping_zone_methods( $args ))
+		if (updateWp_woocommerce_shipping_zone_methods( $args ))
 			return $args["title"];
 		else
 			return "failed";
@@ -335,7 +335,7 @@ function delete_wp_woocommerce_shipping_zone_methods($instance_id)
 		delete_wp_option('woocommerce_flat_rate_' . $instance_id . '_settings');
 }
 
-function update_wp_woocommerce_shipping_zone_methods($args) {
+function updateWp_woocommerce_shipping_zone_methods($args) {
 //	$ignore_list = array("id");
 	$instance_id = GetArg( $args, "instance_id", null );
 	if ( ! ( $instance_id > 0 ) ) {

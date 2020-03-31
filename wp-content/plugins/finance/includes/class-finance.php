@@ -147,6 +147,7 @@ class Finance {
 		// add_action( 'init', array( $this, 'add_image_sizes' ) );
 		// add_action( 'switch_blog', array( $this, 'wpdb_table_fix' ), 0 );
 		add_action( 'admin_enqueue_scripts', array($this, 'admin_scripts' ));
+		add_action( 'wp_enqueue_scripts', array($this, 'enqueue_scripts' ));
 	}
 
 	/**
@@ -235,7 +236,7 @@ class Finance {
 				return self::new_customer($order_id);
 
 				break;
-			case "get_trans":
+			case "get_open_trans":
 				$client_id = GetParam( "client_id" );
 				$site_id   = GetParam( "site_id" );
 				// $data .= $this->Run( $func, $site_id, $first, $debug );
@@ -612,6 +613,16 @@ class Finance {
 //	}
 //
 
+	public function enqueue_scripts()
+	{
+		$file = FINANCE_INCLUDES_URL . 'business.js';
+		wp_enqueue_script( 'business', $file, null, $this->version, false );
+		$file = FINANCE_INCLUDES_URL . 'account.js';
+		wp_enqueue_script( 'account', $file, null, $this->version, false );
+		$file = FINANCE_INCLUDES_URL . 'finance.js';
+		wp_enqueue_script( 'finance', $file, null, $this->version, false );
+	}
+
 	public function admin_scripts() {
 		$file = FLAVOR_INCLUDES_URL . 'core/data/data.js';
 		wp_enqueue_script( 'data', $file, null, $this->version, false );
@@ -624,9 +635,6 @@ class Finance {
 
 		$file = FINANCE_INCLUDES_URL . 'business.js';
 		wp_enqueue_script( 'business', $file, null, $this->version, false );
-
-		$file = FINANCE_INCLUDES_URL . 'account.js';
-		wp_enqueue_script( 'account', $file, null, $this->version, false );
 	}
 
 

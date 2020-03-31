@@ -302,7 +302,7 @@ class Fresh_Order {
 		}
 		// Do the calculation
 		$sql = "SELECT id, post_status FROM wp_posts " .
-		       " WHERE (post_status LIKE '%wc-processing%' OR post_status = 'wc-awaiting-shipment') ";
+		       " WHERE (post_status LIKE '%wc-processing%' ) "; // OR post_status = 'wc-awaiting-shipment'
 
 		if ( $user_id ) {
 			$sql .= " and order_user(id) = " . $user_id;
@@ -482,7 +482,7 @@ class Fresh_Order {
 
 	static function GetAllComments(){
 		$sql = "SELECT id FROM wp_posts " .
-		       " WHERE (post_status LIKE '%wc-processing%' OR post_status = 'wc-awaiting-shipment') ";
+		       " WHERE (post_status LIKE '%wc-processing%' ) "; // OR post_status = 'wc-awaiting-shipment'
 
 		$orders = sql_query_array_scalar($sql);
 

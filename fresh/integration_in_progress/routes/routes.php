@@ -61,7 +61,7 @@ function handle_routes_do($operation)
 	    case "disable_shipping_method":
 		    $args = [ "zone_id"    => GetParam("zone_id", true), "instance_id" => GetParam("instance_id", true),
 		              "is_enabled" => (substr($operation, 0, 3) == "ena" ? '1' : '0')];
-		    update_wp_woocommerce_shipping_zone_methods($args);
+		    updateWp_woocommerce_shipping_zone_methods($args);
 		    return "done";
 		case "get_local": // Is a do action because is called from show_route. (no header).
 			$mission_ids = GetParam("mission_ids", true);

@@ -93,7 +93,6 @@ BEGIN
 	        from im_delivery where id = _del_id; 
 	    return _receipt;
 	END;
-
 ");
 
 		sql_query("drop function order_from_delivery");
@@ -131,7 +130,6 @@ BEGIN
   END;
 
 ");
-
 
 		if (! table_exists("delivery_lines"))
 		sql_query("create table ${db_prefix}delivery_lines
@@ -387,6 +385,9 @@ charset=utf8;");
 		$current = self::CheckInstalled("Fresh", "functions");
 		$db_prefix = get_table_prefix();
 
+
+		if ($current == $version and ! $force) return true;
+
 		sql_query("drop function client_id_from_delivery");
 		sql_query("create  function client_id_from_delivery(del_id int) returns text
 BEGIN
@@ -402,7 +403,6 @@ BEGIN
 END;
 
 ");
-		if ($current == $version and ! $force) return true;
 
 		new Fresh_Delivery(0); // Load classes
 		sql_query("drop function if exists supplier_balance");

@@ -600,7 +600,7 @@ class Finance_Bank
 
 		if ($this->multi_site->getHttpCode($site_id) != 200) {
 			print "can't create<br/>";
-			if (developer()) print "getting $command, status: " . $this->multi_site->getHttpCode($site_id) . "<br/>";
+			 print "getting $command, status: " . $this->multi_site->getHttpCode($site_id) . "<br/>";
 			return false;
 		}
 

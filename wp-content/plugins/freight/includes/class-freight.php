@@ -433,7 +433,7 @@ class Freight {
 		$rc = load_textdomain( 'wfp', $file );
 //		print "loaded $file $rc <br/>";
 //		$rc1 = load_plugin_textdomain( 'wfp');
-		if (get_user_id() == 1) {
+		if (0 and get_user_id() == 1) {
 			if (! $rc) print "can't load textdomain";
 //			if (! $rc1) print "can't load plugin_textdomain";
 			if (! file_exists($file)) print "file $file not found";

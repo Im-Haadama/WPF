@@ -32,6 +32,9 @@ class Core_Importer {
 			return false; // Failed.
 		}
 
+//		foreach($map as $k => $i)
+//			print "$k $i <br/>";
+
 		$count     = 0;
 		$dup_count = 0;
 		$failed    = 0;
@@ -81,7 +84,8 @@ class Core_Importer {
 		while ( $conv = sql_fetch_row( $result ) ) {
 			$col                = $conv[0];
 			$row                = $conv[1];
-			$conversion[ $col ] = $row;
+//			print "$row $col<br/>";
+			$conversion[ $row ] = $col;
 		}
 
 		return true;
@@ -113,9 +117,18 @@ class Core_Importer {
 //		}
 
 		for ( $i = 0; $i < count( $line ); $i ++ ) {
-			foreach ( $conversion as $k => $m )
-				if ( $m == $line[ $i ] )
-					$map[ $k ] = $i;
+//			print $line[$i];
+			$found = false;
+			foreach ( $conversion as $k => $m ) {
+//				print $k . " " . $line[$i] . "<br/>";
+				if ( trim($k) == trim($line[ $i ]) ) {
+//					print "$k $i<br/>";
+					$map[ $m ] = $i;
+					$found = true;
+					break;
+				}
+			}
+			if (! $found) print "Didn't find conversion to $line[$i] <br/>";
 		}
 
 //		print "map: <br/>";

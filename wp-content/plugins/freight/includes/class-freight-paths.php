@@ -8,6 +8,7 @@ class Freight_Paths {
 	 */
 	static public function init() {
 		Core_Gem::AddTable("path_shipments");
+		Core_Gem::AddTable("paths");
 		add_action("show_path", __CLASS__ . "::show_path_wrap");
 		add_action("add_zone_times", __CLASS__ . "::add_zone_times");
 		add_action("path_remove_times", __CLASS__ . "::remove_zone_times");
@@ -37,7 +38,7 @@ class Freight_Paths {
 		$result                .= Core_Html::gui_header( 1, "Shipping paths" );
 
 		$args["edit"] = true;
-		$args["selectors"]     = array("zones" => "gui_select_zones"
+		$args["selectors"]     = array("zones" => "GuiSelectZones"
 //			"week_days" => "Core_Html::gui_select_days"
 		);
 		$args["id_field"]      = "id";
@@ -109,7 +110,7 @@ class Freight_Paths {
 	static function show_path_wrap()
 	{
 		$path_id = GetParam("path_id", true);
-		return show_path($path_id);
+		return self::show_path($path_id);
 	}
 
 	static function show_missions($query = null)
@@ -198,82 +199,35 @@ class Freight_Paths {
 				Freight_Shipment::AddMethod($path, $zone, $weekday);
 			}
 	}
-}
 
-function path_get_zones($path_id, $sorted = true)
-{
-	$zone_times = path_get_zone_times($path_id);
+	static function show_path($path_id)
+	{
+		$P = new Freight_Path($path_id);
+		$result = "";
+		$args = [];
+		$args["selectors"] = array("week_days" => "Core_Html::gui_select_days");
+		$args["hide_cols"] = array("zones_times" => 1);
+		$args["post_file"] = Freight::getPost();
+		$args["selectors"] = array("week_day" => "Core_Html::gui_select_days", "zone" => "GuiSelectZones");
+		$args["query"] = "path_id = $path_id";
+		$args["fields"] = array("id", "zone", "week_day", "hours", "instance");
+		$args["prepare_plug"] = array("Freight_Paths", "prepare_path_line");
 
-	$result = "";
-	if ($zone_times)
-		foreach ($zone_times as $zone_id => $zone)
-			$result .= zone_get_name($zone_id) . ", ";
+		$result .= Core_Html::GuiHeader(1, __("Path") . " " . $P->getDescription());
 
-	return rtrim($result, ", ");
-}
+		$result .= Core_Gem::GemTable("path_shipments", $args);
 
-function path_add_zone($path_id, $zone, $week_day)
-{
-	$db_prefix = get_table_prefix();
+		/////////////
+		// Add day //
+		/////////////
+		$result .= "<div>";
+		$args = [];
+		$args["edit"] = true;
+		$result .= Core_Html::GuiHeader(1, "Add path day");
+		$result .= Core_Html::gui_select_days("day_to_add", __("select"), $args);
+		$result .= Core_Html::GuiButton("btn_add", "Add", array("action" => "path_add_day('" . Freight::getPost() . "', $path_id)"));
 
-	return sql_query("insert into ${db_prefix}path_shipments (path_id, zone, week_day) values ($path_id, $zone, $week_day)");
-}
-
-function path_get_zone_times($path_id, $sorted = true)
-{
-	if (! ($path_id > 0))
-		return null;
-
-	// $zones =
-	$zone_times = unserialize(sql_query_single_scalar("select zones_times from im_paths where id = $path_id"));
-	if (! $zone_times) return null;
-//	if (! $zone_times) { // Backward compatibility
-//		$zone_times = array();
-//		$zone = strtok($raw, ":");
-//		while ($zone)
-//		{
-//			$zone_times[$zone] = "9-13";
-//			$zone = strtok(":");
-//		}
-//	}
-	if ($sorted) uasort($zone_times,
-		function($a, $b) {
-			$start_a = strtok($a, "-");
-			$start_b = strtok($b, "-");
-			return $start_a <=> $start_b;
-		});
-
-	return $zone_times;
-}
-
-function show_path($path_id)
-{
-	$P = new Freight_Path($path_id);
-	$result = "";
-	$args = [];
-	$args["selectors"] = array("week_days" => "Core_Html::gui_select_days");
-	$args["hide_cols"] = array("zones_times" => 1);
-	$args["post_file"] = Freight::getPost();
-	$args["selectors"] = array("week_day" => "Core_Html::gui_select_days", "zone" => "gui_select_zones");
-	$args["query"] = "path_id = $path_id";
-	$args["fields"] = array("id", "zone", "week_day", "hours", "instance");
-	$args["prepare_plug"] = array("Freight_Paths", "prepare_path_line");
-
-	$result .= Core_Html::GuiHeader(1, __("Path") . " " . $P->getDescription());
-
-	$result .= Core_Gem::GemTable("path_shipments", $args);
-
-	/////////////
-	// Add day //
-	/////////////
-	$result .= "<div>";
-	$args = [];
-	$args["edit"] = true;
-	$result .= Core_Html::GuiHeader(1, "Add path day");
-	$result .= Core_Html::gui_select_days("day_to_add", __("select"), $args);
-	$result .= Core_Html::GuiButton("btn_add", "Add", array("action" => "path_add_day('" . Freight::getPost() . "', $path_id)"));
-
-	$result .="</div>";
+		$result .="</div>";
 //	$result .= Core_Gem::GemElement("path_shipments", $path_id, $args);
 
 //	$result .= path_get_zone_time_table($path_id, $args);
@@ -290,8 +244,57 @@ function show_path($path_id)
 
 //	$result .= Core_Html::GuiButton("btn_add_zone_times", "Add", array("action"=>"add_zone_times(" . $path_id . ", '" . GetUrl() . "')"));
 
-	return $result;
+		return $result;
+	}
+
 }
+
+//function path_get_zones($path_id, $sorted = true)
+//{
+//	$zone_times = path_get_zone_times($path_id);
+//
+//	$result = "";
+//	if ($zone_times)
+//		foreach ($zone_times as $zone_id => $zone)
+//			$result .= ZoneGetName($zone_id) . ", ";
+//
+//	return rtrim($result, ", ");
+//}
+
+function path_add_zone($path_id, $zone, $week_day)
+{
+	$db_prefix = get_table_prefix();
+
+	return sql_query("insert into ${db_prefix}path_shipments (path_id, zone, week_day) values ($path_id, $zone, $week_day)");
+}
+
+//function path_get_zone_times($path_id, $sorted = true)
+//{
+//	if (! ($path_id > 0))
+//		return null;
+//
+//	// $zones =
+//	$zone_times = unserialize(sql_query_single_scalar("select zones_times from im_paths where id = $path_id"));
+//	if (! $zone_times) return null;
+////	if (! $zone_times) { // Backward compatibility
+////		$zone_times = array();
+////		$zone = strtok($raw, ":");
+////		while ($zone)
+////		{
+////			$zone_times[$zone] = "9-13";
+////			$zone = strtok(":");
+////		}
+////	}
+//	if ($sorted) uasort($zone_times,
+//		function($a, $b) {
+//			$start_a = strtok($a, "-");
+//			$start_b = strtok($b, "-");
+//			return $start_a <=> $start_b;
+//		});
+//
+//	return $zone_times;
+//}
+
 
 //function path_get_zone_time_table($path_id, $args)
 //{
@@ -311,7 +314,7 @@ function show_path($path_id)
 //	return GemArray($table, $args, "zone_times");
 //}
 
-function path_get_zone_time_table($path_id, $args)
+function PathGet_zone_time_table($path_id, $args)
 {
 	$table = [];
 	$sorted = GetArg($args, "sort", true);
@@ -323,9 +326,9 @@ function path_get_zone_time_table($path_id, $args)
 		// $row_event = sprintf($events, $zone_id);
 		// $args["events"] = $row_event;
 		$table[$zone_id] = array("id" => $zone_id,
-		                         "name" => zone_get_name($zone_id),
+		                         "name" => ZoneGetName($zone_id),
 		                         "times" => Core_Html::GuiInput("times_" . $zone_id, $zone_times[$zone_id], $args),
-		                         "shipping_method" => gui_select_shipping_methods($zone_id, $instance));
+		                         "shipping_method" => Guielect_shipping_methods($zone_id, $instance));
 	}
 	array_unshift($table, array("Id", "Zone name", "Zone times"));
 	$args["add_checkbox"] = true;
@@ -339,8 +342,8 @@ function GuiSelectZones($id, $selected, $args)
 
 	if (! $edit) {
 		$f = strtok($selected, ":");
-		$result = zone_get_name($f);
-		while ($z = strtok( ":")) $result .= ", " . zone_get_name($z);
+		$result = ZoneGetName($f);
+		while ($z = strtok( ":")) $result .= ", " . ZoneGetName($z);
 		return $result;
 	}
 	$wc_zones = WC_Shipping_Zones::get_zones();
@@ -353,7 +356,7 @@ function GuiSelectZones($id, $selected, $args)
 	return Core_Html::gui_select( $id, "zone_name", $wc_zones, $events, $selected, "id", "class", true );
 }
 
-function zone_get_name( $id ) {
+function ZoneGetName( $id ) {
 	if (! ($id > 0)){
 		return "bad zone id $id";
 	}
@@ -372,7 +375,7 @@ function path_save_times($path_id, $params)
 	return sql_query($sql);
 }
 
-function gui_select_shipping_methods($zone_id, $selected)
+function Guielect_shipping_methods($zone_id, $selected)
 {
 	$wc_zones = WC_Shipping_Zones::get_zones();
 
@@ -388,21 +391,21 @@ function gui_select_shipping_methods($zone_id, $selected)
 	       Core_Html::GuiHyperlink("Create", AddToUrl(array("operation" => "create_shipping_method", "zone_id"=>$zone_id)));
 }
 
-function gui_select_zones($id, $selected, $args)
-{
-	$edit = GetArg($args, "edit", false);
-
-	if (! $edit) {
-		$f = strtok($selected, ":");
-		$result = zone_get_name($f);
-		while ($z = strtok( ":")) $result .= ", " . zone_get_name($z);
-		return $result;
-	}
-	$wc_zones = WC_Shipping_Zones::get_zones();
-
-	$args["values"] = $wc_zones;
-	$events = GetArg($args, "events", null);
-	$args["multiple"] = true;
-
-	return Core_Html::gui_select( $id, "zone_name", $wc_zones, $events, $selected, "id", "class", true );
-}
+//function gui_select_zones($id, $selected, $args)
+//{
+//	$edit = GetArg($args, "edit", false);
+//
+//	if (! $edit) {
+//		$f = strtok($selected, ":");
+//		$result = ZoneGetName($f);
+//		while ($z = strtok( ":")) $result .= ", " . ZoneGetName($z);
+//		return $result;
+//	}
+//	$wc_zones = WC_Shipping_Zones::get_zones();
+//
+//	$args["values"] = $wc_zones;
+//	$events = GetArg($args, "events", null);
+//	$args["multiple"] = true;
+//
+//	return Core_Html::gui_select( $id, "zone_name", $wc_zones, $events, $selected, "id", "class", true );
+//}

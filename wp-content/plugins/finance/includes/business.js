@@ -69,7 +69,7 @@ function client_selected() {
             document.getElementById("transactions").innerHTML = xmlhttp.response;
         }
     }
-    let request = finance_post_file + "?operation=get_trans&client_id=" + client_id +
+    let request = finance_post_file + "?operation=get_open_trans&client_id=" + client_id +
         "&site_id=" + site_id;
     // alert (request);
     xmlhttp.open("GET", request, true);
