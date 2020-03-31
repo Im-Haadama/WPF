@@ -128,6 +128,7 @@ class Flavor {
 	 */
 	private function init_hooks() {
 		// register_activation_hook( WC_PLUGIN_FILE, array( 'Flavor_Install', 'install' ) );
+
 		Flavor_Database::install($this->version);
 		register_shutdown_function( array( $this, 'log_errors' ) );
 		add_action( 'after_setup_theme', array( $this, 'setup_environment' ) );

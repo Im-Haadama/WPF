@@ -89,6 +89,14 @@ class Fresh_Basket extends  Fresh_Product  {
 		return sql_query_single_scalar($sql);
 	}
 
+	static function SettingsWrap()
+	{
+		$url = GetUrl();
+		$args = [];
+
+		print self::Settings($url, $args);
+	}
+
 	static function Settings($url, $args)
 	{
 		$basket_id = GetParam("basket_id", false, null);
@@ -147,6 +155,14 @@ class Fresh_Basket extends  Fresh_Product  {
 		$data .= Core_Html::GuiHyperlink("New", AddParamToUrl($url, "basket_id", 0));
 
 		return $data;
+	}
+
+	static function add_admin( $menu ) {
+//		add_submenu_page( 'edit.php?post_type=product', __( 'Attributes', 'woocommerce' ), __( 'Attributes', 'woocommerce' ), 'manage_product_terms', 'product_attributes', array( $this, 'attributes_page' ) );
+
+//		$menu->AddMenu( 'Fresh Packing', 'Packing', 'show_manager', 'packing', 'Fresh_Packing::admin' );
+		$menu->AddSubMenu("edit.php?post_type=product", "edit_shop_orders",
+			array('page_title' => 'Baskets', 'function' => array("Fresh_Basket" , 'SettingsWrap' )));
 	}
 
 	static function new_basket($args)

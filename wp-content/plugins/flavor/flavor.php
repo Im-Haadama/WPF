@@ -42,12 +42,13 @@ function flavor() {
 }
 
 // Global for backwards compatibility.
-$GLOBALS['flavor'] = flavor();
+//$GLOBALS['flavor'] = flavor();
 
 function run_flavor() {
 	$plugin = new Flavor("Flavor");
 	$plugin->run();
 }
+
 
 run_flavor();
 

@@ -1,9 +1,10 @@
 <?php
 
+define ('ROOT_DIR', dirname(dirname(__FILE__)));
 	error_reporting( E_ALL );
 	ini_set( 'display_errors', 'on' );
 
-	define('ABSPATH', dirname(__FILE__) . '/');
+	define('ABSPATH', dirname(dirname(__FILE__)) . '/');
 require_once("../im-config.php");
 require_once("plugins/flavor/includes/core/fund.php");
 require_once("plugins/flavor/includes/core/data/sql.php");

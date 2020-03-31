@@ -229,6 +229,7 @@ function sql_query( $sql, $report_error = true )
 	}
 	if ( ! $conn ) {
 		sql_error("Error (3): not connected");
+		print debug_trace(10);
 		return null;
 	}
 	$prev_time         = microtime(true);

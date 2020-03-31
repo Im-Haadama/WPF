@@ -13,7 +13,9 @@ class Core_Admin_Menu {
 			$menu_title = ( isset($page['menu_title']) ? $page['menu_title'] : $title);
 			$slug = ( isset($page['menu_slug']) ? $page['menu_slug'] :  str_replace(' ', '-', strtolower($menu_title)));
 			$function  = (isset($page['function']) ? $page['function'] : null);
-			add_submenu_page($parent, $title, $menu_title, $capability, $slug, $function);
+
+			if (! add_submenu_page($parent, $title, $menu_title, $capability, $slug, $function))
+				print 1/0;
 	}
 }
 

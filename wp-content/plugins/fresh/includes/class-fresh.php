@@ -639,11 +639,13 @@ class Fresh {
 	    wp_register_script( 'orders', FRESH_INCLUDES_URL . 'js/orders.js');
 	    wp_enqueue_script('orders');
 
-	    wp_register_style( 'woocommerce_admin_menu_styles', WC_URL . '/assets/css/menu.css', array(), WC_VERSION );
-	    wp_register_style( 'woocommerce_admin_styles', WC_URL . '/assets/css/admin.css', array(), WC_VERSION );
+	    if (defined('WC_VERSION')){
+            wp_register_style( 'woocommerce_admin_menu_styles', WC_URL . '/assets/css/menu.css', array(), WC_VERSION );
+            wp_register_style( 'woocommerce_admin_styles', WC_URL . '/assets/css/admin.css', array(), WC_VERSION );
 
-	    wp_enqueue_style('woocommerce_admin_menu_styles');
-	    wp_enqueue_style('woocommerce_admin_styles');
+            wp_enqueue_style('woocommerce_admin_menu_styles');
+            wp_enqueue_style('woocommerce_admin_styles');
+	    }
 
 	    $file = FRESH_INCLUDES_URL . 'js/delivery.js';
 	    wp_enqueue_script( 'delivery', $file, null, $this->version, false );
@@ -661,6 +663,7 @@ class Fresh {
 	}
 
 	public function fresh_quantity_handler() {
+	    if (! function_exists('wc_enqueue_js')) return;
 		wc_enqueue_js( '
 		jQuery(function($) {
 		$("form.cart").on("change", "input.qty", function() {

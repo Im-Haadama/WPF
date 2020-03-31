@@ -82,6 +82,8 @@
 			$menu->AddSubMenu("woocommerce", "edit_suppliers",
 				array('page_title' => 'Needed', 'function' => array("Fresh_Packing" , 'needed_products' )));
 
+			Fresh_Basket::add_admin($menu);
+
 			Fresh_Packing::add_admin($menu);
 		}
 
