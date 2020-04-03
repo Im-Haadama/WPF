@@ -65,7 +65,7 @@ class Finance_Settings {
 
 //		$menu->AddMenu( 'Fresh Settings', 'Fresh', 'show_manager', 'fresh', __CLASS__ . '::general_settings' );
 
-		$menu->AddSubMenu( "users.php", "edit_suppliers",
+		$menu->AddSubMenu( "users.php", "edit_shop_orders",
 			array( 'page_title' => 'Client accounts', 'function' => array( "Finance_Clients", 'admin_page' ) ) );
 	}
 

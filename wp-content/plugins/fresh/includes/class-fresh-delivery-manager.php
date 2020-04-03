@@ -332,7 +332,12 @@ class Fresh_Delivery_Manager
 function delete_wp_woocommerce_shipping_zone_methods($instance_id)
 {
 	if ($instance_id > 0)
-		delete_wp_option('woocommerce_flat_rate_' . $instance_id . '_settings');
+		deleteWpPption( 'woocommerce_flat_rate_' . $instance_id . '_settings');
+}
+
+function deleteWpPption($option_id)
+{
+	sql_query("delete from wp_options where option_id='$option_id'");
 }
 
 function updateWp_woocommerce_shipping_zone_methods($args) {

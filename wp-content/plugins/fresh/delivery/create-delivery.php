@@ -1,19 +1,15 @@
-<html dir="rtl">
 <?php
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 require_once ('../../flavor/includes/core/class-core-fund.php');
-print Core_Fund::load_scripts(array('/wp-content/plugins/flavor/includes/core/gui/client_tools.js',
-	'/wp-content/plugins/fresh/includes/js/delivery.js',
-	'/wp-content/plugins/flavor/includes/core/data/data.js'));
 
 //print gui_datalist( "items", "im_products", "post_title", true );
 //print gui_datalist( "draft_items", "im_products_draft", "post_title", true );
 
 require_once ("../../../../wp-config.php");
-require_once ("../../../../im-config.php");
+//require_once ("../../../../im-config.php");
 
 new Fresh_Delivery(0); // load delivery classes
 
@@ -35,12 +31,21 @@ if ( isset( $_GET["id"] ) ) {
 	if ( isset( $_GET["order_id"] ) ) {
 		$order_id = $_GET["order_id"];
 		$O = new Fresh_Order($order_id);
+		if ($O->getDeliveryId()){
+			print "<meta http-equiv=\"Refresh\" content=\"0; url=get-delivery.php?order_id=$order_id\" />";
+			return;
+		}
 	} else {
 		print "nothing to work with<br/>";
 		die ( 1 );
 	}
 }
-
+?>
+<html dir="rtl">
+<?php
+print Core_Fund::load_scripts(array('/wp-content/plugins/flavor/includes/core/gui/client_tools.js',
+	'/wp-content/plugins/fresh/includes/js/delivery.js',
+	'/wp-content/plugins/flavor/includes/core/data/data.js'));
 
 require ('create-delivery-script.php');
 
@@ -68,6 +73,8 @@ if ( $id > 0 ) {
 	$O->infoBox();
 
 	$d = new Fresh_Delivery( $id );
+	if ($d->getCustomerType())
+	    print "<script> let client_type = " . $d->getCustomerType() . ";</script>";
 	$d->PrintDeliveries( FreshDocumentType::delivery, Fresh_DocumentOperation::edit, false, $show_inventory );
 
 	//$d = new delivery( $id );

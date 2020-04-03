@@ -10,15 +10,22 @@ class Core_Gem {
 	 *
 	 * @param $object_types
 	 */
-	public function __construct( ) {
+	private function __construct( ) {
 		$this->object_types = array();
 		self::$_instance = $this;
+		AddAction("gem_show", array(__CLASS__, "show_wrap"));
+		AddAction("gem_v_show", array(__CLASS__, "v_show_wrap"));
+		AddAction("gem_import", array(__CLASS__, "import_wrap"));
+		AddAction("gem_do_import", array(__CLASS__, "do_import_wrap"));
+		AddAction("gem_v_do_import", array(__CLASS__, "do_v_import_wrap"));
 	}
 
 	/**
 	 * @return Core_Gem|null
 	 */
 	public static function getInstance(): ?Core_Gem {
+		if (! self::$_instance)
+			self::$_instance = new self();
 		return self::$_instance;
 	}
 
@@ -45,7 +52,7 @@ class Core_Gem {
 		AddAction("gem_show_" . $table, array($class, 'show_wrapper'), 10, 3, $debug);
 
 		// Import
-//		AddAction("gem_import_$table", array($class, "import_wrapper"), 10, 3);
+		AddAction("gem_import_$table", array($class, "import_wrapper"), 10, 3);
 	}
 
 	static function edit_wrapper($result, $id, $args)
@@ -78,12 +85,92 @@ class Core_Gem {
 		return $result . self::GemAddRow($table_name, null, $args);
 	}
 
+	static function import_wrap()
+	{
+		$table = GetParam("table", true);
+		$args = self::getInstance()->object_types[$table];
+		return self::ShowImport($table, $args);
+	}
+
+	static function do_import_wrap()
+	{
+		$fields = [];
+		$table = GetParam("table", true);
+//		var_dump(self::getInstance()->object_types[$v_table]);
+//		$table = self::getInstance()->object_types[$v_table]['database_table'];
+//		print "$v_table $table<br/>";
+		$file_name = $_FILES["fileToUpload"]["tmp_name"];
+
+		return Core_Importer::Import($file_name, $table, $fields);
+	}
+
+	static function do_v_import_wrap()
+	{
+		$result = "";
+		$fields = [];
+		$v_table = GetParam("table", true);
+//		var_dump(self::getInstance()->object_types[$v_table]);
+		$table_args = self::getInstance()->object_types[$v_table];
+		$table = $table_args['database_table'];
+//		print "$v_table $table<br/>";
+		$file_name = $_FILES["fileToUpload"]["tmp_name"];
+
+		$unmapped = [];
+		$rc = Core_Importer::Import($file_name, $table, $fields, null, $unmapped);
+		if (count($unmapped)) {
+			foreach ($unmapped as $u)
+			{
+				if (! sql_query_single_scalar("select count(*) from nv_conversion where table_name = '$table' and header ='$u'")) {
+					$sql = "insert into nv_conversion (table_name, col, header) values ('$table', '', '$u')";
+					sql_query( $sql );
+				}
+			}
+			$instance = self::getInstance();
+			$v_args = array("database_table" => "nv_conversion", "query_part" => "from nv_conversion where table_name = '$table'");
+
+			$instance->AddVirtualTable("nv_conversion", $v_args);
+			$args = [];
+			$args["id"] = "id";
+			$args["post_file"] = GetUrl();
+			$args["selectors"] = array("col" => "gui_select_field");
+			$args["import_table"] = $table;
+			// $args["fields"]
+			$result .= $instance->GemVirtualTable("nv_conversion", $args);
+			print $result;
+//			die(1);
+			return false;
+		}
+		print $result;
+		return $rc;
+	}
+
 	static function import_wrapper($result, $id, $args)
 	{
 		$table = GetArg($args, "table_name", null);
 		if (! $table) return "no table selected";
-		self::GemImport($table);
+		self::ShowImport($table);
 	}
+
+	static function v_show_wrap($result = null)
+	{
+		if (! $result)
+			$result = "";
+		$v_table = GetParam("table", true);
+
+		$args = [];
+		$args["id"] = GetParam("id", true);
+		if (isset(self::getInstance()->object_types[$v_table]["post_file"]))
+			$args["post_file"] = self::getInstance()->object_types[$v_table]["post_file"] . "?id=" . $args['id'] . "&table=" . $v_table;
+
+		$instance = self::getInstance();
+		$result .= $instance->GemVirtualTable($v_table, $args);
+
+		if (isset(self::getInstance()->object_types[$v_table]["import"]))
+			$result .= self::ShowVImport( "$v_table", $args );
+
+		return $result;
+	}
+
 
 	static function v_show_wrapper($operation, $id, $args)
 	{
@@ -103,12 +190,13 @@ class Core_Gem {
 		return "lalal"; // $instance->GemVirtualTable($table_name, $args);
 	}
 
-	static function show_wrapper($operation, $id, $args)
+	static function show_wrap($result = null)
 	{
-		$table_name = substr($operation, strlen("gem_show_"));
-//		print "op=$operation tbl=$table_name id=$id args=$args<br/>";
-		if (! $id) return "id is missing";
-		return self::GemElement(get_table_prefix() .$table_name, $id, $args);
+		if (! $result) $result = "";
+		$id = GetParam("id", true);
+		$table_name = GetParam("table", true);
+		$args = [];
+		return $result . self::GemElement($table_name, $id, $args);
 	}
 
 	static function GemAddRow($table_name, $text = null, $args = null){
@@ -257,7 +345,7 @@ class Core_Gem {
 			$checkbox_class = GetArg($args, "checkbox_class", "class");
 			$result .= Core_Html::GuiButton( "btn_delete_$table_id", "delete",
 				array( "action" => "delete_items(" . QuoteText( $checkbox_class ) . "," . QuoteText( $post_file ) . ")" ) );
-			$result .= Core_Gem::GemImport( $table_id, $args );
+			$result .= Core_Gem::ShowImport( $table_id, $args );
 		}
 
 		return $result;
@@ -323,7 +411,7 @@ class Core_Gem {
 		if (! $query_part) return "Query part for $table_name is missing";
 
 		$query_id = GetArg($args, "id", null);
-		if (! $query_id) return "id is missing";
+		if (! $query_id) return __FUNCTION__ . ": id is missing";
 		$query = sprintf($query_part, $query_id);
 		$fields = GetArg($this->object_types["$table_name"], "fields", '*');
 
@@ -368,6 +456,14 @@ class Core_Gem {
 		print Core_Html::GuiButton("btn_search", $script_function, "Search");
 	}
 
+
+	static function ShowVImport($table_name, $args)
+	{
+		$post_file = GetArg($args, "post_file", null);
+		$args["import_action"] = AddParamToUrl($post_file, array("operation" => "gem_v_do_import"));
+
+		return self::ShowImport($table_name, $args);
+	}
 	/**
 	 * @param $table_name
 	 * @param null $args
@@ -375,7 +471,7 @@ class Core_Gem {
 	 * @return string
 	 * @throws Exception
 	 */
-	static function GemImport($table_name, $args = null)
+	static function ShowImport($table_name, $args = null)
 	{
 		$result = "";
 		$header = GetArg($args, "header", "Import to $table_name");
@@ -384,7 +480,7 @@ class Core_Gem {
 			$action_file = GetArg($args, "import_action", null);
 			if ($action_file) break;
 			if ($post_file) {
-				$action_file = $post_file . "?operation=import_$table_name";
+				$action_file = AddParamToUrl($post_file , "operation", "gem_do_import");
 				break;
 			}
 			throw new Exception("must supply import action or post_file");
@@ -404,9 +500,7 @@ class Core_Gem {
 		           ImTranslate('Load from csv file') .
 		           '<input type="file" name="fileToUpload" id="fileToUpload">
         <input type="submit" value="טען" name="submit">
-
-        <input type="hidden" name="post_type" value="product"/>
-    </form>
+    	</form>
 		<script> ';
 		if ($selector) $result .= '	wait_for_selection();';
 		else $result .= 'let forms = document.getElementsByName("submit");
@@ -438,4 +532,16 @@ class Core_Gem {
 
 // Header that attach to upper screen.
 // Gets array of elements to display next to logo
+}
+
+function gui_select_field($id, $selected, $args) {
+	$table = $args["import_table"];
+	$i     = 0;
+	foreach ( sql_table_fields( $table ) as $field ) {
+		$args["values"][ $i ]['id']   = $i;
+		$args["values"][ $i ]['name'] = $field;
+		$i ++;
+	}
+
+	return Core_Html::GuiSelect( "table_field", null, $args );
 }

@@ -49,16 +49,6 @@ class Fresh_Totals {
 		) );
 	}
 
-	static function total_table($args)
-	{
-		$needed_products = array();
-		Fresh_Order::CalculateNeeded( $needed_products );
-
-		var_dump($needed_products);
-
-	}
-
-
 	static function test()
 	{
 		if (get_user_id() == 1)

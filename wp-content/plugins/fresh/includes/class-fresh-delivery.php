@@ -208,7 +208,7 @@ class Fresh_Delivery {
 				if ( $quantity_ordered )
 					$price = round( $order_line_total / $quantity_ordered, 1 );
 				else
-					$price = get_price( $prod_id);
+					$price = Fresh_Pricing::get_price( $prod_id);
 				break;
 			case 1:
 				$price = siton_price( $prod_id );
@@ -406,7 +406,7 @@ class Fresh_Delivery {
 	}
 
 	public function getCustomerType() {
-		return $this->getOrder()->getCustomer()->getCustomerType();
+		return $this->getOrder()->getCustomerType();
 	}
 
 	public function getOrder() {

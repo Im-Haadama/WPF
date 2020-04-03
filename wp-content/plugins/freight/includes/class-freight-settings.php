@@ -61,7 +61,6 @@
 
 		static function admin_menu()
 		{
-			return false;
 			$menu = new Core_Admin_Menu();
 
 			$menu->AddMenu('Freight Settings', 'Freight', 'show_manager', 'freight', __CLASS__ . '::general_settings');

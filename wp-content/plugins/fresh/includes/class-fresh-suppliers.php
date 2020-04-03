@@ -17,7 +17,7 @@ class Fresh_Suppliers {
 	{
 		Core_Gem::AddTable( "suppliers" );
 
-		$this->gem = new Core_Gem();
+		$this->gem =Core_Gem::getInstance();
 
 		// Products
 		$args = array("query_part" => "from wp_posts p,
@@ -31,13 +31,15 @@ class Fresh_Suppliers {
 
 		// Pricelist
 		$args = array("database_table" => "supplier_price_list",
-		              "query_part" => "from im_supplier_price_list
-                where supplier_id = %d",
+		              "query_part" => "from im_supplier_price_list where supplier_id = %d",
 			"fields" => array("id", "product_name", "price", "date"),
 			"order"=>"product_name",
 			"prepare" => "Fresh_Pricelist_Item::add_prod_info",
 //			"header_fields" => array("supplier_product_code" => "code", "product_name" => "name"),
-			"prepare_plug" => "Fresh_Pricelist_Item::add_prod_info");
+		"post_file"=>Fresh::getPost(),
+			"import" => true,
+			"prepare_plug" => "Fresh_Pricelist_Item::add_prod_info",
+			"action_before" => array(__CLASS__, "create_before_import"));
 		$this->gem->AddVirtualTable( "pricelist", $args );
 
 		// load classes
@@ -45,16 +47,16 @@ class Fresh_Suppliers {
 		new Fresh_Catalog();
 	}
 
+
 	static function admin_page()
 	{
 		$operation = GetParam("operation");
 
+		Core_Gem::getInstance(); // Make sure that initiated.
+
 		$result = null;
 		if ($operation){
-			$id = GetParam("id", false, 0);
-			$args = self::Args("pricelist");
-
-			$result = apply_filters( $operation, $operation, $id, $args );
+			$result = apply_filters( $operation, null );
 		}
 
 		if ( !$result )
@@ -71,7 +73,7 @@ class Fresh_Suppliers {
 		// $args["links"] = array("id"=> AddToUrl(array( "operation" => "show_supplier", "id" => "%s")));
 		$args["query"] = "is_active = 1";
 		$args["header_fields"] = array("supplier_name" => "Name", "supplier_description" => "Description");
-		$args["actions"] = array(array("Show products", AddToUrl(array("operation" => "gem_v_show_pricelist", "id" => "%s"))));
+		$args["actions"] = array(array("Show products", AddToUrl(array("operation" => "gem_v_show", "table"=>"pricelist", "id" => "%s"))));
 		$result .= Core_Gem::GemTable("suppliers", $args);
 
 		// $result .= GuiTableContent("im_suppliers",null, $args);
@@ -135,7 +137,7 @@ class Fresh_Suppliers {
 		$event = "on";
 
 
-		$edit_target = AddToUrl(array("operation" => "gem_show_suppliers" , "id" => $row['id']));
+		$edit_target = AddToUrl(array("operation" => "gem_show", "table" => "suppliers" , "id" => $row['id']));
 		return array(
 			"name" => Core_Html::GuiHyperlink($row["supplier_name"],  $edit_target) . "<br/>" .
 			          Core_Html::GuiHyperlink("delete", "remove"),

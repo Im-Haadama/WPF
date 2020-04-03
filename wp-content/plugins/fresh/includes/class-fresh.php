@@ -530,6 +530,7 @@ class Fresh {
 		$this->delivery_manager->init();
 
 		$this->enqueue_scripts();
+		Core_Importer::instance();
 
 		// Init action.
 		do_action( 'fresh_init' );
@@ -626,7 +627,6 @@ class Fresh {
 	public function admin_scripts()
     {
         $file = FRESH_INCLUDES_URL . 'js/admin.js';
-
 	    wp_register_script( 'fresh_admin', $file);
 
 	    $params = array(

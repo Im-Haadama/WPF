@@ -364,7 +364,7 @@ class Finance_Bank
 				$args["post_file"] = self::getPost();
 				print Core_Gem::GemTable("bank", $args);
 
-				print Core_Gem::GemImport( "bank", $args );
+				print Core_Gem::ShowImport( "bank", $args );
 				break;
 
 			case "show_transactions":
@@ -374,7 +374,6 @@ class Finance_Bank
 				$file_name = $_FILES["fileToUpload"]["tmp_name"];
 				print "Trying to import $file_name<br/>";
 				$I                    = new Core_Importer();
-				$fields               = null;
 				$fields               = array();
 				$fields['account_id'] = GetParam( 'selection' );
 				if ( ! $fields['account_id'] ) {

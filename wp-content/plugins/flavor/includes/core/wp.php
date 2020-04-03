@@ -221,10 +221,6 @@ function get_wp_option($option_id, $default = null)
 	return maybe_unserialize($string);
 }
 
-function delete_wp_option($option_id)
-{
-	sql_query("delete from wp_options where option_id='$option_id'");
-}
 
 function update_wp_option($option_id, $array_or_string)
 {

@@ -80,9 +80,9 @@ class Focus_Salary {
 				// if ($user_id = 1) $user_id = 238;
 				return self::add_activity( $worker_id, $date, $start, $end, $project, $vol, $traveling, $extra_text, $extra );
 
-			case "show_add_im_working":
+			case "show_add_working":
 				$args = [];
-				$args["selectors"] = array("user_id" => "gui_select_client", "project_id" => "gui_select_project");
+				$args["selectors"] = array("user_id" => "gui_select_client", "project_id" => "Focus_Tasks::gui_select_project");
 				$args["post_file"] = self::getPost();
 				return Core_Gem::GemAddRow("working", "Add", $args);
 		}
@@ -373,7 +373,7 @@ class Focus_Salary {
 			'<input id="end_h" type="time" value="13:00" pattern="([1]?[0-9]|2[0-3]):[0-5][0-9]">'
 		) ) );
 		$args["worker_id"] = $user_id;
-		array_push( $table, ( array( "פרויקט", gui_select_project( "project", null, $args ) ) ) );
+		array_push( $table, ( array( "פרויקט", Focus_Tasks::gui_select_project( "project", null, $args ) ) ) );
 
 		$result .= Core_Html::gui_table_args( $table );
 
@@ -555,7 +555,7 @@ class Focus_Salary {
 			"comment"      => "Comment",
 			"line_salary" => "Total"
 		);
-		$args["selectors"]     = array( "project_id" => "gui_select_project" );
+		$args["selectors"]     = array( "project_id" => "Focus_Tasks::gui_select_project" );
 		$args["skip_id"]       = true;
 		if ( $edit ) {
 			$args["add_checkbox"] = true;

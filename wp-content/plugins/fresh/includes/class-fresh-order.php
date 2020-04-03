@@ -416,13 +416,13 @@ class Fresh_Order {
 		$prod_or_var = $prod_key[0];
 		$p = new Fresh_Product($prod_or_var);
 		if ( $p->is_basket( $prod_or_var ) ) {
-//                print $prod_id . " is basket ";
-			foreach (
-				Fresh_Basket::get_basket_content_array( $prod_or_var ) as $basket_prod =>
-				$basket_q
-			) {
+			// Add basket content.
+			foreach (Fresh_Basket::get_basket_content_array( $prod_or_var ) as $basket_prod => $basket_q) {
 				Fresh_Order::AddProducts( array( $basket_prod, '' ), $qty * $basket_q, $needed_products );
 			}
+			// Add also the basket
+			if ( ! isset( $needed_products[ $prod_or_var ][ 0 ] ) ) $needed_products[ $prod_or_var ][ 0 ] = 0;
+			$needed_products[$prod_or_var][0] += $qty;
 		} else {
 			$unit_key = '';
 			// Handle single product:
@@ -455,9 +455,7 @@ class Fresh_Order {
 				$prod_or_var = $p;
 			}
 
-			if ( ! isset( $needed_products[ $prod_or_var ][ $unit_key ] ) ) {
-				$needed_products[ $prod_or_var ][ $unit_key ] = 0;
-			}
+			if ( ! isset( $needed_products[ $prod_or_var ][ $unit_key ] ) ) $needed_products[ $prod_or_var ][ $unit_key ] = 0;
 			// print "QQQQ adding $qty to " . get_product_name($prod_or_var) . "<br/>";
 			$needed_products[ $prod_or_var ][ $unit_key ] += $qty;
 			//if ($key == 354) { print "array:"; var_dump($needed_products[$prod_or_var]); print "<br/>";}
@@ -1353,6 +1351,7 @@ class Fresh_Order {
 	}
 
 	static function check_cache_validity() {
+		return false;
 //	$sql = "SELECT count(p.id)
 //	FROM wp_posts p
 //	 LEFT JOIN im_need_orders o
@@ -1384,5 +1383,11 @@ class Fresh_Order {
 		return Core_Html::GuiHyperlink($text, "/wp-admin/post.php?post=". $this->order_id . "&action=edit");
 	}
 
+	function getCustomerType()
+	{
+		print $this->customer_id;
+		return get_user_meta( $this->customer_id, "_client_type", true );
+
+	}
 }
 

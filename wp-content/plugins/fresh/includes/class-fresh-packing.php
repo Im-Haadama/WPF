@@ -144,6 +144,7 @@ class Fresh_Packing {
 	}
 
 	static function needed_totals( $filter_zero, $history = false, $filter_stock = false, $limit_to_supplier_id = null ) {
+
 		$result          = "";
 		$needed_products = array();
 
@@ -163,6 +164,7 @@ class Fresh_Packing {
 		foreach ( $needed_products as $prod_id => $product_info ) {
 			$prod        = new Fresh_Product( $prod_id );
 			$supplier_id = $prod->getSupplierId();
+			if (! $supplier_id) $supplier_id = 1000001; // Todo
 			if ( ! in_array( $supplier_id, $suppliers ) and ( $supplier_id > 0 ) ) {
 				array_push( $suppliers, $supplier_id );
 				$supplier_needed[ $supplier_id ] = array();
@@ -192,9 +194,9 @@ class Fresh_Packing {
 		$sql = "SELECT id, supplier_priority FROM im_suppliers WHERE id IN (" . CommaImplode( $suppliers ) . ")" .
 		       " ORDER BY 2";
 
-		$result = sql_query( $sql );
+		$result = sql_query_array( $sql );
 
-		while ( $row = sql_fetch_row( $result ) ) {
+		foreach ($result as $row){
 			$supplier    = new Fresh_Supplier( $row[0] );
 			$tab_content =
 				self::get_total_orders_supplier( $supplier->getId(), $supplier_needed[ $supplier->getId() ], $filter_zero, $filter_stock, $history );
@@ -202,8 +204,6 @@ class Fresh_Packing {
 			if ( $supply_id = Fresh_Suppliers::TodaySupply( $supplier->getId() ) ) {
 				$tab_content .= Core_Html::GuiHyperlink( "Supply " . $supply_id, "/fresh/supplies/supplies-page.php?operation=show&id=" . $supply_id ) . "<br/>";
 			}
-
-//
 
 			$tab_content .= Core_Html::GuiButton( "btn_create_supply_" . $supplier->getId(), "Create a supply", array( "action" => "needed_create_supplies(" . $supplier->getId() . ")" ) );
 
@@ -213,7 +213,6 @@ class Fresh_Packing {
 					$supplier->getSupplierName(),
 					$tab_content
 				);
-
 		}
 
 		return $supplier_tabs;
@@ -273,16 +272,18 @@ class Fresh_Packing {
 			$order_id      = $row[1];
 			$o = new Fresh_Order($order_id);
 			$quantity      = self::get_order_itemmeta( $order_item_id, '_qty' );
+
 			// consider quantity in the basket or bundle
 			$pid = self::get_order_itemmeta( $order_item_id, '_product_id' );
 			$p   = new Fresh_Product( $pid );
 			if ( $p->is_bundle() ) {
 				$b        = Fresh_Bundle::CreateFromBundleProd( $pid );
 				$quantity *= $b->GetQuantity();
-			} else if ( $p->is_basket() ) {
-				$b        = new Fresh_Basket( $pid );
-				$quantity *= $b->GetQuantity( $prod_id );
 			}
+//			else if ( $p->is_basket() ) {
+//				$b        = new Fresh_Basket( $pid );
+//				$quantity *= $b->GetQuantity( $prod_id );
+//			}
 			$first_name = get_postmeta_field( $order_id, '_shipping_first_name' );
 			$last_name  = get_postmeta_field( $order_id, '_shipping_last_name' );
 

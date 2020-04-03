@@ -7,28 +7,53 @@
  * Time: 18:23
  */
 class Core_Importer {
+	static private $_instance;
+
+	private function __construct() {
+		AddAction("add_conversion_key", array(__CLASS__, "add_conversion_key"));
+		self::$_instance = $this;
+	}
+
+	/**
+	 * @return Core_Importer
+	 */
+	public static function instance() {
+		if ( is_null( self::$_instance ) ) {
+			self::$_instance = new self();
+		}
+
+		return self::$_instance;
+	}
+
+
 	// conversion look like $conversion["name"] = array("שם", "תיאור")...
 	// $conversion["price"] = array("מחיר")...
 	// $map created. Looks like: $map["name"] = 1, $map["price"] = 2. etc.
 	// The places the header was found in the header.
 	// $fields - additional data set externaly.
-	function Import( $file_name, $table_name, $fields = null, $check_dup = null ) {
+	static function Import( $file_name, $table_name, $fields = null, $check_dup = null, &$unmapped = null)
+	{
+		if (! $file_name) {
+			print "No file selected<br/>";
+			return false;
+		}
+		if ( ! file_exists( $file_name ) ) {
+			print "file not found<br/>";
+			return false;
+		}
 		$conversion = array();
 
-		if ( ! $this->ReadConversion( $table_name, $conversion ) ) {
+		if ( ! self::ReadConversion( $table_name, $conversion ) ) {
 			throw new Exception( "Conversion table" );
 		}
 
-		if ( ! file_exists( $file_name ) ) {
-			throw new Exception( "file " . $file_name . " doesn't exists" );
-		}
 		$file = fopen( $file_name, "r" );
 		if ( ! $file ) {
 			throw new Exception( "file " . $file_name . " can't be open" );
 		}
 		$map = array();
 
-		if ( ! $this->ReadHeader( $file, $conversion, $map, $table_name ) ) {
+		if ( ! self::ReadHeader( $file, $conversion, $map, $table_name, $unmapped ) ) {
 			return false; // Failed.
 		}
 
@@ -41,7 +66,7 @@ class Core_Importer {
 
 		while ( $line = fgetcsv( $file ) ) {
 
-			switch ( $this->ImportLine( $line, $table_name, $map, $fields, $check_dup ) ) {
+			switch ( self::ImportLine( $line, $table_name, $map, $fields, $check_dup ) ) {
 				case - 1:
 					$dup_count ++;
 					break;
@@ -66,7 +91,7 @@ class Core_Importer {
 	// 0 - failed.
 	// -1 - row exists (check_dup)
 
-	private function ReadConversion( $table_name, &$conversion ) {
+	private static function ReadConversion( $table_name, &$conversion ) {
 		if ( ! $table_name ) {
 			throw new Exception( __METHOD__ . " no table sended" );
 		}
@@ -91,7 +116,9 @@ class Core_Importer {
 		return true;
 	}
 
-	private function ReadHeader( &$file, $conversion, &$map, $table_name ) {
+	static private function ReadHeader( &$file, $conversion, &$map, $table_name, &$unmapped =null)
+	{
+
 		// First line(s) may be empty.
 		$done = false;
 		$db_prefix = get_table_prefix();
@@ -117,19 +144,25 @@ class Core_Importer {
 //		}
 
 		for ( $i = 0; $i < count( $line ); $i ++ ) {
-//			print $line[$i];
 			$found = false;
+			if (! strlen($line[$i])) {
+				print "Empty column $i header ignored<br/>";
+				continue;
+			}
 			foreach ( $conversion as $k => $m ) {
 //				print $k . " " . $line[$i] . "<br/>";
-				if ( trim($k) == trim($line[ $i ]) ) {
+				if ( strlen($m) and (trim($k) == trim($line[ $i ])) ) {
 //					print "$k $i<br/>";
 					$map[ $m ] = $i;
 					$found = true;
 					break;
 				}
 			}
-			if (! $found) print "Didn't find conversion to $line[$i] <br/>";
+			if (! $found and is_array($unmapped)) {
+				array_push( $unmapped, $line[ $i ] );
+			}
 		}
+		if (count($unmapped)) return false;
 
 //		print "map: <br/>";
 //		foreach ($map as $k => $m)
@@ -140,7 +173,7 @@ class Core_Importer {
 		return true;
 	}
 
-	private function ImportLine( $line, $table_name, $map, $fields = null, $check_dup = null )
+	private static function ImportLine( $line, $table_name, $map, $fields = null, $check_dup = null )
 	{
 		$db_prefix = get_table_prefix();
 		$insert_fields = array();
@@ -197,4 +230,26 @@ class Core_Importer {
 
 		return 1;
 	}
+
+	static function add_conversion_key($post_file)
+	{
+		$header = GetParam("header");
+		$table = GetParam("table", true);
+		$header = GetParam("header", true);
+		$args = [];
+
+		$i = 0;
+		foreach(sql_table_fields($table) as $field) {
+			$args["values"][$i]['id'] = $i;
+			$args["values"][$i]['name'] = $field;
+			$i ++;
+		}
+
+		print "Select match field for $header<br>";
+		print Core_Html::GuiSelect("table_field", null, $args);
+
+		print Core_Html::GuiButton("btn_save_c", "Add", array("action" => "save_conversion('$post_file', '$header', '$table')"));
+		return true;
+	}
+
 }

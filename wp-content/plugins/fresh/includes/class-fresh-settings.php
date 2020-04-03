@@ -63,14 +63,13 @@
 		{
 			$menu = new Core_Admin_Menu();
 
-
 			// General Settings
 			$menu->AddSubMenu('fresh', 'edit_shop_orders',
 				array('page_title' => 'Settings',
 				            'menu_title' => 'Settings',
 				            'menu_slug' => 'settings',
 				            'function' => __CLASS__ . '::general_settings'));
-			$menu->AddSubMenu('fresh', 'edit_shop_orders',
+			$menu->AddSubMenu('users.php', 'edit_shop_orders',
 					array('page_title' => 'Payment List',
 					      'menu_title' => 'Payment list',
 					      'menu_slug' => 'payment_list',
@@ -82,15 +81,15 @@
 			////////////////////
 
 			// Suppliers
-			$menu->AddSubMenu("woocommerce", "edit_suppliers",
+			$menu->AddSubMenu("woocommerce", "edit_shop_orders",
 				array('page_title' => 'Suppliers', 'function' => array("Fresh_Suppliers" , 'admin_page' )));
 
 			// Needed products
-			$menu->AddSubMenu("woocommerce", "edit_suppliers",
+			$menu->AddSubMenu("woocommerce", "edit_shop_orders",
 				array('page_title' => 'Needed', 'function' => array("Fresh_Packing" , 'needed_products' )));
 
 			// Deliveries
-			$menu->AddSubMenu("woocommerce", "edit_suppliers",
+			$menu->AddSubMenu("woocommerce", "edit_shop_orders",
 				array('page_title' => 'Deliveries', 'function' => array("Fresh_Delivery" , 'admin_page' )));
 
 

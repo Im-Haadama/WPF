@@ -553,3 +553,13 @@ function get_table_prefix()
 	global $im_table_prefix;
 	return ($im_table_prefix ? $im_table_prefix : "im_");
 }
+
+function sql_table_fields($table_name) {
+	$fields = [];
+	$result = sql_query( "describe im_" . $table_name );
+	while ( $row = sql_fetch_row( $result ) ) {
+		array_push( $fields, $row[0] );
+	}
+
+	return $fields;
+}

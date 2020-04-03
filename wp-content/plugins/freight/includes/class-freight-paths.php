@@ -20,6 +20,7 @@ class Freight_Paths {
 		add_action("path_create_instance", __CLASS__ . "::show_path_wrap");
 		add_action("update_shipment_instance", __CLASS__ . "::update_shipment_instance");
 		add_action("delete_shipment_instance", __CLASS__ . "::delete_shipment_instance");
+		add_action("update_zone_missions", __CLASS__ . "::update_zones_missions");
 	}
 
 	static function settings($args = null, $operation = null) {
@@ -68,7 +69,6 @@ class Freight_Paths {
 		$result .= Core_Gem::GemTable("paths", $args);
 //		$result .= Core_Html::GuiButton("btn_save", "save", array("action" => "save_paths()"));
 
-		return $result;
 
 		$result .= "<br/>";
 		$result .= Core_Html::GuiButton("btn_instance", "Create Missions", array("action" => "create_missions('" . Freight::getPost() . "')"));
@@ -247,6 +247,12 @@ class Freight_Paths {
 		return $result;
 	}
 
+	function update_zone_missions()
+	{
+		$result = "Updating...<br/>";
+
+		return $result;
+	}
 }
 
 //function path_get_zones($path_id, $sorted = true)
