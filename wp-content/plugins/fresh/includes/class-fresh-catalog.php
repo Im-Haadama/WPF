@@ -464,6 +464,7 @@ class Fresh_Catalog {
 		return $result_ids;
 	}
 
+
 	static function GetBuyPrice( $product_id, $supplier ) {
 		// print "prod_id = " . $product_id . " supplier = " . $supplier . "<br/>";
 		$alternatives = Fresh_Catalog::alternatives( $product_id );
@@ -636,6 +637,23 @@ class Fresh_Catalog {
 			}
 		}
 		return $result;
+	}
+
+	static function best_alternative($prod_id)
+	{
+		$alternatives = self::alternatives($prod_id);
+		$min  = 1111111;
+		$best = null;
+		for ( $i = 0; $i < count( $alternatives ); $i ++ ) {
+			$price = Fresh_Pricing::calculate_price( $alternatives[ $i ]->getPrice(), $alternatives[ $i ]->getSupplierId(),
+				$alternatives[ $i ]->getSalePrice());
+			if ( $price < $min ) {
+				$best = $alternatives[ $i ];
+				$min = $price;
+			}
+		}
+
+		return $best;
 	}
 
 	static function alternatives( $prod_id, $details = false, $supplier_id = null )

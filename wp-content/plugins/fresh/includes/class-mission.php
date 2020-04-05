@@ -216,10 +216,11 @@ class Mission {
 		else
 			$last_mission = new Mission(0);
 
-		$path_days = sql_query_single_scalar("select week_days from im_paths where id = " . $path_id);
+		$path_days = sql_query_array_scalar("select week_day from im_path_shipments where path_id = " . $path_id . " and instance is not null");
+//		print "days: "; var_dump($path_days); print "p=$path_id<br/>";
 
 		for ($day = strtotime('tomorrow') ; $day < strtotime("tomorrow +$forward_days days");  $day += 86400) {
-			if (in_array(date('w', $day), explode(":", $path_days))){
+			if (in_array(date('w', $day), $path_days)){
 				$sql = "select count(*) from im_missions where path_code = " . $path_id . " and date = " . QuoteText(date('Y-m-d', $day));
 				if (sql_query_single_scalar($sql) > 0) continue;
 				if (! $last_mission->create_mission_path_date($path_id, date('Y-m-d',$day))) return false;

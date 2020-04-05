@@ -54,3 +54,4 @@ function show_order($plugins)
 	foreach ($plugins as $plugin) print $plugin . "<br/>";
 	return;
 }
+

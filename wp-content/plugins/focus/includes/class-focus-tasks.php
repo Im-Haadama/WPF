@@ -536,7 +536,7 @@ class Focus_Tasks {
 		$result               .= Core_Gem::GemArray( $table, $args, "team_members" );
 
 		$result .= Core_Html::gui_header( 1, "add member" );
-		$result .= gui_select_worker( "new_member", null, $args );
+		$result .= Focus_Tasks::gui_select_worker( "new_member", null, $args );
 		$result .= Core_Html::GuiButton( "btn_add_member", "add", array("action" => "add_team_member(" . $team_id . ")") );
 
 		return $result;

@@ -17,7 +17,7 @@ class Fresh_Path {
 		$this->id = $id;
 		$path_info = sql_query_single_assoc("select * from im_paths where id = " . $id);
 		$this->description = $path_info['description'];
-		$this->zones = unserialize($path_info['zones_times']);
+//		$this->zones = unserialize($path_info['zones_times']);
 
 		$this->start = 23;
 		$this->end = 0;
@@ -69,16 +69,8 @@ class Fresh_Path {
 	function get_zone_times($sorted = true)
 	{
 		// $zones =
-		$zone_times = unserialize($raw = sql_query_single_scalar("select zones_times from im_paths where id = $this->id"));
-		if (! $zone_times) { // Backward compatibility
-			$zone_times = array();
-			$zone = strtok($raw, ":");
-			while ($zone)
-			{
-				$zone_times[$zone] = "9-13";
-				$zone = strtok(":");
-			}
-		}
+		$zone_times = sql_query_array_scalar("select hours from im_path_shipments where path_id = $this->id and instance is not null");
+		var_dump($zone_times);
 		if ($sorted) uasort($zone_times,
 			function($a, $b) {
 				$start_a = strtok($a, "-");
