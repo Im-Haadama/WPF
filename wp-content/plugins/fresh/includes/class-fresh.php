@@ -17,7 +17,6 @@ class Fresh {
 	protected $supplier_balance;
 	protected $totals;
 	protected $shortcodes;
-//	protected $order;
 
 	/**
 	 * Plugin version.
@@ -134,9 +133,6 @@ class Fresh {
 		add_shortcode( 'im-page', 'im_page' );
 		add_action( 'init', 'register_awaiting_shipment_order_status' );
 		add_action( 'woocommerce_checkout_process', 'wc_minimum_order_amount' );
-		add_action( 'woocommerce_before_cart', 'wc_minimum_order_amount' );
-		add_action( 'woocommerce_checkout_order_processed', 'wc_minimum_order_amount' );
-//		add_action( 'woocommerce_after_cart_table', 'wc_after_cart' );
 		add_action( 'woocommerce_checkout_process', 'wc_minimum_order_amount' );
 		add_action( 'woocommerce_before_cart', 'wc_minimum_order_amount' );
 		add_action( 'woocommerce_checkout_order_processed', 'wc_minimum_order_amount' );
@@ -147,6 +143,7 @@ class Fresh {
 		add_action( 'init', 'custom_add_to_cart_quantity_handler' );
 		add_action( 'woocommerce_checkout_update_order_meta', 'my_custom_checkout_field_update_order_meta' );
 		add_action( 'init', 'register_awaiting_shipment_order_status' );
+		add_action('woocommerce_order_status_completed', 'Fresh_Order_Management::order_complete');
 
 		add_filter( 'wc_order_statuses', 'add_awaiting_shipment_to_order_statuses' );
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
@@ -292,7 +289,6 @@ class Fresh {
 	function handle_operation($operation)
 	{
 		$input = null;
-
 		$result = apply_filters( $operation, $input, null);
 		if ( $result ) return $result;
 
@@ -308,12 +304,6 @@ class Fresh {
 
 		switch ($operation)
 		{
-			case "order_set_mission":
-				$order_id = GetParam("order_id", true);
-				$mission_id = GetParam("mission_id", true);
-				$order = new Fresh_Order($order_id);
-				$order->setMissionID($mission_id);
-				return "done";
 
 			case "update":
 				return handle_data_operation($operation);
@@ -326,8 +316,6 @@ class Fresh {
 			case "update_shipping_methods_anonymous":
 				return $this->delivery_manager->update_shipping_methods();
 
-			case "mission_stop_accept_anonymous":
-				return $this->delivery_manager->stop_accept();
 		}
 		return false;
 	}
@@ -620,8 +608,13 @@ class Fresh {
 	//		$file = plugin_dir_url( __FILE__ ) . 'inventory.js';
 	//		wp_enqueue_script( $this->plugin_name, $file, array( 'jquery' ), $this->version, false );
 
-		wp_enqueue_script( 'my_custom_script', plugin_dir_url( __FILE__ ) . 'js/add_to_cart_on_search.js', array('jquery') );
+//		wp_register_script('add_to_cart_on_search', plugin_dir_url( __FILE__ ) . 'js/add_to_cart_on_search.js');
+//		wp_localize_script('add_to_cart_on_search', 'wc_add_to_cart_params', array());
+		wp_enqueue_script('add_to_cart_on_search', plugin_dir_url( __FILE__ ) . 'js/add_to_cart_on_search.js', array("jquery"));
+
+//		$rc1 = wp_enqueue_script( 'my_custom_script', plugin_dir_url( __FILE__ ) . 'js/add_to_cart_on_search.js', array('jquery') );
 		wp_enqueue_script( 'custom_script', plugin_dir_url( __FILE__ ) . 'js/custom_script.js' );
+//		MyLog(__FUNCTION__ . ": $rc1 $rc2");
 	}
 
 	public function admin_scripts()
@@ -1769,3 +1762,12 @@ function checkout_create_order_line_item( $item, $cart_item_key, $values, $order
 //	print $k . "=" . $r . "<Br/>";
 
 /* -- End Product Comment-- */
+
+//add_filter('woocommerce_shipping_zone_shipping_methods', 'zone_shipping');
+//
+//function zone_shipping($zone)
+//{
+////    $zone['price'] = array("id"=>4);
+//    var_dump($zone);
+//    return $zone;
+//}

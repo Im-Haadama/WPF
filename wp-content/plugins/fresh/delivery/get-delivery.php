@@ -32,6 +32,12 @@ $O = null;
 if ($order_id){
 	$O        = new Fresh_Order( $order_id );
 	$id = $O->getDeliveryId();
+	if (! ($id > 0)) {
+		print "delivery note not found";
+
+		return;
+	}
+
 	$d = new Fresh_Delivery($id);
 //	print "del_id=" . $O->getDeliveryId() . "<br/>";
 } else {

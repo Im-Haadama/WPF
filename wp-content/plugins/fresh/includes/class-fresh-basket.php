@@ -133,7 +133,7 @@ class Fresh_Basket extends  Fresh_Product  {
 				$line .= "</td>";
 				$total_sellprice = self::get_total_sellprice( $basket_id );
 
-				if ($total_sellprice > 0)
+				if ($total_listprice > 0)
 					$line            .= "<td>" . $total_sellprice . '(' . round( 100 * $total_sellprice / $total_listprice, 1 ) . "%)</td>";
 				else
 					$line .= "<td></td>";
@@ -181,7 +181,9 @@ class Fresh_Basket extends  Fresh_Product  {
 			return 0;
 		}
 		$total_price = 0;
-		$sql         = 'SELECT product_id FROM im_baskets WHERE basket_id = ' . $basket_id;
+		//  Todo: When creating basket we add prod 0.
+		$sql         = 'SELECT product_id FROM im_baskets WHERE basket_id = ' . $basket_id . " and product_id > 0";
+//		print $sql . "<br/>";
 
 		$result = sql_query( $sql );
 
@@ -295,8 +297,6 @@ class Fresh_Basket extends  Fresh_Product  {
 		if (sql_query("insert into ${prefix}baskets (basket_id, date, product_id, quantity) values ($basket_id, NOW(), 0, 0)")){
 			return sql_insert_id();
 		}
-
-
 		// $new_prod = Fresh_Product::
 	}
 

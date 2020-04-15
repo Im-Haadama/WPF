@@ -13,3 +13,6 @@ Fresh setting tab is handled by Fresh_Settings.
 Class that has settings that don't belong to other pages will add them using Fresh_Settings.
 
 Class that connects to other parts will be added by Fresh_Settings::add_tab and add_settings.
+
+Enable add to cart from search page:
+wp_options: woocommerce_enable_ajax_add_to_cart should be set to 'yes'

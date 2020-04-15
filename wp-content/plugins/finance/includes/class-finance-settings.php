@@ -22,8 +22,8 @@ class Finance_Settings {
 	}
 
 	public function init() {
-		add_filter( 'woocommerce_get_sections_products', array( __CLASS__, 'product_comment_add_settings_tab' ) );
-		add_filter( 'woocommerce_get_settings_products', array( __CLASS__, 'product_comment_get_settings' ), 10, 2 );
+//		add_filter( 'woocommerce_get_sections_products', array( __CLASS__, 'product_comment_add_settings_tab' ) );
+//		add_filter( 'woocommerce_get_settings_products', array( __CLASS__, 'product_comment_get_settings' ), 10, 2 );
 	}
 
 	static public function product_comment_add_settings_tab( $settings_tab ) {

@@ -214,13 +214,20 @@ function add_im_user( $user, $name, $email, $address = null, $city = null, $phon
 	return $id;
 }
 
+function delete_wp_option($option_id)
+{
+	if (! $option_id) return false;
+	$sql = "delete from wp_options where option_name='$option_id'";
+//	print $sql . "<br/>";
+	return sql_query($sql);
+}
+
 function get_wp_option($option_id, $default = null)
 {
 	$string = sql_query_single_scalar("select option_value from wp_options where option_name = '" . $option_id . "'");
 	if (! $string) return $default;
 	return maybe_unserialize($string);
 }
-
 
 function update_wp_option($option_id, $array_or_string)
 {

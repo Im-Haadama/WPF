@@ -2080,7 +2080,7 @@ class Focus_Tasks {
 		// collision between query of the container and the selector.
 		$args["query"] = ( isset( $args["query_team"] ) ? $args["query_team"] : null );
 
-		$form_table = GetArg( $args, "form_table", null );
+		$form_table = "working_teams"; // GetArg( $args, "form_table", null );
 
 		if ( $edit ) {
 			$gui = Core_Html::GuiSelectTable( $id, "working_teams", $args );

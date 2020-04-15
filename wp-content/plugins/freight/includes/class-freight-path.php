@@ -41,6 +41,10 @@ class Freight_Path {
 		return explode(':', $this->zones);
 	}
 
-
+	public function setDays($days)
+	{
+		sql_query("update im_paths set days = '" . implode(":", $days) . "'" .
+						" where id = " . $this->id );
+	}
 
 }

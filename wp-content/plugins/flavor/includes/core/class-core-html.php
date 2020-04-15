@@ -592,7 +592,7 @@ class Core_Html {
 	 *
 	 * @return string
 	 */
-	static function GuiCell($cell, $args)
+	static function GuiCell($cell, $args = null)
 	{
 		$cell = str_replace( '\n', '<br/>', $cell );
 

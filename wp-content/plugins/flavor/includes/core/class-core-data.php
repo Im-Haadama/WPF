@@ -115,11 +115,12 @@ class Core_Data
 
 	static function data_update($table_name)
 	{
-		$db_prefix = get_table_prefix();
+		$db_prefix = get_table_prefix($table_name);
 		// TODO: adding meta key when needed(?)
 		global $meta_table_info;
 
 		$row_id = intval(GetParam("id", true));
+		$id_field = sql_table_id($table_name);
 
 		// Prepare sql statements: primary and meta tables;
 		$values = self::data_parse_get($table_name, array("search", "operation", "table_name", "id", "dummy"));
@@ -131,7 +132,7 @@ class Core_Data
 				$changed_value = $changed_pair[0];
 				$is_meta = $changed_pair[1];
 				if (sql_type($table_name, $changed_field) == 'date' and strstr($changed_value, "0001")) {
-					$sql = "update ${db_prefix}$table_name set $changed_field = null where id = " . $row_id;
+					$sql = "update ${db_prefix}$table_name set $changed_field = null where $id_field = " . $row_id;
 
 					if ($row_id) sql_query($sql);
 					continue;
@@ -143,7 +144,7 @@ class Core_Data
 					       " and " . $meta_table_info[$tbl]['id'] . "=?";
 				}
 				else
-					$sql = "update ${db_prefix}$table_name set $changed_field =? where id =?";
+					$sql = "update ${db_prefix}$table_name set $changed_field =? where $id_field =?";
 
 				// if (get_user_id() == 1) print $sql;
 				$stmt = sql_prepare($sql);

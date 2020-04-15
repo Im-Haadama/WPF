@@ -23,8 +23,8 @@
 
 		public function init()
 		{
-			add_filter( 'woocommerce_get_sections_products' , array(__CLASS__, 'product_comment_add_settings_tab') );
-			add_filter( 'woocommerce_get_settings_products' , array(__CLASS__, 'product_comment_get_settings'), 10, 2);
+//			add_filter( 'woocommerce_get_sections_products' , array(__CLASS__, 'product_comment_add_settings_tab') );
+//			add_filter( 'woocommerce_get_settings_products' , array(__CLASS__, 'product_comment_get_settings'), 10, 2);
 		}
 
 		static public function product_comment_add_settings_tab( $settings_tab ){
@@ -69,7 +69,14 @@
 				            'menu_title' => 'Settings',
 				            'menu_slug' => 'settings',
 				            'function' => __CLASS__ . '::general_settings'));
-//			$menu->AddSubMenu('freight', 'edit_shop_orders',
+
+			$menu->AddSubMenu('freight', 'edit_shop_orders',
+				array('page_title' => 'Missions',
+				      'menu_title' => 'Missions',
+				      'menu_slug' => 'missions',
+				      'function' => 'Freight_Mission_Manager::missions'));
+
+			//			$menu->AddSubMenu('freight', 'edit_shop_orders',
 //					array('page_title' => 'Payment List',
 //					      'menu_title' => 'Payment list',
 //					      'menu_slug' => 'payment_list',
@@ -106,6 +113,18 @@
 			$tab = GetParam("tab", false, "paths");
 			$url = GetUrl(1) . "?page=settings&tab=";
 			$operation = GetParam("operation", false, null);
+
+			$tabs["help"] = array(
+				"Help",
+				$url . "help",
+				self::help($args, $operation)
+			);
+
+			$tabs["zones"] = array(
+				"Zones",
+				$url . "zones",
+				Freight_Zones::settings($args, $operation)
+			);
 
 			$tabs["paths"] = array(
 				"Paths",
@@ -144,4 +163,14 @@
 			print $result;
 		}
 
+		static function help()
+		{
+			$result = "";
+		 $result .= Core_Html::GuiHeader(1, "Updating shipping times");
+		 $result .= "<li>Create the zones" . Core_Html::GuiHyperlink("here: ", "/wp-admin/admin.php?page=wc-settings&tab=shipping") . "</li>";
+		 $result .= "<li>In zones tab update minimum order, and default fee for delivery</li>";
+		 $result .= "<li>In paths create path = cluster of zones: set the zones and days of arrival. E.g Tel Aviv can be in zone center on Monday, and on zone Tel-Aviv on Thursday.</li>";
+
+		 return $result;
+		}
 	}

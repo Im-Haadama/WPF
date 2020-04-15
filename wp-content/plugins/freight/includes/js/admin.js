@@ -125,11 +125,11 @@ function add_zone_times(path_id, post_file)
     window.location.href = request;
 }
 
-function path_add_day(post_file, path)
+function path_save_days(post_file, path)
 {
-    let day = get_value_by_name("day_to_add");
+    let day = get_value_by_name("path_days");
 
-    execute_url(post_file + "?operation=path_add_day&path_id="+path+"&day=" + day, location_reload);
+    execute_url(post_file + "?operation=path_save_days&path_id="+path+"&day=" + day, location_reload);
 }
 
 function update_shipment_instance(post_file, id)

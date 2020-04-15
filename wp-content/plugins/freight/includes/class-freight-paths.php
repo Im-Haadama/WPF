@@ -15,16 +15,20 @@ class Freight_Paths {
 		add_action("create_missions", __CLASS__ . "::create_missions");
 		add_action("update_shipping_methods",  "Fresh_Delivery_Manager::update_shipping_methods");
 		add_action("create_shipping_method", __CLASS__ . "::create_shipping_method");
-		add_action("path_add_day", __CLASS__ . "::path_add_day");
+		add_action("path_save_days", __CLASS__ . "::path_save_days");
 		add_action("path_create_instance", __CLASS__ . "::path_create_instance");
 		add_action("path_create_instance", __CLASS__ . "::show_path_wrap");
 		add_action("update_shipment_instance", __CLASS__ . "::update_shipment_instance");
+
+		// Delete instance and show the path
 		add_action("delete_shipment_instance", __CLASS__ . "::delete_shipment_instance");
+		add_action("delete_shipment_instance", __CLASS__ . "::show_path_wrap");
+
 		add_action("update_zone_missions", __CLASS__ . "::update_zones_missions");
+		add_action("show_mission", __CLASS__ . "::show_mission_wrap");
 	}
 
 	static function settings($args = null, $operation = null) {
-		$db_prefix = get_table_prefix();
 		$result                = "";
 		$args["post_file"] = Freight::getPost();
 
@@ -93,7 +97,7 @@ class Freight_Paths {
 					';update_shipment_instance(\'' . Freight::getPost() . "', ". $line['id'] .")\""));
 
 			$line['instance'] = Core_Html::GuiHyperlink($line['instance'], "/wp-admin/admin.php?page=wc-settings&tab=shipping&instance_id=" . $line['instance']) . "<br/>" .
-			                    Core_Html::GuiHyperlink("delete", Freight::getPost() . "?operation=delete_shipment_instance&id=" . $line['id']);
+			                    Core_Html::GuiHyperlink("delete", AddToUrl(array("operation" =>"delete_shipment_instance", "id" => $line['id'])));
 		}
 
 		return $line;
@@ -102,7 +106,7 @@ class Freight_Paths {
 	static function path_create_instance()
 	{
 		$method_id = GetParam("id", true);
-		$P = new Freight_Shipment($method_id);
+		$P = Freight_Shipment::LoadFromDB($method_id);
 
 		$P->CreateInstance();
 	}
@@ -111,41 +115,6 @@ class Freight_Paths {
 	{
 		$path_id = GetParam("path_id", true);
 		return self::show_path($path_id);
-	}
-
-	static function show_missions($query = null)
-	{
-		$result = "";
-
-		if (! $query) $week = date('Y-m-d', strtotime('last sunday'));
-
-		$sql = "select id from im_missions where " . $query; // FIRST_DAY_OF_WEEK(date) = " . quote_text($week);
-
-		$missions = sql_query_array_scalar($sql);
-
-		if ( count( $missions )  == 0) {
-			$result .= ImTranslate("No missions for given period");
-			$result .= Core_Html::GuiHyperlink("Last week", AddToUrl("week" , date( "Y-m-d", strtotime( "last sunday" )))) . " ";
-			$result .= Core_Html::GuiHyperlink("This week", AddToUrl("week" , date( "Y-m-d", strtotime( "sunday" )))) . " ";
-			$result .= Core_Html::GuiHyperlink("Next week", AddToUrl("week", date( "Y-m-d", strtotime( "next sunday" ))));
-			return $result;
-		}
-
-		$args = array();
-		$args["edit"] = false;
-		$args["add_checkbox"] = true;
-		$args["post_file"] = GetUrl(1);
-
-		$sql = "select * from im_missions where id in (" . CommaImplode($missions) . ")";
-
-		$args["links"] = array("id" => GetUrl(true) . "?operation=show_mission&id=%s");
-
-		// $args["events"] = array("mission_id" => "mission_changed(order_id))
-		$args["sql"] = $sql;
-		$args["hide_cols"] = array("zones_times"=>1);
-		$result .= Core_Gem::GemTable("missions", $args);
-
-		return $result;
 	}
 
 //	static function add_zone_times()
@@ -176,28 +145,30 @@ class Freight_Paths {
 	static function update_shipment_instance()
 	{
 		$id = GetParam("id", true);
-		$s = new Freight_Shipment($id);
+		$s = Freight_Shipment::LoadFromDB($id);
 		$s->update_instance();
 	}
 
 	static function delete_shipment_instance()
 	{
 		$id = GetParam("id", true);
-		$s = new Freight_Shipment($id);
+		$s = Freight_Shipment::LoadFromDb($id);
 		$s->delete_instance();
 	}
 
-	static function path_add_day()
+	static function path_save_days()
 	{
 		$days = explode(":", GetParam("day", true));
 		$path = GetParam("path_id", true);
 		$P = new Freight_Path($path);
-		foreach ($days as $weekday)
-			foreach ($P->getZones() as $zone) {
-				if (Freight_Shipment::exists($path, $zone, $weekday)) continue;
-
-				Freight_Shipment::AddMethod($path, $zone, $weekday);
-			}
+//		var_dump($days);
+		$P->setDays($days);
+//		foreach ($days as $weekday)
+//			foreach ($P->getZones() as $zone) {
+//				if (Freight_Shipment::exists($path, $zone, $weekday)) continue;
+//
+//				Freight_Shipment::AddMethod($path, $zone, $weekday);
+//			}
 	}
 
 	static function show_path($path_id)
@@ -223,9 +194,10 @@ class Freight_Paths {
 		$result .= "<div>";
 		$args = [];
 		$args["edit"] = true;
-		$result .= Core_Html::GuiHeader(1, "Add path day");
-		$result .= Core_Html::gui_select_days("day_to_add", __("select"), $args);
-		$result .= Core_Html::GuiButton("btn_add", "Add", array("action" => "path_add_day('" . Freight::getPost() . "', $path_id)"));
+		$result .= Core_Html::GuiHeader(1, "Path days");
+		$days = sql_query_single_scalar("select days from im_paths where id = " . $path_id);
+		$result .= Core_Html::gui_select_days("path_days", $days, $args);
+		$result .= Core_Html::GuiButton("btn_add", "Save", array("action" => "path_save_days('" . Freight::getPost() . "', $path_id)"));
 
 		$result .="</div>";
 //	$result .= Core_Gem::GemElement("path_shipments", $path_id, $args);
@@ -253,6 +225,57 @@ class Freight_Paths {
 
 		return $result;
 	}
+
+	static function show_mission_wrap()
+	{
+		$mission_id = GetParam("id", true);
+		return self::show_mission($mission_id);
+	}
+	static function show_mission($mission_id)
+	{
+		if (! ($mission_id > 0)) die ("bad mission_id " .$mission_id);
+		$result = Core_Html::gui_header(1, ImTranslate("mission") . " $mission_id");
+
+		$args = [];
+		$args["selectors"] = array("path_code" => __CLASS__ . "::gui_select_path");
+		$args["edit"] = true;
+		$args["post_file"] = Freight::getPost();
+		$result .= Core_Gem::GemElement("missions", $mission_id, $args);
+		$zone_table = array();
+		$zone_table["header"] = array("Zone id", "shipping method");
+		$mission = new Mission($mission_id);
+
+		$shipping_ids = $mission->getShippingMethods();
+		foreach ($shipping_ids as $zone_id => $shipping) {
+			$tog = ($shipping->enabled == "yes") ? "disable" : "enable";
+			$args["action"] = AddToUrl(array( "operation" => $tog . "_shipping_method&zone_id=" . $zone_id . "&instance_id=" . $shipping->instance_id)) . ";location_reload";
+
+			$args["text"] = $tog;
+			$en_dis = Core_Html::GuiButtonOrHyperlink("btn_" . $zone_id, null, $args);
+
+			array_push($zone_table, array(ZoneGetName($zone_id), $shipping->title, $shipping->enabled, $en_dis));
+		}
+//	 $args["actions"] = array(array("enable", add_to_url(array("operation" => ))));
+//	$zone_table[ $zone_id ] = array(
+//		zone_get_name( $zone_id ),
+//		( $mission_method ? $mission_method->title : "none" )
+//	);
+
+		$result .= Core_Html::gui_table_args($zone_table, "", $args);
+
+		$result .= Core_Html::GuiHyperlink("update", AddToUrl(array( "operation" => "update_shipping_methods")));
+		return $result;
+	}
+
+	static function gui_select_path( $id, $selected = 0, $args = null )
+	{
+//	return gui_select_table( $id, "im_missions", $selected, $events, null,
+//		"path_code", "where date > CURDATE()", true, false, null, "path_code" );
+		$args["selected"] = $selected;
+		$args["name"] = "description";
+		return Core_Html::GuiSelectTable($id, "paths", $args);
+	}
+
 }
 
 //function path_get_zones($path_id, $sorted = true)
@@ -357,9 +380,9 @@ function GuiSelectZones($id, $selected, $args)
 
 	$args["values"] = $wc_zones;
 	$events = GetArg($args, "events", null);
-	$args["multiple"] = true;
+//	$args["multiple"] = true;
 
-	return Core_Html::gui_select( $id, "zone_name", $wc_zones, $events, $selected, "id", "class", true );
+	return Core_Html::gui_select( $id, "zone_name", $wc_zones, $events, $selected, "id", "class", GetArg($args, "multiple", true) );
 }
 
 function ZoneGetName( $id ) {
@@ -415,3 +438,4 @@ function Guielect_shipping_methods($zone_id, $selected)
 //
 //	return Core_Html::gui_select( $id, "zone_name", $wc_zones, $events, $selected, "id", "class", true );
 //}
+

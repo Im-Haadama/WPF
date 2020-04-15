@@ -57,8 +57,8 @@ function get_form_params(table_id, check_mandatory)
     let params = "";
 
     if (! table || ! table.rows){
-        alert("rows of table " + table_id + " not found");
-        return false;
+        // alert("rows of table " + table_id + " not found");
+        return "";
     }
     let size = table.rows.length;
     // Change i to start from 0 - in new row no header. id should be hidden

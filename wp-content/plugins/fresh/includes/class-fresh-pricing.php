@@ -32,6 +32,7 @@ class Fresh_Pricing {
 	{
 		if (! ($prod_id > 0)){
 			print "bad prod $prod_id<br/>";
+			print debug_trace(6);
 			return -1000;
 		}
 		static $configured = -1;

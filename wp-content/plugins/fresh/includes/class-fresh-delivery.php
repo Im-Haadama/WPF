@@ -98,13 +98,19 @@ class Fresh_Delivery {
 	}
 
 	public static function CreateDeliveryFromOrder( $order_id, $q ) {
+		$log = fopen (ABSPATH . 'debug.html', "a");
+		fwrite($log, __FUNCTION__);
+		fwrite ($log, "post complete $order_id\n");
+
+		ob_start();
+
 		remove_filter( 'woocommerce_stock_amount', 'intval' );
 		remove_filter( 'woocommerce_stock_amount', 'filter_woocommerce_stock_amount', 10 );
 
 		// $q = 1: take from order.
 		// $q = 2: inventory
 		$prods       = array();
-		$order       = new Order( $order_id );
+		$order       = new Fresh_Order( $order_id );
 		$order_items = $order->getItems();
 		$total       = 0;
 		$vat         = 0;
@@ -141,7 +147,12 @@ class Fresh_Delivery {
 			array_push( $prods, $prod );
 		}
 
-		$delivery_id = Fresh_Delivery::CreateDeliveryHeader( $order_id, $total, $vat, $lines, false, 0, 0, false );
+		if ($fee = $order->getShippingFee()) {
+			$total += $fee;
+			$lines ++;
+		}
+
+		$delivery_id = Fresh_Delivery::CreateDeliveryHeader( $order_id, $total, $vat, $lines, false, $fee, 0, false );
 		// print " מספר " . $delivery_id;
 
 		foreach ( $prods as $prod ) {
@@ -149,12 +160,15 @@ class Fresh_Delivery {
 				$prod['vat'], $prod['price'], $prod['line_price'], $prod['prod_id'], 0 );
 		}
 
+		if ($fee)
+			Fresh_Delivery::AddDeliveryLine('דמי משלוח', $delivery_id, 1, 1, 0, round($fee / 1.17 * 0.17, 2), $fee, $fee, 0, 0 );
+
 		// print " נוצרה <br/>";
 
 //	$order = new WC_Order( $order_id );
 //	$order->update_status( 'wc-completed' );
 
-		send_deliveries($delivery_id);
+//		send_deliveries($delivery_id);
 
 		return $delivery_id;
 	}

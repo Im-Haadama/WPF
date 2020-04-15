@@ -41,13 +41,5 @@ function gui_select_client_type( $id, $value, $events = null ) {
 //		$sql_where );
 }
 
-function gui_select_path( $id, $selected = 0, $args = null )
-{
-//	return gui_select_table( $id, "im_missions", $selected, $events, null,
-//		"path_code", "where date > CURDATE()", true, false, null, "path_code" );
-	$args["selected"] = $selected;
-	$args["name"] = "description";
-	return GuiSelectTable($id, "im_paths", $args);
-}
 
 

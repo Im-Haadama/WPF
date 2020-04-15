@@ -164,7 +164,7 @@ class Fresh_Packing {
 		foreach ( $needed_products as $prod_id => $product_info ) {
 			$prod        = new Fresh_Product( $prod_id );
 			$supplier_id = $prod->getSupplierId();
-			if (! $supplier_id) $supplier_id = 1000001; // Todo
+
 			if ( ! in_array( $supplier_id, $suppliers ) and ( $supplier_id > 0 ) ) {
 				array_push( $suppliers, $supplier_id );
 				$supplier_needed[ $supplier_id ] = array();
@@ -187,17 +187,24 @@ class Fresh_Packing {
 			}
 
 			return self::get_total_orders_supplier( $limit_to_supplier_id, $supplier_needed[ $limit_to_supplier_id ], $filter_zero, $filter_stock, $history ) .
-
 			       Core_Html::GuiButton( "btn_create_supply_" . $supplier_id, "createSupply(" . $supplier_id . ")", "צור אספקה" );
 		}
+		if (! $suppliers) return "Nothing needed";
 
 		$sql = "SELECT id, supplier_priority FROM im_suppliers WHERE id IN (" . CommaImplode( $suppliers ) . ")" .
 		       " ORDER BY 2";
 
 		$result = sql_query_array( $sql );
 
+//		array_push($result, array(null, 1));
+
 		foreach ($result as $row){
-			$supplier    = new Fresh_Supplier( $row[0] );
+			$supplier_id = $row[0]; // Or null for missing supplier
+			if ($supplier_id)
+				$supplier    = new Fresh_Supplier( $row[0] );
+			else
+				$supplier = null;
+
 			$tab_content =
 				self::get_total_orders_supplier( $supplier->getId(), $supplier_needed[ $supplier->getId() ], $filter_zero, $filter_stock, $history );
 
@@ -215,13 +222,49 @@ class Fresh_Packing {
 				);
 		}
 
+
+//		// Add missing
+//		$supplier_tabs[1] =
+//			array(
+//				1,
+//				'Missing',
+//				$missing_supplier_products
+//			);
+
 		return $supplier_tabs;
 	}
 
 	static function init_hooks() {
+		add_filter( 'manage_edit-shop_order_columns', array(__CLASS__, 'wc_new_order_column' ));
+		add_action( 'manage_shop_order_posts_custom_column', array(__CLASS__, 'add_freight' ));
 	}
 
-	static function orders_per_item( $prod_id, $multiply, $short = false, $include_basket = false, $include_bundle = false, $just_total = false, $month = null ) {
+	static function add_freight($col)
+	{
+		global $post;
+		$m = new Fresh_Order($post->ID);
+		switch ($col) {
+			case "freight":
+			    print self::gui_select_mission("mis_" . $post->ID, $m->getMission(), array("events" => 'onclick="event.stopPropagation();mission_changed(' . $post->ID .')"'));
+			    break;
+			case 'city':
+				print $m->getOrderInfo( '_shipping_city' );
+				break;
+
+		}
+
+
+	}
+
+	function wc_new_order_column( $columns ) {
+		$columns['city'] = __("City");
+		 $columns['freight'] = __("Freight");
+
+		return $columns;
+	}
+
+
+		static function orders_per_item( $prod_id, $multiply, $short = false, $include_basket = false, $include_bundle = false, $just_total = false, $month = null ) {
 		// my_log( "prod_id=" . $prod_id, __METHOD__ );
 
 		$sql = 'select woi.order_item_id, order_id'

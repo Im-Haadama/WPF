@@ -50,6 +50,21 @@
 						'desc_tip' => true,
 						'class' => 'button-secondary',
 						'id'	=> 'activate'
+					),
+
+					array(
+						'name' => __( '' ),
+						'type' => 'checkbox',
+						'desc' => __( 'Show Product Without pictures'),
+						'id'	=> 'product_no_pictures_view'
+					),
+					array(
+						'name' => __( 'Activate' ),
+						'type' => 'button',
+						'desc' => __( 'Show products without pictures'),
+						'desc_tip' => true,
+						'class' => 'button-secondary',
+						'id'	=> 'activate'
 					)
 				);
 
@@ -64,11 +79,12 @@
 			$menu = new Core_Admin_Menu();
 
 			// General Settings
-			$menu->AddSubMenu('fresh', 'edit_shop_orders',
-				array('page_title' => 'Settings',
+			$menu->AddSubMenu('edit.php?post_type=product', 'edit_shop_orders',
+				array('page_title' => 'Pictures',
 				            'menu_title' => 'Settings',
 				            'menu_slug' => 'settings',
-				            'function' => __CLASS__ . '::general_settings'));
+				            'function' => "Fresh_Catalog::missing_pictures"));
+
 			$menu->AddSubMenu('users.php', 'edit_shop_orders',
 					array('page_title' => 'Payment List',
 					      'menu_title' => 'Payment list',
@@ -114,51 +130,42 @@
 			return "/wp-content/plugins/fresh/post.php";
 		}
 
-		static function general_settings()
-		{
-			$result = ""; // Core_Html::gui_header(1, "general settings");
-			$tabs = [];
-			$args = [];
-			$args["post_file"] = self::getPost();
-
-			$tab = GetParam("tab", false, "baskets");
-			$url = GetUrl(1) . "?page=settings&tab=";
-
-			$basket_url = $url . "baskets";
-
-			$tabs["baskets"] = array(
-				"Baskets",
-				$basket_url,
-				Fresh_Basket::settings($basket_url, $args)
-			);
-
-			$tabs["suppliers"] = array(
-				"Suppliers",
-				$url . "suppliers",
-				Fresh_Suppliers::admin_page()
-				//Fresh_Suppliers::SuppliersTable()
-			);
-
-			$tabs["missing_pictures"] = array(
-				"Missing Pictures",
-				$url . "missing_pictures",
-				Fresh_Catalog::missing_pictures()
-			);
-
-//		array_push( $tabs, array(
-//			"workers",
-//			"Workers",
-//			self::company_workers( $company, $args )
-//		) );
-
-			$args["btn_class"] = "nav-tab";
-			$args["tabs_load_all"] = true;
-			$args["nav_tab_wrapper"] = "nav-tab-wrapper woo-nav-tab-wrapper";
-
-			$result .= Core_Html::NavTabs($tabs, $args);
-			$result .= $tabs[$tab][2];
-
-			print $result;
-		}
+//		static function pictures()
+//		{
+//			$result = ""; // Core_Html::gui_header(1, "general settings");
+//			$tabs = [];
+//			$args = [];
+//			$args["post_file"] = self::getPost();
+//
+//			$url = GetUrl();// . "?page=settings&tab=";
+//
+//			$tabs["suppliers"] = array(
+//				"Suppliers",
+//				$url . "suppliers",
+//				Fresh_Suppliers::admin_page()
+//				//Fresh_Suppliers::SuppliersTable()
+//			);
+//
+//			$tabs["missing_pictures"] = array(
+//				"Missing Pictures",
+//				$url . "missing_pictures",
+//				Fresh_Catalog::missing_pictures()
+//			);
+//
+////		array_push( $tabs, array(
+////			"workers",
+////			"Workers",
+////			self::company_workers( $company, $args )
+////		) );
+//
+//			$args["btn_class"] = "nav-tab";
+//			$args["tabs_load_all"] = true;
+//			$args["nav_tab_wrapper"] = "nav-tab-wrapper woo-nav-tab-wrapper";
+//
+//			$result .= Core_Html::NavTabs($tabs, $args);
+////			$result .= $tabs[$tab][2];
+//
+//			print $result;
+//		}
 
 	}

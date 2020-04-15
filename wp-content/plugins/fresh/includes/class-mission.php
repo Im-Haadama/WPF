@@ -265,7 +265,8 @@ class Mission {
 
 		if (! ($path_id > 0)) return null;
 
-		$zones   = path_get_zone_times($path_id);
+		$p = new Freight_Path($path_id);
+		$zones = $p->getZones();
 
 		foreach ($zones as $zone_id => $times){
 			$w              = WC_Shipping_Zones::get_zone( $zone_id );
@@ -303,39 +304,6 @@ class Mission {
  * @return string
  * @throws Exception
  */
-function show_mission($mission_id)
-{
-	if (! ($mission_id > 0)) die ("bad mission_id " .$mission_id);
-	$result = Core_Html::gui_header(1, ImTranslate("mission") . " $mission_id");
-
-	$args = [];
-	$args["selectors"] = array("path_code" => "gui_select_path");
-	$result .= GemElement("im_missions", $mission_id, $args);
-	$zone_table = array();
-	$zone_table["header"] = array("Zone id", "shipping method");
-	$mission = new Mission($mission_id);
-
-	$shipping_ids = $mission->getShippingMethods();
-	foreach ($shipping_ids as $zone_id => $shipping) {
-		$tog = ($shipping->enabled == "yes") ? "disable" : "enable";
-		$args["action"] = AddToUrl(array( "operation" => $tog . "_shipping_method&zone_id=" . $zone_id . "&instance_id=" . $shipping->instance_id)) . ";location_reload";
-
-		$args["text"] = $tog;
-		$en_dis = Core_Html::GuiButtonOrHyperlink("btn_" . $zone_id, null, $args);
-
-		 array_push($zone_table, array(ZoneGetName($zone_id), $shipping->title, $shipping->enabled, $en_dis));
-	}
-//	 $args["actions"] = array(array("enable", add_to_url(array("operation" => ))));
-//	$zone_table[ $zone_id ] = array(
-//		zone_get_name( $zone_id ),
-//		( $mission_method ? $mission_method->title : "none" )
-//	);
-
-	$result .= gui_table_args($zone_table, "", $args);
-
-	$result .= Core_Html::GuiHyperlink("update", AddToUrl(array( "operation" => "update_shipping_methods")));
-	return $result;
-}
 
 /**
  * @return string
@@ -376,7 +344,6 @@ function show_active_missions()
 	$args["actions"] = $actions;
 	$args["query"] = $query;
 	$args["no_data_message"] = ImTranslate("No active missions (today and further)");
-
 
 	return GemTable($table_name,$args);
 }

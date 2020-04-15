@@ -19,8 +19,10 @@ class Fresh_Order_Management {
 	}
 
 	static public function init_hooks() {
+//		MyLog(__FUNCTION__ . __CLASS__);
 		// add_filter( 'manage_shop_order_posts_custom_column', array(__CLASS__, 'add_my_account_order_actions'), 10, 2 );
 		add_filter('woocommerce_admin_order_actions', array(__CLASS__, 'add_order_action'), 10, 2);
+		add_filter('order_complete', array(__CLASS__, 'order_complete_wrap'));
 		add_action('admin_post_delivery', array(__CLASS__, 'create_delivery_note'));
 	}
 
@@ -45,22 +47,37 @@ class Fresh_Order_Management {
 //		print $result;
 	}
 
-	static public function add_order_action( $actions, $order)
+	static public function order_complete_wrap()
 	{
+		$order_id = GetParam("order_id", true);
+		return self::order_complete($order_id);
+	}
+
+	static public function add_order_action($actions, $order)
+	{
+		$O = new Fresh_Order($order->get_id());
 		switch ($order->status)
 		{
 			case "processing":
-					$actions['delivery_note'] = array(
-//						'url'    => wp_nonce_url( admin_url( 'admin-post.php?post=' . $order->get_id() . '&action=delivery' ), 'woocommerce-mark-order-status' ),
-					'url' => '/wp-content/plugins/fresh/delivery/create-delivery.php?order_id=' . $order->get_id(),
-						'name'   => __( 'Delivery', 'woocommerce' ),
-						'action' => 'delivery',
-					);
-					break;
-			case "awaiting-shipment":
+				if (! ($O->getShippingFee() >0))
+					unset($actions['complete']); // Remove the complete
+				if ($order->get_id() == "13101"){
+					MyLog("actions " . $order->get_id());
+					MyLog(StringVar($actions));
+				}
+
 				$actions['delivery_note'] = array(
 //						'url'    => wp_nonce_url( admin_url( 'admin-post.php?post=' . $order->get_id() . '&action=delivery' ), 'woocommerce-mark-order-status' ),
-					'url' => '/wp-content/plugins/fresh/delivery/get-delivery.php?order_id=' . $order->get_id(),
+				'url' => '/wp-content/plugins/fresh/delivery/create-delivery.php?order_id=' . $order->get_id(),
+					'name'   => __( 'Delivery', 'woocommerce' ),
+					'action' => 'delivery',
+				);
+				break;
+			case "awaiting-shipment":
+			case "completed":
+				$actions['delivery_note'] = array(
+//						'url'    => wp_nonce_url( admin_url( 'admin-post.php?post=' . $order->get_id() . '&action=delivery' ), 'woocommerce-mark-order-status' ),
+					'url' => self::get_url($order->get_id()),
 					'name'   => __( 'Delivery', 'woocommerce' ),
 					'action' => 'delivery',
 				);
@@ -81,6 +98,45 @@ class Fresh_Order_Management {
 		$operation = GetParam( "operation", false, "show_orders" );
 
 		print self::handle_operation( $operation );
+	}
+
+	static function get_url($order_id)
+	{
+		$order = new Fresh_Order($order_id);
+		if ($order->getShippingFee())
+			return '/wp-content/plugins/fresh/delivery/get-delivery.php?order_id=' . $order_id;
+
+	}
+
+	static function order_complete($order_id, $force = false)
+	{
+		MyLog(__FUNCTION__ . " $order_id");
+		// Order is complete.
+		// If no delivery note, create one with 100% supplied.
+		$O = new Fresh_Order($order_id);
+//		print "fee= " . $O->getShippingFee() . "<br/>";
+		if (! $O->getDeliveryId()) {
+			$fee = $O->getShippingFee();
+			MyLog($fee);
+			// Check if there is delivery fee.
+			if (! $fee) {
+				MyLog("No delivery fee");
+				Print "Not delivery fee. Add to order before completion";
+				die(1);
+			}
+
+			// if ($O->)
+//			print "no del id</br>";
+			$del_id = Fresh_Delivery::CreateDeliveryFromOrder($order_id, 1);
+//			if ($del_id > 0)
+//				print "$del_id created<br/>";
+		} else {
+			MyLog ("have del: " . $O->getDeliveryId());
+		}
+//		else {
+//			print "has del: " . $O->getDeliveryId() ."<br/>";
+//		}
+		return true;
 	}
 
 	public function enqueue_scripts() {

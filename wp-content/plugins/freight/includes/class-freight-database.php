@@ -16,7 +16,12 @@ class Freight_Database extends Core_Database {
 		$current = self::CheckInstalled("Fresh", "functions");
 		$db_prefix = get_table_prefix();
 
+
 		if ($current == $version and ! $force) return true;
+		sql_query("alter table wp_woocommerce_shipping_zones drop column delivery_days;");
+		sql_query("alter table wp_woocommerce_shipping_zones drop column codes;");
+		sql_query("alter table wp_woocommerce_shipping_zones add min_order float;" );
+		sql_query("alter table wp_woocommerce_shipping_zones add default_rate float;" );
 
 		sql_query("create table ${db_prefix}path_shipments
 (
@@ -41,5 +46,8 @@ class Freight_Database extends Core_Database {
 //);
 //
 //");
+
+		self::UpdateInstalled("Freight", "tables", $version);
+
 	}
 }

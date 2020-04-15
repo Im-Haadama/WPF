@@ -159,7 +159,9 @@ class Fresh_Shortcodes {
 	}
 }
 
-add_filter('woocommerce_product_query_meta_query', 'products_with_thumbs', 10);
+if (! defined('SHOW_PROD_NO_PIC')) {
+	add_filter( 'woocommerce_product_query_meta_query', 'products_with_thumbs', 10 );
+}
 
 function products_with_thumbs()
 {

@@ -26,6 +26,7 @@ error_reporting(E_ALL);
         // if (!product_info.indexOf(")")) return;
         var product_id = get_value_by_name("nam_" + my_row); // product_info.substr(0, product_info.indexOf(")"));
         var request = "delivery-post.php?operation=get_price_vat&id=" + product_id; //encodeURI(product_name);
+            if (typeof(client_type) != "undefined") request += "&type=" +  client_type;
 
         xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function () {

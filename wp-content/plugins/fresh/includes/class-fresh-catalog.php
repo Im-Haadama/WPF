@@ -621,7 +621,7 @@ class Fresh_Catalog {
 		$sql    = "SELECT term_id FROM wp_term_taxonomy WHERE taxonomy = 'product_cat'";
 		$categs = sql_query_array_scalar( $sql );
 
-		$result .= Core_Html::gui_header(1, "השלמת תמונות לאתר");
+		$result .= Core_Html::gui_header(1, "תמונות חסרות באתר");
 
 		foreach ($categs as $categ){
 			$c = new Fresh_Category($categ);
@@ -636,7 +636,7 @@ class Fresh_Catalog {
 				}
 			}
 		}
-		return $result;
+		print $result;
 	}
 
 	static function best_alternative($prod_id)
@@ -644,6 +644,7 @@ class Fresh_Catalog {
 		$alternatives = self::alternatives($prod_id);
 		$min  = 1111111;
 		$best = null;
+		if (! $alternatives) return null;
 		for ( $i = 0; $i < count( $alternatives ); $i ++ ) {
 			$price = Fresh_Pricing::calculate_price( $alternatives[ $i ]->getPrice(), $alternatives[ $i ]->getSupplierId(),
 				$alternatives[ $i ]->getSalePrice());

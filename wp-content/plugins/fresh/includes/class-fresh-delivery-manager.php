@@ -58,14 +58,84 @@ class Fresh_Delivery_Manager
 			'fresh_deliveries' => array('Fresh_Delivery_Manager::show_shipping_methods', null));
 	}
 
-	static function update_shipping_methods()
-	{
-		print 1/0;
-		return;
-		if (! self::create_missions()) return false;
-		return self::do_update_shipping_methods();
-	}
+//	static function update_shipping_methods()
+//	{
+//		// Delete old shipping methods.
+////		self::stop_accept();
+//
+//		// Create shipping methods for the coming week.
+//		self::update_shipping_methods();
+//
+//		// Create missions
+////		self::create_missions();
+//	}
 
+	static function update_shipping_methods() {
+		$paths = Fresh_Path::getAll();
+		$result = "";
+
+		// We deleted old ones.
+		// Now create new.
+		foreach ( $paths as $path_id ) {
+			$path       = new Fresh_path( $path_id );
+			$result     .= Core_Html::GuiHeader( 1, "working on path $path_id" ) . "<br/>";
+
+			// First pass on existing instances.
+			$rows = sql_query("select id, zone, week_day, instance from im_path_shipments where path_id = $path_id");
+			while ($row = sql_fetch_assoc($rows))
+			{
+				if (in_array($row['week_day'], $path->getDays()) and $row['instance']) {
+					$result .= "<br/>updating " . $row['id'] . " instance " . $row['instance'];
+					$shipping = Freight_Shipment::LoadFromDB($row['id']);
+					 $zone = $row['zone'];
+					$price = sql_query_single_scalar("select default_rate from wp_woocommerce_shipping_zones where zone_id = $zone");
+					$shipping->update_instance($price);
+				} else {
+					$result .= "<br/>deleting " . $row['id'];
+					$instance = $row['instance'];
+					if ($instance) {
+						print " instance $instance";
+						self::delete_shipping_method( $instance );
+					}
+					sql_query("delete from im_path_shipments where id = " . $row['id']);
+				}
+			}
+
+			// Second pass - create needed instances.
+			foreach ($path->getDays() as $week_day){
+				if (! sql_query_single_scalar("select count(id) from im_path_shipments where path_id = $path_id and week_day = $week_day")) {
+					$result .= "creating $path_id $week_day<br/>";
+					foreach (explode(":", $path->getZones()) as $zone) {
+						$result .= "zone: $zone. ";
+						Freight_Shipment::CreateInstance( $zone, $path_id, $week_day, "12-18" );
+					}
+				}
+			}
+
+//			foreach ($path->getDays() as $day){
+////				print "<br/>j=" . date('j') /**/."<br/>";
+//				$date = date('Y-m-d', strtotime('today +' . ((date('w') >= $day ? 7 :0) + ($day - date('w'))) . ' days'));
+//				$result .= "<br/>checking $date<br/>";
+//				$instance = sql_query_single_scalar("select instance from im_path_shipments where path_id = $path_id and week_day = $day");
+//				if (! $instance){ // Create instance for path in day.
+//					Freight_Shipment::CreateInstance($zone);
+//				}
+
+//			$zones_info = $path->getZones();
+//			foreach ( $zones_info as $zone_info ) {
+//				$date        = $m->getDate();
+//				$start       = strtok( $zone_info, "-" );
+//				$end         = strtok( "," );
+//				$instance_id = strtok( null );
+//				$result      .= self::update_shipping_method( $instance_id, $date, $start, $end );
+//
+//				array_push( $instances_updated, $instance_id );
+//
+//			}
+		}
+		print $result;
+
+	}
 	static function create_missions($path_ids = null, $forward_week = 0)
 	{
 		$result = "";
@@ -78,16 +148,48 @@ class Fresh_Delivery_Manager
 		return true;
 	}
 
-	function stop_accept()
+	static function stop_accept()
 	{
-		$missions = sql_query_array_scalar("select id from im_missions where date = '" .
-		                                   date("Y-m-d", strtotime('tomorrow')) . "'");
+		// Loop on on methods.
+		// Delete dated at tomorrow and before.
+		$result = "";
+		$wc_zones = WC_Shipping_Zones::get_zones();
+		foreach ($wc_zones as $wc_zone) {
+			$result .= Core_Html::gui_header(2, $wc_zone['zone_name']);
+			foreach ( $wc_zone['shipping_methods'] as $shipping ) {
+				$result .= "<br/>checking " . $shipping->title;
+				if ($shipping->id == 'local_pickup') {
+					$result .= " local_pickup unchanged";
+					continue;
+				}
+				$date = null;
+				if (preg_match('/[0-9]+\-[0-9]+\-[0-9]+/', $shipping->title, $date) or
+				    preg_match('/[0-9]+\/[0-9]+\/[0-9]+/', $shipping->title, $date)) { // Date based
+					$s_date = strtotime($date[0]);
+					$result .=  "<br/>date = " . $date[0] . " " . $s_date;
+					if (! $s_date or ($s_date < strtotime('tomorrow'))) {
+						$result .=  " deleting";
+						self::delete_shipping_method( $shipping->instance_id );
+					}
+				} else {
+					$result .=  " no date ";
 
-		foreach ($missions as $mission_id){
-			$m = new Mission($mission_id);
-			print "mission $mission_id stop<br/>";
-			$m->stopAccept();
+					self::delete_shipping_method($shipping->instance_id);
+				}
+
+//				$result .=  "<br/>";
+			}
 		}
+		print $result;
+
+//		$missions = sql_query_array_scalar("select id from im_missions where date = '" .
+//		                                   date("Y-m-d", strtotime('tomorrow')) . "'");
+//
+//		foreach ($missions as $mission_id){
+//			$m = new Mission($mission_id);
+//			print "mission $mission_id stop<br/>";
+//			$m->stopAccept();
+//		}
 	}
 	/**
 	 * @param int $days_forward
@@ -100,8 +202,23 @@ class Fresh_Delivery_Manager
 	 * @throws Exception
 	 */
 
-	static function do_update_shipping_methods()
+	static function delete_shipping_method($instance_id)
 	{
+		if (! ($instance_id > 0))
+		{
+			print "bad instance id: $instance_id<br/>";
+			return false;
+		}
+		$option_id     = 'woocommerce_flat_rate_' . $instance_id . '_settings';
+		sql_query("delete from wp_woocommerce_shipping_zone_methods where instance_id = $instance_id");
+		delete_wp_option( $option_id );
+		sql_query("delete from im_path_shipments where instance = $instance_id");
+
+	}
+
+	static private function do_update_shipping_methods()
+	{
+		return;
 		$result = "";
 		$instances_updated = [];
 
@@ -154,12 +271,14 @@ class Fresh_Delivery_Manager
 		return $result;
 	}
 
-	static function update_shipping_method($instance_id, $date, $start, $end)
+	static function update_shipping_method($instance_id, $date, $start, $end, $price = 0)
 	{
 		$args                = [];
 		$args["is_enabled"]  = 1;
 		$args["instance_id"] = $instance_id;
-		$args["title"]       = DateDayName( $date ) . " " . date('d/m/Y', strtotime($date)) . ' ' . $start . "-". $end;
+		$args["title"]       = DateDayName( $date ) . " " . date('d-m-Y', strtotime($date)) . ' ' . $start . "-". $end;
+		if ($price)
+			$args["cost"] = $price;
 //		$result .= "$start $end $instance_id<br/>";
 		if (updateWp_woocommerce_shipping_zone_methods( $args ))
 			return $args["title"];
@@ -169,6 +288,8 @@ class Fresh_Delivery_Manager
 
 	static function show_shipping_methods()
 	{
+		print 1/0;
+		die (1);
 		$result = "<table><tr><td>Zone</td><td>Shipping method</td><td>Cost</td></tr>";
 
 		$wc_zones = WC_Shipping_Zones::get_zones();
@@ -340,6 +461,7 @@ function deleteWpPption($option_id)
 	sql_query("delete from wp_options where option_id='$option_id'");
 }
 
+// UPDATE `wp_options` SET `option_value` = 'a:8:{s:11:\"instance_id\";i:70;s:5:\"title\";s:25:\"Thursday 16/04/2020 14-18\";s:10:\"tax_status\";s:7:\"taxable\";s:4:\"cost\";s:3:\"411\";s:14:\"class_cost_154\";s:0:\"\";s:14:\"class_cost_187\";s:0:\"\";s:13:\"no_class_cost\";s:0:\"\";s:4:\"type\";s:5:\"class\";}', `autoload` = 'yes' WHERE `option_name` = 'woocommerce_flat_rate_70_settings'
 function updateWp_woocommerce_shipping_zone_methods($args) {
 //	$ignore_list = array("id");
 	$instance_id = GetArg( $args, "instance_id", null );
@@ -390,6 +512,7 @@ function updateWp_woocommerce_shipping_zone_methods($args) {
 	}
 
 	if ( $update_option ) {
+//		print "updating $instance_id "; var_dump($options); print "<br/>";
 		update_wp_option( 'woocommerce_flat_rate_' . $instance_id . '_settings', $options );
 	}
 }

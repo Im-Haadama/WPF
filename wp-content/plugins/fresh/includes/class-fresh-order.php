@@ -49,6 +49,17 @@ class Fresh_Order {
 		return null;
 	}
 
+	public function getShippingFee() : int
+	{
+		$sql2 = 'SELECT meta_value FROM `wp_woocommerce_order_itemmeta` WHERE order_item_id IN ( '
+		        . 'SELECT order_item_id FROM wp_woocommerce_order_items WHERE order_id = ' . $this->order_id
+		        . ' AND order_item_type = \'shipping\' )  AND meta_key = \'cost\'; ';
+
+		$result = sql_query_single_scalar( $sql2 );
+
+		return ($result ? $result : 0);
+	}
+
 	// Create new
 	static function CreateOrder(
 		$user_id, $mission_id, $prods, $quantities, $comments, $units = null, $type = null,
@@ -1291,6 +1302,14 @@ class Fresh_Order {
 
 				print $count;
 				break;
+
+			case "set_mission":
+				$order_id = GetParam("order_id", true);
+				$mission_id = GetParam("mission_id", true);
+				$order = new Fresh_Order($order_id);
+				$order->setMissionID($mission_id);
+				return true;
+
 
 			default:
 				// die("operation " . $operation . " not handled<br/>");

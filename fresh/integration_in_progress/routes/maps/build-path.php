@@ -23,25 +23,6 @@ function print_path( $ul ) {
 	}
 }
 
-function evaluate_path( $start, $elements, $end ) {
-//	if ( $end < 1 ) {
-//		print "end is " . $end . "<br/>";
-//	}
-	// $cost = get_distance( $start, $elements[0] );
-	$cost = get_distance_duration( $start, $elements[0] );
-	$size = sizeof( $elements );
-//	print "size: " . $size . "<br/>";
-	for ( $i = 1; $i < $size; $i ++ ) {
-//		print "i = " . $i . " e[i-1] = " . $elements[$i-1] . " e[i] = " . $elements[$i] . "<br/>";
-		$dis = get_distance( $elements[ $i - 1 ], $elements[ $i ] );
-		if ($dis > -1)
-			$cost += $dis;
-	}
-//	print "end = " . $end . "<br/>";
-	$cost += get_distance( $elements[ $size - 1 ], $end );
-
-	return $cost;
-}
 
 
 function swap( &$a, &$b ) {
@@ -50,95 +31,8 @@ function swap( &$a, &$b ) {
 	$b = $x;
 }
 
-function find_route_1( $node, $rest, &$path, $print, $end, $prerequisite )
-{
-
-	if (! $rest or ! is_array($rest))
-	{
-		die("invalid points");
-	}
-	// print "find route 1. node = " . $node . " rest = " . CommaImplode($path) . "<br/>";
-	if ( count( $rest ) == 1 ) {
-		array_push( $path, $rest[0] );
-
-		return;
-	}
-	find_route( $node, $rest, $path, $prerequisite );
-
-	$best_cost = evaluate_path( $node, $path, $end );
-
-	if ($print) {
-		print "first guess route<br/>";
-//		print "cost: " . $best_cost . "<br/>";
-		print_path( $path );
-	}
-
-	// Continue as long as switching adjacent nodes makes the route shorter
-	// Disable for now, because the preq is not implemented here.
-	$switched  = false;
-	while ( $switched ) {
-		$switched = false;
-		for ( $switch_node = 1; $switch_node < count( $path ) - 1; $switch_node ++ ) {
-//			print "node: " . $switch_node . " " . get_user_address($path[$switch_node]) . "<br/>";
-			// print $switch_node . "<br/>";
-			$alternate_path = $path;
-			swap( $alternate_path[ $switch_node ], $alternate_path[ $switch_node + 1 ] );
-//			print "alternate:";
-//			print_path($alternate_path);
-			$temp_cost = evaluate_path( $node, $alternate_path, $end );
-			if ( $temp_cost < $best_cost ) {
-				if ( $print ) {
-					print "Best: " . $temp_cost . " " . $switch_node . " " . $path[ $switch_node ] . " " .
-					      $path[ $switch_node + 1 ] . "<br/>";
-				}
-				$switched = true;
-				swap( $path[ $switch_node ], $path[ $switch_node + 1 ] );
-//				print "after switch:<br/>";
-//				print_path($path);
-				$best_cost = $temp_cost;
-			}
-		}
-	}
-}
 
 // Go to next closest node first
-function find_route( $node, $rest, &$path, $prerequisite = null ) {
-	if ( sizeof( $rest ) == 1 ) {
-		array_push( $path, $rest[0] );
-
-		return;
-	}
-
-	$min     = - 1;
-	$min_seq = 0;
-	for ( $i = 0; $i < sizeof( $rest ); $i ++ ) {
-		$d = get_distance( $node, $rest[ $i ] );
-		if ( ( $min == - 1 ) or ( $d < $min ) ) { // ( $node == $rest[ $i ] ) or
-			// If we didn't visit previous location for collecting, skip.
-			// var_dump($path); print "<br/>";
-			if ($prerequisite and isset($prerequisite[$rest[ $i ]]) and strlen ($prerequisite[$rest[$i]])){
-				if (! in_array($prerequisite[$rest[ $i ]], $path)) {
-					print "X" . $prerequisite[$rest[ $i ]] . "X not yet. skipping<br/>";
-
-					continue;
-				}
-			}
-			$min     = $d;
-			$min_seq = $i;
-		}
-	}
-
-	$next = $rest[ $min_seq ];
-	array_push( $path, $next );
-	$new_rest = array();
-	for ( $i = 0; $i < sizeof( $rest ); $i ++ ) {
-		if ( $i <> $min_seq ) {
-			array_push( $new_rest, $rest[ $i ] );
-		}
-	}
-
-	find_route( $next, $new_rest, $path, $prerequisite );
-}
 
 //function map_get_order_address( $order_id )
 //{
@@ -168,53 +62,6 @@ function find_route( $node, $rest, &$path, $prerequisite = null ) {
 //	return $address;
 //}
 
-function get_distance( $address_a, $address_b ) {
-	if ( 0 ) {
-		print "a: X" . $address_a . "X<br/>";
-		print "b: X" . $address_b . "X<br/>";
-	}
-	if ( rtrim( $address_a ) == rtrim( $address_b ) ) {
-		return 0;
-	}
-	$sql = "SELECT distance FROM im_distance WHERE address_a = '" . escape_string( $address_a ) . "' AND address_b = '" .
-	       escape_string( $address_b ) . "'";
-	// print $sql . " ";
-	$ds  = sql_query_single_scalar( $sql );
-	// print $ds . "<br/>";
-
-	if ( $ds > 0 ) {
-		return $ds;
-	}
-	$r = do_get_distance( $address_a, $address_b );
-	if ( $r  == -1) {
-		// One is invalid
-		return -1;
-	}
-	$distance = $r[0];
-	$duration = $r[1];
-	// print get_client_address($order_a) . " " . get_client_address($order_b) . " " . $d . "<br/>";
-	if ( $distance > 0 ) {
-		$sql1 = "insert into im_distance (address_a, address_b, distance, duration) VALUES 
-				('" . escape_string( $address_a ) . "', '" .
-		        escape_string(  $address_b ) . "', $distance, $duration)";
-		sql_query( $sql1 );
-		if ( sql_affected_rows( ) < 1 ) {
-			print "fail: " . $sql1 . "<br/>";
-		}
-
-		return $distance;
-	}
-
-	return - 1;
-}
-
-function get_distance_duration( $address_a, $address_b ) {
-	$sql = "SELECT duration FROM im_distance WHERE address_a = '" . escape_string( $address_a ) .
-	       "' AND address_b = '" . escape_string( $address_b ) . "'";
-
-	return sql_query_single_scalar( $sql );
-
-}
 
 function do_get_distance( $a, $b ) {
 	// $start = new DateTime();

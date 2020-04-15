@@ -61,12 +61,13 @@ class Fresh_Suppliers {
 
 		if ( !$result )
 			$result = self::SuppliersTable();
+
 		print $result;
 	}
 
 	static function SuppliersTable()
 	{
-		$result = Core_Html::GuiHeader(2, "Active suppliers", array("class"=>"wc-shipping-zones-heading", "close"=>false)) . Core_Html::GuiHyperlink("Add supplier", "link", array("class"=> "page-title-action")) .'</h2>';
+		$result = Core_Html::GuiHeader(2, "Active suppliers", array("class"=>"wc-shipping-zones-heading", "close"=>false)) . "<br/>"; // . Core_Html::GuiHyperlink("Add supplier", "link", array("class"=> "page-title-action")) .'</h2>';
 
 		$args = self::Args("suppliers");
 		$args["fields"] = array("id", "supplier_name", "supplier_description");

@@ -76,7 +76,8 @@ function get_sql_conn($new_conn = null)
  * @throws Exception
  */
 function sql_type( $table, $field) {
-	$db_prefix = get_table_prefix();
+	$db_prefix = get_table_prefix($table);
+
 	global $meta_table_info;
 
 	// Meta fields are all varchar
@@ -478,6 +479,8 @@ function sql_table_id($table_name)
 	$cache = array ("tasklist" => "id",
 	                "working_teams" => "id",
 	                "task_templates" => "id",
+				 "woocommerce_shipping_zones" => "zone_id",
+
 	                "working" => "id");
 	if (isset($cache[$table_name])) return $cache[$table_name];
 
@@ -548,8 +551,12 @@ function SqlQueryAssoc($sql)
 
 }
 
-function get_table_prefix()
+function get_table_prefix($table_name = null)
 {
+	global $table_prefix;
+	if ($table_name){
+		if (strstr($table_name, "woocommerce")) return $table_prefix;
+	}
 	global $im_table_prefix;
 	return ($im_table_prefix ? $im_table_prefix : "im_");
 }

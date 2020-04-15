@@ -370,7 +370,7 @@ class Core_Gem {
 			print debug_trace();
 			die(1);
 		}
-		$table_prefix = get_table_prefix();
+		$table_prefix = get_table_prefix($table_name);
 
 		$args["events"] = 'onchange="update_table_field(\'' . $post_file . '\', \'' . $table_name . '\', \'%d\', \'%s\', check_update)"';
 		$sql = GetArg($args, "sql", null);

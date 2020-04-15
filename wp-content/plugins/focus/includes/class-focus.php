@@ -134,6 +134,7 @@ class Focus {
 	 */
 	private function init_hooks() {
 //		print __CLASS__ . ": init_hooks<br/>";
+		self::install();
 		// register_activation_hook( WC_PLUGIN_FILE, array( 'Focus_Install', 'install' ) );
 //		register_shutdown_function( array( $this, 'log_errors' ) );
 		add_action( 'after_setup_theme', array( $this, 'setup_environment' ) );
@@ -183,6 +184,10 @@ class Focus {
 		}
 	}
 
+	private function install()
+	{
+		Focus_Database::install($this->version);
+	}
 	/**
 	 * Define WC Constants.
 	 */

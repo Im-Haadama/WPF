@@ -15,7 +15,7 @@ class Fresh_Database extends Core_Database
 
 	static function CreateViews($version, $force )
 	{
-		$current = self::CheckInstalled("Fresh", "functions");
+		$current = self::CheckInstalled("Fresh", "views");
 		$db_prefix = get_table_prefix();
 
 		if ($current == $version and ! $force) return true;
@@ -75,6 +75,9 @@ from `im_delivery_lines` `dl`
 where `dl`.`delivery_id` > 503
 group by 1
 order by 1;");
+
+		self::UpdateInstalled("Fresh", "views", $version);
+
 	}
 
 
@@ -83,7 +86,40 @@ order by 1;");
 		$current = self::CheckInstalled("Fresh", "functions");
 		$db_prefix = get_table_prefix();
 
+
 		if ($current == $version and ! $force) return true;
+
+		sql_query("alter table wp_woocommerce_shipping_zones add min_order float, add default_rate float");
+
+		sql_query("create table im_bundles
+(
+	id bigint(10) unsigned auto_increment
+		primary key,
+	prod_id bigint(10) unsigned not null,
+	quantity float unsigned not null,
+	margin varchar(10) not null,
+	bundle_prod_id int(10) not null,
+	is_active bit not null
+)
+engine=MyISAM charset=utf8;
+
+");
+
+		sql_query("create table im_supplies_lines
+(
+	id bigint(10) auto_increment
+		primary key,
+	status int(4) default 1 not null,
+	supply_id bigint(10) not null,
+	product_id int(10) not null,
+	quantity float not null,
+	units int null,
+	collected float null,
+	price float not null
+)
+charset=utf8;
+
+");
 
 		sql_query("drop function delivery_receipt");
 		sql_query("create function delivery_receipt(_del_id int) returns int
@@ -377,6 +413,8 @@ charset=utf8;
 	zones varchar(100) null
 )
 charset=utf8;");
+
+		self::UpdateInstalled("Fresh", "tables", $version);
 
 	}
 

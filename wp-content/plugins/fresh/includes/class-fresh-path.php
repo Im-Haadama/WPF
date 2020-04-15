@@ -7,6 +7,7 @@ class Fresh_Path {
 	private $start;
 	private $end;
 	private $zones;
+	private $days;
 
 	/**
 	 * Fresh_Path constructor.
@@ -17,18 +18,28 @@ class Fresh_Path {
 		$this->id = $id;
 		$path_info = sql_query_single_assoc("select * from im_paths where id = " . $id);
 		$this->description = $path_info['description'];
-//		$this->zones = unserialize($path_info['zones_times']);
+		$this->zones = $path_info['zones'];
+		$this->days = explode(':', $path_info['days']);
+		//		$this->zones = unserialize($path_info['zones_times']);
 
-		$this->start = 23;
-		$this->end = 0;
-		$zone_times = self::get_zone_times();
-		foreach ($zone_times as $zone_id => $zone_time){
-			$start = strtok($zone_time, "-");
-			if ($start < $this->start) $this->start = $start;
-			$end = strtok("");
-			if ($end > $this->end) $this->end = $end;
-		}
+//		$this->start = 23;
+//		$this->end = 0;
+//		$zone_times = self::get_zone_times();
+//		foreach ($zone_times as $zone_id => $zone_time){
+//			$start = strtok($zone_time, "-");
+//			if ($start < $this->start) $this->start = $start;
+//			$end = strtok("");
+//			if ($end > $this->end) $this->end = $end;
+//		}
 	}
+
+	/**
+	 * @return array
+	 */
+	public function getDays(): array {
+		return $this->days;
+	}
+
 
 	/**
 	 * @return mixed|string
@@ -70,7 +81,6 @@ class Fresh_Path {
 	{
 		// $zones =
 		$zone_times = sql_query_array_scalar("select hours from im_path_shipments where path_id = $this->id and instance is not null");
-		var_dump($zone_times);
 		if ($sorted) uasort($zone_times,
 			function($a, $b) {
 				$start_a = strtok($a, "-");
