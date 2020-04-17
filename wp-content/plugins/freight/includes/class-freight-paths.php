@@ -29,6 +29,8 @@ class Freight_Paths {
 	}
 
 	static function settings($args = null, $operation = null) {
+		return "lalalal";
+		print 1/0;
 		$result                = "";
 		$args["post_file"] = Freight::getPost();
 
