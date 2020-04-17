@@ -55,7 +55,7 @@ class Freight_Zones {
 //		$result .= Core_Html::GuiButton("btn_instance", "Create Missions", array("action" => "create_missions('" . Freight::getPost() . "')"));
 //
 //		$result .= Core_Html::gui_header(2, "Coming missions");
-//		$result .= self::show_missions( "date > " . QuoteText(date('Y-m-d')));
+
 
 //		$result .= "<br/>";
 //		$result .= Core_Html::GuiHyperlink("עדכון שיטות משלוח", AddToUrl("operation", "update_shipping_methods"));

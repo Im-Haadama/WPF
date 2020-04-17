@@ -51,14 +51,14 @@ class Fresh_Path {
 	/**
 	 * @return string
 	 */
-	public function getStart(): string {
+	public function getStart() {
 		return $this->start;
 	}
 
 	/**
 	 * @return string
 	 */
-	public function getEnd(): string {
+	public function getEnd() {
 		return $this->end;
 	}
 

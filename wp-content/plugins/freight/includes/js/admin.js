@@ -136,3 +136,30 @@ function update_shipment_instance(post_file, id)
 {
     execute_url(post_file + "?operation=update_shipment_instance&id=" + id, fail_message);
 }
+
+function update_order_pri(post_file, obj)
+{
+    let new_pri = obj.value;
+    do_update_order_pri(post_file, obj, new_pri);
+}
+
+function do_update_order_pri(post_file, obj, new_pri)
+{
+    let order_id = obj.id.substr(3, obj.id.indexOf('_') - 3);
+    let site_id = obj.id.substr(obj.id.indexOf('_') + 1);
+    execute_url(post_file + "?operation=order_save_pri&order_id=" + order_id + "&site_id=" +site_id + "&pri="+ new_pri);
+}
+
+function reset_path(post_file, row_number)
+{
+    let pri_col = 6;
+    let table = document.getElementById("path");
+    let pri = get_value(table.rows[row_number].cells[pri_col]);
+
+    for (let i = row_number; i< table.rows.length; i++)
+    {
+        let p = table.rows[i].cells[pri_col].firstElementChild;
+        p.value = pri;
+        do_update_order_pri(post_file, p, pri)
+    }
+}

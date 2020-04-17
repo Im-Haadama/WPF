@@ -56,6 +56,7 @@ class Fresh_Order_Management {
 	static public function add_order_action($actions, $order)
 	{
 		$O = new Fresh_Order($order->get_id());
+//		print "------------------------------->" . $order->status ."<br/>";
 		switch ($order->status)
 		{
 			case "processing":
@@ -70,7 +71,7 @@ class Fresh_Order_Management {
 //						'url'    => wp_nonce_url( admin_url( 'admin-post.php?post=' . $order->get_id() . '&action=delivery' ), 'woocommerce-mark-order-status' ),
 				'url' => '/wp-content/plugins/fresh/delivery/create-delivery.php?order_id=' . $order->get_id(),
 					'name'   => __( 'Delivery', 'woocommerce' ),
-					'action' => 'delivery',
+					'action' => 'delivery'
 				);
 				break;
 			case "awaiting-shipment":
@@ -79,10 +80,11 @@ class Fresh_Order_Management {
 //						'url'    => wp_nonce_url( admin_url( 'admin-post.php?post=' . $order->get_id() . '&action=delivery' ), 'woocommerce-mark-order-status' ),
 					'url' => self::get_url($order->get_id()),
 					'name'   => __( 'Delivery', 'woocommerce' ),
-					'action' => 'delivery',
+					'action' => 'delivery'
 				);
 				break;
 		}
+//		var_dump($actions);
 		return $actions;
 	}
 
@@ -102,8 +104,8 @@ class Fresh_Order_Management {
 
 	static function get_url($order_id)
 	{
-		$order = new Fresh_Order($order_id);
-		if ($order->getShippingFee())
+//		$order = new Fresh_Order($order_id);
+//		if ($order->getShippingFee())
 			return '/wp-content/plugins/fresh/delivery/get-delivery.php?order_id=' . $order_id;
 
 	}

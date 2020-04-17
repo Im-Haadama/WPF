@@ -63,50 +63,6 @@ function swap( &$a, &$b ) {
 //}
 
 
-function do_get_distance( $a, $b ) {
-	// $start = new DateTime();
-	if ( $a == $b ) {
-		return 0;
-	}
-	if ( is_null( $a ) or strlen( $a ) < 1 ) return -1;
-
-	if ( is_null( $b ) or strlen( $b ) < 1 ) return -1;
-
-//	debug_time1("google start");
-	$s = "https://maps.googleapis.com/maps/api/directions/json?origin=" . urlencode( $a ) . "&destination=" .
-	     urlencode( $b ) . "&key=" . MAPS_KEY . "&language=iw";
-
-	// print $s;
-	$result = file_get_contents( $s );
-//	debug_time1("google end");
-
-	$j = json_decode( $result );
-
-	if ( ! $j or ! isset( $j->routes[0] ) ) {
-		print "Can't find distance between '" . $a . "' and '" . $b . "'<br/>";
-
-		return null;
-	}
-
-	$v = $j->routes[0]->legs[0]->distance->value;
-	$t = $j->routes[0]->legs[0]->duration->value;
-
-//	$end = new DateTime();
-//
-//	$delta = $start->diff($end)->format("%s");
-//	// var_dump($delta); print "<br/>"; // ->format("%s");
-//	// print "diff: " . $sec . "<br/>";
-//	if ($delta > 0) {
-//		print "בדוק כתובות" . $a . " " . $b . "<br/>";
-//	}
-	if ( $v > 0 ) {
-		return array( $v, $t );
-	}
-
-	print "can't find distance between " . $a . " " . $b . "<br/>";
-
-	return null;
-}
 
 //$order_id = $row[0];
 //$client_id = get_customer_id_by_order_id();

@@ -77,8 +77,7 @@ class Freight_Paths {
 		$result .= "<br/>";
 		$result .= Core_Html::GuiButton("btn_instance", "Create Missions", array("action" => "create_missions('" . Freight::getPost() . "')"));
 
-		$result .= Core_Html::gui_header(2, "Coming missions");
-		$result .= self::show_missions( "date > " . QuoteText(date('Y-m-d')));
+//		$result .= Core_Html::gui_header(2, "Coming missions");
 
 		$result .= "<br/>";
 		$result .= Core_Html::GuiHyperlink("עדכון שיטות משלוח", AddToUrl("operation", "update_shipping_methods"));
@@ -228,14 +227,21 @@ class Freight_Paths {
 
 	static function show_mission_wrap()
 	{
+		print 1/0;
+		$result = "";
 		$mission_id = GetParam("id", true);
-		return self::show_mission($mission_id);
+		$args = [];
+		$result .= Core_Gem::GemElement("mission", $mission_id, $args);
+		$result .= self::show_mission($mission_id);
+		print $result;
 	}
+
 	static function show_mission($mission_id)
 	{
+		print 1/0;
 		if (! ($mission_id > 0)) die ("bad mission_id " .$mission_id);
-		$result = Core_Html::gui_header(1, ImTranslate("mission") . " $mission_id");
-
+//		$result = Core_Html::gui_header(1, ImTranslate("mission") . " $mission_id");
+$result = "XXX";
 		$args = [];
 		$args["selectors"] = array("path_code" => __CLASS__ . "::gui_select_path");
 		$args["edit"] = true;
@@ -290,12 +296,12 @@ class Freight_Paths {
 //	return rtrim($result, ", ");
 //}
 
-function path_add_zone($path_id, $zone, $week_day)
-{
-	$db_prefix = get_table_prefix();
-
-	return sql_query("insert into ${db_prefix}path_shipments (path_id, zone, week_day) values ($path_id, $zone, $week_day)");
-}
+//function path_add_zone($path_id, $zone_id, $week_day)
+//{
+//	$db_prefix = get_table_prefix();
+//
+//	return sql_query("insert into ${db_prefix}path_shipments (path_id, zone, week_day) values ($path_id, $zone_id, $week_day)");
+//}
 
 //function path_get_zone_times($path_id, $sorted = true)
 //{

@@ -305,16 +305,16 @@ class Fresh_Supply {
 		if ( $edit ) {
 			array_push( $row, gui_select_mission( "mis_" . $this->ID, $this->MissionID, array("events" => "onchange=mission_changed(" . $this->ID . ")" )) );
 		} else {
-			array_push( $row, get_mission_name($this->getMissionID()) );
+			array_push( $row, $this->getMissionName() );
 		}
 
-		array_push($rows, array(__("status"), get_supply_status($this->getStatus())));
+		array_push($rows, array(__("status"), $this->getStatus()));
 
 		array_push( $rows, $row );
 
 		$args = array();
 		// $args["class"] = "sortable";
-		$data = gui_table_args( $rows, "supply_table", $args);
+		$data = Core_Html::gui_table_args( $rows, "supply_table", $args);
 
 		return $data;
 	}
@@ -325,6 +325,11 @@ class Fresh_Supply {
 	public function getMissionID() {
 		return $this->MissionID;
 	}
+
+	public function getMissionName() {
+		return sql_query_single_scalar("select name from im_missions where id = " . $this->getMissionID());
+	}
+
 
 	/**
 	 * @param mixed $MissionID
@@ -345,7 +350,7 @@ class Fresh_Supply {
 		       . ' from im_supplies_lines where status = 1 and supply_id = ' . $this->ID;
 
 		$args = array("id_field" => "id", "add_checkbox" => true,
-			"selectors" => array("product_id" => "gui_select_product"),
+			"selectors" => array("product_id" => "Fresh_Product::gui_select_product"),
 			          "id_key" => "ID",
 			          "edit" => $edit,
 			          "show_cols" => array("product_id" => true, "quantity" => true, '$buy' => true, '$total' => true),
@@ -381,7 +386,7 @@ class Fresh_Supply {
 				if (! $prod_id) {print "bad id: $prod_id<br/>"; continue;
 				}
 				//$prod_id = $rows_data[$i]["Product Name"];
-				$buy_price = get_buy_price($prod_id, $this->getSupplier());
+				$buy_price = 0; // get_buy_price($prod_id, $this->getSupplier());
 				if (! is_numeric($buy_price)) {
 					print "no buy price<br/>";
 					$buy_price = 0;
@@ -395,12 +400,12 @@ class Fresh_Supply {
 
 				$rows_data[$line_id]['$buy'] = $buy_price;
 				$rows_data[$line_id]['$total'] = $buy_price * $q;
-				if ( $internal) $rows_data[$line_id]['$buyers'] = orders_per_item( $prod_id, 1, true, true, true );
+				if ( $internal) $rows_data[$line_id]['$buyers'] = "xxx"; // orders_per_item( $prod_id, 1, true, true, true );
 			}
 
-		if (isset($args['acc_fields'])) $rows_data['sums'] = HandleTableAcc($args['acc_fields'], $rows_data, $args['fields']);
+		// if (isset($args['acc_fields'])) $rows_data['sums'] = HandleTableAcc($args['acc_fields'], $rows_data, $args['fields']);
 
-		return gui_table_args( $rows_data, "supply_" . $this->getID(), $args );
+		return Core_Html::gui_table_args( $rows_data, "supply_" . $this->getID(), $args );
 		// GuiTableContent("supply", $sql, $args);
 		$result = sql_query( $sql );
 
@@ -484,7 +489,7 @@ class Fresh_Supply {
 			$line .= "<td>" . $attr_text . "</td>";
 
 			if ( ! ( $item_price > 0 ) ) {
-				$item_price = get_buy_price( $prod_id, $supplier_id );
+				$item_price = 0; // get_buy_price( $prod_id, $supplier_id );
 				$total_line = $item_price * $quantity;
 				$total      += $total_line;
 			}
@@ -498,7 +503,7 @@ class Fresh_Supply {
 			if ( $internal ) {
 				$sell_price = get_price( $prod_id );
 				$line       .= "<td>" . sprintf( '%0.2f', $sell_price ) . "</td>";
-				$line       .= "<td>" . orders_per_item( $prod_id, 1, true, true, true ) . "</td>";
+				$line       .= "<td>" . "XXX"; // orders_per_item( $prod_id, 1, true, true, true ) . "</td>";
 				if ( $edit ) {
 					$line .= gui_cell( Core_Html::GuiButton( "del_" . $line_id, 'del_line(' . $line_id . ')"', "מחק" ) );
 				}

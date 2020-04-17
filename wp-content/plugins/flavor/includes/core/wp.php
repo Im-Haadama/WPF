@@ -241,7 +241,7 @@ function update_wp_option($option_id, $array_or_string)
 		               " on duplicate key update option_value = VALUES(option_value)",
 			$option_id, escape_string($array_or_string));
 
- return sql_query($sql);
+    return sql_query($sql);
 //	$new_string = serialize($new_array);
 //	return sql_query("update wp_options set option_value = '" . escape_string($new_string) . "' where option_name = '" . $option_id . "'");
 }

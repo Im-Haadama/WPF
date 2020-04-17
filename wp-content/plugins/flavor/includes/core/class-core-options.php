@@ -16,8 +16,6 @@ static function info_remove( $key ) {
 	static function info_get( $key, $create = false, $default = null ) {
 	$sql = "SELECT info_data FROM im_info WHERE info_key = '" . $key . "'";
 
-//	print $sql ."<br/>";
-
 	$result = sql_query_single_scalar( $sql );
 
 	if ( is_null( $result ) ) {

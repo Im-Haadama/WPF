@@ -1,6 +1,6 @@
 #!/bin/bash
 DB=$1
-BACKUP_FILE=$HOME/db_backup/$DB"-"`date '+%Y-%m-%d'`.sql
+BACKUP_FILE=$HOME/db_backups/$DB"-"`date '+%Y-%m-%d'`.sql
 # BACKUP_FILE=$HOME/db_backup/$DB.sql
 # echo Create $BACKUP_FILE ...
 ignore=""
@@ -12,6 +12,6 @@ if [ -f $ignore_file ]; then
                 ignore+=" --ignore-table=$DB.$TABLE"
         done
 fi
-mysqldump --defaults-extra-file=$HOME/db_backup/.$DB $ignore $DB > $BACKUP_FILE
+mysqldump --defaults-extra-file=$HOME/db_backups/.$DB --skip-lock-tables  $ignore $DB > $BACKUP_FILE
 # echo Compressing \<br\/\>
 gzip -f $BACKUP_FILE

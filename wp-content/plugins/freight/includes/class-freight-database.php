@@ -16,8 +16,12 @@ class Freight_Database extends Core_Database {
 		$current = self::CheckInstalled("Fresh", "functions");
 		$db_prefix = get_table_prefix();
 
-
 		if ($current == $version and ! $force) return true;
+
+		sql_query("alter table im_paths
+	add days varchar(40) null;
+
+");
 		sql_query("alter table wp_woocommerce_shipping_zones drop column delivery_days;");
 		sql_query("alter table wp_woocommerce_shipping_zones drop column codes;");
 		sql_query("alter table wp_woocommerce_shipping_zones add min_order float;" );
