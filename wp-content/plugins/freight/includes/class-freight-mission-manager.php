@@ -1,5 +1,8 @@
 <?php
 
+$point_sites = [];
+$point_orders = [];
+
 class Freight_Mission_Manager 
 {
 	static function init_hooks()
@@ -109,9 +112,11 @@ class Freight_Mission_Manager
 			foreach ( $lines_per_station[ $path[ $i ] ] as $line_array ) {
 				$order_info = $line_array[2];
 				$order_id = $line_array[1];
-				$order_pri = self::order_get_pri($order_id, $order_info['site_id'], 50);
+				$order_pri = self::order_get_pri($order_id, $order_info['site_id']);
 				$pri_input = Core_Html::GuiInput("pri". $order_id . "_" . $order_info['site_id'], $order_pri, array("size" => 5, "events"=>'onchange="update_order_pri(\'' . self::getPost() . '\',this)"')) .
 				             Core_Html::GuiButton("btn_reset_reset", "R", array("action" => "reset_path('".self::getPost()."',". ($i + 1) . ")"));
+				$type      = "orders";
+				if ( $order_info['site'] == "supplies" ) $type = "supplies"; else if ( $order_info['site'] == "משימות" )$type = "tasklist";
 
 				array_push($path_info,
 					array($order_id,
@@ -120,7 +125,8 @@ class Freight_Mission_Manager
 						$order_info['address_2'],
 						$order_info['shipping_method'],
 						$order_info['phone'],
-						$pri_input));
+						$pri_input,
+						Core_Html::GuiCheckbox("chk_$order_id", false, array("events"=>'onchange="delivered(' . $order_info['site_id'] . "," . $order_id . ', \'' . $type . '\')"'))));
 			}
 		}
 
@@ -131,7 +137,8 @@ class Freight_Mission_Manager
 			__("Address 2"),
 			__("Shipping method"),
 			__('Phone'),
-			__('Priority')));
+			__('Priority'),
+			__('Actions')));
 
 		$result = Core_Html::gui_table_args($path_info, "path", $args);
 
@@ -390,7 +397,7 @@ class Freight_Mission_Manager
 				// print "adding $pickup_address<br/>";
 				$prerequisite[$stop_point] = $pickup_address;
 				// Add Pickup
-				self::add_stop_point( $stop_points, $pickup_address );
+				self::add_stop_point( $stop_points, $pickup_address, $order_id, $order_info['site_id'] );
 				self::add_line_per_station($lines_per_station, $mission->getStartAddress(), $pickup_address, Core_Html::gui_row( array(
 					$order_info['site'],
 					$order_id,
@@ -405,9 +412,9 @@ class Freight_Mission_Manager
 			}
 			if ( $order_info['site'] == "supplies" ) array_push( $supplies_to_collect, array( $order_id, $order_info['site_id'] ) );
 
-			self::add_stop_point($stop_points, $stop_point );
+			self::add_stop_point($stop_points, $stop_point, $order_id, $order_info['site_id'] );
 			if (! isset($prerequisite[$stop_point])) {
-				$p = Core_Options::info_get("mission_preq_" . $mission_id . "." . $stop_point, false, null);
+				$p = self::order_get_pri($order_id, $order_info['site_id']);
 				if (strlen($p)) $prerequisite[$stop_point] = $p;
 			}
 
@@ -428,9 +435,14 @@ class Freight_Mission_Manager
 		}
 	}
 
-	static function add_stop_point( &$stop_points, $point ) {
+	static function add_stop_point( &$stop_points, $point, $order_id, $site_id) {
+		global $point_sites;
+		global $point_orders;
+
 		if ( ! in_array( $point, $stop_points ) ) {
-			array_push( $stop_points, $point );
+			array_push( $stop_points, $point);
+			$point_sites[$point] = $site_id;
+			$point_orders[$point] = $order_id;
 		}
 	}
 
@@ -530,7 +542,7 @@ class Freight_Mission_Manager
 		global $point_orders;
 		global $point_sites;
 		$debug = 0;
-		$check_preq = 1;
+		$check_preq = 0;
 
 		if ($debug)
 		{
@@ -539,13 +551,14 @@ class Freight_Mission_Manager
 		}
 		if ( sizeof( $rest ) == 1 ) {
 			array_push( $path, $rest[0] );
-
 			return;
 		}
 
 		$site_id = $point_sites[$rest[0]];
 		$order_id = $point_orders[$rest[0]];
-		$pri = Core_Options::info_get("mission_order_priority_" . $site_id . '_' .$order_id);
+//		var_dump($point_sites);
+//		print "$site_id $order_id " . $rest[0] . "<br/>";
+		$pri = self::order_get_pri($order_id, $site_id);
 		$min     = 	self::get_distance( $node, $rest[ 0 ] );
 		$min_seq = 0;
 		if ($debug) print "<tr><td>checking first " . $rest[0]  . "</td><td> Current pri $pri, dis $min</td></tr>";
@@ -554,8 +567,8 @@ class Freight_Mission_Manager
 			$d = self::get_distance( $node, $rest[ $i ] );
 			$site_id = $point_sites[$rest[$i]];
 			$order_id = $point_orders[$rest[$i]];
-			$order_pri = self::order_get_pri($order_id, "delivery_priority", 50);
-				Core_Options::info_get("mission_order_priority_" . $site_id . '_' .$order_id);
+			$order_pri = self::order_get_pri($order_id, $site_id);
+				// Core_Options::info_get("mission_order_priority_" . $site_id . '_' .$order_id);
 
 			if ($debug) print "<tr><td>checking " . $rest[$i]  . "</td><td> dis=$d pri=$order_pri. Current pri $pri, dis $min </td></tr>";
 
@@ -685,9 +698,16 @@ class Freight_Mission_Manager
 		return null;
 	}
 
-	static function order_get_pri($order_id, $site_id, $default)
+	static function order_get_pri($order_id, $site_id, $default = 100)
 	{
+		if (! ($order_id > 0))
+		{
+			print debug_trace(5);
+			die (1);
+		}
 		$i = Core_Options::info_get("mission_order_priority_" . $site_id . '_' .$order_id);
+//		print "OGP $order_id $site_id $i<Br/>";
+
 		if ($i) return $i;
 		return $default;
 	}
