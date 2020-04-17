@@ -98,37 +98,59 @@ class Fresh_Delivery_Manager
 		}
 
 		// For each zone
-		foreach ($zone_days as $zone_id => $days){
-			 if (! ($zone_id > 0)){
-			 	print debug_trace();
-				 die ("zone id should be integer");
-			 }
+		foreach ($zone_days as $zone_id => $days) {
+			if ($zone_id != 29) continue;
+			print "Handling zone $zone_id<br/>";
+			var_dump($days);
+			print "<br/>";
+			$updated_ids = [];
+			if ( ! ( $zone_id > 0 ) ) {
+				print debug_trace();
+				die ( "zone id should be integer" );
+			}
 
 //			// Update existing
-			foreach ($days as $day => $path_ids) {
+			foreach ( $days as $day => $path_ids ) {
 				foreach ( $path_ids as $path_id ) {
-					$result .= "<br/>Updating path $path_id zone $zone_id day $day"; // . StringVar($days);
+					print "Updating path $path_id zone $zone_id day $day "; // . StringVar($days);
 					$sql = "select id from im_path_shipments where zone = $zone_id and week_day = $day and path_id = $path_id";
 //					print $sql . "<br/>";
 					$found = false;
 					if ( $id = sql_query_single_scalar( $sql ) ) {
-						$result   .= " update shipping $id ";
+//						print "updating $id <br/>";
+//						$result   .= " update shipping $id ";
 						$shipping = Freight_Shipment::LoadFromDB( $id );
 						$price    = sql_query_single_scalar( "select default_rate from wp_woocommerce_shipping_zones where zone_id = $zone_id" );
-						$found = true;
+						$found    = true;
 						if ( ! $shipping->update_instance( $price ) ) {
-							sql_query("delete from im_path_shipments where id = $id");
+							sql_query( "delete from im_path_shipments where id = $id" );
 							$result .= "Bad ship id $id <br/>";
-							$found = false;
+							$found  = false;
+						} else {
+							print "id $id<br/>";
+							$updated_ids[] = $id;
 						}
 					}
-					if (! $found) {
-						$result .= " Creating $zone_id $path_id $day";
+					if ( ! $found ) {
+//						$result .= " Creating $zone_id $path_id $day";
 						$result .= $path_id . " ";
 						$result .= Freight_Shipment::CreateInstance( $zone_id, $path_id, $day, "12-18" );
 					}
 				}
 			}
+			// Now remove others.
+			$sql = "select id, path_id, zone, instance, week_day 
+					from im_path_shipments 
+					where zone = $zone_id and id not in (" . CommaImplode( $updated_ids ) . ")";
+			print $sql . "<br/>";
+			$remove_result = sql_query( $sql );
+
+			print "need to remove: ";
+			while ( $row = sql_fetch_assoc( $remove_result ) )
+			{
+				print $row['instance'] . "<Br/>";
+			}
+			print "<br/>";
 //			foreach ($zone_days[$zone_id] as $days){
 ////				var_dump($days); print "<br/>";
 //				foreach ($days as $day)
