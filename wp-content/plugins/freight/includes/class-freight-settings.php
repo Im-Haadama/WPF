@@ -116,7 +116,7 @@
 			$args = [];
 			$args["post_file"] = self::getPost();
 
-			$tab = GetParam("tab", false, "paths");
+			$tab = GetParam("tab", false, "methods");
 			$url = GetUrl(1) . "?page=settings&tab=";
 			$operation = GetParam("operation", false, null);
 
@@ -132,10 +132,10 @@
 				Freight_Zones::settings($args, $operation)
 			);
 
-			$tabs["paths"] = array(
-				"Paths",
-				$url . "paths",
-				Freight_Paths::settings($args, $operation)
+			$tabs["methods"] = array(
+				"Methods",
+				$url . "methods",
+				Freight_Methods::settings($args, $operation)
 			);
 
 //			$tabs["suppliers"] = array(
@@ -164,7 +164,10 @@
 			$args["nav_tab_wrapper"] = "nav-tab-wrapper woo-nav-tab-wrapper";
 
 			$result .= Core_Html::NavTabs($tabs, $args);
-			$result .= $tabs[$tab][2];
+			if (isset($tabs[$tab][2]))
+				$result .= $tabs[$tab][2];
+			else
+				$result .= "array index 2 is missing";
 
 			print $result;
 		}

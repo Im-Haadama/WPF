@@ -18,10 +18,8 @@ class Freight_Database extends Core_Database {
 
 		if ($current == $version and ! $force) return true;
 
-		sql_query("alter table im_paths
-	add days varchar(40) null;
+		sql_query("alter table wp_woocommerce_shipping_zone_methods add week_day integer;");
 
-");
 		sql_query("alter table wp_woocommerce_shipping_zones drop column delivery_days;");
 		sql_query("alter table wp_woocommerce_shipping_zones drop column codes;");
 		sql_query("alter table wp_woocommerce_shipping_zones add min_order float;" );
@@ -37,19 +35,6 @@ class Freight_Database extends Core_Database {
 );
 
 ");
-
-//		if (! table_exists("paths"))
-//			sql_query("create table ${db_prefix}paths
-//(
-//	id int auto_increment
-//		primary key,
-//	path_code varchar(10) charset utf8 not null,
-//	description varchar(40) charset utf8 null,
-//	zones_times longtext null,
-//	week_days varchar(40) null
-//);
-//
-//");
 
 		self::UpdateInstalled("Freight", "tables", $version);
 

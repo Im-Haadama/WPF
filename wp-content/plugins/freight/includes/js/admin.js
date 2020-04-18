@@ -74,63 +74,6 @@ function save_paths()
     alert(params);
 }
 
-function save_path_times(path_id)
-{
-    let table = document.getElementById("zone_times");
-    let params = new Array();
-
-    for (let i = 1; i < table.rows.length; i++){
-        params.push(get_value(table.rows[i].cells[1]));
-        params.push(get_value(table.rows[i].cells[3]));
-    }
-
-    // alert(params);
-    let request = "/routes/routes-post.php?operation=save_path_times&params=" + params.join() + '&path_id=' + path_id;
-
-    execute_url(request, location_reload);
-}
-
-function delete_path_times(path_id, post_file)
-{
-    let params = new Array();
-
-    var collection = document.getElementsByClassName("checkbox_zone_times");
-    for (var i = 0; i < collection.length; i++) {
-        var zone_name = collection[i].id.substr(4);
-        if (document.getElementById("chk_" + zone_name).checked)
-            params.push(encodeURI(zone_name));
-    }
-
-    // for (let i = 1; i < table.rows.length; i++){
-    //     if ()
-    //     params.push(get_value(table.rows[i].cells[1]));
-    //     params.push(get_value(table.rows[i].cells[3]));
-    // }
-
-    // alert(params);
-    let request = post_file + "?operation=path_remove_times&params=" + params.join() + '&path_id=' + path_id;
-
-    execute_url(request, location_reload);
-}
-
-function add_zone_times(path_id, post_file)
-{
-    let zones = get_value_by_name("zone_id");
-    let times = get_value_by_name("zone_time");
-
-    let request = add_param_to_url(post_file, "operation", "add_zone_times");
-    request = add_param_to_url(request, "path_id", path_id);
-    request = add_param_to_url(request, "time", times);
-    request = add_param_to_url(request, "zones", zones)
-    window.location.href = request;
-}
-
-function path_save_days(post_file, path)
-{
-    let day = get_value_by_name("path_days");
-
-    execute_url(post_file + "?operation=path_save_days&path_id="+path+"&day=" + day, location_reload);
-}
 
 function update_shipment_instance(post_file, id)
 {
@@ -162,4 +105,15 @@ function reset_path(post_file, row_number)
         p.value = pri;
         do_update_order_pri(post_file, p, pri)
     }
+}
+
+function toggle_shipment_enable(post_file, instance_id)
+{
+    let enable = get_value_by_name("chk_shipment_" + instance_id);
+    execute_url(post_file + "?operation=toggle_shipment_enable&instance=" + instance_id + '&enable=' + enable);
+}
+
+function shipment_delete(post_file, instance_id)
+{
+    execute_url(post_file + "?operation=shipment_delete&instance=" + instance_id, location_reload);
 }
