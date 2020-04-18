@@ -38,7 +38,7 @@ class Freight_Mission_Manager
 
 	static function show_missions($query = "date >= curdate()")
 	{
-		$result = $query;
+		$result = "";
 
 		if (! $query) $week = date('Y-m-d', strtotime('last sunday'));
 
@@ -130,7 +130,7 @@ class Freight_Mission_Manager
 			}
 		}
 
-		$args =array("class" => "widefat");
+		$args =array("class" => "sortable");
 		array_unshift($path_info, array(__("Order number"),
 			__("Customer name"),
 			__("Address 1"),
