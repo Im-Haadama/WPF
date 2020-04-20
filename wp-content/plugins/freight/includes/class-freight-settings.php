@@ -138,26 +138,11 @@
 				Freight_Methods::settings($args, $operation)
 			);
 
-//			$tabs["suppliers"] = array(
-//				"Suppliers",
-//				$url . "suppliers",
-//"bbbb"
-////				Freight_Suppliers::admin_page()
-//				//Freight_Suppliers::SuppliersTable()
-//			);
-//
-//			$tabs["missing_pictures"] = array(
-//				"Missing Pictures",
-//				$url . "missing_pictures",
-//"ccc"
-////				Freight_Catalog::missing_pictures()
-//			);
-
-//		array_push( $tabs, array(
-//			"workers",
-//			"Workers",
-//			self::company_workers( $company, $args )
-//		) );
+			$tabs["mission_types"] = array(
+				"Mission Types",
+				$url . "mission_types",
+				Freight_Methods::mission_types($args, $operation)
+			);
 
 			$args["btn_class"] = "nav-tab";
 			$args["tabs_load_all"] = true;
@@ -172,7 +157,7 @@
 			print $result;
 		}
 
-		static function help()
+		static function help($args, $operation)
 		{
 			$result = "";
 		 $result .= Core_Html::GuiHeader(1, "Updating shipping times");

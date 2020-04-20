@@ -3,7 +3,7 @@
 
 class Freight_Zones {
 
-	static function settings()
+	static function settings($args, $operation)
 	{
 		$operation = null;
 		$result                = "";

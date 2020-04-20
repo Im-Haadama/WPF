@@ -117,3 +117,22 @@ function shipment_delete(post_file, instance_id)
 {
     execute_url(post_file + "?operation=shipment_delete&instance=" + instance_id, location_reload);
 }
+
+function shipment_update_mc(post_file, instance_id)
+{
+    let mc = get_value_by_name("mis_"+instance_id);
+    execute_url(post_file + "?operation=shipment_update_mc&instance=" + instance_id + '&mc=' + mc, fail_message1);
+}
+
+function fail_message1(xmlhttp)
+{
+    if (xmlhttp.response.substr(0, 4) === "done") return;
+
+    alert (xmlhttp.response);
+}
+
+function mission_update_type(post_file, mission_id)
+{
+    let type = get_value_by_name("mission_type_" + mission_id);
+    execute_url(post_file + '?operation=mission_update_type&mission=' + mission_id + '&type=' + type, fail_message1);
+}

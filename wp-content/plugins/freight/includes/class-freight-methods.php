@@ -25,21 +25,29 @@ class Freight_Methods {
 		add_action("update_zone_missions", __CLASS__ . "::update_zones_missions");
 		add_action("show_mission", __CLASS__ . "::show_mission_wrap");
 		add_action("toggle_shipment_enable", __CLASS__ . "::toggle_shipment_enable");
+		add_action("shipment_update_mc", __CLASS__ . "::shipment_update_mc");
 
 		$file = FLAVOR_INCLUDES_URL . 'js/sorttable.js';
 		wp_enqueue_script( 'sorttable', $file, null, '1.0', false );
 
+		Core_gem::AddTable("mission_types");
 	}
 
-	static function settings($args = null, $operation = null) {
+	static function settings($args = null, $operation = null)
+	{
 		$result = Core_Html::GuiHeader(1, "Shipping methods");
 
-		$header_row = array("id", "Zone name", "Shipping name");
+		if ($operation)
+			$result = apply_filters( $operation, $result, "", null, null );
+
+		$header_row = array("id", "Zone name", "Shipping name", "mission code");
 		for ($day = 1; $day <=4; $day ++)
 			array_push($header_row, DayName($day));
 
+		$table_name = "wp_woocommerce_shipping_zone_methods";
+
 		$rows = array($header_row);
-		$sql = "select * from wp_woocommerce_shipping_zone_methods order by zone_id";
+		$sql = "select * from $table_name order by zone_id";
 		$query_result = sql_query($sql);
 		// Zone name, instance name, workdays
 		while ($method_info = sql_fetch_assoc($query_result))
@@ -48,16 +56,22 @@ class Freight_Methods {
 			$data = get_wp_option("woocommerce_flat_rate_{$instance_id}_settings");
 			$zone_id = $method_info['zone_id'];
 			$zone_info = sql_query_single("select * from wp_woocommerce_shipping_zones where zone_id = $zone_id");
+			$args["events"] = sprintf('onchange="shipment_update_mc(\'%s\', \'%d\')"', Fresh::getPost(), $instance_id);
+
 			$new_row = array(
 				isset($data['instance_id']) ? $data['instance_id'] : 'no instance',
 				$zone_info[1],
-				$data['title']
+				$data['title'],
+				self::SelectMissionType("mis_" . $instance_id, $method_info['mission_code'], $args)
 			);
 			$week_day = $method_info['week_day'];
 
 			$enabled = $method_info['is_enabled'];
 			for ($day = 1; $day <=4; $day ++) {
-				if (! $week_day and strstr($data['title'], DayName($day))) $week_day = $day;
+				if (! $week_day and strstr($data['title'], DayName($day))) {
+					$week_day = $day;
+					sql_query("update wp_woocommerce_shipping_zone_methods set week_day = $week_day where instance_id = $instance_id");
+				}
 				if ($week_day == $day)
 					array_push( $new_row, Core_Html::GuiCheckbox( "chk_shipment_$instance_id", $enabled,
 						array( "events" => ("onchange=\"toggle_shipment_enable('". Freight::getPost() . "', $instance_id)\"") ) ) );
@@ -70,22 +84,17 @@ class Freight_Methods {
 		}
 
 		$args["class"] = "sortable";
-		$result .= Core_Html::gui_table_args($rows, "shipment_methos", $args);
+		$result .= Core_Html::gui_table_args($rows, "shipment_methods", $args);
+		$result .= Core_Html::GuiHyperlink("Update!", AddToUrl("operation", "update_shipping_methods"));
 //		$result .= Core_Gem::GemTable("woocommerce_shipping_zone_methods", $args);
 		return $result;
 	}
 
-	static function create_missions()
+	static function SelectMissionType($id, $selected, $args)
 	{
-		$path_ids = GetParamArray("path_ids", true); // Path ids.
-		return Fresh_Delivery_Manager::create_missions($path_ids);
-	}
-
-	static function update_shipment_instance()
-	{
-		$id = GetParam("id", true);
-		$s = Freight_Shipment::LoadFromDB($id);
-		$s->update_instance();
+		$args["name"] = 'mission_name';
+		$args["selected"] = $selected;
+		return Core_Html::GuiSelectTable($id, "mission_types", $args);
 	}
 
 	static function shipment_delete()
@@ -93,21 +102,6 @@ class Freight_Methods {
 		$id = GetParam("instance", true);
 		$s = new Freight_Shipment($id);
 		$s->delete_instance();
-	}
-
-	static function path_save_days()
-	{
-		$days = explode(":", GetParam("day", true));
-		$path = GetParam("path_id", true);
-		$P = new Freight_Path($path);
-//		var_dump($days);
-		$P->setDays($days);
-//		foreach ($days as $weekday)
-//			foreach ($P->getZones() as $zone) {
-//				if (Freight_Shipment::exists($path, $zone, $weekday)) continue;
-//
-//				Freight_Shipment::AddMethod($path, $zone, $weekday);
-//			}
 	}
 
 	static function toggle_shipment_enable()
@@ -133,6 +127,13 @@ class Freight_Methods {
 		$result .= Core_Gem::GemElement("mission", $mission_id, $args);
 		$result .= self::show_mission($mission_id);
 		print $result;
+	}
+
+	static function shipment_update_mc()
+	{
+		$instance = GetParam("instance", true);
+		$mc = GetParam("mc", true);
+		return sql_query("update wp_woocommerce_shipping_zone_methods set mission_code = " . QuoteText($mc) . " where instance_id = $instance");
 	}
 
 	static function show_mission($mission_id)
@@ -181,6 +182,18 @@ $result = "XXX";
 		return Core_Html::GuiSelectTable($id, "paths", $args);
 	}
 
+	static function mission_types($args, $operation)
+	{
+		$result = "";
+		$args["post_file"] = Fresh::getPost();
+		$args["operation"] = $operation;
+		$args["edit"] = true;
+		if ($operation)
+			$result = apply_filters( $operation, $result, "", $args, null );
+
+		$result .= Core_Gem::GemTable("mission_types", $args);
+		return $result;
+	}
 }
 
 

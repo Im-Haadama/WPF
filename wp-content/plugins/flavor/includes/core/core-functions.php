@@ -566,3 +566,8 @@ function QuoteDate($date, $format = 'Y-m-d')
 		return add_action($tag, $function_to_add, $priority, $accepted_args);
 	}
 
+function next_weekday($week_day)
+{
+	$delta = ($week_day - date('w')); 	if ($delta < 2) $delta += 7;
+	return date('Y-m-d', strtotime ('today +' . $delta . 'days'));
+}

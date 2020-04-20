@@ -57,11 +57,6 @@ class Core_Gem {
 
 	static function edit_wrapper($result, $id, $args)
 	{
-//		var_dump($prev); print "<br/>";
-//		var_dump($table_name); print "<br/>";
-//		var_dump($args); print "<br/>";
-//		return;
-//		$id = GetArg($args, "id", null);
 		if (! ($id > 0)) return __FUNCTION__ . ":bad id";
 
 		$operation = GetArg($args, "operation", null);
@@ -365,13 +360,15 @@ class Core_Gem {
 
 		if (GetArg($args, "add_button", true))
 			$result .= Core_Html::GuiHyperlink("Add", AddToUrl("operation" , "gem_add_" . $table_id)) . " ";
+		$checkbox_class = GetArg($args, "checkbox_class", "class");
 
 		if ($post_file and $enable_import) {
-			$checkbox_class = GetArg($args, "checkbox_class", "class");
-			$result .= Core_Html::GuiButton( "btn_delete_$table_id", "delete",
-				array( "action" => "delete_items(" . QuoteText( $checkbox_class ) . "," . QuoteText( $post_file ) . ")" ) );
 			$result .= Core_Gem::ShowImport( $table_id, $args );
 		}
+		if ($post_file)
+			$result .= Core_Html::GuiButton( "btn_delete_$table_id", "delete",
+				array( "action" => "delete_items(" . QuoteText( $checkbox_class ) . "," . QuoteText( $post_file ) . ")" ) );
+
 
 		return $result;
 	}
@@ -386,7 +383,6 @@ class Core_Gem {
 	 */
 	static function GemTable($table_name, &$args)
 	{
-//		var_dump($args["prepare_plug"]);
 		if (! $table_name) die("Error #N2 no table given");
 		if (! isset($args["title"])) $title = "content of table " . $table_name;
 		$post_file = GetArg($args, "post_file", null);
@@ -397,7 +393,7 @@ class Core_Gem {
 		}
 		$table_prefix = get_table_prefix($table_name);
 
-		$args["events"] = 'onchange="update_table_field(\'' . $post_file . '\', \'' . $table_name . '\', \'%d\', \'%s\', check_update)"';
+		if (! isset($args["events"])) $args["events"] = 'onchange="update_table_field(\'' . $post_file . '\', \'' . $table_name . '\', \'%d\', \'%s\', check_update)"';
 		$sql = GetArg($args, "sql", null);
 
 //		print $sql . " " . $args["fields"] . "<br/>";

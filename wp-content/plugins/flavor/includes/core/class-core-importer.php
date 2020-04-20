@@ -162,7 +162,7 @@ class Core_Importer {
 				array_push( $unmapped, $line[ $i ] );
 			}
 		}
-		if (count($unmapped)) return false;
+		if ($unmapped and count($unmapped)) return false;
 
 //		print "map: <br/>";
 //		foreach ($map as $k => $m)

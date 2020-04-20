@@ -98,8 +98,20 @@ order by 1;");
 		$current = self::CheckInstalled("Fresh", "functions");
 		$db_prefix = get_table_prefix();
 
-
 		if ($current == $version and ! $force) return true;
+
+		sql_query("alter table im_missions drop path_code");
+		sql_query("alter table im_missions add mission_type int");
+
+		sql_query("create table im_mission_types
+(
+	id int auto_increment
+		primary key,
+	mission_name varchar(20) null)");
+
+
+
+		sql_query("alter table wp_woocommerce_shipping_zone_methods add mission_code varchar(10);");
 
 		sql_query("alter table wp_woocommerce_shipping_zones add min_order float, add default_rate float");
 

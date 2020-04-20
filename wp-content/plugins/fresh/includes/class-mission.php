@@ -208,25 +208,22 @@ class Mission {
 	 * @return bool
 	 * @throws Exception
 	 */
-	public static function CreateFromPath($path_id, $forward_days = 8) // from tomorrow till tomorrow+forward_days
+	public static function CreateFromType($type_id, $forward_days = 8) // from tomorrow till tomorrow+forward_days
 	{
-		$last_mission_id = sql_query_single_scalar("select max(id) from im_missions where path_code = $path_id");
-		if ($last_mission_id)
-			$last_mission = new Mission($last_mission_id);
-		else
-			$last_mission = new Mission(0);
+		$last_mission_id = sql_query_single_scalar("select max(id) from im_missions where mission_type = $type_id");
+		if ($last_mission_id) return;
 
-		$path_days = sql_query_array_scalar("select week_day from im_path_shipments where path_id = " . $path_id . " and instance is not null");
-//		print "days: "; var_dump($path_days); print "p=$path_id<br/>";
+		$type_info = sql_query_single_assoc("select *from im_mission_types where id = $type_id");
 
-		for ($day = strtotime('tomorrow') ; $day < strtotime("tomorrow +$forward_days days");  $day += 86400) {
-			if (in_array(date('w', $day), $path_days)){
-				$sql = "select count(*) from im_missions where path_code = " . $path_id . " and date = " . QuoteText(date('Y-m-d', $day));
-				if (sql_query_single_scalar($sql) > 0) continue;
-				if (! $last_mission->create_mission_path_date($path_id, date('Y-m-d',$day))) return false;
-			}
-		}
-		return true;
+		$name = $type_info['mission_name'];
+		$week_day = $type_info['week_day'];
+		$date = next_weekday($week_day);
+
+		 $sql = "insert into im_missions (date, name, mission_type) values('$date', '$name', $type_id)";
+
+//		 print $sql ."<br/>";
+
+		return sql_query($sql);
 	}
 
 	private function create_mission_path_date($path_id, $date)
@@ -286,6 +283,10 @@ class Mission {
 			}
 		}
 		return $ids;
+	}
+
+	function setType($type){
+		return sql_query("update im_missions set mission_type = $type where id = " .$this->id);
 	}
 }
 

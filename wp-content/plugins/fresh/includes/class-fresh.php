@@ -508,7 +508,6 @@ class Fresh {
 //		$this->order = Fresh_Order_Management::instance();
 
 		$shortcodes = Core_Shortcodes::instance();
-		$shortcodes->add($this->delivery_manager->getShortcodes());
 		$shortcodes->add($this->suppliers->getShortcodes());
 		$shortcodes->add($this->supplier_balance->getShortcodes());
 		$shortcodes->add($this->totals->getShortcodes());

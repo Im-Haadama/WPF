@@ -5,20 +5,22 @@ $point_orders = [];
 
 class Freight_Mission_Manager 
 {
+	static $multi_site;
+
 	static function init_hooks()
 	{
 		add_action("order_save_pri", __CLASS__ . '::order_save_pri');
+		add_action("mission_update_type", __CLASS__ . '::mission_update_type');
+		add_action("mission_details", __CLASS__ . '::mission_details');
 	}
+
 	static function missions()
 	{
 		$id = GetParam("id");
 		if ($id) {
 			$args = array("post_file" => self::getPost());
-			$result = ""; /// Core_Html::GuiHeader(1, "Mission $id");
-//			$result .= Core_Gem::GemElement("missions", $id, $args);
-			$path = array();
-//			self::prepare_route($id, $path, $lines_per_station);
-			$result .= self::show_mission_route($id);
+			$result = Core_Html::GuiHeader(1, "Mission $id");
+			$result .= Core_Gem::GemElement("missions", $id, $args);
 			print $result;
 			return;
 		}
@@ -31,9 +33,20 @@ class Freight_Mission_Manager
 
 		$result = Core_Html::GuiHeader(1, $header);
 
+		self::create_missions();
+
 		$result .= self::show_missions($week ? "first_day_of_week(date) = '$week'" : "date >= curdate()");
 
 		print $result;
+	}
+
+	static function create_missions()
+	{
+		$types = sql_query_array_scalar("select id from im_mission_types");
+		foreach ($types as $type) {
+			Mission::CreateFromType($type);
+		}
+		return true;
 	}
 
 	static function show_missions($query = "date >= curdate()")
@@ -57,7 +70,7 @@ class Freight_Mission_Manager
 		$args = array();
 		$args["edit"] = false;
 		$args["add_checkbox"] = true;
-		$args["post_file"] = GetUrl(1);
+		$args["post_file"] = Freight::getPost();
 
 		$sql = "select * from im_missions where id in (" . CommaImplode($missions) . ") order by date";
 
@@ -67,9 +80,18 @@ class Freight_Mission_Manager
 		$args["sql"] = $sql;
 		$args["hide_cols"] = array("zones_times"=>1);
 		$args["class"] = "sortable";
+		$args["selectors"] = array("mission_type" => __CLASS__ . "::gui_select_mission_type");
+		$args["events"] = 'onchange="mission_update_type(\''. Fresh::getPost() . "', %d)\"";
 		$result .= Core_Gem::GemTable("missions", $args);
 
 		return $result;
+	}
+
+	static function gui_select_mission_type($id, $selected, $args)
+	{
+		$args["selected"] = $selected;
+		$args["name"] = 'mission_name';
+		return Core_Html::GuiSelectTable($id, "mission_types", $args);
 	}
 
 	static function dispatcher_wrap()
@@ -86,7 +108,7 @@ class Freight_Mission_Manager
 			return;
 		}
 
-		$header = "Missions";
+		$header = "Dispatch";
 		$week = GetParam("week", false, null);
 		if ($week)
 			$header .= __("Missions of week") . " " . $week;
@@ -118,9 +140,11 @@ class Freight_Mission_Manager
 				             Core_Html::GuiButton("btn_reset_reset", "R", array("action" => "reset_path('".self::getPost()."',". ($i + 1) . ")"));
 				$type      = "orders";
 				if ( $order_info['site'] == "supplies" ) $type = "supplies"; else if ( $order_info['site'] == "משימות" )$type = "tasklist";
-
+				$site_id = $order_info['site_id'];
+				$edit_user = Core_Html::GuiHyperlink($order_info['user_id'], self::$multi_site->getSiteURL($site_id) . "/wp-admin/user-edit.php?user_id=" . $order_info['user_id']);
 				array_push($path_info,
 					array($order_id,
+						$edit_user,
 						$order_info['customer'],
 						$path[$i],
 						$order_info['address_2'],
@@ -134,6 +158,7 @@ class Freight_Mission_Manager
 		$args =array("class" => "sortable");
 		array_unshift($path_info, array(__("Order number"),
 			__("Customer name"),
+			__("Customer id"),
 			__("Address 1"),
 			__("Address 2"),
 			__("Shipping method"),
@@ -141,7 +166,10 @@ class Freight_Mission_Manager
 			__('Priority'),
 			__('Actions')));
 
-		$result = Core_Html::gui_table_args($path_info, "path", $args);
+//		$args["links"] = array(1 => self::$multi_site->getSiteURL($site_id) . "/wp-admin/user-edit.php?user_id=%d");
+//		var_dump($path_info[1]);
+
+		$result = Core_Html::gui_table_args($path_info, "dispatch_" . $the_mission, $args);
 
 		return $result;
 		// print self::show_mission_route($the_mission, false, false, false);
@@ -152,14 +180,14 @@ class Freight_Mission_Manager
 		$update = false;
 		require_once( ABSPATH . 'wp-content/plugins/flavor/includes/core/data/im_simple_html_dom.php' );
 		$stop_points       = array();
-		$m                 = Core_Db_MultiSite::getInstance();
+		self::$multi_site = Core_Db_MultiSite::getInstance();
 
 		$prerequisite = array();
 
 		$data_lines   = array();
 
 		$data_url = "/routes/routes-post.php?operation=get_local&mission_ids=$the_mission";
-		$output   = $m->GetAll( $data_url, false, $debug );
+		$output   = self::$multi_site->GetAll( $data_url, false, $debug );
 		$dom = im_str_get_html( $output );
 
 		if ( strlen( $output ) < 10 ) {
@@ -226,6 +254,7 @@ class Freight_Mission_Manager
 				'onchange="delivered(' . $site_id . "," . $order_id . ', \'' . $type . '\')"' ) ); // #delivered
 			$line_data .= Core_Html::GuiCell( $site_id );
 			$line_data .= Core_Html::GuiCell( $shipping_method );
+			$line_data .= Core_Html::GuiCell( $user_id );
 
 			$line_data .= "</tr>";
 			if ( ! isset( $data_lines[ $mission_id ] ) ) {
@@ -364,6 +393,11 @@ class Freight_Mission_Manager
 		return $data;
 	}
 
+	static function mission_details()
+    {
+    	$id = GetParam("id", true);
+    }
+
 	static function getPost()
 	{
 		return "/wp-content/plugins/freight/post.php";
@@ -382,6 +416,7 @@ class Freight_Mission_Manager
 			// print "<br/>sp=" . $stop_point; var_dump($prerequisite);
 			$dom        = im_str_get_html( $data_lines[ $mission_id ][ $i ][1] );
 			$row        = $dom->find( 'tr' );
+
 			$order_info = [];
 			$order_info['site']     = table_get_text( $row[0], 0 );
 			$order_info['site_id']  = table_get_text( $row[0], 8 );
@@ -390,6 +425,7 @@ class Freight_Mission_Manager
 			$order_info['address_2'] = table_get_text($row[0], 4);
 			$order_info['phone'] = table_get_text($row[0], 5);
 			$order_info['shipping_method'] = table_get_text($row[0], 9);
+			$order_info['user_id'] = table_get_text($row[0], 10);
 
 			$pickup_address = Core_Db_MultiSite::getPickupAddress( $order_info['site_id'] );
 
@@ -725,5 +761,14 @@ class Freight_Mission_Manager
 
 		if ($pri > 0)
 			Core_Options::info_update("mission_order_priority_" . $site_id . '_' .$order_id, $pri);
+	}
+
+	static function mission_update_type()
+	{
+		$mission_id = GetParam("mission", true);
+		$type = GetParam("type", true);
+
+		$m = new Mission($mission_id);
+		return $m->setType($type);
 	}
 }

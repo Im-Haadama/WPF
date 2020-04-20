@@ -373,18 +373,18 @@ class Finance_Bank
 			case 'bank_import_from_file':
 				$file_name = $_FILES["fileToUpload"]["tmp_name"];
 				print "Trying to import $file_name<br/>";
-				$I                    = new Core_Importer();
+//				$I                    = new Core_Importer();
 				$fields               = array();
 				$fields['account_id'] = GetParam( 'selection' );
 				if ( ! $fields['account_id'] ) {
 					die( "not account given" );
 				}
 				try {
-					$result = $I->Import( $file_name, "bank", $fields, 'Finance_Bank::bank_check_dup' );
+					$result = Core_Importer::Import( $file_name, "bank", $fields, 'Finance_Bank::bank_check_dup' );
 				} catch ( Exception $e ) {
 					print $e->getMessage();
 
-					return;
+					return false;
 				}
 				print $result[0] . " rows imported<br/>";
 				print $result[1] . " duplicate rows <br/>";

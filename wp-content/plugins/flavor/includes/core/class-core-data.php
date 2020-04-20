@@ -52,9 +52,15 @@ class Core_Data
 				return self::Active($table_name, $row_id, $active);
 
 			case "data_delete":
-				$team_id = GetParam("team_id", true);
-				$team = new Org_Team($team_id);
-				return $team->removeMember(GetParam("ids"));
+				$ids = GetParamArray("ids", true);
+				$table = GetParam("type", true);
+				// Todo: check permissions
+				return self::Delete($table, $ids);
+
+//			case "data_delete_team":
+//				$team_id = GetParam("team_id", true);
+//				$team = new Org_Team($team_id);
+//				return $team->removeMember(GetParam("ids"));
 
 		}
 	}
@@ -71,6 +77,18 @@ class Core_Data
 			if (! sql_query("update $table_name set is_active = 0 where id = $row_id")) return false;
 		return true;
 	}
+
+	static function Delete($table_name, $rows)
+	{
+		$db_prefix = get_table_prefix($table_name);
+		// TODO: adding meta key when needed(?)
+		if (! in_array($table_name, array("missions"))) die ("not allowed $table_name");
+
+		sql_query("delete from ${db_prefix}$table_name where id in (" . CommaImplode($rows) . ")");
+
+		return true;
+	}
+
 
 	static function Active($table_name, $row_id, $active)
 	{

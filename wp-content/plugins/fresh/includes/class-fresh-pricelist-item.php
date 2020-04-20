@@ -166,9 +166,49 @@ class Fresh_Pricelist_Item {
 			if ($create_info) {
 				array_push($row, Fresh_Category::Select("categ_" . $row['id'], "categories", null));
 				array_push($row, Core_Html::GuiButton("btn_" . $row['id'], "Add Product", array("action" => "create_product('". Fresh::getPost() ."', $supplier_id, " . $row['id'] .")")));
+			} else {
+				var_dump($row);
+//				array_push($row, self::prod_options())
 			}
 		}
 		return $row;
+	}
+
+	static function prod_options($product_name, $pl_id)
+	{
+		$striped_prod = $product_name;
+		foreach ( array( "אורגני", "יחידה", "טרי" ) as $word_to_remove ) $striped_prod = str_replace( $word_to_remove, "", $striped_prod );
+
+		$striped_prod = trim( $striped_prod );
+
+		$prod_options = Fresh_Catalog::GetProdOptions( $product_name );
+
+		$options = [];
+		$selected  = null;
+		foreach ( $prod_options as $row1 )
+		{
+			$striped_option = $row1["post_title"];
+			$striped_option = str_replace( "-", " ", $striped_option );
+			$striped_option = trim( $striped_option, " " );
+			array_push($options, array("id" => $row1["id"], "name"=> $row1["post_title"]));
+			$options .= '<option value="' . "XX"  . '" ';
+			if ( ! strcmp( $striped_option, $striped_prod ) ) $selected = $striped_option;
+		}
+		$args = array("values"=>$options, "events"=>'onchange="selected(this)"');
+
+		return Core_Html::GuiSimpleSelect("prd" .  $pl_id, $selected, $args);
+
+//		$line = "<tr>";
+//		$line .= "<td>" . gui_checkbox( "chk" . $pricelist_id, "product_checkbox", $match ) . "</td>";
+//		$line .= "<td>" . $supplier_product_code . "</td>";
+//		$line .= "<td>" . $product_name . "</td>";
+//		$line .= "<td>" . $supplier_id . "</td>";
+//		$line .= "<td><select onchange='selected(this)' id='$pricelist_id'>";
+//
+//		$line .= $options;
+//
+//		$line .= '</select></td>';
+
 	}
 }
 
