@@ -701,12 +701,12 @@ function user_is_business_owner() {
 //		print Core_Html::GuiHyperlink('Search transaction', add_to_url("operation" ,"search")); print " ";
 
 function insert_leumi_conversion() {
-	sql_query( "INSERT INTO nv_conversion ( table_name, col, header) VALUES ( 'bank', 'date', 'תאריך')" );
-	sql_query( "INSERT INTO nv_conversion ( table_name, col, header) VALUES ( 'bank', 'description', 'תיאור')" );
-	sql_query( "INSERT INTO nv_conversion ( table_name, col, header) VALUES ( 'bank', 'reference', 'אסמכתא')" );
-	sql_query( "INSERT INTO nv_conversion ( table_name, col, header) VALUES ( 'bank', 'in_amount', 'בזכות')" );
-	sql_query( "INSERT INTO nv_conversion ( table_name, col, header) VALUES ( 'bank', 'out_amount', 'בחובה')" );
-	sql_query( "INSERT INTO nv_conversion ( table_name, col, header) VALUES ( 'bank', 'balance', 'היתרה בש\"ח')" );
-	sql_query( "INSERT INTO nv_conversion ( table_name, col, header) VALUES ( 'bank', 'part_id', 'לקוח')" );
-	sql_query( "INSERT INTO nv_conversion ( table_name, col, header) VALUES ( 'bank', 'client_name', 'תאור מורחב')");
+	sql_query( "INSERT INTO im_conversion ( table_name, col, header) VALUES ( 'bank', 'date', 'תאריך')" );
+	sql_query( "INSERT INTO im_conversion ( table_name, col, header) VALUES ( 'bank', 'description', 'תיאור')" );
+	sql_query( "INSERT INTO im_conversion ( table_name, col, header) VALUES ( 'bank', 'reference', 'אסמכתא')" );
+	sql_query( "INSERT INTO im_conversion ( table_name, col, header) VALUES ( 'bank', 'in_amount', 'בזכות')" );
+	sql_query( "INSERT INTO im_conversion ( table_name, col, header) VALUES ( 'bank', 'out_amount', 'בחובה')" );
+	sql_query( 'INSERT INTO im_conversion ( table_name, col, header) VALUES ( \'bank\', \'balance\', \'היתרה בש\"ח\'), \\\'' );
+	sql_query( "INSERT INTO im_conversion ( table_name, col, header) VALUES ( 'bank', 'part_id', 'לקוח')" );
+	sql_query( "INSERT INTO im_conversion ( table_name, col, header) VALUES ( 'bank', 'client_name', 'תאור מורחב')");
 }

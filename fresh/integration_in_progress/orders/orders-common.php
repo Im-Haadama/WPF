@@ -235,7 +235,7 @@ function calculate_total_products() {
 /// print "התקבלה הזמנה של סל " . get_product_name($basket_id) . " עבור " . get_customer_name($user_id);
 
 function copy_meta_field( $source, $destination, $meta_key ) {
-	set_post_meta_field( $destination, $meta_key, get_meta_field( $source, $meta_key ) );
+	set_post_meta_field( $destination, $meta_key, GetMetaField( $source, $meta_key ) );
 }
 
 function set_order_itemmeta( $order_item_id, $meta_key, $meta_value ) {

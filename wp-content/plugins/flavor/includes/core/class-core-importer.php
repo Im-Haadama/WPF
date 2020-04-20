@@ -96,7 +96,7 @@ class Core_Importer {
 			throw new Exception( __METHOD__ . " no table sended" );
 		}
 
-		$sql = "SELECT col, header FROM nv_conversion \n" .
+		$sql = "SELECT col, header FROM im_conversion \n" .
 		       "WHERE table_name = " . QuoteText( $table_name );
 
 		$result = sql_query( $sql );
@@ -185,6 +185,7 @@ class Core_Importer {
 			}
 		}
 		foreach ( $map as $k => $m ) {
+			if ($k == "Don't import") continue;
 			if ( $m != - 1 ) {
 				// Fix data.
 				switch ( substr( sql_type( $table_name, $k ), 0, 3 ) ) {

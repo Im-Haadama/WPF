@@ -23,7 +23,7 @@ $option = GetParam("option");
 ///my_log("Operation: " . $operation, __FILE__);
 
 $supplier_id = $_GET["supplier_id"];
-$pl          = new PriceList( $supplier_id );
+$pl          = new Fresh_PriceList( $supplier_id );
 $cat         = new Catalog();
 
 $pricelist_id = 0;
@@ -106,7 +106,7 @@ switch ( $operation ) {
 		for ( $pos = 0; $pos < count( $params ); $pos ++ ) {
 			$pricelist_id = $params[ $pos ];
 			// print $map_id . "<br/>";
-			PriceList::DeleteMapping( $pricelist_id );
+			Fresh_PriceList::DeleteMapping( $pricelist_id );
 		}
 		print "done delete";
 		break;
@@ -210,14 +210,14 @@ switch ( $operation ) {
 	case 'change_status':
 		$status      = $_GET["status"];
 		$supplier_id = $_GET["supplier_id"];
-		$PL          = new PriceList( $supplier_id );
+		$PL          = new Fresh_PriceList( $supplier_id );
 		$PL->ChangeStatus( $status );
 		break;
 
 	case 'remove_status':
 		$status      = $_GET["status"];
 		$supplier_id = $_GET["supplier_id"];
-		$PL          = new PriceList( $supplier_id );
+		$PL          = new Fresh_PriceList( $supplier_id );
 		$PL->RemoveLines( $status );
 		break;
 

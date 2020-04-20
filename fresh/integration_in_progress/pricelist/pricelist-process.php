@@ -21,7 +21,7 @@ function pricelist_remote_site_process( $supplier_id, &$results, $inc = false ) 
 
 	$debug = false;
 
-	$PL = new PriceList( $supplier_id );
+	$PL = new Fresh_PriceList( $supplier_id );
 
 	if ( $inc ) {
 		print Core_Html::gui_header( 1, "עדכון חלקי" );
@@ -263,7 +263,7 @@ function do_pricelist_process( $file, $supplier_id, $add, $picture_prefix = null
 
 	MyLog( "supplier_id = " . $supplier_id );
 
-	$PL = new PriceList( $supplier_id );
+	$PL = new Fresh_PriceList( $supplier_id );
 
 	if ( ! $add ) {
 		$PL->ChangeStatus( 2 );

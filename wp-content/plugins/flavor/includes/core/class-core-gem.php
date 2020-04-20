@@ -106,32 +106,52 @@ class Core_Gem {
 
 	static function do_v_import_wrap()
 	{
-		$result = "";
-		$fields = [];
+		$result = "Importing";
 		$v_table = GetParam("table", true);
 //		var_dump(self::getInstance()->object_types[$v_table]);
 		$table_args = self::getInstance()->object_types[$v_table];
+		$import_fix_fields = GetArg($table_args, "import_fix_fields", null);
+
+//		var_dump($table_args);
 		$table = $table_args['database_table'];
 //		print "$v_table $table<br/>";
-		$file_name = $_FILES["fileToUpload"]["tmp_name"];
+		if (isset($_FILES["fileToUpload"]["tmp_name"]))
+			$file_name = $_FILES["fileToUpload"]["tmp_name"];
+		else {
+			print "No file selected<br/>";
+			print "Try again<br>";
+			return false;
+		}
+		$db_prefix = get_table_prefix();
 
 		$unmapped = [];
+
+		// Clear data before import and set default values.
+		$fields = array();
+		if ($f = GetArg($table_args, 'action_before_import', null)) $f($fields);
+		var_dump($fields);
+
 		$rc = Core_Importer::Import($file_name, $table, $fields, null, $unmapped);
+		// Unmapped is seq array with the unknown headder.
 		if (count($unmapped)) {
+			$result .= "Those fields not mapped: " . CommaImplode($unmapped);
+			// Let's map them.
 			foreach ($unmapped as $u)
 			{
-				if (! sql_query_single_scalar("select count(*) from nv_conversion where table_name = '$table' and header ='$u'")) {
-					$sql = "insert into nv_conversion (table_name, col, header) values ('$table', '', '$u')";
+				$u = escape_string($u);
+				// Prepare the table for the mapping.
+				if (! sql_query_single_scalar("select count(*) from im_conversion where table_name = '$table' and header ='$u'")) {
+					$sql = "insert into im_conversion (table_name, col, header) values ('$table', '', '$u')";
 					sql_query( $sql );
 				}
 			}
 			$instance = self::getInstance();
-			$v_args = array("database_table" => "nv_conversion", "query_part" => "from nv_conversion where table_name = '$table'");
+			$v_args = array("database_table" => "conversion", "query_part" => "from ${db_prefix}conversion where table_name = '$table'");
 
 			$instance->AddVirtualTable("nv_conversion", $v_args);
 			$args = [];
 			$args["id"] = "id";
-			$args["post_file"] = GetUrl();
+			$args["post_file"] = $table_args['post_file'];
 			$args["selectors"] = array("col" => "gui_select_field");
 			$args["import_table"] = $table;
 			// $args["fields"]
@@ -140,8 +160,13 @@ class Core_Gem {
 //			die(1);
 			return false;
 		}
+		if (is_array($rc)){
+			$result .= $rc[0] . " new rows<br/>" .
+			           $rc[1]. " duplication rows<br/>" .
+			           $rc[2] . " failed rows<br/>";
+		} else
+			$result .= $rc;
 		print $result;
-		return $rc;
 	}
 
 	static function import_wrapper($result, $id, $args)
@@ -157,10 +182,10 @@ class Core_Gem {
 			$result = "";
 		$v_table = GetParam("table", true);
 
-		$args = [];
+		$args = self::getInstance()->object_types[$v_table];
 		$args["id"] = GetParam("id", true);
 		if (isset(self::getInstance()->object_types[$v_table]["post_file"]))
-			$args["post_file"] = self::getInstance()->object_types[$v_table]["post_file"] . "?id=" . $args['id'] . "&table=" . $v_table;
+			$args["post_file"] = self::getInstance()->object_types[$v_table]["import_page"] . "?id=" . $args['id'] . "&table=" . $v_table;
 
 		$instance = self::getInstance();
 		$result .= $instance->GemVirtualTable($v_table, $args);
@@ -459,8 +484,9 @@ class Core_Gem {
 
 	static function ShowVImport($table_name, $args)
 	{
-		$post_file = GetArg($args, "post_file", null);
-		$args["import_action"] = AddParamToUrl($post_file, array("operation" => "gem_v_do_import"));
+		$import_page = GetArg($args, "import_page", null);
+		$table_name = self::getInstance()->object_types[$table_name]['database_table'];
+		$args["import_page"] = AddParamToUrl($import_page, array("operation" => "gem_v_do_import"));
 
 		return self::ShowImport($table_name, $args);
 	}
@@ -477,7 +503,7 @@ class Core_Gem {
 		$header = GetArg($args, "header", "Import to $table_name");
 		$post_file = GetArg($args, "post_file", null);
 		do {
-			$action_file = GetArg($args, "import_action", null);
+			$action_file = GetArg($args, "import_page", null);
 			if ($action_file) break;
 			if ($post_file) {
 				$action_file = AddParamToUrl($post_file , "operation", "gem_do_import");
@@ -538,10 +564,12 @@ function gui_select_field($id, $selected, $args) {
 	$table = $args["import_table"];
 	$i     = 0;
 	foreach ( sql_table_fields( $table ) as $field ) {
-		$args["values"][ $i ]['id']   = $i;
+		$args["values"][ $i ]['id']   = $field;
 		$args["values"][ $i ]['name'] = $field;
 		$i ++;
 	}
+	$args["values"][$i]['id'] = "Don't import";
+	$args["values"][$i]['name'] = $args["values"][$i]['id'];
 
 	return Core_Html::GuiSelect( "table_field", null, $args );
 }

@@ -68,3 +68,18 @@ function needed_create_supplies(supplier_id) {
 
     execute_url(request, location_reload);
 }
+
+function create_product(post_file, supplier_id, pl_id)
+{
+    disable_btn("cre_" + pl_id);
+
+    let categ = get_value_by_name("categ_" + pl_id);
+
+    // let request = "/fresh/about.php?x=1," + pl_id;
+    // NOTICE: hide_row depend on one colon in url. If you add parameter, change hide_row.
+    let request = post_file + "?operation=create_products&category_name=" + encodeURI(categ) +
+        "&create_info=" + supplier_id + "," + pl_id;
+
+    execute_url(request, action_hide_row);
+    // alert (categ);
+}

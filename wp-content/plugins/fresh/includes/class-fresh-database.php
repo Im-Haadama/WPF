@@ -20,6 +20,18 @@ class Fresh_Database extends Core_Database
 
 		if ($current == $version and ! $force) return true;
 
+		sql_query("create table ${db_prefix}supplier_mapping
+(
+	id bigint auto_increment
+		primary key,
+	product_id bigint not null,
+	supplier_id bigint not null,
+	supplier_product_name varchar(40) not null,
+	pricelist_id int(4) default 0 not null,
+	supplier_product_code int null,
+	selected tinyint(1) null
+) charset=utf8");
+
 		sql_query("CREATE OR REPLACE view ${db_prefix}categories as select `wp_terms`.`term_id`    AS `term_id`,
        `wp_terms`.`name`       AS `name`,
        `wp_terms`.`slug`       AS `slug`,
@@ -425,6 +437,52 @@ charset=utf8;");
 
 
 		if ($current == $version and ! $force) return true;
+
+		sql_query("drop function client_last_order");
+		sql_query("create
+    function client_last_order(_id int) returns integer
+BEGIN
+	declare _last_order_id integer;
+	SELECT max(id) into _last_order_id 
+        FROM `wp_posts` posts, wp_postmeta meta 
+        WHERE post_status like 'wc-%' 
+        and meta.meta_key = '_customer_user' and meta.meta_value = _id 
+        and meta.post_id = posts.ID;
+	        
+	return _last_order_id;	   
+END;
+
+");
+
+		sql_query("drop function client_last_order_date");
+		sql_query("create
+    function client_last_order_date(_id int) returns date
+BEGIN
+	declare _date date;
+	declare _last_order_id integer;
+	SELECT max(id) into _last_order_id 
+        FROM `wp_posts` posts, wp_postmeta meta 
+        WHERE post_status like 'wc-%' 
+        and meta.meta_key = '_customer_user' and meta.meta_value = _id 
+        and meta.post_id = posts.ID;
+	        
+	select post_date into _date
+	from wp_posts where id = _last_order_id;
+	
+	return _date;	   
+END;
+
+");
+
+		sql_query("drop function supply_from_business");
+		sql_query("create function supply_from_business( _business_id int) returns integer
+	BEGIN
+		declare _supply_id integer;
+		select id into _supply_id 
+	        from ${db_prefix}supplies where business_id = _business_id; 
+	    return _supply_id;
+	END;
+");
 
 		sql_query("drop function client_id_from_delivery");
 		sql_query("create  function client_id_from_delivery(del_id int) returns text

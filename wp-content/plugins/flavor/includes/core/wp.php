@@ -17,6 +17,7 @@ if (! function_exists( 'GetUserName' )) {
  * @return string
  */
 function get_postmeta_field( $post_id, $field_name ) {
+	if (is_array($post_id)) $post_id = $post_id[0];
 	$sql = 'SELECT meta_value FROM `wp_postmeta` pm'
 	       . ' WHERE pm.post_id = ' . $post_id
 	       . " AND meta_key = '" . $field_name . "'";
@@ -127,9 +128,8 @@ function get_customer_name( $customer_id )
 		if (table_exists("suppliers"))
 			$min_supplier = sql_query_single_scalar( "SELECT min(id) FROM im_suppliers" );
 		else
-			$min_supplier = 1000000;
+			$min_supplier = 100000;
 	}
-
 	if ( $customer_id < $min_supplier ) {
 		$user = get_user_by( "id", $customer_id );
 
@@ -245,6 +245,19 @@ function update_wp_option($option_id, $array_or_string)
 //	$new_string = serialize($new_array);
 //	return sql_query("update wp_options set option_value = '" . escape_string($new_string) . "' where option_name = '" . $option_id . "'");
 }
+
+	function GetMetaField( $post_id, $field_name ) {
+		if ( $post_id > 0 ) {
+			$sql = 'SELECT meta_value FROM `wp_postmeta` pm'
+			       . ' WHERE pm.post_id = ' . $post_id
+			       . " AND meta_key = '" . $field_name . "'";
+
+			// print $sql . "<br>";
+			return sql_query_single_scalar( $sql );
+		}
+
+		return "Bad post id";
+	}
 
 function GetUserName( $id ) {
 //    var_dump(get_user_meta($id, 'first_name'));

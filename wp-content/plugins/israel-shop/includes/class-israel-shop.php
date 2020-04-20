@@ -101,25 +101,6 @@ class Israel_Shop
 			//Fresh_Basket::settings($cities_url, $args)
 		);
 
-//		$tabs["suppliers"] = array(
-//			"Suppliers",
-//			$url . "suppliers",
-//			Fresh_Suppliers::admin_page()
-//			//Fresh_Suppliers::SuppliersTable()
-//		);
-//
-//		$tabs["missing_pictures"] = array(
-//			"Missing Pictures",
-//			$url . "missing_pictures",
-//			Fresh_Catalog::missing_pictures()
-//		);
-
-//		array_push( $tabs, array(
-//			"workers",
-//			"Workers",
-//			self::company_workers( $company, $args )
-//		) );
-
 		$args["btn_class"] = "nav-tab";
 		$args["tabs_load_all"] = true;
 		$args["nav_tab_wrapper"] = "nav-tab-wrapper woo-nav-tab-wrapper";

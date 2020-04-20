@@ -211,7 +211,7 @@ function multi_search_unmapped_products( $site_id ) {
 		}
 		$line .= '</select></td>';
 //        $line .= "<td>" . get_supplier_name($supplier_id) . "</td>";
-		$attachment_id = get_meta_field( $product_id, '_thumbnail_id' );
+		$attachment_id = GetMetaField( $product_id, '_thumbnail_id' );
 		if ( $attachment_id > 0 ) {
 			$result = sql_query_single( "SELECT guid FROM wp_posts WHERE id = " . $attachment_id );
 			if ( $result ) {

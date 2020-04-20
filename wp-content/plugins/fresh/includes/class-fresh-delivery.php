@@ -66,7 +66,7 @@ class Fresh_Delivery {
 		$result .= __("Supply date") . ": " . $this->GetDate() . "<br/>";
 
 		$args = [];
-		$args["fields"] = array("id", "product_name", "quantity_ordered", "quantity", "price", "line_price");
+		$args["fields"] = array("id", "product_name", "quantity_ordered", "quantity", "price", "vat", "line_price");
 //		$lines = TableData("select * from im_delivery_lines where delivery_id = " . $this->getID());
 //	$result .= gui_table_args($lines);
 		$args["where"] = "delivery_id = " . $this->getID();

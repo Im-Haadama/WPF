@@ -19,6 +19,30 @@ class Fresh_Client {
 		$this->user_id = $user_id;
 	}
 
+	static public function init_hooks()
+	{
+		AddAction("set_client_type", __CLASS__ . "::set_client_type_wrap");
+	}
+
+	static function set_client_type_wrap()
+	{
+		$id   = $_GET["id"];
+		$type = $_GET["type"];
+		return self::set_client_type( $id, $type );
+	}
+
+	static function set_client_type($id, $type)
+	{
+		if ( $type == 0 ) {
+			delete_user_meta( $id, "_client_type" );
+
+			return true;
+		}
+		$meta = sql_query_single_scalar( "select type from im_client_types where id = " . $type );
+		// print "meta: " . $meta . "<br/>";
+		return update_user_meta( $id, "_client_type", $meta );
+	}
+
 	public function balance() {
 		$sql = 'select sum(transaction_amount) '
 		       . ' from im_client_accounts '
@@ -97,10 +121,3 @@ class Fresh_Client {
 
 }
 
-function Sunday( $date ) {
-	$datetime = new DateTime( $date );
-	$interval = new DateInterval( "P" . $datetime->format( "w" ) . "D" );
-	$datetime->sub( $interval );
-
-	return $datetime;
-}

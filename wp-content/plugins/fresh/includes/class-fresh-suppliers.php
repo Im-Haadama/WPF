@@ -11,6 +11,8 @@ class Fresh_Suppliers {
 	static function init_hooks()
 	{
 		AddAction("create_supplies",  "Fresh_Supply::create_supplies");
+		AddAction("gem_v_show", __CLASS__."::pricelist_functions");
+//		AddAction("create_products", __CLASS__."create_products");
 	}
 
 	function init()
@@ -36,17 +38,17 @@ class Fresh_Suppliers {
 			"order"=>"product_name",
 			"prepare" => "Fresh_Pricelist_Item::add_prod_info",
 //			"header_fields" => array("supplier_product_code" => "code", "product_name" => "name"),
-		"post_file"=>Fresh::getPost(),
+			"import_page"=> GetUrl(),
+			"post_file" => Fresh::getPost(),
 			"import" => true,
 			"prepare_plug" => "Fresh_Pricelist_Item::add_prod_info",
-			"action_before" => array(__CLASS__, "create_before_import"));
+			"action_before_import" => array(__CLASS__, "action_before_import"));
 		$this->gem->AddVirtualTable( "pricelist", $args );
 
 		// load classes
 		new Fresh_supply(0);
 		new Fresh_Catalog();
 	}
-
 
 	static function admin_page()
 	{
@@ -62,7 +64,9 @@ class Fresh_Suppliers {
 		if ( !$result )
 			$result = self::SuppliersTable();
 
-		print $result;
+//		if (is_array($result)) var_dump($result);
+//		else
+			print $result;
 	}
 
 	static function SuppliersTable()
@@ -169,6 +173,31 @@ class Fresh_Suppliers {
 		       " order by id desc limit 1";
 
 		return sql_query_single_scalar($sql);
+	}
+
+	// Supplier pricelist import
+	static function action_before_import(&$fields)
+	{
+		$supplier_id = GetParam("id", true);
+		// sql_query("update line_status = 2 where supplier_id =$supplier_id")
+		sql_query("delete from im_supplier_price_list where supplier_id = $supplier_id");
+		$fields["date"] = date('Y-m-d');
+		$fields["supplier_id"] = $supplier_id;
+	}
+
+	static function pricelist_functions($result)
+	{
+		$table_name = GetParam("table", false, null);
+		$id = GetParam("id", false, 0);
+		if ("pricelist" == $table_name){
+			$result .= Core_Html::GuiHyperlink("Create products", AddToUrl( "create_products", 1));
+		}
+		return $result;
+	}
+
+	static function create_products()
+	{
+
 	}
 }
 

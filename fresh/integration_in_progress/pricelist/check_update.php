@@ -13,7 +13,7 @@ $result = "";
 
 foreach ($suppliers as $supplier)
 {
-	$p = new PriceList($supplier);
+	$p = new Fresh_PriceList($supplier);
 	// print get_supplier_name($supplier) . " " . $p->GetUpdateDate();
 	$diff = abs(strtotime("now") - strtotime($p->GetUpdateDate()));
 	$days = $diff / 60 / 60 / 24;

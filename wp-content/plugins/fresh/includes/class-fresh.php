@@ -199,6 +199,8 @@ class Fresh {
 		Fresh_Packing::init_hooks();
 		Fresh_Suppliers::init_hooks();
 		Fresh_Order_Management::init_hooks();
+		Fresh_Catalog::init_hooks();
+		Fresh_Client::init_hooks();
 		// if (get_user_id() == 1) wp_set_current_user(474);
 	}
 

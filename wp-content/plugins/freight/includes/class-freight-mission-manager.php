@@ -66,6 +66,7 @@ class Freight_Mission_Manager
 		// $args["events"] = array("mission_id" => "mission_changed(order_id))
 		$args["sql"] = $sql;
 		$args["hide_cols"] = array("zones_times"=>1);
+		$args["class"] = "sortable";
 		$result .= Core_Gem::GemTable("missions", $args);
 
 		return $result;

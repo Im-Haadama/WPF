@@ -178,20 +178,6 @@ function get_site_tools_url( $site_id ) {
 
 }
 
-function get_meta_field( $post_id, $field_name ) {
-	if ( $post_id > 0 ) {
-		$sql = 'SELECT meta_value FROM `wp_postmeta` pm'
-		       . ' WHERE pm.post_id = ' . $post_id
-		       . " AND meta_key = '" . $field_name . "'";
-
-		// print $sql . "<br>";
-		return sql_query_single_scalar( $sql );
-	}
-
-	return "Bad post id";
-}
-
-
 function get_logo_url() {
 	global $logo_url;
 
@@ -220,7 +206,7 @@ function print_page_header( $display_logo ) {
 
 function get_customer_phone( $user_id ) {
 	if ( $user_id > 0 ) {
-		return get_meta_field( get_last_order( $user_id ), '_billing_phone' );
+		return GetMetaField( get_last_order( $user_id ), '_billing_phone' );
 	}
 
 	return "Error: bad user_id";

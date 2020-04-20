@@ -190,7 +190,7 @@ function search_unmapped_products()
 	{
 		$pricelist_id = $row[0];
 
-		$pricelist = PriceList::Get( $pricelist_id );
+		$pricelist = Fresh_PriceList::Get( $pricelist_id );
 
 		$prod_link_id = Catalog::GetProdID( $pricelist_id, true );
 
@@ -224,7 +224,7 @@ function search_unmapped_terms() {
 			continue;
 		}
 
-		$item      = PriceList::Get( $pricelist_id );
+		$item      = Fresh_PriceList::Get( $pricelist_id );
 		$prod_term = $item["category"];
 		$terms     = explode( ",", $prod_term );
 		foreach ( $terms as $term ) {
@@ -291,7 +291,7 @@ function print_unmapped( $pricelist_id, $supplier_product_code, $product_name, $
 		$line .= "<td style=\"display:none;\">" . $site_id . "</td>";
 	}
 
-	$item = PriceList::Get( $pricelist_id );
+	$item = Fresh_PriceList::Get( $pricelist_id );
 	$line .= gui_cell( $item["category"] );
 	$url  = $item["picture_path"];
 	$line .= gui_cell( basename( $url ) );

@@ -479,6 +479,7 @@ function sql_table_id($table_name)
 	$cache = array ("tasklist" => "id",
 	                "working_teams" => "id",
 	                "task_templates" => "id",
+				 "conversion" => "id",
 				 "woocommerce_shipping_zones" => "zone_id",
 
 	                "working" => "id");

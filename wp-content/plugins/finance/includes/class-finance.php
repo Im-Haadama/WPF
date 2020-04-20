@@ -670,7 +670,7 @@ class Finance {
 		$document_file = null
 	) {
 		// print $date . "<br/>";
-		$sunday = Sunday( $date );
+		$sunday = self::Sunday( $date );
 		if ( ! $part_id ) {
 			die ( "no supplier" );
 		}
@@ -702,6 +702,13 @@ class Finance {
 
 		MyLog( $sql, __FILE__ );
 		sql_query( $sql );
+	}
+	static function Sunday( $date ) {
+		$datetime = new DateTime( $date );
+		$interval = new DateInterval( "P" . $datetime->format( "w" ) . "D" );
+		$datetime->sub( $interval );
+
+		return $datetime;
 	}
 
 

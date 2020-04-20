@@ -29,10 +29,6 @@ global $invoice_password;
 $operation = $_GET["operation"];
 switch ( $operation ) {
 	case "set_client_type":
-		$id   = $_GET["id"];
-		$type = $_GET["type"];
-		set_client_type( $id, $type );
-		break;
 
 	case "save_payment":
 		$user_id   = $_GET["user_id"];
@@ -243,17 +239,6 @@ function sc_balance( $atts ) {
 	return $text;
 }
 
-function set_client_type( $id, $type ) {
-	print $id . " " . $type . "<br/>";
-	if ( $type == 0 ) {
-		delete_user_meta( $id, "_client_type" );
-
-		return;
-	}
-	$meta = sql_query_single_scalar( "select type from im_client_types where id = " . $type );
-	// print "meta: " . $meta . "<br/>";
-	update_user_meta( $id, "_client_type", $meta );
-}
 
 function send_month_summary( $user_ids ) {
 	global $current_user;

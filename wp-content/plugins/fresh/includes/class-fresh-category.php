@@ -3,9 +3,11 @@
 
 class Fresh_Category {
 	private $term;
+	static private $datalist_shown;
 
 	public function __construct( $id ) {
 		$this->term = get_term($id);
+		self::$datalist_shown = false;
 	}
 
 	function getName()
@@ -14,17 +16,21 @@ class Fresh_Category {
 	}
 
 
-	static function gui_select_category( $id, $args ) {
+	static function Select( $input_id, $datalist_id, $args ) {
 		$result = "";
 
 //		$args["include_id"] = $include_id;
-		$args["field"]      = "name";
+		$args["field"]    = "name";
 		$args["id_field"] = "term_id";
 
-		$datalist_id = $id . "_datalist";
-		$prefix = get_table_prefix();
-		return Core_Html::TableDatalist($datalist_id , "{$prefix}categories", $args ) .
-		        Core_Html::GuiInputDatalist($id, $datalist_id);
+		$prefix      = get_table_prefix();
+		$result      = "";
+		if ( ! self::$datalist_shown ) {
+			$result .= Core_Html::TableDatalist( $datalist_id, "{$prefix}categories", $args );
+			self::$datalist_shown = true;
+		}
+
+		return $result . Core_Html::GuiInputDatalist($input_id, $datalist_id);
 
 //		return Core_Html::GuiAutoList($id, "categories", $args);
 	}

@@ -777,7 +777,7 @@ if (! function_exists("gui_select_client"))
 			$sql_where = "where 1 order by 2";
 		}
 
-		$select_args = array("name" => "client_displayname(id)", "include_id" => 1, "where"=> $sql_where, "events" => $events, "value"=>$value, "datalist" => 1);
-		return Core_Html::GuiAutoList( $id, "users", $select_args);
+//		$select_args = array("name" => "client_displayname(id)", "include_id" => 1, "where"=> $sql_where, "events" => $events, "value"=>$value, "datalist" => 1);
+		return Core_Html::GuiAutoList( $id, "users", $args);
 	}
 }

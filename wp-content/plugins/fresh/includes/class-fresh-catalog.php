@@ -11,25 +11,39 @@ if ( ! defined( 'FRESH_INCLUDES' ) ) {
 }
 
 class Fresh_Catalog {
-	static function CreateProducts( $category_name, $ids ) {
-		MyLog( "Create_products. Category = " . $category_name );
+	static function init_hooks()
+	{
+		AddAction("create_products", __CLASS__. '::CreateProduct_wrap');
+	}
+
+	static function CreateProduct_wrap()
+	{
+		$category_id = GetParam("category_name", true);
+		$create_info = explode(",", GetParam("create_info", true));
+		$supplier_id = $create_info[0];
+		$pl_id = $create_info[1];
+		return self::CreateProducts($category_id, array($supplier_id, $pl_id));
+	}
+
+	static function CreateProducts( $category_id, $ids ) {
+		MyLog( "Create_products. Category = " . $category_id );
 
 		for ( $pos = 0; $pos < count( $ids ); $pos += 2 ) {
 			// $product_name          = urldecode( $ids[ $pos ] );
 			$supplier_id  = $ids[ $pos ];
 			$pricelist_id = $ids[ $pos + 1 ];
 			// $supplier_product_code = $ids[ $pos + 3 ];
-			// print $product_name . ", " . $supplier_id . ", " . $pricelist_id . ", " . $supplier_product_code . "<br/>";
+//			 print $supplier_id . ", " . $pricelist_id . "<br/>";
 
-			$pricelist = new PriceList( $supplier_id );
-			$id = Catalog::CreateProduct( $pricelist_id, $category_name );
+			$pricelist = new Fresh_PriceList( $supplier_id );
+			$id = Fresh_Catalog::CreateProduct( $pricelist_id, $category_id );
 			// Create link to supplier price list
-			Catalog::AddMapping( $id, $pricelist_id, Core_Db_MultiSite::LocalSiteID() );
+			Fresh_Catalog::AddMapping( $id, $pricelist_id, Core_Db_MultiSite::LocalSiteID() );
 			/// my_log ("add mapp done. Site id = " . $pricelist->SiteId() . " " . MultiSite::LocalSiteID());
 			if ( $pricelist->SiteId() != Core_Db_MultiSite::LocalSiteID() ) {
 				// Map to remote
 				MyLog( "map to remote" );
-				$pricelist_item = PriceList::Get( $pricelist_id );
+				$pricelist_item = Fresh_PriceList::Get( $pricelist_id );
 				$site_id = $pricelist->SiteId();
 				if ( is_numeric( $site_id ) and $site_id != Core_Db_MultiSite::LocalSiteID() ) {
 					// Copy information from remote site
@@ -39,26 +53,25 @@ class Fresh_Catalog {
 				}
 			}
 		}
-		print "done";
+		return true;
 	}
 
-	static function CreateProduct( $pricelist_id, $category_name ) // Create product from pricelist information
+	static function CreateProduct( $pricelist_id, $category_id ) // Create product from pricelist information
 	{
-		$item = new PricelistItem( $pricelist_id );
+		$item = new Fresh_Pricelist_Item( $pricelist_id );
 
-		Pricelist::Get( $pricelist_id );
+		Fresh_PriceList::Get( $pricelist_id );
 
-		if ( $item->getCategory() ) { // Comma seperated list
-			$categ = explode( ",", $item->getCategory() );
-		} else {
-			$categ = $category_name;
-		}
-		$post_id = Catalog::DoCreateProduct( $item->getProductName(), $item->getSellPrice(), $item->getSupplierName(),
-			$categ, $image = $item->getPicturePath() );
+////		if ( $item->getCategory() ) { // Comma seperated list
+////			$categ = explode( ",", $item->getCategory() );
+////		} else {
+//			$categ = $category_id;
+//		}
+		return self::DoCreateProduct( $item->getProductName(), $item->getSellPrice(), $item->getSupplierName(),
+			$category_id, $image = $item->getPicturePath() );
 
 		// update_post_meta( $post_id, 'fifu_image_url', $item->getPicturePath() );
 
-		return $post_id;
 	}
 
 	// "/wp-content/plugins/fresh/post.php?operation=basket_create&basket_name=%D7%9E%D7%95%D7%A1%D7%99%D7%A3&basket_price=99&categ=19"
@@ -82,13 +95,13 @@ class Fresh_Catalog {
 			update_post_meta( $post_id, "_price", $sale_price );
 		}
 		if ( $categ ) {
-			wp_set_object_terms( $post_id, $categ, 'product_cat' );
+			wp_set_object_terms( $post_id, (int)$categ, 'product_cat' );
 		}// Get The image
 		;
 		if ( strlen( $image_path ) > 5 ) {
 			// print "image: $image<br/>";
 
-			upload_image( $post_id, $image_path);
+			self::upload_image( $post_id, $image_path);
 		}
 
 		return $post_id;
@@ -97,12 +110,13 @@ class Fresh_Catalog {
 	static function AddMapping( $product_id, $pricelist_id, $site_id ) {
 		MyLog( "add_mapping" . $product_id, "catalog-map.php" );
 
-		catalog::RemoveOldMap( $product_id, $pricelist_id );
+		self::RemoveOldMap( $product_id, $pricelist_id );
 
-		$pricelist = PriceList::Get( $pricelist_id );
+		$pricelist = Fresh_PriceList::Get( $pricelist_id );
 		// var_dump($pricelist);
 
 		$supplier_id = $pricelist["supplier_id"];
+		$Supplier = new Fresh_Supplier($supplier_id);
 		// var_dump($supplier_id);
 		$supplier_product_name = $pricelist["product_name"];
 		// var_dump($supplier_product_name);
@@ -116,12 +130,12 @@ class Fresh_Catalog {
 		sql_query( $sql );
 
 		if ( $product_id > 0 ) { // not hide
-			$pricelist = new PriceList( $supplier_id );
+			$pricelist = new Fresh_PriceList( $supplier_id );
 			$buy_price = $pricelist->GetByName( $supplier_product_name );
 			update_post_meta( $product_id, "buy_price", $buy_price );
-			update_post_meta( $product_id, "supplier_name", get_supplier_name( $supplier_id ) );
+			update_post_meta( $product_id, "supplier_name", $Supplier->getSupplierName() );
 			// print "going to publish ";
-			Catalog::PublishItem( $product_id );
+			Fresh_Catalog::PublishItem( $product_id );
 		}
 		if ( $product_id > 0 ) {
 			self::UpdateProduct( $product_id, $line );
@@ -129,10 +143,10 @@ class Fresh_Catalog {
 	}
 
 	static function RemoveOldMap( $product_id, $pricelist_id ) {
-		$pricelist    = PriceList::Get( $pricelist_id );
+		$pricelist    = Fresh_PriceList::Get( $pricelist_id );
 		$supplier_id  = $pricelist["supplier_id"];
 		if ( $product_id > 0 ) {
-			$alternatives = alternatives( $product_id );
+			$alternatives = self::alternatives( $product_id );
 			foreach ( $alternatives as $p ) {
 				if ( $p->getSupplierId() == $supplier_id ) {
 					$sql    = "SELECT id FROM im_supplier_mapping WHERE supplier_id = " . $supplier_id .
@@ -198,17 +212,17 @@ class Fresh_Catalog {
 		}
 
 		// Current infoAd
-		$current_supplier_name = get_meta_field( $prod_id, "supplier_name" );
-		$current_price         = get_price( $prod_id );
+		$current_supplier_name = GetMetaField( $prod_id, "supplier_name" );
+		$current_price         = Fresh_Pricing::get_price( $prod_id );
 		if ( $prod_id == $debug_product ) {
 			print "CP = " . $current_price . "<br/>";
 		}
-		$line .= gui_cell( $prod_id );
-		$line .= gui_cell( get_product_name( $prod_id ) );
+		$line .= Core_Html::gui_cell( $prod_id );
+		$line .= Core_Html::gui_cell( $P->getName() );
 		// print "prod_id: " . $prod_id . "<br/>";
 
 		// Find alternatives
-		$alternatives = alternatives( $prod_id, $details );
+		$alternatives = self::alternatives( $prod_id, $details );
 		if ( $debug_product == $prod_id ) {
 			print "count= " . count( $alternatives ) . "<br/>";
 			// var_dump( $alternatives );
@@ -230,7 +244,7 @@ class Fresh_Catalog {
 			}
 			// print " " . count($alternatives) . "<br/>";
 		}
-		$line .= gui_cell( $count );
+		$line .= Core_Html::gui_cell( $count );
 		// my_log( "count $count" );
 		// print $count . "<br/>";
 
@@ -243,23 +257,23 @@ class Fresh_Catalog {
 			if ( get_post_status( $prod_id ) == 'draft' ) {
 				return false;
 			}
-			$line .= gui_cell( "מוצר לא מקושר" );
-			$line .= gui_cell( 'מוצר יורד' );
+			$line .= Core_Html::gui_cell( "מוצר לא מקושר" );
+			$line .= Core_Html::gui_cell( 'מוצר יורד' );
 			$line .= "</tr>";
 
 			// Draft the product.
-			Catalog::DraftItems( array( $prod_id ) );
+			self::DraftItems( array( $prod_id ) );
 
 			// Draft Bundles.
 			print "checking bundles<br>";
 			$sql     = "SELECT bundle_prod_id FROM im_bundles WHERE prod_id = " . $prod_id;
 			$bundles = sql_query_array_scalar( $sql );
 			if ( $bundles )
-				Catalog::DraftItems( $bundles );
+				self::DraftItems( $bundles );
 
 			return true;
 		}
-		$best = best_alternatives( $alternatives, $debug_product == $prod_id );
+		$best = Fresh_Catalog::best_alternative( $prod_id); // $alternatives, $debug_product == $prod_id );
 		if ( $prod_id == $debug_product ) {
 			print "best:<br/>";
 			var_dump( $best );
@@ -273,7 +287,7 @@ class Fresh_Catalog {
 			$new_price = $sale_price;
 		else $new_price = $best_price;
 
-		$line        .= gui_cell( get_supplier_name( $best_supplier ) . " " . $best_price );
+		$line        .= Core_Html::gui_cell( $best->getSupplierName() . " " . $best_price );
 		$prod_status = sql_query_single_scalar( "SELECT post_status FROM wp_posts WHERE id=" . $prod_id );
 		// print $prod_id . " " . $prod_status . "<br/>";
 
@@ -281,7 +295,7 @@ class Fresh_Catalog {
 
 		if ( $prod_status == 'draft' ) {
 			$status .= "פרסום ";
-			Catalog::PublishItem( $prod_id );
+			Fresh_Catalog::PublishItem( $prod_id );
 			$print_line = true;
 		}
 
@@ -291,12 +305,12 @@ class Fresh_Catalog {
 			Catalog::SelectOption( $prod_id, $best_pricelistid );
 		}
 
-		if ( get_supplier_name( $best_supplier ) <> $current_supplier_name ) {
+		if ( $best->getSupplierName() <> $current_supplier_name ) {
 			$status .= "משנה לספק " . get_supplier_name( $best_supplier );
 		}
 
 		// var_dump($alternatives);
-		$line .= gui_cell( $status );
+		$line .= Core_Html::gui_cell( $status );
 
 		// ???????
 		// Catalog::SelectOption( $prod_id, $best_pricelistid );
@@ -321,7 +335,7 @@ class Fresh_Catalog {
 
 	static function SelectOption( $product_id, $pricelist_id ) {
 		// print "select ";
-		$pricelist = PriceList::Get( $pricelist_id );
+		$pricelist = Fresh_PriceList::Get( $pricelist_id );
 		// var_dump($pricelist);
 		// print "pricelist:get " . $pricelist ;
 		$supplier = $pricelist["supplier_id"];
@@ -433,7 +447,7 @@ class Fresh_Catalog {
 		}
 
 		// find products mapped by name
-		$result       = PriceList::Get( $pricelist_id );
+		$result       = Fresh_PriceList::Get( $pricelist_id );
 		$product_name = $result["product_name"];
 		if (strlen($product_name)) {
 			foreach ( array( "חדשה", "מוגבל", "גדול", "טעים", "מבצע", "חדש", "ויפה", "יפה" ) as $word_to_remove ) {
@@ -646,8 +660,7 @@ class Fresh_Catalog {
 		$best = null;
 		if (! $alternatives) return null;
 		for ( $i = 0; $i < count( $alternatives ); $i ++ ) {
-			$price = Fresh_Pricing::calculate_price( $alternatives[ $i ]->getPrice(), $alternatives[ $i ]->getSupplierId(),
-				$alternatives[ $i ]->getSalePrice());
+			$price = Fresh_Pricing::calculate_price( $alternatives[ $i ]->getPrice(), $alternatives[ $i ]->getSupplierId(),	$alternatives[ $i ]->getSalePrice());
 			if ( $price < $min ) {
 				$best = $alternatives[ $i ];
 				$min = $price;
@@ -663,7 +676,8 @@ class Fresh_Catalog {
 		$debug_product = 0;
 
 		// prof_flag("start " . $id);
-		if ( ! ( $prod_id > 0 ) ) {
+		if ( ! is_numeric($prod_id) or !( $prod_id > 0 ) ) {
+			print debug_trace(6);
 			return null;
 		}
 
@@ -740,6 +754,36 @@ class Fresh_Catalog {
 		return strtok( $name, "-()" );
 	}
 
+	static function upload_image( $post_id, $image ) {
+//		print "post id: " . $post_id . "<br/>";
+//		print "image: " . $image . "<br/>";
+		$get = wp_remote_get( $image );
+
+		$type = wp_remote_retrieve_header( $get, 'content-type' );
+
+//		print "type: $type<br/>";
+		if ( $type ) {
+			$mirror = wp_upload_bits( basename( $image ), '', wp_remote_retrieve_body( $get ) );
+//			print "mirror: <br/>";
+//			var_dump( $mirror );
+			if (isset($mirror['error'])) return false;
+//			print "<br/>";
+
+			$attachment = array(
+				'post_title'     => basename( $image ),
+				'post_mime_type' => $type
+			);
+
+			$attachment_id = wp_insert_attachment( $attachment, $mirror['file'], $post_id );
+
+//			print "attach_id: " . $attachment_id . "<br/>";
+
+			wp_generate_attachment_metadata( $attachment_id, $mirror['file'] );
+
+			set_post_meta_field( $post_id, '_thumbnail_id', $attachment_id );
+		}
+	}
+
 }
 
 //function best_alternatives( $alternatives, $debug = false ) {
@@ -780,47 +824,6 @@ class Fresh_Catalog {
 //}
 //require_once( ABSPATH . '/wp-admin/includes/image.php' );
 //
-//function upload_image( $post_id, $image ) {
-//	print "post id: " . $post_id . "<br/>";
-//	print "image: " . $image . "<br/>";
-//	$get = wp_remote_get( $image );
-//
-//	$type = wp_remote_retrieve_header( $get, 'content-type' );
-//
-//	print "type: $type<br/>";
-//	if ( $type ) {
-//		$mirror = wp_upload_bits( basename( $image ), '', wp_remote_retrieve_body( $get ) );
-//		print "mirror: <br/>";
-//		var_dump( $mirror );
-//		print "<br/>";
-//
-//		$attachment = array(
-//			'post_title'     => basename( $image ),
-//			'post_mime_type' => $type
-//		);
-//
-//		$attachment_id = wp_insert_attachment( $attachment, $mirror['file'], $post_id );
-//
-//		print "attach_id: " . $attachment_id . "<br/>";
-//
-//		wp_generate_attachment_metadata( $attachment_id, $mirror['file'] );
-//
-//		set_post_meta_field( $post_id, '_thumbnail_id', $attachment_id );
-////		var_dump ($meta); print "<br/>";
-////		$r = wp_update_attachment_metadata($attachment_id, $meta);
-////		var_dump($r); print "<br/>";
-////		$r = add_post_meta($attachment_id, '_wp_attachment_context', $image);
-////		var_dump($r); print "<br/>";
-//
-////		$attach_data = wp_generate_attachment_metadata( $attach_id, $mirror['file'] );
-////
-////		var_dump($attach_data);
-////
-////		print "<br/>";
-////
-////		print wp_update_attachment_metadata( $post_id, $attach_data );
-//	}
-//}
 //
 //function supplier_prod_id( $prod_id, $supplier_id ) {
 //	$a = alternatives( $prod_id, false );

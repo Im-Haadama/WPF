@@ -998,9 +998,9 @@ class Fresh_Order {
 		$client = new Fresh_Client($client_id);
 		$ref           = $this->getLink();
 		$address       = order_get_address( $this->order_id );
-		$receiver_name = get_meta_field( $this->order_id, '_shipping_first_name' ) . " " .
-		                 get_meta_field( $this->order_id, '_shipping_last_name' );
-		$shipping2     = get_meta_field( $this->order_id, '_shipping_address_2', true );
+		$receiver_name = GetMetaField( $this->order_id, '_shipping_first_name' ) . " " .
+		                 GetMetaField( $this->order_id, '_shipping_last_name' );
+		$shipping2     = GetMetaField( $this->order_id, '_shipping_address_2', true );
 
 		array_push( $fields, $ref );
 

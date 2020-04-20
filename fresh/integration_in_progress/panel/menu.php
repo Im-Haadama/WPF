@@ -62,7 +62,7 @@ if ( $count > 0 ) {
 }
 $first = true;
 foreach ( sql_query_single( "SELECT id FROM im_suppliers WHERE machine_update = TRUE " ) as $supplier_id ) {
-	$PL       = new PriceList( $supplier_id );
+	$PL       = new Fresh_PriceList( $supplier_id );
 	$a        = $PL->GetUpdateDate();
 	$b        = date( 'Y-m-d' );
 	$diff     = date_diff( date_create( $a ), date_create( $b ) );
@@ -121,7 +121,7 @@ function count_unmapped() {
 	{
 		$pricelist_id = $row[0];
 
-		$pricelist = PriceList::Get( $pricelist_id );
+		$pricelist = Fresh_PriceList::Get( $pricelist_id );
 
 		$prod_id = Catalog::GetProdID( $pricelist_id )[0];
 		if ( ( $prod_id == - 1 ) or ( $prod_id > 0 ) ) {

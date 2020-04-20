@@ -164,7 +164,7 @@ class Fresh_Basket extends  Fresh_Product  {
 		$form = array(
 			array("Basket name", Core_Html::GuiInput("basket_name", null)),
 		    array("Basket price", Core_Html::GuiInput("basket_price", 0)),
-			array("Basket categ", Fresh_Category::gui_select_category("basket_categ", $args))
+			array("Basket categ", Fresh_Category::Select("basket_categ", "categories", $args))
 		);
 
 		$args = array();

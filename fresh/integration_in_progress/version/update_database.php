@@ -654,21 +654,6 @@ END;
 
 ");
 
-	sql_query("drop function client_last_order");
-	sql_query("create
-    function client_last_order(_id int) returns integer
-BEGIN
-	declare _last_order_id integer;
-	SELECT max(id) into _last_order_id 
-        FROM `wp_posts` posts, wp_postmeta meta 
-        WHERE post_status like 'wc-%' 
-        and meta.meta_key = '_customer_user' and meta.meta_value = _id 
-        and meta.post_id = posts.ID;
-	        
-	return _last_order_id;	   
-END;
-
-");
 
 	print "get_product_name<br/>";
 	sql_query("drop function get_product_name");
@@ -680,16 +665,6 @@ BEGIN
     return _name;
   END;
 
-");
-	print "supply_from_business<br/>";
-	sql_query("drop function supply_from_business");
-	sql_query("create function supply_from_business( _business_id int) returns integer
-	BEGIN
-		declare _supply_id integer;
-		select id into _supply_id 
-	        from ${db_prefix}supplies where business_id = _business_id; 
-	    return _supply_id;
-	END;
 ");
 
 	print "delivery_receipt<br/>";
