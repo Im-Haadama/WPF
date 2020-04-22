@@ -401,6 +401,26 @@ class Fresh_Product {
 		return $r;
 	}
 
+	function get_variations(  ) {
+		$vars = array();
+
+		$args       = array(
+			'post_type'   => 'product_variation',
+			'post_status' => 'publish',
+			'numberposts' => - 1,
+			'orderby'     => 'menu_order',
+			'order'       => 'asc',
+			'post_parent' => $this->id // $post->ID
+		);
+		$variations = get_posts( $args );
+
+		foreach ( $variations as $v ) {
+			array_push( $vars, $v->ID );
+		}
+
+		return $vars;
+	}
+
 	static function gui_select_product( $id, $data = null, $args = null)
 // $events, $datalist = "products" ) // 'onchange="select_product(' . $line_id . ')"'
 	{

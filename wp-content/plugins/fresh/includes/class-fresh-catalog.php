@@ -107,7 +107,8 @@ class Fresh_Catalog {
 		return $post_id;
 	}
 
-	static function AddMapping( $product_id, $pricelist_id, $site_id ) {
+	static function AddMapping( $product_id, $pricelist_id)
+	{
 		MyLog( "add_mapping" . $product_id, "catalog-map.php" );
 
 		self::RemoveOldMap( $product_id, $pricelist_id );
@@ -154,7 +155,7 @@ class Fresh_Catalog {
 					$result = sql_query( $sql );
 					if ( $result )
 						while ( $row = mysqli_fetch_row( $result ) ) {
-							Catalog::DeleteMapping( $row[0] );
+							self::DeleteMapping( $row[0] );
 						}
 				}
 			}
@@ -302,7 +303,7 @@ class Fresh_Catalog {
 		if ( $new_price <> $current_price ) {
 			$print_line = true;
 			// $status     .= gui_cell( "מחיר חדש " . $calc_price . " מחיר ישן " . $current_price );
-			Catalog::SelectOption( $prod_id, $best_pricelistid );
+			Fresh_Catalog::SelectOption( $prod_id, $best_pricelistid );
 		}
 
 		if ( $best->getSupplierName() <> $current_supplier_name ) {
@@ -338,18 +339,21 @@ class Fresh_Catalog {
 		$pricelist = Fresh_PriceList::Get( $pricelist_id );
 		// var_dump($pricelist);
 		// print "pricelist:get " . $pricelist ;
-		$supplier = $pricelist["supplier_id"];
+		$Supplier = new Fresh_Supplier($pricelist["supplier_id"]);
+		$Product = new Fresh_Product($product_id);
+
 		// Remove supplier category
 		$current_supplier = sql_query_single_scalar( "SELECT meta_value FROM wp_postmeta WHERE meta_key = 'supplier_name' AND post_id = " . $product_id );
 
-		$supplier_name = get_supplier_name( $supplier );
+
+		$supplier_name = $Supplier->getSupplierName();
 		update_post_meta( $product_id, "supplier_name", $supplier_name );
 
 		$terms         = get_the_terms( $product_id, 'product_cat' );
-		$regular_price = calculate_price( $pricelist["price"], $supplier, $terms );
+		$regular_price = Fresh_Pricing::calculate_price( $pricelist["price"], $Supplier->getId(), $terms );
 //		print "regular: " . $regular_price . "<br/>";
 
-		$sale_price = calculate_price( $pricelist["price"], $supplier, $pricelist["sale_price"], $terms );
+		$sale_price = Fresh_Pricing::calculate_price( $pricelist["price"], $Supplier->getId(), $pricelist["sale_price"], $terms );
 //		print "sale: " . $sale_price . "<br/>";
 
 		// $product_name = $pricelist["product_name"];
@@ -371,19 +375,19 @@ class Fresh_Catalog {
 		}
 
 		$sql = "UPDATE im_supplier_mapping SET selected = TRUE WHERE product_id = " . $product_id .
-		       " AND supplier_id = " . $supplier;
+		       " AND supplier_id = " . $Supplier->getId();
 
 		sql_query( $sql );
 		// update_post_meta($product_id, "buy_price", $buy_price);
 
 		// Update variations
 
-		$var = get_product_variations( $product_id );
+		$var = $Product->get_variations( );
 
 		foreach ( $var as $v ) {
 			MyLog( "updating variation " . $v . " to pricelist " . $pricelist_id );
 			$var = new WC_Product_Variation( $v );
-			update_post_meta( $v, "supplier_name", get_supplier_name( $supplier ) );
+			update_post_meta( $v, "supplier_name", $Supplier->getSupplierName());
 			update_post_meta( $v, "_regular_price", $regular_price );
 			update_post_meta( $v, "_price", $regular_price );
 			update_post_meta( $v, "buy_price", $pricelist["price"] );

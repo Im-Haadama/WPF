@@ -325,7 +325,7 @@ class Core_Gem {
 		}
 
 		$no_data_message = GetArg($args, "no_data_message", "No data for now");
-		if ($title) $result .= Core_Html::gui_header(2, $title);
+		if ($title) $result .= Core_Html::GuiHeader(2, $title);
 
 		$page = GetArg($args, "page_number", 1);
 		$rows_per_page = GetArg($args, "rows_per_page", 10);
@@ -338,7 +338,7 @@ class Core_Gem {
 			$div_content = "";
 
 			if (count($rows_data) == $rows_per_page + 1) { // 1 for the header
-				$div_content .= Core_Html::gui_header(1, "page_number", true, true) . " " . Core_Html::gui_label("gem_page_" . $table_id, $page) . "<br/>";
+				$div_content .= Core_Html::GuiHeader(1, "page_number", true, true) . " " . Core_Html::gui_label("gem_page_" . $table_id, $page) . "<br/>";
 				// $result .= Core_Html::GuiHyperlink("Next page", AddToUrl("page_number", $page + 1)) . " ";
 				$div_content .= Core_Html::GuiButton("btn_gem_next_" . $table_id, "Next", array("action" => "gem_next_page(" . QuoteText($post_action)  . "," . QuoteText($table_id) . ")"));
 				$div_content .= Core_Html::GuiButton("btn_gem_all__" . $table_id, "All", array("action" => "gem_all_page(" . QuoteText($post_action)  . "," . QuoteText($table_id) . ")"));
@@ -368,7 +368,6 @@ class Core_Gem {
 		if ($post_file)
 			$result .= Core_Html::GuiButton( "btn_delete_$table_id", "delete",
 				array( "action" => "delete_items(" . QuoteText( $checkbox_class ) . "," . QuoteText( $post_file ) . ")" ) );
-
 
 		return $result;
 	}

@@ -474,8 +474,9 @@ class Fresh_PriceList {
 		}
 	}
 
-	function GetByName( $product_name ) {
-		$product_name = pricelist_strip_product_name( $product_name );
+	function GetByName( $product_name )
+	{
+		$product_name = Fresh_Pricelist::StripProductName( $product_name );
 
 		$sql = "SELECT price FROM im_supplier_price_list "
 		       . " WHERE product_name = '" . addslashes( $product_name ) . "' AND supplier_id = " . $this->SupplierID;
@@ -585,4 +586,13 @@ class Fresh_PriceList {
 			Catalog::UpdateProduct( $prod_id, $line );
 		}
 	}
+
+	static function StripProductName( $name ) {
+		// trim sadot product name starting with * or **
+		$name = str_replace( array( '.', ',', '*', '\'' ), '', $name );
+		$name = str_replace( array( ')', '(', '-' ), ' ', $name );
+
+		return $name;
+	}
 }
+

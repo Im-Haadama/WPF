@@ -87,25 +87,6 @@ function get_user_address( $user_id, $full = false ) {
 	die(1);
 }
 
-function get_product_variations( $prod_id ) {
-	$vars = array();
-
-	$args       = array(
-		'post_type'   => 'product_variation',
-		'post_status' => 'publish',
-		'numberposts' => - 1,
-		'orderby'     => 'menu_order',
-		'order'       => 'asc',
-		'post_parent' => $prod_id // $post->ID
-	);
-	$variations = get_posts( $args );
-
-	foreach ( $variations as $v ) {
-		array_push( $vars, $v->ID );
-	}
-
-	return $vars;
-}
 
 function random_str( $length, $keyspace = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ' ) {
 	$pieces = [];

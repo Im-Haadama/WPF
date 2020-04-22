@@ -88,3 +88,24 @@ function pricelist_option_selected(sel) {
     var pricelist_id = sel.id.substr(3);
     document.getElementById("chk_" + pricelist_id).checked = true;
 }
+
+function pricelist_map_products(post_file)
+{
+    let table = document.getElementById("supplier_price_list");
+    let collection = get_selected("checkbox_supplier_price_list");
+    let map_ids = [];
+    for (let i = 0; i < collection.length; i++) {
+        let pricelist_id = collection[i];
+        let product_id = get_value_by_name("prd" + pricelist_id);
+        if (! product_id) {
+            alert("לא נבחר מוצר עבור " + table.rows[i + 1].cells[2].innerHTML);
+            return;
+        }
+        // Handle local
+        map_ids.push(product_id);
+        map_ids.push(pricelist_id);
+    }
+
+    let request = post_file + '?operation=suppliers_map_products&ids=' + map_ids.join();
+    execute_url(request, location_reload);
+}

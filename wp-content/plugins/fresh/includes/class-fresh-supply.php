@@ -185,7 +185,7 @@ class Fresh_Supply {
 				// $prod_id = get_product_id_by_name( $name );
 				$prod_id = sql_query_single_scalar( "select product_id \n" .
 				                                    " from im_supplier_mapping\n" .
-				                                    " where supplier_product_name = " . QuoteText( pricelist_strip_product_name( $name ) ) );
+				                                    " where supplier_product_name = " . QuoteText( Fresh_Pricelist::StripProductName( $name ) ) );
 //				print "prod_id: " . $prod_id . "<br/>";
 
 				if ( ! ( $prod_id > 0 ) ) {

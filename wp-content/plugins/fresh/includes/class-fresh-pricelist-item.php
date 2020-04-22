@@ -241,15 +241,6 @@ function pricelist_get_price( $prod_id ) {
 }
 
 
-
-function pricelist_strip_product_name( $name ) {
-	// trim sadot product name starting with * or **
-	$name = str_replace( array( '.', ',', '*', '\'' ), '', $name );
-	$name = str_replace( array( ')', '(', '-' ), ' ', $name );
-
-	return $name;
-}
-
 function product_other_suppliers( $prod_id, $supplier_id ) {
 	$result       = "";
 	$alternatives = alternatives( $prod_id );

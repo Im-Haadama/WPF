@@ -302,6 +302,11 @@ class Core_Data
 				$i ++;
 			}
 		}
+
+		if ($extra_header = GetArg($args, "extra_header", null)){
+			foreach ($extra_header as $e )
+				array_push($headers, $e);
+		}
 //	if ($meta_fields and is_array($meta_fields))
 //	{
 //		foreach ($meta_fields as $f)
