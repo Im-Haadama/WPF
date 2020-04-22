@@ -1,10 +1,13 @@
 <?php
 
+if (! class_exists("Cre_Database"))
+	return;
 
 class Fresh_Database extends Core_Database
 {
 	static function install($version, $force = false)
 	{
+		return;
 		// Create im_info table if missing.
 		self::CreateInfo();
 
@@ -108,8 +111,6 @@ order by 1;");
 	id int auto_increment
 		primary key,
 	mission_name varchar(20) null)");
-
-
 
 		sql_query("alter table wp_woocommerce_shipping_zone_methods add mission_code varchar(10);");
 

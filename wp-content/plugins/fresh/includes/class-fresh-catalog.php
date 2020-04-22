@@ -501,7 +501,7 @@ class Fresh_Catalog {
 	static function GetProdOptions( $product_name ) {
 		$array = array();
 
-		$product_name_prf = name_prefix( $product_name );
+		$product_name_prf = self::name_prefix( $product_name );
 //        my_log($product_name_prf);
 
 		if ( $pos = strpos( $product_name, " " ) ) {
@@ -750,7 +750,7 @@ class Fresh_Catalog {
 		return $rows;
 	}
 
-	function name_prefix( $name ) {
+	static function name_prefix( $name ) {
 		return strtok( $name, "-()" );
 	}
 

@@ -728,15 +728,18 @@ class Core_Data
 
 		$fields = array();
 
+		$skip_id = GetArg($args, "skip_id", false);
+		$id_field = GetArg($args, "id_field", "id");
+
 		$result = sql_query($sql);
 		if (strstr($sql, "describe") or strstr($sql, "show cols")){
 			while ( $row = mysqli_fetch_assoc( $result ) ) {
-				$fields[$row['Field']] = 1;
+				$key = $row['Field'];
+				if (! $skip_id or ($key != $id_field)) $fields[$key] = 1;
 			}
 		} else {
 			$row = sql_fetch_assoc($result);
-			$skip_id = GetArg($args, "skip_id", false);
-			$id_field = GetArg($args, "id_field", "id");
+//			print "$id_field $skip_id<br/>";
 			if ($row) foreach ($row as $key => $cell) if (! $skip_id or ($key != $id_field)) $fields[$key] = 1;
 		}
 

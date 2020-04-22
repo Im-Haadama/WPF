@@ -16,6 +16,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+if (! class_exists("Core_Database")) {
+	print( "<a href='/wp-content/plugins/fresh/fresh.php'>must load flavor before fresh</a>" );
+
+	return;
+}
+
 if ( ! defined( 'FRESH_PLUGIN_FILE' ) ) {
 	define( 'FRESH_PLUGIN_FILE', __FILE__ );
 }

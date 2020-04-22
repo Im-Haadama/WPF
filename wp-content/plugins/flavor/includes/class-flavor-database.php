@@ -5,6 +5,7 @@ class Flavor_Database extends Core_Database {
 	static function install( $version, $force = false ) {
 		global $conn;
 
+		return;
 		if (! $conn) ReconnectDb();
 		// Create im_info table if missing.
 //		self::CreateInfo();

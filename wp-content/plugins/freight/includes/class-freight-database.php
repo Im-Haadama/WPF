@@ -3,6 +3,7 @@
 
 class Freight_Database extends Core_Database {
 	static function install( $version, $force =false ) {
+		return;
 		// Create im_info table if missing.
 		self::CreateInfo();
 

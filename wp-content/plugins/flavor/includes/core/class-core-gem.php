@@ -66,7 +66,7 @@ class Core_Gem {
 		return $result . self::GemElement(get_table_prefix() .$table_name, $id, $args);
 	}
 
-	static function add_wrapper($result, $id, $args)
+	static function add_wrapper($result, $id = null, $args = null)
 	{
 		$operation = GetArg($args, "operation", null);
 		if (! $operation)  return __FUNCTION__ . ":no operation";

@@ -42,7 +42,8 @@ class Fresh_Suppliers {
 			"post_file" => Fresh::getPost(),
 			"import" => true,
 			"prepare_plug" => "Fresh_Pricelist_Item::add_prod_info",
-			"action_before_import" => array(__CLASS__, "action_before_import"));
+			"action_before_import" => array(__CLASS__, "action_before_import"),
+			"add_checkbox" => true);
 		$this->gem->AddVirtualTable( "pricelist", $args );
 
 		// load classes
@@ -58,7 +59,10 @@ class Fresh_Suppliers {
 
 		$result = null;
 		if ($operation){
-			$result = apply_filters( $operation, null );
+			$args = self::Args("suppliers");
+			$args["operation"] = $operation;
+			$result = apply_filters( $operation, "", null, $args, null );
+
 		}
 
 		if ( !$result )
@@ -141,8 +145,8 @@ class Fresh_Suppliers {
 //		$args["links"] = array("id" => AddToUrl(array("operation" => "gem_show_suppliers" , "id" => "%d")));
 		$event = "on";
 
-
-		$edit_target = AddToUrl(array("operation" => "gem_show", "table" => "suppliers" , "id" => $row['id']));
+		$row_id = isset($row['id']) ? $row['id'] : 0;
+		$edit_target = AddToUrl(array("operation" => "gem_show", "table" => "suppliers" , "id" => $row_id));
 		return array(
 			"name" => Core_Html::GuiHyperlink($row["supplier_name"],  $edit_target) . "<br/>" .
 			          Core_Html::GuiHyperlink("delete", "remove"),

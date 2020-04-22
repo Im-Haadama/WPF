@@ -24,25 +24,20 @@ class Fresh_Packing {
 		$result = "";
 
 		$result                .= Core_Html::GuiHeader( 1, "Needed products" );
-		$result                .= Core_Html::GuiHeader( 1, "הערות לקוח" );
 		$result                .= Fresh_Order::GetAllComments();
 		$args["tabs_load_all"] = true;
-		$totals                = self::needed_totals( false );
-		if ( ! is_array( $totals ) ) {
-			$result .= $totals;
-		} else {
-//			foreach ($totals)
-			$args["selected_tab"] = 0; // array_key_first( $totals );
-			$result               .= Core_Html::GuiTabs( $totals, $args );
-		}
+		$result                = self::NeededProducts( false );
 
 		print $result;
 	}
 
-	static function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero, $filter_stock, $history ) {
+	static function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero = false, $filter_stock = false, $history = false) {
 		$result            = "";
 		$inventory_managed = InfoGet( "inventory" );
-		$supplier          = new Fresh_Supplier( $supplier_id );
+		if ($supplier_id)
+			$supplier          = new Fresh_Supplier( $supplier_id );
+		else
+			$supplier = null;
 
 		$checkbox_class = "product_checkbox" . $supplier_id;
 
@@ -103,7 +98,7 @@ class Fresh_Packing {
 			if ( $supplier_id ) {
 				$supplier_name = $supplier->getSupplierName();
 			} else {
-				$supplier_name = "מוצרים לא זמינים";
+				$supplier_name = "מוצרים ללא ספק";
 			}
 
 			$result .= Core_Html::GuiHeader( 2, $supplier_name );
@@ -136,15 +131,14 @@ class Fresh_Packing {
 
 			if ( ! $supplier_id ) {
 				$result .= "יש להפוך לטיוטא רק לאחר שמוצר אזל מהמלאי והוצע ללקוחות תחליף<br/>";
-				$result .= Core_Html::GuiButton( "btn_draft_products", "draft_products()", "הפוך לטיוטא" );
+				$result .= Core_Html::GuiButton( "btn_draft_products", "הפוך לטיוטא", array("action" => "draft_products()"));
 			}
 		}
 
 		return $result;
 	}
 
-	static function needed_totals( $filter_zero, $history = false, $filter_stock = false, $limit_to_supplier_id = null ) {
-
+	static function NeededProducts( $filter_zero, $history = false, $filter_stock = false, $limit_to_supplier_id = null ) {
 		$result          = "";
 		$needed_products = array();
 
@@ -164,8 +158,10 @@ class Fresh_Packing {
 		foreach ( $needed_products as $prod_id => $product_info ) {
 			$prod        = new Fresh_Product( $prod_id );
 			$supplier_id = $prod->getSupplierId();
+//			if (! $supplier_id) $supplier_id = 100000000;
+//			print "sup=$supplier_id<br/>";
 
-			if ( ! in_array( $supplier_id, $suppliers ) and ( $supplier_id > 0 ) ) {
+			if ( ! in_array( $supplier_id, $suppliers ) ) {
 				array_push( $suppliers, $supplier_id );
 				$supplier_needed[ $supplier_id ] = array();
 			}
@@ -189,40 +185,44 @@ class Fresh_Packing {
 			return self::get_total_orders_supplier( $limit_to_supplier_id, $supplier_needed[ $limit_to_supplier_id ], $filter_zero, $filter_stock, $history ) .
 			       Core_Html::GuiButton( "btn_create_supply_" . $supplier_id, "createSupply(" . $supplier_id . ")", "צור אספקה" );
 		}
-		if (! $suppliers) return "Nothing needed";
+		if (! $supplier_needed) return "Nothing needed";
 
-		$sql = "SELECT id, supplier_priority FROM im_suppliers WHERE id IN (" . CommaImplode( $suppliers ) . ")" .
-		       " ORDER BY 2";
+		if (strlen(CommaImplode($suppliers))) {
+			$sql = "SELECT id, supplier_priority FROM im_suppliers WHERE id IN (" . CommaImplode( $suppliers ) . ")" .
+			       " ORDER BY 2";
 
-		$result = sql_query_array( $sql );
+			$row_result = sql_query_array( $sql );
 
-//		array_push($result, array(null, 1));
+			foreach ( $row_result as $row ) {
+				$supplier_id = $row[0]; // Or null for missing supplier
+				if ( $supplier_id ) {
+					$supplier = new Fresh_Supplier( $row[0] );
+				} else {
+					$supplier = null;
+				}
 
-		foreach ($result as $row){
-			$supplier_id = $row[0]; // Or null for missing supplier
-			if ($supplier_id)
-				$supplier    = new Fresh_Supplier( $row[0] );
-			else
-				$supplier = null;
+				$tab_content =
+					self::get_total_orders_supplier( $supplier->getId(), $supplier_needed[ $supplier->getId() ], $filter_zero, $filter_stock, $history );
 
-			$tab_content =
-				self::get_total_orders_supplier( $supplier->getId(), $supplier_needed[ $supplier->getId() ], $filter_zero, $filter_stock, $history );
+				if ( $supply_id = Fresh_Suppliers::TodaySupply( $supplier->getId() ) ) {
+					$tab_content .= Core_Html::GuiHyperlink( "Supply " . $supply_id, "/fresh/supplies/supplies-page.php?operation=show&id=" . $supply_id ) . "<br/>";
+				}
 
-			if ( $supply_id = Fresh_Suppliers::TodaySupply( $supplier->getId() ) ) {
-				$tab_content .= Core_Html::GuiHyperlink( "Supply " . $supply_id, "/fresh/supplies/supplies-page.php?operation=show&id=" . $supply_id ) . "<br/>";
+				$tab_content .= Core_Html::GuiButton( "btn_create_supply_" . $supplier->getId(), "Create a supply", array( "action" => "needed_create_supplies(" . $supplier->getId() . ")" ) );
+
+				$supplier_tabs[ $supplier->getId() ] =
+					array(
+						$supplier->getId(),
+						$supplier->getSupplierName(),
+						$tab_content
+					);
 			}
-
-			$tab_content .= Core_Html::GuiButton( "btn_create_supply_" . $supplier->getId(), "Create a supply", array( "action" => "needed_create_supplies(" . $supplier->getId() . ")" ) );
-
-			$supplier_tabs[ $supplier->getId() ] =
-				array(
-					$supplier->getId(),
-					$supplier->getSupplierName(),
-					$tab_content
-				);
 		}
 
-
+		array_push($supplier_tabs,
+			array('missing',
+				'Missing supplier info',
+				self::get_total_orders_supplier(0, $supplier_needed["missing"])));
 //		// Add missing
 //		$supplier_tabs[1] =
 //			array(
@@ -231,7 +231,10 @@ class Fresh_Packing {
 //				$missing_supplier_products
 //			);
 
-		return $supplier_tabs;
+		$args["selected_tab"] = 0; // array_key_first( $totals );
+		$result               .= Core_Html::GuiTabs( $supplier_tabs, $args );
+
+		return $result;
 	}
 
 	static function init_hooks() {

@@ -1,5 +1,20 @@
 <?php
 
+define ('TABLE_START', "
+<table>");
+define ('TABLE_END', "
+</table>");
+define ('ROW_START', "
+<tr>");
+define ('ROW_END', "
+</tr>");
+define ('CELL_START', "
+<td>");
+define ('CELL_END', "
+</td>");
+
+
+
 class Core_Html {
 	/**
 	 * Create html <label>
@@ -241,7 +256,12 @@ class Core_Html {
 	 *
 	 * @return string
 	 */
-	static function GuiDatalist( $id, $values, $id_field, $field_name, $include_id = false ) {
+	static function GuiDatalist( $id, $values, $id_field, $field_name, $include_id = false )
+	{
+		if (is_array($field_name)) {
+			var_dump($field_name);
+			die("field_name should be string");
+		}
 		$data = "<datalist id=\"" . $id . "\">";
 
 		foreach ( $values as $row ) {
@@ -257,7 +277,11 @@ class Core_Html {
 				}
 				$id_text = $row[ $id_field ] . ")";
 			}
-			$data .= "<option value=\"" . $id_text . htmlspecialchars( $row[ $field_name ] ) . "\"";
+			$value = "$field_name not set";
+			if (isset($row[$field_name])) $value =
+				htmlspecialchars( $row[ $field_name ] );
+			$data .= "<option value=\"" . $id_text . $value . "\"";
+
 			foreach ( $row as $key => $data_value ) {
 				if ($key == $id_field) $key = "id";
 				if ( $key != $field_name ) {
@@ -596,7 +620,8 @@ class Core_Html {
 	{
 		$cell = str_replace( '\n', '<br/>', $cell );
 
-		$data = "<td";
+		$data = "
+		<td";
 		$id = GetArg($args, "id", null);
 		if ($id) $data .= " id=\"" . $id . "\"";
 
@@ -694,7 +719,7 @@ class Core_Html {
 			} else {
 				$data .= "<td>$cells</td>";
 			}
-			$data .= "</tr>";
+			$data .= ROW_END;
 
 			return $data;
 		}
@@ -742,7 +767,8 @@ class Core_Html {
 		} else {
 			$data .= "<td>" . $cells . "</td>";
 		}
-		$data .= "</tr>\n";
+		$data .= "
+</tr>";
 
 		return $data;
 	}
@@ -885,7 +911,8 @@ class Core_Html {
 			} else $rows[ $key ] = Core_Data::PrepareRow( $input_row, $args, $key );
 		}
 
-		$data = "<table";
+		$data = "
+		<table";
 		if ( $bordercolor ) {
 			$data .= " bordercolor=" . $bordercolor;
 		}
@@ -913,7 +940,8 @@ class Core_Html {
 
 		foreach ( $rows as $line_id => $line ) {
 			if ( $line_id == "header" ) {
-				$data .= "<tr>";
+				$data .= "
+<tr>";
 				if ( is_array( $line ) ) {
 					foreach ( $line as $col_id => $cell ) {
 						$data .= "<td";
@@ -926,13 +954,15 @@ class Core_Html {
 						$data .= "</td>";
 					}
 				} else {
-					$data .= "<td>$line</td>";
+					$data .= "
+<td>$line</td>";
 				}
 				$data .= "</tr>";
 				continue;
 			}
 			// print "line$line_id<br/>";
-			$data .= "<tr>";
+			$data .= "
+<tr>";
 
 			if ( is_array( $line ) ) {
 				$add_checkbox_line = $add_checkbox;
@@ -941,7 +971,8 @@ class Core_Html {
 					$field  = ( $transpose ? $line_id : $cell_id ); // print "field: $field ";
 					$row_id = ( $transpose ? $cell_id : $line_id ); // print "row: $row_id<br/>";
 					if ( $add_checkbox_line and $row_id != "acc" ) {
-						$data              .= "<td>" . gui_checkbox( "chk_" . $row_id, $checkbox_class, 0,
+						$data              .= "
+<td>" . gui_checkbox( "chk_" . $row_id, $checkbox_class, 0,
 								( $row_id === "header" ) ? $e = 'onchange="select_all_toggle(this, \'' . $checkbox_class . '\')"' : $checkbox_events );
 						$add_checkbox_line = false;
 					}
@@ -964,14 +995,17 @@ class Core_Html {
 				}
 //				 $data .= "<td>" . $cell . "</td>";
 			} else {
-				$data .= "<td>" . $line . "</td>";
+				$data .= "
+<td>" . $line . "</td>";
 			}
-			$data .= "</tr>\n";
+			$data .= "
+</tr>";
 		}
 
 		// $data .= gui_row($acc_fields);
 		if ( $footer ) {
-			$data .= "</table>";
+			$data .= "
+</table>";
 		}
 
 		return $data;
@@ -1188,21 +1222,21 @@ class Core_Html {
 
 	/**
 	 * @param $id
-	 * @param $value
+	 * @param $selected
 	 * @param $args
 	 *
 	 * @return string
 	 */
 
-	static function GuiSimpleSelect( $id, $value, $args ) {
+	static function GuiSimpleSelect( $id, $selected, $args ) {
 		$values = GetArg( $args, "values", array( "Send values thru args" ) );
 		$events = GetArg( $args, "events", null );
 		$edit   = GetArg( $args, "edit", true );
 		if ( ! $edit ) {
-			return __( $values[ $value ] );
+			return __( $values[ $selected ] );
 		}
 
-		return gui_simple_select( $id, $values, $events, $value );
+		return self::gui_simple_select( $id, $values, $events, $selected );
 	}
 
 	/**
@@ -1760,6 +1794,17 @@ class Core_Html {
 		// Fetch the data from DB or create the new row
 		$rows_data = Core_Data::TableData( $sql, $args);
 
+//		print "<table border='1'>";
+//		foreach($rows_data as $key => $row) {
+//			print "<b>" . $key ."</b><br/>";
+//			print "<tr>";
+//			foreach ( $row as $cell_id => $cell ) {
+//				print $cell_id . "<br/>";
+//				print "<td>$cell</td>";
+//			}
+//			print "</tr>";
+//		}
+//		print "</table>";
 		if (! $rows_data)
 			return null;
 
@@ -1836,8 +1881,7 @@ class Core_Html {
 		$args["new_row"] = true; // Selectors can use that to offer creating of new row. E.g, new project.
 		$args["table_id"] = $table_name . "_new";
 		if (! isset($args["hide_cols"])) $args["hide_cols"] = [];
-		$row = self::GuiRowContent($table_name, null, $args);
-		return $row;
+		return self::GuiRowContent($table_name, null, $args);
 	}
 
 	/**

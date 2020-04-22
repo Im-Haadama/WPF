@@ -354,7 +354,7 @@ class Fresh_Order {
 				if ( isset( $item["variation_id"] ) && $item["variation_id"] > 0 ) {
 					$prod_or_var = $item["variation_id"];
 				}
-				// print "GGGGG" . get_product_name($prod_or_var) . " " . $prod_or_var . ":<br/>";
+//				 print "GGGGG" . $prod_or_var . ":<br/>";
 				$qty  = $item['qty'];
 				$unit = $item['unit'];
 
@@ -497,13 +497,19 @@ class Fresh_Order {
 
 		$table = array(array("מספר הזמנה", "מזמין", "הערות"));
 
+		$have_comments = false;
 		foreach ($orders as $order)
 		{
 			$o = new Fresh_Order($order);
-			if (strlen($o->GetComments()))
-				array_push($table, array($o->getLink($o->order_id), $o->CustomerName(), $o->GetComments()));
+			if (strlen($o->GetComments())) {
+				$have_comments = true;
+				array_push( $table, array( $o->getLink( $o->order_id ), $o->CustomerName(), $o->GetComments() ) );
+			}
 		}
-		return Core_Html::gui_table_args($table);
+		if (! $have_comments) return null;
+		return Core_Html::GuiHeader( 1, "הערות לקוח" ) .
+
+		Core_Html::gui_table_args($table);
 	}
 
 	public function Missing() {

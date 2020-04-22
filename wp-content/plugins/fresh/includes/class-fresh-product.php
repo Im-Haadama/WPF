@@ -352,7 +352,8 @@ class Fresh_Product {
 		// Planned to save there the supplier id.
 		$b = Fresh_Catalog::best_alternative($this->id);
 //		$supplier_id = sql_query_single_scalar( "select meta_value from wp_postmeta where post_id = " . $this->id . " and meta_key = 'supplier_id'" );
-		if ($b) return $b->getSupplierId();
+		if ($b)
+			return $b->getSupplierId();
 		return null;
 //		if ($supplier_id) return $supplier_id;
 //

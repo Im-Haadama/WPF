@@ -83,3 +83,8 @@ function create_product(post_file, supplier_id, pl_id)
     execute_url(request, action_hide_row);
     // alert (categ);
 }
+
+function pricelist_option_selected(sel) {
+    var pricelist_id = sel.id.substr(3);
+    document.getElementById("chk_" + pricelist_id).checked = true;
+}

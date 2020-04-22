@@ -1,6 +1,5 @@
 <?php
 
-
 class Fresh {
 	/**
 	 * The loader that's responsible for maintaining and registering all hooks that power
@@ -23,7 +22,7 @@ class Fresh {
 	 *
 	 * @var string
 	 */
-	public $version = '1.0';
+	public $version = '1.1';
 
 	private $plugin_name;
 

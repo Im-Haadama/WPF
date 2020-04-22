@@ -167,8 +167,8 @@ class Fresh_Pricelist_Item {
 				array_push($row, Fresh_Category::Select("categ_" . $row['id'], "categories", null));
 				array_push($row, Core_Html::GuiButton("btn_" . $row['id'], "Add Product", array("action" => "create_product('". Fresh::getPost() ."', $supplier_id, " . $row['id'] .")")));
 			} else {
-				var_dump($row);
-//				array_push($row, self::prod_options())
+//				var_dump($row);
+				array_push($row, self::prod_options($row['product_name'], $pl_id));
 			}
 		}
 		return $row;
@@ -191,12 +191,12 @@ class Fresh_Pricelist_Item {
 			$striped_option = str_replace( "-", " ", $striped_option );
 			$striped_option = trim( $striped_option, " " );
 			array_push($options, array("id" => $row1["id"], "name"=> $row1["post_title"]));
-			$options .= '<option value="' . "XX"  . '" ';
+//			$options .= '<option value="' . "XX"  . '" ';
 			if ( ! strcmp( $striped_option, $striped_prod ) ) $selected = $striped_option;
 		}
-		$args = array("values"=>$options, "events"=>'onchange="selected(this)"');
 
-		return Core_Html::GuiSimpleSelect("prd" .  $pl_id, $selected, $args);
+		print Core_Html::GuiDatalist("datalist". $pl_id, $options, 'id','name', $selected);
+		return Core_Html::GuiInputDatalist("prd" .  $pl_id, "datalist$pl_id", 'onchange="pricelist_option_selected(this)"');
 
 //		$line = "<tr>";
 //		$line .= "<td>" . gui_checkbox( "chk" . $pricelist_id, "product_checkbox", $match ) . "</td>";

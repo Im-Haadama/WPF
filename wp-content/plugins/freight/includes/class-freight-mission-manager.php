@@ -35,7 +35,7 @@ class Freight_Mission_Manager
 
 		self::create_missions();
 
-		$result .= self::show_missions($week ? "first_day_of_week(date) = '$week'" : "date >= curdate()");
+		$result .= self::show_missions($week ? "first_day_of_week(date) = '$week'" : null);
 
 		print $result;
 	}
@@ -49,8 +49,11 @@ class Freight_Mission_Manager
 		return true;
 	}
 
-	static function show_missions($query = "date >= curdate()")
+	static function show_missions($query = null)
 	{
+		if (! $query)
+			$query = "date >= '" . date('Y-m-d', strtotime('last sunday') ). "'";
+
 		$result = "";
 
 		if (! $query) $week = date('Y-m-d', strtotime('last sunday'));
@@ -113,10 +116,9 @@ class Freight_Mission_Manager
 		if ($week)
 			$header .= __("Missions of week") . " " . $week;
 
-
 		$result = Core_Html::GuiHeader(1, $header);
 
-		$result .= self::show_missions($week ? "first_day_of_week(date) = '$week'" : "date >= curdate()");
+		$result .= self::show_missions($week ? "first_day_of_week(date) = '$week'" : null);
 
 		print $result;
 
