@@ -1300,7 +1300,6 @@ class Focus_Tasks {
 	static function show_tasks( $ids ) {
 		$args          = [];
 		$args["query"] = "id in (" . CommaImplode( $ids ) . ")";
-
 		return Focus_Tasks::Taskslist( $args );
 	}
 

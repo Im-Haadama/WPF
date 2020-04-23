@@ -1051,8 +1051,6 @@ class Core_Html {
 		$args["events"] = $events;
 		$value          = GetArg( $args, "selected", null );
 
-//		print "VVV=$value<br/>";
-
 		$datalist_id = $id . "_list";
 
 		$data = "<input id=\"" . $id . "\" ";

@@ -61,6 +61,11 @@ function DebugVar($var)
 	var_dump($var);
 }
 
+function str_dump($var)
+{
+	return StringVar($var);
+}
+
 function StringVar($var)
 {
 	ob_start();

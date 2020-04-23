@@ -5,6 +5,8 @@ class Core_Database {
 	static function CreateInfo()
 	{
 		$db_prefix = get_table_prefix();
+		sql_query("alter table ${db_prefix}info modify info_key varchar(100)");
+
 		if (! self::table_exists("info"))
 			sql_query( "CREATE TABLE ${db_prefix}info (
 		info_key VARCHAR(200) NULL,
