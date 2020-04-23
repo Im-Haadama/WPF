@@ -23,7 +23,7 @@ class Freight_Methods {
 		add_action("shipment_delete", __CLASS__ . "::shipment_delete");
 
 		add_action("update_zone_missions", __CLASS__ . "::update_zones_missions");
-		add_action("show_mission", __CLASS__ . "::show_mission_wrap");
+//		add_action("show_mission", __CLASS__ . "::show_mission_wrap");
 		add_action("toggle_shipment_enable", __CLASS__ . "::toggle_shipment_enable");
 		add_action("shipment_update_mc", __CLASS__ . "::shipment_update_mc");
 
@@ -118,16 +118,16 @@ class Freight_Methods {
 		return $result;
 	}
 
-	static function show_mission_wrap()
-	{
-		print 1/0;
-		$result = "";
-		$mission_id = GetParam("id", true);
-		$args = [];
-		$result .= Core_Gem::GemElement("mission", $mission_id, $args);
-		$result .= self::show_mission($mission_id);
-		print $result;
-	}
+//	static function show_mission_wrap()
+//	{
+//		print 1/0;
+//		$result = "";
+//		$mission_id = GetParam("id", true);
+//		$args = [];
+//		$result .= Core_Gem::GemElement("mission", $mission_id, $args);
+//		$result .= self::show_mission($mission_id);
+//		print $result;
+//	}
 
 	static function shipment_update_mc()
 	{
@@ -136,42 +136,42 @@ class Freight_Methods {
 		return sql_query("update wp_woocommerce_shipping_zone_methods set mission_code = " . QuoteText($mc) . " where instance_id = $instance");
 	}
 
-	static function show_mission($mission_id)
-	{
-		print 1/0;
-		if (! ($mission_id > 0)) die ("bad mission_id " .$mission_id);
-//		$result = Core_Html::gui_header(1, ImTranslate("mission") . " $mission_id");
-$result = "XXX";
-		$args = [];
-		$args["selectors"] = array("path_code" => __CLASS__ . "::gui_select_path");
-		$args["edit"] = true;
-		$args["post_file"] = Freight::getPost();
-		$result .= Core_Gem::GemElement("missions", $mission_id, $args);
-		$zone_table = array();
-		$zone_table["header"] = array("Zone id", "shipping method");
-		$mission = new Mission($mission_id);
-
-		$shipping_ids = $mission->getShippingMethods();
-		foreach ($shipping_ids as $zone_id => $shipping) {
-			$tog = ($shipping->enabled == "yes") ? "disable" : "enable";
-			$args["action"] = AddToUrl(array( "operation" => $tog . "_shipping_method&zone_id=" . $zone_id . "&instance_id=" . $shipping->instance_id)) . ";location_reload";
-
-			$args["text"] = $tog;
-			$en_dis = Core_Html::GuiButtonOrHyperlink("btn_" . $zone_id, null, $args);
-
-			array_push($zone_table, array(ZoneGetName($zone_id), $shipping->title, $shipping->enabled, $en_dis));
-		}
-//	 $args["actions"] = array(array("enable", add_to_url(array("operation" => ))));
-//	$zone_table[ $zone_id ] = array(
-//		zone_get_name( $zone_id ),
-//		( $mission_method ? $mission_method->title : "none" )
-//	);
-
-		$result .= Core_Html::gui_table_args($zone_table, "", $args);
-
-		$result .= Core_Html::GuiHyperlink("update", AddToUrl(array( "operation" => "update_shipping_methods")));
-		return $result;
-	}
+//	static function show_mission($mission_id)
+//	{
+//		print 1/0;
+//		if (! ($mission_id > 0)) die ("bad mission_id " .$mission_id);
+////		$result = Core_Html::gui_header(1, ImTranslate("mission") . " $mission_id");
+//$result = "XXX";
+//		$args = [];
+//		$args["selectors"] = array("path_code" => __CLASS__ . "::gui_select_path");
+//		$args["edit"] = true;
+//		$args["post_file"] = Freight::getPost();
+//		$result .= Core_Gem::GemElement("missions", $mission_id, $args);
+//		$zone_table = array();
+//		$zone_table["header"] = array("Zone id", "shipping method");
+//		$mission = new Mission($mission_id);
+//
+//		$shipping_ids = $mission->getShippingMethods();
+//		foreach ($shipping_ids as $zone_id => $shipping) {
+//			$tog = ($shipping->enabled == "yes") ? "disable" : "enable";
+//			$args["action"] = AddToUrl(array( "operation" => $tog . "_shipping_method&zone_id=" . $zone_id . "&instance_id=" . $shipping->instance_id)) . ";location_reload";
+//
+//			$args["text"] = $tog;
+//			$en_dis = Core_Html::GuiButtonOrHyperlink("btn_" . $zone_id, null, $args);
+//
+//			array_push($zone_table, array(ZoneGetName($zone_id), $shipping->title, $shipping->enabled, $en_dis));
+//		}
+////	 $args["actions"] = array(array("enable", add_to_url(array("operation" => ))));
+////	$zone_table[ $zone_id ] = array(
+////		zone_get_name( $zone_id ),
+////		( $mission_method ? $mission_method->title : "none" )
+////	);
+//
+//		$result .= Core_Html::gui_table_args($zone_table, "", $args);
+//
+//		$result .= Core_Html::GuiHyperlink("update", AddToUrl(array( "operation" => "update_shipping_methods")));
+//		return $result;
+//	}
 
 	static function gui_select_path( $id, $selected = 0, $args = null )
 	{

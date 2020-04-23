@@ -12,7 +12,7 @@ $anonymous = (strstr($operation, "anonymous") !== false);
 if (! $anonymous and ! get_user_id(true) ) die('Not connected');
 $rc = $freight->handle_operation($operation);
 
-if ($rc === false) { print "failed"; return; }
+if ($rc === false or null === $rc) { print "failed"; return; }
 if ($rc === true) { print "done"; return; }
 if (is_numeric($rc)) { print "done.$rc"; return; }
 // Something went wrong. The procssing would print something.

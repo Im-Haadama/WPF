@@ -7,7 +7,6 @@ class Fresh_Database extends Core_Database
 {
 	static function install($version, $force = false)
 	{
-		return;
 		// Create im_info table if missing.
 		self::CreateInfo();
 
@@ -101,7 +100,7 @@ order by 1;");
 		$current = self::CheckInstalled("Fresh", "functions");
 		$db_prefix = get_table_prefix();
 
-//		if ($current == $version and ! $force) return true;
+		if ($current == $version and ! $force) return true;
 
 		sql_query("alter table ${db_prefix}missions drop path_code");
 		sql_query("alter table ${db_prefix}missions add mission_type int");

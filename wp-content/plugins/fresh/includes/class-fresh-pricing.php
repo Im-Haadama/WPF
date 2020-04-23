@@ -3,30 +3,26 @@
 
 class Fresh_Pricing {
 
-	static function calculate_price( $price, $supplier, $sale_price = '', $terms = null ) {
+	static function calculate_price( $price, $supplier, $sale_price = '', $terms = null )
+	{
 		$factor = sql_query_single_scalar( "SELECT factor FROM im_suppliers WHERE id = " . $supplier);
 
 		// Check for sale
-		if ( is_numeric( $sale_price ) and $sale_price < $price and $sale_price > 0 ) {
-			$price = $sale_price;
-		}
+		if ( is_numeric( $sale_price ) and $sale_price < $price and $sale_price > 0 ) $price = $sale_price;
 
-		if ( is_numeric( $factor ) ) {
+//		print "$supplier $price $factor<br/>";
+		if ( is_numeric( $factor ) ) return round( $price * ( 100 + $factor ) / 100, 1 );
 
-			// Fruits factor
+		return 0;
+	}
+
+	// Fruits factor
 //		if ($terms) foreach ($terms as $term){
 //			if ($term->id == 11 and $price > 10 and MultiSite::LocalSiteID() == 1){
 //				$factor = $factor * 0.8;
 //				print "fruit factor";
 //			}
 //		}
-
-			return round( $price * ( 100 + $factor ) / 100, 1 );
-		}
-
-		return 0;
-	}
-
 
 	static function get_price_by_type( $prod_id, $client_type = "", $quantity = 1, $variation_id = null )
 	{
@@ -37,7 +33,6 @@ class Fresh_Pricing {
 		}
 		static $configured = -1;
 		if ($configured == -1) {
-			$prefix = get_table_prefix();
 			$configured = table_exists("client_types");
 		}
 		if (! $configured) return get_postmeta_field( $prod_id, '_price' );
@@ -127,10 +122,18 @@ class Fresh_Pricing {
 		return get_postmeta_field( $prod_id, '_regular_price' );
 	}
 
-	static function set_price( $prod_id, $price ) {
-		$sql = "UPDATE wp_postmeta SET meta_value = " . $price . " WHERE meta_key = '_price' AND post_id = " . $prod_id;
-		sql_query( $sql );
-
-		// return set_post_meta_field( $prod_id, '_sale_price', $sale_price );
+	static function set_regular_price( $product_id, $price ) {
+		update_post_meta( $product_id, "_regular_price", $price );
+		$sale_price = get_post_meta($product_id, "_sale_price");
+		if ($sale_price > 0)
+			update_post_meta($product_id, '_price', min($sale_price, $price));
 	}
+
+	static function set_saleprice( $product_id, $sale_price ) {
+		update_post_meta( $product_id, "_sale_price", $sale_price );
+		$price = get_post_meta($product_id, "_price");
+		$new_price = (($sale_price > 0) ? $sale_price : $price);
+		update_post_meta( $product_id, "_price", $new_price );
+	}
+
 }

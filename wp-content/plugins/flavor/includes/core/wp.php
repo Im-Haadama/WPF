@@ -246,18 +246,6 @@ function update_wp_option($option_id, $array_or_string)
 //	return sql_query("update wp_options set option_value = '" . escape_string($new_string) . "' where option_name = '" . $option_id . "'");
 }
 
-	function GetMetaField( $post_id, $field_name ) {
-		if ( $post_id > 0 ) {
-			$sql = 'SELECT meta_value FROM `wp_postmeta` pm'
-			       . ' WHERE pm.post_id = ' . $post_id
-			       . " AND meta_key = '" . $field_name . "'";
-
-			// print $sql . "<br>";
-			return sql_query_single_scalar( $sql );
-		}
-
-		return "Bad post id";
-	}
 
 function GetUserName( $id ) {
 //    var_dump(get_user_meta($id, 'first_name'));

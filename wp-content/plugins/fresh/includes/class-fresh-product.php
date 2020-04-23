@@ -113,7 +113,6 @@ class Fresh_Product {
 		return sql_query_single_scalar( $sql );
 	}
 
-
 	function getStock( $arrived = false ) {
 		if ( $this->isFresh() ) {
 //			print "<br/> fresh " . $this -> q_in() . " " . $this->q_out() . " ";
@@ -346,7 +345,16 @@ class Fresh_Product {
 		return sql_query_single_scalar( "select meta_value from wp_postmeta where post_id = " . $this->id . " and meta_key = 'supplier_name'" );
 	}
 
-	function getSupplierId()
+	function setRegularPrice($price)
+	{
+		Fresh_Pricing::set_regular_price($this->id, $price);
+	}
+
+	function setSalePrice($price) {
+		Fresh_Pricing::set_saleprice( $this->id, $price );
+	}
+
+		function getSupplierId()
 	{
 		// For now create post saves the supplier name.
 		// Planned to save there the supplier id.
@@ -360,23 +368,22 @@ class Fresh_Product {
 //		return Fresh_Supplier::getSupplierId(self::getSupplierName());
 	}
 
+	function getCalculatedPrice($supplier_id)
+	{
+		return Fresh_Pricing::calculate_price($this->getBuyPrice($supplier_id), $supplier_id);
+	}
+
 	function getBuyPrice($supplier_id = 0)
 	{
 		if ( $this->id > 0 ) {
 			if ( $supplier_id > 0 ) {
-				$a = alternatives( $this->id );
-//				if ($this->id == 3380) var_dump($a);
-				foreach ( $a as $s ) {
-					if ( $s->getSupplierId() == $supplier_id ) {
-						return $s->getPrice();
-					}
-				}
+				$a = Fresh_Catalog::alternatives( $this->id );
+				foreach ( $a as $s )  if ( $s->getSupplierId() == $supplier_id ) return $s->getPrice();
 			}
-//			print "not found in alter" . $this->id . "<br/>";
 			return get_postmeta_field( $this->id, 'buy_price' );
 		}
 
-		return - 1;
+		return -1;
 	}
 
 	function isDraft()

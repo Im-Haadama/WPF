@@ -14,6 +14,8 @@ class Fresh_Catalog {
 	static function init_hooks()
 	{
 		AddAction("create_products", __CLASS__. '::CreateProduct_wrap');
+		AddAction("product_change_regularprice", __CLASS__."::ChangeProductRegularPrice_wrap");
+		AddAction("product_change_saleprice", __CLASS__."::ChangeProductSalePrice_wrap");
 	}
 
 	static function CreateProduct_wrap()
@@ -24,6 +26,27 @@ class Fresh_Catalog {
 		$pl_id = $create_info[1];
 		return self::CreateProducts($category_id, array($supplier_id, $pl_id));
 	}
+
+	static function ChangeProductRegularPrice_wrap()
+	{
+		$prod_id = GetParam("prod_id", true);
+		$price = GetParam("price", true);
+		$P = new Fresh_Product($prod_id);
+		if (! $P) return false;
+		$P->setRegularPrice($price);
+		return true;
+	}
+
+	static function ChangeProductSalePrice_wrap()
+	{
+		$prod_id = GetParam("prod_id", true);
+		$price = GetParam("price", true);
+		$P = new Fresh_Product($prod_id);
+		if (! $P) return false;
+		$P->setSalePrice($price);
+		return true;
+	}
+
 
 	static function CreateProducts( $category_id, $ids ) {
 		MyLog( "Create_products. Category = " . $category_id );

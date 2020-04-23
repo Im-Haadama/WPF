@@ -299,7 +299,7 @@ function selectTab(event, selected, tab_class, tab_links_class)
 
 function success_message(xmlhttp)
 {
-    if (xmlhttp.response.substr(0, 3) === "done")
+    if (xmlhttp.response.substr(0, 4) === "done")
         alert("Success");
     else
         alert (xmlhttp.response);
@@ -307,7 +307,7 @@ function success_message(xmlhttp)
 
 function fail_message(xmlhttp)
 {
-    if (xmlhttp.response.substr(0, 3) === "done") return;
+    if (xmlhttp.response.substr(0, 4) === "done") return;
 
     alert (xmlhttp.response);
 }

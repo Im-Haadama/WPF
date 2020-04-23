@@ -143,23 +143,20 @@ class Fresh_Pricelist_Item {
 				$map_id = $link_data[1];
 			}
 			// print $prod_id . " " . $map_id . "<br/>";
-//			if ($create_option)
-//				continue; // Show only non linked products.
-
-//			if ( $ordered_only and ! isset( $needed_products[ $prod_id ][0] ) and ! isset( $needed_products[ $prod_id ][1] ) )
-//				continue;
-
-//			if ( $need_supply_only and ( $needed_products[ $prod_id ][0] <= $p->getStock() ) ) {
-//				continue;
-//			}
+//			if ($create_option) continue; // Show only non linked products.
+//			if ( $ordered_only and ! isset( $needed_products[ $prod_id ][0] ) and ! isset( $needed_products[ $prod_id ][1] ) ) continue;
+//			if ( $need_supply_only and ( $needed_products[ $prod_id ][0] <= $p->getStock() ) ) { continue;
 
 			array_push( $row, $p->getName() );
 //			array_push( $row, ($edit ? Core_Html::GuiInput("prc_$pl_id", $p->getPrice()) : $p->getPrice()));
-			array_push( $row, $p->getPrice());
-			array_push( $row, $p->getSalePrice() );
+			array_push( $row, $p->getCalculatedPrice($supplier_id));
+			array_push( $row, Core_Html::GuiInput("prc_$linked_prod_id", $p->getPrice(),
+				array("events"=>array("onchange=\"product_change_regularprice('" . Fresh::getPost() . "', $linked_prod_id)\"", 'onkeypress="moveNext(this)"'), "size"=>5)));
+			array_push( $row, Core_Html::GuiInput("sal_$linked_prod_id", $p->getSalePrice(),
+				array("events"=>array("onchange=\"product_change_saleprice('" . Fresh::getPost() . "', $linked_prod_id)\"", 'onkeypress="moveNext(this)"'), "size"=>5)));
 			$stockManaged = $p->getStockManaged();
 //			array_unshift( $row, gui_checkbox( "chm_" . $linked_prod_id, "stock", $stockManaged, "onchange=\"change_managed(this)\")" ) );
-			array_push( $row, Core_Html::GuiLabel( "stk_" . $linked_prod_id, Core_Html::GuiHyperlink( $p->getStock(), "../orders/get-orders-per-item.php?prod_id=" . $linked_prod_id ) ) );
+//			array_push( $row, Core_Html::GuiLabel( "stk_" . $linked_prod_id, Core_Html::GuiHyperlink( $p->getStock(), "../orders/get-orders-per-item.php?prod_id=" . $linked_prod_id ) ) );
 			$n = Fresh_Packing::orders_per_item( $linked_prod_id, 1, true, true, true );
 			array_push( $row, $n );
 		} else {
@@ -168,48 +165,54 @@ class Fresh_Pricelist_Item {
 				array_push($row, Core_Html::GuiButton("btn_" . $row['id'], "Add Product", array("action" => "create_product('". Fresh::getPost() ."', $supplier_id, " . $row['id'] .")")));
 			} else {
 //				var_dump($row);
-				array_push($row, self::prod_options($row['product_name'], $pl_id));
+				array_push($row, Fresh_Product::gui_select_product("prd" . $pl_id, "", array("events" => 'onchange=pricelist_option_selected(this)')),
+				"",
+				"",
+				"",
+				"");
+//					self::prod_options($row['product_name'], $pl_id));
+
 			}
 		}
 		return $row;
 	}
 
-	static function prod_options($product_name, $pl_id)
-	{
-		$striped_prod = $product_name;
-		foreach ( array( "אורגני", "יחידה", "טרי" ) as $word_to_remove ) $striped_prod = str_replace( $word_to_remove, "", $striped_prod );
-
-		$striped_prod = trim( $striped_prod );
-
-		$prod_options = Fresh_Catalog::GetProdOptions( $product_name );
-
-		$options = [];
-		$selected  = null;
-		foreach ( $prod_options as $row1 )
-		{
-			$striped_option = $row1["post_title"];
-			$striped_option = str_replace( "-", " ", $striped_option );
-			$striped_option = trim( $striped_option, " " );
-			array_push($options, array("id" => $row1["id"], "name"=> $row1["post_title"]));
-//			$options .= '<option value="' . "XX"  . '" ';
-			if ( ! strcmp( $striped_option, $striped_prod ) ) $selected = $striped_option;
-		}
-
-		print Core_Html::GuiDatalist("datalist". $pl_id, $options, 'id','name', $selected);
-		return Core_Html::GuiInputDatalist("prd" .  $pl_id, "datalist$pl_id", 'onchange="pricelist_option_selected(this)"');
-
-//		$line = "<tr>";
-//		$line .= "<td>" . gui_checkbox( "chk" . $pricelist_id, "product_checkbox", $match ) . "</td>";
-//		$line .= "<td>" . $supplier_product_code . "</td>";
-//		$line .= "<td>" . $product_name . "</td>";
-//		$line .= "<td>" . $supplier_id . "</td>";
-//		$line .= "<td><select onchange='selected(this)' id='$pricelist_id'>";
+//	static function prod_options($product_name, $pl_id)
+//	{
+//		$striped_prod = $product_name;
+//		foreach ( array( "אורגני", "יחידה", "טרי" ) as $word_to_remove ) $striped_prod = str_replace( $word_to_remove, "", $striped_prod );
 //
-//		$line .= $options;
+//		$striped_prod = trim( $striped_prod );
 //
-//		$line .= '</select></td>';
-
-	}
+//		$prod_options = Fresh_Catalog::GetProdOptions( $product_name );
+//
+//		$options = [];
+//		$selected  = null;
+//		foreach ( $prod_options as $row1 )
+//		{
+//			$striped_option = $row1["post_title"];
+//			$striped_option = str_replace( "-", " ", $striped_option );
+//			$striped_option = trim( $striped_option, " " );
+//			array_push($options, array("id" => $row1["id"], "name"=> $row1["post_title"]));
+////			$options .= '<option value="' . "XX"  . '" ';
+//			if ( ! strcmp( $striped_option, $striped_prod ) ) $selected = $striped_option;
+//		}
+//
+//		print Core_Html::GuiDatalist("datalist". $pl_id, $options, 'id','name', $selected);
+//		return Core_Html::GuiInputDatalist("prd" .  $pl_id, "datalist$pl_id", 'onchange="pricelist_option_selected(this)"');
+//
+////		$line = "<tr>";
+////		$line .= "<td>" . gui_checkbox( "chk" . $pricelist_id, "product_checkbox", $match ) . "</td>";
+////		$line .= "<td>" . $supplier_product_code . "</td>";
+////		$line .= "<td>" . $product_name . "</td>";
+////		$line .= "<td>" . $supplier_id . "</td>";
+////		$line .= "<td><select onchange='selected(this)' id='$pricelist_id'>";
+////
+////		$line .= $options;
+////
+////		$line .= '</select></td>';
+//
+//	}
 }
 
 

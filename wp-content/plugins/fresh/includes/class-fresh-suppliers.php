@@ -36,14 +36,14 @@ class Fresh_Suppliers {
 		$args = array("database_table" => "supplier_price_list",
 		              "query_part" => "from im_supplier_price_list where supplier_id = %d",
 			"fields" => array("id", "product_name", "price", "date"),
-			"extra_header" => array("linked product", "price", "", "open orders"),
+			"extra_header" => array("linked product", "calculated price", "price", "sale price", "open orders"),
 			"order"=>"product_name",
 			"prepare" => "Fresh_Pricelist_Item::add_prod_info",
 //			"header_fields" => array("supplier_product_code" => "code", "product_name" => "name"),
 			"import_page"=> GetUrl(),
 			"post_file" => Fresh::getPost(),
 			"import" => true,
-			"prepare_plug" => "Fresh_Pricelist_Item::add_prod_info",
+			"prepare_plug" => "Fresh_Pricelist_Item::add_prod_info", 
 			"action_before_import" => array(__CLASS__, "action_before_import"),
 			"add_checkbox" => true);
 		$this->gem->AddVirtualTable( "pricelist", $args );
@@ -59,12 +59,12 @@ class Fresh_Suppliers {
 
 		Core_Gem::getInstance(); // Make sure that initiated.
 
-		$result = null;
+		$result = "";
 		if ($operation){
 			$args = self::Args("suppliers");
 			$args["operation"] = $operation;
-			$result = apply_filters( $operation, "", null, $args, null );
-
+			$id = GetParam("id", true);
+			$result = apply_filters( $operation, $result, $id, $args );
 		}
 
 		if ( !$result )
@@ -92,6 +92,8 @@ class Fresh_Suppliers {
 		$result = Core_Html::GuiHeader(2, "Active suppliers", array("class"=>"wc-shipping-zones-heading", "close"=>false)) . "<br/>"; // . Core_Html::GuiHyperlink("Add supplier", "link", array("class"=> "page-title-action")) .'</h2>';
 
 		$args = self::Args("suppliers");
+		$args["prepare_plug"] = __CLASS__ . "::prepare_supplier_list_row";
+
 		$args["fields"] = array("id", "supplier_name", "supplier_description");
 		// $args["links"] = array("id"=> AddToUrl(array( "operation" => "show_supplier", "id" => "%s")));
 		$args["query"] = "is_active = 1";
@@ -142,7 +144,6 @@ class Fresh_Suppliers {
 		if ( $table_name )
 			switch ( $table_name ) {
 				case "suppliers":
-					$args["prepare_plug"] = __CLASS__ . "::prepare_row";
 					break;
 				case "pricelist":
 					$args["edit"] = true;
@@ -153,7 +154,7 @@ class Fresh_Suppliers {
 		return $args;
 	}
 
-	static public function prepare_row($row)
+	static public function prepare_supplier_list_row($row)
 	{
 		// id, supplier_name, supplier_description
 //		$args["links"] = array("id" => AddToUrl(array("operation" => "gem_show_suppliers" , "id" => "%d")));

@@ -109,3 +109,45 @@ function pricelist_map_products(post_file)
     let request = post_file + '?operation=suppliers_map_products&ids=' + map_ids.join();
     execute_url(request, location_reload);
 }
+
+function freight_add_delivery(post_file)
+{
+    let client = get_value_by_name("delivery_client");
+
+    let request = post_file + "?operation=freight_do_add_delivery&client=" + client;
+
+    execute_url(request, action_back);
+}
+
+function product_change_regularprice(post_file, prod_id)
+{
+    let price = get_value_by_name("prc_" + prod_id);
+    if (! (price > 0)) {
+        alert ("Enter valid price");
+        return;
+    }
+    let request = post_file + "?operation=product_change_regularprice&prod_id=" + prod_id + "&price=" + price;
+    execute_url(request, fail_message);
+}
+
+function product_change_saleprice (post_file, prod_id)
+{
+    let price = get_value_by_name("sal_" + prod_id);
+    if (! (price > 0) && price !== '') {
+        alert ("Enter valid saleprice");
+        return;
+    }
+    let request = post_file + "?operation=product_change_saleprice&prod_id=" + prod_id + "&price=" + price;
+    execute_url(request, fail_message);
+}
+
+function moveNext(element)
+{
+    if (window.event.keyCode !== 13) return;
+    let col_index = element.parentElement.cellIndex;
+    let row_index = element.parentElement.parentElement.rowIndex;
+    let table = element.parentElement.parentElement.parentElement;
+
+    if (undefined != table.rows[row_index+1].cells[col_index].firstElementChild)
+        table.rows[row_index+1].cells[col_index].firstElementChild.focus();
+}

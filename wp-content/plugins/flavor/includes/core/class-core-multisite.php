@@ -127,7 +127,10 @@ class Core_MultiSite {
 		}
 		$first = true;
 		$data  = array( array( "site name", "result" ));
+		$rc = null;
 
+		if (! $this->sites_array)
+			return self::DoRun($func, $rc);
 		foreach ( $this->sites_array as $site_id => $site ) {
 			$result = $this->Run( $func, $site_id, $first, $debug );
 			if (! $result) {
@@ -183,18 +186,9 @@ class Core_MultiSite {
 		}
 		$username = $this->sites_array[$site_id][3];
 		$password = $this->sites_array[$site_id][4];
-
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $file);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_USERPWD, "$username:$password");
-		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-		$result_text = curl_exec($ch);
-		$this->http_codes[$site_id] = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-		curl_close($ch);
+		$result_text = self::DoRun($file, $this->http_codes[$site_id], $username, $password);
 
 		if (in_array($this->http_codes[$site_id], array(404, 500))) return false;
-//		$result_text = im_file_get_html( $file );
 
 		if ( $debug ) {
 			print "result from " . $site_name . "<br/>";
@@ -202,6 +196,20 @@ class Core_MultiSite {
 		}
 
 		// print "id=" . $id . " " . "result: " . $result_text;
+		return $result_text;
+	}
+
+	static function DoRun($file, &$http_code, $username= null, $password = null)
+	{
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $file);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_USERPWD, "$username:$password");
+		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+		$result_text = curl_exec($ch);
+		$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		curl_close($ch);
+
 		return $result_text;
 	}
 

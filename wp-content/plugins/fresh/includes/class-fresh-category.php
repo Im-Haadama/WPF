@@ -52,6 +52,4 @@ class Fresh_Category {
 		}
 		return $result;
 	}
-
-
 }

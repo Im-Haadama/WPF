@@ -92,7 +92,6 @@ function im_file_get_html( $url, $use_include_path = false, $context = null, $of
 function im_str_get_html( $str, $lowercase = true, $forceTagsClosed = true, $target_charset = DEFAULT_TARGET_CHARSET, $stripRN = true, $defaultBRText = DEFAULT_BR_TEXT, $defaultSpanText = DEFAULT_SPAN_TEXT ) {
 	$dom = new im_simple_html_dom( null, $lowercase, $forceTagsClosed, $target_charset, $stripRN, $defaultBRText, $defaultSpanText );
 	if ( empty( $str ) || strlen( $str ) > MAX_FILE_SIZE ) {
-		print "Empty";
 		$dom->clear();
 
 		return false;

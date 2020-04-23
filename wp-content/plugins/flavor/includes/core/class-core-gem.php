@@ -13,7 +13,7 @@ class Core_Gem {
 	private function __construct( ) {
 		$this->object_types = array();
 		self::$_instance = $this;
-		AddAction("gem_show", array(__CLASS__, "show_wrap"));
+		AddAction("gem_show", array(__CLASS__, "show_wrap"), 10, 3);
 		AddAction("gem_v_show", array(__CLASS__, "v_show_wrap"));
 		AddAction("gem_import", array(__CLASS__, "import_wrap"));
 		AddAction("gem_do_import", array(__CLASS__, "do_import_wrap"));
@@ -124,7 +124,6 @@ class Core_Gem {
 		// Clear data before import and set default values.
 		$fields = array();
 		if ($f = GetArg($table_args, 'action_before_import', null)) $f($fields);
-		var_dump($fields);
 
 		$rc = Core_Importer::Import($file_name, $table, $fields, null, $unmapped);
 		// Unmapped is seq array with the unknown headder.
@@ -143,14 +142,14 @@ class Core_Gem {
 			$instance = self::getInstance();
 			$v_args = array("database_table" => "conversion", "query_part" => "from ${db_prefix}conversion where table_name = '$table'");
 
-			$instance->AddVirtualTable("nv_conversion", $v_args);
+			$instance->AddVirtualTable("conversion", $v_args);
 			$args = [];
 			$args["id"] = "id";
 			$args["post_file"] = $table_args['post_file'];
 			$args["selectors"] = array("col" => "gui_select_field");
 			$args["import_table"] = $table;
 			// $args["fields"]
-			$result .= $instance->GemVirtualTable("nv_conversion", $args);
+			$result .= $instance->GemVirtualTable("conversion", $args);
 			print $result;
 //			die(1);
 			return false;
@@ -210,12 +209,9 @@ class Core_Gem {
 		return "lalal"; // $instance->GemVirtualTable($table_name, $args);
 	}
 
-	static function show_wrap($result = null)
+	static function show_wrap($result, $id, $args)
 	{
-		if (! $result) $result = "";
-		$id = GetParam("id", true);
 		$table_name = GetParam("table", true);
-		$args = [];
 		return $result . self::GemElement($table_name, $id, $args);
 	}
 

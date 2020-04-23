@@ -129,7 +129,6 @@ class Freight {
 		// Admin menu
 		add_action('admin_menu', __CLASS__ . '::admin_menu');
 
-
 		get_sql_conn(ReconnectDb());
 		Freight_Methods::init();
 		Freight_Mission_Manager::init_hooks();
@@ -224,7 +223,8 @@ class Freight {
 
 		$result = apply_filters( $operation, "", "", null, null );
 
-		if ( $result ) return $result;
+		if ( $result ) 
+			return $result;
 
 		$module = strtok( $operation, "_" );
 		if ( $module === "data" ) {

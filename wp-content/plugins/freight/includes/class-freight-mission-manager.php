@@ -12,6 +12,8 @@ class Freight_Mission_Manager
 		add_action("order_save_pri", __CLASS__ . '::order_save_pri');
 		add_action("mission_update_type", __CLASS__ . '::mission_update_type');
 		add_action("mission_details", __CLASS__ . '::mission_details');
+		add_action("freight_add_delivery", __CLASS__ . "::add_delivery");
+		add_action("freight_do_add_delivery", __CLASS__ . "::do_add_delivery");
 	}
 
 	static function missions()
@@ -99,18 +101,7 @@ class Freight_Mission_Manager
 
 	static function dispatcher_wrap()
 	{
-		$id = GetParam("id");
-		if ($id) {
-			$args = array("post_file" => self::getPost());
-			$result = ""; /// Core_Html::GuiHeader(1, "Mission $id");
-//			$result .= Core_Gem::GemElement("missions", $id, $args);
-			$path = array();
-//			self::prepare_route($id, $path, $lines_per_station);
-			$result .= self::dispatcher($id);
-			print $result;
-			return;
-		}
-
+		$operation = GetParam("operation", false, null);
 		$header = "Dispatch";
 		$week = GetParam("week", false, null);
 		if ($week)
@@ -118,22 +109,44 @@ class Freight_Mission_Manager
 
 		$result = Core_Html::GuiHeader(1, $header);
 
+		if ($operation)
+		{
+			apply_filters($operation, $result);
+		}
+
+		$id = GetParam("id");
+		if ($id) {
+			$args = array("post_file" => self::getPost());
+			$result = ""; /// Core_Html::GuiHeader(1, "Mission $id");
+//			$result .= Core_Gem::GemElement("missions", $id, $args);
+			$path = array();
+//			self::prepare_route($id, $path, $lines_per_station);
+			$result .= self::dispatcher($id, $operation);
+			print $result;
+			return;
+		}
+
 		$result .= self::show_missions($week ? "first_day_of_week(date) = '$week'" : null);
 
 		print $result;
 
 	}
 
-	static function dispatcher($the_mission)
+	static function dispatcher($the_mission, $operation = null)
 	{
 		$lines_per_station = array();
 		$supplies_to_collect = array();
 
+		if (! $operation)
+			print Core_Html::GuiHyperlink("Add delivery", AddToUrl("operation", "freight_add_delivery")) . "<br/>";
+
 		self::prepare_route($the_mission, $path, $lines_per_station, $supplies_to_collect);
+
+		if (! $path or ! count($path))
+			return;
 
 		$path_info = [];
 		for ( $i = 0; $i < count( $path ); $i ++ ) {
-			$first = true;
 			foreach ( $lines_per_station[ $path[ $i ] ] as $line_array ) {
 				$order_info = $line_array[2];
 				$order_id = $line_array[1];
@@ -145,7 +158,7 @@ class Freight_Mission_Manager
 				$site_id = $order_info['site_id'];
 				$edit_user = Core_Html::GuiHyperlink($order_info['user_id'], self::$multi_site->getSiteURL($site_id) . "/wp-admin/user-edit.php?user_id=" . $order_info['user_id']);
 				array_push($path_info,
-					array($order_id,
+					array(Core_Html::GuiHyperlink($order_id, "/wp-admin/post.php?post=$order_id&action=edit"),
 						$edit_user,
 						$order_info['customer'],
 						$path[$i],
@@ -194,7 +207,8 @@ class Freight_Mission_Manager
 
 		if ( strlen( $output ) < 10 ) {
 			print $output . "<br/>";
-			die ( "No routes information<br/>" . $data_url );
+			print __("Nothing to do!") . "<br/>";
+			return;
 		}
 		$table_header = null;
 
@@ -772,5 +786,32 @@ class Freight_Mission_Manager
 
 		$m = new Mission($mission_id);
 		return $m->setType($type);
+	}
+
+	static function add_delivery()
+	{
+		$result = "<div>";
+		$result .= Core_Html::GuiHeader(1, "add delivery");
+
+		$args = array("post_file" => Freight::getPost());
+		$result .= gui_select_client("delivery_client", null, $args);
+		$result .= Core_Html::GuiButton("btn_add_delivery", "Add", array("action" => "freight_add_delivery('" . Freight::getPost() . "')"));
+
+		$result .= "</div>";
+		print $result;
+	}
+
+	static function do_add_delivery()
+	{
+		$client = GetParam("client", true);
+		$pid = sql_query_single_scalar( "SELECT id FROM wp_posts WHERE post_title = 'משלוח בלבד'" );
+		$mission_id = GetParam("mission_id", false, 0);
+
+		$o = Fresh_Order::CreateOrder( $client, $mission_id, null, $instnace,
+			" משלוח המכולת " . date( 'Y-m-d' ) . " " . get_customer_name( $client ));
+		// print "order: " . $o. "<br/>";
+		$o->ChangeStatus( 'wc-processing' );
+
+		return false;
 	}
 }
