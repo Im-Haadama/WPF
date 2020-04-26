@@ -110,15 +110,6 @@ function pricelist_map_products(post_file)
     execute_url(request, location_reload);
 }
 
-function freight_add_delivery(post_file)
-{
-    let client = get_value_by_name("delivery_client");
-
-    let request = post_file + "?operation=freight_do_add_delivery&client=" + client;
-
-    execute_url(request, action_back);
-}
-
 function product_change_regularprice(post_file, prod_id)
 {
     let price = get_value_by_name("prc_" + prod_id);

@@ -62,7 +62,13 @@ class Fresh_Order {
 
 	// Create new
 	static function CreateOrder(
-		$user_id, $mission_id, $prods, $quantities, $comments, $units = null, $type = null,
+		$user_id,
+		$mission_id,
+		$prods_and_quantity,
+		$delivery_instance,
+		$comments,
+		$units = null,
+		$type = null,
 		$method = null
 	) {
 		// Somehow functions_im.php doesn't apply.
@@ -81,30 +87,38 @@ class Fresh_Order {
 			print $order_id . "<br/>";
 		}
 
-		$o           = new Order( $order_id );
+		$o           = new Fresh_Order( $order_id );
 		$o->WC_Order = $WC_Order;
 		// print "count: " . count($prods) . "<br/>";
 		$extra_comments = "";
 
-		$o->setMissionID( $mission_id );
-
 		$total = 0;
 
-		if (! count($prods)) {
+		if (! (($prods_and_quantity and count($prods_and_quantity)) or $delivery_instance)) {
 			MyLog("empty order requested and refused");
 			print "הזמנה ריקה לא נקלטה";
 			return null;
 		}
 
-		for ( $i = 0; $i < count( $prods ); $i ++ ) {
-			$prod_id = $prods[ $i ];
+		// Handle products
+		if ($prods_and_quantity and count($prods_and_quantity))
+			for ( $i = 0; $i < count( $prods_and_quantity ); $i ++ ) {
+				$prod_id = $prods_and_quantity[ $i ][0];
+				$quantity = $prods_and_quantity[ $i ][1];
 
-			if ( $prod_id > 0 ) {
-				$total += $o->AddProduct( $prod_id, $quantities[ $i ], false, $user_id, $units[ $i ], $type );
-			} else {
-				print "פריט לא נמצא " . $prods[ $i ] . "<br/>";
-				MyLog( "can't prod id for " . $prods[ $i ] );
+				if ( $prod_id > 0 ) {
+					$total += $o->AddProduct( $prod_id, $quantity, false, $user_id, $units[ $i ], $type );
+				} else {
+					print "פריט לא נמצא " . $prod_id . "<br/>";
+					MyLog( "can't prod id for " . $prod_id );
+				}
 			}
+
+		// Handle delivery method
+		if ($delivery_instance){
+			// Get a new instance of the WC_Order_Item_Shipping Object
+			if (! $o->SetDeliveryMethod($delivery_instance, $user_id))
+				return null;
 		}
 
 		$comments .= "\n" . $extra_comments;
@@ -127,21 +141,15 @@ class Fresh_Order {
 			)
 			as $key
 		) {
-//		    print $key . "<br/>";
 			$value = get_user_meta( $user_id, $key, true );
 			$_key  = '_' . $key;
-//		print $_key . " " . $value . "<br/>";
 			update_post_meta( $order_id, $_key, $value );
 		}
 
-		if ( $method ) {
-			$o->SetDeliveryMethod( $method );
-		}
-
-// 	print "comments: " . $comments . "<br/>";
 		$o->WC_Order->save();
 
-		//		$order = null;
+		// Set the mission id and comments.
+		$o->setMissionID( $mission_id );
 
 		$o->SetComments( $comments );
 
@@ -251,18 +259,27 @@ class Fresh_Order {
 		update_post_meta( $this->order_id, '_customer_user', $this->customer_id );
 	}
 
-	function SetDeliveryMethod( $method ) {
-		$postcode = get_user_meta( $this->getCustomerId(), 'shipping_postcode', true );
+	function SetDeliveryMethod( $method, $user_id ) {
+		$postcode = get_user_meta( $user_id, 'shipping_postcode', true );
+//		print "pc=$postcode<br/>";
 		$package  = array( 'destination' => array( 'country' => 'IL', 'state' => '', 'postcode' => $postcode ) );
 		$zone     = WC_Shipping_Zones::get_zone_matching_package( $package );
+		if (! $zone){
+			print "Zone for package not found<br/>";
+			return false;
+		}
 		$methods  = $zone->get_shipping_methods();
+		if (! $methods or (count($methods) == 0)) {
+			print "No methods found for zone ". $zone->get_zone_name();
+			return false;
+		}
 		$m        = $methods[ $method ];
 		// var_dump($m->instance_settings['cost']);
 		//  print "m = " . $m->get_cost() . "<br/>";
 
 		$si = new WC_Shipping_Rate( 'ss', $m->get_title(), $m->instance_settings['cost'], "ffoo", $method );
 		// $m = new WC_Shipping_Method($method);
-		$this->WC_Order->add_shipping( $si );
+		return $this->WC_Order->add_shipping( $si );
 	}
 
 	public static function NeedToOrder( &$needed_products ) {
@@ -990,20 +1007,16 @@ class Fresh_Order {
 	}
 
 	function PrintHtml( $selectable = false ) {
-		$site_tools = Core_Db_MultiSite::LocalSiteTools();
-
 		$fields = array();
 
-		if ( $selectable ) {
-			array_push( $fields, Core_Html::gui_checkbox( "chk" . $this->order_id, "deliveries", true ) );
-		}
+		if ( $selectable ) array_push( $fields, Core_Html::gui_checkbox( "chk" . $this->order_id, "deliveries", true ) );
 
 		array_push( $fields, Core_Db_MultiSite::LocalSiteName() );
 
 		$client_id     = $this->getCustomerId();
 		$client = new Fresh_Client($client_id);
-		$ref           = $this->getLink();
-		$address       = order_get_address( $this->order_id );
+		$ref           = $this->getLink($this->order_id);
+		$address       = self::getAddress();
 		$receiver_name = GetMetaField( $this->order_id, '_shipping_first_name' ) . " " .
 		                 GetMetaField( $this->order_id, '_shipping_last_name' );
 		$shipping2     = GetMetaField( $this->order_id, '_shipping_address_2', true );
@@ -1020,34 +1033,23 @@ class Fresh_Order {
 
 		array_push( $fields, get_user_meta( $client_id, 'billing_phone', true ) );
 		$payment_method = $client->get_payment_method_name( );
-		if ( $payment_method <> "מזומן" and $payment_method <> "המחאה" ) {
-			$payment_method = "";
-		}
+		if ( $payment_method <> "מזומן" and $payment_method <> "המחאה" ) $payment_method = "";
 		array_push( $fields, $payment_method );
 
-		array_push( $fields, order_get_mission_id( $this->order_id ) );
+		array_push( $fields, self::getMission() );
 
 		array_push( $fields, Core_Db_MultiSite::LocalSiteID() );
-		// array_push($fields, get_delivery_id($order_id));
 
-		$line = "<tr> " . self::delivery_table_line( 1, $fields ) . "</tr>";
-
-//	print "line=  " . $line ."<br/>";
-		// get_field($order_id, '_shipping_city');
-
-		return $line;
+		return  "<tr> " . self::delivery_table_line( 1, $fields ) . "</tr>";
 	}
 
 	static function delivery_table_line( $ref, $fields, $edit = false ) {
-		//"onclick=\"close_orders()\""
 		$row_text = "";
-		if ( $edit ) {
-			$row_text = gui_cell( Core_Html::gui_checkbox( "chk_" . $ref, "", "", null ) );
-		}
+		if ( $edit ) $row_text = gui_cell( Core_Html::gui_checkbox( "chk_" . $ref, "", "", null ) );
 
 		foreach ( $fields as $field ) // display customer name
 		{
-			$row_text .= gui_cell( $field );
+			$row_text .= Core_Html::gui_cell( $field );
 		}
 
 		return $row_text;
@@ -1413,6 +1415,27 @@ class Fresh_Order {
 		print $this->customer_id;
 		return get_user_meta( $this->customer_id, "_client_type", true );
 
+	}
+
+	static function get_minimum_order($customer_id) {
+		$value = 0; // No min.
+
+		$customer = new Fresh_Client($customer_id);
+
+		$customer_zone = $customer->getZone();
+
+		$sql    = "SELECT min_order FROM wp_woocommerce_shipping_zones WHERE zone_id = " . $customer_zone->get_id();
+		$result = sql_query( $sql, false );
+		if ( $result ) {
+			$row = mysqli_fetch_assoc( $result );
+			//    my_log($row["min_order"]);
+
+			if ( is_numeric( $row["min_order"] ) ) {
+				$value = $row["min_order"];
+			}
+		}
+
+		return $value;
 	}
 }
 

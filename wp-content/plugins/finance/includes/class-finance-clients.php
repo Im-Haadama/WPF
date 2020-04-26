@@ -102,6 +102,7 @@ class Finance_Clients {
 //	var_dump($client);
 
 		$user_info = Core_Html::gui_table_args( array(
+			array("name", $u->getName()),
 			array( "דואל", $u->get_customer_email()),
 			array( "טלפון", $u->get_phone_number() ),
 			array( "מספר מזהה", Core_Html::gui_label( "invoice_client_id", $client_id ) ),
@@ -198,7 +199,7 @@ class Finance_Clients {
 			}
 			return  $doc_id;
 		} else {
-			print "doc_id: " . $doc_id . "<br/>";
+			print "Error: " . $doc_id . "<br/>";
 			return false;
 		}
 	}

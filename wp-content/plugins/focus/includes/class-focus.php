@@ -444,4 +444,27 @@ class Focus {
 	{
 		return "/wp-content/plugins/focus/post.php";
 	}
+
+	static function print_driver_tasks( $mission_id = 0 ) {
+		$data = "";
+		if ( ! table_exists( 'tasklist' ) ) {
+			return "";
+		}
+
+		// Self collect supplies
+		$sql = "SELECT t.id FROM im_tasklist t " .
+		       "WHERE (status < 2)";
+
+		if ( $mission_id ) {
+			$sql .= " and t.mission_id = " . $mission_id;
+		}
+
+		$tasks = sql_query_array_scalar( $sql );
+		foreach ( $tasks as $task ) {
+			$data .= print_task( $task );
+		}
+
+		return $data;
+	}
+
 }

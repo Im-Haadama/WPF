@@ -6,34 +6,42 @@
  * Time: 18:13
  */
 
-// require_once( 'im_simple_html_dom.php' );
-
-
 $local_site_id = - 1;
 
+/**
+ * Class Core_Db_MultiSite
+ */
 class Core_Db_MultiSite extends Core_MultiSite {
 
+	/**
+	 * Core_Db_MultiSite constructor.
+	 */
 	public function __construct() {
-		if ( ! table_exists( "multisite" ) ) {
-			return;
-		}
-		$sql           = "select id, site_name, tools_url, local, display_name, active, master, user, password " .
-		                 " from im_multisite";
-		$results       = sql_query( $sql );
-		$sites_array   = array();
-		$master_id     = - 1;
-		$local_site_id = - 1;
-		while ( $row = sql_fetch_row( $results ) ) {
-			$id = $row[0];
-			if ( $row[3] ) {
-				$local_site_id = $row[0];
-			} // local
-			if ( $row[6] ) {
-				$master_id = $row[0];
-			}     // master
-			$line               = array( $id, $row[1], $row[2], $row[7], $row[8]);
-			$sites_array[ $id ] = $line;
-			// array_push($sites_array, $line);
+		if ( table_exists( "multisite" ) ) {
+			$sql           = "select id, site_name, tools_url, local, display_name, active, master, user, password " .
+			                 " from im_multisite";
+			$results       = sql_query( $sql );
+			$sites_array   = array();
+			$master_id     = - 1;
+			$local_site_id = - 1;
+			while ( $row = sql_fetch_row( $results ) ) {
+				$id = $row[0];
+				if ( $row[3] ) {
+					$local_site_id = $row[0];
+				} // local
+				if ( $row[6] ) {
+					$master_id = $row[0];
+				}     // master
+				$line               = array( $id, $row[1], $row[2], $row[7], $row[8] );
+				$sites_array[ $id ] = $line;
+				// array_push($sites_array, $line);
+			}
+		} else {
+			// Single site
+			$sites_array   = array();
+			$master_id     = 1;
+			$local_site_id = 1;
+			$sites_array[1] = array(1, 'local', $_SERVER['REQUEST_SCHEME'] . '://127.0.0.1', 1, '', '');
 		}
 //		const site_id_idx = 0;
 //		const site_name_idx = 1;
@@ -43,7 +51,9 @@ class Core_Db_MultiSite extends Core_MultiSite {
 		Core_MultiSite::__construct( $sites_array, $master_id, $local_site_id );
 	}
 
-
+	/**
+	 * @return mixed
+	 */
 	static public function LocalSiteId() {
 		return self::getInstance()->getLocalSiteId();
 	}
@@ -53,26 +63,41 @@ class Core_Db_MultiSite extends Core_MultiSite {
 	 */
 
 	// Static getters from singleton.
+	/**
+	 * @return Core_Db_MultiSite
+	 */
 	static function getInstance() {
 		static $instance;
 
 		if ( ! $instance ) {
 			// print "creating instance<br/>";
 			$instance = new Core_Db_MultiSite();
+			if (! $instance)
+				print 1/0;
 		}
 
 		return $instance;
 	}
 
-	static function LocalSiteTools() {
-		return self::getInstance()->getLocalSiteTools();
+	/**
+	 * @return |null
+	 */
+	static function LocalSiteUrl() {
+		return self::getInstance()->getLocalSiteUrl();
 	}
 
+	/**
+	 * @return mixed
+	 */
 	static function LocalSiteName() {
 		return self::getInstance()->getLocalSiteName();
 	}
 
-
+	/**
+	 * @param $remote_site_id
+	 * @param $local_prod_id
+	 * @param $remote_prod_id
+	 */
 	static function map( $remote_site_id, $local_prod_id, $remote_prod_id ) {
 		MyLog( __FILE__, __METHOD__ );
 		$sql = "INSERT INTO im_multisite_map (remote_site_id, local_prod_id, remote_prod_id) " .
@@ -83,6 +108,11 @@ class Core_Db_MultiSite extends Core_MultiSite {
 		sql_query( $sql );
 	}
 
+	/**
+	 * @param $id
+	 * @param $remote_id
+	 * @param $remote_site
+	 */
 	static function CopyImage( $id, $remote_id, $remote_site ) {
 		$req = "multi-site/secondary-send-pictures.php?ids=" . $id . "," . $remote_id;
 
@@ -101,29 +131,25 @@ class Core_Db_MultiSite extends Core_MultiSite {
 		}
 	}
 
+	/**
+	 * @param $id
+	 *
+	 * @return string|null
+	 */
 	static function getPickupAddress( $id ) {
-		return sql_query_single_scalar( "SELECT pickup_address FROM im_multisite WHERE id = " . $id );
+		if (table_exists("multisite"))
+			return sql_query_single_scalar( "SELECT pickup_address FROM im_multisite WHERE id = " . $id );
+		return "";
 	}
 
-	static function SiteTools( $site_id ) {
-		if ( ! is_numeric( $site_id ) ) {
-			die ( "site id should be numeric" . $site_id );
-		}
-		$sql = "SELECT tools_url FROM im_multisite WHERE id = " . $site_id;
-
-		return sql_query_single_scalar( $sql );
-	}
-
-	static function CORS() {
-		if (! table_exists("multisite")) return "";
-		$sql    = "SELECT tools_url FROM im_multisite WHERE master = 1";
-		$row    = sql_query_single_scalar( $sql );
-		$result = "Access-Control-Allow-Origin: http://";
-		$result .= parse_url( $row, PHP_URL_HOST );
-
-		return $result;
-	}
-
+	/**
+	 * @param $request
+	 * @param $site
+	 * @param bool $debug
+	 *
+	 * @return bool|string
+	 * @deprecated
+	 */
 	static function sExecute( $request, $site, $debug = false ) {
 		$i = self::getInstance();
 		$r = $i->Execute( $request, $site, $debug );
@@ -134,10 +160,16 @@ class Core_Db_MultiSite extends Core_MultiSite {
 		return $r;
 	}
 
-	static function SiteName() {
-		self::getInstance()->getLocalSiteName();
-	}
-
+	/**
+	 * @param $table
+	 * @param $key
+	 * @param int $remote
+	 * @param null $query
+	 * @param null $ignore
+	 * @param bool $debug
+	 *
+	 * @return bool|void
+	 */
 	function UpdateFromRemote( $table, $key, $remote = 0, $query = null, $ignore = null, $debug = false ) {
 		if ( $remote == 0 ) {
 			$remote = self::getMaster();
@@ -174,6 +206,17 @@ class Core_Db_MultiSite extends Core_MultiSite {
 		}
 	}
 
+	/**
+	 * @param $html
+	 * @param $table
+	 * @param $table_key
+	 * @param null $query
+	 * @param null $ignore_fields
+	 * @param bool $verbose
+	 *
+	 * @return bool
+	 * @throws Exception
+	 */
 	static private function UpdateTable( $html, $table, $table_key, $query = null, $ignore_fields = null, $verbose = false )
 	{
 		$dom = im_str_get_html( $html );

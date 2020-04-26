@@ -617,8 +617,6 @@ class Finance {
 	{
 		$file = FINANCE_INCLUDES_URL . 'business.js';
 		wp_enqueue_script( 'business', $file, null, $this->version, false );
-		$file = FINANCE_INCLUDES_URL . 'account.js';
-		wp_enqueue_script( 'account', $file, null, $this->version, false );
 		$file = FINANCE_INCLUDES_URL . 'finance.js';
 		wp_enqueue_script( 'finance', $file, null, $this->version, false );
 	}
@@ -635,6 +633,10 @@ class Finance {
 
 		$file = FINANCE_INCLUDES_URL . 'business.js';
 		wp_enqueue_script( 'business', $file, null, $this->version, false );
+
+		$file = FINANCE_INCLUDES_URL . 'account.js';
+		wp_enqueue_script( 'account', $file, null, $this->version, false );
+
 	}
 
 

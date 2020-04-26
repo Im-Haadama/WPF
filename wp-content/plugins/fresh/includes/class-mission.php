@@ -210,10 +210,10 @@ class Mission {
 	 */
 	public static function CreateFromType($type_id, $forward_days = 8) // from tomorrow till tomorrow+forward_days
 	{
-		$last_mission_id = sql_query_single_scalar("select max(id) from im_missions where mission_type = $type_id");
+		$last_mission_id = sql_query_single_scalar("select max(id) from im_missions where mission_type = $type_id and date > curdate()");
 		if ($last_mission_id) return;
 
-		$type_info = sql_query_single_assoc("select *from im_mission_types where id = $type_id");
+		$type_info = sql_query_single_assoc("select * from im_mission_types where id = $type_id");
 
 		$name = $type_info['mission_name'];
 		$week_day = $type_info['week_day'];
@@ -322,32 +322,6 @@ function show_add_mission()
 //$operation   = get_param( "operation", false, null );
 //$entity_name = "mission";
 $table_name  = "im_missions";
-
-/**
- * @return string|null
- * @throws Exception
- */
-function show_active_missions()
-{
-	global $table_name;
-	$query = " date > date_sub(curdate(), interval 10 day)";
-	$actions = array(
-		array( "שכפל", "/fresh/delivery/missions.php?operation=dup&id=%s" ),
-		array( "מחק", "/fresh/delivery/missions.php?operation=del&id=%s" )
-	);
-	$order        = "order by 2 ";
-
-	$args = array();
-	$links = array(); $links["id"] = AddToUrl(array( "operation" => "show_mission", "row_id" => "%s"));
-
-	$args["links"] = $links;
-// $args["first_id"] = true;
-	$args["actions"] = $actions;
-	$args["query"] = $query;
-	$args["no_data_message"] = ImTranslate("No active missions (today and further)");
-
-	return GemTable($table_name,$args);
-}
 
 /**
  * @param null $path_id

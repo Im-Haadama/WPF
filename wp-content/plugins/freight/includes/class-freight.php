@@ -129,6 +129,9 @@ class Freight {
 		// Admin menu
 		add_action('admin_menu', __CLASS__ . '::admin_menu');
 
+		// get local deliveries
+
+
 		get_sql_conn(ReconnectDb());
 		Freight_Methods::init();
 		Freight_Mission_Manager::init_hooks();

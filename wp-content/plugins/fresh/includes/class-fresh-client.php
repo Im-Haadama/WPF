@@ -65,6 +65,11 @@ class Fresh_Client {
 		}
 	}
 
+	function get_payment_method_name()
+	{
+		return (Finance_Payment_Methods::get_payment_method_name(self::get_payment_method()));
+	}
+
 	function customer_type( ) {
 		$key = get_user_meta( $this->user_id, '_client_type', true );
 
@@ -101,6 +106,12 @@ class Fresh_Client {
 		return get_post_meta( self::get_last_order( ), '_billing_phone', true );
 	}
 
+	function getName()
+	{
+//		var_dump(self::get_user());
+		return self::get_user()->display_name;
+	}
+
 	function get_last_order( ) {
 		return sql_query_single_scalar( " SELECT max(meta.post_id) " .
 		                                " FROM `wp_posts` posts, wp_postmeta meta" .
@@ -109,6 +120,21 @@ class Fresh_Client {
 		                                " and meta.post_id = posts.ID");
 	}
 
+	function getZone()
+	{
+		$customer = new WC_Customer($this->user_id);
+		$country  = $customer->get_shipping_country();
+		$postcode = $customer->get_shipping_postcode();
+
+		return WC_Shipping_Zones::get_zone_matching_package( array(
+			'destination' => array(
+				'country'  => $country,
+				'state'    => '',
+				'postcode' => $postcode,
+			),
+		) );
+
+	}
 
 	private function get_user()
 	{

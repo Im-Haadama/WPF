@@ -15,18 +15,18 @@ class Focus_Database extends Core_Database
 
 	static function CreateViews($version, $force )
 	{
-		$current = self::CheckInstalled("Fresh", "views");
+		$current = self::CheckInstalled("Focus", "views");
 
 		if ($current == $version and ! $force) return true;
 
-		self::UpdateInstalled("Fresh", "views", $version);
+		self::UpdateInstalled("Focus", "views", $version);
 
 	}
 
 
 	static function CreateTables($version, $force)
 	{
-		$current = self::CheckInstalled("Fresh", "functions");
+		$current = self::CheckInstalled("Focus", "functions");
 
 		if (!table_exists("working_teams"))
 			sql_query("create table im_working_teams
@@ -157,18 +157,18 @@ engine=InnoDB;
 
 ");
 
-		self::UpdateInstalled("Fresh", "tables", $version);
+		self::UpdateInstalled("Focus", "tables", $version);
 
 	}
 
 	static function CreateFunctions($version, $force = false)
 	{
-		$current = self::CheckInstalled("Fresh", "functions");
+		$current = self::CheckInstalled("Focus", "functions");
 		$db_prefix = get_table_prefix();
 
 
 		if ($current == $version and ! $force) return true;
 
-		self::UpdateInstalled("Fresh", "functions", $version);
+		self::UpdateInstalled("Focus", "functions", $version);
 	}
 }

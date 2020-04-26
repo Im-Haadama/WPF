@@ -56,7 +56,6 @@ class Fresh_Order_Management {
 	static public function add_order_action($actions, $order)
 	{
 		$O = new Fresh_Order($order->get_id());
-//		print "------------------------------->" . $order->status ."<br/>";
 		switch ($order->status)
 		{
 			case "processing":
@@ -84,7 +83,6 @@ class Fresh_Order_Management {
 				);
 				break;
 		}
-//		var_dump($actions);
 		return $actions;
 	}
 
@@ -124,7 +122,6 @@ class Fresh_Order_Management {
 			if (! $fee) {
 				MyLog("No delivery fee");
 				Print "Not delivery fee. Add to order before completion";
-				die(1);
 			}
 
 			// if ($O->)

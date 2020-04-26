@@ -136,3 +136,12 @@ function mission_update_type(post_file, mission_id)
     let type = get_value_by_name("mission_type_" + mission_id);
     execute_url(post_file + '?operation=mission_update_type&mission=' + mission_id + '&type=' + type, fail_message1);
 }
+
+function freight_add_delivery(post_file, mission_id)
+{
+    let client = get_value_by_name("delivery_client");
+
+    let request = post_file + "?operation=freight_do_add_delivery&client=" + client + '&mission_id=' + mission_id;
+
+    execute_url(request, action_back);
+}

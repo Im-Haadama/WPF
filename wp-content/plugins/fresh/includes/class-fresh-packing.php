@@ -255,8 +255,6 @@ class Fresh_Packing {
 				break;
 
 		}
-
-
 	}
 
 	function wc_new_order_column( $columns ) {
@@ -266,10 +264,7 @@ class Fresh_Packing {
 		return $columns;
 	}
 
-
-		static function orders_per_item( $prod_id, $multiply, $short = false, $include_basket = false, $include_bundle = false, $just_total = false, $month = null ) {
-		// my_log( "prod_id=" . $prod_id, __METHOD__ );
-
+	static function orders_per_item( $prod_id, $multiply, $short = false, $include_basket = false, $include_bundle = false, $just_total = false, $month = null ) {
 		$sql = 'select woi.order_item_id, order_id'
 		       . ' from wp_woocommerce_order_items woi join wp_woocommerce_order_itemmeta woim'
 		       . ' where order_id in';
@@ -283,8 +278,6 @@ class Fresh_Packing {
 			}
 			$sql .= "(SELECT id FROM wp_posts WHERE post_date like '" . $year . "-" . sprintf( "%02s", $month ) . "-%'" .
 			        " and post_status = 'wc-completed')";
-//		print $sql;
-//		die (1);
 		}
 
 		$baskets = null;

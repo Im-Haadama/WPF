@@ -13,8 +13,6 @@ abstract class Core_Multisite_Fields {
 	const api_key = 3;
 }
 
-//require_once( "data/im_simple_html_dom.php" );
-
 class Core_MultiSite {
 	private $sites_array;
 	private $master_id;
@@ -79,12 +77,11 @@ class Core_MultiSite {
 	}
 
 	public function getSiteURL( $site_id ) {
+//		var_dump($this->sites_array);
 		if ( isset( $this->sites_array[ $site_id ] ) ) {
 			return $this->sites_array[ $site_id ][ Core_Multisite_Fields::site_url_idx ];
 		} else {
-			print "site ";
-			var_dump( $site_id );
-			print " not defined!";
+			print "site $site_id not defined!";
 
 			return null;
 		}
@@ -129,8 +126,6 @@ class Core_MultiSite {
 		$data  = array( array( "site name", "result" ));
 		$rc = null;
 
-		if (! $this->sites_array)
-			return self::DoRun($func, $rc);
 		foreach ( $this->sites_array as $site_id => $site ) {
 			$result = $this->Run( $func, $site_id, $first, $debug );
 			if (! $result) {
@@ -157,27 +152,15 @@ class Core_MultiSite {
 
 	function Run( $func, $site_id, $first = false, $debug = false )
 	{
-		if ( strstr( $func, "?" ) ) {
-			$glue = "&";
-		} else {
-			$glue = "?";
-		}
-
 		$url = $this->getSiteURL( $site_id );
 
-		if ( strstr( $func, "?" ) ) {
-			$glue = "&";
-		} else {
-			$glue = "?";
-		}
+		$glue = (( strstr( $func, "?" ) ) ? "&" : "?");
 
 		$site_name = $this->getSiteName( $site_id );
 
 		$file = $url . "/" . $func . $glue . "header=" . ( $first ? "1" : "0" );
 
-		if ( $debug ) {
-			print "Getting $file...<br/>";
-		}
+		if ( $debug ) print "Getting $file...<br/>";
 
 		if (! isset($this->sites_array[$site_id][3])){
 			print "Error #N3: username is missing (index 3), site " . $this->getSiteName($site_id) ;

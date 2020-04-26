@@ -14,6 +14,7 @@ class Freight_Mission_Manager
 		add_action("mission_details", __CLASS__ . '::mission_details');
 		add_action("freight_add_delivery", __CLASS__ . "::add_delivery");
 		add_action("freight_do_add_delivery", __CLASS__ . "::do_add_delivery");
+		add_action('get_local_anonymous', __CLASS__ . "::get_local_missions");
 	}
 
 	static function missions()
@@ -79,7 +80,7 @@ class Freight_Mission_Manager
 
 		$sql = "select * from im_missions where id in (" . CommaImplode($missions) . ") order by date";
 
-		$args["links"] = array("id" => AddToUrl( array("operation" => "show_mission", "id"=>"%s")));
+		$args["links"] = array("id" => AddToUrl( "id", "%s"));
 
 		// $args["events"] = array("mission_id" => "mission_changed(order_id))
 		$args["sql"] = $sql;
@@ -187,13 +188,12 @@ class Freight_Mission_Manager
 		$result = Core_Html::gui_table_args($path_info, "dispatch_" . $the_mission, $args);
 
 		return $result;
-		// print self::show_mission_route($the_mission, false, false, false);
 	}
 
 	static function prepare_route($the_mission, &$path, &$lines_per_station, $supplies_to_collect) {
 		$debug  = false;
 		$update = false;
-		require_once( ABSPATH . 'wp-content/plugins/flavor/includes/core/data/im_simple_html_dom.php' );
+		require_once( ABSPATH . 'vendor/simple_html_dom.php' );
 		$stop_points       = array();
 		self::$multi_site = Core_Db_MultiSite::getInstance();
 
@@ -201,9 +201,9 @@ class Freight_Mission_Manager
 
 		$data_lines   = array();
 
-		$data_url = "/routes/routes-post.php?operation=get_local&mission_ids=$the_mission";
+		$data_url = "wp-content/plugins/freight/post.php?operation=get_local_anonymous&mission_ids=$the_mission";
 		$output   = self::$multi_site->GetAll( $data_url, false, $debug );
-		$dom = im_str_get_html( $output );
+		$dom = \Dom\str_get_html( $output );
 
 		if ( strlen( $output ) < 10 ) {
 			print $output . "<br/>";
@@ -430,7 +430,7 @@ class Freight_Mission_Manager
 			$stop_point = $data_lines[ $mission_id ][ $i ][0];
 
 			// print "<br/>sp=" . $stop_point; var_dump($prerequisite);
-			$dom        = im_str_get_html( $data_lines[ $mission_id ][ $i ][1] );
+			$dom        = \Dom\str_get_html( $data_lines[ $mission_id ][ $i ][1] );
 			$row        = $dom->find( 'tr' );
 
 			$order_info = [];
@@ -527,7 +527,7 @@ class Freight_Mission_Manager
 			return $ds;
 		}
 		$r = self::do_get_distance( $address_a, $address_b );
-		if ( $r  == -1) {
+		if ( $r  == -1 or ! is_array($r)) {
 			// One is invalid
 			return -1;
 		}
@@ -755,11 +755,11 @@ class Freight_Mission_Manager
 	{
 		if (! ($order_id > 0))
 		{
+			var_dump($order_id);
 			print debug_trace(5);
 			die (1);
 		}
 		$i = Core_Options::info_get("mission_order_priority_" . $site_id . '_' .$order_id);
-//		print "OGP $order_id $site_id $i<Br/>";
 
 		if ($i) return $i;
 		return $default;
@@ -790,12 +790,13 @@ class Freight_Mission_Manager
 
 	static function add_delivery()
 	{
+		$mission_id = GetParam("id");
 		$result = "<div>";
 		$result .= Core_Html::GuiHeader(1, "add delivery");
 
 		$args = array("post_file" => Freight::getPost());
 		$result .= gui_select_client("delivery_client", null, $args);
-		$result .= Core_Html::GuiButton("btn_add_delivery", "Add", array("action" => "freight_add_delivery('" . Freight::getPost() . "')"));
+		$result .= Core_Html::GuiButton("btn_add_delivery", "Add", array("action" => "freight_add_delivery('" . Freight::getPost() . "', $mission_id)"));
 
 		$result .= "</div>";
 		print $result;
@@ -804,14 +805,127 @@ class Freight_Mission_Manager
 	static function do_add_delivery()
 	{
 		$client = GetParam("client", true);
-		$pid = sql_query_single_scalar( "SELECT id FROM wp_posts WHERE post_title = 'משלוח בלבד'" );
-		$mission_id = GetParam("mission_id", false, 0);
+		$mission_id = GetParam("mission_id", true);
+		$Mission = new Mission($mission_id);
+		$date =date('d-m-Y', strtotime($Mission->getDate()));
 
-		$o = Fresh_Order::CreateOrder( $client, $mission_id, null, $instnace,
+		$customer = new Fresh_Client($client);
+		$zone = $customer->getZone();
+		$the_shipping = null;
+		foreach ($zone->get_shipping_methods(true) as $shipping_method) {
+//			print $shipping_method->title . "<br/>";
+			if ( strstr( $shipping_method->title, $date ) ) {
+				$the_shipping = $shipping_method;
+				break;
+			}
+		}
+		if (! $the_shipping) {
+			print "No shipping method for date $date to zone " . $zone->get_zone_name();
+			return false;
+		}
+//		var_dump($zone->get_shipping_methods(true));
+
+		// Find shipping zone.
+
+
+//		$pid = sql_query_single_scalar( "SELECT id FROM wp_posts WHERE post_title = 'משלוח בלבד'" );
+
+		$o = Fresh_Order::CreateOrder( $client, $mission_id, null, $the_shipping->get_instance_id(),
 			" משלוח המכולת " . date( 'Y-m-d' ) . " " . get_customer_name( $client ));
-		// print "order: " . $o. "<br/>";
+//		// print "order: " . $o. "<br/>";
+		if (! $o)
+			return false;
 		$o->ChangeStatus( 'wc-processing' );
+		$o->setMissionID($mission_id);
 
-		return false;
+		return true;
 	}
+	static function get_local_missions()
+	{
+		$mission_ids = GetParam("mission_ids", true);
+		$header = GetParam("header", false, false);
+		print self::get_missions($mission_ids, $header);
+		return true;
+	}
+
+	static function get_missions($mission_ids, $header)
+	{
+		$data = "";
+
+		if ($header) print self::delivery_table_header();
+		if (! is_array($mission_ids)) $mission_ids = array($mission_ids);
+
+		foreach ( $mission_ids as $mission_id ) {
+			if ( $mission_id ) {
+				$sql = "id in (select post_id from wp_postmeta " .
+				       " WHERE meta_key = 'mission_id' " .
+				       " AND meta_value = " . $mission_id . ") ";
+				$sql .= " and `post_status` in ('wc-awaiting-shipment', 'wc-processing')";
+
+				$data .= self::print_deliveries( $sql, false);
+
+				$data .= Fresh_Supplies::print_driver_supplies( $mission_id );
+
+				$data .= Focus::print_driver_tasks( $mission_id );
+			}
+		}
+
+		return $data;
+	}
+
+	static function delivery_table_header( $edit = false ) {
+		$data = "";
+		$data .= "<table><tr>";
+		$data .= "<td><h3>אתר</h3></td>";
+		$data .= "<td><h3>מספר </br>/הזמנה<br/>אספקה</h3></td>";
+		$data .= "<td><h3>מספר </br>לקוח</h3></td>";
+//	$data .= "<td><h3>שם המזמין</h3></td>";
+		$data .= "<td><h3>שם המקבל</h3></td>";
+		$data .= "<td><h3>כתובת</h3></td>";
+		$data .= "<td><h3>כתובת-2</h3></td>";
+		$data .= "<td><h3>טלפון</h3></td>";
+		// $data .= "<td><h3></h3></td>";
+		$data .= "<td><h3>מזומן/המחאה</h3></td>";
+		$data .= "<td><h3>משימה</h3></td>";
+		$data .= "<td><h3>אתר</h3></td>";
+		$data .= "<td><h3>מספר משלוח</h3></td>";
+
+		// $data .= "<td><h3>מיקום</h3></td>";
+		return $data;
+	}
+
+	static function print_deliveries( $query, $selectable = false, $debug = false ) {
+		$data = "";
+		$sql  = 'SELECT posts.id, order_is_group(posts.id), order_user(posts.id) '
+		        . ' FROM `wp_posts` posts'
+		        . ' WHERE ' . $query;
+
+		$sql .= ' order by 1';
+
+		if ( $debug ) print $sql;
+
+		$orders    = sql_query( $sql );
+		$prev_user = - 1;
+		while ( $order = sql_fetch_row( $orders ) ) {
+			$order_id   = $order[0];
+			$o          = new Fresh_Order( $order_id );
+			$is_group   = $order[1];
+			$order_user = $order[2];
+			if ( $debug ) print "order " . $order_id . "<br/>";
+
+			if ( ! $is_group ) {
+				$data .= $o->PrintHtml( $selectable );
+				continue;
+			} else {
+				if ( $order_user != $prev_user ) {
+					$data      .= $o->PrintHtml( $selectable );
+					$prev_user = $order_user;
+				}
+			}
+		}
+
+		// print "data=" . $data . '<br/>';
+		return $data;
+	}
+
 }

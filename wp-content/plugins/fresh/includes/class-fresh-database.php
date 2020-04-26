@@ -8,19 +8,6 @@ class Fresh_Database extends Core_Database
 	static function install($version, $force = false)
 	{
 
-		sql_query("drop function client_payment_method");
-		sql_query("create function client_payment_method(_user_id int) returns text charset utf8
-BEGIN
-    declare _method_id int;
-    declare _name VARCHAR(50) CHARSET 'utf8';
-    select meta_value into _method_id from wp_usermeta where user_id = _user_id and meta_key = 'payment_method';
-    select name into _name from im_payments where id = _method_id;
-
-    return _name;
-  END;
-
-");
-		return;
 		// Create im_info table if missing.
 		self::CreateInfo();
 
@@ -116,6 +103,31 @@ order by 1;");
 
 		if ($current == $version and ! $force) return true;
 
+		sql_query("create table im_distance
+(
+	id int auto_increment
+		primary key,
+	distance int null,
+	duration int null,
+	address_a varchar(50) null,
+	address_b varchar(50) null
+)
+engine=MyISAM charset=utf8;
+
+");
+
+		sql_query("create table im_client_types
+(
+	id int auto_increment
+		primary key,
+	type varchar(20) null,
+	rate float null,
+	is_group bit default b'0' not null,
+	dry_rate float not null,
+	q_min int not null
+)
+");
+
 		sql_query("alter table ${db_prefix}missions drop path_code");
 		sql_query("alter table ${db_prefix}missions add mission_type int");
 
@@ -180,6 +192,19 @@ END;
 
 ");
 
+		sql_query("drop function client_payment_method");
+		sql_query("create function client_payment_method(_user_id int) returns text charset utf8
+BEGIN
+    declare _method_id int;
+    declare _name VARCHAR(50) CHARSET 'utf8';
+    select meta_value into _method_id from wp_usermeta where user_id = _user_id and meta_key = 'payment_method';
+    select name into _name from im_payments where id = _method_id;
+
+    return _name;
+  END;
+
+");
+
 		sql_query("drop function client_balance");
 		sql_query("create function client_balance(_client_id int, _date date) returns float
 BEGIN
@@ -189,19 +214,6 @@ from im_client_accounts where date <= _date
                           and client_id = _client_id;
 return round(_amount, 0);
 END;
-
-");
-
-		sql_query("drop function client_payment_method");
-		sql_query("create function client_payment_method(_user_id int) returns text
-BEGIN
-    declare _method_id int;
-    declare _name VARCHAR(50) CHARSET 'utf8';
-    select meta_value into _method_id from wp_usermeta where user_id = _user_id and meta_key = 'payment_method';
-    select name into _name from im_payments where id = _method_id;
-
-    return _name;
-  END;
 
 ");
 

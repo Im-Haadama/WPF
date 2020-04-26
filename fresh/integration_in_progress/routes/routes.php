@@ -255,36 +255,6 @@ function delivered($site_id, $type, $id, $debug = false)
  *
  * @return string
  */
-function get_missions($mission_ids, $header, $debug)
-{
-    // $debug = 2;
-    $data = "";
-
-    if ($header){
-        print delivery_table_header();
-    }
-	if (! is_array($mission_ids)) $mission_ids = array($mission_ids);
-    if ($debug){
-        print "missions_ids: "; var_dump($mission_ids); print "<br/>";
-    }
-
-    foreach ( $mission_ids as $mission_id ) {
-        if ( $mission_id ) {
-            $sql = "id in (select post_id from wp_postmeta " .
-                   " WHERE meta_key = 'mission_id' " .
-                   " AND meta_value = " . $mission_id . ") ";
-            if ($debug != 2) $sql .= " and `post_status` in ('wc-awaiting-shipment', 'wc-processing')";
-            // print $sql . "<br/>";
-            $data .= print_deliveries( $sql, false, $debug );
-
-            $data .= print_driver_supplies( $mission_id );
-
-            $data .= print_driver_tasks( $mission_id );
-        }
-    }
-
-    return $data;
-}
 
 /**
  * @param $query
@@ -293,41 +263,6 @@ function get_missions($mission_ids, $header, $debug)
  *
  * @return string
  */
-function print_deliveries( $query, $selectable = false, $debug = false ) {
-	$data = "";
-	$sql  = 'SELECT posts.id, order_is_group(posts.id), order_user(posts.id) '
-	        . ' FROM `wp_posts` posts'
-	        . ' WHERE ' . $query;
-
-	$sql .= ' order by 1';
-
-	if ( $debug ) {
-		print $sql;
-	}
-	$orders    = sql_query( $sql );
-	$prev_user = - 1;
-	while ( $order = sql_fetch_row( $orders ) ) {
-		$order_id   = $order[0];
-		$o          = new Order( $order_id );
-		$is_group   = $order[1];
-		$order_user = $order[2];
-		if ( $debug )
-			print "order " . $order_id . "<br/>";
-
-		if ( ! $is_group ) {
-			$data .= $o->PrintHtml( $selectable );
-			continue;
-		} else {
-			if ( $order_user != $prev_user ) {
-				$data      .= $o->PrintHtml( $selectable );
-				$prev_user = $order_user;
-			}
-		}
-	}
-
-	// print "data=" . $data . '<br/>';
-	return $data;
-}
 
 /**
  * @param $ref
@@ -343,35 +278,6 @@ function print_deliveries( $query, $selectable = false, $debug = false ) {
  * @return string
  * @throws Exception
  */
-function print_driver_supplies( $mission_id = 0 ) {
-	// Self collect supplies
-	$data = "";
-	$sql  = "SELECT s.id FROM im_supplies s
-          JOIN im_suppliers r
-          WHERE r.self_collect = 1
-          AND s.supplier = r.id
-          AND s.status IN (1, 3)" .
-	        " AND (s.picked = 0 or isnull(s.picked))";
-
-	// print $sql;
-
-	if ( $mission_id ) {
-		$sql .= " AND s.mission_id = " . $mission_id;
-	}
-	// DEBUG $data .= $sql;
-
-	$supplies = sql_query_array_scalar( $sql );
-
-	if ( count( $supplies ) ) {
-		foreach ( $supplies as $supply ) {
-//			   print "id: " . $supply . "<br/>";
-			$data .= print_supply( $supply );
-		}
-	}
-
-	return $data;
-}
-
 
 /**
  * @param $id
@@ -445,27 +351,6 @@ function print_task( $id ) {
  * @return string
  * @throws Exception
  */
-function print_driver_tasks( $mission_id = 0 ) {
-	$data = "";
-	if ( ! table_exists( 'tasklist' ) ) {
-		return "";
-	}
-
-	// Self collect supplies
-	$sql = "SELECT t.id FROM im_tasklist t " .
-	       "WHERE (status < 2)";
-
-	if ( $mission_id ) {
-		$sql .= " and t.mission_id = " . $mission_id;
-	}
-
-	$tasks = sql_query_array_scalar( $sql );
-	foreach ( $tasks as $task ) {
-		$data .= print_task( $task );
-	}
-
-	return $data;
-}
 
 
 /**
@@ -473,26 +358,6 @@ function print_driver_tasks( $mission_id = 0 ) {
  *
  * @return string
  */
-function delivery_table_header( $edit = false ) {
-	$data = "";
-	$data .= "<table><tr>";
-	$data .= "<td><h3>אתר</h3></td>";
-	$data .= "<td><h3>מספר </br>/הזמנה<br/>אספקה</h3></td>";
-	$data .= "<td><h3>מספר </br>לקוח</h3></td>";
-//	$data .= "<td><h3>שם המזמין</h3></td>";
-	$data .= "<td><h3>שם המקבל</h3></td>";
-	$data .= "<td><h3>כתובת</h3></td>";
-	$data .= "<td><h3>כתובת-2</h3></td>";
-	$data .= "<td><h3>טלפון</h3></td>";
-	// $data .= "<td><h3></h3></td>";
-	$data .= "<td><h3>מזומן/המחאה</h3></td>";
-	$data .= "<td><h3>משימה</h3></td>";
-	$data .= "<td><h3>אתר</h3></td>";
-	$data .= "<td><h3>מספר משלוח</h3></td>";
-
-	// $data .= "<td><h3>מיקום</h3></td>";
-	return $data;
-}
 
 /**
  * @param $missions

@@ -321,7 +321,6 @@ function QuoteDate($date, $format = 'Y-m-d')
 //		curl_close( $handle );
 
 		$data = file_get_contents($url);
-		var_dump($data);
 		return $data;
 	}
 
@@ -583,4 +582,13 @@ function GetMetaField( $post_id, $field_name ) {
 	}
 
 	return "Bad post id";
+}
+
+function table_get_text( $row, $index ) {
+	$cell = $row->find( 'td', $index );
+	if ( $cell ) {
+		return $cell->plaintext;
+	}
+
+	return "";
 }
