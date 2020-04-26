@@ -3,7 +3,6 @@
 
 class Freight_Database extends Core_Database {
 	static function install( $version, $force =false ) {
-		return;
 		// Create im_info table if missing.
 		self::CreateInfo();
 
@@ -14,10 +13,15 @@ class Freight_Database extends Core_Database {
 
 	static function CreateTables( $version, $force )
 	{
-		$current = self::CheckInstalled("Fresh", "functions");
+		$current = self::CheckInstalled("Freight", "tables");
 		$db_prefix = get_table_prefix();
 
 		if ($current == $version and ! $force) return true;
+
+		sql_query("alter table im_multisite
+	add pickup_address varchar(50) not null;
+
+");
 
 		sql_query("alter table wp_woocommerce_shipping_zone_methods add week_day integer;");
 

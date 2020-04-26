@@ -584,7 +584,7 @@ function GetMetaField( $post_id, $field_name ) {
 	return "Bad post id";
 }
 
-function table_get_text( $row, $index ) {
+function TableGetText( $row, $index ) {
 	$cell = $row->find( 'td', $index );
 	if ( $cell ) {
 		return $cell->plaintext;

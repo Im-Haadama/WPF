@@ -226,7 +226,7 @@ class Fresh_PriceList {
 		$category = sql_query_single_scalar( "SELECT category FROM im_supplier_price_list WHERE id = " . $pl_id );
 		array_push( $line, $category );
 		if ($create_option){
-			array_push($line, gui_select_category($pl_id, false));
+			array_push($line, Fresh_Category::Select($pl_id));
 
 		} else
 			if ( $linked_prod_id > 0 ) {

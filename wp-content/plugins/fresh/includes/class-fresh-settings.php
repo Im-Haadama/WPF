@@ -80,9 +80,9 @@
 
 			// General Settings
 			$menu->AddSubMenu('edit.php?post_type=product', 'edit_shop_orders',
-				array('page_title' => 'Pictures',
-				            'menu_title' => 'Settings',
-				            'menu_slug' => 'settings',
+				array('page_title' => 'Missing pictures',
+				            'menu_title' => 'Missing pictures',
+				            'menu_slug' => 'missing',
 				            'function' => "Fresh_Catalog::missing_pictures"));
 
 			$menu->AddSubMenu('users.php', 'edit_shop_orders',

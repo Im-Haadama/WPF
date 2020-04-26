@@ -98,6 +98,21 @@ class Fresh_Pricing {
 //	}
 
 	static function get_buy_price( $prod_id, $supplier_id = 0 ) {
+		$p = new Fresh_Product($prod_id);
+		if ($p->is_basket())
+		{
+			$buy = 0;
+			$sql2 = 'SELECT DISTINCT product_id, quantity FROM im_baskets WHERE basket_id = ' . $prod_id;
+			print $sql2;
+			$result2 = sql_query( $sql2 );
+			while ( $row2 = mysqli_fetch_assoc( $result2 ) ) {
+				$prod_id = $row2["product_id"];
+				$buy     += self::get_buy_price( $prod_id, $supplier_id );
+			}
+			return $buy;
+
+//			foreach ($p-)
+		}
 		// print $supplier_id . "<br/>";
 		if ( $prod_id > 0 ) {
 			if ( $supplier_id > 0 ) {

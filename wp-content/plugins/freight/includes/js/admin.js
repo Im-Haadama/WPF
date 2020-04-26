@@ -140,8 +140,9 @@ function mission_update_type(post_file, mission_id)
 function freight_add_delivery(post_file, mission_id)
 {
     let client = get_value_by_name("delivery_client");
+    let fee = get_value_by_name("delivery_price");
 
-    let request = post_file + "?operation=freight_do_add_delivery&client=" + client + '&mission_id=' + mission_id;
+    let request = post_file + "?operation=freight_do_add_delivery&client=" + client + '&mission_id=' + mission_id + '&fee=' + fee;
 
-    execute_url(request, action_back);
+    execute_url(request, location_reload);
 }

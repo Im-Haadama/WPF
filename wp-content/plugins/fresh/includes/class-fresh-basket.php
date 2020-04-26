@@ -225,20 +225,22 @@ class Fresh_Basket extends  Fresh_Product  {
 		// $args["sum_fields"] = array("quantity" => array(0, "sum_numbers"));
 
 		$total = 0;
+		$buy_total = 0;
 		$basket_content = Core_Data::TableData($sql, $args);
 		if ($basket_content) {
 			foreach($basket_content as &$row) {
+				$row['buy_price'] = Fresh_Pricing::get_buy_price($row['product_id']);
+				$buy_total += $row['buy_price'];
 				if (is_numeric($row["line_price"])) $total += $row["line_price"];
 			}
 
-			array_push($basket_content, array( "product_id" => ImTranslate("Total"), "price" => "", "quantity" => "", "line_price" => $total));
+			array_push($basket_content, array( "product_id" => ImTranslate("Total"), "price" => "", "quantity" => "", "line_price" => $total, "buy_total" => $buy_total));
 			$args["checkbox_class"] = "product_checkbox";
 
 			$data .= Core_Html::gui_table_args($basket_content, "basket_contents", $args);
 		} else {
 			$data .= __("Basket is empty") . "<br/>";
 		}
-
 
 		$data .= Core_Html::GuiButton("remove_product", "remove", array("action" => "remove_from_basket(" . $basket_id . ")", "remove"));
 

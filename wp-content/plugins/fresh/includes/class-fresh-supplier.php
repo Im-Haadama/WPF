@@ -69,7 +69,7 @@ class Fresh_Supplier {
 		}
 		$args["name"] = "supplier_name";
 
-		return Core_Html::GuiSelectTable($id, "im_suppliers", $args);
+		return Core_Html::GuiSelectTable($id, "suppliers", $args);
 //		$sql_where );
 	}
 

@@ -68,13 +68,11 @@ class Core_Data
 	static function Inactive($table_name, $rows)
 	{
 		// TODO: adding meta key when needed(?)
-//		global $meta_table_info;
-
-//		$row_id = intval(get_param("id", true));
+		$db_prefix = get_table_prefix($table_name);
 		if (! is_array($rows)) $rows = array($rows);
 
 		foreach($rows as $row_id)
-			if (! sql_query("update $table_name set is_active = 0 where id = $row_id")) return false;
+			if (! sql_query("update ${db_prefix}$table_name set is_active = 0 where id = $row_id")) return false;
 		return true;
 	}
 
@@ -89,12 +87,12 @@ class Core_Data
 		return true;
 	}
 
-
 	static function Active($table_name, $row_id, $active)
 	{
 		$row_id = intval($row_id);
+		$db_prefix = get_table_prefix($table_name);
 
-		return sql_query("update $table_name set is_active = $active where id = $row_id");
+		return sql_query("update ${db_prefix}$table_name set is_active = $active where id = $row_id");
 	}
 
 	static function SaveNew($table_name)

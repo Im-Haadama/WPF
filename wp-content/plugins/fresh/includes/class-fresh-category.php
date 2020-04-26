@@ -15,11 +15,7 @@ class Fresh_Category {
 		return $this->term->name;
 	}
 
-
-	static function Select( $input_id, $datalist_id, $args ) {
-		$result = "";
-
-//		$args["include_id"] = $include_id;
+	static function Select( $input_id, $datalist_id = "categories", $args = null ) {
 		$args["field"]    = "name";
 		$args["id_field"] = "term_id";
 
@@ -31,8 +27,6 @@ class Fresh_Category {
 		}
 
 		return $result . Core_Html::GuiInputDatalist($input_id, $datalist_id);
-
-//		return Core_Html::GuiAutoList($id, "categories", $args);
 	}
 
 	function get_missing_pictures()

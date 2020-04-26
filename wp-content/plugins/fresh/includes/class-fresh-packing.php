@@ -530,10 +530,14 @@ class Fresh_Packing {
 	static function gui_select_mission( $id, $selected = 0, $args = null ) {
 		$events = GetArg( $args, "events", null );
 
+		$query = " date >= curdate() or date is null";
+		if ($selected)
+			$query .= " or (id = $selected)";
+
 		$args = array(
 			"events"   => $events,
 			"selected" => $selected,
-			"query"    => " date >= curdate() or date is null"
+			"query"    => $query
 		);
 
 		// "ifnull(concat (name, ' ', DAYOFMONTH(date), '/', month(date)), name)");

@@ -152,6 +152,7 @@ class Core_MultiSite {
 
 	function Run( $func, $site_id, $first = false, $debug = false )
 	{
+		$debug = 0;
 		$url = $this->getSiteURL( $site_id );
 
 		$glue = (( strstr( $func, "?" ) ) ? "&" : "?");
@@ -162,13 +163,12 @@ class Core_MultiSite {
 
 		if ( $debug ) print "Getting $file...<br/>";
 
-		if (! isset($this->sites_array[$site_id][3])){
-			print "Error #N3: username is missing (index 3), site " . $this->getSiteName($site_id) ;
-			// var_dump($this->sites_array);
-			die (1);
+		$username = null;
+		$password = null;
+		if (isset($this->sites_array[$site_id][3])){ // Would work only for anon
+			$username = $this->sites_array[ $site_id ][3];
+			$password = $this->sites_array[ $site_id ][4];
 		}
-		$username = $this->sites_array[$site_id][3];
-		$password = $this->sites_array[$site_id][4];
 		$result_text = self::DoRun($file, $this->http_codes[$site_id], $username, $password);
 
 		if (in_array($this->http_codes[$site_id], array(404, 500))) return false;

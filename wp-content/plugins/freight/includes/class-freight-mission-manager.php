@@ -12,7 +12,6 @@ class Freight_Mission_Manager
 		add_action("order_save_pri", __CLASS__ . '::order_save_pri');
 		add_action("mission_update_type", __CLASS__ . '::mission_update_type');
 		add_action("mission_details", __CLASS__ . '::mission_details');
-		add_action("freight_add_delivery", __CLASS__ . "::add_delivery");
 		add_action("freight_do_add_delivery", __CLASS__ . "::do_add_delivery");
 		add_action('get_local_anonymous', __CLASS__ . "::get_local_missions");
 	}
@@ -103,7 +102,7 @@ class Freight_Mission_Manager
 	static function dispatcher_wrap()
 	{
 		$operation = GetParam("operation", false, null);
-		$header = "Dispatch";
+		$header = __("Dispatch mission");
 		$week = GetParam("week", false, null);
 		if ($week)
 			$header .= __("Missions of week") . " " . $week;
@@ -117,12 +116,11 @@ class Freight_Mission_Manager
 
 		$id = GetParam("id");
 		if ($id) {
-			$args = array("post_file" => self::getPost());
-			$result = ""; /// Core_Html::GuiHeader(1, "Mission $id");
-//			$result .= Core_Gem::GemElement("missions", $id, $args);
-			$path = array();
-//			self::prepare_route($id, $path, $lines_per_station);
+			$m = new Mission($id);
+			$price = $m->getDefaultFee();
+			$result .= Core_Html::GuiHeader(2, $m->getMissionName() . "($id)");
 			$result .= self::dispatcher($id, $operation);
+			$result .= self::add_delivery($price);
 			print $result;
 			return;
 		}
@@ -138,8 +136,8 @@ class Freight_Mission_Manager
 		$lines_per_station = array();
 		$supplies_to_collect = array();
 
-		if (! $operation)
-			print Core_Html::GuiHyperlink("Add delivery", AddToUrl("operation", "freight_add_delivery")) . "<br/>";
+//		if (! $operation)
+//			print Core_Html::GuiHyperlink("Add delivery", AddToUrl("operation", "freight_add_delivery")) . "<br/>";
 
 		self::prepare_route($the_mission, $path, $lines_per_station, $supplies_to_collect);
 
@@ -246,7 +244,7 @@ class Freight_Mission_Manager
 			// Do we need to get somewhere to get something for this delivery.
 //		if ($site_id != $m->getLocalSiteID()) $prerequisite = ImMultiSite::getPickupAddress( $site_id );
 
-			$shipping_method = table_get_text($row, 10);
+			$shipping_method = TableGetText($row, 10);
 
 			$mission_id = $row->find( 'td', 8 )->plaintext;
 			$line_data  = "<tr>";
@@ -434,14 +432,14 @@ class Freight_Mission_Manager
 			$row        = $dom->find( 'tr' );
 
 			$order_info = [];
-			$order_info['site']     = table_get_text( $row[0], 0 );
-			$order_info['site_id']  = table_get_text( $row[0], 8 );
-			$order_id               = table_get_text( $row[0], 1 );
-			$order_info['customer'] = table_get_text( $row[0], 2 );
-			$order_info['address_2'] = table_get_text($row[0], 4);
-			$order_info['phone'] = table_get_text($row[0], 5);
-			$order_info['shipping_method'] = table_get_text($row[0], 9);
-			$order_info['user_id'] = table_get_text($row[0], 10);
+			$order_info['site']     = TableGetText( $row[0], 0 );
+			$order_info['site_id']  = TableGetText( $row[0], 8 );
+			$order_id               = TableGetText( $row[0], 1 );
+			$order_info['customer'] = TableGetText( $row[0], 2 );
+			$order_info['address_2'] = TableGetText($row[0], 4);
+			$order_info['phone'] = TableGetText($row[0], 5);
+			$order_info['shipping_method'] = TableGetText($row[0], 9);
+			$order_info['user_id'] = TableGetText($row[0], 10);
 
 			$pickup_address = Core_Db_MultiSite::getPickupAddress( $order_info['site_id'] );
 
@@ -788,55 +786,47 @@ class Freight_Mission_Manager
 		return $m->setType($type);
 	}
 
-	static function add_delivery()
+	static function add_delivery($price)
 	{
 		$mission_id = GetParam("id");
 		$result = "<div>";
 		$result .= Core_Html::GuiHeader(1, "add delivery");
 
 		$args = array("post_file" => Freight::getPost());
-		$result .= gui_select_client("delivery_client", null, $args);
+		$result .= Fresh_Client::gui_select_client("delivery_client", null, $args);
+		$result .= Core_Html::GuiInput("delivery_price", $price, $args);
 		$result .= Core_Html::GuiButton("btn_add_delivery", "Add", array("action" => "freight_add_delivery('" . Freight::getPost() . "', $mission_id)"));
 
 		$result .= "</div>";
-		print $result;
+		return $result;
 	}
 
 	static function do_add_delivery()
 	{
 		$client = GetParam("client", true);
+		$fee = GetParam("fee", true);
 		$mission_id = GetParam("mission_id", true);
-		$Mission = new Mission($mission_id);
-		$date =date('d-m-Y', strtotime($Mission->getDate()));
 
 		$customer = new Fresh_Client($client);
 		$zone = $customer->getZone();
 		$the_shipping = null;
 		foreach ($zone->get_shipping_methods(true) as $shipping_method) {
-//			print $shipping_method->title . "<br/>";
-			if ( strstr( $shipping_method->title, $date ) ) {
-				$the_shipping = $shipping_method;
-				break;
-			}
+			// Take the first option.
+			$the_shipping = $shipping_method;
+			break;
 		}
 		if (! $the_shipping) {
-			print "No shipping method for date $date to zone " . $zone->get_zone_name();
+			print "No shipping method to zone " . $zone->get_zone_name();
 			return false;
 		}
-//		var_dump($zone->get_shipping_methods(true));
 
-		// Find shipping zone.
+		$o = Fresh_Order::CreateOrder( $client, $mission_id, null, $the_shipping,
+			" משלוח המכולת " . date( 'Y-m-d' ) . " " . get_customer_name( $client ), $fee);
 
-
-//		$pid = sql_query_single_scalar( "SELECT id FROM wp_posts WHERE post_title = 'משלוח בלבד'" );
-
-		$o = Fresh_Order::CreateOrder( $client, $mission_id, null, $the_shipping->get_instance_id(),
-			" משלוח המכולת " . date( 'Y-m-d' ) . " " . get_customer_name( $client ));
-//		// print "order: " . $o. "<br/>";
 		if (! $o)
 			return false;
 		$o->ChangeStatus( 'wc-processing' );
-		$o->setMissionID($mission_id);
+//		$o->setMissionID($mission_id);
 
 		return true;
 	}
@@ -866,7 +856,8 @@ class Freight_Mission_Manager
 
 				$data .= Fresh_Supplies::print_driver_supplies( $mission_id );
 
-				$data .= Focus::print_driver_tasks( $mission_id );
+				if (class_exists("FOCUS"))
+					$data .= Focus::print_driver_tasks( $mission_id );
 			}
 		}
 

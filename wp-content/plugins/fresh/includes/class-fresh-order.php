@@ -67,9 +67,7 @@ class Fresh_Order {
 		$prods_and_quantity,
 		$delivery_instance,
 		$comments,
-		$units = null,
-		$type = null,
-		$method = null
+		$fee
 	) {
 		// Somehow functions_im.php doesn't apply.
 		remove_filter( 'woocommerce_stock_amount', 'intval' );
@@ -107,7 +105,7 @@ class Fresh_Order {
 				$quantity = $prods_and_quantity[ $i ][1];
 
 				if ( $prod_id > 0 ) {
-					$total += $o->AddProduct( $prod_id, $quantity, false, $user_id, $units[ $i ], $type );
+					$total += $o->AddProduct( $prod_id, $quantity, false, $user_id);
 				} else {
 					print "פריט לא נמצא " . $prod_id . "<br/>";
 					MyLog( "can't prod id for " . $prod_id );
@@ -117,7 +115,7 @@ class Fresh_Order {
 		// Handle delivery method
 		if ($delivery_instance){
 			// Get a new instance of the WC_Order_Item_Shipping Object
-			if (! $o->SetDeliveryMethod($delivery_instance, $user_id))
+			if (! $o->SetDeliveryMethod($delivery_instance, $fee))
 				return null;
 		}
 
@@ -146,12 +144,12 @@ class Fresh_Order {
 			update_post_meta( $order_id, $_key, $value );
 		}
 
-		$o->WC_Order->save();
-
 		// Set the mission id and comments.
 		$o->setMissionID( $mission_id );
 
 		$o->SetComments( $comments );
+
+		$o->WC_Order->save();
 
 		return $o;
 	}
@@ -259,27 +257,25 @@ class Fresh_Order {
 		update_post_meta( $this->order_id, '_customer_user', $this->customer_id );
 	}
 
-	function SetDeliveryMethod( $method, $user_id ) {
-		$postcode = get_user_meta( $user_id, 'shipping_postcode', true );
-//		print "pc=$postcode<br/>";
-		$package  = array( 'destination' => array( 'country' => 'IL', 'state' => '', 'postcode' => $postcode ) );
-		$zone     = WC_Shipping_Zones::get_zone_matching_package( $package );
-		if (! $zone){
-			print "Zone for package not found<br/>";
-			return false;
-		}
-		$methods  = $zone->get_shipping_methods();
-		if (! $methods or (count($methods) == 0)) {
-			print "No methods found for zone ". $zone->get_zone_name();
-			return false;
-		}
-		$m        = $methods[ $method ];
-		// var_dump($m->instance_settings['cost']);
-		//  print "m = " . $m->get_cost() . "<br/>";
-
-		$si = new WC_Shipping_Rate( 'ss', $m->get_title(), $m->instance_settings['cost'], "ffoo", $method );
-		// $m = new WC_Shipping_Method($method);
-		return $this->WC_Order->add_shipping( $si );
+	function SetDeliveryMethod( $method, $delivery_price ) {
+//		$postcode = get_user_meta( $user_id, 'shipping_postcode', true );
+//		$package  = array( 'destination' => array( 'country' => 'IL', 'state' => '', 'postcode' => $postcode ) );
+//		$zone     = WC_Shipping_Zones::get_zone_matching_package( $package );
+//		if (! $zone){
+//			print "Zone for package not found<br/>";
+//			return false;
+//		}
+//		$methods  = $zone->get_shipping_methods();
+//		if (! $methods or (count($methods) == 0)) {
+//			print "No methods found for zone ". $zone->get_zone_name();
+//			return false;
+//		}
+//		var_dump($method);
+		$ship = new WC_Order_Item_Shipping($method);
+		$ship->set_total($delivery_price);
+		$rc = $this->WC_Order->add_item( $ship );
+		if ($rc === false) return false;
+		return true;
 	}
 
 	public static function NeedToOrder( &$needed_products ) {
@@ -611,13 +607,8 @@ class Fresh_Order {
 			MyLog( __METHOD__, $id . " changed to " . $status );
 			// var_dump($order);
 			switch ( $status ) {
-				case 'wc-processing';
-					$order->payment_complete();
-					break;
 				case 'wc-completed':
-					$o = new Order( $id );
-					$order->update_status( $status );
-					// $o->update_levels();
+					$order->payment_complete();
 					break;
 				default:
 					$order->update_status( $status );

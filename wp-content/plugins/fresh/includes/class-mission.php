@@ -11,35 +11,11 @@ if ( ! defined( "FRESH_INCLUDES" ) ) {
 	define( 'FRESH_INCLUDES', dirname( dirname( dirname( __FILE__ ) ) ) );
 }
 
-
-
-//require_once( FRESH_INCLUDES . '/core/data/data.php' );
-//require_once( FRESH_INCLUDES . '/routes/gui.php' );
-
-
 /**
  * Class Mission
  */
 class Mission {
-	/**
-	 * @var
-	 */
-	/**
-	 * @var
-	 */
-	/**
-	 * @var
-	 */
-	/**
-	 * @var string
-	 */
-	/**
-	 * @var string
-	 */
-	/**
-	 * @var string
-	 */
-	private $id, $start_address, $end_adress, $start_time, $end_time, $date;
+	private $id, $start_address, $end_adress, $start_time, $end_time, $date, $mission_type;
 
 	/**
 	 * Mission constructor.
@@ -53,7 +29,7 @@ class Mission {
 		if (! $id) return; // New mission.
 
 		// Load from db
-		$sql      = "select name, hour(start_h), MINUTE(start_h), start_address, end_address, end_h, date from im_missions where id = " . $id;
+		$sql      = "select name, hour(start_h), MINUTE(start_h), start_address, end_address, end_h, date, mission_type from im_missions where id = " . $id;
 		$result   = sql_query_single( $sql );
 		if ( ! $result ) {
 			throw new Exception( "Can't find mission " . $id );
@@ -65,6 +41,14 @@ class Mission {
 		$this->end_address   = $result[4];
 		$this->end_time      = $result[5];
 		$this->date          = $result[6];
+		$this->mission_type = $result[7];
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getMissionType() {
+		return $this->mission_type;
 	}
 
 	/**
@@ -109,6 +93,10 @@ class Mission {
 		return $this->date;
 	}
 
+	public function getDefaultFee()
+	{
+		return sql_query_single_scalar("select default_price from im_mission_types where id = " . self::getMissionType());
+	}
 	/**
 	 * @param mixed $start_address
 	 */

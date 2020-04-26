@@ -225,15 +225,6 @@ class Fresh {
 	static function admin_menu()
 	{
 	    Fresh_Settings::admin_menu();
-
-		//               parent_slug, page_title,    menu_title,      capability,        memu_slug,     function, position
-//			add_submenu_page('fresh',    'Packing',      'Packing',      'edit_shop_orders', 'fresh_packing', __CLASS__ . '::fresh_store_packing_page',
-//				'dashicons-tickets', 6 );
-//			add_menu_page( 'Fresh Store', 'ניהול ספקים', 'manage_options', 'im-haadama/supplier_account.php', 'fresh_store_supplier_account_page',
-//				'dashicons-tickets', 6 );
-
-			//	add_menu_page( 'Fresh Store', 'Fresh Store', 'manage_options', 'im-haadama/admin.php', 'fresh_store_admin_page',
-//        'dashicons-tickets', 6 );
 	}
 
 	/**

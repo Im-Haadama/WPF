@@ -121,7 +121,7 @@ class Fresh_Order_Management {
 			// Check if there is delivery fee.
 			if (! $fee) {
 				MyLog("No delivery fee");
-				Print "Not delivery fee. Add to order before completion";
+				Print "No delivery fee. Add to order before completion";
 			}
 
 			// if ($O->)

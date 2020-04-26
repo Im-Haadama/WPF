@@ -55,7 +55,7 @@ class Finance_Invoices {
 		}
 		$year = GetParam( "the_year", false, date( "Y" ) );
 
-		$result .= Core_Html::gui_header( 1, __( "Invoices for year" ) . " " . $year );
+		$result .= Core_Html::GuiHeader( 1, __( "Invoices for year" ) . " " . $year );
 
 		$page = "EXTRACT(YEAR FROM DATE) = " . $year . " and document_type in (4, 8) and is_active=1";
 		$t    = new Core_PivotTable( "im_business_info", $page,
@@ -84,6 +84,7 @@ class Finance_Invoices {
 		} else {
 			$result .= "No invoices yet, for this year";
 		}
+		$result .= Core_Html::GuiHyperlink("Add", AddToUrl("operation", "invoice_add")) . "<br/>";
 
 		$result .= Core_Html::GuiHyperlink( "שנה קודמת", AddToUrl( "the_year", $year - 1 ) );
 
@@ -156,7 +157,7 @@ class Finance_Invoices {
 	static function supplier() {
 		$result  = "";
 		$part_id = GetParam( "part_id" );
-		$year    = GetParam( "the_year" );
+		$year    = GetParam( "the_year", false, date("Y") );
 		$result  .= Core_Html::gui_header( 2, self::get_supplier_name( $part_id ) );
 		$result  .= Core_Html::gui_header( 3, "year " . $year );
 		$page    = "EXTRACT(YEAR FROM DATE) = " . $year . " and document_type in (4, 8) and is_active=1"
@@ -206,7 +207,7 @@ class Finance_Invoices {
 		$args["check_active"] = true;
 		// $result .=  GuiRowContent("im_business_info", $row_id, $args);
 		// $result .=  Core_Html::GuiButton("btn_save", 'data_save_entity(\'im_business_info\', ' . $row_id .')', "שמור");
-		$result .=  Core_Gem::GemElement("im_business_info", $id, $args);
+		$result .=  Core_Gem::GemElement("business_info", $id, $args);
 
 		return $result;
 	}

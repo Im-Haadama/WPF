@@ -23,6 +23,17 @@ class Fresh_Database extends Core_Database
 
 		if ($current == $version and ! $force) return true;
 
+		sql_query("CREATE OR REPLACE view ${db_prefix}categories as select `wp_terms`.`term_id`    AS `term_id`,
+       `wp_terms`.`name`       AS `name`,
+       `wp_terms`.`slug`       AS `slug`,
+       `wp_terms`.`term_group` AS `term_group`
+from `wp_terms`
+where `wp_terms`.`term_id` in (select `wp_term_taxonomy`.`term_id`
+                                        from `wp_term_taxonomy`
+                                        where (`wp_term_taxonomy`.`taxonomy` = 'product_cat'));
+
+");
+
 		sql_query("create table ${db_prefix}supplier_mapping
 (
 	id bigint auto_increment
@@ -35,16 +46,6 @@ class Fresh_Database extends Core_Database
 	selected tinyint(1) null
 ) charset=utf8");
 
-		sql_query("CREATE OR REPLACE view ${db_prefix}categories as select `wp_terms`.`term_id`    AS `term_id`,
-       `wp_terms`.`name`       AS `name`,
-       `wp_terms`.`slug`       AS `slug`,
-       `wp_terms`.`term_group` AS `term_group`
-from `wp_terms`
-where `wp_terms`.`term_id` in (select `wp_term_taxonomy`.`term_id`
-                                        from `wp_term_taxonomy`
-                                        where (`wp_term_taxonomy`.`taxonomy` = 'product_cat'));
-
-");
 
 		sql_query("create OR REPLACE view im_products as select `wp_posts`.`ID`                    AS `ID`,
        `wp_posts`.`post_author`           AS `post_author`,
@@ -102,6 +103,14 @@ order by 1;");
 		$db_prefix = get_table_prefix();
 
 		if ($current == $version and ! $force) return true;
+		sql_query("alter table ${db_prefix}mission_types add default_price float");
+
+		sql_query("create table ${db_prefix}mission_types
+(
+	id int auto_increment
+		primary key,
+	mission_name varchar(20) null)
+	charset = utf8");
 
 		sql_query("create table im_distance
 (
@@ -131,11 +140,6 @@ engine=MyISAM charset=utf8;
 		sql_query("alter table ${db_prefix}missions drop path_code");
 		sql_query("alter table ${db_prefix}missions add mission_type int");
 
-		sql_query("create table ${db_prefix}mission_types
-(
-	id int auto_increment
-		primary key,
-	mission_name varchar(20) null)");
 
 		sql_query("alter table wp_woocommerce_shipping_zone_methods add mission_code varchar(10);");
 
