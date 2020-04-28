@@ -757,7 +757,7 @@ class Focus_Tasks {
 			case "delete_template":
 				$user_id = get_user_id();
 				$id      = GetParam( "row_id", true );
-				return template_delete( $user_id, $id );
+				return Focus_Tasks::template_delete( $user_id, $id );
 
 
 				// If the was query we want to show the result.
@@ -1936,8 +1936,8 @@ class Focus_Tasks {
 	{
 		$db_prefix = get_table_prefix();
 
-		$creator_id = template_creator( $template_id );
-		if ( $creator_id != $user_id ) {
+		$creator_id = self::template_creator( $template_id );
+		if ( get_user_id() != 1 and ($creator_id != $user_id) ) {
 			print "not creator c=$creator_id u=$user_id<br/>";
 
 			return false;

@@ -102,6 +102,8 @@ order by 1;");
 		$current = self::CheckInstalled("Fresh", "functions");
 		$db_prefix = get_table_prefix();
 
+		self::payment_info_table();
+
 		if ($current == $version and ! $force) return true;
 		sql_query("alter table ${db_prefix}mission_types add default_price float");
 

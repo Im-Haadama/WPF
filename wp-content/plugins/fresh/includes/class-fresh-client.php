@@ -13,8 +13,8 @@ class Fresh_Client {
 	 */
 	public function __construct( $user_id = 0 ) {
 		if (! $user_id) {
-			if (! get_user_id()) die("no user");
-			$user_id = get_user_id();
+			if (! get_user_id())
+			$user_id = 0;
 		}
 		$this->user_id = $user_id;
 	}

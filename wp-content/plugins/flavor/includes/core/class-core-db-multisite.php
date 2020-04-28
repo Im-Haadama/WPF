@@ -137,6 +137,8 @@ class Core_Db_MultiSite extends Core_MultiSite {
 	 * @return string|null
 	 */
 	static function getPickupAddress( $id ) {
+		if (! ($id > 0))
+			return "unknown site";
 		if (table_exists("multisite"))
 			return sql_query_single_scalar( "SELECT pickup_address FROM im_multisite WHERE id = " . $id );
 		return "";

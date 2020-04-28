@@ -646,7 +646,6 @@ class Core_Html {
 		$data .= "</td>";
 
 		return $data;
-
 	}
 	static function gui_cell( $cell, $id = null, $show = true, $align = null ) {
 		// Preformating...

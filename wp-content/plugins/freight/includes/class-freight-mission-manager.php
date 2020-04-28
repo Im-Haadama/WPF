@@ -235,35 +235,26 @@ class Freight_Mission_Manager
 			if ( $site == 'אתר' ) {
 				continue;
 			}
-			$order_id               = $row->find( 'td', 1 )->plaintext;
-			$user_id                = $row->find( 'td', 2 )->plaintext;
-			$name                   = $row->find( 'td', 3 )->plaintext;
-			$addresses[ $order_id ] = $row->find( 'td', 4 )->plaintext;
-			$site_id                = $row->find( 'td', 9 )->plaintext;
+			$order_id               = TableGetText($row, 1);
+			$user_id                = TableGetText($row, 2);
+			$name                   = TableGetText($row, 3);
+			$addresses[ $order_id ] = TableGetText($row, 4);
+			$mission_id             = TableGetText($row, 8);
+			$site_id                = TableGetText($row, 9);
+
+			$shipping_method        = TableGetText($row, 10);
 
 			// Do we need to get somewhere to get something for this delivery.
 //		if ($site_id != $m->getLocalSiteID()) $prerequisite = ImMultiSite::getPickupAddress( $site_id );
 
-			$shipping_method = TableGetText($row, 10);
-
-			$mission_id = $row->find( 'td', 8 )->plaintext;
 			$line_data  = "<tr>";
-			for ( $i = 0; $i < 7; $i ++ ) {
-				if ( $i <> 2 ) {
-					$line_data .= $row->find( 'td', $i );
-				}
-			}
+			for ( $i = 0; $i < 7; $i ++ ) if ( $i <> 2 ) $line_data .= $row->find( 'td', $i );
+
 			$line_data .= Core_Html::GuiCell( "" ); // #box
-			$type      = "orders";
-			if ( $site == "supplies" ) {
-				$type = "supplies";
-			}
-			if ( $site == "משימות" ) {
-				$type = "tasklist";
-			}
-			if ( ! is_numeric( $site_id ) ) {
-				die ( $site_id . " not number" . $site_id . " order_id = " . $order_id . " name = " . $name . " <br/>" );
-			}
+			$type      = "orders"; 	if ( $site == "supplies" ) 	$type = "supplies"; if ( $site == "משימות" ) 	$type = "tasklist";
+
+			if ( ! is_numeric( $site_id ) ) die ( $site_id . " not number" . $site_id . " order_id = " . $order_id . " name = " . $name . " <br/>" );
+
 			$line_data .= Core_Html::GuiCell( gui_checkbox( "chk_" . $order_id, "", "",
 				'onchange="delivered(' . $site_id . "," . $order_id . ', \'' . $type . '\')"' ) ); // #delivered
 			$line_data .= Core_Html::GuiCell( $site_id );
@@ -392,7 +383,6 @@ class Freight_Mission_Manager
 			foreach ( $supplies_to_collect as $_supply_id ) {
 				$supply_id = $_supply_id[0];
 				$site_id   = $_supply_id[1];
-				// print "sid= " . $site_id . "<br/>";
 				if ( $site_id != $m->getLocalSiteID() ) {
 					print $m->Run( "supplies/supplies-post.php?operation=print&id=" . $supply_id, $site_id );
 				} else {
@@ -753,9 +743,7 @@ class Freight_Mission_Manager
 	{
 		if (! ($order_id > 0))
 		{
-			var_dump($order_id);
-			print debug_trace(5);
-			die (1);
+			return "bad order_id $order_id";
 		}
 		$i = Core_Options::info_get("mission_order_priority_" . $site_id . '_' .$order_id);
 
@@ -854,9 +842,10 @@ class Freight_Mission_Manager
 
 				$data .= self::print_deliveries( $sql, false);
 
-				$data .= Fresh_Supplies::print_driver_supplies( $mission_id );
+				if (class_exists("Fresh_Supplies"))
+					$data .= Fresh_Supplies::print_driver_supplies( $mission_id );
 
-				if (class_exists("FOCUS"))
+				if (class_exists("Focus"))
 					$data .= Focus::print_driver_tasks( $mission_id );
 			}
 		}

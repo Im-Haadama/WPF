@@ -160,7 +160,7 @@ class Fresh {
 		add_filter( 'auth_cookie_expiration', 'wcs_users_logged_in_longer' );
 
 		// Save payment info
-		add_action('woocommerce_thankyou', 'insert_payment_info', 10, 1);
+		add_action('init', 'insert_payment_info_wrap', 10, 1);
 		add_action('admin_init', 'wp_payment_list_admin_script');
 		add_action("admin_init", array(__CLASS__, "admin_load"));
 		add_action('admin_print_styles', 'wp_payment_list_admin_styles');
@@ -1055,20 +1055,26 @@ function setCreditCard($cc)
 	return $cc;
 }
 
+function insert_payment_info_wrap()
+{
+	$sql = "select post_id from wp_postmeta where meta_key = 'card_number'";
+	$orders = sql_query_array_scalar($sql);
+	foreach ($orders as $order)
+		insert_payment_info($order);
+}
+
 function insert_payment_info( $order_id )
 {
+	MyLog(__FUNCTION__, "handling $order_id");
 	if ( ! $order_id ) return;
-	if( ! get_post_meta( $order_id, '_thankyou_action_done', true ) ) {
+	if ( ! get_post_meta( $order_id, '_thankyou_action_done', true ) ) {
 
-		$order = wc_get_order( $order_id );
-
-
+//		$order = wc_get_order( $order_id );
 		$first_name = get_post_meta($order_id, '_billing_first_name', TRUE);
 		$last_name = get_post_meta($order_id, '_billing_last_name', TRUE);
 		$full_name = $first_name.' '.$last_name;
 		$billing_email = get_post_meta($order_id, '_billing_email', TRUE);
 		$card_number = get_post_meta($order_id, 'card_number', TRUE);
-		
 
 		$card_last_4_digit = setCreditCard($card_number);
 		$card_type = get_post_meta($order_id, 'card_type', TRUE);
@@ -1080,10 +1086,19 @@ function insert_payment_info( $order_id )
 		if($card_number != ''){
 			global $wpdb;
 			$table = 'im_payment_info';
-			$data = array('full_name' => $full_name, 'email' => $billing_email, 'card_number' => $card_number, 'card_four_digit' => $card_last_4_digit, 'card_type' => $card_type, 'exp_date_month' => $exp_date_month, 'exp_date_year' => $exp_date_year, 'cvv_number' => $cvv_number,'id_number' => $billing_id_number );
-			$wpdb->insert($table,$data);
+			$data = array('full_name' => $full_name,
+			              'email' => $billing_email,
+			              'card_number' => $card_number,
+			              'card_four_digit' => $card_last_4_digit,
+			              'card_type' => $card_type,
+			              'exp_date_month' => $exp_date_month,
+			              'exp_date_year' => $exp_date_year,
+			              'cvv_number' => $cvv_number,
+			              'id_number' => $billing_id_number );
+			$wpdb->insert($table, $data);
 			$last_id = $wpdb->insert_id;
-			if($last_id){
+
+			if ($last_id){
 				delete_post_meta($order_id, 'card_number');
 				delete_post_meta($order_id, 'card_type');
 				delete_post_meta($order_id, 'expdate_month');

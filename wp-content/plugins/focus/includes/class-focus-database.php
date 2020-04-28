@@ -1,6 +1,5 @@
 <?php
 
-
 class Focus_Database extends Core_Database
 {
 	static function install($version, $force = false)
@@ -23,10 +22,11 @@ class Focus_Database extends Core_Database
 
 	}
 
-
 	static function CreateTables($version, $force)
 	{
-		$current = self::CheckInstalled("Focus", "functions");
+		$current = self::CheckInstalled("Focus", "tables");
+
+		if ($current == $version and ! $force) return true;
 
 		if (!table_exists("working_teams"))
 			sql_query("create table im_working_teams

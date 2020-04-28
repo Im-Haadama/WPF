@@ -19,6 +19,7 @@ class Fresh_Delivery_Manager
 	{
 		AddAction("delivery_delete", array(__CLASS__, "delete"));
 		AddAction("update_shipping_methods", __CLASS__ . "::update_shipping_methods");
+		AddAction("update_shipping_methods_anonymous", __CLASS__ . "::update_shipping_methods");
 	}
 
 	static public function delete()

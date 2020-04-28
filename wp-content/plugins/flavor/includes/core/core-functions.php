@@ -264,7 +264,7 @@ function QuoteDate($date, $format = 'Y-m-d')
 	 *
 	 * @return array|string
 	 */
-	function CommaImplode( $array, $quote = false )
+	function CommaImplode( $array, $quote = false, $glue = ", " )
 	{
 		if ( is_null( $array ) ) {
 			return "";
@@ -279,7 +279,7 @@ function QuoteDate($date, $format = 'Y-m-d')
 			$result = "";
 			foreach ( $array as $s ) {
 				if ( $quote ) {
-					$result .= QuoteText( $s ) . ", ";
+					$result .= QuoteText( $s ) . $glue;
 				} else {
 					$result .= $s . ", ";
 				}
