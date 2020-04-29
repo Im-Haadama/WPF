@@ -571,3 +571,36 @@ function sql_table_fields($table_name) {
 
 	return $fields;
 }
+
+function sql_insert($table_name, $array, $ignore_list)
+{
+	$db_prefix = get_table_prefix();
+
+	$sql    = "INSERT INTO ${db_prefix}$table_name (";
+	$values = "values (";
+	$first  = true;
+	$sql_values = array();
+	foreach ( $array as $key => $value ) {
+		if ( in_array( $key, $ignore_list ) ) continue;
+
+		if ( ! $first ) {
+			$sql    .= ", ";
+			$values .= ", ";
+		}
+		$sql    .= $key;
+		$values .= "?"; // "\"" . $value . "\"";
+		$first  = false;
+
+		$sql_values[$key] = $value;
+	}
+	$sql    .= ") ";
+	$values .= ") ";
+	$sql    .= $values;
+
+	$stmt = sql_prepare($sql);
+	sql_bind($table_name, $stmt, $sql_values);
+	if (!$stmt -> execute())
+		sql_error($sql);
+
+	return sql_insert_id();
+}

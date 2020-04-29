@@ -19,6 +19,14 @@ class Fresh_Client {
 		$this->user_id = $user_id;
 	}
 
+	/**
+	 * @return int
+	 */
+	public function getUserId(): int {
+		return $this->user_id;
+	}
+
+
 	static public function init_hooks()
 	{
 		AddAction("set_client_type", __CLASS__ . "::set_client_type_wrap");

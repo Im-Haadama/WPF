@@ -17,6 +17,7 @@ class Finance {
 	protected $bank;
 	protected $invoices;
 	protected $post_file;
+	protected $yaad;
 
 	/**
 	 * Plugin version.
@@ -100,12 +101,14 @@ class Finance {
 	 */
 	public function __construct($plugin_name)
 	{
+		global $business_name;
 		$this->plugin_name = $plugin_name;
 		$this->define_constants();
 		$this->includes(); // Loads class autoloader
 		if (! defined('FINANCE_ABSPATH')) die ("not defined");
 		$this->loader = new Core_Autoloader(FINANCE_ABSPATH);
 		$this->post_file = "/wp-content/plugins/finance/post.php";
+		$this->yaad = new Finance_Yaad(YAAD_API_KEY, YAAD_TERMINAL, $business_name);
 
 		$this->init_hooks();
 
@@ -118,7 +121,6 @@ class Finance {
 	static public function getPostFile(): string {
 		return self::instance()->post_file;
 	}
-
 
 	/**
 	 * Hook into actions and filters.
@@ -148,6 +150,9 @@ class Finance {
 		// add_action( 'switch_blog', array( $this, 'wpdb_table_fix' ), 0 );
 		add_action( 'admin_enqueue_scripts', array($this, 'admin_scripts' ));
 		add_action( 'wp_enqueue_scripts', array($this, 'enqueue_scripts' ));
+		add_action('pay_credit', array($this, 'pay_credit_wrapper'));
+
+		$this->yaad->init_hooks();
 	}
 
 	/**
@@ -222,6 +227,10 @@ class Finance {
 		$module = strtok($operation, "_");
 		$multi_site = Core_Db_MultiSite::getInstance();
 
+		$result = apply_filters($operation, "");
+		if ($result)
+			return $result;
+
 		switch ($module)
 		{
 			case "bank":
@@ -271,7 +280,7 @@ class Finance {
 
 				//print "create receipt<br/>";
 				// (NULL, '709.6', NULL, NULL, '205.44', '', '2019-01-22', Array)
-				return Finance_Clients::create_receipt( $cash, $bank, $check, $credit, $change, $user_id, $date, $row_ids );
+				return Finance_Clients::create_receipt_from_account_ids( $cash, $bank, $check, $credit, $change, $user_id, $date, $row_ids );
 				break;
 		}
 		return false;
@@ -713,5 +722,15 @@ class Finance {
 		return $datetime;
 	}
 
+	function pay_credit_wrapper()
+	{
+		$users = explode(",", GetParam("users", true, true));
 
+		foreach ($users as $user) {
+			$rc = apply_filters( 'pay_user_credit', $user );
+			if (! $rc) return false;
+		}
+
+		return true;
+	}
 }

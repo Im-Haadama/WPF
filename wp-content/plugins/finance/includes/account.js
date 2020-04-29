@@ -91,3 +91,11 @@ function create_receipt(post_file, customer_id) {
 
     execute_url(request, location_reload);
 }
+
+function pay_credit(post_file)
+{
+    let users = get_selected("user_chk");
+
+    let request = post_file + '?operation=pay_credit&users='+users;
+    execute_url(request, location_reload);
+}

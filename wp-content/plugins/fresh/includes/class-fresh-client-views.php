@@ -116,15 +116,18 @@ class Fresh_Client_Views {
 				$top = 100;
 				break;
 		}
-		$sql = 'select id, date,
-	 round(transaction_amount, 2) as transaction_amount,
-	  client_balance(client_id, date) as balance,
-	   transaction_method,
+		$sql = 'select 
+		id, 
+		date,
+		round(transaction_amount, 2) as transaction_amount,
+		client_balance(client_id, date) as balance,
+	    transaction_method,
 	    transaction_ref, 
 		order_from_delivery(transaction_ref) as order_id,
 		delivery_receipt(transaction_ref) as receipt,
-		id'
-		       . ' from im_client_accounts where client_id = ' . $customer_id;
+		id 
+		from im_client_accounts 
+		where client_id = ' . $customer_id;
 
 		if ($not_paid)
 			$sql .= " and transaction_method = 'משלוח' ";

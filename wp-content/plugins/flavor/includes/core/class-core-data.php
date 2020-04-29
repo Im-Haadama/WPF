@@ -97,36 +97,9 @@ class Core_Data
 
 	static function SaveNew($table_name)
 	{
-		$db_prefix = get_table_prefix();
-
 		$ignore_list = ["dummy", "operation", "table_name"];
-		$sql    = "INSERT INTO ${db_prefix}$table_name (";
-		$values = "values (";
-		$first  = true;
-		$sql_values = array();
-		foreach ( $_GET as $key => $value ) {
-			if (in_array($key, $ignore_list))
-				continue;
-			if ( ! $first ) {
-				$sql    .= ", ";
-				$values .= ", ";
-			}
-			$sql    .= $key;
-			$values .= "?"; // "\"" . $value . "\"";
-			$first  = false;
 
-			$sql_values[$key] = $value;
-		}
-		$sql    .= ") ";
-		$values .= ") ";
-		$sql    .= $values;
-
-		$stmt = sql_prepare($sql);
-		sql_bind($table_name, $stmt, $sql_values);
-		if (!$stmt -> execute())
-			sql_error($sql);
-
-		return sql_insert_id();
+		return sql_insert($table_name, $_GET, $ignore_list);
 	}
 
 	static function data_update($table_name)

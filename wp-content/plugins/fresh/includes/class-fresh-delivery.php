@@ -54,6 +54,11 @@ class Fresh_Delivery {
 			"pac", // 17,
 			"typ" // 18
 		);
+		if ($id > 0){
+			$del_info = sql_query_single_assoc("select * from im_delivery where id = $id");
+//			var_dump($del_info);
+			$this->delivery_total = $del_info['total'];
+		}
 	}
 
 	public function CustomerView()
@@ -1187,6 +1192,91 @@ class Fresh_Delivery {
 	static public function CustomerLast($user_id)
 	{
 		return sql_query_single_scalar("select max(id) from im_delivery where client_id_from_delivery(id) = " . $user_id);
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getOrderId(): int {
+		return $this->order_id;
+	}
+
+	/**
+	 * @return null
+	 */
+	public function getAdditionalOrders() {
+		return $this->AdditionalOrders;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getOrderTotal(): int {
+		return $this->order_total;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getOrderVatTotal(): int {
+		return $this->order_vat_total;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getOrderDueVat(): int {
+		return $this->order_due_vat;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getLineNumber(): int {
+		return $this->line_number;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getDelPrice(): int {
+		return $this->del_price;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getDeliveryTotal(): int {
+//		print "total=" .$this->delivery_total . "<br/>";
+		return $this->delivery_total;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getDeliveryDueVat(): int {
+		return $this->delivery_due_vat;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getDeliveryTotalVat(): int {
+		return $this->delivery_total_vat;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getMarginTotal(): int {
+		return $this->margin_total;
+	}
+
+	/**
+	 * @return string[]
+	 */
+	public function getDeliveryFieldsNames(): array {
+		return $this->delivery_fields_names;
 	}
 }
 

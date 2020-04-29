@@ -3,16 +3,23 @@
 
 class Fresh_Category {
 	private $term;
+	private $id;
 	static private $datalist_shown;
 
 	public function __construct( $id ) {
-		$this->term = get_term($id);
+		$this->id = $id;
+		if ($id > 0)
+			$this->term = get_term($id);
+		else
+			$this->term = null;
 		self::$datalist_shown = false;
 	}
 
 	function getName()
 	{
-		return $this->term->name;
+		if ($this->term)
+			return $this->term->name;
+		return "term $this->id not found";
 	}
 
 	static function Select( $input_id, $datalist_id = "categories", $args = null ) {
