@@ -7,5 +7,5 @@ then
 
     exit
 fi
-echo Starting >> $0.log
-service mysql start >> $0.log
+echo Starting
+/usr/sbin/service mysql start
