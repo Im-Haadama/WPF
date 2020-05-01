@@ -91,12 +91,30 @@ class Core_Gem {
 	{
 		$fields = [];
 		$table = GetParam("table", true);
+		$db_prefix = get_table_prefix($table);
 //		var_dump(self::getInstance()->object_types[$v_table]);
 //		$table = self::getInstance()->object_types[$v_table]['database_table'];
 //		print "$v_table $table<br/>";
+		if (! isset($_FILES["fileToUpload"]["tmp_name"]))
+			return "No file selected";
+
 		$file_name = $_FILES["fileToUpload"]["tmp_name"];
 
-		return Core_Importer::Import($file_name, $table, $fields);
+		$result = "";
+		$unmapped = [];
+		$rc = Core_Importer::Import($file_name, $table, $fields, null, $unmapped);
+		if (count($unmapped)) {
+			$result .= self::MapFields($unmapped, $db_prefix, $table, '/wp-content/plugins/fresh/post.php');
+			print $result;
+//			die(1);
+			return false;
+		}
+
+		$result .= $rc[0] . " rows imported<br/>";
+		$result .= $rc[1] . " duplicate rows <br/>";
+		$result .= $rc[2] . " failed rows <br/>";
+
+		return $result;
 	}
 
 	static function do_v_import_wrap()
@@ -128,28 +146,7 @@ class Core_Gem {
 		$rc = Core_Importer::Import($file_name, $table, $fields, null, $unmapped);
 		// Unmapped is seq array with the unknown headder.
 		if (count($unmapped)) {
-			$result .= "Those fields not mapped: " . CommaImplode($unmapped);
-			// Let's map them.
-			foreach ($unmapped as $u)
-			{
-				$u = escape_string($u);
-				// Prepare the table for the mapping.
-				if (! sql_query_single_scalar("select count(*) from im_conversion where table_name = '$table' and header ='$u'")) {
-					$sql = "insert into im_conversion (table_name, col, header) values ('$table', '', '$u')";
-					sql_query( $sql );
-				}
-			}
-			$instance = self::getInstance();
-			$v_args = array("database_table" => "conversion", "query_part" => "from ${db_prefix}conversion where table_name = '$table'");
-
-			$instance->AddVirtualTable("conversion", $v_args);
-			$args = [];
-			$args["id"] = "id";
-			$args["post_file"] = $table_args['post_file'];
-			$args["selectors"] = array("col" => "gui_select_field");
-			$args["import_table"] = $table;
-			// $args["fields"]
-			$result .= $instance->GemVirtualTable("conversion", $args);
+			$result .= self::MapFields($unmapped, $db_prefix, $table, $table_args['post_file']);
 			print $result;
 //			die(1);
 			return false;
@@ -170,6 +167,33 @@ class Core_Gem {
 		self::ShowImport($table);
 	}
 
+	static function MapFields($unmapped, $db_prefix, $table, $post_file)
+	{
+		$result = "Those fields not mapped: " . CommaImplode($unmapped);
+		// Let's map them.
+		foreach ($unmapped as $u)
+		{
+			$u = escape_string($u);
+			// Prepare the table for the mapping.
+			if (! sql_query_single_scalar("select count(*) from im_conversion where table_name = '$table' and header ='$u'")) {
+				$sql = "insert into im_conversion (table_name, col, header) values ('$table', '', '$u')";
+				sql_query( $sql );
+			}
+		}
+		$instance = self::getInstance();
+		$v_args = array("database_table" => "conversion", "query_part" => "from ${db_prefix}conversion where table_name = '$table'");
+
+		$instance->AddVirtualTable("conversion", $v_args);
+		$args = [];
+		$args["id"] = "id";
+		$args["post_file"] = $post_file;
+		$args["selectors"] = array("col" => "gui_select_field");
+		$args["import_table"] = $table;
+		// $args["fields"]
+		$result .= $instance->GemVirtualTable("conversion", $args);
+		return $result;
+
+	}
 	static function v_show_wrap($result = null)
 	{
 		if (! $result)
@@ -497,7 +521,7 @@ class Core_Gem {
 			$action_file = GetArg($args, "import_page", null);
 			if ($action_file) break;
 			if ($post_file) {
-				$action_file = AddParamToUrl($post_file , "operation", "gem_do_import");
+				$action_file = AddParamToUrl($post_file , array("operation" => "gem_do_import", "table" => $table_name));
 				break;
 			}
 			throw new Exception("must supply import action or post_file");
@@ -562,5 +586,5 @@ function gui_select_field($id, $selected, $args) {
 	$args["values"][$i]['id'] = "Don't import";
 	$args["values"][$i]['name'] = $args["values"][$i]['id'];
 
-	return Core_Html::GuiSelect( "table_field", null, $args );
+	return Core_Html::GuiSelect( "table_field", $selected, $args );
 }

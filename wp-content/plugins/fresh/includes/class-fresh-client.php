@@ -26,10 +26,22 @@ class Fresh_Client {
 		return $this->user_id;
 	}
 
-
 	static public function init_hooks()
 	{
 		AddAction("set_client_type", __CLASS__ . "::set_client_type_wrap");
+		add_filter('woocommerce_new_customer_data', array(__CLASS__, 'wc_assign_custom_role'), 10, 1);
+		add_filter( 'woocommerce_shop_manager_editable_roles', array(__CLASS__, 'shop_manager_role_edit_capabilities' ));
+	}
+
+	static function shop_manager_role_edit_capabilities( $roles ) {
+		$roles[] = 'subscriber';
+		return $roles;
+	}
+
+	static 	function wc_assign_custom_role($args) {
+		$args['role'] = 'subscriber';
+
+		return $args;
 	}
 
 	static function set_client_type_wrap()

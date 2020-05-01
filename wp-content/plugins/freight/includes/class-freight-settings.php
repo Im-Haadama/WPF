@@ -59,16 +59,16 @@
 			}
 		}
 
-		static function admin_menu()
+		function admin_menu()
 		{
 			$menu = new Core_Admin_Menu();
 
-			$menu->AddMenu('Freight Settings', 'Freight', 'show_manager', 'freight', __CLASS__ . '::general_settings');
+			$menu->AddMenu('Freight Settings', 'Freight', 'show_manager', 'freight', array($this, 'general_settings'));
 			$menu->AddSubMenu('freight', 'edit_shop_orders',
 				array('page_title' => 'Settings',
 				            'menu_title' => 'Settings',
 				            'menu_slug' => 'settings',
-				            'function' => __CLASS__ . '::general_settings'));
+				            'function' => array($this, 'general_settings')));
 
 			$menu->AddSubMenu('freight', 'edit_shop_orders',
 				array('page_title' => 'Dispatcher',
@@ -81,21 +81,6 @@
 				      'menu_title' => 'Missions',
 				      'menu_slug' => 'missions',
 				      'function' => 'Freight_Mission_Manager::missions'));
-
-			//			$menu->AddSubMenu('freight', 'edit_shop_orders',
-//					array('page_title' => 'Payment List',
-//					      'menu_title' => 'Payment list',
-//					      'menu_slug' => 'payment_list',
-//					      'function' => 'payment_list')
-//				);
-
-//			$menu->AddSubMenu("woocommerce", "edit_suppliers",
-//				array('page_title' => 'Suppliers', 'function' => array("Freight_Suppliers" , 'admin_page' )));
-//
-//			$menu->AddSubMenu("woocommerce", "edit_suppliers",
-//				array('page_title' => 'Needed', 'function' => array("Freight_Packing" , 'needed_products' )));
-
-//			Freight_Packing::add_admin($menu);
 		}
 
 		static function suppliers() {
@@ -109,7 +94,7 @@
 			return "/wp-content/plugins/freight/post.php";
 		}
 
-		static function general_settings()
+		public function general_settings()
 		{
 			$result = ""; // Core_Html::gui_header(1, "general settings");
 			$tabs = [];
@@ -129,19 +114,27 @@
 			$tabs["zones"] = array(
 				"Zones",
 				$url . "zones",
-				Freight_Zones::settings($args, $operation)
+				$tab == "zones" ? Freight_Zones::settings($args, $operation) : ""
 			);
 
 			$tabs["methods"] = array(
 				"Methods",
 				$url . "methods",
-				Freight_Methods::settings($args, $operation)
+				$tab == "methods" ? Freight_Methods::settings($args, $operation) : ""
 			);
 
 			$tabs["mission_types"] = array(
 				"Mission Types",
 				$url . "mission_types",
-				Freight_Methods::mission_types($args, $operation)
+				$tab == "mission_types" ? Freight_Methods::mission_types($args, $operation) : ""
+			);
+
+			$cities_tab = apply_filters("wpf_freight_cities", "");
+			if ($cities_tab)
+			$tabs["cities"] = array(
+				"Zone cities",
+				$url . "cities",
+				$cities_tab
 			);
 
 			$args["btn_class"] = "nav-tab";

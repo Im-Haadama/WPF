@@ -224,6 +224,7 @@ class Finance {
 
 	function handle_operation($operation)
 	{
+		Finance::instance()->yaad->setDebug(false);
 		$module = strtok($operation, "_");
 		$multi_site = Core_Db_MultiSite::getInstance();
 

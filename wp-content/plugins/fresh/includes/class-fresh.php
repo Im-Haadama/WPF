@@ -199,6 +199,8 @@ class Fresh {
 		Fresh_Order_Management::init_hooks();
 		Fresh_Catalog::init_hooks();
 		Fresh_Client::init_hooks();
+
+//		add_filter('editable_roles', 'edit_roles');
 		// if (get_user_id() == 1) wp_set_current_user(474);
 	}
 
@@ -455,23 +457,6 @@ class Fresh {
 //		}
 //	}
 //
-//	/**
-//	 * Include required frontend files.
-//	 */
-//	public function frontend_includes() {
-//		include_once WC_FRESH_INCLUDES . 'includes/wc-cart-functions.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/wc-notice-functions.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/wc-template-hooks.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-template-loader.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-frontend-scripts.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-form-handler.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-cart.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-tax.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-shipping-zones.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-customer.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-embed.php';
-//		include_once WC_FRESH_INCLUDES . 'includes/class-wc-session-handler.php';
-//	}
 //
 //	/**
 //	 * Function used to Init WooCommerce Template Functions - This makes them pluggable by plugins and themes.
@@ -1185,7 +1170,13 @@ function on_action_cart_updated( $cart_updated ){
 		}
 		$cart->set_session();
 	}	
-   
+
+}
+
+function edit_roles($roles)
+{
+	print 1/0;
+//    	var_dump($roles);
 }
 
 function checkout_create_order_line_item( $item, $cart_item_key, $values, $order ){
@@ -1227,3 +1218,4 @@ function checkout_create_order_line_item( $item, $cart_item_key, $values, $order
 //    var_dump($zone);
 //    return $zone;
 //}
+

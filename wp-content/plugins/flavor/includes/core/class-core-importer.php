@@ -57,15 +57,11 @@ class Core_Importer {
 			return false; // Failed.
 		}
 
-//		foreach($map as $k => $i)
-//			print "$k $i <br/>";
-
 		$count     = 0;
 		$dup_count = 0;
 		$failed    = 0;
 
 		while ( $line = fgetcsv( $file ) ) {
-
 			switch ( self::ImportLine( $line, $table_name, $map, $fields, $check_dup ) ) {
 				case - 1:
 					$dup_count ++;
@@ -118,7 +114,6 @@ class Core_Importer {
 
 	static private function ReadHeader( &$file, $conversion, &$map, $table_name, &$unmapped =null)
 	{
-
 		// First line(s) may be empty.
 		$done = false;
 		$db_prefix = get_table_prefix();
@@ -180,11 +175,13 @@ class Core_Importer {
 		$values        = array();
 		if ( $fields ) {
 			foreach ( $fields as $key => $field ) {
+//				print "$key $field<br/>";
 				array_push( $insert_fields, $key );
 				array_push( $values, $field );
 			}
 		}
 		foreach ( $map as $k => $m ) {
+//			print "$k $m<br/>";
 			if ($k == "Don't import") continue;
 			if ( $m != - 1 ) {
 				// Fix data.
@@ -214,15 +211,17 @@ class Core_Importer {
 			}
 		}
 		if ( $check_dup ) {
-
 			if ( call_user_func($check_dup, $insert_fields, $values ) ) {
 				return - 1; // Already exists.
 			}
 		}
 
+		if (0 == count($insert_fields)) return 0;
+
 		$sql = "insert into ${db_prefix}$table_name (" . CommaImplode( $insert_fields ) .
 		       ") values (" . CommaImplode( $values, true ) . ")";
 
+//		print $sql . "<br/>";
 
 		if ( ! sql_query( $sql ) ) {
 			// print "insert failed";

@@ -11,10 +11,7 @@ class Freight {
 	 * @var      Delivery_Drivers_Loader    $loader    Maintains and registers all hooks for the plugin.
 	 */
 	protected $auto_loader;
-	protected $suppliers;
-	protected $supplier_balance;
-	protected $totals;
-	protected $shortcodes;
+	protected $settings;
 //	protected $order;
 
 	/**
@@ -104,6 +101,7 @@ class Freight {
 		$this->define_constants();
 		$this->includes(); // Loads class autoloader
 		$this->auto_loader = new Core_Autoloader(FREIGHT_ABSPATH);
+		$this->settings = new Freight_Settings();
 
 		$this->init_hooks();
 
@@ -127,7 +125,7 @@ class Freight {
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
 
 		// Admin menu
-		add_action('admin_menu', __CLASS__ . '::admin_menu');
+		add_action('admin_menu', array($this->settings, 'admin_menu'));
 
 		// get local deliveries
 
@@ -155,20 +153,6 @@ class Freight {
 			);
 			do_action( 'freight_shutdown_error', $error );
 		}
-	}
-
-	static function admin_menu()
-	{
-	    Freight_Settings::admin_menu();
-
-		//               parent_slug, page_title,    menu_title,      capability,        memu_slug,     function, position
-//			add_submenu_page('freight',    'Packing',      'Packing',      'edit_shop_orders', 'freight_packing', __CLASS__ . '::freight_store_packing_page',
-//				'dashicons-tickets', 6 );
-//			add_menu_page( 'Freight Store', 'ניהול ספקים', 'manage_options', 'im-haadama/supplier_account.php', 'freight_store_supplier_account_page',
-//				'dashicons-tickets', 6 );
-
-			//	add_menu_page( 'Freight Store', 'Freight Store', 'manage_options', 'im-haadama/admin.php', 'freight_store_admin_page',
-//        'dashicons-tickets', 6 );
 	}
 
 	/**

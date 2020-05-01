@@ -5,11 +5,13 @@ class Finance_Yaad {
 	private $terminal;
 	private $signature;
 	private $business_name;
+	public $debug;
+
 	function init_hooks()
 	{
 		add_filter('pay_user_credit', array($this, 'pay_user_credit_wrap'));
 
-		if (! table_exists("im_yaad_transactions"))
+		if (! table_exists("yaad_transactions"))
 			sql_query("create table im_yaad_transactions
 (
 	id int auto_increment
@@ -24,6 +26,14 @@ class Finance_Yaad {
 
 ");
 	}
+
+	/**
+	 * @param bool $debug
+	 */
+	public function setDebug( bool $debug ): void {
+		$this->debug = $debug;
+	}
+
 
 	/**
 	 * @param $customer_id
@@ -83,16 +93,14 @@ class Finance_Yaad {
 
 	function pay_user_credit(Fresh_Client $user, $account_line_ids, $amount, $change)
 	{
-		$debug = true;
 		if (0 == $amount)
 			return true;
 //		$delivery = new Fresh_Delivery($delivery_id);
 
-		print "<html><header></header><body>";
-//		print "paying $amount $user_id<br/>";
 		$token = get_user_meta($user->getUserId(), 'credit_token', true);
 
-		$credit_data = sql_query_single_assoc("select * from im_payment_info where email = " . QuoteText($user->get_customer_email()));
+		$credit_data = sql_query_single_assoc("select * from im_payment_info where email = " . QuoteText($user->get_customer_email()) .
+		" and card_number not like '%X%'");
 		if (! $credit_data) return false;
 
 		if ($token) {
@@ -102,15 +110,23 @@ class Finance_Yaad {
 
 			$paid = $transaction_info['Amount'];
 		} else {
-			if ($debug) print "trying to pay with credit info<br/>";
+			if ($this->debug) print "trying to pay with credit info<br/>";
 			// First pay. Use local store credit info, create token and delete local info.
 			$transaction_info = self::FirstPay($credit_data, $user, $amount, CommaImplode($account_line_ids));
+//			var_dump($transaction_info);
 			// info: Id, CCode, Amount, ACode, Fild1, Fild2, Fild3
+			if (($transaction_info['CCode'] != 0)) {
+				print "Got error " . $transaction_info['CCode'];
+				return false;
+			}
 			$transaction_id = $transaction_info['transaction_id'];
-			if (! $transaction_id or ($transaction_info['CCode'] != 0)) return false;
+			if (! $transaction_id){
+				print "No transaction id";
+				return false;
+			}
 			$paid = $transaction_info['Amount'];
 			if ($transaction_id) {
-				if ($debug) print "pay successful $transaction_id<br/>";
+				if ($this->debug) print "pay successful $transaction_id<br/>";
 
 				// Create token and save it.
 				$token_info = self::GetToken( $transaction_id );
@@ -121,7 +137,6 @@ class Finance_Yaad {
 					// Todo: delete payment info
 				}
 			}
-
 		}
 		if ($paid) {
 			// Create invoice receipt. Update balance.
@@ -129,6 +144,7 @@ class Finance_Yaad {
 
 			return true;
 		}
+		return false;
 	}
 
 	/**
@@ -161,6 +177,7 @@ class Finance_Yaad {
 	 * @param $terminal
 	 */
 	public function __construct( $api_key, $terminal, $business_name ) {
+		$this->debug = false;
 		$this->api_key   = $api_key;
 		$this->terminal  = $terminal;
 		$this->signature = null;
@@ -208,11 +225,12 @@ class Finance_Yaad {
 	private function SaveTransaction($rc, $user_info)
 	{
 		if (isset($rc['Id'])) {
-			$rc['transaction_id'] = $rc['Id']; unset($rc['Id']);
-			$rc['user_id'] = $user_info->getUserId();
-			$rc['pay_date'] = date("Y-m-d");
-			sql_insert("yaad_transactions", $rc, array("Fild1", "Fild2", "Fild3"));
+			$rc['transaction_id'] = $rc['Id'];
+			unset( $rc['Id'] );
 		}
+		$rc['user_id'] = $user_info->getUserId();
+		$rc['pay_date'] = date("Y-m-d");
+		sql_insert("yaad_transactions", $rc, array("Fild1", "Fild2", "Fild3"));
 	}
 
 	private function GetToken( $transid ) {
@@ -253,7 +271,7 @@ class Finance_Yaad {
 	private function CallServer( $base_url, $request_params )
 	{
 		$url = AddParamToUrl( $base_url, $request_params );
-//		print $url . "<br/>";
+		if ($this->debug) print $url . "<br/>";
 
 		$ch = curl_init();
 		curl_setopt( $ch, CURLOPT_URL, $url );

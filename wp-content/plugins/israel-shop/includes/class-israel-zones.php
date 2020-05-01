@@ -41,19 +41,19 @@ class Israel_Zones {
 	}
 
 	private function init_hooks() {
-		add_action('admin_menu', __CLASS__ . '::admin_menu');
-
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
 		add_action('import_cities', array(__CLASS__, 'import_wrapper'));
 		Core_Gem::AddTable("cities");
+		add_filter('wpf_freight_cities', array($this, 'freight_cities'));
+
 	}
 
 	static function Args($type = null)
 	{
 		$args = [];
 		$args["post_file"] = plugin_dir_url(dirname(__FILE__)) . "post.php";
+		$args["import_page"] = AddToUrl(array("operation"=> "gem_do_import", "table"=>"cities"));
 		// $args["edit"] = true;
-
 		return $args;
 	}
 
@@ -129,7 +129,7 @@ class Israel_Zones {
 		return $prefix_array;
 	}
 
-	static function main_wrapper()
+	function freight_cities()
 	{
 		$args = self::Args();
 		$operation = GetParam("operation");
@@ -158,44 +158,32 @@ class Israel_Zones {
 		}
 	}
 
-	// From post.php
-	static function handle_operation($operation)
-	{
-		// print "op=$operation";
-		if ($operation){
-			$args = self::Args();
+//	static function import_wrapper()
+//	{
+//		$me = self::instance();
+//		return $me->do_import();
+//	}
 
-			$result = apply_filters( $operation, $operation, null, $args );
-			if ( $result ) 	return $result;
-		}
-		return false;
-	}
-
-	static function import_wrapper()
-	{
-		$me = self::instance();
-		return $me->do_import();
-	}
-
-	function do_import()
-	{
-		$file_name = $_FILES["fileToUpload"]["tmp_name"];
-		print "Trying to import $file_name<br/>";
-		$I                    = new Core_Importer();
-		$fields               = null;
-		$fields               = array();
-		try {
-			$result = $I->Import( $file_name, "{$this->table_prefix}cities", $fields, null );
-		} catch ( Exception $e ) {
-			print $e->getMessage();
-
-			return false;
-		}
-		print $result[0] . " rows imported<br/>";
-		print $result[1] . " duplicate rows <br/>";
-		print $result[2] . " failed rows <br/>";
-		return true;
-	}
+//	function do_import()
+//	{
+//		print 1/0;
+//		$file_name = $_FILES["fileToUpload"]["tmp_name"];
+//		print "Trying to import $file_name<br/>";
+//		$I                    = new Core_Importer();
+//		$fields               = null;
+//		$fields               = array();
+//		try {
+//			$result = $I->Import( $file_name, "{$this->table_prefix}cities", $fields, null );
+//		} catch ( Exception $e ) {
+//			print $e->getMessage();
+//
+//			return false;
+//		}
+//		print $result[0] . " rows imported<br/>";
+//		print $result[1] . " duplicate rows <br/>";
+//		print $result[2] . " failed rows <br/>";
+//		return true;
+//	}
 
 	function run($limit){
 		$sql = "select id from im_cities where zipcode is null limit $limit";
@@ -256,12 +244,4 @@ class Israel_Zones {
 
 		return - 2;
 	}
-
-	static function admin_menu()
-	{
-		$menu = new Core_Admin_Menu();
-
-		$menu->AddMenu('Import cities', 'Cities', 'show_manager', 'cities', __CLASS__ . '::main_wrapper');
-	}
-
 }

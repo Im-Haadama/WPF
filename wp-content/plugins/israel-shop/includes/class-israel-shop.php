@@ -15,10 +15,33 @@ class Israel_Shop
 		return $this->version;
 	}
 
+	// From post.php
+	static function handle_operation($operation)
+	{
+		// print "op=$operation";
+		if ($operation){
+			$args = self::Args();
+
+			$result = apply_filters( $operation, $operation, null, $args );
+			if ( $result ) 	return $result;
+		}
+		return false;
+	}
+
+	static function Args($type = null)
+	{
+		$args = [];
+		$args["post_file"] = plugin_dir_url(dirname(__FILE__)) . "post.php";
+		// $args["edit"] = true;
+
+		return $args;
+	}
+
 	/**
+	 *
 	 * Israel_Shop constructor.
 	 */
-	public function __construct($plugin_name)
+	public function __construct()
 	{
 		$this->define_constants();
 
@@ -36,6 +59,8 @@ class Israel_Shop
 	 * @return Israel_Shop
 	 */
 	public static function instance(): Israel_Shop {
+		if (! self::$_instance)
+			self::$_instance = new Israel_Shop();
 		return self::$_instance;
 	}
 
@@ -63,6 +88,7 @@ class Israel_Shop
 	function init()
 	{
 		Israel_Database::Upgrade(self::instance()->get_version());
+		$this->enqueue_scripts();
 		$this->zones->run(5);
 	}
 
@@ -75,6 +101,11 @@ class Israel_Shop
 
 		add_action('vat_add_category', array($this, 'vat_add_category'));
 		add_action('vat_remove_category', array($this, 'vat_remove_category'));
+	}
+
+	public function enqueue_scripts() {
+		$file = FLAVOR_INCLUDES_URL . 'core/data/data.js';
+		wp_enqueue_script( 'data', $file);
 	}
 
 	function vat_add_category()
@@ -121,7 +152,6 @@ class Israel_Shop
 
 		$menu->AddSubMenu("edit.php?post_type=product", "edit_shop_orders",
 			array('page_title' => 'VAT', 'function' => array("Israel_Shop" , 'SettingsWrap' )));
-
 	}
 
 	static function SettingsWrap()
@@ -142,37 +172,5 @@ class Israel_Shop
 		$result .= "</div>";
 
 		print $result;
-	}
-
-	static function general_settings()
-	{
-		print 1/0;
-
-		$result = "";
-		$tabs = [];
-		$args = [];
-//		$args["post_file"] = self::getPost();
-
-		$tab = GetParam("tab", false, "baskets");
-		$url = GetUrl(1) . "?page=settings&tab=";
-
-		$cities_url = $url . "cities";
-
-		$tabs["cities"] = array(
-			"Cities",
-			$cities_url,
-			"llllll"
-			//Fresh_Basket::settings($cities_url, $args)
-		);
-
-		$args["btn_class"] = "nav-tab";
-		$args["tabs_load_all"] = true;
-		$args["nav_tab_wrapper"] = "nav-tab-wrapper woo-nav-tab-wrapper";
-
-		$result .= Core_Html::NavTabs($tabs, $args);
-		$result .= $tabs[$tab][2];
-
-		print $result;
-		print 1/0;
 	}
 }
