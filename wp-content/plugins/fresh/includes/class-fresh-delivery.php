@@ -61,7 +61,63 @@ class Fresh_Delivery {
 		}
 	}
 
-	public function CustomerView()
+	static public function init_hooks()
+	{
+		AddAction('update_by_customer_type', array('Fresh_Delivery', 'update_by_customer_type'));
+	}
+
+	static public function update_by_customer_type()
+	{
+		$del_id = GetParam("id", true);
+
+		$d = new Fresh_Delivery($del_id);
+		$d->updateByCustomerType();
+	}
+
+	// Temporary until integration of delivery edit
+	public function UpdateByCustomerType()
+	{
+		$vat_precent = Fresh_Pricing::getVatPercent();
+
+		$user = new Fresh_Client(self::getUserId());
+		$customer_type = $user->customer_type();
+		$sql = " select id, quantity, price, prod_id, vat from im_delivery_lines " .
+		       " where delivery_id = " .$this->getID() .
+		       " and prod_id > 0";
+		$rows = sql_query($sql);
+		$total = 0;
+		$total_vat = 0;
+		while ($row = sql_fetch_assoc($rows))
+		{
+			$row_id = $row['id'];
+			$prod_id = $row['prod_id'];
+			$vat  = $row['vat'];
+			$new_price = Fresh_Pricing::get_price_by_type($prod_id, $customer_type);
+			$quantity = $row['quantity'];
+			$line_total = round($new_price * $quantity, 2);
+			$total += $line_total;
+			$new_vat = round($line_total / (1 + $vat_precent / 100) * ($vat_precent / 100), 2);
+			$total_vat += $new_vat;
+//			print "$prod_id $price " .  . "<br/>";
+			$sql = "update im_delivery_lines " .
+			          "	set price = " .  $new_price .
+			          ", line_price = " . $line_total;
+
+			if ($vat > 0)
+				$sql .= ", vat = " . $new_vat;
+
+			$sql .= " where id = " . $row_id;
+
+			sql_query($sql);
+		}
+
+		$sql = "update im_delivery set total = $total " .
+		       ", vat = $total_vat " .
+		       " where id = " . $this->getID();
+
+		sql_query($sql);
+	}
+	public function CustomerView($edit)
 	{
 		$result = "";
 		$order = $this->getOrder();
@@ -92,14 +148,22 @@ class Fresh_Delivery {
 		foreach ($total_fields as $field) $rows["sums"][$field] = 0;
 
 		foreach ($rows as $row_id => $not_used)
-			foreach ($total_fields as $field){
+			foreach ($total_fields as $key => $field){
 				if (! in_array($row_id, array("header", "sums")))
 					$rows["sums"][$field] += $rows[$row_id][$field];
 			}
 
+		if ($edit) foreach ($rows as $row_id => $row)
+			if ($row_id > 0) $rows[$row_id]["quantity"] = Core_Html::GuiInput("qua_" . $row_id, $rows[$row_id]["quantity"]);
+
 		$result .= Core_Html::gui_table_args($rows);
 
 		return $result;
+	}
+
+	public function paid()
+	{
+		return sql_query("select payment_receipt from im_delivery where id = " . $this->getID());
 	}
 
 	public static function CreateDeliveryFromOrder( $order_id, $q ) {

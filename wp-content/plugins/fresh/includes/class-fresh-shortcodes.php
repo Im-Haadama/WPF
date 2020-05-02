@@ -30,7 +30,6 @@ class Fresh_Shortcodes {
 			'fresh_open_orders'    => __CLASS__ . '::open_orders',
 			'fresh_delivery'    => __CLASS__ . '::delivery',
 			'fresh_client_archive'    => __CLASS__ . '::client_archive'
-
 		);
 
 		foreach ( $shortcodes as $shortcode => $function ) {
@@ -75,8 +74,23 @@ class Fresh_Shortcodes {
 		$delivery_id = GetParam("id", false, $last_delivery);
 		if (! $delivery_id) return __("No deliveries yet");
 
+		$operation = GetParam("operation", false, false);
+		if ($operation) do_action($operation, $delivery_id);
+
+		$edit = ("edit"== $operation);
+
 		$delivery = new Fresh_Delivery($delivery_id);
-		return $delivery->CustomerView();
+		$result = $delivery->CustomerView($edit);
+
+		if (! $edit and im_user_can("edit_shop_orders") and ! $delivery->paid()) {
+			$result  .= Core_Html::GuiHyperlink( "Edit delivery note", AddToUrl( "operation", "edit" ) );
+			$user_id = $delivery->getUserId();
+			$user    = new Fresh_Client( $user_id );
+			if ( $user->customer_type())
+				$result .= Core_Html::GuiHyperlink( "Update by customer type", AddToUrl( "operation", "update_by_customer_type" ) );
+		}
+
+		return $result;
 	}
 
 	public static function fresh_management( $atts ) {

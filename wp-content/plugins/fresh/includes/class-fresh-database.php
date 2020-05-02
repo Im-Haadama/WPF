@@ -479,8 +479,23 @@ charset=utf8;");
 		$current = self::CheckInstalled("Fresh", "functions");
 		$db_prefix = get_table_prefix();
 
-
 		if ($current == $version and ! $force) return true;
+
+		sql_query("drop function client_id_from_delivery");
+		sql_query("create  function client_id_from_delivery(del_id int) returns text
+BEGIN
+  declare _order_id int;
+  declare _user_id int;
+  declare _display varchar(50) CHARSET utf8;
+  SELECT order_id INTO _order_id FROM im_delivery where id = del_id;
+  select meta_value into _user_id from wp_postmeta
+  where post_id = _order_id and
+  meta_key = '_customer_user';
+  
+  return _user_id;
+END;
+
+");
 
 		sql_query("drop function client_last_order");
 		sql_query("create
@@ -526,22 +541,6 @@ END;
 	        from ${db_prefix}supplies where business_id = _business_id; 
 	    return _supply_id;
 	END;
-");
-
-		sql_query("drop function client_id_from_delivery");
-		sql_query("create  function client_id_from_delivery(del_id int) returns text
-BEGIN
-  declare _order_id int;
-  declare _user_id int;
-  declare _display varchar(50) CHARSET utf8;
-  SELECT order_id INTO _order_id FROM im_delivery where id = del_id;
-  select meta_value into _user_id from wp_postmeta
-  where post_id = _order_id and
-  meta_key = '_customer_user';
-  
-  return _order_id;
-END;
-
 ");
 
 		new Fresh_Delivery(0); // Load classes

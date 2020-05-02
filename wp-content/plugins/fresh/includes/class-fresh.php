@@ -199,6 +199,7 @@ class Fresh {
 		Fresh_Order_Management::init_hooks();
 		Fresh_Catalog::init_hooks();
 		Fresh_Client::init_hooks();
+		Fresh_Delivery::init_hooks();
 
 //		add_filter('editable_roles', 'edit_roles');
 		// if (get_user_id() == 1) wp_set_current_user(474);

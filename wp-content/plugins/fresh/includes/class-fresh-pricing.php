@@ -151,4 +151,8 @@ class Fresh_Pricing {
 		update_post_meta( $product_id, "_price", $new_price );
 	}
 
+	static function getVatPercent()
+	{
+		return 17;
+	}
 }
