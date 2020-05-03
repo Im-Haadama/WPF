@@ -515,7 +515,7 @@ class Fresh_Packing {
 					}
 				}
 				$line[ Fresh_OrderFields::city ]         = $order->getOrderInfo( '_shipping_city' );
-				$customer                                = new Fresh_Client_Views( $customer_id );
+				$customer                                = new Fresh_Client( $customer_id );
 				$line[ Fresh_OrderFields::payment_type ] = $customer->get_payment_method_name();
 				array_push( $rows, $line );
 			}

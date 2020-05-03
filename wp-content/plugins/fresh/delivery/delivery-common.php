@@ -131,10 +131,7 @@ function print_supply( $id ) {
 	array_push( $fields, "" );
 //
 	array_push( $fields, sql_query_single_scalar( "select supplier_contact_phone from im_suppliers where id = " . $supplier_id ) );
-//	$payment_method = get_payment_method_name( $client_id );
-//	if ( $payment_method <> "מזומן" and $payment_method <> "המחאה" ) {
-//		$payment_method = "";
-//	}
+
 	array_push( $fields, "" );
 //
 	array_push( $fields, sql_query_single_scalar( "select mission_id from im_supplies where id = " . $id ) );

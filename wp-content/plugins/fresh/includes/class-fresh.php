@@ -16,6 +16,7 @@ class Fresh {
 	protected $supplier_balance;
 	protected $totals;
 	protected $shortcodes;
+	protected $client_views;
 
 	/**
 	 * Plugin version.
@@ -200,6 +201,7 @@ class Fresh {
 		Fresh_Catalog::init_hooks();
 		Fresh_Client::init_hooks();
 		Fresh_Delivery::init_hooks();
+		Fresh_Client_Views::init_hooks();
 
 //		add_filter('editable_roles', 'edit_roles');
 		// if (get_user_id() == 1) wp_set_current_user(474);
@@ -480,6 +482,7 @@ class Fresh {
 		$this->suppliers = new Fresh_Suppliers();
 		$this->supplier_balance = Fresh_Supplier_Balance::instance();
 		$this->totals = Fresh_Totals::instance();
+		$this->client_views = new Fresh_Client_Views();
 
 		$shortcodes = Core_Shortcodes::instance();
 		$shortcodes->add($this->suppliers->getShortcodes());
@@ -587,6 +590,9 @@ class Fresh {
 
 //		$rc1 = wp_enqueue_script( 'my_custom_script', plugin_dir_url( __FILE__ ) . 'js/add_to_cart_on_search.js', array('jquery') );
 		wp_enqueue_script( 'custom_script', plugin_dir_url( __FILE__ ) . 'js/custom_script.js' );
+
+		wp_enqueue_script( 'order', plugin_dir_url( __FILE__ ) . 'js/order.js' );
+
 //		MyLog(__FUNCTION__ . ": $rc1 $rc2");
 	}
 

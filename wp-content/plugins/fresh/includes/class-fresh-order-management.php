@@ -24,6 +24,17 @@ class Fresh_Order_Management {
 		add_filter('woocommerce_admin_order_actions', array(__CLASS__, 'add_order_action'), 10, 2);
 		add_filter('order_complete', array(__CLASS__, 'order_complete_wrap'));
 		add_action('admin_post_delivery', array(__CLASS__, 'create_delivery_note'));
+		add_action( 'woocommerce_view_order', array(__CLASS__, 'show_edit_order'), 10 );
+
+	}
+
+	static public function show_edit_order($order_id)
+	{
+		$order = new Fresh_Order($order_id);
+//		print $order->getStatus();
+		if ($order->getStatus() != 'wc-on-hold') return;
+
+		print "ניתן לערוך את ההזמנה " . Core_Html::GuiHyperlink("כאן", "/my-account/edit-order/$order_id") . ".";
 	}
 
 	static public function create_delivery_note($a)

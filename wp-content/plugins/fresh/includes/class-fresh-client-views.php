@@ -10,12 +10,168 @@ class eTransview {
 
 
 class Fresh_Client_Views {
-	private $client_id;
+	private $edit_basket_allowed;
 
-	public function __construct($id) {
-		$this->client_id = $id;;
+	public function __construct() {
+		$this->edit_basket_allowed = true;
 	}
 
+	static function init_hooks()
+	{
+		// Add edit button on my-account/orders
+		add_filter( 'woocommerce_my_account_my_orders_actions', array(__CLASS__, 'account_order_actions'), 10, 2 );
+		add_action('init', array(__CLASS__, 'init'));
+		add_action('woocommerce_account_edit-order_endpoint', array(__CLASS__, 'edit_order'));
+		add_action('order_remove_from_basket', array(__CLASS__, 'remove_from_basket'));
+		add_action('order_add_to_basket', array(__CLASS__, 'add_to_basket'));
+		add_action('order_remove_item', array(__CLASS__, 'remove_item'));
+//		add_filter( 'woocommerce_account_menu_items', array(__CLASS__, 'account_menu_items'), 10, 1 );
+	}
+
+	// Chava.
+	static function remove_from_basket()
+	{
+		$item_id = GetParam("item_id", true);
+		$prod_id = GetParam("prod_id", true);
+
+		$order_id = sql_query_single_scalar("select order_id from wp_woocommerce_order_items where order_item_id = $item_id");
+		$Order = new Fresh_Order($order_id);
+		$Order->addProduct($prod_id, -1, false, $Order->getCustomerId(),null, "regular", 0);
+		return false;
+	}
+
+	static function add_to_basket()
+	{
+		$item_id = GetParam("item_id", true);
+		$prod_id = GetParam("new_prod_id", true);
+		print "pid=$prod_id";
+
+		$order_id = sql_query_single_scalar("select order_id from wp_woocommerce_order_items where order_item_id = $item_id");
+		$Order = new Fresh_Order($order_id);
+		$Order->addProduct($prod_id, 1, false, $Order->getCustomerId(),null, "regular", 0);
+		return true;
+	}
+
+	static function remove_item()
+	{
+		$item_id = GetParam("item_id", true);
+		$order_id = sql_query_single_scalar("select order_id from wp_woocommerce_order_items where order_item_id = $item_id");
+		$Order = new Fresh_Order($order_id);
+		$Order->DeleteLines(array($item_id));
+		return true;
+	}
+
+
+	static function init()
+	{
+		add_rewrite_endpoint('edit-order', EP_PAGES);
+		flush_rewrite_rules();
+	}
+
+	static function edit_order($order_id)
+	{
+		$result = Core_Html::GuiHeader(1, __("Editing order number") . " $order_id");
+
+		$allowed_basket_edit = true;
+		if ($allowed_basket_edit)
+			$result .= "לחץ על שם הסל, כדי לבצע בו שינויים";
+				//__("Press on basket name to edit it");
+
+		$rows = sql_query_array("select order_item_id, order_item_name from wp_woocommerce_order_items " .
+		" where order_id = $order_id and order_item_type = 'line_item'");
+
+		$table_rows = array(array("שם פריט", "כמות", "מחיר", 'סה"כ', "הסר"));
+
+		$basket_divs = "";
+		foreach ($rows as $key => $row)
+		{
+			$item_id = $row[0];
+			$name = $row[1];
+
+			$qty = sql_query_single_scalar( "select meta_value from wp_woocommerce_order_itemmeta where order_item_id = $item_id and meta_key = '_qty'" );
+			$line_total = sql_query_single_scalar( "select meta_value from wp_woocommerce_order_itemmeta where order_item_id = $item_id and meta_key = '_line_total'" );
+			$prod_id = sql_query_single_scalar( "select meta_value from wp_woocommerce_order_itemmeta where order_item_id = $item_id and meta_key = '_product_id'" );
+			$price = Fresh_Pricing::get_price_by_type($prod_id);
+
+			$P = new Fresh_Product($prod_id);
+
+			if ($P->is_basket()) {
+				$name = Core_Html::gui_label("lab_$item_id", $name, array("events"=> "onclick=\"order_show_basket($item_id)\""));
+				$basket_divs .= self::edit_basket($item_id, $prod_id);
+			}
+
+			$table_rows[$item_id] = array("name" => $name,
+			                              "qty" => Core_Html::GuiInput("qty_$item_id", $qty, array("events" => "onchange=\"order_update_quantity($item_id)\"")),
+			                              "price" => round($line_total/$qty, 2),
+						   				  "total"=>$line_total,
+				                          "remove" => Core_Html::GuiButton("rem_$item_id", "X", array("action" => "order_remove_line('" . Fresh::getPost() . "', $item_id, rem_$item_id)")),
+			);
+
+		}
+		$result .= Core_Html::gui_table_args($table_rows);
+
+		$result .= $basket_divs;
+
+		print $result;
+	}
+
+	static function edit_basket($item_id, $prod_id)
+	{
+		$allowed_changes = 3;
+		$P = new Fresh_Product($prod_id);
+
+		$div_content = Core_Html::GuiHeader(1, "עריכת  " . $P->getName());
+		$div_content .= "הסר באמצעות ה X פריט מהסל, כדי להוסיף אחד במקומו<br/>";
+		$div_content .= "מספר השינויים האפשרי: " . Core_Html::GuiLabel("changes_allowed_$item_id", $allowed_changes);
+		$basket_rows =self::expand_basket($item_id, $prod_id, 1);
+		array_unshift($basket_rows, array("פריט", "כמות", "מחיר", "הסר"));
+		$div_content .= Core_Html::gui_table_args($basket_rows);
+		for ($i = $allowed_changes; $i ; $i--)
+			$div_content .= Core_Html::GuiDiv("add_to_basket_${item_id}_$i",
+				"בחר מוצר להוסיף:" . Fresh_Product::gui_select_product("new_prod_${item_id}_$i", null, array("events"=>"onchange=\"order_add_to_basket('". Fresh::getPost()."', $item_id, $prod_id, $i)\"")),
+				array("style"=>"display: none;")); // none/block
+
+		return Core_Html::GuiDiv("basket_$item_id",
+			Core_Html::GuiHeader(1, $div_content),
+			array("style"=>"display: block;"));
+	}
+
+	static function expand_basket($item_id, $basket_id, $quantity_ordered, $level = 0, $line_number = 0) : array
+	{
+		$sql2 = 'SELECT DISTINCT product_id, quantity FROM im_baskets WHERE basket_id = ' . $basket_id;
+		$client_type = "regular";
+		$result2 = sql_query( $sql2 );
+		$basket_lines = array();
+		while ( $row2 = mysqli_fetch_assoc( $result2 ) ) {
+			$prod_id  = $row2["product_id"];
+			if (! $prod_id) continue;
+//			 print $prod_id . "<br/>";
+			$P        = new Fresh_Product( $prod_id );
+			$quantity = $row2["quantity"];
+			$basket_or_prod = new Fresh_Basket($prod_id);
+			if ( $basket_or_prod->is_basket( ) ) {
+				foreach (self::expand_basket( $item_id, $prod_id, $quantity_ordered * $quantity, $level + 1 ) as $row)
+					array_push($basket_lines, $row);
+			} else {
+				$line = array();
+				$line[ "name" ] = $P->getName();
+				$line[ "quantity" ]        = $quantity;
+				$line["price"] = Fresh_Pricing::get_price_by_type($prod_id);
+				$line["action"] = Core_Html::GuiButton("remove_${item_id}_{$prod_id}", "X", array("action"=>"order_remove_from_basket('" . Fresh::getPost() . "', $item_id, $prod_id)"));
+
+//				$line[ eDeliveryFields::product_id ] = $prod_id;
+//				$line[ eDeliveryFields::has_vat ]    = Core_Html::GuiCheckbox( "hvt_" . $prod_id, "has_vat", $has_vat > 0 );
+//				$line[ eDeliveryFields::order_q ]    = $quantity_ordered;
+//				$line[ eDeliveryFields::delivery_q ] = Core_Html::gui_input( "quantity" . $line_number, "",
+//					array( 'onkeypress="moveNextRow(' . $line_number . ')"', 'onfocusout="leaveQuantityFocus(' . $line_number . ')" ' ) );
+//
+//				$line_number++;// = $this->line_number + 1;
+//				$data              .= Core_Html::gui_row( $line, $line_number); // , $show_fields, $sums, $this->delivery_fields_names );
+				array_push($basket_lines, $line);
+			}
+		}
+		return $basket_lines;
+	}
 	static function handle_operation($operation)
 	{
 		$args = self::Args();
@@ -29,9 +185,9 @@ class Fresh_Client_Views {
 				$user_id = get_user_id(true);
 				return self::client_balance($user_id);
 
-			case "open_orders":
-				$user_id = get_user_id(true);
-				return self::open_orders($user_id);
+//			case "open_orders":
+//				$user_id = get_user_id(true);
+//				return self::open_orders($user_id);
 
 			case "show_delivery":
 				die(1);
@@ -67,7 +223,10 @@ class Fresh_Client_Views {
 		return __("Balance") . ":" . $client->balance();
 	}
 
-	static function open_orders( $user_id ) {
+	static function open_orders( $user_id )
+	{
+		if (strstr(GetUrl(), 'view-order'))
+			return ""; // Already showing single order.
 		$result = "";
 
 		if ( $user_id ) {
@@ -176,5 +335,16 @@ class Fresh_Client_Views {
 			array_unshift($data1[$id], $value);
 		}
 		return Core_Gem::GemArray($data1, $args, "trans_table");
+	}
+
+	static function account_order_actions( $actions, $order )
+	{
+		$Order = new Fresh_Order($order->id);
+		if (! in_array($Order->getStatus(), array('wc-on-hold', 'wc-processing', 'wc-pending') )) return $actions;
+		$actions['name'] = array(
+			'url'  => '/my-account/edit-order/'. $order->id,
+			'name' => 'Edit',
+		);
+		return $actions;
 	}
 }

@@ -164,7 +164,7 @@ class Fresh_Order {
 		return sql_query_single_scalar("select post_status from wp_posts where id = " . $this->order_id);
 	}
 
-	function AddProduct( $product_id, $quantity, $replace = false, $client_id = - 1, $unit = null, $type = null ) {
+	function AddProduct( $product_id, $quantity, $replace = false, $client_id = - 1, $unit = null, $type = null, $price = null ) {
 		$debug = false;
 
 		if ( $debug ) {
@@ -198,7 +198,7 @@ class Fresh_Order {
 			}
 		} else {
 			MyLog( __METHOD__ . ": adding product " . $product_id, __FILE__ );
-			if ( ! user_dislike( $client_id, $product_id ) ) {
+			if ( 1 or ! self::user_dislike( $client_id, $product_id ) ) {
 				$has_units = false;
 				if ( $unit and strlen( $unit ) > 0 ) {
 					$has_units = true;
@@ -211,7 +211,9 @@ class Fresh_Order {
 				if ( $product ) {
 					sql_query("delete from im_need_orders where id = " . $this->order_id);
 					//print "type: " . $customer_type . "<br/>";
-					$price = Fresh_Pricing::get_price_by_type( $product_id, $customer_type, $quantity );
+					if (null == $price)
+						$price = Fresh_Pricing::get_price_by_type( $product_id, $customer_type, $quantity );
+
 					// print "price: " . $price . "<br/>";
 					$product->set_price( $price );
 					// print "xx" . $product . " " . $q . "<br/>";
@@ -987,14 +989,15 @@ class Fresh_Order {
 	}
 
 	function DeleteLines( $lines ) {
-		print "order_delete_lines<br/>";
+//		print "order_delete_lines<br/>";
 		foreach ( $lines as $line ) {
-			print $line;
-			print wc_delete_order_item( $line );
+//			print $line;
+			if (! wc_delete_order_item( $line )) return false;
 		}
 		$sql = "delete from im_need_orders where order_id = " . $this->order_id;
 //		print $sql;
 		sql_query( $sql);
+		return true;
 	}
 
 	function PrintHtml( $selectable = false ) {

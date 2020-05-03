@@ -28,11 +28,15 @@ class Core_Html {
 	 *
 	 * @return string
 	 */
-	static function gui_label( $id, $text, $hidden = false ) {
+	static function gui_label( $id, $text, $args = null ) {
+		$hidden = GetArg($args, "hidden", false);
+		$events = GetArg($args, "events", false);
 		$result = "<label id=" . $id . " ";
 		if ( $hidden ) {
 			$result .= 'style="display: none"';
 		}
+		if ($events)
+			$result .= $events;
 		$result .= ">" . $text . "</label>";
 
 		return $result;

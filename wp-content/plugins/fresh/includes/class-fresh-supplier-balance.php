@@ -70,19 +70,7 @@ class Fresh_Supplier_Balance {
 				"get-supplier-balance.php?supplier_id=" . $supplier_id ) );
 		
 			$line .= "<td>" . $supplier_total . "</td>";
-		//	print $line;
-		//	$payment_method = get_payment_method( $customer_id );
-		//	$line           .= "<td>" . $row[4] . "</td>";
-		//	$line           .= "<td>" . get_payment_method_name( $customer_id ) . "</td>";
-		//	if ( $include_zero || $supplier_total > 0 ) {
-		//		print $line;
-			//array_push( $data_lines, array( - $customer_total, $line ) );
 			array_push( $data_lines, $line );
-		//	} else if ( $supplier_total < 0 ) {
-		//		//array_push( $data_lines, array( - $customer_total, $line ) );
-		//		array_push( $data_lines_credits, array( $customer_name, $line ) );
-		//	}
-	
 	}
 
 // sort( $data_lines );
