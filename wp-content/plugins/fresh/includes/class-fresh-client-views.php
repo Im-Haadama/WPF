@@ -48,6 +48,7 @@ class Fresh_Client_Views {
 
 		$order_id = sql_query_single_scalar("select order_id from wp_woocommerce_order_items where order_item_id = $item_id");
 		$Order = new Fresh_Order($order_id);
+		//               $product_id, $quantity, $replace = false, $client_id = - 1, $unit = null, $type = null, $price = null
 		$Order->addProduct($prod_id, 1, false, $Order->getCustomerId(),null, "regular", 0);
 		return true;
 	}
@@ -91,7 +92,7 @@ class Fresh_Client_Views {
 			$qty = sql_query_single_scalar( "select meta_value from wp_woocommerce_order_itemmeta where order_item_id = $item_id and meta_key = '_qty'" );
 			$line_total = sql_query_single_scalar( "select meta_value from wp_woocommerce_order_itemmeta where order_item_id = $item_id and meta_key = '_line_total'" );
 			$prod_id = sql_query_single_scalar( "select meta_value from wp_woocommerce_order_itemmeta where order_item_id = $item_id and meta_key = '_product_id'" );
-			$price = Fresh_Pricing::get_price_by_type($prod_id);
+//			$price = Fresh_Pricing::get_price_by_type($prod_id);
 
 			$P = new Fresh_Product($prod_id);
 
@@ -133,7 +134,7 @@ class Fresh_Client_Views {
 
 		return Core_Html::GuiDiv("basket_$item_id",
 			Core_Html::GuiHeader(1, $div_content),
-			array("style"=>"display: block;"));
+			array("style"=>"display: none;"));
 	}
 
 	static function expand_basket($item_id, $basket_id, $quantity_ordered, $level = 0, $line_number = 0) : array

@@ -211,8 +211,9 @@ class Fresh_Order {
 				if ( $product ) {
 					sql_query("delete from im_need_orders where id = " . $this->order_id);
 					//print "type: " . $customer_type . "<br/>";
-					if (null == $price)
+					if (null === $price) {
 						$price = Fresh_Pricing::get_price_by_type( $product_id, $customer_type, $quantity );
+					}
 
 					// print "price: " . $price . "<br/>";
 					$product->set_price( $price );
