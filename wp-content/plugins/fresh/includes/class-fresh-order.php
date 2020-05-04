@@ -241,6 +241,68 @@ class Fresh_Order {
 		}
 	}
 
+	public function removeFromBasket($item_id, $prod_id)
+	{
+		$current_removal = self::currentRemoved($item_id);
+
+		if (! in_array($prod_id, $current_removal))
+			array_push($current_removal, $prod_id);
+
+		Fresh_Packing::set_order_itemmeta($item_id, 'basket_removed', serialize($current_removal));
+		self::update_basket_comment($item_id);
+	}
+
+	public function addToBasket($item_id, $prod_id)
+	{
+		$current_added = self::currentAdded($item_id);
+
+		if (! in_array($prod_id, $current_added))
+			array_push($current_added, $prod_id);
+
+		Fresh_Packing::set_order_itemmeta($item_id, 'basket_added', serialize($current_added));
+		self::update_basket_comment($item_id);
+	}
+
+	public function update_basket_comment($item_id)
+	{
+		$comment = "";
+		$current_removal = self::currentRemoved($item_id);
+		if ($current_removal) {
+			$comment .= "הוסרו: ";
+			foreach ( $current_removal as $prod ) {
+				$p       = new Fresh_Product( $prod );
+				$comment .= $p->getName() . ", ";
+			}
+			$comment = trim( $comment, ", " ) . ".<br/>";
+		}
+
+		$current_added = self::currentAdded($item_id);
+		if ($current_added) {
+			$comment .= "הוספו: ";
+			foreach ( $current_added as $prod ) {
+				$p       = new Fresh_Product( $prod );
+				$comment .= $p->getName() . ", ";
+			}
+			$comment = trim( $comment, ", " ) . ". ";
+		}
+
+		Fresh_Packing::set_order_itemmeta($item_id, "product_comment", escape_string($comment));
+	}
+
+	static function currentRemoved($item_id)
+	{
+		$current_removal = unserialize(Fresh_Packing::get_order_itemmeta($item_id, "basket_removed"));
+		if (! $current_removal) $current_removal = array();
+		return $current_removal;
+	}
+
+	static function currentAdded($item_id)
+	{
+		$current_addon = unserialize(Fresh_Packing::get_order_itemmeta($item_id, "basket_added"));
+		if (! $current_addon) $current_addon = array();
+		return $current_addon;
+	}
+
 	/**
 	 * @return mixed
 	 */

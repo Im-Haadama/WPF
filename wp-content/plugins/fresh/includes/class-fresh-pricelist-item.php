@@ -256,26 +256,4 @@ function product_other_suppliers( $prod_id, $supplier_id ) {
 
 	return rtrim( $result, ", " );
 }
-
-
-function get_order_itemmeta( $order_item_id, $meta_key ) {
-	if ( is_array( $order_item_id ) ) {
-		$sql = "SELECT sum(meta_value) FROM wp_woocommerce_order_itemmeta "
-		       . ' WHERE order_item_id IN ( ' . CommaImplode( $order_item_id ) . ") "
-		       . ' AND meta_key = \'' . escape_string( $meta_key ) . '\'';
-
-		return sql_query_single_scalar( $sql );
-	}
-	if ( is_numeric( $order_item_id ) ) {
-		$sql2 = 'SELECT meta_value FROM wp_woocommerce_order_itemmeta'
-		        . ' WHERE order_item_id = ' . $order_item_id
-		        . ' AND meta_key = \'' . escape_string( $meta_key ) . '\''
-		        . ' ';
-
-		return sql_query_single_scalar( $sql2 );
-	}
-
-	return - 1;
-}
-
 ?>

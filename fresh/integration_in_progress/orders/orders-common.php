@@ -238,28 +238,6 @@ function copy_meta_field( $source, $destination, $meta_key ) {
 	set_post_meta_field( $destination, $meta_key, GetMetaField( $source, $meta_key ) );
 }
 
-function set_order_itemmeta( $order_item_id, $meta_key, $meta_value ) {
-	$value = $meta_value;
-
-	if ( is_array( $meta_value ) ) {
-		$value = implode( ",", $meta_value );
-	}
-
-	if ( sql_query_single_scalar( "SELECT count(*) FROM wp_woocommerce_order_itemmeta " .
-	                              " WHERE order_item_id = " . $order_item_id .
-	                              " AND meta_key = '" . $meta_key . "'" ) >= 1
-	) {
-		$sql = "update wp_woocommerce_order_itemmeta " .
-		       " set meta_value = '" . $value . "'" .
-		       " where order_item_id = " . $order_item_id .
-		       " and meta_key = '" . $meta_key . "'";
-	} else {
-		$sql = "INSERT INTO wp_woocommerce_order_itemmeta " .
-		       " (order_item_id, meta_key, meta_value) " .
-		       " VALUES (" . $order_item_id . ", '" . $meta_key . "', '" . $value . "')";
-	}
-	sql_query( $sql );
-}
 
 //function order_good_costs( $order_id ) {
 //	$order = new WC_Order( $order_id );

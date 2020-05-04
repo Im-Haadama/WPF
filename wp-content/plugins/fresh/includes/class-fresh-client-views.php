@@ -31,12 +31,15 @@ class Fresh_Client_Views {
 	// Chava.
 	static function remove_from_basket()
 	{
+//		print __FUNCTION__;
 		$item_id = GetParam("item_id", true);
 		$prod_id = GetParam("prod_id", true);
 
 		$order_id = sql_query_single_scalar("select order_id from wp_woocommerce_order_items where order_item_id = $item_id");
 		$Order = new Fresh_Order($order_id);
-		$Order->addProduct($prod_id, -1, false, $Order->getCustomerId(),null, "regular", 0);
+//		$current_remove = get_postmeta_field($order_id)
+//		$Order->addProduct($prod_id, -1, false, $Order->getCustomerId(),null, "regular", 0);
+		$Order->removeFromBasket($item_id, $prod_id);
 		return false;
 	}
 
@@ -44,12 +47,13 @@ class Fresh_Client_Views {
 	{
 		$item_id = GetParam("item_id", true);
 		$prod_id = GetParam("new_prod_id", true);
-		print "pid=$prod_id";
+//		print "pid=$prod_id";
 
 		$order_id = sql_query_single_scalar("select order_id from wp_woocommerce_order_items where order_item_id = $item_id");
 		$Order = new Fresh_Order($order_id);
 		//               $product_id, $quantity, $replace = false, $client_id = - 1, $unit = null, $type = null, $price = null
-		$Order->addProduct($prod_id, 1, false, $Order->getCustomerId(),null, "regular", 0);
+		$Order->addToBasket($item_id, $prod_id);
+//		$Order->addProduct($prod_id, 1, false, $Order->getCustomerId(),null, "regular", 0);
 		return true;
 	}
 
@@ -61,7 +65,6 @@ class Fresh_Client_Views {
 		$Order->DeleteLines(array($item_id));
 		return true;
 	}
-
 
 	static function init()
 	{
@@ -81,7 +84,7 @@ class Fresh_Client_Views {
 		$rows = sql_query_array("select order_item_id, order_item_name from wp_woocommerce_order_items " .
 		" where order_id = $order_id and order_item_type = 'line_item'");
 
-		$table_rows = array(array("שם פריט", "כמות", "מחיר", 'סה"כ', "הסר"));
+		$table_rows = array(array("שם פריט", "כמות", "מחיר", 'סה"כ', "הערה", "הסר"));
 
 		$basket_divs = "";
 		foreach ($rows as $key => $row)
@@ -92,10 +95,10 @@ class Fresh_Client_Views {
 			$qty = sql_query_single_scalar( "select meta_value from wp_woocommerce_order_itemmeta where order_item_id = $item_id and meta_key = '_qty'" );
 			$line_total = sql_query_single_scalar( "select meta_value from wp_woocommerce_order_itemmeta where order_item_id = $item_id and meta_key = '_line_total'" );
 			$prod_id = sql_query_single_scalar( "select meta_value from wp_woocommerce_order_itemmeta where order_item_id = $item_id and meta_key = '_product_id'" );
+			$comment =  sql_query_single_scalar( "select meta_value from wp_woocommerce_order_itemmeta where order_item_id = $item_id and meta_key = 'product_comment'" );
 //			$price = Fresh_Pricing::get_price_by_type($prod_id);
 
 			$P = new Fresh_Product($prod_id);
-
 			if ($P->is_basket()) {
 				$name = Core_Html::gui_label("lab_$item_id", $name, array("events"=> "onclick=\"order_show_basket($item_id)\""));
 				$basket_divs .= self::edit_basket($item_id, $prod_id);
@@ -105,6 +108,7 @@ class Fresh_Client_Views {
 			                              "qty" => Core_Html::GuiInput("qty_$item_id", $qty, array("events" => "onchange=\"order_update_quantity($item_id)\"")),
 			                              "price" => round($line_total/$qty, 2),
 						   				  "total"=>$line_total,
+				                          $comment,
 				                          "remove" => Core_Html::GuiButton("rem_$item_id", "X", array("action" => "order_remove_line('" . Fresh::getPost() . "', $item_id, rem_$item_id)")),
 			);
 
@@ -119,25 +123,38 @@ class Fresh_Client_Views {
 	static function edit_basket($item_id, $prod_id)
 	{
 		$allowed_changes = 3;
+
 		$P = new Fresh_Product($prod_id);
+		$quantity = Fresh_Packing::get_order_itemmeta($item_id, '_qty');
+
+		$removed = Fresh_Order::currentRemoved($item_id);
+		$addon = Fresh_Order::currentAdded($item_id);
+		$remove_allowed = (count($removed) < $allowed_changes);
+		$more_to_add = (count($removed) - count($addon));
+//		var_dump($removed); print "<br/>";
+//		var_dump($addon); print "<br/>";
 
 		$div_content = Core_Html::GuiHeader(1, "עריכת  " . $P->getName());
 		$div_content .= "הסר באמצעות ה X פריט מהסל, כדי להוסיף אחד במקומו<br/>";
 		$div_content .= "מספר השינויים האפשרי: " . Core_Html::GuiLabel("changes_allowed_$item_id", $allowed_changes);
-		$basket_rows =self::expand_basket($item_id, $prod_id, 1);
-		array_unshift($basket_rows, array("פריט", "כמות", "מחיר", "הסר"));
+
+		$basket_rows =self::expand_basket($item_id, $prod_id, $quantity, 0, $remove_allowed);
+		$header = array("פריט", "כמות", "מחיר"); if ($remove_allowed) array_push($header, "הסר");
+		array_unshift($basket_rows, $header);
 		$div_content .= Core_Html::gui_table_args($basket_rows);
-		for ($i = $allowed_changes; $i ; $i--)
-			$div_content .= Core_Html::GuiDiv("add_to_basket_${item_id}_$i",
-				"בחר מוצר להוסיף:" . Fresh_Product::gui_select_product("new_prod_${item_id}_$i", null, array("events"=>"onchange=\"order_add_to_basket('". Fresh::getPost()."', $item_id, $prod_id, $i)\"")),
-				array("style"=>"display: none;")); // none/block
+		for ($i = 0; $i < $more_to_add; $i++) {
+//			$show = ($allowed_changes > $removed ? 'none' : 'block');
+			$div_content .= Core_Html::GuiDiv( "add_to_basket_${item_id}_$i",
+				"בחר מוצר להוסיף:" . Fresh_Product::gui_select_product( "new_prod_${item_id}_$i", null, array( "events" => "onchange=\"order_add_to_basket('" . Fresh::getPost() . "', $item_id, $prod_id, $i)\"" ) ));
+//				array( "style" => "display: $show;" ) ); // none/block
+		}
 
 		return Core_Html::GuiDiv("basket_$item_id",
 			Core_Html::GuiHeader(1, $div_content),
 			array("style"=>"display: none;"));
 	}
 
-	static function expand_basket($item_id, $basket_id, $quantity_ordered, $level = 0, $line_number = 0) : array
+	static function expand_basket($item_id, $basket_id, $quantity_ordered, $level = 0, $remove_allowed = false) : array
 	{
 		$sql2 = 'SELECT DISTINCT product_id, quantity FROM im_baskets WHERE basket_id = ' . $basket_id;
 		$client_type = "regular";
@@ -145,7 +162,7 @@ class Fresh_Client_Views {
 		$basket_lines = array();
 		while ( $row2 = mysqli_fetch_assoc( $result2 ) ) {
 			$prod_id  = $row2["product_id"];
-			if (! $prod_id) continue;
+			if (! $prod_id or in_array($prod_id, Fresh_Order::currentRemoved($item_id))) continue;
 //			 print $prod_id . "<br/>";
 			$P        = new Fresh_Product( $prod_id );
 			$quantity = $row2["quantity"];
@@ -156,18 +173,9 @@ class Fresh_Client_Views {
 			} else {
 				$line = array();
 				$line[ "name" ] = $P->getName();
-				$line[ "quantity" ]        = $quantity;
+				$line[ "quantity" ]        = $quantity * $quantity_ordered;
 				$line["price"] = Fresh_Pricing::get_price_by_type($prod_id);
-				$line["action"] = Core_Html::GuiButton("remove_${item_id}_{$prod_id}", "X", array("action"=>"order_remove_from_basket('" . Fresh::getPost() . "', $item_id, $prod_id)"));
-
-//				$line[ eDeliveryFields::product_id ] = $prod_id;
-//				$line[ eDeliveryFields::has_vat ]    = Core_Html::GuiCheckbox( "hvt_" . $prod_id, "has_vat", $has_vat > 0 );
-//				$line[ eDeliveryFields::order_q ]    = $quantity_ordered;
-//				$line[ eDeliveryFields::delivery_q ] = Core_Html::gui_input( "quantity" . $line_number, "",
-//					array( 'onkeypress="moveNextRow(' . $line_number . ')"', 'onfocusout="leaveQuantityFocus(' . $line_number . ')" ' ) );
-//
-//				$line_number++;// = $this->line_number + 1;
-//				$data              .= Core_Html::gui_row( $line, $line_number); // , $show_fields, $sums, $this->delivery_fields_names );
+				if ($remove_allowed) $line["action"] = Core_Html::GuiButton("remove_${item_id}_{$prod_id}", "X", array("action"=>"order_remove_from_basket('" . Fresh::getPost() . "', $item_id, $prod_id)"));
 				array_push($basket_lines, $line);
 			}
 		}

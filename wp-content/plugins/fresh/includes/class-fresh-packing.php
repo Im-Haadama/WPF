@@ -366,6 +366,29 @@ class Fresh_Packing {
 		return - 1;
 	}
 
+	static function set_order_itemmeta( $order_item_id, $meta_key, $meta_value ) {
+		$value = $meta_value;
+
+		if ( is_array( $meta_value ) ) {
+			$value = implode( ",", $meta_value );
+		}
+
+		if ( sql_query_single_scalar( "SELECT count(*) FROM wp_woocommerce_order_itemmeta " .
+		                              " WHERE order_item_id = " . $order_item_id .
+		                              " AND meta_key = '" . $meta_key . "'" ) >= 1
+		) {
+			$sql = "update wp_woocommerce_order_itemmeta " .
+			       " set meta_value = '" . $value . "'" .
+			       " where order_item_id = " . $order_item_id .
+			       " and meta_key = '" . $meta_key . "'";
+		} else {
+			$sql = "INSERT INTO wp_woocommerce_order_itemmeta " .
+			       " (order_item_id, meta_key, meta_value) " .
+			       " VALUES (" . $order_item_id . ", '" . $meta_key . "', '" . $value . "')";
+		}
+		sql_query( $sql );
+	}
+
 	static function OrdersToHandle() {
 		$operation = GetParam("operation", false, null);
 		if ($operation) self::handle_operation($operation);
