@@ -45,29 +45,5 @@ function balance( $date, $client_id ) {
 
 // [displa-posts][su_posts posts_per_page="3"][su_posts posts_per_page="3" tax_term="21" order="desc"]
 
-function im_set_default_display_name( $user_id ) {
-	// $user = get_userdata( $user_id );
-	$user = get_user_by( "id", $user_id );
-
-	$name = $user->user_firstname . " " . $user->user_lastname;;
-	// print $user_id . " " . $name;
-	if ( strlen( $name ) < 3 ) {
-		$name = get_user_meta( $user_id, 'billing_first_name', true ) . " " .
-		        get_user_meta( $user_id, 'billing_last_name', true );
-		// print "user meta name " . $name;
-
-	}
-	$args = array(
-		'ID'           => $user_id,
-		'display_name' => $name,
-		'nickname'     => $name
-	);
-
-	// print "<br/>";
-	if ( strlen( $name ) > 3 ) {
-		wp_update_user( $args );
-	}
-}
-
 
 

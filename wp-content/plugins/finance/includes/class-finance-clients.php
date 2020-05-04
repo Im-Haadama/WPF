@@ -4,8 +4,8 @@
 /**
  * Class Finance_Clients
  */
-class Finance_Clients {
-
+class Finance_Clients
+{
 	static function admin_page() {
 		$client_id    = GetParam( "id", false, null );
 		$include_zero = GetParam( "include_zero", false, false );
@@ -51,6 +51,9 @@ class Finance_Clients {
 
 			$line .= "<td>" . $row[4] . "</td>";
 			$line .= "<td>" . Finance_Payment_Methods::get_payment_method_name( $payment_method ) . "</td>";
+			$has_credit_info = sql_query_single_scalar("select count(*) from im_payment_info where email = " .QuoteText($C->get_customer_email())) > 0 ? 'C' : '';
+			$has_token = get_user_meta($customer_id, 'credit_token', true);
+			$line .= "<td>" . $has_credit_info . " " . $has_token . "</td>";
 			if ( $customer_total > 0 or $include_zero ) {
 				array_push( $table_lines, array( - $customer_total, $line ) );
 			}
@@ -71,6 +74,8 @@ class Finance_Clients {
 			$table .= "<td>לקוח</td>";
 			$table .= "<td>יתרה לתשלום</td>";
 			$table .= "<td>הזמנה אחרונה</td>";
+			$table .= "<td>אמצעי תשלום</td>";
+			$table .= "<td>יש פרטי אשראי</td>";
 			$table .= "</tr>";
 			for ( $i = 0; $i < count( $table_lines ); $i ++ ) {
 				$line  = $table_lines[ $i ][1];
@@ -95,8 +100,10 @@ class Finance_Clients {
 
 		$result = "";
 		try {
+//			print "user= $invoice_user pass= $invoice_password<br/>";
 			$invoice = new Finance_Invoice4u( $invoice_user, $invoice_password );
 		} catch ( Exception $e ) {
+			var_dump($e);
 			$invoice = null;
 		}
 		$u         = new Fresh_Client( $customer_id );
@@ -134,10 +141,16 @@ class Finance_Clients {
 		} else {
 			$new_tran = Core_Html::GuiHeader( 1, "לא ניתן להחבר ל Invoice4u. בדוק את ההגדרות ואת המנוי. יוזר $invoice_user" );
 		}
+		$payment_info_id = sql_query_single_scalar("select id from im_payment_info where email = " . QuoteText($u->get_customer_email()));
+		if ($payment_info_id) {
+			$args = array("post_file" => Fresh::getPost(), "edit"=>true);
+			$credit_info = Core_Gem::GemElement( "payment_info", $payment_info_id, $args );
+		} else
+			$credit_info = "No payment info";
 
 		$result .= Core_Html::gui_table_args( array(
-			array( Core_Html::gui_header( 2, "פרטי לקוח", true ), Core_Html::gui_header( 2, "קבלה", true ) ),
-			array( $user_info, $new_tran )
+			array( Core_Html::gui_header( 2, "פרטי לקוח", true ), Core_Html::gui_header( 2, "קבלה", true ), Core_Html::GuiHeader(1, "Credit info") ),
+			array( $user_info, $new_tran, $credit_info )
 		) );
 
 		$result .= Core_Html::GuiHeader( 2, __( "Balance" ) . ": " .

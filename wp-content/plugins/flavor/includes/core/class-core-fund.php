@@ -166,6 +166,7 @@ class Core_Fund {
 		$target = array();
 		foreach ( $rows as $i => $row ) {
 			if ( isset( $row[0] ) ) { // sequential
+				var_dump($row);
 				throw new Exception( "row $i, send assoc array" );
 			}
 			foreach ( $row as $j => $cell ) {

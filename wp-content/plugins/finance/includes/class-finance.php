@@ -18,6 +18,7 @@ class Finance {
 	protected $invoices;
 	protected $post_file;
 	protected $yaad;
+	protected $invoice4u;
 
 	/**
 	 * Plugin version.
@@ -446,6 +447,16 @@ class Finance {
 
 		$this->invoices->init(FINANCE_INCLUDES_URL . '../post.php');
 
+		$this->invoice4u = new Finance_Invoice4u(INVOICE_USER, INVOICE_PASSWORD);
+		self::CreateInvoiceUser();
+//		print "a" . get_user_id();
+//		if (1 == get_user_id()) {
+//			var_dump($this->invoice);
+//			print "AAAA";
+//		}
+
+//		$this->invoice = new Finance_Invoice4u( $invoice_user, $invoice_password );
+
 		// For testing:
 //		wp_set_current_user(369);
 
@@ -649,7 +660,6 @@ class Finance {
 
 	}
 
-
 	public function run ()
 	{
 	}
@@ -733,5 +743,44 @@ class Finance {
 		}
 
 		return true;
+	}
+
+	function CreateInvoiceUser()
+	{
+		$debug = (get_user_id() == 1);
+		$last_created = sql_query_single_scalar("select max(user_id) from wp_usermeta where meta_key = 'invoice_id'");
+		$last = sql_query_single_scalar("select max(user_id) from wp_usermeta");
+		for ($user_id = $last_created+1; $user_id <= $last; $user_id++){
+			if ($debug) MyLog("checking $user_id");
+			if (sql_query_single_scalar("select client_last_order($user_id)")) {
+				if ($debug) MyLog("ordered. creating");
+				self::invoice_create_user($last_created + 1);
+				if ($debug) MyLog(get_user_meta( $user_id, 'invoice_id', $user_id ));
+				return; // Do just one.
+			}
+		}
+	}
+
+	//user_id = sql_query("select user_id");
+	function invoice_create_user( $user_id ) {
+		// First change wordpress display name
+		$U = new Fresh_Client($user_id);
+		$U -> set_default_display_name( );
+
+		$name  = $U->getName(); // get_customer_name( $user_id );
+		$email = $U->get_customer_email(); // get_customer_email( $user_id );
+		$phone = $U->get_phone_number(); // get_customer_phone( $user_id );
+
+		MyLog("Creating user. name=" . $name . " email = " . $email . " phone = " . $phone);
+
+		if (! $this->invoice4u->CreateUser( $name, $email, $phone ))
+			return false;
+
+		$client = $this->invoice4u->GetCustomerByName( $name );
+
+		$id = $client->ID;
+
+		// Save locally.
+		update_user_meta( $user_id, 'invoice_id', $id );
 	}
 }

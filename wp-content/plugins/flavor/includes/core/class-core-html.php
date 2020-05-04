@@ -941,6 +941,7 @@ class Core_Html {
 			$rows = Core_Fund::array_transpose( $rows );
 		}
 
+		$line_index = 0;
 		foreach ( $rows as $line_id => $line ) {
 			if ( $line_id == "header" ) {
 				$data .= "
@@ -964,8 +965,11 @@ class Core_Html {
 				continue;
 			}
 			// print "line$line_id<br/>";
+			$row_style = self::get_style($args, $line_index++);
+
 			$data .= "
-<tr>";
+<tr $row_style>";
+
 
 			if ( is_array( $line ) ) {
 				$add_checkbox_line = $add_checkbox;
@@ -1072,6 +1076,13 @@ class Core_Html {
 		return $data;
 	}
 
+	static function get_style($args, $line_id)
+	{
+		if (! $args) return "";
+		if (!isset($args["line_styles"])) return "";
+
+		return "style = \"" . $args["line_styles"][$line_id % count($args["line_styles"])] . "\"";
+	}
 	/**
 	 * @param $args
 	 * @param $table

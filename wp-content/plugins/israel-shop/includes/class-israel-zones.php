@@ -141,10 +141,15 @@ class Israel_Zones {
 			$result = apply_filters( $operation, $operation, $id, $args );
 			if ( $result ) 	return $result;
 		}
+
+		if ($id = GetParam("id")){
+			return Core_Gem::GemElement("cities", $id, $args);
+		}
 //		$args["import_action"] = 'http://127.0.0.1/zone-editor/?operation=import'; // AddToUrl("operation", "import");
 //		print $args["import_action"];
 		$args["enable_import"] = true;
-		$args["links"] = array("zone" => self::GetLink("zone", "%s"));
+		$args["links"] = array("zone" => self::GetLink("zone", "%s"),
+			"id"=>self::GetLink("city", "%s"));
 
 		$result = Core_Gem::GemTable("cities", $args);
 		return $result;
@@ -155,6 +160,8 @@ class Israel_Zones {
 		switch ($type) {
 			case "zone":
 				return "/zone?id=$id";
+			case "city":
+				return AddToUrl("id", $id);
 		}
 	}
 

@@ -104,6 +104,10 @@
 			$menu->AddSubMenu("woocommerce", "edit_shop_orders",
 				array('page_title' => 'Needed', 'function' => array("Fresh_Packing" , 'needed_products' )));
 
+			// Needed products
+			$menu->AddSubMenu("woocommerce", "edit_shop_orders",
+				array('page_title' => 'Packing', 'function' => array("Fresh_Packing" , 'table' )));
+
 			// Deliveries
 			$menu->AddSubMenu("woocommerce", "edit_shop_orders",
 				array('page_title' => 'Deliveries', 'function' => array("Fresh_Delivery" , 'admin_page' )));

@@ -46,18 +46,18 @@ if ( ! class_exists( 'Finance' ) ) {
  */
 
 
-function finance() {
-	return Finance::instance();
-}
+//function finance() {
+//	return Finance::instance();
+//}
 
 // Global for backwards compatibility.
-$GLOBALS['finance'] = finance();
+//$GLOBALS['finance'] = finance();
 
 function run_finance() {
 //	print "runner: ". FINANCE_INCLUDES . "<br/>";
-	$instance = finance();
+	$instance = Finance::instance();
 
 //	$instance->run();
 }
 
-//run_finance();
+run_finance();

@@ -93,6 +93,7 @@ class Finance_Yaad {
 
 	function pay_user_credit(Fresh_Client $user, $account_line_ids, $amount, $change)
 	{
+		$debug = true;
 		if (0 == $amount)
 			return true;
 //		$delivery = new Fresh_Delivery($delivery_id);
@@ -116,10 +117,12 @@ class Finance_Yaad {
 //			var_dump($transaction_info);
 			// info: Id, CCode, Amount, ACode, Fild1, Fild2, Fild3
 			if (($transaction_info['CCode'] != 0)) {
-				print "Got error " . $transaction_info['CCode'];
+				print "Got error " . $transaction_info['CCode'] . "<br/>";
+				if ($debug) var_dump($credit_data);
 				return false;
 			}
-			$transaction_id = $transaction_info['transaction_id'];
+			if ($debug) var_dump($transaction_info);
+			$transaction_id = $transaction_info['Id'];
 			if (! $transaction_id){
 				print "No transaction id";
 				return false;

@@ -129,6 +129,8 @@ class Fresh_Client {
 	function getName()
 	{
 //		var_dump(self::get_user());
+		// TODO: after fixing the error with invoice4u, remove this:
+		self::set_default_display_name();
 		return self::get_user()->display_name;
 	}
 
@@ -189,6 +191,31 @@ class Fresh_Client {
 //		$select_args = array("name" => "client_displayname(id)", "include_id" => 1, "where"=> $sql_where, "events" => $events, "value"=>$value, "datalist" => 1);
 		return Core_Html::GuiAutoList( $id, "users", $args);
 	}
+
+	function set_default_display_name( ) {
+		// $user = get_userdata( $user_id );
+		$user = get_user_by( "id", $this->user_id );
+
+		$name = $user->user_firstname . " " . $user->user_lastname;;
+		// print $this->user_id . " " . $name;
+		if ( strlen( $name ) < 3 ) {
+			$name = get_user_meta( $this->user_id, 'billing_first_name', true ) . " " .
+			        get_user_meta( $this->user_id, 'billing_last_name', true );
+			// print "user meta name " . $name;
+
+		}
+		$args = array(
+			'ID'           => $this->user_id,
+			'display_name' => $name,
+			'nickname'     => $name
+		);
+
+		// print "<br/>";
+		if ( strlen( $name ) > 3 ) {
+			wp_update_user( $args );
+		}
+	}
+
 
 }
 

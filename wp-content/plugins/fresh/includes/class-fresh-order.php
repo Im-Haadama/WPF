@@ -28,6 +28,35 @@ class Fresh_Order {
 		$this->mission_id = get_post_meta( $id, 'mission_id', true );;
 	}
 
+	public function getProducts()
+	{
+		$sql = "select * from wp_woocommerce_order_items where order_id = " . $this->order_id . " and order_item_type = 'line_item'";
+
+		$sql_result = sql_query($sql);
+		$rows = [];
+		while ($row = sql_fetch_assoc($sql_result))
+		{
+			$item_id = $row['order_item_id'];
+			$prod_id = Fresh_Packing::get_order_itemmeta($item_id, '_product_id');
+			$quantity = Fresh_Packing::get_order_itemmeta($item_id, '_qty');
+//			print "$prod_id $quantity<br/>";
+			array_push($rows, array(
+				'prod_id' => $prod_id,
+				'quantity' => $quantity
+			));
+			$P = new Fresh_Product($prod_id);
+			if ($P->is_basket())
+			{
+				foreach(Fresh_Basket::get_basket_content_array($prod_id, $item_id) as $prod_id => $quantity)
+					array_push($rows, array(
+						'prod_id' => $prod_id,
+						'quantity' => $quantity
+					));
+			}
+		}
+		return $rows;
+	}
+
 	public function getMission()
 	{
 		return $this->mission_id;
@@ -243,7 +272,7 @@ class Fresh_Order {
 
 	public function removeFromBasket($item_id, $prod_id)
 	{
-		$current_removal = self::currentRemoved($item_id);
+		$current_removal = self::basketRemoved($item_id);
 
 		if (! in_array($prod_id, $current_removal))
 			array_push($current_removal, $prod_id);
@@ -254,7 +283,7 @@ class Fresh_Order {
 
 	public function addToBasket($item_id, $prod_id)
 	{
-		$current_added = self::currentAdded($item_id);
+		$current_added = self::basketAdded($item_id);
 
 		if (! in_array($prod_id, $current_added))
 			array_push($current_added, $prod_id);
@@ -266,7 +295,7 @@ class Fresh_Order {
 	public function update_basket_comment($item_id)
 	{
 		$comment = "";
-		$current_removal = self::currentRemoved($item_id);
+		$current_removal = self::basketRemoved($item_id);
 		if ($current_removal) {
 			$comment .= "הוסרו: ";
 			foreach ( $current_removal as $prod ) {
@@ -276,7 +305,7 @@ class Fresh_Order {
 			$comment = trim( $comment, ", " ) . ".<br/>";
 		}
 
-		$current_added = self::currentAdded($item_id);
+		$current_added = self::basketAdded($item_id);
 		if ($current_added) {
 			$comment .= "הוספו: ";
 			foreach ( $current_added as $prod ) {
@@ -289,14 +318,14 @@ class Fresh_Order {
 		Fresh_Packing::set_order_itemmeta($item_id, "product_comment", escape_string($comment));
 	}
 
-	static function currentRemoved($item_id)
+	static function basketRemoved($item_id)
 	{
 		$current_removal = unserialize(Fresh_Packing::get_order_itemmeta($item_id, "basket_removed"));
 		if (! $current_removal) $current_removal = array();
 		return $current_removal;
 	}
 
-	static function currentAdded($item_id)
+	static function basketAdded($item_id)
 	{
 		$current_addon = unserialize(Fresh_Packing::get_order_itemmeta($item_id, "basket_added"));
 		if (! $current_addon) $current_addon = array();
@@ -356,7 +385,7 @@ class Fresh_Order {
 		return $result;
 	}
 
-	public static function CalculateNeeded( &$needed_products, $user_id = 0 ) {
+	public static function CalculateNeeded( &$needed_products, $user_id = 0, &$user_table = null) {
 		/// print "user id " . $user_id . "<br/>";
 		$debug_product = 0; // 141;
 		if ( ! $user_id ) {
@@ -403,6 +432,8 @@ class Fresh_Order {
 		// Loop open orders.
 		while ( $row = mysqli_fetch_assoc( $result ) ) {
 			$id     = $row["id"];
+			$O = new Fresh_Order($id);
+			if (is_array($user_table)) array_push($user_table, $O->getCustomerId());
 //			print "handling order $id</br>";
 			$status = $row["post_status"];
 			$del_id = 0;
@@ -432,7 +463,6 @@ class Fresh_Order {
 				if ( isset( $item["variation_id"] ) && $item["variation_id"] > 0 ) {
 					$prod_or_var = $item["variation_id"];
 				}
-//				 print "GGGGG" . $prod_or_var . ":<br/>";
 				$qty  = $item['qty'];
 				$unit = $item['unit'];
 
@@ -455,7 +485,7 @@ class Fresh_Order {
 						print "proccessing " . $qty . " ";
 					}
 					// Adds with bundle consideration
-					Fresh_Order::AddProducts( $key, $qty, $needed_products );
+					Fresh_Order::AddProducts( $key, $qty, $needed_products, $item->get_id() );
 				} else {
 					// Check if order line supplied.
 					$sql = "SELECT sum(quantity) FROM im_delivery_lines WHERE prod_id = " . $prod_or_var .
@@ -494,19 +524,21 @@ class Fresh_Order {
 				sql_query( $sql );
 			}
 		}
-		// var_dump($needed_products[3406]);
 	}
 
-	private static function AddProducts( $prod_key, $qty, &$needed_products ) {
+	private static function AddProducts( $prod_key, $qty, &$needed_products, $item_id = 0 ) {
+
 		// var_dump($prod_key); print "<br/>";
 		// Prod key is array(prod_id or var_id, unit)
 
 		// Handle baskets recursively
 		$prod_or_var = $prod_key[0];
 		$p = new Fresh_Product($prod_or_var);
+//		if ($item_id == 369) print "---------------------------" . $p->getName() . "<br/>";
+
 		if ( $p->is_basket( $prod_or_var ) ) {
 			// Add basket content.
-			foreach (Fresh_Basket::get_basket_content_array( $prod_or_var ) as $basket_prod => $basket_q) {
+			foreach (Fresh_Basket::get_basket_content_array( $prod_or_var,  $item_id ) as $basket_prod => $basket_q) {
 				Fresh_Order::AddProducts( array( $basket_prod, '' ), $qty * $basket_q, $needed_products );
 			}
 			// Add also the basket
@@ -545,8 +577,11 @@ class Fresh_Order {
 			}
 
 			if ( ! isset( $needed_products[ $prod_or_var ][ $unit_key ] ) ) $needed_products[ $prod_or_var ][ $unit_key ] = 0;
-			// print "QQQQ adding $qty to " . get_product_name($prod_or_var) . "<br/>";
+
+//			print "QQQQ adding $qty to " . $prod_or_var . "<br/>";
+//			print "before: " . $needed_products[ $prod_or_var ][ $unit_key ] . "<br/>";
 			$needed_products[ $prod_or_var ][ $unit_key ] += $qty;
+//			print "after: " . $needed_products[ $prod_or_var ][ $unit_key ] . "<br/>";
 			//if ($key == 354) { print "array:"; var_dump($needed_products[$prod_or_var]); print "<br/>";}
 		}
 	}

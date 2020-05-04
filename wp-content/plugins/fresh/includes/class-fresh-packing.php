@@ -31,7 +31,7 @@ class Fresh_Packing {
 		print $result;
 	}
 
-	static function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero = false, $filter_stock = false, $history = false) {
+	static function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero = false, $filter_stock = false, $history = false, $user_table = null) {
 		$result            = "";
 		$inventory_managed = InfoGet( "inventory" );
 		if ($supplier_id)
@@ -44,22 +44,16 @@ class Fresh_Packing {
 		$data_lines = array();
 
 		foreach ( $needed_products as $prod_id => $quantity_array ) {
+			if ($prod_id == 145) var_dump($quantity_array);
 			$P = new Fresh_Product( $prod_id );
-			if ( ! $P ) {
-				continue;
-			}
+			if ( ! $P ) continue;
 
 			$row = array();
 
-			if ( $filter_stock and $P->getStockManaged() and $P->getStock() > $quantity_array[0] ) {
-				continue;
-			}
+			if ( $filter_stock and $P->getStockManaged() and $P->getStock() > $quantity_array[0] ) continue;
 
-			if ( $P->isDraft() ) {
-				$row[] = "טיוטא";
-			} else {
-				$row[] = gui_checkbox( "chk" . $prod_id, $checkbox_class );
-			}
+			if ( $P->isDraft() ) $row[] = "טיוטא";
+			else $row[] = gui_checkbox( "chk" . $prod_id, $checkbox_class );
 			$row[] = $P->getName();
 			$row[] = Core_Html::GuiHyperlink( isset( $quantity_array[0] ) ? round( $quantity_array[0], 1 ) : 0,
 				"get-orders-per-item.php?prod_id=" . $prod_id . ( $history ? "&history" : "" ) );
@@ -87,7 +81,13 @@ class Fresh_Packing {
 					"onchange=\"line_selected('" . $prod_id . "')\"" );
 			}
 
-			$row [] = self::orders_per_item( $prod_id, 1, true, true, true );
+			$opi = self::orders_per_item( $prod_id, 1,  ($user_table ? 2 : true), true, true );
+			if ($user_table) {
+				foreach ($user_table as $user)
+					array_push($row, isset($opi[$user]) ? $opi[$user] : "");
+
+			} else
+				$row [] = $opi;
 
 			if ( ! $filter_zero or ( $numeric_quantity > 0 ) ) {
 				array_push( $data_lines, array( $p->getName(), $row ) );
@@ -111,6 +111,14 @@ class Fresh_Packing {
 				"כמות נדרשת"
 			);
 
+			if ($user_table)
+			{
+				foreach ($user_table as $user) {
+					$u = new Fresh_Client( $user );
+					array_push( $header, $u->getName() );
+				}
+			}
+
 			if ( $inventory_managed ) {
 				array_push( $header, "כמות במלאי" );
 				array_push( $header, "כמות להזמין" );
@@ -127,7 +135,9 @@ class Fresh_Packing {
 			}
 			//array_push($table_rows, array( array( "", 'סה"כ', "", "", "", "", "", $total_buy, $total_sale )));
 
-			$result .= Core_Html::gui_table_args( $table_rows, "needed_" . $supplier_id );
+			$args = array("class" => "widefat", "line_styles" => array('background: #AAA','background: #CCC', 'background: #EEE') );
+
+			$result .= Core_Html::gui_table_args( $table_rows, "needed_" . $supplier_id, $args );
 
 			if ( ! $supplier_id ) {
 				$result .= "יש להפוך לטיוטא רק לאחר שמוצר אזל מהמלאי והוצע ללקוחות תחליף<br/>";
@@ -142,7 +152,8 @@ class Fresh_Packing {
 		$result          = "";
 		$needed_products = array();
 
-		Fresh_Order::CalculateNeeded( $needed_products );
+		$user_table = [];
+		Fresh_Order::CalculateNeeded( $needed_products, 0, $user_table );
 
 		if ( ! count( $needed_products ) ) {
 			$result .= __( "No needed products. Any orders in processing status?" );
@@ -161,7 +172,7 @@ class Fresh_Packing {
 //			if (! $supplier_id) $supplier_id = 100000000;
 //			print "sup=$supplier_id<br/>";
 
-			if ( ! in_array( $supplier_id, $suppliers ) ) {
+			if ( ! in_array( $supplier_id, $suppliers ) and $supplier_id ) {
 				array_push( $suppliers, $supplier_id );
 				$supplier_needed[ $supplier_id ] = array();
 			}
@@ -182,7 +193,7 @@ class Fresh_Packing {
 				return null;
 			}
 
-			return self::get_total_orders_supplier( $limit_to_supplier_id, $supplier_needed[ $limit_to_supplier_id ], $filter_zero, $filter_stock, $history ) .
+			return self::get_total_orders_supplier( $limit_to_supplier_id, $supplier_needed[ $limit_to_supplier_id ], $filter_zero, $filter_stock, $history, $user_table ) .
 			       Core_Html::GuiButton( "btn_create_supply_" . $supplier_id, "createSupply(" . $supplier_id . ")", "צור אספקה" );
 		}
 		if (! $supplier_needed) return "Nothing needed";
@@ -202,7 +213,7 @@ class Fresh_Packing {
 				}
 
 				$tab_content =
-					self::get_total_orders_supplier( $supplier->getId(), $supplier_needed[ $supplier->getId() ], $filter_zero, $filter_stock, $history );
+					self::get_total_orders_supplier( $supplier->getId(), $supplier_needed[ $supplier->getId() ], $filter_zero, $filter_stock, $history, $user_table );
 
 				if ( $supply_id = Fresh_Suppliers::TodaySupply( $supplier->getId() ) ) {
 					$tab_content .= Core_Html::GuiHyperlink( "Supply " . $supply_id, "/fresh/supplies/supplies-page.php?operation=show&id=" . $supply_id ) . "<br/>";
@@ -219,10 +230,13 @@ class Fresh_Packing {
 			}
 		}
 
+//		var_dump($supplier_needed["missing"]);
+
 		array_push($supplier_tabs,
 			array('missing',
 				'Missing supplier info',
-				self::get_total_orders_supplier(0, $supplier_needed["missing"])));
+				self::get_total_orders_supplier(0, $supplier_needed["missing"], false, false, false, $user_table)));
+
 //		// Add missing
 //		$supplier_tabs[1] =
 //			array(
@@ -305,6 +319,9 @@ class Fresh_Packing {
 		$result         = sql_query( $sql );
 		$lines          = "";
 		$total_quantity = 0;
+		if ($short == 2)
+			$user_need = [];
+		else $user_need = null;
 
 		while ( $row = mysqli_fetch_row( $result ) ) {
 			$order_item_id = $row[0];
@@ -328,14 +345,21 @@ class Fresh_Packing {
 
 			$total_quantity += $quantity;
 
-			if ( $short ) {
-				$lines .= $quantity . " " . $last_name . ", ";
-			} else {
-				$line  = "<tr>" . "<td> " . $o->getLink() . "</td>";
-				$line  .= "<td>" . $quantity * $multiply . "</td><td>" . $first_name . "</td><td>" . $last_name . "</td></tr>";
-				$lines .= $line;
+			switch($short) {
+				case 1:
+					$lines .= $quantity . " " . $last_name . ", ";
+					break;
+				case 0:
+					$line  = "<tr>" . "<td> " . $o->getLink() . "</td>";
+					$line  .= "<td>" . $quantity * $multiply . "</td><td>" . $first_name . "</td><td>" . $last_name . "</td></tr>";
+					$lines .= $line;
+					break;
+				case 2:
+					$user_need[$o->getCustomerId()] = $quantity * $multiply;
+					break;
 			}
 		}
+		if ($short == 2) return $user_need;
 		if ( $just_total ) {
 			return $total_quantity;
 		}
@@ -568,9 +592,51 @@ class Fresh_Packing {
 		return Core_Html::GuiSelectTable( $id, "missions", $args );
 	}
 
-	static function admin()
-	{
-		return "lalala";
+	static function Table() {
+		$rows = [];
+		$sql  = "SELECT id, post_status FROM wp_posts " .
+		        " WHERE (post_status LIKE '%wc-processing%' ) "; // OR post_status = 'wc-awaiting-shipment'
+
+		$rows["header"] = array("name" => "סיכום הזמנות");
+		$products = [];
+
+		$sql_result = sql_query( $sql );
+		// Loop open orders.
+//		$col = 2;
+		while ( $row = mysqli_fetch_assoc( $sql_result ) ) {
+			$order_id = $row['id'];
+			$rows[$order_id] = array();
+			$O = new Fresh_Order($order_id);
+			$C = new Fresh_Client($O->getCustomerId());
+
+			$rows[$order_id]["name"] = $C->getName();
+
+			foreach ($O->getProducts() as $prod_info) {
+				$prod_id                       = $prod_info['prod_id'];
+				$prod_q                        = $prod_info['quantity'];
+				$rows[ $order_id ][ $prod_id ] = $prod_q;
+				if (! isset($rows["total"][$prod_id]))
+					$rows["total"][$prod_id] = 0;
+				$rows["total"][$prod_id] += $prod_q;
+//				print $rows["total"][$prod_id] . "<br/>";
+				if (! isset($rows["header"][$prod_id])) {
+					$p                          = new Fresh_Product( $prod_id );
+					$rows["header"][ $prod_id ] = $p->getName();
+				}
+			}
+		}
+		foreach ($rows as $order_id => $row){
+			$table[$order_id] = array();
+			foreach ($rows["header"] as $prod_id => $c) {
+				if ($prod_id > 0) $table["total"][$prod_id] = $rows["total"][$prod_id];
+				$table[ $order_id ][ $prod_id ] = ( isset( $rows[ $order_id ][ $prod_id ] ) ? $rows[ $order_id ][ $prod_id ] : '' );
+			}
+		}
+		$table["total"]["name"] = 'סה"כ';
+							//		$args = array("transpose" => 1);
+		$args = array("class" => "widefat", "line_styles" => array('background: #DDD','background: #EEE', 'background: #FFF') );
+
+		print Core_Html::gui_table_args($table, "table", $args);
 	}
 }
 

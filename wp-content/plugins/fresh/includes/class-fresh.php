@@ -591,7 +591,7 @@ class Fresh {
 //		$rc1 = wp_enqueue_script( 'my_custom_script', plugin_dir_url( __FILE__ ) . 'js/add_to_cart_on_search.js', array('jquery') );
 		wp_enqueue_script( 'custom_script', plugin_dir_url( __FILE__ ) . 'js/custom_script.js' );
 
-		wp_enqueue_script( 'order', plugin_dir_url( __FILE__ ) . 'js/order.js' );
+		wp_enqueue_script( 'order', plugin_dir_url( __FILE__ ) . 'js/my_account_order.js' );
 
 //		MyLog(__FUNCTION__ . ": $rc1 $rc2");
 	}

@@ -501,6 +501,7 @@ class Fresh_Delivery {
 	}
 
 	function delivery_text( $document_type, $operation = Fresh_DocumentOperation::show, $margin = false, $show_inventory = false ) {
+		$this->delivery_total = 0;
 		$header_fields = array(
 			"בחר",
 			"פריט",

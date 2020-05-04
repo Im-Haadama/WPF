@@ -66,6 +66,69 @@ class Fresh_Client_Views {
 		return true;
 	}
 
+	static function edit_basket($item_id, $prod_id)
+	{
+		$allowed_changes = 3;
+
+		$P = new Fresh_Product($prod_id);
+		$quantity = Fresh_Packing::get_order_itemmeta($item_id, '_qty');
+
+		$removed = Fresh_Order::basketRemoved($item_id);
+		$addon = Fresh_Order::basketAdded($item_id);
+		$remove_allowed = (count($removed) < $allowed_changes);
+		$more_to_add = (count($removed) - count($addon));
+//		var_dump($removed); print "<br/>";
+//		var_dump($addon); print "<br/>";
+
+		$div_content = Core_Html::GuiHeader(1, "עריכת  " . $P->getName());
+		$div_content .= "הסר באמצעות ה X פריט מהסל, כדי להוסיף אחד במקומו<br/>";
+		$div_content .= "מספר השינויים האפשרי: " . Core_Html::GuiLabel("changes_allowed_$item_id", $allowed_changes);
+
+		$basket_rows =self::expand_basket($item_id, $prod_id, $quantity, 0, $remove_allowed);
+		$header = array("פריט", "כמות", "מחיר"); if ($remove_allowed) array_push($header, "הסר");
+		array_unshift($basket_rows, $header);
+		$div_content .= Core_Html::gui_table_args($basket_rows);
+		for ($i = 0; $i < $more_to_add; $i++) {
+//			$show = ($allowed_changes > $removed ? 'none' : 'block');
+			$div_content .= Core_Html::GuiDiv( "add_to_basket_${item_id}_$i",
+				"בחר מוצר להוסיף:" . Fresh_Product::gui_select_product( "new_prod_${item_id}_$i", null, array( "events" => "onchange=\"order_add_to_basket('" . Fresh::getPost() . "', $item_id, $prod_id, $i)\"" ) ));
+//				array( "style" => "display: $show;" ) ); // none/block
+		}
+
+		return Core_Html::GuiDiv("basket_$item_id",
+			Core_Html::GuiHeader(1, $div_content),
+			array("style"=>"display: none;"));
+	}
+
+	static function expand_basket($item_id, $basket_id, $quantity_ordered, $level = 0, $remove_allowed = false) : array
+	{
+		$sql2 = 'SELECT DISTINCT product_id, quantity FROM im_baskets WHERE basket_id = ' . $basket_id;
+		$client_type = "regular";
+		$result2 = sql_query( $sql2 );
+		$basket_lines = array();
+		while ( $row2 = mysqli_fetch_assoc( $result2 ) ) {
+			$prod_id  = $row2["product_id"];
+			if (! $prod_id or in_array($prod_id, Fresh_Order::basketRemoved($item_id))) continue;
+//			 print $prod_id . "<br/>";
+			$P        = new Fresh_Product( $prod_id );
+			$quantity = $row2["quantity"];
+			$basket_or_prod = new Fresh_Basket($prod_id);
+			if ( $basket_or_prod->is_basket( ) ) {
+				foreach (self::expand_basket( $item_id, $prod_id, $quantity_ordered * $quantity, $level + 1 ) as $row)
+					array_push($basket_lines, $row);
+			} else {
+				$line = array();
+				$line[ "name" ] = $P->getName();
+				$line[ "quantity" ]        = $quantity * $quantity_ordered;
+				$line["price"] = Fresh_Pricing::get_price_by_type($prod_id);
+				if ($remove_allowed) $line["action"] = Core_Html::GuiButton("remove_${item_id}_{$prod_id}", "X", array("action"=>"order_remove_from_basket('" . Fresh::getPost() . "', $item_id, $prod_id)"));
+				array_push($basket_lines, $line);
+			}
+		}
+		return $basket_lines;
+	}
+	// End Chava
+
 	static function init()
 	{
 		add_rewrite_endpoint('edit-order', EP_PAGES);
@@ -120,67 +183,6 @@ class Fresh_Client_Views {
 		print $result;
 	}
 
-	static function edit_basket($item_id, $prod_id)
-	{
-		$allowed_changes = 3;
-
-		$P = new Fresh_Product($prod_id);
-		$quantity = Fresh_Packing::get_order_itemmeta($item_id, '_qty');
-
-		$removed = Fresh_Order::currentRemoved($item_id);
-		$addon = Fresh_Order::currentAdded($item_id);
-		$remove_allowed = (count($removed) < $allowed_changes);
-		$more_to_add = (count($removed) - count($addon));
-//		var_dump($removed); print "<br/>";
-//		var_dump($addon); print "<br/>";
-
-		$div_content = Core_Html::GuiHeader(1, "עריכת  " . $P->getName());
-		$div_content .= "הסר באמצעות ה X פריט מהסל, כדי להוסיף אחד במקומו<br/>";
-		$div_content .= "מספר השינויים האפשרי: " . Core_Html::GuiLabel("changes_allowed_$item_id", $allowed_changes);
-
-		$basket_rows =self::expand_basket($item_id, $prod_id, $quantity, 0, $remove_allowed);
-		$header = array("פריט", "כמות", "מחיר"); if ($remove_allowed) array_push($header, "הסר");
-		array_unshift($basket_rows, $header);
-		$div_content .= Core_Html::gui_table_args($basket_rows);
-		for ($i = 0; $i < $more_to_add; $i++) {
-//			$show = ($allowed_changes > $removed ? 'none' : 'block');
-			$div_content .= Core_Html::GuiDiv( "add_to_basket_${item_id}_$i",
-				"בחר מוצר להוסיף:" . Fresh_Product::gui_select_product( "new_prod_${item_id}_$i", null, array( "events" => "onchange=\"order_add_to_basket('" . Fresh::getPost() . "', $item_id, $prod_id, $i)\"" ) ));
-//				array( "style" => "display: $show;" ) ); // none/block
-		}
-
-		return Core_Html::GuiDiv("basket_$item_id",
-			Core_Html::GuiHeader(1, $div_content),
-			array("style"=>"display: none;"));
-	}
-
-	static function expand_basket($item_id, $basket_id, $quantity_ordered, $level = 0, $remove_allowed = false) : array
-	{
-		$sql2 = 'SELECT DISTINCT product_id, quantity FROM im_baskets WHERE basket_id = ' . $basket_id;
-		$client_type = "regular";
-		$result2 = sql_query( $sql2 );
-		$basket_lines = array();
-		while ( $row2 = mysqli_fetch_assoc( $result2 ) ) {
-			$prod_id  = $row2["product_id"];
-			if (! $prod_id or in_array($prod_id, Fresh_Order::currentRemoved($item_id))) continue;
-//			 print $prod_id . "<br/>";
-			$P        = new Fresh_Product( $prod_id );
-			$quantity = $row2["quantity"];
-			$basket_or_prod = new Fresh_Basket($prod_id);
-			if ( $basket_or_prod->is_basket( ) ) {
-				foreach (self::expand_basket( $item_id, $prod_id, $quantity_ordered * $quantity, $level + 1 ) as $row)
-					array_push($basket_lines, $row);
-			} else {
-				$line = array();
-				$line[ "name" ] = $P->getName();
-				$line[ "quantity" ]        = $quantity * $quantity_ordered;
-				$line["price"] = Fresh_Pricing::get_price_by_type($prod_id);
-				if ($remove_allowed) $line["action"] = Core_Html::GuiButton("remove_${item_id}_{$prod_id}", "X", array("action"=>"order_remove_from_basket('" . Fresh::getPost() . "', $item_id, $prod_id)"));
-				array_push($basket_lines, $line);
-			}
-		}
-		return $basket_lines;
-	}
 	static function handle_operation($operation)
 	{
 		$args = self::Args();

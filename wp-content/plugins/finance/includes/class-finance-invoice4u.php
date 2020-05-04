@@ -18,10 +18,10 @@ class Customer {
 	public function __construct( $name ) {
 		$this->Name = $name;
 	}
-
 }
 
-class Finance_Invoice4u {
+class Finance_Invoice4u
+{
 	public $token;
 	public $result;
 	private $user, $password;
@@ -30,6 +30,12 @@ class Finance_Invoice4u {
 	 * Invoice4u constructor.
 	 */
 	public function __construct( $user, $password ) {
+//		print "$user $password<br/>";
+//		if (get_user_id() !=1 )return;
+		if (! defined('WSDL_CACHE_NONE')) { // Setup error
+			$this->token = null;
+			return;
+		}
 		$this->user     = $user;
 		$this->password = $password;
 		$this->Login();
@@ -47,6 +53,7 @@ class Finance_Invoice4u {
 	}
 
 	private function DoLogin( $invoice_user, $invoice_password ) {
+//		if (get_user_id() == 1) print $invoice_user . " " .$invoice_password ."<br/>";
 		$wsdl = ApiService . "/LoginService.svc?wsdl";
 		$user = array( 'username' => $invoice_user, 'password' => $invoice_password, 'isPersistent' => false );
 
@@ -54,7 +61,9 @@ class Finance_Invoice4u {
 		$this->token = $this->result;
 	}
 
-	private function requestWS( $wsdl, $service, $params ) {
+	private function requestWS( $wsdl, $service, $params )
+	{
+		if (! defined('WSDL_CACHE_NONE')) return null;
 		try {
 			$options = array(
 				'trace'              => true,
@@ -77,7 +86,10 @@ class Finance_Invoice4u {
 
 			return $this->result;
 		} catch ( SoapFault $f ) {
-			echo $f->faultstring;
+			echo $f->faultstring . "<br/>";
+			print "service=$service<br/>";
+			var_dump(libxml_get_last_error());
+
 
 			return $f->faultstring;
 		} catch ( Exception $e ) {
@@ -92,6 +104,11 @@ class Finance_Invoice4u {
 			print "No client<br/>";
 
 			return 0;
+		}
+
+		if (! $this->token) {
+			print "invoice4u: Not connected<br/>";
+			return false;
 		}
 		$wsdl = ApiService . "/DocumentService.svc?wsdl";
 
@@ -244,18 +261,28 @@ class Finance_Invoice4u {
 		return null;
 	}
 
-	public function CreateUser( $name, $email, $phone ) {
+	public function CreateUser( $name, $email, $phone )
+	{
+		MyLog("creating $name");
+		if (! $this->token) {
+			MyLog("invoice4u: Not connected");
+			return false;
+		}
 		$wsdl = ApiService . "/CustomerService.svc?wsdl";
 
 		$customer        = new Customer( $name );
 		$customer->Email = $email;
 		$customer->Phone = $phone;
+
 		$this->result    = $this->requestWS( $wsdl, "Create",
 			array( 'customer' => $customer, 'token' => $this->token ) );
 
 		if ( ! $this->result->Errors ) {
 			// print $this->result->Errors;
 			MyLog( __METHOD__, $this->result->Errors );
+ 		} else {
+			MyLog(StringVar($this->result->Errors));
+			return false;
 		}
 		// var_dump($this->result);
 	}

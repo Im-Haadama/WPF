@@ -67,7 +67,7 @@ class Fresh_Basket extends  Fresh_Product  {
 		return chop( $basket_content, ", " ) . ".";
 	}
 
-	static function get_basket_content_array( $basket_id ) {
+	static function get_basket_content_array( $basket_id, $item_id ) {
 		$result = array();
 
 		$sql = 'SELECT DISTINCT product_id, quantity, id FROM im_baskets WHERE basket_id = ' . $basket_id .
@@ -79,6 +79,15 @@ class Fresh_Basket extends  Fresh_Product  {
 			$prod_id            = $row[0];
 			$quantity           = $row[1];
 			$result[ $prod_id ] = $quantity;
+		}
+		foreach (Fresh_Order::basketAdded($item_id) as $item) {
+			if (! isset($result[$item])) $result[$item] = 0;
+			$result[ $item ] ++;
+		}
+
+		foreach (Fresh_Order::basketRemoved($item_id) as $item){
+			$result[$item]--;
+			if (! $result[$item]) unset($result[$item]);
 		}
 
 		return $result;

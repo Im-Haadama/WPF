@@ -546,7 +546,7 @@ wp-content/plugins/woocommerce/i18n/states.php
 wp-content/plugins/woocommerce/i18n/countries.php
 wp-content/plugins/woocommerce/i18n/phone.php
 wp-content/plugins/woocommerce/assets/js/admin/wc-product-export.js
-wp-content/plugins/woocommerce/assets/js/admin/meta-boxes-order.js
+wp-content/plugins/woocommerce/assets/js/admin/meta-boxes-my_account_order.js
 wp-content/plugins/woocommerce/assets/js/admin/wc-product-import.js
 wp-content/plugins/woocommerce/assets/js/admin/meta-boxes.js
 wp-content/plugins/woocommerce/assets/js/admin/wc-product-import.min.js
