@@ -186,9 +186,9 @@ class Core_MultiSite {
 
 	static function DoRun($file, &$http_code, $username= null, $password = null)
 	{
-		print "u=$username p=$password<br/>";
+//		print "u=$username p=$password<br/>";
 		 if ($username) $file .= "&AUTH_USER=" . trim($username) . "&AUTH_PW=" . urlencode(trim($password));
-		print "file =$file<br/>";
+//		print "file =$file<br/>";
 //		print $file;
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $file);
@@ -198,7 +198,7 @@ class Core_MultiSite {
 //		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
 
 		$result_text = curl_exec($ch);
-		print "ret=$result_text<br/>";
+//		print "ret=$result_text<br/>";
 		$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		curl_close($ch);
 

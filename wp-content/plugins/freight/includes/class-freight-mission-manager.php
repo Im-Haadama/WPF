@@ -531,7 +531,7 @@ class Freight_Mission_Manager
 				('" . EscapeString( $address_a ) . "', '" .
 			        EscapeString(  $address_b ) . "', $distance, $duration)";
 			SqlQuery( $sql1 );
-			if ( SqlAffectedRowscted_rows( ) < 1 ) {
+			if ( SqlAffectedRows( ) < 1 ) {
 				print "fail: " . $sql1 . "<br/>";
 			}
 
