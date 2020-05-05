@@ -316,6 +316,7 @@ class Fresh_Client_Views {
 		$args["col_ids"] = array("chk", "id", "dat", "amo", "bal", "des", "del", "ord");
 //	$args["show_cols"] = array(); $args["show_cols"]['id'] = 0;
 		$args["add_checkbox"] = false; // Checkbox will be added only to unpaid rows
+		$args["post_file"] = Fresh::getPost();
 		$first = true;
 
 		$args["page"] = -1;// all rows

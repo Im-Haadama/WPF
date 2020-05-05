@@ -1,5 +1,7 @@
 <?php
 
+require_once(ABSPATH . '/wp-content/plugins/flavor/flavor.php');
+
 
 class Finance {
 	/**
@@ -19,6 +21,7 @@ class Finance {
 	protected $post_file;
 	protected $yaad;
 	protected $invoice4u;
+	protected $clients;
 
 	/**
 	 * Plugin version.
@@ -102,6 +105,8 @@ class Finance {
 	 */
 	public function __construct($plugin_name)
 	{
+		Flavor::instance();
+
 		global $business_name;
 		$this->plugin_name = $plugin_name;
 		$this->define_constants();
@@ -109,7 +114,11 @@ class Finance {
 		if (! defined('FINANCE_ABSPATH')) die ("not defined");
 		$this->loader = new Core_Autoloader(FINANCE_ABSPATH);
 		$this->post_file = "/wp-content/plugins/finance/post.php";
-		$this->yaad = new Finance_Yaad(YAAD_API_KEY, YAAD_TERMINAL, $business_name);
+		if (defined('YAAD_API_KEY')) {
+			$this->yaad = new Finance_Yaad( YAAD_API_KEY, YAAD_TERMINAL, $business_name );
+		} else
+			$this->yaad = null;
+		$this->clients = new Finance_Clients();
 
 		$this->init_hooks();
 
@@ -129,6 +138,7 @@ class Finance {
 	 * @since 2.3
 	 */
 	private function init_hooks() {
+		// Flavor::getInstance();
 		// register_activation_hook( WC_PLUGIN_FILE, array( 'Finance_Install', 'install' ) );
 		register_shutdown_function( array( $this, 'log_errors' ) );
 
@@ -153,7 +163,8 @@ class Finance {
 		add_action( 'wp_enqueue_scripts', array($this, 'enqueue_scripts' ));
 		add_action('pay_credit', array($this, 'pay_credit_wrapper'));
 
-		$this->yaad->init_hooks();
+		if ($this->yaad) $this->yaad->init_hooks();
+		if ($this->clients) $this->clients->init_hooks();
 	}
 
 	/**
@@ -225,7 +236,7 @@ class Finance {
 
 	function handle_operation($operation)
 	{
-		Finance::instance()->yaad->setDebug(false);
+		$yaad = Finance::instance()->yaad; if ($yaad) $yaad->setDebug(false);
 		$module = strtok($operation, "_");
 		$multi_site = Core_Db_MultiSite::getInstance();
 
@@ -248,12 +259,14 @@ class Finance {
 
 				break;
 			case "get_open_trans":
-				$client_id = GetParam( "client_id" );
-				$site_id   = GetParam( "site_id" );
+				$client_id = GetParam( "client_id", true );
+				$site_id   = GetParam( "site_id", false, null );
+				if (! $site_id) return Fresh_Client_Views::show_trans($client_id);
 				// $data .= $this->Run( $func, $site_id, $first, $debug );
-				$link = "/fresh/multi-site/multi-get.php?operation=get_open_trans&client_id=" . $client_id;
+				$link = Finance::getPostFile() . "?operation=get_open_trans&client_id=" . $client_id;
+				print $link;
 				print $multi_site->Run( $link, $site_id );
-				break;
+				return true;
 
 			case "exists_invoice":
 				$bank_id = GetParam("bank_id", true);
@@ -447,8 +460,13 @@ class Finance {
 
 		$this->invoices->init(FINANCE_INCLUDES_URL . '../post.php');
 
-		$this->invoice4u = new Finance_Invoice4u(INVOICE_USER, INVOICE_PASSWORD);
-		self::CreateInvoiceUser();
+		if (defined('INVOICE_USER')) {
+			$this->invoice4u = new Finance_Invoice4u( INVOICE_USER, INVOICE_PASSWORD );
+			self::CreateInvoiceUser();
+		}
+		else
+			$this->invoice4u = null;
+
 //		print "a" . get_user_id();
 //		if (1 == get_user_id()) {
 //			var_dump($this->invoice);
@@ -640,6 +658,9 @@ class Finance {
 		wp_enqueue_script( 'business', $file, null, $this->version, false );
 		$file = FINANCE_INCLUDES_URL . 'finance.js';
 		wp_enqueue_script( 'finance', $file, null, $this->version, false );
+		$file = FINANCE_INCLUDES_URL . 'account.js';
+		wp_enqueue_script( 'account', $file, null, $this->version, false );
+
 	}
 
 	public function admin_scripts() {

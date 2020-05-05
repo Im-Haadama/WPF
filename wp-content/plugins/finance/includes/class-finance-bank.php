@@ -422,7 +422,7 @@ class Finance_Bank
 	function gui_select_client_open_account( $id = "open_account" ) {
 		$output = "";
 		$multi_site = Core_Db_MultiSite::getInstance();
-		$url = "org/business/business-post.php?operation=get_client_open_account";
+		$url = Finance::getPostFile() . "?operation=get_client_open_account";
 		$result = $multi_site->GetAll( $url );
 		foreach ($multi_site->getHttpCodes() as $side_id => $code){
 			if ($code != 200) {
@@ -510,7 +510,7 @@ class Finance_Bank
 //			$links = null, $col_ids = null, $first_id = false, $actions = null
 
 		$result .= Core_Html::gui_table_args(array(
-			array("תשלום",	Core_Html::GuiButton( "btn_receipt", "הפק חשבונית מס קבלה", array("action" => "create_receipt_from_bank()") )),
+			array("תשלום",	Core_Html::GuiButton( "btn_receipt", "הפק חשבונית מס קבלה", array("action" => "create_receipt_from_bank('".Finance::getPostFile()."')") )),
 			array( "עודף", " <div id=\"change\"></div>" )));
 		// ,"payment_table", "class" => "payment_table"));
 
@@ -591,7 +591,7 @@ class Finance_Bank
 //              "&ids=" + del_ids.join() +
 //              "&user_id=" + <?php print $customer_id; <!--;-->
 
-		$command = "/fresh/multi-site/multi-get.php?operation=create_receipt&row_ids=" . $ids .
+		$command = Finance::getPostFile() . "?operation=create_receipt&row_ids=" . $ids .
 		           "&user_id=" . $user_id . "&bank=" . $bank_amount . "&date=" . $date .
 		           "&change=" . $change;
 //	print "ZZZZ" . $command;

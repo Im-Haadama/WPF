@@ -312,20 +312,6 @@ if ( $operation) {
 			print $data;
 			break;
 
-		case "get_client_open_account":
-			$sql = "select " . $multi_site->LocalSiteId() . ", client_id, client_displayname(client_id), round(sum(transaction_amount),2) as total\n"
-			       . "from im_client_accounts\n"
-			       . "group by 2\n"
-			       . "having total > 1";
-
-			$data   = "<table>";
-			$result = sql_query( $sql );
-			while ( $row = sql_fetch_row( $result ) ) {
-				$data .= gui_row( $row );
-			}
-			$data .= "</table>";
-			print $data;
-			break;
 
 		case "get_trans":
 			$client_id = GetParam( "client_id" );

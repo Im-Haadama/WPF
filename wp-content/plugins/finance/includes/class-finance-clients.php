@@ -6,6 +6,48 @@
  */
 class Finance_Clients
 {
+	private $multisite;
+
+	/**
+	 * Finance_Clients constructor.
+	 *
+	 * @param $multisite
+	 */
+	public function __construct( ) {
+		if (class_exists("Core_Db_MultiSite"))
+			$this->multisite = Core_Db_MultiSite::getInstance();
+		else {
+			if ( get_user_id() == 1 ) {
+				print "multisite not found";
+			}
+
+			$this->multisite = null;
+		}
+	}
+
+	public function init_hooks()
+	{
+		AddAction("get_client_open_account", array($this, 'get_client_open_account'));
+	}
+
+	function get_client_open_account()
+	{
+		if (! $this->multisite)
+			return "multisite not configured";
+		$sql = "select " . $this->multisite->LocalSiteId() . ", client_id, client_displayname(client_id), round(sum(transaction_amount),2) as total\n"
+		       . "from im_client_accounts\n"
+		       . "group by 2\n"
+		       . "having total > 1";
+
+		$data   = "<table>";
+		$result = sql_query( $sql );
+		while ( $row = sql_fetch_row( $result ) ) {
+			$data .= Core_Html::gui_row( $row );
+		}
+		$data .= "</table>";
+		return  $data;
+	}
+
 	static function admin_page() {
 		$client_id    = GetParam( "id", false, null );
 		$include_zero = GetParam( "include_zero", false, false );

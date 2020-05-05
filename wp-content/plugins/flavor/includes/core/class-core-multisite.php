@@ -128,6 +128,7 @@ class Core_MultiSite {
 
 		foreach ( $this->sites_array as $site_id => $site ) {
 			$result = $this->Run( $func, $site_id, $first, $debug );
+//			print $func . " ". $result . "<br/>";
 			if (! $result) {
 				$output .= "Can't get from " . $this->getSiteName($site_id) . " http code: " . $this->http_codes[$site_id] . Core_Html::Br();
 				$output .= $this->getSiteURL($site_id) . '/' . $func . Core_Html::Br();
@@ -169,6 +170,7 @@ class Core_MultiSite {
 			$username = $this->sites_array[ $site_id ][3];
 			$password = $this->sites_array[ $site_id ][4];
 		}
+
 		$result_text = self::DoRun($file, $this->http_codes[$site_id], $username, $password);
 
 		if (in_array($this->http_codes[$site_id], array(404, 500))) return false;
@@ -184,11 +186,15 @@ class Core_MultiSite {
 
 	static function DoRun($file, &$http_code, $username= null, $password = null)
 	{
+		if ($username) $file .= "&AUTH_USER=$username&AUTH_PW=$password";
+//		print $file;
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $file);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_USERPWD, "$username:$password");
+//		curl_setopt($ch, CURLOPT_USERPWD, "$username:$password");
 		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+//		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
+
 		$result_text = curl_exec($ch);
 		$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		curl_close($ch);

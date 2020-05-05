@@ -831,7 +831,10 @@ class Focus_Tasks {
 
 		$task = new Focus_Tasklist( $task_id );
 
-		return $task->task_started( get_user_id() );
+		if ($task->task_started( get_user_id() ))
+			return $task->task_url();
+
+		return false;
 	}
 
 	static function End($input, $args) {

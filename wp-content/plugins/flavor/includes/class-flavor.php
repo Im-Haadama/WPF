@@ -118,6 +118,8 @@ class Flavor {
 		$this->loader = new Core_Autoloader(FLAVOR_ABSPATH);
 		$this->init_hooks();
 
+		if (get_user_id() == 1)
+			print "loading flavor";
 		do_action( 'flavor_loaded' );
 	}
 

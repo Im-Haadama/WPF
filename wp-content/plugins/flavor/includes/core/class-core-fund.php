@@ -337,7 +337,7 @@ class Core_Fund {
 	 *
 	 * @return bool
 	 */
-	function check_password( $user, $password ) {
+	static function check_password( $user, $password ) {
 		// For now hardcoded.
 		if ( $user != "im-haadama" or $password != "Wer95%pl" ) {
 			return false;
