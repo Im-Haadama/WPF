@@ -179,50 +179,6 @@ function handle_routes_show($operation, $debug = false)
  *
  * @return bool
  */
-function delivered($site_id, $type, $id, $debug = false)
-{
-    if ( $debug ) {
-        print "start<br/>";
-    }
-    if ( $site_id != Core_Db_MultiSite::LocalSiteID() ) {
-        if ( $debug ) {
-            print "remote.. ";
-        }
-        $request = "/routes/routes-post.php?site_id=" . $site_id .
-                   "&type=" . $type . "&id=" . $id . "&operation=delivered";
-        if ( $debug ) {
-            $request .= "&debug=1";
-            print $request;
-        }
-        if ( Core_Db_MultiSite::sExecute( $request, $site_id, $debug ) == "delivered")  return true;
-        print "failed:<br/>";
-        print $request;
-        return false;
-    }
-    // Running local. Let's do it.
-    // print "type=" . $type . "<br/>";
-    switch ( $type ) {
-        case "orders":
-            $o = new Order( $id );
-            $message = "";
-            if ( ! $o->delivered($message) )
-                print $message;
-            else
-                return true;
-            break;
-        case "tasklist":
-            $t = new Focus_Tasklist( $id );
-            $t->Ended();
-            return true;
-            break;
-        case "supplies":
-            $s = new Fresh_Supply( $id );
-            $s->picked();
-            return true;
-            break;
-    }
-    return false;
-}
 
 // Start collecting data
 /**

@@ -53,7 +53,7 @@ function handle_multi_operation($operation)
 
 		case "get_open_trans":
 			$client_id = GetParam( "client_id" );
-			print show_trans( $client_id, eTransview::not_paid );
+			print show_trans( $client_id, TransView::not_paid );
 			break;
 	}
 }

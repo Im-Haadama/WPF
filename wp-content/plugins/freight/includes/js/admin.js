@@ -25,29 +25,10 @@ function update_display(xmlhttp)
     document.getElementById("route_div").innerHTML = xmlhttp.response;
 }
 
-function delivered(site, id, type) {
-    let url = "/routes/routes-post.php?site_id=" + site + "&type=" + type +
-        "&id=" + id + "&operation=delivered";
-
-    xmlhttp = new XMLHttpRequest();
-    xmlhttp.onreadystatechange = function () {
-        // Wait to get query result
-        if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
-        {
-            // alert (xmlhttp.response);
-            if (xmlhttp.response === "delivered") {
-                var row = document.getElementById("chk_" + id).parentElement.parentElement;
-                var table = row.parentElement.parentElement;
-                table.deleteRow(row.rowIndex);
-            } else {
-                alert(xmlhttp.response);
-            }
-            // window.location = window.location;
-        }
-    }
-
-    xmlhttp.open("GET", url, true);
-    xmlhttp.send();
+function delivered(post_file, site, id, type) {
+    let url = post_file + "?site_id=" + site + "&type=" + type + "&id=" + id + "&operation=delivered";
+    let obj = document.getElementById("chk_" + id);
+    execute_url(url, action_hide_row, obj);
 }
 
 function create_missions(post_file)

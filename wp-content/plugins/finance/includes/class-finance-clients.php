@@ -158,7 +158,7 @@ class Finance_Clients
 		$result .= '<div id="logging"></div>';
 
 		$args   = array( "post_file" => Finance::getPostFile(), "class" => "widefat" );
-		$result .= Fresh_Client_Views::show_trans( $customer_id, eTransview::default, $args );
+		$result .= Fresh_Client_Views::show_trans( $customer_id, TransView::default, $args );
 
 		return $result;
 	}

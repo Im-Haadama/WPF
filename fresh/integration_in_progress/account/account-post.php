@@ -148,7 +148,7 @@ switch ( $operation ) {
 		}
 		$args = [];
 		$args["page"] = $page;
-		$table_lines = show_trans( $customer_id, eTransview::default, $args );
+		$table_lines = show_trans( $customer_id, TransView::default, $args );
 		print $table_lines;
 		break;
 
@@ -164,7 +164,7 @@ switch ( $operation ) {
 		}
 		$args["query"] = "id in (" . CommaImplode($ids) . ")";
 		$customer_id = GetParam("customer_id", true);
-		print show_trans($customer_id, eTransview::default, $args);
+		print show_trans($customer_id, TransView::default, $args);
 		return;
 
 
@@ -290,7 +290,7 @@ function send_month_summary( $user_ids ) {
 function replace_shortcode( $text, $id ) {
 	$new_text = Core_Html::gui_header( 1, "מצב חשבון" );
 	$new_text .= "יתרה לתשלום " . client_balance( $id ) . "<br/>";
-	$new_text .= show_trans( $id, eTransview::read_last ) . "<br/>";
+	$new_text .= show_trans( $id, TransView::read_last ) . "<br/>";
 	$new_text = str_replace( "[im-haadama-account-summary]", $new_text, $text );
 
 	return str_replace( "[display_name]", get_customer_name( $id ), $new_text );

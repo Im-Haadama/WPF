@@ -14,6 +14,7 @@ class Freight_Mission_Manager
 		add_action("mission_details", __CLASS__ . '::mission_details');
 		add_action("freight_do_add_delivery", __CLASS__ . "::do_add_delivery");
 		add_action('get_local_anonymous', __CLASS__ . "::get_local_missions");
+		add_action('delivered', array(__CLASS__, "delivered_wrap"));
 	}
 
 	static function missions()
@@ -165,7 +166,7 @@ class Freight_Mission_Manager
 						$order_info['shipping_method'],
 						$order_info['phone'],
 						$pri_input,
-						Core_Html::GuiCheckbox("chk_$order_id", false, array("events"=>'onchange="delivered(' . $order_info['site_id'] . "," . $order_id . ', \'' . $type . '\')"'))));
+						Core_Html::GuiCheckbox("chk_$order_id", false, array("events"=>'onchange="delivered(\'' . Freight::getPost() . "', " .$order_info['site_id'] . "," . $order_id . ', \'' . $type . '\')"'))));
 			}
 		}
 
@@ -256,7 +257,7 @@ class Freight_Mission_Manager
 			if ( ! is_numeric( $site_id ) ) die ( $site_id . " not number" . $site_id . " order_id = " . $order_id . " name = " . $name . " <br/>" );
 
 			$line_data .= Core_Html::GuiCell( gui_checkbox( "chk_" . $order_id, "", "",
-				'onchange="delivered(' . $site_id . "," . $order_id . ', \'' . $type . '\')"' ) ); // #delivered
+				'onchange="delivered("'.Freight::getPost().'", ' . $site_id . "," . $order_id . ', \'' . $type . '\')"' ) ); // #delivered
 			$line_data .= Core_Html::GuiCell( $site_id );
 			$line_data .= Core_Html::GuiCell( $shipping_method );
 			$line_data .= Core_Html::GuiCell( $user_id );
@@ -434,11 +435,13 @@ class Freight_Mission_Manager
 			$pickup_address = Core_Db_MultiSite::getPickupAddress( $order_info['site_id'] );
 
 			// Deliveries created in other place
-			if ( $order_info['site'] != "משימות" and $order_info['site'] != "supplies" and $pickup_address != $mission->getStartAddress() ) {
+			if ( ($order_info['site'] != "משימות") and ($order_info['site'] != "supplies") and ($pickup_address != $mission->getStartAddress()) ) {
 				// print "adding $pickup_address<br/>";
 				$prerequisite[$stop_point] = $pickup_address;
 				// Add Pickup
 				self::add_stop_point( $stop_points, $pickup_address, $order_id, $order_info['site_id'] );
+				$pickup_order_info = $order_info;
+				$pickup_order_info['customer'] = "<b>איסוף</b>" . $order_info["customer"];
 				self::add_line_per_station($lines_per_station, $mission->getStartAddress(), $pickup_address, Core_Html::gui_row( array(
 					$order_info['site'],
 					$order_id,
@@ -449,7 +452,7 @@ class Freight_Mission_Manager
 					"",
 					"",
 					""
-				) ), $order_id, $order_info );
+				) ), $order_id, $pickup_order_info );
 			}
 			if ( $order_info['site'] == "supplies" ) array_push( $supplies_to_collect, array( $order_id, $order_info['site_id'] ) );
 
@@ -463,7 +466,9 @@ class Freight_Mission_Manager
 			self::add_line_per_station($lines_per_station,
 				$mission->getStartAddress(),
 				$stop_point,
-				$data_lines[ $mission_id ][ $i ][1], $order_id, $order_info );
+				$data_lines[ $mission_id ][ $i ][1],
+				$order_id,
+				$order_info );
 
 			// Check if we need to collect something on the go
 			if ($order_info['site_id'] == $multisite->getLocalSiteID() and $order_info['site'] != "supplies"){
@@ -906,6 +911,59 @@ class Freight_Mission_Manager
 
 		// print "data=" . $data . '<br/>';
 		return $data;
+	}
+
+	static function delivered_wrap()
+	{
+		$site_id = GetParam("site_id", true);
+		$type = GetParam("type", true);
+		$id = GetParam("id", true);
+
+		return self::delivered($site_id, $type, $id);
+	}
+	static function delivered($site_id, $type, $id, $debug = false)
+	{
+		if ( $debug ) {
+			print "start<br/>";
+		}
+		if ( $site_id != Core_Db_MultiSite::LocalSiteID() ) {
+			if ( $debug ) {
+				print "remote.. ";
+			}
+			$request = "/routes/routes-post.php?site_id=" . $site_id .
+			           "&type=" . $type . "&id=" . $id . "&operation=delivered";
+			if ( $debug ) {
+				$request .= "&debug=1";
+				print $request;
+			}
+			if ( Core_Db_MultiSite::sExecute( $request, $site_id, $debug ) == "delivered")  return true;
+			print "failed:<br/>";
+			print $request;
+			return false;
+		}
+		// Running local. Let's do it.
+		// print "type=" . $type . "<br/>";
+		switch ( $type ) {
+			case "orders":
+				$o = new Fresh_Order( $id );
+				$message = "";
+				if ( ! $o->delivered($message) )
+					print $message;
+				else
+					return true;
+				break;
+			case "tasklist":
+				$t = new Focus_Tasklist( $id );
+				$t->Ended();
+				return true;
+				break;
+			case "supplies":
+				$s = new Fresh_Supply( $id );
+				$s->picked();
+				return true;
+				break;
+		}
+		return false;
 	}
 
 }

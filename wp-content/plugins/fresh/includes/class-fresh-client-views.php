@@ -1,6 +1,6 @@
 <?php
 
-class eTransview {
+abstract class TransView {
 	const
 		default = 0,
 		from_last_zero = 1,
@@ -190,7 +190,7 @@ class Fresh_Client_Views {
 		{
 			case "client_archive":
 				$user_id = get_user_id(true);
-				return self::show_trans($user_id, eTransview::default, $args);
+				return self::show_trans($user_id, TransView::default, $args);
 
 			case "client_balance":
 				$user_id = get_user_id(true);
@@ -264,7 +264,7 @@ class Fresh_Client_Views {
 		}
 	}
 
-	static function show_trans( $customer_id, $view = eTransview::default, $args =null )
+	static function show_trans( $customer_id, $view = TransView::default, $args =null )
 	{
 		// $from_last_zero = false, $checkbox = true, $top = 10000
 		$query = GetArg($args, "param", null);
@@ -275,14 +275,14 @@ class Fresh_Client_Views {
 		$top            = null;
 		$not_paid       = false;
 		switch ( $view ) {
-			case eTransview::from_last_zero:
+			case TransView::from_last_zero:
 				$from_last_zero = true;
 				break;
-			case eTransview::not_paid:
+			case TransView::not_paid:
 				$not_paid = true;
 				break;
 
-			case eTransview::read_last:
+			case TransView::read_last:
 				$top = 100;
 				break;
 		}

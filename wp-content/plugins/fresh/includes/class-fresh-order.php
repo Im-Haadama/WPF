@@ -709,6 +709,7 @@ class Fresh_Order {
 			switch ( $status ) {
 				case 'wc-completed':
 					$order->payment_complete();
+					$order->update_status( $status );
 					break;
 				default:
 					$order->update_status( $status );
