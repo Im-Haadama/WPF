@@ -9,7 +9,7 @@ class Fresh_Control {
 		switch ($operation)
 		{
 			case "control_report":
-				$missions =  sql_query_array_scalar( "select id from im_missions where date = " . QuoteText(date('Y-m-d')));
+				$missions =  SqlQueryArrayScalar( "select id from im_missions where date = " . QuoteText(date('Y-m-d')));
 				if (count($missions) == 1) {
 					print self::control_mission($missions[0]);
 					return;
@@ -20,7 +20,7 @@ class Fresh_Control {
 	static function control_mission($mission_id)
 	{
 		$sql = "select post_id from wp_postmeta where meta_key = 'mission_id' and meta_value = $mission_id";
-		$orders = sql_query_array_scalar($sql);
+		$orders = SqlQueryArrayScalar($sql);
 
 		$result = "<style>" .
 		"@media print {" .
@@ -44,7 +44,7 @@ class Fresh_Control {
 				$result .= "Order $order_id not packed yet<br/>";
 				continue;
 			}
-			$rows   = sql_query_array( "select product_name, quantity_ordered, quantity from im_delivery_lines where delivery_id = " . $d->getID() );
+			$rows   = SqlQueryArray( "select product_name, quantity_ordered, quantity from im_delivery_lines where delivery_id = " . $d->getID() );
 //			print "row count: " . count($rows) ."<br/>";
 			$result .= "<table>";
 			$result .= Core_Html::gui_row( array(

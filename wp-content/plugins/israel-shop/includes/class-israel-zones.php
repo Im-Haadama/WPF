@@ -37,7 +37,7 @@ class Israel_Zones {
 		$this->shortcodes->add(array("israel_zones" => array("Israel_Zones::main", null),
 			                          "israel_zone"=>array("Israel_Zones::zone", null)));
 		$this->shortcodes->do_init();
-		$this->table_prefix = get_table_prefix();
+		$this->table_prefix = GetTablePrefix();
 	}
 
 	private function init_hooks() {
@@ -77,7 +77,7 @@ class Israel_Zones {
 
 		$result = "";
 		$result .= Core_Html::gui_header(1, $zone->get_zone_name());
-		$zone_info = sql_query_array("select city_name, zipcode from im_cities where zone = $id");
+		$zone_info = SqlQueryArray("select city_name, zipcode from im_cities where zone = $id");
 		$result .= Core_Html::gui_table_args($zone_info);
 		$result .= Core_Html::gui_header(2, "Common prefixes");
 		$prefixes = self::CommonPrefix(array_column($zone_info, 1), $id);
@@ -115,7 +115,7 @@ class Israel_Zones {
 				for ($i = 1; $i < strlen($code); $i++) {
 					$candidate = substr($code, 0, $i);
 //					print "Can: $candidate<br/>";
-					if (! sql_query_single_scalar("select count(*) from im_cities where zone != $zone_id and zipcode like '$candidate%'")) {
+					if (! SqlQuerySingleScalar("select count(*) from im_cities where zone != $zone_id and zipcode like '$candidate%'")) {
 						array_push($prefix_array, $candidate);
 //						print "Adding $candidate<br/>";
 						$found = true;
@@ -194,13 +194,13 @@ class Israel_Zones {
 
 	function run($limit){
 		$sql = "select id from im_cities where zipcode is null limit $limit";
-		$cities = sql_query_array_scalar($sql);
+		$cities = SqlQueryArrayScalar($sql);
 		foreach ($cities as $city_id) {
-			$city_name = sql_query_single_scalar("select city_name from im_cities where id = $city_id");
+			$city_name = SqlQuerySingleScalar("select city_name from im_cities where id = $city_id");
 			$code = self::israelpost_get_city_postcode($city_name);
 			if (! strlen($code)) $code = "-3";
 //			print "city: $city_name code: $code";
-			sql_query("update im_cities set zipcode = $code where id = $city_id");
+			SqlQuery("update im_cities set zipcode = $code where id = $city_id");
 		}
 	}
 

@@ -54,7 +54,7 @@ print " באתר - http://store.im-haadama.co.il או בהודעה חוזרת.";
 function print_basket( $basket_id )
 {
     // old:
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 
 	$basket_content = "";
 

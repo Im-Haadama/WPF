@@ -38,13 +38,13 @@ function get_client_type( $id ) {
 
 function get_mission_name( $mission_id ) {
 	// Todo: find better way to do this
-	sql_query( "set lc_time_names = 'he_IL'" );
+	SqlQuery( "set lc_time_names = 'he_IL'" );
 	if ( ! is_numeric( $mission_id ) ) {
 		return $mission_id;
 	}
 
 	$sql  = "select ifnull(concat(name, ' ', DATE_FORMAT(date, \"%a %d/%m\")), name) from im_missions where id = $mission_id";
-	$name = sql_query_single_scalar( $sql );
+	$name = SqlQuerySingleScalar( $sql );
 
 	return $name;
 }
@@ -105,22 +105,22 @@ function get_key() {
 	if ( ! ( $u->ID > 0 ) )
 		return null;
 
-	$key = sql_query_single_scalar( "select dynamic_key from im_auth where user_id = " . $u->ID .
-	                                " and timestamp > DATE_SUB(now(), $half_interval)");
+	$key = SqlQuerySingleScalar( "select dynamic_key from im_auth where user_id = " . $u->ID .
+	                             " and timestamp > DATE_SUB(now(), $half_interval)");
 
 	// If we have a valid key, return it
 	if ( strlen( $key ) > 10 ) {
 		return $key;
 	}
 	// Delete old keys
-	sql_query( "delete from im_auth where timestamp < DATE_SUB(now(), $interval)");
+	SqlQuery( "delete from im_auth where timestamp < DATE_SUB(now(), $interval)");
 
 	// Generate a key
 	$key = random_str( 32 );
 	$sql = "insert into im_auth (ip, dynamic_key, timestamp, user_id) VALUES ('"
 	       . $_SERVER["REMOTE_ADDR"] . "', '" . $key . "', NOW(), " . $u->ID . ")";
 
-	sql_query( $sql);
+	SqlQuery( $sql);
 
 	return $key;
 }

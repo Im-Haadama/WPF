@@ -30,9 +30,9 @@ class Document {
 
 	public function __construct() {
 		$this->IssueDate        = date( "c", time() ); // can be at the Past no erlier then last invoice
-		$this->Discount         = new Discount;
-		$this->Items            = array( new Item() );
-		$this->AssociatedEmails = array( new Email() );
+		$this->Discount         = new InvoiceDiscount;
+		$this->Items            = array( new InvoiceItem() );
+		$this->AssociatedEmails = array( new InvoiceEmail() );
 		$this->Payments         = array( new Payment() );
 	}
 }
@@ -54,7 +54,7 @@ class Item {
 	public $Discount;
 
 	public function __construct() {
-		$this->Discount = new Discount;
+		$this->Discount = new InvoiceDiscount;
 	}
 }
 
@@ -161,7 +161,7 @@ class Invoice4u {
 	public function CreateDocument() {
 		$wsdl = "http://private.invoice4u.co.il/Services/DocumentService.svc?wsdl";
 
-		$doc = new Document();
+		$doc = new InvoiceDocument();
 
 		$this->result = $this->requestWS( $wsdl, "CreateDocument", array( 'doc' => $doc, 'token' => $this->token ) );
 	}

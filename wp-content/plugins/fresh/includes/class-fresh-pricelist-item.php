@@ -32,7 +32,7 @@ class Fresh_Pricelist_Item {
 		$sql = " SELECT product_name, supplier_id, date, price, supplier_product_code, sale_price, category, picture_path FROM im_supplier_price_list " .
 		       " WHERE id = " . $pricelist_id;
 
-		$result = sql_query_single_assoc( $sql );
+		$result = SqlQuerySingleAssoc( $sql );
 		if ( $result == null ) {
 			print "pricelist item $pricelist_id not found<br/>";
 			die( 1 );
@@ -240,7 +240,7 @@ function pricelist_get_price( $prod_id ) {
 	$sql = 'SELECT price FROM im_supplier_price_list WHERE supplier_id = \'' . $supplier_id . '\'' .
 	       ' AND product_name IN (SELECT supplier_product_name FROM im_supplier_mapping WHERE product_id = ' . $prod_id . ')';
 
-	return sql_query_single_scalar( $sql );
+	return SqlQuerySingleScalar( $sql );
 }
 
 

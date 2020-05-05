@@ -38,5 +38,5 @@ $sql = "INSERT INTO im_activity (time, login, ip, url, ref, search) VALUES (" .
 //print "<br/>" . $sql . "<br/>";
 // my_log($sql);
 
-sql_query( $sql );
+SqlQuery( $sql );
 ?>

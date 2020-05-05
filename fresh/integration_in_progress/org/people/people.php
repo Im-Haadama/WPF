@@ -38,7 +38,7 @@ function people_add_activity_sick( $id, $date, $project_id)
 	       $id . ", \"" . $date . '", ' . $project_id . ", 0, 0, \"" . ImTranslate("Sick leave") . "\")";
 	// print header_text();
 	// print $sql;
-	$export = sql_query( $sql );
+	$export = SqlQuery( $sql );
 	if ( ! $export ) {
 		die ( 'Invalid query: ' . $sql . mysql_error() );
 	}
@@ -106,7 +106,7 @@ function sender_name( $sender_id ) {
  */
 function worker_get_id($user_id)
 {
-	return sql_query_array_scalar("select id from im_working where user_id = " . $user_id);
+	return SqlQueryArrayScalar( "select id from im_working where user_id = " . $user_id);
 }
 
 /**
@@ -154,7 +154,7 @@ function project_name( $id ) {
 	$sql = 'SELECT project_name FROM im_projects '
 	       . ' WHERE id = ' . $id;
 
-	return sql_query_single_scalar( $sql );
+	return SqlQuerySingleScalar( $sql );
 }
 
 /**
@@ -170,13 +170,13 @@ function project_delete($project_id, $user_id, $force = false)
 	if (! in_array(project_company($project_id), Org_Worker::GetCompanies($user_id)))
 		die ("different company");
 
-	$c = sql_query_single_scalar("select count(*) from im_tasklist where status < 2 and project_id = " . $project_id);
+	$c = SqlQuerySingleScalar( "select count(*) from im_tasklist where status < 2 and project_id = " . $project_id);
 	if ($c and ! $force) {
 		print get_project_name($project_id) . "(" . $project_id . ")" . ImTranslate("has") . " " . $c . ImTranslate("active tasks");
 		return false;
 	}
 	// TODO: handle orphan tasks
-	return sql_query("update im_projects set is_active=0 where id = " . $project_id);
+	return SqlQuery( "update im_projects set is_active=0 where id = " . $project_id);
 }
 
 /**
@@ -190,13 +190,13 @@ function project_delete($project_id, $user_id, $force = false)
  */
 function project_create($user_id, $project_name, $company, $project_contact = "set later", $project_priority = 5)
 {
-	sql_query( "insert into im_projects (project_name, project_contact, project_priority) values (" . QuoteText($project_name) .
-	           "," . QuoteText($project_contact) . "," . $project_priority . ")");
+	SqlQuery( "insert into im_projects (project_name, project_contact, project_priority) values (" . QuoteText($project_name) .
+	          "," . QuoteText($project_contact) . "," . $project_priority . ")");
 
-	$project_id = sql_insert_id();
+	$project_id = SqlInsertId();
 	
-	sql_query ("insert into im_working (user_id, project_id, company_id, rate, report, volunteer, is_active) values " .
-	" (" . $user_id . "," . $project_id . ", " . $company . ", 0, 1, 1, 1) ");
+	SqlQuery ( "insert into im_working (user_id, project_id, company_id, rate, report, volunteer, is_active) values " .
+	           " (" . $user_id . "," . $project_id . ", " . $company . ", 0, 1, 1, 1) ");
 
 	return $project_id;
 }
@@ -208,7 +208,7 @@ function project_create($user_id, $project_name, $company, $project_contact = "s
  */
 function project_cancel($project_id)
 {
-	sql_query("update im_working set is_active = 0 where project_id = " . $project_id);
+	SqlQuery( "update im_working set is_active = 0 where project_id = " . $project_id);
 	return true;
 }
 

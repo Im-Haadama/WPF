@@ -15,7 +15,7 @@ require_once( "orders-common.php" );
 $sql = "SELECT id, post_status FROM wp_posts " .
        " WHERE post_status LIKE '%wc%waiting%'";
 
-$result = sql_query( $sql );
+$result = SqlQuery( $sql );
 
 while ( $row = mysqli_fetch_row( $result ) ) {
 	$id = $row[0];

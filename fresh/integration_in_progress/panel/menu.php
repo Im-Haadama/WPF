@@ -61,7 +61,7 @@ if ( $count > 0 ) {
 	$table[ $i ++ ][ $col ] = Core_Html::GuiHyperlink( $count . " פריטים לא ממופים ", "../catalog/catalog-map.php" );
 }
 $first = true;
-foreach ( sql_query_single( "SELECT id FROM im_suppliers WHERE machine_update = TRUE " ) as $supplier_id ) {
+foreach ( SqlQuerySingle( "SELECT id FROM im_suppliers WHERE machine_update = TRUE " ) as $supplier_id ) {
 	$PL       = new Fresh_PriceList( $supplier_id );
 	$a        = $PL->GetUpdateDate();
 	$b        = date( 'Y-m-d' );
@@ -114,7 +114,7 @@ print gui_table_args( $table );
 
 function count_unmapped() {
 	$sql    = "SELECT id FROM im_supplier_price_list";
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 	$count  = 0;
 
 	while ( $row = mysqli_fetch_row( $result ) ) // mysql_fetch_row($export))

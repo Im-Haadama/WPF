@@ -11,7 +11,7 @@ require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 
 $sql = "SELECT post_title, id, post_modified FROM im_products";
 
-$result = sql_query( $sql );
+$result = SqlQuery( $sql );
 
 $data .= "<tr>";
 $data .= "<td>בחר</td>";

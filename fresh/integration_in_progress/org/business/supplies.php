@@ -23,7 +23,7 @@ if ( $only_open ) {
 	$sql .= " and status <> 9";
 }
 
-$result = sql_query( $sql );
+$result = SqlQuery( $sql );
 
 $table = array();
 

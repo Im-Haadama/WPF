@@ -8,6 +8,6 @@
  */
 class inventory {
 	public static function GetQuantity( $prod_id ) {
-		return sql_query_single_scalar( "SELECT q FROM i_total WHERE prod_id = " . $prod_id );
+		return SqlQuerySingleScalar( "SELECT q FROM i_total WHERE prod_id = " . $prod_id );
 	}
 }

@@ -48,7 +48,7 @@ function archive_get_supplier( $prod_id, $week ) {
 
 //	print $sql;
 //	print $sql; die(1);
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 	$s      = "";
 	while ( $row = mysqli_fetch_row( $result ) ) {
 		$s .= get_supplier_name( $row[0] ) . ", ";

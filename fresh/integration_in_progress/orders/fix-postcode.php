@@ -16,7 +16,7 @@ $sql = 'SELECT posts.id'
        . " WHERE post_status = 'wc-processing'" .
        " order by 1";
 
-$result = sql_query( $sql );
+$result = SqlQuery( $sql );
 
 while ( $row = mysqli_fetch_row( $result ) ) {
 	$order_id = $row[0];

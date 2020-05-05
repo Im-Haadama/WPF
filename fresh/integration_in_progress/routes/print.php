@@ -62,7 +62,7 @@ function show_menu() {
 	       . ' FROM `wp_posts` posts'
 	       . " WHERE post_status LIKE '%wc-processing%' order by 1";
 
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 
 	$missions = array();
 	while ( $row = mysqli_fetch_assoc( $result ) ) {
@@ -87,7 +87,7 @@ function print_mission( $mission_id_filter = null ) {
 	       . " WHERE post_status LIKE '%wc-processing%' order by 1";
 
 	$grouped_orders = array();
-	$result         = sql_query( $sql );
+	$result         = SqlQuery( $sql );
 	print "<style>";
 	print "@media print {";
 	print "h1 {page-break-before: always;}";
@@ -153,7 +153,7 @@ AND s.supplier = r.id AND
 ORDER BY 1';
 
 // print $sql;
-	$result   = sql_query( $sql );
+	$result   = SqlQuery( $sql );
 	$supplies = Array();
 	while ( $row = mysqli_fetch_assoc( $result ) ) {
 		array_push( $supplies, $row["id"] );

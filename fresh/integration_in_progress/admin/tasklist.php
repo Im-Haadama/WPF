@@ -51,7 +51,7 @@ function tasklist_page_actions() {
 	if ( is_admin_user() ) {
 		$sql = " SELECT DISTINCT owner FROM im_tasklist WHERE 1 " . $preset_basic_query;
 //		print $sql;
-		$workers = sql_query_array_scalar( $sql );
+		$workers = SqlQueryArrayScalar( $sql );
 		foreach ( $workers as $worker ) {
 			if ( $worker != $user_ID ) {
 				tasklist_add_link( get_customer_name( $worker ), "c-get-all-tasklist.php?preset=" . ( 100 + (int) $worker ) );

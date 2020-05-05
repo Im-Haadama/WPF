@@ -25,9 +25,9 @@ if ( isset( $_GET["incremental"] ) ) {
 
 $sql = "SELECT post_title, id, post_modified FROM im_products";
 if ( $incremental ) {
-	$max      = sql_query_single_scalar( "SELECT max(post_modified) FROM wp_posts" );
+	$max      = SqlQuerySingleScalar( "SELECT max(post_modified) FROM wp_posts" );
 	$date_q   = "SELECT last_inc_update FROM im_multisite WHERE id = " . $site_id;
-	$prev_max = sql_query_single_scalar( $date_q );
+	$prev_max = SqlQuerySingleScalar( $date_q );
 	print "last date: " . $prev_max . "<br/>";
 
 	if ( $prev_max ) {
@@ -37,10 +37,10 @@ if ( $incremental ) {
 
 print header_text();
 
-$result = sql_query( $sql );
+$result = SqlQuery( $sql );
 
 if ( ! $result ) {
-	sql_error( $sql );
+	SqlError( $sql );
 	die ( 1 );
 }
 $data = "";
@@ -93,7 +93,7 @@ while ( $row = mysqli_fetch_row( $result ) ) {
 }
 
 if ( $incremental ) {
-	sql_query( "UPDATE im_multisite SET last_inc_update = NOW() WHERE id = " . $site_id );
+	SqlQuery( "UPDATE im_multisite SET last_inc_update = NOW() WHERE id = " . $site_id );
 	if ( $line_count == 0 ) {
 		print "no new lines since $prev_max<br/>";
 	}

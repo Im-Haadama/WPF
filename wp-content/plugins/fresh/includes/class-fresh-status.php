@@ -19,7 +19,7 @@ class Fresh_Status {
 	{
 		$result = "";
 
-		$order_status = sql_query_array("select count(*), post_status
+		$order_status = SqlQueryArray("select count(*), post_status
 from wp_posts
 where post_status like 'wc%' and post_status not in ('wc-cancelled', 'wc-completed') 
 group by post_status");
@@ -46,7 +46,7 @@ group by post_status");
 	{
 		$result = "";
 
-		$supply_status = sql_query_array("select count(*), status
+		$supply_status = SqlQueryArray("select count(*), status
 from im_supplies
 where status > 0 and status < 5
 group by status");

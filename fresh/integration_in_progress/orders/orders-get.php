@@ -90,7 +90,7 @@ $sql = 'SELECT meta.meta_value ' .
        'and post_date > curdate() - 7 ' .
        'order by 1 ';
 
-$result = sql_query($sql );
+$result = SqlQuery($sql );
 
 function get_user_order_count( $u ) {
 	$sql = 'SELECT count(*) ' .
@@ -99,7 +99,7 @@ function get_user_order_count( $u ) {
 	       ' and meta.meta_key = \'_customer_user\' and meta.meta_value = ' . $u .
 	       ' and meta.post_id = posts.ID';
 
-	return sql_query_single_scalar( $sql );
+	return SqlQuerySingleScalar( $sql );
 }
 
 ?>

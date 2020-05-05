@@ -42,7 +42,7 @@ class Fresh_Supply {
 	public function __construct( $ID ) {
 		$this->ID       = $ID;
 		if (! ($ID > 0)) return null;
-		$row            = sql_query_single( "SELECT status, date(date), supplier, text, business_id, mission_id FROM im_supplies WHERE id = " . $ID );
+		$row            = SqlQuerySingle( "SELECT status, date(date), supplier, text, business_id, mission_id FROM im_supplies WHERE id = " . $ID );
 		if (! $row) return null;
 		$this->Status   = $row[0];
 		$this->Date     = $row[1];
@@ -183,9 +183,9 @@ class Fresh_Supply {
 //				print "name: " . $name;
 
 				// $prod_id = get_product_id_by_name( $name );
-				$prod_id = sql_query_single_scalar( "select product_id \n" .
-				                                    " from im_supplier_mapping\n" .
-				                                    " where supplier_product_name = " . QuoteText( Fresh_Pricelist::StripProductName( $name ) ) );
+				$prod_id = SqlQuerySingleScalar( "select product_id \n" .
+				                                 " from im_supplier_mapping\n" .
+				                                 " where supplier_product_name = " . QuoteText( Fresh_Pricelist::StripProductName( $name ) ) );
 //				print "prod_id: " . $prod_id . "<br/>";
 
 				if ( ! ( $prod_id > 0 ) ) {
@@ -218,7 +218,7 @@ class Fresh_Supply {
 
 	public function GetProduct($line_id)
 	{
-		return sql_query_single_scalar("select product_id from im_supplies_lines where id = " . $line_id);
+		return SqlQuerySingleScalar( "select product_id from im_supplies_lines where id = " . $line_id);
 	}
 
 	public static function CreateSupply( $supplier_id, $date = null ) {
@@ -237,7 +237,7 @@ class Fresh_Supply {
 
 	public function getAddress()
 	{
-		return sql_query_single_scalar( "select address from im_suppliers where id = " . $this->getSupplier() );
+		return SqlQuerySingleScalar( "select address from im_suppliers where id = " . $this->getSupplier() );
 	}
 
 	public function AddLine( $prod_id, $quantity, $price, $units = 0 ) {
@@ -247,7 +247,7 @@ class Fresh_Supply {
 		$sql = "INSERT INTO im_supplies_lines (supply_id, product_id, quantity, units, price) VALUES "
 		       . "( " . $this->ID . ", " . $prod_id . ", " . $quantity . ", " . $units . ", " . $price . " )";
 
-		sql_query( $sql );
+		SqlQuery( $sql );
 		$product = new WC_Product( $prod_id );
 		if ( $product->managing_stock() ) {
 //		print "managed<br/>";
@@ -262,9 +262,9 @@ class Fresh_Supply {
 	}
 
 	public function UpdateField( $field_name, $value ) {
-		sql_query( "update im_supplies " .
-		           "set " . $field_name . '=' . QuoteText( $value ) .
-		           " where id = " . $this->ID );
+		SqlQuery( "update im_supplies " .
+		          "set " . $field_name . '=' . QuoteText( $value ) .
+		          " where id = " . $this->ID );
 	}
 
 	public function Html( $internal, $edit, $categ_group = false ) {
@@ -327,7 +327,7 @@ class Fresh_Supply {
 	}
 
 	public function getMissionName() {
-		return sql_query_single_scalar("select name from im_missions where id = " . $this->getMissionID());
+		return SqlQuerySingleScalar( "select name from im_missions where id = " . $this->getMissionID());
 	}
 
 
@@ -339,8 +339,8 @@ class Fresh_Supply {
 	public function setMissionID( $MissionID ) {
 		$this->MissionID = $MissionID;
 
-		return sql_query_single_scalar( "UPDATE im_supplies SET mission_id = " . $MissionID . " WHERE id = " .
-		                                $this->ID );
+		return SqlQuerySingleScalar( "UPDATE im_supplies SET mission_id = " . $MissionID . " WHERE id = " .
+		                             $this->ID );
 	}
 
 	// $internal - true = for our usage. false = for send to supplier.
@@ -407,7 +407,7 @@ class Fresh_Supply {
 
 		return Core_Html::gui_table_args( $rows_data, "supply_" . $this->getID(), $args );
 		// GuiTableContent("supply", $sql, $args);
-		$result = sql_query( $sql );
+		$result = SqlQuery( $sql );
 
 		$data = "<table id=\"del_table\" border=\"1\"><tr><td>בחר</td><td>מקט</td><td>פריט</td><td>כמות</td><td>יחידות</td>";
 		if ( ! $edit ) {
@@ -427,7 +427,7 @@ class Fresh_Supply {
 		// $vat_total = 0;
 		$line_number = 0;
 
-		$supplier_id = sql_query_single_scalar( "SELECT supplier FROM im_supplies WHERE id = " . $this->ID );
+		$supplier_id = SqlQuerySingleScalar( "SELECT supplier FROM im_supplies WHERE id = " . $this->ID );
 		// print "supplier_id: " . $supplier_id . "<br/>";
 
 		while ( $row = mysqli_fetch_row( $result ) ) {
@@ -578,8 +578,8 @@ class Fresh_Supply {
 	 */
 	public function setText( $Text ) {
 		$this->Text = $Text;
-		sql_query( "UPDATE im_supplies SET text = " . QuoteText( $Text ) .
-		           " WHERE id = " . $this->ID );
+		SqlQuery( "UPDATE im_supplies SET text = " . QuoteText( $Text ) .
+		          " WHERE id = " . $this->ID );
 	}
 
 	/**
@@ -594,14 +594,14 @@ class Fresh_Supply {
 	}
 
 	public function Picked() {
-		sql_query( "update im_supplies " .
-		           " set picked = 1 " .
-		           " where id = " . $this->getID()
+		SqlQuery( "update im_supplies " .
+		          " set picked = 1 " .
+		          " where id = " . $this->getID()
 		);
 	}
 
 	public function getSupplierName() {
-		return sql_query_single_scalar( 'SELECT supplier_name FROM im_suppliers WHERE id = ' . $this->Supplier );
+		return SqlQuerySingleScalar( 'SELECT supplier_name FROM im_suppliers WHERE id = ' . $this->Supplier );
 	}
 
 	/**
@@ -613,14 +613,14 @@ class Fresh_Supply {
 
 	public function UpdateLine($line_id, $q)
 	{
-		$result  = sql_query( "SELECT product_id, quantity FROM im_supplies_lines WHERE id = " . $line_id );
-		$row     = sql_fetch_row( $result );
+		$result  = SqlQuery( "SELECT product_id, quantity FROM im_supplies_lines WHERE id = " . $line_id );
+		$row     = SqlFetchRow( $result );
 		$prod_id = $row[0];
 		$old_q   = $row[1];
 
 		$sql = 'UPDATE im_supplies_lines SET quantity = ' . $q . ' WHERE id = ' . $line_id;
 
-		sql_query( $sql );
+		SqlQuery( $sql );
 
 		$product = new WC_Product( $prod_id );
 
@@ -637,9 +637,9 @@ class Fresh_Supply {
 		MyLog( __METHOD__ . $supplierID );
 		$sql = "INSERT INTO im_supplies (date, supplier, status, paid_date) VALUES " . "('" . $date . "' , " . $supplierID . ", 1, '1000-01-01')";
 
-		sql_query( $sql );
+		SqlQuery( $sql );
 
-		return sql_insert_id(  );
+		return SqlInsertId(  );
 	}
 
 	static function supply_add_line( $supply_id, $prod_id, $quantity, $price, $units = 0 ) {

@@ -120,9 +120,9 @@ if ( count( $lines ) ) {
 		$name                  = $line[2];
 		$price                 = $line[3];
 
-		$prod_id = sql_query_single_scalar( "select product_id \n" .
-		                                    " from im_supplier_mapping\n" .
-		                                    " where supplier_product_code = " . $supplier_product_code );
+		$prod_id = SqlQuerySingleScalar( "select product_id \n" .
+		                                 " from im_supplier_mapping\n" .
+		                                 " where supplier_product_code = " . $supplier_product_code );
 
 		if ( ! ( $prod_id > 0 ) ) {
 			$comments .= " פריט עם קוד " . $supplier_product_code . " לא נמצא. שם " . $name . " כמות " . $quantity . "\n";

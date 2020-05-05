@@ -21,7 +21,7 @@ if ( $debug ) {
 	print "DEBUG<br/>";
 }
 
-$result = sql_query( $sql );
+$result = SqlQuery( $sql );
 if ( ! isset( $_GET["no_header"] ) ) {
 	print header_text();
 }

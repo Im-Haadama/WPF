@@ -313,7 +313,7 @@ class Core_Fund {
 	 * @throws Exception
 	 */
 	function boot_no_login( $plugin_name, $textdomain, $tz = "Asia/Jerusalem" ) {
-		$conn = get_sql_conn();
+		$conn = GetSqlConn();
 
 		if ( ! $conn ) {
 			$conn   = ReconnectDb( $tz );
@@ -323,7 +323,7 @@ class Core_Fund {
 //			if (! load_textdomain('im-haadama', $mofile))
 				$mofile = FRESH_INCLUDES . '/wp-content/languages/plugins/' . $plugin_name . '-' . $locale . '.mo';
 				if ( ! load_textdomain( $textdomain, $mofile ) ) {
-					print "load translation failed . $locale: $mofile";
+					MyLog("load translation failed . $locale: $mofile");
 				}
 			}
 		}

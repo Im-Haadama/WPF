@@ -19,7 +19,7 @@ $sql = 'SELECT posts.id, posts.post_date'
        . ' and post_status like \'wc%\'';
 
 
-$result = sql_query( $sql );
+$result = SqlQuery( $sql );
 
 $fields = mysqli_num_fields( $result );
 
@@ -37,7 +37,7 @@ while ( $row = mysqli_fetch_row( $result ) ) {
 	$sql_i    = 'SELECT meta_value FROM `wp_postmeta` pm'
 	            . ' WHERE pm.post_id = ' . $order_id
 	            . ' AND `meta_key` IN ( \'_shipping_first_name\', \'_shipping_last_name\', \'_shipping_city\', \'_billing_phone\', \'method_id\')';
-	$result_i = sql_query( $sql_i );
+	$result_i = SqlQuery( $sql_i );
 	while ( $row_i = mysqli_fetch_row( $result_i ) ) {
 		$row_text .= "<td>" . $row_i[0] . '</td>';
 	}
@@ -49,7 +49,7 @@ while ( $row = mysqli_fetch_row( $result ) ) {
 
 	$sql_o = 'SELECT order_item_name FROM `wp_woocommerce_order_items` WHERE order_id= \'' . $order_id . '\' AND order_item_type = \'shipping\' LIMIT 0, 30 ';
 
-	$result_o = sql_query( $sql_o );
+	$result_o = SqlQuery( $sql_o );
 	while ( $row_o = mysqli_fetch_row( $result_o ) ) {
 		$row_text .= "<td>" . $row_o[0] . '</td>';
 	}
@@ -77,7 +77,7 @@ $sql = 'select '
        . ' group by woi.order_item_name order by 1'
        . ' ';
 
-$result = sql_query( $sql );
+$result = SqlQuery( $sql );
 
 $fields = mysqli_num_fields( $result );
 
@@ -98,7 +98,7 @@ while ( $row = mysqli_fetch_row( $result ) ) {
 	        . ' where woim.order_item_id = ' . $order_item_id . ' and woim.`meta_key` = \'_product_id\''
 	        . ' ';
 
-	$result2 = sql_query( $sql2 );
+	$result2 = SqlQuery( $sql2 );
 
 	$row2    = mysqli_fetch_row( $result2 );
 	$prod_id = $row2[0];

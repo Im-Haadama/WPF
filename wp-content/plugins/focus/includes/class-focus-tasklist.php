@@ -28,14 +28,14 @@ class Focus_Tasklist {
 
 	public function __construct( $_id)
 	{
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 		$this->id = $_id;
-		$this->table_prefix = get_table_prefix();
+		$this->table_prefix = GetTablePrefix();
 
-		$row      = sql_query_single( "SELECT location_name, location_address, task_description, mission_id," .
-		                              " task_template, priority, project_id, team " .
-		                              " FROM {$this->table_prefix}tasklist " .
-		                              " WHERE id = " . $this->id );
+		$row      = SqlQuerySingle( "SELECT location_name, location_address, task_description, mission_id," .
+		                            " task_template, priority, project_id, team " .
+		                            " FROM {$this->table_prefix}tasklist " .
+		                            " WHERE id = " . $this->id );
 
 		$this->location_name    = $row[0];
 		$this->location_address = $row[1];
@@ -46,8 +46,8 @@ class Focus_Tasklist {
 		$this->team             = $row[7];
 
 		if ( $row[4] ) {
-			$row = sql_query_single( "SELECT repeat_freq, repeat_freq_numbers, timezone " .
-			                         " from ${db_prefix}task_templates where id = " . $row[4] );
+			$row = SqlQuerySingle( "SELECT repeat_freq, repeat_freq_numbers, timezone " .
+			                       " from ${db_prefix}task_templates where id = " . $row[4] );
 
 			$this->repeat_freq         = $row[0];
 			$this->repeat_freq_numbers = $row[1];
@@ -133,18 +133,18 @@ class Focus_Tasklist {
 	 */
 	public function setPriority( $priority )
 	{
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 		$this->priority = $priority;
 		$sql            = "UPDATE ${db_prefix}tasklist SET priority = $priority " .
 		                  " WHERE id = " . $this->id;
 
-		return sql_query( $sql );
+		return SqlQuery( $sql );
 	}
 
 
 	public function Ended($user_id)
 	{
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 		$sql = "UPDATE ${db_prefix}tasklist 
 				SET ended = now(),
 				    owner = $user_id,
@@ -152,15 +152,15 @@ class Focus_Tasklist {
 		       " WHERE id = " . $this->id;
 
 		// print $sql;
-		return sql_query( $sql );
+		return SqlQuery( $sql );
 	}
 
 	public function Postpone()
 	{
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 		$sql = "UPDATE ${db_prefix}tasklist set date = NOW() + INTERVAL 1 DAY\n" .
 		       " where id = " . $this->id;
-		if ( sql_query( $sql ) ) {
+		if ( SqlQuery( $sql ) ) {
 			return true;
 		}
 
@@ -169,9 +169,9 @@ class Focus_Tasklist {
 
 	function task_started( $owner )
 	{
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 
-		$started = sql_query_single_scalar( "select started from ${db_prefix}tasklist where id = " . $this->id );
+		$started = SqlQuerySingleScalar( "select started from ${db_prefix}tasklist where id = " . $this->id );
 		if ( ! $started ) {
 			$this->update_status(enumTasklist::started, $owner);
 		}
@@ -181,26 +181,26 @@ class Focus_Tasklist {
 
 	function update_status( $status, $owner = 0 )
 	{
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 
 		$sql = "UPDATE ${db_prefix}tasklist SET owner = $owner, started = now(), status = $status " .
 		       " WHERE id = " . $this->id;
-		return sql_query( $sql );
+		return SqlQuery( $sql );
 	}
 
 	static function task_cancelled($task_id) {
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 
 		$sql = "UPDATE ${db_prefix}tasklist SET status = " . enumTasklist::canceled . ", status = " . enumTasklist::done .
 		       " WHERE id = " . $task_id;
-		return sql_query( $sql );
+		return SqlQuery( $sql );
 	}
 
 	function task_template()
 	{
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 
-		return sql_query_single_scalar("select task_template from ${db_prefix}tasklist where id = " . $this->id);
+		return SqlQuerySingleScalar( "select task_template from ${db_prefix}tasklist where id = " . $this->id);
 	}
 
 	function task_query($task_id)
@@ -209,14 +209,14 @@ class Focus_Tasklist {
 
 		if (! $task_template) return null;
 
-		return sql_query_single_scalar("select condition_query from {$this->table_prefix}task_templates where id = " . $task_template);
+		return SqlQuerySingleScalar( "select condition_query from {$this->table_prefix}task_templates where id = " . $task_template);
 	}
 
 	function get_task_link( $template_id ) {
-		$table_prefix = get_table_prefix();
+		$table_prefix = GetTablePrefix();
 
 		if ( $template_id > 0 ) {
-			return sql_query_single_scalar( "SELECT task_url FROM {$this->table_prefix}task_templates WHERE id = " . $template_id );
+			return SqlQuerySingleScalar( "SELECT task_url FROM {$this->table_prefix}task_templates WHERE id = " . $template_id );
 		}
 
 		return "";
@@ -225,7 +225,7 @@ class Focus_Tasklist {
 	function task_url()
 	{
 		$sql = "SELECT task_url FROM {$this->table_prefix}task_templates WHERE id = " . self::task_template();
-		return sql_query_single_scalar( $sql );
+		return SqlQuerySingleScalar( $sql );
 	}
 
 	function get_task_status( $status ) {
@@ -246,7 +246,7 @@ class Focus_Tasklist {
 	}
 
 	function check_condition() {
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 
 		if ( ! isset( $_GET["condition"] ) ) {
 			print "must send condition";
@@ -260,7 +260,7 @@ class Focus_Tasklist {
 					die ( 2 );
 				}
 				$id          = $_GET["id"];
-				$last_finish = sql_query_single_scalar( "SELECT max(datediff(curdate(), ended)) FROM ${db_prefix}tasklist WHERE task_template = " . $id );
+				$last_finish = SqlQuerySingleScalar( "SELECT max(datediff(curdate(), ended)) FROM ${db_prefix}tasklist WHERE task_template = " . $id );
 				// print $last_finish;
 				print $last_finish >= 1;
 				break;
@@ -272,9 +272,9 @@ class Focus_Tasklist {
 	}
 
 	function create_tasks_per_mission() {
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 
-		$mission_ids = sql_query_array_scalar( "SELECT id FROM ${db_prefix}missions WHERE date=CURDATE()" );
+		$mission_ids = SqlQueryArrayScalar( "SELECT id FROM ${db_prefix}missions WHERE date=CURDATE()" );
 		$owner       = 1; // Todo: get it from the template
 
 		foreach ( $mission_ids as $mission_id ) {
@@ -293,21 +293,21 @@ class Focus_Tasklist {
 				continue;
 			}
 
-			$template_ids = sql_query_array_scalar( "SELECT id FROM {$this->table_prefix}task_templates WHERE path_code = " . QuoteText( $path_code ) );
+			$template_ids = SqlQueryArrayScalar( "SELECT id FROM {$this->table_prefix}task_templates WHERE path_code = " . QuoteText( $path_code ) );
 
 			foreach ( $template_ids as $template_id ) {
 				$sql    = "SELECT task_description, task_url, project_id, repeat_freq, repeat_freq_numbers, condition_query, priority " . "
 		   		 FROM {$this->table_prefix}task_templates " .
 				          " where id = " . $template_id;
-				$result = sql_query( $sql );
+				$result = SqlQuery( $sql );
 
 				$row = mysqli_fetch_assoc( $result );
 				$project_id = $row["project_id"];
 
-				$priority = sql_query_single_scalar( "SELECT priority FROM {$this->table_prefix}task_templates WHERE id = " . $template_id );
+				$priority = SqlQuerySingleScalar( "SELECT priority FROM {$this->table_prefix}task_templates WHERE id = " . $template_id );
 
 				if ( ! $priority and ( $project_id > 0 ) ) {
-					$priority = sql_query_single_scalar( "SELECT project_priority FROM ${db_prefix}projects WHERE id = " . $project_id );
+					$priority = SqlQuerySingleScalar( "SELECT project_priority FROM ${db_prefix}projects WHERE id = " . $project_id );
 				}
 
 				if ( ! $priority ) {
@@ -331,9 +331,9 @@ class Focus_Tasklist {
 
 	static function create_if_needed($id, $row, &$output, $default_owner, &$verbose_line)
 	{
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 		$verbose_line = array();
-		$last_run = sql_query_single_scalar("select max(date) from ${db_prefix}tasklist where task_template = " . $id);
+		$last_run = SqlQuerySingleScalar( "select max(date) from ${db_prefix}tasklist where task_template = " . $id);
 		if ($last_run=='Error') die('Can\'t work');
 		$project_id = $row["project_id"];
 		if ( ! $project_id ) {
@@ -350,7 +350,7 @@ class Focus_Tasklist {
 
 		$output .= "template " . $id . " result: $test_result" . Core_Html::Br();
 
-		sql_query("update {$db_prefix}task_templates set last_check = now() where id = " . $id);
+		SqlQuery( "update {$db_prefix}task_templates set last_check = now() where id = " . $id);
 
 		array_push( $verbose_line, $test_result );
 		if ( strpos(  $test_result, "0" ) !== false) {
@@ -360,14 +360,14 @@ class Focus_Tasklist {
 			return;
 		}
 
-		$team = sql_query_single_scalar("SELECT team FROM {$db_prefix}task_templates WHERE id = " . $id );
+		$team = SqlQuerySingleScalar( "SELECT team FROM {$db_prefix}task_templates WHERE id = " . $id );
 
-		$creator = sql_query_single_scalar("SELECT creator FROM {$db_prefix}task_templates WHERE id = " . $id );
+		$creator = SqlQuerySingleScalar( "SELECT creator FROM {$db_prefix}task_templates WHERE id = " . $id );
 		if (! $creator)
 			$creator = $default_owner;
 
-		$priority = sql_query_single_scalar( "SELECT priority FROM {$db_prefix}task_templates WHERE id = " . $id );
-		if ( ! $priority ) $priority = sql_query_single_scalar( "SELECT project_priority FROM ${db_prefix}projects WHERE id = " . $project_id );
+		$priority = SqlQuerySingleScalar( "SELECT priority FROM {$db_prefix}task_templates WHERE id = " . $id );
+		if ( ! $priority ) $priority = SqlQuerySingleScalar( "SELECT project_priority FROM ${db_prefix}projects WHERE id = " . $project_id );
 		if ( ! $priority ) $priority = 0;
 		array_push( $verbose_line, $priority);
 
@@ -377,9 +377,9 @@ class Focus_Tasklist {
 		       $priority . "," . $team . "," . $creator . ")";
 
 		print $sql ."<br/>";
-		sql_query( $sql );
+		SqlQuery( $sql );
 
-		array_push( $verbose_line, sql_insert_id() );
+		array_push( $verbose_line, SqlInsertId() );
 
 		$output .= "Template " . $id . " " . CommaImplode($verbose_line) . Core_Html::Br();
 	}
@@ -421,13 +421,13 @@ class Focus_Tasklist {
 	}
 
 	static function check_active( $id, $repeat_freq ) {
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 
 		// status < 2 - active.
 		// Date(date) = curdate() - due today. (or should it be finish date?)
 
-		$running_id = sql_query_single_scalar("select id from ${db_prefix}tasklist where task_template = " . $id .
-		                                      " and (status < 2 or date(ended) = curdate()) limit 1");
+		$running_id = SqlQuerySingleScalar( "select id from ${db_prefix}tasklist where task_template = " . $id .
+		                                    " and (status < 2 or date(ended) = curdate()) limit 1");
 
 		if ($running_id  == 'Error')
 			die ("Can't work");
@@ -444,9 +444,9 @@ class Focus_Tasklist {
 
 	function gui_select_task_related( $id, $value, $events, $task_id ) {
 		$query = "";
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 
-		if ( $project_id = sql_query_single_scalar( "select project_id from ${db_prefix}tasklist where id = " . $task_id ) ) {
+		if ( $project_id = SqlQuerySingleScalar( "select project_id from ${db_prefix}tasklist where id = " . $task_id ) ) {
 			$query = "status in (0, 1) \n" .
 			         " and project_id = " . $project_id;
 		}
@@ -489,7 +489,7 @@ class Focus_Tasklist {
 	function working_time() {
 		$template = self::task_template();
 		if (! $template) return true; // For now just templates has working time.
-		$working_hours = sql_query_single_scalar("select working_hours from {$this->table_prefix}task_templates where id = $template");
+		$working_hours = SqlQuerySingleScalar("select working_hours from {$this->table_prefix}task_templates where id = $template");
 		if (! $working_hours) return true;
 
 		// For now allow just start-end format;

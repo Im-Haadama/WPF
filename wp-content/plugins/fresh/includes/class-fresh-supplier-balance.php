@@ -54,12 +54,12 @@ class Fresh_Supplier_Balance {
 
 		if ( ! $include_zero ) $sql .= " having balance < 0";
 
-		$sql_result = sql_query( $sql );
+		$sql_result = SqlQuery( $sql );
 
 		$data_lines         = array();
 		$data_lines_credits = array();
 
-		while ( $row = sql_fetch_row( $sql_result ) ) {
+		while ( $row = SqlFetchRow( $sql_result ) ) {
 			$supplier_total = $row[0];
 			$supplier_id    = $row[1];
 			$supplier_name  = $row[2];

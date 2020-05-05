@@ -68,21 +68,21 @@ class Core_Data
 	static function Inactive($table_name, $rows)
 	{
 		// TODO: adding meta key when needed(?)
-		$db_prefix = get_table_prefix($table_name);
+		$db_prefix = GetTablePrefix($table_name);
 		if (! is_array($rows)) $rows = array($rows);
 
 		foreach($rows as $row_id)
-			if (! sql_query("update ${db_prefix}$table_name set is_active = 0 where id = $row_id")) return false;
+			if (! SqlQuery("update ${db_prefix}$table_name set is_active = 0 where id = $row_id")) return false;
 		return true;
 	}
 
 	static function Delete($table_name, $rows)
 	{
-		$db_prefix = get_table_prefix($table_name);
+		$db_prefix = GetTablePrefix($table_name);
 		// TODO: adding meta key when needed(?)
 		if (! in_array($table_name, array("missions"))) die ("not allowed $table_name");
 
-		sql_query("delete from ${db_prefix}$table_name where id in (" . CommaImplode($rows) . ")");
+		SqlQuery( "delete from ${db_prefix}$table_name where id in (" . CommaImplode($rows) . ")");
 
 		return true;
 	}
@@ -90,26 +90,26 @@ class Core_Data
 	static function Active($table_name, $row_id, $active)
 	{
 		$row_id = intval($row_id);
-		$db_prefix = get_table_prefix($table_name);
+		$db_prefix = GetTablePrefix($table_name);
 
-		return sql_query("update ${db_prefix}$table_name set is_active = $active where id = $row_id");
+		return SqlQuery("update ${db_prefix}$table_name set is_active = $active where id = $row_id");
 	}
 
 	static function SaveNew($table_name)
 	{
 		$ignore_list = ["dummy", "operation", "table_name"];
 
-		return sql_insert($table_name, $_GET, $ignore_list);
+		return SqlInsert($table_name, $_GET, $ignore_list);
 	}
 
 	static function data_update($table_name)
 	{
-		$db_prefix = get_table_prefix($table_name);
+		$db_prefix = GetTablePrefix($table_name);
 		// TODO: adding meta key when needed(?)
 		global $meta_table_info;
 
 		$row_id = intval(GetParam("id", true));
-		$id_field = sql_table_id($table_name);
+		$id_field = SqlTableId($table_name);
 
 		// Prepare sql statements: primary and meta tables;
 		$values = self::data_parse_get($table_name, array("search", "operation", "table_name", "id", "dummy"));
@@ -120,10 +120,10 @@ class Core_Data
 //				print $changed_field . " " . $changed_pair[0] . "<br/>";
 				$changed_value = $changed_pair[0];
 				$is_meta = $changed_pair[1];
-				if (sql_type($table_name, $changed_field) == 'date' and strstr($changed_value, "0001")) {
+				if ( SqlType($table_name, $changed_field) == 'date' and strstr($changed_value, "0001")) {
 					$sql = "update ${db_prefix}$table_name set $changed_field = null where $id_field = " . $row_id;
 
-					if ($row_id) sql_query($sql);
+					if ($row_id) SqlQuery($sql);
 					continue;
 				}
 				if ($is_meta){
@@ -136,18 +136,18 @@ class Core_Data
 					$sql = "update ${db_prefix}$table_name set $changed_field =? where $id_field =?";
 
 				// if (get_user_id() == 1) print $sql;
-				$stmt = sql_prepare($sql);
+				$stmt = SqlPrepare($sql);
 				if (! $stmt) return false;
 				if ($is_meta){
-					if (! sql_bind($tbl, $stmt,
+					if (! SqlBind($tbl, $stmt,
 						array($meta_table_info[$tbl]['value'] => $changed_value,
 						      $meta_table_info[$tbl]['key'] => $changed_field,
 						      $meta_table_info[$tbl]['id'] => $row_id))) return false;
 				} else {
-					if ( ! sql_bind($table_name, $stmt,
+					if ( ! SqlBind($table_name, $stmt,
 						array(
-							$changed_field => $changed_value,
-							sql_table_id($table_name)  => $row_id
+							$changed_field          => $changed_value,
+							SqlTableId($table_name) => $row_id
 						) ) ) {
 						return false;
 					}
@@ -245,7 +245,7 @@ class Core_Data
 			return $result;
 		}
 
-		$result = sql_query( $sql );
+		$result = SqlQuery( $sql );
 
 		if (! $result)
 			return null;
@@ -256,7 +256,7 @@ class Core_Data
 		// If not sent, create from database fields.
 		if (strstr($sql, "describe") or strstr($sql, "show"))
 		{
-			while ($row = sql_fetch_row($result))
+			while ($row = SqlFetchRow($result))
 			{
 				if (! $skip_id or strtolower($row[0]) !== "id" and !isset($args["hide_cols"])) {
 					$headers[$row[0]] = ImTranslate($row[0]);
@@ -427,7 +427,7 @@ class Core_Data
 //						$type = $args["field_types"][$key];
 //						$value = gui_input_by_type($input_name, $type, $args, $value);
 						if (isset($args["sql_fields"])) {
-							$type = sql_field($args["sql_fields"], $key);
+							$type = SqlField($args["sql_fields"], $key);
 							$value = Core_Html::gui_input_by_type($input_name, $type, $args, $value);
 						}
 					} else {
@@ -450,7 +450,7 @@ class Core_Data
 				}
 				// Format values by type.
 				if (isset($args["sql_fields"])){
-					$type = sql_field($args["sql_fields"], $key);
+					$type = SqlField($args["sql_fields"], $key);
 //				print $key . " " . $type . "<br/>";
 					switch (strtok($type, "(")) {
 						case 'time':
@@ -513,7 +513,7 @@ class Core_Data
 
 	static function RowsData($sql, $id_field, $skip_id, $v_checkbox, $checkbox_class, $h_line, $v_line, $m_line, $header_fields, $meta_fields, $meta_table, &$args)
 	{
-		$result = sql_query( $sql );
+		$result = SqlQuery( $sql );
 		if (! $result) return null;
 		if ($args) $args["sql_fields"] = mysqli_fetch_fields($result);
 		$row_count = 0;
@@ -557,8 +557,8 @@ class Core_Data
 
 			if ( $meta_fields and is_array( $meta_fields ) ) {
 				foreach ( $meta_fields as $meta_key ) {
-					$meta_value = sql_query_single_scalar( "select meta_value from " . $meta_table . " where " . $meta_key_field . " = $row_id " .
-					                                       " and meta_key = " . QuoteText( $meta_key ) );
+					$meta_value = SqlQuerySingleScalar( "select meta_value from " . $meta_table . " where " . $meta_key_field . " = $row_id " .
+					                                    " and meta_key = " . QuoteText( $meta_key ) );
 
 					$key             = $meta_table . '/' . $meta_key;
 					$the_row[ $key ] = $meta_value;
@@ -707,14 +707,14 @@ class Core_Data
 		$skip_id = GetArg($args, "skip_id", false);
 		$id_field = GetArg($args, "id_field", "id");
 
-		$result = sql_query($sql);
+		$result = SqlQuery($sql);
 		if (strstr($sql, "describe") or strstr($sql, "show cols")){
 			while ( $row = mysqli_fetch_assoc( $result ) ) {
 				$key = $row['Field'];
 				if (! $skip_id or ($key != $id_field)) $fields[$key] = 1;
 			}
 		} else {
-			$row = sql_fetch_assoc($result);
+			$row = SqlFetchAssoc($result);
 //			print "$id_field $skip_id<br/>";
 			if ($row) foreach ($row as $key => $cell) if (! $skip_id or ($key != $id_field)) $fields[$key] = 1;
 		}
@@ -776,7 +776,7 @@ class Core_Data
 	 */
 	static function data_search($table_name, $args = null)
 	{
-		$table_prefix = get_table_prefix();
+		$table_prefix = GetTablePrefix();
 
 		$result = null;
 		$query_array = GetArg($args, "query_array", null); //Core_Data::data_parse_get($table_name, $ignore_list);
@@ -808,8 +808,8 @@ class Core_Data
 			}
 //		print $sql; print "<br/>";
 
-			$stmt = sql_prepare($sql);
-			sql_bind( $tbl, $stmt, $params);
+			$stmt = SqlPrepare($sql);
+			SqlBind( $tbl, $stmt, $params);
 			if (! $stmt->execute())
 			{
 				return "no results";

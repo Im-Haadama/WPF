@@ -35,7 +35,7 @@ $sql = "select m.remote_prod_id as rid, p.post_title as title, m.local_prod_id a
        " join wp_posts p " .
        " where  p.id = m.local_prod_id ";
 
-$result = sql_query( $sql );
+$result = SqlQuery( $sql );
 
 $uploads    = wp_upload_dir();
 $req_prefix = "multi-site/recv-pictures.php?prefix=" . urlencode( $uploads['baseurl'] ) .

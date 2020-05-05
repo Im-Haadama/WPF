@@ -26,7 +26,7 @@ function translate_word( $w1, $src_lng, $dst_lng ) {
 	       "lang1='" . $src_lng . "' AND\n" .
 	       "lang2='" . $dst_lng . "'";
 
-	$row = sql_query_single_assoc( $sql );
+	$row = SqlQuerySingleAssoc( $sql );
 
 	if ( is_null( $row ) ) {
 		return $w1;

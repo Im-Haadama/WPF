@@ -58,7 +58,7 @@ class WPF_Organization {
 	}
 
 	static function show_edit_worker() {
-		$prefix = get_table_prefix();
+		$prefix = GetTablePrefix();
 		// Get worker info by id or worker_project link.
 //		$row_id    = GetParam( "row_id", false );
 		$worker_id = GetParam( "worker_id", false );
@@ -68,7 +68,7 @@ class WPF_Organization {
 //		if ( $row_id ) {
 //			$worker_id = sql_query_single_scalar( "select user_id from im_working where id = $row_id" );
 //		}
-		$row_id = sql_query_single_scalar("select id from {$prefix}working where user_id = $worker_id");
+		$row_id = SqlQuerySingleScalar("select id from {$prefix}working where user_id = $worker_id");
 		$result               = Core_Html::gui_header( 1, "editing worker info" );
 		$args                 = self::Args();
 		$args["edit"]         = false;

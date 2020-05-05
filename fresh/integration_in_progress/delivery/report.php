@@ -70,7 +70,7 @@ if ( isset( $_GET["week"] ) ) {
 }
 
 function week_deliveries( $week ) {
-	return sql_query_array_scalar( "SELECT id FROM im_delivery WHERE first_day_of_week(date) = '" . $week . "'");
+	return SqlQueryArrayScalar( "SELECT id FROM im_delivery WHERE first_day_of_week(date) = '" . $week . "'");
 }
 
 if ( isset( $_GET["project"] ) ) {
@@ -94,7 +94,7 @@ function client_report( $customer_id, $last = 5 ) {
 	$sql = "select id from im_delivery where order_user(order_id) = " . $customer_id .
 	       " order by 1 desc limit " . $last;
 
-	$rows = sql_query_array_scalar( $sql );
+	$rows = SqlQueryArrayScalar( $sql );
 	if ( ! $rows ) {
 		print "no results";
 
@@ -104,7 +104,7 @@ function client_report( $customer_id, $last = 5 ) {
 		print Core_Html::gui_header( 1, $delivery_id );
 		$sql = "select product_name from im_delivery_lines where delivery_id = " . $delivery_id;
 
-		$items = sql_query_array_scalar( $sql );
+		$items = SqlQueryArrayScalar( $sql );
 		foreach ( $items as $item ) {
 			print $item . "<br/>";
 		}
@@ -134,13 +134,13 @@ function print_prod_report( $prod_id, $week = null, $user_id = null ) {
 
 	$query = null;
 	if ( $week ) {
-		add_query( $query, "first_day_of_week(date) = '" . $week . "'" );
+		AddQuery( $query, "first_day_of_week(date) = '" . $week . "'" );
 	} else {
 		array_push( $order_by, "5 desc" );
 	}
 
 	if ( $user_id ) {
-		add_query( $query, "order_user(order_id) = " . $user_id );
+		AddQuery( $query, "order_user(order_id) = " . $user_id );
 	}
 
 	if ( $query ) {
@@ -155,7 +155,7 @@ function print_prod_report( $prod_id, $week = null, $user_id = null ) {
 	// print $sql;
 
 	// print $sql;
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 
 	$lines = array();
 	while ( $row = mysqli_fetch_row( $result ) ) {
@@ -199,7 +199,7 @@ function print_weekly_report( $week, $sort = 4 ) {
 
 	// print $sql;
 	// print $sql;1
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 
 	$lines = array();
 	while ( $row = mysqli_fetch_row( $result ) ) {
@@ -274,7 +274,7 @@ function archive_get_supplier( $prod_id, $week ) {
 		AND product_id = " . $prod_id;
 
 //	print $sql; die(1);
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 	$s      = "";
 	while ( $row = mysqli_fetch_row( $result ) ) {
 		$s .= get_supplier_name( $row[0] ) . ", ";

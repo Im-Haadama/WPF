@@ -57,18 +57,18 @@ class Fresh_Product {
 				print " " . $delta;
 			}
 //			print "delta: " . $this->id . " " . $delta . "<br/>";
-			if ( is_null( sql_query_single_scalar( "select meta_value " .
-			                                       " from wp_postmeta " .
-			                                       " where post_id = " . $this->id .
-			                                       " and meta_key = 'im_stock_delta'" ) ) ) {
+			if ( is_null( SqlQuerySingleScalar( "select meta_value " .
+			                                    " from wp_postmeta " .
+			                                    " where post_id = " . $this->id .
+			                                    " and meta_key = 'im_stock_delta'" ) ) ) {
 				if ( $debug ) {
 					print " insert";
 				}
-				sql_query( "insert into wp_postmeta (post_id, meta_key, meta_value) " .
-				           " values (" . $this->id . ", 'im_stock_delta', $delta)" );
+				SqlQuery( "insert into wp_postmeta (post_id, meta_key, meta_value) " .
+				          " values (" . $this->id . ", 'im_stock_delta', $delta)" );
 
-				sql_query( "INSERT INTO wp_postmeta (post_id, meta_key, meta_value) " .
-				           " VALUES (" . $this->id . ", 'im_stock_delta_date', '" . date( 'd/m/Y' ) . "')" );
+				SqlQuery( "INSERT INTO wp_postmeta (post_id, meta_key, meta_value) " .
+				          " VALUES (" . $this->id . ", 'im_stock_delta_date', '" . date( 'd/m/Y' ) . "')" );
 
 				return true;
 			}
@@ -77,50 +77,50 @@ class Fresh_Product {
 				print " update";
 			}
 
-			sql_query( "update wp_postmeta set meta_value = " . $delta .
-			           " where meta_key = 'im_stock_delta' and post_id = " . $this->id );
+			SqlQuery( "update wp_postmeta set meta_value = " . $delta .
+			          " where meta_key = 'im_stock_delta' and post_id = " . $this->id );
 
-			if ( is_null( sql_query_single_scalar( "select meta_value " .
-			                                       " from wp_postmeta " .
-			                                       " where post_id = " . $this->id .
-			                                       " and meta_key = 'im_stock_delta_date'" ) ) ) {
-				sql_query( "INSERT INTO wp_postmeta (post_id, meta_key, meta_value) " .
-				           " VALUES (" . $this->id . ", 'im_stock_delta_date', '" . date( 'd/m/Y' ) . "')" );
+			if ( is_null( SqlQuerySingleScalar( "select meta_value " .
+			                                    " from wp_postmeta " .
+			                                    " where post_id = " . $this->id .
+			                                    " and meta_key = 'im_stock_delta_date'" ) ) ) {
+				SqlQuery( "INSERT INTO wp_postmeta (post_id, meta_key, meta_value) " .
+				          " VALUES (" . $this->id . ", 'im_stock_delta_date', '" . date( 'd/m/Y' ) . "')" );
 			} else {
-				sql_query( "UPDATE wp_postmeta SET meta_value = '" . date( 'd/m/Y' ) . "'" .
-				           " WHERE meta_key = 'im_stock_delta_date' AND post_id = " . $this->id );
+				SqlQuery( "UPDATE wp_postmeta SET meta_value = '" . date( 'd/m/Y' ) . "'" .
+				          " WHERE meta_key = 'im_stock_delta_date' AND post_id = " . $this->id );
 			}
 
 			return true;
 		}
 		// print "set stock ";
 		// print $this->id . " " . $q . "<br/>";
-		sql_query( "update wp_postmeta set meta_value = " . $q .
-		           " where post_id = " . $this->id .
-		           " and meta_key = '_stock'" );
+		SqlQuery( "update wp_postmeta set meta_value = " . $q .
+		          " where post_id = " . $this->id .
+		          " and meta_key = '_stock'" );
 
 		return true;
 		// return $this->p->set_stock_quantity($q);
 	}
 
 	function is_basket() {
-		return sql_query_single_scalar( 'SELECT count(product_id) FROM im_baskets WHERE basket_id = ' . $this->id );
+		return SqlQuerySingleScalar( 'SELECT count(product_id) FROM im_baskets WHERE basket_id = ' . $this->id );
 	}
 
 	function is_bundle() {
 		$sql = 'SELECT count(bundle_prod_id) FROM im_bundles WHERE bundle_prod_id = ' . $this->id;
 
-		return sql_query_single_scalar( $sql );
+		return SqlQuerySingleScalar( $sql );
 	}
 
 	function getStock( $arrived = false ) {
 		if ( $this->isFresh() ) {
 //			print "<br/> fresh " . $this -> q_in() . " " . $this->q_out() . " ";
 			$inv         = $this->q_in( $arrived ) - $this->q_out();
-			$stock_delta = sql_query_single_scalar( "select meta_value " .
-			                                        " from wp_postmeta " .
-			                                        " where post_id = " . $this->id .
-			                                        " and meta_key = 'im_stock_delta'" );
+			$stock_delta = SqlQuerySingleScalar( "select meta_value " .
+			                                     " from wp_postmeta " .
+			                                     " where post_id = " . $this->id .
+			                                     " and meta_key = 'im_stock_delta'" );
 			if ( $stock_delta ) {
 				$inv += $stock_delta;
 			}
@@ -206,7 +206,7 @@ class Fresh_Product {
 	private function q_in( $arrived = false ) {
 		$sql = "SELECT q_in FROM i_in WHERE product_id = " . $this->id;
 
-		$in = sql_query_single_scalar( $sql );
+		$in = SqlQuerySingleScalar( $sql );
 
 		if ( $arrived ) {
 			// print "before: " . $in . "<br/>";
@@ -218,16 +218,16 @@ class Fresh_Product {
   			
   				AND (`s`.`id` = `l`.`supply_id`))
   				AND l.product_id = " . $this->id;
-			$in   -= sql_query_single_scalar( $sql1 );
+			$in   -= SqlQuerySingleScalar( $sql1 );
 			// print $sql1 . "<br/>";
 			// print "after: " . $in . "<br/>";
 		}
 
 		// Add Bundles
 		$sql    = "SELECT bundle_prod_id FROM im_bundles WHERE prod_id = " . $this->id;
-		$result = sql_query( $sql );
-		while ( $row = sql_fetch_row( $result ) ) {
-			$delta = sql_query_single_scalar( "SELECT q_in FROM i_in WHERE product_id = " . $row[0] );
+		$result = SqlQuery( $sql );
+		while ( $row = SqlFetchRow( $result ) ) {
+			$delta = SqlQuerySingleScalar( "SELECT q_in FROM i_in WHERE product_id = " . $row[0] );
 			if ( is_numeric( $delta ) ) {
 				$in += $delta;
 			}
@@ -240,12 +240,12 @@ class Fresh_Product {
 	private function q_out() {
 		$sql = "SELECT q_out FROM i_out WHERE prod_id = " . $this->id;
 
-		$out = sql_query_single_scalar( $sql );
+		$out = SqlQuerySingleScalar( $sql );
 
 		$sql    = "SELECT bundle_prod_id FROM im_bundles WHERE prod_id = " . $this->id;
-		$result = sql_query( $sql );
-		while ( $row = sql_fetch_row( $result ) ) {
-			$delta = sql_query_single_scalar( "SELECT q_out FROM i_out WHERE prod_id = " . $row[0] );
+		$result = SqlQuery( $sql );
+		while ( $row = SqlFetchRow( $result ) ) {
+			$delta = SqlQuerySingleScalar( "SELECT q_out FROM i_out WHERE prod_id = " . $row[0] );
 			if ( is_numeric( $delta ) ) {
 				$out += $delta;
 			}
@@ -265,7 +265,7 @@ class Fresh_Product {
 		       " and sup.id = s.supplier";
 
 		// print $sql;
-		$result = sql_query_array( $sql );
+		$result = SqlQueryArray( $sql );
 
 		// var_dump($result);
 		return $result;
@@ -297,10 +297,10 @@ class Fresh_Product {
 	}
 
 	function getStockDate() {
-		$stock_date = sql_query_single_scalar( "select meta_value " .
-		                                       " from wp_postmeta " .
-		                                       " where post_id = " . $this->id .
-		                                       " and meta_key = 'im_stock_delta_date'" );
+		$stock_date = SqlQuerySingleScalar( "select meta_value " .
+		                                    " from wp_postmeta " .
+		                                    " where post_id = " . $this->id .
+		                                    " and meta_key = 'im_stock_delta_date'" );
 
 		return $stock_date;
 	}
@@ -310,9 +310,10 @@ class Fresh_Product {
 	}
 
 	function getName( $strip = false ) {
+		if (! ($this->id > 0)) return "Error";
 		$sql = 'SELECT post_title FROM wp_posts WHERE id = ' . $this->id;
 
-		$name = sql_query_single_scalar( $sql );
+		$name = SqlQuerySingleScalar( $sql );
 		if ( $strip and strpos( $name, '(' ) ) {
 			$name = trim( substr( $name, 0, strpos( $name, '(' ) ) );
 		}
@@ -342,7 +343,7 @@ class Fresh_Product {
 	}
 
 	function getSupplierName() {
-		return sql_query_single_scalar( "select meta_value from wp_postmeta where post_id = " . $this->id . " and meta_key = 'supplier_name'" );
+		return SqlQuerySingleScalar( "select meta_value from wp_postmeta where post_id = " . $this->id . " and meta_key = 'supplier_name'" );
 	}
 
 	function setRegularPrice($price)

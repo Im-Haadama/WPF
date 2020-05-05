@@ -44,7 +44,7 @@ switch ( $operation ) {
 			if ( isset( $worker_id ) ) {
 //				$w       = $_GET["worker_id"];
 //				print "w=" . $w;
-				$user_id = sql_query_single_scalar( "SELECT user_id FROM im_working WHERE id = " . $worker_id );
+				$user_id = SqlQuerySingleScalar( "SELECT user_id FROM im_working WHERE id = " . $worker_id );
 				//print "uid=" . $user_id . "<br/>";
 			} else {
 				$user_id = get_user_id();

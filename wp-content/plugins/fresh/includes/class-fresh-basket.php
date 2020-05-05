@@ -30,13 +30,13 @@ class Fresh_Basket extends  Fresh_Product  {
 		       " AND product_id = " . $prod_id;
 
 		// print $sql;
-		return sql_query_single_scalar( $sql );
+		return SqlQuerySingleScalar( $sql );
 	}
 
 	function get_basket_date( $basket_id ) {
 		$sql = 'SELECT max(date) FROM im_baskets WHERE basket_id = ' . $basket_id;
 
-		$row = sql_query_single_scalar( $sql );
+		$row = SqlQuerySingleScalar( $sql );
 
 		return substr( $row, 0, 10 );
 	}
@@ -47,7 +47,7 @@ class Fresh_Basket extends  Fresh_Product  {
 		$sql = 'SELECT DISTINCT product_id, quantity, id FROM im_baskets WHERE basket_id = ' . $basket_id .
 		       ' ORDER BY 3';
 
-		$result = sql_query( $sql );
+		$result = SqlQuery( $sql );
 
 		$basket_content = "";
 
@@ -73,7 +73,7 @@ class Fresh_Basket extends  Fresh_Product  {
 		$sql = 'SELECT DISTINCT product_id, quantity, id FROM im_baskets WHERE basket_id = ' . $basket_id .
 		       ' ORDER BY 3';
 
-		$sql_result = sql_query( $sql );
+		$sql_result = SqlQuery( $sql );
 
 		while ( $row = mysqli_fetch_row( $sql_result ) ) {
 			$prod_id            = $row[0];
@@ -95,7 +95,7 @@ class Fresh_Basket extends  Fresh_Product  {
 
 	function is_basket( ) {
 		$sql = 'SELECT count(product_id) FROM im_baskets WHERE basket_id = ' . $this->id;
-		return sql_query_single_scalar($sql);
+		return SqlQuerySingleScalar($sql);
 	}
 
 	static function SettingsWrap()
@@ -122,7 +122,7 @@ class Fresh_Basket extends  Fresh_Product  {
 	{
 		$sql = 'SELECT DISTINCT basket_id FROM im_baskets';
 
-		$result = sql_query( $sql );
+		$result = SqlQuery( $sql );
 
 		$data = "<table border='1'><tr><td><h3>שם הסל</h3></td><td><h3>עלות קניה</h3></td><td><h3>מכירה</h3></td><td><h3>מחיר בנפרד</h3></td><td><h3>אחוזי הנחה</h3></td></tr>";
 
@@ -194,7 +194,7 @@ class Fresh_Basket extends  Fresh_Product  {
 		$sql         = 'SELECT product_id FROM im_baskets WHERE basket_id = ' . $basket_id . " and product_id > 0";
 //		print $sql . "<br/>";
 
-		$result = sql_query( $sql );
+		$result = SqlQuery( $sql );
 
 		while ( $row = mysqli_fetch_row( $result ) ) {
 			$total_price += Fresh_Pricing::get_price( $row[0] );
@@ -207,7 +207,7 @@ class Fresh_Basket extends  Fresh_Product  {
 		$total_price = 0;
 		$sql         = 'SELECT product_id FROM im_baskets WHERE basket_id = ' . $basket_id;
 
-		$result = sql_query( $sql );
+		$result = SqlQuery( $sql );
 
 		while ( $row = mysqli_fetch_row( $result ) ) {
 			// Catalog::GetBuyPrice($row[0]);
@@ -261,13 +261,13 @@ class Fresh_Basket extends  Fresh_Product  {
 		       " and post_status(product_id) like '%draft%'";
 
 		// $data .= $sql;
-		$result = sql_query_array_scalar($sql);
+		$result = SqlQueryArrayScalar($sql);
 		if ($result){
 			$data .= Core_Html::gui_header(1, "Not available, and removed:");
 			foreach ($result as $prod_id){
 				$p = new Fresh_Product($prod_id);
 				$data .= $p->getName() . "<br/>";
-				sql_query("delete from im_baskets where product_id = " . $prod_id);
+				SqlQuery( "delete from im_baskets where product_id = " . $prod_id);
 			}
 		}
 		return $data;
@@ -279,7 +279,7 @@ class Fresh_Basket extends  Fresh_Product  {
 		$sql         = 'INSERT INTO im_baskets (basket_id, date, product_id, quantity) VALUES (' . $basket_id . ", '" . date( 'Y/m/d' ) . "', " .
 		               $new_product . ", " . 1 . ')';
 
-		return sql_query( $sql );
+		return SqlQuery( $sql );
 	}
 
 	static function remove_from_basket() {
@@ -287,7 +287,7 @@ class Fresh_Basket extends  Fresh_Product  {
 		$products  = GetParam( "products", true );
 		$sql       = "delete from im_baskets where basket_id = " . $basket_id . " and product_id in ( $products ) ";
 
-		return sql_query( $sql );
+		return SqlQuery( $sql );
 	}
 
 	static function create()
@@ -295,7 +295,7 @@ class Fresh_Basket extends  Fresh_Product  {
 		$name = urldecode(GetParam("basket_name", true));
 		$price = GetParam("basket_price", true);
 		$categ = GetParam("basket_categ", false, null);
-		$prefix = get_table_prefix();
+		$prefix = GetTablePrefix();
 
 		$cate_name = null;
 		if ($categ) {
@@ -305,8 +305,8 @@ class Fresh_Basket extends  Fresh_Product  {
 
 		// $product_name, $sell_price, $supplier_name, $categ = null, $image_path = null, $sale_price = 0
 		$basket_id = Fresh_Catalog::DoCreateProduct($name, $price, null, $categ_name);
-		if (sql_query("insert into ${prefix}baskets (basket_id, date, product_id, quantity) values ($basket_id, NOW(), 0, 0)")){
-			return sql_insert_id();
+		if (SqlQuery("insert into ${prefix}baskets (basket_id, date, product_id, quantity) values ($basket_id, NOW(), 0, 0)")){
+			return SqlInsertId();
 		}
 		// $new_prod = Fresh_Product::
 	}
@@ -314,12 +314,12 @@ class Fresh_Basket extends  Fresh_Product  {
 	static function delete()
 	{
 		$basket_id = GetParam("basket_id", true);
-		$prefix = get_table_prefix();
+		$prefix = GetTablePrefix();
 
 		// Remove from baskets table
-		return sql_query("delete from {$prefix}baskets where basket_id = " . $basket_id) and
+		return SqlQuery( "delete from {$prefix}baskets where basket_id = " . $basket_id) and
 
-		// Remove the product
-		Fresh_Catalog::DraftItems( array( $basket_id ) );
+		       // Remove the product
+		       Fresh_Catalog::DraftItems( array( $basket_id ) );
 	}
 }

@@ -117,7 +117,7 @@ function basket_ordered( $basket_id ) {
 	       . " and woi.order_item_id = woim1.order_item_id and woim1.`meta_key` = '_product_id'"
 	       . " group by woi.order_item_name order by 1 ";
 //     print $sql;
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 
 	if ( $row = mysqli_fetch_row( $result ) ) {
 		$val = $row[0];
@@ -147,7 +147,7 @@ function table_line( $prod_id, $prod_quantity, $filter_zero, $history = false ) 
 
 	// Check in which baskets we have this product
 	$sql              = 'SELECT basket_id, quantity FROM im_baskets WHERE product_id = ' . $prod_id;
-	$result           = sql_query( $sql );
+	$result           = SqlQuery( $sql );
 	$quantity         = $prod_quantity;
 	$numeric_quantity = $prod_quantity;
 	$prod_name        = get_product_name( $prod_id );
@@ -244,7 +244,7 @@ function q_in( $prod_id ) {
 
 //   print $sql;
 
-	$q = sql_query( $sql );
+	$q = SqlQuery( $sql );
 
 	return round( $q, 1 );
 }
@@ -252,7 +252,7 @@ function q_in( $prod_id ) {
 function q_out( $prod_id ) {
 	$sql = "SELECT q_out FROM i_out WHERE prod_id = " . $prod_id;
 
-	$q = sql_query( $sql );
+	$q = SqlQuery( $sql );
 
 	return round( $q, 1 );
 }

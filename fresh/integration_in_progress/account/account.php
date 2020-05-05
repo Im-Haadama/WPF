@@ -21,7 +21,7 @@ require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 
 function get_daily_rate( $user_id ) {
 //	return get_user_meta($user_id, 'day_rate');
-	return sql_query_single_scalar( "SELECT day_rate FROM im_working WHERE user_id = " . $user_id );
+	return SqlQuerySingleScalar( "SELECT day_rate FROM im_working WHERE user_id = " . $user_id );
 }
 
 $total = 0;
@@ -37,7 +37,7 @@ function balance( $date, $client_id ) {
 	       . ' from im_client_accounts where date <= "' . $date
 	       . '" and client_id = ' . $client_id;
 
-	return round( sql_query_single_scalar( $sql ), 2 );
+	return round( SqlQuerySingleScalar( $sql ), 2 );
 
 }
 

@@ -66,7 +66,7 @@ function schedule_event( $timestamp, $recurrence, $hook, $args = array())
 //$args["query"] = "option_name like '%cron%'";
 //$args["id_field"] = "option_id";
 
-$table = sql_query_single_scalar("select option_value from wp_options where option_name = 'cron'");
+$table = SqlQuerySingleScalar("select option_value from wp_options where option_name = 'cron'");
 
 if ($table) {
 	$rows = unserialize($table);

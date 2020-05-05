@@ -81,15 +81,15 @@ function invoice_create_ship( $customer_id, $order_ids ) {
 	}
 	$email = $client->Email;
 	// print "user mail: " . $email . "<br/>";
-	$doc = new Document();
+	$doc = new InvoiceDocument();
 
-	$iEmail                = new Email();
+	$iEmail                = new InvoiceEmail();
 	$iEmail->Mail          = $email;
 	$doc->AssociatedEmails = Array( $iEmail );
 	//var_dump($client->ID);
 
 	$doc->ClientID     = $client->ID;
-	$doc->DocumentType = DocumentType::InvoiceShip;
+	$doc->DocumentType = InvoiceDocumentType::InvoiceShip;
 
 	// Set the subject
 	$subject      = "משלוחים " . " " . CommaImplode( $order_ids );
@@ -104,7 +104,7 @@ function invoice_create_ship( $customer_id, $order_ids ) {
 		// print "del id " . $del_id;
 
 		$o          = new Order( $order_id );
-		$item       = new Item();
+		$item       = new InvoiceItem();
 		$item->Name = $o->GetComments();
 		if ( strlen( $item->Name ) < 2 ) {
 			$item->Name = "משלוח עבור " . $o->CustomerName() . " תאריך " . $o->OrderDate();
@@ -162,16 +162,16 @@ function invoice_create_subcontract_invoice( $invoice_client_id ) {
 	}
 	$email = $client->Email;
 	// print "user mail: " . $email . "<br/>";
-	$doc        = new Document();
+	$doc        = new InvoiceDocument();
 	$doc->Items = Array();
 
-	$iEmail                = new Email();
+	$iEmail                = new InvoiceEmail();
 	$iEmail->Mail          = $email;
 	$doc->AssociatedEmails = Array( $iEmail );
 	//var_dump($client->ID);
 
 	$doc->ClientID     = $client->ID;
-	$doc->DocumentType = DocumentType::Invoice;
+	$doc->DocumentType = InvoiceDocumentType::Invoice;
 
 	$sql = "select id, date, amount, net_amount, ref " .
 	       " from im_business_info " .
@@ -179,20 +179,20 @@ function invoice_create_subcontract_invoice( $invoice_client_id ) {
 	       " and invoice is null " .
 	       " and document_type = " . FreshDocumentType::ship;
 
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 
 	$ship_ids     = array();
 	$business_ids = array();
 	$net_total    = 0;
 
 	// Add the shipments
-	while ( $row = sql_fetch_row( $result ) ) {
+	while ( $row = SqlFetchRow( $result ) ) {
 		$business_id = $row[0];
 		array_push( $business_ids, $business_id );
 		$ship_id = $row[4];
 		array_push( $ship_ids, $ship_id );
 
-		$item       = new Item();
+		$item       = new InvoiceItem();
 		$item->Name = "תעודת משלוח מספר " . $ship_id;
 
 		$item->Price           = $row[2];
@@ -220,8 +220,8 @@ function invoice_create_subcontract_invoice( $invoice_client_id ) {
 		business_add_transaction( $legacy_user, date( 'Y-m-d' ), $total_lines, 0, $doc_id, 1, $net_total,
 			FreshDocumentType::invoice );
 
-		sql_query( "UPDATE im_business_info SET invoice = " . $doc_id .
-		           " WHERE id IN ( " . CommaImplode( $business_ids ) . " )" );
+		SqlQuery( "UPDATE im_business_info SET invoice = " . $doc_id .
+		          " WHERE id IN ( " . CommaImplode( $business_ids ) . " )" );
 	}
 
 	// var_dump($doc);
@@ -231,7 +231,7 @@ function invoice_create_subcontract_invoice( $invoice_client_id ) {
 
 function save_legacy( $ids ) {
 
-	$pid = sql_query_single_scalar( "SELECT id FROM wp_posts WHERE post_title = 'משלוח בלבד'" );
+	$pid = SqlQuerySingleScalar( "SELECT id FROM wp_posts WHERE post_title = 'משלוח בלבד'" );
 	if ( ! $pid > 0 ) {
 		$pid = Catalog::DoCreateProduct( "משלוח בלבד", 32 * 1.17, "עם האדמה" );
 	}

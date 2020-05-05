@@ -63,7 +63,7 @@ class Core_Gem {
 		if (! $operation)  return __FUNCTION__ . ":no operation";
 
 		$table_name = substr($operation, 9);
-		return $result . self::GemElement(get_table_prefix() .$table_name, $id, $args);
+		return $result . self::GemElement( GetTablePrefix() . $table_name, $id, $args);
 	}
 
 	static function add_wrapper($result, $id = null, $args = null)
@@ -91,7 +91,7 @@ class Core_Gem {
 	{
 		$fields = [];
 		$table = GetParam("table", true);
-		$db_prefix = get_table_prefix($table);
+		$db_prefix = GetTablePrefix($table);
 //		var_dump(self::getInstance()->object_types[$v_table]);
 //		$table = self::getInstance()->object_types[$v_table]['database_table'];
 //		print "$v_table $table<br/>";
@@ -135,7 +135,7 @@ class Core_Gem {
 			print "Try again<br>";
 			return false;
 		}
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 
 		$unmapped = [];
 
@@ -173,11 +173,11 @@ class Core_Gem {
 		// Let's map them.
 		foreach ($unmapped as $u)
 		{
-			$u = escape_string($u);
+			$u = EscapeString($u);
 			// Prepare the table for the mapping.
-			if (! sql_query_single_scalar("select count(*) from im_conversion where table_name = '$table' and header ='$u'")) {
+			if (! SqlQuerySingleScalar("select count(*) from im_conversion where table_name = '$table' and header ='$u'")) {
 				$sql = "insert into im_conversion (table_name, col, header) values ('$table', '', '$u')";
-				sql_query( $sql );
+				SqlQuery( $sql );
 			}
 		}
 		$instance = self::getInstance();
@@ -282,7 +282,7 @@ class Core_Gem {
 	 */
 	static function GemElement($table_name, $row_id, $args)
 	{
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 		$result = "";
 		$title = GetArg($args, "title", null);
 		$post = GetArg($args, "post_file", null);
@@ -300,7 +300,7 @@ class Core_Gem {
 		$check_active = GetArg($args, "check_active", false);
 		if ($check_active) {
 			$sql = "select is_active from ${db_prefix}$table_name where id = $row_id";
-			$active = sql_query_single_scalar($sql);
+			$active = SqlQuerySingleScalar($sql);
 			if (! $active) $result .= " not active ";
 		}
 
@@ -410,7 +410,7 @@ class Core_Gem {
 			print debug_trace();
 			die(1);
 		}
-		$table_prefix = get_table_prefix($table_name);
+		$table_prefix = GetTablePrefix($table_name);
 
 		if (! isset($args["events"])) $args["events"] = 'onchange="update_table_field(\'' . $post_file . '\', \'' . $table_name . '\', \'%d\', \'%s\', check_update)"';
 		$sql = GetArg($args, "sql", null);
@@ -471,7 +471,7 @@ class Core_Gem {
 	{
 		$search_fields = GetArg($args, "search_fields", null);
 		if (! $search_fields) {
-			$search_fields = sql_query_array_scalar("describe  $table_name");
+			$search_fields = SqlQueryArrayScalar("describe  $table_name");
 		}
 		if (!$args) $args = array();
 		$args["transpose"] = true;
@@ -578,7 +578,7 @@ class Core_Gem {
 function gui_select_field($id, $selected, $args) {
 	$table = $args["import_table"];
 	$i     = 0;
-	foreach ( sql_table_fields( $table ) as $field ) {
+	foreach ( SqlTableFields( $table ) as $field ) {
 		$args["values"][ $i ]['id']   = $field;
 		$args["values"][ $i ]['name'] = $field;
 		$i ++;

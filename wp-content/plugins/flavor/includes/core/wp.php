@@ -22,7 +22,7 @@ function get_postmeta_field( $post_id, $field_name ) {
 	       . ' WHERE pm.post_id = ' . $post_id
 	       . " AND meta_key = '" . $field_name . "'";
 
-	return sql_query_single_scalar( $sql );
+	return SqlQuerySingleScalar( $sql );
 }
 
 
@@ -125,8 +125,8 @@ function get_customer_name( $customer_id )
 {
 	static $min_supplier = 0;
 	if ( ! $min_supplier ) {
-		if (table_exists("suppliers"))
-			$min_supplier = sql_query_single_scalar( "SELECT min(id) FROM im_suppliers" );
+		if (TableExists("suppliers"))
+			$min_supplier = SqlQuerySingleScalar( "SELECT min(id) FROM im_suppliers" );
 		else
 			$min_supplier = 100000;
 	}
@@ -219,12 +219,12 @@ function delete_wp_option($option_id)
 	if (! $option_id) return false;
 	$sql = "delete from wp_options where option_name='$option_id'";
 //	print $sql . "<br/>";
-	return sql_query($sql);
+	return SqlQuery($sql);
 }
 
 function get_wp_option($option_id, $default = null)
 {
-	$string = sql_query_single_scalar("select option_value from wp_options where option_name = '" . $option_id . "'");
+	$string = SqlQuerySingleScalar( "select option_value from wp_options where option_name = '" . $option_id . "'");
 	if (! $string) return $default;
 	return maybe_unserialize($string);
 }
@@ -235,13 +235,13 @@ function update_wp_option($option_id, $array_or_string)
 	if (is_array($array_or_string))
 		$sql = sprintf("insert into wp_options (option_name, option_value) values ('%s', '%s')" .
 		               " on duplicate key update option_value = VALUES(option_value)",
-			$option_id, escape_string(serialize($array_or_string)));
+			$option_id, EscapeString(serialize($array_or_string)));
 	else
 		$sql = sprintf("insert into wp_options (option_name, option_value) values ('%s', '%s')" .
 		               " on duplicate key update option_value = VALUES(option_value)",
-			$option_id, escape_string($array_or_string));
+			$option_id, EscapeString($array_or_string));
 
-    return sql_query($sql);
+    return SqlQuery($sql);
 //	$new_string = serialize($new_array);
 //	return sql_query("update wp_options set option_value = '" . escape_string($new_string) . "' where option_name = '" . $option_id . "'");
 }

@@ -58,7 +58,7 @@ class Fresh_Client {
 
 			return true;
 		}
-		$meta = sql_query_single_scalar( "select type from im_client_types where id = " . $type );
+		$meta = SqlQuerySingleScalar( "select type from im_client_types where id = " . $type );
 		// print "meta: " . $meta . "<br/>";
 		return update_user_meta( $id, "_client_type", $meta );
 	}
@@ -68,7 +68,7 @@ class Fresh_Client {
 		       . ' from im_client_accounts '
 		       . ' where client_id = ' . $this->user_id;
 
-		return round( sql_query_single_scalar( $sql ), 2 );
+		return round( SqlQuerySingleScalar( $sql ), 2 );
 	}
 
 	function get_payment_method( ) {
@@ -77,7 +77,7 @@ class Fresh_Client {
 			return $m;
 		}
 
-		$p = sql_query_single_scalar( "SELECT id FROM im_payments WHERE `default` = 1" );
+		$p = SqlQuerySingleScalar( "SELECT id FROM im_payments WHERE `default` = 1" );
 		if ( $p ) {
 			return $p;
 		} else {
@@ -105,7 +105,7 @@ class Fresh_Client {
 		       . "VALUES (" . $this->user_id . ", \"" . $date . "\", " . $amount . ", \"" . $type . "\", " . $ref . ")";
 
 		MyLog( $sql, "account_add_transaction" );
-		sql_query( $sql );
+		SqlQuery( $sql );
 	}
 
 	function update_transaction( $total, $delivery_id) {
@@ -113,7 +113,7 @@ class Fresh_Client {
 		       " WHERE transaction_ref = " . $delivery_id . " and client_id = " . $this->user_id;
 
 		MyLog( $sql, "account_update_transaction" );
-		sql_query( $sql );
+		SqlQuery( $sql );
 	}
 
 	function get_customer_email()
@@ -135,11 +135,11 @@ class Fresh_Client {
 	}
 
 	function get_last_order( ) {
-		return sql_query_single_scalar( " SELECT max(meta.post_id) " .
-		                                " FROM `wp_posts` posts, wp_postmeta meta" .
-		                                " where meta.meta_key = '_customer_user'" .
-		                                " and meta.meta_value = " . $this->user_id .
-		                                " and meta.post_id = posts.ID");
+		return SqlQuerySingleScalar( " SELECT max(meta.post_id) " .
+		                             " FROM `wp_posts` posts, wp_postmeta meta" .
+		                             " where meta.meta_key = '_customer_user'" .
+		                             " and meta.meta_value = " . $this->user_id .
+		                             " and meta.post_id = posts.ID");
 	}
 
 	function getZone()

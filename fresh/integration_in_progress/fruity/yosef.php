@@ -26,7 +26,7 @@ $sql = "SELECT count(*) FROM im_client_accounts \n" .
 
 //print $sql;
 
-$c = sql_query_single_scalar( $sql );
+$c = SqlQuerySingleScalar( $sql );
 
 //print $c;
 

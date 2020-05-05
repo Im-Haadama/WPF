@@ -39,7 +39,7 @@ switch ( $operation ) {
 		$task_id = GetParam( "id" );
 		$sql     = "UPDATE im_tasklist SET ended = now(), status = " . enumTasklist::canceled .
 		           " WHERE id = " . $task_id;
-		sql_query( $sql );
+		SqlQuery( $sql );
 		redirect_back();
 		break;
 	case "postpone":
@@ -53,7 +53,7 @@ switch ( $operation ) {
 		check_condition();
 		break;
 	case "shit":
-		sql_query( "delete from im_tasklist where id >= 423" );
+		SqlQuery( "delete from im_tasklist where id >= 423" );
 		break;
 }
 

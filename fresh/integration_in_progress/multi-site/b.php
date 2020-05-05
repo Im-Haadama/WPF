@@ -10,7 +10,7 @@ require_once( "../tools.php" );
 
 //var_dump($conn);
 $sql    = "SELECT count(*) FROM wp_posts";
-$result = sql_query( $sql );
+$result = SqlQuery( $sql );
 $row    = mysqli_fetch_row( $result );
 print $row[0];
 

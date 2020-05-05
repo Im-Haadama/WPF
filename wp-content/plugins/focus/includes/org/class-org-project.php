@@ -17,7 +17,7 @@ class Org_Project {
 			die ("bad project id");
 		}
 		$this->id = $id;
-		$row = sql_query_single("select project_name, manager from im_projects where id=$id");
+		$row = SqlQuerySingle("select project_name, manager from im_projects where id=$id");
 		$this->name = $row[0];
 		$this->manager = $row[1];
 //		print "manager=" . $this->manager . "<br/>name=".$this->name ."<br/>";
@@ -48,12 +48,12 @@ class Org_Project {
 	function IsActive()
 	{
 		$sql = "select is_active from im_projects where id = " . $this->id;
-		return sql_query_single_scalar($sql);
+		return SqlQuerySingleScalar($sql);
 	}
 
 	public function AllWorkers()
 	{
-		$members = sql_query_array_scalar("select user_id from wp_usermeta where meta_key = 'projects' and meta_value like '%:" . $this->id . ":%'");
+		$members = SqlQueryArrayScalar( "select user_id from wp_usermeta where meta_key = 'projects' and meta_value like '%:" . $this->id . ":%'");
 		$manager = $this->manager;
 		if (!in_array($manager, $members))
 			array_push($members, $manager);

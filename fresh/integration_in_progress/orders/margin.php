@@ -24,7 +24,7 @@ function table_line( $prod_name, $prod_id, $prod_quantity, $supplier_name, $bask
 	$prod_quantity_number = $prod_quantity;
 	// Check in which baskets we have this product
 	$sql           = 'SELECT basket_id FROM im_baskets WHERE product_id = ' . $prod_id;
-	$result        = sql_query( $sql );
+	$result        = SqlQuery( $sql );
 	$quantity      = $prod_quantity;
 	$prod_name     = get_product_name( $prod_id );
 	$supplier_name = get_postmeta_field( $prod_id, "supplier_name" );
@@ -85,7 +85,7 @@ $sql = 'select bk.product_id, wp.post_title'
 
 $basket_products = array();
 $basket_ids      = array();
-$result          = sql_query( $sql );
+$result          = SqlQuery( $sql );
 
 while ( $row = mysqli_fetch_row( $result ) ) {
 	array_push( $basket_products, array( $row[0], $row[1], 0 ) );
@@ -107,7 +107,7 @@ $sql = 'select woi.order_item_name, sum(woim.meta_value), woi.order_item_id'
        . " and woi.order_item_id = woim1.order_item_id and woim1.`meta_key` = '_product_id'"
        . " group by woi.order_item_name order by 1 ";
 
-$result = sql_query( $sql );
+$result = SqlQuery( $sql );
 
 $fields = mysqli_num_fields( $result );
 

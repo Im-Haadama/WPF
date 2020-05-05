@@ -81,10 +81,10 @@ class Fresh_Inventory
 
 //		print $sql;
 
-		$rows = sql_query($sql);
+		$rows = SqlQuery($sql);
 		if (! $rows) return;
 		$buffer = "Product id, Product name, quantity, price, total\n";
-		while ($row = sql_fetch_assoc($rows))
+		while ($row = SqlFetchAssoc($rows))
 		{
 			$prod_id = $row["product_id"];
 			$quantity = $row["quantity"];
@@ -109,7 +109,7 @@ class Fresh_Inventory
 		$sql = sprintf( "insert into im_inventory_count (count_date, supplier_id, product_id, product_name, quantity) values  
 				          (%s, %s, 0 , 'zero count', 0)", QuoteText( date( 'Y-m-d' ) ), $supplier_id );
 
-		return sql_query($sql);
+		return SqlQuery($sql);
 	}
 	static function save_inv( $data ) {
 		for ( $i = 0; $i < count( $data ); $i += 2 ) {
@@ -133,7 +133,7 @@ class Fresh_Inventory
 		$delete_sql = "delete from im_inventory_count where supplier_id = " . $supplier_id .
 		              " and count_date > '" . date('Y-m-d', strtotime('-20 days')) . "'";
 //		print $delete_sql;
-		sql_query($delete_sql);
+		SqlQuery($delete_sql);
 
 		$sql = 'SELECT pl.id ' .
 		       ' FROM im_supplier_price_list pl ' .
@@ -142,7 +142,7 @@ class Fresh_Inventory
 		       . ' and s.id = pl.supplier_id '
 		       . ' order by 1';
 
-		$pricelist_ids = sql_query_array_scalar( $sql );
+		$pricelist_ids = SqlQueryArrayScalar( $sql );
 
 		foreach ($pricelist_ids as $pl_id){
 			$link_data = $catalog->GetProdID( $pl_id );
@@ -152,8 +152,8 @@ class Fresh_Inventory
 				$count = $p->getStock();
 				if ($count) {
 					$sql = "insert into im_inventory_count (count_date, supplier_id, product_id, product_name, quantity) values  
-				          (" . QuoteText(date('Y-m-d')) . ", " . $supplier_id . ", " . $product_id . ", '" . escape_string($p->getName()) . "'," . $count . ")";
-					if (! sql_query($sql)) return false;
+				          (" . QuoteText(date('Y-m-d')) . ", " . $supplier_id . ", " . $product_id . ", '" . EscapeString($p->getName()) . "'," . $count . ")";
+					if (! SqlQuery($sql)) return false;
 				}
 			}
 		}
@@ -167,7 +167,7 @@ class Fresh_Inventory
 		$result .= Core_Html::GuiHyperlink("download count", self::getPost() . "?operation=download_inventory_count");
 
 
-		$suppliers = sql_query_array_scalar("select id from im_suppliers where active = 1");
+		$suppliers = SqlQueryArrayScalar("select id from im_suppliers where active = 1");
 		$status_table = array(array("supplier id", "Supplier name", "Count Date", "Zero"));
 
 		foreach ($suppliers as $supplier_id) {
@@ -197,7 +197,7 @@ class Fresh_Inventory
 
 		$sql = "select count(*) from im_inventory_count where year(count_date) = " . $year . " and supplier_id = " . $supplier_id;
 //		print $sql;
-		$count = sql_query_single_scalar($sql);
+		$count = SqlQuerySingleScalar($sql);
 //		print "count = $count<br/>";
 		if ($count) {
 			$args = [];
@@ -226,8 +226,8 @@ class Fresh_Inventory
 		       . ' order by 1';
 
 //		print $sql;
-		$result = sql_query( $sql );
-		while ( $row = sql_fetch_row( $result ) ) {
+		$result = SqlQuery( $sql );
+		while ( $row = SqlFetchRow( $result ) ) {
 			$pl_id     = $row[3];
 			$link_data = $catalog->GetProdID( $pl_id );
 			if ( $link_data ) {

@@ -37,7 +37,7 @@ if ( $operation )
 			$sql    .= $values;
 
 //			print $sql;
-			sql_query($sql);
+			SqlQuery($sql);
 			break;
 
 

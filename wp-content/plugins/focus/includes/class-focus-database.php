@@ -28,8 +28,8 @@ class Focus_Database extends Core_Database
 
 		if ($current == $version and ! $force) return true;
 
-		if (!table_exists("working_teams"))
-			sql_query("create table im_working_teams
+		if (!TableExists("working_teams"))
+			SqlQuery("create table im_working_teams
 (
 	id int auto_increment
 		primary key,
@@ -39,8 +39,8 @@ class Focus_Database extends Core_Database
 );
 
 ");
-		if (! table_exists("task_templates"))
-			sql_query("create table im_task_templates
+		if (! TableExists("task_templates"))
+			SqlQuery("create table im_task_templates
 (
 	id int auto_increment
 		primary key,
@@ -67,7 +67,7 @@ charset=utf8;
 
 ");
 		if (! self::table_exists("working"))
-			sql_query("create table im_working
+			SqlQuery("create table im_working
 (
 	id int auto_increment,
 	user_id int not null,
@@ -84,7 +84,7 @@ charset=utf8;
 
 ");
 		if (! self::table_exists("company"))
-			sql_query("create table im_company
+			SqlQuery("create table im_company
 (
 	id int auto_increment
 		primary key,
@@ -93,8 +93,8 @@ charset=utf8;
 );
 
 ");
-		if (! table_exists("projects"))
-			sql_query("create table im_projects
+		if (! TableExists("projects"))
+			SqlQuery("create table im_projects
 (
 	ID int auto_increment
 		primary key,
@@ -107,8 +107,8 @@ charset=utf8;
 charset=utf8;
 
 ");
-		if (! table_exists("tasklist"))
-			sql_query("create table im_tasklist
+		if (! TableExists("tasklist"))
+			SqlQuery("create table im_tasklist
 (
 	id int auto_increment
 		primary key,
@@ -134,8 +134,8 @@ charset=utf8;
 engine=InnoDB;
 
 ");
-		if (! table_exists("working_teams"))
-			sql_query("create table im_working_teams
+		if (! TableExists("working_teams"))
+			SqlQuery("create table im_working_teams
 (
 	id int auto_increment
 		primary key,
@@ -145,7 +145,7 @@ engine=InnoDB;
 )");
 		if ($current == $version and ! $force) return true;
 
-		sql_query("create table im_log
+		SqlQuery("create table im_log
 (
 	id int auto_increment
 		primary key,
@@ -164,7 +164,7 @@ engine=InnoDB;
 	static function CreateFunctions($version, $force = false)
 	{
 		$current = self::CheckInstalled("Focus", "functions");
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 
 
 		if ($current == $version and ! $force) return true;

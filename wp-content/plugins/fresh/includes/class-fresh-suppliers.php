@@ -191,7 +191,7 @@ class Fresh_Suppliers {
 				and status = " . eSupplyStatus::NewSupply .
 		       " order by id desc limit 1";
 
-		return sql_query_single_scalar($sql);
+		return SqlQuerySingleScalar($sql);
 	}
 
 	// Supplier pricelist import
@@ -199,7 +199,7 @@ class Fresh_Suppliers {
 	{
 		$supplier_id = GetParam("id", true);
 		// sql_query("update line_status = 2 where supplier_id =$supplier_id")
-		sql_query("delete from im_supplier_price_list where supplier_id = $supplier_id");
+		SqlQuery("delete from im_supplier_price_list where supplier_id = $supplier_id");
 		$fields["date"] = date('Y-m-d');
 		$fields["supplier_id"] = $supplier_id;
 	}

@@ -46,15 +46,15 @@ class Core_Logger
 
 	function log($severity, $message)
 	{
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 
 		if (isset($this->filter_levels[$severity])) return true;
 		switch (self::$mode){
 			case "db":
 				$sql = sprintf("insert into ${db_prefix}log (time, source, severity, message) \n" .
-				               "values(NOW(), '%s', %d, '%s')", $this->source, $severity, escape_string($message));
+				               "values(NOW(), '%s', %d, '%s')", $this->source, $severity, EscapeString($message));
 
-				return sql_query($sql);
+				return SqlQuery($sql);
 			default:
 				if(get_user_id() == 1) print $message . "<br/>";
 		}

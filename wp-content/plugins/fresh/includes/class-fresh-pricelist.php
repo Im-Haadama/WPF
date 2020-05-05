@@ -11,14 +11,14 @@ class Fresh_PriceList {
 	static function DeleteMapping( $pricelist_id ) {
 		// Get product id
 		$prod_ids    = Catalog::GetProdID( $pricelist_id );
-		$supplier_id = sql_query_single_scalar( "SELECT supplier_id FROM im_supplier_price_list WHERE ID = " . $pricelist_id );
+		$supplier_id = SqlQuerySingleScalar( "SELECT supplier_id FROM im_supplier_price_list WHERE ID = " . $pricelist_id );
 //		print "supplier id: " . $supplier_id . "<br/>";
 
 		foreach ( $prod_ids as $prod_id ) {
 //			print "prod id: " . $prod_id . "<br/>";
 			$sql = "DELETE FROM im_supplier_mapping WHERE product_id = " . $prod_id . " AND supplier_id = " . $supplier_id;
 //			print $sql . "<br/>";
-			sql_query( $sql );
+			SqlQuery( $sql );
 
 			$line = "";
 			Catalog::UpdateProduct( $prod_id, $line );
@@ -31,7 +31,7 @@ class Fresh_PriceList {
 	}
 
 	function Refresh() {
-		$priceslist_items = sql_query_array_scalar( "SELECT id FROM im_supplier_price_list WHERE supplier_id = " . $this->SupplierID );
+		$priceslist_items = SqlQueryArrayScalar( "SELECT id FROM im_supplier_price_list WHERE supplier_id = " . $this->SupplierID );
 		foreach ( $priceslist_items as $pricelist_id ) {
 			$prod_ids = Catalog::GetProdID( $pricelist_id );
 			foreach ( $prod_ids as $prod_id ) {
@@ -43,7 +43,7 @@ class Fresh_PriceList {
 	}
 
 	function SiteId() {
-		return sql_query_single_scalar( "SELECT site_id FROM im_suppliers WHERE id =" . $this->SupplierID );
+		return SqlQuerySingleScalar( "SELECT site_id FROM im_suppliers WHERE id =" . $this->SupplierID );
 	}
 
 	function PrintCSV() {
@@ -51,7 +51,7 @@ class Fresh_PriceList {
 		       ' FROM im_supplier_price_list pl '
 		       . ' where supplier_id = ' . $this->SupplierID;
 
-		$result = sql_query( $sql );
+		$result = SqlQuery( $sql );
 
 		print "שם, מחיר, קוד\n";
 
@@ -79,7 +79,7 @@ class Fresh_PriceList {
 		       . ' and s.id = pl.supplier_id '
 		       . ' order by 1';
 
-		$result = sql_query( $sql );
+		$result = SqlQuery( $sql );
 
 		$table_rows = array(
 			array(
@@ -223,7 +223,7 @@ class Fresh_PriceList {
 		// $line .= '<td><input type="text" value="' . $price . '"</td>';
 		array_push( $line, $calc_price );
 		// $line .= '<td>' . $calc_price . '</td>';
-		$category = sql_query_single_scalar( "SELECT category FROM im_supplier_price_list WHERE id = " . $pl_id );
+		$category = SqlQuerySingleScalar( "SELECT category FROM im_supplier_price_list WHERE id = " . $pl_id );
 		array_push( $line, $category );
 		if ($create_option){
 			array_push($line, Fresh_Category::Select($pl_id));
@@ -284,7 +284,7 @@ class Fresh_PriceList {
 		$sql = 'SELECT max(date) FROM im_supplier_price_list'
 		       . ' WHERE supplier_id = ' . $this->SupplierID;
 
-		$result = sql_query( $sql );
+		$result = SqlQuery( $sql );
 
 		$row = mysqli_fetch_row( $result );
 
@@ -295,7 +295,7 @@ class Fresh_PriceList {
 		$sql = 'SELECT factor FROM im_suppliers'
 		       . ' WHERE id = ' . $this->SupplierID;
 
-		$result = sql_query( $sql );
+		$result = SqlQuery( $sql );
 
 		$row = mysqli_fetch_row( $result );
 
@@ -332,7 +332,7 @@ class Fresh_PriceList {
 		$date = date( 'y/m/d' );
 
 		$id     = 0;
-		$result = sql_query( $sql );
+		$result = SqlQuery( $sql );
 
 		if ( $result ) {
 			$row = mysqli_fetch_row( $result );
@@ -355,7 +355,7 @@ class Fresh_PriceList {
 			}
 
 			if ( isset( $picture_path ) ) {
-				$sql .= ", picture_path = '" . escape_string( $picture_path ) . "'";
+				$sql .= ", picture_path = '" . EscapeString( $picture_path ) . "'";
 			} else {
 				$sql .= ", picture_path = null";
 			}
@@ -364,9 +364,9 @@ class Fresh_PriceList {
 			//  print "<br/>"  . $product_name . "<br/>";
 			// print "<p dir='ltr'>"  . $sql . "</p>";
 
-			$result = sql_query( $sql );
+			$result = SqlQuery( $sql );
 			if ( ! $result ) {
-				sql_error( $sql );
+				SqlError( $sql );
 
 				return UpdateResult::SQLError;
 			}
@@ -408,16 +408,16 @@ class Fresh_PriceList {
 			}
 			if ( isset( $picture_path ) ) {
 				$sql    .= ", picture_path ";
-				$values .= ", '" . escape_string( $picture_path ) . "'";
+				$values .= ", '" . EscapeString( $picture_path ) . "'";
 			}
 			// Complete the sql statement
 			$sql .= ") " . $values . ")";
 
 			// print "<p dir=ltr>" . $sql . "</p>";
 
-			$result = sql_query( $sql );
+			$result = SqlQuery( $sql );
 			// Output
-			$id = sql_insert_id( );
+			$id = SqlInsertId( );
 			$rc = UpdateResult::NewPrice;
 		}
 		// Update linked products
@@ -433,7 +433,7 @@ class Fresh_PriceList {
 		$sql = " SELECT product_name, supplier_id, date, price, supplier_product_code, sale_price, category, picture_path FROM im_supplier_price_list " .
 		       " WHERE id = " . $pricelist_id;
 
-		$result = sql_query_single_assoc( $sql );
+		$result = SqlQuerySingleAssoc( $sql );
 
 		return $result;
 	}
@@ -447,7 +447,7 @@ class Fresh_PriceList {
 		       ", sale_price = " . $sale_price .
 		       ", date = '" . date( 'y/m/d' ) . "' " .
 		       " WHERE id = " . $id;
-		sql_query( $sql );
+		SqlQuery( $sql );
 
 		$this->UpdateCatalog( $id );
 
@@ -481,7 +481,7 @@ class Fresh_PriceList {
 		$sql = "SELECT price FROM im_supplier_price_list "
 		       . " WHERE product_name = '" . addslashes( $product_name ) . "' AND supplier_id = " . $this->SupplierID;
 
-		return sql_query_single_scalar( $sql );
+		return SqlQuerySingleScalar( $sql );
 	}
 
 //    function DraftRemoved()
@@ -514,7 +514,7 @@ class Fresh_PriceList {
 
 	function ChangeStatus( $status ) {
 		// Act local
-		sql_query("UPDATE im_supplier_price_list SET line_status = " . $status . " WHERE supplier_id = " . $this->SupplierID);
+		SqlQuery( "UPDATE im_supplier_price_list SET line_status = " . $status . " WHERE supplier_id = " . $this->SupplierID);
 	}
 
 //    function ExecuteRemotes($url)
@@ -540,10 +540,10 @@ class Fresh_PriceList {
 	function RemoveLines( $status ) {
 		$removed = Array();
 
-		$items_to_remove = sql_query_array("select id, price, product_name " .
-		                                   " from im_supplier_price_list " .
-		                                   " where line_status = " . $status .
-		                                   " and supplier_id = " . $this->SupplierID);
+		$items_to_remove = SqlQueryArray( "select id, price, product_name " .
+		                                  " from im_supplier_price_list " .
+		                                  " where line_status = " . $status .
+		                                  " and supplier_id = " . $this->SupplierID);
 
 		foreach ($items_to_remove as $row) {
 			$id = $row[0];
@@ -577,7 +577,7 @@ class Fresh_PriceList {
 		$sql = "DELETE FROM im_supplier_price_list  "
 		       . " WHERE id = " . $pricelist_id;
 
-		sql_query( $sql );
+		SqlQuery( $sql );
 		// The mapping stays - in case supplier gets it back.
 
 		// If no other option for this product - make it draft

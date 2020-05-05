@@ -57,7 +57,7 @@ function new_products( $count = 0 ) {
 }
 
 function prod_list( $sql ) {
-	$ids  = sql_query_array_scalar( $sql );
+	$ids  = SqlQueryArrayScalar( $sql );
 	$text = "";
 	foreach ( $ids as $id ) {
 //		print $id . " " . get_product_name($id) . "<br/>";

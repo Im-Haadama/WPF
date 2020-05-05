@@ -36,7 +36,7 @@ if ( $count > 0 ) {
 
 function count_unmapped() {
 	$sql    = "SELECT id FROM im_supplier_price_list";
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 	$count  = 0;
 
 	while ( $row = mysqli_fetch_row( $result ) ) // mysql_fetch_row($export))

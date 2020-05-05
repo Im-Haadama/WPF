@@ -72,15 +72,15 @@ print Core_Html::gui_header( 1, "שיוך לקוחות למחירון" );
 
 $sql = "SELECT user_id, meta_value FROM wp_usermeta WHERE meta_key = '_client_type'";
 
-$result = sql_query( $sql );
+$result = SqlQuery( $sql );
 
 $table = array( array( "מזהה", "לקוח", "מחירון" ) );
 
-while ( $row = sql_fetch_row( $result ) ) {
+while ( $row = SqlFetchRow( $result ) ) {
 //    print $row[0] . " " . $row[1] . "<br/>";
 	$user_id = $row[0];
 
-	$client_type_id = sql_query_single_scalar( "SELECT id FROM im_client_types WHERE type = '" . $row[1] . "'" );
+	$client_type_id = SqlQuerySingleScalar( "SELECT id FROM im_client_types WHERE type = '" . $row[1] . "'" );
 	array_push( $table, array(
 		$user_id,
 		GetUserName( $user_id ),

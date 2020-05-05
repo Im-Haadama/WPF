@@ -15,7 +15,7 @@ require_once( ROOT_DIR . "/fresh/supplies/Supply.php" );
 function print_fresh_category() {
 	$list = "";
 
-	$option = sql_query_single_scalar( "SELECT option_value FROM wp_options WHERE option_name = 'im_discount_categories'" );
+	$option = SqlQuerySingleScalar( "SELECT option_value FROM wp_options WHERE option_name = 'im_discount_categories'" );
 	if ( ! $option ) {
 		return;
 	}
@@ -39,9 +39,9 @@ function print_deliveries( $query, $selectable = false ) {
 
 	$sql .= ' order by 1';
 
-	$orders    = sql_query( $sql );
+	$orders    = SqlQuery( $sql );
 	$prev_user = - 1;
-	while ( $order = sql_fetch_row( $orders ) ) {
+	while ( $order = SqlFetchRow( $orders ) ) {
 		$order_id   = $order[0];
 		$o          = new Order( $order_id );
 		$is_group   = $order[1];
@@ -113,7 +113,7 @@ function print_supply( $id ) {
 
 	$supplier_id = supply_get_supplier_id( $id );
 	$ref         = gui_hyperlink( $id, "../supplies/supply-get.php?id=" . $id );
-	$address     = sql_query_single_scalar( "select address from im_suppliers where id = " . $supplier_id );
+	$address     = SqlQuerySingleScalar( "select address from im_suppliers where id = " . $supplier_id );
 //	$receiver_name = get_meta_field( $order_id, '_shipping_first_name' ) . " " .
 //	                 get_meta_field( $order_id, '_shipping_last_name' );
 //	$shipping2     = get_meta_field( $order_id, '_shipping_address_2', true );
@@ -130,11 +130,11 @@ function print_supply( $id ) {
 //
 	array_push( $fields, "" );
 //
-	array_push( $fields, sql_query_single_scalar( "select supplier_contact_phone from im_suppliers where id = " . $supplier_id ) );
+	array_push( $fields, SqlQuerySingleScalar( "select supplier_contact_phone from im_suppliers where id = " . $supplier_id ) );
 
 	array_push( $fields, "" );
 //
-	array_push( $fields, sql_query_single_scalar( "select mission_id from im_supplies where id = " . $id ) );
+	array_push( $fields, SqlQuerySingleScalar( "select mission_id from im_supplies where id = " . $id ) );
 //
 	array_push( $fields, imMultiSite::LocalSiteID() );
 	// array_push($fields, get_delivery_id($order_id));

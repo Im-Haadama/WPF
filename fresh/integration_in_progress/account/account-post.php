@@ -90,14 +90,14 @@ switch ( $operation ) {
 
 	case "check_email":
 		$email = $_GET["email"];
-		if ( sql_query_single_scalar( "SELECT count(*) FROM wp_users WHERE user_email = '" . $email . "'" ) > 0 ) {
+		if ( SqlQuerySingleScalar( "SELECT count(*) FROM wp_users WHERE user_email = '" . $email . "'" ) > 0 ) {
 			print "exists";
 
 			return;
 		}
 		// New. find login name
 		$new_login = strtok( $email, "@" );
-		if ( sql_query_single_scalar( "SELECT count(*) FROM wp_users WHERE user_login = '" . $new_login . "'" ) == 0 ) {
+		if ( SqlQuerySingleScalar( "SELECT count(*) FROM wp_users WHERE user_login = '" . $new_login . "'" ) == 0 ) {
 			print $new_login;
 
 			return;
@@ -106,7 +106,7 @@ switch ( $operation ) {
 		while ( 1 ) {
 			$new_login = strtok( $email, "@" ) . $trial;
 
-			if ( sql_query_single_scalar( "SELECT count(*) FROM wp_users WHERE user_login = '" . $new_login . "'" ) == 0 ) {
+			if ( SqlQuerySingleScalar( "SELECT count(*) FROM wp_users WHERE user_login = '" . $new_login . "'" ) == 0 ) {
 				print $new_login;
 
 				return;
@@ -196,7 +196,7 @@ function create_invoice( $ids, $user_id ) {
 
 	if ( is_numeric( $doc_id ) && $doc_id > 0 ) {
 		$sql = "UPDATE im_delivery SET payment_receipt = " . $doc_id . " WHERE id IN (" . CommaImplode( $ids ) . " ) ";
-		sql_query( $sql );
+		SqlQuery( $sql );
 
 		return $doc_id;
 	} else {
@@ -259,7 +259,7 @@ function send_month_summary( $user_ids ) {
 			return;
 
 		}
-		$post_text = sql_query_single_scalar( "SELECT post_content FROM wp_posts WHERE id = " . $post_id );
+		$post_text = SqlQuerySingleScalar( "SELECT post_content FROM wp_posts WHERE id = " . $post_id );
 
 		if ( strlen( $post_text ) < 20 ) {
 			print "לא נמצא פוסט סיכום'<br/>";
@@ -358,7 +358,7 @@ function zero_near_zero() {
 	       . ' group by client_id';
 
 
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 
 	while ( $row = mysqli_fetch_row( $result ) ) {
 		// $line = '';

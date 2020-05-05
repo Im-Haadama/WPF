@@ -24,14 +24,14 @@ function auto_local() {
 	$sql = "SELECT id FROM im_suppliers WHERE  auto_order_day = " . date( "w" );
 
 	// print $sql;
-	$suppliers = sql_query_array_scalar( $sql );
+	$suppliers = SqlQueryArrayScalar( $sql );
 	$created   = false;
 
 	foreach ( $suppliers as $supplier_id ) {
 		print "create auto order for " . get_supplier_name( $supplier_id ) . "\n";
 
 		// $s = new Supply($supplier_id);
-		$last_order = sql_query_single_scalar( "SELECT max(date) FROM im_supplies WHERE supplier = " . $supplier_id );
+		$last_order = SqlQuerySingleScalar( "SELECT max(date) FROM im_supplies WHERE supplier = " . $supplier_id );
 
 		print "last: " . $last_order . "\n";
 		$sold         = supplier_report_data( $supplier_id, $last_order, date( 'y-m-d' ) );
@@ -47,7 +47,7 @@ function auto_local() {
 				$total += $quantity * $price;
 			}
 		}
-		if ( $total > sql_query_single_scalar( "SELECT min_order FROM im_suppliers WHERE id = " . $supplier_id ) ) {
+		if ( $total > SqlQuerySingleScalar( "SELECT min_order FROM im_suppliers WHERE id = " . $supplier_id ) ) {
 			$supply = Fresh_Supply::CreateSupply( $supplier_id );
 			foreach ( $supply_lines as $line ) {
 				$supply->AddLine( $line[0], $line[1], get_buy_price( $line[0] ) );

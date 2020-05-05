@@ -16,7 +16,7 @@ class Fresh_Path {
 	 */
 	public function __construct( $id ) {
 		$this->id = $id;
-		$path_info = sql_query_single_assoc("select * from im_paths where id = " . $id);
+		$path_info = SqlQuerySingleAssoc( "select * from im_paths where id = " . $id);
 		$this->description = $path_info['description'];
 		$this->zones = $path_info['zones'];
 		$this->days = explode(':', $path_info['days']);
@@ -80,7 +80,7 @@ class Fresh_Path {
 	function get_zone_times($sorted = true)
 	{
 		// $zones =
-		$zone_times = sql_query_array_scalar("select hours from im_path_shipments where path_id = $this->id and instance is not null");
+		$zone_times = SqlQueryArrayScalar("select hours from im_path_shipments where path_id = $this->id and instance is not null");
 		if ($sorted) uasort($zone_times,
 			function($a, $b) {
 				$start_a = strtok($a, "-");
@@ -97,6 +97,6 @@ class Fresh_Path {
 	}
 	static function getAll()
 	{
-		return sql_query_array_scalar("select id from im_paths");
+		return SqlQueryArrayScalar("select id from im_paths");
 	}
 }

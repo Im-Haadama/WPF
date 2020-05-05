@@ -28,7 +28,7 @@ class Bundles {
 
 		// print $sql;
 
-		$result = sql_query( $sql );
+		$result = SqlQuery( $sql );
 
 		$data .= "<tr>";
 		$data .= "<td>בחר</td>";
@@ -87,7 +87,7 @@ class Fresh_Bundle {
 		$sql = "SELECT id, bundle_prod_id FROM im_bundles WHERE prod_id = " . $b->prod_id .
 		       " AND quantity = " . $b->quantity;
 
-		$row = sql_query_single( $sql );
+		$row = SqlQuerySingle( $sql );
 
 		if ( $row ) {
 			$b->id             = $row[0];
@@ -99,7 +99,7 @@ class Fresh_Bundle {
 
 	static function CreateFromProd( $prod_id ) {
 		$sql = "select id from im_bundles where prod_id = $prod_id";
-		$_id = sql_query_single_scalar( $sql );
+		$_id = SqlQuerySingleScalar( $sql );
 		// print $_id . " ";
 		if ( $_id ) {
 			return new self( $_id );
@@ -111,7 +111,7 @@ class Fresh_Bundle {
 	static function CreateFromBundleProd( $prod_id ) {
 		$sql = "select id from im_bundles where bundle_prod_id = $prod_id";
 
-		$_id = sql_query_single_scalar( $sql );
+		$_id = SqlQuerySingleScalar( $sql );
 		if ( $_id ) {
 			return Fresh_Bundle::CreateFromDb( $_id );
 		}
@@ -123,7 +123,7 @@ class Fresh_Bundle {
 		$b     = new Fresh_Bundle();
 		$b->id = $_id;
 		$sql   = "select prod_id, quantity, margin, bundle_prod_id from im_bundles where id = $_id";
-		$row   = sql_query_single_assoc( $sql );
+		$row   = SqlQuerySingleAssoc( $sql );
 		if ( $row ) {
 			$b->bundle_prod_id = $row["bundle_prod_id"];
 			$b->prod_id        = $row["prod_id"];
@@ -148,14 +148,14 @@ class Fresh_Bundle {
 //	}
 
 	static function GetBundles( $prod_id ) {
-		return sql_query_array_scalar( "SELECT bundle_prod_id FROM im_bundles WHERE prod_id = " . $prod_id );
+		return SqlQueryArrayScalar( "SELECT bundle_prod_id FROM im_bundles WHERE prod_id = " . $prod_id );
 	}
 
 	function Delete() {
 		MyLog( "delete bundle", __CLASS__ );
 		$sql = "SELECT bundle_prod_id FROM im_bundles WHERE id = " . $this->id;
 		MyLog( $sql, __CLASS__ );
-		$bundle_prod_id = sql_query_single_scalar( $sql );
+		$bundle_prod_id = SqlQuerySingleScalar( $sql );
 		MyLog( $bundle_prod_id, __CLASS__ );
 
 		Catalog::DraftItems( array( $bundle_prod_id ) );
@@ -164,7 +164,7 @@ class Fresh_Bundle {
 
 		MyLog( "sql = " . $sql );
 
-		sql_query( $sql );
+		SqlQuery( $sql );
 	}
 
 	function GetBuyPrice() {
@@ -248,7 +248,7 @@ class Fresh_Bundle {
 
 		print $sql;
 
-		sql_query( $sql );
+		SqlQuery( $sql );
 	}
 
 	function Add() {
@@ -263,7 +263,7 @@ class Fresh_Bundle {
 		$sql = "INSERT INTO im_bundles (prod_id, quantity, margin, bundle_prod_id, is_active) VALUES (" . $this->prod_id . ", " .
 		       $this->quantity . ", '" . $this->margin . "', " . $bundle_prod_id . ", 1)";
 
-		sql_query( $sql );
+		SqlQuery( $sql );
 	}
 
 	function GetSupplier() {
@@ -276,7 +276,7 @@ class Fresh_Bundle {
 		$p->draft();
 
 		$sql = "UPDATE im_bundles SET is_active = FALSE WHERE id = " . $this->id;
-		sql_query_single_scalar( $sql );
+		SqlQuerySingleScalar( $sql );
 	}
 
 	function getName()

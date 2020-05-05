@@ -27,13 +27,13 @@ class Org_Worker extends Core_users
 
 	function IsGlobalCompanyWorker($company)
 	{
-		return sql_query_single_scalar("select count(*) from im_working where user_id = " . $this->id . " and project_id = 0 and company_id = $company");
+		return SqlQuerySingleScalar( "select count(*) from im_working where user_id = " . $this->id . " and project_id = 0 and company_id = $company");
 	}
 
 	function GetCompanies($is_manager = false){
 		$sql = " select id from im_company where admin = " . $this->id;
 		if (!$is_manager) $sql .= " union select company_id from im_working where user_id = " . $this->id;
-		return sql_query_array_scalar($sql);
+		return SqlQueryArrayScalar($sql);
 	}
 
 	function getPersonalTeam()
@@ -84,7 +84,7 @@ class Org_Worker extends Core_users
 
 	function AllProjects($query = "is_active = 1", $field_list = "id")
 	{
-		$table_prefix = get_table_prefix();
+		$table_prefix = GetTablePrefix();
 
 		// Managed projects
 		$sql =  "select " . CommaImplode($field_list) . " from ${table_prefix}projects " .
@@ -98,7 +98,7 @@ class Org_Worker extends Core_users
 		if (is_array($field_list) and (count($field_list) > 1))
 			return SqlQueryAssoc($sql);
 		else
-			return sql_query_array_scalar($sql);
+			return SqlQueryArrayScalar($sql);
 //		if (! $projects) $projects = array();
 //		$managed = sql_query_array_scalar("select $field_list from im_projects where manager = " . $this->id . ($query ? " and $query " : ""));
 //
@@ -131,11 +131,11 @@ class Org_Worker extends Core_users
 
 	function AddWorkingProject($user_id, $company_id, $project_id)
 	{
-		$table_prefix = get_table_prefix();
+		$table_prefix = GetTablePrefix();
 
 		$current = $this->GetCompanies();
 		if (in_array($user_id, $current)) return true; // already in.
-		return sql_query("insert into ${table_prefix}working (company_id, is_active, user_id, project_id, rate) values ($company_id, 1, $user_id, $project_id, 0)");
+		return SqlQuery("insert into ${table_prefix}working (company_id, is_active, user_id, project_id, rate) values ($company_id, 1, $user_id, $project_id, 0)");
 	}
 
 	/**
@@ -150,7 +150,7 @@ class Org_Worker extends Core_users
 	 * @return string
 	 */
 	function is_volunteer($uid) {
-		return sql_query_single_scalar( "SELECT volunteer FROM im_working WHERE user_id = " . $uid );
+		return SqlQuerySingleScalar( "SELECT volunteer FROM im_working WHERE user_id = " . $uid );
 	}
 
 ///////////////////////
@@ -200,7 +200,7 @@ class Org_Worker extends Core_users
 
 	function project_company($project_id)
 	{
-		return sql_query_single_scalar("select company from im_projects where id = " . $project_id);
+		return SqlQuerySingleScalar( "select company from im_projects where id = " . $project_id);
 	}
 
 //	function GetProjects()
@@ -261,15 +261,15 @@ class Org_Worker extends Core_users
 
 	function tasksCount($status)
 	{
-		$prefix = get_table_prefix();
-		return sql_query_single_scalar("select count(*) from ${prefix}tasklist where " . self::myWorkQuery($status));
+		$prefix = GetTablePrefix();
+		return SqlQuerySingleScalar( "select count(*) from ${prefix}tasklist where " . self::myWorkQuery($status));
 	//	return Core_Html::GuiHyperlink($count, Focus_Tasks::get_link("tasks"));
 	}
 
 	function doneTask($period = "7 day")
 	{
-		$prefix = get_table_prefix();
-		return sql_query_single_scalar("select count(*) from ${prefix}tasklist where owner = " . $this->id . " and " .
-		                 " ended >= curdate() - INTERVAL $period ");
+		$prefix = GetTablePrefix();
+		return SqlQuerySingleScalar( "select count(*) from ${prefix}tasklist where owner = " . $this->id . " and " .
+		                             " ended >= curdate() - INTERVAL $period ");
 	}
 }

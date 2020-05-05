@@ -26,7 +26,7 @@ class Fresh_Category {
 		$args["field"]    = "name";
 		$args["id_field"] = "term_id";
 
-		$prefix      = get_table_prefix();
+		$prefix      = GetTablePrefix();
 		$result      = "";
 		if ( ! self::$datalist_shown ) {
 			$result .= Core_Html::TableDatalist( $datalist_id, "{$prefix}categories", $args );

@@ -14,23 +14,23 @@ class Freight_Database extends Core_Database {
 	static function CreateTables( $version, $force )
 	{
 		$current = self::CheckInstalled("Freight", "tables");
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 
 		if ($current == $version and ! $force) return true;
 
-		sql_query("alter table im_multisite
+		SqlQuery("alter table im_multisite
 	add pickup_address varchar(50) not null;
 
 ");
 
-		sql_query("alter table wp_woocommerce_shipping_zone_methods add week_day integer;");
+		SqlQuery("alter table wp_woocommerce_shipping_zone_methods add week_day integer;");
 
-		sql_query("alter table wp_woocommerce_shipping_zones drop column delivery_days;");
-		sql_query("alter table wp_woocommerce_shipping_zones drop column codes;");
-		sql_query("alter table wp_woocommerce_shipping_zones add min_order float;" );
-		sql_query("alter table wp_woocommerce_shipping_zones add default_rate float;" );
+		SqlQuery("alter table wp_woocommerce_shipping_zones drop column delivery_days;");
+		SqlQuery("alter table wp_woocommerce_shipping_zones drop column codes;");
+		SqlQuery("alter table wp_woocommerce_shipping_zones add min_order float;" );
+		SqlQuery("alter table wp_woocommerce_shipping_zones add default_rate float;" );
 
-		sql_query("create table ${db_prefix}path_shipments
+		SqlQuery("create table ${db_prefix}path_shipments
 (
 	id int auto_increment primary key,
 	path_id int not null,

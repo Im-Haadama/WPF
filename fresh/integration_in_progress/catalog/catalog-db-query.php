@@ -156,11 +156,11 @@ function show_pos_pricelist() {
 	print header_text( true, true, true );
 
 	$sql     = "SELECT prod_id FROM i_total WHERE q > 0";
-	$results = sql_query( $sql );
+	$results = SqlQuery( $sql );
 
 	$data_lines = array();
 
-	while ( $row = sql_fetch_row( $results ) ) {
+	while ( $row = SqlFetchRow( $results ) ) {
 		$prod_id = $row[0];
 		$p       = new Fresh_Product( $prod_id );
 		if ( ! $p->isPublished() ) {
@@ -299,7 +299,7 @@ function show_catalog(
 
 	$sql .= ' order by 2';
 
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 
 	$data = "<table>";
 

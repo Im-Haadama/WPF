@@ -142,7 +142,7 @@ class Finance {
 		// register_activation_hook( WC_PLUGIN_FILE, array( 'Finance_Install', 'install' ) );
 		register_shutdown_function( array( $this, 'log_errors' ) );
 
-		get_sql_conn(ReconnectDb());
+		GetSqlConn(ReconnectDb());
 
 		self::install($this->version);
 
@@ -154,7 +154,7 @@ class Finance {
 		// Admin menu
 		add_action('admin_menu', __CLASS__ . '::admin_menu');
 
-		get_sql_conn(ReconnectDb());
+		GetSqlConn(ReconnectDb());
 //		add_action( 'init', array( 'Finance_Emails', 'init_transactional_emails' ) );
 		// add_action( 'init', array( $this, 'wpdb_table_fix' ), 0 );
 		// add_action( 'init', array( $this, 'add_image_sizes' ) );
@@ -306,7 +306,7 @@ class Finance {
 		       . " WHERE ref = " . $ref;
 
 		MyLog( $sql, __FILE__ );
-		sql_query( $sql );
+		SqlQuery( $sql );
 	}
 
 	static function admin_menu()
@@ -733,9 +733,9 @@ class Finance {
 
 		MyLog( $sql, __FILE__ );
 
-		sql_query( $sql );
+		SqlQuery( $sql );
 
-		return sql_insert_id();
+		return SqlInsertId();
 	}
 
 	static function update_transaction( $delivery_id, $total, $fee ) {
@@ -744,7 +744,7 @@ class Finance {
 		       " WHERE ref = " . $delivery_id;
 
 		MyLog( $sql, __FILE__ );
-		sql_query( $sql );
+		SqlQuery( $sql );
 	}
 	static function Sunday( $date ) {
 		$datetime = new DateTime( $date );
@@ -769,11 +769,11 @@ class Finance {
 	function CreateInvoiceUser()
 	{
 		$debug = (get_user_id() == 1);
-		$last_created = sql_query_single_scalar("select max(user_id) from wp_usermeta where meta_key = 'invoice_id'");
-		$last = sql_query_single_scalar("select max(user_id) from wp_usermeta");
+		$last_created = SqlQuerySingleScalar("select max(user_id) from wp_usermeta where meta_key = 'invoice_id'");
+		$last = SqlQuerySingleScalar("select max(user_id) from wp_usermeta");
 		for ($user_id = $last_created+1; $user_id <= $last; $user_id++){
 			if ($debug) MyLog("checking $user_id");
-			if (sql_query_single_scalar("select client_last_order($user_id)")) {
+			if (SqlQuerySingleScalar("select client_last_order($user_id)")) {
 				if ($debug) MyLog("ordered. creating");
 				self::invoice_create_user($last_created + 1);
 				if ($debug) MyLog(get_user_meta( $user_id, 'invoice_id', $user_id ));

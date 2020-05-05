@@ -69,7 +69,7 @@ class Invoice4u {
 	public function CreateCustomer() {
 		$wsdl = "http://localhost/Services/CustomerService.svc?wsdl";
 
-		$customer     = new Customer();
+		$customer     = new InvoiceCustomer();
 		$this->result = $this->requestWS( $wsdl, "Create", array( 'customer' => $customer, 'token' => $this->token ) );
 	}
 }

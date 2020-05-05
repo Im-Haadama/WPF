@@ -22,9 +22,9 @@ $sql = 'SELECT posts.id, order_is_group(posts.id), order_user(posts.id) '
 
 $sql .= ' order by 1';
 
-$orders = sql_query( $sql );
+$orders = SqlQuery( $sql );
 
-while ( $order = sql_fetch_row( $orders ) ) {
+while ( $order = SqlFetchRow( $orders ) ) {
 	$order_id   = $order[0];
 	$is_group   = $order[1];
 	$order_user = $order[2];

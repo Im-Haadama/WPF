@@ -55,7 +55,7 @@ class Fresh_Delivery {
 			"typ" // 18
 		);
 		if ($id > 0){
-			$del_info = sql_query_single_assoc("select * from im_delivery where id = $id");
+			$del_info = SqlQuerySingleAssoc("select * from im_delivery where id = $id");
 //			var_dump($del_info);
 			$this->delivery_total = $del_info['total'];
 		}
@@ -84,10 +84,10 @@ class Fresh_Delivery {
 		$sql = " select id, quantity, price, prod_id, vat from im_delivery_lines " .
 		       " where delivery_id = " .$this->getID() .
 		       " and prod_id > 0";
-		$rows = sql_query($sql);
+		$rows = SqlQuery($sql);
 		$total = 0;
 		$total_vat = 0;
-		while ($row = sql_fetch_assoc($rows))
+		while ($row = SqlFetchAssoc($rows))
 		{
 			$row_id = $row['id'];
 			$prod_id = $row['prod_id'];
@@ -108,15 +108,16 @@ class Fresh_Delivery {
 
 			$sql .= " where id = " . $row_id;
 
-			sql_query($sql);
+			SqlQuery($sql);
 		}
 
 		$sql = "update im_delivery set total = $total " .
 		       ", vat = $total_vat " .
 		       " where id = " . $this->getID();
 
-		sql_query($sql);
+		SqlQuery($sql);
 	}
+
 	public function CustomerView($edit)
 	{
 		$result = "";
@@ -163,7 +164,7 @@ class Fresh_Delivery {
 
 	public function paid()
 	{
-		return sql_query("select payment_receipt from im_delivery where id = " . $this->getID());
+		return SqlQuerySingleScalar( "select payment_receipt from im_delivery where id = " . $this->getID());
 	}
 
 	public static function CreateDeliveryFromOrder( $order_id, $q ) {
@@ -247,9 +248,9 @@ class Fresh_Delivery {
 		// Loading from database
 		$sql = "SELECT prod_id, product_name, quantity_ordered, unit_ordered, round(quantity, 1), price, line_price, vat, part_of_basket FROM im_delivery_lines WHERE id = " . $line_id;
 
-		$row = sql_query_single( $sql );
+		$row = SqlQuerySingle( $sql );
 		if ( ! $row ) {
-			sql_error( $sql );
+			SqlError( $sql );
 			die ( 2 );
 		}
 
@@ -273,7 +274,7 @@ class Fresh_Delivery {
 		$line_id = $line_ids[0];
 		// print "lid=". $line_id . "<br/>";
 		$sql                                 = "SELECT order_item_name FROM wp_woocommerce_order_items WHERE order_item_id = " . $line_id;
-		$prod_name                           = sql_query_single_scalar( $sql );
+		$prod_name                           = SqlQuerySingleScalar( $sql );
 		$quantity_ordered                    = Fresh_Packing::get_order_itemmeta( $line_ids, '_qty' );
 		$unit_ordered                        = Fresh_Packing::get_order_itemmeta( $line_id, 'unit' );
 		$prod_comment = Fresh_Packing::get_order_itemmeta($line_id, 'product_comment');
@@ -325,7 +326,7 @@ class Fresh_Delivery {
 			       " draft = " . $draft . ", " .
 			       " fee = " . $fee .
 			       " WHERE order_id = " . $order_id;
-			sql_query( $sql );
+			SqlQuery( $sql );
 		} else {
 			$sql = "INSERT INTO im_delivery (date, order_id, vat, total, dlines, fee, draft, draft_reason, driver) "
 			       . "VALUES ( CURRENT_TIMESTAMP, "
@@ -338,8 +339,8 @@ class Fresh_Delivery {
 			       . QuoteText( $reason ) . ', '
 			       . "driver"
 			       . ')';
-			sql_query( $sql );
-			$delivery_id = sql_insert_id();
+			SqlQuery( $sql );
+			$delivery_id = SqlInsertId();
 		}
 
 		if ( ! ( $delivery_id > 0 ) ) {
@@ -394,7 +395,7 @@ class Fresh_Delivery {
 
 		MyLog( $sql, "db-add-delivery-line.php" );
 
-		sql_query( $sql );
+		SqlQuery( $sql );
 	}
 
 	function send_mail( $more_email = null, $edit = false ) {
@@ -417,7 +418,7 @@ class Fresh_Delivery {
 
 		$sql = "SELECT dlines FROM im_delivery WHERE id = " . $this->ID;
 
-		$dlines = sql_query_single_scalar( $sql );
+		$dlines = SqlQuerySingleScalar( $sql );
 
 		MyLog( __FILE__, "dlines = " . $dlines );
 
@@ -478,7 +479,7 @@ class Fresh_Delivery {
 		if ( ! ( $this->order_id > 0 ) ) {
 			$sql = "SELECT order_id FROM im_delivery WHERE id = " . $this->ID;
 
-			$this->order_id = sql_query_single_scalar( $sql );
+			$this->order_id = SqlQuerySingleScalar( $sql );
 		}
 
 		return $this->order_id;
@@ -619,7 +620,7 @@ class Fresh_Delivery {
 			                   'from im_delivery_lines ' .
 			                   'where delivery_id=' . $this->ID . " order by 1";
 
-			$result = sql_query( $sql );
+			$result = SqlQuery( $sql );
 
 			if ( ! $result ) {
 				print $sql;
@@ -656,8 +657,8 @@ class Fresh_Delivery {
 			       . ' where ' . $this->OrderQuery()
 			       . ' and woi.order_item_id = woim.order_item_id and woim.`meta_key` = \'_product_id\'';
 
-			$prods_result = sql_query( $sql );
-			while ( $row = sql_fetch_row( $prods_result ) ) {
+			$prods_result = SqlQuery( $sql );
+			while ( $row = SqlFetchRow( $prods_result ) ) {
 				$prod_id = $row[0];
 				$var_id  = $row[1];
 
@@ -668,7 +669,7 @@ class Fresh_Delivery {
 				                  . ' and woim.meta_value = ' . $prod_id
 				                  . ' and order_line_get_variation(woi.order_item_id) = ' . $var_id
 				                  . ' order by 1';
-				$order_item_ids = sql_query_array_scalar( $items_sql );
+				$order_item_ids = SqlQueryArrayScalar( $items_sql );
 
 				$b = new Fresh_Basket($prod_id);
 				if ( $b->is_basket()){
@@ -700,7 +701,7 @@ class Fresh_Delivery {
 			        . 'SELECT order_item_id FROM wp_woocommerce_order_items WHERE ' . $this->OrderQuery()
 			        . ' AND order_item_type = \'shipping\' )  AND meta_key = \'cost\'; ';
 
-			$del_price = sql_query_single_scalar( $sql2 );
+			$del_price = SqlQuerySingleScalar( $sql2 );
 			if ( ! is_numeric( $del_price ) ) {
 				$del_price = 0;
 			}
@@ -770,6 +771,8 @@ class Fresh_Delivery {
 
 	public function delivery_line( $document_type, $line_ids, $client_type, $operation, $margin = false, &$style = null,
 		$show_inventory = false ) {
+
+		$show_inventory = false;
 
 		global $global_vat;
 
@@ -961,7 +964,7 @@ class Fresh_Delivery {
 	function expand_basket( $basket_id, $quantity_ordered, $level, $show_fields, $document_type, $line_id, $client_type, $edit, &$data ) {
 		$sql2 = 'SELECT DISTINCT product_id, quantity FROM im_baskets WHERE basket_id = ' . $basket_id;
 
-		$result2 = sql_query( $sql2 );
+		$result2 = SqlQuery( $sql2 );
 		while ( $row2 = mysqli_fetch_assoc( $result2 ) ) {
 			$prod_id  = $row2["product_id"];
 			// print $prod_id . "<br/>";
@@ -1068,7 +1071,7 @@ class Fresh_Delivery {
 
 	public function isDraft() {
 		if ( $this->ID ) {
-			return sql_query_single_scalar( "select draft from im_delivery where ID = " . $this->ID );
+			return SqlQuerySingleScalar( "select draft from im_delivery where ID = " . $this->ID );
 		} else {
 			die ( __METHOD__ . " no ID" . DB_NAME );
 		}
@@ -1076,7 +1079,7 @@ class Fresh_Delivery {
 
 	public function draftReason() {
 		if ( $this->ID ) {
-			return sql_query_single_scalar( "select draft_reason from im_delivery where ID = " . $this->ID );
+			return SqlQuerySingleScalar( "select draft_reason from im_delivery where ID = " . $this->ID );
 		} else {
 			die ( __METHOD__ . " no ID" );
 		}
@@ -1085,7 +1088,7 @@ class Fresh_Delivery {
 	public function DeliveryDate() {
 		$sql = "SELECT date FROM im_delivery WHERE id = " . $this->ID;
 
-		$row = sql_query_single_scalar($sql);
+		$row = SqlQuerySingleScalar($sql);
 
 		return $row["date"];
 	}
@@ -1099,29 +1102,29 @@ class Fresh_Delivery {
 
 		$sql = "UPDATE wp_posts SET post_status = 'wc-processing' WHERE id = " . $order_id;
 
-		sql_query( $sql );
+		SqlQuery( $sql );
 
 		// Remove from client account
 		$sql = 'DELETE FROM im_client_accounts WHERE transaction_ref = ' . $this->ID;
 
-		sql_query( $sql );
+		SqlQuery( $sql );
 
 		// Remove the header
 		$sql = 'DELETE FROM im_delivery WHERE id = ' . $this->ID;
 
-		sql_query( $sql );
+		SqlQuery( $sql );
 
 		// Remove the lines
 		$sql = 'DELETE FROM im_delivery_lines WHERE delivery_id = ' . $this->ID;
 
-		sql_query( $sql );
+		SqlQuery( $sql );
 	}
 
 	public function DeleteLines() {
 		// TODO:
 		$sql = 'DELETE FROM im_delivery_lines WHERE delivery_id = ' . $this->ID;
 
-		sql_query( $sql );
+		SqlQuery( $sql );
 	}
 
 	public function Price() {
@@ -1129,11 +1132,11 @@ class Fresh_Delivery {
 		$sql = 'SELECT round(total, 2) FROM im_delivery WHERE id = ' . $this->ID;
 		// my_log($sql);
 
-		return sql_query_single_scalar( $sql );
+		return SqlQuerySingleScalar( $sql );
 	}
 
 	public function getDate() {
-		return sql_query_single_scalar("select date from im_delivery where id = " . $this->ID);
+		return SqlQuerySingleScalar( "select date from im_delivery where id = " . $this->ID);
 	}
 
 
@@ -1176,7 +1179,7 @@ class Fresh_Delivery {
 		if ( ! $this->user_id ) {
 			$sql = "SELECT client_id_from_delivery(id) FROM im_delivery WHERE id = " . $this->getID() ;
 //			print $sql;
-			$this->user_id = sql_query_single_scalar( $sql);
+			$this->user_id = SqlQuerySingleScalar( $sql);
 		}
 
 		return $this->user_id;
@@ -1196,7 +1199,7 @@ class Fresh_Delivery {
 		// print $sql;
 		// my_log($sql);
 
-		return sql_query_single_scalar( $sql);
+		return SqlQuerySingleScalar( $sql);
 	}
 
 	static function admin_page()
@@ -1256,7 +1259,7 @@ class Fresh_Delivery {
 
 	static public function CustomerLast($user_id)
 	{
-		return sql_query_single_scalar("select max(id) from im_delivery where client_id_from_delivery(id) = " . $user_id);
+		return SqlQuerySingleScalar( "select max(id) from im_delivery where client_id_from_delivery(id) = " . $user_id);
 	}
 
 	/**
@@ -1344,7 +1347,6 @@ class Fresh_Delivery {
 		return $this->delivery_fields_names;
 	}
 }
-
 
 class FreshDocumentType {
 	const order = 1, // Client

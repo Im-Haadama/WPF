@@ -6,8 +6,8 @@ if ( ! defined( 'TOOLS_DIR' ) ) {
 
 
 
-$suppliers = sql_query_array_scalar("select id from im_suppliers " .
-" where machine_update = 1 and active = 1");
+$suppliers = SqlQueryArrayScalar( "select id from im_suppliers " .
+                                  " where machine_update = 1 and active = 1");
 
 $result = "";
 

@@ -67,7 +67,7 @@ function get_order_id( $delivery_id ) {
 	if ( is_numeric( intval( $delivery_id ) ) ) {
 		$sql_i = 'SELECT order_id FROM im_delivery WHERE id = ' . $delivery_id;
 
-		return sql_query_single_scalar( $sql_i );
+		return SqlQuerySingleScalar( $sql_i );
 	} else {
 		print "Must send a number to get_order_id!";
 		print $delivery_id;
@@ -78,7 +78,7 @@ function get_order_id( $delivery_id ) {
 
 function get_delivery_total( $delivery_id ) {
 	if ( is_numeric( intval( $delivery_id ) ) ) {
-		return sql_query_single_scalar( 'SELECT total FROM im_delivery WHERE id = ' . $delivery_id );
+		return SqlQuerySingleScalar( 'SELECT total FROM im_delivery WHERE id = ' . $delivery_id );
 	} else {
 		print "Must send a number to get_order_id!";
 		print $delivery_id;
@@ -93,7 +93,7 @@ function get_delivery_vat( $delivery_id ) {
 
 //        my_log(__METHOD__ . ": " . $sql_i, __FILE__);
 
-		return sql_query_single_scalar( $sql_i );
+		return SqlQuerySingleScalar( $sql_i );
 	} else {
 		print "Must send a number to get_order_id!";
 		print $delivery_id;
@@ -104,7 +104,7 @@ function get_delivery_vat( $delivery_id ) {
 
 function get_supply_status_name( $supplier_id ) {
 	if ( is_numeric( $supplier_id ) ) {
-		$s = sql_query_single_scalar( 'SELECT status FROM im_supplies WHERE id = ' . $supplier_id );
+		$s = SqlQuerySingleScalar( 'SELECT status FROM im_supplies WHERE id = ' . $supplier_id );
 
 		// Supply status: 1 = new, 3 = sent, 5 = close, 9 = delete
 		return get_supply_status( $s );
@@ -127,16 +127,16 @@ function get_prod_id( $order_item_id ) {
 
 	//print $sql2;
 
-	return sql_query_single_scalar( $sql2 );
+	return SqlQuerySingleScalar( $sql2 );
 }
 
 function get_product_id_by_name( $product_name ) {
-	return sql_query_single_scalar("SELECT id FROM im_products WHERE post_title = '" . $product_name . "'");
+	return SqlQuerySingleScalar( "SELECT id FROM im_products WHERE post_title = '" . $product_name . "'");
 }
 
 
 function get_product_parent( $prod_id ) {
-	return sql_query_single_scalar( "SELECT post_parent FROM wp_posts WHERE id = " . $prod_id );
+	return SqlQuerySingleScalar( "SELECT post_parent FROM wp_posts WHERE id = " . $prod_id );
 }
 
 function client_price( $prod_id ) {
@@ -159,7 +159,7 @@ function is_order( $id ) {
 
 //    my_log(__METHOD__, $sql);
 
-	return sql_query_single_scalar( $sql );
+	return SqlQuerySingleScalar( $sql );
 }
 
 
@@ -173,8 +173,8 @@ function deb_ug_time( $message, $previous_time ) {
 }
 
 function get_site_tools_url( $site_id ) {
-	return sql_query_single_scalar("SELECT tools_url FROM im_multisite " .
-	       " WHERE id = " . $site_id);
+	return SqlQuerySingleScalar( "SELECT tools_url FROM im_multisite " .
+	                             " WHERE id = " . $site_id);
 
 }
 
@@ -189,7 +189,7 @@ function multisite_map_get_remote( $prod_id, $remote_site_id ) {
 	$sql = "SELECT local_prod_id FROM im_multisite_map WHERE remote_prod_id = " . $prod_id .
 	       " AND remote_site_id = " . $remote_site_id;
 
-	return sql_query_single_scalar( $sql );
+	return SqlQuerySingleScalar( $sql );
 }
 
 function print_page_header( $display_logo ) {
@@ -297,7 +297,7 @@ function customer_type_name( $client_id ) {
 }
 }
 function valid_key( $key ) {
-	$valid = sql_query_single_scalar( "SELECT timestamp >
+	$valid = SqlQuerySingleScalar( "SELECT timestamp >
           DATE_SUB(now(), INTERVAL 10 MINUTE) FROM im_auth WHERE dynamic_key = '" . $key . "'" );
 
 	// print $valid;

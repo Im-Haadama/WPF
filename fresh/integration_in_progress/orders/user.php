@@ -79,7 +79,7 @@ AND pm.post_id = p.id
 AND p.post_date >= DATE_SUB(NOW(), INTERVAL 31 DAY))
  AND woi.order_item_id = woim.order_item_id AND woim.`meta_key` = '_product_id'";
 
-$result = sql_query( $sql );
+$result = SqlQuery( $sql );
 
 while ( $row = mysqli_fetch_row( $result ) ) {
 	array_push( $info, prod_line( $row[0] ) );

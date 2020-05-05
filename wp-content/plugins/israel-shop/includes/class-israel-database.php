@@ -26,12 +26,12 @@ class Israel_Database extends  Core_Database
 	}
 
 	static private function create_conversion() {
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 
-		if ( ! table_exists( "conversion" ) ) {
+		if ( ! TableExists( "conversion" ) ) {
 			print "creating conversion<br/>";
 
-			sql_query( "create table ${db_prefix}conversion
+			SqlQuery( "create table ${db_prefix}conversion
 (
 	id int auto_increment
 		primary key,
@@ -47,18 +47,18 @@ engine=MyISAM charset=utf8;
 
 	static function insert_conversion()
 	{
-		sql_query( "INSERT INTO im_conversion (table_name, col, header) VALUES ('im_cities', 'city_name', 'שם_ישוב')" );
-		sql_query( "INSERT INTO im_conversion (table_name, col, header) VALUES ('im_cities', 'code', 'סמל_ישוב')" );
-		sql_query( "INSERT INTO im_conversion (table_name, col, header) VALUES ('im_cities', 'latin_name', 'שם_ישוב_לועזי')" );
-		sql_query( "INSERT INTO im_conversion (table_name, col, header) VALUES ('im_cities', 'region_number', 'סמל_מועצה_איזורית')" );
-		sql_query( "INSERT INTO im_conversion (table_name, col, header) VALUES ('im_cities', 'region_name', 'שם_מועצה')" );
-		sql_query( "INSERT INTO im_conversion (table_name, col, header) VALUES ('im_cities', 'regional_council_code', 'סמל_לשכת_מנא')" );
-		sql_query( "INSERT INTO im_conversion (table_name, col, header) VALUES ('im_cities', 'zone', 'אזור')" );
+		SqlQuery( "INSERT INTO im_conversion (table_name, col, header) VALUES ('im_cities', 'city_name', 'שם_ישוב')" );
+		SqlQuery( "INSERT INTO im_conversion (table_name, col, header) VALUES ('im_cities', 'code', 'סמל_ישוב')" );
+		SqlQuery( "INSERT INTO im_conversion (table_name, col, header) VALUES ('im_cities', 'latin_name', 'שם_ישוב_לועזי')" );
+		SqlQuery( "INSERT INTO im_conversion (table_name, col, header) VALUES ('im_cities', 'region_number', 'סמל_מועצה_איזורית')" );
+		SqlQuery( "INSERT INTO im_conversion (table_name, col, header) VALUES ('im_cities', 'region_name', 'שם_מועצה')" );
+		SqlQuery( "INSERT INTO im_conversion (table_name, col, header) VALUES ('im_cities', 'regional_council_code', 'סמל_לשכת_מנא')" );
+		SqlQuery( "INSERT INTO im_conversion (table_name, col, header) VALUES ('im_cities', 'zone', 'אזור')" );
 	}
 
 	static private function create_cities()
 	{
-		sql_query("create table im_cities
+		SqlQuery("create table im_cities
 (
 	id int auto_increment
 		primary key,

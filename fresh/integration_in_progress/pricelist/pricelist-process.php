@@ -36,11 +36,11 @@ function pricelist_remote_site_process( $supplier_id, &$results, $inc = false ) 
 
 	$sql     = "SELECT site_id FROM im_suppliers WHERE id=" . $supplier_id;
 	// print $sql;
-	$site_id = sql_query_single_scalar( $sql );
+	$site_id = SqlQuerySingleScalar( $sql );
 
 	print $site_id;
 	if ( ! ( $site_id > 0 ) ) {
-		sql_error( $sql );
+		SqlError( $sql );
 		die( 1 );
 	}
 
@@ -200,7 +200,7 @@ function pricelist_remote_site_process( $supplier_id, &$results, $inc = false ) 
 function pricelist_process_name( $filename, $supplier_name, $add, $debug = false ) {
 	$sql = "select id from im_suppliers where supplier_name = '$supplier_name' or eng_name = '$supplier_name'";
 	// print $sql;
-	$sid = sql_query_single_scalar( $sql );
+	$sid = SqlQuerySingleScalar( $sql );
 	if ( $sid > 0 ) {
 		print "supplier id = " . $sid . "<br/>";
 

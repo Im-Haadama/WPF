@@ -45,8 +45,8 @@ class Fresh_Delivery_Manager
 	static function update_shipping_methods($result = null) {
 		$result .= "Updating<br/>";
 		$sql = "select * from wp_woocommerce_shipping_zone_methods";
-		$sql_result = sql_query($sql);
-		while ($row = sql_fetch_assoc($sql_result)) {
+		$sql_result = SqlQuery($sql);
+		while ($row = SqlFetchAssoc($sql_result)) {
 			$instance_id = $row['instance_id'];
 			self::update_shipping_method($instance_id);
 		}
@@ -115,9 +115,9 @@ class Fresh_Delivery_Manager
 			return false;
 		}
 		$option_id     = 'woocommerce_flat_rate_' . $instance_id . '_settings';
-		sql_query("delete from wp_woocommerce_shipping_zone_methods where instance_id = $instance_id");
+		SqlQuery("delete from wp_woocommerce_shipping_zone_methods where instance_id = $instance_id");
 		delete_wp_option( $option_id );
-		sql_query("delete from im_path_shipments where instance = $instance_id");
+		SqlQuery("delete from im_path_shipments where instance = $instance_id");
 
 	}
 
@@ -134,7 +134,7 @@ class Fresh_Delivery_Manager
 		{
 			$path = new Fresh_path($path_id);
 			$result .= Core_Html::gui_header(1, "working on path $path_id");
-			$mission_id = sql_query_single_scalar("select min(id) from im_missions where path_code = $path_id and date > curdate() and accepting = 1");
+			$mission_id = SqlQuerySingleScalar("select min(id) from im_missions where path_code = $path_id and date > curdate() and accepting = 1");
 			if (! $mission_id) continue;
 			$m = new Mission($mission_id);
 
@@ -181,7 +181,7 @@ class Fresh_Delivery_Manager
 		$args                = [];
 		$args["is_enabled"]  = 1;
 		$args["instance_id"] = $instance_id;
-		$week_day = sql_query_single_scalar("select week_day from wp_woocommerce_shipping_zone_methods where instance_id = $instance_id");
+		$week_day = SqlQuerySingleScalar("select week_day from wp_woocommerce_shipping_zone_methods where instance_id = $instance_id");
 		if (! $week_day) return false;
 		$start = "13";
 		$end = "18";
@@ -234,7 +234,7 @@ class Fresh_Delivery_Manager
 		if ( $update_table ) {
 			$sql = rtrim( $sql, ", " );
 			$sql .= " where instance_id = " . $instance_id;
-			if ( ! sql_query( $sql ) ) {
+			if ( ! SqlQuery( $sql ) ) {
 				return false;
 			}
 		}
@@ -251,7 +251,7 @@ function delete_wp_woocommerce_shipping_zone_methods($instance_id)
 {
 	if ($instance_id > 0) {
 		deleteWpOption( 'woocommerce_flat_rate_' . $instance_id . '_settings' );
-		sql_query( "delete from wp_woocommerce_shipping_zone_methods where instance_id = " . $instance_id );
+		SqlQuery( "delete from wp_woocommerce_shipping_zone_methods where instance_id = " . $instance_id );
 	} else {
 		die( __FUNCTION__ . "invalid instance" );
 	}
@@ -259,7 +259,7 @@ function delete_wp_woocommerce_shipping_zone_methods($instance_id)
 
 function deleteWpOption($option_id)
 {
-	sql_query("delete from wp_options where option_id='$option_id'");
+	SqlQuery("delete from wp_options where option_id='$option_id'");
 }
 
 // UPDATE `wp_options` SET `option_value` = 'a:8:{s:11:\"instance_id\";i:70;s:5:\"title\";s:25:\"Thursday 16/04/2020 14-18\";s:10:\"tax_status\";s:7:\"taxable\";s:4:\"cost\";s:3:\"411\";s:14:\"class_cost_154\";s:0:\"\";s:14:\"class_cost_187\";s:0:\"\";s:13:\"no_class_cost\";s:0:\"\";s:4:\"type\";s:5:\"class\";}', `autoload` = 'yes' WHERE `option_name` = 'woocommerce_flat_rate_70_settings'

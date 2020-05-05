@@ -55,7 +55,7 @@ function alerts_pulldown($user_id, $limit = 10)
 	// TODO: added filtering
 	$menu_options = [];
 
-	$events = sql_query_array("select id, started as event_time, 'started' as event_description from im_tasklist where started is not null
+	$events = SqlQueryArray("select id, started as event_time, 'started' as event_description from im_tasklist where started is not null
 union
 select id, ended as event_time, 'ended' as event_description from im_tasklist where ended is not null
 order by 2 desc

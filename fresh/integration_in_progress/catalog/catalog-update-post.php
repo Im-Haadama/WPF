@@ -97,7 +97,7 @@ function get_items_to_remove() {
 	       . ' WHERE (supplier_id, supplier_product_name)'
 	       . ' IN (SELECT supplier_id, product_name FROM im_supplier_price_list))';
 
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 
 	$data = "<tr>";
 	$data .= "<td>בחר</td>";
@@ -137,7 +137,7 @@ function get_items_to_publish() {
 	       . ' AND pl.product_name = mp.supplier_product_name'
 	       . ' AND pl.supplier_id = mp.supplier_id';
 
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 
 	$data = "<tr>";
 	$data .= "<td>בחר</td>";
@@ -173,7 +173,7 @@ function get_changed_prices( $include_sale ) {
 	       . ' where post_status = \'publish\''
 	       . ' and post_type = \'product\'';
 
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 
 	$data = "<tr>";
 	$data .= "<td>בחר</td>";
@@ -218,7 +218,7 @@ function get_changed_prices( $include_sale ) {
 
 		//print $sql1;
 		// Get line options
-		$result1 = sql_query( $sql );
+		$result1 = SqlQuery( $sql );
 		while ( $row1 = mysqli_fetch_row( $result1 ) ) {
 			$supplier_price = $row1[0];
 			$supplier_id    = $row1[1];

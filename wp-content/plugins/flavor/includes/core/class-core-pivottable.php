@@ -56,9 +56,9 @@ class Core_PivotTable {
 
 		// print $sql;
 
-		$results = sql_query( $sql );
+		$results = SqlQuery( $sql );
 
-		while ( $data = sql_fetch_assoc( $results ) ) {
+		while ( $data = SqlFetchAssoc( $results ) ) {
 			$row  = $data[ $this->row ];
 			$col  = $data[ $this->col ];
 			$cell = $data[ $this->data ];

@@ -6,7 +6,7 @@ if ( ! defined( "TOOLS_DIR" ) ) {
 
 require_once( TOOLS_DIR . '/wp/Product.php' );
 
-$prod_ids = sql_query_array_scalar("select id from wp_posts where post_type = 'product'");
+$prod_ids = SqlQueryArrayScalar("select id from wp_posts where post_type = 'product'");
 
 foreach ($prod_ids as $prod) {
 	$p = new Fresh_Product( $prod );
@@ -24,9 +24,9 @@ foreach ($prod_ids as $prod) {
 function fix_image($prod_id)
 {
 //		print "product " . get_product_name( $prod_id ) . "($prod_id) missing image ";
-		$result = sql_query("select id, guid from wp_posts_att where post_parent = " . $prod_id);
+		$result = SqlQuery( "select id, guid from wp_posts_att where post_parent = " . $prod_id);
 //		var_dump($result);
-		while ($row = sql_fetch_row($result))
+		while ($row = SqlFetchRow($result))
 		{
 			var_dump($row);
 		}

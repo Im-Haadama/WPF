@@ -12,7 +12,7 @@ function InfoGet( $key, $create = false, $default = null ) {
 
 //      print $sql ."<br/>";
 
-	$result = sql_query_single_scalar( $sql, false );
+	$result = SqlQuerySingleScalar( $sql, false );
 
 	if ( is_null( $result ) ) {
 		if ( $create ) {
@@ -30,7 +30,7 @@ function QuoteText( $num_or_text, $sql_escape = false ) {
 
 	if ( is_numeric( $num_or_text ) ) return $num_or_text;
 
-	if ($sql_escape) return "'" . escape_string($num_or_text) . "'";
+	if ($sql_escape) return "'" . EscapeString($num_or_text) . "'";
 
 	return "'" . $num_or_text . "'";
 }
@@ -236,17 +236,17 @@ function QuoteDate($date, $format = 'Y-m-d')
 		$sql = "SELECT info_data FROM im_info WHERE info_key = '" . $key . "'";
 //      print "s1=" . $sql . "<br/>";
 
-		$result = sql_query_single_scalar( $sql );
+		$result = SqlQuerySingleScalar( $sql );
 		if ( ! $result ) {
 			$sql = "insert into im_info (info_key, info_data) VALUE ('$key', '$data')";
 //              print $sql;
-			sql_query( $sql );
+			SqlQuery( $sql );
 
 			return;
 		}
 		$sql = "UPDATE im_info SET info_data = '" . $data . "' WHERE info_key = '" . $key . "'";
 //              print $sql;
-		sql_query( $sql );
+		SqlQuery( $sql );
 	}
 	}
 
@@ -340,8 +340,8 @@ function QuoteDate($date, $format = 'Y-m-d')
 		// print "connecting" . __LINE__ . "<br/>";
 
 		$conn = new mysqli( DB_HOST, DB_USER, DB_PASSWORD, DB_NAME );
-		get_sql_conn( $conn );
-		sql_set_time_offset();
+		GetSqlConn( $conn );
+		SqlSetTimeOffset();
 		// print IM_CHARSET;
 		$charset = 'utf8';
 		if ( defined( 'IM_CHARSET' ) ) {
@@ -578,7 +578,7 @@ function GetMetaField( $post_id, $field_name ) {
 		       . " AND meta_key = '" . $field_name . "'";
 
 		// print $sql . "<br>";
-		return sql_query_single_scalar( $sql );
+		return SqlQuerySingleScalar( $sql );
 	}
 
 	return "Bad post id";

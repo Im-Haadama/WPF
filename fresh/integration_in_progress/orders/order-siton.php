@@ -21,7 +21,7 @@ $sql = 'select '
        . ' ';
 MyLog( $sql, "get-order.php" );
 
-$result = sql_query( $sql );
+$result = SqlQuery( $sql );
 
 // Get product_id, order_item_id from the order
 while ( $row = mysqli_fetch_row( $result ) ) {

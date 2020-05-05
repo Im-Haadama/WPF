@@ -90,7 +90,7 @@ error_reporting(E_ALL);
         var list = "items";
         if (draft) list = "draft_items";
         let input = "<?php $args = array("events" => "onchange=\"getPrice(XX)\"", "datalist" => "YYY");
-            print escape_string(Fresh_Product::gui_select_product( "nam_XX", '', $args )); ?>";
+            print EscapeString(Fresh_Product::gui_select_product( "nam_XX", '', $args )); ?>";
         input = input.replace(/XX/g, line_id);
         input = input.replace(/YYY/g, list);
 

@@ -22,12 +22,12 @@ class Org_Team {
 
 	function getName()
 	{
-		return sql_query_single_scalar("select team_name from im_working_teams where id = " . $this->id);
+		return SqlQuerySingleScalar( "select team_name from im_working_teams where id = " . $this->id);
 	}
 
 	static function getByName($name)
 	{
-		$id = sql_query_single_scalar("select id from im_working_teams where team_name = " . QuoteText($name));
+		$id = SqlQuerySingleScalar( "select id from im_working_teams where team_name = " . QuoteText($name));
 		if ($id)
 			return new self($id);
 		return null;
@@ -41,14 +41,14 @@ class Org_Team {
 	 */
 	static function team_managed_teams($worker_id)
 	{
-		$result = sql_query_array_scalar("select id from im_working_teams where manager = " . $worker_id);
+		$result = SqlQueryArrayScalar( "select id from im_working_teams where manager = " . $worker_id);
 		return $result;
 	}
 
 	function AllMembers()
 	{
 		// return sql_query_array_scalar("select id from im_working_teams where manager = " . $user_id);
-		return sql_query_array_scalar("select user_id from wp_usermeta where meta_key = 'teams' and meta_value like '%:" . $this->id . ":%'");
+		return SqlQueryArrayScalar( "select user_id from wp_usermeta where meta_key = 'teams' and meta_value like '%:" . $this->id . ":%'");
 	}
 
 	function RemoveMember($members)
@@ -88,7 +88,7 @@ class Org_Team {
 		}
 		$members = self::AllMembers();
 		foreach ($members as $member) team_remove_member($team_id, $member);
-		sql_query("delete from im_working_teams where id = " . $team_id);
+		SqlQuery( "delete from im_working_teams where id = " . $team_id);
 		return true;
 	}
 
@@ -102,8 +102,8 @@ class Org_Team {
 	 */
 	static function Create($user_id, $team_name, $manager_member = true)
 	{
-		sql_query( "insert into im_working_teams (team_name, manager) values (" . QuoteText($team_name) . ", $user_id)" );
-		$team_id = sql_insert_id();
+		SqlQuery( "insert into im_working_teams (team_name, manager) values (" . QuoteText($team_name) . ", $user_id)" );
+		$team_id = SqlInsertId();
 		$team = new Org_Team($team_id);
 		// Team manager doesn't have to be part of it.
 		if ($manager_member) $team->AddWorker($user_id);
@@ -130,7 +130,7 @@ class Org_Team {
 	 */
 	function GetManager()
 	{
-		return sql_query_single_scalar("select manager from im_working_teams where id = " . $this->id);
+		return SqlQuerySingleScalar( "select manager from im_working_teams where id = " . $this->id);
 	}
 
 }

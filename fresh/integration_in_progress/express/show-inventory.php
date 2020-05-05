@@ -46,8 +46,8 @@ function show_inventory_term( $term_id ) {
 	while ( $loop->have_posts() ) {
 		$loop->the_post();
 		$prod_id = $loop->post->ID;
-		$q_in    = sql_query_single_scalar( "SELECT q_in FROM i_in WHERE product_id = " . $prod_id );
-		$q_tot   = sql_query_single_scalar( "SELECT q FROM i_total WHERE prod_id = " . $prod_id );
+		$q_in    = SqlQuerySingleScalar( "SELECT q_in FROM i_in WHERE product_id = " . $prod_id );
+		$q_tot   = SqlQuerySingleScalar( "SELECT q FROM i_total WHERE prod_id = " . $prod_id );
 //		print $q . "<br/>";
 		if ( $q_tot >= 1 or ( $q_in and is_null( $q_tot ) ) ) {
 			array_push( $rows, array(

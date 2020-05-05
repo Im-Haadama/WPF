@@ -34,7 +34,7 @@ function get_env( $var, $default ) {
 		return $default;
 	}
 }
-$table_prefix = get_table_prefix();
+$table_prefix = GetTablePrefix();
 
 
 $operation = GetParam("operation", false, null);
@@ -44,7 +44,7 @@ if ( $operation) {
 		case "get_amount":
 			$sql = "SELECT amount FROM im_business_info \n" .
 			       " WHERE id = " . GetParam( "id", true );
-			print sql_query_single_scalar( $sql );
+			print SqlQuerySingleScalar( $sql );
 			break;
 
 		case "add_item":
@@ -186,7 +186,7 @@ if ( $operation) {
 				          "VALUES (" . $bank_id . ", " . $line_amount . ", " . $site_id . ", " . $supplier_id . ", " .
 				          $id . ")";
 
-				sql_query($sql);
+				SqlQuery($sql);
 			}
 			$b    = Finance_Bank_Transaction::createFromDB( $bank_id );
 			$date = $b->getDate();
@@ -204,7 +204,7 @@ if ( $operation) {
 			       " site_id = " . $site_id .
 			       " where id = " . $bank_id;
 
-		     sql_query($sql);
+		     SqlQuery($sql);
 
 			break;
 
@@ -232,7 +232,7 @@ if ( $operation) {
 			       " site_id = " . $site_id .
 			       " where id = " . $bank_id;
 
-			sql_query($sql);
+			SqlQuery($sql);
 
 			break;
 
@@ -244,14 +244,14 @@ if ( $operation) {
 			$amount      = GetParam( "amount", true );
 			$sql         = "INSERT INTO im_business_info (part_id, date, amount, ref, document_type)\n" .
 			               "VALUES(" . $supplier_id . ", '" . $date . "' ," . $amount . ", " . $bank_id . ", " . FreshDocumentType::bank . ")";
-			sql_query( $sql );
+			SqlQuery( $sql );
 			print "התווסף תשלום בסך " . $amount . " לספק " . get_supplier_name( $supplier_id ) . "<br/>";
 
 			$sql = "update im_business_info\n" .
 			       "set pay_date = '" . $date . "'\n" .
 			       "where id in (" . CommaImplode( $ids ) . ")";
 
-			sql_query( $sql );
+			SqlQuery( $sql );
 			print "מסמכים מספר  " . CommaImplode( $ids ) . " סומנו כמשולמים<br/>";
 			break;
 
@@ -304,8 +304,8 @@ if ( $operation) {
 			       . "having total < 0";
 
 			$data   = "<table>";
-			$result = sql_query( $sql );
-			while ( $row = sql_fetch_row( $result ) ) {
+			$result = SqlQuery( $sql );
+			while ( $row = SqlFetchRow( $result ) ) {
 				$data .= gui_row( $row );
 			}
 			$data .= "</table>";
@@ -382,7 +382,7 @@ function create_makolet( $month_year ) {
 	       $year . ", " .
 	       $doc_id . ")";
 
-	sql_query( $sql );
+	SqlQuery( $sql );
 }
 
 function create_subcontract_invoice( $month, $year, $net_sell, $net_delivery ) {
@@ -422,9 +422,9 @@ function create_subcontract_invoice( $month, $year, $net_sell, $net_delivery ) {
 	}
 	$email = $client->Email;
 	// print "user mail: " . $email . "<br/>";
-	$doc = new Document();
+	$doc = new InvoiceDocument();
 
-	$iEmail                = new Email();
+	$iEmail                = new InvoiceEmail();
 	$iEmail->Mail          = $email;
 	$doc->AssociatedEmails = Array( $iEmail );
 	//var_dump($client->ID);
@@ -432,10 +432,10 @@ function create_subcontract_invoice( $month, $year, $net_sell, $net_delivery ) {
 	$doc->ClientID = $client->ID;
 	switch ( $type ) {
 		case "r":
-			$doc->DocumentType = DocumentType::InvoiceReceipt;
+			$doc->DocumentType = InvoiceDocumentType::InvoiceReceipt;
 			break;
 		case "i":
-			$doc->DocumentType = DocumentType::Invoice;
+			$doc->DocumentType = InvoiceDocumentType::Invoice;
 			break;
 	}
 
@@ -450,7 +450,7 @@ function create_subcontract_invoice( $month, $year, $net_sell, $net_delivery ) {
 	$total_lines = 0;
 
 	// Add the selling commission
-	$item                  = new Item();
+	$item                  = new InvoiceItem();
 	$item->Name            = "עמלה";
 	$item->Price           = round( $net_sell, 2 ) * 1.17;
 	$item->Quantity        = $percent_sub;
@@ -460,7 +460,7 @@ function create_subcontract_invoice( $month, $year, $net_sell, $net_delivery ) {
 	array_push( $doc->Items, $item );
 
 	// Add the delivery fees
-	$item                  = new Item();
+	$item                  = new InvoiceItem();
 	$item->Name            = "דמי משלוח שניגבו";
 	$item->Price           = round( $net_delivery, 2 ) * 1.17;
 	$item->Quantity        = 1;
@@ -548,7 +548,7 @@ function show_makolet( $month_year ) {
 	$sql = "select invoice from im_subcontract_invoice where month = " . $month .
 	       " and year = " . $year;
 
-	$doc_id = sql_query_single_scalar( $sql );
+	$doc_id = SqlQuerySingleScalar( $sql );
 
 
 	if ( $doc_id ) {
@@ -565,7 +565,7 @@ function calc_makolet( $year, $month ) {
 	       " join im_business_info i " .
 	       " where month(d.date)=" . $month . " and year(d.date)=" . $year . " and i.ref = d.id and i.is_active = 1 ";
 
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 	$table  = array();
 
 	$header = array(
@@ -589,7 +589,7 @@ function calc_makolet( $year, $month ) {
 		if ( $row[6] == 0 ) {
 			print $row[0] . "<br/>";
 			$sql1   = "SELECT round(reduce_vat(line_price),2) FROM im_delivery_lines WHERE delivery_id = " . $row[0] . " AND product_name LIKE '%משלוח%'";
-			$row[6] = sql_query_single_scalar( $sql1 );
+			$row[6] = SqlQuerySingleScalar( $sql1 );
 			$row[7] = $row[4] - $row[5] - $row[6];
 		}
 //		$id =  $row[0];
@@ -618,7 +618,7 @@ function show_control( $month_year ) {
 	       " AND year(date) = " . $year .
 	       " AND transaction_method LIKE '%אשראי%'";
 
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 	$table  = array();
 
 	$header = array(

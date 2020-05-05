@@ -17,7 +17,7 @@ function print_select_supplier( $id, $source ) {
 
 	// Get line options
 	$found  = false;
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 	while ( $row1 = mysqli_fetch_row( $result ) ) {
 		$found = true;
 		print "<option value = \"" . $row1[0] . "\" ";

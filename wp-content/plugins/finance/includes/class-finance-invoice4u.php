@@ -7,10 +7,11 @@
  * Time: 06:25
  */
 
-define( "ApiService", "https://api.invoice4u.co.il/Services" );
+if (! defined('ApiService'))
+	define( "ApiService", "https://api.invoice4u.co.il/Services" );
 
 
-class Customer {
+class InvoiceCustomer {
 	public $Name;
 	public $Active = true; // must be unique
 	public $Email; // important
@@ -200,7 +201,7 @@ class Finance_Invoice4u
 	public function GetCustomerByEmail( $email ) {
 		$wsdl = ApiService . "/CustomerService.svc?wsdl";
 
-		$cust        = new Customer( "" );
+		$cust        = new InvoiceCustomer( "" );
 		$cust->Email = $email;
 		// print $email;
 		$response = $this->requestWS( $wsdl, "GetCustomers", array(
@@ -238,7 +239,7 @@ class Finance_Invoice4u
 	public function GetCustomerById( $id ) {
 		$wsdl = ApiService . "/CustomerService.svc?wsdl";
 
-		$cust = new Customer( "" );
+		$cust = new InvoiceCustomer( "" );
 
 		$response  = $this->requestWS( $wsdl, "GetCustomers", array(
 			'cust'       => $cust,
@@ -271,7 +272,7 @@ class Finance_Invoice4u
 		}
 		$wsdl = ApiService . "/CustomerService.svc?wsdl";
 
-		$customer        = new Customer( $name );
+		$customer        = new InvoiceCustomer( $name );
 		$customer->Email = $email;
 		$customer->Phone = $phone;
 
@@ -290,7 +291,7 @@ class Finance_Invoice4u
 }
 
 // we need to send this class to the service
-class Document {
+class InvoiceDocument {
 	public $ClientID;
 	public $DocumentType;
 	public $Subject;
@@ -315,7 +316,7 @@ class Document {
 
 	public function __construct() {
 		$this->IssueDate = date( "c", time() ); // can be at the Past no earlier then last invoice
-		$this->Discount  = new Discount;
+		$this->Discount  = new InvoiceDiscount;
 		// $this->Items = array(new Item());
 		$this->AssociatedEmails; // = array(new Email());
 		$this->Payments = array();
@@ -323,14 +324,14 @@ class Document {
 
 }
 
-class Discount {
+class InvoiceDiscount {
 	public $Value = 0;
 	public $BeforeTax = true;// discount calculated before tax calculated
 	public $IsNominal = true;// means that the discount is calculated according to currency type (in this case: 5 ILS), if it is false than discount calculated in percentages (in this case: 5%)
 }
 
 
-class Item {
+class InvoiceItem {
 	public $Code; // = "001";
 	public $Name; // = "first Item";
 	public $Quantity; // = 1;
@@ -341,11 +342,11 @@ class Item {
 	public $Discount;
 
 	public function __construct() {
-		$this->Discount = new Discount;
+		$this->Discount = new InvoiceDiscount;
 	}
 }
 
-class PaymentCash {
+class InvoicePaymentCash {
 	public $Date;
 	public $Amount;
 	public $PaymentType = 4; // Cash
@@ -355,7 +356,7 @@ class PaymentCash {
 	}
 }
 
-class PaymentCredit {
+class InvoicePaymentCredit {
 	public $Date;
 	public $Amount;
 	public $PaymentType = 1; // Credit card
@@ -379,7 +380,7 @@ class PaymentCredit {
   public $BranchName = "737";
   public $PaymentNumber = "5";*/
 
-class PaymentBank {
+class InvoicePaymentBank {
 	public $Date;
 	public $Amount;
 	public $PaymentType = 3; // Credit card
@@ -392,7 +393,7 @@ class PaymentBank {
 	}
 }
 
-class PaymentCheck {
+class InvoicePaymentCheck {
 	public $Date;
 	public $Amount;
 	public $PaymentType = 2; // Check
@@ -411,17 +412,17 @@ public $PaymentType = 5; // Credit*/
 // send doc and token object to service to create document
 
 
-class Email {
+class InvoiceEmail {
 	public $Mail; // = "yaakov@im-haadama.co.il";
 	public $IsUserMail = false;// means that this is the user email, and this is the email that sends the document to all associated email
 }
 
-abstract class Language {
+abstract class InvoiceLanguage {
 	const Hebrew = 1;
 	const English = 2;
 }
 
-abstract class DocumentType {
+abstract class InvoiceDocumentType {
 	const Invoice = 1;
 	const Receipt = 2;
 	const InvoiceReceipt = 3;
@@ -432,7 +433,7 @@ abstract class DocumentType {
 	const Deposits = 9;
 }
 
-abstract class PaymentType {
+abstract class InvoicePaymentType {
 	const CreditCard = 1;
 	const Check = 2;
 	const MoneyTransfer = 3;

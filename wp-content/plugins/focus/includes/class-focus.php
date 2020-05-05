@@ -142,7 +142,7 @@ class Focus {
 //		add_action( 'init', array( $this, 'init' ), 0 );
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
 
-		get_sql_conn(ReconnectDb());
+		GetSqlConn(ReconnectDb());
 
 //		add_action( 'init', array( 'Focus_Emails', 'init_transactional_emails' ) );
 		// add_action( 'init', array( $this, 'wpdb_table_fix' ), 0 );
@@ -447,7 +447,7 @@ class Focus {
 
 	static function print_driver_tasks( $mission_id = 0 ) {
 		$data = "";
-		if ( ! table_exists( 'tasklist' ) ) {
+		if ( ! TableExists( 'tasklist' ) ) {
 			return "";
 		}
 
@@ -459,7 +459,7 @@ class Focus {
 			$sql .= " and t.mission_id = " . $mission_id;
 		}
 
-		$tasks = sql_query_array_scalar( $sql );
+		$tasks = SqlQueryArrayScalar( $sql );
 		foreach ( $tasks as $task ) {
 			$data .= print_task( $task );
 		}

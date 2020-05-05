@@ -260,7 +260,7 @@ print Core_Html::GuiButton( "btn_create_supplies", "create_supplies()", "צור 
 	$sql1 = 'SELECT id, supplier_name FROM im_suppliers';
 
 // Get line options
-	$result = sql_query( $sql1 );
+	$result = SqlQuery( $sql1 );
 	while ( $row1 = mysqli_fetch_row( $result ) ) {
 		print "<option value = \"" . $row1[0] . "\" > " . $row1[1] . "</option>";
 	}

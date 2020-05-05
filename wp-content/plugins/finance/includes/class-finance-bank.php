@@ -21,7 +21,7 @@ class Finance_Bank
 		$this->version   = "1.0";
 		$this->user = new Core_Users();
 		$this->multi_site = Core_Db_MultiSite::getInstance();
-		$this->table_prefix = get_table_prefix();
+		$this->table_prefix = GetTablePrefix();
 	}
 
 	public static function instance() {
@@ -39,7 +39,7 @@ class Finance_Bank
 
 	public function accounts()
 	{
-		return sql_query_array();
+		return SqlQueryArray();
 	}
 
 	/**
@@ -51,7 +51,7 @@ class Finance_Bank
 
 	function handle_bank_operation($operation, $url = null)
 	{
-		$table_prefix = get_table_prefix();
+		$table_prefix = GetTablePrefix();
 		$multi_site = Core_Db_MultiSite::getInstance();
 
 		//		print __FILE__ . ':' .$operation . "<br/>";
@@ -177,7 +177,7 @@ class Finance_Bank
 					          "VALUES (" . $bank_id . ", " . $line_amount . ", " . $site_id . ", " . $supplier_id . ", " .
 					          $id . ")";
 
-					sql_query($sql);
+					SqlQuery($sql);
 				}
 				$b    = Finance_Bank_Transaction::createFromDB( $bank_id );
 				$date = $b->getDate();
@@ -195,7 +195,7 @@ class Finance_Bank
 				       " site_id = " . $site_id .
 				       " where id = " . $bank_id;
 
-				sql_query($sql);
+				SqlQuery($sql);
 
 				break;
 
@@ -223,7 +223,7 @@ class Finance_Bank
 				       " site_id = " . $site_id .
 				       " where id = " . $bank_id;
 
-				sql_query($sql);
+				SqlQuery($sql);
 
 				break;
 			case "create_invoice_bank":
@@ -460,7 +460,7 @@ class Finance_Bank
 
 	static function bank_transactions($args = null)
 	{
-		$table_prefix = get_table_prefix();
+		$table_prefix = GetTablePrefix();
 
 		$result = "";
 
@@ -522,7 +522,7 @@ class Finance_Bank
 
 	static public function bank_status()
 	{
-		$table_prefix = get_table_prefix();
+		$table_prefix = GetTablePrefix();
 
 		$result = Core_Html::gui_header(2, "last bank load");
 		$u = new Core_Users();
@@ -636,7 +636,7 @@ class Finance_Bank
 
 function business_logical_delete( $ids ) {
 	$sql = "UPDATE im_business_info SET is_active = 0 WHERE id IN (" . $ids . ")";
-	sql_query( $sql );
+	SqlQuery( $sql );
 	MyLog( $sql );
 }
 
@@ -657,7 +657,7 @@ function business_open_ship( $part_id ) {
 }
 
 static function bank_check_dup( $fields, $values ) {
-	$table_prefix = get_table_prefix();
+	$table_prefix = GetTablePrefix();
 
 	$account_idx = array_search( "account_id", $fields );
 	$date_idx    = array_search( "date", $fields );
@@ -671,7 +671,7 @@ static function bank_check_dup( $fields, $values ) {
 	       " AND date = " . QuoteText( $date ) .
 	       " AND round(balance, 2) = " . round( $balance, 2 );
 	// print sql_query($sql) . "<br/>";
-	$c = sql_query_single_scalar( $sql );
+	$c = SqlQuerySingleScalar( $sql );
 
 //	print " c=" . $c . "<br/>";
 
@@ -701,12 +701,12 @@ function user_is_business_owner() {
 //		print Core_Html::GuiHyperlink('Search transaction', add_to_url("operation" ,"search")); print " ";
 
 function insert_leumi_conversion() {
-	sql_query( "INSERT INTO im_conversion ( table_name, col, header) VALUES ( 'bank', 'date', 'תאריך')" );
-	sql_query( "INSERT INTO im_conversion ( table_name, col, header) VALUES ( 'bank', 'description', 'תיאור')" );
-	sql_query( "INSERT INTO im_conversion ( table_name, col, header) VALUES ( 'bank', 'reference', 'אסמכתא')" );
-	sql_query( "INSERT INTO im_conversion ( table_name, col, header) VALUES ( 'bank', 'in_amount', 'בזכות')" );
-	sql_query( "INSERT INTO im_conversion ( table_name, col, header) VALUES ( 'bank', 'out_amount', 'בחובה')" );
-	sql_query( 'INSERT INTO im_conversion ( table_name, col, header) VALUES ( \'bank\', \'balance\', \'היתרה בש\"ח\'), \\\'' );
-	sql_query( "INSERT INTO im_conversion ( table_name, col, header) VALUES ( 'bank', 'part_id', 'לקוח')" );
-	sql_query( "INSERT INTO im_conversion ( table_name, col, header) VALUES ( 'bank', 'client_name', 'תאור מורחב')");
+	SqlQuery( "INSERT INTO im_conversion ( table_name, col, header) VALUES ( 'bank', 'date', 'תאריך')" );
+	SqlQuery( "INSERT INTO im_conversion ( table_name, col, header) VALUES ( 'bank', 'description', 'תיאור')" );
+	SqlQuery( "INSERT INTO im_conversion ( table_name, col, header) VALUES ( 'bank', 'reference', 'אסמכתא')" );
+	SqlQuery( "INSERT INTO im_conversion ( table_name, col, header) VALUES ( 'bank', 'in_amount', 'בזכות')" );
+	SqlQuery( "INSERT INTO im_conversion ( table_name, col, header) VALUES ( 'bank', 'out_amount', 'בחובה')" );
+	SqlQuery( 'INSERT INTO im_conversion ( table_name, col, header) VALUES ( \'bank\', \'balance\', \'היתרה בש\"ח\'), \\\'' );
+	SqlQuery( "INSERT INTO im_conversion ( table_name, col, header) VALUES ( 'bank', 'part_id', 'לקוח')" );
+	SqlQuery( "INSERT INTO im_conversion ( table_name, col, header) VALUES ( 'bank', 'client_name', 'תאור מורחב')");
 }

@@ -259,9 +259,9 @@ function print_supply( $id ) {
 	array_push( $fields, "<b>איסוף</b> " . get_supplier_name( $supplier_id ) );
 	array_push( $fields, "<a href='waze://?q=$address'>$address</a>" );
 	array_push( $fields, "" );
-	array_push( $fields, sql_query_single_scalar( "select supplier_contact_phone from im_suppliers where id = " . $supplier_id ) );
+	array_push( $fields, SqlQuerySingleScalar( "select supplier_contact_phone from im_suppliers where id = " . $supplier_id ) );
 	array_push( $fields, "" );
-	array_push( $fields, sql_query_single_scalar( "select mission_id from im_supplies where id = " . $id ) );
+	array_push( $fields, SqlQuerySingleScalar( "select mission_id from im_supplies where id = " . $id ) );
 	array_push( $fields, Core_Db_MultiSite::LocalSiteID() );
 
 	$line = "<tr> " . delivery_table_line( 1, $fields ) . "</tr>";
@@ -331,7 +331,7 @@ function edit_route($mission)
 
     print Core_Html::gui_header(1, "Mission", true, true); print gui_label("mission_id", $mission);
 	$m = new Mission($mission);
-    $path = sql_query_single_scalar("select path from im_missions where id = $mission");
+    $path = SqlQuerySingleScalar("select path from im_missions where id = $mission");
 
     $points = explode("," , $path); foreach ($points as $key => $point) $points[$key] = trim($point, "' ");
 	$list = $points;
@@ -430,7 +430,7 @@ function show_today_routes()
 {
 	$result = Core_Html::gui_header(1, "today routes");
 	$sql = "select id from im_missions where date = '" . date("Y-m-d") . "'";
-	$missions = sql_query_array_scalar($sql);
+	$missions = SqlQueryArrayScalar($sql);
 
 	if (count($missions) == 1) $result .= show_mission_route($missions[0]);
 	if (count($missions) == 0) $result .= ImTranslate("No missions today");

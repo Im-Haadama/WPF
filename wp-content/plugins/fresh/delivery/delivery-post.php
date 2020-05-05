@@ -50,7 +50,7 @@ switch ( $operation ) {
 		} else {
 			$name = $_GET["name"];
 			$sql  = "SELECT id FROM wp_posts WHERE post_title = '" . urldecode( $name ) . "' and post_status = 'publish'";
-			$id   = sql_query_single_scalar( $sql );
+			$id   = SqlQuerySingleScalar( $sql );
 		}
 		$p = new Fresh_Product( $id );
 		operation_get_price( $id );
@@ -64,14 +64,14 @@ switch ( $operation ) {
 		} else {
 			$name = $_GET["name"];
 			$sql  = "SELECT id FROM im_products WHERE post_title = '" . urldecode( $name ) . "'";
-			$id   = sql_query_single_scalar( $sql );
+			$id   = SqlQuerySingleScalar( $sql );
 		}
 		operation_get_price( $id );
 		break;
 
 	case "check_delivery":
 		$order_id = $_GET["order_id"];
-		$id       = sql_query_single_scalar( "SELECT id FROM im_delivery WHERE order_id = " . $order_id );
+		$id       = SqlQuerySingleScalar( "SELECT id FROM im_delivery WHERE order_id = " . $order_id );
 		if ( ! $id ) {
 			print "none";
 		}
@@ -96,7 +96,7 @@ function operation_get_price( $id ) {
 }
 function clear_legacy() {
 	$sql    = "UPDATE im_delivery_legacy SET status = 2 WHERE status = 1";
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 }
 
 function add_delivery_lines( $delivery_id, $lines, $edit ) {

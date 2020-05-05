@@ -42,7 +42,7 @@ $sql = 'SELECT id FROM im_delivery'
        . ' meta_key = \'_customer_user\''
        . ' AND meta_value = ' . $customer_id . ')';
 
-$result = sql_query( $sql );
+$result = SqlQuery( $sql );
 
 $data = "<table id=\"del_table\" border=\"0\"><tr><td>משלוח</td><td>תאריך</td><td>מחיר</td><td>מעם</td></tr>";
 
@@ -71,7 +71,7 @@ function delivery_info( $delivery_id ) {
 	$sql = 'select date, total, vat '
 	       . ' from im_delivery where id = ' . $delivery_id;
 
-	$row  = sql_query_single( $sql );
+	$row  = SqlQuerySingle( $sql );
 	$line = "<td>" . $row[0] . '</td>';
 	$line .= "<td>" . $row[1] . "</td>";
 	$line .= "<td>" . $row[2] . "</td>";

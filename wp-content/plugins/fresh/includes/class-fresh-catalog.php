@@ -151,7 +151,7 @@ class Fresh_Catalog {
 		       . $supplier_id . ", '" . $supplier_product_name . '\', '
 		       . $pricelist["supplier_product_code"] . ", " . $pricelist_id . ')';
 
-		sql_query( $sql );
+		SqlQuery( $sql );
 
 		if ( $product_id > 0 ) { // not hide
 			$pricelist = new Fresh_PriceList( $supplier_id );
@@ -175,7 +175,7 @@ class Fresh_Catalog {
 				if ( $p->getSupplierId() == $supplier_id ) {
 					$sql    = "SELECT id FROM im_supplier_mapping WHERE supplier_id = " . $supplier_id .
 					          " AND product_id = " . $product_id;
-					$result = sql_query( $sql );
+					$result = SqlQuery( $sql );
 					if ( $result )
 						while ( $row = mysqli_fetch_row( $result ) ) {
 							self::DeleteMapping( $row[0] );
@@ -192,7 +192,7 @@ class Fresh_Catalog {
 
 		MyLog( $sql, "catalog-map.php" );
 
-		sql_query( $sql );
+		SqlQuery( $sql );
 	}
 
 	static function PublishItem( $product_id ) {
@@ -214,7 +214,7 @@ class Fresh_Catalog {
 		       " where product_id = " . $prod_id .
 		       " and supplier_id = " . $supplier_id;
 		// print $sql . "<br/>";
-		$pricelist_id = sql_query_single_scalar($sql);
+		$pricelist_id = SqlQuerySingleScalar($sql);
 		return $pricelist_id;
 	}
 
@@ -291,7 +291,7 @@ class Fresh_Catalog {
 			// Draft Bundles.
 			print "checking bundles<br>";
 			$sql     = "SELECT bundle_prod_id FROM im_bundles WHERE prod_id = " . $prod_id;
-			$bundles = sql_query_array_scalar( $sql );
+			$bundles = SqlQueryArrayScalar( $sql );
 			if ( $bundles )
 				self::DraftItems( $bundles );
 
@@ -312,7 +312,7 @@ class Fresh_Catalog {
 		else $new_price = $best_price;
 
 		$line        .= Core_Html::gui_cell( $best->getSupplierName() . " " . $best_price );
-		$prod_status = sql_query_single_scalar( "SELECT post_status FROM wp_posts WHERE id=" . $prod_id );
+		$prod_status = SqlQuerySingleScalar( "SELECT post_status FROM wp_posts WHERE id=" . $prod_id );
 		// print $prod_id . " " . $prod_status . "<br/>";
 
 		$status = "";
@@ -366,7 +366,7 @@ class Fresh_Catalog {
 		$Product = new Fresh_Product($product_id);
 
 		// Remove supplier category
-		$current_supplier = sql_query_single_scalar( "SELECT meta_value FROM wp_postmeta WHERE meta_key = 'supplier_name' AND post_id = " . $product_id );
+		$current_supplier = SqlQuerySingleScalar( "SELECT meta_value FROM wp_postmeta WHERE meta_key = 'supplier_name' AND post_id = " . $product_id );
 
 
 		$supplier_name = $Supplier->getSupplierName();
@@ -391,7 +391,7 @@ class Fresh_Catalog {
 			update_post_meta( $product_id, "_price", $sale_price );
 			update_post_meta( $product_id, "buy_price", $pricelist["sale_price"] );
 		} else {
-			sql_query( "DELETE FROM wp_postmeta WHERE post_id = " . $product_id . " AND meta_key = '_sale_price'" );
+			SqlQuery( "DELETE FROM wp_postmeta WHERE post_id = " . $product_id . " AND meta_key = '_sale_price'" );
 			update_post_meta( $product_id, "buy_price", $pricelist["price"] );
 			update_post_meta( $product_id, "_price", $regular_price );
 
@@ -400,7 +400,7 @@ class Fresh_Catalog {
 		$sql = "UPDATE im_supplier_mapping SET selected = TRUE WHERE product_id = " . $product_id .
 		       " AND supplier_id = " . $Supplier->getId();
 
-		sql_query( $sql );
+		SqlQuery( $sql );
 		// update_post_meta($product_id, "buy_price", $buy_price);
 
 		// Update variations
@@ -415,11 +415,11 @@ class Fresh_Catalog {
 			update_post_meta( $v, "_price", $regular_price );
 			update_post_meta( $v, "buy_price", $pricelist["price"] );
 		}
-		sql_query( "UPDATE wp_posts SET post_modified = NOW() WHERE id = " . $product_id );
+		SqlQuery( "UPDATE wp_posts SET post_modified = NOW() WHERE id = " . $product_id );
 
 		// Update bundle
 		$sql     = "SELECT id FROM im_bundles WHERE prod_id = " . $product_id;
-		$bundles = sql_query_single( $sql );
+		$bundles = SqlQuerySingle( $sql );
 		if ( $bundles ) {
 			foreach ( $bundles as $bundle_id ) {
 				MyLog( "updating bundle " . $bundle_id );
@@ -462,7 +462,7 @@ class Fresh_Catalog {
 		if ( ! $include_hide )
 			$sql .= " AND product_id > 0";
 		// print $sql;
-		$result = sql_query( $sql );
+		$result = SqlQuery( $sql );
 		if ( $result ) {
 			while ( $row = mysqli_fetch_row( $result ) ) {
 				array_push( $result_ids, $row[0] );
@@ -481,13 +481,13 @@ class Fresh_Catalog {
 				$product_name = str_replace( $word_to_remove, "", $product_name );
 			}
 			$sql = "SELECT product_id, id FROM im_supplier_mapping " .
-			       " WHERE supplier_product_name = '" . escape_string( $product_name ) . "'" .
+			       " WHERE supplier_product_name = '" . EscapeString( $product_name ) . "'" .
 			       " AND supplier_id = " . $result["supplier_id"];
 
 			if ( ! $include_hide )
 				$sql .= " and product_id > 0";
 			// print $sql;
-			$result = sql_query( $sql );
+			$result = SqlQuery( $sql );
 			if ( $result ) {
 				{
 					while ( $row = mysqli_fetch_row( $result ) ) {
@@ -547,7 +547,7 @@ class Fresh_Catalog {
 //	print $sql1 . "<br/>";
 //	die(1);
 
-		$result1 = sql_query( $sql1 );
+		$result1 = SqlQuery( $sql1 );
 
 		while ( $row1 = mysqli_fetch_assoc( $result1 ) ) {
 			array_push( $array, $row1 );
@@ -563,7 +563,7 @@ class Fresh_Catalog {
 
 		MyLog( $sql, "catalog-map.php" );
 
-		sql_query( $sql );
+		SqlQuery( $sql );
 	}
 
 	function HideProduct( $pricelist_id )
@@ -571,10 +571,10 @@ class Fresh_Catalog {
 		MyLog( "null_mapping", "catalog-map.php" );
 
 		// Good if already mapped
-		sql_query( "UPDATE im_supplier_mapping SET product_id =-1 WHERE pricelist_id = " . $pricelist_id );
+		SqlQuery( "UPDATE im_supplier_mapping SET product_id =-1 WHERE pricelist_id = " . $pricelist_id );
 
 		// Otherwise need to add map to -1
-		if ( sql_affected_rows( ) < 1 ) {
+		if ( SqlAffectedRowscted_rows( ) < 1 ) {
 			$this->AddMapping( - 1, $pricelist_id, Core_Db_MultiSite::LocalSiteID() );
 		}
 	}
@@ -585,7 +585,7 @@ class Fresh_Catalog {
 
 		$sql = "SELECT user_id FROM wp_usermeta WHERE meta_key = 'auto_mail'";
 
-		$auto_list = sql_query_array_scalar( $sql );
+		$auto_list = SqlQueryArrayScalar( $sql );
 
 		print "Auto mail...<br/>";
 		print "Today " . date( "w" ) . "<br/>";
@@ -660,7 +660,7 @@ class Fresh_Catalog {
 	{
 		$result = "";
 		$sql    = "SELECT term_id FROM wp_term_taxonomy WHERE taxonomy = 'product_cat'";
-		$categs = sql_query_array_scalar( $sql );
+		$categs = SqlQueryArrayScalar( $sql );
 
 		$result .= Core_Html::gui_header(1, "תמונות חסרות באתר");
 
@@ -716,10 +716,10 @@ class Fresh_Catalog {
 			im_supplier_price_list where id in (select pricelist_id from im_supplier_mapping where product_id = $prod_id)";
 
 //    print "<br/>" . $sql . "<br/>";
-		$result = sql_query( $sql );
+		$result = SqlQuery( $sql );
 		$output = "";
 		if ( ! $result ) {
-			sql_error( $sql );
+			SqlError( $sql );
 
 			return null;
 		} else {
@@ -746,7 +746,7 @@ class Fresh_Catalog {
   		AND m.supplier_id = pl.supplier_id
 		AND m.product_id = " . $prod_id;
 
-		$result = sql_query( $sql );
+		$result = SqlQuery( $sql );
 		$c      = 0;
 		while ( $row = mysqli_fetch_row( $result ) ) {
 			$supplier_id = $row[1];

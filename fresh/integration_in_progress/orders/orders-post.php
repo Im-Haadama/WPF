@@ -26,9 +26,9 @@ MyLog( "Operation: " . $operation, __FILE__ );
 
 function order_calculate( $order_id ) {
 	$o           = new Order( $order_id );
-	$lines       = sql_query_array_scalar( "select order_item_id " .
-	                                       " from wp_woocommerce_order_items where order_id = $order_id" .
-	                                       " and order_item_type = 'line_item'" );
+	$lines       = SqlQueryArrayScalar( "select order_item_id " .
+	                                    " from wp_woocommerce_order_items where order_id = $order_id" .
+	                                    " and order_item_type = 'line_item'" );
 	$client_type = $o->getCustomerId();
 	$total       = 0;
 	foreach ( $lines as $line ) {
@@ -53,7 +53,7 @@ function replace_baskets() {
 	       . ' FROM `wp_posts` posts'
 	       . " WHERE post_status LIKE '%wc-processing%' or post_status LIKE '%wc-on-hold%' order by 1";
 
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 
 	while ( $row = mysqli_fetch_row( $result ) ) {
 		$order_id = $row[0];
@@ -76,7 +76,7 @@ function remove_dislike_from_order( $order_id ) {
 	       . ' group by woi.order_item_name order by 1'
 	       . ' ';
 
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 
 	while ( $row = mysqli_fetch_row( $result ) ) {
 		$order_item_id = $row[2];

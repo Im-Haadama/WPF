@@ -18,9 +18,9 @@ $sql = 'select '
        . ' from wp_posts '
        . ' where post_type = \'product\'';
 
-$result = sql_query( $sql );
+$result = SqlQuery( $sql );
 
-while ( $row = sql_fetch_row( $result ) ) {
+while ( $row = SqlFetchRow( $result ) ) {
 	$prod_id = $row[0];
 	print "prod_id= " . $prod_id;
 

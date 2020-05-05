@@ -7,23 +7,22 @@ class Fresh_Database extends Core_Database
 {
 	static function install($version, $force = false)
 	{
-
 		// Create im_info table if missing.
 		self::CreateInfo();
 
-		self::CreateFunctions($version, $force);
 		self::CreateTables($version, $force);
+		self::CreateFunctions($version, $force);
 		self::CreateViews($version, $force);
 	}
 
 	static function CreateViews($version, $force )
 	{
 		$current = self::CheckInstalled("Fresh", "views");
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 
 		if ($current == $version and ! $force) return true;
 
-		sql_query("CREATE OR REPLACE view ${db_prefix}categories as select `wp_terms`.`term_id`    AS `term_id`,
+		SqlQuery("CREATE OR REPLACE view ${db_prefix}categories as select `wp_terms`.`term_id`    AS `term_id`,
        `wp_terms`.`name`       AS `name`,
        `wp_terms`.`slug`       AS `slug`,
        `wp_terms`.`term_group` AS `term_group`
@@ -34,7 +33,7 @@ where `wp_terms`.`term_id` in (select `wp_term_taxonomy`.`term_id`
 
 ");
 
-		sql_query("create table ${db_prefix}supplier_mapping
+		SqlQuery("create table ${db_prefix}supplier_mapping
 (
 	id bigint auto_increment
 		primary key,
@@ -47,7 +46,7 @@ where `wp_terms`.`term_id` in (select `wp_term_taxonomy`.`term_id`
 ) charset=utf8");
 
 
-		sql_query("create OR REPLACE view im_products as select `wp_posts`.`ID`                    AS `ID`,
+		SqlQuery("create OR REPLACE view im_products as select `wp_posts`.`ID`                    AS `ID`,
        `wp_posts`.`post_author`           AS `post_author`,
        `wp_posts`.`post_date`             AS `post_date`,
        `wp_posts`.`post_date_gmt`         AS `post_date_gmt`,
@@ -76,7 +75,7 @@ where ((`wp_posts`.`post_type` in ('product', 'product_variation')) and
 
 ");
 
-		sql_query("
+		SqlQuery("
 		create OR REPLACE view i_in as select `l`.`product_id` AS `product_id`, sum(`l`.`quantity`) AS `q_in`
 from (`im_supplies_lines` `l`
          join .`im_supplies` `s`)
@@ -86,7 +85,7 @@ where `l`.`supply_id` > 393
               and `s`.`id` = `l`.`supply_id`
 group by 1;");
 
-		sql_query("create OR REPLACE view i_out as select `dl`.`prod_id` AS `prod_id`, round(sum(`dl`.`quantity`), 1) AS `q_out`
+		SqlQuery("create OR REPLACE view i_out as select `dl`.`prod_id` AS `prod_id`, round(sum(`dl`.`quantity`), 1) AS `q_out`
 from `im_delivery_lines` `dl`
 where `dl`.`delivery_id` > 503
 group by 1
@@ -100,21 +99,35 @@ order by 1;");
 	static function CreateTables($version, $force)
 	{
 		$current = self::CheckInstalled("Fresh", "functions");
-		$db_prefix = get_table_prefix();
-
-		self::payment_info_table();
+		$db_prefix = GetTablePrefix();
 
 		if ($current == $version and ! $force) return true;
-		sql_query("alter table ${db_prefix}mission_types add default_price float");
 
-		sql_query("create table ${db_prefix}mission_types
+		SqlQuery("create table im_client_accounts
+(
+	ID bigint auto_increment
+		primary key,
+	client_id bigint not null,
+	date date not null,
+	transaction_amount double not null,
+	transaction_method text not null,
+	transaction_ref bigint not null
+)
+charset=utf8;
+
+");
+		self::payment_info_table();
+
+		SqlQuery("alter table ${db_prefix}mission_types add default_price float");
+
+		SqlQuery("create table ${db_prefix}mission_types
 (
 	id int auto_increment
 		primary key,
 	mission_name varchar(20) null)
 	charset = utf8");
 
-		sql_query("create table im_distance
+		SqlQuery("create table im_distance
 (
 	id int auto_increment
 		primary key,
@@ -127,7 +140,7 @@ engine=MyISAM charset=utf8;
 
 ");
 
-		sql_query("create table im_client_types
+		SqlQuery("create table im_client_types
 (
 	id int auto_increment
 		primary key,
@@ -139,15 +152,15 @@ engine=MyISAM charset=utf8;
 )
 ");
 
-		sql_query("alter table ${db_prefix}missions drop path_code");
-		sql_query("alter table ${db_prefix}missions add mission_type int");
+		SqlQuery("alter table ${db_prefix}missions drop path_code");
+		SqlQuery("alter table ${db_prefix}missions add mission_type int");
 
 
-		sql_query("alter table wp_woocommerce_shipping_zone_methods add mission_code varchar(10);");
+		SqlQuery("alter table wp_woocommerce_shipping_zone_methods add mission_code varchar(10);");
 
-		sql_query("alter table wp_woocommerce_shipping_zones add min_order float, add default_rate float");
+		SqlQuery("alter table wp_woocommerce_shipping_zones add min_order float, add default_rate float");
 
-		sql_query("create table im_bundles
+		SqlQuery("create table im_bundles
 (
 	id bigint(10) unsigned auto_increment
 		primary key,
@@ -161,7 +174,7 @@ engine=MyISAM charset=utf8;
 
 ");
 
-		sql_query("create table im_supplies_lines
+		SqlQuery("create table im_supplies_lines
 (
 	id bigint(10) auto_increment
 		primary key,
@@ -177,8 +190,8 @@ charset=utf8;
 
 ");
 
-		sql_query("drop function delivery_receipt");
-		sql_query("create function delivery_receipt(_del_id int) returns int
+		SqlQuery("drop function delivery_receipt");
+		SqlQuery("create function delivery_receipt(_del_id int) returns int
 BEGIN
 		declare _receipt integer;
 		select payment_receipt into _receipt 
@@ -187,8 +200,8 @@ BEGIN
 	END;
 ");
 
-		sql_query("drop function order_from_delivery");
-		sql_query("create function order_from_delivery(del_id int) returns text
+		SqlQuery("drop function order_from_delivery");
+		SqlQuery("create function order_from_delivery(del_id int) returns text
 BEGIN
     declare _order_id int;
     SELECT order_id INTO _order_id FROM im_delivery where id = del_id;
@@ -198,8 +211,8 @@ END;
 
 ");
 
-		sql_query("drop function client_payment_method");
-		sql_query("create function client_payment_method(_user_id int) returns text charset utf8
+		SqlQuery("drop function client_payment_method");
+		SqlQuery("create function client_payment_method(_user_id int) returns text charset utf8
 BEGIN
     declare _method_id int;
     declare _name VARCHAR(50) CHARSET 'utf8';
@@ -211,8 +224,8 @@ BEGIN
 
 ");
 
-		sql_query("drop function client_balance");
-		sql_query("create function client_balance(_client_id int, _date date) returns float
+		SqlQuery("drop function client_balance");
+		SqlQuery("create function client_balance(_client_id int, _date date) returns float
 BEGIN
     declare _amount float;
 select sum(transaction_amount) into _amount
@@ -223,8 +236,8 @@ END;
 
 ");
 
-		if (! table_exists("delivery_lines"))
-		sql_query("create table ${db_prefix}delivery_lines
+		if (! TableExists("delivery_lines"))
+		SqlQuery("create table ${db_prefix}delivery_lines
 (
 	id bigint auto_increment
 		primary key,
@@ -244,8 +257,8 @@ END;
 ");
 
 
-		if (! table_exists("payments"))
-		sql_query("create table ${db_prefix}payments
+		if (! TableExists("payments"))
+		SqlQuery("create table ${db_prefix}payments
 (
 	id int auto_increment,
 	name varchar(20) null,
@@ -257,9 +270,9 @@ END;
 
 ");
 
-		if (! table_exists("supplies"))
+		if (! TableExists("supplies"))
 
-		sql_query("create table ${db_prefix}supplies
+		SqlQuery("create table ${db_prefix}supplies
 (
 	id bigint(10) unsigned auto_increment
 		primary key,
@@ -275,8 +288,8 @@ END;
 ");
 
 
-		if (! table_exists("bundles"))
-		sql_query("create table ${db_prefix}bundles
+		if (! TableExists("bundles"))
+		SqlQuery("create table ${db_prefix}bundles
 (
 	id bigint(10) unsigned auto_increment
 		primary key,
@@ -289,8 +302,8 @@ END;
 
 ");
 
-		if (!table_exists("need"))
-		sql_query("create table ${db_prefix}need
+		if (!TableExists("need"))
+		SqlQuery("create table ${db_prefix}need
 (
 	id int auto_increment
 		primary key,
@@ -300,8 +313,8 @@ END;
 )
 ");
 
-		if (! table_exists("need_orders"))
-		sql_query("create table ${db_prefix}need_orders
+		if (! TableExists("need_orders"))
+		SqlQuery("create table ${db_prefix}need_orders
 (
 	id int auto_increment
 		primary key,
@@ -309,8 +322,8 @@ END;
 )
 ");
 
-		if (! table_exists("delivery_lines"))
-		sql_query("create table ${db_prefix}delivery_lines
+		if (! TableExists("delivery_lines"))
+		SqlQuery("create table ${db_prefix}delivery_lines
 (
 	id bigint auto_increment
 		primary key,
@@ -328,8 +341,8 @@ END;
 ) charset=utf8;
 ");
 
-		if (! table_exists("suppliers")) {
-			sql_query( "create table ${db_prefix}suppliers
+		if (! TableExists("suppliers")) {
+			SqlQuery( "create table ${db_prefix}suppliers
 (
 	id bigint auto_increment
 		primary key,
@@ -354,11 +367,11 @@ END;
 	supplier_description varchar(200) null
 ) charset=utf8;" );
 
-	sql_query("ALTER TABLE im_suppliers AUTO_INCREMENT = 100001");
+	SqlQuery("ALTER TABLE im_suppliers AUTO_INCREMENT = 100001");
 }
 
-		if (! table_exists("supplier_price_list"))
-				sql_query("create table im_supplier_price_list
+		if (! TableExists("supplier_price_list"))
+				SqlQuery("create table im_supplier_price_list
 (
 	ID bigint auto_increment,
 	product_name varchar(40) not null,
@@ -379,8 +392,8 @@ charset=utf8;
 
 ");
 
-		if (! table_exists("delivery"))
-			sql_query("create table ${db_prefix}delivery
+		if (! TableExists("delivery"))
+			SqlQuery("create table ${db_prefix}delivery
 (
 	ID bigint auto_increment
 		primary key,
@@ -399,9 +412,9 @@ charset=utf8;
 
 ");
 
-		if (! table_exists("missions"))
+		if (! TableExists("missions"))
 		{
-			sql_query("create table ${db_prefix}missions
+			SqlQuery("create table ${db_prefix}missions
 (
 	id int auto_increment
 		primary key,
@@ -420,8 +433,8 @@ charset=utf8;
 ");
 		}
 
-		if (! table_exists("baskets"))
-			sql_query("create table ${db_prefix}baskets
+		if (! TableExists("baskets"))
+			SqlQuery("create table ${db_prefix}baskets
 (
 	id int auto_increment
 		primary key,
@@ -434,8 +447,8 @@ charset=utf8;
 
 ");
 
-		if (!table_exists("business_info"))
-			sql_query("create table ${db_prefix}business_info
+		if (!TableExists("business_info"))
+			SqlQuery("create table ${db_prefix}business_info
 (
 	id bigint auto_increment
 		primary key,
@@ -454,8 +467,8 @@ charset=utf8;
 	pay_date date null
 );");
 
-		if (! table_exists("missions"))
-			sql_query("create table ${db_prefix}missions
+		if (! TableExists("missions"))
+			SqlQuery("create table ${db_prefix}missions
 (
 	id int auto_increment
 		primary key,
@@ -477,12 +490,12 @@ charset=utf8;");
 	static function CreateFunctions($version, $force = false)
 	{
 		$current = self::CheckInstalled("Fresh", "functions");
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 
 		if ($current == $version and ! $force) return true;
 
-		sql_query("drop function client_id_from_delivery");
-		sql_query("create  function client_id_from_delivery(del_id int) returns text
+		SqlQuery("drop function client_id_from_delivery");
+		SqlQuery("create  function client_id_from_delivery(del_id int) returns text
 BEGIN
   declare _order_id int;
   declare _user_id int;
@@ -497,8 +510,8 @@ END;
 
 ");
 
-		sql_query("drop function client_last_order");
-		sql_query("create
+		SqlQuery("drop function client_last_order");
+		SqlQuery("create
     function client_last_order(_id int) returns integer
 BEGIN
 	declare _last_order_id integer;
@@ -513,8 +526,8 @@ END;
 
 ");
 
-		sql_query("drop function client_last_order_date");
-		sql_query("create
+		SqlQuery("drop function client_last_order_date");
+		SqlQuery("create
     function client_last_order_date(_id int) returns date
 BEGIN
 	declare _date date;
@@ -533,8 +546,8 @@ END;
 
 ");
 
-		sql_query("drop function supply_from_business");
-		sql_query("create function supply_from_business( _business_id int) returns integer
+		SqlQuery("drop function supply_from_business");
+		SqlQuery("create function supply_from_business( _business_id int) returns integer
 	BEGIN
 		declare _supply_id integer;
 		select id into _supply_id 
@@ -544,7 +557,7 @@ END;
 ");
 
 		new Fresh_Delivery(0); // Load classes
-		sql_query("drop function if exists supplier_balance");
+		SqlQuery("drop function if exists supplier_balance");
 		$sql = "create function supplier_balance (_supplier_id int, _date date) returns float   
 BEGIN
 declare _amount float;
@@ -556,10 +569,10 @@ and document_type in (" . FreshDocumentType::bank . "," . FreshDocumentType::inv
 
 return round(_amount, 0);
 END;";
-		sql_query($sql);
+		SqlQuery($sql);
 
-		sql_query("drop function client_from_delivery");
-		sql_query("create function client_from_delivery(del_id int) returns text CHARSET 'utf8'
+		SqlQuery("drop function client_from_delivery");
+		SqlQuery("create function client_from_delivery(del_id int) returns text CHARSET 'utf8'
 BEGIN
   declare _order_id int;
   declare _user_id int;
@@ -575,15 +588,15 @@ END;
 
 ");
 
-		sql_query("drop function if exists  first_day_of_week");
-		sql_query("create function FIRST_DAY_OF_WEEK(day date) returns date
+		SqlQuery("drop function if exists  first_day_of_week");
+		SqlQuery("create function FIRST_DAY_OF_WEEK(day date) returns date
 BEGIN
   RETURN SUBDATE(day, WEEKDAY(day) + 1);
 END;
 
 ");
 
-		sql_query("create function client_displayname(user_id int) returns text CHARSET 'utf8'
+		SqlQuery("create function client_displayname(user_id int) returns text CHARSET 'utf8'
 BEGIN
     declare _user_id int;
     declare _display varchar(50) CHARSET utf8;
@@ -595,8 +608,8 @@ BEGIN
 
 ");
 
-		sql_query("drop function if exists  order_user");
-		sql_query("create function order_user(order_id int) returns int
+		SqlQuery("drop function if exists  order_user");
+		SqlQuery("create function order_user(order_id int) returns int
 BEGIN
     declare _user_id int;
     SELECT meta_value INTO _user_id FROM wp_postmeta where post_id = order_id and meta_key = '_customer_user';
@@ -606,8 +619,8 @@ BEGIN
 
 ");
 
-		sql_query("drop function if exists  post_status");
-		sql_query("CREATE FUNCTION 	post_status(_post_id int)
+		SqlQuery("drop function if exists  post_status");
+		SqlQuery("CREATE FUNCTION 	post_status(_post_id int)
 	 RETURNS TEXT
 BEGIN
 	declare _result varchar(200);
@@ -618,8 +631,8 @@ BEGIN
 	return _result;	   
 END;");
 
-		sql_query("drop function if exists  product_price");
-		sql_query("create
+		SqlQuery("drop function if exists  product_price");
+		SqlQuery("create
     function product_price(_id int) returns varchar(100) charset 'utf8'
 BEGIN
     declare _price varchar(100) CHARSET 'utf8';
@@ -627,8 +640,8 @@ BEGIN
     return _price;
   END; ");
 
-		sql_query("drop function if exists  supplier_displayname");
-		sql_query( "create function supplier_displayname (supplier_id int) returns text charset utf8  
+		SqlQuery("drop function if exists  supplier_displayname");
+		SqlQuery( "create function supplier_displayname (supplier_id int) returns text charset utf8  
 BEGIN
 declare _user_id int;
 declare _display varchar(50) CHARSET utf8;
@@ -640,8 +653,8 @@ END;
 
 " );
 
-		sql_query("drop function if exists  order_is_group");
-		sql_query("create function order_is_group(order_id int) returns bit
+		SqlQuery("drop function if exists  order_is_group");
+		SqlQuery("create function order_is_group(order_id int) returns bit
 BEGIN
     declare _customer_type varchar(20);
     declare _user_id int;
@@ -667,8 +680,8 @@ return _customer_is_group;
 END;
 
 ");
-		sql_query( "drop function if exists  prod_get_name;" );
-		sql_query( "CREATE FUNCTION `prod_get_name`(`prod_id` INT)
+		SqlQuery( "drop function if exists  prod_get_name;" );
+		SqlQuery( "CREATE FUNCTION `prod_get_name`(`prod_id` INT)
 	 RETURNS varchar(200) CHARSET utf8
    NO SQL
 BEGIN
@@ -679,8 +692,8 @@ BEGIN
    return _name;
  END" );
 
-		sql_query("drop function if exists  order_line_get_variation");
-		sql_query("create function order_line_get_variation(_order_item_id int) RETURNS text
+		SqlQuery("drop function if exists  order_line_get_variation");
+		SqlQuery("create function order_line_get_variation(_order_item_id int) RETURNS text
 BEGIN
     declare _variation int;
     select meta_value into _variation from wp_woocommerce_order_itemmeta
@@ -697,11 +710,11 @@ BEGIN
 	/* temp: convert supplier name to id in products */
 	static function convert_supplier_name_to_id()
 	{
-		$suppliers = sql_query_array("select id, supplier_name from im_suppliers");
+		$suppliers = SqlQueryArray("select id, supplier_name from im_suppliers");
 		foreach ($suppliers as $supplier_tuple){
 			$supplier_id = $supplier_tuple[0];
 			$supplier_name = $supplier_tuple[1];
-			sql_query("update wp_postmeta set meta_value = $supplier_id, meta_key = 'supplier_id' ".
+			SqlQuery( "update wp_postmeta set meta_value = $supplier_id, meta_key = 'supplier_id' " .
 			          " where meta_key = 'supplier_name' and meta_value = '" . $supplier_name . "'");
 		}
 	}

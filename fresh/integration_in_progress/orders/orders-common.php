@@ -38,7 +38,7 @@ function orders_item_count( $item_id ) {
 	       . 'and woi.order_item_id = woim1.order_item_id and woim1.`meta_key` = \'_product_id\''
 	       . 'and woim1.meta_value = ' . $item_id;
 
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 	$row    = mysqli_fetch_row( $result );
 
 	return $row[0];
@@ -49,7 +49,7 @@ function order_get_field( $order_id, $field_name ) {
 	       . ' WHERE pm.post_id = ' . $order_id
 	       . " AND meta_key = '" . $field_name . "'";
 	// print $sql . "<br>";
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 	$row    = mysqli_fetch_row( $result );
 
 //	print $row[0] + "<br>";
@@ -59,7 +59,7 @@ function order_get_field( $order_id, $field_name ) {
 function get_max_supplier() {
 	$sql = 'SELECT max(id) FROM im_suppliers';
 
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 	$row    = mysqli_fetch_row( $result );
 
 	return $row[0];
@@ -72,7 +72,7 @@ function user_dislike( $user_id, $prod_id ) {
 	$sql = 'SELECT id FROM im_client_dislike WHERE client_id=' . $user_id .
 	       ' AND dislike_prod_id=' . $prod_id;
 
-	$v = sql_query_single_scalar( $sql );
+	$v = SqlQuerySingleScalar( $sql );
 
 	// print $sql . " " . $v . "<br/>";
 
@@ -184,7 +184,7 @@ function orders_create_subs() {
 
 
 function order_get_last( $user_id ) {
-	return sql_query_single_scalar( "	select max(post_date)
+	return SqlQuerySingleScalar( "	select max(post_date)
 		from wp_posts posts, wp_postmeta meta
 		where meta.post_id = posts.id
 		 	and meta.meta_key = '_customer_user'
@@ -258,7 +258,7 @@ function total_order( $user_id ) {
 	       " WHERE post_status in ('wc-processing', 'wc-awaiting-shipment') " .
 	       " AND order_user(id) = " . $user_id;
 
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 
 	$items         = array();
 	$order_clients = array();
@@ -266,7 +266,7 @@ function total_order( $user_id ) {
 	$totals        = array();
 	$grand_total   = 0;
 
-	while ( $row = sql_fetch_row( $result ) ) {
+	while ( $row = SqlFetchRow( $result ) ) {
 		$order_id = $row[0];
 		array_push( $order_ids, $order_id );
 		array_push( $order_clients, Core_Html::GuiHyperlink( get_postmeta_field( $order_id, '_shipping_first_name' ),
@@ -380,7 +380,7 @@ function ShowCategoryAll( $args )
 		$categs = explode( ",", info_get( "fresh" ) );
 	} else {
 		$sql    = "SELECT term_id FROM wp_term_taxonomy WHERE taxonomy = 'product_cat'";
-		$categs = sql_query_array_scalar( $sql );
+		$categs = SqlQueryArrayScalar( $sql );
 	}
 	foreach ( $categs as $categ ) {
 		$result .= show_category_by_id( $categ, $sale, $text, $customer_type, $inv, $month, $args );
@@ -518,21 +518,21 @@ function month_availability( $prod_id, $month ) {
 		$sql                        = "select id " .
 		                              " from im_delivery where order_id in (select id from wp_posts " .
 		                              " where post_date like '" . $year . "-" . sprintf( "%02s", $month ) . "-%')";
-		$orders_per_month[ $month ] = sql_query_array_scalar( $sql );
+		$orders_per_month[ $month ] = SqlQueryArrayScalar( $sql );
 	}
 
 	// SELECT id, post_date, post_status FROM wp_posts WHERE post_date like '2019-04-%' and post_status = 'wc-completed'
 
 
-	$result = sql_query( "select sum(quantity), sum(quantity_ordered) " .
-	                     " from im_delivery_lines " .
-	                     " where prod_id  = " . $prod_id .
-	                     " and delivery_id in (" . CommaImplode( $orders_per_month[ $month ] ) . ")" );
+	$result = SqlQuery( "select sum(quantity), sum(quantity_ordered) " .
+	                    " from im_delivery_lines " .
+	                    " where prod_id  = " . $prod_id .
+	                    " and delivery_id in (" . CommaImplode( $orders_per_month[ $month ] ) . ")" );
 
 	if ( ! $result ) {
 		die( 1 );
 	}
-	$row      = sql_fetch_row( $result );
+	$row      = SqlFetchRow( $result );
 	$supplied = $row[0];
 	$ordered  = $row[1];
 

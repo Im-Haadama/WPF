@@ -115,7 +115,7 @@ function is_mapped( $code ) {
 	$sql = 'SELECT id FROM `im_supplier_mapping` WHERE supplier_product_code = ' . $code .
 	       ' AND supplier_product_code != 10';
 
-	$id = sql_query_single_scalar( $sql );
+	$id = SqlQuerySingleScalar( $sql );
 
 	if ( $id > 0 ) {
 		// print $sql;
@@ -137,10 +137,10 @@ function search_unmapped_remote() {
 
 	$sql = "SELECT site_id, id FROM im_suppliers WHERE site_id > 0";
 
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 
 	if ( ! $result ) {
-		sql_error( $sql );
+		SqlError( $sql );
 
 		return "No result";
 	}
@@ -174,7 +174,7 @@ function search_unmapped_products()
 {
 	$sql    = "SELECT id, supplier_id, product_name " .
 	          " FROM im_supplier_price_list ORDER BY 2, 3";
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 
 	$data = "<tr>";
 	$data .= "<td>בחר</td>";
@@ -212,7 +212,7 @@ function search_unmapped_terms() {
 	$all_terms_flat = array();
 	$sql            = "SELECT id, supplier_id, product_name " .
 	                  " FROM im_supplier_price_list ORDER BY 2, 3";
-	$result         = sql_query( $sql );
+	$result         = SqlQuery( $sql );
 
 	while ( $row = mysqli_fetch_row( $result ) ) {
 		$pricelist_id = $row[0];
@@ -310,7 +310,7 @@ function search_invalid_mapping() {
             FROM im_supplier_mapping';
 
 
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 
 	$data = "<tr>";
 	$data .= "<td>בחר</td>";

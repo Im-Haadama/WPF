@@ -6,7 +6,7 @@
  * Time: 05:19
  */
 
-if (! function_exists('sql_insert_id')) {
+//if (! function_exists('sql_insert_id')) {
 
 // TODO: move meta table information to somewhere else. Maybe read from database.
 $meta_table_info = array();
@@ -15,8 +15,8 @@ $meta_table_info["wp_usermeta"] = array("id" => "user_id", "key" => "meta_key", 
 /**
  * @return int|string
  */
-function sql_insert_id() {
-	$conn = get_sql_conn();
+function SqlInsertId() {
+	$conn = GetSqlConn();
 
 	return mysqli_insert_id( $conn );
 }
@@ -26,7 +26,7 @@ function sql_insert_id() {
  *
  * @return null
  */
-function get_sql_conn($new_conn = null)
+function GetSqlConn($new_conn = null)
 {
 	static $conn;
 
@@ -36,38 +36,6 @@ function get_sql_conn($new_conn = null)
 	return $conn;
 }
 
-//function sql_express_type($sql, $expression)
-//{
-//	if (! $sql)
-//		throw new Exception("No sql give");
-//
-//	if (! $expression)
-//		throw new Exception("No express");
-//
-//	static $type_cache = array();
-//
-//	if (isset($type_cache[$expression]))
-//		return $type_cache[$expression];
-//
-//	// Parse the sql and save the types.
-//	// if (! strpos(strtolower($sql), "limit")) $sql .= " limit 1"; // We want just the types.
-//
-//	$result = sql_query($sql);
-//	$c = mysqli_num_fields($result);
-//	for ($i = 0; $i < $c; $i++){
-//		$t = mysqli_fetch_field_direct($result, $i);
-//		try {
-//			$type_cache[ $t->name ] = sql_type( $t->orgtable, $t->orgname );
-//		} catch ( Exception $e ) {
-//		}
-//	}
-//
-//	if (isset($type_cache[$expression]))
-//		return $type_cache[$expression];
-//
-//	return "none";
-//
-//}
 /**
  * @param $table
  * @param $field
@@ -75,8 +43,8 @@ function get_sql_conn($new_conn = null)
  * @return mixed|string
  * @throws Exception
  */
-function sql_type( $table, $field) {
-	$db_prefix = get_table_prefix($table);
+function SqlType( $table, $field) {
+	$db_prefix = GetTablePrefix($table);
 
 	global $meta_table_info;
 
@@ -95,9 +63,9 @@ function sql_type( $table, $field) {
 	static $type_cache = array();
 
 	if ( ! isset( $type_cache[ $table ][ $field ] ) ) {
-		$result               = sql_query( "describe ${db_prefix}$table" );
+		$result               = SqlQuery( "describe ${db_prefix}$table" );
 		$type_cache[ $table ] = array();
-		while ( $row = sql_fetch_row( $result ) ) {
+		while ( $row = SqlFetchRow( $result ) ) {
 			$f = $row[0];
 			$t = $row[1];
 			$type_cache[ $table ][ $f ] = $t;
@@ -115,11 +83,11 @@ function sql_type( $table, $field) {
  *
  * @return bool
  */
-function sql_prepare($sql)
+function SqlPrepare($sql)
 {
 	if (! $sql)
 		return false;
-	$conn = get_sql_conn();
+	$conn = GetSqlConn();
 
 	if (!$conn)
 		die("not connected to db");
@@ -127,7 +95,7 @@ function sql_prepare($sql)
 	$stmt = $conn->prepare($sql);
 	if ($stmt)
 		return $stmt;
-	sql_error("prepare $sql failed");
+	SqlError("prepare $sql failed");
 	die(1);
 }
 
@@ -139,7 +107,7 @@ function sql_prepare($sql)
  * @return bool
  * @throws Exception
  */
-function sql_bind($table_name, &$stmt, $_values)
+function SqlBind($table_name, &$stmt, $_values)
 {
 //	print "table: $table_name<br/>";
 	$debug = 0;//  (get_user_id() == 1);
@@ -148,7 +116,7 @@ function sql_bind($table_name, &$stmt, $_values)
 	foreach ($_values as $key => $value){
 		if (! $key) { print "key is empty" . debug_trace(5); die (1);}
 		if ($debug) print "binding $value to $key <br/>";
-		$type = sql_type($table_name, $key);
+		$type = SqlType($table_name, $key);
 		switch(substr($type, 0, 3))
 		{
 			case 'bit':
@@ -221,16 +189,16 @@ function sql_bind($table_name, &$stmt, $_values)
  *
  * @return bool|mysqli_result|null
  */
-function sql_query( $sql, $report_error = true )
+function SqlQuery( $sql, $report_error = true )
 {
 	try {
-		$conn = get_sql_conn();
+		$conn = GetSqlConn();
 	} catch ( Exception $e ) {
 		print "Error (2): " . $e->getMessage() . "<br/>";
 		die(1);
 	}
 	if ( ! $conn ) {
-		sql_error("Error (3): not connected");
+		SqlError("Error (3): not connected");
 		print debug_trace(10);
 		return null;
 	}
@@ -245,7 +213,7 @@ function sql_query( $sql, $report_error = true )
 		}
 		return $result;
 	}
-	if ( $report_error ) sql_error( $sql );
+	if ( $report_error ) SqlError( $sql );
 	return null;
 }
 
@@ -255,10 +223,10 @@ function sql_query( $sql, $report_error = true )
  *
  * @return array|string
  */
-function sql_query_array( $sql, $header = false ) {
-	$result = sql_query( $sql );
+function SqlQueryArray( $sql, $header = false ) {
+	$result = SqlQuery( $sql );
 	if ( ! $result ) {
-		sql_error( $sql );
+		SqlError( $sql );
 
 		return "Error";
 	}
@@ -285,11 +253,11 @@ function sql_query_array( $sql, $header = false ) {
  *
  * @return string
  */
-function sql_query_single_scalar( $sql, $report_error = true ) {
-	$result = sql_query( $sql, $report_error );
+function SqlQuerySingleScalar( $sql, $report_error = true ) {
+	$result = SqlQuery( $sql, $report_error );
 	if ( ! $result ) {
 		if ( $report_error ) {
-			sql_error( $sql );
+			SqlError( $sql );
 		}
 
 		return "Error";
@@ -314,10 +282,11 @@ function sql_query_single_scalar( $sql, $report_error = true ) {
  *
  * @return bool
  */
-function table_exists( $table ) {
-	$db_prefix = get_table_prefix();
+function TableExists( $table ) {
+	$db_prefix = GetTablePrefix();
 	$sql = 'SELECT 1 FROM ' . $db_prefix .$table . ' LIMIT 1';
-	return sql_query( $sql, false) != null;
+//	print $sql;
+	return SqlQuery( $sql, false) != null;
 }
 
 /**
@@ -325,8 +294,8 @@ function table_exists( $table ) {
  *
  * @return string
  */
-function escape_string( $string ) {
-	$conn = get_sql_conn();
+function EscapeString( $string ) {
+	$conn = GetSqlConn();
 
 	return mysqli_real_escape_string( $conn, $string );
 }
@@ -334,9 +303,9 @@ function escape_string( $string ) {
 /**
  * @return int
  */
-function sql_affected_rows()
+function SqlAffectedRows()
 {
-	$conn = get_sql_conn();
+	$conn = GetSqlConn();
 
 	return mysqli_affected_rows($conn);
 }
@@ -347,11 +316,11 @@ function sql_affected_rows()
  * @return array
  * @throws Exception
  */
-function sql_query_array_scalar( $sql ) {
+function SqlQueryArrayScalar( $sql ) {
 	$arr    = array();
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 	if ( ! $result ) {
-		sql_error( $sql );
+		SqlError( $sql );
 
 		throw new Exception("cant fetch");
 	}
@@ -368,12 +337,12 @@ function sql_query_array_scalar( $sql ) {
  *
  * @return array|null
  */
-function sql_query_single( $sql ) {
-	$result = sql_query( $sql );
+function SqlQuerySingle( $sql ) {
+	$result = SqlQuery( $sql );
 	if ( $result ) {
 		return mysqli_fetch_row( $result );
 	}
-	sql_error( $sql );
+	SqlError( $sql );
 
 	return null;
 }
@@ -383,21 +352,21 @@ function sql_query_single( $sql ) {
  *
  * @return string[]|null
  */
-function sql_query_single_assoc( $sql ) {
-	$result = sql_query( $sql );
+function SqlQuerySingleAssoc( $sql ) {
+	$result = SqlQuery( $sql );
 	if ( $result ) {
 		return mysqli_fetch_assoc( $result );
 	}
-	sql_error( $sql );
+	SqlError( $sql );
 
 	return null;
 }
 /**
  * @param $sql
  */
-function sql_error( $sql ) {
+function SqlError( $sql ) {
 	try {
-		$conn = get_sql_conn();
+		$conn = GetSqlConn();
 	} catch ( Exception $e ) {
 		print "Error (1): " . $e->getMessage() . "<br/>";
 	}
@@ -419,7 +388,7 @@ function sql_error( $sql ) {
  *
  * @return array|null
  */
-function sql_fetch_row( $result ) {
+function SqlFetchRow( $result ) {
 	if ($result)
 		return mysqli_fetch_row( $result );
 	else
@@ -431,7 +400,7 @@ function sql_fetch_row( $result ) {
  *
  * @return string[]|null
  */
-function sql_fetch_assoc( $result ) {
+function SqlFetchAssoc( $result ) {
 	if ($result) return mysqli_fetch_assoc( $result );
 	return null;
 }
@@ -441,7 +410,7 @@ function sql_fetch_assoc( $result ) {
  * @param $query
  * @param $p
  */
-function add_query( &$query, $p ) {
+function AddQuery( &$query, $p ) {
 	if ( ! $query ) {
 		$query = "Where ";
 	} else {
@@ -453,7 +422,7 @@ function add_query( &$query, $p ) {
 /**
  * @throws Exception
  */
-function sql_set_time_offset()
+function SqlSetTimeOffset()
 {
 	$now = new DateTime();
 	$mins = $now->getOffset() / 60;
@@ -465,7 +434,7 @@ function sql_set_time_offset()
 
 	// print "offset= " . $offset . "<br/>";
 
-	sql_query("SET time_zone='$offset';");
+	SqlQuery("SET time_zone='$offset';");
 }
 
 /**
@@ -473,9 +442,9 @@ function sql_set_time_offset()
  *
  * @return string
  */
-function sql_table_id($table_name)
+function SqlTableId($table_name)
 {
-	$db_prefix = get_table_prefix();
+	$db_prefix = GetTablePrefix();
 	// Performance issues. For now hardcoded used tables.
 	$cache = array ("tasklist" => "id",
 	                "working_teams" => "id",
@@ -490,14 +459,14 @@ function sql_table_id($table_name)
 		FROM information_schema.KEY_COLUMN_USAGE 
 		WHERE TABLE_NAME = '${db_prefix}$table_name' 
 		  AND CONSTRAINT_NAME = 'PRIMARY'";
-	$rc = sql_query_single_scalar($sql);
+	$rc = SqlQuerySingleScalar($sql);
 
 	if (! $rc) die("no primary key for table $table_name");
 	return $rc;
 }
 
 
-function sql_field($fetch_fields, $field_name)
+function SqlField($fetch_fields, $field_name)
 {
 	foreach($fetch_fields as $field) {
 //		print $field->name . " " . $field->type . "<br/>";
@@ -534,13 +503,13 @@ function sql_field($fetch_fields, $field_name)
 	}
 }
 
-}
+//}
 
 function SqlQueryAssoc($sql)
 {
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 	if ( ! $result ) {
-		sql_error( $sql );
+		SqlError( $sql );
 
 		return "Error";
 	}
@@ -553,7 +522,7 @@ function SqlQueryAssoc($sql)
 
 }
 
-function get_table_prefix($table_name = null)
+function GetTablePrefix($table_name = null)
 {
 	global $table_prefix;
 	if ($table_name){
@@ -563,19 +532,19 @@ function get_table_prefix($table_name = null)
 	return ($im_table_prefix ? $im_table_prefix : "im_");
 }
 
-function sql_table_fields($table_name) {
+function SqlTableFields($table_name) {
 	$fields = [];
-	$result = sql_query( "describe im_" . $table_name );
-	while ( $row = sql_fetch_row( $result ) ) {
+	$result = SqlQuery( "describe im_" . $table_name );
+	while ( $row = SqlFetchRow( $result ) ) {
 		array_push( $fields, $row[0] );
 	}
 
 	return $fields;
 }
 
-function sql_insert($table_name, $array, $ignore_list)
+function SqlInsert($table_name, $array, $ignore_list)
 {
-	$db_prefix = get_table_prefix();
+	$db_prefix = GetTablePrefix();
 
 	$sql    = "INSERT INTO ${db_prefix}$table_name (";
 	$values = "values (";
@@ -598,10 +567,10 @@ function sql_insert($table_name, $array, $ignore_list)
 	$values .= ") ";
 	$sql    .= $values;
 
-	$stmt = sql_prepare($sql);
-	sql_bind($table_name, $stmt, $sql_values);
+	$stmt = SqlPrepare($sql);
+	SqlBind($table_name, $stmt, $sql_values);
 	if (!$stmt -> execute())
-		sql_error($sql);
+		SqlError($sql);
 
-	return sql_insert_id();
+	return SqlInsertId();
 }

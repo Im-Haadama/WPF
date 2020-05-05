@@ -250,7 +250,7 @@ function invoices_table( $statuses, $week = null ) {
 
 		// print $sql;
 		// Build path
-		$order_ids = sql_query_array_scalar( $sql );
+		$order_ids = SqlQueryArrayScalar( $sql );
 
 		// If no orders in this status, move on.
 		if ( sizeof( $order_ids ) < 1 ) {
@@ -279,7 +279,7 @@ function invoices_table( $statuses, $week = null ) {
 //		if ( $build_path ) {
 //			find_route_1( 1, $order_ids, $path, false );
 //		}
-		$result                = sql_query( $sql );
+		$result                = SqlQuery( $sql );
 		$total_delivery_total  = 0;
 		$total_order_total     = 0;
 		$total_order_delivered = 0;

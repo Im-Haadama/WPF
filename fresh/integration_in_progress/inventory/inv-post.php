@@ -54,7 +54,7 @@ switch ($operation)
 		show_fresh_inventory($not_available);
 		break;
 	case "show_all":
-		$suppliers = sql_query_array_scalar("select id from im_suppliers");
+		$suppliers = SqlQueryArrayScalar("select id from im_suppliers");
 		foreach ($suppliers as $sup) {
 			show_supplier_inventory($sup);
 		}
@@ -82,7 +82,7 @@ function show_not_available() {
 
 
 function show_fresh_inventory($not_available = false) {
-	$wait = sql_query_single_scalar( "SELECT count(id) FROM wp_posts WHERE post_status IN ('wc-waiting', 'wc-on-hold')" );
+	$wait = SqlQuerySingleScalar( "SELECT count(id) FROM wp_posts WHERE post_status IN ('wc-waiting', 'wc-on-hold')" );
 	if ( $wait ) {
 		print Core_Html::gui_header( 1, "יש הזמנות במצב המתנה!" );
 		print "יש לטפל בהן לפני עדכון המלאי";
@@ -98,7 +98,7 @@ function show_fresh_inventory($not_available = false) {
 
 
 function add_waste( $prod_ids ) {
-	$user = sql_query_single_scalar( "SELECT user_id FROM wp_usermeta WHERE meta_key = 'nickname' AND meta_value = 'waste'" );
+	$user = SqlQuerySingleScalar( "SELECT user_id FROM wp_usermeta WHERE meta_key = 'nickname' AND meta_value = 'waste'" );
 	if ( is_null( $user ) ) {
 		$user = 1;
 	}
@@ -120,7 +120,7 @@ function add_waste( $prod_ids ) {
 function show_in( $prod_id ) {
 	print header_text();
 	print Core_Html::gui_header( 1, "הספקות לפריט " . get_product_name( $prod_id ) );
-	$inventory_in = sql_query_single_scalar( "SELECT info_data FROM im_info WHERE info_key = 'inventory_in'" );
+	$inventory_in = SqlQuerySingleScalar( "SELECT info_data FROM im_info WHERE info_key = 'inventory_in'" );
 
 	$sql = "select supply_id as אספקה, quantity as כמות, supplier_name as ספק " .
 	       " from im_supplies_lines sl " .
@@ -146,7 +146,7 @@ function show_out( $prod_id ) {
 	);
 	print header_text();
 	print Core_Html::gui_header( 1, "משלוחים לפריט " . get_product_name( $prod_id ) );
-	$inventory_out = sql_query_single_scalar( "SELECT info_data FROM im_info WHERE info_key = 'inventory_out'" );
+	$inventory_out = SqlQuerySingleScalar( "SELECT info_data FROM im_info WHERE info_key = 'inventory_out'" );
 
 	$sql = "select delivery_id as משלוח, quantity as כמות, client_from_delivery(delivery_id) as לקוח" . //, supplier_name as לקוח " .
 	       " from im_delivery_lines dl " .
@@ -162,7 +162,7 @@ function show_out( $prod_id ) {
 	print GuiTableContent("table", $sql, $args);
 
 	$sql    = "select id, quantity from im_bundles where prod_id = $prod_id";
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 	$total  = $sums[1][0];
 
 
@@ -209,7 +209,7 @@ function do_get_out( $prod_id ) {
 	$sql = "SELECT q_out FROM i_out WHERE prod_id = " . $prod_id;
 
 	// print $sql;
-	return sql_query_single_scalar( $sql );
+	return SqlQuerySingleScalar( $sql );
 
 }
 function get_out( $prod_id ) {

@@ -95,14 +95,14 @@ class Core_Importer {
 		$sql = "SELECT col, header FROM im_conversion \n" .
 		       "WHERE table_name = " . QuoteText( $table_name );
 
-		$result = sql_query( $sql );
+		$result = SqlQuery( $sql );
 
 		if ( ! $result ) {
 			// Try naive conversion
 			// Todo: later.
 		}
 
-		while ( $conv = sql_fetch_row( $result ) ) {
+		while ( $conv = SqlFetchRow( $result ) ) {
 			$col                = $conv[0];
 			$row                = $conv[1];
 //			print "$row $col<br/>";
@@ -116,11 +116,11 @@ class Core_Importer {
 	{
 		// First line(s) may be empty.
 		$done = false;
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 
 		$sql    = "describe ${db_prefix}$table_name";
-		$result = sql_query( $sql );
-		while ( $row = sql_fetch_row( $result ) ) {
+		$result = SqlQuery( $sql );
+		while ( $row = SqlFetchRow( $result ) ) {
 			$map[ $row[0] ] = - 1; // Init - not found;
 		}
 
@@ -170,7 +170,7 @@ class Core_Importer {
 
 	private static function ImportLine( $line, $table_name, $map, $fields = null, $check_dup = null )
 	{
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 		$insert_fields = array();
 		$values        = array();
 		if ( $fields ) {
@@ -185,7 +185,7 @@ class Core_Importer {
 			if ($k == "Don't import") continue;
 			if ( $m != - 1 ) {
 				// Fix data.
-				switch ( substr( sql_type( $table_name, $k ), 0, 3 ) ) {
+				switch ( substr( SqlType( $table_name, $k ), 0, 3 ) ) {
 					case 'flo':
 					case "int":
 						if ( $line[ $m ] == '' ) {
@@ -207,7 +207,7 @@ class Core_Importer {
 				}
 
 				array_push( $insert_fields, $k );
-				array_push( $values, escape_string( $line[ $m ] ) );
+				array_push( $values, EscapeString( $line[ $m ] ) );
 			}
 		}
 		if ( $check_dup ) {
@@ -223,7 +223,7 @@ class Core_Importer {
 
 //		print $sql . "<br/>";
 
-		if ( ! sql_query( $sql ) ) {
+		if ( ! SqlQuery( $sql ) ) {
 			// print "insert failed";
 			return 0;
 		}
@@ -239,7 +239,7 @@ class Core_Importer {
 		$args = [];
 
 		$i = 0;
-		foreach(sql_table_fields($table) as $field) {
+		foreach(SqlTableFields($table) as $field) {
 			$args["values"][$i]['id'] = $i;
 			$args["values"][$i]['name'] = $field;
 			$i ++;

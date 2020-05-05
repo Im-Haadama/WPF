@@ -88,7 +88,7 @@ switch ( $operation ) {
 		$pl->RemoveLines( 1 );
 		print "Remove the list<br/>";
 		$sql = "UPDATE im_suppliers SET is_active = 0 WHERE id = " . $supplier_id;
-		sql_query( $sql );
+		SqlQuery( $sql );
 		break;
 
 	case "delete_price":
@@ -127,7 +127,7 @@ switch ( $operation ) {
 		$id  = $_GET["supplier_id"];
 		$sql = "SELECT master FROM im_multisite_pricelist WHERE supplier_id = " . $id;
 		// print $sql;
-		$r = sql_query_single( $sql );
+		$r = SqlQuerySingle( $sql );
 //        print $r[0];
 		if ( $r[0] == '0' ) {
 			print "slave";

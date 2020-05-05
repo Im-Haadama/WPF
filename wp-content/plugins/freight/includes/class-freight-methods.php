@@ -48,14 +48,14 @@ class Freight_Methods {
 
 		$rows = array($header_row);
 		$sql = "select * from $table_name order by zone_id";
-		$query_result = sql_query($sql);
+		$query_result = SqlQuery($sql);
 		// Zone name, instance name, workdays
-		while ($method_info = sql_fetch_assoc($query_result))
+		while ($method_info = SqlFetchAssoc($query_result))
 		{
 			$instance_id = $method_info['instance_id'];
 			$data = get_wp_option("woocommerce_flat_rate_{$instance_id}_settings");
 			$zone_id = $method_info['zone_id'];
-			$zone_info = sql_query_single("select * from wp_woocommerce_shipping_zones where zone_id = $zone_id");
+			$zone_info = SqlQuerySingle("select * from wp_woocommerce_shipping_zones where zone_id = $zone_id");
 			$args["events"] = sprintf('onchange="shipment_update_mc(\'%s\', \'%d\')"', Fresh::getPost(), $instance_id);
 
 			$new_row = array(
@@ -70,7 +70,7 @@ class Freight_Methods {
 			for ($day = 1; $day <=4; $day ++) {
 				if (! $week_day and strstr($data['title'], DayName($day))) {
 					$week_day = $day;
-					sql_query("update wp_woocommerce_shipping_zone_methods set week_day = $week_day where instance_id = $instance_id");
+					SqlQuery("update wp_woocommerce_shipping_zone_methods set week_day = $week_day where instance_id = $instance_id");
 				}
 				if ($week_day == $day)
 					array_push( $new_row, Core_Html::GuiCheckbox( "chk_shipment_$instance_id", $enabled,
@@ -108,7 +108,7 @@ class Freight_Methods {
 	{
 		$enable = GetParam("enable", true);
 		$instance = GetParam("instance", true);
-		return sql_query("update wp_woocommerce_shipping_zone_methods set is_enabled = $enable where instance_id = $instance");
+		return SqlQuery("update wp_woocommerce_shipping_zone_methods set is_enabled = $enable where instance_id = $instance");
 	}
 
 	function update_zone_missions()
@@ -122,7 +122,7 @@ class Freight_Methods {
 	{
 		$instance = GetParam("instance", true);
 		$mc = GetParam("mc", true);
-		return sql_query("update wp_woocommerce_shipping_zone_methods set mission_code = " . QuoteText($mc) . " where instance_id = $instance");
+		return SqlQuery( "update wp_woocommerce_shipping_zone_methods set mission_code = " . QuoteText($mc) . " where instance_id = $instance");
 	}
 
 	static function gui_select_path( $id, $selected = 0, $args = null )
@@ -195,7 +195,7 @@ function ZoneGetName( $id ) {
 	if (! ($id > 0)){
 		return "bad zone id $id";
 	}
-	return sql_query_single_scalar( "SELECT zone_name FROM wp_woocommerce_shipping_zones WHERE zone_id = " . $id );
+	return SqlQuerySingleScalar( "SELECT zone_name FROM wp_woocommerce_shipping_zones WHERE zone_id = " . $id );
 }
 
 function path_save_times($path_id, $params)
@@ -206,8 +206,8 @@ function path_save_times($path_id, $params)
 		$times = $params[$i + 1];
 		$path_times[$zone_id] = $times;
 	}
-	$sql = "update im_paths set zones_times = " . QuoteText(escape_string(serialize($path_times))) . ' where id = ' . $path_id ;
-	return sql_query($sql);
+	$sql = "update im_paths set zones_times = " . QuoteText(EscapeString(serialize($path_times))) . ' where id = ' . $path_id ;
+	return SqlQuery($sql);
 }
 
 function Guielect_shipping_methods($zone_id, $selected)

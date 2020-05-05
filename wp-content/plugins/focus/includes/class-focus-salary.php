@@ -173,7 +173,7 @@ class Focus_Salary {
 		       " and h.is_active = 1 " .
 		       " and h.user_id = w.user_id ";
 
-		$result   = sql_query( $sql );
+		$result   = SqlQuery( $sql );
 		$has_data = false;
 
 		while ( $row = mysqli_fetch_row( $result ) ) {
@@ -268,7 +268,7 @@ class Focus_Salary {
 		       "," . $traveling . ", \"" . $expense_text . "\", " . $expense . ")";
 		// print header_text();
 		// print $sql;
-		$export = sql_query( $sql );
+		$export = SqlQuery( $sql );
 		if ( ! $export ) {
 			die ( 'Invalid query: ' . $sql . mysql_error() );
 		}
@@ -324,7 +324,7 @@ class Focus_Salary {
 		       . ' where user_id = ' . $user_id
 		       . ' and project_id = ' . $project_id;
 
-		$rate = sql_query_single_scalar( $sql );
+		$rate = SqlQuerySingleScalar( $sql );
 
 		if ( $rate ) {
 			return round( $rate, 2 );
@@ -336,7 +336,7 @@ class Focus_Salary {
 		       . ' where user_id = ' . $user_id
 		       . ' and project_id = 0';
 
-		$rate = sql_query_single_scalar( $sql );
+		$rate = SqlQuerySingleScalar( $sql );
 		if ( $rate ) {
 			return round( $rate, 2 );
 		}
@@ -447,7 +447,7 @@ class Focus_Salary {
 		$args["header_fields"] = array("user_id" => "User id", "project_id" => "Main project", "rate" => "Hour rate",
 		                        "report" => "Include in report", "day_rate" => "Day rate", "is_active" => "Active?");
 
-		$row_id = sql_query_single_scalar("select min(id) from im_working where user_id = $user_id");
+		$row_id = SqlQuerySingleScalar("select min(id) from im_working where user_id = $user_id");
 		$result            .= Core_Gem::GemElement( "im_working", $row_id, $args );
 
 		$result .= self::show_report_worker( $user_id, $y, $m );
@@ -463,7 +463,7 @@ class Focus_Salary {
 	 * @return string
 	 */
 	static function worker_get_name( $worker_id ) {
-		return sql_query_single_scalar( "select client_displayname(" . $worker_id . ")" );
+		return SqlQuerySingleScalar( "select client_displayname(" . $worker_id . ")" );
 	}
 
 	/**
@@ -510,7 +510,7 @@ class Focus_Salary {
 	 */
 	static function print_transactions( $user_id = 0, $month = null, $year = null, &$args = null ) // , $week = null, $project = null, &$sum = null, $show_salary = false , $edit = false) {
 	{
-		$day_rate = sql_query_single_scalar("select day_rate from im_working where user_id = $user_id");
+		$day_rate = SqlQuerySingleScalar("select day_rate from im_working where user_id = $user_id");
 
 		$result = "";
 		if ($day_rate) $result .= Core_Html::gui_header(2, "Daily worker");

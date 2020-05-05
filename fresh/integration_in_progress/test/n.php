@@ -19,7 +19,7 @@ require_once( FRESH_INCLUDES . "/init.php" );
 //
 //print "<table><tr><td>" . $description . "</td></tr/><table>";
 
-$text = sql_query_single_scalar("select task_description from im_tasklist where id = 2641" );
+$text = SqlQuerySingleScalar("select task_description from im_tasklist where id = 2641" );
 // $text=str_replace('\n','<br>',$text);
 
 function str_split_unicode($str, $l = 0) {

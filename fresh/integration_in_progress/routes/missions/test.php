@@ -8,7 +8,7 @@ if ( ! defined( "FRESH_INCLUDES" ) ) {
 require_once(FRESH_INCLUDES . '/im-config.php');
 require_once( FRESH_INCLUDES . "/init.php" );
 
-$options = sql_query_array("select * from wp_options where option_name like 'woocommerce_flat_rate_%_settings'");
+$options = SqlQueryArray("select * from wp_options where option_name like 'woocommerce_flat_rate_%_settings'");
 
 var_dump($options);
 

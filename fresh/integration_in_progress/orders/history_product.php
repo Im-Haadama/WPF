@@ -29,7 +29,7 @@ function history_total_orders() {
 	       . " and woi.order_item_id = woim1.order_item_id and woim1.`meta_key` = '_product_id'"
 	       . " group by woi.order_item_name order by 1 ";
 
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 
 	while ( $row = mysqli_fetch_row( $result ) ) {
 		$prod_name     = $row[0];
@@ -57,7 +57,7 @@ function history_total_orders() {
 
 // Second pass. Output quantities
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	$result     = sql_query( $sql );
+	$result     = SqlQuery( $sql );
 	$data_lines = array();
 
 	while ( $row = mysqli_fetch_row( $result ) ) {

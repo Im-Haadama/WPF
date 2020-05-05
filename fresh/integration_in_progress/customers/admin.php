@@ -20,7 +20,7 @@ if ($page) {
 } else
 	$limit = $rows_per_page;
 
-$last_users = sql_query_array_scalar("select distinct meta_value from wp_postmeta where meta_key = '_customer_user'  order by post_id desc limit $limit");
+$last_users = SqlQueryArrayScalar("select distinct meta_value from wp_postmeta where meta_key = '_customer_user'  order by post_id desc limit $limit");
 
 // Default view - customer of last 20 orders.
 //$sql = "select distinct

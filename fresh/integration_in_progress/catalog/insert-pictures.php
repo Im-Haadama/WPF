@@ -21,5 +21,5 @@ function insert_img( $id, $url ) {
 	$sql = "UPDATE wp_posts SET guid = " . $url .
 	       " WHERE id = " . $id;
 
-	sql_query( $sql );
+	SqlQuery( $sql );
 }

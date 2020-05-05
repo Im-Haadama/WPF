@@ -20,7 +20,7 @@ class Focus_Tasks {
 		$this->post_file     = $post_file;
 		$this->version       = "1.0";
 		$this->nav_menu_name = null;
-		$this->table_prefix = get_table_prefix();
+		$this->table_prefix = GetTablePrefix();
 	}
 
 	public static function instance( $post = null ) {
@@ -80,7 +80,7 @@ class Focus_Tasks {
 	}
 
 	static function gui_select_worker( $id, $selected, $args ) {
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 		$edit      = GetArg( $args, "edit", true );
 		$worker    = new Org_Worker( get_user_id() );
 		$companies = $worker->GetCompanies();
@@ -98,7 +98,7 @@ class Focus_Tasks {
 
 			return $gui;
 		} else {
-			return ( $selected > 0 ) ? sql_query_single_scalar( "select client_displayname($selected)") : "";
+			return ( $selected > 0 ) ? SqlQuerySingleScalar( "select client_displayname($selected)") : "";
 		}
 	}
 
@@ -268,7 +268,7 @@ class Focus_Tasks {
 	 * @throws Exception
 	 */
 	static function focus_main( $operation, $user_id ) {
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 		// Actions are performed and return to caller.
 		// Page are $result .= and displayed in the end. (to handle the header just once);
 		$result = ""; // focus_header($header_args);
@@ -418,7 +418,7 @@ class Focus_Tasks {
 
 			case "show_add_member":
 				$team_id = GetParam( "id", true );
-				$result  .= Core_Html::gui_header( 1, "Adding member to team" . sql_query_single_scalar( "select team_name from ${db_prefix}working_teams where id = " . $team_id ) );
+				$result  .= Core_Html::gui_header( 1, "Adding member to team" . SqlQuerySingleScalar( "select team_name from ${db_prefix}working_teams where id = " . $team_id ) );
 				$result  .= gui_select_worker( "new_member" );
 				$result  .= gui_label( "team_id", $team_id, true );
 				$result  .= Core_Html::GuiButton( "btn_add_member", "add_member()", "Add" );
@@ -462,9 +462,9 @@ class Focus_Tasks {
 				$company_id = data_save_new( "company" );
 				//			$worker_id = worker_get_id(get_user_id());
 				$sql = "update ${db_prefix}working set company_id = " . $company_id . " where user_id = " . get_user_id();
-				sql_query( $sql );
+				SqlQuery( $sql );
 
-				return sql_insert_id();
+				return SqlInsertId();
 
 			case "show_teams": // System manager -> edit all teams in the system.
 				return self::show_teams();
@@ -587,7 +587,7 @@ class Focus_Tasks {
 	 */
 	static function show_projects( $owner, $non_zero = false, $is_active = true )
 	{
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 		$links = array();
 
 		$links["id"] = AddToUrl( array(
@@ -746,7 +746,7 @@ class Focus_Tasks {
 				if ( Core_Data::data_update( $table_name ) ) {
 					if ( $table_name == "{$this->table_prefix}task_templates" ) {
 						$row_id = intval( GetParam( "id", true ) );
-						if ( sql_query( "update {$this->table_prefix}task_templates set last_check = null where id = " . $row_id ) ) {
+						if ( SqlQuery( "update {$this->table_prefix}task_templates set last_check = null where id = " . $row_id ) ) {
 							return "done";
 						}
 					}
@@ -1177,7 +1177,7 @@ class Focus_Tasks {
 
 	static function Taskslist( &$args = null )
 	{
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 		$args["count"]           = 0;
 		$args["drill"]           = true;
 		$args["drill_operation"] = "show_tasks";
@@ -1531,7 +1531,7 @@ class Focus_Tasks {
 	 */
 	static function company_teams( $company_id, $args )
 	{
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 		$c                 = new Org_Company( $company_id );
 		$result            = Core_Html::gui_header( 1, $c->getName() );
 		$args["query"]     = "manager = 1";
@@ -1591,7 +1591,7 @@ class Focus_Tasks {
 	 */
 	function show_templates( &$not_sure_about_this_args, $template_id = 0 )
 	{
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 		$url = GetUrl( 1 );
 
 		$result     = "";
@@ -1731,7 +1731,7 @@ class Focus_Tasks {
 	 */
 	function show_staff() // Edit teams that I manage.
 	{
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 		$user   = wp_get_current_user();
 		$result = Core_Html::gui_header( 2, "teams" );
 
@@ -1810,8 +1810,8 @@ class Focus_Tasks {
 	 */
 	function managed_workers( $manager_id, $url )
 	{
-		$db_prefix = get_table_prefix();
-		$teams = sql_query_array_scalar( "select id from ${db_prefix}working_teams where manager = " . $manager_id );
+		$db_prefix = GetTablePrefix();
+		$teams = SqlQueryArrayScalar( "select id from ${db_prefix}working_teams where manager = " . $manager_id );
 
 		if ( ! $teams ) {
 			return "";
@@ -1864,7 +1864,7 @@ class Focus_Tasks {
 	 */
 	function task_new( $user_id, $project, $priority, $description, $preq = null )
 	{
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 		$creator = $user_id;
 		$owner   = $user_id; // For now
 		is_numeric( $priority ) or die( "bad project id" );
@@ -1886,9 +1886,9 @@ class Focus_Tasks {
 		}
 		$sql .= $user_id . "," . $owner . ")";
 
-		sql_query( $sql );
+		SqlQuery( $sql );
 
-		return sql_insert_id();
+		return SqlInsertId();
 	}
 
 	/**
@@ -1926,7 +1926,7 @@ class Focus_Tasks {
 	 * @return string
 	 */
 	function template_creator( $template_id ) {
-		return sql_query_single_scalar( "select creator from {$this->table_prefix}task_templates where id = " . $template_id );
+		return SqlQuerySingleScalar( "select creator from {$this->table_prefix}task_templates where id = " . $template_id );
 	}
 
 	/**
@@ -1937,7 +1937,7 @@ class Focus_Tasks {
 	 */
 	function template_delete( $user_id, $template_id )
 	{
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 
 		$creator_id = self::template_creator( $template_id );
 		if ( get_user_id() != 1 and ($creator_id != $user_id) ) {
@@ -1948,7 +1948,7 @@ class Focus_Tasks {
 		if ( $template_id > 0 ) {
 			$sql = "delete from ${db_prefix}task_templates where id = " . $template_id;
 
-			return sql_query( $sql );
+			return SqlQuery( $sql );
 		}
 
 		return false;
@@ -1989,8 +1989,8 @@ class Focus_Tasks {
 
 	static function task_list_search( $query )
 	{
-		$db_prefix = get_table_prefix();
-		$tasks = sql_query_array( "select id, task_description from ${db_prefix}tasklist where $query" );
+		$db_prefix = GetTablePrefix();
+		$tasks = SqlQueryArray( "select id, task_description from ${db_prefix}tasklist where $query" );
 
 		$result = [];
 		foreach ( $tasks as $task ) {
@@ -2063,14 +2063,14 @@ class Focus_Tasks {
 
 			return $gui;
 		} else {
-			return ( $selected > 0 ) ? sql_query_single_scalar( "select client_displayname(user_id) from wp_users where id = " . $selected ) :
+			return ( $selected > 0 ) ? SqlQuerySingleScalar( "select client_displayname(user_id) from wp_users where id = " . $selected ) :
 				"";
 		}
 	}
 
 	static function gui_select_team( $id, $selected = null, $args = null )
 	{
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 		$edit             = GetArg( $args, "edit", true );
 		$worker           = new Org_Worker( get_user_id() );
 		$companies        = $worker->GetCompanies();
@@ -2093,7 +2093,7 @@ class Focus_Tasks {
 
 			return $gui;
 		} else {
-			return ( $selected > 0 ) ? sql_query_single_scalar( "select team_name from ${db_prefix}working_teams where id = " . $selected ) : "";
+			return ( $selected > 0 ) ? SqlQuerySingleScalar( "select team_name from ${db_prefix}working_teams where id = " . $selected ) : "";
 		}
 
 	}
@@ -2242,7 +2242,7 @@ class Focus_Tasks {
 		$result .= Core_Html::gui_header(1, "New worker!");
 		$result .= Core_Html::gui_header(2, "Enter worker email address");
 		$result .= Core_Html::GuiInput("worker_email", null, $args) . "<br/>";
-		$message = sql_query_single_scalar("select post_content from wp_posts where post_title = 'welcome_message'");
+		$message = SqlQuerySingleScalar("select post_content from wp_posts where post_title = 'welcome_message'");
 		if (! $message) {
 			$message = "Welcome to work with me in Focus management tool!\n" .
 			           GetUserName( get_user_id() );
@@ -2251,7 +2251,7 @@ class Focus_Tasks {
 		}
 		else {
 			$message =strip_tags($message);
-			$post_id = sql_query_single_scalar("select id from wp_posts where post_title = 'welcome_message'");
+			$post_id = SqlQuerySingleScalar("select id from wp_posts where post_title = 'welcome_message'");
 			$result .= Core_Html::GuiHyperlink("Edit this message here","/wp-admin/post.php?post=$post_id&action=edit");
 		}
 		$result .= Core_Html::gui_textarea("welcome_message", $message);
@@ -2324,8 +2324,8 @@ class Focus_Tasks {
 
 	static function show_new_task( $mission = false, $new_task_id = null )
 	{
-		$db_prefix = get_table_prefix();
-		$table_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
+		$table_prefix = GetTablePrefix();
 
 		$args                     = self::Args("tasklist");
 //		$args["selectors"]        = array(
@@ -2367,7 +2367,7 @@ class Focus_Tasks {
 		$args["worker"]    = get_user_id();
 		$result        = "";
 
-		$args["companies"] = sql_query_single_scalar( "select company_id from ${db_prefix}working where user_id = " . get_user_id() );
+		$args["companies"] = SqlQuerySingleScalar( "select company_id from ${db_prefix}working where user_id = " . get_user_id() );
 		$args["hide_cols"] = array( "creator" => 1 );
 		$args["next_page"] = self::get_link( "project" );
 		Core_Data::set_args_value( $args ); // Get values from url.

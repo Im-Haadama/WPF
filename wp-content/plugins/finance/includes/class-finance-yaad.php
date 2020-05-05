@@ -11,8 +11,8 @@ class Finance_Yaad {
 	{
 		add_filter('pay_user_credit', array($this, 'pay_user_credit_wrap'));
 
-		if (! table_exists("yaad_transactions"))
-			sql_query("create table im_yaad_transactions
+		if (! TableExists("yaad_transactions"))
+			SqlQuery("create table im_yaad_transactions
 (
 	id int auto_increment
 		primary key,
@@ -68,7 +68,7 @@ class Finance_Yaad {
 		if ($amount == 0)
 			$amount = $user->balance();
 
-		$rows = sql_query_array($sql);
+		$rows = SqlQueryArray($sql);
 		$current_total = 0;
 
 		$paying_transactions = [];
@@ -100,8 +100,8 @@ class Finance_Yaad {
 
 		$token = get_user_meta($user->getUserId(), 'credit_token', true);
 
-		$credit_data = sql_query_single_assoc("select * from im_payment_info where email = " . QuoteText($user->get_customer_email()) .
-		" and card_number not like '%X%'");
+		$credit_data = SqlQuerySingleAssoc( "select * from im_payment_info where email = " . QuoteText($user->get_customer_email()) .
+		                                    " and card_number not like '%X%'");
 		if (! $credit_data) return false;
 
 		if ($token) {
@@ -233,7 +233,7 @@ class Finance_Yaad {
 		}
 		$rc['user_id'] = $user_info->getUserId();
 		$rc['pay_date'] = date("Y-m-d");
-		sql_insert("yaad_transactions", $rc, array("Fild1", "Fild2", "Fild3"));
+		SqlInsert("yaad_transactions", $rc, array("Fild1", "Fild2", "Fild3"));
 	}
 
 	private function GetToken( $transid ) {
@@ -302,6 +302,6 @@ class Finance_Yaad {
 		$params["tashType"]   = 1;
 		$params["ClientName"] = urlencode( $user_info->getName() );
 //		$params['UserId']    = get_user_meta( $user_info->getUserId(), 'id_number', true );
-		$params['UserId']  = sql_query_single_scalar( "select id_number from im_payment_info where email = '" . $user_info->get_customer_email() . "'" );
+		$params['UserId']  = SqlQuerySingleScalar( "select id_number from im_payment_info where email = '" . $user_info->get_customer_email() . "'" );
 	}
 }

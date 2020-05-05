@@ -16,7 +16,7 @@ $sql = 'select '
        . ' from wp_posts '
        . ' where post_type = \'product\'';
 
-$result = sql_query( $sql );
+$result = SqlQuery( $sql );
 
 $bundles = new Bundles();
 

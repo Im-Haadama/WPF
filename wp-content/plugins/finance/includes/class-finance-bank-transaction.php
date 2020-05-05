@@ -15,15 +15,15 @@ class Finance_Bank_Transaction {
 	private $client_name;
 
 	static function createFromDB( $id ) {
-		$table_prefix = get_table_prefix();
+		$table_prefix = GetTablePrefix();
 
 		$sql    = "SELECT in_amount, date, out_amount, client_name FROM ${table_prefix}bank WHERE id = " . $id;
-		$result = sql_query( $sql );
+		$result = SqlQuery( $sql );
 		if ( ! $result ) {
 			throw new Exception( "Transaction not found" );
 		}
 
-		$row = sql_fetch_row( $result );
+		$row = SqlFetchRow( $result );
 
 		if ( ! $row ) {
 			throw new Exception( "Transaction not found" );
@@ -57,14 +57,14 @@ class Finance_Bank_Transaction {
 	 * @return mixed
 	 */
 	public function getOutAmount( $attached = false ) {
-		$table_prefix = get_table_prefix();
+		$table_prefix = GetTablePrefix();
 //		debug_var($this->out_amount);
 		if ( ! $attached ) {
 			return $this->out_amount;
 		}
 
-		$attached_amount = sql_query_single_scalar( "SELECT sum(amount) FROM ${table_prefix}bank_lines " .
-		                                            " WHERE line_id = " . $this->id );
+		$attached_amount = SqlQuerySingleScalar( "SELECT sum(amount) FROM ${table_prefix}bank_lines " .
+		                                         " WHERE line_id = " . $this->id );
 
 //		debug_var($attached_amount);
 
@@ -77,9 +77,9 @@ class Finance_Bank_Transaction {
 	}
 
 	public function getAttached() {
-		$table_prefix = get_table_prefix();
+		$table_prefix = GetTablePrefix();
 
-		return sql_query_array( "SELECT * FROM ${table_prefix}bank_lines WHERE line_id = " . $this->id );
+		return SqlQueryArray( "SELECT * FROM ${table_prefix}bank_lines WHERE line_id = " . $this->id );
 	}
 
 
@@ -92,7 +92,7 @@ class Finance_Bank_Transaction {
 
 	public function Update( $customer_id, $receipt, $site_id )
 	{
-		$table_prefix = get_table_prefix();
+		$table_prefix = GetTablePrefix();
 
 		if ( is_numeric( $receipt ) ) {
 			$sql = "UPDATE ${table_prefix}bank SET customer_id = " . $customer_id .
@@ -100,7 +100,7 @@ class Finance_Bank_Transaction {
 			       ", site_id = " . $site_id .
 			       " WHERE id = " . $this->id;
 
-			return sql_query( $sql );
+			return SqlQuery( $sql );
 		} else {
 			throw new Exception( "invalid receipt number" );
 		}

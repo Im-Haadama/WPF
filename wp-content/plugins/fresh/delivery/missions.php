@@ -20,7 +20,7 @@ function show_zone_names( $str_zones, $line_id ) {
 		$zones  = explode( ",", $str_zones );
 		$result = "";
 		foreach ( $zones as $zone ) {
-			$result .= sql_query_single_scalar( "SELECT zone_name FROM wp_woocommerce_shipping_zones WHERE zone_id = " . $zone ) . "(" . $zone . "), ";
+			$result .= SqlQuerySingleScalar( "SELECT zone_name FROM wp_woocommerce_shipping_zones WHERE zone_id = " . $zone ) . "(" . $zone . "), ";
 		}
 
 		return rtrim( $result, ", " );
@@ -33,7 +33,7 @@ function get_zones_per_path( $path_code ) {
 	// print $path_code . "<br/>";
 	// Collect zone, days info
 	$sql    = "SELECT zone_id, codes FROM wp_woocommerce_shipping_zones";
-	$result = sql_query_array( $sql );
+	$result = SqlQueryArray( $sql );
 	if ( ! is_array( $result ) ) {
 		my_log( __METHOD__ . " " . $result );
 
@@ -103,7 +103,7 @@ function duplicate_week() {
 	       " WHERE date >= curdate() - INTERVAL DAYOFWEEK(curdate())+6 DAY
                    AND DATE < curdate() - INTERVAL DAYOFWEEK(curdate())-1 DAY";
 
-	$ids = sql_query_array_scalar( $sql );
+	$ids = SqlQueryArrayScalar( $sql );
 	foreach ( $ids as $id ) {
 		// print "mission: " . $id . "<br/>";
 		duplicate_mission( $id );
@@ -113,7 +113,7 @@ function duplicate_week() {
 function delete_mission( $id ) {
 	// print "deleting...<br/>";
 	$sql = "DELETE FROM im_missions WHERE id = " . $id;
-	sql_query( $sql );
+	SqlQuery( $sql );
 	print "deleted";
 }
 
@@ -123,29 +123,29 @@ function duplicate_mission( $id ) {
 //	$zones = get_zones_per_path( $path_code );
 	// print $zones . "<br/>";
 
-	$path_code = sql_query_single_scalar( "select path_code from im_missions where id = " . $id );
+	$path_code = SqlQuerySingleScalar( "select path_code from im_missions where id = " . $id );
 
 	$max_weeks = 4;
 	$sql       = "select date from im_missions where id = " . $id;
-	$date      = sql_query_single_scalar( $sql );
+	$date      = SqlQuerySingleScalar( $sql );
 
 	for ( $i = 1; $i <= $max_weeks; $i ++ ) {
 		$sql = "select count(id) from im_missions where path_code = " . quote_text( $path_code ) .
 		       " and date = ADDDATE(' " . $date . "', interval " . $i * 7 . " DAY) ";
 		// print $sql . "<br/>";
-		$c = sql_query_single_scalar( $sql );
+		$c = SqlQuerySingleScalar( $sql );
 		// print "c= " . $c . "<br/>";
 		if ( ( $c == 0 ) ) {
 			$sql = "INSERT INTO im_missions (date, start_h, end_h, zones, name, path_code, start_address, end_address)
 						SELECT ADDDATE(date, INTERVAL " . $i * 7 . " DAY), start_h, end_h, zones, name, path_code, start_address, end_address FROM im_missions WHERE id = " . $id;
 			//print $sql;
-			sql_query( $sql );
+			SqlQuery( $sql );
 
 			return;
 		}
 	}
 	// print $sql;
 	// die(1);
-	sql_query( $sql );
+	SqlQuery( $sql );
 
 }

@@ -25,8 +25,8 @@ switch ( $operation ) {
 			print "must send numeric id to cancel";
 			die( 1 );
 		}
-		sql_query( "DELETE FROM im_task_templates WHERE " .
-		           " id = " . $id );
+		SqlQuery( "DELETE FROM im_task_templates WHERE " .
+		          " id = " . $id );
 		redirect_back();
 		break;
 }

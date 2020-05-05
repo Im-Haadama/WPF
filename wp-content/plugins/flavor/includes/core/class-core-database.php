@@ -4,11 +4,11 @@ class Core_Database {
 
 	static function CreateInfo()
 	{
-		$db_prefix = get_table_prefix();
-		sql_query("alter table ${db_prefix}info modify info_key varchar(100)");
+		$db_prefix = GetTablePrefix();
+		SqlQuery("alter table ${db_prefix}info modify info_key varchar(100)");
 
 		if (! self::table_exists("info"))
-			sql_query( "CREATE TABLE ${db_prefix}info (
+			SqlQuery( "CREATE TABLE ${db_prefix}info (
 		info_key VARCHAR(200) NULL,
 		info_data VARCHAR(200) NULL,
 		id INT NOT NULL AUTO_INCREMENT
@@ -27,15 +27,15 @@ class Core_Database {
 	}
 
 	static function table_exists( $table ) {
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 		$sql = 'SELECT 1 FROM ' . $db_prefix .$table . ' LIMIT 1';
-		return sql_query( $sql, false) != null;
+		return SqlQuery( $sql, false) != null;
 	}
 
 	static function view_exists( $table ) {
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 		$sql = 'SELECT 1 FROM ' . $db_prefix .$table . ' LIMIT 1';
-		return sql_query( $sql, false) != null;
+		return SqlQuery( $sql, false) != null;
 	}
 
 

@@ -25,7 +25,7 @@ if ( isset( $_GET["business_id"] ) ) {
 	$bid = $_GET["business_id"];
 	$sql = "SELECT id FROM im_supplies WHERE business_id = " . $bid;
 //    print $sql;
-	$id = sql_query_single_scalar( $sql );
+	$id = SqlQuerySingleScalar( $sql );
 	if ( ! ( $id > 0 ) ) {
 		print "לא נמצאה אספקה";
 

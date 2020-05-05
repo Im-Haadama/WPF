@@ -30,7 +30,7 @@ class Mission {
 
 		// Load from db
 		$sql      = "select name, hour(start_h), MINUTE(start_h), start_address, end_address, end_h, date, mission_type from im_missions where id = " . $id;
-		$result   = sql_query_single( $sql );
+		$result   = SqlQuerySingle( $sql );
 		if ( ! $result ) {
 			throw new Exception( "Can't find mission " . $id );
 		}
@@ -67,7 +67,7 @@ class Mission {
 
 	public function getZoneTimes()
 	{
-		return unserialize($raw = sql_query_single_scalar("select zones_times from im_missions where id = " . $this->getId()));
+		return unserialize($raw = SqlQuerySingleScalar( "select zones_times from im_missions where id = " . $this->getId()));
 	}
 
 	/** return mission hour
@@ -95,14 +95,14 @@ class Mission {
 
 	public function getDefaultFee()
 	{
-		return sql_query_single_scalar("select default_price from im_mission_types where id = " . self::getMissionType());
+		return SqlQuerySingleScalar( "select default_price from im_mission_types where id = " . self::getMissionType());
 	}
 	/**
 	 * @param mixed $start_address
 	 */
 	public function setStartAddress( $start_address ): void {
 		$this->start_address = $start_address;
-		sql_query( "update im_missions set start_address = '" . $start_address . "' where id = " . $this->id );
+		SqlQuery( "update im_missions set start_address = '" . $start_address . "' where id = " . $this->id );
 	}
 
 	/**
@@ -111,7 +111,7 @@ class Mission {
 	public function setStartTime( $start_time ): void {
 		$this->start_time = $start_time;
 		$sql              = "update im_missions set start_h = '" . $start_time . "' where id = " . $this->id;
-		sql_query( $sql );
+		SqlQuery( $sql );
 	}
 
 	/**
@@ -144,7 +144,7 @@ class Mission {
 			die ( __METHOD__ . " id = " . $this->id );
 		}
 
-		return sql_query_single_scalar( "SELECT path_code FROM im_missions WHERE id = " . $this->id );
+		return SqlQuerySingleScalar( "SELECT path_code FROM im_missions WHERE id = " . $this->id );
 	}
 
 	/**
@@ -155,7 +155,7 @@ class Mission {
 		if ( ! ( $this->id > 0 ) ) {
 			die ( __METHOD__ . " id = " . $this->id );
 		}
-		$start = sql_query_single_scalar( "SELECT start_address FROM im_missions WHERE id = " . $this->id );
+		$start = SqlQuerySingleScalar( "SELECT start_address FROM im_missions WHERE id = " . $this->id );
 
 		return $start ? $start : $store_address;
 	}
@@ -169,7 +169,7 @@ class Mission {
 		if ( ! ( $this->id > 0 ) ) {
 			die ( __METHOD__ . " id = " . $this->id );
 		}
-		$end = sql_query_single_scalar( "SELECT end_address FROM im_missions WHERE id = " . $this->id );
+		$end = SqlQuerySingleScalar( "SELECT end_address FROM im_missions WHERE id = " . $this->id );
 
 		return $end ? $end : $store_address;
 	}
@@ -178,14 +178,14 @@ class Mission {
 	 * @return int
 	 */
 	public function getTaskCount() {
-		return (int) sql_query_single_scalar( "SELECT count(*) FROM im_tasklist WHERE mission_id = " . $this->id );
+		return (int) SqlQuerySingleScalar( "SELECT count(*) FROM im_tasklist WHERE mission_id = " . $this->id );
 	}
 
 	/**
 	 * @return string
 	 */
 	public function getMissionName() {
-		return sql_query_single_scalar( "SELECT name FROM im_missions WHERE id = " . $this->id );
+		return SqlQuerySingleScalar( "SELECT name FROM im_missions WHERE id = " . $this->id );
 	}
 
 	/**
@@ -198,10 +198,10 @@ class Mission {
 	 */
 	public static function CreateFromType($type_id, $forward_days = 8) // from tomorrow till tomorrow+forward_days
 	{
-		$last_mission_id = sql_query_single_scalar("select max(id) from im_missions where mission_type = $type_id and date > curdate()");
+		$last_mission_id = SqlQuerySingleScalar("select max(id) from im_missions where mission_type = $type_id and date > curdate()");
 		if ($last_mission_id) return;
 
-		$type_info = sql_query_single_assoc("select * from im_mission_types where id = $type_id");
+		$type_info = SqlQuerySingleAssoc("select * from im_mission_types where id = $type_id");
 
 		$name = $type_info['mission_name'];
 		$week_day = $type_info['week_day'];
@@ -211,7 +211,7 @@ class Mission {
 
 //		 print $sql ."<br/>";
 
-		return sql_query($sql);
+		return SqlQuery($sql);
 	}
 
 	private function create_mission_path_date($path_id, $date)
@@ -232,13 +232,13 @@ class Mission {
 		$sql = "insert into im_missions (date, start_h, end_h, zones_times, name, path_code, start_address, end_address) " .
 			" values ('$date', '$start_hour:00', '$end_hour:00', '" . serialize($zones) . "', '$name', '$path_id', '" . $s_address. "', '" . $e_address ."') ";
 
-		sql_query($sql);
-		return sql_insert_id();
+		SqlQuery($sql);
+		return SqlInsertId();
 	}
 
 	public function stopAccept()
 	{
-		sql_query("update im_missions set accepting = 0 where id =" . $this->id);
+		SqlQuery( "update im_missions set accepting = 0 where id =" . $this->id);
 	}
 	/**
 	 * @return array|null
@@ -246,7 +246,7 @@ class Mission {
 	public function getShippingMethods() {
 		$ids = [];
 		$mission_day = DateDayName( $this->getDate() );
-		$path_id     = sql_query_single_scalar( "select path_code from im_missions where id = $this->id" );
+		$path_id     = SqlQuerySingleScalar( "select path_code from im_missions where id = $this->id" );
 
 		if (! ($path_id > 0)) return null;
 
@@ -274,7 +274,7 @@ class Mission {
 	}
 
 	function setType($type){
-		return sql_query("update im_missions set mission_type = $type where id = " .$this->id);
+		return SqlQuery( "update im_missions set mission_type = $type where id = " . $this->id);
 	}
 }
 

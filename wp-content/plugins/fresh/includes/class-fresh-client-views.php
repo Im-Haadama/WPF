@@ -35,7 +35,7 @@ class Fresh_Client_Views {
 		$item_id = GetParam("item_id", true);
 		$prod_id = GetParam("prod_id", true);
 
-		$order_id = sql_query_single_scalar("select order_id from wp_woocommerce_order_items where order_item_id = $item_id");
+		$order_id = SqlQuerySingleScalar("select order_id from wp_woocommerce_order_items where order_item_id = $item_id");
 		$Order = new Fresh_Order($order_id);
 //		$current_remove = get_postmeta_field($order_id)
 //		$Order->addProduct($prod_id, -1, false, $Order->getCustomerId(),null, "regular", 0);
@@ -49,7 +49,7 @@ class Fresh_Client_Views {
 		$prod_id = GetParam("new_prod_id", true);
 //		print "pid=$prod_id";
 
-		$order_id = sql_query_single_scalar("select order_id from wp_woocommerce_order_items where order_item_id = $item_id");
+		$order_id = SqlQuerySingleScalar("select order_id from wp_woocommerce_order_items where order_item_id = $item_id");
 		$Order = new Fresh_Order($order_id);
 		//               $product_id, $quantity, $replace = false, $client_id = - 1, $unit = null, $type = null, $price = null
 		$Order->addToBasket($item_id, $prod_id);
@@ -60,7 +60,7 @@ class Fresh_Client_Views {
 	static function remove_item()
 	{
 		$item_id = GetParam("item_id", true);
-		$order_id = sql_query_single_scalar("select order_id from wp_woocommerce_order_items where order_item_id = $item_id");
+		$order_id = SqlQuerySingleScalar("select order_id from wp_woocommerce_order_items where order_item_id = $item_id");
 		$Order = new Fresh_Order($order_id);
 		$Order->DeleteLines(array($item_id));
 		return true;
@@ -104,7 +104,7 @@ class Fresh_Client_Views {
 	{
 		$sql2 = 'SELECT DISTINCT product_id, quantity FROM im_baskets WHERE basket_id = ' . $basket_id;
 		$client_type = "regular";
-		$result2 = sql_query( $sql2 );
+		$result2 = SqlQuery( $sql2 );
 		$basket_lines = array();
 		while ( $row2 = mysqli_fetch_assoc( $result2 ) ) {
 			$prod_id  = $row2["product_id"];
@@ -144,8 +144,8 @@ class Fresh_Client_Views {
 			$result .= "לחץ על שם הסל, כדי לבצע בו שינויים";
 				//__("Press on basket name to edit it");
 
-		$rows = sql_query_array("select order_item_id, order_item_name from wp_woocommerce_order_items " .
-		" where order_id = $order_id and order_item_type = 'line_item'");
+		$rows = SqlQueryArray( "select order_item_id, order_item_name from wp_woocommerce_order_items " .
+		                       " where order_id = $order_id and order_item_type = 'line_item'");
 
 		$table_rows = array(array("שם פריט", "כמות", "מחיר", 'סה"כ', "הערה", "הסר"));
 
@@ -155,10 +155,10 @@ class Fresh_Client_Views {
 			$item_id = $row[0];
 			$name = $row[1];
 
-			$qty = sql_query_single_scalar( "select meta_value from wp_woocommerce_order_itemmeta where order_item_id = $item_id and meta_key = '_qty'" );
-			$line_total = sql_query_single_scalar( "select meta_value from wp_woocommerce_order_itemmeta where order_item_id = $item_id and meta_key = '_line_total'" );
-			$prod_id = sql_query_single_scalar( "select meta_value from wp_woocommerce_order_itemmeta where order_item_id = $item_id and meta_key = '_product_id'" );
-			$comment =  sql_query_single_scalar( "select meta_value from wp_woocommerce_order_itemmeta where order_item_id = $item_id and meta_key = 'product_comment'" );
+			$qty = SqlQuerySingleScalar( "select meta_value from wp_woocommerce_order_itemmeta where order_item_id = $item_id and meta_key = '_qty'" );
+			$line_total = SqlQuerySingleScalar( "select meta_value from wp_woocommerce_order_itemmeta where order_item_id = $item_id and meta_key = '_line_total'" );
+			$prod_id = SqlQuerySingleScalar( "select meta_value from wp_woocommerce_order_itemmeta where order_item_id = $item_id and meta_key = '_product_id'" );
+			$comment =  SqlQuerySingleScalar( "select meta_value from wp_woocommerce_order_itemmeta where order_item_id = $item_id and meta_key = 'product_comment'" );
 //			$price = Fresh_Pricing::get_price_by_type($prod_id);
 
 			$P = new Fresh_Product($prod_id);
@@ -244,7 +244,7 @@ class Fresh_Client_Views {
 			$sql = "select id from wp_posts where order_user(id) = " . $user_id . " and post_status in 
 				('wc-processing', 'wc-on-hold', 'wc-pending')";
 
-			$orders = sql_query_array_scalar( $sql );
+			$orders = SqlQueryArrayScalar( $sql );
 
 			if ( ! $orders ) {
 				return __( "No pending orders" ) . "<br/>";

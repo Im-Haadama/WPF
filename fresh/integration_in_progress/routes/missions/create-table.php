@@ -12,14 +12,14 @@ require_once( "../sql.php" );
 print header_text( false, true, false );
 
 print "truncating...";
-sql_query( "truncate table im_missions" );
+SqlQuery( "truncate table im_missions" );
 
 print " done<br/>";
 
 print "creating from wp_options...";
 $sql = "SELECT option_value FROM wp_options WHERE option_name LIKE 'woocommerce_flat_rate_%_settings'";
 
-$results = sql_query( $sql );
+$results = SqlQuery( $sql );
 
 while ( $row = mysqli_fetch_row( $results ) ) {
 //	print $row[0] . "<br/>";
@@ -36,6 +36,6 @@ while ( $row = mysqli_fetch_row( $results ) ) {
 	// print "name: " . $name . " " . "h= " . $h . " start=" . $start . " end=" . $end . "<br/>";
 	$sql = "insert into im_missions (name, start_h, end_h) values ('" .
 	       mysqli_real_escape_string( $conn, $name ) . "', $start, $end)";
-	sql_query( $sql );
+	SqlQuery( $sql );
 }
 print " done<br/>";

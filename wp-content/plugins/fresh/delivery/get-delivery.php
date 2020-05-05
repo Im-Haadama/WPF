@@ -67,7 +67,7 @@ $O->infoBox( $order_id );
 print $d->delivery_text( FreshDocumentType::delivery, Fresh_DocumentOperation::show, $margin );
 
 if ( ! $send ) {
-	if ( sql_query_single_scalar( "SELECT payment_receipt FROM im_delivery WHERE id = " . $id ) ) {
+	if ( SqlQuerySingleScalar( "SELECT payment_receipt FROM im_delivery WHERE id = " . $id ) ) {
 		print "תעודה שולמה ולא ניתנת לעריכה או למחיקה";
 	} else {
 	    print Core_Html::GuiButton("btn_del", "delete document", array("action" => "deleteDelivery($id)") );

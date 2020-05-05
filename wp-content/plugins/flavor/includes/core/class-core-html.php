@@ -1090,7 +1090,7 @@ class Core_Html {
 	 */
 	static function DatalistCreate( $args, $table, &$values )
 	{
-		$prefix = get_table_prefix();
+		$prefix = GetTablePrefix();
 		$query  = GetArg( $args, "query", null );
 		$id_key = GetArg( $args, "id_key", "id" );
 
@@ -1110,7 +1110,7 @@ class Core_Html {
 			$sql .= " order by $order_by ";
 		}
 
-		$results = sql_query( $sql );
+		$results = SqlQuery( $sql );
 
 		if ( $results ) {
 			while ( $row = $results->fetch_assoc() ) {
@@ -1297,7 +1297,7 @@ class Core_Html {
 
 		$events = GetArg($args, "events", null);
 		if ( is_array( $events ) ) {
-			sql_error( "bad events in $id" );
+			SqlError( "bad events in $id" );
 			var_dump( $events );
 			die( 1 );
 		}
@@ -1362,7 +1362,7 @@ class Core_Html {
 		}
 
 		if ( is_array( $events ) ) {
-			sql_error( "bad events in $id" );
+			SqlError( "bad events in $id" );
 			var_dump( $events );
 			die( 1 );
 		}
@@ -1465,7 +1465,7 @@ class Core_Html {
 
 		// print $sql;
 
-		$results = sql_query( $sql );
+		$results = SqlQuery( $sql );
 		if ( $results ) {
 			while ( $row = $results->fetch_assoc() ) {
 				array_push( $values, $row );
@@ -1739,7 +1739,7 @@ class Core_Html {
 	 */
 	static function GuiRowContent($table_name, $row_id, $args)
 	{
-		$db_prefix = get_table_prefix();
+		$db_prefix = GetTablePrefix();
 		if (! $table_name) return null;
 		$id_key = GetArg($args, "id_key", "id");
 		$fields = GetArg($args, "fields", null);
@@ -1767,7 +1767,7 @@ class Core_Html {
 		}
 		if (! defined('NOT_NULL_FLAG')) define ('NOT_NULL_FLAG', 1);
 		if ($args /* and ! isset($args["sql_fields"]) */) {
-			$result = sql_query("select * from ${db_prefix}$table_name");
+			$result = SqlQuery("select * from ${db_prefix}$table_name");
 			if (! $result) return null;
 			$args["sql_fields"] = mysqli_fetch_fields( $result );
 			if (! isset($args["mandatory_fields"])){
@@ -1864,9 +1864,9 @@ class Core_Html {
 
 		// print "id_field: $id_field<br/>";
 
-		$result = sql_query( $sql );
+		$result = SqlQuery( $sql );
 		// print $sql . "<br/>";
-		while ( $row = sql_fetch_assoc($result ) ) {
+		while ( $row = SqlFetchAssoc($result ) ) {
 //		var_dump($row); print "<br/>";
 			// print "key = " . $row[$id_field];
 			array_push($values, $row);

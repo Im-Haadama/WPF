@@ -40,8 +40,8 @@ class Finance_Clients
 		       . "having total > 1";
 
 		$data   = "<table>";
-		$result = sql_query( $sql );
-		while ( $row = sql_fetch_row( $result ) ) {
+		$result = SqlQuery( $sql );
+		while ( $row = SqlFetchRow( $result ) ) {
 			$data .= Core_Html::gui_row( $row );
 		}
 		$data .= "</table>";
@@ -69,7 +69,7 @@ class Finance_Clients
 		       . ' group by client_id '
 		       . ' order by 5 desc';
 
-		$result = sql_query( $sql );
+		$result = SqlQuery( $sql );
 
 		$table_lines         = array();
 		$table_lines_credits = array();
@@ -93,7 +93,7 @@ class Finance_Clients
 
 			$line .= "<td>" . $row[4] . "</td>";
 			$line .= "<td>" . Finance_Payment_Methods::get_payment_method_name( $payment_method ) . "</td>";
-			$has_credit_info = sql_query_single_scalar("select count(*) from im_payment_info where email = " .QuoteText($C->get_customer_email())) > 0 ? 'C' : '';
+			$has_credit_info = SqlQuerySingleScalar( "select count(*) from im_payment_info where email = " . QuoteText($C->get_customer_email())) > 0 ? 'C' : '';
 			$has_token = get_user_meta($customer_id, 'credit_token', true);
 			$line .= "<td>" . $has_credit_info . " " . $has_token . "</td>";
 			if ( $customer_total > 0 or $include_zero ) {
@@ -183,7 +183,7 @@ class Finance_Clients
 		} else {
 			$new_tran = Core_Html::GuiHeader( 1, "לא ניתן להחבר ל Invoice4u. בדוק את ההגדרות ואת המנוי. יוזר $invoice_user" );
 		}
-		$payment_info_id = sql_query_single_scalar("select id from im_payment_info where email = " . QuoteText($u->get_customer_email()));
+		$payment_info_id = SqlQuerySingleScalar( "select id from im_payment_info where email = " . QuoteText($u->get_customer_email()));
 		if ($payment_info_id) {
 			$args = array("post_file" => Fresh::getPost(), "edit"=>true);
 			$credit_info = Core_Gem::GemElement( "payment_info", $payment_info_id, $args );
@@ -196,7 +196,7 @@ class Finance_Clients
 		) );
 
 		$result .= Core_Html::GuiHeader( 2, __( "Balance" ) . ": " .
-		                                    sql_query_single_scalar( "SELECT round(sum(transaction_amount), 1) FROM im_client_accounts WHERE client_id = " . $customer_id ) );
+		                                    SqlQuerySingleScalar( "SELECT round(sum(transaction_amount), 1) FROM im_client_accounts WHERE client_id = " . $customer_id ) );
 		$result .= '<div id="logging"></div>';
 
 		$args   = array( "post_file" => Finance::getPostFile(), "class" => "widefat" );
@@ -234,7 +234,7 @@ class Finance_Clients
 		foreach ( $row_ids as $id ) {
 			if ( $id > 0 ) {
 				$no_ids = false;
-				$del_id = sql_query_single_scalar( "select transaction_ref from im_client_accounts where ID = " . $id );
+				$del_id = SqlQuerySingleScalar( "select transaction_ref from im_client_accounts where ID = " . $id );
 				if ( $del_id > 0 ) {
 					array_push( $del_ids, $del_id );
 				} else {
@@ -262,7 +262,7 @@ class Finance_Clients
 
 		// Check if paid (some bug cause double invoice).
 		$sql = "SELECT count(payment_receipt) FROM im_delivery WHERE id IN (" . CommaImplode( $del_ids ) . " )";
-		if ( sql_query_single_scalar( $sql ) > 0 ) {
+		if ( SqlQuerySingleScalar( $sql ) > 0 ) {
 			print " כבר שולם" . CommaImplode( $del_ids ) . " <br/>";
 
 			return false;
@@ -274,7 +274,7 @@ class Finance_Clients
 		if ( is_numeric( $doc_id ) && $doc_id > 0 ) {
 			$pay_description = $pay_type . " " . CommaImplode( $del_ids );
 			$sql = "UPDATE im_delivery SET payment_receipt = " . $doc_id . " WHERE id IN (" . CommaImplode( $del_ids ) . " ) ";
-			sql_query( $sql );
+			SqlQuery( $sql );
 			$u->add_transaction( $date, $change - ( $cash + $bank + $credit + $check ), $doc_id, $pay_description );
 			if ( abs( $change ) > 0 ) {
 				$u->add_transaction($date, - $change, $doc_id, $change > 0 ? "עודף" : "יתרה" );
@@ -332,9 +332,9 @@ class Finance_Clients
 		}
 		$email = $client->Email;
 		// print "user mail: " . $email . "<br/>";
-		$doc = new Document();
+		$doc = new InvoiceDocument();
 
-		$iEmail                = new Email();
+		$iEmail                = new InvoiceEmail();
 		$iEmail->Mail          = $email;
 		$doc->AssociatedEmails = Array( $iEmail );
 		//var_dump($client->ID);
@@ -342,10 +342,10 @@ class Finance_Clients
 		$doc->ClientID = $client->ID;
 		switch ( $type ) {
 			case "r":
-				$doc->DocumentType = DocumentType::InvoiceReceipt;
+				$doc->DocumentType = InvoiceDocumentType::InvoiceReceipt;
 				break;
 			case "i":
-				$doc->DocumentType = DocumentType::Invoice;
+				$doc->DocumentType = InvoiceDocumentType::Invoice;
 				break;
 		}
 
@@ -363,12 +363,12 @@ class Finance_Clients
 			$sql = 'select product_name, quantity, vat, price, line_price '
 			       . ' from im_delivery_lines where delivery_id = ' . $del_id;
 
-			$result = sql_query( $sql );
+			$result = SqlQuery( $sql );
 
 			// drill to lines
 			while ( $row = mysqli_fetch_row( $result ) ) {
 				if ( $row[4] != 0 ) {
-					$item           = new Item();
+					$item           = new InvoiceItem();
 					$item->Name     = $row[0];
 					$item->Price    = round( $row[3], 2 );
 					$item->Quantity = round( $row[1], 2 );
@@ -397,23 +397,23 @@ class Finance_Clients
 
 		if ( $type == "r" ) {
 			if ( is_numeric( $cash ) and $cash <> 0 ) {
-				$pay         = new PaymentCash();
+				$pay         = new InvoicePaymentCash();
 				$pay->Amount = $cash;
 				array_push( $doc->Payments, $pay );
 			}
 			if ( $bank > 0 ) {
-				$pay         = new PaymentBank();
+				$pay         = new InvoicePaymentBank();
 				$pay->Amount = $bank;
 				$pay->Date   = $date;
 				array_push( $doc->Payments, $pay );
 			}
 			if ( $credit > 0 ) {
-				$pay         = new PaymentCredit();
+				$pay         = new InvoicePaymentCredit();
 				$pay->Amount = $credit;
 				array_push( $doc->Payments, $pay );
 			}
 			if ( $check > 0 ) {
-				$pay         = new PaymentCheck();
+				$pay         = new InvoicePaymentCheck();
 				$pay->Amount = $check;
 				array_push( $doc->Payments, $pay );
 			}
@@ -450,15 +450,15 @@ class Finance_Clients
 
 	static function payment_get_accountants($payment_id)
 	{
-		return sql_query_single_scalar("select accountants from im_payments where id = " . $payment_id);
+		return SqlQuerySingleScalar( "select accountants from im_payments where id = " . $payment_id);
 	}
 
 	static function install()
 	{
 		return;
-		$db_prefix = get_table_prefix();
-		if (! table_exists("client_accounts"))
-			sql_query("create table ${db_prefix}client_accounts
+		$db_prefix = GetTablePrefix();
+		if (! TableExists("client_accounts"))
+			SqlQuery("create table ${db_prefix}client_accounts
 (
 	ID bigint auto_increment
 		primary key,

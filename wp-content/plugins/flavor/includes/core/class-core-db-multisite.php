@@ -17,14 +17,14 @@ class Core_Db_MultiSite extends Core_MultiSite {
 	 * Core_Db_MultiSite constructor.
 	 */
 	public function __construct() {
-		if ( table_exists( "multisite" ) ) {
+		if ( TableExists( "multisite" ) ) {
 			$sql           = "select id, site_name, tools_url, local, display_name, active, master, user, password " .
 			                 " from im_multisite";
-			$results       = sql_query( $sql );
+			$results       = SqlQuery( $sql );
 			$sites_array   = array();
 			$master_id     = - 1;
 			$local_site_id = - 1;
-			while ( $row = sql_fetch_row( $results ) ) {
+			while ( $row = SqlFetchRow( $results ) ) {
 				$id = $row[0];
 				if ( $row[3] ) {
 					$local_site_id = $row[0];
@@ -105,7 +105,7 @@ class Core_Db_MultiSite extends Core_MultiSite {
 
 		MyLog( $sql );
 
-		sql_query( $sql );
+		SqlQuery( $sql );
 	}
 
 	/**
@@ -139,8 +139,8 @@ class Core_Db_MultiSite extends Core_MultiSite {
 	static function getPickupAddress( $id ) {
 		if (! ($id > 0))
 			return "unknown site";
-		if (table_exists("multisite"))
-			return sql_query_single_scalar( "SELECT pickup_address FROM im_multisite WHERE id = " . $id );
+		if (TableExists("multisite"))
+			return SqlQuerySingleScalar( "SELECT pickup_address FROM im_multisite WHERE id = " . $id );
 		return "";
 	}
 
@@ -276,7 +276,7 @@ class Core_Db_MultiSite extends Core_MultiSite {
 			array_push( $keys, $row_key );
 			$sql = "SELECT COUNT(*) FROM $table WHERE $table_key=" . QuoteText( $row_key );
 
-			$found = sql_query_single_scalar( $sql ) >= 1;
+			$found = SqlQuerySingleScalar( $sql ) >= 1;
 
 			if ( ! $found ) {
 //				print "<br/>handle " . $row_key . " inserted ";
@@ -291,11 +291,11 @@ class Core_Db_MultiSite extends Core_MultiSite {
 					if ( $insert ) {
 //						if (strlen($fields[$i] == 0)) $insert_values .= "NULL, ";
 //						else // print strlen($fields[$i]) . " " . $fields[$i] . "<br/>";
-						$insert_values .= QuoteText( escape_string( $fields[ $i ] ) ) . ", ";
+						$insert_values .= QuoteText( EscapeString( $fields[ $i ] ) ) . ", ";
 						$insert_count ++;
 
 					} else { // Update
-						$update_fields .= $headers[ $i ] . "=" . QuoteText( escape_string( $fields[ $i ] ) ) . ", ";
+						$update_fields .= $headers[ $i ] . "=" . QuoteText( EscapeString( $fields[ $i ] ) ) . ", ";
 						$update_count ++;
 					}
 				}
@@ -303,11 +303,11 @@ class Core_Db_MultiSite extends Core_MultiSite {
 
 			if ( $insert ) {
 				$sql = "INSERT INTO $table (" . $field_list . ") VALUES ( " . rtrim( $insert_values, ", " ) . ")";
-				sql_query( $sql );
+				SqlQuery( $sql );
 			} else {
 				$sql = "UPDATE $table SET " . rtrim( $update_fields, ", " ) .
 				       " WHERE $table_key = " . QuoteText( $row_key );
-				sql_query( $sql );
+				SqlQuery( $sql );
 			}
 		}
 		if ( $i < 3 ) {
@@ -329,7 +329,7 @@ class Core_Db_MultiSite extends Core_MultiSite {
 			$sql .= " where " . $query;
 		}
 		$for_delete = "";
-		foreach ( sql_query_array_scalar( $sql ) as $key ) {
+		foreach ( SqlQueryArrayScalar( $sql ) as $key ) {
 			if ( ! in_array( $key, $keys ) ) {
 				$for_delete .= QuoteText( $key ) . ", ";
 			}
@@ -339,7 +339,7 @@ class Core_Db_MultiSite extends Core_MultiSite {
 			print "for delete: " . $for_delete;
 			$sql = "DELETE FROM $table WHERE $table_key IN (" . rtrim( $for_delete, ", " ) . ")";
 
-			sql_query( $sql );
+			SqlQuery( $sql );
 		}
 		return true;
 	}

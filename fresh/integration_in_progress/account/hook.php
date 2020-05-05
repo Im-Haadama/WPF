@@ -18,7 +18,7 @@ require_once( 'account.php' );
 
 $sql    = "SELECT id, transaction_method, transaction_ref FROM im_client_accounts " .
           "WHERE transaction_method LIKE 'אשראי %'";
-$result = sql_query( $sql );
+$result = SqlQuery( $sql );
 
 while ( $row = mysqli_fetch_row( $result ) ) {
 	$id      = $row[0];
@@ -33,7 +33,7 @@ while ( $row = mysqli_fetch_row( $result ) ) {
 			        " WHERE id = " . $del_id;
 
 			print $sql1 . "<br/>";
-			sql_query( $sql1 );
+			SqlQuery( $sql1 );
 			// print $del_id . " " . $ref . "<br/>";
 		}
 	}

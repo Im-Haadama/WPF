@@ -4,7 +4,7 @@ if ( ! defined( "FRESH_INCLUDES" ) ) {
 	define( 'FRESH_INCLUDES', dirname( dirname( dirname( __FILE__ ) ) ) );
 }
 
-get_sql_conn() || die("not connected!");
+GetSqlConn() || die("not connected!");
 require_once( '../r-shop_manager.php' ); // for authentication
 require_once( "admin.php" );
 

@@ -45,7 +45,7 @@ class Freight_Mission_Manager
 
 	static function create_missions()
 	{
-		$types = sql_query_array_scalar("select id from im_mission_types");
+		$types = SqlQueryArrayScalar("select id from im_mission_types");
 		foreach ($types as $type) {
 			Mission::CreateFromType($type);
 		}
@@ -63,7 +63,7 @@ class Freight_Mission_Manager
 
 		$sql = "select id from im_missions where " . $query; // FIRST_DAY_OF_WEEK(date) = " . quote_text($week);
 
-		$missions = sql_query_array_scalar($sql);
+		$missions = SqlQueryArrayScalar($sql);
 
 		if ( count( $missions )  == 0) {
 			$result .= ImTranslate("No missions for given period");
@@ -511,10 +511,10 @@ class Freight_Mission_Manager
 		if ( rtrim( $address_a ) == rtrim( $address_b ) ) {
 			return 0;
 		}
-		$sql = "SELECT distance FROM im_distance WHERE address_a = '" . escape_string( $address_a ) . "' AND address_b = '" .
-		       escape_string( $address_b ) . "'";
+		$sql = "SELECT distance FROM im_distance WHERE address_a = '" . EscapeString( $address_a ) . "' AND address_b = '" .
+		       EscapeString( $address_b ) . "'";
 		// print $sql . " ";
-		$ds  = sql_query_single_scalar( $sql );
+		$ds  = SqlQuerySingleScalar( $sql );
 
 		if ( $ds > 0 ) {
 			return $ds;
@@ -528,10 +528,10 @@ class Freight_Mission_Manager
 		$duration = $r[1];
 		if ( $distance > 0 ) {
 			$sql1 = "insert into im_distance (address_a, address_b, distance, duration) VALUES 
-				('" . escape_string( $address_a ) . "', '" .
-			        escape_string(  $address_b ) . "', $distance, $duration)";
-			sql_query( $sql1 );
-			if ( sql_affected_rows( ) < 1 ) {
+				('" . EscapeString( $address_a ) . "', '" .
+			        EscapeString(  $address_b ) . "', $distance, $duration)";
+			SqlQuery( $sql1 );
+			if ( SqlAffectedRowscted_rows( ) < 1 ) {
 				print "fail: " . $sql1 . "<br/>";
 			}
 
@@ -672,10 +672,10 @@ class Freight_Mission_Manager
 	}
 
 	static function get_distance_duration( $address_a, $address_b ) {
-		$sql = "SELECT duration FROM im_distance WHERE address_a = '" . escape_string( $address_a ) .
-		       "' AND address_b = '" . escape_string( $address_b ) . "'";
+		$sql = "SELECT duration FROM im_distance WHERE address_a = '" . EscapeString( $address_a ) .
+		       "' AND address_b = '" . EscapeString( $address_b ) . "'";
 
-		return sql_query_single_scalar( $sql );
+		return SqlQuerySingleScalar( $sql );
 	}
 
 	static function get_maps_url($mission, $path)
@@ -696,7 +696,7 @@ class Freight_Mission_Manager
 //    print "path=" . var_dump($path);
 		! is_array( $missions ) or die ( "missions array" );
 
-		sql_query( "update im_missions set path = \"" . escape_string(CommaImplode($path, true)) . "\" where id = " . $missions );
+		SqlQuery( "update im_missions set path = \"" . EscapeString(CommaImplode($path, true)) . "\" where id = " . $missions );
 	}
 
 	static function do_get_distance( $a, $b ) {
@@ -889,9 +889,9 @@ class Freight_Mission_Manager
 
 		if ( $debug ) print $sql;
 
-		$orders    = sql_query( $sql );
+		$orders    = SqlQuery( $sql );
 		$prev_user = - 1;
-		while ( $order = sql_fetch_row( $orders ) ) {
+		while ( $order = SqlFetchRow( $orders ) ) {
 			$order_id   = $order[0];
 			$o          = new Fresh_Order( $order_id );
 			$is_group   = $order[1];

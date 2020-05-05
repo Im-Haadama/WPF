@@ -139,7 +139,7 @@ class Flavor {
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
 		add_action('wp', 'unlogged_guest_posts_redirect');
 
-		get_sql_conn( ReconnectDb() );
+		GetSqlConn( ReconnectDb() );
 //		add_action( 'init', array( 'Flavor_Emails', 'init_transactional_emails' ) );
 		// add_action( 'init', array( $this, 'wpdb_table_fix' ), 0 );
 		// add_action( 'init', array( $this, 'add_image_sizes' ) );
@@ -471,12 +471,12 @@ class Flavor {
 	static public function check_system()
 	{
 		$result = "שלום<br/>";
-		$result .= sql_query_single_scalar("select \"אהא\"") . "<br/>";
-		$result .= sql_query("SET collation_connection = utf8_general_ci;") . "<br/>";
-		$conn = get_sql_conn();
+		$result .= SqlQuerySingleScalar("select \"אהא\"") . "<br/>";
+		$result .= SqlQuery("SET collation_connection = utf8_general_ci;") . "<br/>";
+		$conn = GetSqlConn();
 		$conn->set_charset("utf8");
 		// $result .= sql_query()
-		$result .= sql_query_single_scalar("select post_title from wp_posts where id = 14");
+		$result .= SqlQuerySingleScalar("select post_title from wp_posts where id = 14");
 
 //		ob_start();
 //		print phpinfo();

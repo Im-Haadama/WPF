@@ -77,7 +77,7 @@
 
 			$sql = "SELECT DISTINCT basket_id FROM im_baskets";
 
-			$result = sql_query( $sql );
+			$result = SqlQuery( $sql );
 			print mysql_error();
 			while ( $row = mysql_fetch_row( $result ) ) {
 				$basket_id   = $row[0];

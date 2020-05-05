@@ -15,7 +15,7 @@ require_once( FRESH_INCLUDES . "/fresh/supplies/Supply.php" );
 function print_fresh_category() {
 	$list = "";
 
-	$option = sql_query_single_scalar( "SELECT option_value FROM wp_options WHERE option_name = 'im_discount_categories'" );
+	$option = SqlQuerySingleScalar( "SELECT option_value FROM wp_options WHERE option_name = 'im_discount_categories'" );
 	if ( ! $option ) {
 		return;
 	}

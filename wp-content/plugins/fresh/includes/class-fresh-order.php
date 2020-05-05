@@ -32,9 +32,9 @@ class Fresh_Order {
 	{
 		$sql = "select * from wp_woocommerce_order_items where order_id = " . $this->order_id . " and order_item_type = 'line_item'";
 
-		$sql_result = sql_query($sql);
+		$sql_result = SqlQuery($sql);
 		$rows = [];
-		while ($row = sql_fetch_assoc($sql_result))
+		while ($row = SqlFetchAssoc($sql_result))
 		{
 			$item_id = $row['order_item_id'];
 			$prod_id = Fresh_Packing::get_order_itemmeta($item_id, '_product_id');
@@ -84,7 +84,7 @@ class Fresh_Order {
 		        . 'SELECT order_item_id FROM wp_woocommerce_order_items WHERE order_id = ' . $this->order_id
 		        . ' AND order_item_type = \'shipping\' )  AND meta_key = \'cost\'; ';
 
-		$result = sql_query_single_scalar( $sql2 );
+		$result = SqlQuerySingleScalar( $sql2 );
 
 		return ($result ? $result : 0);
 	}
@@ -190,7 +190,7 @@ class Fresh_Order {
 
 	function getStatus()
 	{
-		return sql_query_single_scalar("select post_status from wp_posts where id = " . $this->order_id);
+		return SqlQuerySingleScalar( "select post_status from wp_posts where id = " . $this->order_id);
 	}
 
 	function AddProduct( $product_id, $quantity, $replace = false, $client_id = - 1, $unit = null, $type = null, $price = null ) {
@@ -219,7 +219,7 @@ class Fresh_Order {
 			MyLog( "Add basket products " . $product_id );
 			$sql = 'SELECT DISTINCT product_id, quantity FROM im_baskets WHERE basket_id = ' . $product_id;
 
-			$result = sql_query( $sql );
+			$result = SqlQuery( $sql );
 			while ( $row = mysqli_fetch_row( $result ) ) {
 				$prod_id = $row[0];
 				$q       = $row[1];
@@ -238,7 +238,7 @@ class Fresh_Order {
 				// print  "<br/>" . get_product_name( $product_id ) . " " . $q . " ";
 				$product = wc_get_product( $product_id );
 				if ( $product ) {
-					sql_query("delete from im_need_orders where id = " . $this->order_id);
+					SqlQuery( "delete from im_need_orders where id = " . $this->order_id);
 					//print "type: " . $customer_type . "<br/>";
 					if (null === $price) {
 						$price = Fresh_Pricing::get_price_by_type( $product_id, $customer_type, $quantity );
@@ -250,7 +250,7 @@ class Fresh_Order {
 					$oid = $this->WC_Order->add_product( $product, $q );
 
 					// Remove the order from require products cache
-					sql_query( "DELETE FROM im_need_orders WHERE order_id = " . $this->order_id );
+					SqlQuery( "DELETE FROM im_need_orders WHERE order_id = " . $this->order_id );
 
 					// print $oid . "<br/>";
 
@@ -315,7 +315,7 @@ class Fresh_Order {
 			$comment = trim( $comment, ", " ) . ". ";
 		}
 
-		Fresh_Packing::set_order_itemmeta($item_id, "product_comment", escape_string($comment));
+		Fresh_Packing::set_order_itemmeta($item_id, "product_comment", EscapeString($comment));
 	}
 
 	static function basketRemoved($item_id)
@@ -395,7 +395,7 @@ class Fresh_Order {
 
 				$sql = " SELECT prod_id, need_q, need_u, prod_get_name(prod_id) FROM im_need ORDER BY 4 ";
 
-				$result = sql_query( $sql );
+				$result = SqlQuery( $sql );
 
 				while ( $row = mysqli_fetch_row( $result ) ) {
 					$prod_or_var = $row[0];
@@ -413,10 +413,10 @@ class Fresh_Order {
 			// Cache not vaild.
 			// Clean the im_need_orders, im_need table
 			$sql = "truncate table im_need_orders";
-			sql_query( $sql );
+			SqlQuery( $sql );
 
 			$sql = "truncate table im_need";
-			sql_query( $sql );
+			SqlQuery( $sql );
 		}
 		// Do the calculation
 		$sql = "SELECT id, post_status FROM wp_posts " .
@@ -427,7 +427,7 @@ class Fresh_Order {
 		}
 
 		// print $sql;
-		$result = sql_query( $sql );
+		$result = SqlQuery( $sql );
 
 		// Loop open orders.
 		while ( $row = mysqli_fetch_assoc( $result ) ) {
@@ -441,7 +441,7 @@ class Fresh_Order {
 
 			if ( $status == 'wc-awaiting-shipment' ) {
 				// print "ship<br/>";
-				$del_id = sql_query_single_scalar( "SELECT id FROM im_delivery WHERE order_id = " . $id );
+				$del_id = SqlQuerySingleScalar( "SELECT id FROM im_delivery WHERE order_id = " . $id );
 				// print "del id = " . $del_id . "<br/>";
 			}
 
@@ -450,7 +450,7 @@ class Fresh_Order {
 			// Update im_need_orders table
 			if ( ! $user_id ) {
 				$sql1 = "INSERT INTO im_need_orders (order_id) VALUE (" . $id . ") ";
-				sql_query( $sql1 );
+				SqlQuery( $sql1 );
 			}
 
 			$order       = new WC_Order( $id );
@@ -493,7 +493,7 @@ class Fresh_Order {
 
 					// print $sql . "<br/>";
 
-					$supplied = sql_query_single_scalar( $sql );
+					$supplied = SqlQuerySingleScalar( $sql );
 					// if ($prod_or_var == $debug_product) print " c= " . $c. " " ;
 					// 	print get_product_name($prod_or_var) . " " . $supplied . " " . $qty . "<br/>";
 					if ( round( $supplied, 1 ) < round( $qty, 1 ) ) {
@@ -521,7 +521,7 @@ class Fresh_Order {
 				$sql = "INSERT INTO im_need (prod_id, need_q, need_u) " .
 				       " VALUES (" . $prod_or_var . "," . $q . "," . $u . ")";
 
-				sql_query( $sql );
+				SqlQuery( $sql );
 			}
 		}
 	}
@@ -590,7 +590,7 @@ class Fresh_Order {
 		$sql = "select DATE_FORMAT(post_date, '$f') from wp_posts where id = " . $this->order_id;
 
 		// print $sql;
-		return sql_query_single_scalar( $sql );
+		return SqlQuerySingleScalar( $sql );
 	}
 
 	public function CustomerName() {
@@ -606,7 +606,7 @@ class Fresh_Order {
 		$sql = "SELECT id FROM wp_posts " .
 		       " WHERE (post_status LIKE '%wc-processing%' ) "; // OR post_status = 'wc-awaiting-shipment'
 
-		$orders = sql_query_array_scalar($sql);
+		$orders = SqlQueryArrayScalar($sql);
 
 		$table = array(array("מספר הזמנה", "מזמין", "הערות"));
 
@@ -670,9 +670,9 @@ class Fresh_Order {
 		$message = "";
 		$new_status = "wc-completed";
 
-		$c = sql_query_single_scalar( "SELECT count(*) FROM wp_posts " .
-		                              " WHERE id = " . $this->order_id .
-		                              " AND post_excerpt LIKE '%משלוח המכולת%'" );
+		$c = SqlQuerySingleScalar( "SELECT count(*) FROM wp_posts " .
+		                           " WHERE id = " . $this->order_id .
+		                           " AND post_excerpt LIKE '%משלוח המכולת%'" );
 
 		if ( $c ) { // legacy
 			$new_status = "wc-awaiting-document";
@@ -729,9 +729,9 @@ class Fresh_Order {
 			$prod_or_var  = $item['product_id'];
 			$q_in_ordered = $item->get_quantity();
 			$p            = new Fresh_Product( $prod_or_var );
-			$q_supplied   = sql_query( "SELECT quantity FROM im_delivery_lines" .
-			                           " WHERE prod_id = " . $prod_or_var .
-			                           " AND delivery_id = " . $d_id );
+			$q_supplied   = SqlQuery( "SELECT quantity FROM im_delivery_lines" .
+			                          " WHERE prod_id = " . $prod_or_var .
+			                          " AND delivery_id = " . $d_id );
 			if ( $q_in_ordered != $q_supplied ) {
 				MyLog( __METHOD__ . " change stock by " . ($q_supplied - $q_in_ordered) );
 				$p->setStock( $q_supplied - $q_in_ordered );
@@ -740,7 +740,7 @@ class Fresh_Order {
 	}
 
 	public function getDeliveryId() {
-		return sql_query_single_scalar( "SELECT id FROM im_delivery WHERE order_id = " . $this->order_id );
+		return SqlQuerySingleScalar( "SELECT id FROM im_delivery WHERE order_id = " . $this->order_id );
 	}
 
 	public function GetTotal() {
@@ -922,7 +922,7 @@ class Fresh_Order {
 			$order_id = $order_id_or_array;
 		}
 		if ( is_numeric( $order_id ) ) {
-			return sql_query_single_scalar( 'SELECT id FROM im_delivery WHERE order_id = ' . $order_id );
+			return SqlQuerySingleScalar( 'SELECT id FROM im_delivery WHERE order_id = ' . $order_id );
 		}
 
 		print "Must send a number to get_delivery_id!";
@@ -1007,7 +1007,7 @@ class Fresh_Order {
 		       . ' AND (`meta_key` = \'' . $field_name . '\'' .
 		       ' or meta_key = ' . QuoteText( '_' . $field_name ) . ')';
 
-		$value = sql_query_single_scalar( $sql );
+		$value = SqlQuerySingleScalar( $sql );
 
 		// print $field_name . " " . $value . "<br/>";
 		return $value;
@@ -1057,7 +1057,7 @@ class Fresh_Order {
 
 		$sql = "SELECT post_excerpt FROM wp_posts WHERE id=" . $this->order_id;
 
-		$this->comments = sql_query_single_scalar( $sql );
+		$this->comments = SqlQuerySingleScalar( $sql );
 
 		return $this->comments;
 	}
@@ -1065,7 +1065,7 @@ class Fresh_Order {
 	function SetComments( $comments ) {
 		$this->comments = $comments;
 		$sql            = "UPDATE wp_posts SET post_excerpt = '" . $this->comments . "' WHERE id=" . $this->order_id;
-		sql_query( $sql );
+		SqlQuery( $sql );
 	}
 
 	function getAddress() {
@@ -1081,7 +1081,7 @@ class Fresh_Order {
 			        . ' AND `meta_key` = \'_qty\''
 			        . ' ';
 
-			return sql_query_single_scalar( $sql2 );
+			return SqlQuerySingleScalar( $sql2 );
 		}
 
 		return 0;
@@ -1095,7 +1095,7 @@ class Fresh_Order {
 		}
 		$sql = "delete from im_need_orders where order_id = " . $this->order_id;
 //		print $sql;
-		sql_query( $sql);
+		SqlQuery( $sql);
 		return true;
 	}
 
@@ -1181,9 +1181,9 @@ class Fresh_Order {
 				$args["print_logo"] = false;
 				print HeaderText($args);
 				print Core_Html::gui_header(2, "הזמנה/אספקה שבועית");
-				$last_delivery = sql_query_single_scalar("select max(delivery_id) from im_delivery_lines");
+				$last_delivery = SqlQuerySingleScalar("select max(delivery_id) from im_delivery_lines");
 				$sql = "select distinct prod_id, sum(quantity_ordered) from im_delivery_lines where delivery_id > $last_delivery - 20 group by prod_id order by 2 desc limit 38";
-				$prods = sql_query_array_scalar($sql);
+				$prods = SqlQueryArrayScalar($sql);
 
 				$data = [];
 				// array_push($data, array("מוצר", "כמות"));
@@ -1399,7 +1399,7 @@ class Fresh_Order {
 				break;
 
 			case "check_waiting_count":
-				$count =  sql_query_single_scalar("select count(*) from wp_posts where post_status = 'wc-awaiting-shipment'");
+				$count =  SqlQuerySingleScalar("select count(*) from wp_posts where post_status = 'wc-awaiting-shipment'");
 
 				print $count;
 				break;
@@ -1481,13 +1481,13 @@ class Fresh_Order {
 	FROM wp_posts p
   	where post_status like '%wc-processing%'
   	and id not in (select order_id from im_need_orders)";
-		$new = sql_query_single_scalar( $sql );
+		$new = SqlQuerySingleScalar( $sql );
 //	print "new: " . $new . "<br/>";
 
 		$sql  = "SELECT count(id)
 	  FROM im_need_orders
 	  WHERE order_id NOT IN (SELECT id FROM wp_posts WHERE post_status LIKE '%wc-processing%')";
-		$done = sql_query_single_scalar( $sql );
+		$done = SqlQuerySingleScalar( $sql );
 //	print "done: " . $done . "<br/>";
 
 		if ( $done > 0 or $new > 0 ) {
@@ -1518,7 +1518,7 @@ class Fresh_Order {
 		$customer_zone = $customer->getZone();
 
 		$sql    = "SELECT min_order FROM wp_woocommerce_shipping_zones WHERE zone_id = " . $customer_zone->get_id();
-		$result = sql_query( $sql, false );
+		$result = SqlQuery( $sql, false );
 		if ( $result ) {
 			$row = mysqli_fetch_assoc( $result );
 			//    my_log($row["min_order"]);

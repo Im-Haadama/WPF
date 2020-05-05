@@ -117,7 +117,7 @@ class Capabilites {
 		add_action( 'init', array( $this, 'init' ), 0 );
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
 
-		get_sql_conn(ReconnectDb());
+		GetSqlConn(ReconnectDb());
 //		add_action( 'init', array( 'Capabilites_Emails', 'init_transactional_emails' ) );
 		// add_action( 'init', array( $this, 'wpdb_table_fix' ), 0 );
 		// add_action( 'init', array( $this, 'add_image_sizes' ) );
@@ -642,7 +642,7 @@ class Capabilites {
 	{
 		$result = "";
 		$capabilities = [];
-		$capabilities_serialized = sql_query_array("select user_id, meta_value from wp_usermeta where meta_key = 'wp_capabilities'");
+		$capabilities_serialized = SqlQueryArray("select user_id, meta_value from wp_usermeta where meta_key = 'wp_capabilities'");
 		foreach ($capabilities_serialized as $info)
 		{
 			$user = $info[0];

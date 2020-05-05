@@ -82,7 +82,7 @@ function update_zone_table( $table ) {
 
 				$sql = "SELECT COUNT(*) FROM wp_woocommerce_shipping_zones WHERE zone_id=" . $row_key;
 
-				if ( sql_query_single_scalar( $sql ) < 1 ) {
+				if ( SqlQuerySingleScalar( $sql ) < 1 ) {
 					print " insert ";
 					$insert = true;
 				} else {
@@ -103,18 +103,18 @@ function update_zone_table( $table ) {
 		if ( $insert ) {
 			$sql = "INSERT INTO wp_woocommerce_shipping_zones (" . $field_list . ") VALUES ( " . $row_key . ", " . rtrim( $insert_values, ", " ) . ")";
 			// print $sql . "<br/>";
-			sql_query( $sql );
+			SqlQuery( $sql );
 		} else {
 			$sql = "UPDATE wp_woocommerce_shipping_zones SET " . rtrim( $update_fields, ", " ) .
 			       " WHERE zone_id = " . $row_key;
 			// print $sql . "<br/>";
-			sql_query( $sql );
+			SqlQuery( $sql );
 		}
 	}
 	// Delete not recieved keys.
-	$min        = sql_query_single_scalar( "SELECT min(zone_id) FROM wp_woocommerce_shipping_zones" );
-	$max        = sql_query_single_scalar( "SELECT max(zone_id) FROM wp_woocommerce_shipping_zones" );
-	$ids        = sql_query_array_scalar( "select zone_id from wp_woocommerce_shipping_zones" );
+	$min        = SqlQuerySingleScalar( "SELECT min(zone_id) FROM wp_woocommerce_shipping_zones" );
+	$max        = SqlQuerySingleScalar( "SELECT max(zone_id) FROM wp_woocommerce_shipping_zones" );
+	$ids        = SqlQueryArrayScalar( "select zone_id from wp_woocommerce_shipping_zones" );
 	$for_delete = "";
 
 	for ( $i = $min; $i <= $max; $i ++ ) {
@@ -126,7 +126,7 @@ function update_zone_table( $table ) {
 		$sql = "DELETE FROM wp_woocommerce_shipping_zones WHERE zone_id IN (" . rtrim( $for_delete, ", " ) . ")";
 		print $sql;
 
-		sql_query( $sql );
+		SqlQuery( $sql );
 	}
 }
 

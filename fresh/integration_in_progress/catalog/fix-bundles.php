@@ -16,7 +16,7 @@ fix_bundles();
 
 function fix_bundles() {
 	$sql    = "SELECT id, prod_id, bundle_prod_id, margin FROM im_bundles ORDER BY 2";
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 
 	while ( $row = mysqli_fetch_row( $result ) ) {
 		$id      = $row[0];
@@ -54,7 +54,7 @@ function fix_bundles() {
 
 function update_bundle_prices() {
 	$sql    = "SELECT id, prod_id, bundle_prod_id, margin FROM im_bundles ORDER BY 2";
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 
 	while ( $row = mysqli_fetch_row( $result ) ) {
 		$id      = $row[0];
@@ -70,7 +70,7 @@ function update_bundle_prices() {
 
 function delete_duplicate_bundles() {
 	$sql    = "SELECT id, prod_id, bundle_prod_id, margin FROM im_bundles ORDER BY 2";
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 
 	$prev_prod_id   = 0;
 	$prev_bundle_id = 0;
@@ -89,7 +89,7 @@ function delete_duplicate_bundles() {
 			print "marking to delete bundle - " . $bundle_id;
 			wp_set_object_terms( $bundle_id, 'delete', 'product_cat', true );
 			print " deleting bundle " . $id;
-			sql_query( "DELETE FROM im_bundles WHERE id = " . $id );
+			SqlQuery( "DELETE FROM im_bundles WHERE id = " . $id );
 			// : " . get_product_name($prev_prod_id) . " ";
 			//print get_product_name($prod_id) . " " . get_product_name($prev_bundle_id) . " " . get_product_name($bundle_id);
 		}

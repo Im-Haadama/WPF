@@ -25,11 +25,11 @@ print header_text( false, true, true, array( "/core/gui/client_tools.js", "work.
 // Show last 5 new tasks.
 // Allow priority change. Set date.
 
-$last_tasks = sql_query_array_scalar( "SELECT id FROM im_tasklist " .
-                                      " WHERE status = " . enumTasklist::waiting .
-                                      " AND owner = " . $u_id .
-                                      " ORDER BY id DESC " .
-                                      " LIMIT 5 " );
+$last_tasks = SqlQueryArrayScalar( "SELECT id FROM im_tasklist " .
+                                   " WHERE status = " . enumTasklist::waiting .
+                                   " AND owner = " . $u_id .
+                                   " ORDER BY id DESC " .
+                                   " LIMIT 5 " );
 
 print Core_Html::gui_header( 1, "משימות חדשות");
 print task_table( $last_tasks );

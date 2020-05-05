@@ -10,8 +10,8 @@ require_once("plugins/flavor/includes/core/fund.php");
 require_once("plugins/flavor/includes/core/data/sql.php");
 require_once("plugins/flavor/includes/core/core-functions.php");
 
-get_sql_conn(ReconnectDb());
-$plugins_s = sql_query_single_scalar("select option_value from wp_options where option_name='active_plugins'");
+GetSqlConn(ReconnectDb());
+$plugins_s = SqlQuerySingleScalar("select option_value from wp_options where option_name='active_plugins'");
 $plugins = unserialize($plugins_s);
 show_order($plugins);
 if (! isset($_GET["change"])) {
@@ -44,7 +44,7 @@ print "changing order<br/>";
 $sql = "update wp_options set option_value = " .
        QuoteText(serialize($plugins)) . " where option_name='active_plugins'";
 //	print $sql;
-sql_query($sql);
+SqlQuery($sql);
 print "done";
 show_order($plugins);
 

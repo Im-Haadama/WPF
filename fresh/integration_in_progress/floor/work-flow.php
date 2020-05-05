@@ -24,7 +24,7 @@ print Core_Html::gui_header( 1, "בוקר טוב" );
 
 // Display orders waiting to be approved.
 $sql = "select count(id) from wp_posts where post_status in ('wc-pending', 'wc-on-hold')";
-$c   = sql_query_single_scalar( $sql );
+$c   = SqlQuerySingleScalar( $sql );
 // print orders_table('wc-pending');
 if ( $c ) {
 	print Core_Html::gui_header( 2, $c . " הזמנות ממתינות לאישור" );

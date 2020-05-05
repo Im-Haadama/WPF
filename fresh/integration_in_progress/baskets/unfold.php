@@ -26,7 +26,7 @@ header( 'Location: ' . wc_get_cart_url() );
 
 function add_basket_items( $basket_id ) {
 
-	$result = sql_query('SELECT DISTINCT product_id, quantity FROM im_baskets WHERE basket_id = ' . $basket_id);
+	$result = SqlQuery( 'SELECT DISTINCT product_id, quantity FROM im_baskets WHERE basket_id = ' . $basket_id);
 
 	while ( $row = mysqli_fetch_row( $result ) ) {
 		$prod_id = $row[0];

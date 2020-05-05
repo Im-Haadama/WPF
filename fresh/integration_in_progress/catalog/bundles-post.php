@@ -81,7 +81,7 @@ switch ( $operation ) {
 
 	case "update_all":
 		$sql    = "select id from im_bundles";
-		$result = sql_query( $sql );
+		$result = SqlQuery( $sql );
 		while ( $row = mysqli_fetch_row( $result ) ) {
 			print $row[0] . "<br/>";
 			$b = Fresh_Bundle::CreateFromDb( $row[0] );

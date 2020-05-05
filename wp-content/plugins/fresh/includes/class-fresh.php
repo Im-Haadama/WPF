@@ -184,7 +184,7 @@ class Fresh {
 		add_action( 'woocommerce_checkout_create_order_line_item', 'checkout_create_order_line_item', 10, 4 );
         /* -- End Product Comment Hooks-- */
 
-		get_sql_conn(ReconnectDb());
+		GetSqlConn(ReconnectDb());
 //		add_action( 'init', array( 'Fresh_Emails', 'init_transactional_emails' ) );
 		// add_action( 'init', array( $this, 'wpdb_table_fix' ), 0 );
 		// add_action( 'init', array( $this, 'add_image_sizes' ) );
@@ -712,7 +712,7 @@ function im_woocommerce_update_price()
 	MyLog( "cart start" );
 	// TWEEK. Don't know why menu_op calls this method.
 	// DONT remove without trying menu.php and cart.
-	if (! sql_query_single_scalar("select 1")) {
+	if (! SqlQuerySingleScalar("select 1")) {
 		MyLog ("not connected to db");
 		return;
 	}
@@ -1050,7 +1050,7 @@ function setCreditCard($cc)
 function insert_payment_info_wrap()
 {
 	$sql = "select post_id from wp_postmeta where meta_key = 'card_number'";
-	$orders = sql_query_array_scalar($sql);
+	$orders = SqlQueryArrayScalar($sql);
 	foreach ($orders as $order)
 		insert_payment_info($order);
 }

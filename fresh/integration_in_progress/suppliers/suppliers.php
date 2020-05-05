@@ -17,8 +17,8 @@ function handle_supplier_operation($operation, $args = [])
 			$business_id = GetParam( "id" );
 			$t           = GetParam( "type" );
 
-			if (sql_query( "update im_business_info set document_type = " . $t .
-			           " where id = " . $business_id )) print "done";
+			if (SqlQuery( "update im_business_info set document_type = " . $t .
+			              " where id = " . $business_id )) print "done";
 			return;
 
 		case "update":
@@ -34,7 +34,7 @@ function handle_supplier_operation($operation, $args = [])
 			$sql .= " where id = " . $id;
 			// print $sql;
 
-			sql_query( $sql );
+			SqlQuery( $sql );
 			print "done";
 			return;
 		case "save_new":

@@ -202,7 +202,7 @@ class Fresh_Packing {
 			$sql = "SELECT id, supplier_priority FROM im_suppliers WHERE id IN (" . CommaImplode( $suppliers ) . ")" .
 			       " ORDER BY 2";
 
-			$row_result = sql_query_array( $sql );
+			$row_result = SqlQueryArray( $sql );
 
 			foreach ( $row_result as $row ) {
 				$supplier_id = $row[0]; // Or null for missing supplier
@@ -271,7 +271,7 @@ class Fresh_Packing {
 		}
 	}
 
-	function wc_new_order_column( $columns ) {
+	static function wc_new_order_column( $columns ) {
 		$columns['city'] = __("City");
 		 $columns['freight'] = __("Freight");
 
@@ -297,12 +297,12 @@ class Fresh_Packing {
 		$baskets = null;
 		if ( $include_basket ) {
 			$sql1    = "select basket_id from im_baskets where product_id = $prod_id";
-			$baskets = sql_query_array_scalar( $sql1 );
+			$baskets = SqlQueryArrayScalar( $sql1 );
 		}
 		$bundles = null;
 		if ( $include_bundle ) {
 			$sql2    = "select bundle_prod_id from im_bundles where prod_id = " . $prod_id;
-			$bundles = sql_query_array_scalar( $sql2 );
+			$bundles = SqlQueryArrayScalar( $sql2 );
 			// if ($bundles) var_dump($bundles);
 		}
 		$sql .= ' and woi.order_item_id = woim.order_item_id '
@@ -316,7 +316,7 @@ class Fresh_Packing {
 		}
 		$sql .= ")";
 
-		$result         = sql_query( $sql );
+		$result         = SqlQuery( $sql );
 		$lines          = "";
 		$total_quantity = 0;
 		if ($short == 2)
@@ -374,17 +374,17 @@ class Fresh_Packing {
 		if ( is_array( $order_item_id ) ) {
 			$sql = "SELECT sum(meta_value) FROM wp_woocommerce_order_itemmeta "
 			       . ' WHERE order_item_id IN ( ' . CommaImplode( $order_item_id ) . ") "
-			       . ' AND meta_key = \'' . escape_string( $meta_key ) . '\'';
+			       . ' AND meta_key = \'' . EscapeString( $meta_key ) . '\'';
 
-			return sql_query_single_scalar( $sql );
+			return SqlQuerySingleScalar( $sql );
 		}
 		if ( is_numeric( $order_item_id ) ) {
 			$sql2 = 'SELECT meta_value FROM wp_woocommerce_order_itemmeta'
 			        . ' WHERE order_item_id = ' . $order_item_id
-			        . ' AND meta_key = \'' . escape_string( $meta_key ) . '\''
+			        . ' AND meta_key = \'' . EscapeString( $meta_key ) . '\''
 			        . ' ';
 
-			return sql_query_single_scalar( $sql2 );
+			return SqlQuerySingleScalar( $sql2 );
 		}
 
 		return - 1;
@@ -397,9 +397,9 @@ class Fresh_Packing {
 			$value = implode( ",", $meta_value );
 		}
 
-		if ( sql_query_single_scalar( "SELECT count(*) FROM wp_woocommerce_order_itemmeta " .
-		                              " WHERE order_item_id = " . $order_item_id .
-		                              " AND meta_key = '" . $meta_key . "'" ) >= 1
+		if ( SqlQuerySingleScalar( "SELECT count(*) FROM wp_woocommerce_order_itemmeta " .
+		                           " WHERE order_item_id = " . $order_item_id .
+		                           " AND meta_key = '" . $meta_key . "'" ) >= 1
 		) {
 			$sql = "update wp_woocommerce_order_itemmeta " .
 			       " set meta_value = '" . $value . "'" .
@@ -410,7 +410,7 @@ class Fresh_Packing {
 			       " (order_item_id, meta_key, meta_value) " .
 			       " VALUES (" . $order_item_id . ", '" . $meta_key . "', '" . $value . "')";
 		}
-		sql_query( $sql );
+		SqlQuery( $sql );
 	}
 
 	static function OrdersToHandle() {
@@ -495,14 +495,14 @@ class Fresh_Packing {
 			}
 			$sql .= " order by 1";
 
-			$order_ids = sql_query_array_scalar( $sql );
+			$order_ids = SqlQueryArrayScalar( $sql );
 
 			// If no orders in this status, move on.
 			if ( sizeof( $order_ids ) < 1 ) {
 				continue;
 			}
 
-			$result = sql_query( $sql );
+			$result = SqlQuery( $sql );
 			if ( ! $result ) {
 				continue;
 			}
@@ -600,7 +600,7 @@ class Fresh_Packing {
 		$rows["header"] = array("name" => "סיכום הזמנות");
 		$products = [];
 
-		$sql_result = sql_query( $sql );
+		$sql_result = SqlQuery( $sql );
 		// Loop open orders.
 //		$col = 2;
 		while ( $row = mysqli_fetch_assoc( $sql_result ) ) {

@@ -130,7 +130,7 @@ class Freight {
 		// get local deliveries
 
 
-		get_sql_conn(ReconnectDb());
+		GetSqlConn(ReconnectDb());
 		Freight_Methods::init();
 		Freight_Mission_Manager::init_hooks();
 	}

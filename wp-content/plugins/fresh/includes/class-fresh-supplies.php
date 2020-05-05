@@ -19,7 +19,7 @@ class Fresh_Supplies {
 		}
 		// DEBUG $data .= $sql;
 
-		$supplies = sql_query_array_scalar( $sql );
+		$supplies = SqlQueryArrayScalar( $sql );
 
 		if ( count( $supplies ) ) {
 			foreach ( $supplies as $supply ) {

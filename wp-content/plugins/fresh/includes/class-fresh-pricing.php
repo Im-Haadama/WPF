@@ -5,7 +5,7 @@ class Fresh_Pricing {
 
 	static function calculate_price( $price, $supplier, $sale_price = '', $terms = null )
 	{
-		$factor = sql_query_single_scalar( "SELECT factor FROM im_suppliers WHERE id = " . $supplier);
+		$factor = SqlQuerySingleScalar( "SELECT factor FROM im_suppliers WHERE id = " . $supplier);
 
 		// Check for sale
 		if ( is_numeric( $sale_price ) and $sale_price < $price and $sale_price > 0 ) $price = $sale_price;
@@ -33,7 +33,7 @@ class Fresh_Pricing {
 		}
 		static $configured = -1;
 		if ($configured == -1) {
-			$configured = table_exists("client_types");
+			$configured = TableExists("client_types");
 		}
 		if (! $configured) return get_postmeta_field( $prod_id, '_price' );
 		$debug = 0;
@@ -51,7 +51,7 @@ class Fresh_Pricing {
 
 		$sql = "SELECT min($type) FROM im_client_types WHERE type = '" . $client_type . "' AND (q_min <= " . $quantity . " OR q_min = 0)";
 		//  print $sql . "<br/>";
-		$rate = sql_query_single_scalar( $sql );
+		$rate = SqlQuerySingleScalar( $sql );
 
 		$id = $variation_id ? $variation_id : $prod_id;
 
@@ -104,7 +104,7 @@ class Fresh_Pricing {
 			$buy = 0;
 			$sql2 = 'SELECT DISTINCT product_id, quantity FROM im_baskets WHERE basket_id = ' . $prod_id;
 			print $sql2;
-			$result2 = sql_query( $sql2 );
+			$result2 = SqlQuery( $sql2 );
 			while ( $row2 = mysqli_fetch_assoc( $result2 ) ) {
 				$prod_id = $row2["product_id"];
 				$buy     += self::get_buy_price( $prod_id, $supplier_id );

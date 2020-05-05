@@ -125,7 +125,7 @@ function is_mapped( $code ) {
 	$sql = 'SELECT id FROM `im_supplier_mapping` WHERE supplier_product_code = ' . $code .
 	       ' AND supplier_product_code != 10';
 
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 
 	$row = mysqli_fetch_row( $result );
 
@@ -168,7 +168,7 @@ function multi_search_unmapped_products( $site_id ) {
 	       " (select local_prod_id, remote_site_id from im_multisite_map)";
 	/// . ' supplier_product_code not in (select supplier_product_code from im_supplier_mapping)';
 
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 
 	$data = "<tr>";
 	$data .= "<td>בחר</td>";
@@ -213,7 +213,7 @@ function multi_search_unmapped_products( $site_id ) {
 //        $line .= "<td>" . get_supplier_name($supplier_id) . "</td>";
 		$attachment_id = GetMetaField( $product_id, '_thumbnail_id' );
 		if ( $attachment_id > 0 ) {
-			$result = sql_query_single( "SELECT guid FROM wp_posts WHERE id = " . $attachment_id );
+			$result = SqlQuerySingle( "SELECT guid FROM wp_posts WHERE id = " . $attachment_id );
 			if ( $result ) {
 				$url = $result[0];
 				if ( $i = strstr( $url, "wordpress" ) ) {
@@ -255,7 +255,7 @@ function search_invalid_mapping() {
 	$sql = 'SELECT id, supplier_id, supplier_product_name, supplier_product_code
             FROM im_supplier_mapping';
 
-	$result = sql_query( $sql );
+	$result = SqlQuery( $sql );
 
 	$data = "<tr>";
 	$data .= "<td>בחר</td>";

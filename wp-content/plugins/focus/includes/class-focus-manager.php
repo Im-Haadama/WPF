@@ -42,7 +42,7 @@ class Focus_Manager {
 		$debug = 0;
 		if ($debug == 2) $verbose = 1;
 
-		$table_prefix = get_table_prefix();
+		$table_prefix = GetTablePrefix();
 
 		$last_run = get_wp_option("focus_create_tasks_last_run");
 		$run_period = get_wp_option("focus_create_tasks_run_period", 5*60); // every 5 min
@@ -56,12 +56,12 @@ class Focus_Manager {
 
 		update_wp_option("focus_create_tasks_last_run", time()); // Immediate update so won't be activated in parallel
 
-		if ( ! table_exists( "task_templates" ) ) {
+		if ( ! TableExists( "task_templates" ) ) {
 			self::$logger->fatal("no table");
 			return false;
 		}
 		$output = Core_Html::gui_header(1, "Creating tasks freqs");
-		if ( ! $freqs ) $freqs = sql_query_array_scalar( "select DISTINCT repeat_freq from ${table_prefix}task_templates" );
+		if ( ! $freqs ) $freqs = SqlQueryArrayScalar( "select DISTINCT repeat_freq from ${table_prefix}task_templates" );
 
 		// TODO: create_tasks_per_mission();
 		$verbose_table = array( array( "template_id", "freq", "query", "active", "result", "priority", "new task" ));
@@ -73,7 +73,7 @@ class Focus_Manager {
 			       " FROM ${table_prefix}task_templates " .
 			       " where repeat_freq = '" . $freq . "' and ((last_check is null) or (last_check < " . QuoteText(date('Y-m-j')) . ") or repeat_freq like 'c%')";
 
-			$result = sql_query( $sql );
+			$result = SqlQuery( $sql );
 
 			$verbose_line = "";
 			while ( $row = mysqli_fetch_assoc( $result ) ) {
@@ -128,8 +128,8 @@ class Focus_Manager {
 		       ' and status < 2 ';
 
 		$debug_message = "";
-		$result = sql_query($sql);
-		while ($row = sql_fetch_assoc($result)) {
+		$result = SqlQuery($sql);
+		while ($row = SqlFetchAssoc($result)) {
 			$task_id = $row["id"];
 			$debug_message .= "task $task_id ";
 			$task    = new Focus_Tasklist( $task_id, self::$logger );

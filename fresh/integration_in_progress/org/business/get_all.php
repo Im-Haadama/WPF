@@ -137,7 +137,7 @@ $total_amount       = 0;
 $total_delivery_fee = 0;
 
 // print $sql;
-$result = sql_query( $sql );
+$result = SqlQuery( $sql );
 //while ( $row = mysqli_fetch_row( $result ) ) {
 while ( $row = mysqli_fetch_assoc( $result ) ) {
 	$total_amount       += $row["amount"];
@@ -182,7 +182,7 @@ function print_col( $hdr, $key = null ) {
 
 function print_business( $id, $horizontal, $seq ) {
 	$sql = "select id, client_displayname(part_id), date, week, amount, ref, delivery_fee, order_from_delivery(id) from im_business_info where id = $id";
-	$row = sql_query_single( $sql );
+	$row = SqlQuerySingle( $sql );
 	if ( ! $horizontal ) {
 		print "<table>";
 	}

@@ -21,7 +21,7 @@ $sql = "SELECT product_name, price, quantity, prod_id_from_name(product_name) as
        " GROUP BY product_name " .
        " ORDER BY id DESC";
 
-$results = sql_query( $sql );
+$results = SqlQuery( $sql );
 
 $table = "<table>";
 
@@ -32,7 +32,7 @@ while ( $row = mysqli_fetch_row( $results ) ) {
 		$pos              = strpos( $row[0], " " );
 		$product_name_prf = substr( $row[0], 0, $pos );
 		if ( strlen( $product_name_prf ) > 2 ) {
-			$prod_id = sql_query_single_scalar( "select max(id) from wp_posts where post_title like '%$product_name_prf%'" );
+			$prod_id = SqlQuerySingleScalar( "select max(id) from wp_posts where post_title like '%$product_name_prf%'" );
 			// print $prod_id;
 		}
 	}
