@@ -5,9 +5,9 @@ class Core_Database {
 	static function CreateInfo()
 	{
 		$db_prefix = GetTablePrefix();
-		SqlQuery("alter table ${db_prefix}info modify info_key varchar(100)");
+		SqlQuery("alter table ${db_prefix}info modify info_key varchar(100) charset utf8");
 
-		if (! self::table_exists("info"))
+		if (! TableExists("info"))
 			SqlQuery( "CREATE TABLE ${db_prefix}info (
 		info_key VARCHAR(200) NULL,
 		info_data VARCHAR(200) NULL,
@@ -25,19 +25,4 @@ class Core_Database {
 	{
 		InfoUpdate("version_${plugin}_$subsystem", $version);
 	}
-
-	static function table_exists( $table ) {
-		$db_prefix = GetTablePrefix();
-		$sql = 'SELECT 1 FROM ' . $db_prefix .$table . ' LIMIT 1';
-		return SqlQuery( $sql, false) != null;
-	}
-
-	static function view_exists( $table ) {
-		$db_prefix = GetTablePrefix();
-		$sql = 'SELECT 1 FROM ' . $db_prefix .$table . ' LIMIT 1';
-		return SqlQuery( $sql, false) != null;
-	}
-
-
-
 }

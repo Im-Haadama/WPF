@@ -74,6 +74,7 @@ class Finance_Clients
 		$table_lines         = array();
 		$table_lines_credits = array();
 
+		$create_invoice = true;
 		while ( $row = mysqli_fetch_row( $result ) ) {
 			// $line = '';
 			$customer_total = $row[0];
@@ -94,8 +95,14 @@ class Finance_Clients
 			$line .= "<td>" . $row[4] . "</td>";
 			$line .= "<td>" . Finance_Payment_Methods::get_payment_method_name( $payment_method ) . "</td>";
 			$has_credit_info = SqlQuerySingleScalar( "select count(*) from im_payment_info where email = " . QuoteText($C->get_customer_email())) > 0 ? 'C' : '';
-			$has_token = get_user_meta($customer_id, 'credit_token', true);
+			$has_token = (get_user_meta($customer_id, 'credit_token', true) ? 'T' : '');
 			$line .= "<td>" . $has_credit_info . " " . $has_token . "</td>";
+			$invoice_user= $C->getInvoiceUser(false);
+			if ( ! $invoice_user and $create_invoice){
+				$invoice_user = $C->getInvoiceUser(true);
+				$create_invoice = false;
+			}
+			$line .= "<td>" .  $invoice_user . "</td>";
 			if ( $customer_total > 0 or $include_zero ) {
 				array_push( $table_lines, array( - $customer_total, $line ) );
 			}
@@ -117,7 +124,8 @@ class Finance_Clients
 			$table .= "<td>יתרה לתשלום</td>";
 			$table .= "<td>הזמנה אחרונה</td>";
 			$table .= "<td>אמצעי תשלום</td>";
-			$table .= "<td>יש פרטי אשראי</td>";
+			$table .= "<td>פרטי אשראי</td>";
+			$table .= "<td>invoice_user</td>";
 			$table .= "</tr>";
 			for ( $i = 0; $i < count( $table_lines ); $i ++ ) {
 				$line  = $table_lines[ $i ][1];
@@ -159,7 +167,7 @@ class Finance_Clients
 			array( "מספר מזהה", Core_Html::gui_label( "invoice_client_id", $client_id ) ),
 			array(
 				"אמצעי תשלום",
-				Finance_Payment_Methods::gui_select_payment( "payment", "onchange=\"save_payment_method()\"", $u->get_payment_method() )
+				Finance_Payment_Methods::gui_select_payment( "payment", "onchange=\"save_payment_method('".Finance::getPostFile()."', $customer_id)\"", $u->get_payment_method() )
 			)
 		), "customer_details", array( "class" => "widefat" ) );
 		$style     = "table.payment_table { border-collapse: collapse; } " .

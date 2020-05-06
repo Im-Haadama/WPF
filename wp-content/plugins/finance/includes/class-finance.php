@@ -165,6 +165,8 @@ class Finance {
 
 		if ($this->yaad) $this->yaad->init_hooks();
 		if ($this->clients) $this->clients->init_hooks();
+
+		$this->payments = Finance_Payments::instance();
 	}
 
 	/**
@@ -768,6 +770,7 @@ class Finance {
 
 	function CreateInvoiceUser()
 	{
+		return; // Don't use for now.
 		$debug = (get_user_id() == 1);
 		$last_created = SqlQuerySingleScalar("select max(user_id) from wp_usermeta where meta_key = 'invoice_id'");
 		$last = SqlQuerySingleScalar("select max(user_id) from wp_usermeta");

@@ -99,3 +99,9 @@ function pay_credit(post_file)
     let request = post_file + '?operation=pay_credit&users='+users;
     execute_url(request, location_reload);
 }
+
+function save_payment_method(post_file, customer_id) {
+    var method = get_value(document.getElementById("payment"));
+   let request = post_file + '?operation=update_payment_method&user_id=' + customer_id + '&method_id=' + method;
+   execute_url(request, fail_message);
+}

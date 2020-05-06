@@ -103,7 +103,8 @@ order by 1;");
 
 		if ($current == $version and ! $force) return true;
 
-		SqlQuery("create table im_client_accounts
+		if (! TableExists("client_accounts"))
+			SqlQuery("create table im_client_accounts
 (
 	ID bigint auto_increment
 		primary key,

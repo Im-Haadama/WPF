@@ -142,6 +142,17 @@ class Fresh_Client {
 		                             " and meta.post_id = posts.ID");
 	}
 
+	function getInvoiceUser($create = true)
+	{
+		$u = get_user_meta( $this->getUserId(), 'invoice_id', 1);
+		if (! $u and $create) {
+//			print "Creating";
+			$i = Finance_Invoice4u::getInstance();
+//			var_dump($i);
+			$i->CreateUser(self::getName(), self::get_customer_email(), self::get_phone_number());
+		}
+		return $u;
+	}
 	function getZone()
 	{
 		$customer = new WC_Customer($this->user_id);

@@ -67,6 +67,10 @@ class Finance_Settings {
 
 		$menu->AddSubMenu( "users.php", "edit_shop_orders",
 			array( 'page_title' => 'Client accounts', 'function' => array( "Finance_Clients", 'admin_page' ) ) );
+
+		$menu->AddSubMenu( "users.php", "edit_shop_orders",
+			array( 'page_title' => 'Payment methods', 'function' => array( "Finance_Payments", 'payment_methods' ) ) );
+
 	}
 
 	static function suppliers() {

@@ -260,24 +260,6 @@ if ( $manager ) {
 <script type="text/javascript" src="/core/gui/client_tools.js"></script>
 
 <script>
-    function save_payment_method() {
-        var method = get_value(document.getElementById("payment"));
-        xmlhttp = new XMLHttpRequest();
-        xmlhttp.onreadystatechange = function () {
-            // Wait to get query result
-            if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
-            {
-                //logging.innerHTML += "חשבונית מספר " + receipt_id;
-                updateDisplay();
-            }
-        }
-        var request = "account-post.php?operation=save_payment";
-        request = request + "&user_id=" + <?php print $customer_id; ?>;
-        request = request + "&method_id=" + method;
-
-        xmlhttp.open("GET", request, true);
-        xmlhttp.send();
-    }
     //קבלה
 
     function create_invoice() {

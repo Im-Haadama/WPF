@@ -66,7 +66,7 @@ class Focus_Database extends Core_Database
 charset=utf8;
 
 ");
-		if (! self::table_exists("working"))
+		if (! TableExists("working"))
 			SqlQuery("create table im_working
 (
 	id int auto_increment,
@@ -83,7 +83,7 @@ charset=utf8;
 charset=utf8;
 
 ");
-		if (! self::table_exists("company"))
+		if (! TableExists("company"))
 			SqlQuery("create table im_company
 (
 	id int auto_increment

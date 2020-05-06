@@ -26,11 +26,7 @@ if ( ! class_exists( 'Capabilites' ) ) {
 }
 
 // Require parent plugin
-if ( ! is_plugin_active( 'flavor/flavor.php' ) ) {
-	// Stop activation redirect and show error
-	deactivate_plugins(__FILE__);
-}
-
+if ( require_once( dirname(dirname(__FILE__)) . '/flavor/flavor.php' ) ) ;
 /**
  * Main instance of Capabilites.
  *

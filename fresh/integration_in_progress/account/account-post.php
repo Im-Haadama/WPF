@@ -28,13 +28,6 @@ global $invoice_password;
 
 $operation = $_GET["operation"];
 switch ( $operation ) {
-	case "set_client_type":
-
-	case "save_payment":
-		$user_id   = $_GET["user_id"];
-		$method_id = $_GET["method_id"];
-		update_user_meta( $user_id, 'payment_method', $method_id );
-		break;
 
 	case "send_month_summary":
 		$user_ids = $_GET["ids"];

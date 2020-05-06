@@ -27,6 +27,7 @@ class Finance_Invoice4u
 	public $token;
 	public $result;
 	private $user, $password;
+	static private $instance = null;
 
 	/**
 	 * Invoice4u constructor.
@@ -41,7 +42,16 @@ class Finance_Invoice4u
 		$this->user     = $user;
 		$this->password = $password;
 		$this->Login();
+		self::$instance = $this;
 	}
+
+	/**
+	 * @return Finance_Invoice4u
+	 */
+	static public function getInstance(): Finance_Invoice4u {
+		return self::$instance;
+	}
+
 
 	// public $doc;
 
@@ -56,11 +66,13 @@ class Finance_Invoice4u
 
 	private function DoLogin( $invoice_user, $invoice_password ) {
 //		if (get_user_id() == 1) print $invoice_user . " " .$invoice_password ."<br/>";
+//		MyLog($invoice_user . " " . $invoice_password);
 		$wsdl = ApiService . "/LoginService.svc?wsdl";
 		$user = array( 'username' => $invoice_user, 'password' => $invoice_password, 'isPersistent' => false );
 
 		$this->requestWS( $wsdl, "VerifyLogin", $user );
 		$this->token = $this->result;
+//		MyLog($this->token);
 	}
 
 	private function requestWS( $wsdl, $service, $params )
@@ -265,7 +277,7 @@ class Finance_Invoice4u
 
 	public function CreateUser( $name, $email, $phone )
 	{
-		MyLog("creating $name");
+//		MyLog("creating $name");
 		if (! $this->token) {
 			MyLog("invoice4u: Not connected");
 			return false;
@@ -275,6 +287,8 @@ class Finance_Invoice4u
 		$customer        = new InvoiceCustomer( $name );
 		$customer->Email = $email;
 		$customer->Phone = $phone;
+
+//		MyLog($customer);
 
 		$this->result    = $this->requestWS( $wsdl, "Create",
 			array( 'customer' => $customer, 'token' => $this->token ) );
@@ -402,7 +416,6 @@ class InvoicePaymentCheck {
 		$this->Date = date( "c", time() );
 	}
 }
-
 
 /*   OR
 public $Date;

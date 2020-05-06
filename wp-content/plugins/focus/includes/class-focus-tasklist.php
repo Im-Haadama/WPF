@@ -459,7 +459,7 @@ class Focus_Tasklist {
 
 		$args = array( "events"   => $events,
 		               "selected" => $selected,
-		               "where"    => $sql_where = " where date >= curdate() or date is null"
+		               "query"    => " date >= curdate() "
 		);
 
 		// "ifnull(concat (name, ' ', DAYOFMONTH(date), '/', month(date)), name)");

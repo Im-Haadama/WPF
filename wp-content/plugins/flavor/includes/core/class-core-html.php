@@ -1162,7 +1162,7 @@ class Core_Html {
 				}
 				// New one
 			} else {
-				$data .= gui_select_datalist( $id, $table, $table . "_values", $name, $values, $events, null, $include_id, $id_key, $class );
+				$data .= Core_Html::gui_select_datalist( $id, $table, $table . "_values", $name, $values, $events, null, $include_id, $id_key, $class );
 			}
 
 			return $data;
