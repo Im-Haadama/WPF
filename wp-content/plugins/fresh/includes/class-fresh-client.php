@@ -142,17 +142,17 @@ class Fresh_Client {
 		                             " and meta.post_id = posts.ID");
 	}
 
-	function getInvoiceUser($create = true)
+	function getInvoiceUser()
 	{
-		$u = get_user_meta( $this->getUserId(), 'invoice_id', 1);
-		if (! $u and $create) {
-//			print "Creating";
-			$i = Finance_Invoice4u::getInstance();
-//			var_dump($i);
-			$i->CreateUser(self::getName(), self::get_customer_email(), self::get_phone_number());
-		}
-		return $u;
+		return Finance_Invoice4u::getInstance()->GetInvoiceUserId($this->getUserId(), $this->get_customer_email());
 	}
+
+	function createInvoiceUser()
+	{
+		Finance_Invoice4u::getInstance()->CreateUser($this->getUserId(), $this->getName(), $this->get_customer_email(), $this->get_phone_number());
+		return $this->getInvoiceUser();
+	}
+
 	function getZone()
 	{
 		$customer = new WC_Customer($this->user_id);

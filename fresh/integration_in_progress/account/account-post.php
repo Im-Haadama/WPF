@@ -317,30 +317,6 @@ function invoice_create_user( $user_id ) {
 	print $id;
 }
 
-function invoice_update_user( $user_id ) {
-	// First change wordpress display name
-	global $invoice_user, $invoice_password;
-
-	$invoice = new Invoice4u( $invoice_user, $invoice_password );
-
-	// $invoice->Login();
-
-	$name  = get_customer_name( $user_id );
-
-	// print "Creating user. name=" . $name . " email = " . $email . " phone = " . $phone. "<br/>";
-
-		$client = $invoice->GetCustomerByName( $name );
-
-	$id = $client->ID;
-
-	// Save locally.
-	update_user_meta( $user_id, 'invoice_id', $id );
-
-	print $id;
-}
-
-
-
 function zero_near_zero() {
 	print "מאפס קרובים לאפס <br/>";
 

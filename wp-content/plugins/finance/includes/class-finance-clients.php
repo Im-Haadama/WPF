@@ -74,7 +74,7 @@ class Finance_Clients
 		$table_lines         = array();
 		$table_lines_credits = array();
 
-		$create_invoice = true;
+		$create_invoice_user = true;
 		while ( $row = mysqli_fetch_row( $result ) ) {
 			// $line = '';
 			$customer_total = $row[0];
@@ -97,10 +97,12 @@ class Finance_Clients
 			$has_credit_info = SqlQuerySingleScalar( "select count(*) from im_payment_info where email = " . QuoteText($C->get_customer_email())) > 0 ? 'C' : '';
 			$has_token = (get_user_meta($customer_id, 'credit_token', true) ? 'T' : '');
 			$line .= "<td>" . $has_credit_info . " " . $has_token . "</td>";
-			$invoice_user= $C->getInvoiceUser(false);
-			if ( ! $invoice_user and $create_invoice){
-				$invoice_user = $C->getInvoiceUser(true);
-				$create_invoice = false;
+
+			// Invoice User. Create one each load for perfomance.
+			$invoice_user= $C->getInvoiceUser();
+			if ( ! $invoice_user and $create_invoice_user){
+				$invoice_user = $C->createInvoiceUser();
+				$create_invoice_user = false;
 			}
 			$line .= "<td>" .  $invoice_user . "</td>";
 			if ( $customer_total > 0 or $include_zero ) {

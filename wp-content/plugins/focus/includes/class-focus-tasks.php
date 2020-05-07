@@ -1498,7 +1498,7 @@ class Focus_Tasks {
 		// Check if user has team.
 		$team_ids = $worker->AllTeams();
 		if ( ! $team_ids or ! count( $team_ids ) ) {
-			Org_Team::Create($user_id, ImTranslate( "Personal team" ) . " " . get_customer_name( $user_id ) );
+			Org_Team::Create($user_id, ImTranslate( "Personal team" ) . " " . $worker->getName());
 		}
 
 		$project_ids = worker_get_projects( $user_id );

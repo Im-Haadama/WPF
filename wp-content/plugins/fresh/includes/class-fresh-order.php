@@ -420,7 +420,7 @@ class Fresh_Order {
 		}
 		// Do the calculation
 		$sql = "SELECT id, post_status FROM wp_posts " .
-		       " WHERE (post_status LIKE '%wc-processing%' ) "; // OR post_status = 'wc-awaiting-shipment'
+		       " WHERE (post_status LIKE '%wc-processing%' OR post_status = 'wc-awaiting-shipment')";
 
 		if ( $user_id ) {
 			$sql .= " and order_user(id) = " . $user_id;
@@ -604,7 +604,7 @@ class Fresh_Order {
 
 	static function GetAllComments(){
 		$sql = "SELECT id FROM wp_posts " .
-		       " WHERE (post_status LIKE '%wc-processing%' ) "; // OR post_status = 'wc-awaiting-shipment'
+		       " WHERE (post_status LIKE '%wc-processing%' OR post_status = 'wc-awaiting-shipment')";
 
 		$orders = SqlQueryArrayScalar($sql);
 
@@ -1364,22 +1364,6 @@ class Fresh_Order {
 
 			case "replace_baskets":
 				replace_baskets();
-				break;
-
-			case "check_email":
-				$email = GetParam( "email" );
-				if ( ! $email or strlen( $email ) < 5 ) {
-					print "u"; // unknown
-
-					return;
-				}
-				$u       = get_user_by( "email", $email );
-				if ( $u ) {
-					$user_id = $u->ID;
-					print get_customer_name( $user_id );
-				} else {
-					print "אין לקוח כתובת מייל זאת";
-				}
 				break;
 
 			case "check_delivery":

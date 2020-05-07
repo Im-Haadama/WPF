@@ -103,6 +103,10 @@ function greeting( $args = null, $force_login = false )
 //		$data .= im_translate("Hello");
 
 //	$data .= " " . gui_div("user_id", get_customer_name($user_id), false, $user_id);
+	$user_display = "";
+	$user = get_user_by( "id", $user_id );
+	if ( $user ) $user_display = $user->user_firstname . " " . $user->user_lastname;
+
 	$data .= get_avatar( get_user_id(), 40 ) . " " . get_customer_name($user_id) . Core_Html::Br() . GuiHyperlink("logout", wp_logout_url(get_permalink()));
 	if ($viewing_as != $user_id) $data .= "( " . ImTranslate("viewing as") . get_customer_name($viewing_as) . ")";
 
@@ -121,27 +125,6 @@ function greeting( $args = null, $force_login = false )
  *
  * @return int|string
  */
-function get_customer_name( $customer_id )
-{
-	static $min_supplier = 0;
-	if ( ! $min_supplier ) {
-		if (TableExists("suppliers"))
-			$min_supplier = SqlQuerySingleScalar( "SELECT min(id) FROM im_suppliers" );
-		else
-			$min_supplier = 100000;
-	}
-	if ( $customer_id < $min_supplier ) {
-		$user = get_user_by( "id", $customer_id );
-
-		if ( $user ) {
-			return $user->user_firstname . " " . $user->user_lastname;
-		}
-
-		return "לא נבחר לקוח";
-	}
-
-	return get_supplier_name( $customer_id );
-}
 
 /**
  * @param $permission

@@ -814,7 +814,7 @@ class Freight_Mission_Manager
 		}
 
 		$o = Fresh_Order::CreateOrder( $client, $mission_id, null, $the_shipping,
-			" משלוח המכולת " . date( 'Y-m-d' ) . " " . get_customer_name( $client ), $fee);
+			" משלוח המכולת " . date( 'Y-m-d' ) . " " . $customer->getName(), $fee);
 
 		if (! $o)
 			return false;

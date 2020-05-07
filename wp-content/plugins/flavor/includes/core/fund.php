@@ -23,6 +23,8 @@ if (!defined('WC_LOG_DIR')) {
 
 	function MyLog( $msg, $title = '', $file = null )
 	{
+//		if (! (strlen($title) > 2)) $title = debug_trace(2);
+		if (is_array($msg)) $msg = StringVar($msg);
 		$error_file = WC_LOG_DIR . ( $file ? $file : 'fresh.log' );
 		$date = date( 'd.m.Y h:i:s' );
 		$msg  = print_r( $msg, true );

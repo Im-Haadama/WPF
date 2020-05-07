@@ -103,8 +103,6 @@ class Finance_Invoice4u
 			echo $f->faultstring . "<br/>";
 			print "service=$service<br/>";
 			var_dump(libxml_get_last_error());
-
-
 			return $f->faultstring;
 		} catch ( Exception $e ) {
 			echo $e->getMessage();
@@ -182,32 +180,22 @@ class Finance_Invoice4u
 			throw new Exception( "Bad customer id " . __CLASS__ . " " . $customer_id );
 		}
 
-		// print "start";
+		// Try local cache
 		$id = get_user_meta( $customer_id, 'invoice_id', 1 );
+//		MyLog('cache' . $id, __FUNCTION__);
 
-		if ( $id > 0 ) {
-			return $id;
-		}
+		if (is_numeric($id) and ($id > 0)) return $id;
 
-		if (! $client_email) return null;
-
-//		$client_email = get_customer_email( $customer_id );
-		// print $client_email;
-		MyLog( "performance - seaching customer by email", __METHOD__ );
+		// Try email
+		MyLog( "performance - searching customer by email $client_email", __METHOD__ );
 		$client = $this->GetCustomerByEmail( $client_email );
 
-		if ( ! $client ) {
-			MyLog( "performance - seaching customer by name", __METHOD__ );
-			$client = $this->GetCustomerByName( get_customer_name( $customer_id ) );
-		}
+		if ( ! isset( $client->ID ) ) return null;
 
-		if ( ! isset( $client->ID ) ) {
-			return null;
-		}
-		$id = $client->ID;
-		update_user_meta( $customer_id, 'invoice_id', $id );
-
-		return $id;
+		// if found, save
+		if (is_numeric($client->ID) and ($client->ID > 0))
+			update_user_meta( $customer_id, 'invoice_id', $client->ID );
+		return $client->ID;
 	}
 
 	public function GetCustomerByEmail( $email ) {
@@ -224,19 +212,13 @@ class Finance_Invoice4u
 		if ( ! isset( $response->Response->Customer ) ) {
 			return null;
 		}
-		$customers = $response->Response->Customer;
-		// var_dump($customers);
-		if ( $customers->Email == $email ) {
-			return $customers;
-		}
-//		if ( $customers )
-//			foreach ( $customers as $customer ) {
-//			// print $customer->Email . " ";
-//			if ( $customer and $customer->Email == $email ) {
-//				return $customer;
-//			}
-//		}
+		$customer = $response->Response->Customer;
+		if ( $customer->Email == $email ) {
+			if (get_user_id() == 1)
+				var_dump($customer);
 
+			return $customer;
+		}
 		return null;
 	}
 
@@ -275,9 +257,8 @@ class Finance_Invoice4u
 		return null;
 	}
 
-	public function CreateUser( $name, $email, $phone )
+	public function CreateUser( $user_id, $name, $email, $phone )
 	{
-//		MyLog("creating $name");
 		if (! $this->token) {
 			MyLog("invoice4u: Not connected");
 			return false;
@@ -288,19 +269,12 @@ class Finance_Invoice4u
 		$customer->Email = $email;
 		$customer->Phone = $phone;
 
-//		MyLog($customer);
-
 		$this->result    = $this->requestWS( $wsdl, "Create",
 			array( 'customer' => $customer, 'token' => $this->token ) );
 
-		if ( ! $this->result->Errors ) {
-			// print $this->result->Errors;
-			MyLog( __METHOD__, $this->result->Errors );
- 		} else {
-			MyLog(StringVar($this->result->Errors));
-			return false;
-		}
-		// var_dump($this->result);
+		if ( $this->result->Errors ) return false;
+
+		return true;
 	}
 }
 
@@ -343,7 +317,6 @@ class InvoiceDiscount {
 	public $BeforeTax = true;// discount calculated before tax calculated
 	public $IsNominal = true;// means that the discount is calculated according to currency type (in this case: 5 ILS), if it is false than discount calculated in percentages (in this case: 5%)
 }
-
 
 class InvoiceItem {
 	public $Code; // = "001";
@@ -423,7 +396,6 @@ public $Amount = 100;
 public $PaymentType = 5; // Credit*/
 
 // send doc and token object to service to create document
-
 
 class InvoiceEmail {
 	public $Mail; // = "yaakov@im-haadama.co.il";

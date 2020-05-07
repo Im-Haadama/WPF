@@ -8,10 +8,10 @@ class Finance {
 	 * The loader that's responsible for maintaining and registering all hooks that power
 	 * the plugin.
 	 * created: 22/12/2019
-	 * 
+	 *
 	 * @since    1.0.0
 	 * @access   protected
-	 * @var     
+	 * @var
 	 */
 	protected $loader;
 	protected $shortcodes;
@@ -46,8 +46,7 @@ class Finance {
 	 */
 	public $finance = null;
 
-	public function get_plugin_name()
-	{
+	public function get_plugin_name() {
 		return $this->plugin_name;
 	}
 
@@ -65,8 +64,9 @@ class Finance {
 	 */
 	public static function instance() {
 		if ( is_null( self::$_instance ) ) {
-			self::$_instance = new self("Finance");
+			self::$_instance = new self( "Finance" );
 		}
+
 		return self::$_instance;
 	}
 
@@ -76,7 +76,7 @@ class Finance {
 	 * @since 2.1
 	 */
 	public function __clone() {
-		die( __FUNCTION__ .  __( 'Cloning is forbidden.', 'finance' ));
+		die( __FUNCTION__ . __( 'Cloning is forbidden.', 'finance' ) );
 	}
 
 	/**
@@ -92,6 +92,7 @@ class Finance {
 	 * Auto-load in-accessible properties on demand.
 	 *
 	 * @param mixed $key Key name.
+	 *
 	 * @return mixed
 	 */
 	public function __get( $key ) {
@@ -103,21 +104,23 @@ class Finance {
 	/**
 	 * WooCommerce Constructor.
 	 */
-	public function __construct($plugin_name)
-	{
+	public function __construct( $plugin_name ) {
 		Flavor::instance();
 
 		global $business_name;
 		$this->plugin_name = $plugin_name;
 		$this->define_constants();
 		$this->includes(); // Loads class autoloader
-		if (! defined('FINANCE_ABSPATH')) die ("not defined");
-		$this->loader = new Core_Autoloader(FINANCE_ABSPATH);
+		if ( ! defined( 'FINANCE_ABSPATH' ) ) {
+			die ( "not defined" );
+		}
+		$this->loader    = new Core_Autoloader( FINANCE_ABSPATH );
 		$this->post_file = "/wp-content/plugins/finance/post.php";
-		if (defined('YAAD_API_KEY')) {
+		if ( defined( 'YAAD_API_KEY' ) ) {
 			$this->yaad = new Finance_Yaad( YAAD_API_KEY, YAAD_TERMINAL, $business_name );
-		} else
+		} else {
 			$this->yaad = null;
+		}
 		$this->clients = new Finance_Clients();
 
 		$this->init_hooks();
@@ -142,9 +145,9 @@ class Finance {
 		// register_activation_hook( WC_PLUGIN_FILE, array( 'Finance_Install', 'install' ) );
 		register_shutdown_function( array( $this, 'log_errors' ) );
 
-		GetSqlConn(ReconnectDb());
+		GetSqlConn( ReconnectDb() );
 
-		self::install($this->version);
+		self::install( $this->version );
 
 		add_action( 'after_setup_theme', array( $this, 'setup_environment' ) );
 		add_action( 'after_setup_theme', array( $this, 'include_template_functions' ), 11 );
@@ -152,19 +155,23 @@ class Finance {
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
 
 		// Admin menu
-		add_action('admin_menu', __CLASS__ . '::admin_menu');
+		add_action( 'admin_menu', __CLASS__ . '::admin_menu' );
 
-		GetSqlConn(ReconnectDb());
+		GetSqlConn( ReconnectDb() );
 //		add_action( 'init', array( 'Finance_Emails', 'init_transactional_emails' ) );
 		// add_action( 'init', array( $this, 'wpdb_table_fix' ), 0 );
 		// add_action( 'init', array( $this, 'add_image_sizes' ) );
 		// add_action( 'switch_blog', array( $this, 'wpdb_table_fix' ), 0 );
-		add_action( 'admin_enqueue_scripts', array($this, 'admin_scripts' ));
-		add_action( 'wp_enqueue_scripts', array($this, 'enqueue_scripts' ));
-		add_action('pay_credit', array($this, 'pay_credit_wrapper'));
+		add_action( 'admin_enqueue_scripts', array( $this, 'admin_scripts' ) );
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+		add_action( 'pay_credit', array( $this, 'pay_credit_wrapper' ) );
 
-		if ($this->yaad) $this->yaad->init_hooks();
-		if ($this->clients) $this->clients->init_hooks();
+		if ( $this->yaad ) {
+			$this->yaad->init_hooks();
+		}
+		if ( $this->clients ) {
+			$this->clients->init_hooks();
+		}
 
 		$this->payments = Finance_Payments::instance();
 	}
@@ -176,7 +183,13 @@ class Finance {
 	 */
 	public function log_errors() {
 		$error = error_get_last();
-		if ( isset($error['type']) and in_array( $error['type'], array( E_ERROR, E_PARSE, E_COMPILE_ERROR, E_USER_ERROR, E_RECOVERABLE_ERROR ) ) ) {
+		if ( isset( $error['type'] ) and in_array( $error['type'], array(
+				E_ERROR,
+				E_PARSE,
+				E_COMPILE_ERROR,
+				E_USER_ERROR,
+				E_RECOVERABLE_ERROR
+			) ) ) {
 			$logger = finance_get_logger();
 			$logger->critical(
 			/* translators: 1: error message 2: file name and path 3: line number */
@@ -200,7 +213,7 @@ class Finance {
 		$this->define( 'FINANCE_VERSION', $this->version );
 		$this->define( 'FINANCE_INCLUDES', FINANCE_ABSPATH . 'includes/' );
 		$this->define( 'FINANCE_INCLUDES_URL', plugins_url() . '/finance/includes/' ); // For js
-		$this->define( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path(__FILE__) . '../../flavor/includes/' );  // for php
+		$this->define( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path( __FILE__ ) . '../../flavor/includes/' );  // for php
 		$this->define( 'FINANCE_DELIMITER', '|' );
 		$this->define( 'FINANCE_LOG_DIR', $upload_dir['basedir'] . '/finance-logs/' );
 	}
@@ -208,7 +221,7 @@ class Finance {
 	/**
 	 * Define constant if not already set.
 	 *
-	 * @param string      $name  Constant name.
+	 * @param string $name Constant name.
 	 * @param string|bool $value Constant value.
 	 */
 	private function define( $name, $value ) {
@@ -220,7 +233,8 @@ class Finance {
 	/**
 	 * What type of request is this?
 	 *
-	 * @param  string $type admin, ajax, cron or frontend.
+	 * @param string $type admin, ajax, cron or frontend.
+	 *
 	 * @return bool
 	 */
 	private function is_request( $type ) {
@@ -236,70 +250,78 @@ class Finance {
 		}
 	}
 
-	function handle_operation($operation)
-	{
-		$yaad = Finance::instance()->yaad; if ($yaad) $yaad->setDebug(false);
-		$module = strtok($operation, "_");
+	function handle_operation( $operation ) {
+		$yaad = Finance::instance()->yaad;
+		if ( $yaad ) {
+			$yaad->setDebug( false );
+		}
+		$module     = strtok( $operation, "_" );
 		$multi_site = Core_Db_MultiSite::getInstance();
 
-		$result = apply_filters($operation, "");
-		if ($result)
+		$result = apply_filters( $operation, "" );
+		if ( $result ) {
 			return $result;
-
-		switch ($module)
-		{
-			case "bank":
-				return $this->bank->handle_bank_operation($operation);
-			case "data":
-				return Core_Data::handle_operation($operation);
 		}
-		switch ($operation)
-		{
+
+		switch ( $module ) {
+			case "bank":
+				return $this->bank->handle_bank_operation( $operation );
+			case "data":
+				return Core_Data::handle_operation( $operation );
+		}
+		switch ( $operation ) {
 			case "new_customer":
-				$order_id = GetParam("order_id", true);
-				return self::new_customer($order_id);
+				$order_id = GetParam( "order_id", true );
+
+				return self::new_customer( $order_id );
 
 				break;
 			case "get_open_trans":
 				$client_id = GetParam( "client_id", true );
 				$site_id   = GetParam( "site_id", false, null );
-				if (! $site_id) return Fresh_Client_Views::show_trans($client_id);
+				if ( ! $site_id ) {
+					return Fresh_Client_Views::show_trans( $client_id );
+				}
 				// $data .= $this->Run( $func, $site_id, $first, $debug );
 				$link = Finance::getPostFile() . "?operation=get_open_trans&client_id=" . $client_id;
 				print $link;
 				print $multi_site->Run( $link, $site_id );
+
 				return true;
 
 			case "exists_invoice":
-				$bank_id = GetParam("bank_id", true);
-				$invoice = GetParam("invoice", true);
-				$b = Finance_Bank_Transaction::createFromDB( $bank_id );
+				$bank_id = GetParam( "bank_id", true );
+				$invoice = GetParam( "invoice", true );
+				$b       = Finance_Bank_Transaction::createFromDB( $bank_id );
+
 				return $b->Update( 0, $invoice, 0 );
 
 			case "get_open_invoices":
-				$debug = GetParam("debug");
+				$debug       = GetParam( "debug" );
 				$supplier_id = GetParam( "supplier_id", true );
 				$site_id     = GetParam( "site_id", true );
+
 				// $func, $site_id, $first = false, $debug = false ) {
 				return $multi_site->Run( "/org/business/business-post.php?operation=get_open_site_invoices&supplier_id=" . $supplier_id,
-					$site_id, true, $debug);
+					$site_id, true, $debug );
 				break;
-				
+
 			case "create_receipt":
-				$cash         = GetParam( "cash" );
-				$bank         = GetParam( "bank" );
-				$check        = GetParam( "check" );
-				$credit       = GetParam( "credit" );
-				$change       = GetParam( "change" );
-				$row_ids      = GetParamArray( "row_ids" );
-				$user_id      = GetParam( "user_id", true );
-				$date         = GetParam( "date" );
+				$cash    = GetParam( "cash" );
+				$bank    = GetParam( "bank" );
+				$check   = GetParam( "check" );
+				$credit  = GetParam( "credit" );
+				$change  = GetParam( "change" );
+				$row_ids = GetParamArray( "row_ids" );
+				$user_id = GetParam( "user_id", true );
+				$date    = GetParam( "date" );
 
 				//print "create receipt<br/>";
 				// (NULL, '709.6', NULL, NULL, '205.44', '', '2019-01-22', Array)
 				return Finance_Clients::create_receipt_from_account_ids( $cash, $bank, $check, $credit, $change, $user_id, $date, $row_ids );
 				break;
 		}
+
 		return false;
 	}
 
@@ -311,8 +333,7 @@ class Finance {
 		SqlQuery( $sql );
 	}
 
-	static function admin_menu()
-	{
+	static function admin_menu() {
 		Finance_Settings::admin_menu();
 	}
 
@@ -323,11 +344,13 @@ class Finance {
 		/**
 		 * Class autoloader.
 		 */
-		if (! class_exists('Core_Autoloader')){
+		if ( ! class_exists( 'Core_Autoloader' ) ) {
 			$f = FLAVOR_INCLUDES_ABSPATH . 'core/class-core-autoloader.php';
-			if (! file_exists($f)) return false;
+			if ( ! file_exists( $f ) ) {
+				return false;
+			}
 
-				require_once $f;
+			require_once $f;
 
 		}
 		require_once FLAVOR_INCLUDES_ABSPATH . 'core/fund.php';
@@ -450,24 +473,24 @@ class Finance {
 		// Set up localisation.
 		$this->load_plugin_textdomain();
 
-		$this->bank = Finance_Bank::instance();
-		$this->payments = Finance_Payments::instance();
-		$this->invoices = Finance_Invoices::instance();
+		$this->bank       = Finance_Bank::instance();
+		$this->payments   = Finance_Payments::instance();
+		$this->invoices   = Finance_Invoices::instance();
 		$this->shortcodes = Core_Shortcodes::instance();
-		$this->shortcodes->add($this->payments->getShortcodes());
-		$this->shortcodes->add($this->bank->getShortcodes());
-		$this->shortcodes->add($this->invoices->getShortcodes());
+		$this->shortcodes->add( $this->payments->getShortcodes() );
+		$this->shortcodes->add( $this->bank->getShortcodes() );
+		$this->shortcodes->add( $this->invoices->getShortcodes() );
 
 		$this->shortcodes->do_init();
 
-		$this->invoices->init(FINANCE_INCLUDES_URL . '../post.php');
+		$this->invoices->init( FINANCE_INCLUDES_URL . '../post.php' );
 
-		if (defined('INVOICE_USER')) {
+		if ( defined( 'INVOICE_USER' ) ) {
 			$this->invoice4u = new Finance_Invoice4u( INVOICE_USER, INVOICE_PASSWORD );
 			self::CreateInvoiceUser();
-		}
-		else
+		} else {
 			$this->invoice4u = null;
+		}
 
 //		print "a" . get_user_id();
 //		if (1 == get_user_id()) {
@@ -510,27 +533,27 @@ class Finance {
 		do_action( 'finance_init' );
 	}
 
-	static public function finance_main()
-	{
+	static public function finance_main() {
 		$result = "";
 
-		if (im_user_can("show_bank")) {
-			$bank = new Finance_Bank(FINANCE_PLUGIN_DIR . '/post.php');
-			$operation = GetParam("operation", false, null);
+		if ( im_user_can( "show_bank" ) ) {
+			$bank      = new Finance_Bank( FINANCE_PLUGIN_DIR . '/post.php' );
+			$operation = GetParam( "operation", false, null );
 			print "operation: $operation<br/>";
-			if ($operation) {
-				self::handle_bank_operation($operation, GetUrl(1));
+			if ( $operation ) {
+				self::handle_bank_operation( $operation, GetUrl( 1 ) );
+
 				return;
 			}
 
-			$result .= Core_Html::gui_header(1, "Main finance");
-			$result .= Core_Html::gui_header(2, "Bank");
+			$result .= Core_Html::gui_header( 1, "Main finance" );
+			$result .= Core_Html::gui_header( 2, "Bank" );
 
 			$result .= $bank->bank_status();
 		}
 
-		if (im_user_can("show_bank")) {
-			print Core_Html::gui_header(2, "Bank");
+		if ( im_user_can( "show_bank" ) ) {
+			print Core_Html::gui_header( 2, "Bank" );
 		}
 
 		print $result;
@@ -654,8 +677,7 @@ class Finance {
 //	}
 //
 
-	public function enqueue_scripts()
-	{
+	public function enqueue_scripts() {
 		$file = FINANCE_INCLUDES_URL . 'business.js';
 		wp_enqueue_script( 'business', $file, null, $this->version, false );
 		$file = FINANCE_INCLUDES_URL . 'finance.js';
@@ -683,20 +705,19 @@ class Finance {
 
 	}
 
-	public function run ()
-	{
+	public function run() {
 	}
 
-	function install($version, $force = false)
-	{
-		require_once(FINANCE_ABSPATH . '../flavor/includes/core/class-core-database.php' );
-		if (Core_Database::CheckInstalled("Finance", $this->version) == $version and ! $force) return;
+	function install( $version, $force = false ) {
+		require_once( FINANCE_ABSPATH . '../flavor/includes/core/class-core-database.php' );
+		if ( Core_Database::CheckInstalled( "Finance", $this->version ) == $version and ! $force ) {
+			return;
+		}
 
 		Finance_Clients::install();
 	}
 
-	static public function settingPage()
-	{
+	static public function settingPage() {
 		$result = "";
 		//                     Top nav                  Sub nav             target,                              capability
 //		$module_list = array( "Finance" => array(array("Bank transactions", "/finance_bank",                     "show_bank"),
@@ -748,6 +769,7 @@ class Finance {
 		MyLog( $sql, __FILE__ );
 		SqlQuery( $sql );
 	}
+
 	static function Sunday( $date ) {
 		$datetime = new DateTime( $date );
 		$interval = new DateInterval( "P" . $datetime->format( "w" ) . "D" );
@@ -756,55 +778,33 @@ class Finance {
 		return $datetime;
 	}
 
-	function pay_credit_wrapper()
-	{
-		$users = explode(",", GetParam("users", true, true));
+	function pay_credit_wrapper() {
+		$users = explode( ",", GetParam( "users", true, true ) );
 
-		foreach ($users as $user) {
+		foreach ( $users as $user ) {
 			$rc = apply_filters( 'pay_user_credit', $user );
-			if (! $rc) return false;
+			if ( ! $rc ) {
+				return false;
+			}
 		}
 
 		return true;
 	}
 
-	function CreateInvoiceUser()
-	{
-		return; // Don't use for now.
-		$debug = (get_user_id() == 1);
-		$last_created = SqlQuerySingleScalar("select max(user_id) from wp_usermeta where meta_key = 'invoice_id'");
-		$last = SqlQuerySingleScalar("select max(user_id) from wp_usermeta");
-		for ($user_id = $last_created+1; $user_id <= $last; $user_id++){
-			if ($debug) MyLog("checking $user_id");
-			if (SqlQuerySingleScalar("select client_last_order($user_id)")) {
-				if ($debug) MyLog("ordered. creating");
-				self::invoice_create_user($last_created + 1);
-				if ($debug) MyLog(get_user_meta( $user_id, 'invoice_id', $user_id ));
+	function CreateInvoiceUser() {
+		$last_created = SqlQuerySingleScalar( "select max(user_id) from wp_usermeta where meta_key = 'invoice_id'" );
+
+		$last = SqlQuerySingleScalar( "select max(user_id) from wp_usermeta" );
+
+		for ( $user_id = $last_created + 1; $user_id <= $last; $user_id ++ ) {
+			if ( SqlQuerySingleScalar( "select client_last_order($user_id)" ) ) {
+				MyLog( "creating $user_id", __FUNCTION__ );
+				$U = new Fresh_Client( $user_id );
+				$U->createInvoiceUser();
+				MyLog( get_user_meta( $user_id, 'invoice_id' ), __FUNCTION__ );
+
 				return; // Do just one.
 			}
 		}
-	}
-
-	//user_id = sql_query("select user_id");
-	function invoice_create_user( $user_id ) {
-		// First change wordpress display name
-		$U = new Fresh_Client($user_id);
-		$U -> set_default_display_name( );
-
-		$name  = $U->getName(); // get_customer_name( $user_id );
-		$email = $U->get_customer_email(); // get_customer_email( $user_id );
-		$phone = $U->get_phone_number(); // get_customer_phone( $user_id );
-
-		MyLog("Creating user. name=" . $name . " email = " . $email . " phone = " . $phone);
-
-		if (! $this->invoice4u->CreateUser( $name, $email, $phone ))
-			return false;
-
-		$client = $this->invoice4u->GetCustomerByName( $name );
-
-		$id = $client->ID;
-
-		// Save locally.
-		update_user_meta( $user_id, 'invoice_id', $id );
 	}
 }

@@ -580,6 +580,7 @@ class Fresh_Catalog {
 	}
 
 	static function auto_mail() {
+		return false;
 		global $business_name;
 		global $support_email;
 
