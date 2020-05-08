@@ -21,11 +21,11 @@ if (!defined('WC_LOG_DIR')) {
 		define ("WC_LOG_DIR", '/wp-content/uploads/wc-logs/');
 }
 
-	function MyLog( $msg, $title = '', $file = null )
+	function MyLog( $msg, $title = '', $file = 'fresh.log' )
 	{
 //		if (! (strlen($title) > 2)) $title = debug_trace(2);
 		if (is_array($msg)) $msg = StringVar($msg);
-		$error_file = WC_LOG_DIR . ( $file ? $file : 'fresh.log' );
+		$error_file = WC_LOG_DIR . $file;
 		$date = date( 'd.m.Y h:i:s' );
 		$msg  = print_r( $msg, true );
 		$log  = $date . ": " . $title . "  |  " . $msg . "\n";

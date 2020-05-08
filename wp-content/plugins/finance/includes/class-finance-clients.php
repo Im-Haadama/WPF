@@ -78,6 +78,8 @@ class Finance_Clients
 		while ( $row = mysqli_fetch_row( $result ) ) {
 			// $line = '';
 			$customer_total = $row[0];
+			if ( ($customer_total < 1) and ! $include_zero ) continue;
+
 			$customer_id    = $row[1];
 			$customer_name  = $row[2];
 //			print $customer_name . " " . $customer_total . "<br/>";
@@ -105,20 +107,11 @@ class Finance_Clients
 				$create_invoice_user = false;
 			}
 			$line .= "<td>" .  $invoice_user . "</td>";
-			if ( $customer_total > 0 or $include_zero ) {
 				array_push( $table_lines, array( - $customer_total, $line ) );
-			}
-//				print "pushed $customer_name<br/>";
-//			if ( $include_zero || $customer_total > 0 ) {
-			//array_push( $table_lines, array( - $customer_total, $line ) );
-//				array_push( $table_lines, array( $payment_method, $line ) );
-//			} else if ( $customer_total < 0 ) {
-//				print "pushed $customer_name<br/>";
 		}
-//		}
 
 		if ( count( $table_lines ) ) {
-			$table = "<table>";
+			$table = "<table class='sortable'>";
 			$table .= "<tr>";
 			$table .= Core_Html::gui_cell( "בחר" );
 

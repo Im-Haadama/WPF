@@ -52,6 +52,7 @@ class Freight_Methods {
 		// Zone name, instance name, workdays
 		while ($method_info = SqlFetchAssoc($query_result))
 		{
+//			var_dump($method_info); print "<br/>";
 			$instance_id = $method_info['instance_id'];
 			$data = get_wp_option("woocommerce_flat_rate_{$instance_id}_settings");
 			$zone_id = $method_info['zone_id'];
@@ -59,7 +60,8 @@ class Freight_Methods {
 			$args["events"] = sprintf('onchange="shipment_update_mc(\'%s\', \'%d\')"', Fresh::getPost(), $instance_id);
 
 			$new_row = array(
-				isset($data['instance_id']) ? $data['instance_id'] : 'no instance',
+				// isset($data['instance_id']) ? $data['instance_id'] : 'no instance',
+				$instance_id,
 				isset($zone_info[1]) ? $zone_info[1] : "not set",
 				$data['title'],
 				self::SelectMissionType("mis_" . $instance_id, $method_info['mission_code'], $args)
