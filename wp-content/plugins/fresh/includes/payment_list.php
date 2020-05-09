@@ -11,9 +11,9 @@ if (!empty($chk_delete)) {
     $count    = count($chk_delete);
     for ($i = 0; $i < $count; $i++) {
         $del_id = $chk_delete[$i];
-        $sql    = "DELETE FROM $table_name WHERE id =" . $del_id;
+//        $sql    = "DELETE FROM $table_name WHERE id =" . $del_id;
         $card_four_digit   = $wpdb->get_var("SELECT card_four_digit FROM $table_name WHERE id = ".$del_id." ");
-        $sql = $wpdb->query($wpdb->prepare("UPDATE $table_name SET card_number =  '".$card_four_digit."', cvv_number = '' WHERE id = ".$del_id." "));
+        $sql = $wpdb->query($wpdb->prepare("UPDATE $table_name SET card_number =  '".$card_four_digit."' WHERE id = ".$del_id." "));
         $wpdb->get_results($sql);
     }
 }
@@ -21,7 +21,7 @@ if (!empty($chk_delete)) {
 if(isset($_REQUEST['method']) && $_REQUEST['method'] == "delete_rec"){
   $del_id = $_REQUEST['id'];
   $card_four_digit   = $wpdb->get_var("SELECT card_four_digit FROM $table_name WHERE id = ".$del_id." ");
-  $sql = $wpdb->query($wpdb->prepare("UPDATE $table_name SET card_number =  '".$card_four_digit."', cvv_number = '' WHERE id = ".$del_id." "));
+  $sql = $wpdb->query($wpdb->prepare("UPDATE $table_name SET card_number =  '".$card_four_digit."' WHERE id = ".$del_id." "));
   $wpdb->get_results($sql);
 }
 
@@ -85,7 +85,6 @@ $result = $wpdb->num_rows;
                   <th align="left" data-orderable="true"><strong>ID NO</strong></th>
                   <th align="left" data-orderable="false"><strong>Card Type</strong></th>
                   <th align="left" data-orderable="false"><strong>Expiry Date</strong></th>
-                  <th align="left" data-orderable="false"><strong>CVV No</strong></th>
                   <th align="left" data-orderable="false"><strong>Action</strong></th>
 				  
               </tr>
@@ -99,7 +98,6 @@ $result = $wpdb->num_rows;
             $i = 1;
 			
             foreach ($pay_result as $data) {
-
               $fullname = $data->full_name;
               $email = $data->email;
               $card_number = $data->card_number;
@@ -108,7 +106,6 @@ $result = $wpdb->num_rows;
               $exp_date_month = $data->exp_date_month;
               $exp_date_month = str_pad($exp_date_month, 2, '0', STR_PAD_LEFT);
               $exp_date_year = $data->exp_date_year;
-              $cvv_number = $data->cvv_number;
               $id_number = $data->id_number;
 
         ?>             
@@ -123,7 +120,6 @@ $result = $wpdb->num_rows;
                   <td align="left"><?php echo $id_number;?></td>
                   <td align="left"><?php echo $card_type;?></td>
                   <td align="left"><?php echo $exp_date_month.'/'.$exp_date_year;?></td>
-                  <td align="left"><?php echo $cvv_number;?></td>
                   <td align="left">
                    
                     <a title="Delete" class="ual-delete-log" href="javascript: void(0)" onclick="delete_tracking(<?php echo $data->id; ?>)"> 

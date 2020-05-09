@@ -10,16 +10,6 @@ jQuery(document).ready(function () {
          
         });
 
-        jQuery("#cvv_number").bind("keypress", function (e) {
-              var keyCode = e.which ? e.which : e.keyCode
-              if (!(keyCode >= 48 && keyCode <= 57)) {
-                return false;
-              }else{
-               return true;
-              }
-         
-        });
-
         jQuery("#id_number").bind("keypress", function (e) {
               var keyCode = e.which ? e.which : e.keyCode
               if (!(keyCode >= 48 && keyCode <= 57)) {

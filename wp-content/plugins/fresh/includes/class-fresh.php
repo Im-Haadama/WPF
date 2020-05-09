@@ -1072,7 +1072,6 @@ function insert_payment_info( $order_id )
 		$card_type = get_post_meta($order_id, 'card_type', TRUE);
 		$exp_date_month = get_post_meta($order_id, 'expdate_month', TRUE);
 		$exp_date_year = get_post_meta($order_id, 'expdate_year', TRUE);
-		$cvv_number = get_post_meta($order_id, 'cvv_number', TRUE);
 		$billing_id_number = get_post_meta($order_id, 'id_number', TRUE);
 
 		if($card_number != ''){
@@ -1085,7 +1084,6 @@ function insert_payment_info( $order_id )
 			              'card_type' => $card_type,
 			              'exp_date_month' => $exp_date_month,
 			              'exp_date_year' => $exp_date_year,
-			              'cvv_number' => $cvv_number,
 			              'id_number' => $billing_id_number );
 			$wpdb->insert($table, $data);
 			$last_id = $wpdb->insert_id;

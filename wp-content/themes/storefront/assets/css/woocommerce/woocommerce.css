@@ -917,8 +917,6 @@ form.checkout {
           margin-bottom: 1em; }
           #payment .payment_methods li .payment_box fieldset .form-row input[type='checkbox'] {
             margin-right: 5px; }
-        #payment .payment_methods li .payment_box fieldset #cvv {
-          width: 22% !important; }
         #payment .payment_methods li .payment_box fieldset .help {
           width: 75%;
           float: right; }

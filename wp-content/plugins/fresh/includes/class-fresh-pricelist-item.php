@@ -153,6 +153,7 @@ class Fresh_Pricelist_Item {
 		$link_data = $catalog->GetProdID( $this->id);
 		$linked_prod_id   = "";
 		$map_id    = "";
+		$row['product_name'] = Fresh_Pricelist::StripProductName($row['product_name']);
 		if ( $link_data ) {
 			$price = $row['price'];
 			$date = $row['date'];

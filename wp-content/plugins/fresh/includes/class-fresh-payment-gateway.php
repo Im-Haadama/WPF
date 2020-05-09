@@ -61,7 +61,6 @@ if (class_exists("WC_Payment_Gateway")) {
 			$cardtype         = $_REQUEST['billing_cardtype'];
 			$expdateyear      = $_REQUEST['billing_expdateyear'];
 			$expdatemonth     = $_REQUEST['billing_expdatemonth'];
-			$cvvnumber        = $_REQUEST['billing_cvvnumber'];
 			$billing_idnumber = $_REQUEST['billing_idnumber'];
 
 			if ( isset( $creditcard_no ) && $creditcard_no == '' ) {
@@ -89,11 +88,6 @@ if (class_exists("WC_Payment_Gateway")) {
 
 				return false;
 			}
-			if ( isset( $cvvnumber ) && $cvvnumber == '' ) {
-				wc_add_notice( __( 'Please, enter cvv number.', 'woocommerce-custom-payment-gateway' ), 'error' );
-
-				return false;
-			}
 
 			return true;
 		}
@@ -106,7 +100,6 @@ if (class_exists("WC_Payment_Gateway")) {
 			$card_type          = $_REQUEST['billing_cardtype'];
 			$expdate_year       = $_REQUEST['billing_expdateyear'];
 			$expdate_month      = $_REQUEST['billing_expdatemonth'];
-			$cvv_number         = $_REQUEST['billing_cvvnumber'];
 			$billing_idnumber   = $_REQUEST['billing_idnumber'];
 
 			if ( isset( $card_number ) && ! empty( $card_number ) ) {
@@ -123,9 +116,6 @@ if (class_exists("WC_Payment_Gateway")) {
 			}
 			if ( isset( $expdate_year ) && ! empty( $expdate_year ) ) {
 				update_post_meta( $order_id, 'expdate_year', $expdate_year );
-			}
-			if ( isset( $cvv_number ) && ! empty( $cvv_number ) ) {
-				update_post_meta( $order_id, 'cvv_number', $cvv_number );
 			}
 			$order->update_status( $this->order_status, __( 'Awaiting payment', 'woocommerce-other-payment-gateway' ) );
 
@@ -228,16 +218,6 @@ if (class_exists("WC_Payment_Gateway")) {
                         </select>
                     </p>
                     <div class="clear"></div>
-                    <p class="form-row validate-required">
-						<?php
-						$cvv_field_placeholder = __( 'Card Verification Number (CVV)', 'woocommerce-fruity-payment-gateway' );
-						$cvv_field_placeholder = apply_filters( 'wcpprog_cvv_field_placeholder', $cvv_field_placeholder );
-						?>
-                        <label><?php _e( 'Card Verification Number (CVV)', 'woocommerce-fruity-payment-gateway' ); ?>
-                            <span class="required">*</span></label>
-                        <input class="input-text" type="text" size="4" maxlength="4" name="billing_cvvnumber"
-                               id="cvv_number" value="" placeholder="<?php echo $cvv_field_placeholder; ?>" required/>
-                    </p>
                 </fieldset>
 			<?php }
 		}

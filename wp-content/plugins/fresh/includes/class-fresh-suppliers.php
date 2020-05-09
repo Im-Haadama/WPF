@@ -37,7 +37,7 @@ class Fresh_Suppliers {
 		              "query_part" => "from im_supplier_price_list where supplier_id = %d and date = supplier_last_pricelist_date(supplier_id)",
 			"fields" => array("id", "product_name", "price", "date"),
 			"extra_header" => array("linked product", "calculated price", "price", "sale price", "open orders"),
-			"order"=>"product_name",
+			"order"=>"order by id",
 			"prepare" => "Fresh_Pricelist_Item::add_prod_info",
 //			"header_fields" => array("supplier_product_code" => "code", "product_name" => "name"),
 			"import_page"=> GetUrl(),

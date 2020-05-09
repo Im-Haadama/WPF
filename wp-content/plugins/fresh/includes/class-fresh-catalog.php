@@ -454,8 +454,8 @@ class Fresh_Catalog {
 	static function GetProdID( $pricelist_id, $include_hide = false ) # Returns prod id if this supplier product mapped
 	{
 		$debug = false;
-		if ( $pricelist_id == 749873 ) {
-			MyLog("debuging pricelist id $pricelist_id");
+		if ( $debug ) {
+			MyLog("debugging pricelist id $pricelist_id");
 			$debug = true;
 		}
 
@@ -483,10 +483,10 @@ class Fresh_Catalog {
 			print "handling $product_name";
 
 		if (strlen($product_name)) {
-			$product_name = Fresh_PriceList::StripProductName($product_name);
+			$product_name = Fresh_PriceList::StripProductName($product_name, $debug);
 			if ($debug) print " strip name: $product_name";
 			$sql = "SELECT product_id, id FROM im_supplier_mapping " .
-			       " WHERE supplier_product_name like '%" . EscapeString( trim($product_name, " !-" )) . "%'" .
+			       " WHERE supplier_product_name like '%$product_name%'" .
 			       " AND supplier_id = " . $result["supplier_id"];
 
 			if ($debug)

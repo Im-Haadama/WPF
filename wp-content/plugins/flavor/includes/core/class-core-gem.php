@@ -453,9 +453,10 @@ class Core_Gem {
 		$query_id = GetArg($args, "id", null);
 		if (! $query_id) return __FUNCTION__ . ": id is missing";
 		$query = sprintf($query_part, $query_id);
+		$order = GetArg($args, "order", "");
 		$fields = GetArg($this->object_types["$table_name"], "fields", '*');
 
-		$args["sql"] = "select " . CommaImplode($fields) . " $query";
+		$args["sql"] = "select " . CommaImplode($fields) . " $query $order";
 		$args = array_merge($this->object_types["$table_name"], $args);
 
 		return self::GemTable($database_table, $args);

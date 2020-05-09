@@ -100,6 +100,21 @@ order by 1;");
 	{
 		$current = self::CheckInstalled("Fresh", "functions");
 		$db_prefix = GetTablePrefix();
+return;
+		if (get_user_id() != 1) return false;
+
+		$sql = "select id, supplier_product_name from im_supplier_mapping";
+		$result = SqlQuery($sql);
+		while ($row = SqlFetchAssoc($result)){
+			$id = $row['id'];
+			$supplier_prod_name = $row['supplier_product_name'];
+			$sql = "update im_supplier_mapping set supplier_product_name = '" . Fresh_Pricelist::StripProductName($row['supplier_product_name']) . "' 
+			where id = $id";
+			print "$supplier_prod_name $sql<br/>";
+		}
+
+//		SqlQuery("alter table ${db_prefix}payment_info DROP CVV_number;");
+//		SQLQuery("delete from wp_postmeta where meta_key = 'cvv_number'");
 
 		if ($current == $version and ! $force) return true;
 
@@ -742,7 +757,6 @@ BEGIN
 	    `card_type` varchar(100) NOT NULL,
 	    `exp_date_month` tinyint(4) NOT NULL,
 	    `exp_date_year` int(11) NOT NULL,
-	    `cvv_number` varchar(20) NOT NULL,
 	    `id_number` varchar(15)  NOT NULL,
 	    `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 	) $charset_collate;";

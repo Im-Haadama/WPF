@@ -587,15 +587,34 @@ class Fresh_PriceList {
 		}
 	}
 
-	static function StripProductName( $name ) {
+	static function StripProductName( $name, $debug = false ) {
+		if ($debug) MyLog("b${name}b");
 		// trim sadot product name starting with * or **
-		foreach ( array( "חדשה", "מוגבל", "גדול", "טעים", "מבצע", "חדש", "ויפה", "יפה", "אורגנית","אורגני","איכות", "יצוא", "יח", "ייבוא", "יבוא" ) as $word_to_remove ) {
-			$name = str_replace( $word_to_remove, "", $name );
-		}
 		$name = str_replace( array( '!', '.', ',', '*', '\'' ), '', $name );
 		$name = str_replace( array( ')', '(', '-' ), ' ', $name );
+		foreach ( array( "חדשה",
+			"מוגבל",
+			"גדול",
+			"טעים",
+			"מבצע",
+			"חדש",
+			"ויפה",
+			"יפה",
+			"אורגנית",
+			"אורגני",
+			"איכות",
+			"יצוא",
+			"יחידה",
+			"ליח",
+			"יח",
+			"ייבוא",
+			"יבוא" ) as $word_to_remove ) {
+			$name = str_replace( "$word_to_remove", " ", $name );
+		}
 		$name = trim($name, ' ');
+		$name = preg_replace('!\s+!', ' ', $name);//str_replace('  ', ' ', $name);
 
+		if ($debug) MyLog("a${name}a");
 		return $name;
 	}
 }
