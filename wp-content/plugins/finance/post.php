@@ -12,9 +12,7 @@ $user = GetParam('AUTH_USER', false, null);
 $password = GetParam('AUTH_PW', false, null);
 if (! get_user_id() and ! Core_Fund::check_password($user, $password)) {
 	if ( ! get_user_id(true) ) die('Not connected');
-
 }
-
 
 $rc = $finance->handle_operation($operation);
 

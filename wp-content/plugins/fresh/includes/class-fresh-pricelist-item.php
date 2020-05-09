@@ -48,6 +48,18 @@ class Fresh_Pricelist_Item {
 		$this->picture_path          = $result["picture_path"];
 	}
 
+	public function getPricePerDate($date)
+	{
+		$sql = "select price from im_supplier_price_list
+				where product_name like '%" . Fresh_PriceList::StripProductName($this->product_name) ."%' 
+				and date <= '" . $date . "' order by date desc limit 1";
+//		print $sql . "<br/>";
+		$p = SqlQuerySingleScalar($sql);
+//		if ($this->id == 749832)
+//			print $sql . " $p<br/>";
+		return $p;
+	}
+
 	/**
 	 * @return mixed
 	 */
@@ -59,8 +71,9 @@ class Fresh_Pricelist_Item {
 	/**
 	 * @return mixed
 	 */
-	public function getProductName() {
-		return $this->product_name;
+	public function getProductName($striped = false) {
+		if (!$striped) return $this->product_name;
+
 	}
 
 	/**
@@ -121,19 +134,29 @@ class Fresh_Pricelist_Item {
 
 		return $s->getSupplierName();
 	}
-	
-	static public function add_prod_info($row, $edit = true)
+
+	static public function add_prod_info($row, $edit = true) {
+		$create_info = GetParam( "create_products", false, false );
+		$supplier_id = GetParam( "id", true );
+
+		$pl_id = $row["id"];
+
+		$item = new Fresh_Pricelist_Item( $pl_id );
+
+		return $item->AddProdInfo( $row, $edit, $create_info, $supplier_id );
+	}
+
+	public function AddProdInfo($row, $edit, $create_info, $supplier_id)
 	{
-		$create_info = GetParam("create_products", false, false);
-		$supplier_id = GetParam("id", true);
-
 		$catalog = new Fresh_Catalog();
-		$pl_id   = $row["id"];
 
-		$link_data = $catalog->GetProdID( $pl_id );
+		$link_data = $catalog->GetProdID( $this->id);
 		$linked_prod_id   = "";
 		$map_id    = "";
 		if ( $link_data ) {
+			$price = $row['price'];
+			$date = $row['date'];
+			$previous_date = SqlQuerySingleScalar("select date from im_supplier_price_list where supplier_id = $supplier_id and date < '" . $date . "' order by date desc limit 1");
 			if ($create_info) return null; // Show just new products (not mapped).
 			$linked_prod_id = $link_data[0];
 			$p       = new Fresh_Product( $linked_prod_id );
@@ -147,11 +170,18 @@ class Fresh_Pricelist_Item {
 //			if ( $ordered_only and ! isset( $needed_products[ $prod_id ][0] ) and ! isset( $needed_products[ $prod_id ][1] ) ) continue;
 //			if ( $need_supply_only and ( $needed_products[ $prod_id ][0] <= $p->getStock() ) ) { continue;
 
+			$color = $this->get_prod_color($date, $previous_date);
+			if ($color)
+				$row['price'] = Core_Html::GuiDiv("", $row['price'], array("style" => "background-color: $color"));
 			array_push( $row, $p->getName() );
 //			array_push( $row, ($edit ? Core_Html::GuiInput("prc_$pl_id", $p->getPrice()) : $p->getPrice()));
-			array_push( $row, $p->getCalculatedPrice($supplier_id));
+			array_push( $row, Fresh_Pricing::calculate_price($this->getPricePerDate($date), $supplier_id));
+			$style = null;
+			if ($p->getPrice() < $price) $style = "background-color: #EC7063";
 			array_push( $row, Core_Html::GuiInput("prc_$linked_prod_id", $p->getPrice(),
-				array("events"=>array("onchange=\"product_change_regularprice('" . Fresh::getPost() . "', $linked_prod_id)\"", 'onkeypress="moveNext(this)"'), "size"=>5)));
+				array("events"=>array("onchange=\"product_change_regularprice('" . Fresh::getPost() . "', " . $this->id . ", $linked_prod_id)\"", 'onkeypress="moveNext(this)"'),
+				      "size"=>5,
+					"style" => $style)));
 			array_push( $row, Core_Html::GuiInput("sal_$linked_prod_id", $p->getSalePrice(),
 				array("events"=>array("onchange=\"product_change_saleprice('" . Fresh::getPost() . "', $linked_prod_id)\"", 'onkeypress="moveNext(this)"'), "size"=>5)));
 			$stockManaged = $p->getStockManaged();
@@ -165,7 +195,7 @@ class Fresh_Pricelist_Item {
 				array_push($row, Core_Html::GuiButton("btn_" . $row['id'], "Add Product", array("action" => "create_product('". Fresh::getPost() ."', $supplier_id, " . $row['id'] .")")));
 			} else {
 //				var_dump($row);
-				array_push($row, Fresh_Product::gui_select_product("prd" . $pl_id, "", array("events" => 'onchange=pricelist_option_selected(this)')),
+				array_push($row, Fresh_Product::gui_select_product("prd" . $this->id, "", array("events" => 'onchange=pricelist_option_selected(this)')),
 				"",
 				"",
 				"",
@@ -177,42 +207,17 @@ class Fresh_Pricelist_Item {
 		return $row;
 	}
 
-//	static function prod_options($product_name, $pl_id)
-//	{
-//		$striped_prod = $product_name;
-//		foreach ( array( "אורגני", "יחידה", "טרי" ) as $word_to_remove ) $striped_prod = str_replace( $word_to_remove, "", $striped_prod );
-//
-//		$striped_prod = trim( $striped_prod );
-//
-//		$prod_options = Fresh_Catalog::GetProdOptions( $product_name );
-//
-//		$options = [];
-//		$selected  = null;
-//		foreach ( $prod_options as $row1 )
-//		{
-//			$striped_option = $row1["post_title"];
-//			$striped_option = str_replace( "-", " ", $striped_option );
-//			$striped_option = trim( $striped_option, " " );
-//			array_push($options, array("id" => $row1["id"], "name"=> $row1["post_title"]));
-////			$options .= '<option value="' . "XX"  . '" ';
-//			if ( ! strcmp( $striped_option, $striped_prod ) ) $selected = $striped_option;
-//		}
-//
-//		print Core_Html::GuiDatalist("datalist". $pl_id, $options, 'id','name', $selected);
-//		return Core_Html::GuiInputDatalist("prd" .  $pl_id, "datalist$pl_id", 'onchange="pricelist_option_selected(this)"');
-//
-////		$line = "<tr>";
-////		$line .= "<td>" . gui_checkbox( "chk" . $pricelist_id, "product_checkbox", $match ) . "</td>";
-////		$line .= "<td>" . $supplier_product_code . "</td>";
-////		$line .= "<td>" . $product_name . "</td>";
-////		$line .= "<td>" . $supplier_id . "</td>";
-////		$line .= "<td><select onchange='selected(this)' id='$pricelist_id'>";
-////
-////		$line .= $options;
-////
-////		$line .= '</select></td>';
-//
-//	}
+	function get_prod_color($current, $previous)
+	{
+		$current_price = self::getPricePerDate($current);
+		$prev_price = self::getPricePerDate($previous);
+		$color = "white";
+		if (! $prev_price) $color = 'lightgreen';
+		else
+		if ($current_price > $prev_price) $color = 'salmon';
+		if ($current_price < $prev_price) $color = 'lightblue';
+		return $color;
+	}
 }
 
 
@@ -227,22 +232,6 @@ class UpdateResult {
 	const DeletePrice = 7;
 	const NotUsed = 8;
 }
-
-
-function pricelist_get_price( $prod_id ) {
-	// my_log("prod_id = " . $prod_id);
-	if ( ! ( $prod_id > 0 ) ) {
-		print "missing prod_id " . $prod_id . "<br/>";
-		die ( 1 );
-	}
-	$supplier_id = get_supplier_id( get_postmeta_field( $prod_id, "supplier_name" ) );
-
-	$sql = 'SELECT price FROM im_supplier_price_list WHERE supplier_id = \'' . $supplier_id . '\'' .
-	       ' AND product_name IN (SELECT supplier_product_name FROM im_supplier_mapping WHERE product_id = ' . $prod_id . ')';
-
-	return SqlQuerySingleScalar( $sql );
-}
-
 
 function product_other_suppliers( $prod_id, $supplier_id ) {
 	$result       = "";

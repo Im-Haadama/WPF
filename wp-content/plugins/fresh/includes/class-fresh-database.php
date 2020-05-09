@@ -493,6 +493,14 @@ charset=utf8;");
 		$current = self::CheckInstalled("Fresh", "functions");
 		$db_prefix = GetTablePrefix();
 
+		SqlQuery("drop function supplier_last_pricelist_date;");
+
+		SqlQuery("create function supplier_last_pricelist_date(_supplier_id int) returns date
+		BEGIN
+		declare _date date;
+		select max(date) into _date from im_supplier_price_list where supplier_id = _supplier_id;
+		return _date;
+		END");
 		if ($current == $version and ! $force) return true;
 
 		SqlQuery("drop function client_id_from_delivery");

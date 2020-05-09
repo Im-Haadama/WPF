@@ -116,6 +116,8 @@ class Core_Html {
 		$events = GetArg( $args, "events", null );
 		$class  = GetArg( $args, "class", null );
 		$size   = GetArg( $args, "size", null );
+		$style = GetArg($args, "style", null);
+//		print "style=$style";
 
 		if ( is_null( $id ) ) {
 			$id = $name;
@@ -127,6 +129,7 @@ class Core_Html {
 		if ( strlen( $value ) > 0 ) {
 			$data .= "value=\"$value\" ";
 		}
+		if ($style) $data .= ' style="' . $style . '"';
 		if ( $size ) {
 			$data .= ' size="' . $size . '" ';
 		}

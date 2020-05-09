@@ -110,9 +110,14 @@ function pricelist_map_products(post_file)
     execute_url(request, location_reload);
 }
 
-function product_change_regularprice(post_file, prod_id)
+function product_change_regularprice(post_file, pl_id, prod_id)
 {
     let price = get_value_by_name("prc_" + prod_id);
+    let buy_price = get_value_by_name("price_" + pl_id);
+    if (parseFloat(price) < parseFloat(buy_price))
+        document.getElementById("prc_" + prod_id).style.backgroundColor = '#EC7063';
+    else
+        document.getElementById("prc_" + prod_id).style.backgroundColor = 'white';
     if (! (price > 0)) {
         alert ("Enter valid price");
         return;

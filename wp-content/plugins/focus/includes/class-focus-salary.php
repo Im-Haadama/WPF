@@ -62,7 +62,7 @@ class Focus_Salary {
 			case "delete":
 				$lines = GetParamArray( "params" );
 
-				return ( Core_Data::Inactive( "im_working_hours", $lines ) );
+				return ( Core_Data::Inactive( "working_hours", $lines ) );
 
 			case "salary_add_time":
 			case "add_time":
@@ -125,7 +125,7 @@ class Focus_Salary {
 			);
 			$args["selectors"] = array( "project_id" => "Focus_Tasks::gui_select_project" );
 
-			$result .= Core_Gem::GemTable( "im_working", $args );
+			$result .= Core_Gem::GemTable( "working", $args );
 		} else {
 			$year_month = GetParam( "month", false, date( 'Y-m' ) );
 			$y          = intval(strtok( $year_month, "-" ));
@@ -448,7 +448,7 @@ class Focus_Salary {
 		                        "report" => "Include in report", "day_rate" => "Day rate", "is_active" => "Active?");
 
 		$row_id = SqlQuerySingleScalar("select min(id) from im_working where user_id = $user_id");
-		$result            .= Core_Gem::GemElement( "im_working", $row_id, $args );
+		$result            .= Core_Gem::GemElement( "working", $row_id, $args );
 
 		$result .= self::show_report_worker( $user_id, $y, $m );
 		$result .= self::hours_entry($user_id);

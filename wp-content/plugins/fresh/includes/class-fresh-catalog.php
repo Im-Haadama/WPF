@@ -454,8 +454,11 @@ class Fresh_Catalog {
 	static function GetProdID( $pricelist_id, $include_hide = false ) # Returns prod id if this supplier product mapped
 	{
 		$debug = false;
-		if ( $pricelist_id == 22737 )
+		if ( $pricelist_id == 749873 ) {
+			MyLog("debuging pricelist id $pricelist_id");
 			$debug = true;
+		}
+
 		$result_ids = array();
 		// find products mapped by id.
 		$sql = "SELECT product_id, id, supplier_product_name FROM im_supplier_mapping WHERE pricelist_id = " . $pricelist_id;
@@ -466,27 +469,32 @@ class Fresh_Catalog {
 		if ( $result ) {
 			while ( $row = mysqli_fetch_row( $result ) ) {
 				array_push( $result_ids, $row[0] );
-			}
-			if ( $debug ) {
-				MyLog( "direct link to $pricelist_id " . implode( ",", $result_ids ) );
-				MyLog( $sql );
+				if ( $debug ) {
+					MyLog( $sql );
+					MyLog( $row[0] . " direct link to $pricelist_id " . implode( ",", $result_ids ) );
+				}
 			}
 		}
 
 		// find products mapped by name
 		$result       = Fresh_PriceList::Get( $pricelist_id );
 		$product_name = $result["product_name"];
+		if ($debug)
+			print "handling $product_name";
+
 		if (strlen($product_name)) {
-			foreach ( array( "חדשה", "מוגבל", "גדול", "טעים", "מבצע", "חדש", "ויפה", "יפה" ) as $word_to_remove ) {
-				$product_name = str_replace( $word_to_remove, "", $product_name );
-			}
+			$product_name = Fresh_PriceList::StripProductName($product_name);
+			if ($debug) print " strip name: $product_name";
 			$sql = "SELECT product_id, id FROM im_supplier_mapping " .
-			       " WHERE supplier_product_name = '" . EscapeString( $product_name ) . "'" .
+			       " WHERE supplier_product_name like '%" . EscapeString( trim($product_name, " !-" )) . "%'" .
 			       " AND supplier_id = " . $result["supplier_id"];
 
+			if ($debug)
+				MyLog($sql);
 			if ( ! $include_hide )
 				$sql .= " and product_id > 0";
-			// print $sql;
+
+//			print $sql . "<br/>";
 			$result = SqlQuery( $sql );
 			if ( $result ) {
 				{
@@ -502,6 +510,7 @@ class Fresh_Catalog {
 			}
 		}
 
+		if ($debug) var_dump($result_ids);
 		return $result_ids;
 	}
 
@@ -701,7 +710,7 @@ class Fresh_Catalog {
 	static function alternatives( $prod_id, $details = false, $supplier_id = null )
 	{
 		global $debug_product;
-		$debug_product = 0;
+		$debug_product = 3747;
 
 		// prof_flag("start " . $id);
 		if ( ! is_numeric($prod_id) or !( $prod_id > 0 ) ) {
@@ -713,8 +722,10 @@ class Fresh_Catalog {
 			print "Alternatives<br/>";
 		}
 		// Search by pricelist_id
-		$sql = "select price, supplier_id, id, sale_price from
-			im_supplier_price_list where id in (select pricelist_id from im_supplier_mapping where product_id = $prod_id)";
+		$sql = "select price, supplier_id, id, sale_price " .
+		       " from im_supplier_price_list " .
+		       " where id in (select pricelist_id from im_supplier_mapping where product_id = $prod_id)" .
+		       " and date = supplier_last_pricelist_date(supplier_id) ";
 
 //    print "<br/>" . $sql . "<br/>";
 		$result = SqlQuery( $sql );
@@ -745,7 +756,8 @@ class Fresh_Catalog {
     	JOIN im_supplier_mapping m
   		WHERE m.supplier_product_name = pl.product_name
   		AND m.supplier_id = pl.supplier_id
-		AND m.product_id = " . $prod_id;
+		AND m.product_id = $prod_id
+		AND pl.date = supplier_last_pricelist_date(pl.supplier_id)";
 
 		$result = SqlQuery( $sql );
 		$c      = 0;

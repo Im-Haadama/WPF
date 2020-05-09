@@ -11,7 +11,12 @@ class Fresh_Pricing {
 		if ( is_numeric( $sale_price ) and $sale_price < $price and $sale_price > 0 ) $price = $sale_price;
 
 //		print "$supplier $price $factor<br/>";
-		if ( is_numeric( $factor ) ) return round( $price * ( 100 + $factor ) / 100, 1 );
+
+		//		Legacy function:
+		// if ( is_numeric( $factor ) ) return round( $price * ( 100 + $factor ) / 100, 1 );
+
+		// New function:
+		if ( is_numeric( $factor ) ) return ceil($price * ( 100 + $factor ) / 100 );
 
 		return 0;
 	}

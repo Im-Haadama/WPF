@@ -607,7 +607,7 @@ class Finance_Bank
 			die( "already paid" );
 		}
 		if ( strlen( $result ) < 2 ) {
-			if (developer()) print $command . "<br/>";
+			 print $command . "<br/>";
 			die( "bad response" );
 		}
 		if ( strlen( $result ) > 10 ) {

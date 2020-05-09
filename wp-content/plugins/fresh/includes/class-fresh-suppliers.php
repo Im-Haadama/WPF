@@ -34,7 +34,7 @@ class Fresh_Suppliers {
 
 		// Pricelist
 		$args = array("database_table" => "supplier_price_list",
-		              "query_part" => "from im_supplier_price_list where supplier_id = %d",
+		              "query_part" => "from im_supplier_price_list where supplier_id = %d and date = supplier_last_pricelist_date(supplier_id)",
 			"fields" => array("id", "product_name", "price", "date"),
 			"extra_header" => array("linked product", "calculated price", "price", "sale price", "open orders"),
 			"order"=>"product_name",
@@ -199,7 +199,8 @@ class Fresh_Suppliers {
 	{
 		$supplier_id = GetParam("id", true);
 		// sql_query("update line_status = 2 where supplier_id =$supplier_id")
-		SqlQuery("delete from im_supplier_price_list where supplier_id = $supplier_id");
+		// No delete anymore. We'll read the last date fields.
+//		SqlQuery("delete from im_supplier_price_list where supplier_id = $supplier_id");
 		$fields["date"] = date('Y-m-d');
 		$fields["supplier_id"] = $supplier_id;
 	}
