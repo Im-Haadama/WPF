@@ -690,13 +690,13 @@ class Fresh_Order {
 		}
 
 		// if order is legacy, create delivery.
-		$this->ChangeStatus( $new_status );
+		$this->setStatus( $new_status );
 
 		$message = "delivered";
 		return true;
 	}
 
-	function ChangeStatus( $status, $ids = null ) {
+	function setStatus( $status, $ids = null ) {
 		if ( $ids and is_array( $ids ) ) {
 			$args = $ids;
 		} else {
@@ -1331,7 +1331,7 @@ class Fresh_Order {
 				$ids = GetParamArray( "ids" );
 				foreach ( $ids as $id ) {
 					$o = new Fresh_Order( $id );
-					if (! $o->ChangeStatus( "wc-processing" )) return false;
+					if (! $o->setStatus( "wc-processing" )) return false;
 				}
 				return true;
 

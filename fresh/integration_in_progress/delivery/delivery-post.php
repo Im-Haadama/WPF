@@ -66,7 +66,7 @@ switch ( $operation ) {
 		$p = new Fresh_Product( $id );
 		operation_get_price( $id );
 		print ',';
-		print $p->GetVatPercent();
+		print $p->getVatPercent();
 		break;
 	case "get_price":
 		if ( isset( $_GET["id"] ) ) {

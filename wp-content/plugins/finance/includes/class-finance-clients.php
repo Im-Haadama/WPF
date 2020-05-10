@@ -312,23 +312,24 @@ class Finance_Clients
 	}
 
 	static function CreateDocument( $type, $ids, $customer_id, $email, $date, $cash = 0, $bank = 0, $credit = 0, $check = 0, $subject = null ) {
-		global $debug;
-		global $invoice_user;
-		global $invoice_password;
 		require_once(ABSPATH . "im-config.php");
 
 		if ( ! ( $customer_id > 0 ) )
 			throw new Exception( "Bad customer id" . __CLASS__);
 
-		$invoice = new Finance_Invoice4u( $invoice_user, $invoice_password );
+		if ( defined( 'INVOICE_USER' ) and defined('INVOICE_PASSWORD')) {
+			MyLog("Logging to invoice4u ");
+			$invoice = new Finance_Invoice4u( INVOICE_USER, INVOICE_PASSWORD );
+			self::CreateInvoiceUser();
+			MyLog("invoice4u done");
+		} else {
+			Finance::getPostFile()->add_admin_notice( "No invoice user defined. define INVOICE_USER and INVOICE_PASSWORD in wp-config.php" );
+			return false;
+		}
 
 		$invoice->Login();
 
-//	print "customer id : " . $customer_id . "<br/>";
-
 		$invoice_client_id = $invoice->GetInvoiceUserId( $customer_id, $email );
-
-//	print "invoice client id " . $invoice_client_id . "<br/>";
 
 		$client = $invoice->GetCustomerById( $invoice_client_id );
 
@@ -380,8 +381,8 @@ class Finance_Clients
 					$item->Price    = round( $row[3], 2 );
 					$item->Quantity = round( $row[1], 2 );
 					if ( $row[2] > 0 ) {
-						$item->TaxPercentage   = 17;
-						$item->TotalWithoutTax = round( $row[4] / 1.17, 2 );
+						$item->TaxPercentage   = Fresh_Pricing::getVatPercent();
+						$item->TotalWithoutTax = Fresh_Pricing::totalWithoutVat($row[4]);
 					} else {
 						$item->TaxPercentage   = 0;
 						$item->TotalWithoutTax = round( $row[4], 2);
@@ -425,22 +426,8 @@ class Finance_Clients
 				array_push( $doc->Payments, $pay );
 			}
 
-//        if ($total_lines <> ($cash + $bank + $credit + $check)){
-//            print "total lines " . $total_lines . "<br/>";
-//            print "cash " . $cash . "<br/>";
-//            print "bank " . $bank . "<br/>";
-//            print "credit " . $credit . "<br/>";
-//        }
-			//$pay->Amount = $doc->Total;
-			// print "Amount: " . $pay->Amount . "<br/>";
-			// $doc->RoundAmount = 69;
-			// $doc->Total = 69;
-			// $doc->TaxPercentage = 17;
 			$doc->Total = $credit + $bank + $cash + $check;
-			// $doc->RoundAmount = round($total_lines - $doc->Total, 2);
 			$doc->ToRoundAmount = false;
-			// print "round = " . $doc->RoundAmount . "<br/>";
-			// print "total = " . $doc->Total . "<br/>";
 		}
 
 		// print "create<br/>";

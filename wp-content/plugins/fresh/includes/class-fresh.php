@@ -17,6 +17,7 @@ class Fresh {
 	protected $totals;
 	protected $shortcodes;
 	protected $client_views;
+	protected $admin_notices;
 
 	/**
 	 * Plugin version.
@@ -120,6 +121,7 @@ class Fresh {
 	private function init_hooks() {
 	    // Admin scripts and styles. Todo: Check if needed.
 		add_action('admin_enqueue_scripts', array($this, 'admin_scripts'));
+		add_action( 'admin_notices', array($this, 'admin_notices') );
 
 		// Can't make that work: register_activation_hook( __FILE__, array( $this, 'install' ) );
         self::install($this->version);
@@ -183,6 +185,7 @@ class Fresh {
         add_action( 'woocommerce_update_cart_action_cart_updated', 'on_action_cart_updated', 20, 1 );
 		add_action( 'woocommerce_checkout_create_order_line_item', 'checkout_create_order_line_item', 10, 4 );
         /* -- End Product Comment Hooks-- */
+
 
 		GetSqlConn(ReconnectDb());
 //		add_action( 'init', array( 'Fresh_Emails', 'init_transactional_emails' ) );
@@ -665,6 +668,20 @@ class Fresh {
 	static public function admin_load()
 	{
 		new Fresh_Settings();
+	}
+
+	function add_admin_notice($message)
+	{
+		if (! $this->admin_notices) $this->admin_notices = array();
+		array_push($this->admin_notices, $message);
+	}
+
+	function admin_notices() {
+		if (! $this->admin_notices) return;
+		print '<div class="notice is-dismissible notice-info">';
+		foreach ($this->admin_notices as $notice)
+			print _e( $notice );
+		print '</div>';
 	}
 }
 

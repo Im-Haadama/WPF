@@ -818,7 +818,7 @@ class Freight_Mission_Manager
 
 		if (! $o)
 			return false;
-		$o->ChangeStatus( 'wc-processing' );
+		$o->setStatus( 'wc-processing' );
 //		$o->setMissionID($mission_id);
 
 		return true;

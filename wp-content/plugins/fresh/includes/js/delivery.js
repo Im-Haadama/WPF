@@ -147,8 +147,8 @@ function calcDelivery() {
     document.getElementById("del_tot").innerHTML = total;
 }
 
-function deleteDelivery(id) {
-    var request = "/wp-content/plugins/fresh/post.php?operation=delivery_delete&delivery_id=" + id;
+function deleteDelivery(post_file, id) {
+    var request = post_file + "?operation=delivery_delete&delivery_id=" + id;
 
     execute_url(request, action_back);
 }

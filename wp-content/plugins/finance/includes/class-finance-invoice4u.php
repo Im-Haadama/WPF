@@ -128,12 +128,6 @@ class Finance_Invoice4u
 
 		$this->result = $this->requestWS( $wsdl, "CreateDocument", array( 'doc' => $doc, 'token' => $this->token ) );
 
-		//if (strlen($this->result->Error) > 0)
-		//    die ($this->result->Error);
-		// foreach ($this->result->Errors as $err)
-		//    print $err;
-		//print $this->result->Errors->Error;
-//        var_dump($this->result);
 		$docNum = $this->result->DocumentNumber;
 		if ( $docNum == 0 ) {
 			foreach ( $doc->Items as $item ) {

@@ -20,7 +20,6 @@ class Finance {
 	protected $invoices;
 	protected $post_file;
 	protected $yaad;
-	protected $invoice4u;
 	protected $clients;
 	protected $admin_notices;
 
@@ -400,7 +399,8 @@ class Finance {
 		       . " WHERE ref = " . $ref;
 
 		MyLog( $sql, __FILE__ );
-		SqlQuery( $sql );
+		if (SqlQuery( $sql )) return true;
+		return false;
 	}
 
 	static function admin_menu() {
@@ -510,19 +510,8 @@ class Finance {
 
 		$this->invoices->init( FINANCE_INCLUDES_URL . '../post.php' );
 
-		$this->invoice4u = null;
-		if (is_admin()) {
-			if ( defined( 'INVOICE_USER' ) ) {
-				MyLog("Logging to invoice4u");
-				$this->invoice4u = new Finance_Invoice4u( INVOICE_USER, INVOICE_PASSWORD );
-				self::CreateInvoiceUser();
-				MyLog("invoice4u done");
-			} else {
-				$this->add_admin_notice( "No invoice user defined. define INVOICE_USER and INVOICE_PASSWORD in wp-config.php" );
-			}
-		}
 		// For testing:
-//		wp_set_current_user(369);
+		//		wp_set_current_user(369);
 
 		// Init action.
 		do_action( 'finance_init' );

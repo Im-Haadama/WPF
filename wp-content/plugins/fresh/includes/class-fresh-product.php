@@ -14,6 +14,13 @@ class Fresh_Product {
 	private $p;
 
 	/**
+	 * @return mixed
+	 */
+	public function getId() {
+		return $this->id;
+	}
+
+	/**
 	 * Product constructor.
 	 *
 	 * @param $id
@@ -139,26 +146,11 @@ class Fresh_Product {
 
 	function isFresh() {
 		$debug = false;
-		// if ($this->id == 149) $debug = true;
 		$terms = $this->getTerms();
-		// print var_dump($terms);
-		if ( $debug ) {
-			print info_get( "fresh" );
-			var_dump( $terms );
-		}
-		// print "checking .. ";
 
-		if ( $terms ) {
-			foreach ( $terms as $term ) {
-				$term_id = $term->term_id;
-				// print "term: " . $term_id . " ";
-
-				if ( $this->is_fresh( $term_id, $debug ) ) {
-					// print "fresh";
-					return true;
-				}
-			}
-		}
+		if ( $terms )
+			foreach ( $terms as $term )
+				if ( $this->is_fresh( $term->term_id, $debug ) ) return true;
 
 		return false;
 	}
@@ -184,21 +176,14 @@ class Fresh_Product {
 
 	function is_fresh( $term_id, $debug = false ) {
 		$terms = InfoGet( "fresh" );
-		if ( ! $terms ) {
-			return false;
-		}
-		$fresh = explode( $terms, "," );
+		if ( ! $terms ) return false;
+		$fresh = explode( ",", $terms);
 
-		if ( in_array( $term_id, $fresh ) ) {
-			return true;
-		}
+		if ( in_array( $term_id, $fresh ) ) return true;
 
 		$parents = get_ancestors( $term_id, "product_cat", 'taxonomy' );
-		foreach ( $parents as $parent ) {
-			if ( $this->is_fresh( $parent, $debug ) ) {
-				return true;
-			}
-		}
+		foreach ( $parents as $parent )
+			if ( $this->is_fresh( $parent, $debug ) ) return true;
 
 		return false;
 	}
@@ -283,17 +268,12 @@ class Fresh_Product {
 	function setStockManaged( $managed, $backorder ) {
 		print $this->id . " " . $managed . "<br/>";
 		update_post_meta( $this->id, '_manage_stock', $managed ? "yes" : "no" );
-//		$this->p->set_backorders( $backorder );
-//		$this->p->save();
 		update_post_meta( $this->id, '_backorders', $backorder ? "yes" : "no" );
 		update_post_meta( $this->id, '_stock_status', $backorder ? "yes" : "no" );
 		if ( is_null( $this->getStock() ) ) {
 			print "setting stock to 0<br/>";
 			update_post_meta( $this->id, '_stock', 0 );
-//			$this->setStock(0);
-//			$this->p->save();
 		}
-
 	}
 
 	function getStockDate() {
@@ -321,13 +301,10 @@ class Fresh_Product {
 		return $name;
 	}
 
-	function GetVatPercent() {
-		global $global_vat;
-		if ( $this->isFresh() ) {
-			return 0;
-		}
+	function getVatPercent() {
+		if ( $this->isFresh() ) return 0;
 
-		return $global_vat;
+		return Fresh_Pricing::getVatPercent();
 	}
 
 	function getPrice( $customer_type = "regular" ) {
@@ -360,13 +337,11 @@ class Fresh_Product {
 		// For now create post saves the supplier name.
 		// Planned to save there the supplier id.
 		$b = Fresh_Catalog::best_alternative($this->id);
-//		$supplier_id = sql_query_single_scalar( "select meta_value from wp_postmeta where post_id = " . $this->id . " and meta_key = 'supplier_id'" );
+
 		if ($b)
 			return $b->getSupplierId();
+
 		return null;
-//		if ($supplier_id) return $supplier_id;
-//
-//		return Fresh_Supplier::getSupplierId(self::getSupplierName());
 	}
 
 	function getCalculatedPrice($supplier_id)

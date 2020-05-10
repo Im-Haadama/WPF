@@ -32,7 +32,7 @@ class Fresh_Delivery_Manager
 
 		$d->Delete();
 
-		Finance::delete_transaction( $id );
+		return Finance::delete_transaction( $id );
 	}
 
 	public static function instance() {

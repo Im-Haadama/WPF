@@ -153,4 +153,14 @@ class Fresh_Pricing {
 	{
 		return 17;
 	}
+
+	static function vatFromTotal($amount)
+	{
+		return round($amount * self::getVatPercent() / (100 + self::getVatPercent()), 2);
+	}
+
+	static function totalWithoutVat($amount)
+	{
+		return $amount - self::vatFromTotal($amount);
+	}
 }

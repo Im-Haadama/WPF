@@ -31,7 +31,6 @@ class Fresh_Order_Management {
 	static public function show_edit_order($order_id)
 	{
 		$order = new Fresh_Order($order_id);
-//		print $order->getStatus();
 		if ($order->getStatus() != 'wc-on-hold') return;
 
 		print "ניתן לערוך את ההזמנה " . Core_Html::GuiHyperlink("כאן", "/my-account/edit-order/$order_id") . ".";
@@ -125,27 +124,21 @@ class Fresh_Order_Management {
 		// Order is complete.
 		// If no delivery note, create one with 100% supplied.
 		$O = new Fresh_Order($order_id);
-//		print "fee= " . $O->getShippingFee() . "<br/>";
 		if (! $O->getDeliveryId()) {
 			$fee = $O->getShippingFee();
-			MyLog($fee);
 			// Check if there is delivery fee.
 			if (! $fee) {
 				MyLog("No delivery fee");
-				Print "No delivery fee. Add to order before completion";
+				Fresh::instance()->add_admin_notice("No delivery fee. Add to order before completion");
+				// Change back the order status.
+				$O->setStatus('wc-processing');
+				return false;
 			}
 
-			// if ($O->)
-//			print "no del id</br>";
 			$del_id = Fresh_Delivery::CreateDeliveryFromOrder($order_id, 1);
-//			if ($del_id > 0)
-//				print "$del_id created<br/>";
 		} else {
 			MyLog ("have del: " . $O->getDeliveryId());
 		}
-//		else {
-//			print "has del: " . $O->getDeliveryId() ."<br/>";
-//		}
 		return true;
 	}
 

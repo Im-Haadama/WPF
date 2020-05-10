@@ -96,7 +96,7 @@ class Fresh_Delivery {
 			$quantity = $row['quantity'];
 			$line_total = round($new_price * $quantity, 2);
 			$total += $line_total;
-			$new_vat = round($line_total / (1 + $vat_precent / 100) * ($vat_precent / 100), 2);
+			$new_vat = Fresh_Pricing::vatFromTotal($line_total);
 			$total_vat += $new_vat;
 //			print "$prod_id $price " .  . "<br/>";
 			$sql = "update im_delivery_lines " .
@@ -191,52 +191,47 @@ class Fresh_Delivery {
 			// push_array($prods, array($product['qty']));
 			// $total += $p * $q;
 			// var_dump($product);
-			$prod                 = array();
-			$prod['product_name'] = $product["name"];
+			$P = new Fresh_Product($product['product_id']);
+			$prod_to_add                 = array();
+			$prod_to_add['product_name'] = $product["name"];
 			switch ( $q ) {
 				case 1:
-//					print "q=" . $product["quantity"];
-					$prod['quantity'] = $product["quantity"];
+					$prod_to_add['quantity'] = $product["quantity"];
 					break;
 				case 2:
-					$prod['quantity'] = inventory::GetQuantity( $product['product_id'] );
+					$prod_to_add['quantity'] = inventory::GetQuantity( $product['product_id'] );
 					break;
 			}
-			$prod['quantity_ordered'] = $prod['quantity'];
-			$prod['vat']              = 0;
+			$prod_to_add['quantity_ordered'] = $prod_to_add['quantity'];
+			$prod_to_add['vat']       = ($P->getVatPercent() ? Fresh_Pricing::vatFromTotal($product['total']) :0);
+			$vat += $prod_to_add['vat'];
 			$quantity                 = $product["quantity"];
 
-			if ( $q != 0 ) {
-				$prod['price'] = $quantity ? ( $product['total'] / $quantity ) : 0;
-			}
-			$prod['line_price'] = $product['total'];
+			if ( $q != 0 ) $prod_to_add['price'] = $quantity ? ( $product['total'] / $quantity ) : 0;
+			$prod_to_add['line_price'] = $product['total'];
 			$total              += $product['total'];
-			$prod['prod_id']    = $product['product_id'];
+			$prod_to_add['prod_id']    = $product['product_id'];
 
-			// var_dump($prod);
-			array_push( $prods, $prod );
+			array_push( $prods, $prod_to_add );
 		}
 
 		if ($fee = $order->getShippingFee()) {
 			$total += $fee;
+			$vat += Fresh_Pricing::vatFromTotal($fee);
 			$lines ++;
+			MyLog("fee vat: $vat $fee " . Fresh_Pricing::vatFromTotal($fee));
 		}
 
 		$delivery_id = Fresh_Delivery::CreateDeliveryHeader( $order_id, $total, $vat, $lines, false, $fee, 0, false );
 		// print " מספר " . $delivery_id;
 
-		foreach ( $prods as $prod ) {
-			Fresh_Delivery::AddDeliveryLine( $prod['product_name'], $delivery_id, $prod['quantity'], $prod['quantity_ordered'], 0,
-				$prod['vat'], $prod['price'], $prod['line_price'], $prod['prod_id'], 0 );
+		foreach ( $prods as $prod_to_add ) {
+			Fresh_Delivery::AddDeliveryLine( $prod_to_add['product_name'], $delivery_id, $prod_to_add['quantity'], $prod_to_add['quantity_ordered'], 0,
+				$prod_to_add['vat'], $prod_to_add['price'], $prod_to_add['line_price'], $prod_to_add['prod_id'], 0 );
 		}
 
 		if ($fee)
 			Fresh_Delivery::AddDeliveryLine('דמי משלוח', $delivery_id, 1, 1, 0, round($fee / 1.17 * 0.17, 2), $fee, $fee, 0, 0 );
-
-		// print " נוצרה <br/>";
-
-//	$order = new WC_Order( $order_id );
-//	$order->update_status( 'wc-completed' );
 
 //		send_deliveries($delivery_id);
 
@@ -361,7 +356,7 @@ class Fresh_Delivery {
 			Finance::add_transaction( $client_id, $date, $total, $fee, $delivery_id, 3 );
 		}
 		// $order = new WC_Order( $order_id );
-		if ( ! $order->ChangeStatus( 'wc-awaiting-shipment' ) ) {
+		if ( ! $order->setStatus( 'wc-awaiting-shipment' ) ) {
 			printbr( "can't update order status" );
 		}
 
@@ -377,7 +372,6 @@ class Fresh_Delivery {
 			die ( 1 );
 		}
 		$product_name = preg_replace( '/[\'"%()]/', "", $product_name );
-		print "name: " . $product_name . "<br/>";
 
 		$sql = "INSERT INTO im_delivery_lines (delivery_id, product_name, quantity, quantity_ordered, unit_ordered, vat, price, line_price, prod_id, part_of_basket) VALUES ("
 		       . $delivery_id . ", "
@@ -391,9 +385,7 @@ class Fresh_Delivery {
 		       . $prod_id . ', '
 		       . $part_of_basket . ' )';
 
-// print $sql . "<br/>";
-
-		MyLog( $sql, "db-add-delivery-line.php" );
+		MyLog( "$delivery_id: $product_name $quantity $quantity_ordered $vat $price $line_price $prod_id", "db-add-delivery-line.php" );
 
 		SqlQuery( $sql );
 	}
@@ -868,8 +860,7 @@ class Fresh_Delivery {
 					$this->delivery_total                   += $delivery_line;
 				}
 				if ( $has_vat and isset( $delivery_line ) ) {
-					$line[ eDeliveryFields::line_vat ] = round( $delivery_line / ( 100 + $global_vat ) * $global_vat, 2 );
-					// round($delivery_line / (100 + $global_vat));
+					$line[ eDeliveryFields::line_vat ] = Fresh_Pricing::vatFromTotal($delivery_line);
 
 					$this->delivery_due_vat   += $delivery_line;
 					$this->delivery_total_vat += $line[ eDeliveryFields::line_vat ];

@@ -426,7 +426,7 @@ class Fresh_Packing {
 			case "cancel_order":
 			$id = GetParam("id",true);
 			$o  = new Fresh_Order( $id );
-			$o->ChangeStatus( "wc-cancelled" );
+			$o->setStatus( "wc-cancelled" );
 			break;
 		}
 	}

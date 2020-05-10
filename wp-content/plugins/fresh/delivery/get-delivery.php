@@ -70,7 +70,7 @@ if ( ! $send ) {
 	if ( SqlQuerySingleScalar( "SELECT payment_receipt FROM im_delivery WHERE id = " . $id ) ) {
 		print "תעודה שולמה ולא ניתנת לעריכה או למחיקה";
 	} else {
-	    print Core_Html::GuiButton("btn_del", "delete document", array("action" => "deleteDelivery($id)") );
+	    print Core_Html::GuiButton("btn_del", "delete document", array("action" => "deleteDelivery('".Fresh::getPost()."', $id)") );
 	    print Core_Html::GuiButton("btn_edit", "edit document", array("action" =>"editDelivery()"));
 	    print Core_Html::GuiButton("btn_send", "send delivery", array("action" =>"sendDelivery()"));
 	}

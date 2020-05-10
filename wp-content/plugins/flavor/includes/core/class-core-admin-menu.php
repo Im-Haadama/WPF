@@ -1,6 +1,5 @@
 <?php
 
-
 class Core_Admin_Menu {
 	public function AddMenu($page_title, $menu_title, $capability, $menu_slug, $function)
 	{
@@ -21,6 +20,3 @@ class Core_Admin_Menu {
 			else print "==========================================> $capability is missing<br/>";
 	}
 }
-
-//[products limit="4 columns="4" category="סלי השבוע"]
-//[products limit="4" columns="4" category="117"]
