@@ -22,6 +22,7 @@ class Finance {
 	protected $yaad;
 	protected $invoice4u;
 	protected $clients;
+	protected $admin_notices;
 
 	/**
 	 * Plugin version.
@@ -108,6 +109,7 @@ class Finance {
 		Flavor::instance();
 
 		global $business_name;
+		$this->admin_notices = null;
 		$this->plugin_name = $plugin_name;
 		$this->define_constants();
 		$this->includes(); // Loads class autoloader
@@ -153,6 +155,8 @@ class Finance {
 		add_action( 'after_setup_theme', array( $this, 'include_template_functions' ), 11 );
 		add_action( 'init', array( $this, 'init' ), 0 );
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
+		add_action( 'admin_notices', array($this, 'admin_notices') );
+
 
 		// Admin menu
 		add_action( 'admin_menu', __CLASS__ . '::admin_menu' );
@@ -489,6 +493,7 @@ class Finance {
 			$this->invoice4u = new Finance_Invoice4u( INVOICE_USER, INVOICE_PASSWORD );
 			self::CreateInvoiceUser();
 		} else {
+			$this->add_admin_notice("No invoice user defined. define INVOICE_USER and INVOICE_PASSWORD in wp-config.php");
 			$this->invoice4u = null;
 		}
 
@@ -806,5 +811,18 @@ class Finance {
 				return; // Do just one.
 			}
 		}
+	}
+
+	function add_admin_notice($message)
+	{
+		if (! $this->admin_notices) $this->admin_notices = array();
+		array_push($this->admin_notices, $message);
+	}
+	function admin_notices() {
+		if (! $this->admin_notices) return;
+		print '<div class="notice is-dismissible notice-info">';
+		foreach ($this->admin_notices as $notice)
+			print _e( $notice );
+		print '</div>';
 	}
 }

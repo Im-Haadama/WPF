@@ -18,6 +18,8 @@ class Freight_Database extends Core_Database {
 
 		if ($current == $version and ! $force) return true;
 
+		SqlQuery("alter table wp_woocommerce_shipping_zone_methods drop week_day");
+
 		SqlQuery("alter table im_multisite
 	add pickup_address varchar(50) not null;
 
@@ -30,18 +32,6 @@ class Freight_Database extends Core_Database {
 		SqlQuery("alter table wp_woocommerce_shipping_zones add min_order float;" );
 		SqlQuery("alter table wp_woocommerce_shipping_zones add default_rate float;" );
 
-		SqlQuery("create table ${db_prefix}path_shipments
-(
-	id int auto_increment primary key,
-	path_id int not null,
-	week_day int not null,
-	hours varchar(20) null,
-	instance int null
-);
-
-");
-
 		self::UpdateInstalled("Freight", "tables", $version);
-
 	}
 }

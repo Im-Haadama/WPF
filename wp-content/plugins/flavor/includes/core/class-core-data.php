@@ -471,6 +471,8 @@ class Core_Data
 						$server_action = substr($action[1], 0, $s);
 						$action_url = sprintf($server_action, $row_id);
 						$client_action = substr($action[1], $s + 1);
+						if (! $client_action) $client_action = "''";
+//						print "CA=$client_action<br/>";
 						$btn_id = "btn_$text" . "_" . $row_id;
 						$action_args = array("action" => "execute_url('" . $action_url . "', $client_action, $btn_id )");
 						if (isset($action[2])) $action_args["class"] = $action[2];

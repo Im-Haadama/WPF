@@ -48,11 +48,12 @@ class Fresh_Pricelist_Item {
 		$this->picture_path          = $result["picture_path"];
 	}
 
-	public function getPricePerDate($date)
+	public function getPricePerDate($date = null)
 	{
 		$sql = "select price from im_supplier_price_list
-				where product_name like '%" . Fresh_PriceList::StripProductName($this->product_name) ."%' 
-				and date <= '" . $date . "' order by date desc limit 1";
+				where product_name like '%" . Fresh_PriceList::StripProductName($this->product_name) ."%'";
+		if ($date) $sql .= "and date <= '" . $date . "'";
+		$sql .= " order by date desc limit 1";
 //		print $sql . "<br/>";
 		$p = SqlQuerySingleScalar($sql);
 //		if ($this->id == 749832)
@@ -66,7 +67,6 @@ class Fresh_Pricelist_Item {
 	public function getId() {
 		return $this->id;
 	}
-
 
 	/**
 	 * @return mixed

@@ -61,9 +61,6 @@ class Finance_Settings {
 
 	static function admin_menu() {
 		$menu = new Core_Admin_Menu();
-//		new Finance_Clients(); // Just load
-
-//		$menu->AddMenu( 'Fresh Settings', 'Fresh', 'show_manager', 'fresh', __CLASS__ . '::general_settings' );
 
 		$menu->AddSubMenu( "users.php", "edit_shop_orders",
 			array( 'page_title' => 'Client accounts', 'function' => array( "Finance_Clients", 'admin_page' ) ) );

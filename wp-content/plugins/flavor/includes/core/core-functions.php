@@ -310,7 +310,7 @@ function QuoteDate($date, $format = 'Y-m-d')
 	 * @return bool|string
 	 */
 	function GetContent( $url ) {
-		print "url: $url<br/>";
+//		print "url: $url<br/>";
 //		$handle = curl_init();
 //		curl_setopt( $handle, CURLOPT_URL, $url );
 //		curl_setopt( $handle, CURLOPT_RETURNTRANSFER, true );

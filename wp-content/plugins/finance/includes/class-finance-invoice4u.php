@@ -49,6 +49,7 @@ class Finance_Invoice4u
 	 * @return Finance_Invoice4u
 	 */
 	static public function getInstance(): Finance_Invoice4u {
+		if (! self::$instance) throw new Exception("no instance");
 		return self::$instance;
 	}
 
@@ -213,12 +214,7 @@ class Finance_Invoice4u
 			return null;
 		}
 		$customer = $response->Response->Customer;
-		if ( $customer->Email == $email ) {
-			if (get_user_id() == 1)
-				var_dump($customer);
-
-			return $customer;
-		}
+		if ( isset($customer->Email)) return $customer;
 		return null;
 	}
 

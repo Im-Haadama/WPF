@@ -1227,8 +1227,8 @@ class Focus_Tasks {
 			array( "", $action_url . "?operation=task_end&id=%s;action_hide_row","fas fa-stop-circle", "stop"   ),
 			array( "", $action_url . "?operation=task_cancel&id=%s;action_hide_row", "fas fa-window-close", "cancel" ),
 			array( "", $action_url . "?operation=task_postpone&id=%s;action_hide_row", "fas fa-clock", "tomorrow" ),
-			array( "", $action_url . "?operation=task_pri_plus&id=%s;", "fas fa-arrow-alt-circle-up", "increase priority" ),
-			array( "", $action_url . "?operation=task_pri_minus&id=%s;action_hide_row", "fas fa-arrow-alt-circle-down", "decrease priority" )
+			array( "", $action_url . "?operation=task_pri_plus&id=%s;location_reload", "fas fa-arrow-alt-circle-up", "increase priority" ),
+			array( "", $action_url . "?operation=task_pri_minus&id=%s;location_reload", "fas fa-arrow-alt-circle-down", "decrease priority" )
 
 		);
 		$order   = "order by priority desc ";

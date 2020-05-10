@@ -96,14 +96,18 @@ class Finance_Clients
 
 			$line .= "<td>" . $row[4] . "</td>";
 			$line .= "<td>" . Finance_Payment_Methods::get_payment_method_name( $payment_method ) . "</td>";
-			$has_credit_info = SqlQuerySingleScalar( "select count(*) from im_payment_info where email = " . QuoteText($C->get_customer_email())) > 0 ? 'C' : '';
+			$has_credit_info = (SqlQuerySingleScalar( "select count(*) from im_payment_info where card_number not like '%X%' and email = " . QuoteText($C->get_customer_email())) > 0 ? 'C' : '') .
+			                   (SqlQuerySingleScalar( "select count(*) from im_payment_info where card_number like '%X%' and email = " . QuoteText($C->get_customer_email())) > 0 ? 'X' : '');
 			$has_token = (get_user_meta($customer_id, 'credit_token', true) ? 'T' : '');
 			$line .= "<td>" . $has_credit_info . " " . $has_token . "</td>";
 
 			// Invoice User. Create one each load for perfomance.
 			$invoice_user= $C->getInvoiceUser();
-			if ( ! $invoice_user and $create_invoice_user){
-				$invoice_user = $C->createInvoiceUser();
+			if ( ! $invoice_user and $create_invoice_user) {
+				try {
+					$invoice_user = $C->createInvoiceUser();
+				} catch (Exception$e) {
+				}
 				$create_invoice_user = false;
 			}
 			$line .= "<td>" .  $invoice_user . "</td>";

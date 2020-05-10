@@ -94,6 +94,7 @@ function create_receipt(post_file, customer_id) {
 
 function pay_credit(post_file)
 {
+    disable_btn("btn_pay");
     let users = get_selected("user_chk");
 
     let request = post_file + '?operation=pay_credit&users='+users;

@@ -94,8 +94,7 @@ $result = $wpdb->num_rows;
 
        <?php
         if ($result > 0) {
-        
-            $i = 1;
+             $i = 1;
 			
             foreach ($pay_result as $data) {
               $fullname = $data->full_name;

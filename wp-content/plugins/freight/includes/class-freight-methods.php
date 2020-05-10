@@ -64,15 +64,18 @@ class Freight_Methods {
 				$instance_id,
 				isset($zone_info[1]) ? $zone_info[1] : "not set",
 				$data['title'],
-				self::SelectMissionType("mis_" . $instance_id, $method_info['mission_code'], $args)
+				self::SelectMissionType("mis_" . $instance_id, $method_info['mission_code'], $args),
 			);
-			$week_day = $method_info['week_day'];
+			if ($method_info['mission_code'])
+				$week_day = SqlQuerySingleScalar("select week_day from im_mission_types where id = " .$method_info['mission_code']);
+			else
+				$week_day = 3;
 
 			$enabled = $method_info['is_enabled'];
 			for ($day = 1; $day <=4; $day ++) {
 				if (! $week_day and strstr($data['title'], DayName($day))) {
 					$week_day = $day;
-					SqlQuery("update wp_woocommerce_shipping_zone_methods set week_day = $week_day where instance_id = $instance_id");
+//					SqlQuery("update wp_woocommerce_shipping_zone_methods set week_day = $week_day where instance_id = $instance_id");
 				}
 				if ($week_day == $day)
 					array_push( $new_row, Core_Html::GuiCheckbox( "chk_shipment_$instance_id", $enabled,
@@ -86,6 +89,7 @@ class Freight_Methods {
 		}
 
 		$args["class"] = "sortable";
+		$args["links"] = array("id"=>"asdf");
 		$result .= Core_Html::gui_table_args($rows, "shipment_methods", $args);
 		$result .= Core_Html::GuiHyperlink("Update!", AddToUrl("operation", "update_shipping_methods"));
 //		$result .= Core_Gem::GemTable("woocommerce_shipping_zone_methods", $args);

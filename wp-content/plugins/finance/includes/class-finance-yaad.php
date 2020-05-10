@@ -93,7 +93,7 @@ class Finance_Yaad {
 
 	function pay_user_credit(Fresh_Client $user, $account_line_ids, $amount, $change)
 	{
-		$debug = true;
+		$debug = false;
 		if (0 == $amount)
 			return true;
 //		$delivery = new Fresh_Delivery($delivery_id);
@@ -110,6 +110,7 @@ class Finance_Yaad {
 			if (! $transaction_id or ($transaction_info['CCode'] != 0)) return false;
 
 			$paid = $transaction_info['Amount'];
+			if ($paid) self::RemoveRawInfo($credit_data['id']);
 		} else {
 			if ($this->debug) print "trying to pay with credit info<br/>";
 			// First pay. Use local store credit info, create token and delete local info.
@@ -129,6 +130,7 @@ class Finance_Yaad {
 			}
 			$paid = $transaction_info['Amount'];
 			if ($transaction_id) {
+				print "שולם בהצלחה\n";
 				if ($this->debug) print "pay successful $transaction_id<br/>";
 
 				// Create token and save it.
@@ -137,7 +139,8 @@ class Finance_Yaad {
 					if ($debug) print "Got token " . $token_info['Token'] . "<br/>";
 					add_user_meta($user->getUserId(), 'credit_token', $token_info['Token']);
 
-					// Todo: delete payment info
+					self::RemoveRawInfo($credit_data['id']);
+					print "נוצר טוקן";
 				}
 			}
 		}
@@ -150,6 +153,13 @@ class Finance_Yaad {
 		return false;
 	}
 
+	function RemoveRawInfo($del_id)
+	{
+		$table_name = "im_payment_info";
+
+		$card_four_digit   = SqlQuerySingleScalar("SELECT card_four_digit FROM $table_name WHERE id = ".$del_id." ");
+		return SqlQuery("UPDATE $table_name SET card_number =  '".$card_four_digit."' WHERE id = ".$del_id." ");
+	}
 	/**
 	 * @param $credit_info
 	 * @param Fresh_Client $user_info

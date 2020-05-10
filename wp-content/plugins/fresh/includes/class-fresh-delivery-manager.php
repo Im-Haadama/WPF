@@ -53,49 +53,6 @@ class Fresh_Delivery_Manager
 		return $result;
 	}
 
-	static function stop_accept()
-	{
-		// Loop on on methods.
-		// Delete dated at tomorrow and before.
-		$result = "";
-		$wc_zones = WC_Shipping_Zones::get_zones();
-		foreach ($wc_zones as $wc_zone) {
-			$result .= Core_Html::gui_header(2, $wc_zone['zone_name']);
-			foreach ( $wc_zone['shipping_methods'] as $shipping ) {
-				$result .= "<br/>checking " . $shipping->title;
-				if ($shipping->id == 'local_pickup') {
-					$result .= " local_pickup unchanged";
-					continue;
-				}
-				$date = null;
-				if (preg_match('/[0-9]+\-[0-9]+\-[0-9]+/', $shipping->title, $date) or
-				    preg_match('/[0-9]+\/[0-9]+\/[0-9]+/', $shipping->title, $date)) { // Date based
-					$s_date = strtotime($date[0]);
-					$result .=  "<br/>date = " . $date[0] . " " . $s_date;
-					if (! $s_date or ($s_date < strtotime('tomorrow'))) {
-						$result .=  " deleting";
-						self::delete_shipping_method( $shipping->instance_id );
-					}
-				} else {
-					$result .=  " no date ";
-
-					self::delete_shipping_method($shipping->instance_id);
-				}
-
-//				$result .=  "<br/>";
-			}
-		}
-		print $result;
-
-//		$missions = sql_query_array_scalar("select id from im_missions where date = '" .
-//		                                   date("Y-m-d", strtotime('tomorrow')) . "'");
-//
-//		foreach ($missions as $mission_id){
-//			$m = new Mission($mission_id);
-//			print "mission $mission_id stop<br/>";
-//			$m->stopAccept();
-//		}
-	}
 	/**
 	 * @param int $days_forward
 	 * @param bool $disable_all
@@ -107,81 +64,19 @@ class Fresh_Delivery_Manager
 	 * @throws Exception
 	 */
 
-	static function delete_shipping_method($instance_id)
-	{
-		if (! ($instance_id > 0))
-		{
-			print "bad instance id: $instance_id<br/>";
-			return false;
-		}
-		$option_id     = 'woocommerce_flat_rate_' . $instance_id . '_settings';
-		SqlQuery("delete from wp_woocommerce_shipping_zone_methods where instance_id = $instance_id");
-		delete_wp_option( $option_id );
-		SqlQuery("delete from im_path_shipments where instance = $instance_id");
-
-	}
-
-	static private function do_update_shipping_methods()
-	{
-		return;
-		$result = "";
-		$instances_updated = [];
-
-		// update shipping method instances.
-		$paths = Fresh_Path::getAll();
-		$zone_times = []; // [zone][date] = times
-		foreach ($paths as $path_id)
-		{
-			$path = new Fresh_path($path_id);
-			$result .= Core_Html::gui_header(1, "working on path $path_id");
-			$mission_id = SqlQuerySingleScalar("select min(id) from im_missions where path_code = $path_id and date > curdate() and accepting = 1");
-			if (! $mission_id) continue;
-			$m = new Mission($mission_id);
-
-			$zones_info = $path->getZones();
-			foreach ($zones_info as $zone_info){
-				$date = $m->getDate();
-				$start = strtok($zone_info, "-");
-				$end = strtok(",");
-				$instance_id = strtok(null);
-				$result .= self::update_shipping_method($instance_id, $date, $start, $end);
-
-				array_push($instances_updated, $instance_id);
-			}
-		}
-
-		// Disable the others.
-		$result .= Core_Html::gui_header(1, "disabling others");
-		$wc_zones = WC_Shipping_Zones::get_zones();
-
-		$result .= Core_Html::gui_header(1, "checking not available");
-		foreach ($wc_zones as $wc_zone) {
-			$result .= Core_Html::gui_header(2, $wc_zone['zone_name']);
-			foreach ( $wc_zone['shipping_methods'] as $shipping ) {
-				$result .= "<br/>checking " . $shipping->title;
-				if ($shipping->id == 'local_pickup') {
-					$result .= " local_pickup unchanged";
-					continue;
-				}
-				if ( ! in_array( $shipping->instance_id, $instances_updated ) ) {
-					$result .= "disable ";
-					$args = [];
-					$args["is_enabled"]  = 0;
-					$args["instance_id"] = $shipping->instance_id;
-					$args["title"]       = $shipping->title;
-					self::update_wp_woocommerce_shipping_zone_methods( $args );
-				}
-			}
-		}
-		return $result;
-	}
 
 	static function update_shipping_method($instance_id) //, $date, $start, $end, $price = 0)
 	{
 		$args                = [];
 		$args["is_enabled"]  = 1;
 		$args["instance_id"] = $instance_id;
-		$week_day = SqlQuerySingleScalar("select week_day from wp_woocommerce_shipping_zone_methods where instance_id = $instance_id");
+		$method_info = SqlQuerySingleAssoc("select mission_code from wp_woocommerce_shipping_zone_methods where instance_id = $instance_id");
+		$mission_type = $method_info['mission_code'];
+		if ($mission_type)
+			$week_day = SqlQuerySingleScalar("select week_day from im_mission_types where id = $mission_type");
+		else
+			$week_day = 2;
+
 		if (! $week_day) return false;
 		$start = "13";
 		$end = "18";

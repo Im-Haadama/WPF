@@ -144,12 +144,17 @@ class Fresh_Client {
 
 	function getInvoiceUser()
 	{
-		return Finance_Invoice4u::getInstance()->GetInvoiceUserId($this->getUserId(), $this->get_customer_email());
+		try {
+			return Finance_Invoice4u::getInstance()->GetInvoiceUserId( $this->getUserId(), $this->get_customer_email() );
+		} catch (Exception $e) {
+			return null;
+		}
 	}
 
 	function createInvoiceUser()
 	{
-		Finance_Invoice4u::getInstance()->CreateUser($this->getUserId(), $this->getName(), $this->get_customer_email(), $this->get_phone_number());
+		$I = Finance_Invoice4u::getInstance();
+		IF ($I) $I->CreateUser($this->getUserId(), $this->getName(), $this->get_customer_email(), $this->get_phone_number());
 		return $this->getInvoiceUser();
 	}
 

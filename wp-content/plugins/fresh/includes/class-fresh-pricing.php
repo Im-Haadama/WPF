@@ -108,27 +108,20 @@ class Fresh_Pricing {
 		{
 			$buy = 0;
 			$sql2 = 'SELECT DISTINCT product_id, quantity FROM im_baskets WHERE basket_id = ' . $prod_id;
-			print $sql2;
+//			print $sql2 . "<br/>";
 			$result2 = SqlQuery( $sql2 );
 			while ( $row2 = mysqli_fetch_assoc( $result2 ) ) {
 				$prod_id = $row2["product_id"];
 				$buy     += self::get_buy_price( $prod_id, $supplier_id );
 			}
 			return $buy;
-
-//			foreach ($p-)
 		}
 		// print $supplier_id . "<br/>";
 		if ( $prod_id > 0 ) {
 			if ( $supplier_id > 0 ) {
-//			print "supplier: " . $supplier_id . "<br/>";
 				$a = Fresh_Catalog::alternatives( $prod_id );
-				foreach ( $a as $s ) {
-					//		print $s->getSupplierId() . "<br/>";
-					if ( $s->getSupplierId() == $supplier_id ) {
-						return $s->getPrice();
-					}
-				}
+				foreach ( $a as $s )
+					if ( $s->getSupplierId() == $supplier_id ) return $s->getPrice();
 			}
 
 			return get_postmeta_field( $prod_id, 'buy_price' );
