@@ -66,6 +66,7 @@ class Finance_Invoice4u
 	}
 
 	private function DoLogin( $invoice_user, $invoice_password ) {
+		MyLog("Invoice4u Login");
 //		if (get_user_id() == 1) print $invoice_user . " " .$invoice_password ."<br/>";
 //		MyLog($invoice_user . " " . $invoice_password);
 		$wsdl = ApiService . "/LoginService.svc?wsdl";

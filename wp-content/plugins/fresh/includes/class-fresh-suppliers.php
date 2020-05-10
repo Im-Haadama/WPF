@@ -13,7 +13,6 @@ class Fresh_Suppliers {
 		AddAction("create_supplies",  "Fresh_Supply::create_supplies");
 		AddAction("gem_v_show", __CLASS__ . "::pricelist_functions");
 		AddAction("suppliers_map_products", __CLASS__ . "::suppliers_map_products");
-//		AddAction("create_products", __CLASS__."create_products");
 	}
 
 	function init()
@@ -70,9 +69,7 @@ class Fresh_Suppliers {
 		if ( !$result )
 			$result = self::SuppliersTable();
 
-//		if (is_array($result)) var_dump($result);
-//		else
-			print $result;
+		print $result;
 	}
 
 	static function suppliers_map_products()
@@ -139,8 +136,6 @@ class Fresh_Suppliers {
 			}
 		}
 
-		// $args["links"] = array("id" => AddToUrl("operation=supplier_pricelist&id", "%d"));
-
 		if ( $table_name )
 			switch ( $table_name ) {
 				case "suppliers":
@@ -174,7 +169,6 @@ class Fresh_Suppliers {
 	{
 		return get_site_url() . "/wp-content/plugins/fresh/post.php";
 	}
-
 
 	function getShortcodes() {
 		return null;
@@ -216,63 +210,4 @@ class Fresh_Suppliers {
 		}
 		return $result;
 	}
-
-	static function create_products()
-	{
-
-	}
 }
-
-
-//	function OrdersStatus()
-//	{
-//		$result = "";
-//
-//		$order_status = sql_query_array("select count(*), post_status
-//from wp_posts
-//where post_status like 'wc%' and post_status not in ('wc-cancelled', 'wc-completed')
-//group by post_status");
-//
-//		//in ('	wc-awaiting-shipment', 'wc-pending', 'wc-processing')
-//		$args = [];
-//		foreach ($order_status as $status => $info) {
-//			$status_parts = explode("-", $order_status[$status][1]);
-//			unset($status_parts[0]); // remove wc;
-//			$text_status = ucfirst(implode(" ", $status_parts));
-//			$order_status[$status] [0] = GuiHyperlink($order_status[$status][0], add_to_url(array("operation" => "show_orders", "status" => $info[1])));
-//			$order_status[ $status ][1] = $text_status;
-//		}
-//		$result .= Core_Html::gui_header(2, "Orders");
-//
-//		array_unshift($order_status, array(im_translate("Count"), im_translate("Status")));
-//
-//		$result .= gui_table_args($order_status, "orders_status", $args);
-//
-//		return $result;
-//	}
-
-//	function Status()
-//	{
-//		$result = "";
-//
-//		$supply_status = sql_query_array("select count(*), status
-//from im_supplies
-//where status > 0 and status < 5
-//group by status");
-//
-////		var_dump($supply_status);
-//		//in ('	wc-awaiting-shipment', 'wc-pending', 'wc-processing')
-//		$args = [];
-//		foreach ($supply_status as $row_number => $info) {
-//			$status = $supply_status[$row_number][1];
-//			$supply_status[$row_number] [0] = GuiHyperlink($supply_status[$row_number][0], add_to_url(array("operation" => "show_supplies", "status" => $status)));
-//			$supply_status[ $row_number ][1] = im_translate(get_supply_status($status));
-//		}
-//		$result .= Core_Html::gui_header(2, "Supply");
-//
-//		array_unshift($supply_status, array(im_translate("Count"), im_translate("Status")));
-//
-//		$result .= gui_table_args($supply_status, "orders_status", $args);
-//
-//		return $result;
-//	}

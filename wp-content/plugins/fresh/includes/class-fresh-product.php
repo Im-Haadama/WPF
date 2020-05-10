@@ -355,7 +355,7 @@ class Fresh_Product {
 		Fresh_Pricing::set_saleprice( $this->id, $price );
 	}
 
-		function getSupplierId()
+	function getSupplierId()
 	{
 		// For now create post saves the supplier name.
 		// Planned to save there the supplier id.

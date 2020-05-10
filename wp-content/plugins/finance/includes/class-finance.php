@@ -118,11 +118,7 @@ class Finance {
 		}
 		$this->loader    = new Core_Autoloader( FINANCE_ABSPATH );
 		$this->post_file = "/wp-content/plugins/finance/post.php";
-		if ( defined( 'YAAD_API_KEY' ) ) {
-			$this->yaad = new Finance_Yaad( YAAD_API_KEY, YAAD_TERMINAL, $business_name );
-		} else {
-			$this->yaad = null;
-		}
+		$this->yaad = null;
 		$this->clients = new Finance_Clients();
 
 		$this->init_hooks();
@@ -156,7 +152,7 @@ class Finance {
 		add_action( 'init', array( $this, 'init' ), 0 );
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
 		add_action( 'admin_notices', array($this, 'admin_notices') );
-
+		add_filter('pay_user_credit', array($this, 'pay_user_credit_wrap'));
 
 		// Admin menu
 		add_action( 'admin_menu', __CLASS__ . '::admin_menu' );
@@ -180,6 +176,76 @@ class Finance {
 		$this->payments = Finance_Payments::instance();
 	}
 
+	function pay_user_credit_wrap($customer_id, $amount = 0)
+	{
+		MyLog(__FUNCTION__ . " $customer_id");
+
+		if (! $this->yaad)
+			if ( defined( 'YAAD_API_KEY' ) and defined('YAAD_TERMINAL')) {
+				MyLog("init Finanace_Yaad");
+				$this->yaad = new Finance_Yaad( YAAD_API_KEY, YAAD_TERMINAL, get_bloginfo('name') );
+			} else {
+				print "YAAD terminal or api are missing";
+			}
+
+		if (! $this->yaad)
+		{
+			print "cant init yaad";
+			return false;
+		}
+
+		$sql = 'select 
+		id, 
+		date,
+		round(transaction_amount, 2) as transaction_amount,
+		client_balance(client_id, date) as balance,
+	    transaction_method,
+	    transaction_ref, 
+		order_from_delivery(transaction_ref) as order_id,
+		delivery_receipt(transaction_ref) as receipt,
+		id 
+		from im_client_accounts 
+		where client_id = ' . $customer_id . '
+		and delivery_receipt(transaction_ref) is null
+		and transaction_method = "משלוח"
+		order by date asc
+		';
+
+		// If amount not specified, try to pay the balance.
+		$user = new Fresh_Client($customer_id);
+
+		if ($amount == 0)
+			$amount = $user->balance();
+
+		$rows = SqlQueryArray($sql);
+		$current_total = 0;
+
+		$paying_transactions = [];
+		foreach ($rows as $row) {
+			$trans_amount = $row[2];
+			if (($trans_amount + $current_total) < ($amount + 15)) {
+				array_push($paying_transactions, $row[0]);
+				$current_total += $trans_amount;
+			}
+		}
+
+		$change = $amount - $current_total;
+
+		return $this->yaad->pay_user_credit($user, $paying_transactions, $amount, $change);
+
+//		foreach ($delivery_ids as $delivery_id) {
+//			$this->pay_user_credit( $user_id, $delivery_id );
+//			die(0);
+//		}
+	}
+
+	function pay()
+
+	{
+		global $business_name;
+		MyLog("init Finanace_Yaad");
+		$this->yaad = new Finance_Yaad( YAAD_API_KEY, YAAD_TERMINAL, $business_name );
+	}
 	/**
 	 * Ensures fatal errors are logged so they can be picked up in the status report.
 	 *
@@ -419,52 +485,7 @@ class Finance {
 	 *
 	 * @since 3.3.0
 	 */
-//	private function theme_support_includes() {
-//		if ( wc_is_active_theme( array( 'twentynineteen', 'twentyseventeen', 'twentysixteen', 'twentyfifteen', 'twentyfourteen', 'twentythirteen', 'twentyeleven', 'twentytwelve', 'twentyten' ) ) ) {
-//			switch ( get_template() ) {
-//				case 'twentyten':
-//					include_once WC_FINANCE_INCLUDES . 'includes/theme-support/class-wc-twenty-ten.php';
-//					break;
-//				case 'twentyeleven':
-//					include_once WC_FINANCE_INCLUDES . 'includes/theme-support/class-wc-twenty-eleven.php';
-//					break;
-//				case 'twentytwelve':
-//					include_once WC_FINANCE_INCLUDES . 'includes/theme-support/class-wc-twenty-twelve.php';
-//					break;
-//				case 'twentythirteen':
-//					include_once WC_FINANCE_INCLUDES . 'includes/theme-support/class-wc-twenty-thirteen.php';
-//					break;
-//				case 'twentyfourteen':
-//					include_once WC_FINANCE_INCLUDES . 'includes/theme-support/class-wc-twenty-fourteen.php';
-//					break;
-//				case 'twentyfifteen':
-//					include_once WC_FINANCE_INCLUDES . 'includes/theme-support/class-wc-twenty-fifteen.php';
-//					break;
-//				case 'twentysixteen':
-//					include_once WC_FINANCE_INCLUDES . 'includes/theme-support/class-wc-twenty-sixteen.php';
-//					break;
-//				case 'twentyseventeen':
-//					include_once WC_FINANCE_INCLUDES . 'includes/theme-support/class-wc-twenty-seventeen.php';
-//					break;
-//				case 'twentynineteen':
-//					include_once WC_FINANCE_INCLUDES . 'includes/theme-support/class-wc-twenty-nineteen.php';
-//					break;
-//			}
-//		}
-//	}
-//
-//	/**
-//	 * Include required frontend files.
-//	 */
-//	public function frontend_includes() {
-//		include_once WC_FINANCE_INCLUDES . 'includes/wc-cart-functions.php';
-//	}
-//
-//	/**
-//	 * Function used to Init WooCommerce Template Functions - This makes them pluggable by plugins and themes.
-//	 */
 	public function include_template_functions() {
-//		include_once WC_FINANCE_INCLUDES . 'includes/finance-template-functions.php';
 	}
 
 	/**
@@ -489,50 +510,19 @@ class Finance {
 
 		$this->invoices->init( FINANCE_INCLUDES_URL . '../post.php' );
 
-		if ( defined( 'INVOICE_USER' ) ) {
-			$this->invoice4u = new Finance_Invoice4u( INVOICE_USER, INVOICE_PASSWORD );
-			self::CreateInvoiceUser();
-		} else {
-			$this->add_admin_notice("No invoice user defined. define INVOICE_USER and INVOICE_PASSWORD in wp-config.php");
-			$this->invoice4u = null;
+		$this->invoice4u = null;
+		if (is_admin()) {
+			if ( defined( 'INVOICE_USER' ) ) {
+				MyLog("Logging to invoice4u");
+				$this->invoice4u = new Finance_Invoice4u( INVOICE_USER, INVOICE_PASSWORD );
+				self::CreateInvoiceUser();
+				MyLog("invoice4u done");
+			} else {
+				$this->add_admin_notice( "No invoice user defined. define INVOICE_USER and INVOICE_PASSWORD in wp-config.php" );
+			}
 		}
-
-//		print "a" . get_user_id();
-//		if (1 == get_user_id()) {
-//			var_dump($this->invoice);
-//			print "AAAA";
-//		}
-
-//		$this->invoice = new Finance_Invoice4u( $invoice_user, $invoice_password );
-
 		// For testing:
 //		wp_set_current_user(369);
-
-		// Load class instances.
-//		$this->product_factory                     = new WC_Product_Factory();
-//		$this->order_factory                       = new WC_Order_Factory();
-//		$this->countries                           = new WC_Countries();
-//		$this->integrations                        = new WC_Integrations();
-//		$this->structured_data                     = new WC_Structured_Data();
-//		$this->deprecated_hook_handlers['actions'] = new WC_Deprecated_Action_Hooks();
-//		$this->deprecated_hook_handlers['filters'] = new WC_Deprecated_Filter_Hooks();
-
-		// Classes/actions loaded for the frontend and for ajax requests.
-//		if ( $this->is_request( 'frontend' ) ) {
-//			// Session class, handles session data for users - can be overwritten if custom handler is needed.
-//			$session_class = apply_filters( 'woocommerce_session_handler', 'WC_Session_Handler' );
-//			$this->session = new $session_class();
-//			$this->session->init();
-//
-//			$this->customer = new WC_Customer( get_current_user_id(), true );
-//			// Cart needs the customer info.
-//			$this->cart = new WC_Cart();
-//
-//			// Customer should be saved during shutdown.
-//			add_action( 'shutdown', array( $this->customer, 'save' ), 10 );
-//		}
-//
-//		$this->load_webhooks();
 
 		// Init action.
 		do_action( 'finance_init' );
@@ -784,6 +774,7 @@ class Finance {
 	}
 
 	function pay_credit_wrapper() {
+		MyLog(__FUNCTION__);
 		$users = explode( ",", GetParam( "users", true, true ) );
 
 		foreach ( $users as $user ) {
@@ -818,6 +809,7 @@ class Finance {
 		if (! $this->admin_notices) $this->admin_notices = array();
 		array_push($this->admin_notices, $message);
 	}
+
 	function admin_notices() {
 		if (! $this->admin_notices) return;
 		print '<div class="notice is-dismissible notice-info">';

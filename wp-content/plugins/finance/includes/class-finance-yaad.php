@@ -9,8 +9,6 @@ class Finance_Yaad {
 
 	function init_hooks()
 	{
-		add_filter('pay_user_credit', array($this, 'pay_user_credit_wrap'));
-
 		if (! TableExists("yaad_transactions"))
 			SqlQuery("create table im_yaad_transactions
 (
@@ -119,6 +117,7 @@ class Finance_Yaad {
 			// info: Id, CCode, Amount, ACode, Fild1, Fild2, Fild3
 			if (($transaction_info['CCode'] != 0)) {
 				print "Got error " . $transaction_info['CCode'] . "<br/>";
+				print "my ip is :" . $_SERVER['SERVER_ADDR'] . "<br/>";
 				if ($debug) var_dump($credit_data);
 				return false;
 			}
@@ -267,13 +266,18 @@ class Finance_Yaad {
 			"action" => "APISign",
 			"What"   => "SIGN",
 			"Key"    => $this->api_key,
-			"PassP"  => "yaad",
+			"PassP"  => "yaad.net",
 			"Masof"  => $this->terminal
 		);
 
 		$result = $this->CallServer( 'https://icom.yaad.net/p/', $request_params );
 		if ( $result ) {
-			$this->signature = $result["signature"];
+			if (! isset($result["signature"])) {
+				$message = "can't login to yaad." . StringVar($result);
+				Finance::instance()->add_admin_notice($message);
+				$this->signature = null;
+			} else
+				$this->signature = $result["signature"];
 
 			return true;
 		}
