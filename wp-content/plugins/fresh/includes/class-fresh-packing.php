@@ -572,27 +572,49 @@ class Fresh_Packing {
 		return Core_Html::GuiSelectTable( $id, "missions", $args );
 	}
 
-	static function Table() {
+	static function table() {
+		foreach (Fresh_Category::GetTopLevel() as $term) {
+			$term = new Fresh_Category($term->term_id);
+			$table = self::PackingTable( $term);
+			if ($table) {
+				print Core_Html::GuiHeader(2, $term->getName());
+
+				print $table;
+			}
+		}
+	}
+
+	static function PackingTable($term)
+	{
 		$rows = [];
 		$sql  = "SELECT id, post_status FROM wp_posts " .
-		        " WHERE (post_status LIKE '%wc-processing%' ) "; // OR post_status = 'wc-awaiting-shipment'
+		        " WHERE (post_status LIKE '%wc-processing%' ) 
+		         order by 1 asc"; // OR post_status = 'wc-awaiting-shipment'
 
 		$rows["header"] = array("name" => "סיכום הזמנות");
-		$products = [];
 
 		$sql_result = SqlQuery( $sql );
-		// Loop open orders.
-//		$col = 2;
+		$empty_line = array("name" => 'here');
+		foreach (Fresh_Basket::getAll() as $basket_id) {
+			$b = new Fresh_Basket($basket_id);
+			$empty_line[ $basket_id ] = '';
+			if ($term->in($b->getTerms()))
+				$rows["header"][$basket_id] = $b->getName();
+		}
+
 		while ( $row = mysqli_fetch_assoc( $sql_result ) ) {
 			$order_id = $row['id'];
 			$rows[$order_id] = array();
 			$O = new Fresh_Order($order_id);
 			$C = new Fresh_Client($O->getCustomerId());
 
-			$rows[$order_id]["name"] = $C->getName();
+			$rows[$order_id] = $empty_line;
+			$rows[$order_id]["name"] = Core_Html::GuiHyperlink($C->getName(), "/wp-admin/post.php?post=$order_id&action=edit");
 
 			foreach ($O->getProducts() as $prod_info) {
 				$prod_id                       = $prod_info['prod_id'];
+				$p = new Fresh_Product($prod_id);
+				if (! $term->in($p->getTerms())) continue;
 				$prod_q                        = $prod_info['quantity'];
 				$rows[ $order_id ][ $prod_id ] = $prod_q;
 				if (! isset($rows["total"][$prod_id]))
@@ -605,18 +627,24 @@ class Fresh_Packing {
 				}
 			}
 		}
+		if (! isset($rows["total"]) or ! count($rows["total"])) return "";
 		foreach ($rows as $order_id => $row){
 			$table[$order_id] = array();
+			$has_items = false;
 			foreach ($rows["header"] as $prod_id => $c) {
-				if ($prod_id > 0) $table["total"][$prod_id] = $rows["total"][$prod_id];
+				if (isset($rows["total"][$prod_id]) and ($prod_id > 0)) {
+					$table["total"][$prod_id] = $rows["total"][$prod_id];
+					if (isset($rows[$order_id][$prod_id])) $has_items = true;
+				}
 				$table[ $order_id ][ $prod_id ] = ( isset( $rows[ $order_id ][ $prod_id ] ) ? $rows[ $order_id ][ $prod_id ] : '' );
 			}
+			if ($order_id > 0 and ! $has_items) unset ($table[$order_id]);
 		}
 		$table["total"]["name"] = 'סה"כ';
 							//		$args = array("transpose" => 1);
 		$args = array("class" => "widefat", "line_styles" => array('background: #DDD','background: #EEE', 'background: #FFF') );
 
-		print Core_Html::gui_table_args($table, "table", $args);
+		return Core_Html::gui_table_args($table, "table", $args);
 	}
 }
 

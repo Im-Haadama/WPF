@@ -130,9 +130,9 @@ class Fresh_Product {
 		return false;
 	}
 
-	function getTerms( $as_string = false ) {
-		$terms = get_the_terms( $this->id, 'product_cat' );
-
+	function getTerms( $as_string = false )
+	{
+		$terms = self::getAllTermsIds();
 		if ( $as_string ) {
 			if ( ! $terms ) {
 				return "(no terms)";
@@ -147,6 +147,20 @@ class Fresh_Product {
 		}
 
 		return $terms;
+	}
+
+	// include parents
+	private function getAllTermsIds()
+	{
+		$result = [];
+		$terms = get_the_terms( $this->id, 'product_cat' );
+		foreach ($terms as $term)
+		{
+			array_push($result, $term->term_id);
+			$parents = get_ancestors( $term->term_id, "product_cat", 'taxonomy' );
+			if ($parents) foreach ($parents as $parent) array_push($result, $parent);
+		}
+		return $result;
 	}
 
 	function is_fresh( $term_id, $debug = false ) {

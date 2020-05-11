@@ -166,7 +166,6 @@ class Fresh_Basket extends  Fresh_Product  {
 		return $data;
 	}
 
-
 	static function new_basket($args)
 	{
 		$data = Core_Html::gui_header(1, "New basket");
@@ -321,5 +320,10 @@ class Fresh_Basket extends  Fresh_Product  {
 
 		       // Remove the product
 		       Fresh_Catalog::DraftItems( array( $basket_id ) );
+	}
+
+	static function getAll()
+	{
+		return SqlQueryArrayScalar("select distinct basket_id from im_baskets");
 	}
 }

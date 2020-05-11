@@ -53,4 +53,23 @@ class Fresh_Category {
 		}
 		return $result;
 	}
+
+	static function GetTopLevel()
+	{
+		$args = [
+			'taxonomy'     => 'product_cat',
+			'parent'        => 0,
+			'hide_empty'    => false
+		];
+		return get_terms( $args );
+	}
+
+	function in($array)
+	{
+		foreach ($array as $term) {
+			if ( $term == $this->id ) return true;
+
+		}
+		return false;
+	}
 }

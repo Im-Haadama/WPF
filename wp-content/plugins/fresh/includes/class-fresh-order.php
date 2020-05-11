@@ -30,7 +30,10 @@ class Fresh_Order {
 
 	public function getProducts()
 	{
+		$debug = false; // ($this->order_id == 498);
+
 		$sql = "select * from wp_woocommerce_order_items where order_id = " . $this->order_id . " and order_item_type = 'line_item'";
+		if ($debug) print __FUNCTION__ . " " . $this->order_id . "<br/>$sql<br/>";
 
 		$sql_result = SqlQuery($sql);
 		$rows = [];
@@ -39,7 +42,9 @@ class Fresh_Order {
 			$item_id = $row['order_item_id'];
 			$prod_id = Fresh_Packing::get_order_itemmeta($item_id, '_product_id');
 			$quantity = Fresh_Packing::get_order_itemmeta($item_id, '_qty');
-//			print "$prod_id $quantity<br/>";
+			if ($debug) {
+				print "$item_id $prod_id $quantity<br/>";
+			}
 			array_push($rows, array(
 				'prod_id' => $prod_id,
 				'quantity' => $quantity
