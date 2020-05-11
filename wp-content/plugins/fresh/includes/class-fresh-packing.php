@@ -573,15 +573,28 @@ class Fresh_Packing {
 	}
 
 	static function table() {
+		$category_pages = array();
+
 		foreach (Fresh_Category::GetTopLevel() as $term) {
 			$term = new Fresh_Category($term->term_id);
 			$table = self::PackingTable( $term);
 			if ($table) {
-				print Core_Html::GuiHeader(2, $term->getName());
-
-				print $table;
+				array_push($category_pages,
+				array($term->getName(),
+					$term->getName(),
+				$table));
+//				print Core_Html::GuiHeader(2, $term->getName());
+//
+//				print $table;
 			}
 		}
+		array_push($category_pages,
+				array("Comments",
+					"comments",
+					Fresh_Order::GetAllComments()));
+		$args = array("selected_tab" => 0,
+			"tabs_load_all" => true);
+		print Core_Html::GuiTabs($category_pages, $args);
 	}
 
 	static function PackingTable($term)
