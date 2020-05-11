@@ -128,13 +128,13 @@ class Fresh_Delivery {
 		$result .= __("Supply date") . ": " . $this->GetDate() . "<br/>";
 
 		$args = [];
-		$args["fields"] = array("id", "product_name", "quantity_ordered", "quantity", "price", "vat", "line_price");
+		$args["fields"] = array("id", "product_name", "quantity_ordered", "quantity", "price", "vat as has_vat", "vat", "line_price");
 //		$lines = TableData("select * from im_delivery_lines where delivery_id = " . $this->getID());
 //	$result .= gui_table_args($lines);
 		$args["where"] = "delivery_id = " . $this->getID();
 		$args["id_field"] = "id";
-		$args["header_fields"] = array("product_name" => "Product name", "quantity_ordered" => "Quantity ordred",
-		                               "quantity"=>"Quantity", "price" => "Price", "line_price" => "Line total");
+		$args["header_fields"] = array("product_name" => "Product name", "quantity_ordered" => "Quantity ordered",
+		                               "quantity"=>"Quantity", "price" => "Price", "has_vat" =>"Has Vat", "line_price" => "Line total");
 		$args["hide_col"] = array("id");
 
 		$sql = "select " . CommaImplode($args["fields"]) . " from im_delivery_lines where delivery_id = " . $this->getID();
@@ -154,8 +154,13 @@ class Fresh_Delivery {
 					$rows["sums"][$field] += $rows[$row_id][$field];
 			}
 
-		if ($edit) foreach ($rows as $row_id => $row)
-			if ($row_id > 0) $rows[$row_id]["quantity"] = Core_Html::GuiInput("qua_" . $row_id, $rows[$row_id]["quantity"]);
+		if ($edit) foreach ($rows as $row_id => $row) {
+			if ( $row_id > 0 ) {
+				$rows[ $row_id ]["quantity"] = Core_Html::GuiInput( "qua_" . $row_id, $rows[ $row_id ]["quantity"] );
+				$rows[$row_id]["has_vat"] = Core_Html::GuiCheckbox("hvt_". $row_id, $rows[$row_id]["vat"],
+					array("events"=>"onchange=\"change_vat('" . Fresh::getPost() . "', $row_id )\"" ));
+			}
+		}
 
 		$result .= Core_Html::gui_table_args($rows);
 
@@ -664,7 +669,7 @@ class Fresh_Delivery {
 				$order_item_ids = SqlQueryArrayScalar( $items_sql );
 
 				$b = new Fresh_Basket($prod_id);
-				if ( $b->is_basket()){
+				if ( $expand_basket and $b->is_basket()){
 					$basket_header = array();
 					for ($i = 0; $i < eDeliveryFields::max_fields; $i++)	$basket_header[$i] = "";
 					$basket_header[eDeliveryFields::product_name] = $b->getName();
@@ -842,7 +847,7 @@ class Fresh_Delivery {
 					case Fresh_DocumentOperation::edit:
 					case Fresh_DocumentOperation::create:
 
-						if (! $p->is_basket())
+//						if (! $p->is_basket())
 							$line[ eDeliveryFields::delivery_q ] = Core_Html::GuiInput("quantity" . $this->line_number,
 							( $quantity_delivered > 0 ) ? $quantity_delivered : "",
 							array( "events" => 'onfocusout="leaveQuantityFocus(' . $this->line_number . ')" ' .

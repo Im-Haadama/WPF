@@ -33,8 +33,6 @@ class Finance_Invoice4u
 	 * Invoice4u constructor.
 	 */
 	public function __construct( $user, $password ) {
-//		print "$user $password<br/>";
-//		if (get_user_id() !=1 )return;
 		if (! defined('WSDL_CACHE_NONE')) { // Setup error
 			$this->token = null;
 			return;
@@ -178,7 +176,6 @@ class Finance_Invoice4u
 
 		// Try local cache
 		$id = get_user_meta( $customer_id, 'invoice_id', 1 );
-//		MyLog('cache' . $id, __FUNCTION__);
 
 		if (is_numeric($id) and ($id > 0)) return $id;
 

@@ -101,6 +101,15 @@ function pay_credit(post_file)
     execute_url(request, location_reload);
 }
 
+function pay_credit_client(post_file, user)
+{
+    disable_btn("btn_pay");
+
+    let request = post_file + '?operation=pay_credit&users='+user;
+    execute_url(request, location_reload);
+}
+
+
 function save_payment_method(post_file, customer_id) {
     var method = get_value(document.getElementById("payment"));
    let request = post_file + '?operation=update_payment_method&user_id=' + customer_id + '&method_id=' + method;

@@ -376,6 +376,8 @@ class Finance {
 				break;
 
 			case "create_receipt":
+				if (! Finance::Invoice4uConnect())
+					return false;
 				$cash    = GetParam( "cash" );
 				$bank    = GetParam( "bank" );
 				$check   = GetParam( "check" );
@@ -805,5 +807,13 @@ class Finance {
 		foreach ($this->admin_notices as $notice)
 			print _e( $notice );
 		print '</div>';
+	}
+
+	static function Invoice4uConnect()
+	{
+		if (defined('INVOICE_USER') and defined('INVOICE_PASSWORD'))
+			new Finance_Invoice4u(INVOICE_USER, INVOICE_PASSWORD);
+
+		return true;
 	}
 }

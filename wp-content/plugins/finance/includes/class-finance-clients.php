@@ -51,6 +51,9 @@ class Finance_Clients
 	static function admin_page() {
 		$client_id    = GetParam( "id", false, null );
 		$include_zero = GetParam( "include_zero", false, false );
+
+		// Connect to invoice.
+		Finance::Invoice4uConnect();
 		if ( $client_id ) {
 			print self::client_account( $client_id );
 		} else {
@@ -138,32 +141,27 @@ class Finance_Clients
 
 		$output .= Core_Html::GuiButton( "btn_pay", "Pay", array( "action" => "pay_credit('" . Finance::getPostFile() . "')" ) );
 
-//		$table = str_replace( "\r", "", $table );
 		return $output;
 	}
 
 	static function client_account( $customer_id ) {
-		global $invoice_user;
-		global $invoice_password;
 		require_once( ABSPATH . "im-config.php" );
 
 		$result = "";
 		try {
-//			print "user= $invoice_user pass= $invoice_password<br/>";
-			$invoice = new Finance_Invoice4u( $invoice_user, $invoice_password );
+			$invoice = Finance_Invoice4u::getInstance();
 		} catch ( Exception $e ) {
-			var_dump($e);
 			$invoice = null;
 		}
 		$u         = new Fresh_Client( $customer_id );
-		$client_id = ( $invoice ? $invoice->GetInvoiceUserId( $customer_id, $u->get_customer_email() ) : "Not connected" );
-//	var_dump($client);
+		$invoice_client_id = ( $invoice ? $invoice->GetInvoiceUserId( $customer_id, $u->get_customer_email() ) : "Not connected" );
+		if (! $invoice_client_id) $invoice_client_id = $u->createInvoiceUser();
 
 		$user_info = Core_Html::gui_table_args( array(
 			array( "name", $u->getName() ),
 			array( "דואל", $u->get_customer_email() ),
 			array( "טלפון", $u->get_phone_number() ),
-			array( "מספר מזהה", Core_Html::gui_label( "invoice_client_id", $client_id ) ),
+			array( "מספר מזהה", Core_Html::gui_label( "invoice_client_id", $invoice_client_id ) ),
 			array(
 				"אמצעי תשלום",
 				Finance_Payment_Methods::gui_select_payment( "payment", "onchange=\"save_payment_method('".Finance::getPostFile()."', $customer_id)\"", $u->get_payment_method() )
@@ -188,7 +186,7 @@ class Finance_Clients
 			), "payment_table",
 				array( "class" => "widefat" ) );
 		} else {
-			$new_tran = Core_Html::GuiHeader( 1, "לא ניתן להחבר ל Invoice4u. בדוק את ההגדרות ואת המנוי. יוזר $invoice_user" );
+			$new_tran = Core_Html::GuiHeader( 1, "לא ניתן להחבר ל Invoice4u. בדוק את ההגדרות ואת המנוי. יוזר $" );
 		}
 		$payment_info_id = SqlQuerySingleScalar( "select id from im_payment_info where email = " . QuoteText($u->get_customer_email()));
 		if ($payment_info_id) {
@@ -204,6 +202,8 @@ class Finance_Clients
 
 		$result .= Core_Html::GuiHeader( 2, __( "Balance" ) . ": " .
 		                                    SqlQuerySingleScalar( "SELECT round(sum(transaction_amount), 1) FROM im_client_accounts WHERE client_id = " . $customer_id ) );
+
+		$result .= Core_Html::GuiButton("btn_pay", " בצע חיוב על היתרה", array("action"=>"pay_credit_client('" . Finance::getPostFile() . "', $customer_id)"));
 		$result .= '<div id="logging"></div>';
 
 		$args   = array( "post_file" => Finance::getPostFile(), "class" => "widefat" );
@@ -264,6 +264,8 @@ class Finance_Clients
 
 	private static function CreateReceipt($cash, $bank, $check, $credit, $change, $user_id, $date, $del_ids)
 	{
+		Finance::Invoice4uConnect();
+
 		$u = new Fresh_Client( $user_id );
 		$c = $cash - $change;
 
@@ -317,16 +319,14 @@ class Finance_Clients
 		if ( ! ( $customer_id > 0 ) )
 			throw new Exception( "Bad customer id" . __CLASS__);
 
-		if ( defined( 'INVOICE_USER' ) and defined('INVOICE_PASSWORD')) {
-			MyLog("Logging to invoice4u ");
-			$invoice = new Finance_Invoice4u( INVOICE_USER, INVOICE_PASSWORD );
-			self::CreateInvoiceUser();
-			MyLog("invoice4u done");
-		} else {
-			Finance::getPostFile()->add_admin_notice( "No invoice user defined. define INVOICE_USER and INVOICE_PASSWORD in wp-config.php" );
+		$invoice = Finance_Invoice4u::getInstance();
+		if (! $invoice) {
+			print "No connection to invoice. Connect first";
 			return false;
 		}
 
+		$C = new Fresh_Client($customer_id);
+		$C->createInvoiceUser();
 		$invoice->Login();
 
 		$invoice_client_id = $invoice->GetInvoiceUserId( $customer_id, $email );

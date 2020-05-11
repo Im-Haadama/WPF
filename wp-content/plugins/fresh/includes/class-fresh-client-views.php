@@ -192,9 +192,6 @@ class Fresh_Client_Views {
 				$user_id = get_user_id(true);
 				return self::show_trans($user_id, TransView::default, $args);
 
-			case "client_balance":
-				$user_id = get_user_id(true);
-				return self::client_balance($user_id);
 
 //			case "open_orders":
 //				$user_id = get_user_id(true);
@@ -226,12 +223,6 @@ class Fresh_Client_Views {
 		$query["query"] = GetParam("query");
 
 		return $args;
-	}
-
-	static function client_balance($user_id)
-	{
-		$client = new Fresh_Client($user_id);
-		return __("Balance") . ":" . $client->balance();
 	}
 
 	static function open_orders( $user_id )
@@ -311,7 +302,8 @@ class Fresh_Client_Views {
 		}
 
 		$args["links"] = array();
-		$args["links"]["transaction_ref"] = "/delivery?id=%s";
+		$args["links"]["transaction_ref"] = "/wp-content/plugins/fresh/delivery/get-delivery.php?id=%s";
+			// Todo: Finish step 2: "/delivery?id=%s";
 //		$args["links"]["order"] = "/delivery/order_id=%s";
 		$args["col_ids"] = array("chk", "id", "dat", "amo", "bal", "des", "del", "ord");
 //	$args["show_cols"] = array(); $args["show_cols"]['id'] = 0;

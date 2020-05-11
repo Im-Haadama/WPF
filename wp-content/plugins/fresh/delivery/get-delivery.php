@@ -10,17 +10,10 @@ require_once(dirname(dirname(ROOT_DIR)) . '/wp-config.php');
 require_once(dirname(dirname(ROOT_DIR)) . '/im-config.php');
 print Core_Fund::load_scripts(array('/wp-content/plugins/flavor/includes/core/gui/client_tools.js',
 	'/wp-content/plugins/fresh/includes/js/delivery.js',
-	'/wp-content/plugins/flavor/includes/core/data/data.js'));
+	'/wp-content/plugins/flavor/includes/core/data/data.js',
+    '/wp-content/plugins/finance/includes/account.js'
+    ));
 
-//require_once 'delivery.php';
-//require_once '../orders/orders-common.php';
-//require_once( ROOT_DIR . "/init.php" );
-//require_once( ROOT_DIR . "/routes/gui.php" );
-
-
-//print HeaderText(array("script_files"=>array( "/fresh/tools.js", "/niver/gui/client_tools.js" )));
-//print header_text( false, true, true,  );
-//$id     = $_GET["id"];
 $order_id = GetParam("order_id", false, null);
 
 $send   = isset( $_GET["send"] );
@@ -42,10 +35,10 @@ if ($order_id){
 //	print "del_id=" . $O->getDeliveryId() . "<br/>";
 } else {
 	$id = GetParam("id", false, null);
+	$d = new Fresh_Delivery($id);
+	$order_id = $d->OrderId();
+	$O = new Fresh_Order($order_id);
 }
-//$d      = ($id ? new Fresh_Delivery( $id ) : null);
-
-//$order_id = get_order_id( $id );
 
 if ( ! ( $order_id > 0 ) ) {
 	print "תעודה לא קיימת";
@@ -65,6 +58,9 @@ if ( ( ! current_user_can( "edit_shop_orders" ) ) and ( $O->getCustomerId() != g
 $O->infoBox( $order_id );
 
 print $d->delivery_text( FreshDocumentType::delivery, Fresh_DocumentOperation::show, $margin );
+
+$customer_id = $O->getCustomerId();
+print Core_Html::GuiButton("btn_pay", " בצע חיוב על היתרה", array("action"=>"pay_credit_client('" . Finance::getPostFile() . "', $customer_id)")) ."<br/>";
 
 if ( ! $send ) {
 	if ( SqlQuerySingleScalar( "SELECT payment_receipt FROM im_delivery WHERE id = " . $id ) ) {
