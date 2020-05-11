@@ -44,33 +44,14 @@ class Fresh_Product {
 	}
 
 	function setStock( $q ) {
-		$debug = false;
-
-		if ( $debug ) {
-			print get_product_name( $this->id );
-		}
-
-		if ( $q == $this->getStock() ) {
-			return true;
-		}
-//		print "start ";
+		if ( $q == $this->getStock() ) return true;
 		if ( $this->isFresh() ) {
-			if ( $debug ) {
-				print "fresh ";
-			}
 
 			$delta = $q + $this->q_out() - $this->q_in();
-			if ( $debug ) {
-				print " " . $delta;
-			}
-//			print "delta: " . $this->id . " " . $delta . "<br/>";
 			if ( is_null( SqlQuerySingleScalar( "select meta_value " .
 			                                    " from wp_postmeta " .
 			                                    " where post_id = " . $this->id .
 			                                    " and meta_key = 'im_stock_delta'" ) ) ) {
-				if ( $debug ) {
-					print " insert";
-				}
 				SqlQuery( "insert into wp_postmeta (post_id, meta_key, meta_value) " .
 				          " values (" . $this->id . ", 'im_stock_delta', $delta)" );
 
@@ -78,10 +59,6 @@ class Fresh_Product {
 				          " VALUES (" . $this->id . ", 'im_stock_delta_date', '" . date( 'd/m/Y' ) . "')" );
 
 				return true;
-			}
-
-			if ( $debug ) {
-				print " update";
 			}
 
 			SqlQuery( "update wp_postmeta set meta_value = " . $delta .
@@ -100,14 +77,11 @@ class Fresh_Product {
 
 			return true;
 		}
-		// print "set stock ";
-		// print $this->id . " " . $q . "<br/>";
 		SqlQuery( "update wp_postmeta set meta_value = " . $q .
 		          " where post_id = " . $this->id .
 		          " and meta_key = '_stock'" );
 
 		return true;
-		// return $this->p->set_stock_quantity($q);
 	}
 
 	function is_basket() {
@@ -121,6 +95,7 @@ class Fresh_Product {
 	}
 
 	function getStock( $arrived = false ) {
+		print debug_trace(10);
 		if ( $this->isFresh() ) {
 //			print "<br/> fresh " . $this -> q_in() . " " . $this->q_out() . " ";
 			$inv         = $this->q_in( $arrived ) - $this->q_out();
@@ -257,7 +232,6 @@ class Fresh_Product {
 	}
 
 	function getOrdered() {
-//		print "id: " . $this->id . "<br/>";
 		return Fresh_Packing::orders_per_item( $this->id, 1, true, true, true, true );
 	}
 

@@ -386,6 +386,7 @@ class Fresh_Order {
 	}
 
 	public static function CalculateNeeded( &$needed_products, $user_id = 0, &$user_table = null) {
+		$include_shipment = false;
 		/// print "user id " . $user_id . "<br/>";
 		$debug_product = 0; // 141;
 		if ( ! $user_id ) {
@@ -419,8 +420,9 @@ class Fresh_Order {
 			SqlQuery( $sql );
 		}
 		// Do the calculation
-		$sql = "SELECT id, post_status FROM wp_posts " .
-		       " WHERE (post_status LIKE '%wc-processing%' OR post_status = 'wc-awaiting-shipment')";
+		$query = "Where (post_status LIKE '%wc-processing%' " . ($include_shipment ? " OR post_status = 'wc-awaiting-shipment'" : "") . ")";
+
+		$sql = "SELECT id, post_status FROM wp_posts " . $query;
 
 		if ( $user_id ) {
 			$sql .= " and order_user(id) = " . $user_id;
@@ -439,19 +441,10 @@ class Fresh_Order {
 			$del_id = 0;
 			// print "status = " . $status . "<br/>";
 
-			if ( $status == 'wc-awaiting-shipment' ) {
-				// print "ship<br/>";
-				$del_id = SqlQuerySingleScalar( "SELECT id FROM im_delivery WHERE order_id = " . $id );
-				// print "del id = " . $del_id . "<br/>";
-			}
-
-			//		print "order: " . $id . "<br/>";
+			if ( $status == 'wc-awaiting-shipment' ) $del_id = SqlQuerySingleScalar( "SELECT id FROM im_delivery WHERE order_id = " . $id );
 
 			// Update im_need_orders table
-			if ( ! $user_id ) {
-				$sql1 = "INSERT INTO im_need_orders (order_id) VALUE (" . $id . ") ";
-				SqlQuery( $sql1 );
-			}
+			if ( ! $user_id ) SqlQuery("INSERT INTO im_need_orders (order_id) VALUE (" . $id . ") ");
 
 			$order       = new WC_Order( $id );
 			$order_items = $order->get_items();
@@ -460,9 +453,7 @@ class Fresh_Order {
 				$prod_or_var = $item['product_id'];
 
 				$variation = null;
-				if ( isset( $item["variation_id"] ) && $item["variation_id"] > 0 ) {
-					$prod_or_var = $item["variation_id"];
-				}
+				if ( isset( $item["variation_id"] ) && $item["variation_id"] > 0 ) $prod_or_var = $item["variation_id"];
 				$qty  = $item['qty'];
 				$unit = $item['unit'];
 

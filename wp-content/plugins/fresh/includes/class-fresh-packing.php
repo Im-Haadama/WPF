@@ -37,7 +37,7 @@ class Fresh_Packing {
 //		$result                 .= self::supplier_tabs($needed_prods_by_supplier);
 
 //		// Show delected tab
-		$result                 .= self::NeededProducts( false);
+		$result                 .=  self::NeededProducts( );
 
 		print $result;
 	}
@@ -51,17 +51,14 @@ class Fresh_Packing {
 	static function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero = false, $filter_stock = false, $history = false) {
 		$result            = "";
 		$inventory_managed = InfoGet( "inventory" );
-		if ($supplier_id)
-			$supplier          = new Fresh_Supplier( $supplier_id );
-		else
-			$supplier = null;
+		if ($supplier_id) $supplier          = new Fresh_Supplier( $supplier_id );
+		else		$supplier = null;
 
 		$checkbox_class = "product_checkbox" . $supplier_id;
 
 		$data_lines = array();
 
 		foreach ( $needed_products as $prod_id => $quantity_array ) {
-			if ($prod_id == 145) var_dump($quantity_array);
 			$P = new Fresh_Product( $prod_id );
 			if ( ! $P ) continue;
 
@@ -84,9 +81,8 @@ class Fresh_Packing {
 			$quantity = isset( $quantity_array[0] ) ? $quantity_array[0] : 0;
 
 			$p     = new Fresh_Product( $prod_id );
-			$q_inv = $p->getStock();
-
 			if ( $inventory_managed ) {
+				$q_inv = $p->getStock();
 				$row[] = Core_Html::GuiInput( "inv_" . $prod_id, $q_inv, array(
 					"onchange=\"change_inv(" . $prod_id . ")\"",
 					"onkeyup=\"moveNext(" . $prod_id . ")\""
@@ -149,9 +145,10 @@ class Fresh_Packing {
 		return $result;
 	}
 
-	static function NeededProducts( $filter_zero, $history = false, $filter_stock = false, $limit_to_supplier_id = null ) {
+	static function NeededProducts( $filter_zero = false, $history = false, $filter_stock = false, $limit_to_supplier_id = null ) {
 		$result          = "";
 		$needed_products = array();
+		$supplier_tabs = array();
 
 		Fresh_Order::CalculateNeeded( $needed_products );
 
