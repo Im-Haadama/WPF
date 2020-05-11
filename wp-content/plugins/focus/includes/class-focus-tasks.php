@@ -2202,24 +2202,14 @@ class Focus_Tasks {
 			return "unauth";
 		}
 
-		$operation  = GetParam( "operation", false, null );
 		$worker_id = GetParam("worker_id", false, null);
 
-//		print "op=$operation wid=$worker_id uid=$user_id<br/>";
 		$user = new Org_Worker($user_id);
-//		var_dump($user->AllWorkers());
 		if (! in_array($worker_id, $user->AllWorkers()))
 			return  "not privileged";
 
 		// Todo: move all processing to filter.
-		$id = GetParam("id", false, null);
 		$args = self::Args( "tasklist" );
-
-//		if ($operation)	{	$result = apply_filters( $operation, "", $id, $args );
-//			if ( $result != "" ) {
-//				return $result;
-//			}
-//		}
 
 		// If no filter yet, handle the old way.
 		return self::user_work( $args, $worker_id );

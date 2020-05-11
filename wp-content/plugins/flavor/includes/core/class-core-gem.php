@@ -15,7 +15,12 @@ class Core_Gem {
 		self::$_instance = $this;
 		AddAction("gem_show", array(__CLASS__, "show_wrap"), 10, 3);
 		AddAction("gem_v_show", array(__CLASS__, "v_show_wrap"));
+
+		// Import
+		// prepare
 		AddAction("gem_import", array(__CLASS__, "import_wrap"));
+
+		// Do
 		AddAction("gem_do_import", array(__CLASS__, "do_import_wrap"));
 		AddAction("gem_v_do_import", array(__CLASS__, "do_v_import_wrap"));
 	}
@@ -233,7 +238,7 @@ class Core_Gem {
 		return "lalal"; // $instance->GemVirtualTable($table_name, $args);
 	}
 
-	static function show_wrap($result, $id, $args)
+	static function show_wrap($result, $id = 0, $args = null)
 	{
 		$table_name = GetParam("table", true);
 		return $result . self::GemElement($table_name, $id, $args);
@@ -358,7 +363,7 @@ class Core_Gem {
 			$div_content = "";
 
 			if (count($rows_data) == $rows_per_page + 1) { // 1 for the header
-				$div_content .= Core_Html::GuiHeader(1, "page_number", true, true) . " " . Core_Html::gui_label("gem_page_" . $table_id, $page) . "<br/>";
+				$div_content .= Core_Html::GuiHeader(2, "Page number", array("inline"=>true)) . " " . Core_Html::gui_label("gem_page_" . $table_id, $page) . "<br/>";
 				// $result .= Core_Html::GuiHyperlink("Next page", AddToUrl("page_number", $page + 1)) . " ";
 				$div_content .= Core_Html::GuiButton("btn_gem_next_" . $table_id, "Next", array("action" => "gem_next_page(" . QuoteText($post_action)  . "," . QuoteText($table_id) . ")"));
 				$div_content .= Core_Html::GuiButton("btn_gem_all__" . $table_id, "All", array("action" => "gem_all_page(" . QuoteText($post_action)  . "," . QuoteText($table_id) . ")"));

@@ -639,7 +639,7 @@ class Core_Data
 	static function TableData($sql, &$args = null)
 	{
 		if (strstr($sql, "select") and !strstr ($sql, "limit")){
-			$page = GetArg($args, "page_number", null);
+			$page = GetArg($args, "page_number", 1);
 			if ($page) {
 				$rows_per_page = GetArg($args, "rows_per_page", 10);
 				$offset = ($page - 1) * $rows_per_page;

@@ -351,7 +351,9 @@ class Finance_Bank
 				$args["selector"]      = __CLASS__ . "::gui_select_bank_account";
 				$args["order"] = "3 desc";
 				$args["hide_cols"] = array_merge($args["hide_cols"], array("id" => 1, "account_id" => 1, "tmp_client_name" =>1, "customer_id"=>1));
-				print Core_Gem::GemTable("bank", $args);
+				print Core_Html::GuiHeader(1, "דף חשבון") .
+					Core_Gem::GemTable("bank", $args);
+				return true;
 
 			case "bank_show_import":
 			case "import":
@@ -390,7 +392,6 @@ class Finance_Bank
 				print $result[1] . " duplicate rows <br/>";
 				print $result[2] . " failed rows <br/>";
 				return true;
-
 		}
 	}
 
