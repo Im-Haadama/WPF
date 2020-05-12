@@ -36,7 +36,6 @@
 		{
 			if ('product_comment' == $current_section ) {
 				$custom_settings =  array(
-
 					array(
 						'name' => __( '' ),
 						'type' => 'checkbox',
@@ -51,7 +50,6 @@
 						'class' => 'button-secondary',
 						'id'	=> 'activate'
 					),
-
 					array(
 						'name' => __( '' ),
 						'type' => 'checkbox',

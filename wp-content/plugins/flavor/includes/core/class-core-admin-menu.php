@@ -13,6 +13,7 @@ class Core_Admin_Menu {
 			$slug = ( isset($page['menu_slug']) ? $page['menu_slug'] :  str_replace(' ', '-', strtolower($menu_title)));
 			$function  = (isset($page['function']) ? $page['function'] : null);
 			if (im_user_can($capability)) {
+//				print "================adding $parent $title $menu_title $capability $slug $function<br/>";
 				if ( ! add_submenu_page( $parent, $title, $menu_title, $capability, $slug, $function ) ) {
 					print "cant add $title $parent $capability<br/>";
 				}

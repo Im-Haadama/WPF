@@ -42,6 +42,7 @@ class Finance_Bank
 		AddAction("finance_bank_accounts", array($this, "show_bank_accounts"));
 		AddAction("finance_bank_account", array($this, "show_bank_account"));
 		AddAction("finance_show_bank_import", array($this, "show_bank_import"));
+		AddAction("finance_do_import", array($this, "do_bank_import"));
 	}
 
 	/**
@@ -49,6 +50,28 @@ class Finance_Bank
 	 */
 	public function getUser(): Core_Users {
 		return $this->user;
+	}
+
+	function do_bank_import()
+	{
+		$file_name = $_FILES["fileToUpload"]["tmp_name"];
+		print "Trying to import $file_name<br/>";
+		$fields               = array();
+		$fields['account_id'] = GetParam( 'account_id' );
+		if ( ! $fields['account_id'] ) {
+			die( "not account given" );
+		}
+		try {
+			$result = Core_Importer::Import( $file_name, "bank", $fields, 'Finance_Bank::bank_check_dup' );
+		} catch ( Exception $e ) {
+			print $e->getMessage();
+
+			return false;
+		}
+		print $result[0] . " rows imported<br/>";
+		print $result[1] . " duplicate rows <br/>";
+		print $result[2] . " failed rows <br/>";
+		return true;
 	}
 
 	function show_bank_accounts()
@@ -82,13 +105,15 @@ class Finance_Bank
 		print Core_Html::GuiHeader(1, "דף חשבון") .
 		      self::bank_transactions($args) .
 		      Core_Html::GuiHyperlink("Import", AddToUrl(array("operation" => "finance_show_bank_import",
-			      "bank_account"=>1)));
+			      "account_id"=>$account_id)));
 	}
 
 	function show_bank_import()
 	{
 		$args = self::Args();
-		$args["account_id"] =
+		// Using local action - to set account_id and check_dup. See above.
+		$args["import_page"] = AddToUrl(array("operation"=>"finance_do_import"));
+			// AddToUrl(array("operation" => "gem_do_import", "table"=>"bank"));//  . "&account_id=" . $account_id;
 		$result = Core_Gem::ShowImport("bank", $args);
 
 		print $result;
@@ -416,26 +441,7 @@ class Finance_Bank
 			case "show_transactions":
 				print self::bank_transactions( array("query" => $ids ? "id in (" . CommaImplode( $ids ) . ")" : null) );
 				break;
-			case 'bank_import_from_file':
-				$file_name = $_FILES["fileToUpload"]["tmp_name"];
-				print "Trying to import $file_name<br/>";
-//				$I                    = new Core_Importer();
-				$fields               = array();
-				$fields['account_id'] = GetParam( 'selection' );
-				if ( ! $fields['account_id'] ) {
-					die( "not account given" );
-				}
-				try {
-					$result = Core_Importer::Import( $file_name, "bank", $fields, 'Finance_Bank::bank_check_dup' );
-				} catch ( Exception $e ) {
-					print $e->getMessage();
-
-					return false;
-				}
-				print $result[0] . " rows imported<br/>";
-				print $result[1] . " duplicate rows <br/>";
-				print $result[2] . " failed rows <br/>";
-				return true;
+//			case 'bank_import_from_file':
 		}
 	}
 
@@ -523,7 +529,7 @@ class Finance_Bank
 
 		$result .= Core_Html::GuiTableContent("banking", $sql, $args);
 
-		$result .= Core_Html::GuiHyperlink("Older", AddToUrl("page", $page + 1));
+		$result .= Core_Html::GuiHyperlink("Older", AddToUrl("page", $page + 1)) . " ";
 
 		return $result;
 	}

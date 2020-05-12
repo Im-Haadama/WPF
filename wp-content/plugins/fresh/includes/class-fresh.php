@@ -187,7 +187,6 @@ class Fresh {
 		add_action( 'woocommerce_checkout_create_order_line_item', 'checkout_create_order_line_item', 10, 4 );
         /* -- End Product Comment Hooks-- */
 
-
 		GetSqlConn(ReconnectDb());
 //		add_action( 'init', array( 'Fresh_Emails', 'init_transactional_emails' ) );
 		// add_action( 'init', array( $this, 'wpdb_table_fix' ), 0 );
@@ -490,7 +489,8 @@ class Fresh {
 
 		$shortcodes = Core_Shortcodes::instance();
 		$shortcodes->add($this->suppliers->getShortcodes());
-		$shortcodes->add($this->supplier_balance->getShortcodes());
+//		$shortcodes->add($this->supplier_balance->getShortcodes());
+		$this->supplier_balance->init_hooks();
 		$shortcodes->add($this->totals->getShortcodes());
 
 		$this->suppliers->init();
