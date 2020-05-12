@@ -535,7 +535,7 @@ class Fresh_Delivery {
 			$show_fields[ $i ] = false;
 		}
 
-		if ( $operation == Fresh_DocumentOperation::create or $operation == Fresh_DocumentOperation::collect ) {
+		if ( InfoGet("delivery_expand_basket") and $operation == Fresh_DocumentOperation::create or $operation == Fresh_DocumentOperation::collect ) {
 			$expand_basket                                = true;
 			$show_fields[ eDeliveryFields::packing_info ] = true;
 		}
