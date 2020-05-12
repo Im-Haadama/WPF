@@ -1053,7 +1053,26 @@ class Fresh_Order {
 
 		$sql = "SELECT post_excerpt FROM wp_posts WHERE id=" . $this->order_id;
 
-		$this->comments = SqlQuerySingleScalar( $sql );
+		$this->comments = "";
+
+		$c = SqlQuerySingleScalar( $sql );
+
+		if ($c) $this->comments .= "הערות להזמנה: " . $c . "<br/>";
+
+		$product_sql = "select order_item_id, meta_value " .
+		               " from wp_woocommerce_order_itemmeta " .
+		               " where meta_key = 'product_comment' " .
+		               " and order_item_id in (select order_item_id "
+												. " from wp_woocommerce_order_items " .
+		               " where order_id = " . $this->order_id . " )";
+		$result = SqlQuery($product_sql);
+		while ($row = SqlFetchAssoc($result)) {
+			$oid = $row["order_item_id"];
+			$prod_id = SqlQuerySingleScalar("select meta_value from wp_woocommerce_order_itemmeta where order_item_id = $oid");
+			$p = new Fresh_Product($prod_id);
+			$this->comments .= "הערה למוצר ".  $p->getName() . " " . $row['meta_value'] . "<br/>";
+		}
+
 
 		return $this->comments;
 	}
