@@ -1,19 +1,10 @@
 <?php
 
-if (! class_exists("Cre_Database"))
+if (! class_exists("Core_Database"))
 	return;
 
 class Fresh_Database extends Core_Database
 {
-	static function install($version, $force = false)
-	{
-		// Create im_info table if missing.
-		self::CreateInfo();
-
-		self::CreateTables($version, $force);
-		self::CreateFunctions($version, $force);
-		self::CreateViews($version, $force);
-	}
 
 	static function CreateViews($version, $force )
 	{

@@ -977,13 +977,10 @@ class Fresh_Delivery {
 
 				$line[ eDeliveryFields::product_name ] = "===> " . $P->getName();
 				$line[ eDeliveryFields::price ]        = $P->getPrice($client_type );
-				$has_vat                               = true;
 
-				if ( ! $P->getVatPercent() ) {
-					$has_vat = false;
-				}
+				$has_vat = ($P->getVatPercent() > 0);
 				$line[ eDeliveryFields::product_id ] = $prod_id;
-				$line[ eDeliveryFields::has_vat ]    = Core_Html::GuiCheckbox( "hvt_" . $prod_id, "has_vat", $has_vat > 0 );
+				$line[ eDeliveryFields::has_vat ]    = Core_Html::GuiCheckbox( "hvt_" . $prod_id, $has_vat);
 				$line[ eDeliveryFields::order_q ]    = $quantity_ordered;
 				$line[ eDeliveryFields::delivery_q ] = Core_Html::gui_input( "quantity" . $this->line_number, "",
 					array( 'onkeypress="moveNextRow(' . $this->line_number . ')"', 'onfocusout="leaveQuantityFocus(' . $this->line_number . ')" ' ) );

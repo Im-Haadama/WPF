@@ -512,6 +512,11 @@ class Finance {
 
 		$this->invoices->init( FINANCE_INCLUDES_URL . '../post.php' );
 
+		if (InfoGet("finance_bank_enabled")) {
+			$this->bank = new Finance_Bank( self::getPostFile() );
+			$this->bank->init_hooks();
+		}
+
 		// For testing:
 		//		wp_set_current_user(369);
 

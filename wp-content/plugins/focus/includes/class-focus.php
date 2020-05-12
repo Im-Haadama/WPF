@@ -18,6 +18,7 @@ class Focus {
 	protected $salary;
 	protected $manager;
 	protected $tasks;
+	protected $database;
 
 	/**
 	 * Plugin version.
@@ -186,7 +187,8 @@ class Focus {
 
 	private function install()
 	{
-		Focus_Database::install($this->version);
+		$this->database = new Focus_Database();
+		$this->database->install($this->version);
 	}
 	/**
 	 * Define WC Constants.

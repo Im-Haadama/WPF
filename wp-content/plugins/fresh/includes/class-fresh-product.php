@@ -124,8 +124,11 @@ class Fresh_Product {
 		$terms = $this->getTerms();
 
 		if ( $terms )
-			foreach ( $terms as $term )
-				if ( $this->is_fresh( $term->term_id, $debug ) ) return true;
+			foreach ( $terms as $term ) {
+				if ( $this->is_fresh( $term, $debug ) ) {
+					return true;
+				}
+			}
 
 		return false;
 	}

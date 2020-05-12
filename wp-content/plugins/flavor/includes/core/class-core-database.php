@@ -1,6 +1,16 @@
 <?php
 
-class Core_Database {
+class Core_Database
+{
+	function install($version, $force = false)
+	{
+		// Create im_info table if missing.
+		self::CreateInfo();
+
+		$this->CreateTables($version, $force);
+		$this->CreateFunctions($version, $force);
+		$this->CreateViews($version, $force);
+	}
 
 	static function CreateInfo()
 	{

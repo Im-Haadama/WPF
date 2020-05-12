@@ -2,7 +2,7 @@
 
 
 class Flavor_Database extends Core_Database {
-	static function install( $version, $force = false ) {
+	function install( $version, $force = false ) {
 		global $conn;
 
 		return;

@@ -37,9 +37,11 @@ class Finance_Bank
 		return self::instance()->post_file;
 	}
 
-	public function accounts()
+	function init_hooks()
 	{
-		return SqlQueryArray();
+		AddAction("finance_bank_accounts", array($this, "show_bank_accounts"));
+		AddAction("finance_bank_account", array($this, "show_bank_account"));
+		AddAction("finance_show_bank_import", array($this, "show_bank_import"));
 	}
 
 	/**
@@ -47,6 +49,49 @@ class Finance_Bank
 	 */
 	public function getUser(): Core_Users {
 		return $this->user;
+	}
+
+	function show_bank_accounts()
+	{
+		if (! get_user_id() || ! current_user_can("show_bank"))
+			return "no permissions";
+
+		$accounts = self::getBankAccounts(get_user_id());
+		if (! $accounts) return "No bank accounts found";
+
+		if (count($accounts) == 1)
+			return $this->show_bank_account($accounts[0]);
+
+		return "multiple bank accounts not implemented";
+	}
+
+	function show_bank_account($account_id)
+	{
+		if (! current_user_can("show_bank", $account_id))
+			return "no permissions";
+
+		$operation = GetParam("operation", false, null);
+		if ($operation)
+			return apply_filters($operation, "");
+
+		$args = [];
+		$args["page"] = GetParam("page", false, null);
+		$args["post_file"] = Finance::getPostFile();
+		$args["query"] = "account_id = $account_id";
+
+		print Core_Html::GuiHeader(1, "דף חשבון") .
+		      self::bank_transactions($args) .
+		      Core_Html::GuiHyperlink("Import", AddToUrl(array("operation" => "finance_show_bank_import",
+			      "bank_account"=>1)));
+	}
+
+	function show_bank_import()
+	{
+		$args = self::Args();
+		$args["account_id"] =
+		$result = Core_Gem::ShowImport("bank", $args);
+
+		print $result;
 	}
 
 	function handle_bank_operation($operation, $url = null)
@@ -351,8 +396,7 @@ class Finance_Bank
 				$args["selector"]      = __CLASS__ . "::gui_select_bank_account";
 				$args["order"] = "3 desc";
 				$args["hide_cols"] = array_merge($args["hide_cols"], array("id" => 1, "account_id" => 1, "tmp_client_name" =>1, "customer_id"=>1));
-				print Core_Html::GuiHeader(1, "דף חשבון") .
-					Core_Gem::GemTable("bank", $args);
+				// $args["post_action"] = Finance::getPostFile()
 				return true;
 
 			case "bank_show_import":
@@ -454,9 +498,8 @@ class Finance_Bank
 	static public function bank_wrapper()
 	{
 		$operation = GetParam("operation", false, "bank_status");
-		$instance = self::instance();
 
-		return $instance->handle_bank_operation($operation);
+		return apply_filters("finance_bank_accounts", $operation);
 	}
 
 	static function bank_transactions($args = null)
@@ -525,7 +568,9 @@ class Finance_Bank
 	{
 		$table_prefix = GetTablePrefix();
 
-		$result = Core_Html::gui_header(2, "last bank load");
+		$account = GetParam("account", false, null);
+		if ($account)
+		$result = Core_Html::gui_header(2, "Bank accounts");
 		$u = new Core_Users();
 
 		$sql = "select id, name, bank_last_transaction(id)";
@@ -534,7 +579,7 @@ class Finance_Bank
 
 		$args = [];
 		$args["links"] = array("account_id" => AddToUrl(array( "operation" => "show_bank_load", "id" => "%s")),
-			"id" => AddToUrl("operation", "show_bank"));
+			"id" => AddToUrl("account", "%d"));
 //		$args["id_field"] = "count_id";
 		$action_url = GetUrl(1); // plugin_dir_url(dirname(__FILE__)) . "post.php";
 		$args["actions"] =
@@ -634,12 +679,18 @@ class Finance_Bank
 		return Core_Html::GuiSelectTable($id, "bank_account", $args);
 	}
 
+	static function getBankAccounts($user_id)
+	{
+		return SqlQueryArrayScalar("select id from im_bank_account where owner = $user_id");
 
-function business_logical_delete( $ids ) {
-	$sql = "UPDATE im_business_info SET is_active = 0 WHERE id IN (" . $ids . ")";
-	SqlQuery( $sql );
-	MyLog( $sql );
-}
+		// Later we'll add permissions
+	}
+
+	function business_logical_delete( $ids ) {
+		$sql = "UPDATE im_business_info SET is_active = 0 WHERE id IN (" . $ids . ")";
+		SqlQuery( $sql );
+		MyLog( $sql );
+	}
 
 function business_open_ship( $part_id ) {
 	$sql = "select id, date, amount, net_amount, ref " .

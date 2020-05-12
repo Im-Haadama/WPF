@@ -18,6 +18,7 @@ class Fresh {
 	protected $shortcodes;
 	protected $client_views;
 	protected $admin_notices;
+	protected $database;
 
 	/**
 	 * Plugin version.
@@ -660,7 +661,8 @@ class Fresh {
         if (Fresh_Database::CheckInstalled("Fresh", $this->version) == $version and ! $force) return;
 
         // Install common tables
-        Fresh_Database::install($this->version);
+		$this->database = new Fresh_Database();
+		$this->database->install($this->version);
 
         // Install more specific
 	}

@@ -12,6 +12,7 @@ class Freight {
 	 */
 	protected $auto_loader;
 	protected $settings;
+	protected $database;
 //	protected $order;
 
 	/**
@@ -538,8 +539,8 @@ class Freight {
 	{
         if (Freight_Database::CheckInstalled("Freight", $this->version) == $version and ! $force) return;
 
-        // Install common tables
-        Freight_Database::install($this->version);
+        $this->database = new Freight_Database();
+        $this->database->install($this->version);
 
         // Install more specific
 	}
