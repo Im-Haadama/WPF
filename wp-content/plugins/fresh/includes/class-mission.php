@@ -203,11 +203,13 @@ class Mission {
 
 		$type_info = SqlQuerySingleAssoc("select * from im_mission_types where id = $type_id");
 
-		$name = $type_info['mission_name'];
 		$week_day = $type_info['week_day'];
+		$start_address = $type_info['start_address'];
+		$end_address = $type_info['end_address'];
 		$date = next_weekday($week_day);
+		$name = $type_info['mission_name'] . " " .date('m-d', $date);
 
-		 $sql = "insert into im_missions (date, name, mission_type) values('$date', '$name', $type_id)";
+		 $sql = "insert into im_missions (date, name, mission_type, start_address, end_address) values('$date', '$name', $type_id, '" . $start_address . "', '" . $end_address . "')";
 
 //		 print $sql ."<br/>";
 

@@ -537,7 +537,7 @@ class Freight {
 
 	function install($version, $force = false)
 	{
-        if (Freight_Database::CheckInstalled("Freight", $this->version) == $version and ! $force) return;
+//        if (Freight_Database::CheckInstalled("Freight", $this->version) == $version and ! $force) return;
 
         $this->database = new Freight_Database();
         $this->database->install($this->version);
