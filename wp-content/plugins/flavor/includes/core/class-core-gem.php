@@ -383,14 +383,14 @@ class Core_Gem {
 			$result .=  $no_data_message . Core_Html::Br();
 		}
 
-		if (GetArg($args, "add_button", true))
+		if ($edit and GetArg($args, "add_button", true))
 			$result .= Core_Html::GuiHyperlink("Add", AddToUrl("operation" , "gem_add_" . $table_id)) . " ";
 		$checkbox_class = GetArg($args, "checkbox_class", "class");
 
 		if ($post_file and $enable_import) {
 			$result .= Core_Gem::ShowImport( $table_id, $args );
 		}
-		if ($post_file)
+		if ($post_file and $edit)
 			$result .= Core_Html::GuiButton( "btn_delete_$table_id", "delete",
 				array( "action" => "delete_items(" . QuoteText( $checkbox_class ) . "," . QuoteText( $post_file ) . ")" ) );
 

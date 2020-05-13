@@ -492,6 +492,7 @@ class Fresh {
 //		$shortcodes->add($this->supplier_balance->getShortcodes());
 		$this->supplier_balance->init_hooks();
 		$shortcodes->add($this->totals->getShortcodes());
+		$shortcodes->add($this->client_views->getShortcodes());
 
 		$this->suppliers->init();
 		Fresh_Basket::init();

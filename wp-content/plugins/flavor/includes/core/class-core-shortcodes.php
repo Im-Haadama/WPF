@@ -67,18 +67,18 @@ class Core_Shortcodes {
 					continue;
 				}
 				if ($debug == 2) print " going to add";
-				if (is_callable($function . "_wrapper")) {
+				if (is_callable($function)) {
+					if ($debug == 2)	print "adding function $function<br/>";
+					add_shortcode( apply_filters( "{$shortcode}_shortcode_tag", $shortcode ), $function );
+					continue;
+				}
+				if (is_string($function) and is_callable($function . "_wrapper")) {
 					if ($debug == 2) print "adding $shortcode => wrapper: " . $function . "_wrapper<br/>";
 					add_shortcode( apply_filters( "{$shortcode}_shortcode_tag", $shortcode ), $function. "_wrapper" );
 					continue;
 				}
 				if ($debug == 2) print " no wrapper ";
 
-				if (is_callable($function)) {
-					if ($debug == 2)	print "adding function $function<br/>";
-					add_shortcode( apply_filters( "{$shortcode}_shortcode_tag", $shortcode ), $function );
-					continue;
-				}
 				if ($debug >= 1) print "not callable: $function<br/>";
 			}
 	}
@@ -102,7 +102,6 @@ class Core_Shortcodes {
 		)
 	) {
 		ob_start();
-		print "ASDF";
 
 		if (! $atts) {
 			$atts = array();

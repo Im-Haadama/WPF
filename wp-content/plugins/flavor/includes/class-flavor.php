@@ -465,12 +465,18 @@ class Flavor {
 		$shortcodes = Core_Shortcodes::instance();
 		$shortcodes->add(array('flavor'  => array(__CLASS__ . '::static_handle_show', "read"),
 			'log_viewer' => array('Core_Logger::log_viewer', 'edit_shop_orders'),
-			'check_system' => array(__CLASS__ . '::check_system', null)));
+			'check_system' => array(__CLASS__ . '::check_system', null),
+			'flavor_displayname' => array(array($this, 'display_name'), null)));
 
 		// Init action.
 		do_action( 'flavor_init' );
 	}
 
+	static public function display_name()
+	{
+		$f = new Fresh_Client(get_user_id());
+		return  $f->getName();
+	}
 	static public function check_system()
 	{
 		$result = "שלום<br/>";

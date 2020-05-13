@@ -212,6 +212,7 @@ class Fresh_Client {
 		// $user = get_userdata( $user_id );
 		$user = get_user_by( "id", $this->user_id );
 
+		if (! $user) return "user $this->user_id not found";
 		$name = $user->user_firstname . " " . $user->user_lastname;;
 		// print $this->user_id . " " . $name;
 		if ( strlen( $name ) < 3 ) {
@@ -231,7 +232,5 @@ class Fresh_Client {
 			wp_update_user( $args );
 		}
 	}
-
-
 }
 

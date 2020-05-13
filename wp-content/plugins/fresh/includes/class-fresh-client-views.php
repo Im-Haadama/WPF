@@ -5,7 +5,8 @@ abstract class TransView {
 		default = 0,
 		from_last_zero = 1,
 		not_paid = 2,
-		read_last = 3;
+		read_last = 3,
+		admin = 4;
 }
 
 
@@ -26,6 +27,13 @@ class Fresh_Client_Views {
 		add_action('order_add_to_basket', array(__CLASS__, 'add_to_basket'));
 		add_action('order_remove_item', array(__CLASS__, 'remove_item'));
 //		add_filter( 'woocommerce_account_menu_items', array(__CLASS__, 'account_menu_items'), 10, 1 );
+	}
+
+	function getShortcodes()
+	{
+			//             code                           function                  capablity (not checked, for now).
+		return ( array('finance_balance' => array(array( $this, 'show_balance'), null),
+		               'finance_trans'   => array(array( $this, 'show_trans'), null)));
 	}
 
 	// Chava.
@@ -255,14 +263,25 @@ class Fresh_Client_Views {
 		}
 	}
 
-	static function show_trans( $customer_id, $view = TransView::default, $args =null )
+	static function show_balance($customer_id = 0)
 	{
+		if (! $customer_id) $customer_id = get_user_id();
+		if (! $customer_id) return null;
+		$c = new Fresh_Client($customer_id);
+		$b = $c->balance();
+		if ($b) return "יתרה לתשלום: " . $b ."<br/>";
+	}
+
+	static function show_trans( $customer_id = 0, $view = TransView::default, $args =null )
+	{
+		if (! $customer_id) $customer_id = get_user_id();
 		// $from_last_zero = false, $checkbox = true, $top = 10000
 		$query = GetArg($args, "param", null);
 
 		// Show open deliveries
 		$from_last_zero = false;
-		$checkbox       = true;
+		$edit       = ($view == TransView::admin);
+
 		$top            = null;
 		$not_paid       = false;
 		switch ( $view ) {
@@ -301,11 +320,13 @@ class Fresh_Client_Views {
 			$sql .= " limit " . $top;
 		}
 
+		$args = [];
 		$args["links"] = array();
 		$args["links"]["transaction_ref"] = "/wp-content/plugins/fresh/delivery/get-delivery.php?id=%s";
 			// Todo: Finish step 2: "/delivery?id=%s";
 //		$args["links"]["order"] = "/delivery/order_id=%s";
 		$args["col_ids"] = array("chk", "id", "dat", "amo", "bal", "des", "del", "ord");
+		if (! $edit) unset ($args["col_ids"][0]);
 //	$args["show_cols"] = array(); $args["show_cols"]['id'] = 0;
 		$args["add_checkbox"] = false; // Checkbox will be added only to unpaid rows
 		$args["post_file"] = Fresh::getPost();
@@ -319,6 +340,8 @@ class Fresh_Client_Views {
 		                               "order_id" => "Order",
 		                               "receipt" => "Receipt");
 
+		$args["edit"] = $edit;
+
 		$data1 = Core_Data::TableData($sql, $args);
 
 		if (! $data1) {
@@ -326,7 +349,7 @@ class Fresh_Client_Views {
 			return;
 		}
 
-		foreach ($data1 as $id => $row)
+		if ($edit) foreach ($data1 as $id => $row)
 		{
 			$row_id = $row['id'];
 			$value = "";
