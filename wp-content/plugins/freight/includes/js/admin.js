@@ -125,5 +125,5 @@ function freight_add_delivery(post_file, mission_id)
 
     let request = post_file + "?operation=freight_do_add_delivery&client=" + client + '&mission_id=' + mission_id + '&fee=' + fee;
 
-    execute_url(request, location_reload);
+    execute_url(request, success_message);
 }

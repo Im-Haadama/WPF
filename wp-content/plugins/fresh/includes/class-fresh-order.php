@@ -1084,8 +1084,8 @@ class Fresh_Order {
 	}
 
 	function getAddress() {
-		return $this->getOrderInfo( 'shipping_city' ) . " " . $this->getOrderInfo( 'shipping_address_1' ) .
-		       " " . $this->getOrderInfo( 'shipping_address_2' );
+		return $this->getOrderInfo( 'shipping_city' ) . " " . $this->getOrderInfo( 'shipping_address_1' );
+//		       " " . $this->getOrderInfo( 'shipping_address_2' );
 	}
 
 	function quantity_in_order( $order_item_id ) {
@@ -1127,7 +1127,7 @@ class Fresh_Order {
 		$address       = self::getAddress();
 		$receiver_name = GetMetaField( $this->order_id, '_shipping_first_name' ) . " " .
 		                 GetMetaField( $this->order_id, '_shipping_last_name' );
-		$shipping2     = GetMetaField( $this->order_id, '_shipping_address_2', true );
+		$shipping2     = GetMetaField( $this->order_id, '_shipping_address_2' );
 
 		array_push( $fields, $ref );
 

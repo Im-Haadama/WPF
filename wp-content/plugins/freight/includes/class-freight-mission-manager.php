@@ -15,6 +15,18 @@ class Freight_Mission_Manager
 		add_action("freight_do_add_delivery", __CLASS__ . "::do_add_delivery");
 		add_action('get_local_anonymous', __CLASS__ . "::get_local_missions");
 		add_action('delivered', array(__CLASS__, "delivered_wrap"));
+		add_action('sync_data_mission', array(__CLASS__, "sync_data_mission"));
+	}
+
+	static function sync_data_mission()
+	{
+		$table = "missions";
+		$db_prefix = "im_";
+		$sql = "SELECT * FROM ${db_prefix}$table where date >= curdate()";
+
+		print Core_Html::GuiTableContent( "table", $sql, $args );
+
+		return true;
 	}
 
 	static function missions()
@@ -103,10 +115,32 @@ class Freight_Mission_Manager
 	static function dispatcher_wrap()
 	{
 		$operation = GetParam("operation", false, null);
-		$header = __("Dispatch mission");
+		$header = __("Dispatch mission") ;
 		$week = GetParam("week", false, null);
 		if ($week)
 			$header .= __("Missions of week") . " " . $week;
+
+		$multi = Core_Db_MultiSite::getInstance();
+		if (! $multi->isMaster()){
+			$url = Freight::getPost() . "?operation=sync_data_mission";
+
+			$html = $multi->Execute( $url, $multi->getMaster() );
+
+			if (! $html) print "Can't get data from master<br/>";
+
+			if ( strlen( $html ) > 100 ) {
+				//printbr($html);
+				$multi->UpdateTable( $html, "missions", "id" );
+			} else {
+				print "short response. Operation aborted <br/>";
+				print "url = $url";
+				print $html;
+
+				return;
+			}
+
+			$multi->UpdateFromRemote( "missions", "id" );
+		}
 
 		$result = Core_Html::GuiHeader(1, $header);
 

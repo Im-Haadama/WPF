@@ -172,14 +172,13 @@ class Core_Db_MultiSite extends Core_MultiSite {
 	 *
 	 * @return bool|void
 	 */
-	function UpdateFromRemote( $table, $key, $remote = 0, $query = null, $ignore = null, $debug = false ) {
-		if ( $remote == 0 ) {
-			$remote = self::getMaster();
-		}
+	function UpdateFromRemote( $table, $key, $remote = 0, $query = null, $ignore = null, $debug = false )
+	{
+		if ( $remote == 0 ) $remote = self::getMaster();
 
 		if ($this->isMaster()) return true;
 
-		$url = "fresh/multi-site/sync-data.php?table=$table&operation=get";
+		$url = Freight::getPost() . "?operation=sync_data&table=$table";
 		if ( $query ) $url .= "&query=" . urlencode( $query );
 
 		$html = Core_Db_MultiSite::Execute( $url, $remote, $debug );
@@ -219,9 +218,11 @@ class Core_Db_MultiSite extends Core_MultiSite {
 	 * @return bool
 	 * @throws Exception
 	 */
-	static private function UpdateTable( $html, $table, $table_key, $query = null, $ignore_fields = null, $verbose = false )
+	static function UpdateTable( $html, $table, $table_key, $query = null, $ignore_fields = null, $verbose = false )
 	{
-		$dom = im_str_get_html( $html );
+		$dom = Core_Get_File::str_get_html( $html );
+
+		$db_prefix = GetTablePrefix($table);
 
 		$headers      = array();
 		$fields       = array();
@@ -274,7 +275,7 @@ class Core_Db_MultiSite extends Core_MultiSite {
 			$row_key = $fields[ $key_order ];
 
 			array_push( $keys, $row_key );
-			$sql = "SELECT COUNT(*) FROM $table WHERE $table_key=" . QuoteText( $row_key );
+			$sql = "SELECT COUNT(*) FROM ${db_prefix}$table WHERE $table_key=" . QuoteText( $row_key );
 
 			$found = SqlQuerySingleScalar( $sql ) >= 1;
 
@@ -302,10 +303,10 @@ class Core_Db_MultiSite extends Core_MultiSite {
 			}
 
 			if ( $insert ) {
-				$sql = "INSERT INTO $table (" . $field_list . ") VALUES ( " . rtrim( $insert_values, ", " ) . ")";
+				$sql = "INSERT INTO ${db_prefix}$table (" . $field_list . ") VALUES ( " . rtrim( $insert_values, ", " ) . ")";
 				SqlQuery( $sql );
 			} else {
-				$sql = "UPDATE $table SET " . rtrim( $update_fields, ", " ) .
+				$sql = "UPDATE ${db_prefix}$table SET " . rtrim( $update_fields, ", " ) .
 				       " WHERE $table_key = " . QuoteText( $row_key );
 				SqlQuery( $sql );
 			}
@@ -324,7 +325,7 @@ class Core_Db_MultiSite extends Core_MultiSite {
 		}
 
 		// Delete not received keys.
-		$sql = "select $table_key from $table";
+		$sql = "select $table_key from ${db_prefix}$table";
 		if ( $query ) {
 			$sql .= " where " . $query;
 		}
@@ -337,7 +338,7 @@ class Core_Db_MultiSite extends Core_MultiSite {
 
 		if ( strlen( $for_delete ) ) {
 			print "for delete: " . $for_delete;
-			$sql = "DELETE FROM $table WHERE $table_key IN (" . rtrim( $for_delete, ", " ) . ")";
+			$sql = "DELETE FROM ${db_prefix}$table WHERE $table_key IN (" . rtrim( $for_delete, ", " ) . ")";
 
 			SqlQuery( $sql );
 		}
