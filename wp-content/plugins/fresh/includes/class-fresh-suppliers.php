@@ -33,7 +33,11 @@ class Fresh_Suppliers {
 
 		// Pricelist
 		$args = array("database_table" => "supplier_price_list",
-		              "query_part" => "from im_supplier_price_list where supplier_id = %d and date = supplier_last_pricelist_date(supplier_id)",
+		              "query_part" => "from im_supplier_price_list 
+		              where 
+		              supplier_id = %d
+		              and ((select machine_update from im_suppliers where id = supplier_id) = 0 or  
+		              date = supplier_last_pricelist_date(supplier_id))",
 			"fields" => array("id", "product_name", "price", "date"),
 			"extra_header" => array("linked product", "calculated price", "price", "sale price", "open orders"),
 			"order"=>"order by id",
@@ -202,7 +206,7 @@ class Fresh_Suppliers {
 	static function pricelist_functions($result)
 	{
 		$table_name = GetParam("table", false, null);
-		$id = GetParam("id", false, 0);
+//		$id = GetParam("id", false, 0);
 		if ("pricelist" == $table_name){
 			$result .= Core_Html::GuiHyperlink("Create products", AddToUrl( "create_products", 1));
 			$result .= Core_html::GuiButton("btn_map", "Map Products", array("action" => "pricelist_map_products('". Fresh::getPost() ."')"));

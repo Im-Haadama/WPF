@@ -91,21 +91,6 @@ order by 1;");
 	{
 		$current = self::CheckInstalled("Fresh", "functions");
 		$db_prefix = GetTablePrefix();
-return;
-		if (get_user_id() != 1) return false;
-
-		$sql = "select id, supplier_product_name from im_supplier_mapping";
-		$result = SqlQuery($sql);
-		while ($row = SqlFetchAssoc($result)){
-			$id = $row['id'];
-			$supplier_prod_name = $row['supplier_product_name'];
-			$sql = "update im_supplier_mapping set supplier_product_name = '" . Fresh_Pricelist::StripProductName($row['supplier_product_name']) . "' 
-			where id = $id";
-			print "$supplier_prod_name $sql<br/>";
-		}
-
-//		SqlQuery("alter table ${db_prefix}payment_info DROP CVV_number;");
-//		SQLQuery("delete from wp_postmeta where meta_key = 'cvv_number'");
 
 		if ($current == $version and ! $force) return true;
 
@@ -499,6 +484,8 @@ charset=utf8;");
 		$current = self::CheckInstalled("Fresh", "functions");
 		$db_prefix = GetTablePrefix();
 
+		if ($current == $version and ! $force) return true;
+
 		SqlQuery("drop function supplier_last_pricelist_date;");
 
 		SqlQuery("create function supplier_last_pricelist_date(_supplier_id int) returns date
@@ -507,7 +494,6 @@ charset=utf8;");
 		select max(date) into _date from im_supplier_price_list where supplier_id = _supplier_id;
 		return _date;
 		END");
-		if ($current == $version and ! $force) return true;
 
 		SqlQuery("drop function client_id_from_delivery");
 		SqlQuery("create  function client_id_from_delivery(del_id int) returns text

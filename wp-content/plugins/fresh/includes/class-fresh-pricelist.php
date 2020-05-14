@@ -605,11 +605,13 @@ class Fresh_PriceList {
 			"איכות",
 			"יצוא",
 			"יחידה",
+			"מקומי",
 			"ליח",
 			"יח",
+			"י",
 			"ייבוא",
 			"יבוא" ) as $word_to_remove ) {
-			$name = str_replace( "$word_to_remove", " ", $name );
+			$name = str_replace( " $word_to_remove ", " ", $name );
 		}
 		$name = trim($name, ' ');
 		$name = preg_replace('!\s+!', ' ', $name);//str_replace('  ', ' ', $name);

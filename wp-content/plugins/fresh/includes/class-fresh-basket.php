@@ -227,6 +227,7 @@ class Fresh_Basket extends  Fresh_Product  {
 		$args["post_file"] = "/wp-content/plugins/fresh/post.php";
 		$args["id_field"] = "product_id";
 		$args["selectors"] = array("product_id" => "Fresh_Product::gui_select_product");
+		$args["links"] = array("product_id" => "/wp-admin/post.php?post=%d&action=edit&classic-editor");
 		$args["header_fields"] = array("Product", "Quantity", "Price", "Line total");
 		$args["add_checkbox"] = true;
 		$args["edit"] = false;

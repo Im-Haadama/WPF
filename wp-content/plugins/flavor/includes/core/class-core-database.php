@@ -4,6 +4,10 @@ class Core_Database
 {
 	function install($version, $force = false)
 	{
+		if (! function_exists("get_user_id")) return;
+
+		if (get_user_id() != 1) return;
+
 		// Create im_info table if missing.
 		self::CreateInfo();
 

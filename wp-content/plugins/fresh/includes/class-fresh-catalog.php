@@ -137,13 +137,10 @@ class Fresh_Catalog {
 		self::RemoveOldMap( $product_id, $pricelist_id );
 
 		$pricelist = Fresh_PriceList::Get( $pricelist_id );
-		// var_dump($pricelist);
 
 		$supplier_id = $pricelist["supplier_id"];
 		$Supplier = new Fresh_Supplier($supplier_id);
-		// var_dump($supplier_id);
 		$supplier_product_name = $pricelist["product_name"];
-		// var_dump($supplier_product_name);
 
 		$sql = "INSERT INTO im_supplier_mapping (product_id, supplier_id, supplier_product_name, supplier_product_code, pricelist_id)"
 		       . "VALUES (' "
@@ -249,7 +246,6 @@ class Fresh_Catalog {
 		$alternatives = self::alternatives( $prod_id, $details );
 		if ( $debug_product == $prod_id ) {
 			print "count= " . count( $alternatives ) . "<br/>";
-			// var_dump( $alternatives );
 		}
 
 		// If no alternative to a variation, check alternative from parent
@@ -298,10 +294,6 @@ class Fresh_Catalog {
 			return true;
 		}
 		$best = Fresh_Catalog::best_alternative( $prod_id); // $alternatives, $debug_product == $prod_id );
-		if ( $prod_id == $debug_product ) {
-			print "best:<br/>";
-			var_dump( $best );
-		}
 		$best_price       = $best->getSellPrice();
 		$best_supplier    = $best->getSupplierId();
 		$best_pricelistid = $best->getId();
@@ -333,7 +325,6 @@ class Fresh_Catalog {
 			$status .= "משנה לספק " . get_supplier_name( $best_supplier );
 		}
 
-		// var_dump($alternatives);
 		$line .= Core_Html::gui_cell( $status );
 
 		// ???????
@@ -358,10 +349,7 @@ class Fresh_Catalog {
 	}
 
 	static function SelectOption( $product_id, $pricelist_id ) {
-		// print "select ";
 		$pricelist = Fresh_PriceList::Get( $pricelist_id );
-		// var_dump($pricelist);
-		// print "pricelist:get " . $pricelist ;
 		$Supplier = new Fresh_Supplier($pricelist["supplier_id"]);
 		$Product = new Fresh_Product($product_id);
 
@@ -510,7 +498,6 @@ class Fresh_Catalog {
 			}
 		}
 
-		if ($debug) var_dump($result_ids);
 		return $result_ids;
 	}
 
@@ -690,7 +677,7 @@ class Fresh_Catalog {
 		print $result;
 	}
 
-	static function best_alternative($prod_id)
+	static function best_alternative($prod_id) : ?Fresh_Pricelist_Item
 	{
 		$alternatives = self::alternatives($prod_id);
 		$min  = 1111111;
@@ -707,20 +694,13 @@ class Fresh_Catalog {
 		return $best;
 	}
 
-	static function alternatives( $prod_id, $details = false, $supplier_id = null )
+	static function alternatives( $prod_id, $details = false)
 	{
-		global $debug_product;
-		$debug_product = 3747;
-
-		// prof_flag("start " . $id);
 		if ( ! is_numeric($prod_id) or !( $prod_id > 0 ) ) {
 			print debug_trace(6);
 			return null;
 		}
 
-		if ( $prod_id == $debug_product ) {
-			print "Alternatives<br/>";
-		}
 		// Search by pricelist_id
 		$sql = "select price, supplier_id, id, sale_price " .
 		       " from im_supplier_price_list " .
@@ -740,10 +720,8 @@ class Fresh_Catalog {
 				if ( $details ) {
 					$output .= get_supplier_name( $row[1] ) . " " . $row[0] . ", ";
 				}
-				// Todo: handle priority
-				// array_push($row, get_supplier_priority($row[1]));
-				// array_push( $rows, $row );
 				$n = new Fresh_Pricelist_Item( $row[2] );
+//				print "adding1 pl $row[2]<br/>";
 				array_push( $rows, $n);
 			}
 		}
@@ -763,11 +741,6 @@ class Fresh_Catalog {
 		$c      = 0;
 		while ( $row = mysqli_fetch_row( $result ) ) {
 			$supplier_id = $row[1];
-			if ( $prod_id == $debug_product ) {
-				print $c ++ . ")";
-				var_dump( $row );
-				print "<br/>";
-			}
 			$found = false;
 			// Don't repeat alternatives
 			for ( $i = 0; $i < count( $rows ); $i ++ ) {
@@ -780,6 +753,7 @@ class Fresh_Catalog {
 					$output .= get_supplier_name( $row[1] ) . " " . $row[0] . ", ";
 				}
 				// array_push( $rows, $row );
+//				print "adding2 pl " . $row[2] . "<br/>";
 				array_push( $rows, new Fresh_Pricelist_Item( $row[2]));
 			}
 		}
@@ -795,28 +769,19 @@ class Fresh_Catalog {
 	}
 
 	static function upload_image( $post_id, $image ) {
-//		print "post id: " . $post_id . "<br/>";
-//		print "image: " . $image . "<br/>";
 		$get = wp_remote_get( $image );
 
 		$type = wp_remote_retrieve_header( $get, 'content-type' );
 
-//		print "type: $type<br/>";
 		if ( $type ) {
 			$mirror = wp_upload_bits( basename( $image ), '', wp_remote_retrieve_body( $get ) );
-//			print "mirror: <br/>";
-//			var_dump( $mirror );
 			if (isset($mirror['error'])) return false;
-//			print "<br/>";
-
 			$attachment = array(
 				'post_title'     => basename( $image ),
 				'post_mime_type' => $type
 			);
 
 			$attachment_id = wp_insert_attachment( $attachment, $mirror['file'], $post_id );
-
-//			print "attach_id: " . $attachment_id . "<br/>";
 
 			wp_generate_attachment_metadata( $attachment_id, $mirror['file'] );
 

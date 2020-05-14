@@ -103,7 +103,10 @@ class Fresh_Pricing {
 //	}
 
 	static function get_buy_price( $prod_id, $supplier_id = 0 ) {
+		if (! ($prod_id > 0)) return -1;
 		$p = new Fresh_Product($prod_id);
+
+		// If it's a basket, sum basket items.
 		if ($p->is_basket())
 		{
 			$buy = 0;
@@ -116,16 +119,26 @@ class Fresh_Pricing {
 			}
 			return $buy;
 		}
-		// print $supplier_id . "<br/>";
-		if ( $prod_id > 0 ) {
-			if ( $supplier_id > 0 ) {
-				$a = Fresh_Catalog::alternatives( $prod_id );
-				foreach ( $a as $s )
-					if ( $s->getSupplierId() == $supplier_id ) return $s->getPrice();
-			}
 
-			return get_postmeta_field( $prod_id, 'buy_price' );
+		// If supplier know get price thru mapping.
+		if ( $supplier_id > 0 ) {
+			$sql = "select pricelist_id from im_supplier_mapping
+			where prod_id = $prod_id and supplier_id = $supplier_id";
+			print $sql . "<br/>";
+			$pl_id = SqlQuerySingleScalar( $sql );
+			if ( $pl_id ) {
+				$pl_item = new Fresh_Pricelist_Item( $pl_id );
+
+				return $pl_item->getPricePerDate();
+			}
 		}
+		// Try thru mapping
+		$a = Fresh_Catalog::best_alternative( $prod_id );
+		if ($a)
+			return $a->getPrice();
+
+		$p = get_postmeta_field( $prod_id, 'buy_price' );
+		if ($p > 0) return $p;
 
 		return - 1;
 	}
