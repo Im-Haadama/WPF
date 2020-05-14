@@ -99,8 +99,7 @@ class Finance_Clients
 
 			$line .= "<td>" . $row[4] . "</td>";
 			$line .= "<td>" . Finance_Payment_Methods::get_payment_method_name( $payment_method ) . "</td>";
-			$has_credit_info = (SqlQuerySingleScalar( "select count(*) from im_payment_info where card_number not like '%X%' and email = " . QuoteText($C->get_customer_email())) > 0 ? 'C' : '') .
-			                   (SqlQuerySingleScalar( "select count(*) from im_payment_info where card_number like '%X%' and email = " . QuoteText($C->get_customer_email())) > 0 ? 'X' : '');
+			$has_credit_info = Finance_Yaad::getCustomerStatus($customer_id, true);
 			$has_token = (get_user_meta($customer_id, 'credit_token', true) ? 'T' : '');
 			$line .= "<td>" . $has_credit_info . " " . $has_token . "</td>";
 
@@ -203,7 +202,8 @@ class Finance_Clients
 		$result .= Core_Html::GuiHeader( 2, __( "Balance" ) . ": " .
 		                                    SqlQuerySingleScalar( "SELECT round(sum(transaction_amount), 1) FROM im_client_accounts WHERE client_id = " . $customer_id ) );
 
-		$result .= Core_Html::GuiButton("btn_pay", " בצע חיוב על היתרה", array("action"=>"pay_credit_client('" . Finance::getPostFile() . "', $customer_id)"));
+		$result .= self::PaymentBox($u);
+
 		$result .= '<div id="logging"></div>';
 
 		$args   = array( "post_file" => Finance::getPostFile(), "class" => "widefat" );
@@ -437,6 +437,20 @@ class Finance_Clients
 		return $doc_id;
 	}
 
+	static function PaymentBox(Fresh_Client $C )
+	{
+		$status = Finance_Yaad::getCustomerStatus($C, false);
+		if (! $status) return "";
+
+		$result = "<div>";
+		$result .= Core_Html::GuiHeader(1, "בצע תשלום");
+		$result .= "מספר תשלומים: " . Core_Html::GuiInput("btn_number", 1) ."<br/>";
+
+		$result .= Core_Html::GuiButton("btn_pay", " בצע חיוב על היתרה", array("action"=>"pay_credit_client('" . Finance::getPostFile() . "', " . $C->getUserId()));
+		$result .= "</div>";
+
+		return $result;
+	}
 
 	static function getLink($client_id) {
 		return "/wp-admin/users.php?page=client-accounts&id=$client_id";

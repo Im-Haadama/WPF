@@ -89,6 +89,16 @@ class Finance_Yaad {
 //		}
 	}
 
+	static function getCustomerStatus($C, $string)
+	{
+		if ($string)
+			return (SqlQuerySingleScalar( "select count(*) from im_payment_info where card_number not like '%X%' and email = " . QuoteText($C->get_customer_email())) > 0 ? 'C' : '') .
+			(SqlQuerySingleScalar( "select count(*) from im_payment_info where card_number like '%X%' and email = " . QuoteText($C->get_customer_email())) > 0 ? 'X' : '');
+		else
+			return (SqlQuerySingleScalar( "select count(*) from im_payment_info where card_number not like '%X%' and email = " . QuoteText($C->get_customer_email())) > 0 ? 1 : 0) +
+			       (SqlQuerySingleScalar( "select count(*) from im_payment_info where card_number like '%X%' and email = " . QuoteText($C->get_customer_email())) > 0 ? 2 : 0);
+
+	}
 	function pay_user_credit(Fresh_Client $user, $account_line_ids, $amount, $change)
 	{
 		MyLog(__FUNCTION__ . " " . $user->getName() . " " . $amount);
