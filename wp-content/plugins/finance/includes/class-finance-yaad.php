@@ -98,9 +98,12 @@ class Finance_Yaad {
 
 		$token = get_user_meta($user->getUserId(), 'credit_token', true);
 
-		$credit_data = SqlQuerySingleAssoc( "select * from im_payment_info where email = " . QuoteText($user->get_customer_email()) .
-		                                    " and card_number not like '%X%'");
-		if (! $credit_data) return false;
+		$credit_data = SqlQuerySingleAssoc( "select * from im_payment_info where email = " . QuoteText($user->get_customer_email()));
+		// .                                    " and card_number not like '%X%'");
+		if (! $credit_data) {
+			MyLog("no credit info found");
+			return false;
+		}
 
 		if ($token) {
 			$transaction_info = self::TokenPay( $token, $credit_data, $user, $amount, CommaImplode($account_line_ids) );
