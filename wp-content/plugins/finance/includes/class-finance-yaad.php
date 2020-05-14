@@ -91,18 +91,22 @@ class Finance_Yaad {
 
 	function pay_user_credit(Fresh_Client $user, $account_line_ids, $amount, $change)
 	{
+		MyLog(__FUNCTION__ . " " . $user->getName() . " " . $amount);
 		$debug = false;
 		if (0 == $amount)
 			return true;
-//		$delivery = new Fresh_Delivery($delivery_id);
 
 		$token = get_user_meta($user->getUserId(), 'credit_token', true);
 
-		$credit_data = SqlQuerySingleAssoc( "select * from im_payment_info where email = " . QuoteText($user->get_customer_email()) .
-		                                    " and card_number not like '%X%'");
-		if (! $credit_data) return false;
+		$credit_data = SqlQuerySingleAssoc( "select * from im_payment_info where email = " . QuoteText($user->get_customer_email()));
+		// .                                    " and card_number not like '%X%'");
+		if (! $credit_data) {
+			MyLog("no credit info found");
+			return false;
+		}
 
 		if ($token) {
+			MyLog("trying to pay with token user " . $user->getName());
 			$transaction_info = self::TokenPay( $token, $credit_data, $user, $amount, CommaImplode($account_line_ids) );
 			$transaction_id = $transaction_info['Id'];
 			if (! $transaction_id or ($transaction_info['CCode'] != 0)) return false;
@@ -110,6 +114,7 @@ class Finance_Yaad {
 			$paid = $transaction_info['Amount'];
 			if ($paid) self::RemoveRawInfo($credit_data['id']);
 		} else {
+			MyLog("trying to pay with credit info " . $user->getName());
 			if ($this->debug) print "trying to pay with credit info<br/>";
 			// First pay. Use local store credit info, create token and delete local info.
 			$transaction_info = self::FirstPay($credit_data, $user, $amount, CommaImplode($account_line_ids));

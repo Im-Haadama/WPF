@@ -231,7 +231,6 @@ class Finance {
 		$change = $amount - $current_total;
 
 		return $this->yaad->pay_user_credit($user, $paying_transactions, $amount, $change);
-
 //		foreach ($delivery_ids as $delivery_id) {
 //			$this->pay_user_credit( $user_id, $delivery_id );
 //			die(0);
@@ -818,6 +817,7 @@ class Finance {
 	{
 		if (defined('INVOICE_USER') and defined('INVOICE_PASSWORD'))
 			new Finance_Invoice4u(INVOICE_USER, INVOICE_PASSWORD);
+		else MyLog("No invoice user or password");
 
 		return true;
 	}
