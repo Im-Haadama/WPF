@@ -8,10 +8,10 @@
 class Fresh_Suppliers {
 	private $gem;
 
-	static function init_hooks()
+	function init_hooks()
 	{
 		AddAction("create_supplies",  "Fresh_Supply::create_supplies");
-		AddAction("gem_v_show", __CLASS__ . "::pricelist_functions");
+		AddAction("gem_v_show", array($this, "pricelist_functions"));
 		AddAction("suppliers_map_products", __CLASS__ . "::suppliers_map_products");
 	}
 
@@ -210,7 +210,6 @@ class Fresh_Suppliers {
 		if ("pricelist" == $table_name){
 			$result .= Core_Html::GuiHyperlink("Create products", AddToUrl( "create_products", 1));
 			$result .= Core_html::GuiButton("btn_map", "Map Products", array("action" => "pricelist_map_products('". Fresh::getPost() ."')"));
-
 		}
 		return $result;
 	}

@@ -592,7 +592,10 @@ class Fresh_PriceList {
 		// trim sadot product name starting with * or **
 		$name = str_replace( array( '!', '.', ',', '*', '\'' ), '', $name );
 		$name = str_replace( array( ')', '(', '-' ), ' ', $name );
-		foreach ( array( "חדשה",
+		foreach ( array(
+			"איכות ייצוא",
+			"איכות יצוא",
+			"חדשה",
 			"מוגבל",
 			"גדול",
 			"טעים",
@@ -600,18 +603,11 @@ class Fresh_PriceList {
 			"חדש",
 			"ויפה",
 			"יפה",
-			"אורגנית",
-			"אורגני",
-			"איכות",
-			"יצוא",
 			"יחידה",
 			"מקומי",
 			"ליח",
-			"יח",
-			"י",
-			"ייבוא",
-			"יבוא" ) as $word_to_remove ) {
-			$name = str_replace( " $word_to_remove ", " ", $name );
+			"יח" ) as $word_to_remove ) {
+			$name = str_replace( " $word_to_remove", " ", $name );
 		}
 		$name = trim($name, ' ');
 		$name = preg_replace('!\s+!', ' ', $name);//str_replace('  ', ' ', $name);

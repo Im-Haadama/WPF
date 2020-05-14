@@ -134,13 +134,13 @@ class Fresh_Catalog {
 	{
 		MyLog( "add_mapping" . $product_id, "catalog-map.php" );
 
-		self::RemoveOldMap( $product_id, $pricelist_id );
+//		self::RemoveOldMap( $product_id, $pricelist_id );
 
 		$pricelist = Fresh_PriceList::Get( $pricelist_id );
 
 		$supplier_id = $pricelist["supplier_id"];
 		$Supplier = new Fresh_Supplier($supplier_id);
-		$supplier_product_name = $pricelist["product_name"];
+		$supplier_product_name = Fresh_Pricelist::StripProductName($pricelist["product_name"]);
 
 		$sql = "INSERT INTO im_supplier_mapping (product_id, supplier_id, supplier_product_name, supplier_product_code, pricelist_id)"
 		       . "VALUES (' "
@@ -441,18 +441,18 @@ class Fresh_Catalog {
 
 	static function GetProdID( $pricelist_id, $include_hide = false ) # Returns prod id if this supplier product mapped
 	{
-		$debug = false;
+		$debug = false; // ($pricelist_id == 750390);
 		if ( $debug ) {
 			MyLog("debugging pricelist id $pricelist_id");
 			$debug = true;
 		}
 
 		$result_ids = array();
+
 		// find products mapped by id.
 		$sql = "SELECT product_id, id, supplier_product_name FROM im_supplier_mapping WHERE pricelist_id = " . $pricelist_id;
-		if ( ! $include_hide )
-			$sql .= " AND product_id > 0";
-		// print $sql;
+		if ( ! $include_hide ) $sql .= " AND product_id > 0";
+
 		$result = SqlQuery( $sql );
 		if ( $result ) {
 			while ( $row = mysqli_fetch_row( $result ) ) {
@@ -472,28 +472,18 @@ class Fresh_Catalog {
 
 		if (strlen($product_name)) {
 			$product_name = Fresh_PriceList::StripProductName($product_name, $debug);
-			if ($debug) print " strip name: $product_name";
 			$sql = "SELECT product_id, id FROM im_supplier_mapping " .
 			       " WHERE supplier_product_name like '%$product_name%'" .
 			       " AND supplier_id = " . $result["supplier_id"];
 
-			if ($debug)
-				MyLog($sql);
-			if ( ! $include_hide )
-				$sql .= " and product_id > 0";
+			if ($debug) MyLog($sql);
+			if ( ! $include_hide ) $sql .= " and product_id > 0";
 
-//			print $sql . "<br/>";
 			$result = SqlQuery( $sql );
 			if ( $result ) {
-				{
-					while ( $row = mysqli_fetch_row( $result ) ) {
-						if ( ! in_array( $row[0], $result_ids ) ) {
-							array_push( $result_ids, $row[0] );
-						}
-						if ( $debug ) {
-							MyLog( "name link to $pricelist_id " . $row[0] );
-						}
-					}
+				while ( $row = mysqli_fetch_row( $result ) ) {
+					if ( ! in_array( $row[0], $result_ids ) ) array_push( $result_ids, $row[0] );
+					if ( $debug ) MyLog( "name link to $pricelist_id " . $row[0] );
 				}
 			}
 		}

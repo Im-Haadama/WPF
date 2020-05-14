@@ -48,18 +48,11 @@ class Fresh_Pricelist_Item {
 		$this->picture_path          = $result["picture_path"];
 	}
 
-	public function getPricePerDate($date = null)
+	public function getPreviousPrice()
 	{
-		$sql = "select price from im_supplier_price_list
-				where product_name like '%" . Fresh_PriceList::StripProductName($this->product_name) ."%'";
-		if ($date) $sql .= "and date <= '" . $date . "'";
-		$sql .= " order by date desc limit 1";
-//		print $sql . "<br/>";
-		$p = SqlQuerySingleScalar($sql);
-//		if ($this->id == 749832)
-//			print $sql . " $p<br/>";
-		return $p;
+		return $this->getPrice();
 	}
+
 
 	/**
 	 * @return mixed
@@ -151,32 +144,21 @@ class Fresh_Pricelist_Item {
 		$catalog = new Fresh_Catalog();
 
 		$link_data = $catalog->GetProdID( $this->id);
-		$linked_prod_id   = "";
-		$map_id    = "";
-//		$row['product_name'] = Fresh_Pricelist::StripProductName($row['product_name']);
 		if ( $link_data ) {
 			$price = $row['price'];
 			$date = $row['date'];
 			$previous_date = SqlQuerySingleScalar("select date from im_supplier_price_list where supplier_id = $supplier_id and date < '" . $date . "' order by date desc limit 1");
 			if ($create_info) return null; // Show just new products (not mapped).
+
 			$linked_prod_id = $link_data[0];
 			$p       = new Fresh_Product( $linked_prod_id );
 			$map_id  = null;
-
-			if ( isset( $link_data[1] ) ) {
-				$map_id = $link_data[1];
-			}
-			// print $prod_id . " " . $map_id . "<br/>";
-//			if ($create_option) continue; // Show only non linked products.
-//			if ( $ordered_only and ! isset( $needed_products[ $prod_id ][0] ) and ! isset( $needed_products[ $prod_id ][1] ) ) continue;
-//			if ( $need_supply_only and ( $needed_products[ $prod_id ][0] <= $p->getStock() ) ) { continue;
 
 			$color = $this->get_prod_color($date, $previous_date);
 			if ($color)
 				$row['price'] = Core_Html::GuiDiv("", $row['price'], array("style" => "background-color: $color"));
 			array_push( $row, $p->getName() );
-//			array_push( $row, ($edit ? Core_Html::GuiInput("prc_$pl_id", $p->getPrice()) : $p->getPrice()));
-			array_push( $row, Fresh_Pricing::calculate_price($this->getPricePerDate($date), $supplier_id));
+			array_push( $row, Fresh_Pricing::calculate_price($this->getPrice(), $supplier_id));
 			$style = null;
 			if ($p->getPrice() < $price) $style = "background-color: #EC7063";
 			array_push( $row, Core_Html::GuiInput("prc_$linked_prod_id", $p->getPrice(),
@@ -185,9 +167,6 @@ class Fresh_Pricelist_Item {
 					"style" => $style)));
 			array_push( $row, Core_Html::GuiInput("sal_$linked_prod_id", $p->getSalePrice(),
 				array("events"=>array("onchange=\"product_change_saleprice('" . Fresh::getPost() . "', $linked_prod_id)\"", 'onkeypress="moveNext(this)"'), "size"=>5)));
-			$stockManaged = $p->getStockManaged();
-//			array_unshift( $row, gui_checkbox( "chm_" . $linked_prod_id, "stock", $stockManaged, "onchange=\"change_managed(this)\")" ) );
-//			array_push( $row, Core_Html::GuiLabel( "stk_" . $linked_prod_id, Core_Html::GuiHyperlink( $p->getStock(), "../orders/get-orders-per-item.php?prod_id=" . $linked_prod_id ) ) );
 			$n = Fresh_Packing::orders_per_item( $linked_prod_id, 1, true, true, true );
 			array_push( $row, $n );
 		} else {
@@ -195,23 +174,20 @@ class Fresh_Pricelist_Item {
 				array_push($row, Fresh_Category::Select("categ_" . $row['id'], "categories", null));
 				array_push($row, Core_Html::GuiButton("btn_" . $row['id'], "Add Product", array("action" => "create_product('". Fresh::getPost() ."', $supplier_id, " . $row['id'] .")")));
 			} else {
-//				var_dump($row);
 				array_push($row, Fresh_Product::gui_select_product("prd" . $this->id, "", array("events" => 'onchange=pricelist_option_selected(this)')),
 				"",
 				"",
 				"",
 				"");
-//					self::prod_options($row['product_name'], $pl_id));
-
 			}
 		}
 		return $row;
 	}
 
-	function get_prod_color($current, $previous)
+	function get_prod_color()
 	{
-		$current_price = self::getPricePerDate($current);
-		$prev_price = self::getPricePerDate($previous);
+		$current_price = self::getPrice();
+		$prev_price = self::getPreviousPrice();
 		$color = "white";
 		if (! $prev_price) $color = 'lightgreen';
 		else

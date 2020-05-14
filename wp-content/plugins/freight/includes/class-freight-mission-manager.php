@@ -16,8 +16,67 @@ class Freight_Mission_Manager
 		add_action('get_local_anonymous', __CLASS__ . "::get_local_missions");
 		add_action('delivered', array(__CLASS__, "delivered_wrap"));
 		add_action('sync_data_mission', array(__CLASS__, "sync_data_mission"));
+		add_action('download_mission', array(__CLASS__, 'download_mission'));
 	}
 
+	static function download_mission()
+	{
+		$id = GetParam("id", true, "");
+		$file = self::getCSV($id);
+		$date = date('Y-m-d');
+		$file_name = "mission_${id}_${date}.csv";
+
+		header("Content-Disposition: attachment; filename=\"" . $file_name . "\"");
+		header("Content-Type: application/octet-stream");
+		header("Content-Length: " . strlen($file));
+		header("Connection: close");
+		print $file;
+		die (0);
+	}
+
+	static function getCSV($the_mission)
+	{
+		$path_info = array(array("external_id",
+			"task_note",
+			"customer_phone",
+			"customer_first_name",
+			"customer_address_part_1",
+			"customer_address_part_2",
+			));
+
+		$supplies_to_collect = array();
+
+		self::prepare_route($the_mission, $path, $lines_per_station, $supplies_to_collect, false);
+
+		if (! $path or ! count($path))
+			return;
+
+		for ( $i = 0; $i < count( $path ); $i ++ ) {
+			foreach ( $lines_per_station[ $path[ $i ] ] as $line_array ) {
+				$order_info = $line_array[2];
+				$order_id = $line_array[1];
+				$order_pri = self::order_get_pri($order_id, $order_info['site_id']);
+				$type      = "orders";
+				if ( $order_info['site'] == "supplies" ) $type = "supplies"; else if ( $order_info['site'] == "משימות" )$type = "tasklist";
+				$site_id = $order_info['site_id'];
+				array_push($path_info,
+					array($order_id,
+						"comments",
+						$order_info['phone'],
+						$order_info['user_id'],
+						$order_info['customer'],
+						$path[$i],
+						$order_info['address_2']));
+			}
+		}
+
+		$result = "";
+		foreach ($path_info as $row) {
+			$result .= CommaImplode( $row) . PHP_EOL;
+		}
+
+		return $result;
+	}
 	static function sync_data_mission()
 	{
 		$table = "missions";
@@ -71,8 +130,6 @@ class Freight_Mission_Manager
 
 		$result = "";
 
-		if (! $query) $week = date('Y-m-d', strtotime('last sunday'));
-
 		$sql = "select id from im_missions where " . $query; // FIRST_DAY_OF_WEEK(date) = " . quote_text($week);
 
 		$missions = SqlQueryArrayScalar($sql);
@@ -94,7 +151,6 @@ class Freight_Mission_Manager
 
 		$args["links"] = array("id" => AddToUrl( "id", "%s"));
 
-		// $args["events"] = array("mission_id" => "mission_changed(order_id))
 		$args["sql"] = $sql;
 		$args["hide_cols"] = array("zones_times"=>1);
 		$args["class"] = "sortable";
@@ -155,6 +211,7 @@ class Freight_Mission_Manager
 			$price = $m->getDefaultFee();
 			$result .= Core_Html::GuiHeader(2, $m->getMissionName() . "($id)");
 			$result .= self::dispatcher($id, $operation);
+			$result .= Core_Html::GuiHyperlink("Download as csv", Freight::getPost() . "?operation=download_mission&id=$id");
 			$result .= self::add_delivery($price);
 			print $result;
 			return;
@@ -166,7 +223,7 @@ class Freight_Mission_Manager
 
 	}
 
-	static function dispatcher($the_mission, $operation = null)
+	static function dispatcher($the_mission)
 	{
 		$lines_per_station = array();
 		$supplies_to_collect = array();
@@ -223,7 +280,7 @@ class Freight_Mission_Manager
 		return $result;
 	}
 
-	static function prepare_route($the_mission, &$path, &$lines_per_station, $supplies_to_collect) {
+	static function prepare_route($the_mission, &$path, &$lines_per_station, $supplies_to_collect, $headers = true) {
 		$debug  = false;
 		$update = false;
 		require_once( ABSPATH . 'vendor/simple_html_dom.php' );
@@ -304,17 +361,11 @@ class Freight_Mission_Manager
 		}
 
 		foreach ( $data_lines as $mission_id => $data_line ) {
-			$add_on_the_way      = "";
-
-			//    $mission_id = 152;
-			//    $data_line = $data_lines[152];1
-			//    if (1){
 			if ( ! ( $mission_id > 0 ) ) continue;
-			//        die ("no mission id");
 
 			$mission = Mission::getMission( $mission_id );
 
-			if ( ! $update ) {
+			if ($headers and ! $update ) {
 				print Core_Html::gui_header( 1, $mission->getMissionName(), true, true ) . "(" . Core_Html::gui_label( "mission_id", $mission_id ) . ")";
 
 				$events = "onfocusout='update()'";

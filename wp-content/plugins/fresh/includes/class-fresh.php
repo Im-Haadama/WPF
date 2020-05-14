@@ -199,7 +199,6 @@ class Fresh {
 		$this->loader->add_action( 'wp_enqueue_scripts', $inventory, 'enqueue_scripts' );
 
 		Fresh_Packing::init_hooks();
-		Fresh_Suppliers::init_hooks();
 		Fresh_Order_Management::init_hooks();
 		Fresh_Catalog::init_hooks();
 		Fresh_Client::init_hooks();
@@ -494,6 +493,7 @@ class Fresh {
 		$shortcodes->add($this->totals->getShortcodes());
 		$shortcodes->add($this->client_views->getShortcodes());
 
+		$this->suppliers->init_hooks();
 		$this->suppliers->init();
 		Fresh_Basket::init();
 		$this->delivery_manager->init();
@@ -729,14 +729,15 @@ function content_func( $atts, $contents, $tag )
 
 function im_woocommerce_update_price()
 {
-	MyLog( "cart start" );
-	// TWEEK. Don't know why menu_op calls this method.
-	// DONT remove without trying menu.php and cart.
 	if (! SqlQuerySingleScalar("select 1")) {
 		MyLog ("not connected to db");
 		return;
 	}
-	if (! function_exists('get_user_id') or ! get_user_id()) return;
+	if (! function_exists('get_user_id') or ! get_user_id()) {
+		MyLog( "cart start " . $_SERVER['REMOTE_ADDR']);
+		return;
+	}
+	MyLog("cart start " . get_user_id());
 	$user_id = get_user_id();
 	$user = new Fresh_Client($user_id );
 	$client_type = $user->customer_type( );
