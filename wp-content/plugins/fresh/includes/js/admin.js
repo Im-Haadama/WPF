@@ -147,3 +147,13 @@ function moveNext(element)
     if (undefined != table.rows[row_index+1].cells[col_index].firstElementChild)
         table.rows[row_index+1].cells[col_index].firstElementChild.focus();
 }
+
+function account_add_transaction(post_file, customer_id) {
+    let type = document.getElementById("transaction_type").value;
+    let amount = document.getElementById("transaction_amount").value;
+    let date = document.getElementById("transaction_date").value;
+    let ref = document.getElementById("transaction_ref").value;
+    let request = post_file + "?operation=account_add_trans&customer_id=" + customer_id +"&type=" + type + "&amount=" + amount + "&date=" + date + "&ref=" + ref;
+
+    execute_url(request, location_reload);
+}

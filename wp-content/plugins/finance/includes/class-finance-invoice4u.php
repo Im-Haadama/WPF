@@ -77,6 +77,7 @@ class Finance_Invoice4u
 
 	private function requestWS( $wsdl, $service, $params )
 	{
+		MyLog(__FUNCTION__, $service, 'invoice4u.log');
 		if (! defined('WSDL_CACHE_NONE')) return null;
 		try {
 			$options = array(
@@ -97,6 +98,7 @@ class Finance_Invoice4u
 			$this->result = $response->$service;
 
 			// print $response->$service;
+			MyLog("done", "Invoice4u", 'invoice4u.log');
 
 			return $this->result;
 		} catch ( SoapFault $f ) {

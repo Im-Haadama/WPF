@@ -105,7 +105,7 @@ class Fresh_Client {
 		       . "VALUES (" . $this->user_id . ", \"" . $date . "\", " . $amount . ", \"" . $type . "\", " . $ref . ")";
 
 		MyLog( $sql, "account_add_transaction" );
-		SqlQuery( $sql );
+		return SqlQuery( $sql );
 	}
 
 	function update_transaction( $total, $delivery_id) {

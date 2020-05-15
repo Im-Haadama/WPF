@@ -5,7 +5,6 @@ if (! class_exists("Core_Database"))
 
 class Fresh_Database extends Core_Database
 {
-
 	static function CreateViews($version, $force )
 	{
 		$current = self::CheckInstalled("Fresh", "views");

@@ -45,25 +45,6 @@ if ( ! $manager ) {
         var site_url = <?php print '"' . get_site_url() . '"';?>;
         var key = '<?php print get_key(); ?>';
 
-        function addTransaction() {
-            var type = document.getElementById("transaction_type").value;
-            var amount = document.getElementById("transaction_amount").value;
-            var date = document.getElementById("transaction_date").value;
-            var ref = document.getElementById("transaction_ref").value;
-            var request = site_url + "/fresh/account/account-add-trans.php?customer_id=" + <?php print $customer_id ?>
-                +"&type=" + type + "&amount=" + amount + "&date=" + date + "&ref=" + ref;
-            // window.alert(request);
-            xmlhttp = new XMLHttpRequest();
-            xmlhttp.onreadystatechange = function () {
-                // Wait to get query result
-                if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
-                {
-                    updateDisplay();
-                }
-            }
-            xmlhttp.open("GET", request, true);
-            xmlhttp.send();
-        }
 
         function updateDisplayTrans() {
             xmlhttp1 = new XMLHttpRequest();

@@ -22,6 +22,7 @@ class Finance {
 	protected $yaad;
 	protected $clients;
 	protected $admin_notices;
+	protected $database;
 
 	/**
 	 * Plugin version.
@@ -144,6 +145,9 @@ class Finance {
 
 		GetSqlConn( ReconnectDb() );
 
+		$this->database= new Finance_Database();
+		$this->database->install($this->version);
+
 		self::install( $this->version );
 
 		add_action( 'after_setup_theme', array( $this, 'setup_environment' ) );
@@ -151,7 +155,7 @@ class Finance {
 		add_action( 'init', array( $this, 'init' ), 0 );
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
 		add_action( 'admin_notices', array($this, 'admin_notices') );
-		add_filter('pay_user_credit', array($this, 'pay_user_credit_wrap'));
+		add_filter( 'pay_user_credit', array($this, 'pay_user_credit_wrap'), 10, 3);
 
 		// Admin menu
 		add_action( 'admin_menu', __CLASS__ . '::admin_menu' );
@@ -175,7 +179,7 @@ class Finance {
 		$this->payments = Finance_Payments::instance();
 	}
 
-	function pay_user_credit_wrap($customer_id, $amount = 0)
+	function pay_user_credit_wrap($customer_id, $amount, $payment_number)
 	{
 		MyLog(__FUNCTION__ . " $customer_id");
 
@@ -230,7 +234,7 @@ class Finance {
 
 		$change = $amount - $current_total;
 
-		return $this->yaad->pay_user_credit($user, $paying_transactions, $amount, $change);
+		return $this->yaad->pay_user_credit($user, $paying_transactions, $amount, $change, $payment_number);
 //		foreach ($delivery_ids as $delivery_id) {
 //			$this->pay_user_credit( $user_id, $delivery_id );
 //			die(0);
@@ -771,9 +775,11 @@ class Finance {
 	function pay_credit_wrapper() {
 		MyLog(__FUNCTION__);
 		$users = explode( ",", GetParam( "users", true, true ) );
+		$payment_number = GetParam("number", false, 1);
+		$amount = GetParam("amount", false, 0);
 
 		foreach ( $users as $user ) {
-			$rc = apply_filters( 'pay_user_credit', $user );
+			$rc = apply_filters( 'pay_user_credit', $user, $amount, $payment_number );
 			if ( ! $rc ) {
 				return false;
 			}

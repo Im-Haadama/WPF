@@ -28,8 +28,22 @@ class Finance_Clients
 	public function init_hooks()
 	{
 		AddAction("get_client_open_account", array($this, 'get_client_open_account'));
+		AddAction("account_add_trans", array($this, 'add_trans'));
 	}
 
+	function add_trans()
+	{
+		$customer_id = $_GET["customer_id"];
+		$amount      = $_GET["amount"];
+		$date        = $_GET["date"];
+		$ref         = $_GET["ref"];
+		$type        = $_GET["type"];
+
+		$u = new Fresh_Client($customer_id);
+		return $u->add_transaction($date, $amount, $ref, $type);
+
+//		account_add_transaction( $customer_id, $date, $amount, $ref, $type );
+	}
 	function get_client_open_account()
 	{
 		if (! $this->multisite)
@@ -99,7 +113,7 @@ class Finance_Clients
 
 			$line .= "<td>" . $row[4] . "</td>";
 			$line .= "<td>" . Finance_Payment_Methods::get_payment_method_name( $payment_method ) . "</td>";
-			$has_credit_info = Finance_Yaad::getCustomerStatus($customer_id, true);
+			$has_credit_info = Finance_Yaad::getCustomerStatus($C, true);
 			$has_token = (get_user_meta($customer_id, 'credit_token', true) ? 'T' : '');
 			$line .= "<td>" . $has_credit_info . " " . $has_token . "</td>";
 
@@ -161,8 +175,7 @@ class Finance_Clients
 			array( "דואל", $u->get_customer_email() ),
 			array( "טלפון", $u->get_phone_number() ),
 			array( "מספר מזהה", Core_Html::gui_label( "invoice_client_id", $invoice_client_id ) ),
-			array(
-				"אמצעי תשלום",
+			array( "אמצעי תשלום",
 				Finance_Payment_Methods::gui_select_payment( "payment", "onchange=\"save_payment_method('".Finance::getPostFile()."', $customer_id)\"", $u->get_payment_method() )
 			)
 		), "customer_details", array( "class" => "widefat" ) );
@@ -202,16 +215,17 @@ class Finance_Clients
 		$result .= Core_Html::GuiHeader( 2, __( "Balance" ) . ": " .
 		                                    SqlQuerySingleScalar( "SELECT round(sum(transaction_amount), 1) FROM im_client_accounts WHERE client_id = " . $customer_id ) );
 
-		$result .= self::PaymentBox($u);
+		$result .= Core_Html::GuiTabs(array(array("Credit pay", "Credit pay", self::PaymentBox($u)),
+			array("Add document", "Add document", self::AddDocumentBox($u))),
+			array("tabs_load_all"=>true));
 
 		$result .= '<div id="logging"></div>';
 
-		$args   = array( "post_file" => Finance::getPostFile(), "class" => "widefat" );
-		$result .= Fresh_Client_Views::show_trans( $customer_id, TransView::default, $args );
+		$args   = array( "post_file" => Finance::getPostFile());
+		$result .= Fresh_Client_Views::show_trans( $customer_id, TransView::admin, $args );
 
 		return $result;
 	}
-
 
 	/**
 	 * Gets row ids of client transactions to create invoice receipt.
@@ -444,9 +458,9 @@ class Finance_Clients
 
 		$result = "<div>";
 		$result .= Core_Html::GuiHeader(1, "בצע תשלום");
-		$result .= "מספר תשלומים: " . Core_Html::GuiInput("btn_number", 1) ."<br/>";
+		$result .= "מספר תשלומים: " . Core_Html::GuiInput("payment_number", 1) ."<br/>";
 
-		$result .= Core_Html::GuiButton("btn_pay", " בצע חיוב על היתרה", array("action"=>"pay_credit_client('" . Finance::getPostFile() . "', " . $C->getUserId()));
+		$result .= Core_Html::GuiButton("btn_pay", " בצע חיוב על היתרה", array("action"=>"pay_credit_client('" . Finance::getPostFile() . "', " . $C->getUserId() . ")"));
 		$result .= "</div>";
 
 		return $result;
@@ -478,5 +492,18 @@ class Finance_Clients
 )
 charset=utf8;
 ");
+	}
+
+	static function AddDocumentBox(Fresh_Client $u)
+	{
+		return Core_Html::gui_table_args( array(
+			array( "סוג פעולה", "סכום", "תאריך", "מזהה" ),
+			array(
+				'<input type="text" id="transaction_type">',
+				'<input type="text" id="transaction_amount">',
+				'<input type="date" id="transaction_date">',
+				'<input type="text" id="transaction_ref">'
+			)
+		) ) . '<button id="btn_add" onclick="account_add_transaction(\'' . Finance::getPostFile() . '\',' . $u->getUserId() . ')">הוסף תנועה</button>';
 	}
 }

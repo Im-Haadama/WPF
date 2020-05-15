@@ -104,11 +104,12 @@ function pay_credit(post_file)
 function pay_credit_client(post_file, user)
 {
     disable_btn("btn_pay");
-    let number = get_value_by_name("payment_number");
 
     let request = post_file + '?operation=pay_credit&users='+user;
 
-    if (number > 0 ) request += '&number=' + number;
+    let number = get_value_by_name("payment_number");
+    if (number > 0) request += '&number=' + number;
+
     execute_url(request, location_reload);
 }
 

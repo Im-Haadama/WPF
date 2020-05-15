@@ -40,6 +40,8 @@ function QuoteDate($date, $format = 'Y-m-d')
 	return "'" . date($format, $date) . "'";
 }
 
+require_once (ABSPATH . '/wp-includes/pluggable.php');
+
 	function get_user_id( $force_login = false ) {
 		if ( function_exists( 'wp_get_current_user' ) ) {
 			$current_user = wp_get_current_user();
@@ -52,8 +54,6 @@ function QuoteDate($date, $format = 'Y-m-d')
 
 			return 0;
 		}
-//	print "configuration error. Contact support";
-//	print trace();
 		return 0;
 	}
 

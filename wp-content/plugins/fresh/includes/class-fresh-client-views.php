@@ -280,7 +280,7 @@ class Fresh_Client_Views {
 
 		// Show open deliveries
 		$from_last_zero = false;
-		$edit       = ($view == TransView::admin);
+		$admin       = ($view == TransView::admin);
 
 		$top            = null;
 		$not_paid       = false;
@@ -321,13 +321,12 @@ class Fresh_Client_Views {
 		}
 
 		$args = [];
+		$args["class"] = "widefat";
 		$args["links"] = array();
 		$args["links"]["transaction_ref"] = "/wp-content/plugins/fresh/delivery/get-delivery.php?id=%s";
 			// Todo: Finish step 2: "/delivery?id=%s";
-//		$args["links"]["order"] = "/delivery/order_id=%s";
 		$args["col_ids"] = array("chk", "id", "dat", "amo", "bal", "des", "del", "ord");
-		if (! $edit) unset ($args["col_ids"][0]);
-//	$args["show_cols"] = array(); $args["show_cols"]['id'] = 0;
+		if (! $admin) unset ($args["col_ids"][0]);
 		$args["add_checkbox"] = false; // Checkbox will be added only to unpaid rows
 		$args["post_file"] = Fresh::getPost();
 		$first = true;
@@ -340,25 +339,18 @@ class Fresh_Client_Views {
 		                               "order_id" => "Order",
 		                               "receipt" => "Receipt");
 
-		$args["edit"] = $edit;
-
 		$data1 = Core_Data::TableData($sql, $args);
 
-		if (! $data1) {
-			print ImTranslate("No orders");
-			return;
-		}
+		if (! $data1) return ImTranslate("No orders");
 
-		if ($edit) foreach ($data1 as $id => $row)
+		if ($admin) foreach ($data1 as $id => $row)
 		{
 			$row_id = $row['id'];
 			$value = "";
 			if ($first) { $first = false; $value = "בחר";}
-			else {
-				if ($data1[$id]['transaction_method'] == "משלוח" and ! $data1[$id]['receipt']){ // Just unpaid deliveries
+			else if ($data1[$id]['transaction_method'] == "משלוח" and ! $data1[$id]['receipt']) // Just unpaid deliveries
 					$value =  Core_Html::GuiCheckbox("chk_" . $row_id, false, array("class" => "trans_checkbox", "events" => "onchange=update_sum()"));
-				}
-			}
+
 			array_unshift($data1[$id], $value);
 		}
 		return Core_Gem::GemArray($data1, $args, "trans_table");
