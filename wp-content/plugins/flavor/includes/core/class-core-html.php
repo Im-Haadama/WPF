@@ -1976,11 +1976,11 @@ class Core_Html {
 			$text                      .= Core_Html::gui_table_args( $table, "header", $args );
 		}
 
-		if ( function_exists('gui_type') and gui_type() == "html" ) {
+//		if ( function_exists('gui_type') and gui_type() == "html" ) {
 			return $text;
-		}
+//		}
 
-		return strip_tags( $text );
+//		return strip_tags( $text );
 	}
 }
 

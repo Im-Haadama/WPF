@@ -154,7 +154,6 @@ class Fresh_Delivery_Manager
 		$id = GetParam("id", true);
 		$delivery = new Fresh_Delivery($id);
 		return $delivery->send_mail( $track_email);
-
 	}
 
 }

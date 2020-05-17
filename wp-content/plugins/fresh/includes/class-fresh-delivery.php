@@ -58,6 +58,7 @@ class Fresh_Delivery {
 			$del_info = SqlQuerySingleAssoc("select * from im_delivery where id = $id");
 //			var_dump($del_info);
 			$this->delivery_total = $del_info['total'];
+			$this->order_id = $del_info['order_id'];
 		}
 	}
 
@@ -395,30 +396,25 @@ class Fresh_Delivery {
 		SqlQuery( $sql );
 	}
 
-	function send_mail( $more_email = null, $edit = false ) {
-		global $business_name;
-		global $bank_info;
-		global $support_email;
-
+	function send_mail( $admin_email, $revision = false ) {
 		$order_id = $this->OrderId();
 
 		if ( ! ( $order_id > 0 ) ) {
 			die ( "can't get order id from delivery " . $this->ID );
 		}
-		// print "oid= " . $order_id . "<br/>";
 		$client_id = $this->getCustomerId();
 		if ( ! ( $client_id > 0 ) ) {
 			die ( "can't get client id from order " . $this->OrderId() );
 		}
 		$C = new Fresh_Client($client_id);
 
-		MyLog( __FILE__, "client_id = " . $client_id );
+//		MyLog( __FILE__, "client_id = " . $client_id );
 
 		$sql = "SELECT dlines FROM im_delivery WHERE id = " . $this->ID;
 
 		$dlines = SqlQuerySingleScalar( $sql );
 
-		MyLog( __FILE__, "dlines = " . $dlines );
+//		MyLog( __FILE__, "dlines = " . $dlines );
 
 		$del_user = $this->getOrder()->getOrderInfo( '_billing_first_name' );
 		$message  = Core_Html::HeaderText();
@@ -438,46 +434,46 @@ class Fresh_Delivery {
 		$message .= "<br /> לפרטים אודות מצב החשבון והמשלוח האחרון הכנס " .
 		            Core_Html::GuiHyperlink( "מצב חשבון", get_site_url() . '/balance' ) .
 		            "
- <br/>
- העברות בנקאיות מתעדכנות בחשבונכם אצלנו עד עשרה ימים לאחר התשלום.
-<li>
-למשלמים בהעברה בנקאית - פרטי החשבון: " . $bank_info . ". 
-</li>
-<li>המחאה לפקודת " . $business_name . ".
-</li>
-<li>
-במידה ושילמתם כבר, המכתב נשלח לצורך פירוט עלות המשלוח בלבד ואין צורך לשלם שוב.
-</li>
-
+ 
 נשמח מאוד לשמוע מה דעתכם! <br/>
- לשאלות בנוגע למשלוח מוזמנים ליצור איתנו קשר במייל " . $support_email . "
+ לשאלות בנוגע למשלוח מוזמנים ליצור איתנו קשר במייל " . $admin_email . "
 </body>
 </html>";
 
 		$user_info = get_userdata( $client_id );
-		MyLog( $user_info->user_email );
-		$to = $user_info->user_email;
-		// print "To: " . $to . "<br/>";
-		if ( $more_email ) {
-			$to = $to . ", " . $more_email;
-		}
+//		MyLog( $user_info->user_email );
+		$to = 'yaakov.aglamaz@gmail.com'; //$admin_email; // $user_info->user_email . ", " . $admin_email;
 		// print "From: " . $support_email . "<br/>";
 		// print "To: " . $to . "<br/>";
 		// print "Message:<br/>";
 		// print $message . "<br/>";
 		$subject = "משלוח מספר " . $this->ID . " בוצע";
-		if ( $edit ) {
-			$subject = "משלוח מספר " . $this->ID . " - תיקון";
-		}
-		$rc = mail($subject, $to, $message );
-		if ($rc) print "mail sent to " . $to . "<br/>";
+		if ( $revision ) $subject = "משלוח מספר " . $this->ID . " - תיקון";
+		$headers = "From: " . $admin_email . "\r\n";
+		$headers .= "Reply-To: ". $admin_email . "\r\n";
+		if (defined('ADMIN_MAIL'))
+			$headers .= "CC: ". ADMIN_MAIL ."\r\n";
+		else
+			$headers .= "CC: $admin_email\r\n";
+		$headers .= "MIME-Version: 1.0\r\n";
+		$headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";		//        $to, $subject, $message, $additional_headers = null, $additional_parameters = null) {}
+		print $headers;
+		$rc = mail($to, $subject, $message, $headers, "-f " . $admin_email );
+		print $message;
+//		if ($rc)
+//			print "mail sent to " . $to . "<br/>";
+//		else {
+//			print "to: $to<br/>";
+//			print "subject: $subject<br/>";
+//			print "message: $message<br/>";
+//		}
+		MyLog("mail to $to. rc= $rc");
 		return $rc;
 	}
 
 	public function OrderId() {
 		if ( ! ( $this->order_id > 0 ) ) {
 			$sql = "SELECT order_id FROM im_delivery WHERE id = " . $this->ID;
-
 			$this->order_id = SqlQuerySingleScalar( $sql );
 		}
 
@@ -1233,7 +1229,7 @@ class Fresh_Delivery {
 
 	function send_deliveries($ids)
 	{
-		global $support_email;
+		$support_email = get_bloginfo('admin_email');
 		if (!is_array($ids)) $ids = array($ids);
 		foreach ($ids as $delivery_id){
 			$delivery = new Fresh_Delivery( $delivery_id );
