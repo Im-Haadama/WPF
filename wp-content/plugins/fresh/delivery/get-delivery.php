@@ -68,7 +68,7 @@ if ( ! $send ) {
 	} else {
 	    print Core_Html::GuiButton("btn_del", "delete document", array("action" => "deleteDelivery('".Fresh::getPost()."', $id)") );
 	    print Core_Html::GuiButton("btn_edit", "edit document", array("action" =>"editDelivery()"));
-	    print Core_Html::GuiButton("btn_send", "send delivery", array("action" =>"sendDelivery()"));
+	    print Core_Html::GuiButton("btn_send", "send delivery", array("action" =>"sendDelivery('" .Fresh::getPost()."', $id)"));
 	}
 }
 
@@ -83,8 +83,9 @@ if ( ! $send ) {
         window.location.href = "create-delivery.php?id=<?php print $id; ?>";
     }
 
-    function sendDelivery() {
-        window.location.href = "/fresh/account/account-post.php?operation=send&del_ids=<?php print $id; ?>";
+    function sendDelivery(post_file, id) {
+        let request = post_file + '?operation=delivery_send_mail&id=' + id;
+        execute_url(request, success_message);
     }
 
 </script>

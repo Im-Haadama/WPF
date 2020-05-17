@@ -177,6 +177,7 @@ class Finance {
 		}
 
 		$this->payments = Finance_Payments::instance();
+		$this->payments->init_hooks();
 	}
 
 	function pay_user_credit_wrap($customer_id, $amount, $payment_number)

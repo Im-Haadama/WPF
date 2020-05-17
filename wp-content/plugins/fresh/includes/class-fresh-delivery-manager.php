@@ -20,6 +20,7 @@ class Fresh_Delivery_Manager
 		AddAction("delivery_delete", array(__CLASS__, "delete"));
 		AddAction("update_shipping_methods", __CLASS__ . "::update_shipping_methods");
 		AddAction("update_shipping_methods_anonymous", __CLASS__ . "::update_shipping_methods");
+		AddAction("delivery_send_mail", array($this, "mail_delivery"));
 	}
 
 	static public function delete()
@@ -138,6 +139,22 @@ class Fresh_Delivery_Manager
 			return update_wp_option( 'woocommerce_flat_rate_' . $instance_id . '_settings', $options );
 		}
 		return false;
+	}
+
+	function mail_delivery()
+	{
+
+//		print "info: " . $info_email;
+//		print "track: " . $track_email;
+
+//		$option = $delivery->getPrintDeliveryOption();
+
+		$track_email = get_option('admin_email');
+//		if ( strstr( $option, 'M' ) ) {
+		$id = GetParam("id", true);
+		$delivery = new Fresh_Delivery($id);
+		return $delivery->send_mail( $track_email);
+
 	}
 
 }

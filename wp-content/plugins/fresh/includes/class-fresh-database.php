@@ -93,6 +93,9 @@ order by 1;");
 
 		if ($current == $version and ! $force) return true;
 
+//		SqlQuery("alter table im_payments
+//		add mail_delivery bit not null default b'0'");
+
 		if (! TableExists("client_accounts"))
 			SqlQuery("create table im_client_accounts
 (
@@ -254,6 +257,7 @@ END;
 	id int auto_increment,
 	name varchar(20) null,
 	`default` bit default b'0' null,
+	mail_delivery bit not null default b'0',
 	accountants varchar(100) null,
 	constraint im_payments_id_uindex
 		unique (id)

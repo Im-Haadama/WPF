@@ -410,6 +410,7 @@ class Fresh_Delivery {
 		if ( ! ( $client_id > 0 ) ) {
 			die ( "can't get client id from order " . $this->OrderId() );
 		}
+		$C = new Fresh_Client($client_id);
 
 		MyLog( __FILE__, "client_id = " . $client_id );
 
@@ -420,7 +421,7 @@ class Fresh_Delivery {
 		MyLog( __FILE__, "dlines = " . $dlines );
 
 		$del_user = $this->getOrder()->getOrderInfo( '_billing_first_name' );
-		$message  = header_text( true, true, true );
+		$message  = Core_Html::HeaderText();
 
 		$message .= "<body>";
 		$message .= "שלום " . $del_user . "!
@@ -432,7 +433,7 @@ class Fresh_Delivery {
 		$message .= $this->delivery_text( FreshDocumentType::delivery, Fresh_DocumentOperation::show );
 		// file_get_contents("http://store.im-haadama.co.il/fresh/delivery/get-delivery.php?id=" . $del_id . "&send=1");
 
-		$message .= "<br> היתרה המעודכנת במערכת " . client_balance( $client_id );
+		$message .= "<br> היתרה המעודכנת במערכת " . $C->balance();// client_balance( $client_id );
 
 		$message .= "<br /> לפרטים אודות מצב החשבון והמשלוח האחרון הכנס " .
 		            Core_Html::GuiHyperlink( "מצב חשבון", get_site_url() . '/balance' ) .
@@ -468,8 +469,9 @@ class Fresh_Delivery {
 		if ( $edit ) {
 			$subject = "משלוח מספר " . $this->ID . " - תיקון";
 		}
-		send_mail($subject, $to, $message );
-		print "mail sent to " . $to . "<br/>";
+		$rc = mail($subject, $to, $message );
+		if ($rc) print "mail sent to " . $to . "<br/>";
+		return $rc;
 	}
 
 	public function OrderId() {
@@ -1034,17 +1036,6 @@ class Fresh_Delivery {
 		$instance->SetOrderId( $order_id );
 
 		return $instance;
-
-
-//		$id = Fresh_Order::get_delivery_id( $order_id );
-//
-//		if (! $id) return null;
-//
-//		$instance = new self( $id );
-//
-//		$instance->SetOrderId( $order_id );
-//
-//		return $instance;
 	}
 
 	private function SetOrderID( $order_id ) {

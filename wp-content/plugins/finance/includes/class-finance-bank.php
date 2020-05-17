@@ -41,6 +41,7 @@ class Finance_Bank
 	{
 		AddAction("finance_bank_accounts", array($this, "show_bank_accounts"));
 		AddAction("finance_bank_account", array($this, "show_bank_account"));
+		AddAction("finance_bank_receipts", array($this, "show_bank_receipts"));
 		AddAction("finance_show_bank_import", array($this, "show_bank_import"));
 		AddAction("finance_do_import", array($this, "do_bank_import"));
 	}
@@ -164,32 +165,6 @@ class Finance_Bank
 
 			case "bank_receipts":
 			case "receipts":
-				$args = $this->Args();
-				print Core_Html::gui_header( 1, "Receipts" );
-				$args["header_fields"] = array( "id"=>"Id", "date" => "Date", "description" => "Description",
-				                                "in_amount" => "Amount", "reference" => "Reference", "client_name" => "Details" );
-				$args["actions"]       = array(
-					array(
-						"Receipt",
-						AddToUrl(array( "operation" => "bank_create_invoice", "id" => "%s"))
-					),
-					array(
-						"Return",
-						self::getPost() . "?operation=bank_mark_return&id=%s"
-					)
-
-				);
-				$query                 = " account_id = " . $account_id . " and receipt is null and in_amount > 0 " .
-				                         " and description not in (select description from ${table_prefix}bank_transaction_types) ";
-
-				if ( $ids ) {
-					$query .= " and id in (" . CommaImplode( $ids ) . ")";
-				}
-				// " order by date desc limit $rows_per_page offset $offset";
-				$args["query"] = $query;
-				$args["fields"] = array( "id", "date", "description", "in_amount", "reference", "client_name" );
-
-				print self::bank_transactions( $args );
 
 				return;
 
@@ -506,6 +481,39 @@ class Finance_Bank
 		$operation = GetParam("operation", false, "bank_status");
 
 		return apply_filters("finance_bank_accounts", $operation);
+	}
+
+	function show_bank_receipts($account_id, $ids = null)
+	{
+		$account_id = 1;
+		$table_prefix = $this->table_prefix;
+
+		$args = $this->Args();
+		print Core_Html::gui_header( 1, "Receipts" );
+		$args["header_fields"] = array( "id"=>"Id", "date" => "Date", "description" => "Description",
+		                                "in_amount" => "Amount", "reference" => "Reference", "client_name" => "Details" );
+		$args["actions"]       = array(
+			array(
+				"Receipt",
+				AddToUrl(array( "operation" => "bank_create_invoice", "id" => "%s"))
+			),
+			array(
+				"Return",
+				self::getPost() . "?operation=bank_mark_return&id=%s"
+			)
+
+		);
+		$query                 = " account_id = " . $account_id . " and receipt is null and in_amount > 0 " .
+		                         " and description not in (select description from ${table_prefix}bank_transaction_types) ";
+
+		if ( $ids ) {
+			$query .= " and id in (" . CommaImplode( $ids ) . ")";
+		}
+		// " order by date desc limit $rows_per_page offset $offset";
+		$args["query"] = $query;
+		$args["fields"] = array( "id", "date", "description", "in_amount", "reference", "client_name" );
+
+		print self::bank_transactions( $args );
 	}
 
 	static function bank_transactions($args = null)

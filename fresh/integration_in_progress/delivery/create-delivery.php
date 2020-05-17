@@ -90,7 +90,6 @@ if ( $id > 0 ) {
 	} else {
 		print $O->infoBox( false, "יצירת תעודת משלוח ל" );
 		$d = Fresh_Delivery::CreateFromOrder( $order_id );
-
 	}
 
 	$d->PrintDeliveries( FreshDocumentType::delivery, Fresh_DocumentOperation::create, false, $show_inventory );

@@ -1928,7 +1928,7 @@ class Core_Html {
 
 		return $array;
 	}
-	function HeaderText( $args = null ) {
+	static function HeaderText( $args = null ) {
 		global $business_info;
 		global $logo_url;
 		$style_file = GetArg( $args, "css", null );
@@ -1955,10 +1955,10 @@ class Core_Html {
 		$text .= '</title>';
 
 		// print "loading..."; var_dump($script_files); print "<br/>";
-		$text .= load_scripts( $script_files );
-		if ( isset( $style_file ) ) {
-			$text .= load_style( $style_file );
-		}
+//		$text .= load_scripts( $script_files );
+//		if ( isset( $style_file ) ) {
+//			$text .= load_style( $style_file );
+//		}
 
 		if ( $close_header ) {
 			$text .= '</head>';
@@ -1982,7 +1982,6 @@ class Core_Html {
 
 		return strip_tags( $text );
 	}
-
 }
 
 if (!function_exists('gui_checkbox'))
