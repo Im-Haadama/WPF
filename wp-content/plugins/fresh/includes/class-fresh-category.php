@@ -72,4 +72,28 @@ class Fresh_Category {
 		}
 		return false;
 	}
+
+	function getProductsWithPrice()
+	{
+		$result = "";
+		if (! class_exists('Fresh_ProductIterator')) new Fresh_Product(1); // Initiate auto load
+
+		$iter = new Fresh_ProductIterator();
+		$iter->iterateCategory( $this->term->term_id );
+
+		$sort_array = [];
+		if ($iter)
+			while ( $prod_id = $iter->next() ) {
+				$p = new Fresh_Product($prod_id);
+				array_push($sort_array, array($p->getPrice(), $p->getName()));
+			}
+
+		sort ($sort_array);
+		foreach ($sort_array as $p)
+			$result .= $p[1] . " " . $p[0] . "<br/>";
+
+
+		return $result;
+
+	}
 }

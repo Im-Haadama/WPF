@@ -123,6 +123,7 @@ class Fresh_Product {
 		$debug = false;
 		$terms = $this->getTerms();
 
+		if (! $terms or ! is_array($terms)) return "no terms";
 		if ( $terms )
 			foreach ( $terms as $term ) {
 				if ( $this->is_fresh( $term, $debug ) ) {
@@ -157,6 +158,7 @@ class Fresh_Product {
 	{
 		$result = [];
 		$terms = get_the_terms( $this->id, 'product_cat' );
+		if (! $terms) return "no terms";
 		foreach ($terms as $term)
 		{
 			array_push($result, $term->term_id);
@@ -457,7 +459,7 @@ class Fresh_ProductIterator implements  Iterator {
 		}
 	}
 
-	public function iterateCategory($term_id, $post_status = 'publish') {
+	public function iterateCategory($term_id, $post_status = 'publish', $orderby = 'name') {
 		$args = array(
 			'post_type' => 'product',
 			'posts_per_page' => 10000,
@@ -468,7 +470,7 @@ class Fresh_ProductIterator implements  Iterator {
 					'terms'    => $term_id
 				)
 			),
-			'orderby' => 'name',
+			'orderby' => $orderby,
 			'order' => 'ASC'
 		);
 		if ($post_status)
@@ -481,8 +483,8 @@ class Fresh_ProductIterator implements  Iterator {
 
 		while ( $loop->have_posts() ) {
 			$loop->the_post();
-			global $product;
 			$prod_id = $loop->post->ID;
+//			print $prod_id . "<br/>";
 
 			$this->array[] = $prod_id;
 		}

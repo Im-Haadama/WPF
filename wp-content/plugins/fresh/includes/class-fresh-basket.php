@@ -41,10 +41,10 @@ class Fresh_Basket extends  Fresh_Product  {
 		return substr( $row, 0, 10 );
 	}
 
-	function get_basket_content( $basket_id ) {
+	function get_basket_content($expand = true, $include_sub_baskets_name = false) {
 		// t ;
 
-		$sql = 'SELECT DISTINCT product_id, quantity, id FROM im_baskets WHERE basket_id = ' . $basket_id .
+		$sql = 'SELECT DISTINCT product_id, quantity, id FROM im_baskets WHERE basket_id = ' . $this->getId() .
 		       ' ORDER BY 3';
 
 		$result = SqlQuery( $sql );
@@ -60,11 +60,18 @@ class Fresh_Basket extends  Fresh_Product  {
 			}
 			if ($prod_id > 0){
 				$b = new Fresh_Product($prod_id);
+				if ($b and $b->is_basket() and $expand) {
+					$B              = new Fresh_Basket( $prod_id );
+					if ($include_sub_baskets_name)
+						$basket_content .= $b->getName() . " (" . $B->get_basket_content( true, true ) . ")";
+					else
+						$basket_content .= $B->get_basket_content( true, false ) . ", ";
+				} else
 				if ($b) $basket_content .= $b->getName(true) . ", ";
 			}
 		}
 
-		return chop( $basket_content, ", " ) . ".";
+		return chop( $basket_content, ", " );
 	}
 
 	static function get_basket_content_array( $basket_id, $item_id ) {
@@ -133,7 +140,7 @@ class Fresh_Basket extends  Fresh_Product  {
 			$line            = "<tr>";
 			$line            .= "<td>" . Core_Html::GuiHyperlink($p->getName(), AddParamToUrl($url, "basket_id", $basket_id)) . "</td>";
 			// <a href=\"show_baskets.php?basket_id=" . $basket_id . "\">" . $p->getName() . "</a></td>";
-			$total_listprice = self::get_total_listprice( $basket_id );
+			$total_listprice = Fresh_Pricing::get_buy_price($basket_id);
 			$line            .= "<td>" . $total_listprice . "</td>";
 			$basket_price    = $p->getPrice();
 			if ( $basket_price > 0 ) {
@@ -196,21 +203,12 @@ class Fresh_Basket extends  Fresh_Product  {
 		$result = SqlQuery( $sql );
 
 		while ( $row = mysqli_fetch_row( $result ) ) {
-			$total_price += Fresh_Pricing::get_price( $row[0] );
-		}
-
-		return $total_price;
-	}
-
-	static function get_total_listprice( $basket_id ) {
-		$total_price = 0;
-		$sql         = 'SELECT product_id FROM im_baskets WHERE basket_id = ' . $basket_id;
-
-		$result = SqlQuery( $sql );
-
-		while ( $row = mysqli_fetch_row( $result ) ) {
-			// Catalog::GetBuyPrice($row[0]);
-			$total_price += Fresh_Catalog::GetBuyPrice( $row[0], -1 );
+			$prod_id = $row[0];
+			$p = new Fresh_Product($prod_id);
+			if ($p->is_basket())
+				$total_price += self::get_total_sellprice($prod_id);
+			else
+				$total_price += Fresh_Pricing::get_price( $prod_id );
 		}
 
 		return $total_price;
@@ -219,8 +217,9 @@ class Fresh_Basket extends  Fresh_Product  {
 	static function show_basket($basket_id)
 	{
 		$data = "";
-		$basket = new Fresh_Product($basket_id);
+		$basket = new Fresh_Basket($basket_id);
 		$data .= Core_Html::gui_header(1, ImTranslate("basket") . " " . $basket->getName());
+		$data .= $basket->get_basket_content();
 		$sql = 'SELECT DISTINCT product_id, quantity, product_price(product_id) as price, quantity * product_price(product_id) as line_price FROM im_baskets WHERE basket_id = ' . $basket_id .
 		       " and post_status(product_id) like '%pub%'";
 
@@ -270,6 +269,12 @@ class Fresh_Basket extends  Fresh_Product  {
 				SqlQuery( "delete from im_baskets where product_id = " . $prod_id);
 			}
 		}
+		$options = array();
+		foreach (array(19, 62) as $categ) {
+			$C = new Fresh_Category( $categ );
+			array_push( $options, $C->getProductsWithPrice());
+		}
+		$data .= Core_Html::gui_table_args(array($options));
 		return $data;
 	}
 

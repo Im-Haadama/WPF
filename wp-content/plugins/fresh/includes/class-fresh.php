@@ -722,7 +722,7 @@ function content_func( $atts, $contents, $tag )
 	$b = new Fresh_Basket($id);
 
 	$text = "תכולת הסל השבוע: ";
-	$text .= $b->get_basket_content( $id );
+	$text .= $b->get_basket_content();
 
 	return $text;
 }

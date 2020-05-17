@@ -175,6 +175,12 @@ function SqlBind($table_name, &$stmt, $_values)
 		case 8:
 			return $stmt->bind_param($types, $values[0], $values[1], $values[2], $values[3], $values[4], $values[5], $values[6], $values[7]);
 			break;
+		case 9:
+			return $stmt->bind_param($types, $values[0], $values[1], $values[2], $values[3], $values[4], $values[5], $values[6], $values[7], $values[8]);
+			break;
+		case 10:
+			return $stmt->bind_param($types, $values[0], $values[1], $values[2], $values[3], $values[4], $values[5], $values[6], $values[7], $values[8], $values[9]);
+			break;
 
 		default:
 			var_dump($values);

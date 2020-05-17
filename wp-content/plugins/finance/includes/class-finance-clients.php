@@ -204,8 +204,11 @@ class Finance_Clients
 		if ($payment_info_id) {
 			$args = array("post_file" => Fresh::getPost(), "edit"=>true);
 			$credit_info = Core_Gem::GemElement( "payment_info", $payment_info_id, $args );
-		} else
-			$credit_info = "No payment info";
+		} else {
+			$args["post_file"] = Finance::getPostFile();
+			$credit_info = Core_Gem::GemAddRow("payment_info", "Add", $args);
+//			$credit_info = "No payment info";
+		}
 
 		$result .= Core_Html::gui_table_args( array(
 			array( Core_Html::gui_header( 2, "פרטי לקוח", true ), Core_Html::gui_header( 2, "קבלה", true ), Core_Html::GuiHeader(1, "Credit info") ),
