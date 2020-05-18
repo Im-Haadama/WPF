@@ -53,9 +53,7 @@ class Focus_Tasks {
 
 	static function focus_main_wrapper() {
 		$user_id = get_user_id();
-		if ( ! $user_id ) {
-			return "unauth";
-		}
+		if ( ! $user_id ) return "unauth";
 
 		$operation  = GetParam( "operation", false, "default" );
 		$table_name = self::TableFromOperation($operation);
@@ -64,9 +62,7 @@ class Focus_Tasks {
 		$id = GetParam("id", false, null);
 
 		$result = apply_filters( $operation, "", $id, self::Args( $table_name ) );
-		if ( $result != "" ) {
-			return $result;
-		}
+		if ( $result != "" ) return $result;
 
 		// If no filter yet, handle the old way.
 		return self::focus_main( $operation, $user_id );
@@ -268,6 +264,8 @@ class Focus_Tasks {
 	 * @throws Exception
 	 */
 	static function focus_main( $operation, $user_id ) {
+//		print $user_id;
+		if (! $operation) $operation = "default";
 		$db_prefix = GetTablePrefix();
 		// Actions are performed and return to caller.
 		// Page are $result .= and displayed in the end. (to handle the header just once);

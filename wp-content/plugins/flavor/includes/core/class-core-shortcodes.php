@@ -52,7 +52,7 @@ class Core_Shortcodes {
 
 	function do_init()
 	{
-		$debug = 0; // (get_user_id() == 1);
+		$debug = false; // (get_user_id() == 1);
 		if ($this->shortcodes)
 			foreach ( $this->shortcodes as $shortcode => $function_couple ) {
 				if (! is_array($function_couple)) print $function_couple . " is not array";
@@ -67,14 +67,14 @@ class Core_Shortcodes {
 					continue;
 				}
 				if ($debug == 2) print " going to add";
-				if (is_callable($function)) {
-					if ($debug == 2)	print "adding function $function<br/>";
-					add_shortcode( apply_filters( "{$shortcode}_shortcode_tag", $shortcode ), $function );
-					continue;
-				}
 				if (is_string($function) and is_callable($function . "_wrapper")) {
 					if ($debug == 2) print "adding $shortcode => wrapper: " . $function . "_wrapper<br/>";
 					add_shortcode( apply_filters( "{$shortcode}_shortcode_tag", $shortcode ), $function. "_wrapper" );
+					continue;
+				}
+				if (is_callable($function)) {
+					if ($debug == 2)	print "adding function $function<br/>";
+					add_shortcode( apply_filters( "{$shortcode}_shortcode_tag", $shortcode ), $function );
 					continue;
 				}
 				if ($debug == 2) print " no wrapper ";

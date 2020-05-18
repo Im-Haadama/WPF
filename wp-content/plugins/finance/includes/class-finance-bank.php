@@ -41,6 +41,7 @@ class Finance_Bank
 	{
 		AddAction("finance_bank_accounts", array($this, "show_bank_accounts"));
 		AddAction("finance_bank_account", array($this, "show_bank_account"));
+		AddAction("finance_bank_payments", array($this, "show_bank_payments"));
 		AddAction("finance_bank_receipts", array($this, "show_bank_receipts"));
 		AddAction("finance_show_bank_import", array($this, "show_bank_import"));
 		AddAction("finance_do_import", array($this, "do_bank_import"));
@@ -313,43 +314,6 @@ class Finance_Bank
 				), "payment_table", true, true, $sums, "", "payment_table" );
 				break;
 
-			case "bank_payments":
-			case "payments":
-				$args = array();
-				print Core_Html::gui_header( 1, "Payments" );
-				$args["header_fields"] = array( "id" => "Id", "date" => "Date", "description" => "Description", "out_amount" => "Amount" );
-				$args["actions"]       = array(
-					array(
-						"Mark payment",
-						GetUrl(1) . "?operation=bank_create_pay&id=%s"
-					)
-				);
-				$page                  = GetParam( "page", false, 1 );
-				$rows_per_page         = 20;
-				$offset                = ( $page - 1 ) * $rows_per_page;
-				$query                 = "  account_id = " . $account_id . " and receipt is null and out_amount > 0 " .
-				                         " and description not in (select description from ${table_prefix}bank_transaction_types) ";
-
-				if ( $ids ) {
-					$query .= " and id in (" . CommaImplode( $ids ) . ")";
-				}
-				// " order by date desc limit $rows_per_page offset $offset";
-
-				$args["fields"] = array( "id", "date", "description", "out_amount", "reference", "client_name" );
-//			$sql = "select id, date, description, out_amount, reference from im_bank where account_id = " . $account_id .
-//			       " and receipt is null and out_amount > 0 " .
-//			       " and description not in (select description from im_bank_transaction_types) " .
-//			       " order by date desc limit $rows_per_page offset $offset";
-
-				//		print GuiTableContent( "im_banking", $sql, $args);
-
-				//		print Core_Html::GuiHyperlink("Older", add_to_url("page", $page + 1));
-				$args["query"] = $query;
-
-				print self::bank_transactions( $args );
-
-				return;
-
 			case "bank_transaction_types":
 				if (! $this->getUser()->can("cfo"))
 					return "no permissions";
@@ -480,9 +444,50 @@ class Finance_Bank
 	{
 		$operation = GetParam("operation", false, "bank_status");
 
-		return apply_filters("finance_bank_accounts", $operation);
+		print apply_filters("finance_bank_accounts", $operation);
 	}
 
+	function show_bank_payments($account_id = 1)
+	{
+		$account_id=  1;
+		$table_prefix = $this->table_prefix;
+		$result = "";
+		$args = array();
+		$result .= Core_Html::gui_header( 1, "Payments" );
+		$args["header_fields"] = array( "id" => "Id", "date" => "Date", "description" => "Description", "out_amount" => "Amount" );
+		$args["actions"]       = array(
+			array(
+				"Mark payment",
+				GetUrl(1) . "?operation=bank_create_pay&id=%s"
+			)
+		);
+		$page                  = GetParam( "page", false, 1 );
+		$rows_per_page         = 20;
+		$offset                = ( $page - 1 ) * $rows_per_page;
+		$query                 = "  account_id = " . $account_id . " and receipt is null and out_amount > 0 " .
+		                         " and description not in (select description from ${table_prefix}bank_transaction_types) ";
+
+//		if ( $ids ) {
+//			$query .= " and id in (" . CommaImplode( $ids ) . ")";
+//		}
+		// " order by date desc limit $rows_per_page offset $offset";
+
+		$args["fields"] = array( "id", "date", "description", "out_amount", "reference", "client_name" );
+//			$sql = "select id, date, description, out_amount, reference from im_bank where account_id = " . $account_id .
+//			       " and receipt is null and out_amount > 0 " .
+//			       " and description not in (select description from im_bank_transaction_types) " .
+//			       " order by date desc limit $rows_per_page offset $offset";
+
+		//		$result .= GuiTableContent( "im_banking", $sql, $args);
+
+		//		$result .= Core_Html::GuiHyperlink("Older", add_to_url("page", $page + 1));
+		$args["query"] = $query;
+
+		$result .= self::bank_transactions( $args );
+
+		return $result;
+
+	}
 	function show_bank_receipts($account_id, $ids = null)
 	{
 		$account_id = 1;
@@ -712,8 +717,6 @@ function business_open_ship( $part_id ) {
 	       " where part_id = " . $part_id .
 	       " and invoice is null " .
 	       " and document_type = " . FreshDocumentType::ship;
-
-	// print $sql;
 
 	$data = GuiTableContent( "table", $sql );
 
