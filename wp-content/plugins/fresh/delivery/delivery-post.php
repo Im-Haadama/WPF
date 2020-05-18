@@ -41,6 +41,13 @@ switch ( $operation ) {
 		$_lines      = explode( ',', $lines );
 //		print "del id = " . $delivery_id . " " . sizeof($_lines) . "<br/>";
 		add_delivery_lines( $delivery_id, $_lines, $edit );
+		if (! $edit) {
+			$d = new Fresh_Delivery($delivery_id);
+			$admin_email = get_bloginfo('admin_email');
+			if (defined('ADMIN_MAIL')) $admin_email = ADMIN_MAIL;
+
+			$d->send_mail($admin_email);
+		}
 		break;
 
 	case "get_price_vat":

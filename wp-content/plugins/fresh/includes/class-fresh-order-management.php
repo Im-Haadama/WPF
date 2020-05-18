@@ -136,6 +136,11 @@ class Fresh_Order_Management {
 			}
 
 			$del_id = Fresh_Delivery::CreateDeliveryFromOrder($order_id, 1);
+			$d = new Fresh_Delivery($del_id);
+			$admin_email = get_bloginfo('admin_email');
+			if (defined('ADMIN_MAIL')) $admin_email = ADMIN_MAIL;
+
+			$d->send_mail($admin_email);
 		} else {
 			MyLog ("have del: " . $O->getDeliveryId());
 		}

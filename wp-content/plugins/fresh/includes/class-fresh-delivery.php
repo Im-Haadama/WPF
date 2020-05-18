@@ -408,14 +408,6 @@ class Fresh_Delivery {
 		}
 		$C = new Fresh_Client($client_id);
 
-//		MyLog( __FILE__, "client_id = " . $client_id );
-
-		$sql = "SELECT dlines FROM im_delivery WHERE id = " . $this->ID;
-
-		$dlines = SqlQuerySingleScalar( $sql );
-
-//		MyLog( __FILE__, "dlines = " . $dlines );
-
 		$del_user = $this->getOrder()->getOrderInfo( '_billing_first_name' );
 		$message  = Core_Html::HeaderText();
 
@@ -451,15 +443,14 @@ class Fresh_Delivery {
 		if ( $revision ) $subject = "משלוח מספר " . $this->ID . " - תיקון";
 		$headers = "From: " . $admin_email . "\r\n";
 		$headers .= "Reply-To: ". $admin_email . "\r\n";
-		if (defined('ADMIN_MAIL'))
-			$headers .= "CC: ". ADMIN_MAIL ."\r\n";
-		else
-			$headers .= "CC: $admin_email\r\n";
+		$headers .= "CC: $admin_email\r\n";
 		$headers .= "MIME-Version: 1.0\r\n";
 		$headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";		//        $to, $subject, $message, $additional_headers = null, $additional_parameters = null) {}
-		print $headers;
+//		print "to: $to<br/>";
+//		print "subject: $subject<br/>";
+//		print $headers;
 		$rc = mail($to, $subject, $message, $headers, "-f " . $admin_email );
-		print $message;
+//		print $message;
 //		if ($rc)
 //			print "mail sent to " . $to . "<br/>";
 //		else {

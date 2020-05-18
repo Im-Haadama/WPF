@@ -314,30 +314,8 @@ error_reporting(E_ALL);
                 server_lines.onreadystatechange = function () {
                     if (server_lines.readyState === 4 && server_lines.status === 200) {  // Request finished
                         logging.value += "הסתיים.\n";
-//                    3) Send the delivery notes to the client
-                        // Now call the server, to send the delivery. It waits few seconds for the save lines to finish
-                        if (!draft) {
-                            var xmlhttp_send = new XMLHttpRequest();
-                            var request = "send-delivery.php?del_id=" + delivery_id;
-			                <?php if ( $edit ) {
-			                print 'request = request + "&edit";     ';
-		                } ?>
-                            logging.value += "תעודה נשלחת ללקוח";
-                            xmlhttp_send.open("GET", request);
-                            xmlhttp_send.send();
-	                        <?php
-	                        $d = new Fresh_Delivery( $id );
-//	                        if ( strstr( $d->getPrintDeliveryOption(), "P" ) ) {
-//		                        //   print 'logging.style.display="false";';
-//		                        print 'location.replace("get-delivery.php?id=" + delivery_id + "&print"); return;';
-//		                        // print 'logging.style.display="true";';
-//	                        }
-
-	                        ?>
-                        }
                         location.replace(document.referrer);
                     }
-
                 }
 
                 line_request = line_request + "&lines=" + line_args.join();

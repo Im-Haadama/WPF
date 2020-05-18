@@ -56,7 +56,6 @@ $show_inventory = false;
 if ( info_get("manage_inventory") and GetParam("show_inv", false, 1))
       $show_inventory = true;
 
-
 if ( $id > 0 ) {
 	print "<form name=\"delivery\" action= \"\">";
 //	print Core_Html::gui_header( 2, "עריכת תעודת משלוח מספר  " . $id );
