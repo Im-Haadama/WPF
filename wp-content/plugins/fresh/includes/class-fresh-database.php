@@ -93,6 +93,8 @@ order by 1;");
 
 		if ($current == $version and ! $force) return true;
 
+		self::payment_info_table();
+
 //		SqlQuery("alter table im_payments
 //		add mail_delivery bit not null default b'0'");
 

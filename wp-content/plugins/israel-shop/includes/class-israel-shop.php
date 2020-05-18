@@ -18,11 +18,10 @@ class Israel_Shop
 	// From post.php
 	static function handle_operation($operation)
 	{
-		// print "op=$operation";
 		if ($operation){
 			$args = self::Args();
 
-			$result = apply_filters( $operation, $operation, null, $args );
+			$result = apply_filters( $operation, '', null, $args );
 			if ( $result ) 	return $result;
 		}
 		return false;
@@ -101,8 +100,13 @@ class Israel_Shop
 
 		add_action('vat_add_category', array($this, 'vat_add_category'));
 		add_action('vat_remove_category', array($this, 'vat_remove_category'));
+		AddAction('data_update', array($this, 'data_update'));
 	}
 
+	public function data_update()
+	{
+		return Core_Data::data_update('cities');
+	}
 	public function enqueue_scripts() {
 		$file = FLAVOR_INCLUDES_URL . 'core/data/data.js';
 		wp_enqueue_script( 'data', $file);
