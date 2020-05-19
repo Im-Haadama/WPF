@@ -1,4 +1,5 @@
 <?php
+
 namespace Dom {
 	/**
 	 * Website: http://sourceforge.net/projects/simplehtmldom/
@@ -22,23 +23,27 @@ namespace Dom {
 	 * Version Rev. 1.9.1 (291)
 	 */
 
-	define( 'HDOM_TYPE_ELEMENT', 1 );
-	define( 'HDOM_TYPE_COMMENT', 2 );
-	define( 'HDOM_TYPE_TEXT', 3 );
-	define( 'HDOM_TYPE_ENDTAG', 4 );
-	define( 'HDOM_TYPE_ROOT', 5 );
-	define( 'HDOM_TYPE_UNKNOWN', 6 );
-	define( 'HDOM_QUOTE_DOUBLE', 0 );
-	define( 'HDOM_QUOTE_SINGLE', 1 );
-	define( 'HDOM_QUOTE_NO', 3 );
-	define( 'HDOM_INFO_BEGIN', 0 );
-	define( 'HDOM_INFO_END', 1 );
-	define( 'HDOM_INFO_QUOTE', 2 );
-	define( 'HDOM_INFO_SPACE', 3 );
-	define( 'HDOM_INFO_TEXT', 4 );
-	define( 'HDOM_INFO_INNER', 5 );
-	define( 'HDOM_INFO_OUTER', 6 );
-	define( 'HDOM_INFO_ENDSPACE', 7 );
+	function define_symbol($symbol, $value)
+	{
+		defined($symbol) || define($symbol, $value);
+	}
+	define_symbol( 'HDOM_TYPE_ELEMENT', 1 );
+	define_symbol( 'HDOM_TYPE_COMMENT', 2 );
+	define_symbol( 'HDOM_TYPE_TEXT', 3 );
+	define_symbol( 'HDOM_TYPE_ENDTAG', 4 );
+	define_symbol( 'HDOM_TYPE_ROOT', 5 );
+	define_symbol( 'HDOM_TYPE_UNKNOWN', 6 );
+	define_symbol( 'HDOM_QUOTE_DOUBLE', 0 );
+	define_symbol( 'HDOM_QUOTE_SINGLE', 1 );
+	define_symbol( 'HDOM_QUOTE_NO', 3 );
+	define_symbol( 'HDOM_INFO_BEGIN', 0 );
+	define_symbol( 'HDOM_INFO_END', 1 );
+	define_symbol( 'HDOM_INFO_QUOTE', 2 );
+	define_symbol( 'HDOM_INFO_SPACE', 3 );
+	define_symbol( 'HDOM_INFO_TEXT', 4 );
+	define_symbol( 'HDOM_INFO_INNER', 5 );
+	define_symbol( 'HDOM_INFO_OUTER', 6 );
+	define_symbol( 'HDOM_INFO_ENDSPACE', 7 );
 
 	defined( 'DEFAULT_TARGET_CHARSET' ) || define( 'DEFAULT_TARGET_CHARSET', 'UTF-8' );
 	defined( 'DEFAULT_BR_TEXT' ) || define( 'DEFAULT_BR_TEXT', "\r\n" );
@@ -2405,3 +2410,4 @@ namespace Dom {
 		}
 	}
 }
+

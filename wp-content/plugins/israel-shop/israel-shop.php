@@ -34,7 +34,6 @@ if ( ! class_exists( 'Israel_Shop' ) ) {
 	include_once dirname( __FILE__ ) . '/includes/class-israel-shop.php';
 }
 
-
 /**
  * Main instance of Fresh.
  *

@@ -178,7 +178,7 @@ class Core_Db_MultiSite extends Core_MultiSite {
 
 		if ($this->isMaster()) return true;
 
-		$url = Freight::getPost() . "?operation=sync_data&table=$table";
+		$url = Freight::getPost() . "?operation=sync_data_$table";
 		if ( $query ) $url .= "&query=" . urlencode( $query );
 
 		$html = Core_Db_MultiSite::Execute( $url, $remote, $debug );
@@ -199,8 +199,9 @@ class Core_Db_MultiSite extends Core_MultiSite {
 				die(1);
 			}
 		} else {
-			print "short response. Operation aborted <br/>";
-			print "url = $url";
+			print "short response. Operation aborted<br/>";
+			print "url = " . $this->getSiteURL($remote) . $url;
+
 			print $html;
 
 			return;

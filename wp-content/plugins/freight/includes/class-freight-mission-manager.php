@@ -15,7 +15,7 @@ class Freight_Mission_Manager
 		add_action("freight_do_add_delivery", __CLASS__ . "::do_add_delivery");
 		add_action('get_local_anonymous', __CLASS__ . "::get_local_missions");
 		add_action('delivered', array(__CLASS__, "delivered_wrap"));
-		add_action('sync_data_mission', array(__CLASS__, "sync_data_mission"));
+		add_action('sync_data_missions', array(__CLASS__, "sync_data_missions"));
 		add_action('download_mission', array(__CLASS__, 'download_mission'));
 	}
 
@@ -77,7 +77,7 @@ class Freight_Mission_Manager
 
 		return $result;
 	}
-	static function sync_data_mission()
+	static function sync_data_missions()
 	{
 		$table = "missions";
 		$db_prefix = "im_";
@@ -178,7 +178,7 @@ class Freight_Mission_Manager
 
 		$multi = Core_Db_MultiSite::getInstance();
 		if (! $multi->isMaster()){
-			$url = Freight::getPost() . "?operation=sync_data_mission";
+			$url = Freight::getPost() . "?operation=sync_data_missions";
 
 			$html = $multi->Execute( $url, $multi->getMaster() );
 
