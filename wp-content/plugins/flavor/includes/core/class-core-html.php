@@ -1170,6 +1170,10 @@ class Core_Html {
 
 			return $data;
 		} else {
+			foreach ($more_values as $value)
+				if (! in_array($value, $values))
+					array_push($values, $value);
+
 			self::DatalistCreate( $args, $table, $values );
 
 			return self::gui_select( $id, $name, $values, $events, $selected, $id_key, $class );
@@ -1358,7 +1362,7 @@ class Core_Html {
 		if ( $multiple ) {
 			$data .= "multiple ";
 		}
-		$data .= "id=\"" . $id . "\" ";
+		$data .= "id=\"" . $id . "\" name=\"$id\" ";
 
 		if ( $class ) {
 			$data .= ' class = "' . $class . '" ';
@@ -1379,9 +1383,11 @@ class Core_Html {
 		if ( $values ) {
 			foreach ( $values as $row ) {
 				if ( ! isset( $row[ $id_key ] ) ) {
-					//			var_dump($row);
-					//			print '<br/>';
-					//			die ($id_key . ' offset not set ' . $id);
+//								var_dump($row);
+//								print '<br/>';
+//								die ($id_key . ' offset not set ' . $id);
+					MyLog(__FUNCTION__, $id_key . ' offset not set ' . $id . " " . StringVar($row));
+					continue;
 				}
 				$data .= "<option value=\"" . $row[ $id_key ] . "\"";
 				if ( $selected and ( ( $selected == $row[ $id_key ] or ( $multiple and strstr( ':' . $selected . ':', ':' . $row[ $id_key ] . ':' ) ) ) ) ) {

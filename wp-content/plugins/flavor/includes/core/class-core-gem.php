@@ -74,7 +74,7 @@ class Core_Gem {
 	static function add_wrapper($result, $id = null, $args = null)
 	{
 		$operation = GetArg($args, "operation", null);
-		if (! $operation)  return __FUNCTION__ . ":no operation";
+		if (! $operation)  return __FUNCTION__ . ": no operation<br/>";
 
 		$table_name = substr($operation, 8);
 		if (! $table_name or ! strlen($table_name)){
@@ -407,6 +407,13 @@ class Core_Gem {
 	 */
 	static function GemTable($table_name, &$args)
 	{
+		// Try... Handle operation here. Works for clients types. May require to remove apply_filter from others.
+		$operation = GetParam("operation", false, null);
+		if ($operation) {
+			$args['operation']= $operation;
+			print apply_filters( $operation, '', null, $args );
+		}
+
 		if (! $table_name) die("Error #N2 no table given");
 		if (! isset($args["title"])) $title = "content of table " . $table_name;
 		$post_file = GetArg($args, "post_file", null);

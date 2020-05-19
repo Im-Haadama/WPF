@@ -592,3 +592,8 @@ function TableGetText( $row, $index ) {
 
 	return "";
 }
+
+function br2nl($html)
+{
+	return  preg_replace('#<br\s*/?>#i', "\n", $html);
+}
