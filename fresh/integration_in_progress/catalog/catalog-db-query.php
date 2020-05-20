@@ -10,25 +10,6 @@ require_once( "../catalog/catalog.php" );
 $search_text = isset( $_GET["search_txt"] ) ? $_GET["search_txt"] : null;
 $operation   = $_GET["operation"];
 
-class CatalogFields {
-	const
-		/// User interface
-		line_select = 0,
-		id = 1,
-		name = 2,
-		price = 3,
-		vat = 4,
-		supplier = 5,
-		status = 6,
-		category = 7,
-		order = 8,
-		cost_price = 9,
-		inventory = 10,
-		field_count = 11;
-}
-
-;
-
 $header_fields = array(
 	"בחר",
 	"מזהה",

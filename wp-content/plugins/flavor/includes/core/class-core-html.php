@@ -1170,7 +1170,7 @@ class Core_Html {
 
 			return $data;
 		} else {
-			foreach ($more_values as $value)
+			if ($more_values) foreach ($more_values as $value)
 				if (! in_array($value, $values))
 					array_push($values, $value);
 

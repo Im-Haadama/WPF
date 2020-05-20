@@ -93,6 +93,8 @@ order by 1;");
 
 		if ($current == $version and ! $force) return true;
 
+		SqlQuery("alter table im_supplier_price_list add product_id integer(11)");
+
 		self::payment_info_table();
 
 //		SqlQuery("alter table im_payments

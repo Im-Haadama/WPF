@@ -42,7 +42,7 @@
 //		if ($locale != 'en_US'){
 //			$mofile = ROOT_DIR . '/wp-content/languages/plugins/im_haadama-' . $locale . '.mo';
 //			if (! load_textdomain('im-haadama', $mofile))
-//				print "load translation failed . $locale: $mofile";
+
 //		}
 //	}
 //

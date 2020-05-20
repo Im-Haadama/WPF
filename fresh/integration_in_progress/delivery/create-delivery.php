@@ -2,6 +2,10 @@
 require_once( "../r-shop_manager.php" );
 include_once( "delivery.php" );
 
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 print header_text( false );
 
 print load_scripts(array("/core/gui/client_tools.js", "/core/data/data.js"));

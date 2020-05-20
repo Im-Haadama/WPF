@@ -48,6 +48,7 @@ class Fresh_Suppliers {
 			"import" => true,
 			"prepare_plug" => "Fresh_Pricelist_Item::add_prod_info", 
 			"action_before_import" => array(__CLASS__, "action_before_import"),
+			"page_number"=>0,
 			"add_checkbox" => true);
 		$this->gem->AddVirtualTable( "pricelist", $args );
 

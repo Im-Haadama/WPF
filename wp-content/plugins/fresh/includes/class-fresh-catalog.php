@@ -192,19 +192,6 @@ class Fresh_Catalog {
 		SqlQuery( $sql );
 	}
 
-	static function PublishItem( $product_id ) {
-//        print "start ";
-		$my_post                = array();
-		$my_post['ID']          = $product_id;
-		$my_post['post_status'] = 'publish';
-
-		// Update the post into the database
-		MyLog( "publish prod id: " . $product_id, "catalog-update-post.php" );
-		wp_update_post( $my_post );
-
-//        print "end<br/>";
-	}
-
 	static function PricelistFromProduct($prod_id, $supplier_id)
 	{
 		$sql = "select pricelist_id from im_supplier_mapping " .
@@ -692,12 +679,9 @@ class Fresh_Catalog {
 		}
 
 		// Search by pricelist_id
-		$sql = "select price, supplier_id, id, sale_price " .
-		       " from im_supplier_price_list " .
-		       " where id in (select pricelist_id from im_supplier_mapping where product_id = $prod_id)" .
-		       " and date = supplier_last_pricelist_date(supplier_id) ";
+		$sql = "select price, supplier_id, id, sale_price ".
+		       " from im_supplier_price_list where product_id = $prod_id";
 
-//    print "<br/>" . $sql . "<br/>";
 		$result = SqlQuery( $sql );
 		$output = "";
 		if ( ! $result ) {
@@ -756,6 +740,192 @@ class Fresh_Catalog {
 
 	static function name_prefix( $name ) {
 		return strtok( $name, "-()" );
+	}
+
+	static function show_catalog(
+		$for_update = false, $search_text = null, $csv= false, $active = false, $siton = false, $buy = true, $category = null,
+		$order = false, $suppliers = null, $inv = null
+	) {
+		global $header_fields;
+		$show_fields = array();
+
+		// print "search text: " . $search_text . "<br/>";
+		// print "category: " . $category . "<br/>";
+		for ( $i = 0; $i < CatalogFields::field_count; $i ++ ) {
+			$show_fields[ $i ] = false;
+		}
+
+		$show_fields[ CatalogFields::name ] = true;
+
+		if ( $siton ) {
+			$show_fields[ CatalogFields::id ]    = true;
+			$show_fields[ CatalogFields::price ] = true;
+		}
+		if ( $buy ) {
+			$show_fields[ CatalogFields::id ]         = true;
+			$show_fields[ CatalogFields::cost_price ] = true;
+			$show_fields[ CatalogFields::supplier ]   = true;
+		} else {
+			$show_fields[ CatalogFields::vat ] = true;
+		}
+
+		$count = 0;
+		MyLog( "search_text = " . $search_text, "catalog-db-query.php" );
+		$sql = 'select '
+		       . ' id, post_title '
+		       . ' from wp_posts '
+		       . ' where post_type = \'product\'';
+
+
+		if ( $search_text <> "" ) {
+			if ( is_numeric( $search_text ) ) {
+				$sql .= ' and id = ' . $search_text . ' ';
+			} else {
+				$ids = explode( "|", $search_text );
+				if ( is_array( $ids ) and is_numeric( $ids[0] ) ) {
+					$sql .= ' and id in (';
+					foreach ( $ids as $id ) {
+						$sql .= $id . ", ";
+					}
+					$sql = rtrim( $sql, ", " ) . ")";
+
+				} else {
+					$sql .= " and post_title like '%" . $search_text . "%'";
+				}
+			}
+		}
+//	}
+
+		if ( $active ) {
+			$sql .= ' and post_status = \'publish\'';
+		}
+
+		$sql .= ' order by 2';
+
+		$result = SqlQuery( $sql );
+
+		$data = "<table>";
+
+		$data        .= Core_Html::gui_row( $header_fields, "", $show_fields );
+		$line_number = 0;//	default:
+
+		if ( $for_update ) {
+			// print "update<br/>";
+			$show_fields[ CatalogFields::line_select ] = true;
+			$show_fields[ CatalogFields::status ]      = true;
+			$show_fields[ CatalogFields::category ]    = true;
+
+		}
+		if ( ! is_null( $inv ) ) {
+			print "show inv<br/>";
+			$show_fields[ CatalogFields::id ]        = true;
+			$show_fields[ CatalogFields::inventory ] = true;
+		}
+		if ( $order ) {
+			$show_fields[ CatalogFields::order ] = true;
+		}
+
+		while ( $row = mysqli_fetch_row( $result ) ) {
+			$fields = array();
+			for ( $i = 0; $i < CatalogFields::field_count; $i ++ ) {
+				$fields[ $i ] = "";
+			}
+			$line_number ++;
+			$prod_id = $row[0];
+
+			// prof_flag("handle " . $prod_id);
+			$product_categories = array();
+
+			$terms = get_the_terms( $prod_id, 'product_cat' );
+
+			if ( $category ) { // Check if this product in the given categories
+				if ( $terms ) { // Products terms
+					foreach ( $terms as $term ) {
+						array_push( $product_categories, $term->term_id );
+					}
+				} else {
+					// print "no terms for " . $prod_id . "<br/>";
+					continue;
+				}
+
+				if ( sizeof( array_intersect( $product_categories, $category ) ) == 0 ) {
+					continue;
+				}
+			}
+
+			$fields[ CatalogFields::name ] = $row[1];
+			// print "XXX" . CatalogFields::name . "XXX<br/>";
+
+			$fields[ CatalogFields::line_select ] = "<input id=\"chk" . $prod_id . "\" class=\"product_checkbox\" type=\"checkbox\">";
+			$fields[ CatalogFields::id ]          = Core_Html::GuiHyperlink( $prod_id, "../../wp-admin/post.php?post=" . $prod_id . " &action=edit" );
+			$p                                    = new Fresh_Product( $prod_id );
+
+			// price
+			$price = get_postmeta_field( $prod_id, '_price' );
+			if ( $for_update ) {
+				$fields[ CatalogFields::price ] = '<input type="text" value="' . $price . '">';
+			} else {
+				if ( $siton ) {
+					$price = siton_price( $prod_id );
+				} else if ( $buy ) {
+					$price = Fresh_Pricing::get_buy_price( $prod_id );
+				}
+				$fields[ CatalogFields::price ] = $price;
+			}
+
+			// vat percent
+			$vat_percent = get_postmeta_field( $prod_id, 'vat_percent' );
+			if ( $vat_percent )
+				$fields[ CatalogFields::vat ] = $vat_percent . "%";
+
+			// $fields[CatalogFields::supplier] = get_postmeta_field( $prod_id, 'supplier_name' );
+
+			$fields[ CatalogFields::status ] = get_post_status( $prod_id );
+
+			if ( $buy ) {
+				// prof_flag("alternative-start" . $prod_id);
+				$alternatives = Fresh_Catalog::alternatives( $prod_id );
+				$supplies     = "";
+				foreach ( $alternatives as $alt ) {
+					$supplies .= $alt->getSupplierName(). ", ";
+//						get_supplier_name( $alt->getSupplierId() ) . ", ";
+				}
+
+				$fields[ CatalogFields::supplier ] = rtrim( $suppliers, ", " );
+			}
+
+			$P = new Fresh_Product($prod_id);
+			$fields[ CatalogFields::cost_price ] = $P->getBuyPrice();
+			$fields[ CatalogFields::supplier ]   = $P->getSupplierName();
+
+			$show_in_list = 1;
+
+			// $fields[CatalogFields::order] =gui_cell( gui_input( "prod_quantity" . $prod_id, "", null, "q_" . $prod_id ) );
+			$fields[ CatalogFields::category ] = CommaImplode( $terms );
+
+			if ( ! is_null( $inv ) ) {
+				if ( ! $p->getStockManaged() or $p->getStock() > $inv ) {
+					continue;
+				}
+				$fields[ CatalogFields::inventory ] = $p->getStock();
+			}
+
+			if ( $show_in_list ) {
+				// var_dump($fields); print "<br/>";
+				// var_dump($show_fields); print "<br/>";
+				$data .= Core_Html::gui_row( $fields, "cat", $show_fields, $sums);
+			}
+			// prof_flag("end " . $prod_id);
+			$count ++;
+		}
+		$data .= "</table>";
+		if ( $csv ) {
+			$data = str_replace( "</td><td>", ",", $data );
+			$data = str_replace( "<tr>", "<br>", $data );
+			$data = str_replace( "<td>", "", $data );
+		}
+
+		print $data;
 	}
 
 	static function upload_image( $post_id, $image ) {
@@ -836,3 +1006,23 @@ class Fresh_Catalog {
 //	return 0;
 //}
 //
+
+//if (get_user_id() == 1)
+//	print Fresh_Catalog::show_catalog();
+
+class CatalogFields {
+	const
+		/// User interface
+		line_select = 0,
+		id = 1,
+		name = 2,
+		price = 3,
+		vat = 4,
+		supplier = 5,
+		status = 6,
+		category = 7,
+		order = 8,
+		cost_price = 9,
+		inventory = 10,
+		field_count = 11;
+}

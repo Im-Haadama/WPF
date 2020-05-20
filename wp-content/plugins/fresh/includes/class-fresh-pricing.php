@@ -31,6 +31,8 @@ class Fresh_Pricing {
 
 	static function get_price_by_type( $prod_id, $client_type = "", $quantity = 1, $variation_id = null )
 	{
+		$debug = 0;
+		if ($debug) MyLog(__FUNCTION__ . " $prod_id $client_type");
 		if (! ($prod_id > 0)){
 			print "bad prod $prod_id<br/>";
 			print debug_trace(6);
@@ -41,10 +43,10 @@ class Fresh_Pricing {
 			$configured = TableExists("client_types");
 		}
 		if (! $configured) return get_postmeta_field( $prod_id, '_price' );
-		$debug = 0;
 
 		if ( strlen( $client_type ) < 1 ) {
 			$client_type = "regular";
+
 		}
 		// client type can be:
 		// null - regular price.
@@ -52,36 +54,35 @@ class Fresh_Pricing {
 		// number - type id
 		// print "CT=" . $client_type;
 		$p    = new Fresh_Product( $prod_id );
-		$type = ( $p->isFresh() ) ? "rate" : "dry_rate";
+		$product_type = ( $p->isFresh() ) ? "rate" : "dry_rate";
 
-		$sql = "SELECT min($type) FROM im_client_types WHERE type = '" . $client_type . "' AND (q_min <= " . $quantity . " OR q_min = 0)";
-		//  print $sql . "<br/>";
+		$sql = "SELECT min($product_type) FROM im_client_types WHERE id = '" . $client_type . "' AND (q_min <= " . $quantity . " OR q_min = 0)";
+//		  print $sql . "<br/>";
 		$rate = SqlQuerySingleScalar( $sql );
+		if (null != $rate) {
+			if ( $debug ) {
+				MyLog( "regular prices" );
+			}
+
+			if ( $debug ) {
+				MyLog( "rate = $rate" );
+			}
+			if ( $rate >= 0 ) {
+				$buy = $p->getBuyPrice();
+				if ( $buy ) {
+					//				MyLog( "buy : $buy rate: $rate" );
+
+					return round( ( $buy * ( 100 + $rate ) ) / 100, 1 );
+				}
+			}
+		}
 
 		$id = $variation_id ? $variation_id : $prod_id;
 
 		// Nothing special. Return the price from the site.
-		if ( is_null( $rate ) ) {
-			return get_postmeta_field( $id, '_price' );
-		}
-
-//	 print "rate: " . $rate. "<br/>";
-
-		$price = get_postmeta_field( $id, '_price' );
-
-		if ($debug) print $prod_id ." " . $variation_id . "<br/>";
-
-		$buy   = $p->getBuyPrice(  );
-		if ( $buy == 0 ) {
-			return $price;
-		}
-		//print "price: " .$price;
-		// if (! $p->isFresh()) $rate
-		return min( $price, round( ( $buy * ( 100 + $rate ) ) / 100, 1 ) );
-
-		// Non fresh
-//	return get_postmeta_field( $prod_id, '_price' );
+		return get_postmeta_field( $id, '_price' );
 	}
+
 	static function get_price( $prod_id) {
 		return self::get_price_by_type( $prod_id );
 	}
@@ -149,6 +150,7 @@ class Fresh_Pricing {
 	}
 
 	static function set_regular_price( $product_id, $price ) {
+		MyLog("setiing price for $product_id $price " . get_user_id());
 		update_post_meta( $product_id, "_regular_price", $price );
 		$sale_price = get_post_meta($product_id, "_sale_price");
 		if ($sale_price > 0)
@@ -156,6 +158,7 @@ class Fresh_Pricing {
 	}
 
 	static function set_saleprice( $product_id, $sale_price ) {
+		MyLog("setiing sale price for $product_id $sale_price " . get_user_id());
 		update_post_meta( $product_id, "_sale_price", $sale_price );
 		$price = get_post_meta($product_id, "_price");
 		$new_price = (($sale_price > 0) ? $sale_price : $price);
@@ -177,3 +180,17 @@ class Fresh_Pricing {
 		return $amount - self::vatFromTotal($amount);
 	}
 }
+
+function my_custom_show_sale_price_at_cart( $old_display, $cart_item, $cart_item_key ) {
+
+	/** @var WC_Product $product */
+	$product = $cart_item['data'];
+
+	if ( $product ) {
+		return $product->get_price_html();
+	}
+
+	return $old_display;
+
+}
+add_filter( 'woocommerce_cart_item_price', 'my_custom_show_sale_price_at_cart', 10, 3 );

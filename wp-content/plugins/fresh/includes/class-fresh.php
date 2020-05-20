@@ -139,7 +139,6 @@ class Fresh {
 		add_action( 'woocommerce_before_cart', 'wc_minimum_order_amount' );
 		add_action( 'woocommerce_checkout_order_processed', 'wc_minimum_order_amount' );
 		add_filter( 'woocommerce_available_shipping_methods', 'hide_shipping_if_cat_is_orange', 10, 1 );
-		add_action( 'woocommerce_before_calculate_totals', 'im_woocommerce_update_price', 99 );
 		add_filter( 'woocommerce_cart_item_price', 'im_show_nonsale_price', 10, 2 );
 //		add_filter( 'woocommerce_order_button_text', 'im_custom_order_button_text' );
 		add_action( 'init', 'custom_add_to_cart_quantity_handler' );
@@ -206,7 +205,8 @@ class Fresh {
 		Fresh_Client_Views::init_hooks();
 
 //		add_filter('editable_roles', 'edit_roles');
-		// if (get_user_id() == 1) wp_set_current_user(474);
+		/// check siton:
+//		if (get_user_id() == 1) wp_set_current_user(474);
 	}
 
 	/**
@@ -727,38 +727,38 @@ function content_func( $atts, $contents, $tag )
 	return $text;
 }
 
-function im_woocommerce_update_price()
-{
-	if (! SqlQuerySingleScalar("select 1")) {
-		MyLog ("not connected to db");
-		return;
-	}
-	if (! function_exists('get_user_id') or ! get_user_id()) {
-		MyLog( "cart start " . $_SERVER['REMOTE_ADDR']);
-		return;
-	}
-	MyLog("cart start " . get_user_id());
-	$user_id = get_user_id();
-	$user = new Fresh_Client($user_id );
-	$client_type = $user->customer_type( );
-
-	foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
-		$prod_id = $cart_item['product_id'];
-		$variation_id = $cart_item['variation_id'];
-		if ( ! ( $prod_id > 0 ) ) {
-			MyLog( "cart - no prod_id" );
-			continue;
-		}
-		$q          = $cart_item['quantity'];
-		$sell_price = Fresh_Pricing::get_price_by_type( $prod_id, $client_type, $q, $variation_id );
-		//my_log("set " . $sell_price);
-		$cart_item['data']->set_sale_price( $sell_price );
-		$cart_item['data']->set_price( $sell_price );
-		MyLog( $prod_id . " " . $q );
-
-	}
-	//		ob_start();
-}
+//function im_woocommerce_update_price()
+//{
+//	if (! SqlQuerySingleScalar("select 1")) {
+//		MyLog ("not connected to db");
+//		return;
+//	}
+//	if (! function_exists('get_user_id') or ! get_user_id()) {
+//		MyLog( "cart start " . $_SERVER['REMOTE_ADDR']);
+//		return;
+//	}
+//	MyLog("cart start " . get_user_id());
+//	$user_id = get_user_id();
+//	$user = new Fresh_Client($user_id );
+//	$client_type = $user->customer_type( );
+//
+//	foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+//		$prod_id = $cart_item['product_id'];
+//		$variation_id = $cart_item['variation_id'];
+//		if ( ! ( $prod_id > 0 ) ) {
+//			MyLog( "cart - no prod_id" );
+//			continue;
+//		}
+//		$q          = $cart_item['quantity'];
+//		$sell_price = Fresh_Pricing::get_price_by_type( $prod_id, $client_type, $q, $variation_id );
+//		//my_log("set " . $sell_price);
+//		$cart_item['data']->set_sale_price( $sell_price );
+//		$cart_item['data']->set_price( $sell_price );
+//		MyLog( $prod_id . " " . $q );
+//
+//	}
+//	//		ob_start();
+//}
 
 function im_show_nonsale_price( $newprice, $product ) {
 	global $site_id;

@@ -51,18 +51,22 @@ switch ( $operation ) {
 		break;
 
 	case "get_price_vat":
-		if ( isset( $_GET["id"] ) ) {
-			$id = $_GET["id"];
-			// print "id = " . $id . "<br/>";
-		} else {
+		if ( isset( $_GET["id"] ) ) $id = $_GET["id"];
+		else {
 			$name = $_GET["name"];
 			$sql  = "SELECT id FROM wp_posts WHERE post_title = '" . urldecode( $name ) . "' and post_status = 'publish'";
 			$id   = SqlQuerySingleScalar( $sql );
 		}
 		$p = new Fresh_Product( $id );
-		operation_get_price( $id );
-		print ',';
-		print $p->getVatPercent();
+		$user = GetParam("user_id", false, null);
+		if ($user)
+		{
+			$u = new Fresh_Client($user);
+			$customer_type = $u->customer_type();
+		}
+		$price = Fresh_Pricing::get_price_by_type($id, $customer_type);
+
+		print "$price," . $p->getVatPercent();
 		break;
 	case "get_price":
 		if ( isset( $_GET["id"] ) ) {
@@ -89,18 +93,6 @@ switch ( $operation ) {
 
 }
 
-
-function operation_get_price( $id ) {
-	$q = 1;
-	if ( isset( $_GET["quantity"] ) ) {
-		$q = $_GET["quantity"];
-	}
-	$type = isset( $_GET["type"] ) ? $_GET["type"] : null;
-//	 print $id . " " . $type . "<br/>";
-
-	print Fresh_Pricing::get_price_by_type( $id, $type, $q );
-
-}
 function clear_legacy() {
 	$sql    = "UPDATE im_delivery_legacy SET status = 2 WHERE status = 1";
 	$result = SqlQuery( $sql );

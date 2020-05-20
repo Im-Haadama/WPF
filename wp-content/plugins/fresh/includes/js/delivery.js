@@ -152,3 +152,63 @@ function deleteDelivery(post_file, id) {
 
     execute_url(request, action_back);
 }
+
+function addLine(post_file, draft, user_id) {
+    var table = document.getElementById('del_table');
+
+    var lines = table.rows.length;
+    var line_id = lines - 4;
+    var row = table.insertRow(lines - 4);
+    var list = "items";
+    if (draft) list = "draft_items";
+
+    let input = '<input id="nam_' + line_id + '" list="line_id_list" onchange="getPrice(' + line_id + ', ' + user_id + ')" onkeyup="update_list(\'' + post_file + '\', \'products\', this)">' +
+        '<datalist id="line_id_list"></datalist>';
+
+    row.insertCell(-1).innerHTML = "<lable></lable>"; row.cells[0].firstElementChild.id="chk_" + line_id; row.cells[0].hidden = true;
+    row.insertCell(-1).innerHTML = input;
+    row.insertCell(-1).innerHTML = ''; // Comment
+    row.insertCell(-1).innerHTML = "0";                       // 2 - quantity ordered
+    // row.insertCell(-1).innerHTML = "";                        // 3 - unit ordered
+    // row.insertCell(-1).innerHTML = ""; // order total
+    row.insertCell(-1).innerHTML = "<input id=\"deq_" + line_id + "\" type=\"text\" onchange='calcDelivery()'>";   // 4 - supplied
+    row.insertCell(-1).innerHTML = "<input id=\"prc_" + line_id + "\" type=\"text\">";   // 5 - price
+    // row.insertCell(-1).innerHTML = "<label id=\"lpr_" + line_id + "\" type=\"text\">";   // line price
+    row.insertCell(-1).innerHTML = "<input id=\"hvt_" + line_id + "\"  type = \"checkbox\" checked>"; // 6 - has vat
+    row.insertCell(-1).id = "lvt_" + line_id;    row.cells[7].hidden = true;                   // 7 - line vat
+    row.insertCell(-1).id = "del_" + line_id;   // 8 - total_line
+    row.insertCell(-1).innerHTML = "<input id=\"lvt_" + line_id + "\" type=\"text\">";  row.cells[9].hidden = true;
+    // row.insertCell(-1).id = "pac_" + line_id; // 9 - packing info
+    // row.insertCell(-1).innerHTML = "<input id=\"typ_" + line_id + "\" type=\"text\" value=\"prd\">";   // 10 - line type
+
+
+    calcDelivery();
+//        row.insertCell(9).style.visibility = false;              // 9 - categ
+//        row.insertCell(10).style.visibility = false;              // 10 - refund q
+//        row.insertCell(11).style.visibility = false;              // 11 - refund total
+}
+
+function delivered_table() {
+    var collection = doacument.getElementsByClassName("select_order_wc-awaiting-shipment");
+    var order_ids = new Array();
+    var table = document.getElementById("wc-awaiting-shipment");
+
+    xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function () {
+        // Wait to get query result
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+        {
+            window.location = window.location;
+        }
+    }
+
+    for (var i = 0; i < collection.length; i++) {
+        var order_id = collection[i].id.substr(4);
+        if (document.getElementById("chk_" + order_id).checked)
+            order_ids.push(order_id);
+    }
+    var request = "/fresh/orders/orders-post.php?operation=delivered&ids=" + order_ids.join();
+    xmlhttp.open("GET", request, true);
+    xmlhttp.send();
+}
+

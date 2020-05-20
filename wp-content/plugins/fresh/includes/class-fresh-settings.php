@@ -119,6 +119,10 @@
 			$menu->AddSubMenu("edit.php?post_type=product", "edit_shop_orders",
 				array('page_title' => 'Baskets', 'function' => array("Fresh_Basket" , 'SettingsWrap' )));
 
+			// All products
+			$menu->AddSubMenu("edit.php?post_type=product", "edit_shop_orders",
+				array('page_title' => 'All products', 'function' => array("Fresh_Catalog" , 'show_catalog' )));
+
 		}
 
 		static function suppliers() {

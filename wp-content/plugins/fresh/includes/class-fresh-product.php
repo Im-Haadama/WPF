@@ -344,15 +344,13 @@ class Fresh_Product {
 
 	function getBuyPrice($supplier_id = 0)
 	{
-		if ( $this->id > 0 ) {
-			if ( $supplier_id > 0 ) {
-				$a = Fresh_Catalog::alternatives( $this->id );
-				foreach ( $a as $s )  if ( $s->getSupplierId() == $supplier_id ) return $s->getPrice();
-			}
-			return get_postmeta_field( $this->id, 'buy_price' );
-		}
+		if (! $this->id) return -1;
 
-		return -1;
+		$b = Fresh_Catalog::best_alternative($this->id);
+		if ($b)
+			return $b->getPrice();
+
+		return get_postmeta_field( $this->id, 'buy_price' );
 	}
 
 	function isDraft()
@@ -424,6 +422,20 @@ class Fresh_Product {
 		// return GuiSelectTable( $id, "im_products", $args);
 		return Core_Html::GuiAutoList($id, "products", $args);
 	}
+
+	function PublishItem($price = 0) {
+		MyLog(__FUNCTION__ . " " . $this->id . " $price");
+		$my_post                = array();
+		$my_post['ID']          = $this->id;
+		$my_post['post_status'] = 'publish';
+		if ($price)
+			$this->setRegularPrice($price);
+
+		// Update the post into the database
+		MyLog( "publish prod id: " . $this->id . " price: $price", __FUNCTION__ );
+		wp_update_post( $my_post );
+	}
+
 }
 
 class Fresh_ProductIterator implements  Iterator {

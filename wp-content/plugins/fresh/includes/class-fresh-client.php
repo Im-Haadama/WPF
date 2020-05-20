@@ -12,6 +12,7 @@ class Fresh_Client {
 	 * @param $user_id
 	 */
 	public function __construct( $user_id = 0 ) {
+//	    MyLog(__FUNCTION__ . $user_id);
 		if (! $user_id) {
 			if (! get_user_id())
 			$user_id = 0;
@@ -101,6 +102,7 @@ class Fresh_Client {
 	}
 
 	function customer_type( ) {
+	    MyLog(__FUNCTION__ . " " . $this->user_id);
 		$key = get_user_meta( $this->user_id, '_client_type', true );
 
 		if ( is_null( $key ) ) {
@@ -276,7 +278,7 @@ class Fresh_Client {
 				<th><label for="customer_type"><?php _e("Customer type"); ?></label></th>
 				<td>
 					<?php
-					print gui_select_client_type("customer_type", $u->customer_type());
+					print Fresh_Client::gui_select_client_type("customer_type", $u->customer_type());
 					?><br/>
 					<span class="description"><?php _e("Please select customer type."); ?></span>
 				</td>
@@ -354,17 +356,17 @@ class Fresh_Client {
 		}
 		update_user_meta( $user_id, '_client_type', $type );
 	}
+
+	static function gui_select_client_type( $id, $value, $args = null )
+    {
+        if (! $args) $args = [];
+        MyLog("value =$value");
+        $args["selected"] = $value;
+        $args['more_values'] = array(array( "id" => 0, "type" => "רגיל" ));
+        $args["name"] = "type";
+
+	    return Core_Html::GuiSelectTable($id, "client_types", $args);
+    }
+
+
 }
-
-function gui_select_client_type( $id, $value, $args = null ) {
-    if (! $args) $args = [];
-    MyLog("value =$value");
-	$args["selected"] = $value;
-	$args['more_values'] = array(array( "id" => 0, "type" => "רגיל" ));
-	$args["name"] = "type";
-
-	return Core_Html::GuiSelectTable($id, "client_types", $args);
-//	return Core_Html::gui_select_table( $id, "im_client_types", $value, $events, array( $none ), "type",
-//		null, true );
-}
-

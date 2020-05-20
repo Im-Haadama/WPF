@@ -5,11 +5,7 @@ error_reporting(E_ALL);
 
 require_once ('../../flavor/includes/core/class-core-fund.php');
 
-//print gui_datalist( "items", "im_products", "post_title", true );
-//print gui_datalist( "draft_items", "im_products_draft", "post_title", true );
-
 require_once ("../../../../wp-config.php");
-//require_once ("../../../../im-config.php");
 
 new Fresh_Delivery(0); // load delivery classes
 
@@ -40,6 +36,7 @@ if ( isset( $_GET["id"] ) ) {
 		die ( 1 );
 	}
 }
+$user_id = $O->getCustomerId();
 ?>
 <html dir="rtl">
 <?php
@@ -126,7 +123,8 @@ if ( $show_save_draft ) {
 
 ?>
 <button id="btn_add" onclick="addDelivery(0)">אשר תעודה</button>
-<button id="btn_addline" onclick="addLine(0)">הוסף שורה</button>
+<button id="btn_addline" onclick="addLine('<?php print Fresh::getPost(); ?>', 0, <?php print $user_id; ?>)"?>הוסף שורה</button>
+
 <button id="btn_addline" onclick="addLine(1)">מוצר לא באתר</button>
 <textarea id="logging" rows="2" cols="50"></textarea>
 

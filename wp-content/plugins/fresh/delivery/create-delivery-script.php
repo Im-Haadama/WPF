@@ -3,7 +3,6 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-//print gui_select_product("datalist", '', array("datalist" => "im_products"));
 ?>
 
 <script>
@@ -21,12 +20,13 @@ error_reporting(E_ALL);
     const refund_total_id = <?php print eDeliveryFields::refund_line; ?>;
     const line_type_id = <?php print eDeliveryFields::line_type; ?>;
 
-    function getPrice(my_row) {
+    function getPrice(my_row, user_id) {
         // var product_info = get_value(document.getElementById("nam_" + my_row));
         // if (!product_info.indexOf(")")) return;
         var product_id = get_value_by_name("nam_" + my_row); // product_info.substr(0, product_info.indexOf(")"));
         var request = "delivery-post.php?operation=get_price_vat&id=" + product_id; //encodeURI(product_name);
-            if (typeof(client_type) != "undefined") request += "&type=" +  client_type;
+
+        if (typeof(user_id) != "undefined") request += "&user_id=" +  user_id;
 
         xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function () {
@@ -70,48 +70,6 @@ error_reporting(E_ALL);
             var del = document.getElementById("delivery");
             if (del) del.focus();
         }
-    }
-
-    function addLine(draft) {
-        var table = document.getElementById('del_table');
-//        var hidden = [];
-//        for (var i = 0; i < table.rows.length; i++) {
-//            for (var j = 0; j < table.rows[0].cells.length; j++)
-//                table.rows[i].cells[j].style.display = 'visible';
-////             hidden[i] = table.rows[0].cells[i].style.display;
-//
-//        }
-//        return;
-
-        var lines = table.rows.length;
-        var line_id = lines - 4;
-        var row = table.insertRow(lines - 4);
-//        row.insertCell(0).style.visibility = false;              // 0 - select
-        var list = "items";
-        if (draft) list = "draft_items";
-        let input = "<?php $args = array("events" => "onchange=\"getPrice(XX)\"", "datalist" => "YYY");
-            print EscapeString(Fresh_Product::gui_select_product( "nam_XX", '', $args )); ?>";
-        input = input.replace(/XX/g, line_id);
-        input = input.replace(/YYY/g, list);
-
-        row.insertCell(-1).innerHTML = input;// "<input id=\"nam_" + line_id + "\" type=\"text\" list=\"" + list + "\" onchange=\"getPrice(" + line_id + ")\">";   // 1 - product name
-        row.insertCell(-1).innerHTML = "0";                       // 2 - quantity ordered
-        row.insertCell(-1).innerHTML = "";                        // 3 - unit ordered
-        // row.insertCell(-1).innerHTML = ""; // order total
-        row.insertCell(-1).innerHTML = "<input id=\"deq_" + line_id + "\" type=\"text\" onchange='calcDelivery()'>";   // 4 - supplied
-        row.insertCell(-1).innerHTML = "<input id=\"prc_" + line_id + "\" type=\"text\">";   // 5 - price
-        row.insertCell(-1).innerHTML = "<label id=\"lpr_" + line_id + "\" type=\"text\">";   // line price
-        row.insertCell(-1).innerHTML = "<input id=\"hvt_" + line_id + "\"  type = \"checkbox\" checked>"; // 6 - has vat
-        row.insertCell(-1).id = "lvt_" + line_id;                       // 7 - line vat
-        row.insertCell(-1).id = "del_" + line_id;   // 8 - total_line
-        row.insertCell(-1).id = "pac_" + line_id; // 9 - packing info
-        row.insertCell(-1).innerHTML = "<input id=\"typ_" + line_id + "\" type=\"text\" value=\"prd\">";   // 10 - line type
-
-
-        calcDelivery();
-//        row.insertCell(9).style.visibility = false;              // 9 - categ
-//        row.insertCell(10).style.visibility = false;              // 10 - refund q
-//        row.insertCell(11).style.visibility = false;              // 11 - refund total
     }
 
     function addDelivery(draft) {

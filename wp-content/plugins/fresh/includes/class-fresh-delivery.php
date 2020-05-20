@@ -288,22 +288,7 @@ class Fresh_Delivery {
 		// $line_price       = get_order_itemmeta( $line_id, '_line_total' );
 
 		// Todo: handle prices
-		switch ( $client_type ) {
-			case 0:
-				if ( $quantity_ordered )
-					$price = round( $order_line_total / $quantity_ordered, 1 );
-				else
-					$price = Fresh_Pricing::get_price( $prod_id);
-				break;
-			case 1:
-				$price = siton_price( $prod_id );
-				break;
-			case 2:
-				$price = get_buy_price( $prod_id );
-				break;
-			default:
-				$price = round( 1.3 * get_buy_price( $prod_id ), 1);
-		}
+		$price = Fresh_Pricing::get_price_by_type($prod_id, $client_type);
 
 		if ( $unit_ordered ) {
 			$quantity_ordered = "";

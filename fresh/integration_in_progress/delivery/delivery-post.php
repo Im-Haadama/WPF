@@ -53,21 +53,6 @@ switch ( $operation ) {
 		add_delivery_lines( $delivery_id, $_lines, $edit );
 		break;
 
-	case "get_price_vat":
-		if ( isset( $_GET["id"] ) ) {
-			$id = $_GET["id"];
-			// print "id = " . $id . "<br/>";
-		} else {
-			$name = $_GET["name"];
-			$sql  = "SELECT id FROM wp_posts WHERE post_title = '" . urldecode( $name ) . "' and post_status = 'publish'";
-			$id   = SqlQuerySingleScalar( $sql );
-			// print "id: " . $id;
-		}
-		$p = new Fresh_Product( $id );
-		operation_get_price( $id );
-		print ',';
-		print $p->getVatPercent();
-		break;
 	case "get_price":
 		if ( isset( $_GET["id"] ) ) {
 			$id = $_GET["id"];
