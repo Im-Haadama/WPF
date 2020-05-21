@@ -2,24 +2,6 @@
 
 
 class Fresh_Packing {
-
-//	static function add_admin( $menu ) {
-////		$menu->AddMenu( 'Fresh Packing', 'Packing', 'show_manager', 'packing', 'Fresh_Packing::admin' );
-//		$menu->AddSubMenu( 'packing', 'edit_shop_orders',
-//			array(
-//				array(
-//					'page_title' => 'Needed products',
-//					'menu_title' => 'Needed Products',
-//					'menu_slug'  => 'needed_products',
-//					'function'   => __CLASS__ . '::needed_products'
-//				),
-//				array(
-//					'page_title' => 'Orders to handle',
-//					'function'   => __CLASS__ . '::OrdersToHandle'
-//				)
-//			) );
-//	}
-
 	static function needed_products() {
 		$result = "";
 
