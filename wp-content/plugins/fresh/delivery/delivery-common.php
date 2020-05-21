@@ -30,37 +30,6 @@ function print_fresh_category() {
 	print rtrim( $list, ", " );
 }
 
-function print_deliveries( $query, $selectable = false ) {
-	// print "q= " . $query . "<br/>";
-	$data = "";
-	$sql = 'SELECT posts.id, order_is_group(posts.id), order_user(posts.id) '
-	       . ' FROM `wp_posts` posts'
-	       . ' WHERE ' . $query;
-
-	$sql .= ' order by 1';
-
-	$orders    = SqlQuery( $sql );
-	$prev_user = - 1;
-	while ( $order = SqlFetchRow( $orders ) ) {
-		$order_id   = $order[0];
-		$o          = new Order( $order_id );
-		$is_group   = $order[1];
-		$order_user = $order[2];
-		if ( ! $is_group ) {
-			$data .= $o->PrintHtml( $selectable );
-			continue;
-		} else {
-			if ( $order_user != $prev_user ) {
-				$data      .= $o->PrintHtml( $selectable );
-				$prev_user = $order_user;
-			}
-		}
-	}
-
-	return $data;
-}
-
-
 function delivery_table_line( $ref, $fields, $edit = false ) {
 	//"onclick=\"close_orders()\""
 	$row_text = "";

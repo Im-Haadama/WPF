@@ -1,0 +1,12 @@
+Invoice4u
+-=-=--=-=
+
+Login(force = false)
+Force = true: don't use save token. Create a new one and save id.
+Force = false: if saved token exists return it. Other otherwise create and new one and save id.
+
+CreateDocument
+- First login (force = false).
+- Get invoice user.
+
+

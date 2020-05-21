@@ -697,7 +697,6 @@ class Finance {
 
 		$file = FINANCE_INCLUDES_URL . 'account.js';
 		wp_enqueue_script( 'account', $file, null, $this->version, false );
-
 	}
 
 	public function run() {
@@ -822,10 +821,11 @@ class Finance {
 
 	static function Invoice4uConnect()
 	{
+		if ($i = Finance_Invoice4u::getInstance()) return $i;
 		if (defined('INVOICE_USER') and defined('INVOICE_PASSWORD'))
-			new Finance_Invoice4u(INVOICE_USER, INVOICE_PASSWORD);
+			return new Finance_Invoice4u(INVOICE_USER, INVOICE_PASSWORD);
 		else MyLog("No invoice user or password");
 
-		return true;
+		return null;
 	}
 }

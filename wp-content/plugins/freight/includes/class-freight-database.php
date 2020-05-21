@@ -16,8 +16,9 @@ class Freight_Database extends Core_Database {
 		$current = self::CheckInstalled("Freight", "tables");
 		$db_prefix = GetTablePrefix();
 
-
 		if ($current == $version and ! $force) return true;
+
+		SqlQuery("alter table ${db_prefix}mission_types add default_rate float");
 
 		SqlQuery("alter table ${db_prefix}mission_types add start_address varchar(200) charset utf8, add end_address varchar(200) charset utf8;");
 

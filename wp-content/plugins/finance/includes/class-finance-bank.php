@@ -711,19 +711,6 @@ class Finance_Bank
 		MyLog( $sql );
 	}
 
-function business_open_ship( $part_id ) {
-	$sql = "select id, date, amount, net_amount, ref " .
-	       " from im_business_info " .
-	       " where part_id = " . $part_id .
-	       " and invoice is null " .
-	       " and document_type = " . FreshDocumentType::ship;
-
-	$data = GuiTableContent( "table", $sql );
-
-	// $rows = sql_query_array($sql );
-
-	return $data; // gui_table($rows);
-}
 
 static function bank_check_dup( $fields, $values ) {
 	$table_prefix = GetTablePrefix();

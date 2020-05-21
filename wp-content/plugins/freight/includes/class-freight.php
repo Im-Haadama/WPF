@@ -12,15 +12,23 @@ class Freight {
 	 */
 	protected $auto_loader;
 	protected $settings;
+
+	/**
+	 * @return Freight_Legacy
+	 */
+	public function getLegacy(): ?Freight_Legacy {
+		return $this->legacy;
+	}
+
 	protected $database;
-//	protected $order;
+	protected $legacy;
 
 	/**
 	 * Plugin version.
 	 *
 	 * @var string
 	 */
-	public $version = '1.0';
+	public $version = '1.1';
 
 	private $plugin_name;
 
@@ -103,6 +111,10 @@ class Freight {
 		$this->includes(); // Loads class autoloader
 		$this->auto_loader = new Core_Autoloader(FREIGHT_ABSPATH);
 		$this->settings = new Freight_Settings();
+		if (defined('FREIGHT_LEGACY_USER')) {
+			$this->legacy = new Freight_Legacy(FREIGHT_LEGACY_USER);
+			$this->legacy->init_hooks();
+		}
 
 		$this->init_hooks();
 
@@ -133,7 +145,6 @@ class Freight {
 		GetSqlConn(ReconnectDb());
 		Freight_Methods::init();
 		Freight_Mission_Manager::init_hooks();
-
 	}
 
 	/**
@@ -497,15 +508,13 @@ class Freight {
     {
         $file = FREIGHT_INCLUDES_URL . 'js/admin.js';
 	    wp_register_script( 'freight_admin', $file);
-
-//	    $params = array(
-//	    	'admin_post' => get_site_url() . '/wp-content/plugins/freight/post.php'
-//	    );
-//	    wp_localize_script('freight_admin', 'freight_admin_params', $params);
-//
 	    wp_enqueue_script('freight_admin');
 
-    }
+		$file = FREIGHT_INCLUDES_URL . 'js/legacy.js';
+		wp_register_script( 'legacy', $file);
+		wp_enqueue_script( 'legacy', $file, null, $this->version, false );
+
+	}
 
 	/*-- Start product quantity +/- on listing -- */
 	public function freight_add_quantity_fields($html, $product) {

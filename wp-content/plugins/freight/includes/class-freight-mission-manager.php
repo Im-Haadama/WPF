@@ -81,7 +81,7 @@ class Freight_Mission_Manager
 	{
 		$table = "missions";
 		$db_prefix = "im_";
-		$sql = "SELECT * FROM ${db_prefix}$table where date >= curdate()";
+		$sql = "SELECT * FROM ${db_prefix}$table"; //  where date >= curdate()";
 
 		print Core_Html::GuiTableContent( "table", $sql, $args );
 
@@ -100,16 +100,16 @@ class Freight_Mission_Manager
 		}
 
 		$header = "Missions";
-		$week = GetParam("week", false, null);
+		$week = GetParam("week", false, date('Y-m-d', strtotime('last sunday')));
 		if ($week)
 			$header .= __("Missions of week") . " " . $week;
-
 
 		$result = Core_Html::GuiHeader(1, $header);
 
 		self::create_missions();
 
-		$result .= self::show_missions($week ? "first_day_of_week(date) = '$week'" : null);
+		$result .= self::show_missions($week ? " first_day_of_week(date) = '$week'" : null);
+		$result .= Core_Html::GuiHyperlink("last week", AddToUrl("week", date('Y-m-d', strtotime("$week -1 week"))));
 
 		print $result;
 	}
@@ -128,6 +128,7 @@ class Freight_Mission_Manager
 		if (! $query)
 			$query = "date >= '" . date('Y-m-d', strtotime('last sunday') ). "'";
 
+		print "q=$query<br/>";
 		$result = "";
 
 		$sql = "select id from im_missions where " . $query; // FIRST_DAY_OF_WEEK(date) = " . quote_text($week);
@@ -147,7 +148,7 @@ class Freight_Mission_Manager
 		$args["add_checkbox"] = true;
 		$args["post_file"] = Freight::getPost();
 
-		$sql = "select * from im_missions where id in (" . CommaImplode($missions) . ") order by date";
+		$sql = "select id, date, name, mission_type from im_missions where id in (" . CommaImplode($missions) . ") order by date";
 
 		$args["links"] = array("id" => AddToUrl( "id", "%s"));
 
@@ -179,6 +180,7 @@ class Freight_Mission_Manager
 		$multi = Core_Db_MultiSite::getInstance();
 		if (! $multi->isMaster()){
 			$url = Freight::getPost() . "?operation=sync_data_missions";
+//			print $multi->getSiteURL($multi->getMaster()) . $url;
 
 			$html = $multi->Execute( $url, $multi->getMaster() );
 
@@ -217,7 +219,40 @@ class Freight_Mission_Manager
 			return;
 		}
 
-		$result .= self::show_missions($week ? "first_day_of_week(date) = '$week'" : null);
+		$args = [];
+		$args["links"] = array("mission" => AddToUrl("id", "%d"));
+		$args["post_file"] = Freight::getPost();
+		$rows = SqlQueryAssoc("select p.post_status as status, pm.meta_value as mission, m.name, count(*) as c
+from wp_postmeta pm 
+    join wp_posts p,
+     im_missions m
+where meta_key = 'mission_id' 
+  and pm.post_id = p.ID 
+  and p.post_status not in ('wc-completed','wc-cancelled', 'trash')
+and pm.meta_value > 0
+and m.id = pm.meta_value
+group by pm.meta_value, p.post_status");
+
+		$today_missions = SqlQueryArrayScalar("select id from im_missions where date = curdate()");
+//		var_dump($today_missions);
+		if ($today_missions)
+			foreach ($today_missions as $mission) {
+				$found = false;
+				if ( $rows ) {
+					foreach ( $rows as $row ) {
+						if ( $row['mission'] == $mission ) {
+							$found = true;
+						}
+					}
+				}
+				if (! $found)
+					array_push($rows, array("status"=>"new", "mission"=>$mission, "count"=> 0));
+			}
+		if (count($rows)) {
+			array_unshift($rows, array("status", "mission", "count"));
+			$result .= Core_Gem::GemArray( $rows, $args, "missions" );
+//		$result .= self::show_missions($week ? "first_day_of_week(date) = '$week'" : null);
+		}
 
 		print $result;
 
@@ -946,6 +981,7 @@ class Freight_Mission_Manager
 	static function delivery_table_header( $edit = false ) {
 		$data = "";
 		$data .= "<table><tr>";
+		$data .= "<td><h3>בחר</h3></td>";
 		$data .= "<td><h3>אתר</h3></td>";
 		$data .= "<td><h3>מספר </br>/הזמנה<br/>אספקה</h3></td>";
 		$data .= "<td><h3>מספר </br>לקוח</h3></td>";
@@ -958,7 +994,7 @@ class Freight_Mission_Manager
 		$data .= "<td><h3>מזומן/המחאה</h3></td>";
 		$data .= "<td><h3>משימה</h3></td>";
 		$data .= "<td><h3>אתר</h3></td>";
-		$data .= "<td><h3>מספר משלוח</h3></td>";
+		$data .= "<td><h3>דמי משלוח</h3></td>";
 
 		// $data .= "<td><h3>מיקום</h3></td>";
 		return $data;

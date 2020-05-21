@@ -1,5 +1,5 @@
 <?php
-/require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
+require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
 require_once( "../catalog/catalog.php" );
 
 //if ( ! im_user_can( "show_catalog" ) ) {

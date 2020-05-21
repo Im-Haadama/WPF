@@ -46,38 +46,41 @@ class Finance_Invoice4u
 	/**
 	 * @return Finance_Invoice4u
 	 */
-	static public function getInstance(): Finance_Invoice4u {
-		if (! self::$instance) throw new Exception("no instance");
+	static public function getInstance(): ?Finance_Invoice4u {
+//		if (! self::$instance) throw new Exception("no instance");
 		return self::$instance;
 	}
-
 
 	// public $doc;
 
 	public function Login() {
 		if ( ! $this->token ) {
+			// Try the saved one.
+//			if ($this->token = InfoGet("invoice_token_" . $this->user)) return true;
+
 			self::DoLogin( $this->user, $this->password );
-			if ( ! $this->token ) {
-				throw new Exception( "Can't login" );
-			}
+
+			if ($this->token) return true;
 		}
+		return false;
 	}
 
-	private function DoLogin( $invoice_user, $invoice_password ) {
+	private function DoLogin( $invoice_user, $invoice_password, $force = false ) {
 		MyLog("Invoice4u Login");
-//		if (get_user_id() == 1) print $invoice_user . " " .$invoice_password ."<br/>";
-//		MyLog($invoice_user . " " . $invoice_password);
+
 		$wsdl = ApiService . "/LoginService.svc?wsdl";
 		$user = array( 'username' => $invoice_user, 'password' => $invoice_password, 'isPersistent' => false );
 
 		$this->requestWS( $wsdl, "VerifyLogin", $user );
 		$this->token = $this->result;
-//		MyLog($this->token);
+
+//		// Save the token
+//		InfoUpdate("invoice_token_". $this->user, $this->token);
 	}
 
 	private function requestWS( $wsdl, $service, $params )
 	{
-		MyLog(__FUNCTION__, $service, 'invoice4u.log');
+		MyLog(__FUNCTION__, $wsdl . " " . $service, 'invoice4u.log');
 		if (! defined('WSDL_CACHE_NONE')) return null;
 		try {
 			$options = array(
@@ -88,8 +91,6 @@ class Finance_Invoice4u
 			);
 
 			$client = new SoapClient( $wsdl, $options );
-
-			// var_dump($client->__getTypes()); //exit;
 
 			$response = $client->$service( $params );
 
@@ -171,34 +172,33 @@ class Finance_Invoice4u
 //        $this->result = $this->requestWS($wsdl, "CreateDocument", array('doc' => $this->doc, 'token' => $this->token));
 //    }
 
-	public function GetInvoiceUserId( $customer_id, $client_email = null) {
-		if ( ! ( $customer_id > 0 ) ) {
-			throw new Exception( "Bad customer id " . __CLASS__ . " " . $customer_id );
-		}
+//	public function GetInvoiceUserId( $customer_id, $client_email = null) {
+//		if ( ! ( $customer_id > 0 ) ) {
+//			throw new Exception( "Bad customer id " . __CLASS__ . " " . $customer_id );
+//		}
+//
+//		// Try local cache
+//		$id = get_user_meta( $customer_id, 'invoice_id', 1 );
+//
+//		if (is_numeric($id) and ($id > 0)) return $id;
+//
+//		// Try email
+//		MyLog( "performance - searching customer by email $client_email", __METHOD__ );
+//		$client = $this->GetCustomerByEmail( $client_email );
+//
+//		if ( ! isset( $client->ID ) ) return null;
+//
+//		// if found, save
+//		if (is_numeric($client->ID) and ($client->ID > 0))
+//			update_user_meta( $customer_id, 'invoice_id', $client->ID );
+//		return $client->ID;
+//	}
 
-		// Try local cache
-		$id = get_user_meta( $customer_id, 'invoice_id', 1 );
-
-		if (is_numeric($id) and ($id > 0)) return $id;
-
-		// Try email
-		MyLog( "performance - searching customer by email $client_email", __METHOD__ );
-		$client = $this->GetCustomerByEmail( $client_email );
-
-		if ( ! isset( $client->ID ) ) return null;
-
-		// if found, save
-		if (is_numeric($client->ID) and ($client->ID > 0))
-			update_user_meta( $customer_id, 'invoice_id', $client->ID );
-		return $client->ID;
-	}
-
-	public function GetCustomerByEmail( $email ) {
+	public function GetCustomerIDByEmail( $email ) {
 		$wsdl = ApiService . "/CustomerService.svc?wsdl";
 
 		$cust        = new InvoiceCustomer( "" );
 		$cust->Email = $email;
-		// print $email;
 		$response = $this->requestWS( $wsdl, "GetCustomers", array(
 			'cust'       => $cust,
 			'token'      => $this->token,
@@ -208,11 +208,11 @@ class Finance_Invoice4u
 			return null;
 		}
 		$customer = $response->Response->Customer;
-		if ( isset($customer->Email)) return $customer;
+		if ( isset($customer->Email)) return $response->Response->Customer->ID;
 		return null;
 	}
 
-	public function GetCustomerByName( $name ) {
+	private function GetCustomerByName( $name ) {
 		$wsdl = ApiService . "/CustomerService.svc?wsdl";
 
 		$this->result = $this->requestWS( $wsdl, "GetByName", array( 'name' => $name, 'token' => $this->token ) );
@@ -220,7 +220,7 @@ class Finance_Invoice4u
 		return $this->result;
 	}
 
-	public function GetCustomerById( $id ) {
+	public function GetCustomerById( $id )  {
 		$wsdl = ApiService . "/CustomerService.svc?wsdl";
 
 		$cust = new InvoiceCustomer( "" );
@@ -230,6 +230,12 @@ class Finance_Invoice4u
 			'token'      => $this->token,
 			'getAllRows' => true
 		) );
+
+//		print "error:"; var_dump($response->Errors); print "<br/>";
+//		print "info:"; var_dump($response->Info); print "<br/>";
+//		print "open_info: "; var_dump($response->OpenInfo); print "<br/>";
+//		print "response:"; var_dump($response->response); print "<br/>";
+		if (! $response->Response) return null;
 
 		$customers = $response->Response->Customer;
 
@@ -247,7 +253,7 @@ class Finance_Invoice4u
 		return null;
 	}
 
-	public function CreateUser( $user_id, $name, $email, $phone )
+	public function CreateUser( $name, $email, $phone )
 	{
 		if (! $this->token) {
 			MyLog("invoice4u: Not connected");
@@ -262,6 +268,7 @@ class Finance_Invoice4u
 		$this->result    = $this->requestWS( $wsdl, "Create",
 			array( 'customer' => $customer, 'token' => $this->token ) );
 
+		var_dump($this->result);
 		if ( $this->result->Errors ) return false;
 
 		return true;

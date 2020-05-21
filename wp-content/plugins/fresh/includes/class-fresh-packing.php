@@ -248,21 +248,26 @@ class Fresh_Packing {
 	static function add_freight($col)
 	{
 		global $post;
-		$m = new Fresh_Order($post->ID);
+		$O = new Fresh_Order($post->ID);
 		switch ($col) {
 			case "freight":
-			    print self::gui_select_mission("mis_" . $post->ID, $m->getMission(), array("events" => 'onclick="event.stopPropagation();mission_changed(' . $post->ID .')"'));
+			    print self::gui_select_mission("mis_" . $post->ID, $O->getMission(), array("events" => 'onclick="event.stopPropagation();mission_changed(' . $post->ID .')"'));
 			    break;
 			case 'city':
-				print $m->getOrderInfo( '_shipping_city' );
+				print $O->getOrderInfo( '_shipping_city' );
 				break;
+			case 'fee':
+				print $O->getShippingFee();
+				break;
+
 
 		}
 	}
 
 	static function wc_new_order_column( $columns ) {
 		$columns['city'] = __("City");
-		 $columns['freight'] = __("Freight");
+		$columns['fee'] = __("fee");
+		$columns['freight'] = __("Freight");
 
 		return $columns;
 	}

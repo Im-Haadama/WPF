@@ -241,11 +241,9 @@ class Fresh_Order_Management {
 			$fee = $O->getShippingFee();
 			// Check if there is delivery fee.
 			if (! $fee) {
-				MyLog("No delivery fee");
-				Fresh::instance()->add_admin_notice("No delivery fee. Add to order before completion");
-				// Change back the order status.
-				$O->setStatus('wc-processing');
-				return false;
+				MyLog("No delivery fee for order $order_id");
+				Fresh::instance()->add_admin_notice("No delivery fee for order $order_id");
+//				 Change back the order status.
 			}
 
 			$del_id = Fresh_Delivery::CreateDeliveryFromOrder($order_id, 1);

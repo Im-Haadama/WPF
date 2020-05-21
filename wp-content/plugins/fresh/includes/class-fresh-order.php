@@ -1117,7 +1117,7 @@ class Fresh_Order {
 	function PrintHtml( $selectable = false ) {
 		$fields = array();
 
-		if ( $selectable ) array_push( $fields, Core_Html::gui_checkbox( "chk" . $this->order_id, "deliveries", true ) );
+		if ( $selectable ) array_push( $fields, Core_Html::GuiCheckbox( "chk" . $this->order_id, false, array("class"=>"deliveries") ) );
 
 		array_push( $fields, Core_Db_MultiSite::LocalSiteName() );
 
@@ -1147,6 +1147,8 @@ class Fresh_Order {
 		array_push( $fields, self::getMission() );
 
 		array_push( $fields, Core_Db_MultiSite::LocalSiteID() );
+
+		array_push($fields, $this->getShippingFee());
 
 		return  "<tr> " . self::delivery_table_line( 1, $fields ) . "</tr>";
 	}

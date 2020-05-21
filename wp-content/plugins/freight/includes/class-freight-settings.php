@@ -81,6 +81,14 @@
 				      'menu_title' => 'Missions',
 				      'menu_slug' => 'missions',
 				      'function' => 'Freight_Mission_Manager::missions'));
+
+			if ($legacy = Freight::instance()->getLegacy())
+				$menu->AddSubMenu('freight', 'edit_shop_orders',
+					array('page_title' => 'Legacy',
+					      'menu_title' => 'Legacy',
+					      'menu_slug' => 'legacy',
+					      'function' => array($legacy, 'general_settings')));
+
 		}
 
 		static function suppliers() {

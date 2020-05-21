@@ -95,7 +95,7 @@ class Mission {
 
 	public function getDefaultFee()
 	{
-		return SqlQuerySingleScalar( "select default_price from im_mission_types where id = " . self::getMissionType());
+		return SqlQuerySingleScalar( "select default_rate from im_mission_types where id = " . self::getMissionType());
 	}
 	/**
 	 * @param mixed $start_address

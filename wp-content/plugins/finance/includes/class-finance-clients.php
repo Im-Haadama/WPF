@@ -331,8 +331,6 @@ class Finance_Clients
 	}
 
 	static function CreateDocument( $type, $ids, $customer_id, $email, $date, $cash = 0, $bank = 0, $credit = 0, $check = 0, $subject = null ) {
-		require_once(ABSPATH . "im-config.php");
-
 		if ( ! ( $customer_id > 0 ) )
 			throw new Exception( "Bad customer id" . __CLASS__);
 
@@ -343,8 +341,8 @@ class Finance_Clients
 		}
 
 		$C = new Fresh_Client($customer_id);
-		$C->createInvoiceUser();
 		$invoice->Login();
+		$C->createInvoiceUser();
 
 		$invoice_client_id = $invoice->GetInvoiceUserId( $customer_id, $email );
 
