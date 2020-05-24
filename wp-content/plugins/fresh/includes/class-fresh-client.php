@@ -160,29 +160,19 @@ class Fresh_Client {
 		$invoice = Finance_Invoice4u::getInstance();
 		if (! $invoice) return null;
 
-	    // Try the cache
-		$id = get_user_meta( $this->user_id, 'invoice_id', 1 );
-		if ($id) return $invoice->GetCustomerById($id);
+//	    // Try the cache
+//		$id = get_user_meta( $this->user_id, 'invoice_id', 1 );
+//		if ($id) return $invoice->GetCustomerById($id);
 
         // Try to get by email.
-        $id = $invoice->GetCustomerIDByEmail($this->get_customer_email());
-        if ($id) return $invoice->GetCustomerById($id);
+        $c = $invoice->GetCustomerByEmail($this->get_customer_email());
+        if ($c) return $c;
 
         // Create the user.
         if ($invoice->CreateUser($this->getName(), $this->get_customer_email(), $this->get_phone_number())){
             var_dump($invoice->result);
             die (1);
         }
-//        return $user;
-
-//            return null;
-//        $id = $user->
-//
-//		try {
-//			return Finance_Invoice4u::getInstance()->GetInvoiceUserId( $this->getUserId(), $this->get_customer_email() );
-//		} catch (Exception $e) {
-//			return null;
-//		}
         return null;
 	}
 

@@ -1919,9 +1919,9 @@ class Core_Html {
 	 */
 	static function html2array( $text )
 	{
-		require_once("wp-content/plugins/flavor/includes/core/data/im_simple_html_dom.php");
+		require_once( ABSPATH . 'vendor/simple_html_dom.php' );
 
-		$dom   = im_str_get_html( $text );
+		$dom = \Dom\str_get_html( $text );
 		$array = array();
 
 		foreach ( $dom->find( 'tr' ) as $row ) {

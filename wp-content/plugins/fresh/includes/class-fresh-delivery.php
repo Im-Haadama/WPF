@@ -56,6 +56,7 @@ class Fresh_Delivery {
 		);
 		if ($id > 0){
 			$del_info = SqlQuerySingleAssoc("select * from im_delivery where id = $id");
+//			var_dump($del_info);
 			if (! $del_info) throw new Exception("Delivery $id not found");
 			$this->delivery_total = $del_info['total'];
 			$this->order_id = $del_info['order_id'];
@@ -1286,7 +1287,7 @@ class Fresh_Delivery {
 	/**
 	 * @return int
 	 */
-	public function getDeliveryTotal(): int {
+	public function getDeliveryTotal(): float {
 //		print "total=" .$this->delivery_total . "<br/>";
 		return $this->delivery_total;
 	}

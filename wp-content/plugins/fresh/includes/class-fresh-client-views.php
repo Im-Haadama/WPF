@@ -310,15 +310,14 @@ class Fresh_Client_Views {
 		where client_id = ' . $customer_id;
 
 		if ($not_paid)
-			$sql .= " and transaction_method = 'משלוח' ";
+			$sql .= " and transaction_method = 'משלוח'  and
+          delivery_receipt(transaction_ref) is null and date > '2018-01-01'";
 
 		if ($query) $sql .= " and " . $query;
 
 		$sql .= ' order by date desc ';
 
-		if ( $top ) {
-			$sql .= " limit " . $top;
-		}
+		if ( $top ) $sql .= " limit " . $top;
 
 		$args = [];
 		$args["class"] = "widefat";
@@ -331,13 +330,16 @@ class Fresh_Client_Views {
 		$args["post_file"] = Fresh::getPost();
 		$first = true;
 
-		$args["page"] = -1;// all rows
+		$args["page_number"] = -1;// all rows
 		$args["header_fields"] = array("transaction_amount" => "Transaction amount",
 		                               "transaction_method" => "Operation",
 		                               "transaction_ref" => "Reference number",
 		                               "balance" => "Balance",
 		                               "order_id" => "Order",
 		                               "receipt" => "Receipt");
+
+		$args["add_checkbox"] = true;
+		$args["checkbox_class"] = "trans_checkbox";
 
 		$data1 = Core_Data::TableData($sql, $args);
 

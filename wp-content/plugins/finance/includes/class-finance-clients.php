@@ -244,21 +244,22 @@ class Finance_Clients
 	 * @return bool|int|string
 	 * @throws Exception
 	 */
-	static function create_receipt_from_account_ids( $cash, $bank, $check, $credit, $change, $user_id, $date, $row_ids )
+	static function create_receipt_from_account_ids( $cash, $bank, $check, $credit, $user_id, $date, $row_ids )
 	{
-		if ( ! $date ) {
-			$date = date( 'Y-m-d' );
-		}
-		if ( ! ( $user_id > 0 ) ) {
-			throw  new Exception( "Bad customer id " . __CLASS__ );
-		}
+		if ( ! $date ) $date = date( 'Y-m-d' );
+
+		if ( ! ( $user_id > 0 ) ) throw  new Exception( "Bad customer id " . __CLASS__ );
 
 		$del_ids = array();
 		$no_ids  = true;
+		$dels_total = 0;
 		foreach ( $row_ids as $id ) {
 			if ( $id > 0 ) {
 				$no_ids = false;
 				$del_id = SqlQuerySingleScalar( "select transaction_ref from im_client_accounts where ID = " . $id );
+				$d = new Fresh_Delivery($del_id);
+				$dels_total += $d->getDeliveryTotal();
+//				print "dt=$dels_total<br/>";
 				if ( $del_id > 0 ) {
 					array_push( $del_ids, $del_id );
 				} else {
@@ -270,6 +271,7 @@ class Finance_Clients
 				die ( "bad id " . $id );
 			}
 		}
+		$change = ($cash + $bank + $check + $credit) - $dels_total;
 
 		if ( $no_ids ) {
 			print "לא נבחרו תעודות משלוח";
@@ -281,6 +283,7 @@ class Finance_Clients
 
 	private static function CreateReceipt($cash, $bank, $check, $credit, $change, $user_id, $date, $del_ids)
 	{
+		print "cas=$cash bank=$bank check=$check credit=$credit change=$change<br/>";
 		Finance::Invoice4uConnect();
 
 		$u = new Fresh_Client( $user_id );
@@ -330,7 +333,8 @@ class Finance_Clients
 		return $pay_type;
 	}
 
-	static function CreateDocument( $type, $ids, $customer_id, $email, $date, $cash = 0, $bank = 0, $credit = 0, $check = 0, $subject = null ) {
+	static function CreateDocument( $type, $ids, $customer_id, $email, $date, $cash = 0, $bank = 0, $credit = 0, $check = 0, $subject = null )
+	{
 		if ( ! ( $customer_id > 0 ) )
 			throw new Exception( "Bad customer id" . __CLASS__);
 
@@ -342,11 +346,16 @@ class Finance_Clients
 
 		$C = new Fresh_Client($customer_id);
 		$invoice->Login();
-		$C->createInvoiceUser();
 
-		$invoice_client_id = $invoice->GetInvoiceUserId( $customer_id, $email );
+		$invoice_client_id = $C->getInvoiceUser();
+			// $C->createInvoiceUser(); // $invoice->( $customer_id, $email );
 
-		$client = $invoice->GetCustomerById( $invoice_client_id );
+		if (! $invoice_client_id) {
+			print "cant find user";
+			return false;
+		}
+
+		$client = $invoice->GetCustomerByEmail( $email);
 
 		if ( !$client or  ! ( $client->ID ) > 0 ) {
 			print "Client not found " . $customer_id . "<br>";

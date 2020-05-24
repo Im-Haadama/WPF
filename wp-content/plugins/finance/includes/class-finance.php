@@ -353,7 +353,7 @@ class Finance {
 				$client_id = GetParam( "client_id", true );
 				$site_id   = GetParam( "site_id", false, null );
 				if ( ! $site_id ) {
-					return Fresh_Client_Views::show_trans( $client_id );
+					return Fresh_Client_Views::show_trans( $client_id,  TransView::not_paid );
 				}
 				// $data .= $this->Run( $func, $site_id, $first, $debug );
 				$link = Finance::getPostFile() . "?operation=get_open_trans&client_id=" . $client_id;
@@ -382,18 +382,24 @@ class Finance {
 			case "create_receipt":
 				if (! Finance::Invoice4uConnect())
 					return false;
-				$cash    = GetParam( "cash" );
-				$bank    = GetParam( "bank" );
-				$check   = GetParam( "check" );
-				$credit  = GetParam( "credit" );
-				$change  = GetParam( "change" );
+				$cash    = (float) GetParam( "cash", false, 0 );
+				$bank    = (float) GetParam( "bank", false, 0 );
+				$check   = (float) GetParam( "check", false, 0 );
+				$credit  = (float) GetParam( "credit", false, 0 );
+//				$change  = (float) GetParam( "change", false, 0 );
 				$row_ids = GetParamArray( "row_ids" );
 				$user_id = GetParam( "user_id", true );
 				$date    = GetParam( "date" );
 
+				if (! ($cash + $bank + $check + $credit > 1)) {
+					print ( "No payment ammount given" );
+
+					return false;
+				}
+
 				//print "create receipt<br/>";
 				// (NULL, '709.6', NULL, NULL, '205.44', '', '2019-01-22', Array)
-				return Finance_Clients::create_receipt_from_account_ids( $cash, $bank, $check, $credit, $change, $user_id, $date, $row_ids );
+				return Finance_Clients::create_receipt_from_account_ids( $cash, $bank, $check, $credit, $user_id, $date, $row_ids );
 				break;
 		}
 
@@ -821,7 +827,9 @@ class Finance {
 
 	static function Invoice4uConnect()
 	{
+		MyLog(__FUNCTION__);
 		if ($i = Finance_Invoice4u::getInstance()) return $i;
+		MyLog("Connecting");
 		if (defined('INVOICE_USER') and defined('INVOICE_PASSWORD'))
 			return new Finance_Invoice4u(INVOICE_USER, INVOICE_PASSWORD);
 		else MyLog("No invoice user or password");

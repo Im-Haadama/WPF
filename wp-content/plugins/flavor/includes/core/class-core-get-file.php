@@ -1,4 +1,5 @@
 <?php
+return;
 /**
  * Website: http://sourceforge.net/projects/simplehtmldom/
  * Acknowledge: Jose Solorzano (https://sourceforge.net/projects/php-html/)
@@ -76,6 +77,7 @@ class Core_Get_File {
 	static function im_file_get_html( $url, $use_include_path = false, $context = null, $offset = 0, $maxLen = - 1, $lowercase = true, $forceTagsClosed = true, $target_charset = DEFAULT_TARGET_CHARSET, $stripRN = true, $defaultBRText = DEFAULT_BR_TEXT, $defaultSpanText = DEFAULT_SPAN_TEXT ) {
 		ob_start();
 		// We DO force the tags to be terminated.
+
 		$dom = new im_simple_html_dom( null, $lowercase, $forceTagsClosed, $target_charset, $stripRN, $defaultBRText, $defaultSpanText );
 		// For sourceforge users: uncomment the next line and comment the retreive_url_contents line 2 lines down if it is not already done.
 		// Todo: replace with curl or something with time limit. For now, check unexist server cause general timeout (Sql error : MySQL server has gone away)

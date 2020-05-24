@@ -45,8 +45,14 @@ class Finance_Bank
 		AddAction("finance_bank_receipts", array($this, "show_bank_receipts"));
 		AddAction("finance_show_bank_import", array($this, "show_bank_import"));
 		AddAction("finance_do_import", array($this, "do_bank_import"));
+		AddAction("bank_create_invoice", array($this, 'bank_create_invoice'));
 	}
 
+	function bank_create_invoice()
+	{
+		$id = GetParam( "id" );
+		return $this->create_invoice($id);
+	}
 	/**
 	 * @return Core_Users
 	 */
@@ -148,9 +154,6 @@ class Finance_Bank
 			case "bank_status":
 				return self::bank_status();
 
-			case "bank_create_invoice":
-				$id = GetParam( "id" );
-				return $this->create_invoice($id);
 
 			case "bank_create_receipt":
 				$bank_amount = GetParam( "bank" );
@@ -442,9 +445,10 @@ class Finance_Bank
 
 	static public function bank_wrapper()
 	{
+//		print Core_Html::Gui_Header(1, "Bank");
 		$operation = GetParam("operation", false, "bank_status");
 
-		print apply_filters("finance_bank_accounts", $operation);
+		print apply_filters($operation, '');
 	}
 
 	function show_bank_payments($account_id = 1)
@@ -550,7 +554,7 @@ class Finance_Bank
 	function create_invoice($id)
 	{
 		$b = Finance_Bank_Transaction::createFromDB( $id );
-		$result = "";
+		$result = "Creating invoice for bank transaction";
 		$result .= Core_Html::gui_header( 1, "הפקת חשבונית קבלה להפקדה מבנק " );
 
 		$result .= Core_Html::gui_header( 2, "פרטי העברה" );
