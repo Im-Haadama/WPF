@@ -458,6 +458,7 @@ function SqlTableId($table_name)
 				 "conversion" => "id",
 				 "woocommerce_shipping_zones" => "zone_id",
 	                "wp_woocommerce_shipping_zone_methods" => "zone_id",
+	                "supplier_price_list" => "ID",
 	                "working" => "id");
 	if (isset($cache[$table_name])) return $cache[$table_name];
 

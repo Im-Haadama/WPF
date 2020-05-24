@@ -80,7 +80,7 @@ class Core_Data
 	{
 		$db_prefix = GetTablePrefix($table_name);
 		// TODO: adding meta key when needed(?)
-		if (! in_array($table_name, array("missions"))) die ("not allowed $table_name");
+		if (! in_array($table_name, array("missions", "supplier_price_list"))) die ("not allowed $table_name");
 
 		SqlQuery( "delete from ${db_prefix}$table_name where id in (" . CommaImplode($rows) . ")");
 

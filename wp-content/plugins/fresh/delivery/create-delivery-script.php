@@ -216,11 +216,12 @@ error_reporting(E_ALL);
 //                            prod_name = "הנחת כמות";
 //                        }
 //                    }
-                    if (!prod_id && (prod_name.indexOf(")") > 0)) {
-                        prod_id = prod_name.substr(0, prod_name.indexOf(")"));
-                        prod_name = prod_name.substr(prod_name.indexOf(")"));
-                    }
-                    if ((prod_id != -1) && !(prod_id > 0)) prod_id = 0; // New or unknown
+//                     if (!prod_id && (prod_name.indexOf(")") > 0)) {
+//                         prod_id = prod_name.substr(0, prod_name.indexOf(")"));
+//                         prod_name = prod_name.substr(prod_name.indexOf(")"));
+//                     }
+                    if ((prod_id != -1) && !(prod_id > 0))
+                        prod_id = 0; // New or unknown
 
                     if (prod_name.substr(0, 6) === "===&gt")
                         part_of_basket = 1;

@@ -26,8 +26,8 @@ class Fresh_Delivery {
 	private $delivery_total = 0;
 	private $delivery_due_vat = 0;
 	private $delivery_total_vat = 0;
-	private $margin_total = 0;
-	private $user_id = 0;
+	private $margin_total;
+	private $user_id;
 	private $delivery_fields_names;
 
 	public function __construct( $id ) {
@@ -56,7 +56,7 @@ class Fresh_Delivery {
 		);
 		if ($id > 0){
 			$del_info = SqlQuerySingleAssoc("select * from im_delivery where id = $id");
-//			var_dump($del_info);
+			if (! $del_info) throw new Exception("Delivery $id not found");
 			$this->delivery_total = $del_info['total'];
 			$this->order_id = $del_info['order_id'];
 		}
@@ -270,7 +270,7 @@ class Fresh_Delivery {
 		}
 	}
 
-	private function load_line_from_order($line_ids, $client_type, &$prod_id, &$prod_name, &$quantity_ordered, &$unit_q, &$P, &$price )
+	private function load_line_from_order($line_ids, $client_type, &$prod_id, &$prod_name, &$quantity_ordered, &$unit_q, &$P, &$price, &$prod_comment )
 	{
 		$line_id = $line_ids[0];
 		// print "lid=". $line_id . "<br/>";
@@ -278,7 +278,7 @@ class Fresh_Delivery {
 		$prod_name                           = SqlQuerySingleScalar( $sql );
 		$quantity_ordered                    = Fresh_Packing::get_order_itemmeta( $line_ids, '_qty' );
 		$unit_ordered                        = Fresh_Packing::get_order_itemmeta( $line_id, 'unit' );
-		$prod_comment = Fresh_Packing::get_order_itemmeta($line_id, 'product_comment');
+		$prod_comment                        = Fresh_Packing::get_order_itemmeta($line_id, 'product_comment');
 
 		$order_line_total                    = round( Fresh_Packing::get_order_itemmeta( $line_ids, '_line_total' ), 1);
 		$this->order_total                   += $order_line_total;
@@ -287,8 +287,8 @@ class Fresh_Delivery {
 		$P                                   = new Fresh_Product( $prod_id );
 		// $line_price       = get_order_itemmeta( $line_id, '_line_total' );
 
-		// Todo: handle prices
-		$price = Fresh_Pricing::get_price_by_type($prod_id, $client_type);
+		$price = $order_line_total / $quantity_ordered;
+			// Fresh_Pricing::get_price_by_type($prod_id, $client_type);
 
 		if ( $unit_ordered ) {
 			$quantity_ordered = "";
@@ -356,16 +356,32 @@ class Fresh_Delivery {
 		return $delivery_id;
 	}
 
-	public static function AddDeliveryLine( $product_name, $delivery_id, $quantity, $quantity_ordered, $unit_ordered, $vat, $price, $line_price, $prod_id, $part_of_basket ) {
-
-		if ( ! ( $delivery_id > 0 ) ) {
-			print "must send positive delivery id. Got " . $delivery_id . "<br/>";
-			die ( 1 );
-		}
+	public function AddDeliveryLine( $product_name,
+		$quantity,
+		$quantity_ordered,
+		$unit_ordered,
+		$vat,
+		$price,
+		$line_price,
+		$prod_id,
+		$part_of_basket )
+	{
 		$product_name = preg_replace( '/[\'"%()]/', "", $product_name );
+		if (! is_numeric($quantity)) { print "bad quantity for $product_name"; return false; }
+		if (! is_numeric($quantity_ordered)) $quantity_ordered = 0;
+		if (! is_numeric($unit_ordered)) $unit_ordered = 0;
+		if (! is_numeric($vat)) { $vat = 0;  }
+		if (! is_numeric($price)) { print "bad price for $product_name"; return false; }
+		if (! is_numeric($line_price)) { print "line price not number $line_price"; return false; }
+		$line_price = round($line_price, 2);
+		$quantity = round($quantity, 2);
+		$price = round($price, 2);
+		if ($line_price - ($quantity * $price) > 0.001) { print "bad line price: prod=$product_name $prod_id q=$quantity price=$price line_price=$line_price diff = " . ($line_price - ($quantity * $price)) ."<br/>";
+			print "bad line price $line_price (prod id $prod_id) should be " . ($quantity * $price); return false; }
+		if (! is_numeric($prod_id)) { $prod_id = 0; }
 
 		$sql = "INSERT INTO im_delivery_lines (delivery_id, product_name, quantity, quantity_ordered, unit_ordered, vat, price, line_price, prod_id, part_of_basket) VALUES ("
-		       . $delivery_id . ", "
+		       . $this->ID . ", "
 		       . "'" . urldecode( $product_name ) . "', "
 		       . $quantity . ", "
 		       . $quantity_ordered . ", "
@@ -376,9 +392,9 @@ class Fresh_Delivery {
 		       . $prod_id . ', '
 		       . $part_of_basket . ' )';
 
-		MyLog( "$delivery_id: $product_name $quantity $quantity_ordered $vat $price $line_price $prod_id", "db-add-delivery-line.php" );
+		MyLog( "$this->ID: $product_name $quantity $quantity_ordered $vat $price $line_price $prod_id", "db-add-delivery-line.php" );
 
-		SqlQuery( $sql );
+		return SqlQuery( $sql );
 	}
 
 	function send_mail( $admin_email, $revision = false ) {
@@ -776,7 +792,7 @@ class Fresh_Delivery {
 		$prod_comment = "";
 
 		if ( $load_from_order ) {
-			$this->load_line_from_order($line_ids, $client_type, $prod_id, $prod_name, $quantity_ordered, $unit_q, $P, $price );
+			$this->load_line_from_order($line_ids, $client_type, $prod_id, $prod_name, $quantity_ordered, $unit_q, $P, $price, $prod_comment );
 		} else {
 			$this->load_line_from_db($line_id, $P, $prod_id, $prod_name, $quantity_ordered, $quantity_delivered, $price, $delivery_line, $has_vat, $line_color);
 		}
@@ -1302,6 +1318,52 @@ class Fresh_Delivery {
 	public function getDeliveryFieldsNames(): array {
 		return $this->delivery_fields_names;
 	}
+
+	public function add_delivery_lines( $delivery_id, $lines, $edit ) {
+		$debug = true;
+		if ( $edit ) {
+			$d = new Fresh_Delivery( $delivery_id );
+			if (! $d) return false;
+			$d->DeleteLines();
+		}
+
+		for ( $pos = 0; $pos < count( $lines ); $pos += 8 ) {
+			$prod_id = $lines[ $pos ];
+
+			$p = new Fresh_Product($prod_id);
+			if ($prod_id == -1)
+				$product_name = "הנחת סל";
+			else
+				if ( is_numeric( $prod_id ) ) {
+					$product_name = $p->getName();
+				} else {
+					if ( strstr( $prod_id, ")" ) ) {
+						$prod_id      = substr( $prod_id, 0, strstr( $prod_id, ")" ) );
+						$product_name = substr( $prod_id, strstr( $prod_id, ")" ) );
+					} else {
+						$product_name = $prod_id;
+						$prod_id      = 0;
+					}
+				}
+			$quantity         = $lines[ $pos + 1 ];
+			$quantity_ordered = $lines[ $pos + 2 ];
+			$unit_ordered     = $lines[ $pos + 3 ];
+			if ( ! ( strlen( $unit_ordered ) > 0 ) ) {
+				$unit_ordered = "NULL";
+			} // print $unit_ordered . "<br/>";
+			$vat        = $lines[ $pos + 4 ];
+			$price      = $lines[ $pos + 5 ];
+			$line_price = $lines[ $pos + 6 ];
+			$part_of_basket = $lines[$pos + 7];
+			if ($debug)
+				MyLog("id: " . $prod_id . ", name: " . $product_name . " delivery_id: " . $delivery_id . " quantity: " . $quantity . " quantity_ordred: " . $quantity_ordered .
+			      "units: " . $unit_ordered . " vat: " . $vat . " price: " . $price . " line_price: " . $line_price );
+			$rc =  self::AddDeliveryLine( $product_name, $quantity, $quantity_ordered, $unit_ordered, $vat, $price, $line_price, $prod_id, $part_of_basket );
+			if (! $rc) return false;
+		}
+		return true;
+	}
+
 }
 
 class FreshDocumentType {

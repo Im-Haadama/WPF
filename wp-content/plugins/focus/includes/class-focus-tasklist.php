@@ -323,8 +323,8 @@ class Focus_Tasklist {
 				       "'" . $row["task_description"] . "', " . $template_id . ", " . enumTasklist::waiting . ", now(), " . $project_id . ",  " .
 				       $priority . "," . $owner . ")";
 
-				// sql_query( $sql );
-				print $sql;
+				SqlQuery( $sql );
+				//print $sql;
 			}
 		}
 	}

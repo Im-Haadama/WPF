@@ -100,7 +100,7 @@ class Israel_Shop
 
 		add_action('vat_add_category', array($this, 'vat_add_category'));
 		add_action('vat_remove_category', array($this, 'vat_remove_category'));
-		AddAction('data_update', array($this, 'data_update'));
+		AddAction('israel_data_update', array($this, 'data_update'));
 	}
 
 	public function data_update()

@@ -49,7 +49,11 @@ class Fresh_Suppliers {
 			"prepare_plug" => "Fresh_Pricelist_Item::add_prod_info", 
 			"action_before_import" => array(__CLASS__, "action_before_import"),
 			"page_number"=>0,
+			"edit"=>true,
+			"edit_cols"=> array("product_name"=>1,"price"=>1),
+			"v_key" => "supplier_id",
 			"add_checkbox" => true);
+
 		$this->gem->AddVirtualTable( "pricelist", $args );
 
 		// load classes
@@ -59,16 +63,18 @@ class Fresh_Suppliers {
 
 	static function admin_page()
 	{
-		$operation = GetParam("operation");
+		$operation = GetParam("operation", false, null, true);
 
 		Core_Gem::getInstance(); // Make sure that initiated.
 
+		MyLog("op=$operation");
 		$result = "";
 		if ($operation){
 			$args = self::Args("suppliers");
 			$args["operation"] = $operation;
-			$id = GetParam("id", true);
+			$id = GetParam("supplier_id", true);
 			$result = apply_filters( $operation, $result, $id, $args );
+			MyLog($result);
 		}
 
 		if ( !$result )
@@ -100,7 +106,9 @@ class Fresh_Suppliers {
 		// $args["links"] = array("id"=> AddToUrl(array( "operation" => "show_supplier", "id" => "%s")));
 		$args["query"] = "is_active = 1";
 		$args["header_fields"] = array("supplier_name" => "Name", "supplier_description" => "Description");
-		$args["actions"] = array(array("Show products", AddToUrl(array("operation" => "gem_v_show", "table"=>"pricelist", "id" => "%s"))));
+		$args["actions"] = array(array("Show products", AddToUrl(array("operation" => "gem_v_show", "table"=>"pricelist", "supplier_id" => "%s"))));
+//		$result .= "page number: " . $args["page_number"] . "<br/>";
+//		$result .= "page: " . $args["page"] . "<br/>";
 		$result .= Core_Gem::GemTable("suppliers", $args);
 
 		// $result .= GuiTableContent("im_suppliers",null, $args);
@@ -129,7 +137,7 @@ class Fresh_Suppliers {
 	static function Args( $table_name = null, $action = null ) {
 		$ignore_list = [];
 		$args        = array(
-			"page"      => GetParam( "page_number", false, - 1 ),
+			"page_number"      => GetParam( "page_number", false, -1 ),
 			"post_file" => self::getPost()
 		);
 		if ( GetParam( "non_active", false, false ) ) {

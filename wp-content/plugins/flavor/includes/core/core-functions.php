@@ -130,13 +130,15 @@ require_once (ABSPATH . '/wp-includes/pluggable.php');
 	 *
 	 * @return mixed|null
 	 */
-	function GetParam( $key, $mandory = false, $default = null ) {
+	function GetParam( $key, $mandory = false, $default = null, $uset = false ) {
 		if ( isset( $_GET[ $key ] ) ) {
-			return $_GET[ $key ];
+			$v = $_GET[$key];
+			if ($uset) unset($_GET[$key]);
+			return $v;
 		}
 
 		if ( $mandory ) {
-			die ( "Error: " . __FUNCTION__ . " key " . $key . " not supplied" );
+			die ( "Error: " . debug_backtrace()[1]['function']  . " key " . $key . " not supplied" );
 		} else {
 			return $default;
 		}
@@ -557,9 +559,9 @@ require_once (ABSPATH . '/wp-includes/pluggable.php');
 		if ($debug) {
 			$f = $function_to_add;
 			if ( is_array( $f ) ) {
-				$f = $f[0] . "::" . $f[1];
+				$f = $f[1];
 			}
-			print "adding $tag $f<br/>";
+			MyLog("adding $tag $f<br/>");
 		}
 
 		return add_action($tag, $function_to_add, $priority, $accepted_args);

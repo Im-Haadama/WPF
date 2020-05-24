@@ -13,7 +13,7 @@ class Core_Gem {
 	private function __construct( ) {
 		$this->object_types = array();
 		self::$_instance = $this;
-		AddAction("gem_show", array(__CLASS__, "show_wrap"), 10, 3);
+		AddAction("gem_show", array($this, "show_wrap"), 10, 3);
 		AddAction("gem_v_show", array(__CLASS__, "v_show_wrap"));
 
 		// Import
@@ -38,13 +38,23 @@ class Core_Gem {
 	{
 		$this->object_types[$table] = $args;
 
+//		MyLog(__FUNCTION__ . " $table");
+//		print "table=$table<br/>";
+		$db_table = null;
+		if (isset($args["database_table"]))	$db_table = $args["database_table"];
+
+//		MyLog("$table: db_table = $db_table");
 		AddAction("gem_v_add_" . $table, array($class, "v_add_wrapper"), 10, 3);
+		AddAction("gem_add_" . $db_table, array($class, "v_add_wrapper"), 10, 3);
 		AddAction("gem_v_edit_" . $table, array($class, "v_edit_wrapper"), 10, 3);
 		AddAction("gem_v_show_" . $table, array($class, "v_show_wrapper"), 10, 3);
 	}
 
 	static function AddTable($table, $class = 'Core_Gem')
 	{
+		$file = FLAVOR_INCLUDES_URL . 'core/gem.js';
+		wp_enqueue_script( 'gem', $file, null, "1.0", false );
+
 		$debug = 0; //  (get_user_id() == 1);
 		// if (get_user_id() == 1) print __CLASS__ . ":" . $table;
 		// New Row
@@ -53,13 +63,28 @@ class Core_Gem {
 		// Edit
 		AddAction("gem_edit_" . $table, array($class, 'edit_wrapper'), 10, 3);
 
-		// Show
+		// Show row
 		AddAction("gem_show_" . $table, array($class, 'show_wrapper'), 10, 3, $debug);
 
 		// Import
 		AddAction("gem_import_$table", array($class, "import_wrapper"), 10, 3);
+
+		// Page
+		AddAction("gem_page_$table", array($class, "page_wrapper"), 10, 3);
+
 	}
 
+	static function page_wrapper($result)
+	{
+		$operation = GetParam("operation", true);
+		$result .= $operation;
+		$table = substr($operation, 8);
+		$args = [];
+		$args["page"] = GetParam("param", false, 1);
+		$result .= self::GemTable($table, $args);
+		print $result;
+		return true;
+	}
 	static function edit_wrapper($result, $id, $args)
 	{
 		if (! ($id > 0)) return __FUNCTION__ . ":bad id";
@@ -199,6 +224,7 @@ class Core_Gem {
 		return $result;
 
 	}
+
 	static function v_show_wrap($result = null)
 	{
 		if (! $result)
@@ -206,11 +232,14 @@ class Core_Gem {
 		$v_table = GetParam("table", true);
 
 		$args = self::getInstance()->object_types[$v_table];
-		$args["id"] = GetParam("id", true);
-		if (isset(self::getInstance()->object_types[$v_table]["post_file"]))
-			$args["post_file"] = self::getInstance()->object_types[$v_table]["import_page"] . "?id=" . $args['id'] . "&table=" . $v_table;
+		$v_key= GetArg($args, "v_key", "id");
+		$args["id"] = GetParam($v_key, true);
+		// Next line doesn't make sense. If returns check https://fruity.co.il/wp-admin/admin.php?page=suppliers&operation=gem_v_show&table=pricelist&id=100007
+//		if (isset(self::getInstance()->object_types[$v_table]["post_file"]))
+//			$args["post_file"] = self::getInstance()->object_types[$v_table]["import_page"] . "?id=" . $args['id'] . "&table=" . $v_table;
 
 		$instance = self::getInstance();
+
 		$result .= $instance->GemVirtualTable($v_table, $args);
 
 		if (isset(self::getInstance()->object_types[$v_table]["import"]))
@@ -231,11 +260,13 @@ class Core_Gem {
 
 	static function v_add_wrapper($operation, $id, $args)
 	{
-		$table_name = substr($operation, 11);
+		$operation = GetArg($args, "operation", $operation);
+		$table_name = substr($operation, 8);
 		if (! $id) return "id is missing";
 		$instance = self::getInstance();
 		if (! $instance) return __CLASS__ . ":" . __FUNCTION__ . " no instance. Call constructor first";
-		return "lalal"; // $instance->GemVirtualTable($table_name, $args);
+		$args['values'] = GetParams();
+		return self::GemAddRow($table_name, 'Add', $args);
 	}
 
 	static function show_wrap($result, $id = 0, $args = null)
@@ -253,7 +284,7 @@ class Core_Gem {
 		$result .= Core_Html::NewRow($table_name, $args);
 		$post = GetArg($args, "post_file", null);
 		$next_page = GetArg($args, "next_page", null);
-		if (! $post) die(__FUNCTION__ . ":" . $text . "must send post_file " . $table_name);
+		if (! $post) die(__FUNCTION__ . " :" . $text . "must send post_file " . $table_name);
 		if ($next_page){
 			$result .= '<script>
 		function next_page(xmlhttp) {
@@ -270,12 +301,6 @@ class Core_Gem {
 		}
 		return $result;
 	}
-
-	function NewElement($table_name, $args)
-	{
-		return Core_Html::NewRow($table_name, $args);
-	}
-
 
 	/**
 	 * @param $table_name
@@ -341,7 +366,7 @@ class Core_Gem {
 		do {
 			if ($post_action = GetArg($args, "post_action", null)) break;
 			if ($post_file = GetArg($args, "post_file", null)) // For regular next_page and all post.
-				$post_action = $post_file."?operation=gem_show&table=".$table_id;
+				$post_action = $post_file."?operation=gem_page_".$table_id;
 		} while (0);
 
 		if (! $post_action) {
@@ -447,11 +472,13 @@ class Core_Gem {
 		// print "c=" . $args["count"] . "<br/>";
 		$rows_data = Core_Data::TableData( $sql, $args);
 
+		MyLog(__FUNCTION__ . " $table_name");
 		return Core_Gem::GemArray($rows_data, $args, $table_name);
 	}
 
 	function GemVirtualTable($table_name, $args)
 	{
+		MyLog(__FUNCTION__, " $table_name");
 		if (! $table_name) die("no table given:" . __FUNCTION__);
 
 		if (! isset($this->object_types[$table_name])) return __FUNCTION__ . ": coding error $table_name wasn't added";

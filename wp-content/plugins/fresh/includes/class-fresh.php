@@ -207,6 +207,10 @@ class Fresh {
 //		add_filter('editable_roles', 'edit_roles');
 		/// check siton:
 //		if (get_user_id() == 1) wp_set_current_user(474);
+
+		/// check admin;
+	//	if (get_user_id() == 1) wp_set_current_user(601);
+
 	}
 
 	/**

@@ -130,13 +130,14 @@ class Fresh_Pricelist_Item {
 
 	static public function add_prod_info($row, $edit = true) {
 		$create_info = GetParam( "create_products", false, false );
-		$supplier_id = GetParam( "id", true );
+		$supplier_id = GetParam( "supplier_id", true );
 
 		$pl_id = $row["id"];
 
 		$item = new Fresh_Pricelist_Item( $pl_id );
 
-		return $item->AddProdInfo( $row, $edit, $create_info, $supplier_id );
+		$row = $item->AddProdInfo( $row, $edit, $create_info, $supplier_id );
+		return $row;
 	}
 
 	public function AddProdInfo($row, $edit, $create_info, $supplier_id)
