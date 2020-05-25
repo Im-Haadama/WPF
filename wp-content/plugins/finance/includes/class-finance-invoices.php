@@ -49,7 +49,8 @@ class Finance_Invoices {
 		return $args;
 	}
 
-	static function table_wrapper( $result, $b, $c ) {
+	static function Table( $base_url ) {
+		$result = "";
 		if ( $operation = GetParam( "operation" ) ) {
 			return apply_filters( $operation, self::Args() );
 		}
@@ -67,13 +68,13 @@ class Finance_Invoices {
 		);
 
 		$table = $t->Create(
-			AddToUrl( array(
+			AddParamToUrl($base_url, array(
 				"operation"     => "invoice_add",
 				"document_type" => 4,
 				"part_id"       => "%s",
 				"date"          => $year . '-' . '%02s-28'
 			) ),
-			AddToUrl( array(
+			AddParamToUrl($base_url, array(
 				"operation" => "invoice_supplier",
 				"part_id"   => "%s"
 			) ), // 'invoice_table.php?part_id=%s',
@@ -84,9 +85,9 @@ class Finance_Invoices {
 		} else {
 			$result .= "No invoices yet, for this year";
 		}
-		$result .= Core_Html::GuiHyperlink("Add", AddToUrl("operation", "invoice_add")) . "<br/>";
+		$result .= Core_Html::GuiHyperlink("Add", AddParamToUrl($base_url, "operation", "invoice_add")) . "<br/>";
 
-		$result .= Core_Html::GuiHyperlink( "שנה קודמת", AddToUrl( "the_year", $year - 1 ) );
+		$result .= Core_Html::GuiHyperlink( "שנה קודמת", AddParamToUrl($base_url, "the_year", $year - 1 ) );
 
 		return $result;
 	}

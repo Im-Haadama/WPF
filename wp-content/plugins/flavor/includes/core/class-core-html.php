@@ -1694,6 +1694,7 @@ class Core_Html {
 		$contents = "";
 		$class = GetArg($args, "class", "tab");
 		$all_loaded = GetArg($args, "tabs_load_all", false);
+//		$result .= "al=$all_loaded<br/>";
 
 		$div_args = $args;
 		$div_class = "div_$class";
@@ -1717,6 +1718,7 @@ class Core_Html {
 			$div_args["style"] = (($selected_tab == $name) ? 'display: block' : "display: none");
 
 			if ($all_loaded or ($selected_tab == $name)){
+//				$result .= "loaded $name<br/>";
 				$contents .= Core_Html::GuiDiv($name, $tab[2], $div_args);
 				$selected_tab = null;
 			}

@@ -36,17 +36,35 @@ class Fresh_Supplier_Balance {
 	}
 
 	static function main() {
-		$supplier_id = GetParam( "supplier_id", false, null );
+		$result = "";
 
-		if ( $supplier_id ) {
-			print self::get_supplier_balance($supplier_id);
+		$selected_tab = GetParam("selected_tab", false, null);
+		$tabs = [];
+
+		array_push( $tabs, array( "supplier_balance", "Suppliers balances", self::Balance() ) );
+		array_push( $tabs, array( "supplier_invoices", "Suppliers invoices", Finance_Invoices::Table(AddToUrl("selected_tab", "supplier_invoices")) ) );
+
+		$args = [];
+		if ($selected_tab) {
+			$args["tabs_load_all"] = false;
+			$args["selected_tab"] = $selected_tab;
 		} else {
-			print self::Table();
+			$args["tabs_load_all"] = true;
 		}
+
+		$result .= Core_Html::gui_div("logging");
+		$result .= Core_Html::GuiTabs( $tabs, $args );
+
+		print  $result;
+
+		$tabs = [];
 	}
 
-	static function Table($include_zero = false)
-		{
+	static function Balance($include_zero = false)
+	{
+		$supplier_id = GetParam( "supplier_id", false, null );
+		if ( $supplier_id ) return self::get_supplier_balance($supplier_id);
+
 		$result = "<table>";
 		
 		$sql = "SELECT supplier_balance(part_id, curdate()) as balance, part_id, supplier_displayname(part_id) \n"

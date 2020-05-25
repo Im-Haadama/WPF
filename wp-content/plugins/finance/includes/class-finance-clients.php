@@ -283,7 +283,7 @@ class Finance_Clients
 
 	private static function CreateReceipt($cash, $bank, $check, $credit, $change, $user_id, $date, $del_ids)
 	{
-		print "cas=$cash bank=$bank check=$check credit=$credit change=$change<br/>";
+//		print "cas=$cash bank=$bank check=$check credit=$credit change=$change<br/>";
 		Finance::Invoice4uConnect();
 
 		$u = new Fresh_Client( $user_id );
