@@ -949,7 +949,6 @@ function sm_woocommerce_ajax_add_to_cart() {
 	$product_id = apply_filters('ql_woocommerce_add_to_cart_product_id', absint($_POST['product_id']));
 
 	$quantity = empty($_POST['quantity']) ? 1 : wc_stock_amount($_POST['quantity']);
-	MyLog("q=$quantity");
 
 	$variation_id = absint($_POST['variation_id']);
 

@@ -157,6 +157,11 @@ class Finance_Invoice4u
 		return $docNum;
 	}
 
+	function InvoiceLog($message)
+	{
+		MyLog($message,"func",'invoice4u.log');
+	}
+
 //    public function CreateDocument()
 //    {
 //        $wsdl = "http://private.invoice4u examples.co.il/Services/DocumentService.svc?wsdl";
@@ -187,6 +192,7 @@ class Finance_Invoice4u
 //	}
 
 	public function GetCustomerByEmail( $email ) {
+		$this->InvoiceLog($email);
 		$wsdl = ApiService . "/CustomerService.svc?wsdl";
 
 		$cust        = new InvoiceCustomer( "" );
@@ -196,21 +202,18 @@ class Finance_Invoice4u
 			'token'      => $this->token,
 			'getAllRows' => false
 		) );
-		if ( ! isset( $response->Response->Customer ) ) {
-			return null;
-		}
-		$customer = $response->Response->Customer;
-		if ( isset($customer->Email)) return $response->Response->Customer;
+		$this->InvoiceLog("found: " . isset( $response->Response->Customer ));
+		if ( isset( $response->Response->Customer ) ) return $response->Response->Customer;
 		return null;
 	}
 
-//	private function GetCustomerByName( $name ) {
-//		$wsdl = ApiService . "/CustomerService.svc?wsdl";
-//
-//		$this->result = $this->requestWS( $wsdl, "GetByName", array( 'name' => $name, 'token' => $this->token ) );
-//
-//		return $this->result;
-//	}
+	function GetCustomerByName( $name ) {
+		$wsdl = ApiService . "/CustomerService.svc?wsdl";
+
+		$this->result = $this->requestWS( $wsdl, "GetByName", array( 'name' => $name, 'token' => $this->token ) );
+
+		return $this->result;
+	}
 
 //	private function GetCustomerById( $id )  {
 //		$wsdl = ApiService . "/CustomerService.svc?wsdl";
@@ -253,9 +256,11 @@ class Finance_Invoice4u
 		$this->result    = $this->requestWS( $wsdl, "Create",
 			array( 'customer' => $customer, 'token' => $this->token ) );
 
+		var_dump($this->result);
+
 		if ( $this->result->Errors ) return false;
 
-		return true;
+
 	}
 }
 

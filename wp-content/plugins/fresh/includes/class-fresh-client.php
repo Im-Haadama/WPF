@@ -154,7 +154,25 @@ class Fresh_Client {
 		                             " and meta.post_id = posts.ID");
 	}
 
-	function getInvoiceUser()
+	function getInvoiceUserId($create = false)
+    {
+	    $invoice = Finance_Invoice4u::getInstance();
+	    if (! $invoice) return null;
+
+//	    // Try the cache
+		$id = get_user_meta( $this->user_id, 'invoice_id', 1 );
+		if ($id) return $id;
+
+		if ($u = self::getInvoiceUser($create)) {
+		    $id = $u->ID;
+
+		    // Save cache
+			update_user_meta( $this->user_id, 'invoice_id', $id );
+        }
+		return $id;
+    }
+
+	function getInvoiceUser($create = true)
 	{
 		// Invoice is alive?
 		$invoice = Finance_Invoice4u::getInstance();
@@ -165,8 +183,19 @@ class Fresh_Client {
 //		if ($id) return $invoice->GetCustomerById($id);
 
         // Try to get by email.
-        $c = $invoice->GetCustomerByEmail($this->get_customer_email());
+        $email = $this->get_customer_email();
+        $c = $invoice->GetCustomerByEmail($email);
+        if (is_array($c)) foreach ($c as $customer) {
+            if ($customer->Email == $email) return $customer;
+        }
         if ($c) return $c;
+
+        // Try to get by name (is unique in invoice4u);
+		$c = $invoice->GetCustomerByName($this->getName());
+		if ($c) return $c;
+
+        if (! $create) return null;
+        MyLog("Creating user " . $this->getName() . " " . $this->get_customer_email() . " ". $this->get_phone_number());
 
         // Create the user.
         if ($invoice->CreateUser($this->getName(), $this->get_customer_email(), $this->get_phone_number())){
@@ -178,9 +207,9 @@ class Fresh_Client {
 
 	function createInvoiceUser()
 	{
-		$I = Finance_Invoice4u::getInstance();
-		IF ($I) $I->CreateUser($this->getUserId(), $this->getName(), $this->get_customer_email(), $this->get_phone_number());
-		return $this->getInvoiceUser();
+		IF ($I = Finance_Invoice4u::getInstance())
+		    return $I->CreateUser($this->getName(), $this->get_customer_email(), $this->get_phone_number());
+		return null;
 	}
 
 	function getZone()
