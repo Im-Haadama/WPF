@@ -147,8 +147,6 @@ class Fresh_Packing {
 		foreach ( $needed_products as $prod_id => $product_info ) {
 			$prod        = new Fresh_Product( $prod_id );
 			$supplier_id = $prod->getSupplierId();
-//			if (! $supplier_id) $supplier_id = 100000000;
-//			print "sup=$supplier_id<br/>";
 
 			if ( ! in_array( $supplier_id, $suppliers ) and $supplier_id ) {
 				array_push( $suppliers, $supplier_id );
@@ -560,14 +558,12 @@ class Fresh_Packing {
 		foreach (Fresh_Category::GetTopLevel() as $term) {
 			$term = new Fresh_Category($term->term_id);
 			$table = self::PackingTable( $term);
+
 			if ($table) {
 				array_push($category_pages,
 				array($term->getName(),
 					$term->getName(),
 				$table));
-//				print Core_Html::GuiHeader(2, $term->getName());
-//
-//				print $table;
 			}
 		}
 		array_push($category_pages,
@@ -606,16 +602,15 @@ class Fresh_Packing {
 			$rows[$order_id] = $empty_line;
 			$rows[$order_id]["name"] = Core_Html::GuiHyperlink($C->getName(), "/wp-admin/post.php?post=$order_id&action=edit");
 
-			foreach ($O->getProducts() as $prod_info) {
-				$prod_id                       = $prod_info['prod_id'];
+			foreach ($O->getProducts() as $prod_id => $prod_q) {
+//				$prod_id                       = $prod_info['prod_id'];
 				$p = new Fresh_Product($prod_id);
 				if (! $term->in($p->getTerms())) continue;
-				$prod_q                        = $prod_info['quantity'];
+//				$prod_q                        = $prod_info['quantity'];
 				$rows[ $order_id ][ $prod_id ] = $prod_q;
 				if (! isset($rows["total"][$prod_id]))
 					$rows["total"][$prod_id] = 0;
 				$rows["total"][$prod_id] += $prod_q;
-//				print $rows["total"][$prod_id] . "<br/>";
 				if (! isset($rows["header"][$prod_id])) {
 					$p                          = new Fresh_Product( $prod_id );
 					$rows["header"][ $prod_id ] = $p->getName();
