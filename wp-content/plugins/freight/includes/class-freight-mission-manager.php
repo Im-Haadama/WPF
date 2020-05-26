@@ -177,28 +177,7 @@ class Freight_Mission_Manager
 		if ($week)
 			$header .= __("Missions of week") . " " . $week;
 
-		$multi = Core_Db_MultiSite::getInstance();
-		if (! $multi->isMaster()){
-			$url = Freight::getPost() . "?operation=sync_data_missions";
-//			print $multi->getSiteURL($multi->getMaster()) . $url;
-
-			$html = $multi->Execute( $url, $multi->getMaster() );
-
-			if (! $html) print "Can't get data from master<br/>";
-
-			if ( strlen( $html ) > 100 ) {
-				//printbr($html);
-				$multi->UpdateTable( $html, "missions", "id" );
-			} else {
-				print "short response. Operation aborted <br/>";
-				print "url = $url";
-				print $html;
-
-				return;
-			}
-
-			$multi->UpdateFromRemote( "missions", "id" );
-		}
+		self::update_missions_from_master();
 
 		$result = Core_Html::GuiHeader(1, $header);
 
@@ -207,8 +186,8 @@ class Freight_Mission_Manager
 			apply_filters($operation, $result);
 		}
 
-		$id = GetParam("id");
-		if ($id) {
+
+		if ($id = GetParam("id")) {
 			$m = new Mission($id);
 			$price = $m->getDefaultFee();
 			$result .= Core_Html::GuiHeader(2, $m->getMissionName() . "($id)");
@@ -222,7 +201,7 @@ class Freight_Mission_Manager
 		$args = [];
 		$args["links"] = array("mission" => AddToUrl("id", "%d"));
 		$args["post_file"] = Freight::getPost();
-		$rows = SqlQueryAssoc("select p.post_status as status, pm.meta_value as mission, m.name, count(*) as c
+		$rows = SqlQueryAssoc("select p.post_status as status, pm.meta_value as mission, m.name, count(*) as c, date
 from wp_postmeta pm 
     join wp_posts p,
      im_missions m
@@ -233,23 +212,22 @@ and pm.meta_value > 0
 and m.id = pm.meta_value
 group by pm.meta_value, p.post_status");
 
-		$today_missions = SqlQueryArrayScalar("select id from im_missions where date = curdate()");
+		$missions_data = SqlQuery("select id, name from im_missions where date = curdate()");
 //		var_dump($today_missions);
-		if ($today_missions)
-			foreach ($today_missions as $mission) {
-				$found = false;
-				if ( $rows ) {
-					foreach ( $rows as $row ) {
-						if ( $row['mission'] == $mission ) {
-							$found = true;
-						}
+		while ($mission = SqlFetchAssoc($missions_data)) {
+			$found = false;
+			if ( $rows ) {
+				foreach ( $rows as $row ) {
+					if ( $row['mission'] == $mission ) {
+						$found = true;
 					}
 				}
-				if (! $found)
-					array_push($rows, array("status"=>"new", "mission"=>$mission, "count"=> 0));
+			}
+			if (! $found)
+				array_push($rows, array("status"=>"new", "mission"=>$mission['id'], "name" => $mission['name'], "count"=> 0, "date" => "today"));
 			}
 		if (count($rows)) {
-			array_unshift($rows, array("status", "mission", "count"));
+			array_unshift($rows, array("status", "id", "mission", "count", "date"));
 			$result .= Core_Gem::GemArray( $rows, $args, "missions" );
 //		$result .= self::show_missions($week ? "first_day_of_week(date) = '$week'" : null);
 		}
@@ -420,6 +398,31 @@ group by pm.meta_value, p.post_status");
 		}
 	}
 
+	static function update_missions_from_master()
+	{
+		$multi = Core_Db_MultiSite::getInstance();
+		if (! $multi->isMaster()){
+			$url = Freight::getPost() . "?operation=sync_data_missions";
+//			print $multi->getSiteURL($multi->getMaster()) . $url;
+
+			$html = $multi->Execute( $url, $multi->getMaster() );
+
+			if (! $html) print "Can't get data from master<br/>";
+
+			if ( strlen( $html ) > 100 ) {
+				//printbr($html);
+				$multi->UpdateTable( $html, "missions", "id" );
+			} else {
+				print "short response. Operation aborted <br/>";
+				print "url = $url";
+				print $html;
+
+				return;
+			}
+
+			$multi->UpdateFromRemote( "missions", "id" );
+		}
+	}
 	static function show_mission_route($the_mission, $update = false, $debug = false, $missing = false)
 	{
 		$data = '<div id="route_div">';

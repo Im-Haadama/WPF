@@ -46,6 +46,8 @@ class Finance_Bank
 		AddAction("finance_show_bank_import", array($this, "show_bank_import"));
 		AddAction("finance_do_import", array($this, "do_bank_import"));
 		AddAction("bank_create_invoice", array($this, 'bank_create_invoice'));
+		AddAction("bank_create_pay", array($this, 'bank_payments'));
+		AddAction("get_supplier_open_account", array(Fresh_Supplier_Balance::instance(), 'supplier_open_account'));
 	}
 
 	function bank_create_invoice()
@@ -167,48 +169,6 @@ class Finance_Bank
 				return $this->create_multi_site_receipt( $bank_id, $bank_amount, $date, $change, $ids, $site_id, $user_id );
 				break;
 
-			case "bank_receipts":
-			case "receipts":
-
-				return;
-
-			case "bank_create_pay":
-				$id = GetParam( "id" );
-				print Core_Html::gui_header( 1, "רישום העברה שבוצעה " );
-
-				$b = Finance_Bank_Transaction::createFromDB( $id );
-				print Core_Html::gui_header( 2, "פרטי העברה" );
-				$free_amount = $b->getOutAmount( true );
-				$client_name = $b->getClientName();
-				print Core_Html::gui_table_args( array(
-						array( "תאריך", Core_Html::gui_div( "pay_date", $b->getDate() ) ),
-						array( "סכום", Core_Html::gui_div( "bank", $b->getOutAmount() ) ),
-						array( "סכום לתיאום", Core_Html::gui_div( "bank", $free_amount ) ),
-						array( "מזהה", Core_Html::gui_div( "bank_id", $id )),
-						array( "Comment", $client_name	)
-						));
-
-				$lines = $b->getAttached();
-				if ( $lines ) {
-					print Core_Html::gui_header( 2, "שורות מתואמות" );
-
-					print gui_table_args( $lines );
-				}
-				$sums = array();
-				if ( $free_amount > 0 ) {
-//				print "a=" . $amount . "<br/>";
-					print Core_Html::gui_header( 2, "Select Supplier" );
-					print self::gui_select_open_supplier();
-				}
-				print '<div id="logging"></div>';
-				print '<div id="transactions"></div>';
-
-				print Core_Html::gui_table_args( array(
-					array("קשר",
-						  Core_Html::GuiButton( "btn_receipt", "link payment to invoice", array("action" => "link_invoice_bank()"))),
-					array( "סה\"כ", " <div id=\"total\"></div>" )), "payment_table"); //, "payment_table", true, true, $sums, "", "payment_table" ));
-
-				break;
 			case "bank_link_invoice":
 				$bank_id      = GetParam( "bank_id", true );
 				$supplier_id  = GetParam( "supplier_id", true );
@@ -390,7 +350,7 @@ class Finance_Bank
 	function gui_select_open_supplier( $id = "supplier" ) {
 		$multi_site = Core_Db_MultiSite::getInstance();
 
-		$values  = Core_Html::html2array( $multi_site->GetAll( "org/business/business-post.php?operation=get_supplier_open_account" ) );
+		$values  = Core_Html::html2array( $multi_site->GetAll( self::getPost() . "?operation=get_supplier_open_account" ) );
 
 		if (! $values) 	return "nothing found";
 		$open    = array();
@@ -443,6 +403,45 @@ class Finance_Bank
 		return $output;
 	}
 
+	 public function bank_payments()
+	{
+		$id = GetParam( "id" );
+		print Core_Html::gui_header( 1, "רישום העברה שבוצעה " );
+
+		$b = Finance_Bank_Transaction::createFromDB( $id );
+		print Core_Html::gui_header( 2, "פרטי העברה" );
+		$free_amount = $b->getOutAmount( true );
+		$client_name = $b->getClientName();
+		print Core_Html::gui_table_args( array(
+			array( "תאריך", Core_Html::gui_div( "pay_date", $b->getDate() ) ),
+			array( "סכום", Core_Html::gui_div( "bank", $b->getOutAmount() ) ),
+			array( "סכום לתיאום", Core_Html::gui_div( "bank", $free_amount ) ),
+			array( "מזהה", Core_Html::gui_div( "bank_id", $id )),
+			array( "Comment", $client_name	)
+		));
+
+		$lines = $b->getAttached();
+		if ( $lines ) {
+			print Core_Html::gui_header( 2, "שורות מתואמות" );
+
+			print gui_table_args( $lines );
+		}
+		$sums = array();
+		if ( $free_amount > 0 ) {
+//				print "a=" . $amount . "<br/>";
+			print Core_Html::gui_header( 2, "Select Supplier" );
+			print self::gui_select_open_supplier();
+		}
+		print '<div id="logging"></div>';
+		print '<div id="transactions"></div>';
+
+		print Core_Html::gui_table_args( array(
+			array("קשר",
+				Core_Html::GuiButton( "btn_receipt", "link payment to invoice", array("action" => "link_invoice_bank()"))),
+			array( "סה\"כ", " <div id=\"total\"></div>" )), "payment_table"); //, "payment_table", true, true, $sums, "", "payment_table" ));
+
+
+	}
 	static public function bank_wrapper()
 	{
 //		print Core_Html::Gui_Header(1, "Bank");

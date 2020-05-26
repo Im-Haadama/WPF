@@ -14,6 +14,8 @@ if (! get_user_id() and ! Core_Fund::check_password($user, $password)) {
 	if ( ! get_user_id(true) ) die('Not connected');
 }
 
+$finance->init();
+
 $rc = $finance->handle_operation($operation);
 
 if ($rc === false) { print "failed"; return; } // Something went wrong. The processing would print something.

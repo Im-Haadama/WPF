@@ -56,8 +56,6 @@ class Fresh_Supplier_Balance {
 		$result .= Core_Html::GuiTabs( $tabs, $args );
 
 		print  $result;
-
-		$tabs = [];
 	}
 
 	static function Balance($include_zero = false)
@@ -150,6 +148,23 @@ class Fresh_Supplier_Balance {
 		return $result;
 	}
 
+	function supplier_open_account()
+	{
+		$multi_site = Core_Db_MultiSite::getInstance();
+		$sql = "select " . $multi_site->LocalSiteId() . ", part_id, supplier_displayname(part_id), round(sum(amount),2) as total\n"
+		       . "from im_business_info\n"
+		       . "group by 2\n"
+		       . "having total < 0";
+
+		$data   = "<table>";
+		$result = SqlQuery( $sql );
+		while ( $row = SqlFetchRow( $result ) ) {
+			$data .= gui_row( $row );
+		}
+		$data .= "</table>";
+		print $data;
+		return true;
+	}
 }
 
 //

@@ -204,7 +204,7 @@ class Fresh_Suppliers {
 	// Supplier pricelist import
 	static function action_before_import(&$fields)
 	{
-		$supplier_id = GetParam("id", true);
+		$supplier_id = GetParam("supplier_id", true);
 		// sql_query("update line_status = 2 where supplier_id =$supplier_id")
 		// No delete anymore. We'll read the last date fields.
 //		SqlQuery("delete from im_supplier_price_list where supplier_id = $supplier_id");

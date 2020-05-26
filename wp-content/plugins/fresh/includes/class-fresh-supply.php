@@ -980,49 +980,6 @@ class Fresh_Supply {
 //	sql_query( $sql );
 //}
 //
-//function SuppliesTable( $status, $args = null ) {
-//
-//	switch ($status)
-//	{
-//		case SupplyStatus::NewSupply:
-//		case SupplyStatus::Sent:
-//			$sql = "SELECT id, supplier, date(date) FROM im_supplies WHERE status = $status " .
-//			       " ORDER BY 3 desc";
-//			break;
-//
-//		case SupplyStatus::OnTheGo:
-//			$sql = "SELECT id, supplier, date(date), mission_id FROM im_supplies WHERE status = $status " .
-//			       " ORDER BY 3 desc";
-//			break;
-//
-//		default:
-//			$sql = "SELECT id, supplier, date(date) FROM im_supplies WHERE status = $status " .
-//			       " ORDER BY 3 desc";
-//			$args["drill"] = true;
-//	}
-//
-//	$args["sql"] = $sql;
-//	$args["header"] = array("Id", "Supplier", "Date", "Mission");
-//	$args["add_checkbox"] = true;
-//	$args["selectors"] = array("supplier" => 'gui_select_supplier', "mission_id" => 'gui_select_mission');
-//	$args["links"] = array("id" => AddToUrl(array( "operation" =>"show", "id" => "%s")));
-//	$args["checkbox_class"] = gui_select_supply_status(null, $status);
-//	$args["edit"] = false;
-//	//
-//
-//	$result = GemTable("im_supplies", $args);
-//	if (! $result) return null;
-//
-//	// $result .= Core_Html::GuiButton("btn_delete", "close_supplies('" . $status_name . "')", "close");
-//	if ($status == SupplyStatus::NewSupply){
-//		$result .= Core_Html::GuiButton("btn_send", "send_supplies()", "send");
-//		$result .= Core_Html::GuiButton("btn_merge", "merge_supplies()", "merge");
-//		$result .= Core_Html::GuiButton("btn_delete", "supply_delete('new')", "delete");
-//	}
-//	return $result;
-//
-//	// return DoSuppliesTable( $sql );
-//}
 //
 //function DoSuppliesTable( $sql )
 //{
@@ -1533,45 +1490,5 @@ class Fresh_Supply {
 //
 //}
 //
-//function new_supply()
-//{
-//	$post_file = "wp-content/plugins/fresh/post.php";
-//
-//	$data = "";
-//	$data .= Core_Html::gui_header( 1, "יצירת אספקה" );
-//	$data .= gui_table_args(array(
-//		array(
-//			Core_Html::gui_header( 2, "בחר ספק" ),
-//			Core_Html::gui_header( 2, "בחר מועד" ),
-//			Core_Html::gui_header( 2, "בחר משימה" )
-//		),
-//		array(
-//			gui_select_supplier( "supplier_select", null, array("events" => 'onchange="new_supply_change()"')),
-//			gui_input_date( "date", "", date('y-m-d'),  'onchange="change_supplier()"'),
-//			gui_select_mission( "new_mission", "", array("events"=>"gui_select_mission") )
-//			// gui_select_mission( "mis_new")
-//		)
-//	),
-//		"supply_info",
-//		array("edit" => 1, "prepare"=>false));
-//
-//	$data .=Core_Html::gui_header( 2, "בחר מוצרים" );
-//
-//	$data .=gui_table_args( array( array( "פריט", "כמות", "קג או יח" ) ),
-//			"supply_items" );
-//
-//	$data .= Core_Html::GuiButton( "btn_add_line", "supply_new_add_line('". $post_file . "')", "הוסף שורה" );
-//	$data .= Core_Html::GuiButton( "btn_add_item", "supply_add()", "הוסף אספקה" );
-//
-//	$data .='<form name="upload_csv" id="upcsv" method="post" enctype="multipart/form-data">
-//			טען אספקה מקובץ CSV
-//			<input type="file" name="fileToUpload" id="fileToUpload">
-//			<input type="submit" value="החלף" name="submit">
-//			<input type="hidden" name="post_type" value="product"/>
-//		</form>';
-//
-//	$data .= "<script> supply_new_add_line('" . $post_file . "'); </script>";
-//	return $data;
-//}
 //
 //

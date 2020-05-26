@@ -47,17 +47,18 @@ class Core_Html {
 	 *
 	 * @param $id
 	 * @param $text
-	 * @param $args
+	 * @param $args_or_action
 	 *
 	 * @return string
 	 */
-	static function GuiButton($id, $text, $args)
+	static function GuiButton($id, $text, $args_or_action)
 	{
 		$result = "<button id=\"$id\"";
-		if ($style = GetArg($args, "style", null)) $result .= " style=\"$style\"";
-		if ($class = GetArg($args, "class", null)) $result .= " class=\"$class\"";
-		if ($events = GetArg($args, "events", null)) $result .= " $events ";
-		if ($action = GetArg($args, "action", null)) $result .= " onclick=\"$action\" ";
+		if ($style = GetArg($args_or_action, "style", null)) $result .= " style=\"$style\"";
+		if ($class = GetArg($args_or_action, "class", null)) $result .= " class=\"$class\"";
+		if ($events = GetArg($args_or_action, "events", null)) $result .= " $events ";
+		if (is_string($args_or_action)) $result .= " onclick=\"$args_or_action\" ";
+			else if ($action = GetArg($args_or_action, "action", null)) $result .= " onclick=\"$action\" ";
 		$result .= ">$text";
 		$result .= "</button>";
 

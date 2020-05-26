@@ -168,12 +168,12 @@ function got_supply() {
     execute_url(request_url, location_reload);
 }
 
-function new_supply_change()
+function new_supply_change(post_file)
 {
     let supplier_id = get_value_by_name("supplier_select");
     let upcsv = document.getElementById("upcsv");
     let date = get_value_by_name("date");
-    upcsv.action = "/fresh/supplies/supplies-post.php?operation=create_from_file&supplier_id=" + supplier_id + "&date=" + date;
+    upcsv.action = add_param_to_url(add_param_to_url(add_param_to_url(post_file, "operation", "create_supply_from_file"), "supplier_id", supplier_id), "date", date);
 }
 
 function supply_add_item(supply_id) {

@@ -324,6 +324,15 @@ class Finance {
 	}
 
 	function handle_operation( $operation ) {
+		$ignore_list = array("operation");
+		$input = null;
+
+		////////////////////////
+		// called by post.php //
+		////////////////////////
+		$result = apply_filters( $operation, $input, GetParams($ignore_list));
+		if ( $result ) return $result;
+
 		$yaad = Finance::instance()->yaad;
 		if ( $yaad ) {
 			$yaad->setDebug( false );

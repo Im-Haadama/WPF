@@ -1,7 +1,5 @@
 <?php
 
-
-
 if ( ! defined( "ROOT_DIR" ) ) {
 	define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) ) ;
 }

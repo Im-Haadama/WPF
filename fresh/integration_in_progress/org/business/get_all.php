@@ -11,10 +11,6 @@ print header_text( false, true );
 <html dir="rtl">
 <header>
     <script>
-        function change_supplier() {
-
-        }
-
         function get_value(element) {
             if (element === null) {
                 return 0;

@@ -8,16 +8,16 @@ class Core_Admin_Menu {
 
 	public function AddSubMenu($parent, $capability, $page)
 	{
-			$title = (isset($page['page_title']) ? $page['page_title'] : 'not set');
-			$menu_title = ( isset($page['menu_title']) ? $page['menu_title'] : $title);
-			$slug = ( isset($page['menu_slug']) ? $page['menu_slug'] :  str_replace(' ', '-', strtolower($menu_title)));
-			$function  = (isset($page['function']) ? $page['function'] : null);
-			if (im_user_can($capability)) {
-//				print "================adding $parent $title $menu_title $capability $slug $function<br/>";
-				if ( ! add_submenu_page( $parent, $title, $menu_title, $capability, $slug, $function ) ) {
-					print "cant add $title $parent $capability<br/>";
-				}
+		$title = (isset($page['page_title']) ? $page['page_title'] : 'not set');
+		$menu_title = ( isset($page['menu_title']) ? $page['menu_title'] : $title);
+		$slug = ( isset($page['menu_slug']) ? $page['menu_slug'] :  str_replace(' ', '-', strtolower($menu_title)));
+		$function  = (isset($page['function']) ? $page['function'] : null);
+		if (im_user_can($capability)) {
+//				print "================adding $parent $title $menu_title $capability $slug" . $function[1] . "<br/>";
+			if ( ! add_submenu_page( $parent, $title, $menu_title, $capability, $slug, $function ) ) {
+				print "cant add $title $parent $capability<br/>";
 			}
-			else print "==========================================> $capability is missing<br/>";
+		}
+		else MyLog("==========================================> $capability is missing " . get_user_id());
 	}
 }

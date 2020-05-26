@@ -297,22 +297,6 @@ if ( $operation) {
 			), "payment_table", true, true, $sums, "", "payment_table" );
 			break;
 
-		case "get_supplier_open_account":
-			$sql = "select " . $multi_site->LocalSiteId() . ", part_id, supplier_displayname(part_id), round(sum(amount),2) as total\n"
-			       . "from im_business_info\n"
-			       . "group by 2\n"
-			       . "having total < 0";
-
-			$data   = "<table>";
-			$result = SqlQuery( $sql );
-			while ( $row = SqlFetchRow( $result ) ) {
-				$data .= gui_row( $row );
-			}
-			$data .= "</table>";
-			print $data;
-			break;
-
-
 		case "get_trans":
 			$client_id = GetParam( "client_id" );
 			$site_id   = GetParam( "site_id" );

@@ -13,6 +13,7 @@ class Fresh {
 	protected $auto_loader;
 	protected $delivery_manager;
 	protected $suppliers;
+	protected $supplies;
 	protected $supplier_balance;
 	protected $totals;
 	protected $shortcodes;
@@ -486,6 +487,7 @@ class Fresh {
 		$this->load_plugin_textdomain();
 		$this->delivery_manager = new Fresh_Delivery_Manager();
 		$this->suppliers = new Fresh_Suppliers();
+		$this->supplies = new Fresh_Supplies();
 		$this->supplier_balance = Fresh_Supplier_Balance::instance();
 		$this->totals = Fresh_Totals::instance();
 		$this->client_views = new Fresh_Client_Views();
@@ -630,6 +632,10 @@ class Fresh {
 
 	    $file = FRESH_INCLUDES_URL . 'js/delivery.js';
 	    wp_enqueue_script( 'delivery', $file, null, $this->version, false );
+
+	    $file = FRESH_INCLUDES_URL . 'js/supply.js';
+	    wp_enqueue_script( 'supply', $file, null, $this->version, false );
+
     }
 
 	/*-- Start product quantity +/- on listing -- */
