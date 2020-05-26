@@ -46,10 +46,7 @@ class Fresh_Order {
 			}
 			if (! isset($rows[$prod_id])) $rows[$prod_id] = 0;
 			$rows[$prod_id] += $quantity;
-//			array_push($rows, array(
-//				'prod_id' => $prod_id,
-//				'quantity' => $quantity
-//			));
+
 			$P = new Fresh_Product($prod_id);
 			if ($P->is_basket())
 			{

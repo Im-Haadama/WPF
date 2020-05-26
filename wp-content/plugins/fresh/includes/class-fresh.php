@@ -592,19 +592,11 @@ class Fresh {
 		$file = FLAVOR_INCLUDES_URL . 'core/gui/client_tools.js';
 		wp_enqueue_script( 'client_tools', $file, null, $this->version, false );
 
-	//		$file = plugin_dir_url( __FILE__ ) . 'inventory.js';
-	//		wp_enqueue_script( $this->plugin_name, $file, array( 'jquery' ), $this->version, false );
-
-//		wp_register_script('add_to_cart_on_search', plugin_dir_url( __FILE__ ) . 'js/add_to_cart_on_search.js');
-//		wp_localize_script('add_to_cart_on_search', 'wc_add_to_cart_params', array());
 		wp_enqueue_script('add_to_cart_on_search', plugin_dir_url( __FILE__ ) . 'js/add_to_cart_on_search.js', array("jquery"));
 
-//		$rc1 = wp_enqueue_script( 'my_custom_script', plugin_dir_url( __FILE__ ) . 'js/add_to_cart_on_search.js', array('jquery') );
 		wp_enqueue_script( 'custom_script', plugin_dir_url( __FILE__ ) . 'js/custom_script.js' );
 
 		wp_enqueue_script( 'order', plugin_dir_url( __FILE__ ) . 'js/my_account_order.js' );
-
-//		MyLog(__FUNCTION__ . ": $rc1 $rc2");
 	}
 
 	public function admin_scripts()
@@ -957,6 +949,7 @@ function sm_woocommerce_ajax_add_to_cart() {
 	$product_id = apply_filters('ql_woocommerce_add_to_cart_product_id', absint($_POST['product_id']));
 
 	$quantity = empty($_POST['quantity']) ? 1 : wc_stock_amount($_POST['quantity']);
+	MyLog("q=$quantity");
 
 	$variation_id = absint($_POST['variation_id']);
 
