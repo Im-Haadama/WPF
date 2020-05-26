@@ -156,7 +156,8 @@ class Fresh_Catalog {
 			update_post_meta( $product_id, "buy_price", $buy_price );
 			update_post_meta( $product_id, "supplier_name", $Supplier->getSupplierName() );
 			// print "going to publish ";
-			Fresh_Catalog::PublishItem( $product_id );
+			$p = new Fresh_Product($product_id);
+			$p->PublishItem();
 		}
 		if ( $product_id > 0 ) {
 			self::UpdateProduct( $product_id, $line );
@@ -240,7 +241,7 @@ class Fresh_Catalog {
 		if ( $count == 0 ) {
 			if ( $details )
 				print "count == 0. trying parent ";
-			$parent = get_product_parent( $prod_id );
+			$parent = GetProductParernt( $prod_id );
 			// print "parent: " . $parent ;
 			if ( $parent > 0 ) {
 				if ( $details ) {
@@ -272,7 +273,6 @@ class Fresh_Catalog {
 			self::DraftItems( array( $prod_id ) );
 
 			// Draft Bundles.
-			print "checking bundles<br>";
 			$sql     = "SELECT bundle_prod_id FROM im_bundles WHERE prod_id = " . $prod_id;
 			$bundles = SqlQueryArrayScalar( $sql );
 			if ( $bundles )
@@ -654,12 +654,17 @@ class Fresh_Catalog {
 		print $result;
 	}
 
-	static function best_alternative($prod_id) : ?Fresh_Pricelist_Item
+	static function best_alternative($prod_id, $debug) : ?Fresh_Pricelist_Item
 	{
-		$alternatives = self::alternatives($prod_id);
+		if ($debug) MyLog($prod_id, __FUNCTION__);
+
+		$alternatives = self::alternatives($prod_id, $debug);
 		$min  = 1111111;
 		$best = null;
-		if (! $alternatives) return null;
+		if (! $alternatives) {
+			if ($debug) MyLog("no alternatives");
+			return null;
+		}
 		for ( $i = 0; $i < count( $alternatives ); $i ++ ) {
 			$price = Fresh_Pricing::calculate_price( $alternatives[ $i ]->getPrice(), $alternatives[ $i ]->getSupplierId(),	$alternatives[ $i ]->getSalePrice());
 			if ( $price < $min ) {
@@ -671,7 +676,7 @@ class Fresh_Catalog {
 		return $best;
 	}
 
-	static function alternatives( $prod_id, $details = false)
+	static function alternatives( $prod_id, $debug = false)
 	{
 		if ( ! is_numeric($prod_id) or !( $prod_id > 0 ) ) {
 			print debug_trace(6);
@@ -691,9 +696,8 @@ class Fresh_Catalog {
 		} else {
 			$rows = array();
 			while ( $row = mysqli_fetch_row( $result ) ) {
-				if ( $details ) {
-					$output .= get_supplier_name( $row[1] ) . " " . $row[0] . ", ";
-				}
+				if ($debug) MyLog("supplier_id = ". $row[1], __FUNCTION__);
+
 				$n = new Fresh_Pricelist_Item( $row[2] );
 //				print "adding1 pl $row[2]<br/>";
 				array_push( $rows, $n);
@@ -723,18 +727,12 @@ class Fresh_Catalog {
 				}
 			}
 			if ( ! $found ) {
-				if ( $details ) {
-					$output .= get_supplier_name( $row[1] ) . " " . $row[0] . ", ";
-				}
 				// array_push( $rows, $row );
 //				print "adding2 pl " . $row[2] . "<br/>";
 				array_push( $rows, new Fresh_Pricelist_Item( $row[2]));
 			}
 		}
 
-		if ( $details ) {
-			print rtrim( $output, ", ");
-		}
 		return $rows;
 	}
 
@@ -1025,4 +1023,8 @@ class CatalogFields {
 		cost_price = 9,
 		inventory = 10,
 		field_count = 11;
+}
+
+function GetProductParernt( $prod_id ) {
+	return SqlQuerySingleScalar( "SELECT post_parent FROM wp_posts WHERE id = " . $prod_id );
 }

@@ -135,9 +135,6 @@ function get_product_id_by_name( $product_name ) {
 }
 
 
-function get_product_parent( $prod_id ) {
-	return SqlQuerySingleScalar( "SELECT post_parent FROM wp_posts WHERE id = " . $prod_id );
-}
 
 function client_price( $prod_id ) {
 	return get_postmeta_field( $prod_id, '_price' );

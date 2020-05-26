@@ -95,7 +95,6 @@ class Fresh_Product {
 	}
 
 	function getStock( $arrived = false ) {
-		print debug_trace(10);
 		if ( $this->isFresh() ) {
 //			print "<br/> fresh " . $this -> q_in() . " " . $this->q_out() . " ";
 			$inv         = $this->q_in( $arrived ) - $this->q_out();
@@ -325,11 +324,11 @@ class Fresh_Product {
 		Fresh_Pricing::set_saleprice( $this->id, $price );
 	}
 
-	function getSupplierId()
+	function getSupplierId($debug = false)
 	{
 		// For now create post saves the supplier name.
 		// Planned to save there the supplier id.
-		$b = Fresh_Catalog::best_alternative($this->id);
+		$b = Fresh_Catalog::best_alternative($this->id, $debug);
 
 		if ($b)
 			return $b->getSupplierId();

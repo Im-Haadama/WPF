@@ -127,12 +127,16 @@ class Fresh_Packing {
 		return $result;
 	}
 
-	static function NeededProducts( $filter_zero = false, $history = false, $filter_stock = false, $limit_to_supplier_id = null ) {
+	static function NeededProducts( $filter_zero = false, $history = false, $filter_stock = false, $limit_to_supplier_id = null )
+	{
+		$debug_product = null;
+
 		$result          = "";
 		$needed_products = array();
 		$supplier_tabs = array();
 
-		Fresh_Order::CalculateNeeded( $needed_products );
+		$user_table = null;
+		Fresh_Order::CalculateNeeded( $needed_products, 0, $user_table, $debug_product );
 
 		if ( ! count( $needed_products ) ) {
 			$result .= __( "No needed products. Any orders in processing status?" );
@@ -146,7 +150,9 @@ class Fresh_Packing {
 		// Find out which suppliers are relevant
 		foreach ( $needed_products as $prod_id => $product_info ) {
 			$prod        = new Fresh_Product( $prod_id );
-			$supplier_id = $prod->getSupplierId();
+			$supplier_id = $prod->getSupplierId($prod_id == $debug_product);
+
+			if ($prod_id == $debug_product) MyLog("prod $prod_id supplier $supplier_id");
 
 			if ( ! in_array( $supplier_id, $suppliers ) and $supplier_id ) {
 				array_push( $suppliers, $supplier_id );

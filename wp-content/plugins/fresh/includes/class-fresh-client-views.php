@@ -326,7 +326,7 @@ class Fresh_Client_Views {
 			// Todo: Finish step 2: "/delivery?id=%s";
 		$args["col_ids"] = array("chk", "id", "dat", "amo", "bal", "des", "del", "ord");
 		if (! $admin) unset ($args["col_ids"][0]);
-		$args["add_checkbox"] = false; // Checkbox will be added only to unpaid rows
+		$args["add_checkbox"] = ($view == TransView::not_paid); // Checkbox will be added only to unpaid rows
 		$args["post_file"] = Fresh::getPost();
 		$first = true;
 
@@ -338,7 +338,7 @@ class Fresh_Client_Views {
 		                               "order_id" => "Order",
 		                               "receipt" => "Receipt");
 
-		$args["add_checkbox"] = true;
+
 		$args["checkbox_class"] = "trans_checkbox";
 
 		$data1 = Core_Data::TableData($sql, $args);

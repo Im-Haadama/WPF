@@ -387,7 +387,7 @@ class Fresh_Order {
 		return $result;
 	}
 
-	public static function CalculateNeeded( &$needed_products, $user_id = 0, &$user_table = null) {
+	public static function CalculateNeeded( &$needed_products, $user_id = 0, &$user_table = null, $debug_product = null) {
 		$include_shipment = false;
 		/// print "user id " . $user_id . "<br/>";
 		$debug_product = 0; // 141;
@@ -438,10 +438,8 @@ class Fresh_Order {
 			$id     = $row["id"];
 			$O = new Fresh_Order($id);
 			if (is_array($user_table)) array_push($user_table, $O->getCustomerId());
-//			print "handling order $id</br>";
 			$status = $row["post_status"];
 			$del_id = 0;
-			// print "status = " . $status . "<br/>";
 
 			if ( $status == 'wc-awaiting-shipment' ) $del_id = SqlQuerySingleScalar( "SELECT id FROM im_delivery WHERE order_id = " . $id );
 
@@ -453,6 +451,8 @@ class Fresh_Order {
 
 			foreach ( $order_items as $item ) {
 				$prod_or_var = $item['product_id'];
+
+				if ($prod_or_var == $debug_product) MyLog($prod_or_var, __FUNCTION__);
 
 				$variation = null;
 				if ( isset( $item["variation_id"] ) && $item["variation_id"] > 0 ) $prod_or_var = $item["variation_id"];
