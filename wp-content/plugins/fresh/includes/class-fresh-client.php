@@ -12,6 +12,7 @@ class Fresh_Client {
 	 * @param $user_id
 	 */
 	public function __construct( $user_id = 0 ) {
+//	    MyLog(__FUNCTION__ . $user_id);
 		if (! $user_id) {
 			if (! get_user_id())
 			$user_id = 0;
@@ -28,9 +29,19 @@ class Fresh_Client {
 
 	static public function init_hooks()
 	{
+		add_action( 'admin_menu', __CLASS__ . '::admin_menu' );
+
 		AddAction("set_client_type", __CLASS__ . "::set_client_type_wrap");
 		add_filter('woocommerce_new_customer_data', array(__CLASS__, 'wc_assign_custom_role'), 10, 1);
 		add_filter( 'woocommerce_shop_manager_editable_roles', array(__CLASS__, 'shop_manager_role_edit_capabilities' ));
+
+		// Admin user customer type
+		add_action( 'show_user_profile', array(__CLASS__, 'extra_user_profile_fields') );
+		add_action( 'edit_user_profile', array(__CLASS__, 'extra_user_profile_fields' ));
+		add_action( 'personal_options_update', array(__CLASS__, 'save_extra_user_profile_fields') );
+		add_action( 'edit_user_profile_update', array(__CLASS__, 'save_extra_user_profile_fields') );
+
+		Core_Gem::AddTable("client_types");
 	}
 
 	static function shop_manager_role_edit_capabilities( $roles ) {
@@ -91,6 +102,7 @@ class Fresh_Client {
 	}
 
 	function customer_type( ) {
+	    MyLog(__FUNCTION__ . " " . $this->user_id);
 		$key = get_user_meta( $this->user_id, '_client_type', true );
 
 		if ( is_null( $key ) ) {
@@ -105,7 +117,7 @@ class Fresh_Client {
 		       . "VALUES (" . $this->user_id . ", \"" . $date . "\", " . $amount . ", \"" . $type . "\", " . $ref . ")";
 
 		MyLog( $sql, "account_add_transaction" );
-		SqlQuery( $sql );
+		return SqlQuery( $sql );
 	}
 
 	function update_transaction( $total, $delivery_id) {
@@ -144,11 +156,24 @@ class Fresh_Client {
 
 	function getInvoiceUser()
 	{
-		try {
-			return Finance_Invoice4u::getInstance()->GetInvoiceUserId( $this->getUserId(), $this->get_customer_email() );
-		} catch (Exception $e) {
-			return null;
-		}
+		// Invoice is alive?
+		$invoice = Finance_Invoice4u::getInstance();
+		if (! $invoice) return null;
+
+//	    // Try the cache
+//		$id = get_user_meta( $this->user_id, 'invoice_id', 1 );
+//		if ($id) return $invoice->GetCustomerById($id);
+
+        // Try to get by email.
+        $c = $invoice->GetCustomerByEmail($this->get_customer_email());
+        if ($c) return $c;
+
+        // Create the user.
+        if ($invoice->CreateUser($this->getName(), $this->get_customer_email(), $this->get_phone_number())){
+            var_dump($invoice->result);
+            die (1);
+        }
+        return null;
 	}
 
 	function createInvoiceUser()
@@ -212,6 +237,7 @@ class Fresh_Client {
 		// $user = get_userdata( $user_id );
 		$user = get_user_by( "id", $this->user_id );
 
+		if (! $user) return "user $this->user_id not found";
 		$name = $user->user_firstname . " " . $user->user_lastname;;
 		// print $this->user_id . " " . $name;
 		if ( strlen( $name ) < 3 ) {
@@ -232,6 +258,128 @@ class Fresh_Client {
 		}
 	}
 
+	static function extra_user_profile_fields( $user ) {
+		if (! is_admin_user()) return "";
+		$u = new Fresh_Client($user->ID);
+		?>
+		<h3><?php _e("Extra profile information", "blank"); ?></h3>
+        <table class="form-table">
+            <tr>
+                <th><label for="address"><?php _e("Address"); ?></label></th>
+                <td>
+                    <input type="text" name="address_lalal" id="address" value="<?php echo esc_attr( get_the_author_meta( 'address', $user->ID ) ); ?>" class="regular-text" /><br />
+                    <span class="description"><?php _e("Please enter your address."); ?></span>
+                </td>
+            </tr>
+            <tr>
+                <th><label for="city"><?php _e("City"); ?></label></th>
+                <td>
+                    <input type="text" name="city" id="city" value="<?php echo esc_attr( get_the_author_meta( 'city', $user->ID ) ); ?>" class="regular-text" /><br />
+                    <span class="description"><?php _e("Please enter your city."); ?></span>
+                </td>
+            </tr>
+            <tr>
+                <th><label for="postalcode"><?php _e("Postal Code"); ?></label></th>
+                <td>
+                    <input type="text" name="postalcode" id="postalcode" value="<?php echo esc_attr( get_the_author_meta( 'postalcode', $user->ID ) ); ?>" class="regular-text" /><br />
+                    <span class="description"><?php _e("Please enter your postal code."); ?></span>
+                </td>
+            </tr>
+        </table>
+		<table class="form-table">
+			<tr>
+				<th><label for="customer_type"><?php _e("Customer type"); ?></label></th>
+				<td>
+					<?php
+					print Fresh_Client::gui_select_client_type("customer_type", $u->customer_type());
+					?><br/>
+					<span class="description"><?php _e("Please select customer type."); ?></span>
+				</td>
+			</tr>
+		</table>
+	<?php }
+
+	static function admin_menu() {
+		$menu = new Core_Admin_Menu();
+
+		$menu->AddSubMenu( "users.php", "edit_shop_orders",
+			array( 'page_title' => 'Client types', 'function' => array( __CLASS__, 'admin_page' ) ) );
+
+	}
+
+	static function admin_page()
+	{
+		print Core_Html::gui_header( 2, "מחירונים" );
+
+		$args = [];
+		$args['post_file'] = Fresh::getPost();
+		$args['edit'] = true;
+		print Core_Gem::GemTable("client_types", $args);
+            // "SELECT rate, dry_rate AS מרווח, type AS 'שם מחירון' FROM im_client_types");
+
+	}
+
+	function client_types()
+	{
+		print Core_Html::gui_header( 1, "שיוך לקוחות למחירון" );
+
+		$sql = "SELECT user_id, meta_value FROM wp_usermeta WHERE meta_key = '_client_type'";
+
+		$result = SqlQuery( $sql );
+
+		$table = array( array( "מזהה", "לקוח", "מחירון" ) );
+
+		while ( $row = SqlFetchRow( $result ) ) {
+//    print $row[0] . " " . $row[1] . "<br/>";
+			$user_id = $row[0];
+
+			$client_type_id = SqlQuerySingleScalar( "SELECT id FROM im_client_types WHERE type = '" . $row[1] . "'" );
+			array_push( $table, array(
+				$user_id,
+				GetUserName( $user_id ),
+				gui_select_client_type( "select_type_" . $user_id,
+					$client_type_id, "onchange=update_client_type(" . $user_id . ")" )
+			) );
+		}
+
+		print Core_Html::gui_table_args( $table );
+
+		print Core_Html::gui_header( 2, "הוסף שיוך" );
+
+		$args = [];
+		$args["post_file"] = Fresh::getPost();
+		print Core_Html::gui_table_args( array(
+			array( "בחר לקוח", self::gui_select_client("client_select", null, $args) ),
+			array(
+				"בחר מחירון",
+				gui_select_client_type( "select_type_new", 1 )
+			)
+		) );
+
+		print Core_Html::GuiButton( "btn_save", "שמור", array("action"=>"add_client_type()") );
+		print Core_Html::gui_header( 2, "מחירונים" );
+
+		print Core_Html::GuiTableContent("table", "SELECT id, rate, dry_rate AS מרווח, type AS 'שם מחירון' FROM im_client_types");
+	}
+
+	static function save_extra_user_profile_fields( $user_id ) {
+	    $type = $_POST['customer_type'];
+		if ( !current_user_can( 'edit_user', $user_id ) ) {
+			return false;
+		}
+		update_user_meta( $user_id, '_client_type', $type );
+	}
+
+	static function gui_select_client_type( $id, $value, $args = null )
+    {
+        if (! $args) $args = [];
+        MyLog("value =$value");
+        $args["selected"] = $value;
+        $args['more_values'] = array(array( "id" => 0, "type" => "רגיל" ));
+        $args["name"] = "type";
+
+	    return Core_Html::GuiSelectTable($id, "client_types", $args);
+    }
+
 
 }
-

@@ -104,17 +104,20 @@ class Finance_Clients
 			$has_token = (get_user_meta($customer_id, 'credit_token', true) ? 'T' : '');
 			$line .= "<td>" . $has_credit_info . " " . $has_token . "</td>";
 
-			// Invoice User. Create one each load for perfomance.
-			$invoice_user= $C->getInvoiceUser();
-			if ( ! $invoice_user and $create_invoice_user) {
+			// Invoice User. Create one each load (for performance).
+			$invoice_user_id = $C->getInvoiceUserId(false);
+			if ( ! $invoice_user_id and $create_invoice_user) {
 				try {
 					$invoice_user = $C->createInvoiceUser();
 				} catch (Exception$e) {
 				}
 				$create_invoice_user = false;
 			}
-			$line .= "<td>" .  $invoice_user . "</td>";
-				array_push( $table_lines, array( - $customer_total, $line ) );
+			if ($invoice_user_id)
+				$line .= "<td>" .  $invoice_user_id . "</td>";
+			else
+				$line .= "<td>not found</td>";
+			array_push( $table_lines, array( - $customer_total, $line ) );
 		}
 
 		if ( count( $table_lines ) ) {
@@ -154,8 +157,7 @@ class Finance_Clients
 			$invoice = null;
 		}
 		$u         = new Fresh_Client( $customer_id );
-		$invoice_client_id = ( $invoice ? $invoice->GetInvoiceUserId( $customer_id, $u->get_customer_email() ) : "Not connected" );
-		if (! $invoice_client_id) $invoice_client_id = $u->createInvoiceUser();
+		$invoice_client_id = $u->getInvoiceUserId(true);
 
 		$user_info = Core_Html::gui_table_args( array(
 			array( "name", $u->getName() ),

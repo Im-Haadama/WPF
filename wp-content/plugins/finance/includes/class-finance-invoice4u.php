@@ -46,37 +46,32 @@ class Finance_Invoice4u
 	/**
 	 * @return Finance_Invoice4u
 	 */
-	static public function getInstance(): Finance_Invoice4u {
-		if (! self::$instance) throw new Exception("no instance");
+	static public function getInstance(): ?Finance_Invoice4u {
 		return self::$instance;
 	}
-
-
-	// public $doc;
 
 	public function Login() {
 		if ( ! $this->token ) {
 			self::DoLogin( $this->user, $this->password );
-			if ( ! $this->token ) {
-				throw new Exception( "Can't login" );
-			}
+
+			if ($this->token) return true;
 		}
+		return false;
 	}
 
-	private function DoLogin( $invoice_user, $invoice_password ) {
+	private function DoLogin( $invoice_user, $invoice_password, $force = false ) {
 		MyLog("Invoice4u Login");
-//		if (get_user_id() == 1) print $invoice_user . " " .$invoice_password ."<br/>";
-//		MyLog($invoice_user . " " . $invoice_password);
+
 		$wsdl = ApiService . "/LoginService.svc?wsdl";
 		$user = array( 'username' => $invoice_user, 'password' => $invoice_password, 'isPersistent' => false );
 
 		$this->requestWS( $wsdl, "VerifyLogin", $user );
 		$this->token = $this->result;
-//		MyLog($this->token);
 	}
 
 	private function requestWS( $wsdl, $service, $params )
 	{
+		MyLog(__FUNCTION__, $wsdl . " " . $service, 'invoice4u.log');
 		if (! defined('WSDL_CACHE_NONE')) return null;
 		try {
 			$options = array(
@@ -88,8 +83,6 @@ class Finance_Invoice4u
 
 			$client = new SoapClient( $wsdl, $options );
 
-			// var_dump($client->__getTypes()); //exit;
-
 			$response = $client->$service( $params );
 
 			$service = $service . "Result";
@@ -97,6 +90,7 @@ class Finance_Invoice4u
 			$this->result = $response->$service;
 
 			// print $response->$service;
+			MyLog("done", "Invoice4u", 'invoice4u.log');
 
 			return $this->result;
 		} catch ( SoapFault $f ) {
@@ -128,9 +122,7 @@ class Finance_Invoice4u
 
 		$docNum = $this->result->DocumentNumber;
 		if ( $docNum == 0 ) {
-			foreach ( $doc->Items as $item ) {
-				print $item->Name . " " . $item->Quantity . " " . $item->Price . " " . $item->Total . "<br/>";
-			}
+			print "Error creating document!<br/>";
 			// var_dump( $doc );
 			$check_total  = 0;
 			$check_total2 = 0;
@@ -145,21 +137,23 @@ class Finance_Invoice4u
 			foreach ( $doc->Payments as $pay ) {
 //				print $pay->Type . " " . $item->Total . "<br/>";
 				$pay_total += $pay->Amount;
-				var_dump( $pay );
 			}
 
 			print "errors: ";
-			var_dump( $this->result->Errors );
 			if ( $check_total != $check_total2 or $check_total != $pay_total ) {
 				print "calculated total: " . $check_total . "<br/>";
 				print "calculated total2: " . $check_total2 . "<br/>";
 				print "total paid: " . $pay_total . "<br/>";
 			}
 			print "client id: " . $doc->Id . "<br/>";
-			var_dump( $doc );
 		}
 
 		return $docNum;
+	}
+
+	function InvoiceLog($message)
+	{
+		MyLog($message,"func",'invoice4u.log');
 	}
 
 //    public function CreateDocument()
@@ -169,48 +163,45 @@ class Finance_Invoice4u
 //        $this->result = $this->requestWS($wsdl, "CreateDocument", array('doc' => $this->doc, 'token' => $this->token));
 //    }
 
-	public function GetInvoiceUserId( $customer_id, $client_email = null) {
-		if ( ! ( $customer_id > 0 ) ) {
-			throw new Exception( "Bad customer id " . __CLASS__ . " " . $customer_id );
-		}
-
-		// Try local cache
-		$id = get_user_meta( $customer_id, 'invoice_id', 1 );
-
-		if (is_numeric($id) and ($id > 0)) return $id;
-
-		// Try email
-		MyLog( "performance - searching customer by email $client_email", __METHOD__ );
-		$client = $this->GetCustomerByEmail( $client_email );
-
-		if ( ! isset( $client->ID ) ) return null;
-
-		// if found, save
-		if (is_numeric($client->ID) and ($client->ID > 0))
-			update_user_meta( $customer_id, 'invoice_id', $client->ID );
-		return $client->ID;
-	}
+//	public function GetInvoiceUserId( $customer_id, $client_email = null) {
+//		if ( ! ( $customer_id > 0 ) ) {
+//			throw new Exception( "Bad customer id " . __CLASS__ . " " . $customer_id );
+//		}
+//
+//		// Try local cache
+//		$id = get_user_meta( $customer_id, 'invoice_id', 1 );
+//
+//		if (is_numeric($id) and ($id > 0)) return $id;
+//
+//		// Try email
+//		MyLog( "performance - searching customer by email $client_email", __METHOD__ );
+//		$client = $this->GetCustomerByEmail( $client_email );
+//
+//		if ( ! isset( $client->ID ) ) return null;
+//
+//		// if found, save
+//		if (is_numeric($client->ID) and ($client->ID > 0))
+//			update_user_meta( $customer_id, 'invoice_id', $client->ID );
+//		return $client->ID;
+//	}
 
 	public function GetCustomerByEmail( $email ) {
+		$this->InvoiceLog($email);
 		$wsdl = ApiService . "/CustomerService.svc?wsdl";
 
 		$cust        = new InvoiceCustomer( "" );
 		$cust->Email = $email;
-		// print $email;
 		$response = $this->requestWS( $wsdl, "GetCustomers", array(
 			'cust'       => $cust,
 			'token'      => $this->token,
 			'getAllRows' => false
 		) );
-		if ( ! isset( $response->Response->Customer ) ) {
-			return null;
-		}
-		$customer = $response->Response->Customer;
-		if ( isset($customer->Email)) return $customer;
+		$this->InvoiceLog("found: " . isset( $response->Response->Customer ));
+		if ( isset( $response->Response->Customer ) ) return $response->Response->Customer;
 		return null;
 	}
 
-	public function GetCustomerByName( $name ) {
+	function GetCustomerByName( $name ) {
 		$wsdl = ApiService . "/CustomerService.svc?wsdl";
 
 		$this->result = $this->requestWS( $wsdl, "GetByName", array( 'name' => $name, 'token' => $this->token ) );
@@ -218,34 +209,33 @@ class Finance_Invoice4u
 		return $this->result;
 	}
 
-	public function GetCustomerById( $id ) {
-		$wsdl = ApiService . "/CustomerService.svc?wsdl";
+//	private function GetCustomerById( $id )  {
+//		$wsdl = ApiService . "/CustomerService.svc?wsdl";
+//
+//		$cust = new InvoiceCustomer( "" );
+//		$cust->UniqueID = $id;
+//		print "searching for id $id<br/>";
+//
+//		$response  = $this->requestWS( $wsdl, "GetCustomers", array(
+//			'cust'       => $cust,
+//			'token'      => $this->token
+////		,	'getAllRows' => false
+//		) );
+//
+//		var_dump($response);
+//		die (1);
+//		if (! $response->Response) return null;
+//
+//		$customers = $response->Response->Customer;
+//
+//		if ( $customers )
+//			foreach ( $customers as $customer )
+//				if ( $customer->ID == $id ) return $customer;
+//
+//		return null;
+//	}
 
-		$cust = new InvoiceCustomer( "" );
-
-		$response  = $this->requestWS( $wsdl, "GetCustomers", array(
-			'cust'       => $cust,
-			'token'      => $this->token,
-			'getAllRows' => true
-		) );
-
-		$customers = $response->Response->Customer;
-
-		if ( $customers ) {
-			foreach ( $customers as $customer ) {
-				// var_dump($customer);die(1);
-				//	print $customer->ID . "<br/>";
-				if ( $customer->ID == $id ) {
-					// print "found<br/>";
-					return $customer;
-				}
-			}
-		}
-
-		return null;
-	}
-
-	public function CreateUser( $user_id, $name, $email, $phone )
+	public function CreateUser( $name, $email, $phone )
 	{
 		if (! $this->token) {
 			MyLog("invoice4u: Not connected");
