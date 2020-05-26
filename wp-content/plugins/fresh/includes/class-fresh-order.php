@@ -30,10 +30,9 @@ class Fresh_Order {
 
 	public function getProducts()
 	{
-		$debug = false; // ($this->order_id == 498);
+		$debug = false; // ($this->order_id == 717);
 
 		$sql = "select * from wp_woocommerce_order_items where order_id = " . $this->order_id . " and order_item_type = 'line_item'";
-		if ($debug) print __FUNCTION__ . " " . $this->order_id . "<br/>$sql<br/>";
 
 		$sql_result = SqlQuery($sql);
 		$rows = [];
@@ -45,18 +44,19 @@ class Fresh_Order {
 			if ($debug) {
 				print "$item_id $prod_id $quantity<br/>";
 			}
-			array_push($rows, array(
-				'prod_id' => $prod_id,
-				'quantity' => $quantity
-			));
+			if (! isset($rows[$prod_id])) $rows[$prod_id] = 0;
+			$rows[$prod_id] += $quantity;
+//			array_push($rows, array(
+//				'prod_id' => $prod_id,
+//				'quantity' => $quantity
+//			));
 			$P = new Fresh_Product($prod_id);
 			if ($P->is_basket())
 			{
-				foreach(Fresh_Basket::get_basket_content_array($prod_id, $item_id) as $prod_id => $quantity)
-					array_push($rows, array(
-						'prod_id' => $prod_id,
-						'quantity' => $quantity
-					));
+				foreach(Fresh_Basket::get_basket_content_array($prod_id, $item_id) as $prod_id => $quantity) {
+					if (! isset($rows[$prod_id])) $rows[$prod_id] = 0;
+					$rows[$prod_id] += $quantity;
+				}
 			}
 		}
 		return $rows;
