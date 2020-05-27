@@ -126,8 +126,8 @@ class Finance_Invoices {
 		return Core_Gem::GemAddRow( "business_info", "invoices", $args );
 	}
 
-	static function gui_select_document_type( $id = null, $selected = null, $args = null ) {
-
+	static function gui_select_document_type( $id = null, $selected = null, $args = null )
+	{
 		$DocumentTypeNames = array(
 			"",
 			"הזמנה",
@@ -148,7 +148,7 @@ class Finance_Invoices {
 			array_push( $types, $value );
 		}
 
-		return Core_Html::GuiSelect( $id, 4, array(
+		return Core_Html::GuiSelect( $id, $selected, array(
 			"events"   => $events,
 			"selected" => $selected,
 			"values"   => $types

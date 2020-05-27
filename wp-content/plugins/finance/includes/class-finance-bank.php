@@ -809,3 +809,9 @@ function insert_leumi_conversion() {
 	SqlQuery( "INSERT INTO im_conversion ( table_name, col, header) VALUES ( 'bank', 'part_id', 'לקוח')" );
 	SqlQuery( "INSERT INTO im_conversion ( table_name, col, header) VALUES ( 'bank', 'client_name', 'תאור מורחב')");
 }
+// Testing
+// Mark payments
+// 1) Open account
+// https://fruity.co.il//wp-content/plugins/finance/post.php?operation=get_supplier_open_account&header=0&AUTH_USER=im-haadama&AUTH_PW=Wer95%25pl
+// https://store.im-haadama.co.il/wp-content/plugins/finance/post.php?operation=get_open_invoices&supplier_id=100050&site_id=4
+// https://fruity.co.il//wp-content/plugins/finance/post.php?operation=finance_get_open_site_invoices&supplier_id=100050&header=1&AUTH_USER=im-haadama&AUTH_PW=Wer95%25pl
