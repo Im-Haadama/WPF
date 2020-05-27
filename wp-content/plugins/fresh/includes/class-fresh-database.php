@@ -493,14 +493,12 @@ charset=utf8;");
 
 		if ($current == $version and ! $force) return true;
 
-		SqlQuery("drop function if exists  first_day_of_week");
+		SqlQuery("drop function if exists first_day_of_week");
 		SqlQuery("create function FIRST_DAY_OF_WEEK(day date) returns date
 BEGIN
-  RETURN SUBDATE(day, WEEKDAY(day) + 1);
+    RETURN SUBDATE(day, WEEKDAY(day) + 1);
 END;
-
 ");
-
 
 		SqlQuery("drop function supplier_last_pricelist_date;");
 

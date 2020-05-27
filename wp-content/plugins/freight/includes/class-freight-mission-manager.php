@@ -106,7 +106,12 @@ class Freight_Mission_Manager
 
 		$result = Core_Html::GuiHeader(1, $header);
 
-		self::create_missions();
+		$multi = Core_Db_MultiSite::getInstance();
+//		print "ism=" . $multi->isMaster() . "<br/>";
+		if ($multi->isMaster())
+			self::create_missions();
+		else
+			self::update_missions_from_master();
 
 		$result .= self::show_missions($week ? " first_day_of_week(date) = '$week'" : null);
 		$result .= Core_Html::GuiHyperlink("last week", AddToUrl("week", date('Y-m-d', strtotime("$week -1 week"))));
@@ -128,7 +133,6 @@ class Freight_Mission_Manager
 		if (! $query)
 			$query = "date >= '" . date('Y-m-d', strtotime('last sunday') ). "'";
 
-		print "q=$query<br/>";
 		$result = "";
 
 		$sql = "select id from im_missions where " . $query; // FIRST_DAY_OF_WEEK(date) = " . quote_text($week);
