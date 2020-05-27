@@ -22,6 +22,15 @@ class Finance_Bank
 		$this->user = new Core_Users();
 		$this->multi_site = Core_Db_MultiSite::getInstance();
 		$this->table_prefix = GetTablePrefix();
+
+		// For rem
+		self::init_remoting();
+
+	}
+
+	private function init_remoting()
+	{
+		AddAction("finance_add_payment", array($this, 'add_payment'));
 	}
 
 	public static function instance() {
@@ -46,7 +55,9 @@ class Finance_Bank
 		AddAction( "finance_do_import", array( $this, "do_bank_import" ) );
 		AddAction( "bank_create_invoice", array( $this, 'bank_create_invoice' ) );
 		AddAction( "bank_create_pay", array( $this, 'bank_payments' ) );
+		AddAction("finance_get_transaction_amount", array($this, 'get_transaction_amount'));
 	}
+
 
 	function bank_create_invoice()
 	{
@@ -127,6 +138,36 @@ class Finance_Bank
 		print $result;
 	}
 
+	function get_transaction_amount()
+	{
+		$sql = "SELECT amount FROM im_business_info \n" .
+		       " WHERE id = " . GetParam( "id", true );
+		print SqlQuerySingleScalar( $sql );
+	}
+
+	function add_payment()
+	{
+		$supplier_id = GetParam( "supplier_id", true );
+		$bank_id     = GetParam( "bank_id", true );
+		$ids         = GetParamArray( "ids" );
+		$date        = GetParam( "date", true );
+		$amount      = GetParam( "amount", true );
+		$sql         = "INSERT INTO im_business_info (part_id, date, amount, ref, document_type)\n" .
+		               "VALUES(" . $supplier_id . ", '" . $date . "' ," . $amount . ", " . $bank_id . ", " . FreshDocumentType::bank . ")";
+		SqlQuery( $sql );
+
+		$S = new Fresh_Supplier($supplier_id);
+		$result = "התווסף תשלום בסך " . $amount . " לספק " . $S->getSupplierName() . "<br/>";
+
+		$sql = "update im_business_info\n" .
+		       "set pay_date = '" . $date . "'\n" .
+		       "where id in (" . CommaImplode( $ids ) . ")";
+
+		SqlQuery( $sql );
+		$result .= "מסמכים מספר  " . CommaImplode( $ids ) . " סומנו כמשולמים<br/>";
+		return $result;
+	}
+
 	function handle_bank_operation($operation, $url = null)
 	{
 		$table_prefix = GetTablePrefix();
@@ -154,7 +195,6 @@ class Finance_Bank
 			case "bank_status":
 				return self::bank_status();
 
-
 			case "bank_create_receipt":
 				$bank_amount = GetParam( "bank" );
 				$date        = GetParam( "date" );
@@ -176,7 +216,7 @@ class Finance_Bank
 
 				// 1) mark the bank transaction to invoice.
 				foreach ( $ids as $id ) {
-					$command = "org/business/business-post.php?operation=get_amount&id=" . $id;
+					$command = Finance::getPostFile() . "?operation=finance_get_transaction_amount&id=" . $id;
 					$amount = doubleval(strip_tags($multi_site->Run($command , $site_id)));
 					$line_amount = min ($amount, $bank);
 
@@ -190,7 +230,7 @@ class Finance_Bank
 				$date = $b->getDate();
 
 				// 2) mark the invoices to transaction.
-				$command = "org/business/business-post.php?operation=add_payment&ids=" . implode( $ids, "," ) . "&supplier_id=" . $supplier_id .
+				$command = Finance::getPostFile() . "?operation=finance_add_payment&ids=" . implode( $ids, "," ) . "&supplier_id=" . $supplier_id .
 				           "&bank_id=" . $bank_id . "&date=" . $date .
 				           "&amount=" . $bank;
 //			print $command;
@@ -202,7 +242,7 @@ class Finance_Bank
 				       " site_id = " . $site_id .
 				       " where id = " . $bank_id;
 
-				SqlQuery($sql);
+				return SqlQuery($sql);
 
 				break;
 
@@ -218,7 +258,8 @@ class Finance_Bank
 				$date = $b->getDate();
 
 				// 2) mark the invoices to transaction.
-				$command = "org/business/business-post.php?operation=add_refund_bank&supplier_id=" . $supplier_id .
+			// Todo: change hook
+				$command = Finance::getPostFile() . "?operation=add_refund_bank&supplier_id=" . $supplier_id .
 				           "&bank_id=" . $bank_id . "&date=" . $date .
 				           "&amount=" . $bank;
 //			print $command;
@@ -238,6 +279,7 @@ class Finance_Bank
 				break;
 
 			case "mark_return_bank":
+				// Todo: Rewire
 				require_once( FRESH_INCLUDES . '/org/business/BankTransaction.php' );
 				require_once( FRESH_INCLUDES . '/fresh-public/account/gui.php' );
 				print header_text( false, true, true,
@@ -350,7 +392,6 @@ class Finance_Bank
 
 		$values  = Core_Html::html2array( $multi_site->GetAll( self::getPost() . "?operation=get_supplier_open_account" ) );
 
-		print $multi_site->GetAll( self::getPost() . "?operation=get_supplier_open_account" );
 		if (! $values) 	return "nothing found";
 		$open    = array();
 		$list_id = 0;
@@ -423,7 +464,7 @@ class Finance_Bank
 		if ( $lines ) {
 			print Core_Html::gui_header( 2, "שורות מתואמות" );
 
-			print gui_table_args( $lines );
+			print Core_Html::gui_table_args( $lines );
 		}
 		$sums = array();
 		if ( $free_amount > 0 ) {

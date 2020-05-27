@@ -169,6 +169,8 @@ class Finance {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_action( 'pay_credit', array( $this, 'pay_credit_wrapper' ) );
 
+		AddAction('finance_get_open_site_invoices', array($this, 'get_open_site_invoices'));
+
 		if ( $this->yaad ) {
 			$this->yaad->init_hooks();
 		}
@@ -384,7 +386,7 @@ class Finance {
 				$site_id     = GetParam( "site_id", true );
 
 				// $func, $site_id, $first = false, $debug = false ) {
-				return $multi_site->Run( "/org/business/business-post.php?operation=get_open_site_invoices&supplier_id=" . $supplier_id,
+				return $multi_site->Run( Finance::getPostFile() . "?operation=finance_get_open_site_invoices&supplier_id=" . $supplier_id,
 					$site_id, true, $debug );
 				break;
 
@@ -413,6 +415,24 @@ class Finance {
 		}
 
 		return false;
+	}
+
+	static function get_open_site_invoices()
+	{
+		$debug = GetParam("debug");
+		$sum         = array();
+		$supplier_id = GetParam( "supplier_id", true );
+		$sql         = "SELECT id, ref, amount, date FROM im_business_info WHERE part_id=" . $supplier_id .
+		               " AND document_type = 4\n" .
+		               " and pay_date is null " .
+		               " order by 4 desc";
+
+		$args = array();
+		if ($debug) $args["debug"] = true;
+		$args["add_checkbox"] = true;
+		$args["checkbox_events"] = "onchange = \"update_display()\"";
+		$args["checkbox_class"] = "trans_checkbox";
+		return Core_Html::GuiTableContent("table_invoices", $sql, $args);
 	}
 
 	static function delete_transaction( $ref ) {

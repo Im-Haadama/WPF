@@ -654,7 +654,7 @@ class Fresh_Catalog {
 		print $result;
 	}
 
-	static function best_alternative($prod_id, $debug) : ?Fresh_Pricelist_Item
+	static function best_alternative($prod_id, $debug = false) : ?Fresh_Pricelist_Item
 	{
 		if ($debug) MyLog($prod_id, __FUNCTION__);
 

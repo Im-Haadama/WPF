@@ -41,12 +41,6 @@ $operation = GetParam("operation", false, null);
 if ( $operation) {
 	// print "op=" . $operation . "<br/>";
 	switch ( $operation ) {
-		case "get_amount":
-			$sql = "SELECT amount FROM im_business_info \n" .
-			       " WHERE id = " . GetParam( "id", true );
-			print SqlQuerySingleScalar( $sql );
-			break;
-
 		case "add_item":
 			print "Adding item<br/>";
 			$part_id      = $_GET["part_id"];
@@ -236,25 +230,6 @@ if ( $operation) {
 
 			break;
 
-		case "add_payment":
-			$supplier_id = GetParam( "supplier_id", true );
-			$bank_id     = GetParam( "bank_id", true );
-			$ids         = GetParamArray( "ids" );
-			$date        = GetParam( "date", true );
-			$amount      = GetParam( "amount", true );
-			$sql         = "INSERT INTO im_business_info (part_id, date, amount, ref, document_type)\n" .
-			               "VALUES(" . $supplier_id . ", '" . $date . "' ," . $amount . ", " . $bank_id . ", " . FreshDocumentType::bank . ")";
-			SqlQuery( $sql );
-			print "התווסף תשלום בסך " . $amount . " לספק " . get_supplier_name( $supplier_id ) . "<br/>";
-
-			$sql = "update im_business_info\n" .
-			       "set pay_date = '" . $date . "'\n" .
-			       "where id in (" . CommaImplode( $ids ) . ")";
-
-			SqlQuery( $sql );
-			print "מסמכים מספר  " . CommaImplode( $ids ) . " סומנו כמשולמים<br/>";
-			break;
-
 		case "create_invoice_bank":
 
 			break;
@@ -304,28 +279,6 @@ if ( $operation) {
 			$link = "/fresh/multi-site/multi-get.php?operation=get_open_trans&client_id=" . $client_id;
 			print $multi_site->Run( $link, $site_id );
 			break;
-
-
-		case "get_open_site_invoices":
-			$debug = GetParam("debug");
-			$sum         = array();
-			$supplier_id = GetParam( "supplier_id", true );
-			$sql         = "SELECT id, ref, amount, date FROM im_business_info WHERE part_id=" . $supplier_id .
-			               " AND document_type = 4\n" .
-			               " and pay_date is null " .
-			               " order by 4 desc";
-
-			$args = array();
-			if ($debug) $args["debug"] = true;
-			$args["add_checkbox"] = true;
-			$args["checkbox_events"] = "onchange = \"update_display()\"";
-			$args["checkbox_class"] = "trans_checkbox";
-			print GuiTableContent("table_invoices", $sql, $args);
-
-//			print table_content( "table_invoices", $sql, true, null, null, $sum, true,
-//				"trans_checkbox", "onchange=\"update_display()\"" );
-			break;
-
 	}
 }
 

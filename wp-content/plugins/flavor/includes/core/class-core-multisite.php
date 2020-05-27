@@ -170,6 +170,8 @@ class Core_MultiSite {
 			$password = $this->sites_array[ $site_id ][4];
 		}
 
+//		print "r=$file $username $password<br/>";
+
 		$result_text = self::DoRun($file, $this->http_codes[$site_id], $username, $password);
 
 		if (in_array($this->http_codes[$site_id], array(404, 500))) return false;
@@ -187,8 +189,7 @@ class Core_MultiSite {
 	{
 //		print "u=$username p=$password<br/>";
 		 if ($username) $file .= "&AUTH_USER=" . trim($username) . "&AUTH_PW=" . urlencode(trim($password));
-//		print "file =$file<br/>";
-//		print $file;
+//		print __FUNCTION__ . "file=$file<br/>";
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $file);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
