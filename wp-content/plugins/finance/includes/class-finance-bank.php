@@ -37,17 +37,15 @@ class Finance_Bank
 		return self::instance()->post_file;
 	}
 
-	function init_hooks()
-	{
-		AddAction("finance_bank_accounts", array($this, "show_bank_accounts"));
-		AddAction("finance_bank_account", array($this, "show_bank_account"));
-		AddAction("finance_bank_payments", array($this, "show_bank_payments"));
-		AddAction("finance_bank_receipts", array($this, "show_bank_receipts"));
-		AddAction("finance_show_bank_import", array($this, "show_bank_import"));
-		AddAction("finance_do_import", array($this, "do_bank_import"));
-		AddAction("bank_create_invoice", array($this, 'bank_create_invoice'));
-		AddAction("bank_create_pay", array($this, 'bank_payments'));
-		AddAction("get_supplier_open_account", array(Fresh_Supplier_Balance::instance(), 'supplier_open_account'));
+	function init_hooks() {
+		AddAction( "finance_bank_accounts", array( $this, "show_bank_accounts" ) );
+		AddAction( "finance_bank_account", array( $this, "show_bank_account" ) );
+		AddAction( "finance_bank_payments", array( $this, "show_bank_payments" ) );
+		AddAction( "finance_bank_receipts", array( $this, "show_bank_receipts" ) );
+		AddAction( "finance_show_bank_import", array( $this, "show_bank_import" ) );
+		AddAction( "finance_do_import", array( $this, "do_bank_import" ) );
+		AddAction( "bank_create_invoice", array( $this, 'bank_create_invoice' ) );
+		AddAction( "bank_create_pay", array( $this, 'bank_payments' ) );
 	}
 
 	function bank_create_invoice()
@@ -352,6 +350,7 @@ class Finance_Bank
 
 		$values  = Core_Html::html2array( $multi_site->GetAll( self::getPost() . "?operation=get_supplier_open_account" ) );
 
+		print $multi_site->GetAll( self::getPost() . "?operation=get_supplier_open_account" );
 		if (! $values) 	return "nothing found";
 		$open    = array();
 		$list_id = 0;

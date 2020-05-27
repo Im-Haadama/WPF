@@ -27,6 +27,7 @@ class Fresh_Supplier_Balance {
 		$menu = new Core_Admin_Menu();
 
 		$menu->AddMenu("הנהלת חשבונות", "הנהלת חשבונות", "edit_shop_orders", "accounts", array(__CLASS__, 'main'));
+		AddAction("get_supplier_open_account", array(Fresh_Supplier_Balance::instance(), 'supplier_open_account'));
 	}
 
 
@@ -153,13 +154,14 @@ class Fresh_Supplier_Balance {
 		$multi_site = Core_Db_MultiSite::getInstance();
 		$sql = "select " . $multi_site->LocalSiteId() . ", part_id, supplier_displayname(part_id), round(sum(amount),2) as total\n"
 		       . "from im_business_info\n"
+		       . " where document_type in (" . FreshDocumentType::invoice . ", " . FreshDocumentType::bank . ")\n"
 		       . "group by 2\n"
 		       . "having total < 0";
 
 		$data   = "<table>";
 		$result = SqlQuery( $sql );
 		while ( $row = SqlFetchRow( $result ) ) {
-			$data .= gui_row( $row );
+			$data .= Core_Html::gui_row( $row );
 		}
 		$data .= "</table>";
 		print $data;

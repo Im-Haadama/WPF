@@ -5,16 +5,7 @@
  * Date: 15/02/18
  * Time: 23:23
  */
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
 require_once(dirname(dirname(dirname(dirname(dirname(__FILE__))))) . '/wp-config.php');
-
-//require_once( "../r-shop_manager.php" );
-//require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
-//require_once( FRESH_INCLUDES . "/core/gui/sql_table.php" );
-//require_once( "gui.php" );
-
 ?>
     <script type="text/javascript" src="/wp-content/plugins/flavor/includes/core/gui/client_tools.js"></script>
     <script type="text/javascript" src="/wp-content/plugins/flavor/includes/core/data/data.js"></script>

@@ -14,9 +14,6 @@
  *
  */
 
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'on' );
-
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
@@ -49,10 +46,8 @@ function run_flavor() {
 	$plugin->run();
 }
 
-
 run_flavor();
 
 if (get_user_id() == 1) {
-	ini_set( 'display_errors', 'on' );
-	error_reporting( E_ALL );
+	show_errors();
 }

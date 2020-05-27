@@ -1,9 +1,5 @@
 <html dir="rtl">
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 define('ROOT_DIR', dirname(dirname(dirname(__FILE__))));
 
 require_once(dirname(dirname(ROOT_DIR)) . '/wp-config.php');

@@ -531,7 +531,8 @@ class Finance {
 
 		$this->invoices->init( FINANCE_INCLUDES_URL . '../post.php' );
 
-		if (InfoGet("finance_bank_enabled")) {
+//		InfoUpdate("finance_bank_enabled", 1);
+		if (is_admin_user() and InfoGet("finance_bank_enabled")) {
 			$this->bank = new Finance_Bank( self::getPostFile() );
 			$this->bank->init_hooks();
 		}

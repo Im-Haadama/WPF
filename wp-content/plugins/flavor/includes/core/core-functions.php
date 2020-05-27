@@ -599,3 +599,10 @@ function br2nl($html)
 {
 	return  preg_replace('#<br\s*/?>#i', "\n", $html);
 }
+
+function show_errors()
+{
+	ini_set('display_errors', 1);
+	ini_set('display_startup_errors', 1);
+	error_reporting(E_ALL);
+}

@@ -1,10 +1,3 @@
-<?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-?>
-
 <script>
     const line_select_id = <?php print eDeliveryFields::line_select; ?>;
     const product_name_id = <?php print eDeliveryFields::product_name; ?>;
