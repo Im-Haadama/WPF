@@ -1058,13 +1058,14 @@ group by pm.meta_value, p.post_status");
 			if ( $debug ) {
 				print "remote.. ";
 			}
-			$request = "/routes/routes-post.php?site_id=" . $site_id .
+			$request = Freight::getPost() . "?site_id=" . $site_id .
 			           "&type=" . $type . "&id=" . $id . "&operation=delivered";
 			if ( $debug ) {
 				$request .= "&debug=1";
 				print $request;
 			}
-			if ( Core_Db_MultiSite::sExecute( $request, $site_id, $debug ) == "delivered")  return true;
+//			print "X" . Core_Db_MultiSite::sExecute( $request, $site_id, $debug ) . "X<br/>";
+			if ( Core_Db_MultiSite::sExecute( $request, $site_id, $debug ) == "done")  return true;
 			print "failed:<br/>";
 			print $request;
 			return false;

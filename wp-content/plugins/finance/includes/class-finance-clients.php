@@ -113,7 +113,7 @@ class Finance_Clients
 
 			$line .= "<td>" . $row[4] . "</td>";
 			$line .= "<td>" . Finance_Payment_Methods::get_payment_method_name( $payment_method ) . "</td>";
-			$has_credit_info = Finance_Yaad::getCustomerStatus($C, true);
+			$has_credit_info = self::getTokenStatus($C);
 			$has_token = (get_user_meta($customer_id, 'credit_token', true) ? 'T' : '');
 			$line .= "<td>" . $has_credit_info . " " . $has_token . "</td>";
 
@@ -121,7 +121,7 @@ class Finance_Clients
 			$invoice_user_id = $C->getInvoiceUserId(false);
 			if ( ! $invoice_user_id and $create_invoice_user) {
 				try {
-					$invoice_user = $C->createInvoiceUser();
+					$invoice_user_id = $C->createInvoiceUser();
 				} catch (Exception$e) {
 				}
 				$create_invoice_user = false;
@@ -160,6 +160,12 @@ class Finance_Clients
 		return $output;
 	}
 
+	static function getTokenStatus($C)
+	{
+		if (class_exists('Finance_Yaad'))
+		return Finance_Yaad::getCustomerStatus($C, true);
+		return '';
+	}
 	static function client_account( $customer_id ) {
 		require_once( ABSPATH . "im-config.php" );
 

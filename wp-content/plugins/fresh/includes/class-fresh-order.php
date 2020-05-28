@@ -368,6 +368,7 @@ class Fresh_Order {
 //		}
 //		var_dump($method);
 		$ship = new WC_Order_Item_Shipping($method);
+		if (! $delivery_price) $delivery_price = 37.4;
 		$ship->set_total($delivery_price);
 		$rc = $this->WC_Order->add_item( $ship );
 		if ($rc === false) return false;

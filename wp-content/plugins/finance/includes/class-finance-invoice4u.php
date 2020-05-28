@@ -256,11 +256,9 @@ class Finance_Invoice4u
 		$this->result    = $this->requestWS( $wsdl, "Create",
 			array( 'customer' => $customer, 'token' => $this->token ) );
 
-		var_dump($this->result);
-
 		if ( $this->result->Errors ) return false;
 
-
+		return $this->result->ID;
 	}
 }
 

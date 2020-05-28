@@ -198,9 +198,9 @@ class Fresh_Client {
         MyLog("Creating user " . $this->getName() . " " . $this->get_customer_email() . " ". $this->get_phone_number());
 
         // Create the user.
-        if ($invoice->CreateUser($this->getName(), $this->get_customer_email(), $this->get_phone_number())){
-            var_dump($invoice->result);
-            die (1);
+        if ($id = $invoice->CreateUser($this->getName(), $this->get_customer_email(), $this->get_phone_number())){
+	        update_user_meta( $this->user_id, 'invoice_id', $id );
+	        return $invoice->GetCustomerByEmail($this->get_customer_email());
         }
         return null;
 	}
