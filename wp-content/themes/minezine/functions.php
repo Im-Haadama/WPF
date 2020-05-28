@@ -1,8 +1,16 @@
 <?php
 
 $function_im_file = dirname(__FILE__) . "/functions_im.php";
-if (file_exists($function_im_file))
-    require_once($function_im_file);
+if (file_exists($function_im_file)) {
+	require_once( $function_im_file );
+}
+
+$function_li_file = dirname(__FILE__) . "/functions_lion.php";
+if (file_exists($function_li_file)) {
+   require_once ($function_li_file);
+}
+
+
 
 /**
  * MineZine functions and definitions.
