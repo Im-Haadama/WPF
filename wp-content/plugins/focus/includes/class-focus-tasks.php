@@ -1594,39 +1594,6 @@ class Focus_Tasks {
 
 		$result     = "";
 		$action_url = "/wp-content/plugins/focus/post.php"; // GetUrl(1);//  "/focus/focus-post.php";
-
-//		$args["selectors"]     = array(
-//			"project_id"  => "Focus_Tasks::gui_select_project",
-//			"owner"       => "Focus_Tasks::gui_select_worker",
-//			"creator"     => "Focus_Tasks::gui_select_worker",
-//			"repeat_freq" => "gui_select_repeat_time",
-//			"team"        => "Focus_Tasks::gui_select_team"
-//		);
-//		$args["fields"]        = array(
-//			"id",
-//			"task_description",
-//			"project_id",
-//			"priority",
-//			"team",
-//			"repeat_freq",
-//			"repeat_freq_numbers",
-//			"timezone",
-//			"working_hours",
-//			"condition_query",
-//			"task_url",
-//			"template_last_task(id)"
-//		);
-//		$args["header_fields"] = array(
-//			"task_description"    => "Task description",
-//			"project_id"          => "Project",
-//			"priority"            => "Priority",
-//			"team"                => "Team",
-//			"repeat_freq"         => "Repeat Frequency",
-//			"repeat_freq_numbers" => "Repeat times",
-//			"working_hours"       => "Working hours",
-//			"Task site"
-//		);
-
 		$worker                = new Org_Worker( get_user_id() );
 		$template_args = self::Args("task_templates");
 		$template_args["worker"]        = $worker->getId();
@@ -1650,15 +1617,6 @@ class Focus_Tasks {
 			// $tasks_args["prepare_plug"] = "Focus_Tasklist::prepare";
 
 			$tasks_args["class"] = "sortable";
-
-//			if (get_user_id() == 1){
-//				$output = "";
-//				$row = sql_query_single_assoc("SELECT id, task_description, task_url, project_id, repeat_freq, repeat_freq_numbers, condition_query, priority, creator, team " .
-//				                              " FROM _task_templates where id = $template_id");
-//
-//				Focus_Tasklist::create_if_needed($template_id, $row, $output, 1, $verbose_line);
-//				// $result .= $output;
-//			}
 
 			$sql   = "select * from ${db_prefix}tasklist where task_template = " . $template_id;
 			$sql   .= " order by date desc limit 10";
@@ -2489,5 +2447,36 @@ if ( ! function_exists( 'gui_select_repeat_time' ) ) {
 				$new     = GetParam( "new", false );
 
 				return self::show_new_task( $mission, $new ); // after the first task, the new tasks belongs to the new tasks' project will be displayed.
+//		$args["selectors"]     = array(
+//			"project_id"  => "Focus_Tasks::gui_select_project",
+//			"owner"       => "Focus_Tasks::gui_select_worker",
+//			"creator"     => "Focus_Tasks::gui_select_worker",
+//			"repeat_freq" => "gui_select_repeat_time",
+//			"team"        => "Focus_Tasks::gui_select_team"
+//		);
+//		$args["fields"]        = array(
+//			"id",
+//			"task_description",
+//			"project_id",
+//			"priority",
+//			"team",
+//			"repeat_freq",
+//			"repeat_freq_numbers",
+//			"timezone",
+//			"working_hours",
+//			"condition_query",
+//			"task_url",
+//			"template_last_task(id)"
+//		);
+//		$args["header_fields"] = array(
+//			"task_description"    => "Task description",
+//			"project_id"          => "Project",
+//			"priority"            => "Priority",
+//			"team"                => "Team",
+//			"repeat_freq"         => "Repeat Frequency",
+//			"repeat_freq_numbers" => "Repeat times",
+//			"working_hours"       => "Working hours",
+//			"Task site"
+//		);
 
  */

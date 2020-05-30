@@ -78,9 +78,10 @@ class Core_Gem {
 	{
 		$operation = GetParam("operation", true);
 		$result .= $operation;
-		$table = substr($operation, 8);
+		$table = substr($operation, 9);
 		$args = [];
 		$args["page"] = GetParam("param", false, 1);
+		if (isset($_GET["operation"])) unset ($_GET["operation"]);
 		$result .= self::GemTable($table, $args);
 		print $result;
 		return true;
@@ -369,10 +370,11 @@ class Core_Gem {
 				$post_action = $post_file."?operation=gem_page_".$table_id;
 		} while (0);
 
-		if (! $post_action) {
-			return debug_trace(1) . "<br/>".
-			       "post_file is missing";
-		}
+		// In paging we don't have post_file.
+//		if (! $post_action) {
+//			return debug_trace(1) . "<br/>".
+//			       "post_file is missing";
+//		}
 
 		$no_data_message = GetArg($args, "no_data_message", "No data for now");
 		if ($title) $result .= Core_Html::GuiHeader(2, $title);
@@ -387,7 +389,7 @@ class Core_Gem {
 
 			$div_content = "";
 
-			if (count($rows_data) == $rows_per_page + 1) { // 1 for the header
+			if (($page == 1) and (count($rows_data) == $rows_per_page + 1)) { // 1 for the header
 				$div_content .= Core_Html::GuiHeader(2, "Page number", array("inline"=>true)) . " " . Core_Html::gui_label("gem_page_" . $table_id, $page) . "<br/>";
 				// $result .= Core_Html::GuiHyperlink("Next page", AddToUrl("page_number", $page + 1)) . " ";
 				$div_content .= Core_Html::GuiButton("btn_gem_next_" . $table_id, "Next", array("action" => "gem_next_page(" . QuoteText($post_action)  . "," . QuoteText($table_id) . ")"));
@@ -408,8 +410,9 @@ class Core_Gem {
 			$result .=  $no_data_message . Core_Html::Br();
 		}
 
-		if ($edit and GetArg($args, "add_button", true))
+		if ($page == 1 and GetArg($args, "add_button", true))
 			$result .= Core_Html::GuiHyperlink("Add", AddToUrl("operation" , "gem_add_" . $table_id)) . " ";
+
 		$checkbox_class = GetArg($args, "checkbox_class", "class");
 
 		if ($post_file and $enable_import) {
@@ -442,17 +445,15 @@ class Core_Gem {
 		if (! $table_name) die("Error #N2 no table given");
 		if (! isset($args["title"])) $title = "content of table " . $table_name;
 		$post_file = GetArg($args, "post_file", null);
-		if (! $post_file) {
-			print "must send post_file " . $table_name . "<br/>";
-			print debug_trace();
-			die(1);
-		}
+//		if (! $post_file) {
+//			print "must send post_file " . $table_name . "<br/>";
+//			print debug_trace();
+//			die(1);
+//		}
 		$table_prefix = GetTablePrefix($table_name);
 
 		if (! isset($args["events"])) $args["events"] = 'onchange="update_table_field(\'' . $post_file . '\', \'' . $table_name . '\', \'%d\', \'%s\', check_update)"';
 		$sql = GetArg($args, "sql", null);
-
-//		print $sql . " " . $args["fields"] . "<br/>";
 
 		if (! $sql){
 			$fields = GetArg($args, "fields", null);
@@ -466,10 +467,6 @@ class Core_Gem {
 			if ($order) $sql .= " order by $order";
 		}
 
-		// $args["count"] = 0;
-		// $table = GuiTableContent($table_name, $sql, $args);
-
-		// print "c=" . $args["count"] . "<br/>";
 		$rows_data = Core_Data::TableData( $sql, $args);
 
 		MyLog(__FUNCTION__ . " $table_name");
@@ -518,7 +515,7 @@ class Core_Gem {
 		$args["fields"] = $search_fields; /// Not tested...
 //	$events = GetArg($args, "events", "onchange=changed_field(%s)");
 
-		print NewRow($table_name, $args);
+		print self::NewRow($table_name, $args);
 //	foreach ($search_fields as $field)
 //	{
 //		if ($events) {
