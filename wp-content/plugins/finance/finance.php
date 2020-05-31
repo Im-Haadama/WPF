@@ -57,7 +57,7 @@ function run_finance() {
 //	print "runner: ". FINANCE_INCLUDES . "<br/>";
 	$instance = Finance::instance();
 
-//	$instance->run();
+	$instance->run();
 }
 
 run_finance();

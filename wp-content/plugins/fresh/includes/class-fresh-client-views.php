@@ -5,7 +5,8 @@ abstract class TransView {
 		default = 0,
 		from_last_zero = 1,
 		not_paid = 2,
-		read_last = 3;
+		read_last = 3,
+	admin=4;
 }
 
 

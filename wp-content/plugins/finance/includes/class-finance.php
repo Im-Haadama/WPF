@@ -22,6 +22,7 @@ class Finance {
 	protected $yaad;
 	protected $clients;
 	protected $admin_notices;
+//	protected $database;
 
 	/**
 	 * Plugin version.
@@ -144,6 +145,9 @@ class Finance {
 
 		GetSqlConn( ReconnectDb() );
 
+//		$this->database= new Finance_Database();
+//		$this->database->install($this->version);
+
 		self::install( $this->version );
 
 		add_action( 'after_setup_theme', array( $this, 'setup_environment' ) );
@@ -151,7 +155,7 @@ class Finance {
 		add_action( 'init', array( $this, 'init' ), 0 );
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
 		add_action( 'admin_notices', array($this, 'admin_notices') );
-		add_filter('pay_user_credit', array($this, 'pay_user_credit_wrap'));
+		add_filter( 'pay_user_credit', array($this, 'pay_user_credit_wrap'), 10, 3);
 
 		// Admin menu
 		add_action( 'admin_menu', __CLASS__ . '::admin_menu' );
@@ -165,6 +169,8 @@ class Finance {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_action( 'pay_credit', array( $this, 'pay_credit_wrapper' ) );
 
+		AddAction('finance_get_open_site_invoices', array($this, 'get_open_site_invoices'));
+
 		if ( $this->yaad ) {
 			$this->yaad->init_hooks();
 		}
@@ -173,9 +179,10 @@ class Finance {
 		}
 
 		$this->payments = Finance_Payments::instance();
+		$this->payments->init_hooks();
 	}
 
-	function pay_user_credit_wrap($customer_id, $amount = 0)
+	function pay_user_credit_wrap($customer_id, $amount, $payment_number)
 	{
 		MyLog(__FUNCTION__ . " $customer_id");
 
@@ -230,8 +237,7 @@ class Finance {
 
 		$change = $amount - $current_total;
 
-		return $this->yaad->pay_user_credit($user, $paying_transactions, $amount, $change);
-
+		return $this->yaad->pay_user_credit($user, $paying_transactions, $amount, $change, $payment_number);
 //		foreach ($delivery_ids as $delivery_id) {
 //			$this->pay_user_credit( $user_id, $delivery_id );
 //			die(0);
@@ -320,6 +326,15 @@ class Finance {
 	}
 
 	function handle_operation( $operation ) {
+		$ignore_list = array("operation");
+		$input = null;
+
+		////////////////////////
+		// called by post.php //
+		////////////////////////
+		$result = apply_filters( $operation, $input, GetParams($ignore_list));
+		if ( $result ) return $result;
+
 		$yaad = Finance::instance()->yaad;
 		if ( $yaad ) {
 			$yaad->setDebug( false );
@@ -349,7 +364,7 @@ class Finance {
 				$client_id = GetParam( "client_id", true );
 				$site_id   = GetParam( "site_id", false, null );
 				if ( ! $site_id ) {
-					return Fresh_Client_Views::show_trans( $client_id );
+					return Fresh_Client_Views::show_trans( $client_id,  TransView::not_paid );
 				}
 				// $data .= $this->Run( $func, $site_id, $first, $debug );
 				$link = Finance::getPostFile() . "?operation=get_open_trans&client_id=" . $client_id;
@@ -371,29 +386,53 @@ class Finance {
 				$site_id     = GetParam( "site_id", true );
 
 				// $func, $site_id, $first = false, $debug = false ) {
-				return $multi_site->Run( "/org/business/business-post.php?operation=get_open_site_invoices&supplier_id=" . $supplier_id,
+				return $multi_site->Run( Finance::getPostFile() . "?operation=finance_get_open_site_invoices&supplier_id=" . $supplier_id,
 					$site_id, true, $debug );
 				break;
 
 			case "create_receipt":
 				if (! Finance::Invoice4uConnect())
 					return false;
-				$cash    = GetParam( "cash" );
-				$bank    = GetParam( "bank" );
-				$check   = GetParam( "check" );
-				$credit  = GetParam( "credit" );
-				$change  = GetParam( "change" );
+				$cash    = (float) GetParam( "cash", false, 0 );
+				$bank    = (float) GetParam( "bank", false, 0 );
+				$check   = (float) GetParam( "check", false, 0 );
+				$credit  = (float) GetParam( "credit", false, 0 );
+//				$change  = (float) GetParam( "change", false, 0 );
 				$row_ids = GetParamArray( "row_ids" );
 				$user_id = GetParam( "user_id", true );
 				$date    = GetParam( "date" );
 
+				if (! ($cash + $bank + $check + $credit > 1)) {
+					print ( "No payment ammount given" );
+
+					return false;
+				}
+
 				//print "create receipt<br/>";
 				// (NULL, '709.6', NULL, NULL, '205.44', '', '2019-01-22', Array)
-				return Finance_Clients::create_receipt_from_account_ids( $cash, $bank, $check, $credit, $change, $user_id, $date, $row_ids );
+				return Finance_Clients::create_receipt_from_account_ids( $cash, $bank, $check, $credit, $user_id, $date, $row_ids );
 				break;
 		}
 
 		return false;
+	}
+
+	static function get_open_site_invoices()
+	{
+		$debug = GetParam("debug");
+		$sum         = array();
+		$supplier_id = GetParam( "supplier_id", true );
+		$sql         = "SELECT id, ref, amount, date FROM im_business_info WHERE part_id=" . $supplier_id .
+		               " AND document_type = 4\n" .
+		               " and pay_date is null " .
+		               " order by 4 desc";
+
+		$args = array();
+		if ($debug) $args["debug"] = true;
+		$args["add_checkbox"] = true;
+		$args["checkbox_events"] = "onchange = \"update_display()\"";
+		$args["checkbox_class"] = "trans_checkbox";
+		return Core_Html::GuiTableContent("table_invoices", $sql, $args);
 	}
 
 	static function delete_transaction( $ref ) {
@@ -511,6 +550,12 @@ class Finance {
 		$this->shortcodes->do_init();
 
 		$this->invoices->init( FINANCE_INCLUDES_URL . '../post.php' );
+
+//		InfoUpdate("finance_bank_enabled", 1);
+		if (is_admin_user() and InfoGet("finance_bank_enabled")) {
+			$this->bank = new Finance_Bank( self::getPostFile() );
+			$this->bank->init_hooks();
+		}
 
 		// For testing:
 		//		wp_set_current_user(369);
@@ -767,9 +812,11 @@ class Finance {
 	function pay_credit_wrapper() {
 		MyLog(__FUNCTION__);
 		$users = explode( ",", GetParam( "users", true, true ) );
+		$payment_number = GetParam("number", false, 1);
+		$amount = GetParam("amount", false, 0);
 
 		foreach ( $users as $user ) {
-			$rc = apply_filters( 'pay_user_credit', $user );
+			$rc = apply_filters( 'pay_user_credit', $user, $amount, $payment_number );
 			if ( ! $rc ) {
 				return false;
 			}
@@ -783,6 +830,7 @@ class Finance {
 
 		$last = SqlQuerySingleScalar( "select max(user_id) from wp_usermeta" );
 
+		MyLog(__FUNCTION__ . $last_created . " " . $last);
 		for ( $user_id = $last_created + 1; $user_id <= $last; $user_id ++ ) {
 			if ( SqlQuerySingleScalar( "select client_last_order($user_id)" ) ) {
 				MyLog( "creating $user_id", __FUNCTION__ );

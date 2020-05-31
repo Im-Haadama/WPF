@@ -601,8 +601,9 @@ class Fresh {
 
 	public function admin_scripts()
     {
-        $file = FRESH_INCLUDES_URL . 'js/admin.js';
-	    wp_register_script( 'fresh_admin', $file);
+	    $file = FRESH_INCLUDES_URL . 'js/admin.js';
+//	    $mtime = filemtime($_SERVER['DOCUMENT_ROOT'] . $file);
+	    wp_register_script('fresh_admin', $file, null, '5.6');
 
 	    $params = array(
 	    	'admin_post' => get_site_url() . '/wp-content/plugins/fresh/post.php'

@@ -28,8 +28,22 @@ class Finance_Clients
 	public function init_hooks()
 	{
 		AddAction("get_client_open_account", array($this, 'get_client_open_account'));
+		AddAction("account_add_trans", array($this, 'add_trans'));
 	}
 
+	function add_trans()
+	{
+		$customer_id = $_GET["customer_id"];
+		$amount      = $_GET["amount"];
+		$date        = $_GET["date"];
+		$ref         = $_GET["ref"];
+		$type        = $_GET["type"];
+
+		$u = new Fresh_Client($customer_id);
+		return $u->add_transaction($date, $amount, $ref, $type);
+
+//		account_add_transaction( $customer_id, $date, $amount, $ref, $type );
+	}
 	function get_client_open_account()
 	{
 		if (! $this->multisite)
@@ -99,8 +113,7 @@ class Finance_Clients
 
 			$line .= "<td>" . $row[4] . "</td>";
 			$line .= "<td>" . Finance_Payment_Methods::get_payment_method_name( $payment_method ) . "</td>";
-			$has_credit_info = (SqlQuerySingleScalar( "select count(*) from im_payment_info where card_number not like '%X%' and email = " . QuoteText($C->get_customer_email())) > 0 ? 'C' : '') .
-			                   (SqlQuerySingleScalar( "select count(*) from im_payment_info where card_number like '%X%' and email = " . QuoteText($C->get_customer_email())) > 0 ? 'X' : '');
+			$has_credit_info = self::getTokenStatus($C);
 			$has_token = (get_user_meta($customer_id, 'credit_token', true) ? 'T' : '');
 			$line .= "<td>" . $has_credit_info . " " . $has_token . "</td>";
 
@@ -108,7 +121,7 @@ class Finance_Clients
 			$invoice_user_id = $C->getInvoiceUserId(false);
 			if ( ! $invoice_user_id and $create_invoice_user) {
 				try {
-					$invoice_user = $C->createInvoiceUser();
+					$invoice_user_id = $C->createInvoiceUser();
 				} catch (Exception$e) {
 				}
 				$create_invoice_user = false;
@@ -147,6 +160,12 @@ class Finance_Clients
 		return $output;
 	}
 
+	static function getTokenStatus($C)
+	{
+		if (class_exists('Finance_Yaad'))
+		return Finance_Yaad::getCustomerStatus($C, true);
+		return '';
+	}
 	static function client_account( $customer_id ) {
 		require_once( ABSPATH . "im-config.php" );
 
@@ -194,8 +213,11 @@ class Finance_Clients
 		if ($payment_info_id) {
 			$args = array("post_file" => Fresh::getPost(), "edit"=>true);
 			$credit_info = Core_Gem::GemElement( "payment_info", $payment_info_id, $args );
-		} else
-			$credit_info = "No payment info";
+		} else {
+			$args["post_file"] = Finance::getPostFile();
+			$credit_info = Core_Gem::GemAddRow("payment_info", "Add", $args);
+//			$credit_info = "No payment info";
+		}
 
 		$result .= Core_Html::gui_table_args( array(
 			array( Core_Html::gui_header( 2, "פרטי לקוח", true ), Core_Html::gui_header( 2, "קבלה", true ), Core_Html::GuiHeader(1, "Credit info") ),
@@ -205,11 +227,14 @@ class Finance_Clients
 		$result .= Core_Html::GuiHeader( 2, __( "Balance" ) . ": " .
 		                                    SqlQuerySingleScalar( "SELECT round(sum(transaction_amount), 1) FROM im_client_accounts WHERE client_id = " . $customer_id ) );
 
-		$result .= Core_Html::GuiButton("btn_pay", " בצע חיוב על היתרה", array("action"=>"pay_credit_client('" . Finance::getPostFile() . "', $customer_id)"));
+		$result .= Core_Html::GuiTabs(array(array("Credit pay", "Credit pay", self::PaymentBox($u)),
+			array("Add document", "Add document", self::AddDocumentBox($u))),
+			array("tabs_load_all"=>true));
+
 		$result .= '<div id="logging"></div>';
 
-		$args   = array( "post_file" => Finance::getPostFile(), "class" => "widefat" );
-		$result .= Fresh_Client_Views::show_trans( $customer_id, TransView::default, $args );
+		$args   = array( "post_file" => Finance::getPostFile());
+		$result .= Fresh_Client_Views::show_trans( $customer_id, TransView::admin, $args );
 
 		return $result;
 	}
@@ -229,21 +254,22 @@ class Finance_Clients
 	 * @return bool|int|string
 	 * @throws Exception
 	 */
-	static function create_receipt_from_account_ids( $cash, $bank, $check, $credit, $change, $user_id, $date, $row_ids )
+	static function create_receipt_from_account_ids( $cash, $bank, $check, $credit, $user_id, $date, $row_ids )
 	{
-		if ( ! $date ) {
-			$date = date( 'Y-m-d' );
-		}
-		if ( ! ( $user_id > 0 ) ) {
-			throw  new Exception( "Bad customer id " . __CLASS__ );
-		}
+		if ( ! $date ) $date = date( 'Y-m-d' );
+
+		if ( ! ( $user_id > 0 ) ) throw  new Exception( "Bad customer id " . __CLASS__ );
 
 		$del_ids = array();
 		$no_ids  = true;
+		$dels_total = 0;
 		foreach ( $row_ids as $id ) {
 			if ( $id > 0 ) {
 				$no_ids = false;
 				$del_id = SqlQuerySingleScalar( "select transaction_ref from im_client_accounts where ID = " . $id );
+				$d = new Fresh_Delivery($del_id);
+				$dels_total += $d->getDeliveryTotal();
+//				print "dt=$dels_total<br/>";
 				if ( $del_id > 0 ) {
 					array_push( $del_ids, $del_id );
 				} else {
@@ -255,6 +281,7 @@ class Finance_Clients
 				die ( "bad id " . $id );
 			}
 		}
+		$change = ($cash + $bank + $check + $credit) - $dels_total;
 
 		if ( $no_ids ) {
 			print "לא נבחרו תעודות משלוח";
@@ -266,6 +293,7 @@ class Finance_Clients
 
 	private static function CreateReceipt($cash, $bank, $check, $credit, $change, $user_id, $date, $del_ids)
 	{
+//		print "cas=$cash bank=$bank check=$check credit=$credit change=$change<br/>";
 		Finance::Invoice4uConnect();
 
 		$u = new Fresh_Client( $user_id );
@@ -315,9 +343,8 @@ class Finance_Clients
 		return $pay_type;
 	}
 
-	static function CreateDocument( $type, $ids, $customer_id, $email, $date, $cash = 0, $bank = 0, $credit = 0, $check = 0, $subject = null ) {
-		require_once(ABSPATH . "im-config.php");
-
+	static function CreateDocument( $type, $ids, $customer_id, $email, $date, $cash = 0, $bank = 0, $credit = 0, $check = 0, $subject = null )
+	{
 		if ( ! ( $customer_id > 0 ) )
 			throw new Exception( "Bad customer id" . __CLASS__);
 
@@ -328,12 +355,17 @@ class Finance_Clients
 		}
 
 		$C = new Fresh_Client($customer_id);
-		$C->createInvoiceUser();
 		$invoice->Login();
 
-		$invoice_client_id = $invoice->GetInvoiceUserId( $customer_id, $email );
+		$invoice_client_id = $C->getInvoiceUser();
+			// $C->createInvoiceUser(); // $invoice->( $customer_id, $email );
 
-		$client = $invoice->GetCustomerById( $invoice_client_id );
+		if (! $invoice_client_id) {
+			print "cant find user";
+			return false;
+		}
+
+		$client = $invoice->GetCustomerByEmail( $email);
 
 		if ( !$client or  ! ( $client->ID ) > 0 ) {
 			print "Client not found " . $customer_id . "<br>";
@@ -439,6 +471,20 @@ class Finance_Clients
 		return $doc_id;
 	}
 
+	static function PaymentBox(Fresh_Client $C )
+	{
+		$status = Finance_Yaad::getCustomerStatus($C, false);
+		if (! $status) return "";
+
+		$result = "<div>";
+		$result .= Core_Html::GuiHeader(1, "בצע תשלום");
+		$result .= "מספר תשלומים: " . Core_Html::GuiInput("payment_number", 1) ."<br/>";
+
+		$result .= Core_Html::GuiButton("btn_pay", " בצע חיוב על היתרה", array("action"=>"pay_credit_client('" . Finance::getPostFile() . "', " . $C->getUserId() . ")"));
+		$result .= "</div>";
+
+		return $result;
+	}
 
 	static function getLink($client_id) {
 		return "/wp-admin/users.php?page=client-accounts&id=$client_id";
@@ -466,5 +512,18 @@ class Finance_Clients
 )
 charset=utf8;
 ");
+	}
+
+	static function AddDocumentBox(Fresh_Client $u)
+	{
+		return Core_Html::gui_table_args( array(
+			array( "סוג פעולה", "סכום", "תאריך", "מזהה" ),
+			array(
+				'<input type="text" id="transaction_type">',
+				'<input type="text" id="transaction_amount">',
+				'<input type="date" id="transaction_date">',
+				'<input type="text" id="transaction_ref">'
+			)
+		) ) . '<button id="btn_add" onclick="account_add_transaction(\'' . Finance::getPostFile() . '\',' . $u->getUserId() . ')">הוסף תנועה</button>';
 	}
 }

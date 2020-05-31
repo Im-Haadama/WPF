@@ -9,20 +9,6 @@ class Finance_Yaad {
 
 	function init_hooks()
 	{
-		if (! TableExists("yaad_transactions"))
-			SqlQuery("create table im_yaad_transactions
-(
-	id int auto_increment
-		primary key,
-	transaction_id int null,
-	CCode int null,
-	Amount float null,
-	ACode varchar(200) null,
-	user_id int null,
-	pay_date date null
-);
-
-");
 	}
 
 	/**
@@ -38,9 +24,11 @@ class Finance_Yaad {
 	 * @param int $amount
 	 * pay customer balance or the given amount.
 	 *
-	 * @throws Exception
+	 * @param int $payment_number
+	 *
+	 * @return bool
 	 */
-	function pay_user_credit_wrap($customer_id, $amount = 0)
+	function pay_user_credit_wrap($customer_id, $amount = 0, $payment_number = 1)
 	{
 		// $delivery_ids = sql_query_array_scalar("select id from im_delivery where payment_receipt is null and draft is false");
 		$sql = 'select 
@@ -78,23 +66,26 @@ class Finance_Yaad {
 			}
 		}
 
-//		var_dump($paying_transactions);
-//		print "total: $current_total. max amount: $amount<br/>";
 		$change = $amount - $current_total;
-		return $this->pay_user_credit($user, $paying_transactions, $amount, $change);
-
-//		foreach ($delivery_ids as $delivery_id) {
-//			$this->pay_user_credit( $user_id, $delivery_id );
-//			die(0);
-//		}
+		return $this->pay_user_credit($user, $paying_transactions, $amount, $change, $payment_number);
 	}
 
-	function pay_user_credit(Fresh_Client $user, $account_line_ids, $amount, $change)
+	static function getCustomerStatus(Fresh_Client $C, $string)
 	{
+		if ($string)
+			return (SqlQuerySingleScalar( "select count(*) from im_payment_info where card_number not like '%X%' and email = " . QuoteText($C->get_customer_email())) > 0 ? 'C' : '') .
+			(SqlQuerySingleScalar( "select count(*) from im_payment_info where card_number like '%X%' and email = " . QuoteText($C->get_customer_email())) > 0 ? 'X' : '');
+		else
+			return (SqlQuerySingleScalar( "select count(*) from im_payment_info where card_number not like '%X%' and email = " . QuoteText($C->get_customer_email())) > 0 ? 1 : 0) +
+			       (SqlQuerySingleScalar( "select count(*) from im_payment_info where card_number like '%X%' and email = " . QuoteText($C->get_customer_email())) > 0 ? 2 : 0);
+
+	}
+	function pay_user_credit(Fresh_Client $user, $account_line_ids, $amount, $change, $payment_number = 1)
+	{
+		MyLog(__FUNCTION__ . " " . $user->getName() . " " . $amount);
 		$debug = false;
 		if (0 == $amount)
 			return true;
-//		$delivery = new Fresh_Delivery($delivery_id);
 
 		$token = get_user_meta($user->getUserId(), 'credit_token', true);
 
@@ -106,16 +97,18 @@ class Finance_Yaad {
 		}
 
 		if ($token) {
-			$transaction_info = self::TokenPay( $token, $credit_data, $user, $amount, CommaImplode($account_line_ids) );
+			MyLog("trying to pay with token user " . $user->getName());
+			$transaction_info = self::TokenPay( $token, $credit_data, $user, $amount, CommaImplode($account_line_ids), $payment_number );
 			$transaction_id = $transaction_info['Id'];
 			if (! $transaction_id or ($transaction_info['CCode'] != 0)) return false;
 
 			$paid = $transaction_info['Amount'];
 			if ($paid) self::RemoveRawInfo($credit_data['id']);
 		} else {
+			MyLog("trying to pay with credit info " . $user->getName());
 			if ($this->debug) print "trying to pay with credit info<br/>";
 			// First pay. Use local store credit info, create token and delete local info.
-			$transaction_info = self::FirstPay($credit_data, $user, $amount, CommaImplode($account_line_ids));
+			$transaction_info = self::FirstPay($credit_data, $user, $amount, CommaImplode($account_line_ids), $payment_number);
 //			var_dump($transaction_info);
 			// info: Id, CCode, Amount, ACode, Fild1, Fild2, Fild3
 			if (($transaction_info['CCode'] != 0)) {
@@ -132,7 +125,7 @@ class Finance_Yaad {
 			}
 			$paid = $transaction_info['Amount'];
 			if ($transaction_id) {
-				print "שולם בהצלחה\n";
+				print $user->getName() . " " . __("Paid") . " $amount. $payment_number " . __("payments") . "\n";
 				if ($this->debug) print "pay successful $transaction_id<br/>";
 
 				// Create token and save it.
@@ -142,13 +135,13 @@ class Finance_Yaad {
 					add_user_meta($user->getUserId(), 'credit_token', $token_info['Token']);
 
 					self::RemoveRawInfo($credit_data['id']);
-					print "נוצר טוקן";
+					print "נוצר טוקן\n";
 				}
 			}
 		}
 		if ($paid) {
 			// Create invoice receipt. Update balance.
-			Finance_Clients::create_receipt_from_account_ids( 0, 0, 0, $paid, $change, $user->getUserId(), date('Y-m-d'), $account_line_ids );
+			Finance_Clients::create_receipt_from_account_ids( 0, 0, 0, $paid, $user->getUserId(), date('Y-m-d'), $account_line_ids );
 
 			return true;
 		}
@@ -165,24 +158,25 @@ class Finance_Yaad {
 	/**
 	 * @param $credit_info
 	 * @param Fresh_Client $user_info
-	 * @param $amount
-	 * @param $payment_info
+	 * @param float $amount
+	 * @param string $delivery_numbers
+	 * @param int $payment_number
 	 *
 	 * @return array
 	 */
-	function FirstPay($credit_info, Fresh_Client $user_info, $amount, $payment_info)
+	function FirstPay($credit_info, Fresh_Client $user_info, float $amount, string $delivery_numbers, int $payment_number = 1)
 	{
 		// General
 		$params = array();
 		self::SetPayInfo($params);
-		self::SetTransactionInfo($params, $user_info, $amount, $payment_info);
+		self::SetTransactionInfo($params, $user_info, $amount, $delivery_numbers, $payment_number);
 		$params["CC"]     = $credit_info['card_number'];
 		$params["Tmonth"] = $credit_info['exp_date_month'];
 		$params["Tyear"]  = $credit_info['exp_date_year'];
 		$params["UserId"] = $credit_info['id_number'];
 		$params["UserId"] = $credit_info['id_number'];
 		$rc = $this->CallServer( 'https://icom.yaad.net/p3/', $params );
-		self::SaveTransaction($rc, $user_info);
+		self::SaveTransaction($rc, $user_info, $payment_number);
 		return $rc;
 	}
 	/**
@@ -200,44 +194,20 @@ class Finance_Yaad {
 		self::SignIn();
 	}
 
-	public function TokenPay( $token, $credit_info, Fresh_Client $user_info, $amount, $payment_info) {
+	public function TokenPay( string $token, array $credit_info, Fresh_Client $user_info, float $amount, string $delivery_info, int $payment_number = 1) {
 		$params = array();
 		self::SetPayInfo($params);
-		self::SetTransactionInfo($params, $user_info, $amount, $payment_info);
+		self::SetTransactionInfo($params, $user_info, $amount, $delivery_info, $payment_number);
 		$params["Token"] = "True";
 		$params["CC"] = $token;
 		$params["Tmonth"] = $credit_info['exp_date_month'];
 		$params["Tyear"]  = $credit_info['exp_date_year'];
 		$rc = $this->CallServer( 'https://icom.yaad.net/p3/', $params );
-		self::SaveTransaction($rc, $user_info);
+		self::SaveTransaction($rc, $user_info, $payment_number);
 		return $rc;
-
-
-//			"Info"        => $this->business_name,
-//			"Order"       => $payment_info,
-//			"Tash"        => "1",
-//			"UserId"      => $id,
-//			"ClientLName" => "Israeli",
-//			"ClientName"  => "Israel",
-//			"cell"        => "050555555555",
-//			"phone"       => "098610338",
-//			"city"        => "netanya",
-//			"email"       => "testsoft@yaad.net",
-//			"street"      => "levanon+3",
-//			"zip"         => "42361",
-//			"J5"          => "False",
-//			"MoreData"    => "True",
-//			"Postpone"    => "False",
-//			"sendemail"   => "True",
-//			"UTF8"        => "True",
-//			"Fild1"       => "freepram",
-//			"Fild2"       => "freepram",
-//			"Fild3"       => "freepram",
-//		);
-
 	}
 
-	private function SaveTransaction($rc, $user_info)
+	private function SaveTransaction($rc, $user_info, $payment_number)
 	{
 		if (isset($rc['Id'])) {
 			$rc['transaction_id'] = $rc['Id'];
@@ -245,6 +215,7 @@ class Finance_Yaad {
 		}
 		$rc['user_id'] = $user_info->getUserId();
 		$rc['pay_date'] = date("Y-m-d");
+		$rc['payment_number'] = $payment_number;
 		SqlInsert("yaad_transactions", $rc, array("Fild1", "Fild2", "Fild3"));
 	}
 
@@ -312,10 +283,12 @@ class Finance_Yaad {
 		$params["Coin"] = 1;
 	}
 
-	private function SetTransactionInfo(&$params, Fresh_Client $user_info, $amount, $payment_info, $num_of_payments = 1) {
-		$params['Info']       = urlencode( "delivery " . $payment_info );
+	private function SetTransactionInfo(&$params, Fresh_Client $user_info, float $amount, string $delivery_numbers, int $num_of_payments = 1) {
+		$params['Info']       = urlencode( "delivery " . $delivery_numbers );
 		$params["Amount"]     = $amount;
 		$params["Tash"]       = $num_of_payments;
+		if ($num_of_payments > 1)
+			$params["FixTash"] = $num_of_payments;
 		$params["tashType"]   = 1;
 		$params["ClientName"] = urlencode( $user_info->getName() );
 //		$params['UserId']    = get_user_meta( $user_info->getUserId(), 'id_number', true );
