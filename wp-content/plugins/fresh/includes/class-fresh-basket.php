@@ -204,6 +204,8 @@ class Fresh_Basket extends  Fresh_Product  {
 
 		while ( $row = mysqli_fetch_row( $result ) ) {
 			$prod_id = $row[0];
+			if ($prod_id == $basket_id) continue;
+
 			$p = new Fresh_Product($prod_id);
 			if ($p->is_basket())
 				$total_price += self::get_total_sellprice($prod_id);
@@ -237,7 +239,9 @@ class Fresh_Basket extends  Fresh_Product  {
 		$basket_content = Core_Data::TableData($sql, $args);
 		if ($basket_content) {
 			foreach($basket_content as &$row) {
-				$row['buy_price'] = Fresh_Pricing::get_buy_price($row['product_id']);
+				$prod_id = $row['product_id'];
+				if ($prod_id  == $basket_id) continue;
+				$row['buy_price'] = Fresh_Pricing::get_buy_price($prod_id);
 				$buy_total += $row['buy_price'];
 				if (is_numeric($row["line_price"])) $total += $row["line_price"];
 			}
@@ -264,6 +268,7 @@ class Fresh_Basket extends  Fresh_Product  {
 		if ($result){
 			$data .= Core_Html::gui_header(1, "Not available, and removed:");
 			foreach ($result as $prod_id){
+				if ($prod_id == $basket_id) continue;
 				$p = new Fresh_Product($prod_id);
 				$data .= $p->getName() . "<br/>";
 				SqlQuery( "delete from im_baskets where product_id = " . $prod_id);
@@ -279,6 +284,7 @@ class Fresh_Basket extends  Fresh_Product  {
 	}
 
 	static function add_to_basket() {
+		// Todo: check that no loop.
 		$basket_id   = GetParam( "basket_id", true );
 		$new_product = GetParam( "new_product", true );
 		$sql         = 'INSERT INTO im_baskets (basket_id, date, product_id, quantity) VALUES (' . $basket_id . ", '" . date( 'Y/m/d' ) . "', " .

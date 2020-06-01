@@ -116,6 +116,7 @@ class Fresh_Pricing {
 			$result2 = SqlQuery( $sql2 );
 			while ( $row2 = mysqli_fetch_assoc( $result2 ) ) {
 				$prod_id = $row2["product_id"];
+				if ($prod_id == $p->getId()) continue;
 				$buy     += self::get_buy_price( $prod_id, $supplier_id );
 			}
 			return $buy;
