@@ -6,7 +6,7 @@ if ( ! defined( "ABSPATH" ) ) {
 
 require_once(ABSPATH . 'wp-config.php');
 
-$operation = GetParam('operation', true);
+$operation = GetParam('operation', true, null, true);
 $finance = Finance::instance();
 $user = GetParam('AUTH_USER', false, null);
 $password = GetParam('AUTH_PW', false, null);

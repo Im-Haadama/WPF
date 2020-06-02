@@ -31,6 +31,8 @@ class Finance_Bank
 	private function init_remoting()
 	{
 		AddAction("finance_add_payment", array($this, 'add_payment'));
+		AddAction("bank_status", array($this, 'bank_status'));
+		AddAction("bank_show_import", array($this, "show_import"));
 	}
 
 	public static function instance() {
@@ -112,7 +114,7 @@ class Finance_Bank
 		if (! current_user_can("show_bank", $account_id))
 			return "no permissions";
 
-		$operation = GetParam("operation", false, null);
+		$operation = GetParam("operation", false, null, true);
 		if ($operation)
 			return apply_filters($operation, "");
 
@@ -173,7 +175,7 @@ class Finance_Bank
 		$table_prefix = GetTablePrefix();
 		$multi_site = Core_Db_MultiSite::getInstance();
 
-		//		print __FILE__ . ':' .$operation . "<br/>";
+				print __FILE__ . ':' .$operation . "<br/>";
 		$u = new Core_Users();
 		if (! $u->can("show_bank"))
 			return "no permissions";
@@ -190,11 +192,8 @@ class Finance_Bank
 				return;
 			}
 		}
-
+		print "op=$operation";
 		switch ( $operation ) {
-			case "bank_status":
-				return self::bank_status();
-
 			case "bank_create_receipt":
 				$bank_amount = GetParam( "bank" );
 				$date        = GetParam( "date" );
@@ -366,20 +365,6 @@ class Finance_Bank
 				// $args["post_action"] = Finance::getPostFile()
 				return true;
 
-			case "bank_show_import":
-			case "import":
-				$args                  = array();
-				$args["selector"]      = __CLASS__ . "::gui_select_bank_account";
-				$args["import_action"] = $post_file . '?operation=bank_import_from_file';
-
-				$args["page"] = 1;
-				$args["order"] = "3 desc";
-				$args["post_file"] = self::getPost();
-				print Core_Gem::GemTable("bank", $args);
-
-				print Core_Gem::ShowImport( "bank", $args );
-				break;
-
 			case "show_transactions":
 				print self::bank_transactions( array("query" => $ids ? "id in (" . CommaImplode( $ids ) . ")" : null) );
 				break;
@@ -387,6 +372,20 @@ class Finance_Bank
 		}
 	}
 
+	function show_import()
+	{
+		$args                  = array();
+		$args["selector"]      = __CLASS__ . "::gui_select_bank_account";
+		$args["import_action"] = Finance::getPostFile() . '?operation=bank_import_from_file';
+
+		$args["page"] = 1;
+		$args["order"] = "3 desc";
+		$args["post_file"] = self::getPost();
+		print Core_Gem::GemTable("bank", $args);
+
+		print Core_Gem::ShowImport( "bank", $args );
+
+	}
 	function gui_select_open_supplier( $id = "supplier" ) {
 		$multi_site = Core_Db_MultiSite::getInstance();
 
@@ -484,8 +483,8 @@ class Finance_Bank
 	}
 	static public function bank_wrapper()
 	{
-//		print Core_Html::Gui_Header(1, "Bank");
-		$operation = GetParam("operation", false, "bank_status");
+		print Core_Html::Gui_Header(1, "Bank");
+		$operation = GetParam("operation", false, "bank_status", true);
 
 		print apply_filters($operation, '');
 	}
@@ -628,6 +627,7 @@ class Finance_Bank
 
 	static public function bank_status()
 	{
+		$result = "";
 		$table_prefix = GetTablePrefix();
 
 		$account = GetParam("account", false, null);
