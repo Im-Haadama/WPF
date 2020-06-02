@@ -44,6 +44,7 @@ class Fresh_Supplier_Balance {
 
 		array_push( $tabs, array( "supplier_balance", "Suppliers balances", self::Balance() ) );
 		array_push( $tabs, array( "supplier_invoices", "Suppliers invoices", Finance_Invoices::Table(AddToUrl("selected_tab", "supplier_invoices")) ) );
+		array_push( $tabs, array( "test_invoice4u", "Test", self::test_invoice()) );
 
 		$args = [];
 		if ($selected_tab) {
@@ -59,6 +60,17 @@ class Fresh_Supplier_Balance {
 		print  $result;
 	}
 
+	static function test_invoice()
+	{
+		Finance::Invoice4uConnect();
+
+		$u = new Fresh_Client(529);
+		$result = $u->getName() . "<br/>";
+		$iu = $u->getInvoiceUser();
+		if ($iu)
+			$result .= $iu->ID;
+		return $result;
+	}
 	static function Balance($include_zero = false)
 	{
 		$supplier_id = GetParam( "supplier_id", false, null );

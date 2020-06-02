@@ -230,15 +230,16 @@ class Fresh_Delivery {
 		}
 
 		$delivery_id = Fresh_Delivery::CreateDeliveryHeader( $order_id, $total, $vat, $lines, false, $fee, 0, false );
+		$Del = new Fresh_Delivery($delivery_id);
 		// print " מספר " . $delivery_id;
 
 		foreach ( $prods as $prod_to_add ) {
-			Fresh_Delivery::AddDeliveryLine( $prod_to_add['product_name'], $delivery_id, $prod_to_add['quantity'], $prod_to_add['quantity_ordered'], 0,
+			$Del->AddDeliveryLine( $prod_to_add['product_name'], $prod_to_add['quantity'], $prod_to_add['quantity_ordered'], 0,
 				$prod_to_add['vat'], $prod_to_add['price'], $prod_to_add['line_price'], $prod_to_add['prod_id'], 0 );
 		}
 
 		if ($fee)
-			Fresh_Delivery::AddDeliveryLine('דמי משלוח', $delivery_id, 1, 1, 0, round($fee / 1.17 * 0.17, 2), $fee, $fee, 0, 0 );
+			$Del->AddDeliveryLine('דמי משלוח',  1, 1, 0, Fresh_Pricing::vatFromTotal($fee ), $fee, $fee, 0, 0 );
 
 //		send_deliveries($delivery_id);
 

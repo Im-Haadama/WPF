@@ -34,6 +34,7 @@ class Finance_Invoice4u
 	 */
 	public function __construct( $user, $password ) {
 		if (! defined('WSDL_CACHE_NONE')) { // Setup error
+			MyLog("Setup Error");
 			$this->token = null;
 			return;
 		}
@@ -157,9 +158,9 @@ class Finance_Invoice4u
 		return $docNum;
 	}
 
-	function InvoiceLog($message)
+	function InvoiceLog($message, $function = '')
 	{
-		MyLog($message,"func",'invoice4u.log');
+		MyLog($message,$function,'invoice4u.log');
 	}
 
 //    public function CreateDocument()
@@ -169,50 +170,54 @@ class Finance_Invoice4u
 //        $this->result = $this->requestWS($wsdl, "CreateDocument", array('doc' => $this->doc, 'token' => $this->token));
 //    }
 
-//	public function GetInvoiceUserId( $customer_id, $client_email = null) {
-//		if ( ! ( $customer_id > 0 ) ) {
-//			throw new Exception( "Bad customer id " . __CLASS__ . " " . $customer_id );
-//		}
-//
-//		// Try local cache
-//		$id = get_user_meta( $customer_id, 'invoice_id', 1 );
-//
-//		if (is_numeric($id) and ($id > 0)) return $id;
-//
-//		// Try email
-//		MyLog( "performance - searching customer by email $client_email", __METHOD__ );
-//		$client = $this->GetCustomerByEmail( $client_email );
-//
-//		if ( ! isset( $client->ID ) ) return null;
-//
-//		// if found, save
-//		if (is_numeric($client->ID) and ($client->ID > 0))
-//			update_user_meta( $customer_id, 'invoice_id', $client->ID );
-//		return $client->ID;
-//	}
-
-	public function GetCustomerByEmail( $email ) {
-		$this->InvoiceLog($email);
+	private function GetCustomerByID( $invoice_id, $client_email = null)
+	{
+		self::InvoiceLog($invoice_id, __FUNCTION__);
 		$wsdl = ApiService . "/CustomerService.svc?wsdl";
 
 		$cust        = new InvoiceCustomer( "" );
+		$cust->ID = $invoice_id;
+		$response = $this->requestWS( $wsdl, "GetCustomers", array(
+			'cust'       => $cust,
+			'token'      => $this->token
+		) );
+		$this->InvoiceLog("found: " . isset( $response->Response->Customer ));
+		if ( isset( $response->Response->Customer ) ) return $response->Response->Customer;
+		return null;
+
+	}
+
+	public function GetCustomerByEmail( $email ) {
+		$this->InvoiceLog( $email, __FUNCTION__ );
+
+		$cust        = new InvoiceCustomer( "" );
 		$cust->Email = $email;
+
+		return self::DoGetCustomer( $cust );
+	}
+
+	private function DoGetCustomer($cust)
+	{
+		$wsdl = ApiService . "/CustomerService.svc?wsdl";
+
 		$response = $this->requestWS( $wsdl, "GetCustomers", array(
 			'cust'       => $cust,
 			'token'      => $this->token,
 			'getAllRows' => false
 		) );
-		$this->InvoiceLog("found: " . isset( $response->Response->Customer ));
+		if ($this->result->Errors) {
+			foreach ($this->result->Errors as $error)
+				self::InvoiceLog($error, __FUNCTION__);
+			return null;
+		}
 		if ( isset( $response->Response->Customer ) ) return $response->Response->Customer;
 		return null;
 	}
 
 	function GetCustomerByName( $name ) {
-		$wsdl = ApiService . "/CustomerService.svc?wsdl";
+		self::InvoiceLog($name, __FUNCTION__);
 
-		$this->result = $this->requestWS( $wsdl, "GetByName", array( 'name' => $name, 'token' => $this->token ) );
-
-		return $this->result;
+		return self::DoGetCustomer(new InvoiceCustomer($name));
 	}
 
 //	private function GetCustomerById( $id )  {

@@ -77,6 +77,10 @@ class Finance_Clients
 
 	static function all_clients( $include_zero = false ) {
 		$output = "<center><h1>יתרת לקוחות לתשלום</h1></center>";
+		if (! Finance::Invoice4uConnect()) {
+			$output .= "תקלה במנוי. יש ליצור קשר עם תמיכה של invoice4u. " . Core_Html::GuiHyperlink("תמיכה", "http://messenger.providesupport.com/messenger/invoice4u.html");
+		}
+
 		$output .= Core_Html::GuiHyperlink( __( "include paid" ), AddToUrl( "include_zero", 1 ) ) . "<br/>";
 
 		$sql = 'select round(sum(ia.transaction_amount),2), ia.client_id, wu.display_name, client_payment_method(ia.client_id), max(date) '
@@ -171,7 +175,7 @@ class Finance_Clients
 
 		$result = "";
 		try {
-			$invoice = Finance_Invoice4u::getInstance();
+			$invoice = Finance::Invoice4uConnect();
 		} catch ( Exception $e ) {
 			$invoice = null;
 		}
@@ -206,9 +210,10 @@ class Finance_Clients
 			), "payment_table",
 				array( "class" => "widefat" ) );
 		} else {
-			$new_tran = Core_Html::GuiHeader( 1, "לא ניתן להחבר ל Invoice4u. בדוק את ההגדרות ואת המנוי. יוזר $" );
+			$new_tran = Core_Html::GuiHeader( 1, "לא ניתן להתחבר ל Invoice4u. בדוק את ההגדרות ואת המנוי. יוזר $" );
 		}
 		$payment_info_id = SqlQuerySingleScalar( "select id from im_payment_info where email = " . QuoteText($u->get_customer_email()));
+		MyLog("piid= $payment_info_id " .QuoteText($u->get_customer_email()) );
 		if ($payment_info_id) {
 			$args = array("post_file" => Fresh::getPost(), "edit"=>true);
 			$credit_info = Core_Gem::GemElement( "payment_info", $payment_info_id, $args );

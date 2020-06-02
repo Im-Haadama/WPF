@@ -391,8 +391,6 @@ class Finance {
 				break;
 
 			case "create_receipt":
-				if (! Finance::Invoice4uConnect())
-					return false;
 				$cash    = (float) GetParam( "cash", false, 0 );
 				$bank    = (float) GetParam( "bank", false, 0 );
 				$check   = (float) GetParam( "check", false, 0 );
@@ -859,7 +857,7 @@ class Finance {
 	{
 		MyLog(__FUNCTION__);
 		if ($i = Finance_Invoice4u::getInstance()) return $i;
-		MyLog("Connecting");
+		MyLog("Connecting " . INVOICE_USER);
 		if (defined('INVOICE_USER') and defined('INVOICE_PASSWORD'))
 			return new Finance_Invoice4u(INVOICE_USER, INVOICE_PASSWORD);
 		else MyLog("No invoice user or password");

@@ -175,12 +175,12 @@ class Fresh_Client {
 	function getInvoiceUser($create = true)
 	{
 		// Invoice is alive?
-		$invoice = Finance_Invoice4u::getInstance();
+        $invoice = Finance::Invoice4uConnect();
 		if (! $invoice) return null;
 
 //	    // Try the cache
 //		$id = get_user_meta( $this->user_id, 'invoice_id', 1 );
-//		if ($id) return $invoice->GetCustomerById($id);
+//		if ($id) return $invoice->GetCustomerByID($id);
 
         // Try to get by email.
         $email = $this->get_customer_email();
@@ -409,6 +409,4 @@ class Fresh_Client {
 
 	    return Core_Html::GuiSelectTable($id, "client_types", $args);
     }
-
-
 }

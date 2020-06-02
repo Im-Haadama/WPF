@@ -80,7 +80,7 @@ class Fresh_Order {
 		return null;
 	}
 
-	public function getShippingFee() : int
+	public function getShippingFee() : float
 	{
 		$sql2 = 'SELECT meta_value FROM `wp_woocommerce_order_itemmeta` WHERE order_item_id IN ( '
 		        . 'SELECT order_item_id FROM wp_woocommerce_order_items WHERE order_id = ' . $this->order_id
