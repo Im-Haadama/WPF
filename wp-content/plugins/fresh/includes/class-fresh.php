@@ -143,7 +143,7 @@ class Fresh {
 		add_filter( 'woocommerce_cart_item_price', 'im_show_nonsale_price', 10, 2 );
 //		add_filter( 'woocommerce_order_button_text', 'im_custom_order_button_text' );
 		add_action( 'init', 'custom_add_to_cart_quantity_handler' );
-		add_action( 'woocommerce_checkout_update_order_meta', 'my_custom_checkout_field_update_order_meta' );
+//	Todo: Had error function 'my_custom_checkout_field_update_order_meta' not found	add_action( 'woocommerce_checkout_update_order_meta', 'my_custom_checkout_field_update_order_meta' );
 		add_action( 'init', 'register_awaiting_shipment_order_status' );
 		add_action('woocommerce_order_status_completed', 'Fresh_Order_Management::order_complete');
 
