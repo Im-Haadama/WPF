@@ -179,8 +179,8 @@ class Fresh_Client {
 		if (! $invoice) return null;
 
 //	    // Try the cache
-//		$id = get_user_meta( $this->user_id, 'invoice_id', 1 );
-//		if ($id) return $invoice->GetCustomerByID($id);
+		$id = get_user_meta( $this->user_id, 'invoice_id', 1 );
+		if ($id) return $invoice->GetCustomerByID($id);
 
         // Try to get by email.
         $email = $this->get_customer_email();

@@ -537,12 +537,10 @@ class Finance {
 		// Set up localisation.
 		$this->load_plugin_textdomain();
 
-		$this->bank       = Finance_Bank::instance();
 		$this->payments   = Finance_Payments::instance();
 		$this->invoices   = Finance_Invoices::instance();
 		$this->shortcodes = Core_Shortcodes::instance();
 		$this->shortcodes->add( $this->payments->getShortcodes() );
-		$this->shortcodes->add( $this->bank->getShortcodes() );
 		$this->shortcodes->add( $this->invoices->getShortcodes() );
 
 		$this->shortcodes->do_init();
@@ -553,6 +551,7 @@ class Finance {
 		if (is_admin_user() and InfoGet("finance_bank_enabled")) {
 			$this->bank = new Finance_Bank( self::getPostFile() );
 			$this->bank->init_hooks();
+			$this->shortcodes->add( $this->bank->getShortcodes() );
 		}
 
 		// For testing:
@@ -561,33 +560,6 @@ class Finance {
 		// Init action.
 		do_action( 'finance_init' );
 	}
-
-	static public function finance_main() {
-		$result = "";
-
-		if ( im_user_can( "show_bank" ) ) {
-			$bank      = new Finance_Bank( FINANCE_PLUGIN_DIR . '/post.php' );
-			$operation = GetParam( "operation", false, null );
-			print "operation: $operation<br/>";
-			if ( $operation ) {
-				self::handle_bank_operation( $operation, GetUrl( 1 ) );
-
-				return;
-			}
-
-			$result .= Core_Html::gui_header( 1, "Main finance" );
-			$result .= Core_Html::gui_header( 2, "Bank" );
-
-			$result .= $bank->bank_status();
-		}
-
-		if ( im_user_can( "show_bank" ) ) {
-			print Core_Html::gui_header( 2, "Bank" );
-		}
-
-		print $result;
-	}
-
 
 //	/**
 //	 * Load Localisation files.

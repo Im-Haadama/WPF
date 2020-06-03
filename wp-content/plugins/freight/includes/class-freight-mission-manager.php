@@ -36,12 +36,16 @@ class Freight_Mission_Manager
 
 	static function getCSV($the_mission)
 	{
-		$path_info = array(array("external_id",
-			"task_note",
-			"customer_phone",
-			"customer_first_name",
-			"customer_address_part_1",
-			"customer_address_part_2",
+		$path_info = array(array(
+			"Order Number",
+			"Customer Note",
+			"First Name (Billing)",
+			"Last Name (Billing)",
+			"Phone (Billing)",
+			"First Name (Shipping)",
+			"Last Name (Shipping)",
+			"Address 1&2 (Shipping)",
+			"City (Shipping)"
 			));
 
 		$supplies_to_collect = array();
@@ -60,19 +64,25 @@ class Freight_Mission_Manager
 				if ( $order_info['site'] == "supplies" ) $type = "supplies"; else if ( $order_info['site'] == "משימות" )$type = "tasklist";
 				$site_id = $order_info['site_id'];
 				array_push($path_info,
-					array($order_id,
-						"comments",
-						$order_info['phone'],
-						$order_info['user_id'],
-						$order_info['customer'],
-						$path[$i],
-						$order_info['address_2']));
+					array(
+						$order_id, // "Order Number",
+						$order_info['address_2'], // "Customer Note",
+						$order_info['customer'], // "First Name (Billing)",
+						'', // "Last Name (Billing)",
+						$order_info['phone'], // "Phone (Billing)",
+						'', // "First Name (Shipping)",
+						'', // "Last Name (Shipping)",
+						$order_info['address_1'] , // "Address 1&2 (Shipping)",
+						$order_info['city'] // "City (Shipping)"
+					));
 			}
 		}
 
 		$result = "";
 		foreach ($path_info as $row) {
-			$result .= CommaImplode( $row) . PHP_EOL;
+			foreach ($row as $cell)
+				$result .= str_replace(',', ' ', $cell) . ",";
+			$result .=  PHP_EOL;
 		}
 
 		return $result;
@@ -99,7 +109,7 @@ class Freight_Mission_Manager
 			return;
 		}
 
-		$header = "Missions";
+		$header = "";
 		$week = GetParam("week", false, date('Y-m-d', strtotime('last sunday')));
 		if ($week)
 			$header .= __("Missions of week") . " " . $week;
@@ -148,7 +158,7 @@ class Freight_Mission_Manager
 		}
 
 		$args = array();
-		$args["edit"] = false;
+		$args["edit"] = true;
 		$args["add_checkbox"] = true;
 		$args["post_file"] = Freight::getPost();
 
@@ -554,6 +564,7 @@ group by pm.meta_value, p.post_status");
 			$order_info['site_id']  = TableGetText( $row[0], 8 );
 			$order_id               = TableGetText( $row[0], 1 );
 			$order_info['customer'] = TableGetText( $row[0], 2 );
+			$order_info['address_1'] = $stop_point;
 			$order_info['address_2'] = TableGetText($row[0], 4);
 			$order_info['phone'] = TableGetText($row[0], 5);
 			$order_info['shipping_method'] = TableGetText($row[0], 9);
@@ -1094,5 +1105,4 @@ group by pm.meta_value, p.post_status");
 		}
 		return false;
 	}
-
 }

@@ -30,6 +30,6 @@ class Freight_Shipment {
 	{
 		delete_wp_woocommerce_shipping_zone_methods($this->instance_id);
 		$this->instance_id = 0;
-
+		return true;
 	}
 }

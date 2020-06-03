@@ -61,13 +61,17 @@ class Finance_Invoice4u
 	}
 
 	private function DoLogin( $invoice_user, $invoice_password, $force = false ) {
-		MyLog("Invoice4u Login");
+		self::InvoiceLog("Invoice4u Login");
 
 		$wsdl = ApiService . "/LoginService.svc?wsdl";
 		$user = array( 'username' => $invoice_user, 'password' => $invoice_password, 'isPersistent' => false );
 
 		$this->requestWS( $wsdl, "VerifyLogin", $user );
 		$this->token = $this->result;
+		if (! $this->token)
+			self::InvoiceLog("Login failure");
+
+		return $this->token;
 	}
 
 	private function requestWS( $wsdl, $service, $params )
@@ -89,9 +93,6 @@ class Finance_Invoice4u
 			$service = $service . "Result";
 
 			$this->result = $response->$service;
-
-			// print $response->$service;
-			MyLog("done", "Invoice4u", 'invoice4u.log');
 
 			return $this->result;
 		} catch ( SoapFault $f ) {
@@ -170,15 +171,16 @@ class Finance_Invoice4u
 //        $this->result = $this->requestWS($wsdl, "CreateDocument", array('doc' => $this->doc, 'token' => $this->token));
 //    }
 
-	private function GetCustomerByID( $invoice_id, $client_email = null)
+	public function GetCustomerByID( $invoice_id, $client_email = null)
 	{
 		self::InvoiceLog($invoice_id, __FUNCTION__);
 		$wsdl = ApiService . "/CustomerService.svc?wsdl";
 
 		$cust        = new InvoiceCustomer( "" );
 		$cust->ID = $invoice_id;
-		$response = $this->requestWS( $wsdl, "GetCustomers", array(
-			'cust'       => $cust,
+		$response = $this->requestWS( $wsdl, "GetFullCustomer", array(
+			'Id' => $invoice_id,
+			'OrgId' => 0,
 			'token'      => $this->token
 		) );
 		$this->InvoiceLog("found: " . isset( $response->Response->Customer ));
@@ -200,16 +202,22 @@ class Finance_Invoice4u
 	{
 		$wsdl = ApiService . "/CustomerService.svc?wsdl";
 
+		if (! $this->token) {
+			self::InvoiceLog("not login");
+			return null;
+		}
+
 		$response = $this->requestWS( $wsdl, "GetCustomers", array(
 			'cust'       => $cust,
 			'token'      => $this->token,
 			'getAllRows' => false
 		) );
-		if ($this->result->Errors) {
-			foreach ($this->result->Errors as $error)
-				self::InvoiceLog($error, __FUNCTION__);
-			return null;
-		}
+//		if ($response->Errors != '0') {
+//			print "ERRRROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO<br/>";
+//			foreach ($this->result->Errors as $error)
+//				self::InvoiceLog($error, __FUNCTION__);
+//			return null;
+//		}
 		if ( isset( $response->Response->Customer ) ) return $response->Response->Customer;
 		return null;
 	}

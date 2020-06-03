@@ -80,7 +80,7 @@ class Core_Data
 	{
 		$db_prefix = GetTablePrefix($table_name);
 		// TODO: adding meta key when needed(?)
-		if (! in_array($table_name, array("missions", "supplier_price_list"))) die ("not allowed $table_name");
+		if (! in_array($table_name, array("missions", "supplier_price_list", "mission_types"))) die ("not allowed $table_name");
 
 		SqlQuery( "delete from ${db_prefix}$table_name where id in (" . CommaImplode($rows) . ")");
 
@@ -420,7 +420,7 @@ class Core_Data
 				/// 5/9/2019 Change!! edit_cols by default is to edit. if it set, don't edit.
 				/// 23/9/2019  isset($edit_cols[$key]) - set $args["edit_cols"][$key] for fields that need to be edit.
 				if ($edit  and (! $edit_cols or (isset($edit_cols[$key]) and $edit_cols[$key]))){
-					if (! $key)	continue;
+					if (! $key or $key == "id")	continue;
 					if ($field_events) $args["events"] = $field_events;
 					if ( $table_name ) {
 //					if (isset($args["field_types"])) {

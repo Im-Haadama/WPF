@@ -23,9 +23,10 @@ class Finance_Bank
 		$this->multi_site = Core_Db_MultiSite::getInstance();
 		$this->table_prefix = GetTablePrefix();
 
+		self::$_instance = $this;
+
 		// For rem
 		self::init_remoting();
-
 	}
 
 	private function init_remoting()
@@ -175,7 +176,6 @@ class Finance_Bank
 		$table_prefix = GetTablePrefix();
 		$multi_site = Core_Db_MultiSite::getInstance();
 
-				print __FILE__ . ':' .$operation . "<br/>";
 		$u = new Core_Users();
 		if (! $u->can("show_bank"))
 			return "no permissions";
@@ -192,7 +192,6 @@ class Finance_Bank
 				return;
 			}
 		}
-		print "op=$operation";
 		switch ( $operation ) {
 			case "bank_create_receipt":
 				$bank_amount = GetParam( "bank" );
@@ -631,7 +630,9 @@ class Finance_Bank
 		$table_prefix = GetTablePrefix();
 
 		$account = GetParam("account", false, null);
-		if ($account)
+		if ($account) {
+			return self::show_bank_account($account);
+		}
 		$result = Core_Html::gui_header(2, "Bank accounts");
 		$u = new Core_Users();
 

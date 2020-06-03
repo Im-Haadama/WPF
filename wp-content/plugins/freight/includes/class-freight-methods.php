@@ -107,7 +107,7 @@ class Freight_Methods {
 	{
 		$id = GetParam("instance", true);
 		$s = new Freight_Shipment($id);
-		$s->delete_instance();
+		return $s->delete_instance();
 	}
 
 	static function toggle_shipment_enable()
@@ -146,6 +146,7 @@ class Freight_Methods {
 		$args["post_file"] = Fresh::getPost();
 		$args["operation"] = $operation;
 		$args["edit"] = true;
+		$args["add_checkbox"] = true;
 		if ($operation)
 			$result = apply_filters( $operation, $result, "", $args, null );
 

@@ -69,8 +69,11 @@ class Fresh_Supplier_Balance {
 		$iu = $u->getInvoiceUser();
 		if ($iu)
 			$result .= $iu->ID;
+		else
+			$result .= "not found";
 		return $result;
 	}
+
 	static function Balance($include_zero = false)
 	{
 		$supplier_id = GetParam( "supplier_id", false, null );

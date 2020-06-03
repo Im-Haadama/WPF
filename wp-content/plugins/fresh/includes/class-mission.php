@@ -95,7 +95,7 @@ class Mission {
 
 	public function getDefaultFee()
 	{
-		return SqlQuerySingleScalar( "select default_rate from im_mission_types where id = " . self::getMissionType());
+		return SqlQuerySingleScalar( "select default_price from im_mission_types where id = " . self::getMissionType());
 	}
 	/**
 	 * @param mixed $start_address
@@ -196,10 +196,10 @@ class Mission {
 	 * @return bool
 	 * @throws Exception
 	 */
-	public static function CreateFromType($type_id, $forward_days = 8) // from tomorrow till tomorrow+forward_days
+	public static function CreateFromType($type_id) // from tomorrow till tomorrow+forward_days
 	{
 		$last_mission_id = SqlQuerySingleScalar("select max(id) from im_missions where mission_type = $type_id and date > curdate()");
-		if ($last_mission_id) return;
+		if ($last_mission_id) return true;
 
 		$type_info = SqlQuerySingleAssoc("select * from im_mission_types where id = $type_id");
 
@@ -207,7 +207,8 @@ class Mission {
 		$start_address = $type_info['start_address'];
 		$end_address = $type_info['end_address'];
 		$date = next_weekday($week_day);
-		$name = $type_info['mission_name'] . " " .date('m-d', $date);
+		$name = $type_info['mission_name'] . " " . date('m-d', strtotime($date));
+
 
 		 $sql = "insert into im_missions (date, name, mission_type, start_address, end_address) values('$date', '$name', $type_id, '" . $start_address . "', '" . $end_address . "')";
 
