@@ -37,8 +37,8 @@ class Mission {
 
 		$this->name       = $result[0];
 		$this->start_time = $result[1] . ":" . $result[2];
-		$this->start_address = $result[3];
-		$this->end_address   = $result[4];
+		$this->start_address = str_replace('-', ' ', $result[3]);
+		$this->end_address   = str_replace('-', ' ', $result[4]);
 		$this->end_time      = $result[5];
 		$this->date          = $result[6];
 		$this->mission_type = $result[7];
@@ -151,27 +151,29 @@ class Mission {
 	 * @return string
 	 */
 	public function getStartAddress() {
-		global $store_address;
-		if ( ! ( $this->id > 0 ) ) {
-			die ( __METHOD__ . " id = " . $this->id );
-		}
-		$start = SqlQuerySingleScalar( "SELECT start_address FROM im_missions WHERE id = " . $this->id );
-
-		return $start ? $start : $store_address;
+		return $this->start_address;
+//		global $store_address;
+//		if ( ! ( $this->id > 0 ) ) {
+//			die ( __METHOD__ . " id = " . $this->id );
+//		}
+//		$start = SqlQuerySingleScalar( "SELECT start_address FROM im_missions WHERE id = " . $this->id );
+//
+//		return $start ? $start : $store_address;
 	}
 
 	/**
 	 * @return string
 	 */
 	public function getEndAddress() {
-		global $store_address;
-
-		if ( ! ( $this->id > 0 ) ) {
-			die ( __METHOD__ . " id = " . $this->id );
-		}
-		$end = SqlQuerySingleScalar( "SELECT end_address FROM im_missions WHERE id = " . $this->id );
-
-		return $end ? $end : $store_address;
+		return $this->end_address;
+//		global $store_address;
+//
+//		if ( ! ( $this->id > 0 ) ) {
+//			die ( __METHOD__ . " id = " . $this->id );
+//		}
+//		$end = SqlQuerySingleScalar( "SELECT end_address FROM im_missions WHERE id = " . $this->id );
+//
+//		return $end ? $end : $store_address;
 	}
 
 	/**

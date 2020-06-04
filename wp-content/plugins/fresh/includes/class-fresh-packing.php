@@ -237,7 +237,8 @@ class Fresh_Packing {
 		$O = new Fresh_Order($post->ID);
 		switch ($col) {
 			case "freight":
-			    print self::gui_select_mission("mis_" . $post->ID, $O->getMission(), array("events" => 'onclick="event.stopPropagation();mission_changed(' . $post->ID .')"'));
+			    print self::gui_select_mission("mis_" . $post->ID, $O->getMission(),
+				    array("events" => 'onclick="event.stopPropagation();order_mission_changed(\'' . Fresh::getPost() . "', " . $post->ID .')"'));
 			    break;
 			case 'city':
 				print $O->getOrderInfo( '_shipping_city' );
@@ -245,8 +246,6 @@ class Fresh_Packing {
 			case 'fee':
 				print $O->getShippingFee();
 				break;
-
-
 		}
 	}
 
@@ -503,7 +502,7 @@ class Fresh_Packing {
 				$mission_id = $order->getMission();
 
 				$args                                = array();
-				$args["events"]                      = "onchange=\"mission_changed(" . $order_id . ")\"";
+				$args["events"]                      = "onchange=\"order_mission_changed('" . Fresh::getPost() . "', " . $order_id . ")\"";
 				$line[ Fresh_OrderFields::mission ]  = self::gui_select_mission( "mis_" . $order_id, $mission_id, $args );
 				$line[ Fresh_OrderFields::order_id ] = Core_Html::GuiHyperlink( $order_id, get_site_url() . "/wp-admin/post.php?post=$order_id&action=edit");
 
@@ -557,8 +556,6 @@ class Fresh_Packing {
 			"selected" => $selected,
 			"query"    => $query
 		);
-
-		// "ifnull(concat (name, ' ', DAYOFMONTH(date), '/', month(date)), name)");
 
 		return Core_Html::GuiSelectTable( $id, "missions", $args );
 	}

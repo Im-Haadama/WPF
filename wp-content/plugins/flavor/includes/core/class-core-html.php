@@ -952,6 +952,7 @@ class Core_Html {
 <tr>";
 				if ( is_array( $line ) ) {
 					foreach ( $line as $col_id => $cell ) {
+//						if (isset($args["skip_header_field"][$col_id])) continue;
 						$data .= "<td";
 						if ( isset( $args["col_width"][ $col_id ] ) ) {
 							$data .= ' style="overflow: auto; width:' . $args["col_width"][ $col_id ] . '" ';

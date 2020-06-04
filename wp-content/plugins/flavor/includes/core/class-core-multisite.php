@@ -82,6 +82,7 @@ class Core_MultiSite {
 			return $this->sites_array[ $site_id ][ Core_Multisite_Fields::site_url_idx ];
 		} else {
 			print "site $site_id not defined!";
+//			print debug_trace(10);
 
 			return null;
 		}

@@ -127,3 +127,10 @@ function freight_add_delivery(post_file, mission_id)
 
     execute_url(request, success_message);
 }
+
+function order_update_driver_comment(post_file, order_id)
+{
+    let comments = get_value_by_name("comments_" + order_id);
+    let url = post_file + '?operation=order_update_driver_comment&order_id=' + order_id + '&comments=' + encodeURI(comments);
+    execute_url(url, fail_message1);
+}

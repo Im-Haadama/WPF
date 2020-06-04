@@ -140,7 +140,7 @@ class Core_Db_MultiSite extends Core_MultiSite {
 		if (! ($id > 0))
 			return "unknown site";
 		if (TableExists("multisite"))
-			return SqlQuerySingleScalar( "SELECT pickup_address FROM im_multisite WHERE id = " . $id );
+			return str_replace('-', ' ', SqlQuerySingleScalar( "SELECT pickup_address FROM im_multisite WHERE id = " . $id ));
 		return "";
 	}
 

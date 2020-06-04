@@ -1043,7 +1043,22 @@ class Fresh_Order {
 		return Core_Html::gui_row( $data );
 	}
 
-	function GetComments() {
+	function GetDriverComments()
+	{
+		$driver_comments = get_post_meta($this->order_id, 'driver_comments', true);
+		if (null !== $driver_comments) return $driver_comments;
+		$driver_comments = self::GetComments(false);
+		self::UpdateDriverComments($driver_comments);
+		return $driver_comments;
+	}
+
+	function UpdateDriverComments($driver_comments)
+	{
+		if (! strlen($driver_comments)) $driver_comments = ' ';
+		return update_post_meta($this->order_id, 'driver_comments', $driver_comments);
+	}
+
+	function GetComments($include_lines = false) {
 
 		if ( $this->comments ) {
 			return $this->comments;
@@ -1054,6 +1069,11 @@ class Fresh_Order {
 		$this->comments = "";
 
 		$c = SqlQuerySingleScalar( $sql );
+
+		if (! $include_lines) {
+			$this->comments = $c;
+			return $c;
+		}
 
 		if ($c) $this->comments .= "הערות להזמנה: " . $c . "<br/>";
 
@@ -1082,9 +1102,14 @@ class Fresh_Order {
 	}
 
 	function getAddress() {
-		return $this->getOrderInfo( 'shipping_city' ) . " " . $this->getOrderInfo( 'shipping_address_1' );
+		return $this->getOrderInfo( 'shipping_address_1' );
 //		       " " . $this->getOrderInfo( 'shipping_address_2' );
 	}
+
+	function getCity() {
+		return str_replace('-', ' ', $this->getOrderInfo( 'shipping_city' ));
+	}
+
 
 	function quantity_in_order( $order_item_id ) {
 // Get and display item quantity
@@ -1123,6 +1148,7 @@ class Fresh_Order {
 		$client = new Fresh_Client($client_id);
 		$ref           = $this->getLink($this->order_id);
 		$address       = self::getAddress();
+		$city = self::getCity();
 		$receiver_name = GetMetaField( $this->order_id, '_shipping_first_name' ) . " " .
 		                 GetMetaField( $this->order_id, '_shipping_last_name' );
 		$shipping2     = GetMetaField( $this->order_id, '_shipping_address_2' );
@@ -1132,6 +1158,8 @@ class Fresh_Order {
 		array_push( $fields, $client_id );
 
 		array_push( $fields, $receiver_name );
+
+		array_push($fields, $city);
 
 		array_push( $fields, "<a href='waze://?q=$address'>$address</a>" );
 
@@ -1147,6 +1175,8 @@ class Fresh_Order {
 		array_push( $fields, Core_Db_MultiSite::LocalSiteID() );
 
 		array_push($fields, $this->getShippingFee());
+
+		array_push($fields, $this->GetDriverComments());
 
 		return  "<tr> " . self::delivery_table_line( 1, $fields ) . "</tr>";
 	}

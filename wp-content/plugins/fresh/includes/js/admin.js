@@ -1,9 +1,3 @@
-// General
-function admin_post()
-{
-    return fresh_admin_params['admin_post'];
-}
-
 // baskets
 // use wp_localize_script to set admin_post
 function add_to_basket(basket_id)

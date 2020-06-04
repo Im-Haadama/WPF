@@ -303,7 +303,7 @@ class Fresh_Supply {
 
 		$row = array( "Delivery route" );
 		if ( $edit ) {
-			array_push( $row, gui_select_mission( "mis_" . $this->ID, $this->MissionID, array("events" => "onchange=mission_changed(" . $this->ID . ")" )) );
+			array_push( $row, gui_select_mission( "mis_" . $this->ID, $this->MissionID, array("events" => "onchange=mission_changed('" . Fresh::getPost() . "'," . $this->ID . ")" )) );
 		} else {
 			array_push( $row, $this->getMissionName() );
 		}

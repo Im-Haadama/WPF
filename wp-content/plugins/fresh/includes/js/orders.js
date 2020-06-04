@@ -1,16 +1,13 @@
-
-let orders_post = admin_post();
-// '/wp-content/plugins/fresh/post.php';
-
-function mission_changed(order_id) {
+function order_mission_changed(post_file, order_id) {
     // "mis_"
     //var order_id = field.name.substr(4);
     var mis = document.getElementById("mis_" + order_id);
     var mission_id = get_value(mis);
-    execute_url(orders_post + "?operation=order_set_mission&order_id=" + order_id + "&mission_id=" + mission_id);
+    execute_url(post_file + "?operation=order_set_mission&order_id=" + order_id + "&mission_id=" + mission_id);
 }
 
-function start_handle() {
+// Todo: change calling
+function start_handle(post_file) {
     var collection = document.getElementsByClassName("select_order_wc-pending");
     var order_ids = new Array();
 
@@ -26,11 +23,12 @@ function start_handle() {
             order_ids.push(order_id);
     }
 
-    var request = admin_post() + "?operation=order_start_handle&ids=" + order_ids.join();
+    var request = post_file + "?operation=order_start_handle&ids=" + order_ids.join();
     execute_url(request, location_reload);
 }
 
-function cancel_order() {
+// Todo: change calling
+function cancel_order(post_file) {
     var classes = ["select_order_wc-pending", "select_order_wc-processing", "select_order_wc-on-hold"];
     var order_ids = new Array();
 
@@ -42,7 +40,7 @@ function cancel_order() {
                 order_ids.push(order_id);
         }
     }
-    var request = "orders-post.php?operation=order_cancel_orders&ids=" + order_ids.join();
+    var request = post_file + "?operation=order_cancel_orders&ids=" + order_ids.join();
     execute_url(request, location_reload);
 }
 
@@ -54,7 +52,8 @@ function select_orders(table_name) {
 
 }
 
-function complete_status() {
+// Todo: change calling
+function complete_status(post_file) {
     xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = function () {
         // Wait to get delivery id.
@@ -62,12 +61,12 @@ function complete_status() {
             location.reload(true);
         }
     }
-    var request = "orders_close_all_open.php";
+    var request = post_file + "?operation=orders_close_all_open";
     xmlhttp.open("GET", request, true);
     xmlhttp.send();
 }
 
-function create_subs() {
+function create_subs(post_file) {
     xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = function () {
         // Wait to get delivery id.
@@ -75,12 +74,12 @@ function create_subs() {
             location.reload(true);
         }
     }
-    var request = "orders-create-subs.php";
+    var request = post_file + "?operation=orders-create-subs";
     xmlhttp.open("GET", request, true);
     xmlhttp.send();
 }
 
-function replace_baskets() {
+function replace_baskets(post_file) {
     xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = function () {
         // Wait to get delivery id.
@@ -88,15 +87,16 @@ function replace_baskets() {
             location.reload(true);
         }
     }
-    let request = "orders-post.php?operation=order_replace_baskets";
+    let request = post_file + "?operation=order_replace_baskets";
     xmlhttp.open("GET", request, true);
     xmlhttp.send();
 }
 
-function update_email() {
+// Todo: change calling
+function update_email(post_file) {
     let email = get_value_by_name("email");
 
-    let request = admin_post() + "?operation=order_check_email&email=" + email;
+    let request = post_file + "?operation=order_check_email&email=" + email;
 
     execute_url(request, function(xmlhttp){
         if (xmlhttp.response === "u") {
@@ -106,14 +106,15 @@ function update_email() {
         }
     });
 
-    request = admin_post() + "?operation=order_check_delivery&email=" + email;
+    request = post_file + "?operation=order_check_delivery&email=" + email;
     execute_url(request, function(xmlhttp)
     {
         document.getElementById("delivery_info").innerHTML = xmlhttp.response;
     });
 }
 
-function draft_products(collect_name)
+// Todo: change calling
+function draft_products(post_file, collect_name)
 {
     var collection = document.getElementsByClassName(collect_name);
     var ids = new Array();
@@ -123,6 +124,6 @@ function draft_products(collect_name)
             ids.push(prod_id);
         }
     }
-    let request = admin_post() + "?operation=order_draft_items&update_ids=" + ids.join();
+    let request = post_file + "?operation=order_draft_items&update_ids=" + ids.join();
     execute_url(request, location_reload);
 }

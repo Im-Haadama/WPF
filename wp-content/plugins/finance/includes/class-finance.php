@@ -152,7 +152,7 @@ class Finance {
 
 		add_action( 'after_setup_theme', array( $this, 'setup_environment' ) );
 		add_action( 'after_setup_theme', array( $this, 'include_template_functions' ), 11 );
-		add_action( 'init', array( $this, 'init' ), 0 );
+		add_action( 'init', array( $this, 'init' ), 11 );
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
 		add_action( 'admin_notices', array($this, 'admin_notices') );
 		add_filter( 'pay_user_credit', array($this, 'pay_user_credit_wrap'), 10, 3);
@@ -534,13 +534,15 @@ class Finance {
 		// Before init action.
 		do_action( 'before_finance_init' );
 
+		$this->shortcodes = Core_Shortcodes::instance();
+
 		// Set up localisation.
 		$this->load_plugin_textdomain();
 
 		$this->payments   = Finance_Payments::instance();
-		$this->invoices   = Finance_Invoices::instance();
-		$this->shortcodes = Core_Shortcodes::instance();
 		$this->shortcodes->add( $this->payments->getShortcodes() );
+
+		$this->invoices   = Finance_Invoices::instance();
 		$this->shortcodes->add( $this->invoices->getShortcodes() );
 
 		$this->shortcodes->do_init();
@@ -548,11 +550,6 @@ class Finance {
 		$this->invoices->init( FINANCE_INCLUDES_URL . '../post.php' );
 
 //		InfoUpdate("finance_bank_enabled", 1);
-		if (is_admin_user() and InfoGet("finance_bank_enabled")) {
-			$this->bank = new Finance_Bank( self::getPostFile() );
-			$this->bank->init_hooks();
-			$this->shortcodes->add( $this->bank->getShortcodes() );
-		}
 
 		// For testing:
 		//		wp_set_current_user(369);
@@ -561,6 +558,14 @@ class Finance {
 		do_action( 'finance_init' );
 	}
 
+	public function admin_init()
+	{
+		if (is_admin_user() and InfoGet("finance_bank_enabled")) {
+			$this->bank = new Finance_Bank( self::getPostFile() );
+			$this->bank->init_hooks();
+			$this->shortcodes->add( $this->bank->getShortcodes() );
+		}
+	}
 //	/**
 //	 * Load Localisation files.
 //	 *
