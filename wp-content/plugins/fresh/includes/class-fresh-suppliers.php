@@ -10,7 +10,7 @@ class Fresh_Suppliers {
 
 	function init_hooks()
 	{
-		AddAction("create_supplies",  "Fresh_Supply::create_supplies");
+//		AddAction("create_supplies",  "Fresh_Supply::create_supplies");
 		AddAction("gem_v_show", array($this, "pricelist_functions"));
 		AddAction("suppliers_map_products", __CLASS__ . "::suppliers_map_products");
 	}
@@ -72,7 +72,7 @@ class Fresh_Suppliers {
 		if ($operation){
 			$args = self::Args("suppliers");
 			$args["operation"] = $operation;
-			$id = GetParam("supplier_id", true);
+			$id = GetParam("id", false);
 			$result = apply_filters( $operation, $result, $id, $args );
 			MyLog($result);
 		}
@@ -137,7 +137,7 @@ class Fresh_Suppliers {
 	static function Args( $table_name = null, $action = null ) {
 		$ignore_list = [];
 		$args        = array(
-			"page_number"      => GetParam( "page_number", false, -1 ),
+//			"page_number"      => GetParam( "page_number", false, -1 ),
 			"post_file" => self::getPost()
 		);
 		if ( GetParam( "non_active", false, false ) ) {

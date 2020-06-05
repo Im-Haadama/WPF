@@ -516,6 +516,7 @@ class Core_Data
 	static function RowsData($sql, $id_field, $skip_id, $v_checkbox, $checkbox_class, $h_line, $v_line, $m_line, $header_fields, $meta_fields, $meta_table, &$args)
 	{
 		$result = SqlQuery( $sql );
+
 		if (! $result) return null;
 		if ($args) $args["sql_fields"] = mysqli_fetch_fields($result);
 		$row_count = 0;
@@ -583,6 +584,12 @@ class Core_Data
 		}
 		if ( ! $result ) { print "Error #N1"; return null;	}
 
+		if ($args and strstr($sql, "limit"))
+		{
+			$from_pos = strpos(strtolower($sql), "from");
+			$limit_pos = strpos(strtolower($sql), "limit");
+			$args["row_count"] = SqlQuerySingleScalar("select count(*) " . substr($sql, $from_pos, $limit_pos - $from_pos));
+		}
 		return $rows_data;
 	}
 
@@ -646,6 +653,8 @@ class Core_Data
 
 				$limit = (($page > -1) ? " limit $rows_per_page offset $offset" : "");
 				$sql .= $limit;
+
+//				$args["row_count"] = SqlQuerySingleScalar("select count(*) ");
 			}
 		}
 

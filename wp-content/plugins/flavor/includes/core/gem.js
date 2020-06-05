@@ -4,12 +4,12 @@ function gem_fetch_page(post_file, table_id, page_number)
 
     let url = add_param_to_url(post_file, "page", page_number);
     execute_url(url, gem_update_div, event.currentTarget);
-
 }
 
 function gem_next_page(post_file, table_id)
 {
     let page_number = parseInt(get_value_by_name("gem_page_" + table_id));
+    document.getElementById("gem_page_" + table_id).innerHTML = (page_number + 1);
 
     gem_fetch_page(post_file, table_id, page_number+1);
 }

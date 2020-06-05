@@ -380,7 +380,6 @@ class Core_Gem {
 		if ($title) $result .= Core_Html::GuiHeader(2, $title);
 
 		$page = GetArg($args, "page_number", 1);
-		$rows_per_page = GetArg($args, "rows_per_page", 10);
 
 		if ($rows_data){
 			if (! isset($args["checkbox_class"])) $args["checkbox_class"] = "checkbox_" . $table_id; // delete_items depend on that
@@ -389,22 +388,13 @@ class Core_Gem {
 
 			$div_content = "";
 
-			if (($page == 1) and (count($rows_data) == $rows_per_page + 1)) { // 1 for the header
-				$div_content .= Core_Html::GuiHeader(2, "Page number", array("inline"=>true)) . " " . Core_Html::gui_label("gem_page_" . $table_id, $page) . "<br/>";
-				// $result .= Core_Html::GuiHyperlink("Next page", AddToUrl("page_number", $page + 1)) . " ";
-				$div_content .= Core_Html::GuiButton("btn_gem_next_" . $table_id, "Next", array("action" => "gem_next_page(" . QuoteText($post_action)  . "," . QuoteText($table_id) . ")"));
-				$div_content .= Core_Html::GuiButton("btn_gem_all__" . $table_id, "All", array("action" => "gem_all_page(" . QuoteText($post_action)  . "," . QuoteText($table_id) . ")"));
-//				$div_content .= Core_Html::GuiHyperlink("All", AddToUrl("_page", -1)) . " ";
-			}
-			if ($page > 1)
-				$div_content .= Core_Html::GuiButton("btn_gem_prev_" . $table_id, "Previous", array("action" => "gem_previous_page(" . QuoteText($post_file."?operation=gem_show&table=".$table_id)  . "," . QuoteText($table_id) . ")"));
-				// $div_content .= Core_Html::GuiButton("Previous, AddToUrl("page", $page - 1));
-
 			// if ($args["count"] > 10) $div_content .= Core_Html::GuiHyperlink("search", AddToUrl("search", "1"));
 
 			$div_content .= Core_Html::gui_table_args( $rows_data, $table_id, $args );
 
 			$result .= Core_Html::gui_div("gem_div_" . $table_id, $div_content);
+
+			$result .= Core_Html::PageLinks($args);
 
 		} else {
 			$result .=  $no_data_message . Core_Html::Br();

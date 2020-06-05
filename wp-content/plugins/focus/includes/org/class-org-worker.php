@@ -255,6 +255,8 @@ class Org_Worker extends Core_users
 				$query = " (owner = " . $this->id . ")";
 				$query .= " and status = 2";
 				break;
+			default:
+				$query = " owner = " . $this->id;
 		}
 		return $query;
 	}

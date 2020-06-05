@@ -15,13 +15,13 @@ class Fresh_Supplies {
 	{
 		AddAction('admin_menu', array($this, 'admin_menu'));
 		AddAction('create_supply_from_file', array($this, 'create_supply_from_file'));
+		Core_Gem::AddTable("supplies");
 	}
 	public function admin_menu()
 	{
 		$menu = new Core_Admin_Menu();
 		$menu->AddSubMenu("woocommerce", "edit_shop_orders",
 			array('page_title' => 'Supplies', 'function' => array("Fresh_Supplies" , 'main' )));
-
 	}
 
 	static function main()

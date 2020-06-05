@@ -902,6 +902,7 @@ class Focus_Tasks {
 
 		$result = "";
 
+		$selected_tab = GetParam("selected_tab", false, "my_work");
 		$result .= self::search_box();
 //		$result .= self::new_task();
 //		$result .= self::show_new_template();
@@ -912,43 +913,50 @@ class Focus_Tasks {
 //			                     btn_cancel.style.display='none';",
 //		                                                               "style" => "display: none;") );
 
+		array_push( $tabs, array( "my_work", "My work", ($selected_tab == "my_work" ? self::user_work( $args, $user_id )  : null)));
+		array_push( $tabs, array( "i_want", "I want", ($selected_tab == "i_want" ?  self::i_want( $args, $user_id ) : null ) ) );
+		array_push( $tabs, array( "my_teams", "My Teams", ($selected_tab == "my_teams" ? self::my_teams( $args, $user_id ): null ) ) );
+		array_push( $tabs, array( "my_projects", "My projects", ($selected_tab == "my_projects" ? self::my_projects( $args, $user_id ): null ) ));
+		array_push( $tabs, array( "repeating_tasks", "Repeating tasks",($selected_tab == "repeating_tasks" ? self::show_templates( $args ): null ) ));
+
 		// My work queue
-		$mine = self::user_work( $args, $user_id );
-		if ( $mine ) {
-			array_push( $tabs, array( "my_work", "My work", $mine ) );
-		}
+//		$mine = self::user_work( $args, $user_id );
+//		if ( $mine ) {
+//			array_push( $tabs, array( "my_work", "My work", $mine ) );
+//		}
+//
+//		// tasks I initiated.
+//		$i_want = self::i_want( $args, $user_id );
+//		if ( $i_want ) {
+//			array_push( $tabs, array( "i_want", "I want", $i_want ) );
+//		}
+//
+//		// Tasks that belong to my teams.
+//		$my_teams = self::my_teams( $args, $user_id );
+//		if ( $my_teams ) {
+//			array_push( $tabs, array( "my teams", "My Teams", $my_teams ) );
+//		}
+//
+//		$my_projects = self::my_projects( $args, $user_id );
+//		if ( $my_projects ) {
+//			array_push( $tabs, array( "my projects", "My projects", $my_projects ) );
+//		}
+//
+//		$repeating = self::show_templates( $args ); // Todo: limit to what user can see
+//		if ( $repeating ) {
+//			array_push( $tabs, array( "repeating tasks", "Repeating tasks", $repeating ) );
+//		}
 
-		// tasks I initiated.
-		$i_want = self::i_want( $args, $user_id );
-		if ( $i_want ) {
-			array_push( $tabs, array( "i_want", "I want", $i_want ) );
-		}
-
-		// Tasks that belong to my teams.
-		$my_teams = self::my_teams( $args, $user_id );
-		if ( $my_teams ) {
-			array_push( $tabs, array( "my teams", "My Teams", $my_teams ) );
-		}
-
-		$my_projects = self::my_projects( $args, $user_id );
-		if ( $my_projects ) {
-			array_push( $tabs, array( "my projects", "My projects", $my_projects ) );
-		}
-
-		$repeating = self::show_templates( $args ); // Todo: limit to what user can see
-		if ( $repeating ) {
-			array_push( $tabs, array( "repeating tasks", "Repeating tasks", $repeating ) );
-		}
-
-		if ( $companies = $worker->GetCompanies( true ) ) {
-			foreach ( $companies as $company ) {
-				array_push( $tabs, array(
-					"company_settings",
-					"Company settings",
-					self::CompanySettings($company)
-				) );
-			}
-		}
+//		if ( $companies = $worker->GetCompanies( true ) ) {
+//			foreach ( $companies as $company ) {
+//				array_push( $tabs, array(
+//					"company_settings",
+//					"Company settings",
+//					self::CompanySettings($company)
+//				) );
+//			}
+//		}
+		$args["tabs_load_all"] = false;
 
 		$result .= Core_Html::GuiTabs( $tabs, $args );
 
@@ -1018,7 +1026,7 @@ class Focus_Tasks {
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		$args["count"] = 0;
 		$args["title"] = ImTranslate( "Active tasks assigned to me or my teams" );
-		$teams         = $worker->AllTeams();
+//		$teams         = $worker->AllTeams();
 		// $args["query"] = " (owner = " . $user_id . ( $teams ? " or team in (" . CommaImplode( $teams ) . ")" : "" ) . ")";
 		$args["query"] = $worker->myWorkQuery($active_only); ///self::ActiveQuery( );
 		if (isset($args["period"])) {

@@ -138,7 +138,7 @@ require_once (ABSPATH . '/wp-includes/pluggable.php');
 		}
 
 		if ( $mandory ) {
-			die ( "Error: " . debug_backtrace()[1]['function']  . " key " . $key . " not supplied" );
+			die ( "Error: " . debug_backtrace()[1]['function']  . "() key " . $key . " not supplied" );
 		} else {
 			return $default;
 		}

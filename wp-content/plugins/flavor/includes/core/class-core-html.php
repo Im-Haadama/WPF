@@ -1986,17 +1986,41 @@ class Core_Html {
 			$text                      .= Core_Html::gui_table_args( $table, "header", $args );
 		}
 
-//		if ( function_exists('gui_type') and gui_type() == "html" ) {
-			return $text;
-//		}
+		return $text;
+	}
 
-//		return strip_tags( $text );
+	static function PageLinks($args)
+	{
+		$row_count = GetArg($args, "row_count", null);
+		$page_number = GetArg($args, "page_number", 1);
+		$rows_per_page = GetArg($args, "rows_per_page", 10);
+
+//		var_dump($args);
+		if ($rows_per_page and ($row_count > $rows_per_page)) {
+			$total_page_number = ceil($row_count / $rows_per_page);
+			$result = "<div style='text-align: center; direction: ltr'>";
+			if ($page_number > 1) {
+				$result .= self::GuiHyperlink( "<<", AddToUrl( "page_number", 1 ) ) . " ";
+				$result .= self::GuiHyperlink( "<", AddToUrl( "page_number", $page_number - 1 ) ) . " ";
+			}
+			for ($i = 1; $i <= min ($total_page_number, 7); $i++)
+				$result .= self::GuiHyperlink($i, AddToUrl("page_number", $i)) . " ";
+
+			if ($page_number < $total_page_number) {
+				$result .= self::GuiHyperlink( ">", AddToUrl( "page_number", $page_number + 1 ) ) . " ";
+				$result .= self::GuiHyperlink( ">>", AddToUrl( "page_number", $total_page_number ) ) . " ";
+			}
+
+			$result .= "</div>";
+
+			return $result;
+		}
+		return "";
 	}
 }
 
 if (!function_exists('gui_checkbox'))
 {
-
 	function gui_checkbox( $id, $class, $value = false, $events = null ) {
 		return Core_Html::GuiCheckbox($id, $value, array("events" => $events, "class" => $class));
 	}
