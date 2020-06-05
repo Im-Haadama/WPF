@@ -516,34 +516,6 @@ class Freight {
 
 	}
 
-	/*-- Start product quantity +/- on listing -- */
-	public function freight_add_quantity_fields($html, $product) {
-		if ( $product && $product->is_type( 'simple' ) && $product->is_purchasable() && $product->is_in_stock() && ! $product->is_sold_individually() ) {
-			$html = '<form action="' . esc_url( $product->add_to_cart_url() ) . '" class="cart" method="post" enctype="multipart/form-data">';
-			$html .= woocommerce_quantity_input( array(), $product, false );
-			$html .= '<button type="submit" data-quantity="1" data-product_id="' . $product->id . '" class="button alt ajax_add_to_cart add_to_cart_button product_type_simple">' . esc_html( $product->add_to_cart_text() ) . '</button>';
-			$html .= '</form>';
-		}
-		return $html;
-	}
-
-	public function freight_quantity_handler() {
-		wc_enqueue_js( '
-		jQuery(function($) {
-		$("form.cart").on("change", "input.qty", function() {
-        $(this.form).find("[data-quantity]").data("quantity", this.value);
-		});
-		' );
-
-		wc_enqueue_js( '
-		$(document.body).on("adding_to_cart", function() {
-			$("a.added_to_cart").remove();
-		});
-		});
-		' );
-	}
-	/*-- End product quantity +/- on listing -- */
-
 	function install($version, $force = false)
 	{
 //        if (Freight_Database::CheckInstalled("Freight", $this->version) == $version and ! $force) return;

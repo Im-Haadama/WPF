@@ -1205,7 +1205,7 @@ class Fresh_Delivery {
 				$args["post_file"] = $post_file;
 
 				// $args["links"] = array("ID" => add_param_to_url(get_url(), "operation", "show_id", "row_id", "%s"));
-				$args["links"] = array("ID" => "/fresh/delivery/get-delivery.php?id=%s");
+				$args["links"] = array("ID" => "/wp-content/plugins/fresh/delivery/get-delivery.php?id=%s");
 				$table =  Core_Gem::GemTable("delivery", $args);
 				if (strlen($table) < 100)
 					print "No deliveries done this week<br/>";
