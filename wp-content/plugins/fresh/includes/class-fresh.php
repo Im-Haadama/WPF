@@ -206,6 +206,8 @@ class Fresh {
 		Fresh_Delivery::init_hooks();
 		Fresh_Client_Views::init_hooks();
 
+		add_action('wp_enqueue_scripts', array($this, 'remove_add'), 2222);
+
 //		add_filter('editable_roles', 'edit_roles');
 		// if (get_user_id() == 1) wp_set_current_user(474);
 	}
@@ -229,6 +231,12 @@ class Fresh {
 			do_action( 'fresh_shutdown_error', $error );
 		}
 	}
+
+	function remove_add()
+	{
+		wp_dequeue_script('wc-add-to-cart');
+	}
+
 
 	static function admin_menu()
 	{
@@ -1241,4 +1249,5 @@ function checkout_create_order_line_item( $item, $cart_item_key, $values, $order
 //    var_dump($zone);
 //    return $zone;
 //}
+
 
