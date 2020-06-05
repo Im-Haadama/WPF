@@ -131,7 +131,7 @@ class Fresh {
 		register_shutdown_function( array( $this, 'log_errors' ) );
 		add_action( 'after_setup_theme', array( $this, 'setup_environment' ) );
 		add_action( 'after_setup_theme', array( $this, 'include_template_functions' ), 11 );
-		add_action( 'init', array( $this, 'init' ), 0 );
+		add_action( 'woocommerce_loaded', array( $this, 'init' ), 20);
 		add_action( 'init', array( 'Fresh_Shortcodes', 'init' ) );
 		add_shortcode('pay-page', 'pay_page');
 		add_shortcode( 'im-page', 'im_page' );
@@ -205,13 +205,18 @@ class Fresh {
 		Fresh_Delivery::init_hooks();
 		Fresh_Client_Views::init_hooks();
 
+		add_action('wp_enqueue_scripts', array($this, 'remove_add'), 2222);
 //		add_filter('editable_roles', 'edit_roles');
 		/// check siton:
 //		if (get_user_id() == 1) wp_set_current_user(474);
 
 		/// check admin;
 	//	if (get_user_id() == 1) wp_set_current_user(601);
+	}
 
+	function remove_add()
+	{
+		wp_dequeue_script('wc-add-to-cart');
 	}
 
 	/**
