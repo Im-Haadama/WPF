@@ -64,9 +64,10 @@ class Fresh_Supplier_Balance {
 	{
 		Finance::Invoice4uConnect();
 
-		$u = new Fresh_Client(529);
+		$u = new Fresh_Client(341);
 		$result = $u->getName() . "<br/>";
 		$iu = $u->getInvoiceUser();
+		var_dump($iu);
 		if ($iu)
 			$result .= $iu->ID;
 		else

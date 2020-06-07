@@ -1996,8 +1996,11 @@ class Core_Html {
 		$rows_per_page = GetArg($args, "rows_per_page", 10);
 
 //		var_dump($args);
+//		print "rpp=$rows_per_page rc=$row_count<br/>";
 		if ($rows_per_page and ($row_count > $rows_per_page)) {
 			$total_page_number = ceil($row_count / $rows_per_page);
+//			print "tpn=$total_page_number<br/>";
+
 			$result = "<div style='text-align: center; direction: ltr'>";
 			if ($page_number > 1) {
 				$result .= self::GuiHyperlink( "<<", AddToUrl( "page_number", 1 ) ) . " ";

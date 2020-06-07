@@ -408,7 +408,9 @@ class Finance {
 
 				//print "create receipt<br/>";
 				// (NULL, '709.6', NULL, NULL, '205.44', '', '2019-01-22', Array)
-				return Finance_Clients::create_receipt_from_account_ids( $cash, $bank, $check, $credit, $user_id, $date, $row_ids );
+				$doc_id = Finance_Clients::create_receipt_from_account_ids( $cash, $bank, $check, $credit, $user_id, $date, $row_ids );
+				// print "doc=$doc_id<br/>";
+				return $doc_id;
 				break;
 		}
 

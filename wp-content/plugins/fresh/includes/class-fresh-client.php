@@ -176,14 +176,24 @@ class Fresh_Client {
 	{
 		// Invoice is alive?
         $invoice = Finance::Invoice4uConnect();
+
+		$email = $this->get_customer_email();
+		$name = $this->getName();
+
+
 		if (! $invoice) return null;
 
 //	    // Try the cache
-//		$id = get_user_meta( $this->user_id, 'invoice_id', 1 );
-//		if ($id) return $invoice->GetCustomerByID($id);
+		$id = get_user_meta( $this->user_id, 'invoice_id', 1 );
+		MyLog("get by id $id");
+		if ($id) {
+		    $c =  $invoice->GetCustomerByID($id, $name, $email);
+		    if ($c) return $c;
+        }
 
+		// Thoose should be redudant as GetCustomerByID tries also with name and email.
         // Try to get by email.
-        $email = $this->get_customer_email();
+		MyLog("get by email $email");
         $c = $invoice->GetCustomerByEmail($email);
         if (is_array($c)) foreach ($c as $customer) {
             if ($customer->Email == $email) return $customer;
@@ -191,7 +201,8 @@ class Fresh_Client {
         if ($c) return $c;
 
         // Try to get by name (is unique in invoice4u);
-		$c = $invoice->GetCustomerByName($this->getName());
+        MyLog("Get by name");
+		$c = $invoice->GetCustomerByName($name);
 		if ($c) return $c;
 
         if (! $create) return null;

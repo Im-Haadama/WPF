@@ -598,7 +598,9 @@ class Finance_Bank
 		$result .= Core_Html::gui_table_args( array(
 				array( "תאריך", Core_Html::gui_div( "pay_date", $b->getDate() ) ),
 				array( "סכום", Core_Html::gui_div( "bank", $b->getInAmount() ) ),
-				array( "מזהה", Core_Html::gui_div( "bank_id", $id ) )
+				array( "מזהה", Core_Html::gui_div( "bank_id", $id ) ),
+				array( "פרטי התנועה", Core_Html::gui_div( "bank_id", $b->getClientName() ) )
+
 			)
 		);
 
@@ -690,20 +692,9 @@ class Finance_Bank
 		// $msg = $bank . " " . $date . " " . $change . " " . CommaImplode($ids) . " " . $site_id . " " . $user_id . "<br/>";
 		$debug = false;
 
-//var request = "account-post.php?operation=create_receipt" +
-//              "&cash=" + cash +
-//              "&credit=" + credit +
-//              "&bank=" + bank +
-//              "&check=" + check +
-//              "&date=" + date +
-//              "&change=" + change.innerHTML +
-//              "&ids=" + del_ids.join() +
-//              "&user_id=" + <?php print $customer_id; <!--;-->
-
 		$command = Finance::getPostFile() . "?operation=create_receipt&row_ids=" . $ids .
 		           "&user_id=" . $user_id . "&bank=" . $bank_amount . "&date=" . $date .
 		           "&change=" . $change;
-//	print "ZZZZ" . $command;
 		$result  = $this->multi_site->Run( $command, $site_id, true, $debug );
 
 		if ($this->multi_site->getHttpCode($site_id) != 200) {
@@ -722,11 +713,9 @@ class Finance_Bank
 		if ( strlen( $result ) > 10 ) {
 			die( $result );
 		}
-		// print "r=" . $result . "<br/>";
 
 		$receipt = intval( trim( $result ) );
-
-		// print "re=" . $receipt . '<br/>';
+		print "r=$receipt<br/>";
 
 		if ( $receipt > 0 ) {
 			// TODO: to parse $id from $result;

@@ -74,7 +74,7 @@ class Fresh_Suppliers {
 			$args["operation"] = $operation;
 			$id = GetParam("id", false);
 			$result = apply_filters( $operation, $result, $id, $args );
-			MyLog($result);
+//			MyLog($result);
 		}
 
 		if ( !$result )
@@ -107,6 +107,7 @@ class Fresh_Suppliers {
 		$args["query"] = "is_active = 1";
 		$args["header_fields"] = array("supplier_name" => "Name", "supplier_description" => "Description");
 		$args["actions"] = array(array("Show products", AddToUrl(array("operation" => "gem_v_show", "table"=>"pricelist", "supplier_id" => "%s"))));
+		$args["order"] = "supplier_last_pricelist_date(id) desc";
 //		$result .= "page number: " . $args["page_number"] . "<br/>";
 //		$result .= "page: " . $args["page"] . "<br/>";
 		$result .= Core_Gem::GemTable("suppliers", $args);

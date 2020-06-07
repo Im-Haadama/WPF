@@ -171,23 +171,27 @@ class Finance_Invoice4u
 //        $this->result = $this->requestWS($wsdl, "CreateDocument", array('doc' => $this->doc, 'token' => $this->token));
 //    }
 
-	private function GetCustomerByID( $invoice_id, $client_email = null)
+	function GetCustomerByID( $invoice_id, $client_name = null, $client_email = null)
 	{
-
+		// GetFullCustomer(int id, int orgID, string token)
 		self::InvoiceLog($invoice_id, __FUNCTION__);
 		$wsdl = ApiService . "/CustomerService.svc?wsdl";
 
-		$cust        = new InvoiceCustomer( "" );
+		$cust        = new InvoiceCustomer( $client_name);
 		$cust->ID = $invoice_id;
-		print "iid=$invoice_id<br/>";
+		$cust->Email = $client_email;
+		MyLog("iid=$invoice_id email = $client_email<br/>");
 		$response = $this->requestWS( $wsdl, "GetCustomers", array(
-			'ExtNumber' => $invoice_id,
+			'cust' => $cust,
 			'OrgId' => 0,
 			'token'      => $this->token
 		) );
-		var_dump($response);
 		$this->InvoiceLog("found: " . isset( $response->Response->Customer ));
-		if ( isset( $response->Response->Customer ) ) return $response->Response->Customer;
+
+		if ( isset( $response->Response->Customer ) ){
+			if (is_array($response->Response->Customer)) return $response->Response->Customer[0];
+			return $response->Response->Customer;
+		}
 		return null;
 	}
 
@@ -220,6 +224,7 @@ class Finance_Invoice4u
 //				self::InvoiceLog($error, __FUNCTION__);
 //			return null;
 //		}
+//		var_dump($response);
 		if ( isset( $response->Response->Customer ) ) return $response->Response->Customer;
 		return null;
 	}
