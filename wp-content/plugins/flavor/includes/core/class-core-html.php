@@ -2003,7 +2003,7 @@ class Core_Html {
 				$result .= self::GuiHyperlink( "<<", AddToUrl( "page_number", 1 ) ) . " ";
 				$result .= self::GuiHyperlink( "<", AddToUrl( "page_number", $page_number - 1 ) ) . " ";
 			}
-			for ($i = 1; $i <= min ($total_page_number, 7); $i++)
+			for ($i = max(1, $page_number - 3); $i <= min ($total_page_number, $page_number + 3); $i++)
 				$result .= self::GuiHyperlink($i, AddToUrl("page_number", $i)) . " ";
 
 			if ($page_number < $total_page_number) {

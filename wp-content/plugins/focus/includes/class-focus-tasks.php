@@ -401,30 +401,11 @@ class Focus_Tasks {
 
 				return $result;
 
-			case "remove_from_team":
-				$team_id   = GetParam( "id", true );
-				$worker_id = GetParam( "user", true );
-				team_remove_member( $team_id, $worker_id );
-				handle_focus_operation( "show_team", null );
-
-				return $result;
 
 			case "show_team":
 				$team_id = GetParam( "team_id", true );
 
 				return self::show_team( $team_id );
-
-			case "show_add_member":
-				$team_id = GetParam( "id", true );
-				$result  .= Core_Html::gui_header( 1, "Adding member to team" . SqlQuerySingleScalar( "select team_name from ${db_prefix}working_teams where id = " . $team_id ) );
-				$result  .= gui_select_worker( "new_member" );
-				$result  .= gui_label( "team_id", $team_id, true );
-				$result  .= Core_Html::GuiButton( "btn_add_member", "add_member()", "Add" );
-
-				$result .= "<br/>";
-				$result .= Core_Html::GuiHyperlink( "Invite college to your company", AddToUrl( array( "operation" => "show_add_to_company" ) ) );
-
-				return $result;
 
 			case "show_add_to_company":
 				$args = self::Args();
@@ -531,11 +512,13 @@ class Focus_Tasks {
 
 		$args["add_checkbox"] = true;
 		$args["edit"] = true;
-		$result               .= Core_Gem::GemArray( $table, $args, "team_members" );
+		$args["checkbox_class"] = "workers";
+		$result               .= Core_Html::gui_table_args( $table, "team_members", $args );
+		$result .= Core_Html::GuiButton("btn_delete", "Delete", array("action" => "team_remove_member('" . Focus::getPost() . "', $team_id)"));
 
 		$result .= Core_Html::gui_header( 1, "add member" );
 		$result .= Focus_Tasks::gui_select_worker( "new_member", null, $args );
-		$result .= Core_Html::GuiButton( "btn_add_member", "add", array("action" => "add_team_member(" . $team_id . ")") );
+		$result .= Core_Html::GuiButton( "btn_add_member", "add", array("action" => "team_add_member('" . Focus::getPost() . "', $team_id )") );
 
 		return $result;
 	}
@@ -918,6 +901,15 @@ class Focus_Tasks {
 		array_push( $tabs, array( "my_teams", "My Teams", ($selected_tab == "my_teams" ? self::my_teams( $args, $user_id ): null ) ) );
 		array_push( $tabs, array( "my_projects", "My projects", ($selected_tab == "my_projects" ? self::my_projects( $args, $user_id ): null ) ));
 		array_push( $tabs, array( "repeating_tasks", "Repeating tasks",($selected_tab == "repeating_tasks" ? self::show_templates( $args ): null ) ));
+		if ( $companies = $worker->GetCompanies( true ) ) {
+			foreach ( $companies as $company ) {
+				array_push( $tabs, array(
+					"company_settings",
+					"Company settings",
+					($selected_tab == "company_settings" ? self::CompanySettings($company) : null)
+				) );
+			}
+		}
 
 		// My work queue
 //		$mine = self::user_work( $args, $user_id );
@@ -947,15 +939,6 @@ class Focus_Tasks {
 //			array_push( $tabs, array( "repeating tasks", "Repeating tasks", $repeating ) );
 //		}
 
-//		if ( $companies = $worker->GetCompanies( true ) ) {
-//			foreach ( $companies as $company ) {
-//				array_push( $tabs, array(
-//					"company_settings",
-//					"Company settings",
-//					self::CompanySettings($company)
-//				) );
-//			}
-//		}
 		$args["tabs_load_all"] = false;
 
 		$result .= Core_Html::GuiTabs( $tabs, $args );
@@ -1943,6 +1926,7 @@ class Focus_Tasks {
 		$result = [];
 		$result = array_merge( $result, self::project_list_search($user_id,  $text));
 		$result = array_merge( $result, self::task_list_search( "status < 2 and task_description like " . QuotePercent( $text ) ) );
+		$result = array_merge( $result, self::template_list_search( " is_active = 1 and task_description like " . QuotePercent( $text ) ) );
 
 		if ( count( $result ) < 1 ) {
 			return "No results";
@@ -1964,6 +1948,21 @@ class Focus_Tasks {
 		// debug_var($result);
 		return $result;
 	}
+
+	static function template_list_search( $query )
+	{
+		$db_prefix = GetTablePrefix();
+		$tasks = SqlQueryArray( "select id, task_description from ${db_prefix}task_templates where $query" );
+
+		$result = [];
+		foreach ( $tasks as $task ) {
+			array_push( $result, Core_Html::GuiHyperlink( $task[1], self::get_link( "template", $task[0] ) ) );
+		}
+
+		// debug_var($result);
+		return $result;
+	}
+
 
 	static function project_list_search($user_id, $query ) {
 		$result = [];
@@ -2122,7 +2121,35 @@ class Focus_Tasks {
 		AddAction("task_pri_plus", array(__CLASS__, "PriPlus"), 10, 2);
 		AddAction("task_pri_minus", array(__CLASS__, "PriMinus"), 10, 2);
 		AddAction("tasklist_worker", array(__CLASS__, "show_worker_wrapper"), 10, 2);
+		AddAction("team_remove_member", array(__CLASS__, "team_remove_member"));
+		AddAction("team_add_member", array(__CLASS__, "team_add_member"));
 	}
+
+	static function team_remove_member() {
+		$team_id   = GetParam( "team_id", true );
+		$ids = GetParam( "ids", true );
+		$team = new Org_Team($team_id);
+		return $team->RemoveMember($ids);
+	}
+
+	static function team_add_member()
+	{
+		$team_id   = GetParam( "id", true );
+		$new = GetParam( "new_member", true );
+		$team = new Org_Team($team_id);
+		return $team->AddWorker($new);
+
+	}
+//			$team_id = GetParam( "id", true );
+//			$result  .= Core_Html::gui_header( 1, "Adding member to team" . SqlQuerySingleScalar( "select team_name from ${db_prefix}working_teams where id = " . $team_id ) );
+//			$result  .= gui_select_worker( "new_member" );
+//			$result  .= gui_label( "team_id", $team_id, true );
+//			$result  .= Core_Html::GuiButton( "btn_add_member", "add_member()", "Add" );
+//
+//			$result .= "<br/>";
+//
+//			return $result;
+	//			$result .= Core_Html::GuiHyperlink( "Invite college to your company", AddToUrl( array( "operation" => "show_add_to_company" ) ) );
 
 	static function DoAddCompanyWorker()
 	{

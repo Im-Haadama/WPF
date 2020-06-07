@@ -86,6 +86,7 @@ class Core_Gem {
 		print $result;
 		return true;
 	}
+
 	static function edit_wrapper($result, $id, $args)
 	{
 		if (! ($id > 0)) return __FUNCTION__ . ":bad id";
@@ -248,7 +249,6 @@ class Core_Gem {
 
 		return $result;
 	}
-
 
 	static function v_show_wrapper($operation, $id, $args)
 	{
@@ -522,7 +522,6 @@ class Core_Gem {
 
 		print Core_Html::GuiButton("btn_search", $script_function, "Search");
 	}
-
 
 	static function ShowVImport($table_name, $args)
 	{

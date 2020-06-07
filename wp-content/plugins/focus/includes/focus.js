@@ -75,10 +75,19 @@ function add_to_company() {
         + '&name=' + encodeURI(name) + '&project_id=' + project_id, action_back);
 }
 
-function add_team_member(team_id)
+function team_remove_member(post_file, team_id)
+{
+    let ids = get_selected("workers");
+    let operation = post_file + "?operation=team_remove_member&team_id=" + team_id +
+        "&ids=" + ids;
+
+    execute_url(operation, location_reload);
+}
+
+function team_add_member(post_file, team_id)
 {
     let new_member = get_value_by_name("new_member");
-    let operation = focus_post_url + "?operation=add_team_member&team_id=" + team_id +
+    let operation = post_file + "?operation=team_add_member&team_id=" + team_id +
         "&new_member=" + new_member;
 
     execute_url(operation, location_reload);
