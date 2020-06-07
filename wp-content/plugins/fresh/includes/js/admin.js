@@ -24,9 +24,9 @@ function basket_create_new()
     execute_url(url, action_back);
 }
 
-function basket_delete(basket_id)
+function basket_delete(post_file, basket_id)
 {
-    let url = admin_post() + "?operation=basket_delete&basket_id=" + basket_id;
+    let url = post_file + "?operation=basket_delete&basket_id=" + basket_id;
     let btn = document.getElementById("btn_delete_" + basket_id);
 
     execute_url(url, action_hide_row, btn);
@@ -131,6 +131,12 @@ function product_change_saleprice (post_file, prod_id)
     execute_url(request, fail_message);
 }
 
+function product_publish(post_file, product_id)
+{
+    let publish = get_value_by_name("pub_"+ product_id);
+    let url = post_file + '?operation=product_publish&product_id='+product_id+'&status='+publish;
+    execute_url(url, fail_message);
+}
 function moveNext(element)
 {
     if (window.event.keyCode !== 13) return;

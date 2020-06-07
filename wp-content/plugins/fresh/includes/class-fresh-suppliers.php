@@ -39,7 +39,7 @@ class Fresh_Suppliers {
 		              and ((select machine_update from im_suppliers where id = supplier_id) = 0 or  
 		              date = supplier_last_pricelist_date(supplier_id))",
 			"fields" => array("id", "product_name", "price", "date"),
-			"extra_header" => array("linked product", "calculated price", "price", "sale price", "open orders"),
+			"extra_header" => array("linked product", "published", "calculated price", "price", "sale price", "open orders"),
 			"order"=>"order by id",
 			"prepare" => "Fresh_Pricelist_Item::add_prod_info",
 //			"header_fields" => array("supplier_product_code" => "code", "product_name" => "name"),

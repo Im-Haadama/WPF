@@ -16,8 +16,21 @@ class Fresh_Catalog {
 		AddAction("create_products", __CLASS__. '::CreateProduct_wrap');
 		AddAction("product_change_regularprice", __CLASS__."::ChangeProductRegularPrice_wrap");
 		AddAction("product_change_saleprice", __CLASS__."::ChangeProductSalePrice_wrap");
+		AddAction("product_publish", array(__CLASS__, "product_publish"));
 	}
 
+	static function product_publish()
+	{
+//		let url = post_file + '?operation=&product_id='+product_id+'&status='+publish;
+		$product_id = GetParam("product_id", true);
+		$publish = GetParam("status", true);
+		$p = new Fresh_Product($product_id);
+		if ($publish)
+			$p->PublishItem();
+		else
+			$p->Draft();
+		return true;
+	}
 	static function CreateProduct_wrap()
 	{
 		$category_id = GetParam("category_name", true);

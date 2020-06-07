@@ -162,7 +162,7 @@ class Fresh_Basket extends  Fresh_Product  {
 				$line .= "<td></td><td></td>";
 			$line .= "<td>" . $p->getTerms(true);
 			$line .= "<td>" . Core_Html::GuiHyperlink("edit", get_site_url() . "/wp-admin/post.php?post=$basket_id&action=edit") . "</td>";
-			$line .= "<td>" . Core_Html::GuiButton("btn_delete_" . $basket_id, "Delete", array("action"=>"basket_delete(" . $basket_id . ")")) . "</td>";
+			$line .= "<td>" . Core_Html::GuiButton("btn_delete_" . $basket_id, "Delete", array("action"=>"basket_delete('" . Fresh::getPost() . "', $basket_id)")) . "</td>";
 			$line .= "</tr>";
 
 			$data .= $line;
@@ -229,7 +229,7 @@ class Fresh_Basket extends  Fresh_Product  {
 		$args["id_field"] = "product_id";
 		$args["selectors"] = array("product_id" => "Fresh_Product::gui_select_product");
 		$args["links"] = array("product_id" => "/wp-admin/post.php?post=%d&action=edit&classic-editor");
-		$args["header_fields"] = array("Product", "Quantity", "Price", "Line total");
+		$args["header_fields"] = array("product_id" => "Product", "quantity" => "Quantity", "price" => "Price", "line_price" => "Line total");
 		$args["add_checkbox"] = true;
 		$args["edit"] = false;
 		// $args["sum_fields"] = array("quantity" => array(0, "sum_numbers"));
@@ -238,7 +238,9 @@ class Fresh_Basket extends  Fresh_Product  {
 		$buy_total = 0;
 		$basket_content = Core_Data::TableData($sql, $args);
 		if ($basket_content) {
-			foreach($basket_content as &$row) {
+			$basket_content['header'][5] = 'Buy Price';
+			foreach($basket_content as $key => &$row) {
+				if ($key == 'header') continue;
 				$prod_id = $row['product_id'];
 				if ($prod_id  == $basket_id) continue;
 				$row['buy_price'] = Fresh_Pricing::get_buy_price($prod_id);
@@ -260,8 +262,9 @@ class Fresh_Basket extends  Fresh_Product  {
 		$data .= Fresh_Product::gui_select_product("new_product");
 		$data .= Core_Html::GuiButton("add_product", "add", array("action" => "add_to_basket(" . $basket_id . ")"));
 
+		// Remove draft products from the basket.
 		$sql = 'SELECT DISTINCT product_id FROM im_baskets WHERE basket_id = ' . $basket_id .
-		       " and post_status(product_id) like '%draft%'";
+		       " and (post_status(product_id) like '%draft%' or post_status(product_id) like '%trash%')";
 
 		// $data .= $sql;
 		$result = SqlQueryArrayScalar($sql);
@@ -274,6 +277,8 @@ class Fresh_Basket extends  Fresh_Product  {
 				SqlQuery( "delete from im_baskets where product_id = " . $prod_id);
 			}
 		}
+
+		// show in the button product prices for selection.
 		$options = array();
 		foreach (array(19, 62) as $categ) {
 			$C = new Fresh_Category( $categ );

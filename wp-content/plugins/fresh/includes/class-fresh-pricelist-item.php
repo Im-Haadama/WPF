@@ -154,15 +154,13 @@ class Fresh_Pricelist_Item {
 			$linked_prod_id = $link_data[0];
 			$p       = new Fresh_Product( $linked_prod_id );
 			$calculated_price = Fresh_Pricing::calculate_price($this->getPrice(), $supplier_id);
-			if (! $p->isPublished()) $p->PublishItem($calculated_price);
+//			if (! $p->isPublished()) $p->PublishItem($calculated_price);
 			SqlQuery("update im_supplier_price_list set product_id = $linked_prod_id where id = " .$this->id);
 
 			$map_id  = null;
 
-//			$color = $this->get_prod_color($date, $previous_date);
-//			if ($color)
-//				$row['price'] = Core_Html::GuiDiv("", $row['price'], array("style" => "background-color: $color"));
 			array_push( $row, $p->getName() );
+			array_push($row, Core_Html::GuiCheckbox("pub_" . $linked_prod_id, $p->isPublished(), array("events" => "onchange=\"product_publish('" . Fresh::getPost() . "', $linked_prod_id)\"")));
 			array_push( $row, $calculated_price);
 			$style = null;
 			if ($p->getPrice() < $price) $style = "background-color: #EC7063";
