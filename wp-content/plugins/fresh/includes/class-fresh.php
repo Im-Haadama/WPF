@@ -179,8 +179,8 @@ class Fresh {
 		// remove unneeded sorting
 		add_filter( 'woocommerce_catalog_orderby', 'sm_remove_sorting_option_woocommerce_shop' );
 
-		add_action( 'init', array( $this, 'fresh_quantity_handler' ) );
-		add_filter( 'woocommerce_loop_add_to_cart_link', array( $this, 'fresh_add_quantity_fields' ), 10, 2 );
+//		add_action( 'init', array( $this, 'fresh_quantity_handler' ) );
+//		add_filter( 'woocommerce_loop_add_to_cart_link', array( $this, 'fresh_add_quantity_fields' ), 10, 2 );
 
 		/* - Start Product Comment Hooks-- */
         add_action( 'woocommerce_update_cart_action_cart_updated', 'on_action_cart_updated', 20, 1 );
@@ -216,7 +216,7 @@ class Fresh {
 
 	function remove_add()
 	{
-		wp_dequeue_script('wc-add-to-cart');
+//		wp_dequeue_script('wc-add-to-cart');
 	}
 
 	/**
@@ -601,7 +601,7 @@ class Fresh {
 
 		wp_enqueue_script( 'custom_script', plugin_dir_url( __FILE__ ) . 'js/custom_script.js' );
 
-		wp_enqueue_script( 'order', plugin_dir_url( __FILE__ ) . 'js/my_account_order.js' );
+		wp_enqueue_script( 'order', plugin_dir_url( __FILE__ ) . 'js/my_account_order.js?v=1.1' );
 	}
 
 	public function admin_scripts()

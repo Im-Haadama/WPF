@@ -112,6 +112,7 @@ class Freight {
 		$this->auto_loader = new Core_Autoloader(FREIGHT_ABSPATH);
 		$this->settings = new Freight_Settings();
 		if (defined('FREIGHT_LEGACY_USER')) {
+//			MyLog("Legacy user:" . FREIGHT_LEGACY_USER);
 			$this->legacy = new Freight_Legacy(FREIGHT_LEGACY_USER);
 			$this->legacy->init_hooks();
 		}

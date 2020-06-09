@@ -326,6 +326,7 @@ class Fresh_Product {
 
 	function getSupplierId($debug = false)
 	{
+		if ($debug) MyLog(__FUNCTION__, $this->id);
 		// For now create post saves the supplier name.
 		// Planned to save there the supplier id.
 		$b = Fresh_Catalog::best_alternative($this->id, $debug);
@@ -341,11 +342,11 @@ class Fresh_Product {
 		return Fresh_Pricing::calculate_price($this->getBuyPrice($supplier_id), $supplier_id);
 	}
 
-	function getBuyPrice($supplier_id = 0)
+	function getBuyPrice($supplier_id = 0, $debug_product = 0)
 	{
 		if (! $this->id) return -1;
 
-		$b = Fresh_Catalog::best_alternative($this->id);
+		$b = Fresh_Catalog::best_alternative($this->id, $debug_product == $this->id);
 		if ($b)
 			return $b->getPrice();
 

@@ -75,6 +75,7 @@ class Fresh_Client {
 	}
 
 	public function balance() {
+	//    MyLog(__FUNCTION__, $this->user_id);
 		$sql = 'select sum(transaction_amount) '
 		       . ' from im_client_accounts '
 		       . ' where client_id = ' . $this->user_id;

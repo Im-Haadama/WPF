@@ -441,7 +441,7 @@ class Fresh_Catalog {
 
 	static function GetProdID( $pricelist_id, $include_hide = false ) # Returns prod id if this supplier product mapped
 	{
-		$debug = false; // ($pricelist_id == 750390);
+		$debug = false; // ($pricelist_id == 748228);
 		if ( $debug ) {
 			MyLog("debugging pricelist id $pricelist_id");
 			$debug = true;
@@ -678,6 +678,11 @@ class Fresh_Catalog {
 			if ($debug) MyLog("no alternatives");
 			return null;
 		}
+//		if ($debug){
+//			foreach ($alternatives as $key => $not_used)
+//				print $alternatives[$key]['supplier_id'] . " " . $alternatives[$key]['price'] . "<br/>";
+//		}
+
 		for ( $i = 0; $i < count( $alternatives ); $i ++ ) {
 			$price = Fresh_Pricing::calculate_price( $alternatives[ $i ]->getPrice(), $alternatives[ $i ]->getSupplierId(),	$alternatives[ $i ]->getSalePrice());
 			if ( $price < $min ) {
@@ -691,59 +696,34 @@ class Fresh_Catalog {
 
 	static function alternatives( $prod_id, $debug = false)
 	{
+		if ($debug) MyLog(__FUNCTION__, $prod_id);
 		if ( ! is_numeric($prod_id) or !( $prod_id > 0 ) ) {
 			print debug_trace(6);
 			return null;
 		}
 
-		// Search by pricelist_id
-		$sql = "select price, supplier_id, id, sale_price ".
+		$sql = "select distinct supplier_id".
 		       " from im_supplier_price_list where product_id = $prod_id";
 
-		$result = SqlQuery( $sql );
-		$output = "";
-		if ( ! $result ) {
-			SqlError( $sql );
+		if ($debug) MyLog($sql);
 
-			return null;
-		} else {
-			$rows = array();
-			while ( $row = mysqli_fetch_row( $result ) ) {
-				if ($debug) MyLog("supplier_id = ". $row[1], __FUNCTION__);
+		$suppliers = SqlQueryArrayScalar($sql);
 
-				$n = new Fresh_Pricelist_Item( $row[2] );
-//				print "adding1 pl $row[2]<br/>";
-				array_push( $rows, $n);
-			}
-		}
+		if ($debug) MyLog(StringVar($suppliers));
 
-		// prof_flag("mid " . $id);
-		$output .= "by name: ";
-		// Search by product_name and supplier_id
-		$sql = " SELECT pl.price, pl.supplier_id, pl.id, pl.sale_price
-  		FROM im_supplier_price_list pl
-    	JOIN im_supplier_mapping m
-  		WHERE m.supplier_product_name = pl.product_name
-  		AND m.supplier_id = pl.supplier_id
-		AND m.product_id = $prod_id
-		AND pl.date = supplier_last_pricelist_date(pl.supplier_id)";
+		$rows = [];
+		foreach ($suppliers as $supplier_id) {
+			$sql = "select max(id)
+			from im_supplier_price_list 
+			where supplier_id = $supplier_id
+			and product_id = $prod_id
+			and (date = supplier_last_pricelist_date(supplier_id) or 0 = (select machine_update from im_suppliers where id = $supplier_id))";
 
-		$result = SqlQuery( $sql );
-		$c      = 0;
-		while ( $row = mysqli_fetch_row( $result ) ) {
-			$supplier_id = $row[1];
-			$found = false;
-			// Don't repeat alternatives
-			for ( $i = 0; $i < count( $rows ); $i ++ ) {
-				if ( $rows[ $i ]->getSupplierId() == $supplier_id ) {
-					$found = true;
-				}
-			}
-			if ( ! $found ) {
-				// array_push( $rows, $row );
-//				print "adding2 pl " . $row[2] . "<br/>";
-				array_push( $rows, new Fresh_Pricelist_Item( $row[2]));
-			}
+			if ($debug) MyLog($sql);
+			$pl_id = SqlQuerySingleScalar($sql);
+
+			if ($pl_id > 0)
+				array_push( $rows, new Fresh_Pricelist_Item( $pl_id ));
 		}
 
 		return $rows;

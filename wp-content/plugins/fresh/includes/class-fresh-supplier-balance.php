@@ -44,7 +44,7 @@ class Fresh_Supplier_Balance {
 
 		array_push( $tabs, array( "supplier_balance", "Suppliers balances", self::Balance() ) );
 		array_push( $tabs, array( "supplier_invoices", "Suppliers invoices", Finance_Invoices::Table(AddToUrl("selected_tab", "supplier_invoices")) ) );
-		array_push( $tabs, array( "test_invoice4u", "Test", self::test_invoice()) );
+		array_push( $tabs, array( "test_invoice4u", "Test", self::test_price()) );
 
 		$args = [];
 		if ($selected_tab) {
@@ -60,6 +60,12 @@ class Fresh_Supplier_Balance {
 		print  $result;
 	}
 
+	static function test_price()
+	{
+		$debug_product = 347;
+		$p = new Fresh_Product($debug_product);
+		print "buy price: " . $p->getBuyPrice(0, true);
+	}
 	static function test_invoice()
 	{
 		Finance::Invoice4uConnect();
@@ -67,7 +73,7 @@ class Fresh_Supplier_Balance {
 		$u = new Fresh_Client(341);
 		$result = $u->getName() . "<br/>";
 		$iu = $u->getInvoiceUser();
-		var_dump($iu);
+//		var_dump($iu);
 		if ($iu)
 			$result .= $iu->ID;
 		else

@@ -35,3 +35,19 @@ function order_remove_line(post_file, item_id, obj)
     let url = post_file + '?operation=order_remove_item&item_id=' + item_id;
     execute_url(url, action_hide_row, obj);
 }
+
+function order_add_product(post_file, order_id)
+{
+    let prod = get_value_by_name("new_prd");
+    if (! (prod > 0)) {
+        alert("יש לבחור מוצר להוסף");
+        return;
+    }
+    execute_url(post_file + '?operation=order_add_product&order_id=' + order_id + "&prod=" + prod, location_reload);
+}
+
+function order_quantity_update(post_file, oid)
+{
+    let q= get_value_by_name('qty_' + oid);
+    execute_url(post_file + '?operation=order_quantity_update&ooid=' + oid + '&quantity=' + q, fail_message);
+}

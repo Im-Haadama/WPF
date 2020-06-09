@@ -195,7 +195,7 @@ class Fresh_Order {
 		return SqlQuerySingleScalar( "select post_status from wp_posts where id = " . $this->order_id);
 	}
 
-	function AddProduct( $product_id, $quantity, $replace = false, $client_id = - 1, $unit = null, $type = null, $price = null ) {
+	function AddProduct( $product_id, $quantity, $replace = false, $client_id = - 1, $unit = null, $type = null, $price = null, &$oid = 0) {
 		$debug = false;
 
 		if ( $debug ) {
@@ -209,15 +209,17 @@ class Fresh_Order {
 		if ( $client_id == - 1 ) {
 			$client_id = $this->getCustomerId();
 		}
+		$u = new Fresh_Client($client_id);
 		if ( $type ) {
 			$customer_type = $type;
 		} else {
-			$customer_type = customer_type( $client_id );
+			$customer_type = $u->customer_type();
 		}
 
 		MyLog( __METHOD__, __FILE__ );
 		MyLog( "product = " . $product_id, __METHOD__ );
-		if ( $replace and ( is_basket( $product_id ) ) ) {
+		$p = new Fresh_Product($product_id);
+		if ( $replace and ( $p->is_basket() ) ) {
 			MyLog( "Add basket products " . $product_id );
 			$sql = 'SELECT DISTINCT product_id, quantity FROM im_baskets WHERE basket_id = ' . $product_id;
 
@@ -270,6 +272,7 @@ class Fresh_Order {
 				print "client dislike " . get_product_name( $product_id ) . "<br/>";
 			}
 		}
+		return true;
 	}
 
 	public function removeFromBasket($item_id, $prod_id)
@@ -1111,8 +1114,7 @@ class Fresh_Order {
 	}
 
 
-	function quantity_in_order( $order_item_id ) {
-// Get and display item quantity
+	static function quantity_in_order( $order_item_id ) {
 		if ( is_numeric( $order_item_id ) ) {
 			$sql2 = 'SELECT meta_value FROM wp_woocommerce_order_itemmeta'
 			        . ' WHERE order_item_id = ' . $order_item_id
@@ -1123,6 +1125,53 @@ class Fresh_Order {
 		}
 
 		return 0;
+	}
+
+	static function line_total( $order_item_id ) {
+// Get and display item quantity
+		if ( is_numeric( $order_item_id ) ) {
+			$sql2 = 'SELECT meta_value FROM wp_woocommerce_order_itemmeta'
+			        . ' WHERE order_item_id = ' . $order_item_id
+			        . ' AND `meta_key` = \'_line_total\''
+			        . ' ';
+
+			return SqlQuerySingleScalar( $sql2 );
+		}
+
+		return 0;
+	}
+
+
+	static function setQuantity($ooid, $new_q)
+	{
+		$order_id = SqlQuerySingleScalar("select order_id from wp_woocommerce_order_items where order_item_id = $ooid");
+
+		$O = new Fresh_Order($order_id);
+		if ($O->getStatus() == 'wc-processing')
+		{
+			$comment = SqlQuerySingleScalar( "select meta_value from wp_woocommerce_order_itemmeta
+			WHERE order_item_id =  $ooid and meta_key = 'product_comment'");
+
+			$comment .= "בבקשה לשנות כמות ל $new_q אם ניתן";
+			return self::updateComment($ooid, $comment);
+		}
+
+		$q = self::quantity_in_order($ooid);
+		$price = self::line_total($ooid) / $q;
+
+		return SqlQuery( "update wp_woocommerce_order_itemmeta
+		set meta_value = $new_q
+		WHERE order_item_id =  $ooid
+		AND `meta_key` = '_qty' " ) and
+		       SqlQuery( "update wp_woocommerce_order_itemmeta
+		set meta_value = ($price * $new_q)
+		WHERE order_item_id =  $ooid
+		AND `meta_key` = '_line_total' " );
+	}
+
+	static function updateComment($ooid, $comment)
+	{
+		return Fresh_Packing::set_order_itemmeta($ooid, 'product_comment', $comment);
 	}
 
 	function DeleteLines( $lines ) {
@@ -1339,27 +1388,27 @@ class Fresh_Order {
 
 				break;
 
-			case "add_item":
-				$prod_id = GetParam("prod_id", true);
-				$q = $_GET["quantity"];
+			case 'order_add_product':
+			case "add_product":
+				MyLog($operation);
+				$prod_id = GetParam("prod", true);
+				$order_id = GetParam("order_id", true);
+				$q = GetParam("quantity", false, 1);
 				if ( ! is_numeric( $q ) ) {
 					die ( "no quantity" );
 				}
-				$units = null;
-				if ( isset ( $_GET["units"] ) ) {
-					$units = $_GET["units"];
-				}
-				$order_id = $_GET["order_id"];
-				if ( ! is_numeric( $order_id ) ) {
-					die ( "no order_id" );
-				}
+				$units = GetParam("units", false, null);
 
-				if ( ! is_numeric( $prod_id ) ) {
-					die ( "invalid product id" );
+				$o = new Fresh_Order( $order_id );
+				$oid = 0;
+				$o->AddProduct( $prod_id, $q, false, - 1, $units, null, null, $oid );
+				MyLog("ooid= $oid");
+				if (($o->getStatus() == 'wc-processing') and ($oid > 0)){
+					$o->updateComment($oid, 'התווסף לאחר העברת ההזמנה לטיפול');
 				}
-				$o = new Order( $order_id );
-				$o->AddProduct( $prod_id, $q, false, - 1, $units );
-				break;
+				return $oid;
+
+			break;
 
 			case "delete_lines":
 				$order_id = $_GET["order_id"];
@@ -1444,7 +1493,7 @@ class Fresh_Order {
 			default:
 				// die("operation " . $operation . " not handled<br/>");
 		}
-
+		return false;
 	}
 	function order_page_by_term()
 	{

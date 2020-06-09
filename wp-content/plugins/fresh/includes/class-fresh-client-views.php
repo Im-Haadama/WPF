@@ -26,6 +26,7 @@ class Fresh_Client_Views {
 		add_action('order_remove_from_basket', array(__CLASS__, 'remove_from_basket'));
 		add_action('order_add_to_basket', array(__CLASS__, 'add_to_basket'));
 		add_action('order_remove_item', array(__CLASS__, 'remove_item'));
+		AddAction('order_quantity_update', array(__CLASS__, 'order_quantity_update'));
 //		add_filter( 'woocommerce_account_menu_items', array(__CLASS__, 'account_menu_items'), 10, 1 );
 	}
 
@@ -34,6 +35,13 @@ class Fresh_Client_Views {
 			//             code                           function                  capablity (not checked, for now).
 		return ( array('finance_balance' => array(array( $this, 'show_balance'), null),
 		               'finance_trans'   => array(array( $this, 'show_trans'), null)));
+	}
+
+	static function order_quantity_update()
+	{
+		MyLog(__FUNCTION__);
+//		$o = new Fresh_Order(GetParam("order_id", true));
+		return Fresh_Order::setQuantity(GetParam("ooid", true), GetParam("quantity"));
 	}
 
 	// Chava.
@@ -147,19 +155,28 @@ class Fresh_Client_Views {
 	{
 		$result = Core_Html::GuiHeader(1, __("Editing order number") . " $order_id");
 
-		$allowed_basket_edit = true;
+		$allowed_basket_edit = false;
 		if ($allowed_basket_edit)
 			$result .= "לחץ על שם הסל, כדי לבצע בו שינויים";
 				//__("Press on basket name to edit it");
+//			$result .=
+//
+//
+
+		$o = new Fresh_Order($order_id);
+		if ($o->getStatus() == 'wc-processing') {
+			$result .= " ההזמנה כבר בטיפול. השינויים ירשמו ויבוצעו במידת האפשר<br/>";
+			$table_rows = array(array("שם פריט", "כמות", "מחיר", 'סה"כ', "הערה"));
+		} else {
+			$table_rows = array(array("שם פריט", "כמות", "מחיר", 'סה"כ', "הערה", "הסר"));
+		}
 
 		$rows = SqlQueryArray( "select order_item_id, order_item_name from wp_woocommerce_order_items " .
 		                       " where order_id = $order_id and order_item_type = 'line_item'");
 
-		$table_rows = array(array("שם פריט", "כמות", "מחיר", 'סה"כ', "הערה", "הסר"));
 
 		$basket_divs = "";
-		foreach ($rows as $key => $row)
-		{
+		foreach ($rows as $key => $row)	{
 			$item_id = $row[0];
 			$name = $row[1];
 
@@ -167,7 +184,6 @@ class Fresh_Client_Views {
 			$line_total = SqlQuerySingleScalar( "select meta_value from wp_woocommerce_order_itemmeta where order_item_id = $item_id and meta_key = '_line_total'" );
 			$prod_id = SqlQuerySingleScalar( "select meta_value from wp_woocommerce_order_itemmeta where order_item_id = $item_id and meta_key = '_product_id'" );
 			$comment =  SqlQuerySingleScalar( "select meta_value from wp_woocommerce_order_itemmeta where order_item_id = $item_id and meta_key = 'product_comment'" );
-//			$price = Fresh_Pricing::get_price_by_type($prod_id);
 
 			$P = new Fresh_Product($prod_id);
 			if ($P->is_basket()) {
@@ -176,15 +192,18 @@ class Fresh_Client_Views {
 			}
 
 			$table_rows[$item_id] = array("name" => $name,
-			                              "qty" => Core_Html::GuiInput("qty_$item_id", $qty, array("events" => "onchange=\"order_update_quantity($item_id)\"")),
+			                              "qty" => Core_Html::GuiInput("qty_$item_id", $qty, array("events" => "onchange=\"order_quantity_update('".Fresh::getPost() ."', $item_id)\"")),
 			                              "price" => round($line_total/$qty, 2),
 						   				  "total"=>$line_total,
-				                          $comment,
-				                          "remove" => Core_Html::GuiButton("rem_$item_id", "X", array("action" => "order_remove_line('" . Fresh::getPost() . "', $item_id, rem_$item_id)")),
-			);
+				                          $comment);
+			if ($o->getStatus() != 'wc-processing')
+				$table_rows[$item_id] ["remove"]  = Core_Html::GuiButton("rem_$item_id", "X", array("action" => "order_remove_line('" . Fresh::getPost() . "', $item_id, rem_$item_id)"));
 
 		}
 		$result .= Core_Html::gui_table_args($table_rows);
+
+		$result .= "<div>הוספת מוצר: " . Fresh_Product::gui_select_product("new_prd") .
+			Core_Html::GuiButton("btn_add_prod", "הוסף", "order_add_product('".Fresh::getPost() ."', $order_id)\"") . "</div>";
 
 		$result .= $basket_divs;
 
@@ -253,8 +272,8 @@ class Fresh_Client_Views {
 				if ( get_post_meta( $order, '$result .=ed' ) ) {
 					$result .= "הזמנה " . $order . " עברה לטיפול. צור קשר עם שירות הלקוחות" . "<br/>";
 				} else {
-					$result .= __("Order number") . $order . " " . __("before process") . ". " . __("Edit here:") . " ";
-					$result .= Core_Html::GuiHyperlink( __("Order") . " " . $order, "/my-account/view-order/" . $order );
+					$wc_order = new WC_Order($order);
+					$result .= "הזמנה " . Core_Html::GuiHyperlink(  $order, $wc_order->get_view_order_url() ) . " ניתנת לעריכה";
 					$result .= ".<br/>";
 				}
 			}

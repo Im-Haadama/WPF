@@ -135,13 +135,12 @@ class Fresh_Shortcodes {
 	}
 
 	public static function client_balance( $atts ) {
-		$operation = GetParam("operation", false, "client_balance");
-		return Fresh_Client_Views::handle_operation($operation);
+		$u = new Fresh_Client(get_user_id());
+		return  $u->balance();
 	}
 
 	public static function open_orders( $atts ) {
-		$operation = GetParam("operation", false, "open_orders");
-		return Fresh_Client_Views::handle_operation($operation);
+		return Fresh_Client_Views::open_orders(get_user_id());
 	}
 
 	public static function client_archive( $atts ) {

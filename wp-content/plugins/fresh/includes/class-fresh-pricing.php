@@ -159,11 +159,12 @@ class Fresh_Pricing {
 	}
 
 	static function set_saleprice( $product_id, $sale_price ) {
-		MyLog("setiing sale price for $product_id $sale_price " . get_user_id());
 		update_post_meta( $product_id, "_sale_price", $sale_price );
-		$price = get_post_meta($product_id, "_price");
-		$new_price = (($sale_price > 0) ? $sale_price : $price);
+		$regular_price = get_post_meta($product_id, "_regular_price", true);
+		$new_price = (($sale_price > 0) ? $sale_price : $regular_price);
 		update_post_meta( $product_id, "_price", $new_price );
+		MyLog("setiing sale price for $product_id sp=$sale_price pr=$regular_price (user: " . get_user_id() . ")");
+
 	}
 
 	static function getVatPercent()

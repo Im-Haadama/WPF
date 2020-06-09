@@ -129,7 +129,7 @@ class Fresh_Packing {
 
 	static function NeededProducts( $filter_zero = false, $history = false, $filter_stock = false, $limit_to_supplier_id = null )
 	{
-		$debug_product = null;
+		$debug_product = false;
 
 		$result          = "";
 		$needed_products = array();
@@ -360,6 +360,7 @@ class Fresh_Packing {
 	}
 
 	static function set_order_itemmeta( $order_item_id, $meta_key, $meta_value ) {
+		MyLog("update $order_item_id, $meta_key, $meta_value");
 		$value = $meta_value;
 
 		if ( is_array( $meta_value ) ) {
@@ -379,7 +380,7 @@ class Fresh_Packing {
 			       " (order_item_id, meta_key, meta_value) " .
 			       " VALUES (" . $order_item_id . ", '" . $meta_key . "', '" . $value . "')";
 		}
-		SqlQuery( $sql );
+		return SqlQuery( $sql );
 	}
 
 	static function OrdersToHandle() {
