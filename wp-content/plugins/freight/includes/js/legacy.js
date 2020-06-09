@@ -1,17 +1,14 @@
-function create_subcontract_invoice(post_file) {
-    xmlhttp = new XMLHttpRequest();
-    xmlhttp.onreadystatechange = function () {
-        // Wait to get query result
-        if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
-        {
-            var http_text = xmlhttp.responseText.trim();
-            document.getElementById("logging").innerHTML = http_text;
-        }
-    }
-    var request = post_file + "?operation=create_subcontract_invoice";
-    xmlhttp.open("GET", request, true);
-    xmlhttp.send();
+function create_subcontract_delivery_invoice(post_file) {
+    let selected = get_selected("delivery_note");
 
+    if (! selected.length) {
+        alert("יש לבחור תעודות משלוח");
+        return;
+    }
+
+    var request = post_file + "?operation=create_subcontract_delivery_invoice&ids=" + selected;
+
+    execute_url(request, success_message);
 }
 
 function clear_legacy() {

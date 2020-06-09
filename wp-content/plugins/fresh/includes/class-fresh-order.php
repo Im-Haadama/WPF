@@ -1152,7 +1152,7 @@ class Fresh_Order {
 			$comment = SqlQuerySingleScalar( "select meta_value from wp_woocommerce_order_itemmeta
 			WHERE order_item_id =  $ooid and meta_key = 'product_comment'");
 
-			$comment .= "בבקשה לשנות כמות ל $new_q אם ניתן";
+			$comment .= "  לשנות כמות ל $new_q אם ניתן";
 			return self::updateComment($ooid, $comment);
 		}
 

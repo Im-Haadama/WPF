@@ -2183,7 +2183,7 @@ class Focus_Tasks {
 
 		$message = GetParam("message");
 		$company = new Org_Company($company_id);
-		return mail($worker_email, "Welcome to Focus!, company " . $company->getName(), $message);
+		return send_mail($worker_email, "Welcome to Focus!, company " . $company->getName(), $message);
 	}
 
 	static function show_worker_wrapper()
