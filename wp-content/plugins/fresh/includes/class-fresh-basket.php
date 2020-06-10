@@ -256,11 +256,11 @@ class Fresh_Basket extends  Fresh_Product  {
 			$data .= __("Basket is empty") . "<br/>";
 		}
 
-		$data .= Core_Html::GuiButton("remove_product", "remove", array("action" => "remove_from_basket(" . $basket_id . ")", "remove"));
+		$data .= Core_Html::GuiButton("remove_product", "remove", array("action" => "remove_from_basket('" .Fresh::getPost() . "', " . $basket_id . ")", "remove"));
 
 		$data .= "<br/>";
 		$data .= Fresh_Product::gui_select_product("new_product");
-		$data .= Core_Html::GuiButton("add_product", "add", array("action" => "add_to_basket(" . $basket_id . ")"));
+		$data .= Core_Html::GuiButton("add_product", "add", array("action" => "add_to_basket('" .Fresh::getPost() . "', ". $basket_id . ")"));
 
 		// Remove draft products from the basket.
 		$sql = 'SELECT DISTINCT product_id FROM im_baskets WHERE basket_id = ' . $basket_id .

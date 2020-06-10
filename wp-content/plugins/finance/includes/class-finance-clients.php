@@ -272,7 +272,6 @@ class Finance_Clients
 				$del_id = SqlQuerySingleScalar( "select transaction_ref from im_client_accounts where ID = " . $id );
 				$d = new Fresh_Delivery($del_id);
 				$dels_total += $d->getDeliveryTotal();
-//				print "dt=$dels_total<br/>";
 				if ( $del_id > 0 ) {
 					array_push( $del_ids, $del_id );
 				} else {
@@ -460,7 +459,6 @@ class Finance_Clients
 			$doc->ToRoundAmount = false;
 		}
 
-		// print "create<br/>";
 		$doc_id =  $invoice->CreateDocument( $doc );
 
 		// var_dump($doc);

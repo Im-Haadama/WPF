@@ -1,15 +1,15 @@
 // baskets
 // use wp_localize_script to set admin_post
-function add_to_basket(basket_id)
+function add_to_basket(post_file, basket_id)
 {
     let prod_id = get_value_by_name("new_product");
-    execute_url(admin_post() + '?operation=add_to_basket&basket_id=' + basket_id + '&new_product=' + prod_id, location_reload);
+    execute_url(post_file + '?operation=add_to_basket&basket_id=' + basket_id + '&new_product=' + prod_id, location_reload);
 }
 
-function remove_from_basket(basket_id)
+function remove_from_basket(post_file, basket_id)
 {
     let param = get_selected("product_checkbox");
-    execute_url(admin_post() + '?operation=remove_from_basket&basket_id=' + basket_id + '&products=' + param, location_reload);
+    execute_url(post_file + '?operation=remove_from_basket&basket_id=' + basket_id + '&products=' + param, location_reload);
 }
 
 function basket_create_new()

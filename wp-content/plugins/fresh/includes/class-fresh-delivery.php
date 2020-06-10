@@ -1282,14 +1282,14 @@ class Fresh_Delivery {
 	/**
 	 * @return int
 	 */
-	public function getDelPrice(): int {
+	public function getDelPrice(): float {
 		return $this->del_price;
 	}
 
 	/**
 	 * @return int
 	 */
-	public function getDeliveryTotal(): int {
+	public function getDeliveryTotal(): float {
 //		print "total=" .$this->delivery_total . "<br/>";
 		return $this->delivery_total;
 	}
@@ -1297,14 +1297,14 @@ class Fresh_Delivery {
 	/**
 	 * @return int
 	 */
-	public function getDeliveryDueVat(): int {
+	public function getDeliveryDueVat(): float {
 		return $this->delivery_due_vat;
 	}
 
 	/**
 	 * @return int
 	 */
-	public function getDeliveryTotalVat(): int {
+	public function getDeliveryTotalVat(): float {
 		return $this->delivery_total_vat;
 	}
 
