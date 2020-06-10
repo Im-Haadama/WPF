@@ -1061,7 +1061,7 @@ class Fresh_Order {
 
 		$product_sql = "select order_item_id, meta_value " .
 		               " from wp_woocommerce_order_itemmeta " .
-		               " where meta_key in ('product_comment','הערות')" .
+		               " where meta_key in ('product_comment','הערות', 'ערות')" .
 		               " and order_item_id in (select order_item_id "
 												. " from wp_woocommerce_order_items " .
 		               " where order_id = " . $this->order_id . " )";

@@ -157,7 +157,7 @@ class Fresh_Product {
 	{
 		$result = [];
 		$terms = get_the_terms( $this->id, 'product_cat' );
-		foreach ($terms as $term)
+		if ($terms) foreach ($terms as $term)
 		{
 			array_push($result, $term->term_id);
 			$parents = get_ancestors( $term->term_id, "product_cat", 'taxonomy' );
