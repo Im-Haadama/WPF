@@ -68,7 +68,7 @@ if ( $id > 0 ) {
 	$d = new Fresh_Delivery( $id );
 	if ($d->getCustomerType())
 	    print "<script> let client_type = " . $d->getCustomerType() . ";</script>";
-	$d->PrintDeliveries( FreshDocumentType::delivery, Fresh_DocumentOperation::edit, false, $show_inventory );
+	$d->PrintDeliveries( FreshDocumentType::delivery, Fresh_DocumentOperation::edit, false);
 
 	//$d = new delivery( $id );
 	print "</form>";
@@ -96,7 +96,7 @@ if ( $id > 0 ) {
 
 		$d = Fresh_Delivery::CreateFromOrder( $order_id );
 	}
-	$d->PrintDeliveries( FreshDocumentType::delivery, Fresh_DocumentOperation::create, false, $show_inventory );
+	$d->PrintDeliveries( FreshDocumentType::delivery, Fresh_DocumentOperation::create, false);
 	print "</form>";
 }
 

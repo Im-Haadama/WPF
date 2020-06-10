@@ -34,6 +34,7 @@ class Freight_Legacy {
 	function init_hooks()
 	{
 		AddAction("create_ship", array($this, 'create_ship_wrap'));
+		AddAction("create_subcontract_delivery_invoice", array($this, "create_subcontract_delivery_invoice"));
 	}
 
 	function create_ship_wrap()
@@ -171,6 +172,7 @@ AND (meta_value = "legacy" or meta_value = 1)';
 
 		global $legacy_user;
 	}
+
 	function delivery_notes() {
 		$result = "";
 		$data = self::business_open_ship( $this->legacy_user );
@@ -181,7 +183,7 @@ AND (meta_value = "legacy" or meta_value = 1)';
 
 			$result .= $data;
 
-			$result .= Core_Html::GuiButton( "id_legacy_invoice", "הפק חשבונית מס", array("action" => "create_subcontract_invoice()") );
+			$result .= Core_Html::GuiButton( "id_legacy_invoice", "הפק חשבונית מס", array("action" => "create_subcontract_delivery_invoice('". Freight::getPost() . "')") );
 
 		} else {
 			$result .= Core_Html::gui_header( 1, "כל תעודות המשלוח הוכנסו לחשבוניות" );
@@ -202,6 +204,7 @@ AND (meta_value = "legacy" or meta_value = 1)';
 			print $table;
 		}
 	}
+
 	function user_checkbox( $id ) {
 		return Core_Gem::gui_row( array(
 			Core_Html::GuiCheckbox("chk_" . $id, false,array ("class"=>"user_chk" )),
@@ -239,18 +242,112 @@ AND (meta_value = "legacy" or meta_value = 1)';
 		return $data;
 	}
 
-	function business_open_ship( $part_id ) {
+	function business_open_ship( $part_id )
+	{
 		$sql = "select id, date, amount, net_amount, ref " .
 		       " from im_business_info " .
 		       " where part_id = " . $part_id .
 		       " and invoice is null " .
 		       " and document_type = " . FreshDocumentType::ship;
 
-		$data = Core_Html::GuiTableContent( "table", $sql );
+		$args = array("add_checkbox" => 1, "checkbox_class" => "delivery_note");
+
+		$data = Core_Html::GuiTableContent( "table", $sql, $args );
 
 		// $rows = sql_query_array($sql );
 
 		return $data; // gui_table($rows);
+	}
+
+	function create_subcontract_delivery_invoice(  ) {
+		$ids = GetParam("ids");
+		// $invoice_client_id
+		global $invoice_user_sub;
+		global $invoice_password_sub;
+		global $legacy_user;
+
+		$invoice = Finance::Invoice4uConnect();
+		if (! $invoice) {
+			die ("Not connected to invoice4u");
+		}
+
+//		if (!defined(INVOICE_CLINET)) die ("define ");
+//
+//		// print "invoice client id " . $invoice_client_id . "<br/>";
+//
+//		$client = $invoice->GetCustomerById( $this->legacy_user );
+//
+//		if ( ! ( $client->ID ) > 0 ) {
+//			print "Invoice client not found " . $invoice_client_id . "<br>";
+//
+//			// var_dump( $client );
+//
+//			return 0;
+//		}
+//		$email = $client->Email;
+		// print "user mail: " . $email . "<br/>";
+		$doc        = new InvoiceDocument();
+		$doc->Items = Array();
+		$iEmail                = new InvoiceEmail();
+		$legacy_user = new Fresh_Client($this->legacy_user);
+		$iEmail->Mail          = $legacy_user->get_customer_email();
+		$doc->AssociatedEmails = Array( $iEmail );
+
+		$doc->ClientID     = $legacy_user->getUserId();
+
+		$client = $legacy_user->getInvoiceUser(true);
+
+
+		$doc->DocumentType = InvoiceDocumentType::Invoice;
+
+		$sql = "select id, date, amount, net_amount, ref " .
+		       " from im_business_info " .
+		       " where id in (" . CommaImplode($ids) . ")";
+
+		$result = SqlQuery( $sql );
+
+		$ship_ids     = array();
+		$business_ids = array();
+		$net_total    = 0;
+
+		// Add the shipments
+		while ( $row = SqlFetchRow( $result ) ) {
+			$business_id = $row[0];
+			array_push( $business_ids, $business_id );
+			$ship_id = $row[4];
+			array_push( $ship_ids, $ship_id );
+
+			$item       = new InvoiceItem();
+			$item->Name = "תעודת משלוח מספר " . $ship_id;
+
+			$item->Price           = $row[2];
+			$net_total             += $row[3];
+			$item->Quantity        = 1;
+			$item->TaxPercentage   = 17;
+			$item->TotalWithoutTax = $row[3];
+			$item->Total           = round( $item->Price * $item->Quantity, 2 );
+			array_push( $doc->Items, $item );
+		}
+
+		$total_lines = 0;
+		$net_total   = 0;
+
+		// Set the subject
+		$subject      = "חשבונית לתעודת משלוח " . " " . CommaImplode( $ship_ids );
+		$doc->Subject = $subject;
+
+		// print "create<br/>";
+		$doc_id = $invoice->CreateDocument( $doc );
+
+		if ( $doc_id ) {
+			Finance::add_transaction( $legacy_user, date( 'Y-m-d' ), $total_lines, 0, $doc_id, 1, $net_total,
+				FreshDocumentType::invoice );
+
+			SqlQuery ("UPDATE im_business_info SET invoice = " . $doc_id .
+			           " WHERE id IN ( " . CommaImplode( $business_ids ) . " )" );
+		}
+
+		return $doc_id;
 	}
 
 }

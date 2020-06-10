@@ -884,7 +884,7 @@ class Fresh_Order {
 		}
 
 		$data .= "</table>";
-		print  $data;
+		return   $data;
 	}
 
 	function GetMissionId( $debug = false )

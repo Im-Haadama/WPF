@@ -269,10 +269,9 @@ class Fresh_Delivery {
 		}
 	}
 
-	private function load_line_from_order($line_ids, $client_type, &$prod_id, &$prod_name, &$quantity_ordered, &$unit_q, &$P, &$price )
+	private function load_line_from_order($line_ids, &$prod_id, &$prod_name, &$quantity_ordered, &$unit_q, &$P, &$price )
 	{
 		$line_id = $line_ids[0];
-		// print "lid=". $line_id . "<br/>";
 		$sql                                 = "SELECT order_item_name FROM wp_woocommerce_order_items WHERE order_item_id = " . $line_id;
 		$prod_name                           = SqlQuerySingleScalar( $sql );
 		$quantity_ordered                    = Fresh_Packing::get_order_itemmeta( $line_ids, '_qty' );
@@ -284,25 +283,10 @@ class Fresh_Delivery {
 		$line[ eDeliveryFields::order_line ] = $order_line_total;
 		$prod_id                             = Fresh_Packing::get_order_itemmeta( $line_id, '_product_id' );
 		$P                                   = new Fresh_Product( $prod_id );
-		// $line_price       = get_order_itemmeta( $line_id, '_line_total' );
+		$line_price       = Fresh_Packing::get_order_itemmeta( $line_ids, '_line_total' );
 
-		// Todo: handle prices
-		switch ( $client_type ) {
-			case 0:
-				if ( $quantity_ordered )
-					$price = round( $order_line_total / $quantity_ordered, 1 );
-				else
-					$price = Fresh_Pricing::get_price( $prod_id);
-				break;
-			case 1:
-				$price = siton_price( $prod_id );
-				break;
-			case 2:
-				$price = get_buy_price( $prod_id );
-				break;
-			default:
-				$price = round( 1.3 * get_buy_price( $prod_id ), 1);
-		}
+		$price = round($line_price / $quantity_ordered, 2);
+//		$price = Fresh_Pricing::get_price_by_type( $prod_id, $client_type = "", $quantity = 1
 
 		if ( $unit_ordered ) {
 			$quantity_ordered = "";
@@ -469,7 +453,7 @@ class Fresh_Delivery {
 		if ( $edit ) {
 			$subject = "משלוח מספר " . $this->ID . " - תיקון";
 		}
-		mail($to, $subject, $message );
+		send_mail($to, $subject, $message );
 		print "mail sent to " . $to . "<br/>";
 	}
 
@@ -499,7 +483,7 @@ class Fresh_Delivery {
 		return $this->order;
 	}
 
-	function delivery_text( $document_type, $operation = Fresh_DocumentOperation::show, $margin = false, $show_inventory = false ) {
+	function delivery_text( $document_type, $operation = Fresh_DocumentOperation::show, $margin = false ) {
 		$this->delivery_total = 0;
 		$header_fields = array(
 			"בחר",
@@ -634,8 +618,8 @@ class Fresh_Delivery {
 
 				if ($prod_id == -1 and ($row["line_price"] == 0)) $line_style = "hidden ";// Discount line.
 
-				$line = $this->delivery_line(  FreshDocumentType::delivery, $row["id"], 0, $operation,
-					$margin, $line_style, $show_inventory);
+				$line = $this->delivery_line(  FreshDocumentType::delivery, $row["id"], $operation,
+					$margin, $line_style);
 
 				if ( $operation == Fresh_DocumentOperation::check) { // Todo: Need to rewrite this function;
 					for($i = 0; $i < eDeliveryFields::max_fields; $i ++)
@@ -683,7 +667,7 @@ class Fresh_Delivery {
 
 					$data .= Core_Html::gui_row($basket_header, ++$this->line_number, $show_fields, $sums, $this->delivery_fields_names, $style);
 				} else {
-					$line = $this->delivery_line( $document_type, $order_item_ids, $client_type, $operation, $margin, $style, $show_inventory );
+					$line = $this->delivery_line( $document_type, $order_item_ids, $operation, $margin, $style );
 					$data .= Core_Html::gui_row( $line, ++$this->line_number, $show_fields, $sums, $this->delivery_fields_names, $style );
 				}
 				if ( $expand_basket && $b->is_basket() ) {
@@ -767,12 +751,9 @@ class Fresh_Delivery {
 		return "$data";
 	}
 
-	public function delivery_line( $document_type, $line_ids, $client_type, $operation, $margin = false, &$style = null,
-		$show_inventory = false ) {
+	public function delivery_line( $document_type, $line_ids, $operation, $margin = false, &$style = null ) {
 
 		$show_inventory = false;
-
-		global $global_vat;
 
 		$line_color = null;
 
@@ -803,7 +784,7 @@ class Fresh_Delivery {
 		$prod_comment = "";
 
 		if ( $load_from_order ) {
-			$this->load_line_from_order($line_ids, $client_type, $prod_id, $prod_name, $quantity_ordered, $unit_q, $P, $price );
+			$this->load_line_from_order($line_ids,  $prod_id, $prod_name, $quantity_ordered, $unit_q, $P, $price );
 		} else {
 			$this->load_line_from_db($line_id, $P, $prod_id, $prod_name, $quantity_ordered, $quantity_delivered, $price, $delivery_line, $has_vat, $line_color);
 		}
@@ -1183,8 +1164,8 @@ class Fresh_Delivery {
 	// Called when creating a delivery from an order.
 	// After the basket line is shown, we print here the basket lines and basket discount line.
 
-	function PrintDeliveries( $document_type, $operation, $margin = false, $show_inventory = false ) {
-		print $this->delivery_text( $document_type, $operation, $margin, $show_inventory );
+	function PrintDeliveries( $document_type, $operation, $margin = false ) {
+		print $this->delivery_text( $document_type, $operation, $margin);
 	}
 
 	public function DeliveryFee() {

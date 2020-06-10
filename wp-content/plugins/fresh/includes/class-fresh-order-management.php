@@ -44,14 +44,14 @@ class Fresh_Order_Management {
 		print Core_Html::GuiHeader(1, "del" . $order_id);
 		if (Fresh_Order::get_delivery_id( $order_id )) {
 		$d = Fresh_Delivery::CreateFromOrder( $order_id );
-			$d->PrintDeliveries( FreshDocumentType::delivery, Fresh_DocumentOperation::create, false, $show_inventory );
+			$d->PrintDeliveries( FreshDocumentType::delivery, Fresh_DocumentOperation::create, false );
 		}
 		else
 		{
 			$O = new Fresh_Order( $order_id );
 			print $O->infoBox( false, "יצירת תעודת משלוח ל" );
 			$d = Fresh_Delivery::CreateFromOrder( $order_id );
-			$d->PrintDeliveries( FreshDocumentType::delivery, Fresh_DocumentOperation::create, false, $show_inventory );
+			$d->PrintDeliveries( FreshDocumentType::delivery, Fresh_DocumentOperation::create, false );
 		}
 
 //		print $result;
