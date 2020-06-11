@@ -210,9 +210,16 @@ class Fresh {
 		/// check siton:
 //		if (get_user_id() == 1) wp_set_current_user(474);
 
+//		add_filter ( 'woocommerce_account_menu_items', __CLASS__ . '::init_my_account_links' );
 		/// check admin;
 	//	if (get_user_id() == 1) wp_set_current_user(601);
 	}
+
+//	static function init_my_account_links( $menu_links ){
+//
+//		$menu_links['account-status'] = 'Account balance';
+//		return $menu_links;
+//	}
 
 	function remove_add()
 	{

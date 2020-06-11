@@ -586,7 +586,7 @@ class Core_Data
 
 		if ($args and strstr($sql, "limit"))
 		{
-			$from_pos = strpos(strtolower($sql), "from");
+			$from_pos = strpos(strtolower($sql), "from ");
 			$limit_pos = strpos(strtolower($sql), "limit");
 			$args["row_count"] = SqlQuerySingleScalar("select count(*) " . substr($sql, $from_pos, $limit_pos - $from_pos));
 		}
