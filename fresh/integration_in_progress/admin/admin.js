@@ -1,1 +1,0 @@
-alert("dont use admin.js");

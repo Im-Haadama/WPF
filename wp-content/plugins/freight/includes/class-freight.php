@@ -511,7 +511,7 @@ class Freight {
 	    wp_register_script( 'freight_admin', $file);
 	    wp_enqueue_script('freight_admin');
 
-		$file = FREIGHT_INCLUDES_URL . 'js/legacy.js';
+		$file = FREIGHT_INCLUDES_URL . 'js/legacy.js?v=1';
 		wp_register_script( 'legacy', $file);
 		wp_enqueue_script( 'legacy', $file, null, $this->version, false );
 

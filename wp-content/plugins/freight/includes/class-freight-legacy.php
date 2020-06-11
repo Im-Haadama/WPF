@@ -16,17 +16,19 @@ class Freight_Legacy {
 		$invoices       = "invoices";
 
 		$tabs = [];
+		$selected_tab = GetParam("selected_tab", false, 'deliveries_to_do');
 
-		array_push( $tabs, array( "deliveries_to_do", "Deliveries to do", self::deliveries() ) );
-		array_push( $tabs, array( "deliveries_done", "Deliveries done", self::done_deliveries() ) );
-		array_push( $tabs, array( "delivery notes", "Delivery Notes", self::delivery_notes() ) );
+		array_push( $tabs, array( "deliveries_to_do", "Deliveries to do", (($selected_tab != 'deliveries_to_do') ? null : self::deliveries()) ) );
+		array_push( $tabs, array( "deliveries_done", "Deliveries done", (($selected_tab != 'deliveries_done') ? null : self::done_deliveries() )) );
+		array_push( $tabs, array( "delivery_notes", "Delivery Notes", (($selected_tab != 'delivery_notes') ? null : self::delivery_notes() ) ));
 //		array_push( $tabs, array( "invoices", "Invoices", $invoices ) );
 
 		$args = [];
-		$args["tabs_load_all"] = true;
+		$args["tabs_load_all"] = false;
+		$args["selected_tab"] = $selected_tab;
 
-		$result .= Core_Html::gui_div("logging");
 		$result .= Core_Html::GuiTabs( $tabs, $args );
+		$result .= Core_Html::gui_div("logging");
 
 		print  $result;
 	}
@@ -85,9 +87,9 @@ class Freight_Legacy {
 				$item->Name = "משלוח עבור " . $o->CustomerName() . " תאריך " . $o->OrderDate();
 
 			// TODO: display prices.
-			$item->Price           = round($o->getShippingFee(), 0);
-			if (! $item->Price) $item->Price = 37;
-			MyLog($item->Price);
+			$item->Price           = round($o->getShippingFee(), 2);
+			MyLog(__FUNCTION__ . "price=" . $item->Price);
+			if (! $item->Price) $item->Price = 37.4;
 			$net_total             += $item->Price;
 			$item->Quantity        = 1;
 			$item->TaxPercentage   = Fresh_Pricing::getVatPercent();
@@ -293,10 +295,9 @@ AND (meta_value = "legacy" or meta_value = 1)';
 		$iEmail->Mail          = $legacy_user->get_customer_email();
 		$doc->AssociatedEmails = Array( $iEmail );
 
-		$doc->ClientID     = $legacy_user->getUserId();
-
 		$client = $legacy_user->getInvoiceUser(true);
 
+		$doc->ClientID     = $client->ID;
 
 		$doc->DocumentType = InvoiceDocumentType::Invoice;
 
@@ -323,7 +324,7 @@ AND (meta_value = "legacy" or meta_value = 1)';
 			$item->Price           = $row[2];
 			$net_total             += $row[3];
 			$item->Quantity        = 1;
-			$item->TaxPercentage   = 17;
+			$item->TaxPercentage   = Fresh_Pricing::getVatPercent();
 			$item->TotalWithoutTax = $row[3];
 			$item->Total           = round( $item->Price * $item->Quantity, 2 );
 			array_push( $doc->Items, $item );
@@ -336,11 +337,10 @@ AND (meta_value = "legacy" or meta_value = 1)';
 		$subject      = "חשבונית לתעודת משלוח " . " " . CommaImplode( $ship_ids );
 		$doc->Subject = $subject;
 
-		// print "create<br/>";
 		$doc_id = $invoice->CreateDocument( $doc );
 
 		if ( $doc_id ) {
-			Finance::add_transaction( $legacy_user, date( 'Y-m-d' ), $total_lines, 0, $doc_id, 1, $net_total,
+			Finance::add_transaction( $this->legacy_user, date( 'Y-m-d' ), $total_lines, 0, $doc_id, 1, $net_total,
 				FreshDocumentType::invoice );
 
 			SqlQuery ("UPDATE im_business_info SET invoice = " . $doc_id .

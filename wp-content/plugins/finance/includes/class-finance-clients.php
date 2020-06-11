@@ -219,6 +219,7 @@ class Finance_Clients
 			$credit_info = Core_Gem::GemElement( "payment_info", $payment_info_id, $args );
 		} else {
 			$args["post_file"] = Finance::getPostFile();
+			$args["values"] = array("email" => $u->get_customer_email(), "full_name"=>$u->getName(), "created_date"=>date('y-m-d'));
 			$credit_info = Core_Gem::GemAddRow("payment_info", "Add", $args);
 //			$credit_info = "No payment info";
 		}

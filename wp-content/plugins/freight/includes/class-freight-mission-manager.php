@@ -148,12 +148,8 @@ class Freight_Mission_Manager
 
 	static function missions()
 	{
-		$id = GetParam("id");
-		if ($id) {
-			$args = array("post_file" => self::getPost());
-			$result = Core_Html::GuiHeader(1, "Mission $id");
-			$result .= Core_Gem::GemElement("missions", $id, $args);
-			print $result;
+		if ($id = GetParam("id")) {
+			print self::mission($id);
 			return;
 		}
 
@@ -165,7 +161,7 @@ class Freight_Mission_Manager
 		$result = Core_Html::GuiHeader(1, $header);
 
 		$multi = Core_Db_MultiSite::getInstance();
-//		print "ism=" . $multi->isMaster() . "<br/>";
+
 		if ($multi->isMaster())
 			self::create_missions();
 		else
@@ -177,6 +173,15 @@ class Freight_Mission_Manager
 		print $result;
 	}
 
+	static function mission($id)
+	{
+		if (GetParam("operation", false) == "dispatch") return self::dispatcher($id);
+
+		$args = array("post_file" => self::getPost());
+		$result = Core_Html::GuiHeader(1, "Mission $id");
+		$result .= Core_Gem::GemElement("missions", $id, $args);
+		return $result;
+	}
 	static function create_missions()
 	{
 		$types = SqlQueryArrayScalar("select id from im_mission_types");
@@ -218,7 +223,7 @@ class Freight_Mission_Manager
 		$args["hide_cols"] = array("zones_times"=>1);
 		$args["class"] = "sortable";
 		$args["selectors"] = array("mission_type" => __CLASS__ . "::gui_select_mission_type");
-//		$args["events"] = 'onchange="mission_update_type(\''. Fresh::getPost() . "', %d)\"";
+		$args["actions"] = array("Dispatch" => Core_Html::GuiHyperlink("Dispatch", AddToUrl("operation", "dispatch&id=%d")));
 		$result .= Core_Gem::GemTable("missions", $args);
 
 		return $result;
@@ -246,17 +251,6 @@ class Freight_Mission_Manager
 		if ($operation)
 		{
 			apply_filters($operation, $result);
-		}
-
-		if ($id = GetParam("id")) {
-			$m = new Mission($id);
-			$price = $m->getDefaultFee();
-			$result .= Core_Html::GuiHeader(2, $m->getMissionName() . "($id)");
-			$result .= self::dispatcher($id, $operation);
-			$result .= Core_Html::GuiHyperlink("Download as csv", Freight::getPost() . "?operation=download_mission&id=$id");
-			$result .= self::add_delivery($price);
-			print $result;
-			return;
 		}
 
 		$args = [];
@@ -299,63 +293,77 @@ group by pm.meta_value, p.post_status");
 		$lines_per_station = array();
 		$supplies_to_collect = array();
 		$multi_site = Core_Db_MultiSite::getInstance();
+		$result = "";
 
 		self::prepare_route($the_mission, $path, $lines_per_station, $supplies_to_collect);
 
-		if (! $path or ! count($path))
-			return;
+		if ($path and count($path)) {
+			$path_info = [];
+			for ( $i = 0; $i < count( $path ); $i ++ ) {
+				if ( isset( $lines_per_station[ $path[ $i ] ] ) ) {
+					foreach ( $lines_per_station[ $path[ $i ] ] as $order_info ) {
+						$order_id  = $order_info[ OrderTableFields::order_number ];
+						$site_id   = $order_info[ OrderTableFields::site_id ];
+						$site      = $order_info[ OrderTableFields::site_name ];
+						$user_id   = $order_info[ OrderTableFields::client_nubmer ];
+						$order_pri = self::order_get_pri( $order_id, $site_id );
+						$user_name = $order_info[ OrderTableFields::client_name ];
+						$pri_input = Core_Html::GuiInput( "pri" . $order_id . "_" . $site_id, $order_pri, array( "size"   => 5,
+						                                                                                         "events" => 'onchange="update_order_pri(\'' . self::getPost() . '\',this)"'
+							) ) .
+						             Core_Html::GuiButton( "btn_reset_reset", "R", array( "action" => "reset_path('" . self::getPost() . "'," . ( $i + 1 ) . ")" ) );
+						$type      = "orders";
+						if ( $site == "supplies" ) {
+							$type = "supplies";
+						} else if ( $site == "משימות" ) {
+							$type = "tasklist";
+						}
 
-		$path_info = [];
-		for ( $i = 0; $i < count( $path ); $i ++ ) {
-			if (isset($lines_per_station[$path[$i]])) foreach ( $lines_per_station[ $path[ $i ] ] as $order_info ) {
-				$order_id = $order_info[OrderTableFields::order_number];
-				$site_id = $order_info[OrderTableFields::site_id];
-				$site = $order_info[OrderTableFields::site_name];
-				$user_id = $order_info[OrderTableFields::client_nubmer];
-				$order_pri = self::order_get_pri($order_id, $site_id);
-				$user_name = $order_info[OrderTableFields::client_name];
-				$pri_input = Core_Html::GuiInput("pri". $order_id . "_" . $site_id, $order_pri, array("size" => 5, "events"=>'onchange="update_order_pri(\'' . self::getPost() . '\',this)"')) .
-				             Core_Html::GuiButton("btn_reset_reset", "R", array("action" => "reset_path('".self::getPost()."',". ($i + 1) . ")"));
-				$type      = "orders";
-				if ( $site == "supplies" ) $type = "supplies"; else if ( $site == "משימות" ) $type = "tasklist";
-
-				$edit_user = Core_Html::GuiHyperlink($user_id, self::$multi_site->getSiteURL($site_id) . "/wp-admin/user-edit.php?user_id=" . $user_id);
-				$comments = (($site_id == $multi_site->getLocalSiteID()) ?
-					Core_Html::GuiInput("comments_$order_id",
-						$order_info[OrderTableFields::comments],
-						array("events"=>"onchange=\"order_update_driver_comment('". Freight::getPost() . "', $order_id)\"")
-					) : $order_info[OrderTableFields::comments]);
-				array_push($path_info,
-					array(Core_Html::GuiHyperlink($order_id, "/wp-admin/post.php?post=$order_id&action=edit"),
-						$edit_user,
-						Core_Html::GuiHyperlink($user_name, $multi_site->getSiteURL($site_id) . "/wp-admin/user-edit.php?user_id=$user_id"),
-						$path[$i],
-						$order_info[OrderTableFields::address_2],
-						$comments,
-						$order_info[OrderTableFields::shipping],
-						$order_info[OrderTableFields::phone],
-						$pri_input,
-						Core_Html::GuiCheckbox("chk_$order_id", false,
-							array("events"=>'onchange="delivered(\'' . Freight::getPost() . "', " . $site_id . "," . $order_id . ', \'' . $type . '\')"'))));
+						$edit_user = Core_Html::GuiHyperlink( $user_id, self::$multi_site->getSiteURL( $site_id ) . "/wp-admin/user-edit.php?user_id=" . $user_id );
+						$comments  = ( ( $site_id == $multi_site->getLocalSiteID() ) ?
+							Core_Html::GuiInput( "comments_$order_id",
+								$order_info[ OrderTableFields::comments ],
+								array( "events" => "onchange=\"order_update_driver_comment('" . Freight::getPost() . "', $order_id)\"" )
+							) : $order_info[ OrderTableFields::comments ] );
+						array_push( $path_info,
+							array(
+								Core_Html::GuiHyperlink( $order_id, "/wp-admin/post.php?post=$order_id&action=edit" ),
+								$edit_user,
+								Core_Html::GuiHyperlink( $user_name, $multi_site->getSiteURL( $site_id ) . "/wp-admin/user-edit.php?user_id=$user_id" ),
+								$path[ $i ],
+								$order_info[ OrderTableFields::address_2 ],
+								$comments,
+								$order_info[ OrderTableFields::shipping ],
+								$order_info[ OrderTableFields::phone ],
+								$pri_input,
+								Core_Html::GuiCheckbox( "chk_$order_id", false,
+									array( "events" => 'onchange="delivered(\'' . Freight::getPost() . "', " . $site_id . "," . $order_id . ', \'' . $type . '\')"' ) )
+							) );
+					}
+				}
 			}
-		}
 
-		$args =array("class" => "sortable");
-		array_unshift($path_info, array(__("Order number"),
-			__("Customer name"),
-			__("Address 1"),
-			__("Address 2"),
-			__("Comments"),
-			__("Shipping method"),
-			__('Phone'),
-			__('Priority'),
-			__('Actions')));
+			$args = array( "class" => "sortable" );
+			array_unshift( $path_info, array(
+				__( "Order number" ),
+				__( "Customer name" ),
+				__( "Address 1" ),
+				__( "Address 2" ),
+				__( "Comments" ),
+				__( "Shipping method" ),
+				__( 'Phone' ),
+				__( 'Priority' ),
+				__( 'Actions' )
+			) );
 
 //		$args["links"] = array(1 => self::$multi_site->getSiteURL($site_id) . "/wp-admin/user-edit.php?user_id=%d");
 //		var_dump($path_info[1]);
 
-		$args["hide_cols"] = array(OrderTableFields::client_nubmer -1 => 1);
-		$result = Core_Html::gui_table_args($path_info, "dispatch_" . $the_mission, $args);
+			$args["hide_cols"] = array( OrderTableFields::client_nubmer - 1 => 1 );
+			$result            .= Core_Html::gui_table_args( $path_info, "dispatch_" . $the_mission, $args );
+		}
+		$m = new Mission($the_mission);
+		$result .= self::add_delivery($m->getDefaultFee());
 
 		return $result;
 	}
@@ -660,7 +668,7 @@ group by pm.meta_value, p.post_status");
 	{
 		if (! $rest or ! is_array($rest))
 		{
-			die("invalid points");
+			return;
 		}
 		if ( count( $rest ) == 1 ) {
 			array_push( $path, $rest[0] );
@@ -901,9 +909,11 @@ group by pm.meta_value, p.post_status");
 		$result .= Core_Html::GuiHeader(1, "add delivery");
 
 		$args = array("post_file" => Freight::getPost());
-		$result .= Fresh_Client::gui_select_client("delivery_client", null, $args);
-		$result .= Core_Html::GuiInput("delivery_price", $price, $args);
-		$result .= Core_Html::GuiButton("btn_add_delivery", "Add", array("action" => "freight_add_delivery('" . Freight::getPost() . "', $mission_id)"));
+		$result .= __("Recipient") . "<br/>"
+		. Fresh_Client::gui_select_client("delivery_client", null, $args) . "<br/>".
+		 __("Price before taxes:") . "<br/>" .
+		           Core_Html::GuiInput("delivery_price", $price, $args) . "<br/>" .
+			Core_Html::GuiButton("btn_add_delivery", "Add", array("action" => "freight_add_delivery('" . Freight::getPost() . "', $mission_id)"));
 
 		$result .= "</div>";
 		return $result;
@@ -929,7 +939,7 @@ group by pm.meta_value, p.post_status");
 		}
 
 		$o = Fresh_Order::CreateOrder( $client, $mission_id, null, $the_shipping,
-			" משלוח המכולת " . date( 'Y-m-d' ) . " " . $customer->getName(), $fee);
+			" משלוח המכולת " . date( 'Y-m-d' ) . " " . $customer->getName(), Fresh_Pricing::addVat($fee));
 
 		if (! $o)
 			return false;

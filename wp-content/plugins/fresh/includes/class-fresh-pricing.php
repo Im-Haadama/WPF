@@ -181,6 +181,11 @@ class Fresh_Pricing {
 	{
 		return $amount - self::vatFromTotal($amount);
 	}
+
+	static function addVat($net)
+	{
+		return round($net * (100 + self::getVatPercent()) / 100, 2);
+	}
 }
 
 function my_custom_show_sale_price_at_cart( $old_display, $cart_item, $cart_item_key ) {

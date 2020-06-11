@@ -70,11 +70,11 @@
 				            'menu_slug' => 'settings',
 				            'function' => array($this, 'general_settings')));
 
-			$menu->AddSubMenu('freight', 'edit_shop_orders',
-				array('page_title' => 'Dispatcher',
-				      'menu_title' => 'Dispatcher',
-				      'menu_slug' => 'dispatcher',
-				      'function' => 'Freight_Mission_Manager::dispatcher_wrap'));
+//			$menu->AddSubMenu('freight', 'edit_shop_orders',
+//				array('page_title' => 'Dispatcher',
+//				      'menu_title' => 'Dispatcher',
+//				      'menu_slug' => 'dispatcher',
+//				      'function' => 'Freight_Mission_Manager::dispatcher_wrap'));
 
 			$menu->AddSubMenu('freight', 'edit_shop_orders',
 				array('page_title' => 'Missions',
