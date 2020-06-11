@@ -220,6 +220,9 @@ class Freight {
 
 	function handle_operation($operation) {
 		$input = null;
+		$debug = false; // (get_user_id() == 2);
+		if ($debug)
+			print __FUNCTION__;
 
 		$result = apply_filters( $operation, "", "", null, null );
 
@@ -228,6 +231,8 @@ class Freight {
 
 		$module = strtok( $operation, "_" );
 		if ( $module === "data" ) {
+			if ($debug)
+				print "mod=$module op = $operation<br/>";
 			return Core_Data::handle_operation( $operation );
 		}
 	}

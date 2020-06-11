@@ -158,16 +158,19 @@ class Freight_Mission_Manager
 		if ($week)
 			$header .= __("Missions of week") . " " . $week;
 
+
 		$result = Core_Html::GuiHeader(1, $header);
 
 		$multi = Core_Db_MultiSite::getInstance();
 
-		if ($multi->isMaster())
+		if (! $multi->isMaster()) $result .= __("Edit missions in site "). $multi->getSiteName($multi->getMaster());
+
+			if ($multi->isMaster())
 			self::create_missions();
 		else
 			self::update_missions_from_master();
 
-		$result .= self::show_missions($week ? " first_day_of_week(date) = '$week'" : null);
+		$result .= self::show_missions($week ? " first_day_of_week(date) = '$week'" : null, $multi->isMaster());
 		$result .= Core_Html::GuiHyperlink("last week", AddToUrl("week", date('Y-m-d', strtotime("$week -1 week"))));
 
 		print $result;
@@ -191,7 +194,7 @@ class Freight_Mission_Manager
 		return true;
 	}
 
-	static function show_missions($query = null)
+	static function show_missions($query = null, $edit = false)
 	{
 		if (! $query)
 			$query = "date >= '" . date('Y-m-d', strtotime('last sunday') ). "'";
@@ -211,7 +214,7 @@ class Freight_Mission_Manager
 		}
 
 		$args = array();
-		$args["edit"] = true;
+		$args["edit"] = $edit;
 		$args["add_checkbox"] = true;
 		$args["post_file"] = Freight::getPost();
 
@@ -221,8 +224,8 @@ class Freight_Mission_Manager
 
 		$args["sql"] = $sql;
 		$args["hide_cols"] = array("zones_times"=>1);
-		$args["class"] = "sortable";
-		$args["selectors"] = array("mission_type" => __CLASS__ . "::gui_select_mission_type");
+//		$args["class"] = "sortable";
+//		$args["selectors"] = array("mission_type" => __CLASS__ . "::gui_select_mission_type");
 		$args["actions"] = array("Dispatch" => Core_Html::GuiHyperlink("Dispatch", AddToUrl("operation", "dispatch&id=%d")));
 		$result .= Core_Gem::GemTable("missions", $args);
 
