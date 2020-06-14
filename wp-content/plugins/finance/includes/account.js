@@ -106,7 +106,7 @@ function pay_credit_client(post_file, user)
     disable_btn("btn_pay");
 
     let request = post_file + '?operation=pay_credit&users='+user;
-    execute_url(request, location_reload);
+    execute_url(request, success_message);
 }
 
 

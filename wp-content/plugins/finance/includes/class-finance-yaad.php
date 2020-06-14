@@ -30,6 +30,7 @@ class Finance_Yaad {
 	 */
 	function pay_user_credit_wrap($customer_id, $amount = 0, $payment_number = 1)
 	{
+		MyLog(__FUNCTION__ . ": pay for $customer_id");
 		// $delivery_ids = sql_query_array_scalar("select id from im_delivery where payment_receipt is null and draft is false");
 		$sql = 'select 
 		id, 
@@ -109,11 +110,10 @@ class Finance_Yaad {
 			if ($this->debug) print "trying to pay with credit info<br/>";
 			// First pay. Use local store credit info, create token and delete local info.
 			$transaction_info = self::FirstPay($credit_data, $user, $amount, CommaImplode($account_line_ids), $payment_number);
-//			var_dump($transaction_info);
 			// info: Id, CCode, Amount, ACode, Fild1, Fild2, Fild3
 			if (($transaction_info['CCode'] != 0)) {
-				print "Got error " . $transaction_info['CCode'] . "<br/>";
-				print "my ip is :" . $_SERVER['SERVER_ADDR'] . "<br/>";
+				MyLog(__FUNCTION__, $transaction_info['CCode']);
+				print "Got error " . self::ErrorMessage($transaction_info['CCode']) . "\n";
 				if ($debug) var_dump($credit_data);
 				return false;
 			}
@@ -148,6 +148,15 @@ class Finance_Yaad {
 		return false;
 	}
 
+	static function ErrorMessage($code)
+	{
+		switch ($code)
+		{
+			case 6:
+				return "מספר ת.ז שגוי";
+		}
+	}
+
 	function RemoveRawInfo($del_id)
 	{
 		$table_name = "im_payment_info";
@@ -175,7 +184,9 @@ class Finance_Yaad {
 		$params["Tyear"]  = $credit_info['exp_date_year'];
 		$params["UserId"] = $credit_info['id_number'];
 		$params["UserId"] = $credit_info['id_number'];
+//		MyLog(StringVar($params));
 		$rc = $this->CallServer( 'https://icom.yaad.net/p3/', $params );
+//		MyLog(StringVar($rc));
 		self::SaveTransaction($rc, $user_info, $payment_number);
 		return $rc;
 	}

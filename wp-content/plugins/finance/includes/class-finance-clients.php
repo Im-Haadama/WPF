@@ -171,7 +171,7 @@ class Finance_Clients
 
 		$result = "";
 		try {
-			$invoice = Finance_Invoice4u::getInstance();
+			$invoice = Finance::Invoice4uConnect();
 		} catch ( Exception $e ) {
 			$invoice = null;
 		}
@@ -207,7 +207,7 @@ class Finance_Clients
 			), "payment_table",
 				array( "class" => "widefat" ) );
 		} else {
-			$new_tran = Core_Html::GuiHeader( 1, "לא ניתן להחבר ל Invoice4u. בדוק את ההגדרות ואת המנוי. יוזר $" );
+			$new_tran = Core_Html::GuiHeader( 1, "לא ניתן להתחבר ל Invoice4u. בדוק את ההגדרות ואת המנוי. יוזר $" );
 		}
 		$payment_info_id = SqlQuerySingleScalar( "select id from im_payment_info where email = " . QuoteText($u->get_customer_email()));
 		if ($payment_info_id) {
@@ -215,6 +215,7 @@ class Finance_Clients
 			$credit_info = Core_Gem::GemElement( "payment_info", $payment_info_id, $args );
 		} else {
 			$args["post_file"] = Finance::getPostFile();
+			$args["values"] = array("email" => $u->get_customer_email(), "full_name"=>$u->getName(), "created_date"=>date('y-m-d'));
 			$credit_info = Core_Gem::GemAddRow("payment_info", "Add", $args);
 //			$credit_info = "No payment info";
 		}
@@ -357,15 +358,8 @@ class Finance_Clients
 		$C = new Fresh_Client($customer_id);
 		$invoice->Login();
 
-		$invoice_client_id = $C->getInvoiceUser();
-			// $C->createInvoiceUser(); // $invoice->( $customer_id, $email );
-
-		if (! $invoice_client_id) {
-			print "cant find user";
-			return false;
-		}
-
-		$client = $invoice->GetCustomerByEmail( $email);
+//		$client = $invoice->GetCustomerByEmail( $email);
+		$client = $C->getInvoiceUser(true);
 
 		if ( !$client or  ! ( $client->ID ) > 0 ) {
 			print "Client not found " . $customer_id . "<br>";

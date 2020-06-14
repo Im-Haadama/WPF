@@ -333,7 +333,7 @@ class Finance {
 		// called by post.php //
 		////////////////////////
 		$result = apply_filters( $operation, $input, GetParams($ignore_list));
-		if ( $result ) return $result;
+		if ( $result !== null) return $result;
 
 		$yaad = Finance::instance()->yaad;
 		if ( $yaad ) {
@@ -816,6 +816,7 @@ class Finance {
 		$amount = GetParam("amount", false, 0);
 
 		foreach ( $users as $user ) {
+			MyLog(__FUNCTION__ . ": trying to pay, user $user");
 			$rc = apply_filters( 'pay_user_credit', $user, $amount, $payment_number );
 			if ( ! $rc ) {
 				return false;
