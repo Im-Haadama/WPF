@@ -54,6 +54,7 @@ if ( ! class_exists( 'Finance' ) ) {
 //$GLOBALS['finance'] = finance();
 
 function run_finance() {
+	MyLog(__FILE__);
 //	print "runner: ". FINANCE_INCLUDES . "<br/>";
 	$instance = Finance::instance();
 

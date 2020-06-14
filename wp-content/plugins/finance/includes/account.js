@@ -110,7 +110,7 @@ function pay_credit_client(post_file, user)
     let number = get_value_by_name("payment_number");
     if (number > 0) request += '&number=' + number;
 
-    execute_url(request, location_reload);
+    execute_url(request, success_message());
 }
 
 

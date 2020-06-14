@@ -140,20 +140,16 @@ class Finance_Invoice4u
 				//var_dump ($item);
 			}
 			foreach ( $doc->Payments as $pay ) {
-//				print $pay->Type . " " . $item->Total . "<br/>";
 				$pay_total += $pay->Amount;
-//				var_dump( $pay );
 			}
 
 			print "errors: ";
-//			var_dump( $this->result->Errors );
 			if ( $check_total != $check_total2 or $check_total != $pay_total ) {
 				print "calculated total: " . $check_total . "<br/>";
 				print "calculated total2: " . $check_total2 . "<br/>";
 				print "total paid: " . $pay_total . "<br/>";
 			}
 			print "client id: " . $doc->Id . "<br/>";
-//			var_dump( $doc );
 		}
 
 		return $docNum;
@@ -218,13 +214,6 @@ class Finance_Invoice4u
 			'token'      => $this->token,
 			'getAllRows' => false
 		) );
-//		if ($response->Errors != '0') {
-//			print "ERRRROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO<br/>";
-//			foreach ($this->result->Errors as $error)
-//				self::InvoiceLog($error, __FUNCTION__);
-//			return null;
-//		}
-//		var_dump($response);
 		if ( isset( $response->Response->Customer ) ) return $response->Response->Customer;
 		return null;
 	}

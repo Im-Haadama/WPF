@@ -107,7 +107,7 @@ class Focus_Manager {
 	{
 		// Default time zone for repeating tasks is the system timezone.
 		// To override, user can set timezone in the im_task_templates. (not implemented completely).
-		date_default_timezone_set( get_option('timezone_string'));
+		if ($tz=get_option('timezone_string')) date_default_timezone_set( $tz);
 
 		$last_run = get_wp_option("focus_robot_last_run");
 		$run_period = get_wp_option("focus_robot_run_period", 5*60); // every 5 min

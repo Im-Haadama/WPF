@@ -213,7 +213,7 @@ class Core_Gem {
 			}
 		}
 		$instance = self::getInstance();
-		$v_args = array("database_table" => "conversion", "query_part" => "from ${db_prefix}conversion where table_name = '$table'");
+		$v_args = array("database_table" => "conversion", "query_part" => "from ${db_prefix}conversion where table_name = '$table'", "page_number"=>-1);
 
 		$instance->AddVirtualTable("conversion", $v_args);
 		$args = [];
@@ -224,7 +224,6 @@ class Core_Gem {
 		// $args["fields"]
 		$result .= $instance->GemVirtualTable("conversion", $args);
 		return $result;
-
 	}
 
 	static function v_show_wrap($result = null)
@@ -459,7 +458,7 @@ class Core_Gem {
 
 		$rows_data = Core_Data::TableData( $sql, $args);
 
-		MyLog(__FUNCTION__ . " $table_name");
+//		MyLog(__FUNCTION__ . " $table_name");
 		return Core_Gem::GemArray($rows_data, $args, $table_name);
 	}
 
