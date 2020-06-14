@@ -154,7 +154,10 @@ class Finance_Yaad {
 		{
 			case 6:
 				return "מספר ת.ז שגוי";
+			case 447:
+				return "מספר כרטיס שגוי";
 		}
+		return "Error number $code";
 	}
 
 	function RemoveRawInfo($del_id)
