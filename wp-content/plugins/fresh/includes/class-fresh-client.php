@@ -315,6 +315,14 @@ class Fresh_Client {
                     <span class="description"><?php _e("Please enter your postal code."); ?></span>
                 </td>
             </tr>
+            <tr>
+                <th><label for="credit_token"><?php _e("Token"); ?></label></th>
+                <td>
+                    <input type="text" name="credit_token" id="credit_token" value="<?php echo esc_attr( get_the_author_meta( 'credit_token', $user->ID ) ); ?>" class="regular-text" /><br />
+                    <span class="description"><?php _e("Credit token."); ?></span>
+                </td>
+            </tr>
+
         </table>
 		<table class="form-table">
 			<tr>
@@ -327,6 +335,7 @@ class Fresh_Client {
 				</td>
 			</tr>
 		</table>
+
 	<?php }
 
 	static function admin_menu() {
@@ -398,6 +407,11 @@ class Fresh_Client {
 			return false;
 		}
 		update_user_meta( $user_id, '_client_type', $type );
+
+
+		$token = $_POST['credit_token'];
+		update_user_meta( $user_id, 'credit_token', $type );
+
 	}
 
 	static function gui_select_client_type( $id, $value, $args = null )
