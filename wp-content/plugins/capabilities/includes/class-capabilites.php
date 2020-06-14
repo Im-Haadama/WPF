@@ -36,8 +36,7 @@ class Capabilites {
 	 */
 	public $capabilites = null;
 
-	public function get_plugin_name()
-	{
+	public function get_plugin_name() {
 		return $this->plugin_name;
 	}
 
@@ -55,8 +54,9 @@ class Capabilites {
 	 */
 	public static function instance() {
 		if ( is_null( self::$_instance ) ) {
-			self::$_instance = new self("Capabilites");
+			self::$_instance = new self( "Capabilites" );
 		}
+
 		return self::$_instance;
 	}
 
@@ -66,7 +66,7 @@ class Capabilites {
 	 * @since 2.1
 	 */
 	public function __clone() {
-		die( __FUNCTION__ .  __( 'Cloning is forbidden.', 'capabilites' ));
+		die( __FUNCTION__ . __( 'Cloning is forbidden.', 'capabilites' ) );
 	}
 
 	/**
@@ -82,6 +82,7 @@ class Capabilites {
 	 * Auto-load in-accessible properties on demand.
 	 *
 	 * @param mixed $key Key name.
+	 *
 	 * @return mixed
 	 */
 	public function __get( $key ) {
@@ -93,8 +94,7 @@ class Capabilites {
 	/**
 	 * WooCommerce Constructor.
 	 */
-	public function __construct($plugin_name)
-	{
+	public function __construct( $plugin_name ) {
 		$this->plugin_name = $plugin_name;
 		$this->define_constants();
 		$this->includes(); // Loads class autoloader
@@ -110,14 +110,19 @@ class Capabilites {
 	 * @since 2.3
 	 */
 	private function init_hooks() {
+		print debug_trace(10);
+		print 1/0;
 		// register_activation_hook( WC_PLUGIN_FILE, array( 'Capabilites_Install', 'install' ) );
 		register_shutdown_function( array( $this, 'log_errors' ) );
 		add_action( 'after_setup_theme', array( $this, 'setup_environment' ) );
 		add_action( 'after_setup_theme', array( $this, 'include_template_functions' ), 11 );
 		add_action( 'init', array( $this, 'init' ), 0 );
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
+		add_action( 'admin_menu', __CLASS__ . '::admin_menu' );
+		add_action( 'toogle_role', __CLASS__ . '::toggle_role' );
+		add_action( 'admin_enqueue_scripts', array( $this, 'admin_scripts' ) );
 
-		GetSqlConn(ReconnectDb());
+		GetSqlConn( ReconnectDb() );
 //		add_action( 'init', array( 'Capabilites_Emails', 'init_transactional_emails' ) );
 		// add_action( 'init', array( $this, 'wpdb_table_fix' ), 0 );
 		// add_action( 'init', array( $this, 'add_image_sizes' ) );
@@ -151,20 +156,21 @@ class Capabilites {
 	private function define_constants() {
 		$upload_dir = wp_upload_dir( null, false );
 
-		$this->define( 'CAPABILITES_WC_ABSPATH', dirname( CAPABILITES_PLUGIN_FILE ) . '/' );
-		$this->define( 'CAPABILITES_PLUGIN_BASENAME', plugin_basename( CAPABILITES_PLUGIN_FILE ) );
-		$this->define( 'CAPABILITES_VERSION', $this->version );
-		$this->define( 'CAPABILITES_INCLUDES', CAPABILITES_WC_ABSPATH . '/includes/' );
+		$this->define( 'CAPABILITIES_WC_ABSPATH', dirname( CAPABILITES_PLUGIN_FILE ) . '/' );
+		$this->define( 'CAPABILITIES_PLUGIN_BASENAME', plugin_basename( CAPABILITES_PLUGIN_FILE ) );
+		$this->define( 'CAPABILITIES_VERSION', $this->version );
+		$this->define( 'CAPABILITIES_INCLUDES', plugins_url() . '/includes/' );
+		$this->define( 'CAPABILITIES_INCLUDES_URL', plugins_url() . '/capabilities/includes/' ); // For js
 		$this->define( 'FLAVOR_INCLUDES_URL', plugins_url() . '/flavor/includes/' ); // For js
-		$this->define( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path(__FILE__) . '../../flavor/includes/' );  // for php
-		$this->define( 'CAPABILITES_DELIMITER', '|' );
-		$this->define( 'CAPABILITES_LOG_DIR', $upload_dir['basedir'] . '/capabilites-logs/' );
+		$this->define( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path( __FILE__ ) . '../../flavor/includes/' );  // for php
+		$this->define( 'CAPABILITIES_DELIMITER', '|' );
+		$this->define( 'CAPABILITIES_LOG_DIR', $upload_dir['basedir'] . '/capabilites-logs/' );
 	}
 
 	/**
 	 * Define constant if not already set.
 	 *
-	 * @param string      $name  Constant name.
+	 * @param string $name Constant name.
 	 * @param string|bool $value Constant value.
 	 */
 	private function define( $name, $value ) {
@@ -176,7 +182,8 @@ class Capabilites {
 	/**
 	 * What type of request is this?
 	 *
-	 * @param  string $type admin, ajax, cron or frontend.
+	 * @param string $type admin, ajax, cron or frontend.
+	 *
 	 * @return bool
 	 */
 	private function is_request( $type ) {
@@ -192,12 +199,10 @@ class Capabilites {
 		}
 	}
 
-	function handle_operation($operation)
-	{
-		switch ($operation)
-		{
-
-		}
+	function handle_operation( $operation ) {
+		$result = apply_filters( $operation, null, null);
+		if ( $result !== null) return $result;
+		return false;
 	}
 
 	/**
@@ -431,7 +436,7 @@ class Capabilites {
 		// Set up localisation.
 		$this->load_plugin_textdomain();
 		$shortcodes = Core_Shortcodes::instance();
-		$shortcodes->add(array('capabilities'  => array(__CLASS__ . '::main', "edit_users")));
+		$shortcodes->add( array( 'capabilities' => array( __CLASS__ . '::main', "edit_users" ) ) );
 
 		// Init action.
 		do_action( 'capabilites_init' );
@@ -633,35 +638,106 @@ class Capabilites {
 //		return WC_Emails::instance();
 //	}
 
-	public function run ()
-	{
+	public function run() {
 		// $this->loader->run();
 	}
 
-	static public function main()
-	{
+	static public function main() {
 		$result = "";
-		$capabilities = [];
-		$capabilities_serialized = SqlQueryArray("select user_id, meta_value from wp_usermeta where meta_key = 'wp_capabilities'");
-		foreach ($capabilities_serialized as $info)
-		{
-			$user = $info[0];
-			$capability_serialize = $info[1];
-			$capability_array = unserialize($capability_serialize);
-			foreach ($capability_array as $capability => $flag)
-			{
-				if (! isset($capabilities[$capability])) $capabilities[$capability] = [];
-				if ($flag) array_push($capabilities[$capability], $user);
+		// 2D array of capabilithes[$user][$cap];
+		$capabilities            = [];
+		$cap_types               = [];
+		$users                   = [];
+		$capabilities_serialized = SqlQueryArray( "select user_id, meta_value from wp_usermeta where meta_key = 'wp_capabilities'" );
+		// First pass - collect capablities and users
+		foreach ( $capabilities_serialized as $info ) {
+//			print "user: " . $info[0] . "<br/>";
+			$capability_array = unserialize( $info[1] );
+			foreach ( $capability_array as $capability => $flag ) {
+				$cap_types[ $capability ] = 1;
+			}
+			$users[ $info[0] ] = 1;
+		}
+
+		$capabilities["header"]["users"] = "";
+		foreach ( $cap_types as $cap => $not_used ) {
+			$capabilities["header"][ $cap ] = $cap;
+		}
+		foreach ( $users as $user => $not_used ) {
+			$u                              = new Fresh_Client( $user );
+			$capabilities[ $user ]["users"] = $u->getName();
+//			print "user=$user<br/>";
+			foreach ( $cap_types as $cap => $not_used ) {
+				$capabilities[ $user ][ $cap ] = Core_Html::GuiCheckbox( "chk_${user}_$cap", user_can( $user, $cap ),
+					array( "events" => 'onchange="toggle_role(\'' . Capabilites::getPost() . '\', ' . $user . ', \'' . $cap . '\')"' ) );
 			}
 		}
-		foreach ($capabilities as $cap => $not_used)
-		{
-			$cap_result = Core_Html::gui_header(1, $cap);
-			$users = $capabilities[$cap];
-			foreach ($users as $user)
-				$cap_result .= GetUserName($user) . ", ";
-			$result .= rtrim($cap_result, ", ");
-		}
+
+//		foreach ($capabilities_serialized as $info)
+//		{
+//			$user = $info[0];
+//			$capabilities[$user] = [];
+//			$capability_array = unserialize($info[1]);
+//			foreach ($capability_array as $capability => $flag)
+//			{
+//				$capabilities[$user][$capability] = $flag;
+//				if (! isset($capabilities[$capability])) $capabilities[$capability] = [];
+//				if ($flag) array_push($capabilities[$capability], $user);
+//			}
+//		}
+//		foreach ($capabilities as $cap => $not_used)
+//		{
+//			$cap_result = Core_Html::gui_header(1, $cap);
+//			$users = $capabilities[$cap];
+//			foreach ($users as $user)
+//				$cap_result .= GetUserName($user) . ", ";
+//			$result .= rtrim($cap_result, ", ");
+//		}
+		$result .= Core_Html::gui_table_args( $capabilities );
 		print $result;
+	}
+
+	static function admin_menu() {
+		$menu = new Core_Admin_Menu();
+
+		$menu->AddSubMenu( "users.php", "promote_users",
+			array( 'page_title' => 'Site admins', 'function' => array( __CLASS__, 'main' ) ) );
+
+//		$menu->AddSubMenu( "users.php", "edit_shop_orders",
+//			array( 'page_title' => 'Payment methods', 'function' => array( "Finance_Payments", 'payment_methods' ) ) );
+
+	}
+
+	static function getPost() {
+		return "/wp-content/plugins/capabilities/post.php";
+	}
+
+	static function toggle_role() {
+		MyLog(__FUNCTION__);
+		if ( ! im_user_can( 'promote_users' ) ) {
+			die ( "no permissions" );
+		}
+		$user_id = GetParam( "user", true );
+		$cap  = GetParam( "capability", true );
+		$set = GetParam("set", true);
+		MyLog(__FUNCTION__, "$user_id $cap $set");
+
+		$user = new WP_User();
+
+		if ($set)
+			$user->add_cap($cap);
+		else
+			$user->remove_cap($cap);
+
+
+/*		global $wp_roles;
+
+		$wp_roles->add_role( "staff", "Worker", array( "working_hours_self" => "true" ) );*/
+
+	}
+
+	public function admin_scripts() {
+		$file = CAPABILITIES_INCLUDES_URL . 'js/admin.js';
+		wp_enqueue_script( 'capablities', $file, null, $this->version, false );
 	}
 }
