@@ -46,7 +46,8 @@ error_reporting(E_ALL);
 //$GLOBALS['capabilites'] = capabilites();
 
 function run_capabilites() {
-	$plugin = new Capabilites("Capabilites");
+	$plugin = Capabilites::instance();
+		// new Capabilites("Capabilites");
 	$plugin->run();
 }
 

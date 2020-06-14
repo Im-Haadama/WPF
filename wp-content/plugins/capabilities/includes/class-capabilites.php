@@ -110,8 +110,6 @@ class Capabilites {
 	 * @since 2.3
 	 */
 	private function init_hooks() {
-		print debug_trace(10);
-		print 1/0;
 		// register_activation_hook( WC_PLUGIN_FILE, array( 'Capabilites_Install', 'install' ) );
 		register_shutdown_function( array( $this, 'log_errors' ) );
 		add_action( 'after_setup_theme', array( $this, 'setup_environment' ) );
@@ -119,7 +117,7 @@ class Capabilites {
 		add_action( 'init', array( $this, 'init' ), 0 );
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
 		add_action( 'admin_menu', __CLASS__ . '::admin_menu' );
-		add_action( 'toogle_role', __CLASS__ . '::toggle_role' );
+		add_action( 'toggle_role', __CLASS__ . '::toggle_role' );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_scripts' ) );
 
 		GetSqlConn( ReconnectDb() );
@@ -127,7 +125,6 @@ class Capabilites {
 		// add_action( 'init', array( $this, 'wpdb_table_fix' ), 0 );
 		// add_action( 'init', array( $this, 'add_image_sizes' ) );
 		// add_action( 'switch_blog', array( $this, 'wpdb_table_fix' ), 0 );
-
 	}
 
 	/**
@@ -715,19 +712,22 @@ class Capabilites {
 	static function toggle_role() {
 		MyLog(__FUNCTION__);
 		if ( ! im_user_can( 'promote_users' ) ) {
+			MyLog(get_current_user()  . " can't promote");
 			die ( "no permissions" );
 		}
 		$user_id = GetParam( "user", true );
-		$cap  = GetParam( "capability", true );
+		$role  = GetParam( "role", true );
 		$set = GetParam("set", true);
-		MyLog(__FUNCTION__, "$user_id $cap $set");
+		MyLog(__FUNCTION__, "$user_id $role $set");
 
-		$user = new WP_User();
+		$user = new WP_User($user_id);
 
-		if ($set)
-			$user->add_cap($cap);
-		else
-			$user->remove_cap($cap);
+		if ($set) {
+			$user->add_role( $role );
+		} else {
+			$user->remove_role( $role );
+		}
+		return true;
 
 
 /*		global $wp_roles;
