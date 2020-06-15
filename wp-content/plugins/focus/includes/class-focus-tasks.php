@@ -8,6 +8,7 @@ class Focus_Tasks {
 	protected static $_instance = null;
 	protected $nav_menu_name;
 	private $table_prefix;
+	private $options;
 
 	/**
 	 * Focus_Tasks constructor.
@@ -21,9 +22,16 @@ class Focus_Tasks {
 		$this->version       = "1.0";
 		$this->nav_menu_name = null;
 		$this->table_prefix = GetTablePrefix();
+		if (TableExists("missions")) $options["missions"] = true;
 	}
 
-	public static function instance( $post = null ) {
+	static function OptionEnabled($option)
+	{
+		return self::instance()->options[$option];
+	}
+
+	public static function instance( $post = null ): ?Focus_Tasks
+	{
 		if ( is_null( self::$_instance ) ) {
 			self::$_instance = new self( $post );
 		}
@@ -199,9 +207,11 @@ class Focus_Tasks {
 						"owner"      => "Focus_Tasks::gui_select_worker",
 						"creator"    => "Focus_Tasks::gui_select_worker",
 						"preq"       => "gui_select_task",
-						"mission_id" => "Focus_Tasklist::gui_select_mission",
 						"team"       => "Focus_Tasks::gui_select_team"
 					);
+					if (table_exists("missions"))
+						$args["selectors"]["mission_id"] = "Focus_Tasklist::gui_select_mission";
+
 
 					$args["header_fields"] = array(
 						"task_title" => "Task Title",
@@ -1406,9 +1416,11 @@ class Focus_Tasks {
 			"owner"      => "Focus_Tasks::gui_select_worker",
 			"creator"    => "Focus_Tasks::gui_select_worker",
 			"preq"       => "gui_select_task",
-			"mission_id" => "Focus_Tasklist::gui_select_mission",
 			"team"       => "Focus_Tasks::gui_select_team"
 		);
+		if (self::OptionEnabled("missions"))
+			$args["selectors"]["mission_id"] = "Focus_Tasklist::gui_select_mission";
+
 		$args["title"]     = $entity_name;
 
 		$args["header_fields"] = array(
