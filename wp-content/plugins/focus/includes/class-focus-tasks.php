@@ -209,7 +209,7 @@ class Focus_Tasks {
 						"preq"       => "gui_select_task",
 						"team"       => "Focus_Tasks::gui_select_team"
 					);
-					if (table_exists("missions"))
+					if (self::OptionEnabled("missions"))
 						$args["selectors"]["mission_id"] = "Focus_Tasklist::gui_select_mission";
 
 

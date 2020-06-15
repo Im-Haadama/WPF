@@ -137,7 +137,7 @@ class Fresh_Delivery {
 		                               "quantity"=>"Quantity", "price" => "Price", "has_vat" =>"Has Vat", "line_price" => "Line total");
 		$args["hide_col"] = array("id");
 
-		$sql = "select " . CommaImplode($args["fields"]) . " from im_delivery_lines where delivery_id = " . $this->getID();
+		$sql = "select " . CommaImplode($args["fields"]) . " from im_delivery_lines where delivery_id = " . $this->getID() . " order by id asc";
 		$rows = Core_Data::TableData($sql, $args);
 
 		$total_fields = array("quantity", "quantity_ordered", "line_price");
@@ -1195,18 +1195,20 @@ class Fresh_Delivery {
 				// Links to prev/next week
 				$date_format = 'Y-m-j';
 				$date = GetParam("week", false, date($date_format, strtotime("last sunday")));
+				print Core_Html::GuiHeader(1, __("Deliveries of week") . " " . $date);
 				print Core_Html::GuiHyperlink("last week", AddParamToUrl(GetUrl(), "week", date($date_format, strtotime( $date . " -1 week")))) . " ";
 				print Core_Html::GuiHyperlink("next week", AddParamToUrl(GetUrl(), "week", date($date_format, strtotime( $date . " +1 week"))));
 
 				print "<br/>";
 
 				// Show selected week
-				$args["sql"] = "select ID, date, order_id, client_from_delivery(ID) from im_delivery where first_day_of_week(date) = " . QuoteText($date);
+				$args["sql"] = "select ID, date, order_id, client_from_delivery(ID) as client from im_delivery where first_day_of_week(date) = " . QuoteText($date);
 				$args["id_field"] = "ID";
 				$args["post_file"] = $post_file;
 
 				// $args["links"] = array("ID" => add_param_to_url(get_url(), "operation", "show_id", "row_id", "%s"));
-				$args["links"] = array("ID" => "/fresh/delivery/get-delivery.php?id=%s");
+				$args["links"] = array("ID" => "/delivery?id=%s");
+					                       // "/fresh/delivery/get-delivery.php?id=%s");
 				$table =  Core_Gem::GemTable("delivery", $args);
 				if (strlen($table) < 100)
 					print "No deliveries done this week<br/>";
