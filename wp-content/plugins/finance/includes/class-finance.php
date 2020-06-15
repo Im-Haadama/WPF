@@ -182,8 +182,8 @@ class Finance {
 		$this->payments = Finance_Payments::instance();
 		$this->payments->init_hooks();
 
-		if (is_admin_user())
-			self::admin_init();
+//		if (is_admin_user())
+//			self::admin_init();
 
 	}
 
