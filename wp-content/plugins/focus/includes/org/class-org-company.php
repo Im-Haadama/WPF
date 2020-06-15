@@ -27,9 +27,7 @@ class Org_Company {
 	public function getWorkers()
 	{
 		return SqlQueryArrayScalar( "select user_id from wp_usermeta where meta_key = 'companies' and meta_value like '%:" . $this->id . ":%'");
-
 	}
-
 }
 
 //class WPF_Company {

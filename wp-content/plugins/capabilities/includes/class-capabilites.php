@@ -639,59 +639,57 @@ class Capabilites {
 		// $this->loader->run();
 	}
 
-	static public function main() {
-		$result = "";
-		// 2D array of capabilithes[$user][$cap];
-		$capabilities            = [];
-		$cap_types               = [];
-		$users                   = [];
-		$capabilities_serialized = SqlQueryArray( "select user_id, meta_value from wp_usermeta where meta_key = 'wp_capabilities'" );
-		// First pass - collect capablities and users
-		foreach ( $capabilities_serialized as $info ) {
-//			print "user: " . $info[0] . "<br/>";
-			$capability_array = unserialize( $info[1] );
-			foreach ( $capability_array as $capability => $flag ) {
-				$cap_types[ $capability ] = 1;
-			}
-			$users[ $info[0] ] = 1;
+	static public function main()
+	{
+		$result = Core_Html::GuiHeader(1, "Roles and capabilities");
+		$tabs = array(array("Roles", "roles", self::roles()),
+			array("Capabilites", "capabilities", self::capabilites()));
+
+		$args = array("tabs_load_all" => true);
+		$result .= Core_Html::GuiTabs($tabs, $args);
+
+		print $result;
+	}
+
+	static function capabilites()
+	{
+		$result = Core_Html::GuiHeader(2, "Capabilities per role");
+
+		$i = Flavor_Roles::instance();
+		foreach ($i->getRoles() as $role) {
+			$result .= Core_Html::GuiHeader( 3, "role $role" );
 		}
 
-		$capabilities["header"]["users"] = "";
-		foreach ( $cap_types as $cap => $not_used ) {
-			$capabilities["header"][ $cap ] = $cap;
+		return $result;
+	}
+
+	static public function roles() {
+		$result = Core_Html::GuiHeader(2, "roles");
+		// 2D array of capabilithes[$user][$cap];
+		$roles            = [];
+		$role_types               = [];
+		$users                   = [];
+		// First pass - collect capablities and users
+		foreach ( SqlQueryArray( "select user_id, meta_value from wp_usermeta where meta_key = 'wp_capabilities'" ) as $info ) {
+			foreach ( unserialize( $info[1] ) as $capability => $flag ) $role_types[ $capability ] = 1;
+			$users[ $info[0] ] = 1;
+		}
+		foreach (Flavor_Roles::getRoles() as $role) $role_types[$role] = 1;
+
+		$roles["header"]["users"] = "";
+		foreach ( $role_types as $cap => $not_used ) {
+			$roles["header"][ $cap ] = $cap;
 		}
 		foreach ( $users as $user => $not_used ) {
-			$u                              = new Fresh_Client( $user );
-			$capabilities[ $user ]["users"] = $u->getName();
-//			print "user=$user<br/>";
-			foreach ( $cap_types as $cap => $not_used ) {
-				$capabilities[ $user ][ $cap ] = Core_Html::GuiCheckbox( "chk_${user}_$cap", user_can( $user, $cap ),
+			$roles[ $user ]["users"] = get_user_displayname($user);
+			foreach ( $role_types as $cap => $not_used ) {
+				$roles[ $user ][ $cap ] = Core_Html::GuiCheckbox( "chk_${user}_$cap", user_can( $user, $cap ),
 					array( "events" => 'onchange="toggle_role(\'' . Capabilites::getPost() . '\', ' . $user . ', \'' . $cap . '\')"' ) );
 			}
 		}
 
-//		foreach ($capabilities_serialized as $info)
-//		{
-//			$user = $info[0];
-//			$capabilities[$user] = [];
-//			$capability_array = unserialize($info[1]);
-//			foreach ($capability_array as $capability => $flag)
-//			{
-//				$capabilities[$user][$capability] = $flag;
-//				if (! isset($capabilities[$capability])) $capabilities[$capability] = [];
-//				if ($flag) array_push($capabilities[$capability], $user);
-//			}
-//		}
-//		foreach ($capabilities as $cap => $not_used)
-//		{
-//			$cap_result = Core_Html::gui_header(1, $cap);
-//			$users = $capabilities[$cap];
-//			foreach ($users as $user)
-//				$cap_result .= GetUserName($user) . ", ";
-//			$result .= rtrim($cap_result, ", ");
-//		}
-		$result .= Core_Html::gui_table_args( $capabilities );
-		print $result;
+		$result .= Core_Html::gui_table_args( $roles );
+		return $result;
 	}
 
 	static function admin_menu() {

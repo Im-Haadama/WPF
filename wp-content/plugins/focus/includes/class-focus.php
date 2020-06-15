@@ -114,8 +114,7 @@ class Focus {
 	 */
 	public function __construct($plugin_name)
 	{
-
-
+		Flavor_Roles::addRole("focus_user", array("show_tasks"));
 
 		$this->plugin_name = $plugin_name;
 //		if (function_exists("get_user_id") and $user_id = get_user_id()) $this->nav_name = "management." . $user_id;

@@ -28,6 +28,31 @@ class Focus_Database extends Core_Database
 
 		if ($current == $version and ! $force) return true;
 
+		SqlQuery( "create function client_displayname (user_id int) returns text charset 'utf8'
+BEGIN
+    declare _user_id int;
+    declare _display varchar(50) CHARSET utf8;
+    select display_name into _display from wp_users
+    where id = user_id;
+
+    return _display;
+  END;
+
+" );
+
+
+		SqlQuery( "CREATE FUNCTION task_status(task_id INT)
+  RETURNS TEXT CHARSET 'utf8'
+  BEGIN
+    declare _status int;
+    select status into _status from im_tasklist
+    where id = task_id;
+
+    return _status;
+  END;
+" );
+
+
 		if (!TableExists("working_teams"))
 			SqlQuery("create table im_working_teams
 (
@@ -166,6 +191,33 @@ engine=InnoDB;
 		$current = self::CheckInstalled("Focus", "functions");
 		$db_prefix = GetTablePrefix();
 
+		SqlQuery("drop function preq_done");
+		SqlQuery("CREATE FUNCTION 	preq_done(_task_id int)
+	 RETURNS varchar(200)
+BEGIN 
+	declare _preq varchar(200);
+	declare _status int;
+	declare _comma_pos int;
+	declare _preq_task varchar(200);
+	select preq into _preq
+	from im_tasklist
+	where id = _task_id;
+	
+	while (length(_preq)) do
+		set _comma_pos = locate(',', _preq);
+		if (_comma_pos != 0) then
+			set _preq_task =  substring(_preq, 1, _comma_pos - 1);
+			set _preq = substr(_preq, _comma_pos+1); 
+		else
+			set _preq_task = _preq;
+			set _preq = null;
+		end if;
+		if (task_status(_preq_task) < 2) then 
+			return 0; 
+		end if;
+	end while;
+	return 1;	   
+END;");
 
 		if ($current == $version and ! $force) return true;
 

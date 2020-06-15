@@ -626,3 +626,9 @@ function send_mail( $subject, $to, $message ) {
 
 	return mail( $to, $base64_subject, $message, implode( "\r\n", $headers ) );
 }
+
+function get_user_displayname($user_id)
+{
+	$w = get_userdata($user_id);
+	return $w->display_name;
+}
