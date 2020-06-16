@@ -18,11 +18,11 @@ class Fresh_Order_Management {
 		add_action( 'wp_enqueue_scripts', array($this, 'enqueue_scripts' ));
 	}
 
-	static public function init_hooks() {
+	public function init_hooks() {
 //		MyLog(__FUNCTION__ . __CLASS__);
 		// add_filter( 'manage_shop_order_posts_custom_column', array(__CLASS__, 'add_my_account_order_actions'), 10, 2 );
 		add_filter('woocommerce_admin_order_actions', array(__CLASS__, 'add_order_action'), 10, 2);
-		add_filter('order_complete', array(__CLASS__, 'order_complete_wrap'));
+		add_filter('order_complete', array($this, 'order_complete_wrap'));
 		add_action('admin_post_delivery', array(__CLASS__, 'create_delivery_note'));
 		add_action( 'woocommerce_view_order', array(__CLASS__, 'show_edit_order'), 10 );
 
@@ -130,7 +130,10 @@ class Fresh_Order_Management {
 			if (! $fee) {
 				MyLog("No delivery fee for order $order_id");
 				Fresh::instance()->add_admin_notice("No delivery fee for order $order_id");
-				// Change back the order status.
+			}
+
+			if ($fee == $O->getTotal()) {
+				return true;
 			}
 
 			$del_id = Fresh_Delivery::CreateDeliveryFromOrder($order_id, 1);

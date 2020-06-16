@@ -30,7 +30,6 @@ class Fresh_Supplier_Balance {
 		AddAction("get_supplier_open_account", array(Fresh_Supplier_Balance::instance(), 'supplier_open_account'));
 	}
 
-
 	function getShortcodes() {
 		//           code                   function                              capablity (not checked, for now).
 		return array( 'fresh_supplier_balance' => array( 'Fresh_Supplier_Balance::main',    'show_supplier_balance' ));          // Payments data entry
@@ -39,20 +38,23 @@ class Fresh_Supplier_Balance {
 	static function main() {
 		$result = "";
 
-		$selected_tab = GetParam("selected_tab", false, null);
 		$tabs = [];
 
-		array_push( $tabs, array( "supplier_balance", "Suppliers balances", self::Balance() ) );
-		array_push( $tabs, array( "supplier_invoices", "Suppliers invoices", Finance_Invoices::Table(AddToUrl("selected_tab", "supplier_invoices")) ) );
-		array_push( $tabs, array( "test_invoice4u", "Test", self::test_price()) );
+		$ms = Core_Db_MultiSite::getInstance();
+
+		if ($ms->getLocalSiteID() != 2) { // Makolet
+			array_push( $tabs, array( "supplier_balance", "Suppliers balances", self::Balance() ) );
+			array_push( $tabs, array(
+				"supplier_invoices",
+				"Suppliers invoices",
+				Finance_Invoices::Table( AddToUrl( "selected_tab", "supplier_invoices" ) )
+			) );
+		}
+		$tabs = apply_filters('wpf_accounts', $tabs);
+//		array_push( $tabs, array( "test_invoice4u", "Test", self::test_price() ) );
 
 		$args = [];
-		if ($selected_tab) {
-			$args["tabs_load_all"] = false;
-			$args["selected_tab"] = $selected_tab;
-		} else {
-			$args["tabs_load_all"] = true;
-		}
+		$args["tabs_load_all"] = true;
 
 		$result .= Core_Html::gui_div("logging");
 		$result .= Core_Html::GuiTabs( $tabs, $args );
@@ -60,12 +62,16 @@ class Fresh_Supplier_Balance {
 		print  $result;
 	}
 
+
 	static function test_price()
 	{
-		$debug_product = 347;
+		return;
+		$debug_product = 172;
 		$p = new Fresh_Product($debug_product);
-		print "buy price: " . $p->getBuyPrice(0, true);
+//		if (get_user_id() == 1) print "dp=$debug_product<br/>";
+		print "buy price: " . $p->getBuyPrice(0, $debug_product);
 	}
+
 	static function test_invoice()
 	{
 		Finance::Invoice4uConnect();

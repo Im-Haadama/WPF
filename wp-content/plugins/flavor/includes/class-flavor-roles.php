@@ -24,7 +24,7 @@ class Flavor_Roles {
 	{
 		global $wp_roles;
 //		var_dump($wp_roles);
-		$wp_roles or die ( "no wp_roles" );
+		if (!$wp_roles) return; //  or die ( "no wp_roles" );
 
 		$i = self::instance();
 		if (! in_array($role, $i->roles))

@@ -33,9 +33,13 @@ class Finance_Database extends Core_Database {
 
 	}
 
-	function CreateFunctions($version)
-	{
-		return true;
+	function CreateFunctions($version) {
+		return;
+		SqlQuery( "drop function reduce_vat" );
+		SqlQuery( "create FUNCTION `reduce_vat`(total float) RETURNS float
+BEGIN
+    return round(total/1.17, 2);
+  END;" );
 	}
 
 	function CreateViews($version)

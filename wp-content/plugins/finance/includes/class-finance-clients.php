@@ -171,8 +171,6 @@ class Finance_Clients
 		return '';
 	}
 	static function client_account( $customer_id ) {
-		require_once( ABSPATH . "im-config.php" );
-
 		$result = "";
 		try {
 			$invoice = Finance::Invoice4uConnect();

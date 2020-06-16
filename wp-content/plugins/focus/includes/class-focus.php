@@ -161,7 +161,9 @@ class Focus {
 		Focus_Project::init();
 
 		require_once ABSPATH . 'wp-includes/pluggable.php';
-//		 if (get_user_id() == 1) wp_set_current_user(383);
+		// if (get_user_id() == 1) wp_set_current_user(383);
+//		 if (get_user_id() == 1) wp_set_current_user(474); // Julie (siton)
+//		if (get_user_id() == 1) wp_set_current_user(34); // Yaakov (owner)
 	}
 
 	/**

@@ -187,6 +187,9 @@ class Fresh {
 		add_action( 'woocommerce_checkout_create_order_line_item', 'checkout_create_order_line_item', 10, 4 );
         /* -- End Product Comment Hooks-- */
 
+		// Update cart by customer type.
+		add_action('woocommerce_before_calculate_totals', 'cart_update_price', 20, 1);
+
 		GetSqlConn(ReconnectDb());
 //		add_action( 'init', array( 'Fresh_Emails', 'init_transactional_emails' ) );
 		// add_action( 'init', array( $this, 'wpdb_table_fix' ), 0 );
@@ -199,7 +202,7 @@ class Fresh {
 		$this->loader->add_action( 'wp_enqueue_scripts', $inventory, 'enqueue_scripts' );
 
 		Fresh_Packing::init_hooks();
-		Fresh_Order_Management::init_hooks();
+		Fresh_Order_Management::instance()->init_hooks();
 		Fresh_Catalog::init_hooks();
 		Fresh_Client::init_hooks();
 		Fresh_Delivery::init_hooks();
@@ -305,7 +308,7 @@ class Fresh {
 	{
 		$input = null;
 		$result = apply_filters( $operation, $input, null);
-		if ( $result ) return $result;
+		if ( $result !== null) return $result;
 
 		$module = strtok($operation, "_");
 		if ($module === "data")
@@ -319,7 +322,6 @@ class Fresh {
 
 		switch ($operation)
 		{
-
 			case "update":
 				return handle_data_operation($operation);
 
@@ -741,38 +743,38 @@ function content_func( $atts, $contents, $tag )
 	return $text;
 }
 
-//function im_woocommerce_update_price()
-//{
-//	if (! SqlQuerySingleScalar("select 1")) {
-//		MyLog ("not connected to db");
-//		return;
-//	}
-//	if (! function_exists('get_user_id') or ! get_user_id()) {
-//		MyLog( "cart start " . $_SERVER['REMOTE_ADDR']);
-//		return;
-//	}
-//	MyLog("cart start " . get_user_id());
-//	$user_id = get_user_id();
-//	$user = new Fresh_Client($user_id );
-//	$client_type = $user->customer_type( );
-//
-//	foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
-//		$prod_id = $cart_item['product_id'];
-//		$variation_id = $cart_item['variation_id'];
-//		if ( ! ( $prod_id > 0 ) ) {
-//			MyLog( "cart - no prod_id" );
-//			continue;
-//		}
-//		$q          = $cart_item['quantity'];
-//		$sell_price = Fresh_Pricing::get_price_by_type( $prod_id, $client_type, $q, $variation_id );
-//		//my_log("set " . $sell_price);
-//		$cart_item['data']->set_sale_price( $sell_price );
-//		$cart_item['data']->set_price( $sell_price );
-//		MyLog( $prod_id . " " . $q );
-//
-//	}
-//	//		ob_start();
-//}
+function cart_update_price()
+{
+	if (! SqlQuerySingleScalar("select 1")) {
+		MyLog ("not connected to db");
+		return;
+	}
+	if (! function_exists('get_user_id') or ! get_user_id()) {
+		MyLog( "cart start " . $_SERVER['REMOTE_ADDR']);
+		return;
+	}
+	MyLog("cart start " . get_user_id());
+	$user_id = get_user_id();
+	$user = new Fresh_Client($user_id );
+	$client_type = $user->customer_type( );
+
+	foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+		$prod_id = $cart_item['product_id'];
+		$variation_id = $cart_item['variation_id'];
+
+		if ( ! ( $prod_id > 0 ) ) {
+			MyLog( "cart - no prod_id" );
+			continue;
+		}
+		$q          = $cart_item['quantity'];
+		$sell_price = Fresh_Pricing::get_price_by_type( $prod_id, $client_type, $q, $variation_id );
+		//my_log("set " . $sell_price);
+		$cart_item['data']->set_sale_price( $sell_price );
+		$cart_item['data']->set_price( $sell_price );
+		MyLog( "pid= $prod_id  q= $q  sp= $sell_price");
+	}
+	//		ob_start();
+}
 
 function im_show_nonsale_price( $newprice, $product ) {
 	global $site_id;
@@ -1209,8 +1211,7 @@ function on_action_cart_updated( $cart_updated ){
 			$remove_comment = delete_user_meta($user_id,'product_comment_'.$cart_item['product_id']);
 		}
 		$cart->set_session();
-	}	
-
+	}
 }
 
 function edit_roles($roles)

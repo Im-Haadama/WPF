@@ -23,6 +23,7 @@ class Finance {
 	protected $clients;
 	protected $admin_notices;
 	protected $database;
+	protected $sub;
 
 	/**
 	 * Plugin version.
@@ -120,6 +121,7 @@ class Finance {
 		$this->post_file = "/wp-content/plugins/finance/post.php";
 		$this->yaad = null;
 		$this->clients = new Finance_Clients();
+		$this->sub = new Finance_Subcontract();
 
 		$this->init_hooks();
 
@@ -139,7 +141,6 @@ class Finance {
 	 * @since 2.3
 	 */
 	private function init_hooks() {
-		MyLog(__FUNCTION__);
 		// Flavor::getInstance();
 		// register_activation_hook( WC_PLUGIN_FILE, array( 'Finance_Install', 'install' ) );
 		register_shutdown_function( array( $this, 'log_errors' ) );
@@ -181,6 +182,8 @@ class Finance {
 
 		$this->payments = Finance_Payments::instance();
 		$this->payments->init_hooks();
+
+		$this->sub->init_hooks();
 
 //		if (is_admin_user())
 //			self::admin_init();
@@ -252,7 +255,6 @@ class Finance {
 	function pay()
 	{
 		global $business_name;
-		MyLog("init Finanace_Yaad");
 		$this->yaad = new Finance_Yaad( YAAD_API_KEY, YAAD_TERMINAL, $business_name );
 	}
 
@@ -539,7 +541,6 @@ class Finance {
 	 * Init WooCommerce when WordPress Initialises.
 	 */
 	public function init() {
-		MyLog(__FUNCTION__);
 		// Before init action.
 		do_action( 'before_finance_init' );
 
@@ -569,7 +570,6 @@ class Finance {
 
 	public function admin_init()
 	{
-		MyLog(__FUNCTION__);
 		if (is_admin_user() and InfoGet("finance_bank_enabled")) {
 			$this->bank = new Finance_Bank( self::getPostFile() );
 			$this->bank->init_hooks();

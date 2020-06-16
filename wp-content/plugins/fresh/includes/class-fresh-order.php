@@ -740,7 +740,7 @@ class Fresh_Order {
 		return SqlQuerySingleScalar( "SELECT id FROM im_delivery WHERE order_id = " . $this->order_id );
 	}
 
-	public function GetTotal() {
+	public function getTotal() {
 		$order_items = $this->WC_Order->get_items();
 		$total       = 0;
 		// print "cid= " . $this->CustomerId() . "<br/>";

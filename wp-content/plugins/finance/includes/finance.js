@@ -21,3 +21,10 @@ function wait_for_selection()
     let forms = document.getElementsByName("submit");
     forms.forEach(element => element.disabled = true);
 }
+
+function makolet_create_invoice(post_file, year_month)
+{
+    let request = post_file + "?operation=makolet_create_invoice&month=" + year_month;
+
+    execute_url(request, location_reload);
+}
