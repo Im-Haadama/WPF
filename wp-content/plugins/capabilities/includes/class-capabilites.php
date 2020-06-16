@@ -115,6 +115,7 @@ class Capabilites {
 		add_action( 'after_setup_theme', array( $this, 'setup_environment' ) );
 		add_action( 'after_setup_theme', array( $this, 'include_template_functions' ), 11 );
 		add_action( 'init', array( $this, 'init' ), 0 );
+		add_action( 'admin_init', array( $this, 'hide_menu_items' ), 0 );
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
 		add_action( 'admin_menu', __CLASS__ . '::admin_menu' );
 		add_action( 'toggle_role', __CLASS__ . '::toggle_role' );
@@ -125,8 +126,20 @@ class Capabilites {
 		// add_action( 'init', array( $this, 'wpdb_table_fix' ), 0 );
 		// add_action( 'init', array( $this, 'add_image_sizes' ) );
 		// add_action( 'switch_blog', array( $this, 'wpdb_table_fix' ), 0 );
+
+		// Use once:
+//		self::CreateRoles();
 	}
 
+	static function hide_menu_items()
+	{
+		// Business
+		if (! current_user_can('promote_users')) {
+			remove_menu_page('wpcf7');
+			remove_menu_page('upload.php');
+			remove_submenu_page('admin.php', 'extension');
+		}
+	}
 	/**
 	 * Ensures fatal errors are logged so they can be picked up in the status report.
 	 *
@@ -642,8 +655,9 @@ class Capabilites {
 	static public function main()
 	{
 		$result = Core_Html::GuiHeader(1, "Roles and capabilities");
-		$tabs = array(array("Roles", "roles", self::roles()),
-			array("Capabilites", "capabilities", self::capabilites()));
+		$roles = [];
+		$tabs = array(array("Roles", "roles", self::roles($roles)),
+			array("Capabilites", "capabilities", self::capabilites($roles)));
 
 		$args = array("tabs_load_all" => true);
 		$result .= Core_Html::GuiTabs($tabs, $args);
@@ -651,24 +665,36 @@ class Capabilites {
 		print $result;
 	}
 
-	static function capabilites()
+	static function capabilites($roles)
 	{
 		$result = Core_Html::GuiHeader(2, "Capabilities per role");
 
-		$i = Flavor_Roles::instance();
-		foreach ($i->getRoles() as $role) {
+		global $wp_roles;
+
+		$all_roles = $wp_roles->roles;
+		$caps = array("wpcf7_edit_contact_forms", "wpcf7_read_contact_forms");
+
+		foreach ($roles as $role => $not_used) {
 			$result .= Core_Html::GuiHeader( 3, "role $role" );
+			if (! isset($all_roles[$role])) continue;
+//			var_dump($all_roles[$role]);
+//			die (1);
+//			$editable_role = apply_filters('editable_roles', $all_roles[$role]);
+			foreach ($all_roles[$role]['capabilities'] as $cap => $enabled) {
+				if (in_array($cap, $caps))
+					$result .= $cap . " $enabled<br/>";
+			}
 		}
 
 		return $result;
 	}
 
-	static public function roles() {
+	static public function roles(&$role_types) {
 		$result = Core_Html::GuiHeader(2, "roles");
 		// 2D array of capabilithes[$user][$cap];
-		$roles            = [];
-		$role_types               = [];
+//		$role_types               = [];
 		$users                   = [];
+		$roles = [];
 		// First pass - collect capablities and users
 		foreach ( SqlQueryArray( "select user_id, meta_value from wp_usermeta where meta_key = 'wp_capabilities'" ) as $info ) {
 			foreach ( unserialize( $info[1] ) as $capability => $flag ) $role_types[ $capability ] = 1;
@@ -727,7 +753,6 @@ class Capabilites {
 		}
 		return true;
 
-
 /*		global $wp_roles;
 
 		$wp_roles->add_role( "staff", "Worker", array( "working_hours_self" => "true" ) );*/
@@ -738,4 +763,11 @@ class Capabilites {
 		$file = CAPABILITIES_INCLUDES_URL . 'js/admin.js';
 		wp_enqueue_script( 'capablities', $file, null, $this->version, false );
 	}
+
+	public function CreateRoles() {
+//		print 1 / 0;
+		global $wp_roles; // global class wp-includes/capabilities.php
+		$wp_roles->remove_cap( 'shop_manager', 'wpcf7_read_contact_forms' );
+	}
+
 }

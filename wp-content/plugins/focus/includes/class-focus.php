@@ -114,7 +114,8 @@ class Focus {
 	 */
 	public function __construct($plugin_name)
 	{
-		Flavor_Roles::addRole("focus_user", array("show_tasks"));
+		// Call after install
+//		self::CreateRoles();
 
 		$this->plugin_name = $plugin_name;
 //		if (function_exists("get_user_id") and $user_id = get_user_id()) $this->nav_name = "management." . $user_id;
@@ -125,6 +126,11 @@ class Focus {
 		$this->init_hooks();
 
 		do_action( 'focus_loaded' );
+	}
+
+	static function CreateRoles()
+	{
+		Flavor_Roles::addRole( "focus_user", array( "show_tasks" ) );
 	}
 
 	/**
@@ -159,11 +165,6 @@ class Focus {
 		$this->loader->add_action( 'wp_enqueue_scripts', $this->tasks, 'enqueue_scripts' );
 
 		Focus_Project::init();
-
-		require_once ABSPATH . 'wp-includes/pluggable.php';
-		// if (get_user_id() == 1) wp_set_current_user(383);
-//		 if (get_user_id() == 1) wp_set_current_user(474); // Julie (siton)
-//		if (get_user_id() == 1) wp_set_current_user(34); // Yaakov (owner)
 	}
 
 	/**

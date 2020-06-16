@@ -915,7 +915,11 @@ class Core_Html {
 			if ( ! $prepare || in_array( $key, array( "checkbox", "header", "mandatory", "sums" ) ) ) {
 				if ( isset( $input_row['checkbox'] ) ) $input_row['checkbox'] = '';
 				$rows[ $key ] = $input_row;
-			} else $rows[ $key ] = Core_Data::PrepareRow( $input_row, $args, $key );
+			} else {
+				$rows[ $key ] = Core_Data::PrepareRow( $input_row, $args, $key );
+				// If prepare return null - remove it from table.
+				if (! $rows[$key]) unset($rows[$key]);
+			}
 		}
 
 		$data = "

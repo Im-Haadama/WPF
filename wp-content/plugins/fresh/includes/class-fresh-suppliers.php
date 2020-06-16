@@ -110,6 +110,7 @@ class Fresh_Suppliers {
 		$args["order"] = "supplier_last_pricelist_date(id) desc";
 //		$result .= "page number: " . $args["page_number"] . "<br/>";
 //		$result .= "page: " . $args["page"] . "<br/>";
+		$args["page_number"] = -1;
 		$result .= Core_Gem::GemTable("suppliers", $args);
 
 		// $result .= GuiTableContent("im_suppliers",null, $args);

@@ -172,7 +172,7 @@ class Fresh_Supplier_Balance {
 		                  "selectors" => array("document_type" => "Finance_Invoices::gui_select_document_type")); // , "project_id" => "gui_select_project"
 
 		$result .= Core_Html::NewRow("business_info", $new_args);
-		$result .= Core_Html::GuiButton("btn_add_row", "data_save_new('" . GetUrl(1) . "', 'im_business_info')", "הוסף");
+		$result .= Core_Html::GuiButton("btn_add_row", "הוסף", "data_save_new('" . Fresh::getPost() . "', 'business_info')");
 
 		return $result;
 	}

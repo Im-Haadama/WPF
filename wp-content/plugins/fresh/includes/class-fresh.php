@@ -216,6 +216,12 @@ class Fresh {
 //		add_filter ( 'woocommerce_account_menu_items', __CLASS__ . '::init_my_account_links' );
 		/// check admin;
 	//	if (get_user_id() == 1) wp_set_current_user(601);
+		require_once ABSPATH . 'wp-includes/pluggable.php';
+		// if (get_user_id() == 1) wp_set_current_user(383);
+//		 if (get_user_id() == 1) wp_set_current_user(474); // Julie (siton)
+//		if (get_user_id() == 1) wp_set_current_user(34); // Yaakov (owner)
+		if (get_user_id() == 1) wp_set_current_user(12); // business
+
 	}
 
 //	static function init_my_account_links( $menu_links ){
@@ -615,7 +621,7 @@ class Fresh {
 
 	public function admin_scripts()
     {
-        $file = FRESH_INCLUDES_URL . 'js/admin.js?v=1.1';
+        $file = FRESH_INCLUDES_URL . 'js/admin.js?v=1.2';
 	    wp_register_script( 'fresh_admin', $file);
 
 	    $params = array(

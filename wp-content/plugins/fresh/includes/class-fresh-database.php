@@ -509,6 +509,7 @@ END;
 		return _date;
 		END");
 
+
 		SqlQuery("drop function client_id_from_delivery");
 		SqlQuery("create  function client_id_from_delivery(del_id int) returns text
 BEGIN
