@@ -201,7 +201,7 @@ class Fresh_Packing {
 						$tab_content .= Core_Html::GuiHyperlink( "Supply " . $supply_id, "/fresh/supplies/supplies-page.php?operation=show&id=" . $supply_id ) . "<br/>";
 					}
 
-					$tab_content .= Core_Html::GuiButton( "btn_create_supply_" . $supplier->getId(), "Create a supply", array( "action" => "needed_create_supplies(" . $supplier->getId() . ")" ) );
+					$tab_content .= Core_Html::GuiButton( "btn_create_supply_" . $supplier->getId(), "Create a supply", array( "action" => "needed_create_supplies('" . Fresh::getPost() . "', " .$supplier->getId() . ")" ) );
 
 					$supplier_tabs[ $supplier->getId() ] =
 						array(

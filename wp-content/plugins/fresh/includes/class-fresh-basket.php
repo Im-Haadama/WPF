@@ -186,7 +186,7 @@ class Fresh_Basket extends  Fresh_Product  {
 		$data .= Core_Html::gui_table_args($form, "new_basket", $args);
 
 
-		$data .= Core_Html::GuiButton("btn_add_basket", "Add", array("action" => "basket_create_new()"));
+		$data .= Core_Html::GuiButton("btn_add_basket", "Add", array("action" => "basket_create_new('" . Fresh::getPost() . "')"));
 		return $data;
 	}
 

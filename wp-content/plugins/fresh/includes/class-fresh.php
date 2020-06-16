@@ -615,7 +615,7 @@ class Fresh {
 
 	public function admin_scripts()
     {
-        $file = FRESH_INCLUDES_URL . 'js/admin.js?v=1';
+        $file = FRESH_INCLUDES_URL . 'js/admin.js?v=1.1';
 	    wp_register_script( 'fresh_admin', $file);
 
 	    $params = array(

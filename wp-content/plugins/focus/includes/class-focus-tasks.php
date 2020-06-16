@@ -268,7 +268,7 @@ class Focus_Tasks {
 
 	/**
 	 * @param $operation
-	 * @param $args
+	 * @param $user_id
 	 *
 	 * @return string
 	 * @throws Exception
@@ -1283,6 +1283,9 @@ class Focus_Tasks {
 
 	static function prepare_row($task_row)
 	{
+		$id = $task_row['id'];
+		$t = new Focus_Tasklist($id);
+		if (! $t->working_time()) return null;
 		$max_len = 60;
 		if (! isset($task_row["task_title"]) or ! strlen($task_row['task_title'])){
 			$description = explode(" ", $task_row["task_description"]);

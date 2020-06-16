@@ -1,5 +1,4 @@
 // baskets
-// use wp_localize_script to set admin_post
 function add_to_basket(post_file, basket_id)
 {
     let prod_id = get_value_by_name("new_product");
@@ -12,13 +11,13 @@ function remove_from_basket(post_file, basket_id)
     execute_url(post_file + '?operation=remove_from_basket&basket_id=' + basket_id + '&products=' + param, location_reload);
 }
 
-function basket_create_new()
+function basket_create_new(post_file)
 {
     let basket_name = get_value_by_name("basket_name");
     let price = get_value_by_name("basket_price");
     let categ = get_value_by_name("basket_categ");
 
-    let url = admin_post() + '?operation=basket_create&basket_name=' + encodeURI(basket_name) + '&basket_price=' + price;
+    let url = post_file + '?operation=basket_create&basket_name=' + encodeURI(basket_name) + '&basket_price=' + price;
 
     if (categ) url += '&basket_categ=' + categ;
     execute_url(url, action_back);
@@ -32,14 +31,14 @@ function basket_delete(post_file, basket_id)
     execute_url(url, action_hide_row, btn);
 }
 
-function needed_create_supplies(supplier_id) {
+function needed_create_supplies(post_file, supplier_id) {
     document.getElementById("btn_create_supply_" + supplier_id).disabled = true;
     // let table = document.getElementById('needed_' + supplier_id);
     // var lines = table.rows.length;
     let collection = document.getElementsByClassName("product_checkbox" + supplier_id);
 
     // Request header
-    let request = admin_post() + "?operation=create_supplies&params=";
+    let request = post_file + "?operation=create_supplies&params=";
     let params = new Array();
 
     // Add the data.
