@@ -9,8 +9,6 @@ class Flavor_Roles {
 	 * Flavor_Roles constructor.
 	 */
 	protected function __construct() {
-		$this->roles = [];
-		$this->capabilities = [];
 	}
 
 	public static function instance() {
@@ -22,29 +20,17 @@ class Flavor_Roles {
 
 	public static function addRole($role, array $capabilities)
 	{
+		return;
 		global $wp_roles;
-//		var_dump($wp_roles);
 		if (!$wp_roles) return; //  or die ( "no wp_roles" );
 
-		$i = self::instance();
-		if (! in_array($role, $i->roles))
-			array_push($i->roles, $role);
-
-		if (! isset($capabilities[$role])) $capabilities[$role] = [];
+		$rc = $wp_roles->add_role($role, $role, $capabilities);
+//		if (get_user_id() == 1)
+//			var_dump($rc);
+//		var_dump($wp_roles);
 
 		foreach ($capabilities as $cap => $not_used) {
-//			print "adding $cap to $role<br/>";
-			$capabilities[ $role ][ $cap ] = 1;
-
-			$wp_role = $wp_roles->get_role( $role );
-
-			if ( ! $wp_role ) {
-//				print "=====================> Adding $role<br/>";
-				$wp_roles->add_role($role, $role);
-			}
-			foreach ( $capabilities as $cap => $not_used ) {
-				$wp_roles->add_cap( $role, $cap );
-			}
+			$wp_roles->add_cap( $role, $cap );
 		}
 	}
 

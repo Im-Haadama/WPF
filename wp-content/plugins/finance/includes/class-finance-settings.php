@@ -3,6 +3,16 @@
 class Finance_Settings {
 	static private $_instance;
 
+	/**
+	 * @return Finance_Settings
+	 */
+	public static function instance(): Finance_Settings {
+		if ( is_null( self::$_instance ) ) {
+			self::$_instance = new self();
+		}
+		return self::$_instance;
+	}
+
 	public function __construct() {
 		$this->id        = 'fresh';
 		$this->label     = __( 'Fresh' );
@@ -59,8 +69,13 @@ class Finance_Settings {
 		}
 	}
 
-	static function admin_menu() {
+	function admin_menu() {
 		$menu = new Core_Admin_Menu();
+
+		$menu->AddMenu('Finance', 'Finance', 'show_finance', 'finance', array($this, 'main'));
+
+		$menu->AddSubMenu( "finance", "finance_bank",
+			array( 'page_title' => 'Bank pages', 'function' => array( Finance_Bank::instance(), 'show_bank_accounts_wrap' ) ) );
 
 		$menu->AddSubMenu( "users.php", "edit_shop_orders",
 			array( 'page_title' => 'Client accounts', 'function' => array( "Finance_Clients", 'admin_page' ) ) );
@@ -70,6 +85,12 @@ class Finance_Settings {
 
 	}
 
+	function main()
+	{
+		$result = Core_Html::GuiHeader(1, "Finance");
+
+		print $result;
+	}
 	static function suppliers() {
 		$result = '<h3>Suppliers</h3>';
 

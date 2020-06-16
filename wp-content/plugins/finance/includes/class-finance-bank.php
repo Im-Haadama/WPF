@@ -55,12 +55,15 @@ class Finance_Bank
 		AddAction( "finance_bank_payments", array( $this, "show_bank_payments" ) );
 		AddAction( "finance_bank_receipts", array( $this, "show_bank_receipts" ) );
 		AddAction( "finance_show_bank_import", array( $this, "show_bank_import" ) );
-		AddAction( "finance_do_import", array( $this, "do_bank_import" ) );
+		AddAction( "finance_do_import", array( $this, 'do_bank_import' ) );
 		AddAction( "bank_create_invoice", array( $this, 'bank_create_invoice' ) );
 		AddAction( "bank_create_pay", array( $this, 'bank_payments' ) );
 		AddAction("finance_get_transaction_amount", array($this, 'get_transaction_amount'));
-	}
 
+		add_action('admin_menu', array($this, 'admin_menu'));
+
+//		Flavor_Roles::addRole('business_admin', array('finance'));
+	}
 
 	function bank_create_invoice()
 	{
@@ -76,6 +79,10 @@ class Finance_Bank
 
 	function do_bank_import()
 	{
+		if (! isset($_FILES["fileToUpload"])) {
+			print "file name is missing. try again";
+			return false;
+		}
 		$file_name = $_FILES["fileToUpload"]["tmp_name"];
 		print "Trying to import $file_name<br/>";
 		$fields               = array();
@@ -83,8 +90,13 @@ class Finance_Bank
 		if ( ! $fields['account_id'] ) {
 			die( "not account given" );
 		}
+		$unmapped = [];
 		try {
-			$result = Core_Importer::Import( $file_name, "bank", $fields, 'Finance_Bank::bank_check_dup' );
+			$result = Core_Importer::Import( $file_name, "bank", $fields, 'Finance_Bank::bank_check_dup', $unmapped );
+			if (count($unmapped)) {
+				var_dump( $unmapped );
+				return false;
+			}
 		} catch ( Exception $e ) {
 			print $e->getMessage();
 
@@ -94,6 +106,11 @@ class Finance_Bank
 		print $result[1] . " duplicate rows <br/>";
 		print $result[2] . " failed rows <br/>";
 		return true;
+	}
+
+	function show_bank_accounts_wrap()
+	{
+		print self::show_bank_accounts();
 	}
 
 	function show_bank_accounts()
@@ -134,7 +151,8 @@ class Finance_Bank
 	{
 		$args = self::Args();
 		// Using local action - to set account_id and check_dup. See above.
-		$args["import_page"] = AddToUrl(array("operation"=>"finance_do_import"));
+		 $args["import_page"] = AddToUrl(array("operation"=>"finance_do_import"));
+//		$args["import_page"] = AddParamToUrl(Finance::getPostFile() , array("operation" => "gem_do_import", "table" => "bank"));
 			// AddToUrl(array("operation" => "gem_do_import", "table"=>"bank"));//  . "&account_id=" . $account_id;
 		$result = Core_Gem::ShowImport("bank", $args);
 
@@ -570,16 +588,17 @@ class Finance_Bank
 
 		$account_id = 1;
 
-		$page = GetParam("page", false, 1);
-		$rows_per_page = 20;
-		$offset = ($page - 1) * $rows_per_page;
+		$page = GetParam("page_number", false, 1);
+		$args["rows_per_page"] = 20;
+		$args["class"] = "widefat";
+//		$offset = ($page - 1) * $rows_per_page;
 
 		$fields = GetArg($args, "fields", array("id", "date", "description", "out_amount", "in_amount", "balance", "receipt"));
 
 //		print "args=" . $args["query"] . "<br/>";
 		$sql = "select " . CommaImplode($fields) . " from ${table_prefix}bank ";
 		$sql .= " where " . $args["query"] . " and account_id = " . $account_id;
-		$sql .= " order by date desc limit $rows_per_page offset $offset ";
+		$sql .= " order by date desc ";
 
 		$result .= Core_Html::GuiTableContent("banking", $sql, $args);
 
@@ -773,6 +792,18 @@ function user_is_business_owner() {
 	return in_array( 'business', (array) $user->roles );
 }
 
+	function admin_menu()
+	{
+		print 1/0;
+		$menu = new Core_Admin_Menu();
+
+		$menu->AddSubMenu('freight', 'edit_shop_orders',
+			array('page_title' => 'Settings',
+			      'menu_title' => 'Settings',
+			      'menu_slug' => 'settings',
+			      'function' => array($this, 'general_settings')));
+
+	}
 }
 
 

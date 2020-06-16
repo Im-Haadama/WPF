@@ -63,7 +63,7 @@ class Core_Importer {
 
 		while ( $line = fgetcsv( $file ) ) {
 			switch ( self::ImportLine( $line, $table_name, $map, $fields, $check_dup ) ) {
-				case - 1:
+				case -1:
 					$dup_count ++;
 					break;
 				case 0:

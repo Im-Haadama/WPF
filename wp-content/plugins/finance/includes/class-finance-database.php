@@ -10,6 +10,14 @@ class Finance_Database extends Core_Database {
 
 		if ($current == $version and ! $force) return true;
 
+		SqlQuery("CREATE TABLE `im_conversion` (
+  `id` int(11) NOT NULL,
+  `table_name` varchar(20) NOT NULL,
+  `col` varchar(20) NOT NULL,
+  `header` varchar(20) NOT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;");
+
+
 		SqlQuery( "alter table ${db_prefix}yaad_transactions add payment_number int;" );
 
 		if ( ! TableExists( "yaad_transactions" ) ) {

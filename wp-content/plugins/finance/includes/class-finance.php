@@ -23,7 +23,7 @@ class Finance {
 	protected $clients;
 	protected $admin_notices;
 	protected $database;
-	protected $sub;
+	protected $subcontract;
 
 	/**
 	 * Plugin version.
@@ -117,11 +117,11 @@ class Finance {
 		if ( ! defined( 'FINANCE_ABSPATH' ) ) {
 			die ( "not defined" );
 		}
-		$this->loader    = new Core_Autoloader( FINANCE_ABSPATH );
-		$this->post_file = "/wp-content/plugins/finance/post.php";
-		$this->yaad = null;
-		$this->clients = new Finance_Clients();
-		$this->sub = new Finance_Subcontract();
+		$this->loader      = new Core_Autoloader( FINANCE_ABSPATH );
+		$this->post_file   = "/wp-content/plugins/finance/post.php";
+		$this->yaad        = null;
+		$this->clients     = new Finance_Clients();
+		$this->subcontract = new Finance_Subcontract();
 
 		$this->init_hooks();
 
@@ -160,7 +160,7 @@ class Finance {
 		add_filter( 'pay_user_credit', array($this, 'pay_user_credit_wrap'), 10, 3);
 
 		// Admin menu
-		add_action( 'admin_menu', __CLASS__ . '::admin_menu' );
+		add_action( 'admin_menu',array($this, 'admin_menu') );
 
 		GetSqlConn( ReconnectDb() );
 //		add_action( 'init', array( 'Finance_Emails', 'init_transactional_emails' ) );
@@ -172,18 +172,14 @@ class Finance {
 		add_action( 'pay_credit', array( $this, 'pay_credit_wrapper' ) );
 
 		AddAction('finance_get_open_site_invoices', array($this, 'get_open_site_invoices'));
+		AddAction('admin_init', array($this, 'admin_init'));
 
-		if ( $this->yaad ) {
-			$this->yaad->init_hooks();
-		}
-		if ( $this->clients ) {
-			$this->clients->init_hooks();
-		}
+		if ( $this->yaad ) $this->yaad->init_hooks();
+		if ( $this->clients ) $this->clients->init_hooks();
 
 		$this->payments = Finance_Payments::instance();
 		$this->payments->init_hooks();
-
-		$this->sub->init_hooks();
+		$this->subcontract->init_hooks();
 
 //		if (is_admin_user())
 //			self::admin_init();
@@ -453,7 +449,7 @@ class Finance {
 	}
 
 	static function admin_menu() {
-		Finance_Settings::admin_menu();
+		Finance_Settings::instance()->admin_menu();
 	}
 
 	/**
@@ -558,18 +554,18 @@ class Finance {
 		$this->shortcodes->do_init();
 
 		$this->invoices->init( FINANCE_INCLUDES_URL . '../post.php' );
-
 //		InfoUpdate("finance_bank_enabled", 1);
 
 		// For testing:
 		//		wp_set_current_user(369);
 
 		// Init action.
-		do_action( 'finance_init' );
+//		do_action( 'finance_init' );
 	}
 
 	public function admin_init()
 	{
+		InfoUpdate("finance_bank_enabled", 1);
 		if (is_admin_user() and InfoGet("finance_bank_enabled")) {
 			$this->bank = new Finance_Bank( self::getPostFile() );
 			$this->bank->init_hooks();
