@@ -399,7 +399,7 @@ class Core_Gem {
 			$result .=  $no_data_message . Core_Html::Br();
 		}
 
-		if ($page == 1 and GetArg($args, "add_button", true))
+		if (($page == 1 or $page == -1) and GetArg($args, "add_button", true))
 			$result .= Core_Html::GuiHyperlink("Add", AddToUrl("operation" , "gem_add_" . $table_id)) . " ";
 
 		$checkbox_class = GetArg($args, "checkbox_class", "class");

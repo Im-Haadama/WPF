@@ -366,7 +366,8 @@ group by pm.meta_value, p.post_status");
 			$result            .= Core_Html::gui_table_args( $path_info, "dispatch_" . $the_mission, $args );
 		}
 		$m = new Mission($the_mission);
-		$result .= self::add_delivery($m->getDefaultFee());
+		$result .= self::add_delivery($m->getDefaultFee()); // , array("style" => "border:1px solid #000;")
+		$result .= Core_Html::GuiHyperlink("Download CSV", Freight::getPost() . "?operation=download_mission&id=$the_mission");
 
 		return $result;
 	}
@@ -905,10 +906,13 @@ group by pm.meta_value, p.post_status");
 		return $m->setType($type);
 	}
 
-	static function add_delivery($price)
+	static function add_delivery($price, $args = null)
 	{
 		$mission_id = GetParam("id");
-		$result = "<div>";
+		$style = GetArg($args, "style", null);
+		$result = "<div ";
+		if ($style) $result .= "style=\"$style\"";
+		$result .= ">";
 		$result .= Core_Html::GuiHeader(1, "add delivery");
 
 		$args = array("post_file" => Freight::getPost());
