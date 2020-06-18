@@ -261,8 +261,9 @@ class Core_Gem {
 	static function v_add_wrapper($operation, $id, $args)
 	{
 		$operation = GetArg($args, "operation", $operation);
-		$table_name = substr($operation, 8);
-		if (! $id) return "id is missing";
+		// $table_name = substr($operation, 8);
+		$table_name = GetParam("table", true);
+//		if (! $id) return "id is missing";
 		$instance = self::getInstance();
 		if (! $instance) return __CLASS__ . ":" . __FUNCTION__ . " no instance. Call constructor first";
 		$args['values'] = GetParams();
@@ -407,9 +408,12 @@ class Core_Gem {
 		if ($post_file and $enable_import) {
 			$result .= Core_Gem::ShowImport( $table_id, $args );
 		}
-		if ($post_file and $edit)
-			$result .= Core_Html::GuiButton( "btn_delete_$table_id", "delete",
+		if ($post_file and $edit) {
+			$result .= Core_Html::GuiButton( "btn_delete_$table_id", "Delete",
 				array( "action" => "delete_items(" . QuoteText( $checkbox_class ) . "," . QuoteText( $post_file ) . ")" ) );
+//			$add_operation = GetArg($args, "add_operation", "");
+//			$result .= Core_Html::GuiHyperlink("Add", AddToUrl("operation", $add_operation));
+		}
 
 		return $result;
 	}
@@ -482,6 +486,7 @@ class Core_Gem {
 		$fields = GetArg($this->object_types["$table_name"], "fields", '*');
 
 		$args["sql"] = "select " . CommaImplode($fields) . " $query $order";
+		$args["add_operation"] = "gem_v_add_$table_name";
 		$args = array_merge($this->object_types["$table_name"], $args);
 
 		return self::GemTable($database_table, $args);

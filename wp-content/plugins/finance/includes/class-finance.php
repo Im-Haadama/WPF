@@ -797,9 +797,7 @@ class Finance {
 
 		foreach ( $users as $user ) {
 			$rc = apply_filters( 'pay_user_credit', $user, $amount, $payment_number );
-			if ( ! $rc ) {
-				return false;
-			}
+			if ( ! $rc ) print "failed user $user\n";
 		}
 
 		return true;

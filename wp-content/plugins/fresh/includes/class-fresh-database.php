@@ -493,6 +493,20 @@ charset=utf8;");
 
 		if ($current == $version and ! $force) return true;
 
+		SqlQuery("create function order_mission_date(order_id int) returns date
+		BEGIN
+			declare _mission_id int;
+			declare _date date;
+			select meta_value into _mission_id
+			from wp_postmeta
+			where meta_key = 'mission_id'
+			and post_id = order_id;
+			select date into _date from ${db_prefix}missions 
+			where id = _mission_id;
+			return _date;
+		END;
+		");
+
 		SqlQuery("drop function if exists first_day_of_week");
 		SqlQuery("create function FIRST_DAY_OF_WEEK(day date) returns date
 BEGIN

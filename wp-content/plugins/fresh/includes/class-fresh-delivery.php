@@ -453,8 +453,8 @@ class Fresh_Delivery {
 		if ( $edit ) {
 			$subject = "משלוח מספר " . $this->ID . " - תיקון";
 		}
-		send_mail($to, $subject, $message );
-		print "mail sent to " . $to . "<br/>";
+		return send_mail($to, $subject, $message );
+		// print "mail sent to " . $to . "<br/>";
 	}
 
 	public function OrderId() {

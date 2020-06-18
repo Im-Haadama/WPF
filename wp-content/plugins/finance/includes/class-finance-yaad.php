@@ -101,7 +101,10 @@ class Finance_Yaad {
 			MyLog("trying to pay with token user " . $user->getName());
 			$transaction_info = self::TokenPay( $token, $credit_data, $user, $amount, CommaImplode($account_line_ids), $payment_number );
 			$transaction_id = $transaction_info['Id'];
-			if (! $transaction_id or ($transaction_info['CCode'] != 0)) return false;
+			if (! $transaction_id or ($transaction_info['CCode'] != 0)) {
+				MyLog("Failed. Result $transaction_info " . $transaction_info['CCode']);
+				return false;
+			}
 
 			$paid = $transaction_info['Amount'];
 			if ($paid) self::RemoveRawInfo($credit_data['id']);

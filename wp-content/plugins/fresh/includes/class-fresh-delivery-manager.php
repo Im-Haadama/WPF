@@ -21,6 +21,8 @@ class Fresh_Delivery_Manager
 		AddAction("update_shipping_methods", __CLASS__ . "::update_shipping_methods");
 		AddAction("update_shipping_methods_anonymous", __CLASS__ . "::update_shipping_methods");
 		AddAction("delivery_send_mail", array($this, "mail_delivery"));
+		add_action('admin_menu',array($this, 'admin_menu'));
+		add_action('admin_notices', array($this, 'delivered_previous_days'));
 	}
 
 	static public function delete()
@@ -65,7 +67,6 @@ class Fresh_Delivery_Manager
 	 * @return string
 	 * @throws Exception
 	 */
-
 
 	static function update_shipping_method($instance_id) //, $date, $start, $end, $price = 0)
 	{
@@ -157,6 +158,32 @@ class Fresh_Delivery_Manager
 		return $delivery->send_mail( $track_email);
 	}
 
+	function admin_menu()
+	{
+	}
+
+	function delivered_previous_days() {
+		$result = "Marking orders of yesterday delivered:<br/>";
+		$ids    = SqlQueryArrayScalar( "SELECT * FROM `wp_posts` 
+WHERE post_status = 'wc-awaiting-shipment'
+and curdate() > order_mission_date(id)" );
+
+		$message = "";
+		if ( ! $ids or ! count( $ids ) ) {
+			return;
+		}
+		foreach ( $ids as $id ) {
+			$order = new Fresh_Order( $id );
+			$order->delivered( $message );
+			$result .= "Order $id $message\n";
+		}
+
+		if ( strlen( $result ) ) {
+			$class   = 'notice notice-info';
+
+			printf( '<div class="%1$s"><p>%2$s</p></div>', esc_attr( $class ), esc_html( $result ) );
+		}
+	}
 }
 
 function delete_wp_woocommerce_shipping_zone_methods($instance_id)
@@ -173,6 +200,4 @@ function deleteWpOption($option_id)
 {
 	SqlQuery("delete from wp_options where option_id='$option_id'");
 }
-
 // UPDATE `wp_options` SET `option_value` = 'a:8:{s:11:\"instance_id\";i:70;s:5:\"title\";s:25:\"Thursday 16/04/2020 14-18\";s:10:\"tax_status\";s:7:\"taxable\";s:4:\"cost\";s:3:\"411\";s:14:\"class_cost_154\";s:0:\"\";s:14:\"class_cost_187\";s:0:\"\";s:13:\"no_class_cost\";s:0:\"\";s:4:\"type\";s:5:\"class\";}', `autoload` = 'yes' WHERE `option_name` = 'woocommerce_flat_rate_70_settings'
-

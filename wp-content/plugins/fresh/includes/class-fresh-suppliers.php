@@ -11,7 +11,8 @@ class Fresh_Suppliers {
 	function init_hooks()
 	{
 //		AddAction("create_supplies",  "Fresh_Supply::create_supplies");
-		AddAction("gem_v_show", array($this, "pricelist_functions"));
+		AddAction("gem_v_show", array($this, "pricelist_header"), 9);
+		AddAction("gem_v_show", array($this, "pricelist_functions"), 11);
 		AddAction("suppliers_map_products", __CLASS__ . "::suppliers_map_products");
 	}
 
@@ -214,6 +215,14 @@ class Fresh_Suppliers {
 		$fields["supplier_id"] = $supplier_id;
 	}
 
+	static function pricelist_header($result)
+	{
+		$supplier = GetParam("supplier_id");
+		$s = new Fresh_Supplier($supplier);
+		$result .= Core_Html::GuiHeader(1, __("Supplier pricelist") . " " . $s->getSupplierName());
+
+		return $result;
+	}
 	static function pricelist_functions($result)
 	{
 		$table_name = GetParam("table", false, null);
