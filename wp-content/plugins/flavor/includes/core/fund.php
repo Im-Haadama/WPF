@@ -27,7 +27,7 @@ if (!defined('WC_LOG_DIR')) {
 		if (is_array($msg)) $msg = StringVar($msg);
 		$msg = br2nl($msg);
 		$error_file = WC_LOG_DIR . $file;
-		$date = date( 'd.m.Y h:i:s' );
+		$date = date_i18n( 'd.m.Y H:i:s' );
 		$msg  = print_r( $msg, true );
 		$log  = $date . ": " . $title . "  |  " . $msg . "\n";
 		error_log( $log, 3, $error_file );

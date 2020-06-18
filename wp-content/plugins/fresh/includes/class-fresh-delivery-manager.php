@@ -51,6 +51,7 @@ class Fresh_Delivery_Manager
 			$instance_id = $row['instance_id'];
 			self::update_shipping_method($instance_id);
 		}
+		MyLog($result);
 		return $result;
 	}
 

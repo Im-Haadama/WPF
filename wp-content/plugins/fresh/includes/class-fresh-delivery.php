@@ -269,7 +269,7 @@ class Fresh_Delivery {
 		}
 	}
 
-	private function load_line_from_order($line_ids, &$prod_id, &$prod_name, &$quantity_ordered, &$unit_q, &$P, &$price )
+	private function load_line_from_order($line_ids, &$prod_id, &$prod_name, &$quantity_ordered, &$unit_q, &$P, &$price, &$prod_comment )
 	{
 		$line_id = $line_ids[0];
 		$sql                                 = "SELECT order_item_name FROM wp_woocommerce_order_items WHERE order_item_id = " . $line_id;
@@ -784,7 +784,7 @@ class Fresh_Delivery {
 		$prod_comment = "";
 
 		if ( $load_from_order ) {
-			$this->load_line_from_order($line_ids,  $prod_id, $prod_name, $quantity_ordered, $unit_q, $P, $price );
+			$this->load_line_from_order($line_ids,  $prod_id, $prod_name, $quantity_ordered, $unit_q, $P, $price, $prod_comment );
 		} else {
 			$this->load_line_from_db($line_id, $P, $prod_id, $prod_name, $quantity_ordered, $quantity_delivered, $price, $delivery_line, $has_vat, $line_color);
 		}
@@ -1008,7 +1008,8 @@ class Fresh_Delivery {
 		return $instance;
 	}
 
-	public static function CreateFromOrder( $order_id ) {
+	public static function CreateFromOrder( $order_id )
+	{
 		$id = Fresh_Order::get_delivery_id( $order_id );
 
 		$instance = new self( $id );

@@ -672,7 +672,6 @@ class Fresh_Catalog {
 		if ($debug) MyLog($prod_id, __FUNCTION__);
 
 		$alternatives = self::alternatives($prod_id, $debug);
-//		if (($prod_id == 172) and (get_user_id() == 1))var_dump($alternatives);
 		$min  = 1111111;
 		$best = null;
 		if (! $alternatives) {
@@ -681,7 +680,7 @@ class Fresh_Catalog {
 		}
 //		if ($debug){
 //			foreach ($alternatives as $key => $not_used)
-//				print $alternatives[$key]['supplier_id'] . " " . $alternatives[$key]['price'] . "<br/>";
+//				print $alternatives[$key]->getSupplierID() . " " . $alternatives[$key]->getPrice() . "<br/>";
 //		}
 
 		for ( $i = 0; $i < count( $alternatives ); $i ++ ) {

@@ -50,8 +50,9 @@ class Fresh_Supplier_Balance {
 				Finance_Invoices::Table( AddToUrl( "selected_tab", "supplier_invoices" ) )
 			) );
 		}
+//		array_push($tabs, array("potato", "test", self::test_price()));
 		$tabs = apply_filters('wpf_accounts', $tabs);
-//		array_push( $tabs, array( "test_invoice4u", "Test", self::test_price() ) );
+		array_push( $tabs, array( "test_invoice4u", "Test", self::test() ) );
 
 		$args = [];
 		$args["tabs_load_all"] = true;
@@ -63,13 +64,9 @@ class Fresh_Supplier_Balance {
 	}
 
 
-	static function test_price()
+	static function test()
 	{
-		return;
-		$debug_product = 172;
-		$p = new Fresh_Product($debug_product);
-//		if (get_user_id() == 1) print "dp=$debug_product<br/>";
-		print "buy price: " . $p->getBuyPrice(0, $debug_product);
+		echo get_option( 'timezone_string' );
 	}
 
 	static function test_invoice()

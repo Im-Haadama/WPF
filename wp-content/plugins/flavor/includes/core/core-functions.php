@@ -354,10 +354,10 @@ require_once (ABSPATH . '/wp-includes/pluggable.php');
 			die( "encoding setting failed" );
 		}
 		// Local and international staff...
-		// Todo: get it from user profile
-		if ( $tz ) {
-			date_default_timezone_set( $tz );
-		}
+//		// Todo: get it from user profile
+//		if ( $tz ) {
+//			date_default_timezone_set( $tz );
+//		}
 
 		return $conn;
 	}
