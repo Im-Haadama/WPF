@@ -1,7 +1,7 @@
 <?php
 
 
-class Fresh_PriceList {
+class Fresh_Pricelist {
 	private $SupplierID = 0;
 
 	public function __construct( $id ) {
@@ -303,13 +303,9 @@ class Fresh_PriceList {
 	}
 
 	function AddOrUpdate(
-		$regular_price, $sale_price, $product_name, $code = 10, $category, &$id, $parent_id = null,
+		$regular_price, $sale_price, $product_name, $code = 10, $category = null, &$id = null, $parent_id = null,
 		$picture_path = null, $debug = false
 	) {
-
-//		print "code: " . $code . "<br/>";
-//		print "start";
-//		print "AddOrUpdate: " . $product_name . " " . $regular_price . "<br/>";
 		MyLog( __METHOD__, __FILE__ );
 		if ( mb_strlen( $product_name ) > 40 ) {
 			$product_name = mb_substr( $product_name, 0, 40 );
@@ -385,7 +381,6 @@ class Fresh_PriceList {
 				$code = "10";
 			}
 
-			print "code: " . $code . "<br/>";
 			$sql = "INSERT INTO im_supplier_price_list (product_name, supplier_id, "
 			       . "date, price, sale_price, supplier_product_code, line_status";
 
@@ -456,7 +451,7 @@ class Fresh_PriceList {
 
 	static function UpdateCatalog( $pricelist_id, $debug = false ) {
 //		print "pricelist_id: $pricelist_id<br/>";
-		$prod_ids = Catalog::GetProdID( $pricelist_id );
+		$prod_ids = Fresh_Catalog::GetProdID( $pricelist_id );
 //		print "prod_ids:"; var_dump($prod_ids); print "<br/>";
 		$line     = "";
 		if ( $debug ) {
@@ -618,3 +613,14 @@ class Fresh_PriceList {
 	}
 }
 
+class UpdateResult {
+	const UsageError = 0;
+	const UpPrice = 1;
+	const NoChangPrice = 2;
+	const DownPrice = 3;
+	const ExitPrice = 4;
+	const NewPrice = 5;
+	const SQLError = 6;
+	const DeletePrice = 7;
+	const NotUsed = 8;
+}

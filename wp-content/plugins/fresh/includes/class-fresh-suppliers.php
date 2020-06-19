@@ -14,6 +14,7 @@ class Fresh_Suppliers {
 		AddAction("gem_v_show", array($this, "pricelist_header"), 9);
 		AddAction("gem_v_show", array($this, "pricelist_functions"), 11);
 		AddAction("suppliers_map_products", __CLASS__ . "::suppliers_map_products");
+		AddAction("add_pricelist_item", array($this, 'add_pricelist_item'));
 	}
 
 	function init()
@@ -31,6 +32,7 @@ class Fresh_Suppliers {
                 and m.meta_key = 'supplier_id'
                 and m.meta_value = %d");
 		$this->gem->AddVirtualTable( "products", $args );
+		$supplier_id = GetParam("supplier_id", false);
 
 		// Pricelist
 		$args = array("database_table" => "supplier_price_list",
@@ -54,6 +56,12 @@ class Fresh_Suppliers {
 			"edit_cols"=> array("product_name"=>1,"price"=>1),
 			"v_key" => "supplier_id",
 			"add_checkbox" => true);
+
+		if ($supplier_id)
+			$args["new_row"] = array ("id" => Core_Html::GuiButton("btn_add_pricelist_item", "Add",
+				"supplier_add_pricelist_item('" . Fresh::getPost() . "', $supplier_id)"),
+				"product_name" => "", "price"=>"");
+
 
 		$this->gem->AddVirtualTable( "pricelist", $args );
 
@@ -232,5 +240,15 @@ class Fresh_Suppliers {
 			$result .= Core_html::GuiButton("btn_map", "Map Products", array("action" => "pricelist_map_products('". Fresh::getPost() ."')"));
 		}
 		return $result;
+	}
+
+	function add_pricelist_item()
+	{
+		$supplier_id = GetParam("supplier_id", true);
+		$price = GetParam("price");
+		$product_name = GetParam("product_name");
+
+		$pricelist = new Fresh_Pricelist($supplier_id);
+		return $pricelist->AddOrUpdate($price, 0, $product_name);
 	}
 }

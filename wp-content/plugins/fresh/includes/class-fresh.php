@@ -220,7 +220,7 @@ class Fresh {
 		// if (get_user_id() == 1) wp_set_current_user(383);
 //		 if (get_user_id() == 1) wp_set_current_user(474); // Julie (siton)
 //		if (get_user_id() == 1) wp_set_current_user(34); // Yaakov (owner)
-		if (get_user_id() == 1) wp_set_current_user(12); // business
+//		if (get_user_id() == 1) wp_set_current_user(12); // business
 
 	}
 
@@ -647,6 +647,9 @@ class Fresh {
 
 	    $file = FRESH_INCLUDES_URL . 'js/supply.js';
 	    wp_enqueue_script( 'supply', $file, null, $this->version, false );
+
+	    $file = FRESH_INCLUDES_URL . 'js/suppliers.js';
+	    wp_enqueue_script( 'suppliers', $file, null, $this->version, false );
 
     }
 

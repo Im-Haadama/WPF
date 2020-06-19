@@ -89,6 +89,7 @@ function check_update(xmlhttp)
 // After operation completed successfully, send the result to the page before
 
 function update_table_field(post_file, table_name, id, field_name, finish_action) {
+    if (! (id > 0)) return;
     let value = get_value_by_name(field_name);
     if (! value) value = get_value_by_name(field_name + "_" + id);
     if (! value) {

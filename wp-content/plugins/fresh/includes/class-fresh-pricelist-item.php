@@ -29,6 +29,11 @@ class Fresh_Pricelist_Item {
 	private $picture_path;
 
 	function __construct( $pricelist_id ) {
+		if ($pricelist_id == 0)
+		{
+			return;
+		}
+
 		$sql = " SELECT product_name, supplier_id, date, price, supplier_product_code, sale_price, category, picture_path FROM im_supplier_price_list " .
 		       " WHERE id = " . $pricelist_id;
 
@@ -133,6 +138,7 @@ class Fresh_Pricelist_Item {
 		$supplier_id = GetParam( "supplier_id", true );
 
 		$pl_id = $row["id"];
+		if (! ($pl_id > 0)) return $row; // New row
 
 		$item = new Fresh_Pricelist_Item( $pl_id );
 
@@ -198,19 +204,6 @@ class Fresh_Pricelist_Item {
 		if ($current_price < $prev_price) $color = 'lightblue';
 		return $color;
 	}
-}
-
-
-class UpdateResult {
-	const UsageError = 0;
-	const UpPrice = 1;
-	const NoChangPrice = 2;
-	const DownPrice = 3;
-	const ExitPrice = 4;
-	const NewPrice = 5;
-	const SQLError = 6;
-	const DeletePrice = 7;
-	const NotUsed = 8;
 }
 
 function product_other_suppliers( $prod_id, $supplier_id ) {

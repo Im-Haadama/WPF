@@ -462,6 +462,9 @@ class Core_Gem {
 
 		$rows_data = Core_Data::TableData( $sql, $args);
 
+		$new_row = GetArg($args, "new_row", null);
+		if ($new_row) $rows_data["new_row"] = $new_row;
+
 //		MyLog(__FUNCTION__ . " $table_name");
 		return Core_Gem::GemArray($rows_data, $args, $table_name);
 	}

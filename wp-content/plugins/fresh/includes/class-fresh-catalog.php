@@ -71,7 +71,7 @@ class Fresh_Catalog {
 			// $supplier_product_code = $ids[ $pos + 3 ];
 //			 print $supplier_id . ", " . $pricelist_id . "<br/>";
 
-			$pricelist = new Fresh_PriceList( $supplier_id );
+			$pricelist = new Fresh_Pricelist( $supplier_id );
 			$id = Fresh_Catalog::CreateProduct( $pricelist_id, $category_id );
 			// Create link to supplier price list
 			Fresh_Catalog::AddMapping( $id, $pricelist_id, Core_Db_MultiSite::LocalSiteID() );
@@ -79,7 +79,7 @@ class Fresh_Catalog {
 			if ( $pricelist->SiteId() != Core_Db_MultiSite::LocalSiteID() ) {
 				// Map to remote
 				MyLog( "map to remote" );
-				$pricelist_item = Fresh_PriceList::Get( $pricelist_id );
+				$pricelist_item = Fresh_Pricelist::Get( $pricelist_id );
 				$site_id = $pricelist->SiteId();
 				if ( is_numeric( $site_id ) and $site_id != Core_Db_MultiSite::LocalSiteID() ) {
 					// Copy information from remote site
@@ -96,7 +96,7 @@ class Fresh_Catalog {
 	{
 		$item = new Fresh_Pricelist_Item( $pricelist_id );
 
-		Fresh_PriceList::Get( $pricelist_id );
+		Fresh_Pricelist::Get( $pricelist_id );
 
 ////		if ( $item->getCategory() ) { // Comma seperated list
 ////			$categ = explode( ",", $item->getCategory() );
@@ -149,7 +149,7 @@ class Fresh_Catalog {
 
 //		self::RemoveOldMap( $product_id, $pricelist_id );
 
-		$pricelist = Fresh_PriceList::Get( $pricelist_id );
+		$pricelist = Fresh_Pricelist::Get( $pricelist_id );
 
 		$supplier_id = $pricelist["supplier_id"];
 		$Supplier = new Fresh_Supplier($supplier_id);
@@ -164,7 +164,7 @@ class Fresh_Catalog {
 		SqlQuery( $sql );
 
 		if ( $product_id > 0 ) { // not hide
-			$pricelist = new Fresh_PriceList( $supplier_id );
+			$pricelist = new Fresh_Pricelist( $supplier_id );
 			$buy_price = $pricelist->GetByName( $supplier_product_name );
 			update_post_meta( $product_id, "buy_price", $buy_price );
 			update_post_meta( $product_id, "supplier_name", $Supplier->getSupplierName() );
@@ -178,7 +178,7 @@ class Fresh_Catalog {
 	}
 
 	static function RemoveOldMap( $product_id, $pricelist_id ) {
-		$pricelist    = Fresh_PriceList::Get( $pricelist_id );
+		$pricelist    = Fresh_Pricelist::Get( $pricelist_id );
 		$supplier_id  = $pricelist["supplier_id"];
 		if ( $product_id > 0 ) {
 			$alternatives = self::alternatives( $product_id );
@@ -349,7 +349,7 @@ class Fresh_Catalog {
 	}
 
 	static function SelectOption( $product_id, $pricelist_id ) {
-		$pricelist = Fresh_PriceList::Get( $pricelist_id );
+		$pricelist = Fresh_Pricelist::Get( $pricelist_id );
 		$Supplier = new Fresh_Supplier($pricelist["supplier_id"]);
 		$Product = new Fresh_Product($product_id);
 
@@ -465,13 +465,13 @@ class Fresh_Catalog {
 		}
 
 		// find products mapped by name
-		$result       = Fresh_PriceList::Get( $pricelist_id );
+		$result       = Fresh_Pricelist::Get( $pricelist_id );
 		$product_name = $result["product_name"];
 		if ($debug)
 			print "handling $product_name";
 
 		if (strlen($product_name)) {
-			$product_name = Fresh_PriceList::StripProductName($product_name, $debug);
+			$product_name = Fresh_Pricelist::StripProductName($product_name, $debug);
 			$sql = "SELECT product_id, id FROM im_supplier_mapping " .
 			       " WHERE supplier_product_name like '%$product_name%'" .
 			       " AND supplier_id = " . $result["supplier_id"];
