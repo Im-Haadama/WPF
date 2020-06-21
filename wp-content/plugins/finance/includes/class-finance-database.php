@@ -10,6 +10,16 @@ class Finance_Database extends Core_Database {
 
 		if ($current == $version and ! $force) return true;
 
+		SqlQuery("CREATE TABLE `im_bank_lines` (
+  `id` int(11) NOT NULL,
+  `line_id` int(11) DEFAULT NULL,
+  `amount` float DEFAULT NULL,
+  `site_id` int(11) DEFAULT NULL,
+  `part_id` int(11) DEFAULT NULL,
+  `invoice` int(11) DEFAULT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;");
+
+
 		SqlQuery("CREATE TABLE `im_conversion` (
   `id` int(11) NOT NULL,
   `table_name` varchar(20) NOT NULL,

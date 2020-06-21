@@ -50,6 +50,12 @@ class Finance_Bank
 	}
 
 	function init_hooks() {
+//		if (get_user_id() == 1) {
+//			print debug_trace( 10 );
+//			print '=====================================<br/>';
+//
+//		}
+//		if (get_user_id() == 1) print debug_trace(10);
 		AddAction( "finance_bank_accounts", array( $this, "show_bank_accounts" ) );
 		AddAction( "finance_bank_account", array( $this, "show_bank_account" ) );
 		AddAction( "finance_bank_payments", array( $this, "show_bank_payments" ) );
@@ -461,6 +467,9 @@ class Finance_Bank
 
 	 public function bank_payments()
 	{
+		print "YYY";
+		return;
+		print debug_trace(10);
 		$id = GetParam( "id" );
 		print Core_Html::gui_header( 1, "רישום העברה שבוצעה " );
 
@@ -614,6 +623,9 @@ class Finance_Bank
 		if (($row['receipt'] == '') and ($row['in_amount'] > 0))
 			$row['receipt'] = Core_Html::GuiHyperlink(__("Invoice"), AddToUrl(array("operation" => "bank_create_invoice", "id" => $id)));
 //			$row['receipt'] = Core_Html::GuiButton("btn_bank_receipt", "קבלה", "bank_receipt('". Finance::getPostFile() . "', $id)");
+
+		if (($row['receipt'] == '') and ($row['out_amount'] > 0))
+			$row['receipt'] = Core_Html::GuiHyperlink(__("Mark"), AddToUrl(array("operation" => "bank_create_pay", "id" => $id)));
 
 		return $row;
 

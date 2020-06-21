@@ -46,6 +46,7 @@ class Finance_Clients
 	}
 	function get_client_open_account()
 	{
+		if (! TableExists("client_accounts")) return "";
 		if (! $this->multisite)
 			return "multisite not configured";
 		$sql = "select " . $this->multisite->LocalSiteId() . ", client_id, client_displayname(client_id), round(sum(transaction_amount),2) as total\n"
