@@ -172,10 +172,6 @@ class Finance {
 		add_action( 'pay_credit', array( $this, 'pay_credit_wrapper' ) );
 
 		AddAction('finance_get_open_site_invoices', array($this, 'get_open_site_invoices'));
-//		print __FUNCTION__;
-		AddAction('admin_init', array($this, 'admin_init'));
-		// For old version:
-		AddAction('init', array($this, 'admin_init'));
 
 		if ( $this->yaad ) $this->yaad->init_hooks();
 		if ( $this->clients ) $this->clients->init_hooks();
@@ -560,25 +556,15 @@ class Finance {
 		$this->shortcodes->do_init();
 
 		$this->invoices->init( FINANCE_INCLUDES_URL . '../post.php' );
-//		InfoUpdate("finance_bank_enabled", 1);
 
-		// For testing:
-		//		wp_set_current_user(369);
-
-		// Init action.
-//		do_action( 'finance_init' );
-	}
-
-	public function admin_init()
-	{
-		InfoUpdate("finance_bank_enabled", 1);
-		if (is_admin_user() and InfoGet("finance_bank_enabled")) {
+		if (InfoGet("finance_bank_enabled")) {
 			$this->bank = new Finance_Bank( self::getPostFile() );
 			$this->bank->init_hooks();
 			$this->shortcodes = Core_Shortcodes::instance();
 			$this->shortcodes->add( $this->bank->getShortcodes() );
 		}
 	}
+
 //	/**
 //	 * Load Localisation files.
 //	 *

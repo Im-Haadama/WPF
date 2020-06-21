@@ -11,7 +11,7 @@ function selected_client_index() {
 
 function selected_supplier_index() {
     var client = document.getElementById("supplier");
-    return get_value(client);
+    return get_value(client) - 1;
 }
 
 function selected_supplier_id() {

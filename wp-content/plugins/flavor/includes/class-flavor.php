@@ -144,7 +144,7 @@ class Flavor {
 
 		// Register tables that can be fetched.
 		$i = Core_Db_MultiSite::getInstance();
-		foreach (array("multisite") as $table)
+		foreach (array("multisite", "missions") as $table)
 			$i->AddTable($table);
 
 		add_action( 'admin_enqueue_scripts', array($this, 'admin_scripts' ));

@@ -171,11 +171,6 @@ class Core_MultiSite {
 
 		if (in_array($this->http_codes[$site_id], array(404, 500))) return false;
 
-		if ( $debug ) {
-			print "result from master<br/>";
-			print $result_text . "<br/>";
-		}
-
 		return $result_text;
 	}
 

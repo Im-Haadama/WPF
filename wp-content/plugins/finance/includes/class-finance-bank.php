@@ -409,6 +409,7 @@ class Finance_Bank
 		print Core_Gem::ShowImport( "bank", $args );
 
 	}
+
 	function gui_select_open_supplier( $id = "supplier" ) {
 		$multi_site = Core_Db_MultiSite::getInstance();
 
@@ -416,7 +417,7 @@ class Finance_Bank
 
 		if (! $values) 	return "nothing found";
 		$open    = array();
-		$list_id = 0;
+		$list_id = 1;
 		foreach ( $values as $value ) {
 			$new                = array();
 			$new["id"]          = $list_id ++;
@@ -424,6 +425,7 @@ class Finance_Bank
 			$new["supplier_id"] = $value[1];
 			$new["name"]        = $value[2];
 			$new["balance"]     = $value[3];
+//			print $new["id"] . " " . $new["supplier_id"] . " " . $new["name"] . "<br/>";
 			array_push( $open, $new );
 		}
 
@@ -467,9 +469,6 @@ class Finance_Bank
 
 	 public function bank_payments()
 	{
-		print "YYY";
-		return;
-		print debug_trace(10);
 		$id = GetParam( "id" );
 		print Core_Html::gui_header( 1, "רישום העברה שבוצעה " );
 
@@ -598,12 +597,13 @@ class Finance_Bank
 		$account_id = 1;
 
 		$page = GetParam("page_number", false, 1);
-		$args["rows_per_page"] = 20;
+		$args["page_number"] = $page;
+		$args["rows_per_page"] = 40;
 		$args["class"] = "widefat";
 		$args["prepare_plug"] = __CLASS__ . "::prepare_row";
 //		$offset = ($page - 1) * $rows_per_page;
 
-		$fields = GetArg($args, "fields", array("id", "date", "description", "out_amount", "in_amount", "balance", "receipt"));
+		$fields = GetArg($args, "fields", array("id", "date", "description", "out_amount", "in_amount", "balance", "receipt", "client_name"));
 
 //		print "args=" . $args["query"] . "<br/>";
 		$sql = "select " . CommaImplode($fields) . " from ${table_prefix}bank ";
@@ -612,7 +612,7 @@ class Finance_Bank
 
 		$result .= Core_Html::GuiTableContent("banking", $sql, $args);
 
-		$result .= Core_Html::GuiHyperlink("Older", AddToUrl("page", $page + 1)) . " ";
+		$result .= Core_Html::GuiHyperlink("Older", AddToUrl("page_number", $page + 1)) . " ";
 
 		return $result;
 	}

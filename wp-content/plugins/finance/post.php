@@ -16,8 +16,6 @@ if (! get_user_id() and ! $password_check) {
 	if ( ! get_user_id(true) ) die('Not connected');
 }
 
-$finance->init();
-
 $rc = $finance->handle_operation($operation);
 
 if ($rc === false) { print "failed"; return; } // Something went wrong. The processing would print something.
