@@ -152,12 +152,9 @@ class Core_MultiSite {
 
 	function Run( $func, $site_id, $first = false, $debug = false )
 	{
-		$debug = 0;
 		$url = $this->getSiteURL( $site_id );
 
 		$glue = (( strstr( $func, "?" ) ) ? "&" : "?");
-
-		$site_name = $this->getSiteName( $site_id );
 
 		$file = $url . "/" . $func . $glue . "header=" . ( $first ? "1" : "0" );
 
@@ -170,25 +167,22 @@ class Core_MultiSite {
 			$password = $this->sites_array[ $site_id ][4];
 		}
 
-//		print "r=$file $username $password<br/>";
-
-		$result_text = self::DoRun($file, $this->http_codes[$site_id], $username, $password);
+		$result_text = self::DoRun($file, $this->http_codes[$site_id], $username, $password, $debug);
 
 		if (in_array($this->http_codes[$site_id], array(404, 500))) return false;
 
 		if ( $debug ) {
-			print "result from " . $site_name . "<br/>";
+			print "result from master<br/>";
 			print $result_text . "<br/>";
 		}
 
-		// print "id=" . $id . " " . "result: " . $result_text;
 		return $result_text;
 	}
 
-	static function DoRun($file, &$http_code, $username= null, $password = null)
+	static function DoRun($file, &$http_code, $username= null, $password = null, $debug = false)
 	{
 //		print "u=$username p=$password<br/>";
-		 if ($username) $file .= "&AUTH_USER=" . trim($username) . "&AUTH_PW=" . urlencode(trim($password));
+		if ($username) $file .= "&AUTH_USER=" . trim($username) . "&AUTH_PW=" . urlencode(trim($password));
 //		print __FUNCTION__ . "file=$file<br/>";
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $file);
@@ -197,49 +191,22 @@ class Core_MultiSite {
 		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 //		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
 
+
 		$result_text = curl_exec($ch);
-//		print "ret=$result_text<br/>";
+
 		$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		curl_close($ch);
+
+		if ($debug) {
+			print "Trying to get $file<br/>";
+			print "result: <br/>" . $result_text;
+			print "http code: $http_code<br/>";
+		}
 
 		return $result_text;
 	}
 
 	function Execute( $request, $site, $debug = false ) {
 		return $this->Run($request, $site, true, $debug);
-//		$remote_request = $this->getSiteToolsURL( $site ) . '/' . $request;
-//
-////		 print $remote_request . "<br/>";
-//		if ( strlen( $remote_request ) < 4 ) {
-//			print "remote tools not set.<br/>";
-//			die ( 2 );
-//		}
-//
-//		if ( strstr( $remote_request, "?" ) ) {
-//			$glue = "&";
-//		} else {
-//			$glue = "?";
-//		}
-//		// $api_key = sql_query_single_scalar( "select api_key from im_multisite where id = $site" );
-//		$api_key = $this->getApiKey( $site );
-//
-//		if ( $api_key ) {
-//			// print "key";
-//			$remote_request .= $glue . "api_key=$api_key";
-//		} else {
-//			print "no api key while accessing " . $site . "<br/>";
-//			die( 1 );
-//		}
-//		//  print "Execute remote: " . $remote_request . "<br/>";
-//		// print "XX" . $remote_request . "XX<br/>";
-//
-//		if ( $debug ) {
-//			print "request = " . $remote_request . "<br/>";
-//		}
-//		$html = im_file_get_html( $remote_request );
-//
-//		// print $html;
-//
-//		return $html;
 	}
 }

@@ -135,16 +135,6 @@ class Freight_Mission_Manager
 
 		return $result;
 	}
-	static function sync_data_missions()
-	{
-		$table = "missions";
-		$db_prefix = "im_";
-		$sql = "SELECT * FROM ${db_prefix}$table"; //  where date >= curdate()";
-
-		print Core_Html::GuiTableContent( "table", $sql, $args );
-
-		return true;
-	}
 
 	static function missions()
 	{
@@ -185,6 +175,7 @@ class Freight_Mission_Manager
 		$result .= Core_Gem::GemElement("missions", $id, $args);
 		return $result;
 	}
+
 	static function create_missions()
 	{
 		$types = SqlQueryArrayScalar("select id from im_mission_types");

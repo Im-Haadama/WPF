@@ -8,15 +8,26 @@
 
 $local_site_id = - 1;
 
+
 /**
  * Class Core_Db_MultiSite
  */
 class Core_Db_MultiSite extends Core_MultiSite {
 
+	private $allowed_tables;
+
+	public function AddTable($table)
+	{
+		if (in_array($table, $this->allowed_tables)) return;
+		AddAction("sync_data_$table", array($this, 'sync_data_wrap'));
+		array_push($this->allowed_tables, $table);
+	}
+
 	/**
 	 * Core_Db_MultiSite constructor.
 	 */
 	public function __construct() {
+		$this->allowed_tables = [];
 		if ( TableExists( "multisite" ) ) {
 			$sql           = "select id, site_name, tools_url, local, display_name, active, master, user, password " .
 			                 " from im_multisite";
@@ -43,10 +54,6 @@ class Core_Db_MultiSite extends Core_MultiSite {
 			$local_site_id = 1;
 			$sites_array[1] = array(1, 'local', $_SERVER['REQUEST_SCHEME'] . '://127.0.0.1', 1, '', '');
 		}
-//		const site_id_idx = 0;
-//		const site_name_idx = 1;
-//		const site_tools_idx = 2;
-//		const api_key = 3;
 
 		Core_MultiSite::__construct( $sites_array, $master_id, $local_site_id );
 	}
@@ -184,7 +191,8 @@ class Core_Db_MultiSite extends Core_MultiSite {
 		$html = Core_Db_MultiSite::Execute( $url, $remote, $debug );
 
 		if (! $html) {
-			print "Can't get data from " . Core_Db_MultiSite::getInstance()->getSiteToolsURL( $remote ) . "/" . $url;
+			print "Can't get data from $url ";
+			print Core_Db_MultiSite::Execute( $url, $remote, 1);
 			return false;
 		}
 
@@ -221,7 +229,9 @@ class Core_Db_MultiSite extends Core_MultiSite {
 	 */
 	static function UpdateTable( $html, $table, $table_key, $query = null, $ignore_fields = null, $verbose = false )
 	{
-		$dom = Core_Get_File::str_get_html( $html );
+		require_once( ABSPATH . 'vendor/simple_html_dom.php' );
+
+		$dom = \Dom\str_get_html( $html );
 
 		$db_prefix = GetTablePrefix($table);
 
@@ -349,6 +359,7 @@ class Core_Db_MultiSite extends Core_MultiSite {
 	function admin_page()
 	{
 		$result = Core_Html::GuiHeader(1, "Multi sites");
+		$args = [];
 
 		if (self::isMaster()) {
 			Core_Gem::AddTable( "multisite" );
@@ -359,11 +370,14 @@ class Core_Db_MultiSite extends Core_MultiSite {
 			}
 			$result .= Core_Gem::GemTable( "multisite", $args );
 		} else {
+			$args["add_button"] = false;
 			if (! self::getMasterId()) {
 				$result .= self::ShowConnectToMaster();
 			}
+			self::UpdateFromRemote("multisite");
 		}
 
+		$result .= Core_Gem::GemTable("multisite", $args);
 		print $result;
 	}
 
@@ -388,7 +402,7 @@ class Core_Db_MultiSite extends Core_MultiSite {
 		if (substr($result, 0, 4) != "done") return false;
 		$master_id = substr($result, 5); // Master id.
 		if (! SqlQuerySingleScalar("select count(*) from im_multisite where id = $master_id")){
-			SqlQuery("insert into ${db_prefix}multisite (id, tools_url, master, last_inc_update, pickup_address) values ($master_id, '$server', 1, curdate(), '')");
+			SqlQuery("insert into ${db_prefix}multisite (id, tools_url, master, last_inc_update, pickup_address, user, password) values ($master_id, '$server', 1, curdate(), '', '$user', '$password')");
     	}
 
 		$this->UpdateFromRemote("multisite");
@@ -411,5 +425,20 @@ class Core_Db_MultiSite extends Core_MultiSite {
   `password` varchar(100) DEFAULT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 ");
+	}
+
+	function sync_data_wrap()
+	{
+		$operation = GetParam("operation", true, false);
+		return self::sync_data(substr($operation, 10));
+	}
+
+	function sync_data($table)
+	{
+		if (! in_array($table, $this->allowed_tables)) return "not allowed";
+		$db_prefix = "im_";
+		$sql = "SELECT * FROM ${db_prefix}$table"; //  where date >= curdate()";
+
+		return Core_Html::GuiTableContent( "table", $sql, $args );
 	}
 }

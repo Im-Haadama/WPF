@@ -247,7 +247,8 @@ class Focus_Tasks {
 					break;
 
 				case "projects":
-					$args["hide_cols"] = array("is_active"=>1, "manager"=>1);
+					// Todo: if col is hidden, set default.
+//					$args["hide_cols"] = array("is_active"=>1, "manager"=>1);
 					$args["links"]     = array( "ID" => AddToUrl( array( "operation" => "gem_edit_projects&id=%s" ) ) );
 					$args["check_active"] = true;
 					// $args["fields"] =
@@ -1027,7 +1028,7 @@ class Focus_Tasks {
 			$args["query"] .= " and (ended >= curdate() - INTERVAL $period )";
 		}
 
-		$args["limit"] = GetParam( "limit", false, 10 );
+		$args["rows_per_page"] = 9; // GetParam( "limit", false, 10 );
 		$args["post_action"] = self::getPost() . "?operation=tasklist_worker&worker_id=" . $user_id . "&action_only=" . $active_only;
 
 		$table = self::Taskslist( $args );

@@ -323,7 +323,9 @@ class Core_Gem {
 		if (!isset($args["transpose"])) $args["transpose"] = true;
 		if (!isset($args["edit"])) $args["edit"] = true;
 		if (!isset($args["hide_cols"])) $args["hide_cols"] = array();
-		$args["hide_cols"]["is_active"] = 1;
+		// Todo: hiding default values
+//		$args["hide_cols"]["is_active"] = 1;
+//		$args["values"]["is_active"] = 1;
 
 		if ($title)
 			$result .= Core_Html::gui_header(1, $title, true, true) . " " .Core_Html::gui_label("id", $row_id);

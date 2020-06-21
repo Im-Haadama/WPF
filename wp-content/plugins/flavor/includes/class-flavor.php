@@ -12,7 +12,7 @@ class Flavor {
 	 *
 	 * @since    1.0.0
 	 * @access   protected
-	 * @var      Delivery_Drivers_Loader $loader Maintains and registers all hooks for the plugin.
+	 * @var      $loader Maintains and registers all hooks for the plugin.
 	 */
 	protected $loader;
 
@@ -131,8 +131,6 @@ class Flavor {
 	 * @since 2.3
 	 */
 	private function init_hooks() {
-		// register_activation_hook( WC_PLUGIN_FILE, array( 'Flavor_Install', 'install' ) );
-
 		$this->database = new Flavor_Database();
 		$this->database->install($this->version);
 		register_shutdown_function( array( $this, 'log_errors' ) );
@@ -143,14 +141,13 @@ class Flavor {
 		add_action('wp', 'unlogged_guest_posts_redirect');
 
 		GetSqlConn( ReconnectDb() );
-//		add_action( 'init', array( 'Flavor_Emails', 'init_transactional_emails' ) );
-		// add_action( 'init', array( $this, 'wpdb_table_fix' ), 0 );
-		// add_action( 'init', array( $this, 'add_image_sizes' ) );
-		// add_action( 'switch_blog', array( $this, 'wpdb_table_fix' ), 0 );
+
+		// Register tables that can be fetched.
+		$i = Core_Db_MultiSite::getInstance();
+		foreach (array("multisite") as $table)
+			$i->AddTable($table);
 
 		add_action( 'admin_enqueue_scripts', array($this, 'admin_scripts' ));
-
-//		$this->loader->add_action( 'wp_enqueue_scripts', $orders, 'enqueue_scripts' );
 	}
 
 	public static function add_settings_tab( $settings_tabs ) {
@@ -369,6 +366,12 @@ class Flavor {
 	 * @return string|void
 	 */
 	function handle_operation($operation) {
+		$ignore_list = array("operation");
+		$input = null;
+
+		$result = apply_filters( $operation, $input, GetParams($ignore_list));
+		if ( $result !== null ) return $result;
+
 		$module = strtok( $operation, "_" );
 		if ( $module === "data" ) {
 			return handle_data_operation( $operation );
