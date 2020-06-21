@@ -22,8 +22,8 @@ class Core_Db_MultiSite extends Core_MultiSite {
 			                 " from im_multisite";
 			$results       = SqlQuery( $sql );
 			$sites_array   = array();
-			$master_id     = - 1;
-			$local_site_id = - 1;
+			$master_id     = null;
+			$local_site_id = null;
 			while ( $row = SqlFetchRow( $results ) ) {
 				$id = $row[0];
 				if ( $row[3] ) {
@@ -172,13 +172,13 @@ class Core_Db_MultiSite extends Core_MultiSite {
 	 *
 	 * @return bool|void
 	 */
-	function UpdateFromRemote( $table, $key, $remote = 0, $query = null, $ignore = null, $debug = false )
+	function UpdateFromRemote( $table, $key = "id", $remote = 0, $query = null, $ignore = null, $debug = false )
 	{
 		if ( $remote == 0 ) $remote = self::getMaster();
 
 		if ($this->isMaster()) return true;
 
-		$url = Freight::getPost() . "?operation=sync_data_$table";
+		$url = Flavor::getPost() . "?operation=sync_data_$table";
 		if ( $query ) $url .= "&query=" . urlencode( $query );
 
 		$html = Core_Db_MultiSite::Execute( $url, $remote, $debug );
@@ -344,5 +344,72 @@ class Core_Db_MultiSite extends Core_MultiSite {
 			SqlQuery( $sql );
 		}
 		return true;
+	}
+
+	function admin_page()
+	{
+		$result = Core_Html::GuiHeader(1, "Multi sites");
+
+		if (self::isMaster()) {
+			Core_Gem::AddTable( "multisite" );
+
+			$args = array( "post_file" => Finance::getPostFile() );
+			if ( ! TableExists( "multisite" ) ) {
+				self::install();
+			}
+			$result .= Core_Gem::GemTable( "multisite", $args );
+		} else {
+			if (! self::getMasterId()) {
+				$result .= self::ShowConnectToMaster();
+			}
+		}
+
+		print $result;
+	}
+
+	function ShowConnectToMaster()
+	{
+		$result = Core_Html::GuiHeader(1, "Connect to master!");
+		$result .= "master: " . Core_Html::GuiInput("server") . "<br/>" .
+		           "user: " . Core_Html::GuiInput("user") . "<br/>" .
+		           "password: " . Core_Html::GuiInput("password") . "<br/>";
+
+		$result .= Core_Html::GuiButton("btn_connect", "Connect", "multisite_connect('" . Finance::getPostFile() . "')");
+		return $result;
+	}
+
+	function DoConnectToMaster($server, $user, $password)
+	{
+		$db_prefix = GetTablePrefix();
+		$http_code = 0;
+		$url = "$server/wp-content/plugins/finance/post.php?operation=multisite_validate";
+		$result = self::DoRun($url, $http_code, $user, $password );
+
+		if (substr($result, 0, 4) != "done") return false;
+		$master_id = substr($result, 5); // Master id.
+		if (! SqlQuerySingleScalar("select count(*) from im_multisite where id = $master_id")){
+			SqlQuery("insert into ${db_prefix}multisite (id, tools_url, master, last_inc_update, pickup_address) values ($master_id, '$server', 1, curdate(), '')");
+    	}
+
+		$this->UpdateFromRemote("multisite");
+	}
+
+	function install()
+	{
+		SqlQuery("CREATE TABLE `im_multisite` (
+  `id` int(11) NOT NULL,
+  `site_name` varchar(20) DEFAULT NULL,
+  `tools_url` varchar(40) DEFAULT NULL,
+  `local` int(11) DEFAULT '0',
+  `display_name` varchar(20) DEFAULT NULL,
+  `active` tinyint(1) DEFAULT NULL,
+  `api_key` varchar(200) DEFAULT NULL,
+  `master` bit(1) NOT NULL DEFAULT b'0',
+  `last_inc_update` date NOT NULL,
+  `pickup_address` varchar(50) NOT NULL,
+  `user` varchar(100) DEFAULT NULL,
+  `password` varchar(100) DEFAULT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+");
 	}
 }

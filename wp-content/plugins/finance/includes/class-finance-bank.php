@@ -36,7 +36,7 @@ class Finance_Bank
 		AddAction("bank_show_import", array($this, "show_import"));
 	}
 
-	public static function instance() {
+	public static function instance() :Finance_Bank {
 		if ( is_null( self::$_instance ) ) {
 			self::$_instance = new self( "/wp-content/plugins/finance/post.php" );
 		}
@@ -591,6 +591,7 @@ class Finance_Bank
 		$page = GetParam("page_number", false, 1);
 		$args["rows_per_page"] = 20;
 		$args["class"] = "widefat";
+		$args["prepare_plug"] = __CLASS__ . "::prepare_row";
 //		$offset = ($page - 1) * $rows_per_page;
 
 		$fields = GetArg($args, "fields", array("id", "date", "description", "out_amount", "in_amount", "balance", "receipt"));
@@ -605,6 +606,17 @@ class Finance_Bank
 		$result .= Core_Html::GuiHyperlink("Older", AddToUrl("page", $page + 1)) . " ";
 
 		return $result;
+	}
+
+	static function prepare_row($row)
+	{
+		$id = $row['id'];
+		if (($row['receipt'] == '') and ($row['in_amount'] > 0))
+			$row['receipt'] = Core_Html::GuiHyperlink(__("Invoice"), AddToUrl(array("operation" => "bank_create_invoice", "id" => $id)));
+//			$row['receipt'] = Core_Html::GuiButton("btn_bank_receipt", "קבלה", "bank_receipt('". Finance::getPostFile() . "', $id)");
+
+		return $row;
+
 	}
 
 	function create_invoice($id)
@@ -794,7 +806,6 @@ function user_is_business_owner() {
 
 	function admin_menu()
 	{
-		print 1/0;
 		$menu = new Core_Admin_Menu();
 
 		$menu->AddSubMenu('freight', 'edit_shop_orders',

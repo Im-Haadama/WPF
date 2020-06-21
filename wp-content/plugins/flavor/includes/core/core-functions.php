@@ -564,6 +564,7 @@ require_once (ABSPATH . '/wp-includes/pluggable.php');
 			MyLog("adding $tag $f<br/>");
 		}
 
+//		print "adding $tag $function_to_add[1] <br/>";
 		return add_action($tag, $function_to_add, $priority, $accepted_args);
 	}
 

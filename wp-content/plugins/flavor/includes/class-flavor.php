@@ -584,7 +584,7 @@ class Flavor {
 		return $sections;
 	}
 
-	static private function getPost()
+	static function getPost()
 	{
 		return "/wp-content/plugins/flavor/post.php";
 	}

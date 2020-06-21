@@ -77,12 +77,10 @@ class Core_MultiSite {
 	}
 
 	public function getSiteURL( $site_id ) {
-//		var_dump($this->sites_array);
 		if ( isset( $this->sites_array[ $site_id ] ) ) {
 			return $this->sites_array[ $site_id ][ Core_Multisite_Fields::site_url_idx ];
 		} else {
 			print "site $site_id not defined!";
-//			print debug_trace(10);
 
 			return null;
 		}
@@ -97,6 +95,7 @@ class Core_MultiSite {
 	}
 
 	function isMaster() {
+		if (! $this->master_id) return false;
 		return $this->master_id == $this->local_site_id;
 	}
 
@@ -243,6 +242,4 @@ class Core_MultiSite {
 //
 //		return $html;
 	}
-
-
 }

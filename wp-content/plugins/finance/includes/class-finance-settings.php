@@ -14,8 +14,6 @@ class Finance_Settings {
 	}
 
 	public function __construct() {
-		$this->id        = 'fresh';
-		$this->label     = __( 'Fresh' );
 		self::$_instance = $this;
 
 		self::init();
@@ -77,6 +75,10 @@ class Finance_Settings {
 		$menu->AddSubMenu( "finance", "finance_bank",
 			array( 'page_title' => 'Bank pages', 'function' => array( Finance_Bank::instance(), 'show_bank_accounts_wrap' ) ) );
 
+		$menu->AddSubMenu( "finance", "promote_users",
+			array( 'page_title' => 'Multi site', 'function' => array( Core_Db_MultiSite::getInstance(), 'admin_page' ) ) );
+
+
 		$menu->AddSubMenu( "users.php", "edit_shop_orders",
 			array( 'page_title' => 'Client accounts', 'function' => array( "Finance_Clients", 'admin_page' ) ) );
 
@@ -91,6 +93,7 @@ class Finance_Settings {
 
 		print $result;
 	}
+
 	static function suppliers() {
 		$result = '<h3>Suppliers</h3>';
 

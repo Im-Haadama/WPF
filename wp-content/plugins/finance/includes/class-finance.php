@@ -172,7 +172,10 @@ class Finance {
 		add_action( 'pay_credit', array( $this, 'pay_credit_wrapper' ) );
 
 		AddAction('finance_get_open_site_invoices', array($this, 'get_open_site_invoices'));
+//		print __FUNCTION__;
 		AddAction('admin_init', array($this, 'admin_init'));
+		// For old version:
+		AddAction('init', array($this, 'admin_init'));
 
 		if ( $this->yaad ) $this->yaad->init_hooks();
 		if ( $this->clients ) $this->clients->init_hooks();
@@ -180,6 +183,9 @@ class Finance {
 		$this->payments = Finance_Payments::instance();
 		$this->payments->init_hooks();
 		$this->subcontract->init_hooks();
+
+		add_action('multisite_connect', array($this, 'multisite_connect'));
+		add_action('multisite_validate', array($this, 'multisite_validate'));
 
 //		if (is_admin_user())
 //			self::admin_init();
@@ -569,6 +575,7 @@ class Finance {
 		if (is_admin_user() and InfoGet("finance_bank_enabled")) {
 			$this->bank = new Finance_Bank( self::getPostFile() );
 			$this->bank->init_hooks();
+			$this->shortcodes = Core_Shortcodes::instance();
 			$this->shortcodes->add( $this->bank->getShortcodes() );
 		}
 	}
@@ -714,6 +721,9 @@ class Finance {
 
 		$file = FINANCE_INCLUDES_URL . 'account.js';
 		wp_enqueue_script( 'account', $file, null, $this->version, false );
+
+		$file = FINANCE_INCLUDES_URL . 'multisite.js';
+		wp_enqueue_script( 'multisite', $file, null, $this->version, false );
 	}
 
 	public function run() {
@@ -845,4 +855,19 @@ class Finance {
 
 		return null;
 	}
+
+	function multisite_connect()
+	{
+		$server = GetParam("server", true);
+		$user = GetParam("user", true);
+		$password = GetParam("password", true);
+
+		return Core_Db_MultiSite::getInstance()->DoConnectToMaster($server, $user, $password);
+	}
+
+	function multisite_validate()
+	{
+		return Core_Db_MultiSite::getInstance()->getLocalSiteID();
+	}
+
 }
