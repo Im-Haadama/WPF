@@ -51,6 +51,6 @@ function run_flavor() {
 
 run_flavor();
 
-if (function_exists('get_user_id') and (get_user_id() == 1)) {
-	show_errors();
-}
+//if (function_exists('get_user_id') and (get_user_id() == 1)) {
+//	show_errors();
+//}

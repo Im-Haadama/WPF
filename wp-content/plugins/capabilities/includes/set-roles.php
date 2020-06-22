@@ -5,7 +5,6 @@
  * Date: 24/02/18
  * Time: 23:16
  */
-//ini_set( 'display_errors', 'on' );
 require_once( "../im_tools.php" );
 require_once( ROOT_DIR . '/wp-includes/capabilities.php' );
 //https://www.cloudways.com/blog/add-custom-user-roles-in-wordpress/

@@ -337,6 +337,7 @@ class Focus {
 	public function init() {
 		$this->loader = new Focus_Loader();
 		$this->auto_loader = new Core_Autoloader(FOCUS_ABSPATH);
+		$shortcodes = Core_Shortcodes::instance();
 
 		$plugins = get_option( 'active_plugins', array());
 		$plugin = "focus/focus.php";
@@ -348,7 +349,10 @@ class Focus {
 		do_action( 'before_focus_init' );
 
 		$this->manager = new Focus_Manager(self::getPost());
-		$this->salary = Finance_Salary::instance();
+		if (class_exists('Finance_Salary')) {
+			$this->salary = Finance_Salary::instance();
+			$shortcodes->add( $this->salary->getShortcodes() );
+		}
 		$this->tasks = Focus_Tasks::instance(self::getPost());
 
 		WPF_Organization::init();
@@ -356,8 +360,6 @@ class Focus {
 		// Set up localisation.
 		$this->load_plugin_textdomain();
 
-		$shortcodes = Core_Shortcodes::instance();
-		$shortcodes->add($this->salary->getShortcodes());
 		$shortcodes->add($this->tasks->getShortcodes());
 		$shortcodes->add($this->manager->getShortcodes());
 

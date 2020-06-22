@@ -2,7 +2,6 @@
 if (! class_exists("Core_Database"))
 	return;
 
-
 class Finance_Database extends Core_Database {
 	function CreateTables($version, $force) {
 		$current = self::CheckInstalled("Finance", "tables");

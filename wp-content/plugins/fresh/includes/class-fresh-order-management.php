@@ -19,13 +19,19 @@ class Fresh_Order_Management {
 	}
 
 	public function init_hooks() {
-//		MyLog(__FUNCTION__ . __CLASS__);
+		MyLog(__FUNCTION__ . __CLASS__);
 		// add_filter( 'manage_shop_order_posts_custom_column', array(__CLASS__, 'add_my_account_order_actions'), 10, 2 );
 		add_filter('woocommerce_admin_order_actions', array(__CLASS__, 'add_order_action'), 10, 2);
 		add_filter('order_complete', array($this, 'order_complete_wrap'));
 		add_action('admin_post_delivery', array(__CLASS__, 'create_delivery_note'));
 		add_action( 'woocommerce_view_order', array(__CLASS__, 'show_edit_order'), 10 );
+//		AddAction('woocommerce_calculate_totals', array($this, 'woocommerce_calculate_totals'));
 
+	}
+
+	function woocommerce_calculate_totals($order_id)
+	{
+		MyLog(__FUNCTION__ . " $order_id");
 	}
 
 	static public function show_edit_order($order_id)
