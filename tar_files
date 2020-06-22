@@ -1565,7 +1565,7 @@ wp-content/plugins/focus/focus.php
 wp-content/plugins/focus/post.php
 wp-content/plugins/focus/includes/class-focus-autoloader.php
 wp-content/plugins/focus/includes/class-wpf-organization.php
-wp-content/plugins/focus/includes/org/people.js
+wp-content/plugins/focus/includes/org/salary.js
 wp-content/plugins/focus/includes/org/class-org-worker.php
 wp-content/plugins/focus/includes/org/class-org-company.php
 wp-content/plugins/focus/includes/org/class-org-team.php

@@ -2119,8 +2119,8 @@ class Focus_Tasks {
 
 		// Project related actions.
 		Core_Gem::AddTable( "projects" ); // add + edit
-		AddAction("gem_edit_projects", array(__CLASS__, 'ShowProjectMembers'), 11, 3);
-		AddAction("gem_add_project_members", array(__CLASS__, 'AddProjectMember'), 11, 3);
+		AddAction("gem_edit_projects", array($this, 'ShowProjectMembers'), 11, 3);
+		AddAction("gem_add_project_members", array($this, "AddProjectMember"), 11, 3);
 		AddAction("project_add_member", array(__CLASS__, 'ProjectAddMember'), 11, 3);
 
 		// Tasklist
@@ -2156,16 +2156,6 @@ class Focus_Tasks {
 		return $team->AddWorker($new);
 
 	}
-//			$team_id = GetParam( "id", true );
-//			$result  .= Core_Html::gui_header( 1, "Adding member to team" . SqlQuerySingleScalar( "select team_name from ${db_prefix}working_teams where id = " . $team_id ) );
-//			$result  .= gui_select_worker( "new_member" );
-//			$result  .= gui_label( "team_id", $team_id, true );
-//			$result  .= Core_Html::GuiButton( "btn_add_member", "add_member()", "Add" );
-//
-//			$result .= "<br/>";
-//
-//			return $result;
-	//			$result .= Core_Html::GuiHyperlink( "Invite college to your company", AddToUrl( array( "operation" => "show_add_to_company" ) ) );
 
 	static function DoAddCompanyWorker()
 	{
@@ -2258,7 +2248,7 @@ class Focus_Tasks {
 		return $result;
 	}
 
-	static function ShowProjectMembers($i, $id, $args)
+	function ShowProjectMembers($i, $id, $args)
 	{
 		$result = $i;
 		if (! ($id > 0)) {
@@ -2268,30 +2258,11 @@ class Focus_Tasks {
 		$result .= Core_Html::gui_header(1, $u->getName());
 		$result .= self::doShowProjectMembers($id);
 		$result .= Core_html::gui_header(2, "Add member");
-		$result .= gui_select_worker("new_worker", null, $args);
+		$result .= self::gui_select_worker("new_worker", null, $args);
 		$result .= Core_Html::GuiButton("btn_add_worker", "Add",
 			array("action" => 'project_add_worker(' . QuoteText(self::getPost()) . "," . $id . ')'));
 		return $result;
 	}
-
-//	static public function AddTeamMember($i, $team_id, $args)
-//	{
-//		$args = self::Args();
-//		$team = new Org_Team($team_id);
-//		$result = Core_Html::gui_header(1, $team->getName());
-//		$result .= self::gui_select_worker("new_worker", null, $args);
-//		$args["action"] = "team_add_worker('" . self::getPost() ."', " .$team_id . ")";
-//
-//		 $result .= Core_Html::GuiButton("btn_add_worker", "Add", $args);
-////		$table = array();
-////		foreach ($project->all_members() as $member) {
-////			$w = new Org_Worker($member);
-////			$table[$member] = array("name" => $w->getName());
-////		}
-////		$result .= Core_Gem::GemArray($table, $args, "project_members");
-//
-//		return $result;
-//	}
 
 	static function ActiveQuery() {
 		return " (isnull(preq) or preq_done(id)) and (date is null or date(date) <= Curdate())"

@@ -53,7 +53,30 @@ class Finance_Database extends Core_Database {
 
 	function CreateFunctions($version) {
 		return;
-		SqlQuery( "drop function reduce_vat" );
+		SqlQuery("create
+    function working_rate(_worker int, _project int) returns float
+BEGIN
+	
+    declare _rate float;
+
+	select round(rate, 2) into _rate  
+	       from im_working 
+	        where user_id = _worker
+	       and project_id = _project;
+
+    if (_rate > 0 ) THEN
+      return _rate;
+    END IF;
+
+	select round(rate, 2) into _rate
+	          from im_working
+	          where user_id = _worker
+	          and project_id = _project;
+
+    return _rate;
+  END;
+
+");		SqlQuery( "drop function reduce_vat" );
 		SqlQuery( "create FUNCTION `reduce_vat`(total float) RETURNS float
 BEGIN
     return round(total/1.17, 2);

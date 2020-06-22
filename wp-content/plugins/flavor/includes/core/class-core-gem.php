@@ -95,7 +95,7 @@ class Core_Gem {
 		if (! $operation)  return __FUNCTION__ . ":no operation";
 
 		$table_name = substr($operation, 9);
-		return $result . self::GemElement( GetTablePrefix() . $table_name, $id, $args);
+		return $result . self::GemElement( $table_name, $id, $args);
 	}
 
 	static function add_wrapper($result, $id = null, $args = null)

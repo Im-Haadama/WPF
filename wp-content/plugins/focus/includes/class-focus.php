@@ -128,9 +128,9 @@ class Focus {
 		do_action( 'focus_loaded' );
 	}
 
-	static function CreateRoles()
+	static function addRoles()
 	{
-		Flavor_Roles::addRole( "focus_user", array( "show_tasks" ) );
+		Flavor_Roles::instance()->addRole( "focus_user");
 	}
 
 	/**
@@ -277,7 +277,7 @@ class Focus {
 			case "gem":
 				return Core_Gem::handle_operation($operation, $args);
 			case "salary":
-				$salary = Focus_Salary::instance();
+				$salary = Finance_Salary::instance();
 				return ($salary->handle_operation($operation));
 				break;
 			case "data":
@@ -348,7 +348,7 @@ class Focus {
 		do_action( 'before_focus_init' );
 
 		$this->manager = new Focus_Manager(self::getPost());
-		$this->salary = Focus_Salary::instance();
+		$this->salary = Finance_Salary::instance();
 		$this->tasks = Focus_Tasks::instance(self::getPost());
 
 		WPF_Organization::init();

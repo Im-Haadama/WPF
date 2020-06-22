@@ -61,7 +61,6 @@ class Core_Nav {
 
 		$exists = wp_get_nav_menu_items($menu_id);
 
-
 		foreach ($exists as $key => $n)
 			if ($title == $exists[$key]->post_title){
 //				print "found $title at $key<br/>";
@@ -88,9 +87,9 @@ class Core_Nav {
 	{
 		// Make sure the parent is there or create it.
 		$parent_id = self::AddMain($parent);
-//		print "parent=$parent_id<Br/>";
 		return $this->doAddSub($parent_id, $item);
 	}
+
 	protected function doAddSub($parent_id, $item)
 	{
 		$menu_id = self::getMenuId();

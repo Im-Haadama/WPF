@@ -221,7 +221,6 @@ class Fresh {
 //		 if (get_user_id() == 1) wp_set_current_user(474); // Julie (siton)
 //		if (get_user_id() == 1) wp_set_current_user(34); // Yaakov (owner)
 //		if (get_user_id() == 1) wp_set_current_user(12); // business
-
 	}
 
 //	static function init_my_account_links( $menu_links ){

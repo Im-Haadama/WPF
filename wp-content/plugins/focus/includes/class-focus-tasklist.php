@@ -410,6 +410,8 @@ class Focus_Tasklist {
 	}
 
 	static function check_query( $query ) {
+		require_once( ABSPATH . 'vendor/simple_html_dom.php' );
+
 		if ( strlen( $query ) == 0 ) {
 			return "1 empty query passed<br/>";
 		}
@@ -417,7 +419,7 @@ class Focus_Tasklist {
 			return "0 short or bad query. " . $query . " failed";
 		}
 
-		return strip_tags( Core_Get_File::im_file_get_html( $query ));
+		return strip_tags( \Dom\file_get_html( $query ));
 	}
 
 	static function check_active( $id, $repeat_freq ) {

@@ -654,6 +654,8 @@ class Capabilites {
 
 	static public function main()
 	{
+//		print get_current_user_id();
+		if (! im_user_can("promote_users")) return;
 		$result = Core_Html::GuiHeader(1, "Roles and capabilities");
 		$roles = [];
 		$tabs = array(array("Roles", "roles", self::roles($roles)),
@@ -700,7 +702,7 @@ class Capabilites {
 			foreach ( unserialize( $info[1] ) as $capability => $flag ) $role_types[ $capability ] = 1;
 			$users[ $info[0] ] = 1;
 		}
-		foreach (Flavor_Roles::getRoles() as $role) $role_types[$role] = 1;
+		if (Flavor_Roles::getRoles()) foreach (Flavor_Roles::getRoles() as $role) $role_types[$role] = 1;
 
 		$roles["header"]["users"] = "";
 		foreach ( $role_types as $cap => $not_used ) {

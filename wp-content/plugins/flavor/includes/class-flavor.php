@@ -147,7 +147,7 @@ class Flavor {
 		foreach (array("multisite", "missions") as $table)
 			$i->AddTable($table);
 
-		add_action( 'admin_enqueue_scripts', array($this, 'admin_scripts' ));
+		AddAction( 'admin_enqueue_scripts', array($this, 'admin_scripts' ));
 	}
 
 	public static function add_settings_tab( $settings_tabs ) {

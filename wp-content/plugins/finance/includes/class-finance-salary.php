@@ -4,7 +4,7 @@
 /**
  * Class Focus_Salary
  */
-class Focus_Salary {
+class Finance_Salary {
 	/**
 	 * @var null
 	 */
@@ -16,17 +16,11 @@ class Focus_Salary {
 	protected static $version = "1.0";
 
 	/**
-	 * @var string post file
-	 */
-	private $post_file;
-
-	/**
 	 * Focus_Salary constructor.
 	 * gets the post file.
 	 */
-	public function __construct( $post_file )
+	public function __construct( )
 	{
-		$this->post_file = $post_file;
 	}
 
 	/**
@@ -39,7 +33,7 @@ class Focus_Salary {
 	}
 
 	/**
-	 * @return Focus_Salary|null
+	 * @return Finance_Salary|null
 	 * single instance.
 	 */
 	public static function instance() {
@@ -60,39 +54,15 @@ class Focus_Salary {
 		switch ( $operation ) {
 			case "salary_delete":
 			case "delete":
-				$lines = GetParamArray( "params" );
-
-				return ( Core_Data::Inactive( "working_hours", $lines ) );
-
-			case "salary_add_time":
-			case "add_time":
-				$start     = GetParam( "start", true );
-				$end       = GetParam( "end", true );
-				$date      = GetParam( "date", true );
-				$project   = GetParam( "project", true );
-				$worker_id = GetParam( "user_id", true );
-				// print "wid=" . $worker_id . "<br/>";
-				$vol        = GetParam( "vol", true );
-				$traveling  = GetParam( "traveling", true );
-				$extra_text = GetParam( "extra_text", true );
-				$extra      = GetParam( "extra", true );
-
-				// if ($user_id = 1) $user_id = 238;
-				return self::add_activity( $worker_id, $date, $start, $end, $project, $vol, $traveling, $extra_text, $extra );
 
 			case "show_add_working":
 				$args = [];
 				$args["selectors"] = array("user_id" => "gui_select_client", "project_id" => "Focus_Tasks::gui_select_project");
-				$args["post_file"] = self::getPost();
+				$args["post_file"] = Finance::getPostFile();
 				return Core_Gem::GemAddRow("working", "Add", $args);
 		}
 
 		return false;
-	}
-
-	static function getPost()
-	{
-		return self::instance()->post_file;
 	}
 
 	//* Shortcode handling
@@ -115,6 +85,7 @@ class Focus_Salary {
 	 * @throws Exception
 	 */
 	function main() {
+		return "main";
 		$result = Core_Html::gui_header( 1, "Salary info" );
 		if ( im_user_can( "show_salary" ) ) {
 			$args              = self::Args();
@@ -235,7 +206,7 @@ class Focus_Salary {
 
 		$result .= self::show_report_worker($user_id, $y, $m);
 
-		return $result;
+		print $result;
 	}
 
 	// Actions
@@ -355,13 +326,8 @@ class Focus_Salary {
 	 */
 	static private function hours_entry($user_id) {
 		$result  = "";
-//		$user_id = get_user_id();
-		$roles   =
 
 		$table = array();
-//		if ( user_has_role( $user_id, 'hr' ) ) {
-//			array_push( $table, array( "בחר עובד", gui_select_worker() ) );
-//		}
 
 		array_push( $table, ( array( "תאריך", Core_Html::gui_input_date( "date", 'date', date( 'Y-m-d' ) ) ) ) );
 		array_push( $table, ( array(
@@ -385,7 +351,7 @@ class Focus_Salary {
 		$result .= "סכום";
 		$result .= Core_Html::GuiInput( "extra", "" ) . "<br/>";
 
-		$result .= Core_Html::GuiButton( "btn_add_time", 'add item', array("action" => 'salary_add_item(' . $user_id . ')' ));
+		$result .= Core_Html::GuiButton( "btn_add_time", 'add item', array("action" => "salary_add_item('" . Finance::getPostFile() . "', $user_id)" ));
 
 		return $result;
 	}
@@ -433,7 +399,7 @@ class Focus_Salary {
 	 */
 	function worker_data($user_id, $y = 0, $m = 0)
 	{
-		$result  = Core_Html::gui_header( 1, Focus_Salary::worker_get_name( $user_id ) );
+		$result  = Core_Html::gui_header( 1, Finance_Salary::worker_get_name( $user_id ) );
 
 		$args              = [];
 		$args["post_file"] = self::instance()->post_file;
@@ -667,7 +633,7 @@ class Focus_Salary {
 		$result .= Core_Html::gui_table_args( $rows, "working_" . $user_id, $args );
 
 		if ( $edit ) {
-			$result .= Core_Html::GuiButton( "btn_delete_from_report", "Delete" , array("action" => "delete_lines()") );
+			$result .= Core_Html::GuiButton( "btn_delete_from_report", "Delete" , array("action" => "salary_del_items('".Finance::getPostFile()."')") );
 		}
 
 		$result      .= Core_Html::gui_header( 2, "חישוב שכר מקורב" ) . "<br/>";
@@ -740,10 +706,10 @@ class Focus_Salary {
 	function getShortcodes() {
 //		print "get";
 		//           code                   function                              capablity (not checked, for now).
-		return array( 'salary_main'        => array( 'Focus_Salary::main',        'show_salary' ), // Workers list for now. ניהול פרטי שכר
-		              'salary_report'      => array( 'Focus_Salary::report',      'show_salary' ), // Report - all workers דוח שכר
-					  'salary_worker_data' => array( 'Focus_Salary::worker_data', 'show_salary' ), // Personal worker card פרטי עובד
-		              'salary_entry'       => array("Focus_Salary::entry",        null));          // Salary data entry
+//		return array( 'salary_main'        => array( 'Focus_Salary::main',        'show_salary' ), // Workers list for now. ניהול פרטי שכר
+//		              'salary_report'      => array( 'Focus_Salary::report',      'show_salary' ), // Report - all workers דוח שכר
+//					  'salary_worker_data' => array( 'Focus_Salary::worker_data', 'show_salary' ), // Personal worker card פרטי עובד
+//		              'salary_entry'       => array("Focus_Salary::entry",        null));          // Salary data entry
 	}
 
 	static function Args()
@@ -752,5 +718,49 @@ class Focus_Salary {
 		             "post_file" => self::getPost());
 	}
 
-}
+	function init_hooks()
+	{
+		add_action('admin_menu', array($this, 'admin_menu'));
+		AddAction('salary_add_time', array($this, 'salary_add_time'));
+		AddAction('salary_delete', array($this, 'salary_delete'));
 
+//		AddAction('makolet_create_invoice', array($this, 'makolet_create_invoice'));
+//		AddAction('wpf_accounts', array($this, 'main'), 10, 1);
+	}
+
+	function salary_add_time()
+	{
+		$start     = GetParam( "start", true );
+		$end       = GetParam( "end", true );
+		$date      = GetParam( "date", true );
+		$project   = GetParam( "project", true );
+		$worker_id = GetParam( "user_id", true );
+		// print "wid=" . $worker_id . "<br/>";
+		$vol        = GetParam( "vol", true );
+		$traveling  = GetParam( "traveling", true );
+		$extra_text = GetParam( "extra_text", true );
+		$extra      = GetParam( "extra", true );
+
+		// if ($user_id = 1) $user_id = 238;
+		return self::add_activity( $worker_id, $date, $start, $end, $project, $vol, $traveling, $extra_text, $extra );
+	}
+
+	function salary_delete() {
+		$lines = GetParamArray( "params" );
+
+		return ( Core_Data::Inactive( "working_hours", $lines ) );
+	}
+
+
+	function admin_menu()
+	{
+		$menu = new Core_Admin_Menu();
+
+		$menu->AddSubMenu('finance', 'working_hours_self',
+			array('page_title' => 'Hours',
+			      'menu_title' => 'Hours entry',
+			      'menu_slug' => 'settings',
+			      'function' => array($this, 'entry_wrapper')));
+
+	}
+}

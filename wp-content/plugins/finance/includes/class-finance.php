@@ -24,6 +24,7 @@ class Finance {
 	protected $admin_notices;
 	protected $database;
 	protected $subcontract;
+	protected $salary;
 
 	/**
 	 * Plugin version.
@@ -122,6 +123,7 @@ class Finance {
 		$this->yaad        = null;
 		$this->clients     = new Finance_Clients();
 		$this->subcontract = new Finance_Subcontract();
+		$this->salary      = new Finance_Salary();
 
 		$this->init_hooks();
 
@@ -179,9 +181,12 @@ class Finance {
 		$this->payments = Finance_Payments::instance();
 		$this->payments->init_hooks();
 		$this->subcontract->init_hooks();
+		$this->salary->init_hooks();
 
 		add_action('multisite_connect', array($this, 'multisite_connect'));
 		add_action('multisite_validate', array($this, 'multisite_validate'));
+
+		if ((get_user_id() == 1) and defined("DEBUG_USER")) wp_set_current_user(DEBUG_USER);
 
 //		if (is_admin_user())
 //			self::admin_init();
@@ -563,7 +568,16 @@ class Finance {
 			$this->shortcodes = Core_Shortcodes::instance();
 			$this->shortcodes->add( $this->bank->getShortcodes() );
 		}
+		self::addRoles();
+//		if (get_user_id() == 1) wp_set_current_user(2); // e-fresh
 	}
+
+	function addRoles()
+	{
+		Flavor_Roles::instance()->addRole("staff");
+		Flavor_Roles::instance()->addRole("shop_manager");
+	}
+
 
 //	/**
 //	 * Load Localisation files.
@@ -699,7 +713,7 @@ class Finance {
 		$file = FLAVOR_INCLUDES_URL . 'core/gui/client_tools.js';
 		wp_enqueue_script( 'client_tools', $file, null, $this->version, false );
 
-		$file = FINANCE_INCLUDES_URL . 'finance.js';
+		$file = FINANCE_INCLUDES_URL . 'finance.js?v=1';
 		wp_enqueue_script( 'finance', $file, null, $this->version, false );
 
 		$file = FINANCE_INCLUDES_URL . 'business.js';

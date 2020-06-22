@@ -12,7 +12,6 @@
  * @package Finance
  */
 
-
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
@@ -25,7 +24,6 @@ if ( ! defined( 'FINANCE_PLUGIN_FILE' ) ) {
 if ( ! defined( 'FINANCE_PLUGIN_DIR' ) ) {
 	define( 'FINANCE_PLUGIN_DIR', dirname(FINANCE_PLUGIN_FILE) );
 }
-
 require_once(ABSPATH . 'wp-admin/includes/plugin.php');
 if ( ! is_plugin_active( 'flavor/flavor.php' ) /* and current_user_can( 'activate_plugins' ) */ ) {
 	// Stop activation redirect and show error
