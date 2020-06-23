@@ -2029,24 +2029,6 @@ class Focus_Tasks {
 		return $result;
 	}
 
-	static function gui_select_user( $id = null, $selected = null, $args = null ) {
-		// $events = GetArg($args, "events", null);
-		$edit = GetArg( $args, "edit", true );
-
-		$args["name"]     = "client_displayname(id)";
-		$args["id_key"]   = "id";
-		$args["selected"] = $selected;
-
-		if ( $edit ) {
-			$gui = GuiAutoList( $id, "users", $args );
-
-			return $gui;
-		} else {
-			return ( $selected > 0 ) ? SqlQuerySingleScalar( "select client_displayname(user_id) from wp_users where id = " . $selected ) :
-				"";
-		}
-	}
-
 	static function gui_select_team( $id, $selected = null, $args = null )
 	{
 		$db_prefix = GetTablePrefix();

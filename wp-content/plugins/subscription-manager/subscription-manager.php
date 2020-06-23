@@ -53,7 +53,7 @@ function Subscription_Manager() {
 }
 
 function run_subscription_manager() {
-	$plugin = new Subscription_Manager();
+	$plugin = new Subscription_Manager("Subscription_Manager");
 	$plugin->run();
 }
 

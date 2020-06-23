@@ -37,5 +37,24 @@ class Core_Users {
 		return self::getUser()->display_name;
 	}
 
+	static function gui_select_user( $id = null, $selected = null, $args = null ) {
+		// $events = GetArg($args, "events", null);
+		$edit = GetArg( $args, "edit", true );
+
+		$args["name"]     = "client_displayname(id)";
+		$args["id_key"]   = "id";
+		$args["selected"] = $selected;
+
+		if ( $edit ) {
+			$result = Core_Html::GuiAutoList( $id, "users", $args );
+			$result .= Core_Html::GuiHyperlink("Add", "/wp-admin/user-new.php");
+
+			return $result;
+		} else {
+			return ( $selected > 0 ) ? SqlQuerySingleScalar( "select client_displayname(id) from wp_users where id = " . $selected ) :
+				"";
+		}
+	}
+
 }
 

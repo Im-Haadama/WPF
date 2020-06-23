@@ -30,6 +30,7 @@ class Core_Database
 			PRIMARY KEY
 	);" );
 	}
+
 	static function CheckInstalled($plugin, $subsystem)
 	{
 		self::CreateInfo();

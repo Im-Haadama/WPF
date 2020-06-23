@@ -633,3 +633,8 @@ function get_user_displayname($user_id)
 	$w = get_userdata($user_id);
 	return $w->display_name;
 }
+
+function Define_if_needed($sym, $value)
+{
+	if (! defined($sym)) define ($sym, $value);
+}
