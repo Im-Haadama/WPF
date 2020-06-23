@@ -916,7 +916,7 @@ class Core_Html {
 				if ( isset( $input_row['checkbox'] ) ) $input_row['checkbox'] = '';
 				$rows[ $key ] = $input_row;
 			} else {
-				$rows[ $key ] = Core_Data::PrepareRow( $input_row, $args, $key );
+				$rows[ $key ] = Core_Data::PrepareRow( $input_row, $args, isset($args["duplicate_of"]) ? 0 : $key );
 				// If prepare return null - remove it from table.
 				if (! $rows[$key]) unset($rows[$key]);
 			}
@@ -1848,8 +1848,8 @@ class Core_Html {
 
 		// Convert to table if data returned.
 		if ( $row_count >= 1 ) {
-			$html = Core_Html::gui_table_args( $rows_data, $table_id, $args );
-			return $html;
+			if (GetArg($args, "duplicate_of", false)) $table_id .= "_new";
+			return Core_Html::gui_table_args( $rows_data, $table_id, $args );
 		}
 
 		return null;

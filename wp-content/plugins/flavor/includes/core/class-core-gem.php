@@ -71,8 +71,8 @@ class Core_Gem {
 
 		// Page
 		AddAction("gem_page_$table", array($class, "page_wrapper"), 10, 3);
-
 	}
+
 
 	static function page_wrapper($result)
 	{
@@ -319,6 +319,9 @@ class Core_Gem {
 		$post = GetArg($args, "post_file", null);
 		// Later, add permissions checks in custom post.
 
+		$operation = GetParam("operation", false, null);
+		$duplicate = ($operation=="gem_duplicate");
+
 		// Set defaults
 		if (!isset($args["transpose"])) $args["transpose"] = true;
 		if (!isset($args["edit"])) $args["edit"] = true;
@@ -327,8 +330,15 @@ class Core_Gem {
 //		$args["hide_cols"]["is_active"] = 1;
 //		$args["values"]["is_active"] = 1;
 
+		if ($duplicate and $row_id) {
+			$args["duplicate_of"] = $row_id;
+			return self::GemElement( $table_name, 0, $args );
+		}
+
 		if ($title)
-			$result .= Core_Html::gui_header(1, $title, true, true) . " " .Core_Html::gui_label("id", $row_id);
+			$result .= Core_Html::gui_header(1, $title, true, true) . " " . ($row_id ? Core_Html::gui_label("id", $row_id) : __("New"));
+
+		if ($row_id) $result .= " " . Core_Html::GuiHyperlink(__("Duplicate"), AddToUrl("operation", "gem_duplicate"));
 
 		$check_active = GetArg($args, "check_active", false);
 		if ($check_active) {
@@ -337,11 +347,21 @@ class Core_Gem {
 			if (! $active) $result .= " not active ";
 		}
 
-		if (! ($row = Core_Html::GuiRowContent($table_name, $row_id, $args))) return null;
+		$row_to_get = $row_id;
+		$copy_of = GetArg($args, "duplicate_of", 0);
+		if (! $row_to_get and $copy_of) {
+			$row_to_get = $copy_of;
+			$row_to_save = 0;
+		}
+		if (! ($row = Core_Html::GuiRowContent($table_name, $row_to_get, $args))) return null;
 		$result .= $row;
 
 		if (GetArg($args, "edit", false) and $post) {
-			$result .= Core_Html::GuiButton( "btn_save", "save", array("action" => "data_save_entity('" . $post . "', '$table_name', " . $row_id . ')'));
+			if (! $copy_of)
+				$result .= Core_Html::GuiButton( "btn_save", "save", array("action" => "data_save_entity('" . $post . "', '$table_name', " . $row_id . ')'));
+			else
+				$result .= Core_Html::GuiButton("add_row", "add", array("action" => "data_save_new('" . $post . "', '$table_name')", "add"));
+			
 			if ($check_active) $result .= Core_Html::GuiButton( "btn_active", $active ? "inactive" : "activate", array("action" => "active_entity(" . (1 - $active) .", '" . $post . "', '$table_name', " . $row_id . ')') );
 		}
 		return $result;

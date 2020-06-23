@@ -1607,7 +1607,6 @@ class Focus_Tasks {
 		$template_args["companies"]     = $worker->GetCompanies();
 
 		if ( $template_id ) {
-			// print Core_Html::gui_header(1, "משימה חוזרת מספר " . $template_id) ."<br/>";
 			$template_args["title"]     = "Repeating task";
 			$template_args["post_file"] = $action_url;
 

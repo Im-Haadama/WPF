@@ -372,7 +372,7 @@ class Core_Data
 
 			// General preparation... decide the field name and save the orig data and default data.
 			$nm = $key; // mnemonic3($key);
-			if ($add_field_suffix)	$input_name = $nm . '_' . $row_id;
+			if ($add_field_suffix and $row_id)	$input_name = $nm . '_' . $row_id;
 			else $input_name = $nm;
 
 			$orig_data = $data;
@@ -545,7 +545,9 @@ class Core_Data
 				}
 				if ( $v_checkbox ) {
 					if ( ! $skip_id or ( $key != $id_field ) ) {
-						$v_line[ $key ] = Core_Html::GuiCheckbox( "chk_" . $key, false, array("class"=>$checkbox_class));
+						$checked = false;
+						if (GetArg($args, "duplicate_of", false)) $checked = ($cell != '');
+						$v_line[ $key ] = Core_Html::GuiCheckbox( "chk_" . $key, $checked, array("class"=>$checkbox_class));
 					}
 				}
 //			if ( is_array( $h_line ) and $header_fields ) {
