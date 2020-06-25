@@ -106,7 +106,6 @@ class Core_Html {
 	 * @return string
 	 */
 	static function GuiInput( $id, $value = null, $args = null ) {
-		//	print __FUNCTION__ . "<br/>";
 		$name   = GetArg( $args, "name", $id );
 
 		if (is_array($name))
@@ -1141,7 +1140,6 @@ class Core_Html {
 		if (! $table)
 			die (__FUNCTION__ . ": table is missing");
 
-		//	print __FUNCTION__ . "<br/>";
 		$selected             = GetArg( $args, "selected", null );
 		$events               = GetArg( $args, "events", null );
 		$more_values          = GetArg( $args, "more_values", null );

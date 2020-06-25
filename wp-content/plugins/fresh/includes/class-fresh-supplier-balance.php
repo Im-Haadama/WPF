@@ -66,7 +66,17 @@ class Fresh_Supplier_Balance {
 
 	static function test()
 	{
-		echo get_option( 'timezone_string' );
+//		echo get_option( 'timezone_string' );
+		$order = wc_get_order(13318);
+		foreach ($order->get_items() as $item_id => &$item){
+			MyLog($item->get_id());
+			$item->set_subtotal(77);
+			$item->set_total(50);
+			$item->calculate_taxes();
+			$item->save();
+		}
+		$order->calculate_totals();
+		$order->save();
 	}
 
 	static function test_invoice()

@@ -283,8 +283,6 @@ class Core_Data
 //		foreach ($meta_fields as $f)
 //			array_push($headers, $f);
 //	}
-
-//	  print __FUNCTION__ . ":"; var_dump($headers); print "<br/>";
 		return $headers;
 	}
 

@@ -47,7 +47,6 @@ class Fresh_Client_Views {
 	// Chava.
 	static function remove_from_basket()
 	{
-//		print __FUNCTION__;
 		$item_id = GetParam("item_id", true);
 		$prod_id = GetParam("prod_id", true);
 

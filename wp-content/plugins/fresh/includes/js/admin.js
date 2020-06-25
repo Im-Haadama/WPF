@@ -38,7 +38,7 @@ function needed_create_supplies(post_file, supplier_id) {
     let collection = document.getElementsByClassName("product_checkbox" + supplier_id);
 
     // Request header
-    let request = post_file + "?operation=create_supplies&params=";
+    let request = post_file + "?operation=create_supply&params=";
     let params = new Array();
 
     // Add the data.

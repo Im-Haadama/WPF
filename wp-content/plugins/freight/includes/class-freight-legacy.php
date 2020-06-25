@@ -50,6 +50,8 @@ class Freight_Legacy {
 
 	function invoice_create_ship( $customer_id, $order_ids )
 	{
+		$debug = 0;
+		if ($debug) MyLog(__FUNCTION__);
 		$invoice = Finance::Invoice4uConnect();
 
 		if ( !$invoice or is_null( $invoice->token ) ) return false;
@@ -98,6 +100,7 @@ class Freight_Legacy {
 			array_push( $doc->Items, $item );
 			$total_lines += $item->Total;
 
+			if ($debug) MyLog("Completing $order_id");
 			$o->setStatus( "wc-completed" );
 		}
 
@@ -252,7 +255,8 @@ AND (meta_value = "legacy" or meta_value = 1)';
 		       " and invoice is null " .
 		       " and document_type = " . FreshDocumentType::ship;
 
-		$args = array("add_checkbox" => 1, "checkbox_class" => "delivery_note");
+		$args = array("add_checkbox" => 1, "checkbox_class" => "delivery_note", "page_number"=>-1);
+
 
 		$data = Core_Html::GuiTableContent( "table", $sql, $args );
 

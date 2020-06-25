@@ -23,7 +23,7 @@ class Fresh_Order {
 	public function __construct( $id ) {
 		if ( ! is_numeric( $id ) ) die ("bad order id $id");
 		$this->order_id = $id;
-		$this->WC_Order = new WC_Order( $id );
+		$this->WC_Order = wc_get_order($id);
 
 		$this->mission_id = get_post_meta( $id, 'mission_id', true );;
 	}
@@ -78,6 +78,13 @@ class Fresh_Order {
 			//	break;
 		}
 		return null;
+	}
+
+	public function justDelivery() : bool
+	{
+//		MyLog("tot=" . self::getTotal());
+//		MyLog("fee=" . self::getShippingFee());
+		return (self::getTotal() == self::getShippingFee()) or (0 == self::getTotal());
 	}
 
 	public function getShippingFee() : float
@@ -1583,8 +1590,9 @@ class Fresh_Order {
 
 	function getCustomerType()
 	{
-		print $this->customer_id;
-		return get_user_meta( $this->customer_id, "_client_type", true );
+//		MyLog("cid=" . self::getCustomerId());
+//		print $this->customer_id;
+		return get_user_meta( self::getCustomerId(), "_client_type", true );
 
 	}
 
@@ -1608,5 +1616,20 @@ class Fresh_Order {
 
 		return $value;
 	}
-}
 
+//	public function UpdateOrderPrices()
+//	{
+//		MyLog(__FUNCTION__ . " " . $this->order_id);
+//		$order = $this->WC_Order;
+//		foreach ($order->get_items() as $item_id => &$item){
+//			MyLog($item->get_id());
+//			$item->set_subtotal(30);
+//			$item->set_total(22);
+//			$item->calculate_taxes();
+//			$item->save();
+//		}
+//		$this->WC_Order->calculate_totals();
+//		$this->WC_Order->save();
+//	}
+
+}

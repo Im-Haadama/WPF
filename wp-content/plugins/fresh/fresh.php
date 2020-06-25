@@ -36,7 +36,8 @@ if ( ! is_plugin_active( 'flavor/flavor.php' ) /* and current_user_can( 'activat
 	return;
 }
 
-
+//if (1 == get_user_id())
+//	show_errors();
 // Include the main WooCommerce class.
 if ( ! class_exists( 'Fresh' ) ) {
 	include_once dirname( __FILE__ ) . '/includes/class-fresh.php';

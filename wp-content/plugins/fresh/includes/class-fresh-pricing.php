@@ -125,13 +125,13 @@ class Fresh_Pricing {
 		// If supplier know get price thru mapping.
 		if ( $supplier_id > 0 ) {
 			$sql = "select pricelist_id from im_supplier_mapping
-			where prod_id = $prod_id and supplier_id = $supplier_id";
+			where product_id = $prod_id and supplier_id = $supplier_id";
 //			print $sql . "<br/>";
 			$pl_id = SqlQuerySingleScalar( $sql );
 			if ( $pl_id ) {
 				$pl_item = new Fresh_Pricelist_Item( $pl_id );
 
-				return $pl_item->getPricePerDate();
+				return $pl_item->getPrice();
 			}
 		}
 		// Try thru mapping

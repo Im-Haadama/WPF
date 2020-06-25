@@ -518,6 +518,8 @@ class Fresh {
 		$shortcodes->add($this->totals->getShortcodes());
 		$shortcodes->add($this->client_views->getShortcodes());
 
+		$this->supplies->init_hooks();
+		$this->supplies->init();
 		$this->suppliers->init_hooks();
 		$this->suppliers->init();
 		Fresh_Basket::init();
@@ -541,7 +543,7 @@ class Fresh {
 		$rc = load_textdomain( 'wfp', $file );
 //		print "loaded $file $rc <br/>";
 //		$rc1 = load_plugin_textdomain( 'wfp');
-		if (get_user_id() == 1) {
+		if (0 and get_user_id() == 1) {
 			if (! $rc) print "can't load textdomain";
 //			if (! $rc1) print "can't load plugin_textdomain";
 			if (! file_exists($file)) print "file $file not found";
@@ -644,7 +646,7 @@ class Fresh {
 	    $file = FRESH_INCLUDES_URL . 'js/delivery.js';
 	    wp_enqueue_script( 'delivery', $file, null, $this->version, false );
 
-	    $file = FRESH_INCLUDES_URL . 'js/supply.js';
+	    $file = FRESH_INCLUDES_URL . 'js/supply.js?v=1';
 	    wp_enqueue_script( 'supply', $file, null, $this->version, false );
 
 	    $file = FRESH_INCLUDES_URL . 'js/suppliers.js';
@@ -761,9 +763,9 @@ function cart_update_price()
 		MyLog( "cart start " . $_SERVER['REMOTE_ADDR']);
 		return;
 	}
-	MyLog("cart start " . get_user_id());
 	$user_id = get_user_id();
-	$user = new Fresh_Client($user_id );
+	MyLog("cart start " . $user_id);
+	$user = new Fresh_Client($user_id);
 	$client_type = $user->customer_type( );
 
 	foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
@@ -781,7 +783,6 @@ function cart_update_price()
 		$cart_item['data']->set_price( $sell_price );
 		MyLog( "pid= $prod_id  q= $q  sp= $sell_price");
 	}
-	//		ob_start();
 }
 
 function im_show_nonsale_price( $newprice, $product ) {

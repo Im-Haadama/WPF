@@ -2,10 +2,10 @@
  * Created by agla on 01/02/19.
  */
 
-function mission_changed(supply_id) {
+function mission_changed(post_file, supply_id) {
     let mis = document.getElementById("mis_" + supply_id);
     let mission_id = get_value(mis);
-    execute_url("supplies-post.php?operation=set_mission&supply_id=" + get_supply_id() + "&mission_id=" + mission_id);
+    execute_url(post_file + "?operation=set_mission&supply_id=" + supply_id + "&mission_id=" + mission_id);
 }
 
 function save_mission() {
@@ -270,12 +270,12 @@ function supply_new_add_line(post_file)
     product.firstElementChild.focus();
 }
 
-function supply_delete(status) {
+function supply_delete(post_file, status) {
     let params = get_selected(status);
     if (! params.length) {
         alert ("select supplies for delete");
         return
     }
-    let request = "supplies-post.php?operation=delete_supplies&params=" + params;
+    let request = post_file + "?operation=delete_supplies&params=" + params;
     execute_url(request, location_reload);
 }

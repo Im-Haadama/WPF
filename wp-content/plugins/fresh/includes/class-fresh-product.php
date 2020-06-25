@@ -396,15 +396,12 @@ class Fresh_Product {
 	}
 
 	static function gui_select_product( $id, $data = null, $args = null)
-// $events, $datalist = "products" ) // 'onchange="select_product(' . $line_id . ')"'
 	{
-		//	print "data=$data<br/>";
 		if (! $args)
 			$args = array();
 
 		if ($data > 0)
 		{
-//			print "has id";
 			$p = new Fresh_Product($data);
 			$product_name = $p->getName();
 		} else {
@@ -413,12 +410,13 @@ class Fresh_Product {
 		if (isset($args["edit"]) and !$args["edit"]) return $product_name;
 		$args["selected"] = $data;
 		$args["name"] = "post_title";
-		$args["value"] = $product_name;
+		$args["selected"] = $product_name;
 		$args["datalist"] = true;
 		$args["id_field"] = "ID";
 		$args["include_id"] = true;
 		$args["post_file"] = get_site_url() . "/wp-content/plugins/fresh/post.php";
 
+//		print "v1=" . $args["value"] . "<br/>";
 		// return GuiSelectTable( $id, "im_products", $args);
 		return Core_Html::GuiAutoList($id, "products", $args);
 	}

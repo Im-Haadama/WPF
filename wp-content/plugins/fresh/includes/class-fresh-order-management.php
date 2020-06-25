@@ -19,19 +19,61 @@ class Fresh_Order_Management {
 	}
 
 	public function init_hooks() {
-		MyLog(__FUNCTION__ . __CLASS__);
 		// add_filter( 'manage_shop_order_posts_custom_column', array(__CLASS__, 'add_my_account_order_actions'), 10, 2 );
 		add_filter('woocommerce_admin_order_actions', array(__CLASS__, 'add_order_action'), 10, 2);
 		add_filter('order_complete', array($this, 'order_complete_wrap'));
 		add_action('admin_post_delivery', array(__CLASS__, 'create_delivery_note'));
 		add_action( 'woocommerce_view_order', array(__CLASS__, 'show_edit_order'), 10 );
-//		AddAction('woocommerce_calculate_totals', array($this, 'woocommerce_calculate_totals'));
-
+		add_action('wp_ajax_woocommerce_calc_line_taxes', array($this, 'update_prices'), 9);
 	}
 
-	function woocommerce_calculate_totals($order_id)
+	function update_prices()
 	{
-		MyLog(__FUNCTION__ . " $order_id");
+		check_ajax_referer( 'calc-totals', 'security' );
+
+		if ( ! current_user_can( 'edit_shop_orders' ) || ! isset( $_POST['order_id'], $_POST['items'] ) ) {
+			wp_die( -1 );
+		}
+
+		$order_id           = absint( $_POST['order_id'] );
+		$calculate_tax_args = array(
+			'country'  => isset( $_POST['country'] ) ? wc_strtoupper( wc_clean( wp_unslash( $_POST['country'] ) ) ) : '',
+			'state'    => isset( $_POST['state'] ) ? wc_strtoupper( wc_clean( wp_unslash( $_POST['state'] ) ) ) : '',
+			'postcode' => isset( $_POST['postcode'] ) ? wc_strtoupper( wc_clean( wp_unslash( $_POST['postcode'] ) ) ) : '',
+			'city'     => isset( $_POST['city'] ) ? wc_strtoupper( wc_clean( wp_unslash( $_POST['city'] ) ) ) : '',
+		);
+
+		// Parse the jQuery serialized items.
+		$items = array();
+		parse_str( wp_unslash( $_POST['items'] ), $items ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+
+		// Save order items first.
+		wc_save_order_items( $order_id, $items );
+
+		// Grab the order and recalculate taxes.
+		$order = wc_get_order( $order_id );
+
+		// My changes
+		// Start
+		// We need the customer. For now take it from the saved info. (The order must be saved with the client id).
+		$O = new Fresh_Order($order_id);
+		$customer_type = $O->getCustomerType();
+//		MyLog("ct=" . $customer_type);
+
+		foreach ($order->get_items() as $item_id => &$item) {
+			$q = $item->get_quantity();
+			$prod_id = $item->get_product_id();
+			$price = Fresh_Pricing::get_price_by_type($prod_id, $customer_type);
+
+//			$item->set_subtotal( 50 ); // Regular price.
+			$item->set_total( $price * $q ); // Discount price.
+		}
+		// End
+
+		$order->calculate_taxes( $calculate_tax_args );
+		$order->calculate_totals( false );
+		include WC_ABSPATH . 'includes/admin/meta-boxes/views/html-order-items.php';
+		wp_die();
 	}
 
 	static public function show_edit_order($order_id)

@@ -2093,7 +2093,6 @@ class Focus_Tasks {
 	}
 
 	function init() {
-//		print __FUNCTION__;
 		Core_Gem::AddTable( "task_templates" );
 		AddAction("gem_add_team_members", array(__CLASS__, 'show_edit_team'), 10, 3);
 		AddAction("show_edit_team", array(__CLASS__, 'show_edit_team'), 10, 3);

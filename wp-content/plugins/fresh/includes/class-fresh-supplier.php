@@ -16,7 +16,7 @@ class Fresh_Supplier {
 
 	function getSupplierName(  ) {
 		// my_log("sid=" . $supplier_id);
-		return SqlQuerySingleScalar( 'SELECT supplier_name FROM im_suppliers WHERE id = ' . $this->id );
+		return get_supplier_name($this->id);
 	}
 
 	static function getSupplierId( $supplier_name ) {
@@ -72,5 +72,9 @@ class Fresh_Supplier {
 		return Core_Html::GuiSelectTable($id, "suppliers", $args);
 //		$sql_where );
 	}
+}
 
+function get_supplier_name($id)
+{
+	return SqlQuerySingleScalar( 'SELECT supplier_name FROM im_suppliers WHERE id = ' . $id );
 }

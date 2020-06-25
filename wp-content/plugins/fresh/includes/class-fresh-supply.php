@@ -39,18 +39,29 @@ class Fresh_Supply {
 	 *
 	 * @param int $ID
 	 */
-	public function __construct( $ID ) {
+	public function __construct( $ID = 0) {
 		$this->ID       = $ID;
-		if (! ($ID > 0)) return null;
+		if (! ($ID > 0)) {
+			if (get_user_id() == 1) {
+				print debug_trace( 10 );
+			    die("ID should be > 0. To create new use CreateSupply");
+			}
+		}
 		$row            = SqlQuerySingle( "SELECT status, date(date), supplier, text, business_id, mission_id FROM im_supplies WHERE id = " . $ID );
 		if (! $row) return null;
 		$this->Status   = $row[0];
 		$this->Date     = $row[1];
 		$this->Supplier = $row[2];
-		// print "sssss " . $this->Supplier;
 		$this->Text       = $row[3];
 		$this->BusinessID = $row[4];
 		$this->MissionID  = $row[5];
+	}
+
+	/**
+	 * @param mixed $Supplier
+	 */
+	public function setSupplier( $Supplier ): void {
+		$this->Supplier = $Supplier;
 	}
 
 	public static function CreateFromFile( $file_name, $supplier_id, $date, $args = null) {
@@ -240,21 +251,18 @@ class Fresh_Supply {
 		return SqlQuerySingleScalar( "select address from im_suppliers where id = " . $this->getSupplier() );
 	}
 
-	public function AddLine( $prod_id, $quantity, $price, $units = 0 ) {
+	public function AddLine( $prod_id, $quantity, $price = 0, $units = 0 ) {
 		if ( is_null( $price ) ) {
 			$price = 0;
 		}
+		if (! $price) $price = Fresh_Pricing::get_buy_price($prod_id, $this->getSupplier());
 		$sql = "INSERT INTO im_supplies_lines (supply_id, product_id, quantity, units, price) VALUES "
 		       . "( " . $this->ID . ", " . $prod_id . ", " . $quantity . ", " . $units . ", " . $price . " )";
 
 		SqlQuery( $sql );
 		$product = new WC_Product( $prod_id );
 		if ( $product->managing_stock() ) {
-//		print "managed<br/>";
-//		print "stock was: " . $product->get_stock_quantity() . "<br/>";
-
 			$product->set_stock_quantity( $product->get_stock_quantity() + $quantity );
-//		print "stock is: " . $product->get_stock_quantity() . "<br/>";
 			$product->save();
 		}
 
@@ -274,8 +282,77 @@ class Fresh_Supply {
 		$data .= "<br/>";
 		$data .= $this->HtmlLines( $internal, $edit, $categ_group );
 		$data .= "<br/>";
+		$data .= $this->Operation();
 
 		return $data;
+	}
+
+	public function Operation()
+	{
+		$footer = "";
+		switch ($this->getStatus())
+		{
+			case eSupplyStatus::NewSupply:
+				$footer .= Core_Html::GuiButton( "btn_add_line", "add", "supply_add_item(" . $this->getID() . ")" );
+				$footer .= Fresh_Product::gui_select_product( "itm_", "", array("edit"=>true) );
+				$footer .= Core_Html::GuiButton("btn_del", "delete lines", "deleteItems()");
+				$footer .= Core_Html::GuiButton("btn_update", "update items", "updateItems()");
+
+				$footer .= "<br/>" . self::supplier_doc();
+				break;
+
+			case eSupplyStatus::Sent:
+				$invoice_text =  '<br/>   <div class="tooltip">' . gui_checkbox( "is_invoice", "" ) .
+				                 '<span class="tooltiptext">יש לסמן עבור חשבונית ולהשאיר לא מסומן עבור תעודת משלוח</span> </div>';
+
+				$footer .= Core_Html::GuiButton( "btn_add_line", "add", "supply_add_item()");
+				$footer .= Fresh_Product::gui_select_product( "itm_" );
+				$footer .= Core_Html::GuiButton("btn_update", "update", "updateItems()");
+
+				$footer .= Core_Html::gui_table_args( array(
+					array( "חשבונית", $invoice_text ),
+					array( "מספר מסמך", Core_Html::GuiInput( "supply_number") ),
+					array( "סכום כולל מעמ", Core_Html::GuiInput( "supply_total") ),
+					array( "סכום ללא מעמ", Core_Html::GuiInput( "net_amount") ),
+					array( "תאריך", Core_Html::GuiInput( "document_date", "" ) )
+				) );
+				$footer .= "<br/>";
+
+				$footer .= Core_Html::GuiButton( "btn_got_supply", "סחורה התקבלה", "got_supply()" );
+				break;
+
+			case eSupplyStatus::Supplied:
+				$internal = false;
+				$transaction_id = $this->getBusinessID();
+				assert($transaction_id);
+				$row = SqlQuerySingleAssoc("select * from im_business_info where id = " . $transaction_id);
+				$doc_id = $row["ref"];
+				$amount = $row["amount"];
+				$footer .= Core_Html::gui_table_args(array(array("Document number", $doc_id),
+					array("Total to pay", $amount)));
+				break;
+		}
+
+		return $footer;
+	}
+
+	protected function supplier_doc()
+	{
+
+		$data = '<div class="tooltip">' . __("invoice") . gui_checkbox( "is_invoice", "" );
+		$data .= '<span class="tooltiptext">' . __("Check for invoice, and leave uncheck for delivery note") . '</span></div>'; // יש לסמן עבור חשבונית ולהשאיר לא מסומן עבור תעודת משלוח
+
+		$data .= Core_Html::gui_table_args( array(
+			// array( "חשבונית", $invoice_text ),
+			array( "מספר מסמך", Core_Html::GuiInput( "supply_number", "" ) ),
+			array( "סכום כולל מעמ", Core_Html::GuiInput( "supply_total", "" ) ),
+			array( "סכום ללא מעמ", Core_Html::GuiInput( "net_amount", "" ) ),
+			array( "תאריך", Core_Html::gui_input_date( "document_date", "" ) )
+		) );
+
+		$data .= Core_Html::GuiButton("btn_got", "Supply arrived", "got_supply()");
+		return $data;
+
 	}
 
 	public function HtmlHeader( $edit ) {
@@ -283,7 +360,7 @@ class Fresh_Supply {
 		$row  = array( "הערות" );
 		// Text + Button
 		if ( $edit ) {
-			array_push( $row, gui_textarea( "comment", $this->Text, "onchange=\"update_comment()\"" ) );
+			array_push( $row, Core_Html::gui_textarea( "comment", $this->Text, "onchange=\"update_comment()\"" ) );
 		} else {
 			array_push( $row, $this->Text );
 		}
@@ -293,8 +370,8 @@ class Fresh_Supply {
 		$row = array( "תאריך אספקה" );
 
 		if ( $edit ) {
-			array_push( $row, gui_input_date( "date", "", $this->Date,
-				"onchange=\"update_field('supplies-post.php', " . $this->ID . ",'date', '')\"" ) );
+			array_push( $row, Core_Html::gui_input_date( "date", "", $this->Date,
+				"onchange=\"update_field('" . Fresh::getPost() . "', " . $this->ID . ",'date', '')\"" ) );
 		} else {
 			array_push( $row, $this->Date );
 		}
@@ -303,7 +380,8 @@ class Fresh_Supply {
 
 		$row = array( "Delivery route" );
 		if ( $edit ) {
-			array_push( $row, gui_select_mission( "mis_" . $this->ID, $this->MissionID, array("events" => "onchange=mission_changed('" . Fresh::getPost() . "'," . $this->ID . ")" )) );
+			array_push( $row, Fresh_Packing::gui_select_mission( "mis_" . $this->ID, $this->MissionID,
+				array("events" => "onchange=mission_changed('" . Fresh::getPost() . "'," . $this->ID . ")" )) );
 		} else {
 			array_push( $row, $this->getMissionName() );
 		}
@@ -339,7 +417,7 @@ class Fresh_Supply {
 	public function setMissionID( $MissionID ) {
 		$this->MissionID = $MissionID;
 
-		return SqlQuerySingleScalar( "UPDATE im_supplies SET mission_id = " . $MissionID . " WHERE id = " .
+		return SqlQuery( "UPDATE im_supplies SET mission_id = " . $MissionID . " WHERE id = " .
 		                             $this->ID );
 	}
 
@@ -400,7 +478,7 @@ class Fresh_Supply {
 
 				$rows_data[$line_id]['$buy'] = $buy_price;
 				$rows_data[$line_id]['$total'] = $buy_price * $q;
-				if ( $internal) $rows_data[$line_id]['$buyers'] = "xxx"; // orders_per_item( $prod_id, 1, true, true, true );
+				if ( $internal) $rows_data[$line_id]['$buyers'] = Fresh_Packing::orders_per_item( $prod_id, 1, true, true, true );
 			}
 
 		// if (isset($args['acc_fields'])) $rows_data['sums'] = HandleTableAcc($args['acc_fields'], $rows_data, $args['fields']);
@@ -630,7 +708,7 @@ class Fresh_Supply {
 		}
 	}
 
-	static function create_supply( $supplierID, $date = null )
+	static private function create_supply( $supplierID, $date = null )
 	{
 		if ( ! $date )
 			$date = date('Y-m-d');
@@ -651,6 +729,7 @@ class Fresh_Supply {
 
 	static function create_supplies()
 	{
+		die (1);
 		$date        = GetParam( "date", false, date('Y-m-d'));
 		$supplier_id = GetParam("supplier_id", true);
 
@@ -674,6 +753,30 @@ class Fresh_Supply {
 		return $supply->getID();
 	}
 
+	public function delete()
+	{
+		$sql    = "SELECT product_id, quantity FROM im_supplies_lines WHERE supply_id = " . $this->ID;
+		$result = SqlQuery( $sql );
+
+		while ( $row = SqlFetchRow( $result )) {
+			$prod_id  = $row[0];
+			$quantity = $row[1];
+
+			$product = new WC_Product( $prod_id );
+			if ( $product->managing_stock() ) {
+				// print "managed<br/>";
+				// print "stock was: " . $product->get_stock_quantity() . "<br/>";
+
+				$product->set_stock_quantity( max( 0, $product->get_stock_quantity() - $quantity ) );
+				// print "stock is: " . $product->get_stock_quantity() . "<br/>";
+				$product->save();
+			}
+
+		}
+		$sql = 'UPDATE im_supplies SET status = 9 WHERE id = ' . $this->ID;
+
+		return SqlQuery($sql);
+	}
 }
 
 
@@ -699,30 +802,6 @@ class Fresh_Supply {
 //	return sql_query_single_scalar( $sql );
 //}
 //
-//function supply_delete( $supply_id ) {
-//	$sql    = "SELECT product_id, quantity FROM im_supplies_lines WHERE supply_id = " . $supply_id;
-//	$result = sql_query( $sql );
-//
-//	while ( $row = sql_fetch_row( $result ) ) {
-//		$prod_id  = $row[0];
-//		$quantity = $row[1];
-//
-//		$product = new WC_Product( $prod_id );
-//		if ( $product->managing_stock() ) {
-//			// print "managed<br/>";
-//			// print "stock was: " . $product->get_stock_quantity() . "<br/>";
-//
-//			$product->set_stock_quantity( max( 0, $product->get_stock_quantity() - $quantity ) );
-//			// print "stock is: " . $product->get_stock_quantity() . "<br/>";
-//			$product->save();
-//		}
-//
-//	}
-//	$sql = 'UPDATE im_supplies SET status = 9 WHERE id = ' . $supply_id;
-//
-//	if (sql_query( $sql )) return true;
-//	return false;
-//}
 //
 //function supply_sent( $supply_id ) {
 //	$sql = 'UPDATE im_supplies SET status = 3 WHERE id = ' . $supply_id;
@@ -1087,22 +1166,6 @@ class Fresh_Supply {
 //	print "done<br/>";
 //}
 //
-//function create_supplies( $params ) {
-//	MyLog( __METHOD__);
-//	$supplies = array();
-//	for ( $i = 0; $i < count( $params ); $i += 4 ) {
-//		$prod_id  = $params[ $i + 0 ];
-//		$supplier = $params[ $i + 1 ];
-//		$quantity = $params[ $i + 2 ];
-//		$units    = $params[ $i + 3 ];
-//		$price    = get_buy_price( $prod_id, $supplier );
-//
-//		if ( is_null( $supplies[ $supplier ] ) ) {
-//			$supplies[ $supplier ] = create_supply( $supplier );
-//		}
-//		supply_add_line( $supplies[ $supplier ], $prod_id, $quantity, $price, $units );
-//		// print $prod_id . " " . $supplier . " " . $quantity . " " . $units . "<br/>";
-//	}
 //}
 //
 //

@@ -3,26 +3,89 @@
 
 class Fresh_Supplies {
 
-
 	/**
 	 * Fresh_Supplies constructor.
 	 */
 	public function __construct() {
-		self::init_hooks();
+//		self::init_hooks();
+	}
+
+	function init()
+	{
+
 	}
 
 	public function init_hooks()
 	{
 		AddAction('admin_menu', array($this, 'admin_menu'));
 		AddAction('create_supply_from_file', array($this, 'create_supply_from_file'));
+		AddAction('create_supply', array($this, 'create_supply'));
+		AddAction('delete_supplies', array($this, 'delete_supplies'));
+		AddAction('show_supply', array($this, 'show_supply'));
+		AddAction('set_mission', array($this, 'set_mission'));
 		Core_Gem::AddTable("supplies");
 	}
+
+	function set_mission()
+	{
+		$mission_id = GetParam("mission_id", true);
+		$supply_id = GetParam("supply_id", true);
+		$m = new Fresh_Supply($supply_id);
+		return $m->setMissionID($mission_id);
+	}
+
+	public function show_supply()
+	{
+		$id = GetParam("id", true);
+		$internal    = GetParam("internal", false, true);
+//			$categ_group = GetParam( "categ_group" );
+		$Supply      = new Fresh_Supply( $id );
+			// print header_text(true);
+		$result = Core_Html::GuiHeader(1, __("Supply number") . " $id");
+		$result .= $Supply->Html( $internal, true );
+		return $result;
+	}
+
 	public function admin_menu()
 	{
 		$menu = new Core_Admin_Menu();
 		$menu->AddSubMenu("woocommerce", "edit_shop_orders",
 			array('page_title' => 'Supplies', 'function' => array("Fresh_Supplies" , 'main' )));
 	}
+
+	public function create_supply()
+	{
+		$params = GetParamArray("params", true);
+		$supplier_id = GetParam("supplier_id", true);
+		MyLog( __METHOD__);
+
+		$supply = Fresh_Supply::CreateSupply($supplier_id);
+		for ( $i = 0; $i < count( $params ); $i += 2 ) {
+			$prod_id = $params[$i];
+			$quantity = $params[$i+1];
+			$supply->addLine($prod_id, $quantity);
+			// print $prod_id . " " . $supplier . " " . $quantity . " " . $units . "<br/>";
+		}
+		return true;
+	}
+
+	public function delete_supplies()
+	{
+		$supplies = GetParamArray("params", true);
+		foreach ($supplies as $supply_id) {
+			$supply = new Fresh_Supply($supply_id);
+			if (! $supply->delete()) return false;
+		}
+		return true;
+	}
+
+	//create_supplies:
+	//$prod_id  = $params[ $i + 0 ];
+	//$supplier = $params[ $i + 1 ];
+	//$quantity = $params[ $i + 2 ];
+	//$units    = $params[ $i + 3 ];
+	//$price    = get_buy_price( $prod_id, $supplier );
+
 
 	static function main()
 	{
@@ -40,28 +103,21 @@ class Fresh_Supplies {
 //		$args["title"] = "Supplies to collect";   print SuppliesTable( SupplyStatus::OnTheGo, $args );
 //		$args["title"] = "Supplies done";         print SuppliesTable( SupplyStatus::Supplied, $args );
 
-		array_push( $tabs, array( "supplies_create", "New", self::NewSupply() ) );
 		array_push( $tabs, array( "supplies_new", "Supplies to send", self::SuppliesTable(eSupplyStatus::NewSupply) ) );
+		array_push( $tabs, array( "supplies_create", "New", self::NewSupply() ) );
 		array_push( $tabs, array( "supplies_sent", "Supplies to come", self::SuppliesTable(eSupplyStatus::OnTheGo)));
 		array_push( $tabs, array( "supplies_archive", "Archive", self::SuppliesTable(eSupplyStatus::Supplied)));
 
 		$args = [];
 
+		$args["tabs_load_all"] = true;
 		$result .= Core_Html::GuiTabs($tabs, $args);
 
 		$selected_tab = GetParam("selected_tab", false, null);
 
-		if ($selected_tab) {
-			$args["tabs_load_all"] = false;
-			$args["selected_tab"] = $selected_tab;
-		} else {
-			$args["tabs_load_all"] = true;
-		}
-
 		$result .= Core_Html::gui_div("logging");
 
 		print  $result;
-
 	}
 
 	static function print_driver_supplies( $mission_id = 0 ) {
@@ -117,20 +173,20 @@ class Fresh_Supplies {
 		$args["sql"] = $sql;
 		$args["header"] = array("Id", "Supplier", "Date", "Mission");
 		$args["add_checkbox"] = true;
-		$args["selectors"] = array("supplier" => 'gui_select_supplier', "mission_id" => 'gui_select_mission');
-		$args["links"] = array("id" => AddToUrl(array( "operation" =>"show", "id" => "%s")));
+		$args["selectors"] = array("supplier" => 'Fresh_Supplier::gui_select_supplier', "mission_id" => 'gui_select_mission');
+		$args["links"] = array("id" => AddToUrl(array( "operation" =>"show_supply", "id" => "%s")));
 		$args["checkbox_class"] = self::gui_select_supply_status(null, $status);
 		$args["edit"] = false;
 		$args["post_file"] = Fresh::getPost();
 
-		$result = Core_Gem::GemTable("im_supplies", $args);
+		$result = Core_Gem::GemTable("supplies", $args);
 		if ($result == "No data for now<br/>") return null;
 
 		// $result .= Core_Html::GuiButton("btn_delete", "close_supplies('" . $status_name . "')", "close");
 		if ($status == eSupplyStatus::NewSupply){
 			$result .= Core_Html::GuiButton("btn_send", "send", "send_supplies()");
 			$result .= Core_Html::GuiButton("btn_merge", "merge", "merge_supplies()");
-			$result .= Core_Html::GuiButton("btn_delete", "delete", "supply_delete('new')");
+			$result .= Core_Html::GuiButton("btn_delete", "delete", "supply_delete('" . Fresh::getPost() . "', 'new')");
 		}
 		return $result;
 
@@ -220,12 +276,6 @@ class Fresh_Supplies {
 //{
 //	switch ( $operation )
 //	{
-//		case "show":
-//		case "get":
-//			$id = GetParam("id", true);
-//			 get_supply($id);
-//			 break;
-//
 //		case "supply_pay":
 //			print "supply pay<br/>";
 //			$id   = $_GET["id"];
@@ -278,20 +328,6 @@ class Fresh_Supplies {
 //			create_delta();
 //			break;
 //
-//		case "create_supplies":
-//			$params = $_GET["params"];
-//			create_supplies( explode( ',', $params ) );
-//			break;
-//
-//		case "get_supply":
-//			$supply_id   = $_GET["id"];
-//			$internal    = isset( $_GET["internal"] );
-//			$categ_group = GetParam( "categ_group" );
-//			$Supply      = new Fresh_Supply( $supply_id );
-//			// print header_text(true);
-//			print $Supply->Html( $internal, true, $categ_group );
-//			break;
-//
 //		case "get_supply_lines":
 //			$supply_id = $_GET["id"];
 //			$internal  = isset( $_GET["internal"] );
@@ -316,12 +352,6 @@ class Fresh_Supplies {
 //			$args["title"] = "Supplies done";         print SuppliesTable( SupplyStatus::Supplied, $args );
 //			break;
 //
-//		case "delete_supplies":
-//			MyLog( "delete supplies" );
-//			$params = explode( ',', $_GET["params"] );
-//			if (delete_supplies( $params ))
-//				print "done";
-//			break;
 //
 //		case "sent_supplies":
 //			MyLog( "sent supplies" );

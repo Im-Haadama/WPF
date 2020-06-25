@@ -375,6 +375,7 @@ function SqlError( $sql ) {
 		$conn = GetSqlConn();
 	} catch ( Exception $e ) {
 		print "Error (1): " . $e->getMessage() . "<br/>";
+		return;
 	}
 	if ( is_string( $sql ) ) {
 		$message = "Error: sql = `" . $sql;

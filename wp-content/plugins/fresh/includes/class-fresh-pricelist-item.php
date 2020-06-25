@@ -29,10 +29,7 @@ class Fresh_Pricelist_Item {
 	private $picture_path;
 
 	function __construct( $pricelist_id ) {
-		if ($pricelist_id == 0)
-		{
-			return;
-		}
+		if ($pricelist_id == 0) return;
 
 		$sql = " SELECT product_name, supplier_id, date, price, supplier_product_code, sale_price, category, picture_path FROM im_supplier_price_list " .
 		       " WHERE id = " . $pricelist_id;
@@ -40,7 +37,9 @@ class Fresh_Pricelist_Item {
 		$result = SqlQuerySingleAssoc( $sql );
 		if ( $result == null ) {
 			print "pricelist item $pricelist_id not found<br/>";
-			die( 1 );
+			$this->price = 0;
+			return 0;
+			// die( 1 );
 		}
 		$this->id                    = $pricelist_id;
 		$this->product_name          = $result["product_name"];

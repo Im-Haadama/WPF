@@ -10,7 +10,6 @@ class Fresh_Suppliers {
 
 	function init_hooks()
 	{
-//		AddAction("create_supplies",  "Fresh_Supply::create_supplies");
 		AddAction("gem_v_show", array($this, "pricelist_header"), 9);
 		AddAction("gem_v_show", array($this, "pricelist_functions"), 11);
 		AddAction("suppliers_map_products", __CLASS__ . "::suppliers_map_products");
@@ -66,7 +65,7 @@ class Fresh_Suppliers {
 		$this->gem->AddVirtualTable( "pricelist", $args );
 
 		// load classes
-		new Fresh_supply(0);
+		new Fresh_supply(1);
 		new Fresh_Catalog();
 	}
 

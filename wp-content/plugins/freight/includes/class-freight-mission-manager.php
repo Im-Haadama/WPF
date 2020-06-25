@@ -283,6 +283,7 @@ group by pm.meta_value, p.post_status");
 
 	static function dispatcher($the_mission)
 	{
+	//	MyLog(__FUNCTION__ . ": $the_mission");
 		$lines_per_station = array();
 		$supplies_to_collect = array();
 		$multi_site = Core_Db_MultiSite::getInstance();
@@ -945,8 +946,10 @@ group by pm.meta_value, p.post_status");
 
 		return true;
 	}
+
 	static function get_local_missions()
 	{
+//		MyLog(__FUNCTION__);
 		$mission_ids = GetParam("mission_ids", true);
 		$header = GetParam("header", false, false);
 		print self::get_missions($mission_ids, $header);
@@ -969,11 +972,11 @@ group by pm.meta_value, p.post_status");
 
 				$data .= self::print_deliveries( $sql, false);
 
-				if (class_exists("Fresh_Supplies"))
-					$data .= Fresh_Supplies::print_driver_supplies( $mission_id );
-
-				if (class_exists("Focus"))
-					$data .= Focus::print_driver_tasks( $mission_id );
+//				if (class_exists("Fresh_Supplies"))
+//					$data .= Fresh_Supplies::print_driver_supplies( $mission_id );
+//
+//				if (class_exists("Focus"))
+//					$data .= Focus::print_driver_tasks( $mission_id );
 			}
 		}
 
@@ -1011,12 +1014,13 @@ group by pm.meta_value, p.post_status");
 
 		$sql .= ' order by 1';
 
-		if ( $debug ) print $sql;
+		if ( $debug ) MyLog($sql);
 
 		$orders    = SqlQuery( $sql );
 		$prev_user = - 1;
 		while ( $order = SqlFetchRow( $orders ) ) {
 			$order_id   = $order[0];
+			if ($debug) MyLog(__FUNCTION__ . ': $order_id');
 			$o          = new Fresh_Order( $order_id );
 			$is_group   = $order[1];
 			$order_user = $order[2];
@@ -1045,6 +1049,7 @@ group by pm.meta_value, p.post_status");
 
 		return self::delivered($site_id, $type, $id);
 	}
+
 	static function delivered($site_id, $type, $id, $debug = false)
 	{
 		if ( $debug ) {

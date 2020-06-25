@@ -698,7 +698,7 @@ class Fresh_Catalog {
 	{
 		if ($debug) MyLog(__FUNCTION__, $prod_id);
 		if ( ! is_numeric($prod_id) or !( $prod_id > 0 ) ) {
-			print debug_trace(6);
+//			print debug_trace(6);
 			return null;
 		}
 

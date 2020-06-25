@@ -1,4 +1,5 @@
 function create_subcontract_delivery_invoice(post_file) {
+    document.getElementById('id_legacy_invoice').disabled = true;
     let selected = get_selected("delivery_note");
 
     if (! selected.length) {
