@@ -235,7 +235,7 @@ class Core_Data
 					if ($as_pos = strpos($field, " as ")) {
 						$field = substr($field, $as_pos + 4);
 					}
-					if ( ! $skip_id or strtolower( $field ) !== "id" )
+					if ( (! $skip_id or strtolower( $field ) !== "id") and !isset($args["hide_cols"][$field]))
 						$result[ $field ] = ImTranslate( ( isset( $header_fields[ $field ] ) ? $header_fields[ $field ] : $field ) );
 				}
 			} else {
@@ -252,6 +252,7 @@ class Core_Data
 
 		$headers = array();
 		if (GetArg($args, "add_checkbox", false)) $headers["select"] = ImTranslate("select");
+
 
 		// If not sent, create from database fields.
 		if (strstr($sql, "describe") or strstr($sql, "show"))

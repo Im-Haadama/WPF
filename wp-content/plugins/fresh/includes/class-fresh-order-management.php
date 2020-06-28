@@ -27,6 +27,7 @@ class Fresh_Order_Management {
 		add_action('wp_ajax_woocommerce_calc_line_taxes', array($this, 'update_prices'), 9);
 	}
 
+	// Change of function calc_line_taxes() from wp-content/plugins/woocommerce/includes/class-wc-ajax.php
 	function update_prices()
 	{
 		check_ajax_referer( 'calc-totals', 'security' );

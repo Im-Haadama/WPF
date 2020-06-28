@@ -758,7 +758,7 @@ class Finance_Bank
 		}
 
 		$receipt = intval( trim( $result ) );
-		print "r=$receipt<br/>";
+//		print "r=$receipt<br/>";
 
 		if ( $receipt > 0 ) {
 			// TODO: to parse $id from $result;

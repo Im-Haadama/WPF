@@ -46,6 +46,7 @@ class Fresh_Delivery_Manager
 	}
 
 	static function update_shipping_methods($result = null) {
+		MyLog(__FUNCTION__);
 		$result .= "Updating<br/>";
 		$sql = "select * from wp_woocommerce_shipping_zone_methods";
 		$sql_result = SqlQuery($sql);
@@ -53,7 +54,6 @@ class Fresh_Delivery_Manager
 			$instance_id = $row['instance_id'];
 			self::update_shipping_method($instance_id);
 		}
-		MyLog($result);
 		return $result;
 	}
 
@@ -164,7 +164,6 @@ class Fresh_Delivery_Manager
 
 	function delivered_previous_days() {
 		$debug = 0;
-		MyLog(__FUNCTION__);
 		$result = "Marking orders of yesterday delivered:\n";
 		$ids    = SqlQueryArrayScalar( "SELECT * FROM `wp_posts` 
 WHERE (post_status = 'wc-awaiting-shipment' or post_status = 'wc-processing') 
@@ -175,6 +174,8 @@ and curdate() > order_mission_date(id)" );
 			if ($debug) MyLog("No del found");
 			return;
 		}
+		MyLog(__FUNCTION__);
+
 		foreach ( $ids as $id ) {
 			$order = new Fresh_Order( $id );
 			if ($order->justDelivery()) {

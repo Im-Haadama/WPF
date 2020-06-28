@@ -1187,7 +1187,7 @@ class Focus_Tasks {
 		$action_url = "/wp-content/plugins/focus/post.php";
 
 		if ( ! isset( $args["fields"] ) ) {
-			$args["fields"] = array( "id", "task_title", "task_description", "project_id", "priority", "task_template" );
+			$args["fields"] = array( "id", "task_description", "task_title", "project_id", "priority", "task_template" );
 		}
 		if ( isset( $args["extra_fields"] ) ) {
 			$args["fields"] = array_merge( $args["fields"], $args["extra_fields"] );
@@ -2130,11 +2130,11 @@ class Focus_Tasks {
 
 	static function team_add_member()
 	{
-		$team_id   = GetParam( "id", true );
+		//let operation = post_file + "?operation=team_add_member&team_id=" + team_id + "&new_member=" + new_member;
+		$team_id   = GetParam( "team_id", true );
 		$new = GetParam( "new_member", true );
 		$team = new Org_Team($team_id);
 		return $team->AddWorker($new);
-
 	}
 
 	static function DoAddCompanyWorker()
