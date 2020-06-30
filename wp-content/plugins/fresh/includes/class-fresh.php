@@ -209,7 +209,7 @@ class Fresh {
 		add_action('wp_enqueue_scripts', array($this, 'remove_add'), 2222);
 
 //		add_filter('editable_roles', 'edit_roles');
-		// if (get_user_id() == 1) wp_set_current_user(474);
+//		if (get_user_id() == 1) wp_set_current_user(3);
 	}
 
 	/**
@@ -1099,11 +1099,13 @@ function insert_payment_info( $order_id )
 		$exp_date_month = get_post_meta($order_id, 'expdate_month', TRUE);
 		$exp_date_year = get_post_meta($order_id, 'expdate_year', TRUE);
 		$billing_id_number = get_post_meta($order_id, 'id_number', TRUE);
+		$user_id = get_post_meta($order_id, '_customer_user', true);
 
 		if($card_number != ''){
 			global $wpdb;
 			$table = 'im_payment_info';
-			$data = array('full_name' => $full_name,
+			$data = array('user_id' => $user_id,
+						  'full_name' => $full_name,
 			              'email' => $billing_email,
 			              'card_number' => $card_number,
 			              'card_four_digit' => $card_last_4_digit,

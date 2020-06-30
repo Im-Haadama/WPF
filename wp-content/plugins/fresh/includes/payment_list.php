@@ -11,19 +11,96 @@ if (!empty($chk_delete)) {
     $count    = count($chk_delete);
     for ($i = 0; $i < $count; $i++) {
         $del_id = $chk_delete[$i];
+        credit_card_remove($del_id);
 //        $sql    = "DELETE FROM $table_name WHERE id =" . $del_id;
-        $card_four_digit   = $wpdb->get_var("SELECT card_four_digit FROM $table_name WHERE id = ".$del_id." ");
-        $sql = $wpdb->query($wpdb->prepare("UPDATE $table_name SET card_number =  '".$card_four_digit."' WHERE id = ".$del_id." "));
-        $wpdb->get_results($sql);
     }
+}
+
+function credit_card_remove($del_id)
+{
+	global $wpdb;
+	$table_name = "im_payment_info";
+	$card_four_digit   = $wpdb->get_var("SELECT card_four_digit FROM $table_name WHERE id = ".$del_id." ");
+	$dig4 = setCreditCard($card_four_digit);
+	$sql = $wpdb->query($wpdb->prepare("UPDATE $table_name SET card_number =  '".$dig4."' WHERE id = ".$del_id." "));
+	return $wpdb->get_results($sql);
 }
 
 if(isset($_REQUEST['method']) && $_REQUEST['method'] == "delete_rec"){
   $del_id = $_REQUEST['id'];
-  $card_four_digit   = $wpdb->get_var("SELECT card_four_digit FROM $table_name WHERE id = ".$del_id." ");
-  $sql = $wpdb->query($wpdb->prepare("UPDATE $table_name SET card_number =  '".$card_four_digit."' WHERE id = ".$del_id." "));
-  $wpdb->get_results($sql);
+  // Orig:
+//  $card_four_digit   = $wpdb->get_var("SELECT card_four_digit FROM $table_name WHERE id = ".$del_id." ");
+//  $sql = $wpdb->query($wpdb->prepare("UPDATE $table_name SET card_number =  '".$card_four_digit."' WHERE id = ".$del_id." "));
+
+    // Now real delete row:
+    $sql = "delete from $table_name where id = $del_id";
+    MyLog($sql);
+	$sql = $wpdb->query($wpdb->prepare($sql));
+    $wpdb->get_results($sql);
 }
+
+function clear_duplicates()
+{
+	$emails = SqlQueryArrayScalar("SELECT email, count(*) FROM `im_payment_info` group by email having count(*) > 1");
+	foreach ($emails as $email)
+    {
+        $last = SqlQuerySingleScalar("select max(id) from im_payment_info where email = '$email'");
+        $sql = "delete from im_payment_info where email = '$email' and id < $last";
+        SqlQuery($sql);
+//        print $sql . "<br/>";
+    }
+}
+
+function find_user_id()
+{
+	ini_set('display_errors', 1);
+	ini_set('display_startup_errors', 1);
+	error_reporting(E_ALL);
+
+	$result = SqlQuery("SELECT id, email FROM `im_payment_info`");
+	while ($row = SqlFetchAssoc($result))
+	{
+	    $email = trim($row['email']);
+	    $id = $row['id'];
+		$user_id = SqlQuerySingleScalar("SELECT id from wp_users where user_email = '$email'");
+		if ($user_id) {
+			$sql = "update im_payment_info set user_id = $user_id where id = $id";
+			SqlQuery($sql);
+		}
+		else
+		    print "No user found for $email<br/>";
+//		print $sql;
+
+//		$user_id = SqlQuerySingleScalar("select id from im_payment_info where email = '$email'");
+//		$sql = "delete from im_payment_info where email = '$email' and id < $last";
+//		SqlQuery($sql);
+//        print $sql . "<br/>";
+	}
+}
+
+function clear_card_info()
+{
+    $output = Core_Html::GuiHeader(2, "Live card numbers");
+	$sql = "select id, user_id, card_number from im_payment_info where card_number not like '%X%' and length(card_number) > 2";
+	$result = SqlQuery($sql);
+	while ($row = SqlFetchAssoc($result))
+    {
+        $id = $row['id'];
+        $user_id = $row['user_id'];
+        $token = get_user_meta($user_id, 'credit_token', true);
+        $card_number = $row['card_number'];
+//        $card_number = $row['card_number'];
+//        $output .= "$id $user_id" . ($token? "Has token": "No Token") . "<br/>";
+        if ($token) {
+	        credit_card_remove($id);
+	        $output .= "Cleaning data for user $user_id<br/>";
+        }
+    }
+    print $output;
+}
+//clear_duplicates();
+//find_user_id();
+//clear_card_info();
 
 $pay_result   = $wpdb->get_results("SELECT * FROM $table_name ORDER BY id  desc");
 $result = $wpdb->num_rows;
@@ -79,14 +156,16 @@ $result = $wpdb->num_rows;
                <tr>
                   <th align="left"  class="del_order"><input id="" type="checkbox" name="delall" onClick="selall();" style="margin: 3px 0px 0px;"></th>
         				  <th align="left" data-orderable="true"><strong>No</strong></th>
-        				  <th align="left" data-orderable="false"><strong>Full Name</strong></th>
-                  <th align="left" data-orderable="false"><strong>Email</strong></th>
+                          <th align="left" data-orderable="true"><strong>User id</strong></th>
+        				  <th align="left" data-orderable="true"><strong>Full Name</strong></th>
+                  <th align="left" data-orderable="true"><strong>Email</strong></th>
                   <th align="left" data-orderable="true"><strong>Card Number</strong></th>
                   <th align="left" data-orderable="true"><strong>ID NO</strong></th>
                   <th align="left" data-orderable="false"><strong>Card Type</strong></th>
-                  <th align="left" data-orderable="false"><strong>Expiry Date</strong></th>
+                  <th align="left" data-orderable="true"><strong>Expiry Date</strong></th>
+                   <th align="left" data-orderable="false"><strong>Has Token</strong></th>
                   <th align="left" data-orderable="false"><strong>Action</strong></th>
-				  
+
               </tr>
             </thead>
 			
@@ -94,9 +173,9 @@ $result = $wpdb->num_rows;
 
        <?php
         if ($result > 0) {
-             $i = 1;
-			
             foreach ($pay_result as $data) {
+                $id = $data->id;
+                $user_id = $data->user_id;
               $fullname = $data->full_name;
               $email = $data->email;
               $card_number = $data->card_number;
@@ -106,19 +185,23 @@ $result = $wpdb->num_rows;
               $exp_date_month = str_pad($exp_date_month, 2, '0', STR_PAD_LEFT);
               $exp_date_year = $data->exp_date_year;
               $id_number = $data->id_number;
+              $has_token = get_user_meta($user_id, 'credit_token', true) ? 'T' : '';
 
         ?>             
                <tr class="alternate">
                   <td align="left">
                      <input name="chk_delete[]" id="chk_delete[]" type="checkbox" value="<?php echo (stripslashes($data->id));?>" />
                   </td>
-          				<td align="left"><?php echo $i;?></td>
+          				<td align="left"><?php echo $id;?></td>
+                   <td align="left"><?php echo $user_id;?></td>
                   <td align="left"><?php echo $fullname;?></td>
                   <td align="left"><?php echo $email;?></td>
                   <td align="left"><?php echo $card_number;?></td>
                   <td align="left"><?php echo $id_number;?></td>
                   <td align="left"><?php echo $card_type;?></td>
                   <td align="left"><?php echo $exp_date_month.'/'.$exp_date_year;?></td>
+                   <td align="left"><?php echo $has_token;?></td>
+
                   <td align="left">
                    
                     <a title="Delete" class="ual-delete-log" href="javascript: void(0)" onclick="delete_tracking(<?php echo $data->id; ?>)"> 
@@ -128,11 +211,11 @@ $result = $wpdb->num_rows;
 				   				
                </tr>
                <?php
-                $i = $i + 1;
             }
 			 
         }else{
     		  ?>
+
     			    <tr align="center"><td colspan="9" style="text-align: center;">No data found.</td></tr>
     		  <?php
     		}

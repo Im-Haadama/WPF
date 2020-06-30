@@ -100,8 +100,12 @@ order by 1;");
 	{
 		$current = self::CheckInstalled("Fresh", "functions");
 		$db_prefix = GetTablePrefix();
-return;
+
 		if (get_user_id() != 1) return false;
+
+		if ($current == $version and ! $force) return true;
+
+		SqlQuery("alter table ${db_prefix}payment_info add user_id int(11)");
 
 		$sql = "select id, supplier_product_name from im_supplier_mapping";
 		$result = SqlQuery($sql);
@@ -116,7 +120,6 @@ return;
 //		SqlQuery("alter table ${db_prefix}payment_info DROP CVV_number;");
 //		SQLQuery("delete from wp_postmeta where meta_key = 'cvv_number'");
 
-		if ($current == $version and ! $force) return true;
 
 		if (! TableExists("client_accounts"))
 			SqlQuery("create table im_client_accounts
@@ -750,6 +753,7 @@ BEGIN
 
 		$sql = "CREATE TABLE `im_payment_info` (
 	    `id` int(11) NOT NULL AUTO_INCREMENT  PRIMARY KEY,
+	    `user_id` int(11) NOT NULL,
 	    `full_name` varchar(255) NOT NULL,
 	    `email` varchar(255) NOT NULL,
 	    `card_number` varchar(50) NOT NULL,

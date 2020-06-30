@@ -237,6 +237,9 @@ class Finance_Clients
 		$args   = array( "post_file" => Finance::getPostFile());
 		$result .= Fresh_Client_Views::show_trans( $customer_id, TransView::admin, $args );
 
+		if (class_exists('Finance_Yaad'))
+			$result .= Finance_Yaad::History($customer_id);
+
 		return $result;
 	}
 

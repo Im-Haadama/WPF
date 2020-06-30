@@ -289,7 +289,7 @@ class Fresh_Client {
 	}
 
 	static function extra_user_profile_fields( $user ) {
-		if (! is_admin_user()) return "";
+		if (! is_shop_manager()) return "";
 		$u = new Fresh_Client($user->ID);
 		?>
 		<h3><?php _e("Extra profile information", "blank"); ?></h3>
