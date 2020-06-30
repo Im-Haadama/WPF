@@ -137,9 +137,9 @@ if (class_exists("WC_Payment_Gateway")) {
 			$billing_creditcard = isset( $_REQUEST['billing_creditcard'] ) ? esc_attr( $_REQUEST['billing_creditcard'] ) : '';
 			$card_no            = '';
 			if ( is_user_logged_in() ) {
-				$current_user = wp_get_current_user();
-				$email        = $current_user->user_email;
-				$card_no      = $wpdb->get_var( "SELECT card_four_digit FROM im_payment_info WHERE email = '" . $email . "' " );
+				$current_user_id = wp_get_current_user()->ID;
+//				$email        = $current_user->user_email;
+				$card_no      = substr($wpdb->get_var( "SELECT card_four_digit FROM im_payment_info WHERE user_id = $current_user_id" ), 0, 4);
 			}
 
 			if ( $card_no != '' ) { ?>

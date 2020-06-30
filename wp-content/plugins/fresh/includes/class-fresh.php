@@ -140,6 +140,7 @@ class Fresh {
 		add_action( 'woocommerce_before_cart', 'wc_minimum_order_amount' );
 		add_action( 'woocommerce_checkout_order_processed', 'wc_minimum_order_amount' );
 		add_filter( 'woocommerce_available_shipping_methods', 'hide_shipping_if_cat_is_orange', 10, 1 );
+		add_action( 'woocommerce_before_calculate_totals', 'im_woocommerce_update_price', 99 );
 		add_filter( 'woocommerce_cart_item_price', 'im_show_nonsale_price', 10, 2 );
 //		add_filter( 'woocommerce_order_button_text', 'im_custom_order_button_text' );
 		add_action( 'init', 'custom_add_to_cart_quantity_handler' );
@@ -202,13 +203,15 @@ class Fresh {
 		$this->loader->add_action( 'wp_enqueue_scripts', $inventory, 'enqueue_scripts' );
 
 		Fresh_Packing::init_hooks();
-		Fresh_Order_Management::instance()->init_hooks();
+		Fresh_Suppliers::init_hooks();
+		Fresh_Order_Management::init_hooks();
 		Fresh_Catalog::init_hooks();
 		Fresh_Client::init_hooks();
 		Fresh_Delivery::init_hooks();
 		Fresh_Client_Views::init_hooks();
 
 		add_action('wp_enqueue_scripts', array($this, 'remove_add'), 2222);
+
 //		add_filter('editable_roles', 'edit_roles');
 		/// check siton:
 //		if (get_user_id() == 1) wp_set_current_user(474);
@@ -253,6 +256,12 @@ class Fresh {
 			do_action( 'fresh_shutdown_error', $error );
 		}
 	}
+
+	function remove_add()
+	{
+		wp_dequeue_script('wc-add-to-cart');
+	}
+
 
 	static function admin_menu()
 	{
@@ -327,6 +336,7 @@ class Fresh {
 
 		switch ($operation)
 		{
+
 			case "update":
 				return handle_data_operation($operation);
 
@@ -755,6 +765,9 @@ function content_func( $atts, $contents, $tag )
 
 function cart_update_price()
 {
+	MyLog( "cart start" );
+	// TWEEK. Don't know why menu_op calls this method.
+	// DONT remove without trying menu.php and cart.
 	if (! SqlQuerySingleScalar("select 1")) {
 		MyLog ("not connected to db");
 		return;

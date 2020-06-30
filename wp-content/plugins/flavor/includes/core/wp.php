@@ -73,6 +73,14 @@ function is_admin_user() {
 	return $manager;
 }
 
+function is_shop_manager() {
+		$user    = new WP_User( wp_get_current_user() );
+		if ( ! empty( $user->roles ) && is_array( $user->roles ) )
+			foreach ( $user->roles as $role ) if ( $role == 'shop_manager' ) return true;
+
+		return false;
+	}
+
 /**
  * @param null $args
  *
