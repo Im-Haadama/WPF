@@ -1,10 +1,5 @@
 <?php
 
-//require_once dirname( FRESH_PLUGIN_FILE ) . '/includes/core/gui/inputs.php';
-//require_once dirname(FRESH_PLUGIN_FILE) . '/includes/suppliers/suppliers.php';
-
-//add_shortcode('bla', 'Fresh_Suppliers::status');
-
 class Fresh_Suppliers {
 	private $gem;
 
@@ -48,7 +43,7 @@ class Fresh_Suppliers {
 			"import_page"=> GetUrl(),
 			"post_file" => Fresh::getPost(),
 			"import" => true,
-			"prepare_plug" => "Fresh_Pricelist_Item::add_prod_info", 
+			"prepare_plug" => "Fresh_Pricelist_Item::add_prod_info",
 			"action_before_import" => array(__CLASS__, "action_before_import"),
 			"page_number"=>0,
 			"edit"=>true,

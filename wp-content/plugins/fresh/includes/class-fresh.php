@@ -232,11 +232,6 @@ class Fresh {
 //		return $menu_links;
 //	}
 
-	function remove_add()
-	{
-//		wp_dequeue_script('wc-add-to-cart');
-	}
-
 	/**
 	 * Ensures fatal errors are logged so they can be picked up in the status report.
 	 *
@@ -256,12 +251,6 @@ class Fresh {
 			do_action( 'fresh_shutdown_error', $error );
 		}
 	}
-
-	function remove_add()
-	{
-		wp_dequeue_script('wc-add-to-cart');
-	}
-
 
 	static function admin_menu()
 	{
@@ -1281,4 +1270,3 @@ function checkout_create_order_line_item( $item, $cart_item_key, $values, $order
 //    var_dump($zone);
 //    return $zone;
 //}
-
