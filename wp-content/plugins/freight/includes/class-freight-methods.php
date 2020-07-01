@@ -38,6 +38,7 @@ class Freight_Methods {
 
 		$m = Core_Db_MultiSite::getInstance();
 		if ( ! $m->isMaster() ) {
+			if (! $m->UpdateFromRemote( "woocommerce_shipping_zones", "zone_id" )) return false;
 			if (! $m->UpdateFromRemote( "woocommerce_shipping_zone_methods", "instance_id" )) return false;
 			if (! $m->UpdateFromRemote( "woocommerce_shipping_zone_locations", "location_id" )) return false;
 			if (! $m->UpdateFromRemote( "options", "option_name", 0, "option_name like 'woocommerce_flat_rate_%_settings'", array( 'option_id' ))) return false;

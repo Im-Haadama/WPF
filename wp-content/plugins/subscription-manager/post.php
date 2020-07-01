@@ -4,12 +4,7 @@ if ( ! defined( "ABSPATH" ) ) {
 	define( 'ABSPATH', dirname(dirname(dirname( dirname( __FILE__ ) ) )) . '/');
 }
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 require_once(ABSPATH . 'wp-config.php');
-
 
 $operation = GetParam('operation', true, null, true);
 $subscription_manager = Subscription_Manager::instance();

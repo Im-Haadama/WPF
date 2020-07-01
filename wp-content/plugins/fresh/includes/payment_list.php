@@ -53,10 +53,6 @@ function clear_duplicates()
 
 function find_user_id()
 {
-	ini_set('display_errors', 1);
-	ini_set('display_startup_errors', 1);
-	error_reporting(E_ALL);
-
 	$result = SqlQuery("SELECT id, email FROM `im_payment_info`");
 	while ($row = SqlFetchAssoc($result))
 	{

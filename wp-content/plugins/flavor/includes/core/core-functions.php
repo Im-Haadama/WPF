@@ -631,7 +631,8 @@ function send_mail( $subject, $to, $message ) {
 function get_user_displayname($user_id)
 {
 	$w = get_userdata($user_id);
-	return $w->display_name;
+	if (isset($w->display_name)) return $w->display_name;
+	return "user $user_id not found";
 }
 
 function Define_if_needed($sym, $value)

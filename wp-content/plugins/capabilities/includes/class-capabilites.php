@@ -652,7 +652,7 @@ class Capabilites {
 		// $this->loader->run();
 	}
 
-	static public function main()
+	static public function RolesAndCapabilities()
 	{
 //		print get_current_user_id();
 		if (! im_user_can("promote_users")) return;
@@ -692,7 +692,7 @@ class Capabilites {
 	}
 
 	static public function roles(&$role_types) {
-		$result = Core_Html::GuiHeader(2, "roles");
+		$result = Core_Html::GuiHeader(2, "Roles");
 		// 2D array of capabilithes[$user][$cap];
 //		$role_types               = [];
 		$users                   = [];
@@ -709,6 +709,8 @@ class Capabilites {
 			$roles["header"][ $cap ] = $cap;
 		}
 		foreach ( $users as $user => $not_used ) {
+			 $u = new WP_User( $user );
+			 if (count($u->roles) == 1) continue;
 			$roles[ $user ]["users"] = get_user_displayname($user);
 			foreach ( $role_types as $cap => $not_used ) {
 				$roles[ $user ][ $cap ] = Core_Html::GuiCheckbox( "chk_${user}_$cap", user_can( $user, $cap ),
@@ -724,7 +726,7 @@ class Capabilites {
 		$menu = new Core_Admin_Menu();
 
 		$menu->AddSubMenu( "users.php", "promote_users",
-			array( 'page_title' => 'Site admins', 'function' => array( __CLASS__, 'main' ) ) );
+			array( 'page_title' => 'Site admins', 'function' => array( __CLASS__, 'RolesAndCapabilities' ) ) );
 
 //		$menu->AddSubMenu( "users.php", "edit_shop_orders",
 //			array( 'page_title' => 'Payment methods', 'function' => array( "Finance_Payments", 'payment_methods' ) ) );
