@@ -15,8 +15,8 @@ abstract class Core_Multisite_Fields {
 
 class Core_MultiSite {
 	private $sites_array;
-	private $master_id;
-	private $local_site_id;
+	protected $master_id;
+	protected $local_site_id;
 	private $http_codes;
 
 	/// GETTERS

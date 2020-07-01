@@ -185,7 +185,7 @@ and curdate() > order_mission_date(id)" );
 			}
 		}
 
-		if ( strlen( $result ) ) {
+		if ( strlen( $result ) > 39) {
 			$class   = 'notice notice-info';
 
 			printf( '<div class="%1$s"><p>%2$s</p></div>', esc_attr( $class ), esc_html( $result ) );

@@ -338,12 +338,7 @@ class Core_Fund {
 	 * @return bool
 	 */
 	static function check_password( $user, $password ) {
-		// For now hardcoded.
-		if ( $user != "im-haadama" or $password != "Wer95%pl" ) {
-			return false;
-		}
-
-		return true;
+		return SqlQuerySingleScalar("select count(*) from im_multisite where user='$user' and password='$password'");
 	}
 
 	/**

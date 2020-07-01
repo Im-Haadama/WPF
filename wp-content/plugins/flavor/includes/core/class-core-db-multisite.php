@@ -16,11 +16,15 @@ class Core_Db_MultiSite extends Core_MultiSite {
 
 	private $allowed_tables;
 
-	public function AddTable($table)
+	public function AddTable($table, $id_field = "id")
 	{
+//		print __FUNCTION__ . ": $table $id_field<br/>";
 		if (in_array($table, $this->allowed_tables)) return;
 		AddAction("sync_data_$table", array($this, 'sync_data_wrap'));
-		array_push($this->allowed_tables, $table);
+//		array_push($this->allowed_tables, $table);
+		$this->allowed_tables[$table] = $id_field;
+//		print $this->allowed_tables[$table] . "<br/>";
+//		var_dump($this->allowed_tables);
 	}
 
 	/**
@@ -181,6 +185,7 @@ class Core_Db_MultiSite extends Core_MultiSite {
 	 */
 	function UpdateFromRemote( $table, $key = "id", $remote = 0, $query = null, $ignore = null, $debug = false )
 	{
+		$debug = 1;
 		if ( $remote == 0 ) $remote = self::getMaster();
 
 		if ($this->isMaster()) return true;
@@ -204,15 +209,16 @@ class Core_Db_MultiSite extends Core_MultiSite {
 			if (! Core_Db_MultiSite::UpdateTable( $html, $table, $key, $query, $ignore, $debug ))
 			{
 				print "check $url<br/>";
-				die(1);
+				return false;
 			}
+			return true;
 		} else {
 			print "short response. Operation aborted<br/>";
 			print "url = " . $this->getSiteURL($remote) . $url;
 
 			print $html;
 
-			return;
+			return false;
 		}
 	}
 
@@ -229,6 +235,7 @@ class Core_Db_MultiSite extends Core_MultiSite {
 	 */
 	static function UpdateTable( $html, $table, $table_key, $query = null, $ignore_fields = null, $verbose = false )
 	{
+//		print __FUNCTION__;
 		require_once( ABSPATH . 'vendor/simple_html_dom.php' );
 
 		$dom = \Dom\str_get_html( $html );
@@ -268,8 +275,8 @@ class Core_Db_MultiSite extends Core_MultiSite {
 						print "Key $table_key not found<br/>";
 						print "data from server:<br/>";
 						print $html;
+						return false;
 					}
-					die( 1 );
 				}
 				$first = false;
 				continue;
@@ -360,6 +367,14 @@ class Core_Db_MultiSite extends Core_MultiSite {
 	{
 		$result = Core_Html::GuiHeader(1, "Multi sites");
 		$args = [];
+		$db_prefix = GetTablePrefix();
+
+//		print "TRUNCATING<br/>";
+//		SqlQuery("truncate ${db_prefix}multisite");
+//		$this->local_site_id = 0;
+//		$this->master_id = 0;
+//		print "Connecting<br/>";
+//		self::DoConnectToMaster("https://fruity.co.il", "multisite_connect", "multisite_connect");
 
 		if (self::isMaster()) {
 			Core_Gem::AddTable( "multisite" );
@@ -368,14 +383,22 @@ class Core_Db_MultiSite extends Core_MultiSite {
 			if ( ! TableExists( "multisite" ) ) {
 				self::install();
 			}
+			$args["links"] = array("id" => AddToUrl(array("operation"=>"gem_edit_multisite", "id"=>"%s")));
+
 			$result .= Core_Gem::GemTable( "multisite", $args );
-		} else {
-			$args["add_button"] = false;
-			if (! self::getMasterId()) {
-				$result .= self::ShowConnectToMaster();
-			}
-			self::UpdateFromRemote("multisite");
+			print $result;
+			return;
 		}
+
+		// Slave
+		$args["add_button"] = false;
+		if (! self::getMasterId()) {
+			$result .= self::ShowConnectToMaster();
+			print $result;
+			return;
+		}
+//		self::UpdateFromRemote("multisite");
+		self::updateFromMaster();
 
 		$result .= Core_Gem::GemTable("multisite", $args);
 		print $result;
@@ -394,18 +417,45 @@ class Core_Db_MultiSite extends Core_MultiSite {
 
 	function DoConnectToMaster($server, $user, $password)
 	{
-		$db_prefix = GetTablePrefix();
 		$http_code = 0;
+		$db_prefix = GetTablePrefix();
 		$url = "$server/wp-content/plugins/finance/post.php?operation=multisite_validate";
-		$result = self::DoRun($url, $http_code, $user, $password );
+		$result = self::DoRun($url, $http_code, $user, $password);
 
-		if (substr($result, 0, 4) != "done") return false;
-		$master_id = substr($result, 5); // Master id.
-		if (! SqlQuerySingleScalar("select count(*) from im_multisite where id = $master_id")){
-			SqlQuery("insert into ${db_prefix}multisite (id, tools_url, master, last_inc_update, pickup_address, user, password) values ($master_id, '$server', 1, curdate(), '', '$user', '$password')");
+		if (substr($result, 0, 4) != "done") {
+			print $url . " " . $user . " " . $password . "<br/>";
+			print "Failed validation in master.<br/>";
+			print "First, add to master<br/>";
+			return false;
+		}
+		$this->master_id = substr($result, 5); // Master id.
+//		print "master= " . $this->master_id . "<br/>";
+		if (! SqlQuerySingleScalar("select count(*) from im_multisite where id = $this->master_id")){
+//			print "inserting master $this->master_id<br/>";
+			SqlQuery("insert into ${db_prefix}multisite (id, tools_url, master, last_inc_update, pickup_address, user, password) values ($this->master_id, '$server', 1, curdate(), '', '$user', '$password')");
     	}
 
-		$this->UpdateFromRemote("multisite");
+		return self::UpdateFromMaster();
+	}
+
+	function updateFromMaster() {
+		$db_prefix = GetTablePrefix();
+
+		if ( ! $this->UpdateFromRemote( "multisite", "id", 0, null, null, false ) ) {
+			print "Can't update from master<br/>";
+
+			return false;
+		}
+		$host_name           = $_SERVER['SERVER_NAME'];
+		$this->local_site_id = SqlQuerySingleScalar( "select id from ${db_prefix}multisite where tools_url like '%$host_name%'" );
+//		print "my site id $this->local_site_id.<br/> master id: $this->master_id<br/>";
+		if ( $this->local_site_id ) {
+			$sql = "update ${db_prefix}multisite set local = 1 where id = $this->local_site_id";
+//			print $sql . "<br/>";
+			SqlQuery( $sql );
+			SqlQuery( "update ${db_prefix}multisite set local = 0 where id = $this->master_id" );
+		}
+		return true;
 	}
 
 	function install()
@@ -435,9 +485,12 @@ class Core_Db_MultiSite extends Core_MultiSite {
 
 	function sync_data($table)
 	{
-		if (! in_array($table, $this->allowed_tables)) return "not allowed";
-		$db_prefix = "im_";
+		if (! isset($this->allowed_tables[$table])) return "not allowed";
+
+		$db_prefix = GetTablePrefix($table);
 		$sql = "SELECT * FROM ${db_prefix}$table"; //  where date >= curdate()";
+		$args["id_field"] = $this->allowed_tables[$table];
+//		var_dump($args);
 
 		return Core_Html::GuiTableContent( "table", $sql, $args );
 	}

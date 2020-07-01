@@ -33,13 +33,25 @@ class Freight_Methods {
 		Core_gem::AddTable("mission_types");
 	}
 
-	static function settings($args = null, $operation = null)
-	{
-		$result = Core_Html::GuiHeader(1, "Shipping methods");
+	static function settings($args = null, $operation = null) {
+		$result = Core_Html::GuiHeader( 1, "Shipping methods" );
+
+		$m = Core_Db_MultiSite::getInstance();
+		if ( ! $m->isMaster() ) {
+			if (! $m->UpdateFromRemote( "woocommerce_shipping_zone_methods", "instance_id" )) return false;
+			if (! $m->UpdateFromRemote( "woocommerce_shipping_zone_locations", "location_id" )) return false;
+		}
 
 		if ($operation)
-			$result = apply_filters( $operation, $result, "", null, null );
+			$result .= apply_filters( $operation, $result, "", null, null );
 
+		$result .= self::ShippingZoneMethods(false);
+		return $result;
+	}
+
+	static function ShippingZoneMethods($read_only)
+	{
+		$result = "";
 		$header_row = array("id", "Zone name", "Shipping name", "mission code");
 		for ($day = 1; $day <=4; $day ++)
 			array_push($header_row, DayName($day));
@@ -84,7 +96,7 @@ class Freight_Methods {
 					array_push($new_row, "");
 			}
 
-			if ($instance_id) array_push($new_row, Core_Html::GuiButton("btn_delete_$instance_id", "X", array("action"=>"shipment_delete('".Freight::getPost()."', $instance_id)")));
+			if ($instance_id and ! $read_only) array_push($new_row, Core_Html::GuiButton("btn_delete_$instance_id", "X", array("action"=>"shipment_delete('".Freight::getPost()."', $instance_id)")));
 			array_push($rows, $new_row);
 		}
 

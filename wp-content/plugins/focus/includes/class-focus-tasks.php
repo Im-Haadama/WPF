@@ -2055,7 +2055,6 @@ class Focus_Tasks {
 		} else {
 			return ( $selected > 0 ) ? SqlQuerySingleScalar( "select team_name from ${db_prefix}working_teams where id = " . $selected ) : "";
 		}
-
 	}
 
 	static function get_link( $type, $id = 0 ) {

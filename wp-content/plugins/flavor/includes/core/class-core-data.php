@@ -526,7 +526,7 @@ class Core_Data
 			if (isset($row[strtoupper($id_field)])) $id_field = strtoupper($id_field);
 			if ( ! isset( $row[ $id_field ] ) ) {
 				// Error... We don't have a valid row ID.
-				print "<br/>field id:" . $id_field . "<br/>";
+				print "<br/>id_field:" . $id_field . "<br/>";
 				var_dump( $row );
 				print "<br/>";
 				print $sql . "<br/>";
@@ -534,6 +534,7 @@ class Core_Data
 				die( __FUNCTION__ . ":" . __LINE__ . "no id_field" );
 			}
 			$row_id = $row[ $id_field ];
+//			print "row_id=$row_id<br/>";
 
 			foreach ( $row as $key => $cell ) {
 				// Change: 9/9/2019. We put the id only in multirow display
@@ -559,6 +560,7 @@ class Core_Data
 			}
 
 			$row_count ++;
+//			print $row_count . "<br/>";
 
 			if ( $meta_fields and is_array( $meta_fields ) ) {
 				foreach ( $meta_fields as $meta_key ) {
@@ -657,6 +659,7 @@ class Core_Data
 				$sql .= $limit;
 			}
 		}
+		print $sql;
 
 		$header = GetArg($args, "header", true);
 		$field_list = self::FieldList($sql, $args);

@@ -63,12 +63,12 @@
 		{
 			$menu = new Core_Admin_Menu();
 
-			$menu->AddMenu('Freight Settings', 'Freight', 'show_manager', 'freight', array($this, 'general_settings'));
+			$menu->AddMenu('Freight Settings', 'Freight', 'shop_manager', 'freight', array($this, 'freight_general'));
 			$menu->AddSubMenu('freight', 'edit_shop_orders',
 				array('page_title' => 'Settings',
 				            'menu_title' => 'Settings',
 				            'menu_slug' => 'settings',
-				            'function' => array($this, 'general_settings')));
+				            'function' => array($this, 'freight_general')));
 
 //			$menu->AddSubMenu('freight', 'edit_shop_orders',
 //				array('page_title' => 'Dispatcher',
@@ -102,9 +102,9 @@
 			return "/wp-content/plugins/freight/post.php";
 		}
 
-		public function general_settings()
+		public function freight_general()
 		{
-			$result = ""; // Core_Html::gui_header(1, "general settings");
+			$result = Core_Html::gui_header(1, "general settings");
 			$tabs = [];
 			$args = [];
 			$args["post_file"] = self::getPost();
@@ -112,25 +112,21 @@
 			$tab = GetParam("tab", false, "methods");
 			$url = GetUrl(1) . "?page=settings&tab=";
 			$operation = GetParam("operation", false, null);
-
 			$tabs["help"] = array(
 				"Help",
 				$url . "help",
 				self::help($args, $operation)
 			);
-
 			$tabs["zones"] = array(
 				"Zones",
 				$url . "zones",
 				$tab == "zones" ? Freight_Zones::settings($args, $operation) : ""
 			);
-
 			$tabs["methods"] = array(
 				"Methods",
 				$url . "methods",
 				$tab == "methods" ? Freight_Methods::settings($args, $operation) : ""
 			);
-
 			$tabs["mission_types"] = array(
 				"Mission Types",
 				$url . "mission_types",

@@ -89,6 +89,7 @@ class Core_Gem {
 
 	static function edit_wrapper($result, $id, $args)
 	{
+		$id = GetParam("id", true);
 		if (! ($id > 0)) return __FUNCTION__ . ":bad id";
 
 		$operation = GetArg($args, "operation", null);
@@ -474,7 +475,14 @@ class Core_Gem {
 
 		if (! $sql){
 			$fields = GetArg($args, "fields", null);
-			if ($fields) $sql = "select " . CommaImplode($fields) . " from ${table_prefix}$table_name ";
+			if ($fields) {
+				$sql = "select " . CommaImplode( $fields );
+
+//				foreach ($fields as $field => $not_used)
+//					$sql .= $field . ", ";
+//				 //.  .
+				$sql = trim($sql, ", ") . " from ${table_prefix}$table_name ";
+			}
 			else $sql = "select * from ${table_prefix}$table_name";
 
 			$query = GetArg($args, "query", null);
@@ -489,7 +497,6 @@ class Core_Gem {
 		$new_row = GetArg($args, "new_row", null);
 		if ($new_row) $rows_data["new_row"] = $new_row;
 
-//		MyLog(__FUNCTION__ . " $table_name");
 		return Core_Gem::GemArray($rows_data, $args, $table_name);
 	}
 

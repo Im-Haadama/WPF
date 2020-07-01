@@ -96,7 +96,7 @@
 
 			// Suppliers
 			$menu->AddSubMenu("woocommerce", "edit_shop_orders",
-				array('page_title' => 'Suppliers', 'function' => array("Fresh_Suppliers" , 'admin_page' )));
+				array('page_title' => 'Suppliers', 'function' => array("Fresh_Suppliers" , 'suppliers' )));
 
 			// Needed products
 			$menu->AddSubMenu("woocommerce", "edit_shop_orders",

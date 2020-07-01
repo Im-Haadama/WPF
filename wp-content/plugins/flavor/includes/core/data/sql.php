@@ -289,7 +289,7 @@ function SqlQuerySingleScalar( $sql, $report_error = true ) {
  * @return bool
  */
 function TableExists( $table ) {
-	$db_prefix = GetTablePrefix();
+	$db_prefix = GetTablePrefix($table);
 	$sql = 'SELECT 1 FROM ' . $db_prefix .$table . ' LIMIT 1';
 //	print $sql;
 	return SqlQuery( $sql, false) != null;

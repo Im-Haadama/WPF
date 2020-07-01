@@ -69,7 +69,7 @@ class Fresh_Suppliers {
 		new Fresh_Catalog();
 	}
 
-	static function admin_page()
+	static function suppliers()
 	{
 		$operation = GetParam("operation", false, null, true);
 

@@ -26,7 +26,7 @@ class Fresh_Supplier_Balance {
 	{
 		$menu = new Core_Admin_Menu();
 
-		$menu->AddMenu("הנהלת חשבונות", "הנהלת חשבונות", "edit_shop_orders", "accounts", array(__CLASS__, 'main'));
+		$menu->AddMenu("הנהלת חשבונות", "הנהלת חשבונות", "edit_shop_orders", "supplier_accounts", array(__CLASS__, 'supplier_accounts'));
 		AddAction("get_supplier_open_account", array(Fresh_Supplier_Balance::instance(), 'supplier_open_account'));
 	}
 
@@ -35,15 +35,21 @@ class Fresh_Supplier_Balance {
 		return array( 'fresh_supplier_balance' => array( 'Fresh_Supplier_Balance::main',    'show_supplier_balance' ));          // Payments data entry
 	}
 
-	static function main() {
+	static function supplier_accounts() {
 		$result = "";
 
 		$tabs = [];
 
+		if ($operation = GetParam("operation", false, null)) {
+			$result .= apply_filters( $operation, $result, "", null, null );
+			print $result;
+			return;
+		}
+
 		$ms = Core_Db_MultiSite::getInstance();
 
 		if ($ms->getLocalSiteID() != 2) { // Makolet
-			array_push( $tabs, array( "supplier_balance", "Suppliers balances", self::Balance() ) );
+			array_push( $tabs, array( "supplier_transactions", "Suppliers transactions", self::SupplierTransactions() ) );
 			array_push( $tabs, array(
 				"supplier_invoices",
 				"Suppliers invoices",
@@ -66,17 +72,6 @@ class Fresh_Supplier_Balance {
 
 	static function test()
 	{
-//		echo get_option( 'timezone_string' );
-		$order = wc_get_order(13318);
-		foreach ($order->get_items() as $item_id => &$item){
-			MyLog($item->get_id());
-			$item->set_subtotal(77);
-			$item->set_total(50);
-			$item->calculate_taxes();
-			$item->save();
-		}
-		$order->calculate_totals();
-		$order->save();
 	}
 
 	static function test_invoice()
@@ -94,10 +89,10 @@ class Fresh_Supplier_Balance {
 		return $result;
 	}
 
-	static function Balance($include_zero = false)
+	static function SupplierTransactions($include_zero = false)
 	{
 		$supplier_id = GetParam( "supplier_id", false, null );
-		if ( $supplier_id ) return self::get_supplier_balance($supplier_id);
+		if ( $supplier_id ) return self::get_supplier_transactions($supplier_id);
 
 		$result = "<table>";
 		
@@ -145,7 +140,7 @@ class Fresh_Supplier_Balance {
 		return $result;
 	}
 
-	static function get_supplier_balance( $supplier_id ) {
+	static function get_supplier_transactions( $supplier_id ) {
 		$result = "";
 		$s = new Fresh_Supplier($supplier_id);
 		$result .= Core_Html::GuiHeader(1, $s->getSupplierName());
@@ -158,7 +153,7 @@ class Fresh_Supplier_Balance {
 		$selectors_events["document_type"] = 'onchange="update_document_type(%s)"';
 		$args["selectors_events"] = $selectors_events;
 
-		$args["links"] = array("id" => "/org/business/invoice_table.php?row_id=%s");
+		$args["links"] = array("id" => AddToUrl(array("operation"=>"invoice_show", "id" => '%d')));
 
 
 		$sql = "SELECT id, date, amount, ref, pay_date, document_type, supplier_balance($supplier_id, date) as balance FROM im_business_info " .

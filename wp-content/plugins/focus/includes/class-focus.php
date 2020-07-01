@@ -165,6 +165,9 @@ class Focus {
 		$this->loader->add_action( 'wp_enqueue_scripts', $this->tasks, 'enqueue_scripts' );
 
 		Focus_Project::init();
+
+		if ((get_user_id() == 1) and defined("DEBUG_USER")) wp_set_current_user(DEBUG_USER);
+
 	}
 
 	/**

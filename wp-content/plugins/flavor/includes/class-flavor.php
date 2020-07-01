@@ -144,8 +144,12 @@ class Flavor {
 
 		// Register tables that can be fetched.
 		$i = Core_Db_MultiSite::getInstance();
-		foreach (array("multisite", "missions") as $table)
-			$i->AddTable($table);
+//		foreach (array("multisite", "missions", "woocommerce_shipping_zones") as $table)
+		$i->AddTable("multisite");
+		$i->AddTable("missions");
+		$i->AddTable("woocommerce_shipping_zones", "zone_id" );
+		$i->AddTable("woocommerce_shipping_zone_methods", "instance_id" );
+		$i->AddTable("woocommerce_shipping_zone_locations", "location_id" );
 
 		AddAction( 'admin_enqueue_scripts', array($this, 'admin_scripts' ));
 	}

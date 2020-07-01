@@ -31,6 +31,9 @@ if ( ! is_plugin_active( 'flavor/flavor.php' ) /* and current_user_can( 'activat
 	return;
 }
 
+//	ini_set( 'display_errors', 1 );
+//	ini_set( 'display_startup_errors', 1 );
+//	error_reporting( E_ALL );
 // Include the main WooCommerce class.
 if ( ! class_exists( 'Finance' ) ) {
 	include_once dirname( __FILE__ ) . '/includes/class-finance.php';

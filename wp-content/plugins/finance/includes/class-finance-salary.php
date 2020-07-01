@@ -759,7 +759,7 @@ class Finance_Salary {
 		$menu->AddSubMenu('finance', 'working_hours_self',
 			array('page_title' => 'Hours',
 			      'menu_title' => 'Hours entry',
-			      'menu_slug' => 'settings',
+			      'menu_slug' => 'salary_entry',
 			      'function' => array($this, 'entry_wrapper')));
 
 	}
