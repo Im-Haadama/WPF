@@ -90,7 +90,7 @@ class Finance_Yaad {
 
 		$token = get_user_meta($user->getUserId(), 'credit_token', true);
 
-		$credit_data = SqlQuerySingleAssoc( "select * from im_payment_info where email = " . QuoteText($user->get_customer_email()));
+		$credit_data = SqlQuerySingleAssoc( "select * from im_payment_info where user_id = " . $user->getUserId());
 		// .                                    " and card_number not like '%X%'");
 		if (! $credit_data) {
 			MyLog("no credit info found");
@@ -102,7 +102,9 @@ class Finance_Yaad {
 			$transaction_info = self::TokenPay( $token, $credit_data, $user, $amount, CommaImplode($account_line_ids), $payment_number );
 			$transaction_id = $transaction_info['Id'];
 			if (! $transaction_id or ($transaction_info['CCode'] != 0)) {
-				print "Got error " . self::ErrorMessage($transaction_info['CCode']) . "\n";
+				$message = "Got error " . self::ErrorMessage($transaction_info['CCode']) . "\n";
+				print $message;
+				MyLog($message);
 				return false;
 			}
 
@@ -167,6 +169,7 @@ class Finance_Yaad {
 
 	function RemoveRawInfo($row_id)
 	{
+		MyLog(__FUNCTION__ . ": $row_id");
 		credit_card_remove($row_id);
 //		$table_name = "im_payment_info";
 //		MyLog(__FUNCTION__ . ": $del_id");
