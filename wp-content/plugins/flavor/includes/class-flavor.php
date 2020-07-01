@@ -150,6 +150,7 @@ class Flavor {
 		$i->AddTable("woocommerce_shipping_zones", "zone_id" );
 		$i->AddTable("woocommerce_shipping_zone_methods", "instance_id" );
 		$i->AddTable("woocommerce_shipping_zone_locations", "location_id" );
+		$i->AddTable("options", "option_id" );
 
 		AddAction( 'admin_enqueue_scripts', array($this, 'admin_scripts' ));
 	}

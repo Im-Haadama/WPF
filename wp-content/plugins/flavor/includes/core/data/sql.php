@@ -535,6 +535,7 @@ function GetTablePrefix($table_name = null)
 	global $table_prefix;
 	if ($table_name){
 		if (strstr($table_name, "woocommerce")) return $table_prefix;
+		if (strstr($table_name, "options")) return $table_prefix;
 	}
 	global $im_table_prefix;
 	return ($im_table_prefix ? $im_table_prefix : "im_");

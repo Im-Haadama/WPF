@@ -1810,11 +1810,12 @@ class Core_Html {
 
 	static function GuiTableContent($table_id, $sql, &$args = null)
 	{
+		$db_prefix = GetTablePrefix($table_id);
 		if (! $sql)	{
 			$fields = GetArg($args, "fields", '*');
 			$where = GetArg($args, "where", null);
 			if (is_array($fields)) $fields = CommaImplode($fields);
-			$sql = "select $fields from $table_id";
+			$sql = "select $fields from ${db_prefix}$table_id";
 			if ($where) $sql .= " where $where";
 		}
 

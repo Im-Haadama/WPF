@@ -185,7 +185,6 @@ class Core_Db_MultiSite extends Core_MultiSite {
 	 */
 	function UpdateFromRemote( $table, $key = "id", $remote = 0, $query = null, $ignore = null, $debug = false )
 	{
-		$debug = 1;
 		if ( $remote == 0 ) $remote = self::getMaster();
 
 		if ($this->isMaster()) return true;
@@ -480,18 +479,17 @@ class Core_Db_MultiSite extends Core_MultiSite {
 	function sync_data_wrap()
 	{
 		$operation = GetParam("operation", true, false);
-		return self::sync_data(substr($operation, 10));
+		$query=stripslashes(GetParam("query", false, null));
+		return self::sync_data(substr($operation, 10), $query);
 	}
 
-	function sync_data($table)
+	function sync_data($table, $query = null)
 	{
 		if (! isset($this->allowed_tables[$table])) return "not allowed";
 
-		$db_prefix = GetTablePrefix($table);
-		$sql = "SELECT * FROM ${db_prefix}$table"; //  where date >= curdate()";
 		$args["id_field"] = $this->allowed_tables[$table];
-//		var_dump($args);
+		if ($query) $args["where"] = $query;
 
-		return Core_Html::GuiTableContent( "table", $sql, $args );
+		return Core_Html::GuiTableContent( $table, null, $args );
 	}
 }

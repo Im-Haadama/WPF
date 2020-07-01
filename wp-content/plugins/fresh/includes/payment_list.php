@@ -98,9 +98,10 @@ function clear_card_info()
     }
     print $output;
 }
-//clear_duplicates();
+
+clear_duplicates();
 //find_user_id();
-//clear_card_info();
+clear_card_info();
 
 $pay_result   = $wpdb->get_results("SELECT * FROM $table_name ORDER BY id  desc");
 $result = $wpdb->num_rows;
