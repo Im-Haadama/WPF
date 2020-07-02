@@ -27,7 +27,6 @@ class Fresh_Packing {
 	function supplier_tabs($needed_prod_by_supplier)
 	{
 		$supplier_tabs   = [];
-
 	}
 
 	static function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero = false, $filter_stock = false, $history = false) {
