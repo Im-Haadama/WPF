@@ -118,7 +118,7 @@ class Finance_Salary {
 	{
 		$year_month = GetParam( "month", false, date( 'Y-m', strtotime('-15 days') ) );
 
-		return self::salary_report($year_month, $args);
+		print self::salary_report($year_month, $args);
 	}
 
 	/**
@@ -317,7 +317,6 @@ class Finance_Salary {
 		return 0;
 	}
 
-	// Forms used by shortcodes //
 	/**
 	 * @param $user_id
 	 *
@@ -476,7 +475,7 @@ class Finance_Salary {
 	 */
 	static function print_transactions( $user_id = 0, $month = null, $year = null, &$args = null ) // , $week = null, $project = null, &$sum = null, $show_salary = false , $edit = false) {
 	{
-		$day_rate = SqlQuerySingleScalar("select day_rate from im_working where user_id = $user_id");
+		$day_rate = (float) SqlQuerySingleScalar("select day_rate from im_working where user_id = $user_id");
 
 		$result = "";
 		if ($day_rate) $result .= Core_Html::gui_header(2, "Daily worker");
@@ -527,6 +526,8 @@ class Finance_Salary {
 			$args["add_checkbox"] = true;
 		}
 // 	 $args["hide_cols"] = array("expense" => 1, "expense_text" => 1, "125" => 1, "150" => 1);
+		print $sql;
+
 		$rows = Core_Data::TableData( $sql, $args );
 
 		// Add computed rows.
@@ -761,6 +762,12 @@ class Finance_Salary {
 			      'menu_title' => 'Hours entry',
 			      'menu_slug' => 'salary_entry',
 			      'function' => array($this, 'entry_wrapper')));
+
+		$menu->AddSubMenu('finance', 'working_hours_report',
+			array('page_title' => 'Report',
+			      'menu_title' => 'Salary report',
+			      'menu_slug' => 'salary_report',
+			      'function' => array($this, 'report_wrapper')));
 
 	}
 }

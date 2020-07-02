@@ -19,9 +19,23 @@ class Flavor_Roles {
 		return self::$_instance;
 	}
 
-	public function addRole($role)
+	public function addRole($role, $capabilities = null)
 	{
 		array_push($this->roles, $role);
+
+		$caps = [];
+		if ($capabilities) {
+//			foreach ( $capabilities as $capability ) {
+//				MyLog($capability);
+//				$caps[$capability] = true;
+//			}
+			$rc = add_role($role, convert_to_title($role), $caps);
+			$role = get_role($role);
+			foreach ($capabilities as $capability)
+				$role->add_cap($capability);
+//			print "=============================>$role $rc " . $capabilities[0] . "<br/>";
+		}
+
 		return;
 	}
 

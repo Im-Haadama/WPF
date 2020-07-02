@@ -669,12 +669,13 @@ class Capabilites {
 
 	static function capabilites($roles)
 	{
+		if (is_string($roles)) $roles = array($roles);
 		$result = Core_Html::GuiHeader(2, "Capabilities per role");
 
 		global $wp_roles;
 
 		$all_roles = $wp_roles->roles;
-		$caps = array("wpcf7_edit_contact_forms", "wpcf7_read_contact_forms");
+//		$caps = array("wpcf7_edit_contact_forms", "wpcf7_read_contact_forms");
 
 		foreach ($roles as $role => $not_used) {
 			$result .= Core_Html::GuiHeader( 3, "role $role" );
@@ -683,7 +684,7 @@ class Capabilites {
 //			die (1);
 //			$editable_role = apply_filters('editable_roles', $all_roles[$role]);
 			foreach ($all_roles[$role]['capabilities'] as $cap => $enabled) {
-				if (in_array($cap, $caps))
+//				if (in_array($cap, $caps))
 					$result .= $cap . " $enabled<br/>";
 			}
 		}
@@ -719,6 +720,7 @@ class Capabilites {
 		}
 
 		$result .= Core_Html::gui_table_args( $roles );
+
 		return $result;
 	}
 

@@ -52,10 +52,10 @@ class Finance_Database extends Core_Database {
 
 	function CreateFunctions($version) {
 		return;
+		SqlQuery("drop function working_rate");
 		SqlQuery("create
     function working_rate(_worker int, _project int) returns float
 BEGIN
-	
     declare _rate float;
 
 	select round(rate, 2) into _rate  
@@ -70,8 +70,7 @@ BEGIN
 	select round(rate, 2) into _rate
 	          from im_working
 	          where user_id = _worker
-	          and project_id = _project;
-
+	          and project_id = 0;
     return _rate;
   END;
 

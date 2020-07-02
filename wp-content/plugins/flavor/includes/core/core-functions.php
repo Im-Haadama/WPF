@@ -639,3 +639,8 @@ function Define_if_needed($sym, $value)
 {
 	if (! defined($sym)) define ($sym, $value);
 }
+
+function convert_to_title($underscore_text)
+{
+	return ucwords(str_replace("_", " ", $underscore_text));
+}

@@ -155,6 +155,9 @@ class Finance_Yaad {
 	{
 		switch ($code)
 		{
+			case 4:
+				return "סירוב";
+
 			case 6:
 				return "מספר ת.ז שגוי";
 		}

@@ -555,6 +555,7 @@ class Finance_Bank
 		return $result;
 
 	}
+
 	function show_bank_receipts($account_id, $ids = null)
 	{
 		$account_id = 1;
@@ -824,7 +825,7 @@ function user_is_business_owner() {
 			array('page_title' => 'Settings',
 			      'menu_title' => 'Settings',
 			      'menu_slug' => 'settings',
-			      'function' => array($this, 'general_settings')));
+			      'function' => array($this, 'bank_wrapper')));
 
 	}
 }
