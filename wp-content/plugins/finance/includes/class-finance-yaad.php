@@ -102,7 +102,7 @@ class Finance_Yaad {
 			$transaction_info = self::TokenPay( $token, $credit_data, $user, $amount, CommaImplode($account_line_ids), $payment_number );
 			$transaction_id = $transaction_info['Id'];
 			if (! $transaction_id or ($transaction_info['CCode'] != 0)) {
-				$message = "Got error " . self::ErrorMessage($transaction_info['CCode']) . "\n";
+				$message = $user->getName() . ": Got error " . self::ErrorMessage($transaction_info['CCode']) . "\n";
 				print $message;
 				MyLog($message);
 				return false;
@@ -169,13 +169,14 @@ class Finance_Yaad {
 
 	function RemoveRawInfo($row_id)
 	{
+		global $wpdb;
 		MyLog(__FUNCTION__ . ": $row_id");
-		credit_card_remove($row_id);
-//		$table_name = "im_payment_info";
-//		MyLog(__FUNCTION__ . ": $del_id");
-//
-//		$card_four_digit   = SqlQuerySingleScalar("SELECT card_four_digit FROM $table_name WHERE id = ".$del_id." ");
-//		return SqlQuery("UPDATE $table_name SET card_number =  '".$card_four_digit."' WHERE id = ".$del_id." ");
+		MyLog($row_id, __FUNCTION__);
+		$table_name = "im_payment_info";
+		$card_four_digit   = $wpdb->get_var("SELECT card_four_digit FROM $table_name WHERE id = ".$row_id." ");
+		$dig4 = setCreditCard($card_four_digit);
+		SqlQuery("UPDATE $table_name SET card_number =  '".$dig4."' WHERE id = ".$row_id." ");
+		return true;
 	}
 	/**
 	 * @param $credit_info
