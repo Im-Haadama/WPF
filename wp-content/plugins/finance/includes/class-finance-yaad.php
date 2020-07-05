@@ -73,12 +73,13 @@ class Finance_Yaad {
 
 	static function getCustomerStatus(Fresh_Client $C, $string)
 	{
+		$user_id = $C->getUserId();
 		if ($string)
-			return (SqlQuerySingleScalar( "select count(*) from im_payment_info where card_number not like '%X%' and email = " . QuoteText($C->get_customer_email())) > 0 ? 'C' : '') .
-			(SqlQuerySingleScalar( "select count(*) from im_payment_info where card_number like '%X%' and email = " . QuoteText($C->get_customer_email())) > 0 ? 'X' : '');
+			return (SqlQuerySingleScalar( "select count(*) from im_payment_info where card_number not like '%X%' and user_id = $user_id") > 0 ? 'C' : '') .
+			(SqlQuerySingleScalar( "select count(*) from im_payment_info where card_number like '%X%' and user_id = $user_id") > 0 ? 'X' : '');
 		else
-			return (SqlQuerySingleScalar( "select count(*) from im_payment_info where card_number not like '%X%' and email = " . QuoteText($C->get_customer_email())) > 0 ? 1 : 0) +
-			       (SqlQuerySingleScalar( "select count(*) from im_payment_info where card_number like '%X%' and email = " . QuoteText($C->get_customer_email())) > 0 ? 2 : 0);
+			return (SqlQuerySingleScalar( "select count(*) from im_payment_info where card_number not like '%X%' and user_id = $user_id") > 0 ? 1 : 0) +
+			       (SqlQuerySingleScalar( "select count(*) from im_payment_info where card_number like '%X%' and user_id = $user_id") > 0 ? 2 : 0);
 
 	}
 	function pay_user_credit(Fresh_Client $user, $account_line_ids, $amount, $change, $payment_number = 1)
@@ -89,6 +90,7 @@ class Finance_Yaad {
 			return true;
 
 		$token = get_user_meta($user->getUserId(), 'credit_token', true);
+		MyLog($user->getUserId());
 
 		$credit_data = SqlQuerySingleAssoc( "select * from im_payment_info where user_id = " . $user->getUserId());
 		// .                                    " and card_number not like '%X%'");
@@ -135,7 +137,7 @@ class Finance_Yaad {
 
 				// Create token and save it.
 				$token_info = self::GetToken( $transaction_id );
-				if (isset($token_info['Token'])){
+				if (isset($token_info['Token']) and strlen($token_info['Token']) > 10){
 					if ($debug) print "Got token " . $token_info['Token'] . "<br/>";
 					add_user_meta($user->getUserId(), 'credit_token', $token_info['Token']);
 

@@ -166,6 +166,7 @@ class Finance_Clients
 		return Finance_Yaad::getCustomerStatus($C, true);
 		return '';
 	}
+
 	static function client_account( $customer_id ) {
 		require_once( ABSPATH . "im-config.php" );
 
@@ -209,13 +210,13 @@ class Finance_Clients
 		} else {
 			$new_tran = Core_Html::GuiHeader( 1, "לא ניתן להתחבר ל Invoice4u. בדוק את ההגדרות ואת המנוי. יוזר $" );
 		}
-		$payment_info_id = SqlQuerySingleScalar( "select id from im_payment_info where email = " . QuoteText($u->get_customer_email()));
+		$payment_info_id = SqlQuerySingleScalar( "select id from im_payment_info where user_id = " . $customer_id);
 		if ($payment_info_id) {
 			$args = array("post_file" => Fresh::getPost(), "edit"=>true);
 			$credit_info = Core_Gem::GemElement( "payment_info", $payment_info_id, $args );
 		} else {
 			$args["post_file"] = Finance::getPostFile();
-			$args["values"] = array("email" => $u->get_customer_email(), "full_name"=>$u->getName(), "created_date"=>date('y-m-d'));
+			$args["values"] = array("user_id"=>$u->getUserId(), "email" => $u->get_customer_email(), "full_name"=>$u->getName(), "created_date"=>date('y-m-d'));
 			$credit_info = Core_Gem::GemAddRow("payment_info", "Add", $args);
 //			$credit_info = "No payment info";
 		}
