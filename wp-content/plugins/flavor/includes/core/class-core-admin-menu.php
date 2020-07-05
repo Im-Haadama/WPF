@@ -20,4 +20,16 @@ class Core_Admin_Menu {
 		}
 		else MyLog("==========================================> $capability is missing " . get_user_id());
 	}
+
+	public function Add($parent, $capability, $slug, callable $callable)
+	{
+		$title = convert_to_title($slug);
+		$menu_title = $title;
+		if (im_user_can($capability)) {
+			if ( ! add_submenu_page( $parent, $title, $menu_title, $capability, $slug, $callable ) ) {
+				print "cant add $title $parent $capability<br/>";
+			}
+		}
+		else MyLog("==========================================> $capability is missing " . get_user_id());
+	}
 }

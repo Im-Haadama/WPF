@@ -20,7 +20,7 @@ class Core_Database
 	static function CreateInfo()
 	{
 		$db_prefix = GetTablePrefix();
-		SqlQuery("alter table ${db_prefix}info modify info_key varchar(100) charset utf8");
+//		SqlQuery("alter table ${db_prefix}info modify info_key varchar(100) charset utf8");
 
 		if (! TableExists("info"))
 			SqlQuery( "CREATE TABLE ${db_prefix}info (

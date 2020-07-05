@@ -195,7 +195,7 @@ function SqlBind($table_name, &$stmt, $_values)
  *
  * @return bool|mysqli_result|null
  */
-function SqlQuery( $sql, $report_error = true )
+function SqlQuery( $sql, $report_error = true, $set_encoding = true )
 {
 	try {
 		$conn = GetSqlConn();
@@ -207,6 +207,10 @@ function SqlQuery( $sql, $report_error = true )
 		SqlError("Error (3): not connected");
 		print debug_trace(10);
 		return null;
+	}
+	if ($set_encoding) {
+//		print "setenq<br/>";
+		SqlSetEncoding($conn, $sql );
 	}
 	$prev_time         = microtime(true);
 	if ( $result = mysqli_query( $conn, $sql ) ) {
@@ -259,8 +263,8 @@ function SqlQueryArray( $sql, $header = false ) {
  *
  * @return string
  */
-function SqlQuerySingleScalar( $sql, $report_error = true ) {
-	$result = SqlQuery( $sql, $report_error );
+function SqlQuerySingleScalar( $sql, $report_error = true, $set_enc = true ) {
+	$result = SqlQuery( $sql, $report_error, $set_enc );
 	if ( ! $result ) {
 		if ( $report_error ) {
 			SqlError( $sql );
@@ -536,6 +540,7 @@ function GetTablePrefix($table_name = null)
 	if ($table_name){
 		if (strstr($table_name, "woocommerce")) return $table_prefix;
 		if (strstr($table_name, "options")) return $table_prefix;
+		if (strstr($table_name, "users")) return $table_prefix;
 	}
 	global $im_table_prefix;
 	return ($im_table_prefix ? $im_table_prefix : "im_");
@@ -582,4 +587,26 @@ function SqlInsert($table_name, $array, $ignore_list)
 		SqlError($sql);
 
 	return SqlInsertId();
+}
+
+function GetTableEncoding($table) {
+	static $cache = null;
+	if ( isset( $cache[ $table ] ) ) return $cache[ $table ];
+
+	if ( ! $cache ) $cache = [];
+	$cache[$table] = SqlQuerySingleScalar("SELECT CCSA.character_set_name FROM information_schema.`TABLES` T,
+       information_schema.`COLLATION_CHARACTER_SET_APPLICABILITY` CCSA
+	WHERE CCSA.collation_name = T.table_collation
+          AND T.table_name = '$table'", false, false);
+	return $cache[$table];
+	//      AND T.table_schema = \"schemaname\"
+}
+
+function SqlSetEncoding($conn, $sql)
+{
+	$from_pos = strpos(strtolower($sql), " from ");
+	if (! $from_pos) return;
+	$table_name = strtok(substr($sql, $from_pos + 6), " ");
+
+	mysqli_set_charset($conn, GetTableEncoding($table_name));
 }

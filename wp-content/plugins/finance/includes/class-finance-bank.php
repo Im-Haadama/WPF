@@ -806,8 +806,6 @@ static function bank_check_dup( $fields, $values ) {
 	// print sql_query($sql) . "<br/>";
 	$c = SqlQuerySingleScalar( $sql );
 
-//	print " c=" . $c . "<br/>";
-
 	return $c;
 }
 

@@ -20,7 +20,7 @@ class Finance_Invoices {
 		self::$_post = $post;
 		AddAction( "invoice_add", __CLASS__ . "::invoice_add" );
 		AddAction( "invoice_show", __CLASS__ . "::invoice_show" );
-		AddAction( "invoice_supplier", __CLASS__ . "::supplier" );
+		AddAction( "invoice_supplier", array($this, "supplier"));
 	}
 
 	/**
@@ -98,7 +98,8 @@ class Finance_Invoices {
 		return $s->getSupplierName();
 	}
 
-	static function invoice_add( $args ) {
+	static function invoice_add( ) {
+		$args = [];
 		$args["edit"]             = true;
 		$args["header_fields"]    = array(
 			"part_id"       => "supplier",

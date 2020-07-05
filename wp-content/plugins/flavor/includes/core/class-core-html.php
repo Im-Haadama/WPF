@@ -14,7 +14,6 @@ define ('CELL_END', "
 </td>");
 
 
-
 class Core_Html {
 	/**
 	 * Create html <label>
@@ -1476,8 +1475,6 @@ class Core_Html {
 			$sql .= " order by 3 ";
 		}
 
-		// print $sql;
-
 		$results = SqlQuery( $sql );
 		if ( $results ) {
 			while ( $row = $results->fetch_assoc() ) {
@@ -1775,7 +1772,7 @@ class Core_Html {
 			$args["row_id"] = $row_id;
 		} else { // Create new one.
 			if ($fields) {
-				$sql = "show columns from ${db_prefix}$table_name where field in ( " . CommaImplode($fields, true) . ")";
+				$sql = "show columns from ${db_prefix}$table_name where field in (" . CommaImplode($fields, true) . ")";
 			}
 			else
 				$sql = "describe ${db_prefix}$table_name";
@@ -1881,7 +1878,6 @@ class Core_Html {
 		// print "id_field: $id_field<br/>";
 
 		$result = SqlQuery( $sql );
-		// print $sql . "<br/>";
 		while ( $row = SqlFetchAssoc($result ) ) {
 //		var_dump($row); print "<br/>";
 			// print "key = " . $row[$id_field];

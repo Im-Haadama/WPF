@@ -85,10 +85,14 @@ class Finance_Salary {
 	 * @throws Exception
 	 */
 	function main() {
-		return "main";
-		$result = Core_Html::gui_header( 1, "Salary info" );
+		$args              = self::Args();
+		$result = Core_Html::GuiHeader( 1, "Salary info" );
 		if ( im_user_can( "show_salary" ) ) {
-			$args              = self::Args();
+			if ($id = GetParam("user_id", false, null)) {
+				print self::worker_info($id);
+				return;
+			}
+
 			$args["sql"]       = "select distinct user_id, client_displayname(user_id) as name, project_id from im_working where is_active = 1";
 			$args["id_field"]  = "user_id";
 			$args["links"]     = array(
@@ -105,7 +109,7 @@ class Finance_Salary {
 			$result .= self::show_report_worker( get_user_id(), $y, $m );
 		}
 
-		return $result;
+		print $result;
 	}
 
 	// 2) Report - data to salary accountant
@@ -116,6 +120,7 @@ class Finance_Salary {
 	 */
 	static function report_wrapper()
 	{
+//		SqlSetEncoding();
 		$year_month = GetParam( "month", false, date( 'Y-m', strtotime('-15 days') ) );
 
 		print self::salary_report($year_month, $args);
@@ -197,6 +202,7 @@ class Finance_Salary {
 	 */
 	static function entry_wrapper()
 	{
+//		SqlSetEncoding();
 		$result = "";
 		$user_id = get_user_id(true);
 		$result .= self::hours_entry($user_id);
@@ -237,8 +243,6 @@ class Finance_Salary {
 			expense_text, expense) VALUES (" .
 		       $id . ", \"" . $date . "\", \"" . $start . "\", \"" . $end . "\", " . $project_id .
 		       "," . $traveling . ", \"" . $expense_text . "\", " . $expense . ")";
-		// print header_text();
-		// print $sql;
 		$export = SqlQuery( $sql );
 		if ( ! $export ) {
 			die ( 'Invalid query: ' . $sql . mysql_error() );
@@ -400,25 +404,32 @@ class Finance_Salary {
 	{
 		$result  = Core_Html::gui_header( 1, Finance_Salary::worker_get_name( $user_id ) );
 
-		$args              = [];
-		$args["post_file"] = self::instance()->post_file;
-		$args["selectors"] = array(
-			"project_id" => "Focus_Tasks::gui_select_project",
-			"company_id" => "Focus_Tasks::gui_select_company",
-			"post_file" => $this->post_file
-		);
-		$args["check_active"] = true;
-		$args["hide_cols"] = array("volunteer", "company_id");
-		$args["header_fields"] = array("user_id" => "User id", "project_id" => "Main project", "rate" => "Hour rate",
-		                        "report" => "Include in report", "day_rate" => "Day rate", "is_active" => "Active?");
-
-		$row_id = SqlQuerySingleScalar("select min(id) from im_working where user_id = $user_id");
-		$result            .= Core_Gem::GemElement( "working", $row_id, $args );
-
 		$result .= self::show_report_worker( $user_id, $y, $m );
 		$result .= self::hours_entry($user_id);
 
 		return $result;
+	}
+
+	function worker_info($user_id)
+	{
+		$result = Core_Html::GuiHeader(1, get_user_displayname($user_id));
+		$args              = [];
+		$args["post_file"] = Finance::getPostFile();
+		$args["selectors"] = array(
+			"project_id" => "Focus_Tasks::gui_select_project",
+			"company_id" => "Focus_Tasks::gui_select_company"
+//		,		"post_file" => $this->post_file
+		);
+		$args["check_active"] = true;
+		$args["hide_cols"] = array("volunteer", "company_id");
+		$args["header_fields"] = array("user_id" => "User id", "project_id" => "Main project", "rate" => "Hour rate",
+		                               "report" => "Include in report", "day_rate" => "Day rate", "is_active" => "Active?");
+
+		$row_id = SqlQuerySingleScalar("select min(id) from im_working where user_id = $user_id");
+		return $result . Core_Gem::GemElement( "working", $row_id, $args );
+
+
+
 	}
 
 
@@ -525,8 +536,6 @@ class Finance_Salary {
 		if ( $edit ) {
 			$args["add_checkbox"] = true;
 		}
-// 	 $args["hide_cols"] = array("expense" => 1, "expense_text" => 1, "125" => 1, "150" => 1);
-		print $sql;
 
 		$rows = Core_Data::TableData( $sql, $args );
 
@@ -697,7 +706,7 @@ class Finance_Salary {
 			case "worker_monthly":
 				return "/salary_worker?user_id=$id";
 			case "worker_data":
-				return "/salary_worker_data?user_id=$id";
+				return AddToUrl("user_id", $id);
 		}
 	}
 
@@ -716,7 +725,7 @@ class Finance_Salary {
 	static function Args()
 	{
 		return array("page" => GetParam("page", false, -1),
-		             "post_file" => self::getPost());
+		             "post_file" => Finance::getPostFile());
 	}
 
 	function init_hooks()
@@ -757,12 +766,14 @@ class Finance_Salary {
 	{
 		$menu = new Core_Admin_Menu();
 
-		$menu->AddSubMenu('finance', 'working_hours_self',
-			array('page_title' => 'Hours',
-			      'menu_title' => 'Hours entry',
-			      'menu_slug' => 'salary_entry',
-			      'function' => array($this, 'entry_wrapper')));
+//		$menu->AddSubMenu('finance', 'working_hours_self',
+//			array('page_title' => 'Hours',
+//			      'menu_title' => 'Hours entry',
+//			      'menu_slug' => 'salary_entry',
+//			      'function' => array($this, 'entry_wrapper')));
 
+		$menu->Add('finance', 'show_salary', 'manage_workers', array($this, 'main'));
+		$menu->Add('finance', 'working_hours_self', 'salary_entry', array($this, 'entry_wrapper'));
 		$menu->AddSubMenu('finance', 'working_hours_report',
 			array('page_title' => 'Report',
 			      'menu_title' => 'Salary report',

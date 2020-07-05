@@ -7,9 +7,6 @@
  */
 ?>
 <div align="center">
-	<?php
-	date_default_timezone_set( "Asia/Jerusalem" );
-	?>
     <h2> המשלוחים בימים ב' עד ה', בהתאם
         <a href="http://store.im-haadama.co.il/about">לאיזורים</a></h2>
     <script>

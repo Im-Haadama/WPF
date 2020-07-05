@@ -40,7 +40,7 @@ class Fresh_Supplier_Balance {
 
 		$tabs = [];
 
-		if ($operation = GetParam("operation", false, null)) {
+		if ($operation = GetParam("operation", false, null, true)) {
 			$result .= apply_filters( $operation, $result, "", null, null );
 			print $result;
 			return;

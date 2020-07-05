@@ -711,7 +711,7 @@ class Capabilites {
 		}
 		foreach ( $users as $user => $not_used ) {
 			 $u = new WP_User( $user );
-			 if (count($u->roles) == 1) continue;
+			 if ((count($u->roles) == 1) and ($u->roles[0] == 'subscriber') ) continue;
 			$roles[ $user ]["users"] = get_user_displayname($user);
 			foreach ( $role_types as $cap => $not_used ) {
 				$roles[ $user ][ $cap ] = Core_Html::GuiCheckbox( "chk_${user}_$cap", user_can( $user, $cap ),

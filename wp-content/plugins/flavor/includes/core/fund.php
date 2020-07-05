@@ -23,7 +23,7 @@ if (!defined('WC_LOG_DIR')) {
 
 	function MyLog( $msg, $title = '', $file = 'fresh.log' )
 	{
-//		if (! (strlen($title) > 2)) $title = debug_trace(2);
+//		$title = debug_trace(2);
 		if (is_array($msg)) $msg = StringVar($msg);
 		$msg = br2nl($msg);
 		$error_file = WC_LOG_DIR . $file;

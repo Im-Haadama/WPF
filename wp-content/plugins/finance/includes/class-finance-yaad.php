@@ -159,10 +159,8 @@ class Finance_Yaad {
 		{
 			case 2:
 				return "גנוב החרם כרטיס";
-
 			case 4:
 				return "סירוב";
-
 			case 6:
 				return "מספר ת.ז שגוי";
 			case 447:

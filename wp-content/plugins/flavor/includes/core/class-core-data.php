@@ -361,7 +361,7 @@ class Core_Data
 
 		if (! is_array($row))
 		{
-			MyLog( __FUNCTION__ . "invalid row ");
+//			MyLog( __FUNCTION__ . "invalid row ");
 			return $row;
 		}
 
@@ -659,7 +659,6 @@ class Core_Data
 				$sql .= $limit;
 			}
 		}
-		print $sql;
 
 		$header = GetArg($args, "header", true);
 		$field_list = self::FieldList($sql, $args);

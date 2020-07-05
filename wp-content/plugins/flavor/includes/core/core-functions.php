@@ -125,19 +125,19 @@ require_once (ABSPATH . '/wp-includes/pluggable.php');
 
 	/**
 	 * @param $key
-	 * @param bool $mandory
+	 * @param bool $mandatory
 	 * @param null $default
 	 *
 	 * @return mixed|null
 	 */
-	function GetParam( $key, $mandory = false, $default = null, $uset = false ) {
+	function GetParam( $key, $mandatory = false, $default = null, $uset = false ) {
 		if ( isset( $_GET[ $key ] ) ) {
 			$v = $_GET[$key];
 			if ($uset) unset($_GET[$key]);
 			return $v;
 		}
 
-		if ( $mandory ) {
+		if ( $mandatory ) {
 			die ( "Error: " . debug_backtrace()[1]['function']  . "() key " . $key . " not supplied" );
 		} else {
 			return $default;
@@ -344,21 +344,18 @@ require_once (ABSPATH . '/wp-includes/pluggable.php');
 		$conn = new mysqli( DB_HOST, DB_USER, DB_PASSWORD, DB_NAME );
 		GetSqlConn( $conn );
 		SqlSetTimeOffset();
-		// print IM_CHARSET;
-		$charset = 'utf8';
-		if ( defined( 'IM_CHARSET' ) ) {
-			$charset = IM_CHARSET;
-		}
-		if ( ! mysqli_set_charset( $conn, $charset ) ) {
-			MyLog( "encoding setting failed" );
-			die( "encoding setting failed" );
-		}
-		// Local and international staff...
-//		// Todo: get it from user profile
-//		if ( $tz ) {
-//			date_default_timezone_set( $tz );
-//		}
 
+		// We don't set charset globally because some wordpress content could be in other encoding.
+		// print IM_CHARSET;
+//		$charset = 'utf8';
+//		if ( defined( 'IM_CHARSET' ) ) {
+//			$charset = IM_CHARSET;
+//		}
+//		if ( ! mysqli_set_charset( $conn, $charset ) ) {
+//			MyLog( "encoding setting failed" );
+//			die( "encoding setting failed" );
+//		}
+		// Local and international staff...
 		return $conn;
 	}
 
