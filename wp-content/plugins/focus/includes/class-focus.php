@@ -166,10 +166,21 @@ class Focus {
 
 		Focus_Project::init();
 
-		if ((get_user_id() == 1) and defined("DEBUG_USER")) wp_set_current_user(DEBUG_USER);
+		AddAction("company_add_worker", array($this, 'company_add_worker'));
 
+		if ((get_user_id() == 1) and defined("DEBUG_USER")) wp_set_current_user(DEBUG_USER);
 	}
 
+
+	function company_add_worker()
+	{
+		$worker = GetParam("user", true);
+		$company = GetParam("company", true);
+		$C = new Org_Company($company);
+		$C->AddWorker($worker);
+
+		return true;
+	}
 	/**
 	 * Ensures fatal errors are logged so they can be picked up in the status report.
 	 *
@@ -293,6 +304,7 @@ class Focus {
 				$focus = Focus_Tasks::instance();
 				return $focus->handle_focus_do($operation);
 		}
+
 	}
 	/**
 	 * Include required core files used in admin and on the frontend.

@@ -51,6 +51,9 @@ class Focus_Tasks {
 		$file = FOCUS_INCLUDES_URL . 'focus.js';
 		wp_enqueue_script( 'focus', $file, null, $this->version, false );
 
+		$file = FOCUS_INCLUDES_URL . '/org/company.js';
+		wp_enqueue_script( 'company', $file, null, $this->version, false );
+
 		$file = FLAVOR_INCLUDES_URL . 'core/gem.js';
 		wp_enqueue_script( 'gem', $file, null, $this->version, false );
 
@@ -84,7 +87,6 @@ class Focus_Tasks {
 	}
 
 	static function gui_select_worker( $id, $selected, $args ) {
-		$db_prefix = GetTablePrefix();
 		$edit      = GetArg( $args, "edit", true );
 		$worker    = new Org_Worker( get_user_id() );
 		$companies = $worker->GetCompanies();
@@ -812,7 +814,7 @@ class Focus_Tasks {
 				return self::search_by_text( get_user_id(), $text );
 		}
 
-		return "not handled";
+		return false;
 	}
 
 	static function Start($input, $args) {
@@ -1580,7 +1582,11 @@ class Focus_Tasks {
 		$args["post_file"] .= "?company=" . $company_id;
 		$args["add_button"] = false;
 		$result .= Core_Gem::GemArray( $workers, $args, "company_workers" );
-		$result .= Core_Html::GuiHyperlink("Add", AddToUrl(array("operation"=>"show_add_company_worker", "company" => $company_id)));
+
+		$post_file = Focus::getPost();
+		$result .= "<div>" . Core_Users::gui_select_user("user_to_add", null, $args)  . Core_Html::GuiButton("btn_add", "Add", "company_add('$post_file', $company_id)") . "</div>";
+
+//		$result .= Core_Html::GuiHyperlink("Add new user", AddToUrl(array("operation"=>"show_add_company_worker", "company" => $company_id)));
 
 		return $result;
 	}

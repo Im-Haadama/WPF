@@ -598,6 +598,7 @@ function GetTableEncoding($table) {
        information_schema.`COLLATION_CHARACTER_SET_APPLICABILITY` CCSA
 	WHERE CCSA.collation_name = T.table_collation
           AND T.table_name = '$table'", false, false);
+//	MyLog("$table $cache[$table]");
 	return $cache[$table];
 	//      AND T.table_schema = \"schemaname\"
 }
@@ -607,6 +608,8 @@ function SqlSetEncoding($conn, $sql)
 	$from_pos = strpos(strtolower($sql), " from ");
 	if (! $from_pos) return;
 	$table_name = strtok(substr($sql, $from_pos + 6), " ");
+	$enq = GetTableEncoding($table_name);
+//	MyLog($sql . " " . $table_name . " $enq");
 
-	mysqli_set_charset($conn, GetTableEncoding($table_name));
+	mysqli_set_charset($conn, $enq);
 }

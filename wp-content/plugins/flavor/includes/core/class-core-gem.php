@@ -317,8 +317,8 @@ class Core_Gem {
 		$db_prefix = GetTablePrefix();
 		$result = "";
 		$title = GetArg($args, "title", null);
-		$post = GetArg($args, "post_file", null);
-		// Later, add permissions checks in custom post.
+		$post_file = GetArg($args, "post_file", null);
+		// Later, add permissions checks in custom post_file.
 
 		$operation = GetParam("operation", false, null);
 		$duplicate = ($operation=="gem_duplicate");
@@ -357,13 +357,16 @@ class Core_Gem {
 		if (! ($row = Core_Html::GuiRowContent($table_name, $row_to_get, $args))) return null;
 		$result .= $row;
 
-		if (GetArg($args, "edit", false) and $post) {
+		if (GetArg($args, "edit", false) and $post_file) {
 			if (! $copy_of)
-				$result .= Core_Html::GuiButton( "btn_save", "save", array("action" => "data_save_entity('" . $post . "', '$table_name', " . $row_id . ')'));
+				$result .= Core_Html::GuiButton( "btn_save", "save", array("action" => "data_save_entity('" . $post_file . "', '$table_name', " . $row_id . ')'));
 			else
-				$result .= Core_Html::GuiButton("add_row", "add", array("action" => "data_save_new('" . $post . "', '$table_name')", "add"));
+				$result .= Core_Html::GuiButton("add_row", "add", array("action" => "data_save_new('" . $post_file . "', '$table_name')", "add"));
 			
-			if ($check_active) $result .= Core_Html::GuiButton( "btn_active", $active ? "inactive" : "activate", array("action" => "active_entity(" . (1 - $active) .", '" . $post . "', '$table_name', " . $row_id . ')') );
+			if ($check_active) $result .= Core_Html::GuiButton( "btn_active", $active ? "inactive" : "activate", array("action" => "active_entity(" . (1 - $active) .", '" . $post_file . "', '$table_name', " . $row_id . ')') );
+			if (GetArg($args, "allow_delete",  null))
+				$result .= Core_Html::GuiButton( "btn_delete", "Delete", array("action" => "data_delete_entity('$post_file', '$table_name', $row_id)"));
+
 		}
 		return $result;
 	}
@@ -389,7 +392,7 @@ class Core_Gem {
 		$post_file = null;
 		do {
 			if ($post_action = GetArg($args, "post_action", null)) break;
-			if ($post_file = GetArg($args, "post_file", null)) // For regular next_page and all post.
+			if ($post_file = GetArg($args, "post_file", null)) // For regular next_page and all post_file.
 				$post_action = $post_file."?operation=gem_page_".$table_id;
 		} while (0);
 
@@ -601,7 +604,7 @@ class Core_Gem {
 		if ($selector) $result .= $selector("import_select", null, $args);
 
 		// Selecting gui
-		$result .= '<form name="gem_import" id="' . $form_id . '" method="post" enctype="multipart/form-data">' .
+		$result .= '<form name="gem_import" id="' . $form_id . '" method="post_file" enctype="multipart/form-data">' .
 		           ImTranslate('Load from csv file') .
 		           '<input type="file" name="fileToUpload" id="fileToUpload">
         <input type="submit" value="טען" name="submit">

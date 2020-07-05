@@ -17,6 +17,18 @@ function data_save_entity(post_operation, table_name, id)
     execute_url(operation, action_back);
 }
 
+function data_delete_entity(post_operation, table_name, id)
+{
+    if (!Number.isInteger(id)) {
+        alert ("invalid id: " . id);
+        return;
+    }
+    let operation = post_operation + "?type=" + table_name + "&operation=data_delete&ids=" + id;
+    // alert(operation);
+    execute_url(operation, action_back);
+}
+
+
 function active_entity(active, post_operation, table_name, id)
 {
     if (!Number.isInteger(id)) {
@@ -156,9 +168,12 @@ function search_table(table_name, url = null)
 
 function update_list(post_file, list_name, obj)
 {
-    if (obj.value.length >= 2 && obj.value.length <= 7)
-        execute_url(post_file +"?operation=data_auto_list&list=" + list_name + "&prefix=" + obj.value, do_update_list, obj);
-    else
+    if (obj.value.length >= 2 && obj.value.length <= 7) {
+        let url = add_param_to_url(post_file, "operation", "data_auto_list");
+        url = add_param_to_url(url, "list", list_name);
+        url = add_param_to_url(url, "prefix", obj.value);
+        execute_url(url, do_update_list, obj);
+    } else
         obj.dataset = null;
 }
 

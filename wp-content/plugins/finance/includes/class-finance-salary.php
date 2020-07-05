@@ -1,6 +1,6 @@
 <?php
 
-
+show_errors();
 /**
  * Class Focus_Salary
  */
@@ -84,32 +84,49 @@ class Finance_Salary {
 	 * @return string
 	 * @throws Exception
 	 */
-	function main() {
-		$args              = self::Args();
-		$result = Core_Html::GuiHeader( 1, "Salary info" );
-		if ( im_user_can( "show_salary" ) ) {
-			if ($id = GetParam("user_id", false, null)) {
-				print self::worker_info($id);
-				return;
-			}
-
-			$args["sql"]       = "select distinct user_id, client_displayname(user_id) as name, project_id from im_working where is_active = 1";
-			$args["id_field"]  = "user_id";
-			$args["links"]     = array(
-				"user_id" => self::get_link("worker_data", "%s")
-			);
-			$args["selectors"] = array( "project_id" => "Focus_Tasks::gui_select_project" );
-
-			$result .= Core_Gem::GemTable( "working", $args );
+	function manage_workers() {
+		$result = Core_Html::GuiHeader(1, "Manage workers");
+		if ($operation = GetParam("operation", false, null))
+		{
+			$result .= apply_filters($operation, '');
 		} else {
-			$year_month = GetParam( "month", false, date( 'Y-m' ) );
-			$y          = intval(strtok( $year_month, "-" ));
-			$m          = intval(strtok( "" ));
-			$result .= self::hours_entry();
-			$result .= self::show_report_worker( get_user_id(), $y, $m );
+			if ( im_user_can( "show_salary" ) ) {
+				if ( $id = GetParam( "user_id", false, null ) ) {
+					print self::worker_info( $id );
+
+					return;
+				}
+
+				$args["sql"]           = "select id, user_id, project_id from im_working ";
+				$args["id_field"]      = "id";
+				$args["links"]         = array( "id" => self::get_link( "working", "%s" ) );
+				$args["selectors"]     = array(
+					"project_id" => "Focus_Tasks::gui_select_project",
+					"user_id"    => "Org_Worker::gui_select_user"
+				);
+				$args["edit"]          = false;
+				$args["header_fields"] = array( "user_id" => "Worker", "project_id" => "Main project" );
+			$args["prepare_plug"] = array($this, "salary_info_row");
+
+				$result .= Core_Gem::GemTable( "working", $args );
+			} else {
+				$year_month = GetParam( "month", false, date( 'Y-m' ) );
+				$y          = intval( strtok( $year_month, "-" ) );
+				$m          = intval( strtok( "" ) );
+				$result     .= self::hours_entry();
+				$result     .= self::show_report_worker( get_user_id(), $y, $m );
+			}
 		}
 
 		print $result;
+	}
+
+	function salary_info_row($row)
+	{
+		$id = $row["user_id"];
+		$row["report"] = Core_Html::GuiHyperlink("Report", AddToUrl(array("operation"=>"show_entry", "user_id"=>$id)));
+			// get_user_displayname($id);
+		return $row;
 	}
 
 	// 2) Report - data to salary accountant
@@ -120,10 +137,9 @@ class Finance_Salary {
 	 */
 	static function report_wrapper()
 	{
-//		SqlSetEncoding();
 		$year_month = GetParam( "month", false, date( 'Y-m', strtotime('-15 days') ) );
 
-		print self::salary_report($year_month, $args);
+		print self::salary_report($year_month, $args, GetParam("user_id", false, 0));
 	}
 
 	/**
@@ -133,7 +149,7 @@ class Finance_Salary {
 	 * @return string
 	 * @throws Exception
 	 */
-	static function salary_report( $month, &$args ) {
+	static function salary_report( $month, &$args, $user_id = 0 ) {
 		$edit_lines = GetArg( $args, "edit_lines", false );
 
 		$output = Core_Html::gui_header( 1, ImTranslate( "Salary data for month" ) . " " . $month );
@@ -149,6 +165,8 @@ class Finance_Salary {
 		       " and h.is_active = 1 " .
 		       " and h.user_id = w.user_id ";
 
+		if ($user_id) $sql .= " and h.user_id = $user_id";
+
 		$result   = SqlQuery( $sql );
 		$has_data = false;
 
@@ -162,7 +180,7 @@ class Finance_Salary {
 				                                     Core_Html::GuiHyperlink( "$user_id", self::get_link("worker_data", $user_id )) . ")" );
 				$output .= "כתובת מייל של העובד/ת: " . $user->CustomerEmail() . "<br/>";
 
-				$output .= self::print_transactions( $user_id, $m, $y ); // null, null, $s, true, $edit );
+				$output .= self::MonthyWorkerReport( $user_id, $m, $y ); // null, null, $s, true, $edit );
 
 				if ( $edit_lines ) {
 					$output .= Core_Html::GuiButton( "btn_delete", "delete_line(" . $user_id . ")", "מחק" );
@@ -202,9 +220,10 @@ class Finance_Salary {
 	 */
 	static function entry_wrapper()
 	{
-//		SqlSetEncoding();
 		$result = "";
-		$user_id = get_user_id(true);
+		$user_id = GetParam("user_id", false, 0);
+		if (! $user_id)
+			$user_id = get_user_id(true);
 		$result .= self::hours_entry($user_id);
 		$year_month = GetParam( "month", false, date( 'Y-m' ) );
 		$y          = intval(strtok( $year_month, "-" ));
@@ -378,7 +397,7 @@ class Finance_Salary {
 		$result             = Core_Html::gui_header( 1, __( "Salary info for worker" ) . " " . GetUserName( $user_id ) ) . __( "for month" ) . " " . $m . '/' . $y;
 		$args               = array( "add_checkbox" => true, "checkbox_class" => "hours_checkbox" );
 		$args["edit_lines"] = 1;
-		$data               = self::print_transactions( $user_id, $m, $y, $args );
+		$data               = self::MonthyWorkerReport( $user_id, $m, $y, $args );
 		if ( ! $data ) {
 			$result .= __( "No data for month" ) . " " . $m . '/' . $y . "<br/>";
 		} else {
@@ -410,8 +429,15 @@ class Finance_Salary {
 		return $result;
 	}
 
-	function worker_info($user_id)
+	function show_working_row_wrap()
 	{
+		$row_id = GetParam("row_id", true);
+		return self::show_working_row($row_id);
+	}
+
+	function show_working_row($row_id)
+	{
+		$user_id = SqlQuerySingleScalar("select user_id from im_working where id = $row_id");
 		$result = Core_Html::GuiHeader(1, get_user_displayname($user_id));
 		$args              = [];
 		$args["post_file"] = Finance::getPostFile();
@@ -425,13 +451,11 @@ class Finance_Salary {
 		$args["header_fields"] = array("user_id" => "User id", "project_id" => "Main project", "rate" => "Hour rate",
 		                               "report" => "Include in report", "day_rate" => "Day rate", "is_active" => "Active?");
 
-		$row_id = SqlQuerySingleScalar("select min(id) from im_working where user_id = $user_id");
+		$args["allow_delete"] = true;
+
+//		$row_id = SqlQuerySingleScalar("select min(id) from im_working where user_id = $user_id");
 		return $result . Core_Gem::GemElement( "working", $row_id, $args );
-
-
-
 	}
-
 
 	/**
 	 * @param $worker_id
@@ -442,39 +466,7 @@ class Finance_Salary {
 		return SqlQuerySingleScalar( "select client_displayname(" . $worker_id . ")" );
 	}
 
-	/**
-	 * @param $month
-	 * @param bool $edit
-	 *
-	 * @return string|void
-	 */
-	static function show_salary( $month, $edit = false ) {
-		$user_id = get_user_id( true );
-
-		if ( ! user_can( $user_id, 'working_hours_all' ) ) {
-			print ImTranslate( "No permissions" );
-
-			return;
-		}
-
-		$result = "";
-
-		$args["show_salary"] = true;
-		$args["edit_lines"]  = $edit;
-		$result              .= self::salary_report( $month, $args );
-		$result              .= "<br/>";
-		$result              .= Core_Html::GuiHyperlink( "Previous month", AddToUrl( "month", date( 'Y-m', strtotime( $month . '-1 -1 month' ) ) ) );
-		if ( strtotime( $month . '-1' ) < strtotime( 'now' ) ) {
-			$result .= " " . Core_Html::GuiHyperlink( "Next month", AddToUrl( "month", date( 'Y-m', strtotime( $month . '-1 +1 month' ) ) ) );
-		}
-
-		return $result;
-	}
-
-	// Short codes handlers
-	// Main - show all workers names
-	//
-
+	// Worker monthly report
 	/**
 	 * @param int $user_id
 	 * @param null $month
@@ -484,7 +476,7 @@ class Finance_Salary {
 	 * @return string
 	 * @throws Exception
 	 */
-	static function print_transactions( $user_id = 0, $month = null, $year = null, &$args = null ) // , $week = null, $project = null, &$sum = null, $show_salary = false , $edit = false) {
+	static function MonthyWorkerReport( $user_id = 0, $month = null, $year = null, &$args = null ) // , $week = null, $project = null, &$sum = null, $show_salary = false , $edit = false) {
 	{
 		$day_rate = (float) SqlQuerySingleScalar("select day_rate from im_working where user_id = $user_id");
 
@@ -514,7 +506,6 @@ class Finance_Salary {
 
 		if ( isset( $sql_month ) )		$sql .= $sql_month;
 			if ( isset( $project ) )		$sql .= " and project_id = " . $project;
-
 
 		$sql .= " and is_active = 1 order by 2 " . ( isset($month) ? "asc" : "desc") ." limit 100";
 
@@ -670,13 +661,9 @@ class Finance_Salary {
 		return $result;
 	}
 
-	/**
-	 * @return mixed
-	 */
-	function get_nav_name() {
-		return $this->nav_menu_name;
-	}
-
+	//////////////////////////////////////////////////////////////
+	// Wrappers: Get parameters and call functions for handling //
+	//////////////////////////////////////////////////////////////
 	/**
 	 * @return string
 	 * @throws Exception
@@ -705,8 +692,8 @@ class Finance_Salary {
 		switch ($type) {
 			case "worker_monthly":
 				return "/salary_worker?user_id=$id";
-			case "worker_data":
-				return AddToUrl("user_id", $id);
+			case "working":
+				return AddToUrl(array("operation" =>"show_working_row", "row_id"=> $id));
 		}
 	}
 
@@ -733,11 +720,15 @@ class Finance_Salary {
 		add_action('admin_menu', array($this, 'admin_menu'));
 		AddAction('salary_add_time', array($this, 'salary_add_time'));
 		AddAction('salary_delete', array($this, 'salary_delete'));
+		AddAction('show_working_row', array($this, 'show_working_row_wrap'));
+		AddAction('show_report', array($this, 'report_wrapper'));
+		if (im_user_can("show_salary"))
+			AddAction('show_entry', array($this, 'entry_wrapper'));
 
-//		AddAction('makolet_create_invoice', array($this, 'makolet_create_invoice'));
-//		AddAction('wpf_accounts', array($this, 'main'), 10, 1);
+		Core_Gem::AddTable("working");
 	}
 
+	// Operations
 	function salary_add_time()
 	{
 		$start     = GetParam( "start", true );
@@ -761,7 +752,6 @@ class Finance_Salary {
 		return ( Core_Data::Inactive( "working_hours", $lines ) );
 	}
 
-
 	function admin_menu()
 	{
 		$menu = new Core_Admin_Menu();
@@ -772,7 +762,7 @@ class Finance_Salary {
 //			      'menu_slug' => 'salary_entry',
 //			      'function' => array($this, 'entry_wrapper')));
 
-		$menu->Add('finance', 'show_salary', 'manage_workers', array($this, 'main'));
+		$menu->Add('finance', 'show_salary', 'manage_workers', array($this, 'manage_workers'));
 		$menu->Add('finance', 'working_hours_self', 'salary_entry', array($this, 'entry_wrapper'));
 		$menu->AddSubMenu('finance', 'working_hours_report',
 			array('page_title' => 'Report',

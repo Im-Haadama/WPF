@@ -28,6 +28,12 @@ class Org_Company {
 	{
 		return SqlQueryArrayScalar( "select user_id from wp_usermeta where meta_key = 'companies' and meta_value like '%:" . $this->id . ":%'");
 	}
+
+	public function AddWorker($w_id)
+	{
+		$w = new Org_Worker($w_id);
+		$w->AddCompany($this->id);
+	}
 }
 
 //class WPF_Company {
