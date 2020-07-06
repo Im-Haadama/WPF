@@ -212,6 +212,7 @@ class Fresh_Supplies {
 	{
 		$post_file = Fresh::getPost();
 
+		$event = ""; // 'onchange="new_supply_change(\'' . GetUrl() . '\')"'
 		$data = "";
 		$data .= Core_Html::gui_header( 1, "יצירת אספקה" );
 		$data .= Core_Html::gui_table_args(array(
@@ -221,7 +222,7 @@ class Fresh_Supplies {
 				Core_Html::gui_header( 2, "בחר משימה" )
 			),
 			array(
-				Fresh_Supplier::gui_select_supplier( "supplier_select", null, array("events" => 'onchange="new_supply_change(\'' . GetUrl() . '\')"')),
+				Fresh_Supplier::gui_select_supplier( "supplier_select", null, array("events" => $event)),
 				Core_Html::gui_input_date( "date", "", date('y-m-d'),  'onchange="change_supplier()"'),
 				Fresh_Packing::gui_select_mission( "new_mission", "", array("events"=>"gui_select_mission") )
 				// gui_select_mission( "mis_new")
@@ -238,14 +239,16 @@ class Fresh_Supplies {
 		$data .= Core_Html::GuiButton( "btn_add_line", "הוסף שורה", "supply_new_add_line('". $post_file . "')" );
 		$data .= Core_Html::GuiButton( "btn_add_item", "הוסף אספקה", "supply_add()");
 
-		$data .= '<iframe name="load-result""></iframe>';
+		$data .= Core_Html::gui_label("log", "");
 
-		                                                      $data .='<form name="upload_csv" id="upcsv" method="post" enctype="multipart/form-data">
-				טען אספקה מקובץ CSV
-				<input type="file" name="fileToUpload" id="fileToUpload">
-				<input type="submit" value="החלף" name="submit">
-				<input type="hidden" name="post_type" value="product"/>
-			</form>';
+//		$data .= '<iframe name="load-result""></iframe>';
+//
+//		                                                      $data .='<form name="upload_csv" id="upcsv" method="post" enctype="multipart/form-data">
+//				טען אספקה מקובץ CSV
+//				<input type="file" name="fileToUpload" id="fileToUpload">
+//				<input type="submit" value="החלף" name="submit">
+//				<input type="hidden" name="post_type" value="product"/>
+//			</form>';
 
 		$data .= "<script> supply_new_add_line('" . $post_file . "'); </script>";
 		return $data;
