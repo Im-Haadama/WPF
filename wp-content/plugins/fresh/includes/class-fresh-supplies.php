@@ -23,7 +23,110 @@ class Fresh_Supplies {
 		AddAction('delete_supplies', array($this, 'delete_supplies'));
 		AddAction('show_supply', array($this, 'show_supply'));
 		AddAction('set_mission', array($this, 'set_mission'));
+		AddAction('supply_add_item', array($this, 'supply_add_item'));
+		AddAction('supply_delete_items', array($this, 'supply_delete_item'));
+		AddAction('supply_update_items', array($this, 'supply_update_items'));
+		AddAction('supply_save_comment', array($this, 'supply_save_comment'));
+		AddAction('supply_upload', array($this, 'supply_upload'));
 		Core_Gem::AddTable("supplies");
+	}
+
+	function supply_upload()
+	{
+		$post_file = Fresh::getPost();
+		$data = Core_Html::HeaderText();
+		$data .= Core_Html::gui_header( 1, "יבוא אספקה" );
+		$data .= Core_Html::gui_table_args(array(
+			array(
+				Core_Html::gui_header( 2, "בחר ספק" ),
+				Core_Html::gui_header( 2, "בחר מועד" ),
+				Core_Html::gui_header( 2, "בחר משימה" )
+			),
+			array(
+				Fresh_Supplier::gui_select_supplier( "supplier_select", null, array("events" => 'onchange="new_supply_change(\'' . Fresh::getPost() . '\')"')),
+				Core_Html::gui_input_date( "date", "", date('y-m-d'),  'onchange="change_supplier()"'),
+				Fresh_Packing::gui_select_mission( "new_mission", "", array("events"=>"gui_select_mission") )
+				// gui_select_mission( "mis_new")
+			)
+		),
+			"supply_info",
+			array("edit" => 1, "prepare"=>false));
+
+		$data .= '<iframe name="load-result""></iframe>';
+
+		$data .='<form name="upload_csv" id="upcsv" method="post" enctype="multipart/form-data">
+				טען אספקה מקובץ CSV
+				<input type="file" name="fileToUpload" id="fileToUpload">
+				<input type="submit" value="החלף" name="submit">
+				<input type="hidden" name="post_type" value="product"/>
+			</form>';
+
+		// add the first line to the new supply
+		$data .= "<script> supply_new_add_line('" . $post_file . "')";
+		$data .= "</script>";
+
+		print $data;
+		die (0);
+	}
+
+	function supply_add_item()
+	{
+		$supply_id = GetParam("supply_id", true);
+		$prod_id = GetParam("prod_id", true);
+		$q = GetParam("quantity", true);
+
+		$S = new Fresh_Supply($supply_id);
+		return $S->AddLine($prod_id, $q);
+	}
+
+	function supply_save_comment()
+	{
+		$supply_id = GetParam("id", true);
+		$text = GetParam("text", true);
+		$s = new Fresh_Supply($supply_id);
+		return $s->setText($text);
+	}
+
+	function supply_delete_item()
+	{
+		$supply_id = GetParam("supply_id", true);
+		$params = GetParamArray("params", true);
+
+		$S = new Fresh_Supply($supply_id);
+		foreach ($params as $param) {
+			if (!$S->DeleteLine( $param )) return false;
+		}
+		return true;
+	}
+
+	function supply_update_items()
+	{
+		$result = "";
+		$supply_id = GetParam("supply_id", true);
+		$params = GetParamArray("params", true);
+
+		$Supply = new Fresh_Supply($supply_id);
+		$supplier_id = $Supply->getSupplierID();
+		$pricelist = new Fresh_PriceList($supplier_id);
+		// Double update - the supply and also the pricelist
+		for ( $pos = 0; $pos < count( $params ); $pos += 3 ) {
+			$line_id = $params[ $pos ];
+			$q       = $params[ $pos + 1 ];
+			$price = $params[$pos + 2];
+			MyLog( "update supply line" . $line_id . " q= " . $q );
+			$Supply->UpdateLine($line_id, $q);
+
+			// Update the pricelist.
+			$prod_id = $Supply->GetProduct($line_id);
+			$pricelist_id = Fresh_Catalog::PricelistFromProduct($prod_id, $supplier_id);
+			// print "pl=" . $pricelist_id . "<br/>";
+			if ($pricelist_id)
+				$pricelist->Update($pricelist_id, $price);
+			else
+				$result .= "can't find pricelist for " . get_product_name($prod_id) . " " . $prod_id;
+		}
+		if (! strlen($result)) return true;
+		return $result;
 	}
 
 	function set_mission()
@@ -60,9 +163,10 @@ class Fresh_Supplies {
 		MyLog( __METHOD__);
 
 		$supply = Fresh_Supply::CreateSupply($supplier_id);
-		for ( $i = 0; $i < count( $params ); $i += 2 ) {
+		for ( $i = 0; $i < count( $params ); $i += 3 ) {
 			$prod_id = $params[$i];
 			$quantity = $params[$i+1];
+			// units - $params[$i+2];
 			$supply->addLine($prod_id, $quantity);
 			// print $prod_id . " " . $supplier . " " . $quantity . " " . $units . "<br/>";
 		}
@@ -103,8 +207,9 @@ class Fresh_Supplies {
 //		$args["title"] = "Supplies to collect";   print SuppliesTable( SupplyStatus::OnTheGo, $args );
 //		$args["title"] = "Supplies done";         print SuppliesTable( SupplyStatus::Supplied, $args );
 
-		array_push( $tabs, array( "supplies_new", "Supplies to send", self::SuppliesTable(eSupplyStatus::NewSupply) ) );
+		array_push( $tabs, array( "supplies_upload", "Upload", self::NewSupply() ) );
 		array_push( $tabs, array( "supplies_create", "New", self::NewSupply() ) );
+		array_push( $tabs, array( "supplies_new", "Supplies to send", self::SuppliesTable(eSupplyStatus::NewSupply) ) );
 		array_push( $tabs, array( "supplies_sent", "Supplies to come", self::SuppliesTable(eSupplyStatus::OnTheGo)));
 		array_push( $tabs, array( "supplies_archive", "Archive", self::SuppliesTable(eSupplyStatus::Supplied)));
 
@@ -208,11 +313,17 @@ class Fresh_Supplies {
 		return Core_Html::GuiSimpleSelect($id, $value, $args);
 	}
 
+	static function UploadSupply()
+	{
+		$upload_init = Fresh::getPost() . "?operation=supply_upload";
+
+		return "<iframe height=\"800\" width=\"800\" src='$upload_init'></iframe>";
+	}
+
 	static function NewSupply()
 	{
 		$post_file = Fresh::getPost();
-
-		$data = "";
+		$data = Core_Html::HeaderText();
 		$data .= Core_Html::gui_header( 1, "יצירת אספקה" );
 		$data .= Core_Html::gui_table_args(array(
 			array(
@@ -221,7 +332,7 @@ class Fresh_Supplies {
 				Core_Html::gui_header( 2, "בחר משימה" )
 			),
 			array(
-				Fresh_Supplier::gui_select_supplier( "supplier_select", null, array("events" => 'onchange="new_supply_change(\'' . GetUrl() . '\')"')),
+				Fresh_Supplier::gui_select_supplier( "supplier_select", null, array("events" => 'onchange="new_supply_change(\'' . Fresh::getPost() . '\')"')),
 				Core_Html::gui_input_date( "date", "", date('y-m-d'),  'onchange="change_supplier()"'),
 				Fresh_Packing::gui_select_mission( "new_mission", "", array("events"=>"gui_select_mission") )
 				// gui_select_mission( "mis_new")
@@ -233,26 +344,22 @@ class Fresh_Supplies {
 		$data .=Core_Html::gui_header( 2, "בחר מוצרים" );
 
 		$data .= Core_Html::gui_table_args( array( array( "פריט", "כמות", "קג או יח" ) ),
-				"supply_items" );
+			"supply_items" );
+
+		$data .= Core_Html::gui_div("div_log",Core_Html::gui_label("log", ""));
 
 		$data .= Core_Html::GuiButton( "btn_add_line", "הוסף שורה", "supply_new_add_line('". $post_file . "')" );
-		$data .= Core_Html::GuiButton( "btn_add_item", "הוסף אספקה", "supply_add()");
+		$data .= Core_Html::GuiButton( "btn_add_item", "הוסף אספקה", "supply_add('$post_file')");
 
-		$data .= '<iframe name="load-result""></iframe>';
+		// add the first line to the new supply
+		$data .= "<script> supply_new_add_line('" . $post_file . "')";
+		$data .= "</script>";
 
-		                                                      $data .='<form name="upload_csv" id="upcsv" method="post" enctype="multipart/form-data">
-				טען אספקה מקובץ CSV
-				<input type="file" name="fileToUpload" id="fileToUpload">
-				<input type="submit" value="החלף" name="submit">
-				<input type="hidden" name="post_type" value="product"/>
-			</form>';
+		print $data;
 
-		$data .= "<script> supply_new_add_line('" . $post_file . "'); </script>";
-		return $data;
 	}
 
 	function create_supply_from_file() {
-		return "lalal";
 		$supplier_id = GetParam( "supplier_id" );
 		$S = new Fresh_Supplier($supplier_id);
 		print ImTranslate( "Creating supply for" ) . " " . $S->getSupplierName() . " <br/>";
@@ -404,15 +511,6 @@ class Fresh_Supplies {
 //
 //			break;
 //
-//		case "add_item":
-//			$prod_id = GetParam("prod_id", true);
-//			$q = GetParam("quantity", true);
-//			$supply_id = GetParam("supply_id", true);
-//			$supply = new Fresh_Supply( $supply_id );
-//			$price = get_buy_price( $prod_id, $supply->getSupplier() );
-//			if (supply_add_line( $supply_id, $prod_id, $q, $price ))
-//				print "done";
-//			break;
 //
 //		case "set_mission":
 //			$supply_id  = $_GET["supply_id"];

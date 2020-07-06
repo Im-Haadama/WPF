@@ -444,7 +444,8 @@ class Fresh_Pricelist {
 		       " WHERE id = " . $id;
 		SqlQuery( $sql );
 
-		$this->UpdateCatalog( $id );
+		// We don't update prices automatically for now.
+		//		$this->UpdateCatalog( $id );
 
 		return;
 	}
@@ -463,7 +464,7 @@ class Fresh_Pricelist {
 					print $prod_id . " ";
 				}
 				MyLog( __METHOD__, "update product $prod_id" );
-				Catalog::UpdateProduct( $prod_id, $line );
+				Fresh_Catalog::UpdateProduct( $prod_id, $line );
 				MyLog( $line );
 			}
 		}

@@ -174,7 +174,7 @@ and curdate() > order_mission_date(id)" );
 			if ($debug) MyLog("No del found");
 			return;
 		}
-		MyLog(__FUNCTION__);
+		MyLog(__FUNCTION__ . CommaImplode($ids));
 
 		foreach ( $ids as $id ) {
 			$order = new Fresh_Order( $id );

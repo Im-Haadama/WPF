@@ -221,7 +221,7 @@ class Core_Html {
 	 * @return string
 	 */
 	static function gui_textarea( $name, $value, $events = null, $rows = 0, $cols = 0 ) {
-		$data = '<textarea name="' . $name . '" id="' . $name . '"';
+		$data = '<textarea name="' . $name . '" id="' . $name . '" ';
 		if ( strlen( $events ) > 0 ) {
 			$data .= $events;
 		}

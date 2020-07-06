@@ -313,6 +313,12 @@ function fail_message(xmlhttp)
     alert (xmlhttp.response);
 }
 
+function log_message(xmlhttp)
+{
+    log = document.getElementById("log");
+    if (log) log += xmlhttp.response;
+}
+
 
 function add_param_to_url(url, param, value)
 {
