@@ -610,10 +610,12 @@ class Finance_Bank
 		$sql = "select " . CommaImplode($fields) . " from ${table_prefix}bank ";
 		$sql .= " where " . $args["query"] . " and account_id = " . $account_id;
 		$sql .= " order by date desc ";
+		$args["sql"] = $sql;
 
-		$result .= Core_Html::GuiTableContent("banking", $sql, $args);
-
-		$result .= Core_Html::GuiHyperlink("Older", AddToUrl("page_number", $page + 1)) . " ";
+		$result .= Core_Gem::GemTable("bank", $args);
+//		$result .= Core_Html::GuiTableContent("banking", $sql, $args);
+//
+//		$result .= Core_Html::GuiHyperlink("Older", AddToUrl("page_number", $page + 1)) . " ";
 
 		return $result;
 	}

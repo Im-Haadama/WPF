@@ -51,3 +51,9 @@ run_flavor();
 //if (function_exists('get_user_id') and (get_user_id() == 1)) {
 //	show_errors();
 //}
+
+add_action( 'wp_head', 'add_viewport_meta_tag' , '1' );
+
+function add_viewport_meta_tag() {
+	echo '<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">';
+}

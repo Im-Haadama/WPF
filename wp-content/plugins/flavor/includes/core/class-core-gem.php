@@ -102,7 +102,7 @@ class Core_Gem {
 	static function add_wrapper($result, $id = null, $args = null)
 	{
 		$operation = GetArg($args, "operation", null);
-		if (! $operation)  return __FUNCTION__ . ": no operation<br/>";
+		if (! $operation)  return __FUNCTION__ . ": no operation. Add it to \$args<br/>";
 
 		$table_name = substr($operation, 8);
 		if (! $table_name or ! strlen($table_name)){

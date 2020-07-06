@@ -1,6 +1,6 @@
 <?php
 
-show_errors();
+//show_errors();
 /**
  * Class Focus_Salary
  */
@@ -86,9 +86,10 @@ class Finance_Salary {
 	 */
 	function manage_workers() {
 		$result = Core_Html::GuiHeader(1, "Manage workers");
-		if ($operation = GetParam("operation", false, null))
+		if ($operation = GetParam("operation", false))
 		{
-			$result .= apply_filters($operation, '');
+			$args = self::Args("working");
+			$result .= apply_filters($operation, '', '', $args);
 		} else {
 			if ( im_user_can( "show_salary" ) ) {
 				if ( $id = GetParam( "user_id", false, null ) ) {
@@ -106,7 +107,7 @@ class Finance_Salary {
 				);
 				$args["edit"]          = false;
 				$args["header_fields"] = array( "user_id" => "Worker", "project_id" => "Main project" );
-			$args["prepare_plug"] = array($this, "salary_info_row");
+			    $args["prepare_plug"] = array($this, "salary_info_row");
 
 				$result .= Core_Gem::GemTable( "working", $args );
 			} else {
@@ -709,10 +710,23 @@ class Finance_Salary {
 //		              'salary_entry'       => array("Focus_Salary::entry",        null));          // Salary data entry
 	}
 
-	static function Args()
+	static function Args($type)
 	{
-		return array("page" => GetParam("page", false, -1),
+		$args = array("page" => GetParam("page", false, -1),
 		             "post_file" => Finance::getPostFile());
+
+		switch($type)
+		{
+			case "working":
+				$args["operation"] = GetParam("operation", false, true);
+				$args["selectors"]     = array(
+					"project_id" => "Focus_Tasks::gui_select_project",
+					"user_id"    => "Org_Worker::gui_select_user"
+				);
+
+				break;
+		}
+		return $args;
 	}
 
 	function init_hooks()
