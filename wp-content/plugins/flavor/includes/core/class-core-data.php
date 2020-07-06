@@ -104,6 +104,7 @@ class Core_Data
 
 	static function data_update($table_name)
 	{
+		$debug = false;
 		$db_prefix = GetTablePrefix($table_name);
 		// TODO: adding meta key when needed(?)
 		global $meta_table_info;
@@ -111,13 +112,17 @@ class Core_Data
 		$row_id = intval(GetParam("id", true));
 		$id_field = SqlTableId($table_name);
 
+		$conn = GetSqlConn();
+
+		SqlSetEncoding($conn, "${db_prefix}$table_name", $debug);
+
 		// Prepare sql statements: primary and meta tables;
 		$values = self::data_parse_get($table_name, array("search", "operation", "table_name", "id", "dummy"));
 
 		foreach ($values as $tbl => $changed_values)
 		{
 			foreach ($changed_values as $changed_field => $changed_pair){
-//				print $changed_field . " " . $changed_pair[0] . "<br/>";
+				if ($debug) print $changed_field . " " . $changed_pair[0] . "<br/>";
 				$changed_value = $changed_pair[0];
 				$is_meta = $changed_pair[1];
 				if ( SqlType($table_name, $changed_field) == 'date' and strstr($changed_value, "0001")) {

@@ -210,7 +210,12 @@ function SqlQuery( $sql, $report_error = true, $set_encoding = true )
 	}
 	if ($set_encoding) {
 //		print "setenq<br/>";
-		SqlSetEncoding($conn, $sql );
+		$from_pos = strpos(strtolower($sql), " from ");
+		if ($from_pos) {
+			$table_name = strtok( substr( $sql, $from_pos + 6 ), " " );
+
+			SqlSetEncoding( $conn, $table_name );
+		}
 	}
 	$prev_time         = microtime(true);
 	if ( $result = mysqli_query( $conn, $sql ) ) {
@@ -558,6 +563,7 @@ function SqlTableFields($table_name) {
 
 function SqlInsert($table_name, $array, $ignore_list)
 {
+	$debug = false;
 	$db_prefix = GetTablePrefix();
 
 	$sql    = "INSERT INTO ${db_prefix}$table_name (";
@@ -581,6 +587,9 @@ function SqlInsert($table_name, $array, $ignore_list)
 	$values .= ") ";
 	$sql    .= $values;
 
+	$conn = GetSqlConn();
+	SqlSetEncoding($conn, "${db_prefix}$table_name", $debug);
+
 	$stmt = SqlPrepare($sql);
 	SqlBind($table_name, $stmt, $sql_values);
 	if (!$stmt -> execute())
@@ -603,13 +612,12 @@ function GetTableEncoding($table) {
 	//      AND T.table_schema = \"schemaname\"
 }
 
-function SqlSetEncoding($conn, $sql)
+function SqlSetEncoding($conn, $table_name, $debug = false)
 {
-	$from_pos = strpos(strtolower($sql), " from ");
-	if (! $from_pos) return;
-	$table_name = strtok(substr($sql, $from_pos + 6), " ");
+//	return;
 	$enq = GetTableEncoding($table_name);
-//	MyLog($sql . " " . $table_name . " $enq");
+	if ($debug) print "setting enq $enq table $table_name<br/>";
+//	MyLog($table_name . " $enq");
 
 	mysqli_set_charset($conn, $enq);
 }
