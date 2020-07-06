@@ -82,7 +82,6 @@ class Fresh_Shortcodes {
 		$delivery = new Fresh_Delivery($delivery_id);
 		$result = $delivery->CustomerView($edit);
 
-//		$result .= $edit . " " . im_user_can("edit_shop_orders") . " " . $delivery->paid() . "<br/>";
 		if (! $edit and im_user_can("edit_shop_orders") and ! $delivery->paid()) {
 			$result  .= Core_Html::GuiHyperlink( "Edit delivery note", AddToUrl( "operation", "edit" ) );
 			$user_id = $delivery->getUserId();

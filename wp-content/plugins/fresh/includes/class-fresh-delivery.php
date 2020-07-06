@@ -123,8 +123,8 @@ class Fresh_Delivery {
 		$result = "";
 		$order = $this->getOrder();
 
-		$result .= Core_Html::gui_header(1, __("הזמנה") . " " . $this->OrderId()) . "<br/>";
-		$result .= ImTranslate("Order date") . ": " . $order->GetOrderDate() . "<br/>";
+		$result .= $order->infoBox($edit);
+//		$result .= ImTranslate("Order date") . ": " . $order->GetOrderDate() . "<br/>";
 		$result .= __("Supply date") . ": " . $this->GetDate() . "<br/>";
 
 		$args = [];
@@ -1178,12 +1178,13 @@ class Fresh_Delivery {
 		return SqlQuerySingleScalar( $sql);
 	}
 
-	static function admin_page()
+	static function fresh_deliveries()
 	{
 		$operation = GetParam("operation", false, "show_this_week");
 
 		print self::handle_delivery_operation($operation);
 	}
+
 	static function handle_delivery_operation($operation)
 	{
 		$debug = 0;
@@ -1210,7 +1211,8 @@ class Fresh_Delivery {
 				// $args["links"] = array("ID" => add_param_to_url(get_url(), "operation", "show_id", "row_id", "%s"));
 				$args["links"] = array("ID" => "/delivery?id=%s");
 					                       // "/fresh/delivery/get-delivery.php?id=%s");
-				$table =  Core_Gem::GemTable("delivery", $args);
+				$table = Core_Gem::GemTable("delivery", $args);
+
 				if (strlen($table) < 100)
 					print "No deliveries done this week<br/>";
 				else

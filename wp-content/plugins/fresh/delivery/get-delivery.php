@@ -51,7 +51,7 @@ if ( ( ! current_user_can( "edit_shop_orders" ) ) and ( $O->getCustomerId() != g
 	die( 0 );
 }
 
-$O->infoBox( $order_id );
+print $O->infoBox( $order_id );
 
 print $d->delivery_text( FreshDocumentType::delivery, Fresh_DocumentOperation::show, $margin );
 
