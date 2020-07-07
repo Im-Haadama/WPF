@@ -236,7 +236,7 @@ function supply_add(post_file)
         "&date=" + date;
 
     reset_message();
-    execute_url(request, location_reload);
+    execute_url(request, action_back);
     // xmlhttp = new XMLHttpRequest();
     // xmlhttp.onreadystatechange = function () {
     //     // Wait to get delivery id.

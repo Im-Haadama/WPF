@@ -208,8 +208,8 @@ class Fresh_Supplies {
 //		$args["title"] = "Supplies done";         print SuppliesTable( SupplyStatus::Supplied, $args );
 
 //		array_push( $tabs, array( "supplies_upload", "Upload", self::NewSupply() ) );
-		array_push( $tabs, array( "supplies_create", "New", self::NewSupply() ) );
 		array_push( $tabs, array( "supplies_new", "Supplies to send", self::SuppliesTable(eSupplyStatus::NewSupply) ) );
+		array_push( $tabs, array( "supplies_create", "New", self::NewSupply() ) );
 		array_push( $tabs, array( "supplies_sent", "Supplies to come", self::SuppliesTable(eSupplyStatus::OnTheGo)));
 		array_push( $tabs, array( "supplies_archive", "Archive", self::SuppliesTable(eSupplyStatus::Supplied)));
 
