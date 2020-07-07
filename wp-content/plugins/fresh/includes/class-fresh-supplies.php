@@ -207,7 +207,7 @@ class Fresh_Supplies {
 //		$args["title"] = "Supplies to collect";   print SuppliesTable( SupplyStatus::OnTheGo, $args );
 //		$args["title"] = "Supplies done";         print SuppliesTable( SupplyStatus::Supplied, $args );
 
-		array_push( $tabs, array( "supplies_upload", "Upload", self::NewSupply() ) );
+//		array_push( $tabs, array( "supplies_upload", "Upload", self::NewSupply() ) );
 		array_push( $tabs, array( "supplies_create", "New", self::NewSupply() ) );
 		array_push( $tabs, array( "supplies_new", "Supplies to send", self::SuppliesTable(eSupplyStatus::NewSupply) ) );
 		array_push( $tabs, array( "supplies_sent", "Supplies to come", self::SuppliesTable(eSupplyStatus::OnTheGo)));
@@ -325,6 +325,7 @@ class Fresh_Supplies {
 		$post_file = Fresh::getPost();
 		$data = Core_Html::HeaderText();
 		$data .= Core_Html::gui_header( 1, "יצירת אספקה" );
+		$event = ''; // 'onchange="new_supply_change(\'' . Fresh::getPost() . '\')"'
 		$data .= Core_Html::gui_table_args(array(
 			array(
 				Core_Html::gui_header( 2, "בחר ספק" ),
@@ -332,7 +333,7 @@ class Fresh_Supplies {
 				Core_Html::gui_header( 2, "בחר משימה" )
 			),
 			array(
-				Fresh_Supplier::gui_select_supplier( "supplier_select", null, array("events" => 'onchange="new_supply_change(\'' . Fresh::getPost() . '\')"')),
+				Fresh_Supplier::gui_select_supplier( "supplier_select", null, array("events" => $event)),
 				Core_Html::gui_input_date( "date", "", date('y-m-d'),  'onchange="change_supplier()"'),
 				Fresh_Packing::gui_select_mission( "new_mission", "", array("events"=>"gui_select_mission") )
 				// gui_select_mission( "mis_new")
@@ -355,7 +356,7 @@ class Fresh_Supplies {
 		$data .= "<script> supply_new_add_line('" . $post_file . "')";
 		$data .= "</script>";
 
-		print $data;
+		return  $data;
 
 	}
 
