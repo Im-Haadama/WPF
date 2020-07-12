@@ -56,7 +56,6 @@ class Fresh_Suppliers {
 				"supplier_add_pricelist_item('" . Fresh::getPost() . "', $supplier_id)"),
 				"product_name" => "", "price"=>"");
 
-
 		$this->gem->AddVirtualTable( "pricelist", $args );
 
 		// load classes

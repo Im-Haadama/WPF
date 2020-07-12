@@ -337,3 +337,8 @@ function add_param_to_url(url, param, value)
     else base += '&';
     return base + param + "=" + value;
 }
+
+function import_set_action(action)
+{
+    document.upload_csv.action = action;
+}

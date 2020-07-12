@@ -36,7 +36,7 @@ $user_id = $O->getCustomerId();
 ?>
 <html dir="rtl">
 <?php
-print Core_Fund::load_scripts(array('/wp-content/plugins/flavor/includes/core/gui/client_tools.js',
+print Core_Html::load_scripts(array('/wp-content/plugins/flavor/includes/core/gui/client_tools.js',
 	'/wp-content/plugins/fresh/includes/js/delivery.js',
 	'/wp-content/plugins/flavor/includes/core/data/data.js'));
 
