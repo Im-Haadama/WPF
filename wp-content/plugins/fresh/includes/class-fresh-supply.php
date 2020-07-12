@@ -225,7 +225,7 @@ class Fresh_Supply {
 		}
 	}
 
-	function parse_header(
+	static function parse_header(
 		$header_line, &$item_code_idx, &$name_idx, &$price_idx, &$sale_idx, &$inventory_idx, &$detail_idx,
 		&$category_idx, $is_active_idx, &$filter_idx, &$picture_idx, &$quantity_idx
 	) {

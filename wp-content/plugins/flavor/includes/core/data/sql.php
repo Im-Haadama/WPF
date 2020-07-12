@@ -603,11 +603,17 @@ function GetTableEncoding($table, $debug) {
 	if ( isset( $cache[ $table ] ) ) return $cache[ $table ];
 
 	if ( ! $cache ) $cache = [];
-	$sql = "SELECT CCSA.character_set_name FROM information_schema.`TABLES` T,
+	$sql = "SELECT CCSA.character_set_name
+FROM information_schema.`TABLES` T,
        information_schema.`COLLATION_CHARACTER_SET_APPLICABILITY` CCSA
 	WHERE CCSA.collation_name = T.table_collation
+	  and t.TABLE_SCHEMA = ' . DB_NAME . '
           AND T.table_name = '$table'";
+
+//	MyLog("$table: $sql");
 	$cache[$table] = SqlQuerySingleScalar($sql, false, false);
+
+//	MyLog("YYYY $table " . $cache[$table]);
 
 	// Set the default encoding. Didn't get the right encoding for views im_products.
 	if (! $cache[$table]) $cache[$table] = 'utf8';

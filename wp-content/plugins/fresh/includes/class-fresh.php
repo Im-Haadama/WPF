@@ -645,7 +645,7 @@ class Fresh {
 	    $file = FRESH_INCLUDES_URL . 'js/delivery.js';
 	    wp_enqueue_script( 'delivery', $file, null, $this->version, false );
 
-	    $file = FRESH_INCLUDES_URL . 'js/supply.js?v=1';
+	    $file = FRESH_INCLUDES_URL . 'js/supply.js?v=1.1';
 	    wp_enqueue_script( 'supply', $file, null, $this->version, false );
 
 	    $file = FRESH_INCLUDES_URL . 'js/suppliers.js';
