@@ -86,7 +86,7 @@ class Fresh_Supply {
 				print "trying to locate headers " . $file[ $i ] . "<br/>";
 
 			}
-			$parse_header_result = parse_header( $file[ $i ], $item_code_idx, $name_idx, $price_idx, $sale_idx, $inventory_idx,
+			$parse_header_result = self::parse_header( $file[ $i ], $item_code_idx, $name_idx, $price_idx, $sale_idx, $inventory_idx,
 				$detail_idx, $category_idx, $is_active_idx, $filter_idx, $picture_idx, $quantity_idx );
 		}
 		// Name is mandatory.
@@ -172,7 +172,8 @@ class Fresh_Supply {
 				print "no data in line $i<br/>";
 			}
 		}
-		// var_dump($lines);
+		if ($debug)
+			var_dump($lines);
 
 		$comments = "";
 		if ( count( $lines ) ) {
@@ -194,9 +195,12 @@ class Fresh_Supply {
 //				print "name: " . $name;
 
 				// $prod_id = get_product_id_by_name( $name );
-				$prod_id = SqlQuerySingleScalar( "select product_id \n" .
-				                                 " from im_supplier_mapping\n" .
-				                                 " where supplier_product_name = " . QuoteText( Fresh_Pricelist::StripProductName( $name ) ) );
+				$search_sql = "select product_id \n" .
+				              " from im_supplier_mapping\n" .
+				              " where supplier_product_name = " . QuoteText( Fresh_Pricelist::StripProductName( $name ) );
+
+				if ($debug) print $search_sql . "<br/>";
+				$prod_id = SqlQuerySingleScalar( $search_sql );
 //				print "prod_id: " . $prod_id . "<br/>";
 
 				if ( ! ( $prod_id > 0 ) ) {
@@ -213,10 +217,92 @@ class Fresh_Supply {
 
 			print " Supply " . Core_Html::GuiHyperlink($Supply->getID(), "/fresh/supplies/supplies-post.php?id=" . $Supply->getID() . " created <br/>");
 
+			if ($debug)
+				print nl2br($comments);
 			$Supply->setText( $comments );
 
 			return $Supply;
 		}
+	}
+
+	function parse_header(
+		$header_line, &$item_code_idx, &$name_idx, &$price_idx, &$sale_idx, &$inventory_idx, &$detail_idx,
+		&$category_idx, $is_active_idx, &$filter_idx, &$picture_idx, &$quantity_idx
+	) {
+		$header = str_getcsv( $header_line );
+		for ( $i = 0; $i < count( $header ); $i ++ ) {
+			$key = trim( $header[ $i ] );
+
+			switch ( $key ) {
+				case 'פריט':
+				case 'קוד':
+				case 'קוד פריט':
+				case 'מסד':
+				case 'code':
+					array_push( $item_code_idx, $i );
+					break;
+				case 'קטגוריות':
+					array_push( $category_idx, $i );
+					break;
+				case 'הירק':
+				case 'סוג קמח':
+				case 'שם פריט':
+				case 'שם':
+				case 'תאור פריט':
+				case 'תיאור פריט':
+				case 'תיאור הפריט':
+				case 'תיאור':
+				case 'תאור':
+				case 'מוצר':
+				case 'שם המוצר':
+				case 'name':
+					array_push( $name_idx, $i );
+					break;
+				case 'פירוט המוצר':
+					array_push( $detail_idx, $i );
+					break;
+				case 'price':
+				case 'מחיר':
+				case 'מחיר לאחר הנחה':
+				case 'מחירון':
+				case 'מחיר נטו':
+				case 'מחיר לק"ג':
+				case 'סיטונאות':
+					array_push( $price_idx, $i );
+					break;
+				case 'מלאי (ביחידות)':
+					$inventory_idx = $i;
+					break;
+				case 'מחיר מבצע':
+					array_push( $sale_idx, $i );
+					break;
+				case 'כמות':
+				case 'כמות יחידות':
+					array_push( $quantity_idx, $i );
+					break;
+				default:
+					// print im_translate("column %s ignored", $key) . "<br/>";
+
+			}
+			if ( strstr( $key, "הצגה" ) ) {
+				$filter_idx = $i;
+			}
+			if ( strstr( $key, "מחיר" ) and ! in_array( $i, $price_idx ) ) {
+				MyLog( "key: $key, price: " . $i, __FILE__ );
+				array_push( $price_idx, $i );
+			}
+
+			if ( strstr( $key, "תמונה" ) ) {
+				$picture_idx = $i;
+//		print "picture idx $picture_idx<br/>";
+			}
+		}
+
+		if ( count( $name_idx ) == 0 or count( $price_idx ) == 0 ) {
+			return false;
+		}
+		print "<br/>";
+		return true;
 	}
 
 //	function get_supply_status( $status ) {

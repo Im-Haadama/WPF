@@ -169,12 +169,14 @@ function got_supply() {
     execute_url(request_url, location_reload);
 }
 
-function new_supply_change(post_file)
+function supply_new_supplier_selected(e, post_file)
 {
-    let supplier_id = get_value_by_name("supplier_select");
-    let upcsv = document.getElementById("upcsv");
+    let supplier_id = get_value(e);
+    // let upcsv = document.getElementById("upload_upcsv");
     let date = get_value_by_name("date");
-    upcsv.action = add_param_to_url(add_param_to_url(add_param_to_url(post_file, "operation", "create_supply_from_file"), "supplier_id", supplier_id), "date", date);
+    upload_csv.action = add_param_to_url(add_param_to_url(add_param_to_url(post_file, "operation", "create_supply_from_file"), "supplier_id", supplier_id), "date", date);
+    document.getElementsByName("submit")[0].disabled = false;
+    // upload_csv.submit.enabled = true;
 }
 
 function supply_add_item(post_file, supply_id) {

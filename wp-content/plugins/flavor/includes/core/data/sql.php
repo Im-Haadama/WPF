@@ -598,7 +598,7 @@ function SqlInsert($table_name, $array, $ignore_list)
 	return SqlInsertId();
 }
 
-function GetTableEncoding($table) {
+function GetTableEncoding($table, $debug) {
 	static $cache = null;
 	if ( isset( $cache[ $table ] ) ) return $cache[ $table ];
 
@@ -611,6 +611,7 @@ function GetTableEncoding($table) {
 
 	// Set the default encoding. Didn't get the right encoding for views im_products.
 	if (! $cache[$table]) $cache[$table] = 'utf8';
+	if ($debug) print "$table encoding $table<br/>";
 	return $cache[$table];
 }
 
