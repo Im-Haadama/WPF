@@ -66,6 +66,7 @@ class Fresh_Category {
 
 	function in($array)
 	{
+		if (! $array or ! is_array($array)) return false;
 		foreach ($array as $term) {
 			if ( $term == $this->id ) return true;
 

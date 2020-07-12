@@ -7,8 +7,6 @@
  * Time: 17:42
  */
 
-
-
 define( 'IM_HAADAMA_PLUGIN', __FILE__ );
 
 define( 'IM_HAADAMA_PLUGIN_BASENAME', plugin_basename( IM_HAADAMA_PLUGIN ) );
@@ -31,7 +29,6 @@ require_once (ABSPATH . '/im-config.php');
 // Parent process //
 ////////////////////
 
-// require_once( "functions_im.php" );
 if (file_exists(TOOLS_DIR . "/im_tools_light.php"))
     require_once(TOOLS_DIR . "/im_tools_light.php");
 
@@ -206,44 +203,6 @@ if (file_exists(IM_HAADAMA_PLUGIN_DIR . "/tasks.php")){
     require_once("tasks.php");
 }
 
-add_shortcode( 'med_plants', 'med_plants' ); // [med_plants]
-
-function med_plants( $atts, $contents, $tag ) {
-    $result = "";
-	$result .= gui_header(1, "Relevant plants:");
-	$post_id = get_the_ID();
-
-    $terms = get_the_terms(get_the_ID(), 'category');
-
-    foreach ($terms as $term){
-        $term_result = gui_header(1, get_term_name($term));
-        $query_args = array(
-    		'post_type'      => 'post',
-    //		'posts_per_page' => 100,
-    //		'tax_query'      => array( array( 'terms' => $term_ids ) ), // 'taxonomy' => 'posts', 'field' => 'term_id',
-            'cat' => $term->term_id,
-            'orderby'        => 'name',
-            'order'          => 'ASC'
-        );
-
-        $loop = new WP_Query( $query_args );
-        $has_result = false;
-        while ( $loop->have_posts() ) {
-            $loop->the_post();
-            $post =get_post();
-            if ($post->ID != $post_id)  {
-                $term_result .= GuiHyperlink($post->post_title, $post->guid) . gui_br();
-                $has_result = true;
-
-	            // TODO: organize the private stuff
-	            $post->post_status = 'private';
-	            wp_update_post( $post );
-            }
-        }
-        if ($has_result) $result .= $term_result;
-    }
-	return $result;
-}
 
 
 // array(3) {

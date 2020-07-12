@@ -654,7 +654,6 @@ class Capabilites {
 
 	static public function RolesAndCapabilities()
 	{
-//		print get_current_user_id();
 		if (! im_user_can("promote_users")) return;
 		$result = Core_Html::GuiHeader(1, "Roles and capabilities");
 		$roles = [];

@@ -25,6 +25,7 @@ class Focus_Tasklist {
 	private $timezone;
 	private $logger;
 	private $table_prefix;
+	private $creator;
 
 	public function __construct( $_id)
 	{
@@ -33,7 +34,7 @@ class Focus_Tasklist {
 		$this->table_prefix = GetTablePrefix();
 
 		$row      = SqlQuerySingle( "SELECT location_name, location_address, task_description, mission_id," .
-		                            " task_template, priority, project_id, team " .
+		                            " task_template, priority, project_id, team, creator " .
 		                            " FROM {$this->table_prefix}tasklist " .
 		                            " WHERE id = " . $this->id );
 
@@ -44,6 +45,7 @@ class Focus_Tasklist {
 		$this->priority         = $row[5];
 		$this->project          = $row[6];
 		$this->team             = $row[7];
+		$this->creator = $row[8];
 
 		if ( $row[4] ) {
 			$row = SqlQuerySingle( "SELECT repeat_freq, repeat_freq_numbers, timezone " .
@@ -189,11 +191,11 @@ class Focus_Tasklist {
 	}
 
 	static function task_cancelled($task_id) {
-		$db_prefix = GetTablePrefix();
+		$t = new Focus_Tasklist($task_id);
+		if ($t->creator() == get_current_user())
+			return $t->cancel();
 
-		$sql = "UPDATE ${db_prefix}tasklist SET status = " . enumTasklist::canceled . ", status = " . enumTasklist::done .
-		       " WHERE id = " . $task_id;
-		return SqlQuery( $sql );
+		return $t->remove_assignment();
 	}
 
 	function task_template()
@@ -521,6 +523,33 @@ class Focus_Tasklist {
 		}
 		else self::update_status(enumTasklist::done);
 		return $rc;
+	}
+
+	function creator()
+	{
+		return $this->creator;
+	}
+
+	function cancel()
+	{
+		$db_prefix = GetTablePrefix();
+
+		$sql = "UPDATE ${db_prefix}tasklist SET status = " . enumTasklist::canceled . // . ", status = " . enumTasklist::done .
+		       " WHERE id = " . $this->id;
+		MyLog($sql);
+		return SqlQuery( $sql );
+	}
+
+	function remove_assignment()
+	{
+		$db_prefix = GetTablePrefix();
+
+		$sql = "UPDATE ${db_prefix}tasklist SET team = null " .
+		       " WHERE id = " . $this->id;
+
+		MyLog($sql);
+		return SqlQuery( $sql );
+
 	}
 }
 

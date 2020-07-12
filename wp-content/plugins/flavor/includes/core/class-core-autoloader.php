@@ -86,7 +86,7 @@ if (! class_exists('Core_Autoloader')) {
 			} elseif ( 0 === strpos ($class, "fresh"))
 				$path = realpath($this->include_path . '/../../fresh/includes/');
 
-			if (0 and $class == "fresh_supplier") {
+			if (0 and $class == "core_sparse_table") {
 				print "inc=" . $this->include_path . "<br/>";
 				print "path=$path<br/>";
 				print "file=$file" . "<br/>";
