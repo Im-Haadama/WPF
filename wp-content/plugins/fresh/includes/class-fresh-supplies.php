@@ -125,7 +125,6 @@ class Fresh_Supplies {
           AND s.status IN (1, 3)" .
 		        " AND (s.picked = 0 or isnull(s.picked))";
 
-		// print $sql;
 
 		if ( $mission_id ) {
 			$sql .= " AND s.mission_id = " . $mission_id;
