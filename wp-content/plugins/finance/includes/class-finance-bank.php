@@ -146,13 +146,48 @@ class Finance_Bank
 		$args["page"] = GetParam("page", false, null);
 		$args["post_file"] = Finance::getPostFile();
 		$args["query"] = "account_id = $account_id";
+		if ($filter = GetParam("filter", false, null)) {
+			switch ($filter) {
+				case "income":
+					$args["query"] .= " and in_amount > 0 ";
+					break;
+				case "income_to_receipt":
+					$args["query"] .= " and in_amount > 0 and receipt is null ";
+					break;
+
+			}
+		}
 
 		print Core_Html::GuiHeader(1, "דף חשבון") .
+		      self::transaction_filters() .
 		      self::bank_transactions($args) .
 		      Core_Html::GuiHyperlink("Import", AddToUrl(array("operation" => "finance_show_bank_import",
 			      "account_id"=>$account_id)));
 	}
 
+	function transaction_filters()
+	{
+		$current_filter = GetParam("filter", false, "none");
+		$result = "<div>";
+		$income = Core_Html::GuiHyperlink("הכנסות", AddToUrl("filter", "income")) . " ";
+		$income_to_receipt = Core_Html::GuiHyperlink("קבלה להכנסות", AddToUrl("filter", "income_to_receipt")) . " ";
+		$outcome = Core_Html::GuiHyperlink("הוצאות", AddToUrl("filter", "outcome")) . " ";
+		$clear_filters = Core_Html::GuiHyperlink("בטל סינון", AddParamToUrl("filter", null));Core_Html::GuiHyperlink("בטל סינון", AddParamToUrl("filter", null));
+		switch($current_filter)
+		{
+			case "none":
+				$result .= $income;
+				$result .= $outcome;
+				break;
+			case "income":
+				$result .= $income_to_receipt;
+				$result .= $clear_filters;
+				break;
+			default:
+				$result .= $clear_filters;
+		}
+		return $result . "</div>";
+	}
 	function show_bank_import()
 	{
 		$args = self::Args();
@@ -793,20 +828,26 @@ class Finance_Bank
 
 static function bank_check_dup( $fields, $values ) {
 	$table_prefix = GetTablePrefix();
-
 	$account_idx = array_search( "account_id", $fields );
 	$date_idx    = array_search( "date", $fields );
 	$balance_idx = array_search( "balance", $fields );
+	$in_amount_idx = array_search("in_amount", $fields);
+//	var_dump($fields); print "<br/>";
+//	die(1);
 	$account     = $values[ $account_idx ];
 	$date        = $values[ $date_idx ];
 	$balance     = $values[ $balance_idx ];
+	$in_amount = $values[$in_amount_idx];
 //	print "a=" . $account . " d=" . $date . " b=" . $balance;
 
 	$sql = "SELECT count(*) FROM ${table_prefix}bank WHERE account_id = " . $account .
-	       " AND date = " . QuoteText( $date ) .
-	       " AND round(balance, 2) = " . round( $balance, 2 );
+	       " AND date = " . QuoteText( $date );
+	if ($in_amount) $sql .= " and in_amount = " . $in_amount;
+	$sql .= " AND round(balance, 2) = " . round( $balance, 2 );
 	// print sql_query($sql) . "<br/>";
 	$c = SqlQuerySingleScalar( $sql );
+
+	MyLog("trans $date $balance $in_amount $c");
 
 	return $c;
 }

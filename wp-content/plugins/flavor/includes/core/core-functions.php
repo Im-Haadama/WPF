@@ -497,11 +497,8 @@ require_once (ABSPATH . '/wp-includes/pluggable.php');
 	 *
 	 * @return string|null
 	 */
-	function AddParamToUrl($url, $param_name, $param_value = null) {
+	function AddParamToUrl($url, $param_name, $param_value = null) { // Param null is to remove current value
 		$ignore_list = array( "page_number" ); // Would be removed from base url.
-		if ( is_null( $param_value ) and ! is_array( $param_name ) ) {
-			die ( __FUNCTION__ . ": bad usage" );
-		}
 		if ( $s = strpos( $url, '?' ) ) { // Have previous query
 			// Remove url part
 			$result = substr( $url, 0, $s ); // not including the ?
@@ -527,7 +524,7 @@ require_once (ABSPATH . '/wp-includes/pluggable.php');
 		foreach ( $query_parts as $param => $value ) {
 			if (is_array($param)) { print __FUNCTION__ . ":param is array<br/>"; var_dump($param); die(1); }
 			if (is_array($value)) { print __FUNCTION__ . ":value is array<br/>"; var_dump($value); die(1); }
-			$result .= $glue . $param . '=' . $value;
+			if (null != $value) $result .= $glue . $param . '=' . $value;
 			$glue   = "&";
 		}
 
