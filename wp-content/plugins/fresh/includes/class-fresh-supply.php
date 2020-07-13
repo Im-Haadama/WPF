@@ -6,16 +6,6 @@
  * Time: 11:58
  */
 
-//require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
-//require_once( FRESH_INCLUDES . '/supplies/gui.php' );
-//
-//require_once( FRESH_INCLUDES . "/catalog/catalog.php" );
-//require_once( FRESH_INCLUDES . "/org/business/business_info.php" );
-
-// print header_text(false);
-
-// Supply status: 1 = new, 3 = sent, 5 = supplied, 8 = merged into other, 9 = delete
-
 abstract class eSupplyStatus {
 	const NewSupply = 1;
 	const Sent = 3;
@@ -732,6 +722,65 @@ class Fresh_Supply {
 
 		return SqlQuery($sql);
 	}
+
+	public function SupplyText(  ) {
+		$id = $this->getID();
+		if ( ! ( $id > 0 ) ) {
+			throw new Exception( "bad id: " . $id );
+		}
+
+		$fields = array();
+		array_push( $fields, "supplies" );
+
+		$address = "";
+
+		$supplier_id = self::getSupplierID();
+		$ref         = Core_Html::GuiHyperlink( $id, "../supplies/supply-get.php?id=" . $id );
+		$address     = SqlQuerySingleScalar( "select address from im_suppliers where id = " . $supplier_id );
+//	$receiver_name = get_meta_field( $order_id, '_shipping_first_name' ) . " " .
+//	                 get_meta_field( $order_id, '_shipping_last_name' );
+//	$shipping2     = get_meta_field( $order_id, '_shipping_address_2', true );
+//	$mission_id    = order_get_mission_id( $order_id );
+//	$ref           = $order_id;
+//
+		array_push( $fields, $ref );
+//
+		array_push( $fields, $supplier_id );
+//
+		array_push( $fields, "<b>איסוף</b> " . self::getSupplierName() );
+//
+		array_push( $fields, "<a href='waze://?q=$address'>$address</a>" );
+//
+		array_push( $fields, "" );
+//
+		array_push( $fields, SqlQuerySingleScalar( "select supplier_contact_phone from im_suppliers where id = " . $supplier_id ) );
+
+		array_push( $fields, "" );
+//
+		array_push( $fields, SqlQuerySingleScalar( "select mission_id from im_supplies where id = " . $id ) );
+//
+		array_push( $fields, Core_Db_MultiSite::getInstance()->getLocalSiteName() );
+		// array_push($fields, get_delivery_id($order_id));
+
+		return  "<tr> " . self::delivery_table_line( 1, $fields ) . "</tr>";
+
+	}
+
+	function delivery_table_line( $ref, $fields, $edit = false ) {
+		//"onclick=\"close_orders()\""
+		$row_text = "";
+		if ( $edit ) {
+			$row_text = Core_Html::gui_cell( Core_Html::GuiCheckbox("chk_" . $ref) );
+		}
+
+		foreach ( $fields as $field ) // display customer name
+		{
+			$row_text .= Core_Html::gui_cell( $field );
+		}
+
+		return $row_text;
+	}
+
 }
 
 

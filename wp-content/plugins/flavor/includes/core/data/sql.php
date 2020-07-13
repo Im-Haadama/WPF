@@ -601,13 +601,13 @@ function SqlInsert($table_name, $array, $ignore_list)
 function GetTableEncoding($table, $debug) {
 	static $cache = null;
 	if ( isset( $cache[ $table ] ) ) return $cache[ $table ];
-
+//print "db name: " . DB_NAME . "<br/>";
 	if ( ! $cache ) $cache = [];
 	$sql = "SELECT CCSA.character_set_name
 FROM information_schema.`TABLES` T,
        information_schema.`COLLATION_CHARACTER_SET_APPLICABILITY` CCSA
 	WHERE CCSA.collation_name = T.table_collation
-	  and t.TABLE_SCHEMA = ' . DB_NAME . '
+	  and T.TABLE_SCHEMA = ' . DB_NAME . '
           AND T.table_name = '$table'";
 
 //	MyLog("$table: $sql");

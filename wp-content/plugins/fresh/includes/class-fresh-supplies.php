@@ -137,7 +137,9 @@ class Fresh_Supplies {
 		if ( count( $supplies ) ) {
 			foreach ( $supplies as $supply ) {
 //			   print "id: " . $supply . "<br/>";
-				$data .= print_supply( $supply );
+				$s = new Fresh_Supply($supply);
+				$data .= $s->SupplyText();
+					// print_supply( $supply );
 			}
 		}
 

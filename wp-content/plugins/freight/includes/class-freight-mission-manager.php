@@ -972,11 +972,11 @@ group by pm.meta_value, p.post_status");
 
 				$data .= self::print_deliveries( $sql, false);
 
-//				if (class_exists("Fresh_Supplies"))
-//					$data .= Fresh_Supplies::print_driver_supplies( $mission_id );
-//
-//				if (class_exists("Focus"))
-//					$data .= Focus::print_driver_tasks( $mission_id );
+				if (class_exists("Fresh_Supplies"))
+					$data .= Fresh_Supplies::print_driver_supplies( $mission_id );
+
+				if (class_exists("Focus"))
+					$data .= Focus::print_driver_tasks( $mission_id );
 			}
 		}
 
