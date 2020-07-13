@@ -56,7 +56,7 @@ class Fresh_Pricing {
 		$p    = new Fresh_Product( $prod_id );
 		$product_type = ( $p->isFresh() ) ? "rate" : "dry_rate";
 
-		$sql = "SELECT min($product_type) FROM im_client_types WHERE id = '" . $client_type . "' AND (q_min <= " . $quantity . " OR q_min = 0)";
+		$sql = "SELECT min($product_type) FROM im_client_types WHERE type = '" . $client_type . "' AND (q_min <= " . $quantity . " OR q_min = 0)";
 //		  print $sql . "<br/>";
 		$rate = SqlQuerySingleScalar( $sql );
 		if (null != $rate) {
