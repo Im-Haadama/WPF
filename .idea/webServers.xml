@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="5df1ba2e-2eb9-472e-8c7e-5cd1bab9059c" name="SO" url="https://">
+        <fileTransfer accessType="SFTP" host="super-organi.co.il" port="22" sshConfigId="c1155867-82fc-4aa3-88cd-89558baad949" sshConfig="root@super-organi.co.il:22 key" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
