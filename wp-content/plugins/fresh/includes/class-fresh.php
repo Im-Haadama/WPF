@@ -200,7 +200,7 @@ class Fresh {
 		$inventory = new Fresh_Inventory( $this->get_plugin_name(), $this->get_version(), self::getPost());
 
 		$this->loader->add_action( 'wp_enqueue_scripts', $orders, 'enqueue_scripts' );
-		$this->loader->add_action( 'wp_enqueue_scripts', $inventory, 'enqueue_scripts' );
+		$this->loader->add_action( 'admin_enqueue_scripts', $inventory, 'admin_scripts' );
 
 		Fresh_Packing::init_hooks();
 //		Fresh_Suppliers::init_hooks();
@@ -606,11 +606,6 @@ class Fresh {
 	}
 
 	public function enqueue_scripts() {
-		$file = FLAVOR_INCLUDES_URL . 'core/data/data.js';
-		wp_enqueue_script( 'data', $file, null, $this->version, false );
-
-		$file = FLAVOR_INCLUDES_URL . 'core/gui/client_tools.js';
-		wp_enqueue_script( 'client_tools', $file, null, $this->version, false );
 
 		wp_enqueue_script('add_to_cart_on_search', plugin_dir_url( __FILE__ ) . 'js/add_to_cart_on_search.js', array("jquery"));
 
@@ -621,6 +616,12 @@ class Fresh {
 
 	public function admin_scripts()
     {
+	    $file = FLAVOR_INCLUDES_URL . 'core/gui/client_tools.js';
+	    wp_enqueue_script( 'client_tools', $file, null, $this->version, false );
+
+	    $file = FLAVOR_INCLUDES_URL . 'core/data/data.js';
+	    wp_enqueue_script( 'data', $file, null, $this->version, false );
+
         $file = FRESH_INCLUDES_URL . 'js/admin.js?v=1.2';
 	    wp_register_script( 'fresh_admin', $file);
 

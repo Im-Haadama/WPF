@@ -24,22 +24,6 @@ class Fresh_Totals {
 		return self::$_instance;
 	}
 
-	public function enqueue_scripts() {
-//		print "<script>let focus_post_url = \"" . self::getPost() . "\"; </script>";
-
-//		$file = FLAVOR_INCLUDES_URL . 'core/data/data.js';
-//		wp_enqueue_script( 'data', $file, null, $this->version, false );
-//
-//		$file = FLAVOR_INCLUDES_URL . 'core/gui/client_tools.js';
-//		wp_enqueue_script( 'client_tools', $file, null, $this->version, false );
-//
-//		$file = FOCUS_INCLUDES_URL . 'focus.js';
-//		wp_enqueue_script( 'focus', $file, null, $this->version, false );
-//
-//		$file = FLAVOR_INCLUDES_URL . 'core/gem.js';
-//		wp_enqueue_script( 'gem', $file, null, $this->version, false );
-	}
-
 	function getShortcodes() {
 		//             code                           function                  capablity (not checked, for now).
 		return ( array(
@@ -58,21 +42,3 @@ class Fresh_Totals {
 		}
 	}
 }
-
-//
-//		print "<style>
-//table {
-//    font-family: arial, sans-serif;
-//    border-collapse: colb
-//
-//td, th {
-//    border: 1px solid #dddddd;
-//    text-align: right;
-//    padding: 8px;
-//}
-//
-//tr:nth-child(even) {
-//    background-color: #dddddd;
-//}
-//</style>";
-//

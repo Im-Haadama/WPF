@@ -53,9 +53,6 @@ class Core_Gem {
 
 	static function AddTable($table, $class = 'Core_Gem')
 	{
-		$file = FLAVOR_INCLUDES_URL . 'core/gem.js';
-		wp_enqueue_script( 'gem', $file, null, "1.0", false );
-
 		$debug = 0; //  (get_user_id() == 1);
 		// if (get_user_id() == 1) print __CLASS__ . ":" . $table;
 		// New Row

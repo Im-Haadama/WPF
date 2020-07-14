@@ -87,7 +87,6 @@ class Israel_Shop
 	function init()
 	{
 		Israel_Database::Upgrade(self::instance()->get_version());
-		$this->enqueue_scripts();
 		$this->zones->run(5);
 	}
 
@@ -106,10 +105,6 @@ class Israel_Shop
 	public function data_update()
 	{
 		return Core_Data::data_update('cities');
-	}
-	public function enqueue_scripts() {
-		$file = FLAVOR_INCLUDES_URL . 'core/data/data.js';
-		wp_enqueue_script( 'data', $file);
 	}
 
 	function vat_add_category()
@@ -142,6 +137,9 @@ class Israel_Shop
 	}
 
 	public function admin_scripts() {
+		$file = FLAVOR_INCLUDES_URL . 'core/data/data.js';
+		wp_enqueue_script( 'data', $file);
+
 		$file = ISRAEL_INCLUDES_URL . 'js/admin.js';
 		wp_register_script( 'israel_admin', $file );
 		wp_enqueue_script('israel_admin');

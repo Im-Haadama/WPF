@@ -27,9 +27,6 @@ class Freight_Methods {
 		add_action("toggle_shipment_enable", __CLASS__ . "::toggle_shipment_enable");
 		add_action("shipment_update_mc", __CLASS__ . "::shipment_update_mc");
 
-		$file = FLAVOR_INCLUDES_URL . 'js/sorttable.js';
-		wp_enqueue_script( 'sorttable', $file, null, '1.0', false );
-
 		Core_gem::AddTable("mission_types");
 	}
 

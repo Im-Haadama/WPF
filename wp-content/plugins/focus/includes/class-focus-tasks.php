@@ -39,7 +39,7 @@ class Focus_Tasks {
 		return self::$_instance;
 	}
 
-	public function enqueue_scripts() {
+	public function admin_scripts() {
 		print "<script>let focus_post_url = \"" . self::getPost() . "\"; </script>";
 
 		$file = FLAVOR_INCLUDES_URL . 'core/data/data.js';
@@ -378,7 +378,6 @@ class Focus_Tasks {
 
 
 			case "show_staff": // Teams that I manage
-//			$result .= header_text( false, true, true, array( "/core/gui/client_tools.js", "/core/data/data.js", "/core/data/focus.js" ) );
 				$result .= Core_Html::gui_header( 1, "Edit staff" );
 				$result .= show_staff();
 
@@ -386,7 +385,6 @@ class Focus_Tasks {
 
 			case "show_edit_projects": // Projects that I manage
 				$args = self::Args("projects");
-//			$result .= header_text( false, true, true, array( "/core/gui/client_tools.js", "/core/data/data.js", "/core/data/focus.js" ) );
 				$result            .= Core_Html::gui_header( 1, "Edit projects" );
 				$args["worker_id"] = get_user_id();
 				$result            .= edit_projects( $args );
@@ -435,8 +433,6 @@ class Focus_Tasks {
 				return $result;
 
 			case "projects":
-//				$result .= header_text( false, true, true, array( "/core/gui/client_tools.js", "/core/data/data.js" ) );
-
 				if ( $id = GetParam( "project_id" ) ) {
 					$result .= show_project( $id );
 				}
