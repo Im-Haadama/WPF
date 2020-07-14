@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="SshConfigs">
-    <configs>
-      <sshConfig host="super-organi.co.il" id="c1155867-82fc-4aa3-88cd-89558baad949" keyPath="$USER_HOME$/.ssh/digi" port="22" nameFormat="DESCRIPTIVE" username="root" />
-    </configs>
-  </component>
-</project>
