@@ -222,7 +222,17 @@ class Fresh_Suppliers {
 		$s = new Fresh_Supplier($supplier);
 		$result .= Core_Html::GuiHeader(1, __("Supplier pricelist") . " " . $s->getSupplierName());
 
+		$draftable_products = self::draftable_products($supplier);
+		if ($draftable_products) {
+			$result .= Core_Html::GuiHeader(2, "מוצרים להורדה");
+		}
+
 		return $result;
+	}
+
+	static function draftable_products($supplier_id)
+	{
+
 	}
 	static function pricelist_functions($result)
 	{
