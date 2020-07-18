@@ -127,17 +127,18 @@ class Finance_Yaad {
 			if ($debug) var_dump($transaction_info);
 			$transaction_id = $transaction_info['Id'];
 			if (! $transaction_id){
-				print "No transaction id";
+				MyLog("No transaction id");
 				return false;
 			}
 			$paid = $transaction_info['Amount'];
 			if ($transaction_id) {
-				print $user->getName() . " " . __("Paid") . " $amount. $payment_number " . __("payments") . "\n";
+				$message  = $user->getName() . " " . __("Paid") . " $amount. $payment_number " . __("payments") . "\n";
+				print $message; MyLog($message);
 				if ($this->debug) print "pay successful $transaction_id<br/>";
 
 				// Create token and save it.
 				$token_info = self::GetToken( $transaction_id );
-				if (isset($token_info['Token']) and strlen($token_info['Token']) > 10){
+				if (isset($token_info['Token']) and (strlen($token_info['Token']) > 10)){
 					if ($debug) print "Got token " . $token_info['Token'] . "<br/>";
 					add_user_meta($user->getUserId(), 'credit_token', $token_info['Token']);
 
@@ -147,6 +148,7 @@ class Finance_Yaad {
 			}
 		}
 		if ($paid) {
+			MyLog("Paid $paid. trying to create receipt");
 			// Create invoice receipt. Update balance.
 			Finance_Clients::create_receipt_from_account_ids( 0, 0, 0, $paid, $user->getUserId(), date('Y-m-d'), $account_line_ids );
 
@@ -178,6 +180,7 @@ class Finance_Yaad {
 		$card_four_digit   = $wpdb->get_var("SELECT card_four_digit FROM $table_name WHERE id = ".$row_id." ");
 		$dig4 = setCreditCard($card_four_digit);
 		SqlQuery("UPDATE $table_name SET card_number =  '".$dig4."' WHERE id = ".$row_id." ");
+		SqlQuery("delete from wp_usermeta where meta_key = 'credit_token' and meta_value is null");
 		return true;
 	}
 	/**
