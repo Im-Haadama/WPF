@@ -434,5 +434,3 @@ function is_shop_manager() {
 
 	return false;
 }
-
-}

@@ -14,14 +14,17 @@ class Core_Sparse_Table {
 		$this->empty_line = array("name" => 'here');
 	}
 
-	public function AddColumn($id, $name, $link_format) // optional - to add certain columns first (like baskets).
+	public function AddColumn($id, $name, $link_format = null) // optional - to add certain columns first (like baskets).
 	{
 		if (! $id) {
 			print debug_trace();
 			die ( "id is missing" );
 		}
 		$this->empty_line[$id] = '';
-		$link = sprintf($link_format, $id);
+		if ($link_format)
+			$link = sprintf($link_format, $id);
+		else
+			$link = $name;
 		$this->data["header"][$id] = Core_Html::GuiHyperlink($name, $link);
 	}
 
