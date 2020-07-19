@@ -27,7 +27,6 @@ class Fresh_Packing {
 	function supplier_tabs($needed_prod_by_supplier)
 	{
 		$supplier_tabs   = [];
-
 	}
 
 	static function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero = false, $filter_stock = false, $history = false) {
@@ -150,9 +149,7 @@ class Fresh_Packing {
 		// Find out which suppliers are relevant
 		foreach ( $needed_products as $prod_id => $product_info ) {
 			$prod        = new Fresh_Product( $prod_id );
-			$supplier_id = $prod->getSupplierId($prod_id == $debug_product);
-
-			if ($prod_id == $debug_product) MyLog("prod $prod_id supplier $supplier_id");
+			$supplier_id = $prod->getSupplierId();
 
 			if ( ! in_array( $supplier_id, $suppliers ) and $supplier_id ) {
 				array_push( $suppliers, $supplier_id );
@@ -566,7 +563,7 @@ class Fresh_Packing {
 
 		foreach (Fresh_Category::GetTopLevel() as $term) {
 			$term = new Fresh_Category($term->term_id);
-			$table = self::PackingTable( $term);
+			$table = self::PackingTable($term);
 
 			if ($table) {
 				array_push($category_pages,
@@ -584,66 +581,35 @@ class Fresh_Packing {
 		print Core_Html::GuiTabs($category_pages, $args);
 	}
 
-	static function PackingTable($term)
+	static function PackingTable(Fresh_Category $term)
 	{
-		$rows = [];
+		$Table = new Core_Sparse_Table(array("name" => "סיכום הזמנות"), true);
+
 		$sql  = "SELECT id, post_status FROM wp_posts " .
 		        " WHERE (post_status LIKE '%wc-processing%' ) 
 		         order by 1 asc"; // OR post_status = 'wc-awaiting-shipment'
 
-		$rows["header"] = array("name" => "סיכום הזמנות");
-
+		// Add cols of baskets so they appear first.
 		$sql_result = SqlQuery( $sql );
-		$empty_line = array("name" => 'here');
 		foreach (Fresh_Basket::getAll() as $basket_id) {
 			$b = new Fresh_Basket($basket_id);
-			$empty_line[ $basket_id ] = '';
 			if ($term->in($b->getTerms()))
-				$rows["header"][$basket_id] = $b->getName();
+				$Table->addColumn($basket_id, $b->getName());
 		}
 
 		while ( $row = mysqli_fetch_assoc( $sql_result ) ) {
 			$order_id = $row['id'];
-			$rows[$order_id] = array();
 			$O = new Fresh_Order($order_id);
 			$C = new Fresh_Client($O->getCustomerId());
-
-			$rows[$order_id] = $empty_line;
-			$rows[$order_id]["name"] = Core_Html::GuiHyperlink($C->getName(), "/wp-admin/post.php?post=$order_id&action=edit");
+			$Table->AddRow($order_id, $C->getName(), "/wp-admin/post.php?post=%d&action=edit");
 
 			foreach ($O->getProducts() as $prod_id => $prod_q) {
-//				$prod_id                       = $prod_info['prod_id'];
 				$p = new Fresh_Product($prod_id);
 				if (! $term->in($p->getTerms())) continue;
-//				$prod_q                        = $prod_info['quantity'];
-				$rows[ $order_id ][ $prod_id ] = $prod_q;
-				if (! isset($rows["total"][$prod_id]))
-					$rows["total"][$prod_id] = 0;
-				$rows["total"][$prod_id] += $prod_q;
-				if (! isset($rows["header"][$prod_id])) {
-					$p                          = new Fresh_Product( $prod_id );
-					$rows["header"][ $prod_id ] = $p->getName();
-				}
+				$Table->AddItem($order_id, $prod_id, $prod_q, $p->getName());
 			}
 		}
-		if (! isset($rows["total"]) or ! count($rows["total"])) return "";
-		foreach ($rows as $order_id => $row){
-			$table[$order_id] = array();
-			$has_items = false;
-			foreach ($rows["header"] as $prod_id => $c) {
-				if (isset($rows["total"][$prod_id]) and ($prod_id > 0)) {
-					$table["total"][$prod_id] = $rows["total"][$prod_id];
-					if (isset($rows[$order_id][$prod_id])) $has_items = true;
-				}
-				$table[ $order_id ][ $prod_id ] = ( isset( $rows[ $order_id ][ $prod_id ] ) ? $rows[ $order_id ][ $prod_id ] : '' );
-			}
-			if ($order_id > 0 and ! $has_items) unset ($table[$order_id]);
-		}
-		$table["total"]["name"] = 'סה"כ';
-							//		$args = array("transpose" => 1);
-		$args = array("class" => "widefat", "line_styles" => array('background: #DDD','background: #EEE', 'background: #FFF') );
-
-		return Core_Html::gui_table_args($table, "table", $args);
+		return $Table->GetTable();
 	}
 }
 

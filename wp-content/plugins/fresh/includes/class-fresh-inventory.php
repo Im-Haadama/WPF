@@ -256,7 +256,7 @@ class Fresh_Inventory
 		return $display;
 	}
 
-	public function enqueue_scripts() {
+	public function admin_scripts() {
 		$file = plugin_dir_url( __FILE__ ) . 'js/inventory.js';
 //		print "loading $file,....";
 		wp_enqueue_script( $this->plugin_name, $file, array( 'jquery' ), $this->version, false );

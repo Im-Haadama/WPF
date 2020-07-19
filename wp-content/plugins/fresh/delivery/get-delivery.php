@@ -4,7 +4,7 @@ define('ROOT_DIR', dirname(dirname(dirname(__FILE__))));
 
 require_once(dirname(dirname(ROOT_DIR)) . '/wp-config.php');
 //require_once(dirname(dirname(ROOT_DIR)) . '/im-config.php');
-print Core_Fund::load_scripts(array('/wp-content/plugins/flavor/includes/core/gui/client_tools.js',
+print Core_Html::load_scripts(array('/wp-content/plugins/flavor/includes/core/gui/client_tools.js',
 	'/wp-content/plugins/fresh/includes/js/delivery.js',
 	'/wp-content/plugins/flavor/includes/core/data/data.js',
     '/wp-content/plugins/finance/includes/account.js'

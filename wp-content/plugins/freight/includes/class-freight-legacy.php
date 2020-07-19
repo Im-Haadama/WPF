@@ -272,7 +272,7 @@ AND (meta_value = "legacy" or meta_value = 1)';
 		global $invoice_password_sub;
 		global $legacy_user;
 
-		$invoice = Finance::Invoice4uConnect();
+		$invoice = new Finance_Invoice4u(INVOICE_USER_SUB, INVOICE_PASSWORD_SUB);
 		if (! $invoice) {
 			die ("Not connected to invoice4u");
 		}

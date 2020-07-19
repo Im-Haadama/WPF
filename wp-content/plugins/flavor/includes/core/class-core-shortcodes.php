@@ -133,6 +133,6 @@ class Core_Shortcodes {
 
 	public static function missing_capability($a, $b, $cap)
 	{
-		return "Capability for '$cap' is missing.";
+		return "Capability for '$cap' is missing to use:" . get_user_displayname(get_current_user());
 	}
 }

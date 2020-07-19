@@ -698,12 +698,12 @@ class Finance {
 //
 
 	public function enqueue_scripts() {
-		$file = FINANCE_INCLUDES_URL . 'business.js';
-		wp_enqueue_script( 'business', $file, null, $this->version, false );
-		$file = FINANCE_INCLUDES_URL . 'finance.js';
-		wp_enqueue_script( 'finance', $file, null, $this->version, false );
-		$file = FINANCE_INCLUDES_URL . 'account.js';
-		wp_enqueue_script( 'account', $file, null, $this->version, false );
+//		$file = FINANCE_INCLUDES_URL . 'business.js';
+//		wp_enqueue_script( 'business', $file, null, $this->version, false );
+//		$file = FINANCE_INCLUDES_URL . 'finance.js';
+//		wp_enqueue_script( 'finance', $file, null, $this->version, false );
+//		$file = FINANCE_INCLUDES_URL . 'account.js';
+//		wp_enqueue_script( 'account', $file, null, $this->version, false );
 
 	}
 
@@ -819,6 +819,7 @@ class Finance {
 
 		$last = SqlQuerySingleScalar( "select max(user_id) from wp_usermeta" );
 
+		MyLog(__FUNCTION__ . $last_created . " " . $last);
 		for ( $user_id = $last_created + 1; $user_id <= $last; $user_id ++ ) {
 			if ( SqlQuerySingleScalar( "select client_last_order($user_id)" ) ) {
 				MyLog( "creating $user_id", __FUNCTION__ );

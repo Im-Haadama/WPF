@@ -655,7 +655,7 @@ class Flavor {
 	}
 
 	public function admin_scripts() {
-		$file = FLAVOR_INCLUDES_URL . 'core/gui/client_tools.js';
+		$file = FLAVOR_INCLUDES_URL . 'core/gui/client_tools.js?v=1';
 		wp_enqueue_script( 'client_tools', $file, null, $this->version, false );
 	}
 

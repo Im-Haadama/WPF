@@ -27,22 +27,11 @@ class Freight_Methods {
 		add_action("toggle_shipment_enable", __CLASS__ . "::toggle_shipment_enable");
 		add_action("shipment_update_mc", __CLASS__ . "::shipment_update_mc");
 
-		$file = FLAVOR_INCLUDES_URL . 'js/sorttable.js';
-		wp_enqueue_script( 'sorttable', $file, null, '1.0', false );
-
 		Core_gem::AddTable("mission_types");
 	}
 
 	static function settings($args = null, $operation = null) {
 		$result = Core_Html::GuiHeader( 1, "Shipping methods" );
-
-		$m = Core_Db_MultiSite::getInstance();
-		if ( ! $m->isMaster() ) {
-			if (! $m->UpdateFromRemote( "woocommerce_shipping_zones", "zone_id" )) return false;
-			if (! $m->UpdateFromRemote( "woocommerce_shipping_zone_methods", "instance_id" )) return false;
-			if (! $m->UpdateFromRemote( "woocommerce_shipping_zone_locations", "location_id" )) return false;
-			if (! $m->UpdateFromRemote( "options", "option_name", 0, "option_name like 'woocommerce_flat_rate_%_settings'", array( 'option_id' ))) return false;
-		}
 
 		if ($operation)
 			$result .= apply_filters( $operation, $result, "", null, null );

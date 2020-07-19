@@ -313,6 +313,12 @@ function fail_message(xmlhttp)
     alert (xmlhttp.response);
 }
 
+function log_message(xmlhttp)
+{
+    log = document.getElementById("log");
+    if (log) log += xmlhttp.response;
+}
+
 
 function add_param_to_url(url, param, value)
 {
@@ -330,4 +336,9 @@ function add_param_to_url(url, param, value)
     if (base.indexOf('?') === -1) base += '?';
     else base += '&';
     return base + param + "=" + value;
+}
+
+function import_set_action(action)
+{
+    document.upload_csv.action = action;
 }

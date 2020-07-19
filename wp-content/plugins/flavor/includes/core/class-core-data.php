@@ -81,8 +81,9 @@ class Core_Data
 		$db_prefix = GetTablePrefix($table_name);
 		// TODO: adding meta key when needed(?)
 		if (! in_array($table_name, array("missions", "supplier_price_list", "mission_types", "working"))) die ("not allowed $table_name");
-		MyLog(__FUNCTION__ . "delete from $table_name by " . get_current_user(), CommaImplode($rows));
-		SqlQuery( "delete from ${db_prefix}$table_name where id in (" . CommaImplode($rows) . ")");
+		$sql = "delete from ${db_prefix}$table_name where id in (" . CommaImplode($rows) . ")";
+		MyLog(__FUNCTION__ . "$sql by " . get_current_user(), CommaImplode($rows));
+		SqlQuery($sql );
 
 		return true;
 	}
@@ -360,13 +361,11 @@ class Core_Data
 
 		$prepare_plug = GetArg($args, "prepare_plug", null);
 		if (is_callable($prepare_plug)) $row = call_user_func($prepare_plug, $row);
-//		else print "Not callable";
 
 		$row_data = array();
 
 		if (! is_array($row))
 		{
-//			MyLog( __FUNCTION__ . "invalid row ");
 			return $row;
 		}
 

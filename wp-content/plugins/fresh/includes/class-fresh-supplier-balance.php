@@ -199,43 +199,4 @@ class Fresh_Supplier_Balance {
 	}
 }
 
-//
-//require( '../r-shop_manager.php' );
-//print header_text( false, true, is_rtl(), array("/core/data/data.js") );
-//// require_once( "account.php" );
-//
-//print header_text(false, true, true, array("suppliers.js", "/core/gui/client_tools.js"));
-//
-//$operation = GetParam("operation", false, null);
-//
-//if ($operation) {
-//	require_once(FRESH_INCLUDES .'/fresh/suppliers/suppliers.php');
-//    print handle_supplier_operation($operation);
-//	return;
-//}
-//
-//
-//$include_zero = isset( $_GET["zero"] );
-//
-//$supplier_id = GetParam( "supplier_id" );
-//if ( $supplier_id ) {
-//    get_supplier_balance( $supplier_id );
-//	return;
-//}
-//
-//
-//$data = "<table>";
-//$data .= "<tr>";
-//$data .= gui_cell( "בחר" );
-//
-//$data .= "<td>לקוח</td>";
-//$data .= "<td>יתרה לתשלום</td>";
-//$data .= "</tr>";
-//
-//print ">הצג גם חשבונות מאופסים</a>";
-//
-//
-//
-//
-
 ?>

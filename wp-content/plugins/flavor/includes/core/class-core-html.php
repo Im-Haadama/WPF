@@ -53,9 +53,11 @@ class Core_Html {
 	static function GuiButton($id, $text, $args_or_action)
 	{
 		$result = "<button id=\"$id\"";
-		if ($style = GetArg($args_or_action, "style", null)) $result .= " style=\"$style\"";
-		if ($class = GetArg($args_or_action, "class", null)) $result .= " class=\"$class\"";
-		if ($events = GetArg($args_or_action, "events", null)) $result .= " $events ";
+		if (is_array($args_or_action)) {
+			if ( $style = GetArg( $args_or_action, "style", null ) ) $result .= " style=\"$style\"";
+			if ( $class = GetArg( $args_or_action, "class", null ) ) $result .= " class=\"$class\"";
+			if ( $events = GetArg( $args_or_action, "events", null ) ) $result .= " $events ";
+		}
 		if (is_string($args_or_action)) $result .= " onclick=\"$args_or_action\" ";
 			else if ($action = GetArg($args_or_action, "action", null)) $result .= " onclick=\"$action\" ";
 		$result .= ">$text";
@@ -221,7 +223,7 @@ class Core_Html {
 	 * @return string
 	 */
 	static function gui_textarea( $name, $value, $events = null, $rows = 0, $cols = 0 ) {
-		$data = '<textarea name="' . $name . '" id="' . $name . '"';
+		$data = '<textarea name="' . $name . '" id="' . $name . '" ';
 		if ( strlen( $events ) > 0 ) {
 			$data .= $events;
 		}
@@ -1406,6 +1408,7 @@ class Core_Html {
 				// print $selected . " " . $row["$id"] . "<br/>";
 				$data .= ">";
 				if ( $name ) {
+//					var_dump($row); print "<br/>";
 					$data .= $row[ $name ] . "</option>";
 				}
 			}
@@ -2019,6 +2022,36 @@ class Core_Html {
 		}
 		return "";
 	}
+	static function load_scripts( $script_file = false ) {
+		$text = "";
+		if ( $script_file ) {
+			// print "Debug: " . $script_file . '<br/>';
+			// var_dump($script_file);
+			do {
+				if ( $script_file === true ) {
+					$text .= '<script type="text/javascript" src="/core/gui/client_tools.js"></script>';
+					break;
+				}
+				if ( is_string( $script_file ) ) {
+					$text .= '<script type="text/javascript" src="' . $script_file . '"></script>';
+					break;
+				}
+				if ( is_array( $script_file ) ) {
+					foreach ( $script_file as $file ) {
+						if ( strstr( $file, 'php' ) ) {
+							$text .= GetContent( $file );
+						} else {
+							$text .= '<script type="text/javascript" src="' . $file . '"></script>';
+						}
+					}
+					break;
+				}
+				print $script_file . " not added<br/>";
+			} while ( 0 );
+		}
+		return $text;
+	}
+
 }
 
 if (!function_exists('gui_checkbox'))

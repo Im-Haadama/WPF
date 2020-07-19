@@ -7,6 +7,7 @@ class Fresh_Database extends Core_Database
 {
 	static function CreateViews($version, $force )
 	{
+		return;
 		$current = self::CheckInstalled("Fresh", "views");
 		$db_prefix = GetTablePrefix();
 
@@ -88,10 +89,10 @@ order by 1;");
 
 	static function CreateTables($version, $force)
 	{
+		return;
 		$current = self::CheckInstalled("Fresh", "functions");
 		$db_prefix = GetTablePrefix();
 
-		if ($current == $version and ! $force) return true;
 
 		SqlQuery("alter table im_supplier_price_list add product_id integer(11)");
 
@@ -749,6 +750,7 @@ BEGIN
 
 		$sql = "CREATE TABLE `im_payment_info` (
 	    `id` int(11) NOT NULL AUTO_INCREMENT  PRIMARY KEY,
+	    `user_id` int(11) NOT NULL,
 	    `full_name` varchar(255) NOT NULL,
 	    `email` varchar(255) NOT NULL,
 	    `card_number` varchar(50) NOT NULL,

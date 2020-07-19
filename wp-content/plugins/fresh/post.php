@@ -4,7 +4,6 @@ if ( ! defined( "ABSPATH" ) ) {
 	define( 'ABSPATH', dirname(dirname(dirname( dirname( __FILE__ ) ) )) . '/');
 }
 require_once(ABSPATH . 'wp-config.php');
-
 $operation = GetParam('operation', true);
 $fresh = Fresh::instance();
 $anonymous = (strstr($operation, "anonymous") !== false);

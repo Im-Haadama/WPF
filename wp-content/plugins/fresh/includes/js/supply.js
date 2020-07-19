@@ -24,18 +24,17 @@ function save_mission() {
     xmlhttp.send();
 }
 
-function update_comment() {
-    var text = get_value(document.getElementById("comment"));
+function supply_save_comment(post_file, supply_id) {
+    let text = get_value(document.getElementById("comment"));
 
-    execute_url("supplies-post.php?operation=save_comment&text=" + encodeURI(text)
-        + "&id=" + get_supply_id(), location_reload);
+    execute_url(post_file + "?operation=supply_save_comment&text=" + encodeURI(text)
+        + "&id=" + supply_id, location_reload);
 }
 
-function updateItems() {
-    let supply_id = get_supply_id();
+function supply_update_items(post_file, supply_id) {
     let collection = document.getElementsByClassName("supply_checkbox");
     let params = new Array();
-    for (var i = 0; i < collection.length; i++) {
+    for (let i = 0; i < collection.length; i++) {
         if (collection[i].checked) {
             // var name = get_value(table.rows[i+1].cells[0].firstChild);
             var line_id = collection[i].id.substr(4);
@@ -45,7 +44,7 @@ function updateItems() {
             params.push(get_value_by_name("$buy_" +line_id));
         }
     }
-    let request = "supplies-post.php?operation=update_lines&supply_id=" + supply_id + "&params=" + params;
+    let request = post_file + "?operation=supply_update_items&supply_id=" + supply_id + "&params=" + params;
     execute_url(request, location_reload);
 }
 
@@ -55,11 +54,13 @@ function del_line(supply_line_id) {
     execute_url("supplies-post.php?operation=delete_lines&params=" + supply_line_id);
 }
 
-function deleteItems()
+function supply_delete_items(post_file, supply_id)
 {
+    if (! (supply_id > 0)) { alert ("bad supply_id"); return }
     let params = get_selected("supply_checkbox");
-    let request = "supplies-post.php?operation=delete_lines&params=" + params;
-    execute_url(request, location_reload);
+
+    let request_url = post_file + "?operation=supply_delete_items&supply_id=" + supply_id + '&params=' + params;
+    execute_url(request_url, location_reload);
 }
 
 function closeItems(collection_name)
@@ -168,17 +169,19 @@ function got_supply() {
     execute_url(request_url, location_reload);
 }
 
-function new_supply_change(post_file)
+function supply_new_supplier_selected(e, post_file)
 {
-    let supplier_id = get_value_by_name("supplier_select");
-    let upcsv = document.getElementById("upcsv");
+    let supplier_id = get_value(e);
+    // let upcsv = document.getElementById("upload_upcsv");
     let date = get_value_by_name("date");
-    upcsv.action = add_param_to_url(add_param_to_url(add_param_to_url(post_file, "operation", "create_supply_from_file"), "supplier_id", supplier_id), "date", date);
+    upload_csv.action = add_param_to_url(add_param_to_url(add_param_to_url(post_file, "operation", "create_supply_from_file"), "supplier_id", supplier_id), "date", date);
+    document.getElementsByName("submit")[0].disabled = false;
+    // upload_csv.submit.enabled = true;
 }
 
-function supply_add_item(supply_id) {
+function supply_add_item(post_file, supply_id) {
     if (! (supply_id > 0)) { alert ("bad supply_id"); return }
-    let request_url = "supplies-post.php?operation=add_item&supply_id=" + supply_id;
+    let request_url = post_file + "?operation=supply_add_item&supply_id=" + supply_id;
     let prod_id = get_value_by_name("itm_");
     if (! (prod_id > 0)) { alert ("bad product"); return }
     request_url = request_url + "&prod_id=" + prod_id;
@@ -187,16 +190,15 @@ function supply_add_item(supply_id) {
     execute_url(request_url, location_reload, this);
 }
 
-function supply_add()
+function supply_add(post_file)
 {
     disable_btn('btn_add_item');
 
     let supplier_id = get_value_by_name("supplier_select");
 //            var supplier_id = supplier_name.substr(0, supplier_name.indexOf(")"));
     if (!(supplier_id > 0)) {
-        alert("יש לבחור ספק, כולל מספר מזהה מהרשימה");
-        document.getElementById('add_item').disabled = false;
-
+        alert("יש לבחור ספק מהרשימה");
+        enable_btn('btn_add_item');
         return;
     }
     let ids = [];
@@ -230,27 +232,28 @@ function supply_add()
 
     let date = get_value(document.getElementById("date"));
 
-    let request = "supplies-post.php?operation=create_supply" +
+    let request = post_file + "?operation=create_supply" +
         "&supplier_id=" + supplier_id +
-        "&create_info=" + ids.join() +
+        "&params=" + ids.join() +
         "&date=" + date;
 
     reset_message();
-    xmlhttp = new XMLHttpRequest();
-    xmlhttp.onreadystatechange = function () {
-        // Wait to get delivery id.
-        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {  // Request finished
-            add_message(xmlhttp.responseText);
-            let id = xmlhttp.responseText.match(/\d+/)[0];
-            disable_btn("btn_add_item");
-            if (id > 0) {
-                window.location.href = "/fresh/supplies/supplies-page.php?operation=get&id=" + id;
-                // location.reload();
-            }
-        }
-    }
-    xmlhttp.open("GET", request, true);
-    xmlhttp.send();
+    execute_url(request, action_back);
+    // xmlhttp = new XMLHttpRequest();
+    // xmlhttp.onreadystatechange = function () {
+    //     // Wait to get delivery id.
+    //     if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {  // Request finished
+    //         add_message(xmlhttp.responseText);
+    //         let id = xmlhttp.responseText.match(/\d+/)[0];
+    //         disable_btn("btn_add_item");
+    //         if (id > 0) {
+    //             window.location.href = "/fresh/supplies/supplies-page.php?operation=get&id=" + id;
+    //             // location.reload();
+    //         }
+    //     }
+    // }
+    // xmlhttp.open("GET", request, true);
+    // xmlhttp.send();
 }
 
 function supply_new_add_line(post_file)

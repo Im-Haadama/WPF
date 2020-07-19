@@ -27,6 +27,7 @@ class Freight_Mission_Manager
 
 	static function init_hooks()
 	{
+//		print debug_trace(10); print "---------------------<br/>";
 		add_action("order_save_pri", __CLASS__ . '::order_save_pri');
 		add_action("mission_update_type", __CLASS__ . '::mission_update_type');
 		add_action("mission_details", __CLASS__ . '::mission_details');
@@ -296,6 +297,7 @@ group by pm.meta_value, p.post_status");
 			for ( $i = 0; $i < count( $path ); $i ++ ) {
 				if ( isset( $lines_per_station[ $path[ $i ] ] ) ) {
 					foreach ( $lines_per_station[ $path[ $i ] ] as $order_info ) {
+//						print $order_info[ OrderTableFields::order_number ] . "<br/>";
 						$order_id  = $order_info[ OrderTableFields::order_number ];
 						$site_id   = $order_info[ OrderTableFields::site_id ];
 						$site      = $order_info[ OrderTableFields::site_name ];
@@ -359,6 +361,7 @@ group by pm.meta_value, p.post_status");
 		$m = new Mission($the_mission);
 		$result .= self::add_delivery($m->getDefaultFee()); // , array("style" => "border:1px solid #000;")
 		$result .= Core_Html::GuiHyperlink("Download CSV", Freight::getPost() . "?operation=download_mission&id=$the_mission");
+
 
 		return $result;
 	}
@@ -537,12 +540,15 @@ group by pm.meta_value, p.post_status");
 
 	static function collect_points($data_lines, $mission_id, &$prerequisite, &$supplies_to_collect, &$lines_per_station, &$stop_points)
 	{
+//		print "-----------" . debug_trace() . "<br/>";
 		$multisite = Core_Db_MultiSite::getInstance();
 		$stop_points = array();
 
 		$mission = new Mission($mission_id);
 
+//		print "count: " . count($data_lines) . "<br/>";
 		for ( $i = 1; $i < count( $data_lines); $i ++ ) {
+//			print "handling " . $data_lines[$i][OrderTableFields::order_number] . "<br/>";
 			$order_info = $data_lines[$i];
 			$stop_point = str_replace('-', ' ', $order_info[OrderTableFields::address_1] . " " . $order_info[OrderTableFields::city]);
 			$order_id = $order_info[OrderTableFields::order_number];
@@ -553,7 +559,7 @@ group by pm.meta_value, p.post_status");
 
 			// Deliveries created in other place
 //			if ( ($order_info['site'] != "משימות") and ($order_info['site'] != "supplies") and ($pickup_address != $mission->getStartAddress()) ) {
-			if (1) {
+			if (0) {
 				// print "adding $pickup_address<br/>";
 				$prerequisite[$stop_point] = $pickup_address;
 				// Add Pickup
@@ -972,11 +978,13 @@ group by pm.meta_value, p.post_status");
 
 				$data .= self::print_deliveries( $sql, false);
 
-//				if (class_exists("Fresh_Supplies"))
-//					$data .= Fresh_Supplies::print_driver_supplies( $mission_id );
-//
-//				if (class_exists("Focus"))
-//					$data .= Focus::print_driver_tasks( $mission_id );
+				if (class_exists("Fresh_Supplies"))
+					$data .= Fresh_Supplies::print_driver_supplies( $mission_id );
+//				else
+//					print "NNN";
+
+				if (class_exists("Focus"))
+					$data .= Focus::print_driver_tasks( $mission_id );
 			}
 		}
 

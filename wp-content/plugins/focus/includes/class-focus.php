@@ -130,7 +130,7 @@ class Focus {
 
 	static function addRoles()
 	{
-		Flavor_Roles::instance()->addRole( "focus_user");
+		Flavor_Roles::instance()->addRole( "focus_user", array("show_tasks"));
 	}
 
 	/**
@@ -162,7 +162,7 @@ class Focus {
 
 //		$this->loader->add_action( 'wp_enqueue_scripts', $this->manager, 'enqueue_scripts' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $this->salary, 'enqueue_scripts' );
-		$this->loader->add_action( 'wp_enqueue_scripts', $this->tasks, 'enqueue_scripts' );
+		$this->loader->add_action( 'admin_enqueue_scripts', $this->tasks, 'admin_scripts' );
 
 		Focus_Project::init();
 
@@ -383,6 +383,9 @@ class Focus {
 
 		Core_Gem::AddTable("working_teams");
 
+		// Todo: activate this somewhere else
+//		self::addRoles();
+
 		// Load class instances.
 
 		// Init action.
@@ -487,5 +490,4 @@ class Focus {
 
 		return $data;
 	}
-
 }

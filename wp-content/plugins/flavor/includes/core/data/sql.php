@@ -598,24 +598,34 @@ function SqlInsert($table_name, $array, $ignore_list)
 	return SqlInsertId();
 }
 
-function GetTableEncoding($table) {
+function GetTableEncoding($table, $debug) {
 	static $cache = null;
 	if ( isset( $cache[ $table ] ) ) return $cache[ $table ];
-
+//print "db name: " . DB_NAME . "<br/>";
 	if ( ! $cache ) $cache = [];
-	$cache[$table] = SqlQuerySingleScalar("SELECT CCSA.character_set_name FROM information_schema.`TABLES` T,
+	$sql = "SELECT CCSA.character_set_name
+FROM information_schema.`TABLES` T,
        information_schema.`COLLATION_CHARACTER_SET_APPLICABILITY` CCSA
 	WHERE CCSA.collation_name = T.table_collation
-          AND T.table_name = '$table'", false, false);
-//	MyLog("$table $cache[$table]");
+	  and T.TABLE_SCHEMA = ' . DB_NAME . '
+          AND T.table_name = '$table'";
+
+//	MyLog("$table: $sql");
+	$cache[$table] = SqlQuerySingleScalar($sql, false, false);
+
+//	MyLog("YYYY $table " . $cache[$table]);
+
+	// Set the default encoding. Didn't get the right encoding for views im_products.
+	if (! $cache[$table]) $cache[$table] = 'utf8';
+	if ($debug) print "$table encoding $table<br/>";
 	return $cache[$table];
-	//      AND T.table_schema = \"schemaname\"
 }
 
 function SqlSetEncoding($conn, $table_name, $debug = false)
 {
+	$debug = false;
 //	return;
-	$enq = GetTableEncoding($table_name);
+	$enq = GetTableEncoding($table_name, $debug);
 	if ($debug) print "setting enq $enq table $table_name<br/>";
 //	MyLog($table_name . " $enq");
 

@@ -35,6 +35,11 @@ class Fresh_Product {
 		}
 	}
 
+	static public function get_edit_link($id)
+	{
+		return "/wp-admin/post.php?post=" . $id . '&action=edit';
+	}
+
 	function getStockManaged() {
 		$v = get_post_meta( $this->id, '_manage_stock', true );
 
@@ -359,6 +364,7 @@ class Fresh_Product {
 	}
 
 	function Draft() {
+		MyLog("drafting " . $this->getName());
 		$this->setStock(0);
 		$my_post                = array();
 		$my_post['ID']          = $this->id;

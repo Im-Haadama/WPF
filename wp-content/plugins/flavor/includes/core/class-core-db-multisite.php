@@ -34,7 +34,8 @@ class Core_Db_MultiSite extends Core_MultiSite {
 		$this->allowed_tables = [];
 		if ( TableExists( "multisite" ) ) {
 			$sql           = "select id, site_name, tools_url, local, display_name, active, master, user, password " .
-			                 " from im_multisite";
+			                 " from im_multisite 
+			                 where active = 1";
 			$results       = SqlQuery( $sql );
 			$sites_array   = array();
 			$master_id     = null;

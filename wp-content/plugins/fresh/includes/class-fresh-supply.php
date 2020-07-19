@@ -6,16 +6,6 @@
  * Time: 11:58
  */
 
-//require_once( FRESH_INCLUDES . '/core/gui/inputs.php' );
-//require_once( FRESH_INCLUDES . '/supplies/gui.php' );
-//
-//require_once( FRESH_INCLUDES . "/catalog/catalog.php" );
-//require_once( FRESH_INCLUDES . "/org/business/business_info.php" );
-
-// print header_text(false);
-
-// Supply status: 1 = new, 3 = sent, 5 = supplied, 8 = merged into other, 9 = delete
-
 abstract class eSupplyStatus {
 	const NewSupply = 1;
 	const Sent = 3;
@@ -29,7 +19,7 @@ class Fresh_Supply {
 	private $ID = 0;
 	private $Status;
 	private $Date;
-	private $Supplier;
+	private $SupplierID;
 	private $Text;
 	private $BusinessID;
 	private $MissionID;
@@ -49,19 +39,19 @@ class Fresh_Supply {
 		}
 		$row            = SqlQuerySingle( "SELECT status, date(date), supplier, text, business_id, mission_id FROM im_supplies WHERE id = " . $ID );
 		if (! $row) return null;
-		$this->Status   = $row[0];
-		$this->Date     = $row[1];
-		$this->Supplier = $row[2];
+		$this->Status     = $row[0];
+		$this->Date       = $row[1];
+		$this->SupplierID = $row[2];
 		$this->Text       = $row[3];
 		$this->BusinessID = $row[4];
 		$this->MissionID  = $row[5];
 	}
 
 	/**
-	 * @param mixed $Supplier
+	 * @param mixed $SupplierID
 	 */
-	public function setSupplier( $Supplier ): void {
-		$this->Supplier = $Supplier;
+	public function setSupplierID( $SupplierID ): void {
+		$this->SupplierID = $SupplierID;
 	}
 
 	public static function CreateFromFile( $file_name, $supplier_id, $date, $args = null) {
@@ -86,7 +76,7 @@ class Fresh_Supply {
 				print "trying to locate headers " . $file[ $i ] . "<br/>";
 
 			}
-			$parse_header_result = parse_header( $file[ $i ], $item_code_idx, $name_idx, $price_idx, $sale_idx, $inventory_idx,
+			$parse_header_result = self::parse_header( $file[ $i ], $item_code_idx, $name_idx, $price_idx, $sale_idx, $inventory_idx,
 				$detail_idx, $category_idx, $is_active_idx, $filter_idx, $picture_idx, $quantity_idx );
 		}
 		// Name is mandatory.
@@ -172,7 +162,8 @@ class Fresh_Supply {
 				print "no data in line $i<br/>";
 			}
 		}
-		// var_dump($lines);
+		if ($debug)
+			var_dump($lines);
 
 		$comments = "";
 		if ( count( $lines ) ) {
@@ -194,9 +185,12 @@ class Fresh_Supply {
 //				print "name: " . $name;
 
 				// $prod_id = get_product_id_by_name( $name );
-				$prod_id = SqlQuerySingleScalar( "select product_id \n" .
-				                                 " from im_supplier_mapping\n" .
-				                                 " where supplier_product_name = " . QuoteText( Fresh_Pricelist::StripProductName( $name ) ) );
+				$search_sql = "select product_id \n" .
+				              " from im_supplier_mapping\n" .
+				              " where supplier_product_name = " . QuoteText( Fresh_Pricelist::StripProductName( $name ) );
+
+				if ($debug) print $search_sql . "<br/>";
+				$prod_id = SqlQuerySingleScalar( $search_sql );
 //				print "prod_id: " . $prod_id . "<br/>";
 
 				if ( ! ( $prod_id > 0 ) ) {
@@ -213,10 +207,92 @@ class Fresh_Supply {
 
 			print " Supply " . Core_Html::GuiHyperlink($Supply->getID(), "/fresh/supplies/supplies-post.php?id=" . $Supply->getID() . " created <br/>");
 
+			if ($debug)
+				print nl2br($comments);
 			$Supply->setText( $comments );
 
 			return $Supply;
 		}
+	}
+
+	static function parse_header(
+		$header_line, &$item_code_idx, &$name_idx, &$price_idx, &$sale_idx, &$inventory_idx, &$detail_idx,
+		&$category_idx, $is_active_idx, &$filter_idx, &$picture_idx, &$quantity_idx
+	) {
+		$header = str_getcsv( $header_line );
+		for ( $i = 0; $i < count( $header ); $i ++ ) {
+			$key = trim( $header[ $i ] );
+
+			switch ( $key ) {
+				case 'פריט':
+				case 'קוד':
+				case 'קוד פריט':
+				case 'מסד':
+				case 'code':
+					array_push( $item_code_idx, $i );
+					break;
+				case 'קטגוריות':
+					array_push( $category_idx, $i );
+					break;
+				case 'הירק':
+				case 'סוג קמח':
+				case 'שם פריט':
+				case 'שם':
+				case 'תאור פריט':
+				case 'תיאור פריט':
+				case 'תיאור הפריט':
+				case 'תיאור':
+				case 'תאור':
+				case 'מוצר':
+				case 'שם המוצר':
+				case 'name':
+					array_push( $name_idx, $i );
+					break;
+				case 'פירוט המוצר':
+					array_push( $detail_idx, $i );
+					break;
+				case 'price':
+				case 'מחיר':
+				case 'מחיר לאחר הנחה':
+				case 'מחירון':
+				case 'מחיר נטו':
+				case 'מחיר לק"ג':
+				case 'סיטונאות':
+					array_push( $price_idx, $i );
+					break;
+				case 'מלאי (ביחידות)':
+					$inventory_idx = $i;
+					break;
+				case 'מחיר מבצע':
+					array_push( $sale_idx, $i );
+					break;
+				case 'כמות':
+				case 'כמות יחידות':
+					array_push( $quantity_idx, $i );
+					break;
+				default:
+					// print im_translate("column %s ignored", $key) . "<br/>";
+
+			}
+			if ( strstr( $key, "הצגה" ) ) {
+				$filter_idx = $i;
+			}
+			if ( strstr( $key, "מחיר" ) and ! in_array( $i, $price_idx ) ) {
+				MyLog( "key: $key, price: " . $i, __FILE__ );
+				array_push( $price_idx, $i );
+			}
+
+			if ( strstr( $key, "תמונה" ) ) {
+				$picture_idx = $i;
+//		print "picture idx $picture_idx<br/>";
+			}
+		}
+
+		if ( count( $name_idx ) == 0 or count( $price_idx ) == 0 ) {
+			return false;
+		}
+		print "<br/>";
+		return true;
 	}
 
 //	function get_supply_status( $status ) {
@@ -248,14 +324,14 @@ class Fresh_Supply {
 
 	public function getAddress()
 	{
-		return SqlQuerySingleScalar( "select address from im_suppliers where id = " . $this->getSupplier() );
+		return SqlQuerySingleScalar( "select address from im_suppliers where id = " . $this->getSupplierID() );
 	}
 
 	public function AddLine( $prod_id, $quantity, $price = 0, $units = 0 ) {
 		if ( is_null( $price ) ) {
 			$price = 0;
 		}
-		if (! $price) $price = Fresh_Pricing::get_buy_price($prod_id, $this->getSupplier());
+		if (! $price) $price = Fresh_Pricing::get_buy_price($prod_id, $this->getSupplierID());
 		$sql = "INSERT INTO im_supplies_lines (supply_id, product_id, quantity, units, price) VALUES "
 		       . "( " . $this->ID . ", " . $prod_id . ", " . $quantity . ", " . $units . ", " . $price . " )";
 
@@ -267,6 +343,13 @@ class Fresh_Supply {
 		}
 
 		return true;
+	}
+
+	public function DeleteLine($line_id)
+	{
+		//function supply_delete_line( $line_id ) {
+		$sql = 'UPDATE im_supplies_lines SET status = 9 WHERE id = ' . $line_id;
+		return SqlQuery( $sql );
 	}
 
 	public function UpdateField( $field_name, $value ) {
@@ -289,14 +372,16 @@ class Fresh_Supply {
 
 	public function Operation()
 	{
+		$supply_id = $this->getID();
+		$post_file  = Fresh::getPost();
 		$footer = "";
 		switch ($this->getStatus())
 		{
 			case eSupplyStatus::NewSupply:
-				$footer .= Core_Html::GuiButton( "btn_add_line", "add", "supply_add_item(" . $this->getID() . ")" );
+				$footer .= Core_Html::GuiButton( "btn_add_line", "add", "supply_add_item('$post_file'," . $this->getID() . ")" );
 				$footer .= Fresh_Product::gui_select_product( "itm_", "", array("edit"=>true) );
-				$footer .= Core_Html::GuiButton("btn_del", "delete lines", "deleteItems()");
-				$footer .= Core_Html::GuiButton("btn_update", "update items", "updateItems()");
+				$footer .= Core_Html::GuiButton("btn_del", "delete lines", "supply_delete_items('$post_file', $supply_id)");
+				$footer .= Core_Html::GuiButton("btn_update", "update items", "supply_update_items('$post_file', $supply_id)");
 
 				$footer .= "<br/>" . self::supplier_doc();
 				break;
@@ -359,8 +444,10 @@ class Fresh_Supply {
 		$rows = array();
 		$row  = array( "הערות" );
 		// Text + Button
+		$supply_id = $this->getID();
+		$post_file = Fresh::getPost();
 		if ( $edit ) {
-			array_push( $row, Core_Html::gui_textarea( "comment", $this->Text, "onchange=\"update_comment()\"" ) );
+			array_push( $row, Core_Html::gui_textarea( "comment", $this->Text, "onchange=\"supply_save_comment('$post_file', $supply_id)\"" ) );
 		} else {
 			array_push( $row, $this->Text );
 		}
@@ -448,180 +535,37 @@ class Fresh_Supply {
 
 		$rows_data = Core_Data::TableData( $sql, $args);
 
-//		var_dump($sums);
-		/// array_push($rows_data, $sums);
+		$rows_data['header']['$buy'] = "Buy price";
+		$rows_data['header']['$total'] = 'Total';
+		$rows_data['header']['$buyers'] = 'Buyers';
 
-			$rows_data['header']['$buy'] = "Buy price";
-			$rows_data['header']['$total'] = 'Total';
-			$rows_data['header']['$buyers'] = 'Buyers';
+		foreach ($rows_data as $line_id => $row)
+		{
+			if (in_array($line_id, array("header"))) continue;
 
-			foreach ($rows_data as $line_id => $row)
-			{
-				if (in_array($line_id, array("header"))) continue;
+			$prod_id = $row['product_id'];
 
-				$prod_id = $row['product_id'];
+			if (! $prod_id) { print "bad id: $prod_id<br/>"; continue; }
+			$p = new Fresh_Product($prod_id);
+			$buy_price = $p->getBuyPrice($this->SupplierID);
 
-				if (! $prod_id) {print "bad id: $prod_id<br/>"; continue;
-				}
-				//$prod_id = $rows_data[$i]["Product Name"];
-				$buy_price = 0; // get_buy_price($prod_id, $this->getSupplier());
-				if (! is_numeric($buy_price)) {
-					print "no buy price<br/>";
-					$buy_price = 0;
-				}
-				if (! is_numeric($row["quantity"]))
-				{
-					print "bad quantity for $prod_id<br/>";
-					$q = 0;
-				} else
-					$q = $row["quantity"];
-
-				$rows_data[$line_id]['$buy'] = $buy_price;
-				$rows_data[$line_id]['$total'] = $buy_price * $q;
-				if ( $internal) $rows_data[$line_id]['$buyers'] = Fresh_Packing::orders_per_item( $prod_id, 1, true, true, true );
+			if (! is_numeric($buy_price)) {
+				print "no buy price<br/>";
+				$buy_price = 0;
 			}
+			if (! is_numeric($row["quantity"]))
+			{
+				print "bad quantity for $prod_id<br/>";
+				$q = 0;
+			} else
+				$q = $row["quantity"];
 
-		// if (isset($args['acc_fields'])) $rows_data['sums'] = HandleTableAcc($args['acc_fields'], $rows_data, $args['fields']);
+			$rows_data[$line_id]['$buy'] = $buy_price;
+			$rows_data[$line_id]['$total'] = $buy_price * $q;
+			if ( $internal) $rows_data[$line_id]['$buyers'] = Fresh_Packing::orders_per_item( $prod_id, 1, true, true, true );
+		}
 
 		return Core_Html::gui_table_args( $rows_data, "supply_" . $this->getID(), $args );
-		// GuiTableContent("supply", $sql, $args);
-		$result = SqlQuery( $sql );
-
-		$data = "<table id=\"del_table\" border=\"1\"><tr><td>בחר</td><td>מקט</td><td>פריט</td><td>כמות</td><td>יחידות</td>";
-		if ( ! $edit ) {
-			$data .= gui_cell( "כמות לוקט" );
-		}
-		$data .= "<td>מידה</td><td>מחיר</td><td>סהכ";
-
-		if ( $internal ) {
-			$data .= gui_cell( "פעולה" );
-			$data .= gui_cell( "מחיר מכירה" );
-			$data .= "<td>מחיר מכירה</td>";
-		}
-
-		$data .= "</td>";
-
-		$total = 0;
-		// $vat_total = 0;
-		$line_number = 0;
-
-		$supplier_id = SqlQuerySingleScalar( "SELECT supplier FROM im_supplies WHERE id = " . $this->ID );
-		// print "supplier_id: " . $supplier_id . "<br/>";
-
-		while ( $row = mysqli_fetch_row( $result ) ) {
-			$line_number           = $line_number + 1;
-			$line                  = "<tr>";
-			$prod_id               = $row[0];
-			if (! $prod_id)
-			{
-				print "מוצר לא תקין";
-				continue;
-			}
-			$product_name          = get_product_name( $prod_id );
-			$quantity              = $row[1];
-			$line_id               = $row[2];
-			$units                 = $row[3];
-			$pricelist_id          = Fresh_Catalog::alternatives( $prod_id )[0];
-			if ( $pricelist_id ) {
-				$pricelist_item        = new PricelistItem( $pricelist_id->getId() );
-				$supplier_product_code = $pricelist_item->getSupplierProductCode();
-			}
-
-
-			// $vat_line = $row[2];
-//		$item_price = pricelist_get_price( $prod_id );
-			$item_price = Catalog::GetBuyPrice( $prod_id, $supplier_id );
-			$total_line = $item_price * $quantity;
-			$total      += $total_line;
-
-			$line .= "<td><input id=\"chk" . $line_id . "\" class=\"supply_checkbox\" type=\"checkbox\"></td>";
-			$line .= gui_cell( $supplier_product_code );
-
-			// Display item name
-			$line .= "<td>" . $product_name . '</td>';
-			if ( $edit ) {
-				$line .= "<td>" . gui_input( $line_id, $quantity, array( "onchange='changed(this)'" ) ) . "</td>";
-				$line .= "<td>" . gui_input( $line_id, $units, array( "onchange='changed(this)'" ) ) . "</td>";
-			} else {
-				$line .= gui_cell( $quantity );
-				$line .= gui_cell( $units );
-				$line .= gui_cell( "" ); // Collected info
-			}
-
-//        $line .= "<td>" . $quantity . "</td>";
-
-			$attr_array = get_post_meta( $prod_id, '_product_attributes' );
-			if ($attr_array){
-				$attr_text = "";
-				if ( $attr_array and is_array( $attr_array ) ) {
-					foreach ( $attr_array as $attr ) {
-						foreach ( $attr as $i ) {
-							if ( $i['name'] = 'unit' ) {
-								$attr_text .= $i['value'];
-							}
-						}
-					}
-				}
-			}
-
-			$line .= "<td>" . $attr_text . "</td>";
-
-			if ( ! ( $item_price > 0 ) ) {
-				$item_price = 0; // get_buy_price( $prod_id, $supplier_id );
-				$total_line = $item_price * $quantity;
-				$total      += $total_line;
-			}
-			//    $line .= "<td>" . $vat_line . "</td>";
-			if ( $item_price > 0 ) {
-				$line .= "<td>" . sprintf( '%0.2f', $item_price ) . "</td>";
-				$line .= "<td>" . sprintf( '%0.2f', $total_line ) . "</td>";
-			} else {
-				$line .= "<td></td><td></td>";
-			}
-			if ( $internal ) {
-				$sell_price = get_price( $prod_id );
-				$line       .= "<td>" . sprintf( '%0.2f', $sell_price ) . "</td>";
-				$line       .= "<td>" . "XXX"; // orders_per_item( $prod_id, 1, true, true, true ) . "</td>";
-				if ( $edit ) {
-					$line .= gui_cell( Core_Html::GuiButton( "del_" . $line_id, 'del_line(' . $line_id . ')"', "מחק" ) );
-				}
-			}
-			$line  .= "</tr>";
-			$terms = get_the_terms( $prod_id, 'product_cat' );
-			// print $terms[0]->name . "<br/>";
-			array_push( $data_lines, array( $terms[0]->name . "@" . $product_name, $line ) );
-		}
-
-		if ( $categ_group ) {
-			sort( $data_lines );
-		}
-
-		$term = "";
-
-		for ( $i = 0; $i < count( $data_lines ); $i ++ ) {
-			if ( $categ_group ) {
-				$line_term = strtok( $data_lines[ $i ][0], '@' );
-				if ( $line_term <> $term ) {
-					$term = $line_term;
-					$data .= gui_row( array( '', "<b>" . $term . "</b>", '', '', '', '', '' ) );
-				}
-			}
-			$line = $data_lines[ $i ][1];
-			$data .= trim( $line );
-		}
-		// $data .= trim( $line );
-
-		$data .= "<tr><td>סהכ</td><td></td><td></td><td></td><td></td><td>" . $total . "</tdtd></tr>";
-
-		$data = str_replace( "\r", "", $data );
-
-		if ( $data == "" ) {
-			$data = "\n(0) Records Found!\n";
-		}
-
-		$data .= "</table>";
-
-		return "$data";
 	}
 
 	/**
@@ -656,8 +600,9 @@ class Fresh_Supply {
 	 */
 	public function setText( $Text ) {
 		$this->Text = $Text;
-		SqlQuery( "UPDATE im_supplies SET text = " . QuoteText( $Text ) .
-		          " WHERE id = " . $this->ID );
+		$sql = "UPDATE im_supplies SET text = " . QuoteText( $Text ) .
+		       " WHERE id = " . $this->ID;
+		return SqlQuery( $sql );
 	}
 
 	/**
@@ -679,14 +624,14 @@ class Fresh_Supply {
 	}
 
 	public function getSupplierName() {
-		return SqlQuerySingleScalar( 'SELECT supplier_name FROM im_suppliers WHERE id = ' . $this->Supplier );
+		return SqlQuerySingleScalar( 'SELECT supplier_name FROM im_suppliers WHERE id = ' . $this->SupplierID );
 	}
 
 	/**
 	 * @return mixed
 	 */
-	public function getSupplier() {
-		return $this->Supplier;
+	public function getSupplierID() {
+		return $this->SupplierID;
 	}
 
 	public function UpdateLine($line_id, $q)
@@ -777,6 +722,65 @@ class Fresh_Supply {
 
 		return SqlQuery($sql);
 	}
+
+	public function SupplyText(  ) {
+		$id = $this->getID();
+		if ( ! ( $id > 0 ) ) {
+			throw new Exception( "bad id: " . $id );
+		}
+
+		$fields = array();
+		array_push( $fields, "supplies" );
+
+		$address = "";
+
+		$supplier_id = self::getSupplierID();
+		$ref         = Core_Html::GuiHyperlink( $id, "../supplies/supply-get.php?id=" . $id );
+		$address     = SqlQuerySingleScalar( "select address from im_suppliers where id = " . $supplier_id );
+//	$receiver_name = get_meta_field( $order_id, '_shipping_first_name' ) . " " .
+//	                 get_meta_field( $order_id, '_shipping_last_name' );
+//	$shipping2     = get_meta_field( $order_id, '_shipping_address_2', true );
+//	$mission_id    = order_get_mission_id( $order_id );
+//	$ref           = $order_id;
+//
+		array_push( $fields, $ref );
+//
+		array_push( $fields, $supplier_id );
+//
+		array_push( $fields, "<b>איסוף</b> " . self::getSupplierName() );
+//
+		array_push( $fields, "<a href='waze://?q=$address'>$address</a>" );
+//
+		array_push( $fields, "" );
+//
+		array_push( $fields, SqlQuerySingleScalar( "select supplier_contact_phone from im_suppliers where id = " . $supplier_id ) );
+
+		array_push( $fields, "" );
+//
+		array_push( $fields, SqlQuerySingleScalar( "select mission_id from im_supplies where id = " . $id ) );
+//
+		array_push( $fields, Core_Db_MultiSite::getInstance()->getLocalSiteName() );
+		// array_push($fields, get_delivery_id($order_id));
+
+		return  "<tr> " . self::delivery_table_line( 1, $fields ) . "</tr>";
+
+	}
+
+	function delivery_table_line( $ref, $fields, $edit = false ) {
+		//"onclick=\"close_orders()\""
+		$row_text = "";
+		if ( $edit ) {
+			$row_text = Core_Html::gui_cell( Core_Html::GuiCheckbox("chk_" . $ref) );
+		}
+
+		foreach ( $fields as $field ) // display customer name
+		{
+			$row_text .= Core_Html::gui_cell( $field );
+		}
+
+		return $row_text;
+	}
+
 }
 
 

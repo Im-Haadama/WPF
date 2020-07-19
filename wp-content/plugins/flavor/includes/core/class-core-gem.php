@@ -19,6 +19,7 @@ class Core_Gem {
 		// Import
 		// prepare
 		AddAction("gem_import", array(__CLASS__, "import_wrap"));
+		AddAction("gem_v_import", array(__CLASS__, "v_import_wrap"));
 
 		// Do
 		AddAction("gem_do_import", array(__CLASS__, "do_import_wrap"));
@@ -52,9 +53,6 @@ class Core_Gem {
 
 	static function AddTable($table, $class = 'Core_Gem')
 	{
-		$file = FLAVOR_INCLUDES_URL . 'core/gem.js';
-		wp_enqueue_script( 'gem', $file, null, "1.0", false );
-
 		$debug = 0; //  (get_user_id() == 1);
 		// if (get_user_id() == 1) print __CLASS__ . ":" . $table;
 		// New Row
@@ -117,8 +115,18 @@ class Core_Gem {
 	{
 		$table = GetParam("table", true);
 		$args = self::getInstance()->object_types[$table];
-		return self::ShowImport($table, $args);
+		print self::ShowImport($table, $args);
+		die(); // So post.php won't do add "done".
 	}
+
+	static function v_import_wrap()
+	{
+		$table = GetParam("table", true);
+		$args = self::getInstance()->object_types[$table];
+		print self::ShowVImport($table, $args);
+		die(); // So post.php won't do add "done".
+	}
+
 
 	static function do_import_wrap()
 	{
@@ -244,8 +252,12 @@ class Core_Gem {
 
 		$result .= $instance->GemVirtualTable($v_table, $args);
 
-		if (isset(self::getInstance()->object_types[$v_table]["import"]))
+		if (isset(self::getInstance()->object_types[$v_table]["import"])) {
+			$show_import = GetArg($args, "show_import", null);
+			if ($show_import)
+				$result .= '<div><iframe src="' . $show_import . '"></iframe></div>';
 			$result .= self::ShowVImport( "$v_table", $args );
+		}
 
 		return $result;
 	}
@@ -572,6 +584,7 @@ class Core_Gem {
 
 		return self::ShowImport($table_name, $args);
 	}
+
 	/**
 	 * @param $table_name
 	 * @param null $args
@@ -581,6 +594,7 @@ class Core_Gem {
 	 */
 	static function ShowImport($table_name, $args = null)
 	{
+		$html_file = true;
 		$result = "";
 		$header = GetArg($args, "header", "Import to $table_name");
 		$post_file = GetArg($args, "post_file", null);
@@ -594,6 +608,12 @@ class Core_Gem {
 			throw new Exception("must supply import action or post_file");
 		} while (0);
 
+//		$action_file = AddParamToUrl($action_file, "operation", "gem_do_import");
+//		print "action file: $action_file<br/>";
+		if ($html_file)
+			$result .= "<html><header>" . Core_Html::load_scripts(array('/wp-content/plugins/flavor/includes/core/gui/client_tools.js')) .
+			           "</header>";
+
 		$result .= Core_Html::gui_header(1, $header);
 
 		$selector = GetArg($args, "selector", null);
@@ -602,21 +622,22 @@ class Core_Gem {
 		$args["events"] = "onchange='change_import(\"" . $action_file . "\", \"$form_id\")'";
 
 		if ($selector) $result .= $selector("import_select", null, $args);
+//		print $action_file . "<br/>";
+
 
 		// Selecting gui
-		$result .= '<form name="gem_import" id="' . $form_id . '" method="post_file" enctype="multipart/form-data">' .
+		$result .= '<form name="upload_csv" method="post" enctype="multipart/form-data">' .
 		           ImTranslate('Load from csv file') .
 		           '<input type="file" name="fileToUpload" id="fileToUpload">
         <input type="submit" value="טען" name="submit">
     	</form>
-		<script> ';
-		if ($selector) $result .= '	wait_for_selection();';
-		else $result .= 'let forms = document.getElementsByName("submit");
-        forms.forEach(element => element.disabled = false);
-        let upcsv = document.getElementById("' .$form_id . '");
-        upcsv.action = "' . $action_file . '"';
-
-		$result .= '</script>';
+		<script>import_set_action(\'' . $action_file . '\');
+		</script> ';
+//		if ($selector) $result .= '	wait_for_selection();';
+//		else $result .= 'let forms = document.getElementsByName("submit");
+//        forms.forEach(element => element.disabled = false);
+//        let upcsv = document.getElementById("' .$form_id . '");
+//        upcsv.action = "' . $action_file . '"';
 
 		// Setting the action upon selection
 		return $result;

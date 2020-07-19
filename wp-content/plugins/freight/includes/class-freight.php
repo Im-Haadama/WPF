@@ -410,18 +410,10 @@ class Freight {
 	 */
 	public function init() {
 		// Before init action.
-//		print __CLASS__ . ':' . __FUNCTION__ . "<br/>";
 		do_action( 'before_freight_init' );
 
 		// Set up localisation.
 		$this->load_plugin_textdomain();
-//		$this->delivery_manager = new Freight_Delivery_Manager();
-
-		$shortcodes = Core_Shortcodes::instance();
-//		$shortcodes->add($this->delivery_manager->getShortcodes());
-
-
-		$this->enqueue_scripts();
 
 		// Init action.
 		do_action( 'freight_init' );
@@ -500,17 +492,17 @@ class Freight {
 		return "/wp-content/plugins/freight/post.php";
 	}
 
-	public function enqueue_scripts() {
-		$file = FLAVOR_INCLUDES_URL . 'core/data/data.js';
-		wp_enqueue_script( 'data', $file, null, $this->version, false );
-
-		$file = FLAVOR_INCLUDES_URL . 'core/gui/client_tools.js';
-		wp_enqueue_script( 'client_tools', $file, null, $this->version, false );
-
-	}
-
 	public function admin_scripts()
     {
+	    $file = FLAVOR_INCLUDES_URL . 'js/sorttable.js';
+	    wp_enqueue_script( 'sorttable', $file, null, '1.0', false );
+
+	    $file = FLAVOR_INCLUDES_URL . 'core/data/data.js';
+	    wp_enqueue_script( 'data', $file, null, $this->version, false );
+
+	    $file = FLAVOR_INCLUDES_URL . 'core/gui/client_tools.js';
+	    wp_enqueue_script( 'client_tools', $file, null, $this->version, false );
+
         $file = FREIGHT_INCLUDES_URL . 'js/admin.js';
 	    wp_register_script( 'freight_admin', $file);
 	    wp_enqueue_script('freight_admin');
