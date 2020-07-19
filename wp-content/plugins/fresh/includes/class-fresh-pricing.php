@@ -29,10 +29,10 @@ class Fresh_Pricing {
 //			}
 //		}
 
-	static function get_price_by_type( $prod_id, $client_type = "", $quantity = 1, $variation_id = null )
+	static function get_price_by_type( $prod_id, $client_type_id = "", $quantity = 1, $variation_id = null )
 	{
 		$debug = 0;
-		if ($debug) MyLog(__FUNCTION__ . " $prod_id $client_type");
+		if ($debug) MyLog(__FUNCTION__ . " $prod_id $client_type_id");
 		if (! ($prod_id > 0)){
 			print "bad prod $prod_id<br/>";
 			print debug_trace(6);
@@ -44,9 +44,8 @@ class Fresh_Pricing {
 		}
 		if (! $configured) return get_postmeta_field( $prod_id, '_price' );
 
-		if ( strlen( $client_type ) < 1 ) {
+		if ( strlen( $client_type_id ) < 1 ) {
 			$client_type = "regular";
-
 		}
 		// client type can be:
 		// null - regular price.
@@ -56,7 +55,7 @@ class Fresh_Pricing {
 		$p    = new Fresh_Product( $prod_id );
 		$product_type = ( $p->isFresh() ) ? "rate" : "dry_rate";
 
-		$sql = "SELECT min($product_type) FROM im_client_types WHERE type = '" . $client_type . "' AND (q_min <= " . $quantity . " OR q_min = 0)";
+		$sql = "SELECT min($product_type) FROM im_client_rates WHERE type = '" . $client_type_id . "' AND (q_min <= " . $quantity . " OR q_min = 0)";
 //		  print $sql . "<br/>";
 		$rate = SqlQuerySingleScalar( $sql );
 		if (null != $rate) {

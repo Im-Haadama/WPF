@@ -418,9 +418,18 @@ class Fresh_Client {
         if (! $args) $args = [];
         MyLog("value =$value");
         $args["selected"] = $value;
-        $args['more_values'] = array(array( "id" => 0, "type" => "רגיל" ));
-        $args["name"] = "type";
+//        $args['more_values'] = array(array( "id" => 0, "type" => "רגיל" ));
+//        $args["name"] = "name";
 
 	    return Core_Html::GuiSelectTable($id, "client_types", $args);
     }
+}
+
+function is_shop_manager() {
+    return true;
+	$user    = new WP_User( wp_get_current_user() );
+	if ( ! empty( $user->roles ) && is_array( $user->roles ) )
+		foreach ( $user->roles as $role ) if ( $role == 'shop_manager' ) return true;
+
+	return false;
 }

@@ -218,13 +218,45 @@ class Fresh_Suppliers {
 
 	static function pricelist_header($result)
 	{
-		$supplier = GetParam("supplier_id");
-		$s = new Fresh_Supplier($supplier);
+		$supplier_id = GetParam("supplier_id");
+		$s = new Fresh_Supplier($supplier_id);
 		$result .= Core_Html::GuiHeader(1, __("Supplier pricelist") . " " . $s->getSupplierName());
 
-		$draftable_products = self::draftable_products($supplier);
+		$draftable_products = SqlQuery("
+				select distinct sp.id as map_id, product_id, post_title
+		from im_supplier_mapping sp
+		     join wp_posts p
+		where
+		      supplier_id = $supplier_id and
+		      product_id > 0 AND
+		      product_id not in (select product_id
+		                           from im_supplier_price_list
+		                           where supplier_id = $supplier_id
+		                                 and product_id is not null
+		                                                       and date = (select max(date)
+		                                         from im_supplier_price_list where supplier_id = $supplier_id)) and
+		      p.id = product_id and
+		      p.post_status = 'publish'");
+
 		if ($draftable_products) {
 			$result .= Core_Html::GuiHeader(2, "מוצרים להורדה");
+			$rows = array("header" => array("product_id", "product_title", "product name", "Draft", "Remove link"));
+			while($product_info = SqlFetchAssoc($draftable_products))
+			{
+//				$prod_id = $product_info['product_id'];
+				$map_id = $product_info["map_id"];
+//				$product_name = $product_info['post_title'];
+				$rows[$map_id] = $product_info;
+//				array_push($rows, $product_info);
+			}
+			$args = [];
+			$args["links"] = array("product_id" => Fresh_Product::get_edit_link('%d'));
+			$args["id_field"] = "map_id";
+			$args["actions"] = array(
+				array("draft", Fresh::getPost() . '?operation=draft_by_map_id&map_id=%d;action_hide_row'),
+				array("remove_map", Fresh::getPost() . '?operation=remove_map&id=%d;action_hide_row'));
+			$args["class"] = "sortable";
+			$result .= Core_Html::gui_table_args($rows, "draftable_products", $args);
 		}
 
 		return $result;
@@ -232,6 +264,7 @@ class Fresh_Suppliers {
 
 	static function draftable_products($supplier_id)
 	{
+
 
 	}
 	static function pricelist_functions($result)

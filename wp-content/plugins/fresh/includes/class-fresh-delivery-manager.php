@@ -45,8 +45,9 @@ class Fresh_Delivery_Manager
 		return self::$_instance;
 	}
 
-	static function update_shipping_methods($result = null) {
-
+	static function update_shipping_methods($result = null)
+	{
+		MyLog(__FUNCTION__);
 		$m = Core_Db_MultiSite::getInstance();
 		if ( ! $m->isMaster() ) { // if not master, get info from master.
 			if (! $m->UpdateFromRemote( "woocommerce_shipping_zones", "zone_id" )) return false;

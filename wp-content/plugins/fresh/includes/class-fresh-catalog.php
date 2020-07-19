@@ -17,6 +17,29 @@ class Fresh_Catalog {
 		AddAction("product_change_regularprice", __CLASS__."::ChangeProductRegularPrice_wrap");
 		AddAction("product_change_saleprice", __CLASS__."::ChangeProductSalePrice_wrap");
 		AddAction("product_publish", array(__CLASS__, "product_publish"));
+		AddAction("remove_map", array(__CLASS__, "remove_map"));
+		AddAction("draft_by_map_id", array(__CLASS__, "draft_by_map_id"));
+	}
+
+	static function remove_map()
+	{
+		$id = GetParam("id");
+		return self::DeleteMapping($id);
+	}
+
+	static function draft_by_map_id()
+	{
+		$map_id = GetParam("map_id", true);
+		if (! ($map_id > 0)) {
+			print "invalid id";
+			return false;
+		}
+
+		$prod_id = SqlQuerySingleScalar("select product_id from im_supplier_mapping where id = $map_id");
+		$p = new Fresh_Product($prod_id);
+		if (!$p->Draft()) return false;
+		print "done";
+		die(0);
 	}
 
 	static function product_publish()
@@ -203,7 +226,7 @@ class Fresh_Catalog {
 
 		MyLog( $sql, "catalog-map.php" );
 
-		SqlQuery( $sql );
+		return SqlQuery( $sql );
 	}
 
 	static function PricelistFromProduct($prod_id, $supplier_id)

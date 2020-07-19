@@ -53,9 +53,11 @@ class Core_Html {
 	static function GuiButton($id, $text, $args_or_action)
 	{
 		$result = "<button id=\"$id\"";
-		if ($style = GetArg($args_or_action, "style", null)) $result .= " style=\"$style\"";
-		if ($class = GetArg($args_or_action, "class", null)) $result .= " class=\"$class\"";
-		if ($events = GetArg($args_or_action, "events", null)) $result .= " $events ";
+		if (is_array($args_or_action)) {
+			if ( $style = GetArg( $args_or_action, "style", null ) ) $result .= " style=\"$style\"";
+			if ( $class = GetArg( $args_or_action, "class", null ) ) $result .= " class=\"$class\"";
+			if ( $events = GetArg( $args_or_action, "events", null ) ) $result .= " $events ";
+		}
 		if (is_string($args_or_action)) $result .= " onclick=\"$args_or_action\" ";
 			else if ($action = GetArg($args_or_action, "action", null)) $result .= " onclick=\"$action\" ";
 		$result .= ">$text";
@@ -1406,6 +1408,7 @@ class Core_Html {
 				// print $selected . " " . $row["$id"] . "<br/>";
 				$data .= ">";
 				if ( $name ) {
+//					var_dump($row); print "<br/>";
 					$data .= $row[ $name ] . "</option>";
 				}
 			}

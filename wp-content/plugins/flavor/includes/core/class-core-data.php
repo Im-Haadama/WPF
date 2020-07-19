@@ -361,13 +361,11 @@ class Core_Data
 
 		$prepare_plug = GetArg($args, "prepare_plug", null);
 		if (is_callable($prepare_plug)) $row = call_user_func($prepare_plug, $row);
-//		else print "Not callable";
 
 		$row_data = array();
 
 		if (! is_array($row))
 		{
-//			MyLog( __FUNCTION__ . "invalid row ");
 			return $row;
 		}
 
