@@ -27,7 +27,6 @@ class Fresh_Packing {
 	function supplier_tabs($needed_prod_by_supplier)
 	{
 		$supplier_tabs   = [];
-
 	}
 
 	static function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero = false, $filter_stock = false, $history = false) {
@@ -150,9 +149,7 @@ class Fresh_Packing {
 		// Find out which suppliers are relevant
 		foreach ( $needed_products as $prod_id => $product_info ) {
 			$prod        = new Fresh_Product( $prod_id );
-			$supplier_id = $prod->getSupplierId($prod_id == $debug_product);
-
-			if ($prod_id == $debug_product) MyLog("prod $prod_id supplier $supplier_id");
+			$supplier_id = $prod->getSupplierId();
 
 			if ( ! in_array( $supplier_id, $suppliers ) and $supplier_id ) {
 				array_push( $suppliers, $supplier_id );

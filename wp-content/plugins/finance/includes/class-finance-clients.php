@@ -212,7 +212,6 @@ class Finance_Clients
 			$new_tran = Core_Html::GuiHeader( 1, "לא ניתן להתחבר ל Invoice4u. בדוק את ההגדרות ואת המנוי. יוזר $" );
 		}
 		$payment_info_id = SqlQuerySingleScalar( "select id from im_payment_info where email = " . QuoteText($u->get_customer_email()));
-//		MyLog("piid= $payment_info_id " .QuoteText($u->get_customer_email()) );
 		if ($payment_info_id) {
 			$args = array("post_file" => Fresh::getPost(), "edit"=>true);
 			$credit_info = Core_Gem::GemElement( "payment_info", $payment_info_id, $args );
@@ -298,7 +297,6 @@ class Finance_Clients
 
 	private static function CreateReceipt($cash, $bank, $check, $credit, $change, $user_id, $date, $del_ids)
 	{
-//		print "cas=$cash bank=$bank check=$check credit=$credit change=$change<br/>";
 		Finance::Invoice4uConnect();
 
 		$u = new Fresh_Client( $user_id );

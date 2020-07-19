@@ -1,5 +1,6 @@
 <?php
 
+require_once(ABSPATH . 'wp-includes/pluggable.php');
 
 class Fresh_Client {
 
@@ -432,4 +433,6 @@ function is_shop_manager() {
 		foreach ( $user->roles as $role ) if ( $role == 'shop_manager' ) return true;
 
 	return false;
+}
+
 }

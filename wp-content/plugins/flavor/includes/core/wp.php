@@ -73,7 +73,6 @@ function is_admin_user() {
 	return $manager;
 }
 
-
 /**
  * @param null $args
  *

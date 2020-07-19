@@ -210,20 +210,10 @@ class Fresh {
 		Fresh_Delivery::init_hooks();
 		Fresh_Client_Views::init_hooks();
 
-//		add_action('wp_enqueue_scripts', array($this, 'remove_add'), 2222);
+		add_action('wp_enqueue_scripts', array($this, 'remove_add'), 2222);
 
 //		add_filter('editable_roles', 'edit_roles');
-		/// check siton:
-//		if (get_user_id() == 1) wp_set_current_user(474);
-
-//		add_filter ( 'woocommerce_account_menu_items', __CLASS__ . '::init_my_account_links' );
-		/// check admin;
-	//	if (get_user_id() == 1) wp_set_current_user(601);
-		require_once ABSPATH . 'wp-includes/pluggable.php';
-		// if (get_user_id() == 1) wp_set_current_user(383);
-//		 if (get_user_id() == 1) wp_set_current_user(474); // Julie (siton)
-//		if (get_user_id() == 1) wp_set_current_user(34); // Yaakov (owner)
-//		if (get_user_id() == 1) wp_set_current_user(12); // business
+		// if (get_user_id() == 1) wp_set_current_user(474);
 	}
 
 //	static function init_my_account_links( $menu_links ){
@@ -251,6 +241,12 @@ class Fresh {
 			do_action( 'fresh_shutdown_error', $error );
 		}
 	}
+
+	function remove_add()
+	{
+		wp_dequeue_script('wc-add-to-cart');
+	}
+
 
 	static function admin_menu()
 	{
@@ -1122,11 +1118,13 @@ function insert_payment_info( $order_id )
 		$exp_date_month = get_post_meta($order_id, 'expdate_month', TRUE);
 		$exp_date_year = get_post_meta($order_id, 'expdate_year', TRUE);
 		$billing_id_number = get_post_meta($order_id, 'id_number', TRUE);
+		$user_id = get_post_meta($order_id, '_customer_user', true);
 
 		if($card_number != ''){
 			global $wpdb;
 			$table = 'im_payment_info';
-			$data = array('full_name' => $full_name,
+			$data = array('user_id' => $user_id,
+						  'full_name' => $full_name,
 			              'email' => $billing_email,
 			              'card_number' => $card_number,
 			              'card_four_digit' => $card_last_4_digit,

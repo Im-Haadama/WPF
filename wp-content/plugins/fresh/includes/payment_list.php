@@ -19,6 +19,7 @@ if (!empty($chk_delete)) {
 function credit_card_remove($del_id)
 {
 	global $wpdb;
+	MyLog($del_id, __FUNCTION__);
 	$table_name = "im_payment_info";
 	$card_four_digit   = $wpdb->get_var("SELECT card_four_digit FROM $table_name WHERE id = ".$del_id." ");
 	$dig4 = setCreditCard($card_four_digit);
@@ -46,13 +47,17 @@ function clear_duplicates()
     {
         $last = SqlQuerySingleScalar("select max(id) from im_payment_info where email = '$email'");
         $sql = "delete from im_payment_info where email = '$email' and id < $last";
+	    MyLog(__FUNCTION__ . ": Removing dup for $email");
         SqlQuery($sql);
-//        print $sql . "<br/>";
     }
 }
 
 function find_user_id()
 {
+	ini_set('display_errors', 1);
+	ini_set('display_startup_errors', 1);
+	error_reporting(E_ALL);
+
 	$result = SqlQuery("SELECT id, email FROM `im_payment_info`");
 	while ($row = SqlFetchAssoc($result))
 	{
@@ -89,12 +94,12 @@ function clear_card_info()
 //        $output .= "$id $user_id" . ($token? "Has token": "No Token") . "<br/>";
         if ($token) {
 	        credit_card_remove($id);
-	        $output .= "Cleaning data for user $user_id<br/>";
+//	        $output .= "Cleaning data for user $user_id<br/>";
         }
     }
-    print $output;
+//    print $output;
 }
-
+MyLog("Cleaning card info");
 clear_duplicates();
 //find_user_id();
 clear_card_info();
@@ -212,7 +217,6 @@ $result = $wpdb->num_rows;
 			 
         }else{
     		  ?>
-
     			    <tr align="center"><td colspan="9" style="text-align: center;">No data found.</td></tr>
     		  <?php
     		}
