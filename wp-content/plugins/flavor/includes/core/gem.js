@@ -34,3 +34,8 @@ function gem_update_div(xmlhttp, btn)
         document.getElementById("gem_div_" + table_id).innerHTML = xmlhttp.response.substr(5); // Substr to remove done.
     }
 }
+
+function gem_show_import(post_file, table, div)
+{
+    execute_url(post_file + '?operation=gem_show_import&table=' + table, show_response, div);
+}

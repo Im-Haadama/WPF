@@ -56,6 +56,11 @@ class Finance_Bank
 //
 //		}
 //		if (get_user_id() == 1) print debug_trace(10);
+		if (! TableExists("bank_account")) {
+			$db = new Finance_Database();
+			$db->install('1', true);;
+		}
+
 		AddAction( "finance_bank_accounts", array( $this, "show_bank_accounts" ) );
 		AddAction( "finance_bank_account", array( $this, "show_bank_account" ) );
 		AddAction( "finance_bank_payments", array( $this, "show_bank_payments" ) );
@@ -65,8 +70,12 @@ class Finance_Bank
 		AddAction( "bank_create_invoice", array( $this, 'bank_create_invoice' ) );
 		AddAction( "bank_create_pay", array( $this, 'bank_payments' ) );
 		AddAction("finance_get_transaction_amount", array($this, 'get_transaction_amount'));
+		AddAction('create_bank_account', array($this, 'create_bank_account'));
 
 		add_action('admin_menu', array($this, 'admin_menu'));
+
+		$args = array("post_file" => Finance::getPostFile());
+		Core_Gem::getInstance()->AddVirtualTable("bank", $args);
 
 //		Flavor_Roles::addRole('business_admin', array('finance'));
 	}
@@ -114,6 +123,15 @@ class Finance_Bank
 		return true;
 	}
 
+	function create_bank_account()
+	{
+		$args = [];
+		$args['post_file'] = $this->post_file;
+		$result = Core_Gem::GemAddRow("bank_account", 'Create bank account', $args);
+
+		return $result;
+	}
+
 	function show_bank_accounts_wrap()
 	{
 		print self::show_bank_accounts();
@@ -123,9 +141,13 @@ class Finance_Bank
 	{
 		if (! get_user_id() || ! current_user_can("show_bank"))
 			return "no permissions";
+		$post_file = Finance::getPostFile();
 
 		$accounts = self::getBankAccounts(get_user_id());
-		if (! $accounts) return "No bank accounts found";
+		if (! $accounts) {
+			return "No bank accounts found" . Core_Html::GuiButton("btn_create_bank", "Create", "bank_create_account('$post_file', result)") .
+			       "<div id='result'></div>";
+		}
 
 		if (count($accounts) == 1)
 			return $this->show_bank_account($accounts[0]);
@@ -160,9 +182,10 @@ class Finance_Bank
 
 		print Core_Html::GuiHeader(1, "דף חשבון") .
 		      self::transaction_filters() .
-		      self::bank_transactions($args) .
-		      Core_Html::GuiHyperlink("Import", AddToUrl(array("operation" => "finance_show_bank_import",
-			      "account_id"=>$account_id)));
+		      self::bank_transactions($args);
+		//.
+//		      Core_Html::GuiHyperlink("Import", AddToUrl(array("operation" => "finance_show_bank_import",
+//			      "account_id"=>$account_id)));
 	}
 
 	function transaction_filters()
@@ -637,20 +660,17 @@ class Finance_Bank
 		$args["rows_per_page"] = 40;
 		$args["class"] = "widefat";
 		$args["prepare_plug"] = __CLASS__ . "::prepare_row";
-//		$offset = ($page - 1) * $rows_per_page;
+		$args["enable_import"] = true;
+		$args["import_page"] = AddToUrl(array("operation"=>"gem_import", "bank_account" => $account_id));
 
 		$fields = GetArg($args, "fields", array("id", "date", "description", "out_amount", "in_amount", "balance", "receipt", "client_name"));
 
-//		print "args=" . $args["query"] . "<br/>";
 		$sql = "select " . CommaImplode($fields) . " from ${table_prefix}bank ";
 		$sql .= " where " . $args["query"] . " and account_id = " . $account_id;
 		$sql .= " order by date desc ";
 		$args["sql"] = $sql;
 
 		$result .= Core_Gem::GemTable("bank", $args);
-//		$result .= Core_Html::GuiTableContent("banking", $sql, $args);
-//
-//		$result .= Core_Html::GuiHyperlink("Older", AddToUrl("page_number", $page + 1)) . " ";
 
 		return $result;
 	}
@@ -796,7 +816,6 @@ class Finance_Bank
 		}
 
 		$receipt = intval( trim( $result ) );
-//		print "r=$receipt<br/>";
 
 		if ( $receipt > 0 ) {
 			// TODO: to parse $id from $result;
@@ -814,6 +833,7 @@ class Finance_Bank
 
 	static function getBankAccounts($user_id)
 	{
+		if (! TableExists("bank_account")) return null;
 		return SqlQueryArrayScalar("select id from im_bank_account where owner = $user_id");
 
 		// Later we'll add permissions
@@ -832,24 +852,17 @@ static function bank_check_dup( $fields, $values ) {
 	$date_idx    = array_search( "date", $fields );
 	$balance_idx = array_search( "balance", $fields );
 	$in_amount_idx = array_search("in_amount", $fields);
-//	var_dump($fields); print "<br/>";
-//	die(1);
 	$account     = $values[ $account_idx ];
 	$date        = $values[ $date_idx ];
 	$balance     = $values[ $balance_idx ];
 	$in_amount = $values[$in_amount_idx];
-//	print "a=" . $account . " d=" . $date . " b=" . $balance;
 
 	$sql = "SELECT count(*) FROM ${table_prefix}bank WHERE account_id = " . $account .
 	       " AND date = " . QuoteText( $date );
 	if ($in_amount) $sql .= " and in_amount = " . $in_amount;
 	$sql .= " AND round(balance, 2) = " . round( $balance, 2 );
-	// print sql_query($sql) . "<br/>";
-	$c = SqlQuerySingleScalar( $sql );
 
-	MyLog("trans $date $balance $in_amount $c");
-
-	return $c;
+	return SqlQuerySingleScalar( $sql );
 }
 
 function user_is_business_owner() {

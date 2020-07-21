@@ -342,3 +342,14 @@ function import_set_action(action)
 {
     document.upload_csv.action = action;
 }
+
+function show_response(xmlhttp, obj)
+{
+    if (xmlhttp.response.substr(0, 4) === "done") {
+        let operation = document.referrer;
+        let data = xmlhttp.response.substr(5); // After .
+        obj.innerHTML += data;
+    } else {
+        alert(xmlhttp.response + ':' + xmlhttp.responseURL);
+    }
+}

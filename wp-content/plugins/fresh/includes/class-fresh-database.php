@@ -7,7 +7,6 @@ class Fresh_Database extends Core_Database
 {
 	static function CreateViews($version, $force )
 	{
-		return;
 		$current = self::CheckInstalled("Fresh", "views");
 		$db_prefix = GetTablePrefix();
 
@@ -89,9 +88,10 @@ order by 1;");
 
 	static function CreateTables($version, $force)
 	{
-		return;
 		$current = self::CheckInstalled("Fresh", "functions");
 		$db_prefix = GetTablePrefix();
+
+		if ($current == $version and ! $force) return true;
 
 
 		SqlQuery("alter table im_supplier_price_list add product_id integer(11)");

@@ -18,8 +18,8 @@ class Core_Gem {
 
 		// Import
 		// prepare
-		AddAction("gem_import", array(__CLASS__, "import_wrap"));
-		AddAction("gem_v_import", array(__CLASS__, "v_import_wrap"));
+		AddAction("gem_show_import", array(__CLASS__, "show_import_wrap"));
+		AddAction("gem_v_show_import", array(__CLASS__, "show_v_import_wrap"));
 
 		// Do
 		AddAction("gem_do_import", array(__CLASS__, "do_import_wrap"));
@@ -111,7 +111,7 @@ class Core_Gem {
 		return $result . self::GemAddRow($table_name, null, $args);
 	}
 
-	static function import_wrap()
+	static function show_import_wrap()
 	{
 		$table = GetParam("table", true);
 		$args = self::getInstance()->object_types[$table];
@@ -408,12 +408,6 @@ class Core_Gem {
 				$post_action = $post_file."?operation=gem_page_".$table_id;
 		} while (0);
 
-		// In paging we don't have post_file.
-//		if (! $post_action) {
-//			return debug_trace(1) . "<br/>".
-//			       "post_file is missing";
-//		}
-
 		$no_data_message = GetArg($args, "no_data_message", "No data for now");
 		if ($title) $result .= Core_Html::GuiHeader(2, $title);
 
@@ -444,7 +438,9 @@ class Core_Gem {
 		$checkbox_class = GetArg($args, "checkbox_class", "class");
 
 		if ($post_file and $enable_import) {
-			$result .= Core_Gem::ShowImport( $table_id, $args );
+			$result .= "<br/>" . Core_Html::GuiButton("btn_show_import", "Import", "gem_show_import('$post_file', '$table_id', import_div)") .
+			           "<div id='import_div'></div>";
+				// Core_Gem::ShowImport( $table_id, $args );
 		}
 		if ($post_file and $edit) {
 			$result .= Core_Html::GuiButton( "btn_delete_$table_id", "Delete",
@@ -478,11 +474,6 @@ class Core_Gem {
 		if (! $table_name) die("Error #N2 no table given");
 		if (! isset($args["title"])) $title = "content of table " . $table_name;
 		$post_file = GetArg($args, "post_file", null);
-//		if (! $post_file) {
-//			print "must send post_file " . $table_name . "<br/>";
-//			print debug_trace();
-//			die(1);
-//		}
 		$table_prefix = GetTablePrefix($table_name);
 
 		if (! isset($args["events"])) $args["events"] = 'onchange="update_table_field(\'' . $post_file . '\', \'' . $table_name . '\', \'%d\', \'%s\', check_update)"';
@@ -492,10 +483,6 @@ class Core_Gem {
 			$fields = GetArg($args, "fields", null);
 			if ($fields) {
 				$sql = "select " . CommaImplode( $fields );
-
-//				foreach ($fields as $field => $not_used)
-//					$sql .= $field . ", ";
-//				 //.  .
 				$sql = trim($sql, ", ") . " from ${table_prefix}$table_name ";
 			}
 			else $sql = "select * from ${table_prefix}$table_name";

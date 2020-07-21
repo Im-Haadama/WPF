@@ -220,7 +220,8 @@ AND (meta_value = "legacy" or meta_value = 1)';
 	function print_deliveries( $query, $selectable = false ) {
 		// print "q= " . $query . "<br/>";
 		$data = "";
-		$sql = 'SELECT posts.id, order_is_group(posts.id), order_user(posts.id) '
+//		$sql = 'SELECT posts.id, order_is_group(posts.id), order_user(posts.id) '
+		$sql = 'SELECT posts.id, order_user(posts.id) '
 		       . ' FROM `wp_posts` posts'
 		       . ' WHERE ' . $query;
 

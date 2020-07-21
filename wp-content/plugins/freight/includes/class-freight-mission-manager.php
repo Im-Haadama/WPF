@@ -1016,7 +1016,8 @@ group by pm.meta_value, p.post_status");
 
 	static function print_deliveries( $query, $selectable = false, $debug = false ) {
 		$data = "";
-		$sql  = 'SELECT posts.id, order_is_group(posts.id), order_user(posts.id) '
+//		$sql  = 'SELECT posts.id, order_is_group(posts.id), order_user(posts.id) '
+		$sql  = 'SELECT posts.id, order_user(posts.id) '
 		        . ' FROM `wp_posts` posts'
 		        . ' WHERE ' . $query;
 
@@ -1030,8 +1031,8 @@ group by pm.meta_value, p.post_status");
 			$order_id   = $order[0];
 			if ($debug) MyLog(__FUNCTION__ . ': $order_id');
 			$o          = new Fresh_Order( $order_id );
-			$is_group   = $order[1];
-			$order_user = $order[2];
+			$is_group   = false; // $order[1];
+			$order_user = $order[1];
 			if ( $debug ) print "order " . $order_id . "<br/>";
 
 			if ( ! $is_group ) {

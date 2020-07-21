@@ -217,3 +217,8 @@ function invoice_exists()
     let bank_id = get_value_by_name("bank_id");
     execute_url(finance_post_file + "?operation=exists_invoice&bank_id=" + bank_id + "&invoice=" + invoice, action_back);
 }
+
+function bank_create_account(post_file, div)
+{
+    execute_url(post_file + '?operation=create_bank_account', show_response, div);
+}

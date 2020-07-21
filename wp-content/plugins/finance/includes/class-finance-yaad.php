@@ -109,6 +109,7 @@ class Finance_Yaad {
 			}
 
 			$paid = $transaction_info['Amount'];
+			MyLog("paid $paid user " . $user->getName());
 			if ($paid) self::RemoveRawInfo($credit_data['id']);
 		} else {
 			MyLog("trying to pay with credit info " . $user->getName());

@@ -29,7 +29,7 @@ class Fresh_Pricing {
 //			}
 //		}
 
-	static function get_price_by_type( $prod_id, $client_type_id = "", $quantity = 1, $variation_id = null )
+	static function get_price_by_type( $prod_id, $client_type_id = 0, $quantity = 1, $variation_id = null )
 	{
 		$debug = 0;
 		if ($debug) MyLog(__FUNCTION__ . " $prod_id $client_type_id");
@@ -42,7 +42,9 @@ class Fresh_Pricing {
 		if ($configured == -1) {
 			$configured = TableExists("client_types");
 		}
-		if (! $configured) return get_postmeta_field( $prod_id, '_price' );
+		$p    = new Fresh_Product( $prod_id );
+
+		if (! $configured or $p->is_basket() or $p->is_bundle()) return get_postmeta_field( $prod_id, '_price' );
 
 		if ( strlen( $client_type_id ) < 1 ) {
 			$client_type = "regular";
@@ -52,11 +54,11 @@ class Fresh_Pricing {
 		// string - type name
 		// number - type id
 		// print "CT=" . $client_type;
-		$p    = new Fresh_Product( $prod_id );
+//		if ($p->is_bundle()) return $p->getPrice();
 		$product_type = ( $p->isFresh() ) ? "rate" : "dry_rate";
 
-		$sql = "SELECT min($product_type) FROM im_client_rates WHERE type = '" . $client_type_id . "' AND (q_min <= " . $quantity . " OR q_min = 0)";
-//		  print $sql . "<br/>";
+		$sql = "SELECT min($product_type) FROM im_client_rates WHERE type = '" . $client_type_id . "' AND (q_min <= " . $quantity . " OR q_min = 0) and is_group = 0";
+		MyLog($sql);
 		$rate = SqlQuerySingleScalar( $sql );
 		if (null != $rate) {
 			if ( $debug ) {
@@ -69,7 +71,7 @@ class Fresh_Pricing {
 			if ( $rate >= 0 ) {
 				$buy = $p->getBuyPrice();
 				if ( $buy ) {
-					//				MyLog( "buy : $buy rate: $rate" );
+					MyLog( "buy : $buy rate: $rate" );
 
 					return round( ( $buy * ( 100 + $rate ) ) / 100, 1 );
 				}

@@ -244,7 +244,7 @@ class Fresh {
 
 	function remove_add()
 	{
-		wp_dequeue_script('wc-add-to-cart');
+//		wp_dequeue_script('wc-add-to-cart'); // redundant in categories. but needed in search result.
 	}
 
 
@@ -751,21 +751,22 @@ function content_func( $atts, $contents, $tag )
 
 function cart_update_price()
 {
-	MyLog( "cart start" );
-	// TWEEK. Don't know why menu_op calls this method.
-	// DONT remove without trying menu.php and cart.
 	if (! SqlQuerySingleScalar("select 1")) {
 		MyLog ("not connected to db");
 		return;
 	}
-	if (! function_exists('get_user_id') or ! get_user_id()) {
-		MyLog( "cart start " . $_SERVER['REMOTE_ADDR']);
-		return;
+	if (function_exists('get_user_id')) $user_info = get_user_id();
+	else $user_info = $_SERVER['REMOTE_ADDR'];
+
+	MyLog( "cart start " . $user_info);
+
+	if ($user_id = get_user_id()){
+		$user = new Fresh_Client($user_id);
+		$client_type = $user->customer_type( );
+	} else {
+		$client_type = 0;
 	}
-	$user_id = get_user_id();
-	MyLog("cart start " . $user_id);
-	$user = new Fresh_Client($user_id);
-	$client_type = $user->customer_type( );
+//	MyLog("ct=$client_type");
 
 	foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 		$prod_id = $cart_item['product_id'];
