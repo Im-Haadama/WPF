@@ -35,8 +35,12 @@ class Core_Sparse_Table {
 			die ( "id is missing" );
 		}
 		$this->data[$id] = $this->empty_line;
-		if ($link_format)
-			$link = sprintf($link_format, $id);
+		if ($link_format) {
+			if (strstr($link_format, '%d'))
+				$link = sprintf( $link_format, $id );
+			else
+				$link = sprintf( $link_format, $name );
+		}
 		else $link = $name;
 //		print __FUNCTION__ . ": $id $name $link<br/>";
 		$this->data[$id]["name"] = Core_Html::GuiHyperlink($name, $link);
@@ -57,13 +61,6 @@ class Core_Sparse_Table {
 
 	public function GetTable()
 	{
-//		var_dump($this->data);
-//		foreach ($this->data as $key => $row) {
-//			print "<br/>$key: ";
-//
-//			foreach ( $row as $vkey => $cell )
-//				print "<br/>===[$vkey]$cell, ";
-//		}
 		$table = [];
 		$table["header"] = [];
 		if ($this->add_totals)

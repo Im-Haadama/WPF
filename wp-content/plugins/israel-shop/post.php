@@ -14,7 +14,5 @@ $rc = $israel_shop->handle_operation($operation);
 
 if ($rc === false) { print "failed"; return; }
 if ($rc === true) { print "done"; return; }
-if (is_numeric($rc)) { print "done.$rc"; return; }
-// Something went wrong. The procssing would print something.
 
-print "done" . $rc;
+print $rc;

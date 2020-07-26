@@ -35,21 +35,17 @@ function save_new_sequence()
 
 function back_to_project(xmlhttp, project)
 {
-    if (xmlhttp.response === "done")
+    if (check_result(xmlhttp))
         window.location = window.location.href + "&project=" + project;
-    else
-        alert (xmlhttp.response);
 }
 
 function show_project(xmlhttp)
 {
     let project = get_value_by_name("project_id");
-    if (xmlhttp.response === "done" || xmlhttp.response > 0) {
+    if (check_result(xmlhttp)) {
         let url = removeParam("operation", window.location.href);
         window.location = url + "&project=" + project;
     }
-    else
-    alert (xmlhttp.response);
 }
 
 function add_project(table_name, url)

@@ -61,6 +61,7 @@ class Fresh_Pricelist {
 	}
 
 	function PrintHTML( $ordered_only = false, $need_supply_only = false, $args = null) {
+		$post_file = Fresh::getPost();
 		$create_option = false;
 		if (isset($args) and isset($args["create_products"])){
 			print Core_Html::gui_header(1, "יצירת מוצרים");
@@ -170,7 +171,7 @@ class Fresh_Pricelist {
 				if ($create_option)
 					array_push( $line, Core_Html::GuiButton( "cre_" . $pl_id, "create_product(" . $pl_id . ")", "צור מוצר", true ) );
 				else
-					array_push( $line, Core_Html::GuiButton( "del_" . $pl_id, "del_line(" . $pl_id . ")", "מחק" ) );
+					array_push( $line, Core_Html::GuiButton( "del_" . $pl_id, "Delete", "del_line('$post_file', $pl_id )" ) );
 			}
 			array_unshift( $line, $pl_id );
 
@@ -549,10 +550,6 @@ class Fresh_Pricelist {
 			$removed[] = array( $row[2], $row[1] );
 			// var_dump($ids);
 		}
-//        $this->ExecuteRemotes("pricelist/pricelist-post.php?operation=delete_price&params=" . implode(",", $ids));
-
-//        print "Done<br/>";
-		// var_dump($removed);
 		return $removed;
 	}
 

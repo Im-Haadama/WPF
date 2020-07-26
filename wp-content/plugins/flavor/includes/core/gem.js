@@ -37,5 +37,8 @@ function gem_update_div(xmlhttp, btn)
 
 function gem_show_import(post_file, table, div)
 {
-    execute_url(post_file + '?operation=gem_show_import&table=' + table, show_response, div);
+    let action = add_param_to_url(post_file, 'operation', 'gem_show_import&table=' + table);
+    let frame_id = div.id + '_frame';
+    // execute_url(action, show_response, div);
+    div.innerHTML = '<iframe id="' + frame_id + '" width="100%" height="600" src="' + action + '"></iiframe>';
 }

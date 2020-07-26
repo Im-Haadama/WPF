@@ -944,6 +944,7 @@ class Fresh_Order {
 	}
 
 	function infoRightBox( $edit = false ) {
+		$post_file = Fresh::getPost();
 		if ( ! $this->WC_Order ) {
 			return new Exception( "no WC_Order" );
 		}
@@ -1007,7 +1008,7 @@ class Fresh_Order {
 //	) );
 		$mission = $this->GetMissionId();
 //	 print "XCXmission: " . $mission . "<br/>";
-		$data .= Core_Html::gui_row( array( Fresh_Packing::gui_select_mission( "mission_select", $mission, "onchange=\"save_mission()\"" ) ) );
+		$data .= Core_Html::gui_row( array( Fresh_Packing::gui_select_mission( "mission_select", $mission, "onchange=\"save_mission('$post_file')\"" ) ) );
 
 		$data .= '</table>';
 
@@ -1582,11 +1583,8 @@ class Fresh_Order {
 	  FROM im_need_orders
 	  WHERE order_id NOT IN (SELECT id FROM wp_posts WHERE post_status LIKE '%wc-processing%')";
 		$done = SqlQuerySingleScalar( $sql );
-//	print "done: " . $done . "<br/>";
 
-		if ( $done > 0 or $new > 0 ) {
-			return false;
-		}
+		if ( $done > 0 or $new > 0 ) return false;
 
 		return true;
 	}

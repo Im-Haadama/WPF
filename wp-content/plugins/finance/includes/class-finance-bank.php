@@ -166,7 +166,7 @@ class Finance_Bank
 
 		$args = [];
 		$args["page"] = GetParam("page", false, null);
-		$args["post_file"] = Finance::getPostFile();
+		$args["post_file"] = Finance::getPostFile() . "?account_id=$account_id";
 		$args["query"] = "account_id = $account_id";
 		if ($filter = GetParam("filter", false, null)) {
 			switch ($filter) {
@@ -179,6 +179,7 @@ class Finance_Bank
 
 			}
 		}
+		$args["account_id" ] = $account_id;
 
 		print Core_Html::GuiHeader(1, "דף חשבון") .
 		      self::transaction_filters() .
@@ -211,17 +212,18 @@ class Finance_Bank
 		}
 		return $result . "</div>";
 	}
-	function show_bank_import()
-	{
-		$args = self::Args();
-		// Using local action - to set account_id and check_dup. See above.
-		 $args["import_page"] = AddToUrl(array("operation"=>"finance_do_import"));
-//		$args["import_page"] = AddParamToUrl(Finance::getPostFile() , array("operation" => "gem_do_import", "table" => "bank"));
-			// AddToUrl(array("operation" => "gem_do_import", "table"=>"bank"));//  . "&account_id=" . $account_id;
-		$result = Core_Gem::ShowImport("bank", $args);
 
-		print $result;
-	}
+//	function show_bank_import($account_id)
+//	{
+//		$args = self::Args();
+//		// Using local action - to set account_id and check_dup. See above.
+//		 $args["import_page"] = AddToUrl(array("operation"=>"finance_do_import"));
+////		$args["import_page"] = AddParamToUrl(Finance::getPostFile() , array("operation" => "gem_do_import", "table" => "bank"));
+//			// AddToUrl(array("operation" => "gem_do_import", "table"=>"bank"));//  . "&account_id=" . $account_id;
+//		$result = Core_Gem::ShowImport("bank", $args);
+//
+//		print $result;
+//	}
 
 	function get_transaction_amount()
 	{
@@ -653,7 +655,8 @@ class Finance_Bank
 
 		$result = "";
 
-		$account_id = 1;
+		$account_id = GetArg($args, "account_id", null);
+		if (! $account_id) return "no account selected";
 
 		$page = GetParam("page_number", false, 1);
 		$args["page_number"] = $page;

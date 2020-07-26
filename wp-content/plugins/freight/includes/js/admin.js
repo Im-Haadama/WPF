@@ -107,9 +107,7 @@ function shipment_update_mc(post_file, instance_id)
 
 function fail_message1(xmlhttp)
 {
-    if (xmlhttp.response.substr(0, 4) === "done") return;
-
-    alert (xmlhttp.response);
+    check_result(xmlhttp);
 }
 
 function mission_update_type(post_file, mission_id)

@@ -8,9 +8,9 @@ function mission_changed(post_file, supply_id) {
     execute_url(post_file + "?operation=set_mission&supply_id=" + supply_id + "&mission_id=" + mission_id);
 }
 
-function save_mission() {
+function save_mission(post_file) {
     var mission = get_value(document.getElementById("mission_select"));
-    var request = "supplies-post.php?operation=set_mission&mission_id=" + mission + "&supply_id= " + get_supply_id();
+    var request = post_file + "?operation=set_mission&mission_id=" + mission + "&supply_id= " + get_supply_id();
 
     xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = function () {
@@ -48,10 +48,10 @@ function supply_update_items(post_file, supply_id) {
     execute_url(request, location_reload);
 }
 
-function del_line(supply_line_id) {
+function del_line(post_file, supply_line_id) {
     var btn = document.getElementById("del_" + supply_line_id);
     btn.parentElement.parentElement.style.display = 'none';
-    execute_url("supplies-post.php?operation=delete_lines&params=" + supply_line_id);
+    execute_url(post_file, "?operation=delete_lines&params=" + supply_line_id);
 }
 
 function supply_delete_items(post_file, supply_id)
@@ -63,9 +63,9 @@ function supply_delete_items(post_file, supply_id)
     execute_url(request_url, location_reload);
 }
 
-function closeItems(collection_name)
+function closeItems(post_file, collection_name)
 {
-    let request = "/fresh/supplies/supplies-post.php?operation=supplied&ids=" + get_selected(collection_name);
+    let request = post_file + "?operation=supplied&ids=" + get_selected(collection_name);
     execute_url(request, location_reload);
 }
 function get_supply_id()
@@ -73,17 +73,18 @@ function get_supply_id()
     return get_value_by_name("supply_id");
 }
 
-function send_supplies()
+function send_supplies(post_file)
 {
     let ids = get_selected("new");
     if (! ids.length) {
         alert ("no supply selected");
         return;
     }
-    do_send_supplies(ids);
+    do_send_supplies(post_file, ids);
 }
-function do_send_supplies(ids) {
-    let request = "supplies-post.php?operation=send&id=" + ids;
+
+function do_send_supplies(post_file, ids) {
+    let request = post_file + "?operation=send&id=" + ids;
 
     // execute_url(url, finish_action, obj)
 
@@ -96,10 +97,10 @@ function update_message(xmlhttp, obj)
     document.getElementById("results").innerText = xmlhttp.response;
 }
 
-function supply_pay(id) {
+function supply_pay(post_file, id) {
     var date = get_value_by_name("pay_date");
 
-    var request_url = "supplies-post.php?operation=supply_pay&date=" + date +
+    var request_url = post_file + "?operation=supply_pay&date=" + date +
     "&id=" + id;
 
     var request = new XMLHttpRequest();
@@ -130,14 +131,14 @@ function printDeliveryNotes() {
     });
 }
 
-function got_supply() {
+function got_supply(post_file, supply_id) {
     disable_btn("btn_got_supply");
     var supply_number = get_value(document.getElementById("supply_number"));
     var supply_total = get_value(document.getElementById("supply_total"));
     var net_amount = get_value(document.getElementById("net_amount"));
     var is_invoice = get_value(document.getElementById("is_invoice"));
     var date = get_value_by_name("document_date");
-    let supply_id = get_value_by_name("supply_id");
+    // let supply_id = get_value_by_name("supply_id");
 
     if (!supply_number) {
         alert("יש לרשום את מספר תעודת המשלוח");
@@ -157,7 +158,7 @@ function got_supply() {
         return;
     }
 
-    var request_url = "supplies-post.php?operation=got_supply" +
+    var request_url = post_file + "?operation=got_supply" +
         "&supply_id=" + supply_id +
         "&supply_total=" + supply_total + "&supply_number=" + supply_number +
         "&net_amount=" + net_amount +

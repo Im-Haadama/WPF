@@ -432,6 +432,8 @@ group by pm.meta_value, p.post_status");
 
 	static function show_mission_route($the_mission, $update = false, $debug = false, $missing = false)
 	{
+		$post_file = Freight::getPost();
+
 		$data = '<div id="route_div">';
 		$path = null;
 		$lines_per_station = array();
@@ -515,7 +517,7 @@ group by pm.meta_value, p.post_status");
 				$supply_id = $_supply_id[0];
 				$site_id   = $_supply_id[1];
 				if ( $site_id != $m->getLocalSiteID() ) {
-					print $m->Run( "supplies/supplies-post.php?operation=print&id=" . $supply_id, $site_id );
+					print $m->Run( $post_file . "?operation=print&id=" . $supply_id, $site_id );
 				} else {
 					$s = new Fresh_Supply( $supply_id );
 					$data .= Core_Html::gui_header( 1, "אספקה  " . $supply_id . " מספק " . $s->getSupplierName() );
@@ -1075,10 +1077,11 @@ group by pm.meta_value, p.post_status");
 				print $request;
 			}
 //			print "X" . Core_Db_MultiSite::sExecute( $request, $site_id, $debug ) . "X<br/>";
-			if ( Core_Db_MultiSite::sExecute( $request, $site_id, $debug ) == "done")  return true;
-			print "failed:<br/>";
-			print $request;
-			return false;
+			if ( check_for_error( Core_Db_MultiSite::sExecute( $request, $site_id, $debug ) )) {
+				print "failed:<br/>";
+				print $request;
+				return false;
+			}
 		}
 		// Running local. Let's do it.
 		// print "type=" . $type . "<br/>";

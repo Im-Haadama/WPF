@@ -87,8 +87,6 @@ $wp_roles->add_cap( "business", "edit_suppliers" );
 
 $wp_roles->add_cap( "packing_manager", "manage_packing" );
 
-print "done";
-
 function handle_role( $role, $capabilities ) {
 	global $wp_roles;
 

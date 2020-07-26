@@ -90,14 +90,6 @@ function get_form_params(table_id, check_mandatory)
     return params;
 }
 
-function check_update(xmlhttp)
-{
-    if (xmlhttp.response !== "done")
-        alert (xmlhttp.response);
-
-}
-
-
 // After operation completed successfully, send the result to the page before
 
 function update_table_field(post_file, table_name, id, field_name, finish_action) {

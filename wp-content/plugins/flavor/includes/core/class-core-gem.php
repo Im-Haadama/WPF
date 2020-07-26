@@ -116,7 +116,7 @@ class Core_Gem {
 		$table = GetParam("table", true);
 		$args = self::getInstance()->object_types[$table];
 		print self::ShowImport($table, $args);
-		die(); // So post.php won't do add "done".
+		die();
 	}
 
 	static function v_import_wrap()
@@ -124,7 +124,7 @@ class Core_Gem {
 		$table = GetParam("table", true);
 		$args = self::getInstance()->object_types[$table];
 		print self::ShowVImport($table, $args);
-		die(); // So post.php won't do add "done".
+		die();
 	}
 
 
@@ -145,7 +145,9 @@ class Core_Gem {
 		$unmapped = [];
 		$rc = Core_Importer::Import($file_name, $table, $fields, null, $unmapped);
 		if (count($unmapped)) {
-			$result .= self::MapFields($unmapped, $db_prefix, $table, '/wp-content/plugins/fresh/post.php');
+			$result .= self::MapFields($unmapped, $db_prefix, $table, '/wp-content/plugins/fresh/post.php') .
+			           Core_Html::load_scripts(array('/wp-content/plugins/flavor/includes/core/gui/client_tools.js',
+				           '/wp-content/plugins/flavor/includes/core/data/data.js'));
 			print $result;
 //			die(1);
 			return false;
@@ -302,7 +304,7 @@ class Core_Gem {
 		if ($next_page){
 			$result .= '<script>
 		function next_page(xmlhttp) {
-		    if (xmlhttp.response.substr(0, 4) === "done") {
+		    if (xmlhttp.response.indexOf("failed") !== -1 ) {
 		        let new_id = xmlhttp.response.substr(5);
 		      window.location = "' . $next_page . '&new=" + new_id;  
 		    }  else alert(xmlhttp.response);
@@ -438,6 +440,7 @@ class Core_Gem {
 		$checkbox_class = GetArg($args, "checkbox_class", "class");
 
 		if ($post_file and $enable_import) {
+			print $post_file;
 			$result .= "<br/>" . Core_Html::GuiButton("btn_show_import", "Import", "gem_show_import('$post_file', '$table_id', import_div)") .
 			           "<div id='import_div'></div>";
 				// Core_Gem::ShowImport( $table_id, $args );
@@ -476,7 +479,7 @@ class Core_Gem {
 		$post_file = GetArg($args, "post_file", null);
 		$table_prefix = GetTablePrefix($table_name);
 
-		if (! isset($args["events"])) $args["events"] = 'onchange="update_table_field(\'' . $post_file . '\', \'' . $table_name . '\', \'%d\', \'%s\', check_update)"';
+		if (! isset($args["events"])) $args["events"] = 'onchange="update_table_field(\'' . $post_file . '\', \'' . $table_name . '\', \'%d\', \'%s\', check_result)"';
 		$sql = GetArg($args, "sql", null);
 
 		if (! $sql){
@@ -610,16 +613,14 @@ class Core_Gem {
 
 		if ($selector) $result .= $selector("import_select", null, $args);
 //		print $action_file . "<br/>";
-
-
 		// Selecting gui
-		$result .= '<form name="upload_csv" method="post" enctype="multipart/form-data">' .
+//		print "done.af=$action_file<br/>";
+		print "af=$action_file<br/>";
+		$result .= '<form action="' . $action_file . '" name="upload_csv" method="post" enctype="multipart/form-data">' .
 		           ImTranslate('Load from csv file') .
 		           '<input type="file" name="fileToUpload" id="fileToUpload">
         <input type="submit" value="טען" name="submit">
-    	</form>
-		<script>import_set_action(\'' . $action_file . '\');
-		</script> ';
+    	</form>';
 //		if ($selector) $result .= '	wait_for_selection();';
 //		else $result .= 'let forms = document.getElementsByName("submit");
 //        forms.forEach(element => element.disabled = false);

@@ -140,7 +140,7 @@ function execute_url(url, finish_action, obj) {
             if (finish_action)
                 return finish_action(xmlhttp3, obj);
 
-            else if (xmlhttp3.response.substr(0, 4) !== "done") alert (xmlhttp3.response);
+            else report_error(xmlhttp3.response);
         }
     }
     // xmlhttp3.onloadend = function(){
@@ -153,32 +153,40 @@ function execute_url(url, finish_action, obj) {
 // Use this when the delete button is outside the table and the lines are indicated by the checkbox class
 function action_hide_rows(xmlhttp, checkbox_class)
 {
-    if (xmlhttp.response === "done"){
+    if (check_result(xmlhttp)) {
         var collection = document.getElementsByClassName(checkbox_class);
         for (var i = 0; i < collection.length; i++) {
             if (collection[i].checked) {
                 collection[i].parentElement.parentElement.style.display = 'none';
             }
         }
-            // btn.parentElement.parentElement.style.display = 'none';
     }
+}
 
-    else
-        alert (xmlhttp.response);
+function check_result(xmlhttp)
+{
+    return ! report_error(xmlhttp.response);
+}
+
+function report_error(response)
+{
+    if (response.indexOf("failed") !== -1){
+        alert (response);
+        return true;
+    }
+    return false;
 }
 
 // Use this when the delete button is inline.
 function action_hide_row(xmlhttp, btn)
 {
-    if (xmlhttp.response === "done"){
+    if (check_result(xmlhttp)){
         if (typeof (btn[0]) != 'undefined')
             for (let i=0; i < btn.length; i++)
                 btn[i].parentElement.parentElement.style.display = 'none';
         else
             btn.parentElement.parentElement.style.display = 'none';
     }
-    else
-        alert (xmlhttp.response);
 }
 
 function disable_btn(id) {
@@ -193,25 +201,21 @@ function enable_btn(id) {
 
 function location_reload(xmlhttp)
 {
-    if (xmlhttp.response.substr(0, 4) === "done")
+    if (check_result(xmlhttp))
         location.reload();
-    else
-        alert (xmlhttp.response);
 }
 
 // Good for start task. If URL received as response, the URL will be loaded.
 // Otherwise the page will be reloaded.
 function load_page(xmlhttp)
 {
-    if (xmlhttp.response.substr(0, 4) !== "done") {
-        alert (xmlhttp.response);
-        return false;
+    if (check_result(xmlhttp)) {
+        let url = xmlhttp.response;
+        if (url.length)
+            window.location = url;
+        else
+            location.reload();
     }
-    let url = xmlhttp.response.substr(5); // Skip "."
-    if (url.length)
-        window.location = url;
-    else
-        location.reload();
 }
 
 function get_selected(collection_name)
@@ -244,7 +248,7 @@ function removeParam(key, sourceURL) {
 
 function action_back(xmlhttp)
 {
-    if (xmlhttp.response.substr(0, 4) === "done") {
+    if (check_result(xmlhttp)) {
         let operation = document.referrer;
         let data = xmlhttp.response.substr(5); // After .
         if (data.length) {
@@ -255,8 +259,6 @@ function action_back(xmlhttp)
         }
         location.replace(operation );
     }
-    else
-        alert (xmlhttp.response);
 }
 
 function show_menu(menu_name)
@@ -300,17 +302,13 @@ function selectTab(event, selected, tab_class, tab_links_class)
 
 function success_message(xmlhttp)
 {
-    if (xmlhttp.response.substr(0, 4) === "done")
+    if (check_result(xmlhttp))
         alert("Success");
-    else
-        alert (xmlhttp.response);
 }
 
 function fail_message(xmlhttp)
 {
-    if (xmlhttp.response.substr(0, 4) === "done") return;
-
-    alert (xmlhttp.response);
+    check_result(xmlhttp);
 }
 
 function log_message(xmlhttp)
@@ -345,10 +343,8 @@ function import_set_action(action)
 
 function show_response(xmlhttp, obj)
 {
-    if (xmlhttp.response.substr(0, 4) === "done") {
-        let operation = document.referrer;
-        let data = xmlhttp.response.substr(5); // After .
-        obj.innerHTML += data;
+    if (check_result(xmlhttp)) {
+        obj.innerHTML += xmlhttp.response;
     } else {
         alert(xmlhttp.response + ':' + xmlhttp.responseURL);
     }

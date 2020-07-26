@@ -422,7 +422,7 @@ class Core_Db_MultiSite extends Core_MultiSite {
 		$url = "$server/wp-content/plugins/finance/post.php?operation=multisite_validate";
 		$result = self::DoRun($url, $http_code, $user, $password);
 
-		if (substr($result, 0, 4) != "done") {
+		if (check_for_error($result)) {
 			print $url . " " . $user . " " . $password . "<br/>";
 			print "Failed validation in master.<br/>";
 			print "First, add to master<br/>";

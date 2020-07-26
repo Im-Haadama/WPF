@@ -28,6 +28,7 @@ class Fresh_Supplies {
 		AddAction('supply_update_items', array($this, 'supply_update_items'));
 		AddAction('supply_save_comment', array($this, 'supply_save_comment'));
 		AddAction('supply_upload', array($this, 'supply_upload'));
+		AddAction('got_supply', array($this, 'got_supply_wrap'));
 		Core_Gem::AddTable("supplies");
 	}
 
@@ -170,7 +171,7 @@ class Fresh_Supplies {
 		$args["header"] = array("Id", "Supplier", "Date", "Mission");
 		$args["add_checkbox"] = true;
 		$args["selectors"] = array("supplier" => 'Fresh_Supplier::gui_select_supplier', "mission_id" => 'gui_select_mission');
-		$args["links"] = array("id" => AddToUrl(array( "operation" =>"show_supply", "id" => "%s")));
+		$args["links"] = array("id" => Fresh_Supply::getLink("%s"));
 		$args["checkbox_class"] = self::gui_select_supply_status(null, $status);
 		$args["edit"] = false;
 		$args["post_file"] = Fresh::getPost();
@@ -178,9 +179,10 @@ class Fresh_Supplies {
 		$result = Core_Gem::GemTable("supplies", $args);
 		if ($result == "No data for now<br/>") return null;
 
+		$post_file = Fresh::getPost();
 		// $result .= Core_Html::GuiButton("btn_delete", "close_supplies('" . $status_name . "')", "close");
 		if ($status == eSupplyStatus::NewSupply){
-			$result .= Core_Html::GuiButton("btn_send", "send", "send_supplies()");
+			$result .= Core_Html::GuiButton("btn_send", "send", "send_supplies('$post_file')");
 			$result .= Core_Html::GuiButton("btn_merge", "merge", "merge_supplies()");
 			$result .= Core_Html::GuiButton("btn_delete", "delete", "supply_delete('" . Fresh::getPost() . "', 'new')");
 		}
@@ -384,173 +386,28 @@ class Fresh_Supplies {
 		return true;
 	}
 
-}
+	static function got_supply_wrap()
+	{
+		$id = GetParam("supply_id", true);
+		if (! ($id > 0)) {
+			print "Must supply supply id. Got $id";
+			return false;
+		}
+		// https://fruity.co.il//wp-content/plugins/fresh/post.php?operation=got_supply&supply_id=1249&supply_total=2&supply_number=1&net_amount=3&is_invoice=0
 
-//function handle_supplies_operation($operation)
-//{
-//	switch ( $operation )
-//	{
-//		case "supply_pay":
-//			print "supply pay<br/>";
-//			$id   = $_GET["id"];
-//			$date = $_GET["date"];
-//			supply_set_pay_date( $id, $date );
-//			break;
-//
-//		case "get_business":
-//			// print header_text(false); DONT!!!
-//			$supply_id = $_GET["supply_id"]; // מספר אספקה שלנו
-//			supply_business_info( $supply_id );
-//			break;
-//
-//		case "supplied":
-//			$supply_ids = GetParamArray("ids");
-//			foreach ($supply_ids as $supply_id)
-//				supply_supplied($supply_id);
-//			print "done";
-//			break;
-//
-//		case "got_supply":
-//			$supply_id     = GetParam("supply_id", true); // מספר אספקה שלנו
-//			$supply_total  = $_GET["supply_total"]; // סכום
-//			$supply_number = $_GET["supply_number"]; // מספר תעודת משלוח
-//			$net_amount    = GetParam( "net_amount" );
-//			$is_invoice    = GetParam( "is_invoice" );
-////			print "ii=" . $is_invoice . "<br/>";
-//			$doc_type      = $is_invoice ? FreshDocumentType::invoice : FreshDocumentType::supply;
-////			print "dt=" . $doc_type;
-////			die(1);
-//			$document_date = GetParam( "document_date" );
-//			$bid           = got_supply( $supply_id, $supply_total, $supply_number, $net_amount, $doc_type, $document_date );
-//			if ( $bid > 0) print "done";
-//			break;
-//
-//		case "send":
-//			$params = $_GET["id"];
-//			$ids    = explode( ',', $params );
-//			if (send_supplies( $ids ))
-//				sent_supplies( $ids );
-//			break;
-//
-//		case "print":
-//			$params = GetParam("id", true);
-//			$ids    = explode( ',', $params );
-//			print_supplies_table( $ids, true );
-//			break;
-//
-//		case "create_delta":
-//			create_delta();
-//			break;
-//
-//		case "get_supply_lines":
-//			$supply_id = $_GET["id"];
-//			$internal  = isset( $_GET["internal"] );
-//			HtmlLines( $supply_id, $internal );
-//			break;
-//
-//		case "get_comment":
-//			$supply_id = $_GET["id"];
-//			$s         = new Fresh_Supply( $supply_id );
-//			print $s->getText();
-//			break;
-//
-//		case "show_all":
-//			$args = array();
-//			print load_scripts(true);
-//			print Core_Html::gui_header(1, "Supply management");
-//			print gui_div("results");
-//			$args["title"] = "Supplies to send";      print SuppliesTable( SupplyStatus::NewSupply, $args );
-//			print Core_Html::GuiHyperlink("Create supply", GetUrl(1) . "?operation=new_supply");
-//			$args["title"] = "Supplies to get";       print SuppliesTable( SupplyStatus::Sent, $args );
-//			$args["title"] = "Supplies to collect";   print SuppliesTable( SupplyStatus::OnTheGo, $args );
-//			$args["title"] = "Supplies done";         print SuppliesTable( SupplyStatus::Supplied, $args );
-//			break;
-//
-//
-//		case "sent_supplies":
-//			MyLog( "sent supplies" );
-//			$params = explode( ',', $_GET["params"] );
-//			sent_supplies( $params );
-//			break;
-//
-//		case "delete_lines":
-//			MyLog( "delete lines" );
-//			$params = GetParamArray( "params" );
-//			delete_supply_lines( $params );
-//			break;
-//
-//		case "merge_supplies":
-//			MyLog( "merge supplies" );
-//			$params = explode( ',', $_GET["params"] );
-//			merge_supplies( $params );
-//			break;
-//
-//		case 'update_lines':
-//			MyLog( "update lines" );
-//			$params = explode( ',', $_GET["params"] );
-//			$supply_id = GetParam("supply_id", true);
-//			print update_supply_lines( $supply_id, $params );
-//			break;
-//
-////			var request = post_file + "?operation=update_field" +
-////			              "&field_name=" + field_name +
-////			              "&value=" + encodeURI(value) +
-////			              "&id=" + id;
-//
-//		case 'update_field':
-//			$field_name = GetParam( "field_name" );
-//			$value      = GetParam( "value" );
-//			$id         = GetParam( "id" );
-//			$s          = new Fresh_Supply( $id );
-//			$s->UpdateField( $field_name, $value );
-//
-//			break;
-//
-//		case 'save_comment':
-//			$comment = $_GET["text"];
-////			print $comment . "<br/>";
-//			$supply_id = $_GET["id"];
-////			print $supply_id . "<br/>";
-//			$sql = "UPDATE im_supplies SET text = '" . $comment .
-//			       "' WHERE id = " . $supply_id;
-//
-//			if (sql_query($sql)) print "done";
-//
-//			break;
-//
-//
-//		case "set_mission":
-//			$supply_id  = $_GET["supply_id"];
-//			$mission_id = $_GET["mission_id"];
-//			$s          = new Fresh_Supply( $supply_id );
-//			$s->setMissionID( $mission_id);
-//			break;
-//
-//		case "delivered":
-//			$ids = explode( ",", $_GET["ids"] );
-//			foreach ( $ids as $supply_id ) {
-//				got_supply( $supply_id, 0, 0 );
-//			}
-//			print "delivered";
-//
-//			break;
-//
-//		case "check_open":
-//			$count =  sql_query_single_scalar("select count(*) from im_supplies where status = " . SupplyStatus::NewSupply  );
-//			print $count;
-//			break;
-//
-//		case "new_supply":
-//			print new_supply();
-//			break;
-//
-//		case "show_archive":
-//			$args = [];
-//			$args["drill"] = true;
-//			print SuppliesTable( SupplyStatus::Supplied, $args );
-//			break;
-//
-//		default:
-//			print $operation . " not handled <br/>";
-//
-//	}
+		$supply_total  =GetParam("supply_total", true);
+
+		$supply_number = GetParam("supply_number", true);
+
+		$net_amount= GetParam("net_amount", true);
+
+		$is_invoice = GetParam("is_invoice", true);
+
+		$document_date = GetParam("document_date", false, null);
+
+		$S = new Fresh_Supply($id);
+
+		return $S->got_supply($supply_total, $supply_number, $net_amount, $is_invoice ? FreshDocumentType::invoice : FreshDocumentType::supply, $document_date );
+	}
+
+}

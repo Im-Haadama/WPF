@@ -25,9 +25,8 @@ function order_add_to_basket(post_file, item_id, basket_prod_id, new_index)
 
 function order_remove_from_display(xmlhttp, obj)
 {
-    if (xmlhttp.response.substr(0, 4) === "done") {
+    if (check_result(xmlhttp))
         obj.style.display = 'none';
-    }
 }
 
 function order_remove_line(post_file, item_id, obj)

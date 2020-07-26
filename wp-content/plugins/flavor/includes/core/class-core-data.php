@@ -845,6 +845,6 @@ class Core_Data
 	static function UpdateTableFieldEvent($post_file, $table_name, $id, $field_name)
 	{
 		return "XXXX";
-		// 'update_table_field(\'' . $post_file . '\', \'' . $table_name . "', $id, '$field_name', check_update)";
+		// 'update_table_field(\'' . $post_file . '\', \'' . $table_name . "', $id, '$field_name', check_result)";
 	}
 }

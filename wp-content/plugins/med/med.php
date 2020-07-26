@@ -3,22 +3,9 @@
  * Plugin Name: Med
  * Created by Im-haadama
 + * User: agla
- * Date: 8/7/2022
+ * Date: 8/7/2020
  * Time: 18:35
  * Previous version: im-haadama.php
- */
-
-
-/**
- * Plugin Name: med (full)
- * Plugin URI: https://aglamaz.com
- * Description: Medical
- * Version: 1.0
- * Author: agla
- * Author URI: http://aglamaz.com
- * Text Domain: im-haadama
- *
- * @package Med
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -52,3 +39,5 @@ if ( ! class_exists( 'Med' ) ) {
  *
  * @return Med
  */
+
+new Med();

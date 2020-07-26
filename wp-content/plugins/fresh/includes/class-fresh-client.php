@@ -276,9 +276,8 @@ class Fresh_Client {
 	}
 
 	function set_default_display_name( ) {
-		// $user = get_userdata( $user_id );
 		$user = get_user_by( "id", $this->user_id );
-		MyLog(__FUNCTION__, $this->user_id);
+//		MyLog(__FUNCTION__, $this->user_id);
 
 		if (! $user) return "user $this->user_id not found";
 		$name = $user->user_firstname . " " . $user->user_lastname;;
@@ -299,7 +298,6 @@ class Fresh_Client {
 		if ( strlen( $name ) > 3 ) {
 			wp_update_user( $args );
 		}
-		MyLog($name);
 	}
 
 	static function extra_user_profile_fields( $user ) {

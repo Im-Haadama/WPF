@@ -31,9 +31,10 @@ class Flavor_Roles {
 //			}
 			$rc = add_role($role, convert_to_title($role), $caps);
 			$role = get_role($role);
-			foreach ($capabilities as $capability)
-				$role->add_cap($capability);
-//			print "=============================>$role $rc " . $capabilities[0] . "<br/>";
+			foreach ($capabilities as $capability) {
+				$role->add_cap( $capability );
+//				print "=============================>$role $rc " . $capabilities[0] . "<br/>";
+			}
 		}
 
 		return;

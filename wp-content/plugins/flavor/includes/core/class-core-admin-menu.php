@@ -18,7 +18,7 @@ class Core_Admin_Menu {
 				print "cant add $title $parent $capability<br/>";
 			}
 		}
-		else MyLog("==========================================> $capability is missing " . get_user_id());
+//		else MyLog("==========================================> $capability is missing " . get_user_id());
 	}
 
 	public function Add($parent, $capability, $slug, callable $callable)

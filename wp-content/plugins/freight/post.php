@@ -28,6 +28,6 @@ $rc = $freight->handle_operation($operation);
 
 if ($rc === false or null === $rc) { print "failed"; return; }
 if ($rc === true) { print "done"; return; }
-if (is_numeric($rc)) { print "done.$rc"; return; }
+//if (is_numeric($rc)) { print AJAX_PREFIX . ".$rc"; return; }
 // Something went wrong. The procssing would print something.
-print "done" . $rc;
+print $rc;

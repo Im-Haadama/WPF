@@ -547,6 +547,12 @@ require_once (ABSPATH . '/wp-includes/pluggable.php');
 		return "execute_url('". $post . "'" . ($after ? ", " . $after : "") . ")";
 	}
 
+	function check_for_error($response)
+	{
+		if (strstr($response, "failed")) return true;
+		return false;
+	}
+
 	function AddAction($tag, $function_to_add, int $priority = 10, int $accepted_args = 1, $debug = 0)
 	{
 		$debug = 0;

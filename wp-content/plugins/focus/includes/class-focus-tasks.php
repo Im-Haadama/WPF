@@ -686,7 +686,7 @@ class Focus_Tasks {
 				if ( create_new_sequence() ) {
 					print "done";
 				} else {
-					print "create failed";
+					print "failed";
 				}
 
 				return;
@@ -723,7 +723,7 @@ class Focus_Tasks {
 				}
 				$result = data_save_new( $table_name );
 				if ( $result > 0 ) {
-					print "done." . $result;
+					print $result;
 				}
 
 				return;
@@ -736,9 +736,7 @@ class Focus_Tasks {
 				if ( Core_Data::data_update( $table_name ) ) {
 					if ( $table_name == "{$this->table_prefix}task_templates" ) {
 						$row_id = intval( GetParam( "id", true ) );
-						if ( SqlQuery( "update {$this->table_prefix}task_templates set last_check = null where id = " . $row_id ) ) {
-							return "done";
-						}
+						return (SqlQuery( "update {$this->table_prefix}task_templates set last_check = null where id = " . $row_id ) );
 					}
 				}
 
@@ -798,11 +796,7 @@ class Focus_Tasks {
 
 			case "cancel_projects":
 				$id = GetParam( "id", true );
-				if ( project_delete( $id, get_user_id() ) ) {
-					print "done";
-				}
-
-				return;
+				return ( project_delete( $id, get_user_id() ) );
 
 			case "search_by_text":
 				$text = GetParam( "text", true );
@@ -1054,7 +1048,7 @@ class Focus_Tasks {
 		if (! $workers) return null;
 
 		// Todo: if more than 6 workers need to organize differently.
-		$data = array("header" => array("Worker", "Ready tasks", "Non ready tasks", "Done (1 week)"));
+		$data = array("header" => array("Worker", "Ready tasks", "Non ready tasks", "done (1 week)"));
 		foreach($workers as $worker_id) {
 			$args["worker_id"] = $worker_id;
 			$w = new Org_Worker($worker_id);

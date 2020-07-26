@@ -95,8 +95,8 @@ function supplier_selected()
 
 function update_transactions(xmlhttp, btn)
 {
-    if (xmlhttp.response.substr(0, 4) == "done")
-        document.getElementById("transactions").innerHTML = xmlhttp.response.substr(5);
+    if (xmlhttp.response.indexOf("failed") === -1)
+        document.getElementById("transactions").innerHTML = xmlhttp.response; // .substr(5);
     else
         alert(xmlhttp.response);
 }
