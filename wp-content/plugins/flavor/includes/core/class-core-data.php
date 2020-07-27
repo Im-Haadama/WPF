@@ -467,7 +467,7 @@ class Core_Data
 		}
 
 		if ($actions){
-			foreach ($actions as $action) {
+			foreach ($actions as $action_name => $action) {
 				if (is_array($action))
 				{
 					$text = $action[0];
@@ -481,16 +481,16 @@ class Core_Data
 						$action_args = array("action" => "execute_url('" . $action_url . "', $client_action, $btn_id )");
 						if (isset($action[2])) $action_args["class"] = $action[2];
 						if (isset($action[3])) $action_args["tooltip"] = $action[3];
-						array_push($row_data, Core_Html::GuiButton($btn_id, $text, $action_args));
+						$row_data[$action_name] = Core_Html::GuiButton($btn_id, $text, $action_args);
 					} else {
 //						$action_url = $row_id . $action[1];
 						if (! $row_id) $action_url = ($action[1] . "row id missing");
 						else $action_url = sprintf($action[1], $row_id);
-						array_push($row_data, Core_Html::GuiHyperlink($text, $action_url, $args));
+						$row_data[$action_name] = Core_Html::GuiHyperlink($text, $action_url, $args);
 					}
 				} else {
 					$h = sprintf($action, $row_id);
-					array_push($row_data, $h);
+					$row_data[$action_name] = $h;
 				}
 			}
 		}

@@ -321,7 +321,7 @@ class Core_Html {
 		$args["include_id"] = $include_id;
 		$args["field"]      = $field;
 
-		return TableDatalist( $id, $table, $args );
+		return self::TableDatalist( $id, $table, $args );
 	}
 
 	/**

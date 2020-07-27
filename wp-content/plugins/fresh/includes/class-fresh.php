@@ -209,6 +209,7 @@ class Fresh {
 		Fresh_Client::init_hooks();
 		Fresh_Delivery::init_hooks();
 		Fresh_Client_Views::init_hooks();
+		Fresh_Bundles::instance()->init_hooks();
 
 		add_action('wp_enqueue_scripts', array($this, 'remove_add'), 2222);
 

@@ -120,7 +120,11 @@ class Fresh_Basket extends  Fresh_Product  {
 		if ($basket_id === "0") return self::new_basket($args);
 		$result = Core_Html::GuiHeader(1, "This week's baskets");
 
-		$result .= self::current_baskets($url);
+		$b = new Fresh_Bundles();
+
+		$tabs = array(array("Bundles", "Bundles", $b->PrintHTML()),
+			array("Baskets", "Baskets", self::current_baskets($url)));
+		$result .= Core_Html::GuiTabs($tabs, array("tabs_load_all"=>true));
 
 		return $result;
 	}

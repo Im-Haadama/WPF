@@ -448,8 +448,6 @@ class Core_Gem {
 		if ($post_file and $edit) {
 			$result .= Core_Html::GuiButton( "btn_delete_$table_id", "Delete",
 				array( "action" => "delete_items(" . QuoteText( $checkbox_class ) . "," . QuoteText( $post_file ) . ")" ) );
-//			$add_operation = GetArg($args, "add_operation", "");
-//			$result .= Core_Html::GuiHyperlink("Add", AddToUrl("operation", $add_operation));
 		}
 
 		return $result;

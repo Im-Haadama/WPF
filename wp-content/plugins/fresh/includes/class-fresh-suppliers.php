@@ -216,13 +216,10 @@ class Fresh_Suppliers {
 		$fields["supplier_id"] = $supplier_id;
 	}
 
-	static function pricelist_header($result)
+	static function draftable_products()
 	{
-		$supplier_id = GetParam("supplier_id");
-		$s = new Fresh_Supplier($supplier_id);
-		$result .= Core_Html::GuiHeader(1, __("Supplier pricelist") . " " . $s->getSupplierName());
-
-		$draftable_products = SqlQuery("
+		$result = "";
+		$draftable_products = null; /* SqlQuery("
 				select distinct sp.id as map_id, product_id, post_title
 		from im_supplier_mapping sp
 		     join wp_posts p
@@ -236,7 +233,7 @@ class Fresh_Suppliers {
 		                                                       and date = (select max(date)
 		                                         from im_supplier_price_list where supplier_id = $supplier_id)) and
 		      p.id = product_id and
-		      p.post_status = 'publish'");
+		      p.post_status = 'publish'"); */
 
 		if ($draftable_products) {
 			$result .= Core_Html::GuiHeader(2, "מוצרים להורדה");
@@ -258,15 +255,16 @@ class Fresh_Suppliers {
 			$args["class"] = "sortable";
 			$result .= Core_Html::gui_table_args($rows, "draftable_products", $args);
 		}
+	}
+	static function pricelist_header($result)
+	{
+		$supplier_id = GetParam("supplier_id");
+		$s = new Fresh_Supplier($supplier_id);
+		$result .= Core_Html::GuiHeader(1, __("Supplier pricelist") . " " . $s->getSupplierName());
 
 		return $result;
 	}
 
-	static function draftable_products($supplier_id)
-	{
-
-
-	}
 	static function pricelist_functions($result)
 	{
 		$table_name = GetParam("table", false, null);

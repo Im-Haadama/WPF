@@ -156,3 +156,175 @@ function account_add_transaction(post_file, customer_id) {
 
     execute_url(request, location_reload);
 }
+
+//////////////////////////// Bundles /////////////////////////////
+function bundle_get_price() {
+    var product_name = get_value(document.getElementById("item_name"));
+    var request = "../delivery/delivery-post.php?operation=get_price&name=" + encodeURI(product_name);
+
+    xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function () {
+        // Wait to get delivery id.
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+        {
+            var price = xmlhttp.response;
+
+            if (price > 0) {
+                document.getElementById("unit_price").innerHTML = price;
+            }
+        }
+    }
+    xmlhttp.open("GET", request, true);
+    xmlhttp.send();
+}
+
+function bundle_calc(post_file) {
+    let product_id = get_value_by_name("product_name");
+    // var product_id = product_name.substr(0, product_name.indexOf(")"));
+    var q = get_value(document.getElementById("quantity"));
+    var margin = get_value(document.getElementById("margin"));
+
+    var request = post_file + "?operation=calculate&product_id=" + product_id +
+        "&quantity=" + q + "&margin=" + margin;
+
+    xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function () {
+        // Wait to get delivery id.
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+        {
+            var response = xmlhttp.response.split(",");
+            var buy_price = response[0];
+            var price = response[1];
+            var bundle_price = response[2];
+
+            document.getElementById("buy_price").innerHTML = buy_price;
+            document.getElementById("price").innerHTML = price;
+            document.getElementById("bundle_price").innerHTML = bundle_price;
+            document.getElementById("regular_price").innerHTML = price * q;
+
+        }
+    }
+    xmlhttp.open("GET", request, true);
+    xmlhttp.send();
+
+}
+
+function bundle_show_create_new() {
+    var new_item = document.getElementById("new_item");
+    new_item.style.display = 'block';
+    // add_line();
+    // document.getElementById("client_select").focus();
+
+}
+
+// function selected(sel) {
+//     var pricelist_id = sel.id.substr(4);
+//     document.getElementById("chk_" + pricelist_id).checked = true;
+// }
+
+function bundle_create(post_url) {
+    var product_id = get_value_by_name("product_name");
+    // var product_id = product_name.substr(0, product_name.indexOf(")"));
+    var quantity = get_value(document.getElementById("quantity"));
+    var margin = get_value(document.getElementById("margin"));
+
+    var request = post_url + "?operation=bundle_add_item&product_id=" + product_id + "&quantity=" + quantity +
+        "&margin=" + encodeURI(margin);
+
+    execute_url(request, location_reload);
+}
+
+function bundle_save_items(post_url) {
+    var table = document.getElementById(table_name);
+
+    var collection = document.getElementsByClassName(class_name);
+    var params = new Array();
+    for (var i = 0; i < collection.length; i++) {
+        if (collection[i].checked) {
+            var bundle_id = table.rows[i + 1].cells[0].firstChild.id.substr(4);
+            var quantity = get_value_by_name("qty_" + bundle_id);
+            var margin = get_value_by_name("mar_" + bundle_id);
+
+            params.push(bundle_id);
+            params.push(quantity);
+            params.push(encodeURI(margin));
+        }
+    }
+    xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function () {
+        // Wait to get query result
+        if (xmlhttp.readyState === 4 && xmlhttp.status === 200)  // Request finished
+        {
+            updateDisplay();
+        }
+    }
+    var request = post_url + "?operation=update&params=" + params;
+    xmlhttp.open("GET", request, true);
+    xmlhttp.send();
+}
+
+function bundle_del_items(post_url) {
+    var table = document.getElementById(table_name);
+
+    var collection = document.getElementsByClassName(class_name);
+    var params = new Array();
+    for (var i = 0; i < collection.length; i++) {
+        if (collection[i].checked) {
+            var id = collection[i].id.substr(4);
+
+            params.push(id);
+        }
+    }
+    xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function () {
+        // Wait to get query result
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+        {
+            updateDisplay();
+        }
+    }
+    var request = post_url + "?operation=delete_item" + "&params=" + params;
+    xmlhttp.open("GET", request, true);
+    xmlhttp.send();
+}
+
+function bundle_update_display(post_url) {
+    xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function () {
+        // Wait to get query result
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+        {
+            table = document.getElementById(table_name);
+            table.innerHTML = xmlhttp.response;
+        }
+    }
+    var request = post_url + "?operation=get_bundles";
+    xmlhttp.open("GET", request, true);
+    xmlhttp.send();
+}
+
+function bundle_add_item(post_url) {
+    var prod_name = get_value(document.getElementById("item_id"));
+    var quantity = get_value(document.getElementById("quantity"));
+    var margin = get_value(document.getElementById("margin"));
+    var bundle_prod_name = get_value(document.getElementById("bundle_prod_id"));
+
+    xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function () {
+        // Wait to get query result
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200)  // Request finished
+        {
+            updateDisplay();
+        }
+    }
+    var request = post_url + "?operation=add_item&product_name=" + encodeURI(prod_name) + '&quantity=' + quantity +
+        '&margin=' + margin + '&bundle_prod_name=' + encodeURI(bundle_prod_name);
+    xmlhttp.open("GET", request, true);
+    xmlhttp.send();
+}
+
+function bundle_update_quantity(post_file, id)
+{
+    let q = get_value_by_name("quantity_" + id);
+    execute_url(post_file + '?operation=bundle_change_quantity&id=' + id + '&q=' + q, location_reload);
+}
