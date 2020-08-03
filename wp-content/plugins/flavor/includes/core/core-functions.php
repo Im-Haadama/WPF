@@ -644,3 +644,28 @@ function convert_to_title($underscore_text)
 {
 	return ucwords(str_replace("_", " ", $underscore_text));
 }
+
+/**
+ * Define constant if not already set.
+ *
+ * @param string $name Constant name.
+ * @param string|bool $value Constant value.
+ */
+
+function define_const( $name, $value ) {
+	if ( ! defined( $name ) ) {
+		define( $name, $value );
+	}
+}
+
+function get_caller($my_class)
+{
+//	print "mc=$my_class<br/>";
+	$debug = debug_backtrace();
+//	var_dump($debug[2]);
+	for ($i = 1; $i < count($debug); $i ++)
+	{
+		if (isset($debug[$i]['class']) and ($debug[$i]['class'] != $my_class)) return $debug[$i];
+	}
+	return null;
+}

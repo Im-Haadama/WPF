@@ -405,6 +405,7 @@ class Core_Gem {
 		$post_action = null;
 		$post_file = null;
 		do {
+			if ($post_action = GetArg($args, "import_page", null)) break;
 			if ($post_action = GetArg($args, "post_action", null)) break;
 			if ($post_file = GetArg($args, "post_file", null)) // For regular next_page and all post_file.
 				$post_action = $post_file."?operation=gem_page_".$table_id;
@@ -439,9 +440,9 @@ class Core_Gem {
 
 		$checkbox_class = GetArg($args, "checkbox_class", "class");
 
-		if ($post_file and $enable_import) {
-			print $post_file;
-			$result .= "<br/>" . Core_Html::GuiButton("btn_show_import", "Import", "gem_show_import('$post_file', '$table_id', import_div)") .
+		if ($post_action and $enable_import) {
+//			print $post_file;
+			$result .= "<br/>" . Core_Html::GuiButton("btn_show_import", "Import", "gem_show_import('$post_action', '$table_id', import_div)") .
 			           "<div id='import_div'></div>";
 				// Core_Gem::ShowImport( $table_id, $args );
 		}
@@ -595,6 +596,8 @@ class Core_Gem {
 			}
 			throw new Exception("must supply import action or post_file");
 		} while (0);
+
+		print "af=$action_file<br/>";
 
 //		$action_file = AddParamToUrl($action_file, "operation", "gem_do_import");
 //		print "action file: $action_file<br/>";

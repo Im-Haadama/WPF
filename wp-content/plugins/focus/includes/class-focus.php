@@ -1,6 +1,5 @@
 <?php
 
-
 /**
  * Class Focus
  */
@@ -148,7 +147,7 @@ class Focus {
 //		add_action( 'init', array( $this, 'init' ), 0 );
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
 
-		GetSqlConn(ReconnectDb());
+//		GetSqlConn(ReconnectDb());
 
 //		add_action( 'init', array( 'Focus_Emails', 'init_transactional_emails' ) );
 		// add_action( 'init', array( $this, 'wpdb_table_fix' ), 0 );

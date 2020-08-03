@@ -135,21 +135,42 @@ if (class_exists("WC_Payment_Gateway")) {
 		public function payment_fields() {
 			global $wpdb;
 			$billing_creditcard = isset( $_REQUEST['billing_creditcard'] ) ? esc_attr( $_REQUEST['billing_creditcard'] ) : '';
-			$card_no            = '';
+			$valid_credit_info = false;
 			if ( is_user_logged_in() ) {
 				$current_user_id = wp_get_current_user()->ID;
-//				$email        = $current_user->user_email;
-				$card_no      = substr($wpdb->get_var( "SELECT card_four_digit FROM im_payment_info WHERE user_id = $current_user_id" ), 0, 4);
+				$card_number      = $wpdb->get_var( "SELECT card_four_digit FROM im_payment_info WHERE user_id = $current_user_id" );
+
+				$valid_month     = (int) $wpdb->get_var( "SELECT exp_date_month FROM im_payment_info WHERE user_id = $current_user_id" );
+				$valid_year      = (int) $wpdb->get_var( "SELECT exp_date_year FROM im_payment_info WHERE user_id = $current_user_id" );
+
+				$this_month = (int) date('m');
+				$this_year = (int) date('Y');
+
+                if (! (($valid_year > $this_year) or (($valid_year == $this_year) and ($valid_month >= $this_month)))){
+                    print __("Previous card expired");
+                }
+
+				$id_number =  $wpdb->get_var( "SELECT id_number FROM im_payment_info WHERE user_id = $current_user_id" );
+				//$valid_id = (! class_exists('Israel_Shop')) or
+                $valid_id = Israel_Shop::ValidID($id_number);
+
+				$token = get_usermeta($current_user_id, 'credit_token');
+//				MyLog("token: $token");
+//				MyLog(strstr($card_number, 'XX'));
+
+				$valid_credit_info = ($valid_id and
+				     (($valid_year > $this_year) or (($valid_year == $this_year) and ($valid_month >= $this_month))) and
+                     (strlen($token) >= 10 or ! strstr($card_number, 'XX')));
 			}
 
-			if ( $card_no != '' ) { ?>
+			if ( $valid_credit_info ) { ?>
                 <fieldset>
                     <p class="form-row validate-required">
 						<?php
 						$card_number_field_placeholder = __( 'Card Number', 'woocommerce-fruity-payment-gateway' );
 						?>
                         <label><?php _e( 'Card Number', 'woocommerce-fruity-payment-gateway' ); ?></label>
-                    <p><?php echo $card_no; ?></p>
+                    <p><?php echo substr($card_number, -4); ?></p>
                     </p>
                 </fieldset>
 			<?php } else {

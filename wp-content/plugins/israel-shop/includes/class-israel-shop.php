@@ -175,4 +175,27 @@ class Israel_Shop
 
 		print $result;
 	}
+
+	static function ValidID($id) {
+//		MyLog(__FUNCTION__ . ":" . strlen($id) . " " . self::CheckDigit(substr($id, 0, 8)));
+		if (strlen($id) == 9 && self::CheckDigit(substr($id, 0, 8)) == $id[8]) {
+//			MyLog("valid");
+			return true;
+		}
+		else
+			return FALSE;
+	}
+
+	function CheckDigit($id) {
+		for($i = 0; $i < strlen($id); $i++)
+			if($i % 2 != 0)
+				$Sum .= $id[$i] * 2;
+			else
+				$Sum .= $id[$i];
+
+		for($i = 0; $i <= strlen($Sum)-1; $i++)
+			$Digit = $Digit + $Sum[$i];
+
+		return ( $Digit % 10 > 0 ? 10 - ($Digit % 10) : 0);
+	}
 }

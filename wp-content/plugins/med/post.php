@@ -11,7 +11,6 @@ if ( ! $anonymous and ! get_user_id( true ) ) {
 	die( 'Not connected' );
 }
 $rc = $fresh->handle_operation( $operation );
-
 if ( $rc === false ) {
 	print "failed";
 

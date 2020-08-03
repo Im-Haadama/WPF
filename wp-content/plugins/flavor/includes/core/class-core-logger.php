@@ -9,6 +9,8 @@ abstract class Core_Logger_Severity
 	const fatal = 5;
 }
 
+$a = new Core_Logger('aaa', 'file', 'logger.log');
+$a->info("test");
 
 class Core_Logger
 {
@@ -16,15 +18,16 @@ class Core_Logger
 	protected $source;
 	protected $filter_levels;
 	protected static $mode;
-
+	protected static $file;
 
 	/**
 	 * Core_Logger constructor.
 	 */
-	public function __construct($source) {
+	public function __construct($source, $mode = "file", $file='flavor.log') {
 		$this->source = $source;
 		$this->filter_levels = array(); // array(1, 2);
-		self::$mode = "db";
+		self::$mode = $mode;
+		self::$file = $file;
 	}
 
 	public static function instance() {
@@ -49,12 +52,18 @@ class Core_Logger
 		$db_prefix = GetTablePrefix();
 
 		if (isset($this->filter_levels[$severity])) return true;
+		$caller = get_caller(__CLASS__);
+		$function = (isset($caller['function']) ? $caller['function'] : $caller);
 		switch (self::$mode){
 			case "db":
 				$sql = sprintf("insert into ${db_prefix}log (time, source, severity, message) \n" .
 				               "values(NOW(), '%s', %d, '%s')", $this->source, $severity, EscapeString($message));
 
 				return SqlQuery($sql);
+			case "file":
+//				var_dump($function);
+				MyLog($message, $function, self::$file);
+				break;
 			default:
 				if(get_user_id() == 1) print $message . "<br/>";
 		}

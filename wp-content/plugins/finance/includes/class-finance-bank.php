@@ -157,6 +157,7 @@ class Finance_Bank
 
 	function show_bank_account($account_id)
 	{
+//		print __FUNCTION__;
 		if (! current_user_can("show_bank", $account_id))
 			return "no permissions";
 
@@ -166,7 +167,7 @@ class Finance_Bank
 
 		$args = [];
 		$args["page"] = GetParam("page", false, null);
-		$args["post_file"] = Finance::getPostFile() . "?account_id=$account_id";
+		$args["import_page"] = Finance::getPostFile() . "?account_id=$account_id";
 		$args["query"] = "account_id = $account_id";
 		if ($filter = GetParam("filter", false, null)) {
 			switch ($filter) {
@@ -181,6 +182,7 @@ class Finance_Bank
 		}
 		$args["account_id" ] = $account_id;
 
+//		print "af1=" . $args["import_page"] . "<br/>";
 		print Core_Html::GuiHeader(1, "דף חשבון") .
 		      self::transaction_filters() .
 		      self::bank_transactions($args);
@@ -455,20 +457,20 @@ class Finance_Bank
 		}
 	}
 
-	function show_import()
-	{
-		$args                  = array();
-		$args["selector"]      = __CLASS__ . "::gui_select_bank_account";
-		$args["import_action"] = Finance::getPostFile() . '?operation=bank_import_from_file';
-
-		$args["page"] = 1;
-		$args["order"] = "3 desc";
-		$args["post_file"] = self::getPost();
-		print Core_Gem::GemTable("bank", $args);
-
-		print Core_Gem::ShowImport( "bank", $args );
-
-	}
+//	function show_import()
+//	{
+//		$args                  = array();
+//		$args["selector"]      = __CLASS__ . "::gui_select_bank_account";
+//		$args["import_action"] = Finance::getPostFile() . '?operation=bank_import_from_file';
+//
+//		$args["page"] = 1;
+//		$args["order"] = "3 desc";
+//		$args["post_file"] = self::getPost();
+//		print Core_Gem::GemTable("bank", $args);
+//
+//		print Core_Gem::ShowImport( "bank", $args );
+//
+//	}
 
 	function gui_select_open_supplier( $id = "supplier" ) {
 		$multi_site = Core_Db_MultiSite::getInstance();
@@ -664,7 +666,6 @@ class Finance_Bank
 		$args["class"] = "widefat";
 		$args["prepare_plug"] = __CLASS__ . "::prepare_row";
 		$args["enable_import"] = true;
-		$args["import_page"] = AddToUrl(array("operation"=>"gem_import", "bank_account" => $account_id));
 
 		$fields = GetArg($args, "fields", array("id", "date", "description", "out_amount", "in_amount", "balance", "receipt", "client_name"));
 

@@ -3,12 +3,14 @@
 
 class Med {
 
-
+	private $version;
 	/**
 	 * Med constructor.
 	 */
 	public function __construct() {
+		$this->define_constants();
 		self::init_hooks();
+		$this->version = '1.0';
 	}
 
 	function init_hooks() {
@@ -17,6 +19,68 @@ class Med {
 		AddAction("gem_add_med_cases", array($this, "add_case"));
 		add_action( 'init', array( $this, 'init' ), 11 );
 		add_action( 'admin_menu',array($this, 'admin_menu') );
+		add_action( 'admin_enqueue_scripts', array( $this, 'admin_scripts' ) );
+		self::Add('med_create_case');
+		self::Add('med_show_case');
+	}
+
+	private function define_constants() {
+		$upload_dir = wp_upload_dir( null, false );
+
+		define_const( 'MED_ABSPATH', dirname( MED_PLUGIN_FILE ) . '/' );
+		define_const( 'MED_PLUGIN_BASENAME', plugin_basename( MED_PLUGIN_FILE ) );
+		define_const( 'MED_VERSION', $this->version );
+		define_const( 'MED_INCLUDES', MED_ABSPATH . 'includes/' );
+		define_const( 'MED_INCLUDES_URL', plugins_url() . '/med/includes/' ); // For js
+		define_const( 'MED_INCLUDES_URL', plugins_url() . '/med/includes/' ); // For js
+		define_const( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path( __FILE__ ) . '../../flavor/includes/' );  // for php
+		define_const( 'MED_DELIMITER', '|' );
+		define_const( 'MED_LOG_DIR', $upload_dir['basedir'] . '/MED-logs/' );
+	}
+
+	function Add($tag)
+	{
+		AddAction($tag, array($this, $tag));
+	}
+
+	function med_show_case()
+	{
+		$id = GetParam("id");
+
+		$user = new Core_Users($id);
+
+		$result = Core_Html::GuiHeader(1, $user->getName());
+
+		$symtoms = get_usermeta($id, "med_case_symtoms");
+		if ($symtoms) {
+			foreach (unserialize($symtoms) as $symtom)
+				$result .= Core_Html::GuiHeader(2, $symtoms);
+		}
+		$result .= self::GuiSelectSym("med_sym");
+
+		$result .= Core_Html::GuiButton("btn_add_symtom", "Add", "");
+
+		print $result;
+	}
+
+	public function admin_scripts() {
+		$file = MED_INCLUDES_URL . 'med.js';
+		wp_enqueue_script( 'med', $file, null, $this->version, false );
+	}
+
+	function GuiSelectSym()
+	{
+		$q = get_terms('product_cat', array(
+			'hide_empty' => false
+		));
+	}
+
+	function med_create_case()
+	{
+		$user = GetParam("client", true);
+
+		update_user_meta($user, "med_case", 1);
+		return self::get_link("med_case", $user);
 	}
 
 	function init()
@@ -34,10 +98,12 @@ class Med {
 	}
 
 	function add_case() {
+		$post_file = Med::getPost();
 		$result = Core_Html::GuiHeader(1, "Medical - add new case");
 		$args = [];
 		$args["post_file"] = self::getPost();
-		$result .= __("Select client") . " " .Core_Users::gui_select_user("new_user", null, $args);
+		$result .= __("Select client") . " " .Core_Users::gui_select_user("new_user", null, $args) . "<br/>";
+		$result .= Core_Html::GuiButton("btn_save", "Save", "med_new_case('$post_file')");
 
 		print $result;
 	}
@@ -136,13 +202,59 @@ class Med {
 
 		$cases = array("");
 		$args = [];
-		$result .= Core_Gem::GemArray($cases, $args, "med_cases");
+		$sql = "select user_id as id, u.display_name
+       from wp_usermeta join wp_users u 
+where meta_key = 'med_case'
+and u.ID = user_id";
 
-		print $result;
+//		var_dump(Core_Data::TableData( $sql, $args));
+		$args["links"] = array("id" => self::get_link("med_case", '%d'));
+
+		print $result . Core_Gem::GemArray(Core_Data::TableData( $sql, $args), $args, "cases");
 	}
 
-// private stuff
-//				$post->post_status = 'private';
-//				wp_update_post( $post );
+	function get_link($type, $id)
+	{
+		switch ($type)
+		{
+			case "med_case":
+				return "/wp-admin/admin.php?page=med&operation=med_show_case&id=$id";
+		}
+		die ("unknown type");
+	}
+
+	/**
+	 * Add custom taxonomies
+	 *
+	 * Additional custom taxonomies can be defined here
+	 * http://codex.wordpress.org/Function_Reference/register_taxonomy
+	 */
+	function add_custom_taxonomies() {
+		// Add new "Locations" taxonomy to Posts
+		register_taxonomy('symptoms', 'post', array(
+		// Hierarchical taxonomy (like categories)
+		'hierarchical' => true,
+		// This array of options controls the labels displayed in the WordPress Admin UI
+		'labels' => array(
+			'name' => _x( 'Locations', 'taxonomy general name' ),
+			'singular_name' => _x( 'Location', 'taxonomy singular name' ),
+			'search_items' =>  __( 'Search Locations' ),
+			'all_items' => __( 'All Locations' ),
+			'parent_item' => __( 'Parent Location' ),
+			'parent_item_colon' => __( 'Parent Location:' ),
+			'edit_item' => __( 'Edit Location' ),
+			'update_item' => __( 'Update Location' ),
+			'add_new_item' => __( 'Add New Location' ),
+			'new_item_name' => __( 'New Location Name' ),
+			'menu_name' => __( 'Locations' ),
+		),
+		// Control the slugs used for this taxonomy
+		'rewrite' => array(
+				'slug' => 'locations', // This controls the base slug that will display before each term
+				'with_front' => false, // Don't display the category base before "/locations/"
+				'hierarchical' => true // This will allow URL's like "/locations/boston/cambridge/"
+			),
+	  ));
+}
 
 }

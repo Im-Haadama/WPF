@@ -47,7 +47,7 @@ class Core_Users {
 
 		if ( $edit ) {
 			$result = Core_Html::GuiAutoList( $id, "users", $args );
-			$result .= Core_Html::GuiHyperlink("Create new", "/wp-admin/user-new.php");
+			$result .= Core_Html::GuiHyperlink("Create new user", "/wp-admin/user-new.php");
 
 			return $result;
 		} else {

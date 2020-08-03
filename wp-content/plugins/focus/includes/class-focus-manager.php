@@ -14,7 +14,7 @@ class Focus_Manager {
 	 */
 	public function __construct($post_file) {
 		self::$post_file = $post_file;
-		self::$logger = new Core_Logger(__CLASS__);
+		self::$logger = new Core_Logger(__CLASS__, "file", "focus.log");
 		self::$_instance  = $this;
 	}
 
@@ -39,6 +39,7 @@ class Focus_Manager {
 
 	function create_tasks( $freqs = null, $verbose = false, $default_owner = 1 )
 	{
+		self::$logger->Info($freqs);
 		$debug = 0;
 		if ($debug == 2) $verbose = 1;
 

@@ -293,27 +293,16 @@ class Finance {
 	private function define_constants() {
 		$upload_dir = wp_upload_dir( null, false );
 
-		$this->define( 'FINANCE_ABSPATH', dirname( FINANCE_PLUGIN_FILE ) . '/' );
-		$this->define( 'FINANCE_PLUGIN_BASENAME', plugin_basename( FINANCE_PLUGIN_FILE ) );
-		$this->define( 'FINANCE_VERSION', $this->version );
-		$this->define( 'FINANCE_INCLUDES', FINANCE_ABSPATH . 'includes/' );
-		$this->define( 'FINANCE_INCLUDES_URL', plugins_url() . '/finance/includes/' ); // For js
-		$this->define( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path( __FILE__ ) . '../../flavor/includes/' );  // for php
-		$this->define( 'FINANCE_DELIMITER', '|' );
-		$this->define( 'FINANCE_LOG_DIR', $upload_dir['basedir'] . '/finance-logs/' );
+		define_const( 'FINANCE_ABSPATH', dirname( FINANCE_PLUGIN_FILE ) . '/' );
+		define_const( 'FINANCE_PLUGIN_BASENAME', plugin_basename( FINANCE_PLUGIN_FILE ) );
+		define_const( 'FINANCE_VERSION', $this->version );
+		define_const( 'FINANCE_INCLUDES', FINANCE_ABSPATH . 'includes/' );
+		define_const( 'FINANCE_INCLUDES_URL', plugins_url() . '/finance/includes/' ); // For js
+		define_const( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path( __FILE__ ) . '../../flavor/includes/' );  // for php
+		define_const( 'FINANCE_DELIMITER', '|' );
+		define_const( 'FINANCE_LOG_DIR', $upload_dir['basedir'] . '/finance-logs/' );
 	}
 
-	/**
-	 * Define constant if not already set.
-	 *
-	 * @param string $name Constant name.
-	 * @param string|bool $value Constant value.
-	 */
-	private function define( $name, $value ) {
-		if ( ! defined( $name ) ) {
-			define( $name, $value );
-		}
-	}
 
 	/**
 	 * What type of request is this?
@@ -606,7 +595,7 @@ class Finance {
 //	 */
 	public function setup_environment() {
 		/* @deprecated 2.2 Use WC()->template_path() instead. */
-		$this->define( 'FINANCE_TEMPLATE_PATH', $this->template_path() );
+		define_const( 'FINANCE_TEMPLATE_PATH', $this->template_path() );
 
 		// $this->add_thumbnail_support();
 	}

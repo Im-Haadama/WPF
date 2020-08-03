@@ -782,7 +782,7 @@ function cart_update_price()
 		//my_log("set " . $sell_price);
 		$cart_item['data']->set_sale_price( $sell_price );
 		$cart_item['data']->set_price( $sell_price );
-		MyLog( "pid= $prod_id  q= $q  sp= $sell_price");
+//		MyLog( "pid= $prod_id  q= $q  sp= $sell_price");
 	}
 }
 

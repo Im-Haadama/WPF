@@ -60,3 +60,29 @@ function run_fresh() {
 }
 
 run_fresh();
+
+//add_filter( 'wp_calculate_image_sizes', 'sizes', 10, 2 );
+//
+//function sizes( $sizes, $size ) {
+//	$width = $size[0];
+//
+////	print 1/0;
+////	MyLog(get_post_type());
+//	if ( 840 <= $width ) {
+//		$sizes = '(max-width: 709px) 85vw, (max-width: 909px) 67vw, (max-width: 1362px) 62vw, 840px';
+//	}
+//
+//	if ( 'page' === get_post_type() ) {
+//		if ( 840 > $width ) {
+//			$sizes = '(max-width: ' . $width . 'px) 85vw, ' . $width . 'px';
+//		}
+//	} else {
+//		if ( 840 > $width && 600 <= $width ) {
+//			$sizes = '(max-width: 709px) 85vw, (max-width: 909px) 67vw, (max-width: 984px) 61vw, (max-width: 1362px) 45vw, 600px';
+//		} elseif ( 600 > $width ) {
+//			$sizes = '(max-width: ' . $width . 'px) 85vw, ' . $width . 'px';
+//		}
+//	}
+//
+//	return $sizes;
+//}

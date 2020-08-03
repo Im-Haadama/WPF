@@ -189,7 +189,7 @@ and curdate() > order_mission_date(id)" );
 
 		foreach ( $ids as $id ) {
 			$order = new Fresh_Order( $id );
-			if ($order->justDelivery()) {
+			if (! $order->justDelivery()) {
 				if ($debug) MyLog("adding $id");
 				$order->delivered( $message );
 				$result .= "Order $id $message\n";
