@@ -597,8 +597,6 @@ class Core_Gem {
 			throw new Exception("must supply import action or post_file");
 		} while (0);
 
-		print "af=$action_file<br/>";
-
 //		$action_file = AddParamToUrl($action_file, "operation", "gem_do_import");
 //		print "action file: $action_file<br/>";
 		if ($html_file)

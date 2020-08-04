@@ -161,7 +161,7 @@ class Focus {
 
 //		$this->loader->add_action( 'wp_enqueue_scripts', $this->manager, 'enqueue_scripts' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $this->salary, 'enqueue_scripts' );
-		$this->loader->add_action( 'admin_enqueue_scripts', $this->tasks, 'admin_scripts' );
+		$this->loader->add_action( 'wp_enqueue_scripts', $this->tasks, 'admin_scripts' );
 
 		Focus_Project::init();
 

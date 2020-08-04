@@ -216,11 +216,13 @@ class Fresh_Suppliers {
 		$fields["supplier_id"] = $supplier_id;
 	}
 
-	static function draftable_products()
+	static function draftable_products($supplier_id)
 	{
+		$machine_query = (SqlQuerySingleScalar("select machine_update from im_suppliers where id = $supplier_id") ?
+			(" date = (select max(date) from im_supplier_price_list where supplier_id = " . $supplier_id .")") : '1');
+
 		$result = "";
-		$draftable_products = null; /* SqlQuery("
-				select distinct sp.id as map_id, product_id, post_title
+		$sql = "select distinct sp.id as map_id, product_id, post_title
 		from im_supplier_mapping sp
 		     join wp_posts p
 		where
@@ -230,10 +232,10 @@ class Fresh_Suppliers {
 		                           from im_supplier_price_list
 		                           where supplier_id = $supplier_id
 		                                 and product_id is not null
-		                                                       and date = (select max(date)
-		                                         from im_supplier_price_list where supplier_id = $supplier_id)) and
+		                                                       and $machine_query) and
 		      p.id = product_id and
-		      p.post_status = 'publish'"); */
+		      p.post_status = 'publish'";
+		$draftable_products = SqlQuery($sql);
 
 		if ($draftable_products) {
 			$result .= Core_Html::GuiHeader(2, "מוצרים להורדה");
@@ -255,12 +257,19 @@ class Fresh_Suppliers {
 			$args["class"] = "sortable";
 			$result .= Core_Html::gui_table_args($rows, "draftable_products", $args);
 		}
+		print $result;
 	}
 	static function pricelist_header($result)
 	{
 		$supplier_id = GetParam("supplier_id");
 		$s = new Fresh_Supplier($supplier_id);
 		$result .= Core_Html::GuiHeader(1, __("Supplier pricelist") . " " . $s->getSupplierName());
+
+		$draftable_products = self::draftable_products($supplier_id);
+		if ($draftable_products) {
+			$result .= Core_Html::GuiHeader(2, "מוצרים להורדה");
+		}
+
 
 		return $result;
 	}

@@ -27,9 +27,9 @@ class Finance_Salary {
 	 * enqueue_scripts - add scripts to be loaded.
 	 */
 	function enqueue_scripts() {
-		$file = plugin_dir_url( __FILE__ ) . 'org/people.js';
+//		$file = plugin_dir_url( __FILE__ ) . 'org/people.js';
 //		print "script $file";
-		wp_enqueue_script( 'people', $file, null, self::$version, false );
+//		wp_enqueue_script( 'people', $file, null, self::$version, false );
 	}
 
 	/**
