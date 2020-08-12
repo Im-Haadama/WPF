@@ -217,7 +217,7 @@ class Fresh_Supply {
 
 	static function getLink($supply_id)
 	{
-		return "/wp-admin/admin.php?page=supplies&id=$supply_id";
+		return "/wp-admin/admin.php?page=supplies&operation=show_supply&id=$supply_id";
 		// AddToUrl(array( "operation" =>"show_supply", "id" => "%s")
 	}
 
@@ -728,16 +728,20 @@ class Fresh_Supply {
 			$prod_id  = $row[0];
 			$quantity = $row[1];
 
-			$product = new WC_Product( $prod_id );
-			if ( $product->managing_stock() ) {
-				// print "managed<br/>";
-				// print "stock was: " . $product->get_stock_quantity() . "<br/>";
+			try {
+				$product = new WC_Product( $prod_id );
+				if ( $product->managing_stock() ) {
+					// print "managed<br/>";
+					// print "stock was: " . $product->get_stock_quantity() . "<br/>";
 
-				$product->set_stock_quantity( max( 0, $product->get_stock_quantity() - $quantity ) );
-				// print "stock is: " . $product->get_stock_quantity() . "<br/>";
-				$product->save();
+					$product->set_stock_quantity( max( 0, $product->get_stock_quantity() - $quantity ) );
+					// print "stock is: " . $product->get_stock_quantity() . "<br/>";
+					$product->save();
+				}
+			} catch (Exception $e)
+			{
+				print $e->getMessage();
 			}
-
 		}
 		$sql = 'UPDATE im_supplies SET status = 9 WHERE id = ' . $this->ID;
 

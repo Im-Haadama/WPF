@@ -145,11 +145,20 @@ class Fresh_Pricelist_Item {
 		return $row;
 	}
 
+	function delete()
+	{
+		$sql = "delete from im_supplier_price_list where id = $this->id";
+		MyLog($sql);
+		return SqlQuery($sql);
+	}
+
 	public function AddProdInfo($row, $edit, $create_info, $supplier_id)
 	{
 		$catalog = new Fresh_Catalog();
 
+		$post_file = Fresh::getPost();
 		$link_data = $catalog->GetProdID( $this->id);
+		array_push($row, Core_Html::GuiButton("del_" . $this->id, "X", "pricelist_delete('$post_file', $this->id)"));
 		if ( $link_data ) {
 			$price = $row['price'];
 			$date = $row['date'];

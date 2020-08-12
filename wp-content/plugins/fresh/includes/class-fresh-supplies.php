@@ -29,6 +29,7 @@ class Fresh_Supplies {
 		AddAction('supply_save_comment', array($this, 'supply_save_comment'));
 		AddAction('supply_upload', array($this, 'supply_upload'));
 		AddAction('got_supply', array($this, 'got_supply_wrap'));
+		AddAction('supplies_merge', array($this, 'supplies_merge'));
 		Core_Gem::AddTable("supplies");
 	}
 
@@ -183,7 +184,7 @@ class Fresh_Supplies {
 		// $result .= Core_Html::GuiButton("btn_delete", "close_supplies('" . $status_name . "')", "close");
 		if ($status == eSupplyStatus::NewSupply){
 			$result .= Core_Html::GuiButton("btn_send", "send", "send_supplies('$post_file')");
-			$result .= Core_Html::GuiButton("btn_merge", "merge", "merge_supplies()");
+			$result .= Core_Html::GuiButton("btn_merge", "merge", "supply_merge('$post_file')");
 			$result .= Core_Html::GuiButton("btn_delete", "delete", "supply_delete('" . Fresh::getPost() . "', 'new')");
 		}
 		return $result;
@@ -366,7 +367,7 @@ class Fresh_Supplies {
 		MyLog( __METHOD__);
 
 		$supply = Fresh_Supply::CreateSupply($supplier_id);
-		for ( $i = 0; $i < count( $params ); $i += 3 ) {
+		for ( $i = 0; $i < count( $params ); $i += 2 ) {
 			$prod_id = $params[$i];
 			$quantity = $params[$i+1];
 			// units - $params[$i+2];
@@ -374,6 +375,23 @@ class Fresh_Supplies {
 			// print $prod_id . " " . $supplier . " " . $quantity . " " . $units . "<br/>";
 		}
 		return true;
+	}
+
+	public function supplies_merge()
+	{
+		$params = GetParamArray("params");
+		for ( $i = 0; $i < count( $params ); $i ++ ) {
+			$supply_id = $params[$i];
+			$s = new Fresh_Supply($supply_id);
+			if ( $s->getStatus() != eSupplyStatus::NewSupply ) {
+				print "ניתן לאחד רק הספקות במצב חדש ";
+
+				return false;
+			}
+		}
+		$supply_id = $params[0];
+		unset( $params[0] );
+		return self::do_merge_supplies( $params, $supply_id );
 	}
 
 	public function delete_supplies()
@@ -410,4 +428,35 @@ class Fresh_Supplies {
 		return $S->got_supply($supply_total, $supply_number, $net_amount, $is_invoice ? FreshDocumentType::invoice : FreshDocumentType::supply, $document_date );
 	}
 
+	function do_merge_supplies( $params, $supply_id ) {
+		// Read sum of lines.
+		$sql     = "SELECT sum(quantity), product_id, 1 FROM im_supplies_lines
+WHERE status = 1 AND supply_id IN (" . $supply_id . ", " . rtrim( implode( ",", $params ) ) . ")" .
+		           " GROUP BY product_id, status ";
+		$result  = SqlQuery($sql );
+		$results = array();
+
+		while ( $row = mysqli_fetch_row( $result ) ) {
+			array_push( $results, $row );
+		}
+
+		// Move all lines to be in merged status
+		$sql = "UPDATE im_supplies_lines SET status = " . eSupplyStatus::Merged . " WHERE supply_id IN ("
+		       . $supply_id . ", " . rtrim( implode( ",", $params ) ) . ")";
+
+		SqlQuery( $sql );
+
+		// Insert new lines
+		$sql = "INSERT INTO im_supplies_lines (status, supply_id, product_id, quantity) VALUES ";
+		foreach ( $results as $row ) {
+			$sql .= "( " . eSupplyStatus::NewSupply . ", " . $supply_id . ", " . $row[1] . ", " . $row[0] . "),";
+		}
+		$sql = rtrim( $sql, "," );
+		SqlQuery( $sql );
+
+		$sql = "UPDATE im_supplies SET status = " . eSupplyStatus::Merged .
+		       " WHERE id IN (" . rtrim( implode( $params, "," ) ) . ")";
+
+		return SqlQuery( $sql );
+	}
 }

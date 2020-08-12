@@ -82,6 +82,25 @@ function pricelist_option_selected(sel) {
     document.getElementById("chk_" + pricelist_id).checked = true;
 }
 
+function pricelist_delete(post_file, line_id)
+{
+    let btn = document.getElementById("del_" + line_id);
+    execute_url(post_file + '?operation=pricelist_delete&id=' + line_id, action_hide_row, btn);
+}
+
+function pricelist_map_remove(post_file)
+{
+    let table = document.getElementById("supplier_price_list");
+    let collection = get_selected("checkbox_supplier_price_list");
+    let map_ids = [];
+    for (let i = 0; i < collection.length; i++) {
+        map_ids.push(collection[i]);
+    }
+
+    let request = post_file + '?operation=suppliers_map_remove&ids=' + map_ids.join();
+    execute_url(request, location_reload);
+}
+
 function pricelist_map_products(post_file)
 {
     let table = document.getElementById("supplier_price_list");
@@ -327,4 +346,13 @@ function bundle_update_quantity(post_file, id)
 {
     let q = get_value_by_name("quantity_" + id);
     execute_url(post_file + '?operation=bundle_change_quantity&id=' + id + '&q=' + q, location_reload);
+}
+
+function inventory_change(post_file, prod_id)
+{
+    let prod_ids = new Array();
+    let q = get_value_by_name("inv_" + prod_id);
+    prod_ids.push(prod_id, q);
+    let request = post_file + "?operation=inventory_save&data=" + prod_ids.join();
+    execute_url(request, fail_message);
 }

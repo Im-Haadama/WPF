@@ -30,6 +30,7 @@ class Fresh_Packing {
 	}
 
 	static function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero = false, $filter_stock = false, $history = false) {
+		$post_file = Fresh::getPost();
 		$result            = "";
 		$inventory_managed = InfoGet( "inventory" );
 		if ($supplier_id) $supplier          = new Fresh_Supplier( $supplier_id );
@@ -64,10 +65,7 @@ class Fresh_Packing {
 			$p     = new Fresh_Product( $prod_id );
 			if ( $inventory_managed ) {
 				$q_inv = $p->getStock();
-				$row[] = Core_Html::GuiInput( "inv_" . $prod_id, $q_inv, array(
-					"onchange=\"change_inv(" . $prod_id . ")\"",
-					"onkeyup=\"moveNext(" . $prod_id . ")\""
-				) );
+				$row[] = Core_Html::GuiInput( "inv_" . $prod_id, $q_inv, array("events" => "onchange=\"inventory_change('$post_file', " . $prod_id . ")\" onkeyup=\"moveNext('$post_file'," . $prod_id . ")\""));
 
 				$numeric_quantity = ceil( $quantity - $q_inv );
 
@@ -114,8 +112,11 @@ class Fresh_Packing {
 				array_push( $table_rows, $data_lines[ $i ][1] );
 			}
 			//array_push($table_rows, array( array( "", 'סה"כ', "", "", "", "", "", $total_buy, $total_sale )));
+//			$args = [];
+//			$post_file = Fresh::getPost();
+//			$args["events"] = array(3 => 'onchange="inventory_update(\'' . $post_file . '\')');
 
-			$result .= Core_Html::gui_table_args( $table_rows, "needed_" . $supplier_id );
+			$result .= Core_Html::gui_table_args( $table_rows, "needed_" . $supplier_id);
 
 			if ( ! $supplier_id ) {
 				$result .= "יש להפוך לטיוטא רק לאחר שמוצר אזל מהמלאי והוצע ללקוחות תחליף<br/>";
@@ -226,8 +227,18 @@ class Fresh_Packing {
 	static function init_hooks() {
 		add_filter( 'manage_edit-shop_order_columns', array(__CLASS__, 'wc_new_order_column' ));
 		add_action( 'manage_shop_order_posts_custom_column', array(__CLASS__, 'add_freight' ));
+		AddAction('inventory_save', array(__CLASS__, 'inventory_save'));
 	}
 
+	static function inventory_save()
+	{
+		$data = GetParamArray("data");
+		$prod_id = $data[0];
+		$q = $data[1];
+
+		$p = new Fresh_Product($prod_id);
+		return $p->setStock($q);
+	}
 	static function add_freight($col)
 	{
 		global $post;

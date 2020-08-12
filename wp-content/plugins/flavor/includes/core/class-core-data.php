@@ -355,7 +355,8 @@ class Core_Data
 		$transpose = GetArg($args, "transpose", null);
 		$add_field_suffix = GetArg($args, "add_field_suffix", true);
 
-		$events = GetArg($args, "events", null); // $edit ? "onchange='changed_field(" . $row_id . ")'" : null); // Valid for grid. In transposed single row it will be replaced.
+		$maybe_array_events = GetArg($args, "events", null); // $edit ? "onchange='changed_field(" . $row_id . ")'" : null); // Valid for grid. In transposed single row it will be replaced.
+		unset ($args["events"]);
 		$field_events = null;
 		$table_name = GetArg($args, "table_name", null);
 
@@ -368,6 +369,7 @@ class Core_Data
 		{
 			return $row;
 		}
+		$events = $maybe_array_events; // If it's array, handle it in the loop.
 
 		foreach ($row as $key => $data)
 		{
@@ -381,6 +383,15 @@ class Core_Data
 			$orig_data = $data;
 			$value = self::prepare_text($data); // Default;
 			if (strtolower($key) == "id" and $skip_id) continue;
+
+//          Option for events specific to col. Not tested.
+//			if (is_array($maybe_array_events)) { // If it's array check if the right col has events.
+//				if ( isset( $maybe_array_events[ $key ] ) ) {
+//					$events = $maybe_array_events[ $key ];
+//				} else {
+//					$events = null;
+//				}
+//			}
 
 			if ($events) {
 				if ($transpose)	$field_events = sprintf($events, "'" . $key . "'", $row_id);

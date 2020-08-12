@@ -3,12 +3,14 @@
 class Fresh_Suppliers {
 	private $gem;
 
-	function init_hooks()
-	{
-		AddAction("gem_v_show", array($this, "pricelist_header"), 9);
-		AddAction("gem_v_show", array($this, "pricelist_functions"), 11);
-		AddAction("suppliers_map_products", __CLASS__ . "::suppliers_map_products");
-		AddAction("add_pricelist_item", array($this, 'add_pricelist_item'));
+	function init_hooks() {
+		AddAction( "gem_v_show", array( $this, "pricelist_header" ), 9 );
+//		AddAction( "gem_v_show", array( $this, "draftable_products" ), 12 );
+		AddAction( "gem_v_show", array( $this, "pricelist_functions" ), 11 );
+		AddAction( "suppliers_map_products", __CLASS__ . "::suppliers_map_products" );
+		AddAction( "suppliers_map_remove", __CLASS__ . "::suppliers_map_remove" );
+		AddAction( "add_pricelist_item", array( $this, 'add_pricelist_item' ) );
+		AddAction('pricelist_delete', array($this, 'delete'));
 	}
 
 	function init()
@@ -36,7 +38,7 @@ class Fresh_Suppliers {
 		              and ((select machine_update from im_suppliers where id = supplier_id) = 0 or  
 		              date = supplier_last_pricelist_date(supplier_id))",
 			"fields" => array("id", "product_name", "price", "date"),
-			"extra_header" => array("linked product", "published", "calculated price", "price", "sale price", "open orders"),
+			"extra_header" => array("Delete", "linked product", "published", "calculated price", "price", "sale price", "open orders"),
 			"order"=>"order by id",
 			"prepare" => "Fresh_Pricelist_Item::add_prod_info",
 //			"header_fields" => array("supplier_product_code" => "code", "product_name" => "name"),
@@ -67,9 +69,9 @@ class Fresh_Suppliers {
 	{
 		$operation = GetParam("operation", false, null, true);
 
+//		print "op=$operation";
 		Core_Gem::getInstance(); // Make sure that initiated.
 
-		MyLog("op=$operation");
 		$result = "";
 		if ($operation){
 			$args = self::Args("suppliers");
@@ -83,6 +85,23 @@ class Fresh_Suppliers {
 			$result = self::SuppliersTable();
 
 		print $result;
+	}
+
+	function delete()
+	{
+		$item = new Fresh_Pricelist_Item(GetParam("id", true));
+		return $item->delete();
+	}
+	static function suppliers_map_remove()
+	{
+		$ids = GetParamArray("ids");
+		for($i=0; $i < count($ids); $i += 2 ){
+			$product_id   = $ids[ $i ];
+			$pricelist_id = $ids[ $i + 1 ];
+			Fresh_Catalog::RemoveMapping( $product_id, $pricelist_id );
+		}
+
+		return true;
 	}
 
 	static function suppliers_map_products()
@@ -99,6 +118,7 @@ class Fresh_Suppliers {
 
 	static function SuppliersTable()
 	{
+//		print debug_trace(10);
 		$result = Core_Html::GuiHeader(2, "Active suppliers", array("class"=>"wc-shipping-zones-heading", "close"=>false)) . "<br/>"; // . Core_Html::GuiHyperlink("Add supplier", "link", array("class"=> "page-title-action")) .'</h2>';
 
 		$args = self::Args("suppliers");
@@ -216,8 +236,10 @@ class Fresh_Suppliers {
 		$fields["supplier_id"] = $supplier_id;
 	}
 
-	static function draftable_products($supplier_id)
+	static function draftable_products()
 	{
+		$supplier_id = GetParam("supplier_id");
+
 		$machine_query = (SqlQuerySingleScalar("select machine_update from im_suppliers where id = $supplier_id") ?
 			(" date = (select max(date) from im_supplier_price_list where supplier_id = " . $supplier_id .")") : '1');
 
@@ -235,6 +257,8 @@ class Fresh_Suppliers {
 		                                                       and $machine_query) and
 		      p.id = product_id and
 		      p.post_status = 'publish'";
+
+//		print $sql;
 		$draftable_products = SqlQuery($sql);
 
 		if ($draftable_products) {
@@ -257,19 +281,14 @@ class Fresh_Suppliers {
 			$args["class"] = "sortable";
 			$result .= Core_Html::gui_table_args($rows, "draftable_products", $args);
 		}
-		print $result;
+		return $result;
 	}
+
 	static function pricelist_header($result)
 	{
 		$supplier_id = GetParam("supplier_id");
 		$s = new Fresh_Supplier($supplier_id);
 		$result .= Core_Html::GuiHeader(1, __("Supplier pricelist") . " " . $s->getSupplierName());
-
-		$draftable_products = self::draftable_products($supplier_id);
-		if ($draftable_products) {
-			$result .= Core_Html::GuiHeader(2, "מוצרים להורדה");
-		}
-
 
 		return $result;
 	}
@@ -281,6 +300,8 @@ class Fresh_Suppliers {
 		if ("pricelist" == $table_name){
 			$result .= Core_Html::GuiHyperlink("Create products", AddToUrl( "create_products", 1));
 			$result .= Core_html::GuiButton("btn_map", "Map Products", array("action" => "pricelist_map_products('". Fresh::getPost() ."')"));
+//			$result .= Core_html::GuiButton("btn_remove_map", "Remove Map", array("action" => "pricelist_remove_map('". Fresh::getPost() ."')"));
+			$result .= self::draftable_products();
 		}
 		return $result;
 	}

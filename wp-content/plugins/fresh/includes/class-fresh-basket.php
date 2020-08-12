@@ -284,7 +284,7 @@ class Fresh_Basket extends  Fresh_Product  {
 
 		// show in the button product prices for selection.
 		$options = array();
-		foreach (array(19, 62) as $categ) {
+		foreach (array(19, 62, 18) as $categ) {
 			$C = new Fresh_Category( $categ );
 			array_push( $options, $C->getProductsWithPrice());
 		}

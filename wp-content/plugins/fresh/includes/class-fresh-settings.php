@@ -76,14 +76,23 @@
 		{
 			$menu = new Core_Admin_Menu();
 
-			// General Settings
-			$menu->AddSubMenu('edit.php?post_type=product', 'edit_shop_orders',
+//			$menu->AddMenu('Fresh', 'Fresh', 'shop_manager', 'fresh', array(Fresh::instance(), 'main'));
+			$menu->AddMenu('פרש', 'Fresh', 'edit_shop_orders', 'fresh', array(Fresh::instance(), 'main'));
+
+			$menu->AddSubMenu('fresh', 'edit_shop_orders',
+				array('page_title' => 'Print',
+				      'menu_title' => 'Packing printing',
+				      'menu_slug' => 'printing',
+				      'function' => "Fresh::printing"));
+
+			// General Settings //edit.php?post_type=product
+			$menu->AddSubMenu('fresh', 'edit_shop_orders',
 				array('page_title' => 'Missing pictures',
 				            'menu_title' => 'Missing pictures',
 				            'menu_slug' => 'missing',
 				            'function' => "Fresh_Catalog::missing_pictures"));
 
-			$menu->AddSubMenu('users.php', 'edit_shop_orders',
+			$menu->AddSubMenu('users.php', 'edit_shop_orders', // Previous users.php
 					array('page_title' => 'Payment List',
 					      'menu_title' => 'Payment list',
 					      'menu_slug' => 'payment_list',
@@ -95,31 +104,31 @@
 			////////////////////
 
 			// Suppliers
-			$menu->AddSubMenu("woocommerce", "edit_shop_orders",
+			$menu->AddSubMenu("fresh", "edit_shop_orders",
 				array('page_title' => 'Suppliers', 'function' => array("Fresh_Suppliers" , 'suppliers' )));
 
 			// Needed products
-			$menu->AddSubMenu("woocommerce", "edit_shop_orders",
+			$menu->AddSubMenu("fresh", "edit_shop_orders",
 				array('page_title' => 'Needed', 'function' => array("Fresh_Packing" , 'needed_products' )));
 
 			// Needed products
-			$menu->AddSubMenu("woocommerce", "edit_shop_orders",
+			$menu->AddSubMenu("fresh", "edit_shop_orders",
 				array('page_title' => 'Packing', 'function' => array("Fresh_Packing" , 'table' )));
 
 			// Deliveries
-			$menu->Add("woocommerce", "edit_shop_orders", "fresh_deliveries", array("Fresh_Delivery" , 'fresh_deliveries' ));
+			$menu->Add("fresh", "edit_shop_orders", "fresh_deliveries", array("Fresh_Delivery" , 'fresh_deliveries' ));
 
 
 			//////////////
-			// Products //
+			// Products // edit.php?post_type=product
 			//////////////
 
 			// Baskets
-			$menu->AddSubMenu("edit.php?post_type=product", "edit_shop_orders",
+			$menu->AddSubMenu("fresh", "edit_shop_orders",
 				array('page_title' => 'Baskets', 'function' => array("Fresh_Basket" , 'SettingsWrap' )));
 
 			// All products
-			$menu->AddSubMenu("edit.php?post_type=product", "edit_shop_orders",
+			$menu->AddSubMenu("fresh", "edit_shop_orders",
 				array('page_title' => 'All products', 'function' => array("Fresh_Catalog" , 'show_catalog' )));
 
 		}
@@ -134,6 +143,7 @@
 		{
 			return "/wp-content/plugins/fresh/post.php";
 		}
+
 
 //		static function pictures()
 //		{

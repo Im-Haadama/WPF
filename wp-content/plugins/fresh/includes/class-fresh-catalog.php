@@ -962,7 +962,6 @@ class Fresh_Catalog {
 			set_post_meta_field( $post_id, '_thumbnail_id', $attachment_id );
 		}
 	}
-
 }
 
 //function best_alternatives( $alternatives, $debug = false ) {

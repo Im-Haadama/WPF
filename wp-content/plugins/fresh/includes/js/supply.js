@@ -278,8 +278,19 @@ function supply_delete(post_file, status) {
     let params = get_selected(status);
     if (! params.length) {
         alert ("select supplies for delete");
-        return
+        return false;
     }
     let request = post_file + "?operation=delete_supplies&params=" + params;
+    execute_url(request, location_reload);
+}
+
+function supply_merge(post_file)
+{
+    let params = get_selected('new');
+    if (! params.length) {
+        alert ("select supplies for delete");
+        return false;
+    }
+    let request = post_file + "?operation=supplies_merge&params=" + params;
     execute_url(request, location_reload);
 }

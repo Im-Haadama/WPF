@@ -98,6 +98,49 @@ class Fresh {
 		}
 	}
 
+	function main()
+	{
+		print "Fresh";
+	}
+
+	static function mission_print_wrap()
+	{
+		$id = GetParam("mission_id", true);
+		Fresh::instance()->mission_print($id);
+	}
+
+	static function printing()
+	{
+		if ($operation = GetParam("operation", false, null)) {
+			print apply_filters($operation, null);
+			return;
+		}
+		$sql = 'SELECT posts.id as id'
+		       . ' FROM `wp_posts` posts'
+		       . " WHERE post_status LIKE '%wc-processing%' order by 1";
+
+		$result = SqlQuery( $sql );
+
+		$missions = array();
+		while ( $row = SqlFetchAssoc( $result ) ) {
+			$id         = $row["id"];
+//			print "id=$id<br/>";
+			$o = new Fresh_Order($id);
+			$mission_id = $o->getMission();
+			if ( ! in_array( $mission_id, $missions ) ) {
+//				print "adding $mission_id<br/>";
+				if ($mission_id) array_push( $missions, $mission_id );
+			}
+		}
+		foreach ( $missions as $mission ) {
+//			print "mid=$mission<b<!---->r/>";
+			$m = new Mission($mission);
+			print Core_Html::GuiHyperlink(  $m->getMissionName(), AddParamToUrl(Fresh::getPost(), array("operation" => "mission_print", "mission_id" => $mission )));
+			print "<br/>";
+		}
+//			print gui_hyperlink( "אספקות", "print.php?operation=supplies" );
+	}
+
 	/**
 	 * WooCommerce Constructor.
 	 */
@@ -212,6 +255,7 @@ class Fresh {
 		Fresh_Bundles::instance()->init_hooks();
 
 		add_action('wp_enqueue_scripts', array($this, 'remove_add'), 2222);
+		add_filter('mission_print', array($this, 'mission_print_wrap'));
 
 //		add_filter('editable_roles', 'edit_roles');
 		// if (get_user_id() == 1) wp_set_current_user(474);
@@ -660,6 +704,71 @@ class Fresh {
 			$html .= '</form>';
 		}
 		return $html;
+	}
+
+	function mission_print( $mission_id_filter = null )
+	{
+		$sql = 'SELECT posts.id as id, order_user(id) as user_id' // , order_is_group(id) as is_grouped
+		       . ' FROM `wp_posts` posts'
+		       . " WHERE post_status LIKE '%wc-processing%' order by 1";
+
+		$grouped_orders = array();
+		$result         = SqlQuery( $sql );
+		print Core_Html::HeaderText();
+		print "<style>";
+		print "@media print {";
+		print "h1 {page-break-before: always;}";
+		print "}";
+		print "</style>";
+
+		$orders = array();
+		$start  = null;
+		$end    = null;
+
+		while ( $row = SqlFetchAssoc( $result ) ) {
+			$id         = $row["id"];
+			$is_grouped = false; // $row["is_grouped"];
+			$user_id    = $row["user_id"];
+			$o = new Fresh_Order($id);
+
+			$mission_id = $o->getMission();
+			if ( $mission_id ) {
+				$mission = Mission::getMission( $mission_id );
+				$start   = $mission->getStartAddress();
+				$end     = $mission->getEndAddress();
+			}
+			if ( isset( $mission_id_filter ) and $mission_id != $mission_id_filter ) {
+				continue;
+			}
+			if ( $is_grouped ) {
+				if ( ! array_key_exists( $user_id, $grouped_orders ) ) {
+					$grouped_orders[ $user_id ] = array();
+					array_push( $orders, $id );
+				}
+				array_push( $grouped_orders[ $user_id ], $id );
+			} else {
+				array_push( $orders, $id );
+			}
+		}
+//	$path_orders = array();
+		// find_route_1( $node, $rest, &$path, $print = false, $end ) {
+
+		// find_route_1( $start, $orders, $path_orders, false, $end );
+		foreach ( $orders as $id ) {
+			update_post_meta( $id, "printed", 1 );
+			$O       = new Fresh_Order( $id );
+			$user_id = $O->getCustomerId();
+			if ( array_key_exists( $user_id, $grouped_orders ) ) {
+				print $O->infoBox( true, null, $grouped_orders[ $user_id ][0] );
+				$d = Delivery::CreateFromOrder( $grouped_orders[ $user_id ] );
+				$d->PrintDeliveries( ImDocumentType::delivery, ImDocumentOperation::collect );
+
+			} else {
+				print $O->infoBox( false );
+				$D = Fresh_Delivery::CreateFromOrder( $id );
+				$D->PrintDeliveries( FreshDocumentType::delivery, Fresh_DocumentOperation::collect, 0);
+			}
+		}
 	}
 
 	public function fresh_quantity_handler() {
@@ -1247,27 +1356,3 @@ function checkout_create_order_line_item( $item, $cart_item_key, $values, $order
 		}
 	}
 }
-
-//$y = new Yaad_Pay('b6589fc6ab0dc82cf12099d1c2d40ab994e8410c', '0010142214');
-//
-//if (!$y->SignIn()) die ("can't sign in");
-//
-////foreach($result as $k => $r)
-////	print $k . "=" . $r . "<br/>";
-//
-//$token = "2818986124534250000";
-//
-////var_dump($y->GetToken("16123298"));
-//foreach ($y->Pay($token, 333) as $k => $r)
-//	print $k . "=" . $r . "<Br/>";
-
-/* -- End Product Comment-- */
-
-//add_filter('woocommerce_shipping_zone_shipping_methods', 'zone_shipping');
-//
-//function zone_shipping($zone)
-//{
-////    $zone['price'] = array("id"=>4);
-//    var_dump($zone);
-//    return $zone;
-//}
