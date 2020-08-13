@@ -67,7 +67,7 @@
 			$menu->AddSubMenu('freight', 'edit_shop_orders',
 				array('page_title' => 'Settings',
 				            'menu_title' => 'Settings',
-				            'menu_slug' => 'settings',
+				            'menu_slug' => 'freight_settings',
 				            'function' => array($this, 'freight_general')));
 
 //			$menu->AddSubMenu('freight', 'edit_shop_orders',
@@ -110,7 +110,8 @@
 			$args["post_file"] = self::getPost();
 
 			$tab = GetParam("tab", false, "methods");
-			$url = GetUrl(1) . "?page=settings&tab=";
+			$url = GetUrl(1) . "?page=freight_settings&tab=";
+
 			$operation = GetParam("operation", false, null);
 			$tabs["help"] = array(
 				"Help",

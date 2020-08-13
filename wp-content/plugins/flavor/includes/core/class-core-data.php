@@ -23,10 +23,13 @@ class Core_Data
 			case "data_auto_list":
 				$prefix = GetParam("prefix", true);
 
+				// Todo: add in classes
 				$lists = array("products" => array("table" => "im_products", "field_name" =>'post_title', "include_id" => 0, "id_field" => "ID"),
+				               "products_w_drafts" => array("table" => "im_products_w_drafts", "field_name" =>'post_title', "include_id" => 0, "id_field" => "ID"),
 				"tasks" => array("table"=>"im_tasklist", "field_name" => "task_title", "include_id" => 1, "id_field" => "id", "query" => " status = 0"),
 				"users" => array("table" => "wp_users", "field_name" => "display_name", "id_field" => "ID"),
 					"categories" => array("table"=>"im_categories", "include_id" => 0, "id_field"=>"term_id", "field_name" => "name"));
+
 				$list = GetParam("list", true);
 				if (! isset($lists[$list])) die ("Error: unknown list " . $list);
 				$table_name = $lists[$list]["table"];
@@ -65,6 +68,11 @@ class Core_Data
 		}
 	}
 
+	static function data_save_new()
+	{
+		$table_name = GetParam("table_name", true);
+		return self::SaveNew($table_name);
+	}
 	static function Inactive($table_name, $rows)
 	{
 		// TODO: adding meta key when needed(?)
@@ -167,7 +175,6 @@ class Core_Data
 		return true;
 	}
 
-
 	static function data_parse_get($table_name, $ignore_list) {
 		$values =array();
 		foreach ( $_GET as $key => $value ) {
@@ -220,6 +227,8 @@ class Core_Data
 		$query = GetArg($args, "query", null); 	if ($query) $args["sql"] .= " and " . $query;
 		$args["field"] = $field;
 		$args["include_id"] = $include_id;
+
+		print $args["sql"];
 
 		$data .= Core_Html::TableDatalist($datalist, $table_name, $args);
 

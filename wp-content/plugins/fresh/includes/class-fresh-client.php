@@ -303,33 +303,19 @@ class Fresh_Client {
 	static function extra_user_profile_fields( $user ) {
 		if (! is_shop_manager()) return "";
 		$u = new Fresh_Client($user->ID);
-		?>
+				?>
 		<h3><?php _e("Extra profile information", "blank"); ?></h3>
-        <table class="form-table">
-            <tr>
-                <th><label for="address"><?php _e("Address"); ?></label></th>
-                <td>
-                    <input type="text" name="address_lalal" id="address" value="<?php echo esc_attr( get_the_author_meta( 'address', $user->ID ) ); ?>" class="regular-text" /><br />
-                    <span class="description"><?php _e("Please enter your address."); ?></span>
-                </td>
-            </tr>
-            <tr>
-                <th><label for="city"><?php _e("City"); ?></label></th>
-                <td>
-                    <input type="text" name="city" id="city" value="<?php echo esc_attr( get_the_author_meta( 'city', $user->ID ) ); ?>" class="regular-text" /><br />
-                    <span class="description"><?php _e("Please enter your city."); ?></span>
-                </td>
-            </tr>
-            <tr>
-                <th><label for="postalcode"><?php _e("Postal Code"); ?></label></th>
-                <td>
-                    <input type="text" name="postalcode" id="postalcode" value="<?php echo esc_attr( get_the_author_meta( 'postalcode', $user->ID ) ); ?>" class="regular-text" /><br />
-                    <span class="description"><?php _e("Please enter your postal code."); ?></span>
-                </td>
-            </tr>
-        </table>
 		<table class="form-table">
-			<tr>
+            <th><label for="preference">העדפות</label></th>
+
+            <td>
+                <input type="text" name="preference" id="preference"
+                       value="<?php echo esc_attr( get_the_author_meta( 'preference', $user->ID ) ); ?>"
+                       class="regular-text"/><br/>
+                <span class="description">הכנס העדפות משתמש.</span>
+            </td>
+
+            <tr>
 				<th><label for="customer_type"><?php _e("Customer type"); ?></label></th>
 				<td>
 					<?php
@@ -337,7 +323,7 @@ class Fresh_Client {
 					?><br/>
 					<span class="description"><?php _e("Please select customer type."); ?></span>
 				</td>
-			</tr>
+            </tr>
 		</table>
 	<?php }
 
@@ -405,11 +391,12 @@ class Fresh_Client {
 	}
 
 	static function save_extra_user_profile_fields( $user_id ) {
-	    $type = $_POST['customer_type'];
 		if ( !current_user_can( 'edit_user', $user_id ) ) {
 			return false;
 		}
-		update_user_meta( $user_id, '_client_type', $type );
+		update_user_meta( $user_id, '_client_type', $_POST['customer_type'] );
+		update_usermeta( $user_id, 'preference', $_POST['preference'] );
+
 	}
 
 	static function gui_select_client_type( $id, $value, $args = null )

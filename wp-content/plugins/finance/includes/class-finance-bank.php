@@ -733,6 +733,7 @@ class Finance_Bank
 
 	static public function bank_status()
 	{
+//		print debug_trace();
 		$result = "";
 		$table_prefix = GetTablePrefix();
 
@@ -882,7 +883,7 @@ function user_is_business_owner() {
 		$menu->AddSubMenu('freight', 'edit_shop_orders',
 			array('page_title' => 'Settings',
 			      'menu_title' => 'Settings',
-			      'menu_slug' => 'settings',
+			      'menu_slug' => 'bank_settings',
 			      'function' => array($this, 'bank_wrapper')));
 
 	}

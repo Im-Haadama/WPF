@@ -49,7 +49,7 @@ class Fresh_Product {
 	}
 
 	function setStock( $q ) {
-		if ( $q == $this->getStock() ) return true;
+//		if ( $q == $this->getStock() ) return true; Creates a loop
 		if ( $this->isFresh() ) {
 
 			$delta = $q + $this->q_out() - $this->q_in();
@@ -109,6 +109,11 @@ class Fresh_Product {
 			                                     " and meta_key = 'im_stock_delta'" );
 			if ( $stock_delta ) {
 				$inv += $stock_delta;
+			}
+
+			if ($inv < 0) {
+				self::setStock(0);
+				return 0;
 			}
 
 			return round( $inv, 1 );
@@ -420,11 +425,11 @@ class Fresh_Product {
 		$args["datalist"] = true;
 		$args["id_field"] = "ID";
 		$args["include_id"] = true;
-		$args["post_file"] = get_site_url() . "/wp-content/plugins/fresh/post.php";
+		$args["post_file"] = Fresh::getPost();
 
 //		print "v1=" . $args["value"] . "<br/>";
 		// return GuiSelectTable( $id, "im_products", $args);
-		return Core_Html::GuiAutoList($id, "products", $args);
+		return Core_Html::GuiAutoList($id, "products_w_drafts", $args);
 	}
 
 	function PublishItem($price = 0) {

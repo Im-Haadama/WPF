@@ -5,7 +5,12 @@ class Fresh_Packing {
 	static function needed_products() {
 		$result = "";
 
+		$filter_in_stock = GetParam("stock_filter", false, 0);
 		$result                .= Core_Html::GuiHeader( 1, "Needed products" );
+		if ($filter_in_stock)
+			$result .= Core_Html::GuiHyperlink("unfiltered", AddToUrl("stock_filter", 0));
+		else
+			$result .= Core_Html::GuiHyperlink("filter in-stock", AddToUrl("stock_filter", 1));
 		$result                .= Fresh_Order::GetAllComments();
 		$args["tabs_load_all"] = true;
 		$selected_tab= GetParam("selected_tab", false, null);
@@ -19,7 +24,7 @@ class Fresh_Packing {
 //		$result                 .= self::supplier_tabs($needed_prods_by_supplier);
 
 //		// Show delected tab
-		$result                 .=  self::NeededProducts( );
+		$result                 .=  self::NeededProducts(false, false, $filter_in_stock );
 
 		print $result;
 	}
@@ -46,7 +51,8 @@ class Fresh_Packing {
 
 			$row = array();
 
-			if ( $filter_stock and $P->getStockManaged() and $P->getStock() > $quantity_array[0] ) continue;
+//			if ( $filter_stock and $P->getStockManaged() and $P->getStock() > $quantity_array[0] ) continue;
+			if ( $filter_stock and ($P->getStock() > $quantity_array[0] )) continue;
 
 			if ( $P->isDraft() ) $row[] = "טיוטא";
 			else $row[] = gui_checkbox( "chk" . $prod_id, $checkbox_class );
@@ -80,7 +86,7 @@ class Fresh_Packing {
 			}
 		}
 
-		if ( count( $data_lines ) ) {
+		if ( count( $data_lines ) > 1) {
 			if ( $supplier_id ) {
 				$supplier_name = $supplier->getSupplierName();
 			} else {
@@ -132,6 +138,7 @@ class Fresh_Packing {
 		$debug_product = false;
 
 		$result          = "";
+		if ($filter_stock) $result .= Core_Html::GuiHeader(2, "Stock filtered");
 		$needed_products = array();
 		$supplier_tabs = array();
 
@@ -194,6 +201,7 @@ class Fresh_Packing {
 
 					$tab_content =
 						self::get_total_orders_supplier( $supplier->getId(), $supplier_needed[ $supplier->getId() ], $filter_zero, $filter_stock, $history );
+					if (! strlen ($tab_content)) continue;
 
 					if ( $supply_id = Fresh_Suppliers::TodaySupply( $supplier->getId() ) ) {
 						$tab_content .= Core_Html::GuiHyperlink( "Supply " . $supply_id, "/fresh/supplies/supplies-page.php?operation=show&id=" . $supply_id ) . "<br/>";

@@ -139,6 +139,7 @@ class Flavor {
 		add_action( 'init', array( $this, 'init' ), 0 );
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
 		add_action('wp', 'unlogged_guest_posts_redirect');
+		add_action('data_save_new', array('Core_Data', 'data_save_new'));
 
 		GetSqlConn( ReconnectDb() );
 

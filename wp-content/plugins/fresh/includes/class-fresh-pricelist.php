@@ -438,6 +438,7 @@ class Fresh_Pricelist {
 	// ID: output the pricelist id
 
 	function Update( $id, $price, $sale_price = 0 ) {
+		if (! $price) return;
 		MyLog( __METHOD__, "update line $id, price $price, sale price $sale_price" );
 		$sql = "UPDATE im_supplier_price_list SET price = " . $price .
 		       ", sale_price = " . $sale_price .

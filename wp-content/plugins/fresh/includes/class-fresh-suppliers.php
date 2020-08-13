@@ -36,7 +36,7 @@ class Fresh_Suppliers {
 		              where 
 		              supplier_id = %d
 		              and ((select machine_update from im_suppliers where id = supplier_id) = 0 or  
-		              date = supplier_last_pricelist_date(supplier_id))",
+		              date >= supplier_last_pricelist_date(supplier_id))",
 			"fields" => array("id", "product_name", "price", "date"),
 			"extra_header" => array("Delete", "linked product", "published", "calculated price", "price", "sale price", "open orders"),
 			"order"=>"order by id",
@@ -47,6 +47,7 @@ class Fresh_Suppliers {
 			"import" => true,
 			"prepare_plug" => "Fresh_Pricelist_Item::add_prod_info",
 			"action_before_import" => array(__CLASS__, "action_before_import"),
+	        "action_after_import" => array(__CLASS__, "action_after_import"),
 			"page_number"=>0,
 			"edit"=>true,
 			"edit_cols"=> array("product_name"=>1,"price"=>1),
@@ -223,6 +224,12 @@ class Fresh_Suppliers {
 		       " order by id desc limit 1";
 
 		return SqlQuerySingleScalar($sql);
+	}
+
+	static function action_after_import(&$fields)
+	{
+		$supplier_id = GetParam("supplier_id", true);
+		InfoUpdate("import_supplier_$supplier_id", $fields['date']);
 	}
 
 	// Supplier pricelist import
