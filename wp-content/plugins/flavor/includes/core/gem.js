@@ -37,8 +37,13 @@ function gem_update_div(xmlhttp, btn)
 
 function gem_show_import(post_file, table, div)
 {
-    let action = add_param_to_url(post_file, 'operation', 'gem_show_import&table=' + table);
-    let frame_id = div.id + '_frame';
+    let action = add_param_to_url(post_file, 'operation', 'gem_do_import&table=' + table);
     // execute_url(action, show_response, div);
-    div.innerHTML = '<iframe id="' + frame_id + '" width="100%" height="600" src="' + action + '"></iiframe>';
+    div.innerHTML = '<h1>Import to bank</h1>' +
+        '<form action="' + action + '" name="upload_csv" method="post" enctype="multipart/form-data">Load from csv file' +
+        '<input type="file" name="fileToUpload" id="fileToUpload">' +
+        '<input type="submit" value="טען" name="submit">';
+
+    // let frame_id = div.id + '_frame';
+    //    div.innerHTML = '<iframe id="' + frame_id + '" width="100%" height="600" src="' + action + '"></iiframe>';
 }

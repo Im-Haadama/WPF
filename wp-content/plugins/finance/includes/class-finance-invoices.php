@@ -134,16 +134,17 @@ class Finance_Invoices {
 			"הזמנה",
 			"משלוח",
 			"זיכוי",
-			"חשבונית מס קבלה",
+			"חשבונית מס",
 			"אספקה",
 			"תעודת משלוח",
 			"העברה",
-			"חשבונית מס זיכוי"
+			"חשבונית מס זיכוי",
+			"חשבונית מס קבלה"
 		);
 
 		$events = GetArg( $args, "events", null );
 		$types  = array();
-		for ( $i = 1; $i < 9; $i ++ ) { // require_once FRESH_INCLUDES . 'fresh_delivery_enum.php';
+		for ( $i = 1; $i < FreshDocumentType::count; $i ++ ) { // require_once FRESH_INCLUDES . 'fresh_delivery_enum.php';
 			$value["id"]   = $i;
 			$value["name"] = $DocumentTypeNames[ $i ];
 			array_push( $types, $value );

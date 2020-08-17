@@ -71,6 +71,7 @@ class Finance_Bank
 		AddAction( "bank_create_pay", array( $this, 'bank_payments' ) );
 		AddAction("finance_get_transaction_amount", array($this, 'get_transaction_amount'));
 		AddAction('create_bank_account', array($this, 'create_bank_account'));
+		add_filter('bank_check_valid', array(__CLASS__, 'bank_check_valid'), 10, 2);
 
 		add_action('admin_menu', array($this, 'admin_menu'));
 
@@ -90,37 +91,6 @@ class Finance_Bank
 	 */
 	public function getUser(): Core_Users {
 		return $this->user;
-	}
-
-	function do_bank_import()
-	{
-		if (! isset($_FILES["fileToUpload"])) {
-			print "file name is missing. try again";
-			return false;
-		}
-		$file_name = $_FILES["fileToUpload"]["tmp_name"];
-		print "Trying to import $file_name<br/>";
-		$fields               = array();
-		$fields['account_id'] = GetParam( 'account_id' );
-		if ( ! $fields['account_id'] ) {
-			die( "not account given" );
-		}
-		$unmapped = [];
-		try {
-			$result = Core_Importer::Import( $file_name, "bank", $fields, 'Finance_Bank::bank_check_dup', $unmapped );
-			if (count($unmapped)) {
-				var_dump( $unmapped );
-				return false;
-			}
-		} catch ( Exception $e ) {
-			print $e->getMessage();
-
-			return false;
-		}
-		print $result[0] . " rows imported<br/>";
-		print $result[1] . " duplicate rows <br/>";
-		print $result[2] . " failed rows <br/>";
-		return true;
 	}
 
 	function create_bank_account()
@@ -157,6 +127,8 @@ class Finance_Bank
 
 	function show_bank_account($account_id)
 	{
+		show_errors();
+		$table_prefix = GetTablePrefix("bank");
 //		print __FUNCTION__;
 		if (! current_user_can("show_bank", $account_id))
 			return "no permissions";
@@ -167,17 +139,19 @@ class Finance_Bank
 
 		$args = [];
 		$args["page"] = GetParam("page", false, null);
-		$args["import_page"] = Finance::getPostFile() . "?account_id=$account_id";
+		$args["import_page"] = AddToUrl("account_id", $account_id);
+			// Finance::getPostFile() . "?account_id=$account_id";
 		$args["query"] = "account_id = $account_id";
 		if ($filter = GetParam("filter", false, null)) {
 			switch ($filter) {
+				case "outcome":
+					$args["query"] .= " and receipt is null and out_amount > 0 ";
+					break;
 				case "income":
-					$args["query"] .= " and in_amount > 0 ";
+					$args["query"] .= " and receipt is null and in_amount > 0 " .
+						" and description not in (select description from ${table_prefix}bank_transaction_types) ";
 					break;
-				case "income_to_receipt":
-					$args["query"] .= " and in_amount > 0 and receipt is null ";
-					break;
-
+//					return self::show_bank_receipts($account_id);
 			}
 		}
 		$args["account_id" ] = $account_id;
@@ -259,6 +233,7 @@ class Finance_Bank
 
 	function handle_bank_operation($operation, $url = null)
 	{
+		print 1/0;
 		$table_prefix = GetTablePrefix();
 		$multi_site = Core_Db_MultiSite::getInstance();
 
@@ -620,10 +595,12 @@ class Finance_Bank
 
 	function show_bank_receipts($account_id, $ids = null)
 	{
-		$account_id = 1;
+		die (1);
+//		$account_id = 1;
 		$table_prefix = $this->table_prefix;
 
 		$args = $this->Args();
+		$args["account_id"] = $account_id;
 		print Core_Html::gui_header( 1, "Receipts" );
 		$args["header_fields"] = array( "id"=>"Id", "date" => "Date", "description" => "Description",
 		                                "in_amount" => "Amount", "reference" => "Reference", "client_name" => "Details" );
@@ -662,7 +639,7 @@ class Finance_Bank
 
 		$page = GetParam("page_number", false, 1);
 		$args["page_number"] = $page;
-		$args["rows_per_page"] = 40;
+		$args["rows_per_page"] = 16;
 		$args["class"] = "widefat";
 		$args["prepare_plug"] = __CLASS__ . "::prepare_row";
 		$args["enable_import"] = true;
@@ -820,7 +797,9 @@ class Finance_Bank
 			die( $result );
 		}
 
+		MyLog(__FUNCTION__ . " $result");
 		$receipt = intval( trim( $result ) );
+		MyLog(__FUNCTION__ . " $receipt");
 
 		if ( $receipt > 0 ) {
 			// TODO: to parse $id from $result;
@@ -851,23 +830,32 @@ class Finance_Bank
 	}
 
 
-static function bank_check_dup( $fields, $values ) {
+static function bank_check_valid( $fields, $values ) {
 	$table_prefix = GetTablePrefix();
 	$account_idx = array_search( "account_id", $fields );
 	$date_idx    = array_search( "date", $fields );
 	$balance_idx = array_search( "balance", $fields );
 	$in_amount_idx = array_search("in_amount", $fields);
+	$out_amount_idx = array_search("out_amount", $fields);
+
 	$account     = $values[ $account_idx ];
 	$date        = $values[ $date_idx ];
 	$balance     = $values[ $balance_idx ];
 	$in_amount = $values[$in_amount_idx];
+	$out_amount = $values[$out_amount_idx];
 
+	// Check we've got info to add.
+	if (! $account or ! $date or ! $balance and ! ($in_amount or $out_amount)) return false;
+
+	// Check duplicate (from previous import).
 	$sql = "SELECT count(*) FROM ${table_prefix}bank WHERE account_id = " . $account .
 	       " AND date = " . QuoteText( $date );
 	if ($in_amount) $sql .= " and in_amount = " . $in_amount;
 	$sql .= " AND round(balance, 2) = " . round( $balance, 2 );
 
-	return SqlQuerySingleScalar( $sql );
+	$dup = SqlQuerySingleScalar( $sql );
+
+	return (! $dup);
 }
 
 function user_is_business_owner() {

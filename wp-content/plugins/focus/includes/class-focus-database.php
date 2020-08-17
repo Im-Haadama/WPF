@@ -191,6 +191,8 @@ engine=InnoDB;
 		$current = self::CheckInstalled("Focus", "functions");
 		$db_prefix = GetTablePrefix();
 
+		if ($current == $version and ! $force) return true;
+
 		SqlQuery("drop function preq_done");
 		SqlQuery("CREATE FUNCTION 	preq_done(_task_id int)
 	 RETURNS varchar(200)
@@ -219,7 +221,6 @@ BEGIN
 	return 1;	   
 END;");
 
-		if ($current == $version and ! $force) return true;
 
 		self::UpdateInstalled("Focus", "functions", $version);
 	}

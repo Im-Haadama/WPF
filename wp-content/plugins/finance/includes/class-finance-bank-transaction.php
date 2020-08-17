@@ -93,12 +93,15 @@ class Finance_Bank_Transaction {
 	public function Update( $customer_id, $receipt, $site_id )
 	{
 		$table_prefix = GetTablePrefix();
+		MyLog(__FUNCTION__ . $receipt);
 
 		if ( is_numeric( $receipt ) ) {
 			$sql = "UPDATE ${table_prefix}bank SET customer_id = " . $customer_id .
 			       ", receipt = " . $receipt .
 			       ", site_id = " . $site_id .
 			       " WHERE id = " . $this->id;
+
+			MyLog($sql);
 
 			return SqlQuery( $sql );
 		} else {

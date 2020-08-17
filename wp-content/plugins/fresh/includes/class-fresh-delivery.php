@@ -1384,7 +1384,8 @@ class FreshDocumentType {
 		ship = 6,  // Legacy
 		bank = 7,
 		invoice_refund = 8, // Supplier
-		count = 9;
+		invoice_receipt = 9, // Supplier
+		count = 10;
 }
 
 class Fresh_DocumentOperation {

@@ -18,8 +18,8 @@ class Core_Gem {
 
 		// Import
 		// prepare
-		AddAction("gem_show_import", array(__CLASS__, "show_import_wrap"));
-		AddAction("gem_v_show_import", array(__CLASS__, "show_v_import_wrap"));
+//		AddAction("gem_show_import", array(__CLASS__, "show_import_wrap"));
+//		AddAction("gem_v_show_import", array(__CLASS__, "show_v_import_wrap"));
 
 		// Do
 		AddAction("gem_do_import", array(__CLASS__, "do_import_wrap"));
@@ -130,7 +130,7 @@ class Core_Gem {
 
 	static function do_import_wrap()
 	{
-		$fields = [];
+		$fields = GetParams(array("page", "table"));
 		$table = GetParam("table", true);
 		$db_prefix = GetTablePrefix($table);
 //		var_dump(self::getInstance()->object_types[$v_table]);
@@ -143,7 +143,7 @@ class Core_Gem {
 
 		$result = "";
 		$unmapped = [];
-		$rc = Core_Importer::Import($file_name, $table, $fields, null, $unmapped);
+		$rc = Core_Importer::Import($file_name, $table, $fields,  $unmapped);
 		if (count($unmapped)) {
 			$result .= self::MapFields($unmapped, $db_prefix, $table, '/wp-content/plugins/fresh/post.php') .
 			           Core_Html::load_scripts(array('/wp-content/plugins/flavor/includes/core/gui/client_tools.js',
@@ -185,8 +185,9 @@ class Core_Gem {
 		// Clear data before import and set default values.
 		$fields = array();
 		if ($f = GetArg($table_args, 'action_before_import', null)) $f($fields);
+		do_action($v_table . "_before_import", $fields);
 
-		$rc = Core_Importer::Import($file_name, $table, $fields, null, $unmapped);
+		$rc = Core_Importer::Import($file_name, $table, $fields, $unmapped);
 		// Unmapped is seq array with the unknown headder.
 		if (count($unmapped)) {
 			$result .= self::MapFields($unmapped, $db_prefix, $table, $table_args['post_file']);

@@ -54,9 +54,6 @@ class Focus_Tasks {
 		$file = FOCUS_INCLUDES_URL . '/org/company.js';
 		wp_enqueue_script( 'company', $file, null, $this->version, false );
 
-		$file = FLAVOR_INCLUDES_URL . 'core/gem.js';
-		wp_enqueue_script( 'gem', $file, null, $this->version, false );
-
 		// <script src="https://kit.fontawesome.com/f666c528bc.js" crossorigin="anonymous"></script>
 		$awesome = "https://kit.fontawesome.com/f666c528bc.js";
 		wp_enqueue_script( 'awesome', $awesome, null, $this->version, false );
