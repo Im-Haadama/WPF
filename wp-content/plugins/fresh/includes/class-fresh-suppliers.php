@@ -11,6 +11,8 @@ class Fresh_Suppliers {
 		AddAction( "suppliers_map_remove", __CLASS__ . "::suppliers_map_remove" );
 		AddAction( "add_pricelist_item", array( $this, 'add_pricelist_item' ) );
 		AddAction('pricelist_delete', array($this, 'delete'));
+		add_filter("supplier_price_list_check_valid", array($this, 'supplier_pricelist_valid'), 10, 2);
+		AddAction("pricelist_before_import", array($this, 'supplier_pricelist_before_import'));
 	}
 
 	function init()
@@ -64,6 +66,39 @@ class Fresh_Suppliers {
 		// load classes
 		new Fresh_supply(1);
 		new Fresh_Catalog();
+	}
+
+	function supplier_pricelist_before_import($fields)
+	{
+		return SqlQuery("delete from im_supplier_price_list where supplier_id = " . $fields['supplier_id'] . ' and date = \'' . $fields['date'] . "'");
+	}
+
+	function supplier_pricelist_valid($fields, $values)
+	{
+		$table_prefix = GetTablePrefix();
+
+		$product_name_idx = array_search( "product_name", $fields );
+		$price_idx = array_search("price", $fields);
+
+		$price     = $values[ $price_idx ];
+		$product_name = $values[$product_name_idx];
+
+		// Check we've got info to add.
+//		if (! $account or ! $date or ! $balance and ! ($in_amount or $out_amount)) return false;
+		if (! ($price > 0) or (! strlen($product_name))) return false;
+
+		return true;
+
+		// Check duplicate (from previous import).
+//		$sql = "SELECT count(*) FROM ${table_prefix}supplier_pri WHERE account_id = " . $account .
+//		       " AND date = " . QuoteText( $date );
+//		if ($in_amount) $sql .= " and in_amount = " . $in_amount;
+//		$sql .= " AND round(balance, 2) = " . round( $balance, 2 );
+//
+//		$dup = SqlQuerySingleScalar( $sql );
+//
+//		return (! $dup);
+
 	}
 
 	static function suppliers()

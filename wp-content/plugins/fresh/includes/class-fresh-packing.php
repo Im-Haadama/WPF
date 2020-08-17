@@ -52,7 +52,7 @@ class Fresh_Packing {
 			$row = array();
 
 //			if ( $filter_stock and $P->getStockManaged() and $P->getStock() > $quantity_array[0] ) continue;
-			if ( $filter_stock and ($P->getStock() > $quantity_array[0] )) continue;
+			if ( $filter_stock and ($P->getStock() >= $quantity_array[0] )) continue;
 
 			if ( $P->isDraft() ) $row[] = "טיוטא";
 			else $row[] = gui_checkbox( "chk" . $prod_id, $checkbox_class );

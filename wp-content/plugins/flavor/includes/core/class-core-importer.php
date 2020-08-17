@@ -25,13 +25,12 @@ class Core_Importer {
 		return self::$_instance;
 	}
 
-
 	// conversion look like $conversion["name"] = array("שם", "תיאור")...
 	// $conversion["price"] = array("מחיר")...
 	// $map created. Looks like: $map["name"] = 1, $map["price"] = 2. etc.
 	// The places the header was found in the header.
 	// $fields - additional data set externaly.
-	static function Import( $file_name, $table_name, $fields = null, $check_dup = null, &$unmapped = null)
+	static function Import( $file_name, $table_name, $fields = null, &$unmapped = null)
 	{
 		if (! $file_name) {
 			print "No file selected<br/>";
@@ -62,7 +61,7 @@ class Core_Importer {
 		$failed    = 0;
 
 		while ( $line = fgetcsv( $file ) ) {
-			switch ( self::ImportLine( $line, $table_name, $map, $fields, $check_dup ) ) {
+			switch ( self::ImportLine( $line, $table_name, $map, $fields ) ) {
 				case -1:
 					$dup_count ++;
 					break;
@@ -170,6 +169,7 @@ class Core_Importer {
 
 	private static function ImportLine( $line, $table_name, $map, $fields = null, $check_dup = null )
 	{
+//		show_errors();
 		$db_prefix = GetTablePrefix();
 		$insert_fields = array();
 		$values        = array();
@@ -210,18 +210,14 @@ class Core_Importer {
 				array_push( $values, EscapeString( $line[ $m ] ) );
 			}
 		}
-		if ( $check_dup ) {
-			if ( call_user_func($check_dup, $insert_fields, $values ) ) {
-				return - 1; // Already exists.
-			}
-		}
 
-		if (0 == count($insert_fields)) return 0;
+		if (0 == count($insert_fields)) return 0; // Noting to insert
+
+		$valid = apply_filters($table_name . '_check_valid', $insert_fields, $values);
+		if (! $valid) return -1; // Line exists (duplicate) or data is missing
 
 		$sql = "insert into ${db_prefix}$table_name (" . CommaImplode( $insert_fields ) .
 		       ") values (" . CommaImplode( $values, true ) . ")";
-
-//		print $sql . "<br/>";
 
 		if ( ! SqlQuery( $sql ) ) {
 			// print "insert failed";

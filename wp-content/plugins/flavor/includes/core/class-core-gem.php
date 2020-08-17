@@ -199,7 +199,7 @@ class Core_Gem {
 
 		if (is_array($rc)){
 			$result .= $rc[0] . " new rows<br/>" .
-			           $rc[1]. " duplication rows<br/>" .
+			           $rc[1]. " not valid rows (duplicate or not enough data<br/>" .
 			           $rc[2] . " failed rows<br/>";
 		} else
 			$result .= $rc;
