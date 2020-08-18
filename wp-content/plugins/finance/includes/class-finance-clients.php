@@ -168,6 +168,7 @@ class Finance_Clients
 	}
 
 	static function client_account( $customer_id ) {
+		$post_file = Finance::getPostFile();
 		require_once( ABSPATH . "im-config.php" );
 
 		$result = "";
@@ -213,7 +214,8 @@ class Finance_Clients
 		$payment_info_id = SqlQuerySingleScalar( "select id from im_payment_info where user_id = " . $customer_id);
 		if ($payment_info_id) {
 			$args = array("post_file" => Fresh::getPost(), "edit"=>true);
-			$credit_info = Core_Gem::GemElement( "payment_info", $payment_info_id, $args );
+			$credit_info = Core_Gem::GemElement( "payment_info", $payment_info_id, $args ) .
+			               Core_Html::GuiButton("btn_remove_token", "מחק טוקן", array("events" => "onclick=\"token_delete('$post_file', $customer_id)\""));
 		} else {
 			$args["post_file"] = Finance::getPostFile();
 			$args["values"] = array("user_id"=>$u->getUserId(), "email" => $u->get_customer_email(), "full_name"=>$u->getName(), "created_date"=>date('y-m-d'));
@@ -222,8 +224,12 @@ class Finance_Clients
 		}
 
 		$result .= Core_Html::gui_table_args( array(
-			array( Core_Html::gui_header( 2, "פרטי לקוח", true ), Core_Html::gui_header( 2, "קבלה", true ), Core_Html::GuiHeader(1, "Credit info") ),
-			array( $user_info, $new_tran, $credit_info )
+			array( Core_Html::gui_header( 2, "פרטי לקוח", true ),
+				Core_Html::gui_header( 2, "קבלה", true ),
+				Core_Html::GuiHeader(1, "Credit info") ),
+			array( $user_info,
+				$new_tran,
+				$credit_info )
 		) );
 
 		$result .= Core_Html::GuiHeader( 2, __( "Balance" ) . ": " .

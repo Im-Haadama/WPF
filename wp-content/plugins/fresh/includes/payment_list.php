@@ -92,7 +92,7 @@ function clear_card_info()
         $card_number = $row['card_number'];
 //        $card_number = $row['card_number'];
 //        $output .= "$id $user_id" . ($token? "Has token": "No Token") . "<br/>";
-        if ($token) {
+        if (strlen($token) > 9) {
 	        credit_card_remove($id);
 //	        $output .= "Cleaning data for user $user_id<br/>";
         }

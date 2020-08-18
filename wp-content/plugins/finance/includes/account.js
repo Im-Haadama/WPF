@@ -115,3 +115,9 @@ function save_payment_method(post_file, customer_id) {
    let request = post_file + '?operation=update_payment_method&user_id=' + customer_id + '&method_id=' + method;
    execute_url(request, fail_message);
 }
+
+function token_delete(post_file, account_id)
+{
+    if (confirm("האם ברצונך למחוק את הטוקן של המשתמש? לא ניתן לשחזר"))
+        execute_url(post_file + '?operation=credit_token_delete&customer=' + account_id, success_message);
+}

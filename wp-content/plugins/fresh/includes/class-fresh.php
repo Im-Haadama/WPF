@@ -119,7 +119,9 @@ class Fresh {
 	 * @since 2.3
 	 */
 	private function init_hooks() {
-	    // Admin scripts and styles. Todo: Check if needed.
+		if ((get_user_id() == 1) and defined("DEBUG_USER")) wp_set_current_user(DEBUG_USER);
+
+		// Admin scripts and styles. Todo: Check if needed.
 		add_action('admin_enqueue_scripts', array($this, 'admin_scripts'));
 		add_action( 'admin_notices', array($this, 'admin_notices') );
 

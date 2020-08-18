@@ -171,6 +171,8 @@ class Finance {
 
 		AddAction('finance_get_open_site_invoices', array($this, 'get_open_site_invoices'));
 
+		AddAction('credit_token_delete', array($this, 'credit_token_delete'));
+
 		if ( $this->yaad ) {
 			$this->yaad->init_hooks();
 		}
@@ -182,6 +184,13 @@ class Finance {
 		$this->payments->init_hooks();
 	}
 
+	function credit_token_delete()
+	{
+		$customer_id = GetParam("customer", true);
+
+		MyLog("deleting token for $customer_id");
+		return delete_user_meta($customer_id, "credit_token");
+	}
 	function pay_user_credit_wrap($customer_id, $amount, $payment_number)
 	{
 		MyLog(__FUNCTION__ . " $customer_id");

@@ -139,8 +139,9 @@ class Finance_Yaad {
 				// Create token and save it.
 				$token_info = self::GetToken( $transaction_id );
 				if (isset($token_info['Token']) and (strlen($token_info['Token']) > 10)){
+					MyLog('Got token');
 					if ($debug) print "Got token " . $token_info['Token'] . "<br/>";
-					add_user_meta($user->getUserId(), 'credit_token', $token_info['Token']);
+					update_user_meta($user->getUserId(), 'credit_token', $token_info['Token']);
 
 					self::RemoveRawInfo($credit_data['id']);
 					print "נוצר טוקן\n";
