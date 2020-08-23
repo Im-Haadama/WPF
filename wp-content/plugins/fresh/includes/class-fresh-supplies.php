@@ -30,6 +30,8 @@ class Fresh_Supplies {
 		AddAction('supply_upload', array($this, 'supply_upload'));
 		AddAction('got_supply', array($this, 'got_supply_wrap'));
 		AddAction('supplies_merge', array($this, 'supplies_merge'));
+		AddAction('supplies_send', array($this, 'supplies_send'));
+
 		Core_Gem::AddTable("supplies");
 	}
 
@@ -102,7 +104,7 @@ class Fresh_Supplies {
 		array_push( $tabs, array( "supplies_new", "Supplies to send", self::SuppliesTable(eSupplyStatus::NewSupply) ) );
 		array_push( $tabs, array( "supplies_create", "New", self::NewSupply() ) );
 		array_push( $tabs, array( "supplies_import", "Import", self::ImportSupply() ) );
-		array_push( $tabs, array( "supplies_sent", "Supplies to come", self::SuppliesTable(eSupplyStatus::OnTheGo)));
+		array_push( $tabs, array( "supplies_sent", "Supplies to come", self::SuppliesTable(eSupplyStatus::Sent)));
 		array_push( $tabs, array( "supplies_archive", "Archive", self::SuppliesTable(eSupplyStatus::Supplied)));
 
 		$args = [];
@@ -183,9 +185,9 @@ class Fresh_Supplies {
 		$post_file = Fresh::getPost();
 		// $result .= Core_Html::GuiButton("btn_delete", "close_supplies('" . $status_name . "')", "close");
 		if ($status == eSupplyStatus::NewSupply){
-			$result .= Core_Html::GuiButton("btn_send", "send", "send_supplies('$post_file')");
-			$result .= Core_Html::GuiButton("btn_merge", "merge", "supply_merge('$post_file')");
-			$result .= Core_Html::GuiButton("btn_delete", "delete", "supply_delete('" . Fresh::getPost() . "', 'new')");
+			$result .= Core_Html::GuiButton("btn_send", "send", "supplies_send('$post_file')");
+			$result .= Core_Html::GuiButton("btn_merge", "merge", "supplies_merge('$post_file')");
+			$result .= Core_Html::GuiButton("btn_delete", "delete", "supplies_delete('" . Fresh::getPost() . "', 'new')");
 		}
 		return $result;
 
@@ -394,6 +396,22 @@ class Fresh_Supplies {
 		return self::do_merge_supplies( $params, $supply_id );
 	}
 
+	public function supplies_send()
+	{
+		$params = GetParamArray("id");
+		for ( $i = 0; $i < count( $params ); $i ++ ) {
+			$supply_id = $params[$i];
+			$s = new Fresh_Supply($supply_id);
+			if ( $s->getStatus() != eSupplyStatus::NewSupply ) {
+				print "ניתן לשלוח רק הספקות במצב חדש ";
+
+				return false;
+			}
+		}
+		return self::do_send_supplies( $params);
+	}
+
+
 	public function delete_supplies()
 	{
 		$supplies = GetParamArray("params", true);
@@ -459,4 +477,15 @@ WHERE status = 1 AND supply_id IN (" . $supply_id . ", " . rtrim( implode( ",", 
 
 		return SqlQuery( $sql );
 	}
+
+	function do_send_supplies( $params ) {
+		// Read sum of lines.
+		foreach ($params as $supply_id)
+		{
+			$s = new Fresh_Supply($supply_id);
+			if (!$s->Send()) return false;
+		}
+		return true;
+	}
+
 }

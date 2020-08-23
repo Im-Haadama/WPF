@@ -54,6 +54,29 @@ class Fresh_Category {
 		return $result;
 	}
 
+	function merge_with_category_with_tag($merge_to_slug, $tag)
+	{
+		print __FUNCTION__ . "<br/>";
+		if (! class_exists('Fresh_ProductIterator')) new Fresh_Product(1); // Initiate auto load
+
+		$iter = new Fresh_ProductIterator();
+		$iter->iterateCategory( $this->term->term_id, null );
+//		var_dump($iter);
+
+		if ($iter) {
+			while ( $prod_id = $iter->next() ) {
+				$prod = new Fresh_Product($prod_id);
+				print "handling $prod_id " . $prod->getName() . "<br/>";
+
+				$prod->addTag($tag);
+				$prod->addCategory($merge_to_slug);
+//				$prod->removeCategory($this->term->slug);
+			}
+		}
+		return true;
+	}
+
+
 	static function GetTopLevel()
 	{
 		$args = [
@@ -96,5 +119,26 @@ class Fresh_Category {
 
 		return $result;
 
+	}
+
+	function addTag($tag_name)
+	{
+//		$tag = get_term_by('slug', 'organic', 'product_tag');
+//		if (! $tag) {
+//			print "$tag_name not found<br/>";
+//			return false;
+//		}
+		$iter = new Fresh_ProductIterator();
+		$iter->iterateCategory($this->id, null);
+
+		while ($prod_id = $iter->next()) {
+			$prod = new Fresh_Product($prod_id);
+			print "handling " . $prod->getName() . "<br/>";
+			if (! $prod->addTag($tag_name)) {
+				print "couldn't add<br/>";
+				return false;
+			}
+		}
+		return true;
 	}
 }

@@ -73,7 +73,7 @@ function get_supply_id()
     return get_value_by_name("supply_id");
 }
 
-function send_supplies(post_file)
+function supplies_send(post_file)
 {
     let ids = get_selected("new");
     if (! ids.length) {
@@ -84,11 +84,11 @@ function send_supplies(post_file)
 }
 
 function do_send_supplies(post_file, ids) {
-    let request = post_file + "?operation=send&id=" + ids;
+    let request = post_file + "?operation=supplies_send&id=" + ids;
 
     // execute_url(url, finish_action, obj)
 
-    execute_url(request, update_message);
+    execute_url(request, location_reload);
 }
 
 // finish_action(xmlhttp3, obj);
@@ -240,21 +240,6 @@ function supply_add(post_file)
 
     reset_message();
     execute_url(request, action_back);
-    // xmlhttp = new XMLHttpRequest();
-    // xmlhttp.onreadystatechange = function () {
-    //     // Wait to get delivery id.
-    //     if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {  // Request finished
-    //         add_message(xmlhttp.responseText);
-    //         let id = xmlhttp.responseText.match(/\d+/)[0];
-    //         disable_btn("btn_add_item");
-    //         if (id > 0) {
-    //             window.location.href = "/fresh/supplies/supplies-page.php?operation=get&id=" + id;
-    //             // location.reload();
-    //         }
-    //     }
-    // }
-    // xmlhttp.open("GET", request, true);
-    // xmlhttp.send();
 }
 
 function supply_new_add_line(post_file)
@@ -274,7 +259,7 @@ function supply_new_add_line(post_file)
     product.firstElementChild.focus();
 }
 
-function supply_delete(post_file, status) {
+function supplies_delete(post_file, status) {
     let params = get_selected(status);
     if (! params.length) {
         alert ("select supplies for delete");
@@ -284,7 +269,7 @@ function supply_delete(post_file, status) {
     execute_url(request, location_reload);
 }
 
-function supply_merge(post_file)
+function supplies_merge(post_file)
 {
     let params = get_selected('new');
     if (! params.length) {

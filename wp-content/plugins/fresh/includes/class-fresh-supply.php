@@ -634,7 +634,9 @@ class Fresh_Supply {
 	}
 
 	public function Send() {
-		send_supplies( array( $this->ID ) );
+		$sql = 'UPDATE im_supplies SET status = 3 WHERE id = ' . $this->ID;
+
+		return SqlQuery( $sql );
 	}
 
 	public function Picked() {

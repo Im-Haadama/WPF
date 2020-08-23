@@ -240,7 +240,7 @@ class Fresh_Suppliers {
 	}
 	static private function getPost()
 	{
-		return get_site_url() . "/wp-content/plugins/fresh/post.php";
+		return "/wp-content/plugins/fresh/post.php";
 	}
 
 	function getShortcodes() {
@@ -356,5 +356,10 @@ class Fresh_Suppliers {
 
 		$pricelist = new Fresh_Pricelist($supplier_id);
 		return $pricelist->AddOrUpdate($price, 0, $product_name);
+	}
+
+	static function get_link($supplier_id)
+	{
+		return "/wp-admin/admin.php?page=suppliers&operation=gem_v_show&table=pricelist&supplier_id=" . $supplier_id;
 	}
 }

@@ -165,7 +165,7 @@ class Fresh_Basket extends  Fresh_Product  {
 			} else
 				$line .= "<td></td><td></td>";
 			$line .= "<td>" . $p->getTerms(true);
-			$line .= "<td>" . Core_Html::GuiHyperlink("edit", get_site_url() . "/wp-admin/post.php?post=$basket_id&action=edit") . "</td>";
+			$line .= "<td>" . Core_Html::GuiHyperlink("edit", "/wp-admin/post.php?post=$basket_id&action=edit") . "</td>";
 			$line .= "<td>" . Core_Html::GuiButton("btn_delete_" . $basket_id, "Delete", array("action"=>"basket_delete('" . Fresh::getPost() . "', $basket_id)")) . "</td>";
 			$line .= "</tr>";
 
@@ -231,8 +231,8 @@ class Fresh_Basket extends  Fresh_Product  {
 
 		$args["post_file"] = "/wp-content/plugins/fresh/post.php";
 		$args["id_field"] = "product_id";
-		$args["selectors"] = array("product_id" => "Fresh_Product::gui_select_product");
-		$args["links"] = array("product_id" => "/wp-admin/post.php?post=%d&action=edit&classic-editor");
+//		$args["selectors"] = array("product_id" => "Fresh_Product::gui_select_product");
+//		$args["links"] = array("product_id" => "/wp-admin/post.php?post=%d&action=edit&classic-editor");
 		$args["header_fields"] = array("product_id" => "Product", "quantity" => "Quantity", "price" => "Price", "line_price" => "Line total");
 		$args["add_checkbox"] = true;
 		$args["edit"] = false;
@@ -246,7 +246,10 @@ class Fresh_Basket extends  Fresh_Product  {
 			foreach($basket_content as $key => &$row) {
 				if ($key == 'header') continue;
 				$prod_id = $row['product_id'];
+				$p = new Fresh_Product($prod_id);
 				if ($prod_id  == $basket_id) continue;
+				$row['product_id'] = Core_Html::GuiHyperlink($p->getName(),
+					($p->is_basket() ? AddToUrl("basket_id", $prod_id) : Fresh_Suppliers::get_link($p->getSupplierId())));
 				$row['buy_price'] = Fresh_Pricing::get_buy_price($prod_id);
 				$buy_total += $row['buy_price'];
 				if (is_numeric($row["line_price"])) $total += $row["line_price"];

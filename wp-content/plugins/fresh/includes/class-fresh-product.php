@@ -445,6 +445,29 @@ class Fresh_Product {
 		wp_update_post( $my_post );
 	}
 
+	// Add product tag to the product
+	function addTag(string $tag)
+	{
+		return wp_set_object_terms($this->id, $tag, "product_tag", true);
+	}
+
+	function addCategory(string $categ_slug)
+	{
+		return wp_set_object_terms($this->id, $categ_slug, "product_cat", true);
+	}
+
+	function removeCategory(string $categ_slug)
+	{
+		print "removing $categ_slug<br/>";
+		$categs = wp_get_object_terms($this->id, 'product_cat');
+		for ($i = 0; $i < count($categs); $i ++)
+			if ($categs[$i]->slug == $categ_slug) {
+				unset ($categs[$i]);
+				break;
+			}
+
+		return wp_set_object_terms($this->id, $categs, "product_cat");
+	}
 }
 
 class Fresh_ProductIterator implements  Iterator {
@@ -496,6 +519,8 @@ class Fresh_ProductIterator implements  Iterator {
 		);
 		if ($post_status)
 			$args["post_status"] = $post_status;
+		else
+			$args["post_status"] = array('publish', 'pending', 'draft', 'auto-draft', 'future', 'private', 'inherit', 'trash');
 
 		$this->position = 0;
 		$this->array = [];
