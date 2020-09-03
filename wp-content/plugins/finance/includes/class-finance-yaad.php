@@ -323,7 +323,11 @@ class Finance_Yaad {
 		$params["tashType"]   = 1;
 		$params["ClientName"] = urlencode( $user_info->getName() );
 //		$params['UserId']    = get_user_meta( $user_info->getUserId(), 'id_number', true );
-		$params['UserId']  = SqlQuerySingleScalar( "select id_number from im_payment_info where email = '" . $user_info->get_customer_email() . "'" );
+//		$params['UserId']  = SqlQuerySingleScalar( "select id_number from im_payment_info where email = '" . $user_info->get_customer_email() . "'" );
+		$sql = "select id_number from im_payment_info where user_id = '" . $user_info->getUserId() . "'";
+		$params['UserId']  = SqlQuerySingleScalar($sql );
+		MyLog($sql);
+		MyLog($params['UserId']);
 	}
 
 	static public function History($customer_id)
