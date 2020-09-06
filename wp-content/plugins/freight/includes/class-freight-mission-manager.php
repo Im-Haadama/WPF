@@ -35,7 +35,16 @@ class Freight_Mission_Manager
 		add_action('get_local_anonymous', __CLASS__ . "::get_local_missions");
 		add_action('delivered', array(__CLASS__, "delivered_wrap"));
 		add_action('download_mission', array(__CLASS__, 'download_mission'));
+		add_action('print_mission', array(__CLASS__, 'print_mission'));
 		AddAction('order_update_driver_comment', array(__CLASS__, 'order_update_driver_comment'));
+	}
+
+	static function print_mission()
+	{
+		$id = GetParam("id", true);
+		print Core_Html::HeaderText();
+		print self::dispatcher($id, false);
+		die(0);
 	}
 
 	static function download_mission()
@@ -282,7 +291,7 @@ group by pm.meta_value, p.post_status");
 		print $result;
 	}
 
-	static function dispatcher($the_mission)
+	static function dispatcher($the_mission, $edit = true)
 	{
 	//	MyLog(__FUNCTION__ . ": $the_mission");
 		$lines_per_station = array();
@@ -291,8 +300,11 @@ group by pm.meta_value, p.post_status");
 		$result = "";
 
 		self::prepare_route($the_mission, $path, $lines_per_station, $supplies_to_collect);
+		$m = new Mission($the_mission);
 
 		if ($path and count($path)) {
+			$result .= Core_Html::GuiHeader(1, __("Details for dispatch number") . " " . $the_mission);
+			$result .= Core_Html::GuiHeader(2, $m->getDate());
 			$path_info = [];
 			for ( $i = 0; $i < count( $path ); $i ++ ) {
 				if ( isset( $lines_per_station[ $path[ $i ] ] ) ) {
@@ -354,13 +366,17 @@ group by pm.meta_value, p.post_status");
 
 //		$args["links"] = array(1 => self::$multi_site->getSiteURL($site_id) . "/wp-admin/user-edit.php?user_id=%d");
 //		var_dump($path_info[1]);
+			$args["class"] = "widefat";
 
 			$args["hide_cols"] = array( OrderTableFields::client_nubmer - 1 => 1 );
 			$result            .= Core_Html::gui_table_args( $path_info, "dispatch_" . $the_mission, $args );
 		}
-		$m = new Mission($the_mission);
-		$result .= self::add_delivery($m->getDefaultFee()); // , array("style" => "border:1px solid #000;")
-		$result .= Core_Html::GuiHyperlink("Download CSV", Freight::getPost() . "?operation=download_mission&id=$the_mission");
+		if ($edit) {
+			$result .= self::add_delivery( $m->getDefaultFee() ); // , array("style" => "border:1px solid #000;")
+			$result .= Core_Html::GuiHyperlink( "Download CSV", Freight::getPost() . "?operation=download_mission&id=$the_mission" ) . "<br/>";
+			$result .= Core_Html::GuiHyperlink( "Print", Freight::getPost() . "?operation=print_mission&id=$the_mission" ) ."</br>";
+			$result .= self::get_maps_url($m, $path);
+		}
 
 
 		return $result;
@@ -378,6 +394,8 @@ group by pm.meta_value, p.post_status");
 		$output   = self::$multi_site->GetAll( $data_url, false, $debug );
 
 		$rows = self::parse_output($output);
+
+//		var_dump($rows);
 
 		self::collect_points( $rows, $mission_id, $prerequisite, $supplies_to_collect, $lines_per_station, $stop_points );
 		// Collect the stop points
@@ -398,6 +416,7 @@ group by pm.meta_value, p.post_status");
 			for ($i = 0; $i < OrderTableFields::max; $i++)
 				$new_row[$i] = TableGetText($row, $i);
 
+//			var_dump($new_row); print "<br/>";
 			array_push($rows, $new_row);
 		}
 
@@ -549,7 +568,7 @@ group by pm.meta_value, p.post_status");
 		$mission = new Mission($mission_id);
 
 //		print "count: " . count($data_lines) . "<br/>";
-		for ( $i = 1; $i < count( $data_lines); $i ++ ) {
+		for ( $i = 0; $i < count( $data_lines); $i ++ ) {
 //			print "handling " . $data_lines[$i][OrderTableFields::order_number] . "<br/>";
 			$order_info = $data_lines[$i];
 			$stop_point = str_replace('-', ' ', $order_info[OrderTableFields::address_1] . " " . $order_info[OrderTableFields::city]);
@@ -561,7 +580,7 @@ group by pm.meta_value, p.post_status");
 
 			// Deliveries created in other place
 //			if ( ($order_info['site'] != "משימות") and ($order_info['site'] != "supplies") and ($pickup_address != $mission->getStartAddress()) ) {
-			if (0) {
+			if (1) {
 				// print "adding $pickup_address<br/>";
 				$prerequisite[$stop_point] = $pickup_address;
 				// Add Pickup

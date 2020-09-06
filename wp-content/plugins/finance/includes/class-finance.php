@@ -412,7 +412,8 @@ class Finance {
 
 				$doc_id = Finance_Clients::create_receipt_from_account_ids( $cash, $bank, $check, $credit, $user_id, $date, $row_ids );
 				// print "doc=$doc_id<br/>";
-				return $doc_id;
+				print $doc_id;
+				die (1);
 				break;
 		}
 

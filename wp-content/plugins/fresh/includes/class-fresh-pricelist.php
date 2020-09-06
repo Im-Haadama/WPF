@@ -24,7 +24,6 @@ class Fresh_Pricelist {
 			Catalog::UpdateProduct( $prod_id, $line );
 //			print header_text(false, true, false);
 //			print $line;
-
 		}
 
 		return;

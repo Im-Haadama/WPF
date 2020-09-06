@@ -70,7 +70,9 @@ class Fresh_Suppliers {
 
 	function supplier_pricelist_before_import($fields)
 	{
-		return SqlQuery("delete from im_supplier_price_list where supplier_id = " . $fields['supplier_id'] . ' and date = \'' . $fields['date'] . "'");
+		$sql = "delete from im_supplier_price_list where supplier_id = " . $fields['supplier_id'] . ' and date = \'' . $fields['date'] . "'";
+//		MyLog(__FUNCTION__ . ": $sql");
+		return SqlQuery($sql);
 	}
 
 	function supplier_pricelist_valid($fields, $values)
@@ -80,13 +82,21 @@ class Fresh_Suppliers {
 		$product_name_idx = array_search( "product_name", $fields );
 		$price_idx = array_search("price", $fields);
 
+		if (false === $price_idx) return false;
+		if (false === $product_name_idx) return false;
+
 		$price     = $values[ $price_idx ];
 		$product_name = $values[$product_name_idx];
 
 		// Check we've got info to add.
 //		if (! $account or ! $date or ! $balance and ! ($in_amount or $out_amount)) return false;
-		if (! ($price > 0) or (! strlen($product_name))) return false;
+		if (! ($price > 0) or (! strlen($product_name)))
+		{
+			MyLog(__FUNCTION__ . " false");
+			return false;
+		}
 
+		MyLog(__FUNCTION__ . " true $price $product_name");
 		return true;
 
 		// Check duplicate (from previous import).

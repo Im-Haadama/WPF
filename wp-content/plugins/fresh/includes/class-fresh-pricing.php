@@ -104,8 +104,10 @@ class Fresh_Pricing {
 //		}
 //	}
 
-	static function get_buy_price( $prod_id, $supplier_id = 0 ) {
-		if (! ($prod_id > 0)) return -1;
+	static function get_buy_price( $prod_id, $supplier_id = 0 )
+	{
+		$debug_product = null;
+		if (! ($prod_id > 0)) return 0;
 		$p = new Fresh_Product($prod_id);
 
 		// If it's a basket, sum basket items.
@@ -137,13 +139,14 @@ class Fresh_Pricing {
 		}
 		// Try thru mapping
 		$a = Fresh_Catalog::best_alternative( $prod_id );
+		if ($prod_id == $debug_product) var_dump($a);
 		if ($a)
 			return $a->getPrice();
 
 		$p = get_postmeta_field( $prod_id, 'buy_price' );
 		if ($p > 0) return $p;
 
-		return - 1;
+		return 0;
 	}
 
 

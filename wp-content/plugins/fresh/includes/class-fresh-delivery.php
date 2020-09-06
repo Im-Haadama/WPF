@@ -887,8 +887,8 @@ class Fresh_Delivery {
 
 		if ( $margin ) {
 			$q                                    = ( $operation == FreshDocumentType::delivery ) ? $quantity_delivered : $quantity_ordered;
-			$line[ eDeliveryFields::buy_price ]   = get_buy_price( $prod_id );
-			$line[ eDeliveryFields::line_margin ] = ( $price - get_buy_price( $prod_id ) ) * $q;
+			$line[ eDeliveryFields::buy_price ]   = Fresh_Pricing::get_buy_price( $prod_id );
+			$line[ eDeliveryFields::line_margin ] = ( $price - Fresh_Pricing::get_buy_price( $prod_id ) ) * $q;
 			$this->margin_total                   += $line[ eDeliveryFields::line_margin ];
 		}
 
