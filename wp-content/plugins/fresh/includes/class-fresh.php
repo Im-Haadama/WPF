@@ -178,6 +178,7 @@ class Fresh {
 		add_action( 'init', array( 'Fresh_Shortcodes', 'init' ) );
 		add_shortcode('pay-page', 'pay_page');
 		add_shortcode( 'im-page', 'im_page' );
+		add_shortcode('products_by_name', array($this, 'products_by_name'));
 		add_action( 'init', 'register_awaiting_shipment_order_status' );
 		add_action( 'woocommerce_checkout_process', 'wc_minimum_order_amount' );
 		add_action( 'woocommerce_before_cart', 'wc_minimum_order_amount' );
@@ -253,6 +254,7 @@ class Fresh {
 		Fresh_Delivery::init_hooks();
 		Fresh_Client_Views::init_hooks();
 		Fresh_Bundles::instance()->init_hooks();
+		Fresh_Views::init_hooks();
 
 		add_action('wp_enqueue_scripts', array($this, 'remove_add'), 2222);
 		add_filter('mission_print', array($this, 'mission_print_wrap'));
@@ -654,6 +656,25 @@ class Fresh {
 
 		wp_enqueue_script( 'order', plugin_dir_url( __FILE__ ) . 'js/my_account_order.js?v=1.1' );
 	}
+
+	function products_by_name($atts)
+	{
+		if (empty($atts['name'])) return 'no product selected';
+
+		$atts['ids'] = CommaImplode(SqlQueryArrayScalar("select id from wp_posts where post_status = 'publish' 
+			and post_title like '%" . $atts['name'] . " %'"));
+
+//		MyLog($atts['ids']);
+
+		$shortcode = new WC_Shortcode_Products( $atts, 'product' );
+
+		$rc = $shortcode->get_content();
+		
+//		remove_filter( 'posts_where', 'title_filter', 10 );
+
+		return $rc;
+	}
+
 
 	public function admin_scripts()
     {
@@ -1355,4 +1376,10 @@ function checkout_create_order_line_item( $item, $cart_item_key, $values, $order
 		   
 		}
 	}
+}
+
+function title_filter($where, $wp_query)
+{
+	MyLog(__FUNCTION__);
+	 return $where . " and post_tile like '%מנגו%' ";
 }

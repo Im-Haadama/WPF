@@ -387,9 +387,9 @@ class Finance {
 				$site_id     = GetParam( "site_id", true );
 
 				// $func, $site_id, $first = false, $debug = false ) {
-				return $multi_site->Run( Finance::getPostFile() . "?operation=finance_get_open_site_invoices&supplier_id=" . $supplier_id,
+				print $multi_site->Run( Finance::getPostFile() . "?operation=finance_get_open_site_invoices&supplier_id=" . $supplier_id,
 					$site_id, true, $debug );
-				break;
+				die (0);
 
 			case "create_receipt":
 				$cash    = (float) GetParam( "cash", false, 0 );
@@ -435,7 +435,8 @@ class Finance {
 		$args["add_checkbox"] = true;
 		$args["checkbox_events"] = "onchange = \"update_display()\"";
 		$args["checkbox_class"] = "trans_checkbox";
-		return Core_Html::GuiTableContent("table_invoices", $sql, $args);
+		print Core_Html::GuiTableContent("table_invoices", $sql, $args);
+		die (0);
 	}
 
 	static function delete_transaction( $ref ) {
