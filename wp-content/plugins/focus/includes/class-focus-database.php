@@ -28,6 +28,7 @@ class Focus_Database extends Core_Database
 
 		if ($current == $version and ! $force) return true;
 
+		SqlQuery("drop function client_displayname");
 		SqlQuery( "create function client_displayname (user_id int) returns text charset 'utf8'
 BEGIN
     declare _user_id int;
@@ -39,6 +40,7 @@ BEGIN
   END;
 
 " );
+		print "DONE";
 
 
 		SqlQuery( "CREATE FUNCTION task_status(task_id INT)

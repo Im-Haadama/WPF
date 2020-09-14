@@ -104,8 +104,8 @@ class Fresh_Client {
 	}
 
 	function customer_type( ) {
-	    MyLog(__FUNCTION__ . " " . $this->user_id);
 		$key = get_user_meta( $this->user_id, '_client_type', true );
+//		MyLog(__FUNCTION__ . " " . $this->user_id . " $key");
 
 		if ( is_null( $key ) ) {
 			return 0;

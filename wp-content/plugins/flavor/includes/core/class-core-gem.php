@@ -255,7 +255,7 @@ class Core_Gem {
 
 		$instance = self::getInstance();
 
-		$result .= $instance->GemVirtualTable($v_table, $args);
+		$result .= $instance->GemVirtualTable($v_table, $args, GetParam("mode", false, null) == "csv");
 
 		if (isset(self::getInstance()->object_types[$v_table]["import"])) {
 			$show_import = GetArg($args, "show_import", null);
@@ -263,6 +263,8 @@ class Core_Gem {
 				$result .= '<div><iframe src="' . $show_import . '"></iframe></div>';
 			$result .= self::ShowVImport( "$v_table", $args );
 		}
+
+		$result .= Core_Html::GuiHyperlink("download as CSV", AddToUrl("mode", "csv"));
 
 		return $result;
 	}
@@ -504,10 +506,14 @@ class Core_Gem {
 		$new_row = GetArg($args, "new_row", null);
 		if ($new_row) $rows_data["new_row"] = $new_row;
 
+		if (isset($args["csv"])) {
+			return "csv";
+		}
+
 		return Core_Gem::GemArray($rows_data, $args, $table_name);
 	}
 
-	function GemVirtualTable($table_name, $args)
+	function GemVirtualTable($table_name, $args, $csv = false)
 	{
 		MyLog(__FUNCTION__, " $table_name");
 		if (! $table_name) die("no table given:" . __FUNCTION__);
@@ -530,6 +536,11 @@ class Core_Gem {
 		$args["add_operation"] = "gem_v_add_$table_name";
 		$args = array_merge($this->object_types["$table_name"], $args);
 
+		if ($csv) {
+			$args["csv"] = true;
+			print self::GemTable($database_table, $args);
+			die (1);
+		}
 		return self::GemTable($database_table, $args);
 	}
 

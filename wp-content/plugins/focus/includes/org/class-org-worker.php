@@ -248,7 +248,7 @@ class Org_Worker extends Core_users
 				$query .= " and !(" . Focus_Tasks::ActiveQuery() . ") and status < 2";
 				break;
 			case 1: // Active
-				$query = " (owner = " . $this->id . ( $teams ? " or team in (" . CommaImplode( $teams ) . ")" : "" ) . ")";
+				$query = " (owner = " . $this->id . ( $teams ? " or (( owner is null or " . $this->id . " = owner) and team in (" . CommaImplode( $teams ) . "))" : "" ) . ")";
 				$query .= " and " . Focus_Tasks::ActiveQuery() . " and status < 2";
 				break;
 			case 2: // Done;

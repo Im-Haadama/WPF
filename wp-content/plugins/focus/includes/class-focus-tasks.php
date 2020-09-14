@@ -273,8 +273,7 @@ class Focus_Tasks {
 	 * @return string
 	 * @throws Exception
 	 */
-	static function focus_main( $operation, $user_id ) {
-//		print $user_id;
+	static function focus_main( $operation, $user_id ){
 		if (! $operation) $operation = "default";
 		$db_prefix = GetTablePrefix();
 		// Actions are performed and return to caller.
@@ -878,6 +877,8 @@ class Focus_Tasks {
 	 */
 	function default( $user_id )
 	{
+		if (! self::focus_check_user()) return "not valid user";
+
 		if (! ($user_id > 0)) return "'$user_id' is not valid user";
 		$worker = new Org_Worker( $user_id );
 		$tabs   = array();
@@ -1008,7 +1009,7 @@ class Focus_Tasks {
 		// Tasks I need to handle (owner = me)                                                                       //
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		$args["count"] = 0;
-		$args["title"] = ImTranslate( "Active tasks assigned to me or my teams" );
+		$args["title"] = __( "Active tasks assigned to me or my teams" );
 //		$teams         = $worker->AllTeams();
 		// $args["query"] = " (owner = " . $user_id . ( $teams ? " or team in (" . CommaImplode( $teams ) . ")" : "" ) . ")";
 		$args["query"] = $worker->myWorkQuery($active_only); ///self::ActiveQuery( );
@@ -1484,21 +1485,24 @@ class Focus_Tasks {
 			}
 
 			print Core_Html::GuiButton( "btn_add", "Add", array( "action" => "data_save_new('/focus/focus-post.php?operation=new_company_user', 'company', location_reload)" ) );
-
-			// print gui_input("company", )
 			return false;
 		}
 
 		// Check if user has team.
 		$team_ids = $worker->AllTeams();
-		if ( ! $team_ids or ! count( $team_ids ) ) {
-			Org_Team::Create($user_id, ImTranslate( "Personal team" ) . " " . $worker->getName());
+		$found_personal = false;
+		$prefix = __( "Personal team" );
+		foreach ($team_ids as $team_id){
+			$t = new Org_Team($team_id);
+			if (strstr($t->getName(), $prefix)) $found_personal = true;
 		}
+		if (! $found_personal)
+			Org_Team::Create($user_id, $prefix . " " . $worker->getName());
 
-		$project_ids = worker_get_projects( $user_id );
-		if ( is_null( $project_ids ) or ! count( $project_ids ) ) {
-			project_create( $user_id, ImTranslate( "first project" ), $company_ids[0] );
-		}
+//		$project_ids = worker_get_projects( $user_id );
+//		if ( is_null( $project_ids ) or ! count( $project_ids ) ) {
+//			project_create( $user_id, ImTranslate( "first project" ), $company_ids[0] );
+//		}
 
 		return true;
 	}
