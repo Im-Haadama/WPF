@@ -2008,8 +2008,11 @@ class Core_Html {
 				$result .= self::GuiHyperlink( "<<", AddToUrl( "page_number", 1 ) ) . " ";
 				$result .= self::GuiHyperlink( "<", AddToUrl( "page_number", $page_number - 1 ) ) . " ";
 			}
-			for ($i = max(1, $page_number - 3); $i <= min ($total_page_number, $page_number + 3); $i++)
-				$result .= self::GuiHyperlink($i, AddToUrl("page_number", $i)) . " ";
+			for ($i = max(1, $page_number - 3); $i <= min ($total_page_number, $page_number + 3); $i++) {
+				$text = $i;
+				if ($i == $page_number) $text = "<b>$i</b>";
+				$result .= self::GuiHyperlink( $text, AddToUrl( "page_number", $i ) ) . " ";
+			}
 
 			if ($page_number < $total_page_number) {
 				$result .= self::GuiHyperlink( ">", AddToUrl( "page_number", $page_number + 1 ) ) . " ";

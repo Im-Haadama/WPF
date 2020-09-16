@@ -322,12 +322,15 @@ class Core_Gem {
 		$result .= Core_Html::gui_header(1, $text);
 		$result .= Core_Html::NewRow($table_name, $args);
 		$post = GetArg($args, "post_file", null);
-		$next_page = GetArg($args, "next_page", null);
+		// $next_page = GetArg($args, "next_page", null);
 		if (! $post) die(__FUNCTION__ . " :" . $text . "must send post_file " . $table_name);
+
+		$next_page = apply_filters("gem_next_page_" . $table_name, '');
+//		print "np=$next_page<br/>";
 		if ($next_page){
 			$result .= '<script>
 		function next_page(xmlhttp) {
-		    if (xmlhttp.response.indexOf("failed") !== -1 ) {
+		    if (xmlhttp.response.indexOf("failed") === -1 ) {
 		        let new_id = xmlhttp.response.substr(5);
 		      window.location = "' . $next_page . '&new=" + new_id;  
 		    }  else alert(xmlhttp.response);
