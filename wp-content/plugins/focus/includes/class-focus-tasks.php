@@ -1472,19 +1472,20 @@ class Focus_Tasks {
 		$user_id     = get_user_id();
 		$worker      = new Org_Worker( $user_id );
 		$company_ids = $worker->GetCompanies();
+
 		if ( ! count( $company_ids ) ) {
 			print "Ne need some information to get started!<br/>";
 			$args = array( "values" => array( "admin" => get_user_id() ) );
 			try {
 				print Core_Html::gui_header( 1, "Company details" );
-				print NewRow( "company", $args );
+				print Core_Html::NewRow( "company", $args );
 			} catch ( Exception $e ) {
 				print "Error F1: " . $e->getMessage();
 
 				return false;
 			}
 
-			print Core_Html::GuiButton( "btn_add", "Add", array( "action" => "data_save_new('/focus/focus-post.php?operation=new_company_user', 'company', location_reload)" ) );
+			print Core_Html::GuiButton( "btn_add", "Add", array( "action" => "data_save_new('".Focus::getPost()."', $user_id" ) );
 			return false;
 		}
 
