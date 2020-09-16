@@ -15,6 +15,7 @@ class Core_Gem {
 		self::$_instance = $this;
 		AddAction("gem_show", array($this, "show_wrap"), 10, 3);
 		AddAction("gem_v_show", array(__CLASS__, "v_show_wrap"));
+		AddAction("gem_v_csv", array(__CLASS__, "gem_v_csv"));
 
 		// Import
 		// prepare
@@ -240,6 +241,23 @@ class Core_Gem {
 		return $result;
 	}
 
+	static function gem_v_csv()
+	{
+		$v_table = GetParam("table", true);
+
+		$args = self::getInstance()->object_types[$v_table];
+		$v_key= GetArg($args, "v_key", "id");
+		$args["id"] = GetParam($v_key, true);
+		// Next line doesn't make sense. If returns check https://fruity.co.il/wp-admin/admin.php?page=suppliers&operation=gem_v_show&table=pricelist&id=100007
+//		if (isset(self::getInstance()->object_types[$v_table]["post_file"]))
+//			$args["post_file"] = self::getInstance()->object_types[$v_table]["import_page"] . "?id=" . $args['id'] . "&table=" . $v_table;
+
+		$instance = self::getInstance();
+
+		print $instance->GemVirtualTable($v_table, $args, true);
+		die (0);
+	}
+
 	static function v_show_wrap($result = null)
 	{
 		if (! $result)
@@ -255,7 +273,7 @@ class Core_Gem {
 
 		$instance = self::getInstance();
 
-		$result .= $instance->GemVirtualTable($v_table, $args, GetParam("mode", false, null) == "csv");
+		$result .= $instance->GemVirtualTable($v_table, $args);
 
 		if (isset(self::getInstance()->object_types[$v_table]["import"])) {
 			$show_import = GetArg($args, "show_import", null);
@@ -264,7 +282,7 @@ class Core_Gem {
 			$result .= self::ShowVImport( "$v_table", $args );
 		}
 
-		$result .= Core_Html::GuiHyperlink("download as CSV", AddToUrl("mode", "csv"));
+		$result .= Core_Html::GuiHyperlink("download as CSV", Flavor::getPost() . "?operation=gem_v_csv&table=" . $v_table . '&'. $v_key . '=' . $args["id"]) ;
 
 		return $result;
 	}
@@ -507,7 +525,14 @@ class Core_Gem {
 		if ($new_row) $rows_data["new_row"] = $new_row;
 
 		if (isset($args["csv"])) {
-			return "csv";
+			$result = "";
+			foreach ($rows_data as $row) {
+				foreach ( $row as $cell ) {
+					$result .= "$cell, ";
+				}
+				$result .= PHP_EOL;
+			}
+			return $result;
 		}
 
 		return Core_Gem::GemArray($rows_data, $args, $table_name);
@@ -538,7 +563,17 @@ class Core_Gem {
 
 		if ($csv) {
 			$args["csv"] = true;
-			print self::GemTable($database_table, $args);
+			unset ($_GET["operation"]);
+			$file = self::GemTable($database_table, $args);
+			$date = date('Y-m-d');
+			$file_name = "list_${date}.csv";
+
+			header("Content-Disposition: attachment; filename=\"" . $file_name . "\"");
+			header("Content-Type: application/octet-stream");
+			header("Content-Length: " . strlen($file));
+			header("Connection: close");
+
+			print $file;
 			die (1);
 		}
 		return self::GemTable($database_table, $args);
