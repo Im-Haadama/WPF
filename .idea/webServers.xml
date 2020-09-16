@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="a5be089d-c3aa-47a2-8d17-4c4dea8ce28f" name="fruity.co.il">
+        <fileTransfer rootFolder="C:\Users\Lihi\PhpstormProjects\WPF\wp-content\plugins\focus" accessType="SFTP" host="test.fruity.co.il" port="22" sshConfigId="a53f1b11-5893-4211-8d81-a91a47255483" sshConfig="root@test.fruity.co.il:22 key" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+      <webServer id="cd7bc124-000e-40e4-8cce-341233775946" name="test.fruity.c.il">
+        <fileTransfer accessType="SFTP" port="22" sshConfigId="250aa15e-5014-4306-99eb-8468e525de1d" sshConfig="test.fruity.c.il">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+      <webServer id="136d0261-4c4e-4aad-858a-167991282a89" name="http://test.fruity.co.il/" url="http://test.fruity.co.il">
+        <fileTransfer rootFolder="/var/www/html" accessType="SFTP" host="test.fruity.co.il" port="22" sshConfigId="a53f1b11-5893-4211-8d81-a91a47255483" sshConfig="root@test.fruity.co.il:22 key" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

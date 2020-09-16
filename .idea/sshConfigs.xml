@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SshConfigs">
+    <configs>
+      <sshConfig host="test.fruity.co.il" id="a53f1b11-5893-4211-8d81-a91a47255483" keyPath="C:\Users\Lihi\Documents\Fruity\digi" port="22" nameFormat="DESCRIPTIVE" username="root" />
+      <sshConfig authType="PASSWORD" id="250aa15e-5014-4306-99eb-8468e525de1d" port="22" customName="test.fruity.c.il" nameFormat="CUSTOM">
+        <option name="customName" value="test.fruity.c.il" />
+      </sshConfig>
+    </configs>
+  </component>
+</project>
