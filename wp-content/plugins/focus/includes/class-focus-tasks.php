@@ -1485,8 +1485,8 @@ class Focus_Tasks {
 				return false;
 			}
 
-			print Core_Html::GuiButton( "btn_add", "Add", array( "action" => "data_save_new('".Focus::getPost()."', $user_id" ) );
-			return false;
+			print Core_Html::GuiButton( "btn_add", "Add", array( "action" => "data_save_new('".Focus::getPost()."','company', location_reload)" ) );
+			return null;
 		}
 
 		// Check if user has team.
