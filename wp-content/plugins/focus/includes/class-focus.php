@@ -138,7 +138,6 @@ class Focus {
 	 * @since 2.3
 	 */
 	private function init_hooks() {
-//		print __CLASS__ . ": init_hooks<br/>";
 		self::install();
 		// register_activation_hook( WC_PLUGIN_FILE, array( 'Focus_Install', 'install' ) );
 //		register_shutdown_function( array( $this, 'log_errors' ) );

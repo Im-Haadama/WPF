@@ -123,13 +123,15 @@ require_once (ABSPATH . '/wp-includes/pluggable.php');
 			return $args[ $key ];
 		}
 
-	/**
-	 * @param $key
-	 * @param bool $mandatory
-	 * @param null $default
-	 *
-	 * @return mixed|null
-	 */
+		/**
+		 * @param $key - the value to fetch from $_Get.
+		 * @param bool $mandatory - is the parameter is mandatory. If it is and no value set - the function will cause die after outputing error message
+		 *      that includes to callear function and the parameter name.
+		 * @param null $default - if not mandatory and not set - value to return
+		 * @param bool $uset - wheather to clear this param from $_Get.
+		 *
+		 * @return mixed|null
+		 */
 	function GetParam( $key, $mandatory = false, $default = null, $uset = false ) {
 		if ( isset( $_GET[ $key ] ) ) {
 			$v = $_GET[$key];

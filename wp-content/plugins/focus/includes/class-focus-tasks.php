@@ -1598,7 +1598,7 @@ class Focus_Tasks {
 		$url = GetUrl( 1 );
 
 		$result     = "";
-		$action_url = "/wp-content/plugins/focus/post.php"; // GetUrl(1);//  "/focus/focus-post.php";
+		$action_url = Focus::getPost(); // "/wp-content/plugins/focus/post.php"; // GetUrl(1);//  "/focus/focus-post.php";
 		$worker                = new Org_Worker( get_user_id() );
 		$template_args = self::Args("task_templates");
 		$template_args["worker"]        = $worker->getId();
@@ -1653,6 +1653,7 @@ class Focus_Tasks {
 		}
 
 		$template_args["class"]   = "sortable";
+		$template_args["rows_per_page"] = 10;
 		$template_args["links"]   = array( "id" => $url . "?operation=show_template&id=%s" );
 		$template_args["header"]  = true;
 		$template_args["drill"]   = true;
