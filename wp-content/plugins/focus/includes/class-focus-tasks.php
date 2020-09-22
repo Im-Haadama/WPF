@@ -897,8 +897,8 @@ class Focus_Tasks {
 //			                     btn_cancel.style.display='none';",
 //		                                                               "style" => "display: none;") );
 
-		array_push( $tabs, array( "my_work", "My tasks", ($selected_tab == "my_work" ? self::user_work( $args, $user_id )  : null)));
-		array_push( $tabs, array( "my_team_work", "Team's tasks", ($selected_tab == "my_team_work" ? self::team_work( $args, $user_id )  : null)));
+		array_push( $tabs, array( "my_work", "My tasks", ($selected_tab == "my_work" ? self::user_work( $args, "Active tasks assigned to me", false, $user_id )  : null)));
+		array_push( $tabs, array( "my_team_work", "Team's tasks", ($selected_tab == "my_team_work" ? self::user_work( $args, "Active tasks assigned to my teams", true, $user_id )  : null)));
 		array_push( $tabs, array( "i_want", "I want", ($selected_tab == "i_want" ?  self::i_want( $args, $user_id ) : null ) ) );
 		array_push( $tabs, array( "my_teams", "My Teams", ($selected_tab == "my_teams" ? self::my_teams( $args, $user_id ): null ) ) );
 		array_push( $tabs, array( "my_projects", "My projects", ($selected_tab == "my_projects" ? self::my_projects( $args, $user_id ): null ) ));
@@ -995,7 +995,7 @@ class Focus_Tasks {
 		return $result;
 	}
 
-	static function user_work( $args, $user_id )
+	static function user_work( $args, $title, $include_team, $user_id )
 	{
 		$result = "";
 
@@ -1011,11 +1011,10 @@ class Focus_Tasks {
 		// Tasks I need to handle (owner = me)                                                                       //
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		$args["count"] = 0;
-		$args["title"] = __( "Active tasks assigned to me" );
+		$args["title"] = __( $title );
 //		$teams         = $worker->AllTeams();
 		// $args["query"] = " (owner = " . $user_id . ( $teams ? " or team in (" . CommaImplode( $teams ) . ")" : "" ) . ")";
-		$args["query"] = $worker->myWorkQuery($active_only, false); ///self::ActiveQuery( );
-		 		print $args["query"];
+		$args["query"] = $worker->myWorkQuery($active_only, $include_team); ///self::ActiveQuery( );
 		if (isset($args["period"])) {
 			$period        = $args["period"];
 			$args["query"] .= " and (ended >= curdate() - INTERVAL $period )";
@@ -1034,45 +1033,6 @@ class Focus_Tasks {
 
 		return $result;
 	}
-
-	static function team_work( $args, $user_id ) {
-		$result = "";
-
-		if ( ! ( $user_id > 0 ) ) {
-			print debug_trace();
-			die ( "bad user id $user_id" );
-		}
-
-		$worker = new Org_Worker( $user_id );
-		$active_only = GetArg($args, "active_only", 1);
-
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// Tasks I need to handle (owner = me)                                                                       //
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		$args["count"] = 0;
-		$args["title"] = __( "Active tasks assigned to my teams" );
-//		$teams         = $worker->AllTeams();
-		// $args["query"] = " (owner = " . $user_id . ( $teams ? " or team in (" . CommaImplode( $teams ) . ")" : "" ) . ")";
-		$args["query"] = $worker->myWorkQuery($active_only, true); ///self::ActiveQuery( );
-		if (isset($args["period"])) {
-			$period        = $args["period"];
-			$args["query"] .= " and (ended >= curdate() - INTERVAL $period )";
-		}
-
-		$args["rows_per_page"] = 9; // GetParam( "limit", false, 10 );
-		$args["post_action"] = self::getPost() . "?operation=tasklist_worker&worker_id=" . $user_id . "&action_only=" . $active_only;
-
-		$table = self::Taskslist( $args );
-		if ( $args["count"] ) {
-			$result .= $table;
-		} else {
-			$result .= "Nothing found. Try non active list: ";
-			$result .= Core_Html::GuiHyperlink( "non active", AddToUrl( "non_active", 1 ) );
-		}
-
-		return $result;
-	}
-
 
 	static function my_teams( $args, $user_id ) {
 		$worker = new Org_Worker( $user_id );
