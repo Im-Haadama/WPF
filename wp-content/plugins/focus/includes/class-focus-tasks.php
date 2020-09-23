@@ -901,7 +901,8 @@ class Focus_Tasks {
 //			                     btn_cancel.style.display='none';",
 //		                                                               "style" => "display: none;") );
 
-		array_push( $tabs, array( "my_work", "My work", ($selected_tab == "my_work" ? self::user_work( $args, $user_id )  : null)));
+		array_push( $tabs, array( "my_work", "My tasks", ($selected_tab == "my_work" ? self::user_work( $args, "Active tasks assigned to me", false, $user_id )  : null)));
+		array_push( $tabs, array( "my_team_work", "Team's tasks", ($selected_tab == "my_team_work" ? self::user_work( $args, "Active tasks assigned to my teams", true, $user_id )  : null)));
 		array_push( $tabs, array( "i_want", "I want", ($selected_tab == "i_want" ?  self::i_want( $args, $user_id ) : null ) ) );
 		array_push( $tabs, array( "my_teams", "My Teams", ($selected_tab == "my_teams" ? self::my_teams( $args, $user_id ): null ) ) );
 		array_push( $tabs, array( "my_projects", "My projects", ($selected_tab == "my_projects" ? self::my_projects( $args, $user_id ): null ) ));
@@ -995,7 +996,8 @@ class Focus_Tasks {
 		return $result;
 	}
 
-	static function user_work( $args, $user_id ) {
+	static function user_work( $args, $title, $include_team, $user_id )
+	{
 		$result = "";
 
 		if ( ! ( $user_id > 0 ) ) {
@@ -1010,10 +1012,10 @@ class Focus_Tasks {
 		// Tasks I need to handle (owner = me)                                                                       //
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		$args["count"] = 0;
-		$args["title"] = __( "Active tasks assigned to me or my teams" );
+		$args["title"] = __( $title );
 //		$teams         = $worker->AllTeams();
 		// $args["query"] = " (owner = " . $user_id . ( $teams ? " or team in (" . CommaImplode( $teams ) . ")" : "" ) . ")";
-		$args["query"] = $worker->myWorkQuery($active_only); ///self::ActiveQuery( );
+		$args["query"] = $worker->myWorkQuery($active_only, $include_team); ///self::ActiveQuery( );
 		if (isset($args["period"])) {
 			$period        = $args["period"];
 			$args["query"] .= " and (ended >= curdate() - INTERVAL $period )";
@@ -1614,7 +1616,7 @@ class Focus_Tasks {
 		$url = GetUrl( 1 );
 
 		$result     = "";
-		$action_url = "/wp-content/plugins/focus/post.php"; // GetUrl(1);//  "/focus/focus-post.php";
+		$action_url = Focus::getPost(); // "/wp-content/plugins/focus/post.php"; // GetUrl(1);//  "/focus/focus-post.php";
 		$worker                = new Org_Worker( get_user_id() );
 		$template_args = self::Args("task_templates");
 		$template_args["worker"]        = $worker->getId();
@@ -1669,6 +1671,7 @@ class Focus_Tasks {
 		}
 
 		$template_args["class"]   = "sortable";
+		$template_args["rows_per_page"] = 10;
 		$template_args["links"]   = array( "id" => $url . "?operation=show_template&id=%s" );
 		$template_args["header"]  = true;
 		$template_args["drill"]   = true;

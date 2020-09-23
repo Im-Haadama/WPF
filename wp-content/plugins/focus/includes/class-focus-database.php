@@ -125,7 +125,7 @@ charset=utf8;
 );
 
 ");
-		if (! TableExists("projects"))
+		if (! TableExists("1"))
 			SqlQuery("create table im_projects
 (
 	ID int auto_increment
@@ -201,7 +201,7 @@ engine=InnoDB;
 		if ($current == $version and ! $force) return true;
 
 		SqlQuery("drop function preq_done");
-		SqlQuery("CREATE FUNCTION 	preq_done(_task_id int)
+		SqlQuery("CREATE FUNCTION preq_done(_task_id int)
 	 RETURNS varchar(200)
 BEGIN 
 	declare _preq varchar(200);
@@ -227,7 +227,6 @@ BEGIN
 	end while;
 	return 1;	   
 END;");
-
 
 		self::UpdateInstalled("Focus", "functions", $version);
 	}
