@@ -27,6 +27,11 @@ class Focus_Database extends Core_Database
 		$current = self::CheckInstalled("Focus", "tables");
 
 		if ($current == $version and ! $force) return true;
+        if ($current == '1.0' and $version = '1.1'){
+            SqlQuery("alter table im_projects add is_active bit");
+            self::UpdateInstalled("Focus", "tables", $version);
+            return true;
+        }
 
 		SqlQuery("drop function client_displayname");
 		SqlQuery( "create function client_displayname (user_id int) returns text charset 'utf8'

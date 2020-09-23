@@ -880,6 +880,9 @@ class Focus_Tasks {
 		if (! self::focus_check_user()) return "not valid user";
 
 		if (! ($user_id > 0)) return "'$user_id' is not valid user";
+
+		$greet = greeting(null, false);
+		print "{$greet}";
 		$worker = new Org_Worker( $user_id );
 		$tabs   = array();
 		$args = self::Args();
@@ -888,6 +891,7 @@ class Focus_Tasks {
 
 		$selected_tab = GetParam("selected_tab", false, "my_work");
 		$result .= self::search_box();
+		//print "<b> Hello {$worker->getName()} <b> ! Have a nice day <br>";
 //		$result .= self::new_task();
 //		$result .= self::show_new_template();
 //		$result .= Core_html::GuiButton("btn_cancel", "Cancel", array( "action" => "new_task.style.display = 'none';
@@ -903,12 +907,9 @@ class Focus_Tasks {
 		array_push( $tabs, array( "my_projects", "My projects", ($selected_tab == "my_projects" ? self::my_projects( $args, $user_id ): null ) ));
 		array_push( $tabs, array( "repeating_tasks", "Repeating tasks",($selected_tab == "repeating_tasks" ? self::show_templates( $args ): null ) ));
 		if ( $companies = $worker->GetCompanies( true ) ) {
-			foreach ( $companies as $company ) {
-				array_push( $tabs, array(
-					"company_settings",
-					"Company settings",
-					($selected_tab == "company_settings" ? self::CompanySettings($company) : null)
-				) );
+			foreach ( $companies as $company_id ) {
+			    $company = new Org_Company($company_id);
+				array_push( $tabs, array("company_settings", "{$company->getName()} Settings", ($selected_tab == "company_settings" ? self::CompanySettings($company) : null)) );
 			}
 		}
 
@@ -1265,7 +1266,7 @@ class Focus_Tasks {
 		}
 		$result .= Core_Html::GuiHyperlink( "Not filtered", AddToUrl( "active_only", 0 ) ); // Not filtered
 
-		$result .= " " . Core_Html::GuiHyperlink( "Add task", self::get_link( "task" ) ); // id == 0 -> new
+		//$result .= " " . Core_Html::GuiHyperlink( "Add task", self::get_link( "task" ) ); // id == 0 -> new
 
 		$result .= " " . Core_Html::GuiHyperlink( "Add delivery", AddToUrl( "operation", "show_new_task&mission=1" ) );
 
@@ -1468,7 +1469,8 @@ class Focus_Tasks {
 	 * @throws Exception
 	 */
 	function focus_check_user() {
-		// Check if user has company
+
+		// Check if user has company. if not create new one.
 		$user_id     = get_user_id();
 		$worker      = new Org_Worker( $user_id );
 		$company_ids = $worker->GetCompanies();
@@ -1481,7 +1483,6 @@ class Focus_Tasks {
 				print Core_Html::NewRow( "company", $args );
 			} catch ( Exception $e ) {
 				print "Error F1: " . $e->getMessage();
-
 				return false;
 			}
 
@@ -1489,7 +1490,7 @@ class Focus_Tasks {
 			return null;
 		}
 
-		// Check if user has team.
+		// Check if user has team. creat a new personal team if not.
 		$team_ids = $worker->AllTeams();
 		$found_personal = false;
 		$prefix = __( "Personal team" );
@@ -1499,6 +1500,21 @@ class Focus_Tasks {
 		}
 		if (! $found_personal)
 			Org_Team::Create($user_id, $prefix . " " . $worker->getName());
+
+		// Check if user has at list one project. create the first one if not.
+        if(!($worker->AllProjects())){
+            print "It seems you have no projects. let's create your first project.<br/>";
+            $args = self::Args("projects");
+            $args["post_file"] = Focus::getPost();
+            try {
+                print Core_Gem::GemAddRow( "projects", "Please enter details for you first project", $args );
+                return null;
+            } catch ( Exception $e ) {
+                print "Error F1: " . $e->getMessage();
+                return false;
+            }
+
+        }
 
 //		$project_ids = worker_get_projects( $user_id );
 //		if ( is_null( $project_ids ) or ! count( $project_ids ) ) {

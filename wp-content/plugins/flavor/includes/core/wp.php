@@ -82,6 +82,7 @@ function greeting( $args = null, $force_login = false )
 {
 	$extra_text = GetArg($args, "greeting_extra_text", null);
 	$viewing_as = GetArg($args, "view_as", get_user_id());
+	//$customer_name = GetArg($args, "view_as", get_customer_name($user_id));
 
 //	global $no_wp;
 	$data = "";
@@ -107,11 +108,14 @@ function greeting( $args = null, $force_login = false )
 	$user = get_user_by( "id", $user_id );
 	if ( $user ) $user_display = $user->user_firstname . " " . $user->user_lastname;
 
-	$data .= get_avatar( get_user_id(), 40 ) . " " . get_customer_name($user_id) . Core_Html::Br() . GuiHyperlink("logout", wp_logout_url(get_permalink()));
-	if ($viewing_as != $user_id) $data .= "( " . ImTranslate("viewing as") . get_customer_name($viewing_as) . ")";
+	$data .= get_avatar( get_user_id(), 40 ) . " Hello " . "<b>".get_user_displayname($user_id) ."</b>". "! Have a nice day". Core_Html::Br() ;
+	//. GuiHyperlink("logout", wp_logout_url(get_permalink()));
+	//get_customer_name($user_id)
+	//if ($viewing_as != $user_id) $data .= "( " . ImTranslate("viewing as") . get_customer_name($viewing_as) . ")";
 
-	$data .=  Date("G:i", $now );
-
+    //show the time
+    date_default_timezone_set('Asia/Jerusalem');
+	$data .=  Date("G:i", $now ) . Core_Html::Br();
 	// Would go to dropdown.
 	// $data .= Core_Html::GuiHyperlink("logout", get_param(1) . "?operation=logout&back=" . encodeURIComponent(get_url()));
 
