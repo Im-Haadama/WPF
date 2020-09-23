@@ -1014,8 +1014,8 @@ group by pm.meta_value, p.post_status");
 
 	static function delivery_table_header( $edit = false ) {
 		$data = "";
-		$data .= "<table><tr>";
-		$data .= "<td><h3>בחר</h3></td>";
+		$data .= "<table id='done_deliveries'><tr>";
+		$data .= "<td><h3>" . Core_Html::GuiCheckbox("done_select_all", false, array("events" => "onchange = \"select_all_toggle(done_select_all, 'deliveries')\"") ) . "</h3></td>";
 		$data .= "<td><h3>אתר</h3></td>";
 		$data .= "<td><h3>מספר </br>/הזמנה<br/>אספקה</h3></td>";
 		$data .= "<td><h3>מספר </br>לקוח</h3></td>";

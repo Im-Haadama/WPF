@@ -453,7 +453,8 @@ class Fresh_Delivery {
 		if ( $edit ) {
 			$subject = "משלוח מספר " . $this->ID . " - תיקון";
 		}
-		return send_mail($to, $subject, $message );
+		$from = (defined ("MAIL_SENDER") ? MAIL_SENDER : get_option('admin_email'));
+		return send_mail($from, $to, $subject, $message );
 		// print "mail sent to " . $to . "<br/>";
 	}
 
@@ -725,6 +726,12 @@ class Fresh_Delivery {
 			$summary_line[ eDeliveryFields::delivery_line ] = $this->delivery_due_vat;
 			$summary_line[ eDeliveryFields::order_line ]    = $this->order_due_vat;
 			$data                                           .= Core_Html::gui_row( $summary_line, "due", $show_fields, $sum, $this->delivery_fields_names, $style );
+
+			$summary_line                                   = $empty_array;
+			$summary_line[ eDeliveryFields::product_name ]  = 'סה"כ בשיעור מע"מ 0';
+			$summary_line[ eDeliveryFields::delivery_line ] = $this->delivery_total - $this->delivery_due_vat; // $this->delivery_due_vat;
+//			$summary_line[ eDeliveryFields::order_line ]    = 'bb'; // $this->order_due_vat;
+			$data                                           .= Core_Html::gui_row( $summary_line, "va0", $show_fields, $sum, $this->delivery_fields_names, $style );
 
 			// Total VAT
 			$summary_line                                   = $empty_array;

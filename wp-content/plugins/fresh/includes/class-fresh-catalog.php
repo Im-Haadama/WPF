@@ -633,7 +633,7 @@ class Fresh_Catalog {
 				$user_info = get_userdata( $client_id );
 				$to        = $user_info->user_email . ", " . $support_email;
 
-				$rc = send_mail( $subject, $to, $mail );
+				$rc = send_mail( $to, $subject, $mail );
 				print "subject: " . $subject . "<br/>";
 				print "mail: " . $mail . "<br/>";
 				print "to: " . $to . "<br/>";
