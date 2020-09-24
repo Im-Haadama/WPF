@@ -912,7 +912,7 @@ group by pm.meta_value, p.post_status");
 		Core_Options::info_remove("mission_order_priority_" . $site_id . '_' .$order_id);
 
 		if ($pri > 0)
-			Core_Options::info_update("mission_order_priority_" . $site_id . '_' .$order_id, $pri);
+			InfoUpdate("mission_order_priority_" . $site_id . '_' .$order_id, $pri);
 	}
 
 	static function mission_update_type()

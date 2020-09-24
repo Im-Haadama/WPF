@@ -244,13 +244,10 @@ require_once (ABSPATH . '/wp-includes/pluggable.php');
 		if ( ! $result ) {
 			$sql = "insert into im_info (info_key, info_data) VALUE ('$key', '$data')";
 //              print $sql;
-			SqlQuery( $sql );
-
-			return;
+			return SqlQuery( $sql );
 		}
 		$sql = "UPDATE im_info SET info_data = '" . $data . "' WHERE info_key = '" . $key . "'";
-//              print $sql;
-		SqlQuery( $sql );
+		return SqlQuery( $sql );
 	}
 	}
 
