@@ -882,13 +882,10 @@ class Focus_Tasks {
 
 		if (! ($user_id > 0)) return "'$user_id' is not valid user";
 
-		$greet = greeting(null, false);
-		print "{$greet}";
+		$result = greeting(null, false);
 		$worker = new Org_Worker( $user_id );
 		$tabs   = array();
 		$args = self::Args();
-
-		$result = "";
 
 		$selected_tab = GetParam("selected_tab", false, "my_work");
 		$result .= self::search_box();

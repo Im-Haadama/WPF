@@ -114,7 +114,7 @@ function greeting( $args = null, $force_login = false )
 	//if ($viewing_as != $user_id) $data .= "( " . ImTranslate("viewing as") . get_customer_name($viewing_as) . ")";
 
     //show the time
-    date_default_timezone_set('Asia/Jerusalem');
+    // date_default_timezone_set('Asia/Jerusalem'); The time zone should be set generally in wordpress. See wordpress settings.
 	$data .=  Date("G:i", $now ) . Core_Html::Br();
 	// Would go to dropdown.
 	// $data .= Core_Html::GuiHyperlink("logout", get_param(1) . "?operation=logout&back=" . encodeURIComponent(get_url()));

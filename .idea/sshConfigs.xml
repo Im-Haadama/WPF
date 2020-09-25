@@ -2,10 +2,10 @@
 <project version="4">
   <component name="SshConfigs">
     <configs>
-      <sshConfig host="test.fruity.co.il" id="a53f1b11-5893-4211-8d81-a91a47255483" keyPath="C:\Users\Lihi\Documents\Fruity\digi" port="22" nameFormat="DESCRIPTIVE" username="root" />
-      <sshConfig authType="PASSWORD" id="250aa15e-5014-4306-99eb-8468e525de1d" port="22" customName="test.fruity.c.il" nameFormat="CUSTOM">
-        <option name="customName" value="test.fruity.c.il" />
-      </sshConfig>
+      <sshConfig host="104.248.36.246" id="3bff9d23-731e-49e5-9a17-ef787542bd44" keyPath="$USER_HOME$/.ssh/digi" port="22" nameFormat="DESCRIPTIVE" username="root" />
+      <sshConfig host="chavabeahava.com" id="3a703039-8558-4493-aa96-119dbec3f437" keyPath="$USER_HOME$/.ssh/digi" port="22" nameFormat="DESCRIPTIVE" username="root" />
+      <sshConfig host="e-fresh.co.il" id="bc14b519-1074-462e-99c4-397feaeb52f8" keyPath="$USER_HOME$/.ssh/digi" port="22" nameFormat="DESCRIPTIVE" username="root" />
+      <sshConfig host="tasks.work" id="55139e74-1181-45a6-9d8d-afd08d15d187" keyPath="$USER_HOME$/.ssh/digi" port="22" nameFormat="DESCRIPTIVE" username="root" />
     </configs>
   </component>
 </project>
