@@ -167,6 +167,7 @@ class Focus {
 		AddAction("company_add_worker", array($this, 'company_add_worker'));
 
 		add_filter("gem_next_page_tasklist", array($this, "next_page"));
+        add_filter("gem_next_page_projects", array($this, "next_page"));
 
 		if ((get_user_id() == 1) and defined("DEBUG_USER")) wp_set_current_user(DEBUG_USER);
 	}

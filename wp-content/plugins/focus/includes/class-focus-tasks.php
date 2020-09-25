@@ -234,6 +234,7 @@ class Focus_Tasks {
 					$args["fields"] = array(
 						"id",
 						"task_title",
+						"date",
 						"task_description", // Needed for task title
 						"team",
 						"project_id",
@@ -1160,9 +1161,9 @@ class Focus_Tasks {
 
 		//print "c=" . $args["count"];
 		if ( ! $args["count"] ) {
-			$result .= ImTranslate( "No active tasks!" ) . "<br/>";
+			$result .= "<br/>".ImTranslate( "No active tasks!" );
 			$result .= ImTranslate( "Let's create first one!" ) . " ";
-			$result .= Core_Html::GuiHyperlink( "create task", "?operation=show_new_task" ) . "<br/>";
+			$result .= Core_Html::GuiHyperlink( "create task", "?selected_tab=i_want&operation=gem_add_tasklist" ) . "<br/>";
 		}
 
 		return $result;
@@ -1180,7 +1181,7 @@ class Focus_Tasks {
 		$action_url = "/wp-content/plugins/focus/post.php";
 
 		if ( ! isset( $args["fields"] ) ) {
-			$args["fields"] = array( "id", "task_description", "task_title", "project_id", "priority", "task_template" );
+			$args["fields"] = array( "id", "task_description", "task_title", "project_id", "date", "priority", "task_template" );
 		}
 		if ( isset( $args["extra_fields"] ) ) {
 			$args["fields"] = array_merge( $args["fields"], $args["extra_fields"] );
@@ -1266,7 +1267,7 @@ class Focus_Tasks {
 			$result .= Core_Html::GuiHyperlink( "More", AddToUrl( "page", $page + 1 ) ) . " ";
 			$result .= Core_Html::GuiHyperlink( "Not paged", AddToUrl( "page", - 1 ) ) . " "; // All pages
 		}
-		$result .= Core_Html::GuiHyperlink( "Not filtered", AddToUrl( "active_only", 0 ) ); // Not filtered
+		$result .= "<br/>".Core_Html::GuiHyperlink( "Not filtered", AddToUrl( "active_only", 0 ) ); // Not filtered
 
 		//$result .= " " . Core_Html::GuiHyperlink( "Add task", self::get_link( "task" ) ); // id == 0 -> new
 
