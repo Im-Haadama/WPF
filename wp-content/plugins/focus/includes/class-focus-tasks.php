@@ -902,7 +902,12 @@ class Focus_Tasks {
 //			                     btn_cancel.style.display='none';",
 //		                                                               "style" => "display: none;") );
 
-		array_push( $tabs, array( "my_work", "My tasks", ($selected_tab == "my_work" ? self::user_work( $args, "Active tasks assigned to me", false, $user_id )  : null)));
+		$user_work = self::user_work( $args, "Active tasks assigned to me", false, $user_id );
+		if (substr($user_work, 0,7) != 'Nothing') {
+			array_push( $tabs, array( "my_work", "My tasks", ( $selected_tab == "my_work" ? $user_work : null ) ) );
+		} else {
+			if ($selected_tab == "my_work") $selected_tab = 'my_team_work';
+		}
 		array_push( $tabs, array( "my_team_work", "Team's tasks", ($selected_tab == "my_team_work" ? self::user_work( $args, "Active tasks assigned to my teams", true, $user_id )  : null)));
 		array_push( $tabs, array( "i_want", "I want", ($selected_tab == "i_want" ?  self::i_want( $args, $user_id ) : null ) ) );
 		array_push( $tabs, array( "my_teams", "My Teams", ($selected_tab == "my_teams" ? self::my_teams( $args, $user_id ): null ) ) );

@@ -610,20 +610,19 @@ function show_errors()
 	error_reporting(E_ALL);
 }
 
-function send_mail( $subject, $to, $message ) {
-	global $mail_sender;
-	global $support_email;
+function send_mail( $from, $to, $subject, $message ) {
+		MyLog("sub=" .$subject, "to=" .$to, 'mail.log');
 
 	$headers   = array();
 	$headers[] = "MIME-Version: 1.0";
 	$headers[] = "Content-type: text/html; charset=UTF-8";
 	$headers[] .= 'To: ' . $to;
-	$headers[] = "From: " . $mail_sender;
-	$headers[] = "Reply-To: " . $support_email;
+	$headers[] = "From: " . $from;
+	$headers[] = "Reply-To: " . $from;
 	// $headers[] = "Subject: {$subject}";
 	$headers[] = "X-Mailer: PHP/" . phpversion();
 
-	print "sending from " . $support_email . " to: " . $to . '<br/>';
+	MyLog("sending",  "from " . $support_email . " to: " . $to, 'mail.log');
 
 	$base64_subject = '=?UTF-8?B?'.base64_encode($subject).'?=';
 
