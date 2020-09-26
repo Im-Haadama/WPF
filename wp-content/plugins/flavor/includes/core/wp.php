@@ -96,7 +96,12 @@ function greeting( $args = null, $force_login = false )
 		die (1);
 	}
 
-	$now = strtotime("now");
+	if (date_i18n("H") < 12)
+		$day_part = __("Good morning");
+	else
+		if (date_i18n("H") < 18)
+			$day_part = __("Good afternoon");
+		else $day_part = __("Good evening");
 
 //	if ($now < strtotime("12pm"))
 //		$data .= im_translate("Good morning");
@@ -108,14 +113,15 @@ function greeting( $args = null, $force_login = false )
 	$user = get_user_by( "id", $user_id );
 	if ( $user ) $user_display = $user->user_firstname . " " . $user->user_lastname;
 
-	$data .= get_avatar( get_user_id(), 40 ) . " Hello " . "<b>".get_user_displayname($user_id) ."</b>". "! Have a nice day". Core_Html::Br() ;
+	$data .= get_avatar( get_user_id(), 40 ) . " " . __("Hello") . " <b>".get_user_displayname($user_id) . "</b> $day_part ";
+
 	//. GuiHyperlink("logout", wp_logout_url(get_permalink()));
 	//get_customer_name($user_id)
 	//if ($viewing_as != $user_id) $data .= "( " . ImTranslate("viewing as") . get_customer_name($viewing_as) . ")";
 
     //show the time
     // date_default_timezone_set('Asia/Jerusalem'); The time zone should be set generally in wordpress. See wordpress settings.
-	$data .=  Date("G:i", $now ) . Core_Html::Br();
+	$data .= date_i18n("H:i" ) . Core_Html::Br();
 	// Would go to dropdown.
 	// $data .= Core_Html::GuiHyperlink("logout", get_param(1) . "?operation=logout&back=" . encodeURIComponent(get_url()));
 

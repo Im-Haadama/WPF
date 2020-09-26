@@ -85,24 +85,32 @@ class Focus_Tasks {
 
 	static function gui_select_worker( $id, $selected, $args ) {
 		$edit      = GetArg( $args, "edit", true );
+		if (! $edit){
+			$u = get_user_to_edit( $selected );
+			return $u->display_name;
+		}
+
 		$worker    = new Org_Worker( get_user_id() );
 		$companies = $worker->GetCompanies();
 
 		$debug            = false; // (get_user_id() == 1);
-		$args["debug"]    = $debug;
-		$args["name"]     = "client_displayname(user_id)";
-		$args["where"]    = "where is_active=1 and company_id in (" . CommaImplode( $companies ) . ")";
-		$args["id_key"]   = "user_id";
-		$args["selected"] = $selected;
-		$args["query"]    = ( isset( $args["query_team"] ) ? $args["query_worker"] : null );
+//		$args["debug"]    = $debug;
+////		$args["name"]     = "client_displayname(user_id)";
+//		$args["where"]    = "where is_active=1 and company_id in (" . CommaImplode( $companies ) . ")";
+//		$args["id_key"]   = "user_id";
+//		$args["selected"] = $selected;
+//		$args["query"]    = ( isset( $args["query_team"] ) ? $args["query_worker"] : null );
 
-		if ( $edit ) {
-			$gui = Core_Html::GuiSelectTable( $id, "working", $args );
-
-			return $gui;
-		} else {
-			return ( $selected > 0 ) ? SqlQuerySingleScalar( "select client_displayname($selected)") : "";
+		$ids = SqlQueryArrayScalar("select * from wp_users where 1");
+		$selected_info = array();
+		foreach ($ids as $user_id) {
+			$u = get_user_to_edit( $user_id );
+			$selected_info[] = array("user_id" => $user_id, "display_name" => $u->display_name);
 		}
+
+		$events               = GetArg( $args, "events", null );
+		$class                = GetArg( $args, "class", null );
+		return Core_Html::gui_select( $id, 'display_name', $selected_info, $events, $selected, "user_id", $class );
 	}
 
 	static function gui_select_project( $id, $project_id, $args ) {
