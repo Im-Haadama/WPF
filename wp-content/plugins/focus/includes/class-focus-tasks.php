@@ -900,7 +900,7 @@ class Focus_Tasks {
 //		                                                               "style" => "display: none;") );
 
 		$user_work = self::user_work( $args, "Active tasks assigned to me", false, $user_id );
-		if (substr($user_work, 0,7) != 'Nothing') {
+		if ($args['count'] > 1) {
 			array_push( $tabs, array( "my_work", "My tasks", ( $selected_tab == "my_work" ? $user_work : null ) ) );
 		} else {
 			if ($selected_tab == "my_work") $selected_tab = 'my_team_work';
@@ -999,7 +999,7 @@ class Focus_Tasks {
 		return $result;
 	}
 
-	static function user_work( $args, $title, $include_team, $user_id )
+	static function user_work( &$args, $title, $include_team, $user_id )
 	{
 		$result = "";
 
@@ -1264,11 +1264,11 @@ class Focus_Tasks {
 		if ( $table ) $result .= $table;
 
 		$count = $args["count"];
-		$page  = GetParam( "page", false, 1 );
-		if ( $count === $page ) {
-			$result .= Core_Html::GuiHyperlink( "More", AddToUrl( "page", $page + 1 ) ) . " ";
-			$result .= Core_Html::GuiHyperlink( "Not paged", AddToUrl( "page", - 1 ) ) . " "; // All pages
-		}
+//		$page  = GetParam( "page", false, 1 );
+//		if ( $count === $page ) {
+//			$result .= Core_Html::GuiHyperlink( "More", AddToUrl( "page", $page + 1 ) ) . " ";
+//			$result .= Core_Html::GuiHyperlink( "Not paged", AddToUrl( "page", - 1 ) ) . " "; // All pages
+//		}
 		$result .= "<br/>".Core_Html::GuiHyperlink( "Not filtered", AddToUrl( "active_only", 0 ) ); // Not filtered
 
 		//$result .= " " . Core_Html::GuiHyperlink( "Add task", self::get_link( "task" ) ); // id == 0 -> new
