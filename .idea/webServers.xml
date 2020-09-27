@@ -17,7 +17,7 @@
         </fileTransfer>
       </webServer>
       <webServer id="20546f10-4af8-495a-9031-bca35f424290" name="fruity.co.il" url="http://fruity.co.il">
-        <fileTransfer rootFolder="/var/www/html" accessType="SFTP" host="super-organi.co.il" port="22" sshConfigId="dc1ba4fc-cd03-4604-90b9-8a9e0c54e9b0" sshConfig="fruity.co.il" keyPair="true">
+        <fileTransfer rootFolder="/var/www/html" accessType="SFTP" host="fruity.co.il" port="22" sshConfigId="dc1ba4fc-cd03-4604-90b9-8a9e0c54e9b0" sshConfig="fruity.co.il" keyPair="true">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
           </advancedOptions>

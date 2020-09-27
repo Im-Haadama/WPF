@@ -578,11 +578,11 @@ class Fresh {
 		$locale = is_admin() && function_exists( 'get_user_locale' ) ? get_user_locale() : get_locale();
 		$locale = apply_filters( 'plugin_locale', $locale, 'fresh' );
 
-		unload_textdomain( 'wpf' );
+//		unload_textdomain( 'wpf' );
 		if ($locale == 'en_US') return;
 
-		$file = FRESH_ABSPATH . 'languages/wpf-' . $locale . '.mo';
-		$rc = load_textdomain( 'wfp', $file );
+		$file = FRESH_ABSPATH . 'languages/fresh-' . $locale . '.mo';
+		$rc = load_textdomain( 'fresh', $file );
 //		print "loaded $file $rc <br/>";
 //		$rc1 = load_plugin_textdomain( 'wfp');
 		if (0 and get_user_id() == 1) {

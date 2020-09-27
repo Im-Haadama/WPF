@@ -28,7 +28,8 @@ class Fresh_Shortcodes {
 			'fresh_client_balance'    => __CLASS__ . '::client_balance',
 			'fresh_open_orders'    => __CLASS__ . '::open_orders',
 			'fresh_delivery'    => __CLASS__ . '::delivery',
-			'fresh_client_archive'    => __CLASS__ . '::client_archive'
+			'fresh_client_archive'    => __CLASS__ . '::client_archive',
+			'fresh_deliveries' => __CLASS__ . '::deliveries'
 		);
 
 		foreach ( $shortcodes as $shortcode => $function ) {
@@ -168,6 +169,35 @@ class Fresh_Shortcodes {
 		}
 		// handle actions / operations.
 		print Fresh::instance()->handle_operation($operation);
+	}
+
+	static function deliveries()
+	{
+//		$result = '<div class="elementor-element elementor-element-1509c1bd elementor-widget elementor-widget-heading" data-id="1509c1bd" data-element_type="widget" data-widget_type="heading.default">';
+		$result  = '';
+
+		$wc_zones = WC_Shipping_Zones::get_zones();
+
+		foreach ($wc_zones as $zone_id => $zone)
+		{
+			$args["class"] = 'elementor-heading-title elementor-size-default';
+			$result .= Core_Html::GuiHeader(1, $zone['zone_name'], $args);
+			$time = ""; foreach ($zone['shipping_methods'] as $method) $time .= $method->title . ", ";
+			$result .= Core_Html::GuiHeader(3, __("Next deliveries", 'fresh') . ': ' .trim($time, ", "));
+			if (TableExists("cities")) {
+				$result .= Core_Html::GuiHeader( 3, __( "Cities", 'fresh' ) );
+				$cities = SqlQueryArrayScalar("select city_name from im_cities where zone = $zone_id");
+				foreach ($cities as $city) $result .= $city . ", ";
+				$result = trim($result, ", ") . ".<br/>";
+			}
+			$info = SqlQuerySingleAssoc("select default_rate, min_order from wp_woocommerce_shipping_zones where zone_id = $zone_id");
+			$result .= __("Minimum order", 'fresh') . ": " . $info['min_order'] . get_woocommerce_currency_symbol() . ".<br/>";
+			$result .= __("Shipping price", 'fresh') . ": " . $info['default_rate'] . get_woocommerce_currency_symbol() . ".<br/>";
+			$result .= "<br/>";
+
+		}
+//		$result .= "</div>";
+		return $result;
 	}
 }
 
