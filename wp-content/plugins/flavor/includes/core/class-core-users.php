@@ -41,19 +41,20 @@ class Core_Users {
 		// $events = GetArg($args, "events", null);
 		$edit = GetArg( $args, "edit", true );
 
+		if (! $edit){
+			$u = get_user_to_edit( $selected );
+			return $u->display_name;
+		}
+
+
 		$args["name"]     = "client_displayname(id)";
 		$args["id_key"]   = "id";
 		$args["selected"] = $selected;
 
-		if ( $edit ) {
-			$result = Core_Html::GuiAutoList( $id, "users", $args );
-			$result .= Core_Html::GuiHyperlink("Create new user", "/wp-admin/user-new.php");
+		$result = Core_Html::GuiAutoList( $id, "users", $args );
+		$result .= Core_Html::GuiHyperlink("Create new user", "/wp-admin/user-new.php");
 
-			return $result;
-		} else {
-			return ( $selected > 0 ) ? SqlQuerySingleScalar( "select client_displayname(id) from wp_users where id = " . $selected ) :
-				"";
-		}
+		return $result;
 	}
 
 }
