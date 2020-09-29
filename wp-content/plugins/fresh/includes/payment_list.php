@@ -100,7 +100,7 @@ function clear_card_info()
 //    print $output;
 }
 MyLog("Cleaning card info");
-clear_duplicates();
+//clear_duplicates();
 //find_user_id();
 clear_card_info();
 

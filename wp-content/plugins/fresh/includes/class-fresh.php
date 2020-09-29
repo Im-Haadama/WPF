@@ -26,7 +26,7 @@ class Fresh {
 	 *
 	 * @var string
 	 */
-	public $version = '1.1';
+	public $version = '1.2';
 
 	private $plugin_name;
 
@@ -663,8 +663,6 @@ class Fresh {
 
 		$atts['ids'] = CommaImplode(SqlQueryArrayScalar("select id from wp_posts where post_status = 'publish' 
 			and post_title like '%" . $atts['name'] . " %'"));
-
-//		MyLog($atts['ids']);
 
 		$shortcode = new WC_Shortcode_Products( $atts, 'product' );
 

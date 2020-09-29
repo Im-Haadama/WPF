@@ -114,14 +114,17 @@ order by 1;");
 
 	}
 
-
 	static function CreateTables($version, $force)
 	{
 		$current = self::CheckInstalled("Fresh", "functions");
 		$db_prefix = GetTablePrefix();
 
+		if ($current == '1.1' and $version == '1.2')
+		{
+			return SqlQuery("alter table im_payment_info add user_id integer(11)") and
+			self::UpdateInstalled("Fresh", "tables", $version);
+		}
 		if ($current == $version and ! $force) return true;
-
 
 		SqlQuery("alter table im_supplier_price_list add product_id integer(11)");
 
@@ -176,7 +179,7 @@ engine=MyISAM charset=utf8;
 	rate float null,
 	is_group bit default b'0' not null,
 	dry_rate float not null,
-	q_min int not null
+	q_min int not null7
 )
 ");
 
@@ -513,7 +516,6 @@ charset=utf8;
 charset=utf8;");
 
 		self::UpdateInstalled("Fresh", "tables", $version);
-
 	}
 
 	static function CreateFunctions($version, $force = false)

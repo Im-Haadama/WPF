@@ -293,7 +293,6 @@ group by pm.meta_value, p.post_status");
 
 	static function dispatcher($the_mission, $edit = true)
 	{
-	//	MyLog(__FUNCTION__ . ": $the_mission");
 		$lines_per_station = array();
 		$supplies_to_collect = array();
 		$multi_site = Core_Db_MultiSite::getInstance();
@@ -912,7 +911,7 @@ group by pm.meta_value, p.post_status");
 		Core_Options::info_remove("mission_order_priority_" . $site_id . '_' .$order_id);
 
 		if ($pri > 0)
-			Core_Options::info_update("mission_order_priority_" . $site_id . '_' .$order_id, $pri);
+			InfoUpdate("mission_order_priority_" . $site_id . '_' .$order_id, $pri);
 	}
 
 	static function mission_update_type()
@@ -976,7 +975,6 @@ group by pm.meta_value, p.post_status");
 
 	static function get_local_missions()
 	{
-//		MyLog(__FUNCTION__);
 		$mission_ids = GetParam("mission_ids", true);
 		$header = GetParam("header", false, false);
 		print self::get_missions($mission_ids, $header);
