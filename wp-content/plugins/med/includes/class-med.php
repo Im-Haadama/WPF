@@ -20,6 +20,8 @@ class Med {
 		add_action( 'init', array( $this, 'init' ), 11 );
 		add_action( 'admin_menu',array($this, 'admin_menu') );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_scripts' ) );
+		add_action('init', __CLASS__ . "::register", 0);
+
 		self::Add('med_create_case');
 		self::Add('med_show_case');
 	}
@@ -53,8 +55,11 @@ class Med {
 
 		$symtoms = get_usermeta($id, "med_case_symtoms");
 		if ($symtoms) {
+			$result .= Core_Html::GuiHeader(2, "Symptoms");
 			foreach (unserialize($symtoms) as $symtom)
-				$result .= Core_Html::GuiHeader(2, $symtoms);
+				$result .= Core_Html::GuiHeader(2, $symtom);
+		} else {
+			$result .= "No symptoms yet. Add below<br/>";
 		}
 		$result .= self::GuiSelectSym("med_sym");
 
@@ -70,9 +75,13 @@ class Med {
 
 	function GuiSelectSym()
 	{
-		$q = get_terms('product_cat', array(
+		$terms = get_terms('product_cat', array(
 			'hide_empty' => false
 		));
+		foreach ($terms as $term_id => $term) {
+			print $term->name . "<br/>";
+		}
+//		var_dump($q);
 	}
 
 	function med_create_case()
@@ -221,6 +230,34 @@ and u.ID = user_id";
 				return "/wp-admin/admin.php?page=med&operation=med_show_case&id=$id";
 		}
 		die ("unknown type");
+	}
+
+	static function register()
+	{
+		// Add new taxonomy, make it hierarchical like categories
+		// first do the translations part for GUI
+		$labels = array(
+			'name' => _x( 'Symptoms', 'symptom_taxonomy' ),
+			'singular_name' => _x( 'Symptom', 'symptom singular name' ),
+			'search_items' =>  __( 'Search symptoms' ),
+			'all_items' => __( 'All Symptoms' ),
+			'parent_item' => __( 'Parent Symptom' ),
+			'parent_item_colon' => __( 'Parent Symptom:' ),
+			'edit_item' => __( 'Edit Symptom' ),
+			'update_item' => __( 'Update Symptom' ),
+			'add_new_item' => __( 'Add New Symptom' ),
+			'new_item_name' => __( 'New Symptom Name' ),
+			'menu_name' => __( 'Symptoms' ),
+		);
+
+		register_taxonomy('symptom_taxonomy',array('post'), array(
+			'hierarchical' => true,
+			'labels' => $labels,
+			'show_ui' => true,
+			'show_admin_column' => true,
+			'query_var' => true,
+			'rewrite' => array( 'slug' => 'symptom' ),
+		));
 	}
 
 	/**
