@@ -39,8 +39,6 @@ class Fresh_Client_Views {
 
 	static function order_quantity_update()
 	{
-		MyLog(__FUNCTION__);
-//		$o = new Fresh_Order(GetParam("order_id", true));
 		return Fresh_Order::setQuantity(GetParam("ooid", true), GetParam("quantity"));
 	}
 

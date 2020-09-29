@@ -119,7 +119,6 @@ order by 1;");
 		$current = self::CheckInstalled("Fresh", "functions");
 		$db_prefix = GetTablePrefix();
 
-		MyLog(__FUNCTION__, $current . $version);
 		if ($current == '1.1' and $version == '1.2')
 		{
 			return SqlQuery("alter table im_payment_info add user_id integer(11)") and

@@ -1,11 +1,9 @@
 <?php
 
-
 class Fresh_Views {
 
 	static function init_hooks()
 	{
-//		MyLog(__FUNCTION__);
 //		add_action( 'product_cat_add_form_fields', array(__CLASS__, 'add_category_data') );
 		add_action( 'product_cat_edit_form_fields', array(__CLASS__, 'edit_category_data'), 11);
 

@@ -213,10 +213,8 @@ class Core_Db_MultiSite extends Core_MultiSite {
 			}
 			return true;
 		} else {
-			print "short response. Operation aborted<br/>";
-			print "url = " . $this->getSiteURL($remote) . $url;
-
-			print $html;
+			MyLog("short response. Operation aborted. " .
+			 "url = " . $this->getSiteURL($remote) . $url);
 
 			return false;
 		}
@@ -267,7 +265,6 @@ class Core_Db_MultiSite extends Core_MultiSite {
 					if ( ( $ignore_fields == null ) or ( ! in_array( $key, $ignore_fields ) ) ) {
 						$field_list .= $key . ", ";
 					}
-
 				}
 				$field_list = rtrim( $field_list, ", " );
 				if ( $key_order == - 1 ) {

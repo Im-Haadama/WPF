@@ -9,8 +9,7 @@ class Freight_Zones {
 		// print "is_master=$isMaster<br/>";
 
 		if (! $isMaster) {
-			$m = Core_Db_MultiSite::getInstance();
-			$m->UpdateFromRemote("woocommerce_shipping_zones", "zone_id");
+			Fresh_Delivery_Manager::sync_from_master();
 		}
 
 		$operation = null;
@@ -35,6 +34,6 @@ class Freight_Zones {
 
 		$result .= Core_Gem::GemTable("woocommerce_shipping_zones", $args);
 		return $result;
-
 	}
+
 }
