@@ -34,7 +34,10 @@ class Fresh_Packing {
 		$supplier_tabs   = [];
 	}
 
-	static function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero = false, $filter_stock = false, $history = false) {
+	static function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero = false, $filter_stock = false, $history = false, $debug = false)
+	{
+		if ($debug) print __FUNCTION__ . $supplier_id . "<br/>";
+
 		$post_file = Fresh::getPost();
 		$result            = "";
 		$inventory_managed = InfoGet( "inventory" );
@@ -46,8 +49,12 @@ class Fresh_Packing {
 		$data_lines = array();
 
 		foreach ( $needed_products as $prod_id => $quantity_array ) {
+			if ($debug) print "checking $prod_id<br/>";
 			$P = new Fresh_Product( $prod_id );
-			if ( ! $P ) continue;
+			if ( ! $P ) {
+				if ($debug) print "product $prod_id not found<br/>";
+				continue;
+			}
 
 			$row = array();
 
@@ -81,12 +88,15 @@ class Fresh_Packing {
 
 			$row [] = self::orders_per_item( $prod_id, 1, true, true, true );
 
+			if ($debug) var_dump($row);
+
 			if ( ! $filter_zero or ( $numeric_quantity > 0 ) ) {
+				if ($debug) print "Adding to data lines<br/>";
 				array_push( $data_lines, array( $p->getName(), $row ) );
 			}
 		}
 
-		if ( count( $data_lines ) > 1) {
+		if ( count( $data_lines ) >= 1) {
 			if ( $supplier_id ) {
 				$supplier_name = $supplier->getSupplierName();
 			} else {
@@ -129,16 +139,21 @@ class Fresh_Packing {
 				$result .= Core_Html::GuiButton( "btn_draft_products", "הפוך לטיוטא", array("action" => "draft_products()"));
 			}
 		}
+		if ($debug) var_dump($result);
 
 		return $result;
 	}
 
 	static function NeededProducts( $filter_zero = false, $history = false, $filter_stock = false, $limit_to_supplier_id = null )
 	{
-		$debug_product = false;
+		$debug_product = null; $debug_supplier = null;
 
 		$result          = "";
 		if ($filter_stock) $result .= Core_Html::GuiHeader(2, "Stock filtered");
+		if ($debug_product) {
+			$p = new Fresh_Product($debug_product);
+			$result .= "Debugging product " . $p->getName();
+		}
 		$needed_products = array();
 		$supplier_tabs = array();
 
@@ -171,6 +186,10 @@ class Fresh_Packing {
 
 				$supplier_needed["missing"][ $prod_id ] = $product_info;
 			}
+			if ($debug_product == $prod_id) {
+				$result         .= "(debug) needed. supplier $supplier_id $product_info[0]<br/>";
+				$debug_supplier = $supplier_id;
+			}
 		}
 
 		if ( $limit_to_supplier_id ) {
@@ -194,13 +213,20 @@ class Fresh_Packing {
 				foreach ( $row_result as $row ) {
 					$supplier_id = $row[0]; // Or null for missing supplier
 					if ( $supplier_id ) {
+						if ($supplier_id == $debug_supplier) {
+							$result .= "Checking debug supplier $debug_supplier<br/>";
+						}
 						$supplier = new Fresh_Supplier( $row[0] );
 					} else {
 						$supplier = null;
 					}
 
 					$tab_content =
-						self::get_total_orders_supplier( $supplier->getId(), $supplier_needed[ $supplier->getId() ], $filter_zero, $filter_stock, $history );
+						self::get_total_orders_supplier( $supplier->getId(), $supplier_needed[ $supplier->getId() ], $filter_zero, $filter_stock, $history, $supplier_id == $debug_supplier );
+
+					if ($supplier->getId() == $debug_supplier) {
+						$result .= "supplier tab: $tab_content<br/>";
+					}
 					if (! strlen ($tab_content)) continue;
 
 					if ( $supply_id = Fresh_Suppliers::TodaySupply( $supplier->getId() ) ) {

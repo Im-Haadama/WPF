@@ -780,13 +780,16 @@ class Fresh_Supply {
 //
 		array_push( $fields, "" );
 //
+		array_push( $fields, "" );
+
 		array_push( $fields, SqlQuerySingleScalar( "select supplier_contact_phone from im_suppliers where id = " . $supplier_id ) );
 
 		array_push( $fields, "" );
+
 //
 		array_push( $fields, SqlQuerySingleScalar( "select mission_id from im_supplies where id = " . $id ) );
 //
-		array_push( $fields, Core_Db_MultiSite::getInstance()->getLocalSiteName() );
+		array_push( $fields, Core_Db_MultiSite::getInstance()->getLocalSiteID() );
 		// array_push($fields, get_delivery_id($order_id));
 
 		return  "<tr> " . self::delivery_table_line( 1, $fields ) . "</tr>";
