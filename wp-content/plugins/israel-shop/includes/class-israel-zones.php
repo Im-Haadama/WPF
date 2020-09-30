@@ -205,50 +205,11 @@ class Israel_Zones {
 	}
 
 	function israelpost_get_address_postcode( $city, $street, $house ) {
-		$url = "http://www.israelpost.co.il/zip_data.nsf/SearchZip?OpenAgent&Location=" . urlencode( $city ) . "&street=" . $street .
-		       "&house=" . $house;
-
-		$ch = curl_init();
-
-		$timeout = 5;
-		curl_setopt( $ch, CURLOPT_URL, $url );
-		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 );
-		curl_setopt( $ch, CURLOPT_CONNECTTIMEOUT, $timeout );
-		$data = curl_exec( $ch );
-		curl_close( $ch );
-
-		$value = array();
-		if ( preg_match( "/RES[0-9]*/", $data, $value ) ) {
-			$result = substr( $value[0], 4 );
-
-			if ( $result == "11" or $result == "12" or $result == "13" ) {
-				return - 1;
-			}
-
-			return $result;
-		}
-
-		return - 2;
+		return israelpost_get_city_postcode($city, $street, $house);
 	}
 
 	static function israelpost_get_city_postcode( $city )
 	{
-		$city=trim($city);
-		$url = "http://www.israelpost.co.il/zip_data.nsf/SearchZip?OpenAgent&Location=" . urlencode( $city ) . "&POB=1";
-
-		$data = file_get_contents( $url );
-
-		$value = array();
-		if ( preg_match( "/RES[0-9]*/", $data, $value ) ) {
-			$result = substr( $value[0], 4 );
-
-			if ( $result == "11" or $result == "12" or $result == "13" ) {
-				return - 1;
-			}
-
-			return $result;
-		}
-
-		return - 2;
+		return israelpost_get_city_postcode($city);
 	}
 }
