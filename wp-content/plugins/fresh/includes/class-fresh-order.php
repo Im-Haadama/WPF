@@ -5,12 +5,6 @@
  * Date: 06/10/18
  * Time: 17:03
  */
-//require_once( FRESH_INCLUDES . '/core/data/sql.php' );
-//require_once( FRESH_INCLUDES . '/catalog/bundles.php' );
-//require_once( FRESH_INCLUDES . "/catalog/Basket.php" );
-//require_once( FRESH_INCLUDES . "/orders/orders-common.php" );
-//require_once( FRESH_INCLUDES . "/routes/gui.php" );
-//require_once( FRESH_INCLUDES . "/core/wp.php" );
 
 class Fresh_Order {
 	private $order_id = 0;

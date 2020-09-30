@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created 25 Dec 2019
  * Plugin Name: flavor
@@ -57,13 +56,3 @@ add_action( 'wp_head', 'add_viewport_meta_tag' , '1' );
 function add_viewport_meta_tag() {
 	echo '<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">';
 }
-
-//function change_wordpress_locale( $lang ) {
-//	global $post;
-//
-////	if ($post ) MyLog($post->ID);
-////	if ($post and ($post->ID == 15391)) return 'en_US';
-////	return 'he_IL';
-//}
-//
-//add_filter( 'locale', 'change_wordpress_locale' );

@@ -13,7 +13,6 @@ define ('CELL_START', "
 define ('CELL_END', "
 </td>");
 
-
 class Core_Html {
 	/**
 	 * Create html <label>

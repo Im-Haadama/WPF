@@ -1,6 +1,5 @@
 <?php
 
-
 class Core_Gem {
 	private $object_types;
 	protected static $_instance = null;

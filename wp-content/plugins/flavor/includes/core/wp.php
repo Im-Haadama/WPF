@@ -252,5 +252,4 @@ function GetUserName( $id ) {
 	 * @return int
 	 */
 
-
 }

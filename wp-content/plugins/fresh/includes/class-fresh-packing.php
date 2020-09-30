@@ -1,6 +1,4 @@
 <?php
-
-
 class Fresh_Packing {
 	static function needed_products() {
 		$result = "";
@@ -657,7 +655,6 @@ class Fresh_Packing {
 		return $Table->GetTable();
 	}
 }
-
 /*
  *
  * 	if ( ! current_user_can( "show_business_info" ) ) {

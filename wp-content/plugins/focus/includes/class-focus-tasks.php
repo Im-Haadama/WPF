@@ -1,7 +1,5 @@
 <?php
 
-require_once( FOCUS_INCLUDES . 'gui.php' );
-
 class Focus_Tasks {
 	private $post_file;
 	private $version;
@@ -17,11 +15,11 @@ class Focus_Tasks {
 	 */
 	public function __construct( $post_file ) {
 //		debug_print_backtrace();
-
 		$this->post_file     = $post_file;
 		$this->version       = "1.0";
 		$this->nav_menu_name = null;
 		$this->table_prefix = GetTablePrefix();
+//		MyLog("mis: " . TableExists("missions"));
 		if (TableExists("missions")) $options["missions"] = true;
 	}
 
@@ -213,7 +211,7 @@ class Focus_Tasks {
 						"project_id" => "Focus_Tasks::gui_select_project",
 						"owner"      => "Focus_Tasks::gui_select_worker",
 						"creator"    => "Focus_Tasks::gui_select_worker",
-						"preq"       => "gui_select_task",
+						"preq"       => "Focus_Tasks::gui_select_task",
 						"team"       => "Focus_Tasks::gui_select_team"
 					);
 					if (self::OptionEnabled("missions"))
@@ -679,7 +677,6 @@ class Focus_Tasks {
 			"/core/gui/client_tools.js",
 			"/core/data/data.js",
 			"/focus/focus.js",
-			"/focus/gui.php",
 			"/vendor/sorttable.js"
 		);
 
@@ -1423,7 +1420,7 @@ class Focus_Tasks {
 			"project_id" => "Focus_Tasks::gui_select_project",
 			"owner"      => "Focus_Tasks::gui_select_worker",
 			"creator"    => "Focus_Tasks::gui_select_worker",
-			"preq"       => "gui_select_task",
+			"preq"       => "Focus_Tasks::gui_select_task",
 			"team"       => "Focus_Tasks::gui_select_team"
 		);
 		if (self::OptionEnabled("missions"))
@@ -2407,8 +2404,26 @@ class Focus_Tasks {
 //		$args = self::Args();
 
 		return $result;
-
 	}
+
+	static function gui_select_task( $id, $value, $args )
+	{
+		if ($value > 0) {
+			$t = new Focus_Tasklist($value);
+			$selected = $value . ")" . $t->getTaskDescription();
+		} else
+			$selected = $value;
+
+		$args["selected"] = $selected;
+		$args["name"] = "task_description";
+		$args["query"] =  GetArg($args, "query", " status = 0 ");
+		//	              "include_id" => 1,
+		//	              "datalist" =>1,
+		$args["multiple_inline"] = 1;
+
+		return Core_Html::GuiAutoList($id, "tasks", $args);
+	}
+
 }
 
 /**

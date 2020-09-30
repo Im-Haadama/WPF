@@ -810,5 +810,4 @@ class Fresh_Supply {
 
 		return $row_text;
 	}
-
 }
