@@ -264,7 +264,7 @@ group by pm.meta_value, p.post_status");
 								$order_info[ OrderTableFields::phone ],
 								Core_Html::GuiCheckbox( "chk_$order_id", false,
 									array( "events" => 'onchange="delivered(\'' . Freight::getPost() . "', " . $site_id . "," . $order_id . ', \'' . $type . '\')"' ) ));
-								if ($edit) array_push($new_row, $order_pri);
+								if ($edit) array_push($new_row, $pri_input);
 						array_push( $path_info, $new_row);
 
 					}

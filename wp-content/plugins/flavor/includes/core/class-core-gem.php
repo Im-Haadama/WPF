@@ -423,7 +423,7 @@ class Core_Gem {
 	{
 		$result = "";
 
-		$title = GetArg($args, "title", null);
+		$title = GetArg($args, "title", null) . " " . (GetArg($args, "only_active", 1) ? __("Active") : __("All"));
 		$edit = GetArg($args, "edit", false);
 		$enable_import = GetArg($args, "enable_import", false);
 
@@ -502,6 +502,7 @@ class Core_Gem {
 		if (! isset($args["title"])) $title = "content of table " . $table_name;
 		$post_file = GetArg($args, "post_file", null);
 		$table_prefix = GetTablePrefix($table_name);
+		$only_active = GetArg($args, "only_active", 1);
 
 		if (! isset($args["events"])) $args["events"] = 'onchange="update_table_field(\'' . $post_file . '\', \'' . $table_name . '\', \'%d\', \'%s\', check_result)"';
 		$sql = GetArg($args, "sql", null);
@@ -514,7 +515,8 @@ class Core_Gem {
 			}
 			else $sql = "select * from ${table_prefix}$table_name";
 
-			$query = GetArg($args, "query", null);
+			$query = GetArg($args, "query", " 1 ");
+			if ($only_active) $query .= " and is_active = 1";
 			if ($query) $sql .= " where $query";
 
 			$order = GetArg($args, "order", null);
@@ -537,7 +539,11 @@ class Core_Gem {
 			return $result;
 		}
 
-		return Core_Gem::GemArray($rows_data, $args, $table_name);
+		return Core_Gem::GemArray($rows_data, $args, $table_name) .
+		       ($only_active ? Core_Html::GuiHyperlink("include not active", AddToUrl("only_active",'0' ) ):
+			       Core_Html::GuiHyperlink("Active", AddToUrl("only_active",'1' )));
+
+
 	}
 
 	function GemVirtualTable($table_name, $args, $csv = false)

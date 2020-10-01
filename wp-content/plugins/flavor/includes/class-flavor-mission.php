@@ -183,7 +183,7 @@ class Flavor_Mission {
 
 	static function mission($id)
 	{
-		if (GetParam("operation", false) == "dispatch") return Freight_Mission_Manager::dispatcher($id);
+		if (GetParam("operation", false) == "dispatch") return Freight_Mission_Manager::dispatcher($id, true);
 
 		$args = array("post_file" => self::getPost());
 		$result = Core_Html::GuiHeader(1, "Mission $id");
