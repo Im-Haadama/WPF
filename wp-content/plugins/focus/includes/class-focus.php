@@ -381,7 +381,6 @@ class Focus {
 		$this->load_plugin_textdomain();
 
 		$shortcodes->add($this->tasks->getShortcodes());
-		$shortcodes->add($this->manager->getShortcodes());
 
 		$this->tasks->init();
 		$this->manager->init();
@@ -489,8 +488,9 @@ class Focus {
 		}
 
 		$tasks = SqlQueryArrayScalar( $sql );
-		foreach ( $tasks as $task ) {
-			$data .= print_task( $task );
+		foreach ( $tasks as $task_id ) {
+			$t = new Focus_Tasklist($task_id);
+			$data .= $t->print_task();
 		}
 
 		return $data;

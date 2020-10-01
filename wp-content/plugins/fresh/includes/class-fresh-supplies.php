@@ -65,9 +65,7 @@ class Fresh_Supplies {
 //			$categ_group = GetParam( "categ_group" );
 		$Supply      = new Fresh_Supply( $id );
 			// print header_text(true);
-		$result = Core_Html::GuiHeader(1, __("Supply number") . " $id");
-		$result .= $Supply->Html( $internal, true );
-		return $result;
+		return $Supply->Html( $internal, true );
 	}
 
 	public function admin_menu()
@@ -122,20 +120,8 @@ class Fresh_Supplies {
 	static function print_driver_supplies( $mission_id = 0 ) {
 		// Self collect supplies
 		$data = "";
-		$sql  = "SELECT s.id FROM im_supplies s
-          JOIN im_suppliers r
-          WHERE r.self_collect = 1
-          AND s.supplier = r.id
-          AND s.status IN (1, 3)" .
-		        " AND (s.picked = 0 or isnull(s.picked))";
 
-
-		if ( $mission_id ) {
-			$sql .= " AND s.mission_id = " . $mission_id;
-		}
-		// DEBUG $data .= $sql;
-
-		$supplies = SqlQueryArrayScalar( $sql );
+		$supplies = self::mission_supplies($mission_id);
 
 		if ( count( $supplies ) ) {
 			foreach ( $supplies as $supply ) {
@@ -148,6 +134,25 @@ class Fresh_Supplies {
 
 		return $data;
 	}
+
+	static function mission_supplies($mission_id)
+	{
+		$sql  = "SELECT s.id FROM im_supplies s
+          JOIN im_suppliers r
+          WHERE r.self_collect = 1
+          AND s.supplier = r.id
+          AND s.status IN (1, 3)" .
+		        " AND (s.picked = 0 or isnull(s.picked))";
+
+		if ( $mission_id ) {
+			$sql .= " AND s.mission_id = " . $mission_id;
+		}
+		// DEBUG $data .= $sql;
+
+		return SqlQueryArrayScalar( $sql );
+
+	}
+
 
 	static function SuppliesTable( $status, $args = null )
 	{
@@ -173,7 +178,7 @@ class Fresh_Supplies {
 		$args["sql"] = $sql;
 		$args["header"] = array("Id", "Supplier", "Date", "Mission");
 		$args["add_checkbox"] = true;
-		$args["selectors"] = array("supplier" => 'Fresh_Supplier::gui_select_supplier', "mission_id" => 'gui_select_mission');
+		$args["selectors"] = array("supplier" => 'Fresh_Supplier::gui_select_supplier', "mission_id" => 'Flavor_Mission::gui_select_mission');
 		$args["links"] = array("id" => Fresh_Supply::getLink("%s"));
 		$args["checkbox_class"] = self::gui_select_supply_status(null, $status);
 		$args["edit"] = false;
@@ -213,6 +218,7 @@ class Fresh_Supplies {
 	{
 		$data = Core_Html::gui_header( 1, $header );
 //		$event = ''; // 'onchange="new_supply_change(\'' . Fresh::getPost() . '\')"'
+		$args = array("edit" => 1, "prepare"=>false);
 		$data .= Core_Html::gui_table_args(array(
 			array(
 				Core_Html::gui_header( 2, "בחר ספק" ),
@@ -222,12 +228,10 @@ class Fresh_Supplies {
 			array(
 				Fresh_Supplier::gui_select_supplier( "supplier_select", null, array("events" => $event)),
 				Core_Html::gui_input_date( "date", "", date('y-m-d'),  'onchange="change_supplier()"'),
-				Fresh_Packing::gui_select_mission( "new_mission", "", array("events"=>"gui_select_mission") )
-				// gui_select_mission( "mis_new")
+				Flavor_Mission::gui_select_mission( "new_mission", "", array("events"=>"gui_select_mission") )
 			)
 		),
-			"supply_info",
-			array("edit" => 1, "prepare"=>false));
+			"supply_info", $args);
 
 		return $data;
 	}

@@ -32,7 +32,6 @@ class Freight_Mission_Manager
 		add_action("mission_update_type", __CLASS__ . '::mission_update_type');
 		add_action("mission_details", __CLASS__ . '::mission_details');
 		add_action("freight_do_add_delivery", __CLASS__ . "::do_add_delivery");
-		add_action('get_local_anonymous', __CLASS__ . "::get_local_missions");
 		add_action('delivered', array(__CLASS__, "delivered_wrap"));
 		add_action('download_mission', array(__CLASS__, 'download_mission'));
 		add_action('print_mission', array(__CLASS__, 'print_mission'));
@@ -43,7 +42,15 @@ class Freight_Mission_Manager
 	{
 		$id = GetParam("id", true);
 		print Core_Html::HeaderText();
+		// The route stops.
 		print self::dispatcher($id, false);
+
+		// Supplies to collect
+		$supplies = Fresh_Supplies::mission_supplies($id);
+		foreach ($supplies as $supply_id) {
+			$s = new Fresh_Supply($supply_id);
+			print $s->Html(true, false, true) ;
+		}
 		die(0);
 	}
 
@@ -145,93 +152,6 @@ class Freight_Mission_Manager
 		return $result;
 	}
 
-	static function missions()
-	{
-		if ($id = GetParam("id")) {
-			print self::mission($id);
-			return;
-		}
-
-		$header = "";
-		$week = GetParam("week", false, date('Y-m-d', strtotime('last sunday')));
-		if ($week)
-			$header .= __("Missions of week") . " " . $week;
-
-
-		$result = Core_Html::GuiHeader(1, $header);
-
-		$multi = Core_Db_MultiSite::getInstance();
-
-		if (! $multi->isMaster()) $result .= __("Edit missions in site "). $multi->getSiteName($multi->getMaster());
-
-			if ($multi->isMaster())
-			self::create_missions();
-		else
-			self::update_missions_from_master();
-
-		$result .= self::show_missions($week ? " first_day_of_week(date) = '$week'" : null, $multi->isMaster());
-		$result .= Core_Html::GuiHyperlink("last week", AddToUrl("week", date('Y-m-d', strtotime("$week -1 week"))));
-
-		print $result;
-	}
-
-	static function mission($id)
-	{
-		if (GetParam("operation", false) == "dispatch") return self::dispatcher($id);
-
-		$args = array("post_file" => self::getPost());
-		$result = Core_Html::GuiHeader(1, "Mission $id");
-		$result .= Core_Gem::GemElement("missions", $id, $args);
-		return $result;
-	}
-
-	static function create_missions()
-	{
-		$types = SqlQueryArrayScalar("select id from im_mission_types");
-		foreach ($types as $type) {
-			Mission::CreateFromType($type);
-		}
-		return true;
-	}
-
-	static function show_missions($query = null, $edit = false)
-	{
-		if (! $query)
-			$query = "date >= '" . date('Y-m-d', strtotime('last sunday') ). "'";
-
-		$result = "";
-
-		$sql = "select id from im_missions where " . $query; // FIRST_DAY_OF_WEEK(date) = " . quote_text($week);
-
-		$missions = SqlQueryArrayScalar($sql);
-
-		if ( count( $missions )  == 0) {
-			$result .= ImTranslate("No missions for given period");
-			$result .= Core_Html::GuiHyperlink("Last week", AddToUrl("week" , date( "Y-m-d", strtotime( "last sunday" )))) . " ";
-			$result .= Core_Html::GuiHyperlink("This week", AddToUrl("week" , date( "Y-m-d", strtotime( "sunday" )))) . " ";
-			$result .= Core_Html::GuiHyperlink("Next week", AddToUrl("week", date( "Y-m-d", strtotime( "next sunday" ))));
-			return $result;
-		}
-
-		$args = array();
-		$args["edit"] = $edit;
-		$args["add_checkbox"] = true;
-		$args["post_file"] = Freight::getPost();
-
-		$sql = "select id, date, name, mission_type from im_missions where id in (" . CommaImplode($missions) . ") order by date";
-
-		$args["links"] = array("id" => AddToUrl( "id", "%s"));
-
-		$args["sql"] = $sql;
-		$args["hide_cols"] = array("zones_times"=>1);
-//		$args["class"] = "sortable";
-//		$args["selectors"] = array("mission_type" => __CLASS__ . "::gui_select_mission_type");
-		$args["actions"] = array("Dispatch" => Core_Html::GuiHyperlink("Dispatch", AddToUrl("operation", "dispatch&id=%d")));
-		$result .= Core_Gem::GemTable("missions", $args);
-
-		return $result;
-	}
-
 	static function gui_select_mission_type($id, $selected, $args)
 	{
 		$args["selected"] = $selected;
@@ -298,7 +218,7 @@ group by pm.meta_value, p.post_status");
 		$multi_site = Core_Db_MultiSite::getInstance();
 		$result = "";
 
-		self::prepare_route($the_mission, $path, $lines_per_station, $supplies_to_collect);
+		self::prepare_route($the_mission, $path, $lines_per_station, $supplies_to_collect, $edit);
 		$m = new Mission($the_mission);
 
 		if ($path and count($path)) {
@@ -327,12 +247,12 @@ group by pm.meta_value, p.post_status");
 						}
 
 						$edit_user = Core_Html::GuiHyperlink( $user_id, self::$multi_site->getSiteURL( $site_id ) . "/wp-admin/user-edit.php?user_id=" . $user_id );
-						$comments  = ( ( $site_id == $multi_site->getLocalSiteID() ) ?
+						$comments  = ( ( $site_id == $multi_site->getLocalSiteID() and $edit) ?
 							Core_Html::GuiInput( "comments_$order_id",
 								$order_info[ OrderTableFields::comments ],
 								array( "events" => "onchange=\"order_update_driver_comment('" . Freight::getPost() . "', $order_id)\"" )
 							) : $order_info[ OrderTableFields::comments ] );
-						array_push( $path_info,
+						$new_row =
 							array(
 								Core_Html::GuiHyperlink( $order_id, "/wp-admin/post.php?post=$order_id&action=edit" ),
 								$edit_user,
@@ -342,16 +262,17 @@ group by pm.meta_value, p.post_status");
 								$comments,
 								$order_info[ OrderTableFields::shipping ],
 								$order_info[ OrderTableFields::phone ],
-								$pri_input,
 								Core_Html::GuiCheckbox( "chk_$order_id", false,
-									array( "events" => 'onchange="delivered(\'' . Freight::getPost() . "', " . $site_id . "," . $order_id . ', \'' . $type . '\')"' ) )
-							) );
+									array( "events" => 'onchange="delivered(\'' . Freight::getPost() . "', " . $site_id . "," . $order_id . ', \'' . $type . '\')"' ) ));
+								if ($edit) array_push($new_row, $order_pri);
+						array_push( $path_info, $new_row);
+
 					}
 				}
 			}
 
 			$args = array( "class" => "sortable" );
-			array_unshift( $path_info, array(
+			$header = array(
 				__( "Order number" ),
 				__( "Customer name" ),
 				__( "Address 1" ),
@@ -359,9 +280,10 @@ group by pm.meta_value, p.post_status");
 				__( "Comments" ),
 				__( "Shipping method" ),
 				__( 'Phone' ),
-				__( 'Priority' ),
-				__( 'Actions' )
-			) );
+				__( 'Delivered' )
+			);
+			if ($edit) array_push($header, __( 'Priority' ));
+			array_unshift( $path_info, $header);
 
 //		$args["links"] = array(1 => self::$multi_site->getSiteURL($site_id) . "/wp-admin/user-edit.php?user_id=%d");
 //		var_dump($path_info[1]);
@@ -381,7 +303,7 @@ group by pm.meta_value, p.post_status");
 		return $result;
 	}
 
-	static function prepare_route($mission_id, &$path, &$lines_per_station, $supplies_to_collect, $headers = true) {
+	static function prepare_route($mission_id, &$path, &$lines_per_station, $supplies_to_collect) {
 		$mission = new Mission($mission_id);
 		$debug = false;
 		$stop_points      = array();
@@ -389,8 +311,10 @@ group by pm.meta_value, p.post_status");
 
 		$prerequisite = array();
 
-		$data_url = "wp-content/plugins/freight/post.php?operation=get_local_anonymous&mission_ids=$mission_id";
+		$data_url = "wp-content/plugins/flavor/post.php?operation=get_local_anonymous&mission_ids=$mission_id";
+//		print $data_url . "<br/>";
 		$output   = self::$multi_site->GetAll( $data_url, false, $debug );
+//		print $output;
 
 		$rows = self::parse_output($output);
 
@@ -420,32 +344,6 @@ group by pm.meta_value, p.post_status");
 		}
 
 		return $rows;
-	}
-
-	static function update_missions_from_master()
-	{
-		$multi = Core_Db_MultiSite::getInstance();
-		if (! $multi->isMaster()){
-			$url = Freight::getPost() . "?operation=sync_data_missions";
-//			print $multi->getSiteURL($multi->getMaster()) . $url;
-
-			$html = $multi->Execute( $url, $multi->getMaster() );
-
-			if (! $html) print "Can't get data from master<br/>";
-
-			if ( strlen( $html ) > 100 ) {
-				//printbr($html);
-				$multi->UpdateTable( $html, "missions", "id" );
-			} else {
-				print "short response. Operation aborted <br/>";
-				print "url = $url";
-				print $html;
-
-				return;
-			}
-
-			$multi->UpdateFromRemote( "missions", "id" );
-		}
 	}
 
 	static function show_mission_route($the_mission, $update = false, $debug = false, $missing = false)
@@ -973,78 +871,24 @@ group by pm.meta_value, p.post_status");
 		return true;
 	}
 
-	static function get_local_missions()
-	{
-		$mission_ids = GetParam("mission_ids", true);
-		$header = GetParam("header", false, false);
-		print self::get_missions($mission_ids, $header);
-		return true;
-	}
-
-	static function get_missions($mission_ids, $header)
-	{
+	static function print_deliveries( $mission_id, $selectable = false, $debug = false ) {
 		$data = "";
+		$query = "id in (select post_id from wp_postmeta " .
+		         " WHERE meta_key = 'mission_id' " .
+		         " AND meta_value = " . $mission_id . ") ";
 
-		if ($header) print self::delivery_table_header();
-		if (! is_array($mission_ids)) $mission_ids = array($mission_ids);
-
-		foreach ( $mission_ids as $mission_id ) {
-			if ( $mission_id ) {
-				$sql = "id in (select post_id from wp_postmeta " .
-				       " WHERE meta_key = 'mission_id' " .
-				       " AND meta_value = " . $mission_id . ") ";
-				$sql .= " and `post_status` in ('wc-awaiting-shipment', 'wc-processing')";
-
-				$data .= self::print_deliveries( $sql, false);
-
-				if (class_exists("Fresh_Supplies"))
-					$data .= Fresh_Supplies::print_driver_supplies( $mission_id );
-//				else
-//					print "NNN";
-
-				if (class_exists("Focus"))
-					$data .= Focus::print_driver_tasks( $mission_id );
-			}
-		}
-
-		return $data;
-	}
-
-	static function delivery_table_header( $edit = false ) {
-		$data = "";
-		$data .= "<table id='done_deliveries'><tr>";
-		$data .= "<td><h3>" . Core_Html::GuiCheckbox("done_select_all", false, array("events" => "onchange = \"select_all_toggle(done_select_all, 'deliveries')\"") ) . "</h3></td>";
-		$data .= "<td><h3>אתר</h3></td>";
-		$data .= "<td><h3>מספר </br>/הזמנה<br/>אספקה</h3></td>";
-		$data .= "<td><h3>מספר </br>לקוח</h3></td>";
-//	$data .= "<td><h3>שם המזמין</h3></td>";
-		$data .= "<td><h3>שם המקבל</h3></td>";
-		$data .= "<td><h3>עיר</h3></td>";
-		$data .= "<td><h3>כתובת</h3></td>";
-		$data .= "<td><h3>כתובת-2</h3></td>";
-		$data .= "<td><h3>טלפון</h3></td>";
-		// $data .= "<td><h3></h3></td>";
-		$data .= "<td><h3>מזומן/המחאה</h3></td>";
-		$data .= "<td><h3>משימה</h3></td>";
-		$data .= "<td><h3>אתר</h3></td>";
-		$data .= "<td><h3>דמי משלוח</h3></td>";
-
-		// $data .= "<td><h3>מיקום</h3></td>";
-		return $data;
-	}
-
-	static function print_deliveries( $query, $selectable = false, $debug = false ) {
-		$data = "";
-//		$sql  = 'SELECT posts.id, order_is_group(posts.id), order_user(posts.id) '
 		$sql  = 'SELECT posts.id, order_user(posts.id) '
 		        . ' FROM `wp_posts` posts'
 		        . ' WHERE ' . $query;
-
+//
 		$sql .= ' order by 1';
+//
+//		if ( $debug ) MyLog($sql);
 
-		if ( $debug ) MyLog($sql);
+		$sql .= " and `post_status` in ('wc-awaiting-shipment', 'wc-processing')";
 
 		$orders    = SqlQuery( $sql );
+
 		$prev_user = - 1;
 		while ( $order = SqlFetchRow( $orders ) ) {
 			$order_id   = $order[0];

@@ -371,7 +371,7 @@ class Fresh_Supply {
 		$data .= "<br/>";
 		$data .= $this->HtmlLines( $internal, $edit, $categ_group );
 		$data .= "<br/>";
-		$data .= $this->Operation();
+		if ($edit) $data .= $this->Operation();
 
 		return $data;
 	}
@@ -462,6 +462,8 @@ class Fresh_Supply {
 	}
 
 	public function HtmlHeader( $edit ) {
+		$data =	Core_Html::GuiHeader(1, __("Supply number") . " $this->ID" . " " . $this->getSupplierName());
+
 		$rows = array();
 		$row  = array( "הערות" );
 		// Text + Button
@@ -488,7 +490,7 @@ class Fresh_Supply {
 
 		$row = array( "Delivery route" );
 		if ( $edit ) {
-			array_push( $row, Fresh_Packing::gui_select_mission( "mis_" . $this->ID, $this->MissionID,
+			array_push( $row, Flavor_Mission::gui_select_mission( "mis_" . $this->ID, $this->MissionID,
 				array("events" => "onchange=mission_changed('" . Fresh::getPost() . "'," . $this->ID . ")" )) );
 		} else {
 			array_push( $row, $this->getMissionName() );
@@ -500,7 +502,7 @@ class Fresh_Supply {
 
 		$args = array();
 		// $args["class"] = "sortable";
-		$data = Core_Html::gui_table_args( $rows, "supply_table", $args);
+		$data .= Core_Html::gui_table_args( $rows, "supply_table", $args);
 
 		return $data;
 	}
@@ -793,7 +795,6 @@ class Fresh_Supply {
 		// array_push($fields, get_delivery_id($order_id));
 
 		return  "<tr> " . self::delivery_table_line( 1, $fields ) . "</tr>";
-
 	}
 
 	function delivery_table_line( $ref, $fields, $edit = false ) {

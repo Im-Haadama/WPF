@@ -94,11 +94,6 @@ class Focus_Manager {
 		self::run_robot();
 	}
 
-	function getShortcodes()
-	{
-		return array();
-	}
-
 	function run_robot()
 	{
 		// Default time zone for repeating tasks is the system timezone.

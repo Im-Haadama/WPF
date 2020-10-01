@@ -6,6 +6,11 @@ class Core_Admin_Menu {
 		return add_menu_page($page_title, $menu_title, $capability, $menu_slug, $function);
 	}
 
+	public function AddTop()
+	{
+
+	}
+
 	public function AddSubMenu($parent, $capability, $page)
 	{
 		$title = (isset($page['page_title']) ? $page['page_title'] : 'not set');

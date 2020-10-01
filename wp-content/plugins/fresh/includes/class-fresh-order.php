@@ -1002,7 +1002,7 @@ class Fresh_Order {
 //	) );
 		$mission = $this->GetMissionId();
 //	 print "XCXmission: " . $mission . "<br/>";
-		$data .= Core_Html::gui_row( array( Fresh_Packing::gui_select_mission( "mission_select", $mission, "onchange=\"save_mission('$post_file')\"" ) ) );
+		$data .= Core_Html::gui_row( array( Flavor_Mission::gui_select_mission( "mission_select", $mission, "onchange=\"save_mission('$post_file')\"" ) ) );
 
 		$data .= '</table>';
 

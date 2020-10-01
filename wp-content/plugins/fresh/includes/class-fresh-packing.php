@@ -277,7 +277,7 @@ class Fresh_Packing {
 		$O = new Fresh_Order($post->ID);
 		switch ($col) {
 			case "freight":
-			    print self::gui_select_mission("mis_" . $post->ID, $O->getMission(),
+			    print Flavor_Mission::gui_select_mission("mis_" . $post->ID, $O->getMission(),
 				    array("events" => 'onclick="event.stopPropagation();order_mission_changed(\'' . Fresh::getPost() . "', " . $post->ID .')"'));
 			    break;
 			case 'city':
@@ -544,7 +544,7 @@ class Fresh_Packing {
 
 				$args                                = array();
 				$args["events"]                      = "onchange=\"order_mission_changed('" . Fresh::getPost() . "', " . $order_id . ")\"";
-				$line[ Fresh_OrderFields::mission ]  = self::gui_select_mission( "mis_" . $order_id, $mission_id, $args );
+				$line[ Fresh_OrderFields::mission ]  = Flavor_Mission::gui_select_mission( "mis_" . $order_id, $mission_id, $args );
 				$line[ Fresh_OrderFields::order_id ] = Core_Html::GuiHyperlink( $order_id, get_site_url() . "/wp-admin/post.php?post=$order_id&action=edit");
 
 				// 2) Customer name with link to his deliveries
@@ -583,22 +583,6 @@ class Fresh_Packing {
 		}
 
 		return $all_tables;
-	}
-
-	static function gui_select_mission( $id, $selected = 0, $args = null ) {
-		$events = GetArg( $args, "events", null );
-
-		$query = " date >= curdate() or date is null";
-		if ($selected)
-			$query .= " or (id = $selected)";
-
-		$args = array(
-			"events"   => $events,
-			"selected" => $selected,
-			"query"    => $query
-		);
-
-		return Core_Html::GuiSelectTable( $id, "missions", $args );
 	}
 
 	static function table() {

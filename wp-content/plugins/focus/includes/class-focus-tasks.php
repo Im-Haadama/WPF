@@ -19,7 +19,6 @@ class Focus_Tasks {
 		$this->version       = "1.0";
 		$this->nav_menu_name = null;
 		$this->table_prefix = GetTablePrefix();
-//		MyLog("mis: " . TableExists("missions"));
 		if (TableExists("missions")) $options["missions"] = true;
 	}
 
@@ -214,8 +213,9 @@ class Focus_Tasks {
 						"preq"       => "Focus_Tasks::gui_select_task",
 						"team"       => "Focus_Tasks::gui_select_team"
 					);
-					if (self::OptionEnabled("missions"))
-						$args["selectors"]["mission_id"] = "Focus_Tasklist::gui_select_mission";
+					if (self::OptionEnabled("missions")) {
+						$args["selectors"]["mission_id"] = "Flavor_Mission::gui_select_mission";
+					}
 
 
 					$args["header_fields"] = array(
@@ -463,7 +463,7 @@ class Focus_Tasks {
 
 
 			case "show_tasks":
-
+			die(1); // 1/10/2020 Not sure this code is needed. If needed write the scenario.
 				$query_array = Core_Data::data_parse_get( "tasklist", array("search", "operation", "table_name", "id", "dummy") );
 				// Todo: handle default values
 				$query_array["tasklist"]["status"] = array(0, false);
@@ -1421,10 +1421,11 @@ class Focus_Tasks {
 			"owner"      => "Focus_Tasks::gui_select_worker",
 			"creator"    => "Focus_Tasks::gui_select_worker",
 			"preq"       => "Focus_Tasks::gui_select_task",
-			"team"       => "Focus_Tasks::gui_select_team"
+			"team"       => "Focus_Tasks::gui_select_team",
+			"mission_id" => "Flavor_Mission::gui_select_mission"
 		);
 		if (self::OptionEnabled("missions"))
-			$args["selectors"]["mission_id"] = "Focus_Tasklist::gui_select_mission";
+			$args["selectors"]["mission_id"] = "Flavor_Mission::gui_select_mission";
 
 		$args["title"]     = $entity_name;
 
@@ -2106,13 +2107,13 @@ class Focus_Tasks {
 		//             code                           function                  capablity (not checked, for now).
 		return ( array(
 			'focus_main'           => array( 'Focus_Tasks::focus_main', 'show_tasks' ),
-			'focus_task'           => array( 'Focus_tasks::show_task', 'show_tasks' ),
-			'focus_template'       => array( 'Focus_tasks::show_template', 'show_tasks' ),
-			'focus_repeating_task' => array( 'Focus_tasks::show_repeating_task', 'show_tasks' ),
-			'focus_team'           => array( 'Focus_tasks::show_team', 'show_teams' ),
-			'focus_project'        => array( 'Focus_tasks::show_project', null ), // 'edit_projects' ),
-			'focus_project_tasks'  => array( 'Focus_tasks::show_project_tasks', 'show_tasks' ),
-			'focus_worker'         => array( 'Focus_tasks::show_worker', 'show_tasks' )
+			'focus_task'           => array( 'Focus_Tasks::show_task', 'show_tasks' ),
+			'focus_template'       => array( 'Focus_Tasks::show_template', 'show_tasks' ),
+			'focus_repeating_task' => array( 'Focus_Tasks::show_repeating_task', 'show_tasks' ),
+			'focus_team'           => array( 'Focus_Tasks::show_team', 'show_teams' ),
+			'focus_project'        => array( 'Focus_Tasks::show_project', null ), // 'edit_projects' ),
+			'focus_project_tasks'  => array( 'Focus_Tasks::show_project_tasks', 'show_tasks' ),
+			'focus_worker'         => array( 'Focus_Tasks::show_worker', 'show_tasks' )
 		) );
 	}
 
@@ -2326,11 +2327,11 @@ class Focus_Tasks {
 		$args['form_table'] = 'tasklist';
 
 		// Todo: check last update time
-		if ( $mission and function_exists( "gui_select_mission" ) ) {
+		if ( $mission and function_exists( "Flavor_Mission::gui_select_mission" ) ) {
 			array_push( $args["fields"], "location_name", "location_address", "mission_id" );
 			$i = new Core_Db_MultiSite();
 			$i->UpdateFromRemote( "missions", "id", 0, null, null );
-			$args["selectors"]["mission_id"]              = "gui_select_mission";
+			$args["selectors"]["mission_id"]              = "Flavor_Mission::gui_select_mission";
 			$args["header_fields"]["mission_id"]          = "Mission";
 			$args["mandatory_fields"]["location_name"]    = true;
 			$args["mandatory_fields"]["location_address"] = true;
