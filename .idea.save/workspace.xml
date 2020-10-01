@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="BranchesTreeState">
+    <expand>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </expand>
+    <select>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="BRANCH:SO" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </select>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="dd4b6b06-04cf-46db-9e58-6ec15f98df51" name="Default Changelist" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ComposerSettings">
+    <execution />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="SO" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectId" id="1e4pCg63wLOXTPGWx7IBUiI0F1G" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+    <option name="showMembers" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="ChangesTree.GroupingKeys" value="" />
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="true" />
+    <property name="WebServerToolWindowPanel.toolwindow.highlight.mappings" value="true" />
+    <property name="WebServerToolWindowPanel.toolwindow.highlight.symlinks" value="true" />
+    <property name="WebServerToolWindowPanel.toolwindow.show.date" value="false" />
+    <property name="WebServerToolWindowPanel.toolwindow.show.permissions" value="false" />
+    <property name="WebServerToolWindowPanel.toolwindow.show.size" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/wp-content" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.detected.package.tslint" value="true" />
+    <property name="node.js.path.for.package.eslint" value="project" />
+    <property name="node.js.path.for.package.tslint" value="project" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="node.js.selected.package.tslint" value="(autodetect)" />
+    <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
+    <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+    <property name="nodejs_package_manager_path" value="npm" />
+    <property name="settings.editor.selected.configurable" value="web-ide.project.structure" />
+    <property name="vue.rearranger.settings.migration" value="true" />
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="dd4b6b06-04cf-46db-9e58-6ec15f98df51" name="Default Changelist" comment="" />
+      <created>1593590593963</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1593590593963</updated>
+      <workItem from="1593590595225" duration="2624000" />
+      <workItem from="1593598999363" duration="14000" />
+      <workItem from="1593609900416" duration="8476000" />
+      <workItem from="1593665864546" duration="210000" />
+      <workItem from="1594111777008" duration="3637000" />
+      <workItem from="1594736352345" duration="1752000" />
+      <workItem from="1594739277363" duration="114000" />
+      <workItem from="1594739422266" duration="67000" />
+      <workItem from="1595101596409" duration="1561000" />
+      <workItem from="1596038864828" duration="631000" />
+      <workItem from="1596548625941" duration="906000" />
+      <workItem from="1596977149902" duration="3617000" />
+      <workItem from="1600875622964" duration="4128000" />
+      <workItem from="1600880231783" duration="1267000" />
+    </task>
+    <task id="LOCAL-00001" summary="Capabilities - show just manangers.&#10;Removed loading scripts thru loader. Use init_hooks.&#10;Finish zone sync.">
+      <created>1593624235353</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1593624235353</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Update shipping moved from settings to remote action">
+      <created>1594738950857</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1594738950857</updated>
+    </task>
+    <task id="LOCAL-00003" summary="unneeded files">
+      <created>1594739464952</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1594739464952</updated>
+    </task>
+    <task id="LOCAL-00004" summary="subcontract: connect to invoice4u with other invoice user.">
+      <created>1595140456945</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1595140456945</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Close previous order - fix bug.">
+      <created>1596548710552</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1596548710552</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Delivery note: add sum of vat0 products.&#10;Mail: &#10;- add from field. defaults to admin_email. Can be set in MAIL_SENDER in wp-config.php file.&#10;- change order of parameters in caller.">
+      <created>1600880518981</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1600880518982</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Delivery note: add sum of vat0 products.&#10;Mail: &#10;- add from field. defaults to admin_email. Can be set in MAIL_SENDER in wp-config.php file.&#10;- change order of parameters in caller.">
+      <created>1600880583473</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1600880583473</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Capabilities - show just manangers.&#10;Removed loading scripts thru loader. Use init_hooks.&#10;Finish zone sync." />
+    <MESSAGE value="Update shipping moved from settings to remote action" />
+    <MESSAGE value="unneeded files" />
+    <MESSAGE value="subcontract: connect to invoice4u with other invoice user." />
+    <MESSAGE value="Close previous order - fix bug." />
+    <MESSAGE value="Delivery note: add sum of vat0 products.&#10;Mail: &#10;- add from field. defaults to admin_email. Can be set in MAIL_SENDER in wp-config.php file.&#10;- change order of parameters in caller." />
+    <option name="LAST_COMMIT_MESSAGE" value="Delivery note: add sum of vat0 products.&#10;Mail: &#10;- add from field. defaults to admin_email. Can be set in MAIL_SENDER in wp-config.php file.&#10;- change order of parameters in caller." />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="1781" y="458" width="802" height="676" key="#Deployment" timestamp="1595102493778">
+      <screen x="1280" y="0" width="2560" height="1440" />
+    </state>
+    <state x="1781" y="458" width="802" height="676" key="#Deployment/0.24.1280.976/1280.0.2560.1440@1280.0.2560.1440" timestamp="1595102493778" />
+    <state x="1761" y="444" width="834" height="703" key="#SSH_Configurations" timestamp="1595102445229">
+      <screen x="1280" y="0" width="2560" height="1440" />
+    </state>
+    <state x="1761" y="444" width="834" height="703" key="#SSH_Configurations/0.24.1280.976/1280.0.2560.1440@1280.0.2560.1440" timestamp="1595102445229" />
+    <state x="1543" y="179" width="1372" height="1025" key="CommitChangelistDialog2" timestamp="1600880583350">
+      <screen x="1280" y="0" width="2560" height="1440" />
+    </state>
+    <state x="1398" y="19" width="2108" height="1373" key="CommitChangelistDialog2/0.24.1280.976/1280.0.2560.1440@1280.0.2560.1440" timestamp="1595140470823" />
+    <state x="1543" y="179" width="1372" height="1025" key="CommitChangelistDialog2/0.27.1280.973/1280.0.2560.1440@1280.0.2560.1440" timestamp="1600880583350" />
+    <state x="2135" y="114" width="1538" height="949" key="DiffContextDialog" timestamp="1600882632504">
+      <screen x="1280" y="0" width="2560" height="1440" />
+    </state>
+    <state x="2135" y="114" width="1538" height="949" key="DiffContextDialog/0.24.1280.976/1280.0.2560.1440@1280.0.2560.1440" timestamp="1594738860478" />
+    <state x="2135" y="114" width="1538" height="949" key="DiffContextDialog/0.27.1280.973/1280.0.2560.1440@1280.0.2560.1440" timestamp="1600882632504" />
+    <state x="2135" y="114" width="1538" height="949" key="DirDiffDialog" timestamp="1593666074539">
+      <screen x="1280" y="0" width="2560" height="1440" />
+    </state>
+    <state x="2135" y="114" width="1538" height="949" key="DirDiffDialog/0.24.1280.976/1280.0.2560.1440@1280.0.2560.1440" timestamp="1593666074539" />
+    <state x="1947" y="483" width="449" height="512" key="FileChooserDialogImpl" timestamp="1595102440053">
+      <screen x="1280" y="0" width="2560" height="1440" />
+    </state>
+    <state x="1947" y="483" width="449" height="512" key="FileChooserDialogImpl/0.24.1280.976/1280.0.2560.1440@1280.0.2560.1440" timestamp="1595102440053" />
+    <state x="2627" y="272" width="546" height="632" key="RollbackChangesDialog" timestamp="1593622487412">
+      <screen x="1280" y="0" width="2560" height="1440" />
+    </state>
+    <state x="2627" y="272" width="546" height="632" key="RollbackChangesDialog/0.24.1280.976/1280.0.2560.1440@1280.0.2560.1440" timestamp="1593622487412" />
+    <state x="1665" y="375" key="SettingsEditor" timestamp="1593590647574">
+      <screen x="1280" y="0" width="2560" height="1440" />
+    </state>
+    <state x="1665" y="375" key="SettingsEditor/0.24.1280.976/1280.0.2560.1440@1280.0.2560.1440" timestamp="1593590647574" />
+    <state x="2403" y="636" width="305" height="168" key="VCS.ChangelistChooser" timestamp="1594739310510">
+      <screen x="1280" y="0" width="2560" height="1440" />
+    </state>
+    <state x="2403" y="636" width="305" height="168" key="VCS.ChangelistChooser/0.24.1280.976/1280.0.2560.1440@1280.0.2560.1440" timestamp="1594739310510" />
+    <state x="2499" y="324" width="802" height="527" key="Vcs.Push.Dialog.v2" timestamp="1600880641832">
+      <screen x="1280" y="0" width="2560" height="1440" />
+    </state>
+    <state x="2499" y="324" width="802" height="527" key="Vcs.Push.Dialog.v2/0.24.1280.976/1280.0.2560.1440@1280.0.2560.1440" timestamp="1595140479171" />
+    <state x="2499" y="324" width="802" height="527" key="Vcs.Push.Dialog.v2/0.27.1280.973/1280.0.2560.1440@1280.0.2560.1440" timestamp="1600880641832" />
+    <state x="2514" y="202" width="772" height="772" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser" timestamp="1594738706840">
+      <screen x="1280" y="0" width="2560" height="1440" />
+    </state>
+    <state x="2514" y="202" width="772" height="772" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser/0.24.1280.976/1280.0.2560.1440@1280.0.2560.1440" timestamp="1594738706840" />
+    <state x="2295" y="643" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1600882632409">
+      <screen x="1280" y="0" width="2560" height="1440" />
+    </state>
+    <state x="2295" y="643" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.27.1280.973/1280.0.2560.1440@1280.0.2560.1440" timestamp="1600882632409" />
+    <state x="1648" y="249" width="1621" height="1132" key="find.popup" timestamp="1600876828015">
+      <screen x="1280" y="0" width="2560" height="1440" />
+    </state>
+    <state x="1648" y="249" width="1621" height="1132" key="find.popup/0.24.1280.976/1280.0.2560.1440@1280.0.2560.1440" timestamp="1595101746971" />
+    <state x="1648" y="249" width="1621" height="1132" key="find.popup/0.27.1280.973/1280.0.2560.1440@1280.0.2560.1440" timestamp="1600876828015" />
+    <state x="2083" y="509" width="197" height="572" key="ftp.server.browser" timestamp="1593592045385">
+      <screen x="1280" y="0" width="2560" height="1440" />
+    </state>
+    <state x="2083" y="509" width="197" height="572" key="ftp.server.browser/0.24.1280.976/1280.0.2560.1440@1280.0.2560.1440" timestamp="1593592045385" />
+    <state x="2140" y="420" width="614" height="422" key="git4idea.merge.GitPullDialog" timestamp="1594112567528">
+      <screen x="1280" y="0" width="2560" height="1440" />
+    </state>
+    <state x="2140" y="420" width="614" height="422" key="git4idea.merge.GitPullDialog/0.24.1280.976/1280.0.2560.1440@1280.0.2560.1440" timestamp="1594112567528" />
+    <state x="1980" y="652" width="383" height="175" key="git4idea.remote.GitConfigureRemotesDialog" timestamp="1593590953441">
+      <screen x="1280" y="0" width="2560" height="1440" />
+    </state>
+    <state x="1980" y="652" width="383" height="175" key="git4idea.remote.GitConfigureRemotesDialog/0.24.1280.976/1280.0.2560.1440@0.24.1280.976" timestamp="1593590953441" />
+    <state x="2567" y="271" key="run.anything.popup" timestamp="1593617802859">
+      <screen x="1280" y="0" width="2560" height="1440" />
+    </state>
+    <state x="2567" y="271" key="run.anything.popup/0.24.1280.976/1280.0.2560.1440@1280.0.2560.1440" timestamp="1593617802859" />
+    <state x="2567" y="270" width="672" height="678" key="search.everywhere.popup" timestamp="1600880526020">
+      <screen x="1280" y="0" width="2560" height="1440" />
+    </state>
+    <state x="2567" y="270" width="672" height="678" key="search.everywhere.popup/0.24.1280.976/1280.0.2560.1440@1280.0.2560.1440" timestamp="1596038877048" />
+    <state x="2567" y="270" width="672" height="678" key="search.everywhere.popup/0.27.1280.973/1280.0.2560.1440@1280.0.2560.1440" timestamp="1600880526020" />
+  </component>
+</project>
