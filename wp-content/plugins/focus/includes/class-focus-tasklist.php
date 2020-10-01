@@ -458,19 +458,6 @@ class Focus_Tasklist {
 		return gui_select_task( $id, $value, $events, $query );
 	}
 
-	static function gui_select_mission( $id, $selected = 0, $args = null ) {
-		$events = GetArg( $args, "events", null );
-
-		$args = array( "events"   => $events,
-		               "selected" => $selected,
-		               "query"    => " date >= curdate() "
-		);
-
-		// "ifnull(concat (name, ' ', DAYOFMONTH(date), '/', month(date)), name)");
-
-		return Core_Html::GuiSelectTable( $id, "missions", $args );
-	}
-
 	function task_table( $task_ids ) {
 		$rows = array( array( "מזהה", "עדיפות", "תיאור" ) );
 
@@ -551,6 +538,33 @@ class Focus_Tasklist {
 		return SqlQuery( $sql );
 
 	}
+
+	function print_task( ) {
+		$fields = array();
+		array_push( $fields, "משימות" );
+
+		$ref = Core_Html::GuiHyperlink( $this->id, "../tasklist/c-get-tasklist.php?id=" . $this->id );
+
+		array_push( $fields, $ref );
+
+		array_push( $fields, "" ); // client number
+		array_push( $fields, $this->getLocationName() ); // name
+		array_push( $fields, $this->getLocationAddress() ); // address 1
+		array_push( $fields, "" ); // Address 2
+		array_push( $fields, "" ); // phone
+		array_push( $fields, "" ); // payment
+		array_push( $fields, "" ); //
+
+		array_push( $fields, $this->getMissionId() ); // payment
+		array_push( $fields, Core_Db_MultiSite::LocalSiteID() );
+		array_push( $fields, "" ); // fee
+		array_push( $fields, $this->getTaskDescription() ); // Comments
+
+		$line = Core_Html::gui_row( $fields );
+
+		return $line;
+	}
+
 }
 
 class enumTasklist {

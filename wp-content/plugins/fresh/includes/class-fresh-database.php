@@ -444,27 +444,6 @@ charset=utf8;
 
 ");
 
-		if (! TableExists("missions"))
-		{
-			SqlQuery("create table ${db_prefix}missions
-(
-	id int auto_increment
-		primary key,
-	date date null,
-	start_h time(6) null,
-	end_h time(6) null,
-	zones_times longtext null,
-	name varchar(200) null,
-	path_code varchar(10) null,
-	start_address varchar(50) null,
-	end_address varchar(50) null,
-	path varchar(4000) null,
-	accepting bit default b'1' null
-)
-charset=utf8;
-");
-		}
-
 		if (! TableExists("baskets"))
 			SqlQuery("create table ${db_prefix}baskets
 (
@@ -499,22 +478,6 @@ charset=utf8;
 	pay_date date null
 );");
 
-		if (! TableExists("missions"))
-			SqlQuery("create table ${db_prefix}missions
-(
-	id int auto_increment
-		primary key,
-	date date null,
-	name varchar(200) null,
-	path_code varchar(20) null,
-	start_address varchar(50) null,
-	end_address varchar(50) null,
-	start_h time null,
-	end_h time null,
-	zones varchar(100) null
-)
-charset=utf8;");
-
 		self::UpdateInstalled("Fresh", "tables", $version);
 	}
 
@@ -548,20 +511,6 @@ charset=utf8;");
 			return _date;
 		END;
 		");
-
-		SqlQuery("drop function if exists first_day_of_week");
-		SqlQuery("create function FIRST_DAY_OF_WEEK(day date) returns date
-BEGIN
-    RETURN SUBDATE(day, WEEKDAY(day) + 1);
-END;
-");
-
-		SqlQuery("create function supplier_last_pricelist_date(_supplier_id int) returns date
-		BEGIN
-		declare _date date;
-		SELECT info_data into _date
-		FROM im_info WHERE info_key = concat('import_supplier_', _supplier_id);
-		END");
 
 //		SqlQuery("create function supplier_last_pricelist_date(_supplier_id int) returns date
 //		BEGIN

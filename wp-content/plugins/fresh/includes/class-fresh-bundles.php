@@ -11,7 +11,6 @@ if ( ! defined( "FRESH_INCLUDES" ) ) {
  */
 // require_once( '../r-shop_manager.php' );
 //require_once( "catalog.php" );
-// require_once( "gui.php" );
 
 class Fresh_Bundles {
 	protected static $_instance = null;

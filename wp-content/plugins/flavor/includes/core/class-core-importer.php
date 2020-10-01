@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Created by PhpStorm.
  * User: agla
@@ -247,5 +246,4 @@ class Core_Importer {
 		print Core_Html::GuiButton("btn_save_c", "Add", array("action" => "save_conversion('$post_file', '$header', '$table')"));
 		return true;
 	}
-
 }

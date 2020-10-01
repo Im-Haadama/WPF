@@ -161,7 +161,8 @@
 		 $result .= Core_Html::GuiHeader(1, "Updating shipping times");
 		 $result .= "<li>Create the zones" . Core_Html::GuiHyperlink("here: ", "/wp-admin/admin.php?page=wc-settings&tab=shipping") . "</li>";
 		 $result .= "<li>In zones tab update minimum order, and default fee for delivery</li>";
-		 $result .= "<li>In paths create path = cluster of zones: set the zones and days of arrival. E.g Tel Aviv can be in zone center on Monday, and on zone Tel-Aviv on Thursday.</li>";
+		 $result .= "<li>To change the delivery day, in the Mission types set the day. Monday is 1, Tuesday is 2, etc. Than in Methods tab, press update!</li>";
+//		 $result .= "<li>In paths create path = cluster of zones: set the zones and days of arrival. E.g Tel Aviv can be in zone center on Monday, and on zone Tel-Aviv on Thursday.</li>";
 
 		 return $result;
 		}

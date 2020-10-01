@@ -1,0 +1,6 @@
+Flavor - the basics of all. All other plugins depend on it.
+
+Missions
+- can be updated in the master by Freight_Mission_Manager.
+- can be view in all others by Flavor::missions.
+- GetMissionLocal - orchestrated by flavor. Add delivery, supply and tasks according to what installed.

@@ -13,7 +13,6 @@ define ('CELL_START', "
 define ('CELL_END', "
 </td>");
 
-
 class Core_Html {
 	/**
 	 * Create html <label>
@@ -867,7 +866,7 @@ class Core_Html {
 	 * @return string
 	 * @throws Exception
 	 */
-	static function gui_table_args( $input_rows, $id = null, $args = null )
+	static function gui_table_args( $input_rows, $id = null, &$args = null )
 	{
 		$width       = GetArg( $args, "width", null );
 		$bordercolor = GetArg( $args, "bordercolor", null );
@@ -918,7 +917,10 @@ class Core_Html {
 			} else {
 				$rows[ $key ] = Core_Data::PrepareRow( $input_row, $args, isset($args["duplicate_of"]) ? 0 : $key );
 				// If prepare return null - remove it from table.
-				if (! $rows[$key]) unset($rows[$key]);
+				if (! $rows[$key]) {
+					unset( $rows[ $key ] );
+					$args['count'] --;
+				}
 			}
 		}
 

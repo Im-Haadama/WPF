@@ -24,7 +24,7 @@ class Focus {
 	 *
 	 * @var string
 	 */
-	public $version = '1.0';
+	public $version = '1.1';
 
 	/**
 	 * @var
@@ -167,6 +167,7 @@ class Focus {
 		AddAction("company_add_worker", array($this, 'company_add_worker'));
 
 		add_filter("gem_next_page_tasklist", array($this, "next_page"));
+        add_filter("gem_next_page_projects", array($this, "next_page"));
 
 		if ((get_user_id() == 1) and defined("DEBUG_USER")) wp_set_current_user(DEBUG_USER);
 	}
@@ -380,7 +381,6 @@ class Focus {
 		$this->load_plugin_textdomain();
 
 		$shortcodes->add($this->tasks->getShortcodes());
-		$shortcodes->add($this->manager->getShortcodes());
 
 		$this->tasks->init();
 		$this->manager->init();
@@ -488,8 +488,9 @@ class Focus {
 		}
 
 		$tasks = SqlQueryArrayScalar( $sql );
-		foreach ( $tasks as $task ) {
-			$data .= print_task( $task );
+		foreach ( $tasks as $task_id ) {
+			$t = new Focus_Tasklist($task_id);
+			$data .= $t->print_task();
 		}
 
 		return $data;
