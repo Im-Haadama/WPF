@@ -256,10 +256,9 @@ class Focus_Tasks {
 
 				case "projects":
 					// Todo: if col is hidden, set default.
-//					$args["hide_cols"] = array("is_active"=>1, "manager"=>1);
 					$args["links"]     = array( "ID" => AddToUrl( array( "operation" => "gem_edit_projects&id=%s" ) ) );
+                    $args["hide_cols"] = array("is_active" => 1);
 					$args["check_active"] = true;
-					// $args["fields"] =
 					break;
 			}
 
@@ -342,15 +341,18 @@ class Focus_Tasks {
 				$args["post_file"] = self::getPost();
 //			$user_id = get_user_id();
 //			$args["user_id"] = $user_id;
-//			$args["hide_cols"] = array("user_id" => 1, "company_id" => 1);
+    			//$args["hide_cols"] = array("is_active" => 1, "manager" => 13);
 //			$args["values"] = array("company_id" => worker_get_companies($user_id)[0]);
+
 				$args["fields"]           = array( "project_name", "project_contact", "project_priority" );
 				$args["mandatory_fields"] = array( "project_name" );
 				$args["header_fields"]    = array(
 					"project_name"     => "Project name",
 					"project_contact"  => "Project contact (client)",
 					"project_priority" => "Priority"
+
 				);
+
 
 				return Core_Gem::GemAddRow( "projects", "Add a project", $args );
 
@@ -890,7 +892,7 @@ class Focus_Tasks {
 
 		if (! ($user_id > 0)) return "'$user_id' is not valid user";
 
-		$result = greeting(null, false);
+		$result = +greeting(null, false);
 		$worker = new Org_Worker( $user_id );
 		$tabs   = array();
 		$args = self::Args();
@@ -2129,6 +2131,7 @@ class Focus_Tasks {
 		AddAction("gem_edit_projects", array($this, 'ShowProjectMembers'), 11, 3);
 		AddAction("gem_add_project_members", array($this, "AddProjectMember"), 11, 3);
 		AddAction("project_add_member", array(__CLASS__, 'ProjectAddMember'), 11, 3);
+        add_filter("data_save_new_project", array(__CLASS__, 'DataSaveNewProject' ),11,3);
 
 		// Tasklist
 		Core_Gem::AddTable( "tasklist" ); // add + edit
@@ -2147,6 +2150,13 @@ class Focus_Tasks {
 		AddAction("team_remove_member", array(__CLASS__, "team_remove_member"));
 		AddAction("team_add_member", array(__CLASS__, "team_add_member"));
 	}
+
+    static function DataSaveNewProject(){
+        $args = self::Args("projects");
+        $args["values"] = array( "manager" => get_user_id() );
+        return $args;
+
+    }
 
 	static function team_remove_member() {
 		$team_id   = GetParam( "team_id", true );
