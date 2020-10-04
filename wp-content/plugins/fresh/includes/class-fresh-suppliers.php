@@ -164,21 +164,21 @@ class Fresh_Suppliers {
 
 	static function SuppliersTable()
 	{
-//		print debug_trace(10);
-		$result = Core_Html::GuiHeader(2, "Active suppliers", array("class"=>"wc-shipping-zones-heading", "close"=>false)) . "<br/>"; // . Core_Html::GuiHyperlink("Add supplier", "link", array("class"=> "page-title-action")) .'</h2>';
+		$result = ""; //Core_Html::GuiHeader(2, "Suppliers", array("class"=>"wc-shipping-zones-heading", "close"=>false)) . "<br/>"; // . Core_Html::GuiHyperlink("Add supplier", "link", array("class"=> "page-title-action")) .'</h2>';
 
 		$args = self::Args("suppliers");
 		$args["prepare_plug"] = __CLASS__ . "::prepare_supplier_list_row";
 
 		$args["fields"] = array("id", "supplier_name", "supplier_description");
 		// $args["links"] = array("id"=> AddToUrl(array( "operation" => "show_supplier", "id" => "%s")));
-		$args["query"] = "is_active = 1";
 		$args["header_fields"] = array("supplier_name" => "Name", "supplier_description" => "Description");
 		$args["actions"] = array(array("Show products", AddToUrl(array("operation" => "gem_v_show", "table"=>"pricelist", "supplier_id" => "%s"))));
 		$args["order"] = "supplier_last_pricelist_date(id) desc";
+		$args["title"] = "Suppliers";
 //		$result .= "page number: " . $args["page_number"] . "<br/>";
 //		$result .= "page: " . $args["page"] . "<br/>";
 		$args["page_number"] = -1;
+		$args["only_active"] = GetParam("only_active", false, 1);
 		$result .= Core_Gem::GemTable("suppliers", $args);
 
 		// $result .= GuiTableContent("im_suppliers",null, $args);

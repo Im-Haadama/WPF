@@ -868,7 +868,7 @@ function user_is_business_owner() {
 	{
 		$menu = new Core_Admin_Menu();
 
-		$menu->AddSubMenu('freight', 'edit_shop_orders',
+		$menu->AddSubMenu('finance', 'edit_shop_orders',
 			array('page_title' => 'Settings',
 			      'menu_title' => 'Settings',
 			      'menu_slug' => 'bank_settings',

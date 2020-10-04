@@ -47,18 +47,9 @@ class Fresh_Delivery_Manager
 
 	static function update_shipping_methods($result = null)
 	{
-		MyLog(__FUNCTION__);
-		$m = Core_Db_MultiSite::getInstance();
-		if ( ! $m->isMaster() ) { // if not master, get info from master.
-			if (! $m->UpdateFromRemote( "woocommerce_shipping_zones", "zone_id" )) return false;
-			if (! $m->UpdateFromRemote( "woocommerce_shipping_zone_methods", "instance_id" )) return false;
-			if (! $m->UpdateFromRemote( "woocommerce_shipping_zone_locations", "location_id" )) return false;
-			if (! $m->UpdateFromRemote( "options", "option_name", 0, "option_name like 'woocommerce_flat_rate_%_settings'", array( 'option_id' ))) return false;
-			return true;
-		}
+		self::sync_from_master();
 
 		// Otherwise - master - update.
-		MyLog(__FUNCTION__);
 		$result .= "Updating<br/>";
 		$sql = "select * from wp_woocommerce_shipping_zone_methods";
 		$sql_result = SqlQuery($sql);
@@ -69,6 +60,22 @@ class Fresh_Delivery_Manager
 		return $result;
 	}
 
+	static function sync_from_master()
+	{
+		MyLog(__METHOD__, __FUNCTION__);
+		$m = Core_Db_MultiSite::getInstance();
+		if ( $m->isMaster() ) { // if not master, get info from master.
+			MyLog("master - skipped", __FUNCTION__);
+			return true;
+		}
+
+		if (! $m->UpdateFromRemote( "woocommerce_shipping_zones", "zone_id" )) return false;
+		if (! $m->UpdateFromRemote( "woocommerce_shipping_zone_methods", "instance_id" )) return false;
+		if (! $m->UpdateFromRemote( "woocommerce_shipping_zone_locations", "location_id" )) return false;
+		if (! $m->UpdateFromRemote( "options", "option_name", 0, "option_name like 'woocommerce_flat_rate_%_settings'", array( 'option_id' ))) return false;
+
+		return true;
+	}
 	/**
 	 * @param int $days_forward
 	 * @param bool $disable_all
@@ -185,7 +192,6 @@ and curdate() > order_mission_date(id)" );
 			if ($debug) MyLog("No del found");
 			return;
 		}
-		MyLog(__FUNCTION__ . CommaImplode($ids));
 
 		foreach ( $ids as $id ) {
 			$order = new Fresh_Order( $id );

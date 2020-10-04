@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Plugin Name: finance (full)
  * Plugin URI: https://aglamaz.com

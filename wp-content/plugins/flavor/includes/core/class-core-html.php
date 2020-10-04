@@ -13,7 +13,6 @@ define ('CELL_START', "
 define ('CELL_END', "
 </td>");
 
-
 class Core_Html {
 	/**
 	 * Create html <label>
@@ -1511,6 +1510,7 @@ class Core_Html {
 	 * @return string|null
 	 */
 	static function gui_input_by_type( $input_name, $type = null, $args = null, $data = null ) {
+		if (strstr($data, "<input")) return $data;
 		$events = GetArg( $args, "events", null );
 //		print "name=$input_name type=$type<br/>";
 		switch ( substr( $type, 0, 3 ) ) {

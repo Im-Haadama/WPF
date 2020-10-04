@@ -1,6 +1,5 @@
 <?php
 
-
 class Core_Gem {
 	private $object_types;
 	protected static $_instance = null;
@@ -377,7 +376,7 @@ class Core_Gem {
 		}
 
 		if ($title)
-			$result .= Core_Html::gui_header(1, $title, true, true) . " " . ($row_id ? Core_Html::gui_label("id", $row_id) : __("New"));
+			$result .= Core_Html::gui_header(1, $title, true, true). " " . ($row_id ? Core_Html::gui_label("id", $row_id) : __("New"));
 
 		if ($row_id) $result .= " " . Core_Html::GuiHyperlink(__("Duplicate"), AddToUrl("operation", "gem_duplicate"));
 
@@ -424,7 +423,9 @@ class Core_Gem {
 	{
 		$result = "";
 
-		$title = GetArg($args, "title", null);
+		$only_active = GetArg($args, "only_active", 2);
+		$title = GetArg($args, "title", null) . " ";
+		if ( $only_active != 2) $title .= ($only_active ? __("Active") : __("All"));
 		$edit = GetArg($args, "edit", false);
 		$enable_import = GetArg($args, "enable_import", false);
 
@@ -503,6 +504,7 @@ class Core_Gem {
 		if (! isset($args["title"])) $title = "content of table " . $table_name;
 		$post_file = GetArg($args, "post_file", null);
 		$table_prefix = GetTablePrefix($table_name);
+		$only_active = GetArg($args, "only_active", 2);
 
 		if (! isset($args["events"])) $args["events"] = 'onchange="update_table_field(\'' . $post_file . '\', \'' . $table_name . '\', \'%d\', \'%s\', check_result)"';
 		$sql = GetArg($args, "sql", null);
@@ -515,7 +517,8 @@ class Core_Gem {
 			}
 			else $sql = "select * from ${table_prefix}$table_name";
 
-			$query = GetArg($args, "query", null);
+			$query = GetArg($args, "query", " 1 ");
+			if ($only_active == 1) $query .= " and is_active = 1";
 			if ($query) $sql .= " where $query";
 
 			$order = GetArg($args, "order", null);
@@ -538,7 +541,14 @@ class Core_Gem {
 			return $result;
 		}
 
-		return Core_Gem::GemArray($rows_data, $args, $table_name);
+		$result = Core_Gem::GemArray($rows_data, $args, $table_name);
+
+		if ($result != 2) $result .=
+		       ($only_active ? Core_Html::GuiHyperlink("All", AddToUrl("only_active",'0' ) ):
+			       Core_Html::GuiHyperlink("Active", AddToUrl("only_active",'1' )));
+
+		       return $result;
+
 	}
 
 	function GemVirtualTable($table_name, $args, $csv = false)

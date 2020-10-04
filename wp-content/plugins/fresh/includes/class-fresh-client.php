@@ -229,7 +229,15 @@ class Fresh_Client {
 	{
 		$customer = new WC_Customer($this->user_id);
 		$country  = $customer->get_shipping_country();
+		if (! $country) $country = 'IL';
 		$postcode = $customer->get_shipping_postcode();
+        if (! $postcode and ($city = $customer->get_shipping_city())) {
+	        $postcode = israelpost_get_city_postcode($city);
+//            print "city = $city<br/>";
+        } else {
+            print "no shipping zipcode or city";
+        }
+        print "pc=$postcode country=$country<br/>";
 
 		return WC_Shipping_Zones::get_zone_matching_package( array(
 			'destination' => array(

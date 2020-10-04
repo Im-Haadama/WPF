@@ -4,10 +4,12 @@ class Core_Database
 {
 	function install($version, $force = false)
 	{
-		if (! function_exists("get_user_id") or (get_user_id() != 1)) {
+		if (! function_exists("get_user_id")) {
 //			print debug_trace(2);
 			return;
 		}
+		$user = new Core_Users();
+		if (!$user->hasRole('administrator')) return;
 
 		// Create im_info table if missing.
 		self::CreateInfo();
@@ -39,6 +41,6 @@ class Core_Database
 
 	static function UpdateInstalled($plugin, $subsystem, $version)
 	{
-		InfoUpdate("version_${plugin}_$subsystem", $version);
+		return InfoUpdate("version_${plugin}_$subsystem", $version);
 	}
 }

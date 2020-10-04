@@ -244,13 +244,10 @@ require_once (ABSPATH . '/wp-includes/pluggable.php');
 		if ( ! $result ) {
 			$sql = "insert into im_info (info_key, info_data) VALUE ('$key', '$data')";
 //              print $sql;
-			SqlQuery( $sql );
-
-			return;
+			return SqlQuery( $sql );
 		}
 		$sql = "UPDATE im_info SET info_data = '" . $data . "' WHERE info_key = '" . $key . "'";
-//              print $sql;
-		SqlQuery( $sql );
+		return SqlQuery( $sql );
 	}
 	}
 
@@ -669,4 +666,52 @@ function get_caller($my_class)
 		if (isset($debug[$i]['class']) and ($debug[$i]['class'] != $my_class)) return $debug[$i];
 	}
 	return null;
+}
+
+function israelpost_get_address_postcode( $city, $street, $house ) {
+	$url = "http://www.israelpost.co.il/zip_data.nsf/SearchZip?OpenAgent&Location=" . urlencode( $city ) . "&street=" . $street .
+	       "&house=" . $house;
+
+	$ch = curl_init();
+
+	$timeout = 5;
+	curl_setopt( $ch, CURLOPT_URL, $url );
+	curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 );
+	curl_setopt( $ch, CURLOPT_CONNECTTIMEOUT, $timeout );
+	$data = curl_exec( $ch );
+	curl_close( $ch );
+
+	$value = array();
+	if ( preg_match( "/RES[0-9]*/", $data, $value ) ) {
+		$result = substr( $value[0], 4 );
+
+		if ( $result == "11" or $result == "12" or $result == "13" ) {
+			return - 1;
+		}
+
+		return $result;
+	}
+
+	return - 2;
+}
+
+function israelpost_get_city_postcode( $city )
+{
+	$city=trim($city);
+	$url = "http://www.israelpost.co.il/zip_data.nsf/SearchZip?OpenAgent&Location=" . urlencode( $city ) . "&POB=1";
+
+	$data = file_get_contents( $url );
+
+	$value = array();
+	if ( preg_match( "/RES[0-9]*/", $data, $value ) ) {
+		$result = substr( $value[0], 4 );
+
+		if ( $result == "11" or $result == "12" or $result == "13" ) {
+			return - 1;
+		}
+
+		return $result;
+	}
+
+	return - 2;
 }
