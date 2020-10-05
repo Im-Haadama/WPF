@@ -84,6 +84,14 @@ class Finance_Settings {
 		$menu->AddSubMenu( "users.php", "edit_shop_orders",
 			array( 'page_title' => 'Payment methods', 'function' => array( "Finance_Payments", 'payment_methods' ) ) );
 
+		$menu->AddSubMenu('users.php', 'edit_shop_orders', // Previous users.php
+			array('page_title' => 'Payment List',
+			      'menu_title' => 'Payment list',
+			      'menu_slug' => 'payment_list',
+			      'function' => 'payment_list')
+		);
+
+
 //		$menu->AddSubMenu( "finance", "working_hours_self",
 //			array( 'page_title' => 'Hours entry', 'function' => array( "Finance_Salary", 'entry_wrapper' ) ) );
 

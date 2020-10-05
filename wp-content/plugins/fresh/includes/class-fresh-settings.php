@@ -92,13 +92,6 @@
 				            'menu_slug' => 'missing',
 				            'function' => "Fresh_Catalog::missing_pictures"));
 
-			$menu->AddSubMenu('users.php', 'edit_shop_orders', // Previous users.php
-					array('page_title' => 'Payment List',
-					      'menu_title' => 'Payment list',
-					      'menu_slug' => 'payment_list',
-					      'function' => 'payment_list')
-				);
-
 			/////////////////////
 			// WOO menu        //
 			////////////////////

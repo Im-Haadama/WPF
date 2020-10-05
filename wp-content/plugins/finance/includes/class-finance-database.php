@@ -9,6 +9,8 @@ class Finance_Database extends Core_Database {
 
 		if ($current == $version and ! $force) return true;
 
+		self::payment_info_table();
+
 		SqlQuery("CREATE TABLE `im_bank_account` (
   `id` int(11) NOT NULL,
   `name` varchar(20) NOT NULL,
@@ -109,5 +111,30 @@ BEGIN
 	{
 		return true;
 	}
+
+	/*-- Start create payment table --*/
+	static function payment_info_table(){
+		global $wpdb;
+		$charset_collate = $wpdb->get_charset_collate();
+
+		$sql = "CREATE TABLE `im_payment_info` (
+	    `id` int(11) NOT NULL AUTO_INCREMENT  PRIMARY KEY,
+	    `user_id` int(11) NOT NULL,
+	    `full_name` varchar(255) NOT NULL,
+	    `email` varchar(255) NOT NULL,
+	    `card_number` varchar(50) NOT NULL,
+	    `card_four_digit` varchar(50) NOT NULL,
+	    `card_type` varchar(100) NOT NULL,
+	    `exp_date_month` tinyint(4) NOT NULL,
+	    `exp_date_year` int(11) NOT NULL,
+	    `id_number` varchar(15)  NOT NULL,
+	    `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
+	) $charset_collate;";
+
+		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+		dbDelta( $sql );
+	}
+	/*-- End create payment table --*/
+
 
 }

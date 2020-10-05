@@ -2,6 +2,9 @@
 
 require_once(ABSPATH . '/wp-content/plugins/flavor/flavor.php');
 
+//ini_set('display_errors', 1);
+//ini_set('display_startup_errors', 1);
+//error_reporting(E_ALL);
 
 class Finance {
 	/**
@@ -146,6 +149,7 @@ class Finance {
 		// Flavor::getInstance();
 		// register_activation_hook( WC_PLUGIN_FILE, array( 'Finance_Install', 'install' ) );
 		register_shutdown_function( array( $this, 'log_errors' ) );
+		self::register_payment();
 
 		GetSqlConn( ReconnectDb() );
 
@@ -192,6 +196,31 @@ class Finance {
 //			self::admin_init();
 
 	}
+
+	function register_payment()
+	{
+//		$active_plugins = apply_filters('active_plugins', get_option('active_plugins'));
+		if(fresh_custom_payment_is_woocommerce_active()){
+			add_filter('woocommerce_payment_gateways', array($this, 'add_other_payment_gateway'));
+
+			add_action('plugins_loaded', array($this, 'init_other_payment_gateway'));
+
+			add_action( 'plugins_loaded', array($this, 'other_payment_load_plugin_textdomain'));
+		}
+	}
+
+	function add_other_payment_gateway( $gateways ){
+		$gateways[] = 'WC_Other_Payment_Gateway';
+		return $gateways;
+	}
+
+	function init_other_payment_gateway(){
+		require FINANCE_INCLUDES . 'class-payment-gateway.php';
+	}
+	function other_payment_load_plugin_textdomain() {
+		load_plugin_textdomain( 'woocommerce-other-payment-gateway', FALSE, basename( dirname( __FILE__ ) ) . '/languages/' );
+	}
+
 
 	function pay_user_credit_wrap($customer_id, $amount, $payment_number)
 	{
@@ -588,7 +617,9 @@ class Finance {
 		$locale = apply_filters( 'plugin_locale', $locale, 'finance' );
 
 //		unload_textdomain( 'finance' );
-//		load_textdomain( 'finance', FERSH_LANG_DIR . '/finance/finance-' . $locale . '.mo' );
+		$rc = load_textdomain( 'finance', FINANCE_PLUGIN_DIR . '/languages/finance-' . $locale . '.mo' );
+//		print "rc=$rc<br/>";
+//		print "E=$locale " . _e("Credit Card", "finance");
 //		load_plugin_textdomain( 'finance', false, plugin_basename( dirname( FINANCE_PLUGIN_FILE ) ) . '/i18n/languages' );
 	}
 //
@@ -722,6 +753,7 @@ class Finance {
 	}
 
 	public function run() {
+
 	}
 
 	function install( $version, $force = false ) {
@@ -865,5 +897,23 @@ class Finance {
 	{
 		return Core_Db_MultiSite::getInstance()->getLocalSiteID();
 	}
-
 }
+
+/*-- Start payment gateway--*/
+
+function fresh_custom_payment_is_woocommerce_active()
+{
+	$active_plugins = (array) get_option('active_plugins', array());
+
+	if (is_multisite()) {
+		$active_plugins = array_merge($active_plugins, get_site_option('active_sitewide_plugins', array()));
+	}
+
+	return in_array('woocommerce/woocommerce.php', $active_plugins) || array_key_exists('woocommerce/woocommerce.php', $active_plugins);
+}
+
+function payment_list() {
+	include( FINANCE_INCLUDES . 'payment_list.php' );
+}
+
+/*-- End payment gateway--*/

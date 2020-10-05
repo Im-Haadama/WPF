@@ -3,6 +3,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 ?>
+
 <h2 class="wc-shipping-zones-heading">
 	<?php _e( 'Shipping zones', 'woocommerce' ); ?>
 	<a href="<?php echo admin_url( 'admin.php?page=wc-settings&tab=shipping&zone_id=new' ); ?>" class="page-title-action"><?php esc_html_e( 'Add shipping zone', 'woocommerce' ); ?></a>
@@ -15,8 +16,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<th class="wc-shipping-zone-name"><?php esc_html_e( 'Zone name', 'woocommerce' ); ?></th>
 			<th class="wc-shipping-zone-region"><?php esc_html_e( 'Region(s)', 'woocommerce' ); ?></th>
 			<th class="wc-shipping-zone-methods"><?php esc_html_e( 'Shipping method(s)', 'woocommerce' ); ?></th>
-            <th class="wc-shipping-zone-methods"><?php esc_html_e( 'Default flat price', 'woocommerce' ); ?></th>
-            <th class="wc-shipping-zone-methods"><?php esc_html_e( 'Min order', 'woocommerce' ); ?></th>
 		</tr>
 	</thead>
 	<tbody class="wc-shipping-zone-rows"></tbody>
@@ -85,14 +84,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<td class="wc-shipping-zone-methods">
 			<div><ul></ul></div>
 		</td>
-        <td>
-            {{ data.default_price }}
-        </td>
-        <td>
-            {{ data.min_order }}
-        </td>
-
-    </tr>
+	</tr>
 </script>
 
 <script type="text/template" id="tmpl-wc-modal-add-shipping-method">
@@ -116,7 +108,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 									if ( ! $method->supports( 'shipping-zones' ) ) {
 										continue;
 									}
-									echo '<option data-description="' . esc_attr( wp_kses_post( wpautop( $method->get_method_description() ) ) ) . '" value="' . esc_attr( $method->id ) . '">' . esc_attr( $method->get_method_title() ) . '</li>';
+									echo '<option data-description="' . esc_attr( wp_kses_post( wpautop( $method->get_method_description() ) ) ) . '" value="' . esc_attr( $method->id ) . '">' . esc_html( $method->get_method_title() ) . '</li>';
 								}
 								?>
 							</select>

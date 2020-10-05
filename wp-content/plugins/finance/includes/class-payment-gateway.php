@@ -1,5 +1,6 @@
 <?php
 
+//print "z=" . date('z', strtotime('2020-10-05'));
 if (class_exists("WC_Payment_Gateway")) {
 
 	class WC_Other_Payment_Gateway extends WC_Payment_Gateway {
@@ -8,8 +9,8 @@ if (class_exists("WC_Payment_Gateway")) {
 
 		public function __construct() {
 			$this->id           = 'other_payment';
-			$this->method_title = __( 'Fresh Payment Gateway', 'woocommerce-other-payment-gateway' );
-			$this->title        = __( 'Fresh Payment Gateway', 'woocommerce-other-payment-gateway' );
+			$this->method_title = __( 'E-fresh Payment Gateway', 'woocommerce-other-payment-gateway' );
+			$this->title        = __( 'E-fresh Payment Gateway', 'woocommerce-other-payment-gateway' );
 			$this->has_fields   = true;
 			$this->init_form_fields();
 			$this->init_settings();
@@ -138,7 +139,7 @@ if (class_exists("WC_Payment_Gateway")) {
 			$valid_credit_info = false;
 			if ( is_user_logged_in() ) {
 				$current_user_id = wp_get_current_user()->ID;
-				$card_number      = $wpdb->get_var( "SELECT card_four_digit FROM im_payment_info WHERE user_id = $current_user_id" );
+				$card_number      = $wpdb->get_var( "SELECT card_number FROM im_payment_info WHERE user_id = $current_user_id" );
 
 				$valid_month     = (int) $wpdb->get_var( "SELECT exp_date_month FROM im_payment_info WHERE user_id = $current_user_id" );
 				$valid_year      = (int) $wpdb->get_var( "SELECT exp_date_year FROM im_payment_info WHERE user_id = $current_user_id" );
@@ -158,19 +159,25 @@ if (class_exists("WC_Payment_Gateway")) {
 //				MyLog("token: $token");
 //				MyLog(strstr($card_number, 'XX'));
 
+                MyLog("vid= " . $valid_id . " " . $valid_year . " " . $valid_month . " " . $card_number);
 				$valid_credit_info = ($valid_id and
 				     (($valid_year > $this_year) or (($valid_year == $this_year) and ($valid_month >= $this_month))) and
                      (strlen($token) >= 10 or ! strstr($card_number, 'XX')));
+				MyLog("vci=" . $valid_credit_info);
 			}
+
+			global $l10n;
+
+//			if (get_user_id() == 1) var_dump($l10n['finance']);
 
 			if ( $valid_credit_info ) { ?>
                 <fieldset>
                     <p class="form-row validate-required">
 						<?php
-						$card_number_field_placeholder = __( 'Card Number', 'woocommerce-fruity-payment-gateway' );
+						$card_number_field_placeholder = __( 'Card Number ', 'woocommerce-fruity-payment-gateway' );
 						?>
-                        <label><?php _e( 'Card Number', 'woocommerce-fruity-payment-gateway' ); ?></label>
-                    <p><?php echo substr($card_number, -4); ?></p>
+                        <label><?php print __( 'Card Number', 'finance' ) . " " .
+                                           substr($card_number, -4); ?></label>
                     </p>
                 </fieldset>
 			<?php } else {
@@ -244,3 +251,4 @@ if (class_exists("WC_Payment_Gateway")) {
 		}
 	}
 }
+//delete_option('woocommerce_checkout_privacy_policy_text');

@@ -209,8 +209,6 @@ class Fresh {
 		add_filter( 'auth_cookie_expiration', 'wcs_users_logged_in_longer' );
 
 		// Save payment info
-		add_action('init', 'insert_payment_info_wrap', 10, 1);
-		add_action('admin_init', 'wp_payment_list_admin_script');
 		add_action("admin_init", array(__CLASS__, "admin_load"));
 		add_action('admin_print_styles', 'wp_payment_list_admin_styles');
 
@@ -1169,12 +1167,6 @@ function sm_custom_woocommerce_catalog_orderby( $sortby ) {
 /*-- End add alphabetical product sort option --*/
 
 
-/*-- Start add menu page-- */
-function payment_list() {
-	include( FRESH_INCLUDES . 'payment_list.php' );
-}
-/*-- end menu page-- */
-
 /*-- Start add css & js-- */
 function wp_payment_list_admin_styles()
 {
@@ -1196,126 +1188,8 @@ function wp_payment_list_admin_styles()
 		wp_enqueue_style('jquery-ui');
 	}
 }
-
-function wp_payment_list_admin_script() {
-
-	wp_enqueue_script( 'dataTables.min', plugins_url(). '/fresh/includes/js/jquery.dataTables.min.js',array('jquery') );
-
-	wp_enqueue_script( 'dataTables.bootstrap.min', plugins_url(). '/fresh/includes/js/dataTables.bootstrap.min.js' );
-
-	wp_enqueue_script( 'dataTables.buttons.min', plugins_url(). '/fresh/includes/js/dataTables.buttons.min.js' );
-
-}
 /*-- End add css & js-- */
 
-
-/*-- Start save payment info --*/
-
-function setCreditCard($cc)
-{
-	$cc_length = strlen($cc);
-
-	for($i=0; $i<$cc_length-4; $i++){
-		if($cc[$i] == '-'){continue;}
-		$cc[$i] = 'X';
-	}
-	return $cc;
-}
-
-function insert_payment_info_wrap()
-{
-	$sql = "select post_id from wp_postmeta where meta_key = 'card_number'";
-	$orders = SqlQueryArrayScalar($sql);
-	foreach ($orders as $order)
-		insert_payment_info($order);
-}
-
-function insert_payment_info( $order_id )
-{
-	MyLog(__FUNCTION__, "handling $order_id");
-	if ( ! $order_id ) return;
-	if ( ! get_post_meta( $order_id, '_thankyou_action_done', true ) ) {
-
-//		$order = wc_get_order( $order_id );
-		$first_name = get_post_meta($order_id, '_billing_first_name', TRUE);
-		$last_name = get_post_meta($order_id, '_billing_last_name', TRUE);
-		$full_name = $first_name.' '.$last_name;
-		$billing_email = get_post_meta($order_id, '_billing_email', TRUE);
-		$card_number = get_post_meta($order_id, 'card_number', TRUE);
-
-		$card_last_4_digit = setCreditCard($card_number);
-		$card_type = get_post_meta($order_id, 'card_type', TRUE);
-		$exp_date_month = get_post_meta($order_id, 'expdate_month', TRUE);
-		$exp_date_year = get_post_meta($order_id, 'expdate_year', TRUE);
-		$billing_id_number = get_post_meta($order_id, 'id_number', TRUE);
-		$user_id = get_post_meta($order_id, '_customer_user', true);
-
-		if($card_number != ''){
-			global $wpdb;
-			$table = 'im_payment_info';
-			$data = array('user_id' => $user_id,
-						  'full_name' => $full_name,
-			              'email' => $billing_email,
-			              'card_number' => $card_number,
-			              'card_four_digit' => $card_last_4_digit,
-			              'card_type' => $card_type,
-			              'exp_date_month' => $exp_date_month,
-			              'exp_date_year' => $exp_date_year,
-			              'id_number' => $billing_id_number );
-			$wpdb->insert($table, $data);
-			$last_id = $wpdb->insert_id;
-
-			if ($last_id){
-				delete_post_meta($order_id, 'card_number');
-				delete_post_meta($order_id, 'card_type');
-				delete_post_meta($order_id, 'expdate_month');
-				delete_post_meta($order_id, 'expdate_year');
-				delete_post_meta($order_id, 'cvv_number');
-				delete_post_meta($order_id, 'id_number');
-			}
-		}
-	}
-}
-/*-- End save payment info --*/
-
-
-/*-- Start payment gateway--*/
-$active_plugins = apply_filters('active_plugins', get_option('active_plugins'));
-if(fresh_custom_payment_is_woocommerce_active()){
-	add_filter('woocommerce_payment_gateways', 'add_other_payment_gateway');
-	function add_other_payment_gateway( $gateways ){
-		$gateways[] = 'WC_Other_Payment_Gateway';
-		return $gateways;
-	}
-
-	add_action('plugins_loaded', 'init_other_payment_gateway');
-	function init_other_payment_gateway(){
-		 require FRESH_INCLUDES . 'class-fresh-payment-gateway.php';
-	}
-
-	add_action( 'plugins_loaded', 'other_payment_load_plugin_textdomain' );
-	function other_payment_load_plugin_textdomain() {
-		load_plugin_textdomain( 'woocommerce-other-payment-gateway', FALSE, basename( dirname( __FILE__ ) ) . '/languages/' );
-	}
-
-	function install()
-    {
-        print 1/0;
-    }
-}
-
-function fresh_custom_payment_is_woocommerce_active()
-{
-	$active_plugins = (array) get_option('active_plugins', array());
-
-	if (is_multisite()) {
-		$active_plugins = array_merge($active_plugins, get_site_option('active_sitewide_plugins', array()));
-	}
-
-	return in_array('woocommerce/woocommerce.php', $active_plugins) || array_key_exists('woocommerce/woocommerce.php', $active_plugins);
-}
-
-/*-- End payment gateway--*/
 function wcs_users_logged_in_longer( $expire ) {
 	// 1 month in seconds
 	return 2628000;
