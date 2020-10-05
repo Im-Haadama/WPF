@@ -2142,7 +2142,7 @@ class Focus_Tasks {
 		AddAction("gem_edit_projects", array($this, 'ShowProjectMembers'), 11, 3);
 		AddAction("gem_add_project_members", array($this, "AddProjectMember"), 11, 3);
 		AddAction("project_add_member", array(__CLASS__, 'ProjectAddMember'), 11, 3);
-        add_filter("data_save_new_default", array(__CLASS__, 'DataSaveNewDefault' ),11,1);
+        add_filter("data_save_new_projects", array(__CLASS__, 'DataSaveNewDefault' ),11,1);
 
 		// Tasklist
 		Core_Gem::AddTable( "tasklist" ); // add + edit
@@ -2165,10 +2165,8 @@ class Focus_Tasks {
     static function DataSaveNewDefault($row){
 	    if(!isset($row["manager"])){
             $row["manager"] = get_user_id();
-
         }
 	    return $row;
-
     }
 
 	static function team_remove_member() {
