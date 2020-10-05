@@ -1,5 +1,10 @@
 <?php
 
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+
 class Focus_Tasks {
 	private $post_file;
 	private $version;
@@ -83,8 +88,7 @@ class Focus_Tasks {
 	static function gui_select_worker( $id, $selected, $args ) {
 		$edit      = GetArg( $args, "edit", true );
 		if (! $edit){
-			$u = get_user_to_edit( $selected );
-			return $u->display_name;
+			return GetUserName($selected);
 		}
 
 		$worker    = new Org_Worker( get_user_id() );
@@ -101,8 +105,8 @@ class Focus_Tasks {
 		$ids = SqlQueryArrayScalar("select * from wp_users where 1");
 		$selected_info = array();
 		foreach ($ids as $user_id) {
-			$u = get_user_to_edit( $user_id );
-			$selected_info[] = array("user_id" => $user_id, "display_name" => $u->display_name);
+//			$u = get_user_to_edit( $user_id );
+			$selected_info[] = array("user_id" => $user_id, "display_name" => GetUserName($user_id));
 		}
 
 		$events               = GetArg( $args, "events", null );
@@ -255,7 +259,7 @@ class Focus_Tasks {
 				case "projects":
 					// Todo: if col is hidden, set default.
 					$args["links"]     = array( "ID" => AddToUrl( array( "operation" => "gem_edit_projects&id=%s" ) ) );
-                    $args["fields"]           = array( "project_name", "project_contact", "project_priority" );
+                    $args["fields"]           = array( "ID", "project_name", "project_contact", "project_priority" );
                     $args["mandatory_fields"] = array( "project_name" );
                     $args["values"] = array("manager" => get_user_id());
                     $args["header_fields"]    = array(
