@@ -255,8 +255,17 @@ class Focus_Tasks {
 				case "projects":
 					// Todo: if col is hidden, set default.
 					$args["links"]     = array( "ID" => AddToUrl( array( "operation" => "gem_edit_projects&id=%s" ) ) );
-                    $args["hide_cols"] = array("is_active" => 1);
-					$args["check_active"] = true;
+                    $args["fields"]           = array( "project_name", "project_contact", "project_priority" );
+                    $args["mandatory_fields"] = array( "project_name" );
+                    $args["values"] = array("manager" => get_user_id());
+                    $args["header_fields"]    = array(
+                        "project_name"     => "Project name",
+                        "project_contact"  => "Project contact (client)",
+                        "project_priority" => "Priority"
+
+                    );
+                    $args["hide_cols"] = array("is_active" => 1, "manager" => 1);
+                    $args["check_active"] = true;
 					break;
 			}
 
@@ -2129,7 +2138,7 @@ class Focus_Tasks {
 		AddAction("gem_edit_projects", array($this, 'ShowProjectMembers'), 11, 3);
 		AddAction("gem_add_project_members", array($this, "AddProjectMember"), 11, 3);
 		AddAction("project_add_member", array(__CLASS__, 'ProjectAddMember'), 11, 3);
-        add_filter("data_save_new_project", array(__CLASS__, 'DataSaveNewProject' ),11,3);
+        add_filter("data_save_new_default", array(__CLASS__, 'DataSaveNewDefault' ),11,1);
 
 		// Tasklist
 		Core_Gem::AddTable( "tasklist" ); // add + edit
@@ -2149,10 +2158,12 @@ class Focus_Tasks {
 		AddAction("team_add_member", array(__CLASS__, "team_add_member"));
 	}
 
-    static function DataSaveNewProject(){
-        $args = self::Args("projects");
-        $args["values"] = array( "manager" => get_user_id() );
-        return $args;
+    static function DataSaveNewDefault($row){
+	    if(!isset($row["manager"])){
+            $row["manager"] = get_user_id();
+
+        }
+	    return $row;
 
     }
 

@@ -324,7 +324,7 @@ class Core_Gem {
 		// $next_page = GetArg($args, "next_page", null);
 		if (! $post) die(__FUNCTION__ . " :" . $text . "must send post_file " . $table_name);
 
-		$next_page = apply_filters("gem_next_page_" . $table_name, '');
+            $next_page = apply_filters("gem_next_page_" . $table_name, '');
 //		print "np=$next_page<br/>";
 		if ($next_page){
 			$result .= '<script>

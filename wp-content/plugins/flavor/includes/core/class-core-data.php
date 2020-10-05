@@ -73,6 +73,7 @@ class Core_Data
 		$table_name = GetParam("table_name", true);
 		return self::SaveNew($table_name);
 	}
+
 	static function Inactive($table_name, $rows)
 	{
 		// TODO: adding meta key when needed(?)
@@ -107,8 +108,10 @@ class Core_Data
 	static function SaveNew($table_name)
 	{
 		$ignore_list = ["dummy", "operation", "table_name"];
-
-		return SqlInsert($table_name, $_GET, $ignore_list);
+		$row = apply_filters("data_save_new_$table_name", $_GET);
+		$row_id = SqlInsert($table_name, $row, $ignore_list);
+		self::Active($table_name,$row_id,true);
+        return $row_id;
 	}
 
 	static function data_update($table_name)
