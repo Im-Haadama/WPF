@@ -1,6 +1,5 @@
 <?php
 
-
 /**
  * Class Flavor
  */
@@ -140,6 +139,7 @@ class Flavor {
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
 		add_action('wp', 'unlogged_guest_posts_redirect');
 		add_action('data_save_new', array('Core_Data', 'data_save_new'));
+		add_action('admin_menu', array($this, 'admin_menu'));
 
 		GetSqlConn( ReconnectDb() );
 
@@ -154,6 +154,19 @@ class Flavor {
 		$i->AddTable("options", "option_id" );
 
 		AddAction( 'admin_enqueue_scripts', array($this, 'admin_scripts' ));
+		Flavor_Mission::init_hooks();
+	}
+
+	public function admin_menu()
+	{
+		$menu = new Core_Admin_Menu();
+
+		$menu->AddSubMenu('missions', 'edit_shop_orders',
+			array('page_title' => 'Missions',
+			      'menu_title' => 'Missions',
+			      'menu_slug' => 'missions',
+			      'function' => 'Flavor_Mission::missions'));
+
 	}
 
 	public static function add_settings_tab( $settings_tabs ) {
@@ -482,6 +495,7 @@ class Flavor {
 
 		// Init action.
 		do_action( 'flavor_init' );
+		add_action( 'admin_bar_menu', 'modify_admin_bar', 200 );
 	}
 
 	static public function display_name()
@@ -662,7 +676,6 @@ class Flavor {
 		$file = FLAVOR_INCLUDES_URL . 'core/gem.js';
 		wp_enqueue_script( 'gem', $file, null, $this->version, false );
 	}
-
 }
 
 function flavor_get_logger()
@@ -675,6 +688,25 @@ function unlogged_guest_posts_redirect()
 	if (Flavor::isManagementPage() && !is_user_logged_in()) {
 			auth_redirect();
 		}
+}
+function modify_admin_bar( $wp_admin_bar )
+{
+	$wp_admin_bar->add_node( [
+		'id' => 'missions',
+		'title' => __( 'Missions', 'משימות' ),
+		'href' => '/wp-admin/admin.php?page=missions',
+	] );
+
+
+//		$wp_admin_bar->add_node( [
+//			'id' => 'elementor-maintenance-edit',
+//			'parent' => 'missions',
+//			'title' => __( 'Edit Template', 'elementor' ),
+//			'href' => "a.php",
+//		] );
+//
+//	MyLog(__FUNCTION__);
+
 }
 
 ?>

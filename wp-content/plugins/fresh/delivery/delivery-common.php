@@ -29,29 +29,3 @@ function print_fresh_category() {
 	}
 	print rtrim( $list, ", " );
 }
-
-
-function print_task( $id ) {
-	$fields = array();
-	array_push( $fields, "משימות" );
-
-	$ref = gui_hyperlink( $id, "../tasklist/c-get-tasklist.php?id=" . $id );
-
-	array_push( $fields, $ref );
-
-	$T = new Tasklist( $id );
-
-	array_push( $fields, "" ); // client number
-	array_push( $fields, $T->getLocationName() ); // name
-	array_push( $fields, $T->getLocationAddress() ); // address
-	array_push( $fields, $T->getTaskDescription() ); // address 2
-	array_push( $fields, "" ); // phone
-	array_push( $fields, "" ); // payment
-	array_push( $fields, $T->getMissionId() ); // payment
-	array_push( $fields, ImMultiSite::LocalSiteID() );
-
-	$line = gui_row( $fields );
-
-	print $line;
-
-}

@@ -177,7 +177,7 @@ class Finance_Salary {
 			$args["worker"] = $user_id;
 
 			if ( $row[1] ) {
-				$output .= Core_Html::gui_header( 1, GetUserName( $user_id ) . " (" .
+				$output .= Core_Html::gui_header( 1, $user->getName() . " (" .
 				                                     Core_Html::GuiHyperlink( "$user_id", self::get_link("worker_data", $user_id )) . ")" );
 				$output .= "כתובת מייל של העובד/ת: " . $user->CustomerEmail() . "<br/>";
 
@@ -403,7 +403,7 @@ class Finance_Salary {
 			$result .= __( "No data for month" ) . " " . $m . '/' . $y . "<br/>";
 		} else {
 			$result .= $data;
-			$result .= Core_Html::GuiButton( "btn_delete",'מחק פעילות', array("action" => 'salary_del_items()') );
+//			$result .= Core_Html::GuiButton( "btn_delete",'מחק פעילות', array("action" => 'salary_del_items()') );
 		}
 		$result .= "<br/>" . Core_Html::GuiHyperlink( "Previous month",
 				AddToUrl( "month", date( 'Y-m', strtotime( $y . '-' . $m . '-1 -1 month' ) ) ) );

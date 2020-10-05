@@ -27,7 +27,12 @@ class Focus_Database extends Core_Database
 		$current = self::CheckInstalled("Focus", "tables");
 
 		if ($current == $version and ! $force) return true;
+        if ($current == '1.0' and $version = '1.1'){
+            SqlQuery("alter table im_projects add is_active bit");
+            return self::UpdateInstalled("Focus", "tables", $version);
+        }
 
+		SqlQuery("drop function client_displayname");
 		SqlQuery( "create function client_displayname (user_id int) returns text charset 'utf8'
 BEGIN
     declare _user_id int;
@@ -39,6 +44,7 @@ BEGIN
   END;
 
 " );
+		print "DONE";
 
 
 		SqlQuery( "CREATE FUNCTION task_status(task_id INT)
@@ -118,7 +124,7 @@ charset=utf8;
 );
 
 ");
-		if (! TableExists("projects"))
+		if (! TableExists("1"))
 			SqlQuery("create table im_projects
 (
 	ID int auto_increment
@@ -194,7 +200,7 @@ engine=InnoDB;
 		if ($current == $version and ! $force) return true;
 
 		SqlQuery("drop function preq_done");
-		SqlQuery("CREATE FUNCTION 	preq_done(_task_id int)
+		SqlQuery("CREATE FUNCTION preq_done(_task_id int)
 	 RETURNS varchar(200)
 BEGIN 
 	declare _preq varchar(200);
@@ -220,7 +226,6 @@ BEGIN
 	end while;
 	return 1;	   
 END;");
-
 
 		self::UpdateInstalled("Focus", "functions", $version);
 	}

@@ -43,7 +43,7 @@ class WPF_Organization {
 			'update_item' => __( 'Update Topic' ),
 			'add_new_item' => __( 'Add New Topic' ),
 			'new_item_name' => __( 'New Topic Name' ),
-			'menu_name' => __( 'Topics' ),
+			'menu_name' => __( 'Companies' ),
 		);
 
 		register_taxonomy('company_taxonomy',array('post'), array(

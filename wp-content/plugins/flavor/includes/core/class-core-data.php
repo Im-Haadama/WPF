@@ -73,6 +73,7 @@ class Core_Data
 		$table_name = GetParam("table_name", true);
 		return self::SaveNew($table_name);
 	}
+
 	static function Inactive($table_name, $rows)
 	{
 		// TODO: adding meta key when needed(?)
@@ -107,8 +108,10 @@ class Core_Data
 	static function SaveNew($table_name)
 	{
 		$ignore_list = ["dummy", "operation", "table_name"];
-
-		return SqlInsert($table_name, $_GET, $ignore_list);
+		$row = apply_filters("data_save_new_$table_name", $_GET);
+		$row_id = SqlInsert($table_name, $row, $ignore_list);
+		self::Active($table_name,$row_id,true);
+        return $row_id;
 	}
 
 	static function data_update($table_name)
@@ -370,7 +373,7 @@ class Core_Data
 		$table_name = GetArg($args, "table_name", null);
 
 		$prepare_plug = GetArg($args, "prepare_plug", null);
-		if (is_callable($prepare_plug)) $row = call_user_func($prepare_plug, $row);
+		if (is_callable($prepare_plug)) $row = call_user_func($prepare_plug, $row, $args);
 
 		$row_data = array();
 
@@ -452,6 +455,9 @@ class Core_Data
 //						$value = gui_input_by_type($input_name, $type, $args, $value);
 						if (isset($args["sql_fields"])) {
 							$type = SqlField($args["sql_fields"], $key);
+			// Not tested:
+			//							if (isset($args['styles']) and is_array($args['styles']))
+			//								$args['style'] = (isset($args['styles'][$key]) ? $args['styles'][$key] : null);
 							$value = Core_Html::gui_input_by_type($input_name, $type, $args, $value);
 						}
 					} else {

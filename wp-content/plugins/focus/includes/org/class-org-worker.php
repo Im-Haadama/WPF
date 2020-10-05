@@ -238,17 +238,20 @@ class Org_Worker extends Core_users
 //		return $result;
 //	}
 
-	function myWorkQuery($status) // 1 - ready, 0 - not ready, 2 - both, 3- not finished
+	function myWorkQuery($status, $include_teams = false) // 1 - ready, 0 - not ready, 2 - both, 3- not finished
 	{
 		$teams         = self::AllTeams();
+
 //		if ($status 3) $query .= " and (status < 2) ";
 		switch ($status) {
 			case 0: // Not active.
-				$query = " (owner = " . $this->id . ( $teams ? " or team in (" . CommaImplode( $teams ) . ")" : "" ) . ")";
+				$teams_q = ($include_teams ? ( $teams ? " or team in (" . CommaImplode( $teams ) . ")" : "" ) : "");
+				$query = " (owner = " . $this->id . $teams_q . ")";
 				$query .= " and !(" . Focus_Tasks::ActiveQuery() . ") and status < 2";
 				break;
 			case 1: // Active
-				$query = " (owner = " . $this->id . ( $teams ? " or team in (" . CommaImplode( $teams ) . ")" : "" ) . ")";
+				$teams_q = ($include_teams ? ( $teams ? " or (( owner is null or " . $this->id . " = owner) and team in (" . CommaImplode( $teams ) . "))" : "" ) : '');
+				$query = " (owner = " . $this->id . $teams_q . ")";
 				$query .= " and " . Focus_Tasks::ActiveQuery() . " and status < 2";
 				break;
 			case 2: // Done;

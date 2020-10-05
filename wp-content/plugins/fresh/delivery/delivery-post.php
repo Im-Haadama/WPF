@@ -98,4 +98,3 @@ function clear_legacy() {
 	$sql    = "UPDATE im_delivery_legacy SET status = 2 WHERE status = 1";
 	$result = SqlQuery( $sql );
 }
-

@@ -600,5 +600,14 @@ msgstr "יתרה לתשלםו"
 msgid "No pending orders"
 msgstr "כל ההזמנות סופקו"
 
-msgid "POPO"
-msgstr "פהפה"
+msgid "Next deliveries"
+msgstr "המשלוחים הבאים"
+
+msgid "Cities"
+msgstr "ישובים"
+
+msgid "Minimum order"
+msgstr "הזמנת מינימום"
+
+msgid "Shipping price"
+msgstr "מחיר משלוח"

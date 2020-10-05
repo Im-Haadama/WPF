@@ -13,7 +13,6 @@ define ('CELL_START', "
 define ('CELL_END', "
 </td>");
 
-
 class Core_Html {
 	/**
 	 * Create html <label>
@@ -867,7 +866,7 @@ class Core_Html {
 	 * @return string
 	 * @throws Exception
 	 */
-	static function gui_table_args( $input_rows, $id = null, $args = null )
+	static function gui_table_args( $input_rows, $id = null, &$args = null )
 	{
 		$width       = GetArg( $args, "width", null );
 		$bordercolor = GetArg( $args, "bordercolor", null );
@@ -918,7 +917,10 @@ class Core_Html {
 			} else {
 				$rows[ $key ] = Core_Data::PrepareRow( $input_row, $args, isset($args["duplicate_of"]) ? 0 : $key );
 				// If prepare return null - remove it from table.
-				if (! $rows[$key]) unset($rows[$key]);
+				if (! $rows[$key]) {
+					unset( $rows[ $key ] );
+					$args['count'] --;
+				}
 			}
 		}
 
@@ -1508,6 +1510,7 @@ class Core_Html {
 	 * @return string|null
 	 */
 	static function gui_input_by_type( $input_name, $type = null, $args = null, $data = null ) {
+		if (strstr($data, "<input")) return $data;
 		$events = GetArg( $args, "events", null );
 //		print "name=$input_name type=$type<br/>";
 		switch ( substr( $type, 0, 3 ) ) {
@@ -2008,8 +2011,11 @@ class Core_Html {
 				$result .= self::GuiHyperlink( "<<", AddToUrl( "page_number", 1 ) ) . " ";
 				$result .= self::GuiHyperlink( "<", AddToUrl( "page_number", $page_number - 1 ) ) . " ";
 			}
-			for ($i = max(1, $page_number - 3); $i <= min ($total_page_number, $page_number + 3); $i++)
-				$result .= self::GuiHyperlink($i, AddToUrl("page_number", $i)) . " ";
+			for ($i = max(1, $page_number - 3); $i <= min ($total_page_number, $page_number + 3); $i++) {
+				$text = $i;
+				if ($i == $page_number) $text = "<b>$i</b>";
+				$result .= self::GuiHyperlink( $text, AddToUrl( "page_number", $i ) ) . " ";
+			}
 
 			if ($page_number < $total_page_number) {
 				$result .= self::GuiHyperlink( ">", AddToUrl( "page_number", $page_number + 1 ) ) . " ";

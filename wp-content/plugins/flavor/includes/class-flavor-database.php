@@ -5,23 +5,65 @@ class Flavor_Database extends Core_Database {
 	function install( $version, $force = false ) {
 		global $conn;
 
-		return;
 		if (! $conn) ReconnectDb();
 		// Create im_info table if missing.
 //		self::CreateInfo();
 
-//		self::CreateFunctions($version, $force);
+		self::CreateFunctions($version, $force);
 		self::CreateTables( $version, $force );
 //		self::CreateViews($version, $force);
 	}
 
+	static function CreateFunctions($version, $force)
+	{
+		$current   = self::CheckInstalled( "Flavor", "functions" );
+		if ( $current == $version and ! $force ) return true;
+
+			SqlQuery("create function FIRST_DAY_OF_WEEK(day date) returns date
+BEGIN
+    RETURN SUBDATE(day, WEEKDAY(day) + 1);
+END;
+");
+
+		SqlQuery("create function supplier_last_pricelist_date(_supplier_id int) returns date
+		BEGIN
+		declare _date date;
+		SELECT info_data into _date
+		FROM im_info WHERE info_key = concat('import_supplier_', _supplier_id);
+		END");
+
+		self::UpdateInstalled( "Flavor", "functions", $version );
+
+	}
 	static function CreateTables( $version, $force ) {
 		$current   = self::CheckInstalled( "Flavor", "tables" );
 		$db_prefix = GetTablePrefix();
 
+		if (! TableExists("missions"))
+		{
+			SqlQuery("create table ${db_prefix}missions
+(
+	id int auto_increment
+		primary key,
+	date date null,
+	start_h time(6) null,
+	end_h time(6) null,
+	zones_times longtext null,
+	name varchar(200) null,
+	start_address varchar(50) null,
+	end_address varchar(50) null,
+	mission_type int(11) null,	
+	path varchar(4000),
+	accepting bit default b'1' null
+)
+charset=utf8;
+");
+		}
+
 		if ( $current == $version and ! $force ) {
 			return true;
 		}
+
 
 		SqlQuery( "create table ${db_prefix}log
 (

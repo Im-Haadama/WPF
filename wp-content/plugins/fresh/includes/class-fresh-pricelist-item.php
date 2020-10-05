@@ -54,7 +54,13 @@ class Fresh_Pricelist_Item {
 
 	public function getPreviousPrice()
 	{
-		return $this->getPrice();
+		$previous_date = SqlQuerySingleScalar("select date from im_supplier_price_list 
+			where supplier_id = $this->supplier_id and date < '" . $this->date . "' order by date desc limit 1");
+
+		return SqlQuerySingleScalar("select price from im_supplier_price_list
+			where supplier_id = $this->supplier_id 
+			  and date = '$previous_date' 
+			  and product_name = '" . EscapeString($this->product_name) ."'");
 	}
 
 
@@ -159,10 +165,11 @@ class Fresh_Pricelist_Item {
 		$post_file = Fresh::getPost();
 		$link_data = $catalog->GetProdID( $this->id);
 		array_push($row, Core_Html::GuiButton("del_" . $this->id, "X", "pricelist_delete('$post_file', $this->id)"));
+		$price = $row['price'];
+		$args['style'] = 'background-color: ' . self::get_prod_color();
+		$row['price'] = Core_Html::GuiInput("price_" . $row['id'], $price, $args);
+
 		if ( $link_data ) {
-			$price = $row['price'];
-			$date = $row['date'];
-			$previous_date = SqlQuerySingleScalar("select date from im_supplier_price_list where supplier_id = $supplier_id and date < '" . $date . "' order by date desc limit 1");
 			if ($create_info) return null; // Show just new products (not mapped).
 
 			$linked_prod_id = $link_data[0];
@@ -177,7 +184,7 @@ class Fresh_Pricelist_Item {
 			array_push($row, Core_Html::GuiCheckbox("pub_" . $linked_prod_id, $p->isPublished(), array("events" => "onchange=\"product_publish('" . Fresh::getPost() . "', $linked_prod_id)\"")));
 			array_push( $row, $calculated_price);
 			$style = null;
-			if ($p->getPrice() < $price) $style = "background-color: #EC7063";
+			if ($p->getPrice() and ($p->getPrice() < $price)) $style = "background-color: #EC7063";
 			array_push( $row, Core_Html::GuiInput("prc_$linked_prod_id", $p->getPrice(),
 				array("events"=>array("onchange=\"product_change_regularprice('" . Fresh::getPost() . "', " . $this->id . ", $linked_prod_id)\"", 'onkeypress="moveNext(this)"'),
 				      "size"=>5,

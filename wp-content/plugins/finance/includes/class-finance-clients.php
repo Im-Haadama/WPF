@@ -181,6 +181,7 @@ class Finance_Clients
 		$u         = new Fresh_Client( $customer_id );
 		$invoice_client_id = $u->getInvoiceUserId(true);
 
+		$args = array( "class" => "widefat" );
 		$user_info = Core_Html::gui_table_args( array(
 			array( "name", $u->getName() ),
 			array( "דואל", $u->get_customer_email() ),
@@ -189,7 +190,7 @@ class Finance_Clients
 			array( "אמצעי תשלום",
 				Finance_Payment_Methods::gui_select_payment( "payment", "onchange=\"save_payment_method('".Finance::getPostFile()."', $customer_id)\"", $u->get_payment_method() )
 			)
-		), "customer_details", array( "class" => "widefat" ) );
+		), "customer_details", $args );
 		$style     = "table.payment_table { border-collapse: collapse; } " .
 		             " table.payment_table, td.change, th.change { border: 1px solid black; } ";
 		$args      = array( "style" => $style, "class" => "payment_table" );
@@ -207,7 +208,7 @@ class Finance_Clients
 				array( "המחאה", Core_Html::gui_input( "check", "", array( 'onkeyup="update_sum()"' ) ) ),
 				array( "עודף", " <div id=\"change\"></div>" )
 			), "payment_table",
-				array( "class" => "widefat" ) );
+				$args );
 		} else {
 			$new_tran = Core_Html::GuiHeader( 1, "לא ניתן להתחבר ל Invoice4u. בדוק את ההגדרות ואת המנוי. יוזר $" );
 		}

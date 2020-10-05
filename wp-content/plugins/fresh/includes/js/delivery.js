@@ -101,20 +101,10 @@ function calcDelivery() {
         total += line_total;
     }
 
-    var employee_discount = false;
-    <!--	    --><?php
-//	    $customer_id = $O->getCustomerId();
-//	    $wp_user = get_user_by( 'id', $customer_id );
-//	    $roles = $wp_user->roles;
-//	    if ( $roles and customer_type( $customer_id ) == 0 // Not owner or siton
-//	         and count( array_intersect( array( "staff" ), $roles ) )
-//	    ) {
-//		    print "employee_discount = true;";
-//	    }
-//	    ?>
+    let employee_discount = false;
     // Show discount line or hide
-    var line = table.rows.length - 4;
-    var discount = 0;
+    let line = table.rows.length - 5;
+    let discount = 0;
     if (employee_discount) {
         var discount_gross = Math.round(total, 0); /// todo: get delivery_fee
         discount = -Math.round(discount_gross * 10) / 100;
@@ -141,6 +131,8 @@ function calcDelivery() {
 //    table.rows[table.rows.length - 4].cells[line_total_id].firstChild.nodeValue = Math.round((round_total-total) *100)/100;
     // Due VAT
     document.getElementById("del_due").innerHTML = due_vat;
+    // Vat 0
+    document.getElementById("del_va0").innerHTML = Math.round(100 *(total-due_vat)) / 100 ;
     // VAT
     document.getElementById("del_vat").innerHTML = Math.round(total_vat * 100) / 100;
     // Total

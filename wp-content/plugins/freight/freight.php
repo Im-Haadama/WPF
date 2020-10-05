@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Plugin Name: Freight
  * Plugin URI: https://aglamaz.com
@@ -28,7 +27,6 @@ if ( ! is_plugin_active( 'flavor/flavor.php' ) /* and current_user_can( 'activat
 	deactivate_plugins(__FILE__);
 	return;
 }
-
 
 // Include the main WooCommerce class.
 if ( ! class_exists( 'Freight' ) ) {

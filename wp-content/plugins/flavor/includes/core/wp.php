@@ -82,6 +82,7 @@ function greeting( $args = null, $force_login = false )
 {
 	$extra_text = GetArg($args, "greeting_extra_text", null);
 	$viewing_as = GetArg($args, "view_as", get_user_id());
+	//$customer_name = GetArg($args, "view_as", get_customer_name($user_id));
 
 //	global $no_wp;
 	$data = "";
@@ -95,7 +96,12 @@ function greeting( $args = null, $force_login = false )
 		die (1);
 	}
 
-	$now = strtotime("now");
+	if (date_i18n("H") < 12)
+		$day_part = __("Good morning");
+	else
+		if (date_i18n("H") < 18)
+			$day_part = __("Good afternoon");
+		else $day_part = __("Good evening");
 
 //	if ($now < strtotime("12pm"))
 //		$data .= im_translate("Good morning");
@@ -107,11 +113,15 @@ function greeting( $args = null, $force_login = false )
 	$user = get_user_by( "id", $user_id );
 	if ( $user ) $user_display = $user->user_firstname . " " . $user->user_lastname;
 
-	$data .= get_avatar( get_user_id(), 40 ) . " " . get_customer_name($user_id) . Core_Html::Br() . GuiHyperlink("logout", wp_logout_url(get_permalink()));
-	if ($viewing_as != $user_id) $data .= "( " . ImTranslate("viewing as") . get_customer_name($viewing_as) . ")";
+	$data .= get_avatar( get_user_id(), 40 ) . " " . __("Hello") . " <b>".get_user_displayname($user_id) . "</b> $day_part ";
 
-	$data .=  Date("G:i", $now );
+	//. GuiHyperlink("logout", wp_logout_url(get_permalink()));
+	//get_customer_name($user_id)
+	//if ($viewing_as != $user_id) $data .= "( " . ImTranslate("viewing as") . get_customer_name($viewing_as) . ")";
 
+    //show the time
+    // date_default_timezone_set('Asia/Jerusalem'); The time zone should be set generally in wordpress. See wordpress settings.
+	$data .= date_i18n("H:i" ) . Core_Html::Br();
 	// Would go to dropdown.
 	// $data .= Core_Html::GuiHyperlink("logout", get_param(1) . "?operation=logout&back=" . encodeURIComponent(get_url()));
 
@@ -231,14 +241,9 @@ function update_wp_option($option_id, $array_or_string)
 
 
 function GetUserName( $id ) {
-//    var_dump(get_user_meta($id, 'first_name'));
-	$result = (get_user_meta( $id, 'first_name' )[0] . " " . get_user_meta( $id, 'last_name' )[0]);
-	if (strlen ($result) > 1) return $result;
-	if (is_array($id)){
-		var_dump($id);
-		print __FUNCTION__ . ': bad id';
-		return;
-	}
+	$u = get_user_to_edit( $id );
+	if ($u)
+		return $u->display_name;
 	return "user $id";
 }
 	/**
@@ -246,6 +251,5 @@ function GetUserName( $id ) {
 	 *
 	 * @return int
 	 */
-
 
 }

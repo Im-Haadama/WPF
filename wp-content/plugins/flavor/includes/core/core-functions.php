@@ -123,13 +123,15 @@ require_once (ABSPATH . '/wp-includes/pluggable.php');
 			return $args[ $key ];
 		}
 
-	/**
-	 * @param $key
-	 * @param bool $mandatory
-	 * @param null $default
-	 *
-	 * @return mixed|null
-	 */
+		/**
+		 * @param $key - the value to fetch from $_Get.
+		 * @param bool $mandatory - is the parameter is mandatory. If it is and no value set - the function will cause die after outputing error message
+		 *      that includes to callear function and the parameter name.
+		 * @param null $default - if not mandatory and not set - value to return
+		 * @param bool $uset - wheather to clear this param from $_Get.
+		 *
+		 * @return mixed|null
+		 */
 	function GetParam( $key, $mandatory = false, $default = null, $uset = false ) {
 		if ( isset( $_GET[ $key ] ) ) {
 			$v = $_GET[$key];
@@ -242,13 +244,10 @@ require_once (ABSPATH . '/wp-includes/pluggable.php');
 		if ( ! $result ) {
 			$sql = "insert into im_info (info_key, info_data) VALUE ('$key', '$data')";
 //              print $sql;
-			SqlQuery( $sql );
-
-			return;
+			return SqlQuery( $sql );
 		}
 		$sql = "UPDATE im_info SET info_data = '" . $data . "' WHERE info_key = '" . $key . "'";
-//              print $sql;
-		SqlQuery( $sql );
+		return SqlQuery( $sql );
 	}
 	}
 
@@ -608,20 +607,19 @@ function show_errors()
 	error_reporting(E_ALL);
 }
 
-function send_mail( $subject, $to, $message ) {
-	global $mail_sender;
-	global $support_email;
+function send_mail( $from, $to, $subject, $message ) {
+		MyLog("sub=" .$subject, "to=" .$to, 'mail.log');
 
 	$headers   = array();
 	$headers[] = "MIME-Version: 1.0";
 	$headers[] = "Content-type: text/html; charset=UTF-8";
 	$headers[] .= 'To: ' . $to;
-	$headers[] = "From: " . $mail_sender;
-	$headers[] = "Reply-To: " . $support_email;
+	$headers[] = "From: " . $from;
+	$headers[] = "Reply-To: " . $from;
 	// $headers[] = "Subject: {$subject}";
 	$headers[] = "X-Mailer: PHP/" . phpversion();
 
-	print "sending from " . $support_email . " to: " . $to . '<br/>';
+	MyLog("sending",  "from " . $support_email . " to: " . $to, 'mail.log');
 
 	$base64_subject = '=?UTF-8?B?'.base64_encode($subject).'?=';
 
@@ -668,4 +666,52 @@ function get_caller($my_class)
 		if (isset($debug[$i]['class']) and ($debug[$i]['class'] != $my_class)) return $debug[$i];
 	}
 	return null;
+}
+
+function israelpost_get_address_postcode( $city, $street, $house ) {
+	$url = "http://www.israelpost.co.il/zip_data.nsf/SearchZip?OpenAgent&Location=" . urlencode( $city ) . "&street=" . $street .
+	       "&house=" . $house;
+
+	$ch = curl_init();
+
+	$timeout = 5;
+	curl_setopt( $ch, CURLOPT_URL, $url );
+	curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 );
+	curl_setopt( $ch, CURLOPT_CONNECTTIMEOUT, $timeout );
+	$data = curl_exec( $ch );
+	curl_close( $ch );
+
+	$value = array();
+	if ( preg_match( "/RES[0-9]*/", $data, $value ) ) {
+		$result = substr( $value[0], 4 );
+
+		if ( $result == "11" or $result == "12" or $result == "13" ) {
+			return - 1;
+		}
+
+		return $result;
+	}
+
+	return - 2;
+}
+
+function israelpost_get_city_postcode( $city )
+{
+	$city=trim($city);
+	$url = "http://www.israelpost.co.il/zip_data.nsf/SearchZip?OpenAgent&Location=" . urlencode( $city ) . "&POB=1";
+
+	$data = file_get_contents( $url );
+
+	$value = array();
+	if ( preg_match( "/RES[0-9]*/", $data, $value ) ) {
+		$result = substr( $value[0], 4 );
+
+		if ( $result == "11" or $result == "12" or $result == "13" ) {
+			return - 1;
+		}
+
+		return $result;
+	}
+
+	return - 2;
 }

@@ -1,6 +1,5 @@
 <?php
 
-
 class Core_Gem {
 	private $object_types;
 	protected static $_instance = null;
@@ -15,6 +14,7 @@ class Core_Gem {
 		self::$_instance = $this;
 		AddAction("gem_show", array($this, "show_wrap"), 10, 3);
 		AddAction("gem_v_show", array(__CLASS__, "v_show_wrap"));
+		AddAction("gem_v_csv", array(__CLASS__, "gem_v_csv"));
 
 		// Import
 		// prepare
@@ -240,6 +240,23 @@ class Core_Gem {
 		return $result;
 	}
 
+	static function gem_v_csv()
+	{
+		$v_table = GetParam("table", true);
+
+		$args = self::getInstance()->object_types[$v_table];
+		$v_key= GetArg($args, "v_key", "id");
+		$args["id"] = GetParam($v_key, true);
+		// Next line doesn't make sense. If returns check https://fruity.co.il/wp-admin/admin.php?page=suppliers&operation=gem_v_show&table=pricelist&id=100007
+//		if (isset(self::getInstance()->object_types[$v_table]["post_file"]))
+//			$args["post_file"] = self::getInstance()->object_types[$v_table]["import_page"] . "?id=" . $args['id'] . "&table=" . $v_table;
+
+		$instance = self::getInstance();
+
+		print $instance->GemVirtualTable($v_table, $args, true);
+		die (0);
+	}
+
 	static function v_show_wrap($result = null)
 	{
 		if (! $result)
@@ -263,6 +280,8 @@ class Core_Gem {
 				$result .= '<div><iframe src="' . $show_import . '"></iframe></div>';
 			$result .= self::ShowVImport( "$v_table", $args );
 		}
+
+		$result .= Core_Html::GuiHyperlink("download as CSV", Flavor::getPost() . "?operation=gem_v_csv&table=" . $v_table . '&'. $v_key . '=' . $args["id"]) ;
 
 		return $result;
 	}
@@ -302,12 +321,15 @@ class Core_Gem {
 		$result .= Core_Html::gui_header(1, $text);
 		$result .= Core_Html::NewRow($table_name, $args);
 		$post = GetArg($args, "post_file", null);
-		$next_page = GetArg($args, "next_page", null);
+		// $next_page = GetArg($args, "next_page", null);
 		if (! $post) die(__FUNCTION__ . " :" . $text . "must send post_file " . $table_name);
+
+            $next_page = apply_filters("gem_next_page_" . $table_name, '');
+//		print "np=$next_page<br/>";
 		if ($next_page){
 			$result .= '<script>
 		function next_page(xmlhttp) {
-		    if (xmlhttp.response.indexOf("failed") !== -1 ) {
+		    if (xmlhttp.response.indexOf("failed") === -1 ) {
 		        let new_id = xmlhttp.response.substr(5);
 		      window.location = "' . $next_page . '&new=" + new_id;  
 		    }  else alert(xmlhttp.response);
@@ -354,7 +376,7 @@ class Core_Gem {
 		}
 
 		if ($title)
-			$result .= Core_Html::gui_header(1, $title, true, true) . " " . ($row_id ? Core_Html::gui_label("id", $row_id) : __("New"));
+			$result .= Core_Html::gui_header(1, $title, true, true). " " . ($row_id ? Core_Html::gui_label("id", $row_id) : __("New"));
 
 		if ($row_id) $result .= " " . Core_Html::GuiHyperlink(__("Duplicate"), AddToUrl("operation", "gem_duplicate"));
 
@@ -401,7 +423,9 @@ class Core_Gem {
 	{
 		$result = "";
 
-		$title = GetArg($args, "title", null);
+		$only_active = GetArg($args, "only_active", 2);
+		$title = GetArg($args, "title", null) . " ";
+		if ( $only_active != 2) $title .= ($only_active ? __("Active") : __("All"));
 		$edit = GetArg($args, "edit", false);
 		$enable_import = GetArg($args, "enable_import", false);
 
@@ -480,6 +504,7 @@ class Core_Gem {
 		if (! isset($args["title"])) $title = "content of table " . $table_name;
 		$post_file = GetArg($args, "post_file", null);
 		$table_prefix = GetTablePrefix($table_name);
+		$only_active = GetArg($args, "only_active", 2);
 
 		if (! isset($args["events"])) $args["events"] = 'onchange="update_table_field(\'' . $post_file . '\', \'' . $table_name . '\', \'%d\', \'%s\', check_result)"';
 		$sql = GetArg($args, "sql", null);
@@ -492,7 +517,8 @@ class Core_Gem {
 			}
 			else $sql = "select * from ${table_prefix}$table_name";
 
-			$query = GetArg($args, "query", null);
+			$query = GetArg($args, "query", " 1 ");
+			if ($only_active == 1) $query .= " and is_active = 1";
 			if ($query) $sql .= " where $query";
 
 			$order = GetArg($args, "order", null);
@@ -504,10 +530,28 @@ class Core_Gem {
 		$new_row = GetArg($args, "new_row", null);
 		if ($new_row) $rows_data["new_row"] = $new_row;
 
-		return Core_Gem::GemArray($rows_data, $args, $table_name);
+		if (isset($args["csv"])) {
+			$result = "";
+			foreach ($rows_data as $row) {
+				foreach ( $row as $cell ) {
+					$result .= "$cell, ";
+				}
+				$result .= PHP_EOL;
+			}
+			return $result;
+		}
+
+		$result = Core_Gem::GemArray($rows_data, $args, $table_name);
+
+		if ($result != 2) $result .=
+		       ($only_active ? Core_Html::GuiHyperlink("All", AddToUrl("only_active",'0' ) ):
+			       Core_Html::GuiHyperlink("Active", AddToUrl("only_active",'1' )));
+
+		       return $result;
+
 	}
 
-	function GemVirtualTable($table_name, $args)
+	function GemVirtualTable($table_name, $args, $csv = false)
 	{
 		MyLog(__FUNCTION__, " $table_name");
 		if (! $table_name) die("no table given:" . __FUNCTION__);
@@ -530,6 +574,21 @@ class Core_Gem {
 		$args["add_operation"] = "gem_v_add_$table_name";
 		$args = array_merge($this->object_types["$table_name"], $args);
 
+		if ($csv) {
+			$args["csv"] = true;
+			unset ($_GET["operation"]);
+			$file = self::GemTable($database_table, $args);
+			$date = date('Y-m-d');
+			$file_name = "list_${date}.csv";
+
+			header("Content-Disposition: attachment; filename=\"" . $file_name . "\"");
+			header("Content-Type: application/octet-stream");
+			header("Content-Length: " . strlen($file));
+			header("Connection: close");
+
+			print $file;
+			die (1);
+		}
 		return self::GemTable($database_table, $args);
 	}
 

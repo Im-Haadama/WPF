@@ -12,7 +12,6 @@ require_once( FOCUS_INCLUDES . 'core/data/data.php' );
 require_once( FOCUS_INCLUDES . 'Tasklist.php' );
 require_once( FOCUS_INCLUDES . 'core/gui/gem.php' );
 require_once( FOCUS_INCLUDES . 'org/people/people.php' );
-//require_once( FOCUS_INCLUDES . 'gui.php' );
 // incude
 
 //require_once (ROOT_DIR . '/im-config.php');
