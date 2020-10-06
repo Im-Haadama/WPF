@@ -1,4 +1,3 @@
-// let post_file = '/wp-content/plugins/focus/post.php';
 // Save entity from single row view - chk_ new fields.
 function data_save_entity(post_operation, table_name, id)
 {

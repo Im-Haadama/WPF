@@ -18,13 +18,9 @@ class Core_Db_MultiSite extends Core_MultiSite {
 
 	public function AddTable($table, $id_field = "id")
 	{
-//		print __FUNCTION__ . ": $table $id_field<br/>";
 		if (in_array($table, $this->allowed_tables)) return;
 		AddAction("sync_data_$table", array($this, 'sync_data_wrap'));
-//		array_push($this->allowed_tables, $table);
 		$this->allowed_tables[$table] = $id_field;
-//		print $this->allowed_tables[$table] . "<br/>";
-//		var_dump($this->allowed_tables);
 	}
 
 	/**
@@ -233,7 +229,6 @@ class Core_Db_MultiSite extends Core_MultiSite {
 	 */
 	static function UpdateTable( $html, $table, $table_key, $query = null, $ignore_fields = null, $verbose = false )
 	{
-//		print __FUNCTION__;
 		require_once( ABSPATH . 'vendor/simple_html_dom.php' );
 
 		$dom = \Dom\str_get_html( $html );

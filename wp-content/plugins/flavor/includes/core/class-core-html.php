@@ -1590,7 +1590,7 @@ class Core_Html {
 		$options = GetArg( $args, "menu_options", null );
 		if ( ! $options ) {
 			return null;
-		} // die ("no options for " . __FUNCTION__ . " " . $id);
+		}
 		foreach ( $options as $option ) {
 			$link   = $option['link'];
 			$text   = $option['text'];

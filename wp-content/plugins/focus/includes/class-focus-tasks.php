@@ -551,13 +551,13 @@ class Focus_Tasks {
 	}
 
 	static function show_teams() {
-		$action_url = "/wp-content/plugins/focus/post.php";
+		$action_url = Focus::getPost();
 		$result     = "";
 		if ( ! im_user_can( "edit_teams" ) ) {
 			$result .= "No permissions";
 		}
 		$args              = [];
-		$args["post_file"] = "/wp-content/plugins/focus/post.php";
+		$args["post_file"] = Focus::getPost();
 		$args["selectors"] = array( "manager" => "Focus_Tasks::gui_select_worker" );
 		$args["links"]     = array(
 			"id" => AddToUrl( array(
@@ -902,7 +902,7 @@ class Focus_Tasks {
 
 		if (! ($user_id > 0)) return "'$user_id' is not valid user";
 
-		$result = +greeting(null, false);
+		$result = greeting(null, false);
 		$worker = new Org_Worker( $user_id );
 		$tabs   = array();
 		$args = self::Args();
@@ -1200,7 +1200,7 @@ class Focus_Tasks {
 
 		$table_name = "tasklist";
 
-		$action_url = "/wp-content/plugins/focus/post.php";
+		$action_url = Focus::getPost(); // "/wp-content/plugins/focus/post.php";
 
 		if ( ! isset( $args["fields"] ) ) {
 			$args["fields"] = array( "id", "task_description", "task_title", "project_id", "date", "priority", "task_template" );
@@ -2346,7 +2346,7 @@ class Focus_Tasks {
 		$args["mandatory_fields"] = array( "project_id", "priority", "team", "task_description" );
 
 //		$args["fields"]     = array( "task_description", "project_id", "priority", "date", "preq", "creator", "team" );
-		$args['post_file']  = "/wp-content/plugins/focus/post.php";
+		$args['post_file']  = Focus::getPost(); // "/wp-content/plugins/focus/post.php";
 		$args['form_table'] = 'tasklist';
 
 		// Todo: check last update time

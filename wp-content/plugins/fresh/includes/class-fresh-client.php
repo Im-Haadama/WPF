@@ -13,7 +13,6 @@ class Fresh_Client {
 	 * @param $user_id
 	 */
 	public function __construct( $user_id = 0 ) {
-//	    MyLog(__FUNCTION__ . $user_id);
 		if (! $user_id) {
 			if (! get_user_id())
 			$user_id = 0;

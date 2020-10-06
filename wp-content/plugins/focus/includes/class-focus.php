@@ -472,7 +472,7 @@ class Focus {
 
 	static function getPost()
 	{
-		return "/wp-content/plugins/focus/post.php";
+		return Flavor::getPost();
 	}
 
 	static function print_driver_tasks( $mission_id = 0 ) {
