@@ -38,7 +38,7 @@ class Finance_Salary {
 	 */
 	public static function instance() {
 		if ( is_null( self::$_instance ) ) {
-			self::$_instance = new self( "/wp-content/plugins/focus/post.php" ); // Todo: fix this
+			self::$_instance = new self( Focus::getPost() );
 		}
 
 		return self::$_instance;

@@ -233,7 +233,7 @@ class Finance_Bank
 
 	function handle_bank_operation($operation, $url = null)
 	{
-		print 1/0;
+		die(1); // To check if needed.
 		$table_prefix = GetTablePrefix();
 		$multi_site = Core_Db_MultiSite::getInstance();
 
@@ -244,7 +244,6 @@ class Finance_Bank
 		$ids = null;
 		$post_file = self::getPost();
 
-		// Todo: change to operation
 		if (GetParam("search", false, 0)){
 			$ids=data_search("bank");
 			Core_Html::gui_header(1, "Results");
@@ -306,7 +305,6 @@ class Finance_Bank
 				break;
 
 			case "mark_refund_bank":
-				// TODO: NOT CHECKED
 				$bank_id      = GetParam( "bank_id", true );
 				$supplier_id  = GetParam( "supplier_id", true );
 				$site_id      = GetParam( "site_id", true );
@@ -317,7 +315,6 @@ class Finance_Bank
 				$date = $b->getDate();
 
 				// 2) mark the invoices to transaction.
-			// Todo: change hook
 				$command = Finance::getPostFile() . "?operation=add_refund_bank&supplier_id=" . $supplier_id .
 				           "&bank_id=" . $bank_id . "&date=" . $date .
 				           "&amount=" . $bank;
@@ -338,7 +335,6 @@ class Finance_Bank
 				break;
 
 			case "mark_return_bank":
-				// Todo: Rewire
 				require_once( FRESH_INCLUDES . '/org/business/BankTransaction.php' );
 				require_once( FRESH_INCLUDES . '/fresh-public/account/gui.php' );
 				print header_text( false, true, true,
@@ -756,8 +752,8 @@ class Finance_Bank
 
 		if (! $user->hasRole("cfo")) {
 			$args["hide_cols"] = array("balance" => 1);
-			// TOdo: get from transaction_types
 
+			// Todo: get from transaction_types
 			$args["query"] = "1 ";
 //			foreach (array("פרעון הלוואה", "מסלול מורחב", "הלואה") as $type)
 //				$args["query"] .= " and description not like " . quote_text('%' . $type . '%');
@@ -802,7 +798,6 @@ class Finance_Bank
 		MyLog(__FUNCTION__ . " $receipt");
 
 		if ( $receipt > 0 ) {
-			// TODO: to parse $id from $result;
 			$b = Finance_Bank_Transaction::createFromDB( $bank_id );
 			$b->Update( $user_id, $receipt, $site_id );
 			return $receipt;

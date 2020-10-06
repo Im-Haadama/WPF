@@ -24,7 +24,7 @@ Routes:
 - mission folder: change to new stucture.
 
 Fresh:
-- new: account - allow query and pages. Todo: change stucture of files.
+- new: account - allow query and pages.
 - new multi-get: one entry for site to site calls.
 
 Version 2.6.2:

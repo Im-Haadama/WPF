@@ -5,7 +5,6 @@
  * User: agla
  * Date: 25/02/19
  * Time: 15:34
- * Todo: for now - the code is for single company per installation
  */
 class Finance_Bank_Transaction {
 	private $id;

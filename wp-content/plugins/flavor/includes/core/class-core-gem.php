@@ -39,12 +39,9 @@ class Core_Gem {
 	{
 		$this->object_types[$table] = $args;
 
-//		MyLog(__FUNCTION__ . " $table");
-//		print "table=$table<br/>";
 		$db_table = null;
 		if (isset($args["database_table"]))	$db_table = $args["database_table"];
 
-//		MyLog("$table: db_table = $db_table");
 		AddAction("gem_v_add_" . $table, array($class, "v_add_wrapper"), 10, 3);
 		AddAction("gem_add_" . $db_table, array($class, "v_add_wrapper"), 10, 3);
 		AddAction("gem_v_edit_" . $table, array($class, "v_edit_wrapper"), 10, 3);
@@ -553,11 +550,9 @@ class Core_Gem {
 
 	function GemVirtualTable($table_name, $args, $csv = false)
 	{
-		MyLog(__FUNCTION__, " $table_name");
 		if (! $table_name) die("no table given:" . __FUNCTION__);
 
 		if (! isset($this->object_types[$table_name])) return __FUNCTION__ . ": coding error $table_name wasn't added";
-//		var_dump($this->object_types[$table_name]);
 		$database_table = $this->object_types[$table_name]['database_table'];
 
 		// $args["table_prefix"] = (isset($this->object_types[$table_name]['prefix']) ? $this->object_types[$table_name]['prefix'] : get_table_prefix());

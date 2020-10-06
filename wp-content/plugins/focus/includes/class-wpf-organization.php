@@ -22,7 +22,7 @@ class WPF_Organization {
 
 	public static function instance() {
 		if ( is_null( self::$_instance ) ) {
-			self::$_instance = new self( "/wp-content/plugins/focus/post.php" ); // Todo: fix this
+			self::$_instance = new self( Flavor::getPost() );
 		}
 
 		return self::$_instance;

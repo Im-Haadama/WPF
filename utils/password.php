@@ -1,5 +1,4 @@
 <?php
-// TODO: Check what letters are allowed
 print "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '";
 $symbols = array("qwertyuiopasdfghjklzxcvbnm",
 	"!@#$%^&*()1234567890",

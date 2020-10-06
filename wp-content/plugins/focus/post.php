@@ -1,4 +1,5 @@
 <?php
+die (1); // use flavor::getPost();
 
 if ( ! defined( "ABSPATH" ) ) {
 	define( 'ABSPATH', dirname(dirname(dirname( dirname( __FILE__ ) ) )) . '/');
