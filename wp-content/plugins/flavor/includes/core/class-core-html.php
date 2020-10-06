@@ -57,6 +57,7 @@ class Core_Html {
 			if ( $class = GetArg( $args_or_action, "class", null ) ) $result .= " class=\"$class\"";
 			if ( $events = GetArg( $args_or_action, "events", null ) ) $result .= " $events ";
 		}
+        //$result .= " title=\"hello\"";
 		if (is_string($args_or_action)) $result .= " onclick=\"$args_or_action\" ";
 			else if ($action = GetArg($args_or_action, "action", null)) $result .= " onclick=\"$action\" ";
 		$result .= ">$text";

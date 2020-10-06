@@ -261,14 +261,14 @@ class Focus_Tasks {
 					$args["links"]     = array( "ID" => AddToUrl( array( "operation" => "gem_edit_projects&id=%s" ) ) );
                     $args["fields"]           = array( "ID", "project_name", "project_contact", "project_priority" );
                     $args["mandatory_fields"] = array( "project_name" );
-                    $args["values"] = array("manager" => get_user_id());
+                    //$args["values"] = array("manager" => get_user_id());
                     $args["header_fields"]    = array(
                         "project_name"     => "Project name",
                         "project_contact"  => "Project contact (client)",
                         "project_priority" => "Priority"
 
                     );
-                    $args["hide_cols"] = array("is_active" => 1, "manager" => 1);
+                    //$args["hide_cols"] = array("is_active" => 1, "manager" => 1);
                     $args["check_active"] = true;
 					break;
 			}
@@ -919,6 +919,7 @@ class Focus_Tasks {
 //			                     btn_cancel.style.display='none';",
 //		                                                               "style" => "display: none;") );
 
+        if ($selected_tab != 'my_work') unset($args['page_number']);
 		$user_work = self::user_work( $args, "Active tasks assigned to me", false, $user_id );
 		if ($args['count'] > 1) {
 			array_push( $tabs, array( "my_work", "My tasks", ( $selected_tab == "my_work" ? $user_work : null ) ) );
