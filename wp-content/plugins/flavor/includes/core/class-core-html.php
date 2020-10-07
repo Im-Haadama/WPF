@@ -56,6 +56,7 @@ class Core_Html {
 			if ( $style = GetArg( $args_or_action, "style", null ) ) $result .= " style=\"$style\"";
 			if ( $class = GetArg( $args_or_action, "class", null ) ) $result .= " class=\"$class\"";
 			if ( $events = GetArg( $args_or_action, "events", null ) ) $result .= " $events ";
+            if ($text = GetArgs($args_or_action, 'tooltip', null)) $result .= gui_div($id, $result, false, $text);
 		}
         //$result .= " title=\"hello\"";
 		if (is_string($args_or_action)) $result .= " onclick=\"$args_or_action\" ";
