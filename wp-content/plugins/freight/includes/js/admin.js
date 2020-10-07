@@ -119,7 +119,15 @@ function mission_update_type(post_file, mission_id)
 function freight_add_delivery(post_file, mission_id)
 {
     let client = get_value_by_name("delivery_client");
+    if (! (client > 0)) {
+        alert("יש לבחור לקוח מהרשימה או להוסיף תחילה משתמש וורדפרס");
+        return;
+    }
     let fee = get_value_by_name("delivery_price");
+    if (! (fee > 0)) {
+        alert("יש לבחור את עלות המשלוח לפני מע\"מ");
+        return;
+    }
 
     let request = post_file + "?operation=freight_do_add_delivery&client=" + client + '&mission_id=' + mission_id + '&fee=' + fee;
 

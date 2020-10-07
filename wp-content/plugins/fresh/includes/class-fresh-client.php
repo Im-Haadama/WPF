@@ -231,13 +231,18 @@ class Fresh_Client {
 		$country  = $customer->get_shipping_country();
 		if (! $country) $country = 'IL';
 		$postcode = $customer->get_shipping_postcode();
-        if (! $postcode and ($city = $customer->get_shipping_city())) {
-	        $postcode = israelpost_get_city_postcode($city);
-//            print "city = $city<br/>";
-        } else {
-            print "no shipping zipcode or city";
+        if (! ($postcode > 0)) {
+            if ($city = $customer->get_shipping_city()) {
+	            $postcode = israelpost_get_city_postcode( $city );
+	            if (! $postcode) {
+	                print "No postcode in user. Can't get postcode for city $city";
+	                return false;
+                }
+            } else {
+	            print "no shipping zipcode or city";
+	            return false;
+            }
         }
-        print "pc=$postcode country=$country<br/>";
 
 		return WC_Shipping_Zones::get_zone_matching_package( array(
 			'destination' => array(
