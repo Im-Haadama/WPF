@@ -153,7 +153,7 @@ class Finance_Salary {
 	static function salary_report( $month, &$args, $user_id = 0 ) {
 		$edit_lines = GetArg( $args, "edit_lines", false );
 
-		$output = Core_Html::gui_header( 1, ImTranslate( "Salary data for month" ) . " " . $month );
+		$output = Core_Html::GuiHeader( 1, ImTranslate( "Salary data for month" ) . " " . $month );
 		$a      = explode( "-", $month );
 		$y      = $a[0];
 		$m      = $a[1];
@@ -177,7 +177,7 @@ class Finance_Salary {
 			$args["worker"] = $user_id;
 
 			if ( $row[1] ) {
-				$output .= Core_Html::gui_header( 1, $user->getName() . " (" .
+				$output .= Core_Html::GuiHeader( 1, $user->getName() . " (" .
 				                                     Core_Html::GuiHyperlink( "$user_id", self::get_link("worker_data", $user_id )) . ")" );
 				$output .= "כתובת מייל של העובד/ת: " . $user->CustomerEmail() . "<br/>";
 
@@ -366,9 +366,9 @@ class Finance_Salary {
 
 		$result .= Core_Html::gui_table_args( $table );
 
-		$result .= Core_Html::gui_header( 2, "הוצאות נסיעה" );
+		$result .= Core_Html::GuiHeader( 2, "הוצאות נסיעה" );
 		$result .= Core_Html::GuiInput( "traveling", "" ) . "<br/>";
-		$result .= Core_Html::gui_header( 2, "הוצאות נוספות/משלוחים" );
+		$result .= Core_Html::GuiHeader( 2, "הוצאות נוספות/משלוחים" );
 		$result .= "תיאור";
 		$result .= Core_Html::GuiInput( "extra_text", "" ) . "<br/>";
 		$result .= "סכום";
@@ -395,7 +395,7 @@ class Finance_Salary {
 			$y = date( 'Y' );
 		}
 
-		$result             = Core_Html::gui_header( 1, __( "Salary info for worker" ) . " " . GetUserName( $user_id ) ) . __( "for month" ) . " " . $m . '/' . $y;
+		$result             = Core_Html::GuiHeader( 1, __( "Salary info for worker" ) . " " . GetUserName( $user_id ) ) . __( "for month" ) . " " . $m . '/' . $y;
 		$args               = array( "add_checkbox" => true, "checkbox_class" => "hours_checkbox" );
 		$args["edit_lines"] = 1;
 		$data               = self::MonthyWorkerReport( $user_id, $m, $y, $args );
@@ -422,7 +422,7 @@ class Finance_Salary {
 	 */
 	function worker_data($user_id, $y = 0, $m = 0)
 	{
-		$result  = Core_Html::gui_header( 1, Finance_Salary::worker_get_name( $user_id ) );
+		$result  = Core_Html::GuiHeader( 1, Finance_Salary::worker_get_name( $user_id ) );
 
 		$result .= self::show_report_worker( $user_id, $y, $m );
 		$result .= self::hours_entry($user_id);
@@ -482,7 +482,7 @@ class Finance_Salary {
 		$day_rate = (float) SqlQuerySingleScalar("select day_rate from im_working where user_id = $user_id");
 
 		$result = "";
-		if ($day_rate) $result .= Core_Html::gui_header(2, "Daily worker");
+		if ($day_rate) $result .= Core_Html::GuiHeader(2, "Daily worker");
 
 		$rate_field = ($day_rate ? '' : ', working_rate(user_id, project_id) as rate');
 		$sql  = "SELECT id, date, dayofweek(date) as weekday, start_time, end_time, project_id $rate_field, traveling, expense, expense_text, comment FROM im_working_hours WHERE 1 ";
@@ -638,7 +638,7 @@ class Finance_Salary {
 			$result .= Core_Html::GuiButton( "btn_delete_from_report", "Delete" , array("action" => "salary_del_items('".Finance::getPostFile()."')") );
 		}
 
-		$result      .= Core_Html::gui_header( 2, "חישוב שכר מקורב" ) . "<br/>";
+		$result      .= Core_Html::GuiHeader( 2, "חישוב שכר מקורב" ) . "<br/>";
 		$result      .= "שכר שעות " . $total_sal . "<br/>";
 		$result      .= "סהכ נסיעה " . $total_travel . "<br/>";
 		$result      .= "סהכ הוצאות " . $total_expense . "<br/>";

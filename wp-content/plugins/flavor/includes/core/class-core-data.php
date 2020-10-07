@@ -350,7 +350,7 @@ class Core_Data
 	 * @throws Exception
 	 */
 
-	static function PrepareRow($row, $args, $row_id)
+	static function PrepareRow($row, &$args, $row_id)
 	{
 		if (is_null($row)){
 			return null; // Todo: find why PivotTable creates null rows as in invoice_table.php
@@ -366,6 +366,8 @@ class Core_Data
 		$edit_cols = GetArg($args, "edit_cols", null);
 		$transpose = GetArg($args, "transpose", null);
 		$add_field_suffix = GetArg($args, "add_field_suffix", true);
+		$accumulation_row = GetArg($args, "accumulation_row", null);
+
 
 		$maybe_array_events = GetArg($args, "events", null); // $edit ? "onchange='changed_field(" . $row_id . ")'" : null); // Valid for grid. In transposed single row it will be replaced.
 		unset ($args["events"]);
@@ -490,6 +492,11 @@ class Core_Data
 				}
 			} while (0);
 			$row_data[$key] = $value;
+
+
+			if ($accumulation_row and isset($accumulation_row[$key][1]) and is_callable($accumulation_row[$key][1])) {
+				$accumulation_row[ $key ][1]( $accumulation_row[ $key ][0], $value );
+			}
 		}
 
 		if ($actions){
@@ -521,6 +528,7 @@ class Core_Data
 			}
 		}
 
+		if ($accumulation_row) $args["accumulation_row"] = $accumulation_row;
 		return $row_data;
 	}
 

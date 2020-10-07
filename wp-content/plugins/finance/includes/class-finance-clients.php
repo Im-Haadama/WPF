@@ -224,7 +224,7 @@ class Finance_Clients
 		}
 
 		$result .= Core_Html::gui_table_args( array(
-			array( Core_Html::gui_header( 2, "פרטי לקוח", true ), Core_Html::gui_header( 2, "קבלה", true ), Core_Html::GuiHeader(1, "Credit info") ),
+			array( Core_Html::GuiHeader( 2, "פרטי לקוח", true ), Core_Html::GuiHeader( 2, "קבלה", true ), Core_Html::GuiHeader(1, "Credit info") ),
 			array( $user_info, $new_tran, $credit_info )
 		) );
 

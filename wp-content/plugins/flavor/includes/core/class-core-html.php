@@ -464,18 +464,6 @@ class Core_Html {
 
 		return $data;
 	}
-	/**
-	 * @param $level
-	 * @param $text
-	 * @param bool $center
-	 *
-	 * @param bool $inline
-	 * @deprecated. use GuiHeader
-	 * @return string
-	 */
-	static function gui_header( $level, $text, $center = false, $inline = false ) {
-		return self::GuiHeader($level, $text, array("center"=>$center, "inline"=>$inline));
-	}
 
 	/**
 	 * @param $text
@@ -588,6 +576,10 @@ class Core_Html {
 
 		$data .= '>';
 		if ( $text ) {
+			if (! is_string($text)) {
+				print debug_trace(6);
+				die ('$text is not string');
+			}
 			$data .= $text;
 		}
 		if ( $tool_tip = GetArg( $args, "tool_tip", false ) ) {
@@ -782,7 +774,7 @@ class Core_Html {
 	}
 
 	/**
-	 * @deprecated use gui_table_args
+	 * @deprecated use Core_Html::gui_table_args
 	 */
 	static function gui_table(
 		$rows, $id = null, $header = true, $footer = true, &$acc_fields = null, $style = null, $class = null, $show_fields = null,
@@ -900,6 +892,12 @@ class Core_Html {
 
 		if ( ! $input_rows ) return null;
 
+		if (! is_array($input_rows)) {
+			print "input row is not array";
+			print debug_trace(5);
+			die (1);
+		}
+
 		$rows = array();
 
 		if ($reverse){
@@ -911,7 +909,6 @@ class Core_Html {
 			$input_rows = array_reverse($input_rows, true);
 			if ($header) array_unshift($input_rows, $header);
 		}
-
 		foreach ( $input_rows as $key => $input_row ) {
 			if ( ! $prepare || in_array( $key, array( "checkbox", "header", "mandatory", "sums" ) ) ) {
 				if ( isset( $input_row['checkbox'] ) ) $input_row['checkbox'] = '';
@@ -924,6 +921,12 @@ class Core_Html {
 					$args['count'] --;
 				}
 			}
+		}
+		if ($accumulation_row = GetArg($args, "accumulation_row", null)) {
+			$rows["sums"] = array();
+			foreach ($accumulation_row as $key => $cell)
+				if (is_array($cell)) $rows["sums"][$key] = $cell[0];
+				else $rows["sums"][$key] = $cell;
 		}
 
 		$data = "
@@ -1719,7 +1722,8 @@ class Core_Html {
 		if($tabs) foreach ($tabs as $key => $tab)
 		{
 			if (! is_array($tab) or count($tab) < 3){
-				return "Tab elements should be seq array with 3 elements: [0]name, [1]display_name, and [2]content";
+				var_dump($tab);
+				return "Tab elements should be seq array with 3 elements: [0]name, [1]display_name, and [2]content. Count is " . count($tab);
 			}
 			$name = $tab[0]; // print "name=$name show=$selected_tab $all_loaded<br/>";
 			$display_name = $tab[1];

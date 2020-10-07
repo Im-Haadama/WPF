@@ -138,7 +138,7 @@ class Fresh {
 			print Core_Html::GuiHyperlink(  $m->getMissionName(), AddParamToUrl(Fresh::getPost(), array("operation" => "mission_print", "mission_id" => $mission )));
 			print "<br/>";
 		}
-//			print gui_hyperlink( "אספקות", "print.php?operation=supplies" );
+//			printCore_Html::GuiHyperlink( "אספקות", "print.php?operation=supplies" );
 	}
 
 	/**
@@ -387,7 +387,7 @@ class Fresh {
 	static function new_customer($order_id)
 	{
 		$result = "";
-		$result .= Core_Html::gui_header( 1, "לקוח חדש" );
+		$result .= Core_Html::GuiHeader( 1, "לקוח חדש" );
 
 		$O         = new Order( $order_id );
 		$client_id = $O->getCustomerId();
@@ -401,7 +401,7 @@ class Fresh {
 
 		$invoice_client_id = get_user_meta( $client_id, 'invoice_id', 1 );
 
-		$result .= gui_table_args( array(
+		$result .= Core_Html::gui_table_args( array(
 			$O->info_right_box_input( "shipping_city", true, "עיר" ),
 			$O->info_right_box_input( "shipping_address_1", true, "רחוב ומספר" ),
 			$O->info_right_box_input( "shipping_address_2", true, "כניסה, קוד אינטרקום, קומה ומספר דירה" )

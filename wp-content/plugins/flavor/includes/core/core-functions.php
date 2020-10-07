@@ -398,6 +398,7 @@ require_once (ABSPATH . '/wp-includes/pluggable.php');
 		if ( is_numeric( $s ) and is_numeric( $n ) ) {
 			$s = round( $s + $n, 2 );
 		}
+//		print "$s $a<br/>";
 	}
 
 /**
@@ -560,6 +561,7 @@ require_once (ABSPATH . '/wp-includes/pluggable.php');
 			if ( is_array( $f ) ) {
 				$f = $f[1];
 			}
+//			print "adding $tag $f<br/>";
 			MyLog("adding $tag $f<br/>");
 		}
 

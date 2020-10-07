@@ -75,7 +75,7 @@ if ( $id > 0 ) {
 } else {
 	$client_id = $O->getCustomerId();
 	print "<form name=\"delivery\" action= \"\">";
-	// print gui_header( 2, "יצירת תעודת משלוח להזמנה מספר " . $order_id, true );
+	// printCore_Html::GuiHeader( 2, "יצירת תעודת משלוח להזמנה מספר " . $order_id, true );
 
 	if ( 0 and SqlQuerySingleScalar( "select order_is_group(" . $order_id . ")" ) == 1 ) {
 //		 print "הזמנה קבוצתית";

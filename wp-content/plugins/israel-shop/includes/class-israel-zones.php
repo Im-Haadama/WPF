@@ -76,10 +76,10 @@ class Israel_Zones {
 				Core_Html::GuiHyperlink("Create", AddToUrl("operation", "create"));
 
 		$result = "";
-		$result .= Core_Html::gui_header(1, $zone->get_zone_name());
+		$result .= Core_Html::GuiHeader(1, $zone->get_zone_name());
 		$zone_info = SqlQueryArray("select city_name, zipcode from im_cities where zone = $id");
 		$result .= Core_Html::gui_table_args($zone_info);
-		$result .= Core_Html::gui_header(2, "Common prefixes");
+		$result .= Core_Html::GuiHeader(2, "Common prefixes");
 		$prefixes = self::CommonPrefix(array_column($zone_info, 1), $id);
 		foreach ($prefixes as $prefix)
 			$result .= $prefix . "*<br>";

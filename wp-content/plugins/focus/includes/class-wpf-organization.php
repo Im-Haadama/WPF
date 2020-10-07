@@ -69,7 +69,7 @@ class WPF_Organization {
 //			$worker_id = sql_query_single_scalar( "select user_id from im_working where id = $row_id" );
 //		}
 		$row_id = SqlQuerySingleScalar("select id from {$prefix}working where user_id = $worker_id");
-		$result               = Core_Html::gui_header( 1, "editing worker info" );
+		$result               = Core_Html::GuiHeader( 1, "editing worker info" );
 		$args                 = self::Args();
 		$args["edit"]         = false;
 		$args["selectors"]    = array( "project_id" => "Focus_Tasks::gui_select_project" );

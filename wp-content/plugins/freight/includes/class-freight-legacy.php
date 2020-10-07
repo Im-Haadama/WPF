@@ -139,7 +139,7 @@ class Freight_Legacy {
 		$table = self::print_deliveries( "post_status = 'wc-awaiting-document'", true );
 
 		if ( strlen( $table ) > 10 ) {
-			$result .= Core_Html::gui_header( 1, "משלוחים שבוצעו" );
+			$result .= Core_Html::GuiHeader( 1, "משלוחים שבוצעו" );
 			$result .= Freight_Mission_Manager::delivery_table_header();
 			$result .= $table;
 			$result .= "</table>";
@@ -152,7 +152,7 @@ class Freight_Legacy {
 
 		print '<div id="logging">';
 
-		print gui_header( 1, "הוספת משלוחים" );
+		printCore_Html::GuiHeader( 1, "הוספת משלוחים" );
 
 		print "אנא בחר משלוחים לשבוע זה" . "<br/>";
 
@@ -184,14 +184,14 @@ AND (meta_value = "legacy" or meta_value = 1)';
 
 // print $data . " " . strlen($data);
 		if ( strlen( $data ) > 182 ) {
-			$result .= Core_Html::gui_header( 1, "תעודות משלוח פתוחות" );
+			$result .= Core_Html::GuiHeader( 1, "תעודות משלוח פתוחות" );
 
 			$result .= $data;
 
 			$result .= Core_Html::GuiButton( "id_legacy_invoice", "הפק חשבונית מס", array("action" => "create_subcontract_delivery_invoice('". Freight::getPost() . "')") );
 
 		} else {
-			$result .= Core_Html::gui_header( 1, "כל תעודות המשלוח הוכנסו לחשבוניות" );
+			$result .= Core_Html::GuiHeader( 1, "כל תעודות המשלוח הוכנסו לחשבוניות" );
 		}
 		return $result;
 	}
@@ -205,7 +205,7 @@ AND (meta_value = "legacy" or meta_value = 1)';
 		$table = Core_Html::GuiTableContent( "open_invoices", $sql, $args );
 
 		if ( $table ) {
-			print Core_Html::gui_header( 1, "חשבוניות פתוחות" );
+			print Core_Html::GuiHeader( 1, "חשבוניות פתוחות" );
 			print $table;
 		}
 	}

@@ -648,7 +648,7 @@ class Fresh_Catalog {
 		$categs = self::GetFreshCategories();
 
 		foreach ($categs as $categ){
-//			print Core_Html::gui_header(1, get_term_name($categ)) . "<br/>";
+//			print Core_Html::GuiHeader(1, get_term_name($categ)) . "<br/>";
 			$iter = new Fresh_ProductIterator();
 			$iter->iteratePublished($categ );
 
@@ -672,13 +672,13 @@ class Fresh_Catalog {
 		$sql    = "SELECT term_id FROM wp_term_taxonomy WHERE taxonomy = 'product_cat'";
 		$categs = SqlQueryArrayScalar( $sql );
 
-		$result .= Core_Html::gui_header(1, "תמונות חסרות באתר");
+		$result .= Core_Html::GuiHeader(1, "תמונות חסרות באתר");
 
 		foreach ($categs as $categ){
 			$c = new Fresh_Category($categ);
 			$missing_pictures = $c->get_missing_pictures();
 			if ($missing_pictures and count($missing_pictures)){
-				$result .= Core_Html::gui_header(2, $c->getName());
+				$result .= Core_Html::GuiHeader(2, $c->getName());
 
 				foreach ($missing_pictures as $prod_id){
 					// https://fruity.co.il/wp-admin/post.php?post=7015&action=edit

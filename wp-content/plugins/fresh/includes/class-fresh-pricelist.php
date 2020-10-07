@@ -63,7 +63,7 @@ class Fresh_Pricelist {
 		$post_file = Fresh::getPost();
 		$create_option = false;
 		if (isset($args) and isset($args["create_products"])){
-			print Core_Html::gui_header(1, "יצירת מוצרים");
+			print Core_Html::GuiHeader(1, "יצירת מוצרים");
 			print gui_datalist( "category", "im_categories", "name", 0 );
 			$create_option = true;
 		}
@@ -185,7 +185,7 @@ class Fresh_Pricelist {
 		// $data .= "<tr>";
 		$data .= "</tr>";
 
-		$data .= gui_table_args( array(
+		$data .= Core_Html::gui_table_args( array(
 			array( 'מק"ט - אופציונאלי', gui_input( "product_code", "" ) ),
 			array( "שם מוצר", gui_input( "product_name", "" ) ),
 			array( "מחיר", gui_input( "price", "" ) )

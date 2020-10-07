@@ -179,7 +179,7 @@ class Fresh_Basket extends  Fresh_Product  {
 
 	static function new_basket($args)
 	{
-		$data = Core_Html::gui_header(1, "New basket");
+		$data = Core_Html::GuiHeader(1, "New basket");
 		$form = array(
 			array("Basket name", Core_Html::GuiInput("basket_name", null)),
 		    array("Basket price", Core_Html::GuiInput("basket_price", 0)),
@@ -224,7 +224,7 @@ class Fresh_Basket extends  Fresh_Product  {
 	{
 		$data = "";
 		$basket = new Fresh_Basket($basket_id);
-		$data .= Core_Html::gui_header(1, ImTranslate("basket") . " " . $basket->getName());
+		$data .= Core_Html::GuiHeader(1, ImTranslate("basket") . " " . $basket->getName());
 		$data .= $basket->get_basket_content();
 		$sql = 'SELECT DISTINCT product_id, quantity, product_price(product_id) as price, quantity * product_price(product_id) as line_price FROM im_baskets WHERE basket_id = ' . $basket_id .
 		       " and post_status(product_id) like '%pub%'";
@@ -276,7 +276,7 @@ class Fresh_Basket extends  Fresh_Product  {
 		// $data .= $sql;
 		$result = SqlQueryArrayScalar($sql);
 		if ($result){
-			$data .= Core_Html::gui_header(1, "Not available, and removed:");
+			$data .= Core_Html::GuiHeader(1, "Not available, and removed:");
 			foreach ($result as $prod_id){
 				if ($prod_id == $basket_id) continue;
 				$p = new Fresh_Product($prod_id);

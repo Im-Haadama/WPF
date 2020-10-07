@@ -436,7 +436,7 @@ group by pm.meta_value, p.post_status");
 					print $m->Run( $post_file . "?operation=print&id=" . $supply_id, $site_id );
 				} else {
 					$s = new Fresh_Supply( $supply_id );
-					$data .= Core_Html::gui_header( 1, "אספקה  " . $supply_id . " מספק " . $s->getSupplierName() );
+					$data .= Core_Html::GuiHeader( 1, "אספקה  " . $supply_id . " מספק " . $s->getSupplierName() );
 					$data .= $s->Html( true, 0 );
 				}
 			}
