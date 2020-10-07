@@ -162,7 +162,7 @@ class Fresh_Inventory
 
 	static function show_status($year, $include_counted = false)
 	{
-		$result = Core_Html::gui_header(1, "Inventory status for 31 Dec $year");
+		$result = Core_Html::GuiHeader(1, "Inventory status for 31 Dec $year");
 		$result .= Core_Html::GuiHyperlink("include counted", AddToUrl("include_counted", 1)) . " ";
 		$result .= Core_Html::GuiHyperlink("download count", self::getPost() . "?operation=download_inventory_count");
 
@@ -192,7 +192,7 @@ class Fresh_Inventory
 	{
 		$supplier = new Fresh_Supplier($supplier_id);
 
-		$result = Core_Html::gui_header(1, __("Inventory of supplier")). " " . $supplier->getSupplierName() ." " . __("for year ending in") . " " . $year;
+		$result = Core_Html::GuiHeader(1, __("Inventory of supplier")). " " . $supplier->getSupplierName() ." " . __("for year ending in") . " " . $year;
 		$result .= Core_Html::GuiLabel("supplier_id", $supplier_id, array("hidden" => true));
 
 		$sql = "select count(*) from im_inventory_count where year(count_date) = " . $year . " and supplier_id = " . $supplier_id;
@@ -215,7 +215,7 @@ class Fresh_Inventory
 		$display = "";
 		$table = array( array( "", "מוצר", "מחיר עלות", "כמות במלאי" ) );
 
-//		$display = Core_Html::gui_header( 1, "מלאי לספק " . get_supplier_name( $supplier_id ) );
+//		$display = Core_Html::GuiHeader( 1, "מלאי לספק " . get_supplier_name( $supplier_id ) );
 		$catalog = new Fresh_Catalog();
 
 		$sql = 'SELECT product_name, price, date, pl.id, supplier_product_code, s.factor ' .

@@ -75,7 +75,7 @@ class Fresh_Control {
 		}
 
 //			array_unshift($rows, array("Product name", "Ordered", "Delivered", "Product name", "Ordered", "Delivered"));
-////1			$current .= gui_table_args($rows, "delivery_" . $d->getUserId(), $args);
+////1			$current .= Core_Html::gui_table_args($rows, "delivery_" . $d->getUserId(), $args);
 ////			$current .= $d->delivery_text(ImDocumentType::delivery, ImDocumentOperation::check );
 //
 ////			print "CCC=" . $count % $col_number ."<br/>";

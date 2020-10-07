@@ -216,14 +216,14 @@ class Fresh_Supplies {
 
 	static function SupplyHeader($header, $event = '')
 	{
-		$data = Core_Html::gui_header( 1, $header );
+		$data = Core_Html::GuiHeader( 1, $header );
 //		$event = ''; // 'onchange="new_supply_change(\'' . Fresh::getPost() . '\')"'
 		$args = array("edit" => 1, "prepare"=>false);
 		$data .= Core_Html::gui_table_args(array(
 			array(
-				Core_Html::gui_header( 2, "בחר ספק" ),
-				Core_Html::gui_header( 2, "בחר מועד" ),
-				Core_Html::gui_header( 2, "בחר משימה" )
+				Core_Html::GuiHeader( 2, "בחר ספק" ),
+				Core_Html::GuiHeader( 2, "בחר מועד" ),
+				Core_Html::GuiHeader( 2, "בחר משימה" )
 			),
 			array(
 				Fresh_Supplier::gui_select_supplier( "supplier_select", null, array("events" => $event)),
@@ -259,7 +259,7 @@ class Fresh_Supplies {
 
 		$data = self::SupplyHeader("הזמנה חדשה");
 
-		$data .=Core_Html::gui_header( 2, "בחר מוצרים" );
+		$data .=Core_Html::GuiHeader( 2, "בחר מוצרים" );
 
 		$data .= Core_Html::gui_table_args( array( array( "פריט", "כמות", "קג או יח" ) ),
 			"supply_items" );

@@ -26,7 +26,7 @@ class Fresh_Supplier_Balance {
 	{
 		$menu = new Core_Admin_Menu();
 
-		$menu->AddMenu("הנהלת חשבונות", "הנהלת חשבונות", "edit_shop_orders", "supplier_accounts", array(__CLASS__, 'supplier_accounts'));
+		$menu->AddMenu("הנהלת חשבונות", "הנהלת חשבונות", "edit_shop_orders", "accounting", array(__CLASS__, 'accounting'));
 		AddAction("get_supplier_open_account", array(Fresh_Supplier_Balance::instance(), 'supplier_open_account'));
 	}
 
@@ -35,43 +35,68 @@ class Fresh_Supplier_Balance {
 		return array( 'fresh_supplier_balance' => array( 'Fresh_Supplier_Balance::main',    'show_supplier_balance' ));          // Payments data entry
 	}
 
-	static function supplier_accounts() {
+	static function accounting() {
 		$result = "";
 
-		$tabs = [];
+		$selected_tab = GetParam("selected_tab", false, "weekly");
 
+		$tabs = array(array("weekly", "Weekly summary", "not set"),
+			array("supplier_transactions", "Suppliers transaction", "not set"),
+		    array("supplier_invoices", "Supply invoices", "not set"));
+
+
+		// Put the tab names inside the array.
 		if ($operation = GetParam("operation", false, null, true)) {
 			$result .= apply_filters( $operation, $result, "", null, null );
 			print $result;
 			return;
 		}
 
-		$ms = Core_Db_MultiSite::getInstance();
+		switch ($selected_tab)
+		{
+			case "weekly":
+				$tab_content = "";
+				$week = GetParam("week", false, date( "Y-m-d", strtotime( "last sunday" )));
+				if ( date( 'Y-m-d' ) > date( 'Y-m-d', strtotime( $week . "+1 week" ) ) ) {
+					$tab_content .= Core_Html::GuiHyperlink( "שבוע הבא", AddToUrl("week", date( 'Y-m-d', strtotime( $week . " +1 week" ) ) )) . " ";
+				}
 
-		if ($ms->getLocalSiteID() != 2) { // Makolet
-			array_push( $tabs, array( "supplier_transactions", "Suppliers transactions", self::SupplierTransactions() ) );
-			array_push( $tabs, array(
-				"supplier_invoices",
-				"Suppliers invoices",
-				Finance_Invoices::Table( AddToUrl( "selected_tab", "supplier_invoices" ) )
-			) );
+				$tab_content .= Core_Html::GuiHyperlink( "שבוע קודם", AddToUrl("week",  date( 'Y-m-d', strtotime( $week . " -1 week" ) ) ));
+				$tab_content .= Fresh_Accounting::weekly_report($week);
+				$tabs[0][2] = $tab_content;
+				break;
+
+			case "supplier_transactions":
+				$tab_content = self::SupplierTransactions(self::SupplierTransactions());
+				$tabs[0][2] = $tab_content;
+//				if ($ms->getLocalSiteID() != 2) { // Makolet
+//					array_push( $tabs, array( "", "",  ) );
+//					array_push( $tabs, array(
+//						"supplier_invoices",
+//						"Suppliers invoices",
+//						Finance_Invoices::Table( AddToUrl( "selected_tab", "supplier_invoices" ) )
+//					) );
+//				}
+				break;
+
+			case "supplier_invoices":
+				$tabs[0][2] = Finance_Invoices::Table( AddToUrl( "selected_tab", "supplier_invoices" ));
+				break;
+
+			default:
+				die ("foo: $selected_tab not handled");
 		}
+
 //		array_push($tabs, array("potato", "test", self::test_price()));
-		$tabs = apply_filters('wpf_accounts', $tabs);
-		array_push( $tabs, array( "test_invoice4u", "Test", self::test() ) );
+//		$tabs = apply_filters('wpf_accounts', $tabs);
 
 		$args = [];
-		$args["tabs_load_all"] = true;
+		$args["tabs_load_all"] = false;
 
 		$result .= Core_Html::gui_div("logging");
 		$result .= Core_Html::GuiTabs( $tabs, $args );
 
 		print  $result;
-	}
-
-
-	static function test()
-	{
 	}
 
 	static function test_invoice()
@@ -164,7 +189,7 @@ class Fresh_Supplier_Balance {
 
 		$result .= Core_Html::GuiTableContent( "supplier_account", $sql, $args );
 
-		// $result .= gui_hyperlink("Add invoice", add_to_url(array("operation" => "add_invoice", "supplier_id" => $supplier_id)));
+		// $result .=Core_Html::GuiHyperlink("Add invoice", add_to_url(array("operation" => "add_invoice", "supplier_id" => $supplier_id)));
 
 		$result .= Core_Html::GuiHeader(2, "Add transaction");
 		$result .= __("Meanwhile solution for returned goods and old transactions (older that bank account in the system");

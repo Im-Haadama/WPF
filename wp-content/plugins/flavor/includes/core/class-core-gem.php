@@ -315,7 +315,7 @@ class Core_Gem {
 		if (! $table_name or ! strlen($table_name)) return __FUNCTION__ . ": No table selected";
 
 		if (! $text) $text = __("Add"). " " . $table_name;
-		$result .= Core_Html::gui_header(1, $text);
+		$result .= Core_Html::GuiHeader(1, $text);
 		$result .= Core_Html::NewRow($table_name, $args);
 		$post = GetArg($args, "post_file", null);
 		// $next_page = GetArg($args, "next_page", null);
@@ -373,7 +373,7 @@ class Core_Gem {
 		}
 
 		if ($title)
-			$result .= Core_Html::gui_header(1, $title, true, true). " " . ($row_id ? Core_Html::gui_label("id", $row_id) : __("New"));
+			$result .= Core_Html::GuiHeader(1, $title, true, true). " " . ($row_id ? Core_Html::gui_label("id", $row_id) : __("New"));
 
 		if ($row_id) $result .= " " . Core_Html::GuiHyperlink(__("Duplicate"), AddToUrl("operation", "gem_duplicate"));
 
@@ -460,7 +460,7 @@ class Core_Gem {
 		}
 
 		if (($page == 1 or $page == -1) and GetArg($args, "add_button", true))
-			$result .= Core_Html::GuiHyperlink("Add", AddToUrl("operation" , "gem_add_" . $table_id)) . " ";
+			$result .= Core_Html::GuiHyperlink("[" . __("Add") . "]", AddToUrl("operation" , "gem_add_" . $table_id)) . " ";
 
 		$checkbox_class = GetArg($args, "checkbox_class", "class");
 
@@ -541,8 +541,8 @@ class Core_Gem {
 		$result = Core_Gem::GemArray($rows_data, $args, $table_name);
 
 		if ($result != 2) $result .=
-		       ($only_active ? Core_Html::GuiHyperlink("All", AddToUrl("only_active",'0' ) ):
-			       Core_Html::GuiHyperlink("Active", AddToUrl("only_active",'1' )));
+		       ($only_active ? Core_Html::GuiHyperlink("[" . __("All") ."]", AddToUrl("only_active",'0' ) ):
+			       Core_Html::GuiHyperlink("[" . __("Active") ."]", AddToUrl("only_active",'1' )));
 
 		       return $result;
 
@@ -615,7 +615,7 @@ class Core_Gem {
 //		$input = gui_input_by_type($field, $type, $args);
 //		array_push($search_table, array($field, $input));
 //	}
-//	print gui_table_args($search_table, $table_name, $args);
+//	print Core_Html::gui_table_args($search_table, $table_name, $args);
 
 		$script_function = GetArg($args, "search", "search_table('".  $table_name . "')");
 
@@ -660,7 +660,7 @@ class Core_Gem {
 			$result .= "<html><header>" . Core_Html::load_scripts(array('/wp-content/plugins/flavor/includes/core/gui/client_tools.js')) .
 			           "</header>";
 
-		$result .= Core_Html::gui_header(1, $header);
+		$result .= Core_Html::GuiHeader(1, $header);
 
 		$selector = GetArg($args, "selector", null);
 

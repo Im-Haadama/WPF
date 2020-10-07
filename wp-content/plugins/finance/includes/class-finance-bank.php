@@ -246,7 +246,7 @@ class Finance_Bank
 
 		if (GetParam("search", false, 0)){
 			$ids=data_search("bank");
-			Core_Html::gui_header(1, "Results");
+			Core_Html::GuiHeader(1, "Results");
 			if (! $ids){
 				print ImTranslate("Nothing found");
 				return;
@@ -345,21 +345,21 @@ class Finance_Bank
 					) );
 				$id = GetParam( "id" );
 				$b = Finance_Bank_Transaction::createFromDB( $id );
-				print Core_Html::gui_header( 1, "סמן החזר מהספק" );
+				print Core_Html::GuiHeader( 1, "סמן החזר מהספק" );
 
-				print Core_Html::gui_header( 2, "פרטי העברה" );
-				print gui_table_args( array(
+				print Core_Html::GuiHeader( 2, "פרטי העברה" );
+				print Core_Html::gui_table_args( array(
 						array( "תאריך", gui_div( "pay_date", $b->getDate() ) ),
 						array( "סכום", gui_div( "bank", $b->getInAmount() ) ),
 						array( "מזהה", gui_div( "bank_id", $id ) )
 					)
 				);
 
-//			print Core_Html::gui_header(2, "חשבונית שהופקה");
+//			print Core_Html::GuiHeader(2, "חשבונית שהופקה");
 //			print GuiInput("invoice_id");
 //			print Core_Html::GuiButton("btn_invoice_exists", "invoice_exists()", "Exists invoice");
 
-				print Core_Html::gui_header( 2, "בחר ספק" );
+				print Core_Html::GuiHeader( 2, "בחר ספק" );
 				print gui_select_open_supplier();
 				print '<div id="logging"></div>';
 				print '<div id="transactions"></div>';
@@ -403,7 +403,7 @@ class Finance_Bank
 
 			case "do_search":
 				$ids = data_search( "bank" );
-				Core_Html::gui_header( 1, "Results" );
+				Core_Html::GuiHeader( 1, "Results" );
 				if ( ! $ids ) {
 					print ImTranslate( "Nothing found" );
 
@@ -503,10 +503,10 @@ class Finance_Bank
 	 public function bank_payments()
 	{
 		$id = GetParam( "id" );
-		print Core_Html::gui_header( 1, "רישום העברה שבוצעה " );
+		print Core_Html::GuiHeader( 1, "רישום העברה שבוצעה " );
 
 		$b = Finance_Bank_Transaction::createFromDB( $id );
-		print Core_Html::gui_header( 2, "פרטי העברה" );
+		print Core_Html::GuiHeader( 2, "פרטי העברה" );
 		$free_amount = $b->getOutAmount( true );
 		$client_name = $b->getClientName();
 		print Core_Html::gui_table_args( array(
@@ -519,14 +519,14 @@ class Finance_Bank
 
 		$lines = $b->getAttached();
 		if ( $lines ) {
-			print Core_Html::gui_header( 2, "שורות מתואמות" );
+			print Core_Html::GuiHeader( 2, "שורות מתואמות" );
 
 			print Core_Html::gui_table_args( $lines );
 		}
 		$sums = array();
 		if ( $free_amount > 0 ) {
 //				print "a=" . $amount . "<br/>";
-			print Core_Html::gui_header( 2, "Select Supplier" );
+			print Core_Html::GuiHeader( 2, "Select Supplier" );
 			print self::gui_select_open_supplier();
 		}
 		print '<div id="logging"></div>';
@@ -541,7 +541,7 @@ class Finance_Bank
 	}
 	static public function bank_wrapper()
 	{
-		print Core_Html::Gui_Header(1, "Bank");
+		print Core_Html::GuiHeader(1, "Bank");
 		$operation = GetParam("operation", false, "bank_status", true);
 
 		print apply_filters($operation, '');
@@ -553,7 +553,7 @@ class Finance_Bank
 		$table_prefix = $this->table_prefix;
 		$result = "";
 		$args = array();
-		$result .= Core_Html::gui_header( 1, "Payments" );
+		$result .= Core_Html::GuiHeader( 1, "Payments" );
 		$args["header_fields"] = array( "id" => "Id", "date" => "Date", "description" => "Description", "out_amount" => "Amount" );
 		$args["actions"]       = array(
 			array(
@@ -597,7 +597,7 @@ class Finance_Bank
 
 		$args = $this->Args();
 		$args["account_id"] = $account_id;
-		print Core_Html::gui_header( 1, "Receipts" );
+		print Core_Html::GuiHeader( 1, "Receipts" );
 		$args["header_fields"] = array( "id"=>"Id", "date" => "Date", "description" => "Description",
 		                                "in_amount" => "Amount", "reference" => "Reference", "client_name" => "Details" );
 		$args["actions"]       = array(
@@ -670,9 +670,9 @@ class Finance_Bank
 	{
 		$b = Finance_Bank_Transaction::createFromDB( $id );
 		$result = "Creating invoice for bank transaction";
-		$result .= Core_Html::gui_header( 1, "הפקת חשבונית קבלה להפקדה מבנק " );
+		$result .= Core_Html::GuiHeader( 1, "הפקת חשבונית קבלה להפקדה מבנק " );
 
-		$result .= Core_Html::gui_header( 2, "פרטי העברה" );
+		$result .= Core_Html::GuiHeader( 2, "פרטי העברה" );
 		$result .= Core_Html::gui_table_args( array(
 				array( "תאריך", Core_Html::gui_div( "pay_date", $b->getDate() ) ),
 				array( "סכום", Core_Html::gui_div( "bank", $b->getInAmount() ) ),
@@ -682,11 +682,11 @@ class Finance_Bank
 			)
 		);
 
-		$result .= Core_Html::gui_header(2, "חשבונית שהופקה");
+		$result .= Core_Html::GuiHeader(2, "חשבונית שהופקה");
 		$result .= Core_Html::GuiInput("invoice_id");
 		$result .= Core_Html::GuiButton("btn_invoice_exists", "Exists invoice", array("action" => "invoice_exists()"));
 
-		$result .= Core_Html::gui_header( 2, "בחר לקוח" );
+		$result .= Core_Html::GuiHeader( 2, "בחר לקוח" );
 		$result .= self::gui_select_client_open_account();
 		$result .= '<div id="logging"></div>';
 		$result .= '<div id="transactions"></div>';
@@ -714,7 +714,7 @@ class Finance_Bank
 		if ($account) {
 			return self::show_bank_account($account);
 		}
-		$result = Core_Html::gui_header(2, "Bank accounts");
+		$result = Core_Html::GuiHeader(2, "Bank accounts");
 		$u = new Core_Users();
 
 		$sql = "select id, name, bank_last_transaction(id)";

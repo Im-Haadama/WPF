@@ -64,13 +64,13 @@ class Fresh_Bundles {
 		$result .=  Core_Html::GuiHeader( 1, "יצירת מארז" );
 		$result .=  Core_Html::gui_table_args( array(
 			array(
-				Core_Html::gui_header( 2, "בחר מוצר" ),
-				Core_Html::gui_header( 2, "מחיר עלות" ),
-				Core_Html::gui_header( 2, "מחיר יחידה" ),
-				Core_Html::gui_header( 2, "כמות במארז" ),
-				Core_Html::gui_header( 2, "רוווח %/שח" ),
-				Core_Html::gui_header( 2, "מחיר מארז" ),
-				Core_Html::gui_header( 2, "מחיר רגיל" )
+				Core_Html::GuiHeader( 2, "בחר מוצר" ),
+				Core_Html::GuiHeader( 2, "מחיר עלות" ),
+				Core_Html::GuiHeader( 2, "מחיר יחידה" ),
+				Core_Html::GuiHeader( 2, "כמות במארז" ),
+				Core_Html::GuiHeader( 2, "רוווח %/שח" ),
+				Core_Html::GuiHeader( 2, "מחיר מארז" ),
+				Core_Html::GuiHeader( 2, "מחיר רגיל" )
 			),
 			array(
 //				Core_Html::GuiInputDatalist( "product_name", "products", "onchange=\"calcBundle()\"" ),

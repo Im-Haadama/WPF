@@ -63,7 +63,7 @@ class Flavor_System {
 		}
 
 		$args = [];
-		print gui_table_args( $results, "result_table", $args );
+		print Core_Html::gui_table_args( $results, "result_table", $args );
 
 //	if ($fail) print im_file_get_html("http://tabula.aglamaz.com/utils/daily.log." . date('d') . ".html");
 

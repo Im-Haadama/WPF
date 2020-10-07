@@ -188,7 +188,7 @@ class Fresh_Suppliers {
 
 	static function handle()
 	{
-		return "lalal";
+		 return __FUNCTION__ . "is used"; // ; called eg from needed.
 		$operation = GetParam("operation", false, null);
 
 		if (! $operation) {

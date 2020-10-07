@@ -488,6 +488,30 @@ charset=utf8;
 
 		if ($current == $version and ! $force) return true;
 
+		SqlQuery("drop function supplier_from_business");
+		SqlQuery("create
+     function supplier_from_business(bus_id int) returns text
+BEGIN
+    declare _supplier_id int;
+    declare _display varchar(50) CHARSET utf8;
+    SELECT part_id INTO _supplier_id FROM im_business_info where id = bus_id;
+    select supplier_name into _display from im_suppliers where id = _supplier_id;
+
+    return _display;
+  END;
+
+");
+
+		SqlQuery("drop function supply_from_business");
+		SqlQuery("create function supply_from_business( _business_id int) returns integer
+	BEGIN
+		declare _supply_id integer;
+		select id into _supply_id 
+	        from ${db_prefix}supplies where business_id = _business_id; 
+	    return _supply_id;
+	END;
+");
+
 		SqlQuery("drop function supplier_last_pricelist_date;");
 
 		SqlQuery("create function supplier_last_pricelist_date(_supplier_id int) returns date
@@ -572,15 +596,6 @@ END;
 
 ");
 
-		SqlQuery("drop function supply_from_business");
-		SqlQuery("create function supply_from_business( _business_id int) returns integer
-	BEGIN
-		declare _supply_id integer;
-		select id into _supply_id 
-	        from ${db_prefix}supplies where business_id = _business_id; 
-	    return _supply_id;
-	END;
-");
 
 		new Fresh_Delivery(0); // Load classes
 		SqlQuery("drop function if exists supplier_balance");

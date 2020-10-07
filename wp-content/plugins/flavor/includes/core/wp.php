@@ -246,10 +246,4 @@ function GetUserName( $id ) {
 		return $u->display_name;
 	return "user $id";
 }
-	/**
-	 * @param bool $force_login
-	 *
-	 * @return int
-	 */
-
 }

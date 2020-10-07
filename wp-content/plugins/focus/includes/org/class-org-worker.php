@@ -238,29 +238,45 @@ class Org_Worker extends Core_users
 //		return $result;
 //	}
 
-	function myWorkQuery($status, $include_teams = false) // 1 - ready, 0 - not ready, 2 - both, 3- not finished
+
+	// Team_filter = 0: my work
+	// Team_filter = 1: team's work.
+	// status - if not set show by ActiveQuery.
+	function myWorkQuery($teams_filter, $status = null)
+		// 1 - ready, 0 - not ready, 2 - both, 3- not finished
 	{
 		$teams         = self::AllTeams();
 
+		$user_team_query = ($teams_filter ?
+			// My team's work.
+			" ( team in (" . CommaImplode( $teams ) . "))" :
+			// Just my work.
+			" ( owner = " . $this->id . ")" );
+//		$team_query = ($team_filter ? "owner is null or " . $this->id . " = owner) and team in (" . CommaImplode( $teams ) . ")" : " 1 ");
+		$status_query = " 1 ";
+		$active_query = ((null != $status) ? " status = $status " : "((status < 2) and (" . Focus_Tasks::ActiveQuery() . "))");
+
 //		if ($status 3) $query .= " and (status < 2) ";
-		switch ($status) {
-			case 0: // Not active.
-				$teams_q = ($include_teams ? ( $teams ? " or team in (" . CommaImplode( $teams ) . ")" : "" ) : "");
-				$query = " (owner = " . $this->id . $teams_q . ")";
-				$query .= " and !(" . Focus_Tasks::ActiveQuery() . ") and status < 2";
-				break;
-			case 1: // Active
-				$teams_q = ($include_teams ? ( $teams ? " or (( owner is null or " . $this->id . " = owner) and team in (" . CommaImplode( $teams ) . "))" : "" ) : '');
-				$query = " (owner = " . $this->id . $teams_q . ")";
-				$query .= " and " . Focus_Tasks::ActiveQuery() . " and status < 2";
-				break;
-			case 2: // Done;
-				$query = " (owner = " . $this->id . ")";
-				$query .= " and status = 2";
-				break;
-			default:
-				$query = " owner = " . $this->id;
-		}
+//		switch ($status_filter) {
+//			case 0: // Not active.
+//				$teams_q = ($include_teams ? ( $teams ? " or team in (" . CommaImplode( $teams ) . ")" : "" ) : "");
+//				$query = " (owner = " . $this->id . $teams_q . ")";
+//				$query .= " and !(" . Focus_Tasks::ActiveQuery() . ") and status < 2";
+//				break;
+//			case 1: // Active
+//				$teams_q = ($include_teams ? ( $teams ? " or (( owner is null or " . $this->id . " = owner) and team in (" . CommaImplode( $teams ) . "))" : "" ) : '');
+//				$query = " (owner = " . $this->id . $teams_q . ")";
+//				$query .= " and " . Focus_Tasks::ActiveQuery() . " and status < 2";
+//				break;
+//			case 2: // Done;
+//				$query = " (owner = " . $this->id . ")";
+//				$query .= " and status = 2";
+//				break;
+//			default:
+//				$query = " owner = " . $this->id;
+//		}
+		$query = "$user_team_query and $status_query and $active_query";
+//		print $query;
 		return $query;
 	}
 

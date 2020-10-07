@@ -24,7 +24,7 @@ class Freight_Zones {
 			if ($output)
 				return $result . $output;
 		}
-		$result                .= Core_Html::gui_header( 1, "Shipping zones" );
+		$result                .= Core_Html::GuiHeader( 1, "Shipping zones" );
 
 		$args["edit"] = true;
 		$args["sql"] = "select * from wp_woocommerce_shipping_zones";

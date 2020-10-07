@@ -147,7 +147,7 @@
 
 //		static function pictures()
 //		{
-//			$result = ""; // Core_Html::gui_header(1, "general settings");
+//			$result = ""; // Core_Html::GuiHeader(1, "general settings");
 //			$tabs = [];
 //			$args = [];
 //			$args["post_file"] = self::getPost();

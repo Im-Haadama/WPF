@@ -130,7 +130,7 @@ class Fresh_Delivery {
 		$args = [];
 		$args["fields"] = array("id", "product_name", "quantity_ordered", "quantity", "price", "vat as has_vat", "vat", "line_price");
 //		$lines = TableData("select * from im_delivery_lines where delivery_id = " . $this->getID());
-//	$result .= gui_table_args($lines);
+//	$result .= Core_Html::gui_table_args($lines);
 		$args["where"] = "delivery_id = " . $this->getID();
 		$args["id_field"] = "id";
 		$args["header_fields"] = array("product_name" => "Product name", "quantity_ordered" => "Quantity ordered",
@@ -997,7 +997,7 @@ class Fresh_Delivery {
 	}
 
 	public static function GuiCreateNewNoOrder() {
-		$data = gui_table_args( array(
+		$data = Core_Html::gui_table_args( array(
 			array( "לקוח:", gui_select_client("client", null, null) ),
 			array( "תאריך", gui_input_date( "delivery_date", "" ) ),
 			array( Core_Html::GuiButton( "btn_add_delivery", "", "הוסף תעודת משלוח" ) )

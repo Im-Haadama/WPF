@@ -474,7 +474,7 @@ class Focus_Tasklist {
 		}
 
 
-		return gui_table_args( $rows );
+		return Core_Html::gui_table_args( $rows );
 	}
 
 	function working_time() {

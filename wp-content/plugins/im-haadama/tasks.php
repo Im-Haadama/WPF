@@ -37,7 +37,7 @@ function task_focus()
 		 handle_focus_operation($operation, $args);
 		return;
 	}
-	print gui_header(1, "Active Tasks");
+	print Core_Html::GuiHeader(1, "Active Tasks");
 	print Focus_Views::active_tasks();
 }
 

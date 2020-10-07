@@ -161,8 +161,8 @@ class Finance_Invoices {
 		$result  = "";
 		$part_id = GetParam( "part_id" );
 		$year    = GetParam( "the_year", false, date("Y") );
-		$result  .= Core_Html::gui_header( 2, self::get_supplier_name( $part_id ) );
-		$result  .= Core_Html::gui_header( 3, "year " . $year );
+		$result  .= Core_Html::GuiHeader( 2, self::get_supplier_name( $part_id ) );
+		$result  .= Core_Html::GuiHeader( 3, "year " . $year );
 		$page    = "EXTRACT(YEAR FROM DATE) = " . $year . " and document_type in (4, 8) and is_active=1"
 		           . " and part_id = " . $part_id;
 		$links   = array(
@@ -199,7 +199,7 @@ class Finance_Invoices {
 	{
 		$result = "";
 		$id = GetPAram("id");
-		$result .=  Core_Html::gui_header(1, "חשבונית מס " . $id);
+		$result .=  Core_Html::GuiHeader(1, "חשבונית מס " . $id);
 		$args = self::Args();
 		$args["edit"] = 1;
 		$args["skip_id"] = true;

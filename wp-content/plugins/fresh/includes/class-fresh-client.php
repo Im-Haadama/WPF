@@ -344,7 +344,7 @@ class Fresh_Client {
 
 	static function admin_page()
 	{
-		print Core_Html::gui_header( 2, "מחירונים" );
+		print Core_Html::GuiHeader( 2, "מחירונים" );
 
 		$args = [];
 		$args['post_file'] = Fresh::getPost();
@@ -356,7 +356,7 @@ class Fresh_Client {
 
 	function client_types()
 	{
-		print Core_Html::gui_header( 1, "שיוך לקוחות למחירון" );
+		print Core_Html::GuiHeader( 1, "שיוך לקוחות למחירון" );
 
 		$sql = "SELECT user_id, meta_value FROM wp_usermeta WHERE meta_key = '_client_type'";
 
@@ -379,7 +379,7 @@ class Fresh_Client {
 
 		print Core_Html::gui_table_args( $table );
 
-		print Core_Html::gui_header( 2, "הוסף שיוך" );
+		print Core_Html::GuiHeader( 2, "הוסף שיוך" );
 
 		$args = [];
 		$args["post_file"] = Fresh::getPost();
@@ -392,7 +392,7 @@ class Fresh_Client {
 		) );
 
 		print Core_Html::GuiButton( "btn_save", "שמור", array("action"=>"add_client_type()") );
-		print Core_Html::gui_header( 2, "מחירונים" );
+		print Core_Html::GuiHeader( 2, "מחירונים" );
 
 		print Core_Html::GuiTableContent("table", "SELECT id, rate, dry_rate AS מרווח, type AS 'שם מחירון' FROM im_client_types");
 	}

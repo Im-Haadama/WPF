@@ -794,7 +794,7 @@ class Fresh_Order {
 
 	function checkInfoBox()
 	{
-		$result = Core_Html::gui_header(1, __("Order number") . ":" . $this->order_id) . "<br/>";
+		$result = Core_Html::GuiHeader(1, __("Order number") . ":" . $this->order_id) . "<br/>";
 		$result .= __("Client") . ":" . $this->getOrderInfo( '_billing_first_name' ) . ' '
 		                                                                      . $this->getOrderInfo( '_billing_last_name') . "<br/>";
 
@@ -809,7 +809,7 @@ class Fresh_Order {
 //
 //		$args = [];
 ////		$args = ["transpose" => true, "include_id" => true];
-//		return gui_table_args($row_data, "order_" . $this->order_id . "_info", $args);
+//		return Core_Html::gui_table_args($row_data, "order_" . $this->order_id . "_info", $args);
 //		$data      = "<table><tr><td rowspan='4'>";
 //		$data      .= '<table>';
 //		$client_id = $this->getCustomerId();
@@ -854,7 +854,7 @@ class Fresh_Order {
 			$header .= CommaImplode( $addition_orders );
 		}
 		$data = Core_Html::GuiHeader( 1, $header, true );
-		// $data  .= Core_Html::gui_header( 2, $order->order_date, true);
+		// $data  .= Core_Html::GuiHeader( 2, $order->order_date, true);
 
 		$d_id = self::get_delivery_id( $this->order_id );
 		if ( $d_id > 0 ) {
@@ -864,7 +864,7 @@ class Fresh_Order {
 				$draft_text = " טיוטא " . $d->draftReason();
 			}
 
-			$data .= Core_Html::gui_header( 2, "משלוח מספר " . $d_id . $draft_text );
+			$data .= Core_Html::GuiHeader( 2, "משלוח מספר " . $d_id . $draft_text );
 		}
 		$data     .= $this->infoRightBox( $edit_order );
 		$data     .= "</td>";
@@ -885,7 +885,7 @@ class Fresh_Order {
 		} else {
 			$days = get_postmeta_field( $this->order_id, "pack_day" );
 			if ( strlen( $days ) > 1 ) {
-				$data .= "<tr><td>" . Core_Html::gui_header( 2, "יום ביצוע" . $days ) . "</td></tr>";
+				$data .= "<tr><td>" . Core_Html::GuiHeader( 2, "יום ביצוע" . $days ) . "</td></tr>";
 			} else {
 				$options = array( array( "id" => 1, "name" => 'א' ), array( "id" => 2, "name" => 'ב' ) );
 				$select  = gui_select( "day", "name", $options, "onchange=save_day()", null );
@@ -1285,7 +1285,7 @@ class Fresh_Order {
 				$args = [];
 				$args["print_logo"] = false;
 				print HeaderText($args);
-				print Core_Html::gui_header(2, "הזמנה/אספקה שבועית");
+				print Core_Html::GuiHeader(2, "הזמנה/אספקה שבועית");
 				$last_delivery = SqlQuerySingleScalar("select max(delivery_id) from im_delivery_lines");
 				$sql = "select distinct prod_id, sum(quantity_ordered) from im_delivery_lines where delivery_id > $last_delivery - 20 group by prod_id order by 2 desc limit 38";
 				$prods = SqlQueryArrayScalar($sql);
@@ -1314,7 +1314,7 @@ class Fresh_Order {
 				$args = [];
 				$args["width"] = '100%';
 				$args["col_width"] = array('25%', '25%', '25%', '25%');
-				print gui_table_args($table_lines, "products", $args);
+				print Core_Html::gui_table_args($table_lines, "products", $args);
 
 				break;
 
@@ -1526,7 +1526,7 @@ class Fresh_Order {
 				if (!is_basket($prod_id)) array_push($temp_table, get_product_name($prod_id));
 			if (count($temp_table)){
 				sort ($temp_table);
-				array_push($data, Core_Html::gui_header(3, get_term_name($term)));
+				array_push($data, Core_Html::GuiHeader(3, get_term_name($term)));
 
 				foreach ($temp_table as $prod_name)
 					array_push($data, array($prod_name, ""));
@@ -1536,7 +1536,7 @@ class Fresh_Order {
 
 		$table_lines = array();
 		$table_lines["header"] = array("מוצר", "כמות", "מוצר", "כמות");
-//			print gui_table_args($data);
+//			print Core_Html::gui_table_args($data);
 		$line_number = round((count($prods) + 1)/ 2, 0);
 
 //		print count($prods) . '<br/>';
@@ -1547,7 +1547,7 @@ class Fresh_Order {
 			$table_lines[$i] = $new_line;
 		}
 		$args = [];
-		print gui_table_args($table_lines, "products", $args);
+		print Core_Html::gui_table_args($table_lines, "products", $args);
 
 	}
 
