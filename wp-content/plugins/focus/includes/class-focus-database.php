@@ -140,7 +140,7 @@ charset=utf8;
 );
 
 ");
-		if (! TableExists("1"))
+		if (! TableExists("projects"))
 			SqlQuery("create table im_projects
 (
 	ID int auto_increment
@@ -149,7 +149,8 @@ charset=utf8;
 	project_contact varchar(20) not null,
 	project_priority int null,
 	is_active bit null,
-	manager int null
+	manager int null,
+	company int null	
 )
 charset=utf8;
 
