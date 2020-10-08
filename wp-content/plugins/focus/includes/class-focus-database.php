@@ -22,16 +22,32 @@ class Focus_Database extends Core_Database
 
 	}
 
-	static function CreateTables($version, $force)
+	static function CreateTables($version, $force) {
+		$current = self::CheckInstalled( "Focus", "tables" );
+
+		if ( ! $current ) {
+			// Fresh install - create all tables.
+			return self::FreshInstall() and
+			       self::UpdateInstalled( "Focus", "tables", $version );
+
+		}
+		if ( $current == $version and ! $force ) {
+			return true;
+		}
+
+		switch ($current){
+			case '1.0':
+				SqlQuery( "alter table im_projects add is_active bit" );
+
+			case '1.1':
+				SqlQuery( "alter table im_projects add company int" );
+		}
+
+		return self::UpdateInstalled( "Focus", "tables", $version );
+	}
+
+	static function FreshInstall()
 	{
-		$current = self::CheckInstalled("Focus", "tables");
-
-		if ($current == $version and ! $force) return true;
-        if ($current == '1.0' and $version = '1.1'){
-            SqlQuery("alter table im_projects add is_active bit");
-            return self::UpdateInstalled("Focus", "tables", $version);
-        }
-
 		SqlQuery("drop function client_displayname");
 		SqlQuery( "create function client_displayname (user_id int) returns text charset 'utf8'
 BEGIN

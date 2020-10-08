@@ -102,7 +102,7 @@ class Focus_Tasks {
 //		$args["query"]    = ( isset( $args["query_team"] ) ? $args["query_worker"] : null );
 
 		$ids = SqlQueryArrayScalar("select * from wp_users where 1");
-		$selected_info = array();
+		$selected_info = array(array("user_id" => 0, "display_name" =>"Select")); // Select 0 cause to delete the value.
 		foreach ($ids as $user_id) {
 //			$u = get_user_to_edit( $user_id );
 			$selected_info[] = array("user_id" => $user_id, "display_name" => GetUserName($user_id));
