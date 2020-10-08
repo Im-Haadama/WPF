@@ -309,7 +309,7 @@ class Core_Fund {
 	 * @return bool
 	 */
 	static function check_password( $user, $password ) {
-		return SqlQuerySingleScalar("select count(*) from im_multisite where user='$user' and password='$password'");
+		return TableExists("multisite") and SqlQuerySingleScalar("select count(*) from im_multisite where user='$user' and password='$password'");
 	}
 
 	/**
