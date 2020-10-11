@@ -251,7 +251,7 @@ class Fresh_Packing {
 
 		$args["selected_tab"] = 0; // array_key_first( $totals );
 		$args["tabs_load_all"] = true;
-		$result               .= Core_Html::GuiTabs( $supplier_tabs, $args );
+		$result               .= Core_Html::GuiTabs( "products", $supplier_tabs, $args );
 
 		return $result;
 	}
@@ -605,7 +605,7 @@ class Fresh_Packing {
 					Fresh_Order::GetAllComments()));
 		$args = array("selected_tab" => 0,
 			"tabs_load_all" => true);
-		print Core_Html::GuiTabs($category_pages, $args);
+		print Core_Html::GuiTabs("packing", $category_pages, $args);
 	}
 
 	static function PackingTable(Fresh_Category $term)

@@ -180,7 +180,6 @@ class Freight {
 		$this->define( 'FREIGHT_DELIMITER', '|' );
 		$this->define( 'FREIGHT_LOG_DIR', $upload_dir['basedir'] . '/freight-logs/' );
 		$this->define( 'FREIGHT_INCLUDES_URL', plugins_url() . '/freight/includes/' ); // For js
-		$this->define( 'WC_URL', plugins_url() . '/woocommerce/' ); // For css
 
 		$this->define( 'FLAVOR_INCLUDES_URL', plugins_url() . '/flavor/includes/' ); // For js
 		$this->define( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path(__FILE__) . '../../flavor/includes/' );  // for php

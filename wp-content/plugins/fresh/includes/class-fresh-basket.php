@@ -124,7 +124,7 @@ class Fresh_Basket extends  Fresh_Product  {
 
 		$tabs = array(array("Bundles", "Bundles", $b->PrintHTML()),
 			array("Baskets", "Baskets", self::current_baskets($url)));
-		$result .= Core_Html::GuiTabs($tabs, array("tabs_load_all"=>true));
+		$result .= Core_Html::GuiTabs("settings", $tabs, array("tabs_load_all"=>true));
 
 		return $result;
 	}

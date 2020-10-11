@@ -108,7 +108,7 @@ class Fresh_Supplies {
 		$args = [];
 
 		$args["tabs_load_all"] = true;
-		$result .= Core_Html::GuiTabs($tabs, $args);
+		$result .= Core_Html::GuiTabs("suppliers", $tabs, $args);
 
 		$selected_tab = GetParam("selected_tab", false, null);
 

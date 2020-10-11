@@ -500,6 +500,14 @@ class Flavor {
 		// Init action.
 		do_action( 'flavor_init' );
 		add_action( 'admin_bar_menu', 'modify_admin_bar', 200 );
+
+		$url = plugins_url() . '/flavor/assets/css/';
+		wp_register_style( 'flavor_styles', $url . 'modal.css', array(), $this->version );
+		wp_enqueue_style('flavor_styles');
+////		wp_register_style( 'woocommerce_admin_styles', WC_URL . '/assets/css/admin.css', array(), WC_VERSION );
+//
+//		wp_enqueue_style('woocommerce_admin_styles');
+
 	}
 
 	static public function display_name()

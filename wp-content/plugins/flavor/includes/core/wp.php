@@ -241,7 +241,9 @@ function update_wp_option($option_id, $array_or_string)
 
 
 function GetUserName( $id ) {
-	$u = wp_get_current_user();
+	$u = get_user_by("ID", $id);
+//	$u = get_user_to_edit( $id );
+//	$u = wp_get_current_user();
 	if ($u)
 		return $u->display_name;
 	return "user $id";

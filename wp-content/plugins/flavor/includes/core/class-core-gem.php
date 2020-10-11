@@ -325,9 +325,9 @@ class Core_Gem {
 //		print "np=$next_page<br/>";
 		if ($next_page){
 			$result .= '<script>
-		function next_page(xmlhttp) {
-		    if (xmlhttp.response.indexOf("failed") === -1 ) {
-		        let new_id = xmlhttp.response.substr(5);
+		function next_page(xmlhttp) { 
+		    if (xmlhttp.response.indexOf("failed") === -1 ) { 
+		        let new_id = xmlhttp.response;
 		      window.location = "' . $next_page . '&new=" + new_id;  
 		    }  else alert(xmlhttp.response);
 		}
@@ -461,6 +461,7 @@ class Core_Gem {
 
 		if (($page == 1 or $page == -1) and GetArg($args, "add_button", true))
 			$result .= Core_Html::GuiHyperlink("[" . __("Add") . "]", AddToUrl("operation" , "gem_add_" . $table_id)) . " ";
+//			$result .= self::Entry($table_id);
 
 		$checkbox_class = GetArg($args, "checkbox_class", "class");
 
@@ -476,6 +477,17 @@ class Core_Gem {
 		}
 
 		return $result;
+	}
+
+	static function Entry($table_id)
+	{
+		$entry = "entry_$table_id";
+		$div_args = array("class"=>"gem_modal");
+		$args = array("post_file" => Flavor::getPost());
+		$html = Core_Html::GuiDiv($entry, self::GemAddRow($table_id, 'Add', $args), $div_args);
+		$html .= Core_Html::GuiButton("btn_add_$table_id", "Add", "show_modal($entry);");
+
+		return $html;
 	}
 
 // Data is updated upon change by the client;
