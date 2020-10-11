@@ -131,6 +131,7 @@ charset=utf8;
 		primary key,
 	project_name varchar(20) not null,
 	project_contact varchar(20) not null,
+	company int null,
 	project_priority int null,
 	is_active bit null,
 	manager int null

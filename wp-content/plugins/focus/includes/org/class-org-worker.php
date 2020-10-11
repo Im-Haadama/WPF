@@ -89,6 +89,7 @@ class Org_Worker extends Core_users
 		// Managed projects
 		$sql =  "select " . CommaImplode($field_list) . " from ${table_prefix}projects " .
 		        " where manager = " . $this->id . ($query ? " and $query " : "");
+		//. "where company = ". $this->project_company($field_list);
 
 		// or direct member.
 		if ($direct_projects = get_usermeta($this->id, 'projects')){
