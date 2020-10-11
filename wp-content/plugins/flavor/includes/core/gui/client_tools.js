@@ -349,3 +349,8 @@ function show_response(xmlhttp, obj)
         alert(xmlhttp.response + ':' + xmlhttp.responseURL);
     }
 }
+
+function show_modal(div)
+{
+    div.style.display = "block";
+}

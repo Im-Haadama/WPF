@@ -231,7 +231,7 @@ class Finance_Clients
 		$result .= Core_Html::GuiHeader( 2, __( "Balance" ) . ": " .
 		                                    SqlQuerySingleScalar( "SELECT round(sum(transaction_amount), 1) FROM im_client_accounts WHERE client_id = " . $customer_id ) );
 
-		$result .= Core_Html::GuiTabs(array(array("Credit pay", "Credit pay", self::PaymentBox($u)),
+		$result .= Core_Html::GuiTabs("ca", array(array("Credit pay", "Credit pay", self::PaymentBox($u)),
 			array("Add document", "Add document", self::AddDocumentBox($u))),
 			array("tabs_load_all"=>true));
 

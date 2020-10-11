@@ -488,7 +488,7 @@ class Capabilites {
 			array("Capabilites", "capabilities", self::capabilites($roles)));
 
 		$args = array("tabs_load_all" => true);
-		$result .= Core_Html::GuiTabs($tabs, $args);
+		$result .= Core_Html::GuiTabs("roles", $tabs, $args);
 
 		print $result;
 	}

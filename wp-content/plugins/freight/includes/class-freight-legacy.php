@@ -27,7 +27,7 @@ class Freight_Legacy {
 		$args["tabs_load_all"] = false;
 		$args["selected_tab"] = $selected_tab;
 
-		$result .= Core_Html::GuiTabs( $tabs, $args );
+		$result .= Core_Html::GuiTabs( "deliveries", $tabs, $args );
 		$result .= Core_Html::gui_div("logging");
 
 		print  $result;

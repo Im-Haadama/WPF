@@ -9,7 +9,7 @@ class Org_Company {
 	 *
 	 * @param $id
 	 */
-	public function __construct( $id ) {
+	public function __construct( int $id ) {
 		$this->id = $id;
 	}
 
@@ -33,6 +33,11 @@ class Org_Company {
 	{
 		$w = new Org_Worker($w_id);
 		$w->AddCompany($this->id);
+	}
+
+	public function GetTeams()
+	{
+
 	}
 }
 

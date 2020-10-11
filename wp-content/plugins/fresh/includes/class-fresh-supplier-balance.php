@@ -94,7 +94,7 @@ class Fresh_Supplier_Balance {
 		$args["tabs_load_all"] = false;
 
 		$result .= Core_Html::gui_div("logging");
-		$result .= Core_Html::GuiTabs( $tabs, $args );
+		$result .= Core_Html::GuiTabs( "suppliers", $tabs, $args );
 
 		print  $result;
 	}

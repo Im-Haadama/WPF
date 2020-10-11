@@ -313,7 +313,6 @@ class Fresh {
 		$this->define( 'FRESH_DELIMITER', '|' );
 		$this->define( 'FRESH_LOG_DIR', $upload_dir['basedir'] . '/fresh-logs/' );
 		$this->define( 'FRESH_INCLUDES_URL', plugins_url() . '/fresh/includes/' ); // For js
-		$this->define( 'WC_URL', plugins_url() . '/woocommerce/' ); // For css
 
 		$this->define( 'FLAVOR_INCLUDES_URL', plugins_url() . '/flavor/includes/' ); // For js
 		$this->define( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path(__FILE__) . '../../flavor/includes/' );  // for php

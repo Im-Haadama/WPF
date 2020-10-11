@@ -1692,20 +1692,20 @@ class Core_Html {
 	}
 
 	/**
-	 * @param $tabs
+	 * @param $id sring: id of the tab group.
+	 * @param $tabs array.
 	 *
 	 * @param null $args
 	 *
 	 * @return string
 	 */
-	static function GuiTabs($tabs, $args = null)
+	static function GuiTabs(string $id, array $tabs, $args = null)
 	{
+		$debug = false; // ($id == "company_settings");
 		$result = '<div class="tab">';
 
 		$contents = "";
 		$class = GetArg($args, "class", "tab");
-		$all_loaded = GetArg($args, "tabs_load_all", false);
-//		$result .= "al=$all_loaded<br/>";
 
 		$div_args = $args;
 		$div_class = "div_$class";
@@ -1715,38 +1715,50 @@ class Core_Html {
 		$btn_class = "btn_$class";
 		$button_args["class"] = $btn_class;
 
-		$selected_tab = GetArg($args, "selected_tab", 0);
-		$tab_index = 0;
+		$selected_tab = GetArg($args, "st_$id", 0);
+//		print "st=$selected_tab<br/>";
+		$all_loaded = GetArg($args, "tabs_load_all", false);
+		if ($all_loaded) $selected_tab = null;
 
-		if($tabs) foreach ($tabs as $key => $tab)
+		if ($debug) print "al=$all_loaded";
+
+		if ($tabs) foreach ($tabs as $key => $tab)
 		{
 			if (! is_array($tab) or count($tab) < 3){
 				var_dump($tab);
 				return "Tab elements should be seq array with 3 elements: [0]name, [1]display_name, and [2]content. Count is " . count($tab);
 			}
-			$name = $tab[0]; // print "name=$name show=$selected_tab $all_loaded<br/>";
+			$name = strtok($tab[0], '&'); // print "name=$name show=$selected_tab $all_loaded<br/>";
 			$display_name = $tab[1];
 
-			$div_args["style"] = (($selected_tab == $name) ? 'display: block' : "display: none");
+			// To show the block?
+			// Default no.
+			$div_args["style"] = "display: none";
+			// Unless first of all loaded
+			if ($all_loaded and ($key == 0)) $div_args['style'] = 'display:block';
+			// Or is selected.
+			if ($selected_tab == $name) $div_args['style'] = 'display:block';
+//			$div_args["style"] = ((($selected_tab == $name) or $all_loaded) ? 'display: block' : "display: none");
+//			print "$name ds=" . $div_args["style"] . "<br/>";
 
 			if ($all_loaded or ($selected_tab == $name)){
-//				$result .= "loaded $name<br/>";
 				$contents .= Core_Html::GuiDiv($name, $tab[2], $div_args);
+				if ($debug) print $contents;
 				$selected_tab = null;
 			}
 
 			if ($all_loaded)
 				$button_args["events"] = "onclick=\"selectTab(event, '$name', '$div_class', '$btn_class')\"";
 			else
-				$button_args["events"] = "onclick=\"window.location.href = '" . AddToUrl("selected_tab", $name) . "'\"";
+				$button_args["events"] = "onclick=\"window.location.href = '" . AddToUrl("st_$id", $tab[0]) . "'\"";
 
 			$result .= Core_Html::GuiButton("btn_tab_$name", $display_name, $button_args);
-			$tab_index++;
 		}
 		$result .= "</div>";
 		$result .= "<hr>";
 
 		$result .= $contents;
+		if ($debug) print $contents;
 		return $result;
 	}
 	/**

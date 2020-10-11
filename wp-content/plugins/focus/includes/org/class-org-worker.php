@@ -33,7 +33,12 @@ class Org_Worker extends Core_users
 	function GetCompanies($is_manager = false){
 		$sql = " select id from im_company where admin = " . $this->id;
 		if (!$is_manager) $sql .= " union select company_id from im_working where user_id = " . $this->id;
-		return SqlQueryArrayScalar($sql);
+//		print $sql . "<br/>";
+		$result = SqlQueryArrayScalar($sql);
+		if (! $result) return null;
+		for ($i = 0; $i < count($result); $i++)
+			$result[$i] = (int) $result[$i];
+		return $result;
 	}
 
 	function getPersonalTeam()

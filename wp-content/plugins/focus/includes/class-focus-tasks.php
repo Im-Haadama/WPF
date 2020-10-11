@@ -221,7 +221,6 @@ class Focus_Tasks {
 						$args["selectors"]["mission_id"] = "Flavor_Mission::gui_select_mission";
 					}
 
-
 					$args["header_fields"] = array(
 						"task_title" => "Task Title",
 						"date"             => "Date",
@@ -244,7 +243,7 @@ class Focus_Tasks {
 					$args["fields"] = array(
 						"id",
 						"task_title",
-						"date",
+						"task_template",
 						"task_description", // Needed for task title
 						"team",
 						"project_id",
@@ -904,6 +903,8 @@ class Focus_Tasks {
 	 */
 	function default( $user_id )
 	{
+//		print self::CompanySettings(new Org_Company(1));
+//		die (1);
 		if (! self::focus_check_user()) return "not valid user";
 
 		if (! ($user_id > 0)) return "'$user_id' is not valid user";
@@ -911,11 +912,12 @@ class Focus_Tasks {
 		$result = greeting(null, false);
 		$worker = new Org_Worker( $user_id );
 		$tabs   = array();
-		$args = self::Args();
+		$args = self::Args("tasklist");
 
 		$result .= self::search_box();
 
-		$selected_tab = GetParam("selected_tab", false, "my_work");
+		$selected_tab = GetParam("st_main", false, "my_work");
+//		print "ST=$selected_tab<br/>";
 		$tabs = array(
 			array("my_work", "My tasks", null),
 			array( "my_team_work", "Team's tasks", null),
@@ -924,6 +926,17 @@ class Focus_Tasks {
 			array( "my_projects", "My projects", null),
 			array( "repeating_tasks", "Repeating tasks", null));
 
+		if ( $companies = $worker->GetCompanies( true ) ) {
+			foreach ( $companies as $company_id ) {
+				if (! is_integer($company_id))
+					die ("company $company_id is not int");
+				$company = new Org_Company($company_id);
+				array_push( $tabs, array("company_settings&company_id=$company_id", "{$company->getName()} Settings", null));
+//					, ($selected_tab == "company_settings" ? self::CompanySettings($company) : null)) );
+			}
+		}
+
+//		print "st=$selected_tab<br/>";
 		switch ($selected_tab) {
 			case "my_work":
 				$tabs[0][2] = self::user_work( $args, "Active tasks assigned to me", false, $user_id );
@@ -943,6 +956,13 @@ class Focus_Tasks {
 			case "repeating_tasks":
 				$tabs[5][2] = self::show_templates( $args );
 				break;
+			case "company_settings":
+//				print 1/0;
+				$company_id = GetParam("company_id", true);
+				$company = new Org_Company($company_id);
+				$tabs[6][2] = self::CompanySettings($company);
+//				print self::CompanySettings($company);
+				break;
 			default:
 				$result .= "$selected_tab not handled!";
 		}
@@ -958,12 +978,14 @@ class Focus_Tasks {
 //		array_push( $tabs, array( "my_teams", "My Teams", ($selected_tab == "my_teams" ? self::my_teams( $args, $user_id ): null ) ) );
 //		array_push( $tabs, array( "my_projects", "My projects", ($selected_tab == "my_projects" ? self::my_projects( $args, $user_id ): null ) ));
 //		array_push( $tabs, array( "repeating_tasks", "Repeating tasks",($selected_tab == "repeating_tasks" ? self::show_templates( $args ): null ) ));
-		if ( $companies = $worker->GetCompanies( true ) ) {
-			foreach ( $companies as $company_id ) {
-			    $company = new Org_Company($company_id);
-				array_push( $tabs, array("company_settings", "{$company->getName()} Settings", ($selected_tab == "company_settings" ? self::CompanySettings($company) : null)) );
-			}
-		}
+//		if ( $companies = $worker->GetCompanies( true ) ) {
+//			foreach ( $companies as $company_id ) {
+//				if (! is_integer($company_id))
+//					 die ("company $company_id is not int");
+//			    $company = new Org_Company($company_id);
+//				array_push( $tabs, array("company_settings", "{$company->getName()} Settings", ($selected_tab == "company_settings" ? self::CompanySettings($company) : null)) );
+//			}
+//		}
 
 		// My work queue
 //		$mine = self::user_work( $args, $user_id );
@@ -995,12 +1017,12 @@ class Focus_Tasks {
 
 		$args["tabs_load_all"] = false;
 
-		$result .= Core_Html::GuiTabs( $tabs, $args );
+		$result .= Core_Html::GuiTabs( "main", $tabs, $args );
 
 		return $result;
 	}
 
-	static function CompanySettings($company)
+	static function CompanySettings(Org_Company $company)
 	{
 		$args = self::Args();
 		$tabs = [];
@@ -1019,7 +1041,11 @@ class Focus_Tasks {
 
 		$args["class"] = "company_tabs";
 		$args["tabs_load_all"] = true;
-		return Core_Html::GuiTabs($tabs, $args);
+//		var_dump($tabs);
+		$t = Core_Html::GuiTabs("company_settings", $tabs, $args);
+
+//		print $t;
+		return $t;
 	}
 
 	static function search_box() {
@@ -1078,6 +1104,8 @@ class Focus_Tasks {
 		if ( $args["count"] ) {
 			$result .= $table;
 		} else {
+			if (! $include_team)
+				return self::user_work($args, "Active tasks assigned to my teams", true, $user_id);
 			$result .= "Nothing found.";
 		}
 		$result .= self::task_filters();
@@ -1528,7 +1556,7 @@ class Focus_Tasks {
 		$worker      = new Org_Worker( $user_id );
 		$company_ids = $worker->GetCompanies();
 
-		if ( ! count( $company_ids ) ) {
+		if ( ! $company_ids or ! count( $company_ids ) ) {
 			print "Ne need some information to get started!<br/>";
 			$args = array( "values" => array( "admin" => get_user_id() ) );
 			try {
@@ -1597,11 +1625,11 @@ class Focus_Tasks {
 	 * @return string
 	 * @throws Exception
 	 */
-	static function company_teams( $company_id, $args )
+	static function company_teams( Org_Company $company, $args )
 	{
+		$company_id = $company->getId();
 		$db_prefix = GetTablePrefix();
-		$c                 = new Org_Company( $company_id );
-		$result            = Core_Html::GuiHeader( 1, $c->getName() );
+		$result            = Core_Html::GuiHeader( 1, $company->getName() );
 		$args["query"]     = "manager = 1";
 		$args["links"]     = array( "id" => AddToUrl( array( "operation" => "show_edit_team&id=%s" ) ) );
 		$args["selectors"] = array( "team_members" => __CLASS__ . "::gui_show_team" );
@@ -1627,15 +1655,15 @@ class Focus_Tasks {
 		return $result;
 	}
 
-	static function company_workers( $company_id, $args ) {
-		$c                 = new Org_Company( $company_id );
-		$result            = Core_Html::GuiHeader( 1, $c->getName() );
+	static function company_workers( Org_Company $company, $args ) {
+		$company_id = $company->getId();
+		$result            = Core_Html::GuiHeader( 1, $company->getName() );
 		$args["query"]     = "manager = 1";
 		$args["links"]     = array( "id" => AddToUrl( array( "operation" => "show_edit_worker&worker_id=%s" ) ) );
 //		$args["selectors"] = array( "team_members" => __CLASS__ . "::gui_show_team" );
 		//$args["post_file"] .= "operation=company_teams";
 
-		$worker_ids = $c->GetWorkers(); // Should return the admin at least.
+		$worker_ids = $company->GetWorkers(); // Should return the admin at least.
 		if (! $worker_ids) return null;
 
 		$workers = Core_Data::TableData("select id, client_displayname(id) from wp_users where id in ("
