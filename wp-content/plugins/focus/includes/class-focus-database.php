@@ -1,5 +1,4 @@
 <?php
-
 class Focus_Database extends Core_Database
 {
 	function install($version, $force = false)
@@ -31,16 +30,19 @@ class Focus_Database extends Core_Database
 			       self::UpdateInstalled( "Focus", "tables", $version );
 
 		}
-		if ( $current == $version and ! $force ) {
-			return true;
-		}
-
+        //print $version;
+		//if ( $current == $version and ! $force ) {
+		//	return true;
+		//}
 		switch ($current){
 			case '1.0':
 				SqlQuery( "alter table im_projects add is_active bit" );
 
 			case '1.1':
 				SqlQuery( "alter table im_projects add company int" );
+
+            case '1.2':
+                SqlQuery("ALTER TABLE im_tasklist MODIFY project_id int NOT NULL");
 		}
 
 		return self::UpdateInstalled( "Focus", "tables", $version );

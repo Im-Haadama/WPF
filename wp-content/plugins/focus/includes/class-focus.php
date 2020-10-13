@@ -171,6 +171,7 @@ class Focus {
 		add_filter("search_by_text", array("Focus_Tasks", "search_by_text_wrap"));
 
         Core_Pages::CreateIfNeeded("project", "/project", "focus_project");
+        Core_Pages::CreateIfNeeded("task", "/task", "focus_task");
 
 		if ((get_user_id() == 1) and defined("DEBUG_USER")) wp_set_current_user(DEBUG_USER);
 	}

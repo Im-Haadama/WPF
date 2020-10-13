@@ -158,6 +158,16 @@ class Focus_Tasks {
 		return $result;
 	}
 
+    static function gui_select_priority($id, $priority_id, $args) {
+
+        $result = "";
+        $priority_list = array(1=>"1",2=>"2",3=>"3",4=>"4",5=>"5",6=>"6",7=>"7",8=>"8",9=>"9",10=>"10");
+        //$priority_list = array(1 => '1-low',2 =>'2',3=>'3',4=>'4',5=>'5',6=>'6',7=>'7',8=>'8',9=>'9',10=> 'high');
+        $args["values"] = $priority_list;
+        $result .= Core_Html::GuiSimpleSelect($id, $priority_id, $args);
+        return $result;
+    }
+
 	static function Args( $table_name = null, $action = null ) {
 		$ignore_list = [];
 		$args        = array(
@@ -184,7 +194,7 @@ class Focus_Tasks {
 						"owner"       => "Focus_Tasks::gui_select_worker",
 						"creator"     => "Focus_Tasks::gui_select_worker",
 						"repeat_freq" => "gui_select_repeat_time",
-						"team"        => "Focus_Tasks::gui_select_team"
+						"team"        => "Focus_Tasks::gui_select_team",
 					);
 					$args["fields"]        = array(
 						"id",
@@ -216,7 +226,8 @@ class Focus_Tasks {
 						"owner"      => "Focus_Tasks::gui_select_worker",
 						"creator"    => "Focus_Tasks::gui_select_worker",
 						"preq"       => "Focus_Tasks::gui_select_task",
-						"team"       => "Focus_Tasks::gui_select_team"
+						"team"       => "Focus_Tasks::gui_select_team",
+                        "priority"   => "Focus_Tasks::gui_select_priority"
 					);
 					if (self::OptionEnabled("missions")) {
 						$args["selectors"]["mission_id"] = "Flavor_Mission::gui_select_mission";
@@ -261,6 +272,7 @@ class Focus_Tasks {
 					$args["links"]     = array( "ID" => AddToUrl( array( "operation" => "gem_edit_projects&id=%s" ) ) );
                     $args["fields"]           = array( "ID", "project_name", "project_contact", "project_priority" );
                     $args["mandatory_fields"] = array( "project_name" );
+                    $args["selectors"] = array("project_priority" => "Focus_Tasks::gui_select_priority");
                     //$args["values"] = array("manager" => get_user_id());
                     $args["header_fields"]    = array(
                         "project_name"     => "Project name",
@@ -671,6 +683,7 @@ class Focus_Tasks {
 
 		$result = Core_Gem::GemTable( "tasklist", $args );
 		$result .= Core_Html::GuiHyperlink( "Edit project", AddToUrl( "edit", 1 ) );
+        $result .= Core_Html::GuiHyperlink("main page", "https://test.fruity.co.il/focus/" ,null);
 
 		return $result;
 	}
@@ -1636,7 +1649,7 @@ class Focus_Tasks {
 		$args["selectors"] = array( "team_members" => __CLASS__ . "::gui_show_team" );
 
 		$teams = Core_Data::TableData( "select id, team_name from ${db_prefix}working_teams where manager in \n" .
-		                               "(select user_id from ${db_prefix}working where company_id = $company_id) order by 1", $args );
+		                               "(select user_id from ${db_prefix}working where company = $company_id) order by 1", $args );
 		if ( $teams ) {
 			foreach ( $teams as $key => &$row ) {
 				if ( $key == "header" ) {
