@@ -43,8 +43,8 @@ class Focus_Database extends Core_Database
 
             case '1.2':
                 SqlQuery("ALTER TABLE im_tasklist MODIFY project_id int NOT NULL");
+                SqlQuery( "alter table im_projects add project_contact_id int" );
 		}
-
 		return self::UpdateInstalled( "Focus", "tables", $version );
 	}
 

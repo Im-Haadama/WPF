@@ -111,7 +111,11 @@ class Focus_Tasks {
 
 		$events               = GetArg( $args, "events", null );
 		$class                = GetArg( $args, "class", null );
-		return Core_Html::gui_select( $id, 'display_name', $selected_info, $events, $selected, "user_id", $class );
+        $result = "";
+		$result .= Core_Html::gui_select( $id, 'display_name', $selected_info, $events, $selected, "user_id", $class );
+        //$result .= Core_Html::GuiButton( "add_new_user", "New user", array(
+        //        "action" => "add_element('contact', '" . $form_table . "', '" . GetUrl() . "')", "New User") );
+		return $result;
 	}
 
 	static function gui_select_project( $id, $project_id, $args ) {
@@ -161,8 +165,7 @@ class Focus_Tasks {
     static function gui_select_priority($id, $priority_id, $args) {
 
         $result = "";
-        $priority_list = array(1=>"1",2=>"2",3=>"3",4=>"4",5=>"5",6=>"6",7=>"7",8=>"8",9=>"9",10=>"10");
-        //$priority_list = array(1 => '1-low',2 =>'2',3=>'3',4=>'4',5=>'5',6=>'6',7=>'7',8=>'8',9=>'9',10=> 'high');
+        $priority_list = array(1=>"1-low",2=>"2",3=>"3",4=>"4",5=>"5",6=>"6",7=>"7",8=>"8",9=>"9",10=>"10 - high");
         $args["values"] = $priority_list;
         $result .= Core_Html::GuiSimpleSelect($id, $priority_id, $args);
         return $result;
@@ -265,18 +268,26 @@ class Focus_Tasks {
 					break;
 
 				case "working_teams":
+                    $args["fields"] = array( "team_name" );
+                    $args["header_fields"]    = array("team_name" => "Team name");
 					break;
 
 				case "projects":
 					// Todo: if col is hidden, set default.
 					$args["links"]     = array( "ID" => AddToUrl( array( "operation" => "gem_edit_projects&id=%s" ) ) );
-                    $args["fields"]           = array( "ID", "project_name", "project_contact", "project_priority" );
+                    $args["fields"]           = array( "ID",
+                                                        "project_name",
+                                                        "project_contact",
+                                                        "project_contact_id",
+                                                        "project_priority" );
                     $args["mandatory_fields"] = array( "project_name" );
-                    $args["selectors"] = array("project_priority" => "Focus_Tasks::gui_select_priority");
+                    $args["selectors"] = array("project_priority" => "Focus_Tasks::gui_select_priority",
+                                                "project_contact_id" => "Core_Users::gui_select_user", );
                     //$args["values"] = array("manager" => get_user_id());
                     $args["header_fields"]    = array(
                         "project_name"     => "Project name",
                         "project_contact"  => "Project contact (client)",
+                        "project_contact_id" => "Project contact id",
                         "project_priority" => "Priority"
 
                     );
@@ -375,7 +386,6 @@ class Focus_Tasks {
 					"project_priority" => "Priority"
 
 				);
-
 
 				return Core_Gem::GemAddRow( "projects", "Add a project", $args );
 
@@ -683,7 +693,7 @@ class Focus_Tasks {
 
 		$result = Core_Gem::GemTable( "tasklist", $args );
 		$result .= Core_Html::GuiHyperlink( "Edit project", AddToUrl( "edit", 1 ) );
-        $result .= Core_Html::GuiHyperlink("main page", "https://test.fruity.co.il/focus/" ,null);
+        $result .= Core_Html::GuiHyperlink("main page", "/focus/" ,null);
 
 		return $result;
 	}
@@ -1649,7 +1659,7 @@ class Focus_Tasks {
 		$args["selectors"] = array( "team_members" => __CLASS__ . "::gui_show_team" );
 
 		$teams = Core_Data::TableData( "select id, team_name from ${db_prefix}working_teams where manager in \n" .
-		                               "(select user_id from ${db_prefix}working where company = $company_id) order by 1", $args );
+		                               "(select user_id from ${db_prefix}working where id = $company_id) order by 1", $args );
 		if ( $teams ) {
 			foreach ( $teams as $key => &$row ) {
 				if ( $key == "header" ) {
@@ -1678,16 +1688,18 @@ class Focus_Tasks {
 		//$args["post_file"] .= "operation=company_teams";
 
 		$worker_ids = $company->GetWorkers(); // Should return the admin at least.
-		if (! $worker_ids) return null;
-
-		$workers = Core_Data::TableData("select id, client_displayname(id) from wp_users where id in ("
-		. CommaImplode($worker_ids) . ")");
-		$args["post_file"] .= "?company=" . $company_id;
-		$args["add_button"] = false;
-		$result .= Core_Gem::GemArray( $workers, $args, "company_workers" );
+		if (! $worker_ids) {
+            $result .= "No workers in the company";
+        }
+		else{
+            $workers = Core_Data::TableData("select id,display_name from wp_users where id in (" . CommaImplode($worker_ids) . ")");
+            $args["post_file"] .= "?company=" . $company_id;
+            $args["add_button"] = false;
+            $result .= Core_Gem::GemArray( $workers, $args, "company_workers" );
+        }
 
 		$post_file = Focus::getPost();
-		$result .= "<div>" . Core_Users::gui_select_user("user_to_add", null, $args)  . Core_Html::GuiButton("btn_add", "Add", "company_add('$post_file', $company_id)") . "</div>";
+		$result .= "<div>" . Core_Users::gui_select_user("user_to_add", null, $args). Core_Html::GuiButton("btn_add", "Add", "company_add_worker('$post_file', $company_id)") . "</div>";
 
 //		$result .= Core_Html::GuiHyperlink("Add new user", AddToUrl(array("operation"=>"show_add_company_worker", "company" => $company_id)));
 
@@ -2212,6 +2224,7 @@ class Focus_Tasks {
 		AddAction("gem_add_project_members", array($this, "AddProjectMember"), 11, 3);
 		AddAction("project_add_member", array(__CLASS__, 'ProjectAddMember'), 11, 3);
         add_filter("data_save_new_projects", array(__CLASS__, 'DataSaveNewDefault' ),11,1);
+        add_filter("data_save_new_working_teams", array(__CLASS__, 'DataSaveNewTeam' ),11,1);
 
 		// Tasklist
 		Core_Gem::AddTable( "tasklist" ); // add + edit
@@ -2236,6 +2249,12 @@ class Focus_Tasks {
             $row["manager"] = get_user_id();
         }
 	    return $row;
+    }
+    static function DataSaveNewTeam($row){
+        if(!isset($row["manager"])){
+            $row["manager"] = get_user_id();
+        }
+        return $row;
     }
 
 	static function team_remove_member() {
