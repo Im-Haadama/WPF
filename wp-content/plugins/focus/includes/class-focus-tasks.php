@@ -161,8 +161,8 @@ class Focus_Tasks {
     static function gui_select_priority($id, $priority_id, $args) {
 
         $result = "";
-        $priority_list = array(1=>"1",2=>"2",3=>"3",4=>"4",5=>"5",6=>"6",7=>"7",8=>"8",9=>"9",10=>"10");
-        //$priority_list = array(1 => '1-low',2 =>'2',3=>'3',4=>'4',5=>'5',6=>'6',7=>'7',8=>'8',9=>'9',10=> 'high');
+//        $priority_list = array(1=>"1",2=>"2",3=>"3",4=>"4",5=>"5",6=>"6",7=>"7",8=>"8",9=>"9",10=>"10");
+        $priority_list = array(1 => '1-low',2 =>'2',3=>'3',4=>'4',5=>'5',6=>'6',7=>'7',8=>'8',9=>'9',10=>'10-high');
         $args["values"] = $priority_list;
         $result .= Core_Html::GuiSimpleSelect($id, $priority_id, $args);
         return $result;
@@ -683,7 +683,7 @@ class Focus_Tasks {
 
 		$result = Core_Gem::GemTable( "tasklist", $args );
 		$result .= Core_Html::GuiHyperlink( "Edit project", AddToUrl( "edit", 1 ) );
-        $result .= Core_Html::GuiHyperlink("main page", "https://test.fruity.co.il/focus/" ,null);
+//        $result .= Core_Html::GuiHyperlink("main page", "https://test.fruity.co.il/focus/" ,null);
 
 		return $result;
 	}
@@ -956,7 +956,11 @@ class Focus_Tasks {
 				$tabs[0][2] = self::user_work( $args, "Active tasks assigned to me", false, $user_id );
 				break;
 			case "my_team_work":
-				$tabs[1][2] = self::user_work( $args, "Active tasks assigned to my teams", true, $user_id );
+				$title = "Active tasks assigned to my teams";
+				if ($team = GetParam("team", false, null)) {
+					$title = "Active tasks assigned to team " . $team;
+				}
+				$tabs[1][2] = self::user_work( $args, $title, true, $user_id );
 				break;
 			case "i_want":
 				$tabs[2][2] = self::i_want( $args, $user_id );
@@ -1275,7 +1279,7 @@ class Focus_Tasks {
 		$db_prefix = GetTablePrefix();
 		$args["count"]           = 0;
 		$args["drill"]           = true;
-		$args["drill_operation"] = "show_tasks";
+		$args["drill_operation"] = ''; // "show_tasks";
 
 		$table_name = "tasklist";
 
