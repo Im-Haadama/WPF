@@ -24,9 +24,16 @@ class Org_Company {
 		return SqlQuerySingleScalar( "select name from im_company where id = " . $this->id);
 	}
 
+	public function getManager(){
+        return SqlQuerySingleScalar("select admin from im_company where id = " . $this->id);
+    }
+
 	public function getWorkers()
 	{
-		return SqlQueryArrayScalar( "select user_id from wp_usermeta where meta_key = 'companies' and meta_value like '%:" . $this->id . ":%'");
+        $users_array = SqlQueryArrayScalar( "select user_id from wp_usermeta where meta_key = 'companies' and meta_value like '%:" . $this->id . ":%'");
+	    $manager = $this->getManager();
+        if (! in_array($manager, $users_array)) array_push($users_array, $manager);
+		return $users_array;
 	}
 
 	public function AddWorker($w_id)

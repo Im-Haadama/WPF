@@ -1660,7 +1660,6 @@ class Focus_Tasks {
 
 		$sql = "select id, team_name from ${db_prefix}working_teams where manager in \n" .
 		       "(" . CommaImplode($company->getWorkers()) . ")";
-//		       "(select user_id from ${db_prefix}working where id = $company_id) order by 1";
 		$teams = Core_Data::TableData($sql , $args );
 		if ( $teams ) {
 			foreach ( $teams as $key => &$row ) {
@@ -2255,6 +2254,15 @@ class Focus_Tasks {
     static function DataSaveNewTeam($row){
         if(!isset($row["manager"])){
             $row["manager"] = get_user_id();
+        }
+        //check if the team already exist
+        $manager = $row["manager"];
+        $team_name = $row["team_name"];
+        $db_prefix = GetTablePrefix("working_teams");
+        $count = SqlQuerySingleScalar("select count(*) from ${db_prefix}working_teams where team_name = '" . $team_name . "' and manager =". $manager);
+        if ($count > 0 ) {
+            print __("Duplicate value", "e-fresh");
+            return null;
         }
         return $row;
     }

@@ -31,9 +31,9 @@ class Focus_Database extends Core_Database
 
 		}
         //print $version;
-		if ( $current == $version and ! $force ) {
-			return true;
-		}
+		//if ( $current == $version and ! $force ) {
+		//	return true;
+		//}
 		switch ($current){
 			case '1.0':
 				SqlQuery( "alter table im_projects add is_active bit" );
@@ -45,6 +45,7 @@ class Focus_Database extends Core_Database
                 SqlQuery("ALTER TABLE im_tasklist MODIFY project_id int NOT NULL");
                 SqlQuery( "alter table im_projects add project_contact_id int" );
 		}
+
 		return self::UpdateInstalled( "Focus", "tables", $version );
 	}
 
@@ -194,7 +195,6 @@ engine=InnoDB;
 	manager int null,
 	is_active bit default b'1' null
 )");
-		if ($current == $version and ! $force) return true;
 
 		SqlQuery("create table im_log
 (
