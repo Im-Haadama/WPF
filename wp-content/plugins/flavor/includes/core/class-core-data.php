@@ -109,6 +109,7 @@ class Core_Data
 	{
 		$ignore_list = ["dummy", "operation", "table_name"];
 		$row = apply_filters("data_save_new_$table_name", $_GET);
+        if (!$row) return 0;
 		$row_id = SqlInsert($table_name, $row, $ignore_list);
 		self::Active($table_name,$row_id,true);
         return $row_id;
