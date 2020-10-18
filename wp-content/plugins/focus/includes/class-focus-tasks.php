@@ -1658,8 +1658,10 @@ class Focus_Tasks {
 		$args["links"]     = array( "id" => AddToUrl( array( "operation" => "show_edit_team&id=%s" ) ) );
 		$args["selectors"] = array( "team_members" => __CLASS__ . "::gui_show_team" );
 
-		$teams = Core_Data::TableData( "select id, team_name from ${db_prefix}working_teams where manager in \n" .
-		                               "(select user_id from ${db_prefix}working where id = $company_id) order by 1", $args );
+		$sql = "select id, team_name from ${db_prefix}working_teams where manager in \n" .
+		       "(" . CommaImplode($company->getWorkers()) . ")";
+//		       "(select user_id from ${db_prefix}working where id = $company_id) order by 1";
+		$teams = Core_Data::TableData($sql , $args );
 		if ( $teams ) {
 			foreach ( $teams as $key => &$row ) {
 				if ( $key == "header" ) {

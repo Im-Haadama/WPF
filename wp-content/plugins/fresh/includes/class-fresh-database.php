@@ -490,7 +490,7 @@ charset=utf8;
 
 		SqlQuery("drop function supplier_from_business");
 		SqlQuery("create
-     function supplier_from_business(bus_id int) returns text
+     function supplier_from_business(bus_id int) returns text CHARSET utf8
 BEGIN
     declare _supplier_id int;
     declare _display varchar(50) CHARSET utf8;
@@ -501,6 +501,7 @@ BEGIN
   END;
 
 ");
+
 
 		SqlQuery("drop function supply_from_business");
 		SqlQuery("create function supply_from_business( _business_id int) returns integer

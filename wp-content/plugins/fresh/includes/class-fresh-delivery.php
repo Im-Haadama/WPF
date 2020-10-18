@@ -29,6 +29,7 @@ class Fresh_Delivery {
 	private $margin_total = 0;
 	private $user_id = 0;
 	private $delivery_fields_names;
+	private $calculated;
 
 	public function __construct( $id ) {
 		$this->ID = $id;
@@ -59,6 +60,7 @@ class Fresh_Delivery {
 //			var_dump($del_info);
 			$this->delivery_total = $del_info['total'];
 		}
+		$this->calculated = false;
 	}
 
 	static public function init_hooks()
@@ -755,6 +757,8 @@ class Fresh_Delivery {
 
 		$data .= "מספר שורות  " . $this->line_number . "<br/>";
 
+		$this->calculated = true;
+
 		return "$data";
 	}
 
@@ -1310,6 +1314,8 @@ class Fresh_Delivery {
 	 * @return int
 	 */
 	public function getDeliveryDueVat(): float {
+		if (! $this->calculated)
+			$this->delivery_text( FreshDocumentType::delivery, Fresh_DocumentOperation::show );
 		return $this->delivery_due_vat;
 	}
 

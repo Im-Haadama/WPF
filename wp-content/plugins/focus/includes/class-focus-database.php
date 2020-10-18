@@ -31,9 +31,9 @@ class Focus_Database extends Core_Database
 
 		}
         //print $version;
-		//if ( $current == $version and ! $force ) {
-		//	return true;
-		//}
+		if ( $current == $version and ! $force ) {
+			return true;
+		}
 		switch ($current){
 			case '1.0':
 				SqlQuery( "alter table im_projects add is_active bit" );
@@ -164,7 +164,7 @@ charset=utf8;
 	id int auto_increment
 		primary key,
 	date datetime null,
-	task_title varchar(100) null,
+	task_title varchar(100) charset utf8 null,
 	task_description varchar(100) charset utf8 null,
 	task_template int null,
 	status int default 0 null,

@@ -19,12 +19,38 @@ class Fresh_Accounting {
 		FROM im_business_info WHERE " .
 		       " is_active = 1 AND week = '" . $week . "' AND amount > 0 ORDER BY 1";
 
-		$sums_in = array(  "ref" => "סה\"כ", "date" => '', "amount" => array( 0, 'SumNumbers' ), 'delivery fee' => array(0, 'SumNumbers') );
+		$sums_in = array(  "ref" => "סה\"כ",
+		                   "date" => '',
+		                   "amount" => array( 0, 'SumNumbers' ),
+		                   'delivery fee' => array(0, 'SumNumbers'),
+			'client' => '',
+			'קבלה' => '',
+			               'due_vat' => array(0, 'SumNumbers'),
+			'fresh' => array(0, 'SumNumbers'));
 		$in_args = array("links" => array("ref" => "../delivery/get-delivery.php?id=%s"),
 		                 "accumulation_row" => &$sums_in,
 		                 "id_field" => "ref");
-		$report .= Core_Html::GuiTableContent("table", $sql, $in_args);
-			// Core_Html::gui_table_args("table", $sql, $in_args);
+		$rows_data = Core_Data::TableData( $sql, $in_args);
+
+		// Add due vat, fresh total
+		foreach ($rows_data as $key => $row)
+		{
+			if ($key == 'header') {
+				$rows_data[ $key ]['due_vat'] = 'מוצרים חייבי מע"מ';// ;;__("Vat");
+				$rows_data[$key] ['fresh'] = 'סה"כ מוצרים טריים';
+			}
+			else {
+				$delivery = new Fresh_Delivery($key);
+				$rows_data[ $key ]['due_vat'] = $delivery->getDeliveryDueVat() - $delivery->DeliveryFee();
+				$rows_data[$key]['fresh'] = $rows_data[ $key ]['amount'] - $rows_data[ $key ]['due_vat'];
+			}
+		}
+
+//		$report .= Core_Html::GuiTableContent("business", $sql, $in_args);
+//			 Core_Html::gui_table_args("table", $sql, $in_args);
+
+		$report .= Core_Html::gui_table_args( $rows_data, "table", $in_args );
+
 
 		$report .= Core_Html::GuiHeader(2, "הוצאות");
 
