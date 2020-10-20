@@ -21,10 +21,9 @@ class Focus_Database extends Core_Database
 			       self::UpdateInstalled( "Focus", "tables", $version );
 
 		}
-        //print $version;
-		//if ( $current == $version and ! $force ) {
-		//	return true;
-		//}
+		if ( $current == $version and ! $force ) {
+			return true;
+		}
 		switch ($current){
 			case '1.0':
 				SqlQuery( "alter table im_projects add is_active bit" );
@@ -35,8 +34,10 @@ class Focus_Database extends Core_Database
             case '1.2':
                 SqlQuery("ALTER TABLE im_tasklist MODIFY project_id int NOT NULL");
                 SqlQuery( "alter table im_projects add project_contact_id int" );
-		}
+                SqlQuery( "alter table im_projects change project_contact_id project_contact_email" );
+                SqlQuery("ALTER TABLE im_projects MODIFY project_contact_email varchar(50)");
 
+		}
 		return self::UpdateInstalled( "Focus", "tables", $version );
 	}
 

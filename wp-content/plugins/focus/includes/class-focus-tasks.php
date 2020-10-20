@@ -278,16 +278,15 @@ class Focus_Tasks {
                     $args["fields"]           = array( "ID",
                                                         "project_name",
                                                         "project_contact",
-                                                        "project_contact_id",
+                                                        "project_contact_email",
                                                         "project_priority" );
                     $args["mandatory_fields"] = array( "project_name" );
-                    $args["selectors"] = array("project_priority" => "Focus_Tasks::gui_select_priority",
-                                                "project_contact_id" => "Core_Users::gui_select_user", );
+                    $args["selectors"] = array("project_priority" => "Focus_Tasks::gui_select_priority");
                     //$args["values"] = array("manager" => get_user_id());
                     $args["header_fields"]    = array(
                         "project_name"     => "Project name",
                         "project_contact"  => "Project contact (client)",
-                        "project_contact_id" => "Project contact id",
+                        "project_contact_email" => "Project contact email",
                         "project_priority" => "Priority"
 
                     );
@@ -1267,17 +1266,18 @@ class Focus_Tasks {
 		// Tasks I've created. Assigned to some else                                                                 //
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		$args["title"] = ImTranslate( "Tasks I've initiated to other teams" );
-		$args["query"] = " creator = " . $user_id; // . " and (owner != " . $user_id . ' or isnull(owner)) ' . ($teams ? ' and team not in (' . CommaImplode( $teams ) . ")" : '');
-		$result .= Focus_Tasks::Taskslist( $args );
-
-		//print "c=" . $args["count"];
-		if ( ! $args["count"] ) {
-			$result .= "<br/>".ImTranslate( "No active tasks!" );
-			$result .= ImTranslate( "Let's create first one!" ) . " ";
-			$result .= Core_Html::GuiHyperlink( "create task", "?selected_tab=i_want&operation=gem_add_tasklist" ) . "<br/>";
+		$args["query"] = " creator = $user_id and status = 1"; // . " and (owner != " . $user_id . ' or isnull(owner)) ' . ($teams ? ' and team not in (' . CommaImplode( $teams ) . ")" : '');
+        $table = self::Taskslist( $args );
+		if ( $args["count"] ) {
+            $result .= $table;
+		}
+		else{
+            $result .= "<br/>".ImTranslate( "No active tasks!" );
+            $result .= ImTranslate( "Let's create first one!" ) . " ";
 		}
 
-		return $result;
+        $result .= Core_Html::GuiHyperlink( "create task", "?selected_tab=i_want&operation=gem_add_tasklist" ) . "<br/>";
+        return $result;
 	}
 
 	static function Taskslist( &$args = null )
@@ -1361,7 +1361,6 @@ class Focus_Tasks {
 		$fields                = $args["fields"];
 
 		$sql = "select " . CommaImplode( $fields ) . " from ${db_prefix}$table_name $query $order ";
-
 		$result      = "";
 		$args["sql"] = $sql;
 
@@ -1702,7 +1701,8 @@ class Focus_Tasks {
         }
 
 		$post_file = Focus::getPost();
-		$result .= "<div>" . Core_Users::gui_select_user("user_to_add", null, $args). Core_Html::GuiButton("btn_add", "Add", "company_add_worker('$post_file', $company_id)") . "</div>";
+		$result .= "<div>" . Core_Html::GuiInput("user_to_add", null, $args). Core_Html::GuiButton("btn_add", "Add", "company_add_worker('$post_file', $company_id)") . "</div>";
+        //$result .= "<div>" . Core_Users::gui_select_user("user_to_add", null, $args). Core_Html::GuiButton("btn_add", "Add", "company_add_worker('$post_file', $company_id)") . "</div>";
 
 //		$result .= Core_Html::GuiHyperlink("Add new user", AddToUrl(array("operation"=>"show_add_company_worker", "company" => $company_id)));
 
@@ -2228,6 +2228,7 @@ class Focus_Tasks {
 		AddAction("project_add_member", array(__CLASS__, 'ProjectAddMember'), 11, 3);
         add_filter("data_save_new_projects", array(__CLASS__, 'DataSaveNewDefault' ),11,1);
         add_filter("data_save_new_working_teams", array(__CLASS__, 'DataSaveNewTeam' ),11,1);
+        add_filter("data_save_new_tasklist", array(__CLASS__, 'DataSaveNewTaskList' ),11,1);
 
 		// Tasklist
 		Core_Gem::AddTable( "tasklist" ); // add + edit
@@ -2248,12 +2249,15 @@ class Focus_Tasks {
 	}
 
     static function DataSaveNewDefault($row){
+	    //when new project is open the user that open the project is the manager of the project.
 	    if(!isset($row["manager"])){
             $row["manager"] = get_user_id();
         }
 	    return $row;
     }
+
     static function DataSaveNewTeam($row){
+        //when new team is open the user that open the team is the manager of the team.
         if(!isset($row["manager"])){
             $row["manager"] = get_user_id();
         }
@@ -2263,8 +2267,15 @@ class Focus_Tasks {
         $db_prefix = GetTablePrefix("working_teams");
         $count = SqlQuerySingleScalar("select count(*) from ${db_prefix}working_teams where team_name = '" . $team_name . "' and manager =". $manager);
         if ($count > 0 ) {
-            print __("Duplicate value", "e-fresh");
+            print __("Duplicate value ", "e-fresh");
             return null;
+        }
+        return $row;
+    }
+
+    static function DataSaveNewTaskList($row){
+        if(!isset($row["creator"])){
+            $row["creator"] = get_user_id();
         }
         return $row;
     }
