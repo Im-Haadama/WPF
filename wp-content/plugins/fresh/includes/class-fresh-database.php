@@ -131,20 +131,6 @@ order by 1;");
 //		SqlQuery("alter table im_payments
 //		add mail_delivery bit not null default b'0'");
 
-		if (! TableExists("client_accounts"))
-			SqlQuery("create table im_client_accounts
-(
-	ID bigint auto_increment
-		primary key,
-	client_id bigint not null,
-	date date not null,
-	transaction_amount double not null,
-	transaction_method text not null,
-	transaction_ref bigint not null
-)
-charset=utf8;
-
-");
 		self::payment_info_table();
 
 		SqlQuery("alter table ${db_prefix}mission_types add default_price float");
@@ -264,27 +250,6 @@ return round(_amount, 0);
 END;
 
 ");
-
-		if (! TableExists("delivery_lines"))
-		SqlQuery("create table ${db_prefix}delivery_lines
-(
-	id bigint auto_increment
-		primary key,
-	delivery_id bigint not null,
-	product_name varchar(40) not null,
-	quantity float not null,
-	quantity_ordered float not null,
-	vat float not null,
-	price float not null,
-	line_price float not null,
-	prod_id int null,
-	unit_ordered float null,
-	part_of_basket int null,
-	a int null
-);
-
-");
-
 
 		if (! TableExists("payments"))
 		SqlQuery("create table ${db_prefix}payments
@@ -422,26 +387,6 @@ charset=utf8;
 
 ");
 
-		if (! TableExists("delivery"))
-			SqlQuery("create table ${db_prefix}delivery
-(
-	ID bigint auto_increment
-		primary key,
-	date date not null,
-	order_id bigint not null,
-	vat float not null,
-	total float not null,
-	dlines int(5) default 0 not null,
-	fee float not null,
-	payment_receipt int null,
-	driver int not null,
-	draft bit default b'0' not null,
-	draft_reason varchar(50) null
-)
-charset=utf8;
-
-");
-
 		if (! TableExists("baskets"))
 			SqlQuery("create table ${db_prefix}baskets
 (
@@ -455,26 +400,6 @@ charset=utf8;
 charset=utf8;
 
 ");
-
-		if (!TableExists("business_info"))
-			SqlQuery("create table ${db_prefix}business_info
-(
-	id bigint auto_increment
-		primary key,
-	part_id int not null,
-	date date not null,
-	week date not null,
-	amount double not null,
-	ref varchar(20) not null,
-	delivery_fee float null,
-	project_id int default 3 not null,
-	is_active bit default b'1' null,
-	document_type int(2) default 1 not null,
-	net_amount double null,
-	invoice_file varchar(200) charset utf8 null,
-	invoice int(10) null,
-	pay_date date null
-);");
 
 		self::UpdateInstalled("Fresh", "tables", $version);
 	}
@@ -589,29 +514,11 @@ select sum(amount) into _amount from ${db_prefix}business_info
 where part_id = _supplier_id
 and date <= _date
 and is_active = 1
-and document_type in (" . FreshDocumentType::bank . "," . FreshDocumentType::invoice . "," . FreshDocumentType::refund . "); 
+and document_type in (" . Finance_DocumentType::bank . "," . Finance_DocumentType::invoice . "," . Finance_DocumentType::refund . "); 
 
 return round(_amount, 0);
 END;";
 		SqlQuery($sql);
-
-		SqlQuery("drop function client_from_delivery");
-		SqlQuery("create function client_from_delivery(del_id int) returns text CHARSET 'utf8'
-BEGIN
-  declare _order_id int;
-  declare _user_id int;
-  declare _display varchar(50) CHARSET utf8;
-  SELECT order_id INTO _order_id FROM im_delivery where id = del_id;
-  select meta_value into _user_id from wp_postmeta
-  where post_id = _order_id and
-  meta_key = '_customer_user';
-  select display_name into _display from wp_users where id = _user_id;
-
-  return _display;
-END;
-
-");
-
 
 		SqlQuery("create function client_displayname(user_id int) returns text CHARSET 'utf8'
 BEGIN
@@ -708,19 +615,6 @@ BEGIN
 
    return _name;
  END" );
-
-		SqlQuery("drop function if exists  order_line_get_variation");
-		SqlQuery("create function order_line_get_variation(_order_item_id int) RETURNS text
-BEGIN
-    declare _variation int;
-    select meta_value into _variation from wp_woocommerce_order_itemmeta
-    where order_item_id = _order_item_id
-      and meta_key = '_variation_id';
-
-    return _variation;
-  END;
-
-");
 		self::UpdateInstalled("Fresh", "functions", $version);
 	}
 

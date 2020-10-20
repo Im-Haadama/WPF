@@ -4,8 +4,90 @@ if (! class_exists("Core_Database"))
 
 class Finance_Database extends Core_Database {
 	function CreateTables($version, $force) {
-		$current = self::CheckInstalled("Finance", "tables");
+
 		$db_prefix = GetTablePrefix();
+
+		if (! TableExists("delivery_lines")) {
+			SqlQuery( "create table ${db_prefix}delivery_lines
+(
+	id bigint auto_increment
+		primary key,
+	delivery_id bigint not null,
+	product_name varchar(40) not null,
+	quantity float not null,
+	quantity_ordered float not null,
+	vat float not null,
+	price float not null,
+	line_price float not null,
+	prod_id int null,
+	unit_ordered float null,
+	part_of_basket int null,
+	a int null
+);
+
+" );
+		}
+
+			if (!TableExists("business_info"))
+			SqlQuery("create table ${db_prefix}business_info
+(
+	id bigint auto_increment
+		primary key,
+	part_id int not null,
+	date date not null,
+	week date not null,
+	amount double not null,
+	ref varchar(20) not null,
+	delivery_fee float null,
+	project_id int default 3 not null,
+	is_active bit default b'1' null,
+	document_type int(2) default 1 not null,
+	net_amount double null,
+	invoice_file varchar(200) charset utf8 null,
+	invoice int(10) null,
+	pay_date date null
+);");
+
+		if (! TableExists("client_accounts"))
+			SqlQuery("create table ${db_prefix}client_accounts
+(
+	ID bigint auto_increment
+		primary key,
+	client_id bigint not null,
+	date date not null,
+	transaction_amount double not null,
+	transaction_method text not null,
+	transaction_ref bigint not null
+)
+charset=utf8;
+
+");
+
+		if (! TableExists("delivery")) {
+			SqlQuery( "create table ${db_prefix}delivery
+(
+	ID bigint auto_increment
+		primary key,
+	date date not null,
+	order_id bigint not null,
+	vat float not null,
+	total float not null,
+	dlines int(5) default 0 not null,
+	fee float not null,
+	payment_receipt int null,
+	driver int not null,
+	draft bit default b'0' not null,
+	draft_reason varchar(50) null
+)
+charset=utf8;
+
+" );
+			SqlQuery( "ALTER TABLE im_delivery
+    ADD UNIQUE (order_id);
+" );
+		}
+
+			$current = self::CheckInstalled("Finance", "tables");
 
 		if ($current == $version and ! $force) return true;
 
@@ -73,11 +155,40 @@ class Finance_Database extends Core_Database {
 		}
 
 		self::UpdateInstalled("Finance", "tables", $version);
-
 	}
 
 	function CreateFunctions($version) {
+		SqlQuery("drop function if exists  order_line_get_variation");
+		SqlQuery("create function order_line_get_variation(_order_item_id int) RETURNS text
+BEGIN
+    declare _variation int;
+    select meta_value into _variation from wp_woocommerce_order_itemmeta
+    where order_item_id = _order_item_id
+      and meta_key = '_variation_id';
+
+    return _variation;
+  END;
+
+");
+
 		return;
+		SqlQuery("drop function client_from_delivery");
+		SqlQuery("create function client_from_delivery(del_id int) returns text CHARSET 'utf8'
+BEGIN
+  declare _order_id int;
+  declare _user_id int;
+  declare _display varchar(50) CHARSET utf8;
+  SELECT order_id INTO _order_id FROM im_delivery where id = del_id;
+  select meta_value into _user_id from wp_postmeta
+  where post_id = _order_id and
+  meta_key = '_customer_user';
+  select display_name into _display from wp_users where id = _user_id;
+
+  return _display;
+END;
+
+");
+
 		SqlQuery("drop function working_rate");
 		SqlQuery("create
     function working_rate(_worker int, _project int) returns float

@@ -159,7 +159,7 @@ class Flavor {
 
 	public function admin_menu()
 	{
-		$menu = new Core_Admin_Menu();
+		$menu = Core_Admin_Menu::instance();
 
 		$menu->AddSubMenu('missions', 'edit_shop_orders',
 			array('page_title' => 'Missions',
@@ -167,6 +167,17 @@ class Flavor {
 			      'menu_slug' => 'missions',
 			      'function' => 'Flavor_Mission::missions'));
 
+		if (TableExists("mission_types"))
+			self::AddTop('missions',"Missions", '/wp-admin/admin.php?page=missions');
+
+		self::AddTop('orders', 'Orders', '/wp-admin/edit.php?post_type=shop_order');
+	}
+
+	function AddTop($id, $title, $href)
+	{
+		$menu = Core_Admin_Menu::instance();
+
+		$menu->AddTop($id, __($title, "e-fresh"), $href);
 	}
 
 	public static function add_settings_tab( $settings_tabs ) {
@@ -334,6 +345,7 @@ class Flavor {
 		$this->define( 'FLAVOR_ABSPATH', dirname( FLAVOR_PLUGIN_FILE ) . '/' );
 		$this->define( 'FLAVOR_PLUGIN_BASENAME', plugin_basename( FLAVOR_PLUGIN_FILE ) );
 		$this->define( 'FLAVOR_VERSION', $this->version );
+		$this->define( 'FLAVOR_URL', plugins_url() . '/flavor/' ); // For languages
 		$this->define( 'FLAVOR_INCLUDES_URL', plugins_url() . '/flavor/includes/' ); // For js
 		$this->define( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path(__FILE__) . '../../flavor/includes/' );  // for php
 		$this->define( 'FLAVOR_DELIMITER', '|' );
@@ -495,7 +507,8 @@ class Flavor {
 
 		// Init action.
 		do_action( 'flavor_init' );
-		add_action( 'admin_bar_menu', 'modify_admin_bar', 200 );
+		self::admin_menu();
+		add_action( 'admin_bar_menu', array(Core_Admin_Menu::instance(), 'do_modify_admin_bar'), 200 );
 	}
 
 	static public function display_name()
@@ -503,6 +516,7 @@ class Flavor {
 		$f = new Fresh_Client(get_user_id());
 		return  $f->getName();
 	}
+
 	static public function check_system()
 	{
 		$result = "שלום<br/>";
@@ -526,10 +540,13 @@ class Flavor {
 	public function load_plugin_textdomain() {
 		$locale = is_admin() && function_exists( 'get_user_locale' ) ? get_user_locale() : get_locale();
 		$locale = apply_filters( 'plugin_locale', $locale, 'flavor' );
+		$domain = 'e-fresh';
 
-		unload_textdomain( 'flavor' );
-//		load_textdomain( 'flavor', FERSH_LANG_DIR . '/flavor/flavor-' . $locale . '.mo' );
-//		load_plugin_textdomain( 'flavor', false, plugin_basename( dirname( FLAVOR_PLUGIN_FILE ) ) . '/i18n/languages' );
+		unload_textdomain( $domain );
+		$text_url = FLAVOR_ABSPATH . '/languages/e-fresh-' . $locale . '.mo';
+		$rc = load_textdomain( $domain, $text_url);
+//		MyLog("$text_url rc=$rc");
+//		load_plugin_textdomain( $domain, false, plugin_basename( dirname( FLAVOR_PLUGIN_FILE ) ) . '/i18n/languages' );
 	}
 
 	/**
@@ -688,25 +705,6 @@ function unlogged_guest_posts_redirect()
 	if (Flavor::isManagementPage() && !is_user_logged_in()) {
 			auth_redirect();
 		}
-}
-function modify_admin_bar( $wp_admin_bar )
-{
-	$wp_admin_bar->add_node( [
-		'id' => 'missions',
-		'title' => __( 'Missions', 'משימות' ),
-		'href' => '/wp-admin/admin.php?page=missions',
-	] );
-
-
-//		$wp_admin_bar->add_node( [
-//			'id' => 'elementor-maintenance-edit',
-//			'parent' => 'missions',
-//			'title' => __( 'Edit Template', 'elementor' ),
-//			'href' => "a.php",
-//		] );
-//
-//	MyLog(__FUNCTION__);
-
 }
 
 ?>

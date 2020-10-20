@@ -1,0 +1,21 @@
+# Translation of Plugin - flavor - Stable (latest release) in Hebrew
+# This file is distributed under the same license as the Plugins - flavor
+msgid ""
+msgstr ""
+"PO-Revision-Date: 2019-01-29 14:54:07+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: GlotPress/2.4.0-alpha\n"
+"Language: he_IL\n"
+"Project1-Id-Version: Imhaadama - 1 - Stable (latest release)\n"
+
+#. translators: %s: error message
+#: includes/wc-rest-functions.php:114
+
+msgid "Order"
+msgstr "הזמנה"
+
+msgid "Orders"
+msgstr "הזמנות"

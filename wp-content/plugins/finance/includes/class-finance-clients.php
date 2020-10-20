@@ -171,6 +171,7 @@ class Finance_Clients
 		return Finance_Yaad::getCustomerStatus($C, true);
 		return '';
 	}
+
 	static function client_account( $customer_id ) {
 		$result = "";
 		try {

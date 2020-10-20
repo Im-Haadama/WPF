@@ -144,7 +144,7 @@ class Finance_Invoices {
 
 		$events = GetArg( $args, "events", null );
 		$types  = array();
-		for ( $i = 1; $i < FreshDocumentType::count; $i ++ ) { // require_once FRESH_INCLUDES . 'fresh_delivery_enum.php';
+		for ( $i = 1; $i < Finance_DocumentType::count; $i ++ ) { // require_once FRESH_INCLUDES . 'fresh_delivery_enum.php';
 			$value["id"]   = $i;
 			$value["name"] = $DocumentTypeNames[ $i ];
 			array_push( $types, $value );

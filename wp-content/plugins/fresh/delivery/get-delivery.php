@@ -53,7 +53,7 @@ if ( ( ! current_user_can( "edit_shop_orders" ) ) and ( $O->getCustomerId() != g
 
 print $O->infoBox( $order_id );
 
-print $d->delivery_text( FreshDocumentType::delivery, Fresh_DocumentOperation::show, $margin );
+print $d->delivery_text( Finance_DocumentType::delivery, Finance_DocumentOperation::show, $margin );
 
 $customer_id = $O->getCustomerId();
 print Core_Html::GuiButton("btn_pay", " בצע חיוב על היתרה", array("action"=>"pay_credit_client('" . Finance::getPostFile() . "', $customer_id)")) ."<br/>";

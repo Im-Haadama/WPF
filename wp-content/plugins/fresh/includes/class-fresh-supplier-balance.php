@@ -24,7 +24,7 @@ class Fresh_Supplier_Balance {
 
 	public function init_hooks()
 	{
-		$menu = new Core_Admin_Menu();
+		$menu = Core_Admin_Menu::instance();
 
 		$menu->AddMenu("הנהלת חשבונות", "הנהלת חשבונות", "edit_shop_orders", "supplier_accounts", array(__CLASS__, 'supplier_accounts'));
 		AddAction("get_supplier_open_account", array(Fresh_Supplier_Balance::instance(), 'supplier_open_account'));
@@ -100,8 +100,8 @@ class Fresh_Supplier_Balance {
        . "FROM `im_business_info`\n"
        . "where part_id > 10000\n"
        . " and is_active = 1\n"
-       . " and document_type in (" . FreshDocumentType::invoice . ", " . FreshDocumentType::bank . ")\n"
-       . " and document_type in (" . FreshDocumentType::invoice . ", " . FreshDocumentType::bank . ")\n"
+       . " and document_type in (" . Finance_DocumentType::invoice . ", " . Finance_DocumentType::bank . ")\n"
+       . " and document_type in (" . Finance_DocumentType::invoice . ", " . Finance_DocumentType::bank . ")\n"
        . "group by part_id";
 
 		if ( ! $include_zero ) $sql .= " having balance < 0";
@@ -158,7 +158,7 @@ class Fresh_Supplier_Balance {
 
 		$sql = "SELECT id, date, amount, ref, pay_date, document_type, supplier_balance($supplier_id, date) as balance FROM im_business_info " .
 		       " WHERE part_id = " . $supplier_id .
-		       " AND document_type IN ( " . FreshDocumentType::bank . "," . FreshDocumentType::invoice ."," . FreshDocumentType::refund . ") " .
+		       " AND document_type IN ( " . Finance_DocumentType::bank . "," . Finance_DocumentType::invoice . "," . Finance_DocumentType::refund . ") " .
 		       " and is_active = 1" .
 		       " ORDER BY date DESC ";
 
@@ -184,7 +184,7 @@ class Fresh_Supplier_Balance {
 		$multi_site = Core_Db_MultiSite::getInstance();
 		$sql = "select " . $multi_site->LocalSiteId() . ", part_id, supplier_displayname(part_id), round(sum(amount),2) as total\n"
 		       . "from im_business_info\n"
-		       . " where document_type in (" . FreshDocumentType::invoice . ", " . FreshDocumentType::bank . ")\n"
+		       . " where document_type in (" . Finance_DocumentType::invoice . ", " . Finance_DocumentType::bank . ")\n"
 		       . "group by 2\n"
 		       . "having total < 0";
 

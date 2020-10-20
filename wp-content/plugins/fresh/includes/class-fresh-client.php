@@ -2,7 +2,7 @@
 
 require_once(ABSPATH . 'wp-includes/pluggable.php');
 
-class Fresh_Client {
+class Fresh_Client extends  Finance_Client {
 
 	private $user_id;
 	private $user;
@@ -112,22 +112,6 @@ class Fresh_Client {
 		}
 
 		return $key;
-	}
-
-	function add_transaction( $date, $amount, $ref, $type ) {
-		$sql = "INSERT INTO im_client_accounts (client_id, date, transaction_amount, transaction_method, transaction_ref) "
-		       . "VALUES (" . $this->user_id . ", \"" . $date . "\", " . $amount . ", \"" . $type . "\", " . $ref . ")";
-
-		MyLog( $sql, "account_add_transaction" );
-		return SqlQuery( $sql );
-	}
-
-	function update_transaction( $total, $delivery_id) {
-		$sql = "UPDATE im_client_accounts SET transaction_amount = " . $total .
-		       " WHERE transaction_ref = " . $delivery_id . " and client_id = " . $this->user_id;
-
-		MyLog( $sql, "account_update_transaction" );
-		SqlQuery( $sql );
 	}
 
 	function get_customer_email()
@@ -336,7 +320,7 @@ class Fresh_Client {
 	<?php }
 
 	static function admin_menu() {
-		$menu = new Core_Admin_Menu();
+		$menu = Core_Admin_Menu::instance();
 
 		$menu->AddSubMenu( "users.php", "edit_shop_orders",
 			array( 'page_title' => 'Client types', 'function' => array( __CLASS__, 'admin_page' ) ) );

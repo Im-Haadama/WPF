@@ -148,7 +148,7 @@ class Israel_Shop
 
 	static function admin_menu()
 	{
-		$menu = new Core_Admin_Menu();
+		$menu = Core_Admin_Menu::instance();
 
 //		$menu->AddMenu('Israel', 'Israel', 'shop_manager', 'israel', __CLASS__ . '::general_settings');
 

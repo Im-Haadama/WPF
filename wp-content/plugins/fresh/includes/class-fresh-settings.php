@@ -74,7 +74,7 @@
 
 		static function admin_menu()
 		{
-			$menu = new Core_Admin_Menu();
+			$menu = Core_Admin_Menu::instance();
 
 //			$menu->AddMenu('Fresh', 'Fresh', 'shop_manager', 'fresh', array(Fresh::instance(), 'main'));
 			$menu->AddMenu('פרש', 'Fresh', 'edit_shop_orders', 'fresh', array(Fresh::instance(), 'main'));
@@ -107,9 +107,6 @@
 			// Needed products
 			$menu->AddSubMenu("fresh", "edit_shop_orders",
 				array('page_title' => 'Packing', 'function' => array("Fresh_Packing" , 'table' )));
-
-			// Deliveries
-			$menu->Add("fresh", "edit_shop_orders", "fresh_deliveries", array("Fresh_Delivery" , 'fresh_deliveries' ));
 
 
 			//////////////

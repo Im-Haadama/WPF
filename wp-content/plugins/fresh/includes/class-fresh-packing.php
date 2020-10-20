@@ -379,26 +379,6 @@ class Fresh_Packing {
 		return $lines;
 	}
 
-	static function get_order_itemmeta( $order_item_id, $meta_key ) {
-		if ( is_array( $order_item_id ) ) {
-			$sql = "SELECT sum(meta_value) FROM wp_woocommerce_order_itemmeta "
-			       . ' WHERE order_item_id IN ( ' . CommaImplode( $order_item_id ) . ") "
-			       . ' AND meta_key = \'' . EscapeString( $meta_key ) . '\'';
-
-			return SqlQuerySingleScalar( $sql );
-		}
-		if ( is_numeric( $order_item_id ) ) {
-			$sql2 = 'SELECT meta_value FROM wp_woocommerce_order_itemmeta'
-			        . ' WHERE order_item_id = ' . $order_item_id
-			        . ' AND meta_key = \'' . EscapeString( $meta_key ) . '\''
-			        . ' ';
-
-			return SqlQuerySingleScalar( $sql2 );
-		}
-
-		return - 1;
-	}
-
 	static function set_order_itemmeta( $order_item_id, $meta_key, $meta_value ) {
 		MyLog("update $order_item_id, $meta_key, $meta_value");
 		$value = $meta_value;

@@ -28,13 +28,14 @@ class Finance {
 	protected $database;
 	protected $subcontract;
 	protected $salary;
+	protected $delivery;
 
 	/**
 	 * Plugin version.
 	 *
 	 * @var string
 	 */
-	public $version = '1.0';
+	public $version = '1.1';
 
 	private $plugin_name;
 
@@ -127,6 +128,7 @@ class Finance {
 		$this->clients     = new Finance_Clients();
 		$this->subcontract = new Finance_Subcontract();
 		$this->salary      = new Finance_Salary();
+//		$this->delivery = new Finance_Delivery();
 
 		$this->init_hooks();
 
@@ -182,6 +184,8 @@ class Finance {
 		if ( $this->yaad ) $this->yaad->init_hooks();
 		if ( $this->clients ) $this->clients->init_hooks();
 
+		Finance_Order_Management::instance()->init_hooks();
+
 		$this->payments = Finance_Payments::instance();
 		$this->payments->init_hooks();
 		$this->subcontract->init_hooks();
@@ -192,9 +196,7 @@ class Finance {
 
 		if ((get_user_id() == 1) and defined("DEBUG_USER")) wp_set_current_user(DEBUG_USER);
 
-//		if (is_admin_user())
-//			self::admin_init();
-
+		Finance_Delivery::init_hooks();
 	}
 
 	function register_payment()
@@ -592,6 +594,7 @@ class Finance {
 		}
 		self::addRoles();
 //		if (get_user_id() == 1) wp_set_current_user(2); // e-fresh
+		Finance_Delivery::init();
 	}
 
 	function addRoles()
@@ -750,6 +753,10 @@ class Finance {
 
 		$file = FINANCE_INCLUDES_URL . 'multisite.js';
 		wp_enqueue_script( 'multisite', $file, null, $this->version, false );
+
+	    $file = FINANCE_INCLUDES_URL . 'delivery.js';
+	    wp_enqueue_script( 'delivery', $file, null, $this->version, false );
+
 	}
 
 	public function run() {
@@ -780,7 +787,7 @@ class Finance {
 
 	static function add_transaction(
 		$part_id, $date, $amount, $delivery_fee, $ref, $project, $net_amount = 0,
-		$document_type = FreshDocumentType::delivery,
+		$document_type = Finance_DocumentType::delivery,
 		$document_file = null
 	) {
 		// print $date . "<br/>";

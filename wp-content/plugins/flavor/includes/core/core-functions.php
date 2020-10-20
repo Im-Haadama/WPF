@@ -140,7 +140,7 @@ require_once (ABSPATH . '/wp-includes/pluggable.php');
 		}
 
 		if ( $mandatory ) {
-			die ( "Error: " . debug_backtrace()[1]['function']  . "() key " . $key . " not supplied" );
+			die ( "failed: " . debug_backtrace()[1]['function']  . "() key " . $key . " not supplied" );
 		} else {
 			return $default;
 		}

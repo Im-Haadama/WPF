@@ -15,3 +15,21 @@ msgstr ""
 #: includes/wc-rest-functions.php:114
 msgid "Card Number"
 msgstr "מספר כרטיס"
+
+msgid "ID Number"
+msgstr "מספר תעודת זהות"
+
+msgid "Card Type"
+msgstr "סוג כרטיס"
+
+msgid "Expiration Date"
+msgstr "תוקף כרטיס"
+
+msgid "Select Month"
+msgstr "חודש"
+
+msgid "Select Year"
+msgstr "שנה"
+
+msgid "Select Card"
+msgstr "סוג כרטיס"

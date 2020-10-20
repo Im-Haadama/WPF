@@ -70,7 +70,7 @@ class Fresh_Supplies {
 
 	public function admin_menu()
 	{
-		$menu = new Core_Admin_Menu();
+		$menu = Core_Admin_Menu::instance();
 		$menu->AddSubMenu("woocommerce", "edit_shop_orders",
 			array('page_title' => 'Supplies', 'function' => array("Fresh_Supplies" , 'main' )));
 	}
@@ -447,7 +447,7 @@ class Fresh_Supplies {
 
 		$S = new Fresh_Supply($id);
 
-		return $S->got_supply($supply_total, $supply_number, $net_amount, $is_invoice ? FreshDocumentType::invoice : FreshDocumentType::supply, $document_date );
+		return $S->got_supply($supply_total, $supply_number, $net_amount, $is_invoice ? Finance_DocumentType::invoice : Finance_DocumentType::supply, $document_date );
 	}
 
 	function do_merge_supplies( $params, $supply_id ) {

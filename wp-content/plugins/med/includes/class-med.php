@@ -118,7 +118,7 @@ class Med {
 	}
 	function admin_menu()
 	{
-		$menu = new Core_Admin_Menu();
+		$menu = Core_Admin_Menu::instance();
 
 		$menu->AddMenu('Med', 'Med', 'med_show', 'med', array($this, 'med_main'));
 	}

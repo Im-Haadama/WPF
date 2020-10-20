@@ -20,10 +20,8 @@ class Fresh_Order_Management {
 
 	public function init_hooks() {
 		// add_filter( 'manage_shop_order_posts_custom_column', array(__CLASS__, 'add_my_account_order_actions'), 10, 2 );
-		add_filter('woocommerce_admin_order_actions', array(__CLASS__, 'add_order_action'), 10, 2);
-		add_filter('order_complete', array($this, 'order_complete_wrap'));
-		add_action('admin_post_delivery', array(__CLASS__, 'create_delivery_note'));
-		add_action( 'woocommerce_view_order', array(__CLASS__, 'show_edit_order'), 10 );
+//		add_action('admin_post_delivery', array(__CLASS__, 'create_delivery_note'));
+		add_action('woocommerce_view_order', array(__CLASS__, 'show_edit_order'), 10 );
 		add_action('wp_ajax_woocommerce_calc_line_taxes', array($this, 'update_prices'), 9);
 	}
 
@@ -85,66 +83,6 @@ class Fresh_Order_Management {
 		print "ניתן לערוך את ההזמנה " . Core_Html::GuiHyperlink("כאן", "/my-account/edit-order/$order_id") . ".";
 	}
 
-	static public function create_delivery_note($a)
-	{
-		print "<html dir='rtl'>";
-		$show_inventory = false;
-		$order_id = GetParam("post");
-		print Core_Html::GuiHeader(1, "del" . $order_id);
-		if (Fresh_Order::get_delivery_id( $order_id )) {
-		$d = Fresh_Delivery::CreateFromOrder( $order_id );
-			$d->PrintDeliveries( FreshDocumentType::delivery, Fresh_DocumentOperation::create, false );
-		}
-		else
-		{
-			$O = new Fresh_Order( $order_id );
-			print $O->infoBox( false, "יצירת תעודת משלוח ל" );
-			$d = Fresh_Delivery::CreateFromOrder( $order_id );
-			$d->PrintDeliveries( FreshDocumentType::delivery, Fresh_DocumentOperation::create, false );
-		}
-
-//		print $result;
-	}
-
-	static public function order_complete_wrap()
-	{
-		$order_id = GetParam("order_id", true);
-		return self::order_complete($order_id);
-	}
-
-	static public function add_order_action($actions, $order)
-	{
-		$O = new Fresh_Order($order->get_id());
-		switch ($order->status)
-		{
-			case "processing":
-				if (! ($O->getShippingFee() >0))
-					unset($actions['complete']); // Remove the complete
-				if ($order->get_id() == "13101"){
-					MyLog("actions " . $order->get_id());
-					MyLog(StringVar($actions));
-				}
-
-				$actions['delivery_note'] = array(
-//						'url'    => wp_nonce_url( admin_url( 'admin-post.php?post=' . $order->get_id() . '&action=delivery' ), 'woocommerce-mark-order-status' ),
-				'url' => '/wp-content/plugins/fresh/delivery/create-delivery.php?order_id=' . $order->get_id(),
-					'name'   => __( 'Delivery', 'woocommerce' ),
-					'action' => 'delivery'
-				);
-				break;
-			case "awaiting-shipment":
-			case "completed":
-				$actions['delivery_note'] = array(
-//						'url'    => wp_nonce_url( admin_url( 'admin-post.php?post=' . $order->get_id() . '&action=delivery' ), 'woocommerce-mark-order-status' ),
-					'url' => self::get_url($order->get_id()),
-					'name'   => __( 'Delivery', 'woocommerce' ),
-					'action' => 'delivery'
-				);
-				break;
-		}
-		return $actions;
-	}
-
 	public static function instance() {
 		if ( is_null( self::$_instance ) ) {
 			self::$_instance = new self();
@@ -157,39 +95,6 @@ class Fresh_Order_Management {
 		$operation = GetParam( "operation", false, "show_orders" );
 
 		print self::handle_operation( $operation );
-	}
-
-	static function get_url($order_id)
-	{
-//		$order = new Fresh_Order($order_id);
-//		if ($order->getShippingFee())
-			return '/wp-content/plugins/fresh/delivery/get-delivery.php?order_id=' . $order_id;
-
-	}
-
-	static function order_complete($order_id, $force = false)
-	{
-		MyLog(__FUNCTION__ . " $order_id");
-		// Order is complete.
-		// If no delivery note, create one with 100% supplied.
-		$O = new Fresh_Order($order_id);
-		if (! $O->getDeliveryId()) {
-			$fee = $O->getShippingFee();
-			// Check if there is delivery fee.
-			if (! $fee) {
-				MyLog("No delivery fee for order $order_id");
-				Fresh::instance()->add_admin_notice("No delivery fee for order $order_id");
-			}
-
-			if ($fee == $O->getTotal()) {
-				return true;
-			}
-
-			$del_id = Fresh_Delivery::CreateDeliveryFromOrder($order_id, 1);
-		} else {
-			MyLog ("have del: " . $O->getDeliveryId());
-		}
-		return true;
 	}
 
 	public function enqueue_scripts() {

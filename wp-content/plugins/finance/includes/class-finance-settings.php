@@ -68,7 +68,7 @@ class Finance_Settings {
 	}
 
 	function admin_menu() {
-		$menu = new Core_Admin_Menu();
+		$menu = Core_Admin_Menu::instance();
 
 		$menu->AddMenu('Finance', 'Finance', 'show_finance', 'finance', array($this, 'main'));
 
@@ -90,6 +90,9 @@ class Finance_Settings {
 			      'menu_slug' => 'payment_list',
 			      'function' => 'payment_list')
 		);
+
+		// Deliveries
+		$menu->Add("woocommerce", "edit_shop_orders", "deliveries", array("Finance_Delivery" , 'deliveries' ));
 
 
 //		$menu->AddSubMenu( "finance", "working_hours_self",

@@ -179,7 +179,6 @@ class Fresh {
 		add_shortcode('pay-page', 'pay_page');
 		add_shortcode( 'im-page', 'im_page' );
 		add_shortcode('products_by_name', array($this, 'products_by_name'));
-		add_action( 'init', 'register_awaiting_shipment_order_status' );
 		add_action( 'woocommerce_checkout_process', 'wc_minimum_order_amount' );
 		add_action( 'woocommerce_before_cart', 'wc_minimum_order_amount' );
 		add_action( 'woocommerce_checkout_order_processed', 'wc_minimum_order_amount' );
@@ -189,10 +188,8 @@ class Fresh {
 //		add_filter( 'woocommerce_order_button_text', 'im_custom_order_button_text' );
 		add_action( 'init', 'custom_add_to_cart_quantity_handler' );
 //	Todo: Had error function 'my_custom_checkout_field_update_order_meta' not found	add_action( 'woocommerce_checkout_update_order_meta', 'my_custom_checkout_field_update_order_meta' );
-		add_action( 'init', 'register_awaiting_shipment_order_status' );
 		add_action('woocommerce_order_status_completed', 'Fresh_Order_Management::order_complete');
 
-		add_filter( 'wc_order_statuses', 'add_awaiting_shipment_to_order_statuses' );
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
 		// add_filter( 'woocommerce_package_rates' , 'im_sort_shipping_services_by_date', 10, 2 );
 
@@ -606,7 +603,7 @@ class Fresh {
 		$this->loader->run();
 
 		// Install tables
-		self::register_activation(dirname(__FILE__) . '/class-fresh-database.php', array('Fresh_Database', 'payment_info_table'));
+		self::register_activation(dirname(__FILE__) . '/class-fresh-database.php', array('Fresh_Database', 'install'));
 
 		// Temp migration. run once on each installation
         // Fresh_Database::convert_supplier_name_to_id();
@@ -621,7 +618,7 @@ class Fresh {
 			return;
 		}
 		if (! is_callable($function)){
-			print "function is not callable";
+			print "function is not callable. file=$file";
 			return;
 		}
 		register_activation_hook($file, $function);
@@ -700,9 +697,6 @@ class Fresh {
             wp_enqueue_style('woocommerce_admin_menu_styles');
             wp_enqueue_style('woocommerce_admin_styles');
 	    }
-
-	    $file = FRESH_INCLUDES_URL . 'js/delivery.js';
-	    wp_enqueue_script( 'delivery', $file, null, $this->version, false );
 
 	    $file = FRESH_INCLUDES_URL . 'js/supply.js?v=1.1';
 	    wp_enqueue_script( 'supply', $file, null, $this->version, false );
@@ -783,7 +777,7 @@ class Fresh {
 			} else {
 				print $O->infoBox( false );
 				$D = Fresh_Delivery::CreateFromOrder( $id );
-				$D->PrintDeliveries( FreshDocumentType::delivery, Fresh_DocumentOperation::collect, 0);
+				$D->PrintDeliveries( Finance_DocumentType::delivery, Finance_DocumentOperation::collect, 0);
 			}
 		}
 	}
@@ -950,45 +944,6 @@ function custom_add_to_cart_quantity_handler() {
 		});
 	' );
 	}
-}
-
-function register_awaiting_shipment_order_status() {
-	register_post_status( 'wc-awaiting-shipment', array(
-		'label'                     => 'ממתין למשלוח',
-		'public'                    => true,
-		'exclude_from_search'       => false,
-		'show_in_admin_all_list'    => true,
-		'show_in_admin_status_list' => true,
-		'label_count'               => _n_noop( 'ממתין למשלוח <span class="count">(%s)</span>', 'Awaiting shipment <span class="count">(%s)</span>' )
-	) );
-
-	register_post_status( 'wc-awaiting-document', array(
-		'label'                     => 'Awaiting shipment document',
-		'public'                    => true,
-		'exclude_from_search'       => false,
-		'show_in_admin_all_list'    => true,
-		'show_in_admin_status_list' => true,
-		'label_count'               => _n_noop( 'Awaiting shipment document<span class="count">(%s)</span>', 'Awaiting shipment <span class="count">(%s)</span>' )
-	) );
-}
-
-// Add to list of WC Order statuses
-function add_awaiting_shipment_to_order_statuses( $order_statuses ) {
-
-	$new_order_statuses = array();
-
-	// add new order status after processing
-	foreach ( $order_statuses as $key => $status ) {
-
-		$new_order_statuses[ $key ] = $status;
-
-		if ( 'wc-processing' === $key ) {
-			$new_order_statuses['wc-awaiting-shipment'] = 'ממתין למשלוח';
-			$new_order_statuses['wc-awaiting-document'] = 'ממתין לתעודת משלוח';
-		}
-	}
-
-	return $new_order_statuses;
 }
 
 function im_sort_shipping_services_by_date($rates, $package)

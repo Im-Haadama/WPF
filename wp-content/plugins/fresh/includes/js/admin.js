@@ -155,16 +155,18 @@ function product_publish(post_file, product_id)
     let url = post_file + '?operation=product_publish&product_id='+product_id+'&status='+publish;
     execute_url(url, fail_message);
 }
-function moveNext(element)
-{
-    if (window.event.keyCode !== 13) return;
-    let col_index = element.parentElement.cellIndex;
-    let row_index = element.parentElement.parentElement.rowIndex;
-    let table = element.parentElement.parentElement.parentElement;
-
-    if (undefined != table.rows[row_index+1].cells[col_index].firstElementChild)
-        table.rows[row_index+1].cells[col_index].firstElementChild.focus();
-}
+// Have general function in client_tools. 19/10/2020
+// function moveNext(element)
+// {
+//     if (window.event.keyCode !== 13) return;
+//     let col_index = element.parentElement.cellIndex;
+//     let row_index = element.parentElement.parentElement.rowIndex;
+//     let table = element.parentElement.parentElement.parentElement;
+//
+//     if (null != table.rows[row_index+1])
+//         if (undefined != table.rows[row_index+1].cells[col_index].firstElementChild)
+//             table.rows[row_index+1].cells[col_index].firstElementChild.focus();
+// }
 
 function account_add_transaction(post_file, customer_id) {
     let type = document.getElementById("transaction_type").value;

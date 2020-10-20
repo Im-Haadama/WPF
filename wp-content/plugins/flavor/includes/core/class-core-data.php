@@ -461,8 +461,10 @@ class Core_Data
 							$value = Core_Html::gui_input_by_type($input_name, $type, $args, $value);
 						}
 					} else {
+						// Not from sql table
 						// ??? 30/3/2020
-						// $value = Core_Html::GuiInput( $input_name, $data, $args ); //gui_input( $key, $data, $field_events, $row_id);
+						$value = Core_Html::GuiInput( $input_name, $data, $args ); //gui_input( $key, $data, $field_events, $row_id);
+//						print "AAAA<br/>";
 					}
 					break;
 				}

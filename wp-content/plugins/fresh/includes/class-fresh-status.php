@@ -24,7 +24,6 @@ from wp_posts
 where post_status like 'wc%' and post_status not in ('wc-cancelled', 'wc-completed') 
 group by post_status");
 
-		//in ('	wc-awaiting-shipment', 'wc-pending', 'wc-processing')
 		$args = [];
 		foreach ($order_status as $status => $info) {
 			$status_parts = explode("-", $order_status[$status][1]);

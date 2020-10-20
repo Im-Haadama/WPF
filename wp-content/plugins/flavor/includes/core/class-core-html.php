@@ -1529,11 +1529,20 @@ class Core_Html {
 					$prepare_data = preg_replace('#<br\s*/?>#i', "\n", $data);
 					$value = Core_Html::gui_textarea( $input_name, $prepare_data, $events );
 				} else {
+//					print "$input_name $length<br/>";
+//					$args["size"] = $length;
 					$value = self::GuiInput( $input_name, $data, $args ); // gui_input( $input_name, $data, $field_events, $row_id );
+//					unset($args["size"]);
 				}
 				break;
 			case 'fun':  // function
 				return $data;
+			case 'flo':
+//					print "$input_name $length<br/>";
+					$args["size"] = 4;
+				$value = self::GuiInput( $input_name, $data, $args ); // gui_input( $input_name, $data, $field_events, $row_id );
+					unset($args["size"]);
+					break;
 			default:
 				// $field_events = sprintf( $events, $row_id, $key );
 				$value = Core_Html::GuiInput( $input_name, $data, $args ); //gui_input( $input_name, $data, $field_events, $row_id );
@@ -1851,7 +1860,7 @@ class Core_Html {
 		// Convert to table if data returned.
 		if ( $row_count >= 1 ) {
 			if (GetArg($args, "duplicate_of", false)) $table_id .= "_new";
-			return Core_Html::gui_table_args( $rows_data, $table_id, $args );
+			return Core_Html::gui_table_args( $rows_data, $args["form_table"], $args );
 		}
 
 		return null;

@@ -216,7 +216,7 @@ class Finance_Bank
 		$date        = GetParam( "date", true );
 		$amount      = GetParam( "amount", true );
 		$sql         = "INSERT INTO im_business_info (part_id, date, amount, ref, document_type)\n" .
-		               "VALUES(" . $supplier_id . ", '" . $date . "' ," . $amount . ", " . $bank_id . ", " . FreshDocumentType::bank . ")";
+		               "VALUES(" . $supplier_id . ", '" . $date . "' ," . $amount . ", " . $bank_id . ", " . Finance_DocumentType::bank . ")";
 		SqlQuery( $sql );
 
 		$S = new Fresh_Supplier($supplier_id);
@@ -866,7 +866,7 @@ function user_is_business_owner() {
 
 	function admin_menu()
 	{
-		$menu = new Core_Admin_Menu();
+		$menu = Core_Admin_Menu::instance();
 
 		$menu->AddSubMenu('finance', 'edit_shop_orders',
 			array('page_title' => 'Settings',

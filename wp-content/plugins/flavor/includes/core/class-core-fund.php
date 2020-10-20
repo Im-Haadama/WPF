@@ -284,6 +284,7 @@ class Core_Fund {
 	 * @throws Exception
 	 */
 	function boot_no_login( $plugin_name, $textdomain, $tz = "Asia/Jerusalem" ) {
+		die (1);
 		$conn = GetSqlConn();
 
 		if ( ! $conn ) {
