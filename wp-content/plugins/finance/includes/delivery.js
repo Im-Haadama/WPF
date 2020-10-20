@@ -37,6 +37,8 @@ function calcDelivery() {
         total += line_total;
     }
 
+    total += parseFloat(get_value_by_name("fee"));
+
     document.getElementById("total").innerHTML = total;
 
 //     table.rows[line].cells[line_total_id].innerHTML = (discount < 0) ? discount : "";

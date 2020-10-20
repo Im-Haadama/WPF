@@ -29,6 +29,8 @@ class Flavor {
 
 	private $database;
 
+	protected $admin_notices;
+
 	/**
 	 * The single instance of the class.
 	 *
@@ -155,6 +157,7 @@ class Flavor {
 
 		AddAction( 'admin_enqueue_scripts', array($this, 'admin_scripts' ));
 		Flavor_Mission::init_hooks();
+		add_action( 'admin_notices', array($this, 'admin_notices') );
 	}
 
 	public function admin_menu()
@@ -692,6 +695,20 @@ class Flavor {
 
 		$file = FLAVOR_INCLUDES_URL . 'core/gem.js';
 		wp_enqueue_script( 'gem', $file, null, $this->version, false );
+	}
+
+	function add_admin_notice($message)
+	{
+		if (! $this->admin_notices) $this->admin_notices = array();
+		array_push($this->admin_notices, $message);
+	}
+
+	function admin_notices() {
+		if (! $this->admin_notices) return;
+		print '<div class="notice is-dismissible notice-info">';
+		foreach ($this->admin_notices as $notice)
+			print _e( $notice );
+		print '</div>';
 	}
 }
 

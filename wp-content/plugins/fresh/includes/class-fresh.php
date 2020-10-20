@@ -18,7 +18,6 @@ class Fresh {
 	protected $totals;
 	protected $shortcodes;
 	protected $client_views;
-	protected $admin_notices;
 	protected $database;
 
 	/**
@@ -166,7 +165,6 @@ class Fresh {
 	private function init_hooks() {
 	    // Admin scripts and styles. Todo: Check if needed.
 		add_action('admin_enqueue_scripts', array($this, 'admin_scripts'));
-		add_action( 'admin_notices', array($this, 'admin_notices') );
 
 		// Can't make that work: register_activation_hook( __FILE__, array( $this, 'install' ) );
         self::install($this->version);
@@ -188,7 +186,6 @@ class Fresh {
 //		add_filter( 'woocommerce_order_button_text', 'im_custom_order_button_text' );
 		add_action( 'init', 'custom_add_to_cart_quantity_handler' );
 //	Todo: Had error function 'my_custom_checkout_field_update_order_meta' not found	add_action( 'woocommerce_checkout_update_order_meta', 'my_custom_checkout_field_update_order_meta' );
-		add_action('woocommerce_order_status_completed', 'Fresh_Order_Management::order_complete');
 
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
 		// add_filter( 'woocommerce_package_rates' , 'im_sort_shipping_services_by_date', 10, 2 );
@@ -814,20 +811,6 @@ class Fresh {
 	static public function admin_load()
 	{
 		new Fresh_Settings();
-	}
-
-	function add_admin_notice($message)
-	{
-		if (! $this->admin_notices) $this->admin_notices = array();
-		array_push($this->admin_notices, $message);
-	}
-
-	function admin_notices() {
-		if (! $this->admin_notices) return;
-		print '<div class="notice is-dismissible notice-info">';
-		foreach ($this->admin_notices as $notice)
-			print _e( $notice );
-		print '</div>';
 	}
 }
 

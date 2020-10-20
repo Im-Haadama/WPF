@@ -30,6 +30,10 @@ class Finance_Delivery
 		AddAction("delivery_save", array('Finance_Delivery', 'save_wrap')); // POST: create delivery
 		AddAction("delivery_edit", array('Finance_Delivery', 'edit_wrap')); // POST: update delivery
 		AddAction("delivery_delete", array('Finance_Delivery', "delete_wrap"));
+
+		// Complete order
+		add_action('woocommerce_order_status_completed', array(__CLASS__, 'order_complete_wrap'));
+//		MyLog(__FUNCTION__);
 	}
 	/**
 	 * Finance_Delivery constructor.
@@ -55,12 +59,12 @@ class Finance_Delivery
 		$this->order       = new Finance_Order($this->order_id);
 	}
 
-	public function getDeliveryTotal()
+	public function getDeliveryTotal() : float
 	{
 		if (! $this->delivery_total and $this->delivery_id) {
 			$this->delivery_total = SqlQuerySingleScalar("select sum(line_price) from im_delivery_lines where delivery_id = $this->delivery_id");
 		}
-		return $this->delivery_total;
+		return round($this->delivery_total, 2);
 	}
 
 	public function getOrder() : Finance_Order {
@@ -86,20 +90,24 @@ class Finance_Delivery
 
 		$delivery_id = GetParam("delivery_id", false, 0);
 		$order_id = GetParam("order_id", false, 0);
-		print "oid=$order_id del=$delivery_id<br/>";
+//		print "oid=$order_id del=$delivery_id<br/>";
 		if ($delivery_id or $order_id)
 		{
 			$d = new Finance_Delivery($order_id, $delivery_id);
 //			$report .= $d->OrderInfoBox();
 			$report .= $d->Show();
-			if ( $receipt = $d->getReceipt() ) {
-				$report .= "תעודה שולמה ($receipt) ולא ניתנת לעריכה או למחיקה";
-			} else {
-				$report .= Core_Html::GuiHyperlink("[Delete]", AddToUrl("operation", "delivery_delete")) . " ";
+			if ($d->delivery_id) {
+				if ( $receipt = $d->getReceipt() ) {
+					$report .= "תעודה שולמה ($receipt) ולא ניתנת לעריכה או למחיקה";
+				} else {
+					$report .= Core_Html::GuiHyperlink( "[Delete]", AddToUrl( "operation", "delivery_delete" ) ) . " ";
 					// Core_Html::GuiButton("btn_del", "delete document", array("action" => "deleteDelivery('".Fresh::getPost()."', $delivery_id)") );
-				$report .= Core_Html::GuiHyperlink("[Edit]", AddToUrl("operation", "delivery_show_edit")) . " ";
+					$report .= Core_Html::GuiHyperlink( "[Edit]", AddToUrl( "operation", "delivery_show_edit" ) ) . " ";
 					// Core_Html::GuiButton("btn_edit", "edit document", array("action" =>"editDelivery()"));
-				$report .= Core_Html::GuiButton("btn_send", "send delivery", array("action" =>"sendDelivery('" .Fresh::getPost()."', $delivery_id)"));
+					$report .= Core_Html::GuiButton( "btn_send", "send delivery", array( "action" => "sendDelivery('" . Fresh::getPost() . "', $delivery_id)" ) );
+				}
+			} else {
+				$report .= __("No delivery note for order"). " " .$order_id;
 			}
 		} else {
 			$date_format = 'Y-m-j';
@@ -217,7 +225,7 @@ class Finance_Delivery
 
 	private function getReceipt()
 	{
-		return SqlQuerySingleScalar( "SELECT payment_receipt FROM im_delivery WHERE id = " . $this->delivery_id );
+		return $this->delivery_id and SqlQuerySingleScalar( "SELECT payment_receipt FROM im_delivery WHERE id = " . $this->delivery_id );
 	}
 
 	// Show - if delivery note created.
@@ -240,15 +248,17 @@ class Finance_Delivery
 			"form_table" => "del_table",
 			"edit_cols" => array("quantity"=>1, "price"=>1));
 
-		$html .= Core_Html::GuiTableContent("delivery_lines", null, $args);
-		$html .= Core_Html::GuiDiv("total_div",
-			__("Total: ") . " ".
-			Core_html::gui_label("total", $this->getDeliveryTotal())
-		);
-		$html .= Core_Html::GuiLabel("order_id", $this->order_id, array("hidden"=>true));
-		if ($edit) {
-			$html .= Core_Html::GuiButton( "btn_save", "Save", "delivery_save_or_edit('" . Flavor::getPost() . "', 'delivery_edit')" );
-			$html .= Core_Html::GuiButton( "btn_delete", "Delete", "delivery_delete('" . Flavor::getPost() . "')" );
+		if ($this->delivery_id) {
+			$html .= Core_Html::GuiTableContent( "delivery_lines", null, $args );
+			$html .= Core_Html::GuiDiv( "total_div",
+				__( "Total: " ) . " " .
+				Core_html::gui_label( "total", $this->getDeliveryTotal() )
+			);
+			$html .= Core_Html::GuiLabel( "order_id", $this->order_id, array( "hidden" => true ) );
+			if ( $edit ) {
+				$html .= Core_Html::GuiButton( "btn_save", "Save", "delivery_save_or_edit('" . Flavor::getPost() . "', 'delivery_edit')" );
+				$html .= Core_Html::GuiButton( "btn_delete", "Delete", "delivery_delete('" . Flavor::getPost() . "')" );
+			}
 		}
 		return $html;
 	}
@@ -295,13 +305,20 @@ class Finance_Delivery
 				"price" => 1),
 			"size"=>2,
 			"events"=>'onfocusout="calcDelivery()" onkeypress="moveNextRow(' . $this->line_number . ');calcDelivery()" ' .
-				'onfocusout="leaveQuantityFocus(' . $this->line_number . ')"');
+				'onfocusout="leaveQuantityFocus(' . $this->line_number . ')"',
+			          "class"=>"widefat");
 		$html .= Core_Html::gui_table_args($table, "del_table", $args);
-		$html .= Core_Html::GuiLabel("order_id", $this->order_id, array("hidden"=>true));
-		$html .= Core_Html::GuiDiv("total_div",
-			__("Total: ") . " ".
-			Core_html::gui_label("total", 0)
-		);
+
+		// Delivery payment and total
+		$fee = $this->order->getShippingFee();
+		$args = array("class"=>"widefat");
+		$html .= Core_Html::gui_table_args(array(
+			array(__("Delivery"), Core_Html::GuiInput("fee", $fee)),
+			array(__("Total"), Core_html::gui_label("total", $fee))),
+		"summary",
+		$args);
+
+		Core_Html::GuiLabel("order_id", $this->order_id, array("hidden"=>true));
 		$html  .= Core_Html::GuiButton("btn_add", "Create", "delivery_save_or_edit('" . Flavor::getPost() . "', 'delivery_save')");
 
 		return $html;
@@ -370,7 +387,7 @@ class Finance_Delivery
 		       . round( $line_price, 2 ) . ', '
 		       . $prod_id . ' )';
 
-		MyLog( "$delivery_id: $product_name $quantity $quantity_ordered $vat $price $line_price $prod_id", __FILE__);
+//		MyLog( "$delivery_id: $product_name $quantity $quantity_ordered $vat $price $line_price $prod_id", __FILE__);
 
 		return SqlQuery( $sql );
 	}
@@ -483,6 +500,103 @@ class Finance_Delivery
 		$sql = 'DELETE FROM im_delivery_lines WHERE delivery_id = ' . $this->delivery_id;
 
 		SqlQuery( $sql );
+	}
+
+	static public function order_complete_wrap()
+	{
+		$order_id = GetParam("order_id", true);
+		MyLog(__FUNCTION__ . " $order_id");
+		$d = new Finance_Delivery($order_id);
+		return $d->order_complete();
+	}
+
+	public function order_complete($force = false)
+	{
+		$order_id = $this->order_id;
+		$O = new Finance_Delivery($order_id);
+
+		if (! $O->delivery_id) {
+			$fee = $O-$this->getOrder()->getShippingFee();
+			// Check if there is delivery fee.
+			if (! $fee) {
+				MyLog("No delivery fee for order $order_id");
+				Flavor::instance()->add_admin_notice("No delivery fee for order $order_id");
+			}
+			if ($fee == $O->getDeliveryTotal()) {
+				// order that is just delivery. Handled separately.
+				return true;
+			}
+			$del_id = $O->CreateDeliveryFromOrder($order_id, 1);
+			Flavor::instance()->add_admin_notice("Delivery $del_id created");
+		}
+	}
+
+	public function CreateDeliveryFromOrder( $order_id, $q ) {
+		$log = fopen (ABSPATH . 'debug.html', "a");
+		fwrite($log, __FUNCTION__);
+		fwrite ($log, "post complete $order_id\n");
+
+		ob_start();
+
+		remove_filter( 'woocommerce_stock_amount', 'intval' );
+		remove_filter( 'woocommerce_stock_amount', 'filter_woocommerce_stock_amount', 10 );
+
+		// $q = 1: take from order.
+		// $q = 2: inventory
+		$prods       = array();
+		$order_items = $this->order->getItems();
+		$total       = 0;
+		$vat         = 0;
+		$lines       = 0;
+		foreach ( $order_items as $product ) {
+			$lines ++;
+			// $p = $product['price'];
+			// push_array($prods, array($product['qty']));
+			// $total += $p * $q;
+			// var_dump($product);
+			$P = new Fresh_Product($product['product_id']);
+			$prod_to_add                 = array();
+			$prod_to_add['product_name'] = $product["name"];
+			switch ( $q ) {
+				case 1:
+					$prod_to_add['quantity'] = $product["quantity"];
+					break;
+				case 2:
+					$prod_to_add['quantity'] = inventory::GetQuantity( $product['product_id'] );
+					break;
+			}
+			$prod_to_add['quantity_ordered'] = $prod_to_add['quantity'];
+			$prod_to_add['vat']       = ($P->getVatPercent() ? Fresh_Pricing::vatFromTotal($product['total']) :0);
+			$vat += $prod_to_add['vat'];
+			$quantity                 = $product["quantity"];
+
+			if ( $q != 0 ) $prod_to_add['price'] = $quantity ? ( $product['total'] / $quantity ) : 0;
+			$prod_to_add['line_price'] = $product['total'];
+			$total              += $product['total'];
+			$prod_to_add['prod_id']    = $product['product_id'];
+
+			array_push( $prods, $prod_to_add );
+		}
+
+		if ($fee = $this->order->getShippingFee()) {
+			$total += $fee;
+			$vat += Fresh_Pricing::vatFromTotal($fee);
+			$lines ++;
+			MyLog("fee vat: $vat $fee " . Fresh_Pricing::vatFromTotal($fee));
+		}
+
+		$delivery_id = $this->CreateOrUpdateDelivery($order_id, $total, $vat, $lines, false, $fee);
+		// print " מספר " . $delivery_id;
+
+		foreach ( $prods as $prod_to_add ) {
+			$this->AddDeliveryLine( $prod_to_add['product_name'], $prod_to_add['quantity'], $prod_to_add['quantity_ordered'],
+				$prod_to_add['vat'], $prod_to_add['price'], $prod_to_add['line_price'], $prod_to_add['prod_id'] );
+		}
+
+		if ($fee)
+			$this->AddDeliveryLine('דמי משלוח', 1, 1,  round($fee / 1.17 * 0.17, 2), $fee, $fee, 0 );
+
+		return $delivery_id;
 	}
 }
 

@@ -584,10 +584,6 @@ class Finance_Order {
 		return gui_table($result);
 	}
 
-	public function getItems() {
-		return $this->WC_Order->get_items();
-	}
-
 	function delivered(&$message) {
 		$message = "";
 		$new_status = "wc-completed";
@@ -619,6 +615,7 @@ class Finance_Order {
 	}
 
 	function setStatus( $status, $ids = null ) {
+		MyLog(__FUNCTION__ . " $status");
 		if ( $ids and is_array( $ids ) ) {
 			$args = $ids;
 		} else {
@@ -665,8 +662,13 @@ class Finance_Order {
 		return SqlQuerySingleScalar( "SELECT id FROM im_delivery WHERE order_id = " . $this->order_id );
 	}
 
+	public function getItems()
+	{
+		return $this->WC_Order->get_items();
+	}
+
 	public function getTotal() {
-		$order_items = $this->WC_Order->get_items();
+		$order_items = $this->getItems();
 		$total       = 0;
 		// print "cid= " . $this->CustomerId() . "<br/>";
 
@@ -1488,6 +1490,7 @@ class Finance_Order {
 	}
 
 	function create_delivery() {
+		die(1); // 20/10/2020
 		$edit     = true;
 		$order_id = GetParam( "order_id", true );
 		$O        = new Finance_Order( $order_id );

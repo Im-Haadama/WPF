@@ -16,13 +16,6 @@ class Finance_Order_Management {
 		add_filter('woocommerce_admin_order_actions', array(__CLASS__, 'add_order_action'), 10, 2);
 
 	}
-
-	static public function order_complete_wrap()
-	{
-		$order_id = GetParam("order_id", true);
-		return self::order_complete($order_id);
-	}
-
 	static public function add_order_action($actions, WC_Order $order)
 	{
 		if (get_user_id() != 1)
@@ -58,31 +51,5 @@ class Finance_Order_Management {
 				break;
 		}
 		return $actions;
-	}
-
-
-	static function order_complete($order_id, $force = false)
-	{
-		MyLog(__FUNCTION__ . " $order_id");
-		// Order is complete.
-		// If no delivery note, create one with 100% supplied.
-		$O = new Finance_Order($order_id);
-		if (! $O->getDeliveryId()) {
-			$fee = $O->getShippingFee();
-			// Check if there is delivery fee.
-			if (! $fee) {
-				MyLog("No delivery fee for order $order_id");
-				Fresh::instance()->add_admin_notice("No delivery fee for order $order_id");
-			}
-
-			if ($fee == $O->getTotal()) {
-				return true;
-			}
-
-			$del_id = Fresh_Delivery::CreateDeliveryFromOrder($order_id, 1);
-		} else {
-			MyLog ("have del: " . $O->getDeliveryId());
-		}
-		return true;
 	}
 }
