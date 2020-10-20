@@ -234,9 +234,9 @@ class Fresh_Client {
 	        $postcode = israelpost_get_city_postcode($city);
 //            print "city = $city<br/>";
         } else {
-            print "no shipping zipcode or city";
+//            print "no shipping zipcode or city";
         }
-        print "pc=$postcode country=$country<br/>";
+//        print "pc=$postcode country=$country<br/>";
 
 		return WC_Shipping_Zones::get_zone_matching_package( array(
 			'destination' => array(

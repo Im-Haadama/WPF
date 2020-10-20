@@ -50,9 +50,15 @@ class Org_Worker extends Core_users
 
 	function AllTeams()
 	{
-		if ($this->teams) return $this->teams;
+		if ($this->teams)
+			return $this->teams;
 
 		$this->teams = CommaArrayExplode(get_usermeta($this->id, 'teams'));
+
+		if (! $this->teams) {
+			// Add personal team and return it.
+			return array( Org_Team::Create($this->id, __("Personal team") . " " . EscapeString($this->getName())));
+		}
 		return $this->teams;
 	}
 
@@ -247,11 +253,19 @@ class Org_Worker extends Core_users
 
 	// Team_filter = 0: my work
 	// Team_filter = 1: team's work.
+	// Team_filter = array - selected teams.
 	// status - if not set show by ActiveQuery.
 	function myWorkQuery($teams_filter, $status = null)
 		// 1 - ready, 0 - not ready, 2 - both, 3- not finished
 	{
 		$teams         = self::AllTeams();
+
+		if (! $teams) {
+			print "No teams for user " . $this->id . "<br/>";
+
+			return 1;
+		}
+
 
 		$user_team_query = ($teams_filter ?
 			// My team's work.
@@ -260,7 +274,7 @@ class Org_Worker extends Core_users
 			" ( owner = " . $this->id . ")" );
 //		$team_query = ($team_filter ? "owner is null or " . $this->id . " = owner) and team in (" . CommaImplode( $teams ) . ")" : " 1 ");
 		$status_query = " 1 ";
-		$active_query = ((null != $status) ? " status = $status " : "((status < 2) and (" . Focus_Tasks::ActiveQuery() . "))");
+		$active_query = ((null != $status) ? " status = $status " : "(" . Focus_Tasks::ActiveQuery() . ")");
 
 //		if ($status 3) $query .= " and (status < 2) ";
 //		switch ($status_filter) {

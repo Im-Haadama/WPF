@@ -1365,6 +1365,8 @@ class Focus_Tasks {
 		$result      = "";
 		$args["sql"] = $sql;
 
+		if (GetParam("debug")) print "sql=$sql<br/>";
+
 		$args["col_width"] = array( "task_description" => '30%' );
 		$args["prepare_plug"] = __CLASS__ . "::prepare_row";
 		$args["post_action"] = self::getPost() .
@@ -2392,7 +2394,7 @@ class Focus_Tasks {
 
 	static function ActiveQuery() {
 		return " (isnull(preq) or preq_done(id)) and (date is null or date(date) <= Curdate())"
-		       . " and (mission_id is null or mission_id = 0)";
+		       . " and (mission_id is null or mission_id = 0) and status < 2";
 	}
 
 	static public function AddProjectMember($i, $project_id, $args)

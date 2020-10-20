@@ -1,15 +1,6 @@
 <?php
 class Focus_Database extends Core_Database
 {
-	function install($version, $force = false)
-	{
-		// Create im_info table if missing.
-		self::CreateInfo();
-
-		self::CreateFunctions($version, $force);
-		self::CreateTables($version, $force);
-		self::CreateViews($version, $force);
-	}
 
 	static function CreateViews($version, $force )
 	{

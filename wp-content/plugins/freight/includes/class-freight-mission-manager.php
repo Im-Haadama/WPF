@@ -856,7 +856,7 @@ group by pm.meta_value, p.post_status");
 			break;
 		}
 		if (! $the_shipping) {
-			print "No shipping method to zone " . $zone->get_zone_name();
+//			print "No shipping method to zone " . $zone->get_zone_name();
 			return false;
 		}
 
