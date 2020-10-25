@@ -877,9 +877,4 @@ class Core_Data
 		return $result;
 	}
 
-	static function UpdateTableFieldEvent($post_file, $table_name, $id, $field_name)
-	{
-		return "XXXX";
-		// 'update_table_field(\'' . $post_file . '\', \'' . $table_name . "', $id, '$field_name', check_result)";
-	}
 }

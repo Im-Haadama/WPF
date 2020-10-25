@@ -118,6 +118,7 @@ class Core_Html {
 		$events = GetArg( $args, "events", null );
 		$class  = GetArg( $args, "class", null );
 		$size   = GetArg( $args, "size", null );
+//		print "id=$id size=$size<br/>";
 		$style = GetArg($args, "style", null);
 //		print "style=$style";
 
@@ -1264,9 +1265,9 @@ class Core_Html {
 		$events = GetArg( $args, "events", null );
 		$edit   = GetArg( $args, "edit", true );
 		if ( ! $edit ) {
-			return __( $values[ $selected ] );
+			if (isset($values[$selected])) return __( $values[ $selected ] );
+			return __($values[sizeof($values)]);
 		}
-
 		return self::gui_simple_select( $id, $values, $events, $selected );
 	}
 
@@ -1541,6 +1542,7 @@ class Core_Html {
 				return $data;
 			default:
 				// $field_events = sprintf( $events, $row_id, $key );
+//				print "in=" . $input_name . "size=".$args['size'] ."<br/>";
 				$value = Core_Html::GuiInput( $input_name, $data, $args ); //gui_input( $input_name, $data, $field_events, $row_id );
 				break;
 		}
@@ -2075,7 +2077,6 @@ class Core_Html {
 		}
 		return $text;
 	}
-
 }
 
 if (!function_exists('gui_checkbox'))

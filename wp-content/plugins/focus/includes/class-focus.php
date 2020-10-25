@@ -165,6 +165,7 @@ class Focus {
 		Focus_Project::init();
 
 		AddAction("company_add_worker", array($this, 'company_add_worker'));
+		AddAction("company_remove_worker", array($this, 'company_remove_worker'));
 
 		add_filter("gem_next_page_tasklist", array($this, "next_page"));
         add_filter("gem_next_page_projects", array($this, "next_page"));
@@ -190,6 +191,21 @@ class Focus {
 
 		return true;
 	}
+
+	function company_remove_worker()
+	{
+		$workers = GetParamArray("users", true);
+		$company = GetParam("company", true);
+		$C = new Org_Company($company);
+
+		foreach ($workers as $worker) {
+			print "removing $worker from $company<Br/>";
+			$C->RemoveWorker( $worker );
+		}
+
+		return true;
+	}
+
 	/**
 	 * Ensures fatal errors are logged so they can be picked up in the status report.
 	 *

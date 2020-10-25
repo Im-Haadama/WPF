@@ -20,13 +20,14 @@ if ( ! defined( "FRESH_INCLUDES" ) ) {
 class Fresh_Pricelist_Item {
 	private $id;
 	private $product_name;
-	private $supplier_id;
+	private $supplier;
 	private $date;
 	private $price;
 	private $supplier_product_code;
 	private $sale_price;
 	private $category;
 	private $picture_path;
+	private $supplier_id;
 
 	function __construct( $pricelist_id ) {
 		if ($pricelist_id == 0) return;
@@ -43,23 +44,24 @@ class Fresh_Pricelist_Item {
 		}
 		$this->id                    = $pricelist_id;
 		$this->product_name          = $result["product_name"];
-		$this->supplier_id           = $result["supplier_id"];
+		$supplier_id           = $result["supplier_id"];
 		$this->date                  = $result["date"];
 		$this->price                 = $result["price"];
 		$this->supplier_product_code = $result["supplier_product_code"];
 		$this->sale_price            = $result["sale_price"];
 		$this->category              = $result["category"];
 		$this->picture_path          = $result["picture_path"];
+		$this->supplier = new Fresh_Supplier($supplier_id);
 	}
 
 	public function getPreviousPrice()
 	{
 		$previous_date = SqlQuerySingleScalar("select date from im_supplier_price_list 
-			where supplier_id = $this->supplier_id and date < '" . $this->date . "' order by date desc limit 1");
+			where supplier_id = " . $this->getSupplierId() . " and date < '" . $this->date . "' order by date desc limit 1");
 
 		return SqlQuerySingleScalar("select price from im_supplier_price_list
-			where supplier_id = $this->supplier_id 
-			  and date = '$previous_date' 
+			where supplier_id = " . $this->getSupplierId() .
+			  " and date = '$previous_date' 
 			  and product_name = '" . EscapeString($this->product_name) ."'");
 	}
 
@@ -83,7 +85,7 @@ class Fresh_Pricelist_Item {
 	 * @return mixed
 	 */
 	public function getSupplierId() {
-		return $this->supplier_id;
+		return $this->supplier->getId();
 	}
 
 	/**
@@ -129,11 +131,11 @@ class Fresh_Pricelist_Item {
 	}
 
 	public function getSellPrice() {
-		return Fresh_Pricing::calculate_price( $this->price, $this->supplier_id, $this->sale_price );
+		return Fresh_Pricing::calculate_price( $this->price, $this->getSupplierId(), $this->sale_price );
 	}
 
 	public function getSupplierName() {
-		$s = new Fresh_Supplier( $this->supplier_id );
+		$s = new Fresh_Supplier( $this->getSupplierId() );
 
 		return $s->getSupplierName();
 	}
@@ -166,7 +168,10 @@ class Fresh_Pricelist_Item {
 		$link_data = $catalog->GetProdID( $this->id);
 		array_push($row, Core_Html::GuiButton("del_" . $this->id, "X", "pricelist_delete('$post_file', $this->id)"));
 		$price = $row['price'];
-		$args['style'] = 'background-color: ' . self::get_prod_color();
+		if ($color = self::get_prod_color()) $args['style'] = 'background-color: ' . $color;
+		$args['size'] = 3;
+		$args["events"] = "onchange = \"pricelist_update_price('" . flavor::getPost() . "', " . $this->id . ")\"";
+			// Core_Gem::UpdateTableFieldEvent(Flavor::getPost(), "supplier_price_list", $this->id, "price");
 		$row['price'] = Core_Html::GuiInput("price_" . $row['id'], $price, $args);
 
 		if ( $link_data ) {
@@ -210,6 +215,7 @@ class Fresh_Pricelist_Item {
 
 	function get_prod_color()
 	{
+		if (! $this->supplier->getMachineUpdate()) return  "";
 		$current_price = self::getPrice();
 		$prev_price = self::getPreviousPrice();
 		$color = "white";
@@ -218,6 +224,16 @@ class Fresh_Pricelist_Item {
 		if ($current_price > $prev_price) $color = 'salmon';
 		if ($current_price < $prev_price) $color = 'lightblue';
 		return $color;
+	}
+
+	function setPrice(float $price)
+	{
+		$this->price = $price;
+		$sql = "update im_supplier_price_list
+		set price = $price,
+		  date = curdate() where id = " . $this->id;
+		MyLog(__FUNCTION__, $sql);
+		return SqlQuery($sql);
 	}
 }
 

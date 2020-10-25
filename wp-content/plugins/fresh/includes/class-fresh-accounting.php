@@ -31,6 +31,7 @@ class Fresh_Accounting {
 		                 "accumulation_row" => &$sums_in,
 		                 "id_field" => "ref");
 		$rows_data = Core_Data::TableData( $sql, $in_args);
+		$due_vat = 0;
 
 		// Add due vat, fresh total
 		foreach ($rows_data as $key => $row)
@@ -42,6 +43,7 @@ class Fresh_Accounting {
 			else {
 				$delivery = new Fresh_Delivery($key);
 				$rows_data[ $key ]['due_vat'] = $delivery->getDeliveryDueVat() - $delivery->DeliveryFee();
+				$due_vat +=$rows_data[ $key ]['due_vat'];
 				$rows_data[$key]['fresh'] = $rows_data[ $key ]['amount'] - $rows_data[ $key ]['due_vat'];
 			}
 		}
@@ -51,6 +53,10 @@ class Fresh_Accounting {
 
 		$report .= Core_Html::gui_table_args( $rows_data, "table", $in_args );
 
+		$report .= Core_Html::GuiHeader(2, "מוצרים יבשים");
+
+//		$report .= 'סה"כ נמכרו (כולל מע"מ) ' . $due_vat . "<br/>";
+		$report .= ' רווח מחושב ' . round($due_vat / 1.17 - $due_vat / 1.4, 0) . "<br/>";
 
 		$report .= Core_Html::GuiHeader(2, "הוצאות");
 

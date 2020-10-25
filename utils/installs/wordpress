@@ -1,0 +1,16 @@
+#!/bin/bash
+set -x
+# cd /var/www/html
+# wget https://he.wordpress.org/latest-he_IL.tar.gz
+# tar xvf latest-he_IL.tar.gz
+# mv wordpress/* .
+# chown -R www-data:www-data .
+echo Enter database name
+read database
+echo Enter password
+read password
+mysql << EOF
+# create database $database;
+create user $database@localhost identified by "$password";
+GRANT ALL PRIVILEGES ON $database.* TO '$database'@'localhost';
+EOF

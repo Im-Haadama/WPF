@@ -45,6 +45,10 @@ class Fresh_Supplier {
 		return SqlQuerySingleScalar( "SELECT site_id FROM im_suppliers WHERE id = " . $this->id );
 	}
 
+	function getMachineUpdate() {
+		return SqlQuerySingleScalar( "SELECT machine_update FROM im_suppliers WHERE id = " . $this->id );
+	}
+
 	function getAddress()
 	{
 		$sql = "select address from im_suppliers where id = " . $this->id;

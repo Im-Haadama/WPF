@@ -712,6 +712,11 @@ class Core_Gem {
 		}
 	}
 
+	static function UpdateTableFieldEvent($post_file, $table_name, $id, $field_name)
+	{
+		return 'onchange = "update_table_field(\'' . $post_file . '\', \'' . $table_name . "', $id, '$field_name', check_result)\"";
+	}
+
 // Header that attach to upper screen.
 // Gets array of elements to display next to logo
 }

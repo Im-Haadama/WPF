@@ -13,6 +13,7 @@ class Fresh_Suppliers {
 		AddAction('pricelist_delete', array($this, 'delete'));
 		add_filter("supplier_price_list_check_valid", array($this, 'supplier_pricelist_valid'), 10, 2);
 		AddAction("pricelist_before_import", array($this, 'supplier_pricelist_before_import'));
+		AddAction("pricelist_update_price" , array($this, 'pricelist_update_price'));
 	}
 
 	function init()
@@ -53,13 +54,14 @@ class Fresh_Suppliers {
 			"page_number"=>0,
 			"edit"=>true,
 			"edit_cols"=> array("product_name"=>1,"price"=>1),
+			"col_width"=> array("price"=>3),
 			"v_key" => "supplier_id",
 			"add_checkbox" => true);
 
 		if ($supplier_id)
 			$args["new_row"] = array ("id" => Core_Html::GuiButton("btn_add_pricelist_item", "Add",
 				"supplier_add_pricelist_item('" . Fresh::getPost() . "', $supplier_id)"),
-				"product_name" => "", "price"=>"");
+				"product_name" => "", "price"=>Core_Html::GuiInput("price_new_row", "", array("size"=>3)));
 
 		$this->gem->AddVirtualTable( "pricelist", $args );
 
@@ -371,5 +373,14 @@ class Fresh_Suppliers {
 	static function get_link($supplier_id)
 	{
 		return "/wp-admin/admin.php?page=suppliers&operation=gem_v_show&table=pricelist&supplier_id=" . $supplier_id;
+	}
+
+	static function pricelist_update_price()
+	{
+		$pricelist_id = GetParam("pricelist_id", true);
+		$new_price = GetParam("price", true);
+
+		$item = new Fresh_Pricelist_Item($pricelist_id);
+		return $item->setPrice($new_price);
 	}
 }

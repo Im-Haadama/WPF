@@ -1683,7 +1683,7 @@ class Focus_Tasks {
 
 	static function company_workers( Org_Company $company, $args ) {
 		$company_id = $company->getId();
-		$result            = Core_Html::GuiHeader( 1, $company->getName() );
+		$html            = Core_Html::GuiHeader( 1, $company->getName() );
 		$args["query"]     = "manager = 1";
 		$args["links"]     = array( "id" => AddToUrl( array( "operation" => "show_edit_worker&worker_id=%s" ) ) );
 //		$args["selectors"] = array( "team_members" => __CLASS__ . "::gui_show_team" );
@@ -1691,22 +1691,31 @@ class Focus_Tasks {
 
 		$worker_ids = $company->GetWorkers(); // Should return the admin at least.
 		if (! $worker_ids) {
-            $result .= "No workers in the company";
+            $html .= "No workers in the company";
         }
 		else{
-            $workers = Core_Data::TableData("select id,display_name from wp_users where id in (" . CommaImplode($worker_ids) . ")");
+            $workers = Core_Data::TableData("select id from wp_users where id in (" . CommaImplode($worker_ids) . ")");
+            foreach ($workers as $id => $row){
+            	$u = new Core_Users($id);
+	            if ($id > 0)
+	            	$workers[$id]["display_name"] = $u->getName();
+	            else // the header
+		            $workers[$id]["display_name"] = __("Name");
+            }
             $args["post_file"] .= "?company=" . $company_id;
             $args["add_button"] = false;
-            $result .= Core_Gem::GemArray( $workers, $args, "company_workers" );
+            $args["add_checkbox"] = true;
+            $html .= Core_Gem::GemArray( $workers, $args, "company_workers" );
         }
-
 		$post_file = Focus::getPost();
-		$result .= "<div>" . Core_Html::GuiInput("user_to_add", null, $args). Core_Html::GuiButton("btn_add", "Add", "company_add_worker('$post_file', $company_id)") . "</div>";
-        //$result .= "<div>" . Core_Users::gui_select_user("user_to_add", null, $args). Core_Html::GuiButton("btn_add", "Add", "company_add_worker('$post_file', $company_id)") . "</div>";
+		$html .= Core_Html::GuiButton("btn_remove", "Remove", "company_remove('$post_file', $company_id)");
 
-//		$result .= Core_Html::GuiHyperlink("Add new user", AddToUrl(array("operation"=>"show_add_company_worker", "company" => $company_id)));
+		$html .= "<div>" . Core_Html::GuiInput("user_to_add", null, $args). Core_Html::GuiButton("btn_add", "Add", "company_add_worker('$post_file', $company_id)") . "</div>";
+        //$html .= "<div>" . Core_Users::gui_select_user("user_to_add", null, $args). Core_Html::GuiButton("btn_add", "Add", "company_add_worker('$post_file', $company_id)") . "</div>";
 
-		return $result;
+//		$html .= Core_Html::GuiHyperlink("Add new user", AddToUrl(array("operation"=>"show_add_company_worker", "company" => $company_id)));
+
+		return $html;
 	}
 
 

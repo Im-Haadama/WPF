@@ -17,3 +17,10 @@ function supplier_add_pricelist_item(post_file, supplier_id)
         '&price=' + price +
         '&supplier_id=' + supplier_id, location_reload);
 }
+
+function pricelist_update_price(post_file, pricelist_id)
+{
+    let price = get_value_by_name("price_" + pricelist_id);
+    let url = post_file + '?operation=pricelist_update_price&pricelist_id=' + pricelist_id + '&price=' + price;
+    execute_url(url, fail_message);
+}

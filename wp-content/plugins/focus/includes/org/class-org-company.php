@@ -42,6 +42,13 @@ class Org_Company {
 		$w->AddCompany($this->id);
 	}
 
+	public function RemoveWorker($w_id)
+	{
+		$w = new Org_Worker($w_id);
+		$w->RemoveCompany($this->id);
+	}
+
+
 	public function GetTeams()
 	{
 
