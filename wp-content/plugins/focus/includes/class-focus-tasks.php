@@ -2171,6 +2171,7 @@ class Focus_Tasks {
 		$user_id = get_user_id();
 		$companies        = $worker->GetCompanies();
 
+		$company_teams = GetParam("company_teams", false, false);
 		//
         //return only the teams that the user is part of.
         //$all_teams = $worker->AllTeams(true);

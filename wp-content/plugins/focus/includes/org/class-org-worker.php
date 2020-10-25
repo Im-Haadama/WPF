@@ -48,29 +48,27 @@ class Org_Worker extends Core_users
 //			if (strstr(, "Personal"))
 	}
 
-	function AllTeams()
+	function AllTeams($include_names = false)
 	{
-            if ($this->teams)
-                return $this->teams;
-
-            $this->teams = CommaArrayExplode(get_usermeta($this->id, 'teams'));
-            if($include_names){
-                $result = array();
-                foreach ($this->teams as $team_id){
-                    $team = new Org_Team($team_id);
-                    $team_name = $team->getName();
-                    array_push($result,$team_name);
-                }
-                //echo gettype($this->teams)."\n";
-                //print_r($result)."\n";
-                return $result;
-            }
-
-            if (! $this->teams) {
-                // Add personal team and return it.
-                return array( Org_Team::Create($this->id, __("Personal team") . " " . EscapeString($this->getName())));
-            }
+        if ($this->teams)
             return $this->teams;
+
+        $this->teams = CommaArrayExplode(get_usermeta($this->id, 'teams'));
+        if($include_names){
+            $result = array();
+            foreach ($this->teams as $team_id){
+                $team = new Org_Team($team_id);
+                $team_name = $team->getName();
+                array_push($result, arraY($team_id, $team_name));
+            }
+            return $result;
+        }
+
+        if (! $this->teams) {
+            // Add personal team and return it.
+            return array( Org_Team::Create($this->id, __("Personal team") . " " . EscapeString($this->getName())));
+        }
+        return $this->teams;
 	}
 
 	function AllWorkers()
