@@ -1266,7 +1266,7 @@ class Focus_Tasks {
 		// Tasks I've created. Assigned to some else                                                                 //
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		$args["title"] = ImTranslate( "Tasks I've initiated to other teams" );
-		$args["query"] = " creator = $user_id and status = 1"; // . " and (owner != " . $user_id . ' or isnull(owner)) ' . ($teams ? ' and team not in (' . CommaImplode( $teams ) . ")" : '');
+		$args["query"] = " creator = $user_id and status < 2"; // . " and (owner != " . $user_id . ' or isnull(owner)) ' . ($teams ? ' and team not in (' . CommaImplode( $teams ) . ")" : '');
         $table = self::Taskslist( $args );
 		if ( $args["count"] ) {
             $result .= $table;
@@ -1329,7 +1329,7 @@ class Focus_Tasks {
 		$actions = array(
 			//    text, action,                                                class,               tooltip
 			array( "", $action_url . "?operation=task_start&id=%s;load_page", "fas fa-play-circle", "start" ),
-			array( "", $action_url . "?operation=task_end&id=%s;action_hide_row","fas fa-stop-circle", "stop"   ),
+			array( "", $action_url . "?operation=task_end&id=%s;action_hide_row","fas fa-stop-circle", "finished"   ),
 			array( "", $action_url . "?operation=task_cancel&id=%s;action_hide_row", "fas fa-window-close", "cancel" ),
 			array( "", $action_url . "?operation=task_postpone&id=%s;action_hide_row", "fas fa-clock", "tomorrow" ),
 			array( "", $action_url . "?operation=task_pri_plus&id=%s;location_reload", "fas fa-arrow-alt-circle-up", "increase priority" ),
@@ -1708,6 +1708,7 @@ class Focus_Tasks {
             $html .= Core_Gem::GemArray( $workers, $args, "company_workers" );
         }
 		$post_file = Focus::getPost();
+		$html .= "<div>" . Core_Html::GuiInput("worker_email", null, $args). Core_Html::GuiButton("btn_add", "Add", "company_add_worker('$post_file', $company_id)") . "</div>";
 		$html .= Core_Html::GuiButton("btn_remove", "Remove", "company_remove('$post_file', $company_id)");
 
 		$html .= "<div>" . Core_Html::GuiInput("user_to_add", null, $args). Core_Html::GuiButton("btn_add", "Add", "company_add_worker('$post_file', $company_id)") . "</div>";
@@ -2167,8 +2168,19 @@ class Focus_Tasks {
 		$db_prefix = GetTablePrefix();
 		$edit             = GetArg( $args, "edit", true );
 		$worker           = new Org_Worker( get_user_id() );
+		$user_id = get_user_id();
 		$companies        = $worker->GetCompanies();
+
+		//
+        //return only the teams that the user is part of.
+        //$all_teams = $worker->AllTeams(true);
+        //
+        //
+
+        //teams return all the teams in the user's company.
+        $teams = SqlQueryArrayScalar( "select team_name from ${db_prefix}working_teams where manager = " . $user_id );
 		$debug            = false; // (get_user_id() == 1);
+        $args["values"] = $teams;
 		$args["debug"]    = $debug;
 		$args["name"]     = "team_name";
 		$args["selected"] = $selected;
@@ -2179,7 +2191,9 @@ class Focus_Tasks {
 		$form_table = "working_teams"; // GetArg( $args, "form_table", null );
 
 		if ( $edit ) {
-			$gui = Core_Html::GuiSelectTable( $id, "working_teams", $args );
+		    //$gui = Core_Html::
+		    $gui = Core_Html::GuiSimpleSelect($id, $selected, $args);
+			//$gui = Core_Html::GuiSelectTable( $id, "working_teams", $args );
 			$gui .= Core_Html::GuiButton( "add_new_team", "New Team", array(
 				"action" => "add_element('team', '" . $form_table . "', '" . GetUrl() . "')",
 				"New Team"
