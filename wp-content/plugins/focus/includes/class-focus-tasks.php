@@ -1701,7 +1701,7 @@ class Focus_Tasks {
         }
 
 		$post_file = Focus::getPost();
-		$result .= "<div>" . Core_Html::GuiInput("user_to_add", null, $args). Core_Html::GuiButton("btn_add", "Add", "company_add_worker('$post_file', $company_id)") . "</div>";
+		$result .= "<div>" . Core_Html::GuiInput("worker_email", null, $args). Core_Html::GuiButton("btn_add", "Add", "company_add_worker('$post_file', $company_id)") . "</div>";
         //$result .= "<div>" . Core_Users::gui_select_user("user_to_add", null, $args). Core_Html::GuiButton("btn_add", "Add", "company_add_worker('$post_file', $company_id)") . "</div>";
 
 //		$result .= Core_Html::GuiHyperlink("Add new user", AddToUrl(array("operation"=>"show_add_company_worker", "company" => $company_id)));
@@ -2159,6 +2159,8 @@ class Focus_Tasks {
 		$edit             = GetArg( $args, "edit", true );
 		$worker           = new Org_Worker( get_user_id() );
 		$companies        = $worker->GetCompanies();
+		$all_teams = $worker->AllTeams();
+		//print_r($all_teams);
 		$debug            = false; // (get_user_id() == 1);
 		$args["debug"]    = $debug;
 		$args["name"]     = "team_name";
@@ -2170,6 +2172,7 @@ class Focus_Tasks {
 		$form_table = "working_teams"; // GetArg( $args, "form_table", null );
 
 		if ( $edit ) {
+		    //$gui = Core_Html::GuiSimpleSelect($id, $all_teams, $args);
 			$gui = Core_Html::GuiSelectTable( $id, "working_teams", $args );
 			$gui .= Core_Html::GuiButton( "add_new_team", "New Team", array(
 				"action" => "add_element('team', '" . $form_table . "', '" . GetUrl() . "')",
