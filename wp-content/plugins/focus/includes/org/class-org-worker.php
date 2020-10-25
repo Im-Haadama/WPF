@@ -50,16 +50,27 @@ class Org_Worker extends Core_users
 
 	function AllTeams()
 	{
-		if ($this->teams)
-			return $this->teams;
+            if ($this->teams)
+                return $this->teams;
 
-		$this->teams = CommaArrayExplode(get_usermeta($this->id, 'teams'));
+            $this->teams = CommaArrayExplode(get_usermeta($this->id, 'teams'));
+            if($include_names){
+                $result = array();
+                foreach ($this->teams as $team_id){
+                    $team = new Org_Team($team_id);
+                    $team_name = $team->getName();
+                    array_push($result,$team_name);
+                }
+                //echo gettype($this->teams)."\n";
+                //print_r($result)."\n";
+                return $result;
+            }
 
-		if (! $this->teams) {
-			// Add personal team and return it.
-			return array( Org_Team::Create($this->id, __("Personal team") . " " . EscapeString($this->getName())));
-		}
-		return $this->teams;
+            if (! $this->teams) {
+                // Add personal team and return it.
+                return array( Org_Team::Create($this->id, __("Personal team") . " " . EscapeString($this->getName())));
+            }
+            return $this->teams;
 	}
 
 	function AllWorkers()
@@ -69,12 +80,17 @@ class Org_Worker extends Core_users
 		$companies = self::GetCompanies(true);
 		if ($companies) {
 			$this->workers = array();
+			$result = $this->workers;
 			foreach ($companies as $company_id){
 				$company = new Org_Company($company_id);
-				$this->workers = array_merge($this->workers, $company->getWorkers());
+				$workers_company = $company->getWorkers();
+                foreach ($workers_company as $worker) {
+                    if(!in_array($worker,$result)) // check if a user is already exist in another team
+                        $this->workers = array_push($result, $worker);
+                }
 			}
 
-			return $this->workers;
+			return $result;
 		}
 
 		return null;
