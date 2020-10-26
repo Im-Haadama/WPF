@@ -272,7 +272,6 @@ class Core_Data
 		$headers = array();
 		if (GetArg($args, "add_checkbox", false)) $headers["select"] = ImTranslate("select");
 
-
 		// If not sent, create from database fields.
 		if (strstr($sql, "describe") or strstr($sql, "show"))
 		{
@@ -368,11 +367,9 @@ class Core_Data
 		$transpose = GetArg($args, "transpose", null);
 		$add_field_suffix = GetArg($args, "add_field_suffix", true);
 		$accumulation_row = GetArg($args, "accumulation_row", null);
+		$field_args = $args; // Copied so the event format would change for every field.
 
-
-		$maybe_array_events = GetArg($args, "events", null); // $edit ? "onchange='changed_field(" . $row_id . ")'" : null); // Valid for grid. In transposed single row it will be replaced.
-		unset ($args["events"]);
-		$field_events = null;
+		$events = GetArg($args, "events", null); // $edit ? "onchange='changed_field(" . $row_id . ")'" : null); // Valid for grid. In transposed single row it will be replaced.
 		$table_name = GetArg($args, "table_name", null);
 
 		$prepare_plug = GetArg($args, "prepare_plug", null);
@@ -384,7 +381,6 @@ class Core_Data
 		{
 			return $row;
 		}
-		$events = $maybe_array_events; // If it's array, handle it in the loop.
 
 		foreach ($row as $key => $data)
 		{
@@ -412,7 +408,7 @@ class Core_Data
 				if ($transpose)	$field_events = sprintf($events, "'" . $key . "'", $row_id);
 				else			$field_events = sprintf( $events, $row_id, $key );
 
-				$args["events"] = $field_events;
+				$field_args["events"] = $field_events;
 			}
 
 			// Let's start
@@ -433,7 +429,7 @@ class Core_Data
 //					print "sel=" . $selector_name . "<br/>";
 					if ( strlen( $selector_name ) < 2 ) die( "selector " . $key . "is empty" );
 					// print $selector_name;
-					$value = $selector_name( $input_name, $orig_data, $args );
+					$value = $selector_name( $input_name, $orig_data, $field_args );
 					// $value = (function_exists($selector_name) ? $selector_name( $input_name, $orig_data, $args ) : $orig_data); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
 //					if (! function_exists($selector_name)) {
 //						print( "function $selector_name does not exists" );
@@ -451,7 +447,7 @@ class Core_Data
 				/// 23/9/2019  isset($edit_cols[$key]) - set $args["edit_cols"][$key] for fields that need to be edit.
 				if ($edit  and (! $edit_cols or (isset($edit_cols[$key]) and $edit_cols[$key]))){
 					if (! $key or $key == "id")	continue;
-					if ($field_events) $args["events"] = $field_events;
+//					if ($field_events) $args["events"] = $field_events;
 					if ( $table_name ) {
 //					if (isset($args["field_types"])) {
 //						$type = $args["field_types"][$key];
@@ -461,7 +457,7 @@ class Core_Data
 			// Not tested:
 			//							if (isset($args['styles']) and is_array($args['styles']))
 			//								$args['style'] = (isset($args['styles'][$key]) ? $args['styles'][$key] : null);
-							$value = Core_Html::gui_input_by_type($input_name, $type, $args, $value);
+							$value = Core_Html::gui_input_by_type($input_name, $type, $field_args, $value);
 						}
 					} else {
 						// ??? 30/3/2020
@@ -476,7 +472,7 @@ class Core_Data
 					// Selector ($id, $value, $args //
 					//////////////////////////////////
 					if (function_exists($selector_name))
-						$value = $selector_name( $key, $orig_data, $args); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
+						$value = $selector_name( $key, $orig_data, $field_args); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
 					else
 						$value = "selector $selector_name not found";
 					break;

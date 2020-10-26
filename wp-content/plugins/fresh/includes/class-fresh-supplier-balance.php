@@ -38,11 +38,11 @@ class Fresh_Supplier_Balance {
 	static function accounting() {
 		$result = "";
 
-		$selected_tab = GetParam("selected_tab", false, "weekly");
+		$selected_tab = GetParam("st_suppliers", false, "weekly");
 
-		$tabs = array(array("weekly", "Weekly summary", "not set"),
-			array("supplier_transactions", "Suppliers transaction", "not set"),
-		    array("supplier_invoices", "Supply invoices", "not set"));
+		$tabs = array(array("weekly", "Weekly summary", "ws"),
+			array("supplier_transactions", "Suppliers transaction", "st"),
+		    array("supplier_invoices", "Supply invoices", "si"));
 
 
 		// Put the tab names inside the array.
@@ -68,9 +68,9 @@ class Fresh_Supplier_Balance {
 
 			case "supplier_transactions":
 				$tab_content = self::SupplierTransactions(self::SupplierTransactions());
-				$tabs[0][2] = $tab_content;
+				$tabs[1][2] = $tab_content;
 //				if ($ms->getLocalSiteID() != 2) { // Makolet
-//					array_push( $tabs, array( "", "",  ) );
+//					ardray_push( $tabs, array( "", "",  ) );
 //					array_push( $tabs, array(
 //						"supplier_invoices",
 //						"Suppliers invoices",
@@ -80,7 +80,7 @@ class Fresh_Supplier_Balance {
 				break;
 
 			case "supplier_invoices":
-				$tabs[0][2] = Finance_Invoices::Table( AddToUrl( "selected_tab", "supplier_invoices" ));
+				$tabs[2][2] = Finance_Invoices::Table( AddToUrl( "selected_tab", "supplier_invoices" ));
 				break;
 
 			default:
@@ -90,7 +90,7 @@ class Fresh_Supplier_Balance {
 //		array_push($tabs, array("potato", "test", self::test_price()));
 //		$tabs = apply_filters('wpf_accounts', $tabs);
 
-		$args = [];
+		$args = array("st_suppliers" => $selected_tab);
 		$args["tabs_load_all"] = false;
 
 		$result .= Core_Html::gui_div("logging");
@@ -125,8 +125,9 @@ class Fresh_Supplier_Balance {
        . "FROM `im_business_info`\n"
        . "where part_id > 10000\n"
        . " and is_active = 1\n"
+//		       " and balance > 0 "
        . " and document_type in (" . FreshDocumentType::invoice . ", " . FreshDocumentType::bank . ")\n"
-       . " and document_type in (" . FreshDocumentType::invoice . ", " . FreshDocumentType::bank . ")\n"
+//       . " and document_type in (" . FreshDocumentType::invoice . ", " . FreshDocumentType::bank . ")\n"
        . "group by part_id";
 
 		if ( ! $include_zero ) $sql .= " having balance < 0";
@@ -138,13 +139,16 @@ class Fresh_Supplier_Balance {
 
 		while ( $row = SqlFetchRow( $sql_result ) ) {
 			$supplier_total = $row[0];
+//			print "st=$supplier_total" . abs($supplier_total);
+			if (! (abs($supplier_total)> 10)) continue;
+//			print "cocccc<br/>";
 			$supplier_id    = $row[1];
 			$supplier_name  = $row[2];
-		
+
 			$line = Core_Html::gui_cell( gui_checkbox( "chk_" . $supplier_id, "supplier_chk" ) );
 			// $line .= "<td><a href = \"get-supplier-account.php?supplier_id=" . $supplier_id . "\">" . $supplier_name . "</a></td>";
 			$line .= Core_Html::gui_cell( Core_Html::GuiHyperlink( $supplier_name, AddToUrl("supplier_id", $supplier_id )));
-		
+
 			$line .= "<td>" . $supplier_total . "</td>";
 			array_push( $data_lines, $line );
 	}

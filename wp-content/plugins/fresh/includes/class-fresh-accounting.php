@@ -34,6 +34,7 @@ class Fresh_Accounting {
 		$due_vat = 0;
 
 		// Add due vat, fresh total
+		if (! $rows_data) return $report . "No data!<br/>";
 		foreach ($rows_data as $key => $row)
 		{
 			if ($key == 'header') {

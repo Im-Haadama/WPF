@@ -234,15 +234,10 @@ class Fresh_Client_Views {
 		return $operation . " not handled " . __FUNCTION__ . "<br/>";
 	}
 
-	static private function getPost()
-	{
-		return "/wp-content/plugins/fresh/post.php";
-	}
-
 	static function Args()
 	{
 		$args = [];
-		$args["post_file"] = self::getPost();
+		$args["post_file"] = Flavor::getPost();
 		$args["page_number"] = GetParam("page_number");
 		$query["query"] = GetParam("query");
 

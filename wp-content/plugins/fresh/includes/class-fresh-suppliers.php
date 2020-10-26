@@ -210,7 +210,7 @@ class Fresh_Suppliers {
 		$ignore_list = [];
 		$args        = array(
 //			"page_number"      => GetParam( "page_number", false, -1 ),
-			"post_file" => self::getPost()
+			"post_file" => Flavor::getPost()
 		);
 		if ( GetParam( "non_active", false, false ) ) {
 			$args["non_active"] = 1;
@@ -249,10 +249,6 @@ class Fresh_Suppliers {
 		);
 
 //		return $new_row;
-	}
-	static private function getPost()
-	{
-		return "/wp-content/plugins/fresh/post.php";
 	}
 
 	function getShortcodes() {

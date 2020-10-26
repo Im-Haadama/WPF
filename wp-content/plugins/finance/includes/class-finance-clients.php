@@ -214,7 +214,7 @@ class Finance_Clients
 		}
 		$payment_info_id = SqlQuerySingleScalar( "select id from im_payment_info where email = " . QuoteText($u->get_customer_email()));
 		if ($payment_info_id) {
-			$args = array("post_file" => Fresh::getPost(), "edit"=>true);
+			$args = array("post_file" => Flavor::getPost(), "edit"=>true);
 			$credit_info = Core_Gem::GemElement( "payment_info", $payment_info_id, $args );
 		} else {
 			$args["post_file"] = Finance::getPostFile();
