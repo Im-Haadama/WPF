@@ -36,6 +36,27 @@ class Org_Company {
 		return $users_array;
 	}
 
+    /**
+     * return all the teams that users in the company belong to.
+     */
+    public function getTeams()
+    {
+        $teams_array = array();
+        $workers = self::getWorkers();
+        foreach ($workers as $worker){
+            $worker_teams = CommaArrayExplode(get_usermeta($worker, 'teams'));
+            foreach ($worker_teams as $worker_team){
+                $team_id = new Org_Team($worker_team);
+                $team_name = $team_id->getName();
+                $team = array( "id" =>$worker_team, "team_name" =>$team_name);
+                if(!in_array( $team,$teams_array) and $team["team_name"] != null ) // check if a team is already exist
+                    array_push($teams_array,$team);
+            }
+            return $teams_array;
+
+        }
+    }
+
 	public function AddWorker($w_id)
 	{
 		$w = new Org_Worker($w_id);
@@ -46,12 +67,6 @@ class Org_Company {
 	{
 		$w = new Org_Worker($w_id);
 		$w->RemoveCompany($this->id);
-	}
-
-
-	public function GetTeams()
-	{
-
 	}
 }
 
