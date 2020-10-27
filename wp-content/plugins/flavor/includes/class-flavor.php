@@ -24,7 +24,7 @@ class Flavor {
 	 *
 	 * @var string
 	 */
-	public $version = '1.0';
+	protected $version = '1.0';
 
 	/**
 	 * @var
@@ -62,8 +62,8 @@ class Flavor {
 	/**
 	 * @return string
 	 */
-	public function get_version() {
-		return $this->version;
+	static public function getVersion() {
+		return self::instance()->version;
 	}
 
 	/**

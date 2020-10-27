@@ -433,7 +433,6 @@ class Fresh_Supplies {
 			print "Must supply supply id. Got $id";
 			return false;
 		}
-		// https://fruity.co.il//wp-content/plugins/fresh/post.php?operation=got_supply&supply_id=1249&supply_total=2&supply_number=1&net_amount=3&is_invoice=0
 
 		$supply_total  =GetParam("supply_total", true);
 

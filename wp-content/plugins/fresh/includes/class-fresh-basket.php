@@ -229,7 +229,7 @@ class Fresh_Basket extends  Fresh_Product  {
 		$sql = 'SELECT DISTINCT product_id, quantity, product_price(product_id) as price, quantity * product_price(product_id) as line_price FROM im_baskets WHERE basket_id = ' . $basket_id .
 		       " and post_status(product_id) like '%pub%'";
 
-		$args["post_file"] = "/wp-content/plugins/fresh/post.php";
+		$args["post_file"] = Flavor::getPost();
 		$args["id_field"] = "product_id";
 //		$args["selectors"] = array("product_id" => "Fresh_Product::gui_select_product");
 //		$args["links"] = array("product_id" => "/wp-admin/post.php?post=%d&action=edit&classic-editor");

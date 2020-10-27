@@ -133,8 +133,6 @@ class Fresh_Catalog {
 
 	}
 
-	// "/wp-content/plugins/fresh/post.php?operation=basket_create&basket_name=%D7%9E%D7%95%D7%A1%D7%99%D7%A3&basket_price=99&categ=19"
-	// מוסיף, 99, ירקות אורגניים - 19
 	static function DoCreateProduct( $product_name, $sell_price, $supplier_name, $categ = null, $image_path = null, $sale_price = 0 ) {
 		$post_information = array(
 			'post_title'  => $product_name,

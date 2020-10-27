@@ -22,7 +22,7 @@ require_once(dirname(dirname(dirname(dirname(dirname(__FILE__))))) . '/wp-config
                     location.reload();
                 }
             }
-            var request = "/wp-content/plugins/fresh/post.php?operation=set_client_type" +
+            var request = "<?php print Fresh::getPost(); ?>?operation=set_client_type" +
                 "&id=" + id +
                 "&type=" + type;
 
@@ -46,7 +46,7 @@ require_once(dirname(dirname(dirname(dirname(dirname(__FILE__))))) . '/wp-config
                     location.reload();
                 }
             }
-            var request = "/wp-content/plugins/fresh/post.php?operation=set_client_type" +
+            var request = "<?php print Fresh::getPosts();?>?operation=set_client_type" +
                 "&id=" + user_id +
                 "&type=" + type;
 

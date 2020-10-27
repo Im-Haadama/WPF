@@ -139,11 +139,6 @@
 			print $result;
 		}
 
-		static private function getPost()
-		{
-			return "/wp-content/plugins/fresh/post.php";
-		}
-
 
 //		static function pictures()
 //		{

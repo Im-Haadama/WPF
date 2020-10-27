@@ -685,7 +685,7 @@ class Fresh {
 	    wp_register_script( 'fresh_admin', $file);
 
 	    $params = array(
-	    	'admin_post' => get_site_url() . '/wp-content/plugins/fresh/post.php'
+	    	'admin_post' => get_site_url() . Fresh::getPost()
 	    );
 	    wp_localize_script('fresh_admin', 'fresh_admin_params', $params);
 
