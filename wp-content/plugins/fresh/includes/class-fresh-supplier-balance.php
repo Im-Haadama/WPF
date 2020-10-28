@@ -67,7 +67,7 @@ class Fresh_Supplier_Balance {
 				break;
 
 			case "supplier_transactions":
-				$tab_content = self::SupplierTransactions(self::SupplierTransactions());
+				$tab_content = self::SupplierTransactions();
 				$tabs[1][2] = $tab_content;
 //				if ($ms->getLocalSiteID() != 2) { // Makolet
 //					ardray_push( $tabs, array( "", "",  ) );
@@ -126,7 +126,8 @@ class Fresh_Supplier_Balance {
        . "where part_id > 10000\n"
        . " and is_active = 1\n"
 //		       " and balance > 0 "
-       . " and document_type in (" . FreshDocumentType::invoice . ", " . FreshDocumentType::bank . ")\n"
+       . " and document_type in (" . FreshDocumentType::invoice . ", " . FreshDocumentType::bank . ", " .
+		       FreshDocumentType::invoice_refund . ")\n"
 //       . " and document_type in (" . FreshDocumentType::invoice . ", " . FreshDocumentType::bank . ")\n"
        . "group by part_id";
 
@@ -187,7 +188,7 @@ class Fresh_Supplier_Balance {
 
 		$sql = "SELECT id, date, amount, ref, pay_date, document_type, supplier_balance($supplier_id, date) as balance FROM im_business_info " .
 		       " WHERE part_id = " . $supplier_id .
-		       " AND document_type IN ( " . FreshDocumentType::bank . "," . FreshDocumentType::invoice ."," . FreshDocumentType::refund . ") " .
+		       " AND document_type IN ( " . FreshDocumentType::bank . "," . FreshDocumentType::invoice ."," . FreshDocumentType::invoice_refund . ") " .
 		       " and is_active = 1" .
 		       " ORDER BY date DESC ";
 
@@ -213,15 +214,24 @@ class Fresh_Supplier_Balance {
 		$multi_site = Core_Db_MultiSite::getInstance();
 		$sql = "select " . $multi_site->LocalSiteId() . ", part_id, supplier_displayname(part_id), round(sum(amount),2) as total\n"
 		       . "from im_business_info\n"
-		       . " where document_type in (" . FreshDocumentType::invoice . ", " . FreshDocumentType::bank . ")\n"
+		       . " where document_type in (" . FreshDocumentType::invoice . ", " . FreshDocumentType::bank .
+		       ", " . FreshDocumentType::invoice_refund .")\n"
+//		       . " and part_id = 100007"
+		       . " and is_active = 1 " // order by date asc";
 		       . "group by 2\n"
 		       . "having total < 0";
 
+//		print $sql;
+
 		$data   = "<table>";
 		$result = SqlQuery( $sql );
+//		$total = 0;
 		while ( $row = SqlFetchRow( $result ) ) {
+//			$total += $row[3];
+//			array_push($row, $total);
 			$data .= Core_Html::gui_row( $row );
 		}
+//		$data .= "total=$total<br/>";
 		$data .= "</table>";
 		print $data;
 		return true;

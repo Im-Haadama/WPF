@@ -13,6 +13,7 @@ class Focus_Database extends Core_Database
 	}
 
 	static function CreateTables($version, $force) {
+		return true;
 		$current = self::CheckInstalled( "Focus", "tables" );
 
 		if ( ! $current ) {

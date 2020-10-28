@@ -124,7 +124,6 @@ class Core_Gem {
 		die();
 	}
 
-
 	static function do_import_wrap()
 	{
 		$fields = GetParams(array("page", "table"));
@@ -456,8 +455,20 @@ class Core_Gem {
 			$result .=  $no_data_message . Core_Html::Br();
 		}
 
-		if (($page == 1 or $page == -1) and GetArg($args, "add_button", true))
+		if (($page == 1 or $page == -1) and GetArg($args, "add_button", true)) {
 			$result .= Core_Html::GuiHyperlink("[" . __("Add") . "]", AddToUrl("operation" , "gem_add_" . $table_id)) . " ";
+//			$result .= Core_Html::GuiButton( "btn_add",  "Add", "show_modal('gem_new', tasklist)" );
+			$new_args = $args;
+			$new_args["operation"] = "gem_add_$table_id";
+			unset($new_args["actions"]);
+			$result .= '';
+//			$result .=
+//				Core_Html::GuiDiv("gem_new",
+//				'<div class="modal-header">
+//    <span class="close" onclick="gem_new.style.display=\'none\'">&times;</span>
+//  </div>' . apply_filters("gem_add_$table_id", "", null, $new_args),
+//				array("class" => "gem_modal"));
+		}
 //			$result .= self::Entry($table_id);
 
 		$checkbox_class = GetArg($args, "checkbox_class", "class");

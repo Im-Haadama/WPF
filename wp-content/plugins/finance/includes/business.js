@@ -2,7 +2,7 @@
  * Created by agla on 26/02/19.
  */
 
-finance_post_file = "/wp-content/plugins/finance/post.php";
+finance_post_file = "/wp-content/plugins/flavor/post.php";
 
 function selected_client_index() {
     let client = document.getElementById("open_account");

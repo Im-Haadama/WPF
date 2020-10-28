@@ -1,12 +1,12 @@
 <?php
 /**
  * Plugin Name: finance (full)
- * Plugin URI: https://aglamaz.com
+ * Plugin URI: https://e-fresh.co.il
  * Description: Bank info and detail.
  * Version: 1.0
  * Author: agla
- * Author URI: http://aglamaz.com
- * Text Domain: im-haadama
+ * Author URI: http://e-fresh.co.il
+ * Text Domain: e-fresh
  *
  * @package Finance
  */

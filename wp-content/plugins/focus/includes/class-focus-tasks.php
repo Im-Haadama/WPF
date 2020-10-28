@@ -42,7 +42,7 @@ class Focus_Tasks {
 	}
 
 	public function admin_scripts() {
-		print "<script>let focus_post_url = \"" . self::getPost() . "\"; </script>";
+//		print "<script>let focus_post_url = \"" . self::getPost() . "\"; </script>";
 
 		$file = FLAVOR_INCLUDES_URL . 'core/data/data.js';
 		wp_enqueue_script( 'data', $file, null, $this->version, false );
@@ -2179,7 +2179,7 @@ class Focus_Tasks {
         //
 
         //teams return all the teams in the user's company.
-        $teams = SqlQueryArrayScalar( "select team_name from ${db_prefix}working_teams where manager = " . $user_id );
+        $teams = SqlQueryArrayScalar( "select team_name from ${db_prefix}working_teams "); // where manager = " . $user_id
 		$debug            = false; // (get_user_id() == 1);
         $args["values"] = $teams;
 		$args["debug"]    = $debug;

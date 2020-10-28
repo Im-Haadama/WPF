@@ -158,6 +158,8 @@ class Flavor {
 		$i->AddTable("options", "option_id" );
 
 		AddAction( 'admin_enqueue_scripts', array($this, 'admin_scripts' ));
+//		add_action('wp_footer', 'wp_enqueue_scripts', 5);
+
 		Flavor_Mission::init_hooks();
 	}
 
@@ -504,6 +506,8 @@ class Flavor {
 		$url = plugins_url() . '/flavor/assets/css/';
 		wp_register_style( 'flavor_styles', $url . 'modal.css', array(), $this->version );
 		wp_enqueue_style('flavor_styles');
+//		wp_enqueue_script( 'jquery-ui-dialog' ); // jquery and jquery-ui should be dependencies, didn't check though...
+//		wp_enqueue_style( 'wp-jquery-ui-dialog' );
 ////		wp_register_style( 'woocommerce_admin_styles', WC_URL . '/assets/css/admin.css', array(), WC_VERSION );
 //
 //		wp_enqueue_style('woocommerce_admin_styles');
@@ -720,5 +724,4 @@ function modify_admin_bar( $wp_admin_bar )
 //	MyLog(__FUNCTION__);
 
 }
-
 ?>

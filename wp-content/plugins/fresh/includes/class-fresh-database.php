@@ -116,7 +116,8 @@ order by 1;");
 
 	static function CreateTables($version, $force)
 	{
-		$current = self::CheckInstalled("Fresh", "functions");
+		return; // need to rewrite
+		$current = self::CheckInstalled("Fresh", "1");
 		$db_prefix = GetTablePrefix();
 
 		if ($current == '1.1' and $version == '1.2')
@@ -488,6 +489,23 @@ charset=utf8;
 
 		if ($current == $version and ! $force) return true;
 
+		new Fresh_Delivery(0); // Load classes
+
+		SqlQuery("drop function if exists supplier_balance");
+		$sql = "create function supplier_balance (_supplier_id int, _date date) returns float   
+BEGIN
+declare _amount float;
+select sum(amount) into _amount from ${db_prefix}business_info
+where part_id = _supplier_id
+and date <= _date
+and is_active = 1
+and document_type in (" . FreshDocumentType::bank . "," . FreshDocumentType::invoice . "," . FreshDocumentType::invoice_refund . "); 
+
+return round(_amount, 0);
+END;";
+		SqlQuery($sql);
+
+
 		SqlQuery("drop function supplier_from_business");
 		SqlQuery("create
      function supplier_from_business(bus_id int) returns text CHARSET utf8
@@ -596,22 +614,6 @@ BEGIN
 END;
 
 ");
-
-
-		new Fresh_Delivery(0); // Load classes
-		SqlQuery("drop function if exists supplier_balance");
-		$sql = "create function supplier_balance (_supplier_id int, _date date) returns float   
-BEGIN
-declare _amount float;
-select sum(amount) into _amount from ${db_prefix}business_info
-where part_id = _supplier_id
-and date <= _date
-and is_active = 1
-and document_type in (" . FreshDocumentType::bank . "," . FreshDocumentType::invoice . "," . FreshDocumentType::refund . "); 
-
-return round(_amount, 0);
-END;";
-		SqlQuery($sql);
 
 		SqlQuery("drop function client_from_delivery");
 		SqlQuery("create function client_from_delivery(del_id int) returns text CHARSET 'utf8'

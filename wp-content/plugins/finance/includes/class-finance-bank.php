@@ -71,6 +71,8 @@ class Finance_Bank
 		AddAction( "bank_create_pay", array( $this, 'bank_payments' ) );
 		AddAction("finance_get_transaction_amount", array($this, 'get_transaction_amount'));
 		AddAction('create_bank_account', array($this, 'create_bank_account'));
+		AddAction("bank_link_invoice", array($this, 'bank_link_invoice'));
+
 		add_filter('bank_check_valid', array(__CLASS__, 'bank_check_valid'), 10, 2);
 
 		add_action('admin_menu', array($this, 'admin_menu'));
@@ -145,7 +147,9 @@ class Finance_Bank
 		if ($filter = GetParam("filter", false, null)) {
 			switch ($filter) {
 				case "outcome":
-					$args["query"] .= " and receipt is null and out_amount > 0 ";
+					$args["query"] .= " and receipt is null and out_amount > 0 " .
+					                  " and description not in (select description from 
+					                  im_bank_transaction_types where cfo = 1)";
 					break;
 				case "income":
 					$args["query"] .= " and receipt is null and in_amount > 0 " .
@@ -233,6 +237,7 @@ class Finance_Bank
 
 	function handle_bank_operation($operation, $url = null)
 	{
+		print "don't use";
 		die(1); // To check if needed.
 		$table_prefix = GetTablePrefix();
 		$multi_site = Core_Db_MultiSite::getInstance();
@@ -263,47 +268,6 @@ class Finance_Bank
 				$bank_id     = GetParam( "bank_id" );
 
 				return $this->create_multi_site_receipt( $bank_id, $bank_amount, $date, $change, $ids, $site_id, $user_id );
-				break;
-
-			case "bank_link_invoice":
-				$bank_id      = GetParam( "bank_id", true );
-				$supplier_id  = GetParam( "supplier_id", true );
-				$site_id      = GetParam( "site_id", true );
-				$ids          = GetParamArray( "ids" );
-				$bank         = GetParam( "bank" );
-
-				// 1) mark the bank transaction to invoice.
-				foreach ( $ids as $id ) {
-					$command = Finance::getPostFile() . "?operation=finance_get_transaction_amount&id=" . $id;
-					$amount = doubleval(strip_tags($multi_site->Run($command , $site_id)));
-					$line_amount = min ($amount, $bank);
-
-					$sql    = "INSERT INTO ${table_prefix}bank_lines (line_id, amount, site_id, part_id, invoice)\n" .
-					          "VALUES (" . $bank_id . ", " . $line_amount . ", " . $site_id . ", " . $supplier_id . ", " .
-					          $id . ")";
-
-					SqlQuery($sql);
-				}
-				$b    = Finance_Bank_Transaction::createFromDB( $bank_id );
-				$date = $b->getDate();
-
-				// 2) mark the invoices to transaction.
-				$command = Finance::getPostFile() . "?operation=finance_add_payment&ids=" . implode( $ids, "," ) . "&supplier_id=" . $supplier_id .
-				           "&bank_id=" . $bank_id . "&date=" . $date .
-				           "&amount=" . $bank;
-//			print $command;
-				print $multi_site->Run( $command, $site_id );
-
-				print "מעדכן שורות<br/>";
-				$sql = "update ${table_prefix}bank " .
-				       " set receipt = \"" . CommaImplode($ids) . "\", " .
-				       " site_id = " . $site_id .
-				       " where id = " . $bank_id;
-
-				return SqlQuery($sql);
-
-				break;
-
 			case "mark_refund_bank":
 				$bank_id      = GetParam( "bank_id", true );
 				$supplier_id  = GetParam( "supplier_id", true );
@@ -443,6 +407,48 @@ class Finance_Bank
 //
 //	}
 
+	function bank_link_invoice()
+	{
+		$table_prefix = $this->table_prefix;
+		$multi_site = Core_Db_MultiSite::getInstance();
+
+		$bank_id     = GetParam( "bank_id", true );
+		$supplier_id = GetParam( "supplier_id", true );
+		$site_id     = GetParam( "site_id", true );
+		$ids         = GetParamArray( "ids" );
+		$bank        = GetParam( "bank" );
+
+		// 1) mark the bank transaction to invoice.
+		foreach ( $ids as $id ) {
+			$command     = Finance::getPostFile() . "?operation=finance_get_transaction_amount&id=" . $id;
+			$amount      = doubleval( strip_tags( $multi_site->Run( $command, $site_id ) ) );
+			$line_amount = min( $amount, $bank );
+
+			$sql = "INSERT INTO ${table_prefix}bank_lines (line_id, amount, site_id, part_id, invoice)\n" .
+			       "VALUES (" . $bank_id . ", " . $line_amount . ", " . $site_id . ", " . $supplier_id . ", " .
+			       $id . ")";
+
+			SqlQuery( $sql );
+		}
+		$b    = Finance_Bank_Transaction::createFromDB( $bank_id );
+		$date = $b->getDate();
+
+	// 2) mark the invoices to transaction.
+		$command = Finance::getPostFile() . "?operation=finance_add_payment&ids=" . implode( $ids, "," ) . "&supplier_id=" . $supplier_id .
+		           "&bank_id=" . $bank_id . "&date=" . $date .
+		           "&amount=" . $bank;
+	//			print $command;
+		print $multi_site->Run( $command, $site_id );
+
+		print "מעדכן שורות<br/>";
+		$sql = "update ${table_prefix}bank " .
+		       " set receipt = \"" . CommaImplode( $ids ) . "\", " .
+		       " site_id = " . $site_id .
+		       " where id = " . $bank_id;
+
+		return SqlQuery( $sql );
+	}
+
 	function gui_select_open_supplier( $id = "supplier" ) {
 		$multi_site = Core_Db_MultiSite::getInstance();
 
@@ -536,9 +542,8 @@ class Finance_Bank
 			array("קשר",
 				Core_Html::GuiButton( "btn_receipt", "link payment to invoice", array("action" => "link_invoice_bank()"))),
 			array( "סה\"כ", " <div id=\"total\"></div>" )), "payment_table"); //, "payment_table", true, true, $sums, "", "payment_table" ));
-
-
 	}
+
 	static public function bank_wrapper()
 	{
 		print Core_Html::GuiHeader(1, "Bank");

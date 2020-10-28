@@ -5,7 +5,6 @@ class Core_Database
 	function install($version, $force = false)
 	{
 		if (! function_exists("get_user_id")) {
-//			print debug_trace(2);
 			return;
 		}
 		$user = new Core_Users();

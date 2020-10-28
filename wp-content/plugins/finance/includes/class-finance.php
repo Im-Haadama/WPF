@@ -107,7 +107,7 @@ class Finance {
 	/**
 	 * WooCommerce Constructor.
 	 */
-	public function __construct( $plugin_name ) {
+	private function __construct( $plugin_name ) {
 		Flavor::instance();
 
 		global $business_name;
@@ -186,6 +186,7 @@ class Finance {
 		add_action('multisite_connect', array($this, 'multisite_connect'));
 		add_action('multisite_validate', array($this, 'multisite_validate'));
 
+		AddAction("get_open_invoices", array($this, 'get_open_invoices'));
 		if ((get_user_id() == 1) and defined("DEBUG_USER")) wp_set_current_user(DEBUG_USER);
 
 //		if (is_admin_user())
@@ -193,6 +194,19 @@ class Finance {
 
 	}
 
+	function get_open_invoices()
+	{
+		$multi_site = Core_Db_MultiSite::getInstance();
+
+		$debug       = GetParam( "debug" );
+		$supplier_id = GetParam( "supplier_id", true );
+		$site_id     = GetParam( "site_id", true );
+
+		// $func, $site_id, $first = false, $debug = false ) {
+		return  $multi_site->Run( Finance::getPostFile() . "?operation=finance_get_open_site_invoices&supplier_id=" . $supplier_id,
+			$site_id, true, $debug );
+
+	}
 	function pay_user_credit_wrap($customer_id, $amount, $payment_number)
 	{
 		MyLog(__FUNCTION__ . " $customer_id");
@@ -382,13 +396,6 @@ class Finance {
 				return $b->Update( 0, $invoice, 0 );
 
 			case "get_open_invoices":
-				$debug       = GetParam( "debug" );
-				$supplier_id = GetParam( "supplier_id", true );
-				$site_id     = GetParam( "site_id", true );
-
-				// $func, $site_id, $first = false, $debug = false ) {
-				print $multi_site->Run( Finance::getPostFile() . "?operation=finance_get_open_site_invoices&supplier_id=" . $supplier_id,
-					$site_id, true, $debug );
 				die (0);
 
 			case "create_receipt":
