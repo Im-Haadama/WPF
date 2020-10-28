@@ -42,7 +42,7 @@ class Focus_Tasks {
 	}
 
 	public function admin_scripts() {
-//		print "<script>let focus_post_url = \"" . self::getPost() . "\"; </script>";
+		print "<script>let focus_post_url = \"" . self::getPost() . "\"; </script>";
 
 		$file = FLAVOR_INCLUDES_URL . 'core/data/data.js';
 		wp_enqueue_script( 'data', $file, null, $this->version, false );
@@ -270,6 +270,7 @@ class Focus_Tasks {
 				case "working_teams":
                     $args["fields"] = array( "team_name" );
                     $args["header_fields"]    = array("team_name" => "Team name");
+                    //$args["links"] = array("id"=>self::get_link("team", "%d"));
 					break;
 
 				case "projects":
@@ -691,8 +692,9 @@ class Focus_Tasks {
 		unset_by_value($args["fields"], "project_id");
 
 		$result = Core_Gem::GemTable( "tasklist", $args );
-		$result .= Core_Html::GuiHyperlink( "Edit project", AddToUrl( "edit", 1 ) );
-        $result .= Core_Html::GuiHyperlink("main page", "/focus/" ,null);
+		$result .= Core_Html::GuiHyperlink( " Edit project ", AddToUrl( "edit", 1 ) );
+        $result .= '<br/>';
+        $result .= Core_Html::GuiHyperlink(" main page ", "/focus/" ,null);
 
 		return $result;
 	}
@@ -1340,6 +1342,7 @@ class Focus_Tasks {
 
 		$links["task_template"] = self::get_link( "template", "%s" );
 		$links["id"]            = self::get_link( "task", "%s" );
+        //$links["project_id"]       = self::get_link("project_tasks", $project_id, $args);
 		// Use drill, instead - $links["project_id"] = $page_url . "?operation=show_project&id=%s";
 		$args["links"]         = $links;
 		$args["post_file"]     = self::getPost();
@@ -1654,7 +1657,7 @@ class Focus_Tasks {
 	{
 		$company_id = $company->getId();
 		$db_prefix = GetTablePrefix();
-		$result            = Core_Html::GuiHeader( 1, $company->getName() );
+		$result            = Core_Html::GuiHeader( 1, "All the teams in the company ".$company->getName() );
 		$args["query"]     = "manager = 1";
 		$args["links"]     = array( "id" => AddToUrl( array( "operation" => "show_edit_team&id=%s" ) ) );
 		$args["selectors"] = array( "team_members" => __CLASS__ . "::gui_show_team" );
@@ -1683,7 +1686,7 @@ class Focus_Tasks {
 
 	static function company_workers( Org_Company $company, $args ) {
 		$company_id = $company->getId();
-		$html            = Core_Html::GuiHeader( 1, $company->getName() );
+		$html            = Core_Html::GuiHeader( 1, "All the workers in the company " .$company->getName() );
 		$args["query"]     = "manager = 1";
 		$args["links"]     = array( "id" => AddToUrl( array( "operation" => "show_edit_worker&worker_id=%s" ) ) );
 //		$args["selectors"] = array( "team_members" => __CLASS__ . "::gui_show_team" );
@@ -2168,22 +2171,24 @@ class Focus_Tasks {
 		$db_prefix = GetTablePrefix();
 		$edit             = GetArg( $args, "edit", true );
 		$worker           = new Org_Worker( get_user_id() );
-		$user_id = get_user_id();
 		$companies        = $worker->GetCompanies();
-
-		$company_teams = GetParam("company_teams", false, false);
-		//
-        //return only the teams that the user is part of.
-        //$all_teams = $worker->AllTeams(true);
-        //
-        //
+		$companies_teams = array();
+		foreach ($companies as $company_id){
+            $company_id = new Org_Company($company_id);
+            $company_teams = $company_id->getTeams(); //get teams in company
+            foreach ($company_teams as $company_team){
+                if(!in_array( $company_team,$companies_teams)) // check if a team is already exist
+                    array_push($companies_teams,$company_team);
+            }
+        }
 
         //teams return all the teams in the user's company.
-        $teams = SqlQueryArrayScalar( "select team_name from ${db_prefix}working_teams "); // where manager = " . $user_id
+        //$teams = SqlQueryArrayScalar( "select team_name from ${db_prefix}working_teams where manager = " . $user_id );
 		$debug            = false; // (get_user_id() == 1);
-        $args["values"] = $teams;
+        $args["values"] = $companies_teams;
 		$args["debug"]    = $debug;
 		$args["name"]     = "team_name";
+		$arg["id_key"] = "id";
 		$args["selected"] = $selected;
 
 		// collision between query of the container and the selector.
@@ -2192,8 +2197,7 @@ class Focus_Tasks {
 		$form_table = "working_teams"; // GetArg( $args, "form_table", null );
 
 		if ( $edit ) {
-		    //$gui = Core_Html::
-		    $gui = Core_Html::GuiSimpleSelect($id, $selected, $args);
+            $gui = Core_Html::GuiSelect($id, $selected, $args);
 			//$gui = Core_Html::GuiSelectTable( $id, "working_teams", $args );
 			$gui .= Core_Html::GuiButton( "add_new_team", "New Team", array(
 				"action" => "add_element('team', '" . $form_table . "', '" . GetUrl() . "')",
@@ -2222,6 +2226,10 @@ class Focus_Tasks {
 
 			case "worker":
 				return "/focus_worker";
+
+            //case "project_tasks":
+            //    return self::show_project($id, $args);
+
 
 		}
 	}
