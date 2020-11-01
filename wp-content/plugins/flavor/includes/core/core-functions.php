@@ -237,18 +237,25 @@ require_once (ABSPATH . '/wp-includes/pluggable.php');
 	}
 
 	function InfoUpdate( $key, $data ) {
-		$sql = "SELECT info_data FROM im_info WHERE info_key = '" . $key . "'";
-//      print "s1=" . $sql . "<br/>";
+		$db_prefix = GetTablePrefix();
 
-		$result = SqlQuerySingleScalar( $sql );
-		if ( ! $result ) {
-			$sql = "insert into im_info (info_key, info_data) VALUE ('$key', '$data')";
-//              print $sql;
-			return SqlQuery( $sql );
-		}
-		$sql = "UPDATE im_info SET info_data = '" . $data . "' WHERE info_key = '" . $key . "'";
-		return SqlQuery( $sql );
+		return SqlQuery( "insert into ${db_prefix}info (info_key, info_data)
+			values('$key', '$data')
+			on duplicate key update info_data='$data'" );
 	}
+
+
+//		$sql = "SELECT info_data FROM im_info WHERE info_key = '" . $key . "'";
+////      print "s1=" . $sql . "<br/>";
+//
+//		$result = SqlQuerySingleScalar( $sql );
+//		if ( ! $result ) {
+//			$sql = "insert into im_info (info_key, info_data) VALUE ('$key', '$data')";
+////              print $sql;
+//			return SqlQuery( $sql );
+//		}
+//		$sql = "UPDATE im_info SET info_data = '" . $data . "' WHERE info_key = '" . $key . "'";
+//		return SqlQuery( $sql );
 	}
 
 	function AppendUrl( $url, $addition ) {
@@ -566,7 +573,22 @@ require_once (ABSPATH . '/wp-includes/pluggable.php');
 		}
 
 //		print "adding $tag $function_to_add[1] <br/>";
+		if (! is_callable($function_to_add)) {
+			print "Function for $tag is not callable<br/>";
+			var_dump($function_to_add);
+			die (1);
+		}
 		return add_action($tag, $function_to_add, $priority, $accepted_args);
+	}
+
+	function AddFilter($tag, $function_to_add, int $priority = 10, int $accepted_args = 1)
+	{
+		if (! is_callable($function_to_add)) {
+			print "Function for $tag is not callable<br/>";
+			var_dump($function_to_add);
+			die (1);
+		}
+		return add_filter($tag, $function_to_add, $priority, $accepted_args);
 	}
 
 function next_weekday($week_day)

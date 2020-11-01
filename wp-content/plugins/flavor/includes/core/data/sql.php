@@ -300,8 +300,9 @@ function SqlQuerySingleScalar( $sql, $report_error = true, $set_enc = true ) {
 function TableExists( $table ) {
 	$db_prefix = GetTablePrefix($table);
 	$sql = 'SELECT 1 FROM ' . $db_prefix .$table . ' LIMIT 1';
-//	print $sql;
-	return SqlQuery( $sql, false) != null;
+	$rc =  SqlQuery( $sql, false) != null;
+//	print "rc=$rc $sql<Br/>";
+	return $rc;
 }
 
 /**

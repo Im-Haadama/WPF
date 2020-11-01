@@ -141,35 +141,35 @@ class Focus {
 		self::install();
 		// register_activation_hook( WC_PLUGIN_FILE, array( 'Focus_Install', 'install' ) );
 //		register_shutdown_function( array( $this, 'log_errors' ) );
-		add_action( 'after_setup_theme', array( $this, 'setup_environment' ) );
-		add_action( 'after_setup_theme', array( $this, 'include_template_functions' ), 11 );
-//		add_action( 'init', array( $this, 'init' ), 0 );
-		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
+		AddAction( 'after_setup_theme', array( $this, 'setup_environment' ) );
+		AddAction( 'after_setup_theme', array( $this, 'include_template_functions' ), 11 );
+//		AddAction( 'init', array( $this, 'init' ), 0 );
+		AddAction( 'init', array( 'Core_Shortcodes', 'init' ) );
 
 //		GetSqlConn(ReconnectDb());
 
-//		add_action( 'init', array( 'Focus_Emails', 'init_transactional_emails' ) );
-		// add_action( 'init', array( $this, 'wpdb_table_fix' ), 0 );
-		// add_action( 'init', array( $this, 'add_image_sizes' ) );
-		// add_action( 'switch_blog', array( $this, 'wpdb_table_fix' ), 0 );
+//		AddAction( 'init', array( 'Focus_Emails', 'init_transactional_emails' ) );
+		// AddAction( 'init', array( $this, 'wpdb_table_fix' ), 0 );
+		// AddAction( 'init', array( $this, 'add_image_sizes' ) );
+		// AddAction( 'switch_blog', array( $this, 'wpdb_table_fix' ), 0 );
 		// $orders = new Focus_Orders( $this->get_plugin_name(), $this->get_version() );
 
 //		$manager = Focus_Manager::instance(self::getPost());
 //		$salary = Focus_Salary::instance(self::getPost());
 //		$tasks = Focus_Salary::instance(self::getPost());
 
-//		$this->loader->add_action( 'wp_enqueue_scripts', $this->manager, 'enqueue_scripts' );
-		$this->loader->add_action( 'wp_enqueue_scripts', $this->salary, 'enqueue_scripts' );
-		$this->loader->add_action( 'wp_enqueue_scripts', $this->tasks, 'admin_scripts' );
+//		$this->loader->AddAction( 'wp_enqueue_scripts', $this->manager, 'enqueue_scripts' );
+		if ($this->salary) $this->loader->AddAction( 'wp_enqueue_scripts', $this->salary, 'enqueue_scripts' );
+		$this->loader->AddAction( 'wp_enqueue_scripts', $this->tasks, 'admin_scripts' );
 
 		Focus_Project::init();
 
 		AddAction("company_add_worker", array($this, 'company_add_worker'));
 		AddAction("company_remove_worker", array($this, 'company_remove_worker'));
 
-		add_filter("gem_next_page_tasklist", array($this, "next_page"));
-        add_filter("gem_next_page_projects", array($this, "next_page"));
-		add_filter("search_by_text", array("Focus_Tasks", "search_by_text_wrap"));
+		AddFilter("gem_next_page_tasklist", array($this, "next_page"));
+        AddFilter("gem_next_page_projects", array($this, "next_page"));
+		AddFilter("search_by_text", array("Focus_Tasks", "search_by_text_wrap"));
 
         Core_Pages::CreateIfNeeded("project", "/project", "focus_project");
         Core_Pages::CreateIfNeeded("task", "/task", "focus_task");

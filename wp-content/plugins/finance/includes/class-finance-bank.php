@@ -235,181 +235,170 @@ class Finance_Bank
 		return $result;
 	}
 
-	function handle_bank_operation($operation, $url = null)
-	{
+	function handle_bank_operation($operation, $url = null) {
 		print "don't use";
-		die(1); // To check if needed.
+		die( 1 ); // To check if needed.
 		$table_prefix = GetTablePrefix();
-		$multi_site = Core_Db_MultiSite::getInstance();
+		$multi_site   = Core_Db_MultiSite::getInstance();
 
 		$u = new Core_Users();
-		if (! $u->can("show_bank"))
+		if ( ! $u->can( "show_bank" ) ) {
 			return "no permissions";
+		}
 		$account_id = 1;
-		$ids = null;
-		$post_file = self::getPost();
+		$ids        = null;
+		$post_file  = self::getPost();
 
-		if (GetParam("search", false, 0)){
-			$ids=data_search("bank");
-			Core_Html::GuiHeader(1, "Results");
-			if (! $ids){
-				print ImTranslate("Nothing found");
+		if ( GetParam( "search", false, 0 ) ) {
+			$ids = data_search( "bank" );
+			Core_Html::GuiHeader( 1, "Results" );
+			if ( ! $ids ) {
+				print ImTranslate( "Nothing found" );
+
 				return;
 			}
 		}
-		switch ( $operation ) {
-			case "bank_create_receipt":
-				$bank_amount = GetParam( "bank" );
-				$date        = GetParam( "date" );
-				$change      = GetParam( "change" );
-				$ids         = GetParam( "ids", true );
-				$site_id     = GetParam( "site_id" );
-				$user_id     = GetParam( "user_id" );
-				$bank_id     = GetParam( "bank_id" );
+	}
+	function bank_create_receipt() {
+		$bank_amount = GetParam( "bank" );
+		$date        = GetParam( "date" );
+		$change      = GetParam( "change" );
+		$ids         = GetParam( "ids", true );
+		$site_id     = GetParam( "site_id" );
+		$user_id     = GetParam( "user_id" );
+		$bank_id     = GetParam( "bank_id" );
 
-				return $this->create_multi_site_receipt( $bank_id, $bank_amount, $date, $change, $ids, $site_id, $user_id );
-			case "mark_refund_bank":
-				$bank_id      = GetParam( "bank_id", true );
-				$supplier_id  = GetParam( "supplier_id", true );
-				$site_id      = GetParam( "site_id", true );
-				$bank         = GetParam( "bank" );
-
-				// 1) mark the bank transaction to invoice.
-				$b    = Finance_Bank_Transaction::createFromDB( $bank_id );
-				$date = $b->getDate();
-
-				// 2) mark the invoices to transaction.
-				$command = Finance::getPostFile() . "?operation=add_refund_bank&supplier_id=" . $supplier_id .
-				           "&bank_id=" . $bank_id . "&date=" . $date .
-				           "&amount=" . $bank;
-//			print $command;
-				print $multi_site->Run( $command, $site_id );
-
-				print "מעדכן שורות<br/>";
-				$sql = "update ${table_prefix}bank " .
-				       " set receipt = \"refund\", " .
-				       " site_id = " . $site_id .
-				       " where id = " . $bank_id;
-
-				SqlQuery($sql);
-
-				break;
-			case "create_invoice_bank":
-
-				break;
-
-			case "mark_return_bank":
-				require_once( FRESH_INCLUDES . '/org/business/BankTransaction.php' );
-				require_once( FRESH_INCLUDES . '/fresh-public/account/gui.php' );
-				print header_text( false, true, true,
-					array(
-						"business.js",
-						"/core/gui/client_tools.js",
-						"/fresh/account/account.js"
-					) );
-				$id = GetParam( "id" );
-				$b = Finance_Bank_Transaction::createFromDB( $id );
-				print Core_Html::GuiHeader( 1, "סמן החזר מהספק" );
-
-				print Core_Html::GuiHeader( 2, "פרטי העברה" );
-				print Core_Html::gui_table_args( array(
-						array( "תאריך", gui_div( "pay_date", $b->getDate() ) ),
-						array( "סכום", gui_div( "bank", $b->getInAmount() ) ),
-						array( "מזהה", gui_div( "bank_id", $id ) )
-					)
-				);
-
-//			print Core_Html::GuiHeader(2, "חשבונית שהופקה");
-//			print GuiInput("invoice_id");
-//			print Core_Html::GuiButton("btn_invoice_exists", "invoice_exists()", "Exists invoice");
-
-				print Core_Html::GuiHeader( 2, "בחר ספק" );
-				print gui_select_open_supplier();
-				print '<div id="logging"></div>';
-				print '<div id="transactions"></div>';
-				print gui_table( array(
-					array(
-						"תשלום",
-						Core_Html::GuiButton( "btn_refund", "mark_refund_bank()", "סמן זיכוי" )
-					),
-					array( "עודף", " <div id=\"change\"></div>" )
-				), "payment_table", true, true, $sums, "", "payment_table" );
-				break;
-
-			case "bank_transaction_types":
-				if (! $this->getUser()->can("cfo"))
-					return "no permissions";
-				$args = array();
-				// $args["selectors"] = array("part_id" => "gui_select_supplier");
-
-				print Core_Html::GuiTableContent( "bank_transaction_types", null, $args );
-				print Core_Html::GuiHyperlink( "add", AddToUrl( "operation", "add_transaction_types" ) );
-
-				return;
-
-			case "add_transaction_types":
-				if (! $this->getUser()->can("cfo"))
-					return "no permissions";
-				$args              = self::Args();
-				$args["selectors"] = array( "part_id" => "Fresh_Supplier::gui_select_supplier" );
-
-				print Core_Gem::GemAddRow( "bank_transaction_types", "Transaction types", $args );
-
-				return;
-
-			case "search":
-				$args           = array();
-				$search_url     = "search_table('${table_prefix}bank', '" . AddParamToUrl( $url, "search", "1" ) . "')";
-				$args["search"] = $search_url; //'/fresh/bank/bank-page.php?operation=do_search')";
-				GemSearch( "bank", $args );
-
-				return;
-
-			case "do_search":
-				$ids = data_search( "bank" );
-				Core_Html::GuiHeader( 1, "Results" );
-				if ( ! $ids ) {
-					print ImTranslate( "Nothing found" );
-
-					return;
-				}
-
-				print self::bank_transactions( array("query" => "id in (" . CommaImplode( $ids ) . ")" ));
-				return;
-
-			case "show_bank":
-				$args                  = self::Args($u);
-				$args["selector"]      = __CLASS__ . "::gui_select_bank_account";
-				$args["order"] = "3 desc";
-				$args["hide_cols"] = array_merge($args["hide_cols"], array("id" => 1, "account_id" => 1, "tmp_client_name" =>1, "customer_id"=>1));
-				// $args["post_action"] = Finance::getPostFile()
-				return true;
-
-			case "show_transactions":
-				print self::bank_transactions( array("query" => $ids ? "id in (" . CommaImplode( $ids ) . ")" : null) );
-				break;
-//			case 'bank_import_from_file':
-		}
+		return $this->create_multi_site_receipt( $bank_id, $bank_amount, $date, $change, $ids, $site_id, $user_id );
 	}
 
-//	function show_import()
-//	{
-//		$args                  = array();
-//		$args["selector"]      = __CLASS__ . "::gui_select_bank_account";
-//		$args["import_action"] = Finance::getPostFile() . '?operation=bank_import_from_file';
-//
-//		$args["page"] = 1;
-//		$args["order"] = "3 desc";
-//		$args["post_file"] = self::getPost();
-//		print Core_Gem::GemTable("bank", $args);
-//
-//		print Core_Gem::ShowImport( "bank", $args );
-//
+	function mark_refund_bank() {
+		$table_prefix = GetTablePrefix( "bank" );
+
+		$bank_id     = GetParam( "bank_id", true );
+		$supplier_id = GetParam( "supplier_id", true );
+		$site_id     = GetParam( "site_id", true );
+		$bank        = GetParam( "bank" );
+
+		// 1) mark the bank transaction to invoice.
+		$b    = Finance_Bank_Transaction::createFromDB( $bank_id );
+		$date = $b->getDate();
+
+		// 2) mark the invoices to transaction.
+		$command = Finance::getPostFile() . "?operation=add_refund_bank&supplier_id=" . $supplier_id .
+		           "&bank_id=" . $bank_id . "&date=" . $date .
+		           "&amount=" . $bank;
+		//			print $command;
+		$multi_site = Core_Db_MultiSite::getInstance();
+
+		print $multi_site->Run( $command, $site_id );
+
+		print "מעדכן שורות<br/>";
+		$sql = "update ${table_prefix}bank " .
+		       " set receipt = \"refund\", " .
+		       " site_id = " . $site_id .
+		       " where id = " . $bank_id;
+
+		return SqlQuery( $sql );
+	}
+
+	function mark_return_bank() {
+		$id = GetParam( "id" );
+		$b  = Finance_Bank_Transaction::createFromDB( $id );
+		print Core_Html::GuiHeader( 1, "סמן החזר מהספק" );
+
+		print Core_Html::GuiHeader( 2, "פרטי העברה" );
+		print Core_Html::gui_table_args( array(
+				array( "תאריך", gui_div( "pay_date", $b->getDate() ) ),
+				array( "סכום", gui_div( "bank", $b->getInAmount() ) ),
+				array( "מזהה", gui_div( "bank_id", $id ) )
+			)
+		);
+
+		//			print Core_Html::GuiHeader(2, "חשבונית שהופקה");
+		//			print GuiInput("invoice_id");
+		//			print Core_Html::GuiButton("btn_invoice_exists", "invoice_exists()", "Exists invoice");
+
+		$sums = array();
+		print Core_Html::GuiHeader( 2, "בחר ספק" );
+		print gui_select_open_supplier();
+		print '<div id="logging"></div>';
+		print '<div id="transactions"></div>';
+		print gui_table( array(
+			array(
+				"תשלום",
+				Core_Html::GuiButton( "btn_refund", "mark_refund_bank()", "סמן זיכוי" )
+			),
+			array( "עודף", " <div id=\"change\"></div>" )
+		), "payment_table", true, true, $sums, "", "payment_table" );
+	}
+
+	function bank_transaction_types()
+	{
+		if (! $this->getUser()->can("cfo"))
+			return "no permissions";
+		$args = array();
+		// $args["selectors"] = array("part_id" => "gui_select_supplier");
+
+		print Core_Html::GuiTableContent( "bank_transaction_types", null, $args );
+		print Core_Html::GuiHyperlink( "add", AddToUrl( "operation", "add_transaction_types" ) );
+		return true;
+	}
+
+	function add_transaction_types()
+	{
+		if (! $this->getUser()->can("cfo"))
+			return "no permissions";
+		$args              = self::Args();
+		$args["selectors"] = array( "part_id" => "Fresh_Supplier::gui_select_supplier" );
+
+		print Core_Gem::GemAddRow( "bank_transaction_types", "Transaction types", $args );
+		return true;
+	}
+
+	function search() {
+		$table_prefix = GetTablePrefix("bank");
+		$url = GetUrl();
+		$args           = array();
+		$search_url     = "search_table('${table_prefix}bank', '" . AddParamToUrl( $url, "search", "1" ) . "')";
+		$args["search"] = $search_url; //'/fresh/bank/bank-page.php?operation=do_search')";
+		Core_Gem::GemSearch( "bank", $args );
+
+		return true;
+	}
+
+	function do_search() {
+		$ids = data_search( "bank" );
+		Core_Html::GuiHeader( 1, "Results" );
+		if ( ! $ids ) {
+			print ImTranslate( "Nothing found" );
+
+			return;
+		}
+
+		print self::bank_transactions( array( "query" => "id in (" . CommaImplode( $ids ) . ")" ) );
+	}
+
+	function show_bank() {
+		$args              = self::Args( $u );
+		$args["selector"]  = __CLASS__ . "::gui_select_bank_account";
+		$args["order"]     = "3 desc";
+		$args["hide_cols"] = array_merge( $args["hide_cols"], array( "id"              => 1,
+		                                                             "account_id"      => 1,
+		                                                             "tmp_client_name" => 1,
+		                                                             "customer_id"     => 1
+		) );
+
+		// $args["post_action"] = Finance::getPostFile()
+		return true;
+	}
+
+//	function show_transactions() {
+//		print self::bank_transactions( array( "query" => $ids ? "id in (" . CommaImplode( $ids ) . ")" : null ) );
 //	}
 
 	function bank_link_invoice()
 	{
-		$table_prefix = $this->table_prefix;
+		$table_prefix = GetTablePrefix("bank_lines");
 		$multi_site = Core_Db_MultiSite::getInstance();
 
 		$bank_id     = GetParam( "bank_id", true );

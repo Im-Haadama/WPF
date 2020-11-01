@@ -300,7 +300,7 @@ class Core_Gem {
 		return self::GemAddRow($table_name, 'Add', $args);
 	}
 
-	static function show_wrap($result, $id = 0, $args = null)
+	static function show_wrapper($result, $id = 0, $args = null)
 	{
 		$table_name = GetParam("table", true);
 		return $result . self::GemElement($table_name, $id, $args);

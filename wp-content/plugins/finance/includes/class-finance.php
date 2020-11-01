@@ -187,6 +187,10 @@ class Finance {
 		add_action('multisite_validate', array($this, 'multisite_validate'));
 
 		AddAction("get_open_invoices", array($this, 'get_open_invoices'));
+		AddAction("get_open_trans", array($this, 'get_open_trans'));
+		AddAction("exists_invoice", array($this, 'exists_invoice'));
+		AddAction("create_receipt", array($this, 'create_receipt'));
+
 		if ((get_user_id() == 1) and defined("DEBUG_USER")) wp_set_current_user(DEBUG_USER);
 
 //		if (is_admin_user())
@@ -207,6 +211,7 @@ class Finance {
 			$site_id, true, $debug );
 
 	}
+
 	function pay_user_credit_wrap($customer_id, $amount, $payment_number)
 	{
 		MyLog(__FUNCTION__ . " $customer_id");
@@ -339,16 +344,20 @@ class Finance {
 	}
 
 	function handle_operation( $operation ) {
-		$ignore_list = array("operation");
-		$input = null;
+		$ignore_list = array( "operation" );
+		$input       = null;
 
-		if (strstr($operation, 'gem')) Core_Gem::getInstance();
+		if ( strstr( $operation, 'gem' ) ) {
+			Core_Gem::getInstance();
+		}
 
 		////////////////////////
 		// called by post.php //
 		////////////////////////
-		$result = apply_filters( $operation, $input, GetParams($ignore_list));
-		if ( $result !== null ) return $result;
+		$result = apply_filters( $operation, $input, GetParams( $ignore_list ) );
+		if ( $result !== null ) {
+			return $result;
+		}
 
 		$yaad = Finance::instance()->yaad;
 		if ( $yaad ) {
@@ -362,72 +371,57 @@ class Finance {
 			return $result;
 		}
 
-		switch ( $module ) {
-			case "bank":
-				return $this->bank->handle_bank_operation( $operation );
-			case "data":
-				return Core_Data::handle_operation( $operation );
-		}
-		switch ( $operation ) {
-			case "new_customer":
-				$order_id = GetParam( "order_id", true );
-
-				return self::new_customer( $order_id );
-
-				break;
-			case "get_open_trans":
-				$client_id = GetParam( "client_id", true );
-				$site_id   = GetParam( "site_id", false, null );
-				if ( ! $site_id ) {
-					return Fresh_Client_Views::show_trans( $client_id,  TransView::not_paid );
-				}
-				// $data .= $this->Run( $func, $site_id, $first, $debug );
-				$link = Finance::getPostFile() . "?operation=get_open_trans&client_id=" . $client_id;
-				print $link;
-				print $multi_site->Run( $link, $site_id );
-
-				return true;
-
-			case "exists_invoice":
-				$bank_id = GetParam( "bank_id", true );
-				$invoice = GetParam( "invoice", true );
-				$b       = Finance_Bank_Transaction::createFromDB( $bank_id );
-
-				return $b->Update( 0, $invoice, 0 );
-
-			case "get_open_invoices":
-				die (0);
-
-			case "create_receipt":
-				$cash    = (float) GetParam( "cash", false, 0 );
-				$bank    = (float) GetParam( "bank", false, 0 );
-				$check   = (float) GetParam( "check", false, 0 );
-				$credit  = (float) GetParam( "credit", false, 0 );
-//				$change  = (float) GetParam( "change", false, 0 );
-				$row_ids = GetParamArray( "row_ids" );
-				$user_id = GetParam( "user_id", true );
-				$date    = GetParam( "date" );
-
-				if (! ($cash + $bank + $check + $credit > 1)) {
-					print ( "No payment ammount given" );
-
-					return false;
-				}
-
-				//print "create receipt<br/>";
-				// (NULL, '709.6', NULL, NULL, '205.44', '', '2019-01-22', Array)
-
-				$doc_id = Finance_Clients::create_receipt_from_account_ids( $cash, $bank, $check, $credit, $user_id, $date, $row_ids );
-				// print "doc=$doc_id<br/>";
-				print $doc_id;
-				die (1);
-				break;
-		}
+		print "opeartion $operation not handled</br>";
 
 		return false;
 	}
 
-	static function get_open_site_invoices()
+	function exists_invoice() {
+		$bank_id = GetParam( "bank_id", true );
+		$invoice = GetParam( "invoice", true );
+		$b       = Finance_Bank_Transaction::createFromDB( $bank_id );
+
+		return $b->Update( 0, $invoice, 0 );
+	}
+
+	function create_receipt() {
+		$cash    = (float) GetParam( "cash", false, 0 );
+		$bank    = (float) GetParam( "bank", false, 0 );
+		$check   = (float) GetParam( "check", false, 0 );
+		$credit  = (float) GetParam( "credit", false, 0 );
+		$row_ids = GetParamArray( "row_ids" );
+		$user_id = GetParam( "user_id", true );
+		$date    = GetParam( "date" );
+
+		if ( ! ( $cash + $bank + $check + $credit > 1 ) ) {
+			print ( "No payment ammount given" );
+
+			return false;
+		}
+
+		$doc_id = Finance_Clients::create_receipt_from_account_ids( $cash, $bank, $check, $credit, $user_id, $date, $row_ids );
+		// print "doc=$doc_id<br/>";
+		print $doc_id;
+		die ( 1 );
+	}
+
+	static function get_open_trans() {
+		$multi_site = Core_Db_MultiSite::getInstance();
+
+		$client_id = GetParam( "client_id", true );
+		$site_id   = GetParam( "site_id", false, null );
+		if ( ! $site_id ) {
+			return Fresh_Client_Views::show_trans( $client_id, TransView::not_paid );
+		}
+// $data .= $this->Run( $func, $site_id, $first, $debug );
+		$link = Finance::getPostFile() . "?operation=get_open_trans&client_id=" . $client_id;
+		print $link;
+		print $multi_site->Run( $link, $site_id );
+
+		return true;
+	}
+
+static function get_open_site_invoices()
 	{
 		$debug = GetParam("debug");
 		$sum         = array();

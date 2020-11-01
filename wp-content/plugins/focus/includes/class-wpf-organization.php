@@ -16,7 +16,7 @@ class WPF_Organization {
 
 
 	static function init() {
-		add_action('init', __CLASS__ . "::register", 0);
+		AddAction('init', __CLASS__ . "::register", 0);
 		AddAction("show_edit_worker", __CLASS__ . '::show_edit_worker');
 	}
 

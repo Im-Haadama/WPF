@@ -2258,9 +2258,9 @@ class Focus_Tasks {
 		AddAction("gem_edit_projects", array($this, 'ShowProjectMembers'), 11, 3);
 		AddAction("gem_add_project_members", array($this, "AddProjectMember"), 11, 3);
 		AddAction("project_add_member", array(__CLASS__, 'ProjectAddMember'), 11, 3);
-        add_filter("data_save_new_projects", array(__CLASS__, 'DataSaveNewDefault' ),11,1);
-        add_filter("data_save_new_working_teams", array(__CLASS__, 'DataSaveNewTeam' ),11,1);
-        add_filter("data_save_new_tasklist", array(__CLASS__, 'DataSaveNewTaskList' ),11,1);
+        AddFilter("data_save_new_projects", array(__CLASS__, 'DataSaveNewDefault' ),11,1);
+        AddFilter("data_save_new_working_teams", array(__CLASS__, 'DataSaveNewTeam' ),11,1);
+        AddFilter("data_save_new_tasklist", array(__CLASS__, 'DataSaveNewTaskList' ),11,1);
 
 		// Tasklist
 		Core_Gem::AddTable( "tasklist" ); // add + edit

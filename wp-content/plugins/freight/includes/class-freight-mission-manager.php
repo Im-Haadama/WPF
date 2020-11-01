@@ -217,12 +217,15 @@ group by pm.meta_value, p.post_status");
 		$supplies_to_collect = array();
 		$multi_site = Core_Db_MultiSite::getInstance();
 		$result = "";
+		$post_file = Flavor::getPost();
 
 		self::prepare_route($the_mission, $path, $lines_per_station, $supplies_to_collect, $edit);
 		$m = new Mission($the_mission);
 
 		if ($path and count($path)) {
 			$result .= Core_Html::GuiHeader(1, __("Details for dispatch number") . " " . $the_mission);
+			$result .= "<div>" . __("Mission start") . ":" . Core_Html::gui_input_time("start_h", null, $m->getStartTime(),
+					"onchange=\"update_table_field('" . $post_file . "', 'missions', $the_mission, 'start_h', location_reload)\"") . "</div>";
 			$result .= Core_Html::GuiHeader(2, $m->getDate());
 			$path_info = [];
 			for ( $i = 0; $i < count( $path ); $i ++ ) {

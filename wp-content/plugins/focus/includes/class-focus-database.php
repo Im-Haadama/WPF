@@ -13,7 +13,6 @@ class Focus_Database extends Core_Database
 	}
 
 	static function CreateTables($version, $force) {
-		return true;
 		$current = self::CheckInstalled( "Focus", "tables" );
 
 		if ( ! $current ) {
@@ -42,6 +41,7 @@ class Focus_Database extends Core_Database
 		return self::UpdateInstalled( "Focus", "tables", $version );
 	}
 
+	// Create what needed in clean install
 	static function FreshInstall()
 	{
 		SqlQuery("drop function client_displayname");
@@ -52,13 +52,12 @@ BEGIN
     select display_name into _display from wp_users
     where id = user_id;
 
-    return _display;
+    return _display; 
   END;
 
 " );
-		print "DONE";
 
-
+		SqlQuery("drop function task_status");
 		SqlQuery( "CREATE FUNCTION task_status(task_id INT)
   RETURNS TEXT CHARSET 'utf8'
   BEGIN
@@ -146,8 +145,7 @@ charset=utf8;
 	company int null,
 	project_priority int null,
 	is_active bit null,
-	manager int null,
-	company int null	
+	manager int null	
 )
 charset=utf8;
 
@@ -189,6 +187,7 @@ engine=InnoDB;
 	is_active bit default b'1' null
 )");
 
+		if (! TableExists("log"))
 		SqlQuery("create table im_log
 (
 	id int auto_increment
@@ -201,7 +200,7 @@ engine=InnoDB;
 
 ");
 
-		self::UpdateInstalled("Focus", "tables", $version);
+		return true;
 
 	}
 
