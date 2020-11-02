@@ -33,29 +33,27 @@ class Focus_Tasklist {
 		$this->id = $_id;
 		$this->table_prefix = GetTablePrefix();
 
-		if ($_id) {
-			$row = SqlQuerySingle( "SELECT location_name, location_address, task_description, mission_id," .
-			                       " task_template, priority, project_id, team, creator " .
-			                       " FROM {$this->table_prefix}tasklist " .
-			                       " WHERE id = " . $this->id );
+		$row      = SqlQuerySingle( "SELECT location_name, location_address, task_description, mission_id," .
+		                            " task_template, priority, project_id, team, creator " .
+		                            " FROM {$this->table_prefix}tasklist " .
+		                            " WHERE id = " . $this->id );
 
-			$this->location_name    = $row[0];
-			$this->location_address = $row[1];
-			$this->task_description = $row[2];
-			$this->mission_id       = $row[3];
-			$this->priority         = $row[5];
-			$this->project          = $row[6];
-			$this->team             = $row[7];
-			$this->creator          = $row[8];
+		$this->location_name    = $row[0];
+		$this->location_address = $row[1];
+		$this->task_description = $row[2];
+		$this->mission_id       = $row[3];
+		$this->priority         = $row[5];
+		$this->project          = $row[6];
+		$this->team             = $row[7];
+		$this->creator = $row[8];
 
-			if ( $row[4] ) {
-				$row = SqlQuerySingle( "SELECT repeat_freq, repeat_freq_numbers, timezone " .
-				                       " from ${db_prefix}task_templates where id = " . $row[4] );
+		if ( $row[4] ) {
+			$row = SqlQuerySingle( "SELECT repeat_freq, repeat_freq_numbers, timezone " .
+			                       " from ${db_prefix}task_templates where id = " . $row[4] );
 
-				$this->repeat_freq         = $row[0];
-				$this->repeat_freq_numbers = $row[1];
-				$this->timezone            = $row[2];
-			}
+			$this->repeat_freq         = $row[0];
+			$this->repeat_freq_numbers = $row[1];
+			$this->timezone = $row[2];
 		}
 		$this->logger = Focus_Manager::instance()->getLogger();
 	}
@@ -80,7 +78,9 @@ class Focus_Tasklist {
 	public function getId() {
 		return $this->id;
 	}
-
+    public function getCreator(){
+	    return $this->creator;
+    }
 	/**
 	 * @return mixed
 	 */
@@ -203,8 +203,6 @@ class Focus_Tasklist {
 	function task_template()
 	{
 		$db_prefix = GetTablePrefix();
-
-		if (! $this->id) return null;
 
 		return SqlQuerySingleScalar( "select task_template from ${db_prefix}tasklist where id = " . $this->id);
 	}

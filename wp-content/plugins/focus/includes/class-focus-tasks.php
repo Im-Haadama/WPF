@@ -166,7 +166,7 @@ class Focus_Tasks {
     static function gui_select_priority($id, $priority_id, $args) {
 
         $result = "";
-        $priority_list = array(1=>"1-low",2=>"2",3=>"3",4=>"4",5=>"5",6=>"6",7=>"7",8=>"8",9=>"9",10=>"10 - high");
+        $priority_list = array(1=>"1-low",2=>"2",3=>"3",4=>"4",5=>"5",6=>"6",7=>"7",8=>"8",9=>"9",10=>"10-high");
         $args["values"] = $priority_list;
         $result .= Core_Html::GuiSimpleSelect($id, $priority_id, $args);
         return $result;
@@ -903,18 +903,20 @@ class Focus_Tasks {
 	static function PriPlus($input, $args)
 	{
 		$task_id=GetArg($args, "id", 0);
-		if (! ($task_id > 0)) return false;
+		if (!($task_id > 0)) return false;
 
 		$T       = new Focus_Tasklist( $task_id );
+        if($T->getPriority() == 10) return false;
 		return   $T->setPriority( $T->getPriority() + 1 );
 	}
 
 	static function PriMinus($input, $args)
 	{
 		$task_id=GetArg($args, "id", 0);
-		if (! ($task_id > 0)) return false;
+		if (!($task_id > 0)) return false;
 
 		$T       = new Focus_Tasklist( $task_id );
+		if($T->getPriority() == 1) return false;
 		return $T->setPriority( $T->getPriority() - 1 );
 	}
 
@@ -1343,7 +1345,7 @@ class Focus_Tasks {
 
 		$links["task_template"] = self::get_link( "template", "%s" );
 		$links["id"]            = self::get_link( "task", "%s" );
-        //$links["project_id"]       = self::get_link("project_tasks", $project_id, $args);
+        $links["project_id"]       = self::get_link("project_tasks", $project_id, $args);
 		// Use drill, instead - $links["project_id"] = $page_url . "?operation=show_project&id=%s";
 		$args["links"]         = $links;
 		$args["post_file"]     = self::getPost();
@@ -1511,10 +1513,12 @@ class Focus_Tasks {
 
 		$table_name  = "tasklist";
 		$entity_name = "task";
-
 		// print Core_Html::GuiHeader( 1, $entity_name . " " . $row_id );
 		$args              = array();
 		$args["edit"]      = $edit;
+		$args["edit_cols"] = array("date" => true, "task_title" => true, "task_description" => true, "task_template" => true,
+            "status" => true, "started" => true, "ended" => true, "location_name"=>true,
+            "location_address" => true, "preq" => true, "task_type" =>true, "is_active" =>true);
 		$args["selectors"] = array(
 			"project_id" => "Focus_Tasks::gui_select_project",
 			"owner"      => "Focus_Tasks::gui_select_worker",
@@ -1527,14 +1531,17 @@ class Focus_Tasks {
 			$args["selectors"]["mission_id"] = "Flavor_Mission::gui_select_mission";
 
 		$args["title"]     = $entity_name;
-
+        $args["hide_cols"] = array("status" => true,"preq" => true,"task_type" => true,
+            "mission_id" => true, "mission_id" => true, "location_name" => true,
+            "location_address" => true, "is_active" => true);
 		$args["header_fields"] = array(
-			"date"             => "Date",
+			"date"             => "Start date",
+            "task_title"       => "Title",
 			"task_description" => "Task description",
 			"task_template"    => "Repeating task",
 			"status"           => "Status",
-			"started"          => "Started",
-			"ended"            => "Ended",
+			"started"          => "Started date",
+			"ended"            => "Ended date",
 			"project_id"       => "Project",
 			"location_name"    => "Location",
 			"location_address" => "Address",
@@ -1543,10 +1550,14 @@ class Focus_Tasks {
 			"owner"            => "Assigned to",
 			"creator"          => "Creator",
 			"task_type"        => "Task type",
-			"mission_id"       => "Mission"
+			"mission_id"       => "Mission",
+            "team"             =>"Team"
 		);
 
-		$args["worker"]    = $worker->getId();
+		//$new_task = new Focus_Tasklist($row_id);
+        //$creator = new Org_Worker( $new_task->getCreator() );
+        //print "creator = " .$creator->getName();
+		//$args["creator"] = $creator->getName();
 		$args["companies"] = $worker->GetCompanies();
 		$args["debug"]     = 0; // get_user_id() == 1;
 		$args["post_file"] = self::instance()->post_file;
@@ -1586,8 +1597,10 @@ class Focus_Tasks {
 		$company_ids = $worker->GetCompanies();
 
 		if ( ! $company_ids or ! count( $company_ids ) ) {
-			print "Ne need some information to get started!<br/>";
+			print "We need some information to get started! <br/> please enter a name to represent your company<br/>";
 			$args = array( "values" => array( "admin" => get_user_id() ) );
+			$args["hide_cols"] = array("admin" => true);
+            $args["header_fields"] = array("name" => "Company name");
 			try {
 				print Core_Html::GuiHeader( 1, "Company details" );
 				print Core_Html::NewRow( "company", $args );
@@ -2296,6 +2309,7 @@ class Focus_Tasks {
 	    if(!isset($row["manager"])){
             $row["manager"] = get_user_id();
         }
+	    //$row["hide_cols"] = array("manager" => true);
 	    return $row;
     }
 

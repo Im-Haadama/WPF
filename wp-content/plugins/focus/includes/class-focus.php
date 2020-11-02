@@ -173,6 +173,7 @@ class Focus {
         AddFilter("gem_next_page_projects", array($this, "next_page"));
 		AddFilter("search_by_text", array("Focus_Tasks", "search_by_text_wrap"));
 
+        Core_Pages::CreateIfNeeded("focus", "/focus", "focus_main");
         Core_Pages::CreateIfNeeded("project", "/project", "focus_project");
         Core_Pages::CreateIfNeeded("task", "/task", "focus_task");
 

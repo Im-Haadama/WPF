@@ -141,9 +141,9 @@ class Core_Gem {
 		$unmapped = [];
 		$rc = Core_Importer::Import($file_name, $table, $fields,  $unmapped);
 		if (count($unmapped)) {
-			$result .= self::MapFields($unmapped, $db_prefix, $table, Flavor::getPost()) .
+			$result .= self::MapFields($unmapped, $db_prefix, $table, '/wp-content/plugins/fresh/post.php') .
 			           Core_Html::load_scripts(array('/wp-content/plugins/flavor/includes/core/gui/client_tools.js',
-				           '/wp-content/plugins/flavor/includes/core/data/data.js?version=' . Flavor::getVersion()));
+				           '/wp-content/plugins/flavor/includes/core/data/data.js'));
 			print $result;
 //			die(1);
 			return false;
@@ -455,20 +455,8 @@ class Core_Gem {
 			$result .=  $no_data_message . Core_Html::Br();
 		}
 
-		if (($page == 1 or $page == -1) and GetArg($args, "add_button", true)) {
+		if (($page == 1 or $page == -1) and GetArg($args, "add_button", true))
 			$result .= Core_Html::GuiHyperlink("[" . __("Add") . "]", AddToUrl("operation" , "gem_add_" . $table_id)) . " ";
-//			$result .= Core_Html::GuiButton( "btn_add",  "Add", "show_modal('gem_new', tasklist)" );
-			$new_args = $args;
-			$new_args["operation"] = "gem_add_$table_id";
-			unset($new_args["actions"]);
-			$result .= '';
-//			$result .=
-//				Core_Html::GuiDiv("gem_new",
-//				'<div class="modal-header">
-//    <span class="close" onclick="gem_new.style.display=\'none\'">&times;</span>
-//  </div>' . apply_filters("gem_add_$table_id", "", null, $new_args),
-//				array("class" => "gem_modal"));
-		}
 //			$result .= self::Entry($table_id);
 
 		$checkbox_class = GetArg($args, "checkbox_class", "class");
@@ -721,11 +709,6 @@ class Core_Gem {
 			case "page_number":
 				return self::GemTable($table, $args);
 		}
-	}
-
-	static function UpdateTableFieldEvent($post_file, $table_name, $id, $field_name)
-	{
-		return 'onchange = "update_table_field(\'' . $post_file . '\', \'' . $table_name . "', $id, '$field_name', check_result)\"";
 	}
 
 // Header that attach to upper screen.
