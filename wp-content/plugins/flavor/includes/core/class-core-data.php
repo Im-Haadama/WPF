@@ -352,31 +352,28 @@ class Core_Data
 
 	static function PrepareRow($row, &$args, $row_id)
 	{
-        $field_args = $args;
 		if (is_null($row)){
 			return null; // Todo: find why PivotTable creates null rows as in invoice_table.php
 		}
 
 		// On single row, the id is displayed in the header, and not showing in the table.
-		$skip_id = GetArg($field_args, "skip_id", false);
-		$links = GetArg($field_args, "links", null);
-		$edit = GetArg($field_args, "edit", false);
-		$drill = GetArg($field_args, "drill", false);
-		$selectors = GetArg($field_args, "selectors", null);
-		$actions = GetArg($field_args, "actions",null);
-		$edit_cols = GetArg($field_args, "edit_cols", null);
-		$transpose = GetArg($field_args, "transpose", null);
-		$add_field_suffix = GetArg($field_args, "add_field_suffix", true);
-		$accumulation_row = GetArg($field_args, "accumulation_row", null);
+		$skip_id = GetArg($args, "skip_id", false);
+		$links = GetArg($args, "links", null);
+		$edit = GetArg($args, "edit", false);
+		$drill = GetArg($args, "drill", false);
+		$selectors = GetArg($args, "selectors", null);
+		$actions = GetArg($args, "actions",null);
+		$edit_cols = GetArg($args, "edit_cols", null);
+		$transpose = GetArg($args, "transpose", null);
+		$add_field_suffix = GetArg($args, "add_field_suffix", true);
+		$accumulation_row = GetArg($args, "accumulation_row", null);
+		$events = GetArg($args, "events", null);
 
-
-		$maybe_array_events = GetArg($field_args, "events", null); // $edit ? "onchange='changed_field(" . $row_id . ")'" : null); // Valid for grid. In transposed single row it will be replaced.
-		unset ($field_args["events"]);
 		$field_events = null;
-		$table_name = GetArg($field_args, "table_name", null);
+		$table_name = GetArg($args, "table_name", null);
 
-		$prepare_plug = GetArg($field_args, "prepare_plug", null);
-		if (is_callable($prepare_plug)) $row = call_user_func($prepare_plug, $row, $field_args);
+		$prepare_plug = GetArg($args, "prepare_plug", null);
+		if (is_callable($prepare_plug)) $row = call_user_func($prepare_plug, $row, $args);
 
 		$row_data = array();
 
@@ -384,7 +381,6 @@ class Core_Data
 		{
 			return $row;
 		}
-		$events = $maybe_array_events; // If it's array, handle it in the loop.
 
 		foreach ($row as $key => $data)
 		{
@@ -449,25 +445,27 @@ class Core_Data
 
 				/// 5/9/2019 Change!! edit_cols by default is to edit. if it set, don't edit.
 				/// 23/9/2019  isset($edit_cols[$key]) - set $args["edit_cols"][$key] for fields that need to be edit.
-				if ($edit  and (! $edit_cols or (isset($edit_cols[$key]) and $edit_cols[$key]))){
-
+				if ($edit){
 					if (! $key or $key == "id")	continue;
 					if ($field_events) $field_args["events"] = $field_events;
 					if ( $table_name ) {
-//					if (isset($args["field_types"])) {
-//						$type = $args["field_types"][$key];
-//						$value = gui_input_by_type($input_name, $type, $args, $value);
-						if (isset($field_args["sql_fields"])) {
-							$type = SqlField($field_args["sql_fields"], $key);
-			// Not tested:
-			//							if (isset($args['styles']) and is_array($args['styles']))
-			//								$args['style'] = (isset($args['styles'][$key]) ? $args['styles'][$key] : null);
+						if (isset($args["sql_fields"])) {
+							$type = SqlField($args["sql_fields"], $key);
+							$field_args = $args;
+							if ($edit_cols and (isset($edit_cols[$key]) and $edit_cols[$key]))
+								$fields["edit"] = true; // Not needed. Just for clarity.
+							else
+								$fields["edit"] = false;
+							// Not tested:
+							//							if (isset($args['styles']) and is_array($args['styles']))
+							//								$args['style'] = (isset($args['styles'][$key]) ? $args['styles'][$key] : null);
 							$value = Core_Html::gui_input_by_type($input_name, $type, $field_args, $value);
 						}
-					} else {
-						// ??? 30/3/2020
-						// $value = Core_Html::GuiInput( $input_name, $data, $args ); //gui_input( $key, $data, $field_events, $row_id);
 					}
+//					else {
+//						// ??? 30/3/2020
+//						// $value = Core_Html::GuiInput( $input_name, $data, $args ); //gui_input( $key, $data, $field_events, $row_id);
+//					}
 					break;
 				}
 				if ( $selectors and array_key_exists( $key, $selectors )) {

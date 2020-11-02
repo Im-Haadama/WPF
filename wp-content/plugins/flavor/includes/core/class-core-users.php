@@ -48,7 +48,9 @@ class Core_Users {
 
 	function getName()
 	{
-		return self::getUser()->display_name;
+		if ($u = self::getUser())
+			return $u->display_name;
+		return "no user for " . $this->id;
 	}
 
 	static function gui_select_user( $id = null, $selected = null, $args = null ) {
