@@ -148,7 +148,7 @@ if (class_exists("WC_Payment_Gateway")) {
 				$this_year = (int) date('Y');
 
                 if (! (($valid_year > $this_year) or (($valid_year == $this_year) and ($valid_month >= $this_month)))){
-                    print __("Previous card expired");
+                    print __("Previous card expired", "e-fresh");
                 }
 
 				$id_number =  $wpdb->get_var( "SELECT id_number FROM im_payment_info WHERE user_id = $current_user_id" );

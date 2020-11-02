@@ -5,6 +5,7 @@ class Finance_Yaad {
 	private $terminal;
 	private $signature;
 	private $business_name;
+	private $PassP;
 	public $debug;
 
 	function init_hooks()
@@ -30,7 +31,7 @@ class Finance_Yaad {
 	 */
 	function pay_user_credit_wrap($customer_id, $amount = 0, $payment_number = 1)
 	{
-		MyLog(__FUNCTION__ . ": pay for $customer_id");
+		FinanceLog(__FUNCTION__ . ": pay for $customer_id");
 		// $delivery_ids = sql_query_array_scalar("select id from im_delivery where payment_receipt is null and draft is false");
 		$sql = 'select 
 		id, 
@@ -50,7 +51,7 @@ class Finance_Yaad {
 		';
 
 		// If amount not specified, try to pay the balance.
-		$user = new Fresh_Client($customer_id);
+		$user = new Finance_Client($customer_id);
 
 		if ($amount == 0)
 			$amount = $user->balance();
@@ -71,7 +72,7 @@ class Finance_Yaad {
 		return $this->pay_user_credit($user, $paying_transactions, $amount, $change, $payment_number);
 	}
 
-	static function getCustomerStatus(Fresh_Client $C, $string)
+	static function getCustomerStatus(Finance_Client $C, $string)
 	{
 		if ($string)
 			return (SqlQuerySingleScalar( "select count(*) from im_payment_info where card_number not like '%X%' and email = " . QuoteText($C->get_customer_email())) > 0 ? 'C' : '') .
@@ -81,7 +82,8 @@ class Finance_Yaad {
 			       (SqlQuerySingleScalar( "select count(*) from im_payment_info where card_number like '%X%' and email = " . QuoteText($C->get_customer_email())) > 0 ? 2 : 0);
 
 	}
-	function pay_user_credit(Fresh_Client $user, $account_line_ids, $amount, $change, $payment_number = 1)
+
+	function pay_user_credit(Finance_Client $user, $account_line_ids, $amount, $change, $payment_number = 1)
 	{
 		MyLog(__FUNCTION__ . " " . $user->getName() . " " . $amount);
 		$debug = false;
@@ -178,21 +180,21 @@ class Finance_Yaad {
 		MyLog($row_id, __FUNCTION__);
 		$table_name = "im_payment_info";
 		$card_four_digit   = $wpdb->get_var("SELECT card_four_digit FROM $table_name WHERE id = ".$row_id." ");
-		$dig4 = setCreditCard($card_four_digit);
+		$dig4 = Finance_Payments::setCreditCard($card_four_digit);
 		SqlQuery("UPDATE $table_name SET card_number =  '".$dig4."' WHERE id = ".$row_id." ");
 		return true;
 	}
 
 	/**
 	 * @param $credit_info
-	 * @param Fresh_Client $user_info
+	 * @param Finance_Client $user_info
 	 * @param float $amount
 	 * @param string $delivery_numbers
 	 * @param int $payment_number
 	 *
 	 * @return array
 	 */
-	function FirstPay($credit_info, Fresh_Client $user_info, float $amount, string $delivery_numbers, int $payment_number = 1)
+	function FirstPay($credit_info, Finance_Client $user_info, float $amount, string $delivery_numbers, int $payment_number = 1)
 	{
 		// General
 		$params = array();
@@ -214,16 +216,17 @@ class Finance_Yaad {
 	 * @param $api_key
 	 * @param $terminal
 	 */
-	public function __construct( $api_key, $terminal, $business_name ) {
+	public function __construct( $api_key, $terminal, $business_name, $PassP = "yaad") {
 		$this->debug = false;
 		$this->api_key   = $api_key;
 		$this->terminal  = $terminal;
 		$this->signature = null;
 		$this->business_name = $business_name;
+		$this->PassP = $PassP;
 		self::SignIn();
 	}
 
-	public function TokenPay( string $token, array $credit_info, Fresh_Client $user_info, float $amount, string $delivery_info, int $payment_number = 1) {
+	public function TokenPay( string $token, array $credit_info, Finance_Client $user_info, float $amount, string $delivery_info, int $payment_number = 1) {
 		$params = array();
 		self::SetPayInfo($params);
 		self::SetTransactionInfo($params, $user_info, $amount, $delivery_info, $payment_number);
@@ -257,7 +260,7 @@ class Finance_Yaad {
 			"Masof"     => $this->terminal,
 			"Key"       => $this->api_key,
 			"TransId"   => $transid,
-			"PassP"     => "yaad",
+			"PassP"     => $this->PassP,
 			"signature" => $this->signature
 		);
 
@@ -269,7 +272,7 @@ class Finance_Yaad {
 			"action" => "APISign",
 			"What"   => "SIGN",
 			"Key"    => $this->api_key,
-			"PassP"  => "yaad.net",
+			"PassP"  => $this->PassP,
 			"Masof"  => $this->terminal
 		);
 
@@ -305,14 +308,14 @@ class Finance_Yaad {
 	{
 		$params['action'] = 'soft';
 		$params["Masof"] = $this->terminal;
-		$params["PassP"] = "yaad";
+		$params["PassP"] = $this->PassP;
 		$params["KEY"] = $this->api_key;
 		$params["UTF8"] = "True";
 		$params["UTF8out"] = "True";
 		$params["Coin"] = 1;
 	}
 
-	private function SetTransactionInfo(&$params, Fresh_Client $user_info, float $amount, string $delivery_numbers, int $num_of_payments = 1) {
+	private function SetTransactionInfo(&$params, Finance_Client $user_info, float $amount, string $delivery_numbers, int $num_of_payments = 1) {
 		$params['Info']       = urlencode( "delivery " . $delivery_numbers );
 		$params["Amount"]     = $amount;
 		$params["Tash"]       = $num_of_payments;

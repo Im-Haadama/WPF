@@ -200,4 +200,25 @@ class Israel_Shop
 
 		return ( $Digit % 10 > 0 ? 10 - ($Digit % 10) : 0);
 	}
+
+	static function getVatPercent()
+	{
+		return 17;
+	}
+
+	static function vatFromTotal($amount)
+	{
+		return round($amount * self::getVatPercent() / (100 + self::getVatPercent()), 2);
+	}
+
+	static function totalWithoutVat($amount)
+	{
+		return $amount - self::vatFromTotal($amount);
+	}
+
+	static function addVat($net)
+	{
+		return round($net * (100 + self::getVatPercent()) / 100, 2);
+	}
+
 }

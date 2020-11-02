@@ -176,7 +176,7 @@ class Flavor {
 		self::AddTop('orders', 'Orders', '/wp-admin/edit.php?post_type=shop_order');
 	}
 
-	function AddTop($id, $title, $href)
+	static function AddTop($id, $title, $href)
 	{
 		$menu = Core_Admin_Menu::instance();
 
@@ -709,6 +709,11 @@ class Flavor {
 		foreach ($this->admin_notices as $notice)
 			print _e( $notice );
 		print '</div>';
+	}
+
+	static function getTextDomain()
+	{
+		return 'e-fresh';
 	}
 }
 

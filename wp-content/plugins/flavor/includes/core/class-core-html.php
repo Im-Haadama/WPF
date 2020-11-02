@@ -883,7 +883,6 @@ class Core_Html {
 		$reverse = GetArg($args, "reverse", false);
 
 		// Table start and end
-		$header = true;
 		$footer = true;
 
 		// Style and class.
@@ -965,7 +964,7 @@ class Core_Html {
 //							$data .= " width=" . $args["col_width"][ $col_id ];
 						}
 						$data .= ">";
-						$data .= $cell;
+						$data .= __($cell, Flavor::getTextDomain());
 						$data .= "</td>";
 					}
 				} else {
@@ -1829,6 +1828,7 @@ class Core_Html {
 			if (is_array($fields)) $fields = CommaImplode($fields);
 			$sql = "select $fields from ${db_prefix}$table_id";
 			if ($where) $sql .= " where $where";
+			if ($order = GetArg($args, "order_by", null)) $sql .= $order;
 		}
 
 		// Fetch the data from DB or create the new row

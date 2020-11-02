@@ -1,0 +1,1 @@
+find . -name '*php' -exec grep $1 /dev/null {} \;

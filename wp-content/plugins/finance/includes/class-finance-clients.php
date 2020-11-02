@@ -39,7 +39,7 @@ class Finance_Clients
 		$ref         = $_GET["ref"];
 		$type        = $_GET["type"];
 
-		$u = new Fresh_Client($customer_id);
+		$u = new Finance_Client($customer_id);
 		return $u->add_transaction($date, $amount, $ref, $type);
 
 //		account_add_transaction( $customer_id, $date, $amount, $ref, $type );
@@ -105,7 +105,7 @@ class Finance_Clients
 			$customer_id    = $row[1];
 			$customer_name  = $row[2];
 //			print $customer_name . " " . $customer_total . "<br/>";
-			$C = new Fresh_Client( $customer_id );
+			$C = new Finance_Client( $customer_id );
 
 			$line = Core_Html::gui_cell( gui_checkbox( "chk_" . $customer_id, "user_chk" ) );
 			$line .= "<td><a href = \"" . self::getLink( $customer_id ) . "\">" . $customer_name . "</a></td>";
@@ -179,7 +179,7 @@ class Finance_Clients
 		} catch ( Exception $e ) {
 			$invoice = null;
 		}
-		$u         = new Fresh_Client( $customer_id );
+		$u         = new Finance_Client( $customer_id );
 		$invoice_client_id = $u->getInvoiceUserId(true);
 
 		$args = array( "class" => "widefat" );
@@ -215,7 +215,7 @@ class Finance_Clients
 		}
 		$payment_info_id = SqlQuerySingleScalar( "select id from im_payment_info where email = " . QuoteText($u->get_customer_email()));
 		if ($payment_info_id) {
-			$args = array("post_file" => Fresh::getPost(), "edit"=>true);
+			$args = array("post_file" => Flavor::getPost(), "edit"=>true);
 			$credit_info = Core_Gem::GemElement( "payment_info", $payment_info_id, $args );
 		} else {
 			$args["post_file"] = Finance::getPostFile();
@@ -239,7 +239,7 @@ class Finance_Clients
 		$result .= '<div id="logging"></div>';
 
 		$args   = array( "post_file" => Finance::getPostFile());
-		$result .= Fresh_Client_Views::show_trans( $customer_id, TransView::admin, $args );
+		$result .= Finance_Client_Views::show_trans( $customer_id, TransView::admin, $args );
 
 		if (class_exists('Finance_Yaad'))
 			$result .= Finance_Yaad::History($customer_id);
@@ -276,7 +276,7 @@ class Finance_Clients
 			if ( $id > 0 ) {
 				$no_ids = false;
 				$del_id = SqlQuerySingleScalar( "select transaction_ref from im_client_accounts where ID = " . $id );
-				$d = new Fresh_Delivery($del_id);
+				$d = new Finance_Delivery(0, $del_id);
 				$dels_total += $d->getDeliveryTotal();
 				if ( $del_id > 0 ) {
 					array_push( $del_ids, $del_id );
@@ -304,7 +304,7 @@ class Finance_Clients
 	{
 		Finance::Invoice4uConnect();
 
-		$u = new Fresh_Client( $user_id );
+		$u = new Finance_Client( $user_id );
 		$c = $cash - $change;
 
 		// Check if paid (some bug cause double invoice).
@@ -362,7 +362,7 @@ class Finance_Clients
 			return false;
 		}
 
-		$C = new Fresh_Client($customer_id);
+		$C = new Finance_Client($customer_id);
 		$invoice->Login();
 
 //		$client = $invoice->GetCustomerByEmail( $email);
@@ -416,8 +416,8 @@ class Finance_Clients
 					$item->Price    = round( $row[3], 2 );
 					$item->Quantity = round( $row[1], 2 );
 					if ( $row[2] > 0 ) {
-						$item->TaxPercentage   = Fresh_Pricing::getVatPercent();
-						$item->TotalWithoutTax = Fresh_Pricing::totalWithoutVat($row[4]);
+						$item->TaxPercentage   = Israel_Shop::getVatPercent();
+						$item->TotalWithoutTax = Israel_Shop::totalWithoutVat($row[4]);
 					} else {
 						$item->TaxPercentage   = 0;
 						$item->TotalWithoutTax = round( $row[4], 2);
@@ -471,7 +471,7 @@ class Finance_Clients
 		return $doc_id;
 	}
 
-	static function PaymentBox(Fresh_Client $C )
+	static function PaymentBox(Finance_Client $C )
 	{
 		$status = Finance_Yaad::getCustomerStatus($C, false);
 		if (! $status) return "";
@@ -514,7 +514,7 @@ charset=utf8;
 ");
 	}
 
-	static function AddDocumentBox(Fresh_Client $u)
+	static function AddDocumentBox(Finance_Client $u)
 	{
 		return Core_Html::gui_table_args( array(
 			array( "סוג פעולה", "סכום", "תאריך", "מזהה" ),

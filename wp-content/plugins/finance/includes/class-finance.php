@@ -35,7 +35,7 @@ class Finance {
 	 *
 	 * @var string
 	 */
-	public $version = '1.1';
+	public $version = '1.3';
 
 	private $plugin_name;
 
@@ -226,14 +226,14 @@ class Finance {
 
 	function pay_user_credit_wrap($customer_id, $amount, $payment_number)
 	{
-		MyLog(__FUNCTION__ . " $customer_id");
+		FinanceLog(__FUNCTION__ . " $customer_id");
 
 		if (! $this->yaad)
 			if ( defined( 'YAAD_API_KEY' ) and defined('YAAD_TERMINAL')) {
-				MyLog("init Finanace_Yaad");
-				$this->yaad = new Finance_Yaad( YAAD_API_KEY, YAAD_TERMINAL, get_bloginfo('name') );
+				FinanceLog("init Finanace_Yaad");
+				$this->yaad = new Finance_Yaad( YAAD_API_KEY, YAAD_TERMINAL, get_bloginfo('name'), YAAD_PassP );
 			} else {
-				print "YAAD terminal or api are missing";
+				FinanceLog("Error: folder YAAD terminal or api are missing", true);
 			}
 
 		if (! $this->yaad)
@@ -260,7 +260,7 @@ class Finance {
 		';
 
 		// If amount not specified, try to pay the balance.
-		$user = new Fresh_Client($customer_id);
+		$user = new Finance_Client($customer_id);
 
 		if ($amount == 0)
 			$amount = $user->balance();
@@ -834,12 +834,13 @@ class Finance {
 	}
 
 	function pay_credit_wrapper() {
-		MyLog(__FUNCTION__);
+		FinanceLog(__FUNCTION__);
 		$users = explode( ",", GetParam( "users", true, true ) );
 		$payment_number = GetParam("number", false, 1);
 		$amount = GetParam("amount", false, 0);
 
 		foreach ( $users as $user ) {
+			FinanceLog("trying $user");
 			$rc = apply_filters( 'pay_user_credit', $user, $amount, $payment_number );
 			if ( ! $rc ) print "failed user $user\n";
 		}
@@ -924,3 +925,9 @@ function payment_list() {
 }
 
 /*-- End payment gateway--*/
+
+function FinanceLog($message, $print = false)
+{
+	if ($print) print $message;
+	MyLog($message, '', 'finance.log');
+}

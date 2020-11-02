@@ -37,7 +37,7 @@ function calcDelivery() {
         total += line_total;
     }
 
-    total += parseFloat(get_value_by_name("fee"));
+    // total += parseFloat(get_value_by_name("fee"));
 
     document.getElementById("total").innerHTML = total;
 
@@ -62,7 +62,7 @@ function delivery_delete(post_file)
 {
     let order_id = get_value_by_name("order_id");
 
-    execute_url(post_file + '?operation=delivery_delete&order_id=' + order_id);
+    execute_url(post_file + '?operation=delivery_delete&order_id=' + order_id, action_back);
 }
 
 function delivery_save_or_edit(post_file, operation) {
@@ -74,6 +74,10 @@ function delivery_save_or_edit(post_file, operation) {
     // var logging = document.getElementById('logging');
     var is_edit = false;
     let order_id = get_value_by_name("order_id");
+    if (! (order_id > 0)) {
+        alert("Error - order id is missing");
+        return false;
+    }
     let vat = 0; // Calculate in server
 
     let request = "order_id=" + order_id + "&total=" + total;
@@ -91,13 +95,13 @@ function delivery_save_or_edit(post_file, operation) {
         // 2
         let price = get_value_by_name("price_"+ order_line);
         // 3
-        let live_vat = 0;
+        let line_vat = Math.round((q * price * 100) / 1.17 * 0.17) / 100;
         // 4
         let prod_id = 0;
         // 5
         let quantity_ordered = get_value_by_name("quantity_ordered_" + order_line);
 
-        data.push([prod_name, q, price, live_vat, prod_id, quantity_ordered]);
+        data.push([prod_name, q, price, line_vat, prod_id, quantity_ordered]);
         // request += "&oid=" + oid + "&q=" + q + "&price="+price;
     }
     // alert (JSON.stringify(data));
@@ -254,8 +258,30 @@ function delivery_save_or_edit(post_file, operation) {
 //         server_header.send();
 //     }
 
+function delivery_add_line(post_file, user_id)
+{
+    let  table = document.getElementById("del_table");
+    let id = table.rows[table.rows.length - 1].cells[0].id;
+    let row_number = id.substr(id.lastIndexOf("_") + 1);
+    row_number ++;
+
+    let new_row = table.insertRow();
+    let new_cell = new_row.insertCell();
+    new_cell.innerHTML = '<input type="text" id="product_name_' + row_number + '" onchange="get_price(\'' + post_file + '\', ' + row_number + ', ' + user_id + ')"></input>';
+    new_cell.id = "product_name_" + row_number;
+    new_row.insertCell().innerHTML = '<label id="quantity_ordered_' + row_number + '">0</label>'; // ordered quantity
+    new_row.insertCell().innerHTML = '<input type="text" id="quantity_' + row_number + '" size="4"></input>';
+    new_row.insertCell().innerHTML = '<input type="text" id="price_' + row_number + '" size="4"></input>';
+
+}
 function quantity_changed()
 {
     moveNextRow();
     calcDelivery();
+}
+
+function get_price(post_file, row_number, user_id)
+{
+    let prod_name = get_value_by_name("product_name_"+row_number);
+    execute_url(post_file + '?operation=delivery_get_price&prod_name='+encodeURI(prod_name) + '&user_id=' + user_id);
 }

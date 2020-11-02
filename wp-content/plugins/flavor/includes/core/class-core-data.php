@@ -101,6 +101,7 @@ class Core_Data
 	{
 		$row_id = intval($row_id);
 		$db_prefix = GetTablePrefix($table_name);
+		if (! in_array(SqlTableFields($table_name), "is_active")) return true;
 
 		return SqlQuery("update ${db_prefix}$table_name set is_active = $active where id = $row_id");
 	}

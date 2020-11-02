@@ -194,7 +194,7 @@ class Finance_Payments {
 
 	/*-- Start save payment info --*/
 
-	function setCreditCard($cc)
+	static function setCreditCard($cc)
 	{
 		$cc_length = strlen($cc);
 

@@ -34,7 +34,7 @@ class Finance_Invoice4u
 	 */
 	public function __construct( $user, $password ) {
 		if (! defined('WSDL_CACHE_NONE')) { // Setup error
-			MyLog("Setup Error");
+			FinanceLog("Invoice Setup Error - WSDL is missing");
 			$this->token = null;
 			return;
 		}

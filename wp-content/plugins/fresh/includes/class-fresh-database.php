@@ -205,66 +205,6 @@ charset=utf8;
 
 ");
 
-		SqlQuery("drop function delivery_receipt");
-		SqlQuery("create function delivery_receipt(_del_id int) returns int
-BEGIN
-		declare _receipt integer;
-		select payment_receipt into _receipt 
-	        from im_delivery where id = _del_id; 
-	    return _receipt;
-	END;
-");
-
-		SqlQuery("drop function order_from_delivery");
-		SqlQuery("create function order_from_delivery(del_id int) returns text
-BEGIN
-    declare _order_id int;
-    SELECT order_id INTO _order_id FROM im_delivery where id = del_id;
-
-    return _order_id;
-END;
-
-");
-
-		SqlQuery("drop function client_payment_method");
-		SqlQuery("create function client_payment_method(_user_id int) returns text charset utf8
-BEGIN
-    declare _method_id int;
-    declare _name VARCHAR(50) CHARSET 'utf8';
-    select meta_value into _method_id from wp_usermeta where user_id = _user_id and meta_key = 'payment_method';
-    select name into _name from im_payments where id = _method_id;
-
-    return _name;
-  END;
-
-");
-
-		SqlQuery("drop function client_balance");
-		SqlQuery("create function client_balance(_client_id int, _date date) returns float
-BEGIN
-    declare _amount float;
-select sum(transaction_amount) into _amount
-from im_client_accounts where date <= _date
-                          and client_id = _client_id;
-return round(_amount, 0);
-END;
-
-");
-
-		if (! TableExists("payments"))
-		SqlQuery("create table ${db_prefix}payments
-(
-	id int auto_increment,
-	name varchar(20) null,
-	`default` bit default b'0' null,
-	mail_delivery bit not null default b'0',
-	accountants varchar(100) null,
-	constraint im_payments_id_uindex
-		unique (id)
-)
-
-");
-
 		if (! TableExists("supplies"))
 
 		SqlQuery("create table ${db_prefix}supplies

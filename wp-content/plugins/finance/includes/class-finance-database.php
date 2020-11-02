@@ -6,6 +6,25 @@ class Finance_Database extends Core_Database {
 	function CreateTables($version, $force) {
 
 		$db_prefix = GetTablePrefix();
+		$current = self::CheckInstalled("Finance", "tables");
+
+		if ($current)  // Installed!
+			return true;
+
+		if (! TableExists("payments"))
+			SqlQuery("create table ${db_prefix}payments
+(
+	id int auto_increment,
+	name varchar(20) null,
+	default_method bit default b'0' null,
+	mail_delivery bit not null default b'0',
+	accountants varchar(100) null,
+	constraint im_payments_id_uindex
+		unique (id)
+)
+
+");
+		if ($current == $version and ! $force) return true;
 
 		if (! TableExists("delivery_lines")) {
 			SqlQuery( "create table ${db_prefix}delivery_lines
@@ -93,6 +112,7 @@ charset=utf8;
 
 		self::payment_info_table();
 
+		if (!TableExists("bank_account"))
 		SqlQuery("CREATE TABLE `im_bank_account` (
   `id` int(11) NOT NULL,
   `name` varchar(20) NOT NULL,
@@ -100,6 +120,7 @@ charset=utf8;
   `owner` int(11) DEFAULT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;");
 
+		if (!TableExists("bank"))
 		SqlQuery("CREATE TABLE `im_bank` (
   `id` int(11) NOT NULL,
   `account_id` int(20) NOT NULL,
@@ -117,6 +138,7 @@ charset=utf8;
   `comment` varchar(400) DEFAULT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;");
 
+		if (! TableExists("bank_lines"))
 		SqlQuery("CREATE TABLE `im_bank_lines` (
   `id` int(11) NOT NULL,
   `line_id` int(11) DEFAULT NULL,
@@ -127,6 +149,7 @@ charset=utf8;
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;");
 
 
+		if (!TableExists("conversion"))
 		SqlQuery("CREATE TABLE `im_conversion` (
   `id` int(11) NOT NULL,
   `table_name` varchar(20) NOT NULL,
@@ -157,21 +180,11 @@ charset=utf8;
 		self::UpdateInstalled("Finance", "tables", $version);
 	}
 
-	function CreateFunctions($version) {
-		SqlQuery("drop function if exists  order_line_get_variation");
-		SqlQuery("create function order_line_get_variation(_order_item_id int) RETURNS text
-BEGIN
-    declare _variation int;
-    select meta_value into _variation from wp_woocommerce_order_itemmeta
-    where order_item_id = _order_item_id
-      and meta_key = '_variation_id';
-
-    return _variation;
-  END;
-
-");
+	function CreateFunctions($version, $force = false) {
+		$current = self::CheckInstalled("Finance", "functions");
 
 		return;
+
 		SqlQuery("drop function client_from_delivery");
 		SqlQuery("create function client_from_delivery(del_id int) returns text CHARSET 'utf8'
 BEGIN
@@ -186,6 +199,79 @@ BEGIN
 
   return _display;
 END;
+
+");
+
+		if ($current == $version and ! $force) return true;
+
+		SqlQuery("drop function delivery_receipt");
+		SqlQuery("create function delivery_receipt(_del_id int) returns int
+BEGIN
+		declare _receipt integer;
+		select payment_receipt into _receipt 
+	        from im_delivery where id = _del_id; 
+	    return _receipt;
+	END;
+");
+
+		SqlQuery("drop function order_from_delivery");
+		SqlQuery("create function order_from_delivery(del_id int) returns text
+BEGIN
+    declare _order_id int;
+    SELECT order_id INTO _order_id FROM im_delivery where id = del_id;
+
+    return _order_id;
+END;
+
+");
+
+		SqlQuery("drop function client_balance");
+		SqlQuery("create function client_balance(_client_id int, _date date) returns float
+BEGIN
+    declare _amount float;
+select sum(transaction_amount) into _amount
+from im_client_accounts where date <= _date
+                          and client_id = _client_id;
+return round(_amount, 0);
+END;
+
+");
+
+		SqlQuery("create function client_payment_method(_user_id int) returns text charset utf8
+BEGIN
+    declare _method_id int;
+    declare _name VARCHAR(50) CHARSET 'utf8';
+    select meta_value into _method_id from wp_usermeta where user_id = _user_id and meta_key = 'payment_method';
+    select name into _name from im_payments where id = _method_id;
+
+    return _name;
+  END;
+
+");
+
+		SqlQuery("drop function client_payment_method");
+		SqlQuery("create function client_payment_method(_user_id int) returns text charset utf8
+BEGIN
+    declare _method_id int;
+    declare _name VARCHAR(50) CHARSET 'utf8';
+    select meta_value into _method_id from wp_usermeta where user_id = _user_id and meta_key = 'payment_method';
+    select name into _name from im_payments where id = _method_id;
+
+    return _name;
+  END;
+
+");
+
+		SqlQuery("drop function if exists  order_line_get_variation");
+		SqlQuery("create function order_line_get_variation(_order_item_id int) RETURNS text
+BEGIN
+    declare _variation int;
+    select meta_value into _variation from wp_woocommerce_order_itemmeta
+    where order_item_id = _order_item_id
+      and meta_key = '_variation_id';
+
+    return _variation;
+  END;
 
 ");
 
@@ -211,11 +297,16 @@ BEGIN
     return _rate;
   END;
 
-");		SqlQuery( "drop function reduce_vat" );
+");
+
+		SqlQuery( "drop function reduce_vat" );
 		SqlQuery( "create FUNCTION `reduce_vat`(total float) RETURNS float
 BEGIN
     return round(total/1.17, 2);
   END;" );
+
+		self::UpdateInstalled("Finance", "functions", $version);
+
 	}
 
 	function CreateViews($version)

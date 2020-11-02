@@ -4,7 +4,6 @@ class Core_Database
 {
 	function install($version, $force = false)
 	{
-		return;
 		if (! function_exists("get_user_id")) {
 //			print debug_trace(2);
 			return;

@@ -19,3 +19,33 @@ msgstr "הזמנה"
 
 msgid "Orders"
 msgstr "הזמנות"
+
+msgid "Create delivery note"
+msgstr "יצירת תעודת משלוח"
+
+msgid "Product"
+msgstr "מוצר"
+
+msgid "Quantity ordered"
+msgstr "כמות הוזמנה"
+
+msgid "Quantity supplied"
+msgstr "כמות סופק"
+
+msgid "Price"
+msgstr "מחיר"
+
+msgid "Line Total"
+msgstr "סה\"כ"
+
+msgid "Comment"
+msgstr "הערה"
+
+msgid "Client accounts"
+msgstr "חשבונות לקוחות"
+
+msgid "Deliveries"
+msgstr "משלוחים"
+
+msgid "Previous card expired"
+msgstr "הזן פרטי אשראי"

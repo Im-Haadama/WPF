@@ -98,3 +98,5 @@ function register_awaiting_shipment_order_status() {
 		'label_count'               => _n_noop( 'Awaiting shipment document<span class="count">(%s)</span>', 'Awaiting shipment <span class="count">(%s)</span>' )
 	) );
 }
+
+add_filter( 'wc_product_sku_enabled', '__return_false' );
