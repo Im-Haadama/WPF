@@ -418,18 +418,18 @@ group by pm.meta_value, p.post_status");
 			// Deliveries created in other place
 //			if ( ($order_info['site'] != "משימות") and ($order_info['site'] != "supplies") and ($pickup_address != $mission->getStartAddress()) ) {
 //			print "$pickup_address<br/>";
-			if (1) {
-				// print "adding $pickup_address<br/>";
-				$prerequisite[$stop_point] = $pickup_address;
-				// Add Pickup
-				self::add_stop_point( $stop_points, $pickup_address, $order_id, $site_id );
-				$pickup_order_info = $order_info;
-				$pickup_order_info['customer'] = "<b>איסוף</b>" . $order_info[OrderTableFields::client_name];
-				self::add_line_per_station($mission->getStartAddress(),
-					$pickup_address,
-					$pickup_order_info,
-				$order_id);
-			}
+			// print "adding $pickup_address<br/>";
+			$prerequisite[$stop_point] = $pickup_address;
+			// Add Pickup
+			self::add_stop_point( $stop_points, $pickup_address, $order_id, $site_id );
+			$pickup_order_info = $order_info;
+			$pickup_order_info[OrderTableFields::client_name] = "<b>איסוף</b> " . $order_info[OrderTableFields::client_name];
+			$pickup_order_info[OrderTableFields::address_2] = '';
+			$pickup_order_info[OrderTableFields::phone] = '';
+			self::add_line_per_station($mission->getStartAddress(),
+				$pickup_address,
+				$pickup_order_info,
+			$order_id);
 			if ( $order_info[OrderTableFields::site_name] == "supplies" ) array_push( $supplies_to_collect, array( $order_id, $order_info['site_id'] ) );
 
 			self::add_stop_point($stop_points, $stop_point, $order_id, $site_id );
@@ -438,7 +438,6 @@ group by pm.meta_value, p.post_status");
 				if (strlen($p)) $prerequisite[$stop_point] = $p;
 			}
 
-			//		array_push( $stop_points, $stop_point );
 			self::add_line_per_station($mission->getStartAddress(),
 				$stop_point,
 				$order_info,
