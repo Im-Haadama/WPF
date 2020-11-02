@@ -350,13 +350,7 @@ function show_response(xmlhttp, obj)
     }
 }
 
-function show_modal(div, blur_div)
+function show_modal(div)
 {
-    if (typeof(div) == 'string')
-        div = document.getElementById(div);
     div.style.display = "block";
-    // Blur the body
-    // document.getElementsByTagName("body").className = "is-blurred";
-    if (undefined != blur_div)
-        blur_div.className = "is-blurred";
 }

@@ -352,28 +352,31 @@ class Core_Data
 
 	static function PrepareRow($row, &$args, $row_id)
 	{
+        $field_args = $args;
 		if (is_null($row)){
 			return null; // Todo: find why PivotTable creates null rows as in invoice_table.php
 		}
 
 		// On single row, the id is displayed in the header, and not showing in the table.
-		$skip_id = GetArg($args, "skip_id", false);
-		$links = GetArg($args, "links", null);
-		$edit = GetArg($args, "edit", false);
-		$drill = GetArg($args, "drill", false);
-		$selectors = GetArg($args, "selectors", null);
-		$actions = GetArg($args, "actions",null);
-		$edit_cols = GetArg($args, "edit_cols", null);
-		$transpose = GetArg($args, "transpose", null);
-		$add_field_suffix = GetArg($args, "add_field_suffix", true);
-		$accumulation_row = GetArg($args, "accumulation_row", null);
-		$field_args = $args; // Copied so the event format would change for every field.
+		$skip_id = GetArg($field_args, "skip_id", false);
+		$links = GetArg($field_args, "links", null);
+		$edit = GetArg($field_args, "edit", false);
+		$drill = GetArg($field_args, "drill", false);
+		$selectors = GetArg($field_args, "selectors", null);
+		$actions = GetArg($field_args, "actions",null);
+		$edit_cols = GetArg($field_args, "edit_cols", null);
+		$transpose = GetArg($field_args, "transpose", null);
+		$add_field_suffix = GetArg($field_args, "add_field_suffix", true);
+		$accumulation_row = GetArg($field_args, "accumulation_row", null);
 
-		$events = GetArg($args, "events", null); // $edit ? "onchange='changed_field(" . $row_id . ")'" : null); // Valid for grid. In transposed single row it will be replaced.
-		$table_name = GetArg($args, "table_name", null);
 
-		$prepare_plug = GetArg($args, "prepare_plug", null);
-		if (is_callable($prepare_plug)) $row = call_user_func($prepare_plug, $row, $args);
+		$maybe_array_events = GetArg($field_args, "events", null); // $edit ? "onchange='changed_field(" . $row_id . ")'" : null); // Valid for grid. In transposed single row it will be replaced.
+		unset ($field_args["events"]);
+		$field_events = null;
+		$table_name = GetArg($field_args, "table_name", null);
+
+		$prepare_plug = GetArg($field_args, "prepare_plug", null);
+		if (is_callable($prepare_plug)) $row = call_user_func($prepare_plug, $row, $field_args);
 
 		$row_data = array();
 
@@ -381,6 +384,7 @@ class Core_Data
 		{
 			return $row;
 		}
+		$events = $maybe_array_events; // If it's array, handle it in the loop.
 
 		foreach ($row as $key => $data)
 		{
@@ -408,7 +412,7 @@ class Core_Data
 				if ($transpose)	$field_events = sprintf($events, "'" . $key . "'", $row_id);
 				else			$field_events = sprintf( $events, $row_id, $key );
 
-				$field_args["events"] = $field_events;
+                $field_args["events"] = $field_events;
 			}
 
 			// Let's start
@@ -417,11 +421,11 @@ class Core_Data
 				if ( $links and  array_key_exists( $key, $links )) {
 					if ( $selectors and array_key_exists( $key, $selectors ) ) {
 						$selector_name = $selectors[ $key ];
-						$selected = $selector_name( $input_name, $orig_data, $args ); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
+						$selected = $selector_name( $input_name, $orig_data, $field_args ); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
 					} else $selected = $value;
 
 //					print $links[$key] . "<br/>";
-					$value = Core_Html::GuiHyperlink($selected, sprintf( urldecode($links[ $key ]), $data ), $args );
+					$value = Core_Html::GuiHyperlink($selected, sprintf( urldecode($links[ $key ]), $data ), $field_args );
 					break;
 				}
 				if ( $selectors and array_key_exists( $key, $selectors ) ) {
@@ -437,8 +441,8 @@ class Core_Data
 //						die(1);
 //					}
 					if ($drill) {
-						$operation = GetArg($args, "drill_operation", "show_archive");
-						$value = Core_Html::GuiHyperlink($value, AddToUrl(array( $key => $orig_data, "operation" => $operation)), $args);
+						$operation = GetArg($field_args, "drill_operation", "show_archive");
+						$value = Core_Html::GuiHyperlink($value, AddToUrl(array( $key => $orig_data, "operation" => $operation)), $field_args);
 					}
 					break;
 				}
@@ -446,14 +450,15 @@ class Core_Data
 				/// 5/9/2019 Change!! edit_cols by default is to edit. if it set, don't edit.
 				/// 23/9/2019  isset($edit_cols[$key]) - set $args["edit_cols"][$key] for fields that need to be edit.
 				if ($edit  and (! $edit_cols or (isset($edit_cols[$key]) and $edit_cols[$key]))){
+
 					if (! $key or $key == "id")	continue;
-//					if ($field_events) $args["events"] = $field_events;
+					if ($field_events) $field_args["events"] = $field_events;
 					if ( $table_name ) {
 //					if (isset($args["field_types"])) {
 //						$type = $args["field_types"][$key];
 //						$value = gui_input_by_type($input_name, $type, $args, $value);
-						if (isset($args["sql_fields"])) {
-							$type = SqlField($args["sql_fields"], $key);
+						if (isset($field_args["sql_fields"])) {
+							$type = SqlField($field_args["sql_fields"], $key);
 			// Not tested:
 			//							if (isset($args['styles']) and is_array($args['styles']))
 			//								$args['style'] = (isset($args['styles'][$key]) ? $args['styles'][$key] : null);
@@ -478,8 +483,8 @@ class Core_Data
 					break;
 				}
 				// Format values by type.
-				if (isset($args["sql_fields"])){
-					$type = SqlField($args["sql_fields"], $key);
+				if (isset($field_args["sql_fields"])){
+					$type = SqlField($field_args["sql_fields"], $key);
 //				print $key . " " . $type . "<br/>";
 					switch (strtok($type, "(")) {
 						case 'time':
@@ -516,7 +521,7 @@ class Core_Data
 //						$action_url = $row_id . $action[1];
 						if (! $row_id) $action_url = ($action[1] . "row id missing");
 						else $action_url = sprintf($action[1], $row_id);
-						$row_data[$action_name] = Core_Html::GuiHyperlink($text, $action_url, $args);
+						$row_data[$action_name] = Core_Html::GuiHyperlink($text, $action_url, $field_args);
 					}
 				} else {
 					$h = sprintf($action, $row_id);
@@ -525,7 +530,7 @@ class Core_Data
 			}
 		}
 
-		if ($accumulation_row) $args["accumulation_row"] = $accumulation_row;
+		if ($accumulation_row) $field_args["accumulation_row"] = $accumulation_row;
 		return $row_data;
 	}
 
@@ -873,4 +878,9 @@ class Core_Data
 		return $result;
 	}
 
+	static function UpdateTableFieldEvent($post_file, $table_name, $id, $field_name)
+	{
+		return "XXXX";
+		// 'update_table_field(\'' . $post_file . '\', \'' . $table_name . "', $id, '$field_name', check_result)";
+	}
 }

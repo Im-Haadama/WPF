@@ -140,7 +140,7 @@ require_once (ABSPATH . '/wp-includes/pluggable.php');
 		}
 
 		if ( $mandatory ) {
-			die ( "failed: " . debug_backtrace()[1]['function']  . "() key " . $key . " not supplied" );
+			die ( "Error: " . debug_backtrace()[1]['function']  . "() key " . $key . " not supplied" );
 		} else {
 			return $default;
 		}
@@ -153,7 +153,7 @@ require_once (ABSPATH . '/wp-includes/pluggable.php');
 				return explode( $delimiter, $k );
 			}
 			if ( $mandatory ) {
-				die ( "failed: " . __FUNCTION__ . " key " . $key . " not supplied" );
+				die ( "Error: " . __FUNCTION__ . " key " . $key . " not supplied" );
 			} else {
 				return $default;
 			}

@@ -154,20 +154,19 @@ class Org_Worker extends Core_users
 		}
 	}
 
-	function RemoveCompany($company_id)
-	{
-		$cur_ser =get_usermeta($this->id, 'companies');
-		if (! $cur_ser) return true;
+    function RemoveCompany($company_id)
+    {
+        $cur_ser =get_usermeta($this->id, 'companies');
+        if (! $cur_ser) return true;
 //		print "cur=$cur_ser<br/>";
-		$current = unserialize($cur_ser);
+        $current = unserialize($cur_ser);
 //		var_dump($current);
-		if (! $current) $current = array();
-		if ($key = array_search($company_id, $current)) {
-			unset ($current[$key]);
-		}
-		update_usermeta($this->id, 'companies', serialize($current));
-	}
-
+        if (! $current) $current = array();
+        if ($key = array_search($company_id, $current)) {
+            unset ($current[$key]);
+        }
+        update_usermeta($this->id, 'companies', serialize($current));
+    }
 
 	function AddWorkingProject($user_id, $company_id, $project_id)
 	{
