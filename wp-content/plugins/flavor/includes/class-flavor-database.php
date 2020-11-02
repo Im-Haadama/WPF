@@ -2,6 +2,14 @@
 
 
 class Flavor_Database extends Core_Database {
+
+	/**
+	 * Flavor_Database constructor.
+	 */
+	public function __construct() {
+		parent::__construct("flavor");
+	}
+
 	function install( $version, $force = false ) {
 		global $conn;
 
@@ -14,9 +22,9 @@ class Flavor_Database extends Core_Database {
 //		self::CreateViews($version, $force);
 	}
 
-	static function CreateFunctions($version, $force)
+	function CreateFunctions($version, $force)
 	{
-		$current   = self::CheckInstalled( "Flavor", "functions" );
+		$current   = $this->checkInstalled(  "functions" );
 		if ( $current == $version and ! $force ) return true;
 
 			SqlQuery("create function FIRST_DAY_OF_WEEK(day date) returns date
@@ -30,13 +38,13 @@ END;
 		declare _date date;
 		SELECT info_data into _date
 		FROM im_info WHERE info_key = concat('import_supplier_', _supplier_id);
+		return _date;
 		END");
 
-		self::UpdateInstalled( "Flavor", "functions", $version );
-
+		self::UpdateInstalled( "functions", $version );
 	}
-	static function CreateTables( $version, $force ) {
-		$current   = self::CheckInstalled( "Flavor", "tables" );
+	function CreateTables( $version, $force ) {
+		$current   = $this->checkInstalled( "tables" );
 		$db_prefix = GetTablePrefix();
 
 		if (! TableExists("missions"))
@@ -77,7 +85,7 @@ charset=utf8;
 
 " );
 
-		self::UpdateInstalled( "Flavor", "tables", $version );
+		return self::UpdateInstalled(  "tables", $version );
 
 	}
 }

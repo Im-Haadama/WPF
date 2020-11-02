@@ -86,7 +86,8 @@ class Israel_Shop
 
 	function init()
 	{
-		Israel_Database::Upgrade(self::instance()->get_version());
+		$database = new Israel_Database();
+		$database->install($this->version);
 		$this->zones->run(5);
 	}
 

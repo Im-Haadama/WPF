@@ -5,9 +5,17 @@ if (! class_exists("Core_Database"))
 
 class Fresh_Database extends Core_Database
 {
-	static function CreateViews($version, $force )
+
+	/**
+	 * Fresh_Database constructor.
+	 */
+	public function __construct() {
+		parent::__construct("Fresh");
+	}
+
+	function CreateViews($version, $force )
 	{
-		$current = self::CheckInstalled("Fresh", "views");
+		$current = $this->checkInstalled("views");
 		$db_prefix = GetTablePrefix();
 
 		if ($current == $version and ! $force) return true;
@@ -110,20 +118,19 @@ where `dl`.`delivery_id` > 503
 group by 1
 order by 1;");
 
-		self::UpdateInstalled("Fresh", "views", $version);
+		return self::UpdateInstalled( "views", $version);
 
 	}
 
-	static function CreateTables($version, $force)
+	function CreateTables($version, $force)
 	{
-		return; // need to rewrite
-		$current = self::CheckInstalled("Fresh", "1");
+		$current = $this->checkInstalled( "tables");
 		$db_prefix = GetTablePrefix();
 
 		if ($current == '1.1' and $version == '1.2')
 		{
 			return SqlQuery("alter table im_payment_info add user_id integer(11)") and
-			self::UpdateInstalled("Fresh", "tables", $version);
+			self::UpdateInstalled("tables", $version);
 		}
 		if ($current == $version and ! $force) return true;
 
@@ -479,12 +486,12 @@ charset=utf8;
 	pay_date date null
 );");
 
-		self::UpdateInstalled("Fresh", "tables", $version);
+		return self::UpdateInstalled( "tables", $version);
 	}
 
-	static function CreateFunctions($version, $force = false)
+	function CreateFunctions($version, $force = false)
 	{
-		$current = self::CheckInstalled("Fresh", "functions");
+		$current = $this->checkInstalled("functions");
 		$db_prefix = GetTablePrefix();
 
 		if ($current == $version and ! $force) return true;
@@ -741,7 +748,7 @@ BEGIN
   END;
 
 ");
-		self::UpdateInstalled("Fresh", "functions", $version);
+		return self::UpdateInstalled("functions", $version);
 	}
 
 	/* temp: convert supplier name to id in products */

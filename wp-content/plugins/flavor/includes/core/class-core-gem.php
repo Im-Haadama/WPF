@@ -12,7 +12,7 @@ class Core_Gem {
 	private function __construct( ) {
 		$this->object_types = array();
 		self::$_instance = $this;
-		AddAction("gem_show", array($this, "show_wrap"), 10, 3);
+//		AddAction("gem_show", array($this, "show_wrap"), 10, 3);
 		AddAction("gem_v_show", array(__CLASS__, "v_show_wrap"));
 		AddAction("gem_v_csv", array(__CLASS__, "gem_v_csv"));
 
@@ -44,7 +44,7 @@ class Core_Gem {
 
 		AddAction("gem_v_add_" . $table, array($class, "v_add_wrapper"), 10, 3);
 		AddAction("gem_add_" . $db_table, array($class, "v_add_wrapper"), 10, 3);
-		AddAction("gem_v_edit_" . $table, array($class, "v_edit_wrapper"), 10, 3);
+//		AddAction("gem_v_edit_" . $table, array($class, "v_edit_wrapper"), 10, 3);
 		AddAction("gem_v_show_" . $table, array($class, "v_show_wrapper"), 10, 3);
 	}
 

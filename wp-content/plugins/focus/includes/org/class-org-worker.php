@@ -1,6 +1,5 @@
 <?php
 
-
 class Org_Worker extends Core_users
 {
 	private $teams;
@@ -21,9 +20,6 @@ class Org_Worker extends Core_users
 	/**
 	 * @return mixed
 	 */
-	public function getId() {
-		return $this->id;
-	}
 
 	function IsGlobalCompanyWorker($company)
 	{

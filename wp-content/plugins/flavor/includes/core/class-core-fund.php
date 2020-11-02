@@ -322,7 +322,7 @@ class Core_Fund {
 	/**
 	 * @return string
 	 */
-	function randomPassword() {
+	static function randomPassword() {
 		$alphabet    = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789`10';
 		$pass        = array(); //remember to declare $pass as an array
 		$alphaLength = strlen( $alphabet ) - 1; //put the length -1 in cache

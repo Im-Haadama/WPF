@@ -57,9 +57,9 @@ class Core_Shortcodes {
 			foreach ( $this->shortcodes as $shortcode => $function_couple ) {
 				if ($debug and ($shortcode  == 'finance_bank')) print $shortcode . "<br/>";
 				if (! is_array($function_couple)) print $function_couple . " is not array";
-				if (count($function_couple) < 2) print $function_couple[0] . " not a couple";
+//				if (count($function_couple) < 2) print $function_couple[0] . " not a couple";
 				$function = $function_couple[0];
-				$capability = $function_couple[1];
+				$capability = isset($function_couple[1]) ? $function_couple[1] : null;
 				if ($debug) print "<br/>handling $shortcode $capability<br/>";
 				if ($capability and strlen($capability) and ! im_user_can($capability)) {
 //					print "<br/>" . $capability;

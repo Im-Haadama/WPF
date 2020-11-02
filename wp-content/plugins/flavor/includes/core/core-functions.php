@@ -574,6 +574,7 @@ require_once (ABSPATH . '/wp-includes/pluggable.php');
 
 //		print "adding $tag $function_to_add[1] <br/>";
 		if (! is_callable($function_to_add)) {
+//			print debug_trace(10);
 			print "Function for $tag is not callable<br/>";
 			var_dump($function_to_add);
 			die (1);

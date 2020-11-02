@@ -18,6 +18,8 @@ class Focus {
 	protected $manager;
 	protected $tasks;
 	protected $database;
+	private $focus_users;
+
 
 	/**
 	 * Plugin version.
@@ -173,6 +175,9 @@ class Focus {
 
         Core_Pages::CreateIfNeeded("project", "/project", "focus_project");
         Core_Pages::CreateIfNeeded("task", "/task", "focus_task");
+
+        $this->focus_users = new Focus_Users();
+        $this->focus_users->init_hooks();
 
 		if ((get_user_id() == 1) and defined("DEBUG_USER")) wp_set_current_user(DEBUG_USER);
 	}
@@ -478,6 +483,7 @@ class Focus {
 
 	static public function settingPage()
 	{
+		die("not implemented");
 		$result = "";
 		//                     Top nav                  Sub nav    target,                                        capability
 //		$module_list = array( "Focus" => array(array("Repeating weekly", "/focus?operation=show_repeating_tasks&freq=w","show_tasks"),

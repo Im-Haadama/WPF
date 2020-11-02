@@ -1,28 +1,29 @@
 <?php
 
 
-class Israel_Database extends  Core_Database
+class Israel_Database extends Core_Database
 {
-	static function Upgrade($version, $force = false)
-	{
-		self::CreateInfo();
-		self::CreateTables($version, $force);
-//		self::CreateFunctions($version, $force);
+
+	/**
+	 * Israel_Database constructor.
+	 */
+	public function __construct() {
+		parent::__construct("Israel");
 	}
 
-	static function CreateTables($version, $force = false)
+	function CreateTables($version, $force = false)
 	{
-		$current = self::CheckInstalled("Israel", "tables");
+		$current = $this->checkInstalled( "tables");
 
 //		print "ver=$current force=$force";
 		if ($current == $version and ! $force) return true;
 //		print "cont";
 
-		self::create_cities();
-		self::create_conversion(); // Should move to flavor
-		self::insert_conversion();
+		$this->create_cities();
+		$this->create_conversion(); // Should move to flavor
+		$this->insert_conversion();
 
-		self::UpdateInstalled("Israel", "tables", $version);
+		return $this->UpdateInstalled( "tables", $version);
 	}
 
 	static private function create_conversion() {
@@ -75,6 +76,4 @@ engine=MyISAM charset=utf8;
 ");
 
 	}
-
-
 }

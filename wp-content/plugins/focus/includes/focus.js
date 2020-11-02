@@ -131,3 +131,33 @@ function company_add_worker(post, company)
         "&message=" + encodeURI(message);
     execute_url(url, action_back);
 }
+
+function focus_create_user(post_file)
+{
+    let user_name = get_value_by_name('new_user_name');
+    if (! (user_name.length > 4)) {
+        alert("Please enter wanted user name longer than 4 letters");
+        return;
+    }
+    let email = get_value_by_name('new_email');
+    if (! email.length) {
+        alert("Please enter your email");
+        return;
+    }
+
+    let password = get_value_by_name("password");
+    if (! (password.length > 7)) {
+        alert ("Password must be longer the 7 characters" );
+        return;
+    }
+
+    execute_url(post_file + '?operation=focus_create_user&user_name=' + encodeURI(user_name) + '&email=' + encodeURI(email) + '&password=' +
+        encodeURI(password), navigate_to_login_page);
+}
+
+function navigate_to_login_page(xmlhttp)
+{
+    if (check_result(xmlhttp)) {
+        location.href = "/wp-login.php?redirect_to=/focus";
+    }
+}

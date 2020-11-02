@@ -10,6 +10,13 @@ class Core_Users {
 		$this->wp_user = null; // Create by demand
 	}
 
+	/**
+	 * @return int
+	 */
+	public function getId(): int {
+		return $this->id;
+	}
+
 	function CustomerEmail() {
 		$user_info = get_userdata( $this->id );
 		return $user_info->user_email;
@@ -25,6 +32,13 @@ class Core_Users {
 	function hasRole($role){
 		if (! $u = self::getUser()) return false;
 		return in_array($role, $u->roles);
+	}
+
+	static function get_user_by_email($meail)
+	{
+		$u = get_user_by('email', $meail);
+		if ($u) return new Core_Users($u->id);
+		return null;
 	}
 
 	function can($capability)
@@ -59,5 +73,29 @@ class Core_Users {
 		return $result;
 	}
 
-}
+	static function create_user($email, $user_name, $password = null)
+	{
+		$u_id = wp_create_user($user_name, $password, $email);
 
+//		MyLog("setting password $password to user $u_id email $email");
+//		wp_set_password($password, $u_id) ;
+
+		return new Core_Users($u_id);
+	}
+
+	function setName($name)
+	{
+		return self::set_field('nickname', $name);
+	}
+
+	function set_field($field_name, $field_value)
+	{
+		return update_user_meta($this->id, $field_name, $field_value);
+	}
+
+	function addCapability($capablity)
+	{
+		$this->getUser()->add_cap($capablity); // Seems not to return a value. Assuming success.
+		return true;
+	}
+}

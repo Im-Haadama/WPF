@@ -2,15 +2,26 @@
 
 class Core_Database
 {
+	private $my_class;
+
+	/**
+	 * Core_Database constructor.
+	 *
+	 * @param $my_class
+	 */
+	public function __construct( $my_class ) {
+		$this->my_class = $my_class;
+	}
+
 	function install($version, $force = false)
 	{
+		// Run just in admin user
 		if (! function_exists("get_user_id")) {
 			return;
 		}
 		$user = new Core_Users();
 		if (!$user->hasRole('administrator')) return;
 
-		// Create im_info table if missing.
 		self::CreateInfo();
 
 		$this->CreateTables($version, $force);
@@ -18,7 +29,7 @@ class Core_Database
 		$this->CreateViews($version, $force);
 	}
 
-	static function CreateInfo()
+	private function CreateInfo()
 	{
 		$db_prefix = GetTablePrefix();
 //		SqlQuery("alter table ${db_prefix}info modify info_key varchar(100) charset utf8");
@@ -30,20 +41,34 @@ class Core_Database
 		id INT NOT NULL AUTO_INCREMENT
 			PRIMARY KEY
 	);" );
-
 			SqlQuery( "create unique index ${db_prefix}info_key_uindex
 	on ${db_prefix}info (info_key);" );
+
 		}
+
 	}
 
-	static function CheckInstalled($plugin, $subsystem)
+	function CheckInstalled($subsystem)
 	{
-		self::CreateInfo();
+		$plugin = $this->my_class;
 		return InfoGet("version_${plugin}_$subsystem");
 	}
 
-	static function UpdateInstalled($plugin, $subsystem, $version)
+	function UpdateInstalled($subsystem, $version)
 	{
+		$plugin = $this->my_class;
+		print "===============================version_${plugin}_$subsystem $version<br/>";
 		return InfoUpdate("version_${plugin}_$subsystem", $version);
 	}
+
+	// functions to overide in class:
+	function CreateFunctions($version, $force)
+	{
+
+	}
+	function CreateViews($version, $force)
+	{
+
+	}
+
 }

@@ -31,7 +31,7 @@ class Finance {
 	 *
 	 * @var string
 	 */
-	public $version = '1.0';
+	public $version = '1.2';
 
 	private $plugin_name;
 
@@ -556,6 +556,7 @@ static function get_open_site_invoices()
 
 		$this->invoices->init( FINANCE_INCLUDES_URL . '../post.php' );
 
+//		InfoUpdate("finance_bank_enabled", 1);
 		if (InfoGet("finance_bank_enabled")) {
 			$this->bank = new Finance_Bank( self::getPostFile() );
 			$this->bank->init_hooks();
@@ -726,12 +727,8 @@ static function get_open_site_invoices()
 	}
 
 	function install( $version, $force = false ) {
-		require_once( FINANCE_ABSPATH . '../flavor/includes/core/class-core-database.php' );
-		if ( Core_Database::CheckInstalled( "Finance", $this->version ) == $version and ! $force ) {
-			return;
-		}
-
-		Finance_Clients::install();
+		$this->database = new Finance_Database();
+		$this->database->install($this->version);
 	}
 
 	static public function settingPage() {

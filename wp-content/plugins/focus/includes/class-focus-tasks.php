@@ -24,6 +24,7 @@ class Focus_Tasks {
 		$this->version       = "1.0";
 		$this->nav_menu_name = null;
 		$this->table_prefix = GetTablePrefix();
+		$this->focus_users = new Focus_Users();
 		if (TableExists("missions")) $options["missions"] = true;
 	}
 
@@ -2244,8 +2245,18 @@ class Focus_Tasks {
 			'focus_team'           => array( 'Focus_Tasks::show_team', 'show_teams' ),
 			'focus_project'        => array( 'Focus_Tasks::show_project', null ), // 'edit_projects' ),
 			'focus_project_tasks'  => array( 'Focus_Tasks::show_project_tasks', 'show_tasks' ),
-			'focus_worker'         => array( 'Focus_Tasks::show_worker', 'show_tasks' )
+			'focus_worker'         => array( 'Focus_Tasks::show_worker', 'show_tasks' ),
+			'focus_getting_started' => array( array($this, 'getting_started'))
 		) );
+	}
+
+	function getting_started()
+	{
+		if (! class_exists("Subscription_Manager")) {
+			die("install error. Install Subscript_Manager");
+		}
+
+		return $this->focus_users->showNewUser();
 	}
 
 	function init() {

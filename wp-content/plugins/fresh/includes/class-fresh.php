@@ -809,7 +809,7 @@ class Fresh {
 
 	function install($version, $force = false)
 	{
-        if (Fresh_Database::CheckInstalled("Fresh", $this->version) == $version and ! $force) return;
+//        if ($this->CheckInstalled($this->version) == $version and ! $force) return;
 
         // Install common tables
 		$this->database = new Fresh_Database();

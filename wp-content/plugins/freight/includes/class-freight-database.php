@@ -2,18 +2,17 @@
 
 
 class Freight_Database extends Core_Database {
-	function install( $version, $force =false ) {
-		// Create im_info table if missing.
-		self::CreateInfo();
 
-//		self::CreateFunctions($version, $force);
-		self::CreateTables( $version, $force );
-//		self::CreateViews($version, $force);
+	/**
+	 * Freight_Database constructor.
+	 */
+	public function __construct() {
+		parent::__construct("Freight");
 	}
 
-	static function CreateTables( $version, $force )
+	function CreateTables( $version, $force )
 	{
-		$current = self::CheckInstalled("Freight", "tables");
+		$current = $this->checkInstalled( "tables");
 		$db_prefix = GetTablePrefix();
 
 		if ($current == $version and ! $force) return true;
@@ -37,6 +36,6 @@ class Freight_Database extends Core_Database {
 		SqlQuery("alter table wp_woocommerce_shipping_zones add min_order float;" );
 		SqlQuery("alter table wp_woocommerce_shipping_zones add default_rate float;" );
 
-		self::UpdateInstalled("Freight", "tables", $version);
+		return $this->UpdateInstalled( "tables", $version);
 	}
 }

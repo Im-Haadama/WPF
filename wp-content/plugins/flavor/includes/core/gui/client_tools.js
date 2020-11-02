@@ -171,7 +171,7 @@ function check_result(xmlhttp)
 function report_error(response)
 {
     if (response.indexOf("failed") !== -1){
-        alert (response);
+        alert (response.substr(0, response.lastIndexOf("failed")));
         return true;
     }
     return false;

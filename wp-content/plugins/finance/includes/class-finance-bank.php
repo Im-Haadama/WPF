@@ -33,12 +33,13 @@ class Finance_Bank
 	{
 		AddAction("finance_add_payment", array($this, 'add_payment'));
 		AddAction("bank_status", array($this, 'bank_status'));
-		AddAction("bank_show_import", array($this, "show_import"));
+//		AddAction("bank_show_import", array($this, "show_import"));
+		AddAction("bank_create_receipt", array($this, "bank_create_receipt"));
 	}
 
 	public static function instance() :Finance_Bank {
 		if ( is_null( self::$_instance ) ) {
-			self::$_instance = new self( "/wp-content/plugins/finance/post.php" );
+			self::$_instance = new self( Flavor::getPost() );
 		}
 
 		return self::$_instance;
@@ -58,15 +59,15 @@ class Finance_Bank
 //		if (get_user_id() == 1) print debug_trace(10);
 		if (! TableExists("bank_account")) {
 			$db = new Finance_Database();
-			$db->install('1', true);;
+			$db->install($this->version);;
 		}
 
 		AddAction( "finance_bank_accounts", array( $this, "show_bank_accounts" ) );
 		AddAction( "finance_bank_account", array( $this, "show_bank_account" ) );
 		AddAction( "finance_bank_payments", array( $this, "show_bank_payments" ) );
 		AddAction( "finance_bank_receipts", array( $this, "show_bank_receipts" ) );
-		AddAction( "finance_show_bank_import", array( $this, "show_bank_import" ) );
-		AddAction( "finance_do_import", array( $this, 'do_bank_import' ) );
+//		AddAction( "finance_show_bank_import", array( $this, "show_bank_import" ) );
+//		AddAction( "finance_do_import", array( $this, 'do_bank_import' ) );
 		AddAction( "bank_create_invoice", array( $this, 'bank_create_invoice' ) );
 		AddAction( "bank_create_pay", array( $this, 'bank_payments' ) );
 		AddAction("finance_get_transaction_amount", array($this, 'get_transaction_amount'));
@@ -162,8 +163,8 @@ class Finance_Bank
 
 //		print "af1=" . $args["import_page"] . "<br/>";
 		print Core_Html::GuiHeader(1, "דף חשבון") .
-		      self::transaction_filters() .
-		      self::bank_transactions($args);
+		      $this->transaction_filters() .
+		      $this->bank_transactions($args);
 		//.
 //		      Core_Html::GuiHyperlink("Import", AddToUrl(array("operation" => "finance_show_bank_import",
 //			      "account_id"=>$account_id)));
@@ -698,13 +699,13 @@ class Finance_Bank
 
 	}
 
-	static public function bank_status()
+	public function bank_status()
 	{
 //		print debug_trace();
 		$result = "";
 		$table_prefix = GetTablePrefix();
 
-		$account = GetParam("account", false, null);
+		$account = GetParam("account_id", false, null);
 		if ($account) {
 			return self::show_bank_account($account);
 		}
@@ -716,8 +717,7 @@ class Finance_Bank
 		$sql .= " from ${table_prefix}bank_account";
 
 		$args = [];
-		$args["links"] = array("account_id" => AddToUrl(array( "operation" => "show_bank_load", "id" => "%s")),
-			"id" => AddToUrl("account", "%d"));
+		$args["links"] = array("id" => AddToUrl(array( "operation" => "show_bank_load", "account_id" => "%s")));
 //		$args["id_field"] = "count_id";
 		$action_url = GetUrl(1); // plugin_dir_url(dirname(__FILE__)) . "post.php";
 		$args["actions"] =
@@ -826,12 +826,17 @@ static function bank_check_valid( $fields, $values ) {
 	$balance_idx = array_search( "balance", $fields );
 	$in_amount_idx = array_search("in_amount", $fields);
 	$out_amount_idx = array_search("out_amount", $fields);
+	$description_idx = array_search("description", $fields);
 
 	$account     = $values[ $account_idx ];
 	$date        = $values[ $date_idx ];
-	$balance     = $values[ $balance_idx ];
+	$balance = str_replace(",", "", $values[$balance_idx]);
+//	$balance     = (float) $balance;
+//	print "b=$balance<br/>";
 	$in_amount = $values[$in_amount_idx];
 	$out_amount = $values[$out_amount_idx];
+	$description = $values[$description_idx];
+//	print round( $balance, 2 ) . "balance: $balance<br/>";
 
 	// Check we've got info to add.
 	if (! $account or ! $date or ! $balance and ! ($in_amount or $out_amount)) return false;
@@ -839,8 +844,10 @@ static function bank_check_valid( $fields, $values ) {
 	// Check duplicate (from previous import).
 	$sql = "SELECT count(*) FROM ${table_prefix}bank WHERE account_id = " . $account .
 	       " AND date = " . QuoteText( $date );
-	if ($in_amount) $sql .= " and in_amount = " . $in_amount;
-	$sql .= " AND round(balance, 2) = " . round( $balance, 2 );
+	$sql .= " and round(in_amount, 2) = " . $in_amount;
+	$sql .= " and round(out_amount, 2) = " . $out_amount;
+	$sql .= " and description like '%" . $description . "%'";
+//	$sql .= " AND round(balance, 2) = " . round( $balance, 2 );
 
 	$dup = SqlQuerySingleScalar( $sql );
 

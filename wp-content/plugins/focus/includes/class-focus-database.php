@@ -1,24 +1,23 @@
 <?php
 class Focus_Database extends Core_Database
 {
-
-	static function CreateViews($version, $force )
+	function CreateViews($version, $force )
 	{
-		$current = self::CheckInstalled("Focus", "views");
+		$current = $this->checkInstalled( "views");
 
 		if ($current == $version and ! $force) return true;
 
-		self::UpdateInstalled("Focus", "views", $version);
+		self::UpdateInstalled("views", $version);
 
 	}
 
-	static function CreateTables($version, $force) {
-		$current = self::CheckInstalled( "Focus", "tables" );
+	function CreateTables($version, $force) {
+		$current = $this->checkInstalled(  "tables" );
 
 		if ( ! $current ) {
 			// Fresh install - create all tables.
 			return self::FreshInstall() and
-			       self::UpdateInstalled( "Focus", "tables", $version );
+			       self::UpdateInstalled( "tables", $version );
 
 		}
 		if ( $current == $version and ! $force ) {
@@ -38,7 +37,7 @@ class Focus_Database extends Core_Database
                 SqlQuery("ALTER TABLE im_projects MODIFY project_contact_email varchar(50)");
 
 		}
-		return self::UpdateInstalled( "Focus", "tables", $version );
+		return self::UpdateInstalled("tables", $version );
 	}
 
 	// Create what needed in clean install
@@ -204,9 +203,9 @@ engine=InnoDB;
 
 	}
 
-	static function CreateFunctions($version, $force = false)
+	function CreateFunctions($version, $force = false)
 	{
-		$current = self::CheckInstalled("Focus", "functions");
+		$current = $this->checkInstalled( "functions");
 		$db_prefix = GetTablePrefix();
 
 		if ($current == $version and ! $force) return true;
@@ -239,6 +238,6 @@ BEGIN
 	return 1;	   
 END;");
 
-		self::UpdateInstalled("Focus", "functions", $version);
+		return self::UpdateInstalled("functions", $version);
 	}
 }
