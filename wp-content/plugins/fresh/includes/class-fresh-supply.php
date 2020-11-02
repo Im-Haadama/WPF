@@ -364,12 +364,14 @@ class Fresh_Supply {
 		          " where id = " . $this->ID );
 	}
 
-	public function Html( $internal, $edit, $categ_group = false ) {
+	public function Html( $args ) {
+		$edit = GetArgs($args, "edit", true);
+
 		$data = "";
 
 		$data .= $this->HtmlHeader( $edit );
 		$data .= "<br/>";
-		$data .= $this->HtmlLines( $internal, $edit, $categ_group );
+		$data .= $this->HtmlLines( $args );
 		$data .= "<br/>";
 		if ($edit) $data .= $this->Operation();
 
@@ -532,7 +534,12 @@ class Fresh_Supply {
 	}
 
 	// $internal - true = for our usage. false = for send to supplier.
-	function HtmlLines( $internal, $edit = 1, $categ_group = false ) {
+	function HtmlLines( $args) {
+		$edit = GetArgs($args, "edit", true);
+		$internal = GetArgs($args, "internal", true);
+		$categ_group = false;
+		$print = GetArgs($args, "print", true);
+
 		// my_log( __FILE__, "id = " . $this->ID . " internal = " . $internal );
 		$sql = 'select product_id, quantity, id'
 		       . ' from im_supplies_lines where status = 1 and supply_id = ' . $this->ID;

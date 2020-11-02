@@ -144,7 +144,7 @@ class Freight {
 
 		GetSqlConn(ReconnectDb());
 		Freight_Methods::init();
-		Freight_Mission_Manager::init_hooks();
+		Freight_Mission_Manager::instance()->init_hooks();
 	}
 
 	/**

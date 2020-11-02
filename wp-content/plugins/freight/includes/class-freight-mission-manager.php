@@ -24,8 +24,19 @@ abstract class OrderTableFields
 class Freight_Mission_Manager 
 {
 	static $multi_site;
+	private $points_per_sites; // 2D array: site_id and order_names;
+	private $lines_per_station;
+	private $site_info;
+	static private $_instance;
 
-	static function init_hooks()
+	public static function instance() {
+		if ( is_null( self::$_instance ) ) {
+			self::$_instance = new self();
+		}
+		return self::$_instance;
+	}
+
+	function init_hooks()
 	{
 //		print debug_trace(10); print "---------------------<br/>";
 		add_action("order_save_pri", __CLASS__ . '::order_save_pri');
@@ -34,22 +45,23 @@ class Freight_Mission_Manager
 		add_action("freight_do_add_delivery", __CLASS__ . "::do_add_delivery");
 		add_action('delivered', array(__CLASS__, "delivered_wrap"));
 		add_action('download_mission', array(__CLASS__, 'download_mission'));
-		add_action('print_mission', array(__CLASS__, 'print_mission'));
+		add_action('print_mission', array($this, 'print_mission'));
 		AddAction('order_update_driver_comment', array(__CLASS__, 'order_update_driver_comment'));
 	}
 
-	static function print_mission()
+	function print_mission()
 	{
 		$id = GetParam("id", true);
 		print Core_Html::HeaderText();
 		// The route stops.
-		print self::dispatcher($id, false);
+		$args = array("print" => true, "edit" => false);
+		print $this->dispatcher($id, $args);
 
 		// Supplies to collect
 		$supplies = Fresh_Supplies::mission_supplies($id);
 		foreach ($supplies as $supply_id) {
 			$s = new Fresh_Supply($supply_id);
-			print $s->Html(true, false, true) ;
+			print $s->Html($args) ;
 		}
 		die(0);
 	}
@@ -69,7 +81,7 @@ class Freight_Mission_Manager
 		die (0);
 	}
 
-	static function getCSV($the_mission)
+	function getCSV($the_mission)
 	{
 		$path_info = array(array(
 			"Order Number",
@@ -94,14 +106,14 @@ class Freight_Mission_Manager
 
 		$supplies_to_collect = array();
 
-		self::prepare_route($the_mission, $path, $lines_per_station, $supplies_to_collect, false);
+		self::prepare_route($the_mission, $path, $supplies_to_collect);
 
 		if (! $path or ! count($path))
 			return;
 
 		for ( $i = 0; $i < count( $path ); $i ++ ) {
-			if (isset($lines_per_station[$path[$i]]))
-				foreach ( $lines_per_station[ $path[ $i ] ] as $order_info ) {
+			if (isset($this->lines_per_station[$path[$i]]))
+				foreach ( $this->lines_per_station[ $path[ $i ] ] as $order_info ) {
 					if (! is_array($order_info) or count($order_info) < 10)
 					{
 						var_dump($order_info);
@@ -211,27 +223,34 @@ group by pm.meta_value, p.post_status");
 		print $result;
 	}
 
-	static function dispatcher($the_mission, $edit = true)
+	function dispatcher($the_mission, $args)
 	{
-		$lines_per_station = array();
+		$edit = GetArg($args, "edit", true);
+		$print = GetArg($args, "print", false);
+
+		$this->lines_per_station = array();
 		$supplies_to_collect = array();
 		$multi_site = Core_Db_MultiSite::getInstance();
 		$result = "";
 		$post_file = Flavor::getPost();
 
-		self::prepare_route($the_mission, $path, $lines_per_station, $supplies_to_collect, $edit);
+		$this->prepare_route($the_mission, $path, $supplies_to_collect);
+
 		$m = new Mission($the_mission);
+
+		$arrive_time = strtotime( $m->getStartTime());
+		$prev           = $m->getStartAddress();
+		$total_distance = 0;
 
 		if ($path and count($path)) {
 			$result .= Core_Html::GuiHeader(1, __("Details for dispatch number") . " " . $the_mission);
-			$result .= "<div>" . __("Mission start") . ":" . Core_Html::gui_input_time("start_h", null, $m->getStartTime(),
+			if (! $print) $result .= "<div>" . __("Mission start") . ":" . Core_Html::gui_input_time("start_h", null, $m->getStartTime(),
 					"onchange=\"update_table_field('" . $post_file . "', 'missions', $the_mission, 'start_h', location_reload)\"") . "</div>";
 			$result .= Core_Html::GuiHeader(2, $m->getDate());
 			$path_info = [];
 			for ( $i = 0; $i < count( $path ); $i ++ ) {
-				if ( isset( $lines_per_station[ $path[ $i ] ] ) ) {
-					foreach ( $lines_per_station[ $path[ $i ] ] as $order_info ) {
-//						print $order_info[ OrderTableFields::order_number ] . "<br/>";
+				if ( isset( $this->lines_per_station[ $path[ $i ] ] ) ) {
+					foreach ( $this->lines_per_station[ $path[ $i ] ] as $order_info ) {
 						$order_id  = $order_info[ OrderTableFields::order_number ];
 						$site_id   = $order_info[ OrderTableFields::site_id ];
 						$site      = $order_info[ OrderTableFields::site_name ];
@@ -249,6 +268,18 @@ group by pm.meta_value, p.post_status");
 							$type = "tasklist";
 						}
 
+						// Time calculation
+						$distance       = round( self::get_distance( $prev, $path[ $i ] ) / 1000, 1 );
+//						print "dis=$distance<br/>";
+//						if (! $first ) {
+							$total_distance += $distance;
+							$duration       = round( self::get_distance_duration( $prev, $path[ $i ] ) / 60, 0 );
+//						} else {
+//							$duration = 5;
+//							$first          = false;
+//						}
+						$arrive_time += $duration * 60;
+
 						$edit_user = Core_Html::GuiHyperlink( $user_id, self::$multi_site->getSiteURL( $site_id ) . "/wp-admin/user-edit.php?user_id=" . $user_id );
 						$comments  = ( ( $site_id == $multi_site->getLocalSiteID() and $edit) ?
 							Core_Html::GuiInput( "comments_$order_id",
@@ -264,14 +295,21 @@ group by pm.meta_value, p.post_status");
 								$order_info[ OrderTableFields::address_2 ],
 								$comments,
 								$order_info[ OrderTableFields::shipping ],
-								$order_info[ OrderTableFields::phone ],
-								Core_Html::GuiCheckbox( "chk_$order_id", false,
+								$order_info[ OrderTableFields::phone ]);
+						if (! $print) array_push($new_row,  Core_Html::GuiCheckbox( "chk_$order_id", false,
 									array( "events" => 'onchange="delivered(\'' . Freight::getPost() . "', " . $site_id . "," . $order_id . ', \'' . $type . '\')"' ) ));
+						array_push($new_row, date('H:i', $arrive_time));
 								if ($edit) array_push($new_row, $pri_input);
 						array_push( $path_info, $new_row);
-
 					}
 				}
+//				else {
+//					var_dump($lines_per_station[$path[$i]]);
+//					$new_row = array(__("Collect"), '', $path[ $i ]);
+//				}
+
+				$prev = $path[ $i];
+
 			}
 
 			$args = array( "class" => "sortable" );
@@ -282,9 +320,9 @@ group by pm.meta_value, p.post_status");
 				__( "Address 2" ),
 				__( "Comments" ),
 				__( "Shipping method" ),
-				__( 'Phone' ),
-				__( 'Delivered' )
+				__( 'Phone' )
 			);
+			if (! $print) array_push($header, __( 'Delivered' ));
 			if ($edit) array_push($header, __( 'Priority' ));
 			array_unshift( $path_info, $header);
 
@@ -295,18 +333,16 @@ group by pm.meta_value, p.post_status");
 			$args["hide_cols"] = array( OrderTableFields::client_nubmer - 1 => 1 );
 			$result            .= Core_Html::gui_table_args( $path_info, "dispatch_" . $the_mission, $args );
 		}
-		if ($edit) {
+		if (! $print) {
 			$result .= self::add_delivery( $m->getDefaultFee() ); // , array("style" => "border:1px solid #000;")
 			$result .= Core_Html::GuiHyperlink( "Download CSV", Freight::getPost() . "?operation=download_mission&id=$the_mission" ) . "<br/>";
 			$result .= Core_Html::GuiHyperlink( "Print", Freight::getPost() . "?operation=print_mission&id=$the_mission" ) ."</br>";
 			$result .= self::get_maps_url($m, $path);
 		}
-
-
 		return $result;
 	}
 
-	static function prepare_route($mission_id, &$path, &$lines_per_station, $supplies_to_collect) {
+	function prepare_route($mission_id, &$path, $supplies_to_collect) {
 		$mission = new Mission($mission_id);
 		$debug = false;
 		$stop_points      = array();
@@ -323,7 +359,7 @@ group by pm.meta_value, p.post_status");
 
 //		var_dump($rows);
 
-		self::collect_points( $rows, $mission_id, $prerequisite, $supplies_to_collect, $lines_per_station, $stop_points );
+		self::collect_points( $rows, $mission_id, $prerequisite, $supplies_to_collect, $stop_points );
 		// Collect the stop points
 		//	foreach ($stop_points as $p) print $p . " ";
 		$path = array();
@@ -349,106 +385,6 @@ group by pm.meta_value, p.post_status");
 		return $rows;
 	}
 
-	static function show_mission_route($the_mission, $update = false, $debug = false, $missing = false)
-	{
-		$post_file = Freight::getPost();
-
-		$data = '<div id="route_div">';
-		$path = null;
-		$lines_per_station = array();
-		$supplies_to_collect = array();
-
-		self::prepare_route($the_mission, $path, $lines_per_station, $supplies_to_collect);
-		$mission = new Mission($the_mission);
-
-		$data .= self::get_maps_url($mission, $path);
-
-		$table_header = null;
-
-		$data .= "<table>";
-		$data .= Core_Html::GuiHyperlink("Edit route", AddToUrl(array( "edit_route" => 1, "id" => $the_mission)));
-		$data .= Core_Html::gui_list( "באחריות הנהג להעמיס את הרכב ולסמן את מספר האריזות והאם יש קירור." );
-		$data .= Core_Html::gui_list( "אם יש ללקוח מוצרים קפואים או בקירור, יש לבדוק זמינות לקבלת המסלול (לעדכן את יעקב)." );
-		$data .= Core_Html::gui_list( "יש לוודא שכל המשלוחים הועמסו." );
-		$data .= Core_Html::gui_list( "בעת קבלת כסף או המחאה יש לשלוח מיידית הודעה ליעקב, עם הסכום ושם הלקוח." );
-		$data .= Core_Html::gui_list( "במידה והלקוח לא פותח את הדלת, יש ליידע את הלקוח שהמשלוח בדלת (טלפון או הודעה)." );
-		$data .= "</table>";
-
-		$prev           = $mission->getStartAddress();
-		$total_distance = 0;
-		$arrive_time = $mission->getStart();
-
-		$data .= "<table>" . $table_header;
-		for ( $i = 0; $i < count( $path ); $i ++ ) {
-			$first = true;
-			foreach ( $lines_per_station[ $path[ $i ] ] as $line_array ) {
-				$line     = $line_array[0];
-				$order_id = $line_array[1];
-				$distance       = round( self::get_distance( $prev, $path[ $i ] ) / 1000, 1 );
-				if ( $first ) {
-					$total_distance += $distance;
-					$duration       = round( self::get_distance_duration( $prev, $path[ $i ] ) / 60, 0 );
-					$first          = false;
-				} else {
-					$duration = 5;
-				}
-				$arrive_time += $duration * 60;
-				$data           .= substr( $line, 0, strpos( $line, "</tr>" ) ) . Core_Html::gui_cell( $distance . "km" ) .
-				                   Core_Html::gui_cell( $duration . "ד'" ) . Core_Html::gui_cell( date( "G:i", $arrive_time ) ) . "</td>";
-
-				if ( $missing )
-					try {
-						$o    = new Fresh_Order( $order_id );
-						if ( $o->getDeliveryId() and strlen( $o->Missing() ) ) {
-							$data .= Core_Html::gui_row( array(
-								"חוסרים",
-								$order_id,
-								$o->CustomerName(),
-								"נא לסמן מה הושלם:",
-								$o->Missing(),
-								"",
-								"",
-								"",
-								"",
-								"",
-								"",
-								""
-							) );
-						}
-					} catch ( Exception $e ) {
-						// probably from different site
-					}
-
-			}
-			$prev = $path[ $i];
-		}
-		$total_distance += self::get_distance( $path[ count( $path ) - 1 ], $mission->getEndAddress() ) / 1000;
-
-		$data .= "</table>";
-
-		self::save_route($the_mission, $path);
-
-		$data .= "סך הכל ק\"מ " . $total_distance . "<br/>";
-
-		if ( count( $supplies_to_collect ) ) {
-			// var_dump($supplies_to_collect);
-			foreach ( $supplies_to_collect as $_supply_id ) {
-				$supply_id = $_supply_id[0];
-				$site_id   = $_supply_id[1];
-				if ( $site_id != $m->getLocalSiteID() ) {
-					print $m->Run( $post_file . "?operation=print&id=" . $supply_id, $site_id );
-				} else {
-					$s = new Fresh_Supply( $supply_id );
-					$data .= Core_Html::GuiHeader( 1, "אספקה  " . $supply_id . " מספק " . $s->getSupplierName() );
-					$data .= $s->Html( true, 0 );
-				}
-			}
-		}
-
-		$data .= "</div>";
-		return $data;
-	}
-
 	static function mission_details()
     {
     	$id = GetParam("id", true);
@@ -459,47 +395,42 @@ group by pm.meta_value, p.post_status");
 		return "/wp-content/plugins/freight/post.php";
 	}
 
-	static function collect_points($data_lines, $mission_id, &$prerequisite, &$supplies_to_collect, &$lines_per_station, &$stop_points)
+	function collect_points($data_lines, $mission_id, &$prerequisite, &$supplies_to_collect, &$stop_points)
 	{
-//		print "-----------" . debug_trace() . "<br/>";
 		$multisite = Core_Db_MultiSite::getInstance();
 		$stop_points = array();
 
 		$mission = new Mission($mission_id);
 
-//		print "count: " . count($data_lines) . "<br/>";
 		for ( $i = 0; $i < count( $data_lines); $i ++ ) {
-//			print "handling " . $data_lines[$i][OrderTableFields::order_number] . "<br/>";
 			$order_info = $data_lines[$i];
 			$stop_point = str_replace('-', ' ', $order_info[OrderTableFields::address_1] . " " . $order_info[OrderTableFields::city]);
 			$order_id = $order_info[OrderTableFields::order_number];
 			$order_site = $order_info[OrderTableFields::site_name];
 			$site_id = $order_info[OrderTableFields::site_id];
 
+			// Collect information about pickup points.
+			if (! isset($this->points_per_sites[$site_id])) $this->points_per_sites[$site_id] = array();
+			array_push($this->points_per_sites[$site_id], $order_id);
+
 			$pickup_address = Core_Db_MultiSite::getPickupAddress( $site_id );
 
 			// Deliveries created in other place
 //			if ( ($order_info['site'] != "משימות") and ($order_info['site'] != "supplies") and ($pickup_address != $mission->getStartAddress()) ) {
+//			print "$pickup_address<br/>";
 			if (1) {
 				// print "adding $pickup_address<br/>";
 				$prerequisite[$stop_point] = $pickup_address;
 				// Add Pickup
 				self::add_stop_point( $stop_points, $pickup_address, $order_id, $site_id );
-//				$pickup_order_info = $order_info;
-//				$pickup_order_info['customer'] = "<b>איסוף</b>" . $order_info["customer"];
-//				self::add_line_per_station($lines_per_station, $mission->getStartAddress(), $pickup_address, Core_Html::gui_row( array(
-//					$order_info['site'],
-//					$order_id,
-//					"<b>איסוף </b>" . $order_info['customer'],
-//					$pickup_address,
-//					"",
-//					"",
-//					"",
-//					"",
-//					""
-//				) ), $order_id, $pickup_order_info );
+				$pickup_order_info = $order_info;
+				$pickup_order_info['customer'] = "<b>איסוף</b>" . $order_info[OrderTableFields::client_name];
+				self::add_line_per_station($mission->getStartAddress(),
+					$pickup_address,
+					$pickup_order_info,
+				$order_id);
 			}
-//			if ( $order_info['site'] == "supplies" ) array_push( $supplies_to_collect, array( $order_id, $order_info['site_id'] ) );
+			if ( $order_info[OrderTableFields::site_name] == "supplies" ) array_push( $supplies_to_collect, array( $order_id, $order_info['site_id'] ) );
 
 			self::add_stop_point($stop_points, $stop_point, $order_id, $site_id );
 			if (! isset($prerequisite[$stop_point])) {
@@ -508,8 +439,7 @@ group by pm.meta_value, p.post_status");
 			}
 
 			//		array_push( $stop_points, $stop_point );
-			self::add_line_per_station($lines_per_station,
-				$mission->getStartAddress(),
+			self::add_line_per_station($mission->getStartAddress(),
 				$stop_point,
 				$order_info,
 				$order_id);
@@ -536,22 +466,22 @@ group by pm.meta_value, p.post_status");
 		}
 	}
 
-	static function add_line_per_station(&$lines_per_station, $start_address, $stop_point, $order_info, $order_id ) {
+	function add_line_per_station($start_address, $stop_point, $order_info, $order_id ) {
 //		print "sa=$start_address sp=$stop_point<br/>";
-		if ( ! isset( $lines_per_station[ $stop_point ] ) ) {
-			$lines_per_station[ $stop_point ] = array();
+		if ( ! isset( $this->lines_per_station[ $stop_point ] ) ) {
+			$this->lines_per_station[ $stop_point ] = array();
 		}
 		if ( self::get_distance( $start_address, $stop_point ) or ( $start_address == $stop_point ) ) {
-			array_push( $lines_per_station[ $stop_point ], $order_info );
+			array_push( $this->lines_per_station[ $stop_point ], $order_info );
 		} else {
 			print "לא מזהה את הכתובת של הזמנה " . $order_id . "<br/>";
 		}
 	}
 
 	static function get_distance( $address_a, $address_b ) {
-		if ( 0 ) {
-			print "a: X" . $address_a . "X<br/>";
-			print "b: X" . $address_b . "X<br/>";
+		if ( 0) {
+			print "a: " . $address_a . "<br/>";
+			print "b: " . $address_b . "<br/>";
 		}
 		if ( rtrim( $address_a ) == rtrim( $address_b ) ) {
 			return 0;
@@ -588,13 +518,9 @@ group by pm.meta_value, p.post_status");
 
 	static function find_route_1( $node, $rest, &$path, $print, $end, $prerequisite )
 	{
-		if (! $rest or ! is_array($rest))
-		{
-			return;
-		}
+		if (! $rest or ! is_array($rest)) return;
 		if ( count( $rest ) == 1 ) {
 			array_push( $path, $rest[0] );
-
 			return;
 		}
 		self::find_route( $node, $rest, $path, $prerequisite );
