@@ -11,7 +11,9 @@ class Focus_Database extends Core_Database
 
 	}
 
-	function CreateTables($version, $force) {
+	function CreateTables($version, $force)
+	{
+		$db_prefix = GetTablePrefix("tasklist");
 		$current = $this->checkInstalled(  "tables" );
 
 		if ( ! $current ) {
@@ -23,18 +25,22 @@ class Focus_Database extends Core_Database
 		if ( $current == $version and ! $force ) {
 			return true;
 		}
-		switch ($current){
+
+		switch ($current){ // The version before the new one.
 			case '1.0':
+				SqlQuery( "alter table im_projects add company int" );
 				SqlQuery( "alter table im_projects add is_active bit" );
 
-			case '1.1':
-				SqlQuery( "alter table im_projects add company int" );
-
-            case '1.2':
+            case '1.1':
                 SqlQuery("ALTER TABLE im_tasklist MODIFY project_id int NOT NULL");
                 SqlQuery( "alter table im_projects add project_contact_id int" );
                 SqlQuery( "alter table im_projects change project_contact_id project_contact_email" );
                 SqlQuery("ALTER TABLE im_projects MODIFY project_contact_email varchar(50)");
+
+			case '1.2':
+				SqlQuery("Alter table ${db_prefix}working_teams add company_id int" );
+				if (TableExists("working"))
+					SqlQuery("Alter table ${db_prefix}working ${db_prefix}working_rates");
 
 		}
 		return self::UpdateInstalled("tables", $version );
@@ -107,8 +113,8 @@ BEGIN
 charset=utf8;
 
 ");
-		if (! TableExists("working"))
-			SqlQuery("create table im_working
+		if (! TableExists("working_rates"))
+			SqlQuery("create table im_working_rates
 (
 	id int auto_increment,
 	user_id int not null,

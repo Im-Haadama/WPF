@@ -59,7 +59,7 @@ class Finance_Salary {
 				$args = [];
 				$args["selectors"] = array("user_id" => "gui_select_client", "project_id" => "Focus_Tasks::gui_select_project");
 				$args["post_file"] = Finance::getPostFile();
-				return Core_Gem::GemAddRow("working", "Add", $args);
+				return Core_Gem::GemAddRow("working_rates", "Add", $args);
 		}
 
 		return false;
@@ -88,7 +88,7 @@ class Finance_Salary {
 		$result = Core_Html::GuiHeader(1, "Manage workers");
 		if ($operation = GetParam("operation", false))
 		{
-			$args = self::Args("working");
+			$args = self::Args("working_rates");
 			$result .= apply_filters($operation, '', '', $args);
 		} else {
 			if ( im_user_can( "show_salary" ) ) {
@@ -100,7 +100,7 @@ class Finance_Salary {
 
 				$args["sql"]           = "select id, user_id, project_id from im_working ";
 				$args["id_field"]      = "id";
-				$args["links"]         = array( "id" => self::get_link( "working", "%s" ) );
+				$args["links"]         = array( "id" => self::get_link( "working_rates", "%s" ) );
 				$args["selectors"]     = array(
 					"project_id" => "Focus_Tasks::gui_select_project",
 					"user_id"    => "Org_Worker::gui_select_user"
@@ -109,7 +109,7 @@ class Finance_Salary {
 				$args["header_fields"] = array( "user_id" => "Worker", "project_id" => "Main project" );
 			    $args["prepare_plug"] = array($this, "salary_info_row");
 
-				$result .= Core_Gem::GemTable( "working", $args );
+				$result .= Core_Gem::GemTable( "working_rates", $args );
 			} else {
 				$year_month = GetParam( "month", false, date( 'Y-m' ) );
 				$y          = intval( strtok( $year_month, "-" ) );
@@ -455,7 +455,7 @@ class Finance_Salary {
 		$args["allow_delete"] = true;
 
 //		$row_id = SqlQuerySingleScalar("select min(id) from im_working where user_id = $user_id");
-		return $result . Core_Gem::GemElement( "working", $row_id, $args );
+		return $result . Core_Gem::GemElement( "working_rates", $row_id, $args );
 	}
 
 	/**
@@ -693,7 +693,7 @@ class Finance_Salary {
 		switch ($type) {
 			case "worker_monthly":
 				return "/salary_worker?user_id=$id";
-			case "working":
+			case "working_rates":
 				return AddToUrl(array("operation" =>"show_working_row", "row_id"=> $id));
 		}
 	}
@@ -717,7 +717,7 @@ class Finance_Salary {
 
 		switch($type)
 		{
-			case "working":
+			case "working_rates":
 				$args["operation"] = GetParam("operation", false, true);
 				$args["selectors"]     = array(
 					"project_id" => "Focus_Tasks::gui_select_project",
@@ -739,7 +739,7 @@ class Finance_Salary {
 		if (im_user_can("show_salary"))
 			AddAction('show_entry', array($this, 'entry_wrapper'));
 
-		Core_Gem::AddTable("working");
+		Core_Gem::AddTable("working_rates");
 	}
 
 	// Operations

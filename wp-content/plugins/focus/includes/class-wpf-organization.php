@@ -77,7 +77,7 @@ class WPF_Organization {
 		$args["add_checkbox"] = true;
 		$args["links"]        = array( "id" => AddToUrl( "operation", "show_edit_worker_project" ) );
 
-		$result .= Core_HTML::GuiRowContent( "working", $row_id, $args );
+		$result .= Core_HTML::GuiRowContent( "working_rates", $row_id, $args );
 
 		return $result;
 	}

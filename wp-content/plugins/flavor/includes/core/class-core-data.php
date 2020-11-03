@@ -89,7 +89,7 @@ class Core_Data
 	{
 		$db_prefix = GetTablePrefix($table_name);
 		// TODO: adding meta key when needed(?)
-		if (! in_array($table_name, array("missions", "supplier_price_list", "mission_types", "working"))) die ("not allowed $table_name");
+		if (! in_array($table_name, array("missions", "supplier_price_list", "mission_types", "working_rates"))) die ("not allowed $table_name");
 		$sql = "delete from ${db_prefix}$table_name where id in (" . CommaImplode($rows) . ")";
 		MyLog(__FUNCTION__ . "$sql by " . get_current_user(), CommaImplode($rows));
 		SqlQuery($sql );
@@ -408,7 +408,7 @@ class Core_Data
 				if ($transpose)	$field_events = sprintf($events, "'" . $key . "'", $row_id);
 				else			$field_events = sprintf( $events, $row_id, $key );
 
-                $field_args["events"] = $field_events;
+                $args["events"] = $field_events;
 			}
 
 			// Let's start
@@ -417,11 +417,11 @@ class Core_Data
 				if ( $links and  array_key_exists( $key, $links )) {
 					if ( $selectors and array_key_exists( $key, $selectors ) ) {
 						$selector_name = $selectors[ $key ];
-						$selected = $selector_name( $input_name, $orig_data, $field_args ); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
+						$selected = $selector_name( $input_name, $orig_data, $args ); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
 					} else $selected = $value;
 
 //					print $links[$key] . "<br/>";
-					$value = Core_Html::GuiHyperlink($selected, sprintf( urldecode($links[ $key ]), $data ), $field_args );
+					$value = Core_Html::GuiHyperlink($selected, sprintf( urldecode($links[ $key ]), $data ), $args );
 					break;
 				}
 				if ( $selectors and array_key_exists( $key, $selectors ) ) {
@@ -429,7 +429,7 @@ class Core_Data
 //					print "sel=" . $selector_name . "<br/>";
 					if ( strlen( $selector_name ) < 2 ) die( "selector " . $key . "is empty" );
 					// print $selector_name;
-					$value = $selector_name( $input_name, $orig_data, $field_args );
+					$value = $selector_name( $input_name, $orig_data, $args );
 					// $value = (function_exists($selector_name) ? $selector_name( $input_name, $orig_data, $args ) : $orig_data); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
 //					if (! function_exists($selector_name)) {
 //						print( "function $selector_name does not exists" );
@@ -437,8 +437,8 @@ class Core_Data
 //						die(1);
 //					}
 					if ($drill) {
-						$operation = GetArg($field_args, "drill_operation", "show_archive");
-						$value = Core_Html::GuiHyperlink($value, AddToUrl(array( $key => $orig_data, "operation" => $operation)), $field_args);
+						$operation = GetArg($args, "drill_operation", "show_archive");
+						$value = Core_Html::GuiHyperlink($value, AddToUrl(array( $key => $orig_data, "operation" => $operation)), $args);
 					}
 					break;
 				}
@@ -447,15 +447,16 @@ class Core_Data
 				/// 23/9/2019  isset($edit_cols[$key]) - set $args["edit_cols"][$key] for fields that need to be edit.
 				if ($edit){
 					if (! $key or $key == "id")	continue;
-					if ($field_events) $field_args["events"] = $field_events;
+//					if ($field_events) $args["events"] = $field_events;
 					if ( $table_name ) {
 						if (isset($args["sql_fields"])) {
 							$type = SqlField($args["sql_fields"], $key);
-							$field_args = $args;
+							$fields_args = $args;
 							if ($edit_cols and (isset($edit_cols[$key]) and $edit_cols[$key]))
-								$fields["edit"] = true; // Not needed. Just for clarity.
+								$field_args["edit"] = true; // Not needed. Just for clarity.
 							else
-								$fields["edit"] = false;
+								$field_args["edit"] = false;
+							$field_args["events"] = $field_events;
 							// Not tested:
 							//							if (isset($args['styles']) and is_array($args['styles']))
 							//								$args['style'] = (isset($args['styles'][$key]) ? $args['styles'][$key] : null);
@@ -475,14 +476,14 @@ class Core_Data
 					// Selector ($id, $value, $args //
 					//////////////////////////////////
 					if (function_exists($selector_name))
-						$value = $selector_name( $key, $orig_data, $field_args); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
+						$value = $selector_name( $key, $orig_data, $args); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
 					else
 						$value = "selector $selector_name not found";
 					break;
 				}
 				// Format values by type.
-				if (isset($field_args["sql_fields"])){
-					$type = SqlField($field_args["sql_fields"], $key);
+				if (isset($args["sql_fields"])){
+					$type = SqlField($args["sql_fields"], $key);
 //				print $key . " " . $type . "<br/>";
 					switch (strtok($type, "(")) {
 						case 'time':
@@ -519,7 +520,7 @@ class Core_Data
 //						$action_url = $row_id . $action[1];
 						if (! $row_id) $action_url = ($action[1] . "row id missing");
 						else $action_url = sprintf($action[1], $row_id);
-						$row_data[$action_name] = Core_Html::GuiHyperlink($text, $action_url, $field_args);
+						$row_data[$action_name] = Core_Html::GuiHyperlink($text, $action_url, $args);
 					}
 				} else {
 					$h = sprintf($action, $row_id);
@@ -528,7 +529,7 @@ class Core_Data
 			}
 		}
 
-		if ($accumulation_row) $field_args["accumulation_row"] = $accumulation_row;
+		if ($accumulation_row) $args["accumulation_row"] = $accumulation_row;
 		return $row_data;
 	}
 

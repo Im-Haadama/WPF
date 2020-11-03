@@ -24,7 +24,7 @@ class Focus_Tasks {
 		$this->version       = "1.0";
 		$this->nav_menu_name = null;
 		$this->table_prefix = GetTablePrefix();
-		$this->focus_users = new Focus_Users();
+		$this->focus_users = new Focus_Users_Management();
 		if (TableExists("missions")) $options["missions"] = true;
 	}
 
@@ -163,8 +163,8 @@ class Focus_Tasks {
 		return $result;
 	}
 
-    static function gui_select_priority($id, $priority_id, $args) {
-
+    static function gui_select_priority($id, $priority_id, $args)
+    {
         $result = "";
         $priority_list = array(1=>"1-low",2=>"2",3=>"3",4=>"4",5=>"5",6=>"6",7=>"7",8=>"8",9=>"9",10=>"10-high");
         $args["values"] = $priority_list;
@@ -545,7 +545,7 @@ class Focus_Tasks {
 	}
 
 	static function show_edit_team($page, $team_id, $args ) {
-		$args["post_file"] .= "?team_id=" . $team_id;
+//		$args["post_file"] .= "?team_id=" . $team_id;
 
 		$result            = Core_Html::GuiHeader( 1, "Edit team" );
 		$args["selectors"] = array( "manager" => "Focus_Tasks::gui_select_worker" );
@@ -569,6 +569,11 @@ class Focus_Tasks {
 		$result .= Core_Html::GuiHeader( 1, "add member" );
 		$result .= Focus_Tasks::gui_select_worker( "new_member", null, $args );
 		$result .= Core_Html::GuiButton( "btn_add_member", "add", array("action" => "team_add_member('" . Focus::getPost() . "', $team_id )") );
+
+		// Who can send work to this team
+		$result .= Core_Html::GuiDiv("can_send",
+			Core_Html::GuiHeader(1, "Who can send tasks?") .
+			Core_Html::gui_table_args($team->CanSendTasks()));
 
 		return $result;
 	}
@@ -711,7 +716,7 @@ class Focus_Tasks {
 			"tasklist",
 			"task_templates",
 			"projects",
-			"working"
+			"working_rates"
 		);
 		$header_args            = [];
 		$header_args["scripts"] = array(
@@ -1121,6 +1126,7 @@ class Focus_Tasks {
 //		$teams         = $worker->AllTeams();
 		// $args["query"] = " (owner = " . $user_id . ( $teams ? " or team in (" . CommaImplode( $teams ) . ")" : "" ) . ")";
 		$args["query"] = $worker->myWorkQuery($include_team, $status); ///self::ActiveQuery( );
+		FocusLog($args["query"]);
 		if (isset($args["period"])) {
 			$period        = $args["period"];
 			$args["query"] .= " and (ended >= curdate() - INTERVAL $period )";
@@ -1367,6 +1373,7 @@ class Focus_Tasks {
 		$fields                = $args["fields"];
 
 		$sql = "select " . CommaImplode( $fields ) . " from ${db_prefix}$table_name $query $order ";
+		FocusLog($sql);
 		$result      = "";
 		$args["sql"] = $sql;
 
@@ -2184,8 +2191,16 @@ class Focus_Tasks {
 	{
 		$db_prefix = GetTablePrefix();
 		$edit             = GetArg( $args, "edit", true );
+
+		// Just view - fetch the team name and return.
+		if (! $edit)
+			return ( $selected > 0 ) ? SqlQuerySingleScalar( "select team_name from ${db_prefix}working_teams where id = " . $selected ) : "";
+
+		//
 		$worker           = new Org_Worker( get_user_id() );
-		$companies        = $worker->GetCompanies();
+
+		// The user is the manager of the company.
+		$companies        = $worker->GetCompanies(true);
 		$companies_teams = array();
 		foreach ($companies as $company_id){
             $company_id = new Org_Company($company_id);
@@ -2210,18 +2225,14 @@ class Focus_Tasks {
 
 		$form_table = "working_teams"; // GetArg( $args, "form_table", null );
 
-		if ( $edit ) {
-            $gui = Core_Html::GuiSelect($id, $selected, $args);
-			//$gui = Core_Html::GuiSelectTable( $id, "working_teams", $args );
-			$gui .= Core_Html::GuiButton( "add_new_team", "New Team", array(
-				"action" => "add_element('team', '" . $form_table . "', '" . GetUrl() . "')",
-				"New Team"
-			) );
+        $gui = Core_Html::GuiSelect($id, $selected, $args);
+		//$gui = Core_Html::GuiSelectTable( $id, "working_teams", $args );
+		$gui .= Core_Html::GuiButton( "add_new_team", "New Team", array(
+			"action" => "add_element('team', '" . $form_table . "', '" . GetUrl() . "')",
+			"New Team"
+		) );
 
-			return $gui;
-		} else {
-			return ( $selected > 0 ) ? SqlQuerySingleScalar( "select team_name from ${db_prefix}working_teams where id = " . $selected ) : "";
-		}
+		return $gui;
 	}
 
 	static function get_link( $type, $id = 0 ) {
@@ -2529,9 +2540,11 @@ class Focus_Tasks {
 		}
 
 		$args["worker"]    = get_user_id();
+		$user = new Org_Worker(get_user_id());
 		$result        = "";
 
-		$args["companies"] = SqlQuerySingleScalar( "select company_id from ${db_prefix}working where user_id = " . get_user_id() );
+		$args["companies"] = $user->
+			// SqlQuerySingleScalar( "select company_id from ${db_prefix}working where user_id = " . get_user_id() );
 		$args["hide_cols"] = array( "creator" => 1 );
 		$args["next_page"] = self::get_link( "project" );
 		Core_Data::set_args_value( $args ); // Get values from url.
@@ -2716,3 +2729,7 @@ if ( ! function_exists( 'gui_select_repeat_time' ) ) {
 //		);
 
  */
+function FocusLog($message)
+{
+	MyLog($message, '', 'focus.log');
+}

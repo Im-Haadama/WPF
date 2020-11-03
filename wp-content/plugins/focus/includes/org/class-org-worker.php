@@ -28,7 +28,7 @@ class Org_Worker extends Core_users
 
 	function GetCompanies($is_manager = false){
 		$sql = " select id from im_company where admin = " . $this->id;
-		if (!$is_manager) $sql .= " union select company_id from im_working where user_id = " . $this->id;
+//		if (!$is_manager) $sql .= " union select company_id from im_working where user_id = " . $this->id;
 //		print $sql . "<br/>";
 		$result = SqlQueryArrayScalar($sql);
 		if (! $result) return null;
@@ -168,14 +168,16 @@ class Org_Worker extends Core_users
         update_usermeta($this->id, 'companies', serialize($current));
     }
 
-	function AddWorkingProject($user_id, $company_id, $project_id)
-	{
-		$table_prefix = GetTablePrefix();
-
-		$current = $this->GetCompanies();
-		if (in_array($user_id, $current)) return true; // already in.
-		return SqlQuery("insert into ${table_prefix}working (company_id, is_active, user_id, project_id, rate) values ($company_id, 1, $user_id, $project_id, 0)");
-	}
+//	function AddWorkingProject($user_id, $company_id, $project_id)
+//	{
+//		$table_prefix = GetTablePrefix();
+//
+//		$current = $this->GetCompanies();
+//		if (in_array($user_id, $current)) return true; // already in.
+//
+//		die  (1);
+//		// return SqlQuery("insert into ${table_prefix}working (company_id, is_active, user_id, project_id, rate) values ($company_id, 1, $user_id, $project_id, 0)");
+//	}
 
 	/**
 	 * @param $user_id
@@ -292,7 +294,6 @@ class Org_Worker extends Core_users
 
 			return 1;
 		}
-
 
 		$user_team_query = ($teams_filter ?
 			// My team's work.

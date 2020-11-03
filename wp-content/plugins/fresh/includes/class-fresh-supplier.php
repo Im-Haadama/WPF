@@ -67,11 +67,15 @@ class Fresh_Supplier {
 		$events = null;
 		$edit = GetArg($args, "edit", true);
 
+		// Debug
+		// if ($id == "supplier_1334") print "e=$edit v=$value<br/>";
+
 		if (! $edit){
 			if ($value) return get_supplier_name($value);
 			return "supplier not selected";
 		}
 		$args["name"] = "supplier_name";
+		$args['selected'] = $value;
 
 		return Core_Html::GuiSelectTable($id, "suppliers", $args);
 //		$sql_where );

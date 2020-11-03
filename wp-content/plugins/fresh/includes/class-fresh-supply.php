@@ -365,7 +365,7 @@ class Fresh_Supply {
 	}
 
 	public function Html( $args ) {
-		$edit = GetArgs($args, "edit", true);
+		$edit = GetArg($args, "edit", true);
 
 		$data = "";
 
@@ -535,10 +535,10 @@ class Fresh_Supply {
 
 	// $internal - true = for our usage. false = for send to supplier.
 	function HtmlLines( $args) {
-		$edit = GetArgs($args, "edit", true);
-		$internal = GetArgs($args, "internal", true);
-		$categ_group = false;
-		$print = GetArgs($args, "print", true);
+		$edit = GetArg($args, "edit", true);
+		$internal = GetArg($args, "internal", true);
+//		$categ_group = false;
+//		$print = GetArg($args, "print", true);
 
 		// my_log( __FILE__, "id = " . $this->ID . " internal = " . $internal );
 		$sql = 'select product_id, quantity, id'

@@ -26,7 +26,7 @@ class Focus {
 	 *
 	 * @var string
 	 */
-	public $version = '1.2';
+	public $version = '1.3';
 
 	/**
 	 * @var
@@ -177,7 +177,7 @@ class Focus {
         Core_Pages::CreateIfNeeded("project", "/project", "focus_project");
         Core_Pages::CreateIfNeeded("task", "/task", "focus_task");
 
-        $this->focus_users = new Focus_Users();
+        $this->focus_users = new Focus_Users_Management();
         $this->focus_users->init_hooks();
 
 		if ((get_user_id() == 1) and defined("DEBUG_USER")) wp_set_current_user(DEBUG_USER);
@@ -234,7 +234,7 @@ class Focus {
 
 	private function install()
 	{
-		$this->database = new Focus_Database();
+		$this->database = new Focus_Database("Focus");
 		$this->database->install($this->version);
 	}
 	/**

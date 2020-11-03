@@ -583,11 +583,6 @@ class Capabilites {
 			$user->remove_role( $role );
 		}
 		return true;
-
-/*		global $wp_roles;
-
-		$wp_roles->add_role( "staff", "Worker", array( "working_hours_self" => "true" ) );*/
-
 	}
 
 	public function admin_scripts() {

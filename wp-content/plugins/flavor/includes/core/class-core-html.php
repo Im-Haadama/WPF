@@ -1518,7 +1518,6 @@ class Core_Html {
 	static function gui_input_by_type( $input_name, $type = null, $args = null, $data = null ) {
 		if (strstr($data, "<input")) return $data;
 		$events = GetArg( $args, "events", null );
-//		print "name=$input_name type=$type<br/>";
 		switch ( substr( $type, 0, 3 ) ) {
 			case 'dat':
 				$value = Core_Html::gui_input_date( $input_name, null, $data, $events );

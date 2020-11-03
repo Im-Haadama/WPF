@@ -15,7 +15,7 @@ if ( ! defined( "FRESH_INCLUDES" ) ) {
  * Class Mission
  */
 class Mission {
-	private $id, $start_address, $end_adress, $start_time, $end_time, $date, $mission_type;
+	private $id, $start_address, $end_address, $start_time, $end_time, $date, $mission_type;
 
 	/**
 	 * Mission constructor.
@@ -56,13 +56,6 @@ class Mission {
 	 */
 	public function getId() {
 		return $this->id;
-	}
-
-	/**
-	 * @return mixed
-	 */
-	public function getEndAdress() {
-		return $this->end_adress;
 	}
 
 	public function getZoneTimes()

@@ -11,17 +11,6 @@ class Fresh_Packing {
 			$result .= Core_Html::GuiHyperlink("filter in-stock", AddToUrl("stock_filter", 1));
 		$result                .= Fresh_Order::GetAllComments();
 		$args["tabs_load_all"] = true;
-		$selected_tab= GetParam("selected_tab", false, null);
-
-		//( $filter_zero, $history = false, $filter_stock = false, $limit_to_supplier_id = null )
-
-		// Calculate needed (all suppliers including no-supplier
-//		$needed_prods_by_supplier = self::needed_products_by_supplier();
-
-//		// Show the tabs
-//		$result                 .= self::supplier_tabs($needed_prods_by_supplier);
-
-//		// Show delected tab
 		$result                 .=  self::NeededProducts(false, false, $filter_in_stock );
 
 		print $result;
@@ -38,6 +27,7 @@ class Fresh_Packing {
 
 		$post_file = Fresh::getPost();
 		$result            = "";
+		// InfoUpdate("inventory", 1);
 		$inventory_managed = InfoGet( "inventory" );
 		if ($supplier_id) $supplier          = new Fresh_Supplier( $supplier_id );
 		else		$supplier = null;

@@ -27,7 +27,7 @@ class Fresh_Supplies {
 		AddAction('supply_delete_items', array($this, 'supply_delete_item'));
 		AddAction('supply_update_items', array($this, 'supply_update_items'));
 		AddAction('supply_save_comment', array($this, 'supply_save_comment'));
-		AddAction('supply_upload', array($this, 'supply_upload'));
+//		AddAction('supply_upload', array($this, 'supply_upload'));
 		AddAction('got_supply', array($this, 'got_supply_wrap'));
 		AddAction('supplies_merge', array($this, 'supplies_merge'));
 		AddAction('supplies_send', array($this, 'supplies_send'));

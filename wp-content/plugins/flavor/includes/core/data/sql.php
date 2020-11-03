@@ -470,7 +470,7 @@ function SqlTableId($table_name)
 				 "woocommerce_shipping_zones" => "zone_id",
 	                "wp_woocommerce_shipping_zone_methods" => "zone_id",
 	                "supplier_price_list" => "ID",
-	                "working" => "id");
+	                "working_rates" => "id");
 	if (isset($cache[$table_name])) return $cache[$table_name];
 
 	$sql = "SELECT COLUMN_NAME 

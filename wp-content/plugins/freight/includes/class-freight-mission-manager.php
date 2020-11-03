@@ -251,6 +251,7 @@ group by pm.meta_value, p.post_status");
 			for ( $i = 0; $i < count( $path ); $i ++ ) {
 				if ( isset( $this->lines_per_station[ $path[ $i ] ] ) ) {
 					foreach ( $this->lines_per_station[ $path[ $i ] ] as $order_info ) {
+						$arrive_time += 6 *60; // 6 minutes
 						$order_id  = $order_info[ OrderTableFields::order_number ];
 						$site_id   = $order_info[ OrderTableFields::site_id ];
 						$site      = $order_info[ OrderTableFields::site_name ];
@@ -299,7 +300,9 @@ group by pm.meta_value, p.post_status");
 						if (! $print) array_push($new_row,  Core_Html::GuiCheckbox( "chk_$order_id", false,
 									array( "events" => 'onchange="delivered(\'' . Freight::getPost() . "', " . $site_id . "," . $order_id . ', \'' . $type . '\')"' ) ));
 						array_push($new_row, date('H:i', $arrive_time));
-								if ($edit) array_push($new_row, $pri_input);
+						array_push($new_row, $total_distance);
+
+						if ($edit) array_push($new_row, $pri_input);
 						array_push( $path_info, $new_row);
 					}
 				}
@@ -309,7 +312,6 @@ group by pm.meta_value, p.post_status");
 //				}
 
 				$prev = $path[ $i];
-
 			}
 
 			$args = array( "class" => "sortable" );
@@ -332,6 +334,9 @@ group by pm.meta_value, p.post_status");
 
 			$args["hide_cols"] = array( OrderTableFields::client_nubmer - 1 => 1 );
 			$result            .= Core_Html::gui_table_args( $path_info, "dispatch_" . $the_mission, $args );
+			$total_distance += round(self::get_distance($prev, $m->getEndAddress()) / 1000, 1);
+
+			$result .= __("Total distance") . ": $total_distance<br/>";
 		}
 		if (! $print) {
 			$result .= self::add_delivery( $m->getDefaultFee() ); // , array("style" => "border:1px solid #000;")

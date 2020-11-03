@@ -3,6 +3,8 @@
 
 class Org_Team {
 	private $id;
+	private $company;
+	private $name;
 
 	/**
 	 * Org_Team constructor.
@@ -11,6 +13,8 @@ class Org_Team {
 	 */
 	public function __construct( $id ) {
 		$this->id = $id;
+		$this->name = SqlQuerySingleScalar( "select team_name from im_working_teams where id = " . $this->id);
+		$this->company = SqlQuerySingleScalar( "select company_id from im_working_teams where id = " . $this->id);
 	}
 
 	/**
@@ -22,7 +26,14 @@ class Org_Team {
 
 	function getName()
 	{
-		return SqlQuerySingleScalar( "select team_name from im_working_teams where id = " . $this->id);
+		return $this->name;
+	}
+
+	/**
+	 * @return int|null
+	 */
+	public function getCompany(): ?int {
+		return $this->company;
 	}
 
 	static function getByName($name)
@@ -133,4 +144,15 @@ class Org_Team {
 		return SqlQuerySingleScalar( "select manager from im_working_teams where id = " . $this->id);
 	}
 
+	function CanSendTasks()
+	{
+		$company = new Org_Company($this->getCompany());
+		$senders = array();
+		foreach ($company->getWorkers() as $worker_id)
+		{
+			$worker = new Org_Worker($worker_id);
+			array_push($senders, array($worker_id, $worker->getName()));
+		}
+		return $senders;
+	}
 }

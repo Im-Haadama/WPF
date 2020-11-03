@@ -45,7 +45,6 @@ class Core_Database
 	on ${db_prefix}info (info_key);" );
 
 		}
-
 	}
 
 	function CheckInstalled($subsystem)
@@ -57,7 +56,7 @@ class Core_Database
 	function UpdateInstalled($subsystem, $version)
 	{
 		$plugin = $this->my_class;
-		print "===============================version_${plugin}_$subsystem $version<br/>";
+//		MyLog(__FUNCTION__ . "version_${plugin}_$subsystem $version");
 		return InfoUpdate("version_${plugin}_$subsystem", $version);
 	}
 

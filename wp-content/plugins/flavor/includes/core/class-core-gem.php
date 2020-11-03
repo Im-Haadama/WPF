@@ -56,16 +56,16 @@ class Core_Gem {
 		AddAction("gem_add_" . $table, array($class, 'add_wrapper'), 10, 3);
 
 		// Edit
-		AddAction("gem_edit_" . $table, array($class, 'edit_wrapper'), 10, 3);
+//		AddAction("gem_edit_" . $table, array($class, 'edit_wrapper'), 10, 3);
 
 		// Show row
-		AddAction("gem_show_" . $table, array($class, 'show_wrapper'), 10, 3, $debug);
+//		AddAction("gem_show_" . $table, array($class, 'show_wrapper'), 10, 3, $debug);
 
 		// Import
-		AddAction("gem_import_$table", array($class, "import_wrapper"), 10, 3);
+//		AddAction("gem_import_$table", array($class, "import_wrapper"), 10, 3);
 
 		// Page
-		AddAction("gem_page_$table", array($class, "page_wrapper"), 10, 3);
+//		AddAction("gem_page_$table", array($class, "page_wrapper"), 10, 3);
 	}
 
 
@@ -350,6 +350,7 @@ class Core_Gem {
 		$result = "";
 		$title = GetArg($args, "title", null);
 		$post_file = GetArg($args, "post_file", null);
+//		print "pf=$post_file<br/>";
 		// Later, add permissions checks in custom post_file.
 
 		$operation = GetParam("operation", false, null);
