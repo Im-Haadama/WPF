@@ -105,6 +105,7 @@ class Core_Gem {
 			return false;
 		}
 		Core_Data::set_args_value($args);
+		unset($args["add_checkbox"]);
 		return $result . self::GemAddRow($table_name, null, $args);
 	}
 
@@ -293,6 +294,7 @@ class Core_Gem {
 
 	static function v_add_wrapper($operation, $id, $args)
 	{
+		print "AAAAA";
 		$table_name = GetParam("table", true);
 		$instance = self::getInstance();
 		if (! $instance) return __CLASS__ . ":" . __FUNCTION__ . " no instance. Call constructor first";

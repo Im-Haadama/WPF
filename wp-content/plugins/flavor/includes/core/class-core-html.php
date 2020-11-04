@@ -1843,7 +1843,7 @@ class Core_Html {
 
 		// Fetch the data from DB or create the new row
 		$rows_data = Core_Data::TableData( $sql, $args);
-
+//var_dump($rows_data);
 //		print "<table border='1'>";
 //		foreach($rows_data as $key => $row) {
 //			print "<b>" . $key ."</b><br/>";

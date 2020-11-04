@@ -242,7 +242,7 @@ class Fresh_Product {
 		return round( $out, 1 );
 	}
 
-	function PendingSupplies() {
+	function PendingSupplies($mission_id) {
 		// $data = "";
 		$sql = "select l.supply_id, s.status, s.supplier, sup.self_collect, s.picked \n" .
 		       "from im_supplies_lines l\n" .
@@ -250,6 +250,7 @@ class Fresh_Product {
 		       "where product_id = " . $this->id . "\n" .
 		       " and s.status in (" . eSupplyStatus::Sent . "," . eSupplyStatus::NewSupply . ")\n" .
 		       " and l.supply_id = s.id\n" .
+		       " and s.mission_id = $mission_id " .
 		       " and sup.id = s.supplier";
 
 		// print $sql;

@@ -648,14 +648,14 @@ class Fresh_Order {
 		return gui_table($result);
 	}
 
-	public function SuppliersOnTheGo()
+	public function SuppliersOnTheGo($mission_id)
 	{
 		$needed = array();
 		$suppliers = null;
 		$this->CalculateNeeded( $needed, $this->getCustomerId() );
 		foreach ( $needed as $prod_id => $p ) {
 			$P = new Fresh_Product($prod_id);
-			if ($s = $P->PendingSupplies()){
+			if ($s = $P->PendingSupplies($mission_id)){
 //				print "s:"; var_dump($s); print "<br/>";
 				if (!$suppliers) $suppliers = array();
 				foreach ($s as $supplies){

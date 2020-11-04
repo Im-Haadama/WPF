@@ -1,12 +1,21 @@
 <?php
-
+echo __FILE__ . "<br/>";
 if ( ! defined( "ABSPATH" ) ) {
-	define( 'ABSPATH', dirname(dirname(dirname( dirname( __FILE__ ) ) )) . '/');
+	define( 'ABSPATH', dirname( __FILE__ ) . '/');
 }
+echo ABSPATH;
 
-require_once(ABSPATH . 'wp-config.php');
+// require_once(ABSPATH . 'wp-config.php');
+
+$_GET=array("operation"=>"print_mission", "id"=>962);
+require_once(ABSPATH . 'wp-includes/pluggable.php');
+require_once(ABSPATH . 'wp-includes/functions.php');
+require_once(ABSPATH . 'wp-content/plugins/flavor/flavor.php');
+
+// require_once(ABSPATH . 'wp-content/plugins/flavor/includes/core/core-functions.php');
 
 $operation = GetParam('operation', true);
+
 $freight = Freight::instance();
 $anonymous = (strstr($operation, "anonymous") !== false);
 $user = GetParam('AUTH_USER', false, null);
