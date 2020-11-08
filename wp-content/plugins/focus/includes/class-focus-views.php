@@ -1679,7 +1679,7 @@ class Focus_Views {
 			if (strstr($t->getName(), $prefix)) $found_personal = true;
 		}
 		if (! $found_personal) {
-			die("aaaaa");
+			die("cccc");
 			Org_Team::Create($user_id, $prefix . " " . $worker->getName());
 		}
 
