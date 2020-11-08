@@ -23,7 +23,7 @@
  */
 class Core_Loader {
 
-	private $debug = true;
+	private $debug = false;
 
 	static private $_instance;
 
