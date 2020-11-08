@@ -186,6 +186,7 @@ class Org_Worker extends Core_users
         update_usermeta($this->id, 'companies', serialize($current));
     }
 
+    // Which teams the worker can send to.
     function CanSentTo()
     {
     	$teams = array();
@@ -198,7 +199,7 @@ class Org_Worker extends Core_users
 		    $company_teams = $company_id->getTeams(); //get teams in company
 		    foreach ($company_teams as $company_team){
 			    if(!in_array( $company_team,$companies_teams)) // check if a team is already exist
-				    array_push($teams,$company_team);
+				    array_push($teams, $company_team);
 		    }
 	    }
 

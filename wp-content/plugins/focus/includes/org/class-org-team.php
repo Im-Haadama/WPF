@@ -143,7 +143,7 @@ class Org_Team {
 
 	function GetWorkers()
 	{
-
+		return null;
 	}
 
 	/**

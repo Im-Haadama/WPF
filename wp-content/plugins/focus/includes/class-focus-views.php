@@ -2,7 +2,7 @@
 
 
 class Focus_Views {
-	function init_hooks(Focus_Loader &$loader)
+	function init_hooks(Core_Loader &$loader)
 	{
 		$loader->AddAction('company_add_worker', $this, 'company_add_worker');
 		$loader->AddAction('company_remove_worker', $this, $this, 'company_remove_worker');
@@ -19,6 +19,8 @@ class Focus_Views {
 		$loader->AddFilter('data_save_new_tasklist', $this, 'DataSaveNewTaskList',11,1);
 		$loader->AddAction('show_add_company_worker', $this, 'AddCompanyWorker', 11, 3);
 		$loader->AddAction('add_worker', $this, 'doAddCompanyWorker', 11, 3);
+		$loader->AddAction("tasklist_worker", $this, "show_worker_wrapper", 10, 2);
+
 	}
 	
 	static function gui_select_team	( $id, $selected = null, $args = null )
@@ -30,7 +32,6 @@ class Focus_Views {
 		if (! $edit)
 			return ( $selected > 0 ) ? SqlQuerySingleScalar( "select team_name from ${db_prefix}working_teams where id = " . $selected ) : "";
 
-		//
 		$worker           = new Org_Worker( get_user_id() );
 
 		//teams return all the teams in the user's company.
@@ -2279,22 +2280,6 @@ class Focus_Views {
 			$row["creator"] = get_user_id();
 		}
 		return $row;
-	}
-
-	static function team_remove_member() {
-		$team_id   = GetParam( "team_id", true );
-		$ids = GetParam( "ids", true );
-		$team = new Org_Team($team_id);
-		return $team->RemoveMember($ids);
-	}
-
-	static function team_add_member()
-	{
-		//let operation = post_file + "?operation=team_add_member&team_id=" + team_id + "&new_member=" + new_member;
-		$team_id   = GetParam( "team_id", true );
-		$new = GetParam( "new_member", true );
-		$team = new Org_Team($team_id);
-		return $team->AddWorker($new);
 	}
 
 	static function DoAddCompanyWorker()

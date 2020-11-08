@@ -22,14 +22,19 @@ class Core_Gem {
 //		AddAction("gem_v_show_import", array(__CLASS__, "show_v_import_wrap"));
 
 		// Do
-		AddAction("gem_do_import", array(__CLASS__, "do_import_wrap"));
-		AddAction("gem_v_do_import", array(__CLASS__, "do_v_import_wrap"));
+	}
+
+	static function init_hooks(Core_Loader $loader)
+	{
+		$me = self::getInstance();
+		$loader->AddAction("gem_do_import", $me, "do_import_wrap");
+		$loader->AddAction("gem_v_do_import", $me, "do_v_import_wrap");
 	}
 
 	/**
 	 * @return Core_Gem|null
 	 */
-	public static function getInstance(): ?Core_Gem {
+	public static function getInstance(): ? Core_Gem {
 		if (! self::$_instance)
 			self::$_instance = new self();
 		return self::$_instance;
@@ -125,7 +130,7 @@ class Core_Gem {
 		die();
 	}
 
-	static function do_import_wrap()
+	function do_import_wrap()
 	{
 		$fields = GetParams(array("page", "table"));
 		$table = GetParam("table", true);

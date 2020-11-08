@@ -21,7 +21,11 @@
  * @subpackage Focus/includes
  * @author     Devio Digital <deviodigital@gmail.com>
  */
-class Focus_Loader {
+class Core_Loader {
+
+	private $debug = true;
+
+	static private $_instance;
 
 	/**
 	 * The array of actions registered with WordPress.
@@ -46,10 +50,18 @@ class Focus_Loader {
 	 *
 	 * @since    1.0.0
 	 */
-	public function __construct()
+	private function __construct()
 	{
 		$this->actions = array();
 		$this->filters = array();
+	}
+
+	public static function instance() : Core_Loader {
+		if ( is_null( self::$_instance ) ) {
+			self::$_instance = new self( Flavor::getPost() );
+		}
+
+		return self::$_instance;
 	}
 
 	/**
@@ -63,6 +75,7 @@ class Focus_Loader {
 	 * @param    int                  $accepted_args    Optional. The number of arguments that should be passed to the $callback. Default is 1.
 	 */
 	public function AddAction( $hook, $component, $callback, $priority = 10, $accepted_args = 1 ) {
+		if ($this->debug) MyLog(__FUNCTION__ . " $hook");
 		$this->actions = $this->add( $this->actions, $hook, $component, $callback, $priority, $accepted_args );
 	}
 
@@ -115,15 +128,14 @@ class Focus_Loader {
 	 */
 	public function run()
 	{
-//
-//
 		foreach ( $this->filters as $hook ) {
-			AddFilter( $hook['hook'], array( $hook['component'], $hook['callback'] ), $hook['priority'], $hook['accepted_args'] );
+			add_filters( $hook['hook'], array( $hook['component'], $hook['callback'] ), $hook['priority'], $hook['accepted_args'] );
 		}
 
 		foreach ( $this->actions as $hook ) {
+			if ($this->debug) MyLog("Adding " . $hook['hook']);
  			// print "adding " . $hook['hook'] . " " . var_dump($hook['component']) . " " . $hook['callback'] . "<br/>";
-			AddAction( $hook['hook'], array( $hook['component'], $hook['callback'] ), $hook['priority'], $hook['accepted_args'] );
+			add_action($hook['hook'], array( $hook['component'], $hook['callback'] ), $hook['priority'], $hook['accepted_args'] );
 		}
 
 	}

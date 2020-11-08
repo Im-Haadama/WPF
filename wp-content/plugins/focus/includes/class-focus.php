@@ -173,6 +173,9 @@ class Focus {
         $this->focus_users = new Focus_Users_Management();
         $this->focus_users->init_hooks();
 
+        $focus_actions = new Focus_Actions();
+        $focus_actions->init_hooks($this->loader);
+
 		if ((get_user_id() == 1) and defined("DEBUG_USER")) wp_set_current_user(DEBUG_USER);
 	}
 
@@ -375,7 +378,7 @@ class Focus {
 
 	public function init()
 	{
-		$this->loader = new Focus_Loader();
+		$this->loader = Core_Loader::instance();
 		$this->auto_loader = new Core_Autoloader(FOCUS_ABSPATH);
 
 		$this->loader->AddAction( 'init', Core_Shortcodes::instance(), 'init' );

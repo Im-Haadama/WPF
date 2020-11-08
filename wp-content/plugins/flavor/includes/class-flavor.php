@@ -15,9 +15,9 @@ class Flavor {
 	 *
 	 * @since    1.0.0
 	 * @access   protected
-	 * @var      $loader Maintains and registers all hooks for the plugin.
+	 * @var      $auto_loader Maintains and registers all hooks for the plugin.
 	 */
-	protected $loader;
+	protected $auto_loader;
 
 	/**
 	 * Plugin version.
@@ -32,6 +32,8 @@ class Flavor {
 	private $plugin_name;
 
 	private $database;
+
+	private $loader;
 
 	/**
 	 * The single instance of the class.
@@ -120,7 +122,8 @@ class Flavor {
 		$this->plugin_name = $plugin_name;
 		$this->define_constants();
 		$this->includes(); // Loads class autoloader
-		$this->loader = new Core_Autoloader(FLAVOR_ABSPATH);
+		$this->auto_loader = new Core_Autoloader(FLAVOR_ABSPATH);
+		$this->loader = Core_Loader::instance();
 		$this->init_hooks();
 
 //		if (get_user_id() == 1)
@@ -158,6 +161,7 @@ class Flavor {
 		$i->AddTable("options", "option_id" );
 
 		AddAction( 'admin_enqueue_scripts', array($this, 'admin_scripts' ));
+		Core_Gem::init_hooks($this->loader);
 		Flavor_Mission::init_hooks();
 	}
 
