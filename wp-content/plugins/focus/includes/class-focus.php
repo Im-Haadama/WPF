@@ -20,7 +20,6 @@ class Focus {
 	protected $database;
 	private $focus_users;
 
-
 	/**
 	 * Plugin version.
 	 *

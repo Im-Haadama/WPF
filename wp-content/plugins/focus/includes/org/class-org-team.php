@@ -58,11 +58,17 @@ class Org_Team {
 	function AllMembers()
 	{
         $db_prefix = GetTablePrefix();
-        return SqlQueryArrayScalar("Select id2 from ${db_prefix}links where id1=$this->id and type1=" . FlavorDbObjects::team . " and type2 = " . FlavorDbObjects::user);
+        $result = SqlQueryArrayScalar("Select id2 from ${db_prefix}links where id1=$this->id and type1=" . FlavorDbObjects::team . " and type2 = " . FlavorDbObjects::users);
+
+        if (! $result) { // try the old data.
+	        $result = SqlQueryArrayScalar( "select user_id from wp_usermeta where meta_key = 'teams' and meta_value like '%:" . $this->id . ":%'");
+        }
+
+        return $result;
         /*
 //		$sql = SqlQuerySingleScalar("select )
 		// return sql_query_array_scalar("select id from im_working_teams where manager = " . $user_id);
-		$backward = SqlQueryArrayScalar( "select user_id from wp_usermeta where meta_key = 'teams' and meta_value like '%:" . $this->id . ":%'");
+		$backward =
 		if ($backward)
 		{
 //			SqlQuery("delete from wp_usermeta where meta_key = 'teams' and )

@@ -87,8 +87,8 @@ charset=utf8;
 
         SqlQuery( "create table ${db_prefix}links
 (
-                type1 varchar(20),
-                type2 varchar(20),
+                type1 integer(11),
+                type2 integer(11),
                 id1 integer(11) not null, 
                 id2 integer(11) not null
 );

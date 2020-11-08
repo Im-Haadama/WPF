@@ -24,7 +24,7 @@ class Flavor {
 	 *
 	 * @var string
 	 */
-	public $version = '1.0';
+	public $version = '1.1';
 
 	/**
 	 * @var
