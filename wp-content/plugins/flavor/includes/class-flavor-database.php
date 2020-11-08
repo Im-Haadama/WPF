@@ -85,6 +85,16 @@ charset=utf8;
 
 " );
 
+        SqlQuery( "create table ${db_prefix}links
+(
+                type1 varchar(20),
+                type2 varchar(20),
+                id1 integer(11) not null, 
+                id2 integer(11) not null
+);
+
+" );
+
 		return self::UpdateInstalled(  "tables", $version );
 
 	}
