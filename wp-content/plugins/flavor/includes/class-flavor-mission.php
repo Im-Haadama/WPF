@@ -185,7 +185,7 @@ class Flavor_Mission {
 	{
 		if (GetParam("operation", false) == "dispatch") return Freight_Mission_Manager::instance()->dispatcher($id, true);
 
-		$args = array("post_file" => self::getPost());
+		$args = array("post_file" => Flavor::getPost());
 		$result = Core_Html::GuiHeader(1, "Mission $id");
 		$result .= Core_Gem::GemElement("missions", $id, $args);
 		return $result;

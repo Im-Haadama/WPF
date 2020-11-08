@@ -504,6 +504,10 @@ class Flavor {
 		$url = plugins_url() . '/flavor/assets/css/';
 		wp_register_style( 'flavor_styles', $url . 'modal.css', array(), $this->version );
 		wp_enqueue_style('flavor_styles');
+
+		wp_register_style( 'table_styles', $url . 'tables.css', array(), $this->version );
+		wp_enqueue_style('table_styles');
+
 ////		wp_register_style( 'woocommerce_admin_styles', WC_URL . '/assets/css/admin.css', array(), WC_VERSION );
 //
 //		wp_enqueue_style('woocommerce_admin_styles');

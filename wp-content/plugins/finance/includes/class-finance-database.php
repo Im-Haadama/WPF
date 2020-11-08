@@ -54,7 +54,7 @@ BEGIN
     declare _rate float;
 
 	select round(rate, 2) into _rate  
-	       from im_working 
+	       from im_working_rates 
 	        where user_id = _worker
 	       and project_id = _project;
 

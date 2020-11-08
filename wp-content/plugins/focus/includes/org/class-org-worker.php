@@ -27,29 +27,47 @@ class Org_Worker extends Core_users
 	}
 
 	function GetCompanies($is_manager = false){
-		$sql = " select id from im_company where admin = " . $this->id;
-//		if (!$is_manager) $sql .= " union select company_id from im_working where user_id = " . $this->id;
-//		print $sql . "<br/>";
-		$result = SqlQueryArrayScalar($sql);
-		if (! $result) return null;
-		for ($i = 0; $i < count($result); $i++)
-			$result[$i] = (int) $result[$i];
-		return $result;
+//		$yael = new Org_Worker(4);
+//		$yael->AddCompany(1);
+		if ($is_manager) {
+			$sql = " select id from im_company where admin = " . $this->id;
+			$array = SqlQueryArrayScalar($sql);
+		} else {
+			$array = unserialize( get_usermeta( $this->getId(), 'companies' ) );
+		}
+
+		if (! $array) return array();
+		foreach ($array as $key => $item)
+			$array[$key] = (int) $item;
+		return $array;
+//
+////		if (!$is_manager) $sql .= " union select company_id from im_working where user_id = " . $this->id;
+////		print $sql . "<br/>";
+//
+//		if (! $result) return null;
+//		for ($i = 0; $i < count($result); $i++)
+//			$result[$i] = (int) $result[$i];
+//		return $result;
 	}
 
-	function getPersonalTeam()
+	function GetPersonalTeam()
 	{
 //		$teams =
 //		foreach ($teams as $team)
 //			if (strstr(, "Personal"))
 	}
 
-    function AllTeams($include_names = false)
+    function GetAllTeams($include_names = false)
     {
         if ($this->teams)
             return $this->teams;
 
-        $this->teams = CommaArrayExplode(get_usermeta($this->id, 'teams'));
+	    $data = get_usermeta($this->id, 'teams');
+	    $this->teams = @unserialize($data);
+	    if (! $this->teams) {
+	    	// Try backward compability
+		    $this->teams = CommaArrayExplode($data);
+	    }
 
         if($include_names){  //return the teams that the user belong to
             $result = array();
@@ -70,7 +88,7 @@ class Org_Worker extends Core_users
         return $this->teams;
     }
 
-	function AllWorkers()
+	function GetAllWorkers()
 	{
 		if ($this->workers) return $this->workers;
 
@@ -106,7 +124,7 @@ class Org_Worker extends Core_users
 //		return $this->workers;
 	}
 
-	function AllProjects($query = "is_active = 1", $field_list = "id")
+	function GetAllProjects($query = "is_active = 1", $field_list = "id")
 	{
 		$table_prefix = GetTablePrefix();
 
@@ -138,7 +156,7 @@ class Org_Worker extends Core_users
 //		return $result;
 	}
 
-	function AllCompanies()
+	function GetAllCompanies()
 	{
 		// return CommaArrayExplode(get_usermeta($this->id, 'teams'));
 		unserialize(get_usermeta($this->id, 'companies'));
@@ -166,6 +184,29 @@ class Org_Worker extends Core_users
             unset ($current[$key]);
         }
         update_usermeta($this->id, 'companies', serialize($current));
+    }
+
+    function CanSentTo()
+    {
+    	$teams = array();
+
+	    // The user is the manager of the company.
+	    $companies        = $this->GetCompanies(true);
+	    $companies_teams = array();
+	    foreach ($companies as $company_id){
+		    $company_id = new Org_Company($company_id);
+		    $company_teams = $company_id->getTeams(); //get teams in company
+		    foreach ($company_teams as $company_team){
+			    if(!in_array( $company_team,$companies_teams)) // check if a team is already exist
+				    array_push($teams,$company_team);
+		    }
+	    }
+
+	    // Team manager
+	    foreach (self::GetAllTeams() as $team)
+	    	if (! in_array($team, $teams)) array_push($teams, $team);
+
+		return $teams;
     }
 
 //	function AddWorkingProject($user_id, $company_id, $project_id)
@@ -287,7 +328,7 @@ class Org_Worker extends Core_users
 	function myWorkQuery($teams_filter, $status = null)
 		// 1 - ready, 0 - not ready, 2 - both, 3- not finished
 	{
-		$teams         = self::AllTeams();
+		$teams         = self::GetAllTeams();
 
 		if (! $teams) {
 			print "No teams for user " . $this->id . "<br/>";
@@ -302,19 +343,19 @@ class Org_Worker extends Core_users
 			" ( owner = " . $this->id . ")" );
 //		$team_query = ($team_filter ? "owner is null or " . $this->id . " = owner) and team in (" . CommaImplode( $teams ) . ")" : " 1 ");
 		$status_query = " 1 ";
-		$active_query = ((null != $status) ? " status = $status " : "(" . Focus_Tasks::ActiveQuery() . ")");
+		$active_query = ((null != $status) ? " status = $status " : "(" . Focus_Views::ActiveQuery() . ")");
 
 //		if ($status 3) $query .= " and (status < 2) ";
 //		switch ($status_filter) {
 //			case 0: // Not active.
 //				$teams_q = ($include_teams ? ( $teams ? " or team in (" . CommaImplode( $teams ) . ")" : "" ) : "");
 //				$query = " (owner = " . $this->id . $teams_q . ")";
-//				$query .= " and !(" . Focus_Tasks::ActiveQuery() . ") and status < 2";
+//				$query .= " and !(" . Focus_Views::ActiveQuery() . ") and status < 2";
 //				break;
 //			case 1: // Active
 //				$teams_q = ($include_teams ? ( $teams ? " or (( owner is null or " . $this->id . " = owner) and team in (" . CommaImplode( $teams ) . "))" : "" ) : '');
 //				$query = " (owner = " . $this->id . $teams_q . ")";
-//				$query .= " and " . Focus_Tasks::ActiveQuery() . " and status < 2";
+//				$query .= " and " . Focus_Views::ActiveQuery() . " and status < 2";
 //				break;
 //			case 2: // Done;
 //				$query = " (owner = " . $this->id . ")";
@@ -332,7 +373,7 @@ class Org_Worker extends Core_users
 	{
 		$prefix = GetTablePrefix();
 		return SqlQuerySingleScalar( "select count(*) from ${prefix}tasklist where " . self::myWorkQuery($status));
-	//	return Core_Html::GuiHyperlink($count, Focus_Tasks::get_link("tasks"));
+	//	return Core_Html::GuiHyperlink($count, Focus_Views::get_link("tasks"));
 	}
 
 	function doneTask($period = "7 day")

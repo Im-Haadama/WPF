@@ -187,7 +187,7 @@ class Israel_Shop
 			return FALSE;
 	}
 
-	function CheckDigit($id) {
+	static function CheckDigit($id) {
 		for($i = 0; $i < strlen($id); $i++)
 			if($i % 2 != 0)
 				$Sum .= $id[$i] * 2;

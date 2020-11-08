@@ -1,0 +1,18 @@
+#wrapper {
+    width: auto;
+    height: auto;
+    box-sizing: border-box;
+    display: grid;
+    grid-auto-flow: row;
+    grid-template-columns: repeat(6, 1fr);
+}
+
+#left{
+    text-align: left;
+    grid-column: 1/4;
+}
+
+#right {
+    text-align: right;
+    grid-column: 4/6;
+}

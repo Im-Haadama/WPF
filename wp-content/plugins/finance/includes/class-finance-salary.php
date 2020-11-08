@@ -98,7 +98,7 @@ class Finance_Salary {
 					return;
 				}
 
-				$args["sql"]           = "select id, user_id, project_id from im_working ";
+				$args["sql"]           = "select id, user_id, project_id from im_working_rates ";
 				$args["id_field"]      = "id";
 				$args["links"]         = array( "id" => self::get_link( "working_rates", "%s" ) );
 				$args["selectors"]     = array(
@@ -160,7 +160,7 @@ class Finance_Salary {
 
 		$sql = "select distinct h.user_id, report " .
 		       " from im_working_hours h " .
-		       " join im_working w " .
+		       " join im_working_rates w " .
 		       " where month(date)=" . $m .
 		       " and year(date) = " . $y .
 		       " and h.is_active = 1 " .
@@ -315,7 +315,7 @@ class Finance_Salary {
 	static function get_rate( $user_id, $project_id ) {
 		// Check project specific rate
 		$sql = 'select rate '
-		       . ' from im_working '
+		       . ' from im_working_rates '
 		       . ' where user_id = ' . $user_id
 		       . ' and project_id = ' . $project_id;
 
@@ -327,7 +327,7 @@ class Finance_Salary {
 
 		// Check global rate.
 		$sql = 'select rate '
-		       . ' from im_working '
+		       . ' from im_working_rates '
 		       . ' where user_id = ' . $user_id
 		       . ' and project_id = 0';
 
@@ -362,7 +362,7 @@ class Finance_Salary {
 			'<input id="end_h" type="time" value="13:00" pattern="([1]?[0-9]|2[0-3]):[0-5][0-9]">'
 		) ) );
 		$args["worker_id"] = $user_id;
-		array_push( $table, ( array( "פרויקט", Focus_Tasks::gui_select_project( "project", null, $args ) ) ) );
+		array_push( $table, ( array( "פרויקט", Focus_Actions::gui_select_project( "project", null, $args ) ) ) );
 
 		$result .= Core_Html::gui_table_args( $table );
 
@@ -408,7 +408,6 @@ class Finance_Salary {
 		$result .= "<br/>" . Core_Html::GuiHyperlink( "Previous month",
 				AddToUrl( "month", date( 'Y-m', strtotime( $y . '-' . $m . '-1 -1 month' ) ) ) );
 
-
 		return $result;
 	}
 
@@ -438,7 +437,7 @@ class Finance_Salary {
 
 	function show_working_row($row_id)
 	{
-		$user_id = SqlQuerySingleScalar("select user_id from im_working where id = $row_id");
+		$user_id = SqlQuerySingleScalar("select user_id from im_working_rates where id = $row_id");
 		$result = Core_Html::GuiHeader(1, get_user_displayname($user_id));
 		$args              = [];
 		$args["post_file"] = Finance::getPostFile();
@@ -479,7 +478,7 @@ class Finance_Salary {
 	 */
 	static function MonthyWorkerReport( $user_id = 0, $month = null, $year = null, &$args = null ) // , $week = null, $project = null, &$sum = null, $show_salary = false , $edit = false) {
 	{
-		$day_rate = (float) SqlQuerySingleScalar("select day_rate from im_working where user_id = $user_id");
+		$day_rate = (float) SqlQuerySingleScalar("select day_rate from im_working_rates where user_id = $user_id");
 
 		$result = "";
 		if ($day_rate) $result .= Core_Html::GuiHeader(2, "Daily worker");

@@ -105,6 +105,7 @@ class Core_Gem {
 			return false;
 		}
 		Core_Data::set_args_value($args);
+		unset($args["add_checkbox"]);
 		return $result . self::GemAddRow($table_name, null, $args);
 	}
 
@@ -293,6 +294,7 @@ class Core_Gem {
 
 	static function v_add_wrapper($operation, $id, $args)
 	{
+		print "AAAAA";
 		$table_name = GetParam("table", true);
 		$instance = self::getInstance();
 		if (! $instance) return __CLASS__ . ":" . __FUNCTION__ . " no instance. Call constructor first";
@@ -372,8 +374,6 @@ class Core_Gem {
 		if ($title)
 			$result .= Core_Html::GuiHeader(1, $title, true, true). " " . ($row_id ? Core_Html::gui_label("id", $row_id) : __("New"));
 
-		if ($row_id) $result .= " " . Core_Html::GuiHyperlink(__("Duplicate"), AddToUrl("operation", "gem_duplicate"));
-
 		$check_active = GetArg($args, "check_active", false);
 		if ($check_active) {
 			$sql = "select is_active from ${db_prefix}$table_name where id = $row_id";
@@ -395,7 +395,9 @@ class Core_Gem {
 				$result .= Core_Html::GuiButton( "btn_save", "save", array("action" => "data_save_entity('" . $post_file . "', '$table_name', " . $row_id . ')'));
 			else
 				$result .= Core_Html::GuiButton("add_row", "add", array("action" => "data_save_new('" . $post_file . "', '$table_name')", "add"));
-			
+			if ($row_id) $result .= " " . Core_Html::GuiHyperlink('[' . __("Duplicate") . ']', AddToUrl("operation", "gem_duplicate"));
+
+
 			if ($check_active) $result .= Core_Html::GuiButton( "btn_active", $active ? "inactive" : "activate", array("action" => "active_entity(" . (1 - $active) .", '" . $post_file . "', '$table_name', " . $row_id . ')') );
 			if (GetArg($args, "allow_delete",  null))
 				$result .= Core_Html::GuiButton( "btn_delete", "Delete", array("action" => "data_delete_entity('$post_file', '$table_name', $row_id)"));
@@ -469,8 +471,10 @@ class Core_Gem {
 				// Core_Gem::ShowImport( $table_id, $args );
 		}
 		if ($post_file and $edit) {
+			$delete_action = GetArg($args, "delete_action", null);
 			$result .= Core_Html::GuiButton( "btn_delete_$table_id", "Delete",
-				array( "action" => "delete_items(" . QuoteText( $checkbox_class ) . "," . QuoteText( $post_file ) . ")" ) );
+				array( "action" => "delete_items(" . QuoteText( $checkbox_class ) . "," . QuoteText( $post_file ) .
+				                   ($delete_action ? ", '$delete_action'" : '') .")" ) );
 		}
 
 		return $result;

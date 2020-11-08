@@ -72,7 +72,7 @@ class WPF_Organization {
 		$result               = Core_Html::GuiHeader( 1, "editing worker info" );
 		$args                 = self::Args();
 		$args["edit"]         = false;
-		$args["selectors"]    = array( "project_id" => "Focus_Tasks::gui_select_project" );
+		$args["selectors"]    = array( "project_id" => "Focus_Views::gui_select_project" );
 		$args["query"]        = "user_id=" . $worker_id . " and is_active = 1";
 		$args["add_checkbox"] = true;
 		$args["links"]        = array( "id" => AddToUrl( "operation", "show_edit_worker_project" ) );
