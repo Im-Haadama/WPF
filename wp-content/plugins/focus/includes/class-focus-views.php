@@ -1679,6 +1679,7 @@ class Focus_Tasks {
 		$company_id = $company->getId();
 		$db_prefix = GetTablePrefix();
 		$result            = Core_Html::GuiHeader( 1, "All the teams in the company ".$company->getName() );
+        $result .= "blabla";
 		$args["query"]     = "manager = 1";
 		$args["links"]     = array( "id" => AddToUrl( array( "operation" => "show_edit_team&id=%s" ) ) );
 		$args["selectors"] = array( "team_members" => __CLASS__ . "::gui_show_team" );
