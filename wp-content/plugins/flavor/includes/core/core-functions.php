@@ -271,7 +271,6 @@ function GetParams($ignore_list = array())
 
 	function InfoUpdate( $key, $data ) {
 		$db_prefix = GetTablePrefix();
-
 		return SqlQuery( "insert into ${db_prefix}info (info_key, info_data)
 			values('$key', '$data')
 			on duplicate key update info_data='$data'" );
