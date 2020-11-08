@@ -22,6 +22,7 @@ class Focus_Database extends Core_Database
 			       self::UpdateInstalled( "tables", $version );
 
 		}
+
 		if ( $current == $version and ! $force ) {
 			return true;
 		}
@@ -41,7 +42,8 @@ class Focus_Database extends Core_Database
 				SqlQuery("Alter table ${db_prefix}working_teams add company_id int" );
 				if (TableExists("working"))
 					SqlQuery("Alter table ${db_prefix}working ${db_prefix}working_rates");
-
+            case '1.3':
+                SqlQuery("Alter table ${db_prefix}tasklist add created varchar(30)" );
 		}
 		return self::UpdateInstalled("tables", $version );
 	}

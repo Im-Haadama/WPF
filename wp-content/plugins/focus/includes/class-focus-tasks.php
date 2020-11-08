@@ -254,7 +254,7 @@ class Focus_Tasks {
 						"status"           => "Status",
 						"started"          => "Started",
 						"ended"            => "Ended",
-						"team"=>"Team"
+						"team"             => "Team"
 					);
 					$args["fields"] = array(
 						"id",
@@ -1542,7 +1542,7 @@ class Focus_Tasks {
             "mission_id" => true, "mission_id" => true, "location_name" => true,
             "location_address" => true, "is_active" => true);
 		$args["header_fields"] = array(
-			"date"             => "Start date",
+            "date"             => "Start date",
             "task_title"       => "Title",
 			"task_description" => "Task description",
 			"task_template"    => "Repeating task",
@@ -1558,7 +1558,7 @@ class Focus_Tasks {
 			"creator"          => "Creator",
 			"task_type"        => "Task type",
 			"mission_id"       => "Mission",
-            "team"             =>"Team"
+            "team"             => "Team"
 		);
 
 		//$new_task = new Focus_Tasklist($row_id);
@@ -2344,6 +2344,9 @@ class Focus_Tasks {
     static function DataSaveNewTaskList($row){
         if(!isset($row["creator"])){
             $row["creator"] = get_user_id();
+        }
+        if(!isset($row["created"])){
+            $row["created"] = date_i18n("H:i" );
         }
         return $row;
     }

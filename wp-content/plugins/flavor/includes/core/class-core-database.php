@@ -34,7 +34,7 @@ class Core_Database
 		$db_prefix = GetTablePrefix();
 //		SqlQuery("alter table ${db_prefix}info modify info_key varchar(100) charset utf8");
 
-		if (! TableExists("info")) {
+        if (! TableExists("info")) {
 			SqlQuery( "CREATE TABLE ${db_prefix}info (
 		info_key VARCHAR(200) NULL,
 		info_data VARCHAR(200) NULL,
