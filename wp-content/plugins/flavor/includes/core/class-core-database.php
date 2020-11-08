@@ -69,5 +69,4 @@ class Core_Database
 	{
 
 	}
-
 }

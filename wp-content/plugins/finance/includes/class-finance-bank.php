@@ -112,8 +112,11 @@ class Finance_Bank
 
 	function show_bank_accounts()
 	{
-		if (! get_user_id() || ! current_user_can("show_bank"))
-			return "no permissions";
+		if (! get_user_id() || ! current_user_can("show_bank")) {
+			print "no permissions";
+			die (1);
+		}
+
 		$post_file = Finance::getPostFile();
 
 		$accounts = self::getBankAccounts(get_user_id());
@@ -130,15 +133,15 @@ class Finance_Bank
 
 	function show_bank_account($account_id)
 	{
-		show_errors();
 		$table_prefix = GetTablePrefix("bank");
 //		print __FUNCTION__;
 		if (! current_user_can("show_bank", $account_id))
 			return "no permissions";
 
 		$operation = GetParam("operation", false, null, true);
-		if ($operation)
-			return apply_filters($operation, "");
+		if ($operation) {
+			return apply_filters( $operation, "" );
+		}
 
 		$args = [];
 		$args["page"] = GetParam("page", false, null);

@@ -1,23 +1,18 @@
 <?php
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-show_errors();
 
 class Focus_Actions {
 
 	function init_hooks(&$loader)
 	{
-		Focus::AddAction("task_start", array(__CLASS__, "Start"), 10, 2);
-		$loader->AddAction("task_end", array(__CLASS__, "End"), 10, 2);
-		$loader->AddAction("task_cancel", array(__CLASS__, "Cancel"), 10, 2);
-		$loader->AddAction("task_postpone", array(__CLASS__, "Postpone"), 10, 2);
-		$loader->AddAction("task_pri_plus", array(__CLASS__, "PriPlus"), 10, 2);
-		$loader->AddAction("task_pri_minus", array(__CLASS__, "PriMinus"), 10, 2);
-		$loader->AddAction("tasklist_worker", array(__CLASS__, "show_worker_wrapper"), 10, 2);
-		$loader->AddAction("team_remove_member", array(__CLASS__, "team_remove_member"));
-		$loader->AddAction("team_add_member", array(__CLASS__, "team_add_member"));
+		$loader->AddAction("task_start", $this, "Start", 10, 2);
+		$loader->AddAction("task_end", $this, "End", 10, 2);
+		$loader->AddAction("task_cancel", $this, "Cancel", 10, 2);
+		$loader->AddAction("task_postpone", $this, "Postpone", 10, 2);
+		$loader->AddAction("task_pri_plus", $this, "PriPlus", 10, 2);
+		$loader->AddAction("task_pri_minus", $this, "PriMinus", 10, 2);
+		$loader->AddAction("team_remove_member", $this, "team_remove_member");
+		$loader->AddAction("team_add_member", $this, "team_add_member");
 	}
 
 	static function Start($input, $args) {
@@ -87,6 +82,23 @@ class Focus_Actions {
 		if($T->getPriority() == 1) return false;
 		return $T->setPriority( $T->getPriority() - 1 );
 	}
+
+	function team_remove_member() {
+		$team_id   = GetParam( "team_id", true );
+		$ids = GetParam( "ids", true );
+		$team = new Org_Team($team_id);
+		return $team->RemoveMember($ids);
+	}
+
+	static function team_add_member()
+	{
+		//let operation = post_file + "?operation=team_add_member&team_id=" + team_id + "&new_member=" + new_member;
+		$team_id   = GetParam( "team_id", true );
+		$new = GetParam( "new_member", true );
+		$team = new Org_Team($team_id);
+		return $team->AddWorker($new);
+	}
+
 
 }
 

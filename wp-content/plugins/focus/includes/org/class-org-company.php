@@ -42,9 +42,8 @@ class Org_Company {
     public function getTeams()
     {
     	$db_prefix = GetTablePrefix("working_teams");
-        return SqlQueryAssoc("select id, team_name from ${db_prefix}working_teams where company_id = " . $this->id .
+        return SqlQueryArrayScalar("select id from ${db_prefix}working_teams where company_id = " . $this->id .
         " and team_name not like '%Personal%'");
-        return $rc;
     }
 
 	public function AddWorker($w_id)
