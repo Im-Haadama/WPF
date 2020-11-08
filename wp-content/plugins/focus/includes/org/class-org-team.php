@@ -50,16 +50,23 @@ class Org_Team {
 	 * @return array
 	 * @throws Exception
 	 */
-	static function team_managed_teams($worker_id)
+	static function managed_teams($worker_id)
 	{
-		$result = SqlQueryArrayScalar( "select id from im_working_teams where manager = " . $worker_id);
-		return $result;
+		return SqlQueryArrayScalar( "select id from im_working_teams where manager = " . $worker_id);
 	}
 
 	function AllMembers()
 	{
+//		$sql = SqlQuerySingleScalar("select )
 		// return sql_query_array_scalar("select id from im_working_teams where manager = " . $user_id);
-		return SqlQueryArrayScalar( "select user_id from wp_usermeta where meta_key = 'teams' and meta_value like '%:" . $this->id . ":%'");
+		$backward = SqlQueryArrayScalar( "select user_id from wp_usermeta where meta_key = 'teams' and meta_value like '%:" . $this->id . ":%'");
+		if ($backward)
+		{
+//			SqlQuery("delete from wp_usermeta where meta_key = 'teams' and )
+			foreach ($backward as $user)
+				self::AddWorker($user_id);
+		}
+		return ;
 	}
 
 	function RemoveMember($members)
@@ -128,10 +135,15 @@ class Org_Team {
 	function AddWorker($user_id)
 	{
 		$current = get_usermeta($user_id, 'teams');
-		if (strstr($current ,":" . $this->id . ":")) return; // Already in.
+		if (strstr($current ,":" . $this->id . ":")) return true; // Already in.
 		if (!$current or strlen($current) < 1) $current = ":";
 
 		return update_usermeta($user_id, 'teams', $current . ":" . $this->id . ":");
+	}
+
+	function GetWorkers()
+	{
+
 	}
 
 	/**
@@ -146,13 +158,21 @@ class Org_Team {
 
 	function CanSendTasks()
 	{
-		$company = new Org_Company($this->getCompany());
+		$debug = false;
+		if ($debug) print "team: " . $this->getId();
+//		$company = new Org_Company($this->getCompany());
 		$senders = array();
-		foreach ($company->getWorkers() as $worker_id)
+		$team_members = self::getWorkers();
+		if ($team_members) foreach ($team_members as $worker_id)
 		{
-			$worker = new Org_Worker($worker_id);
-			array_push($senders, array($worker_id, $worker->getName()));
+			if ($debug) print "worker: $worker_id<br/>";
+			$senders[] = $worker_id;
 		}
+		if (! in_array($manager = $this->getManager(), $senders)) {
+			$senders[] = $manager;
+			if ($debug) print "manager: $manager";
+		}
+		if ($debug) print "<br/>";
 		return $senders;
 	}
 }

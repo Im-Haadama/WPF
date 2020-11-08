@@ -698,8 +698,9 @@ group by pm.meta_value, p.post_status");
 		$dynamic_url = "https://www.google.com/maps/dir/My+Location";
 
 		for ( $i = 0; $i < count( $path ); $i ++ ) {
-			$url .= "/" . $path[ $i ];
-			$dynamic_url .= "/" . $path[ $i ];
+			$add = str_replace('#', '', $path[ $i ]);
+			$url .= "/" . $add;
+			$dynamic_url .= "/" . $add;
 		}
 		$url .= "/" . $mission->getEndAddress();
 		return Core_Html::GuiHyperlink( "Maps", $url ) . " " . Core_Html::GuiHyperlink("Dyn", $dynamic_url);

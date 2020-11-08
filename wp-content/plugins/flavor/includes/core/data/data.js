@@ -189,8 +189,9 @@ function add_element(element_name, table_name, url)
     window.location = new_loc;
 }
 
-function delete_items(collection_name, post_file)
+function delete_items(collection_name, post_file, action_name)
 {
+    if (undefined == action_name) action_name = 'data_delete';
     let ids = get_selected(collection_name);
     if (ids.length == 0) {
         alert ("first select items");
@@ -198,6 +199,6 @@ function delete_items(collection_name, post_file)
     }
     let type = collection_name.substr(9); // Remove checkbox_
     let glue = '?'; if (post_file.indexOf('?') > -1) glue = '&';
-    let url = post_file + glue + "operation=data_delete&type=" + type + "&ids=" + ids;
+    let url = post_file + glue + "operation=" + action_name + "&type=" + type + "&ids=" + ids;
     execute_url(url, location_reload);
 }

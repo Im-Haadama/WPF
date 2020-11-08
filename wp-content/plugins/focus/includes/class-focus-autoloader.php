@@ -83,15 +83,6 @@ class Focus_Autoloader {
 		} else
 			return;
 
-//		print "path=$path";
-//		} elseif ( 0 === strpos( $class, 'wc_admin' ) ) {
-//			$path = $this->include_path . 'admin/';
-//		} elseif ( 0 === strpos( $class, 'wc_payment_token_' ) ) {
-//			$path = $this->include_path . 'payment-tokens/';
-//		} elseif ( 0 === strpos( $class, 'wc_log_handler_' ) ) {
-//			$path = $this->include_path . 'log-handlers/';
-//		}
-
 //		print "looking for " . $this->include_path . $file . "<br/>";
 		if ( empty( $path ) || ! $this->load_file( $path . $file ) ) {
 			$this->load_file( $this->include_path . $file );

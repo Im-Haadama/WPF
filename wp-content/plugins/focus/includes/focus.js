@@ -62,6 +62,15 @@ function project_add_worker(post_file, project_id)
                            "&user=" + worker_id, location_reload);
 }
 
+function project_remove_member(post_file, team_id)
+{
+    let ids = get_selected("workers");
+    let operation = post_file + "?operation=project_remove_member&team_id=" + team_id +
+        "&ids=" + ids;
+
+    execute_url(operation, location_reload);
+}
+
 function add_to_company() {
     let email = get_value_by_name("email");
     let name = get_value_by_name("name");

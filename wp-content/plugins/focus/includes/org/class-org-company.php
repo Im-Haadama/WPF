@@ -41,20 +41,10 @@ class Org_Company {
      */
     public function getTeams()
     {
-        $teams_array = array();
-        $workers = self::getWorkers();
-        foreach ($workers as $worker){
-            $worker_teams = CommaArrayExplode(get_usermeta($worker, 'teams'));
-            foreach ($worker_teams as $worker_team){
-                $team_id = new Org_Team($worker_team);
-                $team_name = $team_id->getName();
-                $team = array( "id" =>$worker_team, "team_name" =>$team_name);
-                if(!in_array( $team,$teams_array) and $team["team_name"] != null ) // check if a team is already exist
-                    array_push($teams_array,$team);
-            }
-            return $teams_array;
-
-        }
+    	$db_prefix = GetTablePrefix("working_teams");
+        return SqlQueryAssoc("select id, team_name from ${db_prefix}working_teams where company_id = " . $this->id .
+        " and team_name not like '%Personal%'");
+        return $rc;
     }
 
 	public function AddWorker($w_id)

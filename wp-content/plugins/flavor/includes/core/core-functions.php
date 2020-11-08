@@ -25,6 +25,12 @@ function InfoGet( $key, $create = false, $default = null ) {
 	return $result;
 }
 
+/**
+ * @param $num_or_text
+ * @param false $sql_escape
+ *
+ * @return int|string
+ */
 function QuoteText( $num_or_text, $sql_escape = false ) {
 	if ( is_null( $num_or_text ) ) return '"NULL"';
 
@@ -35,6 +41,12 @@ function QuoteText( $num_or_text, $sql_escape = false ) {
 	return "'" . $num_or_text . "'";
 }
 
+/**
+ * @param $date
+ * @param string $format
+ *
+ * @return string
+ */
 function QuoteDate($date, $format = 'Y-m-d')
 {
 	return "'" . date($format, $date) . "'";
@@ -42,7 +54,12 @@ function QuoteDate($date, $format = 'Y-m-d')
 
 require_once (ABSPATH . '/wp-includes/pluggable.php');
 
-	function get_user_id( $force_login = false ) {
+/**
+ * @param false $force_login
+ *
+ * @return int
+ */
+function get_user_id( $force_login = false ) {
 		if ( function_exists( 'wp_get_current_user' ) ) {
 			$current_user = wp_get_current_user();
 			if ( $current_user->ID ) {
@@ -57,7 +74,13 @@ require_once (ABSPATH . '/wp-includes/pluggable.php');
 		return 0;
 	}
 
-	function user_has_role( $user_id, $role ) {
+/**
+ * @param $user_id
+ * @param $role
+ *
+ * @return bool
+ */
+function user_has_role( $user_id, $role ) {
 		$user_meta  = get_userdata( $user_id );
 		$user_roles = $user_meta->roles;
 
@@ -91,14 +114,23 @@ require_once (ABSPATH . '/wp-includes/pluggable.php');
 		return $result;
 	}
 
-	function unset_by_value(&$array, $del_val)
+/**
+ * @param $array
+ * @param $del_val
+ */
+function unset_by_value(&$array, $del_val)
 	{
 		if (($key = array_search($del_val, $array)) !== false) {
 			unset($array[$key]);
 		}
 	}
 
-	function GetParams($ignore_list = array())
+/**
+ * @param array $ignore_list
+ *
+ * @return array
+ */
+function GetParams($ignore_list = array())
 	{
 		$atts = [];
 		foreach ($_GET as $param => $value)
@@ -181,6 +213,7 @@ require_once (ABSPATH . '/wp-includes/pluggable.php');
 	/**
 	 * @param $text
 	 * @param null $arg
+	 * @deprecated: use __('string', "e-fresh");
 	 *
 	 * @return string|void
 	 */
@@ -258,7 +291,13 @@ require_once (ABSPATH . '/wp-includes/pluggable.php');
 //		return SqlQuery( $sql );
 	}
 
-	function AppendUrl( $url, $addition ) {
+/**
+ * @param $url
+ * @param $addition
+ *
+ * @return string
+ */
+function AppendUrl( $url, $addition ) {
 		if ( strstr( $url, "?" ) ) {
 			return $url . "&" . $addition;
 		}
@@ -332,7 +371,13 @@ require_once (ABSPATH . '/wp-includes/pluggable.php');
 		return $data;
 	}
 
-	function ReconnectDb( $tz = null ) {
+/**
+ * @param null $tz
+ *
+ * @return mysqli
+ * @throws Exception
+ */
+function ReconnectDb( $tz = null ) {
 		if ( ! defined( "DB_HOST" ) ) {
 			throw new Exception( "DB configuration error = host" );
 		}
@@ -459,7 +504,12 @@ require_once (ABSPATH . '/wp-includes/pluggable.php');
 
 	}
 
-	function GetUrl($only_base = false)
+/**
+ * @param false $only_base
+ *
+ * @return array|int|mixed|string
+ */
+function GetUrl($only_base = false)
 	{
 		if (isset($_SERVER['REQUEST_URI'])) {
 			$url = $_SERVER['REQUEST_URI'];
@@ -473,7 +523,13 @@ require_once (ABSPATH . '/wp-includes/pluggable.php');
 		return "unknown";
 	}
 
-	function ParseQuery($query, $ignore_list = null)
+/**
+ * @param $query
+ * @param null $ignore_list
+ *
+ * @return array
+ */
+function ParseQuery($query, $ignore_list = null)
 	{
 		$query_parts = [];
 		while ( strlen( $query ) ) {
@@ -549,18 +605,40 @@ require_once (ABSPATH . '/wp-includes/pluggable.php');
 		return AddParamToUrl(GetUrl(), $param_name, $param_value);
 	}
 
-	function execute_url($post, $after = null)
+/**
+ * @param $post
+ * @param null $after
+ *
+ * @return string
+ */
+function execute_url($post, $after = null)
 	{
 		return "execute_url('". $post . "'" . ($after ? ", " . $after : "") . ")";
 	}
 
-	function check_for_error($response)
+/**
+ * @param $response
+ *
+ * @return bool
+ */
+function check_for_error($response)
 	{
 		if (strstr($response, "failed")) return true;
 		return false;
 	}
 
-	function AddAction($tag, $function_to_add, int $priority = 10, int $accepted_args = 1, $debug = 0)
+
+/**
+ * @param $tag
+ * @param $function_to_add
+ * @param int $priority
+ * @param int $accepted_args
+ * @param int $debug
+ * @deprecated Use plugin's AddAction. There it's can be managed better.
+ *
+ * @return mixed
+ */
+function AddAction($tag, $function_to_add, int $priority = 10, int $accepted_args = 1, $debug = 0)
 	{
 		$debug = 0;
 		if ($debug) {
@@ -582,7 +660,16 @@ require_once (ABSPATH . '/wp-includes/pluggable.php');
 		return add_action($tag, $function_to_add, $priority, $accepted_args);
 	}
 
-	function AddFilter($tag, $function_to_add, int $priority = 10, int $accepted_args = 1)
+/**
+ * @param $tag
+ * @param $function_to_add
+ * @param int $priority
+ * @param int $accepted_args
+ * @deprecated: use loader class.
+ *
+ * @return mixed
+ */
+function AddFilter($tag, $function_to_add, int $priority = 10, int $accepted_args = 1)
 	{
 		if (! is_callable($function_to_add)) {
 			print "Function for $tag is not callable<br/>";
@@ -592,12 +679,23 @@ require_once (ABSPATH . '/wp-includes/pluggable.php');
 		return add_filter($tag, $function_to_add, $priority, $accepted_args);
 	}
 
+/**
+ * @param $week_day
+ *
+ * @return false|string
+ */
 function next_weekday($week_day)
 {
 	$delta = ($week_day - date('w')); 	if ($delta < 2) $delta += 7;
 	return date('Y-m-d', strtotime ('today +' . $delta . 'days'));
 }
 
+/**
+ * @param $post_id
+ * @param $field_name
+ *
+ * @return string|null
+ */
 function GetMetaField( $post_id, $field_name ) {
 	if ( $post_id > 0 ) {
 		$sql = 'SELECT meta_value FROM `wp_postmeta` pm'
@@ -611,6 +709,12 @@ function GetMetaField( $post_id, $field_name ) {
 	return "Bad post id";
 }
 
+/**
+ * @param $row
+ * @param $index
+ *
+ * @return string
+ */
 function TableGetText( $row, $index ) {
 	$cell = $row->find( 'td', $index );
 	if ( $cell ) {
@@ -620,11 +724,19 @@ function TableGetText( $row, $index ) {
 	return "";
 }
 
+/**
+ * @param $html
+ *
+ * @return string|string[]|null
+ */
 function br2nl($html)
 {
 	return  preg_replace('#<br\s*/?>#i', "\n", $html);
 }
 
+/**
+ *
+ */
 function show_errors()
 {
 	ini_set('display_errors', 1);
@@ -632,6 +744,14 @@ function show_errors()
 	error_reporting(E_ALL);
 }
 
+/**
+ * @param $from
+ * @param $to
+ * @param $subject
+ * @param $message
+ *
+ * @return bool
+ */
 function send_mail( $from, $to, $subject, $message ) {
 		MyLog("sub=" .$subject, "to=" .$to, 'mail.log');
 
@@ -651,6 +771,11 @@ function send_mail( $from, $to, $subject, $message ) {
 	return mail( $to, $base64_subject, $message, implode( "\r\n", $headers ) );
 }
 
+/**
+ * @param $user_id
+ *
+ * @return string
+ */
 function get_user_displayname($user_id)
 {
 	$w = get_userdata($user_id);
@@ -658,11 +783,20 @@ function get_user_displayname($user_id)
 	return "user $user_id not found";
 }
 
+/**
+ * @param $sym
+ * @param $value
+ */
 function Define_if_needed($sym, $value)
 {
 	if (! defined($sym)) define ($sym, $value);
 }
 
+/**
+ * @param $underscore_text
+ *
+ * @return string
+ */
 function convert_to_title($underscore_text)
 {
 	return ucwords(str_replace("_", " ", $underscore_text));
@@ -681,6 +815,11 @@ function define_const( $name, $value ) {
 	}
 }
 
+/**
+ * @param $my_class
+ *
+ * @return mixed|null
+ */
 function get_caller($my_class)
 {
 //	print "mc=$my_class<br/>";
@@ -693,6 +832,13 @@ function get_caller($my_class)
 	return null;
 }
 
+/**
+ * @param $city
+ * @param $street
+ * @param $house
+ *
+ * @return false|int|string
+ */
 function israelpost_get_address_postcode( $city, $street, $house ) {
 	$url = "http://www.israelpost.co.il/zip_data.nsf/SearchZip?OpenAgent&Location=" . urlencode( $city ) . "&street=" . $street .
 	       "&house=" . $house;
@@ -720,6 +866,11 @@ function israelpost_get_address_postcode( $city, $street, $house ) {
 	return - 2;
 }
 
+/**
+ * @param $city
+ *
+ * @return false|int|string
+ */
 function israelpost_get_city_postcode( $city )
 {
 	$city=trim($city);

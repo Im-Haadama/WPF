@@ -16,7 +16,7 @@ class Focus {
 	protected $auto_loader;
 	protected $salary;
 	protected $manager;
-	protected $tasks;
+	protected $views;
 	protected $database;
 	private $focus_users;
 
@@ -162,16 +162,9 @@ class Focus {
 
 //		$this->loader->AddAction( 'wp_enqueue_scripts', $this->manager, 'enqueue_scripts' );
 		if ($this->salary) $this->loader->AddAction( 'wp_enqueue_scripts', $this->salary, 'enqueue_scripts' );
-		$this->loader->AddAction( 'wp_enqueue_scripts', $this->tasks, 'admin_scripts' );
+		$this->loader->AddAction( 'wp_enqueue_scripts', $this->views, 'admin_scripts' );
 
 		Focus_Project::init();
-
-		AddAction("company_add_worker", array($this, 'company_add_worker'));
-		AddAction("company_remove_worker", array($this, 'company_remove_worker'));
-
-		AddFilter("gem_next_page_tasklist", array($this, "next_page"));
-        AddFilter("gem_next_page_projects", array($this, "next_page"));
-		AddFilter("search_by_text", array("Focus_Tasks", "search_by_text_wrap"));
 
         Core_Pages::CreateIfNeeded("focus", "/focus", "focus_main");
         Core_Pages::CreateIfNeeded("project", "/project", "focus_project");
@@ -311,7 +304,7 @@ class Focus {
 		{
 			case "bad_url":
 				$template_id = GetParam("id", true);
-				return Focus_Tasks::show_task($template_id);
+				return Focus_Actions::show_task($template_id);
 				break;
 		}
 		$args["post_file"] = GetUrl(1);
@@ -332,7 +325,7 @@ class Focus {
 			default:
 //				print "fault";
 //				return "no handler found for $operation";
-				$focus = Focus_Tasks::instance();
+				$focus = Focus_Actions::instance();
 				return $focus->handle_focus_do($operation);
 		}
 
@@ -380,9 +373,13 @@ class Focus {
 	 * Init WooCommerce when WordPress Initialises.
 	 */
 
-	public function init() {
+	public function init()
+	{
 		$this->loader = new Focus_Loader();
 		$this->auto_loader = new Core_Autoloader(FOCUS_ABSPATH);
+
+		$this->loader->AddAction( 'init', Core_Shortcodes::instance(), 'init' );
+
 		$shortcodes = Core_Shortcodes::instance();
 
 		$plugins = get_option( 'active_plugins', array());
@@ -399,16 +396,18 @@ class Focus {
 			$this->salary = Finance_Salary::instance();
 			$shortcodes->add( $this->salary->getShortcodes() );
 		}
-		$this->tasks = Focus_Tasks::instance(self::getPost());
+		$this->views = Focus_Views::instance(self::getPost());
 
 		WPF_Organization::init();
 
 		// Set up localisation.
 		$this->load_plugin_textdomain();
 
-		$shortcodes->add($this->tasks->getShortcodes());
+		$shortcodes->add($this->views->getShortcodes());
 
-		$this->tasks->init();
+		$this->views->init($this->loader);
+
+		// Creates the tasks from templates.
 		$this->manager->init();
 
 		Core_Gem::AddTable("working_teams");
@@ -522,4 +521,9 @@ class Focus {
 
 		return $data;
 	}
+}
+
+function FocusLog($message)
+{
+	MyLog($message, '', 'focus.log');
 }

@@ -86,7 +86,6 @@ class Focus_Nav {
 				'menu-item-status' => 'publish'
 			) );
 		}
-
 	}
 
 	private function update_nav_projects($menu_id, $parent, $user_id)
@@ -149,7 +148,7 @@ class Focus_Nav {
 	private function update_nav_teams($menu_id, $parent, $user_id) {
 		// Add new ones.
 		$user = new Org_Worker($user_id);
-		$teams   = $user->AllTeams( );
+		$teams   = $user->GetAllTeams( );
 		$menu_items = wp_get_nav_menu_items( $menu_id );
 		foreach ( $teams as $team_id ) {
 			$team = new Org_Team($team_id);
