@@ -63,5 +63,6 @@ abstract class FlavorDbObjects
 	const team = 2;
 	const project = 3;
 	const company = 4;
+	const sender = 5; // Who can send a task to a team.
 }
 

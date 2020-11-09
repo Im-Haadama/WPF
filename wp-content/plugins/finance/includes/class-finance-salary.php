@@ -57,7 +57,7 @@ class Finance_Salary {
 
 			case "show_add_working":
 				$args = [];
-				$args["selectors"] = array("user_id" => "gui_select_client", "project_id" => "Focus_Tasks::gui_select_project");
+				$args["selectors"] = array("user_id" => "gui_select_client", "project_id" => "Focus_Views::gui_select_project");
 				$args["post_file"] = Finance::getPostFile();
 				return Core_Gem::GemAddRow("working_rates", "Add", $args);
 		}
@@ -102,7 +102,7 @@ class Finance_Salary {
 				$args["id_field"]      = "id";
 				$args["links"]         = array( "id" => self::get_link( "working_rates", "%s" ) );
 				$args["selectors"]     = array(
-					"project_id" => "Focus_Tasks::gui_select_project",
+					"project_id" => "Focus_Views::gui_select_project",
 					"user_id"    => "Org_Worker::gui_select_user"
 				);
 				$args["edit"]          = false;
@@ -442,8 +442,8 @@ class Finance_Salary {
 		$args              = [];
 		$args["post_file"] = Finance::getPostFile();
 		$args["selectors"] = array(
-			"project_id" => "Focus_Tasks::gui_select_project",
-			"company_id" => "Focus_Tasks::gui_select_company"
+			"project_id" => "Focus_Views::gui_select_project",
+			"company_id" => "Focus_Views::gui_select_company"
 //		,		"post_file" => $this->post_file
 		);
 		$args["check_active"] = true;
@@ -522,7 +522,7 @@ class Finance_Salary {
 			"comment"      => "Comment",
 			"line_salary" => "Total"
 		);
-		$args["selectors"]     = array( "project_id" => "Focus_Tasks::gui_select_project" );
+		$args["selectors"]     = array( "project_id" => "Focus_Views::gui_select_project" );
 		$args["skip_id"]       = true;
 		if ( $edit ) {
 			$args["add_checkbox"] = true;
@@ -719,7 +719,7 @@ class Finance_Salary {
 			case "working_rates":
 				$args["operation"] = GetParam("operation", false, true);
 				$args["selectors"]     = array(
-					"project_id" => "Focus_Tasks::gui_select_project",
+					"project_id" => "Focus_Views::gui_select_project",
 					"user_id"    => "Org_Worker::gui_select_user"
 				);
 

@@ -169,12 +169,18 @@ class Flavor_Org_Views {
 			array("fields" => array("id", "team_name", "manager"),
 			"add_checkbox"=>false,
 			      "selectors" => array("manager" => "Focus_Views::gui_select_worker")));
+
+		//////////////
+		// info box //
+		//////////////
 		$team_info_box = Core_Html::GuiDiv("team_info_box",
 			Core_Html::GuiHeader(2, "team details") .
 			Core_Gem::GemElement( "working_teams", $team_id, $table_args ),
 			array("style" => 'width:400px; float: right'));
 
-		// Remove box
+		////////////////
+		// Remove box //
+		////////////////
 		$table           = array();
 		$table["header"] = array( "select", "name" );
 		$team            = new Org_Team( $team_id );
@@ -195,23 +201,60 @@ class Flavor_Org_Views {
 			Core_Html::GuiButton( "btn_delete", "Delete", array( "action" => "team_remove_member('" . Focus::getPost() . "', $team_id)" )),
 		array("style" => 'width:400px; float: right'));
 
+		/////////////
+		// Add Box //
+		/////////////
         $member_add = Core_Html::GuiDiv("add_member", Core_Html::GuiHeader(2, "add") .
                  Focus_Views::gui_select_worker( "new_member", null, $args ) .
 		    Core_Html::GuiButton( "btn_add_member", "add", array( "action" => "team_add_member('" . Focus::getPost() . "', $team_id )" )),
-		array("style" => 'width:400px; float: right'));
+        		array("style" => 'width:400px; float: right'));
 
-        // Now build the page.
+        /////////////////////////////
+        // Now build the page top. //
+		/////////////////////////////
         $result .= Core_Html::GuiDiv("team_info",  $team_info_box .
 //                    Core_Html::GuiDiv( "team_add_and_remove",
 	                   $member_add .  $member_remove);
 
-		// Who can send work to this team
-		$table_args['add_checkbox'] = true;
-		$result .= Core_Html::GuiDiv( "can_send",
-			Core_Html::GuiHeader( 1, "Who can send tasks?" ) .
-			Core_Html::gui_table_args( $team->CanSendTasks(true), "can_send", $table_args ),
+        ////////////////////////////////////
+		// Who can send work to this team //
+		////////////////////////////////////
+
+		////////////////////
+		// Add Sender Box //
+		////////////////////
+		$member_add = Core_Html::GuiDiv("add_sender", Core_Html::GuiHeader(2, "add") .
+		                                              Focus_Views::gui_select_worker( "new_sender", null, $args ) .
+		                                              Core_Html::GuiButton( "btn_add_sender", "add", array( "action" => "team_add_sender('" . Focus::getPost() . "', $team_id )" )),
 			array("style" => 'width:400px; float: right'));
 
+//		$table_args['add_checkbox'] = true;
+//		$result .= $member_add .
+//			Core_Html::GuiDiv( "can_send",
+//			Core_Html::GuiHeader( 1, "Who can send tasks?" ) .
+//			Core_Html::gui_table_args( $team->CanSendTasks(), "can_send", $table_args ),
+//			array("style" => 'width:400px; float: right'));
+
+		$table           = array();
+		$table["header"] = array( "select", "name" );
+		$team            = new Org_Team( $team_id );
+		foreach ( $team->CanSendTasks() as $member ) {
+			$table[ $member ]["name"] = GetUserName( $member );
+			$table[$member] ["id"] = $member;
+		}
+		$args["edit"]           = true;
+		$args["checkbox_class"] = "workers";
+
+		unset($table_args["fields"]);
+		$table_args["hide_cols"] = array("id"=>true);
+		$table_args["checkbox_class"] = "workers";
+		$table_args["add_checkbox"] = true;
+		$member_remove = Core_Html::GuiDiv("senders_remove",  	// $args["post_file"] = GetUrl( 1 ) . "?team_id=" . $team_id;
+			Core_Html::GuiHeader(2, "Sender remove") .
+			Core_Html::gui_table_args( $table, "team_senders", $table_args ) .
+			Core_Html::GuiButton( "btn_delete", "Remove", array( "action" => "team_remove_sender('" . Focus::getPost() . "', $team_id)" )),
+			array("style" => 'width:400px; float: right'));
+		$result .= $member_add . $member_remove;
 		return $result;
 	}
 

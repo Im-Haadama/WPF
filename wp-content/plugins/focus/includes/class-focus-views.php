@@ -59,7 +59,6 @@ class Focus_Views {
 //	}
 
 	private $post_file;
-	private $version;
 	protected static $_instance = null;
 	protected $nav_menu_name;
 	private $table_prefix;
@@ -73,7 +72,6 @@ class Focus_Views {
 	public function __construct( $post_file ) {
 //		debug_print_backtrace();
 		$this->post_file     = $post_file;
-		$this->version       = "1.0";
 		$this->nav_menu_name = null;
 		$this->table_prefix  = GetTablePrefix();
 		$this->focus_users   = new Focus_Users_Management();
@@ -95,23 +93,24 @@ class Focus_Views {
 	}
 
 	public function admin_scripts() {
+		$version = Focus::instance()->version;
 		print "<script>let focus_post_url = \"" . self::getPost() . "\"; </script>";
 
 		$file = FLAVOR_INCLUDES_URL . 'core/data/data.js';
-		wp_enqueue_script( 'data', $file, null, $this->version, false );
+		wp_enqueue_script( 'data', $file, null, $version, false );
 
 		$file = FLAVOR_INCLUDES_URL . 'core/gui/client_tools.js';
-		wp_enqueue_script( 'client_tools', $file, null, $this->version, false );
+		wp_enqueue_script( 'client_tools', $file, null, $version, false );
 
 		$file = FOCUS_INCLUDES_URL . 'focus.js';
-		wp_enqueue_script( 'focus', $file, null, $this->version, false );
+		wp_enqueue_script( 'focus', $file, null, $version, false );
 
 		$file = FOCUS_INCLUDES_URL . '/org/company.js';
-		wp_enqueue_script( 'company', $file, null, $this->version, false );
+		wp_enqueue_script( 'company', $file, null, $version, false );
 
 		// <script src="https://kit.fontawesome.com/f666c528bc.js" crossorigin="anonymous"></script>
 		$awesome = "https://kit.fontawesome.com/f666c528bc.js";
-		wp_enqueue_script( 'awesome', $awesome, null, $this->version, false );
+		wp_enqueue_script( 'awesome', $awesome, null, $version, false );
 	}
 
 	static function focus_main_wrapper() {
@@ -150,6 +149,10 @@ class Focus_Views {
 
 		$worker    = new Org_Worker( get_user_id() );
 		$companies = $worker->GetCompanies();
+		$company_id = GetArg($args, "company_id", $companies[0]);
+
+		$company = new Org_Company($company_id);
+		$ids = $company->getWorkers();
 
 		$debug = false; // (get_user_id() == 1);
 //		$args["debug"]    = $debug;
@@ -159,7 +162,6 @@ class Focus_Views {
 //		$args["selected"] = $selected;
 //		$args["query"]    = ( isset( $args["query_team"] ) ? $args["query_worker"] : null );
 
-		$ids           = SqlQueryArrayScalar( "select * from wp_users where 1" );
 		$selected_info = array(
 			array(
 				"user_id"      => 0,
@@ -206,7 +208,7 @@ class Focus_Views {
 		$form_table = GetArg( $args, "form_table", null );
 		$events     = GetArg( $args, "events", null );
 
-		$projects_list = $user->AllProjects( "is_active = 1", array( "id", "project_name" ) );
+		$projects_list = $user->GetAllProjects( "is_active = 1", array( "id", "project_name" ) );
 		if ( $projects_list ) {
 			$args["values"] = $projects_list;
 			$args["id_key"] = "id";
@@ -772,7 +774,7 @@ class Focus_Views {
 		$header_args["scripts"] = array(
 			"/core/gui/client_tools.js",
 			"/core/data/data.js",
-			"/focus/focus.js",
+			"/focus/focus.js?version=" . Focus::instance()->get_version(),
 			"/vendor/sorttable.js"
 		);
 

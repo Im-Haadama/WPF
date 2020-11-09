@@ -24,7 +24,7 @@ class Flavor {
 	 *
 	 * @var string
 	 */
-	public $version = '1.1';
+	public $version = '1.4';
 
 	/**
 	 * @var
@@ -728,5 +728,4 @@ function modify_admin_bar( $wp_admin_bar )
 //	MyLog(__FUNCTION__);
 
 }
-
 ?>

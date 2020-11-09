@@ -13,6 +13,7 @@ class Focus_Actions
 		$loader->AddAction("task_pri_minus", $this, "PriMinus", 10, 2);
 		$loader->AddAction("team_remove_member", $this, "team_remove_member");
 		$loader->AddAction("team_add_member", $this, "team_add_member");
+		$loader->AddAction("team_add_sender", $this, "team_add_sender");
 	}
 
 	function Start($input, $args) {
@@ -99,7 +100,14 @@ class Focus_Actions
 		return $team->AddWorker($new);
 	}
 
-
+	static function team_add_sender()
+	{
+		//let operation = post_file + "?operation=team_add_member&team_id=" + team_id + "&new_member=" + new_member;
+		$team_id   = GetParam( "team_id", true );
+		$new = GetParam( "new_member", true );
+		$team = new Org_Team($team_id);
+		return $team->AddSender($new);
+	}
 }
 
 /**

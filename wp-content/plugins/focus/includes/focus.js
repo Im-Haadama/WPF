@@ -96,7 +96,18 @@ function team_add_member(post_file, team_id)
         "&new_member=" + new_member;
 
     execute_url(operation, location_reload);
+
 }
+
+function team_add_sender(post_file, team_id)
+{
+    let new_sender = get_value_by_name("new_sender");
+    let operation = post_file + "?operation=team_add_sender&team_id=" + team_id +
+        "&new_member=" + new_sender;
+
+    execute_url(operation, location_reload);
+}
+
 
 function search_by_text()
 {
