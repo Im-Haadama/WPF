@@ -128,12 +128,14 @@ class Core_Loader {
 	 */
 	public function run()
 	{
+		$this->debug = false;
 		foreach ( $this->filters as $hook ) {
-			add_filters( $hook['hook'], array( $hook['component'], $hook['callback'] ), $hook['priority'], $hook['accepted_args'] );
+			if ($this->debug) print ("Adding " . $hook['hook']) . "<br/>";
+			add_filter( $hook['hook'], array( $hook['component'], $hook['callback'] ), $hook['priority'], $hook['accepted_args'] );
 		}
 
 		foreach ( $this->actions as $hook ) {
-			if ($this->debug) MyLog("Adding " . $hook['hook']);
+			if ($this->debug) print ("Adding " . $hook['hook']) . "<br/>";
  			// print "adding " . $hook['hook'] . " " . var_dump($hook['component']) . " " . $hook['callback'] . "<br/>";
 			add_action($hook['hook'], array( $hook['component'], $hook['callback'] ), $hook['priority'], $hook['accepted_args'] );
 		}

@@ -1,8 +1,8 @@
 <?php
 
 
-class Focus_Actions {
-
+class Focus_Actions
+{
 	function init_hooks(&$loader)
 	{
 		$loader->AddAction("task_start", $this, "Start", 10, 2);
@@ -15,7 +15,7 @@ class Focus_Actions {
 		$loader->AddAction("team_add_member", $this, "team_add_member");
 	}
 
-	static function Start($input, $args) {
+	function Start($input, $args) {
 		$task_id = GetArg( $args, "id", 0 );
 		if ( ! ( $task_id > 0 ) ) {
 			return false;
@@ -32,7 +32,7 @@ class Focus_Actions {
 		return false;
 	}
 
-	static function End($input, $args) {
+	function End($input, $args) {
 		$task_id = GetArg( $args, "id", 0 );
 		if ( ! ( $task_id > 0 ) ) {
 			print "no id";

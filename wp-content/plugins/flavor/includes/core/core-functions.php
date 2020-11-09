@@ -213,7 +213,6 @@ function GetParams($ignore_list = array())
 	/**
 	 * @param $text
 	 * @param null $arg
-	 * @deprecated: use __('string', "e-fresh");
 	 *
 	 * @return string|void
 	 */
@@ -227,7 +226,7 @@ function GetParams($ignore_list = array())
 
 		if ( ! $translate_enabled ) return $text;
 
-		$textdomain = GetArg( $arg, "textdomain", 'wpf' );
+		$textdomain = GetArg( $arg, "textdomain", 'fresh' );
 
 		if ( is_array( $text ) ) {
 			$result = "";

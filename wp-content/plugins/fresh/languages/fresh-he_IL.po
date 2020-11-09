@@ -611,3 +611,9 @@ msgstr "הזמנת מינימום"
 
 msgid "Shipping price"
 msgstr "מחיר משלוח"
+
+msgid "Edit team"
+msgstr "עריכת צוות"
+
+msgid "Member remove"
+msgstr "הורדת חבר מהצוות"

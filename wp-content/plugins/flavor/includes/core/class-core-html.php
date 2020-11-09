@@ -460,7 +460,7 @@ class Core_Html {
 			if ( $center ) $style .= 'text-align:center; ';
 			if ( strlen( $style ) ) $data .= 'style="' . $style . '"';
 		}
-		$data .= ">" . __( $text );
+		$data .= ">" . ImTranslate( $text );
 		if ($close) $data .= "</h" . $level . ">";
 
 		return $data;
@@ -1305,7 +1305,21 @@ class Core_Html {
 
 	static function GuiSelect($id, $selected, $args)
 	{
+		$values = GetArg($args, "values", null);
+//		var_dump($values);
+		$id_key = GetArg($args, "id_key", "id");
+		$name = GetArg($args, "name", "name");
+//
+//		if (! GetArg($args, "edit", true)){
+//			if (! is_array($selected)) $selected = array($selected);
+//			$result = "";
+//			foreach ($selected as $value)
+//				$result .= $values[$value][$name]. ", ";
+//			return rtrim($result, ", ");
+//		}
 		$data = "<select ";
+		$size = GetArg($args, "size", null);
+		if ($size) $data .= " size=\"$size\" ";
 		if ( $multiple = GetArg($args, "multiple", false) ) {
 			$data .= "multiple ";
 		}
@@ -1325,10 +1339,6 @@ class Core_Html {
 		if ( $events ) $data .= $events;
 
 		$data .= ">";
-
-		$values = GetArg($args, "values", null);
-		$id_key = GetArg($args, "id_key", "id");
-		$name = GetArg($args, "name", "name");
 
 		if ( $values ) {
 			foreach ( $values as $row ) {

@@ -24,11 +24,10 @@ class Core_Gem {
 		// Do
 	}
 
-	static function init_hooks(Core_Loader $loader)
+	function init_hooks(Core_Loader $loader)
 	{
-		$me = self::getInstance();
-		$loader->AddAction("gem_do_import", $me, "do_import_wrap");
-		$loader->AddAction("gem_v_do_import", $me, "do_v_import_wrap");
+		$loader->AddAction("gem_do_import", $this, "do_import_wrap");
+		$loader->AddAction("gem_v_do_import", $this, "do_v_import_wrap");
 	}
 
 	/**

@@ -4,14 +4,6 @@
  * Class Focus
  */
 class Focus {
-	/**
-	 * The loader that's responsible for maintaining and registering all hooks that power
-	 * the plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   protected
-	 * @var      Delivery_Drivers_Loader    $loader    Maintains and registers all hooks for the plugin.
-	 */
 	protected $loader;
 	protected $auto_loader;
 	protected $salary;
@@ -174,6 +166,9 @@ class Focus {
 
         $focus_actions = new Focus_Actions();
         $focus_actions->init_hooks($this->loader);
+
+		$focus_views = Focus_Views::instance();
+		$focus_views->init_hooks($this->loader);
 
 		if ((get_user_id() == 1) and defined("DEBUG_USER")) wp_set_current_user(DEBUG_USER);
 	}

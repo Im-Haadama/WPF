@@ -161,7 +161,8 @@ class Flavor {
 		$i->AddTable("options", "option_id" );
 
 		AddAction( 'admin_enqueue_scripts', array($this, 'admin_scripts' ));
-		Core_Gem::init_hooks($this->loader);
+		Core_Gem::getInstance()->init_hooks($this->loader);
+		Flavor_Org_Views::instance()->init_hooks($this->loader);
 		Flavor_Mission::init_hooks();
 	}
 
