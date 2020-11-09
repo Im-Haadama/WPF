@@ -1573,7 +1573,8 @@ class Focus_Views {
 			"creator"          => "Creator",
 			"task_type"        => "Task type",
 			"mission_id"       => "Mission",
-			"team"             => "Team"
+            "team"             => "Team",
+            "created"          => "Created"
 		);
 
 		//$new_task = new Focus_Tasklist($row_id);
@@ -1623,9 +1624,8 @@ class Focus_Views {
 				$found_personal = true;
 			}
 		}
-		if ( ! $found_personal ) {
-			die( "cccc" );
-			Org_Team::Create( $user_id, $prefix . " " . $worker->getName() );
+		if (! $found_personal) {
+			Org_Team::Create($user_id, $prefix . " " . $worker->getName());
 		}
 
 		// Check if user has at list one project. create the first one if not.
@@ -2154,16 +2154,15 @@ class Focus_Views {
 		return $row;
 	}
 
-	static function DataSaveNewTaskList( $row ) {
-		if ( ! isset( $row["creator"] ) ) {
-			$row["creator"] = get_user_id();
-		}
-		if ( ! isset( $row["created"] ) ) {
-			$row["created"] = date_i18n( "H:i" );
-		}
-
-		return $row;
-	}
+    static function DataSaveNewTaskList($row){
+        if(!isset($row["creator"])){
+            $row["creator"] = get_user_id();
+        }
+        if(!isset($row["created"])){
+            $row["created"] = date_i18n("d/m/y \a\t g:i  A " );
+        }
+        return $row;
+    }
 
 	static function DoAddCompanyWorker() {
 		$user_id = get_user_id();
