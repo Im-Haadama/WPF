@@ -166,7 +166,7 @@ class Org_Team {
 		return SqlQuerySingleScalar( "select manager from im_working_teams where id = " . $this->id);
 	}
 
-	function CanSendTasks()
+	function CanSendTasks($include_name = false)
 	{
 		$debug = false;
 		if ($debug) print "team: " . $this->getId();
@@ -183,6 +183,11 @@ class Org_Team {
 			if ($debug) print "manager: $manager";
 		}
 		if ($debug) print "<br/>";
+		if ($include_name) foreach ($senders as $key => $id)
+		{
+			$user = new Core_Users($id);
+			$senders[$key] = array($id, $user->getName());
+		}
 		return $senders;
 	}
 }

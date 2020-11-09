@@ -947,12 +947,12 @@ class Core_Html {
 			}
 			$data .= ' id="' . $id . '"';
 		}
+		if ( $style ) $data .= "style=\"$style\"";
 		$data .= " border=\"1\"";
 		$data .= ">";
 
 		$action_line = null;
 
-		if ( $style ) $data .= "<style>" . $style . "</style>";
 		if ( is_array( $rows ) and $transpose ) {
 			$rows = Core_Fund::array_transpose( $rows );
 		}
@@ -995,10 +995,11 @@ class Core_Html {
 					$field  = ( $transpose ? $line_id : $cell_id ); // print "field: $field ";
 					$row_id = ( $transpose ? $cell_id : $line_id ); // print "row: $row_id<br/>";
 					if ( $add_checkbox_line and $row_id != "acc" ) {
-						$data              .= "
-<td>" . gui_checkbox( "chk_" . $row_id, $checkbox_class, 0,
-								( $row_id === "header" ) ? $e = 'onchange="select_all_toggle(this, \'' . $checkbox_class . '\')"' : $checkbox_events );
+//						$data              .= "<td>" . gui_checkbox( "chk_" . $row_id, $checkbox_class, 0,
+//								( $row_id === "header" ) ? $e = 'onchange="select_all_toggle(this, \'' . $checkbox_class . '\')"' : $checkbox_events );
+						$data .= "<td>" . Core_Html::GuiCheckbox("chk_$row_id", 0) . "</td>";
 						$add_checkbox_line = false;
+
 					}
 					// print "show: "; var_dump($args["show_cols"]); print "<br/>";
 					$show = ( ( ( ( ! $show_cols ) or isset( $show_cols[ $field ] ) ) // Positive
@@ -1798,7 +1799,7 @@ class Core_Html {
 
 		$edit = GetArg($args, "edit", false);
 		if ($edit) {
-			$args["v_checkbox"] = 1;
+			// $args["v_checkbox"] = 1; 09/11/2020 Add v_checkbox where needed
 			if (! isset($args["transpose"])) $args["transpose"] = 1;
 			$args["events"] = "onchange=changed_field(%s)";
 		}
@@ -1853,6 +1854,7 @@ class Core_Html {
 
 		// Fetch the data from DB or create the new row
 		$rows_data = Core_Data::TableData( $sql, $args);
+
 //var_dump($rows_data);
 //		print "<table border='1'>";
 //		foreach($rows_data as $key => $row) {
@@ -2085,12 +2087,5 @@ class Core_Html {
 			} while ( 0 );
 		}
 		return $text;
-	}
-}
-
-if (!function_exists('gui_checkbox'))
-{
-	function gui_checkbox( $id, $class, $value = false, $events = null ) {
-		return Core_Html::GuiCheckbox($id, $value, array("events" => $events, "class" => $class));
 	}
 }
