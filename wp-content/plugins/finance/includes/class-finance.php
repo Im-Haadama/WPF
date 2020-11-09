@@ -586,12 +586,6 @@ static function get_open_site_invoices()
 //	 *      - WP_LANG_DIR/plugins/woocommerce-LOCALE.mo
 //	 */
 	public function load_plugin_textdomain() {
-		$locale = is_admin() && function_exists( 'get_user_locale' ) ? get_user_locale() : get_locale();
-		$locale = apply_filters( 'plugin_locale', $locale, 'finance' );
-
-//		unload_textdomain( 'finance' );
-//		load_textdomain( 'finance', FERSH_LANG_DIR . '/finance/finance-' . $locale . '.mo' );
-//		load_plugin_textdomain( 'finance', false, plugin_basename( dirname( FINANCE_PLUGIN_FILE ) ) . '/i18n/languages' );
 	}
 //
 //	/**

@@ -90,7 +90,7 @@ class Flavor_Mission {
 		$missions = SqlQueryArrayScalar($sql);
 
 		if ( count( $missions )  == 0) {
-			$result .= ImTranslate("No missions for given period");
+			$result .= ETranslate("No missions for given period");
 			$result .= Core_Html::GuiHyperlink("Last week", AddToUrl("week" , date( "Y-m-d", strtotime( "last sunday" )))) . " ";
 			$result .= Core_Html::GuiHyperlink("This week", AddToUrl("week" , date( "Y-m-d", strtotime( "sunday" )))) . " ";
 			$result .= Core_Html::GuiHyperlink("Next week", AddToUrl("week", date( "Y-m-d", strtotime( "next sunday" ))));

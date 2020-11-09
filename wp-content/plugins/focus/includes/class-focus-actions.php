@@ -1,8 +1,8 @@
 <?php
 
 
-class Focus_Actions {
-
+class Focus_Actions
+{
 	function init_hooks(&$loader)
 	{
 		$loader->AddAction("task_start", $this, "Start", 10, 2);
@@ -13,9 +13,10 @@ class Focus_Actions {
 		$loader->AddAction("task_pri_minus", $this, "PriMinus", 10, 2);
 		$loader->AddAction("team_remove_member", $this, "team_remove_member");
 		$loader->AddAction("team_add_member", $this, "team_add_member");
+		$loader->AddAction("team_add_sender", $this, "team_add_sender");
 	}
 
-	static function Start($input, $args) {
+	function Start($input, $args) {
 		$task_id = GetArg( $args, "id", 0 );
 		if ( ! ( $task_id > 0 ) ) {
 			return false;
@@ -32,7 +33,7 @@ class Focus_Actions {
 		return false;
 	}
 
-	static function End($input, $args) {
+	function End($input, $args) {
 		$task_id = GetArg( $args, "id", 0 );
 		if ( ! ( $task_id > 0 ) ) {
 			print "no id";
@@ -99,7 +100,14 @@ class Focus_Actions {
 		return $team->AddWorker($new);
 	}
 
-
+	static function team_add_sender()
+	{
+		//let operation = post_file + "?operation=team_add_member&team_id=" + team_id + "&new_member=" + new_member;
+		$team_id   = GetParam( "team_id", true );
+		$new = GetParam( "new_member", true );
+		$team = new Org_Team($team_id);
+		return $team->AddSender($new);
+	}
 }
 
 /**

@@ -24,11 +24,10 @@ class Core_Gem {
 		// Do
 	}
 
-	static function init_hooks(Core_Loader $loader)
+	function init_hooks(Core_Loader $loader)
 	{
-		$me = self::getInstance();
-		$loader->AddAction("gem_do_import", $me, "do_import_wrap");
-		$loader->AddAction("gem_v_do_import", $me, "do_v_import_wrap");
+		$loader->AddAction("gem_do_import", $this, "do_import_wrap");
+		$loader->AddAction("gem_v_do_import", $this, "do_v_import_wrap");
 	}
 
 	/**
@@ -691,7 +690,7 @@ class Core_Gem {
 //		print "done.af=$action_file<br/>";
 //		print "af=$action_file<br/>";
 		$result .= '<form action="' . $action_file . '" name="upload_csv" method="post" enctype="multipart/form-data">' .
-		           ImTranslate('Load from csv file') .
+		           ETranslate('Load from csv file') .
 		           '<input type="file" name="fileToUpload" id="fileToUpload">
         <input type="submit" value="טען" name="submit">
     	</form>';

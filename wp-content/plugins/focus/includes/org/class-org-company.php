@@ -28,11 +28,18 @@ class Org_Company {
         return SqlQuerySingleScalar("select admin from im_company where id = " . $this->id);
     }
 
-	public function getWorkers()
+	public function getWorkers($include_name = false)
 	{
         $users_array = SqlQueryArrayScalar( "select user_id from wp_usermeta where meta_key = 'companies' and meta_value like '%:" . $this->id . ":%'");
 	    $manager = $this->getManager();
         if (! in_array($manager, $users_array)) array_push($users_array, $manager);
+
+        if ($include_name) foreach($users_array as $key => $user_id) {
+        	$u = new Core_Users($user_id);
+//        	print $u->getName() . "<br/>";
+//        	var_dump($u->getNa
+        	$users_array[$key] = array("id" => $user_id, "name" => $u->getName());
+        }
 		return $users_array;
 	}
 

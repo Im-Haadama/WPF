@@ -574,23 +574,6 @@ class Fresh {
 	}
 
 	public function load_plugin_textdomain() {
-		$locale = is_admin() && function_exists( 'get_user_locale' ) ? get_user_locale() : get_locale();
-		$locale = apply_filters( 'plugin_locale', $locale, 'fresh' );
-
-//		unload_textdomain( 'wpf' );
-		if ($locale == 'en_US') return;
-
-		$file = FRESH_ABSPATH . 'languages/fresh-' . $locale . '.mo';
-		$rc = load_textdomain( 'fresh', $file );
-//		print "loaded $file $rc <br/>";
-//		$rc1 = load_plugin_textdomain( 'wfp');
-		if (0 and get_user_id() == 1) {
-			if (! $rc) print "can't load textdomain";
-//			if (! $rc1) print "can't load plugin_textdomain";
-			if (! file_exists($file)) print "file $file not found";
-//			print $file . "<br/>";
-//			print "Rc= $rc";
-		}
 	}
 
 	public function setup_environment() {
@@ -1018,13 +1001,13 @@ function PayPage($atts, $content = null)
 		print do_shortcode("[woocommerce_checkout]");
 		return;
 	}
-	print ImTranslate("In order to complete your order, register to this site.") . "<br/>";
-	print ImTranslate("You can use existing user or create local user in the form below.") . "<br/>";
+	print ETranslate("In order to complete your order, register to this site.") . "<br/>";
+	print ETranslate("You can use existing user or create local user in the form below.") . "<br/>";
 	print do_shortcode('[miniorange_social_login shape="longbuttonwithtext" theme="default" space="8" width="180" height="35" color="000000"]');
 
 	print do_shortcode('[woocommerce_checkout]');
 
-	print ImTranslate("Or with one of the following.") . "<br/>";
+	print ETranslate("Or with one of the following.") . "<br/>";
 
 	return;
 }
@@ -1063,13 +1046,13 @@ function pay_page($atts, $content = null)
 		print do_shortcode("[woocommerce_checkout]");
 		return;
 	}
-	print ImTranslate("In order to complete your order, register to this site.") . "<br/>";
-	print ImTranslate("You can use existing user or create local user in the form below.") . "<br/>";
+	print ETranslate("In order to complete your order, register to this site.") . "<br/>";
+	print ETranslate("You can use existing user or create local user in the form below.") . "<br/>";
 	print do_shortcode('[miniorange_social_login shape="longbuttonwithtext" theme="default" space="8" width="180" height="35" color="000000"]');
 
 	print do_shortcode('[woocommerce_checkout]');
 
-	print ImTranslate("Or with one of the following.") . "<br/>";
+	print ETranslate("Or with one of the following.") . "<br/>";
 
 	return;
 }

@@ -207,50 +207,7 @@ function GetParams($ignore_list = array())
 	 *
 	 */
 	function DisableTranslate() {
-		ImTranslate( "DisableTranslate" );
-	}
-
-	/**
-	 * @param $text
-	 * @param null $arg
-	 * @deprecated: use __('string', "e-fresh");
-	 *
-	 * @return string|void
-	 */
-	function ImTranslate( $text, $arg = null ) {
-		static $translate_enabled = true; // Had problems with global variable changed somehow.
-
-		if ( $text === "DisableTranslate" ) {
-			$translate_enabled = false;
-			return;
-		}
-
-		if ( ! $translate_enabled ) return $text;
-
-		$textdomain = GetArg( $arg, "textdomain", 'wpf' );
-
-		if ( is_array( $text ) ) {
-			$result = "";
-			foreach ( $text as $text_part )  $result .= ImTranslate( $text_part, $arg );
-
-			return $result;
-		}
-
-		if ( function_exists( 'translate' ) ) {
-			$t = translate( $text, $textdomain );
-		} else {
-			print "no translate function";
-			$t = $text;
-		}
-		if ( strlen( $t ) ) {
-			if ( strstr( $t, "%s" ) ) {
-				return $arg ? sprintf( $t, $arg ) : $t;
-			}
-
-			return $t;
-		} else {
-			return $text;
-		}
+		ETranslate( "DisableTranslate" );
 	}
 
 	/**
@@ -889,4 +846,44 @@ function israelpost_get_city_postcode( $city )
 	}
 
 	return - 2;
+}
+
+function ETranslate( $text, $arg = null ) {
+	static $translate_enabled = true; // Had problems with global variable changed somehow.
+
+	if ( $text === "DisableTranslate" ) {
+		$translate_enabled = false;
+		return;
+	}
+
+	if ( ! $translate_enabled ) return $text;
+
+	$textdomain = GetArg( $arg, "textdomain", 'e-fresh' );
+
+	if ( is_array( $text ) ) {
+		$result = "";
+		foreach ( $text as $text_part )  $result .= ETranslate( $text_part, $arg );
+
+		return $result;
+	}
+
+	if ( function_exists( 'translate' ) ) {
+//		print "<br/>trans $textdomain";
+		$t = translate( $text, $textdomain );
+//		print $t ." ";
+		if (! $t) $t = translate($text, 'woocommerce');
+//		print "$t ";
+	} else {
+		print "no translate function";
+		$t = $text;
+	}
+	if ( strlen( $t ) ) {
+		if ( strstr( $t, "%s" ) ) {
+			return $arg ? sprintf( $t, $arg ) : $t;
+		}
+
+		return $t;
+	} else {
+		return $text;
+	}
 }

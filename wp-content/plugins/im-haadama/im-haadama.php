@@ -53,13 +53,13 @@ function pay_page($atts, $content = null)
 	    print do_shortcode("[woocommerce_checkout]");
         return;
     }
-    print ImTranslate("In order to complete your order, register to this site.") . "<br/>";
-	print ImTranslate("You can use existing user or create local user in the form below.") . "<br/>";
+    print ETranslate("In order to complete your order, register to this site.") . "<br/>";
+	print ETranslate("You can use existing user or create local user in the form below.") . "<br/>";
 	print do_shortcode('[miniorange_social_login shape="longbuttonwithtext" theme="default" space="8" width="180" height="35" color="000000"]');
 
     print do_shortcode('[woocommerce_checkout]');
 
-    print ImTranslate("Or with one of the following.") . "<br/>";
+    print ETranslate("Or with one of the following.") . "<br/>";
 
     return;
     // [woocommerce_checkout]

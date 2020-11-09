@@ -57,7 +57,7 @@ class Finance_Salary {
 
 			case "show_add_working":
 				$args = [];
-				$args["selectors"] = array("user_id" => "gui_select_client", "project_id" => "Focus_Tasks::gui_select_project");
+				$args["selectors"] = array("user_id" => "gui_select_client", "project_id" => "Focus_Views::gui_select_project");
 				$args["post_file"] = Finance::getPostFile();
 				return Core_Gem::GemAddRow("working_rates", "Add", $args);
 		}
@@ -102,7 +102,7 @@ class Finance_Salary {
 				$args["id_field"]      = "id";
 				$args["links"]         = array( "id" => self::get_link( "working_rates", "%s" ) );
 				$args["selectors"]     = array(
-					"project_id" => "Focus_Tasks::gui_select_project",
+					"project_id" => "Focus_Views::gui_select_project",
 					"user_id"    => "Org_Worker::gui_select_user"
 				);
 				$args["edit"]          = false;
@@ -153,7 +153,7 @@ class Finance_Salary {
 	static function salary_report( $month, &$args, $user_id = 0 ) {
 		$edit_lines = GetArg( $args, "edit_lines", false );
 
-		$output = Core_Html::GuiHeader( 1, ImTranslate( "Salary data for month" ) . " " . $month );
+		$output = Core_Html::GuiHeader( 1, ETranslate( "Salary data for month" ) . " " . $month );
 		$a      = explode( "-", $month );
 		$y      = $a[0];
 		$m      = $a[1];
@@ -190,7 +190,7 @@ class Finance_Salary {
 			$has_data = true;
 		}
 		if ( ! $has_data ) {
-			$output .= ImTranslate( "No data entered" ) . Core_Html::Br();
+			$output .= ETranslate( "No data entered" ) . Core_Html::Br();
 		}
 
 		return $output;
@@ -442,8 +442,8 @@ class Finance_Salary {
 		$args              = [];
 		$args["post_file"] = Finance::getPostFile();
 		$args["selectors"] = array(
-			"project_id" => "Focus_Tasks::gui_select_project",
-			"company_id" => "Focus_Tasks::gui_select_company"
+			"project_id" => "Focus_Views::gui_select_project",
+			"company_id" => "Focus_Views::gui_select_company"
 //		,		"post_file" => $this->post_file
 		);
 		$args["check_active"] = true;
@@ -522,7 +522,7 @@ class Finance_Salary {
 			"comment"      => "Comment",
 			"line_salary" => "Total"
 		);
-		$args["selectors"]     = array( "project_id" => "Focus_Tasks::gui_select_project" );
+		$args["selectors"]     = array( "project_id" => "Focus_Views::gui_select_project" );
 		$args["skip_id"]       = true;
 		if ( $edit ) {
 			$args["add_checkbox"] = true;
@@ -542,14 +542,14 @@ class Finance_Salary {
 		$show_expense = false;
 		$show_comment = false;
 
-		if ( ! $rows ) return $result . ImTranslate( "No data" ) . Core_Html::Br();
+		if ( ! $rows ) return $result . ETranslate( "No data" ) . Core_Html::Br();
 
 		foreach ( $rows as $key => &$row ) {
 			if ( $key == "header" ) {
-				$row["base"]        = ImTranslate( "base" );
+				$row["base"]        = ETranslate( "base" );
 				$row["dur_125"]     = "125%";
 				$row["dur_150"]     = "150%";
-				$row["line_salary"] = ImTranslate( "total" );
+				$row["line_salary"] = ETranslate( "total" );
 				continue;
 			}
 			$row["weekday"] = DayName( $row["weekday"] - 1 );
@@ -719,7 +719,7 @@ class Finance_Salary {
 			case "working_rates":
 				$args["operation"] = GetParam("operation", false, true);
 				$args["selectors"]     = array(
-					"project_id" => "Focus_Tasks::gui_select_project",
+					"project_id" => "Focus_Views::gui_select_project",
 					"user_id"    => "Org_Worker::gui_select_user"
 				);
 

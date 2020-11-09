@@ -419,23 +419,6 @@ class Freight {
 	}
 
 	public function load_plugin_textdomain() {
-		$locale = is_admin() && function_exists( 'get_user_locale' ) ? get_user_locale() : get_locale();
-		$locale = apply_filters( 'plugin_locale', $locale, 'freight' );
-
-		unload_textdomain( 'wpf' );
-		if ($locale == 'en_US') return;
-
-		$file = FREIGHT_ABSPATH . 'languages/wpf-' . $locale . '.mo';
-		$rc = load_textdomain( 'wfp', $file );
-//		print "loaded $file $rc <br/>";
-//		$rc1 = load_plugin_textdomain( 'wfp');
-		if (0 and get_user_id() == 1) {
-			if (! $rc) print "can't load textdomain";
-//			if (! $rc1) print "can't load plugin_textdomain";
-			if (! file_exists($file)) print "file $file not found";
-//			print $file . "<br/>";
-//			print "Rc= $rc";
-		}
 	}
 
 	public function setup_environment() {

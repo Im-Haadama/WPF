@@ -85,15 +85,21 @@ charset=utf8;
 
 " );
 
+//		SqlQuery("drop table im_links");
         SqlQuery( "create table ${db_prefix}links
 (
-                type1 integer(11),
-                type2 integer(11),
-                id1 integer(11) not null, 
-                id2 integer(11) not null
+    id int auto_increment primary key,
+                type1 int(11) not null,
+                type2 int(11) not null,
+                id1 int(11) not null, 
+                id2 int(11) not null
 );
 
 " );
+
+		SqlQuery("create unique index ${db_prefix}links_index1 on ${db_prefix}links (type1, type2, id1);");
+		SqlQuery("create unique index ${db_prefix}links_index2 on ${db_prefix}links (type1, type2, id2);");
+
 
 		return self::UpdateInstalled(  "tables", $version );
 

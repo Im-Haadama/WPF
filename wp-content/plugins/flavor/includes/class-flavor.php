@@ -24,7 +24,7 @@ class Flavor {
 	 *
 	 * @var string
 	 */
-	public $version = '1.1';
+	public $version = '1.4';
 
 	/**
 	 * @var
@@ -161,7 +161,8 @@ class Flavor {
 		$i->AddTable("options", "option_id" );
 
 		AddAction( 'admin_enqueue_scripts', array($this, 'admin_scripts' ));
-		Core_Gem::init_hooks($this->loader);
+		Core_Gem::getInstance()->init_hooks($this->loader);
+		Flavor_Org_Views::instance()->init_hooks($this->loader);
 		Flavor_Mission::init_hooks();
 	}
 
@@ -547,9 +548,8 @@ class Flavor {
 		$locale = is_admin() && function_exists( 'get_user_locale' ) ? get_user_locale() : get_locale();
 		$locale = apply_filters( 'plugin_locale', $locale, 'flavor' );
 
-		unload_textdomain( 'flavor' );
-//		load_textdomain( 'flavor', FERSH_LANG_DIR . '/flavor/flavor-' . $locale . '.mo' );
-//		load_plugin_textdomain( 'flavor', false, plugin_basename( dirname( FLAVOR_PLUGIN_FILE ) ) . '/i18n/languages' );
+		$file = dirname( FLAVOR_PLUGIN_FILE ) . "/languages/e-fresh-$locale.mo";
+		return load_textdomain( 'e-fresh', $file );
 	}
 
 	/**
@@ -728,5 +728,4 @@ function modify_admin_bar( $wp_admin_bar )
 //	MyLog(__FUNCTION__);
 
 }
-
 ?>

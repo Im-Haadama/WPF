@@ -453,12 +453,6 @@ class Capabilites {
 	}
 
 	public function load_plugin_textdomain() {
-		$locale = is_admin() && function_exists( 'get_user_locale' ) ? get_user_locale() : get_locale();
-		$locale = apply_filters( 'plugin_locale', $locale, 'capabilites' );
-
-//		unload_textdomain( 'im-haadama' );
-//		load_textdomain( 'capabilites', FERSH_LANG_DIR . '/capabilites/capabilites-' . $locale . '.mo' );
-//		load_plugin_textdomain( 'capabilites', false, plugin_basename( dirname( CAPABILITES_PLUGIN_FILE ) ) . '/i18n/languages' );
 	}
 //
 //	/**

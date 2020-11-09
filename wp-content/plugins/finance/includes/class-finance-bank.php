@@ -180,7 +180,8 @@ class Finance_Bank
 		$income = Core_Html::GuiHyperlink("הכנסות", AddToUrl("filter", "income")) . " ";
 		$income_to_receipt = Core_Html::GuiHyperlink("קבלה להכנסות", AddToUrl("filter", "income_to_receipt")) . " ";
 		$outcome = Core_Html::GuiHyperlink("הוצאות", AddToUrl("filter", "outcome")) . " ";
-		$clear_filters = Core_Html::GuiHyperlink("בטל סינון", AddParamToUrl("filter", null));Core_Html::GuiHyperlink("בטל סינון", AddParamToUrl("filter", null));
+		$clear_filters = Core_Html::GuiHyperlink("בטל סינון", AddToUrl("filter", null));
+
 		switch($current_filter)
 		{
 			case "none":
@@ -257,7 +258,7 @@ class Finance_Bank
 			$ids = data_search( "bank" );
 			Core_Html::GuiHeader( 1, "Results" );
 			if ( ! $ids ) {
-				print ImTranslate( "Nothing found" );
+				print ETranslate( "Nothing found" );
 
 				return;
 			}
@@ -374,7 +375,7 @@ class Finance_Bank
 		$ids = data_search( "bank" );
 		Core_Html::GuiHeader( 1, "Results" );
 		if ( ! $ids ) {
-			print ImTranslate( "Nothing found" );
+			print ETranslate( "Nothing found" );
 
 			return;
 		}

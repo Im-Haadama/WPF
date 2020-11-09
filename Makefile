@@ -1,4 +1,4 @@
-.languages: wp-content/plugins/fresh/languages/wpf-he_IL.mo
+.languages: wp-content/plugins/flavor/languages/e-fresh-he_IL.mo
 	touch $@
 
 %.mo: %.po
