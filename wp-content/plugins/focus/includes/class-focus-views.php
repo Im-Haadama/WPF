@@ -542,7 +542,7 @@ class Focus_Views {
 				$args       = self::Args();
 				$company_id = GetParam( "id", true );
 				$result     .= Core_Html::GuiHeader( 2, "Invite to company" ) . " " . gui_label( "company_id", $company_id );
-				$result     .= ImTranslate( "Enter college email address: " );
+				$result     .= ETranslate( "Enter college email address: " );
 				$result     .= Core_Html::gui_table_args( array(
 					array( "email", GuiInput( "email", "", $args ) ),
 					array( "name", GuiInput( "name", "", $args ) ),
@@ -1137,7 +1137,7 @@ class Focus_Views {
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Tasks teams I'm a member of (team in my_teams). Not assigned                                              //
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		$args["title"] = ImTranslate( "My teams tasks" );
+		$args["title"] = ETranslate( "My teams tasks" );
 
 		$teams = $worker->AllTeams();
 		if ( ! $teams ) {
@@ -1181,7 +1181,7 @@ class Focus_Views {
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Tasks projects I'm a member of (team in my_projects). Not assigned                                        //
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		$args["title"] = ImTranslate( "My projects" );
+		$args["title"] = ETranslate( "My projects" );
 		// DebugVar(CommaImplode($worker->AllProjects()));
 		$projects = $worker->AllProjects();
 		if ( ! $projects ) {
@@ -1233,7 +1233,7 @@ class Focus_Views {
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Tasks I need to handle (owner = me)                                                                       //
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		$args["title"]       = ImTranslate( "Tasks assigned to me" );
+		$args["title"]       = ETranslate( "Tasks assigned to me" );
 		$args["query"]       = " owner = " . $user_id;
 		$args["limit"]       = GetParam( "limit", false, 10 );
 		$args["active_only"] = GetParam( "active_only", false, true );
@@ -1256,14 +1256,14 @@ class Focus_Views {
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Tasks I've created. Assigned to some else                                                                 //
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		$args["title"] = ImTranslate( "Tasks I've initiated to other teams" );
+		$args["title"] = ETranslate( "Tasks I've initiated to other teams" );
 		$args["query"] = " creator = $user_id and status < 2"; // . " and (owner != " . $user_id . ' or isnull(owner)) ' . ($teams ? ' and team not in (' . CommaImplode( $teams ) . ")" : '');
 		$table         = self::Taskslist( $args );
 		if ( $args["count"] ) {
 			$result .= $table;
 		} else {
-			$result .= "<br/>" . ImTranslate( "No active tasks!" );
-			$result .= ImTranslate( "Let's create first one!" ) . " ";
+			$result .= "<br/>" . ETranslate( "No active tasks!" );
+			$result .= ETranslate( "Let's create first one!" ) . " ";
 		}
 
 		$result .= Core_Html::GuiHyperlink( "create task", "?selected_tab=i_want&operation=gem_add_tasklist" ) . "<br/>";
@@ -1874,7 +1874,7 @@ class Focus_Views {
 		}
 
 		if ( im_user_can( "edit_teams" ) ) { // System editor
-			$result .= "<br/>" . ImTranslate( "System wide:" );
+			$result .= "<br/>" . ETranslate( "System wide:" );
 			$result .= Core_Html::GuiHyperlink( "All teams", AddToUrl( "operation", "show_edit_all_teams" ) ) . " ";
 			$result .= Core_Html::GuiHyperlink( "All projects", AddToUrl( "operation", "show_edit_all_projects" ) ) . " ";
 		}
@@ -1966,7 +1966,7 @@ class Focus_Views {
 	}
 
 	static function show_settings( $user_id ) {
-		$result = Core_Html::GuiHeader( 1, ImTranslate( "Settings for" ) . " " . GetUserName( $user_id ) );
+		$result = Core_Html::GuiHeader( 1, ETranslate( "Settings for" ) . " " . GetUserName( $user_id ) );
 
 		return $result;
 	}

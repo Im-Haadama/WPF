@@ -548,9 +548,8 @@ class Flavor {
 		$locale = is_admin() && function_exists( 'get_user_locale' ) ? get_user_locale() : get_locale();
 		$locale = apply_filters( 'plugin_locale', $locale, 'flavor' );
 
-		unload_textdomain( 'flavor' );
-//		load_textdomain( 'flavor', FERSH_LANG_DIR . '/flavor/flavor-' . $locale . '.mo' );
-//		load_plugin_textdomain( 'flavor', false, plugin_basename( dirname( FLAVOR_PLUGIN_FILE ) ) . '/i18n/languages' );
+		$file = dirname( FLAVOR_PLUGIN_FILE ) . "/languages/e-fresh-$locale.mo";
+		return load_textdomain( 'e-fresh', $file );
 	}
 
 	/**

@@ -224,7 +224,7 @@ class Fresh_Basket extends  Fresh_Product  {
 	{
 		$data = "";
 		$basket = new Fresh_Basket($basket_id);
-		$data .= Core_Html::GuiHeader(1, ImTranslate("basket") . " " . $basket->getName());
+		$data .= Core_Html::GuiHeader(1, ETranslate("basket") . " " . $basket->getName());
 		$data .= $basket->get_basket_content();
 		$sql = 'SELECT DISTINCT product_id, quantity, product_price(product_id) as price, quantity * product_price(product_id) as line_price FROM im_baskets WHERE basket_id = ' . $basket_id .
 		       " and post_status(product_id) like '%pub%'";
@@ -255,7 +255,7 @@ class Fresh_Basket extends  Fresh_Product  {
 				if (is_numeric($row["line_price"])) $total += $row["line_price"];
 			}
 
-			array_push($basket_content, array( "product_id" => ImTranslate("Total"), "price" => "", "quantity" => "", "line_price" => $total, "buy_total" => $buy_total));
+			array_push($basket_content, array( "product_id" => ETranslate("Total"), "price" => "", "quantity" => "", "line_price" => $total, "buy_total" => $buy_total));
 			$args["checkbox_class"] = "product_checkbox";
 
 			$data .= Core_Html::gui_table_args($basket_content, "basket_contents", $args);

@@ -153,7 +153,7 @@ class Finance_Salary {
 	static function salary_report( $month, &$args, $user_id = 0 ) {
 		$edit_lines = GetArg( $args, "edit_lines", false );
 
-		$output = Core_Html::GuiHeader( 1, ImTranslate( "Salary data for month" ) . " " . $month );
+		$output = Core_Html::GuiHeader( 1, ETranslate( "Salary data for month" ) . " " . $month );
 		$a      = explode( "-", $month );
 		$y      = $a[0];
 		$m      = $a[1];
@@ -190,7 +190,7 @@ class Finance_Salary {
 			$has_data = true;
 		}
 		if ( ! $has_data ) {
-			$output .= ImTranslate( "No data entered" ) . Core_Html::Br();
+			$output .= ETranslate( "No data entered" ) . Core_Html::Br();
 		}
 
 		return $output;
@@ -542,14 +542,14 @@ class Finance_Salary {
 		$show_expense = false;
 		$show_comment = false;
 
-		if ( ! $rows ) return $result . ImTranslate( "No data" ) . Core_Html::Br();
+		if ( ! $rows ) return $result . ETranslate( "No data" ) . Core_Html::Br();
 
 		foreach ( $rows as $key => &$row ) {
 			if ( $key == "header" ) {
-				$row["base"]        = ImTranslate( "base" );
+				$row["base"]        = ETranslate( "base" );
 				$row["dur_125"]     = "125%";
 				$row["dur_150"]     = "150%";
-				$row["line_salary"] = ImTranslate( "total" );
+				$row["line_salary"] = ETranslate( "total" );
 				continue;
 			}
 			$row["weekday"] = DayName( $row["weekday"] - 1 );

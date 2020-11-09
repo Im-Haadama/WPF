@@ -690,7 +690,7 @@ class Core_Gem {
 //		print "done.af=$action_file<br/>";
 //		print "af=$action_file<br/>";
 		$result .= '<form action="' . $action_file . '" name="upload_csv" method="post" enctype="multipart/form-data">' .
-		           ImTranslate('Load from csv file') .
+		           ETranslate('Load from csv file') .
 		           '<input type="file" name="fileToUpload" id="fileToUpload">
         <input type="submit" value="טען" name="submit">
     	</form>';

@@ -81,7 +81,7 @@ class Fresh_Supply {
 		}
 		// Name is mandatory.
 		if ( ! count( $name_idx ) ) {
-			print ImTranslate(array("Error: ", "name column is missing."));
+			print ETranslate(array("Error: ", "name column is missing."));
 			print "<br/>";
 
 			return null;
@@ -89,26 +89,26 @@ class Fresh_Supply {
 		// Quantity is needed in supply (and orders).
 		if ( ! count( $quantity_idx ) ) {
 			if ($needed_fields["quantity"]) {
-				print ImTranslate( array("Error: ", "quantity column is missing." ));
+				print ETranslate( array("Error: ", "quantity column is missing." ));
 
 				return null;
 			}
-			print ImTranslate(array("Info: ", "quantity column is missing."));
+			print ETranslate(array("Info: ", "quantity column is missing."));
 		}
 
 		// Optional
 		if ( ! count( $item_code_idx ) ) {
-			print ImTranslate(array("Info: ", "can't find item code header")) . "<br/>";
+			print ETranslate(array("Info: ", "can't find item code header")) . "<br/>";
 		}
 
 		// Price is needed in pricelist.
 		if ( ! count( $price_idx ) ) {
 			if (isset($needed_fields["price"])){
-				print ImTranslate(array("Error: ",  "can't find price header")) . "<br/>";
+				print ETranslate(array("Error: ",  "can't find price header")) . "<br/>";
 
 				return null;
 			}
-			print ImTranslate(array("Info: ", "can't find price header"));
+			print ETranslate(array("Info: ", "can't find price header"));
 		}
 		if ( $debug ) {
 			print "headers: <br/>";

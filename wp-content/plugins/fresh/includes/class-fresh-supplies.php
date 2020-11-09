@@ -243,7 +243,7 @@ class Fresh_Supplies {
 		$result = self::SupplyHeader("יבוא הזמנה", 'onchange="supply_new_supplier_selected(this, \'' . $action . '\')"');
 
 		$result .= '<form name="upload_csv" method="post" enctype="multipart/form-data">' .
-		           ImTranslate('Load from csv file') .
+		           ETranslate('Load from csv file') .
 		           '<input type="file" name="fileToUpload" id="fileToUpload">
         <input type="submit" value="טען" name="submit" disabled>
     	</form>
@@ -279,7 +279,7 @@ class Fresh_Supplies {
 	function create_supply_from_file() {
 		$supplier_id = GetParam( "supplier_id" );
 		$S = new Fresh_Supplier($supplier_id);
-		print ImTranslate( "Creating supply for" ) . " " . $S->getSupplierName() . " <br/>";
+		print ETranslate( "Creating supply for" ) . " " . $S->getSupplierName() . " <br/>";
 
 		if (! isset($_FILES['fileToUpload']))
 			return "No file selected";

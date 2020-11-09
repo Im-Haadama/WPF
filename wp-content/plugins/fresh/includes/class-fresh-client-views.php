@@ -354,7 +354,7 @@ class Fresh_Client_Views {
 
 		$data1 = Core_Data::TableData($sql, $args);
 
-		if (! $data1) return ImTranslate("No orders");
+		if (! $data1) return ETranslate("No orders");
 
 		if ($admin) foreach ($data1 as $id => $row)
 		{

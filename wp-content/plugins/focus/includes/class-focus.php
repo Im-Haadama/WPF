@@ -432,16 +432,6 @@ class Focus {
 	 */
 
 	public function load_plugin_textdomain() {
-		$locale = is_admin() && function_exists( 'get_user_locale' ) ? get_user_locale() : get_locale();
-		$locale = apply_filters( 'plugin_locale', $locale, 'focus' );
-
-//		unload_textdomain( 'focus' );
-		$file = WP_LANG_DIR . '/im-haadama-' . $locale . '.mo';
-//		print "trying to load $file <br/>";
-		// wp-content/languages/plugins/im_haadama-he_IL.po
-		$rc = load_textdomain( 'im-haadama', $file );
-//		print "rc=$rc<br/>";
-//		load_plugin_textdomain( 'focus', false, plugin_basename( dirname( FOCUS_PLUGIN_FILE ) ) . '/i18n/languages' );
 	}
 //
 //	/**

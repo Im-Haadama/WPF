@@ -460,7 +460,7 @@ class Core_Html {
 			if ( $center ) $style .= 'text-align:center; ';
 			if ( strlen( $style ) ) $data .= 'style="' . $style . '"';
 		}
-		$data .= ">" . ImTranslate( $text );
+		$data .= ">" . ETranslate( $text );
 		if ($close) $data .= "</h" . $level . ">";
 
 		return $data;

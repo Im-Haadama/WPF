@@ -255,7 +255,7 @@ class Core_Data
 						$field = substr($field, $as_pos + 4);
 					}
 					if ( (! $skip_id or strtolower( $field ) !== "id") and !isset($args["hide_cols"][$field]))
-						$result[ $field ] = ImTranslate( ( isset( $header_fields[ $field ] ) ? $header_fields[ $field ] : $field ) );
+						$result[ $field ] = ETranslate( ( isset( $header_fields[ $field ] ) ? $header_fields[ $field ] : $field ) );
 				}
 			} else {
 				$result = $header_fields;
@@ -270,7 +270,7 @@ class Core_Data
 			return null;
 
 		$headers = array();
-		if (GetArg($args, "add_checkbox", false)) $headers["select"] = ImTranslate("select");
+		if (GetArg($args, "add_checkbox", false)) $headers["select"] = ETranslate("select");
 
 		// If not sent, create from database fields.
 		if (strstr($sql, "describe") or strstr($sql, "show"))
@@ -278,7 +278,7 @@ class Core_Data
 			while ($row = SqlFetchRow($result))
 			{
 				if (! $skip_id or strtolower($row[0]) !== "id" and !isset($args["hide_cols"])) {
-					$headers[$row[0]] = ImTranslate($row[0]);
+					$headers[$row[0]] = ETranslate($row[0]);
 					// array_push($headers, im_translate($row[0]));
 				}
 			}
@@ -287,7 +287,7 @@ class Core_Data
 			$fields = mysqli_fetch_fields( $result );
 			foreach ( $fields as $val ) {
 				if ((! $skip_id or strtolower($val->name) !== "id") and !isset($args["hide_cols"][$val->name])) {
-					$headers [$val->name] = ImTranslate($val->name);
+					$headers [$val->name] = ETranslate($val->name);
 				}
 				$i ++;
 			}
@@ -615,7 +615,7 @@ class Core_Data
 					if ( $h_line ) {
 						// print "adding $key<br/>";
 //					print "trans " . $header_fields[$key] . "<br/>";
-						$h_line[ $key ] = ImTranslate( $header_fields[ $key ++ ], $args );
+						$h_line[ $key ] = ETranslate( $header_fields[ $key ++ ], $args );
 					}
 				}
 			}

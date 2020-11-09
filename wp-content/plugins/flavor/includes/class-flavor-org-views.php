@@ -197,7 +197,7 @@ class Flavor_Org_Views {
 //
 //			Core_Html::GuiDiv("members", Core_Html::GuiHeader( 1, "Add member" )));
 
-         $member_add = Core_Html::GuiDiv("add_member", Core_Html::GuiHeader(2, "Add") .
+         $member_add = Core_Html::GuiDiv("add_member", Core_Html::GuiHeader(2, "add") .
                  Focus_Views::gui_select_worker( "new_member", null, $args ) .
 		    Core_Html::GuiButton( "btn_add_member", "add", array( "action" => "team_add_member('" . Focus::getPost() . "', $team_id )" )));
 
