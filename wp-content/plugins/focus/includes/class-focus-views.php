@@ -193,7 +193,7 @@ class Focus_Views {
 		$form_table = GetArg( $args, "form_table", null );
 		$events     = GetArg( $args, "events", null );
 
-		$projects_list      = $user->AllProjects("is_active = 1" , array("id", "project_name") );
+		$projects_list      = $user->GetAllProjects("is_active = 1" , array("id", "project_name") );
 		if ($projects_list) {
 			$args["values"] = $projects_list;
 			$args["id_key"] = "id";
@@ -996,7 +996,6 @@ class Focus_Views {
 		$worker = new Org_Worker( $user_id );
 		$tabs   = array();
 		$args = self::Args("tasklist");
-
 		$result .= self::search_box();
 
 		$selected_tab = GetParam("st_main", false, "my_work");
@@ -1217,9 +1216,9 @@ class Focus_Views {
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		$args["title"] = ImTranslate( "My teams tasks" );
 
-		$teams         = $worker->AllTeams();
+		$teams         = $worker->GetAllTeams();
 		if (! $teams) return "No teams";
-		$workers = $worker->AllWorkers();
+		$workers = $worker->GetAllWorkers();
 		if (! $workers) return null;
 
 		// Todo: if more than 6 workers need to organize differently.
@@ -1255,7 +1254,7 @@ class Focus_Views {
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		$args["title"] = ImTranslate( "My projects" );
 		// DebugVar(CommaImplode($worker->AllProjects()));
-		$projects = $worker->AllProjects();
+		$projects = $worker->GetAllProjects();
 		if (! $projects) return "no projects for user " . $worker->getName();
 
 		$args["query"] = " id in (" . CommaImplode($projects) . ")";
@@ -1589,8 +1588,8 @@ class Focus_Views {
 
 		$args["title"]     = $entity_name;
         $args["hide_cols"] = array("status" => true,"preq" => true,"task_type" => true,
-            "mission_id" => true, "mission_id" => true, "location_name" => true,
-            "location_address" => true, "is_active" => true);
+            "mission_id" => true, "location_name" => true, "location_address" => true,
+            "is_active" => true, "created" => true);
 		$args["header_fields"] = array(
             "date"             => "Start date",
             "task_title"       => "Title",
@@ -1608,7 +1607,8 @@ class Focus_Views {
 			"creator"          => "Creator",
 			"task_type"        => "Task type",
 			"mission_id"       => "Mission",
-            "team"             => "Team"
+            "team"             => "Team",
+            "created"          => "Created"
 		);
 
 		//$new_task = new Focus_Tasklist($row_id);
@@ -1679,7 +1679,6 @@ class Focus_Views {
 			if (strstr($t->getName(), $prefix)) $found_personal = true;
 		}
 		if (! $found_personal) {
-			die("cccc");
 			Org_Team::Create($user_id, $prefix . " " . $worker->getName());
 		}
 
@@ -2400,7 +2399,7 @@ class Focus_Views {
             $row["creator"] = get_user_id();
         }
         if(!isset($row["created"])){
-            $row["created"] = date_i18n("H:i" );
+            $row["created"] = date_i18n("d/m/y \a\t g:i  A " );
         }
         return $row;
     }
