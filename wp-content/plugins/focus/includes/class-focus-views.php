@@ -2013,25 +2013,42 @@ class Focus_Views {
 
 		// The user is the manager of the company.
 		$companies       = $worker->GetCompanies( true );
-		$companies_teams = array();
+		$teams = array();
 		foreach ( $companies as $company_id ) {
 			$company_id    = new Org_Company( $company_id );
 			$company_teams = $company_id->getTeams(); //get teams in company
 			foreach ( $company_teams as $company_team ) {
-				if ( ! in_array( $company_team, $companies_teams ) ) // check if a team is already exist
+				if ( ! in_array( $company_team, $teams ) ) // check if a team is already exist
 				{
-					array_push( $companies_teams, $company_team );
+					array_push( $teams, $company_team );
 				}
 			}
 		}
 
+		// Specific given sender permission
+		$can_send_to = $worker->CanSendTasks();
+//		var_dump($can_send_to);
+//		print "<br/>";
+//		var_dump($can_send_to);
+		foreach ($can_send_to as $team) {
+//			print $team . "<br/>";
+			if (! in_array($team, $teams))
+			array_push($teams, $team);
+		}
+
+		$data = array();
+		foreach ($teams as $team) {
+			$t = new Org_Team($team);
+			if ($t->getName())
+				$data[] = array("id"=>$team, "name"=>$t->getName());
+		}
 		//teams return all the teams in the user's company.
 		//$teams = SqlQueryArrayScalar( "select team_name from ${db_prefix}working_teams where manager = " . $user_id );
 		$debug            = false; // (get_user_id() == 1);
-		$args["values"]   = $companies_teams;
+		$args["values"]   = $data;
 		$args["debug"]    = $debug;
-		$args["name"]     = "team_name";
-		$arg["id_key"]    = "id";
+//		$args["name"]     = "team_name";
+//		$arg["id_key"]    = "id";
 		$args["selected"] = $selected;
 
 		// collision between query of the container and the selector.

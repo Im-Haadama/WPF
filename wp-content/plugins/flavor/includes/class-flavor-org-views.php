@@ -77,7 +77,7 @@ class Flavor_Org_Views {
 					$row["team_members"] = ( $all ? CommaImplode( $all ) : null );
 
 					// Senders
-					$senders        = $team->CanSendTasks();
+					$senders        = $team->Senders();
 					$row['senders'] = ( $senders ? CommaImplode( $senders ) : null );
 					// " ";				.				                  Core_Html::GuiHyperlink("[Edit]", AddToUrl(array("operation"=>"team_sender_show_edit", "id" => $team->getId())));
 

@@ -171,12 +171,12 @@ class Org_Team {
 		$db_prefix = GetTablePrefix();
 
 		$team_id = $this->getId();
-		$type1 = FlavorDbObjects::users;
+		$type1 = FlavorDbObjects::team;
 		$type2 = FlavorDbObjects::sender;
 		return SqlQuery("insert into ${db_prefix}links (type1, type2, id1, id2) values($type1, $type2, $worker_id, $team_id)");
 	}
 
-	function CanSendTasks($include_name = false)
+	function Senders($include_name = false)
 	{
 		$db_prefix = GetTablePrefix();
 
@@ -201,14 +201,13 @@ class Org_Team {
 		if ($debug) print "<br/>";
 
 		// Add senders.
-		$type1 = FlavorDbObjects::users;
+		$type1 = FlavorDbObjects::team;
 		$type2 = FlavorDbObjects::sender;
 		$id = $this->id;
 		$sql = "select id1 from ${db_prefix}links where type1=$type1 and type2=$type2 and id2=$id";
 		$ids = SqlQueryArrayScalar($sql);
 		foreach ($ids as $id)
 			$senders[] = $id;
-
 
 		// Add the name if required.
 		if ($include_name) foreach ($senders as $key => $id)

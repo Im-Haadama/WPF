@@ -50,7 +50,7 @@ class Fresh_Packing {
 			if ( $filter_stock and ($P->getStock() >= $quantity_array[0] )) continue;
 
 			if ( $P->isDraft() ) $row[] = "טיוטא";
-			else $row[] = gui_checkbox( "chk" . $prod_id, $checkbox_class );
+			else $row[] = Core_Html::GuiCheckbox( "chk" . $prod_id, 0, array("checkbox_class" => $checkbox_class ));
 			$row[] = $P->getName();
 			$row[] = Core_Html::GuiHyperlink( isset( $quantity_array[0] ) ? round( $quantity_array[0], 1 ) : 0,
 				"get-orders-per-item.php?prod_id=" . $prod_id . ( $history ? "&history" : "" ) );

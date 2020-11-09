@@ -69,7 +69,7 @@ class Org_Worker extends Core_users
 		    $this->teams = CommaArrayExplode($data);
 	    }
 
-        if($include_names){  //return the teams that the user belong to
+        if ($include_names){  //return the teams that the user belong to
             $result = array();
             foreach ($this->teams as $team_id){
                 $team = new Org_Team($team_id);
@@ -82,6 +82,7 @@ class Org_Worker extends Core_users
         }
 
         if (! $this->teams) {
+        	die ("AAAAA");
             // Add personal team and return it.
             return array( Org_Team::Create($this->id, __("Personal team") . " " . EscapeString($this->getName())));
         }
@@ -187,27 +188,42 @@ class Org_Worker extends Core_users
     }
 
     // Which teams the worker can send to.
-    function CanSentTo()
+    function CanSendTasks()
     {
+    	$db_prefix = GetTablePrefix( "links" );
     	$teams = array();
 
 	    // The user is the manager of the company.
 	    $companies        = $this->GetCompanies(true);
 	    $companies_teams = array();
 	    foreach ($companies as $company_id){
+//	    	print "comp $company_id<br/>";
 		    $company_id = new Org_Company($company_id);
 		    $company_teams = $company_id->getTeams(); //get teams in company
 		    foreach ($company_teams as $company_team){
+//		    	print $company_team . "<br/>";
 			    if(!in_array( $company_team,$companies_teams)) // check if a team is already exist
 				    array_push($teams, $company_team);
 		    }
 	    }
 
 	    // Team manager
-	    foreach (self::GetAllTeams() as $team)
-	    	if (! in_array($team, $teams)) array_push($teams, $team);
+	    foreach (self::GetAllTeams() as $team) {
+		    if ( ! in_array( $team, $teams ) ) {
+//		    	print $team . "<br/>";
+			    array_push( $teams, $team );
+		    }
+	    }
 
-		return $teams;
+	    $type1 = FlavorDbObjects::users;
+	    $type2 = FlavorDbObjects::sender;
+	    $id = $this->getId();
+	    $sql = "select id2 from ${db_prefix}links where type1=$type1 and type2=$type2 and id1=$id";
+	    print $sql;
+	    foreach (SqlQueryArrayScalar($sql) as $team_id)
+	    	if (! in_array($team_id, $teams)) array_push($teams, $team_id);
+
+	    return $teams;
     }
 
 //	function AddWorkingProject($user_id, $company_id, $project_id)
@@ -239,7 +255,6 @@ class Org_Worker extends Core_users
 ///////////////////////
 /// Team functions. ///
 ///////////////////////
-
 
 
 	/**
