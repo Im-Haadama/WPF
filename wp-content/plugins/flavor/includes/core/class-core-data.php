@@ -494,7 +494,6 @@ class Core_Data
 			} while (0);
 			$row_data[$key] = $value;
 
-
 			if ($accumulation_row and isset($accumulation_row[$key][1]) and is_callable($accumulation_row[$key][1])) {
 				$accumulation_row[ $key ][1]( $accumulation_row[ $key ][0], $value );
 			}
@@ -552,7 +551,7 @@ class Core_Data
 //	if ($links) $data = sprintf($links[$key], $value)
 //}
 
-	static function RowsData($sql, $id_field, $skip_id, $v_checkbox, $checkbox_class, $h_line, $v_line, $m_line, $header_fields, $meta_fields, $meta_table, &$args)
+	static function RowsData($sql, $id_field, $skip_id, bool $v_checkbox, $checkbox_class, $h_line, $v_line, $m_line, $header_fields, $meta_fields, $meta_table, &$args)
 	{
 		$result = SqlQuery( $sql );
 
@@ -708,7 +707,7 @@ class Core_Data
 		$meta_table = GetArg($args, "meta_table", null);
 		$meta_key_field = GetArg($args, "meta_key", "id");
 		$values = GetArg($args, "values", null);
-		$v_checkbox = GetArg($args, "v_checkbox", null);
+		$v_checkbox = GetArg($args, "v_checkbox", false);
 		$checkbox_class = GetArg($args, "checkbox_class", "checkbox");
 		$header_fields = GetArg($args, "header_fields", null);	 $header_fields = Core_Fund::array_assoc($header_fields);
 

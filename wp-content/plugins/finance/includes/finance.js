@@ -45,7 +45,7 @@ function do_update(xmlhttp)
 }
 
 function salary_del_items(post_file) {
-    document.getElementById("btn_delete").disabled = true;
+    document.getElementById("btn_delete_from_report").disabled = true;
 
     var collection = document.getElementsByClassName("working_days");
     var params = new Array();
@@ -55,7 +55,7 @@ function salary_del_items(post_file) {
             params.push(id);
         }
     }
-    execute_url(post_file + "?operation=salary_delete&params=" + params, action_hide_rows, "working_days");
+    execute_url(post_file + "?operation=salary_delete&params=" + params, function(xmlhttp3, obj) { action_hide_rows(xmlhttp3, obj); enable_btn("btn_delete_from_report");}, "working_days");
 
 }
 function salary_add_item(post_file, user_id)

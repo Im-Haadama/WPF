@@ -219,7 +219,6 @@ class Org_Worker extends Core_users
 	    $type2 = FlavorDbObjects::sender;
 	    $id = $this->getId();
 	    $sql = "select id2 from ${db_prefix}links where type1=$type1 and type2=$type2 and id1=$id";
-	    print $sql;
 	    foreach (SqlQueryArrayScalar($sql) as $team_id)
 	    	if (! in_array($team_id, $teams)) array_push($teams, $team_id);
 

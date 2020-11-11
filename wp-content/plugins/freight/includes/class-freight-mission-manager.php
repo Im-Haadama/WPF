@@ -375,19 +375,12 @@ group by pm.meta_value, p.post_status");
 
 		// Collect the points
 		self::collect_points( $rows, $mission_id);
-//		var_dump($this->prerequisite);
-		if (0) foreach ($this->prerequisite as $key => $array)
-		{
-			print "$key: ";
-			foreach ($array as $item)
-				print "$item, ";
-			print "<br/>";
-		}
 
-		$path = array(); // $mission->getStartAddress());
+		$path = array($mission->getStartAddress());
 
 		// Build the path
-		self::find_route_1( $mission->getStartAddress(), $this->stop_points, $path, false, $mission->getEndAddress() );
+		self::find_route_1(array_diff($this->stop_points, array($mission->getStartAddress())), // Remove start address if appears in points.
+			$path, false, $mission->getEndAddress() );
 	}
 
 	static private function parse_output($output)
@@ -481,8 +474,6 @@ group by pm.meta_value, p.post_status");
 			if ($site_id == $multisite->getLocalSiteID() and $order_site != "supplies"){
 				$order = new Fresh_Order($order_id);
 				if ($supply_points = $order->SuppliersOnTheGo($mission_id)){
-					var_dump($supply_points);
-					print "<br/>";
 					$supplier = new Fresh_Supplier($supply_points[0]);
 					$this->AddPrerequisite($order_id, $supplier->getAddress());
 				}
@@ -492,6 +483,7 @@ group by pm.meta_value, p.post_status");
 
 	function add_stop_point( $point, $order_id, $site_id)
 	{
+		$point = trim($point);
 		if ( ! in_array( $point, $this->stop_points ) ) {
 			array_push( $this->stop_points, $point);
 			$this->point_sites[$point] = $site_id;
@@ -549,16 +541,16 @@ group by pm.meta_value, p.post_status");
 		return - 1;
 	}
 
-	function find_route_1( $node, $rest, &$path, $print, $end )
+	function find_route_1( $rest, &$path, $print, $end )
 	{
 		if (! $rest or ! is_array($rest)) return;
 		if ( count( $rest ) == 1 ) {
 			array_push( $path, $rest[0] );
 			return;
 		}
-		$this->find_route( $node, $rest, $path );
+		$this->find_route( $rest, $path );
 
-		$best_cost = self::evaluate_path( $node, $path, $end );
+		$best_cost = self::evaluate_path( $path, $end );
 
 		if ($print) {
 			print "first guess route<br/>";
@@ -587,90 +579,87 @@ group by pm.meta_value, p.post_status");
 		}
 	}
 
-	function find_route( $node, $rest, &$path )
-	{
+	// Make sure that point doesn't appear twice
+	function find_route( $rest, &$path ) {
 		$debug = 0;
 
-		if ($debug)
-		{
-			print __FUNCTION__ . " $node<br/>";
-			var_dump($rest); print "<br/>";
-			var_dump($this->point_sites);
-			foreach ($rest as $key => $value) {
-				$site_id   = $this->point_sites[ $value  ];
-				$order_id  = $this->point_orders[ $value ];
-				print "$key $value pri= " . self::order_get_pri($order_id, $site_id) . "<br/>";
-			}
-		}
-		if ($debug) {
-			print "<br/>Find route from $node<br/>";
-			print "<table>";
-		}
+		if ($debug) print "================ START ====================<br/>";
+		$current_node = end($path);
+
 		if ( sizeof( $rest ) == 1 ) {
-			foreach ($rest as $last_node) array_push( $path, $last_node );
+			array_push( $path, reset( $rest ) );
 			return;
 		}
 
-		$pri = 10000;
-		$min     = 	0;
-		$min_seq = 0;
-		if ($debug) print "<tr><td>checking first " . reset($rest)  . "</td><td> Current pri $pri, dis $min</td></tr>";
+		if ($debug) var_dump($rest);
+		$candidates = $rest;
+		// Remove points that does not meet preq.
+		foreach ( $candidates as $key => $candidate ) {
+			$order_id = $this->point_orders[ $candidate ];
 
-		foreach ($rest as $i => $check_node) {
-			$d         = self::get_distance( $node, $check_node );
-			$site_id   = $this->point_sites[ $check_node ];
-			$order_id  = $this->point_orders[ $check_node ];
-			$order_pri = self::order_get_pri( $order_id, $site_id );
-
-			if ( $debug ) {
-				print "<tr><td>checking " .$check_node . "</td><td> dis=$d pri=$order_pri. Current pri $pri, dis $min </td></tr>";
-			}
-
-			if ( ( $order_pri < $pri ) or ( ( $order_pri == $pri ) and ( $d < $min ) ) ) {
-//				print "<tr><td>inside " . ($order_pri < $pri)  . "</td><td> " .(($order_pri = $pri) and ($d < $min)) ." </td></tr>";
-				$preq_meet = true;
-				if ( isset( $this->prerequisite[ $order_id ] ) ) { //and strlen ($prerequisite[$rest[$i]])){
-					if ($debug) print "<tr>Checking for $order_id ";
-					foreach ( $this->prerequisite[ $order_id ] as $point ) {
-						if ((trim($point) != trim($rest[$i]))
-						    and ! in_array( $point, $path, true ) ) {
-							if ( $debug ) {
-								print "<td>preq $point not met</td>";
-							}
-							$preq_meet = false;
-						}
-					}
-					if ($debug) print "</tr/>";
+			if (isset($this->prerequisite[$order_id]))
+				if ($debug) print "<br/>checking preq for $candidate: ";
+				if (isset($this->prerequisite[$order_id])) {
+					$diff = array_diff($this->prerequisite[$order_id], $path);
+					if ($debug) var_dump($diff);
+					if ($diff) unset( $candidates[ $key ] );
 				}
-				if ( $preq_meet ) {
-					if ( $debug ) {
-						print " new min $i ";
-					}
-					$min     = $d;
-					$min_seq = $i;
-					$pri     = $order_pri;
-				}
-			}
 		}
+
+
+		// If just 1 candidate remains go there.
+		if ( sizeof( $rest ) == 1 ) {
+			if ($debug) {
+				print "just " . reset($rest) . " left<br/>";
+			}
+			array_push( $path, reset( $rest ) );
+
+			return;
+		}
+
+		if (! $candidates or ! count($candidates)) die ("nothing to work with");
+		// Pick from the left points the point with minimum priority and distance.
 		if ($debug) {
-			print "</table>";
-			print "<tr><td>=====>selected $rest[$min_seq] $pri</td></tr></table>";
+			print "<br/>checking candidates<br/>";
+			var_dump( $candidates );
+		}
+		$selected          = array_shift( $candidates );
+		if ($debug) print "checking $selected<br/>";
+		$selected_priority = self::order_get_pri( $this->point_orders[ $selected ], $this->point_sites[ $selected ] );
+		$selected_distance = self::get_distance( $current_node, $selected );
+
+		foreach ( $candidates as $candidate ) {
+			$candidate_priority = self::order_get_pri( $this->point_orders[ $candidate ], $this->point_sites[ $candidate ] );
+			$candidate_distance = self::get_distance( $current_node, $candidate );
+			if ($debug) print "evaluating $candidate pri=$candidate_priority dis=$candidate_distance<br/>";
+			if ( $candidate_priority <= $selected_priority and $candidate_distance <= $selected_distance ) {
+				$selected          = $candidate;
+				$selected_distance = $candidate_distance;
+				$selected_priority = $candidate_priority;
+			}
 		}
 
-		$next = $rest[ $min_seq ];
-		array_push( $path, $next );
-		$new_rest = $rest;
-		if (! isset ($new_rest[$min_seq])) die ("BUGGG");
-		unset($new_rest[$min_seq]);
-		$this->find_route( $next, $new_rest, $path);
+		if ($debug)
+		{
+			print "--------------------------- Selected: $selected ------------------<Br/>";
+		}
+		array_push( $path, $selected );
+		// Remove it from $rest
+		foreach ( $rest as $key => $item ) {
+			if ( trim( $rest[ $key ] ) == trim( $selected ) ) {
+				unset ( $rest[ $key ] );
+				$this->find_route( $rest, $path );
+				return;
+			}
+		}
 	}
 
-	static function evaluate_path( $start, $elements, $end ) {
+	static function evaluate_path( $elements, $end ) {
 //	if ( $end < 1 ) {
 //		print "end is " . $end . "<br/>";
 //	}
 		// $cost = get_distance( $start, $elements[0] );
-		$cost = self::get_distance_duration( $start, $elements[0] );
+		$cost = 0; // self::get_distance_duration( $start, $elements[0] );
 		$size = sizeof( $elements );
 //	print "size: " . $size . "<br/>";
 		for ( $i = 1; $i < $size; $i ++ ) {
@@ -953,7 +942,9 @@ group by pm.meta_value, p.post_status");
 
 	function AddPrerequisite($order_id, $pre_point)
 	{
+//		print "Adding $pre_point to $order_id<br/>";
 		if (! isset($this->prerequisite[$order_id])) $this->prerequisite[$order_id] = array();
-		if (! in_array($pre_point, $this->prerequisite[$order_id])) array_push($this->prerequisite[$order_id], $pre_point);
+		if (! in_array($pre_point, $this->prerequisite[$order_id]))
+			array_push($this->prerequisite[$order_id], trim($pre_point));
 	}
 }

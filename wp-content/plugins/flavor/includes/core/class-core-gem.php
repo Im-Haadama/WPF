@@ -12,7 +12,6 @@ class Core_Gem {
 	private function __construct( ) {
 		$this->object_types = array();
 		self::$_instance = $this;
-//		AddAction("gem_show", array($this, "show_wrap"), 10, 3);
 		AddAction("gem_v_show", array(__CLASS__, "v_show_wrap"));
 		AddAction("gem_v_csv", array(__CLASS__, "gem_v_csv"));
 
@@ -28,6 +27,8 @@ class Core_Gem {
 	{
 		$loader->AddAction("gem_do_import", $this, "do_import_wrap");
 		$loader->AddAction("gem_v_do_import", $this, "do_v_import_wrap");
+		$loader->AddAction("gem_show", $this, "show_wrap", 10, 3);
+
 	}
 
 	/**
@@ -109,7 +110,7 @@ class Core_Gem {
 			return false;
 		}
 		Core_Data::set_args_value($args);
-		unset($args["add_checkbox"]);
+		// 10-11-2020 not sure if needed: unset($args["add_checkbox"]);
 		return $result . self::GemAddRow($table_name, null, $args);
 	}
 
@@ -298,7 +299,6 @@ class Core_Gem {
 
 	static function v_add_wrapper($operation, $id, $args)
 	{
-		print "AAAAA";
 		$table_name = GetParam("table", true);
 		$instance = self::getInstance();
 		if (! $instance) return __CLASS__ . ":" . __FUNCTION__ . " no instance. Call constructor first";
@@ -306,7 +306,7 @@ class Core_Gem {
 		return self::GemAddRow($table_name, 'Add', $args);
 	}
 
-	static function show_wrapper($result, $id = 0, $args = null)
+	static function show_wrap($result, $id = 0, $args = null)
 	{
 		$table_name = GetParam("table", true);
 		return $result . self::GemElement($table_name, $id, $args);
@@ -323,7 +323,7 @@ class Core_Gem {
 		// $next_page = GetArg($args, "next_page", null);
 		if (! $post) die(__FUNCTION__ . " :" . $text . "must send post_file " . $table_name);
 
-            $next_page = apply_filters("gem_next_page_" . $table_name, '');
+            $next_page = @apply_filters("gem_next_page_" . $table_name, '');
 //		print "np=$next_page<br/>";
 		if ($next_page){
 			$result .= '<script>
@@ -366,6 +366,9 @@ class Core_Gem {
 		if (!isset($args["transpose"])) $args["transpose"] = true;
 		if (!isset($args["edit"])) $args["edit"] = true;
 		if (!isset($args["hide_cols"])) $args["hide_cols"] = array();
+		$args["v_checkbox"] = true;
+		$args["checkbox_class"] = $table_name;
+
 		// Todo: hiding default values
 //		$args["hide_cols"]["is_active"] = 1;
 //		$args["values"]["is_active"] = 1;

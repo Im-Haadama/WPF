@@ -11,6 +11,8 @@ class Focus_Views {
 		$loader->AddAction( 'add_worker', $this, 'doAddCompanyWorker', 11, 3 );
 		$loader->AddAction( "tasklist_worker", $this, "show_worker_wrapper", 10, 2 );
 
+		$loader->AddAction('wp_enqueue_scripts', $this, 'enqueue_scripts');
+
 //		$loader->AddAction( "gem_add_team_members", array( __CLASS__, 'show_edit_team' ), 10, 3 );
 //		$loader->AddAction( "show_edit_team", array( __CLASS__, 'show_edit_team' ), 10, 3 );
 //		$loader->AddAction( "gem_edit_projects", array( $this, 'ShowProjectMembers' ), 11, 3 );
@@ -1260,6 +1262,7 @@ class Focus_Views {
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		$args["title"] = ETranslate( "Tasks I've initiated to other teams" );
 		$args["query"] = " creator = $user_id and status < 2"; // . " and (owner != " . $user_id . ' or isnull(owner)) ' . ($teams ? ' and team not in (' . CommaImplode( $teams ) . ")" : '');
+		$args["class"] = "sortable";
 		$table         = self::Taskslist( $args );
 		if ( $args["count"] ) {
 			$result .= $table;
@@ -1584,6 +1587,7 @@ class Focus_Views {
 		$args["companies"] = $worker->GetCompanies();
 		$args["debug"]     = 0; // get_user_id() == 1;
 		$args["post_file"] = self::instance()->post_file;
+		$args["v_checkbox"] =true;
 
 		return Core_Gem::GemElement( $table_name, $row_id, $args );
 	}
@@ -1913,7 +1917,7 @@ class Focus_Views {
 	static function search_by_text( $user_id, $text ) {
 		$result = [];
 		$result = array_merge( $result, self::project_list_search( $user_id, $text ) );
-		$result = array_merge( $result, self::task_list_search( "status < 2 and task_description like " . QuotePercent( $text ) ) );
+		$result = array_merge( $result, self::task_list_search( "status < 2 and (task_description like " . QuotePercent( $text ) . " or task_title like " . QuotePercent( $text ) . ")" ) );
 		$result = array_merge( $result, self::template_list_search( " is_active = 1 and task_description like " . QuotePercent( $text ) ) );
 
 		if ( count( $result ) < 1 ) {
@@ -1925,7 +1929,8 @@ class Focus_Views {
 
 	static function task_list_search( $query ) {
 		$db_prefix = GetTablePrefix();
-		$tasks     = SqlQueryArray( "select id, task_description from ${db_prefix}tasklist where $query" );
+		$sql = "select id, CONCAT(IFNULL(task_title, substring(task_description, 1, 20))) from ${db_prefix}tasklist where $query";
+		$tasks     = SqlQueryArray($sql);
 
 		$result = [];
 		foreach ( $tasks as $task ) {
@@ -1953,7 +1958,7 @@ class Focus_Views {
 		$result = [];
 		$user   = new Org_Worker( $user_id );
 
-		$projects = $user->AllProjects( "is_active = 1", array( "id", "project_name" ) );
+		$projects = $user->GetAllProjects( "is_active = 1", array( "id", "project_name" ) );
 		if ( $projects ) {
 			foreach ( $projects as $project ) {
 //				var_dump($project);
@@ -2424,5 +2429,11 @@ class Focus_Views {
 		$args["multiple_inline"] = 1;
 
 		return Core_Html::GuiAutoList( $id, "tasks", $args );
+	}
+
+	function enqueue_scripts()
+	{
+		$file = FLAVOR_INCLUDES_URL . 'js/sorttable.js';
+		wp_enqueue_script( 'sorttable', $file, null, '1.0', false );
 	}
 }

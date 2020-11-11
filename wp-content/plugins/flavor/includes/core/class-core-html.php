@@ -78,9 +78,8 @@ class Core_Html {
 	 */
 	static function GuiCheckbox($id, $value = false, $args = array())
 	{
-//	static function gui_checkbox( $id, $class, $value = false, $events = null ) {
-		$class = GetArg($args, "class", "class");
 		$events = GetArg($args, "events", null);
+		$class = GetArg($args, "checkbox_class", "checkbox");
 		$data = "<input id=\"$id\" class=\"$class\" type=\"checkbox\" ";
 		if ( $value ) {
 			$data .= "checked ";
@@ -997,7 +996,7 @@ class Core_Html {
 					if ( $add_checkbox_line and $row_id != "acc" ) {
 //						$data              .= "<td>" . gui_checkbox( "chk_" . $row_id, $checkbox_class, 0,
 //								( $row_id === "header" ) ? $e = 'onchange="select_all_toggle(this, \'' . $checkbox_class . '\')"' : $checkbox_events );
-						$data .= "<td>" . Core_Html::GuiCheckbox("chk_$row_id", 0) . "</td>";
+						$data .= "<td>" . Core_Html::GuiCheckbox("chk_$row_id", 0, array("class" => $checkbox_class, "events"=>$checkbox_events)) . "</td>";
 						$add_checkbox_line = false;
 
 					}
@@ -1941,6 +1940,7 @@ class Core_Html {
 		$args["add_field_suffix"] = false;
 		$args["new_row"] = true; // Selectors can use that to offer creating of new row. E.g, new project.
 		$args["table_id"] = $table_name . "_new";
+		$args["v_checkbox"] = true;
 		if (! isset($args["hide_cols"])) $args["hide_cols"] = [];
 		return self::GuiRowContent($table_name, null, $args);
 	}
@@ -2088,4 +2088,7 @@ class Core_Html {
 		}
 		return $text;
 	}
+}
+function gui_checkbox( $id, $class, $value = false, $events = null ) {
+	return Core_Html::GuiCheckbox($id, $value, array("events" => $events, "class" => $class));
 }

@@ -7,7 +7,6 @@ if ( ! defined( "ABSPATH" ) ) {
 	define( 'ABSPATH', dirname(dirname(dirname( dirname( __FILE__ ) ) )) . '/');
 }
 
-/// asdfasdfasdfasdf
 require_once(ABSPATH . 'wp-config.php');
 
 $operation = GetParam('operation', true);

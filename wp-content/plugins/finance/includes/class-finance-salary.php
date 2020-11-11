@@ -362,7 +362,7 @@ class Finance_Salary {
 			'<input id="end_h" type="time" value="13:00" pattern="([1]?[0-9]|2[0-3]):[0-5][0-9]">'
 		) ) );
 		$args["worker_id"] = $user_id;
-		array_push( $table, ( array( "פרויקט", Focus_Actions::gui_select_project( "project", null, $args ) ) ) );
+		array_push( $table, ( array( "פרויקט", Focus_Views::gui_select_project( "project", null, $args ) ) ) );
 
 		$result .= Core_Html::gui_table_args( $table );
 

@@ -20,7 +20,6 @@ class Focus_Database extends Core_Database
 			// Fresh install - create all tables.
 			return self::FreshInstall() and
 			       self::UpdateInstalled( "tables", $version );
-
 		}
 
 		if ( $current == $version and ! $force ) {

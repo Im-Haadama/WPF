@@ -119,8 +119,10 @@ class Fresh_Packing {
 //			$args = [];
 //			$post_file = Fresh::getPost();
 //			$args["events"] = array(3 => 'onchange="inventory_update(\'' . $post_file . '\')');
+			$args["checkbox_class"] = $checkbox_class;
+//			var_dump($table_rows[1]); print "<br/>";
 
-			$result .= Core_Html::gui_table_args( $table_rows, "needed_" . $supplier_id);
+			 $result .= Core_Html::gui_table_args( $table_rows, "needed_" . $supplier_id, $args);
 
 			if ( ! $supplier_id ) {
 				$result .= "יש להפוך לטיוטא רק לאחר שמוצר אזל מהמלאי והוצע ללקוחות תחליף<br/>";
