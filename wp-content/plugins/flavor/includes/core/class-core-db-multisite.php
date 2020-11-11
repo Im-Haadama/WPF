@@ -479,6 +479,7 @@ class Core_Db_MultiSite extends Core_MultiSite {
 	function sync_data($table, $query = null)
 	{
 		if (! isset($this->allowed_tables[$table])) return "not allowed";
+		ETranslate("DisableTranslate");
 
 		$args["id_field"] = $this->allowed_tables[$table];
 		if ($query) $args["where"] = $query;

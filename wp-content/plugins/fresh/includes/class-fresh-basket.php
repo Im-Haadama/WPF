@@ -223,6 +223,8 @@ class Fresh_Basket extends  Fresh_Product  {
 	static function show_basket($basket_id)
 	{
 		$data = "";
+		$args = array("checkbox_class"=>"product_checkbox");
+
 		$basket = new Fresh_Basket($basket_id);
 		$data .= Core_Html::GuiHeader(1, ETranslate("basket") . " " . $basket->getName());
 		$data .= $basket->get_basket_content();
@@ -235,6 +237,7 @@ class Fresh_Basket extends  Fresh_Product  {
 //		$args["links"] = array("product_id" => "/wp-admin/post.php?post=%d&action=edit&classic-editor");
 		$args["header_fields"] = array("product_id" => "Product", "quantity" => "Quantity", "price" => "Price", "line_price" => "Line total");
 		$args["add_checkbox"] = true;
+		$args["checkbox_class"] ="product_checkbox";
 		$args["edit"] = false;
 		// $args["sum_fields"] = array("quantity" => array(0, "sum_numbers"));
 
@@ -291,7 +294,7 @@ class Fresh_Basket extends  Fresh_Product  {
 			$C = new Fresh_Category( $categ );
 			array_push( $options, $C->getProductsWithPrice());
 		}
-		$data .= Core_Html::gui_table_args(array($options));
+		$data .= Core_Html::gui_table_args(array($options), "basket", $args);
 		return $data;
 	}
 

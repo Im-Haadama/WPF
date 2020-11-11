@@ -2164,7 +2164,7 @@ class Focus_Views {
             $row["creator"] = get_user_id();
         }
         if(!isset($row["created"])){
-            $row["created"] = date_i18n("d/m/y \a\t g:i  A " );
+            $row["created"] = date_i18n("Y/m/d \a\t g:i  A " );
         }
         return $row;
     }

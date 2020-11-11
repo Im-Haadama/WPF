@@ -135,7 +135,7 @@ function SqlBind($table_name, &$stmt, $_values)
 				break;
 			case "dat":
 				$types .= "s";
-				$_values[$key] = date('Y/m/d', strtotime($_values[$key]));
+				$_values[$key] = date('Y/m/d g:i', strtotime($_values[$key]));
 				break;
 			case "dou":
 			case "flo":

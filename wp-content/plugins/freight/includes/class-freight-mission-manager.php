@@ -381,6 +381,10 @@ group by pm.meta_value, p.post_status");
 		// Build the path
 		self::find_route_1(array_diff($this->stop_points, array($mission->getStartAddress())), // Remove start address if appears in points.
 			$path, false, $mission->getEndAddress() );
+
+		self::find_route_1(array_diff($this->stop_points, array($mission->getStartAddress())), // Remove start address if appears in points.
+			$path, false, $mission->getEndAddress() );
+
 	}
 
 	static private function parse_output($output)
@@ -617,7 +621,10 @@ group by pm.meta_value, p.post_status");
 			return;
 		}
 
-		if (! $candidates or ! count($candidates)) die ("nothing to work with");
+		if (! $candidates or ! count($candidates)) {
+			$candidates = array(reset($rest));
+			print ( "nothing to work with" );
+		}
 		// Pick from the left points the point with minimum priority and distance.
 		if ($debug) {
 			print "<br/>checking candidates<br/>";

@@ -585,7 +585,7 @@ class Core_Data
 					if ( ! $skip_id or ( $key != $id_field ) ) {
 						$checked = false;
 						if (GetArg($args, "duplicate_of", false)) $checked = ($cell != '');
-						$v_line[ $key ] = Core_Html::GuiCheckbox( "chk_" . $key, $checked, array("class"=>$checkbox_class));
+						$v_line[ $key ] = Core_Html::GuiCheckbox( "chk_" . $key, $checked, array("checkbox_class"=>$checkbox_class));
 					}
 				}
 //			if ( is_array( $h_line ) and $header_fields ) {
@@ -609,7 +609,7 @@ class Core_Data
 					$the_row[ $key ] = $meta_value;
 
 					if ( $v_checkbox ) {
-						$v_line[ $key ] = Core_Html::GuiCheckbox( "chk_" . $key, false , array("class" => $checkbox_class) );
+						$v_line[ $key ] = Core_Html::GuiCheckbox( "chk_" . $key, false , array("checkbox_class" => $checkbox_class) );
 					}
 					if ( $h_line ) {
 						// print "adding $key<br/>";
@@ -654,7 +654,7 @@ class Core_Data
 			if ( $values and isset( $values[ $key ] ) ) $new_row[ $key ] = $values[ $key ];
 			else $new_row[ $key ] = null;
 
-			if ( $v_line !== null ) $v_line[ $key ] = Core_Html::GuiCheckbox( "chk_" . $key, $new_row[ $key ] != null, array("class" => $checkbox_class) );
+			if ( $v_line !== null ) $v_line[ $key ] = Core_Html::GuiCheckbox( "chk_" . $key, $new_row[ $key ] != null, array("checkbox_class" => $checkbox_class) );
 			if ( is_array( $h_line ) and ! isset($h_line[$key])) $h_line[$key] = $key;   ////* and $header_fields */) $h_line[ $key ] = isset( $header_fields[ $key ] ) ? im_translate( $header_fields[ $key ], $args ) : $key;
 			if ( is_array( $m_line ) ) $m_line[ $key ] = isset( $mandatory_fields[ $key ] );
 		}
