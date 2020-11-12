@@ -58,3 +58,45 @@ function run_finance() {
 }
 
 run_finance();
+
+add_filter( 'wc_order_statuses', 'add_awaiting_shipment_to_order_statuses' );
+add_action( 'init', 'register_awaiting_shipment_order_status' );
+
+function add_awaiting_shipment_to_order_statuses( $order_statuses ) {
+	$new_order_statuses = array();
+
+	// add new order status after processing
+	foreach ( $order_statuses as $key => $status ) {
+
+		$new_order_statuses[ $key ] = $status;
+
+		if ( 'wc-processing' === $key ) {
+			$new_order_statuses['wc-awaiting-shipment'] = 'ממתין למשלוח';
+			$new_order_statuses['wc-awaiting-document'] = 'ממתין לתעודת משלוח';
+		}
+	}
+
+	return $new_order_statuses;
+}
+
+function register_awaiting_shipment_order_status() {
+	register_post_status( 'wc-awaiting-shipment', array(
+		'label'                     => 'ממתין למשלוח',
+		'public'                    => true,
+		'exclude_from_search'       => false,
+		'show_in_admin_all_list'    => true,
+		'show_in_admin_status_list' => true,
+		'label_count'               => _n_noop( 'ממתין למשלוח <span class="count">(%s)</span>', 'Awaiting shipment <span class="count">(%s)</span>' )
+	) );
+
+	register_post_status( 'wc-awaiting-document', array(
+		'label'                     => 'Awaiting shipment document',
+		'public'                    => true,
+		'exclude_from_search'       => false,
+		'show_in_admin_all_list'    => true,
+		'show_in_admin_status_list' => true,
+		'label_count'               => _n_noop( 'Awaiting shipment document<span class="count">(%s)</span>', 'Awaiting shipment <span class="count">(%s)</span>' )
+	) );
+}
+
+add_filter( 'wc_product_sku_enabled', '__return_false' );

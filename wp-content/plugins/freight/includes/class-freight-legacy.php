@@ -82,7 +82,7 @@ class Freight_Legacy {
 		$total_lines = 0;
 		$net_total   = 0;
 		foreach ( $order_ids as $order_id ) {
-			$o          = new Fresh_Order( $order_id );
+			$o          = new Finance_Order( $order_id );
 			$item       = new InvoiceItem();
 			$item->Name = $o->GetComments();
 			if ( strlen( $item->Name ) < 2 )
@@ -107,7 +107,7 @@ class Freight_Legacy {
 		// print "create<br/>";
 		$doc_id = $invoice->CreateDocument( $doc );
 		Finance::add_transaction( $customer_id, date( 'Y-m-d' ), $total_lines, 0, $doc_id, 1, $net_total,
-			FreshDocumentType::ship );
+			Finance_DocumentType::ship );
 
 		// var_dump($doc);
 		return $doc_id;
@@ -231,7 +231,7 @@ AND (meta_value = "legacy" or meta_value = 1)';
 		$prev_user = - 1;
 		while ( $order = SqlFetchRow( $orders ) ) {
 			$order_id   = $order[0];
-			$o          = new Fresh_Order( $order_id );
+			$o          = new Finance_Order( $order_id );
 			$is_group   = $order[1];
 			$order_user = $order[2];
 			if ( ! $is_group ) {
@@ -254,7 +254,7 @@ AND (meta_value = "legacy" or meta_value = 1)';
 		       " from im_business_info " .
 		       " where part_id = " . $part_id .
 		       " and invoice is null " .
-		       " and document_type = " . FreshDocumentType::ship;
+		       " and document_type = " . Finance_DocumentType::ship;
 
 		$args = array("add_checkbox" => 1, "checkbox_class" => "delivery_note", "page_number"=>-1);
 
@@ -346,7 +346,7 @@ AND (meta_value = "legacy" or meta_value = 1)';
 
 		if ( $doc_id ) {
 			Finance::add_transaction( $this->legacy_user, date( 'Y-m-d' ), $total_lines, 0, $doc_id, 1, $net_total,
-				FreshDocumentType::invoice );
+				Finance_DocumentType::invoice );
 
 			SqlQuery ("UPDATE im_business_info SET invoice = " . $doc_id .
 			           " WHERE id IN ( " . CommaImplode( $business_ids ) . " )" );

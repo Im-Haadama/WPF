@@ -1,5 +1,6 @@
 <?php
 
+//print "z=" . date('z', strtotime('2020-10-05'));
 if (class_exists("WC_Payment_Gateway")) {
 
 	class WC_Other_Payment_Gateway extends WC_Payment_Gateway {
@@ -8,8 +9,8 @@ if (class_exists("WC_Payment_Gateway")) {
 
 		public function __construct() {
 			$this->id           = 'other_payment';
-			$this->method_title = __( 'Fresh Payment Gateway', 'woocommerce-other-payment-gateway' );
-			$this->title        = __( 'Fresh Payment Gateway', 'woocommerce-other-payment-gateway' );
+			$this->method_title = __( 'E-fresh Payment Gateway', 'woocommerce-other-payment-gateway' );
+			$this->title        = __( 'E-fresh Payment Gateway', 'woocommerce-other-payment-gateway' );
 			$this->has_fields   = true;
 			$this->init_form_fields();
 			$this->init_settings();
@@ -64,27 +65,27 @@ if (class_exists("WC_Payment_Gateway")) {
 			$billing_idnumber = $_REQUEST['billing_idnumber'];
 
 			if ( isset( $creditcard_no ) && $creditcard_no == '' ) {
-				wc_add_notice( __( 'Please enter credit card number.', 'woocommerce-custom-payment-gateway' ), 'error' );
+				wc_add_notice( __( 'Please enter credit card number.', 'finance' ), 'error' );
 
 				return false;
 			}
 			if ( isset( $billing_idnumber ) && $billing_idnumber == '' ) {
-				wc_add_notice( __( 'Please enter id number.', 'woocommerce-custom-payment-gateway' ), 'error' );
+				wc_add_notice( __( 'Please enter id number.', 'finance' ), 'error' );
 
 				return false;
 			}
 			if ( isset( $cardtype ) && $cardtype == '0' ) {
-				wc_add_notice( __( 'Please select card type', 'woocommerce-custom-payment-gateway' ), 'error' );
+				wc_add_notice( __( 'Please select card type', 'finance' ), 'error' );
 
 				return false;
 			}
 			if ( isset( $expdatemonth ) && $expdatemonth == '0' ) {
-				wc_add_notice( __( 'Please select expiry month.', 'woocommerce-custom-payment-gateway' ), 'error' );
+				wc_add_notice( __( 'Please select expiry month.', 'finance' ), 'error' );
 
 				return false;
 			}
 			if ( isset( $expdateyear ) && $expdateyear == '0' ) {
-				wc_add_notice( __( 'Please select expiry year.', 'woocommerce-custom-payment-gateway' ), 'error' );
+				wc_add_notice( __( 'Please select expiry year.', 'finance' ), 'error' );
 
 				return false;
 			}
@@ -138,7 +139,7 @@ if (class_exists("WC_Payment_Gateway")) {
 			$valid_credit_info = false;
 			if ( is_user_logged_in() ) {
 				$current_user_id = wp_get_current_user()->ID;
-				$card_number      = $wpdb->get_var( "SELECT card_four_digit FROM im_payment_info WHERE user_id = $current_user_id" );
+				$card_number      = $wpdb->get_var( "SELECT card_number FROM im_payment_info WHERE user_id = $current_user_id" );
 
 				$valid_month     = (int) $wpdb->get_var( "SELECT exp_date_month FROM im_payment_info WHERE user_id = $current_user_id" );
 				$valid_year      = (int) $wpdb->get_var( "SELECT exp_date_year FROM im_payment_info WHERE user_id = $current_user_id" );
@@ -147,7 +148,7 @@ if (class_exists("WC_Payment_Gateway")) {
 				$this_year = (int) date('Y');
 
                 if (! (($valid_year > $this_year) or (($valid_year == $this_year) and ($valid_month >= $this_month)))){
-                    print __("Previous card expired");
+                    print __("Previous card expired", "e-fresh");
                 }
 
 				$id_number =  $wpdb->get_var( "SELECT id_number FROM im_payment_info WHERE user_id = $current_user_id" );
@@ -158,60 +159,64 @@ if (class_exists("WC_Payment_Gateway")) {
 //				MyLog("token: $token");
 //				MyLog(strstr($card_number, 'XX'));
 
+                MyLog("vid= " . $valid_id . " " . $valid_year . " " . $valid_month . " " . $card_number);
 				$valid_credit_info = ($valid_id and
 				     (($valid_year > $this_year) or (($valid_year == $this_year) and ($valid_month >= $this_month))) and
                      (strlen($token) >= 10 or ! strstr($card_number, 'XX')));
+				MyLog("vci=" . $valid_credit_info);
 			}
+
+			global $l10n;
+
+//			if (get_user_id() == 1) var_dump($l10n['finance']);
 
 			if ( $valid_credit_info ) { ?>
                 <fieldset>
                     <p class="form-row validate-required">
 						<?php
-						$card_number_field_placeholder = __( 'Card Number', 'woocommerce-fruity-payment-gateway' );
+						$card_number_field_placeholder = __( 'Card Number ', 'finance' );
 						?>
-                        <label><?php _e( 'Card Number', 'woocommerce-fruity-payment-gateway' ); ?></label>
-                    <p><?php echo substr($card_number, -4); ?></p>
+                        <label><?php print __( 'Card Number', 'finance' ) . " " .
+                                           substr($card_number, -4); ?></label>
                     </p>
                 </fieldset>
 			<?php } else {
 				?>
                 <fieldset>
-
-                    <p class="form-row validate-required">
+                    <p class="form-row validate-required" style="display: inline-block;">
 						<?php
-						$card_number_field_placeholder = __( 'Card Number', 'woocommerce-fruity-payment-gateway' );
+						$card_number_field_placeholder = __( 'Card Number', 'finance' );
 						$card_number_field_placeholder = apply_filters( 'wcpprog_card_number_field_placeholder', $card_number_field_placeholder );
 						?>
-                        <label><?php _e( 'Card Number', 'woocommerce-fruity-payment-gateway' ); ?> <span
+                        <label><?php _e( 'Card Number', 'finance' ); ?> <span
                                     class="required">*</span></label>
                         <input class="input-text" type="text" size="19" maxlength="19" name="billing_creditcard"
                                id="card_number" value="<?php echo $billing_creditcard; ?>"
                                placeholder="<?php echo $card_number_field_placeholder; ?>" required/>
                     </p>
 
-                    <p class="form-row validate-required">
+                    <p class="form-row validate-required" style="display: inline-block;">
 
-                        <label><?php _e( 'ID Number', 'woocommerce-fruity-payment-gateway' ); ?> <span class="required">*</span></label>
+                        <label><?php _e( 'ID Number', 'finance' ); ?> <span class="required">*</span></label>
                         <input class="input-text" type="text" size="19" maxlength="10" name="billing_idnumber"
                                id="id_number" value="" placeholder="Id Number" required/>
                     </p>
 
-                    <p class="form-row form-row-first">
-                        <label><?php _e( 'Card Type', 'woocommerce-fruity-payment-gateway' ); ?> <span class="required">*</span></label>
+                    <p class="form-row" style="display: inline-block;">
+                        <label><?php _e( 'Card Type', 'finance' ); ?> <span class="required">*</span></label>
                         <select name="billing_cardtype" required>
-                            <option value="0">Select Card</option>
+                            <option value="0"><?php _e("Select Card", "finance"); ?></option>
                             <option value="Visa">Visa</option>
                             <option value="MasterCard">MasterCard</option>
                             <option value="Discover">Discover</option>
                             <option value="Amex">American Express</option>
                         </select>
                     </p>
-                    <div class="clear"></div>
-                    <p class="form-row form-row-first">
-                        <label><?php _e( 'Expiration Date', 'woocommerce-fruity-payment-gateway' ); ?> <span
-                                    class="required">*</span></label>
-                        <select name="billing_expdatemonth" required>
-                            <option value=0>Select Month</option>
+                    <p class="form-row" style="display: inline-block;">
+                        <label><?php _e( 'Expiration Date', 'finance' ); ?>
+                            <span class="required" style="display: inline-block;">*</label>
+                        <select name="billing_expdatemonth" required style="display: inline-block;">
+                            <option value=0><?php _e("Select Month", "finance"); ?></option>
                             <option value=1>01</option>
                             <option value=2>02</option>
                             <option value=3>03</option>
@@ -225,8 +230,8 @@ if (class_exists("WC_Payment_Gateway")) {
                             <option value=11>11</option>
                             <option value=12>12</option>
                         </select>
-                        <select name="billing_expdateyear" required>
-                            <option value=0>Select Year</option>
+                        <select name="billing_expdateyear" required style="display: inline-block;">
+                            <option value=0><?php _e("Select Year", "finance"); ?></option>
 							<?php
 							$today = (int) date( 'Y', time() );
 							for ( $i = 0; $i < 12; $i ++ ) {
@@ -238,9 +243,9 @@ if (class_exists("WC_Payment_Gateway")) {
 							?>
                         </select>
                     </p>
-                    <div class="clear"></div>
                 </fieldset>
 			<?php }
 		}
 	}
 }
+//delete_option('woocommerce_checkout_privacy_policy_text');

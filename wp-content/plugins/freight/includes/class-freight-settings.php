@@ -61,7 +61,7 @@
 
 		function admin_menu()
 		{
-			$menu = new Core_Admin_Menu();
+			$menu = Core_Admin_Menu::instance();
 
 			$menu->AddMenu('Freight Settings', 'Freight', 'shop_manager', 'freight', array($this, 'freight_general'));
 			$menu->AddSubMenu('freight', 'edit_shop_orders',

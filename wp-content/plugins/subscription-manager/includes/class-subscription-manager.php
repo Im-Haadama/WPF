@@ -32,7 +32,7 @@ class Subscription_Manager {
 	}
 
 	function admin_menu() {
-		$menu = new Core_Admin_Menu();
+		$menu = Core_Admin_Menu::instance();
 
 		$menu->AddMenu( 'Subs', 'Subscription Manager', 'show_subs', 'subs', array( $this, 'main' ) );
 

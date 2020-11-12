@@ -35,6 +35,8 @@ class Flavor {
 
 	private $loader;
 
+	protected $admin_notices;
+
 	/**
 	 * The single instance of the class.
 	 *
@@ -164,11 +166,12 @@ class Flavor {
 		Core_Gem::getInstance()->init_hooks($this->loader);
 		Flavor_Org_Views::instance()->init_hooks($this->loader);
 		Flavor_Mission::init_hooks();
+		add_action( 'admin_notices', array($this, 'admin_notices') );
 	}
 
 	public function admin_menu()
 	{
-		$menu = new Core_Admin_Menu();
+		$menu = Core_Admin_Menu::instance();
 
 		$menu->AddSubMenu('missions', 'edit_shop_orders',
 			array('page_title' => 'Missions',
@@ -176,6 +179,17 @@ class Flavor {
 			      'menu_slug' => 'missions',
 			      'function' => 'Flavor_Mission::missions'));
 
+		if (TableExists("mission_types"))
+			self::AddTop('missions',"Missions", '/wp-admin/admin.php?page=missions');
+
+		self::AddTop('orders', 'Orders', '/wp-admin/edit.php?post_type=shop_order');
+	}
+
+	static function AddTop($id, $title, $href)
+	{
+		$menu = Core_Admin_Menu::instance();
+
+		$menu->AddTop($id, __($title, "e-fresh"), $href);
 	}
 
 	public static function add_settings_tab( $settings_tabs ) {
@@ -343,6 +357,7 @@ class Flavor {
 		$this->define( 'FLAVOR_ABSPATH', dirname( FLAVOR_PLUGIN_FILE ) . '/' );
 		$this->define( 'FLAVOR_PLUGIN_BASENAME', plugin_basename( FLAVOR_PLUGIN_FILE ) );
 		$this->define( 'FLAVOR_VERSION', $this->version );
+		$this->define( 'FLAVOR_URL', plugins_url() . '/flavor/' ); // For languages
 		$this->define( 'FLAVOR_INCLUDES_URL', plugins_url() . '/flavor/includes/' ); // For js
 		$this->define( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path(__FILE__) . '../../flavor/includes/' );  // for php
 		$this->define( 'FLAVOR_DELIMITER', '|' );
@@ -504,7 +519,7 @@ class Flavor {
 
 		// Init action.
 		do_action( 'flavor_init' );
-		add_action( 'admin_bar_menu', 'modify_admin_bar', 200 );
+//		add_action( 'admin_bar_menu', 'modify_admin_bar', 200 );
 
 		$url = plugins_url() . '/flavor/assets/css/';
 		wp_register_style( 'flavor_styles', $url . 'modal.css', array(), $this->version );
@@ -517,6 +532,8 @@ class Flavor {
 //
 //		wp_enqueue_style('woocommerce_admin_styles');
 
+		self::admin_menu();
+		add_action( 'admin_bar_menu', array(Core_Admin_Menu::instance(), 'do_modify_admin_bar'), 200 );
 	}
 
 	static public function display_name()
@@ -524,6 +541,7 @@ class Flavor {
 		$f = new Fresh_Client(get_user_id());
 		return  $f->getName();
 	}
+
 	static public function check_system()
 	{
 		$result = "שלום<br/>";
@@ -547,6 +565,7 @@ class Flavor {
 	public function load_plugin_textdomain() {
 		$locale = is_admin() && function_exists( 'get_user_locale' ) ? get_user_locale() : get_locale();
 		$locale = apply_filters( 'plugin_locale', $locale, 'flavor' );
+		$domain = 'e-fresh';
 
 		$file = dirname( FLAVOR_PLUGIN_FILE ) . "/languages/e-fresh-$locale.mo";
 		return load_textdomain( 'e-fresh', $file );
@@ -696,6 +715,25 @@ class Flavor {
 
 		$file = FLAVOR_INCLUDES_URL . 'core/gem.js';
 		wp_enqueue_script( 'gem', $file, null, $this->version, false );
+	}
+
+	function add_admin_notice($message)
+	{
+		if (! $this->admin_notices) $this->admin_notices = array();
+		array_push($this->admin_notices, $message);
+	}
+
+	function admin_notices() {
+		if (! $this->admin_notices) return;
+		print '<div class="notice is-dismissible notice-info">';
+		foreach ($this->admin_notices as $notice)
+			print _e( $notice );
+		print '</div>';
+	}
+
+	static function getTextDomain()
+	{
+		return 'e-fresh';
 	}
 }
 

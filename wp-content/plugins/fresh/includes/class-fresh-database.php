@@ -136,25 +136,9 @@ order by 1;");
 
 		SqlQuery("alter table im_supplier_price_list add product_id integer(11)");
 
-		self::payment_info_table();
-
 //		SqlQuery("alter table im_payments
 //		add mail_delivery bit not null default b'0'");
 
-		if (! TableExists("client_accounts"))
-			SqlQuery("create table im_client_accounts
-(
-	ID bigint auto_increment
-		primary key,
-	client_id bigint not null,
-	date date not null,
-	transaction_amount double not null,
-	transaction_method text not null,
-	transaction_ref bigint not null
-)
-charset=utf8;
-
-");
 		self::payment_info_table();
 
 		SqlQuery("alter table ${db_prefix}mission_types add default_price float");
@@ -226,87 +210,6 @@ engine=MyISAM charset=utf8;
 	price float not null
 )
 charset=utf8;
-
-");
-
-		SqlQuery("drop function delivery_receipt");
-		SqlQuery("create function delivery_receipt(_del_id int) returns int
-BEGIN
-		declare _receipt integer;
-		select payment_receipt into _receipt 
-	        from im_delivery where id = _del_id; 
-	    return _receipt;
-	END;
-");
-
-		SqlQuery("drop function order_from_delivery");
-		SqlQuery("create function order_from_delivery(del_id int) returns text
-BEGIN
-    declare _order_id int;
-    SELECT order_id INTO _order_id FROM im_delivery where id = del_id;
-
-    return _order_id;
-END;
-
-");
-
-		SqlQuery("drop function client_payment_method");
-		SqlQuery("create function client_payment_method(_user_id int) returns text charset utf8
-BEGIN
-    declare _method_id int;
-    declare _name VARCHAR(50) CHARSET 'utf8';
-    select meta_value into _method_id from wp_usermeta where user_id = _user_id and meta_key = 'payment_method';
-    select name into _name from im_payments where id = _method_id;
-
-    return _name;
-  END;
-
-");
-
-		SqlQuery("drop function client_balance");
-		SqlQuery("create function client_balance(_client_id int, _date date) returns float
-BEGIN
-    declare _amount float;
-select sum(transaction_amount) into _amount
-from im_client_accounts where date <= _date
-                          and client_id = _client_id;
-return round(_amount, 0);
-END;
-
-");
-
-		if (! TableExists("delivery_lines"))
-		SqlQuery("create table ${db_prefix}delivery_lines
-(
-	id bigint auto_increment
-		primary key,
-	delivery_id bigint not null,
-	product_name varchar(40) not null,
-	quantity float not null,
-	quantity_ordered float not null,
-	vat float not null,
-	price float not null,
-	line_price float not null,
-	prod_id int null,
-	unit_ordered float null,
-	part_of_basket int null,
-	a int null
-);
-
-");
-
-
-		if (! TableExists("payments"))
-		SqlQuery("create table ${db_prefix}payments
-(
-	id int auto_increment,
-	name varchar(20) null,
-	`default` bit default b'0' null,
-	mail_delivery bit not null default b'0',
-	accountants varchar(100) null,
-	constraint im_payments_id_uindex
-		unique (id)
-)
 
 ");
 
@@ -432,26 +335,6 @@ charset=utf8;
 
 ");
 
-		if (! TableExists("delivery"))
-			SqlQuery("create table ${db_prefix}delivery
-(
-	ID bigint auto_increment
-		primary key,
-	date date not null,
-	order_id bigint not null,
-	vat float not null,
-	total float not null,
-	dlines int(5) default 0 not null,
-	fee float not null,
-	payment_receipt int null,
-	driver int not null,
-	draft bit default b'0' not null,
-	draft_reason varchar(50) null
-)
-charset=utf8;
-
-");
-
 		if (! TableExists("baskets"))
 			SqlQuery("create table ${db_prefix}baskets
 (
@@ -466,27 +349,7 @@ charset=utf8;
 
 ");
 
-		if (!TableExists("business_info"))
-			SqlQuery("create table ${db_prefix}business_info
-(
-	id bigint auto_increment
-		primary key,
-	part_id int not null,
-	date date not null,
-	week date not null,
-	amount double not null,
-	ref varchar(20) not null,
-	delivery_fee float null,
-	project_id int default 3 not null,
-	is_active bit default b'1' null,
-	document_type int(2) default 1 not null,
-	net_amount double null,
-	invoice_file varchar(200) charset utf8 null,
-	invoice int(10) null,
-	pay_date date null
-);");
-
-		return self::UpdateInstalled( "tables", $version);
+		self::UpdateInstalled("Fresh", "tables", $version);
 	}
 
 	function CreateFunctions($version, $force = false)
@@ -622,23 +485,30 @@ END;
 
 ");
 
-		SqlQuery("drop function client_from_delivery");
-		SqlQuery("create function client_from_delivery(del_id int) returns text CHARSET 'utf8'
-BEGIN
-  declare _order_id int;
-  declare _user_id int;
-  declare _display varchar(50) CHARSET utf8;
-  SELECT order_id INTO _order_id FROM im_delivery where id = del_id;
-  select meta_value into _user_id from wp_postmeta
-  where post_id = _order_id and
-  meta_key = '_customer_user';
-  select display_name into _display from wp_users where id = _user_id;
-
-  return _display;
-END;
-
+		SqlQuery("drop function supply_from_business");
+		SqlQuery("create function supply_from_business( _business_id int) returns integer
+	BEGIN
+		declare _supply_id integer;
+		select id into _supply_id 
+	        from ${db_prefix}supplies where business_id = _business_id; 
+	    return _supply_id;
+	END;
 ");
 
+		new Fresh_Delivery(0); // Load classes
+		SqlQuery("drop function if exists supplier_balance");
+		$sql = "create function supplier_balance (_supplier_id int, _date date) returns float   
+BEGIN
+declare _amount float;
+select sum(amount) into _amount from ${db_prefix}business_info
+where part_id = _supplier_id
+and date <= _date
+and is_active = 1
+and document_type in (" . Finance_DocumentType::bank . "," . Finance_DocumentType::invoice . "," . Finance_DocumentType::refund . "); 
+
+return round(_amount, 0);
+END;";
+		SqlQuery($sql);
 
 		SqlQuery("create function client_displayname(user_id int) returns text CHARSET 'utf8'
 BEGIN
@@ -735,20 +605,7 @@ BEGIN
 
    return _name;
  END" );
-
-		SqlQuery("drop function if exists  order_line_get_variation");
-		SqlQuery("create function order_line_get_variation(_order_item_id int) RETURNS text
-BEGIN
-    declare _variation int;
-    select meta_value into _variation from wp_woocommerce_order_itemmeta
-    where order_item_id = _order_item_id
-      and meta_key = '_variation_id';
-
-    return _variation;
-  END;
-
-");
-		return self::UpdateInstalled("functions", $version);
+		self::UpdateInstalled("Fresh", "functions", $version);
 	}
 
 	/* temp: convert supplier name to id in products */
@@ -763,27 +620,4 @@ BEGIN
 		}
 	}
 
-	/*-- Start create payment table --*/
-	static function payment_info_table(){
-		global $wpdb;
-		$charset_collate = $wpdb->get_charset_collate();
-
-		$sql = "CREATE TABLE `im_payment_info` (
-	    `id` int(11) NOT NULL AUTO_INCREMENT  PRIMARY KEY,
-	    `user_id` int(11) NOT NULL,
-	    `full_name` varchar(255) NOT NULL,
-	    `email` varchar(255) NOT NULL,
-	    `card_number` varchar(50) NOT NULL,
-	    `card_four_digit` varchar(50) NOT NULL,
-	    `card_type` varchar(100) NOT NULL,
-	    `exp_date_month` tinyint(4) NOT NULL,
-	    `exp_date_year` int(11) NOT NULL,
-	    `id_number` varchar(15)  NOT NULL,
-	    `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-	) $charset_collate;";
-
-		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-		dbDelta( $sql );
-	}
-	/*-- End create payment table --*/
 }

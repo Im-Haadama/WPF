@@ -17,25 +17,11 @@ class Fresh_Delivery_Manager
 
 	public function init()
 	{
-		AddAction("delivery_delete", array(__CLASS__, "delete"));
 		AddAction("update_shipping_methods", __CLASS__ . "::update_shipping_methods");
 		AddAction("update_shipping_methods_anonymous", __CLASS__ . "::update_shipping_methods");
 		AddAction("delivery_send_mail", array($this, "mail_delivery"));
 		add_action('admin_menu',array($this, 'admin_menu'));
 		add_action('admin_notices', array($this, 'delivered_previous_days'));
-	}
-
-	static public function delete()
-	{
-		$id = GetParam("delivery_id", true);
-		$d = new Fresh_Delivery( $id );
-		$client = $d->getCustomerId();
-		if (get_user_id() != $client and ! im_user_can("delete_shop_orders"))
-			die("no permission");
-
-		$d->Delete();
-
-		return Finance::delete_transaction( $id );
 	}
 
 	public static function instance() {

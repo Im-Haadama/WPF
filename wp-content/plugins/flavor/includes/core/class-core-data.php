@@ -101,6 +101,7 @@ class Core_Data
 	{
 		$row_id = intval($row_id);
 		$db_prefix = GetTablePrefix($table_name);
+		if (! in_array(SqlTableFields($table_name), "is_active")) return true;
 
 		return SqlQuery("update ${db_prefix}$table_name set is_active = $active where id = $row_id");
 	}
@@ -462,6 +463,11 @@ class Core_Data
 							//								$args['style'] = (isset($args['styles'][$key]) ? $args['styles'][$key] : null);
 							$value = Core_Html::gui_input_by_type($input_name, $type, $field_args, $value);
 						}
+					} else {
+						// Not from sql table
+						// ??? 30/3/2020
+						$value = Core_Html::GuiInput( $input_name, $data, $args ); //gui_input( $key, $data, $field_events, $row_id);
+//						print "AAAA<br/>";
 					}
 //					else {
 //						// ??? 30/3/2020

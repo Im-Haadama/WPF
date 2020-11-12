@@ -18,7 +18,6 @@ class Fresh {
 	protected $totals;
 	protected $shortcodes;
 	protected $client_views;
-	protected $admin_notices;
 	protected $database;
 
 	/**
@@ -166,7 +165,6 @@ class Fresh {
 	private function init_hooks() {
 	    // Admin scripts and styles. Todo: Check if needed.
 		add_action('admin_enqueue_scripts', array($this, 'admin_scripts'));
-		add_action( 'admin_notices', array($this, 'admin_notices') );
 
 		// Can't make that work: register_activation_hook( __FILE__, array( $this, 'install' ) );
         self::install($this->version);
@@ -179,7 +177,6 @@ class Fresh {
 		add_shortcode('pay-page', 'pay_page');
 		add_shortcode( 'im-page', 'im_page' );
 		add_shortcode('products_by_name', array($this, 'products_by_name'));
-		add_action( 'init', 'register_awaiting_shipment_order_status' );
 		add_action( 'woocommerce_checkout_process', 'wc_minimum_order_amount' );
 		add_action( 'woocommerce_before_cart', 'wc_minimum_order_amount' );
 		add_action( 'woocommerce_checkout_order_processed', 'wc_minimum_order_amount' );
@@ -189,10 +186,7 @@ class Fresh {
 //		add_filter( 'woocommerce_order_button_text', 'im_custom_order_button_text' );
 		add_action( 'init', 'custom_add_to_cart_quantity_handler' );
 //	Todo: Had error function 'my_custom_checkout_field_update_order_meta' not found	add_action( 'woocommerce_checkout_update_order_meta', 'my_custom_checkout_field_update_order_meta' );
-		add_action( 'init', 'register_awaiting_shipment_order_status' );
-		add_action('woocommerce_order_status_completed', 'Fresh_Order_Management::order_complete');
 
-		add_filter( 'wc_order_statuses', 'add_awaiting_shipment_to_order_statuses' );
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
 		// add_filter( 'woocommerce_package_rates' , 'im_sort_shipping_services_by_date', 10, 2 );
 
@@ -209,8 +203,6 @@ class Fresh {
 		add_filter( 'auth_cookie_expiration', 'wcs_users_logged_in_longer' );
 
 		// Save payment info
-		add_action('init', 'insert_payment_info_wrap', 10, 1);
-		add_action('admin_init', 'wp_payment_list_admin_script');
 		add_action("admin_init", array(__CLASS__, "admin_load"));
 		add_action('admin_print_styles', 'wp_payment_list_admin_styles');
 
@@ -590,7 +582,7 @@ class Fresh {
 		$this->loader->run();
 
 		// Install tables
-		self::register_activation(dirname(__FILE__) . '/class-fresh-database.php', array('Fresh_Database', 'payment_info_table'));
+		self::register_activation(dirname(__FILE__) . '/class-fresh-database.php', array('Fresh_Database', 'install'));
 
 		// Temp migration. run once on each installation
         // Fresh_Database::convert_supplier_name_to_id();
@@ -605,7 +597,7 @@ class Fresh {
 			return;
 		}
 		if (! is_callable($function)){
-			print "function is not callable";
+			print "function is not callable. file=$file";
 			return;
 		}
 		register_activation_hook($file, $function);
@@ -684,9 +676,6 @@ class Fresh {
             wp_enqueue_style('woocommerce_admin_menu_styles');
             wp_enqueue_style('woocommerce_admin_styles');
 	    }
-
-	    $file = FRESH_INCLUDES_URL . 'js/delivery.js';
-	    wp_enqueue_script( 'delivery', $file, null, $this->version, false );
 
 	    $file = FRESH_INCLUDES_URL . 'js/supply.js?v=1.1';
 	    wp_enqueue_script( 'supply', $file, null, $this->version, false );
@@ -767,7 +756,7 @@ class Fresh {
 			} else {
 				print $O->infoBox( false );
 				$D = Fresh_Delivery::CreateFromOrder( $id );
-				$D->PrintDeliveries( FreshDocumentType::delivery, Fresh_DocumentOperation::collect, 0);
+				$D->PrintDeliveries( Finance_DocumentType::delivery, Finance_DocumentOperation::collect, 0);
 			}
 		}
 	}
@@ -804,20 +793,6 @@ class Fresh {
 	static public function admin_load()
 	{
 		new Fresh_Settings();
-	}
-
-	function add_admin_notice($message)
-	{
-		if (! $this->admin_notices) $this->admin_notices = array();
-		array_push($this->admin_notices, $message);
-	}
-
-	function admin_notices() {
-		if (! $this->admin_notices) return;
-		print '<div class="notice is-dismissible notice-info">';
-		foreach ($this->admin_notices as $notice)
-			print _e( $notice );
-		print '</div>';
 	}
 }
 
@@ -934,45 +909,6 @@ function custom_add_to_cart_quantity_handler() {
 		});
 	' );
 	}
-}
-
-function register_awaiting_shipment_order_status() {
-	register_post_status( 'wc-awaiting-shipment', array(
-		'label'                     => 'ממתין למשלוח',
-		'public'                    => true,
-		'exclude_from_search'       => false,
-		'show_in_admin_all_list'    => true,
-		'show_in_admin_status_list' => true,
-		'label_count'               => _n_noop( 'ממתין למשלוח <span class="count">(%s)</span>', 'Awaiting shipment <span class="count">(%s)</span>' )
-	) );
-
-	register_post_status( 'wc-awaiting-document', array(
-		'label'                     => 'Awaiting shipment document',
-		'public'                    => true,
-		'exclude_from_search'       => false,
-		'show_in_admin_all_list'    => true,
-		'show_in_admin_status_list' => true,
-		'label_count'               => _n_noop( 'Awaiting shipment document<span class="count">(%s)</span>', 'Awaiting shipment <span class="count">(%s)</span>' )
-	) );
-}
-
-// Add to list of WC Order statuses
-function add_awaiting_shipment_to_order_statuses( $order_statuses ) {
-
-	$new_order_statuses = array();
-
-	// add new order status after processing
-	foreach ( $order_statuses as $key => $status ) {
-
-		$new_order_statuses[ $key ] = $status;
-
-		if ( 'wc-processing' === $key ) {
-			$new_order_statuses['wc-awaiting-shipment'] = 'ממתין למשלוח';
-			$new_order_statuses['wc-awaiting-document'] = 'ממתין לתעודת משלוח';
-		}
-	}
-
-	return $new_order_statuses;
 }
 
 function im_sort_shipping_services_by_date($rates, $package)
@@ -1151,12 +1087,6 @@ function sm_custom_woocommerce_catalog_orderby( $sortby ) {
 /*-- End add alphabetical product sort option --*/
 
 
-/*-- Start add menu page-- */
-function payment_list() {
-	include( FRESH_INCLUDES . 'payment_list.php' );
-}
-/*-- end menu page-- */
-
 /*-- Start add css & js-- */
 function wp_payment_list_admin_styles()
 {
@@ -1178,126 +1108,8 @@ function wp_payment_list_admin_styles()
 		wp_enqueue_style('jquery-ui');
 	}
 }
-
-function wp_payment_list_admin_script() {
-
-	wp_enqueue_script( 'dataTables.min', plugins_url(). '/fresh/includes/js/jquery.dataTables.min.js',array('jquery') );
-
-	wp_enqueue_script( 'dataTables.bootstrap.min', plugins_url(). '/fresh/includes/js/dataTables.bootstrap.min.js' );
-
-	wp_enqueue_script( 'dataTables.buttons.min', plugins_url(). '/fresh/includes/js/dataTables.buttons.min.js' );
-
-}
 /*-- End add css & js-- */
 
-
-/*-- Start save payment info --*/
-
-function setCreditCard($cc)
-{
-	$cc_length = strlen($cc);
-
-	for($i=0; $i<$cc_length-4; $i++){
-		if($cc[$i] == '-'){continue;}
-		$cc[$i] = 'X';
-	}
-	return $cc;
-}
-
-function insert_payment_info_wrap()
-{
-	$sql = "select post_id from wp_postmeta where meta_key = 'card_number'";
-	$orders = SqlQueryArrayScalar($sql);
-	foreach ($orders as $order)
-		insert_payment_info($order);
-}
-
-function insert_payment_info( $order_id )
-{
-	MyLog(__FUNCTION__, "handling $order_id");
-	if ( ! $order_id ) return;
-	if ( ! get_post_meta( $order_id, '_thankyou_action_done', true ) ) {
-
-//		$order = wc_get_order( $order_id );
-		$first_name = get_post_meta($order_id, '_billing_first_name', TRUE);
-		$last_name = get_post_meta($order_id, '_billing_last_name', TRUE);
-		$full_name = $first_name.' '.$last_name;
-		$billing_email = get_post_meta($order_id, '_billing_email', TRUE);
-		$card_number = get_post_meta($order_id, 'card_number', TRUE);
-
-		$card_last_4_digit = setCreditCard($card_number);
-		$card_type = get_post_meta($order_id, 'card_type', TRUE);
-		$exp_date_month = get_post_meta($order_id, 'expdate_month', TRUE);
-		$exp_date_year = get_post_meta($order_id, 'expdate_year', TRUE);
-		$billing_id_number = get_post_meta($order_id, 'id_number', TRUE);
-		$user_id = get_post_meta($order_id, '_customer_user', true);
-
-		if($card_number != ''){
-			global $wpdb;
-			$table = 'im_payment_info';
-			$data = array('user_id' => $user_id,
-						  'full_name' => $full_name,
-			              'email' => $billing_email,
-			              'card_number' => $card_number,
-			              'card_four_digit' => $card_last_4_digit,
-			              'card_type' => $card_type,
-			              'exp_date_month' => $exp_date_month,
-			              'exp_date_year' => $exp_date_year,
-			              'id_number' => $billing_id_number );
-			$wpdb->insert($table, $data);
-			$last_id = $wpdb->insert_id;
-
-			if ($last_id){
-				delete_post_meta($order_id, 'card_number');
-				delete_post_meta($order_id, 'card_type');
-				delete_post_meta($order_id, 'expdate_month');
-				delete_post_meta($order_id, 'expdate_year');
-				delete_post_meta($order_id, 'cvv_number');
-				delete_post_meta($order_id, 'id_number');
-			}
-		}
-	}
-}
-/*-- End save payment info --*/
-
-
-/*-- Start payment gateway--*/
-$active_plugins = apply_filters('active_plugins', get_option('active_plugins'));
-if(fresh_custom_payment_is_woocommerce_active()){
-	add_filter('woocommerce_payment_gateways', 'add_other_payment_gateway');
-	function add_other_payment_gateway( $gateways ){
-		$gateways[] = 'WC_Other_Payment_Gateway';
-		return $gateways;
-	}
-
-	add_action('plugins_loaded', 'init_other_payment_gateway');
-	function init_other_payment_gateway(){
-		 require FRESH_INCLUDES . 'class-fresh-payment-gateway.php';
-	}
-
-	add_action( 'plugins_loaded', 'other_payment_load_plugin_textdomain' );
-	function other_payment_load_plugin_textdomain() {
-		load_plugin_textdomain( 'woocommerce-other-payment-gateway', FALSE, basename( dirname( __FILE__ ) ) . '/languages/' );
-	}
-
-	function install()
-    {
-        print 1/0;
-    }
-}
-
-function fresh_custom_payment_is_woocommerce_active()
-{
-	$active_plugins = (array) get_option('active_plugins', array());
-
-	if (is_multisite()) {
-		$active_plugins = array_merge($active_plugins, get_site_option('active_sitewide_plugins', array()));
-	}
-
-	return in_array('woocommerce/woocommerce.php', $active_plugins) || array_key_exists('woocommerce/woocommerce.php', $active_plugins);
-}
-
-/*-- End payment gateway--*/
 function wcs_users_logged_in_longer( $expire ) {
 	// 1 month in seconds
 	return 2628000;

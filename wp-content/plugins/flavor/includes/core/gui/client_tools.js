@@ -150,6 +150,19 @@ function execute_url(url, finish_action, obj) {
     xmlhttp3.send();
 }
 
+function execute_url_post(url, post, finish_action)
+{
+    let xhr = new XMLHttpRequest();
+    xhr.open("POST", url, true);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.send(post);
+    xhr.onload = function() {
+        if (finish_action)
+            return finish_action(xhr);
+
+        else report_error(xhr.response);
+    }
+}
 // Use this when the delete button is outside the table and the lines are indicated by the checkbox class
 function action_hide_rows(xmlhttp, checkbox_class)
 {
@@ -170,7 +183,8 @@ function check_result(xmlhttp)
 
 function report_error(response)
 {
-    if (response.indexOf("failed") !== -1){
+    if (response.indexOf("failed") !== -1 ||
+        (response.indexOf("Error") !== -1)){
         alert (response.substr(0, response.lastIndexOf("failed")));
         return true;
     }
@@ -359,4 +373,23 @@ function show_modal(div, blur_div)
     // document.getElementsByTagName("body").className = "is-blurred";
     if (undefined != blur_div)
         blur_div.className = "is-blurred";
+}
+function moveNextRow() {
+    let me = document.getElementById(event.target.id);
+    if (event.which === 13) {
+        let next_row = me.parentElement.nextElementSibling;
+        if (null === next_row) return;
+        if (undefined !== next_row) {
+            let td = next_row.cells[me.cellIndex];
+            if (undefined !== td) {
+                let input = td.firstElementChild;
+                if (undefined !== input) {
+                    input.focus();
+                    input.select();
+                }
+
+            }
+            // event.stopPropagation();
+        }
+    }
 }

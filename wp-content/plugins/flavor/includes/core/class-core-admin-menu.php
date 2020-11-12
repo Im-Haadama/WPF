@@ -1,14 +1,46 @@
 <?php
 
 class Core_Admin_Menu {
+
+	public $top; // Array of (id, title, href);
+	protected static $_instance = null;
+
+
+	public static function instance() {
+		if ( is_null( self::$_instance ) ) {
+			self::$_instance = new self( "Flavor" );
+		}
+
+		return self::$_instance;
+	}
+
+	private function __construct(  ) {
+		$this->top = array();
+	}
+
 	public function AddMenu($page_title, $menu_title, $capability, $menu_slug, $function)
 	{
 		return add_menu_page($page_title, $menu_title, $capability, $menu_slug, $function);
 	}
 
-	public function AddTop()
+	public function AddTop($id, $title, $href)
 	{
+		array_push($this->top, array($id, $title, $href));
+	}
 
+	function do_modify_admin_bar($wp_admin_bar)
+	{
+		foreach ($this->top as $item) {
+			$id = $item[0];
+			$title = $item[1];
+			$href = $item[2];
+
+			$wp_admin_bar->add_node( [
+				'id'    => $id,
+				'title' => __( $title ),
+				'href'  => $href,
+			] );
+		}
 	}
 
 	public function AddSubMenu($parent, $capability, $page)

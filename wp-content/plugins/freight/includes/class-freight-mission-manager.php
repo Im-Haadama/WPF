@@ -476,6 +476,8 @@ group by pm.meta_value, p.post_status");
 
 			// Check if we need to collect something on the go
 			if ($site_id == $multisite->getLocalSiteID() and $order_site != "supplies"){
+				$order = new Finance_Order($order_id);
+				if ($supply_points = $order->SuppliersOnTheGo()){
 				$order = new Fresh_Order($order_id);
 				if ($supply_points = $order->SuppliersOnTheGo($mission_id)){
 					$supplier = new Fresh_Supplier($supply_points[0]);
@@ -829,7 +831,7 @@ group by pm.meta_value, p.post_status");
 			return false;
 		}
 
-		$o = Fresh_Order::CreateOrder( $client, $mission_id, null, $the_shipping,
+		$o = Finance_Order::CreateOrder( $client, $mission_id, null, $the_shipping,
 			" משלוח המכולת " . date( 'Y-m-d' ) . " " . $customer->getName(), Fresh_Pricing::addVat($fee));
 
 		if (! $o)
@@ -862,7 +864,7 @@ group by pm.meta_value, p.post_status");
 		while ( $order = SqlFetchRow( $orders ) ) {
 			$order_id   = $order[0];
 			if ($debug) MyLog(__FUNCTION__ . ': $order_id');
-			$o          = new Fresh_Order( $order_id );
+			$o          = new Finance_Order( $order_id );
 			$is_group   = false; // $order[1];
 			$order_user = $order[1];
 			if ( $debug ) print "order " . $order_id . "<br/>";
@@ -917,7 +919,7 @@ group by pm.meta_value, p.post_status");
 		// print "type=" . $type . "<br/>";
 		switch ( $type ) {
 			case "orders":
-				$o = new Fresh_Order( $id );
+				$o = new Finance_Order( $id );
 				$message = "";
 				if ( ! $o->delivered($message) )
 					print $message;
@@ -943,7 +945,7 @@ group by pm.meta_value, p.post_status");
 		$order_id = GetParam("order_id", true);
 		$comments = GetParam("comments", true);
 //		print "$order_id \'$comments\'";
-		$o = new Fresh_Order($order_id);
+		$o = new Finance_Order($order_id);
 		return $o->UpdateDriverComments($comments);
 	}
 

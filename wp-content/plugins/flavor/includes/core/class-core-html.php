@@ -881,7 +881,6 @@ class Core_Html {
 		$reverse = GetArg($args, "reverse", false);
 
 		// Table start and end
-		$header = true;
 		$footer = true;
 
 		// Style and class.
@@ -974,7 +973,7 @@ class Core_Html {
 //							$data .= " width=" . $args["col_width"][ $col_id ];
 						}
 						$data .= ">";
-						$data .= $cell;
+						$data .= __($cell, Flavor::getTextDomain());
 						$data .= "</td>";
 					}
 				} else {
@@ -1548,11 +1547,20 @@ class Core_Html {
 					$prepare_data = preg_replace('#<br\s*/?>#i', "\n", $data);
 					$value = Core_Html::gui_textarea( $input_name, $prepare_data, $events );
 				} else {
+//					print "$input_name $length<br/>";
+//					$args["size"] = $length;
 					$value = self::GuiInput( $input_name, $data, $args ); // gui_input( $input_name, $data, $field_events, $row_id );
+//					unset($args["size"]);
 				}
 				break;
 			case 'fun':  // function
 				return $data;
+			case 'flo':
+//					print "$input_name $length<br/>";
+					$args["size"] = 4;
+				$value = self::GuiInput( $input_name, $data, $args ); // gui_input( $input_name, $data, $field_events, $row_id );
+					unset($args["size"]);
+					break;
 			default:
 				// $field_events = sprintf( $events, $row_id, $key );
 //				print "in=" . $input_name . "size=".$args['size'] ."<br/>";
@@ -1853,6 +1861,7 @@ class Core_Html {
 			if (is_array($fields)) $fields = CommaImplode($fields);
 			$sql = "select $fields from ${db_prefix}$table_id";
 			if ($where) $sql .= " where $where";
+			if ($order = GetArg($args, "order_by", null)) $sql .= $order;
 		}
 
 		// Fetch the data from DB or create the new row
@@ -1885,7 +1894,7 @@ class Core_Html {
 		// Convert to table if data returned.
 		if ( $row_count >= 1 ) {
 			if (GetArg($args, "duplicate_of", false)) $table_id .= "_new";
-			return Core_Html::gui_table_args( $rows_data, $table_id, $args );
+			return Core_Html::gui_table_args( $rows_data, $args["form_table"], $args );
 		}
 
 		return null;

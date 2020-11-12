@@ -2,6 +2,9 @@
 
 require_once(ABSPATH . '/wp-content/plugins/flavor/flavor.php');
 
+//ini_set('display_errors', 1);
+//ini_set('display_startup_errors', 1);
+//error_reporting(E_ALL);
 
 class Finance {
 	/**
@@ -25,6 +28,7 @@ class Finance {
 	protected $database;
 	protected $subcontract;
 	protected $salary;
+	protected $delivery;
 
 	/**
 	 * Plugin version.
@@ -124,6 +128,7 @@ class Finance {
 		$this->clients     = new Finance_Clients();
 		$this->subcontract = new Finance_Subcontract();
 		$this->salary      = new Finance_Salary();
+//		$this->delivery = new Finance_Delivery();
 
 		$this->init_hooks();
 
@@ -146,6 +151,7 @@ class Finance {
 		// Flavor::getInstance();
 		// register_activation_hook( WC_PLUGIN_FILE, array( 'Finance_Install', 'install' ) );
 		register_shutdown_function( array( $this, 'log_errors' ) );
+		self::register_payment();
 
 		GetSqlConn( ReconnectDb() );
 
@@ -178,6 +184,8 @@ class Finance {
 		if ( $this->yaad ) $this->yaad->init_hooks();
 		if ( $this->clients ) $this->clients->init_hooks();
 
+		Finance_Order_Management::instance()->init_hooks();
+
 		$this->payments = Finance_Payments::instance();
 		$this->payments->init_hooks();
 		$this->subcontract->init_hooks();
@@ -193,10 +201,33 @@ class Finance {
 
 		if ((get_user_id() == 1) and defined("DEBUG_USER")) wp_set_current_user(DEBUG_USER);
 
-//		if (is_admin_user())
-//			self::admin_init();
-
+		Finance_Delivery::init_hooks();
 	}
+
+	function register_payment()
+	{
+//		$active_plugins = apply_filters('active_plugins', get_option('active_plugins'));
+		if(fresh_custom_payment_is_woocommerce_active()){
+			add_filter('woocommerce_payment_gateways', array($this, 'add_other_payment_gateway'));
+
+			add_action('plugins_loaded', array($this, 'init_other_payment_gateway'));
+
+			add_action( 'plugins_loaded', array($this, 'other_payment_load_plugin_textdomain'));
+		}
+	}
+
+	function add_other_payment_gateway( $gateways ){
+		$gateways[] = 'WC_Other_Payment_Gateway';
+		return $gateways;
+	}
+
+	function init_other_payment_gateway(){
+		require FINANCE_INCLUDES . 'class-payment-gateway.php';
+	}
+	function other_payment_load_plugin_textdomain() {
+		load_plugin_textdomain( 'woocommerce-other-payment-gateway', FALSE, basename( dirname( __FILE__ ) ) . '/languages/' );
+	}
+
 
 	function get_open_invoices()
 	{
@@ -214,14 +245,14 @@ class Finance {
 
 	function pay_user_credit_wrap($customer_id, $amount, $payment_number)
 	{
-		MyLog(__FUNCTION__ . " $customer_id");
+		FinanceLog(__FUNCTION__ . " $customer_id");
 
 		if (! $this->yaad)
 			if ( defined( 'YAAD_API_KEY' ) and defined('YAAD_TERMINAL')) {
-				MyLog("init Finanace_Yaad");
-				$this->yaad = new Finance_Yaad( YAAD_API_KEY, YAAD_TERMINAL, get_bloginfo('name') );
+				FinanceLog("init Finanace_Yaad");
+				$this->yaad = new Finance_Yaad( YAAD_API_KEY, YAAD_TERMINAL, get_bloginfo('name'), YAAD_PassP );
 			} else {
-				print "YAAD terminal or api are missing";
+				FinanceLog("Error: folder YAAD terminal or api are missing", true);
 			}
 
 		if (! $this->yaad)
@@ -248,7 +279,7 @@ class Finance {
 		';
 
 		// If amount not specified, try to pay the balance.
-		$user = new Fresh_Client($customer_id);
+		$user = new Finance_Client($customer_id);
 
 		if ($amount == 0)
 			$amount = $user->balance();
@@ -565,6 +596,7 @@ static function get_open_site_invoices()
 		}
 		self::addRoles();
 //		if (get_user_id() == 1) wp_set_current_user(2); // e-fresh
+		Finance_Delivery::init();
 	}
 
 	function addRoles()
@@ -586,6 +618,14 @@ static function get_open_site_invoices()
 //	 *      - WP_LANG_DIR/plugins/woocommerce-LOCALE.mo
 //	 */
 	public function load_plugin_textdomain() {
+		$locale = is_admin() && function_exists( 'get_user_locale' ) ? get_user_locale() : get_locale();
+		$locale = apply_filters( 'plugin_locale', $locale, 'finance' );
+
+//		unload_textdomain( 'finance' );
+		$rc = load_textdomain( 'finance', FINANCE_PLUGIN_DIR . '/languages/finance-' . $locale . '.mo' );
+//		print "rc=$rc<br/>";
+//		print "E=$locale " . _e("Credit Card", "finance");
+//		load_plugin_textdomain( 'finance', false, plugin_basename( dirname( FINANCE_PLUGIN_FILE ) ) . '/i18n/languages' );
 	}
 //
 //	/**
@@ -715,9 +755,14 @@ static function get_open_site_invoices()
 
 		$file = FINANCE_INCLUDES_URL . 'multisite.js';
 		wp_enqueue_script( 'multisite', $file, null, $this->version, false );
+
+	    $file = FINANCE_INCLUDES_URL . 'delivery.js';
+	    wp_enqueue_script( 'delivery', $file, null, $this->version, false );
+
 	}
 
 	public function run() {
+
 	}
 
 	function install( $version, $force = false ) {
@@ -740,7 +785,7 @@ static function get_open_site_invoices()
 
 	static function add_transaction(
 		$part_id, $date, $amount, $delivery_fee, $ref, $project, $net_amount = 0,
-		$document_type = FreshDocumentType::delivery,
+		$document_type = Finance_DocumentType::delivery,
 		$document_file = null
 	) {
 		// print $date . "<br/>";
@@ -787,12 +832,13 @@ static function get_open_site_invoices()
 	}
 
 	function pay_credit_wrapper() {
-		MyLog(__FUNCTION__);
+		FinanceLog(__FUNCTION__);
 		$users = explode( ",", GetParam( "users", true, true ) );
 		$payment_number = GetParam("number", false, 1);
 		$amount = GetParam("amount", false, 0);
 
 		foreach ( $users as $user ) {
+			FinanceLog("trying $user");
 			$rc = apply_filters( 'pay_user_credit', $user, $amount, $payment_number );
 			if ( ! $rc ) print "failed user $user\n";
 		}
@@ -857,5 +903,29 @@ static function get_open_site_invoices()
 	{
 		return Core_Db_MultiSite::getInstance()->getLocalSiteID();
 	}
+}
 
+/*-- Start payment gateway--*/
+
+function fresh_custom_payment_is_woocommerce_active()
+{
+	$active_plugins = (array) get_option('active_plugins', array());
+
+	if (is_multisite()) {
+		$active_plugins = array_merge($active_plugins, get_site_option('active_sitewide_plugins', array()));
+	}
+
+	return in_array('woocommerce/woocommerce.php', $active_plugins) || array_key_exists('woocommerce/woocommerce.php', $active_plugins);
+}
+
+function payment_list() {
+	include( FINANCE_INCLUDES . 'payment_list.php' );
+}
+
+/*-- End payment gateway--*/
+
+function FinanceLog($message, $print = false)
+{
+	if ($print) print $message;
+	MyLog($message, '', 'finance.log');
 }

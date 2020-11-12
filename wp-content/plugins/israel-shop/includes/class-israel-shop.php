@@ -149,7 +149,7 @@ class Israel_Shop
 
 	static function admin_menu()
 	{
-		$menu = new Core_Admin_Menu();
+		$menu = Core_Admin_Menu::instance();
 
 //		$menu->AddMenu('Israel', 'Israel', 'shop_manager', 'israel', __CLASS__ . '::general_settings');
 
@@ -188,6 +188,8 @@ class Israel_Shop
 	}
 
 	static function CheckDigit($id) {
+		$Sum = 0;
+		$Digit = 0;
 		for($i = 0; $i < strlen($id); $i++)
 			if($i % 2 != 0)
 				$Sum .= $id[$i] * 2;
@@ -199,4 +201,25 @@ class Israel_Shop
 
 		return ( $Digit % 10 > 0 ? 10 - ($Digit % 10) : 0);
 	}
+
+	static function getVatPercent()
+	{
+		return 17;
+	}
+
+	static function vatFromTotal($amount)
+	{
+		return round($amount * self::getVatPercent() / (100 + self::getVatPercent()), 2);
+	}
+
+	static function totalWithoutVat($amount)
+	{
+		return $amount - self::vatFromTotal($amount);
+	}
+
+	static function addVat($net)
+	{
+		return round($net * (100 + self::getVatPercent()) / 100, 2);
+	}
+
 }

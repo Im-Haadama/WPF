@@ -1,4 +1,4 @@
-# Translation of Plugins - Im_haadama - Stable (latest release) in Hebrew
+# Translation of Plugin - fresh - Stable (latest release) in Hebrew
 # This file is distributed under the same license as the Plugins - Im_haadama - Stable (latest release) package.
 msgid ""
 msgstr ""

@@ -68,7 +68,7 @@ class Finance_Settings {
 	}
 
 	function admin_menu() {
-		$menu = new Core_Admin_Menu();
+		$menu = Core_Admin_Menu::instance();
 
 		$menu->AddMenu('Finance', 'Finance', 'show_finance', 'finance', array($this, 'main'));
 
@@ -81,8 +81,23 @@ class Finance_Settings {
 		$menu->AddSubMenu( "users.php", "edit_shop_orders",
 			array( 'page_title' => 'Client accounts', 'function' => array( "Finance_Clients", 'admin_page' ) ) );
 
+		Flavor::AddTop("client_accounts", "Client accounts", "/wp-admin/users.php?page=client-accounts");
+
+
 		$menu->AddSubMenu( "users.php", "edit_shop_orders",
 			array( 'page_title' => 'Payment methods', 'function' => array( "Finance_Payments", 'payment_methods' ) ) );
+
+		$menu->AddSubMenu('users.php', 'edit_shop_orders', // Previous users.php
+			array('page_title' => 'Payment List',
+			      'menu_title' => 'Payment list',
+			      'menu_slug' => 'payment_list',
+			      'function' => 'payment_list')
+		);
+
+		// Deliveries
+		$menu->Add("woocommerce", "edit_shop_orders", "deliveries", array("Finance_Delivery" , 'deliveries' ));
+		// On Top
+		Flavor::AddTop("deliveries", "Deliveries", "/wp-admin/admin.php?page=deliveries");
 
 //		$menu->AddSubMenu( "finance", "working_hours_self",
 //			array( 'page_title' => 'Hours entry', 'function' => array( "Finance_Salary", 'entry_wrapper' ) ) );

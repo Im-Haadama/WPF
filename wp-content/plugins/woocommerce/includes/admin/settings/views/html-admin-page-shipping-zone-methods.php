@@ -2,19 +2,20 @@
 /**
  * Shipping zone admin
  *
- * @package WooCommerce/Admin/Shipping
+ * @package WooCommerce\Admin\Shipping
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 ?>
+
 <h2>
 	<a href="<?php echo esc_url( admin_url( 'admin.php?page=wc-settings&tab=shipping' ) ); ?>"><?php esc_html_e( 'Shipping zones', 'woocommerce' ); ?></a> &gt;
 	<span class="wc-shipping-zone-name"><?php echo esc_html( $zone->get_zone_name() ? $zone->get_zone_name() : __( 'Zone', 'woocommerce' ) ); ?></span>
 </h2>
 
-<?php do_action( 'woocommerce_shipping_zone_before_methods_table', $zone ); ?> 
+<?php do_action( 'woocommerce_shipping_zone_before_methods_table', $zone ); ?>
 
 <table class="form-table wc-shipping-zone-settings">
 	<tbody>
@@ -69,28 +70,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 					</div>
 				</td>
 			<?php endif; ?>
-		</tr>
-		<tr valign="top" class="">
-			<th scope="row" class="titledesc">
-				<label for="min_order">
-					<?php esc_html_e( 'Min order', 'woocommerce' ); ?>
-					<?php echo wc_help_tip( __( 'Minimum order to this zone.', 'woocommerce' ) ); // @codingStandardsIgnoreLine ?>
-				</label>
-			</th>
-			<td class="forminp">
-				<input type="text" data-attribute="min_order" name="min_order" id="min_order" value="<?php echo esc_attr( $zone->get_meta( 'min_order' ) ); ?>" placeholder="<?php esc_attr_e( 'Min order', 'woocommerce' ); ?>">
-			</td>
-		</tr>
-		<tr valign="top" class="">
-			<th scope="row" class="titledesc">
-				<label for="default_price">
-					<?php esc_html_e( 'Default shipping price', 'woocommerce' ); ?>
-					<?php echo wc_help_tip( __( 'Default shipping price to this zone. You can change later in shipping methods.', 'woocommerce' ) ); // @codingStandardsIgnoreLine ?>
-				</label>
-			</th>
-			<td class="forminp">
-				<input type="text" data-attribute="default_price" name="default_price" id="default_price" value="<?php echo esc_attr( $zone->get_meta( 'default_price' ) ); ?>" placeholder="<?php esc_attr_e( 'Default price', 'woocommerce' ); ?>">
-			</td>
 		</tr>
 		<tr valign="top" class="">
 			<th scope="row" class="titledesc">
@@ -210,7 +189,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 									if ( ! $method->supports( 'shipping-zones' ) ) {
 										continue;
 									}
-									echo '<option data-description="' . esc_attr( wp_kses_post( wpautop( $method->get_method_description() ) ) ) . '" value="' . esc_attr( $method->id ) . '">' . esc_attr( $method->get_method_title() ) . '</li>';
+									echo '<option data-description="' . esc_attr( wp_kses_post( wpautop( $method->get_method_description() ) ) ) . '" value="' . esc_attr( $method->id ) . '">' . esc_html( $method->get_method_title() ) . '</li>';
 								}
 								?>
 							</select>

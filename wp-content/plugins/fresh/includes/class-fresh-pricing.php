@@ -170,26 +170,6 @@ class Fresh_Pricing {
 		MyLog("setiing sale price for $product_id sp=$sale_price pr=$regular_price (user: " . get_user_id() . ")");
 
 	}
-
-	static function getVatPercent()
-	{
-		return 17;
-	}
-
-	static function vatFromTotal($amount)
-	{
-		return round($amount * self::getVatPercent() / (100 + self::getVatPercent()), 2);
-	}
-
-	static function totalWithoutVat($amount)
-	{
-		return $amount - self::vatFromTotal($amount);
-	}
-
-	static function addVat($net)
-	{
-		return round($net * (100 + self::getVatPercent()) / 100, 2);
-	}
 }
 
 function my_custom_show_sale_price_at_cart( $old_display, $cart_item, $cart_item_key ) {

@@ -767,7 +767,7 @@ class Finance_Salary {
 
 	function admin_menu()
 	{
-		$menu = new Core_Admin_Menu();
+		$menu = Core_Admin_Menu::instance();
 
 //		$menu->AddSubMenu('finance', 'working_hours_self',
 //			array('page_title' => 'Hours',

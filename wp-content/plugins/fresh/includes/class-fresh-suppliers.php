@@ -18,6 +18,7 @@ class Fresh_Suppliers {
 
 	function init()
 	{
+		if (! TableExists("suppliers")) return;
 		Core_Gem::AddTable( "suppliers" );
 
 		$this->gem =Core_Gem::getInstance();

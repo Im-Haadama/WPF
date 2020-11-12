@@ -545,7 +545,7 @@ class Capabilites {
 	}
 
 	static function admin_menu() {
-		$menu = new Core_Admin_Menu();
+		$menu = Core_Admin_Menu::instance();
 
 		$menu->AddSubMenu( "users.php", "promote_users",
 			array( 'page_title' => 'Site admins', 'function' => array( __CLASS__, 'RolesAndCapabilities' ) ) );
