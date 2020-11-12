@@ -556,7 +556,7 @@ class Capabilites {
 	}
 
 	static function getPost() {
-		return "/wp-content/plugins/capabilities/post.php";
+		return Flavor::getPost();
 	}
 
 	static function toggle_role() {

@@ -20,7 +20,7 @@ class Subscription_Manager {
 
 
 	function getPost() {
-		return "/wp-content/plugins/flavor/post.php";
+		return Flavor::getPost();
 	}
 
 	public static function instance() {

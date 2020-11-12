@@ -647,7 +647,7 @@ class Finance_Salary {
 		if ( $user_id ) {
 			$u     = new Core_Users( $user_id );
 			$email = $u->CustomerEmail();
-			$r     = "people/people-post.php?operation=get_balance_email&date=" .
+			$r     = Flavor::getPost() . "?operation=get_balance_email&date=" .
 			         date( 'Y-m-j', strtotime( "last day of " . $year . "-" . $month ) ) . "&email=" . $email;
 			// print $r;
 			$b = strip_tags( Core_Db_MultiSite::sExecute( $r, 4 ) );

@@ -42,7 +42,7 @@ class Finance_Payments {
 	 */
 	public static function instance() {
 		if ( is_null( self::$_instance ) ) {
-			self::$_instance = new self( "/wp-content/plugins/finance/post.php" );
+			self::$_instance = new self( Flavor::getPost());
 		}
 		return self::$_instance;
 	}

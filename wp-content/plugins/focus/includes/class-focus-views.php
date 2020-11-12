@@ -1284,7 +1284,7 @@ class Focus_Views {
 
 		$table_name = "tasklist";
 
-		$action_url = Focus::getPost(); // "/wp-content/plugins/focus/post.php";
+		$action_url = Focus::getPost();
 
 		if ( ! isset( $args["fields"] ) ) {
 			$args["fields"] = array(
@@ -1662,7 +1662,7 @@ class Focus_Views {
 		$url       = GetUrl( 1 );
 
 		$result                     = "";
-		$action_url                 = Focus::getPost(); // "/wp-content/plugins/focus/post.php"; // GetUrl(1);//  "/focus/focus-post.php";
+		$action_url                 = Focus::getPost();
 		$worker                     = new Org_Worker( get_user_id() );
 		$template_args              = self::Args( "task_templates" );
 		$template_args["worker"]    = $worker->getId();
@@ -2329,7 +2329,7 @@ class Focus_Views {
 		$args["mandatory_fields"] = array( "project_id", "priority", "team", "task_description" );
 
 //		$args["fields"]     = array( "task_description", "project_id", "priority", "date", "preq", "creator", "team" );
-		$args['post_file']  = Focus::getPost(); // "/wp-content/plugins/focus/post.php";
+		$args['post_file']  = Focus::getPost();
 		$args['form_table'] = 'tasklist';
 
 		// Todo: check last update time

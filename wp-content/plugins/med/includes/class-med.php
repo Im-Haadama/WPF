@@ -103,7 +103,7 @@ class Med {
 
 	static function getPost()
 	{
-		return "/wp-content/plugins/med/post.php";
+		return Flavor::getPost();
 	}
 
 	function add_case() {

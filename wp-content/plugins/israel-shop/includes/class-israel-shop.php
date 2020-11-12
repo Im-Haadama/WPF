@@ -30,7 +30,7 @@ class Israel_Shop
 	static function Args($type = null)
 	{
 		$args = [];
-		$args["post_file"] = plugin_dir_url(dirname(__FILE__)) . "post.php";
+		$args["post_file"] = Flavor::getPost();
 		// $args["edit"] = true;
 
 		return $args;
@@ -65,7 +65,7 @@ class Israel_Shop
 
 	static public function getPost()
 	{
-		return '/wp-content/plugins/israel-shop/post.php';
+		return Flavor::getPost();
 	}
 
 	private function define_constants() {

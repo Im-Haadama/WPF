@@ -10,7 +10,7 @@ class Finance_Invoices {
 
 	public static function instance() {
 		if ( is_null( self::$_instance ) ) {
-			self::$_instance = new self( "/wp-content/plugins/finance/post.php" );
+			self::$_instance = new self( );
 		}
 
 		return self::$_instance;

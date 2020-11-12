@@ -411,7 +411,7 @@ class Core_Db_MultiSite extends Core_MultiSite {
 	{
 		$http_code = 0;
 		$db_prefix = GetTablePrefix();
-		$url = "$server/wp-content/plugins/finance/post.php?operation=multisite_validate";
+		$url = "$server" . Flavor::getPost() . "?operation=multisite_validate";
 		$result = self::DoRun($url, $http_code, $user, $password);
 
 		if (check_for_error($result)) {

@@ -627,7 +627,7 @@ class Fresh {
 
 	static function getPost()
 	{
-		return "/wp-content/plugins/fresh/post.php";
+		return Flavor::getPost();
 	}
 
 	public function enqueue_scripts() {

@@ -119,7 +119,7 @@ class Finance {
 			die ( "not defined" );
 		}
 		$this->loader      = new Core_Autoloader( FINANCE_ABSPATH );
-		$this->post_file   = "/wp-content/plugins/finance/post.php";
+		$this->post_file   = Flavor::getPost();
 		$this->yaad        = null;
 		$this->clients     = new Finance_Clients();
 		$this->subcontract = new Finance_Subcontract();
@@ -554,7 +554,7 @@ static function get_open_site_invoices()
 
 		$this->shortcodes->do_init();
 
-		$this->invoices->init( FINANCE_INCLUDES_URL . '../post.php' );
+		$this->invoices->init( Flavor::getPost() );
 
 //		InfoUpdate("finance_bank_enabled", 1);
 		if (InfoGet("finance_bank_enabled")) {

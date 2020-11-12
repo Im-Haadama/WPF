@@ -367,7 +367,7 @@ group by pm.meta_value, p.post_status");
 
 		// Read from all sites.
 		self::$multi_site = Core_Db_MultiSite::getInstance();
-		$data_url = "wp-content/plugins/flavor/post.php?operation=get_local_anonymous&mission_ids=$mission_id";
+		$data_url = Flavor::getPost() . "?operation=get_local_anonymous&mission_ids=$mission_id";
 		$output   = self::$multi_site->GetAll( $data_url, false, $debug );
 
 		// Parse the output
@@ -412,7 +412,7 @@ group by pm.meta_value, p.post_status");
 
 	static function getPost()
 	{
-		return "/wp-content/plugins/freight/post.php";
+		return Flavor::getPost();
 	}
 
 	function collect_points($data_lines, $mission_id)

@@ -147,7 +147,7 @@ class Core_Gem {
 		$unmapped = [];
 		$rc = Core_Importer::Import($file_name, $table, $fields,  $unmapped);
 		if (count($unmapped)) {
-			$result .= self::MapFields($unmapped, $db_prefix, $table, '/wp-content/plugins/fresh/post.php') .
+			$result .= self::MapFields($unmapped, $db_prefix, $table, Flavor::getPost()) .
 			           Core_Html::load_scripts(array('/wp-content/plugins/flavor/includes/core/gui/client_tools.js',
 				           '/wp-content/plugins/flavor/includes/core/data/data.js'));
 			print $result;

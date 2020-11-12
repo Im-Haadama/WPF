@@ -723,7 +723,7 @@ class Finance_Bank
 		$args = [];
 		$args["links"] = array("id" => AddToUrl(array( "operation" => "show_bank_load", "account_id" => "%s")));
 //		$args["id_field"] = "count_id";
-		$action_url = GetUrl(1); // plugin_dir_url(dirname(__FILE__)) . "post.php";
+		$action_url = GetUrl(1);
 		$args["actions"] =
 			array(array( "load", $action_url . "?operation=bank_show_import&id=%s" ));
 

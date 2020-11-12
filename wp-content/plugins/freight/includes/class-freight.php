@@ -471,7 +471,7 @@ class Freight {
 
 	static function getPost()
 	{
-		return "/wp-content/plugins/freight/post.php";
+		return Flavor::getPost();
 	}
 
 	public function admin_scripts()

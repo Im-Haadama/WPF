@@ -99,7 +99,7 @@
 
 		static private function getPost()
 		{
-			return "/wp-content/plugins/freight/post.php";
+			return Flavor::getPost();
 		}
 
 		public function freight_general()
