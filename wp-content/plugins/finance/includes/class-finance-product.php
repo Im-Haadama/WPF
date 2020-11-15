@@ -29,7 +29,7 @@ class Finance_Product {
 
 	function getPrice()
 	{
-		return get_postmeta_field( $this->prod_id, '_price' );
+		return get_postmeta_field( $this->id, '_price' );
 	}
 
 	static public function get_edit_link( $id ) {

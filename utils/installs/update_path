@@ -1,0 +1,5 @@
+#!/bin/bash
+    if [ `grep utils ~/.bashrc | wc -l` -eq "0" ]; then
+       echo 'PATH=$PATH:~/utils' >> ~/.bashrc
+    fi;
+    touch .install.bash_path

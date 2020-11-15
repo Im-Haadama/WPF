@@ -415,28 +415,29 @@ group by pm.meta_value, p.post_status");
 		return Flavor::getPost();
 	}
 
-	function collect_points($data_lines, $mission_id)
-	{
-		$multisite = Core_Db_MultiSite::getInstance();
+	function collect_points($data_lines, $mission_id) {
+		$multisite         = Core_Db_MultiSite::getInstance();
 		$this->stop_points = array();
 
-		$mission = new Mission($mission_id);
+		$mission = new Mission( $mission_id );
 
 //		for ( $i = 0; $i < count( $data_lines); $i ++ )
 //		{
 //			$order_info = $data_lines[$i];
 //			print $order_info[OrderTableFields::client_name] . "<br/>";
 //		}
-		for ( $i = 0; $i < count( $data_lines); $i ++ ) {
-			$order_info = $data_lines[$i];
-			$stop_point = str_replace('-', ' ', $order_info[OrderTableFields::address_1] . " " . $order_info[OrderTableFields::city]);
-			$order_id = $order_info[OrderTableFields::order_number];
-			$order_site = $order_info[OrderTableFields::site_name];
-			$site_id = $order_info[OrderTableFields::site_id];
+		for ( $i = 0; $i < count( $data_lines ); $i ++ ) {
+			$order_info = $data_lines[ $i ];
+			$stop_point = str_replace( '-', ' ', $order_info[ OrderTableFields::address_1 ] . " " . $order_info[ OrderTableFields::city ] );
+			$order_id   = $order_info[ OrderTableFields::order_number ];
+			$order_site = $order_info[ OrderTableFields::site_name ];
+			$site_id    = $order_info[ OrderTableFields::site_id ];
 
 			// Collect information about pickup points.
-			if (! isset($this->points_per_sites[$site_id])) $this->points_per_sites[$site_id] = array();
-			array_push($this->points_per_sites[$site_id], $order_id);
+			if ( ! isset( $this->points_per_sites[ $site_id ] ) ) {
+				$this->points_per_sites[ $site_id ] = array();
+			}
+			array_push( $this->points_per_sites[ $site_id ], $order_id );
 
 			$pickup_address = Core_Db_MultiSite::getPickupAddress( $site_id );
 
@@ -447,41 +448,42 @@ group by pm.meta_value, p.post_status");
 			// Add Pickup
 			self::add_stop_point( $pickup_address, $order_id, $site_id );
 
-			if ( $order_info[OrderTableFields::site_name] == "supplies" )
-				array_push( $this->supplies_to_collect, array( $order_id, $order_info[OrderTableFields::site_id] ) );
-			else {
+			if ( $order_info[ OrderTableFields::site_name ] == "supplies" ) {
+				array_push( $this->supplies_to_collect, array( $order_id, $order_info[ OrderTableFields::site_id ] ) );
+			} else {
 //				var_dump($pickup_address); 	print "<br/>";
-				$this->AddPrerequisite($order_id, $pickup_address);
-				$pickup_order_info = $order_info;
-				$pickup_order_info[OrderTableFields::client_name] = "<b>העמסה</b> " . $order_info[OrderTableFields::client_name];
-				$pickup_order_info[OrderTableFields::address_2] = '';
-				$pickup_order_info[OrderTableFields::phone] = '';
+				$this->AddPrerequisite( $order_id, $pickup_address );
+				$pickup_order_info                                  = $order_info;
+				$pickup_order_info[ OrderTableFields::client_name ] = "<b>העמסה</b> " . $order_info[ OrderTableFields::client_name ];
+				$pickup_order_info[ OrderTableFields::address_2 ]   = '';
+				$pickup_order_info[ OrderTableFields::phone ]       = '';
 				// $this->prerequisite[$order_id] = $pickup_order_info[OrderTableFields::address_1];
-				self::add_line_per_station($mission->getStartAddress(),
+				self::add_line_per_station( $mission->getStartAddress(),
 					$pickup_address,
 					$pickup_order_info,
-					$order_id);
+					$order_id );
 			}
 
-			self::add_stop_point($stop_point, $order_id, $site_id );
+			self::add_stop_point( $stop_point, $order_id, $site_id );
 //			if (! isset($this->prerequisite[$stop_point])) {
 //				$p = self::order_get_pri($order_id, $site_id);
 //				if (strlen($p)) $this->prerequisite[$stop_point] = $p;
 //			}
 
-			self::add_line_per_station($mission->getStartAddress(),
+			self::add_line_per_station( $mission->getStartAddress(),
 				$stop_point,
 				$order_info,
-				$order_id);
+				$order_id );
 
 			// Check if we need to collect something on the go
-			if ($site_id == $multisite->getLocalSiteID() and $order_site != "supplies"){
-				$order = new Finance_Order($order_id);
-				if ($supply_points = $order->SuppliersOnTheGo()){
-				$order = new Fresh_Order($order_id);
-				if ($supply_points = $order->SuppliersOnTheGo($mission_id)){
-					$supplier = new Fresh_Supplier($supply_points[0]);
-					$this->AddPrerequisite($order_id, $supplier->getAddress());
+			if ( $site_id == $multisite->getLocalSiteID() and $order_site != "supplies" ) {
+				$order = new Finance_Order( $order_id );
+				if ( $supply_points = $order->SuppliersOnTheGo() ) {
+					$order = new Fresh_Order( $order_id );
+					if ( $supply_points = $order->SuppliersOnTheGo( $mission_id ) ) {
+						$supplier = new Fresh_Supplier( $supply_points[0] );
+						$this->AddPrerequisite( $order_id, $supplier->getAddress() );
+					}
 				}
 			}
 		}

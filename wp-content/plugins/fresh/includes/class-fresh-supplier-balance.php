@@ -24,7 +24,7 @@ class Fresh_Supplier_Balance {
 
 	public function init_hooks()
 	{
-		$menu = new Core_Admin_Menu();
+		$menu = Core_Admin_Menu::instance();
 
 		$menu->AddMenu("הנהלת חשבונות", "הנהלת חשבונות", "edit_shop_orders", "accounting", array(__CLASS__, 'accounting'));
 		AddAction("get_supplier_open_account", array(Fresh_Supplier_Balance::instance(), 'supplier_open_account'));

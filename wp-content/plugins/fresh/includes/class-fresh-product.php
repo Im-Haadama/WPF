@@ -166,7 +166,7 @@ class Fresh_Product  extends Finance_Product {
 	function getVatPercent() {
 		if ( $this->isFresh() ) return 0;
 
-		return Fresh_Pricing::getVatPercent();
+		return Israel_Shop::getVatPercent();
 	}
 
 	function getPrice( $customer_type = "regular" ) {

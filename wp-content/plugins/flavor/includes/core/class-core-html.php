@@ -96,6 +96,8 @@ class Core_Html {
 			}
 		}
 
+		if (false === GetArg($args, "edit", null))
+			$data .= " disabled='disabled' ";
 		$data .= ">";
 
 		return $data;
@@ -1532,6 +1534,9 @@ class Core_Html {
 		if (strstr($data, "<input")) return $data;
 		$events = GetArg( $args, "events", null );
 		switch ( substr( $type, 0, 3 ) ) {
+			case 'tin':
+				$value = Core_Html::GuiCheckbox( $input_name, $data, array("events"=>$events) );
+				break;
 			case 'dat':
 				$value = Core_Html::gui_input_date( $input_name, null, $data, $events );
 				break;

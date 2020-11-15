@@ -36,7 +36,6 @@ class Finance_Order_Management {
 				$actions['delivery_note'] = array(
 //						'url'    => wp_nonce_url( admin_url( 'admin-post.php?post=' . $order->get_id() . '&action=delivery' ), 'woocommerce-mark-order-status' ),
 					'url' => AddParamToUrl("/wp-admin/admin.php?page=deliveries", array("operation"=> "delivery_show_create", "order_id" => $order->get_id())),
-//						'/wp-content/plugins/fresh/delivery/create-delivery.php?order_id=' . $order->get_id(),
 					'name'   => __( 'Create delivery note', 'e-fresh' ),
 					'action' => 'delivery'
 				);

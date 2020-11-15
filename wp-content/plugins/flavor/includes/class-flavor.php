@@ -166,6 +166,7 @@ class Flavor {
 		Core_Gem::getInstance()->init_hooks($this->loader);
 		Flavor_Org_Views::instance()->init_hooks($this->loader);
 		Flavor_Mission::init_hooks();
+		Core_Data::init_hooks($this->loader);
 		add_action( 'admin_notices', array($this, 'admin_notices') );
 	}
 

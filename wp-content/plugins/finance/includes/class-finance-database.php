@@ -6,11 +6,16 @@ class Finance_Database extends Core_Database {
 	function CreateTables($version, $force) {
 
 		$db_prefix = GetTablePrefix();
-		$current = self::CheckInstalled("Finance", "tables");
+		$current = self::CheckInstalled("tables");
 
-		if ($current)  // Installed!
-			return true;
-
+		if ($current)
+		switch($current)
+		{
+			case '1.2':
+			case '1.4':
+				 SqlQuery("alter table ${db_prefix}delivery_lines add has_vat bool default true;");
+				return $this->UpdateInstalled("tables", $version);
+		}
 		if (! TableExists("payments"))
 			SqlQuery("create table ${db_prefix}payments
 (
@@ -177,7 +182,7 @@ charset=utf8;
 	" );
 		}
 
-		self::UpdateInstalled("Finance", "tables", $version);
+		self::UpdateInstalled( "tables", $version);
 	}
 
 	function CreateFunctions($version, $force = false) {
@@ -305,11 +310,11 @@ BEGIN
     return round(total/1.17, 2);
   END;" );
 
-		self::UpdateInstalled("Finance", "functions", $version);
+		self::UpdateInstalled("functions", $version);
 
 	}
 
-	function CreateViews($version)
+	function CreateViews($version, $force)
 	{
 		return true;
 	}

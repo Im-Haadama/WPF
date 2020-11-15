@@ -67,6 +67,8 @@ class Finance_Subcontract {
 	}
 
 	static function calc_makolet( $year, $month ) {
+		$db_prefix = GetTablePrefix("delivery_lines");
+
 		$sql = "select d.id, client_from_delivery(d.id), d.date, order_id, total, vat, round(reduce_vat(fee),2), " .
 		       " round(total-vat-reduce_vat(fee),2), payment_receipt " .
 		       " from im_delivery d" .
@@ -97,7 +99,7 @@ class Finance_Subcontract {
 			$row[0] = Core_Html::GuiHyperlink( $row[0], "/fresh/delivery/get-delivery.php?id=" . $row[0] );
 			if ( $row[6] == 0 ) {
 				print $row[0] . "<br/>";
-				$sql1   = "SELECT round(reduce_vat(line_price),2) FROM im_delivery_lines WHERE delivery_id = " . $row[0] . " AND product_name LIKE '%משלוח%'";
+				$sql1   = "SELECT round(reduce_vat(line_price),2) FROM ${db_prefix}delivery_lines WHERE delivery_id = " . $row[0] . " AND product_name LIKE '%משלוח%'";
 				$row[6] = SqlQuerySingleScalar( $sql1 );
 				$row[7] = $row[4] - $row[5] - $row[6];
 			}

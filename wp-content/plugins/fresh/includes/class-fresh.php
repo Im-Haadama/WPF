@@ -149,7 +149,7 @@ class Fresh {
 		$this->plugin_name = $plugin_name;
 		$this->define_constants();
 		$this->includes(); // Loads class autoloader
-		$this->loader = new Fresh_Loader();
+		$this->loader = Core_Loader::instance();
 		$this->auto_loader = new Core_Autoloader(FRESH_ABSPATH);
 
 		$this->init_hooks();
@@ -235,15 +235,15 @@ class Fresh {
 		$orders = new Fresh_Order_Management( $this->get_plugin_name(), $this->get_version() );
 		$inventory = new Fresh_Inventory( $this->get_plugin_name(), $this->get_version(), self::getPost());
 
-		$this->loader->add_action( 'wp_enqueue_scripts', $orders, 'enqueue_scripts' );
-		$this->loader->add_action( 'admin_enqueue_scripts', $inventory, 'admin_scripts' );
+		$this->loader->AddAction( 'wp_enqueue_scripts', $orders, 'enqueue_scripts' );
+		$this->loader->AddAction( 'admin_enqueue_scripts', $inventory, 'admin_scripts' );
 
 		Fresh_Packing::init_hooks();
 //		Fresh_Suppliers::init_hooks();
 		Fresh_Order_Management::instance()->init_hooks();
 		Fresh_Catalog::init_hooks();
 		Fresh_Client::init_hooks();
-		Fresh_Delivery::init_hooks();
+		Fresh_Delivery::init_hooks($this->loader);
 		Fresh_Client_Views::init_hooks();
 		Fresh_Bundles::instance()->init_hooks();
 		Fresh_Views::init_hooks();
@@ -421,12 +421,7 @@ class Fresh {
 		/**
 		 * Class autoloader.
 		 */
-		require_once FRESH_INCLUDES . 'class-fresh-autoloader.php';
 		require_once FLAVOR_INCLUDES_ABSPATH . 'core/core-functions.php';
-//
-//		require_once FLAVOR_INCLUDES_ABSPATH . 'core/fund.php';
-//		require_once FLAVOR_INCLUDES_ABSPATH . 'core/data/sql.php';
-//		require_once FLAVOR_INCLUDES_ABSPATH . 'core/wp.php';
 
 		/**
 		 * Interfaces.
@@ -439,7 +434,7 @@ class Fresh {
 		/**
 		 * Core classes.
 		 */
-		include_once FRESH_INCLUDES . 'class-fresh-shortcodes.php';
+//		include_once FRESH_INCLUDES . 'class-fresh-shortcodes.php';
 
 		/**
 		 * Data stores - used to store and retrieve CRUD object data from the database.

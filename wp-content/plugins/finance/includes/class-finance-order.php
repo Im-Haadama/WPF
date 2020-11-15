@@ -338,6 +338,8 @@ class Finance_Order {
 	}
 
 	public static function CalculateNeeded( &$needed_products, $user_id = 0, &$user_table = null, $debug_product = null) {
+		$db_prefix = GetTablePrefix("delivery_lines");
+
 		$include_shipment = false;
 		/// print "user id " . $user_id . "<br/>";
 		$debug_product = 0; // 141;
@@ -431,7 +433,7 @@ class Finance_Order {
 					Finance_Order::AddProducts( $key, $qty, $needed_products, $item->get_id() );
 				} else {
 					// Check if order line supplied.
-					$sql = "SELECT sum(quantity) FROM im_delivery_lines WHERE prod_id = " . $prod_or_var .
+					$sql = "SELECT sum(quantity) FROM ${db_prefix}delivery_lines WHERE prod_id = " . $prod_or_var .
 					       " AND quantity > 0 AND delivery_id = " . $del_id;
 
 					// print $sql . "<br/>";
@@ -640,6 +642,8 @@ class Finance_Order {
 	}
 
 	function update_levels() {
+		$db_prefix = GetTablePrefix("delivery_lines");
+
 		// OK. We supplied the order.
 		// We check if delivered different from ordered and change the stock level.
 		$order_items = $this->order->get_items();
@@ -648,7 +652,7 @@ class Finance_Order {
 			$prod_or_var  = $item['product_id'];
 			$q_in_ordered = $item->get_quantity();
 			$p            = new Fresh_Product( $prod_or_var );
-			$q_supplied   = SqlQuery( "SELECT quantity FROM im_delivery_lines" .
+			$q_supplied   = SqlQuery( "SELECT quantity FROM ${db_prefix}delivery_lines" .
 			                          " WHERE prod_id = " . $prod_or_var .
 			                          " AND delivery_id = " . $d_id );
 			if ( $q_in_ordered != $q_supplied ) {
@@ -711,7 +715,7 @@ class Finance_Order {
 
 	function checkInfoBox()
 	{
-		$result = Core_Html::gui_header(1, __("Order number") . ":" . $this->order_id) . "<br/>";
+		$result = Core_Html::GuiHeader(1, ETranslate("Order number") . ":" . $this->order_id) . "<br/>";
 		$result .= __("Client") . ":" . $this->getOrderInfo( '_billing_first_name' ) . ' '
 		                                                                      . $this->getOrderInfo( '_billing_last_name') . "<br/>";
 
@@ -777,7 +781,7 @@ class Finance_Order {
 
 		$data = Core_Html::GuiHeader( 1, $header, true );
 
-		if ( ($d_id = self::get_delivery_id( $this->order_id )) > 0 ) $data .= Core_Html::gui_header( 2, "משלוח מספר " . $d_id );
+		if ( ($d_id = self::get_delivery_id( $this->order_id )) > 0 ) $data .= Core_Html::GuiHeader( 2, "משלוח מספר " . $d_id );
 		$data     .= $this->infoRightBox( $edit_order );
 		$data     .= "</td>";
 		$data .= "<tr><td>$logo_url</td></td>";
@@ -1108,6 +1112,8 @@ class Finance_Order {
 
 	function handle_order_operation($operation)
 	{
+		$db_prefix = GetTablePrefix("delivery_lines");
+
 		$page = GetParam("page", false, 0);
 		$args = [];
 		if ($page) $args["page"] = $page;
@@ -1124,9 +1130,9 @@ class Finance_Order {
 				$args = [];
 				$args["print_logo"] = false;
 				print HeaderText($args);
-				print Core_Html::gui_header(2, "הזמנה/אספקה שבועית");
-				$last_delivery = SqlQuerySingleScalar("select max(delivery_id) from im_delivery_lines");
-				$sql = "select distinct prod_id, sum(quantity_ordered) from im_delivery_lines where delivery_id > $last_delivery - 20 group by prod_id order by 2 desc limit 38";
+				print Core_Html::GuiHeader(2, "הזמנה/אספקה שבועית");
+				$last_delivery = SqlQuerySingleScalar("select max(delivery_id) from ${db_prefix}delivery_lines");
+				$sql = "select distinct prod_id, sum(quantity_ordered) from ${db_prefix}delivery_lines where delivery_id > $last_delivery - 20 group by prod_id order by 2 desc limit 38";
 				$prods = SqlQueryArrayScalar($sql);
 
 				$data = [];
@@ -1365,7 +1371,7 @@ class Finance_Order {
 				if (!is_basket($prod_id)) array_push($temp_table, get_product_name($prod_id));
 			if (count($temp_table)){
 				sort ($temp_table);
-				array_push($data, Core_Html::gui_header(3, get_term_name($term)));
+				array_push($data, Core_Html::GuiHeader(3, get_term_name($term)));
 
 				foreach ($temp_table as $prod_name)
 					array_push($data, array($prod_name, ""));
@@ -1516,7 +1522,6 @@ class Finance_Order {
 		} else {
 			$client_id = $O->getCustomerId();
 			$report    .= "<form name=\"delivery\" action= \"\">";
-			// $report .= gui_header( 2, "יצירת תעודת משלוח להזמנה מספר " . $order_id, true );
 
 			if ( 0 and SqlQuerySingleScalar( "select order_is_group(" . $order_id . ")" ) == 1 ) {
 				//		 $report .= "הזמנה קבוצתית";
@@ -1578,7 +1583,7 @@ class Finance_Order {
 	{
 //		$order = new Fresh_Order($order_id);
 //		if ($order->getShippingFee())
-		return '/wp-content/plugins/fresh/delivery/get-delivery.php?order_id=' . $this->order_id;
+		return "wp-admin/admin.php?page=deliveries?order_id=" . $this->order_id;
 	}
 
 }

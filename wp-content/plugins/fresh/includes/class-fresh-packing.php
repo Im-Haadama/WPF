@@ -335,10 +335,10 @@ class Fresh_Packing {
 			$order_item_id = $row[0];
 			$order_id      = $row[1];
 			$o = new Fresh_Order($order_id);
-			$quantity      = self::get_order_itemmeta( $order_item_id, '_qty' );
+			$quantity      = Finance_Delivery::get_order_itemmeta( $order_item_id, '_qty' );
 
 			// consider quantity in the basket or bundle
-			$pid = self::get_order_itemmeta( $order_item_id, '_product_id' );
+			$pid = Finance_Delivery::get_order_itemmeta( $order_item_id, '_product_id' );
 			$p   = new Fresh_Product( $pid );
 			if ( $p->is_bundle() ) {
 				$b        = Fresh_Bundle::CreateFromBundleProd( $pid );

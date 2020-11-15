@@ -64,7 +64,7 @@ class Finance_Client_Views {
 		$args["class"] = "widefat";
 		$args["links"] = array();
 		$args["links"]["transaction_ref"] = Finance_Delivery::getLink('%d');
-			// "/wp-content/plugins/fresh/delivery/get-delivery.php?id=%s";
+
 		// Todo: Finish step 2: "/delivery?id=%s";
 		$args["col_ids"] = array("chk", "id", "dat", "amo", "bal", "des", "del", "ord");
 		if (! $admin) unset ($args["col_ids"][0]);

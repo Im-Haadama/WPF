@@ -91,6 +91,8 @@ function supplier_report( $supplier_id, $week ) {
 }
 
 function client_report( $customer_id, $last = 5 ) {
+	$db_prefix = GetTablePrefix("delivery_lines");
+
 	$sql = "select id from im_delivery where order_user(order_id) = " . $customer_id .
 	       " order by 1 desc limit " . $last;
 
@@ -102,7 +104,7 @@ function client_report( $customer_id, $last = 5 ) {
 	}
 	foreach ( $rows as $delivery_id ) {
 		printCore_Html::GuiHeader( 1, $delivery_id );
-		$sql = "select product_name from im_delivery_lines where delivery_id = " . $delivery_id;
+		$sql = "select product_name from ${db_prefix}delivery_lines where delivery_id = " . $delivery_id;
 
 		$items = SqlQueryArrayScalar( $sql );
 		foreach ( $items as $item ) {
@@ -112,7 +114,10 @@ function client_report( $customer_id, $last = 5 ) {
 }
 
 // print_weekly_report( date( "Y-m-d", strtotime( "last sunday" ) ) );
-function print_prod_report( $prod_id, $week = null, $user_id = null ) {
+function print_prod_report( $prod_id, $week = null, $user_id = null )
+{
+	$db_prefix = GetTablePrefix("delivery_lines");
+
 	if ( $week ) {
 		printCore_Html::GuiHeader( 1, "מציג תוצאות לשבוע המתחיל ביום " . $week );
 	}
@@ -129,7 +134,7 @@ function print_prod_report( $prod_id, $week = null, $user_id = null ) {
 	$prod_ids = Bundle::GetBundles( $prod_id );
 	array_push( $prod_ids, $prod_id );
 
-	$sql .= " FROM im_delivery_lines dl JOIN im_delivery d " .
+	$sql .= " FROM ${db_prefix}delivery_lines dl JOIN im_delivery d " .
 	        " WHERE dl.delivery_id = d.id AND prod_id in (" . comma_implode( $prod_ids ) . ") AND delivery_id IN (SELECT id FROM im_delivery";
 
 	$query = null;
