@@ -255,7 +255,6 @@ class Finance_Delivery
 		);
 
 		$args = apply_filters("delivery_args", $args);
-//		var_dump($args["fields"]);
 
 		$vat = apply_filters("finance_vat", false);
 
@@ -310,7 +309,6 @@ class Finance_Delivery
 
 
 		$items = SqlQueryArray("select order_item_id, order_item_type from wp_woocommerce_order_items where order_id = " . $this->order_id);
-//		var_dump($items);
 //		$sql = 'select distinct woim.meta_value, order_line_get_variation(woi.order_item_id) '
 //		       . ' from wp_woocommerce_order_items woi join wp_woocommerce_order_itemmeta woim'
 //		       . ' where ' . $this->OrderQuery()
@@ -657,7 +655,6 @@ class Finance_Delivery
 			// $p = $product['price'];
 			// push_array($prods, array($product['qty']));
 			// $total += $p * $q;
-			// var_dump($product);
 			$P = new Finance_Product($product['product_id']);
 			$prod_to_add                 = array();
 			$prod_to_add['product_name'] = $product["name"];

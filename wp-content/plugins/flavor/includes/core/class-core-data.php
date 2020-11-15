@@ -805,8 +805,6 @@ class Core_Data
 	 */
 	static function HandleAcc(&$acc_fields, $row)
 	{
-		// if (function_exists("sum_numbers")) print "AAAA";
-//	var_dump($acc_fields); print "<br/>";
 		foreach ($row as $key => $cell)
 		{
 			if (isset($acc_fields[$key]) and is_array($acc_fields[$key]) and function_exists($acc_fields[$key]['func'])) {

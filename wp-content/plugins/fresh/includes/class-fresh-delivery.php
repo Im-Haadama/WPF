@@ -46,7 +46,6 @@ class Fresh_Delivery {
 		);
 		if ($id > 0){
 			$del_info = SqlQuerySingleAssoc("select * from im_delivery where id = $id");
-//			var_dump($del_info);
 			$this->delivery_total = $del_info['total'];
 		}
 		$this->calculated = false;
@@ -190,7 +189,6 @@ class Fresh_Delivery {
 			$quantity_ordered = "";
 			$unit_array       = explode( ",", $unit_ordered );
 			$unit_q           = $unit_array[1];
-			// print "unit: " ; var_dump($unit) ; print "<br/>";
 		}
 		return $price;
 	}
@@ -1078,11 +1076,8 @@ class Fresh_Delivery {
 
 	static function prepare_line($row)
 	{
-		print __FUNCTION__;
-		var_dump($row);
 		$prod_id = $row['prod_id'];
 		if ($prod_id) {
-			print "aaa";
 			$p              = new Fresh_Product( $prod_id );
 			$row['has_vat'] = ($p->isFresh() ? false : true);
 		} else {
