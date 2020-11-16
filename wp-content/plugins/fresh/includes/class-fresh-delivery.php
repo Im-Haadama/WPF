@@ -1084,7 +1084,6 @@ class Fresh_Delivery {
 	{
 		$prod_id = $row['prod_id'];
 		if (null == $row['has_vat']) {
-			print $prod_id;
 			if ( $prod_id ) {
 				$p              = new Fresh_Product( $prod_id );
 				$row['has_vat'] = ( $p->isFresh() ? false : true );

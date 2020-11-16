@@ -27,6 +27,13 @@ class Finance_Product {
 		}
 	}
 
+	static function getByName($prod_name)
+	{
+		$id = SqlQuerySingleScalar("select id from im_products where post_title = " . QuoteText($prod_name));
+		if ($id) return new self($id);
+		return null;
+	}
+
 	function getPrice()
 	{
 		return get_postmeta_field( $this->id, '_price' );

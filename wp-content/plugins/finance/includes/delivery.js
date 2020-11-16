@@ -92,8 +92,16 @@ function delivery_save_or_edit(post_file, operation) {
     {
         let id = table.rows[line_number].cells[1].id;
         let order_line = id.substr(id.lastIndexOf("_") + 1);
-        // 0
-        let prod_name = encodeURI(get_value_by_name("product_name_" + order_line));
+
+        let prod_id = get_value_by_name("prod_id_" + order_line);
+        let prod_name;
+        if (null == prod_id) { // New line
+            prod_name = encodeURI(document.getElementById("product_name_" + order_line).firstElementChild.value);
+            prod_id = get_value_by_name("product_name_" + order_line);
+        } else {
+            prod_name = encodeURI(get_value_by_name("product_name_" + order_line));
+        }
+
         // 1
         let q = get_value_by_name("quantity_" + order_line);
         // 2
@@ -103,8 +111,6 @@ function delivery_save_or_edit(post_file, operation) {
         let has_vat = get_value_by_name("has_vat_" + order_line);
         if (! has_vat) line_vat = 0;
 
-        // 4
-        let prod_id = get_value_by_name("prod_id_" + order_line);
         // 5
         let quantity_ordered = get_value_by_name("quantity_ordered_" + order_line);
 

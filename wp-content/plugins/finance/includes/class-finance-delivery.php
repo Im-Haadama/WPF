@@ -440,11 +440,20 @@ class Finance_Delivery
 
 		for ($i = 1; $i < count($data); $i ++)
 		{
+			$prod_name = urldecode($data[$i][0]);
 			$q = $data[$i][1];
 			$p = $data[$i][2];
-			$prod_id = $data[$i][4]; if (! ($prod_id > 0)) $prod_id = 0;
+			$prod_id = $data[$i][4];
+			if (! ($prod_id > 0)) {
+				$prod = Finance_Product::getByName($prod_name);
+				if ($prod)
+					$prod_id = $prod->getId();
+				else
+					$prod_id = 0;
+			}
+			MyLog($prod_name . " " . $data[$i][4] . " " .$prod_id);
 			$prod_data = array(
-			'product_name' => urldecode($data[$i][0]),
+			'product_name' => $prod_name,
 			'quantity' => $q,
 			'price' => $p,
 			'vat' => $data[$i][3],
@@ -570,7 +579,6 @@ class Finance_Delivery
 
 		return SqlQuery( $sql );
 	}
-
 
 	// Action to update delivery
 	static public function save_wrap()
