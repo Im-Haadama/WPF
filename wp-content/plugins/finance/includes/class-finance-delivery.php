@@ -29,6 +29,7 @@ class Finance_Delivery
 		$loader->AddAction("delivery_save", __CLASS__,  'save_wrap'); // POST: create delivery
 		$loader->AddAction("delivery_edit", __CLASS__,  'edit_wrap'); // POST: update delivery
 		$loader->AddAction("delivery_delete", __CLASS__,  "delete_wrap");
+		$loader->AddAction("delivery_delete_lines", __CLASS__,  "delete_lines_wrap");
 		$loader->AddAction("delivery_get_price", __CLASS__,  'get_price');
 
 		// Complete order
@@ -100,7 +101,8 @@ class Finance_Delivery
 				if ( $receipt = $d->getReceipt() ) {
 					$report .= "תעודה שולמה ($receipt) ולא ניתנת לעריכה או למחיקה";
 				} else {
-					$report .= Core_Html::GuiHyperlink( "[Delete]", AddToUrl( "operation", "delivery_delete" ) ) . " ";
+					// $report .= Core_Html::GuiHyperlink( "[Delete]", AddToUrl( "operation", "delivery_delete" ) ) . " ";
+					$report .= Core_Html::GuiButton("btn_delete", "Delete", array("action"=>"delivery_delete('" . Flavor::getPost() . "')"));
 					$report .= Core_Html::GuiHyperlink( "[Edit]", AddToUrl( "operation", "delivery_show_edit" ) ) . " ";
 					$report .= Core_Html::GuiButton( "btn_send", "send delivery", array( "action" => "sendDelivery('" . Flavor::getPost() . "', $delivery_id)" ) );
 				}
@@ -155,7 +157,7 @@ class Finance_Delivery
 		$order_id = GetParam( "order_id", true );
 		$delivery        = new Finance_Delivery( $order_id );
 		$user_id = $delivery->getUserId();
-		$vat = apply_filters("finance_vat", false);
+		$vat = apply_filters("finance_vat", 0);
 
 		return $delivery->ShowCreate(array())
 		       . Core_Html::GuiButton("btn_add_line", "Add Line", "delivery_add_line('". Flavor::getPost() . "', $user_id, $vat)");
@@ -250,6 +252,7 @@ class Finance_Delivery
 			          "edit"=>$edit,
 		              "form_table" => "del_table",
 		              "edit_cols" => array("quantity"=>1, "price"=>1),
+		              "checkbox_class"=>"delivery_lines",
 		              "hide_cols" => array("prod_id"=> 1),
 		              "add_checkbox" => $edit
 		);
@@ -259,6 +262,8 @@ class Finance_Delivery
 		$vat = apply_filters("finance_vat", false);
 
 		if ($this->delivery_id) {
+//			print "cc=".$args["checkbox_class"];
+
 			$html .= Core_Html::GuiTableContent( "delivery_lines", null, $args );
 			$html .= Core_Html::GuiDiv( "total_div",
 				__( "Total" ) . ": " .
@@ -269,7 +274,7 @@ class Finance_Delivery
 				$html .= '<datalist id="products"></datalist>';
 				$html .= Core_Html::GuiButton("btn_add_line", "Add Line", "delivery_add_line('". Flavor::getPost() . "', $user_id, $vat)");
 				$html .= Core_Html::GuiButton( "btn_save", "Save", "delivery_save_or_edit('" . Flavor::getPost() . "', 'delivery_edit')" );
-				$html .= Core_Html::GuiButton( "btn_delete", "Delete", "delivery_delete('" . Flavor::getPost() . "')" );
+				$html .= Core_Html::GuiButton( "btn_delete", "Delete Lines", "delete_items('delivery_lines', '" . Flavor::getPost() . "', 'delivery_delete_lines')" );
 			}
 		}
 		return $html;
@@ -306,7 +311,6 @@ class Finance_Delivery
 			$args["types"] = array("has_vat"=>"tiny");
 		}
 		$args["hide_cols"] = array("prod_id"=> 1);
-
 
 		$items = SqlQueryArray("select order_item_id, order_item_type from wp_woocommerce_order_items where order_id = " . $this->order_id);
 //		$sql = 'select distinct woim.meta_value, order_line_get_variation(woi.order_item_id) '
@@ -430,7 +434,7 @@ class Finance_Delivery
 
 		if ($edit) {
 			MyLog("Edit");
-			$d->DeleteLines();
+			if (! $d->DeleteLines()) return false;
 		}
 		$d->CreateOrUpdateDelivery( $order_id, $total, $vat, $lines, $edit, $fee );
 
@@ -438,12 +442,13 @@ class Finance_Delivery
 		{
 			$q = $data[$i][1];
 			$p = $data[$i][2];
+			$prod_id = $data[$i][4]; if (! ($prod_id > 0)) $prod_id = 0;
 			$prod_data = array(
 			'product_name' => urldecode($data[$i][0]),
 			'quantity' => $q,
 			'price' => $p,
 			'vat' => $data[$i][3],
-			'prod_id' => $data[$i][4],
+			'prod_id' => $prod_id,
 			'quantity_ordered' => $data[$i][5],
 			'line_price' => round($p * $q, 2),
 			'has_vat' => $data[$i][6]);
@@ -468,6 +473,7 @@ class Finance_Delivery
 		$line_price = $prod_data['line_price'];
 		$prod_id = $prod_data['prod_id'];
 		$has_vat = $prod_data['has_vat'];
+		if (null == $has_vat) $has_vat = 'NULL';
 
 		$product_name = preg_replace( '/[\'"%()]/', "", $product_name );
 		$delivery_id = $this->delivery_id;
@@ -550,11 +556,21 @@ class Finance_Delivery
 	}
 
 	private function DeleteLines() {
-		$sql = 'DELETE FROM ${db_prefix}delivery_lines WHERE delivery_id = ' . $this->delivery_id;
+		$db_prefix = GetTablePrefix("delivery_lines");
+		$sql = "DELETE FROM ${db_prefix}delivery_lines WHERE delivery_id = " . $this->delivery_id;
 		MyLog($sql);
 
-		SqlQuery( $sql );
+		return SqlQuery( $sql );
 	}
+
+	private function DeleteLine($id) {
+		$db_prefix = GetTablePrefix("delivery_lines");
+		$sql = "DELETE FROM ${db_prefix}delivery_lines WHERE id = " . $id;
+		MyLog($sql);
+
+		return SqlQuery( $sql );
+	}
+
 
 	// Action to update delivery
 	static public function save_wrap()
@@ -579,6 +595,29 @@ class Finance_Delivery
 			return false;
 		}
 		$d->Delete();
+		print "done";
+		die(0);
+	}
+
+	static public function delete_lines_wrap()
+	{
+		$delivery_id = GetParam("delivery_id", false);
+		$order_id = GetParam("order_id", false);
+		if (! $order_id and ! $delivery_id) {
+			print "no id supplied";
+			die (1);
+		}
+		MyLog(__FUNCTION__ . " $delivery_id");
+		$d = new Finance_Delivery( $order_id, $delivery_id );
+		if (! $d->delivery_id) {
+			MyLog("no delivery for order $order_id");
+			print "no delivery for order $order_id";
+			return false;
+		}
+
+		$ids = GetParamArray("ids", true);
+		foreach ($ids as $item_id)
+			$d->DeleteLine($item_id);
 		print "done";
 		die(0);
 	}
@@ -675,7 +714,7 @@ class Finance_Delivery
 			$prod_to_add['line_price'] = $product['total'];
 			$total              += $product['total'];
 			$prod_to_add['prod_id']    = $product['product_id'];
-			$prod_to_add['has_vat'] = true;
+			$prod_to_add['has_vat'] = null;
 
 			array_push( $prods, $prod_to_add );
 		}
@@ -736,10 +775,10 @@ class Finance_Delivery
 		$prod_id = GetParam("prod_id", true);
 
 		if ($prod_id) {
-			$p = new Finance_Product( $prod_id );
-			$price =  $p->getPrice();
-			$p = apply_filters("delivery_product_price", $prod_id);
-			if ($p != $prod_id)  print $p;
+			$P = new Finance_Product( $prod_id );
+			$price =  $P->getPrice();
+			$output = apply_filters("delivery_product_price", $prod_id);
+			if ($output != $prod_id)  print $output;
 			else print $price;
 
 			die (0);

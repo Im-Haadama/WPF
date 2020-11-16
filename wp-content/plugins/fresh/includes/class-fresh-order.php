@@ -53,14 +53,14 @@ class Fresh_Order extends Finance_Order {
 
 	static function basketRemoved($item_id)
 	{
-		$current_removal = unserialize(Fresh_Packing::get_order_itemmeta($item_id, "basket_removed"));
+		$current_removal = unserialize(Finance_Delivery::get_order_itemmeta($item_id, "basket_removed"));
 		if (! $current_removal) $current_removal = array();
 		return $current_removal;
 	}
 
 	static function basketAdded($item_id)
 	{
-		$current_addon = unserialize(Fresh_Packing::get_order_itemmeta($item_id, "basket_added"));
+		$current_addon = unserialize(Finance_Delivery::get_order_itemmeta($item_id, "basket_added"));
 		if (! $current_addon) $current_addon = array();
 		return $current_addon;
 	}

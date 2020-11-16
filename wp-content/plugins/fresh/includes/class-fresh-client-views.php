@@ -74,7 +74,7 @@ class Fresh_Client_Views  extends Finance_Client_Views {
 		$allowed_changes = 3;
 
 		$P = new Fresh_Product($prod_id);
-		$quantity = Fresh_Packing::get_order_itemmeta($item_id, '_qty');
+		$quantity = Finance_Delivery::get_order_itemmeta($item_id, '_qty');
 
 		$removed = Fresh_Order::basketRemoved($item_id);
 		$addon = Fresh_Order::basketAdded($item_id);

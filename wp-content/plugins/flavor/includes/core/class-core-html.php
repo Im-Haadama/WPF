@@ -79,8 +79,8 @@ class Core_Html {
 	static function GuiCheckbox($id, $value = false, $args = array())
 	{
 		$events = GetArg($args, "events", null);
-		$class = GetArg($args, "checkbox_class", "checkbox");
-//		if ($class == "checkbox") {
+		$class = GetArg($args, "checkbox_class", "checkbox_default");
+//		if ($class == "checkbox_default") {
 //			print debug_trace(10);
 //			die ("1");
 //		}

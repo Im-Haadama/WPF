@@ -84,7 +84,7 @@ function delivery_save_or_edit(post_file, operation) {
     }
     let vat = 0; // Calculate in server
 
-    let request = "order_id=" + order_id + "&total=" + total;
+    let request = post_file + '?operation=' + operation + "&order_id=" + order_id + "&total=" + total;
 
     let data = [[order_id, total, vat]];
 
@@ -112,7 +112,7 @@ function delivery_save_or_edit(post_file, operation) {
         // request += "&oid=" + oid + "&q=" + q + "&price="+price;
     }
     // alert (JSON.stringify(data));
-    execute_url_post(post_file + '?operation=' + operation, JSON.stringify(data), action_back);
+    execute_url_post(request, JSON.stringify(data), action_back);
 }
 // 	    <?php if ( $edit ) {  print "is_edit = true;"; } ?>
 //

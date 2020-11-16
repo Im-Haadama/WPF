@@ -432,7 +432,8 @@ class Core_Data
 				/// 5/9/2019 Change!! edit_cols by default is to edit. if it set, don't edit.
 				/// 23/9/2019  isset($edit_cols[$key]) - set $args["edit_cols"][$key] for fields that need to be edit.
 				if ($edit){
-					$field_args = array();
+					// Copy the global args to field args. And than handle specific col args.
+					$field_args = $args;
 					if (isset($args["size"]) and is_array($args["size"]) and isset($args["size"][$key])) $field_args["size"] = $args["size"][$key];
 					$field_args["events"] = $args["events"];
 
@@ -441,21 +442,20 @@ class Core_Data
 					//							if (isset($args['styles']) and is_array($args['styles']))
 					//								$args['style'] = (isset($args['styles'][$key]) ? $args['styles'][$key] : null);
 //							print "edit $key " . $field_args["edit"] . "<br/>";
-
 					if ($edit_cols and (isset($edit_cols[$key]) and $edit_cols[$key])) {
-						if ( $table_name or isset($args["types"][$key])) {
+						if ( $table_name or isset($args["types"][$key])) { // Create by type
 							if ( isset( $args["sql_fields"] ) ) {
 								$type = SqlField( $args["sql_fields"], $key );
 							} else {
-								$type = $args["types"][$key];
+								$type = $args["types"][ $key ];
 							}
-							// Last change context: https://fruity.co.il/wp-admin/admin.php?page=deliveries&order_id=18584
+//							$field_args["checkbox_class"] = $args["checkbox_class"];
 							$value = Core_Html::gui_input_by_type( $input_name, $type, $field_args, $value );
 						} else {
-							// Not from sql table
-							// ??? 30/3/2020
 							$value = Core_Html::GuiInput( $input_name, $data, $field_args ); //gui_input( $key, $data, $field_events, $row_id);
 						}
+						// Last change context: https://fruity.co.il/wp-admin/admin.php?page=deliveries&order_id=18584
+
 					}
 //					else {
 //						// ??? 30/3/2020
@@ -708,7 +708,7 @@ class Core_Data
 		$meta_key_field = GetArg($args, "meta_key", "id");
 		$values = GetArg($args, "values", null);
 		$v_checkbox = GetArg($args, "v_checkbox", false);
-		$checkbox_class = GetArg($args, "checkbox_class", "checkbox");
+		$checkbox_class = GetArg($args, "checkbox_class", "checkbox_class");
 		$header_fields = GetArg($args, "header_fields", null);	 $header_fields = Core_Fund::array_assoc($header_fields);
 
 		$table_names = array();
@@ -733,6 +733,7 @@ class Core_Data
 		} else {
 			// print "before: "; var_dump($h_line); print "<br/>";
 			$rows_data = self::RowsData($sql, $id_field, $skip_id, $v_checkbox, $checkbox_class, $h_line, $v_line, $m_line, $header_fields, $meta_fields, $meta_table, $args);
+
 			// print "after: "; var_dump($h_line); print "<br/>";
 		}
 

@@ -238,7 +238,6 @@ class Finance_Clients
 
 		$result .= '<div id="logging"></div>';
 
-		$args   = array( "post_file" => Finance::getPostFile());
 		$result .= Finance_Client_Views::show_trans( $customer_id, TransView::admin, $args );
 
 		if (class_exists('Finance_Yaad'))

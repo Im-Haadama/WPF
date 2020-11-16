@@ -143,6 +143,7 @@ class Israel_Zones {
 		}
 
 		if ($id = GetParam("id")){
+			$args["edit"] = true;
 			return Core_Gem::GemElement("cities", $id, $args);
 		}
 //		$args["import_action"] = 'http://127.0.0.1/zone-editor/?operation=import'; // AddToUrl("operation", "import");

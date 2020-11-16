@@ -3,7 +3,7 @@
 
 class Finance_Product {
 	protected $id;
-	private $p;
+	protected $wp_p;
 
 	/**
 	 * @return mixed
@@ -20,7 +20,7 @@ class Finance_Product {
 	public function __construct( $id ) {
 		$this->id = $id;
 		try {
-			$this->p = new WC_Product( $id );
+			$this->wp_p = new WC_Product( $id );
 		} catch ( Exception $e ) {
 			return null;
 //			print "can't create prod " . $id . $e->getMessage() . " " . $this->getName() . "<br/>";

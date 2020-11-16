@@ -25,7 +25,7 @@ class Fresh {
 	 *
 	 * @var string
 	 */
-	public $version = '1.3';
+	public $version = '1.4';
 
 	private $plugin_name;
 

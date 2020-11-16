@@ -60,7 +60,6 @@ class Finance_Client_Views {
 
 		if ( $top ) $sql .= " limit " . $top;
 
-		$args = [];
 		$args["class"] = "widefat";
 		$args["links"] = array();
 		$args["links"]["transaction_ref"] = Finance_Delivery::getLink('%d');
@@ -93,7 +92,7 @@ class Finance_Client_Views {
 			$value = "";
 			if ($first) { $first = false; $value = "בחר";}
 			else if ($data1[$id]['transaction_method'] == "משלוח" and ! $data1[$id]['receipt']) // Just unpaid deliveries
-				$value =  Core_Html::GuiCheckbox("chk_" . $row_id, false, array("class" => "trans_checkbox", "events" => "onchange=update_sum()"));
+				$value =  Core_Html::GuiCheckbox("chk_" . $row_id, false, array("checkbox_class" => "trans_checkbox", "events" => "onchange=update_sum()"));
 
 			array_unshift($data1[$id], $value);
 		}

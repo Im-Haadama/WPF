@@ -42,8 +42,8 @@ class Finance_Order {
 		while ($row = SqlFetchAssoc($sql_result))
 		{
 			$item_id = $row['order_item_id'];
-			$prod_id = Fresh_Packing::get_order_itemmeta($item_id, '_product_id');
-			$quantity = Fresh_Packing::get_order_itemmeta($item_id, '_qty');
+			$prod_id = Finance_Delivery::get_order_itemmeta($item_id, '_product_id');
+			$quantity = Finance_Delivery::get_order_itemmeta($item_id, '_qty');
 			if (! isset($rows[$prod_id])) $rows[$prod_id] = 0;
 			$rows[$prod_id] += $quantity;
 //			array_push($rows, array(

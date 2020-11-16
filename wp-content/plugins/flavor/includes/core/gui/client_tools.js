@@ -185,7 +185,7 @@ function report_error(response)
 {
     if (response.indexOf("failed") !== -1 ||
         (response.indexOf("Error") !== -1)){
-        alert (response.substr(0, response.lastIndexOf("failed")));
+        alert (response);
         return true;
     }
     return false;

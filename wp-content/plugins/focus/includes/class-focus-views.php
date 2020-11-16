@@ -1187,7 +1187,7 @@ class Focus_Views {
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		$args["title"] = ETranslate( "My projects" );
 		// DebugVar(CommaImplode($worker->AllProjects()));
-		$projects = $worker->AllProjects();
+		$projects = $worker->GetAllProjects();
 		if ( ! $projects ) {
 			return "no projects for user " . $worker->getName();
 		}
