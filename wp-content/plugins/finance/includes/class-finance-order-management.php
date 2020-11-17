@@ -11,12 +11,15 @@ class Finance_Order_Management {
 		return self::$_instance;
 	}
 
-	public function init_hooks() {
+	public function init_hooks(Core_Loader $loader) {
 		add_filter('order_complete', array($this, 'order_complete_wrap'));
 		add_filter('woocommerce_admin_order_actions', array(__CLASS__, 'add_order_action'), 10, 2);
 		// Set Here the WooCommerce icon for your action button
 		add_action( 'admin_head', array($this, 'add_custom_order_actions_button_css' ));
+
+		$loader->AddAction('order_set_mission', $this);
 	}
+
 	static public function add_order_action($actions, WC_Order $order)
 	{
 		if (get_user_id() != 1)
@@ -63,6 +66,14 @@ class Finance_Order_Management {
 		$action_slug = "fee";
 
 		echo '<style>.wc-action-button-'.$action_slug.'::after { font-family: woocommerce !important; content: "\e016" !important; }</style>';
+	}
 
+	function order_set_mission()
+	{
+		$order_id = GetParam("order_id", true);
+		$mission_id = GetParam("mission_id", true);
+		$order = new Finance_Order($order_id);
+		$order->setMissionID($mission_id);
+		return true;
 	}
 }

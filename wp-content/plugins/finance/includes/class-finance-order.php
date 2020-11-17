@@ -1337,20 +1337,12 @@ class Finance_Order {
 
 				print $count;
 				break;
-
-			case "set_mission":
-				$order_id = GetParam("order_id", true);
-				$mission_id = GetParam("mission_id", true);
-				$order = new Finance_Order($order_id);
-				$order->setMissionID($mission_id);
-				return true;
-
-
 			default:
 				// die("operation " . $operation . " not handled<br/>");
 		}
 		return false;
 	}
+
 	function order_page_by_term()
 	{
 		for ($i = 0; $i < count($prods); $i++){
@@ -1439,7 +1431,6 @@ class Finance_Order {
 //		MyLog("cid=" . self::getCustomerId());
 //		print $this->customer_id;
 		return get_user_meta( self::getCustomerId(), "_client_type", true );
-
 	}
 
 	static function get_minimum_order($customer_id) {

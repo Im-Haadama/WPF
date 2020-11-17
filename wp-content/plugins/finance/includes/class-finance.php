@@ -184,7 +184,7 @@ class Finance {
 		if ( $this->yaad ) $this->yaad->init_hooks();
 		if ( $this->clients ) $this->clients->init_hooks();
 
-		Finance_Order_Management::instance()->init_hooks();
+		Finance_Order_Management::instance()->init_hooks($this->loader);
 
 		$this->payments = Finance_Payments::instance();
 		$this->payments->init_hooks();

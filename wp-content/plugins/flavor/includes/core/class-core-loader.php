@@ -74,7 +74,8 @@ class Core_Loader {
 	 * @param    int                  $priority         Optional. The priority at which the function should be fired. Default is 10.
 	 * @param    int                  $accepted_args    Optional. The number of arguments that should be passed to the $callback. Default is 1.
 	 */
-	public function AddAction( $hook, $component, $callback, $priority = 10, $accepted_args = 1 ) {
+	public function AddAction( $hook, $component, $callback = null, $priority = 10, $accepted_args = 1 ) {
+		if (!$callback) $callback = $hook;
 		if ($this->debug) MyLog(__FUNCTION__ . " $hook");
 		$this->actions = $this->add( $this->actions, $hook, $component, $callback, $priority, $accepted_args );
 	}
