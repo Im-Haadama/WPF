@@ -382,9 +382,6 @@ group by pm.meta_value, p.post_status");
 		self::find_route_1(array_diff($this->stop_points, array($mission->getStartAddress())), // Remove start address if appears in points.
 			$path, false, $mission->getEndAddress() );
 
-		self::find_route_1(array_diff($this->stop_points, array($mission->getStartAddress())), // Remove start address if appears in points.
-			$path, false, $mission->getEndAddress() );
-
 	}
 
 	static private function parse_output($output)
@@ -477,8 +474,8 @@ group by pm.meta_value, p.post_status");
 
 			// Check if we need to collect something on the go
 			if ( $site_id == $multisite->getLocalSiteID() and $order_site != "supplies" ) {
-				$order = new Finance_Order( $order_id );
-				if ( $supply_points = $order->SuppliersOnTheGo() ) {
+				$order = self::getOrder($order_id);
+				if ($order instanceof Fresh_Order and $supply_points = $order->SuppliersOnTheGo() ) {
 					$order = new Fresh_Order( $order_id );
 					if ( $supply_points = $order->SuppliersOnTheGo( $mission_id ) ) {
 						$supplier = new Fresh_Supplier( $supply_points[0] );
@@ -591,12 +588,16 @@ group by pm.meta_value, p.post_status");
 	function find_route( $rest, &$path ) {
 		$debug = 0;
 
-		if ($debug) print "================ START ====================<br/>";
+		if ($debug) {
+			print "================ START ====================<br/>";
+			print debug_trace(10);
+		}
 		$current_node = end($path);
 
 		if ( sizeof( $rest ) == 1 ) {
+			if ($debug) print "just 1 left. Done<br/>";
 			array_push( $path, reset( $rest ) );
-			return;
+			return true;
 		}
 
 		if ($debug) var_dump($rest);
@@ -657,12 +658,14 @@ group by pm.meta_value, p.post_status");
 		array_push( $path, $selected );
 		// Remove it from $rest
 		foreach ( $rest as $key => $item ) {
+			if ($debug) print "searhing $item<br/>";
 			if ( trim( $rest[ $key ] ) == trim( $selected ) ) {
+				if ($debug) print "removing " . $rest[$key] . "<br/>";
 				unset ( $rest[ $key ] );
-				$this->find_route( $rest, $path );
-				return;
+				return $this->find_route( $rest, $path );
 			}
 		}
+		die ("Hee????");
 	}
 
 	static function evaluate_path( $elements, $end ) {
@@ -940,6 +943,13 @@ group by pm.meta_value, p.post_status");
 				break;
 		}
 		return false;
+	}
+
+	static function getOrder($order_id)
+	{
+		if (class_exists("Fresh_Order"))
+			return new Fresh_Order($order_id);
+		new Finance_Order( $order_id );
 	}
 
 	static function order_update_driver_comment()

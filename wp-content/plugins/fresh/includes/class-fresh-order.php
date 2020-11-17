@@ -72,7 +72,7 @@ class Fresh_Order extends Finance_Order {
 		$this->CalculateNeeded( $needed, $this->getCustomerId() );
 		foreach ( $needed as $prod_id => $p ) {
 			$P = new Fresh_Product($prod_id);
-			if ($s = $P->PendingSupplies($mission_id)){
+			if ($s = $P->PendingSupplies($this->getMission())){
 //				print "s:"; var_dump($s); print "<br/>";
 				if (!$suppliers) $suppliers = array();
 				foreach ($s as $supplies){
@@ -85,29 +85,4 @@ class Fresh_Order extends Finance_Order {
 		}
 		return $suppliers;
 	}
-
-	function GetMissionId( $debug = false )
-	{
-		if ( ! is_numeric( $this->order_id ) ) {
-			print "Bad order id: $this->order_id<br/>";
-			die( 1 );
-		}
-		$mission = get_post_meta( $this->order_id, 'mission_id', true );
-		if ( $debug ) {
-			var_dump( $mission );
-			print "<br/>";
-		}
-		if ( is_array( $mission ) ) {
-			$mission_id = $mission[0];
-		} else {
-			$mission_id = $mission;
-		}
-		if ( ! is_numeric( $mission_id ) ) {
-			return 0;
-		}
-
-		return $mission_id;
-	}
-
-
 }

@@ -652,8 +652,8 @@ class Flavor {
 
 	static function getPost()
 	{
-		return plugin_dir_url(dirname(__FILE__)) . "post.php";
-//			"/wp-content/plugins/flavor/post.php";
+//		return plugin_dir_url(dirname(__FILE__)) . "post.php"; // Physical file.
+		return "/wp-content/plugins/flavor/post.php";
 	}
 
 	static public function SettingPage()
