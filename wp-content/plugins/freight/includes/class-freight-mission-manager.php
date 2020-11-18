@@ -320,10 +320,11 @@ group by pm.meta_value, p.post_status");
 						array_push( $path_info, $new_row);
 					}
 				}
-//				else {
+				else {
 //					var_dump($lines_per_station[$path[$i]]);
-//					$new_row = array(__("Collect"), '', $path[ $i ]);
-//				}
+					$new_row = array(__("Collect"), '', $path[ $i ]);
+					array_push( $path_info, $new_row);
+				}
 
 				$prev = $path[ $i];
 			}
@@ -590,7 +591,7 @@ group by pm.meta_value, p.post_status");
 
 		if ($debug) {
 			print "================ START ====================<br/>";
-			print debug_trace(10);
+//			print debug_trace(10);
 		}
 		$current_node = end($path);
 
@@ -609,7 +610,7 @@ group by pm.meta_value, p.post_status");
 			if (isset($this->prerequisite[$order_id]))
 				if ($debug) print "<br/>checking preq for $candidate: ";
 				if (isset($this->prerequisite[$order_id])) {
-					$diff = array_diff($this->prerequisite[$order_id], $path);
+					$diff = array_diff($this->prerequisite[$order_id], $path, array($candidate));
 					if ($debug) var_dump($diff);
 					if ($diff) unset( $candidates[ $key ] );
 				}
@@ -658,7 +659,7 @@ group by pm.meta_value, p.post_status");
 		array_push( $path, $selected );
 		// Remove it from $rest
 		foreach ( $rest as $key => $item ) {
-			if ($debug) print "searhing $item<br/>";
+			if ($debug) print "searching $item<br/>";
 			if ( trim( $rest[ $key ] ) == trim( $selected ) ) {
 				if ($debug) print "removing " . $rest[$key] . "<br/>";
 				unset ( $rest[ $key ] );

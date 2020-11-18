@@ -17,7 +17,7 @@ class Finance_Order {
 	public function __construct( $order_id ) {
 		if ( ! is_numeric( $order_id ) or ! $order_id) {
 			print debug_trace(20);
-			die ("bad order id $order_id");
+			die ("bad order id: $order_id");
 		}
 		$this->order_id = $order_id;
 		if (! function_exists("wc_get_order"))
@@ -25,6 +25,7 @@ class Finance_Order {
 
 		$this->WC_Order = wc_get_order($order_id);
 		if (! $this->WC_Order) {
+			print debug_trace(10);
 			die("Can't load order $order_id");
 		}
 
@@ -90,24 +91,6 @@ class Finance_Order {
 			//	break;
 		}
 		return null;
-	}
-
-	public function justDelivery() : bool
-	{
-//		MyLog("tot=" . self::getTotal());
-//		MyLog("fee=" . self::getShippingFee());
-		return (self::getTotal() == self::getShippingFee()) or (0 == self::getTotal());
-	}
-
-	public function getShippingFee() : float
-	{
-		$sql2 = 'SELECT meta_value FROM `wp_woocommerce_order_itemmeta` WHERE order_item_id IN ( '
-		        . 'SELECT order_item_id FROM wp_woocommerce_order_items WHERE order_id = ' . $this->order_id
-		        . ' AND order_item_type = \'shipping\' )  AND meta_key = \'cost\'; ';
-
-		$result = SqlQuerySingleScalar( $sql2 );
-
-		return ($result ? $result : 0);
 	}
 
 	// Create new
@@ -597,8 +580,8 @@ class Finance_Order {
 		if ( $c ) { // legacy
 			$new_status = "wc-awaiting-document";
 		} else {
-			$d = Fresh_Delivery::CreateFromOrder( $this->order_id );
-			if (! $d->getID()) {
+			$d = Finance_Delivery::CreateFromOrder( $this->order_id );
+			if (! $d) {
 				$message = "no delivery note";
 				return false;
 			}
@@ -646,7 +629,7 @@ class Finance_Order {
 
 		// OK. We supplied the order.
 		// We check if delivered different from ordered and change the stock level.
-		$order_items = $this->order->get_items();
+		$order_items = self::get_items();
 		$d_id        = $this->getDeliveryId();
 		foreach ( $order_items as $item ) {
 			$prod_or_var  = $item['product_id'];
@@ -664,36 +647,6 @@ class Finance_Order {
 
 	public function getDeliveryId() {
 		return SqlQuerySingleScalar( "SELECT id FROM im_delivery WHERE order_id = " . $this->order_id );
-	}
-
-	public function getItems()
-	{
-		return $this->WC_Order->get_items();
-	}
-
-	public function getTotal() {
-		$order_items = $this->getItems();
-		$total       = 0;
-		// print "cid= " . $this->CustomerId() . "<br/>";
-
-		$client_type = get_user_meta( $this->getCustomerId(), '_client_type', true );
-
-		// print "cty= " . $client_type . "<br/>";
-		foreach ( $order_items as $item ) {
-			$prod_or_var = $item['product_id'];
-			$q           = $item->get_quantity();
-
-			if ( $prod_or_var > 0 and $q > 0 and
-			                          is_numeric( Fresh_Pricing::get_price_by_type( $prod_or_var, $client_type ) )
-			) {
-				$line = Fresh_Pricing::get_price_by_type( $prod_or_var, $client_type ) * $q;
-				if ( is_numeric( $line ) ) {
-					$total += $line;
-				}
-			}
-		}
-
-		return $total;
 	}
 
 	public function GetBuyTotal() {
@@ -1576,5 +1529,53 @@ class Finance_Order {
 //		if ($order->getShippingFee())
 		return "wp-admin/admin.php?page=deliveries?order_id=" . $this->order_id;
 	}
+
+	function get_items()
+	{
+		return $this->WC_Order->get_items();
+	}
+	public function justDelivery() : bool
+	{
+//		MyLog("tot=" . self::getTotal());
+//		MyLog("fee=" . self::getShippingFee());
+		return (self::getTotal() == self::getShippingFee()) or (0 == self::getTotal());
+	}
+
+	public function getTotal() {
+		$order_items = $this->get_items();
+		$total       = 0;
+		// print "cid= " . $this->CustomerId() . "<br/>";
+
+		$client_type = $this->getCustomerType();
+
+		// print "cty= " . $client_type . "<br/>";
+		foreach ( $order_items as $item ) {
+			$prod_or_var = $item['product_id'];
+			$q           = $item->get_quantity();
+
+			if ( $prod_or_var > 0 and $q > 0 and
+			                          is_numeric( Fresh_Pricing::get_price_by_type( $prod_or_var, $client_type ) )
+			) {
+				$line = Fresh_Pricing::get_price_by_type( $prod_or_var, $client_type ) * $q;
+				if ( is_numeric( $line ) ) {
+					$total += $line;
+				}
+			}
+		}
+
+		return $total;
+	}
+
+	public function getShippingFee() : float
+	{
+		$sql2 = 'SELECT meta_value FROM `wp_woocommerce_order_itemmeta` WHERE order_item_id IN ( '
+		        . 'SELECT order_item_id FROM wp_woocommerce_order_items WHERE order_id = ' . $this->order_id
+		        . ' AND order_item_type = \'shipping\' )  AND meta_key = \'cost\'; ';
+
+		$result = SqlQuerySingleScalar( $sql2 );
+
+		return ($result ? $result : 0);
+	}
+
 
 }

@@ -22,9 +22,6 @@ class Finance_Order_Management {
 
 	static public function add_order_action($actions, WC_Order $order)
 	{
-		if (get_user_id() != 1)
-			return $actions;
-
 		$O = new Finance_Order($order->get_id());
 		switch ($order->status)
 		{

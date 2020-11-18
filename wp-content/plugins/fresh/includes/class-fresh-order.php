@@ -1,7 +1,8 @@
 <?php
 
 
-class Fresh_Order extends Finance_Order {
+class Fresh_Order extends Finance_Order
+{
 
 	public function removeFromBasket($item_id, $prod_id)
 	{

@@ -1,7 +1,7 @@
 <?php
 
 
-class Fresh_Delivery_Manager
+class Finance_Delivery_Manager
 {
 	protected static $_instance = null;
 	private $logger;
@@ -181,7 +181,7 @@ and curdate() > order_mission_date(id)" );
 		}
 
 		foreach ( $ids as $id ) {
-			$order = new Fresh_Order( $id );
+			$order = new Finance_Order( $id );
 			if (! $order->justDelivery()) {
 				if ($debug) MyLog("adding $id");
 				$order->delivered( $message );

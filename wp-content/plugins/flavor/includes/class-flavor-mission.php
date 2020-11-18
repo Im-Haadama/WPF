@@ -4,7 +4,7 @@
 class Flavor_Mission {
 	static function init_hooks()
 	{
-		add_action('get_local_anonymous', __CLASS__ . "::GetLocalMissionsWrap");
+		add_action('get_local_anonymous', __CLASS__ . "::get_local_anonymous");
 	}
 
 	static function gui_select_mission( $id, $selected = 0, $args = null ) {
@@ -116,7 +116,7 @@ class Flavor_Mission {
 		return $result;
 	}
 
-	static function GetLocalMissionsWrap()
+	static function get_local_anonymous()
 	{
 		$mission_ids = GetParam("mission_ids", true);
 		$header = GetParam("header", false, false);

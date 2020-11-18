@@ -23,7 +23,7 @@ class Freight_Shipment {
 
 			return false;
 		}
-		return Fresh_Delivery_Manager::update_shipping_method( $this->instance_id, $date, $this->start, $this->end, $price );
+		return Finance_Delivery_Manager::update_shipping_method( $this->instance_id, $date, $this->start, $this->end, $price );
 	}
 
 	function delete_instance()

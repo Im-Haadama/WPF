@@ -532,7 +532,7 @@ class Fresh {
 
 		// Set up localisation.
 		$this->load_plugin_textdomain();
-		$this->delivery_manager = new Fresh_Delivery_Manager();
+		$this->delivery_manager = new Finance_Delivery_Manager();
 		$this->suppliers = new Fresh_Suppliers();
 		$this->supplies = new Fresh_Supplies();
 		$this->supplier_balance = Fresh_Supplier_Balance::instance();

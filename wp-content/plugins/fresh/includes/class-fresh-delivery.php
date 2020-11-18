@@ -1004,7 +1004,7 @@ class Fresh_Delivery {
 	 */
 	public function getDeliveryDueVat(): float {
 		if (! $this->calculated)
-			$this->delivery_text( FreshDocumentType::delivery, Fresh_DocumentOperation::show );
+			$this->delivery_text( Finance_DocumentType::delivery, Finance_DocumentOperation::show );
 		return $this->delivery_due_vat;
 	}
 

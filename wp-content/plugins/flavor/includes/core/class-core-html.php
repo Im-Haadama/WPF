@@ -975,7 +975,7 @@ class Core_Html {
 //							$data .= " width=" . $args["col_width"][ $col_id ];
 						}
 						$data .= ">";
-						$data .= __($cell, Flavor::getTextDomain());
+						$data .= ETranslate($cell);
 						$data .= "</td>";
 					}
 				} else {

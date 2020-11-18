@@ -15,6 +15,13 @@ class Finance_Delivery
 	private $margin_total = 0;
 	private $order_id = 0;
 
+	/**
+	 * @return int|mixed|string|null
+	 */
+	public function getId() {
+		return $this->delivery_id;
+	}
+
 	static function init()
 	{
 	}
@@ -39,6 +46,7 @@ class Finance_Delivery
 		$loader->AddAction('woocommerce_order_actions_start', __CLASS__,  'show_delivery_link');
 //		MyLog(__FUNCTION__);
 	}
+
 	/**
 	 * Finance_Delivery constructor.
 	 *
@@ -60,7 +68,8 @@ class Finance_Delivery
 			}
 		}
 //		print "DDD=" . $this->delivery_id . "; OOOO=" . $this->order_id . "<br/>";
-		$this->order       = new Finance_Order($this->order_id);
+		if ($this->order_id > 0)
+			$this->order       = new Finance_Order($this->order_id);
 	}
 
 	public function getDeliveryTotal() : float
@@ -181,15 +190,19 @@ class Finance_Delivery
 		return self::do_create_delivery(true);
 	}
 
-	private static function CreateFromOrder( $order_id )
+	static function CreateFromOrder( $order_id )
 	{
 		$id = Finance_Order::get_delivery_id( $order_id );
 
-		$instance = new self( $id );
+		if ($id) {
+			$instance = new self( $id );
 
-		$instance->SetOrderId( $order_id );
+			$instance->SetOrderId( $order_id );
 
-		return $instance;
+			return $instance;
+		}
+//		print "delivery for $order_id not found";
+		return null;
 	}
 
 	private function SetOrderID( $order_id ) {
@@ -798,6 +811,11 @@ class Finance_Delivery
 	static function getLink($id)
 	{
 		return "/wp-admin/admin.php?page=deliveries&delivery_id=" . $id;
+	}
+
+	public function getItems()
+	{
+		return $this->order->get_items();
 	}
 }
 
