@@ -24,7 +24,7 @@ class Focus_Users_Management {
 		return Subscription_Manager::instance()->add_subscription($u, "2 Month", "Focus user", "show_tasks");
 	}
 
-	function showNewUser() {
+	function register() {
 		$result = "";
 		// narrow class is not defined. Todo: https://e-fresh.co.il/task?id=6088
 		$args   = array( "class" => "narrow" );
@@ -39,4 +39,19 @@ class Focus_Users_Management {
 
 		return $result;
 	}
+
+	function login(){
+	    $result = "";
+        $args   = array( "class" => "narrow" );
+        $result .= Core_Html::gui_table_args( array(
+            array( __( "name or email" ) . ": ", Core_Html::GuiInput( "name_or_email", "" ) ),
+            array( __( "Your email" ) . ": ", Core_Html::GuiInput( "new_email", "" ) ),
+            array(__("Your password") . ": ", Core_Html::GuiInput("password", Core_Fund::RandomPassword()))
+        ),
+            "login_user", $args
+        );
+        //$result .= Core_Html::GuiButton( "btn_login", "Login", "focus_create_user('" . Flavor::getPost() . "')" );
+
+        return $result;
+    }
 }
