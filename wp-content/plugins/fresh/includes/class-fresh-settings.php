@@ -83,7 +83,7 @@
 				array('page_title' => 'Print',
 				      'menu_title' => 'Packing printing',
 				      'menu_slug' => 'printing',
-				      'function' => "Fresh::printing"));
+				      'function' => "Finance_Order_Management::printing"));
 
 			// General Settings //edit.php?post_type=product
 			$menu->AddSubMenu('fresh', 'edit_shop_orders',

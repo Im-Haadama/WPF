@@ -271,7 +271,7 @@ function delivery_save_or_edit(post_file, operation) {
 //         server_header.send();
 //     }
 
-function delivery_add_line(post_file, user_id, add_vat)
+function delivery_add_line(post_file, user_id, add_vat, has_checkbox)
 {
     let  table = document.getElementById("del_table");
     let id = table.rows[table.rows.length - 1].cells[1].id;
@@ -279,7 +279,7 @@ function delivery_add_line(post_file, user_id, add_vat)
     row_number ++;
 
     let new_row = table.insertRow();
-    new_row.insertCell(); // checkbox
+    if (has_checkbox) new_row.insertCell(); // checkbox
     let new_cell = new_row.insertCell();
     new_cell.innerHTML = '<input type="text" id="product_name_' + row_number + '" list="products" onkeyup="update_list(\'' + post_file + '\', \'products\', this)" onchange="get_price(\'' + post_file + '\', ' + row_number + ', ' + user_id + ')"></input>';
     new_cell.id = "product_name_" + row_number;

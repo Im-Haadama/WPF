@@ -169,7 +169,7 @@ class Finance_Delivery
 		$vat = apply_filters("finance_vat", 0);
 
 		return $delivery->ShowCreate(array())
-		       . Core_Html::GuiButton("btn_add_line", "Add Line", "delivery_add_line('". Flavor::getPost() . "', $user_id, $vat)");
+		       . Core_Html::GuiButton("btn_add_line", "Add Line", "delivery_add_line('". Flavor::getPost() . "', $user_id, $vat, 0)");
 	}
 
 	static function delivery_show_edit()
@@ -190,20 +190,20 @@ class Finance_Delivery
 		return self::do_create_delivery(true);
 	}
 
-	static function CreateFromOrder( $order_id )
-	{
-		$id = Finance_Order::get_delivery_id( $order_id );
-
-		if ($id) {
-			$instance = new self( $id );
-
-			$instance->SetOrderId( $order_id );
-
-			return $instance;
-		}
-//		print "delivery for $order_id not found";
-		return null;
-	}
+//	static function CreateFromOrder( $order_id )
+//	{
+//		$id = Finance_Order::get_delivery_id( $order_id );
+//
+//		if ($id) {
+//			$instance = new self( $id );
+//
+//			$instance->SetOrderId( $order_id );
+//
+//			return $instance;
+//		}
+////		print "delivery for $order_id not found";
+//		return null;
+//	}
 
 	private function SetOrderID( $order_id ) {
 		$this->order_id = $order_id;
@@ -285,7 +285,7 @@ class Finance_Delivery
 			$html .= Core_Html::GuiLabel( "order_id", $this->order_id, array( "hidden" => true ) );
 			if ( $edit ) {
 				$html .= '<datalist id="products"></datalist>';
-				$html .= Core_Html::GuiButton("btn_add_line", "Add Line", "delivery_add_line('". Flavor::getPost() . "', $user_id, $vat)");
+				$html .= Core_Html::GuiButton("btn_add_line", "Add Line", "delivery_add_line('". Flavor::getPost() . "', $user_id, $vat, 1)");
 				$html .= Core_Html::GuiButton( "btn_save", "Save", "delivery_save_or_edit('" . Flavor::getPost() . "', 'delivery_edit')" );
 				$html .= Core_Html::GuiButton( "btn_delete", "Delete Lines", "delete_items('delivery_lines', '" . Flavor::getPost() . "', 'delivery_delete_lines')" );
 			}
@@ -314,6 +314,7 @@ class Finance_Delivery
 		);
 
 		$packing = GetArg($args, "packing", false);
+//		var_dump($packing);
 
 		if ($packing) {
 			$args["edit"] = false;
@@ -364,7 +365,7 @@ class Finance_Delivery
 						"comment"          => self::get_order_itemmeta( $item_id, 'product_comment' ),
 						"quantity_ordered" => $quantity,
 						"quantity"         => '',
-						"price"            => round( round( $line_total / $quantity, 2 ) ),
+						"price"            => round( $line_total / $quantity, 2 ),
 						"line_price"       => 0,
 						"prod_id" => $prod_id,
 						"has_vat"=>$has_vat
@@ -381,6 +382,21 @@ class Finance_Delivery
 						"line_price"=> $price,
 						"prod_id"=>0,
 						"has_vat" => 1,
+					);
+					break;
+				case 'coupon':
+					$coupon_data = self::get_order_itemmeta($item_id, 'coupon_data');
+					if (! $coupon_data) die("no coupon data");
+					$coupon_data = unserialize($coupon_data);
+					$table[$item_id] = array(
+						"product_name" => ETranslate("Coupon") . " " . $coupon_data['code'],
+						'comment' => '',
+						'quantity_ordered' => null,
+						"quantity" => null,
+						"price" => null,
+						"line_price"=> null,
+						"prod_id"=>null,
+						"has_vat" => null,
 					);
 					break;
 				default:
@@ -421,10 +437,12 @@ class Finance_Delivery
 
 	static private function do_create_delivery($edit = false)
 	{
+
 		MyLog(__FUNCTION__ . " e=$edit");
 		$json_params = file_get_contents("php://input");
-		$data = json_decode($json_params);
-
+		$data =null;
+//		if (! $json_params) $json_params = '[["18669","322",0],["%D7%A1%D7%9C%20%D7%A4%D7%99%D7%A8%D7%95%D7%AA","1","100",0,"1121","1",0],["%D7%A1%D7%9C%20%D7%99%D7%A8%D7%A7%D7%95%D7%AA%20%D7%9E%D7%A9%D7%A4%D7%97%D7%AA%D7%99","1","140",0,"1118","1",0],["%D7%91%D7%99%D7%99%D7%92%D7%9C%D7%94%20%D7%9B%D7%95%D7%A1%D7%9E%D7%99%D7%9F%20-%20%D7%9E%D7%90%D7%A4%D7%99%D7%99%D7%AA%20%D7%94%D7%A8%D7%9E%D7%9F","4","14",8.14,"448","4",1],["%D7%9E%D7%A9%D7%9C%D7%95%D7%97","1","10.00",1.45,"0","1",1],["%D7%93%D7%91%D7%A9%20%D7%94%D7%91%D7%A9%D7%9F%20(250%20%D7%92%D7%A8%D7%9D)%20-%20%D7%90%D7%91%D7%95%D7%A7%D7%93%D7%95","1","16",2.32,"17465","1",1]]';
+		$data = json_decode( $json_params );
 		if (! $data) {
 			MyLog("no post data");
 			print "no post data";

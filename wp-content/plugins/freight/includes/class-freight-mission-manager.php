@@ -322,8 +322,8 @@ group by pm.meta_value, p.post_status");
 				}
 				else {
 //					var_dump($lines_per_station[$path[$i]]);
-					$new_row = array(__("Collect"), '', $path[ $i ]);
-					array_push( $path_info, $new_row);
+//					$new_row = array(__("Collect"), '', $path[ $i ]);
+//					array_push( $path_info, $new_row);
 				}
 
 				$prev = $path[ $i];
@@ -456,7 +456,7 @@ group by pm.meta_value, p.post_status");
 				$pickup_order_info[ OrderTableFields::address_2 ]   = '';
 				$pickup_order_info[ OrderTableFields::phone ]       = '';
 				// $this->prerequisite[$order_id] = $pickup_order_info[OrderTableFields::address_1];
-				self::add_line_per_station( $mission->getStartAddress(),
+				if (0) self::add_line_per_station( $mission->getStartAddress(),
 					$pickup_address,
 					$pickup_order_info,
 					$order_id );
@@ -587,13 +587,13 @@ group by pm.meta_value, p.post_status");
 
 	// Make sure that point doesn't appear twice
 	function find_route( $rest, &$path ) {
-		$debug = 0;
+		$debug = false;
 
+		$current_node = end($path);
 		if ($debug) {
-			print "================ START ====================<br/>";
+			print "================ START. cur=$current_node ====================<br/>";
 //			print debug_trace(10);
 		}
-		$current_node = end($path);
 
 		if ( sizeof( $rest ) == 1 ) {
 			if ($debug) print "just 1 left. Done<br/>";
@@ -608,14 +608,13 @@ group by pm.meta_value, p.post_status");
 			$order_id = $this->point_orders[ $candidate ];
 
 			if (isset($this->prerequisite[$order_id]))
-				if ($debug) print "<br/>checking preq for $candidate: ";
+				if (0 and $debug) print "<br/>checking preq for $candidate: ";
 				if (isset($this->prerequisite[$order_id])) {
 					$diff = array_diff($this->prerequisite[$order_id], $path, array($candidate));
-					if ($debug) var_dump($diff);
+					if (0 and $debug) var_dump($diff);
 					if ($diff) unset( $candidates[ $key ] );
 				}
 		}
-
 
 		// If just 1 candidate remains go there.
 		if ( sizeof( $rest ) == 1 ) {
@@ -637,15 +636,20 @@ group by pm.meta_value, p.post_status");
 			var_dump( $candidates );
 		}
 		$selected          = array_shift( $candidates );
-		if ($debug) print "checking $selected<br/>";
 		$selected_priority = self::order_get_pri( $this->point_orders[ $selected ], $this->point_sites[ $selected ] );
 		$selected_distance = self::get_distance( $current_node, $selected );
+		if ($debug) print "<br/>checking $selected $selected_priority $selected_distance";
 
 		foreach ( $candidates as $candidate ) {
 			$candidate_priority = self::order_get_pri( $this->point_orders[ $candidate ], $this->point_sites[ $candidate ] );
 			$candidate_distance = self::get_distance( $current_node, $candidate );
-			if ($debug) print "evaluating $candidate pri=$candidate_priority dis=$candidate_distance<br/>";
-			if ( $candidate_priority <= $selected_priority and $candidate_distance <= $selected_distance ) {
+			if ($debug) print "<br/>evaluating $candidate pri=$candidate_priority dis=$candidate_distance sp=$selected_priority sd=$selected_distance";
+			if (($candidate_priority < $selected_priority) // Better priority
+			    or (($candidate_priority == $selected_priority) and ($candidate_distance < $selected_distance)) // Same priority.
+				or (false))
+				/// It's  a collection. ignore the prio
+			{
+				if ($debug) print " taken";
 				$selected          = $candidate;
 				$selected_distance = $candidate_distance;
 				$selected_priority = $candidate_priority;
@@ -659,9 +663,9 @@ group by pm.meta_value, p.post_status");
 		array_push( $path, $selected );
 		// Remove it from $rest
 		foreach ( $rest as $key => $item ) {
-			if ($debug) print "searching $item<br/>";
+			if (0 and $debug) print "searching $item<br/>";
 			if ( trim( $rest[ $key ] ) == trim( $selected ) ) {
-				if ($debug) print "removing " . $rest[$key] . "<br/>";
+				if (0 and $debug) print "removing " . $rest[$key] . "<br/>";
 				unset ( $rest[ $key ] );
 				return $this->find_route( $rest, $path );
 			}
@@ -786,7 +790,9 @@ group by pm.meta_value, p.post_status");
 		Core_Options::info_remove("mission_order_priority_" . $site_id . '_' .$order_id);
 
 		if ($pri > 0)
-			InfoUpdate("mission_order_priority_" . $site_id . '_' .$order_id, $pri);
+			return InfoUpdate("mission_order_priority_" . $site_id . '_' .$order_id, $pri);
+		return false;
+
 	}
 
 	static function mission_update_type()

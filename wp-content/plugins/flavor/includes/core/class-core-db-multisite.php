@@ -483,6 +483,7 @@ class Core_Db_MultiSite extends Core_MultiSite {
 
 		$args["id_field"] = $this->allowed_tables[$table];
 		if ($query) $args["where"] = $query;
+		$args["no_html"] = true;
 
 		return Core_Html::GuiTableContent( $table, null, $args );
 	}

@@ -435,7 +435,7 @@ class Core_Data
 					// Copy the global args to field args. And than handle specific col args.
 					$field_args = $args;
 					if (isset($args["size"]) and is_array($args["size"]) and isset($args["size"][$key])) $field_args["size"] = $args["size"][$key];
-					$field_args["events"] = $args["events"];
+					if (isset($args["events"])) $field_args["events"] = $args["events"];
 
 					if (! $key or $key == "id")	continue;
 					// Not tested:
@@ -476,7 +476,7 @@ class Core_Data
 					break;
 				}
 				// Format values by type.
-				if (isset($args["sql_fields"])){
+				if (isset($args["sql_fields"]) and ! isset($args["no_html"])){
 					$type = SqlField($args["sql_fields"], $key);
 //				print $key . " " . substr($type, 0, 3) . "<br/>";
 					switch (substr($type, 0, 3)) {
@@ -485,7 +485,7 @@ class Core_Data
 							break;
 						case 'tin':
 //							print "value=$value<Br/>";
-							$value  =Core_Html::GuiCheckbox("", $value, array("edit"=>false));
+							$value  = Core_Html::GuiCheckbox("", $value, array("edit"=>false));
 							break;
 
 					}

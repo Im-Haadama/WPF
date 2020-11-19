@@ -6,6 +6,7 @@ class Focus_Users_Management {
 	{
 		AddAction("focus_create_user", array($this, 'add_user'));
 	}
+
 	function add_user()
 	{
 		// Input

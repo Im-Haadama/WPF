@@ -34,7 +34,7 @@ class Finance {
 	 *
 	 * @var string
 	 */
-	public $version = '1.6';
+	public $version = '1.7.2';
 
 	private $plugin_name;
 
@@ -200,6 +200,14 @@ class Finance {
 		$this->loader->AddAction("create_receipt", $this, 'create_receipt');
 
 		if ((get_user_id() == 1) and defined("DEBUG_USER")) wp_set_current_user(DEBUG_USER);
+
+		$i = Core_Db_MultiSite::getInstance();
+		$i->AddTable("missions");
+		$i->AddTable("cities");
+		$i->AddTable("woocommerce_shipping_zones", "zone_id" );
+		$i->AddTable("woocommerce_shipping_zone_methods", "instance_id" );
+		$i->AddTable("woocommerce_shipping_zone_locations", "location_id" );
+
 
 		Finance_Delivery::init_hooks($this->loader);
 	}

@@ -580,14 +580,14 @@ class Finance_Order {
 		if ( $c ) { // legacy
 			$new_status = "wc-awaiting-document";
 		} else {
-			$d = Finance_Delivery::CreateFromOrder( $this->order_id );
+			$d = new Finance_Delivery($this->order_id );
 			if (! $d) {
 				$message = "no delivery note";
 				return false;
 			}
 
-			if ( $d->isDraft() ) {
-				$message = "is draft";
+			if (! $d->getId()) {
+				$message = "no delivery id";
 				return false;
 			}
 		}

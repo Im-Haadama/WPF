@@ -14,7 +14,14 @@ class Finance_Database extends Core_Database {
 			case '1.2':
 			case '1.4':
 				 SqlQuery("alter table ${db_prefix}delivery_lines add has_vat bool default true;");
+			case '1.6':
+				SqlQuery("alter table wp_woocommerce_shipping_zone_methods " .
+				         " drop week_day");
 				return $this->UpdateInstalled("tables", $version);
+			case '1.7':
+			case '1.7.1':
+				SqlQuery("alter table ${db_prefix}payments add	default_method bit default b'0' null");
+
 		}
 		if (! TableExists("payments"))
 			SqlQuery("create table ${db_prefix}payments

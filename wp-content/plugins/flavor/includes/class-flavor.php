@@ -156,10 +156,6 @@ class Flavor {
 		$i = Core_Db_MultiSite::getInstance();
 //		foreach (array("multisite", "missions", "woocommerce_shipping_zones") as $table)
 		$i->AddTable("multisite");
-		$i->AddTable("missions");
-		$i->AddTable("woocommerce_shipping_zones", "zone_id" );
-		$i->AddTable("woocommerce_shipping_zone_methods", "instance_id" );
-		$i->AddTable("woocommerce_shipping_zone_locations", "location_id" );
 		$i->AddTable("options", "option_id" );
 
 		AddAction( 'admin_enqueue_scripts', array($this, 'admin_scripts' ));
@@ -183,14 +179,16 @@ class Flavor {
 		if (TableExists("mission_types"))
 			self::AddTop('missions',"Missions", '/wp-admin/admin.php?page=missions');
 
-		self::AddTop('orders', 'Orders', '/wp-admin/edit.php?post_type=shop_order');
+		self::AddTop('orders', 'Orders', '/wp-admin/edit.php?post_type=shop_order&post_status=wc-processing');
+		self::AddTop('orders_all', 'All orders', '/wp-admin/edit.php?post_type=shop_order', 'orders');
+		self::AddTop('orders_print', 'Print', '/wp-admin/admin.php?page=printing', 'orders');
 	}
 
-	static function AddTop($id, $title, $href)
+	static function AddTop($id, $title, $href, $parent = null)
 	{
 		$menu = Core_Admin_Menu::instance();
 
-		$menu->AddTop($id, __($title, "e-fresh"), $href);
+		$menu->AddTop($id, __($title, "e-fresh"), $href, $parent);
 	}
 
 	public static function add_settings_tab( $settings_tabs ) {
