@@ -310,7 +310,8 @@ class Focus_Views {
 						"creator"    => "Focus_Views::gui_select_worker",
 						"preq"       => "Focus_Views::gui_select_task",
 						"team"       => "Focus_Views::gui_select_team",
-						"priority"   => "Focus_Views::gui_select_priority"
+						"priority"   => "Focus_Views::gui_select_priority",
+						"created" => "Core_Html::GuiShowDynamicDateTime"
 					);
 					if ( self::OptionEnabled( "missions" ) ) {
 						$args["selectors"]["mission_id"] = "Flavor_Mission::gui_select_mission";
@@ -338,11 +339,12 @@ class Focus_Views {
 					$args["fields"]        = array(
 						"id",
 						"task_title",
-						"task_template",
+//						"task_template",
 						"task_description", // Needed for task title
 						"team",
 						"project_id",
-						"priority"
+						"priority",
+						"created"
 					);
 					$args["links"]         = array( "id" => self::get_link( "task", "%d" ) );
 					break;
@@ -1520,8 +1522,8 @@ class Focus_Views {
 		$table_name  = "tasklist";
 		$entity_name = "task";
 		// print Core_Html::GuiHeader( 1, $entity_name . " " . $row_id );
-		$args              = array();
-		$args["edit"]      = $edit;
+		$args              = self::Args("tasklist");
+//		$args["edit"]      = $edit;
 		$args["edit_cols"] = array(
 			"date"             => true,
 			"task_title"       => true,
@@ -1536,58 +1538,58 @@ class Focus_Views {
 			"task_type"        => true,
 			"is_active"        => true
 		);
-		$args["selectors"] = array(
-			"project_id" => "Focus_Views::gui_select_project",
-			"owner"      => "Focus_Views::gui_select_worker",
-			"creator"    => "Focus_Views::gui_select_worker",
-			"preq"       => "Focus_Views::gui_select_task",
-			"team"       => "Focus_Views::gui_select_team",
-			"mission_id" => "Flavor_Mission::gui_select_mission"
-		);
-		if ( self::OptionEnabled( "missions" ) ) {
-			$args["selectors"]["mission_id"] = "Flavor_Mission::gui_select_mission";
-		}
-
-		$args["title"]         = $entity_name;
-		$args["hide_cols"]     = array(
-			"status"           => true,
-			"preq"             => true,
-			"task_type"        => true,
-			"mission_id"       => true,
-			"mission_id"       => true,
-			"location_name"    => true,
-			"location_address" => true,
-			"is_active"        => true
-		);
-		$args["header_fields"] = array(
-			"date"             => "Start date",
-			"task_title"       => "Title",
-			"task_description" => "Task description",
-			"task_template"    => "Repeating task",
-			"status"           => "Status",
-			"started"          => "Started date",
-			"ended"            => "Ended date",
-			"project_id"       => "Project",
-			"location_name"    => "Location",
-			"location_address" => "Address",
-			"priority"         => "Priority",
-			"preq"             => "Prerequisite",
-			"owner"            => "Assigned to",
-			"creator"          => "Creator",
-			"task_type"        => "Task type",
-			"mission_id"       => "Mission",
-            "team"             => "Team",
-            "created"          => "Created"
-		);
-
-		//$new_task = new Focus_Tasklist($row_id);
-		//$creator = new Org_Worker( $new_task->getCreator() );
-		//print "creator = " .$creator->getName();
-		//$args["creator"] = $creator->getName();
-		$args["companies"] = $worker->GetCompanies();
-		$args["debug"]     = 0; // get_user_id() == 1;
-		$args["post_file"] = self::instance()->post_file;
-		$args["v_checkbox"] =true;
+//		$args["selectors"] = array(
+//			"project_id" => "Focus_Views::gui_select_project",
+//			"owner"      => "Focus_Views::gui_select_worker",
+//			"creator"    => "Focus_Views::gui_select_worker",
+//			"preq"       => "Focus_Views::gui_select_task",
+//			"team"       => "Focus_Views::gui_select_team",
+//			"mission_id" => "Flavor_Mission::gui_select_mission"
+//		);
+//		if ( self::OptionEnabled( "missions" ) ) {
+//			$args["selectors"]["mission_id"] = "Flavor_Mission::gui_select_mission";
+//		}
+//
+//		$args["title"]         = $entity_name;
+//		$args["hide_cols"]     = array(
+//			"status"           => true,
+//			"preq"             => true,
+//			"task_type"        => true,
+//			"mission_id"       => true,
+//			"mission_id"       => true,
+//			"location_name"    => true,
+//			"location_address" => true,
+//			"is_active"        => true
+//		);
+//		$args["header_fields"] = array(
+//			"date"             => "Start date",
+//			"task_title"       => "Title",
+//			"task_description" => "Task description",
+//			"task_template"    => "Repeating task",
+//			"status"           => "Status",
+//			"started"          => "Started date",
+//			"ended"            => "Ended date",
+//			"project_id"       => "Project",
+//			"location_name"    => "Location",
+//			"location_address" => "Address",
+//			"priority"         => "Priority",
+//			"preq"             => "Prerequisite",
+//			"owner"            => "Assigned to",
+//			"creator"          => "Creator",
+//			"task_type"        => "Task type",
+//			"mission_id"       => "Mission",
+//            "team"             => "Team",
+//            "created"          => "Created"
+//		);
+//
+//		//$new_task = new Focus_Tasklist($row_id);
+//		//$creator = new Org_Worker( $new_task->getCreator() );
+//		//print "creator = " .$creator->getName();
+//		//$args["creator"] = $creator->getName();
+//		$args["companies"] = $worker->GetCompanies();
+//		$args["debug"]     = 0; // get_user_id() == 1;
+//		$args["post_file"] = self::instance()->post_file;
+//		$args["v_checkbox"] =true;
 
 		return Core_Gem::GemElement( $table_name, $row_id, $args );
 	}
@@ -2164,7 +2166,8 @@ class Focus_Views {
             $row["creator"] = get_user_id();
         }
         if(!isset($row["created"])){
-            $row["created"] = date_i18n("Y/m/d \a\t g:i  A " );
+            $row["created"] = date("Y/m/d g:i" );
+            FocusLog($row["created"]);
         }
         return $row;
     }

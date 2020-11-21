@@ -380,7 +380,6 @@ class Focus_Tasklist {
 		       "'" . $row["task_description"] . "', " . $id . ", " . enumTasklist::waiting . ", now(), " . $project_id . ",  " .
 		       $priority . "," . $team . "," . $creator . ")";
 
-		print $sql ."<br/>";
 		SqlQuery( $sql );
 
 		array_push( $verbose_line, SqlInsertId() );

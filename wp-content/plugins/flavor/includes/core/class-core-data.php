@@ -465,6 +465,7 @@ class Core_Data
 				}
 				if ( $selectors and array_key_exists( $key, $selectors )) {
 					$selector_name = $selectors[ $key ];
+//					print "$key sel=$selector_name<br/>";
 					if ( strlen( $selector_name ) < 2 ) die( "selector " . $key . "is empty" );
 					//////////////////////////////////
 					// Selector ($id, $value, $args //

@@ -361,10 +361,19 @@ class Core_Html {
 	 * @param $class
 	 * @param null $value
 	 * @param null $events
+	 * @deprecated user GuiInputDate
 	 *
 	 * @return string
 	 */
 	static function gui_input_date( $id, $class, $value = null, $events = null ) {
+		return self::GuiInputDate($id, $value, array("class"=>$class, "events"=>$events));
+	}
+
+	static function GuiInputDate($id, $value, $args)
+	{
+		$class = GetArg($args, "class", null);
+		$events = GetArg($args, "events", null);
+
 		$data = '<input type="date" id="' . $id . '" ';
 		// 09/09/2019. It's ok to show null - not selected value. E.g - task date.
 		//	if ( is_null( $value ) ) {
@@ -394,6 +403,16 @@ class Core_Html {
 
 		//    print $data;
 		return $data;
+	}
+
+	static function GuiShowDynamicDateTime( $id, $value = null, $args = null ) {
+		$delta = time() - strtotime($value);
+		if ($delta < 10) $value = ETranslate("Seconds ago");
+		else if ($delta < 3600) $value = round($delta/60) . " " . ETranslate("minutes ago");
+		else if ($delta < 86400) $value = date("g:i", strtotime($value));
+		else if ($delta < (86400 * 365)) $value = date("d/m", strtotime($value));
+
+		return self::GuiLabel($id, $value, $args);
 	}
 
 	/**
@@ -1538,7 +1557,7 @@ class Core_Html {
 				$value = Core_Html::GuiCheckbox( $input_name, $data, array("events"=>$events) );
 				break;
 			case 'dat':
-				$value = Core_Html::gui_input_date( $input_name, null, $data, $events );
+				$value = Core_Html::GuiInputDate( $input_name,  $data, array("events"=>$events ));
 				break;
 			case 'var':
 			case 'med':
