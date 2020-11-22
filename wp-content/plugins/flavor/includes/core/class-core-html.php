@@ -1807,7 +1807,7 @@ class Core_Html {
 			if ($all_loaded)
 				$button_args["events"] = "onclick=\"selectTab(event, '$name', '$div_class', '$btn_class')\"";
 			else
-				$button_args["events"] = "onclick=\"window.location.href = '" . AddToUrl("st_$id", $tab[0]) . "'\"";
+				$button_args["events"] = "onclick=\"window.location.href = '" . AddParamToUrl(GetUrl(1), "st_$id", $tab[0]) . "'\"";
 
 			$result .= Core_Html::GuiButton("btn_tab_$name", $display_name, $button_args);
 		}
