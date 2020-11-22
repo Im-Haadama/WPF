@@ -406,11 +406,15 @@ class Core_Html {
 	}
 
 	static function GuiShowDynamicDateTime( $id, $value = null, $args = null ) {
+//		var_dump(SqlQuerySingleAssoc("select * from im_tasklist where id = 6282")); die (1);
+
 		$delta = time() - strtotime($value);
+//		print "del=$delta $value<br/>";
 		if ($delta < 10) $value = ETranslate("Seconds ago");
 		else if ($delta < 3600) $value = round($delta/60) . " " . ETranslate("minutes ago");
-		else if ($delta < 86400) $value = date("g:i", strtotime($value));
-		else if ($delta < (86400 * 365)) $value = date("d/m", strtotime($value));
+		else if ($delta < 86400) $value = get_date_from_gmt(  $value,  'G:i' );
+		else if ($delta < (86400 * 7)) $value = get_date_from_gmt(  $value,  'l G:i' );
+		else if ($delta < (86400 * 365)) $value = get_date_from_gmt(  $value,  'd-m' );
 
 		return self::GuiLabel($id, $value, $args);
 	}
@@ -971,7 +975,8 @@ class Core_Html {
 			$data .= ' id="' . $id . '"';
 		}
 		if ( $style ) $data .= "style=\"$style\"";
-		$data .= " border=\"1\"";
+		$border = GetArg($args, "border", 1);
+		if ($border) $data .= " border=\"$border\"";
 		$data .= ">";
 
 		$action_line = null;
@@ -1552,9 +1557,13 @@ class Core_Html {
 	static function gui_input_by_type( $input_name, $type = null, $args = null, $data = null ) {
 		if (strstr($data, "<input")) return $data;
 		$events = GetArg( $args, "events", null );
+
 		switch ( substr( $type, 0, 3 ) ) {
 			case 'tin':
-				$value = Core_Html::GuiCheckbox( $input_name, $data, array("events"=>$events) );
+				if ($type == 'tinyint(1)')
+					$value = Core_Html::GuiCheckbox( $input_name, $data, array("events"=>$events) );
+				else
+					$value = Core_Html::GuiInput( $input_name, $data, $args ); //gui_input( $input_name, $data, $field_events, $row_id );
 				break;
 			case 'dat':
 				$value = Core_Html::GuiInputDate( $input_name,  $data, array("events"=>$events ));

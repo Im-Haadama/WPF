@@ -86,7 +86,7 @@ class Core_Data
 	{
 		$row_id = intval($row_id);
 		$db_prefix = GetTablePrefix($table_name);
-		if (! in_array(SqlTableFields($table_name), "is_active")) return true;
+		if (! in_array("is_active", SqlTableFields($table_name))) return true;
 
 		return SqlQuery("update ${db_prefix}$table_name set is_active = $active where id = $row_id");
 	}
@@ -423,8 +423,7 @@ class Core_Data
 //						die(1);
 //					}
 					if ($drill) {
-						$operation = GetArg($args, "drill_operation", "show_archive");
-						$value = Core_Html::GuiHyperlink($value, AddToUrl(array( $key => $orig_data, "operation" => $operation)), $args);
+						$value = Core_Html::GuiHyperlink($value, AddToUrl(array( $key => $orig_data)), $args);
 					}
 					break;
 				}
@@ -442,7 +441,7 @@ class Core_Data
 					//							if (isset($args['styles']) and is_array($args['styles']))
 					//								$args['style'] = (isset($args['styles'][$key]) ? $args['styles'][$key] : null);
 //							print "edit $key " . $field_args["edit"] . "<br/>";
-					if ($edit_cols and (isset($edit_cols[$key]) and $edit_cols[$key])) {
+					if (! $edit_cols or (isset($edit_cols[$key]) and $edit_cols[$key])) {
 						if ( $table_name or isset($args["types"][$key])) { // Create by type
 							if ( isset( $args["sql_fields"] ) ) {
 								$type = SqlField( $args["sql_fields"], $key );
@@ -465,7 +464,7 @@ class Core_Data
 				}
 				if ( $selectors and array_key_exists( $key, $selectors )) {
 					$selector_name = $selectors[ $key ];
-//					print "$key sel=$selector_name<br/>";
+					print "$key sel=$selector_name<br/>";
 					if ( strlen( $selector_name ) < 2 ) die( "selector " . $key . "is empty" );
 					//////////////////////////////////
 					// Selector ($id, $value, $args //

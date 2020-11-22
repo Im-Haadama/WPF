@@ -393,3 +393,10 @@ function moveNextRow() {
         }
     }
 }
+
+function next_page(xmlhttp, page) {
+    if (xmlhttp.response.indexOf("failed") === -1 ) {
+        let new_id = xmlhttp.response;
+        window.location = add_param_to_url(page, 'new', new_id);
+    }  else alert(xmlhttp.response);
+}

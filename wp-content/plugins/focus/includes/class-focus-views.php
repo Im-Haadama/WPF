@@ -10,8 +10,8 @@ class Focus_Views {
 		$loader->AddFilter( 'data_save_new_tasklist', $this, 'DataSaveNewTaskList', 11, 1 );
 		$loader->AddAction( 'add_worker', $this, 'doAddCompanyWorker', 11, 3 );
 		$loader->AddAction( "tasklist_worker", $this, "show_worker_wrapper", 10, 2 );
-
 		$loader->AddAction('wp_enqueue_scripts', $this, 'enqueue_scripts');
+		$loader->AddFilter("gem_next_page_tasklist", $this, "next_page_tasklist");
 
 //		$loader->AddAction( "gem_add_team_members", array( __CLASS__, 'show_edit_team' ), 10, 3 );
 //		$loader->AddAction( "show_edit_team", array( __CLASS__, 'show_edit_team' ), 10, 3 );
@@ -126,8 +126,14 @@ class Focus_Views {
 
 		// Todo: move all processing to filter.
 		$id = GetParam( "id", false, null );
+		$args = self::Args( $table_name );
+		if (strstr($operation, "add"))
+		{
+			$args["edit"] = true;
+			unset_by_value($args["fields"], "created");
+		}
 
-		$result = apply_filters( $operation, "", $id, self::Args( $table_name ) );
+		$result = apply_filters( $operation, "", $id, $args );
 		if ( $result != "" ) {
 			return $result;
 		}
@@ -310,7 +316,7 @@ class Focus_Views {
 						"creator"    => "Focus_Views::gui_select_worker",
 						"preq"       => "Focus_Views::gui_select_task",
 						"team"       => "Focus_Views::gui_select_team",
-						"priority"   => "Focus_Views::gui_select_priority",
+//						"priority"   => "Focus_Views::gui_select_priority", Show select
 						"created" => "Core_Html::GuiShowDynamicDateTime"
 					);
 					if ( self::OptionEnabled( "missions" ) ) {
@@ -339,7 +345,6 @@ class Focus_Views {
 					$args["fields"]        = array(
 						"id",
 						"task_title",
-//						"task_template",
 						"task_description", // Needed for task title
 						"team",
 						"project_id",
@@ -352,7 +357,6 @@ class Focus_Views {
 				case "working_teams":
 					$args["fields"]        = array( "team_name" );
 					$args["header_fields"] = array( "team_name" => "Team name" );
-					//$args["links"] = array("id"=>self::get_link("team", "%d"));
 					break;
 
 				case "projects":
@@ -400,6 +404,7 @@ class Focus_Views {
 	 * @throws Exception
 	 */
 	static function focus_main( $operation, $user_id ) {
+
 		if ( ! $operation ) {
 			$operation = "default";
 		}
@@ -942,12 +947,12 @@ class Focus_Views {
 			return "'$user_id' is not valid user";
 		}
 
-		$result = greeting( null, false );
+		$table_args = array("border"=>0);
+		$result = Core_Html::gui_table_args(array(array(greeting( null, false ), self::search_box())), null, $table_args);
+
 		$worker = new Org_Worker( $user_id );
-		$tabs   = array();
 		$args   = self::Args( "tasklist" );
 
-		$result .= self::search_box();
 
 		$selected_tab = GetParam( "st_main", false, "my_work" );
 //		print "ST=$selected_tab<br/>";
@@ -1066,12 +1071,13 @@ class Focus_Views {
 		$result .= Core_Html::GuiInput( "search_text", "(search here)",
 			array( "events" => "onfocus=\"search_by_text()\" onkeyup=\"search_by_text()\" onfocusout=\"search_box_reset()\"" ) );
 
-		$result .= Core_Html::GuiDiv( "search_result" );
+//		$result .= Core_Html::GuiDiv( "search_result" );
 
 		return $result;
 	}
 
 	static function new_task() {
+		die (1); // Probably not in use. 21/11/2020
 		$result = "";
 //		$result .= Core_Html::GuiButton( "btn_new_task", "Add",
 //			array( "action" => "new_task.style.display = 'block';
@@ -1097,13 +1103,19 @@ class Focus_Views {
 		$worker = new Org_Worker( $user_id );
 		$status = GetArg( $args, "status", null );
 
+		// Build the title
+		$args["title"] = __( $title );
+		foreach ($_GET as $query_key => $query_value) {
+			if ( isset( $args["selectors"][ $query_key ] ) ) {
+				$args["title"] .= " " . $args["header_fields"][ $query_key ] . " " . $args["selectors"][ $query_key ]("title", $query_value, ["edit"=>false]) . ", ";
+			}
+		}
+		$args["title"] = rtrim($args["title"], ", ");
+
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Tasks I need to handle (owner = me)                                                                       //
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		$args["count"] = 0;
-		$args["title"] = __( $title );
-//		$teams         = $worker->AllTeams();
-		// $args["query"] = " (owner = " . $user_id . ( $teams ? " or team in (" . CommaImplode( $teams ) . ")" : "" ) . ")";
 		$args["query"] = $worker->myWorkQuery( $include_team, $status ); ///self::ActiveQuery( );
 		FocusLog( $args["query"] );
 		if ( isset( $args["period"] ) ) {
@@ -1118,6 +1130,7 @@ class Focus_Views {
 			$result .= $table;
 		} else {
 			if ( ! $include_team ) {
+//				print "<br/>".$args["sql"] . "<br/>";
 				return self::user_work( $args, "Active tasks assigned to my teams", true, $user_id );
 			}
 			$result .= "Nothing found.";
@@ -1282,7 +1295,6 @@ class Focus_Views {
 		$db_prefix               = GetTablePrefix();
 		$args["count"]           = 0;
 		$args["drill"]           = true;
-		$args["drill_operation"] = "show_tasks";
 
 		$table_name = "tasklist";
 
@@ -1355,7 +1367,7 @@ class Focus_Views {
 
 		$links["task_template"] = self::get_link( "template", "%s" );
 		$links["id"]            = self::get_link( "task", "%s" );
-		$links["project_id"]    = self::get_link( "project_tasks", $project_id, $args );
+//		$links["project_id"]    = self::get_link( "project_tasks", $project_id, $args );
 		// Use drill, instead - $links["project_id"] = $page_url . "?operation=show_project&id=%s";
 		$args["links"]     = $links;
 		$args["post_file"] = self::getPost();
@@ -2166,7 +2178,7 @@ class Focus_Views {
             $row["creator"] = get_user_id();
         }
         if(!isset($row["created"])){
-            $row["created"] = date("Y/m/d g:i" );
+            $row["created"] = date("Y/m/d G:i" );
             FocusLog($row["created"]);
         }
         return $row;
@@ -2306,6 +2318,7 @@ class Focus_Views {
 	}
 
 	static function show_new_task( $mission = false, $new_task_id = null ) {
+		die (1); // Suspected as not in use.
 		$db_prefix    = GetTablePrefix();
 		$table_prefix = GetTablePrefix();
 
@@ -2439,4 +2452,10 @@ class Focus_Views {
 		$file = FLAVOR_INCLUDES_URL . 'js/sorttable.js';
 		wp_enqueue_script( 'sorttable', $file, null, '1.0', false );
 	}
+
+	function next_page_tasklist()
+	{
+		return "/project";
+	}
+
 }

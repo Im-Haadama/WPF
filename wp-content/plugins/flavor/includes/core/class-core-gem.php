@@ -110,6 +110,7 @@ class Core_Gem {
 			return false;
 		}
 		Core_Data::set_args_value($args);
+
 		// 10-11-2020 not sure if needed: unset($args["add_checkbox"]);
 		return $result . self::GemAddRow($table_name, null, $args);
 	}
@@ -323,18 +324,19 @@ class Core_Gem {
 		// $next_page = GetArg($args, "next_page", null);
 		if (! $post) die(__FUNCTION__ . " :" . $text . "must send post_file " . $table_name);
 
-            $next_page = @apply_filters("gem_next_page_" . $table_name, '');
+		$next_page = @apply_filters("gem_next_page_" . $table_name, '');
+
 //		print "np=$next_page<br/>";
 		if ($next_page){
 			$result .= '<script>
-		function next_page(xmlhttp) { 
-		    if (xmlhttp.response.indexOf("failed") === -1 ) { 
-		        let new_id = xmlhttp.response;
-		      window.location = "' . $next_page . '&new=" + new_id;  
-		    }  else alert(xmlhttp.response);
-		}
+//		function next_page(xmlhttp) { 
+//		    if (xmlhttp.response.indexOf("failed") === -1 ) { 
+//		        let new_id = xmlhttp.response;
+//		      window.location = "' . $next_page . '&new=" + new_id;  
+//		    }  else alert(xmlhttp.response);
+//		}
 		</script>';
-			$result .= "\n" . Core_Html::GuiButton("add_row", "add", array("action" => "data_save_new('" . $post . "', '$table_name', next_page)\n"));
+			$result .= "\n" . Core_Html::GuiButton("add_row", "add", array("action" => "data_save_new('" . $post . "', '$table_name', '$next_page')\n"));
 		} else {
 			$result .= Core_Html::GuiButton("add_row", "add", array("action" => "data_save_new('" . $post . "', '$table_name')", "add"));
 			$result .= Core_Html::GuiButton("add_row", "add and continue", array("action" => "data_save_new('" . $post . "', '$table_name', success_message)", "add and continue"));

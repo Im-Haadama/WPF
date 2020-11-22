@@ -215,7 +215,10 @@ class Finance_Clients
 		}
 		$payment_info_id = SqlQuerySingleScalar( "select id from im_payment_info where email = " . QuoteText($u->get_customer_email()));
 		if ($payment_info_id) {
-			$args = array("post_file" => Flavor::getPost(), "edit"=>true);
+			$args = array("post_file" => Flavor::getPost(), "edit"=>true,
+			              "fields"=>array("id", "card_number", "exp_date_month", "exp_date_year", "id_number"),
+			              "edit_cols"=> array("card_number"=>1, "card_type"=>1, "exp_date_month"=>1, "id_number"=>1, "exp_date_year"=>1));
+
 			$credit_info = Core_Gem::GemElement( "payment_info", $payment_info_id, $args );
 		} else {
 			$args["post_file"] = Finance::getPostFile();

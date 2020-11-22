@@ -887,3 +887,9 @@ function ETranslate( $text, $arg = null ) {
 		return $text;
 	}
 }
+
+function dd($var)
+{
+	var_dump($var);
+	die(1);
+}
