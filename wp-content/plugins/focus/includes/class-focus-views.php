@@ -885,6 +885,8 @@ class Focus_Views {
 
 		$table_args = array("border"=>0);
 		$result = Core_Html::gui_table_args(array(array(greeting( null, false ), self::search_box())), null, $table_args);
+		$result .= Core_Html::GuiDiv( "search_result" );
+
 
 		$worker = new Org_Worker( $user_id );
 		$args   = self::Args( "tasklist" );
@@ -918,6 +920,7 @@ class Focus_Views {
 		switch ( $selected_tab ) {
 			case "my_work":
 				$tabs[0][2] = self::user_work( $args, "Active tasks assigned to me", false, $user_id );
+				if (! $this->result_count) $tabs[0][2] = self::user_work( $args, "Active tasks assigned to my teams", true, $user_id );
 				break;
 			case "my_team_work":
 				$tabs[1][2] = self::user_work( $args, "Active tasks assigned to my teams", true, $user_id );
@@ -955,8 +958,6 @@ class Focus_Views {
 		$result = "";
 		$result .= Core_Html::GuiInput( "search_text", "(search here)",
 			array( "events" => "onfocus=\"search_by_text()\" onkeyup=\"search_by_text()\" onfocusout=\"search_box_reset()\"" ) );
-
-//		$result .= Core_Html::GuiDiv( "search_result" );
 
 		return $result;
 	}
@@ -1149,7 +1150,7 @@ class Focus_Views {
 		$args["query"] = " creator = $user_id and status < 2"; // . " and (owner != " . $user_id . ' or isnull(owner)) ' . ($teams ? ' and team not in (' . CommaImplode( $teams ) . ")" : '');
 		$args["class"] = "sortable";
 		$table         = $this->Taskslist( $args );
-		if ( $args["count"] ) {
+		if ( $this->result_count ) {
 			$result .= $table;
 		} else {
 			$result .= "<br/>" . ETranslate( "No active tasks!" );

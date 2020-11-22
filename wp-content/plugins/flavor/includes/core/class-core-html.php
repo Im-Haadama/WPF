@@ -1773,7 +1773,6 @@ class Core_Html {
 		$button_args["class"] = $btn_class;
 
 		$selected_tab = GetArg($args, "st_$id", 0);
-//		print "st=$selected_tab<br/>";
 		$all_loaded = GetArg($args, "tabs_load_all", false);
 		if ($all_loaded) $selected_tab = null;
 
@@ -1795,8 +1794,6 @@ class Core_Html {
 			if ($all_loaded and ($key == 0)) $div_args['style'] = 'display:block';
 			// Or is selected.
 			if ($selected_tab == $name) $div_args['style'] = 'display:block';
-//			$div_args["style"] = ((($selected_tab == $name) or $all_loaded) ? 'display: block' : "display: none");
-//			print "$name ds=" . $div_args["style"] . "<br/>";
 
 			if ($all_loaded or ($selected_tab == $name)){
 				$contents .= Core_Html::GuiDiv($name, $tab[2], $div_args);
