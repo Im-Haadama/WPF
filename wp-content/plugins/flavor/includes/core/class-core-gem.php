@@ -528,6 +528,10 @@ class Core_Gem {
 		if (! isset($args["events"])) $args["events"] = 'onchange="update_table_field(\'' . $post_file . '\', \'' . $table_name . '\', \'%d\', \'%s\', check_result)"';
 		$sql = GetArg($args, "sql", null);
 
+		if ($drill_fields = GetArg($args, "drill_fields", null)) {
+			foreach ($drill_fields as $field) unset_by_value( $args["fields"], $field  );
+		}
+
 		if (! $sql){
 			$fields = GetArg($args, "fields", null);
 			if ($fields) {
