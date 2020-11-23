@@ -2106,16 +2106,15 @@ class Focus_Views {
 			'focus_project'         => array( 'Focus_Views::show_project', null ), // 'edit_projects' ),
 			'focus_project_tasks'   => array( 'Focus_Views::show_project_tasks', 'show_tasks' ),
 			'focus_worker'          => array( 'Focus_Views::show_worker', 'show_tasks' ),
-			'focus_getting_started' => array( array( $this, 'getting_started' ) )
+			'focus_sign_up' => array( array( $this, 'sign_up' ) )
 		) );
 	}
 
-	function getting_started() {
+	function sign_up() {
 		if ( ! class_exists( "Subscription_Manager" ) ) {
 			die( "install error. Install Subscript_Manager" );
 		}
-
-		return $this->focus_users->showNewUser();
+		return $this->focus_users->register();
 	}
 
 	function init() {

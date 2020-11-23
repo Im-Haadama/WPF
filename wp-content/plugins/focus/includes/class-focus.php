@@ -160,6 +160,7 @@ class Focus {
         Core_Pages::CreateIfNeeded("focus", "/focus", "focus_main");
         Core_Pages::CreateIfNeeded("project", "/project", "focus_project");
         Core_Pages::CreateIfNeeded("task", "/task", "focus_task");
+        Core_Pages::CreateIfNeeded("signup", "/signup", "focus_sign_up");
 
         $this->focus_users = new Focus_Users_Management();
         $this->focus_users->init_hooks();
