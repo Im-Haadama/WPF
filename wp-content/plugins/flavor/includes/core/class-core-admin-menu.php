@@ -5,7 +5,6 @@ class Core_Admin_Menu {
 	public $top; // Array of (id, title, href);
 	protected static $_instance = null;
 
-
 	public static function instance() {
 		if ( is_null( self::$_instance ) ) {
 			self::$_instance = new self( "Flavor" );
@@ -23,9 +22,9 @@ class Core_Admin_Menu {
 		return add_menu_page($page_title, $menu_title, $capability, $menu_slug, $function);
 	}
 
-	public function AddTop($id, $title, $href)
+	public function AddTop($id, $title, $href, $parent = null)
 	{
-		array_push($this->top, array($id, $title, $href));
+		array_push($this->top, array($id, $title, $href, $parent));
 	}
 
 	function do_modify_admin_bar($wp_admin_bar)
@@ -34,12 +33,15 @@ class Core_Admin_Menu {
 			$id = $item[0];
 			$title = $item[1];
 			$href = $item[2];
+			$parent = ((isset($item[3]) and $item[3]) ? $item[3] : null);
 
-			$wp_admin_bar->add_node( [
+			$new_item =  [
 				'id'    => $id,
 				'title' => __( $title ),
 				'href'  => $href,
-			] );
+			];
+			if ($parent) $new_item['parent'] = $parent;
+			$wp_admin_bar->add_node($new_item);
 		}
 	}
 

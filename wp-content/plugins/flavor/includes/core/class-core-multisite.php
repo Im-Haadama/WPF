@@ -80,7 +80,7 @@ class Core_MultiSite {
 		if ( isset( $this->sites_array[ $site_id ] ) ) {
 			return $this->sites_array[ $site_id ][ Core_Multisite_Fields::site_url_idx ];
 		} else {
-			print "site $site_id not defined!";
+//			print "site $site_id not defined!";
 
 			return null;
 		}
@@ -129,8 +129,8 @@ class Core_MultiSite {
 		foreach ( $this->sites_array as $site_id => $site ) {
 			$result = $this->Run( $func, $site_id, $first, $debug );
 			if (! $result) {
-				$output .= "Can't get from " . $this->getSiteName($site_id) . " http code: " . $this->http_codes[$site_id] . Core_Html::Br();
-				$output .= $this->getSiteURL($site_id) . '/' . $func . Core_Html::Br();
+				$output .= "Can't get from " . Core_Html::GuiHyperlink($this->getSiteName($site_id), $this->getSiteURL($site_id) . '/' . $func) .
+				           " http code: " . $this->http_codes[$site_id] . Core_Html::Br();
 			}
 			if ( $strip ) {
 				$result = strip_tags( $result, "<div><br><p><table><tr><td>" );

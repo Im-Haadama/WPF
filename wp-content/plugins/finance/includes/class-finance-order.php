@@ -17,7 +17,7 @@ class Finance_Order {
 	public function __construct( $order_id ) {
 		if ( ! is_numeric( $order_id ) or ! $order_id) {
 			print debug_trace(20);
-			die ("bad order id $order_id");
+			die ("bad order id: $order_id");
 		}
 		$this->order_id = $order_id;
 		if (! function_exists("wc_get_order"))
@@ -25,6 +25,7 @@ class Finance_Order {
 
 		$this->WC_Order = wc_get_order($order_id);
 		if (! $this->WC_Order) {
+			print debug_trace(10);
 			die("Can't load order $order_id");
 		}
 
@@ -42,8 +43,8 @@ class Finance_Order {
 		while ($row = SqlFetchAssoc($sql_result))
 		{
 			$item_id = $row['order_item_id'];
-			$prod_id = Fresh_Packing::get_order_itemmeta($item_id, '_product_id');
-			$quantity = Fresh_Packing::get_order_itemmeta($item_id, '_qty');
+			$prod_id = Finance_Delivery::get_order_itemmeta($item_id, '_product_id');
+			$quantity = Finance_Delivery::get_order_itemmeta($item_id, '_qty');
 			if (! isset($rows[$prod_id])) $rows[$prod_id] = 0;
 			$rows[$prod_id] += $quantity;
 //			array_push($rows, array(
@@ -90,24 +91,6 @@ class Finance_Order {
 			//	break;
 		}
 		return null;
-	}
-
-	public function justDelivery() : bool
-	{
-//		MyLog("tot=" . self::getTotal());
-//		MyLog("fee=" . self::getShippingFee());
-		return (self::getTotal() == self::getShippingFee()) or (0 == self::getTotal());
-	}
-
-	public function getShippingFee() : float
-	{
-		$sql2 = 'SELECT meta_value FROM `wp_woocommerce_order_itemmeta` WHERE order_item_id IN ( '
-		        . 'SELECT order_item_id FROM wp_woocommerce_order_items WHERE order_id = ' . $this->order_id
-		        . ' AND order_item_type = \'shipping\' )  AND meta_key = \'cost\'; ';
-
-		$result = SqlQuerySingleScalar( $sql2 );
-
-		return ($result ? $result : 0);
 	}
 
 	// Create new
@@ -338,6 +321,8 @@ class Finance_Order {
 	}
 
 	public static function CalculateNeeded( &$needed_products, $user_id = 0, &$user_table = null, $debug_product = null) {
+		$db_prefix = GetTablePrefix("delivery_lines");
+
 		$include_shipment = false;
 		/// print "user id " . $user_id . "<br/>";
 		$debug_product = 0; // 141;
@@ -431,7 +416,7 @@ class Finance_Order {
 					Finance_Order::AddProducts( $key, $qty, $needed_products, $item->get_id() );
 				} else {
 					// Check if order line supplied.
-					$sql = "SELECT sum(quantity) FROM im_delivery_lines WHERE prod_id = " . $prod_or_var .
+					$sql = "SELECT sum(quantity) FROM ${db_prefix}delivery_lines WHERE prod_id = " . $prod_or_var .
 					       " AND quantity > 0 AND delivery_id = " . $del_id;
 
 					// print $sql . "<br/>";
@@ -595,14 +580,14 @@ class Finance_Order {
 		if ( $c ) { // legacy
 			$new_status = "wc-awaiting-document";
 		} else {
-			$d = Fresh_Delivery::CreateFromOrder( $this->order_id );
-			if (! $d->getID()) {
+			$d = new Finance_Delivery($this->order_id );
+			if (! $d) {
 				$message = "no delivery note";
 				return false;
 			}
 
-			if ( $d->isDraft() ) {
-				$message = "is draft";
+			if (! $d->getId()) {
+				$message = "no delivery id";
 				return false;
 			}
 		}
@@ -640,15 +625,17 @@ class Finance_Order {
 	}
 
 	function update_levels() {
+		$db_prefix = GetTablePrefix("delivery_lines");
+
 		// OK. We supplied the order.
 		// We check if delivered different from ordered and change the stock level.
-		$order_items = $this->order->get_items();
+		$order_items = self::get_items();
 		$d_id        = $this->getDeliveryId();
 		foreach ( $order_items as $item ) {
 			$prod_or_var  = $item['product_id'];
 			$q_in_ordered = $item->get_quantity();
 			$p            = new Fresh_Product( $prod_or_var );
-			$q_supplied   = SqlQuery( "SELECT quantity FROM im_delivery_lines" .
+			$q_supplied   = SqlQuery( "SELECT quantity FROM ${db_prefix}delivery_lines" .
 			                          " WHERE prod_id = " . $prod_or_var .
 			                          " AND delivery_id = " . $d_id );
 			if ( $q_in_ordered != $q_supplied ) {
@@ -660,36 +647,6 @@ class Finance_Order {
 
 	public function getDeliveryId() {
 		return SqlQuerySingleScalar( "SELECT id FROM im_delivery WHERE order_id = " . $this->order_id );
-	}
-
-	public function getItems()
-	{
-		return $this->WC_Order->get_items();
-	}
-
-	public function getTotal() {
-		$order_items = $this->getItems();
-		$total       = 0;
-		// print "cid= " . $this->CustomerId() . "<br/>";
-
-		$client_type = get_user_meta( $this->getCustomerId(), '_client_type', true );
-
-		// print "cty= " . $client_type . "<br/>";
-		foreach ( $order_items as $item ) {
-			$prod_or_var = $item['product_id'];
-			$q           = $item->get_quantity();
-
-			if ( $prod_or_var > 0 and $q > 0 and
-			                          is_numeric( Fresh_Pricing::get_price_by_type( $prod_or_var, $client_type ) )
-			) {
-				$line = Fresh_Pricing::get_price_by_type( $prod_or_var, $client_type ) * $q;
-				if ( is_numeric( $line ) ) {
-					$total += $line;
-				}
-			}
-		}
-
-		return $total;
 	}
 
 	public function GetBuyTotal() {
@@ -711,7 +668,7 @@ class Finance_Order {
 
 	function checkInfoBox()
 	{
-		$result = Core_Html::gui_header(1, __("Order number") . ":" . $this->order_id) . "<br/>";
+		$result = Core_Html::GuiHeader(1, ETranslate("Order number") . ":" . $this->order_id) . "<br/>";
 		$result .= __("Client") . ":" . $this->getOrderInfo( '_billing_first_name' ) . ' '
 		                                                                      . $this->getOrderInfo( '_billing_last_name') . "<br/>";
 
@@ -777,7 +734,7 @@ class Finance_Order {
 
 		$data = Core_Html::GuiHeader( 1, $header, true );
 
-		if ( ($d_id = self::get_delivery_id( $this->order_id )) > 0 ) $data .= Core_Html::gui_header( 2, "משלוח מספר " . $d_id );
+		if ( ($d_id = self::get_delivery_id( $this->order_id )) > 0 ) $data .= Core_Html::GuiHeader( 2, "משלוח מספר " . $d_id );
 		$data     .= $this->infoRightBox( $edit_order );
 		$data     .= "</td>";
 		$data .= "<tr><td>$logo_url</td></td>";
@@ -1108,6 +1065,8 @@ class Finance_Order {
 
 	function handle_order_operation($operation)
 	{
+		$db_prefix = GetTablePrefix("delivery_lines");
+
 		$page = GetParam("page", false, 0);
 		$args = [];
 		if ($page) $args["page"] = $page;
@@ -1124,9 +1083,9 @@ class Finance_Order {
 				$args = [];
 				$args["print_logo"] = false;
 				print HeaderText($args);
-				print Core_Html::gui_header(2, "הזמנה/אספקה שבועית");
-				$last_delivery = SqlQuerySingleScalar("select max(delivery_id) from im_delivery_lines");
-				$sql = "select distinct prod_id, sum(quantity_ordered) from im_delivery_lines where delivery_id > $last_delivery - 20 group by prod_id order by 2 desc limit 38";
+				print Core_Html::GuiHeader(2, "הזמנה/אספקה שבועית");
+				$last_delivery = SqlQuerySingleScalar("select max(delivery_id) from ${db_prefix}delivery_lines");
+				$sql = "select distinct prod_id, sum(quantity_ordered) from ${db_prefix}delivery_lines where delivery_id > $last_delivery - 20 group by prod_id order by 2 desc limit 38";
 				$prods = SqlQueryArrayScalar($sql);
 
 				$data = [];
@@ -1331,20 +1290,12 @@ class Finance_Order {
 
 				print $count;
 				break;
-
-			case "set_mission":
-				$order_id = GetParam("order_id", true);
-				$mission_id = GetParam("mission_id", true);
-				$order = new Finance_Order($order_id);
-				$order->setMissionID($mission_id);
-				return true;
-
-
 			default:
 				// die("operation " . $operation . " not handled<br/>");
 		}
 		return false;
 	}
+
 	function order_page_by_term()
 	{
 		for ($i = 0; $i < count($prods); $i++){
@@ -1365,7 +1316,7 @@ class Finance_Order {
 				if (!is_basket($prod_id)) array_push($temp_table, get_product_name($prod_id));
 			if (count($temp_table)){
 				sort ($temp_table);
-				array_push($data, Core_Html::gui_header(3, get_term_name($term)));
+				array_push($data, Core_Html::GuiHeader(3, get_term_name($term)));
 
 				foreach ($temp_table as $prod_name)
 					array_push($data, array($prod_name, ""));
@@ -1433,7 +1384,6 @@ class Finance_Order {
 //		MyLog("cid=" . self::getCustomerId());
 //		print $this->customer_id;
 		return get_user_meta( self::getCustomerId(), "_client_type", true );
-
 	}
 
 	static function get_minimum_order($customer_id) {
@@ -1516,7 +1466,6 @@ class Finance_Order {
 		} else {
 			$client_id = $O->getCustomerId();
 			$report    .= "<form name=\"delivery\" action= \"\">";
-			// $report .= gui_header( 2, "יצירת תעודת משלוח להזמנה מספר " . $order_id, true );
 
 			if ( 0 and SqlQuerySingleScalar( "select order_is_group(" . $order_id . ")" ) == 1 ) {
 				//		 $report .= "הזמנה קבוצתית";
@@ -1578,7 +1527,55 @@ class Finance_Order {
 	{
 //		$order = new Fresh_Order($order_id);
 //		if ($order->getShippingFee())
-		return '/wp-content/plugins/fresh/delivery/get-delivery.php?order_id=' . $this->order_id;
+		return "wp-admin/admin.php?page=deliveries?order_id=" . $this->order_id;
 	}
+
+	function get_items()
+	{
+		return $this->WC_Order->get_items();
+	}
+	public function justDelivery() : bool
+	{
+//		MyLog("tot=" . self::getTotal());
+//		MyLog("fee=" . self::getShippingFee());
+		return (self::getTotal() == self::getShippingFee()) or (0 == self::getTotal());
+	}
+
+	public function getTotal() {
+		$order_items = $this->get_items();
+		$total       = 0;
+		// print "cid= " . $this->CustomerId() . "<br/>";
+
+		$client_type = $this->getCustomerType();
+
+		// print "cty= " . $client_type . "<br/>";
+		foreach ( $order_items as $item ) {
+			$prod_or_var = $item['product_id'];
+			$q           = $item->get_quantity();
+
+			if ( $prod_or_var > 0 and $q > 0 and
+			                          is_numeric( Fresh_Pricing::get_price_by_type( $prod_or_var, $client_type ) )
+			) {
+				$line = Fresh_Pricing::get_price_by_type( $prod_or_var, $client_type ) * $q;
+				if ( is_numeric( $line ) ) {
+					$total += $line;
+				}
+			}
+		}
+
+		return $total;
+	}
+
+	public function getShippingFee() : float
+	{
+		$sql2 = 'SELECT meta_value FROM `wp_woocommerce_order_itemmeta` WHERE order_item_id IN ( '
+		        . 'SELECT order_item_id FROM wp_woocommerce_order_items WHERE order_id = ' . $this->order_id
+		        . ' AND order_item_type = \'shipping\' )  AND meta_key = \'cost\'; ';
+
+		$result = SqlQuerySingleScalar( $sql2 );
+
+		return ($result ? $result : 0);
+	}
+
 
 }

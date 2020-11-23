@@ -42,14 +42,15 @@ function active_entity(active, post_operation, table_name, id)
 }
 
 // If we want to add custom action in the server we can send different post action.
-function data_save_new(post_operation, table_name, action)
+function data_save_new(post_operation, table_name, next_page_url)
 {
     let operation = post_operation;
     let table_id = table_name + "_new";
     let glue = '?';
     if (operation.indexOf('?') !== -1) glue = '&';
 
-    if (post_operation.indexOf("operation=") === -1) operation += glue + 'operation=data_save_new';
+    operation = add_param_to_url(post_operation, "operation", "data_save_new");
+    // if (post_operation.indexOf("operation=") === -1) operation += glue + 'operation=data_save_new';
 
     operation += '&table_name=' + table_name;
     let form_params = get_form_params(table_id, true);
@@ -59,8 +60,8 @@ function data_save_new(post_operation, table_name, action)
     }
     operation += form_params;
     // alert(operation);
-    if (action)
-        execute_url(operation, action);
+    if (next_page_url)
+        execute_url(operation, function(xmlhttp, obj) { next_page(xmlhttp, next_page_url); });
     else
         execute_url(operation, action_back);
 }

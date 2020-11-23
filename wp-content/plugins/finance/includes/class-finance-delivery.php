@@ -15,29 +15,38 @@ class Finance_Delivery
 	private $margin_total = 0;
 	private $order_id = 0;
 
+	/**
+	 * @return int|mixed|string|null
+	 */
+	public function getId() {
+		return $this->delivery_id;
+	}
+
 	static function init()
 	{
 	}
 
-	static function init_hooks()
+	static function init_hooks($loader)
 	{
 		// Gui
-		AddAction( "delivery_show_create", array( 'Finance_Delivery', "delivery_show_create" ) ); // gui: order->delivery
-		AddAction( "delivery_show_edit", array( 'Finance_Delivery', "delivery_show_edit" ) ); // gui: order->delivery
+		$loader->AddAction( "delivery_show_create", __CLASS__,  "delivery_show_create" ); // gui: order->delivery
+		$loader->AddAction( "delivery_show_edit", __CLASS__,  "delivery_show_edit" ); // gui: order->delivery
 
 		// Actions
-		AddAction("delivery_save", array('Finance_Delivery', 'save_wrap')); // POST: create delivery
-		AddAction("delivery_edit", array('Finance_Delivery', 'edit_wrap')); // POST: update delivery
-		AddAction("delivery_delete", array('Finance_Delivery', "delete_wrap"));
-		AddAction("delivery_get_price", array('Finance_Delivery', 'get_price'));
+		$loader->AddAction("delivery_save", __CLASS__,  'save_wrap'); // POST: create delivery
+		$loader->AddAction("delivery_edit", __CLASS__,  'edit_wrap'); // POST: update delivery
+		$loader->AddAction("delivery_delete", __CLASS__,  "delete_wrap");
+		$loader->AddAction("delivery_delete_lines", __CLASS__,  "delete_lines_wrap");
+		$loader->AddAction("delivery_get_price", __CLASS__,  'get_price');
 
 		// Complete order
-		add_action('woocommerce_order_status_completed', array(__CLASS__, 'order_complete_wrap'));
+		$loader->AddAction('woocommerce_order_status_completed', __CLASS__,  'order_complete_wrap');
 
 		// Show link to delivery note
-		AddAction('woocommerce_order_actions_start', array(__CLASS__, 'show_delivery_link'));
+		$loader->AddAction('woocommerce_order_actions_start', __CLASS__,  'show_delivery_link');
 //		MyLog(__FUNCTION__);
 	}
+
 	/**
 	 * Finance_Delivery constructor.
 	 *
@@ -59,13 +68,16 @@ class Finance_Delivery
 			}
 		}
 //		print "DDD=" . $this->delivery_id . "; OOOO=" . $this->order_id . "<br/>";
-		$this->order       = new Finance_Order($this->order_id);
+		if ($this->order_id > 0)
+			$this->order       = new Finance_Order($this->order_id);
 	}
 
 	public function getDeliveryTotal() : float
 	{
+		$db_prefix = GetTablePrefix("delivery_lines");
+
 		if (! $this->delivery_total and $this->delivery_id) {
-			$this->delivery_total = SqlQuerySingleScalar("select sum(line_price) from im_delivery_lines where delivery_id = $this->delivery_id");
+			$this->delivery_total = SqlQuerySingleScalar("select sum(line_price) from ${db_prefix}delivery_lines where delivery_id = $this->delivery_id");
 		}
 		return round($this->delivery_total, 2);
 	}
@@ -80,31 +92,26 @@ class Finance_Delivery
 	static function deliveries() {
 		$report = "";
 		$operation = GetParam( "operation", false, null, true );
-//		print "del=" . GetParam("delivery_id") . "<br/>";
 		if ($operation) {
-			MyLog(__FUNCTION__ . ":" . $operation);
 			$report = apply_filters($operation,  null);
-//			var_dump($report);
 			if (is_string($report)) {
 				print $report;
 				return true;
 			}
-//			print "$operation not handled<br/>";
 		}
 
 		$delivery_id = GetParam("delivery_id", false, 0);
 		$order_id = GetParam("order_id", false, 0);
-//		print "oid=$order_id del=$delivery_id<br/>";
 		if ($delivery_id or $order_id)
 		{
 			$d = new Finance_Delivery($order_id, $delivery_id);
-//			$report .= $d->OrderInfoBox();
 			$report .= $d->Show();
 			if ($d->delivery_id) {
 				if ( $receipt = $d->getReceipt() ) {
 					$report .= "תעודה שולמה ($receipt) ולא ניתנת לעריכה או למחיקה";
 				} else {
-					$report .= Core_Html::GuiHyperlink( "[Delete]", AddToUrl( "operation", "delivery_delete" ) ) . " ";
+					// $report .= Core_Html::GuiHyperlink( "[Delete]", AddToUrl( "operation", "delivery_delete" ) ) . " ";
+					$report .= Core_Html::GuiButton("btn_delete", "Delete", array("action"=>"delivery_delete('" . Flavor::getPost() . "')"));
 					$report .= Core_Html::GuiHyperlink( "[Edit]", AddToUrl( "operation", "delivery_show_edit" ) ) . " ";
 					$report .= Core_Html::GuiButton( "btn_send", "send delivery", array( "action" => "sendDelivery('" . Flavor::getPost() . "', $delivery_id)" ) );
 				}
@@ -158,8 +165,11 @@ class Finance_Delivery
 	static function delivery_show_create() {
 		$order_id = GetParam( "order_id", true );
 		$delivery        = new Finance_Delivery( $order_id );
+		$user_id = $delivery->getUserId();
+		$vat = apply_filters("finance_vat", 0);
 
-		return $delivery->ShowCreate();
+		return $delivery->ShowCreate(array())
+		       . Core_Html::GuiButton("btn_add_line", "Add Line", "delivery_add_line('". Flavor::getPost() . "', $user_id, $vat, 0)");
 	}
 
 	static function delivery_show_edit()
@@ -172,7 +182,6 @@ class Finance_Delivery
 		$delivery        = new Finance_Delivery( $order_id, $delivery_id );
 
 		return $delivery->Show(true);
-
 	}
 
 	// POST: update delivery
@@ -181,16 +190,20 @@ class Finance_Delivery
 		return self::do_create_delivery(true);
 	}
 
-	private static function CreateFromOrder( $order_id )
-	{
-		$id = Finance_Order::get_delivery_id( $order_id );
-
-		$instance = new self( $id );
-
-		$instance->SetOrderId( $order_id );
-
-		return $instance;
-	}
+//	static function CreateFromOrder( $order_id )
+//	{
+//		$id = Finance_Order::get_delivery_id( $order_id );
+//
+//		if ($id) {
+//			$instance = new self( $id );
+//
+//			$instance->SetOrderId( $order_id );
+//
+//			return $instance;
+//		}
+////		print "delivery for $order_id not found";
+//		return null;
+//	}
 
 	private function SetOrderID( $order_id ) {
 		$this->order_id = $order_id;
@@ -240,22 +253,30 @@ class Finance_Delivery
 		$user_id = $this->getUserId();
 
 		$events = 'onkeypress="quantity_changed()" onfocusout="quantity_changed()"';
-		$args = array("fields"=>array("id", "product_name", "quantity_ordered", "quantity", "price", "line_price"),
-			"where" => " delivery_id = " . $this->delivery_id,
-			"skip_id"=>true,
-			"header_fields" => array("product_name" => __("Product name", "e-fresh"),
-				"quantity_ordered" => __("Quantity ordered"),
-				"quantity" => __("Quantity supplied", "e-fresh"),
-						"price"=>__("Price", "e-fresh"),
-				"line_price" => __("Line total"),
-			),
-		"events"=>$events,
-		"order_by"=>" order by id ",
-		"edit"=>$edit,
-			"form_table" => "del_table",
-			"edit_cols" => array("quantity"=>1, "price"=>1));
+		$args = array("fields"=>array("id", "product_name", "quantity_ordered", "quantity", "price", "line_price", "prod_id", "has_vat"),
+		              "where" => " delivery_id = " . $this->delivery_id,
+		              "skip_id"=>true, "header_fields" => array("product_name" => __("Product name", "e-fresh"),
+		                                                        "quantity_ordered" => __("Quantity ordered"),
+		                                                        "quantity" => __("Quantity supplied", "e-fresh"),
+		                                                        "price"=>__("Price", "e-fresh"),
+		                                                        "line_price" => __("Line total")),
+			          "events"=>$events,
+			          "order_by"=>" order by id ",
+			          "edit"=>$edit,
+		              "form_table" => "del_table",
+		              "edit_cols" => array("quantity"=>1, "price"=>1),
+		              "checkbox_class"=>"delivery_lines",
+		              "hide_cols" => array("prod_id"=> 1),
+		              "add_checkbox" => $edit
+		);
+
+		$args = apply_filters("delivery_args", $args);
+
+		$vat = apply_filters("finance_vat", false);
 
 		if ($this->delivery_id) {
+//			print "cc=".$args["checkbox_class"];
+
 			$html .= Core_Html::GuiTableContent( "delivery_lines", null, $args );
 			$html .= Core_Html::GuiDiv( "total_div",
 				__( "Total" ) . ": " .
@@ -263,26 +284,49 @@ class Finance_Delivery
 			);
 			$html .= Core_Html::GuiLabel( "order_id", $this->order_id, array( "hidden" => true ) );
 			if ( $edit ) {
-				$html .= Core_Html::GuiButton("btn_add_line", "Add Line", "delivery_add_line('". Flavor::getPost() . "', $user_id)");
+				$html .= '<datalist id="products"></datalist>';
+				$html .= Core_Html::GuiButton("btn_add_line", "Add Line", "delivery_add_line('". Flavor::getPost() . "', $user_id, $vat, 1)");
 				$html .= Core_Html::GuiButton( "btn_save", "Save", "delivery_save_or_edit('" . Flavor::getPost() . "', 'delivery_edit')" );
-				$html .= Core_Html::GuiButton( "btn_delete", "Delete", "delivery_delete('" . Flavor::getPost() . "')" );
+				$html .= Core_Html::GuiButton( "btn_delete", "Delete Lines", "delete_items('delivery_lines', '" . Flavor::getPost() . "', 'delivery_delete_lines')" );
 			}
 		}
-//		$html .= "<table> id='row_insert' style='display: none'>
-//			<tr>" .
-//		"</tr></table>";
 		return $html;
 	}
 
-	function ShowCreate()
+	// Args:
+	// Packing - before packing:
+	//  -- No edit.
+	//  -- Show comments.
+	function ShowCreate($args)
 	{
 		$html = $this->getOrder()->infoBox( false, "יצירת תעודת משלוח ל" );
 
-//		$table = array(array("product", "comment", "quantity_ordered", "qunatity_supplied", "price", "line_total"));
-		$table = array("header"=>array("Product", "Comment", "Quantity ordered", "Quantity supplied", "Price", "Line Total"));
+		$table = array(
+			"header" => array(
+				"Product",
+				"Comment",
+				"Quantity ordered",
+				"Quantity supplied",
+				"Price",
+				"Line Total",
+				"Has Vat"
+			)
+		);
+
+		$packing = GetArg($args, "packing", false);
+//		var_dump($packing);
+
+		if ($packing) {
+			$args["edit"] = false;
+		} else {
+			unset_by_value($table['header'], 'Comment');
+			$args["edit"] = true;
+			$args["edit_cols"] = array("quantity" => 1, "price"=>1, "has_vat"=>1);
+			$args["types"] = array("has_vat"=>"tiny");
+		}
+		$args["hide_cols"] = array("prod_id"=> 1);
 
 		$items = SqlQueryArray("select order_item_id, order_item_type from wp_woocommerce_order_items where order_id = " . $this->order_id);
-//		var_dump($items);
 //		$sql = 'select distinct woim.meta_value, order_line_get_variation(woi.order_item_id) '
 //		       . ' from wp_woocommerce_order_items woi join wp_woocommerce_order_itemmeta woim'
 //		       . ' where ' . $this->OrderQuery()
@@ -299,6 +343,7 @@ class Finance_Delivery
 
 			$prod_id = self::get_order_itemmeta($item_id, '_product_id');
 			$var_id  = self::get_order_itemmeta($item_id, '_variation_id');
+			$has_vat = apply_filters("finance_has_vat", 1, $prod_id);
 			switch ($type) {
 				case 'line_item':
 //					$items_sql = 'select woim.order_item_id'
@@ -320,8 +365,10 @@ class Finance_Delivery
 						"comment"          => self::get_order_itemmeta( $item_id, 'product_comment' ),
 						"quantity_ordered" => $quantity,
 						"quantity"         => '',
-						"price"            => round( round( $line_total / $quantity, 2 ) ),
-						"line_price"       => 0
+						"price"            => round( $line_total / $quantity, 2 ),
+						"line_price"       => 0,
+						"prod_id" => $prod_id,
+						"has_vat"=>$has_vat
 					);
 					break;
 				case 'shipping':
@@ -332,21 +379,45 @@ class Finance_Delivery
 						'quantity_ordered' => 1,
 						"quantity" => 1,
 						"price" => $price,
-						"line_price"=> $price
+						"line_price"=> $price,
+						"prod_id"=>0,
+						"has_vat" => 1,
+					);
+					break;
+				case 'coupon':
+					$coupon_data = self::get_order_itemmeta($item_id, 'coupon_data');
+					if (! $coupon_data) die("no coupon data");
+					$coupon_data = unserialize($coupon_data);
+					$table[$item_id] = array(
+						"product_name" => ETranslate("Coupon") . " " . $coupon_data['code'],
+						'comment' => '',
+						'quantity_ordered' => null,
+						"quantity" => null,
+						"price" => null,
+						"line_price"=> null,
+						"prod_id"=>null,
+						"has_vat" => null,
 					);
 					break;
 				default:
 					print "type $type not handled<br/>";
 					die( 1 );
 			}
+			if (! $packing) unset($table[$item_id]['comment']);
 		}
-		$args = array("edit" => true,
-			"edit_cols" => array("quantity" => 1,
-				"price" => 1),
-			"size"=>2,
-			"events"=>'onfocusout="calcDelivery()" onkeypress="moveNextRow(' . $this->line_number . ');calcDelivery()" ' .
-				'onfocusout="leaveQuantityFocus(' . $this->line_number . ')"',
-			          "class"=>"widefat");
+//		$args = array("edit" => true,
+//			"edit_cols" => array("quantity" => 1,
+//				"price" => 1),
+		$args["size"] = array("quantity"=>2, "price"=>3);
+		$args["events"] = 'onfocusout="calcDelivery()" onkeypress="moveNextRow(' . $this->line_number . ');calcDelivery()" ' .
+				'onfocusout="leaveQuantityFocus(' . $this->line_number . ')"';
+
+//		$args["class"] = "widefat";
+
+//		foreach ($table as $key => $line)
+//		{
+//			$table[$key]['has_vat'] = Core_Html::GuiCheckbox('has_vat_$id', $table[$key]['has_vat']);
+//		}
 		$html .= Core_Html::gui_table_args($table, "del_table", $args);
 		$html .= "<div>" . __("Total") . ": " .Core_html::gui_label("total", $price) . "</div>";
 
@@ -359,17 +430,19 @@ class Finance_Delivery
 //		$args);
 
 		$html .= Core_Html::GuiLabel("order_id", $this->order_id, array("hidden"=>true));
-		$html  .= Core_Html::GuiButton("btn_add", "Create", "delivery_save_or_edit('" . Flavor::getPost() . "', 'delivery_save')");
+		$html .= Core_Html::GuiButton("btn_add", "Create", "delivery_save_or_edit('" . Flavor::getPost() . "', 'delivery_save')");
 
 		return $html;
 	}
 
 	static private function do_create_delivery($edit = false)
 	{
+
 		MyLog(__FUNCTION__ . " e=$edit");
 		$json_params = file_get_contents("php://input");
-		$data = json_decode($json_params);
-
+		$data =null;
+//		if (! $json_params) $json_params = '[["18669","322",0],["%D7%A1%D7%9C%20%D7%A4%D7%99%D7%A8%D7%95%D7%AA","1","100",0,"1121","1",0],["%D7%A1%D7%9C%20%D7%99%D7%A8%D7%A7%D7%95%D7%AA%20%D7%9E%D7%A9%D7%A4%D7%97%D7%AA%D7%99","1","140",0,"1118","1",0],["%D7%91%D7%99%D7%99%D7%92%D7%9C%D7%94%20%D7%9B%D7%95%D7%A1%D7%9E%D7%99%D7%9F%20-%20%D7%9E%D7%90%D7%A4%D7%99%D7%99%D7%AA%20%D7%94%D7%A8%D7%9E%D7%9F","4","14",8.14,"448","4",1],["%D7%9E%D7%A9%D7%9C%D7%95%D7%97","1","10.00",1.45,"0","1",1],["%D7%93%D7%91%D7%A9%20%D7%94%D7%91%D7%A9%D7%9F%20(250%20%D7%92%D7%A8%D7%9D)%20-%20%D7%90%D7%91%D7%95%D7%A7%D7%93%D7%95","1","16",2.32,"17465","1",1]]';
+		$data = json_decode( $json_params );
 		if (! $data) {
 			MyLog("no post data");
 			print "no post data";
@@ -392,33 +465,60 @@ class Finance_Delivery
 
 		if ($edit) {
 			MyLog("Edit");
-			$d->DeleteLines();
+			if (! $d->DeleteLines()) return false;
 		}
 		$d->CreateOrUpdateDelivery( $order_id, $total, $vat, $lines, $edit, $fee );
 
 		for ($i = 1; $i < count($data); $i ++)
 		{
-			$product_name=urldecode($data[$i][0]);
-			$q = $data[$i][1]; if (! ($q > 0)) $q = 0;
-			$p = $data[$i][2]; if (! ($p > 0)) $p = 0;
-			$vat = $data[$i][3];
+			$prod_name = urldecode($data[$i][0]);
+			$q = $data[$i][1];
+			$p = $data[$i][2];
 			$prod_id = $data[$i][4];
-			$quantity_ordered = $data[$i][5]; MyLog("qo=$quantity_ordered"); //  if (! ($quantity_ordered > 0)) $quantity_ordered = 0;
-			$line_price = round($p * $q, 2);
+			if (! ($prod_id > 0)) {
+				$prod = Finance_Product::getByName($prod_name);
+				if ($prod)
+					$prod_id = $prod->getId();
+				else
+					$prod_id = 0;
+			}
+			MyLog($prod_name . " " . $data[$i][4] . " " .$prod_id);
+			$prod_data = array(
+			'product_name' => $prod_name,
+			'quantity' => $q,
+			'price' => $p,
+			'vat' => $data[$i][3],
+			'prod_id' => $prod_id,
+			'quantity_ordered' => $data[$i][5],
+			'line_price' => round($p * $q, 2),
+			'has_vat' => $data[$i][6]);
 
 			// $product_name, $quantity, $quantity_ordered, $vat, $price, $line_price, $prod_id )
-			$d->AddDeliveryLine( $product_name, $q, $quantity_ordered, $vat, $p, $line_price, $prod_id );
+			$d->AddDeliveryLine( $prod_data );
 		}
 
 		return true;
 	}
 
-	private function AddDeliveryLine( $product_name, $quantity, $quantity_ordered, $vat, $price, $line_price, $prod_id )
+	private function AddDeliveryLine( $prod_data )
 	{
+		$db_prefix = GetTablePrefix("delivery_lines");
+
+		$product_name = $prod_data['product_name'];
+		$quantity = $prod_data['quantity'];
+		if (! $quantity > 0) $quantity = 0;
+		$quantity_ordered = $prod_data['quantity_ordered'];
+		$vat = $prod_data['vat'];
+		$price = $prod_data['price'];
+		$line_price = $prod_data['line_price'];
+		$prod_id = $prod_data['prod_id'];
+		$has_vat = $prod_data['has_vat'];
+		if (null == $has_vat) $has_vat = 'NULL';
+
 		$product_name = preg_replace( '/[\'"%()]/', "", $product_name );
 		$delivery_id = $this->delivery_id;
 
-		$sql = "INSERT INTO im_delivery_lines (delivery_id, product_name, quantity, quantity_ordered, vat, price, line_price, prod_id) VALUES ("
+		$sql = "INSERT INTO ${db_prefix}delivery_lines (delivery_id, product_name, quantity, quantity_ordered, vat, price, line_price, prod_id, has_vat) VALUES ("
 		       . $delivery_id . ", "
 		       . "'" . urldecode( $product_name ) . "', "
 		       . $quantity . ", "
@@ -426,9 +526,10 @@ class Finance_Delivery
 		       . $vat . ", "
 		       . $price . ', '
 		       . round( $line_price, 2 ) . ', '
-		       . $prod_id . ' )';
+		       . $prod_id . ", $has_vat )";
 
-//		MyLog( "$delivery_id: $product_name $quantity $quantity_ordered $vat $price $line_price $prod_id", __FILE__);
+		MyLog( "$delivery_id: $product_name $quantity $quantity_ordered $vat $price $line_price $prod_id", __FILE__);
+		MyLog($sql);
 
 		return SqlQuery( $sql );
 	}
@@ -495,10 +596,19 @@ class Finance_Delivery
 	}
 
 	private function DeleteLines() {
-		$sql = 'DELETE FROM im_delivery_lines WHERE delivery_id = ' . $this->delivery_id;
+		$db_prefix = GetTablePrefix("delivery_lines");
+		$sql = "DELETE FROM ${db_prefix}delivery_lines WHERE delivery_id = " . $this->delivery_id;
 		MyLog($sql);
 
-		SqlQuery( $sql );
+		return SqlQuery( $sql );
+	}
+
+	private function DeleteLine($id) {
+		$db_prefix = GetTablePrefix("delivery_lines");
+		$sql = "DELETE FROM ${db_prefix}delivery_lines WHERE id = " . $id;
+		MyLog($sql);
+
+		return SqlQuery( $sql );
 	}
 
 	// Action to update delivery
@@ -528,7 +638,32 @@ class Finance_Delivery
 		die(0);
 	}
 
+	static public function delete_lines_wrap()
+	{
+		$delivery_id = GetParam("delivery_id", false);
+		$order_id = GetParam("order_id", false);
+		if (! $order_id and ! $delivery_id) {
+			print "no id supplied";
+			die (1);
+		}
+		MyLog(__FUNCTION__ . " $delivery_id");
+		$d = new Finance_Delivery( $order_id, $delivery_id );
+		if (! $d->delivery_id) {
+			MyLog("no delivery for order $order_id");
+			print "no delivery for order $order_id";
+			return false;
+		}
+
+		$ids = GetParamArray("ids", true);
+		foreach ($ids as $item_id)
+			$d->DeleteLine($item_id);
+		print "done";
+		die(0);
+	}
+
 	public function Delete() {
+		$db_prefix = GetTablePrefix("delivery_lines");
+
 		// change the order back to processing
 
 		$sql = "UPDATE wp_posts SET post_status = 'wc-processing' WHERE id = " . $this->order_id;
@@ -536,17 +671,17 @@ class Finance_Delivery
 		SqlQuery( $sql );
 
 		// Remove from client account
-		$sql = 'DELETE FROM im_client_accounts WHERE transaction_ref = ' . $this->delivery_id;
+		$sql = "DELETE FROM ${db_prefix}client_accounts WHERE transaction_ref = " . $this->delivery_id;
 
 		SqlQuery( $sql );
 
 		// Remove the header
-		$sql = 'DELETE FROM im_delivery WHERE id = ' . $this->delivery_id;
+		$sql = "DELETE FROM ${db_prefix}delivery WHERE id = " . $this->delivery_id;
 
 		SqlQuery( $sql );
 
 		// Remove the lines
-		$sql = 'DELETE FROM im_delivery_lines WHERE delivery_id = ' . $this->delivery_id;
+		$sql = "DELETE FROM ${db_prefix}delivery_lines WHERE delivery_id = " . $this->delivery_id;
 
 		SqlQuery( $sql );
 
@@ -598,7 +733,6 @@ class Finance_Delivery
 			// $p = $product['price'];
 			// push_array($prods, array($product['qty']));
 			// $total += $p * $q;
-			// var_dump($product);
 			$P = new Finance_Product($product['product_id']);
 			$prod_to_add                 = array();
 			$prod_to_add['product_name'] = $product["name"];
@@ -619,6 +753,7 @@ class Finance_Delivery
 			$prod_to_add['line_price'] = $product['total'];
 			$total              += $product['total'];
 			$prod_to_add['prod_id']    = $product['product_id'];
+			$prod_to_add['has_vat'] = null;
 
 			array_push( $prods, $prod_to_add );
 		}
@@ -634,12 +769,23 @@ class Finance_Delivery
 		// print " מספר " . $delivery_id;
 
 		foreach ( $prods as $prod_to_add ) {
-			$this->AddDeliveryLine( $prod_to_add['product_name'], $prod_to_add['quantity'], $prod_to_add['quantity_ordered'],
-				$prod_to_add['vat'], $prod_to_add['price'], $prod_to_add['line_price'], $prod_to_add['prod_id'] );
+			$this->AddDeliveryLine( $prod_to_add );
 		}
 
-		if ($fee)
-			$this->AddDeliveryLine('דמי משלוח', 1, 1,  round($fee / 1.17 * 0.17, 2), $fee, $fee, 0 );
+		if ($fee) {
+			// 'דמי משלוח', 1, 1, round( $fee / 1.17 * 0.17, 2 ), $fee, $fee, 0
+			$prod_data = array(
+				'product_name' => urldecode('דמי משלוח'),
+				'quantity' => 1,
+				'price' => $fee,
+				'vat' => round( $fee / 1.17 * 0.17, 2 ),
+				'prod_id' => 0,
+				'quantity_ordered' => 1,
+				'line_price' => $fee,
+				'has_vat' => 1);
+
+			$this->AddDeliveryLine( $prod_data);
+		}
 
 		return $delivery_id;
 	}
@@ -665,21 +811,29 @@ class Finance_Delivery
 
 	static function get_price()
 	{
-		$user_id = GetParam("user_id", true);
-		$prod_name = GetParam("prod_name", true);
+		$prod_id = GetParam("prod_id", true);
 
-		$sql  = "SELECT id FROM im_products WHERE post_title = '" . urldecode( $prod_name ) . "'";
-		$id   = SqlQuerySingleScalar( $sql );
+		if ($prod_id) {
+			$P = new Finance_Product( $prod_id );
+			$price =  $P->getPrice();
+			$output = apply_filters("delivery_product_price", $prod_id);
+			if ($output != $prod_id)  print $output;
+			else print $price;
 
-		$p = new Finance_Product($id);
-		print $p->getPrice();
-		return true;
+			die (0);
+		}
+		return false;
 		// print Fresh_Pricing::get_price_by_type()
 	}
 
 	static function getLink($id)
 	{
 		return "/wp-admin/admin.php?page=deliveries&delivery_id=" . $id;
+	}
+
+	public function getItems()
+	{
+		return $this->order->get_items();
 	}
 }
 

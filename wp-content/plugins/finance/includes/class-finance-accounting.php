@@ -1,7 +1,7 @@
 <?php
 
 
-class Fresh_Accounting {
+class Finance_Accounting {
 	static function weekly_report( $week ) {
 		$report = "";
 		$report .= Core_Html::GuiHeader( 1, "מציג תוצאות לשבוע המתחיל ביום " . $week );
@@ -27,7 +27,7 @@ class Fresh_Accounting {
 			'קבלה' => '',
 			               'due_vat' => array(0, 'SumNumbers'),
 			'fresh' => array(0, 'SumNumbers'));
-		$in_args = array("links" => array("ref" => "../delivery/get-delivery.php?id=%s"),
+		$in_args = array("links" => array("ref" => Finance_Delivery::getLink('%s')),
 		                 "accumulation_row" => &$sums_in,
 		                 "id_field" => "ref");
 		$rows_data = Core_Data::TableData( $sql, $in_args);
@@ -35,17 +35,19 @@ class Fresh_Accounting {
 
 		// Add due vat, fresh total
 		if (! $rows_data) return $report . "No data!<br/>";
-		foreach ($rows_data as $key => $row)
+		foreach ($rows_data as $delivery_id => $row)
 		{
-			if ($key == 'header') {
-				$rows_data[ $key ]['due_vat'] = 'מוצרים חייבי מע"מ';// ;;__("Vat");
-				$rows_data[$key] ['fresh'] = 'סה"כ מוצרים טריים';
+//			print "del: $delivery_id<br/>";
+			if ($delivery_id == 'header') {
+				$rows_data[ $delivery_id ]['due_vat'] = 'מוצרים חייבי מע"מ';// ;;__("Vat");
+				$rows_data[$delivery_id] ['fresh'] = 'סה"כ מוצרים טריים';
 			}
 			else {
-				$delivery = new Fresh_Delivery($key);
-				$rows_data[ $key ]['due_vat'] = $delivery->getDeliveryDueVat() - $delivery->DeliveryFee();
-				$due_vat +=$rows_data[ $key ]['due_vat'];
-				$rows_data[$key]['fresh'] = $rows_data[ $key ]['amount'] - $rows_data[ $key ]['due_vat'];
+				$delivery = new Finance_Delivery(0, $delivery_id);
+		//	 Todo: move it to a fresh filter.
+			$rows_data[ $delivery_id ]['due_vat'] = 0; //$delivery->getDeliveryDueVat() - $delivery->DeliveryFee();
+				$due_vat +=$rows_data[ $delivery_id ]['due_vat'];
+				$rows_data[$delivery_id]['fresh'] = $rows_data[ $delivery_id ]['amount'] - $rows_data[ $delivery_id ]['due_vat'];
 			}
 		}
 
@@ -119,12 +121,14 @@ class Fresh_Accounting {
 	}
 
 	static function weekly_product_report( $week, $sort = 4 ) {
+		$db_prefix = GetTablePrefix("delivery_lines");
+
 		$result = "";
 		$result .=Core_Html::GuiHeader( 1, "מציג תוצאות לשבוע המתחיל ביום " . $week );
 
 		$result .= "<br/>";
 
-		$sql = "SELECT product_name, round(sum(quantity), 1), max(prod_id), product_name FROM im_delivery_lines " .
+		$sql = "SELECT product_name, round(sum(quantity), 1), max(prod_id), product_name FROM ${db_prefix}delivery_lines " .
 		       " WHERE delivery_id IN (SELECT id FROM im_delivery WHERE first_day_of_week(date) = '" . $week . "')" .
 		       " GROUP BY prod_id order by " . $sort;
 

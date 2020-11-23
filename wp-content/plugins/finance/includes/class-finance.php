@@ -28,14 +28,13 @@ class Finance {
 	protected $database;
 	protected $subcontract;
 	protected $salary;
-	protected $delivery;
 
 	/**
 	 * Plugin version.
 	 *
 	 * @var string
 	 */
-	public $version = '1.4';
+	public $version = '1.7.2';
 
 	private $plugin_name;
 
@@ -52,6 +51,10 @@ class Finance {
 	 *
 	 */
 	public $finance = null;
+	/**
+	 * @var Core_Autoloader
+	 */
+	private $auto_loader;
 
 	public function get_plugin_name() {
 		return $this->plugin_name;
@@ -122,13 +125,13 @@ class Finance {
 		if ( ! defined( 'FINANCE_ABSPATH' ) ) {
 			die ( "not defined" );
 		}
-		$this->loader      = new Core_Autoloader( FINANCE_ABSPATH );
+		$this->auto_loader      = new Core_Autoloader( FINANCE_ABSPATH );
+		$this->loader = Core_Loader::instance();
 		$this->post_file   = Flavor::getPost();
 		$this->yaad        = null;
 		$this->clients     = new Finance_Clients();
 		$this->subcontract = new Finance_Subcontract();
 		$this->salary      = new Finance_Salary();
-//		$this->delivery = new Finance_Delivery();
 
 		$this->init_hooks();
 
@@ -154,9 +157,6 @@ class Finance {
 		self::register_payment();
 
 		GetSqlConn( ReconnectDb() );
-
-		$this->database= new Finance_Database();
-		$this->database->install($this->version);
 
 		self::install( $this->version );
 
@@ -184,30 +184,38 @@ class Finance {
 		if ( $this->yaad ) $this->yaad->init_hooks();
 		if ( $this->clients ) $this->clients->init_hooks();
 
-		Finance_Order_Management::instance()->init_hooks();
+		Finance_Order_Management::instance()->init_hooks($this->loader);
 
 		$this->payments = Finance_Payments::instance();
 		$this->payments->init_hooks();
 		$this->subcontract->init_hooks();
 		$this->salary->init_hooks();
 
-		add_action('multisite_connect', array($this, 'multisite_connect'));
-		add_action('multisite_validate', array($this, 'multisite_validate'));
+		$this->loader->AddAction('multisite_connect', $this, 'multisite_connect');
+		$this->loader->AddAction('multisite_validate', $this, 'multisite_validate');
 
-		AddAction("get_open_invoices", array($this, 'get_open_invoices'));
-		AddAction("get_open_trans", array($this, 'get_open_trans'));
-		AddAction("exists_invoice", array($this, 'exists_invoice'));
-		AddAction("create_receipt", array($this, 'create_receipt'));
+		$this->loader->AddAction("get_open_invoices", $this, 'get_open_invoices');
+		$this->loader->AddAction("get_open_trans", $this, 'get_open_trans');
+		$this->loader->AddAction("exists_invoice", $this, 'exists_invoice');
+		$this->loader->AddAction("create_receipt", $this, 'create_receipt');
 
 		if ((get_user_id() == 1) and defined("DEBUG_USER")) wp_set_current_user(DEBUG_USER);
 
-		Finance_Delivery::init_hooks();
+		$i = Core_Db_MultiSite::getInstance();
+		$i->AddTable("missions");
+		$i->AddTable("cities");
+		$i->AddTable("woocommerce_shipping_zones", "zone_id" );
+		$i->AddTable("woocommerce_shipping_zone_methods", "instance_id" );
+		$i->AddTable("woocommerce_shipping_zone_locations", "location_id" );
+
+
+		Finance_Delivery::init_hooks($this->loader);
 	}
 
 	function register_payment()
 	{
 //		$active_plugins = apply_filters('active_plugins', get_option('active_plugins'));
-		if(fresh_custom_payment_is_woocommerce_active()){
+		if(finance_custom_payment_is_woocommerce_active()){
 			add_filter('woocommerce_payment_gateways', array($this, 'add_other_payment_gateway'));
 
 			add_action('plugins_loaded', array($this, 'init_other_payment_gateway'));
@@ -766,7 +774,7 @@ static function get_open_site_invoices()
 	}
 
 	function install( $version, $force = false ) {
-		$this->database = new Finance_Database();
+		$this->database = new Finance_Database("Finance");
 		$this->database->install($this->version);
 	}
 
@@ -907,7 +915,7 @@ static function get_open_site_invoices()
 
 /*-- Start payment gateway--*/
 
-function fresh_custom_payment_is_woocommerce_active()
+function finance_custom_payment_is_woocommerce_active()
 {
 	$active_plugins = (array) get_option('active_plugins', array());
 

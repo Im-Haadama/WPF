@@ -19,10 +19,11 @@ function calcDelivery() {
 
         var line_total = 0;
         var vat_percent = 17; // Todo: read from settings
-        var line_vat = 0;
         var has_vat = true;
-        let id = table.rows[i].cells[0].id;
-        var order_line = id.substr(id.lastIndexOf("_") + 1);
+        let id = table.rows[i].cells[1].id;
+        id = id.substr(id.lastIndexOf("_") + 1);
+        var line_vat = document.getElementById("vat_" + id);
+        var order_line = id;
         if (order_line === "")
             order_line = table.rows[i].cells[0].firstElementChild.id.substr(4);
 
@@ -32,9 +33,12 @@ function calcDelivery() {
         basket_sum += line_total;
         document.getElementById("line_price_" + order_line).innerHTML = line_total.toString();
 
-        if (line_vat) due_vat += line_total;
+        if (line_vat) {
+            line_vat.innerHTML = Math.round(100 * line_total / (100 + vat_percent)* vat_percent) / 100;
+            due_vat += line_total;
+        }
         total_vat += line_vat;
-        total += line_total;
+        total = Math.round(100*(total + line_total)) / 100;
     }
 
     // total += parseFloat(get_value_by_name("fee"));
@@ -80,32 +84,41 @@ function delivery_save_or_edit(post_file, operation) {
     }
     let vat = 0; // Calculate in server
 
-    let request = "order_id=" + order_id + "&total=" + total;
+    let request = post_file + '?operation=' + operation + "&order_id=" + order_id + "&total=" + total;
 
     let data = [[order_id, total, vat]];
 
     for (let line_number = 1; line_number < table.rows.length; line_number++)
     {
-        let id = table.rows[line_number].cells[0].id;
+        let id = table.rows[line_number].cells[1].id;
         let order_line = id.substr(id.lastIndexOf("_") + 1);
-        // 0
-        let prod_name = encodeURI(get_value_by_name("product_name_" + order_line));
+
+        let prod_id = get_value_by_name("prod_id_" + order_line);
+        let prod_name;
+        if (null == prod_id) { // New line
+            prod_name = encodeURI(document.getElementById("product_name_" + order_line).firstElementChild.value);
+            prod_id = get_value_by_name("product_name_" + order_line);
+        } else {
+            prod_name = encodeURI(get_value_by_name("product_name_" + order_line));
+        }
+
         // 1
         let q = get_value_by_name("quantity_" + order_line);
         // 2
         let price = get_value_by_name("price_"+ order_line);
         // 3
         let line_vat = Math.round((q * price * 100) / 1.17 * 0.17) / 100;
-        // 4
-        let prod_id = 0;
+        let has_vat = get_value_by_name("has_vat_" + order_line);
+        if (! has_vat) line_vat = 0;
+
         // 5
         let quantity_ordered = get_value_by_name("quantity_ordered_" + order_line);
 
-        data.push([prod_name, q, price, line_vat, prod_id, quantity_ordered]);
+        data.push([prod_name, q, price, line_vat, prod_id, quantity_ordered, has_vat]);
         // request += "&oid=" + oid + "&q=" + q + "&price="+price;
     }
     // alert (JSON.stringify(data));
-    execute_url_post(post_file + '?operation=' + operation, JSON.stringify(data), action_back);
+    execute_url_post(request, JSON.stringify(data), action_back);
 }
 // 	    <?php if ( $edit ) {  print "is_edit = true;"; } ?>
 //
@@ -258,22 +271,27 @@ function delivery_save_or_edit(post_file, operation) {
 //         server_header.send();
 //     }
 
-function delivery_add_line(post_file, user_id)
+function delivery_add_line(post_file, user_id, add_vat, has_checkbox)
 {
     let  table = document.getElementById("del_table");
-    let id = table.rows[table.rows.length - 1].cells[0].id;
+    let id = table.rows[table.rows.length - 1].cells[1].id;
     let row_number = id.substr(id.lastIndexOf("_") + 1);
     row_number ++;
 
     let new_row = table.insertRow();
+    if (has_checkbox) new_row.insertCell(); // checkbox
     let new_cell = new_row.insertCell();
-    new_cell.innerHTML = '<input type="text" id="product_name_' + row_number + '" onchange="get_price(\'' + post_file + '\', ' + row_number + ', ' + user_id + ')"></input>';
+    new_cell.innerHTML = '<input type="text" id="product_name_' + row_number + '" list="products" onkeyup="update_list(\'' + post_file + '\', \'products\', this)" onchange="get_price(\'' + post_file + '\', ' + row_number + ', ' + user_id + ')"></input>';
     new_cell.id = "product_name_" + row_number;
     new_row.insertCell().innerHTML = '<label id="quantity_ordered_' + row_number + '">0</label>'; // ordered quantity
-    new_row.insertCell().innerHTML = '<input type="text" id="quantity_' + row_number + '" size="4"></input>';
-    new_row.insertCell().innerHTML = '<input type="text" id="price_' + row_number + '" size="4"></input>';
+    new_row.insertCell().innerHTML = '<input type="text" id="quantity_' + row_number + '" size="4" onchange="quantity_changed()"></input>'; // supplied q
+    new_row.insertCell().innerHTML = '<input type="text" id="price_' + row_number + '" size="4"></input>'; // price
+    new_row.insertCell().innerHTML = '<lable id="line_price_' + row_number + '" size="4"></lable>'; // line_price
+    if (add_vat)
+        new_row.insertCell().innerHTML = '<input type="checkbox" id="has_vat_' + row_number + '" ></input>'; // vat checkbox
 
 }
+
 function quantity_changed()
 {
     moveNextRow();
@@ -282,6 +300,32 @@ function quantity_changed()
 
 function get_price(post_file, row_number, user_id)
 {
-    let prod_name = get_value_by_name("product_name_"+row_number);
-    execute_url(post_file + '?operation=delivery_get_price&prod_name='+encodeURI(prod_name) + '&user_id=' + user_id);
+    let prod_id = get_value_by_name("product_name_"+row_number);
+    if (! (prod_id > 0)) return;
+    let obj = document.getElementById('product_name_'+row_number);
+    execute_url(post_file + '?operation=delivery_get_price&prod_id='+prod_id + '&user_id=' + user_id, delivery_update_price, obj);
+}
+
+function delivery_update_price(xmlhttp, obj)
+{
+    let my_row = obj.id.substr(obj.id.lastIndexOf("_") + 1);
+    if (xmlhttp.response.indexOf(",")) { // price, vat
+        var response = xmlhttp.response.split(",");
+        var price = response[0];
+        if (!(price > 0)) {
+            alert(response);
+            return false;
+        }
+        var vat = response[1] > 0;
+
+        if (price > 0) {
+            document.getElementById("price_" + my_row).value = price;
+            document.getElementById("quantity_" + my_row).focus();
+        }
+
+        document.getElementById("has_vat_" + my_row).checked = vat;
+    }
+    // Just price
+    document.getElementById("price_" + my_row).value = price;
+
 }

@@ -43,7 +43,7 @@ class Israel_Zones {
 	private function init_hooks() {
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
 		add_action('import_cities', array(__CLASS__, 'import_wrapper'));
-		Core_Gem::AddTable("cities");
+		Core_Gem::getInstance()->AddTable("cities");
 		add_filter('wpf_freight_cities', array($this, 'freight_cities'));
 
 	}
@@ -143,6 +143,7 @@ class Israel_Zones {
 		}
 
 		if ($id = GetParam("id")){
+			$args["edit"] = true;
 			return Core_Gem::GemElement("cities", $id, $args);
 		}
 //		$args["import_action"] = 'http://127.0.0.1/zone-editor/?operation=import'; // AddToUrl("operation", "import");

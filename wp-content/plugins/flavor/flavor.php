@@ -12,7 +12,6 @@
  * @package Fresh
  *
  */
-
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
@@ -25,6 +24,7 @@ if ( ! defined( 'FLAVOR_PLUGIN_FILE' ) ) {
 if ( ! class_exists( 'Flavor' ) ) {
 	include_once dirname( __FILE__ ) . '/includes/class-flavor.php';
 }
+
 /**
  * Main instance of Flavor.
  *
@@ -37,11 +37,13 @@ function flavor() {
 	return Flavor::instance();
 }
 
+
 // Global for backwards compatibility.
 //$GLOBALS['flavor'] = flavor();
 
 function run_flavor() {
 	$plugin = new Flavor("Flavor");
+
 	$plugin->run();
 }
 

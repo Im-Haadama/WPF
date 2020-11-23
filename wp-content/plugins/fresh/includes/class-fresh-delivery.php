@@ -46,15 +46,25 @@ class Fresh_Delivery {
 		);
 		if ($id > 0){
 			$del_info = SqlQuerySingleAssoc("select * from im_delivery where id = $id");
-//			var_dump($del_info);
 			$this->delivery_total = $del_info['total'];
 		}
 		$this->calculated = false;
 	}
 
-	static public function init_hooks()
+	static public function init_hooks($loader)
 	{
-		AddAction('update_by_customer_type', array('Fresh_Delivery', 'update_by_customer_type'));
+//		static $count = 0;
+//		if ($count >0) {
+//			print debug_trace(10);
+//			die (1);
+//		}
+		$loader->AddAction('update_by_customer_type', __CLASS__, 'Fresh_Delivery', 'update_by_customer_type');
+		$loader->Addfilter("prepare_delivery_lines", __CLASS__, 'prepare_line');
+		$loader->Addfilter("finance_show_vat", __CLASS__, 'finance_show_vat');
+		$loader->Addfilter("finance_has_vat", __CLASS__, 'finance_has_vat', 10, 2);
+		$loader->Addfilter("finance_vat", __CLASS__, 'finance_vat', 10, 2); // Show has vat in deliveries
+		$loader->AddFilter('delivery_product_price', __CLASS__, 'delivery_product_price');
+//		$count ++;
 	}
 
 	static public function update_by_customer_type()
@@ -69,10 +79,11 @@ class Fresh_Delivery {
 	public function UpdateByCustomerType()
 	{
 		$vat_precent = Fresh_Pricing::getVatPercent();
+		$db_prefix = GetTablePrefix("delivery_lines");
 
 		$user = new Fresh_Client(self::getUserId());
 		$customer_type = $user->customer_type();
-		$sql = " select id, quantity, price, prod_id, vat from im_delivery_lines " .
+		$sql = " select id, quantity, price, prod_id, vat from ${db_prefix}delivery_lines " .
 		       " where delivery_id = " .$this->getID() .
 		       " and prod_id > 0";
 		$rows = SqlQuery($sql);
@@ -90,7 +101,7 @@ class Fresh_Delivery {
 			$new_vat = Fresh_Pricing::vatFromTotal($line_total);
 			$total_vat += $new_vat;
 //			print "$prod_id $price " .  . "<br/>";
-			$sql = "update im_delivery_lines " .
+			$sql = "update ${db_prefix}delivery_lines " .
 			          "	set price = " .  $new_price .
 			          ", line_price = " . $line_total;
 
@@ -120,8 +131,6 @@ class Fresh_Delivery {
 
 		$args = [];
 		$args["fields"] = array("id", "product_name", "quantity_ordered", "quantity", "price", "vat as has_vat", "vat", "line_price");
-//		$lines = TableData("select * from im_delivery_lines where delivery_id = " . $this->getID());
-//	$result .= Core_Html::gui_table_args($lines);
 		$args["where"] = "delivery_id = " . $this->getID();
 		$args["id_field"] = "id";
 		$args["header_fields"] = array("product_name" => "Product name", "quantity_ordered" => "Quantity ordered",
@@ -168,16 +177,16 @@ class Fresh_Delivery {
 		$line_id = $line_ids[0];
 		$sql                                 = "SELECT order_item_name FROM wp_woocommerce_order_items WHERE order_item_id = " . $line_id;
 		$prod_name                           = SqlQuerySingleScalar( $sql );
-		$quantity_ordered                    = Fresh_Packing::get_order_itemmeta( $line_ids, '_qty' );
-		$unit_ordered                        = Fresh_Packing::get_order_itemmeta( $line_id, 'unit' );
-		$prod_comment = Fresh_Packing::get_order_itemmeta($line_id, 'product_comment');
+		$quantity_ordered                    = Finance_Delivery::get_order_itemmeta( $line_ids, '_qty' );
+		$unit_ordered                        = Finance_Delivery::get_order_itemmeta( $line_id, 'unit' );
+		$prod_comment = Finance_Delivery::get_order_itemmeta($line_id, 'product_comment');
 
-		$order_line_total                    = round( Fresh_Packing::get_order_itemmeta( $line_ids, '_line_total' ), 1);
+		$order_line_total                    = round( Finance_Delivery::get_order_itemmeta( $line_ids, '_line_total' ), 1);
 		$this->order_total                   += $order_line_total;
 		$line[ eDeliveryFields::order_line ] = $order_line_total;
-		$prod_id                             = Fresh_Packing::get_order_itemmeta( $line_id, '_product_id' );
+		$prod_id                             = Finance_Delivery::get_order_itemmeta( $line_id, '_product_id' );
 		$P                                   = new Fresh_Product( $prod_id );
-		$line_price       = Fresh_Packing::get_order_itemmeta( $line_ids, '_line_total' );
+		$line_price       = Finance_Delivery::get_order_itemmeta( $line_ids, '_line_total' );
 
 		$price = round($line_price / $quantity_ordered, 2);
 //		$price = Fresh_Pricing::get_price_by_type( $prod_id, $client_type = "", $quantity = 1
@@ -186,7 +195,6 @@ class Fresh_Delivery {
 			$quantity_ordered = "";
 			$unit_array       = explode( ",", $unit_ordered );
 			$unit_q           = $unit_array[1];
-			// print "unit: " ; var_dump($unit) ; print "<br/>";
 		}
 		return $price;
 	}
@@ -227,7 +235,6 @@ class Fresh_Delivery {
 		$message .= "<Br> להלן פרטי המשלוח";
 
 		$message .= $this->delivery_text( Finance_DocumentType::delivery, Finance_DocumentOperation::show );
-		// file_get_contents("http://store.im-haadama.co.il/fresh/delivery/get-delivery.php?id=" . $del_id . "&send=1");
 
 		$message .= "<br> היתרה המעודכנת במערכת " . $C->balance();
 
@@ -297,6 +304,8 @@ class Fresh_Delivery {
 	}
 
 	function delivery_text( $document_type = Finance_DocumentType::delivery, $operation = Finance_DocumentOperation::show, $margin = false ) {
+		$db_prefix = GetTablePrefix("delivery_lines");
+
 		$this->delivery_total = 0;
 		$header_fields = array(
 			"בחר",
@@ -412,7 +421,7 @@ class Fresh_Delivery {
 		if ( $this->ID > 0 and $document_type == Finance_DocumentType::delivery) { // load delivery
 			$delivery_loaded = true;
 			$sql             = 'select id, product_name, round(quantity, 1), quantity_ordered, vat, price, line_price, prod_id ' .
-			                   'from im_delivery_lines ' .
+			                   "from ${db_prefix}delivery_lines " .
 			                   'where delivery_id=' . $this->ID . " order by 1";
 
 			$result = SqlQuery( $sql );
@@ -471,11 +480,11 @@ class Fresh_Delivery {
 					$basket_header = array();
 					for ($i = 0; $i < eDeliveryFields::max_fields; $i++)	$basket_header[$i] = "";
 					$basket_header[eDeliveryFields::product_name] = $b->getName();
-					$basket_header[eDeliveryFields::order_q]      = Fresh_Packing::get_order_itemmeta( $order_item_ids, '_qty' );
+					$basket_header[eDeliveryFields::order_q]      = Finance_Delivery::get_order_itemmeta( $order_item_ids, '_qty' );
 					$basket_header[eDeliveryFields::price]        = $b->getPrice();
 					$basket_header[eDeliveryFields::line_type]    = "bsk";
 					$basket_header[eDeliveryFields::product_id]   = $prod_id;
-					$basket_header[eDeliveryFields::client_comment] = Fresh_Packing::get_order_itemmeta($order_item_ids[0], 'product_comment');
+					$basket_header[eDeliveryFields::client_comment] = Finance_Delivery::get_order_itemmeta($order_item_ids[0], 'product_comment');
 
 
 					$data .= Core_Html::gui_row($basket_header, ++$this->line_number, $show_fields, $sums, $this->delivery_fields_names, $style);
@@ -484,7 +493,7 @@ class Fresh_Delivery {
 					$data .= Core_Html::gui_row( $line, ++$this->line_number, $show_fields, $sums, $this->delivery_fields_names, $style );
 				}
 				if ( $expand_basket && $b->is_basket() ) {
-					$quantity_ordered = Fresh_Packing::get_order_itemmeta( $order_item_ids, '_qty' ); //, $client_type, $operation, $data );
+					$quantity_ordered = Finance_Delivery::get_order_itemmeta( $order_item_ids, '_qty' ); //, $client_type, $operation, $data );
 
 					$this->expand_basket( $prod_id, $quantity_ordered, 0, $show_fields, $document_type,
 						$order_item_ids, $client_type, $operation, $data );
@@ -995,7 +1004,7 @@ class Fresh_Delivery {
 	 */
 	public function getDeliveryDueVat(): float {
 		if (! $this->calculated)
-			$this->delivery_text( FreshDocumentType::delivery, Fresh_DocumentOperation::show );
+			$this->delivery_text( Finance_DocumentType::delivery, Finance_DocumentOperation::show );
 		return $this->delivery_due_vat;
 	}
 
@@ -1066,4 +1075,48 @@ class Fresh_Delivery {
 		return true;
 	}
 
+	static function link($id)
+	{
+		return "/wp-admin/admin.php?page=deliveries&delivery_id=$id";
+	}
+
+	static function prepare_line($row)
+	{
+		$prod_id = $row['prod_id'];
+		if (null == $row['has_vat']) {
+			if ( $prod_id ) {
+				$p              = new Fresh_Product( $prod_id );
+				$row['has_vat'] = ( $p->isFresh() ? false : true );
+			} else {
+				$row['has_vat'] = true;
+			}
+		}
+		return $row;
+	}
+
+	static function finance_has_vat($has_vat, $prod_id)
+	{
+		$p = new Fresh_Product($prod_id);
+		return $p->getVatPercent() > 0;
+	}
+
+	static function finance_show_vat()
+	{
+		return 1;
+	}
+
+
+	static function delivery_product_price($prod_id)
+	{
+		$user_id = GetParam("user_id", true);
+		$u = new Fresh_Client($user_id);
+		$p = new Fresh_Product($prod_id);
+		$vat = ! $p->isFresh();
+		return Fresh_Pricing::get_price_by_type($prod_id, $u->customer_type()) . ",$vat";
+	}
+
+	static function finance_vat()
+	{
+		return 1;
+	}
 }

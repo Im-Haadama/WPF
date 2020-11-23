@@ -123,7 +123,7 @@ function greeting( $args = null, $force_login = false )
     // date_default_timezone_set('Asia/Jerusalem'); The time zone should be set generally in wordpress. See wordpress settings.
 	$data .= date_i18n("H:i   " );
 	//logout link
-    $data .= '<a href="'.wp_logout_url( home_url()).'" class="join-button">'."Logout".'</a>' . Core_Html::Br();
+    $data .= '<a href="'.wp_logout_url( home_url()).'" class="join-button">'."Logout".'</a>';
 	// Would go to dropdown.
 	// $data .= Core_Html::GuiHyperlink("logout", get_param(1) . "?operation=logout&back=" . encodeURIComponent(get_url()));
 

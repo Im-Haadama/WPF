@@ -215,7 +215,10 @@ class Finance_Clients
 		}
 		$payment_info_id = SqlQuerySingleScalar( "select id from im_payment_info where email = " . QuoteText($u->get_customer_email()));
 		if ($payment_info_id) {
-			$args = array("post_file" => Flavor::getPost(), "edit"=>true);
+			$args = array("post_file" => Flavor::getPost(), "edit"=>true,
+			              "fields"=>array("id", "card_number", "exp_date_month", "exp_date_year", "id_number"),
+			              "edit_cols"=> array("card_number"=>1, "card_type"=>1, "exp_date_month"=>1, "id_number"=>1, "exp_date_year"=>1));
+
 			$credit_info = Core_Gem::GemElement( "payment_info", $payment_info_id, $args );
 		} else {
 			$args["post_file"] = Finance::getPostFile();
@@ -238,7 +241,6 @@ class Finance_Clients
 
 		$result .= '<div id="logging"></div>';
 
-		$args   = array( "post_file" => Finance::getPostFile());
 		$result .= Finance_Client_Views::show_trans( $customer_id, TransView::admin, $args );
 
 		if (class_exists('Finance_Yaad'))
@@ -353,6 +355,7 @@ class Finance_Clients
 
 	static function CreateDocument( $type, $ids, $customer_id, $email, $date, $cash = 0, $bank = 0, $credit = 0, $check = 0, $subject = null )
 	{
+		$db_prefix = GetTablePrefix("delivery_lines");
 		if ( ! ( $customer_id > 0 ) )
 			throw new Exception( "Bad customer id" . __CLASS__);
 
@@ -404,7 +407,7 @@ class Finance_Clients
 		$total_lines = 0;
 		foreach ( $ids as $del_id ) {
 			$sql = 'select product_name, quantity, vat, price, line_price '
-			       . ' from im_delivery_lines where delivery_id = ' . $del_id;
+			       . " from ${db_prefix}delivery_lines where delivery_id = $del_id";
 
 			$result = SqlQuery( $sql );
 

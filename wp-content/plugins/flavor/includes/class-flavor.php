@@ -146,7 +146,7 @@ class Flavor {
 		add_action( 'after_setup_theme', array( $this, 'include_template_functions' ), 11 );
 		add_action( 'init', array( $this, 'init' ), 0 );
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
-		add_action('wp', 'unlogged_guest_posts_redirect');
+//		add_action('wp', 'unlogged_guest_posts_redirect');
 		add_action('data_save_new', array('Core_Data', 'data_save_new'));
 		add_action('admin_menu', array($this, 'admin_menu'));
 
@@ -156,16 +156,13 @@ class Flavor {
 		$i = Core_Db_MultiSite::getInstance();
 //		foreach (array("multisite", "missions", "woocommerce_shipping_zones") as $table)
 		$i->AddTable("multisite");
-		$i->AddTable("missions");
-		$i->AddTable("woocommerce_shipping_zones", "zone_id" );
-		$i->AddTable("woocommerce_shipping_zone_methods", "instance_id" );
-		$i->AddTable("woocommerce_shipping_zone_locations", "location_id" );
 		$i->AddTable("options", "option_id" );
 
 		AddAction( 'admin_enqueue_scripts', array($this, 'admin_scripts' ));
 		Core_Gem::getInstance()->init_hooks($this->loader);
 		Flavor_Org_Views::instance()->init_hooks($this->loader);
 		Flavor_Mission::init_hooks();
+		Core_Data::init_hooks($this->loader);
 		add_action( 'admin_notices', array($this, 'admin_notices') );
 	}
 
@@ -182,14 +179,16 @@ class Flavor {
 		if (TableExists("mission_types"))
 			self::AddTop('missions',"Missions", '/wp-admin/admin.php?page=missions');
 
-		self::AddTop('orders', 'Orders', '/wp-admin/edit.php?post_type=shop_order');
+		self::AddTop('orders', 'Orders', '/wp-admin/edit.php?post_type=shop_order&post_status=wc-processing');
+		self::AddTop('orders_all', 'All orders', '/wp-admin/edit.php?post_type=shop_order', 'orders');
+		self::AddTop('orders_print', 'Print', '/wp-admin/admin.php?page=printing', 'orders');
 	}
 
-	static function AddTop($id, $title, $href)
+	static function AddTop($id, $title, $href, $parent = null)
 	{
 		$menu = Core_Admin_Menu::instance();
 
-		$menu->AddTop($id, __($title, "e-fresh"), $href);
+		$menu->AddTop($id, __($title, "e-fresh"), $href, $parent);
 	}
 
 	public static function add_settings_tab( $settings_tabs ) {
@@ -651,8 +650,8 @@ class Flavor {
 
 	static function getPost()
 	{
-		return plugin_dir_url(dirname(__FILE__)) . "post.php";
-//			"/wp-content/plugins/flavor/post.php";
+//		return plugin_dir_url(dirname(__FILE__)) . "post.php"; // Physical file.
+		return "/wp-content/plugins/flavor/post.php";
 	}
 
 	static public function SettingPage()

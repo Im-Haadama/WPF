@@ -79,8 +79,8 @@ class Core_Html {
 	static function GuiCheckbox($id, $value = false, $args = array())
 	{
 		$events = GetArg($args, "events", null);
-		$class = GetArg($args, "checkbox_class", "checkbox");
-//		if ($class == "checkbox") {
+		$class = GetArg($args, "checkbox_class", "checkbox_default");
+//		if ($class == "checkbox_default") {
 //			print debug_trace(10);
 //			die ("1");
 //		}
@@ -96,6 +96,8 @@ class Core_Html {
 			}
 		}
 
+		if (false === GetArg($args, "edit", null))
+			$data .= " disabled='disabled' ";
 		$data .= ">";
 
 		return $data;
@@ -359,10 +361,19 @@ class Core_Html {
 	 * @param $class
 	 * @param null $value
 	 * @param null $events
+	 * @deprecated user GuiInputDate
 	 *
 	 * @return string
 	 */
 	static function gui_input_date( $id, $class, $value = null, $events = null ) {
+		return self::GuiInputDate($id, $value, array("class"=>$class, "events"=>$events));
+	}
+
+	static function GuiInputDate($id, $value, $args)
+	{
+		$class = GetArg($args, "class", null);
+		$events = GetArg($args, "events", null);
+
 		$data = '<input type="date" id="' . $id . '" ';
 		// 09/09/2019. It's ok to show null - not selected value. E.g - task date.
 		//	if ( is_null( $value ) ) {
@@ -392,6 +403,20 @@ class Core_Html {
 
 		//    print $data;
 		return $data;
+	}
+
+	static function GuiShowDynamicDateTime( $id, $value = null, $args = null ) {
+//		var_dump(SqlQuerySingleAssoc("select * from im_tasklist where id = 6282")); die (1);
+
+		$delta = time() - strtotime($value);
+//		print "del=$delta $value<br/>";
+		if ($delta < 10) $value = ETranslate("Seconds ago");
+		else if ($delta < 3600) $value = round($delta/60) . " " . ETranslate("minutes ago");
+		else if ($delta < 86400) $value = get_date_from_gmt(  $value,  'G:i' );
+		else if ($delta < (86400 * 7)) $value = get_date_from_gmt(  $value,  'l G:i' );
+		else if ($delta < (86400 * 365)) $value = get_date_from_gmt(  $value,  'd-m' );
+
+		return self::GuiLabel($id, $value, $args);
 	}
 
 	/**
@@ -950,7 +975,8 @@ class Core_Html {
 			$data .= ' id="' . $id . '"';
 		}
 		if ( $style ) $data .= "style=\"$style\"";
-		$data .= " border=\"1\"";
+		$border = GetArg($args, "border", 1);
+		if ($border) $data .= " border=\"$border\"";
 		$data .= ">";
 
 		$action_line = null;
@@ -973,7 +999,7 @@ class Core_Html {
 //							$data .= " width=" . $args["col_width"][ $col_id ];
 						}
 						$data .= ">";
-						$data .= __($cell, Flavor::getTextDomain());
+						$data .= ETranslate($cell);
 						$data .= "</td>";
 					}
 				} else {
@@ -1531,9 +1557,16 @@ class Core_Html {
 	static function gui_input_by_type( $input_name, $type = null, $args = null, $data = null ) {
 		if (strstr($data, "<input")) return $data;
 		$events = GetArg( $args, "events", null );
+
 		switch ( substr( $type, 0, 3 ) ) {
+			case 'tin':
+				if ($type == 'tinyint(1)')
+					$value = Core_Html::GuiCheckbox( $input_name, $data, array("events"=>$events) );
+				else
+					$value = Core_Html::GuiInput( $input_name, $data, $args ); //gui_input( $input_name, $data, $field_events, $row_id );
+				break;
 			case 'dat':
-				$value = Core_Html::gui_input_date( $input_name, null, $data, $events );
+				$value = Core_Html::GuiInputDate( $input_name,  $data, array("events"=>$events ));
 				break;
 			case 'var':
 			case 'med':
@@ -1740,7 +1773,6 @@ class Core_Html {
 		$button_args["class"] = $btn_class;
 
 		$selected_tab = GetArg($args, "st_$id", 0);
-//		print "st=$selected_tab<br/>";
 		$all_loaded = GetArg($args, "tabs_load_all", false);
 		if ($all_loaded) $selected_tab = null;
 
@@ -1762,8 +1794,6 @@ class Core_Html {
 			if ($all_loaded and ($key == 0)) $div_args['style'] = 'display:block';
 			// Or is selected.
 			if ($selected_tab == $name) $div_args['style'] = 'display:block';
-//			$div_args["style"] = ((($selected_tab == $name) or $all_loaded) ? 'display: block' : "display: none");
-//			print "$name ds=" . $div_args["style"] . "<br/>";
 
 			if ($all_loaded or ($selected_tab == $name)){
 				$contents .= Core_Html::GuiDiv($name, $tab[2], $div_args);
@@ -1774,7 +1804,7 @@ class Core_Html {
 			if ($all_loaded)
 				$button_args["events"] = "onclick=\"selectTab(event, '$name', '$div_class', '$btn_class')\"";
 			else
-				$button_args["events"] = "onclick=\"window.location.href = '" . AddToUrl("st_$id", $tab[0]) . "'\"";
+				$button_args["events"] = "onclick=\"window.location.href = '" . AddParamToUrl(GetUrl(1), "st_$id", $tab[0]) . "'\"";
 
 			$result .= Core_Html::GuiButton("btn_tab_$name", $display_name, $button_args);
 		}

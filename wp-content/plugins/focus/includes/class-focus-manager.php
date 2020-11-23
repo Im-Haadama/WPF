@@ -39,7 +39,6 @@ class Focus_Manager {
 
 	function create_tasks( $freqs = null, $verbose = false, $default_owner = 1 )
 	{
-		self::$logger->Info("freq: " . $freqs);
 		$debug = 0;
 		if ($debug == 2) $verbose = 1;
 

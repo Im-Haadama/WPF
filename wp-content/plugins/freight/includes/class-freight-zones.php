@@ -9,7 +9,7 @@ class Freight_Zones {
 		// print "is_master=$isMaster<br/>";
 
 		if (! $isMaster) {
-			Fresh_Delivery_Manager::sync_from_master();
+			Finance_Delivery_Manager::sync_from_master();
 		}
 
 		$operation = null;

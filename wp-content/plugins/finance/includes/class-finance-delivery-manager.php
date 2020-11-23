@@ -1,7 +1,7 @@
 <?php
 
 
-class Fresh_Delivery_Manager
+class Finance_Delivery_Manager
 {
 	protected static $_instance = null;
 	private $logger;
@@ -22,6 +22,7 @@ class Fresh_Delivery_Manager
 		AddAction("delivery_send_mail", array($this, "mail_delivery"));
 		add_action('admin_menu',array($this, 'admin_menu'));
 		add_action('admin_notices', array($this, 'delivered_previous_days'));
+		add_filter('delivery_args', array($this, 'delivery_args'));
 	}
 
 	public static function instance() {
@@ -180,7 +181,7 @@ and curdate() > order_mission_date(id)" );
 		}
 
 		foreach ( $ids as $id ) {
-			$order = new Fresh_Order( $id );
+			$order = new Finance_Order( $id );
 			if (! $order->justDelivery()) {
 				if ($debug) MyLog("adding $id");
 				$order->delivered( $message );
@@ -193,6 +194,13 @@ and curdate() > order_mission_date(id)" );
 
 			printf( '<div class="%1$s"><p>%2$s</p></div>', esc_attr( $class ), esc_html( $result ) );
 		}
+	}
+	function delivery_args($args)
+	{
+		array_push($args["fields"], 'has_vat');
+		$args["edit_cols"]['has_vat'] = true;
+		$args["header_fields"]['has_vat'] = "Vat";
+		return $args;
 	}
 }
 

@@ -113,7 +113,7 @@ where `l`.`supply_id` > 393
 group by 1;");
 
 		SqlQuery("create OR REPLACE view i_out as select `dl`.`prod_id` AS `prod_id`, round(sum(`dl`.`quantity`), 1) AS `q_out`
-from `im_delivery_lines` `dl`
+from `${db_prefix}delivery_lines` `dl`
 where `dl`.`delivery_id` > 503
 group by 1
 order by 1;");
@@ -127,19 +127,16 @@ order by 1;");
 		$current = $this->checkInstalled( "tables");
 		$db_prefix = GetTablePrefix();
 
-		if ($current == '1.1' and $version == '1.2')
-		{
-			return SqlQuery("alter table im_payment_info add user_id integer(11)") and
-			self::UpdateInstalled("tables", $version);
+		if ($current) {
+			switch ( $current ) {
+				case '1.1':
+					return SqlQuery("alter table im_payment_info add user_id integer(11)") and
+					       self::UpdateInstalled("tables", $version);
+			}
 		}
 		if ($current == $version and ! $force) return true;
 
 		SqlQuery("alter table im_supplier_price_list add product_id integer(11)");
-
-//		SqlQuery("alter table im_payments
-//		add mail_delivery bit not null default b'0'");
-
-		self::payment_info_table();
 
 		SqlQuery("alter table ${db_prefix}mission_types add default_price float");
 
@@ -349,7 +346,7 @@ charset=utf8;
 
 ");
 
-		self::UpdateInstalled("Fresh", "tables", $version);
+		self::UpdateInstalled( "tables", $version);
 	}
 
 	function CreateFunctions($version, $force = false)
@@ -369,7 +366,7 @@ select sum(amount) into _amount from ${db_prefix}business_info
 where part_id = _supplier_id
 and date <= _date
 and is_active = 1
-and document_type in (" . FreshDocumentType::bank . "," . FreshDocumentType::invoice . "," . FreshDocumentType::invoice_refund . "); 
+and document_type in (" . Finance_DocumentType::bank . "," . Finance_DocumentType::invoice . "," . Finance_DocumentType::invoice_refund . "); 
 
 return round(_amount, 0);
 END;";
@@ -605,7 +602,7 @@ BEGIN
 
    return _name;
  END" );
-		self::UpdateInstalled("Fresh", "functions", $version);
+		self::UpdateInstalled( "functions", $version);
 	}
 
 	/* temp: convert supplier name to id in products */

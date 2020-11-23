@@ -185,7 +185,7 @@ function report_error(response)
 {
     if (response.indexOf("failed") !== -1 ||
         (response.indexOf("Error") !== -1)){
-        alert (response.substr(0, response.lastIndexOf("failed")));
+        alert (response);
         return true;
     }
     return false;
@@ -392,4 +392,11 @@ function moveNextRow() {
             // event.stopPropagation();
         }
     }
+}
+
+function next_page(xmlhttp, page) {
+    if (xmlhttp.response.indexOf("failed") === -1 ) {
+        let new_id = xmlhttp.response;
+        window.location = add_param_to_url(page, 'new', new_id);
+    }  else alert(xmlhttp.response);
 }

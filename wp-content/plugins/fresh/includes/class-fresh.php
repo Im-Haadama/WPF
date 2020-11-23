@@ -25,7 +25,7 @@ class Fresh {
 	 *
 	 * @var string
 	 */
-	public $version = '1.3';
+	public $version = '1.4';
 
 	private $plugin_name;
 
@@ -102,44 +102,6 @@ class Fresh {
 		print "Fresh";
 	}
 
-	static function mission_print_wrap()
-	{
-		$id = GetParam("mission_id", true);
-		Fresh::instance()->mission_print($id);
-	}
-
-	static function printing()
-	{
-		if ($operation = GetParam("operation", false, null)) {
-			print apply_filters($operation, null);
-			return;
-		}
-		$sql = 'SELECT posts.id as id'
-		       . ' FROM `wp_posts` posts'
-		       . " WHERE post_status LIKE '%wc-processing%' order by 1";
-
-		$result = SqlQuery( $sql );
-
-		$missions = array();
-		while ( $row = SqlFetchAssoc( $result ) ) {
-			$id         = $row["id"];
-//			print "id=$id<br/>";
-			$o = new Fresh_Order($id);
-			$mission_id = $o->getMission();
-			if ( ! in_array( $mission_id, $missions ) ) {
-//				print "adding $mission_id<br/>";
-				if ($mission_id) array_push( $missions, $mission_id );
-			}
-		}
-		foreach ( $missions as $mission ) {
-//			print "mid=$mission<b<!---->r/>";
-			$m = new Mission($mission);
-			print Core_Html::GuiHyperlink(  $m->getMissionName(), AddParamToUrl(Fresh::getPost(), array("operation" => "mission_print", "mission_id" => $mission )));
-			print "<br/>";
-		}
-//			printCore_Html::GuiHyperlink( "אספקות", "print.php?operation=supplies" );
-	}
-
 	/**
 	 * WooCommerce Constructor.
 	 */
@@ -149,10 +111,11 @@ class Fresh {
 		$this->plugin_name = $plugin_name;
 		$this->define_constants();
 		$this->includes(); // Loads class autoloader
-		$this->loader = new Fresh_Loader();
+		$this->loader = Core_Loader::instance();
 		$this->auto_loader = new Core_Autoloader(FRESH_ABSPATH);
+		$this->loader = Core_Loader::instance();
 
-		$this->init_hooks();
+		$this->init_hooks($this->loader);
 
 		do_action( 'fresh_loaded' );
 	}
@@ -162,7 +125,7 @@ class Fresh {
 	 *
 	 * @since 2.3
 	 */
-	private function init_hooks() {
+	private function init_hooks($loader) {
 	    // Admin scripts and styles. Todo: Check if needed.
 		add_action('admin_enqueue_scripts', array($this, 'admin_scripts'));
 
@@ -235,21 +198,20 @@ class Fresh {
 		$orders = new Fresh_Order_Management( $this->get_plugin_name(), $this->get_version() );
 		$inventory = new Fresh_Inventory( $this->get_plugin_name(), $this->get_version(), self::getPost());
 
-		$this->loader->add_action( 'wp_enqueue_scripts', $orders, 'enqueue_scripts' );
-		$this->loader->add_action( 'admin_enqueue_scripts', $inventory, 'admin_scripts' );
+		$this->loader->AddAction( 'wp_enqueue_scripts', $orders, 'enqueue_scripts' );
+		$this->loader->AddAction( 'admin_enqueue_scripts', $inventory, 'admin_scripts' );
 
 		Fresh_Packing::init_hooks();
 //		Fresh_Suppliers::init_hooks();
 		Fresh_Order_Management::instance()->init_hooks();
 		Fresh_Catalog::init_hooks();
 		Fresh_Client::init_hooks();
-		Fresh_Delivery::init_hooks();
+		Fresh_Delivery::init_hooks($this->loader);
 		Fresh_Client_Views::init_hooks();
-		Fresh_Bundles::instance()->init_hooks();
+		Fresh_Bundles::instance()->init_hooks($loader);
 		Fresh_Views::init_hooks();
 
 		add_action('wp_enqueue_scripts', array($this, 'remove_add'), 2222);
-		add_filter('mission_print', array($this, 'mission_print_wrap'));
 
 //		add_filter('editable_roles', 'edit_roles');
 		// if (get_user_id() == 1) wp_set_current_user(474);
@@ -421,12 +383,7 @@ class Fresh {
 		/**
 		 * Class autoloader.
 		 */
-		require_once FRESH_INCLUDES . 'class-fresh-autoloader.php';
 		require_once FLAVOR_INCLUDES_ABSPATH . 'core/core-functions.php';
-//
-//		require_once FLAVOR_INCLUDES_ABSPATH . 'core/fund.php';
-//		require_once FLAVOR_INCLUDES_ABSPATH . 'core/data/sql.php';
-//		require_once FLAVOR_INCLUDES_ABSPATH . 'core/wp.php';
 
 		/**
 		 * Interfaces.
@@ -439,7 +396,7 @@ class Fresh {
 		/**
 		 * Core classes.
 		 */
-		include_once FRESH_INCLUDES . 'class-fresh-shortcodes.php';
+//		include_once FRESH_INCLUDES . 'class-fresh-shortcodes.php';
 
 		/**
 		 * Data stores - used to store and retrieve CRUD object data from the database.
@@ -537,7 +494,7 @@ class Fresh {
 
 		// Set up localisation.
 		$this->load_plugin_textdomain();
-		$this->delivery_manager = new Fresh_Delivery_Manager();
+		$this->delivery_manager = new Finance_Delivery_Manager();
 		$this->suppliers = new Fresh_Suppliers();
 		$this->supplies = new Fresh_Supplies();
 		$this->supplier_balance = Fresh_Supplier_Balance::instance();
@@ -694,71 +651,6 @@ class Fresh {
 			$html .= '</form>';
 		}
 		return $html;
-	}
-
-	function mission_print( $mission_id_filter = null )
-	{
-		$sql = 'SELECT posts.id as id, order_user(id) as user_id' // , order_is_group(id) as is_grouped
-		       . ' FROM `wp_posts` posts'
-		       . " WHERE post_status LIKE '%wc-processing%' order by 1";
-
-		$grouped_orders = array();
-		$result         = SqlQuery( $sql );
-		print Core_Html::HeaderText();
-		print "<style>";
-		print "@media print {";
-		print "h1 {page-break-before: always;}";
-		print "}";
-		print "</style>";
-
-		$orders = array();
-		$start  = null;
-		$end    = null;
-
-		while ( $row = SqlFetchAssoc( $result ) ) {
-			$id         = $row["id"];
-			$is_grouped = false; // $row["is_grouped"];
-			$user_id    = $row["user_id"];
-			$o = new Fresh_Order($id);
-
-			$mission_id = $o->getMission();
-			if ( $mission_id ) {
-				$mission = Mission::getMission( $mission_id );
-				$start   = $mission->getStartAddress();
-				$end     = $mission->getEndAddress();
-			}
-			if ( isset( $mission_id_filter ) and $mission_id != $mission_id_filter ) {
-				continue;
-			}
-			if ( $is_grouped ) {
-				if ( ! array_key_exists( $user_id, $grouped_orders ) ) {
-					$grouped_orders[ $user_id ] = array();
-					array_push( $orders, $id );
-				}
-				array_push( $grouped_orders[ $user_id ], $id );
-			} else {
-				array_push( $orders, $id );
-			}
-		}
-//	$path_orders = array();
-		// find_route_1( $node, $rest, &$path, $print = false, $end ) {
-
-		// find_route_1( $start, $orders, $path_orders, false, $end );
-		foreach ( $orders as $id ) {
-			update_post_meta( $id, "printed", 1 );
-			$O       = new Fresh_Order( $id );
-			$user_id = $O->getCustomerId();
-			if ( array_key_exists( $user_id, $grouped_orders ) ) {
-				print $O->infoBox( true, null, $grouped_orders[ $user_id ][0] );
-				$d = Delivery::CreateFromOrder( $grouped_orders[ $user_id ] );
-				$d->PrintDeliveries( ImDocumentType::delivery, ImDocumentOperation::collect );
-
-			} else {
-				print $O->infoBox( false );
-				$D = Fresh_Delivery::CreateFromOrder( $id );
-				$D->PrintDeliveries( Finance_DocumentType::delivery, Finance_DocumentOperation::collect, 0);
-			}
-		}
 	}
 
 	public function fresh_quantity_handler() {

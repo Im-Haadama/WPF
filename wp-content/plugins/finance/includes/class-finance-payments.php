@@ -67,7 +67,7 @@ class Finance_Payments {
 
 	function init_hooks()
 	{
-		Core_Gem::AddTable("payments");
+		Core_Gem::getInstance()->AddTable("payments");
 		AddAction("update_payment_method", array($this, 'update_payment_method'));
 		add_action('init', array($this, 'insert_payment_info_wrap'), 10, 1);
 		add_action('admin_init', array($this, 'wp_payment_list_admin_script'));

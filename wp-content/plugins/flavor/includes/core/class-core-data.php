@@ -17,29 +17,14 @@ class Core_Data
 	public function __construct() {
 	}
 
+	static function init_hooks($loader)
+	{
+		$loader->AddAction("data_auto_list", __CLASS__, "data_auto_list");
+	}
+
 	static function handle_operation( $operation )
 	{
 		switch ($operation){
-			case "data_auto_list":
-				$prefix = GetParam("prefix", true);
-
-				// Todo: add in classes
-				$lists = array("products" => array("table" => "im_products", "field_name" =>'post_title', "include_id" => 0, "id_field" => "ID"),
-				               "products_w_drafts" => array("table" => "im_products_w_drafts", "field_name" =>'post_title', "include_id" => 0, "id_field" => "ID"),
-				"tasks" => array("table"=>"im_tasklist", "field_name" => "task_title", "include_id" => 1, "id_field" => "id", "query" => " status = 0"),
-				"users" => array("table" => "wp_users", "field_name" => "display_name", "id_field" => "ID"),
-					"categories" => array("table"=>"im_categories", "include_id" => 0, "id_field"=>"term_id", "field_name" => "name"));
-
-				$list = GetParam("list", true);
-				if (! isset($lists[$list])) die ("Error: unknown list " . $list);
-				$table_name = $lists[$list]["table"];
-				$field = $lists[$list]["field_name"];
-
-				$args = $lists[$list];
-				$args["datalist"] = $list . "_list";
-
-				print Core_Data::auto_list($table_name, $field, $prefix, $args);
-				return true;
 			case "data_update":
 				$table_name = GetParam("table_name", true);
 				return self::data_update($table_name);
@@ -101,7 +86,7 @@ class Core_Data
 	{
 		$row_id = intval($row_id);
 		$db_prefix = GetTablePrefix($table_name);
-		if (! in_array(SqlTableFields($table_name), "is_active")) return true;
+		if (! in_array("is_active", SqlTableFields($table_name))) return true;
 
 		return SqlQuery("update ${db_prefix}$table_name set is_active = $active where id = $row_id");
 	}
@@ -232,8 +217,6 @@ class Core_Data
 		$query = GetArg($args, "query", null); 	if ($query) $args["sql"] .= " and " . $query;
 		$args["field"] = $field;
 		$args["include_id"] = $include_id;
-
-		print $args["sql"];
 
 		$data .= Core_Html::TableDatalist($datalist, $table_name, $args);
 
@@ -376,6 +359,8 @@ class Core_Data
 		$prepare_plug = GetArg($args, "prepare_plug", null);
 		if (is_callable($prepare_plug)) $row = call_user_func($prepare_plug, $row, $args);
 
+		$row = apply_filters("prepare_$table_name", $row);
+
 		$row_data = array();
 
 		if (! is_array($row))
@@ -438,8 +423,7 @@ class Core_Data
 //						die(1);
 //					}
 					if ($drill) {
-						$operation = GetArg($args, "drill_operation", "show_archive");
-						$value = Core_Html::GuiHyperlink($value, AddToUrl(array( $key => $orig_data, "operation" => $operation)), $args);
+						$value = Core_Html::GuiHyperlink($value, AddToUrl(array( $key => $orig_data)), $args);
 					}
 					break;
 				}
@@ -447,27 +431,30 @@ class Core_Data
 				/// 5/9/2019 Change!! edit_cols by default is to edit. if it set, don't edit.
 				/// 23/9/2019  isset($edit_cols[$key]) - set $args["edit_cols"][$key] for fields that need to be edit.
 				if ($edit){
+					// Copy the global args to field args. And than handle specific col args.
+					$field_args = $args;
+					if (isset($args["size"]) and is_array($args["size"]) and isset($args["size"][$key])) $field_args["size"] = $args["size"][$key];
+					if (isset($args["events"])) $field_args["events"] = $args["events"];
+
 					if (! $key or $key == "id")	continue;
-//					if ($field_events) $args["events"] = $field_events;
-					if ( $table_name ) {
-						if (isset($args["sql_fields"])) {
-							$type = SqlField($args["sql_fields"], $key);
-							$fields_args = $args;
-							if ($edit_cols and (isset($edit_cols[$key]) and $edit_cols[$key]))
-								$field_args["edit"] = true; // Not needed. Just for clarity.
-							else
-								$field_args["edit"] = false;
-							$field_args["events"] = $field_events;
-							// Not tested:
-							//							if (isset($args['styles']) and is_array($args['styles']))
-							//								$args['style'] = (isset($args['styles'][$key]) ? $args['styles'][$key] : null);
-							$value = Core_Html::gui_input_by_type($input_name, $type, $field_args, $value);
+					// Not tested:
+					//							if (isset($args['styles']) and is_array($args['styles']))
+					//								$args['style'] = (isset($args['styles'][$key]) ? $args['styles'][$key] : null);
+//							print "edit $key " . $field_args["edit"] . "<br/>";
+					if (! $edit_cols or (isset($edit_cols[$key]) and $edit_cols[$key])) {
+						if ( $table_name or isset($args["types"][$key])) { // Create by type
+							if ( isset( $args["sql_fields"] ) ) {
+								$type = SqlField( $args["sql_fields"], $key );
+							} else {
+								$type = $args["types"][ $key ];
+							}
+//							$field_args["checkbox_class"] = $args["checkbox_class"];
+							$value = Core_Html::gui_input_by_type( $input_name, $type, $field_args, $value );
+						} else {
+							$value = Core_Html::GuiInput( $input_name, $data, $field_args ); //gui_input( $key, $data, $field_events, $row_id);
 						}
-					} else {
-						// Not from sql table
-						// ??? 30/3/2020
-						$value = Core_Html::GuiInput( $input_name, $data, $args ); //gui_input( $key, $data, $field_events, $row_id);
-//						print "AAAA<br/>";
+						// Last change context: https://fruity.co.il/wp-admin/admin.php?page=deliveries&order_id=18584
+
 					}
 //					else {
 //						// ??? 30/3/2020
@@ -477,6 +464,7 @@ class Core_Data
 				}
 				if ( $selectors and array_key_exists( $key, $selectors )) {
 					$selector_name = $selectors[ $key ];
+					print "$key sel=$selector_name<br/>";
 					if ( strlen( $selector_name ) < 2 ) die( "selector " . $key . "is empty" );
 					//////////////////////////////////
 					// Selector ($id, $value, $args //
@@ -488,16 +476,22 @@ class Core_Data
 					break;
 				}
 				// Format values by type.
-				if (isset($args["sql_fields"])){
+				if (isset($args["sql_fields"]) and ! isset($args["no_html"])){
 					$type = SqlField($args["sql_fields"], $key);
-//				print $key . " " . $type . "<br/>";
-					switch (strtok($type, "(")) {
-						case 'time':
+//				print $key . " " . substr($type, 0, 3) . "<br/>";
+					switch (substr($type, 0, 3)) {
+						case 'tim':
 							$value = substr($value, 0, 5);
 							break;
+						case 'tin':
+//							print "value=$value<Br/>";
+							$value  = Core_Html::GuiCheckbox("", $value, array("edit"=>false));
+							break;
+
 					}
 				}
 			} while (0);
+
 			$row_data[$key] = $value;
 
 			if ($accumulation_row and isset($accumulation_row[$key][1]) and is_callable($accumulation_row[$key][1])) {
@@ -714,14 +708,14 @@ class Core_Data
 		$meta_key_field = GetArg($args, "meta_key", "id");
 		$values = GetArg($args, "values", null);
 		$v_checkbox = GetArg($args, "v_checkbox", false);
-		$checkbox_class = GetArg($args, "checkbox_class", "checkbox");
+		$checkbox_class = GetArg($args, "checkbox_class", "checkbox_class");
 		$header_fields = GetArg($args, "header_fields", null);	 $header_fields = Core_Fund::array_assoc($header_fields);
 
 		$table_names = array();
 		if (preg_match_all("/from ([^ ]*)/" , $sql, $table_names))
 		{
 			$table_name = $table_names[1][0];
-			$args["table_name"] = $table_name;
+			$args["table_name"] = substr($table_name, 3); // Assume prefix is two letters with _
 			$id_field = GetArg($args, "id_field", "id" /* long executing: sql_table_id($table_name) */);
 		} else {
 			$id_field = GetArg($args, "id_field", "id");
@@ -739,6 +733,7 @@ class Core_Data
 		} else {
 			// print "before: "; var_dump($h_line); print "<br/>";
 			$rows_data = self::RowsData($sql, $id_field, $skip_id, $v_checkbox, $checkbox_class, $h_line, $v_line, $m_line, $header_fields, $meta_fields, $meta_table, $args);
+
 			// print "after: "; var_dump($h_line); print "<br/>";
 		}
 
@@ -811,8 +806,6 @@ class Core_Data
 	 */
 	static function HandleAcc(&$acc_fields, $row)
 	{
-		// if (function_exists("sum_numbers")) print "AAAA";
-//	var_dump($acc_fields); print "<br/>";
 		foreach ($row as $key => $cell)
 		{
 			if (isset($acc_fields[$key]) and is_array($acc_fields[$key]) and function_exists($acc_fields[$key]['func'])) {
@@ -886,5 +879,50 @@ class Core_Data
 	{
 		return "XXXX";
 		// 'update_table_field(\'' . $post_file . '\', \'' . $table_name . "', $id, '$field_name', check_result)";
+	}
+
+	static function data_auto_list() {
+		$prefix = GetParam( "prefix", true );
+
+		// Todo: add in classes
+		$lists = array(
+			"products"          => array(
+				"table"      => "im_products",
+				"field_name" => 'post_title',
+				"include_id" => 0,
+				"id_field"   => "ID"
+			),
+			"products_w_drafts" => array( "table"      => "im_products_w_drafts",
+			                              "field_name" => 'post_title',
+			                              "include_id" => 0,
+			                              "id_field"   => "ID"
+			),
+			"tasks"             => array( "table"      => "im_tasklist",
+			                              "field_name" => "task_title",
+			                              "include_id" => 1,
+			                              "id_field"   => "id",
+			                              "query"      => " status = 0"
+			),
+			"users"             => array( "table" => "wp_users", "field_name" => "display_name", "id_field" => "ID" ),
+			"categories"        => array( "table"      => "im_categories",
+			                              "include_id" => 0,
+			                              "id_field"   => "term_id",
+			                              "field_name" => "name"
+			)
+		);
+
+		$list = GetParam( "list", true );
+		if ( ! isset( $lists[ $list ] ) ) {
+			die ( "Error: unknown list " . $list );
+		}
+		$table_name = $lists[ $list ]["table"];
+		$field      = $lists[ $list ]["field_name"];
+
+		$args             = $lists[ $list ];
+		$args["datalist"] = $list . "_list";
+
+		print Core_Data::auto_list( $table_name, $field, $prefix, $args );
+
+		return true;
 	}
 }

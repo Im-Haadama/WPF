@@ -3,7 +3,7 @@
 
 class Finance_Product {
 	protected $id;
-	private $p;
+	protected $wp_p;
 
 	/**
 	 * @return mixed
@@ -20,16 +20,23 @@ class Finance_Product {
 	public function __construct( $id ) {
 		$this->id = $id;
 		try {
-			$this->p = new WC_Product( $id );
+			$this->wp_p = new WC_Product( $id );
 		} catch ( Exception $e ) {
 			return null;
 //			print "can't create prod " . $id . $e->getMessage() . " " . $this->getName() . "<br/>";
 		}
 	}
 
+	static function getByName($prod_name)
+	{
+		$id = SqlQuerySingleScalar("select id from im_products where post_title = " . QuoteText($prod_name));
+		if ($id) return new self($id);
+		return null;
+	}
+
 	function getPrice()
 	{
-		return get_postmeta_field( $this->prod_id, '_price' );
+		return get_postmeta_field( $this->id, '_price' );
 	}
 
 	static public function get_edit_link( $id ) {

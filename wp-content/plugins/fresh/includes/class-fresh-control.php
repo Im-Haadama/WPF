@@ -36,6 +36,8 @@ class Fresh_Control {
 //		$cols[1] = '<div class ="column">';
 
 		foreach ($orders as $order_id) {
+			$db_prefix = GetTablePrefix("delivery_lines");
+
 			$o       = new Fresh_Order( $order_id );
 			$result .= $o->checkInfoBox( true );
 
@@ -44,7 +46,7 @@ class Fresh_Control {
 				$result .= "Order $order_id not packed yet<br/>";
 				continue;
 			}
-			$rows   = SqlQueryArray( "select product_name, quantity_ordered, quantity from im_delivery_lines where delivery_id = " . $d->getID() );
+			$rows   = SqlQueryArray( "select product_name, quantity_ordered, quantity from ${db_prefix}delivery_lines where delivery_id = " . $d->getID() );
 //			print "row count: " . count($rows) ."<br/>";
 			$result .= "<table>";
 			$result .= Core_Html::gui_row( array(

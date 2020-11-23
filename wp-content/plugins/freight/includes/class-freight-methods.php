@@ -7,7 +7,7 @@ class Freight_Methods {
 	/**
 	 * Freight_Zones constructor.
 	 */
-	static public function init() {
+	static public function init($loader) {
 		add_action("show_path", __CLASS__ . "::show_path_wrap");
 		add_action("add_zone_times", __CLASS__ . "::add_zone_times");
 		add_action("path_remove_times", __CLASS__ . "::remove_zone_times");
@@ -27,8 +27,8 @@ class Freight_Methods {
 		add_action("toggle_shipment_enable", __CLASS__ . "::toggle_shipment_enable");
 		add_action("shipment_update_mc", __CLASS__ . "::shipment_update_mc");
 
-		Core_gem::AddTable("mission_types");
-		Core_gem::AddTable("missions");
+		Core_gem::getInstance()->AddTable("mission_types", $loader);
+		Core_Gem::getInstance()->AddTable("missions");
 	}
 
 	static function settings($args = null, $operation = null) {

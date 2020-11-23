@@ -28,7 +28,6 @@ class Core_Gem {
 		$loader->AddAction("gem_do_import", $this, "do_import_wrap");
 		$loader->AddAction("gem_v_do_import", $this, "do_v_import_wrap");
 		$loader->AddAction("gem_show", $this, "show_wrap", 10, 3);
-
 	}
 
 	/**
@@ -53,13 +52,17 @@ class Core_Gem {
 		AddAction("gem_v_show_" . $table, array($class, "v_show_wrapper"), 10, 3);
 	}
 
-	static function AddTable($table, $class = 'Core_Gem')
+	function AddTable($table, $loader = null)
 	{
-		$debug = 0; //  (get_user_id() == 1);
-		// if (get_user_id() == 1) print __CLASS__ . ":" . $table;
-		// New Row
-		AddAction("gem_add_" . $table, array($class, 'add_wrapper'), 10, 3);
+//		$debug = 0; //  (get_user_id() == 1);
+//		 if (get_user_id() == 1) print "=================================================". __CLASS__ . ":" . $table . "<br/>";
 
+		$class = __CLASS__;
+		// New Row
+		if ($loader) {
+			$loader->AddAction( "gem_add_" . $table, $this, 'add_wrapper', 10, 1);
+		} else
+			AddAction( "gem_add_" . $table, array( $class, 'add_wrapper' ), 10, 3 );
 		// Edit
 //		AddAction("gem_edit_" . $table, array($class, 'edit_wrapper'), 10, 3);
 
@@ -99,10 +102,10 @@ class Core_Gem {
 		return $result . self::GemElement( $table_name, $id, $args);
 	}
 
-	static function add_wrapper($result, $id = null, $args = null)
+	function add_wrapper($args = null)
 	{
 		$operation = GetArg($args, "operation", null);
-		if (! $operation)  return __FUNCTION__ . ": no operation. Add it to \$args<br/>";
+		if (! $operation)  print __FUNCTION__ . ": no operation. Add it to \$args<br/>";
 
 		$table_name = substr($operation, 8);
 		if (! $table_name or ! strlen($table_name)){
@@ -110,8 +113,9 @@ class Core_Gem {
 			return false;
 		}
 		Core_Data::set_args_value($args);
+
 		// 10-11-2020 not sure if needed: unset($args["add_checkbox"]);
-		return $result . self::GemAddRow($table_name, null, $args);
+		print self::GemAddRow($table_name, null, $args);
 	}
 
 	static function show_import_wrap()
@@ -323,18 +327,19 @@ class Core_Gem {
 		// $next_page = GetArg($args, "next_page", null);
 		if (! $post) die(__FUNCTION__ . " :" . $text . "must send post_file " . $table_name);
 
-            $next_page = @apply_filters("gem_next_page_" . $table_name, '');
+		$next_page = @apply_filters("gem_next_page_" . $table_name, '');
+
 //		print "np=$next_page<br/>";
 		if ($next_page){
 			$result .= '<script>
-		function next_page(xmlhttp) { 
-		    if (xmlhttp.response.indexOf("failed") === -1 ) { 
-		        let new_id = xmlhttp.response;
-		      window.location = "' . $next_page . '&new=" + new_id;  
-		    }  else alert(xmlhttp.response);
-		}
+//		function next_page(xmlhttp) { 
+//		    if (xmlhttp.response.indexOf("failed") === -1 ) { 
+//		        let new_id = xmlhttp.response;
+//		      window.location = "' . $next_page . '&new=" + new_id;  
+//		    }  else alert(xmlhttp.response);
+//		}
 		</script>';
-			$result .= "\n" . Core_Html::GuiButton("add_row", "add", array("action" => "data_save_new('" . $post . "', '$table_name', next_page)\n"));
+			$result .= "\n" . Core_Html::GuiButton("add_row", "add", array("action" => "data_save_new('" . $post . "', '$table_name', '$next_page')\n"));
 		} else {
 			$result .= Core_Html::GuiButton("add_row", "add", array("action" => "data_save_new('" . $post . "', '$table_name')", "add"));
 			$result .= Core_Html::GuiButton("add_row", "add and continue", array("action" => "data_save_new('" . $post . "', '$table_name', success_message)", "add and continue"));
@@ -525,6 +530,10 @@ class Core_Gem {
 
 		if (! isset($args["events"])) $args["events"] = 'onchange="update_table_field(\'' . $post_file . '\', \'' . $table_name . '\', \'%d\', \'%s\', check_result)"';
 		$sql = GetArg($args, "sql", null);
+
+		if ($drill_fields = GetArg($args, "drill_fields", null)) {
+			foreach ($drill_fields as $field) unset_by_value( $args["fields"], $field  );
+		}
 
 		if (! $sql){
 			$fields = GetArg($args, "fields", null);

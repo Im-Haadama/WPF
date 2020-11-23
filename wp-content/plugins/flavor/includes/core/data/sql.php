@@ -489,7 +489,6 @@ function SqlField($fetch_fields, $field_name)
 	foreach($fetch_fields as $field) {
 //		print $field->name . " " . $field->type . "<br/>";
 		if ($field->name == $field_name) {
-//			debug_var($field->name . " " . $field->type);
 			$length = $field->length;
 //			print "len = $length <br/>";
 			switch ($field->type){

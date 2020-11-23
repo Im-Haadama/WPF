@@ -24,7 +24,7 @@ class Fresh_Supplier_Balance {
 
 	public function init_hooks()
 	{
-		$menu = new Core_Admin_Menu();
+		$menu = Core_Admin_Menu::instance();
 
 		$menu->AddMenu("הנהלת חשבונות", "הנהלת חשבונות", "edit_shop_orders", "accounting", array(__CLASS__, 'accounting'));
 		AddAction("get_supplier_open_account", array(Fresh_Supplier_Balance::instance(), 'supplier_open_account'));
@@ -41,7 +41,7 @@ class Fresh_Supplier_Balance {
 		$selected_tab = GetParam("st_suppliers", false, "weekly");
 
 		$tabs = array(array("weekly", "Weekly summary", "ws"),
-			array("supplier_transactions", "Suppliers transaction", "st"),
+			array("supplier_transactions", "Suppliers accounts", "st"),
 		    array("supplier_invoices", "Supply invoices", "si"));
 
 
@@ -62,7 +62,7 @@ class Fresh_Supplier_Balance {
 				}
 
 				$tab_content .= Core_Html::GuiHyperlink( "שבוע קודם", AddToUrl("week",  date( 'Y-m-d', strtotime( $week . " -1 week" ) ) ));
-				$tab_content .= Fresh_Accounting::weekly_report($week);
+				$tab_content .= Finance_Accounting::weekly_report($week);
 				$tabs[0][2] = $tab_content;
 				break;
 
@@ -126,9 +126,9 @@ class Fresh_Supplier_Balance {
        . "where part_id > 10000\n"
        . " and is_active = 1\n"
 //		       " and balance > 0 "
-       . " and document_type in (" . FreshDocumentType::invoice . ", " . FreshDocumentType::bank . ", " .
-		       FreshDocumentType::invoice_refund . ")\n"
-//       . " and document_type in (" . FreshDocumentType::invoice . ", " . FreshDocumentType::bank . ")\n"
+       . " and document_type in (" . Finance_DocumentType::invoice . ", " . Finance_DocumentType::bank . ", " .
+		       Finance_DocumentType::invoice_refund . ")\n"
+//       . " and document_type in (" . Finance_DocumentType::invoice . ", " . Finance_DocumentType::bank . ")\n"
        . "group by part_id";
 
 		if ( ! $include_zero ) $sql .= " having balance < 0";
@@ -188,7 +188,7 @@ class Fresh_Supplier_Balance {
 
 		$sql = "SELECT id, date, amount, ref, pay_date, document_type, supplier_balance($supplier_id, date) as balance FROM im_business_info " .
 		       " WHERE part_id = " . $supplier_id .
-		       " AND document_type IN ( " . FreshDocumentType::bank . "," . FreshDocumentType::invoice ."," . FreshDocumentType::invoice_refund . ") " .
+		       " AND document_type IN ( " . Finance_DocumentType::bank . "," . Finance_DocumentType::invoice ."," . Finance_DocumentType::invoice_refund . ") " .
 		       " and is_active = 1" .
 		       " ORDER BY date DESC ";
 
@@ -214,8 +214,8 @@ class Fresh_Supplier_Balance {
 		$multi_site = Core_Db_MultiSite::getInstance();
 		$sql = "select " . $multi_site->LocalSiteId() . ", part_id, supplier_displayname(part_id), round(sum(amount),2) as total\n"
 		       . "from im_business_info\n"
-		       . " where document_type in (" . FreshDocumentType::invoice . ", " . FreshDocumentType::bank .
-		       ", " . FreshDocumentType::invoice_refund .")\n"
+		       . " where document_type in (" . Finance_DocumentType::invoice . ", " . Finance_DocumentType::bank .
+		       ", " . Finance_DocumentType::invoice_refund .")\n"
 //		       . " and part_id = 100007"
 		       . " and is_active = 1 " // order by date asc";
 		       . "group by 2\n"
