@@ -12,8 +12,6 @@ class Core_Gem {
 	private function __construct( ) {
 		$this->object_types = array();
 		self::$_instance = $this;
-		AddAction("gem_v_show", array(__CLASS__, "v_show_wrap"));
-		AddAction("gem_v_csv", array(__CLASS__, "gem_v_csv"));
 
 		// Import
 		// prepare
@@ -28,6 +26,8 @@ class Core_Gem {
 		$loader->AddAction("gem_do_import", $this, "do_import_wrap");
 		$loader->AddAction("gem_v_do_import", $this, "do_v_import_wrap");
 		$loader->AddAction("gem_show", $this, "show_wrap", 10, 3);
+		$loader->AddAction("gem_v_show", $this, "v_show_wrap");
+		$loader->AddAction("gem_v_csv", $this, "gem_v_csv");
 	}
 
 	/**
@@ -57,12 +57,11 @@ class Core_Gem {
 //		$debug = 0; //  (get_user_id() == 1);
 //		 if (get_user_id() == 1) print "=================================================". __CLASS__ . ":" . $table . "<br/>";
 
-		$class = __CLASS__;
 		// New Row
 		if ($loader) {
 			$loader->AddAction( "gem_add_" . $table, $this, 'add_wrapper', 10, 1);
 		} else
-			AddAction( "gem_add_" . $table, array( $class, 'add_wrapper' ), 10, 3 );
+			AddAction( "gem_add_" . $table, array( $this, 'add_wrapper' ), 10, 3 );
 		// Edit
 //		AddAction("gem_edit_" . $table, array($class, 'edit_wrapper'), 10, 3);
 
@@ -105,7 +104,12 @@ class Core_Gem {
 	function add_wrapper($args = null)
 	{
 		$operation = GetArg($args, "operation", null);
-		if (! $operation)  print __FUNCTION__ . ": no operation. Add it to \$args<br/>";
+		if (! $operation) {
+			print __FUNCTION__ . ": no operation. Add it to \$args<br/>";
+			print debug_trace(10);
+			var_dump($args);
+			return "Error";
+		}
 
 		$table_name = substr($operation, 8);
 		if (! $table_name or ! strlen($table_name)){

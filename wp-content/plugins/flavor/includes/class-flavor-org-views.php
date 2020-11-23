@@ -258,4 +258,87 @@ class Flavor_Org_Views {
 		return $result;
 	}
 
+
+	function ShowProjectMembers( $args ) {
+		$post_file = GetArg($args, "post_file", null);
+		$result = "";
+		$id = GetArg($args, "id", null);
+		if ( ! ( $id > 0 ) ) {
+			return __FUNCTION__ . " bad id $id";
+		}
+		$u      = new Org_Project( $id );
+		$result .= Core_Html::GuiHeader( 1, $u->getName() );
+		$result .= self::doShowProjectMembers( $id );
+		$result .= Core_Html::GuiHeader( 2, "Add member" );
+		$result .= self::gui_select_worker( "new_worker", null, $args );
+		$result .= Core_Html::GuiButton( "btn_add_worker", "Add",
+			array( "action" => 'project_add_worker(' . QuoteText( $post_file ) . "," . $id . ')' ) );
+
+		return $result;
+	}
+
+	static public function doShowProjectMembers( $project_id ) {
+		$args              = ["post_file"=>Flavor::getPost()];
+		$args["post_file"] .= "?team_id=" . $project_id;
+		$project           = new Org_Project( $project_id );
+
+		$result = "";
+//		$result            = Core_Html::GuiHeader( 1, "Edit project" );
+//		$args["selectors"] = array( "manager" => "Focus_Views::gui_select_worker" );
+		// $args["post_file"] = GetUrl( 1 ) . "?team_id=" . $team_id;
+//		$result            .= Core_Gem::GemElement( "working_teams", $project_id, $args );
+//
+		$result          .= Core_Html::GuiHeader( 2, "Project members" );
+		$table           = array();
+		$table["header"] = array( "name" );
+		$members         = $project->AllWorkers();
+		foreach ( $members as $member ) {
+			$table[ $member ]["name"] = GetUserName( $member );
+		}
+
+		$args["add_checkbox"] = true;
+		$args["edit"]         = true;
+		$result               .= Core_Gem::GemArray( $table, $args, "project_members" );
+//
+//		$result .= Core_Html::GuiHeader( 1, "add member" );
+//		$result .= gui_select_worker( "new_member", null, $args );
+//		$result .= Core_Html::GuiButton( "btn_add_member", "add_project_member(" . $project_id . ")", "add" );
+//
+//		$args = self::Args();
+
+		return $result;
+	}
+	static function gui_select_worker( $id, $selected, $args ) {
+		$edit = GetArg( $args, "edit", true );
+		if ( ! $edit ) {
+			return GetUserName( $selected );
+		}
+
+		$worker    = new Org_Worker( get_user_id() );
+		$companies = $worker->GetCompanies();
+		$company_id = GetArg($args, "company_id", $companies[0]);
+
+		$company = new Org_Company($company_id);
+		$ids = $company->getWorkers();
+
+		$selected_info = array(
+			array(
+				"user_id"      => 0,
+				"display_name" => "Select"
+			)
+		); // Select 0 cause to delete the value.
+		foreach ( $ids as $user_id ) {
+//			$u = get_user_to_edit( $user_id );
+			$selected_info[] = array( "user_id" => $user_id, "display_name" => GetUserName( $user_id ) );
+		}
+
+		$events = GetArg( $args, "events", null );
+		$class  = GetArg( $args, "class", null );
+		$result = "";
+		$result .= Core_Html::gui_select( $id, 'display_name', $selected_info, $events, $selected, "user_id", $class );
+		return $result;
+	}
+
+
+
 }
