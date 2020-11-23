@@ -62,7 +62,7 @@ class Subscription_Manager {
 	}
 
 	public function init_hooks() {
-		Core_Gem::AddTable( "subscriptions" );
+		Core_Gem::getInstance()->AddTable( "subscriptions" );
 		add_action( 'admin_menu', array( $this, 'admin_menu' ) );
 		Flavor_Roles::instance()->addRole( "show_subs" );
 		self::install();

@@ -301,9 +301,11 @@ group by pm.meta_value, p.post_status");
 								$order_info[ OrderTableFields::comments ],
 								array( "events" => "onchange=\"order_update_driver_comment('" . Freight::getPost() . "', $order_id)\"" )
 							) : $order_info[ OrderTableFields::comments ] );
+						$url = (($type == "supplies") ? Core_Html::GuiHyperlink($order_id, "/wp-admin/admin.php?page=supplies&operation=show_supply&id=$order_id") :
+							Core_Html::GuiHyperlink( $order_id, "/wp-admin/post.php?post=$order_id&action=edit" ));
 						$new_row =
 							array(
-								Core_Html::GuiHyperlink( $order_id, "/wp-admin/post.php?post=$order_id&action=edit" ),
+								$url,
 								$edit_user,
 								Core_Html::GuiHyperlink( $user_name, $multi_site->getSiteURL( $site_id ) . "/wp-admin/user-edit.php?user_id=$user_id" ),
 								$path[ $i ],
@@ -319,11 +321,9 @@ group by pm.meta_value, p.post_status");
 						if ($edit) array_push($new_row, $pri_input);
 						array_push( $path_info, $new_row);
 					}
-				}
-				else {
+				} else {
 //					var_dump($lines_per_station[$path[$i]]);
-//					$new_row = array(__("Collect"), '', $path[ $i ]);
-//					array_push( $path_info, $new_row);
+					print "no lines per station $path[$i]<br/>";
 				}
 
 				$prev = $path[ $i];
@@ -449,14 +449,16 @@ group by pm.meta_value, p.post_status");
 			if ( $order_info[ OrderTableFields::site_name ] == "supplies" ) {
 				array_push( $this->supplies_to_collect, array( $order_id, $order_info[ OrderTableFields::site_id ] ) );
 			} else {
-//				var_dump($pickup_address); 	print "<br/>";
 				$this->AddPrerequisite( $order_id, $pickup_address );
+			}
+
+			if (0) { /// Pickup lines.
 				$pickup_order_info                                  = $order_info;
 				$pickup_order_info[ OrderTableFields::client_name ] = "<b>העמסה</b> " . $order_info[ OrderTableFields::client_name ];
 				$pickup_order_info[ OrderTableFields::address_2 ]   = '';
 				$pickup_order_info[ OrderTableFields::phone ]       = '';
 				// $this->prerequisite[$order_id] = $pickup_order_info[OrderTableFields::address_1];
-				if (0) self::add_line_per_station( $mission->getStartAddress(),
+				self::add_line_per_station( $mission->getStartAddress(),
 					$pickup_address,
 					$pickup_order_info,
 					$order_id );
@@ -498,7 +500,7 @@ group by pm.meta_value, p.post_status");
 	}
 
 	function add_line_per_station($start_address, $stop_point, $order_info, $order_id ) {
-//		print "sa=$start_address sp=$stop_point<br/>";
+		$stop_point = trim($stop_point);
 		if ( ! isset( $this->lines_per_station[ $stop_point ] ) ) {
 			$this->lines_per_station[ $stop_point ] = array();
 		}
@@ -507,6 +509,22 @@ group by pm.meta_value, p.post_status");
 		} else {
 			print "לא מזהה את הכתובת של הזמנה " . $order_id . "<br/>";
 		}
+
+		if ($order_info[OrderTableFields::site_name] != 'supplies') {
+			// collect point
+			$start_address = trim( $start_address );
+			if ( ! isset( $this->lines_per_station[ $start_address ] ) ) {
+				// Add row for the pick-up.
+				$new_row = [];
+				for ($i = 0; $i < OrderTableFields::max; $i++) $new_row[$i] = '';
+				$new_row[OrderTableFields::address_1] = $start_address;
+				$this->lines_per_station[ $start_address ] = array($new_row);
+			}
+			// Add info to pickup line.
+			$this->lines_per_station[ $start_address ][0][ OrderTableFields::client_name ]  .= $order_info[ OrderTableFields::client_name ] . "<br/>";
+			$this->lines_per_station[ $start_address ][0][ OrderTableFields::order_number ] .= $order_info[ OrderTableFields::order_number ] . "<br/>";
+		}
+
 	}
 
 	static function get_distance( $address_a, $address_b ) {

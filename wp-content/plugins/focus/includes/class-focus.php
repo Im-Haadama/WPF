@@ -407,7 +407,7 @@ class Focus {
 		// Creates the tasks from templates.
 		$this->manager->init();
 
-		Core_Gem::AddTable("working_teams");
+		Core_Gem::getInstance()->AddTable("working_teams");
 
 		// Todo: activate this somewhere else
 //		self::addRoles();

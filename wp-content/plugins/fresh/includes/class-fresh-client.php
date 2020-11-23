@@ -31,7 +31,7 @@ class Fresh_Client extends  Finance_Client {
 		add_action( 'personal_options_update', array(__CLASS__, 'save_extra_user_profile_fields') );
 		add_action( 'edit_user_profile_update', array(__CLASS__, 'save_extra_user_profile_fields') );
 
-		Core_Gem::AddTable("client_types");
+		Core_Gem::getInstance()->AddTable("client_types");
 	}
 
 	static function shop_manager_role_edit_capabilities( $roles ) {

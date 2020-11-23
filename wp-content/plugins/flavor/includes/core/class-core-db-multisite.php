@@ -369,7 +369,7 @@ class Core_Db_MultiSite extends Core_MultiSite {
 //		self::DoConnectToMaster("https://fruity.co.il", "multisite_connect", "multisite_connect");
 
 		if (self::isMaster()) {
-			Core_Gem::AddTable( "multisite" );
+			Core_Gem::getInstance()->AddTable( "multisite" );
 
 			$args = array( "post_file" => Finance::getPostFile() );
 			if ( ! TableExists( "multisite" ) ) {

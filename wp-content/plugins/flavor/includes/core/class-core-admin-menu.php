@@ -5,7 +5,6 @@ class Core_Admin_Menu {
 	public $top; // Array of (id, title, href);
 	protected static $_instance = null;
 
-
 	public static function instance() {
 		if ( is_null( self::$_instance ) ) {
 			self::$_instance = new self( "Flavor" );

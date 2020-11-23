@@ -43,7 +43,7 @@ class Israel_Zones {
 	private function init_hooks() {
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
 		add_action('import_cities', array(__CLASS__, 'import_wrapper'));
-		Core_Gem::AddTable("cities");
+		Core_Gem::getInstance()->AddTable("cities");
 		add_filter('wpf_freight_cities', array($this, 'freight_cities'));
 
 	}

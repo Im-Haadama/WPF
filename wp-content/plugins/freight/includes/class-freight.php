@@ -12,6 +12,7 @@ class Freight {
 	 */
 	protected $auto_loader;
 	protected $settings;
+	protected $loader;
 
 	/**
 	 * @return Freight_Legacy
@@ -110,13 +111,14 @@ class Freight {
 		$this->define_constants();
 		$this->includes(); // Loads class autoloader
 		$this->auto_loader = new Core_Autoloader(FREIGHT_ABSPATH);
+		$this->loader = Core_Loader::instance();
 		$this->settings = new Freight_Settings();
 		if (defined('FREIGHT_LEGACY_USER')) {
 			$this->legacy = new Freight_Legacy(FREIGHT_LEGACY_USER);
 			$this->legacy->init_hooks();
 		}
 
-		$this->init_hooks();
+		$this->init_hooks($this->loader);
 
 		do_action( 'freight_loaded' );
 	}
@@ -124,9 +126,12 @@ class Freight {
 	/**
 	 * Hook into actions and filters.
 	 *
+	 * @param Core_Loader $loader
+	 *
+	 * @throws Exception
 	 * @since 2.3
 	 */
-	private function init_hooks() {
+	private function init_hooks(Core_Loader $loader) {
 	    // Admin scripts and styles. Todo: Check if needed.
 		add_action('admin_enqueue_scripts', array($this, 'admin_scripts'));
 
@@ -143,7 +148,7 @@ class Freight {
 		// get local deliveries
 
 		GetSqlConn(ReconnectDb());
-		Freight_Methods::init();
+		Freight_Methods::init($loader);
 		Freight_Mission_Manager::instance()->init_hooks();
 	}
 

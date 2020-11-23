@@ -32,7 +32,7 @@ class Fresh_Supplies {
 		AddAction('supplies_merge', array($this, 'supplies_merge'));
 		AddAction('supplies_send', array($this, 'supplies_send'));
 
-		Core_Gem::AddTable("supplies");
+		Core_Gem::getInstance()->AddTable("supplies");
 	}
 
 //	public function NewSupply()

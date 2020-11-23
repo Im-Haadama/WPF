@@ -738,7 +738,7 @@ class Finance_Salary {
 		if (im_user_can("show_salary"))
 			AddAction('show_entry', array($this, 'entry_wrapper'));
 
-		Core_Gem::AddTable("working_rates");
+		Core_Gem::getInstance()->AddTable("working_rates");
 	}
 
 	// Operations

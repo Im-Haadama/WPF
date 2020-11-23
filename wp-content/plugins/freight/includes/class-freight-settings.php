@@ -113,6 +113,11 @@
 			$url = GetUrl(1) . "?page=freight_settings&tab=";
 
 			$operation = GetParam("operation", false, null);
+			if ($operation) {
+				$args=array("operation"=>$operation, "post_file"=>Flavor::getPost());
+				do_action( $operation, $args );
+				return;
+			}
 			$tabs["help"] = array(
 				"Help",
 				$url . "help",

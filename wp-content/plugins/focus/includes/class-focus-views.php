@@ -203,7 +203,7 @@ class Focus_Views {
 	}
 
 	static function Args( $table_name = null, $action = null ) {
-		$ignore_list = ["st_main"];
+		$ignore_list = ["st_main", "page_number"];
 		$args        = array(
 			"page_number"  => GetParam( "page_number", false, 1 ),
 			"post_file"    => self::getPost(),
@@ -1964,13 +1964,13 @@ class Focus_Views {
 	}
 
 	function init() {
-		Core_Gem::AddTable( "task_templates" );
+		Core_Gem::getInstance()->AddTable( "task_templates" );
 
 		// Project related actions.
-		Core_Gem::AddTable( "projects" ); // add + edit
+		Core_Gem::getInstance()->AddTable( "projects" ); // add + edit
 
 		// Tasklist
-		Core_Gem::AddTable( "tasklist" ); // add + edit
+		Core_Gem::getInstance()->AddTable( "tasklist" ); // add + edit
 
 		// Company
 	}

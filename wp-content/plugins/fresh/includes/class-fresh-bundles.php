@@ -24,10 +24,10 @@ class Fresh_Bundles {
 
 	private $class_name = "bundle";
 
-	function init_hooks()
+	function init_hooks($loader)
 	{
 		show_errors();
-		Core_Gem::AddTable("bundles", __CLASS__);
+		Core_Gem::getInstance()->AddTable("bundles", $loader);
 		self::AddHook('bundle_change_quantity');
 		self::AddHook('bundle_add_item');
 	}

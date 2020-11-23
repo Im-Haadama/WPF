@@ -113,8 +113,9 @@ class Fresh {
 		$this->includes(); // Loads class autoloader
 		$this->loader = Core_Loader::instance();
 		$this->auto_loader = new Core_Autoloader(FRESH_ABSPATH);
+		$this->loader = Core_Loader::instance();
 
-		$this->init_hooks();
+		$this->init_hooks($this->loader);
 
 		do_action( 'fresh_loaded' );
 	}
@@ -124,7 +125,7 @@ class Fresh {
 	 *
 	 * @since 2.3
 	 */
-	private function init_hooks() {
+	private function init_hooks($loader) {
 	    // Admin scripts and styles. Todo: Check if needed.
 		add_action('admin_enqueue_scripts', array($this, 'admin_scripts'));
 
@@ -207,7 +208,7 @@ class Fresh {
 		Fresh_Client::init_hooks();
 		Fresh_Delivery::init_hooks($this->loader);
 		Fresh_Client_Views::init_hooks();
-		Fresh_Bundles::instance()->init_hooks();
+		Fresh_Bundles::instance()->init_hooks($loader);
 		Fresh_Views::init_hooks();
 
 		add_action('wp_enqueue_scripts', array($this, 'remove_add'), 2222);

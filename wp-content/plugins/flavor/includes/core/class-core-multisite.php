@@ -80,7 +80,7 @@ class Core_MultiSite {
 		if ( isset( $this->sites_array[ $site_id ] ) ) {
 			return $this->sites_array[ $site_id ][ Core_Multisite_Fields::site_url_idx ];
 		} else {
-			print "site $site_id not defined!";
+//			print "site $site_id not defined!";
 
 			return null;
 		}

@@ -28,7 +28,6 @@ class Core_Gem {
 		$loader->AddAction("gem_do_import", $this, "do_import_wrap");
 		$loader->AddAction("gem_v_do_import", $this, "do_v_import_wrap");
 		$loader->AddAction("gem_show", $this, "show_wrap", 10, 3);
-
 	}
 
 	/**
@@ -53,13 +52,17 @@ class Core_Gem {
 		AddAction("gem_v_show_" . $table, array($class, "v_show_wrapper"), 10, 3);
 	}
 
-	static function AddTable($table, $class = 'Core_Gem')
+	function AddTable($table, $loader = null)
 	{
-		$debug = 0; //  (get_user_id() == 1);
-		// if (get_user_id() == 1) print __CLASS__ . ":" . $table;
-		// New Row
-		AddAction("gem_add_" . $table, array($class, 'add_wrapper'), 10, 3);
+//		$debug = 0; //  (get_user_id() == 1);
+//		 if (get_user_id() == 1) print "=================================================". __CLASS__ . ":" . $table . "<br/>";
 
+		$class = __CLASS__;
+		// New Row
+		if ($loader) {
+			$loader->AddAction( "gem_add_" . $table, $this, 'add_wrapper', 10, 1);
+		} else
+			AddAction( "gem_add_" . $table, array( $class, 'add_wrapper' ), 10, 3 );
 		// Edit
 //		AddAction("gem_edit_" . $table, array($class, 'edit_wrapper'), 10, 3);
 
@@ -99,10 +102,10 @@ class Core_Gem {
 		return $result . self::GemElement( $table_name, $id, $args);
 	}
 
-	static function add_wrapper($result, $id = null, $args = null)
+	function add_wrapper($args = null)
 	{
 		$operation = GetArg($args, "operation", null);
-		if (! $operation)  return __FUNCTION__ . ": no operation. Add it to \$args<br/>";
+		if (! $operation)  print __FUNCTION__ . ": no operation. Add it to \$args<br/>";
 
 		$table_name = substr($operation, 8);
 		if (! $table_name or ! strlen($table_name)){
@@ -112,7 +115,7 @@ class Core_Gem {
 		Core_Data::set_args_value($args);
 
 		// 10-11-2020 not sure if needed: unset($args["add_checkbox"]);
-		return $result . self::GemAddRow($table_name, null, $args);
+		print self::GemAddRow($table_name, null, $args);
 	}
 
 	static function show_import_wrap()
