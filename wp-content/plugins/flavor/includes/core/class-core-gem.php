@@ -39,17 +39,18 @@ class Core_Gem {
 		return self::$_instance;
 	}
 
-	public function AddVirtualTable($table, $args, $class = __CLASS__)
+	public function AddVirtualTable($table, $args, $loader = null)
 	{
 		$this->object_types[$table] = $args;
 
 		$db_table = null;
 		if (isset($args["database_table"]))	$db_table = $args["database_table"];
 
-		AddAction("gem_v_add_" . $table, array($class, "v_add_wrapper"), 10, 3);
-		AddAction("gem_add_" . $db_table, array($class, "v_add_wrapper"), 10, 3);
+		if (! $loader) $loader = Core_Loader::instance();
+		$loader->AddAction("gem_v_add_" . $table, $this,  "v_add_wrapper", 10, 3);
+		$loader->AddAction("gem_add_" . $db_table, $this,  "v_add_wrapper", 10, 3);
 //		AddAction("gem_v_edit_" . $table, array($class, "v_edit_wrapper"), 10, 3);
-		AddAction("gem_v_show_" . $table, array($class, "v_show_wrapper"), 10, 3);
+		$loader->AddAction("gem_v_show_" . $table, $this,  "v_show_wrapper", 10, 3);
 	}
 
 	function AddTable($table, $loader = null)
@@ -105,10 +106,7 @@ class Core_Gem {
 	{
 		$operation = GetArg($args, "operation", null);
 		if (! $operation) {
-			print __FUNCTION__ . ": no operation. Add it to \$args<br/>";
-			print debug_trace(10);
-			var_dump($args);
-			return "Error";
+			$operation = GetParam("operation", true);
 		}
 
 		$table_name = substr($operation, 8);
@@ -239,7 +237,7 @@ class Core_Gem {
 		$instance = self::getInstance();
 		$v_args = array("database_table" => "conversion", "query_part" => "from ${db_prefix}conversion where table_name = '$table'", "page_number"=>-1);
 
-		$instance->AddVirtualTable("conversion", $v_args);
+		$instance->AddVirtualTable("conversion", $v_args, Core_loader::instance());
 		$args = [];
 		$args["id"] = "id";
 		$args["post_file"] = $post_file;
@@ -517,14 +515,14 @@ class Core_Gem {
 	 */
 	static function GemTable($table_name, &$args)
 	{
-//		if (! TableExists($table_name)) return "Table $table_name not exists";
+		if (! TableExists($table_name)) return "Table $table_name not exists";
 
 		// Try... Handle operation here. Works for clients types. May require to remove apply_filter from others.
-		$operation = GetParam("operation", false, null);
-		if ($operation) {
-			$args['operation']= $operation;
-			print apply_filters( $operation, '', null, $args );
-		}
+//		$operation = GetParam("operation", false, null);
+//		if ($operation) {
+//			$args['operation']= $operation;
+//			print apply_filters( $operation, '', null, $args );
+//		}
 
 		if (! $table_name) die("Error #N2 no table given");
 		if (! isset($args["title"])) $title = "content of table " . $table_name;

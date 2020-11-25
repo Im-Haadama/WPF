@@ -634,7 +634,6 @@ class Finance_Delivery
 			return false;
 		}
 		$d->Delete();
-		print "done";
 		die(0);
 	}
 
@@ -657,7 +656,6 @@ class Finance_Delivery
 		$ids = GetParamArray("ids", true);
 		foreach ($ids as $item_id)
 			$d->DeleteLine($item_id);
-		print "done";
 		die(0);
 	}
 

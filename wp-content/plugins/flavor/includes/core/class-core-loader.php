@@ -76,6 +76,7 @@ class Core_Loader {
 	 */
 	public function AddAction( $hook, $component, $callback = null, $priority = 10, $accepted_args = 1 ) {
 		if (!$callback) $callback = $hook;
+		if (is_callable(array($component, $callback . "_wrap"))) $callback .= "_wrap";
 		if ($this->debug) MyLog(__FUNCTION__ . " $hook");
 		$this->actions = $this->add( $this->actions, $hook, $component, $callback, $priority, $accepted_args );
 	}

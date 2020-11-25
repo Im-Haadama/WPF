@@ -2,7 +2,6 @@
 /* Created: Dec 28 2019
 */
 
-
 if ( ! defined( "ABSPATH" ) ) {
 	define( 'ABSPATH', dirname(dirname(dirname( dirname( __FILE__ ) ) )) . '/');
 }
@@ -21,5 +20,5 @@ if (! get_user_id() and ! $password_check) {
 
 $rc = $flavor->handle_operation($operation);
 if ($rc === false) { print "failed"; return; } // Something went wrong. The processing would print something.
-if ($rc === true) { print "done"; return; }
+if ($rc === true) { return; } // 2020-11-24 removed the approval of success.
 print $rc;

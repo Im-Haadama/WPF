@@ -409,38 +409,16 @@ class Flavor {
 	 */
 	function handle_operation($operation) {
 		$ignore_list = array("operation");
-		$input = null;
+		$args = GetParams($ignore_list);
+		$args["post_file"] = Flavor::getPost();
 
-		$result = apply_filters( $operation, $input, GetParams($ignore_list));
-		if ( $result !== null ) return $result;
-
-		$module = strtok( $operation, "_" );
-		if ( $module === "data" ) {
-			return Core_Data::handle_operation($operation);
+		try {
+			do_action( $operation, $args );
+		} catch (Exception $e) {
+			print $e;
+			return false;
 		}
-		print "op $operation handle not found";
-		return false;
-
-//
-//		if ( $module === "fresh" ) {
-//			return Fresh::instance()->handle_operation( $operation );
-//		}
-
-//		switch ( $operation ) {
-//			case "flavor_main":
-//				self::show_main();
-//				return;
-//				// http://store.im-haadama.co.il/wp-content/plugins/flavor/post.php?operation=nav_add&main=Flavor&sub=Bank%20transactions&target=%2Ffinance_bank
-//			case "nav_add":
-//				$main = GetParam("main", true);
-//				$sub = GetParam("sub", false);
-//				$target = GetParam("target", true);
-//				$nav = $this->getNav();
-//				$main_id = $nav->AddMain(array('title' => $main, 'url' => $target));
-//				if (! $main_id) return $main_id;
-//				if ($sub) return $nav->AddSub($main_id, array( 'title' => $sub, 'url' => $target));
-//				return $main_id;
-//		}
+		return true;
 	}
 
 	/**

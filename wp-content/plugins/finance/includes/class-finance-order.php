@@ -744,7 +744,7 @@ class Finance_Order {
 //			$data .= Core_Html::gui_cell( Core_Html::gui_textarea( "order_excerpt", htmlspecialchars( $excerpt ) ) );
 //			$data .= Core_Html::gui_cell( Core_Html::GuiButton( "btn_save_excerpt","שמור הערה", array("action"=> "save_excerpt(" . $this->order_id . ")") ));
 //		} else {
-//			$data .= "<tr><td valign='top'>" . nl2br( $excerpt ) . "</td></tr>";
+			$data .= "<tr><td valign='top'>" . nl2br( $excerpt ) . "</td></tr>";
 //
 //		}
 //		if ( true or get_delivery_id( $this->order_id ) > 0 ) { // Done
@@ -1197,27 +1197,6 @@ class Finance_Order {
 
 				break;
 
-			case 'order_add_product':
-			case "add_product":
-				MyLog($operation);
-				$prod_id = GetParam("prod", true);
-				$order_id = GetParam("order_id", true);
-				$q = GetParam("quantity", false, 1);
-				if ( ! is_numeric( $q ) ) {
-					die ( "no quantity" );
-				}
-				$units = GetParam("units", false, null);
-
-				$o = new Finance_Order( $order_id );
-				$oid = 0;
-				$o->AddProduct( $prod_id, $q, false, - 1, $units, null, null, $oid );
-				MyLog("ooid= $oid");
-				if (($o->getStatus() == 'wc-processing') and ($oid > 0)){
-					$o->updateComment($oid, 'התווסף לאחר העברת ההזמנה לטיפול');
-				}
-				return $oid;
-
-			break;
 
 			case "delete_lines":
 				$order_id = $_GET["order_id"];
@@ -1576,6 +1555,4 @@ class Finance_Order {
 
 		return ($result ? $result : 0);
 	}
-
-
 }

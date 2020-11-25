@@ -18,8 +18,8 @@ class Finance_Order_Management {
 		add_action( 'admin_head', array($this, 'add_custom_order_actions_button_css' ));
 
 		$loader->AddAction('mission_print', $this, 'mission_print_wrap');
-
 		$loader->AddAction('order_set_mission', $this);
+		$loader->AddAction('order_add_product', $this);
 	}
 
 	static public function add_order_action($actions, WC_Order $order)
@@ -180,5 +180,25 @@ class Finance_Order_Management {
 		}
 	}
 
+	public function order_add_product()
+	{
+		MyLog(__FUNCTION__);
+		$prod_id = GetParam("prod", true);
+		$order_id = GetParam("order_id", true);
+		$q = GetParam("quantity", false, 1);
+		if ( ! is_numeric( $q ) ) {
+			die ( "no quantity" );
+		}
+		$units = GetParam("units", false, null);
+
+		$o = new Finance_Order( $order_id );
+		$oid = 0;
+		$o->AddProduct( $prod_id, $q, false, - 1, $units, null, null, $oid );
+		MyLog("ooid= $oid");
+		if (($o->getStatus() == 'wc-processing') and ($oid > 0)){
+			$o->updateComment($oid, 'התווסף לאחר העברת ההזמנה לטיפול');
+		}
+		return $oid;
+	}
 
 }

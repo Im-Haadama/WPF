@@ -129,25 +129,20 @@ function select_all_toggle(selector, collection_name) {
     }
 }
 
-// Limited use. The internal variable is not scoped correctly.
-// Use only if one call at a time
 function execute_url(url, finish_action, obj) {
-    let xmlhttp3 = new XMLHttpRequest();
-    xmlhttp3.onreadystatechange = function () {
+    let xhp = new XMLHttpRequest();
+    xhp.onreadystatechange = function () {
         // Wait to get query result
-        if (xmlhttp3.readyState == 4 && xmlhttp3.status == 200)  // Request finished
+        if (xhp.readyState == 4 && xhp.status == 200)  // Request finished
         {
             if (finish_action)
-                return finish_action(xmlhttp3, obj);
+                return finish_action(xhp, obj);
 
-            else report_error(xmlhttp3.response);
+            else report_error(xhp.response);
         }
     }
-    // xmlhttp3.onloadend = function(){
-    //     alert("Can't load " + url);
-    // }
-    xmlhttp3.open("GET", url, true);
-    xmlhttp3.send();
+    xhp.open("GET", url, true);
+    xhp.send();
 }
 
 function execute_url_post(url, post, finish_action)

@@ -598,7 +598,7 @@ static function get_open_site_invoices()
 //		InfoUpdate("finance_bank_enabled", 1);
 		if (InfoGet("finance_bank_enabled")) {
 			$this->bank = new Finance_Bank( self::getPostFile() );
-			$this->bank->init_hooks();
+			$this->bank->init_hooks($this->loader);
 			$this->shortcodes = Core_Shortcodes::instance();
 			$this->shortcodes->add( $this->bank->getShortcodes() );
 		}

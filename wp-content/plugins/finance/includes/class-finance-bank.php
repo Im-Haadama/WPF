@@ -50,7 +50,7 @@ class Finance_Bank
 		return self::instance()->post_file;
 	}
 
-	function init_hooks() {
+	function init_hooks($loader) {
 //		if (get_user_id() == 1) {
 //			print debug_trace( 10 );
 //			print '=====================================<br/>';
@@ -79,7 +79,7 @@ class Finance_Bank
 		add_action('admin_menu', array($this, 'admin_menu'));
 
 		$args = array("post_file" => Finance::getPostFile());
-		Core_Gem::getInstance()->AddVirtualTable("bank", $args);
+		Core_Gem::getInstance()->AddVirtualTable("bank", $args, $loader);
 
 //		Flavor_Roles::addRole('business_admin', array('finance'));
 	}

@@ -16,7 +16,16 @@ class Focus_Actions
 		$loader->AddAction("team_add_sender", $this, "team_add_sender");
 	}
 
-	function Start($input, $args) {
+	// Use WRAP function to output data to be used by the jabascript.
+	function Start_wrap($args)
+	{
+		if (is_string($url = self::Start($args)))
+			print $url;
+		return true;
+	}
+
+	// The internal function can be called from the code - no output should be displayed.
+	function Start($args) {
 		$task_id = GetArg( $args, "id", 0 );
 		if ( ! ( $task_id > 0 ) ) {
 			return false;
@@ -33,7 +42,7 @@ class Focus_Actions
 		return false;
 	}
 
-	function End($input, $args) {
+	function End($args) {
 		$task_id = GetArg( $args, "id", 0 );
 		if ( ! ( $task_id > 0 ) ) {
 			print "no id";
@@ -45,7 +54,7 @@ class Focus_Actions
 		return $t->Ended(get_user_id());
 	}
 
-	static function Cancel($input, $args) {
+	static function Cancel($args) {
 		$task_id = GetArg( $args, "id", 0 );
 		if ( ! ( $task_id > 0 ) ) {
 			return false;
@@ -54,7 +63,7 @@ class Focus_Actions
 		return Focus_Tasklist::task_cancelled( $task_id );
 	}
 
-	static function Postpone($input, $args) {
+	static function Postpone($args) {
 		$task_id = GetArg( $args, "id", 0 );
 		if ( ! ( $task_id > 0 ) ) {
 			return false;
@@ -64,7 +73,7 @@ class Focus_Actions
 		return $T->Postpone();
 	}
 
-	static function PriPlus($input, $args)
+	static function PriPlus($args)
 	{
 		$task_id=GetArg($args, "id", 0);
 		if (!($task_id > 0)) return false;
@@ -74,7 +83,7 @@ class Focus_Actions
 		return   $T->setPriority( $T->getPriority() + 1 );
 	}
 
-	static function PriMinus($input, $args)
+	static function PriMinus($args)
 	{
 		$task_id=GetArg($args, "id", 0);
 		if (!($task_id > 0)) return false;

@@ -410,11 +410,11 @@ class Core_Data
 					$value = Core_Html::GuiHyperlink($selected, sprintf( urldecode($links[ $key ]), $data ), $args );
 					break;
 				}
-				if ( $selectors and array_key_exists( $key, $selectors ) ) {
+				if ($selectors and array_key_exists( $key, $selectors ) ) {
 					$selector_name = $selectors[ $key ];
-//					print "sel=" . $selector_name . "<br/>";
 					if ( strlen( $selector_name ) < 2 ) die( "selector " . $key . "is empty" );
 					// print $selector_name;
+//					if ($key == "team") dd ($args);
 					$value = $selector_name( $input_name, $orig_data, $args );
 					// $value = (function_exists($selector_name) ? $selector_name( $input_name, $orig_data, $args ) : $orig_data); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
 //					if (! function_exists($selector_name)) {
@@ -433,8 +433,9 @@ class Core_Data
 				if ($edit){
 					// Copy the global args to field args. And than handle specific col args.
 					$field_args = $args;
-					if (isset($args["size"]) and is_array($args["size"]) and isset($args["size"][$key])) $field_args["size"] = $args["size"][$key];
-					if (isset($args["events"])) $field_args["events"] = $args["events"];
+					if (isset($args["size"]) and is_array($args["size"]))
+						$field_args["size"] = (isset($args["size"][$key]) ? $args["size"][$key] : null);
+//					if (isset($args["events"])) $field_args["events"] = $args["events"];
 
 					if (! $key or $key == "id")	continue;
 					// Not tested:
@@ -462,19 +463,19 @@ class Core_Data
 //					}
 					break;
 				}
-				if ( $selectors and array_key_exists( $key, $selectors )) {
-					$selector_name = $selectors[ $key ];
-					print "$key sel=$selector_name<br/>";
-					if ( strlen( $selector_name ) < 2 ) die( "selector " . $key . "is empty" );
-					//////////////////////////////////
-					// Selector ($id, $value, $args //
-					//////////////////////////////////
-					if (function_exists($selector_name))
-						$value = $selector_name( $key, $orig_data, $args); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
-					else
-						$value = "selector $selector_name not found";
-					break;
-				}
+				// Looks like the block above.
+//				if ( $selectors and array_key_exists( $key, $selectors )) {
+//					$selector_name = $selectors[ $key ];
+//					if ( strlen( $selector_name ) < 2 ) die( "selector " . $key . "is empty" );
+//					//////////////////////////////////
+//					// Selector ($id, $value, $args //
+//					//////////////////////////////////
+//					if (function_exists($selector_name))
+//						$value = $selector_name( $key, $orig_data, $args); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
+//					else
+//						$value = "selector $selector_name not found";
+//					break;
+//				}
 				// Format values by type.
 				if (isset($args["sql_fields"]) and ! isset($args["no_html"])){
 					$type = SqlField($args["sql_fields"], $key);
@@ -500,6 +501,9 @@ class Core_Data
 		}
 
 		if ($actions){
+			// Action types:
+			// server;client: Run something in the server and update the display. Execute url is used to run the server action and later the javascript action.
+			// url: Show as hyperlink
 			foreach ($actions as $action_name => $action) {
 				if (is_array($action))
 				{
@@ -568,7 +572,7 @@ class Core_Data
 				var_dump( $row );
 				print "<br/>";
 				print $sql . "<br/>";
-				print debug_trace();
+				print debug_trace(1);
 				die( __FUNCTION__ . ":" . __LINE__ . "no id_field" );
 			}
 			$row_id = $row[ $id_field ];

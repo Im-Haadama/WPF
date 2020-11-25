@@ -91,14 +91,13 @@ class Focus_Views {
 		if ($operation) {
 			$table_name = self::TableFromOperation( $operation );
 			$args = self::Args( $table_name );
-			$result = apply_filters( $operation, $args );
-			if ( $result != "" ) {
-				return $result;
-			}
+			ob_start();
+			do_action($operation, $args);
+			return ob_get_clean();
 		}
 
 		// If no filter yet, handle the old way.
-		return Focus_Views::instance()->focus_main( $operation, $user_id );
+		return Focus_Views::instance()->focus_main( $user_id );
 	}
 
 	static function TableFromOperation( $operation ) {
@@ -233,6 +232,7 @@ class Focus_Views {
 					);
 					break;
 				case "tasklist":
+					$args["rows_per_page"] = 20;
 					$args["selectors"] = array(
 						"project_id" => "Focus_Views::gui_select_project",
 						"owner"      => "Focus_Views::gui_select_worker",
@@ -326,7 +326,7 @@ class Focus_Views {
 	 * @return string
 	 * @throws Exception
 	 */
-	function focus_main( $operation, $user_id )
+	function focus_main_old( $operation, $user_id )
 	{
 		if ( ! $operation ) {
 			$operation = "default";
@@ -369,6 +369,7 @@ class Focus_Views {
 				break;
 
 			case "show_project":
+				die("Is this called");
 				$args = self::Args( "projects" );
 
 				$id           = GetParam( "project_id", true );
@@ -512,7 +513,6 @@ class Focus_Views {
 				return self::show_teams();
 				break;
 
-
 			case "show_tasks":
 				die( 1 ); // 1/10/2020 Not sure this code is needed. If needed write the scenario.
 				$query_array = Core_Data::data_parse_get( "tasklist", array(
@@ -550,18 +550,29 @@ class Focus_Views {
 		return Core_Gem::GemAddRow( "working_teams", "New team", $args );
 	}
 
+	// Called from the shortcode [focus_project]
 	static function show_project_wrapper() {
-		$new = GetParam( "new" );
-		if ( $new ) {
-			$project = Focus_Project::create_from_task( $new );
-			if ( $project ) {
-				return self::show_project( $project->getId() );
+		$db_prefix = GetTablePrefix();
+		// Are we here after creating a task?
+		$new = GetParam( "new", false, false, true ); // Called after add a task. Ned is the id of the new task.
+		if ( false !== $new ) {
+			if ($new) {
+				$project = Focus_Project::create_from_task( $new );
+				if ( ! $project ) {
+					return "project not found";
+				}
+				$project_id = $project->getId();
+			} else {
+				$project_id = SqlQuerySingleScalar("select project_id from ${db_prefix}tasklist where id = " . SqlQuerySingleScalar("Select max(id) from ${db_prefix}tasklist where creator = " . get_user_id()));
 			}
-
-			return "project not found";
+		} else {
+			// Otherwise get from the URL.
+			$project_id = GetParam("id", true, null, true);
 		}
+		$args = self::Args( "tasklist" );
+		$args["order"] = " id desc";
 
-		return self::show_project( get_user_id() );
+		return self::show_project($project_id, $args );
 	}
 
 	static function show_teams() {
@@ -645,43 +656,33 @@ class Focus_Views {
 			return "bad project id $project_id";
 		}
 
-		if ( $operation = GetParam( "operation", false, null ) ) {
-			$args               = self::Args( "tasklist" );
-			$args["project_id"] = $project_id;
-			$result             = apply_filters( $operation, "", $project_id, $args );
-			if ( $result != "" ) {
-				return $result;
-			}
-		}
-
 		$P = new Org_Project( $project_id );
-//		$edit = GetArg( $args, "edit", false );
-//		if ( $edit ) {
-//			$args["post_file"] = self::instance()->post_file;
-//
-//			return Core_Gem::GemElement( "projects", $project_id, $args );
-//		}
-//		$active_only = GetArg( $args, "active_only", true );
-//		$order       = GetArg( $args, "order", "order by priority desc" );
 		if ( is_null( $args ) ) {
 			$args = self::Args( "tasklist" );
 		}
 
+		$args["query"] = (isset($args["query"]) ? $args["query"] : 1) . " and project_id = $project_id and status < 2";
 //		$sql = "select * from tasklist where project_id = " . $project_id;
 //		if ( $active_only ) {
 //			$sql .= " and status = 0 ";
 //		}
 //		$args["sql"]   = $sql . $order;
-		$args["links"]        = array( "id" => self::get_link( "task", "%s" ) );
+//		$args["links"]        = array( "id" => self::get_link( "task", "%s" ) );
 		$args["title"]        = __( "Tasks in project" ) . " " . $P->getName();
-		$args["prepare_plug"] = __CLASS__ . "::prepare_row";
-		$args["query"]        = " project_id=$project_id and status < 2";
-		$args["hide_cols"]    = array( "task_description" => 1 );
-		$args["order"]        = " id desc";
-		$args["actions"] =array(array("create Follow-up", "AA"));
+//		$args["prepare_plug"] = __CLASS__ . "::prepare_row";
+//		$args["query"]        = " project_id=$project_id and status < 2";
+//		$args["hide_cols"]    = array( "task_description" => 1 );
+//		$args["order"]        = " id desc";
+		$action_url = GetUrl();
+
+		$args["actions"] =array(array( "", $action_url . "?operation=gem_add_tasklist&preq=%d;", "fas fa-plus-square", "add_followup" ));
 		// $args["post_file"] .= "project_id=$project_id";
 
 		unset_by_value( $args["fields"], "project_id" );
+
+//		var_dump($args["fields"]);
+
+//		var_dump($args["query"]); print "<br/>";
 
 		$result = Core_Gem::GemTable( "tasklist", $args );
 		$result .= Core_Html::GuiHyperlink( " Edit project ", AddToUrl( "edit", 1 ) );
@@ -692,6 +693,7 @@ class Focus_Views {
 	}
 
 	function handle_focus_do( $operation ) {
+		die ("No to be called"); // 2020-11-24 agla
 		if ( strpos( $operation, "data_" ) === 0 ) {
 			return handle_data_operation( $operation );
 		}
@@ -846,7 +848,7 @@ class Focus_Views {
 	 * @return string
 	 * @throws Exception
 	 */
-	function default( $user_id ) {
+	function focus_main( $user_id ) {
 //		print self::CompanySettings(new Org_Company(1));
 //		die (1);
 		if ( ! self::focus_check_user() ) {
@@ -1053,6 +1055,7 @@ class Focus_Views {
 		}
 
 		$args["query"] = " id in (" . CommaImplode( $projects ) . ")";
+		$args["actions"] = array(array("Open tasks", "/project?id=%d"));
 
 		$result .= Core_Gem::GemTable( "projects", $args );
 
@@ -1825,7 +1828,7 @@ class Focus_Views {
 
 	static function gui_select_team( $id, $selected = null, $args = null ) {
 		$db_prefix = GetTablePrefix();
-		$edit      = GetArg( $args, "edit", true );
+		$edit      = GetArg( $args, "edit", false );
 
 		// Just view - fetch the team name and return.
 		if ( ! $edit ) {
@@ -1906,9 +1909,6 @@ class Focus_Views {
 
 			case "worker":
 				return "/focus_worker";
-
-			//case "project_tasks":
-			//    return self::show_project($id, $args);
 
 
 		}

@@ -38,7 +38,6 @@ class Fresh_Catalog {
 		$prod_id = SqlQuerySingleScalar("select product_id from im_supplier_mapping where id = $map_id");
 		$p = new Fresh_Product($prod_id);
 		if (!$p->Draft()) return false;
-		print "done";
 		die(0);
 	}
 
