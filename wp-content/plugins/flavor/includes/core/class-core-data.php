@@ -20,38 +20,39 @@ class Core_Data
 	static function init_hooks($loader)
 	{
 		$loader->AddAction("data_auto_list", __CLASS__, "data_auto_list");
+		$loader->AddAction("data_update", __CLASS__, "data_update");
 	}
 
-	static function handle_operation( $operation )
-	{
-		switch ($operation){
-			case "data_update":
-				$table_name = GetParam("table_name", true);
-				return self::data_update($table_name);
-
-			case "data_save_new":
-				$table_name = GetParam("table_name", true);
-				return self::SaveNew($table_name);
-
-			case "data_active":
-				$active = GetParam("active", true);
-				$table_name = GetParam("table_name", true);
-				$row_id = GetParam("id", true);
-				return self::Active($table_name, $row_id, $active);
-
-			case "data_delete":
-				$ids = GetParamArray("ids", true);
-				$table = GetParam("type", true);
-				// Todo: check permissions
-				return self::Delete($table, $ids);
-
-//			case "data_delete_team":
-//				$team_id = GetParam("team_id", true);
-//				$team = new Org_Team($team_id);
-//				return $team->removeMember(GetParam("ids"));
-
-		}
-	}
+//	static function handle_operation( $operation )
+//	{
+//		switch ($operation){
+//			case "data_update":
+//				$table_name = GetParam("table_name", true);
+//				return self::data_update($table_name);
+//
+//			case "data_save_new":
+//				$table_name = GetParam("table_name", true);
+//				return self::SaveNew($table_name);
+//
+//			case "data_active":
+//				$active = GetParam("active", true);
+//				$table_name = GetParam("table_name", true);
+//				$row_id = GetParam("id", true);
+//				return self::Active($table_name, $row_id, $active);
+//
+//			case "data_delete":
+//				$ids = GetParamArray("ids", true);
+//				$table = GetParam("type", true);
+//				// Todo: check permissions
+//				return self::Delete($table, $ids);
+//
+////			case "data_delete_team":
+////				$team_id = GetParam("team_id", true);
+////				$team = new Org_Team($team_id);
+////				return $team->removeMember(GetParam("ids"));
+//
+//		}
+//	}
 
 	static function data_save_new()
 	{
@@ -101,6 +102,12 @@ class Core_Data
         return $row_id;
 	}
 
+	static function data_update_wrap()
+	{
+		$table_name = GetParam("table_name", true, null, true);
+		self::data_update($table_name);
+	}
+
 	static function data_update($table_name)
 	{
 		$debug = false;
@@ -117,6 +124,8 @@ class Core_Data
 
 		// Prepare sql statements: primary and meta tables;
 		$values = self::data_parse_get($table_name, array("search", "operation", "table_name", "id", "dummy"));
+//		print "data_update_prepare_$table_name";
+		$values = apply_filters("data_update_prepare_$table_name", $values, $row_id);
 
 		foreach ($values as $tbl => $changed_values)
 		{

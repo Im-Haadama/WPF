@@ -13,6 +13,7 @@ class Focus_Views {
 		$loader->AddAction( "tasklist_worker", $this, "show_worker_wrapper", 10, 2 );
 		$loader->AddAction('wp_enqueue_scripts', $this, 'enqueue_scripts');
 		$loader->AddFilter("gem_next_page_tasklist", $this, "next_page_tasklist");
+		$loader->AddFilter("data_update_prepare_tasklist", $this, "data_update_prepare_tasklist", 10, 2);
 	}
 
 	private $post_file;
@@ -2196,6 +2197,16 @@ class Focus_Views {
 	function next_page_tasklist()
 	{
 		return "/project";
+	}
+
+	function data_update_prepare_tasklist($values, $id)
+	{
+		$task = new Focus_Tasklist($id);
+		if (($task->get_status() == enumTasklist::done_creator) and isset($values['tasklist']['team'])) {
+			// Assigning the task. Change status to 0.
+			$values['tasklist']['status'] = array('0', false);
+		}
+		return $values;
 	}
 
 }

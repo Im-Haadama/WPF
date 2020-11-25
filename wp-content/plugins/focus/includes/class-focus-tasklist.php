@@ -154,7 +154,7 @@ class Focus_Tasklist {
 				SET ended = now(),
 				    owner = $user_id,
 				    status = " . $new_status;
-		if ($this->creator() != $user_id) $sql .= "team = null";
+		if ($this->creator() != $user_id) $sql .= ", team = null";
 
 		$sql .= " WHERE id = " . $this->id;
 
@@ -185,6 +185,14 @@ class Focus_Tasklist {
 		}
 
 		return true;
+	}
+
+	function get_status()
+	{
+		$db_prefix = GetTablePrefix();
+		$rc =  SqlQuerySingleScalar("select status from ${db_prefix}tasklist where id = " . $this->getId());
+//		print "stat=$rc<br/>";
+		return $rc;
 	}
 
 	function update_status( $status, $owner = 0 )

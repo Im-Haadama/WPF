@@ -405,7 +405,7 @@ class Flavor {
 	/**
 	 * @param $operation
 	 *
-	 * @return string|void
+	 * @return string|void`
 	 */
 	function handle_operation($operation) {
 		$ignore_list = array("operation");
