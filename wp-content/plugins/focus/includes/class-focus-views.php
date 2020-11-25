@@ -663,28 +663,13 @@ class Focus_Views {
 			$args = self::Args( "tasklist" );
 		}
 
-		$args["query"] = (isset($args["query"]) ? $args["query"] : 1) . " and project_id = $project_id and status < 2";
-//		$sql = "select * from tasklist where project_id = " . $project_id;
-//		if ( $active_only ) {
-//			$sql .= " and status = 0 ";
-//		}
-//		$args["sql"]   = $sql . $order;
-//		$args["links"]        = array( "id" => self::get_link( "task", "%s" ) );
+		$args["query"] = (isset($args["query"]) ? $args["query"] : 1) . " and project_id = $project_id and (status < 2 or status = 6)";
 		$args["title"]        = __( "Tasks in project" ) . " " . $P->getName();
-//		$args["prepare_plug"] = __CLASS__ . "::prepare_row";
-//		$args["query"]        = " project_id=$project_id and status < 2";
-//		$args["hide_cols"]    = array( "task_description" => 1 );
-//		$args["order"]        = " id desc";
 		$action_url = GetUrl();
 
 		$args["actions"] =array(array( "", $action_url . "?operation=gem_add_tasklist&preq=%d;", "fas fa-plus-square", "add_followup" ));
-		// $args["post_file"] .= "project_id=$project_id";
 
 		unset_by_value( $args["fields"], "project_id" );
-
-//		var_dump($args["fields"]);
-
-//		var_dump($args["query"]); print "<br/>";
 
 		$result = Core_Gem::GemTable( "tasklist", $args );
 		$result .= Core_Html::GuiHyperlink( " Edit project ", AddToUrl( "edit", 1 ) );
@@ -979,7 +964,6 @@ class Focus_Views {
 			$result .= $table;
 		} else {
 			if ( ! $include_team ) {
-//				print "<br/>".$args["sql"] . "<br/>";
 				return self::user_work( $args, "Active tasks assigned to my teams", true, $user_id );
 			}
 			$result .= "Nothing found.";
@@ -1126,8 +1110,10 @@ class Focus_Views {
 		// Tasks I've created. Assigned to some else                                                                 //
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		$args["title"] = ETranslate( "Tasks I've initiated to other teams" );
-		$args["query"] = " creator = $user_id and status < 2"; // . " and (owner != " . $user_id . ' or isnull(owner)) ' . ($teams ? ' and team not in (' . CommaImplode( $teams ) . ")" : '');
+		$args["query"] = " creator = $user_id and (status < 2 or status = 6)"; // . " and (owner != " . $user_id . ' or isnull(owner)) ' . ($teams ? ' and team not in (' . CommaImplode( $teams ) . ")" : '');
 		$args["class"] = "sortable";
+		$args["fields"][] = "status";
+		$args["selectors"]["status"] = "Focus_Tasklist::get_task_status";
 		$table         = $this->Taskslist( $args );
 		if ( $this->result_count ) {
 			$result .= $table;
@@ -1737,7 +1723,7 @@ class Focus_Views {
 	static function search_by_text( $user_id, $text ) {
 		$result = [];
 		$result = array_merge( $result, self::project_list_search( $user_id, $text ) );
-		$result = array_merge( $result, self::task_list_search( "status < 2 and (task_description like " . QuotePercent( $text ) . " or task_title like " . QuotePercent( $text ) . ")" ) );
+		$result = array_merge( $result, self::task_list_search( "(status < 2 or status = 6) and (task_description like " . QuotePercent( $text ) . " or task_title like " . QuotePercent( $text ) . ")" ) );
 		$result = array_merge( $result, self::template_list_search( " is_active = 1 and task_description like " . QuotePercent( $text ) ) );
 
 		if ( count( $result ) < 1 ) {
@@ -2080,7 +2066,7 @@ class Focus_Views {
 
 	static function ActiveQuery() {
 		return " (isnull(preq) or preq_done(id)) and (date is null or date(date) <= Curdate())"
-		       . " and (mission_id is null or mission_id = 0) and status < 2";
+		       . " and (mission_id is null or mission_id = 0) and (status < 2 or status = 6)";
 	}
 
 	static public function AddProjectMember( $i, $project_id, $args ) {

@@ -13,7 +13,6 @@ class Flavor_Org_Views {
 		return self::$_instance;
 	}
 
-
 	function init_hooks($loader)
 	{
 		$loader->AddAction( 'company_add_worker', $this, 'company_add_worker' );
@@ -338,7 +337,4 @@ class Flavor_Org_Views {
 		$result .= Core_Html::gui_select( $id, 'display_name', $selected_info, $events, $selected, "user_id", $class );
 		return $result;
 	}
-
-
-
 }
