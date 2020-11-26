@@ -92,6 +92,7 @@ class Fresh_Supplier_Balance {
 
 		$args = array("st_suppliers" => $selected_tab);
 		$args["tabs_load_all"] = false;
+		$args["url"] = "/wp-admin/admin.php?page=accounting";
 
 		$result .= Core_Html::gui_div("logging");
 		$result .= Core_Html::GuiTabs( "suppliers", $tabs, $args );

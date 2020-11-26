@@ -154,7 +154,7 @@ class Focus_Tasklist {
 				SET ended = now(),
 				    owner = $user_id,
 				    status = " . $new_status;
-		if ($this->creator() != $user_id) $sql .= ", team = null";
+		if ($this->creator() != $user_id) $sql .= ", team = 0, owner = 0 ";
 
 		$sql .= " WHERE id = " . $this->id;
 

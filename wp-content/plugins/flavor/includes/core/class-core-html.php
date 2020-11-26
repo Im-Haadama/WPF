@@ -1771,6 +1771,7 @@ class Core_Html {
 		$button_args = $args;
 		$btn_class = "btn_$class";
 		$button_args["class"] = $btn_class;
+		$url = GetArg($args, "url", GetUrl(1));
 
 		$selected_tab = GetArg($args, "st_$id", 0);
 		$all_loaded = GetArg($args, "tabs_load_all", false);
@@ -1804,7 +1805,7 @@ class Core_Html {
 			if ($all_loaded)
 				$button_args["events"] = "onclick=\"selectTab(event, '$name', '$div_class', '$btn_class')\"";
 			else
-				$button_args["events"] = "onclick=\"window.location.href = '" . AddParamToUrl(GetUrl(1), "st_$id", $tab[0]) . "'\"";
+				$button_args["events"] = "onclick=\"window.location.href = '" . AddParamToUrl($url, "st_$id", $tab[0]) . "'\"";
 
 			$result .= Core_Html::GuiButton("btn_tab_$name", $display_name, $button_args);
 		}
