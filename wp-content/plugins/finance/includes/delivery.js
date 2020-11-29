@@ -12,6 +12,9 @@ function calcDelivery() {
     let due_vat = 0;
     let basket_sum = 0, basket_price = 0;
 
+    let id_col = 0;
+    if (table.rows[1].cells[1].id.indexOf("product") !== -1) id_col = 1;
+
     for (let i = 1; i < lines; i++)  // Skip the header. Skip last lines: total, vat, total-vat, discount
     {
         // let line_type = get_line_type(i);
@@ -20,12 +23,12 @@ function calcDelivery() {
         var line_total = 0;
         var vat_percent = 17; // Todo: read from settings
         var has_vat = true;
-        let id = table.rows[i].cells[1].id;
+        let id = table.rows[i].cells[id_col].id;
         id = id.substr(id.lastIndexOf("_") + 1);
         var line_vat = document.getElementById("vat_" + id);
         var order_line = id;
-        if (order_line === "")
-            order_line = table.rows[i].cells[0].firstElementChild.id.substr(4);
+        // if (order_line === "")
+        //     order_line = table.rows[i].cells[id].firstElementChild.id.substr(4);
 
         let p = get_value(document.getElementById("price_" + order_line));
         let q = get_value(document.getElementById("quantity_" + order_line));
@@ -87,10 +90,12 @@ function delivery_save_or_edit(post_file, operation) {
     let request = post_file + '?operation=' + operation + "&order_id=" + order_id + "&total=" + total;
 
     let data = [[order_id, total, vat]];
+    let id_col = 1;
+    if (operation == "delivery_save") id_col = 0; // in save there is no checkbox.
 
     for (let line_number = 1; line_number < table.rows.length; line_number++)
     {
-        let id = table.rows[line_number].cells[1].id;
+        let id = table.rows[line_number].cells[id_col].id;
         let order_line = id.substr(id.lastIndexOf("_") + 1);
 
         let prod_id = get_value_by_name("prod_id_" + order_line);

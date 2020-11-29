@@ -129,6 +129,14 @@ function select_all_toggle(selector, collection_name) {
     }
 }
 
+function data_set_active(post_file, id)
+{
+    let value = get_value_by_name(id);
+    let url = add_param_to_url(post_file, "operation", "data_set_active");
+    url = add_param_to_url(url, "value", value);
+    execute_url(url, load_page);
+}
+
 function execute_url(url, finish_action, obj) {
     let xhp = new XMLHttpRequest();
     xhp.onreadystatechange = function () {
@@ -190,10 +198,11 @@ function report_error(response)
 function action_hide_row(xmlhttp, btn)
 {
     if (check_result(xmlhttp)){
-        if (typeof (btn[0]) != 'undefined')
-            for (let i=0; i < btn.length; i++)
+        if (typeof (btn[0]) != 'undefined') {
+            if (btn[0].parentElement.parentElement.parentElement.rows.length === 2) location.reload();
+            for (let i = 0; i < btn.length; i++)
                 btn[i].parentElement.parentElement.style.display = 'none';
-        else
+        } else
             btn.parentElement.parentElement.style.display = 'none';
     }
 }

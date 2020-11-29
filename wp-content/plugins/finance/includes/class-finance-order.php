@@ -1555,4 +1555,10 @@ class Finance_Order {
 
 		return ($result ? $result : 0);
 	}
+
+	public function getItems()
+	{
+		return $this->WC_Order->get_items();
+	}
+
 }

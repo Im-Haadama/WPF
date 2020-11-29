@@ -21,6 +21,18 @@ class Core_Data
 	{
 		$loader->AddAction("data_auto_list", __CLASS__, "data_auto_list");
 		$loader->AddAction("data_update", __CLASS__, "data_update");
+		$loader->AddAction("data_set_active", __CLASS__, "data_set_active");
+	}
+
+	static function data_set_active($args)
+	{
+		$id = GetARg($args, "id", 0);
+		$table = GetArg($args, "table", null);
+		$value = GetArg($args, "value", true);
+		if (! $id or ! $table) return;
+		$db_prefix = GetTablePrefix($table);
+		$sql = "update ${db_prefix}$table set is_active = $value where id = $id";
+		SqlQuery($sql);
 	}
 
 //	static function handle_operation( $operation )
@@ -523,7 +535,7 @@ class Core_Data
 						$client_action = substr($action[1], $s + 1);
 						if (! $client_action) $client_action = "''";
 //						print "CA=$client_action<br/>";
-						$btn_id = "btn_$text" . "_" . $row_id;
+						$btn_id = "btn_$text" . "_" . $row_id . "_$action_name";
 						$action_args = array("action" => "execute_url('" . $action_url . "', $client_action, $btn_id )");
 						if (isset($action[2])) $action_args["class"] = $action[2];
 						if (isset($action[3])) $action_args["tooltip"] = $action[3];

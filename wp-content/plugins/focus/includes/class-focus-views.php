@@ -206,7 +206,7 @@ class Focus_Views {
 						"owner"       => "Flavor_Org_Views::gui_select_worker",
 						"creator"     => "Flavor_Org_Views::gui_select_worker",
 						"repeat_freq" => "gui_select_repeat_time",
-						"team"        => "Focus_Views::gui_select_team",
+						"team"        => "Focus_Views::gui_select_team"
 					);
 					$args["fields"]        = array(
 						"id",
@@ -231,7 +231,10 @@ class Focus_Views {
 						"task_url"            => "Task Url",
 						"condition_query"     => "Condition query"
 					);
+					$args["check_active"] = true;
+
 					break;
+
 				case "tasklist":
 					$args["rows_per_page"] = 20;
 					$args["selectors"] = array(
@@ -241,7 +244,7 @@ class Focus_Views {
 						"preq"       => "Focus_Views::gui_select_task",
 						"team"       => "Focus_Views::gui_select_team",
 //						"priority"   => "Focus_Views::gui_select_priority", Show select
-						"created" => "Core_Html::GuiShowDynamicDateTime"
+						"created" => "Core_Html::GuiShowDynamicDateTime",
 					);
 					if ( self::OptionEnabled( "missions" ) ) {
 						$args["selectors"]["mission_id"] = "Flavor_Mission::gui_select_mission";
@@ -275,7 +278,8 @@ class Focus_Views {
 						"priority",
 						"created"
 					);
-					$args["links"]         = array( "id" => self::get_link( "task", "%d" ) );
+					$args["links"]         = array( "id" => self::get_link( "task", "%d" ),
+						"task_template"=>self::get_link("template", "%d"));
 					if ($action == "show")
 						$args["fields"][] = "creator";
 					break;
@@ -1262,6 +1266,11 @@ class Focus_Views {
 		if ( ! $template_id ) {
 			return self::show_new_template();
 		}
+		if ($operation = GetParam("operation", false, null)){
+			$args = array("id"=> GetParam("id", true),
+			"table"=>"task_templates");
+			do_action($operation, $args);
+		}
 
 		return self::instance()->show_templates( $not_used, $template_id );
 	}
@@ -1327,8 +1336,13 @@ class Focus_Views {
 			return self::show_new_task();
 		}
 
+		$t = new Focus_Tasklist($row_id);
 		$table_name  = "tasklist";
 		$args              = self::Args("tasklist", $edit ? "show" : "create");
+		if ($t->task_template()) {
+			$args["fields"][] = "task_template";
+		}
+
 		$args["edit_cols"] = array(
 			"date"             => true,
 			"task_title"       => true,
@@ -1476,7 +1490,7 @@ class Focus_Views {
 		$template_args["companies"] = $worker->GetCompanies();
 
 		if ( $template_id ) {
-			$template_args["title"]     = "Repeating task";
+//			$template_args["title"]     = "Repeating task"; 2020-11-29. agla: Title should be set in pages
 			$template_args["post_file"] = $action_url;
 
 			$template = Core_Gem::GemElement( "task_templates", $template_id, $template_args );

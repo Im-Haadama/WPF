@@ -274,7 +274,6 @@ class Finance_Delivery
 
 		$vat = apply_filters("finance_vat", false);
 
-		$html .= '<datalist id="products"></datalist>';
 
 		if ($this->delivery_id) {
 //			print "cc=".$args["checkbox_class"];
@@ -291,6 +290,7 @@ class Finance_Delivery
 				$html .= Core_Html::GuiButton( "btn_save", "Save", "delivery_save_or_edit('" . Flavor::getPost() . "', 'delivery_edit')" );
 				$html .= Core_Html::GuiButton( "btn_delete", "Delete Lines", "delete_items('delivery_lines', '" . $post_file . "', 'delivery_delete_lines')" );
 			}
+			$html .= '<datalist id="products"></datalist>';
 		}
 		return $html;
 	}
@@ -432,7 +432,8 @@ class Finance_Delivery
 //		$args);
 
 		$html .= Core_Html::GuiLabel("order_id", $this->order_id, array("hidden"=>true));
-		$html .= Core_Html::GuiButton("btn_add", "Create", "delivery_save_or_edit('" . Flavor::getPost() . "', 'delivery_save')");
+		$html .= Core_Html::GuiButton("btn_add", "Create", "delivery_save_or_edit('" . Flavor::getPost() . "', 'delivery_save')") .
+		         '<datalist id="products"></datalist>';
 
 		return $html;
 	}
@@ -831,11 +832,6 @@ class Finance_Delivery
 	static function getLink($id)
 	{
 		return "/wp-admin/admin.php?page=deliveries&delivery_id=" . $id;
-	}
-
-	public function getItems()
-	{
-		return $this->order->get_items();
 	}
 }
 
