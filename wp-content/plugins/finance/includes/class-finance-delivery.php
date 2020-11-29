@@ -10,7 +10,6 @@ class Finance_Delivery
 	private $order_due_vat = 0;
 	private $order_vat_total = 0;
 	private $delivery_total = 0;
-	private $delivery_due_vat = 0;
 	private $delivery_total_vat = 0;
 	private $margin_total = 0;
 	private $order_id = 0;

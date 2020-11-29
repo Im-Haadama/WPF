@@ -13,43 +13,22 @@ if ( ! defined( 'FRESH_INCLUDES' ) ) {
 
 $debug = false;
 
-class Fresh_Delivery {
+class Fresh_Delivery extends Finance_Delivery {
 	private $ID = 0;
 	private $order_id = 0;
 	private $AdditionalOrders = null;
-	private $order = null;
 	private $del_price = 0;
 
-	public function __construct( $id ) {
+	/**
+	 * Fresh_Delivery constructor.
+	 *
+	 * @param int $del_price
+	 */
+	public function __construct( int $id ) {
+		parent::__construct(0, $id);
 		$this->ID = $id;
-		$this->delivery_fields_names = array(
-			"chk", // 0
-			// product
-			"nam", // 1
-			"com", // 2
-			"pid", // 3
-			"ter", // 4
-			"orq", // 5
-			"oru", // 6
-			"deq", // 7
-			"prc", // 8
-			"orl", // 9
-			"hvt", // 10
-			"lvt", // 11
-			"del", // 12
-			"req", // 13
-			"ret",  // 14
-			"buy", // 15
-			"mar", // 16
-			"pac", // 17,
-			"typ" // 18
-		);
-		if ($id > 0){
-			$del_info = SqlQuerySingleAssoc("select * from im_delivery where id = $id");
-			$this->delivery_total = $del_info['total'];
-		}
-		$this->calculated = false;
 	}
+
 
 	static public function init_hooks($loader)
 	{
@@ -295,463 +274,13 @@ class Fresh_Delivery {
 		return $this->getOrder()->getCustomerType();
 	}
 
-	public function getOrder() {
-		if ( ! $this->order ) {
-			$this->order = new Fresh_Order( $this->OrderId() );
-		}
-
-		return $this->order;
-	}
-
-	function delivery_text( $document_type = Finance_DocumentType::delivery, $operation = Finance_DocumentOperation::show, $margin = false ) {
-		$db_prefix = GetTablePrefix("delivery_lines");
-
-		$this->delivery_total = 0;
-		$header_fields = array(
-			"בחר",
-			"פריט",
-			"הערה",
-			"ID",
-			"קטגוריה",
-			"כמות הוזמן",
-			"יחידות הוזמנו",
-			"כמות סופק",
-			"מחיר",
-			"סה\"כ להזמנה",
-			"חייב מע\"מ",
-			"מע\"מ",
-			"סה\"כ",
-			"כמות לזיכוי",
-			"סה\"כ זיכוי",
-			"מחיר עלות",
-			"סה\"כ מרווח שורה",
-			"מידע לאריזה",
-			"סוג שורה"
-		);
-
-		if ( false ) {
-			print "Document type " . $document_type . "<br/>";
-			print "operation: " . $operation . "<br/>";
-		}
-		global $global_vat;
-
-		$expand_basket = false;
-
-		$show_fields = array();
-		for ( $i = 0; $i < eDeliveryFields::max_fields; $i ++ ) {
-			$show_fields[ $i ] = false;
-		}
-
-		if ( InfoGet("delivery_expand_basket") and $operation == Finance_DocumentOperation::create or $operation == Finance_DocumentOperation::collect ) {
-			$expand_basket                                = true;
-			$show_fields[ eDeliveryFields::packing_info ] = true;
-		}
-
-		// All fields:
-		$show_fields[ eDeliveryFields::product_name ]  = true;
-		$show_fields[ eDeliveryFields::order_q ]       = true;
-		$show_fields[ eDeliveryFields::order_q_units ] = false; // For now ordering by units is not supported
-		$show_fields[ eDeliveryFields::price ]         = true;
-		$show_fields[ eDeliveryFields::client_comment ]         = true;
-
-
-		$empty_array = array();
-		for ( $i = 0; $i < eDeliveryFields::max_fields; $i ++ ) {
-			$empty_array[ $i ] = "";
-		}
-
-		switch ( $document_type ) {
-			case Finance_DocumentType::order:
-				$header_fields[ eDeliveryFields::delivery_line ] = "סה\"כ למשלוח";
-				if ( $operation == Finance_DocumentOperation::edit ) {
-					$header_fields[ eDeliveryFields::line_select ] = Core_Html::gui_checkbox( "chk", "line_chk", false );
-					$show_fields[ eDeliveryFields::line_select ]   = true;
-				}
-				$show_fields[ eDeliveryFields::order_line ] = true;
-				if ( $margin ) {
-					$show_fields[ eDeliveryFields::buy_price ]   = true;
-					$show_fields[ eDeliveryFields::line_margin ] = true;
-				}
-				break;
-			case Finance_DocumentType::delivery:
-				$show_fields[ eDeliveryFields::delivery_q ] = true;
-				if ( $operation != Finance_DocumentOperation::collect) {
-					$show_fields[ eDeliveryFields::has_vat ]       = true;
-//					$show_fields[ eDeliveryFields::line_vat ]      = true;
-					$show_fields[ eDeliveryFields::delivery_line ] = true;
-				}
-				if ( $operation == Finance_DocumentOperation::create or $operation == Finance_DocumentOperation::collect )
-					$show_fields[ eDeliveryFields::order_line ] = false;
-				if ( $margin ) {
-					$show_fields[ eDeliveryFields::buy_price ]   = true;
-					$show_fields[ eDeliveryFields::line_margin ] = true;
-				}
-				break;
-			case Finance_DocumentType::refund:
-				$refund                                      = true;
-				$show_fields[ eDeliveryFields::refund_q ]    = true;
-				$show_fields[ eDeliveryFields::refund_line ] = true;
-				break;
-			default:
-				print "Document type " . $document_type . " not handled " . __FILE__ . " " . __LINE__ . "<br/>";
-				die( 1 );
-		}
-		$data = "";
-
-		$client_id = $this->GetCustomerID();
-		$client = new Fresh_Client($client_id);
-		$client_type = $client->customer_type();
-
-		$delivery_loaded = false;
-		$volume_line = false;
-
-		$data .= "<style> " .
-		         "table.prods { border-collapse: collapse; } " .
-		         " table.prods, td.prods, th.prods { border: 1px solid black; } " .
-		         " </style>";
-
-		// Orig: $data .= "<table class=\"prods\" id=\"del_table\" border=\"1\">";
-		$data .= "<table style='border-collapse: collapse'  id=\"del_table\">";
-
-		// Print header
-		$sum   = null;
-		$style = 'style="border: 2px solid #dddddd; text-align: right; padding: 8px;"';
-		$data  .= Core_Html::gui_row( $header_fields, "header", $show_fields, $sum, null, $style );
-
-		if ( $this->ID > 0 and $document_type == Finance_DocumentType::delivery) { // load delivery
-			$delivery_loaded = true;
-			$sql             = 'select id, product_name, round(quantity, 1), quantity_ordered, vat, price, line_price, prod_id ' .
-			                   "from ${db_prefix}delivery_lines " .
-			                   'where delivery_id=' . $this->ID . " order by 1";
-
-			$result = SqlQuery( $sql );
-
-			if ( ! $result ) {
-				print $sql;
-				die ( "select error" );
-			}
-
-			while ( $row = mysqli_fetch_assoc( $result ) ) {
-				$line_style = $style;
-				if ( $row["product_name"] == "הנחת כמות" ) $volume_line = true;
-
-				// delivery_line( $document_type, $line_ids, $client_type, $operation, $margin = false, $style = null, $show_inventory = false );
-				$prod_id = $row["prod_id"];
-
-				if ($prod_id == -1 and ($row["line_price"] == 0)) $line_style = "hidden ";// Discount line.
-
-				$line = $this->delivery_line(  Finance_DocumentType::delivery, $row["id"], $operation,
-					$margin, $line_style);
-
-				if ( $operation == Finance_DocumentOperation::check) { // Todo: Need to rewrite this function;
-					for($i = 0; $i < eDeliveryFields::max_fields; $i ++)
-						$show_fields[$i] = false;
-
-					$show_fields[eDeliveryFields::product_name] = true;
-					$show_fields[eDeliveryFields::order_q]      = true;
-					$show_fields[eDeliveryFields::delivery_q]   = true;
-				}
-
-				$data .= Core_Html::gui_row( $line, ++$this->line_number, $show_fields, $sums, $this->delivery_fields_names, $line_style );
-			}
-		} else {
-			// For group orders - first we get the needed products and then accomulate the quantities.
-			$sql = 'select distinct woim.meta_value,  order_line_get_variation(woi.order_item_id) '
-			       . ' from wp_woocommerce_order_items woi join wp_woocommerce_order_itemmeta woim'
-			       . ' where ' . $this->OrderQuery()
-			       . ' and woi.order_item_id = woim.order_item_id and woim.`meta_key` = \'_product_id\'';
-
-			$prods_result = SqlQuery( $sql );
-			while ( $row = SqlFetchRow( $prods_result ) ) {
-				$prod_id = $row[0];
-				$var_id  = $row[1];
-
-				$items_sql      = 'select woim.order_item_id'
-				                  . ' from wp_woocommerce_order_items woi join wp_woocommerce_order_itemmeta woim'
-				                  . ' where ' . $this->OrderQuery()
-				                  . ' and woi.order_item_id = woim.order_item_id and woim.`meta_key` = \'_product_id\''
-				                  . ' and woim.meta_value = ' . $prod_id
-				                  . ' and order_line_get_variation(woi.order_item_id) = ' . $var_id
-				                  . ' order by 1';
-				$order_item_ids = SqlQueryArrayScalar( $items_sql );
-
-				$b = new Fresh_Basket($prod_id);
-				if ( $expand_basket and $b->is_basket()){
-					$basket_header = array();
-					for ($i = 0; $i < eDeliveryFields::max_fields; $i++)	$basket_header[$i] = "";
-					$basket_header[eDeliveryFields::product_name] = $b->getName();
-					$basket_header[eDeliveryFields::order_q]      = Finance_Delivery::get_order_itemmeta( $order_item_ids, '_qty' );
-					$basket_header[eDeliveryFields::price]        = $b->getPrice();
-					$basket_header[eDeliveryFields::line_type]    = "bsk";
-					$basket_header[eDeliveryFields::product_id]   = $prod_id;
-					$basket_header[eDeliveryFields::client_comment] = Finance_Delivery::get_order_itemmeta($order_item_ids[0], 'product_comment');
-
-
-					$data .= Core_Html::gui_row($basket_header, ++$this->line_number, $show_fields, $sums, $this->delivery_fields_names, $style);
-				} else {
-					$line = $this->delivery_line( $document_type, $order_item_ids, $operation, $margin, $style );
-					$data .= Core_Html::gui_row( $line, ++$this->line_number, $show_fields, $sums, $this->delivery_fields_names, $style );
-				}
-				if ( $expand_basket && $b->is_basket() ) {
-					$quantity_ordered = Finance_Delivery::get_order_itemmeta( $order_item_ids, '_qty' ); //, $client_type, $operation, $data );
-
-					$this->expand_basket( $prod_id, $quantity_ordered, 0, $show_fields, $document_type,
-						$order_item_ids, $client_type, $operation, $data );
-				}
-			}
-
-			// Get and display order delivery price
-			$sql2 = 'SELECT meta_value FROM `wp_woocommerce_order_itemmeta` WHERE order_item_id IN ( '
-			        . 'SELECT order_item_id FROM wp_woocommerce_order_items WHERE ' . $this->OrderQuery()
-			        . ' AND order_item_type = \'shipping\' )  AND meta_key = \'cost\'; ';
-
-			$del_price = SqlQuerySingleScalar( $sql2 );
-			if ( ! is_numeric( $del_price ) ) {
-				$del_price = 0;
-			}
-		}
-
-		if ( ! $delivery_loaded ) {
-			$this->order_total   += $del_price;
-			$this->order_due_vat += $del_price;
-
-			$del_vat         = round( $del_price / ( 100 + $global_vat ) * $global_vat, 2 );
-
-			$delivery_line                                   = $empty_array;
-			$delivery_line[ eDeliveryFields::product_name ]  = "דמי משלוח";
-			$delivery_line[ eDeliveryFields::delivery_q ]    = 1;
-			$delivery_line[ eDeliveryFields::price ]         = $operation ?
-				Core_Html::GuiInput( "delivery", $del_price > 0 ? $del_price : "" ) : $del_price;
-			$delivery_line[ eDeliveryFields::has_vat ]       = Core_Html::GuiCheckbox( "hvt_del", true, array("class"=>"vat" ));
-			$delivery_line[ eDeliveryFields::line_vat ]      = $del_vat;
-			$delivery_line[ eDeliveryFields::delivery_line ] = $del_price;
-			$delivery_line[ eDeliveryFields::order_line ]    = $del_price;
-
-			$sums = null;
-
-			$data                  .= Core_Html::gui_row( $delivery_line, "del", $show_fields, $sums, $this->delivery_fields_names );
-			$this->order_vat_total += $del_vat;
-			// Spare line for volume discount
-		}
-
-		if ( $operation != Finance_DocumentOperation::collect ) {
-			if ( ! $volume_line ) {
-				$delivery_line = $empty_array;
-				$dis_line = Core_Html::gui_row( $delivery_line, "dis", $show_fields, $sums, $this->delivery_fields_names );
-				$data          .= $dis_line;
-			}
-			// Summary
-			// Due VAT
-			$summary_line                                   = $empty_array;
-			$summary_line[ eDeliveryFields::product_name ]  = 'סה"כ חייב במע"מ';
-			$summary_line[ eDeliveryFields::delivery_line ] = $this->delivery_due_vat;
-			$summary_line[ eDeliveryFields::order_line ]    = $this->order_due_vat;
-			$data                                           .= Core_Html::gui_row( $summary_line, "due", $show_fields, $sum, $this->delivery_fields_names, $style );
-
-			$summary_line                                   = $empty_array;
-			$summary_line[ eDeliveryFields::product_name ]  = 'סה"כ בשיעור מע"מ 0';
-			$summary_line[ eDeliveryFields::delivery_line ] = $this->delivery_total - $this->delivery_due_vat; // $this->delivery_due_vat;
-//			$summary_line[ eDeliveryFields::order_line ]    = 'bb'; // $this->order_due_vat;
-			$data                                           .= Core_Html::gui_row( $summary_line, "va0", $show_fields, $sum, $this->delivery_fields_names, $style );
-
-			// Total VAT
-			$summary_line                                   = $empty_array;
-			$summary_line[ eDeliveryFields::product_name ]  = 'מע"מ 17%';
-			$summary_line[ eDeliveryFields::delivery_line ] = $this->delivery_total_vat;
-			$summary_line[ eDeliveryFields::order_line ]    = $this->order_vat_total;
-			$data                                           .= Core_Html::gui_row( $summary_line, "vat", $show_fields, $sum, $this->delivery_fields_names, $style );
-
-			// Total
-			$summary_line                                   = $empty_array;
-			$summary_line[ eDeliveryFields::product_name ]  = "סה\"כ לתשלום";
-			$summary_line[ eDeliveryFields::delivery_line ] = $this->delivery_total;
-			$summary_line[ eDeliveryFields::order_line ]    = $this->order_total;
-			$summary_line[ eDeliveryFields::line_margin ]   = $this->margin_total;
-			$data                                           .= Core_Html::gui_row( $summary_line, "tot", $show_fields, $sum, $this->delivery_fields_names, $style );
-		}
-
-		$data = str_replace( "\r", "", $data );
-
-		$data .= "</table>";
-
-		$data .= "מספר שורות  " . $this->line_number . "<br/>";
-
-		$this->calculated = true;
-
-		return "$data";
-	}
-
-	public function delivery_line( $document_type, $line_ids, $operation, $margin = false, &$style = null ) {
-
-		$show_inventory = false;
-
-		$line_color = null;
-
-		$line = array(); for ( $i = 0; $i <= eDeliveryFields::max_fields; $i ++ ) $line[ $i ] = "";
-		if ( is_array( $line_ids ) )$line_id = $line_ids[0]; else $line_id = $line_ids;
-		$line[ eDeliveryFields::line_select ] = Core_Html::GuiCheckbox( "chk" . $line_id, false, array("class" => "line_chk" ));
-
-		$unit_ordered       = null;
-		$quantity_delivered = 0;
-		//////////////////////////////////////////
-		// Fetch fields from the order/delivery //
-		//////////////////////////////////////////
-		$unit_q           = "";
-		$load_from_order  = false;
-		switch ( $document_type ) {
-			case Finance_DocumentType::order:
-				$load_from_order = true;
-				break;
-
-			case Finance_DocumentType::delivery:
-				$load_from_order = ( $operation == Finance_DocumentOperation::create or $operation == Finance_DocumentOperation::collect );
-				// TODO: check price
-				break;
-		}
-		$has_vat = null;
-
-		$P = null;
-		$prod_comment = "";
-
-		if ( $load_from_order ) {
-			$this->load_line_from_order($line_ids,  $prod_id, $prod_name, $quantity_ordered, $unit_q, $P, $price, $prod_comment );
-		} else {
-			$this->load_line_from_db($line_id, $P, $prod_id, $prod_name, $quantity_ordered, $quantity_delivered, $price, $delivery_line, $has_vat, $line_color);
-		}
-
-		// in Order price is total/q. in delivery get from db.
-		// $price            = $this->item_price( $client_type, $prod_id, $order_line_total, $quantity_ordered );
-
-		// Display item name. product_name
-		$line[ eDeliveryFields::product_name ] = $prod_name;
-		$line[ eDeliveryFields::product_id ]   = $prod_id;
-
-		$p = new Fresh_Basket($prod_id);
-
-		// q_quantity_ordered
-		$line[ eDeliveryFields::order_q ]       = $quantity_ordered;
-		$line[ eDeliveryFields::order_q_units ] = $unit_q;
-
-		if ( is_null( $has_vat ) ) $has_vat = ( $P->getVatPercent() != 0 );
-
-		// price
-		if ( $operation == Finance_DocumentOperation::create and $document_type == Finance_DocumentType::delivery ) {
-			$line[ eDeliveryFields::price ] = Core_Html::gui_input( "prc_" .  $prod_id, $price, null, null, null, 5 );
-		} else {
-			$line[ eDeliveryFields::price ] = $price;
-		}
-
-		// has_vat
-		$line[ eDeliveryFields::has_vat ] = Core_Html::GuiCheckbox( "hvt_" . $prod_id, $has_vat > 0, array("class"=> "has_vat")); // 6 - has vat
-
-		// q_supply
-		switch ( $document_type ) {
-			case Finance_DocumentType::order:
-				// TODO: get supplied q
-				// $line[DeliveryFields::delivery_q] = $quantity_delivered;
-				// $value .= gui_cell( $quantity_delivered, "", $show_fields[ DeliveryFields::delivery_q ] ); // 4-supplied
-				// $value .= gui_cell( "הוזמן", $debug );
-				break;
-
-			case Finance_DocumentType::delivery:
-				 $line[eDeliveryFields::order_line] = 99; // $order_line_total;
-				switch ( $operation ) {
-					case Finance_DocumentOperation::edit:
-					case Finance_DocumentOperation::create:
-
-//						if (! $p->is_basket())
-							$line[ eDeliveryFields::delivery_q ] = Core_Html::GuiInput("quantity" . $this->line_number,
-							( $quantity_delivered > 0 ) ? $quantity_delivered : "",
-							array( "events" => 'onfocusout="leaveQuantityFocus(' . $this->line_number . ')" ' .
-								'onkeypress="moveNextRow(' . $this->line_number . ')"')  );
-						break;
-					case Finance_DocumentOperation::collect:
-						break;
-					case Finance_DocumentOperation::show:
-						$line[ eDeliveryFields::delivery_q ] = $quantity_delivered;
-						break;
-					default:
-				}
-				if ( isset( $delivery_line ) ) {
-					$line[ eDeliveryFields::delivery_line ] = $delivery_line;
-					$this->delivery_total                   += $delivery_line;
-				}
-				if ( $has_vat and isset( $delivery_line ) ) {
-					$line[ eDeliveryFields::line_vat ] = Fresh_Pricing::vatFromTotal($delivery_line);
-
-					$this->delivery_due_vat   += $delivery_line;
-					$this->delivery_total_vat += $line[ eDeliveryFields::line_vat ];
-				} else {
-					$line[ eDeliveryFields::line_vat ] = "";
-				}
-
-				break;
-			case Finance_DocumentType::refund;
-				$line[ eDeliveryFields::delivery_q ] = $quantity_delivered;
-				// $value .= gui_cell( $quantity_delivered );                                              // 4- Supplied
-				break;
-		}
-
-		if ( ! is_numeric( $price ) ) {
-			$price = 0;
-		}
-
-		// terms
-		// Check if this product eligible for quantity discount.
-		$terms = get_the_terms( $prod_id, 'product_cat' );
-		$terms_cell = "";
-		if ( $terms ) {
-			foreach ( $terms as $term ) {
-				$terms_cell .= $term->term_id . ",";
-			}
-			$terms_cell = rtrim( $terms_cell, "," );
-		}
-		$line[ eDeliveryFields::term ] = $terms_cell;
-		//$value .= gui_cell( $terms_cell, "terms" . $this->line_number, false );                    // 9 - terms
-
-		// Handle refund
-		if ( $document_type == Finance_DocumentType::refund ) {
-			$line[ eDeliveryFields::refund_q ] = gui_cell( gui_input( "refund_" . $this->line_number, 0 ) );             // 10 - refund q
-			// $value .= gui_cell( "0" );                                                              // 11 - refund amount
-		}
-
-		if ( $margin ) {
-			$q                                    = ( $operation == Finance_DocumentType::delivery ) ? $quantity_delivered : $quantity_ordered;
-			$line[ eDeliveryFields::buy_price ]   = Fresh_Pricing::get_buy_price( $prod_id );
-			$line[ eDeliveryFields::line_margin ] = ( $price - Fresh_Pricing::get_buy_price( $prod_id ) ) * $q;
-			$this->margin_total                   += $line[ eDeliveryFields::line_margin ];
-		}
-
-		$sums = null;
-		if ( $line_color )
-			$style .= 'bgcolor="' . $line_color . '"';
-
-		// print $prod_id . " " . $P->getStock() . " " . $P->getStock(true). "<br/>";
-		if ( $show_inventory and $P->getOrderedDetails() > 0.8 * $P->getStock( true ) ) {
-			$line[ eDeliveryFields::packing_info ] = "מלאי: " . $P->getStock( true ) . ". הזמנות: " . $P->getOrderedDetails();
-			$pending                               = $P->PendingSupplies();
-			if ( $pending ) {
-				foreach ( $pending as $p ) {
-					if ( $p[1] == eSupplyStatus::NewSupply ) {
-						$line[ eDeliveryFields::packing_info ] .= "<br/>" . "יש לשלוח אספקה מספר " .
-						                                          Core_Html::GuiHyperlink( $p[0], "../supplies/supply-get.php?id=" . $p[0] ) . "!<br/>";
-					}
-
-					if ( $p[1] == eSupplyStatus::Sent ) {
-						$line[ eDeliveryFields::packing_info ] .= " אספקה מספר  " . Core_Html::GuiHyperlink( $p[0], "../supplies/supply-get.php?id=" . $p[0] ) . " בביצוע<br/>";
-					}
-				}
-			} else {
-				$line[ eDeliveryFields::packing_info ] .= " חסר! ";
-			}
-			// " אספקות:" . ;
-		}
-
-		$line[eDeliveryFields::line_type] = self::line_type($prod_id);
-		$line[eDeliveryFields::client_comment] = $prod_comment;
-
-		return $line;
-	}
+//	public function getOrder() {
+//		if ( ! $this->order ) {
+//			$this->order = new Fresh_Order( $this->OrderId() );
+//		}
+//
+//		return $this->order;
+//	}
 
 	function expand_basket( $basket_id, $quantity_ordered, $level, $show_fields, $document_type, $line_id, $client_type, $edit, &$data ) {
 		$sql2 = 'SELECT DISTINCT product_id, quantity FROM im_baskets WHERE basket_id = ' . $basket_id;
@@ -1003,9 +532,14 @@ class Fresh_Delivery {
 	 * @return int
 	 */
 	public function getDeliveryDueVat(): float {
-		if (! $this->calculated)
-			$this->delivery_text( Finance_DocumentType::delivery, Finance_DocumentOperation::show );
-		return $this->delivery_due_vat;
+		$db_prefix = GetTablePrefix();
+		$sql = "select sum(line_price) " .
+		       " from ${db_prefix}delivery_lines " .
+		       " where delivery_id = " . $this->getID() . " and vat > 0 " .
+		       " and product_name != 'משלוח'";
+		$rc = SqlQuerySingleScalar($sql);
+		if (! $rc) return 0;
+		return round($rc, 2);
 	}
 
 	/**
@@ -1104,7 +638,6 @@ class Fresh_Delivery {
 	{
 		return 1;
 	}
-
 
 	static function delivery_product_price($prod_id)
 	{
