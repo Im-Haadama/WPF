@@ -626,10 +626,14 @@ class Flavor {
 		return $sections;
 	}
 
-	static function getPost()
+	static function getPost($action = null)
 	{
 //		return plugin_dir_url(dirname(__FILE__)) . "post.php"; // Physical file.
-		return "/wp-content/plugins/flavor/post.php";
+		$result = "/wp-content/plugins/flavor/post.php";
+		if ($action)
+			$result .= "?operation=$action&nonce=" . wp_create_nonce($action);
+
+		return $result;
 	}
 
 	static public function SettingPage()

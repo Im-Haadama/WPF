@@ -36,7 +36,7 @@ class Focus_Users_Management {
 		),
 			"new_user", $args
 		);
-		$result .= Core_Html::GuiButton( "btn_add", "Create", "focus_create_user('" . Flavor::getPost() . "')" );
+		$result .= Core_Html::GuiButton( "btn_add", "Create", "focus_create_user('" . Flavor::getPost("focus_create_user") . "')" );
 
 		return $result;
 	}

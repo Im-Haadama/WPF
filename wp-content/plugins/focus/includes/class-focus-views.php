@@ -1924,15 +1924,15 @@ class Focus_Views {
 			'focus_project'         => array( 'Focus_Views::show_project', null ), // 'edit_projects' ),
 			'focus_project_tasks'   => array( 'Focus_Views::show_project_tasks', 'show_tasks' ),
 			'focus_worker'          => array( 'Focus_Views::show_worker', 'show_tasks' ),
-			'focus_sign_up'         =>  array( $this, 'sign_up' )
+			'focus_sign_up'         =>  array( __CLASS__ . '::sign_up' )
 		) );
 	}
 
-	function sign_up() {
+	static function sign_up() {
 		if ( ! class_exists( "Subscription_Manager" ) ) {
 			die( "install error. Install Subscript_Manager" );
 		}
-		return $this->focus_users->register();
+		return self::instance()->focus_users->register();
 	}
 
 	function init() {
