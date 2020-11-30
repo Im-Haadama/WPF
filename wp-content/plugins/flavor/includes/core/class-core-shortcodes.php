@@ -60,10 +60,11 @@ class Core_Shortcodes {
 //				if (count($function_couple) < 2) print $function_couple[0] . " not a couple";
 				$function = $function_couple[0];
 				$capability = isset($function_couple[1]) ? $function_couple[1] : null;
+                //$debug = ($shortcode == 'focus_sign_up');;
 				if ($debug) print "<br/>handling $shortcode $capability<br/>";
 				if ($capability and strlen($capability) and ! im_user_can($capability)) {
 //					print "<br/>" . $capability;
-//					if ($debug >= 1) print "capability '" . $capability . "' is missing";
+					if ($debug >= 1) print "capability '" . $capability . "' is missing";
 					add_shortcode( apply_filters( "{$shortcode}_shortcode_tag", $shortcode ), 'Core_Shortcodes::missing_capability' );
 					continue;
 				}

@@ -1671,15 +1671,14 @@ class Focus_Views {
 			$sql .= ", preq";
 		}
 
-		$sql .= ", creator, owner) values (" .
+        $sql .= ", creator, owner) values (" .
 		        quote_text( $description ) . "," .
 		        $project . "," .
 		        $priority . ",";
 		if ( $preq ) {
 			$sql .= $preq . ",";
 		}
-		$sql .= $user_id . "," . $owner . ")";
-
+        $sql .= $user_id . "," . $owner . ")";
 		SqlQuery( $sql );
 
 		return SqlInsertId();
@@ -1925,15 +1924,18 @@ class Focus_Views {
 			'focus_project'         => array( 'Focus_Views::show_project', null ), // 'edit_projects' ),
 			'focus_project_tasks'   => array( 'Focus_Views::show_project_tasks', 'show_tasks' ),
 			'focus_worker'          => array( 'Focus_Views::show_worker', 'show_tasks' ),
-			'focus_sign_up'         =>  array( $this, 'sign_up' )
+            'focus_sign_up'         =>  array( 'Focus_Views::sign_up')
 		) );
 	}
 
-	function sign_up() {
+	public static function sign_up(){
 		if ( ! class_exists( "Subscription_Manager" ) ) {
 			die( "install error. Install Subscript_Manager" );
 		}
-		return $this->focus_users->register();
+        //$post_file = Flavor::getPost();
+		//$Focus_Views = new Focus_Views($post_file);
+        //return $Focus_Views->focus_users->register();
+		return self::instance()->focus_users->register();
 	}
 
 	function init() {

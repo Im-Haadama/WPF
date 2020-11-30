@@ -4,6 +4,7 @@
 class Focus_Users_Management {
 	function init_hooks()
 	{
+        //FocusLog(__FUNCTION__);
 		AddAction("focus_create_user", array($this, 'add_user'));
 	}
 
