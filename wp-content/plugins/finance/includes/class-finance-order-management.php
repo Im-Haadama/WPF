@@ -20,6 +20,8 @@ class Finance_Order_Management {
 		$loader->AddAction('mission_print', $this, 'mission_print_wrap');
 		$loader->AddAction('order_set_mission', $this);
 		$loader->AddAction('order_add_product', $this);
+		$loader->AddAction('wp_trash_post', $this);
+//		FinanceLog("before_delete_post added");
 	}
 
 	static public function add_order_action($actions, WC_Order $order)
@@ -201,4 +203,14 @@ class Finance_Order_Management {
 		return $oid;
 	}
 
+	function wp_trash_post($order_id) {
+		global $post_type;
+
+		if($post_type !== 'shop_order') {
+			return;
+		}
+
+		$del = new Finance_Delivery($order_id);
+		$del->delete();
+	}
 }
