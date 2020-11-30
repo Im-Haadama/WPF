@@ -460,10 +460,10 @@ class Finance_Delivery
 		MyLog($order_id);
 		$total = $data[0][1];
 		$vat = $data[0][2];
+		$fee = $data[0][3];
 
 		$d = new Finance_Delivery($order_id);
 		$lines = count($data) - 1;
-		$fee = 0;
 
 		if ($edit) {
 			MyLog("Edit");

@@ -81,15 +81,16 @@ function delivery_save_or_edit(post_file, operation) {
     // var logging = document.getElementById('logging');
     var is_edit = false;
     let order_id = get_value_by_name("order_id");
+    let data = [];
     if (! (order_id > 0)) {
         alert("Error - order id is missing");
         return false;
     }
     let vat = 0; // Calculate in server
+    let fee = 0;
 
     let request = post_file + '?operation=' + operation + "&order_id=" + order_id + "&total=" + total;
 
-    let data = [[order_id, total, vat]];
     let id_col = 1;
     if (operation == "delivery_save") id_col = 0; // in save there is no checkbox.
 
@@ -121,7 +122,11 @@ function delivery_save_or_edit(post_file, operation) {
 
         data.push([prod_name, q, price, line_vat, prod_id, quantity_ordered, has_vat]);
         // request += "&oid=" + oid + "&q=" + q + "&price="+price;
+
+        if (prod_name.indexOf(encodeURI("משלוח")) !== -1) fee = fee + q * price;
     }
+    data.unshift([order_id, total, vat, fee]);
+
     // alert (JSON.stringify(data));
     execute_url_post(request, JSON.stringify(data), action_back);
 }
