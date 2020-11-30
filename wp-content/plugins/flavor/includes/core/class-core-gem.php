@@ -385,14 +385,18 @@ class Core_Gem {
 			return self::GemElement( $table_name, 0, $args );
 		}
 
-		if ($title)
-			$result .= Core_Html::GuiHeader(1, $title, true, true). " " . ($row_id ? Core_Html::gui_label("id", $row_id) : __("New"));
+		if ($title) {
+			$result .= Core_Html::GuiHeader( 1, $title, true, true ) . " " . ( $row_id ? Core_Html::gui_label( "id", $row_id ) : __( "New" ) );
+//			$result .= " " . Core_Html::GuiHyperlink( '[' . __( "Inactive" ) . ']', AddToUrl( "operation", "gem_inactive" ) );
+		}
 
 		$check_active = GetArg($args, "check_active", false);
 		if ($check_active) {
 			$sql = "select is_active from ${db_prefix}$table_name where id = $row_id";
 			$active = SqlQuerySingleScalar($sql);
-			if (! $active) $result .= " not active ";
+			$chk_args = array("post_file" => $post_file . "?table=$table_name&id=$row_id");
+			$result .= Core_Html::ActiveCheckbox("chk_$row_id", $active, $chk_args);
+//			if ($active) $result .= " not active ";
 		}
 
 		$row_to_get = $row_id;
@@ -409,10 +413,11 @@ class Core_Gem {
 				$result .= Core_Html::GuiButton( "btn_save", "save", array("action" => "data_save_entity('" . $post_file . "', '$table_name', " . $row_id . ')'));
 			else
 				$result .= Core_Html::GuiButton("add_row", "add", array("action" => "data_save_new('" . $post_file . "', '$table_name')", "add"));
-			if ($row_id) $result .= " " . Core_Html::GuiHyperlink('[' . __("Duplicate") . ']', AddToUrl("operation", "gem_duplicate"));
+			if ($row_id) {
+				$result .= " " . Core_Html::GuiHyperlink( '[' . __( "Duplicate" ) . ']', AddToUrl( "operation", "gem_duplicate" ) );
+			}
 
-
-			if ($check_active) $result .= Core_Html::GuiButton( "btn_active", $active ? "inactive" : "activate", array("action" => "active_entity(" . (1 - $active) .", '" . $post_file . "', '$table_name', " . $row_id . ')') );
+//			if ($check_active) $result .= Core_Html::GuiButton( "btn_active", $active ? "inactive" : "activate", array("action" => "active_entity(" . (1 - $active) .", '" . $post_file . "', '$table_name', " . $row_id . ')') );
 			if (GetArg($args, "allow_delete",  null))
 				$result .= Core_Html::GuiButton( "btn_delete", "Delete", array("action" => "data_delete_entity('$post_file', '$table_name', $row_id)"));
 

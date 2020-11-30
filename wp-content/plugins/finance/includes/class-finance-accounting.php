@@ -43,11 +43,7 @@ class Finance_Accounting {
 				$rows_data[$delivery_id] ['fresh'] = 'סה"כ מוצרים טריים';
 			}
 			else {
-				$delivery = new Finance_Delivery(0, $delivery_id);
-		//	 Todo: move it to a fresh filter.
-			$rows_data[ $delivery_id ]['due_vat'] = 0; //$delivery->getDeliveryDueVat() - $delivery->DeliveryFee();
-				$due_vat +=$rows_data[ $delivery_id ]['due_vat'];
-				$rows_data[$delivery_id]['fresh'] = $rows_data[ $delivery_id ]['amount'] - $rows_data[ $delivery_id ]['due_vat'];
+				$rows_data[$delivery_id] = apply_filters("finance_weekly_update_row", $rows_data[$delivery_id], $delivery_id);
 			}
 		}
 

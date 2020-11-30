@@ -405,7 +405,7 @@ class Flavor {
 	/**
 	 * @param $operation
 	 *
-	 * @return string|void
+	 * @return string|void`
 	 */
 	function handle_operation($operation) {
 		$ignore_list = array("operation");
@@ -626,10 +626,14 @@ class Flavor {
 		return $sections;
 	}
 
-	static function getPost()
+	static function getPost($action = null)
 	{
 //		return plugin_dir_url(dirname(__FILE__)) . "post.php"; // Physical file.
-		return "/wp-content/plugins/flavor/post.php";
+		$result = "/wp-content/plugins/flavor/post.php";
+		if ($action)
+			$result .= "?operation=$action&nonce=" . wp_create_nonce($action);
+
+		return $result;
 	}
 
 	static public function SettingPage()
@@ -687,7 +691,7 @@ class Flavor {
 	}
 
 	public function admin_scripts() {
-		$file = FLAVOR_INCLUDES_URL . 'core/gui/client_tools.js?v=1';
+		$file = FLAVOR_INCLUDES_URL . 'core/gui/client_tools.js';
 		wp_enqueue_script( 'client_tools', $file, null, $this->version, false );
 
 		$file = FLAVOR_INCLUDES_URL . 'core/gem.js';

@@ -1,0 +1,4 @@
+#!/bin/bash
+sudo apt-get install sendmail
+sudo sendmailconfig
+sudo service apache2 restart

@@ -171,7 +171,7 @@ function focus_create_user(post_file)
         return;
     }
 
-    execute_url(post_file + '?operation=focus_create_user&user_name=' + encodeURI(user_name) + '&email=' + encodeURI(email) + '&password=' +
+    execute_url(post_file + '&user_name=' + encodeURI(user_name) + '&email=' + encodeURI(email) + '&password=' +
         encodeURI(password), navigate_to_login_page);
 }
 

@@ -10,7 +10,6 @@ class Finance_Delivery
 	private $order_due_vat = 0;
 	private $order_vat_total = 0;
 	private $delivery_total = 0;
-	private $delivery_due_vat = 0;
 	private $delivery_total_vat = 0;
 	private $margin_total = 0;
 	private $order_id = 0;
@@ -274,6 +273,7 @@ class Finance_Delivery
 
 		$vat = apply_filters("finance_vat", false);
 
+
 		if ($this->delivery_id) {
 //			print "cc=".$args["checkbox_class"];
 
@@ -282,13 +282,14 @@ class Finance_Delivery
 				__( "Total" ) . ": " .
 				Core_html::gui_label( "total", $this->getDeliveryTotal() )
 			);
+			$post_file = flavor::getPost() . "?delivery_id=" . $this->getId();
 			$html .= Core_Html::GuiLabel( "order_id", $this->order_id, array( "hidden" => true ) );
 			if ( $edit ) {
-				$html .= '<datalist id="products"></datalist>';
 				$html .= Core_Html::GuiButton("btn_add_line", "Add Line", "delivery_add_line('". Flavor::getPost() . "', $user_id, $vat, 1)");
 				$html .= Core_Html::GuiButton( "btn_save", "Save", "delivery_save_or_edit('" . Flavor::getPost() . "', 'delivery_edit')" );
-				$html .= Core_Html::GuiButton( "btn_delete", "Delete Lines", "delete_items('delivery_lines', '" . Flavor::getPost() . "', 'delivery_delete_lines')" );
+				$html .= Core_Html::GuiButton( "btn_delete", "Delete Lines", "delete_items('delivery_lines', '" . $post_file . "', 'delivery_delete_lines')" );
 			}
+			$html .= '<datalist id="products"></datalist>';
 		}
 		return $html;
 	}
@@ -430,7 +431,8 @@ class Finance_Delivery
 //		$args);
 
 		$html .= Core_Html::GuiLabel("order_id", $this->order_id, array("hidden"=>true));
-		$html .= Core_Html::GuiButton("btn_add", "Create", "delivery_save_or_edit('" . Flavor::getPost() . "', 'delivery_save')");
+		$html .= Core_Html::GuiButton("btn_add", "Create", "delivery_save_or_edit('" . Flavor::getPost() . "', 'delivery_save')") .
+		         '<datalist id="products"></datalist>';
 
 		return $html;
 	}
@@ -458,10 +460,10 @@ class Finance_Delivery
 		MyLog($order_id);
 		$total = $data[0][1];
 		$vat = $data[0][2];
+		$fee = $data[0][3];
 
 		$d = new Finance_Delivery($order_id);
 		$lines = count($data) - 1;
-		$fee = 0;
 
 		if ($edit) {
 			MyLog("Edit");
@@ -475,6 +477,7 @@ class Finance_Delivery
 			$q = $data[$i][1];
 			$p = $data[$i][2];
 			$prod_id = $data[$i][4];
+			$has_vat = $data[$i][6];
 			if (! ($prod_id > 0)) {
 				$prod = Finance_Product::getByName($prod_name);
 				if ($prod)
@@ -482,7 +485,7 @@ class Finance_Delivery
 				else
 					$prod_id = 0;
 			}
-			MyLog($prod_name . " " . $data[$i][4] . " " .$prod_id);
+			// FinanceLog("INPUT: $prod_name $prod_id $has_vat");
 			$prod_data = array(
 			'product_name' => $prod_name,
 			'quantity' => $q,
@@ -491,7 +494,7 @@ class Finance_Delivery
 			'prod_id' => $prod_id,
 			'quantity_ordered' => $data[$i][5],
 			'line_price' => round($p * $q, 2),
-			'has_vat' => $data[$i][6]);
+			'has_vat' => $has_vat);
 
 			// $product_name, $quantity, $quantity_ordered, $vat, $price, $line_price, $prod_id )
 			$d->AddDeliveryLine( $prod_data );
@@ -513,7 +516,8 @@ class Finance_Delivery
 		$line_price = $prod_data['line_price'];
 		$prod_id = $prod_data['prod_id'];
 		$has_vat = $prod_data['has_vat'];
-		if (null == $has_vat) $has_vat = 'NULL';
+
+		if (null === $has_vat) $has_vat = 'NULL';
 
 		$product_name = preg_replace( '/[\'"%()]/', "", $product_name );
 		$delivery_id = $this->delivery_id;
@@ -528,8 +532,8 @@ class Finance_Delivery
 		       . round( $line_price, 2 ) . ', '
 		       . $prod_id . ", $has_vat )";
 
-		MyLog( "$delivery_id: $product_name $quantity $quantity_ordered $vat $price $line_price $prod_id", __FILE__);
-		MyLog($sql);
+		FinanceLog( "$delivery_id: $product_name $quantity $quantity_ordered $vat $price $line_price $prod_id $has_vat", __FILE__);
+		FinanceLog($sql);
 
 		return SqlQuery( $sql );
 	}
@@ -642,7 +646,7 @@ class Finance_Delivery
 		$delivery_id = GetParam("delivery_id", false);
 		$order_id = GetParam("order_id", false);
 		if (! $order_id and ! $delivery_id) {
-			print "no id supplied";
+			print "failed: no id supplied";
 			die (1);
 		}
 		MyLog(__FUNCTION__ . " $delivery_id");
@@ -827,11 +831,6 @@ class Finance_Delivery
 	static function getLink($id)
 	{
 		return "/wp-admin/admin.php?page=deliveries&delivery_id=" . $id;
-	}
-
-	public function getItems()
-	{
-		return $this->order->get_items();
 	}
 }
 

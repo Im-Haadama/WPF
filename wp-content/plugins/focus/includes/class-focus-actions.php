@@ -161,7 +161,7 @@ if ( ! function_exists( 'gui_select_repeat_time' ) ) {
 
 
 //function gui_select_worker( $id = null, $selected = null, $args = null ) {
-//	return Focus_Views::gui_select_worker( $id, $selected, $args );
+//	return Flavor_Org_Views::gui_select_worker( $id, $selected, $args );
 //}
 
 //function gui_select_project( $id, $value, $args ) {
@@ -174,7 +174,7 @@ if ( ! function_exists( 'gui_select_repeat_time' ) ) {
 				$args                     = [];
 				$args["next_page"]        = GetParam( "next_page", false, null );
 				$args["post_file"]        = "/wp-content/plugins/focus/post.php";
-				$args["selectors"]        = array( "manager" => "Focus_Views::gui_select_worker" );
+				$args["selectors"]        = array( "manager" => "Flavor_Org_Views::gui_select_worker" );
 				$args["mandatory_fields"] = array( "manager", "team_name" );
 
 				return Core_Gem::GemAddRow( "working_teams", "Add a team", $args );
@@ -186,8 +186,8 @@ if ( ! function_exists( 'gui_select_repeat_time' ) ) {
 				return self::show_new_task( $mission, $new ); // after the first task, the new tasks belongs to the new tasks' project will be displayed.
 //		$args["selectors"]     = array(
 //			"project_id"  => "Focus_Views::gui_select_project",
-//			"owner"       => "Focus_Views::gui_select_worker",
-//			"creator"     => "Focus_Views::gui_select_worker",
+//			"owner"       => "Flavor_Org_Views::gui_select_worker",
+//			"creator"     => "Flavor_Org_Views::gui_select_worker",
 //			"repeat_freq" => "gui_select_repeat_time",
 //			"team"        => "Focus_Views::gui_select_team"
 //		);

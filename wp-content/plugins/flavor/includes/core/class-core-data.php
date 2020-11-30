@@ -20,38 +20,51 @@ class Core_Data
 	static function init_hooks($loader)
 	{
 		$loader->AddAction("data_auto_list", __CLASS__, "data_auto_list");
+		$loader->AddAction("data_update", __CLASS__, "data_update");
+		$loader->AddAction("data_set_active", __CLASS__, "data_set_active");
 	}
 
-	static function handle_operation( $operation )
+	static function data_set_active($args)
 	{
-		switch ($operation){
-			case "data_update":
-				$table_name = GetParam("table_name", true);
-				return self::data_update($table_name);
-
-			case "data_save_new":
-				$table_name = GetParam("table_name", true);
-				return self::SaveNew($table_name);
-
-			case "data_active":
-				$active = GetParam("active", true);
-				$table_name = GetParam("table_name", true);
-				$row_id = GetParam("id", true);
-				return self::Active($table_name, $row_id, $active);
-
-			case "data_delete":
-				$ids = GetParamArray("ids", true);
-				$table = GetParam("type", true);
-				// Todo: check permissions
-				return self::Delete($table, $ids);
-
-//			case "data_delete_team":
-//				$team_id = GetParam("team_id", true);
-//				$team = new Org_Team($team_id);
-//				return $team->removeMember(GetParam("ids"));
-
-		}
+		$id = GetARg($args, "id", 0);
+		$table = GetArg($args, "table", null);
+		$value = GetArg($args, "value", true);
+		if (! $id or ! $table) return;
+		$db_prefix = GetTablePrefix($table);
+		$sql = "update ${db_prefix}$table set is_active = $value where id = $id";
+		SqlQuery($sql);
 	}
+
+//	static function handle_operation( $operation )
+//	{
+//		switch ($operation){
+//			case "data_update":
+//				$table_name = GetParam("table_name", true);
+//				return self::data_update($table_name);
+//
+//			case "data_save_new":
+//				$table_name = GetParam("table_name", true);
+//				return self::SaveNew($table_name);
+//
+//			case "data_active":
+//				$active = GetParam("active", true);
+//				$table_name = GetParam("table_name", true);
+//				$row_id = GetParam("id", true);
+//				return self::Active($table_name, $row_id, $active);
+//
+//			case "data_delete":
+//				$ids = GetParamArray("ids", true);
+//				$table = GetParam("type", true);
+//				// Todo: check permissions
+//				return self::Delete($table, $ids);
+//
+////			case "data_delete_team":
+////				$team_id = GetParam("team_id", true);
+////				$team = new Org_Team($team_id);
+////				return $team->removeMember(GetParam("ids"));
+//
+//		}
+//	}
 
 	static function data_save_new()
 	{
@@ -101,6 +114,12 @@ class Core_Data
         return $row_id;
 	}
 
+	static function data_update_wrap()
+	{
+		$table_name = GetParam("table_name", true, null, true);
+		self::data_update($table_name);
+	}
+
 	static function data_update($table_name)
 	{
 		$debug = false;
@@ -117,6 +136,8 @@ class Core_Data
 
 		// Prepare sql statements: primary and meta tables;
 		$values = self::data_parse_get($table_name, array("search", "operation", "table_name", "id", "dummy"));
+//		print "data_update_prepare_$table_name";
+		$values = apply_filters("data_update_prepare_$table_name", $values, $row_id);
 
 		foreach ($values as $tbl => $changed_values)
 		{
@@ -514,7 +535,7 @@ class Core_Data
 						$client_action = substr($action[1], $s + 1);
 						if (! $client_action) $client_action = "''";
 //						print "CA=$client_action<br/>";
-						$btn_id = "btn_$text" . "_" . $row_id;
+						$btn_id = "btn_$text" . "_" . $row_id . "_$action_name";
 						$action_args = array("action" => "execute_url('" . $action_url . "', $client_action, $btn_id )");
 						if (isset($action[2])) $action_args["class"] = $action[2];
 						if (isset($action[3])) $action_args["tooltip"] = $action[3];

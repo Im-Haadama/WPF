@@ -103,6 +103,16 @@ class Core_Html {
 		return $data;
 	}
 
+	static function ActiveCheckbox($id, $value, $args = [])
+	{
+		$result = ETranslate($value ? "Active" : "Not active") . " ";
+
+		$post_file = GetArg($args, "post_file", "post not supplied" . __FUNCTION__);
+		if (! isset($args["events"])) $args["events"] = 'onchange="data_set_active(\'' . $post_file . '\', \'' . $id .'\')"';
+		$result .= self::GuiCheckbox($id, $value, $args);
+		return $result;
+	}
+
 	// $key, $data, $args
 
 	/**
@@ -1560,7 +1570,7 @@ class Core_Html {
 
 		switch ( substr( $type, 0, 3 ) ) {
 			case 'tin':
-				if ($type == 'tinyint(1)')
+				if ($type == 'tinyint(1)' or $type=="tiny")
 					$value = Core_Html::GuiCheckbox( $input_name, $data, array("events"=>$events) );
 				else
 					$value = Core_Html::GuiInput( $input_name, $data, $args ); //gui_input( $input_name, $data, $field_events, $row_id );
@@ -1771,6 +1781,7 @@ class Core_Html {
 		$button_args = $args;
 		$btn_class = "btn_$class";
 		$button_args["class"] = $btn_class;
+		$url = GetArg($args, "url", GetUrl(1));
 
 		$selected_tab = GetArg($args, "st_$id", 0);
 		$all_loaded = GetArg($args, "tabs_load_all", false);
@@ -1804,7 +1815,7 @@ class Core_Html {
 			if ($all_loaded)
 				$button_args["events"] = "onclick=\"selectTab(event, '$name', '$div_class', '$btn_class')\"";
 			else
-				$button_args["events"] = "onclick=\"window.location.href = '" . AddParamToUrl(GetUrl(1), "st_$id", $tab[0]) . "'\"";
+				$button_args["events"] = "onclick=\"window.location.href = '" . AddParamToUrl($url, "st_$id", $tab[0]) . "'\"";
 
 			$result .= Core_Html::GuiButton("btn_tab_$name", $display_name, $button_args);
 		}
@@ -2102,6 +2113,7 @@ class Core_Html {
 		}
 		return "";
 	}
+
 	static function load_scripts( $script_file = false ) {
 		$text = "";
 		if ( $script_file ) {
@@ -2130,6 +2142,12 @@ class Core_Html {
 			} while ( 0 );
 		}
 		return $text;
+	}
+
+	static function is_active($id, $value, $args)
+	{
+		if ($value) return self::GuiLabel($id, ETranslate("Active"), $args);
+		return self::GuiLabel($id, ETranslate("Not active"), $args);
 	}
 }
 function gui_checkbox( $id, $class, $value = false, $events = null ) {

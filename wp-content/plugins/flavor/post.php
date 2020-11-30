@@ -14,7 +14,8 @@ $flavor = Flavor::instance();
 $user = GetParam('AUTH_USER', false, null);
 $password = GetParam('AUTH_PW', false, null);
 $password_check = Core_Fund::check_password($user, $password);
-if (! get_user_id() and ! $password_check) {
+$nonce_checked = ($nonce=GetParam("nonce", false, null)) and wp_verify_nonce($nonce);
+if (! get_user_id() and ! $password_check and !$nonce_checked) {
 	if ( ! get_user_id(true) ) die('Not connected');
 }
 

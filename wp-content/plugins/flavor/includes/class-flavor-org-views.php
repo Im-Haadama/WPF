@@ -13,7 +13,6 @@ class Flavor_Org_Views {
 		return self::$_instance;
 	}
 
-
 	function init_hooks($loader)
 	{
 		$loader->AddAction( 'company_add_worker', $this, 'company_add_worker' );
@@ -168,7 +167,7 @@ class Flavor_Org_Views {
 		$table_args = array_merge($common_args,
 			array("fields" => array("id", "team_name", "manager"),
 			"add_checkbox"=>false,
-			      "selectors" => array("manager" => "Focus_Views::gui_select_worker")));
+			      "selectors" => array("manager" => "Flavor_Org_Views::gui_select_worker")));
 
 		//////////////
 		// info box //
@@ -205,7 +204,7 @@ class Flavor_Org_Views {
 		// Add Box //
 		/////////////
         $member_add = Core_Html::GuiDiv("add_member", Core_Html::GuiHeader(2, "add") .
-                 Focus_Views::gui_select_worker( "new_member", null, $args ) .
+                 Flavor_Org_Views::gui_select_worker( "new_member", null, $args ) .
 		    Core_Html::GuiButton( "btn_add_member", "add", array( "action" => "team_add_member('" . Focus::getPost() . "', $team_id )" )),
         		array("style" => 'width:400px; float: right'));
 
@@ -224,7 +223,7 @@ class Flavor_Org_Views {
 		// Add Sender Box //
 		////////////////////
 		$member_add = Core_Html::GuiDiv("add_sender", Core_Html::GuiHeader(2, "add") .
-		                                              Focus_Views::gui_select_worker( "new_sender", null, $args ) .
+		                                              Flavor_Org_Views::gui_select_worker( "new_sender", null, $args ) .
 		                                              Core_Html::GuiButton( "btn_add_sender", "add", array( "action" => "team_add_sender('" . Focus::getPost() . "', $team_id )" )),
 			array("style" => 'width:400px; float: right'));
 
@@ -284,7 +283,7 @@ class Flavor_Org_Views {
 
 		$result = "";
 //		$result            = Core_Html::GuiHeader( 1, "Edit project" );
-//		$args["selectors"] = array( "manager" => "Focus_Views::gui_select_worker" );
+//		$args["selectors"] = array( "manager" => "Flavor_Org_Views::gui_select_worker" );
 		// $args["post_file"] = GetUrl( 1 ) . "?team_id=" . $team_id;
 //		$result            .= Core_Gem::GemElement( "working_teams", $project_id, $args );
 //
@@ -338,7 +337,4 @@ class Flavor_Org_Views {
 		$result .= Core_Html::gui_select( $id, 'display_name', $selected_info, $events, $selected, "user_id", $class );
 		return $result;
 	}
-
-
-
 }

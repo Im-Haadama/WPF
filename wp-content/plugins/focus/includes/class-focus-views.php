@@ -13,6 +13,7 @@ class Focus_Views {
 		$loader->AddAction( "tasklist_worker", $this, "show_worker_wrapper", 10, 2 );
 		$loader->AddAction('wp_enqueue_scripts', $this, 'enqueue_scripts');
 		$loader->AddFilter("gem_next_page_tasklist", $this, "next_page_tasklist");
+		$loader->AddFilter("data_update_prepare_tasklist", $this, "data_update_prepare_tasklist", 10, 2);
 	}
 
 	private $post_file;
@@ -202,10 +203,10 @@ class Focus_Views {
 				case "task_templates":
 					$args["selectors"]     = array(
 						"project_id"  => "Focus_Views::gui_select_project",
-						"owner"       => "Focus_Views::gui_select_worker",
-						"creator"     => "Focus_Views::gui_select_worker",
+						"owner"       => "Flavor_Org_Views::gui_select_worker",
+						"creator"     => "Flavor_Org_Views::gui_select_worker",
 						"repeat_freq" => "gui_select_repeat_time",
-						"team"        => "Focus_Views::gui_select_team",
+						"team"        => "Focus_Views::gui_select_team"
 					);
 					$args["fields"]        = array(
 						"id",
@@ -230,17 +231,20 @@ class Focus_Views {
 						"task_url"            => "Task Url",
 						"condition_query"     => "Condition query"
 					);
+					$args["check_active"] = true;
+
 					break;
+
 				case "tasklist":
 					$args["rows_per_page"] = 20;
 					$args["selectors"] = array(
 						"project_id" => "Focus_Views::gui_select_project",
-						"owner"      => "Focus_Views::gui_select_worker",
-						"creator"    => "Focus_Views::gui_select_worker",
+						"owner"      => "Flavor_Org_Views::gui_select_worker",
+						"creator"    => "Flavor_Org_Views::gui_select_worker",
 						"preq"       => "Focus_Views::gui_select_task",
 						"team"       => "Focus_Views::gui_select_team",
 //						"priority"   => "Focus_Views::gui_select_priority", Show select
-						"created" => "Core_Html::GuiShowDynamicDateTime"
+						"created" => "Core_Html::GuiShowDynamicDateTime",
 					);
 					if ( self::OptionEnabled( "missions" ) ) {
 						$args["selectors"]["mission_id"] = "Flavor_Mission::gui_select_mission";
@@ -274,7 +278,10 @@ class Focus_Views {
 						"priority",
 						"created"
 					);
-					$args["links"]         = array( "id" => self::get_link( "task", "%d" ) );
+					$args["links"]         = array( "id" => self::get_link( "task", "%d" ),
+						"task_template"=>self::get_link("template", "%d"));
+					if ($action == "show")
+						$args["fields"][] = "creator";
 					break;
 
 				case "working_teams":
@@ -461,7 +468,7 @@ class Focus_Views {
 			case "new_team":
 				$args   = self::Args( "teams" );
 				$result .= Core_Html::GuiHeader( 1, "Add Team" );
-				$args   = array( "selectors" => array( "manager" => "Focus_Views::gui_select_worker" ) );
+				$args   = array( "selectors" => array( "manager" => "Flavor_Org_Views::gui_select_worker" ) );
 				$result .= Core_Html::NewRow( "working_teams", $args );
 				$result .= Core_Html::GuiButton( "btn_newteam", "save_new('working_teams')", "add" );
 
@@ -583,7 +590,7 @@ class Focus_Views {
 		}
 		$args              = [];
 		$args["post_file"] = Focus::getPost();
-		$args["selectors"] = array( "manager" => "Focus_Views::gui_select_worker" );
+		$args["selectors"] = array( "manager" => "Flavor_Org_Views::gui_select_worker" );
 		$args["links"]     = array(
 			"id" => AddToUrl( array(
 				"operation" => "show_edit_team",
@@ -661,28 +668,13 @@ class Focus_Views {
 			$args = self::Args( "tasklist" );
 		}
 
-		$args["query"] = (isset($args["query"]) ? $args["query"] : 1) . " and project_id = $project_id and status < 2";
-//		$sql = "select * from tasklist where project_id = " . $project_id;
-//		if ( $active_only ) {
-//			$sql .= " and status = 0 ";
-//		}
-//		$args["sql"]   = $sql . $order;
-//		$args["links"]        = array( "id" => self::get_link( "task", "%s" ) );
+		$args["query"] = (isset($args["query"]) ? $args["query"] : 1) . " and project_id = $project_id and (status < 2 or status = 6)";
 		$args["title"]        = __( "Tasks in project" ) . " " . $P->getName();
-//		$args["prepare_plug"] = __CLASS__ . "::prepare_row";
-//		$args["query"]        = " project_id=$project_id and status < 2";
-//		$args["hide_cols"]    = array( "task_description" => 1 );
-//		$args["order"]        = " id desc";
 		$action_url = GetUrl();
 
 		$args["actions"] =array(array( "", $action_url . "?operation=gem_add_tasklist&preq=%d;", "fas fa-plus-square", "add_followup" ));
-		// $args["post_file"] .= "project_id=$project_id";
 
 		unset_by_value( $args["fields"], "project_id" );
-
-//		var_dump($args["fields"]);
-
-//		var_dump($args["query"]); print "<br/>";
 
 		$result = Core_Gem::GemTable( "tasklist", $args );
 		$result .= Core_Html::GuiHyperlink( " Edit project ", AddToUrl( "edit", 1 ) );
@@ -977,7 +969,6 @@ class Focus_Views {
 			$result .= $table;
 		} else {
 			if ( ! $include_team ) {
-//				print "<br/>".$args["sql"] . "<br/>";
 				return self::user_work( $args, "Active tasks assigned to my teams", true, $user_id );
 			}
 			$result .= "Nothing found.";
@@ -1124,8 +1115,10 @@ class Focus_Views {
 		// Tasks I've created. Assigned to some else                                                                 //
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		$args["title"] = ETranslate( "Tasks I've initiated to other teams" );
-		$args["query"] = " creator = $user_id and status < 2"; // . " and (owner != " . $user_id . ' or isnull(owner)) ' . ($teams ? ' and team not in (' . CommaImplode( $teams ) . ")" : '');
+		$args["query"] = " creator = $user_id and (status < 2 or status = 6)"; // . " and (owner != " . $user_id . ' or isnull(owner)) ' . ($teams ? ' and team not in (' . CommaImplode( $teams ) . ")" : '');
 		$args["class"] = "sortable";
+		$args["fields"][] = "status";
+		$args["selectors"]["status"] = "Focus_Tasklist::get_task_status";
 		$table         = $this->Taskslist( $args );
 		if ( $this->result_count ) {
 			$result .= $table;
@@ -1167,7 +1160,7 @@ class Focus_Views {
 			$args["selectors"] = array(
 				"project"    => "Focus_Views::gui_select_project",
 				"project_id" => "Focus_Views::gui_select_project",
-				"owner"      => "Focus_Views::gui_select_worker"
+				"owner"      => "Flavor_Org_Views::gui_select_worker"
 			);
 		}
 
@@ -1273,6 +1266,11 @@ class Focus_Views {
 		if ( ! $template_id ) {
 			return self::show_new_template();
 		}
+		if ($operation = GetParam("operation", false, null)){
+			$args = array("id"=> GetParam("id", true),
+			"table"=>"task_templates");
+			do_action($operation, $args);
+		}
 
 		return self::instance()->show_templates( $not_used, $template_id );
 	}
@@ -1293,8 +1291,8 @@ class Focus_Views {
 		$args                     = array();
 		$args["selectors"]        = array(
 			"project_id"  => "Focus_Views::gui_select_project",
-			"owner"       => "Focus_Views::gui_select_worker",
-			"creator"     => "Focus_Views::gui_select_worker",
+			"owner"       => "Flavor_Org_Views::gui_select_worker",
+			"creator"     => "Flavor_Org_Views::gui_select_worker",
 			"team"        => "Focus_Views::gui_select_team",
 			"repeat_freq" => "gui_select_repeat_time"
 		);
@@ -1337,13 +1335,14 @@ class Focus_Views {
 		if ( ! $row_id ) {
 			return self::show_new_task();
 		}
-		$worker = new Org_Worker( get_user_id() );
 
+		$t = new Focus_Tasklist($row_id);
 		$table_name  = "tasklist";
-		$entity_name = "task";
-		// print Core_Html::GuiHeader( 1, $entity_name . " " . $row_id );
-		$args              = self::Args("tasklist");
-//		$args["edit"]      = $edit;
+		$args              = self::Args("tasklist", $edit ? "show" : "create");
+		if ($t->task_template()) {
+			$args["fields"][] = "task_template";
+		}
+
 		$args["edit_cols"] = array(
 			"date"             => true,
 			"task_title"       => true,
@@ -1360,8 +1359,8 @@ class Focus_Views {
 		);
 //		$args["selectors"] = array(
 //			"project_id" => "Focus_Views::gui_select_project",
-//			"owner"      => "Focus_Views::gui_select_worker",
-//			"creator"    => "Focus_Views::gui_select_worker",
+//			"owner"      => "Flavor_Org_Views::gui_select_worker",
+//			"creator"    => "Flavor_Org_Views::gui_select_worker",
 //			"preq"       => "Focus_Views::gui_select_task",
 //			"team"       => "Focus_Views::gui_select_team",
 //			"mission_id" => "Flavor_Mission::gui_select_mission"
@@ -1491,7 +1490,7 @@ class Focus_Views {
 		$template_args["companies"] = $worker->GetCompanies();
 
 		if ( $template_id ) {
-			$template_args["title"]     = "Repeating task";
+//			$template_args["title"]     = "Repeating task"; 2020-11-29. agla: Title should be set in pages
 			$template_args["post_file"] = $action_url;
 
 			$template = Core_Gem::GemElement( "task_templates", $template_id, $template_args );
@@ -1571,7 +1570,7 @@ class Focus_Views {
 
 		$args              = [];
 		$args["links"]     = array( "id" => AddToUrl( array( "operation" => "show_team", "id" => "%s" ) ) );
-		$args["selectors"] = array( "manager" => "Focus_Views::gui_select_worker" );
+		$args["selectors"] = array( "manager" => "Flavor_Org_Views::gui_select_worker" );
 		$args["edit"]      = false;
 		$result            .= GuiTableContent( "working_teams", "select * from {$db_prefix}working_teams where manager = " . $user->id, $args );
 
@@ -1588,7 +1587,7 @@ class Focus_Views {
 
 		$global            = GetArg( $args, false, "global" );
 		$args["links"]     = array( "ID" => AddToUrl( array( "operation" => "show_edit_project", "id" => "%s" ) ) );
-		$args["selectors"] = array( "manager" => "Focus_Views::gui_select_worker" );
+		$args["selectors"] = array( "manager" => "Flavor_Org_Views::gui_select_worker" );
 		$args["edit"]      = false;
 		$args["actions"]   = array(
 			array(
@@ -1671,14 +1670,15 @@ class Focus_Views {
 			$sql .= ", preq";
 		}
 
-        $sql .= ", creator, owner) values (" .
+		$sql .= ", creator, owner) values (" .
 		        quote_text( $description ) . "," .
 		        $project . "," .
 		        $priority . ",";
 		if ( $preq ) {
 			$sql .= $preq . ",";
 		}
-        $sql .= $user_id . "," . $owner . ")";
+		$sql .= $user_id . "," . $owner . ")";
+
 		SqlQuery( $sql );
 
 		return SqlInsertId();
@@ -1738,7 +1738,7 @@ class Focus_Views {
 	static function search_by_text( $user_id, $text ) {
 		$result = [];
 		$result = array_merge( $result, self::project_list_search( $user_id, $text ) );
-		$result = array_merge( $result, self::task_list_search( "status < 2 and (task_description like " . QuotePercent( $text ) . " or task_title like " . QuotePercent( $text ) . ")" ) );
+		$result = array_merge( $result, self::task_list_search( "(status < 2 or status = 6) and (task_description like " . QuotePercent( $text ) . " or task_title like " . QuotePercent( $text ) . ")" ) );
 		$result = array_merge( $result, self::template_list_search( " is_active = 1 and task_description like " . QuotePercent( $text ) ) );
 
 		if ( count( $result ) < 1 ) {
@@ -1924,17 +1924,14 @@ class Focus_Views {
 			'focus_project'         => array( 'Focus_Views::show_project', null ), // 'edit_projects' ),
 			'focus_project_tasks'   => array( 'Focus_Views::show_project_tasks', 'show_tasks' ),
 			'focus_worker'          => array( 'Focus_Views::show_worker', 'show_tasks' ),
-            'focus_sign_up'         =>  array( 'Focus_Views::sign_up')
+			'focus_sign_up'         =>  array( __CLASS__ . '::sign_up' )
 		) );
 	}
 
-	public static function sign_up(){
+	static function sign_up() {
 		if ( ! class_exists( "Subscription_Manager" ) ) {
 			die( "install error. Install Subscript_Manager" );
 		}
-        //$post_file = Flavor::getPost();
-		//$Focus_Views = new Focus_Views($post_file);
-        //return $Focus_Views->focus_users->register();
 		return self::instance()->focus_users->register();
 	}
 

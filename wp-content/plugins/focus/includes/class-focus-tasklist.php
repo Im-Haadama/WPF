@@ -149,12 +149,16 @@ class Focus_Tasklist {
 	public function Ended($user_id)
 	{
 		$db_prefix = GetTablePrefix();
+		$new_status = (($this->creator() == $user_id) ? enumTasklist::done : enumTasklist::done_creator);
 		$sql = "UPDATE ${db_prefix}tasklist 
 				SET ended = now(),
 				    owner = $user_id,
-				    status = " . enumTasklist::done .
-		       " WHERE id = " . $this->id;
+				    status = " . $new_status;
+		if ($this->creator() != $user_id) $sql .= ", team = 0, owner = 0 ";
 
+		$sql .= " WHERE id = " . $this->id;
+
+		FocusLog($sql);
 		// print $sql;
 		return SqlQuery( $sql );
 	}
@@ -181,6 +185,14 @@ class Focus_Tasklist {
 		}
 
 		return true;
+	}
+
+	function get_status()
+	{
+		$db_prefix = GetTablePrefix();
+		$rc =  SqlQuerySingleScalar("select status from ${db_prefix}tasklist where id = " . $this->getId());
+//		print "stat=$rc<br/>";
+		return $rc;
 	}
 
 	function update_status( $status, $owner = 0 )
@@ -232,19 +244,22 @@ class Focus_Tasklist {
 		return SqlQuerySingleScalar( $sql );
 	}
 
-	function get_task_status( $status ) {
+	static function get_task_status( $id, $status )
+	{
 		switch ( $status ) {
 			case enumTasklist::waiting:
-				print "ממתין";
+				return "ממתין";
 				break;
 			case enumTasklist::started:
-				print "התחיל";
+				return "התחיל";
 				break;
 			case enumTasklist::done:
-				print "הסתיים";
+				return "הסתיים";
 				break;
 			case enumTasklist::canceled:
-				print "בוטל";
+				return "בוטל";
+			case enumTasklist::done_creator:
+				return "<b>בוצע!</b>";
 				break;
 		}
 	}
@@ -575,5 +590,6 @@ class enumTasklist {
 		done = 2,
 		canceled = 3,
 		bad_url = 4,
-		failed = 5;
+		failed = 5,
+		done_creator = 6;
 }
