@@ -844,7 +844,7 @@ class Focus_Views {
 //		print self::CompanySettings(new Org_Company(1));
 //		die (1);
 		if ( ! self::focus_check_user() ) {
-			return "not valid user";
+			return null;
 		}
 
 		if ( ! ( $user_id > 0 ) ) {
