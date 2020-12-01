@@ -463,11 +463,12 @@ class Finance {
 		$client_id = GetParam( "client_id", true );
 		$site_id   = GetParam( "site_id", false, null );
 		if ( ! $site_id ) {
-			return Fresh_Client_Views::show_trans( $client_id, TransView::not_paid );
+			print Fresh_Client_Views::show_trans( $client_id, TransView::not_paid );
+			return true;
 		}
 // $data .= $this->Run( $func, $site_id, $first, $debug );
 		$link = Finance::getPostFile() . "?operation=get_open_trans&client_id=" . $client_id;
-		print $link;
+//		print $link;
 		print $multi_site->Run( $link, $site_id );
 
 		return true;

@@ -93,7 +93,7 @@ class Subscription_Manager {
 
 	public function enqueue_scripts() {
 		$file = SUBSCRIPTION_MANAGER_INCLUDES_URL . '/js/subscriptions.js';
-		SubsLog("trying to load $file");
+//		SubsLog("trying to load $file");
 		wp_enqueue_script( 'subscriptions', $file, null, $this->version, false );
 	}
 

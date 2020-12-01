@@ -60,7 +60,7 @@ class Finance_Clients
 			$data .= Core_Html::gui_row( $row );
 		}
 		$data .= "</table>";
-		return  $data;
+		print $data;
 	}
 
 	static function admin_page() {
@@ -288,8 +288,7 @@ class Finance_Clients
 	 */
 	static function create_receipt_from_account_ids( $cash, $bank, $check, $credit, $user_id, $date, $row_ids )
 	{
-		FinanceLog(__FUNCTION__, "cash: $cash bank: $bank check: $check credit $credit user $user_id date $date rows: " .
-			StringVar($row_ids));
+		FinanceLog(__FUNCTION__ . "cash: $cash bank: $bank check: $check credit $credit user $user_id date $date rows: " . StringVar($row_ids));
 		if ( ! $date ) $date = date( 'Y-m-d' );
 
 		if ( ! ( $user_id > 0 ) ) throw  new Exception( "Bad customer id " . __CLASS__ );
