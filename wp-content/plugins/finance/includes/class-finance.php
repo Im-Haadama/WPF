@@ -198,6 +198,7 @@ class Finance {
 		$this->loader->AddAction("get_open_trans", $this, 'get_open_trans');
 		$this->loader->AddAction("exists_invoice", $this, 'exists_invoice');
 		$this->loader->AddAction("create_receipt", $this, 'create_receipt');
+		$this->loader->AddAction("create_invoice", $this, 'create_invoice');
 
 		if ((get_user_id() == 1) and defined("DEBUG_USER")) wp_set_current_user(DEBUG_USER);
 
@@ -444,6 +445,18 @@ class Finance {
 		die ( 1 );
 	}
 
+	function create_invoice() {
+		$row_ids = GetParamArray( "row_ids" );
+		$user_id = GetParam( "user_id", true );
+		$date    = GetParam( "date" );
+
+		$doc_id = Finance_Clients::create_invoice_from_account_ids( $user_id, $date, $row_ids );
+		// print "doc=$doc_id<br/>";
+		print $doc_id;
+		die ( 1 );
+	}
+
+
 	static function get_open_trans() {
 		$multi_site = Core_Db_MultiSite::getInstance();
 
@@ -460,7 +473,7 @@ class Finance {
 		return true;
 	}
 
-static function get_open_site_invoices()
+	static function get_open_site_invoices()
 	{
 		$debug = GetParam("debug");
 		$sum         = array();
@@ -888,12 +901,12 @@ static function get_open_site_invoices()
 
 	static function Invoice4uConnect()
 	{
-		MyLog(__FUNCTION__);
+		FinanceLog(__FUNCTION__);
 		if ($i = Finance_Invoice4u::getInstance()) return $i;
-		MyLog("Connecting " . INVOICE_USER);
+		FinanceLog("Connecting " . INVOICE_USER);
 		if (defined('INVOICE_USER') and defined('INVOICE_PASSWORD'))
 			return new Finance_Invoice4u(INVOICE_USER, INVOICE_PASSWORD);
-		else MyLog("No invoice user or password");
+		else FinanceLog("No invoice user or password");
 
 		return null;
 	}

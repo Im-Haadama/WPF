@@ -595,7 +595,7 @@ msgstr "נתוני שכר"
 
 # fresh personal area
 msgid "Balance"
-msgstr "יתרה לתשלםו"
+msgstr "יתרה לתשלום"
 
 msgid "No pending orders"
 msgstr "כל ההזמנות סופקו"
