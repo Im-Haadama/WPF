@@ -41,6 +41,8 @@ function wpf_custom_nav_menu_item( $title, $url, $order, $parent = 0 ){
 }
 
 function custom_nav_menu_items( $items, $menu ){
+	return $items;
+
 //	print "ms=" . $menu->slug . "<br/>";
 	// only add item to a specific menu
 	if ( $menu->slug == 'info_site' || $menu->slug == 'main' ){

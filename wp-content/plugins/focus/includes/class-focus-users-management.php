@@ -18,7 +18,7 @@ class Focus_Users_Management {
 		// Create wordpress users.
 		$u = Core_Users::get_user_by_email($email);
 		if ($u) {
-			print "user with email $email exists<br/>";
+			print "failed: user with email $email exists!";
 			return false;
 		}
 		$u = Core_Users::create_user($email, $user_name, $password);

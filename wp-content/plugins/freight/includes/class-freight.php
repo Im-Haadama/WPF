@@ -453,7 +453,7 @@ class Freight {
 			return;
 		}
 		if (! is_callable($function)){
-			print "function is not callable";
+			print __FUNCTION__ . ": function is not callable";
 			print debug_trace();
 			return;
 		}

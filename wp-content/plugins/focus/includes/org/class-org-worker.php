@@ -165,13 +165,28 @@ class Org_Worker extends Core_users
 
 	function AddCompany($company_id)
 	{
-		$current = unserialize(get_usermeta($this->id, 'companies'));
-		if (! $current) $current = array();
-		if (! in_array($company_id, $current)) {
-			array_push($current, $company_id);
-			update_usermeta($this->id, 'companies', serialize($current));
-		}
+		$db_prefix = GetTablePrefix();
+
+		$worker_id = $this->getId();
+		$type1 = FlavorDbObjects::users;
+		$type2 = FlavorDbObjects::company;
+		$sql = "insert into ${db_prefix}links (type1, type2, id1, id2) values($type1, $type2, $worker_id, $company_id)";
+		return SqlQuery($sql);
 	}
+
+//	function AddCompany($company_id)
+//	{
+//
+//		$current = unserialize(get_usermeta($this->id, 'companies'));
+//		var_dump($current);
+//		var_dump($company_id);
+//		if (! $current) $current = array();
+//		if (! in_array($company_id, $current)) {
+//			array_push($current, $company_id);
+//			update_usermeta($this->id, 'companies', serialize($current));
+//			print "adding $this->id X${company_id}X";
+//		}
+//	}
 
     function RemoveCompany($company_id)
     {

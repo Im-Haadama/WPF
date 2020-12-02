@@ -111,6 +111,7 @@ class Core_Data
         if (!$row) return false;
 		$row_id = SqlInsert($table_name, $row, $ignore_list);
 		self::Active($table_name,$row_id,true);
+		do_action("data_save_new_after_$table_name", $row, $row_id);
         return $row_id;
 	}
 

@@ -3,12 +3,14 @@
 class Focus_Views {
 	private $result_count;
 	function init_hooks( Core_Loader &$loader ) {
-		$loader->AddFilter( 'gem_next_page_tasklist', $this, 'next_page' );
-		$loader->AddFilter( 'gem_next_page_projects', $this, 'next_page' );
+		$loader->AddFilter( 'gem_next_page_tasklist', $this );
+		$loader->AddFilter( 'gem_next_page_projects', $this );
 		$loader->AddFilter( 'search_by_text', $this, 'search_by_text_wrap' );
 		$loader->AddFilter( 'data_save_new_projects', $this, 'DataSaveNewDefault', 11, 1 );
 		$loader->AddFilter( 'data_save_new_working_teams', $this, 'DataSaveNewTeam', 11, 1 );
 		$loader->AddFilter( 'data_save_new_tasklist', $this, 'DataSaveNewTaskList', 11, 1 );
+		$loader->AddFilter("data_save_new_after_company", $this, null, 10, 2);
+
         $loader->AddFilter( 'data_save_new_company', $this, 'DataSaveNewCompany', 11, 1 );
 		$loader->AddAction( 'add_worker', $this, 'DoAddCompanyWorker', 11, 3 );
 		$loader->AddAction( "tasklist_worker", $this, "show_worker_wrapper", 10, 2 );
@@ -1970,9 +1972,9 @@ class Focus_Views {
             return null;
         }
         //add the company to the admin-user
-        $company_id = GetParam( "company_id" );
-        $U = new Org_Worker( $admin );
-        $U->AddCompany( $company_id );
+//        $company_id = GetParam( "company_id" );
+//        $U = new Org_Worker( $admin );
+//        $U->AddCompany( $company_id );
 
         return $row;
     }
@@ -2016,6 +2018,15 @@ class Focus_Views {
         }
         return $row;
     }
+
+	function data_save_new_after_company($row, $new_company_id)
+	{
+		$worker = $row['admin'];
+		$w = new Org_Worker($worker);
+		$w->AddCompany($new_company_id);
+//		var_dump($new_copany_id);
+//		var_dump($row);
+	}
 
 	static function DoAddCompanyWorker() {
 		$user_id = get_user_id();
@@ -2238,9 +2249,14 @@ class Focus_Views {
 		wp_enqueue_script( 'sorttable', $file, null, '1.0', false );
 	}
 
-	function next_page_tasklist()
+	function gem_next_page_tasklist()
 	{
 		return "/project";
+	}
+
+	function gem_next_page_projects()
+	{
+		return "/focus";
 	}
 
 }

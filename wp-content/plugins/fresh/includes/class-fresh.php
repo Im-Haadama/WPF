@@ -555,7 +555,7 @@ class Fresh {
 			return;
 		}
 		if (! is_callable($function)){
-			print "function is not callable. file=$file";
+			print __FUNCTION__ . ": function is not callable. file=$file";
 			return;
 		}
 		register_activation_hook($file, $function);

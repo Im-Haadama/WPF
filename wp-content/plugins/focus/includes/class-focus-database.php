@@ -45,6 +45,9 @@ class Focus_Database extends Core_Database
                 SqlQuery("Alter table ${db_prefix}tasklist add created varchar(30)" );
 			case '1.4':
 				SqlQuery("alter table ${db_prefix}tasklist modify created datetime");
+			case '1.5':
+				SqlQuery("ALTER TABLE im_projects add project_contact varchar(50)");
+
 		}
 		return self::UpdateInstalled("tables", $version );
 	}

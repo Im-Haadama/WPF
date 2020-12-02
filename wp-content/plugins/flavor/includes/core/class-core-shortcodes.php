@@ -81,7 +81,7 @@ class Core_Shortcodes {
 				}
 				if ($debug == 2) print " no wrapper ";
 
-				if ($debug >= 1) print "not callable: $function<br/>";
+				if ($debug >= 1) print __FUNCTION__ . " $function not callable.<br/>";
 			}
 	}
 
