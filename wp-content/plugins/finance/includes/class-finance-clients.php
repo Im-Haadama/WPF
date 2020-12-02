@@ -60,7 +60,7 @@ class Finance_Clients
 			$data .= Core_Html::gui_row( $row );
 		}
 		$data .= "</table>";
-		return  $data;
+		print $data;
 	}
 
 	static function admin_page() {
@@ -199,7 +199,7 @@ class Finance_Clients
 		if ( $invoice ) {
 			$new_tran = Core_Html::gui_table_args( array(
 				array(
-					"תשלום",
+					"הפקת חשבונית מס קבלה",
 					Core_Html::GuiButton( "btn_receipt", "Invoice Reciept", array( "action" => "create_receipt('" . Finance::getPostFile() . "', " . $customer_id . ")" ) )
 				),
 				array( "תאריך", Core_Html::gui_input_date( "pay_date", "" ) ),
@@ -210,8 +210,17 @@ class Finance_Clients
 				array( "עודף", " <div id=\"change\"></div>" )
 			), "payment_table",
 				$args );
+			$new_invoice = Core_Html::gui_table_args( array(
+				array(
+					"יצירת חשבונית",
+					Core_Html::GuiButton( "btn_invoice", "Invoice", array( "action" => "create_invoice('" . Finance::getPostFile() . "', " . $customer_id . ")" ) )
+				),
+				array( "תאריך", Core_Html::gui_input_date( "pay_date", "" ) )
+			), "payment_table",
+				$args );
 		} else {
 			$new_tran = Core_Html::GuiHeader( 1, "לא ניתן להתחבר ל Invoice4u. בדוק את ההגדרות ואת המנוי. יוזר $" );
+			$new_invoice = "";
 		}
 		$payment_info_id = SqlQuerySingleScalar( "select id from im_payment_info where email = " . QuoteText($u->get_customer_email()));
 		if ($payment_info_id) {
@@ -227,16 +236,30 @@ class Finance_Clients
 //			$credit_info = "No payment info";
 		}
 
-		$result .= Core_Html::gui_table_args( array(
-			array( Core_Html::GuiHeader( 2, "פרטי לקוח", true ), Core_Html::GuiHeader( 2, "קבלה", true ), Core_Html::GuiHeader(1, "Credit info") ),
-			array( $user_info, $new_tran, $credit_info )
-		) );
+		$result .=  Core_Html::GuiHeader( 2, "פרטי לקוח", true );
+		$result .= Core_Html::gui_table_args(array($user_info));
+
+//		$result .= Core_Html::gui_table_args( array(
+//			array(  Core_Html::GuiHeader( 2, "קבלה", true ), Core_Html::GuiHeader(1, "Credit info") ),
+//			array( $user_info, $new_tran, $credit_info )
+//		) );
 
 		$result .= Core_Html::GuiHeader( 2, __( "Balance" ) . ": " .
 		                                    SqlQuerySingleScalar( "SELECT round(sum(transaction_amount), 1) FROM im_client_accounts WHERE client_id = " . $customer_id ) );
 
-		$result .= Core_Html::GuiTabs("ca", array(array("Credit pay", "Credit pay", self::PaymentBox($u)),
-			array("Add document", "Add document", self::AddDocumentBox($u))),
+		// Add to account existing documemnt
+		$tabs = [array("exists_document", "Add Exists document", self::AddDocumentBox($u))];
+		// Pay the balance with credit card.
+		if ($pay = self::PaymentBox($u)) $tabs [] = array("Credit pay", "Credit pay", $pay);
+		// Create receipt.
+		$tabs[]  = ["receipt", "Create Receipt", $new_tran];
+		// Create invoice
+		$tabs[]  = ["invoice", "Create Invoice", $new_invoice];
+		// Edit Card info
+		$tabs[]  = ["card", "Edit card info", $credit_info];
+
+
+		$result .= Core_Html::GuiTabs("ca", $tabs,
 			array("tabs_load_all"=>true));
 
 		$result .= '<div id="logging"></div>';
@@ -265,21 +288,31 @@ class Finance_Clients
 	 */
 	static function create_receipt_from_account_ids( $cash, $bank, $check, $credit, $user_id, $date, $row_ids )
 	{
-		MyLog(__FUNCTION__, "cash: $cash bank: $bank check: $check credit $credit user $user_id date $date rows: " .
-			StringVar($row_ids));
+		FinanceLog(__FUNCTION__ . "cash: $cash bank: $bank check: $check credit $credit user $user_id date $date rows: " . StringVar($row_ids));
 		if ( ! $date ) $date = date( 'Y-m-d' );
 
 		if ( ! ( $user_id > 0 ) ) throw  new Exception( "Bad customer id " . __CLASS__ );
 
-		$del_ids = array();
-		$no_ids  = true;
-		$dels_total = 0;
+		$deliveries_total = 0;
+		$del_ids = self::check_deliveries($row_ids, $deliveries_total);
+		$change = ($cash + $bank + $check + $credit) - $deliveries_total;
+
+		if ( ! $del_ids or ! count($del_ids) ) {
+			print "לא נבחרו תעודות משלוח";
+			MyLog("no del ids");
+
+			return false;
+		}
+		return self::CreateReceipt($cash, $bank, $check, $credit, $change, $user_id, $date, $del_ids);
+	}
+
+	static function check_deliveries($row_ids, &$deliveries_total) {
+		$del_ids = [];
 		foreach ( $row_ids as $id ) {
 			if ( $id > 0 ) {
-				$no_ids = false;
-				$del_id = SqlQuerySingleScalar( "select transaction_ref from im_client_accounts where ID = " . $id );
-				$d = new Finance_Delivery(0, $del_id);
-				$dels_total += $d->getDeliveryTotal();
+				$del_id           = SqlQuerySingleScalar( "select transaction_ref from im_client_accounts where ID = " . $id );
+				$d                = new Finance_Delivery( 0, $del_id );
+				$deliveries_total += $d->getDeliveryTotal();
 				if ( $del_id > 0 ) {
 					array_push( $del_ids, $del_id );
 				} else {
@@ -291,15 +324,22 @@ class Finance_Clients
 				die ( "bad id " . $id );
 			}
 		}
-		$change = ($cash + $bank + $check + $credit) - $dels_total;
+		return $del_ids;
+	}
 
-		if ( $no_ids ) {
-			print "לא נבחרו תעודות משלוח";
-			MyLog("no del ids");
+	static function create_invoice_from_account_ids( $user_id, $date, $row_ids )
+	{
+		FinanceLog(__FUNCTION__, "user $user_id date $date rows: " .
+		                         StringVar($row_ids));
 
-			return false;
-		}
-		return self::CreateReceipt($cash, $bank, $check, $credit, $change, $user_id, $date, $del_ids);
+		if ( ! $date ) $date = date( 'Y-m-d' );
+
+		if ( ! ( $user_id > 0 ) ) throw  new Exception( "Bad customer id " . __CLASS__ );
+
+		$total = 0;
+		if (! ($del_ids = self::check_deliveries($row_ids, $total))) return false;
+
+		return self::CreateInvoice($user_id, $date, $del_ids);
 	}
 
 	private static function CreateReceipt($cash, $bank, $check, $credit, $change, $user_id, $date, $del_ids)
@@ -317,7 +357,7 @@ class Finance_Clients
 			return false;
 		}
 
-		$doc_id   = self::CreateDocument( "r", $del_ids, $user_id, $u->get_customer_email(), $date, $c, $bank, $credit, $check );
+		$doc_id   = self::CreateDocument( "r", $del_ids, $user_id, $date, $c, $bank, $credit, $check );
 
 		$pay_type = self::pay_type( $cash, $bank, $credit, $check );
 		if ( is_numeric( $doc_id ) && $doc_id > 0 ) {
@@ -334,6 +374,34 @@ class Finance_Clients
 			return false;
 		}
 	}
+
+	private static function CreateInvoice($user_id, $date, $del_ids)
+	{
+		Finance::Invoice4uConnect();
+
+		$u = new Finance_Client( $user_id );
+
+		// Check if paid (some bug cause double invoice).
+		$sql = "SELECT count(payment_receipt) FROM im_delivery WHERE id IN (" . CommaImplode( $del_ids ) . " )";
+		if ( SqlQuerySingleScalar( $sql ) > 0 ) {
+			print " כבר שולם" . CommaImplode( $del_ids ) . " <br/>";
+
+			return false;
+		}
+
+		$doc_id = self::CreateDocument( "i", $del_ids, $user_id, $date );
+
+		if ( is_numeric( $doc_id ) && $doc_id > 0 ) {
+			$sql = "UPDATE im_delivery SET payment_receipt = " . $doc_id . " WHERE id IN (" . CommaImplode( $del_ids ) . " ) ";
+			print $sql;
+			SqlQuery( $sql );
+			return  $doc_id;
+		} else {
+			print "Error: " . $doc_id . "<br/>";
+			return false;
+		}
+	}
+
 
 	static function pay_type( $cash, $bank, $credit, $check ) {
 		$pay_type = "";
@@ -353,7 +421,7 @@ class Finance_Clients
 		return $pay_type;
 	}
 
-	static function CreateDocument( $type, $ids, $customer_id, $email, $date, $cash = 0, $bank = 0, $credit = 0, $check = 0, $subject = null )
+	static function CreateDocument( $type, $ids, $customer_id, $date, $cash = 0, $bank = 0, $credit = 0, $check = 0, $subject = null )
 	{
 		$db_prefix = GetTablePrefix("delivery_lines");
 		if ( ! ( $customer_id > 0 ) )
@@ -368,7 +436,6 @@ class Finance_Clients
 		$C = new Finance_Client($customer_id);
 		$invoice->Login();
 
-//		$client = $invoice->GetCustomerByEmail( $email);
 		$client = $C->getInvoiceUser(true);
 
 		if ( !$client or  ! ( $client->ID ) > 0 ) {
@@ -477,7 +544,7 @@ class Finance_Clients
 	static function PaymentBox(Finance_Client $C )
 	{
 		$status = Finance_Yaad::getCustomerStatus($C, false);
-		if (! $status) return "";
+		if (! $status) return null;
 
 		$result = "<div>";
 		$result .= Core_Html::GuiHeader(1, "בצע תשלום");

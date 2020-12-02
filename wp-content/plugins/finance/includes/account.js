@@ -92,6 +92,20 @@ function create_receipt(post_file, customer_id) {
     execute_url(request, location_reload);
 }
 
+function create_invoice(post_file, customer_id) {
+    disable_btn('btn_invoice');
+
+    let row_ids = account_get_row_ids();
+
+    let date = get_value(document.getElementById("pay_date"));
+    let request = post_file + "?operation=create_invoice" +
+        "&date=" + date +
+        "&row_ids=" + row_ids.join() +
+        "&user_id=" + customer_id;
+
+    execute_url(request, location_reload);
+}
+
 function pay_credit(post_file)
 {
     disable_btn("btn_pay");
@@ -112,7 +126,6 @@ function pay_credit_client(post_file, user)
 
     execute_url(request, success_message);
 }
-
 
 function save_payment_method(post_file, customer_id) {
     var method = get_value(document.getElementById("payment"));

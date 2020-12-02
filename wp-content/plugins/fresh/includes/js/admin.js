@@ -170,9 +170,21 @@ function product_publish(post_file, product_id)
 
 function account_add_transaction(post_file, customer_id) {
     let type = document.getElementById("transaction_type").value;
+    if (type.length < 1) {
+        alert("Enter type");
+        return;
+    }
+
     let amount = document.getElementById("transaction_amount").value;
+    if (amount.length < 1) {
+        alert("Enter amount");
+        return;
+    }
+
     let date = document.getElementById("transaction_date").value;
     let ref = document.getElementById("transaction_ref").value;
+    if (ref.length < 1) ref = '0';
+
     let request = post_file + "?operation=account_add_trans&customer_id=" + customer_id +"&type=" + type + "&amount=" + amount + "&date=" + date + "&ref=" + ref;
 
     execute_url(request, location_reload);

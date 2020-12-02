@@ -764,6 +764,7 @@ class Finance_Bank
 	}
 
 	function create_multi_site_receipt( $bank_id, $bank_amount, $date, $change, $ids, $site_id, $user_id ) {
+		FinanceLog(__FUNCTION__);
 		// IDS sent as string.
 
 		// $msg = $bank . " " . $date . " " . $change . " " . CommaImplode($ids) . " " . $site_id . " " . $user_id . "<br/>";
@@ -775,32 +776,34 @@ class Finance_Bank
 		$result  = $this->multi_site->Run( $command, $site_id, true, $debug );
 
 		if ($this->multi_site->getHttpCode($site_id) != 200) {
-			print "can't create<br/>";
-			 print "getting $command, status: " . $this->multi_site->getHttpCode($site_id) . "<br/>";
+			FinanceLog("can't create");
+			FinanceLog("getting $command, status: " . $this->multi_site->getHttpCode($site_id));
 			return false;
 		}
 
 		if ( strstr( $result, "כבר" ) ) {
+			FinanceLog("already paid");
 			die( "already paid" );
 		}
 		if ( strlen( $result ) < 2 ) {
-			 print $command . "<br/>";
+			FinanceLog("Bad response for $command: $result");
 			die( "bad response" );
 		}
 		if ( strlen( $result ) > 10 ) {
+			FinanceLog("Bad response for $command: $result");
 			die( $result );
 		}
 
-		MyLog(__FUNCTION__ . " $result");
+		FinanceLog(__FUNCTION__ . " $result");
 		$receipt = intval( trim( $result ) );
-		MyLog(__FUNCTION__ . " $receipt");
+		FinanceLog(__FUNCTION__ . " $receipt");
 
 		if ( $receipt > 0 ) {
 			$b = Finance_Bank_Transaction::createFromDB( $bank_id );
 			$b->Update( $user_id, $receipt, $site_id );
 			return $receipt;
 		} else {
-			print false;
+			return false;
 		}
 	}
 

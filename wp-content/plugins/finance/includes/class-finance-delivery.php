@@ -532,7 +532,7 @@ class Finance_Delivery
 		       . round( $line_price, 2 ) . ', '
 		       . $prod_id . ", $has_vat )";
 
-		FinanceLog( "$delivery_id: $product_name $quantity $quantity_ordered $vat $price $line_price $prod_id $has_vat", __FILE__);
+//		FinanceLog( "$delivery_id: $product_name $quantity $quantity_ordered $vat $price $line_price $prod_id $has_vat", __FILE__);
 		FinanceLog($sql);
 
 		return SqlQuery( $sql );
