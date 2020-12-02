@@ -9,7 +9,8 @@ class Focus_Views {
 		$loader->AddFilter( 'data_save_new_projects', $this, 'DataSaveNewDefault', 11, 1 );
 		$loader->AddFilter( 'data_save_new_working_teams', $this, 'DataSaveNewTeam', 11, 1 );
 		$loader->AddFilter( 'data_save_new_tasklist', $this, 'DataSaveNewTaskList', 11, 1 );
-		$loader->AddAction( 'add_worker', $this, 'doAddCompanyWorker', 11, 3 );
+        $loader->AddFilter( 'data_save_new_company', $this, 'DataSaveNewCompany', 11, 1 );
+		$loader->AddAction( 'add_worker', $this, 'DoAddCompanyWorker', 11, 3 );
 		$loader->AddAction( "tasklist_worker", $this, "show_worker_wrapper", 10, 2 );
 		$loader->AddAction('wp_enqueue_scripts', $this, 'enqueue_scripts');
 		$loader->AddFilter("gem_next_page_tasklist", $this, "next_page_tasklist");
@@ -1422,6 +1423,14 @@ class Focus_Views {
 
 		if ( ! $company_ids or ! count( $company_ids ) ) {
 			print "We need some information to get started! <br/> please enter a name to represent your company<br/>";
+            $args              = self::Args( "company" );
+            $args["fields"]           = array("name");
+            $args["post_file"] = Focus::getPost();
+            $args["mandatory_fields"] = array( "name" );
+            //$args["links"]     = array( "id" => AddToUrl( array( "operation" => "show_edit_company", "id" => "%s" ) ) );
+            print Core_Gem::GemAddRow( "company", "Add New Company", $args );
+
+            /*
 			$args                  = array( "values" => array( "admin" => get_user_id() ) );
 			$args["hide_cols"]     = array( "admin" => true );
 			$args["header_fields"] = array( "name" => "Company name" );
@@ -1430,12 +1439,10 @@ class Focus_Views {
 				print Core_Html::NewRow( "company", $args );
 			} catch ( Exception $e ) {
 				print "Error F1: " . $e->getMessage();
-
 				return false;
 			}
-
 			print Core_Html::GuiButton( "btn_add", "Add", array( "action" => "data_save_new('" . Focus::getPost() . "','company', location_reload)" ) );
-
+*/
 			return null;
 		}
 
@@ -1946,6 +1953,29 @@ class Focus_Views {
 
 		// Company
 	}
+
+    static function DataSaveNewCompany( $row ) {
+        //when new company is open the user that open the company is the admin of the company.
+        if ( ! isset( $row["admin"] ) ) {
+            $row["admin"] = get_user_id();
+        }
+        //check if the team already exist
+        $admin   = $row["admin"];
+        $company_name = $row["name"];
+        $db_prefix = GetTablePrefix( "company" );
+        $count     = SqlQuerySingleScalar( "select count(*) from ${db_prefix}company where name = '" . $company_name . "' and admin =" . $admin );
+        if ( $count > 0 ) {
+            print __( "Duplicate value ", "e-fresh" );
+
+            return null;
+        }
+        //add the company to the admin-user
+        $company_id = GetParam( "company_id" );
+        $U = new Org_Worker( $admin );
+        $U->AddCompany( $company_id );
+
+        return $row;
+    }
 
 	static function DataSaveNewDefault( $row ) {
 		//when new project is open the user that open the project is the manager of the project.

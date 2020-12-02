@@ -82,7 +82,7 @@ class Org_Worker extends Core_users
         }
 
         if (! $this->teams) {
-        	die ("AAAAA");
+        	//die ("AAAAA");
             // Add personal team and return it.
             return array( Org_Team::Create($this->id, __("Personal team") . " " . EscapeString($this->getName())));
         }
