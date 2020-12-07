@@ -161,7 +161,7 @@ class Core_Data
 				else
 					$sql = "update ${db_prefix}$table_name set $changed_field =? where $id_field =?";
 
-				// if (get_user_id() == 1) print $sql;
+//				 if (get_user_id() == 1) print $sql;
 				$stmt = SqlPrepare($sql);
 				if (! $stmt) return false;
 				if ($is_meta){

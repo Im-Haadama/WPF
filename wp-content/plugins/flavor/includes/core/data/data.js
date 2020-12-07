@@ -13,7 +13,7 @@ function data_save_entity(post_operation, table_name, id)
     }
     operation = operation + operands;
     // alert(operation);
-    execute_url(operation, action_back);
+    execute_url(operation, location_reload);
 }
 
 function data_delete_entity(post_operation, table_name, id)

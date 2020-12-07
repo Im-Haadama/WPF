@@ -134,6 +134,9 @@ class Core_Shortcodes {
 
 	public static function missing_capability($a, $b, $cap)
 	{
-		return "Capability for '$cap' is missing to use:" . get_user_displayname(get_current_user());
+		$id = get_user_id();
+		if (! $id) return ETranslate("This content is for registered users. Login") . " " . Core_Html::GuiHyperlink("here", wp_login_url()) .".";
+		return ETranslate("Not autherized to see this content");
+//		return "Capability for '$cap' is missing to use:" . get_user_displayname(get_current_user());
 	}
 }
