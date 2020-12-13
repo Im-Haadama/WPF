@@ -228,7 +228,7 @@ class Finance_Clients
 			              "fields"=>array("id", "card_number", "exp_date_month", "exp_date_year", "id_number"),
 			              "edit_cols"=> array("card_number"=>1, "card_type"=>1, "exp_date_month"=>1, "id_number"=>1, "exp_date_year"=>1));
 
-			$credit_info = Core_Gem::GemElement( "payment_info", $payment_info_id, $args );
+			$credit_info = Core_Gem::GemElement( "payment_info", $payment_info_id, $args ) . self::TokenInfo($u);
 		} else {
 			$args["post_file"] = Finance::getPostFile();
 			$args["values"] = array("email" => $u->get_customer_email(), "full_name"=>$u->getName(), "created_date"=>date('y-m-d'));
@@ -595,5 +595,17 @@ charset=utf8;
 				'<input type="text" id="transaction_ref">'
 			)
 		) ) . '<button id="btn_add" onclick="account_add_transaction(\'' . Finance::getPostFile() . '\',' . $u->getUserId() . ')">הוסף תנועה</button>';
+	}
+
+	static function TokenInfo(Finance_Client $client)
+	{
+		$status = get_user_meta($client->getUserId(), 'credit_token', true);
+
+		$result = "";
+		$post_file = Flavor::getPost("credit_clear_token&id=" . $client->getUserId());
+
+		if ($status) $result .= "Has token." . Core_Html::GuiButton("btn_clear_token", "Clear", "execute_url('$post_file', location_reload)");
+
+		return Core_Html::GuiDiv("token_info", $result);
 	}
 }

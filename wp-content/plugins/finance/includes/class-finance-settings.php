@@ -101,6 +101,9 @@ class Finance_Settings {
 
 //		$menu->AddSubMenu( "finance", "working_hours_self",
 //			array( 'page_title' => 'Hours entry', 'function' => array( "Finance_Salary", 'entry_wrapper' ) ) );
+		self::AddTop('orders', 'Orders', '/wp-admin/edit.php?post_type=shop_order&post_status=wc-processing');
+		self::AddTop('orders_all', 'All orders', '/wp-admin/edit.php?post_type=shop_order', 'orders');
+		self::AddTop('orders_print', 'Print', '/wp-admin/admin.php?page=printing', 'orders');
 
 	}
 

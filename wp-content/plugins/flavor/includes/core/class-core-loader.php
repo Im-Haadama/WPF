@@ -77,7 +77,7 @@ class Core_Loader {
 	public function AddAction( $hook, $component, $callback = null, $priority = 10, $accepted_args = 1 ) {
 		if (!$callback) $callback = $hook;
 		if (is_callable(array($component, $callback . "_wrap"))) $callback .= "_wrap";
-		if ($this->debug) MyLog(__FUNCTION__ . " $hook");
+		if ($this->debug) print __FUNCTION__ . " $hook" . "<br/>";
 		$this->actions = $this->add( $this->actions, $hook, $component, $callback, $priority, $accepted_args );
 	}
 
@@ -142,6 +142,5 @@ class Core_Loader {
  			// print "adding " . $hook['hook'] . " " . var_dump($hook['component']) . " " . $hook['callback'] . "<br/>";
 			add_action($hook['hook'], array( $hook['component'], $hook['callback'] ), $hook['priority'], $hook['accepted_args'] );
 		}
-
 	}
 }

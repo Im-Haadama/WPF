@@ -133,7 +133,7 @@ class Finance {
 		$this->subcontract = new Finance_Subcontract();
 		$this->salary      = new Finance_Salary();
 
-		$this->init_hooks();
+		$this->init_hooks($this->loader);
 
 		do_action( 'finance_loaded' );
 	}
@@ -150,7 +150,7 @@ class Finance {
 	 *
 	 * @since 2.3
 	 */
-	private function init_hooks() {
+	private function init_hooks(Core_loader $loader) {
 		// Flavor::getInstance();
 		// register_activation_hook( WC_PLUGIN_FILE, array( 'Finance_Install', 'install' ) );
 		register_shutdown_function( array( $this, 'log_errors' ) );
@@ -166,6 +166,7 @@ class Finance {
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
 		add_action( 'admin_notices', array($this, 'admin_notices') );
 		add_filter( 'pay_user_credit', array($this, 'pay_user_credit_wrap'), 10, 3);
+		$loader->AddAction('credit_clear_token', $this);
 
 		// Admin menu
 		add_action( 'admin_menu',array($this, 'admin_menu') );
@@ -902,9 +903,9 @@ class Finance {
 
 	static function Invoice4uConnect()
 	{
-		FinanceLog(__FUNCTION__);
+//		FinanceLog(__FUNCTION__);
 		if ($i = Finance_Invoice4u::getInstance()) return $i;
-		FinanceLog("Connecting " . INVOICE_USER);
+//		FinanceLog("Connecting " . INVOICE_USER);
 		if (defined('INVOICE_USER') and defined('INVOICE_PASSWORD'))
 			return new Finance_Invoice4u(INVOICE_USER, INVOICE_PASSWORD);
 		else FinanceLog("No invoice user or password");
@@ -924,6 +925,12 @@ class Finance {
 	function multisite_validate()
 	{
 		return Core_Db_MultiSite::getInstance()->getLocalSiteID();
+	}
+
+	function credit_clear_token()
+	{
+		$client_id = GetParam("id");
+		Finance_Yaad::ClearToken($client_id);
 	}
 }
 

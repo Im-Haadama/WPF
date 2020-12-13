@@ -473,7 +473,7 @@ class Core_Db_MultiSite extends Core_MultiSite {
 	{
 		$operation = GetParam("operation", true, false);
 		$query=stripslashes(GetParam("query", false, null));
-		return self::sync_data(substr($operation, 10), $query);
+		print self::sync_data(substr($operation, 10), $query);
 	}
 
 	function sync_data($table, $query = null)

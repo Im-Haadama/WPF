@@ -198,11 +198,14 @@ function report_error(response)
 function action_hide_row(xmlhttp, btn)
 {
     if (check_result(xmlhttp)){
+        let the_button;
         if (typeof (btn[0]) != 'undefined') {
-            if (btn[0].parentElement.parentElement.parentElement.rows.length === 2) location.reload();
-            for (let i = 0; i < btn.length; i++)
-                btn[i].parentElement.parentElement.style.display = 'none';
-        } else
+            the_button = btn[0];
+        } else {
+            the_button = btn;
+        }
+        if (the_button.parentElement.parentElement.parentElement.rows.length === 2) location.reload();
+        else
             btn.parentElement.parentElement.style.display = 'none';
     }
 }

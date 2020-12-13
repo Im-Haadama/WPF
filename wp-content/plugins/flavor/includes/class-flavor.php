@@ -178,10 +178,6 @@ class Flavor {
 
 		if (TableExists("mission_types"))
 			self::AddTop('missions',"Missions", '/wp-admin/admin.php?page=missions');
-
-		self::AddTop('orders', 'Orders', '/wp-admin/edit.php?post_type=shop_order&post_status=wc-processing');
-		self::AddTop('orders_all', 'All orders', '/wp-admin/edit.php?post_type=shop_order', 'orders');
-		self::AddTop('orders_print', 'Print', '/wp-admin/admin.php?page=printing', 'orders');
 	}
 
 	static function AddTop($id, $title, $href, $parent = null)

@@ -19,6 +19,9 @@ class Core_Database
 		if (! function_exists("get_user_id")) {
 			return;
 		}
+		global $conn;
+		if (! $conn) ReconnectDb();
+
 		$user = new Core_Users();
 		if (!$user->hasRole('administrator')) return;
 
@@ -70,3 +73,4 @@ class Core_Database
 
 	}
 }
+

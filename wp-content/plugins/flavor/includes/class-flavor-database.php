@@ -10,17 +10,15 @@ class Flavor_Database extends Core_Database {
 		parent::__construct("flavor");
 	}
 
-	function install( $version, $force = false ) {
-		global $conn;
-
-		if (! $conn) ReconnectDb();
-		// Create im_info table if missing.
-//		self::CreateInfo();
-
-		self::CreateFunctions($version, $force);
-		self::CreateTables( $version, $force );
-//		self::CreateViews($version, $force);
-	}
+//	function install( $version, $force = false ) {
+//		global $conn;
+//
+//		if (! $conn) ReconnectDb();
+//
+//		self::CreateFunctions($version, $force);
+//		self::CreateTables( $version, $force );
+////		self::CreateViews($version, $force);
+//	}
 
 	function CreateFunctions($version, $force)
 	{

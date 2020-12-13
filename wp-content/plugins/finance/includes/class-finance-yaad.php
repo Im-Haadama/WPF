@@ -72,14 +72,16 @@ class Finance_Yaad {
 		return $this->pay_user_credit($user, $paying_transactions, $amount, $change, $payment_number);
 	}
 
-	static function getCustomerStatus(Finance_Client $C, $string)
+	static function getCustomerStatus(Finance_Client $C, $string = true)
 	{
 		if ($string)
-			return (SqlQuerySingleScalar( "select count(*) from im_payment_info where card_number not like '%X%' and email = " . QuoteText($C->get_customer_email())) > 0 ? 'C' : '') .
+			$rc = (SqlQuerySingleScalar( "select count(*) from im_payment_info where card_number not like '%X%' and email = " . QuoteText($C->get_customer_email())) > 0 ? 'C' : '') .
 			(SqlQuerySingleScalar( "select count(*) from im_payment_info where card_number like '%X%' and email = " . QuoteText($C->get_customer_email())) > 0 ? 'X' : '');
 		else
-			return (SqlQuerySingleScalar( "select count(*) from im_payment_info where card_number not like '%X%' and email = " . QuoteText($C->get_customer_email())) > 0 ? 1 : 0) +
+			$rc = (SqlQuerySingleScalar( "select count(*) from im_payment_info where card_number not like '%X%' and email = " . QuoteText($C->get_customer_email())) > 0 ? 1 : 0) +
 			       (SqlQuerySingleScalar( "select count(*) from im_payment_info where card_number like '%X%' and email = " . QuoteText($C->get_customer_email())) > 0 ? 2 : 0);
+
+		return $rc;
 
 	}
 
@@ -336,5 +338,11 @@ class Finance_Yaad {
 
 		return Core_Gem::GemTable("yaad_transactions", $trans_args);
 
+	}
+
+	static function ClearToken($client_id)
+	{
+		FinanceLog(__FUNCTION__ . $client_id . " " . get_user_id());
+		return delete_user_meta($client_id, 'credit_token');
 	}
 }
