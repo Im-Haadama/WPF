@@ -34,7 +34,7 @@ class Finance {
 	 *
 	 * @var string
 	 */
-	public $version = '1.7.3';
+	public $version = '1.7.5';
 
 	private $plugin_name;
 
@@ -129,9 +129,12 @@ class Finance {
 		$this->loader = Core_Loader::instance();
 		$this->post_file   = Flavor::getPost();
 		$this->yaad        = null;
-		$this->clients     = new Finance_Clients();
+		$this->clients     = new Finance_Client_Accounts();
 		$this->subcontract = new Finance_Subcontract();
 		$this->salary      = new Finance_Salary();
+
+		$finance_actions = new Finance_Actions();
+		$finance_actions->init_hooks($this->loader);
 
 		$this->init_hooks($this->loader);
 
@@ -198,8 +201,6 @@ class Finance {
 		$this->loader->AddAction("get_open_invoices", $this, 'get_open_invoices');
 		$this->loader->AddAction("get_open_trans", $this, 'get_open_trans');
 		$this->loader->AddAction("exists_invoice", $this, 'exists_invoice');
-		$this->loader->AddAction("create_receipt", $this, 'create_receipt');
-		$this->loader->AddAction("create_invoice", $this, 'create_invoice');
 
 		if ((get_user_id() == 1) and defined("DEBUG_USER")) wp_set_current_user(DEBUG_USER);
 
@@ -248,8 +249,8 @@ class Finance {
 		$site_id     = GetParam( "site_id", true );
 
 		// $func, $site_id, $first = false, $debug = false ) {
-		return  $multi_site->Run( Finance::getPostFile() . "?operation=finance_get_open_site_invoices&supplier_id=" . $supplier_id,
-			$site_id, true, $debug );
+		$url = Finance::getPostFile() . "?operation=finance_get_open_site_invoices&supplier_id=" . $supplier_id;
+		print  $multi_site->Run( $url, $site_id, true, $debug );
 
 	}
 
@@ -424,39 +425,6 @@ class Finance {
 
 		return $b->Update( 0, $invoice, 0 );
 	}
-
-	function create_receipt() {
-		$cash    = (float) GetParam( "cash", false, 0 );
-		$bank    = (float) GetParam( "bank", false, 0 );
-		$check   = (float) GetParam( "check", false, 0 );
-		$credit  = (float) GetParam( "credit", false, 0 );
-		$row_ids = GetParamArray( "row_ids" );
-		$user_id = GetParam( "user_id", true );
-		$date    = GetParam( "date" );
-
-		if ( ! ( $cash + $bank + $check + $credit > 1 ) ) {
-			print ( "No payment ammount given" );
-
-			return false;
-		}
-
-		$doc_id = Finance_Clients::create_receipt_from_account_ids( $cash, $bank, $check, $credit, $user_id, $date, $row_ids );
-		// print "doc=$doc_id<br/>";
-		print $doc_id;
-		die ( 1 );
-	}
-
-	function create_invoice() {
-		$row_ids = GetParamArray( "row_ids" );
-		$user_id = GetParam( "user_id", true );
-		$date    = GetParam( "date" );
-
-		$doc_id = Finance_Clients::create_invoice_from_account_ids( $user_id, $date, $row_ids );
-		// print "doc=$doc_id<br/>";
-		print $doc_id;
-		die ( 1 );
-	}
-
 
 	static function get_open_trans() {
 		$multi_site = Core_Db_MultiSite::getInstance();
@@ -751,13 +719,6 @@ class Finance {
 //
 
 	public function enqueue_scripts() {
-//		$file = FINANCE_INCLUDES_URL . 'business.js';
-//		wp_enqueue_script( 'business', $file, null, $this->version, false );
-//		$file = FINANCE_INCLUDES_URL . 'finance.js';
-//		wp_enqueue_script( 'finance', $file, null, $this->version, false );
-//		$file = FINANCE_INCLUDES_URL . 'account.js';
-//		wp_enqueue_script( 'account', $file, null, $this->version, false );
-
 	}
 
 	public function admin_scripts() {

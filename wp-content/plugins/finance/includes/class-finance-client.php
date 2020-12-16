@@ -18,7 +18,7 @@ class Finance_Client {
 		$sql = "INSERT INTO im_client_accounts (client_id, date, transaction_amount, transaction_method, transaction_ref) "
 		       . "VALUES (" . $this->user_id . ", \"" . $date . "\", " . $amount . ", \"" . $type . "\", " . $ref . ")";
 
-		MyLog( $sql, "account_add_transaction" );
+		FinanceLog( __FUNCTION__ . ':'. $sql );
 		return SqlQuery( $sql );
 	}
 

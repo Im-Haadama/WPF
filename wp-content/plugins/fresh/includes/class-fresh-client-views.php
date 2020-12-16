@@ -2,12 +2,21 @@
 
 class Fresh_Client_Views  extends Finance_Client_Views {
 	private $edit_basket_allowed;
+	protected static $_instance = null;
+
+	public static function instance() {
+		if ( is_null( self::$_instance ) ) {
+			return new self();
+		}
+		return self::$_instance;
+	}
+
 
 	public function __construct() {
 		$this->edit_basket_allowed = true;
 	}
 
-	static function init_hooks()
+	function init_hooks($loader)
 	{
 		// Add edit button on my-account/orders
 		add_filter( 'woocommerce_my_account_my_orders_actions', array(__CLASS__, 'account_order_actions'), 10, 2 );
@@ -203,8 +212,9 @@ class Fresh_Client_Views  extends Finance_Client_Views {
 		switch ($operation)
 		{
 			case "client_archive":
-				$user_id = get_user_id(true);
-				return self::show_trans($user_id, TransView::default, $args);
+				$user_id = get_user_id();
+				if ($user_id)
+					return self::show_trans($user_id, TransView::default, $args);
 
 
 //			case "open_orders":

@@ -107,7 +107,18 @@ class Finance_Invoice4u
 		}
 	}
 
-	public function CreateDocument( $doc ) {
+	public function CreateReceipt($doc)
+	{
+		$wsdl = ApiService . "/DocumentService.svc?wsdl";
+		$this->result = $this->requestWS( $wsdl, "CreateDocument", array( 'doc' => $doc, 'token' => $this->token ) );
+		if (isset($this->result->Errors->CommonError))
+//			var_dump($this->result->Errors);
+			print $this->result->Errors->CommonError->Error ."<br/>";
+//		var_dump($this->result);
+		return $this->result->DocumentNumber;
+	}
+
+	public function CreateInvoiceDocument( $doc ) {
 		if ( ! $doc->ClientID > 0 ) {
 			print "No client<br/>";
 
@@ -302,7 +313,31 @@ class InvoiceDocument {
 		$this->AssociatedEmails; // = array(new Email());
 		$this->Payments = array();
 	}
+}
 
+class ReceiptDocument {
+	public $ClientID;
+	public $DocumentType = 2; // receipt
+	public $Subject;
+	public $Currency = "ILS";
+	public $IssueDate;
+	public $Language = 1;
+	public $AssociatedEmails;
+	public $Payments;
+
+	/******************* in case you want to create receipt to specific invoices
+	 * Invoices = GetInvoices(token, 10.00, DocumentType.Receipt),
+	 * DocumentReffType = (int)DocumentType.Invoice,
+	 ********************/
+
+	public function __construct($ClientID) {
+		$this->IssueDate        = date( "c", time() ); // can be at the Past no erlier then last invoice
+		$this->Discount         = new InvoiceDiscount;
+//		$this->Items            = array( new InvoiceItem() );
+		$this->AssociatedEmails = array( new InvoiceEmail() );
+		$this->Payments         = array();
+		$this->ClientID = $ClientID;
+	}
 }
 
 class InvoiceDiscount {

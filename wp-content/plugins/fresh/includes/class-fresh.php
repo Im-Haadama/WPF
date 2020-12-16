@@ -207,7 +207,7 @@ class Fresh {
 		Fresh_Catalog::init_hooks();
 		Fresh_Client::init_hooks();
 		Fresh_Delivery::init_hooks($this->loader);
-		Fresh_Client_Views::init_hooks();
+		Fresh_Client_Views::instance()->init_hooks($this->loader);
 		Fresh_Bundles::instance()->init_hooks($loader);
 		Fresh_Views::init_hooks();
 		Fresh_Accounting::instance()->init_hooks($loader);

@@ -105,7 +105,7 @@ class Freight_Legacy {
 		}
 
 		// print "create<br/>";
-		$doc_id = $invoice->CreateDocument( $doc );
+		$doc_id = $invoice->CreateInvoiceDocument( $doc );
 		Finance::add_transaction( $customer_id, date( 'Y-m-d' ), $total_lines, 0, $doc_id, 1, $net_total,
 			Finance_DocumentType::ship );
 
@@ -342,7 +342,7 @@ AND (meta_value = "legacy" or meta_value = 1)';
 		$subject      = "חשבונית לתעודת משלוח " . " " . CommaImplode( $ship_ids );
 		$doc->Subject = $subject;
 
-		$doc_id = $invoice->CreateDocument( $doc );
+		$doc_id = $invoice->CreateInvoiceDocument( $doc );
 
 		if ( $doc_id ) {
 			Finance::add_transaction( $this->legacy_user, date( 'Y-m-d' ), $total_lines, 0, $doc_id, 1, $net_total,

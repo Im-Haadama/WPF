@@ -65,8 +65,8 @@ function account_get_row_ids() {
     return row_ids;
 }
 
-function create_receipt(post_file, customer_id) {
-    disable_btn('btn_receipt');
+function create_invoice_receipt(post_file, customer_id) {
+    disable_btn('btn_invoice_receipt');
 
     let row_ids = account_get_row_ids();
 
@@ -79,7 +79,7 @@ function create_receipt(post_file, customer_id) {
     let check = parseFloat(get_value(document.getElementById("check")));
     if (isNaN(check)) check = 0;
     let date = get_value(document.getElementById("pay_date"));
-    let request = post_file + "?operation=create_receipt" +
+    let request = post_file + "?operation=create_invoice_receipt" +
     "&cash=" + cash +
     "&credit=" + credit +
     "&bank=" + bank +
@@ -88,6 +88,30 @@ function create_receipt(post_file, customer_id) {
     "&change=" + change.innerHTML +
     "&row_ids=" + row_ids.join() +
     "&user_id=" + customer_id;
+
+    execute_url(request, location_reload);
+}
+
+function create_receipt(post_file, customer_id) {
+    disable_btn('btn_receipt');
+
+    let credit = parseFloat(get_value(document.getElementById("receipt_credit")));
+    if (isNaN(credit)) credit = 0;
+    let bank = parseFloat(get_value(document.getElementById("receipt_bank")));
+    if (isNaN(bank)) bank = 0;
+    let cash = parseFloat(get_value(document.getElementById("receipt_cash")));
+    if (isNaN(cash)) cash = 0;
+    let check = parseFloat(get_value(document.getElementById("receipt_check")));
+    if (isNaN(check)) check = 0;
+    let date = get_value(document.getElementById("receipt_pay_date"));
+    let request = post_file + "?operation=create_receipt" +
+        "&cash=" + cash +
+        "&credit=" + credit +
+        "&bank=" + bank +
+        "&check=" + check +
+        "&date=" + date +
+        "&change=" + change.innerHTML +
+        "&user_id=" + customer_id;
 
     execute_url(request, location_reload);
 }

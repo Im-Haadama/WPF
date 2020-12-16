@@ -152,7 +152,7 @@ class Finance_Yaad {
 		if ($paid) {
 			// Create invoice receipt. Update balance.
 			MyLog("b4 create_receipt_from_account_ids");
-			Finance_Clients::create_receipt_from_account_ids( 0, 0, 0, $paid, $user->getUserId(), date('Y-m-d'), $account_line_ids );
+			Finance_Client_Accounts::create_receipt_from_account_ids( 0, 0, 0, $paid, $user->getUserId(), date('Y-m-d'), $account_line_ids );
 
 			return true;
 		}

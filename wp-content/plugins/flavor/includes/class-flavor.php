@@ -146,9 +146,12 @@ class Flavor {
 		add_action( 'after_setup_theme', array( $this, 'include_template_functions' ), 11 );
 		add_action( 'init', array( $this, 'init' ), 0 );
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
-//		add_action('wp', 'unlogged_guest_posts_redirect');
 		add_action('data_save_new', array('Core_Data', 'data_save_new'));
 		add_action('admin_menu', array($this, 'admin_menu'));
+
+		// If this cause problem, alter isManagementPage.
+		add_action('wp', 'unlogged_guest_posts_redirect');
+
 
 		GetSqlConn( ReconnectDb() );
 
@@ -725,6 +728,7 @@ function unlogged_guest_posts_redirect()
 			auth_redirect();
 		}
 }
+
 function modify_admin_bar( $wp_admin_bar )
 {
 	$wp_admin_bar->add_node( [

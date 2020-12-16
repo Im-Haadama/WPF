@@ -101,7 +101,7 @@ function update_transactions(xmlhttp, btn)
         alert(xmlhttp.response);
 }
 
-function create_receipt_from_bank(post_file) {
+function create_invoice_receipt_from_bank(post_file) {
     disable_btn('btn_receipt');
 
     var del_ids = account_get_row_ids();
@@ -112,7 +112,7 @@ function create_receipt_from_bank(post_file) {
     var bank_amount = parseFloat(get_value(document.getElementById("bank")));
     if (isNaN(bank_amount)) bank_amount = 0;
     var date = get_value(document.getElementById("pay_date"));
-    var request = post_file + "?operation=bank_create_receipt" +
+    var request = post_file + "?operation=bank_create_invoice_receipt" +
         "&bank=" + bank_amount +
         "&date=" + date +
         "&ids=" + del_ids.join() +
@@ -123,6 +123,26 @@ function create_receipt_from_bank(post_file) {
     let change = get_value_by_name("change");
     if (change)
         request += "&change=" + change;
+
+    execute_url(request, action_back);
+}
+
+function create_receipt_from_bank(post_file) {
+    disable_btn('btn_receipt');
+
+    var site_id = selected_client_site_id();
+    var client_id = selected_client_id();
+    var bank_id = selected_bank_id();
+
+    var bank_amount = parseFloat(get_value(document.getElementById("bank")));
+    if (isNaN(bank_amount)) bank_amount = 0;
+    var date = get_value(document.getElementById("pay_date"));
+    var request = post_file + "?operation=bank_create_receipt" +
+        "&bank=" + bank_amount +
+        "&date=" + date +
+        "&site_id=" + site_id +
+        "&user_id=" + client_id +
+        "&bank_id=" + bank_id;
 
     execute_url(request, action_back);
 }

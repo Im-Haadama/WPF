@@ -367,13 +367,6 @@ class FVideo {
 	public function enqueue_scripts() {
 		$file = dirname(dirname(plugins_url())). '/vendor/webtorrent/webtorrent.min.js';
 		wp_enqueue_script( 'webtorrent', $file, null, $this->version, false );
-//		$file = FVideo_INCLUDES_URL . 'business.js';
-//		wp_enqueue_script( 'business', $file, null, $this->version, false );
-//		$file = FVideo_INCLUDES_URL . 'fVideo.js';
-//		wp_enqueue_script( 'fVideo', $file, null, $this->version, false );
-//		$file = FVideo_INCLUDES_URL . 'account.js';
-//		wp_enqueue_script( 'account', $file, null, $this->version, false );
-
 	}
 
 	public function admin_scripts() {

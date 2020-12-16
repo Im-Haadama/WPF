@@ -16,7 +16,9 @@ class Focus_Views {
 		$loader->AddAction( "tasklist_worker", $this, "show_worker_wrapper", 10, 2 );
 		$loader->AddAction('wp_enqueue_scripts', $this, 'enqueue_scripts');
 		$loader->AddFilter("gem_next_page_tasklist", $this, "next_page_tasklist");
-		$loader->AddFilter("data_update_prepare_tasklist", $this, "data_update_prepare_tasklist", 10, 2);
+
+		//	Function not found:
+		//	$loader->AddFilter("data_update_prepare_tasklist", $this, "data_update_prepare_tasklist", 10, 2);
 	}
 
 	private $post_file;
@@ -832,7 +834,7 @@ class Focus_Views {
 	static function search_by_text_wrap() {
 		$text = GetParam( "text", true );
 
-		return self::search_by_text( get_user_id(), $text );
+		 print self::search_by_text( get_user_id(), $text );
 	}
 
 	/**
@@ -1345,6 +1347,7 @@ class Focus_Views {
 		if ($t->task_template()) {
 			$args["fields"][] = "task_template";
 		}
+		$args["fields"][] = "preq";
 
 		$args["edit_cols"] = array(
 			"date"             => true,

@@ -176,6 +176,14 @@ class Core_MultiSite {
 
 	static function DoRun($file, &$http_code, $username= null, $password = null, $debug = false)
 	{
+		if (! function_exists("curl_init")) {
+			print "Curl_init is missing<br/>";
+			print "Php version: " . phpversion() . "<br/>";
+			print 'sudo apt-get install php*-curl<br/>';
+			print 'add ;extension=php_curl.dll to php.ini';
+			print phpinfo();
+			die (1);
+		}
 //		print "u=$username p=$password<br/>";
 		if ($username) $file .= "&AUTH_USER=" . trim($username) . "&AUTH_PW=" . urlencode(trim($password));
 //		print __FUNCTION__ . "file=$file<br/>";

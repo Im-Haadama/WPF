@@ -34,6 +34,7 @@ class Finance_Bank
 		AddAction("finance_add_payment", array($this, 'add_payment'));
 		AddAction("bank_status", array($this, 'bank_status'));
 //		AddAction("bank_show_import", array($this, "show_import"));
+		AddAction("bank_create_invoice_receipt", array($this, "bank_create_invoice_receipt"));
 		AddAction("bank_create_receipt", array($this, "bank_create_receipt"));
 	}
 
@@ -65,10 +66,12 @@ class Finance_Bank
 		AddAction( "finance_bank_accounts", array( $this, "show_bank_accounts" ) );
 		AddAction( "finance_bank_account", array( $this, "show_bank_account" ) );
 		AddAction( "finance_bank_payments", array( $this, "show_bank_payments" ) );
-		AddAction( "finance_bank_receipts", array( $this, "show_bank_receipts" ) );
+//		AddAction( "finance_bank_receipts", array( $this, "show_bank_receipts" ) );
 //		AddAction( "finance_show_bank_import", array( $this, "show_bank_import" ) );
 //		AddAction( "finance_do_import", array( $this, 'do_bank_import' ) );
-		AddAction( "bank_create_invoice", array( $this, 'bank_create_invoice' ) );
+
+		AddAction( "bank_show_create_invoice_receipt", array( $this, 'bank_create_invoice_receipt' ) );
+		AddAction( "bank_show_create_receipt", array( $this, 'bank_show_create_receipt' ) );
 		AddAction( "bank_create_pay", array( $this, 'bank_payments' ) );
 		AddAction("finance_get_transaction_amount", array($this, 'get_transaction_amount'));
 		AddAction('create_bank_account', array($this, 'create_bank_account'));
@@ -84,11 +87,18 @@ class Finance_Bank
 //		Flavor_Roles::addRole('business_admin', array('finance'));
 	}
 
-	function bank_create_invoice()
+	function bank_show_create_invoice_receipt()
 	{
 		$id = GetParam( "id" );
-		return $this->create_invoice($id);
+		return $this->show_create_invoice_receipt($id);
 	}
+
+	function bank_show_create_receipt()
+	{
+		$id = GetParam( "id" );
+		print $this->show_create_receipt($id);
+	}
+
 	/**
 	 * @return Core_Users
 	 */
@@ -264,7 +274,8 @@ class Finance_Bank
 			}
 		}
 	}
-	function bank_create_receipt() {
+
+	function bank_create_invoice_receipt() {
 		$bank_amount = GetParam( "bank" );
 		$date        = GetParam( "date" );
 		$change      = GetParam( "change" );
@@ -273,7 +284,18 @@ class Finance_Bank
 		$user_id     = GetParam( "user_id" );
 		$bank_id     = GetParam( "bank_id" );
 
-		return $this->create_multi_site_receipt( $bank_id, $bank_amount, $date, $change, $ids, $site_id, $user_id );
+		return $this->create_multi_site_invoice_receipt( $bank_id, $bank_amount, $date, $change, $ids, $site_id, $user_id );
+	}
+
+	function bank_create_receipt()
+	{
+		$bank_amount = GetParam( "bank" );
+		$date        = GetParam( "date" );
+		$site_id     = GetParam( "site_id" );
+		$user_id     = GetParam( "user_id" );
+		$bank_id     = GetParam( "bank_id" );
+
+		return $this->create_multi_site_receipt( $bank_id, $bank_amount, $date, $site_id, $user_id );
 	}
 
 	function mark_refund_bank() {
@@ -469,7 +491,7 @@ class Finance_Bank
 		// return gui_select_datalist( $id, "im_suppliers", "open_supplier", "name", $open, 'onchange="supplier_selected()"', null, true );
 	}
 
-	function gui_select_client_open_account( $id = "open_account" ) {
+	function gui_select_client_open_account( $id = "open_account", $events = 'onchange="client_selected()"' ) {
 		$output = "";
 		$multi_site = Core_Db_MultiSite::getInstance();
 		$url = Finance::getPostFile() . "?operation=get_client_open_account";
@@ -492,7 +514,7 @@ class Finance_Bank
 			$new["balance"]   = $value[3];
 			array_push( $open, $new );
 		}
-		$events = 'onchange="client_selected()"';
+//		$events = ;
 		$datalist_id = $id . "_datalist";
 		$output .= Core_Html::GuiInputDatalist($id, $datalist_id, $events);
 		$output .= Core_Html::GuiDatalist( $datalist_id, $open, "id","name", false);
@@ -588,41 +610,6 @@ class Finance_Bank
 
 	}
 
-	function show_bank_receipts($account_id, $ids = null)
-	{
-		die (1);
-//		$account_id = 1;
-		$table_prefix = $this->table_prefix;
-
-		$args = $this->Args();
-		$args["account_id"] = $account_id;
-		print Core_Html::GuiHeader( 1, "Receipts" );
-		$args["header_fields"] = array( "id"=>"Id", "date" => "Date", "description" => "Description",
-		                                "in_amount" => "Amount", "reference" => "Reference", "client_name" => "Details" );
-		$args["actions"]       = array(
-			array(
-				"Receipt",
-				AddToUrl(array( "operation" => "bank_create_invoice", "id" => "%s"))
-			),
-			array(
-				"Return",
-				self::getPost() . "?operation=bank_mark_return&id=%s"
-			)
-
-		);
-		$query                 = " account_id = " . $account_id . " and receipt is null and in_amount > 0 " .
-		                         " and description not in (select description from ${table_prefix}bank_transaction_types) ";
-
-		if ( $ids ) {
-			$query .= " and id in (" . CommaImplode( $ids ) . ")";
-		}
-		// " order by date desc limit $rows_per_page offset $offset";
-		$args["query"] = $query;
-		$args["fields"] = array( "id", "date", "description", "in_amount", "reference", "client_name" );
-
-		print self::bank_transactions( $args );
-	}
-
 	static function bank_transactions($args = null)
 	{
 		$table_prefix = GetTablePrefix();
@@ -655,8 +642,8 @@ class Finance_Bank
 	{
 		$id = $row['id'];
 		if (($row['receipt'] == '') and ($row['in_amount'] > 0))
-			$row['receipt'] = Core_Html::GuiHyperlink(__("Invoice"), AddToUrl(array("operation" => "bank_create_invoice", "id" => $id)));
-//			$row['receipt'] = Core_Html::GuiButton("btn_bank_receipt", "קבלה", "bank_receipt('". Finance::getPostFile() . "', $id)");
+			$row['receipt'] = Core_Html::GuiHyperlink(__("Invoice-Receipt"), AddToUrl(array("operation" => "bank_show_create_invoice", "id" => $id))) . " ".
+			                  Core_Html::GuiHyperlink(__("Receipt"), AddToUrl(array("operation" => "bank_show_create_receipt", "id" => $id)));
 
 		if (($row['receipt'] == '') and ($row['out_amount'] > 0))
 			$row['receipt'] = Core_Html::GuiHyperlink(__("Mark"), AddToUrl(array("operation" => "bank_create_pay", "id" => $id)));
@@ -665,7 +652,7 @@ class Finance_Bank
 
 	}
 
-	function create_invoice($id)
+	function show_create_invoice_receipt($id)
 	{
 		$b = Finance_Bank_Transaction::createFromDB( $id );
 		$result = "Creating invoice for bank transaction";
@@ -693,7 +680,44 @@ class Finance_Bank
 //			$links = null, $col_ids = null, $first_id = false, $actions = null
 
 		$result .= Core_Html::gui_table_args(array(
-			array("תשלום",	Core_Html::GuiButton( "btn_receipt", "הפק חשבונית מס קבלה", array("action" => "create_receipt_from_bank('".Finance::getPostFile()."')") )),
+			array("תשלום",	Core_Html::GuiButton( "btn_receipt", "הפק חשבונית מס קבלה", array("action" => "create_invoice_receipt_from_bank('".Finance::getPostFile()."')") )),
+			array( "עודף", " <div id=\"change\"></div>" )));
+		// ,"payment_table", "class" => "payment_table"));
+
+//		$result .= gui_table( , "payment_table", true, true, $sums, "", "payment_table" );
+
+		return $result;
+
+	}
+
+	function show_create_receipt($id)
+	{
+		$b = Finance_Bank_Transaction::createFromDB( $id );
+		$result = "Creating receipt for bank transaction";
+		$result .= Core_Html::GuiHeader( 1, "הפקת קבלה להפקדה מבנק " );
+
+		$result .= Core_Html::GuiHeader( 2, "פרטי העברה" );
+		$result .= Core_Html::gui_table_args( array(
+				array( "תאריך", Core_Html::gui_div( "pay_date", $b->getDate() ) ),
+				array( "סכום", Core_Html::gui_div( "bank", $b->getInAmount() ) ),
+				array( "מזהה", Core_Html::gui_div( "bank_id", $id ) ),
+				array( "פרטי התנועה", Core_Html::gui_div( "bank_id", $b->getClientName() ) )
+			)
+		);
+
+//		$result .= Core_Html::GuiHeader(2, "חשבונית שהופקה");
+//		$result .= Core_Html::GuiInput("invoice_id");
+//		$result .= Core_Html::GuiButton("btn_invoice_exists", "Exists invoice", array("action" => "invoice_exists()"));
+
+		$result .= Core_Html::GuiHeader( 2, "בחר לקוח" );
+		$result .= self::gui_select_client_open_account($id = "open_account", null);
+		$result .= '<div id="logging"></div>';
+		$result .= '<div id="transactions"></div>';
+//		function gui_table(	$rows, $id = null, $header = true, $footer = true, &$acc_fields = null, $style = null, $class = null, $show_fields = null,
+//			$links = null, $col_ids = null, $first_id = false, $actions = null
+
+		$result .= Core_Html::gui_table_args(array(
+			array("תשלום",	Core_Html::GuiButton( "btn_receipt", "הפק קבלה", array("action" => "create_receipt_from_bank('".Finance::getPostFile()."')") )),
 			array( "עודף", " <div id=\"change\"></div>" )));
 		// ,"payment_table", "class" => "payment_table"));
 
@@ -763,7 +787,7 @@ class Finance_Bank
 		return $args;
 	}
 
-	function create_multi_site_receipt( $bank_id, $bank_amount, $date, $change, $ids, $site_id, $user_id ) {
+	function create_multi_site_invoice_receipt( $bank_id, $bank_amount, $date, $change, $ids, $site_id, $user_id ) {
 		FinanceLog(__FUNCTION__);
 		// IDS sent as string.
 
@@ -771,6 +795,50 @@ class Finance_Bank
 		$debug = false;
 
 		$command = Finance::getPostFile() . "?operation=create_receipt&row_ids=" . $ids .
+		           "&user_id=" . $user_id . "&bank=" . $bank_amount . "&date=" . $date .
+		           "&change=" . $change;
+		$result  = $this->multi_site->Run( $command, $site_id, true, $debug );
+
+		if ($this->multi_site->getHttpCode($site_id) != 200) {
+			FinanceLog("can't create");
+			FinanceLog("getting $command, status: " . $this->multi_site->getHttpCode($site_id));
+			return false;
+		}
+
+		if ( strstr( $result, "כבר" ) ) {
+			FinanceLog("already paid");
+			die( "already paid" );
+		}
+		if ( strlen( $result ) < 2 ) {
+			FinanceLog("Bad response for $command: $result");
+			die( "bad response" );
+		}
+		if ( strlen( $result ) > 10 ) {
+			FinanceLog("Bad response for $command: $result");
+			die( $result );
+		}
+
+		FinanceLog(__FUNCTION__ . " $result");
+		$receipt = intval( trim( $result ) );
+		FinanceLog(__FUNCTION__ . " $receipt");
+
+		if ( $receipt > 0 ) {
+			$b = Finance_Bank_Transaction::createFromDB( $bank_id );
+			$b->Update( $user_id, $receipt, $site_id );
+			return $receipt;
+		} else {
+			return false;
+		}
+	}
+
+	function create_multi_site_receipt( $bank_id, $bank_amount, $date, $site_id, $user_id ) {
+		FinanceLog(__FUNCTION__);
+		// IDS sent as string.
+
+		// $msg = $bank . " " . $date . " " . $change . " " . CommaImplode($ids) . " " . $site_id . " " . $user_id . "<br/>";
+		$debug = false;
+
+		$command = Finance::getPostFile() . "?operation=create_receipt" .
 		           "&user_id=" . $user_id . "&bank=" . $bank_amount . "&date=" . $date .
 		           "&change=" . $change;
 		$result  = $this->multi_site->Run( $command, $site_id, true, $debug );

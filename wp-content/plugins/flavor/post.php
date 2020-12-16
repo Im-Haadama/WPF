@@ -3,7 +3,7 @@
 */
 
 if ( ! defined( "ABSPATH" ) ) {
-	define( 'ABSPATH', dirname(dirname(dirname( dirname( __FILE__ ) ) )) . '/');
+	define( 'ABSPATH', dirname(dirname(dirname( dirname( $_SERVER["SCRIPT_FILENAME"])))). '/');
 }
 
 require_once(ABSPATH . 'wp-config.php');

@@ -280,7 +280,7 @@ class Finance_Subcontract {
 //	}
 
 		// print "create<br/>";
-		$doc_id = $invoice->CreateDocument( $doc );
+		$doc_id = $invoice->CreateInvoiceDocument( $doc );
 
 		// var_dump($doc);
 		return $doc_id;

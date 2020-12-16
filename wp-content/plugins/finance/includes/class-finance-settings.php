@@ -79,7 +79,7 @@ class Finance_Settings {
 			array( 'page_title' => 'Multi site', 'function' => array( Core_Db_MultiSite::getInstance(), 'admin_page' ) ) );
 
 		$menu->AddSubMenu( "users.php", "edit_shop_orders",
-			array( 'page_title' => 'Client accounts', 'function' => array( "Finance_Clients", 'admin_page' ) ) );
+			array( 'page_title' => 'Client accounts', 'function' => array( "Finance_Client_Views", 'admin_page' ) ) );
 
 		Flavor::AddTop("client_accounts", "Client accounts", "/wp-admin/users.php?page=client-accounts");
 
@@ -101,9 +101,9 @@ class Finance_Settings {
 
 //		$menu->AddSubMenu( "finance", "working_hours_self",
 //			array( 'page_title' => 'Hours entry', 'function' => array( "Finance_Salary", 'entry_wrapper' ) ) );
-		self::AddTop('orders', 'Orders', '/wp-admin/edit.php?post_type=shop_order&post_status=wc-processing');
-		self::AddTop('orders_all', 'All orders', '/wp-admin/edit.php?post_type=shop_order', 'orders');
-		self::AddTop('orders_print', 'Print', '/wp-admin/admin.php?page=printing', 'orders');
+		Flavor::AddTop('orders', 'Orders', '/wp-admin/edit.php?post_type=shop_order&post_status=wc-processing');
+		Flavor::AddTop('orders_all', 'All orders', '/wp-admin/edit.php?post_type=shop_order', 'orders');
+		Flavor::AddTop('orders_print', 'Print', '/wp-admin/admin.php?page=printing', 'orders');
 
 	}
 
