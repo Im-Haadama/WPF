@@ -3,24 +3,23 @@
 //print "z=" . date('z', strtotime('2020-10-05'));
 if (class_exists("WC_Payment_Gateway")) {
 
-	class WC_Other_Payment_Gateway extends WC_Payment_Gateway {
-
+	class E_Fresh_Payment_Gateway extends WC_Payment_Gateway
+    {
 		private $order_status;
 
 		public function __construct() {
 			$this->id           = 'other_payment';
-			$this->method_title = __( 'E-fresh Payment Gateway', 'woocommerce-other-payment-gateway' );
-			$this->title        = __( 'E-fresh Payment Gateway', 'woocommerce-other-payment-gateway' );
+			$this->method_title = __( 'E-fresh Payment Gateway', 'e-fresh-payment-gateway' );
+			$this->title        = __( 'E-fresh Payment Gateway', 'e-fresh' );
 			$this->has_fields   = true;
 			$this->init_form_fields();
 			$this->init_settings();
-			$this->enabled           = $this->get_option( 'enabled' );
+			$this->pay_on_checkout   = $this->get_option( 'pay_on_checkout' );
 			$this->title             = $this->get_option( 'title' );
 			$this->description       = $this->get_option( 'description' );
 			$this->hide_text_box     = $this->get_option( 'hide_text_box' );
 			$this->text_box_required = $this->get_option( 'text_box_required' );
 			$this->order_status      = $this->get_option( 'order_status' );
-
 
 			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array(
 				$this,
@@ -30,10 +29,10 @@ if (class_exists("WC_Payment_Gateway")) {
 
 		public function init_form_fields() {
 			$this->form_fields = array(
-				'enabled' => array(
-					'title'   => __( 'Enable/Disable', 'woocommerce-other-payment-gateway' ),
-					'type'    => 'checkbox',
-					'label'   => __( 'Enable Custom Payment', 'woocommerce-other-payment-gateway' ),
+				'pay_on_checkout' => array(
+					'title'   => __( 'Pay on checkout', 'e-fresh-pay-on-checkout' ),
+					'type'    => 'checkbox', // woocommerce-other-payment-gateway
+					'label'   => __( 'If checked on ordered will be paid while checkout', 'e-fresh-pay-on-order' ),
 					'default' => 'yes'
 				),
 
@@ -96,28 +95,52 @@ if (class_exists("WC_Payment_Gateway")) {
 		public function process_payment( $order_id ) {
 			global $woocommerce;
 			$order              = new WC_Order( $order_id );
-			$billing_creditcard = $_REQUEST['billing_creditcard'];
-			$card_number        = str_replace( "-", "", $billing_creditcard );
-			$card_type          = $_REQUEST['billing_cardtype'];
-			$expdate_year       = $_REQUEST['billing_expdateyear'];
-			$expdate_month      = $_REQUEST['billing_expdatemonth'];
-			$billing_idnumber   = $_REQUEST['billing_idnumber'];
 
-			if ( isset( $card_number ) && ! empty( $card_number ) ) {
-				update_post_meta( $order_id, 'card_number', $card_number );
-			}
-			if ( isset( $billing_idnumber ) && ! empty( $billing_idnumber ) ) {
-				update_post_meta( $order_id, 'id_number', $billing_idnumber );
-			}
-			if ( isset( $card_type ) && ! empty( $card_type ) ) {
-				update_post_meta( $order_id, 'card_type', $card_type );
-			}
-			if ( isset( $expdate_month ) && ! empty( $expdate_month ) ) {
-				update_post_meta( $order_id, 'expdate_month', $expdate_month );
-			}
-			if ( isset( $expdate_year ) && ! empty( $expdate_year ) ) {
-				update_post_meta( $order_id, 'expdate_year', $expdate_year );
-			}
+			if ("yes" == $this->get_option('pay_on_checkout'))
+            {
+                $credit_info = array("card_number" => str_replace("-", "", $_REQUEST["billing_creditcard"]),
+                "exp_date_month" => $_REQUEST["billing_expdatemonth"],
+                "exp_date_year" => $_REQUEST["billing_expdateyear"],
+                "id_number"=>$_REQUEST["billing_idnumber"]
+                );
+                $instance = Finance::instance();
+                $passed = $instance->pay_order($order_id, $credit_info);
+                $error_message = $instance->getMessage();
+                FinanceLog($error_message);
+            } else {
+				$billing_creditcard = $_REQUEST['billing_creditcard'];
+				$card_number        = str_replace( "-", "", $billing_creditcard );
+				$card_type          = $_REQUEST['billing_cardtype'];
+				$expdate_year       = $_REQUEST['billing_expdateyear'];
+				$expdate_month      = $_REQUEST['billing_expdatemonth'];
+				$billing_idnumber   = $_REQUEST['billing_idnumber'];
+
+				if ( isset( $card_number ) && ! empty( $card_number ) ) {
+					update_post_meta( $order_id, 'card_number', $card_number );
+				}
+				if ( isset( $billing_idnumber ) && ! empty( $billing_idnumber ) ) {
+					update_post_meta( $order_id, 'id_number', $billing_idnumber );
+				}
+				if ( isset( $card_type ) && ! empty( $card_type ) ) {
+					update_post_meta( $order_id, 'card_type', $card_type );
+				}
+				if ( isset( $expdate_month ) && ! empty( $expdate_month ) ) {
+					update_post_meta( $order_id, 'expdate_month', $expdate_month );
+				}
+				if ( isset( $expdate_year ) && ! empty( $expdate_year ) ) {
+					update_post_meta( $order_id, 'expdate_year', $expdate_year );
+				}
+			    $passed = true;
+            }
+			if (! $passed)
+            {
+                FinanceLog("payment failed");
+
+	            wc_add_notice( __('Payment error:') . $error_message, 'error' );
+
+	            return array("result"=>'fail');
+            }
+			FinanceLog(__FUNCTION__ . $pay_on_checkout);
 			$order->update_status( $this->order_status, __( 'Awaiting payment', 'woocommerce-other-payment-gateway' ) );
 
 			wc_reduce_stock_levels( $order_id );
@@ -242,7 +265,20 @@ if (class_exists("WC_Payment_Gateway")) {
 							}
 							?>
                         </select>
-                    </p>
+<!--                    <p class="form-row" style="display: inline-block;">-->
+<!--                        <label>--><?php //_e( 'Save token to next orders', 'finance' ); ?><!--</label>-->
+<!--                        <input name="save_as_token" type="checkbox">-->
+<!--                    </p>-->
+                        <?php
+                        woocommerce_form_field( 'save_as_token', array( // CSS ID
+	                        'type'          => 'checkbox',
+	                        'class'         => array('form-row mycheckbox'), // CSS Class
+	                        'label_class'   => array('woocommerce-form__label woocommerce-form__label-for-checkbox checkbox'),
+	                        'input_class'   => array('woocommerce-form__input woocommerce-form__input-checkbox input-checkbox'),
+//	                        'required'      => true, // Mandatory or Optional
+	                        'label'         => 'Save token for next orders', // Label and Link
+                        ));
+                        ?>
                 </fieldset>
 			<?php }
 		}

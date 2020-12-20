@@ -185,7 +185,7 @@ class Finance_Client_Views {
 			              "fields"=>array("id", "card_number", "exp_date_month", "exp_date_year", "id_number"),
 			              "edit_cols"=> array("card_number"=>1, "card_type"=>1, "exp_date_month"=>1, "id_number"=>1, "exp_date_year"=>1));
 
-			$credit_info = Core_Gem::GemElement( "payment_info", $payment_info_id, $args ) . self::TokenInfo($u);
+			$credit_info = Core_Gem::GemElement( "payment_info", $payment_info_id, $args ) . Finance_Client_Accounts::TokenInfo($u);
 		} else {
 			$args["post_file"] = Finance::getPostFile();
 			$args["values"] = array("email" => $u->get_customer_email(), "full_name"=>$u->getName(), "created_date"=>date('y-m-d'));

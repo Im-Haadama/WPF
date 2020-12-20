@@ -1487,5 +1487,4 @@ class Finance_Order {
 	{
 		return $this->WC_Order->get_items();
 	}
-
 }

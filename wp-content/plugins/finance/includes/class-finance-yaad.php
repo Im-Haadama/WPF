@@ -7,6 +7,23 @@ class Finance_Yaad {
 	private $business_name;
 	private $PassP;
 	public $debug;
+	private $message;
+
+	/**
+	 * @return mixed
+	 */
+	public function getMessage() {
+		return $this->message;
+	}
+//	protected static $_instance = null;
+//
+//	public static function instance() {
+//		if ( is_null( self::$_instance ) ) {
+//			self::$_instance = new self( "Finance" );
+//		}
+//
+//		return self::$_instance;
+//	}
 
 	function init_hooks()
 	{
@@ -18,7 +35,6 @@ class Finance_Yaad {
 	public function setDebug( bool $debug ): void {
 		$this->debug = $debug;
 	}
-
 
 	/**
 	 * @param $customer_id
@@ -69,7 +85,14 @@ class Finance_Yaad {
 		}
 
 		$change = $amount - $current_total;
-		return $this->pay_user_credit($user, $paying_transactions, $amount, $change, $payment_number);
+
+		$credit_data = SqlQuerySingleAssoc( "select * from im_payment_info where user_id = " . $user->getUserId());
+		if (! $credit_data) {
+			FinanceLog("no credit info found");
+			return false;
+		}
+
+		return $this->pay_user_credit($user, $credit_info, $paying_transactions, $amount, $change, $payment_number);
 	}
 
 	static function getCustomerStatus(Finance_Client $C, $string = true)
@@ -85,45 +108,39 @@ class Finance_Yaad {
 
 	}
 
-	function pay_user_credit(Finance_Client $user, $account_line_ids, $amount, $change, $payment_number = 1)
+	function pay_user_credit(Finance_Client $user, $credit_data, $account_line_ids, $amount, $change = 0, $payment_number = 1)
 	{
-		MyLog(__FUNCTION__ . " " . $user->getName() . " " . $amount);
+//		FinanceLog(__FUNCTION__ . " " . $user->getName() . " " . $amount);
 		$debug = false;
 		if (0 == $amount)
 			return true;
 
 		$token = get_user_meta($user->getUserId(), 'credit_token', true);
 
-		$credit_data = SqlQuerySingleAssoc( "select * from im_payment_info where user_id = " . $user->getUserId());
-		// .                                    " and card_number not like '%X%'");
-		if (! $credit_data) {
-			MyLog("no credit info found");
-			return false;
-		}
-
 		if ($token) {
-			MyLog("trying to pay with token user " . $user->getName());
+			FinanceLog("trying to pay with token user " . $user->getName());
 			$transaction_info = self::TokenPay( $token, $credit_data, $user, $amount, CommaImplode($account_line_ids), $payment_number );
 			$transaction_id = $transaction_info['Id'];
 			if (! $transaction_id or ($transaction_info['CCode'] != 0)) {
 				$message = $user->getName() . ": Got error " . self::ErrorMessage($transaction_info['CCode']) . "\n";
 				print $message;
-				MyLog($message);
+				FinanceLog($message);
 				return false;
 			}
 
 			$paid = $transaction_info['Amount'];
-			MyLog("paid $paid user " . $user->getName());
+			FinanceLog("paid $paid user " . $user->getName());
 			if ($paid) self::RemoveRawInfo($credit_data['id']);
 		} else {
-			MyLog("trying to pay with credit info " . $user->getName());
+			FinanceLog("trying to pay with credit info " . $user->getName());
 			if ($this->debug) print "trying to pay with credit info<br/>";
 			// First pay. Use local store credit info, create token and delete local info.
 			$transaction_info = self::FirstPay($credit_data, $user, $amount, CommaImplode($account_line_ids), $payment_number);
+			FinanceLog("back");
 			// info: Id, CCode, Amount, ACode, Fild1, Fild2, Fild3
 			if (($transaction_info['CCode'] != 0)) {
-				MyLog(__FUNCTION__, $transaction_info['CCode']);
-				print "Got error " . self::ErrorMessage($transaction_info['CCode']) . "\n";
+				FinanceLog(__FUNCTION__, $transaction_info['CCode']);
+				$this->message .= "Got error " . self::ErrorMessage($transaction_info['CCode']) . "\n";
 				if ($debug) var_dump($credit_data);
 				return false;
 			}
@@ -151,7 +168,7 @@ class Finance_Yaad {
 		}
 		if ($paid) {
 			// Create invoice receipt. Update balance.
-			MyLog("b4 create_receipt_from_account_ids");
+			FinanceLog("b4 create_receipt_from_account_ids");
 			Finance_Client_Accounts::create_receipt_from_account_ids( 0, 0, 0, $paid, $user->getUserId(), date('Y-m-d'), $account_line_ids );
 
 			return true;
@@ -171,6 +188,8 @@ class Finance_Yaad {
 				return "מספר ת.ז שגוי";
 			case 447:
 				return "מספר כרטיס שגוי";
+			case 902:
+				return "הגדרות מסוף";
 		}
 		return "Error number $code";
 	}
@@ -198,6 +217,7 @@ class Finance_Yaad {
 	 */
 	function FirstPay($credit_info, Finance_Client $user_info, float $amount, string $delivery_numbers, int $payment_number = 1)
 	{
+		FinanceLog(__FUNCTION__ . " " . $credit_info['card_number'] . " $amount ");
 		// General
 		$params = array();
 		self::SetPayInfo($params);
@@ -226,6 +246,7 @@ class Finance_Yaad {
 		$this->business_name = $business_name;
 		$this->PassP = $PassP;
 		self::SignIn();
+		FinanceLog("Sig: " . $this->signature);
 	}
 
 	public function TokenPay( string $token, array $credit_info, Finance_Client $user_info, float $amount, string $delivery_info, int $payment_number = 1) {
@@ -297,6 +318,11 @@ class Finance_Yaad {
 	{
 		$url = AddParamToUrl( $base_url, $request_params );
 		if ($this->debug) print $url . "<br/>";
+
+		if (! function_exists("curl_init")) {
+			FinanceLog("Curl not installed");
+			return false;
+		}
 
 		$ch = curl_init();
 		curl_setopt( $ch, CURLOPT_URL, $url );

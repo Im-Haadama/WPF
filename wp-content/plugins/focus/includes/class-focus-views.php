@@ -1348,6 +1348,7 @@ class Focus_Views {
 			$args["fields"][] = "task_template";
 		}
 		$args["fields"][] = "preq";
+		$args["fields"][] = "date";
 
 		$args["edit_cols"] = array(
 			"date"             => true,

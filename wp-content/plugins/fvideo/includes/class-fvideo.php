@@ -441,6 +441,7 @@ class FVideo {
 			'menu_position' => 5,
 			'supports'      => array( 'title', 'editor', 'thumbnail', 'excerpt', 'comments' ),
 			'has_archive'   => true,
+			'taxonomies' => array('category')
 		);
 		register_post_type( 'fvideo', $args );
 	}

@@ -21,6 +21,9 @@ class Finance_Order_Management {
 		$loader->AddAction('order_set_mission', $this);
 		$loader->AddAction('order_add_product', $this);
 		$loader->AddAction('wp_trash_post', $this);
+		$loader->AddAction( 'woocommerce_proceed_to_checkout', $this, 'disable_checkout_button_no_shipping', 1 );
+		$loader->AddFilter( 'woocommerce_cart_no_shipping_available_html', $this, 'no_shipping_message' );
+		$loader->AddFilter( 'woocommerce_no_shipping_available_html', $this, 'no_shipping_message' );
 //		FinanceLog("before_delete_post added");
 	}
 
@@ -213,4 +216,22 @@ class Finance_Order_Management {
 		$del = new Finance_Delivery($order_id);
 		$del->delete();
 	}
+
+	function disable_checkout_button_no_shipping() {
+		$package_counts = array();
+
+		// get shipping packages and their rate counts
+		$packages = WC()->shipping->get_packages();
+		foreach( $packages as $key => $pkg )
+			$package_counts[ $key ] = count( $pkg[ 'rates' ] );
+
+		// remove button if any packages are missing shipping options
+		if( in_array( 0, $package_counts ) )
+			remove_action( 'woocommerce_proceed_to_checkout', 'woocommerce_button_proceed_to_checkout', 20 );
+	}
+
+	function no_shipping_message( $message ) {
+		return __( 'Check with us availability of deliveries to your area.' );
+	}
+
 }

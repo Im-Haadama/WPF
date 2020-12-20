@@ -28,6 +28,14 @@ class Finance {
 	protected $database;
 	protected $subcontract;
 	protected $salary;
+	protected $message;
+
+	/**
+	 * @return mixed
+	 */
+	public function getMessage() {
+		return $this->message;
+	}
 
 	/**
 	 * Plugin version.
@@ -219,26 +227,26 @@ class Finance {
 	{
 //		$active_plugins = apply_filters('active_plugins', get_option('active_plugins'));
 		if(finance_custom_payment_is_woocommerce_active()){
-			add_filter('woocommerce_payment_gateways', array($this, 'add_other_payment_gateway'));
+			add_filter('woocommerce_payment_gateways', array($this, 'add_payment_gateway'));
 
-			add_action('plugins_loaded', array($this, 'init_other_payment_gateway'));
+			add_action('plugins_loaded', array($this, 'init_payment_gateway'));
 
 			add_action( 'plugins_loaded', array($this, 'other_payment_load_plugin_textdomain'));
 		}
 	}
 
-	function add_other_payment_gateway( $gateways ){
-		$gateways[] = 'WC_Other_Payment_Gateway';
+	function add_payment_gateway( $gateways ){
+		$gateways[] = 'E_Fresh_Payment_Gateway';
 		return $gateways;
 	}
 
-	function init_other_payment_gateway(){
-		require FINANCE_INCLUDES . 'class-payment-gateway.php';
+	function init_payment_gateway(){
+		require FINANCE_INCLUDES . 'class-e-fresh-payment-gateway.php';
 	}
+
 	function other_payment_load_plugin_textdomain() {
 		load_plugin_textdomain( 'woocommerce-other-payment-gateway', FALSE, basename( dirname( __FILE__ ) ) . '/languages/' );
 	}
-
 
 	function get_open_invoices()
 	{
@@ -254,17 +262,33 @@ class Finance {
 
 	}
 
+	function Yaad_Connect()
+	{
+		FinanceLog(__FUNCTION__);
+		if (! $this->yaad) {
+			if ( ! defined( 'YAAD_API_KEY' ) ) {
+				$this->message = "api not defined";
+
+				return false;
+			}
+			if ( ! defined( 'YAAD_TERMINAL' ) ) {
+				$this->message = "terminal not defined";
+
+				return false;
+			}
+			if ( ! defined( 'YAAD_PassP' ) ) {
+				$this->message = 'PassP not defined';
+
+				return false;
+			}
+			$this->yaad = new Finance_Yaad( YAAD_API_KEY, YAAD_TERMINAL, get_bloginfo( 'name' ), YAAD_PassP );
+		}
+	}
 	function pay_user_credit_wrap($customer_id, $amount, $payment_number)
 	{
 		FinanceLog(__FUNCTION__ . " $customer_id");
 
-		if (! $this->yaad)
-			if ( defined( 'YAAD_API_KEY' ) and defined('YAAD_TERMINAL')) {
-				FinanceLog("init Finanace_Yaad");
-				$this->yaad = new Finance_Yaad( YAAD_API_KEY, YAAD_TERMINAL, get_bloginfo('name'), YAAD_PassP );
-			} else {
-				FinanceLog("Error: folder YAAD terminal or api are missing", true);
-			}
+		self::Yaad_Connect();
 
 		if (! $this->yaad)
 		{
@@ -892,6 +916,37 @@ class Finance {
 	{
 		$client_id = GetParam("id");
 		Finance_Yaad::ClearToken($client_id);
+	}
+
+	function pay_order($order_id, $credit_info)
+	{
+		FinanceLog(__FUNCTION__ . " $order_id");
+		if (! self::Yaad_Connect()) {
+			FinanceLog($this->message);
+			$this->message = __("Payment system not available. Please contact customer support");
+			return false;
+		}
+
+		$O = new Finance_Order($order_id);
+		$user = new Finance_Client($O->getCustomerId());
+		$amount = $O->getTotal();
+		$Del = new Finance_Delivery($order_id);
+		$del_id = $Del->CreateDeliveryFromOrder($order_id, 1);
+
+//		$credit_data = SqlQuerySingleAssoc( "select * from im_payment_info where user_id = " . $user->getUserId());
+		$paid = $this->yaad->pay_user_credit($user, $credit_info, $del_id, $amount);
+		$this->message = $this->yaad->getMessage();
+
+		FinanceLog(__FUNCTION__ . " user = " . $user->getUserId() . " amount = $amount " . $user->getUserId(). " del=$del_id paid=$paid");
+
+		return false;
+//		$token = get_user_meta($user->getUserId(), 'credit_token', true);
+//
+//		if ($token) {
+//
+//			return true;
+//		}
+
 	}
 }
 

@@ -167,6 +167,20 @@ class Flavor {
 		Flavor_Mission::init_hooks();
 		Core_Data::init_hooks($this->loader);
 		add_action( 'admin_notices', array($this, 'admin_notices') );
+		add_action('admin_init', array($this, 'blog_settings'));
+	}
+
+	public function blog_settings()
+	{
+//		add_settings_field('site_support', __('Complete Disable', 'disable-gutenberg'), 'disable_gutenberg_callback_checkbox', 'disable_gutenberg_options', 'settings_1', array('id' => 'disable-all', 'label' => esc_html__('Disable Gutenberg everywhere', 'disable-gutenberg')));
+		add_settings_field("site_support", "Site support", array($this, "show_support"), "general");
+		register_setting('general', 'site_support');
+	}
+
+	function show_support()
+	{
+//		update_option("support_details", "055");
+		echo Core_Html::GuiInput("support_details", get_option("support_details"));
 	}
 
 	public function admin_menu()

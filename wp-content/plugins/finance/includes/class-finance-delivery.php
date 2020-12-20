@@ -533,7 +533,7 @@ class Finance_Delivery
 		       . $prod_id . ", $has_vat )";
 
 //		FinanceLog( "$delivery_id: $product_name $quantity $quantity_ordered $vat $price $line_price $prod_id $has_vat", __FILE__);
-		FinanceLog($sql);
+//		FinanceLog($sql);
 
 		return SqlQuery( $sql );
 	}
@@ -719,7 +719,6 @@ class Finance_Delivery
 
 	public function CreateDeliveryFromOrder( $order_id, $q ) {
 //		ob_start();
-		MyLog(__FUNCTION__ . " $order_id");
 		remove_filter( 'woocommerce_stock_amount', 'intval' );
 		remove_filter( 'woocommerce_stock_amount', 'filter_woocommerce_stock_amount', 10 );
 
