@@ -62,7 +62,7 @@ class Subscription_Manager {
 	}
 
 	public function init_hooks() {
-		Core_Gem::getInstance()->AddTable( "subscriptions" );
+        Core_Gem::getInstance()->AddTable( "subscriptions" );
 		add_action( 'admin_menu', array( $this, 'admin_menu' ) );
 		Flavor_Roles::instance()->addRole( "show_subs" );
 		self::install();
@@ -101,6 +101,9 @@ class Subscription_Manager {
 	{
 		$table_name = "subscriptions";
 		$db_prefix = GetTablePrefix($table_name);
+		//print "capability = " .$capability;
+		//print "<br/>";
+		//print "id= ". $u->getId();
 		return  SqlQuery("insert into ${db_prefix}$table_name (user_id, subscription_name, start_date, valid_date) " .
 		" VALUES (" . $u->getId() . ", '" . $subscription_name . "', CURDATE(), CURDATE() + INTERVAL $time_period)
 		on duplicate key update start_date = curdate() and valid_date = CURDATE() + INTERVAL $time_period") and
