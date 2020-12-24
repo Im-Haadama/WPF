@@ -122,7 +122,7 @@ class Finance_Client_Accounts
 		return $doc_id;
 	}
 
-	private static function CreateInvoiceReceipt($cash, $bank, $check, $credit, $change, $user_id, $date, $del_ids)
+	static function CreateInvoiceReceipt($cash, $bank, $check, $credit, $change, $user_id, $date, array $del_ids, $subject = null)
 	{
 		Finance::Invoice4uConnect();
 
@@ -137,7 +137,7 @@ class Finance_Client_Accounts
 			return false;
 		}
 
-		$doc_id   = self::CreateInvoiceDocument( "r", $del_ids, $user_id, $date, $c, $bank, $credit, $check );
+		$doc_id   = self::CreateInvoiceDocument( "r", $del_ids, $user_id, $date, $c, $bank, $credit, $check, $subject );
 
 		$pay_type = self::pay_type( $cash, $bank, $credit, $check );
 		if ( is_numeric( $doc_id ) && $doc_id > 0 ) {
@@ -217,7 +217,7 @@ class Finance_Client_Accounts
 
 		$client = $C->getInvoiceUser(true);
 
-		if ( !$client or  ! ( $client->ID ) > 0 ) {
+		if ( !$client or (isset($client->ID) and ! ( $client->ID )) > 0 ) {
 			print "Client not found " . $customer_id . "<br>";
 
 			return 0;

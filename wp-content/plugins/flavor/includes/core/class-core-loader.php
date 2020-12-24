@@ -138,7 +138,7 @@ class Core_Loader {
 		}
 
 		foreach ( $this->actions as $hook ) {
-			if ($this->debug) print ("Adding " . $hook['hook']) . "<br/>";
+//			if ($hook == 'gem_edit_multisite') print ("===================== Adding " . $hook['hook']) . "<br/>";
  			// print "adding " . $hook['hook'] . " " . var_dump($hook['component']) . " " . $hook['callback'] . "<br/>";
 			add_action($hook['hook'], array( $hook['component'], $hook['callback'] ), $hook['priority'], $hook['accepted_args'] );
 		}

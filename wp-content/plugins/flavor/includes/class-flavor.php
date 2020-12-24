@@ -120,7 +120,7 @@ class Flavor {
 	/**
 	 * WooCommerce Constructor.
 	 */
-	public function __construct( $plugin_name ) {
+	private function __construct( $plugin_name ) {
 		$this->plugin_name = $plugin_name;
 		$this->define_constants();
 		$this->includes(); // Loads class autoloader
@@ -146,11 +146,14 @@ class Flavor {
 		add_action( 'after_setup_theme', array( $this, 'include_template_functions' ), 11 );
 		add_action( 'init', array( $this, 'init' ), 0 );
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
+
 		add_action('data_save_new', array('Core_Data', 'data_save_new'));
 		add_action('admin_menu', array($this, 'admin_menu'));
 
+
 		// If this cause problem, alter isManagementPage.
-		add_action('wp', 'unlogged_guest_posts_redirect');
+		if (!defined('WP_DEBUG'))
+			add_action('wp', 'unlogged_guest_posts_redirect');
 
 
 		GetSqlConn( ReconnectDb() );
@@ -168,6 +171,9 @@ class Flavor {
 		Core_Data::init_hooks($this->loader);
 		add_action( 'admin_notices', array($this, 'admin_notices') );
 		add_action('admin_init', array($this, 'blog_settings'));
+
+		// For production
+		if ((get_user_id() == 1) and defined("DEBUG_USER")) wp_set_current_user(DEBUG_USER);
 	}
 
 	public function blog_settings()
@@ -492,6 +498,12 @@ class Flavor {
 	 */
 	public function init() {
 		// Before init action.
+
+		ini_set('display_errors', 1);
+		ini_set('display_startup_errors', 1);
+		error_reporting(E_ALL);
+
+		add_action('wp_loaded', 'Flavor::wp_loaded');
 		do_action( 'before_flavor_init' );
 		add_filter( 'woocommerce_settings_tabs_array', __CLASS__ . '::add_settings_tab', 50 );
 		add_action( 'woocommerce_settings_tabs_wpf', __CLASS__ . '::settings_tab' );
@@ -522,7 +534,7 @@ class Flavor {
 //
 //		wp_enqueue_style('woocommerce_admin_styles');
 
-		self::admin_menu();
+//		self::admin_menu();
 		add_action( 'admin_bar_menu', array(Core_Admin_Menu::instance(), 'do_modify_admin_bar'), 200 );
 	}
 
@@ -728,6 +740,11 @@ class Flavor {
 	static function getTextDomain()
 	{
 		return 'e-fresh';
+	}
+
+	static function wp_loaded()
+	{
+		self::instance()->loader->run();
 	}
 }
 

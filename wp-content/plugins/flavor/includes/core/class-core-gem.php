@@ -56,15 +56,14 @@ class Core_Gem {
 	function AddTable($table, $loader = null)
 	{
 //		$debug = 0; //  (get_user_id() == 1);
-//		 if (get_user_id() == 1) print "=================================================". __CLASS__ . ":" . $table . "<br/>";
+	//	 if (get_user_i d() == 1) print "=================================================". __CLASS__ . ":" . $table . "<br/>";
 
+		if (! $loader) $loader = Core_Loader::instance();
 		// New Row
-		if ($loader) {
-			$loader->AddAction( "gem_add_" . $table, $this, 'add_wrapper', 10, 1);
-		} else
-			AddAction( "gem_add_" . $table, array( $this, 'add_wrapper' ), 10, 3 );
+		$loader->AddAction( "gem_add_" . $table, $this, 'add_wrapper', 10, 1);
+
 		// Edit
-//		AddAction("gem_edit_" . $table, array($class, 'edit_wrapper'), 10, 3);
+		$loader->AddAction("gem_edit_" . $table, $this, 'edit_wrapper', 10, 1);
 
 		// Show row
 //		AddAction("gem_show_" . $table, array($class, 'show_wrapper'), 10, 3, $debug);
@@ -90,16 +89,16 @@ class Core_Gem {
 		return true;
 	}
 
-	static function edit_wrapper($result, $id, $args)
+	function edit_wrapper($args)
 	{
 		$id = GetParam("id", true);
-		if (! ($id > 0)) return __FUNCTION__ . ":bad id";
+		if (! ($id > 0)) print __FUNCTION__ . ":bad id";
 
-		$operation = GetArg($args, "operation", null);
-		if (! $operation)  return __FUNCTION__ . ":no operation";
+		$operation = GetParam("operation", true);
+		if (! $operation)  print __FUNCTION__ . ":no operation";
 
 		$table_name = substr($operation, 9);
-		return $result . self::GemElement( $table_name, $id, $args);
+		print self::GemElement( $table_name, $id, $args);
 	}
 
 	function add_wrapper($args = null)

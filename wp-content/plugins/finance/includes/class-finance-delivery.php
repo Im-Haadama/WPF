@@ -664,6 +664,7 @@ class Finance_Delivery
 	}
 
 	public function Delete() {
+		if (! $this->delivery_id) return;
 		$db_prefix = GetTablePrefix("delivery_lines");
 
 		// change the order back to processing

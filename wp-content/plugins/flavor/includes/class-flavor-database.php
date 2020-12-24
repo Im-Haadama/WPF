@@ -45,6 +45,14 @@ END;
 		$current   = $this->checkInstalled( "tables" );
 		$db_prefix = GetTablePrefix();
 
+		if (! TableExists("mission_types"))
+			SqlQuery("create table ${db_prefix}mission_types
+(
+	id int auto_increment
+		primary key,
+	mission_name varchar(20) null)
+	charset = utf8");
+
 		if (! TableExists("missions"))
 		{
 			SqlQuery("create table ${db_prefix}missions

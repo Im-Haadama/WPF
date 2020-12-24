@@ -1,7 +1,7 @@
 <?php
 
 
-class Fresh_Inventory
+class Finance_Inventory
 {
 	private $version = null;
 	private $plugin_name = null;

@@ -19,17 +19,17 @@ class Fresh_Shortcodes {
 	 */
 	public static function init() {
 		$shortcodes = array(
-			'fresh_suppliers'            => __CLASS__ . '::suppliers', // [fresh_suppliers]
-			'fresh_control'            => __CLASS__ . '::packing_control', // [fresh_suppliers]
+			'fresh_suppliers'      => __CLASS__ . '::suppliers', // [fresh_suppliers]
+			'fresh_control'        => __CLASS__ . '::packing_control', // [fresh_suppliers]
 //			'fresh_orders'    => __CLASS__ . '::orders',
-			'fresh_account_status'    => __CLASS__ . '::fresh_account_status',
-			'fresh_inventory'    => __CLASS__ . '::inventory',
+			'fresh_account_status' => __CLASS__ . '::fresh_account_status',
+			'Finance_Inventory'    => __CLASS__ . '::inventory',
 			/// Personal area
-			'fresh_client_balance'    => __CLASS__ . '::client_balance',
+			'fresh_client_balance' => __CLASS__ . '::client_balance',
 			'fresh_open_orders'    => __CLASS__ . '::open_orders',
-			'fresh_delivery'    => __CLASS__ . '::delivery',
-			'fresh_client_archive'    => __CLASS__ . '::client_archive',
-			'fresh_deliveries' => __CLASS__ . '::deliveries'
+			'fresh_delivery'       => __CLASS__ . '::delivery',
+			'fresh_client_archive' => __CLASS__ . '::client_archive',
+			'fresh_deliveries'     => __CLASS__ . '::deliveries'
 		);
 
 		foreach ( $shortcodes as $shortcode => $function ) {
@@ -104,7 +104,7 @@ class Fresh_Shortcodes {
 			$atts[$param] = $value;
 		}
 
-		return Fresh_Inventory::handle();
+		return Finance_Inventory::handle();
 	}
 
 	public static function suppliers( $atts ) {

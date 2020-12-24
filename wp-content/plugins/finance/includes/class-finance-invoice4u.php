@@ -52,15 +52,10 @@ class Finance_Invoice4u
 	}
 
 	public function Login() {
-		if ( ! $this->token ) {
-			self::DoLogin( $this->user, $this->password );
-
-			if ($this->token) return true;
-		}
-		return false;
+		return (null != $this->token) or self::DoLogin( $this->user, $this->password );
 	}
 
-	private function DoLogin( $invoice_user, $invoice_password, $force = false ) {
+	private function DoLogin( $invoice_user, $invoice_password, $force = false ) : bool {
 		self::InvoiceLog("Invoice4u Login");
 
 		$wsdl = ApiService . "/LoginService.svc?wsdl";
@@ -71,7 +66,7 @@ class Finance_Invoice4u
 		if (! $this->token)
 			self::InvoiceLog("Login failure");
 
-		return $this->token;
+		return (null != $this->token);
 	}
 
 	private function requestWS( $wsdl, $service, $params )
@@ -232,7 +227,9 @@ class Finance_Invoice4u
 	function GetCustomerByName( $name ) {
 		self::InvoiceLog($name, __FUNCTION__);
 
-		return self::DoGetCustomer(new InvoiceCustomer($name));
+		$c = self::DoGetCustomer(new InvoiceCustomer($name));
+		if (is_array($c)) return $c[0]; // Shouldn't happen, but did in the test.
+		return $c;
 	}
 
 //	private function GetCustomerById( $id )  {

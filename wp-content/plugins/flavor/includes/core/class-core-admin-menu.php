@@ -47,6 +47,13 @@ class Core_Admin_Menu {
 
 	public function AddSubMenu($parent, $capability, $page)
 	{
+		if (! defined('add_submenu_page')) {
+//			print "add_submenu_page not defined";
+//			print debug_trace(10);
+//			die();
+
+			return;
+		}
 		$title = (isset($page['page_title']) ? $page['page_title'] : 'not set');
 		$menu_title = ( isset($page['menu_title']) ? $page['menu_title'] : $title);
 		$slug = ( isset($page['menu_slug']) ? $page['menu_slug'] :  str_replace(' ', '-', strtolower($menu_title)));
@@ -62,6 +69,12 @@ class Core_Admin_Menu {
 
 	public function Add($parent, $capability, $slug, callable $callable)
 	{
+		if (! defined('add_submenu_page')) {
+//			print "add_submenu_page not defined";
+//			print debug_trace(10);
+//			die(1);
+			return;
+		}
 		$title = convert_to_title($slug);
 		$menu_title = $title;
 		if (im_user_can($capability)) {

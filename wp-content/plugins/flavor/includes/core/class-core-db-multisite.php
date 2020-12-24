@@ -27,16 +27,21 @@ class Core_Db_MultiSite extends Core_MultiSite {
 	 * Core_Db_MultiSite constructor.
 	 */
 	public function __construct() {
+
+//		SqlQuery("alter table im_multisite add active tinyint;");
+//		SqlQuery("update im_multisite set active = 1");
+
 		$this->allowed_tables = [];
 		if ( TableExists( "multisite" ) ) {
 			$sql           = "select id, site_name, tools_url, local, display_name, active, master, user, password " .
 			                 " from im_multisite 
 			                 where active = 1";
-			$results       = SqlQuery( $sql );
+			$results       = SqlQueryArray( $sql );
+			if (! $results or ! count($results)) die ("no site infomation");
 			$sites_array   = array();
 			$master_id     = null;
 			$local_site_id = null;
-			while ( $row = SqlFetchRow( $results ) ) {
+			foreach ($results as $row) {
 				$id = $row[0];
 				if ( $row[3] ) {
 					$local_site_id = $row[0];
@@ -358,7 +363,7 @@ class Core_Db_MultiSite extends Core_MultiSite {
 	function admin_page()
 	{
 		$result = Core_Html::GuiHeader(1, "Multi sites");
-		$args = [];
+		$args = ["post_file" => Flavor::getPost()];
 		$db_prefix = GetTablePrefix();
 
 //		print "TRUNCATING<br/>";
@@ -369,7 +374,11 @@ class Core_Db_MultiSite extends Core_MultiSite {
 //		self::DoConnectToMaster("https://fruity.co.il", "multisite_connect", "multisite_connect");
 
 		if (self::isMaster()) {
-			Core_Gem::getInstance()->AddTable( "multisite" );
+			if ($operation = GetParam("operation", false, null))
+			{
+				do_action($operation, $args);
+				return;
+			}
 
 			$args = array( "post_file" => Finance::getPostFile() );
 			if ( ! TableExists( "multisite" ) ) {
@@ -420,11 +429,12 @@ class Core_Db_MultiSite extends Core_MultiSite {
 			print "First, add to master<br/>";
 			return false;
 		}
-		$this->master_id = substr($result, 5); // Master id.
+		$this->master_id = intval($result);
+		if (! ($this->master_id > 0)) die("master id: $result");
 //		print "master= " . $this->master_id . "<br/>";
 		if (! SqlQuerySingleScalar("select count(*) from im_multisite where id = $this->master_id")){
 //			print "inserting master $this->master_id<br/>";
-			SqlQuery("insert into ${db_prefix}multisite (id, tools_url, master, last_inc_update, pickup_address, user, password) values ($this->master_id, '$server', 1, curdate(), '', '$user', '$password')");
+			SqlQuery("insert into ${db_prefix}multisite (id, tools_url, master, last_inc_update, pickup_address, user, password, active) values ($this->master_id, '$server', 1, curdate(), '', '$user', '$password', 1)");
     	}
 
 		return self::UpdateFromMaster();

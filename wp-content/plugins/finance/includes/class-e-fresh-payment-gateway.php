@@ -6,6 +6,7 @@ if (class_exists("WC_Payment_Gateway")) {
 	class E_Fresh_Payment_Gateway extends WC_Payment_Gateway
     {
 		private $order_status;
+		private $error_message;
 
 		public function __construct() {
 			$this->id           = 'other_payment';
@@ -20,6 +21,8 @@ if (class_exists("WC_Payment_Gateway")) {
 			$this->hide_text_box     = $this->get_option( 'hide_text_box' );
 			$this->text_box_required = $this->get_option( 'text_box_required' );
 			$this->order_status      = $this->get_option( 'order_status' );
+
+			$this->paying = null;
 
 			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array(
 				$this,
@@ -92,71 +95,21 @@ if (class_exists("WC_Payment_Gateway")) {
 			return true;
 		}
 
-		public function process_payment( $order_id ) {
-			global $woocommerce;
-			$order              = new WC_Order( $order_id );
+		public function test()
+		{
+		    $d = new Finance_Delivery(16631);
+		    $d->Delete();
+			$_REQUEST["billing_creditcard"] = "4580000000000000";
+			$_REQUEST["billing_expdatemonth"] = "12";
+			$_REQUEST["billing_expdateyear"] = "2021";
+			$_REQUEST["billing_idnumber"] = "012680286";
+			$_REQUEST['save_as_token'] = 1;
+			self::process_payment(16631);
 
-			if ("yes" == $this->get_option('pay_on_checkout'))
-            {
-                $credit_info = array("card_number" => str_replace("-", "", $_REQUEST["billing_creditcard"]),
-                "exp_date_month" => $_REQUEST["billing_expdatemonth"],
-                "exp_date_year" => $_REQUEST["billing_expdateyear"],
-                "id_number"=>$_REQUEST["billing_idnumber"]
-                );
-                $instance = Finance::instance();
-                $passed = $instance->pay_order($order_id, $credit_info);
-                $error_message = $instance->getMessage();
-                FinanceLog($error_message);
-            } else {
-				$billing_creditcard = $_REQUEST['billing_creditcard'];
-				$card_number        = str_replace( "-", "", $billing_creditcard );
-				$card_type          = $_REQUEST['billing_cardtype'];
-				$expdate_year       = $_REQUEST['billing_expdateyear'];
-				$expdate_month      = $_REQUEST['billing_expdatemonth'];
-				$billing_idnumber   = $_REQUEST['billing_idnumber'];
+			print $this->error_message;
+    }
 
-				if ( isset( $card_number ) && ! empty( $card_number ) ) {
-					update_post_meta( $order_id, 'card_number', $card_number );
-				}
-				if ( isset( $billing_idnumber ) && ! empty( $billing_idnumber ) ) {
-					update_post_meta( $order_id, 'id_number', $billing_idnumber );
-				}
-				if ( isset( $card_type ) && ! empty( $card_type ) ) {
-					update_post_meta( $order_id, 'card_type', $card_type );
-				}
-				if ( isset( $expdate_month ) && ! empty( $expdate_month ) ) {
-					update_post_meta( $order_id, 'expdate_month', $expdate_month );
-				}
-				if ( isset( $expdate_year ) && ! empty( $expdate_year ) ) {
-					update_post_meta( $order_id, 'expdate_year', $expdate_year );
-				}
-			    $passed = true;
-            }
-			if (! $passed)
-            {
-                FinanceLog("payment failed");
-
-	            wc_add_notice( __('Payment error:') . $error_message, 'error' );
-
-	            return array("result"=>'fail');
-            }
-			FinanceLog(__FUNCTION__ . $pay_on_checkout);
-			$order->update_status( $this->order_status, __( 'Awaiting payment', 'woocommerce-other-payment-gateway' ) );
-
-			wc_reduce_stock_levels( $order_id );
-			if ( isset( $_POST[ $this->id . '-admin-note' ] ) && trim( $_POST[ $this->id . '-admin-note' ] ) != '' ) {
-				$order->add_order_note( esc_html( $_POST[ $this->id . '-admin-note' ] ), 1 );
-			}
-
-			$woocommerce->cart->empty_cart();
-
-			return array(
-				'result'   => 'success',
-				'redirect' => $this->get_return_url( $order )
-			);
-		}
-
-		public function payment_fields() {
+    public function payment_fields() {
 			global $wpdb;
 			$billing_creditcard = isset( $_REQUEST['billing_creditcard'] ) ? esc_attr( $_REQUEST['billing_creditcard'] ) : '';
 			$valid_credit_info = false;
@@ -282,6 +235,165 @@ if (class_exists("WC_Payment_Gateway")) {
                 </fieldset>
 			<?php }
 		}
+
+		public function process_payment($order_id)
+        {
+            $bl = new Finance_Business_Logic();
+            $args = [];
+            $args['pay_on_checkout'] = $this->get_option('pay_on_checkout');
+            $bl->process_payment($order_id, $args);
+        }
+
+	/**
+	 * @param $customer_id
+	 * @param int $amount
+	 * pay customer balance or the given amount.
+	 *
+	 * @param int $payment_number
+	 *
+	 * @return bool
+	 */
+	function pay_user_credit_wrap($customer_id, $amount = 0, $payment_number = 1)
+	{
+		FinanceLog(__FUNCTION__ . ": pay for $customer_id");
+		// $delivery_ids = sql_query_array_scalar("select id from im_delivery where payment_receipt is null and draft is false");
+		$sql = 'select 
+		id, 
+		date,
+		round(transaction_amount, 2) as transaction_amount,
+		client_balance(client_id, date) as balance,
+	    transaction_method,
+	    transaction_ref, 
+		order_from_delivery(transaction_ref) as order_id,
+		delivery_receipt(transaction_ref) as receipt,
+		id 
+		from im_client_accounts 
+		where client_id = ' . $customer_id . '
+		and delivery_receipt(transaction_ref) is null
+		and transaction_method = "משלוח"
+		order by date asc
+		';
+
+		// If amount not specified, try to pay the balance.
+		$user = new Finance_Client($customer_id);
+
+		if ($amount == 0)
+			$amount = $user->balance();
+
+		$rows = SqlQueryArray($sql);
+		$current_total = 0;
+
+		$paying_transactions = [];
+		foreach ($rows as $row) {
+			$trans_amount = $row[2];
+			if (($trans_amount + $current_total) < ($amount + 15)) {
+				array_push($paying_transactions, $row[0]);
+				$current_total += $trans_amount;
+			}
+		}
+
+		$change = $amount - $current_total;
+
+		$credit_data = SqlQuerySingleAssoc( "select * from im_payment_info where user_id = " . $user->getUserId());
+		if (! $credit_data) {
+			FinanceLog("no credit info found");
+			return false;
+		}
+
+		return $this->pay_user_credit($user, $credit_info, $paying_transactions, $amount, $change, $payment_number);
+	}
+
+	static function getCustomerStatus(Finance_Client $C, $string = true)
+	{
+		if ($string)
+			$rc = (SqlQuerySingleScalar( "select count(*) from im_payment_info where card_number not like '%X%' and email = " . QuoteText($C->get_customer_email())) > 0 ? 'C' : '') .
+			      (SqlQuerySingleScalar( "select count(*) from im_payment_info where card_number like '%X%' and email = " . QuoteText($C->get_customer_email())) > 0 ? 'X' : '');
+		else
+			$rc = (SqlQuerySingleScalar( "select count(*) from im_payment_info where card_number not like '%X%' and email = " . QuoteText($C->get_customer_email())) > 0 ? 1 : 0) +
+			      (SqlQuerySingleScalar( "select count(*) from im_payment_info where card_number like '%X%' and email = " . QuoteText($C->get_customer_email())) > 0 ? 2 : 0);
+
+		return $rc;
+
+	}
+
+	function pay_user_credit(Finance_Client $user, $credit_data, $account_line_ids, $amount, $change = 0, $payment_number = 1)
+	{
+//		FinanceLog(__FUNCTION__ . " " . $user->getName() . " " . $amount);
+		$debug = false;
+		if (0 == $amount)
+			return true;
+
+		$token = get_user_meta($user->getUserId(), 'credit_token', true);
+
+		if ($token) {
+			FinanceLog("trying to pay with token user " . $user->getName());
+			$transaction_info = self::TokenPay( $token, $credit_data, $user, $amount, CommaImplode($account_line_ids), $payment_number );
+			$transaction_id = $transaction_info['Id'];
+			if (! $transaction_id or ($transaction_info['CCode'] != 0)) {
+				$message = $user->getName() . ": Got error " . self::ErrorMessage($transaction_info['CCode']) . "\n";
+				print $message;
+				FinanceLog($message);
+				return false;
+			}
+
+			$paid = $transaction_info['Amount'];
+			FinanceLog("paid $paid user " . $user->getName());
+			if ($paid) self::RemoveRawInfo($credit_data['id']);
+		} else {
+			FinanceLog("trying to pay with credit info " . $user->getName());
+			if ($this->debug) print "trying to pay with credit info<br/>";
+			// First pay. Use local store credit info, create token and delete local info.
+			$transaction_info = self::FirstPay($credit_data, $user, $amount, CommaImplode($account_line_ids), $payment_number);
+			FinanceLog("back");
+			// info: Id, CCode, Amount, ACode, Fild1, Fild2, Fild3
+			if (($transaction_info['CCode'] != 0)) {
+				FinanceLog(__FUNCTION__, $transaction_info['CCode']);
+				$this->message .= "Got error " . self::ErrorMessage($transaction_info['CCode']) . "\n";
+				if ($debug) var_dump($credit_data);
+				return false;
+			}
+			if ($debug) var_dump($transaction_info);
+			$transaction_id = $transaction_info['Id'];
+			if (! $transaction_id){
+				print "No transaction id";
+				return false;
+			}
+			$paid = $transaction_info['Amount'];
+			if ($transaction_id) {
+				print $user->getName() . " " . __("Paid") . " $amount. $payment_number " . __("payments") . "\n";
+				if ($this->debug) print "pay successful $transaction_id<br/>";
+
+				// Create token and save it.
+				$token_info = self::GetToken( $transaction_id );
+				if (isset($token_info['Token'])){
+					if ($debug) print "Got token " . $token_info['Token'] . "<br/>";
+					add_user_meta($user->getUserId(), 'credit_token', $token_info['Token']);
+
+					self::RemoveRawInfo($credit_data['id']);
+				}
+			}
+		}
+		if ($paid) {
+			// Create invoice receipt. Update balance.
+			FinanceLog("b4 create_receipt_from_account_ids");
+			$subject = "delivery " . CommaImplode($account_line_ids);
+			Finance_Client_Accounts::create_receipt_from_account_ids( 0, 0, 0, $paid, $user->getUserId(), date('Y-m-d'), $account_line_ids );
+
+			return true;
+		}
+		return false;
+	}
+
+	function RemoveRawInfo($row_id)
+	{
+		global $wpdb;
+		FinanceLog(__FUNCTION__ . ": $row_id");
+		FinanceLog($row_id, __FUNCTION__);
+		$table_name = "im_payment_info";
+		$card_four_digit   = $wpdb->get_var("SELECT card_four_digit FROM $table_name WHERE id = ".$row_id." ");
+		$dig4 = Finance_Payments::setCreditCard($card_four_digit);
+		SqlQuery("UPDATE $table_name SET card_number =  '".$dig4."' WHERE id = ".$row_id." ");
+		return true;
 	}
 }
-//delete_option('woocommerce_checkout_privacy_policy_text');
+}

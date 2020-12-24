@@ -56,27 +56,30 @@ class Flavor_Mission {
 	static function update_missions_from_master()
 	{
 		$multi = Core_Db_MultiSite::getInstance();
-		if (! $multi->isMaster()){
-			$url = Flavor::getPost() . "?operation=sync_data_missions";
-//			print $multi->getSiteURL($multi->getMaster()) . $url;
-
-			$html = $multi->Execute( $url, $multi->getMaster() );
-
-			if (! $html) print "Can't get data from master<br/>";
-
-			if ( strlen( $html ) > 100 ) {
-				//printbr($html);
-				$multi->UpdateTable( $html, "missions", "id" );
-			} else {
-				print "short response. Operation aborted <br/>";
-				print "url = $url";
-				print $html;
-
-				return;
-			}
-
-			$multi->UpdateFromRemote( "missions", "id" );
+		if (! $multi->isMaster()) {
+			$multi->UpdateFromRemote( "missions", "id", 0, "date >= curdate()" );
 		}
+//			$url = Flavor::getPost() . "?operation=sync_data_missions";
+////			print $multi->getSiteURL($multi->getMaster()) . $url;
+//
+//			$html = $multi->Execute( $url, $multi->getMaster() );
+//
+//			if (! $html) print "Can't get data from master<br/>";
+//
+//			if ( strlen( $html ) > 100 ) {
+//				//printbr($html);
+//				$multi->UpdateTable( $html, "missions", "id" );
+//			} else {
+//				print "short response. Operation aborted <br/>";
+//				print "url = $url";
+//				print $html;
+//
+//				return;
+//			}
+//
+//			dd("he?");
+//			$multi->UpdateFromRemote( "missions", "id", 0, "date >= curdate()" );
+//		}
 	}
 	static function show_missions($query = null, $edit = false)
 	{

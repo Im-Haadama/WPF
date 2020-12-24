@@ -30,6 +30,8 @@ class Core_MultiSite {
 		$this->sites_array   = $sites_array;
 		$this->master_id     = $master_id;
 		$this->local_site_id = $local_site_id;
+//		print "master $master_site_id local $local_site_id<br/>";
+//		var_dump($sites_array);
 	}
 
 	/**
@@ -95,6 +97,7 @@ class Core_MultiSite {
 	}
 
 	function isMaster() {
+//		dd("master " . $this->master_id . " local " . $this->local_site_id . "<br/>");
 		if (! $this->master_id) return false;
 		return $this->master_id == $this->local_site_id;
 	}
@@ -157,6 +160,7 @@ class Core_MultiSite {
 		$glue = (( strstr( $func, "?" ) ) ? "&" : "?");
 
 		$file = $url . "/" . $func . $glue . "header=" . ( $first ? "1" : "0" );
+//		print $file;
 
 		if ( $debug ) print "Getting $file...<br/>";
 
@@ -190,6 +194,7 @@ class Core_MultiSite {
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $file);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 //		curl_setopt($ch, CURLOPT_USERPWD, "$username:$password");
 		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 //		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);

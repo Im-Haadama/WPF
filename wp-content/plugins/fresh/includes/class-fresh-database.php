@@ -140,13 +140,6 @@ order by 1;");
 
 		SqlQuery("alter table ${db_prefix}mission_types add default_price float");
 
-		SqlQuery("create table ${db_prefix}mission_types
-(
-	id int auto_increment
-		primary key,
-	mission_name varchar(20) null)
-	charset = utf8");
-
 		SqlQuery("create table im_distance
 (
 	id int auto_increment

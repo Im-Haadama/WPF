@@ -1454,7 +1454,7 @@ class Finance_Order {
 
 		$client_type = $this->getCustomerType();
 
-		// print "cty= " . $client_type . "<br/>";
+		// print "cty= " . $client_type . "<br/>"
 		foreach ( $order_items as $item ) {
 			$prod_or_var = $item['product_id'];
 			$q           = $item->get_quantity();

@@ -96,7 +96,7 @@ class Finance_Client {
 
 //	    // Try the cache
 		$id = get_user_meta( $this->user_id, 'invoice_id', 1 );
-		MyLog("get by id $id");
+		FinanceLog("get by id $id");
 		if ($id) {
 			$c =  $invoice->GetCustomerByID($id, $name, $email);
 			if ($c) return $c;
@@ -104,7 +104,7 @@ class Finance_Client {
 
 		// Thoose should be redudant as GetCustomerByID tries also with name and email.
 		// Try to get by email.
-		MyLog("get by email $email");
+		FinanceLog("get by email $email");
 		$c = $invoice->GetCustomerByEmail($email);
 		if (is_array($c)) foreach ($c as $customer) {
 			if ($customer->Email == $email) return $customer;
@@ -112,12 +112,13 @@ class Finance_Client {
 		if ($c) return $c;
 
 		// Try to get by name (is unique in invoice4u);
-		MyLog("Get by name");
+		FinanceLog("Get by name $name");
 		$c = $invoice->GetCustomerByName($name);
 		if ($c) return $c;
 
+		FinanceLog("Not found");
 		if (! $create) return null;
-		MyLog("Creating user " . $this->getName() . " " . $this->get_customer_email() . " ". $this->get_phone_number());
+		FinanceLog("Creating user " . $this->getName() . " " . $this->get_customer_email() . " ". $this->get_phone_number());
 
 		// Create the user.
 		if ($id = $invoice->CreateUser($this->getName(), $this->get_customer_email(), $this->get_phone_number())){

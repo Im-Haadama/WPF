@@ -168,8 +168,6 @@ class FVideo {
 		$loader->AddAction('init', $this, 'register_fvideo');
 		$loader->AddAction( 'add_meta_boxes', $this, 'fvideo_box') ;
 		$loader->AddACtion( 'save_post', $this, 'fvideo_box_save' );
-
-		if ((get_user_id() == 1) and defined("DEBUG_USER")) wp_set_current_user(DEBUG_USER);
 	}
 
 	/**
@@ -238,7 +236,6 @@ class FVideo {
 		$this->shortcodes->do_init();
 
 		self::addRoles();
-//		if (get_user_id() == 1) wp_set_current_user(2); // e-fVideo
 	}
 
 	function addRoles()
@@ -381,8 +378,7 @@ class FVideo {
 	}
 
 	public function run() {
-		$this->loader->run();
-
+//		$this->loader->run();
 	}
 
 	function install( $version, $force = false ) {

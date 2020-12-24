@@ -2080,7 +2080,7 @@ class Focus_Views {
 		$worker_id = GetParam( "worker_id", false, null );
 
 		$user = new Org_Worker( $user_id );
-		if ( ! in_array( $worker_id, $user->AllWorkers() ) ) {
+		if ( ! in_array( $worker_id, $user->GetAllWorkers() ) ) {
 			return "not privileged";
 		}
 
@@ -2088,7 +2088,7 @@ class Focus_Views {
 		$args = self::Args( "tasklist" );
 
 		// If no filter yet, handle the old way.
-		return self::user_work( $args, $worker_id );
+		return self::instance()->user_work( $args, "Worker's tasks", true, $user_id );
 	}
 
 	static function ProjectAddMember() {

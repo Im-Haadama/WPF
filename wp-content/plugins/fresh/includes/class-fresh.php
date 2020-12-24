@@ -196,10 +196,8 @@ class Fresh {
 		// add_action( 'init', array( $this, 'add_image_sizes' ) );
 		// add_action( 'switch_blog', array( $this, 'wpdb_table_fix' ), 0 );
 		$orders = new Fresh_Order_Management( $this->get_plugin_name(), $this->get_version() );
-		$inventory = new Fresh_Inventory( $this->get_plugin_name(), $this->get_version(), self::getPost());
 
 		$this->loader->AddAction( 'wp_enqueue_scripts', $orders, 'enqueue_scripts' );
-		$this->loader->AddAction( 'admin_enqueue_scripts', $inventory, 'admin_scripts' );
 
 		Fresh_Packing::init_hooks();
 //		Fresh_Suppliers::init_hooks();
@@ -215,7 +213,6 @@ class Fresh {
 		add_action('wp_enqueue_scripts', array($this, 'remove_add'), 2222);
 
 //		add_filter('editable_roles', 'edit_roles');
-		// if (get_user_id() == 1) wp_set_current_user(474);
 	}
 
 //	static function init_my_account_links( $menu_links ){
@@ -318,7 +315,7 @@ class Fresh {
 			return Fresh_Order::handle_operation($operation);
 
 		if (strstr($operation, "inv"))
-			return Fresh_Inventory::handle_operation($operation);
+			return Finance_Inventory::handle_operation($operation);
 
 		switch ($operation)
 		{
@@ -516,7 +513,7 @@ class Fresh {
 		Fresh_Basket::init();
 		$this->delivery_manager->init();
 
-		$this->enqueue_scripts();
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		Core_Importer::instance();
 
 		// Init action.
@@ -537,8 +534,6 @@ class Fresh {
 
 	public function run()
 	{
-		$this->loader->run();
-
 		// Install tables
 		self::register_activation(dirname(__FILE__) . '/class-fresh-database.php', array('Fresh_Database', 'install'));
 
@@ -628,6 +623,7 @@ class Fresh {
 	    wp_enqueue_script('orders');
 
 	    if (defined('WC_VERSION')){
+	    	if (! defineD('WC_URL')) return;
             wp_register_style( 'woocommerce_admin_menu_styles', WC_URL . '/assets/css/menu.css', array(), WC_VERSION );
             wp_register_style( 'woocommerce_admin_styles', WC_URL . '/assets/css/admin.css', array(), WC_VERSION );
 

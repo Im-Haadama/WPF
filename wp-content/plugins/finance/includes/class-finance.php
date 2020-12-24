@@ -29,6 +29,14 @@ class Finance {
 	protected $subcontract;
 	protected $salary;
 	protected $message;
+	protected $transaction_id;
+
+	/**
+	 * @return mixed
+	 */
+	public function getTransactionId() {
+		return $this->transaction_id;
+	}
 
 	/**
 	 * @return mixed
@@ -123,8 +131,6 @@ class Finance {
 	 * WooCommerce Constructor.
 	 */
 	private function __construct( $plugin_name ) {
-		Flavor::instance();
-
 		global $business_name;
 		$this->admin_notices = null;
 		$this->plugin_name = $plugin_name;
@@ -140,6 +146,9 @@ class Finance {
 		$this->clients     = new Finance_Client_Accounts();
 		$this->subcontract = new Finance_Subcontract();
 		$this->salary      = new Finance_Salary();
+
+		$inventory = new Finance_Inventory( $this->get_plugin_name(), $this->get_version(), self::getPost());
+		$this->loader->AddAction( 'admin_enqueue_scripts', $inventory, 'admin_scripts' );
 
 		$finance_actions = new Finance_Actions();
 		$finance_actions->init_hooks($this->loader);
@@ -210,15 +219,13 @@ class Finance {
 		$this->loader->AddAction("get_open_trans", $this, 'get_open_trans');
 		$this->loader->AddAction("exists_invoice", $this, 'exists_invoice');
 
-		if ((get_user_id() == 1) and defined("DEBUG_USER")) wp_set_current_user(DEBUG_USER);
-
 		$i = Core_Db_MultiSite::getInstance();
 		$i->AddTable("missions");
 		$i->AddTable("cities");
 		$i->AddTable("woocommerce_shipping_zones", "zone_id" );
 		$i->AddTable("woocommerce_shipping_zone_methods", "instance_id" );
 		$i->AddTable("woocommerce_shipping_zone_locations", "location_id" );
-
+		Core_Gem::getInstance()->AddTable( "multisite" );
 
 		Finance_Delivery::init_hooks($this->loader);
 	}
@@ -262,28 +269,10 @@ class Finance {
 
 	}
 
-	function Yaad_Connect()
-	{
-		FinanceLog(__FUNCTION__);
-		if (! $this->yaad) {
-			if ( ! defined( 'YAAD_API_KEY' ) ) {
-				$this->message = "api not defined";
+	/**
+	 * @return bool true on sucess. If failed see message.
+	 */
 
-				return false;
-			}
-			if ( ! defined( 'YAAD_TERMINAL' ) ) {
-				$this->message = "terminal not defined";
-
-				return false;
-			}
-			if ( ! defined( 'YAAD_PassP' ) ) {
-				$this->message = 'PassP not defined';
-
-				return false;
-			}
-			$this->yaad = new Finance_Yaad( YAAD_API_KEY, YAAD_TERMINAL, get_bloginfo( 'name' ), YAAD_PassP );
-		}
-	}
 	function pay_user_credit_wrap($customer_id, $amount, $payment_number)
 	{
 		FinanceLog(__FUNCTION__ . " $customer_id");
@@ -888,11 +877,12 @@ class Finance {
 
 	static function Invoice4uConnect()
 	{
-//		FinanceLog(__FUNCTION__);
-		if ($i = Finance_Invoice4u::getInstance()) return $i;
-//		FinanceLog("Connecting " . INVOICE_USER);
+		if ($i = Finance_Invoice4u::getInstance())
+			return $i;
+
 		if (defined('INVOICE_USER') and defined('INVOICE_PASSWORD'))
 			return new Finance_Invoice4u(INVOICE_USER, INVOICE_PASSWORD);
+
 		else FinanceLog("No invoice user or password");
 
 		return null;
@@ -909,7 +899,7 @@ class Finance {
 
 	function multisite_validate()
 	{
-		return Core_Db_MultiSite::getInstance()->getLocalSiteID();
+		print Core_Db_MultiSite::getInstance()->getLocalSiteID();
 	}
 
 	function credit_clear_token()
@@ -918,35 +908,9 @@ class Finance {
 		Finance_Yaad::ClearToken($client_id);
 	}
 
-	function pay_order($order_id, $credit_info)
+	static function getPost()
 	{
-		FinanceLog(__FUNCTION__ . " $order_id");
-		if (! self::Yaad_Connect()) {
-			FinanceLog($this->message);
-			$this->message = __("Payment system not available. Please contact customer support");
-			return false;
-		}
-
-		$O = new Finance_Order($order_id);
-		$user = new Finance_Client($O->getCustomerId());
-		$amount = $O->getTotal();
-		$Del = new Finance_Delivery($order_id);
-		$del_id = $Del->CreateDeliveryFromOrder($order_id, 1);
-
-//		$credit_data = SqlQuerySingleAssoc( "select * from im_payment_info where user_id = " . $user->getUserId());
-		$paid = $this->yaad->pay_user_credit($user, $credit_info, $del_id, $amount);
-		$this->message = $this->yaad->getMessage();
-
-		FinanceLog(__FUNCTION__ . " user = " . $user->getUserId() . " amount = $amount " . $user->getUserId(). " del=$del_id paid=$paid");
-
-		return false;
-//		$token = get_user_meta($user->getUserId(), 'credit_token', true);
-//
-//		if ($token) {
-//
-//			return true;
-//		}
-
+		return Flavor::getPost();
 	}
 }
 

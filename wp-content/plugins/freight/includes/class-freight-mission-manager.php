@@ -60,7 +60,7 @@ class Freight_Mission_Manager
 		add_action("mission_details", __CLASS__ . '::mission_details');
 		add_action("freight_do_add_delivery", __CLASS__ . "::do_add_delivery");
 		add_action('delivered', array(__CLASS__, "delivered_wrap"));
-		add_action('download_mission', array(__CLASS__, 'download_mission'));
+		add_action('download_mission', array($this, 'download_mission'));
 		add_action('print_mission', array($this, 'print_mission'));
 		AddAction('order_update_driver_comment', array(__CLASS__, 'order_update_driver_comment'));
 	}
@@ -82,10 +82,10 @@ class Freight_Mission_Manager
 		die(0);
 	}
 
-	static function download_mission()
+	function download_mission()
 	{
 		$id = GetParam("id", true, "");
-		$file = self::getCSV($id);
+		$file = $this->getCSV($id);
 		$date = date('Y-m-d');
 		$file_name = "mission_${id}_${date}.csv";
 
@@ -122,7 +122,7 @@ class Freight_Mission_Manager
 
 		$supplies_to_collect = array();
 
-		self::prepare_route($the_mission, $path);
+		$this->prepare_route($the_mission, $path);
 
 		if (! $path or ! count($path))
 			return;
@@ -720,16 +720,23 @@ group by pm.meta_value, p.post_status");
 
 	static function get_maps_url($mission, $path)
 	{
-		$url = "https://www.google.com/maps/dir/" . $mission->getStartAddress();
+		$maps_base = "https://www.google.com/maps/dir/";
+		$url = $maps_base . $mission->getStartAddress();
 		$dynamic_url = "https://www.google.com/maps/dir/My+Location";
-
+		$result = "";
+		$m = 1;
 		for ( $i = 0; $i < count( $path ); $i ++ ) {
-			$add = str_replace('#', '', $path[ $i ]);
+			$add = urlencode(str_replace('#', '', $path[ $i ]));
 			$url .= "/" . $add;
 			$dynamic_url .= "/" . $add;
+			if ($i % 10 == 9) {
+				$result .= Core_Html::GuiHyperlink( "Map" . $m ++, $url ) . "<br/>";
+				$url    = $maps_base . $add;
+			}
 		}
 		$url .= "/" . $mission->getEndAddress();
-		return Core_Html::GuiHyperlink( "Maps", $url ) . " " . Core_Html::GuiHyperlink("Dyn", $dynamic_url);
+		$result .= Core_Html::GuiHyperlink( "Maps" . $m++, $url ) . " " . Core_Html::GuiHyperlink("Dyn", $dynamic_url);
+		return $result;
 	}
 
 	static function save_route($missions, $path) {

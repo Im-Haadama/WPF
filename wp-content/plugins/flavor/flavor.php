@@ -42,9 +42,9 @@ function flavor() {
 //$GLOBALS['flavor'] = flavor();
 
 function run_flavor() {
-	$plugin = new Flavor("Flavor");
-
-	$plugin->run();
+$plugin = Flavor::instance();
+//
+//	$plugin->run();
 }
 
 run_flavor();
@@ -67,4 +67,3 @@ abstract class FlavorDbObjects
 	const company = 4;
 	const sender = 5; // Who can send a task to a team.
 }
-

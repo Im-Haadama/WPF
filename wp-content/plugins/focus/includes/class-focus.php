@@ -170,8 +170,6 @@ class Focus {
 
 		$focus_views = Focus_Views::instance();
 		$focus_views->init_hooks($this->loader);
-
-		if ((get_user_id() == 1) and defined("DEBUG_USER")) wp_set_current_user(DEBUG_USER);
 	}
 
 	function next_page($input)
