@@ -22,6 +22,7 @@ class Focus_Users_Management {
 			return false;
 		}
 		$u = Core_Users::create_user($email, $user_name, $password);
+        if(!$u) return null;
 
 		return Subscription_Manager::instance()->add_subscription($u, "2 Month", "Focus user", "show_tasks");
 	}

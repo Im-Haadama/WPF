@@ -76,11 +76,13 @@ class Core_Users {
 	static function create_user($email, $user_name, $password = null)
 	{
 		$u_id = wp_create_user($user_name, $password, $email);
+		if(is_integer($u_id))
+            return new Core_Users($u_id);
+		print "failed : ".$u_id->get_error_message();
+		return null;
 
 //		MyLog("setting password $password to user $u_id email $email");
 //		wp_set_password($password, $u_id) ;
-
-		return new Core_Users($u_id);
 	}
 
 	function setName($name)
