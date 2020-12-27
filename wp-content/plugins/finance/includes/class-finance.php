@@ -29,14 +29,6 @@ class Finance {
 	protected $subcontract;
 	protected $salary;
 	protected $message;
-	protected $transaction_id;
-
-	/**
-	 * @return mixed
-	 */
-	public function getTransactionId() {
-		return $this->transaction_id;
-	}
 
 	/**
 	 * @return mixed
@@ -873,19 +865,6 @@ class Finance {
 		foreach ($this->admin_notices as $notice)
 			print _e( $notice );
 		print '</div>';
-	}
-
-	static function Invoice4uConnect()
-	{
-		if ($i = Finance_Invoice4u::getInstance())
-			return $i;
-
-		if (defined('INVOICE_USER') and defined('INVOICE_PASSWORD'))
-			return new Finance_Invoice4u(INVOICE_USER, INVOICE_PASSWORD);
-
-		else FinanceLog("No invoice user or password");
-
-		return null;
 	}
 
 	function multisite_connect()

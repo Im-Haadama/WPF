@@ -124,8 +124,6 @@ class Finance_Client_Accounts
 
 	static function CreateInvoiceReceipt($cash, $bank, $check, $credit, $change, $user_id, $date, array $del_ids, $subject = null)
 	{
-		Finance::Invoice4uConnect();
-
 		$u = new Finance_Client( $user_id );
 		$c = $cash - $change;
 

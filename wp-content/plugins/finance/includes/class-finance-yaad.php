@@ -71,7 +71,7 @@ class Finance_Yaad extends Finance_Paying {
 	 *
 	 * @return array
 	 */
-	function FirstPay($credit_info, string $user_name, int $user_id, float $amount, string $subject, int $payment_number = 1)
+	function CreditPay($credit_info, string $user_name, int $user_id, float $amount, string $subject, int $payment_number = 1)
 	{
 		FinanceLog(__FUNCTION__ . " " . $credit_info['card_number'] . " $amount ");
 		// General
@@ -114,7 +114,7 @@ class Finance_Yaad extends Finance_Paying {
 		SqlInsert("yaad_transactions", $rc, array("Fild1", "Fild2", "Fild3"));
 	}
 
-	private function GetToken( $transid ) {
+	public function GetToken($transid ) {
 		if ( ! $this->signature ) {
 			return false;
 		}
@@ -190,7 +190,7 @@ class Finance_Yaad extends Finance_Paying {
 		if ($num_of_payments > 1)
 			$params["FixTash"] = $num_of_payments;
 		$params["tashType"]   = 1;
-		$params["ClientName"] = urlencode( $user_name->getName() );
+		$params["ClientName"] = urlencode( $user_name );
 //		$params['UserId']    = get_user_meta( $user_info->getUserId(), 'id_number', true );
 		$params['UserId']  = $user_id;
 	}

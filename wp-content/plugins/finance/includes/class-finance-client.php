@@ -86,13 +86,12 @@ class Finance_Client {
 	function getInvoiceUser($create = true)
 	{
 		// Invoice is alive?
-		$invoice = Finance::Invoice4uConnect();
+		$invoice = Finance_Invoice4u::getInstance();
+		if (! $invoice) return null;
 
 		$email = $this->get_customer_email();
 		$name = $this->getName();
 
-
-		if (! $invoice) return null;
 
 //	    // Try the cache
 		$id = get_user_meta( $this->user_id, 'invoice_id', 1 );

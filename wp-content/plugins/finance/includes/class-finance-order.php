@@ -9,6 +9,13 @@
 class Finance_Order {
 	private $order_id = 0;
 	private $WC_Order = null;
+
+	/**
+	 * @return null
+	 */
+	public function getWCOrder() {
+		return $this->WC_Order;
+	}
 	private $mission_id = 0;
 	private $customer_id = 0;
 	private $comments = null;
@@ -1378,7 +1385,7 @@ class Finance_Order {
 			$row = mysqli_fetch_assoc( $result );
 			//    my_log($row["min_order"]);
 
-			if ( is_numeric( $row["min_order"] ) ) {
+			if ( isset($row["min_order"]) and is_numeric( $row["min_order"] ) ) {
 				$value = $row["min_order"];
 			}
 		}
@@ -1486,5 +1493,10 @@ class Finance_Order {
 	public function getItems()
 	{
 		return $this->WC_Order->get_items();
+	}
+
+	public function update_status($status, $note)
+	{
+		return $this->WC_Order->update_status($status, $note);
 	}
 }

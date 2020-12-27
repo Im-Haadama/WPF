@@ -102,11 +102,11 @@ if (class_exists("WC_Payment_Gateway")) {
 			$_REQUEST["billing_creditcard"] = "4580000000000000";
 			$_REQUEST["billing_expdatemonth"] = "12";
 			$_REQUEST["billing_expdateyear"] = "2021";
-			$_REQUEST["billing_idnumber"] = "012680286";
+			$_REQUEST["billing_idnumber"] = "014480286";
 			$_REQUEST['save_as_token'] = 1;
 			self::process_payment(16631);
 
-			print $this->error_message;
+			print "Error: " . $this->error_message . "<br/>";
     }
 
     public function payment_fields() {
@@ -150,7 +150,7 @@ if (class_exists("WC_Payment_Gateway")) {
                 <fieldset>
                     <p class="form-row validate-required">
 						<?php
-						$card_number_field_placeholder = __( 'Card Number ', 'finance' );
+						$card_number_field_placeholder = __( '  ', 'finance' );
 						?>
                         <label><?php print __( 'Card Number', 'finance' ) . " " .
                                            substr($card_number, -4); ?></label>
@@ -241,7 +241,32 @@ if (class_exists("WC_Payment_Gateway")) {
             $bl = new Finance_Business_Logic();
             $args = [];
             $args['pay_on_checkout'] = $this->get_option('pay_on_checkout');
-            $bl->process_payment($order_id, $args);
+            $passed = $bl->process_payment($order_id, $args);
+            $this->error_message = $bl->getErrorMessage();
+
+	        if ($passed) {
+		        $order = new Finance_Order($order_id);
+
+		        $order->update_status( $this->order_status, ETranslate("Paid with E-fresh payment gateway " . date('Y-m-d')));
+
+		        wc_reduce_stock_levels( $order_id );
+		        if ( isset( $_POST[ $this->id . '-admin-note' ] ) && trim( $_POST[ $this->id . '-admin-note' ] ) != '' ) {
+			        $order->add_order_note( esc_html( $_POST[ $this->id . '-admin-note' ] ), 1 );
+		        }
+		        global $woocommerce;
+		        $woocommerce->cart->empty_cart();
+
+		        return array(
+			        'result'   => 'success',
+                    'redirect' => $this->get_return_url( $order->getWCOrder() )
+		        );
+	        } else  {
+		        FinanceLog("payment failed");
+
+		        wc_add_notice( $this->error_message, 'error' );
+
+		        return array("result"=>'fail');
+	        }
         }
 
 	/**
@@ -367,6 +392,7 @@ if (class_exists("WC_Payment_Gateway")) {
 				$token_info = self::GetToken( $transaction_id );
 				if (isset($token_info['Token'])){
 					if ($debug) print "Got token " . $token_info['Token'] . "<br/>";
+					delete_user_meta($user->getUserId(), 'credit_token');
 					add_user_meta($user->getUserId(), 'credit_token', $token_info['Token']);
 
 					self::RemoveRawInfo($credit_data['id']);
