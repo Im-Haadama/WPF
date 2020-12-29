@@ -21,7 +21,7 @@
  * @subpackage Focus/includes
  * @author     Devio Digital <deviodigital@gmail.com>
  */
-class Core_Loader {
+class Core_Hook_Handler {
 
 	private $debug = false;
 
@@ -56,7 +56,7 @@ class Core_Loader {
 		$this->filters = array();
 	}
 
-	public static function instance() : Core_Loader {
+	public static function instance() : Core_Hook_Handler {
 		if ( is_null( self::$_instance ) ) {
 			self::$_instance = new self( Flavor::getPost() );
 		}
@@ -113,7 +113,7 @@ class Core_Loader {
 
 	private function add( $hooks, $hook, $component, $callback, $priority, $accepted_args ) {
 
-		$hooks[] = array(
+		$hooks[$hook] = array(
 			'hook'          => $hook,
 			'component'     => $component,
 			'callback'      => $callback,
@@ -142,5 +142,13 @@ class Core_Loader {
  			// print "adding " . $hook['hook'] . " " . var_dump($hook['component']) . " " . $hook['callback'] . "<br/>";
 			add_action($hook['hook'], array( $hook['component'], $hook['callback'] ), $hook['priority'], $hook['accepted_args'] );
 		}
+	}
+
+	public function DoAction($action, $params)
+	{
+		if (! isset($this->actions[$action]))
+			print "No handler for $action";
+		else
+			do_action($action, $params);
 	}
 }

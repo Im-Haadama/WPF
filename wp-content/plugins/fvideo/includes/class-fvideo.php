@@ -124,7 +124,7 @@ class FVideo {
 			die ( "not defined" );
 		}
 		$this->auto_loader      = new Core_Autoloader( FVideo_ABSPATH );
-		$this->loader = Core_Loader::instance();
+		$this->loader = Core_Hook_Handler::instance();
 		$this->post_file   = Flavor::getPost();
 
 		$this->init_hooks($this->loader);
@@ -144,7 +144,7 @@ class FVideo {
 	 *
 	 * @since 2.3
 	 */
-	private function init_hooks(Core_loader $loader) {
+	private function init_hooks(Core_Hook_Handler $loader) {
 		// Flavor::getInstance();
 		// register_activation_hook( WC_PLUGIN_FILE, array( 'FVideo_Install', 'install' ) );
 		register_shutdown_function( array( $this, 'log_errors' ) );

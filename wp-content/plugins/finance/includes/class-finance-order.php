@@ -107,8 +107,9 @@ class Finance_Order {
 		$prods_and_quantity,
 		$delivery_instance,
 		$comments,
-		$fee
-	) {
+		$fee,
+		$delivery_info = null
+	) :?Finance_Order {
 		// Somehow functions_im.php doesn't apply.
 		remove_filter( 'woocommerce_stock_amount', 'intval' );
 		remove_filter( 'woocommerce_stock_amount', 'filter_woocommerce_stock_amount', 10 );
@@ -179,7 +180,10 @@ class Finance_Order {
 			)
 			as $key
 		) {
-			$value = get_user_meta( $user_id, $key, true );
+			if ($delivery_info and isset($delivery_info[$key]))
+				$value = $delivery_info[$key];
+			else
+				$value = get_user_meta( $user_id, $key, true );
 			$_key  = '_' . $key;
 			update_post_meta( $order_id, $_key, $value );
 		}

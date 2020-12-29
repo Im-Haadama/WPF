@@ -21,7 +21,7 @@ class Core_Gem {
 		// Do
 	}
 
-	function init_hooks(Core_Loader $loader)
+	function init_hooks(Core_Hook_Handler $loader)
 	{
 		$loader->AddAction("gem_do_import", $this, "do_import_wrap");
 		$loader->AddAction("gem_v_do_import", $this, "do_v_import_wrap");
@@ -46,7 +46,7 @@ class Core_Gem {
 		$db_table = null;
 		if (isset($args["database_table"]))	$db_table = $args["database_table"];
 
-		if (! $loader) $loader = Core_Loader::instance();
+		if (! $loader) $loader = Core_Hook_Handler::instance();
 		$loader->AddAction("gem_v_add_" . $table, $this,  "v_add_wrapper", 10, 3);
 		$loader->AddAction("gem_add_" . $db_table, $this,  "v_add_wrapper", 10, 3);
 //		AddAction("gem_v_edit_" . $table, array($class, "v_edit_wrapper"), 10, 3);
@@ -58,7 +58,7 @@ class Core_Gem {
 //		$debug = 0; //  (get_user_id() == 1);
 	//	 if (get_user_i d() == 1) print "=================================================". __CLASS__ . ":" . $table . "<br/>";
 
-		if (! $loader) $loader = Core_Loader::instance();
+		if (! $loader) $loader = Core_Hook_Handler::instance();
 		// New Row
 		$loader->AddAction( "gem_add_" . $table, $this, 'add_wrapper', 10, 1);
 
@@ -236,7 +236,7 @@ class Core_Gem {
 		$instance = self::getInstance();
 		$v_args = array("database_table" => "conversion", "query_part" => "from ${db_prefix}conversion where table_name = '$table'", "page_number"=>-1);
 
-		$instance->AddVirtualTable("conversion", $v_args, Core_loader::instance());
+		$instance->AddVirtualTable("conversion", $v_args, Core_Hook_Handler::instance());
 		$args = [];
 		$args["id"] = "id";
 		$args["post_file"] = $post_file;
@@ -532,7 +532,8 @@ class Core_Gem {
 		if (! isset($args["title"])) $title = "content of table " . $table_name;
 		$post_file = GetArg($args, "post_file", null);
 		$table_prefix = GetTablePrefix($table_name);
-		$only_active = GetArg($args, "only_active", 2);
+		$only_active = GetArg($args, "only_active", 1);
+//		print "oa=$only_active<br/>";
 
 		if (! isset($args["events"])) $args["events"] = 'onchange="update_table_field(\'' . $post_file . '\', \'' . $table_name . '\', \'%d\', \'%s\', check_result)"';
 		$sql = GetArg($args, "sql", null);

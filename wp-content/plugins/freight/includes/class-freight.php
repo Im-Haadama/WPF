@@ -29,7 +29,7 @@ class Freight {
 	 *
 	 * @var string
 	 */
-	public $version = '1.1';
+	public $version = '1.3';
 
 	private $plugin_name;
 
@@ -111,7 +111,7 @@ class Freight {
 		$this->define_constants();
 		$this->includes(); // Loads class autoloader
 		$this->auto_loader = new Core_Autoloader(FREIGHT_ABSPATH);
-		$this->loader = Core_Loader::instance();
+		$this->loader = Core_Hook_Handler::instance();
 		$this->settings = new Freight_Settings();
 		if (defined('FREIGHT_LEGACY_USER')) {
 			$this->legacy = new Freight_Legacy(FREIGHT_LEGACY_USER);
@@ -126,12 +126,12 @@ class Freight {
 	/**
 	 * Hook into actions and filters.
 	 *
-	 * @param Core_Loader $loader
+	 * @param Core_Hook_Handler $loader
 	 *
 	 * @throws Exception
 	 * @since 2.3
 	 */
-	private function init_hooks(Core_Loader $loader) {
+	private function init_hooks(Core_Hook_Handler $loader) {
 	    // Admin scripts and styles. Todo: Check if needed.
 		add_action('admin_enqueue_scripts', array($this, 'admin_scripts'));
 
@@ -145,13 +145,26 @@ class Freight {
 		// Admin menu
 		add_action('admin_menu', array($this->settings, 'admin_menu'));
 
+		$loader->AddFilter("mission_actions", $this);
+		$loader->AddAction("mission_dispatch", $this);
+
 		// get local deliveries
 
 		GetSqlConn(ReconnectDb());
 		Freight_Methods::init($loader);
-		Freight_Mission_Manager::instance()->init_hooks();
+		Freight_Mission_Manager::instance()->init_hooks($loader);
 	}
 
+	function mission_dispatch_wrap($id)
+	{
+		print Freight_Mission_Manager::instance()->dispatcher($id, true);
+	}
+	function mission_actions($actions)
+	{
+		$actions['Dispatch'] = Core_Html::GuiHyperlink("Dispatch", AddToUrl("operation", "mission_dispatch&id=%d"));
+
+		return $actions;
+	}
 	/**
 	 * Ensures fatal errors are logged so they can be picked up in the status report.
 	 *
@@ -490,7 +503,7 @@ class Freight {
 	    $file = FLAVOR_INCLUDES_URL . 'core/gui/client_tools.js';
 	    wp_enqueue_script( 'client_tools', $file, null, $this->version, false );
 
-        $file = FREIGHT_INCLUDES_URL . 'js/admin.js';
+        $file = FREIGHT_INCLUDES_URL . 'js/admin.js?v=' . $this->version;
 	    wp_register_script( 'freight_admin', $file);
 	    wp_enqueue_script('freight_admin');
 
@@ -514,4 +527,10 @@ class Freight {
 	{
 		new Freight_Settings();
 	}
+}
+
+function FreightLog($message, $print = false)
+{
+	if ($print) print $message;
+	MyLog($message, '', 'freight.log');
 }

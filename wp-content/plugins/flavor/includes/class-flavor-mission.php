@@ -25,7 +25,14 @@ class Flavor_Mission {
 
 	static function missions()
 	{
-		if ($id = GetParam("id")) {
+		$id = GetParam("id");
+		if ($operation = GetParam("operation", false, null))
+		{
+			Core_Hook_Handler::instance()->DoAction($operation, $id);
+			return;
+		}
+
+		if ($id) {
 			print self::mission($id);
 			return;
 		}
@@ -113,7 +120,7 @@ class Flavor_Mission {
 		$args["hide_cols"] = array("zones_times"=>1);
 //		$args["class"] = "sortable";
 //		$args["selectors"] = array("mission_type" => __CLASS__ . "::gui_select_mission_type");
-		$args["actions"] = array("Dispatch" => Core_Html::GuiHyperlink("Dispatch", AddToUrl("operation", "dispatch&id=%d")));
+		$args["actions"] = apply_filters("mission_actions", array());
 		$result .= Core_Gem::GemTable("missions", $args);
 
 		return $result;
@@ -186,7 +193,13 @@ class Flavor_Mission {
 
 	static function mission($id)
 	{
-		if (GetParam("operation", false) == "dispatch") return Freight_Mission_Manager::instance()->dispatcher($id, true);
+		dd($id);
+		if (GetParam("operation", false) == "dispatch") {
+			print "doing";
+			do_action("mission_dispatch", $id);
+			print "done";
+			return;
+		}
 
 		$args = array("post_file" => Flavor::getPost());
 		$result = Core_Html::GuiHeader(1, "Mission $id");

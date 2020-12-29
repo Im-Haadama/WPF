@@ -98,7 +98,7 @@ class Finance_Salary {
 					return;
 				}
 
-				$args["sql"]           = "select id, user_id, project_id from im_working_rates ";
+				$args["sql"]           = "select id, user_id, project_id from im_working_rates where is_active = 1";
 				$args["id_field"]      = "id";
 				$args["links"]         = array( "id" => self::get_link( "working_rates", "%s" ) );
 				$args["selectors"]     = array(

@@ -10,7 +10,6 @@ abstract class Core_Logger_Severity
 }
 
 $a = new Core_Logger('aaa', 'file', 'logger.log');
-$a->info("test");
 
 class Core_Logger
 {

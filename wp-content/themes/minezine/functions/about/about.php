@@ -143,7 +143,7 @@ function minezine_admin_css() { ?>
 
 <?php }
 function minezine_add_admin() {
-	add_theme_page( __( 'About MineZine' , 'minezine' ), __( 'About MineZine' , 'minezine' ), 'edit_theme_options', 'about.php', 'minezine_admin', '', '1' );
+//	add_theme_page( __( 'About MineZine' , 'minezine' ), __( 'About MineZine' , 'minezine' ), 'edit_theme_options', 'about.php', 'minezine_admin', '1' );
 }
 
 function minezine_admin() {

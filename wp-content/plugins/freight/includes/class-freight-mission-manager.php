@@ -1,4 +1,11 @@
 <?php
+/*
+ * Copyright (c) 2020. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+ * Morbi non lorem porttitor neque feugiat blandit. Ut vitae ipsum eget quam lacinia accumsan.
+ * Etiam sed turpis ac ipsum condimentum fringilla. Maecenas magna.
+ * Proin dapibus sapien vel ante. Aliquam erat volutpat. Pellentesque sagittis ligula eget metus.
+ * Vestibulum commodo. Ut rhoncus gravida arcu.
+ */
 
 abstract class OrderTableFields
 {
@@ -52,7 +59,7 @@ class Freight_Mission_Manager
 		return self::$_instance;
 	}
 
-	function init_hooks()
+	function init_hooks(Core_Hook_Handler $loader)
 	{
 //		print debug_trace(10); print "---------------------<br/>";
 		add_action("order_save_pri", __CLASS__ . '::order_save_pri');
@@ -63,6 +70,52 @@ class Freight_Mission_Manager
 		add_action('download_mission', array($this, 'download_mission'));
 		add_action('print_mission', array($this, 'print_mission'));
 		AddAction('order_update_driver_comment', array(__CLASS__, 'order_update_driver_comment'));
+		$loader->AddAction("freight_do_import", $this);
+	}
+
+	function freight_do_import_wrap($mission_id)
+	{
+		if (! isset($_FILES["fileToUpload"]["tmp_name"])) {
+			print "No file selected";
+
+			return;
+		}
+
+		$file_name = $_FILES["fileToUpload"]["tmp_name"];
+
+		$file = fopen( $file_name, "r" );
+		$header = fgetcsv( $file ); // Skip header.
+		$customer = new Finance_Client(1);
+		$zone = $customer->getZone();
+		$the_shipping = null;
+		foreach ($zone->get_shipping_methods(true) as $shipping_method) {
+			// Take the first option.
+			$the_shipping = $shipping_method;
+			break;
+		}
+		while ($line = fgetcsv( $file ))
+		{
+			$order_id = $line[0];
+			$client_name = $line[1];
+			$address1 = $line[2];
+			$address2 = $line[3];
+			$city = $line[4];
+			$comments = $line[5];
+			$phone = $line[6];
+
+			$delivery_info = array(
+			'shipping_first_name' => $client_name,
+				'shipping_last_name' => '',
+				'shipping_address_1' => $address1,
+				'shipping_address_2'=> $address2,
+				'shipping_city'=>$city,
+				'shipping_postcode'=>'',
+				'billing_phone'=>$phone
+			);
+
+			$O = Finance_Order::CreateOrder(1, $mission_id, null, $the_shipping, $comments, 10, $delivery_info);
+			print "Created order  " . $O->GetID() . " client $client_name<br/>";
+		}
 	}
 
 	function print_mission()
@@ -736,6 +789,8 @@ group by pm.meta_value, p.post_status");
 		}
 		$url .= "/" . $mission->getEndAddress();
 		$result .= Core_Html::GuiHyperlink( "Maps" . $m++, $url ) . " " . Core_Html::GuiHyperlink("Dyn", $dynamic_url);
+		$result .= Core_Html::GuiButton("btn_import", "Import", "freight_import('" . GetUrl() . "', import_div)");
+		$result .= Core_Html::GuiDiv("import_div");
 		return $result;
 	}
 

@@ -12,7 +12,6 @@ abstract class TransView {
 class Finance_Client_Views {
 	function init_hooks($loader)
 	{
-		$loader->AddAction("get_client_open_account", $this);
 	}
 
 	static function show_trans( $customer_id = 0, $view = TransView::default, $args =null )
@@ -106,7 +105,7 @@ class Finance_Client_Views {
 		$include_zero = GetParam( "include_zero", false, false );
 
 		// Connect to invoice.
-		Finance::Invoice4uConnect();
+		Finance_Business_Logic::Invoice4uConnect();
 		if ( $client_id ) {
 			print self::ClientAccount( $client_id );
 		} else {
@@ -117,7 +116,7 @@ class Finance_Client_Views {
 	static function ClientAccount( $customer_id ) {
 		$result = "";
 		try {
-			$invoice = Finance::Invoice4uConnect();
+			$invoice = Finance_Business_Logic::Invoice4uConnect();
 		} catch ( Exception $e ) {
 			$invoice = null;
 		}
@@ -234,7 +233,7 @@ class Finance_Client_Views {
 
 	static function AllClients( $include_zero = false ) {
 		$output = "<center><h1>יתרת לקוחות לתשלום</h1></center>";
-		if (! Finance::Invoice4uConnect()) {
+		if (! Finance_Business_Logic::Invoice4uConnect()) {
 			$output .= "תקלה במנוי. יש ליצור קשר עם תמיכה של invoice4u. " . Core_Html::GuiHyperlink("תמיכה", "http://messenger.providesupport.com/messenger/invoice4u.html");
 		}
 

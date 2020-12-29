@@ -148,6 +148,11 @@ function execute_url(url, finish_action, obj) {
 
             else report_error(xhp.response);
         }
+        if (xhp.readyState == 4 && xhp.status == 500)  // Request finished
+        {
+            alert("Server error. Contact support");
+            return false;
+        }
     }
     xhp.open("GET", url, true);
     xhp.send();
@@ -186,8 +191,8 @@ function check_result(xmlhttp)
 
 function report_error(response)
 {
-    if (response.indexOf("failed") !== -1 ||
-        (response.indexOf("Error") !== -1)){
+    if (response.toLowerCase().indexOf("failed:") !== -1 ||
+        (response.toLowerCase().indexOf("error:") !== -1)){
         alert (response);
         return true;
     }

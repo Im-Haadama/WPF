@@ -797,7 +797,7 @@ class Finance_Delivery
 	{
 		global $theorder;
 
-		switch ($theorder->status)
+		switch ($theorder->get_status())
 		{
 			case 'on-hold':
 				break;
@@ -807,7 +807,7 @@ class Finance_Delivery
 					                                                           "order_id" => $theorder->get_id())));
 				break;
 			default:
-				print $theorder->status;
+				print $theorder->get_status();
 		}
 	}
 

@@ -55,7 +55,6 @@ function save_paths()
     alert(params);
 }
 
-
 function update_shipment_instance(post_file, id)
 {
     execute_url(post_file + "?operation=update_shipment_instance&id=" + id, fail_message);
@@ -131,4 +130,15 @@ function order_update_driver_comment(post_file, order_id)
     let comments = get_value_by_name("comments_" + order_id);
     let url = post_file + '?operation=order_update_driver_comment&order_id=' + order_id + '&comments=' + encodeURI(comments);
     execute_url(url, fail_message1);
+}
+
+function freight_import(post_file, div)
+{
+    let action = add_param_to_url(post_file, 'operation', 'freight_do_import');
+    // execute_url(action, show_response, div);
+    div.innerHTML = '<h1>Import deliveries</h1>' +
+        '<form action="' + action + '" name="import_csv" method="post" enctype="multipart/form-data">Import from csv file' +
+        '<input type="file" name="fileToUpload" id="fileToUpload">' +
+        '<input type="submit" value="טען" name="submit">';
+
 }

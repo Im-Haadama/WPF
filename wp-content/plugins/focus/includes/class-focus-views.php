@@ -2,7 +2,7 @@
 
 class Focus_Views {
 	private $result_count;
-	function init_hooks( Core_Loader &$loader ) {
+	function init_hooks( Core_Hook_Handler &$loader ) {
 		$loader->AddFilter( 'gem_next_page_tasklist', $this );
 		$loader->AddFilter( 'gem_next_page_projects', $this );
 		$loader->AddFilter( 'search_by_text', $this, 'search_by_text_wrap' );

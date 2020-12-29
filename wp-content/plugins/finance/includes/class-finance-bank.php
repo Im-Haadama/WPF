@@ -70,7 +70,7 @@ class Finance_Bank
 //		AddAction( "finance_show_bank_import", array( $this, "show_bank_import" ) );
 //		AddAction( "finance_do_import", array( $this, 'do_bank_import' ) );
 
-		AddAction( "bank_show_create_invoice_receipt", array( $this, 'bank_create_invoice_receipt' ) );
+		AddAction( "bank_show_create_invoice_receipt", array( $this, 'bank_show_create_invoice_receipt' ) );
 		AddAction( "bank_show_create_receipt", array( $this, 'bank_show_create_receipt' ) );
 		AddAction( "bank_create_pay", array( $this, 'bank_payments' ) );
 		AddAction("finance_get_transaction_amount", array($this, 'get_transaction_amount'));
@@ -90,7 +90,7 @@ class Finance_Bank
 	function bank_show_create_invoice_receipt()
 	{
 		$id = GetParam( "id" );
-		return $this->show_create_invoice_receipt($id);
+		print $this->show_create_invoice_receipt($id);
 	}
 
 	function bank_show_create_receipt()
@@ -496,10 +496,10 @@ class Finance_Bank
 		$multi_site = Core_Db_MultiSite::getInstance();
 		$url = Finance::getPostFile() . "?operation=get_client_open_account";
 		$result = $multi_site->GetAll( $url );
-		foreach ($multi_site->getHttpCodes() as $side_id => $code){
+		foreach ($multi_site->getHttpCodes() as $site_id => $code){
 			if ($code != 200) {
-				$output .= "Can't get result from " . $multi_site->getSiteName($side_id) . " error: $code <br/>";
-				if (get_user_id()== 1) $output .= $url . "<br/>";
+				FinanceLog("Can't get result from " . $multi_site->getSiteName($site_id) . " error: $code");
+				if (get_user_id()== 1) $output .= Core_Html::GuiHyperlink($multi_site->getSiteName($site_id), $multi_site->getSiteURL($site_id) . $url) . " ";
 			}
 		}
 		$values  = Core_Html::html2array( $result );
@@ -642,7 +642,7 @@ class Finance_Bank
 	{
 		$id = $row['id'];
 		if (($row['receipt'] == '') and ($row['in_amount'] > 0))
-			$row['receipt'] = Core_Html::GuiHyperlink(__("Invoice-Receipt"), AddToUrl(array("operation" => "bank_show_create_invoice", "id" => $id))) . " ".
+			$row['receipt'] = Core_Html::GuiHyperlink(__("Invoice-Receipt"), AddToUrl(array("operation" => "bank_show_create_invoice_receipt", "id" => $id))) . " ".
 			                  Core_Html::GuiHyperlink(__("Receipt"), AddToUrl(array("operation" => "bank_show_create_receipt", "id" => $id)));
 
 		if (($row['receipt'] == '') and ($row['out_amount'] > 0))
@@ -655,7 +655,7 @@ class Finance_Bank
 	function show_create_invoice_receipt($id)
 	{
 		$b = Finance_Bank_Transaction::createFromDB( $id );
-		$result = "Creating invoice for bank transaction";
+		$result = ""; // "Creating invoice for bank transaction";
 		$result .= Core_Html::GuiHeader( 1, "הפקת חשבונית קבלה להפקדה מבנק " );
 
 		$result .= Core_Html::GuiHeader( 2, "פרטי העברה" );
@@ -664,7 +664,6 @@ class Finance_Bank
 				array( "סכום", Core_Html::gui_div( "bank", $b->getInAmount() ) ),
 				array( "מזהה", Core_Html::gui_div( "bank_id", $id ) ),
 				array( "פרטי התנועה", Core_Html::gui_div( "bank_id", $b->getClientName() ) )
-
 			)
 		);
 
@@ -687,7 +686,6 @@ class Finance_Bank
 //		$result .= gui_table( , "payment_table", true, true, $sums, "", "payment_table" );
 
 		return $result;
-
 	}
 
 	function show_create_receipt($id)
@@ -794,28 +792,29 @@ class Finance_Bank
 		// $msg = $bank . " " . $date . " " . $change . " " . CommaImplode($ids) . " " . $site_id . " " . $user_id . "<br/>";
 		$debug = false;
 
-		$command = Finance::getPostFile() . "?operation=create_receipt&row_ids=" . $ids .
+		$command = Finance::getPostFile() . "?operation=create_invoice_receipt&row_ids=" . $ids .
 		           "&user_id=" . $user_id . "&bank=" . $bank_amount . "&date=" . $date .
 		           "&change=" . $change;
 		$result  = $this->multi_site->Run( $command, $site_id, true, $debug );
 
-		if ($this->multi_site->getHttpCode($site_id) != 200) {
+		if (($code = $this->multi_site->getHttpCode($site_id)) != 200) {
 			FinanceLog("can't create");
 			FinanceLog("getting $command, status: " . $this->multi_site->getHttpCode($site_id));
+			print "failed: error code - " . $code;
 			return false;
 		}
 
 		if ( strstr( $result, "כבר" ) ) {
 			FinanceLog("already paid");
-			die( "already paid" );
+			die( "failed: already paid" );
 		}
 		if ( strlen( $result ) < 2 ) {
 			FinanceLog("Bad response for $command: $result");
-			die( "bad response" );
+			die( "failed: bad response" );
 		}
 		if ( strlen( $result ) > 10 ) {
 			FinanceLog("Bad response for $command: $result");
-			die( $result );
+			die( "failed: " . $result );
 		}
 
 		FinanceLog(__FUNCTION__ . " $result");
@@ -839,8 +838,7 @@ class Finance_Bank
 		$debug = false;
 
 		$command = Finance::getPostFile() . "?operation=create_receipt" .
-		           "&user_id=" . $user_id . "&bank=" . $bank_amount . "&date=" . $date .
-		           "&change=" . $change;
+		           "&user_id=" . $user_id . "&bank=" . $bank_amount . "&date=" . $date;
 		$result  = $this->multi_site->Run( $command, $site_id, true, $debug );
 
 		if ($this->multi_site->getHttpCode($site_id) != 200) {

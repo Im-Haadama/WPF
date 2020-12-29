@@ -111,9 +111,9 @@ class Fresh {
 		$this->plugin_name = $plugin_name;
 		$this->define_constants();
 		$this->includes(); // Loads class autoloader
-		$this->loader = Core_Loader::instance();
+		$this->loader = Core_Hook_Handler::instance();
 		$this->auto_loader = new Core_Autoloader(FRESH_ABSPATH);
-		$this->loader = Core_Loader::instance();
+		$this->loader = Core_Hook_Handler::instance();
 
 		$this->init_hooks($this->loader);
 

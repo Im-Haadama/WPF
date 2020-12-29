@@ -25,15 +25,22 @@ class Finance_Client_Accounts
 		}
 	}
 
-	public function init_hooks()
+	public function init_hooks($loader)
 	{
+		$loader->AddAction("get_client_open_account", $this);
+
 	}
 
 	function get_client_open_account()
 	{
+		print "AAA";
 		if (! TableExists("client_accounts")) return "";
-		if (! $this->multisite)
-			return "multisite not configured";
+		if (! $this->multisite) {
+			print "failed: multisite not configured";
+
+			return false;
+		}
+
 		$sql = "select " . $this->multisite->LocalSiteId() . ", client_id, client_displayname(client_id), round(sum(transaction_amount),2) as total\n"
 		       . "from im_client_accounts\n"
 		       . "group by 2\n"
@@ -64,6 +71,7 @@ class Finance_Client_Accounts
 	 */
 	static function create_receipt_from_account_ids( $cash, $bank, $check, $credit, $user_id, $date, $row_ids )
 	{
+		Finance_Business_Logic::Invoice4uConnect();
 		FinanceLog(__FUNCTION__ . "cash: $cash bank: $bank check: $check credit $credit user $user_id date $date rows: " . StringVar($row_ids));
 		if ( ! $date ) $date = date( 'Y-m-d' );
 
@@ -155,7 +163,7 @@ class Finance_Client_Accounts
 
 	private static function CreateInvoice($user_id, $date, $del_ids)
 	{
-		Finance::Invoice4uConnect();
+		Finance_Business_Logic::Invoice4uConnect();
 
 		$u = new Finance_Client( $user_id );
 
@@ -326,7 +334,7 @@ class Finance_Client_Accounts
 			throw new Exception( "Bad customer id" . __CLASS__);
 
 //		$invoice = Finance_Invoice4u::getInstance();
-		$invoice = Finance::Invoice4uConnect();
+		$invoice = Finance_Business_Logic::Invoice4uConnect();
 
 		if (! $invoice) {
 			print "No connection to invoice. Connect first";

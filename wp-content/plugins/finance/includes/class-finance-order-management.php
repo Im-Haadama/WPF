@@ -11,7 +11,7 @@ class Finance_Order_Management {
 		return self::$_instance;
 	}
 
-	public function init_hooks(Core_Loader $loader) {
+	public function init_hooks(Core_Hook_Handler $loader) {
 		add_filter('order_complete', array($this, 'order_complete_wrap'));
 		add_filter('woocommerce_admin_order_actions', array(__CLASS__, 'add_order_action'), 10, 2);
 		// Set Here the WooCommerce icon for your action button
@@ -30,7 +30,7 @@ class Finance_Order_Management {
 	static public function add_order_action($actions, WC_Order $order)
 	{
 		$O = new Finance_Order($order->get_id());
-		switch ($order->status)
+		switch ($order->get_status())
 		{
 			case "processing":
 				if (! $O->getShippingFee())

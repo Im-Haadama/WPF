@@ -132,7 +132,7 @@ class Finance {
 			die ( "not defined" );
 		}
 		$this->auto_loader      = new Core_Autoloader( FINANCE_ABSPATH );
-		$this->loader = Core_Loader::instance();
+		$this->loader = Core_Hook_Handler::instance();
 		$this->post_file   = Flavor::getPost();
 		$this->yaad        = null;
 		$this->clients     = new Finance_Client_Accounts();
@@ -162,7 +162,7 @@ class Finance {
 	 *
 	 * @since 2.3
 	 */
-	private function init_hooks(Core_loader $loader) {
+	private function init_hooks(Core_Hook_Handler $loader) {
 		// Flavor::getInstance();
 		// register_activation_hook( WC_PLUGIN_FILE, array( 'Finance_Install', 'install' ) );
 		register_shutdown_function( array( $this, 'log_errors' ) );
@@ -195,7 +195,7 @@ class Finance {
 		AddAction('finance_get_open_site_invoices', array($this, 'get_open_site_invoices'));
 
 		if ( $this->yaad ) $this->yaad->init_hooks();
-		if ( $this->clients ) $this->clients->init_hooks();
+		if ( $this->clients ) $this->clients->init_hooks($loader);
 
 		Finance_Order_Management::instance()->init_hooks($this->loader);
 

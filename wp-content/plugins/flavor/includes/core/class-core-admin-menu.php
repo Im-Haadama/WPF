@@ -47,10 +47,10 @@ class Core_Admin_Menu {
 
 	public function AddSubMenu($parent, $capability, $page)
 	{
-		if (! defined('add_submenu_page')) {
-//			print "add_submenu_page not defined";
-//			print debug_trace(10);
-//			die();
+		if (! function_exists('add_submenu_page')) {
+			print "add_submenu_page not defined";
+			print debug_trace(10);
+			die();
 
 			return;
 		}

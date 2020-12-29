@@ -371,7 +371,7 @@ class Focus {
 
 	public function init()
 	{
-		$this->loader = Core_Loader::instance();
+		$this->loader = Core_Hook_Handler::instance();
 		$this->auto_loader = new Core_Autoloader(FOCUS_ABSPATH);
 
 		$this->loader->AddAction( 'init', Core_Shortcodes::instance(), 'init' );

@@ -52,7 +52,7 @@ class Freight_Legacy {
 	{
 		$debug = 0;
 		if ($debug) MyLog(__FUNCTION__);
-		$invoice = Finance::Invoice4uConnect();
+		$invoice = Finance_Business_Logic::Invoice4uConnect();
 
 		if ( !$invoice or is_null( $invoice->token ) ) return false;
 

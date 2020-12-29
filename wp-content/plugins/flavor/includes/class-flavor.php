@@ -1,9 +1,5 @@
 <?php
 
-//ini_set('display_errors', 1);
-//ini_set('display_startup_errors', 1);
-//error_reporting(E_ALL);
-
 /**
  * Class Flavor
  */
@@ -125,7 +121,7 @@ class Flavor {
 		$this->define_constants();
 		$this->includes(); // Loads class autoloader
 		$this->auto_loader = new Core_Autoloader(FLAVOR_ABSPATH);
-		$this->loader = Core_Loader::instance();
+		$this->loader = Core_Hook_Handler::instance();
 		$this->init_hooks();
 
 //		if (get_user_id() == 1)
