@@ -598,8 +598,9 @@ class Finance_Order {
 			}
 
 			if (! $d->getId()) {
-				$message = "no delivery id";
-				return false;
+//				$message = "failed: no delivery id";
+				add_post_meta($this->order_id, "delivered", 1);
+				return true;
 			}
 		}
 
@@ -1019,6 +1020,7 @@ class Finance_Order {
 		$receiver_name = GetMetaField( $this->order_id, '_shipping_first_name' ) . " " .
 		                 GetMetaField( $this->order_id, '_shipping_last_name' );
 		$shipping2     = GetMetaField( $this->order_id, '_shipping_address_2' );
+		$biiling_phone = GetMetaField($this->order_id, '_billing_phone');
 
 		array_push( $fields, $ref );
 
@@ -1032,7 +1034,8 @@ class Finance_Order {
 
 		array_push( $fields, $shipping2 );
 
-		array_push( $fields, get_user_meta( $client_id, 'billing_phone', true ) );
+		// get_user_meta( $client_id, 'billing_phone', true )
+		array_push( $fields, $biiling_phone );
 		$payment_method = $client->get_payment_method_name( );
 		if ( $payment_method <> "מזומן" and $payment_method <> "המחאה" ) $payment_method = "";
 		array_push( $fields, $payment_method );

@@ -159,6 +159,7 @@ class Freight {
 	{
 		print Freight_Mission_Manager::instance()->dispatcher($id, true);
 	}
+
 	function mission_actions($actions)
 	{
 		$actions['Dispatch'] = Core_Html::GuiHyperlink("Dispatch", AddToUrl("operation", "mission_dispatch&id=%d"));

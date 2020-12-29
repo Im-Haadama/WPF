@@ -961,6 +961,7 @@ group by pm.meta_value, p.post_status");
 			$order_user = $order[1];
 			if ( $debug ) print "order " . $order_id . "<br/>";
 
+			if (get_post_meta($order_id, "delivered")) continue;
 			if ( ! $is_group ) {
 				$data .= $o->PrintHtml( $selectable );
 				continue;

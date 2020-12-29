@@ -75,7 +75,7 @@ class Core_MultiSite {
 	public function getSiteName( $site_id ) {
 		if (isset($this->sites_array[ $site_id ][ Core_Multisite_Fields::site_name_idx ]))
 			return $this->sites_array[ $site_id ][ Core_Multisite_Fields::site_name_idx ];
-		die ("invalid site_id");
+		die ("invalid site_id: $site_id");
 	}
 
 	public function getSiteURL( $site_id ) {
