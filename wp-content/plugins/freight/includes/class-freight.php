@@ -29,7 +29,7 @@ class Freight {
 	 *
 	 * @var string
 	 */
-	public $version = '1.3';
+	public $version = '1.4';
 
 	private $plugin_name;
 
@@ -504,8 +504,8 @@ class Freight {
 	    $file = FLAVOR_INCLUDES_URL . 'core/gui/client_tools.js';
 	    wp_enqueue_script( 'client_tools', $file, null, $this->version, false );
 
-        $file = FREIGHT_INCLUDES_URL . 'js/admin.js?v=' . $this->version;
-	    wp_register_script( 'freight_admin', $file);
+        $file = FREIGHT_INCLUDES_URL . 'js/admin.js';
+	    wp_register_script( 'freight_admin', $file, null, $this->version, false);
 	    wp_enqueue_script('freight_admin');
 
 		$file = FREIGHT_INCLUDES_URL . 'js/legacy.js?v=1';

@@ -912,6 +912,9 @@ group by pm.meta_value, p.post_status");
 
 		$customer = new Fresh_Client($client);
 		$zone = $customer->getZone();
+		if (! $zone) {
+			return false;
+		}
 		$the_shipping = null;
 		foreach ($zone->get_shipping_methods(true) as $shipping_method) {
 			// Take the first option.
@@ -936,19 +939,14 @@ group by pm.meta_value, p.post_status");
 
 	static function print_deliveries( $mission_id, $selectable = false, $debug = false ) {
 		$data = "";
-		$query = "id in (select post_id from wp_postmeta " .
-		         " WHERE meta_key = 'mission_id' " .
-		         " AND meta_value = " . $mission_id . ") ";
-
 		$sql  = 'SELECT posts.id, order_user(posts.id) '
 		        . ' FROM `wp_posts` posts'
-		        . ' WHERE ' . $query;
-//
+		        . ' WHERE ' .
+		        " `post_status` in ('wc-awaiting-shipment', 'wc-processing') and " .
+		        " id in (select post_id from wp_postmeta " .
+		        " WHERE meta_key = 'mission_id' " .
+		        " AND meta_value = " . $mission_id . ") ";
 		$sql .= ' order by 1';
-//
-//		if ( $debug ) MyLog($sql);
-
-		$sql .= " and `post_status` in ('wc-awaiting-shipment', 'wc-processing')";
 
 		$orders    = SqlQuery( $sql );
 

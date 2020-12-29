@@ -122,7 +122,7 @@ class Freight_Legacy {
 			$result = "";
 			$result .=  Core_Html::GuiHeader( 1, "משלוחים לביצוע" );
 // $sql = "select post_id from wp_posts where post_status = 'wc-
-			$result .=  Freight_Mission_Manager::delivery_table_header();
+			$result .=  Flavor_Mission::delivery_table_header();
 			$result .=  $table;
 
 			$result .=  "</table>";
@@ -140,7 +140,7 @@ class Freight_Legacy {
 
 		if ( strlen( $table ) > 10 ) {
 			$result .= Core_Html::GuiHeader( 1, "משלוחים שבוצעו" );
-			$result .= Freight_Mission_Manager::delivery_table_header();
+			$result .= Flavor_Mission::delivery_table_header();
 			$result .= $table;
 			$result .= "</table>";
 		}
@@ -221,7 +221,7 @@ AND (meta_value = "legacy" or meta_value = 1)';
 		// print "q= " . $query . "<br/>";
 		$data = "";
 //		$sql = 'SELECT posts.id, order_is_group(posts.id), order_user(posts.id) '
-		$sql = 'SELECT posts.id, order_user(posts.id) '
+		$sql = 'SELECT posts.id, order_user(posts.id), order_user(posts.id) '
 		       . ' FROM `wp_posts` posts'
 		       . ' WHERE ' . $query;
 
@@ -284,7 +284,8 @@ AND (meta_value = "legacy" or meta_value = 1)';
 //
 //		$client = $invoice->GetCustomerById( $this->legacy_user );
 //
-//		if ( ! ( $client->ID ) > 0 ) {
+//		if ( ! ( $clien21
+//t->ID ) > 0 ) {
 //			print "Invoice client not found " . $invoice_client_id . "<br>";
 //
 //			// var_dump( $client );
