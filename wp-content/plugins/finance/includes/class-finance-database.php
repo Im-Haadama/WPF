@@ -8,6 +8,7 @@ class Finance_Database extends Core_Database {
 		$db_prefix = GetTablePrefix();
 		$current = self::CheckInstalled("tables");
 
+		print "cur=$current";
 		if ($current)
 		switch($current)
 		{
@@ -21,6 +22,17 @@ class Finance_Database extends Core_Database {
 			case '1.7':
 			case '1.7.1':
 				SqlQuery("alter table ${db_prefix}payments add	default_method bit default b'0' null");
+				SqlQuery("create table ${db_prefix}inventory_count
+(
+	id int auto_increment
+		primary key,
+	count_date date not null,
+	supplier_id int null,
+	product_id int null,
+	product_name varchar(200) charset utf8 null,
+	quantity int not null
+)
+engine=MyISAM;");
 
 		}
 		if (! TableExists("payments"))

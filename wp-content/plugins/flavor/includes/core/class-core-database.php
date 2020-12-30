@@ -44,10 +44,11 @@ class Core_Database
 		id INT NOT NULL AUTO_INCREMENT
 			PRIMARY KEY
 	);" );
-			SqlQuery( "create unique index ${db_prefix}info_key_uindex
+	        SqlQuery( "create unique index ${db_prefix}info_key_uindex
 	on ${db_prefix}info (info_key);" );
 
-		}
+        }
+
 	}
 
 	function CheckInstalled($subsystem)

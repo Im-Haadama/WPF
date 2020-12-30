@@ -79,6 +79,7 @@ charset=utf8;
 		}
 
 
+		if (!TableExists("log"))
 		SqlQuery( "create table ${db_prefix}log
 (
 	id int auto_increment
@@ -91,7 +92,7 @@ charset=utf8;
 
 " );
 
-//		SqlQuery("drop table im_links");
+	if (!TableExists("links"))
         SqlQuery( "create table ${db_prefix}links
 (
     id int auto_increment primary key,

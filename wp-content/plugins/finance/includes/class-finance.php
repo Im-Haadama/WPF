@@ -42,7 +42,7 @@ class Finance {
 	 *
 	 * @var string
 	 */
-	public $version = '1.7.5';
+	public $version = '1.7.6';
 
 	private $plugin_name;
 
@@ -210,6 +210,8 @@ class Finance {
 		$this->loader->AddAction("get_open_invoices", $this, 'get_open_invoices');
 		$this->loader->AddAction("get_open_trans", $this, 'get_open_trans');
 		$this->loader->AddAction("exists_invoice", $this, 'exists_invoice');
+
+		Finance_Inventory::instance()->init_hooks($this->loader);
 
 		$i = Core_Db_MultiSite::getInstance();
 		$i->AddTable("missions");
@@ -478,6 +480,7 @@ class Finance {
 
 	static function admin_menu() {
 		Finance_Settings::instance()->admin_menu();
+		Finance_Inventory::instance()->admin_menu();
 	}
 
 	/**

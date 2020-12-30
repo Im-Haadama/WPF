@@ -15,6 +15,10 @@ class Finance_Inventory
 		return self::$_instance;
 	}
 
+	function init_hooks($loader)
+	{
+		$loader->AddAction("inventory_show_supplier", $this);
+	}
 	static function handle()
 	{
 		$operation = GetParam("operation", false, "show_status");
@@ -45,14 +49,11 @@ class Finance_Inventory
 				return self::download_inventory($year);
 				break;
 			case "show_status":
-				$year = (date('m') < 12 ? date('Y') - 1 : date('Y'));
-				$include_counted = GetParam("include_counted", false, false);
-				return self::show_status($year, $include_counted);
 				break;
 			case "show":
 				$year = GetParam("year");
 				$supplier_id = GetParam("supplier_id");
-				return self::show_supplier($year, $supplier_id);
+				return self::inventory_show_supplier($year, $supplier_id);
 				break;
 			case "save_inv":
 				$data = GetParamArray("data", true);
@@ -104,6 +105,7 @@ class Finance_Inventory
 		print $buffer;
 		return true;
 	}
+
 	static function zero_count($supplier_id)
 	{
 		$sql = sprintf( "insert into im_inventory_count (count_date, supplier_id, product_id, product_name, quantity) values  
@@ -111,6 +113,7 @@ class Finance_Inventory
 
 		return SqlQuery($sql);
 	}
+
 	static function save_inv( $data ) {
 		for ( $i = 0; $i < count( $data ); $i += 2 ) {
 			$id = $data[ $i ];
@@ -166,8 +169,7 @@ class Finance_Inventory
 		$result .= Core_Html::GuiHyperlink("include counted", AddToUrl("include_counted", 1)) . " ";
 		$result .= Core_Html::GuiHyperlink("download count", self::getPost() . "?operation=download_inventory_count");
 
-
-		$suppliers = SqlQueryArrayScalar("select id from im_suppliers where active = 1");
+		$suppliers = SqlQueryArrayScalar("select id from im_suppliers where is_active = 1");
 		$status_table = array(array("supplier id", "Supplier name", "Count Date", "Zero"));
 
 		foreach ($suppliers as $supplier_id) {
@@ -181,15 +183,19 @@ class Finance_Inventory
 				$status_table[$supplier_id] = array("id" => $supplier_id, "supplier_name" => $Supplier->getSupplierName(), "count_date" => $Supplier->getLastCount());
 		}
 
-		$args = array("links" => array("id" => "?operation=show&supplier_id=%d&year=$year"));
+		$args = array("links" => array("id" => AddToUrl(array("operation"=>"inventory_show_supplier", "supplier_id"=>"%d", "year" => $year))));
+
 		$args["actions"] = array(array("Zero", self::getPost() . "?operation=inventory_zero&supplier_id=%d;action_hide_row"));
 
 		$result .= Core_Html::gui_table_args($status_table, "inventory_status", $args);
 		return $result;
 	}
 
-	static function show_supplier($year, $supplier_id)
+	static function inventory_show_supplier($params)
 	{
+		$year = GetArg($params, "year",null);
+		$supplier_id = GetArg($params, "supplier_id", null);
+
 		$supplier = new Fresh_Supplier($supplier_id);
 
 		$result = Core_Html::GuiHeader(1, __("Inventory of supplier")). " " . $supplier->getSupplierName() ." " . __("for year ending in") . " " . $year;
@@ -200,14 +206,14 @@ class Finance_Inventory
 		$count = SqlQuerySingleScalar($sql);
 //		print "count = $count<br/>";
 		if ($count) {
-			$args = [];
-			$result .= Core_Gem::GemTable("im_inventory_count", $args);
+			$args = ["only_active" => 0];
+			$result .= Core_Gem::GemTable("inventory_count", $args);
 		} else {
 			$result .= self::show_supplier_inventory($supplier_id);
 		}
 		$result .= Core_Html::GuiButton("btn_save_count", "Save count", array("action" => "inventory_save_count(" . $supplier_id . ")"));
 
-		return $result;
+		print $result;
 	}
 
 	static function show_supplier_inventory( $supplier_id ) {
@@ -253,7 +259,30 @@ class Finance_Inventory
 
 		$display .= Core_Html::GuiButton( "btn_save_inv" . $supplier_id, "Save inventory", array("action" => "save_inv('term_" . $supplier_id . "')" ));
 
-		return $display;
+		print $display;
+	}
+
+	public function admin_menu()
+	{
+		$menu = Core_Admin_Menu::instance();
+
+		$menu->AddSubMenu("edit.php?post_type=product", "edit_shop_orders",
+			array('page_title' => 'Inventory', 'function' => array($this , 'inventory' )));
+
+	}
+
+	public function inventory()
+	{
+		$include_counted = GetParam("include_counted", false, false);
+
+		$params = [];
+		$params['year'] = GetParam("year", false, (date('m') < 12 ? date('Y') - 1 : date('Y')));
+		$params['supplier_id'] = GetParam("supplier_id", false, null);
+		if ($operation = GetParam("operation")){
+			Core_Hook_Handler::instance()->DoAction($operation, $params);
+			return;
+		}
+		print self::show_status($params['year'], $include_counted);
 	}
 
 	public function admin_scripts() {

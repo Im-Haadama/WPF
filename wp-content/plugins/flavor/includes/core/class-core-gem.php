@@ -519,7 +519,7 @@ class Core_Gem {
 	 */
 	static function GemTable($table_name, &$args)
 	{
-		if (! TableExists($table_name)) return "Table $table_name not exists";
+		if (! TableExists($table_name)) return "Table $table_name not exists!";
 
 		// Try... Handle operation here. Works for clients types. May require to remove apply_filter from others.
 //		$operation = GetParam("operation", false, null);

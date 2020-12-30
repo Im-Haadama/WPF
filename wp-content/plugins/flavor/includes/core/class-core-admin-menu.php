@@ -69,11 +69,8 @@ class Core_Admin_Menu {
 
 	public function Add($parent, $capability, $slug, callable $callable)
 	{
-		if (! defined('add_submenu_page')) {
-//			print "add_submenu_page not defined";
-//			print debug_trace(10);
-//			die(1);
-			return;
+		if (! defined('add_submenu_page')) { // Probably not triggered in the right time.
+			require_once(ABSPATH . 'wp-admin/includes/plugin.php');
 		}
 		$title = convert_to_title($slug);
 		$menu_title = $title;

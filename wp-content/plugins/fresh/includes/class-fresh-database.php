@@ -349,7 +349,7 @@ charset=utf8;
 
 		if ($current == $version and ! $force) return true;
 
-		new Fresh_Delivery(0); // Load classes
+//		new Fresh_Delivery(0); // Load classes
 
 		SqlQuery("drop function if exists supplier_balance");
 		$sql = "create function supplier_balance (_supplier_id int, _date date) returns float   
@@ -485,7 +485,7 @@ END;
 	END;
 ");
 
-		new Fresh_Delivery(0); // Load classes
+//		new Fresh_Delivery(0); // Load classes
 		SqlQuery("drop function if exists supplier_balance");
 		$sql = "create function supplier_balance (_supplier_id int, _date date) returns float   
 BEGIN
