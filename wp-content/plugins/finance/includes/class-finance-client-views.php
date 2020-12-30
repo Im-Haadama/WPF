@@ -335,7 +335,7 @@ class Finance_Client_Views {
 
 	static function PaymentBox(Finance_Client $C )
 	{
-		$status = Finance_Yaad::getCustomerStatus($C, false);
+		$status = E_Fresh_Payment_Gateway::getCustomerStatus($C, false);
 		if (! $status) return null;
 
 		$result = "<div>";
@@ -355,7 +355,7 @@ class Finance_Client_Views {
 	static function getTokenStatus($C)
 	{
 		if (class_exists('Finance_Yaad'))
-			return Finance_Yaad::getCustomerStatus($C, true);
+			return E_Fresh_Payment_Gateway::getCustomerStatus($C, true);
 		return '';
 	}
 

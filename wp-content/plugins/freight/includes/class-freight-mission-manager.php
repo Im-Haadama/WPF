@@ -927,7 +927,7 @@ group by pm.meta_value, p.post_status");
 		}
 
 		$o = Finance_Order::CreateOrder( $client, $mission_id, null, $the_shipping,
-			" משלוח המכולת " . date( 'Y-m-d' ) . " " . $customer->getName(), Fresh_Pricing::addVat($fee));
+			" משלוח המכולת " . date( 'Y-m-d' ) . " " . $customer->getName(), Israel_Shop::addVat($fee));
 
 		if (! $o)
 			return false;

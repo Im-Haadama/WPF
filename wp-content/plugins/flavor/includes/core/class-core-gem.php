@@ -521,19 +521,11 @@ class Core_Gem {
 	{
 		if (! TableExists($table_name)) return "Table $table_name not exists!";
 
-		// Try... Handle operation here. Works for clients types. May require to remove apply_filter from others.
-//		$operation = GetParam("operation", false, null);
-//		if ($operation) {
-//			$args['operation']= $operation;
-//			print apply_filters( $operation, '', null, $args );
-//		}
-
 		if (! $table_name) die("Error #N2 no table given");
 		if (! isset($args["title"])) $title = "content of table " . $table_name;
 		$post_file = GetArg($args, "post_file", null);
 		$table_prefix = GetTablePrefix($table_name);
 		$only_active = GetArg($args, "only_active", 1);
-//		print "oa=$only_active<br/>";
 
 		if (! isset($args["events"])) $args["events"] = 'onchange="update_table_field(\'' . $post_file . '\', \'' . $table_name . '\', \'%d\', \'%s\', check_result)"';
 		$sql = GetArg($args, "sql", null);

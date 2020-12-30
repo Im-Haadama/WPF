@@ -836,7 +836,7 @@ class Finance_Order {
 			throw new Exception( "no WC_Order" );
 		}
 
-		return $this->WC_Order->order_date;
+		return $this->WC_Order->get_date_created();
 	}
 
 	function info_right_box_input( $field, $edit, $title ) {

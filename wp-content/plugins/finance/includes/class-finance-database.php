@@ -8,7 +8,6 @@ class Finance_Database extends Core_Database {
 		$db_prefix = GetTablePrefix();
 		$current = self::CheckInstalled("tables");
 
-		print "cur=$current";
 		if ($current)
 		switch($current)
 		{
