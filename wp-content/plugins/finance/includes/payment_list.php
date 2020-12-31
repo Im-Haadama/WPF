@@ -1,7 +1,7 @@
 <?php
-ob_start();
-ob_get_clean(); 
-error_reporting(0);
+//ob_start();
+//ob_get_clean();
+//error_reporting(0);
 global $wpdb;
 $table_name = "im_payment_info";
 
@@ -23,8 +23,8 @@ function credit_card_remove($del_id)
 	$table_name = "im_payment_info";
 	$card_four_digit   = $wpdb->get_var("SELECT card_four_digit FROM $table_name WHERE id = ".$del_id." ");
 	$dig4 = setCreditCard($card_four_digit);
-	$sql = $wpdb->query($wpdb->prepare("UPDATE $table_name SET card_number =  '".$dig4."' WHERE id = ".$del_id." "));
-	return $wpdb->get_results($sql);
+	SqlQuery("UPDATE $table_name SET card_number =  '".$dig4."' WHERE id = ".$del_id." ");
+//	return $wpdb->get_results($sql);
 }
 
 if(isset($_REQUEST['method']) && $_REQUEST['method'] == "delete_rec"){
@@ -269,3 +269,14 @@ function selall(){
   }
 }
 </script>
+<?php
+function setCreditCard($cc)
+{
+	$cc_length = strlen($cc);
+
+	for($i=0; $i<$cc_length-4; $i++){
+		if($cc[$i] == '-'){continue;}
+		$cc[$i] = 'X';
+	}
+	return $cc;
+}

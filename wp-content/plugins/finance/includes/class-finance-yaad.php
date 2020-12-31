@@ -25,7 +25,7 @@ class Finance_Yaad extends Finance_Paying {
 		$this->PassP = $PassP;
 		$this->message = null;
 		self::SignIn();
-		FinanceLog("Sig: " . $this->signature);
+//		FinanceLog("Sig: " . $this->signature);
 	}
 
 	/**

@@ -217,9 +217,8 @@ class Finance_Client_Views {
 		// Edit Card info
 		$tabs[]  = ["card", "Edit card info", $credit_info];
 
-
 		$result .= Core_Html::GuiTabs("ca", $tabs,
-			array("tabs_load_all"=>true));
+			array("tabs_load_all"=>true, "st_ca" => "aa"));
 
 		$result .= '<div id="logging"></div>';
 

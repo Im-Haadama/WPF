@@ -8,6 +8,7 @@ class Finance_Database extends Core_Database {
 		$db_prefix = GetTablePrefix();
 		$current = self::CheckInstalled("tables");
 
+//		print "=====================================================cur=$current<br/>";
 		if ($current)
 		switch($current)
 		{
@@ -32,6 +33,9 @@ class Finance_Database extends Core_Database {
 	quantity int not null
 )
 engine=MyISAM;");
+			case '1.7.6':
+//				SqlQuery("alter table ${db_prefix}payments add
+//	    	default_method bit default b'0' null");
 
 		}
 		if (! TableExists("payments"))

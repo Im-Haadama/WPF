@@ -42,7 +42,7 @@ class Finance {
 	 *
 	 * @var string
 	 */
-	public $version = '1.7.6';
+	public $version = '1.7.7';
 
 	private $plugin_name;
 
@@ -124,6 +124,7 @@ class Finance {
 	 */
 	private function __construct( $plugin_name ) {
 		global $business_name;
+		$hook_manager = Core_Hook_Handler::instance();
 		$this->admin_notices = null;
 		$this->plugin_name = $plugin_name;
 		$this->define_constants();
@@ -144,6 +145,9 @@ class Finance {
 
 		$finance_actions = new Finance_Actions();
 		$finance_actions->init_hooks($this->loader);
+
+		$bl = new Finance_Business_Logic();
+		$bl->init_hooks($hook_manager);
 
 		$this->init_hooks($this->loader);
 
@@ -177,8 +181,6 @@ class Finance {
 		add_action( 'init', array( $this, 'init' ), 11 );
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
 		add_action( 'admin_notices', array($this, 'admin_notices') );
-		add_filter( 'pay_user_credit', array($this, 'pay_user_credit_wrap'), 10, 3);
-		$loader->AddAction('credit_clear_token', $this);
 
 		// Admin menu
 		add_action( 'admin_menu',array($this, 'admin_menu') );
@@ -190,7 +192,6 @@ class Finance {
 		// add_action( 'switch_blog', array( $this, 'wpdb_table_fix' ), 0 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_scripts' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
-		add_action( 'pay_credit', array( $this, 'pay_credit_wrapper' ) );
 
 		AddAction('finance_get_open_site_invoices', array($this, 'get_open_site_invoices'));
 
@@ -266,62 +267,6 @@ class Finance {
 	/**
 	 * @return bool true on sucess. If failed see message.
 	 */
-
-	function pay_user_credit_wrap($customer_id, $amount, $payment_number)
-	{
-		FinanceLog(__FUNCTION__ . " $customer_id");
-
-		self::Yaad_Connect();
-
-		if (! $this->yaad)
-		{
-			print "cant init yaad";
-			return false;
-		}
-
-		$sql = 'select 
-		id, 
-		date,
-		round(transaction_amount, 2) as transaction_amount,
-		client_balance(client_id, date) as balance,
-	    transaction_method,
-	    transaction_ref, 
-		order_from_delivery(transaction_ref) as order_id,
-		delivery_receipt(transaction_ref) as receipt,
-		id 
-		from im_client_accounts 
-		where client_id = ' . $customer_id . '
-		and delivery_receipt(transaction_ref) is null
-		and transaction_method = "משלוח"
-		order by date asc
-		';
-
-		// If amount not specified, try to pay the balance.
-		$user = new Finance_Client($customer_id);
-
-		if ($amount == 0)
-			$amount = $user->balance();
-
-		$rows = SqlQueryArray($sql);
-		$current_total = 0;
-
-		$paying_transactions = [];
-		foreach ($rows as $row) {
-			$trans_amount = $row[2];
-			if (($trans_amount + $current_total) < ($amount + 15)) {
-				array_push($paying_transactions, $row[0]);
-				$current_total += $trans_amount;
-			}
-		}
-
-		$change = $amount - $current_total;
-
-		return $this->yaad->pay_user_credit($user, $paying_transactions, $amount, $change, $payment_number);
-//		foreach ($delivery_ids as $delivery_id) {
-//			$this->pay_user_credit( $user_id, $delivery_id );
-//			die(0);
-//		}
-	}
 
 	function pay()
 	{
@@ -821,21 +766,6 @@ class Finance {
 		$datetime->sub( $interval );
 
 		return $datetime;
-	}
-
-	function pay_credit_wrapper() {
-		FinanceLog(__FUNCTION__);
-		$users = explode( ",", GetParam( "users", true, true ) );
-		$payment_number = GetParam("number", false, 1);
-		$amount = GetParam("amount", false, 0);
-
-		foreach ( $users as $user ) {
-			FinanceLog("trying $user");
-			$rc = apply_filters( 'pay_user_credit', $user, $amount, $payment_number );
-			if ( ! $rc ) print "failed user $user\n";
-		}
-
-		return true;
 	}
 
 	function CreateInvoiceUser() {

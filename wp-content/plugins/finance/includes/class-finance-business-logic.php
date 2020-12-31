@@ -43,6 +43,14 @@ class Finance_Business_Logic {
 		$this->error_message = '';
 	}
 
+	public function init_hooks($loader)
+	{
+		$loader->AddAction( 'pay_credit', $this );
+		$loader->AddAction( 'pay_user_credit', $this);
+		$loader->AddAction('credit_clear_token', $this);
+
+
+	}
 	public function process_payment( $order_id, $args ) : bool {
 		$order              = new WC_Order( $order_id );
 
@@ -109,29 +117,46 @@ class Finance_Business_Logic {
 
 	function Paying_Connect() :bool
 	{
-		FinanceLog(__FUNCTION__);
-			if (! $this->paying) {
-				if ( ! defined( 'YAAD_API_KEY' ) ) {
-					$this->error_message = "api key not defined";
+		if (! $this->paying) {
+			if ( ! defined( 'YAAD_API_KEY' ) ) {
+				$this->error_message = "api key not defined";
 
-					return false;
-				}
-				if ( ! defined( 'YAAD_TERMINAL' ) ) {
-					$this->error_message = "terminal not defined";
-
-					return false;
-				}
-				if ( ! defined( 'YAAD_PassP' ) ) {
-					$this->error_message = 'PassP not defined';
-
-					return false;
-				}
-				$this->paying = new Finance_Yaad( YAAD_API_KEY, YAAD_TERMINAL, get_bloginfo( 'name' ), YAAD_PassP );
-				if ($this->error_message = $this->paying->getMessage())
-					return false;
+				return false;
 			}
-			return true;
+			if ( ! defined( 'YAAD_TERMINAL' ) ) {
+				$this->error_message = "terminal not defined";
+
+				return false;
+			}
+			if ( ! defined( 'YAAD_PassP' ) ) {
+				$this->error_message = 'PassP not defined';
+
+				return false;
+			}
+			$this->paying = new Finance_Yaad( YAAD_API_KEY, YAAD_TERMINAL, get_bloginfo( 'name' ), YAAD_PassP );
+			if ($this->error_message = $this->paying->getMessage())
+				return false;
 		}
+		return true;
+	}
+
+	function pay_credit() {
+		FinanceLog(__FUNCTION__);
+		$users = explode( ",", GetParam( "users", true, true ) );
+		$payment_number = GetParam("number", false, 1);
+		$amount = GetParam("amount", false, 0);
+
+		foreach ( $users as $user ) {
+			FinanceLog("trying $user");
+			$args = ["user"=>$user,
+			         "amount"=>$amount,
+			         "payment_number"=>$payment_number];
+			Core_Hook_Handler::instance()->DoAction( 'pay_user_credit', $args );
+		}
+
+		return true;
+	}
+
 
 	function pay_order($order_id, $credit_info)
 	{
@@ -205,5 +230,140 @@ class Finance_Business_Logic {
 	function GetToken()
 	{
 		return $this->paying->GetToken($this->transaction_id);
+	}
+
+	function pay_user_credit_wrap($args)
+	{
+		$customer_id = GetArg($args, "user");
+		if (null == $customer_id) {
+			print "Failed: no customer id";
+			die (1);
+		}
+		$amount = GetArg($args, "amount");
+		$payment_number = GetArg($args, "payment_number");
+
+		FinanceLog(__FUNCTION__ . " $customer_id");
+
+		if (! $this->Paying_Connect()) return false;
+
+		$sql = 'select 
+		id, 
+		date,
+		round(transaction_amount, 2) as transaction_amount,
+		client_balance(client_id, date) as balance,
+	    transaction_method,
+	    transaction_ref, 
+		order_from_delivery(transaction_ref) as order_id,
+		delivery_receipt(transaction_ref) as receipt,
+		id 
+		from im_client_accounts 
+		where client_id = ' . $customer_id . '
+		and delivery_receipt(transaction_ref) is null
+		and transaction_method = "משלוח"
+		order by date asc
+		';
+
+		// If amount not specified, try to pay the balance.
+		$user = new Finance_Client($customer_id);
+
+		if ($amount == 0)
+			$amount = $user->balance();
+
+		$rows = SqlQueryArray($sql);
+		$current_total = 0;
+
+		$paying_transactions = [];
+		foreach ($rows as $row) {
+			$trans_amount = $row[2];
+			if (($trans_amount + $current_total) < ($amount + 15)) {
+				array_push($paying_transactions, $row[0]);
+				$current_total += $trans_amount;
+			}
+		}
+
+		$change = $amount - $current_total;
+
+		$credit_data = SqlQuerySingleAssoc("select * from im_payment_info where user_id = $customer_id");
+		if (! $credit_data) {
+			print "failed: no credit info for user $customer_id";
+			return false;
+		}
+
+		return $this->pay_user_credit($user, $credit_data, $paying_transactions, $amount, $change, $payment_number);
+//		foreach ($delivery_ids as $delivery_id) {
+//			$this->pay_user_credit( $user_id, $delivery_id );
+//			die(0);
+//		}
+	}
+
+	function pay_user_credit(Finance_Client $user, $credit_data, $account_line_ids, $amount, $change = 0, $payment_number = 1)
+	{
+//		print __FUNCTION__;
+		FinanceLog(__FUNCTION__ . " " . $user->getName() . " " . $amount);
+		$debug = false;
+
+		if (0 == $amount)
+			return true;
+
+		$token = get_user_meta($user->getUserId(), 'credit_token', true);
+
+		if ($token) {
+			FinanceLog("trying to pay with token user " . $user->getName());
+			$transaction_info = $this->paying->TokenPay( $token, $credit_data, $user->getName(), $user->getUserId(), $amount, CommaImplode($account_line_ids), $payment_number );
+			$transaction_id = $transaction_info['Id'];
+			if (! $transaction_id or ($transaction_info['CCode'] != 0)) {
+				$message = "Failed: " . $user->getName() . ": Got error " . $this->paying->ErrorMessage($transaction_info['CCode']) . "\n";
+				print $message;
+				FinanceLog($message);
+				return false;
+			}
+
+			$paid = $transaction_info['Amount'];
+			FinanceLog("paid $paid user " . $user->getName());
+			if ($paid) self::RemoveRawInfo($credit_data['id']);
+		} else {
+			FinanceLog("trying to pay with credit info " . $user->getName());
+			if ($this->debug) print "trying to pay with credit info<br/>";
+			// First pay. Use local store credit info, create token and delete local info.
+			$transaction_info = self::FirstPay($credit_data, $user, $amount, CommaImplode($account_line_ids), $payment_number);
+			FinanceLog("back");
+			// info: Id, CCode, Amount, ACode, Fild1, Fild2, Fild3
+			if (($transaction_info['CCode'] != 0)) {
+				FinanceLog(__FUNCTION__, $transaction_info['CCode']);
+				$this->message .= "Got error " . self::ErrorMessage($transaction_info['CCode']) . "\n";
+				if ($debug) var_dump($credit_data);
+				return false;
+			}
+			if ($debug) var_dump($transaction_info);
+			$transaction_id = $transaction_info['Id'];
+			if (! $transaction_id){
+				print "No transaction id";
+				return false;
+			}
+			$paid = $transaction_info['Amount'];
+			if ($transaction_id) {
+				print $user->getName() . " " . __("Paid") . " $amount. $payment_number " . __("payments") . "\n";
+				if ($this->debug) print "pay successful $transaction_id<br/>";
+
+				// Create token and save it.
+				$token_info = self::GetToken( $transaction_id );
+				if (isset($token_info['Token'])){
+					if ($debug) print "Got token " . $token_info['Token'] . "<br/>";
+					delete_user_meta($user->getUserId(), 'credit_token');
+					add_user_meta($user->getUserId(), 'credit_token', $token_info['Token']);
+
+					self::RemoveRawInfo($credit_data['id']);
+				}
+			}
+		}
+		if ($paid) {
+			// Create invoice receipt. Update balance.
+			FinanceLog("b4 create_receipt_from_account_ids");
+			$subject = "delivery " . CommaImplode($account_line_ids);
+			Finance_Client_Accounts::create_receipt_from_account_ids( 0, 0, 0, $paid, $user->getUserId(), date('Y-m-d'), $account_line_ids );
+
+			return true;
+		}
+		return false;
 	}
 }

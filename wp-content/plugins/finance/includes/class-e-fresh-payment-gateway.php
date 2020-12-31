@@ -269,64 +269,64 @@ if (class_exists("WC_Payment_Gateway")) {
 	        }
         }
 
-	/**
-	 * @param $customer_id
-	 * @param int $amount
-	 * pay customer balance or the given amount.
-	 *
-	 * @param int $payment_number
-	 *
-	 * @return bool
-	 */
-	function pay_user_credit_wrap($customer_id, $amount = 0, $payment_number = 1)
-	{
-		FinanceLog(__FUNCTION__ . ": pay for $customer_id");
-		// $delivery_ids = sql_query_array_scalar("select id from im_delivery where payment_receipt is null and draft is false");
-		$sql = 'select 
-		id, 
-		date,
-		round(transaction_amount, 2) as transaction_amount,
-		client_balance(client_id, date) as balance,
-	    transaction_method,
-	    transaction_ref, 
-		order_from_delivery(transaction_ref) as order_id,
-		delivery_receipt(transaction_ref) as receipt,
-		id 
-		from im_client_accounts 
-		where client_id = ' . $customer_id . '
-		and delivery_receipt(transaction_ref) is null
-		and transaction_method = "משלוח"
-		order by date asc
-		';
-
-		// If amount not specified, try to pay the balance.
-		$user = new Finance_Client($customer_id);
-
-		if ($amount == 0)
-			$amount = $user->balance();
-
-		$rows = SqlQueryArray($sql);
-		$current_total = 0;
-
-		$paying_transactions = [];
-		foreach ($rows as $row) {
-			$trans_amount = $row[2];
-			if (($trans_amount + $current_total) < ($amount + 15)) {
-				array_push($paying_transactions, $row[0]);
-				$current_total += $trans_amount;
-			}
-		}
-
-		$change = $amount - $current_total;
-
-		$credit_data = SqlQuerySingleAssoc( "select * from im_payment_info where user_id = " . $user->getUserId());
-		if (! $credit_data) {
-			FinanceLog("no credit info found");
-			return false;
-		}
-
-		return $this->pay_user_credit($user, $credit_info, $paying_transactions, $amount, $change, $payment_number);
-	}
+//	/**
+//	 * @param $customer_id
+//	 * @param int $amount
+//	 * pay customer balance or the given amount.
+//	 *
+//	 * @param int $payment_number
+//	 *
+//	 * @return bool
+//	 */
+//	function pay_user_credit_wrap($customer_id, $amount = 0, $payment_number = 1)
+//	{
+//		FinanceLog(__FUNCTION__ . ": pay for $customer_id");
+//		// $delivery_ids = sql_query_array_scalar("select id from im_delivery where payment_receipt is null and draft is false");
+//		$sql = 'select
+//		id,
+//		date,
+//		round(transaction_amount, 2) as transaction_amount,
+//		client_balance(client_id, date) as balance,
+//	    transaction_method,
+//	    transaction_ref,
+//		order_from_delivery(transaction_ref) as order_id,
+//		delivery_receipt(transaction_ref) as receipt,
+//		id
+//		from im_client_accounts
+//		where client_id = ' . $customer_id . '
+//		and delivery_receipt(transaction_ref) is null
+//		and transaction_method = "משלוח"
+//		order by date asc
+//		';
+//
+//		// If amount not specified, try to pay the balance.
+//		$user = new Finance_Client($customer_id);
+//
+//		if ($amount == 0)
+//			$amount = $user->balance();
+//
+//		$rows = SqlQueryArray($sql);
+//		$current_total = 0;
+//
+//		$paying_transactions = [];
+//		foreach ($rows as $row) {
+//			$trans_amount = $row[2];
+//			if (($trans_amount + $current_total) < ($amount + 15)) {
+//				array_push($paying_transactions, $row[0]);
+//				$current_total += $trans_amount;
+//			}
+//		}
+//
+//		$change = $amount - $current_total;
+//
+//		$credit_data = SqlQuerySingleAssoc( "select * from im_payment_info where user_id = " . $user->getUserId());
+//		if (! $credit_data) {
+//			FinanceLog("no credit info found");
+//			return false;
+//		}
+//
+//		return $this->pay_user_credit($user, $credit_info, $paying_transactions, $amount, $change, $payment_number);
+//	}
 
 	static function getCustomerStatus(Finance_Client $C, $string = true)
 	{
@@ -339,75 +339,6 @@ if (class_exists("WC_Payment_Gateway")) {
 
 		return $rc;
 
-	}
-
-	function pay_user_credit(Finance_Client $user, $credit_data, $account_line_ids, $amount, $change = 0, $payment_number = 1)
-	{
-//		FinanceLog(__FUNCTION__ . " " . $user->getName() . " " . $amount);
-		$debug = false;
-		if (0 == $amount)
-			return true;
-
-		$token = get_user_meta($user->getUserId(), 'credit_token', true);
-
-		if ($token) {
-			FinanceLog("trying to pay with token user " . $user->getName());
-			$transaction_info = self::TokenPay( $token, $credit_data, $user, $amount, CommaImplode($account_line_ids), $payment_number );
-			$transaction_id = $transaction_info['Id'];
-			if (! $transaction_id or ($transaction_info['CCode'] != 0)) {
-				$message = $user->getName() . ": Got error " . self::ErrorMessage($transaction_info['CCode']) . "\n";
-				print $message;
-				FinanceLog($message);
-				return false;
-			}
-
-			$paid = $transaction_info['Amount'];
-			FinanceLog("paid $paid user " . $user->getName());
-			if ($paid) self::RemoveRawInfo($credit_data['id']);
-		} else {
-			FinanceLog("trying to pay with credit info " . $user->getName());
-			if ($this->debug) print "trying to pay with credit info<br/>";
-			// First pay. Use local store credit info, create token and delete local info.
-			$transaction_info = self::FirstPay($credit_data, $user, $amount, CommaImplode($account_line_ids), $payment_number);
-			FinanceLog("back");
-			// info: Id, CCode, Amount, ACode, Fild1, Fild2, Fild3
-			if (($transaction_info['CCode'] != 0)) {
-				FinanceLog(__FUNCTION__, $transaction_info['CCode']);
-				$this->message .= "Got error " . self::ErrorMessage($transaction_info['CCode']) . "\n";
-				if ($debug) var_dump($credit_data);
-				return false;
-			}
-			if ($debug) var_dump($transaction_info);
-			$transaction_id = $transaction_info['Id'];
-			if (! $transaction_id){
-				print "No transaction id";
-				return false;
-			}
-			$paid = $transaction_info['Amount'];
-			if ($transaction_id) {
-				print $user->getName() . " " . __("Paid") . " $amount. $payment_number " . __("payments") . "\n";
-				if ($this->debug) print "pay successful $transaction_id<br/>";
-
-				// Create token and save it.
-				$token_info = self::GetToken( $transaction_id );
-				if (isset($token_info['Token'])){
-					if ($debug) print "Got token " . $token_info['Token'] . "<br/>";
-					delete_user_meta($user->getUserId(), 'credit_token');
-					add_user_meta($user->getUserId(), 'credit_token', $token_info['Token']);
-
-					self::RemoveRawInfo($credit_data['id']);
-				}
-			}
-		}
-		if ($paid) {
-			// Create invoice receipt. Update balance.
-			FinanceLog("b4 create_receipt_from_account_ids");
-			$subject = "delivery " . CommaImplode($account_line_ids);
-			Finance_Client_Accounts::create_receipt_from_account_ids( 0, 0, 0, $paid, $user->getUserId(), date('Y-m-d'), $account_line_ids );
-
-			return true;
-		}
-		return false;
 	}
 
 	function RemoveRawInfo($row_id)

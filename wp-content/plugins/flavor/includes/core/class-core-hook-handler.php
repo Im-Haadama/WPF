@@ -147,7 +147,7 @@ class Core_Hook_Handler {
 	public function DoAction($action, $params)
 	{
 		if (! isset($this->actions[$action]))
-			print "No handler for $action";
+			print "Failed: no handler for $action";
 		else
 			do_action($action, $params);
 	}

@@ -1781,9 +1781,13 @@ class Core_Html {
 		$button_args = $args;
 		$btn_class = "btn_$class";
 		$button_args["class"] = $btn_class;
-		$url = GetArg($args, "url", GetUrl(1));
+		$url = GetArg($args, "url", GetUrl(0));
 
-		$selected_tab = GetArg($args, "st_$id", 0);
+		$selected_tab = GetArg($args, "st_$id", null);
+		if (null == $selected_tab){
+			print "st_$id not set<br/>";
+			die(1);
+		}
 		$all_loaded = GetArg($args, "tabs_load_all", false);
 		if ($all_loaded) $selected_tab = null;
 

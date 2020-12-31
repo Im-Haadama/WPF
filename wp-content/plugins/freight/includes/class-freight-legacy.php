@@ -15,17 +15,29 @@ class Freight_Legacy {
 		$delivery_notes = "notes";
 		$invoices       = "invoices";
 
-		$tabs = [];
-		$selected_tab = GetParam("selected_tab", false, 'deliveries_to_do');
+		$selected_tab = GetParam("st_deliveries", false, 'deliveries_to_do');
 
-		array_push( $tabs, array( "deliveries_to_do", "Deliveries to do", (($selected_tab != 'deliveries_to_do') ? null : self::deliveries()) ) );
-		array_push( $tabs, array( "deliveries_done", "Deliveries done", (($selected_tab != 'deliveries_done') ? null : self::done_deliveries() )) );
-		array_push( $tabs, array( "delivery_notes", "Delivery Notes", (($selected_tab != 'delivery_notes') ? null : self::delivery_notes() ) ));
-//		array_push( $tabs, array( "invoices", "Invoices", $invoices ) );
+		$tabs = array(array("deliveries_to_do", "Deliveries to do", "ws"),
+			array("deliveries_done", "Deliveries done", "st"),
+			array("delivery_notes", "Delivery Notes", "si"));
+
+		switch ($selected_tab){
+			case "deliveries_to_do":
+				$tabs[0][2]=self::deliveries();
+				break;
+			case "deliveries_done":
+				$tabs[1][2] = self::done_deliveries();
+				break;
+			case "delivery_notes":
+				$tabs[2][2] =  self::delivery_notes();
+				break;
+			default:
+				print $selected_tab . " not handled<br/>";
+		}
 
 		$args = [];
 		$args["tabs_load_all"] = false;
-		$args["selected_tab"] = $selected_tab;
+		$args["st_deliveries"] = $selected_tab;
 
 		$result .= Core_Html::GuiTabs( "deliveries", $tabs, $args );
 		$result .= Core_Html::gui_div("logging");
@@ -131,7 +143,6 @@ class Freight_Legacy {
 		} else {
 			print Core_Html::GuiHeader( 1, "כל המשלוחים בוצעו" );
 		}
-
 	}
 
 	function done_deliveries() {

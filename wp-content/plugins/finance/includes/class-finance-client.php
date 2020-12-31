@@ -40,7 +40,7 @@ class Finance_Client {
 		if ( $p ) {
 			return $p;
 		} else {
-			return "לא נבחר אמצעי ברירת מחדל";
+			return 1;
 		}
 	}
 

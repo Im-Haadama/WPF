@@ -147,7 +147,7 @@ function GetParams($ignore_list = array())
 	 * @return mixed
 	 */
 	if (! function_exists('GetArg')){
-		function &GetArg( $args, $key, $default ) {
+		function &GetArg( $args, $key, $default= null ) {
 			if ( ! $args or ! isset( $args[ $key ] ) ) {
 				return $default;
 			}
