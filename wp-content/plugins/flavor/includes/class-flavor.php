@@ -423,12 +423,13 @@ class Flavor {
 	 * @return string|void`
 	 */
 	function handle_operation($operation) {
+		$hook_master = Core_Hook_Handler::instance();
 		$ignore_list = array("operation");
 		$args = GetParams($ignore_list);
 		$args["post_file"] = Flavor::getPost();
 
 		try {
-			do_action( $operation, $args );
+			$hook_master->DoAction($operation, $args);
 		} catch (Exception $e) {
 			print $e;
 			return false;

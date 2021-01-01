@@ -135,7 +135,7 @@ class Finance_Order {
 
 		if (! (($prods_and_quantity and count($prods_and_quantity)) or $delivery_instance)) {
 			MyLog("empty order requested and refused");
-			print "הזמנה ריקה לא נקלטה";
+			print "Failed: הזמנה ריקה לא נקלטה";
 			return null;
 		}
 
@@ -1379,14 +1379,16 @@ class Finance_Order {
 		return get_user_meta( self::getCustomerId(), "_client_type", true );
 	}
 
-	static function get_minimum_order($customer_id) {
+	static function get_minimum_order($zone)
+	{
+//		$customer_id) {
 		$value = 0; // No min.
 
-		$customer = new Fresh_Client($customer_id);
+//		$customer = new Fresh_Client($customer_id);
 
-		$customer_zone = $customer->getZone();
+//		$customer_zone = $customer->getZone();
 
-		$sql    = "SELECT min_order FROM wp_woocommerce_shipping_zones WHERE zone_id = " . $customer_zone->get_id();
+		$sql    = "SELECT min_order FROM wp_woocommerce_shipping_zones WHERE zone_id = " . $zone->get_id();
 		$result = SqlQuery( $sql, false );
 		if ( $result ) {
 			$row = mysqli_fetch_assoc( $result );

@@ -65,7 +65,7 @@ class Freight_Mission_Manager
 		add_action("order_save_pri", __CLASS__ . '::order_save_pri');
 		add_action("mission_update_type", __CLASS__ . '::mission_update_type');
 		add_action("mission_details", __CLASS__ . '::mission_details');
-		add_action("freight_do_add_delivery", __CLASS__ . "::do_add_delivery");
+		$loader->AddAction("freight_do_add_delivery", $this);
 		add_action('delivered', array(__CLASS__, "delivered_wrap"));
 		add_action('download_mission', array($this, 'download_mission'));
 		add_action('print_mission', array($this, 'print_mission'));
@@ -904,7 +904,7 @@ group by pm.meta_value, p.post_status");
 		return $result;
 	}
 
-	static function do_add_delivery()
+	function freight_do_add_delivery() : bool
 	{
 		$client = GetParam("client", true);
 		$fee = GetParam("fee", true);
@@ -913,6 +913,7 @@ group by pm.meta_value, p.post_status");
 		$customer = new Fresh_Client($client);
 		$zone = $customer->getZone();
 		if (! $zone) {
+			print "Failed: zone not found";
 			return false;
 		}
 		$the_shipping = null;
@@ -921,10 +922,10 @@ group by pm.meta_value, p.post_status");
 			$the_shipping = $shipping_method;
 			break;
 		}
-		if (! $the_shipping) {
-//			print "No shipping method to zone " . $zone->get_zone_name();
-			return false;
-		}
+//		if (! $the_shipping) {
+//			print "Failed: no shipping method to zone " . $zone->get_zone_name();
+//			return false;
+//		}
 
 		$o = Finance_Order::CreateOrder( $client, $mission_id, null, $the_shipping,
 			" משלוח המכולת " . date( 'Y-m-d' ) . " " . $customer->getName(), Israel_Shop::addVat($fee));
