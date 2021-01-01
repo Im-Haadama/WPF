@@ -802,7 +802,6 @@ function custom_add_to_cart_quantity_handler() {
 
 function im_sort_shipping_services_by_date($rates, $package)
 {
-	$logger = new Core_Logger("check");
 	if ( ! $rates )  return;
 
 	$rate_date = array();
@@ -839,18 +838,13 @@ function PayPage($atts, $content = null)
 
 // in functions_im thema
 function wc_minimum_order_amount() {
-	global $woocommerce;
-
-//	FinanceLog(__FUNCTION__ . " $minimum");
 	$shipping_packages =  WC()->cart->get_shipping_packages();
 
 	// Get the WC_Shipping_Zones instance object for the first package
 	$shipping_zone = wc_get_shipping_zone( reset( $shipping_packages ) );
 
 	$minimum = Finance_Order::get_minimum_order($shipping_zone);
-		// $woocommerce->customer->get_id());
-//	var_dump($shipping_zone);
-	
+
 	if ( WC()->cart->total - WC()->cart->shipping_total < $minimum ) {
 		if ( is_cart() ) {
 			wc_print_notice(
@@ -868,6 +862,8 @@ function wc_minimum_order_amount() {
 				), 'error'
 			);
 		}
+		remove_action( 'woocommerce_proceed_to_checkout', 'woocommerce_button_proceed_to_checkout', 20 );
+
 	}
 }
 
