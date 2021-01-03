@@ -18,8 +18,9 @@ class Core_Db_MultiSite extends Core_MultiSite {
 
 	public function AddTable($table, $id_field = "id")
 	{
+		$loader = Core_Hook_Handler::instance();
 		if (in_array($table, $this->allowed_tables)) return;
-		AddAction("sync_data_$table", array($this, 'sync_data_wrap'));
+		$loader->AddAction("sync_data_$table", $this,'sync_data_wrap');
 		$this->allowed_tables[$table] = $id_field;
 	}
 
@@ -187,6 +188,7 @@ class Core_Db_MultiSite extends Core_MultiSite {
 	 */
 	function UpdateFromRemote( $table, $key = "id", $remote = 0, $query = null, $ignore = null, $debug = false )
 	{
+		MyLog(__FUNCTION__, $table);
 		if ( $remote == 0 ) $remote = self::getMaster();
 
 		if ($this->isMaster()) return true;
@@ -214,6 +216,7 @@ class Core_Db_MultiSite extends Core_MultiSite {
 			}
 			return true;
 		} else {
+			if (strstr($html, "ailed")) print $html;
 			MyLog("short response. Operation aborted. " .
 			 "url = " . $this->getSiteURL($remote) . $url);
 

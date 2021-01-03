@@ -4,7 +4,7 @@
  * Class Focus
  */
 class Focus {
-	protected $loader;
+	protected Core_Hook_Handler $loader;
 	protected $auto_loader;
 	protected $salary;
 	protected $manager;

@@ -33,7 +33,7 @@ class Finance_Order {
 		$this->WC_Order = wc_get_order($order_id);
 		if (! $this->WC_Order) {
 			print debug_trace(10);
-			die("Can't load order $order_id");
+			die("FaileD: can't load order $order_id");
 		}
 
 		$this->mission_id = get_post_meta( $order_id, 'mission_id', true );;
@@ -1008,7 +1008,7 @@ class Finance_Order {
 	function PrintHtml( $selectable = false ) {
 		$fields = array();
 
-		if ( $selectable ) array_push( $fields, Core_Html::GuiCheckbox( "chk" . $this->order_id, false, array("class"=>"deliveries") ) );
+		if ( $selectable ) array_push( $fields, Core_Html::GuiCheckbox( "chk_" . $this->order_id, false, array("class"=>"deliveries", "checkbox_class" => "deliveries") ) );
 
 		array_push( $fields, Core_Db_MultiSite::LocalSiteName() );
 

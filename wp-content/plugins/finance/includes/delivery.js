@@ -337,5 +337,10 @@ function delivery_update_price(xmlhttp, obj)
     }
     // Just price
     document.getElementById("price_" + my_row).value = price;
+}
 
+function delivery_done(post)
+{
+    let url = post + '?operation=delivered&id=' + get_selected("deliveries");
+    execute_url(url, location_reload);
 }

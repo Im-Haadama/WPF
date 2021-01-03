@@ -139,6 +139,8 @@ class Freight_Legacy {
 
 			$result .=  "</table>";
 
+			$result .= Core_Html::GuiButton("btn_done", "Delivered", "delivery_done('" . Flavor::getPost() . "')");
+
 			return $result;
 		} else {
 			print Core_Html::GuiHeader( 1, "כל המשלוחים בוצעו" );

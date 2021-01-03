@@ -33,6 +33,7 @@ class Fresh_Pricing {
 	{
 		$debug = 0;
 		if ($debug) MyLog(__FUNCTION__ . " $prod_id $client_type_id");
+		if (!TableExists("client_rates")) return get_postmeta_field( $prod_id, '_price' );
 		if (! ($prod_id > 0)){
 			print "bad prod $prod_id<br/>";
 			print debug_trace(6);

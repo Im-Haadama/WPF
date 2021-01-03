@@ -28,6 +28,14 @@ class Focus_Views {
 	private $options;
 
 	/**
+	 * @return mixed
+	 */
+	public function getOption($option) {
+		if (isset($this->options[$option])) return $this->options[$option];
+		return false;
+	}
+
+	/**
 	 * Focus_Views constructor.
 	 *
 	 * @param $post_file
@@ -44,7 +52,7 @@ class Focus_Views {
 	}
 
 	static function OptionEnabled( $option ) {
-		return self::instance()->options[ $option ];
+		return self::instance()->getOption($option);
 	}
 
 	public static function instance( $post = null ): ?Focus_Views {
@@ -248,7 +256,7 @@ class Focus_Views {
 						"creator"    => "Flavor_Org_Views::gui_select_worker",
 						"preq"       => "Focus_Views::gui_select_task",
 						"team"       => "Focus_Views::gui_select_team",
-//						"priority"   => "Focus_Views::gui_select_priority", Show select
+						"priority"   => "Focus_Views::gui_select_priority",
 						"created" => "Core_Html::GuiShowDynamicDateTime",
 					);
 					if ( self::OptionEnabled( "missions" ) ) {
@@ -280,8 +288,7 @@ class Focus_Views {
 						"task_description", // Needed for task title
 						"team",
 						"project_id",
-						"priority",
-						"created"
+						"priority"
 					);
 					$args["links"]         = array( "id" => self::get_link( "task", "%d" ),
 						"task_template"=>self::get_link("template", "%d"));

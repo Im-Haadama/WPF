@@ -2,9 +2,20 @@
 
 
 class Flavor_Mission {
-	static function init_hooks()
+
+	static private $_instance;
+
+	public static function instance() {
+		if ( is_null( self::$_instance ) ) {
+			self::$_instance = new self( "Flavor" );
+		}
+
+		return self::$_instance;
+	}
+
+	function init_hooks($loader)
 	{
-		add_action('get_local_anonymous', __CLASS__ . "::get_local_anonymous");
+		$loader->AddAction('get_local_anonymous', $this);
 	}
 
 	static function gui_select_mission( $id, $selected = 0, $args = null ) {
@@ -128,6 +139,7 @@ class Flavor_Mission {
 
 	static function get_local_anonymous()
 	{
+		FinanceLog(__FUNCTION__);
 		$mission_ids = GetParam("mission_ids", true);
 		$header = GetParam("header", false, false);
 		print self::GetLocalMissions($mission_ids, $header);
@@ -138,6 +150,7 @@ class Flavor_Mission {
 	{
 		$data = "";
 
+//		FinanceLog(__FUNCTION__);
 		if ($header) print self::delivery_table_header();
 		if (! is_array($mission_ids)) $mission_ids = array($mission_ids);
 
