@@ -17,12 +17,12 @@ class Fresh_Basket extends  Fresh_Product  {
 		parent::__construct($id);
 	}
 
-	static public function init()
+	static public function init(Core_Hook_Handler $loader)
 	{
-		AddAction( "add_to_basket", __CLASS__ . "::add_to_basket" );
-		AddAction( "remove_from_basket", __CLASS__ . "::remove_from_basket" );
-		AddAction( "basket_create", __CLASS__ . "::create" );
-		AddAction( "basket_delete", __CLASS__ . "::delete" );
+		$loader->AddAction( "add_to_basket", __CLASS__,  "add_to_basket" );
+		$loader->AddAction( "remove_from_basket", __CLASS__,  "remove_from_basket" );
+		$loader->AddAction( "basket_create", __CLASS__,  "create" );
+		$loader->AddAction( "basket_delete", __CLASS__, "delete" );
 	}
 
 	public function GetQuantity( $prod_id ) {

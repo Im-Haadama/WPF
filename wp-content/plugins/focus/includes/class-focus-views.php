@@ -2266,7 +2266,7 @@ class Focus_Views {
 		wp_enqueue_script( 'client_tools', $file, null, $version, false );
 	}
 
-	function gem_next_page_tasklist()
+	function next_page_tasklist()
 	{
 		return "/project";
 	}

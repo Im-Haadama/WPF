@@ -83,12 +83,15 @@ class Fresh_Supplier_Balance {
 				$tabs[2][2] = Finance_Invoices::Table( AddToUrl( "selected_tab", "supplier_invoices" ));
 				break;
 
+			case "subcontract": // Added by different class. Todo: add a filter(?)
+				break;
+
 			default:
-				die ("foo: $selected_tab not handled");
+				die ("Failed: $selected_tab not handled");
 		}
 
 //		array_push($tabs, array("potato", "test", self::test_price()));
-//		$tabs = apply_filters('wpf_accounts', $tabs);
+		$tabs = apply_filters('wpf_accounts', $tabs);
 
 		$args = array("st_suppliers" => $selected_tab);
 		$args["tabs_load_all"] = false;

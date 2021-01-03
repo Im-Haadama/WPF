@@ -42,7 +42,7 @@ if ( ! class_exists( 'Focus' ) ) {
  */
 
 function run_focus() {
-	$plugin = new Focus("Focus");
+	$plugin = Focus::instance();
 	$plugin->run();
 }
 

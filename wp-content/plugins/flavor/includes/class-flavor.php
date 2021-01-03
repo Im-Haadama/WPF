@@ -122,7 +122,7 @@ class Flavor {
 		$this->includes(); // Loads class autoloader
 		$this->auto_loader = new Core_Autoloader(FLAVOR_ABSPATH);
 		$this->loader = Core_Hook_Handler::instance();
-		$this->init_hooks();
+		$this->init_hooks($this->loader);
 
 //		if (get_user_id() == 1)
 //			print "loading flavor";
@@ -134,22 +134,21 @@ class Flavor {
 	 *
 	 * @since 2.3
 	 */
-	private function init_hooks() {
+	private function init_hooks(Core_Hook_Handler $loader) {
 		$this->database = new Flavor_Database();
 		$this->database->install($this->version);
 		register_shutdown_function( array( $this, 'log_errors' ) );
-		add_action( 'after_setup_theme', array( $this, 'setup_environment' ) );
-		add_action( 'after_setup_theme', array( $this, 'include_template_functions' ), 11 );
-		add_action( 'init', array( $this, 'init' ), 0 );
-		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
+		$loader->AddAction( 'after_setup_theme', $this, 'setup_environment' );
+		$loader->AddAction( 'after_setup_theme', $this, 'include_template_functions', 11 );
+		$loader->AddAction( 'init', $this, 'init', 0 );
+		$loader->AddAction( 'init', Core_Shortcodes::instance(), 'init' );
 
-		add_action('data_save_new', array('Core_Data', 'data_save_new'));
-		add_action('admin_menu', array($this, 'admin_menu'));
-
+		$loader->AddAction('data_save_new', Core_Data::instance(), 'data_save_new');
+		$loader->AddAction('admin_menu', $this, 'admin_menu');
 
 		// If this cause problem, alter isManagementPage.
 		if (!defined('WP_DEBUG'))
-			add_action('wp', 'unlogged_guest_posts_redirect');
+			$loader->AddAction('wp', $this, 'unlogged_guest_posts_redirect');
 
 
 		GetSqlConn( ReconnectDb() );
@@ -160,13 +159,15 @@ class Flavor {
 		$i->AddTable("multisite");
 		$i->AddTable("options", "option_id" );
 
-		AddAction( 'admin_enqueue_scripts', array($this, 'admin_scripts' ));
+		$loader->AddAction( 'admin_enqueue_scripts', $this, 'admin_scripts' );
+		$loader->AddAction( 'wp_enqueue_scripts', $this, 'enqueue_scripts' );
+
 		Core_Gem::getInstance()->init_hooks($this->loader);
 		Flavor_Org_Views::instance()->init_hooks($this->loader);
 		Flavor_Mission::instance()->init_hooks($this->loader);
 		Core_Data::init_hooks($this->loader);
-		add_action( 'admin_notices', array($this, 'admin_notices') );
-		add_action('admin_init', array($this, 'blog_settings'));
+		$loader->AddAction( 'admin_notices', $this, 'admin_notices' );
+		$loader->AddAction('admin_init', $this, 'blog_settings');
 
 		// For production
 		if ((get_user_id() == 1) and defined("DEBUG_USER")) wp_set_current_user(DEBUG_USER);
@@ -589,7 +590,7 @@ class Flavor {
 	 *
 	 */
 	public function run() {
-//		$this->loader->run();
+		$this->loader->run();
 	}
 
 	public function getNav()
@@ -713,12 +714,19 @@ class Flavor {
 	}
 
 	public function admin_scripts() {
+	}
+
+	public function enqueue_scripts() {
 		$file = FLAVOR_INCLUDES_URL . 'core/gui/client_tools.js';
 		wp_enqueue_script( 'client_tools', $file, null, $this->version, false );
 
 		$file = FLAVOR_INCLUDES_URL . 'core/gem.js';
 		wp_enqueue_script( 'gem', $file, null, $this->version, false );
+
+		$file = FLAVOR_INCLUDES_URL . 'core/data/data.js';
+		wp_enqueue_script( 'data', $file, null, $this->version, false );
 	}
+
 
 	function add_admin_notice($message)
 	{
@@ -743,6 +751,14 @@ class Flavor {
 	{
 		self::instance()->loader->run();
 	}
+
+	function unlogged_guest_posts_redirect()
+	{
+		if (Flavor::isManagementPage() && !is_user_logged_in()) {
+			auth_redirect();
+		}
+	}
+
 }
 
 function flavor_get_logger()
@@ -750,12 +766,6 @@ function flavor_get_logger()
 	return Core_Logger::instance();
 }
 
-function unlogged_guest_posts_redirect()
-{
-	if (Flavor::isManagementPage() && !is_user_logged_in()) {
-			auth_redirect();
-		}
-}
 
 function modify_admin_bar( $wp_admin_bar )
 {

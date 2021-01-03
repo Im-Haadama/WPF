@@ -42,9 +42,8 @@ function flavor() {
 //$GLOBALS['flavor'] = flavor();
 
 function run_flavor() {
-$plugin = Flavor::instance();
-//
-//	$plugin->run();
+	$plugin = Flavor::instance();
+	$plugin->run();
 }
 
 run_flavor();

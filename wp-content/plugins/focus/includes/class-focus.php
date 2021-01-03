@@ -104,7 +104,7 @@ class Focus {
 	/**
 	 * WooCommerce Constructor.
 	 */
-	public function __construct($plugin_name)
+	private function __construct($plugin_name)
 	{
 		// Call after install
 //		self::CreateRoles();

@@ -510,7 +510,7 @@ class Fresh {
 		$this->supplies->init();
 		$this->suppliers->init_hooks();
 		$this->suppliers->init();
-		Fresh_Basket::init();
+		Fresh_Basket::init($this->loader);
 		$this->delivery_manager->init();
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );

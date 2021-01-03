@@ -61,12 +61,15 @@ function data_save_new(post_operation, table_name, page)
     operation += form_params;
 
     if (typeof(page) === "string"){
-        page = function(xmlhttp, obj) { next_page(xmlhttp, page); }
+        page_function = function(xmlhttp, obj) { next_page(xmlhttp, page); }
     }  else {
-        if (typeof (page) !== 'function') page = action_back;
+        if (typeof (page) == 'function')
+            page_function = page;
+        else
+            page_function = action_back;
     }
 
-    execute_url(operation, page);
+    execute_url(operation, page_function);
 }
 
 function get_form_params(table_id, check_mandatory)

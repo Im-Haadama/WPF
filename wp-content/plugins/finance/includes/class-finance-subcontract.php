@@ -3,10 +3,10 @@
 
 class Finance_Subcontract {
 
-	function init_hooks()
+	function init_hooks($loader)
 	{
-		AddAction('makolet_create_invoice', array($this, 'makolet_create_invoice'));
-		AddAction('wpf_accounts', array($this, 'main'), 10, 1);
+		$loader->AddAction('makolet_create_invoice', $this, 'makolet_create_invoice');
+		$loader->AddAction('wpf_accounts', $this, 'main', 10, 1);
 	}
 
 	function main($tabs)

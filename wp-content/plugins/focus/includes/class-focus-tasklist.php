@@ -51,9 +51,11 @@ class Focus_Tasklist {
 			$row = SqlQuerySingle( "SELECT repeat_freq, repeat_freq_numbers, timezone " .
 			                       " from ${db_prefix}task_templates where id = " . $row[4] );
 
-			$this->repeat_freq         = $row[0];
-			$this->repeat_freq_numbers = $row[1];
-			$this->timezone = $row[2];
+			if ($row) {
+				$this->repeat_freq         = $row[0];
+				$this->repeat_freq_numbers = $row[1];
+				$this->timezone            = $row[2];
+			}
 		}
 		$this->logger = Focus_Manager::instance()->getLogger();
 	}

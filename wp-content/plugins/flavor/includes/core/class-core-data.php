@@ -14,7 +14,7 @@ class Core_Data
 	/**
 	 * Core_Data constructor.
 	 */
-	public function __construct() {
+	private function __construct() {
 	}
 
 	static function init_hooks($loader)
@@ -69,7 +69,7 @@ class Core_Data
 	static function data_save_new()
 	{
 		$table_name = GetParam("table_name", true);
-		return self::SaveNew($table_name);
+		print self::SaveNew($table_name);
 	}
 
 	static function Inactive($table_name, $rows)
