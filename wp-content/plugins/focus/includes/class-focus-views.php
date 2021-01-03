@@ -975,6 +975,7 @@ class Focus_Views {
 		}
 
 		$args["rows_per_page"] = 9; // GetParam( "limit", false, 10 );
+		array_push($args["fields"], "created");
 
 		$table = $this->Taskslist( $args );
 		if ( $this->result_count ) {
@@ -2256,8 +2257,13 @@ class Focus_Views {
 
 	function enqueue_scripts()
 	{
+		$version = Focus::instance()->version;
+
 		$file = FLAVOR_INCLUDES_URL . 'js/sorttable.js';
-		wp_enqueue_script( 'sorttable', $file, null, '1.0', false );
+		wp_enqueue_script( 'sorttable', $file, null, $version, false );
+
+		$file = FLAVOR_INCLUDES_URL . 'core/gui/client_tools.js';
+		wp_enqueue_script( 'client_tools', $file, null, $version, false );
 	}
 
 	function gem_next_page_tasklist()

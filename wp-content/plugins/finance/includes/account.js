@@ -121,7 +121,12 @@ function create_invoice(post_file, customer_id) {
 
     let row_ids = account_get_row_ids();
 
-    let date = get_value(document.getElementById("pay_date"));
+    if (! row_ids.length) {
+        alert("יש לבחור את המשלוחים להפקת חשבונית");
+        return false;
+    }
+
+    let date = get_value_by_name("invoice_date");
     let request = post_file + "?operation=create_invoice" +
         "&date=" + date +
         "&row_ids=" + row_ids.join() +

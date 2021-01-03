@@ -157,7 +157,7 @@ class Finance_Client_Views {
 					"יצירת חשבונית",
 					Core_Html::GuiButton( "btn_invoice", "Invoice", array( "action" => "create_invoice('" . Finance::getPostFile() . "', " . $customer_id . ")" ) )
 				),
-				array( "תאריך", Core_Html::gui_input_date( "pay_date", "" ) )
+				array( "תאריך", Core_Html::gui_input_date( "invoice_date", "" ) )
 			), "payment_table",
 				$args );
 

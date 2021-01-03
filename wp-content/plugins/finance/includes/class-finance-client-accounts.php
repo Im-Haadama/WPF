@@ -244,6 +244,7 @@ class Finance_Client_Accounts
 				break;
 			case "i":
 				$doc->DocumentType = InvoiceDocumentType::Invoice;
+				$doc->IssueDate = date("c", strtotime($date));
 				break;
 		}
 
