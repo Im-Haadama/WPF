@@ -191,7 +191,7 @@ class Fresh_Pricelist_Item {
 			$style = null;
 			if ($p->getPrice() and ($p->getPrice() < $price)) $style = "background-color: #EC7063";
 			array_push( $row, Core_Html::GuiInput("prc_$linked_prod_id", $p->getPrice(),
-				array("events"=>array("onchange=\"product_change_regularprice('" . Fresh::getPost() . "', " . $this->id . ", $linked_prod_id)\"", 'onkeypress="moveNext(this)"'),
+				array("events"=>array("onchange=\"product_change_regularprice('" . Fresh::getPost() . "', " . $this->id . ", $linked_prod_id)\"", 'onkeypress="moveNextRow(this)"'),
 				      "size"=>5,
 					"style" => $style)));
 			array_push( $row, Core_Html::GuiInput("sal_$linked_prod_id", $p->getSalePrice(),

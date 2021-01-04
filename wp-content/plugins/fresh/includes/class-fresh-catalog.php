@@ -24,8 +24,8 @@ class Fresh_Catalog {
 	function init_hooks($loader)
 	{
 		$loader->AddAction("create_products", $this, 'CreateProduct_wrap');
-		$loader->AddAction("product_change_regularprice", $this, "::ChangeProductRegularPrice_wrap");
-		$loader->AddAction("product_change_saleprice", $this, "::ChangeProductSalePrice_wrap");
+		$loader->AddAction("product_change_regularprice", $this, "ChangeProductRegularPrice_wrap");
+		$loader->AddAction("product_change_saleprice", $this, "ChangeProductSalePrice_wrap");
 		$loader->AddAction("product_publish", $this, "product_publish");
 		$loader->AddAction("remove_map", $this, "remove_map");
 		$loader->AddAction("draft_by_map_id", $this, "draft_by_map_id");

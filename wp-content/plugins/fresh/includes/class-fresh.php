@@ -508,7 +508,7 @@ class Fresh {
 
 		$this->supplies->init_hooks();
 		$this->supplies->init();
-		$this->suppliers->init_hooks();
+		$this->suppliers->init_hooks($this->loader);
 		$this->suppliers->init();
 		Fresh_Basket::init($this->loader);
 		$this->delivery_manager->init();

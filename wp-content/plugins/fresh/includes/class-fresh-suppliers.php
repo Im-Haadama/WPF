@@ -3,17 +3,17 @@
 class Fresh_Suppliers {
 	private $gem;
 
-	function init_hooks() {
-		AddAction( "gem_v_show", array( $this, "pricelist_header" ), 9 );
-//		AddAction( "gem_v_show", array( $this, "draftable_products" ), 12 );
-		AddAction( "gem_v_show", array( $this, "pricelist_functions" ), 11 );
-		AddAction( "suppliers_map_products", __CLASS__ . "::suppliers_map_products" );
-		AddAction( "suppliers_map_remove", __CLASS__ . "::suppliers_map_remove" );
-		AddAction( "add_pricelist_item", array( $this, 'add_pricelist_item' ) );
-		AddAction('pricelist_delete', array($this, 'delete'));
-		add_filter("supplier_price_list_check_valid", array($this, 'supplier_pricelist_valid'), 10, 2);
-		AddAction("pricelist_before_import", array($this, 'supplier_pricelist_before_import'));
-		AddAction("pricelist_update_price" , array($this, 'pricelist_update_price'));
+	function init_hooks($loader) {
+		$loader->AddAction( "gem_v_show", $this, "pricelist_header" , 9 );
+//		AddAction( "gem_v_show", $this, "draftable_products" ), 12 );
+		$loader->AddAction( "gem_v_show", $this, "pricelist_functions" , 11 );
+		$loader->AddAction( "suppliers_map_products", $this, "suppliers_map_products" );
+		$loader->AddAction( "suppliers_map_remove", $this, "suppliers_map_remove" );
+		$loader->AddAction( "add_pricelist_item", $this, 'add_pricelist_item' ) ;
+		$loader->AddAction('pricelist_delete', $this, 'delete');
+		add_filter("supplier_price_list_check_valid", $this, 'supplier_pricelist_valid', 10, 2);
+		$loader->AddAction("pricelist_before_import", $this, 'supplier_pricelist_before_import');
+		$loader->AddAction("pricelist_update_price" , $this, 'pricelist_update_price');
 	}
 
 	function init()
