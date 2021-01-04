@@ -81,9 +81,13 @@ class Finance_Delivery
 		return round($this->delivery_total, 2);
 	}
 
-	public function getOrder() : Finance_Order {
+	public function getOrder() : ?Finance_Order {
 		if (! $this->order) {
-			$this->order = new Finance_Order($this->order_id);
+			try {
+				$this->order = new Finance_Order( $this->order_id );
+			} catch (Exception $e) {
+				return null;
+			}
 		}
 		return $this->order;
 	}
@@ -237,6 +241,10 @@ class Finance_Delivery
 	}
 
 	public function OrderInfoBox() {
+		$order = $this->getOrder();
+		if (! $order) {
+			throw new Exception("No order");
+		}
 		return $this->getOrder()->infoBox();
 	}
 
@@ -248,6 +256,8 @@ class Finance_Delivery
 	// Show - if delivery note created.
 	function Show($edit = false)
 	{
+		$order = $this->getOrder();
+		if (! $order) return "Order not found";
 		$html = self::OrderInfoBox();
 		$user_id = $this->getUserId();
 
@@ -596,6 +606,8 @@ class Finance_Delivery
 
 	private function getUserId()
 	{
+		$order = self::getOrder();
+		if (! $order) throw new Exception("No order");
 		return self::getOrder()->getCustomerId();
 	}
 

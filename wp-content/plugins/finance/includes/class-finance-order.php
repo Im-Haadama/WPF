@@ -23,8 +23,8 @@ class Finance_Order {
 	// Load order
 	public function __construct( $order_id ) {
 		if ( ! is_numeric( $order_id ) or ! $order_id) {
-			print debug_trace(20);
-			die ("bad order id: $order_id");
+//			print debug_trace(20);
+			throw new Exception("bad order id: $order_id");
 		}
 		$this->order_id = $order_id;
 		if (! function_exists("wc_get_order"))
@@ -33,7 +33,7 @@ class Finance_Order {
 		$this->WC_Order = wc_get_order($order_id);
 		if (! $this->WC_Order) {
 			print debug_trace(10);
-			die("FaileD: can't load order $order_id");
+			throw new Exception("Failed: can't load order $order_id");
 		}
 
 		$this->mission_id = get_post_meta( $order_id, 'mission_id', true );;

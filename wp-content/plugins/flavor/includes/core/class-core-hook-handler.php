@@ -75,7 +75,7 @@ class Core_Hook_Handler {
 	 * @param    int                  $accepted_args    Optional. The number of arguments that should be passed to the $callback. Default is 1.
 	 */
 	public function AddAction( $hook, $component, $callback = null, $priority = 10, $accepted_args = 1 ) {
-		$debug =false;
+		$debug = false; // ($hook == 'admin_menu');
 		if (!$callback) {
 			if ($debug) print "using $hook";
 			$callback = $hook;

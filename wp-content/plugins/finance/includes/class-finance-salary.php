@@ -728,15 +728,15 @@ class Finance_Salary {
 		return $args;
 	}
 
-	function init_hooks()
+	function init_hooks($loader)
 	{
-		add_action('admin_menu', array($this, 'admin_menu'));
-		AddAction('salary_add_time', array($this, 'salary_add_time'));
-		AddAction('salary_delete', array($this, 'salary_delete'));
-		AddAction('show_working_row', array($this, 'show_working_row_wrap'));
-		AddAction('show_report', array($this, 'report_wrapper'));
+		$loader->AddAction('admin_menu', $this, 'admin_menu');
+		$loader->AddAction('salary_add_time', $this, 'salary_add_time');
+		$loader->AddAction('salary_delete', $this, 'salary_delete');
+		$loader->AddAction('show_working_row', $this, 'show_working_row_wrap');
+		$loader->AddAction('show_report', $this, 'report_wrapper');
 		if (im_user_can("show_salary"))
-			AddAction('show_entry', array($this, 'entry_wrapper'));
+			$loader->AddAction('show_entry', $this, 'entry_wrapper');
 
 		Core_Gem::getInstance()->AddTable("working_rates");
 	}

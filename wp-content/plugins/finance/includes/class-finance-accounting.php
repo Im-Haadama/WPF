@@ -14,7 +14,7 @@ class Finance_Accounting {
 
 		$report .= Core_Html::GuiHeader(2, "הכנסות");
 
-		$sql = "SELECT ref, date, amount, delivery_fee as 'delivery fee', client_from_delivery(ref) as client,
+		$sql = "SELECT id, ref, date, amount, delivery_fee as 'delivery fee', client_from_delivery(ref) as client,
 		delivery_receipt(ref) AS קבלה
 		FROM im_business_info WHERE " .
 		       " is_active = 1 AND week = '" . $week . "' AND amount > 0 ORDER BY 1";
@@ -27,7 +27,8 @@ class Finance_Accounting {
 			'קבלה' => '',
 			               'due_vat' => array(0, 'SumNumbers'),
 			'fresh' => array(0, 'SumNumbers'));
-		$in_args = array("links" => array("ref" => Finance_Delivery::getLink('%s')),
+		$in_args = array("links" => array("id"=>AddToUrl(array("operation"=>'invoice_show', 'id'=>"%d")),
+			"ref" => Finance_Delivery::getLink('%s')),
 		                 "accumulation_row" => &$sums_in,
 		                 "id_field" => "ref");
 		$rows_data = Core_Data::TableData( $sql, $in_args);

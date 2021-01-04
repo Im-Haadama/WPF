@@ -391,7 +391,7 @@ function SqlError( $sql ) {
 		$message = "Error: sql = `" . $sql;
 		if ($conn) $message .= "`. Sql error : " . mysqli_error( $conn ) . "<br/>";
 		else $message .= "not connected";
-		print debug_trace(4);
+		print debug_trace(10);
 	} else {
 		$message = $sql->error;
 		// $message = "sql not string";

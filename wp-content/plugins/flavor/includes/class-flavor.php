@@ -124,6 +124,10 @@ class Flavor {
 		$this->loader = Core_Hook_Handler::instance();
 		$this->init_hooks($this->loader);
 
+		// Fires early. Don't use loader.
+		add_action('admin_menu', array($this, 'admin_menu'));
+		add_action('admin_bar_menu', array(Core_Admin_Menu::instance(), 'do_modify_admin_bar'), 200 );
+
 //		if (get_user_id() == 1)
 //			print "loading flavor";
 		do_action( 'flavor_loaded' );
@@ -142,9 +146,7 @@ class Flavor {
 		$loader->AddAction( 'after_setup_theme', $this, 'include_template_functions', 11 );
 		$loader->AddAction( 'init', $this, 'init', 0 );
 		$loader->AddAction( 'init', Core_Shortcodes::instance(), 'init' );
-
 		$loader->AddAction('data_save_new', Core_Data::instance(), 'data_save_new');
-		$loader->AddAction('admin_menu', $this, 'admin_menu');
 
 		// If this cause problem, alter isManagementPage.
 		if (!defined('WP_DEBUG'))
@@ -197,7 +199,7 @@ class Flavor {
 			      'function' => 'Flavor_Mission::missions'));
 
 //		if (TableExists("mission_types"))
-			self::AddTop('missions',"Missions", '/wp-admin/admin.php?page=missions');
+		self::AddTop('missions',"Missions", '/wp-admin/admin.php?page=missions');
 	}
 
 	static function AddTop($id, $title, $href, $parent = null)
@@ -533,7 +535,6 @@ class Flavor {
 //		wp_enqueue_style('woocommerce_admin_styles');
 
 //		self::admin_menu();
-		add_action( 'admin_bar_menu', array(Core_Admin_Menu::instance(), 'do_modify_admin_bar'), 200 );
 	}
 
 	static public function display_name()

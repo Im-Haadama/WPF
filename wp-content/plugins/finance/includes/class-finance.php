@@ -204,7 +204,7 @@ class Finance {
 		$this->payments = Finance_Payments::instance();
 		$this->payments->init_hooks();
 		$this->subcontract->init_hooks($this->loader);
-		$this->salary->init_hooks();
+		$this->salary->init_hooks($this->loader);
 
 		$this->loader->AddAction('multisite_connect', $this, 'multisite_connect');
 		$this->loader->AddAction('multisite_validate', $this, 'multisite_validate');
