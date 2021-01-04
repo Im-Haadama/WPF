@@ -11,14 +11,24 @@ if ( ! defined( 'FRESH_INCLUDES' ) ) {
 }
 
 class Fresh_Catalog {
-	static function init_hooks()
+
+	protected static $_instance = null;
+
+	public static function instance() {
+		if ( is_null( self::$_instance ) ) {
+			self::$_instance = new self("Fresh");
+		}
+		return self::$_instance;
+	}
+
+	function init_hooks($loader)
 	{
-		AddAction("create_products", __CLASS__. '::CreateProduct_wrap');
-		AddAction("product_change_regularprice", __CLASS__."::ChangeProductRegularPrice_wrap");
-		AddAction("product_change_saleprice", __CLASS__."::ChangeProductSalePrice_wrap");
-		AddAction("product_publish", array(__CLASS__, "product_publish"));
-		AddAction("remove_map", array(__CLASS__, "remove_map"));
-		AddAction("draft_by_map_id", array(__CLASS__, "draft_by_map_id"));
+		$loader->AddAction("create_products", $this, 'CreateProduct_wrap');
+		$loader->AddAction("product_change_regularprice", $this, "::ChangeProductRegularPrice_wrap");
+		$loader->AddAction("product_change_saleprice", $this, "::ChangeProductSalePrice_wrap");
+		$loader->AddAction("product_publish", $this, "product_publish");
+		$loader->AddAction("remove_map", $this, "remove_map");
+		$loader->AddAction("draft_by_map_id", $this, "draft_by_map_id");
 	}
 
 	static function remove_map()

@@ -33,7 +33,8 @@ class Finance_Database extends Core_Database {
 	quantity int not null
 )
 engine=MyISAM;");
-			case '1.7.6':
+			case '1.7.12':
+
 //				SqlQuery("alter table ${db_prefix}payments add
 //	    	default_method bit default b'0' null");
 
@@ -208,9 +209,34 @@ charset=utf8;
 	}
 
 	function CreateFunctions($version, $force = false) {
-		$current = self::CheckInstalled("Finance", "functions");
 
 		return;
+		$current = self::CheckInstalled("Finance", "functions");
+
+		SqlQuery("drop function working_rate");
+		SqlQuery("create
+    function working_rate(_worker int, _project int) returns float
+BEGIN
+    declare _rate float;
+
+	select round(rate, 2) into _rate  
+	       from im_working_rates 
+	        where user_id = _worker
+	       and project_id = _project;
+
+    if (_rate > 0 ) THEN
+      return _rate;
+    END IF;
+
+	select round(rate, 2) into _rate
+	          from im_working_rates
+	          where user_id = _worker
+	          and project_id = 0;
+    return _rate;
+  END;
+
+");
+
 
 		SqlQuery("drop function client_from_delivery");
 		SqlQuery("create function client_from_delivery(del_id int) returns text CHARSET 'utf8'
@@ -298,30 +324,6 @@ BEGIN
       and meta_key = '_variation_id';
 
     return _variation;
-  END;
-
-");
-
-		SqlQuery("drop function working_rate");
-		SqlQuery("create
-    function working_rate(_worker int, _project int) returns float
-BEGIN
-    declare _rate float;
-
-	select round(rate, 2) into _rate  
-	       from im_working 
-	        where user_id = _worker
-	       and project_id = _project;
-
-    if (_rate > 0 ) THEN
-      return _rate;
-    END IF;
-
-	select round(rate, 2) into _rate
-	          from im_working
-	          where user_id = _worker
-	          and project_id = 0;
-    return _rate;
   END;
 
 ");
