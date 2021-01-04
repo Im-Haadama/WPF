@@ -156,7 +156,6 @@ class Freight {
 
 	function mission_dispatch_wrap($id)
 	{
-		print "=========================================AAA";
 		print Freight_Mission_Manager::instance()->dispatcher($id, true);
 	}
 

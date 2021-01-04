@@ -28,6 +28,7 @@ class Finance {
 	protected $database;
 	protected $subcontract;
 	protected $salary;
+	protected $inventory;
 	protected $message;
 
 	/**
@@ -139,16 +140,15 @@ class Finance {
 		$this->clients     = new Finance_Client_Accounts();
 		$this->subcontract = new Finance_Subcontract();
 		$this->salary      = new Finance_Salary();
-
-		$inventory = new Finance_Inventory( $this->get_plugin_name(), $this->get_version(), self::getPost());
-		$this->loader->AddAction( 'admin_enqueue_scripts', $inventory, 'admin_scripts' );
+		$this->inventory = new Finance_Inventory( $this->get_plugin_name(), $this->get_version(), self::getPost());
+		$this->loader->AddAction( 'admin_enqueue_scripts', $this->inventory, 'admin_scripts' );
 
 		$finance_actions = new Finance_Actions();
 		$finance_actions->init_hooks($this->loader);
 
 		$bl = new Finance_Business_Logic();
 		$bl->init_hooks($hook_manager);
-
+		$this->inventory->init_hooks($this->loader);
 		$this->init_hooks($this->loader);
 
 		do_action( 'finance_loaded' );
@@ -167,6 +167,7 @@ class Finance {
 	 * @since 2.3
 	 */
 	private function init_hooks(Core_Hook_Handler $loader) {
+//		print "----------------------------------------" . __FUNCTION__;
 		// Flavor::getInstance();
 		// register_activation_hook( WC_PLUGIN_FILE, array( 'Finance_Install', 'install' ) );
 		register_shutdown_function( array( $this, 'log_errors' ) );
@@ -211,8 +212,6 @@ class Finance {
 		$this->loader->AddAction("get_open_invoices", $this, 'get_open_invoices');
 		$this->loader->AddAction("get_open_trans", $this, 'get_open_trans');
 		$this->loader->AddAction("exists_invoice", $this, 'exists_invoice');
-
-		Finance_Inventory::instance()->init_hooks($this->loader);
 
 		$i = Core_Db_MultiSite::getInstance();
 		$i->AddTable("missions");

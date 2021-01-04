@@ -75,8 +75,16 @@ class Core_Hook_Handler {
 	 * @param    int                  $accepted_args    Optional. The number of arguments that should be passed to the $callback. Default is 1.
 	 */
 	public function AddAction( $hook, $component, $callback = null, $priority = 10, $accepted_args = 1 ) {
-		if (!$callback) $callback = $hook;
-		if (is_callable(array($component, $callback . "_wrap"))) $callback .= "_wrap";
+		$debug =false;
+		if (!$callback) {
+			if ($debug) print "using $hook";
+			$callback = $hook;
+		}
+		if (is_callable(array($component, $callback . "_wrap"))) {
+			if ($debug) print "using ${callback}_wrap";
+			$callback .= "_wrap";
+		}
+		if ($debug) var_dump($component);
 		if ($this->debug) print __FUNCTION__ . " $hook" . "<br/>";
 		$this->actions = $this->add( $this->actions, $hook, $component, $callback, $priority, $accepted_args );
 	}
@@ -138,7 +146,7 @@ class Core_Hook_Handler {
 		}
 
 		foreach ( $this->actions as $hook ) {
-//			if ($hook == 'gem_edit_multisite') print ("===================== Adding " . $hook['hook']) . "<br/>";
+			if ($hook == 'inventory_show_supplier') print ("===================== Adding " . $hook['hook']) . "<br/>";
  			// print "adding " . $hook['hook'] . " " . var_dump($hook['component']) . " " . $hook['callback'] . "<br/>";
 			add_action($hook['hook'], array( $hook['component'], $hook['callback'] ), $hook['priority'], $hook['accepted_args'] );
 		}
@@ -148,7 +156,10 @@ class Core_Hook_Handler {
 	{
 		if (! isset($this->actions[$action]))
 			print "Failed: no handler for $action";
-		else
-			do_action($action, $params);
+		else {
+			do_action( $action, $params );
+		}
 	}
 }
+
+

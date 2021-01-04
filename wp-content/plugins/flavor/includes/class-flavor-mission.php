@@ -209,7 +209,6 @@ class Flavor_Mission {
 
 	static function mission($id)
 	{
-		print "AAAAAAAAAAAAA=============================================";
 		if (GetParam("operation", false) == "dispatch") {
 			print "doing";
 			do_action("mission_dispatch", $id);

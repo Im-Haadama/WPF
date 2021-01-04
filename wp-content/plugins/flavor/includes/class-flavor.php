@@ -590,7 +590,12 @@ class Flavor {
 	 *
 	 */
 	public function run() {
-		$this->loader->run();
+		// 2021-Jan-4 agla
+		// Dont run here the loader!
+		// it should be run just before the content.
+        // $this->loader->run();
+
+		add_action('init', array($this->loader, 'run'));
 	}
 
 	public function getNav()

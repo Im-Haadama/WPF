@@ -19,7 +19,9 @@ class Finance_Inventory
 	{
 		$loader->AddAction("inventory_show_supplier", $this);
 		$loader->AddACtion("inv_save_count", $this);
+		$loader->AddAction("download_inventory_count", $this);
 	}
+
 	static function handle()
 	{
 		$operation = GetParam("operation", false, "show_status");
@@ -33,6 +35,7 @@ class Finance_Inventory
 		$this->plugin_name = $name;
 		$this->post_file = $post_file;
 		self::$_instance = $this;
+//		$this->inventory_show_supplier1([]);
 //		add_action( 'wp_enqueue_scripts', array('Fresh_Inventory', 'enqueue_styles' ));
 	}
 
@@ -42,32 +45,33 @@ class Finance_Inventory
 		return self::instance()->post_file;
 	}
 
-	static function handle_operation($operation)
+//	static function handle_operation($operation)
+//	{
+//		switch ($operation){
+//			case "show_status":
+//				break;
+//			case "show":
+//				$year = GetParam("year");
+//				$supplier_id = GetParam("supplier_id");
+//				return self::inventory_show_supplier($year, $supplier_id);
+//				break;
+//			case "save_inv":
+//				$data = GetParamArray("data", true);
+//				return self::save_inv($data);
+//				break;
+//
+//			case "inventory_zero":
+//				$supplier_id = GetParam("supplier_id", true);
+//				return self::zero_count($supplier_id);
+//				break;
+//		}
+//	}
+
+	public function download_inventory_count()
 	{
-		switch ($operation){
-			case "download_inventory_count":
-				$year = (date('m') < 12 ? date('Y') - 1 : date('Y'));
-				return self::download_inventory($year);
-				break;
-			case "show_status":
-				break;
-			case "show":
-				$year = GetParam("year");
-				$supplier_id = GetParam("supplier_id");
-				return self::inventory_show_supplier($year, $supplier_id);
-				break;
-			case "save_inv":
-				$data = GetParamArray("data", true);
-				return self::save_inv($data);
-				break;
-
-			case "inventory_zero":
-				$supplier_id = GetParam("supplier_id", true);
-				return self::zero_count($supplier_id);
-				break;
-		}
+		$year = (date('m') < 12 ? date('Y') - 1 : date('Y'));
+		return self::download_inventory($year);
 	}
-
 	function inv_save_count() {
 		$supplier_id = GetParam( "supplier_id", true );
 
@@ -201,7 +205,7 @@ class Finance_Inventory
 		return $result;
 	}
 
-	static function inventory_show_supplier($params)
+	public function inventory_show_supplier($params)
 	{
 		$year = GetArg($params, "year",null);
 		$supplier_id = GetArg($params, "supplier_id", null);
@@ -213,22 +217,24 @@ class Finance_Inventory
 		$result .= "לחיצה למטה על Save inventory ישמור את ספירת המלאי של הספק - לצורך מלאי שנתי<br/>";
 		$result .= Core_Html::GuiLabel("supplier_id", $supplier_id, array("hidden" => true));
 
+		$query = "datediff(count_date, '$year-12-31') < 30
+		and datediff(count_date, '$year-12-31') > -7
+		    and supplier_id = " . $supplier_id;
+
 		$sql = "select count(*) from im_inventory_count 
-			where datediff(count_date, '$year-12-31') < 30
-			 and datediff(count_date, '$year-12-31') > -7
-			 and supplier_id = " . $supplier_id;
+			where $query";
 
 		$count = SqlQuerySingleScalar($sql);
 //		print "count = $count<br/>";
 		if ($count) {
 			$args = ["only_active" => 0];
-			$args['query'] = "supplier_id = $supplier_id";
+			$args['query'] = $query;
 			$result .= Core_Gem::GemTable("inventory_count", $args);
 		} else {
 			$result .= self::show_supplier_inventory($supplier_id);
 		}
-		$result .= Core_Html::GuiButton("btn_save_count", "Save count", array("action" => "inventory_save_count(" . $supplier_id . ")"));
 
+		$result .= Core_Html::GuiButton("btn_save_count", "Save count", array("action" => "inventory_save_count(" . $supplier_id . ")"));
 		print $result;
 	}
 
@@ -285,7 +291,6 @@ class Finance_Inventory
 
 		$menu->AddSubMenu("edit.php?post_type=product", "edit_shop_orders",
 			array('page_title' => 'Inventory', 'function' => array($this , 'inventory' )));
-
 	}
 
 	public function inventory()
