@@ -364,9 +364,9 @@ function bundle_update_quantity(post_file, id)
 
 function inventory_change(post_file, prod_id)
 {
-    let prod_ids = new Array();
+    let data = new Array();
     let q = get_value_by_name("inv_" + prod_id);
-    prod_ids.push(prod_id, q);
-    let request = post_file + "?operation=inventory_save&data=" + prod_ids.join();
+    data.push(prod_id, q);
+    let request = post_file + "?operation=inventory_save&data=" + data.join();
     execute_url(request, fail_message);
 }

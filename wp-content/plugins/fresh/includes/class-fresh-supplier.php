@@ -56,9 +56,11 @@ class Fresh_Supplier {
 	}
 
 	function getLastCount() {
+		$sql = "select max(count_date) from im_inventory_count where supplier_id = " . $this->id;
 		//  year(date_sub(count_date, interval 30 day)) from im_Tinventory_count
-		$result = SqlQuerySingleScalar( "select max(count_date) from im_inventory_count where supplier_id = " . $this->id);
-		if (strlen($result) < 5) return null;
+		$result = SqlQuerySingleScalar( $sql);
+//		print $sql . " $result<br/>";
+		// if (strlen($result) < 5) return null;
 		return $result;
 	}
 

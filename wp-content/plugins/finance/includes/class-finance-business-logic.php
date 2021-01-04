@@ -62,8 +62,8 @@ class Finance_Business_Logic {
 			return false;
 		}
 
-		FinanceLog(__FUNCTION__);
-		if ($pay_on_checkout)
+		FinanceLog(__FUNCTION__ . " poc=$pay_on_checkout");
+		if (false)
 		{
 			$credit_info = array("card_number" => str_replace("-", "", $_REQUEST["billing_creditcard"]),
 			                     "exp_date_month" => $_REQUEST["billing_expdatemonth"],

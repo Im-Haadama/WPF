@@ -695,7 +695,6 @@ class Finance {
 
 	    $file = FINANCE_INCLUDES_URL . 'delivery.js';
 	    wp_enqueue_script( 'delivery', $file, null, $this->version, false );
-
 	}
 
 	public function run() {

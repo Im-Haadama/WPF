@@ -3,7 +3,7 @@
 
 class Finance_Inventory
 {
-	private $version = null;
+	private $version = '1.0';
 	private $plugin_name = null;
 	private $post_file = null;
 	static private $_instance = null;
@@ -18,6 +18,7 @@ class Finance_Inventory
 	function init_hooks($loader)
 	{
 		$loader->AddAction("inventory_show_supplier", $this);
+		$loader->AddACtion("inv_save_count", $this);
 	}
 	static function handle()
 	{
@@ -59,16 +60,18 @@ class Finance_Inventory
 				$data = GetParamArray("data", true);
 				return self::save_inv($data);
 				break;
-			case "inv_save_count":
-				$supplier_id = GetParam("supplier_id", true);
-				return self::save_count($supplier_id);
-				break;
 
 			case "inventory_zero":
 				$supplier_id = GetParam("supplier_id", true);
 				return self::zero_count($supplier_id);
 				break;
 		}
+	}
+
+	function inv_save_count() {
+		$supplier_id = GetParam( "supplier_id", true );
+
+		return self::save_count( $supplier_id );
 	}
 
 	static function download_inventory($year)
@@ -147,6 +150,7 @@ class Finance_Inventory
 
 		$pricelist_ids = SqlQueryArrayScalar( $sql );
 
+		$saved = false;
 		foreach ($pricelist_ids as $pl_id){
 			$link_data = $catalog->GetProdID( $pl_id );
 			if ( $link_data ) {
@@ -157,8 +161,14 @@ class Finance_Inventory
 					$sql = "insert into im_inventory_count (count_date, supplier_id, product_id, product_name, quantity) values  
 				          (" . QuoteText(date('Y-m-d')) . ", " . $supplier_id . ", " . $product_id . ", '" . EscapeString($p->getName()) . "'," . $count . ")";
 					if (! SqlQuery($sql)) return false;
+					$save = true;
 				}
 			}
+		}
+		if (! $saved) {
+			$sql = "insert into im_inventory_count (count_date, supplier_id, product_id, product_name, quantity) values  
+				          (" . QuoteText(date('Y-m-d')) . ", " . $supplier_id . ", 0, '" . EscapeString('כללי"') . "'," . 0 . ")";
+			if (! SqlQuery($sql)) return false;
 		}
 		return true;
 	}
@@ -198,15 +208,21 @@ class Finance_Inventory
 
 		$supplier = new Fresh_Supplier($supplier_id);
 
-		$result = Core_Html::GuiHeader(1, __("Inventory of supplier")). " " . $supplier->getSupplierName() ." " . __("for year ending in") . " " . $year;
+		$result = Core_Html::GuiHeader(1, __("Inventory of supplier"). " " . $supplier->getSupplierName()) ." " . __("for") . " 31-dec-" . $year ."<br/>";
+		$result .= "עדכון של הערך של העמודה השמאלית יעדכן את המלאי הזמין למכירה.<br/>";
+		$result .= "לחיצה למטה על Save inventory ישמור את ספירת המלאי של הספק - לצורך מלאי שנתי<br/>";
 		$result .= Core_Html::GuiLabel("supplier_id", $supplier_id, array("hidden" => true));
 
-		$sql = "select count(*) from im_inventory_count where year(count_date) = " . $year . " and supplier_id = " . $supplier_id;
-//		print $sql;
+		$sql = "select count(*) from im_inventory_count 
+			where datediff(count_date, '$year-12-31') < 30
+			 and datediff(count_date, '$year-12-31') > -7
+			 and supplier_id = " . $supplier_id;
+
 		$count = SqlQuerySingleScalar($sql);
 //		print "count = $count<br/>";
 		if ($count) {
 			$args = ["only_active" => 0];
+			$args['query'] = "supplier_id = $supplier_id";
 			$result .= Core_Gem::GemTable("inventory_count", $args);
 		} else {
 			$result .= self::show_supplier_inventory($supplier_id);
@@ -219,19 +235,18 @@ class Finance_Inventory
 	static function show_supplier_inventory( $supplier_id ) {
 		$img_size = 40;
 		$display = "";
-		$table = array( array( "", "מוצר", "מחיר עלות", "כמות במלאי" ) );
+		$table = array( array( "", "מוצר", "מחיר עלות", "כמות במלאי", "תאריך שמירה"  ) );
 
 //		$display = Core_Html::GuiHeader( 1, "מלאי לספק " . get_supplier_name( $supplier_id ) );
 		$catalog = new Fresh_Catalog();
 
-		$sql = 'SELECT product_name, price, date, pl.id, supplier_product_code, s.factor ' .
+		$sql = 'SELECT product_name, price, date, pl.id, supplier_product_code ' .
 		       ' FROM im_supplier_price_list pl ' .
 		       ' Join im_suppliers s '
 		       . ' where supplier_id = ' . $supplier_id
 		       . ' and s.id = pl.supplier_id '
 		       . ' order by 1';
 
-//		print $sql;
 		$result = SqlQuery( $sql );
 		while ( $row = SqlFetchRow( $result ) ) {
 			$pl_id     = $row[3];
@@ -239,14 +254,16 @@ class Finance_Inventory
 			if ( $link_data ) {
 				$prod_id = $link_data[0];
 				$p = new Fresh_Product($prod_id);
+				if (! $p->found()) continue;
 //				print $p->getName() . "<br/>";
 //				 $line    = self::product_line( $prod_id, false, false, null, true, $supplier_id );
 //				array_push( $table, $line );
+				$args = array("name" =>"sup_" . $supplier_id, "events" => 'onchange="inventory_change(\'' . Flavor::getPost() . '\', ' . $prod_id . ')"');
 				$table[$prod_id] = array(
 					(has_post_thumbnail( $prod_id ) ? get_the_post_thumbnail( $prod_id, array( $img_size, $img_size ) ) : ""),
 					$p->getName(),
 					$p->getBuyPrice($supplier_id),
-					Core_Html::GuiInput( "inv_" . $prod_id, $p->getStock(), array("name" =>"term_" . $supplier_id )),
+					Core_Html::GuiInput( "inv_" . $prod_id, $p->getStock(), $args),
 					$p->getStockDate());
 			}
 		}
@@ -257,9 +274,9 @@ class Finance_Inventory
 
 		$display .= Core_Html::gui_table_args( $table, "table_" . $supplier_id );
 
-		$display .= Core_Html::GuiButton( "btn_save_inv" . $supplier_id, "Save inventory", array("action" => "save_inv('term_" . $supplier_id . "')" ));
+//		$display .= Core_Html::GuiButton( "btn_save_inv" . $supplier_id, "Save inventory", array("action" => "save_inv('term_" . $supplier_id . "')" ));
 
-		print $display;
+		return $display;
 	}
 
 	public function admin_menu()

@@ -199,7 +199,7 @@ class Fresh {
 
 		$this->loader->AddAction( 'wp_enqueue_scripts', $orders, 'enqueue_scripts' );
 
-		Fresh_Packing::init_hooks();
+		Fresh_Packing::instance()->init_hooks($this->loader);
 //		Fresh_Suppliers::init_hooks();
 		Fresh_Order_Management::instance()->init_hooks();
 		Fresh_Catalog::init_hooks();

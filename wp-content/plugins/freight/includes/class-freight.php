@@ -147,7 +147,6 @@ class Freight {
 
 		$loader->AddFilter("mission_actions", $this);
 		$loader->AddAction("mission_dispatch", $this);
-
 		// get local deliveries
 
 		GetSqlConn(ReconnectDb());
@@ -157,6 +156,7 @@ class Freight {
 
 	function mission_dispatch_wrap($id)
 	{
+		print "=========================================AAA";
 		print Freight_Mission_Manager::instance()->dispatcher($id, true);
 	}
 

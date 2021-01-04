@@ -22,9 +22,15 @@ class Finance_Product {
 		try {
 			$this->wp_p = new WC_Product( $id );
 		} catch ( Exception $e ) {
+			$this->wp_p = null;
 			return null;
 //			print "can't create prod " . $id . $e->getMessage() . " " . $this->getName() . "<br/>";
 		}
+	}
+
+	public function found() : bool
+	{
+		return null != $this->wp_p;
 	}
 
 	static function getByName($prod_name)

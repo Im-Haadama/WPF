@@ -196,7 +196,7 @@ class Flavor {
 			      'menu_slug' => 'missions',
 			      'function' => 'Flavor_Mission::missions'));
 
-		if (TableExists("mission_types"))
+//		if (TableExists("mission_types"))
 			self::AddTop('missions',"Missions", '/wp-admin/admin.php?page=missions');
 	}
 

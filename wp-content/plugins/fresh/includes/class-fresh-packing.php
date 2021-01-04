@@ -1,5 +1,14 @@
 <?php
 class Fresh_Packing {
+	protected static $_instance = null;
+
+	public static function instance() {
+		if ( is_null( self::$_instance ) ) {
+			self::$_instance = new self("Fresh");
+		}
+		return self::$_instance;
+	}
+
 	static function needed_products() {
 		$result = "";
 
@@ -248,10 +257,10 @@ class Fresh_Packing {
 		return $result;
 	}
 
-	static function init_hooks() {
+	function init_hooks($loader) {
 		add_filter( 'manage_edit-shop_order_columns', array(__CLASS__, 'wc_new_order_column' ));
 		add_action( 'manage_shop_order_posts_custom_column', array(__CLASS__, 'add_freight' ));
-		AddAction('inventory_save', array(__CLASS__, 'inventory_save'));
+		$loader->AddAction('inventory_save', $this);
 	}
 
 	static function inventory_save()
@@ -263,6 +272,7 @@ class Fresh_Packing {
 		$p = new Fresh_Product($prod_id);
 		return $p->setStock($q);
 	}
+
 	static function add_freight($col)
 	{
 		global $post;

@@ -1,5 +1,8 @@
 <?php
 
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 class Flavor_Mission {
 
@@ -206,7 +209,7 @@ class Flavor_Mission {
 
 	static function mission($id)
 	{
-		dd($id);
+		print "AAAAAAAAAAAAA=============================================";
 		if (GetParam("operation", false) == "dispatch") {
 			print "doing";
 			do_action("mission_dispatch", $id);
