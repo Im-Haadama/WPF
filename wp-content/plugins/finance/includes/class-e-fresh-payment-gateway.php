@@ -109,7 +109,7 @@ if (class_exists("WC_Payment_Gateway")) {
 			print "Error: " . $this->error_message . "<br/>";
     }
 
-    public function payment_fields() {
+        public function payment_fields() {
 			global $wpdb;
 			$billing_creditcard = isset( $_REQUEST['billing_creditcard'] ) ? esc_attr( $_REQUEST['billing_creditcard'] ) : '';
 			$valid_credit_info = false;
@@ -131,15 +131,16 @@ if (class_exists("WC_Payment_Gateway")) {
 				//$valid_id = (! class_exists('Israel_Shop')) or
                 $valid_id = Israel_Shop::ValidID($id_number);
 
+//                update_usermeta($current_user_id, 'credit_token', 'invoice4u00');
 				$token = get_usermeta($current_user_id, 'credit_token');
 //				MyLog("token: $token");
 //				MyLog(strstr($card_number, 'XX'));
 
-                MyLog("vid= " . $valid_id . " " . $valid_year . " " . $valid_month . " " . $card_number);
+                FinanceLog("vid= " . $valid_id . " " . $valid_year . " " . $valid_month . " " . $card_number);
 				$valid_credit_info = ($valid_id and
 				     (($valid_year > $this_year) or (($valid_year == $this_year) and ($valid_month >= $this_month))) and
                      (strlen($token) >= 10 or ! strstr($card_number, 'XX')));
-				MyLog("vci=" . $valid_credit_info);
+				FinanceLog("vci=" . $valid_credit_info);
 			}
 
 			global $l10n;

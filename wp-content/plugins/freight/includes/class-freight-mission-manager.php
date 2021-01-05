@@ -100,7 +100,7 @@ class Freight_Mission_Manager
 			$address1 = $line[2];
 			$address2 = $line[3];
 			$city = $line[4];
-			$comments = $line[5];
+			$comments = $order_id . " " . $line[5];
 			$phone = $line[6];
 
 			$delivery_info = array(

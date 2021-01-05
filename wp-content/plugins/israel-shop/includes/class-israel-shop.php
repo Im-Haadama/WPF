@@ -138,8 +138,9 @@ class Israel_Shop
 	}
 
 	public function admin_scripts() {
-		$file = FLAVOR_INCLUDES_URL . 'core/data/data.js';
-		wp_enqueue_script( 'data', $file);
+		// Should be loaded by flavor
+//		$file = FLAVOR_INCLUDES_URL . 'core/data/data.js';
+//		wp_enqueue_script( 'data', $file);
 
 		$file = ISRAEL_INCLUDES_URL . 'js/admin.js';
 		wp_register_script( 'israel_admin', $file );

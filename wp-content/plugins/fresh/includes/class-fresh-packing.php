@@ -244,7 +244,6 @@ class Fresh_Packing {
 			}
 		}
 
-
 		array_push($supplier_tabs,
 			array('missing',
 				'Missing supplier info',

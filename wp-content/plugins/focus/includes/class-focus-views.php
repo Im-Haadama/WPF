@@ -67,8 +67,9 @@ class Focus_Views {
 		$version = Focus::instance()->version;
 		print "<script>let focus_post_url = \"" . self::getPost() . "\"; </script>";
 
-		$file = FLAVOR_INCLUDES_URL . 'core/data/data.js';
-		wp_enqueue_script( 'data', $file, null, $version, false );
+		// Should be loaded by flavor
+//		$file = FLAVOR_INCLUDES_URL . 'core/data/data.js';
+//		wp_enqueue_script( 'data', $file, null, $version, false );
 
 		$file = FLAVOR_INCLUDES_URL . 'core/gui/client_tools.js';
 		wp_enqueue_script( 'client_tools', $file, null, $version, false );

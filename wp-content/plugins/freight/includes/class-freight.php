@@ -497,8 +497,9 @@ class Freight {
 	    $file = FLAVOR_INCLUDES_URL . 'js/sorttable.js';
 	    wp_enqueue_script( 'sorttable', $file, null, '1.0', false );
 
-	    $file = FLAVOR_INCLUDES_URL . 'core/data/data.js';
-	    wp_enqueue_script( 'data', $file, null, $this->version, false );
+	    // Should be loaded by flavor
+//	    $file = FLAVOR_INCLUDES_URL . 'core/data/data.js';
+//	    wp_enqueue_script( 'data', $file, null, $this->version, false );
 
 	    $file = FLAVOR_INCLUDES_URL . 'core/gui/client_tools.js';
 	    wp_enqueue_script( 'client_tools', $file, null, $this->version, false );

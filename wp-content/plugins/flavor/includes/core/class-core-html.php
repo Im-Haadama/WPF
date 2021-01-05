@@ -1784,12 +1784,13 @@ class Core_Html {
 		$url = GetArg($args, "url", GetUrl(0));
 
 		$selected_tab = GetArg($args, "st_$id", null);
-		if (null == $selected_tab){
+		$all_loaded = GetArg($args, "tabs_load_all", false);
+		if ($all_loaded) $selected_tab = null;
+		if (! $all_loaded and (null == $selected_tab)){
 			print "st_$id not set<br/>";
 			die(1);
 		}
-		$all_loaded = GetArg($args, "tabs_load_all", false);
-		if ($all_loaded) $selected_tab = null;
+
 
 		if ($debug) print "al=$all_loaded";
 

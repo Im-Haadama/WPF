@@ -161,18 +161,19 @@ class Flavor {
 		$i->AddTable("multisite");
 		$i->AddTable("options", "option_id" );
 
-		$loader->AddAction( 'admin_enqueue_scripts', $this, 'admin_scripts' );
-		$loader->AddAction( 'wp_enqueue_scripts', $this, 'enqueue_scripts' );
+		// WP actions.
+		add_action( 'admin_enqueue_scripts', array($this, 'admin_scripts' ));
+		add_action( 'wp_enqueue_scripts', array($this, 'enqueue_scripts' ));
+		add_action( 'admin_notices', array($this, 'admin_notices' ));
+		add_action('admin_init', array($this, 'blog_settings'));
 
 		Core_Gem::getInstance()->init_hooks($this->loader);
 		Flavor_Org_Views::instance()->init_hooks($this->loader);
 		Flavor_Mission::instance()->init_hooks($this->loader);
 		Core_Data::init_hooks($this->loader);
-		$loader->AddAction( 'admin_notices', $this, 'admin_notices' );
-		$loader->AddAction('admin_init', $this, 'blog_settings');
 
 		// For production
-		if ((get_user_id() == 1) and defined("DEBUG_USER")) wp_set_current_user(DEBUG_USER);
+		if ((get_user_id() == 1 or get_user_id() == 2)  and defined("DEBUG_USER")) wp_set_current_user(DEBUG_USER);
 	}
 
 	public function blog_settings()

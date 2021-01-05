@@ -52,6 +52,8 @@ function clear_duplicates()
     }
 }
 
+//find_user_id();
+
 function find_user_id()
 {
 	ini_set('display_errors', 1);
