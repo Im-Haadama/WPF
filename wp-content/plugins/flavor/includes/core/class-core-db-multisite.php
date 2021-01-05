@@ -33,28 +33,34 @@ class Core_Db_MultiSite extends Core_MultiSite {
 //		SqlQuery("update im_multisite set active = 1");
 
 		$this->allowed_tables = [];
-		if ( TableExists( "multisite" ) ) {
+		$loaded = false;
+		if (TableExists( "multisite" ) ) {
 			$sql           = "select id, site_name, tools_url, local, display_name, active, master, user, password " .
 			                 " from im_multisite 
 			                 where active = 1";
 			$results       = SqlQueryArray( $sql );
-			if (! $results or ! count($results)) die ("no site infomation");
-			$sites_array   = array();
-			$master_id     = null;
-			$local_site_id = null;
-			foreach ($results as $row) {
-				$id = $row[0];
-				if ( $row[3] ) {
-					$local_site_id = $row[0];
-				} // local
-				if ( $row[6] ) {
-					$master_id = $row[0];
-				}     // master
-				$line               = array( $id, $row[1], $row[2], $row[7], $row[8] );
-				$sites_array[ $id ] = $line;
-				// array_push($sites_array, $line);
+			if ($results and count($results)) {
+				$sites_array   = array();
+				$master_id     = null;
+				$local_site_id = null;
+				foreach ( $results as $row ) {
+					$id = $row[0];
+					if ( $row[3] ) {
+						$local_site_id = $row[0];
+					} // local
+					if ( $row[6] ) {
+						$master_id = $row[0];
+					}     // master
+					$line               = array( $id, $row[1], $row[2], $row[7], $row[8] );
+					$sites_array[ $id ] = $line;
+					// array_push($sites_array, $line);
+				}
+				$loaded = true;
 			}
-		} else {
+		}
+
+		if (! $loaded)
+		{
 			// Single site
 			$sites_array   = array();
 			$master_id     = 1;
@@ -191,8 +197,8 @@ class Core_Db_MultiSite extends Core_MultiSite {
 		MyLog(__FUNCTION__, $table);
 		if ( $remote == 0 ) $remote = self::getMaster();
 
-		if ($this->isMaster()) return true;
-
+//		if ($this->isMaster()) return true;
+//
 		$url = Flavor::getPost() . "?operation=sync_data_$table";
 		if ( $query ) $url .= "&query=" . urlencode( $query );
 
@@ -365,6 +371,16 @@ class Core_Db_MultiSite extends Core_MultiSite {
 
 	function admin_page()
 	{
+		if (count($this->sites_array) == 1)
+		{
+			print Core_Html::GuiHeader(1, "Single site");
+			print self::ShowConnectToMaster();
+			return;
+		}
+		// For testing:
+//		SqlQuery("truncate im_multisite");
+//		die (1);
+
 		$result = Core_Html::GuiHeader(1, "Multi sites");
 		$args = ["post_file" => Flavor::getPost()];
 		$db_prefix = GetTablePrefix();
@@ -402,6 +418,7 @@ class Core_Db_MultiSite extends Core_MultiSite {
 			return;
 		}
 //		self::UpdateFromRemote("multisite");
+		print "updating<br/>";
 		self::updateFromMaster();
 
 		$result .= Core_Gem::GemTable("multisite", $args);
@@ -446,13 +463,14 @@ class Core_Db_MultiSite extends Core_MultiSite {
 	function updateFromMaster() {
 		$db_prefix = GetTablePrefix();
 
-		if ( ! $this->UpdateFromRemote( "multisite", "id", 0, null, null, false ) ) {
+		if ( ! $this->UpdateFromRemote( "multisite", "id", 0, null, null, false) ) {
 			print "Can't update from master<br/>";
 
 			return false;
 		}
 		$host_name           = $_SERVER['SERVER_NAME'];
 		$this->local_site_id = SqlQuerySingleScalar( "select id from ${db_prefix}multisite where tools_url like '%$host_name%'" );
+		if (! $this->local_site_id) die ("Can't find local");
 //		print "my site id $this->local_site_id.<br/> master id: $this->master_id<br/>";
 		if ( $this->local_site_id ) {
 			$sql = "update ${db_prefix}multisite set local = 1 where id = $this->local_site_id";
@@ -465,6 +483,7 @@ class Core_Db_MultiSite extends Core_MultiSite {
 
 	function install()
 	{
+
 		SqlQuery("CREATE TABLE `im_multisite` (
   `id` int(11) NOT NULL,
   `site_name` varchar(20) DEFAULT NULL,

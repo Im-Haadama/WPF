@@ -19,6 +19,8 @@ if (!defined('WC_LOG_DIR')) {
 		define ("WC_LOG_DIR", wp_get_upload_dir()['basedir'] . '/wc-logs/');
 	else
 		define ("WC_LOG_DIR", '/wp-content/uploads/wc-logs/');
+
+	if (! file_exists(WC_LOG_DIR)) mkdir(WC_LOG_DIR);
 }
 
 	function MyLog( $msg, $title = '', $file = 'fresh.log' )

@@ -29,7 +29,7 @@ class Freight {
 	 *
 	 * @var string
 	 */
-	public $version = '1.4';
+	public $version = '1.4.1';
 
 	private $plugin_name;
 
@@ -115,7 +115,7 @@ class Freight {
 		$this->settings = new Freight_Settings();
 		if (defined('FREIGHT_LEGACY_USER')) {
 			$this->legacy = new Freight_Legacy(FREIGHT_LEGACY_USER);
-			$this->legacy->init_hooks();
+			$this->legacy->init_hooks($this->loader);
 		}
 
 		$this->init_hooks($this->loader);
@@ -508,7 +508,7 @@ class Freight {
 	    wp_register_script( 'freight_admin', $file, null, $this->version, false);
 	    wp_enqueue_script('freight_admin');
 
-		$file = FREIGHT_INCLUDES_URL . 'js/legacy.js?v=1';
+		$file = FREIGHT_INCLUDES_URL . 'js/legacy.js';
 		wp_register_script( 'legacy', $file);
 		wp_enqueue_script( 'legacy', $file, null, $this->version, false );
 

@@ -45,10 +45,10 @@ class Freight_Legacy {
 		print  $result;
 	}
 
-	function init_hooks()
+	function init_hooks($loader)
 	{
-		AddAction("create_ship", array($this, 'create_ship_wrap'));
-		AddAction("create_subcontract_delivery_invoice", array($this, "create_subcontract_delivery_invoice"));
+		$loader->AddAction("create_ship", $this, 'create_ship_wrap');
+		$loader->AddAction("create_subcontract_delivery_invoice", $this, "create_subcontract_delivery_invoice");
 	}
 
 	function create_ship_wrap()
@@ -106,8 +106,8 @@ class Freight_Legacy {
 			if (! $item->Price) $item->Price = 37.4;
 			$net_total             += $item->Price;
 			$item->Quantity        = 1;
-			$item->TaxPercentage   = Fresh_Pricing::getVatPercent();
-			$item->TotalWithoutTax = Fresh_Pricing::totalWithoutVat($item->Price);
+			$item->TaxPercentage   = Israel_Shop::getVatPercent();
+			$item->TotalWithoutTax = Israel_Shop::totalWithoutVat($item->Price);
 			$item->Total           = round( $item->Price * $item->Quantity, 2 );
 			array_push( $doc->Items, $item );
 			$total_lines += $item->Total;

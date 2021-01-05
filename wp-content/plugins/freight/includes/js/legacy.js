@@ -35,7 +35,7 @@ function create_ship(post_file) {
 
     for (var i = 0; i < collection.length; i++) {
         if (collection[i].checked) {
-            var del_id = collection[i].id.substring(3); // table.rows[i + 1].cells[6].firstChild.innerHTML;
+            var del_id = collection[i].id.substring(4); // table.rows[i + 1].cells[6].firstChild.innerHTML;
             del_ids.push(del_id);
             count++;
         }

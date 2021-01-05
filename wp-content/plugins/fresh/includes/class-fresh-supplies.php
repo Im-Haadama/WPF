@@ -15,22 +15,22 @@ class Fresh_Supplies {
 
 	}
 
-	public function init_hooks()
+	public function init_hooks($loader)
 	{
-		AddAction('admin_menu', array($this, 'admin_menu'));
-		AddAction('create_supply_from_file', array($this, 'create_supply_from_file'));
-		AddAction('create_supply', array($this, 'create_supply'));
-		AddAction('delete_supplies', array($this, 'delete_supplies'));
-		AddAction('show_supply', array($this, 'show_supply'));
-		AddAction('set_mission', array($this, 'set_mission'));
-		AddAction('supply_add_item', array($this, 'supply_add_item'));
-		AddAction('supply_delete_items', array($this, 'supply_delete_item'));
-		AddAction('supply_update_items', array($this, 'supply_update_items'));
-		AddAction('supply_save_comment', array($this, 'supply_save_comment'));
-//		AddAction('supply_upload', array($this, 'supply_upload'));
-		AddAction('got_supply', array($this, 'got_supply_wrap'));
-		AddAction('supplies_merge', array($this, 'supplies_merge'));
-		AddAction('supplies_send', array($this, 'supplies_send'));
+		$loader->AddAction('admin_menu', $this, 'admin_menu');
+		$loader->AddAction('create_supply_from_file', $this, 'create_supply_from_file');
+		$loader->AddAction('create_supply', $this, 'create_supply');
+		$loader->AddAction('delete_supplies', $this, 'delete_supplies');
+		$loader->AddAction('show_supply', $this, 'show_supply');
+		$loader->AddAction('set_mission', $this, 'set_mission');
+		$loader->AddAction('supply_add_item', $this, 'supply_add_item');
+		$loader->AddAction('supply_delete_items', $this, 'supply_delete_item');
+		$loader->AddAction('supply_update_items', $this, 'supply_update_items');
+		$loader->AddAction('supply_save_comment', $this, 'supply_save_comment');
+//		$loader->AddAction('supply_upload', $this, 'supply_upload');
+		$loader->AddAction('got_supply', $this, 'got_supply_wrap');
+		$loader->AddAction('supplies_merge', $this, 'supplies_merge');
+		$loader->AddAction('supplies_send', $this, 'supplies_send');
 
 		Core_Gem::getInstance()->AddTable("supplies");
 	}
@@ -87,8 +87,9 @@ class Fresh_Supplies {
 		$result = Core_Html::GuiHeader(1, "Supplies management");
 
 		$operation = GetParam("operation", false, null);
+		$args = [];
 		if ($operation) {
-			print apply_filters($operation, "");
+			print apply_filters($operation, $args);
 			return;
 		}
 		$tabs = [];

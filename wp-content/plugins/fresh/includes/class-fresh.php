@@ -506,7 +506,7 @@ class Fresh {
 		$shortcodes->add($this->totals->getShortcodes());
 		$shortcodes->add($this->client_views->getShortcodes());
 
-		$this->supplies->init_hooks();
+		$this->supplies->init_hooks($this->loader);
 		$this->supplies->init();
 		$this->suppliers->init_hooks($this->loader);
 		$this->suppliers->init();

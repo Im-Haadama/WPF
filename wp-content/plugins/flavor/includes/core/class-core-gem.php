@@ -103,6 +103,10 @@ class Core_Gem {
 
 	function add_wrapper($args = null)
 	{
+		if (! $args) {
+			$args              = [];
+			$args["post_file"] = Flavor::getPost();
+		}
 		$operation = GetArg($args, "operation", null);
 		if (! $operation) {
 			$operation = GetParam("operation", true);

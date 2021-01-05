@@ -18,5 +18,6 @@ function multisite_connect(post_file)
         return;
     }
 
-    execute_url(post_file + '?operation=multisite_connect&server='+encodeURIComponent(server) + '&user=' + user + '&password=' + encodeURI(password));
+    execute_url(post_file + '?operation=multisite_connect&server='+encodeURIComponent(server) + '&user=' + user + '&password=' + encodeURI(password),
+        reload_location);
 }
