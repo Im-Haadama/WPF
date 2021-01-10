@@ -137,8 +137,11 @@ function data_set_active(post_file, id)
     execute_url(url, load_page);
 }
 
-function execute_url(url, finish_action, obj) {
+function execute_url(url, finish_action, obj, xml) {
     let xhp = new XMLHttpRequest();
+
+    if (xml) xhp.overrideMimeType('text/xml');
+
     xhp.onreadystatechange = function () {
         // Wait to get query result
         if (xhp.readyState == 4 && xhp.status == 200)  // Request finished

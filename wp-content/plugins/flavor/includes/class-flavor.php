@@ -20,7 +20,7 @@ class Flavor {
 	 *
 	 * @var string
 	 */
-	public $version = '1.5';
+	public $version = '1.6';
 
 	/**
 	 * @var
@@ -192,12 +192,12 @@ class Flavor {
 	public function admin_menu()
 	{
 		$menu = Core_Admin_Menu::instance();
+//		$menu->AddSubMenu('freight', 'edit_shop_orders',
+//			array('page_title' => 'Missions',
+//			      'menu_title' => 'Missions',
+//			      'menu_slug' => 'missions',
+//			      'function' => 'Freight_Mission_Manager::missions'));
 
-		$menu->AddSubMenu('missions', 'edit_shop_orders',
-			array('page_title' => 'Missions',
-			      'menu_title' => 'Missions',
-			      'menu_slug' => 'missions',
-			      'function' => 'Flavor_Mission::missions'));
 
 //		if (TableExists("mission_types"))
 		self::AddTop('missions',"Missions", '/wp-admin/admin.php?page=missions');

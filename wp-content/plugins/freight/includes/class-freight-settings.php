@@ -76,12 +76,6 @@
 //				      'menu_slug' => 'dispatcher',
 //				      'function' => 'Freight_Mission_Manager::dispatcher_wrap'));
 
-			$menu->AddSubMenu('freight', 'edit_shop_orders',
-				array('page_title' => 'Missions',
-				      'menu_title' => 'Missions',
-				      'menu_slug' => 'missions',
-				      'function' => 'Freight_Mission_Manager::missions'));
-
 			if ($legacy = Freight::instance()->getLegacy())
 				$menu->AddSubMenu('freight', 'edit_shop_orders',
 					array('page_title' => 'Legacy',

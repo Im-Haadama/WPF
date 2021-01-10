@@ -56,7 +56,6 @@ class Flavor_Mission {
 		if ($week)
 			$header .= __("Missions of week") . " " . $week;
 
-
 		$result = Core_Html::GuiHeader(1, $header);
 
 		$multi = Core_Db_MultiSite::getInstance();
@@ -220,6 +219,11 @@ class Flavor_Mission {
 		$result = Core_Html::GuiHeader(1, "Mission $id");
 		$result .= Core_Gem::GemElement("missions", $id, $args);
 		return $result;
+	}
+
+	static function install_woocommerce()
+	{
+		print Core_Html::GuiHeader(1,"Deliveries and missions are using woocommerce. Install it!");
 	}
 
 }

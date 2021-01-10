@@ -81,8 +81,20 @@ class Finance_Settings {
 		$menu->AddSubMenu( "users.php", "edit_shop_orders",
 			array( 'page_title' => 'Client accounts', 'function' => array( "Finance_Client_Views", 'admin_page' ) ) );
 
-		Flavor::AddTop("client_accounts", "Client accounts", "/wp-admin/users.php?page=client-accounts");
+		if (im_user_can("edit_shop_orders"))
+			$menu->AddSubMenu('finance', 'edit_shop_orders',
+				array('page_title' => 'Missions',
+				      'menu_title' => 'Missions',
+				      'menu_slug' => 'missions',
+				      'function' => 'Flavor_Mission::missions'));
+		else
+			$menu->AddSubMenu('finance', 'read',
+				array('page_title' => 'Install woocommerce',
+				      'menu_title' => 'Missions',
+				      'menu_slug' => 'missions',
+				      'function' => 'Flavor_Mission::install_woocommerce'));
 
+		Flavor::AddTop("client_accounts", "Client accounts", "/wp-admin/users.php?page=client-accounts");
 
 		$menu->AddSubMenu( "users.php", "edit_shop_orders",
 			array( 'page_title' => 'Payment methods', 'function' => array( "Finance_Payments", 'payment_methods' ) ) );

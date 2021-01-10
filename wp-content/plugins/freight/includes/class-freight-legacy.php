@@ -269,6 +269,7 @@ AND (meta_value = "legacy" or meta_value = 1)';
 		       " and invoice is null " .
 		       " and document_type = " . Finance_DocumentType::ship;
 
+
 		$args = array("add_checkbox" => 1, "checkbox_class" => "delivery_note", "page_number"=>-1);
 
 
@@ -343,7 +344,7 @@ AND (meta_value = "legacy" or meta_value = 1)';
 			$item->Price           = $row[2];
 			$net_total             += $row[3];
 			$item->Quantity        = 1;
-			$item->TaxPercentage   = Fresh_Pricing::getVatPercent();
+			$item->TaxPercentage   = Israel_Shop::getVatPercent();
 			$item->TotalWithoutTax = $row[3];
 			$item->Total           = round( $item->Price * $item->Quantity, 2 );
 			array_push( $doc->Items, $item );

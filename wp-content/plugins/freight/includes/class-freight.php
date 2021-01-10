@@ -29,7 +29,7 @@ class Freight {
 	 *
 	 * @var string
 	 */
-	public $version = '1.4.1';
+	public $version = '1.4.2';
 
 	private $plugin_name;
 
@@ -147,21 +147,40 @@ class Freight {
 
 		$loader->AddFilter("mission_actions", $this);
 		$loader->AddAction("mission_dispatch", $this);
+		$loader->AddAction("mission_markers", $this);
 		// get local deliveries
 
 		GetSqlConn(ReconnectDb());
 		Freight_Methods::init($loader);
-		Freight_Mission_Manager::instance()->init_hooks($loader);
+		Freight_Actions::instance()->init_hooks($loader);
+	}
+
+	function mission_markers()
+	{
+		$id = GetParam("id");
+		$m = Freight_Mission_Manager::get_mission_manager($id);
+		print $m->markers($id);
 	}
 
 	function mission_dispatch_wrap($id)
 	{
-		print Freight_Mission_Manager::instance()->dispatcher($id, true);
+		$m = Freight_Mission_Manager::get_mission_manager($id);
+
+		$prev_time         = microtime(true);
+		print $m->dispatcher();
+
+		$now         = microtime(true);
+		$micro_delta = $now - $prev_time;
+		print "time: $micro_delta<br/>";
+
+//		print Freight_Mission_Manager::instance()->dispatcher($id, true);
 	}
 
 	function mission_actions($actions)
 	{
+		$actions['Plan'] = Core_Html::GuiHyperlink("Plan", "/wp-content/plugins/freight/plan.php?id=%d");
 		$actions['Dispatch'] = Core_Html::GuiHyperlink("Dispatch", AddToUrl("operation", "mission_dispatch&id=%d"));
+		$actions['clean'] = Core_Html::GuiHyperlink("Clean", AddToUrl("operation", "mission_clean&id=%d"));
 
 		return $actions;
 	}

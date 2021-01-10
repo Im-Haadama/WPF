@@ -1,8 +1,5 @@
 <?php
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
 /*
  * Copyright (c) 2020. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
  * Morbi non lorem porttitor neque feugiat blandit. Ut vitae ipsum eget quam lacinia accumsan.
@@ -39,14 +36,18 @@ class Freight_Mission_Manager
 	private $stop_points;
 	private $point_sites;
 	private $point_orders;
+	private $mission_id;
 
-	static private $_instance;
-
+	function instance()
+	{
+		return null;
+	}
 	/**
 	 * Freight_Mission_Manager constructor.
 	 */
 
-	public function __construct( ) {
+	public function __construct($mission_id) {
+		$this->mission_id = $mission_id;
 		$this->points_per_sites    = array();
 		$this->lines_per_station   = array();
 		$this->prerequisite        = array();
@@ -56,73 +57,22 @@ class Freight_Mission_Manager
 		$this->point_orders        = array();
 	}
 
-	public static function instance() {
-		if ( is_null( self::$_instance ) ) {
-			self::$_instance = new self();
-		}
-		return self::$_instance;
-	}
-
-	function init_hooks(Core_Hook_Handler $loader)
+	static public function get_mission_manager($mission_id)
 	{
-//		print debug_trace(10); print "---------------------<br/>";
-		add_action("order_save_pri", __CLASS__ . '::order_save_pri');
-		add_action("mission_update_type", __CLASS__ . '::mission_update_type');
-		add_action("mission_details", __CLASS__ . '::mission_details');
-		$loader->AddAction("freight_do_add_delivery", $this);
-		$loader->AddAction('delivered', $this, "delivered_wrap");
-		add_action('download_mission', array($this, 'download_mission'));
-		add_action('print_mission', array($this, 'print_mission'));
-		AddAction('order_update_driver_comment', array(__CLASS__, 'order_update_driver_comment'));
-		$loader->AddAction("freight_do_import", $this);
+		self::$multi_site = Core_Db_MultiSite::getInstance();
+
+		// Try cache
+		$data = InfoGet("mission_$mission_id");
+		if ($data) return unserialize($data);
+
+		// Get from all sites.
+		$n = new Freight_Mission_Manager($mission_id);
+		$n->get_route();
+
+		return $n;
 	}
 
-	function freight_do_import_wrap_csv($mission_id)
-	{
-		if (! isset($_FILES["fileToUpload"]["tmp_name"])) {
-			print "No file selected";
-
-			return;
-		}
-
-		$file_name = $_FILES["fileToUpload"]["tmp_name"];
-
-		$file = fopen( $file_name, "r" );
-		$header = fgetcsv( $file ); // Skip header.
-		$customer = new Finance_Client(1);
-		$zone = $customer->getZone();
-		$the_shipping = null;
-		foreach ($zone->get_shipping_methods(true) as $shipping_method) {
-			// Take the first option.
-			$the_shipping = $shipping_method;
-			break;
-		}
-		while ($line = fgetcsv( $file ))
-		{
-			$order_id = $line[0];
-			$client_name = $line[1];
-			$address1 = $line[2];
-			$address2 = $line[3];
-			$city = $line[4];
-			$comments = $order_id . " " . $line[5];
-			$phone = $line[6];
-
-			$delivery_info = array(
-			'shipping_first_name' => $client_name,
-				'shipping_last_name' => '',
-				'shipping_address_1' => $address1,
-				'shipping_address_2'=> $address2,
-				'shipping_city'=>$city,
-				'shipping_postcode'=>'',
-				'billing_phone'=>$phone
-			);
-
-			$O = Finance_Order::CreateOrder(1, $mission_id,  null, $the_shipping, $comments, 10, $delivery_info);
-			print "Created order  " . $O->GetID() . " client $client_name<br/>";
-		}
-	}
-
-    function freight_do_import_wrap($mission_id)
+    function freight_do_import_wrap_html($mission_id)
     {
         if (!isset($_FILES["fileToUpload"]["tmp_name"])) {
             print "No file selected";
@@ -191,38 +141,6 @@ class Freight_Mission_Manager
             }
         }
     }
-
-	function print_mission()
-	{
-		$id = GetParam("id", true);
-		print Core_Html::HeaderText();
-		// The route stops.
-		$args = array("print" => true, "edit" => false);
-		print $this->dispatcher($id, $args);
-
-		// Supplies to collect
-		$supplies = Fresh_Supplies::mission_supplies($id);
-		foreach ($supplies as $supply_id) {
-			$s = new Fresh_Supply($supply_id);
-			print $s->Html($args) ;
-		}
-		die(0);
-	}
-
-	function download_mission()
-	{
-		$id = GetParam("id", true, "");
-		$file = $this->getCSV($id);
-		$date = date('Y-m-d');
-		$file_name = "mission_${id}_${date}.csv";
-
-		header("Content-Disposition: attachment; filename=\"" . $file_name . "\"");
-		header("Content-Type: application/octet-stream");
-		header("Content-Length: " . strlen($file));
-		header("Connection: close");
-		print $file;
-		die (0);
-	}
 
 	function getCSV($the_mission)
 	{
@@ -366,8 +284,35 @@ group by pm.meta_value, p.post_status");
 		print $result;
 	}
 
-	function dispatcher($the_mission, $args)
+	function markers($the_mission)
 	{
+		$output = "";
+		$output .='<?xml version="1.0" encoding="UTF-8"?>' . PHP_EOL .
+		'<markers>' . PHP_EOL;
+		$path = [];
+		$points = $this->prepare_route($the_mission, $path, false);
+		foreach ($points as $points)
+		{
+			$point = $points[0];
+
+			$address = $point[OrderTableFields::address_1] . " " . $point[OrderTableFields::city];
+			$comments = $point[OrderTableFields::comments]; $name = $point[OrderTableFields::client_name];
+			if (! $comments) $comments = $name;
+			$lat_long = Freight_Mission_Manager::get_lat_long($address);
+			$output .='<marker id="1" name="' . $comments . '" address="' . urlencode($address) . '" type="Delivery"'.
+			' lat="' . $lat_long[0]. '" lng="' . $lat_long[1] . '" ';
+			$output .='/>' . PHP_EOL;
+		}
+
+		$output .='</markers>';
+
+		return $output;
+	}
+
+	function dispatcher($args = null)
+	{
+		$the_mission = $this->mission_id;
+
 		$edit = GetArg($args, "edit", true);
 		$print = GetArg($args, "print", false);
 
@@ -375,7 +320,8 @@ group by pm.meta_value, p.post_status");
 		$result = "";
 		$post_file = Flavor::getPost();
 
-		$this->prepare_route($the_mission, $path);
+		$path = [];
+		$this->prepare_route( $path);
 
 		$m = new Mission($the_mission);
 
@@ -489,12 +435,25 @@ group by pm.meta_value, p.post_status");
 		return $result;
 	}
 
-	function prepare_route($mission_id, &$path) {
-		$mission = new Mission($mission_id);
-		$debug = false;
+	function prepare_route(&$path, $build = true) {
+		$mission = new Mission($this->mission_id);
 
+//		$this->get_route($mission_id, $debug);
+
+		// Build the path
+		if ($build) {
+			$path = array($mission->getStartAddress());
+			self::find_route_1( array_diff( $this->stop_points, array( $mission->getStartAddress() ) ), // Remove start address if appears in points.
+				$path, false, $mission->getEndAddress() );
+			return null;
+		}
+		return $this->lines_per_station;
+	}
+
+	function get_route($debug = false)
+	{
+		$mission_id = $this->mission_id;
 		// Read from all sites.
-		self::$multi_site = Core_Db_MultiSite::getInstance();
 		$data_url = Flavor::getPost() . "?operation=get_local_anonymous&mission_ids=$mission_id";
 		$output   = self::$multi_site->GetAll( $data_url, false, $debug );
 
@@ -504,12 +463,7 @@ group by pm.meta_value, p.post_status");
 		// Collect the points
 		self::collect_points( $rows, $mission_id);
 
-		$path = array($mission->getStartAddress());
-
-		// Build the path
-		self::find_route_1(array_diff($this->stop_points, array($mission->getStartAddress())), // Remove start address if appears in points.
-			$path, false, $mission->getEndAddress() );
-
+		InfoUpdate("mission_$mission_id", serialize($this));
 	}
 
 	static private function parse_output($output)
@@ -530,16 +484,13 @@ group by pm.meta_value, p.post_status");
 		return $rows;
 	}
 
-	static function mission_details()
-    {
-    	$id = GetParam("id", true);
-    }
 
 	static function getPost()
 	{
 		return Flavor::getPost();
 	}
 
+	// Calculates points_pe
 	function collect_points($data_lines, $mission_id) {
 		$multisite         = Core_Db_MultiSite::getInstance();
 		$this->stop_points = array();
@@ -637,7 +588,7 @@ group by pm.meta_value, p.post_status");
 			print "לא מזהה את הכתובת של הזמנה " . $order_id . "<br/>";
 		}
 
-		if ($order_info[OrderTableFields::site_name] != 'supplies') {
+		if (0 and $order_info[OrderTableFields::site_name] != 'supplies') {
 			// collect point
 			$start_address = trim( $start_address );
 			if ( ! isset( $this->lines_per_station[ $start_address ] ) ) {
@@ -654,6 +605,25 @@ group by pm.meta_value, p.post_status");
 
 	}
 
+	static function get_lat_long($address)
+	{
+		$r = InfoGet("lat_long" . $address);
+
+		if ($r) {
+			return array(strtok($r, ":"), strtok(null));
+		}
+		$s = "https://maps.googleapis.com/maps/api/geocode/json?address=" . urlencode( $address ).
+		     "&key=" . MAPS_KEY; // . "&language=iw";
+
+		// print $s;
+		$result = file_get_contents( $s );
+
+		$j = json_decode( $result );
+		$lat = $j->results[0]->geometry->location->lat;
+		$long = $j->results[0]->geometry->location->lng;
+		InfoUpdate("lat_long".  $address, $lat . ":" . $long);
+		return array($lat, $long);
+	}
 	static function get_distance( $address_a, $address_b ) {
 		if ( 0) {
 			print "a: " . $address_a . "<br/>";
@@ -933,31 +903,6 @@ group by pm.meta_value, p.post_status");
 		return $default;
 	}
 
-	static function order_save_pri()
-	{
-		$order_id = GetParam("order_id", true);
-		$site_id = GetParam("site_id", true);
-		$pri = GetParam("pri", true);
-
-	//			print info_get("mission_order_priority_" . $site_id . '_' .$order_id);
-		// TEMP: Remove duplicates.
-		Core_Options::info_remove("mission_order_priority_" . $site_id . '_' .$order_id);
-
-		if ($pri > 0)
-			return InfoUpdate("mission_order_priority_" . $site_id . '_' .$order_id, $pri);
-		return false;
-
-	}
-
-	static function mission_update_type()
-	{
-		$mission_id = GetParam("mission", true);
-		$type = GetParam("type", true);
-
-		$m = new Mission($mission_id);
-		return $m->setType($type);
-	}
-
 	static function add_delivery($price, $args = null)
 	{
 		$mission_id = GetParam("id");
@@ -976,40 +921,6 @@ group by pm.meta_value, p.post_status");
 
 		$result .= "</div>";
 		return $result;
-	}
-
-	function freight_do_add_delivery() : bool
-	{
-		$client = GetParam("client", true);
-		$fee = GetParam("fee", true);
-		$mission_id = GetParam("mission_id", true);
-
-		$customer = new Fresh_Client($client);
-		$zone = $customer->getZone();
-		if (! $zone) {
-			print "Failed: zone not found";
-			return false;
-		}
-		$the_shipping = null;
-		foreach ($zone->get_shipping_methods(true) as $shipping_method) {
-			// Take the first option.
-			$the_shipping = $shipping_method;
-			break;
-		}
-		if (! $the_shipping) {
-			print "Failed: no shipping method to zone " . $zone->get_zone_name();
-			return false;
-		}
-
-		$o = Finance_Order::CreateOrder( $client, $mission_id, null, $the_shipping,
-			" משלוח המכולת " . date( 'Y-m-d' ) . " " . $customer->getName(), Israel_Shop::addVat($fee));
-
-		if (! $o)
-			return false;
-		$o->setStatus( 'wc-processing' );
-//		$o->setMissionID($mission_id);
-
-		return true;
 	}
 
 	static function print_deliveries( $mission_id, $selectable = false, $debug = false ) {
@@ -1046,19 +957,7 @@ group by pm.meta_value, p.post_status");
 			}
 		}
 
-		// print "data=" . $data . '<br/>';
 		return $data;
-	}
-
-	static function delivered_wrap()
-	{
-		$site_id = GetParam("site_id", false, Core_Db_MultiSite::LocalSiteId());
-		$type = GetParam("type", false, "orders");
-		$ids = GetParamArray("id", true);
-
-		foreach ($ids as $id)
-			if (! self::delivered($site_id, $type, $id)) return false;
-		return true;
 	}
 
 	static function delivered($site_id, $type, $id, $debug = false)
@@ -1115,20 +1014,16 @@ group by pm.meta_value, p.post_status");
 		new Finance_Order( $order_id );
 	}
 
-	static function order_update_driver_comment()
-	{
-		$order_id = GetParam("order_id", true);
-		$comments = GetParam("comments", true);
-//		print "$order_id \'$comments\'";
-		$o = new Finance_Order($order_id);
-		return $o->UpdateDriverComments($comments);
-	}
-
 	function AddPrerequisite($order_id, $pre_point)
 	{
 //		print "Adding $pre_point to $order_id<br/>";
 		if (! isset($this->prerequisite[$order_id])) $this->prerequisite[$order_id] = array();
 		if (! in_array($pre_point, $this->prerequisite[$order_id]))
 			array_push($this->prerequisite[$order_id], trim($pre_point));
+	}
+
+	static function clean($mission_id)
+	{
+		InfoDelete("mission_$mission_id");
 	}
 }

@@ -8,9 +8,9 @@
  */
 
 function InfoGet( $key, $create = false, $default = null ) {
-	$sql = "SELECT info_data FROM im_info WHERE info_key = '" . $key . "'";
+	$sql = "SELECT info_data FROM im_info WHERE info_key = '" . EscapeString($key) . "'";
 
-//      print $sql ."<br/>";
+    //  print $sql ."<br/>";
 
 	$result = SqlQuerySingleScalar( $sql, false );
 
@@ -228,9 +228,16 @@ function GetParams($ignore_list = array())
 
 	function InfoUpdate( $key, $data ) {
 		$db_prefix = GetTablePrefix();
+		$data = EscapeString($data);
 		return SqlQuery( "insert into ${db_prefix}info (info_key, info_data)
 			values('$key', '$data')
 			on duplicate key update info_data='$data'" );
+	}
+
+	function InfoDelete( $key ) {
+		$db_prefix = GetTablePrefix();
+		return SqlQuery( "delete from ${db_prefix}info
+		where info_key = '$key'");
 	}
 
 

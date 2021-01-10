@@ -43,7 +43,44 @@ END;
 	}
 	function CreateTables( $version, $force ) {
 		$current   = $this->checkInstalled( "tables" );
+
+		if (! $current) return $this->CreateTablesFresh($version);
+
 		$db_prefix = GetTablePrefix();
+		if ( $current == $version and ! $force ) {
+			return true;
+		}
+
+		switch ($current)
+		{
+			case '1.0':
+			case '1.1':
+			case '1.4':
+			case '1.5':
+				SqlQuery("alter table ${db_prefix}info modify info_data blob null");
+				break;
+		}
+
+
+		return self::UpdateInstalled(  "tables", $version );
+	}
+
+	function CreateTablesFresh($version)
+	{
+		$db_prefix = GetTablePrefix();
+
+		if (!TableExists("log"))
+			SqlQuery( "create table ${db_prefix}log
+(
+	id int auto_increment
+		primary key,
+	time datetime not null,
+	source varchar(30) null,
+	severity int null,
+	message longtext null
+);
+
+" );
 
 		if (! TableExists("mission_types"))
 			SqlQuery("create table ${db_prefix}mission_types
@@ -53,8 +90,22 @@ END;
 	mission_name varchar(20) null)
 	charset = utf8");
 
+		if (!TableExists("links")) {
+			SqlQuery( "create table ${db_prefix}links
+(
+    id int auto_increment primary key,
+                type1 int(11) not null,
+                type2 int(11) not null,
+                id1 int(11) not null, 
+                id2 int(11) not null
+);
+
+" );
+			SqlQuery( "create unique index ${db_prefix}links_index1 on ${db_prefix}links (type1, type2, id1);" );
+			SqlQuery( "create unique index ${db_prefix}links_index2 on ${db_prefix}links (type1, type2, id2);" );
+		}
+
 		if (! TableExists("missions"))
-		{
 			SqlQuery("create table ${db_prefix}missions
 (
 	id int auto_increment
@@ -72,43 +123,20 @@ END;
 )
 charset=utf8;
 ");
-		}
 
-		if ( $current == $version and ! $force ) {
-			return true;
-		}
-
-
-		if (!TableExists("log"))
-		SqlQuery( "create table ${db_prefix}log
+		if (! TableExists("info"))
+			SqlQuery("create table ${db_prefix}info
 (
+	info_key varchar(200) charset utf8 null,
+	info_data blob null,
 	id int auto_increment
 		primary key,
-	time datetime not null,
-	source varchar(30) null,
-	severity int null,
-	message longtext null
+	constraint im_info_key_uindex
+		unique (info_key)
 );
 
-" );
-
-	if (!TableExists("links"))
-        SqlQuery( "create table ${db_prefix}links
-(
-    id int auto_increment primary key,
-                type1 int(11) not null,
-                type2 int(11) not null,
-                id1 int(11) not null, 
-                id2 int(11) not null
-);
-
-" );
-
-		SqlQuery("create unique index ${db_prefix}links_index1 on ${db_prefix}links (type1, type2, id1);");
-		SqlQuery("create unique index ${db_prefix}links_index2 on ${db_prefix}links (type1, type2, id2);");
-
+");
 
 		return self::UpdateInstalled(  "tables", $version );
-
 	}
 }

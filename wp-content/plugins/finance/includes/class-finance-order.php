@@ -870,7 +870,7 @@ class Finance_Order {
 	function GetDriverComments()
 	{
 		$driver_comments = get_post_meta($this->order_id, 'driver_comments', true);
-		if (null !== $driver_comments) return $driver_comments;
+		if (null !== $driver_comments and strlen($driver_comments) > 0)   return $driver_comments;
 		$driver_comments = self::GetComments(false);
 		self::UpdateDriverComments($driver_comments);
 		return $driver_comments;
@@ -921,8 +921,8 @@ class Finance_Order {
 
 	function SetComments( $comments ) {
 		$this->comments = $comments;
-		$sql            = "UPDATE wp_posts SET post_excerpt = '" . $this->comments . "' WHERE id=" . $this->order_id;
-		SqlQuery( $sql );
+//		print "going to set to $comments<br/>";
+		$this->getWCOrder()->set_customer_note($comments);
 	}
 
 	function getAddress() {
@@ -1504,7 +1504,7 @@ class Finance_Order {
 		return $this->WC_Order->get_items();
 	}
 
-	public function update_status($status, $note)
+	public function update_status($status, $note = '')
 	{
 		return $this->WC_Order->update_status($status, $note);
 	}
