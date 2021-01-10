@@ -933,19 +933,19 @@ group by pm.meta_value, p.post_status");
 		        " WHERE meta_key = 'mission_id' " .
 		        " AND meta_value = " . $mission_id . ") ";
 		$sql .= ' order by 1';
-
 		$orders    = SqlQuery( $sql );
 
 		$prev_user = - 1;
 		while ( $order = SqlFetchRow( $orders ) ) {
 			$order_id   = $order[0];
+//			print "order: $order_id<br/>";
 			if ($debug) MyLog(__FUNCTION__ . ': $order_id');
 			$o          = new Finance_Order( $order_id );
 			$is_group   = false; // $order[1];
 			$order_user = $order[1];
 			if ( $debug ) print "order " . $order_id . "<br/>";
 
-			if (get_post_meta($order_id, "delivered")) continue;
+//			if (get_post_meta($order_id, "delivered")) continue;
 			if ( ! $is_group ) {
 				$data .= $o->PrintHtml( $selectable );
 				continue;

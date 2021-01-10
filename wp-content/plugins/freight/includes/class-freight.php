@@ -166,14 +166,7 @@ class Freight {
 	{
 		$m = Freight_Mission_Manager::get_mission_manager($id);
 
-		$prev_time         = microtime(true);
 		print $m->dispatcher();
-
-		$now         = microtime(true);
-		$micro_delta = $now - $prev_time;
-		print "time: $micro_delta<br/>";
-
-//		print Freight_Mission_Manager::instance()->dispatcher($id, true);
 	}
 
 	function mission_actions($actions)

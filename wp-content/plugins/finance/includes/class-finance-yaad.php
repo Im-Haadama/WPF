@@ -92,7 +92,7 @@ class Finance_Yaad extends Finance_Paying {
 	public function TokenPay( string $token, array $credit_info, string $user_name, int $user_id, float $amount, string $delivery_info, int $payment_number = 1) {
 		$params = array();
 		self::SetPayInfo($params);
-		self::SetTransactionInfo($params, $user_name, $user_id, $amount, $delivery_info, $payment_number);
+		self::SetTransactionInfo($params, $user_name, $credit_info['id_number'], $amount, $delivery_info, $payment_number);
 		$params["Token"] = "True";
 		$params["CC"] = $token;
 		$params["Tmonth"] = $credit_info['exp_date_month'];
@@ -183,7 +183,7 @@ class Finance_Yaad extends Finance_Paying {
 		$params["Coin"] = 1;
 	}
 
-	private function SetTransactionInfo(&$params, String $user_name, int $user_id, float $amount, string $delivery_numbers, int $num_of_payments = 1) {
+	private function SetTransactionInfo(&$params, String $user_name, string $user_id_number, float $amount, string $delivery_numbers, int $num_of_payments = 1) {
 		$params['Info']       = urlencode( "delivery " . $delivery_numbers );
 		$params["Amount"]     = $amount;
 		$params["Tash"]       = $num_of_payments;
@@ -192,7 +192,7 @@ class Finance_Yaad extends Finance_Paying {
 		$params["tashType"]   = 1;
 		$params["ClientName"] = urlencode( $user_name );
 //		$params['UserId']    = get_user_meta( $user_info->getUserId(), 'id_number', true );
-		$params['UserId']  = $user_id;
+		$params['UserId']  = $user_id_number;
 	}
 
 	static public function History($customer_id)

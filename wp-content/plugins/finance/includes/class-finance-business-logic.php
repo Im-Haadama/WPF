@@ -320,7 +320,7 @@ class Finance_Business_Logic {
 
 			$paid = $transaction_info['Amount'];
 			FinanceLog("paid $paid user " . $user->getName());
-			if ($paid) self::RemoveRawInfo($credit_data['id']);
+			if ($paid) E_Fresh_Payment_Gateway::RemoveRawInfo($credit_data['id']);
 		} else {
 			FinanceLog("trying to pay with credit info " . $user->getName());
 			if ($this->debug) print "trying to pay with credit info<br/>";
