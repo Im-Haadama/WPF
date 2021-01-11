@@ -14,8 +14,12 @@ class Focus_Actions
 		$loader->AddAction("team_remove_member", $this, "team_remove_member");
 		$loader->AddAction("team_add_member", $this, "team_add_member");
 		$loader->AddAction("team_add_sender", $this, "team_add_sender");
+
 		$loader->AddAction( 'company_add_worker', $this, 'company_add_worker' );
 		$loader->AddAction( 'company_remove_worker', $this, 'company_remove_worker' );
+
+		$loader->AddAction('project_remove_member', $this);
+		$loader->AddAction('project_add_member', $this);
 
 	}
 
@@ -144,6 +148,23 @@ class Focus_Actions
 		return true;
 	}
 
+	function project_add_member()
+	{
+		$project_id = GetParam("project_id", true);
+		$worker = GetParam("user", true);
+		$p = new Org_Project($project_id);
+		$p->AddWorker($worker);
+	}
+
+	function project_remove_member()
+	{
+		$project_id = GetParam("project_id");
+		$p = new Org_Project($project_id);
+		$ids = GetParamArray("ids");
+
+		foreach ($ids as $worker_id)
+			$p->RemoveWorker($worker_id);
+	}
 }
 
 /**

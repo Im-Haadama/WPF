@@ -53,29 +53,46 @@ class Org_Project {
 
 	public function AllWorkers($include_name = false)
 	{
-		$members = SqlQueryArrayScalar( "select user_id from wp_usermeta where meta_key = 'projects' and meta_value like '%:" . $this->id . ":%'");
-		$manager = $this->manager;
-		if (!in_array($manager, $members))
-			array_push($members, $manager);
+		$type1 = FlavorDbObjects::project;
+		$type2 = FlavorDbObjects::users;
+		$db_prefix = GetTablePrefix();
+		$project_id = $this->id;
+
+		$members = SqlQueryArrayScalar( "select id2 from ${db_prefix}links where id1=$project_id and type1=$type1 and type2=$type2");
+//		$manager = $this->manager;
+//		if (!in_array($manager, $members))
+//			array_push($members, $manager);
 
 		if ($include_name){
 			$table = array(array("", "id"=>"ID", "name"=>"name"));
 			foreach ($members as $member_id){
 				$u = new Core_Users($member_id);
-				$table[] = array("id"=>$member_id, "name" => $u->getName());
+				$table[$member_id] = array("id"=>$member_id, "name" => $u->getName());
 			}
 			return $table;
 		}
 		return $members;
 	}
 
-	function AddWorker($user_id)
+	function AddWorker($worker_id)
 	{
-		$current = get_usermeta($user_id, 'projects');
-		if (strstr($current ,":" . $this->id . ":")) return true; // Already in.
-		if (!$current or strlen($current) < 1) $current = ":";
+		$db_prefix = GetTablePrefix();
+		$project_id = $this->id;
+		$type1 = FlavorDbObjects::project;
+		$type2 = FlavorDbObjects::users;
+		$sql = "insert into ${db_prefix}links (type1, type2, id1, id2) values($type1, $type2, $project_id, $worker_id)";
+		return SqlQuery($sql);
+	}
 
-		return update_usermeta($user_id, 'projects', $current . ":" . $this->id . ":");
+	function RemoveWorker($worker_id)
+	{
+		$db_prefix = GetTablePrefix();
+		$type1 = FlavorDbObjects::project;
+		$type2 = FlavorDbObjects::users;
+		$project_id = $this->id;
+		$sql = "delete from ${db_prefix}links  where type1=$type1 and type2=$type2 and id1=$project_id and id2=$worker_id";
+		SqlQuery($sql);
+
 	}
 
 }

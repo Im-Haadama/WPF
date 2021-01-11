@@ -125,36 +125,32 @@ class Org_Worker extends Core_users
 //		return $this->workers;
 	}
 
-	function GetAllProjects($query = "is_active = 1", $field_list = "id")
+	function GetAllProjects($include_name = false)
 	{
 		$table_prefix = GetTablePrefix();
 
+		$db_prefix = GetTablePrefix();
+		$worker_id = $this->id;
+		$type1 = FlavorDbObjects::project;
+		$type2 = FlavorDbObjects::users;
+//		$sql = "insert into ${db_prefix}links (type1, type2, id1, id2) values($type1, $type2, $project_id, $worker_id)";
+
 		// Managed projects
-		$sql =  "select " . CommaImplode($field_list) . " from ${table_prefix}projects " .
-		        " where manager = " . $this->id . ($query ? " and $query " : "");
-		//. "where company = ". $this->project_company($field_list);
+		$sql =  "select id1 from ${table_prefix}links " .
+		        " where id2=$worker_id and type1=$type1 and type2=$type2";
 
-		// or direct member.
-		if ($direct_projects = get_usermeta($this->id, 'projects')){
-			$sql .= " or id in (" . CommaImplode(CommaArrayExplode($direct_projects)) . ")";
+//		print $sql;
+		$ids = SqlQueryArrayScalar($sql);
+
+		if ($include_name) {
+			$table = array(array("", "id"=>"id", "project_name"=>"בחר"));
+			foreach ($ids as $id) {
+				$p = new Org_Project($id);
+				$table[$id] = array("id" => $id, "project_name"=>$p->getName());
+			}
+			return $table;
 		}
-
-		if (is_array($field_list) and (count($field_list) > 1))
-			return SqlQueryAssoc($sql);
-		else
-			return SqlQueryArrayScalar($sql);
-//		if (! $projects) $projects = array();
-//		$managed = sql_query_array_scalar("select $field_list from im_projects where manager = " . $this->id . ($query ? " and $query " : ""));
-//
-//		$result = array();
-//		if ($just_active)
-//			foreach(array_merge($projects, $managed) as $project_id)
-//			{
-//				$p = new Org_Project($project_id);
-//				if ($p->IsActive()) array_push($result, $project_id);
-//			}
-//
-//		return $result;
+		return $ids;
 	}
 
 	function GetAllCompanies()

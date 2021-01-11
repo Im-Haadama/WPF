@@ -2269,6 +2269,10 @@ class Focus_Views {
 
 		$file = FLAVOR_INCLUDES_URL . 'core/gui/client_tools.js';
 		wp_enqueue_script( 'client_tools', $file, null, $version, false );
+
+		$file = FOCUS_INCLUDES_URL . 'focus.js';
+		wp_enqueue_script( 'focus', $file, null, $version, false );
+
 	}
 
 	function next_page_tasklist()
@@ -2284,6 +2288,7 @@ class Focus_Views {
 	function focus_edit_project()
 	{
 		$id = GetParam("id");
+		$post_file = Flavor::getPost();
 		$result = "";
 		$p = new Org_Project($id);
 		$args = self::Args("projects");
@@ -2294,8 +2299,11 @@ class Focus_Views {
 		$result .= Core_Html::GuiHeader(2, ETranslate("Members"));
 		$args = [];
 		$args["add_checkbox"] = true;
+		$args["checkbox_class"] = "workers";
 		$result .= Core_Html::gui_table_args($p->AllWorkers(true), null, $args);
-		$result .= Core_Html::GuiButton("btn_project_remove", "Remove", "project_remove_member('post_file', $id)");
+		$result .= Core_Html::GuiButton("btn_project_remove", "Remove", "project_remove_member('$post_file', $id)");
+		$result .= Flavor_Org_Views::gui_select_worker("worker", null, $args);
+		$result .= Core_Html::GuiButton("btn_add", "Add", "project_add_member('$post_file', $id)");
 
 		print $result;
 	}

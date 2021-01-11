@@ -55,17 +55,21 @@ function add_project(table_name, url)
     window.location = new_loc;
 }
 
-function project_add_worker(post_file, project_id)
+function project_add_member(post_file, project_id)
 {
-    let worker_id = get_value_by_name("new_worker");
-    execute_url(focus_post_url + "?operation=project_add_member&project_id=" + project_id +
+    let worker_id = get_value_by_name("worker");
+    if (! worker_id) {
+        alert("Select user to add to the project");
+        return;
+    }
+    execute_url(post_file + "?operation=project_add_member&project_id=" + project_id +
                            "&user=" + worker_id, location_reload);
 }
 
-function project_remove_member(post_file, team_id)
+function project_remove_member(post_file, project_id)
 {
     let ids = get_selected("workers");
-    let operation = post_file + "?operation=project_remove_member&team_id=" + team_id +
+    let operation = post_file + "?operation=project_remove_member&project_id=" + project_id +
         "&ids=" + ids;
 
     execute_url(operation, location_reload);
