@@ -68,7 +68,7 @@ class WPF_Organization {
 //		if ( $row_id ) {
 //			$worker_id = sql_query_single_scalar( "select user_id from im_working where id = $row_id" );
 //		}
-		$row_id = SqlQuerySingleScalar("select id from {$prefix}working where user_id = $worker_id");
+		$row_id = SqlQuerySingleScalar("select id from {$prefix}working_rates where user_id = $worker_id");
 		$result               = Core_Html::GuiHeader( 1, "editing worker info" );
 		$args                 = self::Args();
 		$args["edit"]         = false;
@@ -79,7 +79,7 @@ class WPF_Organization {
 
 		$result .= Core_HTML::GuiRowContent( "working_rates", $row_id, $args );
 
-		return $result;
+		print $result;
 	}
 
 	static function Args()

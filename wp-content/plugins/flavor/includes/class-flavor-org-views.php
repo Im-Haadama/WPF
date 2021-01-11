@@ -15,8 +15,6 @@ class Flavor_Org_Views {
 
 	function init_hooks($loader)
 	{
-		$loader->AddAction( 'company_add_worker', $this, 'company_add_worker' );
-		$loader->AddAction( 'company_remove_worker', $this, 'company_remove_worker' );
 		$loader->AddAction( 'gem_add_team_members', $this, 'show_edit_team', 10, 3 );
 		$loader->AddAction( 'gem_edit_projects', $this, 'ShowProjectMembers', 11, 3 );
 		$loader->AddAction( 'gem_add_project_members', $this, 'AddProjectMember', 11, 3 );
@@ -102,7 +100,8 @@ class Flavor_Org_Views {
 			$members = explode( ",", $selected );
 			$result  = "";
 			foreach ( $members as $member ) {
-				$result .= ( new Core_Users( $member ) )->getName() . ", ";
+				$id = intval($member);
+				$result .= ( new Core_Users( $id ) )->getName() . ", ";
 			}
 
 			return rtrim( $result, ", " );
@@ -131,7 +130,8 @@ class Flavor_Org_Views {
 			$html .= "No workers in the company";
 		} else {
 			$workers = Core_Data::TableData( "select id from wp_users where id in (" . CommaImplode( $worker_ids ) . ")" );
-			foreach ( $workers as $id => $row ) {
+			foreach ( $workers as $key => $row ) {
+				$id = intval($key);
 				$u = new Core_Users( $id );
 				if ( $id > 0 ) {
 					$workers[ $id ]["display_name"] = $u->getName();
@@ -140,16 +140,17 @@ class Flavor_Org_Views {
 					$workers[ $id ]["display_name"] = __( "Name" );
 				}
 			}
+			if (! isset($args["post_file"])) $args["post_file"] = Flavor::getPost();
 			$args["post_file"]    .= "?company=" . $company_id;
 			$args["add_button"]   = false;
 			$args["add_checkbox"] = true;
 			$html                 .= Core_Gem::GemArray( $workers, $args, "company_workers" );
 		}
 		$post_file = Focus::getPost();
-		$html      .= "<div>" . Core_Html::GuiInput( "worker_email", null, $args ) . Core_Html::GuiButton( "btn_add", "Add", "company_add_worker('$post_file', $company_id)" ) . "</div>";
-		$html      .= Core_Html::GuiButton( "btn_remove", "Remove", "company_remove('$post_file', $company_id)" );
+		$html      .= "<div>" . Core_Html::GuiInput( "worker_email", '(email)', $args ) . Core_Html::GuiButton( "btn_add", "Add", "company_add_worker('$post_file', $company_id)" ) . "</div>";
+		$html      .= Core_Html::GuiButton( "btn_remove", "Remove", "company_remove_worker('$post_file', $company_id)" );
 
-		$html .= "<div>" . Core_Html::GuiInput( "user_to_add", null, $args ) . Core_Html::GuiButton( "btn_add", "Add", "company_add_worker('$post_file', $company_id)" ) . "</div>";
+//		$html .= "<div>" . Core_Html::GuiInput( "user_to_add", null, $args ) . Core_Html::GuiButton( "btn_add", "Add", "company_add_worker('$post_file', $company_id)" ) . "</div>";
 		//$html .= "<div>" . Core_Users::gui_select_user("user_to_add", null, $args). Core_Html::GuiButton("btn_add", "Add", "company_add_worker('$post_file', $company_id)") . "</div>";
 
 //		$html .= Core_Html::GuiHyperlink("Add new user", AddToUrl(array("operation"=>"show_add_company_worker", "company" => $company_id)));
@@ -237,7 +238,7 @@ class Flavor_Org_Views {
 		$table           = array();
 		$table["header"] = array( "select", "name" );
 		$team            = new Org_Team( $team_id );
-		foreach ( $team->CanSendTasks() as $member ) {
+		foreach ( $team->Senders() as $member ) {
 			$table[ $member ]["name"] = GetUserName( $member );
 			$table[$member] ["id"] = $member;
 		}
@@ -254,7 +255,7 @@ class Flavor_Org_Views {
 			Core_Html::GuiButton( "btn_delete", "Remove", array( "action" => "team_remove_sender('" . Focus::getPost() . "', $team_id)" )),
 			array("style" => 'width:400px; float: right'));
 		$result .= $member_add . $member_remove;
-		return $result;
+		print $result;
 	}
 
 
@@ -319,6 +320,7 @@ class Flavor_Org_Views {
 
 		$company = new Org_Company($company_id);
 		$ids = $company->getWorkers();
+//		var_dump($ids);
 
 		$selected_info = array(
 			array(

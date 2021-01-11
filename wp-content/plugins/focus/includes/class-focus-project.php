@@ -27,8 +27,4 @@ class Focus_Project {
 		return $this->id;
 	}
 
-
-	static function init()
-	{
-	}
 }

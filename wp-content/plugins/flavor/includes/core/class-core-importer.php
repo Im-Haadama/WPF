@@ -218,6 +218,7 @@ class Core_Importer {
 		$sql = "insert into ${db_prefix}$table_name (" . CommaImplode( $insert_fields ) .
 		       ") values (" . CommaImplode( $values, true ) . ")";
 
+//		MyLog($sql);
 		if ( ! SqlQuery( $sql ) ) {
 			// print "insert failed";
 			return 0;

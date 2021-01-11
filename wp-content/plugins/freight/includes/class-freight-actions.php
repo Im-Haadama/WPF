@@ -124,7 +124,8 @@ class Freight_Actions {
 		print Core_Html::HeaderText();
 		// The route stops.
 		$args = array("print" => true, "edit" => false);
-		print $this->dispatcher($id, $args);
+		$m = Freight_Mission_Manager::get_mission_manager($id);
+		print $m->dispatcher($args);
 
 		// Supplies to collect
 		$supplies = Fresh_Supplies::mission_supplies($id);
@@ -189,7 +190,7 @@ class Freight_Actions {
 
 			$O = Finance_Order::CreateOrder(1, $mission_id,  null, $the_shipping, $comments, 10, $delivery_info);
 			print "Created order  " . $O->GetID() . " client $client_name $comments";
-			if (self::get_distance($m->getStartAddress(), $address1 . " " . $city)) {
+			if (Freight_Mission_Manager::get_distance($m->getStartAddress(), $address1 . " " . $city)) {
 				$O->update_status( "wc-processing" );
 				print "processing<br/>";
 				$valid ++;

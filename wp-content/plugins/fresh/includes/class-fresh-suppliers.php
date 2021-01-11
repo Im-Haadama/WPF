@@ -11,9 +11,11 @@ class Fresh_Suppliers {
 		$loader->AddAction( "suppliers_map_remove", $this, "suppliers_map_remove" );
 		$loader->AddAction( "add_pricelist_item", $this, 'add_pricelist_item' ) ;
 		$loader->AddAction('pricelist_delete', $this, 'delete');
-		add_filter("supplier_price_list_check_valid", $this, 'supplier_pricelist_valid', 10, 2);
 		$loader->AddAction("pricelist_before_import", $this, 'supplier_pricelist_before_import');
 		$loader->AddAction("pricelist_update_price" , $this, 'pricelist_update_price');
+
+		add_filter("supplier_price_list_check_valid", array($this, 'supplier_price_list_check_valid'), 10, 2);
+
 	}
 
 	function init()
@@ -78,7 +80,7 @@ class Fresh_Suppliers {
 		return SqlQuery($sql);
 	}
 
-	function supplier_pricelist_valid($fields, $values)
+	function supplier_price_list_check_valid($fields, $values)
 	{
 		$table_prefix = GetTablePrefix();
 
@@ -95,11 +97,11 @@ class Fresh_Suppliers {
 //		if (! $account or ! $date or ! $balance and ! ($in_amount or $out_amount)) return false;
 		if (! ($price > 0) or (! strlen($product_name)))
 		{
-			MyLog(__FUNCTION__ . " false");
+//			MyLog(__FUNCTION__ . " false");
 			return false;
 		}
 
-		MyLog(__FUNCTION__ . " true $price $product_name");
+//		MyLog(__FUNCTION__ . " true $price $product_name");
 		return true;
 
 		// Check duplicate (from previous import).

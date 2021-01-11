@@ -190,16 +190,13 @@ class Org_Worker extends Core_users
 
     function RemoveCompany($company_id)
     {
-        $cur_ser =get_usermeta($this->id, 'companies');
-        if (! $cur_ser) return true;
-//		print "cur=$cur_ser<br/>";
-        $current = unserialize($cur_ser);
-//		var_dump($current);
-        if (! $current) $current = array();
-        if ($key = array_search($company_id, $current)) {
-            unset ($current[$key]);
-        }
-        update_usermeta($this->id, 'companies', serialize($current));
+	    $db_prefix = GetTablePrefix();
+
+	    $type1 = FlavorDbObjects::users;
+	    $type2 = FlavorDbObjects::company;
+	    $worker_id = $this->getId();
+	    $sql = "delete from ${db_prefix}links  where type1=$type1 and type2=$type2 and id1=$worker_id and id2=$company_id";
+		SqlQuery($sql);
     }
 
     // Which teams the worker can send to.

@@ -732,6 +732,10 @@ class Flavor {
 
 		$file = FLAVOR_INCLUDES_URL . 'core/data/data.js';
 		wp_enqueue_script( 'data', $file, null, $this->version, false );
+
+		$file = FLAVOR_INCLUDES_URL . 'js/company.js';
+		wp_enqueue_script( 'company', $file, null, $this->version, false );
+
 	}
 
 

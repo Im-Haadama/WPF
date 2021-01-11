@@ -17,6 +17,7 @@ class Focus_Views {
 		$loader->AddAction('wp_enqueue_scripts', $this, 'enqueue_scripts');
 		$loader->AddFilter("gem_next_page_tasklist", $this, "next_page_tasklist");
 
+		$loader->AddAction('focus_edit_project', $this);
 		//	Function not found:
 		//	$loader->AddFilter("data_update_prepare_tasklist", $this, "data_update_prepare_tasklist", 10, 2);
 	}
@@ -106,9 +107,11 @@ class Focus_Views {
 		if ($operation) {
 			$table_name = self::TableFromOperation( $operation );
 			$args = self::Args( $table_name );
-			ob_start();
-			do_action($operation, $args);
-			return ob_get_clean();
+//			ob_start();
+			Core_Hook_Handler::instance()->DoAction($operation, $args);
+			return;
+//			do_action($operation, $args);
+//			return ob_get_clean();
 		}
 
 		// If no filter yet, handle the old way.
@@ -304,7 +307,7 @@ class Focus_Views {
 
 				case "projects":
 					// Todo: if col is hidden, set default.
-					$args["links"]            = array( "ID" => AddToUrl( array( "operation" => "gem_edit_projects&id=%s" ) ) );
+					$args["links"]            = array( "ID" => AddToUrl( array( "operation" => "focus_edit_project&id=%s" ) ) );
 					$args["fields"]           = array(
 						"ID",
 						"project_name",
@@ -854,6 +857,8 @@ class Focus_Views {
 	 * @throws Exception
 	 */
 	function focus_main( $user_id ) {
+		unset ($_GET["operation"]);
+//		return __FUNCTION__;
 //		print self::CompanySettings(new Org_Company(1));
 //		die (1);
 		if ( ! self::focus_check_user() ) {
@@ -867,7 +872,6 @@ class Focus_Views {
 		$table_args = array("border"=>0);
 		$result = Core_Html::gui_table_args(array(array(greeting( null, false ), self::search_box())), null, $table_args);
 		$result .= Core_Html::GuiDiv( "search_result" );
-
 
 		$worker = new Org_Worker( $user_id );
 		$args   = self::Args( "tasklist" );
@@ -2277,4 +2281,22 @@ class Focus_Views {
 		return "/focus";
 	}
 
+	function focus_edit_project()
+	{
+		$id = GetParam("id");
+		$result = "";
+		$p = new Org_Project($id);
+		$args = self::Args("projects");
+		$result .= Core_Html::GuiHeader(1, ETranslate("Editing project") . " " . $p->getName());
+		$result .= Core_Html::GuiHeader(2, ETranslate("General"));
+		$result .= Core_Gem::GemElement("projects", $id, $args);
+
+		$result .= Core_Html::GuiHeader(2, ETranslate("Members"));
+		$args = [];
+		$args["add_checkbox"] = true;
+		$result .= Core_Html::gui_table_args($p->AllWorkers(true), null, $args);
+		$result .= Core_Html::GuiButton("btn_project_remove", "Remove", "project_remove_member('post_file', $id)");
+
+		print $result;
+	}
 }

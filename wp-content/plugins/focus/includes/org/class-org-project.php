@@ -51,13 +51,21 @@ class Org_Project {
 		return SqlQuerySingleScalar($sql);
 	}
 
-	public function AllWorkers()
+	public function AllWorkers($include_name = false)
 	{
 		$members = SqlQueryArrayScalar( "select user_id from wp_usermeta where meta_key = 'projects' and meta_value like '%:" . $this->id . ":%'");
 		$manager = $this->manager;
 		if (!in_array($manager, $members))
 			array_push($members, $manager);
 
+		if ($include_name){
+			$table = array(array("", "id"=>"ID", "name"=>"name"));
+			foreach ($members as $member_id){
+				$u = new Core_Users($member_id);
+				$table[] = array("id"=>$member_id, "name" => $u->getName());
+			}
+			return $table;
+		}
 		return $members;
 	}
 

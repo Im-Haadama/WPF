@@ -77,7 +77,9 @@ $id = GetParam("id");
                 var text = document.createElement('text');
                 text.textContent = address
                 infowincontent.appendChild(text);
-                var icon = customLabel[type] || {};
+                // var icon = document.createElement("label"); icon.innerHTML = id;
+                var icon = { label: id } || {};
+                // var icon = customLabel[type] || {};
                 var marker = new google.maps.Marker({
                     map: map,
                     position: point,

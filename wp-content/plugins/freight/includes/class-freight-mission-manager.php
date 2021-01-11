@@ -46,7 +46,7 @@ class Freight_Mission_Manager
 	 * Freight_Mission_Manager constructor.
 	 */
 
-	public function __construct($mission_id) {
+	private function __construct($mission_id) {
 		$this->mission_id = $mission_id;
 		$this->points_per_sites    = array();
 		$this->lines_per_station   = array();
@@ -294,12 +294,15 @@ group by pm.meta_value, p.post_status");
 		foreach ($points as $points)
 		{
 			$point = $points[0];
+			$site_id = $point[OrderTableFields::site_id];
+			$order_id = $point[OrderTableFields::order_number];
+			$pri = Freight_Mission_Manager::order_get_pri($order_id, $site_id);
 
 			$address = $point[OrderTableFields::address_1] . " " . $point[OrderTableFields::city];
 			$comments = $point[OrderTableFields::comments]; $name = $point[OrderTableFields::client_name];
 			if (! $comments) $comments = $name;
 			$lat_long = Freight_Mission_Manager::get_lat_long($address);
-			$output .='<marker id="1" name="' . $comments . '" address="' . urlencode($address) . '" type="Delivery"'.
+			$output .='<marker id="' . $pri . '" name="' . $comments . '" address="' . urlencode($address) . '" type="Delivery"'.
 			' lat="' . $lat_long[0]. '" lng="' . $lat_long[1] . '" ';
 			$output .='/>' . PHP_EOL;
 		}

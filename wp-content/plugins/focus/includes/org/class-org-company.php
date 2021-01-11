@@ -30,7 +30,14 @@ class Org_Company {
 
 	public function getWorkers($include_name = false)
 	{
-        $users_array = SqlQueryArrayScalar( "select user_id from wp_usermeta where meta_key = 'companies' and meta_value like '%:" . $this->id . ":%'");
+		$db_prefix = GetTablePrefix();
+
+		//	$sql = "insert into ${db_prefix}links (type1, type2, id1, id2) values($type1, $type2, $worker_id, $company_id)";
+		$type1 = FlavorDbObjects::users;
+		$type2 = FlavorDbObjects::company;
+		$id2 = $this->id;
+		// $users_array = SqlQueryArrayScalar("select id1 from ${db_prefix}links where id2 = " . $this->getId() . " and type1=$type1 and type2=$type2");
+		$users_array = SqlQueryArrayScalar("select id1 from ${db_prefix}links where id2=$id2 and type1=$type1 and type2=$type2");
 	    $manager = $this->getManager();
         if (! in_array($manager, $users_array)) array_push($users_array, $manager);
 
@@ -55,13 +62,23 @@ class Org_Company {
 
 	public function AddWorker($w_id)
 	{
-		$w = new Org_Worker($w_id);
+		if (is_numeric($w_id))
+			$w = new Org_Worker($w_id);
+		else
+			if (strstr($w_id, '@')) {
+				$u = Core_Users::get_user_by_email( $w_id );
+				$w = new Org_Worker($u->getId());
+			}
+			else
+				dd( $w_id );
+
 		$w->AddCompany($this->id);
 	}
 
 	public function RemoveWorker($w_id)
 	{
 		$w = new Org_Worker($w_id);
+
 		$w->RemoveCompany($this->id);
 	}
 }

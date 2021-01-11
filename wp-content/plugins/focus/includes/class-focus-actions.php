@@ -14,6 +14,9 @@ class Focus_Actions
 		$loader->AddAction("team_remove_member", $this, "team_remove_member");
 		$loader->AddAction("team_add_member", $this, "team_add_member");
 		$loader->AddAction("team_add_sender", $this, "team_add_sender");
+		$loader->AddAction( 'company_add_worker', $this, 'company_add_worker' );
+		$loader->AddAction( 'company_remove_worker', $this, 'company_remove_worker' );
+
 	}
 
 	// Use WRAP function to output data to be used by the jabascript.
@@ -117,6 +120,30 @@ class Focus_Actions
 		$team = new Org_Team($team_id);
 		return $team->AddSender($new);
 	}
+	function company_remove_worker()
+	{
+		$workers = GetParamArray("users", true);
+		$company = GetParam("company", true);
+		$C = new Org_Company($company);
+
+		foreach ($workers as $worker) {
+			print "removing $worker from $company<Br/>";
+			$C->RemoveWorker( $worker );
+		}
+
+		return true;
+	}
+
+	function company_add_worker()
+	{
+		$worker_email = GetParam("worker_email", true);
+		$company = GetParam("company", true);
+		$C = new Org_Company($company);
+		$C->AddWorker($worker_email);
+
+		return true;
+	}
+
 }
 
 /**

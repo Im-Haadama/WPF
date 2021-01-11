@@ -155,7 +155,7 @@ class Focus {
 		if ($this->salary) $this->loader->AddAction( 'wp_enqueue_scripts', $this->salary, 'enqueue_scripts' );
 		$this->loader->AddAction( 'wp_enqueue_scripts', $this->views, 'admin_scripts' );
 
-		Focus_Project::init();
+//		Focus_Project::init();
 
         Core_Pages::CreateIfNeeded("focus", "/focus", "focus_main");
         Core_Pages::CreateIfNeeded("project", "/project", "focus_project");
@@ -175,30 +175,6 @@ class Focus {
 	function next_page($input)
 	{
 		return "/project?i=1";
-	}
-
-	function company_add_worker()
-	{
-		$worker = GetParam("user", true);
-		$company = GetParam("company", true);
-		$C = new Org_Company($company);
-		$C->AddWorker($worker);
-
-		return true;
-	}
-
-	function company_remove_worker()
-	{
-		$workers = GetParamArray("users", true);
-		$company = GetParam("company", true);
-		$C = new Org_Company($company);
-
-		foreach ($workers as $worker) {
-			print "removing $worker from $company<Br/>";
-			$C->RemoveWorker( $worker );
-		}
-
-		return true;
 	}
 
 	/**
@@ -292,7 +268,8 @@ class Focus {
 		////////////////////////
 		// called by post.php //
 		////////////////////////
-		$result = apply_filters( $operation, $input, GetParams($ignore_list));
+		Core_Hook_Handler::instance()->DoAction($operation, GetParams($ignore_list));
+		return;
 		if ( $result ) return $result;
 
 		// Handle global operation

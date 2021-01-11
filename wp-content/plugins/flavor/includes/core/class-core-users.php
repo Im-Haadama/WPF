@@ -4,8 +4,7 @@ class Core_Users {
 	protected $id;
 	private $wp_user;
 
-	public function __construct($id = 0) {
-		if (! $id) $id = get_user_id();
+	public function __construct(int $id = 0) {
 		$this->id = $id;
 		$this->wp_user = null; // Create by demand
 	}
