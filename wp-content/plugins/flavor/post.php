@@ -19,6 +19,7 @@ if (! get_user_id() and ! $password_check and !$nonce_checked) {
 	if ( ! get_user_id(true) ) die('Not connected');
 }
 
+Core_Hook_Handler::instance()->run();
 $rc = $flavor->handle_operation($operation);
 if ($rc === false) { print "failed"; return; } // Something went wrong. The processing would print something.
 if ($rc === true) { return; } // 2020-11-24 removed the approval of success.

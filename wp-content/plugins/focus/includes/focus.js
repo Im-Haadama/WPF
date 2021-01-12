@@ -113,7 +113,7 @@ function team_add_sender(post_file, team_id)
 }
 
 
-function search_by_text()
+function search_by_text(post_file)
 {
     let search_box = document.getElementById("search_text");
     let value = get_value(search_box);
@@ -123,7 +123,7 @@ function search_by_text()
     }
     if (value.length > 2) {
         document.getElementById("search_result").innerHTML = "Searching...";
-        execute_url(focus_post_url + "?operation=search_by_text&text=" + value, update_search);
+        execute_url(post_file + "?operation=search_by_text&text=" + value, update_search);
     }
 }
 

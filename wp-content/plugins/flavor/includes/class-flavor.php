@@ -721,6 +721,8 @@ class Flavor {
 	}
 
 	public function admin_scripts() {
+		$file = FLAVOR_INCLUDES_URL . 'core/gem.js';
+		wp_enqueue_script( 'gem', $file, null, $this->version, false );
 	}
 
 	public function enqueue_scripts() {

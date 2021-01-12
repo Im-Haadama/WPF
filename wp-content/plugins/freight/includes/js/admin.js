@@ -143,10 +143,16 @@ function order_update_driver_comment(post_file, order_id)
 function freight_import(post_file, div)
 {
     let action = add_param_to_url(post_file, 'operation', 'freight_do_import');
+    let action_baldar = add_param_to_url(post_file, 'operation', 'freight_do_import_baldar');
+
     // execute_url(action, show_response, div);
     div.innerHTML = '<h1>Import deliveries</h1>' +
-        '<form action="' + action + '" name="import_csv" method="post" enctype="multipart/form-data">Import from csv file' +
+        '<div><form action="' + action + '" name="import_csv" method="post" enctype="multipart/form-data">Import from csv file' +
         '<input type="file" name="fileToUpload" id="fileToUpload">' +
-        '<input type="submit" value="טען" name="submit">';
+        '<input type="submit" value="טען" name="submit"></form></div>' +
+
+        '<div><form action="' + action_baldar + '" name="import_html" method="post" enctype="multipart/form-data">Import from baldar html file' +
+        '<input type="file" name="fileToUpload" id="fileToUpload">' +
+        '<input type="submit" value="טען" name="submit"></form></div>';
 
 }

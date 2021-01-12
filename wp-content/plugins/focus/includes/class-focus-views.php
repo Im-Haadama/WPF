@@ -5,7 +5,7 @@ class Focus_Views {
 	function init_hooks( Core_Hook_Handler &$loader ) {
 		$loader->AddFilter( 'gem_next_page_tasklist', $this );
 		$loader->AddFilter( 'gem_next_page_projects', $this );
-		$loader->AddFilter( 'search_by_text', $this, 'search_by_text_wrap' );
+		$loader->AddAction( 'search_by_text', $this);
 		$loader->AddFilter( 'data_save_new_projects', $this, 'DataSaveNewDefault', 11, 1 );
 		$loader->AddFilter( 'data_save_new_working_teams', $this, 'DataSaveNewTeam', 11, 1 );
 		$loader->AddFilter( 'data_save_new_tasklist', $this, 'DataSaveNewTaskList', 11, 1 );
@@ -198,7 +198,8 @@ class Focus_Views {
 			"page_number"  => GetParam( "page_number", false, 1 ),
 			"post_file"    => self::getPost(),
 			"selected_tab" => GetParam( "selected_tab", false, null ),
-			"active_only"  => GetParam( "active_only", false, true )
+			"active_only"  => GetParam( "active_only", false, true ),
+			"worker_id" => get_user_id()
 		);
 		// Filter by status.
 		if ( GetParam( "status", false, false ) ) {
@@ -942,7 +943,7 @@ class Focus_Views {
 	static function search_box() {
 		$result = "";
 		$result .= Core_Html::GuiInput( "search_text", "(search here)",
-			array( "events" => "onfocus=\"search_by_text()\" onkeyup=\"search_by_text()\" onfocusout=\"search_box_reset()\"" ) );
+			array( "events" => "onfocus=\"search_by_text()\" onkeyup=\"search_by_text('". Flavor::getPost() . "')\" onfocusout=\"search_box_reset()\"" ) );
 
 		return $result;
 	}

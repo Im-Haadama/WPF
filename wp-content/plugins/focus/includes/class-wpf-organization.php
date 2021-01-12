@@ -15,9 +15,9 @@ class WPF_Organization {
 	}
 
 
-	static function init() {
-		AddAction('init', __CLASS__ . "::register", 0);
-		AddAction("show_edit_worker", __CLASS__ . '::show_edit_worker');
+	function init($loader) {
+		$loader->AddAction('init', $this, "register", 0);
+		$loader->AddAction("show_edit_worker", $this, 'show_edit_worker');
 	}
 
 	public static function instance() {
@@ -28,7 +28,7 @@ class WPF_Organization {
 		return self::$_instance;
 	}
 
-	static function register()
+	function register()
 	{
 		// Add new taxonomy, make it hierarchical like categories
 		// first do the translations part for GUI
@@ -57,7 +57,7 @@ class WPF_Organization {
 
 	}
 
-	static function show_edit_worker() {
+	function show_edit_worker() {
 		$prefix = GetTablePrefix();
 		// Get worker info by id or worker_project link.
 //		$row_id    = GetParam( "row_id", false );

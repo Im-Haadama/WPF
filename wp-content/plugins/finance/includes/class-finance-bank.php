@@ -26,16 +26,16 @@ class Finance_Bank
 		self::$_instance = $this;
 
 		// For rem
-		self::init_remoting();
+		self::init_remoting(Core_Hook_Handler::instance());
 	}
 
-	private function init_remoting()
+	private function init_remoting($loader)
 	{
-		AddAction("finance_add_payment", array($this, 'add_payment'));
-		AddAction("bank_status", array($this, 'bank_status'));
+		$loader->AddAction("finance_add_payment", $this, 'add_payment');
+		$loader->AddAction("bank_status", $this, 'bank_status');
 //		AddAction("bank_show_import", array($this, "show_import"));
-		AddAction("bank_create_invoice_receipt", array($this, "bank_create_invoice_receipt"));
-		AddAction("bank_create_receipt", array($this, "bank_create_receipt"));
+		$loader->AddAction("bank_create_invoice_receipt", $this, "bank_create_invoice_receipt");
+		$loader->AddAction("bank_create_receipt", $this, "bank_create_receipt");
 	}
 
 	public static function instance() :Finance_Bank {

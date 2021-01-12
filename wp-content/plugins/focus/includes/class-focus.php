@@ -371,7 +371,7 @@ class Focus {
 		}
 		$this->views = Focus_Views::instance(self::getPost());
 
-		WPF_Organization::init();
+		WPF_Organization::instance()->init($this->loader);
 
 		// Set up localisation.
 		$this->load_plugin_textdomain();
@@ -435,7 +435,7 @@ class Focus {
 	public function run()
 	{
 //		print "run " . __CLASS__;
-		$this->loader->run();
+//		$this->loader->run();
 		$this->manager->run();
 //		self::create_tasks();
 	}
