@@ -8,7 +8,6 @@ class Focus_Database extends Core_Database
 		if ($current == $version and ! $force) return true;
 
 		self::UpdateInstalled("views", $version);
-
 	}
 
 	function CreateTables($version, $force)
@@ -47,6 +46,8 @@ class Focus_Database extends Core_Database
 				SqlQuery("alter table ${db_prefix}tasklist modify created datetime");
 			case '1.5':
 				SqlQuery("ALTER TABLE im_projects add project_contact varchar(50)");
+			case '1.6':
+				SqlQuery("ALTER TABLE im_working_rates add add_break bool");
 
 		}
 		return self::UpdateInstalled("tables", $version );

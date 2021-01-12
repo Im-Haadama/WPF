@@ -396,7 +396,7 @@ class Finance_Salary {
 		}
 
 		$result             = Core_Html::GuiHeader( 1, __( "Salary info for worker" ) . " " . GetUserName( $user_id ) ) . __( "for month" ) . " " . $m . '/' . $y;
-		$args               = array( "add_checkbox" => true, "checkbox_class" => "hours_checkbox" );
+		$args               = array( "add_checkbox" => true, "checkbox_class" => "hours_checkbox", "worker_id" => $user_id );
 		$args["edit_lines"] = 1;
 		$data               = self::MonthyWorkerReport( $user_id, $m, $y, $args );
 		if ( ! $data ) {
@@ -452,6 +452,7 @@ class Finance_Salary {
 		                               "report" => "Include in report", "day_rate" => "Day rate", "is_active" => "Active?");
 
 		$args["allow_delete"] = true;
+		$args["worker_id"] = $user_id;
 
 //		$row_id = SqlQuerySingleScalar("select min(id) from im_working where user_id = $user_id");
 		return $result . Core_Gem::GemElement( "working_rates", $row_id, $args );
@@ -478,12 +479,15 @@ class Finance_Salary {
 	 */
 	static function MonthyWorkerReport( $user_id = 0, $month = null, $year = null, &$args = null ) // , $week = null, $project = null, &$sum = null, $show_salary = false , $edit = false) {
 	{
-		$day_rate = (float) SqlQuerySingleScalar("select day_rate from im_working_rates where user_id = $user_id");
+		$user = new Org_Worker($user_id);
+		$day_rate = (float) $user->getDayRate();
+		$add_break = $user->getAddBreak();
 
 		$result = "";
 		if ($day_rate) $result .= Core_Html::GuiHeader(2, "Daily worker");
 
 		$rate_field = ($day_rate ? '' : ', working_rate(user_id, project_id) as rate');
+
 		$sql  = "SELECT id, date, dayofweek(date) as weekday, start_time, end_time, project_id $rate_field, traveling, expense, expense_text, comment FROM im_working_hours WHERE 1 ";
 
 		// print $sql ."<br/>";
@@ -564,6 +568,7 @@ class Finance_Salary {
 				$total_sal += $day_rate;
 			} else {
 				$total_dur = ( $dur->h + $dur->i / 60 );
+				if ($add_break and $total_dur > 4 ) $total_dur -= 0.5;
 				$dur_base  = min( $total_dur, 25 / 3 );
 				$dur_125   = min( 2, $total_dur - $dur_base );
 				$dur_150   = $total_dur - $dur_base - $dur_125;

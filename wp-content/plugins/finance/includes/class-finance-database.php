@@ -231,12 +231,11 @@ BEGIN
 	select round(rate, 2) into _rate
 	          from im_working_rates
 	          where user_id = _worker
-	          and project_id = 0;
+	          limit 1;
     return _rate;
   END;
 
 ");
-
 
 		SqlQuery("drop function client_from_delivery");
 		SqlQuery("create function client_from_delivery(del_id int) returns text CHARSET 'utf8'

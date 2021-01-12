@@ -74,4 +74,3 @@ class Core_Database
 
 	}
 }
-

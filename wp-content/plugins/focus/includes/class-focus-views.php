@@ -140,7 +140,7 @@ class Focus_Views {
 		}
 
 		// Filter by worker if supplied.
-		$user_id = GetArg( $args, "worker_id", get_user_id() );
+		$user_id = GetArg( $args, "worker_id" );
 		if ( ! $user_id ) {
 			throw new Exception( __FUNCTION__ . ": No user " . $user_id );
 		}
@@ -1362,6 +1362,7 @@ class Focus_Views {
 		}
 		$args["fields"][] = "preq";
 		$args["fields"][] = "date";
+		$args["worker_id"] = get_user_id();
 
 		$args["edit_cols"] = array(
 			"date"             => true,

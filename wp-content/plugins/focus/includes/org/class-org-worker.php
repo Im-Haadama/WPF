@@ -383,5 +383,19 @@ class Org_Worker extends Core_users
 		$prefix = GetTablePrefix();
 		return SqlQuerySingleScalar( "select count(*) from ${prefix}tasklist where owner = " . $this->id . " and " .
 		                             " ended >= curdate() - INTERVAL $period ");
+
+
 	}
+	function getDayRate()
+	{
+		$user_id = $this->id;
+		return SqlQuerySingleScalar("select day_rate from im_working_rates where user_id = $user_id");
+	}
+
+	function getAddBreak() : bool
+	{
+		$user_id = $this->id;
+		return SqlQuerySingleScalar("select add_break from im_working_rates where user_id = $user_id") == 1;
+	}
+
 }
