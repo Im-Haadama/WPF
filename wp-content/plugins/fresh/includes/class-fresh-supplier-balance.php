@@ -36,6 +36,7 @@ class Fresh_Supplier_Balance {
 	}
 
 	static function accounting() {
+		draft_no_picture();
 		$result = "";
 
 		$selected_tab = GetParam("st_suppliers", false, "weekly");

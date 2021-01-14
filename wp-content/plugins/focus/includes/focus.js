@@ -55,6 +55,17 @@ function add_project(table_name, url)
     window.location = new_loc;
 }
 
+function worker_add_project(post_file, worker_id)
+{
+    let project_id = get_value_by_name("project");
+    if (! project_id) {
+        alert("Select user to add to the project");
+        return;
+    }
+    execute_url(post_file + "?operation=project_add_member&project_id=" + project_id +
+        "&user=" + worker_id, location_reload);
+}
+
 function project_add_member(post_file, project_id)
 {
     let worker_id = get_value_by_name("worker");

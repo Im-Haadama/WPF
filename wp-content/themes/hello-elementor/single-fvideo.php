@@ -28,6 +28,52 @@ get_header();
 <br/>
 <br/><br/><br/><br/><br/><br/><br/>
 <div>
-	aaaaa
+<!--	-->
+
 </div>
-<?php while ( have_posts() ) the_post(); ?>
+<?php
+$post = get_post();
+$v = new FVideo_Video($post->ID);
+$torrent_key = $v->get_video();
+//print $torrent_key;
+while ( have_posts() )the_post();
+?>
+
+<script>
+    var client = new WebTorrent();
+
+    // Sintel, a free, Creative Commons movie
+    var torrentId = // 'magnet:?xt=urn:btih:1fe155cdf63ed3a4ed725df4e2e7c1b0c6cf8e82&dn=bbb&tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A80&tr=udp%3A%2F%2Fopentor.org%3A2710&tr=udp%3A%2F%2Ftracker.ccc.de%3A80&tr=udp%3A%2F%2Ftracker.blackunicorn.xyz%3A6969&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969';
+        'magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel&tr=udp%3A%2F%2Fexplodie.org%3A6969&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.empire-js.us%3A1337&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.fastcast.nz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com&ws=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2F&xs=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel.torrent'
+    client.add(torrentId, function (torrent) {
+        // Torrents can contain many files. Let's use the .mp4 file
+        var file = torrent.files.find(function (file) {
+            return file.name.endsWith('.mp4')
+        })
+
+        // Display the file by adding it to the DOM.
+        // Supports video, audio, image files, and more!
+        file.appendTo('body')
+    });
+
+    // client.add(magnetURI, function (torrent) {
+    //     // create HTTP server for this torrent
+    //     var server = torrent.createServer()
+    //     server.listen(port) // start the server listening to a port
+    //
+    //     // visit http://localhost:<port>/ to see a list of files
+    //
+    //     // access individual files at http://localhost:<port>/<index> where index is the index
+    //     // in the torrent.files array
+    //
+    //     // later, cleanup...
+    //     server.close()
+    //     client.destroy()
+    // })
+
+
+</script>
+<script>
+var client = new WebTorrent();
+</script>
+

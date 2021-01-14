@@ -448,11 +448,12 @@ class Fresh_Catalog {
 		}
 	}
 
-	static function GetProdImage( $prod_id ) {
+	static function GetProdImage( $prod_id )
+	{
 		$tid = get_post_thumbnail_id( $prod_id );
-		print "tid=" . $tid . " ";
 
 		$img_a = wp_get_attachment_image_src( $tid );
+		if (!is_array($img_a)) return $img_a;
 		$img   = $img_a[0];
 
 		return $img;

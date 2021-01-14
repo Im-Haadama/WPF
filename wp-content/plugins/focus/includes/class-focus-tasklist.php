@@ -37,6 +37,7 @@ class Focus_Tasklist {
 		                            " task_template, priority, project_id, team, creator " .
 		                            " FROM {$this->table_prefix}tasklist " .
 		                            " WHERE id = " . $this->id );
+		if (! $row) throw new Exception("Task not found");
 
 		$this->location_name    = $row[0];
 		$this->location_address = $row[1];

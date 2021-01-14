@@ -125,53 +125,6 @@ class Focus_Views {
 		return strtok( null );
 	}
 
-	static function gui_select_project( $id, $project_id, $args ) {
-		$edit    = GetArg( $args, "edit", true );
-		$new_row = GetArg( $args, "new_row", false );
-
-		if ( ! $edit ) {
-			if ( $project_id ) {
-				$project = new Org_Project( $project_id );
-
-				return $project->GetName();
-			}
-
-			return "no project selected";
-		}
-
-		// Filter by worker if supplied.
-		$user_id = GetArg( $args, "worker_id" );
-		if ( ! $user_id ) {
-			throw new Exception( __FUNCTION__ . ": No user " . $user_id );
-		}
-
-		$result = "";
-		$user   = new Org_Worker( $user_id );
-
-		$form_table = GetArg( $args, "form_table", null );
-		$events     = GetArg( $args, "events", null );
-
-		$projects_list = $user->GetAllProjects( "is_active = 1", array( "id", "project_name" ) );
-		if ( $projects_list ) {
-			$args["values"] = $projects_list;
-			$args["id_key"] = "id";
-			$args["name"]   = "project_name";
-			$result         .= Core_Html::GuiSelect( $id, $project_id, $args );
-
-			// $result .= Core_Html::gui_select( $id, "project_name", $projects_list, $events, $project_id, "project_id" );
-			if ( $form_table and $new_row ) { // die(__FUNCTION__ . ":" . " missing form_table");
-				$result .= Core_Html::GuiButton( "add_new_project", "New Project", array(
-					"action" => "add_element('project', '" . $form_table . "', '" . GetUrl() . "')",
-					"New Project"
-				) );
-			}
-		} else {
-			$result .= "No Projects";
-		}
-
-		return $result;
-	}
-
 	static function gui_select_priority( $id, $priority_id, $args ) {
 		$result         = "";
 		$priority_list  = array(
@@ -220,7 +173,7 @@ class Focus_Views {
 			switch ( $table_name ) {
 				case "task_templates":
 					$args["selectors"]     = array(
-						"project_id"  => "Focus_Views::gui_select_project",
+						"project_id"  => "WPF_Organization::gui_select_project",
 						"owner"       => "Flavor_Org_Views::gui_select_worker",
 						"creator"     => "Flavor_Org_Views::gui_select_worker",
 						"repeat_freq" => "gui_select_repeat_time",
@@ -256,7 +209,7 @@ class Focus_Views {
 				case "tasklist":
 					$args["rows_per_page"] = 20;
 					$args["selectors"] = array(
-						"project_id" => "Focus_Views::gui_select_project",
+						"project_id" => "WPF_Organization::gui_select_project",
 						"owner"      => "Flavor_Org_Views::gui_select_worker",
 						"creator"    => "Flavor_Org_Views::gui_select_worker",
 						"preq"       => "Focus_Views::gui_select_task",
@@ -444,7 +397,7 @@ class Focus_Views {
 				$args["worker"] = get_user_id();
 				$args["edit"]   = true;
 				$table_rows     = array(
-					array( "project", gui_select_project( "project", null, $args ) ),
+					array( "project", WPF_Organization::gui_select_project( "project", null, $args ) ),
 					array( "priority", GuiInput( "priority", null, $args ) ),
 					array( "task1", GuiInput( "task1" ) ),
 					array( "task2", GuiInput( "task2", null, array( "events" => 'onchange="addSequenceTask(2)"' ) ) )
@@ -505,7 +458,7 @@ class Focus_Views {
 				$result     .= Core_Html::gui_table_args( array(
 					array( "email", GuiInput( "email", "", $args ) ),
 					array( "name", GuiInput( "name", "", $args ) ),
-					array( "project", gui_select_project( "project_id", null, $args ) )
+					array( "project", WPF_Organization::gui_select_project( "project_id", null, $args ) )
 				) );
 				$result     .= Core_Html::GuiButton( "btn_add_to_company", "add_to_company()", "Add" );
 
@@ -1031,7 +984,7 @@ class Focus_Views {
 			$w                 = new Org_Worker( $worker_id );
 			array_push( $data, array(
 				$w->getName(),
-				Core_Html::GuiHyperlink( $w->tasksCount( 1 ), self::get_link( "worker" ) . "?worker_id=$worker_id&active_only=1" ),
+				Core_Html::GuiHyperlink( $w->tasksCount( 1 ), self::get_link( "worker" ) . "?user_id=$worker_id&active_only=1" ),
 				Core_Html::GuiHyperlink( $w->tasksCount( 0 ), self::get_link( "worker" ) . "?worker_id=$worker_id&active_only=0" ),
 				Core_Html::GuiHyperlink( $w->doneTask( "7 day" ), self::get_link( "worker" ) . "?worker_id=$worker_id&active_only=2&period=" . urldecode( "7 day" ) )
 			) );
@@ -1177,8 +1130,8 @@ class Focus_Views {
 
 		if ( ! isset( $args["selectors"] ) ) {
 			$args["selectors"] = array(
-				"project"    => "Focus_Views::gui_select_project",
-				"project_id" => "Focus_Views::gui_select_project",
+				"project"    => "WPF_Organization::gui_select_project",
+				"project_id" => "WPF_Organization::gui_select_project",
 				"owner"      => "Flavor_Org_Views::gui_select_worker"
 			);
 		}
@@ -1309,7 +1262,7 @@ class Focus_Views {
 		$worker                   = new Org_Worker( get_user_id() );
 		$args                     = array();
 		$args["selectors"]        = array(
-			"project_id"  => "Focus_Views::gui_select_project",
+			"project_id"  => "WPF_Organization::gui_select_project",
 			"owner"       => "Flavor_Org_Views::gui_select_worker",
 			"creator"     => "Flavor_Org_Views::gui_select_worker",
 			"team"        => "Focus_Views::gui_select_team",
@@ -2292,7 +2245,13 @@ class Focus_Views {
 		$id = GetParam("id");
 		$post_file = Flavor::getPost();
 		$result = "";
-		$p = new Org_Project($id);
+		try {
+			$p = new Org_Project( $id );
+		} catch (Exception $e)
+		{
+			print $e->getMessage();
+			return;
+		}
 		$args = self::Args("projects");
 		$result .= Core_Html::GuiHeader(1, ETranslate("Editing project") . " " . $p->getName());
 		$result .= Core_Html::GuiHeader(2, ETranslate("General"));

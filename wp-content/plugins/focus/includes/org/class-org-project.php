@@ -18,6 +18,9 @@ class Org_Project {
 		}
 		$this->id = $id;
 		$row = SqlQuerySingle("select project_name, manager from im_projects where id=$id");
+		if (! $row) {
+			throw new Exception("project $id not found");
+		}
 		$this->name = $row[0];
 		$this->manager = $row[1];
 //		print "manager=" . $this->manager . "<br/>name=".$this->name ."<br/>";

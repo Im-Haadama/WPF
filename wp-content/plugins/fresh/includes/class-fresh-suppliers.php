@@ -15,7 +15,6 @@ class Fresh_Suppliers {
 		$loader->AddAction("pricelist_update_price" , $this, 'pricelist_update_price');
 
 		add_filter("supplier_price_list_check_valid", array($this, 'supplier_price_list_check_valid'), 10, 2);
-
 	}
 
 	function init()
@@ -383,3 +382,4 @@ class Fresh_Suppliers {
 		return $item->setPrice($new_price);
 	}
 }
+

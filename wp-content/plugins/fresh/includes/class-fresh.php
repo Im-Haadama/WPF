@@ -211,7 +211,6 @@ class Fresh {
 		Fresh_Accounting::instance()->init_hooks($loader);
 
 		add_action('wp_enqueue_scripts', array($this, 'remove_add'), 2222);
-
 //		add_filter('editable_roles', 'edit_roles');
 	}
 
@@ -250,6 +249,8 @@ class Fresh {
 	static function admin_menu()
 	{
 	    Fresh_Settings::admin_menu();
+		draft_no_picture();
+
 	}
 
 	/**
@@ -1068,4 +1069,38 @@ function title_filter($where, $wp_query)
 {
 	MyLog(__FUNCTION__);
 	 return $where . " and post_tile like '%מנגו%' ";
+}
+
+function draft_no_picture()
+{
+	// Status
+//	SqlQuery("alter table wp_posts change processed int null");
+	$ids = SqlQueryArrayScalar("select id
+	from wp_posts p
+	where post_type = 'product'
+	and post_status = 'publish'
+	and (processed is null or processed < 2) limit 10");
+//	return;
+
+	foreach ($ids as $prod_id) {
+//		print "checking $prod_id<br/>";
+		$file = Fresh_Catalog::GetProdImage( $prod_id);
+		if ($file) {
+			// No attachement. Leaving the same.
+			SqlQuery("update wp_posts set processed = 2 where id = $prod_id");
+			continue; // No attachment.
+		}
+
+		$p = new Fresh_Product($prod_id);
+		$file_content = @file_get_contents($file);
+		if (! $file_content) {
+			// Can't get the file.
+//			print "drafting " . $p->getName() . "<br/>";
+			SqlQuery("update wp_posts set processed = 3, post_status = 'draft' where id = $prod_id");
+		} else {
+			// All good.
+			SqlQuery("update wp_posts set processed = 4 where id = $prod_id");
+		}
+	}
+
 }

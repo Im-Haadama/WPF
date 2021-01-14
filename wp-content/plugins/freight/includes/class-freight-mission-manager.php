@@ -229,7 +229,7 @@ group by pm.meta_value, p.post_status");
 			$pri = Freight_Mission_Manager::order_get_pri($order_id, $site_id);
 
 			$address = $point[OrderTableFields::address_1] . " " . $point[OrderTableFields::city];
-			$comments = $point[OrderTableFields::comments]; $name = $point[OrderTableFields::client_name];
+			$comments = strtok($point[OrderTableFields::comments], " "); $name = $point[OrderTableFields::client_name];
 			if (! $comments) $comments = $name;
 			$lat_long = Freight_Mission_Manager::get_lat_long($address);
 			$output .='<marker id="' . $pri . '" name="' . $comments . '" address="' . urlencode($address) . '" type="Delivery"'.

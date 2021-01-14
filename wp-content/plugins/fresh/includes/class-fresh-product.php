@@ -412,7 +412,8 @@ class Fresh_ProductIterator implements  Iterator {
 			'post_type' => 'product',
 			'posts_per_page' => 10000,
 			'orderby' => 'name',
-			'order' => 'ASC'
+			'order' => 'ASC',
+			'post_status' => 'published'
 		);
 
 		if ($term_id)
