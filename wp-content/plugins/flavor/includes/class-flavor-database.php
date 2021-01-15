@@ -41,6 +41,7 @@ END;
 
 		self::UpdateInstalled( "functions", $version );
 	}
+
 	function CreateTables( $version, $force ) {
 		$current   = $this->checkInstalled( "tables" );
 

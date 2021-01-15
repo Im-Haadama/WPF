@@ -2,7 +2,7 @@
 /* Low level class that handles the calls to YAAD Payment server. 
 */
 
-class Finance_Yaad extends Finance_Paying {
+class Finance_Yaad {
 	private $api_key;
 	private $terminal;
 	private $signature;
@@ -71,7 +71,7 @@ class Finance_Yaad extends Finance_Paying {
 	 *
 	 * @return array
 	 */
-	function CreditPay($credit_info, string $user_name, int $user_id, float $amount, string $subject, int $payment_number = 1)
+	function CreditPay($credit_info, string $user_name, int $user_id, float $amount, string $subject, int $payment_number = 1) : ?array
 	{
 		FinanceLog(__FUNCTION__ . " " . $credit_info['card_number'] . " $amount ");
 		// General
@@ -82,8 +82,8 @@ class Finance_Yaad extends Finance_Paying {
 		$params["Tmonth"] = $credit_info['exp_date_month'];
 		$params["Tyear"]  = $credit_info['exp_date_year'];
 		$params["UserId"] = $credit_info['id_number'];
-		$params["UserId"] = $credit_info['id_number'];
-//		FinanceLog(StringVar($params));
+
+		//		FinanceLog(StringVar($params));
 		$rc = $this->CallServer( 'https://icom.yaad.net/p3/', $params );
 		self::SaveTransaction($rc, $user_id, $payment_number);
 		return $rc;
@@ -154,14 +154,14 @@ class Finance_Yaad extends Finance_Paying {
 		return false;
 	}
 
-	private function CallServer( $base_url, $request_params )
+	private function CallServer( $base_url, $request_params ) : ?array
 	{
 		$url = AddParamToUrl( $base_url, $request_params );
-		if ($this->debug) print $url . "<br/>";
+//		if ($this->debug) print $url . "<br/>";
 
 		if (! function_exists("curl_init")) {
 			FinanceLog("Curl not installed");
-			return false;
+			return null;
 		}
 
 		$ch = curl_init();

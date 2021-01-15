@@ -22,8 +22,11 @@ class Core_Database
 		global $conn;
 		if (! $conn) ReconnectDb();
 
-		$user = new Core_Users();
-		if (!$user->hasRole('administrator')) return;
+		$user = new Core_Users(get_user_id());
+		if (!$user->hasRole('administrator')) {
+
+			return;
+		}
 
 		self::CreateInfo();
 

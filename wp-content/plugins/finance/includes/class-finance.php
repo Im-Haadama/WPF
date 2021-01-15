@@ -43,7 +43,7 @@ class Finance {
 	 *
 	 * @var string
 	 */
-	public $version = '1.7.13';
+	public $version = '1.7.14';
 
 	private $plugin_name;
 
@@ -202,7 +202,7 @@ class Finance {
 		Finance_Order_Management::instance()->init_hooks($this->loader);
 
 		$this->payments = Finance_Payments::instance();
-		$this->payments->init_hooks();
+		$this->payments->init_hooks($this->loader);
 		$this->subcontract->init_hooks($this->loader);
 		$this->salary->init_hooks($this->loader);
 

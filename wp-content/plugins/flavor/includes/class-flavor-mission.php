@@ -64,8 +64,10 @@ class Flavor_Mission {
 
 		if ($multi->isMaster())
 			self::create_missions();
-		else
+		else {
 			self::update_missions_from_master();
+			Finance_Delivery_Manager::update_shipping_methods();
+		}
 
 		$result .= self::show_missions($week ? " first_day_of_week(date) = '$week'" : null, $multi->isMaster());
 		$result .= Core_Html::GuiHyperlink("last week", AddToUrl("week", date('Y-m-d', strtotime("$week -1 week"))));
@@ -75,6 +77,9 @@ class Flavor_Mission {
 
 	static function update_missions_from_master()
 	{
+//		SqlQuery("alter table im_missions modify start_h varchar(10)");
+//		SqlQuery("alter table im_missions modify end_h varchar(10)");
+//		SqlQuery("alter table im_missions modify mission_type int null");
 		$multi = Core_Db_MultiSite::getInstance();
 		if (! $multi->isMaster()) {
 			$multi->UpdateFromRemote( "missions", "id", 0, "date >= curdate()" );

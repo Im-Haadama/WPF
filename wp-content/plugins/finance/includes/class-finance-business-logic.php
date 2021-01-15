@@ -5,7 +5,7 @@
  */
 
 class Finance_Business_Logic {
-	private ?Finance_Paying $paying;
+	private ?Finance_Yaad $paying;
 	private ?string $error_message;
 
 	/**
@@ -32,7 +32,7 @@ class Finance_Business_Logic {
 	 * @param Finance_Paying|null $paying
 	 * @param string|null $error_message
 	 */
-	public function __construct( ?Finance_Paying $paying = null ) {
+	public function __construct( ?Finance_Yaad $paying = null) {
 		if ($paying)
 			$this->paying        = $paying;
 		else {
@@ -156,7 +156,6 @@ class Finance_Business_Logic {
 
 		return true;
 	}
-
 
 	function pay_order($order_id, $credit_info)
 	{
@@ -323,9 +322,9 @@ class Finance_Business_Logic {
 			if ($paid) E_Fresh_Payment_Gateway::RemoveRawInfo($credit_data['id']);
 		} else {
 			FinanceLog("trying to pay with credit info " . $user->getName());
-			if ($this->debug) print "trying to pay with credit info<br/>";
+			if ($debug) print "trying to pay with credit info<br/>";
 			// First pay. Use local store credit info, create token and delete local info.
-			$transaction_info = self::FirstPay($credit_data, $user, $amount, CommaImplode($account_line_ids), $payment_number);
+			$transaction_info = $this->paying->CreditPay($credit_data, $user->getName(), $user->getUserId(), $amount, CommaImplode($account_line_ids), $payment_number);
 			FinanceLog("back");
 			// info: Id, CCode, Amount, ACode, Fild1, Fild2, Fild3
 			if (($transaction_info['CCode'] != 0)) {
@@ -343,7 +342,7 @@ class Finance_Business_Logic {
 			$paid = $transaction_info['Amount'];
 			if ($transaction_id) {
 				print $user->getName() . " " . __("Paid") . " $amount. $payment_number " . __("payments") . "\n";
-				if ($this->debug) print "pay successful $transaction_id<br/>";
+				if ($debug) print "pay successful $transaction_id<br/>";
 
 				// Create token and save it.
 				$token_info = self::GetToken( $transaction_id );

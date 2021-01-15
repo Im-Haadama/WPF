@@ -259,6 +259,9 @@ class Core_Db_MultiSite extends Core_MultiSite {
 		$update_count = 0;
 		$i = 0;
 
+		$result = SqlQuery("select * from ${db_prefix}$table");
+		$fetch_fields = mysqli_fetch_fields($result);
+
 		foreach ( $dom->find( 'tr' ) as $row ) {
 			// First line - headers.
 			if ( $first ) {
@@ -312,15 +315,24 @@ class Core_Db_MultiSite extends Core_MultiSite {
 //					print "<br/>handle " . $row_key . " updated ";
 //			}
 			for ( $i = 0; $i < count( $headers ); $i ++ ) {
+				$int_val = false;
 				if ( ( $ignore_fields == null ) or ( ! in_array( $headers[ $i ], $ignore_fields ) ) ) {
+//					print SqlField($fetch_fields, $headers[$i]) . "<br/>";
+//					print substr(SqlField($fetch_fields, $headers[$i]), 0, 3) . "<br/>";
+					if ($fields[$i] == '' and substr(SqlField($fetch_fields, $headers[$i]), 0, 3) == 'int') $int_val = true;
+
 					if ( $insert ) {
-//						if (strlen($fields[$i] == 0)) $insert_values .= "NULL, ";
-//						else // print strlen($fields[$i]) . " " . $fields[$i] . "<br/>";
-						$insert_values .= QuoteText( EscapeString( $fields[ $i ] ) ) . ", ";
+						if ($int_val and strlen($fields[$i]) < 1)
+							$insert_values .=  "null, ";
+						else
+							$insert_values .= QuoteText( EscapeString( $fields[ $i ] ) ) . ", ";
 						$insert_count ++;
 
 					} else { // Update
-						$update_fields .= $headers[ $i ] . "=" . QuoteText( EscapeString( $fields[ $i ] ) ) . ", ";
+						if ($int_val and strlen($fields[$i]) < 1)
+							$update_fields .= $headers[ $i ] . "=null, ";
+						else
+							$update_fields .= $headers[ $i ] . "=" . QuoteText( EscapeString( $fields[ $i ] ) ) . ", ";
 						$update_count ++;
 					}
 				}

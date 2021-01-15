@@ -32,7 +32,7 @@ function InfoGet( $key, $create = false, $default = null ) {
  * @return int|string
  */
 function QuoteText( $num_or_text, $sql_escape = false ) {
-	if ( is_null( $num_or_text ) ) return '"NULL"';
+	if ( is_null( $num_or_text ) ) return 'null';
 
 	if ( is_numeric( $num_or_text ) ) return $num_or_text;
 
@@ -897,6 +897,6 @@ function ETranslate( $text, $arg = null ) {
 
 function dd($var)
 {
-	var_dump($var);
+	print_r($var);
 	die(1);
 }

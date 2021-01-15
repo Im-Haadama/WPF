@@ -152,7 +152,6 @@ class Flavor {
 		if (!defined('WP_DEBUG'))
 			$loader->AddAction('wp', $this, 'unlogged_guest_posts_redirect');
 
-
 		GetSqlConn( ReconnectDb() );
 
 		// Register tables that can be fetched.

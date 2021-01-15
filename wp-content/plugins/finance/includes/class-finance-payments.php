@@ -65,12 +65,12 @@ class Finance_Payments {
 		return self::instance()->post_file;
 	}
 
-	function init_hooks()
+	function init_hooks($loader)
 	{
 		Core_Gem::getInstance()->AddTable("payments");
-		AddAction("update_payment_method", array($this, 'update_payment_method'));
-		add_action('init', array($this, 'insert_payment_info_wrap'), 10, 1);
-		add_action('admin_init', array($this, 'wp_payment_list_admin_script'));
+		$loader->AddAction("update_payment_method", $this, 'update_payment_method');
+		$loader->AddAction('init', $this, 'insert_payment_info_wrap', 10, 1);
+		$loader->AddAction('admin_init', $this, 'wp_payment_list_admin_script');
 
 	}
 

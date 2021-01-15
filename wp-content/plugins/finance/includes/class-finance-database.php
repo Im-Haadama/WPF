@@ -33,8 +33,9 @@ class Finance_Database extends Core_Database {
 	quantity int not null
 )
 engine=MyISAM;");
-			case '1.7.12':
+			case '1.7.13':
 
+				SqlQuery("alter table wp_woocommerce_shipping_zone_methods add mission_code int null");
 //				SqlQuery("alter table ${db_prefix}payments add
 //	    	default_method bit default b'0' null");
 

@@ -232,6 +232,10 @@ class Freight_Actions {
 			break;
 		}
 		$html = file_get_contents($file_name);
+		$html = str_replace("charset=windows-1255", "", $html);
+//		print mb_detect_encoding($html);
+//		$html = win1255ToUtf8($html);
+//			$html = iconv(null, "UTF-8", $html);
 
 		// Create a new DOM Document
 		$doc = new DOMDocument();
@@ -239,9 +243,11 @@ class Freight_Actions {
 		// Load the html contents into the DOM
 		$doc->loadHTML($html);
 
+		print "<table>";
 		//Loop through each <li> tag in the dom
 		foreach ($doc->getElementsByTagName('li') as $li) {
 
+			print "<tr>";
 			//Loop through each <h3> tag within the li, then extract the node value
 			foreach ($li->getElementsByTagName('h3') as $links) {
 				$order_id = $links->nodeValue;
@@ -266,6 +272,11 @@ class Freight_Actions {
 				$address_2 = "address_2";
 				$comments = $order_id;
 
+				$client_name = baldar_fix($client_name);
+				$street = baldar_fix($street);
+				$address_2 = baldar_fix($address_2);
+				$city = baldar_fix($city);
+
 				$delivery_info = array(
 					'shipping_first_name' => $client_name,
 					'shipping_last_name' => '',
@@ -275,13 +286,28 @@ class Freight_Actions {
 					'shipping_postcode'=>'',
 					'billing_phone'=>$phone
 				);
+				print "<td>$client_name</td><td>$street</td><td>$address_2</td><td>$city</td><td>$phone</td>";
 
 				//print_r($delivery_info); "<br/>";
-				$O = Finance_Order::CreateOrder(1, $mission_id,  null, $the_shipping, $comments, 10, $delivery_info);
-				print "Created order  " . $O->GetID() . " client $client_name<br/>";
+//				$O = Finance_Order::CreateOrder(1, $mission_id,  null, $the_shipping, $comments, 10, $delivery_info);
+//				print "Created order  " . $O->GetID() . " client $client_name<br/>";
 			}
+			print "</tr>";
 		}
+		print "</table>";
+	}
+}
+
+function baldar_fix($src)
+{
+	$hex = bin2hex($src);
+	$i =0;
+	$dst = "";
+	while ($i < strlen($hex)){
+		if (($hex[$i] == 'c') and ($hex[$i+1] == '3')) $i += 4;
+		else if (($hex[$i] == 'c') and ($hex[$i + 1] == '2')) { $dst .= ('d7' . $hex[$i+2] . $hex[$i+3]); $i +=4;}
+		else { $dst .= ($hex[$i] . $hex[$i+1]); $i +=2; }
 	}
 
-
+	return hex2bin($dst);
 }
