@@ -136,7 +136,9 @@ class Core_Shortcodes {
 	{
 		$id = get_user_id();
 		if (! $id) return ETranslate("This content is for registered users. Login") . " " . Core_Html::GuiHyperlink("here", wp_login_url()) .".";
-		return ETranslate("Not autherized to see this content");
+		return
+			greeting() . "<br/>" .
+			ETranslate("Not authorized to see this content. Login") . " " . Core_Html::GuiHyperlink("here", wp_login_url()) .".";
 //		return "Capability for '$cap' is missing to use:" . get_user_displayname(get_current_user());
 	}
 }

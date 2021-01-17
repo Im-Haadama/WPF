@@ -45,9 +45,16 @@ END;
 	function CreateTables( $version, $force ) {
 		$current   = $this->checkInstalled( "tables" );
 
+		$db_prefix = GetTablePrefix();
+
+//		SqlQuery( "drop index ${db_prefix}links_index1 on ${db_prefix}links;" );
+//		SqlQuery( "drop index ${db_prefix}links_index2 on ${db_prefix}links;" );
+//
+//		SqlQuery( "create index ${db_prefix}links_index1 on ${db_prefix}links (type1, type2, id1);" );
+//		SqlQuery( "create index ${db_prefix}links_index2 on ${db_prefix}links (type1, type2, id2);" );
+
 		if (! $current) return $this->CreateTablesFresh($version);
 
-		$db_prefix = GetTablePrefix();
 		if ( $current == $version and ! $force ) {
 			return true;
 		}
@@ -102,8 +109,8 @@ END;
 );
 
 " );
-			SqlQuery( "create unique index ${db_prefix}links_index1 on ${db_prefix}links (type1, type2, id1);" );
-			SqlQuery( "create unique index ${db_prefix}links_index2 on ${db_prefix}links (type1, type2, id2);" );
+			SqlQuery( "create index index ${db_prefix}links_index1 on ${db_prefix}links (type1, type2, id1);" );
+			SqlQuery( "create index index ${db_prefix}links_index2 on ${db_prefix}links (type1, type2, id2);" );
 		}
 
 		if (! TableExists("missions"))

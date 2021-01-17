@@ -58,7 +58,7 @@ class Core_Hook_Handler {
 
 	public static function instance() : Core_Hook_Handler {
 		if ( is_null( self::$_instance ) ) {
-			self::$_instance = new self( Flavor::getPost() );
+			self::$_instance = new self( );
 		}
 
 		return self::$_instance;
@@ -77,14 +77,14 @@ class Core_Hook_Handler {
 	public function AddAction( $hook, $component, $callback = null, $priority = 10, $accepted_args = 1 ) {
 		$debug = false; // ($hook == 'bank_create_invoice_receipt');
 		if (!$callback) {
-			if ($debug) print "using $hook";
+			if ($debug) print "using $hook<br/>";
 			$callback = $hook;
 		}
 		if (is_callable(array($component, $callback . "_wrap"))) {
-			if ($debug) print "using ${callback}_wrap";
+			if ($debug) print "using ${callback}_wrap<br/>";
 			$callback .= "_wrap";
 		}
-		if ($debug) var_dump($component);
+//		if ($debug) var_dump($component);
 		if ($this->debug) print __FUNCTION__ . " $hook" . "<br/>";
 		$this->actions = $this->add( $this->actions, $hook, $component, $callback, $priority, $accepted_args );
 	}
@@ -146,7 +146,7 @@ class Core_Hook_Handler {
 		}
 
 		foreach ( $this->actions as $hook ) {
-			if ($hook == 'inventory_show_supplier') print ("===================== Adding " . $hook['hook']) . "<br/>";
+			if ($this->debug and $hook == 'inventory_show_supplier') print ("===================== Adding " . $hook['hook']) . "<br/>";
  			// print "adding " . $hook['hook'] . " " . var_dump($hook['component']) . " " . $hook['callback'] . "<br/>";
 			add_action($hook['hook'], array( $hook['component'], $hook['callback'] ), $hook['priority'], $hook['accepted_args'] );
 		}

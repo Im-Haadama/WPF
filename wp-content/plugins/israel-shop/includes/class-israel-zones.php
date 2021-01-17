@@ -194,6 +194,8 @@ class Israel_Zones {
 //	}
 
 	function run($limit){
+		if (! TableExists("cities")) return;
+
 		$sql = "select id from im_cities where zipcode is null limit $limit";
 		$cities = SqlQueryArrayScalar($sql);
 		foreach ($cities as $city_id) {

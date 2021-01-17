@@ -57,14 +57,14 @@ class Finance_Business_Logic {
 		$this->Paying_Connect();
 		$pay_on_checkout = GetArg($args, "pay_on_checkout", false);
 
-		if (! $this->paying) {
-			$this->error_message = "Payment system not connected";
-			return false;
-		}
-
 		FinanceLog(__FUNCTION__ . " poc=$pay_on_checkout");
 		if (false)
 		{
+			if (! $this->paying) {
+				$this->error_message = "Payment system not connected";
+				return false;
+			}
+
 			$credit_info = array("card_number" => str_replace("-", "", $_REQUEST["billing_creditcard"]),
 			                     "exp_date_month" => $_REQUEST["billing_expdatemonth"],
 			                     "exp_date_year" => $_REQUEST["billing_expdateyear"],

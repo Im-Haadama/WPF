@@ -29,6 +29,7 @@ class Fresh_Catalog {
 		$loader->AddAction("product_publish", $this, "product_publish");
 		$loader->AddAction("remove_map", $this, "remove_map");
 		$loader->AddAction("draft_by_map_id", $this, "draft_by_map_id");
+//		add_action('template_redirect', array($this, 'draft_no_picture'));
 	}
 
 	static function remove_map()
@@ -284,7 +285,7 @@ class Fresh_Catalog {
 		if ( $count == 0 ) {
 			if ( $details )
 				print "count == 0. trying parent ";
-			$parent = GetProductParernt( $prod_id );
+			$parent = GetProductParent( $prod_id );
 			// print "parent: " . $parent ;
 			if ( $parent > 0 ) {
 				if ( $details ) {
@@ -970,6 +971,47 @@ class Fresh_Catalog {
 			set_post_meta_field( $post_id, '_thumbnail_id', $attachment_id );
 		}
 	}
+
+//	static function draft_no_picture()
+//	{
+//		// Status
+////	SqlQuery("alter table wp_posts change processed int null");
+//		$sql = "select id
+//	from wp_posts p
+//	where post_type = 'product'
+//	and post_status = 'publish'
+//	and (processed is null or processed < 3) limit 10";
+//
+//		$ids = SqlQueryArrayScalar($sql);
+////	return;
+//
+//		foreach ($ids as $prod_id) {
+////			print "checking $prod_id<br/>";
+////			MyLog(__FUNCTION__ . $prod_id);
+//			$file = Fresh_Catalog::GetProdImage( $prod_id);
+//
+////			var_dump($file);
+//			if (! $file) {
+//				// No attachement. Leaving the same.
+//				SqlQuery("update wp_posts set processed = 5 where id = $prod_id");
+//				continue; // No attachment.
+//			}
+//
+//			$p = new Fresh_Product($prod_id);
+//			$file_content = @file_get_contents($file);
+////			var_dump($file_content);
+//
+//			if (! $file_content) {
+//				// Can't get the file.
+//				MyLog("drafting " . $p->getName() . "<br/>");
+//				SqlQuery("update wp_posts set processed = 3, post_status = 'draft' where id = $prod_id");
+//			} else {
+//				// All good.
+//				MyLog("OK: " . $p->getName() . "<br/>");
+//				SqlQuery("update wp_posts set processed = 4 where id = $prod_id");
+//			}
+//		}
+//	}
 }
 
 //function best_alternatives( $alternatives, $debug = false ) {
@@ -1048,6 +1090,6 @@ class CatalogFields {
 		field_count = 11;
 }
 
-function GetProductParernt( $prod_id ) {
+function GetProductParent( $prod_id ) {
 	return SqlQuerySingleScalar( "SELECT post_parent FROM wp_posts WHERE id = " . $prod_id );
 }

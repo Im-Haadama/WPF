@@ -1,6 +1,5 @@
 <?php
 
-
 class Finance_Product {
 	protected $id;
 	protected $wp_p;
@@ -18,6 +17,8 @@ class Finance_Product {
 	 * @param $id
 	 */
 	public function __construct( $id ) {
+		if (! class_exists('WC_Product')) return null;
+
 		$this->id = $id;
 		try {
 			$this->wp_p = new WC_Product( $id );

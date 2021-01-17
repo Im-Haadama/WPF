@@ -24,6 +24,4 @@ class FVideo_Video {
 	{
 		return get_post_meta($this->id, 'video_link', 1);
 	}
-
-
 }

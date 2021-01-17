@@ -315,7 +315,7 @@ class Flavor_Org_Views {
 		}
 
 		$worker    = new Org_Worker( get_user_id() );
-		$companies = $worker->GetCompanies();
+		$companies = $worker->GetAllCompanies();
 		$company_id = GetArg($args, "company_id", $companies[0]);
 
 		$company = new Org_Company($company_id);

@@ -165,9 +165,9 @@ class FVideo {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 
 		// FVideo type.
-		$loader->AddAction('init', $this, 'register_fvideo');
-		$loader->AddAction( 'add_meta_boxes', $this, 'fvideo_box') ;
-		$loader->AddACtion( 'save_post', $this, 'fvideo_box_save' );
+		add_action('init', array($this, 'register_fvideo'));
+		add_action('add_meta_boxes', array($this, 'fvideo_box'));
+		add_action( 'save_post', array($this, 'fvideo_box_save'));
 	}
 
 	/**

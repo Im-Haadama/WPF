@@ -26,30 +26,6 @@ class Org_Worker extends Core_users
 		return SqlQuerySingleScalar( "select count(*) from im_working where user_id = " . $this->id . " and project_id = 0 and company_id = $company");
 	}
 
-	function GetCompanies($is_manager = false){
-//		$yael = new Org_Worker(4);
-//		$yael->AddCompany(1);
-		if ($is_manager) {
-			$sql = " select id from im_company where admin = " . $this->id;
-			$array = SqlQueryArrayScalar($sql);
-		} else {
-			$array = unserialize( get_usermeta( $this->getId(), 'companies' ) );
-		}
-
-		if (! $array) return array();
-		foreach ($array as $key => $item)
-			$array[$key] = (int) $item;
-		return $array;
-//
-////		if (!$is_manager) $sql .= " union select company_id from im_working where user_id = " . $this->id;
-////		print $sql . "<br/>";
-//
-//		if (! $result) return null;
-//		for ($i = 0; $i < count($result); $i++)
-//			$result[$i] = (int) $result[$i];
-//		return $result;
-	}
-
 	function GetPersonalTeam()
 	{
 //		$teams =
@@ -93,7 +69,7 @@ class Org_Worker extends Core_users
 	{
 		if ($this->workers) return $this->workers;
 
-		$companies = self::GetCompanies(true);
+		$companies = self::GetAllCompanies(true);
 		if ($companies) {
 			$this->workers = array();
 			$result = $this->workers;
@@ -155,8 +131,12 @@ class Org_Worker extends Core_users
 
 	function GetAllCompanies()
 	{
-		// return CommaArrayExplode(get_usermeta($this->id, 'teams'));
-		unserialize(get_usermeta($this->id, 'companies'));
+		$db_prefix = GetTablePrefix();
+		$worker_id = $this->getId();
+		$type1 = FlavorDbObjects::users;
+		$type2 = FlavorDbObjects::company;
+		$sql = "select id2 from ${db_prefix}links where type1=$type1 and type2=$type2 and id1=$worker_id";
+		return SqlQueryArrayScalar($sql);
 	}
 
 	function AddCompany($company_id)
@@ -202,7 +182,7 @@ class Org_Worker extends Core_users
     	$teams = array();
 
 	    // The user is the manager of the company.
-	    $companies        = $this->GetCompanies(true);
+	    $companies        = $this->GetAllCompanies(true);
 	    $companies_teams = array();
 	    foreach ($companies as $company_id){
 //	    	print "comp $company_id<br/>";
@@ -237,7 +217,7 @@ class Org_Worker extends Core_users
 //	{
 //		$table_prefix = GetTablePrefix();
 //
-//		$current = $this->GetCompanies();
+//		$current = $this->GetAllCompanies();
 //		if (in_array($user_id, $current)) return true; // already in.
 //
 //		die  (1);
@@ -314,14 +294,14 @@ class Org_Worker extends Core_users
 //		$worker_id = $this->id;
 //		$worker = new Org_Worker($worker_id);
 //		$result = [];
-//		$companies = $worker->GetCompanies($worker_id);
+//		$companies = $worker->GetAllCompanies($worker_id);
 //		if (!$companies) {
 //			print "Doesn't belong to any company";
 //			print "user= $worker_id<Br/>";
 //			return null;
 //		}
 ////		print "companies: "; var_dump($co); print "<br/>";
-//		foreach ($worker->GetCompanies($worker_id) as $company){
+//		foreach ($worker->GetAllCompanies($worker_id) as $company){
 ////			print "com=$company<br/>";
 //			if ($worker->IsGlobalCompanyWorker($company)){
 //				foreach (sql_query_array_scalar("select id from im_projects where is_active = 1 and company = $company") as $project_id)

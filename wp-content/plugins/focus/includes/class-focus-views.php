@@ -10,6 +10,7 @@ class Focus_Views {
 		$loader->AddFilter( 'data_save_new_working_teams', $this, 'DataSaveNewTeam', 11, 1 );
 		$loader->AddFilter( 'data_save_new_tasklist', $this, 'DataSaveNewTaskList', 11, 1 );
 		$loader->AddFilter("data_save_new_after_company", $this, null, 10, 2);
+		$loader->AddFilter("data_save_new_after_projects", $this, null, 10, 2);
 
         $loader->AddFilter( 'data_save_new_company', $this, 'DataSaveNewCompany', 11, 1 );
 		$loader->AddAction( 'add_worker', $this, 'DoAddCompanyWorker', 11, 3 );
@@ -86,7 +87,10 @@ class Focus_Views {
 		wp_enqueue_script( 'awesome', $awesome, null, $version, false );
 	}
 
-	static function focus_main_wrapper() {
+	static function focus_main_wrapper($attr) {
+
+		$narrow = GetArg($attr, "narrow", false);
+
 		$user_id = get_user_id();
 		if ( ! $user_id ) {
 			return "unauth";
@@ -106,7 +110,7 @@ class Focus_Views {
 //		print "op=$operation";
 		if ($operation) {
 			$table_name = self::TableFromOperation( $operation );
-			$args = self::Args( $table_name );
+			$args = self::Args( $table_name, null,  $narrow );
 //			ob_start();
 			Core_Hook_Handler::instance()->DoAction($operation, $args);
 			return;
@@ -115,7 +119,7 @@ class Focus_Views {
 		}
 
 		// If no filter yet, handle the old way.
-		return Focus_Views::instance()->focus_main( $user_id );
+		return Focus_Views::instance()->focus_main( $user_id, $narrow );
 	}
 
 	static function TableFromOperation( $operation ) {
@@ -145,7 +149,7 @@ class Focus_Views {
 		return $result;
 	}
 
-	static function Args( $table_name = null, $action = null ) {
+	static function Args( $table_name = null, $action = null, $narrow = false ) {
 		$ignore_list = ["st_main", "page_number"];
 		$args        = array(
 			"page_number"  => GetParam( "page_number", false, 1 ),
@@ -240,6 +244,8 @@ class Focus_Views {
 						"ended"            => "Ended",
 						"team"             => "Team"
 					);
+
+					if (! $narrow)
 					$args["fields"]        = array(
 						"id",
 						"task_title",
@@ -248,6 +254,12 @@ class Focus_Views {
 						"project_id",
 						"priority"
 					);
+					else
+						$args["fields"]        = array(
+							"id",
+							"task_title",
+							"task_description" // Needed for task title
+						);
 					$args["links"]         = array( "id" => self::get_link( "task", "%d" ),
 						"task_template"=>self::get_link("template", "%d"));
 					if ($action == "show")
@@ -810,7 +822,7 @@ class Focus_Views {
 	 * @return string
 	 * @throws Exception
 	 */
-	function focus_main( $user_id ) {
+	function focus_main( $user_id, $narrow = false ) {
 		unset ($_GET["operation"]);
 //		return __FUNCTION__;
 //		print self::CompanySettings(new Org_Company(1));
@@ -828,7 +840,7 @@ class Focus_Views {
 		$result .= Core_Html::GuiDiv( "search_result" );
 
 		$worker = new Org_Worker( $user_id );
-		$args   = self::Args( "tasklist" );
+		$args   = self::Args( "tasklist", null, $narrow );
 
 		$selected_tab = GetParam( "st_main", false, "my_work" );
 		$tabs = array(
@@ -840,12 +852,9 @@ class Focus_Views {
 			array( "repeating_tasks", "Repeating tasks", null )
 		);
 
-		if ( $companies = $worker->GetCompanies( true ) ) {
+		if ( $companies = $worker->GetAllCompanies( ) ) {
 			foreach ( $companies as $company_id ) {
-				if ( ! is_integer( $company_id ) ) {
-					die ( "company $company_id is not int" );
-				}
-				$company = new Org_Company( $company_id );
+				$company = new Org_Company( intval($company_id) );
 				array_push( $tabs, array(
 					"company_settings&company_id=$company_id",
 					"{$company->getName()} Settings",
@@ -858,11 +867,11 @@ class Focus_Views {
 
 		switch ( $selected_tab ) {
 			case "my_work":
-				$tabs[0][2] = self::user_work( $args, "Active tasks assigned to me", false, $user_id );
-				if (! $this->result_count) $tabs[0][2] = self::user_work( $args, "Active tasks assigned to my teams", true, $user_id );
+				$tabs[0][2] = self::my_work( $args, "Active tasks assigned to me", false, $user_id );
+				if (! $this->result_count) $tabs[0][2] = self::my_work( $args, "Active tasks assigned to my teams", true, $user_id );
 				break;
 			case "my_team_work":
-				$tabs[1][2] = self::user_work( $args, "Active tasks assigned to my teams", true, $user_id );
+				$tabs[1][2] = self::my_work( $args, "Active tasks assigned to my teams", true, $user_id );
 				break;
 			case "i_want":
 				$tabs[2][2] = self::i_want( $args, $user_id );
@@ -901,7 +910,7 @@ class Focus_Views {
 		return $result;
 	}
 
-	function user_work( $args, $title, $include_team, $user_id )
+	function my_work( $args, $title, $include_team, $user_id )
 	{
 		$result = "";
 
@@ -939,13 +948,16 @@ class Focus_Views {
 		$table = $this->Taskslist( $args );
 		if ( $this->result_count ) {
 			$result .= $table;
+			$result .= self::task_filters();
+
 		} else {
 			if ( ! $include_team ) {
-				return self::user_work( $args, "Active tasks assigned to my teams", true, $user_id );
+				return self::my_work( $args, "Active tasks assigned to my teams", true, $user_id );
 			}
-			$result .= "Nothing found.";
+			$result .= ETranslate("Horray, no tasks!") . "<br/>";
+			$result .= Core_Html::GuiHyperlink("Let's create task", AddToUrl("operation", "gem_add_tasklist"));
+
 		}
-		$result .= self::task_filters();
 
 		return $result;
 	}
@@ -1270,7 +1282,7 @@ class Focus_Views {
 		);
 		$args["transpose"]        = true;
 		$args["worker"]           = get_user_id();
-		$args["companies"]        = $worker->GetCompanies();
+		$args["companies"]        = $worker->GetAllCompanies();
 		$args["values"]           = array( "owner" => get_user_id(), "creator" => get_user_id() );
 		$args["fields"]           = array(
 			"task_description",
@@ -1380,7 +1392,7 @@ class Focus_Views {
 //		//$creator = new Org_Worker( $new_task->getCreator() );
 //		//print "creator = " .$creator->getName();
 //		//$args["creator"] = $creator->getName();
-//		$args["companies"] = $worker->GetCompanies();
+//		$args["companies"] = $worker->GetAllCompanies();
 //		$args["debug"]     = 0; // get_user_id() == 1;
 //		$args["post_file"] = self::instance()->post_file;
 //		$args["v_checkbox"] =true;
@@ -1393,9 +1405,9 @@ class Focus_Views {
 		// Check if user has company. if not create new one.
 		$user_id     = get_user_id();
 		$worker      = new Org_Worker( $user_id );
-		$company_ids = $worker->GetCompanies();
+		$company_ids = $worker->GetAllCompanies();
 
-		if ( ! $company_ids or ! count( $company_ids ) ) {
+		if ( ! ( $company_ids and count( $company_ids ) ) ){
 			print "We need some information to get started! <br/> please enter a name to represent your company<br/>";
             $args              = self::Args( "company" );
             $args["fields"]           = array("name");
@@ -1468,7 +1480,7 @@ class Focus_Views {
 		$worker                     = new Org_Worker( get_user_id() );
 		$template_args              = self::Args( "task_templates" );
 		$template_args["worker"]    = $worker->getId();
-		$template_args["companies"] = $worker->GetCompanies();
+		$template_args["companies"] = $worker->GetAllCompanies();
 
 		if ( $template_id ) {
 //			$template_args["title"]     = "Repeating task"; 2020-11-29. agla: Title should be set in pages
@@ -1796,7 +1808,7 @@ class Focus_Views {
 		$form_table = GetArg( $args, "form_table", null );
 		$events     = GetArg( $args, "events", null );
 
-		$companies      = array( 1 ); // Org_Company::GetCompanies($user_id);
+		$companies      = array( 1 ); // Org_Company::GetAllCompanies($user_id);
 		$companies_list = [];
 		foreach ( $companies as $company_id => $company_name ) {
 			$companies_list[] = array( "company_id" => $company_id, "company_name" => $company_name );
@@ -1819,7 +1831,7 @@ class Focus_Views {
 		$worker = new Org_Worker( get_user_id() );
 
 		// The user is the manager of the company.
-		$companies       = $worker->GetCompanies( true );
+		$companies       = $worker->GetAllCompanies( true );
 		$teams = array();
 		foreach ( $companies as $company_id ) {
 			$company_id    = new Org_Company( $company_id );
@@ -2000,6 +2012,13 @@ class Focus_Views {
 //		var_dump($row);
 	}
 
+	function data_save_new_after_projects($row, $new_project_id)
+	{
+		$worker = $row['manager'];
+		$p = new Org_Project($new_project_id);
+		$p->AddWorker($worker);
+	}
+
 	static function DoAddCompanyWorker() {
 		$user_id = get_user_id();
 		if ( ! $user_id ) {
@@ -2010,7 +2029,7 @@ class Focus_Views {
 		$User = new Org_Worker( $user_id );
 
 		$company_id = GetParam( "company_id" );
-		if ( ! in_array( $company_id, $User->GetCompanies() ) ) {
+		if ( ! in_array( $company_id, $User->GetAllCompanies() ) ) {
 			print "not your company!";
 
 			return false;
@@ -2056,7 +2075,7 @@ class Focus_Views {
 		$args = self::Args( "tasklist" );
 
 		// If no filter yet, handle the old way.
-		return self::instance()->user_work( $args, "Worker's tasks", true, $user_id );
+		return self::instance()->my_work( $args, "Worker's tasks", true, $user_id );
 	}
 
 	static function ProjectAddMember() {
