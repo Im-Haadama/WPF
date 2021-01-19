@@ -29,7 +29,7 @@ class Freight {
 	 *
 	 * @var string
 	 */
-	public $version = '1.4.2';
+	public $version = '1.4.4';
 
 	private $plugin_name;
 

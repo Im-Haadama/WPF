@@ -61,13 +61,18 @@ class Freight_Mission_Manager
 	{
 		self::$multi_site = Core_Db_MultiSite::getInstance();
 
+//		FreightLog(__FUNCTION__);
 		// Try cache
 		$data = InfoGet("mission_$mission_id");
 		if ($data) return unserialize($data);
 
+//		FreightLog("no cache");
+
 		// Get from all sites.
 		$n = new Freight_Mission_Manager($mission_id);
+//		FreightLog("getting route");
 		$n->get_route();
+//		FreightLog("done");
 
 		return $n;
 	}
@@ -97,7 +102,7 @@ class Freight_Mission_Manager
 
 		$supplies_to_collect = array();
 
-		$this->prepare_route($the_mission, $path);
+		$this->prepare_route($path);
 
 		if (! $path or ! count($path))
 			return;
@@ -244,6 +249,7 @@ group by pm.meta_value, p.post_status");
 
 	function dispatcher($args = null)
 	{
+		FreightLog(__FUNCTION__);
 		$the_mission = $this->mission_id;
 
 		$edit = GetArg($args, "edit", true);
@@ -261,6 +267,9 @@ group by pm.meta_value, p.post_status");
 		$arrive_time = strtotime( $m->getStartTime());
 		$prev           = $m->getStartAddress();
 		$total_distance = 0;
+
+//		// TEMP for develop
+//		Freight_Actions::instance()->freight_do_import_baldar(998, WC_LOG_DIR . "/baldar.html");
 
 		if ($path and count($path)) {
 			$result .= Core_Html::GuiHeader(1, __("Details for dispatch number") . " " . $the_mission);
@@ -281,7 +290,7 @@ group by pm.meta_value, p.post_status");
 						$pri_input = Core_Html::GuiInput( "pri" . $order_id . "_" . $site_id, $order_pri, array( "size"   => 5,
 						                                                                                         "events" => 'onchange="update_order_pri(\'' . self::getPost() . '\',this)"'
 							) ) .
-						             Core_Html::GuiButton( "btn_reset_reset", "R", array( "action" => "reset_path('" . self::getPost() . "'," . ( $i + 1 ) . ")" ) );
+			 	             Core_Html::GuiButton( "btn_reset_reset", "R", array( "action" => "reset_path('" . self::getPost() . "'," . ( $i + 1 ) . ")" ) );
 						$type      = "orders";
 						if ( $site == "supplies" ) {
 							$type = "supplies";
@@ -302,11 +311,29 @@ group by pm.meta_value, p.post_status");
 						$arrive_time += $duration * 60;
 
 						$edit_user = Core_Html::GuiHyperlink( $user_id, self::$multi_site->getSiteURL( $site_id ) . "/wp-admin/user-edit.php?user_id=" . $user_id );
-						$comments  = ( ( $site_id == $multi_site->getLocalSiteID() and $edit) ?
-							Core_Html::GuiInput( "comments_$order_id",
-								$order_info[ OrderTableFields::comments ],
-								array( "events" => "onchange=\"order_update_driver_comment('" . Freight::getPost() . "', $order_id)\"" )
-							) : $order_info[ OrderTableFields::comments ] );
+
+						$comments = $order_info[ OrderTableFields::comments ];
+						$city = $order_info[OrderTableFields::city];
+						$address_1 = $order_info[OrderTableFields::address_1];
+						$address_2 = $order_info[ OrderTableFields::address_2 ];
+						$link = '';
+
+						// Editable fields
+						if ($site_id == $multi_site->getLocalSiteID() and $edit) {
+							$comments  = Core_Html::GuiInput( "comments_$order_id", $comments,
+									array( "events" => "onchange=\"order_update_driver_comment('" . Freight::getPost() . "', $order_id)\"" ));
+							$address_1 = Core_Html::GuiInput("address_1_$order_id", $address_1,
+								array( "events" => "onchange=\"order_update_field('" . Freight::getPost() . "', $order_id, 'address_1')\"" ));
+							$address_2 = Core_Html::GuiInput("address_2_$order_id", $address_2,
+								array( "events" => "onchange=\"order_update_field('" . Freight::getPost() . "', $order_id, 'address_2')\"" ));
+
+							$o = new Finance_Order($order_id);
+							if (($external_id = $o->getField('baldar_id') > 0))
+								$link = $external_id; // Core_html::GuiHyperlink($external_id, "http://84.228.229.231?TaskDetails.aspx?dlv=$external_id");
+
+
+						}
+
 						$url = (($type == "supplies") ? Core_Html::GuiHyperlink($order_id, "/wp-admin/admin.php?page=supplies&operation=show_supply&id=$order_id") :
 							Core_Html::GuiHyperlink( $order_id, "/wp-admin/post.php?post=$order_id&action=edit" ));
 						$new_row =
@@ -314,10 +341,11 @@ group by pm.meta_value, p.post_status");
 								$url,
 								$edit_user,
 								Core_Html::GuiHyperlink( $user_name, $multi_site->getSiteURL( $site_id ) . "/wp-admin/user-edit.php?user_id=$user_id" ),
-								$path[ $i ],
-								$order_info[ OrderTableFields::address_2 ],
+								$city,
+								$address_1,
+								$address_2,
 								$comments,
-								$order_info[ OrderTableFields::shipping ],
+								$link,
 								$order_info[ OrderTableFields::phone ]);
 						if (! $print) array_push($new_row,  Core_Html::GuiCheckbox( "chk_$order_id", false,
 									array( "events" => 'onchange="delivered(\'' . Freight::getPost() . "', " . $site_id . "," . $order_id . ', \'' . $type . '\')"' ) ));
@@ -339,6 +367,7 @@ group by pm.meta_value, p.post_status");
 			$header = array(
 				__( "Order number" ),
 				__( "Customer name" ),
+				__( "City"),
 				__( "Address 1" ),
 				__( "Address 2" ),
 				__( "Comments" ),
@@ -365,6 +394,7 @@ group by pm.meta_value, p.post_status");
 			$result .= Core_Html::GuiHyperlink( "Print", Freight::getPost() . "?operation=print_mission&id=$the_mission" ) ."</br>";
 			$result .= self::get_maps_url($m, $path);
 		}
+		FreightLog("done");
 		return $result;
 	}
 
@@ -425,6 +455,7 @@ group by pm.meta_value, p.post_status");
 
 	// Calculates points_pe
 	function collect_points($data_lines, $mission_id) {
+		FreightLog(__FUNCTION__);
 		$multisite         = Core_Db_MultiSite::getInstance();
 		$this->stop_points = array();
 
@@ -475,7 +506,11 @@ group by pm.meta_value, p.post_status");
 					$order_id );
 			}
 
-			self::add_stop_point( $stop_point, $order_id, $site_id );
+			if (self::get_distance($mission->getStartAddress(), $stop_point) == -1) {
+				print "Address of order $order_id is not vaild. " . $stop_point . "<br/>";
+				continue;
+			} else
+				self::add_stop_point( $stop_point, $order_id, $site_id );
 //			if (! isset($this->prerequisite[$stop_point])) {
 //				$p = self::order_get_pri($order_id, $site_id);
 //				if (strlen($p)) $this->prerequisite[$stop_point] = $p;
@@ -498,6 +533,7 @@ group by pm.meta_value, p.post_status");
 				}
 			}
 		}
+		FreightLog("done");
 	}
 
 	function add_stop_point( $point, $order_id, $site_id)
@@ -574,7 +610,9 @@ group by pm.meta_value, p.post_status");
 			return $ds;
 		}
 		$r = self::do_get_distance( $address_a, $address_b );
-		if ( $r  == -1 or ! is_array($r)) {
+		if (! $r or ! is_array($r)) {
+			print "no distance $address_b<br/>";
+			print debug_trace(10); print "<br/>";
 			// One is invalid
 			return -1;
 		}
@@ -784,9 +822,9 @@ group by pm.meta_value, p.post_status");
 		if ( trim($a) == trim($b) ) {
 			return 0;
 		}
-		if ( is_null( $a ) or strlen( $a ) < 1 ) return -1;
+		if ( is_null( $a ) or strlen( $a ) < 1 ) return null;
 
-		if ( is_null( $b ) or strlen( $b ) < 1 ) return -1;
+		if ( is_null( $b ) or strlen( $b ) < 1 ) return null;
 
 //	debug_time1("google start");
 		$s = "https://maps.googleapis.com/maps/api/directions/json?origin=" . urlencode( $a ) . "&destination=" .
@@ -799,7 +837,7 @@ group by pm.meta_value, p.post_status");
 		$j = json_decode( $result );
 
 		if ( ! $j or ! isset( $j->routes[0] ) ) {
-			print "Can't find distance between '" . $a . "' and '" . $b . "'<br/>";
+//			print "Can't find distance between '" . $a . "' and '" . $b . "'<br/>";
 
 			return null;
 		}
@@ -819,7 +857,7 @@ group by pm.meta_value, p.post_status");
 			return array( $v, $t );
 		}
 
-		print "can't find distance between " . $a . " " . $b . "<br/>";
+//		print "can't find distance between " . $a . " " . $b . "<br/>";
 
 		return null;
 	}
@@ -895,6 +933,7 @@ group by pm.meta_value, p.post_status");
 
 	static function delivered($site_id, $type, $id, $debug = false)
 	{
+		$debug = false;
 		if ( $debug ) {
 			print "start<br/>";
 		}
@@ -914,6 +953,7 @@ group by pm.meta_value, p.post_status");
 				print $request;
 				return false;
 			}
+			return true;
 		}
 		// Running local. Let's do it.
 		// print "type=" . $type . "<br/>";

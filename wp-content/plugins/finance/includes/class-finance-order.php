@@ -200,7 +200,17 @@ class Finance_Order {
 
 	function setMissionID( $mission_id ) {
 		$this->mission_id = $mission_id;
-		set_post_meta_field( $this->order_id, "mission_id", $this->mission_id );
+		$this->setField( "mission_id", $this->mission_id );
+	}
+
+	function setField($field_name, $field_value)
+	{
+		set_post_meta_field( $this->order_id, $field_name, $field_value );
+	}
+
+	function getField($field_name)
+	{
+		return get_postmeta_field( $this->order_id, $field_name );
 	}
 
 	function getStatus()
@@ -881,6 +891,20 @@ class Finance_Order {
 		if (! strlen($driver_comments)) $driver_comments = ' ';
 		return update_post_meta($this->order_id, 'driver_comments', $driver_comments);
 	}
+
+	function UpdateField($field, $field_value)
+	{
+//		print __FUNCTION__ . " $field $field_value " . $this->order_id;
+		switch ($field) {
+			case 'address_1':
+				return update_post_meta($this->order_id, '_shipping_address_1', $field_value);
+			case 'address_2':
+				return update_post_meta($this->order_id, '_shipping_address_2', $field_value);
+			default:
+				die("failed: field $field not handled");
+		}
+	}
+
 
 	function GetComments($include_lines = false) {
 

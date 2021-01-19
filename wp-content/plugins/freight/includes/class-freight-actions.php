@@ -29,6 +29,7 @@ class Freight_Actions {
 		$loader->AddAction('download_mission',$this, 'download_mission');
 		$loader->AddAction('print_mission', $this, 'print_mission');
 		$loader->AddAction('order_update_driver_comment', $this, 'order_update_driver_comment');
+		$loader->AddAction('order_update_field', $this);
 		$loader->AddAction("freight_do_import", $this);
 		$loader->AddAction("freight_do_import_baldar", $this);
 
@@ -101,7 +102,7 @@ class Freight_Actions {
 		$ids = GetParamArray("id", true);
 
 		foreach ($ids as $id)
-			if (! self::delivered($site_id, $type, $id)) return false;
+			if (! Freight_Mission_Manager::delivered($site_id, $type, $id)) return false;
 		return true;
 	}
 
@@ -147,6 +148,17 @@ class Freight_Actions {
 		return $o->UpdateDriverComments($comments);
 	}
 
+	static function order_update_field()
+	{
+		$order_id = GetParam("order_id", true);
+		$field = GetParam("field", true);
+		$field_value = GetParam("field_value", true);
+		$o = new Finance_Order($order_id);
+		$o->UpdateField($field, urldecode($field_value));
+		Freight_Mission_Manager::clean($o->getField('mission_id'));
+	}
+
+
 	function freight_do_import_wrap($mission_id)
 	{
 		if (! isset($_FILES["fileToUpload"]["tmp_name"])) {
@@ -191,10 +203,10 @@ class Freight_Actions {
 			);
 
 			$O = Finance_Order::CreateOrder(1, $mission_id,  null, $the_shipping, $comments, 10, $delivery_info);
-			print "Created order  " . $O->GetID() . " client $client_name $comments";
+//			print "Created order  " . $O->GetID() . " client $client_name $comments";
 			if (Freight_Mission_Manager::get_distance($m->getStartAddress(), $address1 . " " . $city)) {
 				$O->update_status( "wc-processing" );
-				print "processing<br/>";
+//				print "processing<br/>";
 				$valid ++;
 			} else {
 				print "bad address<br/>";
@@ -204,6 +216,8 @@ class Freight_Actions {
 		print "Summary:<br/>";
 		print $valid . " new orders in processing<br/>";
 		if ($bad_address) print $bad_address . " orders to fix address (remain waiting for payment<Br/>";
+		Freight_Mission_Manager::clean($mission_id);
+
 	}
 
 	function mission_clean()
@@ -213,15 +227,19 @@ class Freight_Actions {
 		Freight_Mission_Manager::clean($id);
 	}
 
-	function freight_do_import_baldar($mission_id)
+	function freight_do_import_baldar($mission_id, $file_name = null)
 	{
-		if (!isset($_FILES["fileToUpload"]["tmp_name"])) {
+		$m = new Mission($mission_id);
+		$valid = 0;
+		$bad_address = 0;
+
+		if (! $file_name and !isset($_FILES["fileToUpload"]["tmp_name"])) {
 			print "No file selected";
 
 			return;
 		}
 
-		$file_name = $_FILES["fileToUpload"]["tmp_name"];
+		if (! $file_name) $file_name = $_FILES["fileToUpload"]["tmp_name"];
 
 		$customer = new Finance_Client(1);
 		$zone = $customer->getZone();
@@ -233,49 +251,91 @@ class Freight_Actions {
 		}
 		$html = file_get_contents($file_name);
 		$html = str_replace("charset=windows-1255", "", $html);
-//		print mb_detect_encoding($html);
-//		$html = win1255ToUtf8($html);
-//			$html = iconv(null, "UTF-8", $html);
 
 		// Create a new DOM Document
 		$doc = new DOMDocument();
 
 		// Load the html contents into the DOM
 		$doc->loadHTML($html);
+		$db_prefix = GetTablePrefix();
 
-		print "<table>";
+		$all_cities = SqlQueryArrayScalar("select city_name from ${db_prefix}cities");
+
 		//Loop through each <li> tag in the dom
 		foreach ($doc->getElementsByTagName('li') as $li) {
-
-			print "<tr>";
+			$phone = '';
 			//Loop through each <h3> tag within the li, then extract the node value
 			foreach ($li->getElementsByTagName('h3') as $links) {
 				$order_id = $links->nodeValue;
+//				print $order_id . "<br/>";
 			}
+			$client_name = '';
+			$street = '';
+			$city = '';
+			$address_2 = '';
 
 			//Loop through each <p> tag within the li, then extract the node value
 			foreach ($li->getElementsByTagName('p') as $links) {
-				$string = "$links->nodeValue";
-				$temp_1 = explode(" ", $string);
-				$phone = trim(end($temp_1));
-				$temp_2 = explode("$phone",$string);
-				$temp_3 = explode("-", $temp_2[0]);
-				$client_name = trim(end($temp_3));
-				$full_address = trim($temp_2[1]);
-				preg_match_all('/\d+/', $full_address, $numbers);
-				$street_number = $numbers[0][0];
-				$temp_4 = explode("$street_number", $full_address);
-				$city = trim(end($temp_4));
-				$street = trim($temp_4[0] .  $street_number);
-				// need to split the city and address 2
-				//maybe with SqlQuery("select id from im_cities where name like '$first_name%') to get the city name
-				$address_2 = "address_2";
-				$comments = $order_id;
+				$order_details = baldar_fix($links->nodeValue);
+//				print "X${order_details}X<br/>";
+				$word = strtok($order_details, " ");
+				$word_array = [];
+				while ($word) {
+//					print "$word ";
+					if ($word != '-' and $word != 'טל' and $word != '.')
+						array_unshift($word_array, $word);
 
-				$client_name = baldar_fix($client_name);
-				$street = baldar_fix($street);
-				$address_2 = baldar_fix($address_2);
-				$city = baldar_fix($city);
+					$word = strtok (" ");
+				}
+
+				$phone = $word_array[0]; unset($word_array[0]);	$word_array=array_values($word_array);
+				$word_array=array_values($word_array);
+
+				for ($i = 0; $i < count($word_array) - 1; $i++) {
+					if ( in_array( $word_array[ $i + 1 ] . " " . $word_array[ $i ], $all_cities ) ) {
+						// 2 word city
+						$city = $word_array[ $i+1 ] . " " . $word_array[ $i ];
+//						print "city2 at $i<br/>";
+						unset ( $word_array[ $i ] );
+						unset ( $word_array[ $i + 1 ] );
+						break;
+					}
+					if ( in_array( $word_array[ $i ], $all_cities ) ) {
+//						print "city1 at $i<br/>";
+						// 2 word city
+						$city = $word_array[ $i ];
+						unset ( $word_array[ $i ] );
+						break;
+					}
+				}
+//				print "finding city. i=$i<br/>";
+				// The street address is between the city and senders phone.
+				for ($j = $i + 1; $j < count($word_array); $j++) {
+					if (! isset($word_array[$j])) continue; // Two word city name.
+//					print "checking $j " . $word_array[$j];
+					if ((strlen ($word_array[$j]) > 5) and ($word_array[$j][0] == '0' or $word_array[$j][0] == '5' or $word_array[$j][0] == '+')) { // Sender phone.
+//						print "<br/>phone: $j " . $word_array[$j] . "<br/>";
+						for ($k = $i+1; $k < $j; $k++) {
+							if (isset($word_array[$k])) $street .= $word_array[ $k ] . " ";
+							unset ($word_array[$k]);
+						}
+						$street = trim($street, " ");
+						for ($k = 0; $k < $j; $k++) {
+							if (isset($word_array[$k])) $address_2 .= $word_array[ $k ] . " ";
+							unset ($word_array[$k]);
+						}
+						$address_2 = trim($address_2, " ");
+						break;
+					}
+				}
+//				var_dump($word_array);
+//				print "st=$street<br/>";
+				if ($street == '') { // No sender phone
+					for ($k = 0; $k < count($word_array); $k++) {
+						if (isset($word_array[$k])) $street .= $word_array[ $k ] . " ";
+						unset ($word_array[$k]);
+					}
+				}
 
 				$delivery_info = array(
 					'shipping_first_name' => $client_name,
@@ -286,17 +346,28 @@ class Freight_Actions {
 					'shipping_postcode'=>'',
 					'billing_phone'=>$phone
 				);
-				print "<td>$client_name</td><td>$street</td><td>$address_2</td><td>$city</td><td>$phone</td>";
-
-				//print_r($delivery_info); "<br/>";
-//				$O = Finance_Order::CreateOrder(1, $mission_id,  null, $the_shipping, $comments, 10, $delivery_info);
-//				print "Created order  " . $O->GetID() . " client $client_name<br/>";
+				var_dump($delivery_info);
+				$O = Finance_Order::CreateOrder(1, $mission_id,  null, $the_shipping, '', 10, $delivery_info);
+				$O->setField('baldar_id', $order_id);
+				print "Created order  " . $O->GetID() . " client $client_name $order_id";
+				if (-1 != Freight_Mission_Manager::get_distance($m->getStartAddress(), $street . " " . $city)) {
+					$O->update_status( "wc-processing" );
+					print "processing<br/>";
+					$valid ++;
+				} else {
+					print "bad address<br/>";
+					$bad_address ++;
+				}
 			}
-			print "</tr>";
 		}
-		print "</table>";
+		print "Summary:<br/>";
+		print $valid . " new orders in processing<br/>";
+		if ($bad_address) print $bad_address . " orders to fix address (remain waiting for payment<Br/>";
+		Freight_Mission_Manager::clean($mission_id);
+
 	}
 }
+
 
 function baldar_fix($src)
 {

@@ -10,7 +10,7 @@
 function InfoGet( $key, $create = false, $default = null ) {
 	$sql = "SELECT info_data FROM im_info WHERE info_key = '" . EscapeString($key) . "'";
 
-    //  print $sql ."<br/>";
+//     print $sql ."<br/>";
 
 	$result = SqlQuerySingleScalar( $sql, false );
 
@@ -229,6 +229,7 @@ function GetParams($ignore_list = array())
 	function InfoUpdate( $key, $data ) {
 		$db_prefix = GetTablePrefix();
 		$data = EscapeString($data);
+		$key = EscapeString($key);
 		return SqlQuery( "insert into ${db_prefix}info (info_key, info_data)
 			values('$key', '$data')
 			on duplicate key update info_data='$data'" );

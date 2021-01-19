@@ -47,7 +47,7 @@ END;
 
 		$db_prefix = GetTablePrefix();
 
-//		SqlQuery( "drop index ${db_prefix}links_index1 on ${db_prefix}links;" );
+		//		SqlQuery( "drop index ${db_prefix}links_index1 on ${db_prefix}links;" );
 //		SqlQuery( "drop index ${db_prefix}links_index2 on ${db_prefix}links;" );
 //
 //		SqlQuery( "create index ${db_prefix}links_index1 on ${db_prefix}links (type1, type2, id1);" );
@@ -66,7 +66,8 @@ END;
 			case '1.4':
 			case '1.5':
 				SqlQuery("alter table ${db_prefix}info modify info_data blob null");
-				break;
+			case '1.6':
+				SqlQuery("alter table ${db_prefix}mission_types add week_day int");
 		}
 
 
@@ -93,7 +94,8 @@ END;
 		if (! TableExists("mission_types"))
 			SqlQuery("create table ${db_prefix}mission_types
 (
-	id int auto_increment
+	id int auto_increment,
+	week_day int,
 		primary key,
 	mission_name varchar(20) null)
 	charset = utf8");

@@ -140,6 +140,14 @@ function order_update_driver_comment(post_file, order_id)
     execute_url(url, fail_message1);
 }
 
+function order_update_field(post_file, order_id, field)
+{
+    let field_value = get_value_by_name(field + "_" + order_id);
+    let url = post_file + '?operation=order_update_field&order_id=' + order_id + '&field=' + field + '&field_value=' + encodeURI(field_value);
+    execute_url(url, fail_message1);
+}
+
+
 function freight_import(post_file, div)
 {
     let action = add_param_to_url(post_file, 'operation', 'freight_do_import');
