@@ -221,8 +221,14 @@ class Flavor_Mission {
 		}
 
 		$args = array("post_file" => Flavor::getPost());
-		$result = Core_Html::GuiHeader(1, "Mission $id");
+		$m = Core_Db_MultiSite::getInstance();
+		$args["edit"] = $m->isMaster();
+		$result = "";
+		$result .= Core_Html::GuiHeader(1, "Mission $id");
 		$result .= Core_Gem::GemElement("missions", $id, $args);
+
+		if (! $args["edit"]) $result .= "<b>Edit missions in master</b> " . $m->getSiteName($m->getMaster());
+
 		return $result;
 	}
 

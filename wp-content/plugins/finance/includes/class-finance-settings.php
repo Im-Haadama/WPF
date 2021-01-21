@@ -111,8 +111,6 @@ class Finance_Settings {
 		// On Top
 		Flavor::AddTop("deliveries", "Deliveries", "/wp-admin/admin.php?page=deliveries");
 
-//		$menu->AddSubMenu( "finance", "working_hours_self",
-//			array( 'page_title' => 'Hours entry', 'function' => array( "Finance_Salary", 'entry_wrapper' ) ) );
 		if (class_exists("WC_Order")) {
 			Flavor::AddTop( 'orders', 'Orders', '/wp-admin/edit.php?post_type=shop_order&post_status=wc-processing' );
 			Flavor::AddTop( 'orders_all', 'All orders', '/wp-admin/edit.php?post_type=shop_order', 'orders' );

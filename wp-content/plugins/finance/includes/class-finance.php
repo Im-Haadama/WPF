@@ -31,6 +31,7 @@ class Finance {
 	protected $inventory;
 	protected $message;
 
+
 	/**
 	 * @return mixed
 	 */
@@ -525,6 +526,7 @@ class Finance {
 
 		$this->invoices   = Finance_Invoices::instance();
 		$this->shortcodes->add( $this->invoices->getShortcodes() );
+		$this->shortcodes->add( $this->salary->getShortcodes() );
 
 		$this->shortcodes->do_init();
 
@@ -679,9 +681,6 @@ class Finance {
 
 		$file = FLAVOR_INCLUDES_URL . 'core/gui/client_tools.js';
 		wp_enqueue_script( 'client_tools', $file, null, $this->version, false );
-
-		$file = FINANCE_INCLUDES_URL . 'finance.js?v=1';
-		wp_enqueue_script( 'finance', $file, null, $this->version, false );
 
 		$file = FINANCE_INCLUDES_URL . 'business.js';
 		wp_enqueue_script( 'business', $file, null, $this->version, false );

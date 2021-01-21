@@ -95,11 +95,12 @@ class Capabilites {
 	 * WooCommerce Constructor.
 	 */
 	public function __construct( $plugin_name ) {
+		$this->loader = Core_Hook_Handler::instance();
 		$this->plugin_name = $plugin_name;
 		$this->define_constants();
 		$this->includes(); // Loads class autoloader
 		// $this->loader = new Capabilites_Loader();
-		$this->init_hooks();
+		$this->init_hooks($this->loader);
 
 		do_action( 'capabilites_loaded' );
 	}
@@ -109,7 +110,7 @@ class Capabilites {
 	 *
 	 * @since 2.3
 	 */
-	private function init_hooks() {
+	private function init_hooks($loader) {
 		// register_activation_hook( WC_PLUGIN_FILE, array( 'Capabilites_Install', 'install' ) );
 		register_shutdown_function( array( $this, 'log_errors' ) );
 		add_action( 'after_setup_theme', array( $this, 'setup_environment' ) );
@@ -118,7 +119,7 @@ class Capabilites {
 		add_action( 'admin_init', array( $this, 'hide_menu_items' ), 0 );
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
 		add_action( 'admin_menu', __CLASS__ . '::admin_menu' );
-		add_action( 'toggle_role', __CLASS__ . '::toggle_role' );
+		$loader->AddAction( 'toggle_role', $this );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_scripts' ) );
 
 		GetSqlConn( ReconnectDb() );

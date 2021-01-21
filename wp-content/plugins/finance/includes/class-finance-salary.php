@@ -27,6 +27,9 @@ class Finance_Salary {
 	 * enqueue_scripts - add scripts to be loaded.
 	 */
 	function enqueue_scripts() {
+		$file = FINANCE_INCLUDES_URL . 'finance.js?v=1';
+		wp_enqueue_script( 'finance', $file, null, Finance::instance()->version, false );
+
 //		$file = plugin_dir_url( __FILE__ ) . 'org/people.js';
 //		print "script $file";
 //		wp_enqueue_script( 'people', $file, null, self::$version, false );
@@ -201,8 +204,8 @@ class Finance_Salary {
 	 * @return string
 	 * @throws Exception
 	 */
-	static function worker_wrapper() {
-		$user_id = GetParam("user_id", true);
+	static function salary_entry_wrapper() {
+		$user_id = GetParam("user_id", false, get_user_id());
 		if (! $user_id) return __FUNCTION__ . ": no worker id";
 		$result  = "";
 		$year_month = GetParam( "month", false, date( 'Y-m' ) );
@@ -708,10 +711,11 @@ class Finance_Salary {
 	function getShortcodes() {
 //		print "get";
 		//           code                   function                              capablity (not checked, for now).
-//		return array( 'salary_main'        => array( 'Focus_Salary::main',        'show_salary' ), // Workers list for now. ניהול פרטי שכר
+		return array(
+//			'salary_main'        => array( 'Focus_Salary::main',        'show_salary' ), // Workers list for now. ניהול פרטי שכר
 //		              'salary_report'      => array( 'Focus_Salary::report',      'show_salary' ), // Report - all workers דוח שכר
 //					  'salary_worker_data' => array( 'Focus_Salary::worker_data', 'show_salary' ), // Personal worker card פרטי עובד
-//		              'salary_entry'       => array("Focus_Salary::entry",        null));          // Salary data entry
+		              'salary_entry'       => array("Finance_Salary::salary_entry",        'working_hours_self'));          // Salary data entry
 	}
 
 	static function Args($type)
@@ -740,6 +744,7 @@ class Finance_Salary {
 		$loader->AddAction('salary_delete', $this, 'salary_delete');
 		$loader->AddAction('show_working_row', $this, 'show_working_row_wrap');
 		$loader->AddAction('show_report', $this, 'report_wrapper');
+		add_action('init', array($this, 'enqueue_scripts'));
 		if (im_user_can("show_salary"))
 			$loader->AddAction('show_entry', $this, 'entry_wrapper');
 

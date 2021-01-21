@@ -55,6 +55,7 @@ class Core_Shortcodes {
 		$debug = false; // (get_user_id() == 1);
 		if ($this->shortcodes)
 			foreach ( $this->shortcodes as $shortcode => $function_couple ) {
+				$debug = false; // ($shortcode == 'salary_entry');
 				if ($debug and ($shortcode  == 'finance_bank')) print $shortcode . "<br/>";
 				if (! is_array($function_couple)) print $function_couple . " is not array";
 //				if (count($function_couple) < 2) print $function_couple[0] . " not a couple";

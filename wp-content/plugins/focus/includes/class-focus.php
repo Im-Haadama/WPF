@@ -6,7 +6,6 @@
 class Focus {
 	protected Core_Hook_Handler $loader;
 	protected $auto_loader;
-	protected $salary;
 	protected $manager;
 	protected $views;
 	protected $database;
@@ -148,11 +147,9 @@ class Focus {
 		// $orders = new Focus_Orders( $this->get_plugin_name(), $this->get_version() );
 
 //		$manager = Focus_Manager::instance(self::getPost());
-//		$salary = Focus_Salary::instance(self::getPost());
 //		$tasks = Focus_Salary::instance(self::getPost());
 
 //		$this->loader->AddAction( 'wp_enqueue_scripts', $this->manager, 'enqueue_scripts' );
-		if ($this->salary) $this->loader->AddAction( 'wp_enqueue_scripts', $this->salary, 'enqueue_scripts' );
 		$this->loader->AddAction( 'wp_enqueue_scripts', $this->views, 'admin_scripts' );
 
 //		Focus_Project::init();
@@ -170,6 +167,8 @@ class Focus {
 
 		$focus_views = Focus_Views::instance();
 		$focus_views->init_hooks($this->loader);
+
+		$this->salary = Finance_Salary::instance();
 	}
 
 	function next_page($input)
@@ -365,10 +364,6 @@ class Focus {
 		do_action( 'before_focus_init' );
 
 		$this->manager = new Focus_Manager(self::getPost());
-		if (class_exists('Finance_Salary')) {
-			$this->salary = Finance_Salary::instance();
-			$shortcodes->add( $this->salary->getShortcodes() );
-		}
 		$this->views = Focus_Views::instance(self::getPost());
 
 		WPF_Organization::instance()->init($this->loader);

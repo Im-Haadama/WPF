@@ -73,6 +73,7 @@ class Org_Company {
 				dd( $w_id );
 
 		$w->AddCompany($this->id);
+		$w->add_role('staff');
 	}
 
 	public function RemoveWorker($w_id)

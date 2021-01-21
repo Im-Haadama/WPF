@@ -204,6 +204,10 @@ class Freight_Actions {
 
 			$O = Finance_Order::CreateOrder(1, $mission_id,  null, $the_shipping, $comments, 10, $delivery_info);
 //			print "Created order  " . $O->GetID() . " client $client_name $comments";
+			if (! $m->getStartAddress()) {
+				print "No start address for mission " . $m->getMissionName();
+				return false;
+			}
 			if (Freight_Mission_Manager::get_distance($m->getStartAddress(), $address1 . " " . $city)) {
 				$O->update_status( "wc-processing" );
 //				print "processing<br/>";
@@ -229,6 +233,7 @@ class Freight_Actions {
 
 	function freight_do_import_baldar($mission_id, $file_name = null)
 	{
+		// http://84.228.229.231/smartphone/TasksList.aspx#
 		$m = new Mission($mission_id);
 		$valid = 0;
 		$bad_address = 0;
@@ -346,7 +351,7 @@ class Freight_Actions {
 					'shipping_postcode'=>'',
 					'billing_phone'=>$phone
 				);
-				var_dump($delivery_info);
+//				var_dump($delivery_info);
 				$O = Finance_Order::CreateOrder(1, $mission_id,  null, $the_shipping, '', 10, $delivery_info);
 				$O->setField('baldar_id', $order_id);
 				print "Created order  " . $O->GetID() . " client $client_name $order_id";

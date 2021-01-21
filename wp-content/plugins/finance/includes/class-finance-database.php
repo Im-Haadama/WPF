@@ -123,7 +123,6 @@ charset=utf8;
 	dlines int(5) default 0 not null,
 	fee float not null,
 	payment_receipt int null,
-	driver int not null,
 	draft bit default b'0' not null,
 	draft_reason varchar(50) null
 )

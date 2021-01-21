@@ -63,8 +63,8 @@ class Freight_Mission_Manager
 
 //		FreightLog(__FUNCTION__);
 		// Try cache
-		$data = InfoGet("mission_$mission_id");
-		if ($data) return unserialize($data);
+//		$data = InfoGet("mission_$mission_id");
+//		if ($data) return unserialize($data);
 
 //		FreightLog("no cache");
 
@@ -259,10 +259,15 @@ group by pm.meta_value, p.post_status");
 		$result = "";
 		$post_file = Flavor::getPost();
 
+		$m = new Mission($the_mission);
+		if (! $m->getStartAddress()){
+			return  "No start address<br/>" .
+			        "Set " . Core_Html::GuiHyperlink("here", self::get_url($the_mission));
+		}
+
 		$path = [];
 		$this->prepare_route( $path);
 
-		$m = new Mission($the_mission);
 
 		$arrive_time = strtotime( $m->getStartTime());
 		$prev           = $m->getStartAddress();
@@ -280,6 +285,7 @@ group by pm.meta_value, p.post_status");
 			for ( $i = 0; $i < count( $path ); $i ++ ) {
 				if ( isset( $this->lines_per_station[ $path[ $i ] ] ) ) {
 					foreach ( $this->lines_per_station[ $path[ $i ] ] as $order_info ) {
+						var_dump($order_info); print "<br/>";
 						$arrive_time += 6 *60; // 6 minutes
 						$order_id  = $order_info[ OrderTableFields::order_number ];
 						$site_id   = $order_info[ OrderTableFields::site_id ];
@@ -316,6 +322,7 @@ group by pm.meta_value, p.post_status");
 						$city = $order_info[OrderTableFields::city];
 						$address_1 = $order_info[OrderTableFields::address_1];
 						$address_2 = $order_info[ OrderTableFields::address_2 ];
+						print "c=$city a1=$address_1 a2=$address_2<br/>";
 						$link = '';
 
 						// Editable fields
@@ -423,6 +430,10 @@ group by pm.meta_value, p.post_status");
 		// Parse the output
 		$rows = self::parse_output($output);
 
+		if (count($rows) < 2) {
+			print "No orders found<br/>";
+			return false;
+		}
 		// Collect the points
 		self::collect_points( $rows, $mission_id);
 
@@ -612,7 +623,7 @@ group by pm.meta_value, p.post_status");
 		$r = self::do_get_distance( $address_a, $address_b );
 		if (! $r or ! is_array($r)) {
 			print "no distance $address_b<br/>";
-			print debug_trace(10); print "<br/>";
+//			print debug_trace(10); print "<br/>";
 			// One is invalid
 			return -1;
 		}
@@ -998,5 +1009,10 @@ group by pm.meta_value, p.post_status");
 	static function clean($mission_id)
 	{
 		InfoDelete("mission_$mission_id");
+	}
+
+	static function get_url($mission_id)
+	{
+		return "/wp-admin/admin.php?page=missions&id=" . $mission_id;
 	}
 }

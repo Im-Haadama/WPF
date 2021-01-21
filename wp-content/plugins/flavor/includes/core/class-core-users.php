@@ -99,4 +99,15 @@ class Core_Users {
 		$this->getUser()->add_cap($capablity); // Seems not to return a value. Assuming success.
 		return true;
 	}
+
+	function add_role($role)
+	{
+		$w = $this->getUser();
+		if (! $w) {
+			print "failed: user not found";
+			return false;
+		}
+		$w->add_role($role);
+		return true;
+	}
 }
