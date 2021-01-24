@@ -728,7 +728,7 @@ function send_mail( $from, $to, $subject, $message ) {
 	// $headers[] = "Subject: {$subject}";
 	$headers[] = "X-Mailer: PHP/" . phpversion();
 
-	MyLog("sending",  "from " . $support_email . " to: " . $to, 'mail.log');
+	MyLog("sending",  "from " . $from . " to: " . $to, 'mail.log');
 
 	$base64_subject = '=?UTF-8?B?'.base64_encode($subject).'?=';
 

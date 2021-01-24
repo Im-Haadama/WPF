@@ -500,7 +500,7 @@ class Fresh {
 		$shortcodes = Core_Shortcodes::instance();
 		$shortcodes->add($this->suppliers->getShortcodes());
 //		$shortcodes->add($this->supplier_balance->getShortcodes());
-		$this->supplier_balance->init_hooks();
+		$this->supplier_balance->init_hooks($this->loader);
 		$shortcodes->add($this->totals->getShortcodes());
 		$shortcodes->add($this->client_views->getShortcodes());
 
@@ -509,7 +509,7 @@ class Fresh {
 		$this->suppliers->init_hooks($this->loader);
 		$this->suppliers->init();
 		Fresh_Basket::init($this->loader);
-		$this->delivery_manager->init();
+		$this->delivery_manager->init($this->loader);
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		Core_Importer::instance();

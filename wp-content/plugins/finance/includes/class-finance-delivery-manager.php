@@ -15,11 +15,10 @@ class Finance_Delivery_Manager
 		$this->logger = new Core_Logger(__CLASS__);
 	}
 
-	public function init()
+	public function init($loader)
 	{
-		AddAction("update_shipping_methods", __CLASS__ . "::update_shipping_methods");
-		AddAction("update_shipping_methods_anonymous", __CLASS__ . "::update_shipping_methods");
-		AddAction("delivery_send_mail", array($this, "mail_delivery"));
+		$loader->AddAction("update_shipping_methods", __CLASS__ . "::update_shipping_methods");
+		$loader->AddAction("update_shipping_methods_anonymous", __CLASS__ . "::update_shipping_methods");
 		add_action('admin_menu',array($this, 'admin_menu'));
 		add_action('admin_notices', array($this, 'delivered_previous_days'));
 		add_filter('delivery_args', array($this, 'delivery_args'));
@@ -146,21 +145,6 @@ class Finance_Delivery_Manager
 			return update_wp_option( 'woocommerce_flat_rate_' . $instance_id . '_settings', $options );
 		}
 		return false;
-	}
-
-	function mail_delivery()
-	{
-
-//		print "info: " . $info_email;
-//		print "track: " . $track_email;
-
-//		$option = $delivery->getPrintDeliveryOption();
-
-		$track_email = get_option('admin_email');
-//		if ( strstr( $option, 'M' ) ) {
-		$id = GetParam("id", true);
-		$delivery = new Fresh_Delivery($id);
-		return $delivery->send_mail( $track_email);
 	}
 
 	function admin_menu()

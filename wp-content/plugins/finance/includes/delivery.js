@@ -65,6 +65,12 @@ function calcDelivery() {
 //     document.getElementById("del_tot").innerHTML = total;
 }
 
+function delivery_send_mail(post_file, del_id)
+{
+    let url = post_file + '?operation=delivery_send_mail&id=' + del_id;
+    execute_url(url, success_message);
+}
+
 function delivery_delete(post_file)
 {
     let order_id = get_value_by_name("order_id");
@@ -81,6 +87,7 @@ function delivery_save_or_edit(post_file, operation) {
     // var logging = document.getElementById('logging');
     var is_edit = false;
     let order_id = get_value_by_name("order_id");
+    let send_email = get_value_by_name("chk_send_email");
     let data = [];
     if (! (order_id > 0)) {
         alert("Error - order id is missing");
@@ -89,7 +96,7 @@ function delivery_save_or_edit(post_file, operation) {
     let vat = 0; // Calculate in server
     let fee = 0;
 
-    let request = post_file + '?operation=' + operation + "&order_id=" + order_id + "&total=" + total;
+    let request = post_file + '?operation=' + operation + "&order_id=" + order_id + "&total=" + total + '&send_email=' + send_email;
 
     let id_col = 1;
     if (operation == "delivery_save") id_col = 0; // in save there is no checkbox.

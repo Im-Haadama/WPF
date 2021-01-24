@@ -44,7 +44,7 @@ class Finance {
 	 *
 	 * @var string
 	 */
-	public $version = '1.7.15';
+	public $version = '1.7.17';
 
 	private $plugin_name;
 
@@ -195,7 +195,7 @@ class Finance {
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_scripts' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 
-		AddAction('finance_get_open_site_invoices', array($this, 'get_open_site_invoices'));
+		$loader->AddAction('finance_get_open_site_invoices', $this);
 
 		if ( $this->yaad ) $this->yaad->init_hooks();
 		if ( $this->clients ) $this->clients->init_hooks($loader);
@@ -395,7 +395,7 @@ class Finance {
 		return true;
 	}
 
-	static function get_open_site_invoices()
+	function finance_get_open_site_invoices()
 	{
 		$debug = GetParam("debug");
 		$sum         = array();
@@ -538,6 +538,8 @@ class Finance {
 			$this->bank->init_hooks($this->loader);
 			$this->shortcodes = Core_Shortcodes::instance();
 			$this->shortcodes->add( $this->bank->getShortcodes() );
+		} else {
+//			dd("not enabled!");
 		}
 		self::addRoles();
 //		if (get_user_id() == 1) wp_set_current_user(2); // e-fresh
@@ -679,8 +681,8 @@ class Finance {
 		$file = FLAVOR_INCLUDES_URL . 'core/data/data.js';
 		wp_enqueue_script( 'data', $file, null, $this->version, false );
 
-		$file = FLAVOR_INCLUDES_URL . 'core/gui/client_tools.js';
-		wp_enqueue_script( 'client_tools', $file, null, $this->version, false );
+//		$file = FLAVOR_INCLUDES_URL . 'core/gui/client_tools.js';
+//		wp_enqueue_script( 'client_tools', $file, null, $this->version, false );
 
 		$file = FINANCE_INCLUDES_URL . 'business.js';
 		wp_enqueue_script( 'business', $file, null, $this->version, false );

@@ -24,7 +24,6 @@ class Core_Database
 
 		$user = new Core_Users(get_user_id());
 		if (!$user->hasRole('administrator')) {
-
 			return;
 		}
 

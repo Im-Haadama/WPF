@@ -75,7 +75,7 @@ class Core_Hook_Handler {
 	 * @param    int                  $accepted_args    Optional. The number of arguments that should be passed to the $callback. Default is 1.
 	 */
 	public function AddAction( $hook, $component, $callback = null, $priority = 10, $accepted_args = 1 ) {
-		$debug = false; // ($hook == 'bank_create_invoice_receipt');
+		$debug = false; // ($hook=='bank_create_pay');
 		if (!$callback) {
 			if ($debug) print "using $hook<br/>";
 			$callback = $hook;
@@ -85,7 +85,8 @@ class Core_Hook_Handler {
 			$callback .= "_wrap";
 		}
 //		if ($debug) var_dump($component);
-		if ($this->debug) print __FUNCTION__ . " $hook" . "<br/>";
+		if ($this->debug) print "=-======================================" . __FUNCTION__ . " $hook $callback" . "<br/>";
+		if ($this->debug and ! is_callable(array($component, $callback))) die ("Not callable");
 		$this->actions = $this->add( $this->actions, $hook, $component, $callback, $priority, $accepted_args );
 	}
 
@@ -146,7 +147,7 @@ class Core_Hook_Handler {
 		}
 
 		foreach ( $this->actions as $hook ) {
-			if ($this->debug and $hook == 'inventory_show_supplier') print ("===================== Adding " . $hook['hook']) . "<br/>";
+			if ($this->debug and $hook == 'bank_create_pay') print ("===================== Adding " . $hook['hook']) . "<br/>";
  			// print "adding " . $hook['hook'] . " " . var_dump($hook['component']) . " " . $hook['callback'] . "<br/>";
 			add_action($hook['hook'], array( $hook['component'], $hook['callback'] ), $hook['priority'], $hook['accepted_args'] );
 		}
@@ -157,9 +158,9 @@ class Core_Hook_Handler {
 		if (! isset($this->actions[$action]))
 			print "Failed: no handler for $action";
 		else {
+//			var_dump($action);
+//			var_dump($params);
 			do_action( $action, $params );
 		}
 	}
 }
-
-

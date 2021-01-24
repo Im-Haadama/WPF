@@ -116,7 +116,7 @@ class Finance_Delivery
 					// $report .= Core_Html::GuiHyperlink( "[Delete]", AddToUrl( "operation", "delivery_delete" ) ) . " ";
 					$report .= Core_Html::GuiButton("btn_delete", "Delete", array("action"=>"delivery_delete('" . Flavor::getPost() . "')"));
 					$report .= Core_Html::GuiHyperlink( "[Edit]", AddToUrl( "operation", "delivery_show_edit" ) ) . " ";
-					$report .= Core_Html::GuiButton( "btn_send", "send delivery", array( "action" => "sendDelivery('" . Flavor::getPost() . "', $delivery_id)" ) );
+					$report .= Core_Html::GuiButton( "btn_send", "send delivery", array( "action" => "delivery_send_mail('" . Flavor::getPost() . "', $delivery_id)" ) );
 				}
 			} else {
 				$report .= __("No delivery note for order"). " " .$order_id;
@@ -171,8 +171,8 @@ class Finance_Delivery
 		$user_id = $delivery->getUserId();
 		$vat = apply_filters("finance_vat", 0);
 
-		return $delivery->ShowCreate(array())
-		       . Core_Html::GuiButton("btn_add_line", "Add Line", "delivery_add_line('". Flavor::getPost() . "', $user_id, $vat, 0)");
+		return $delivery->ShowCreate(array("user_id" => $user_id, "vat" => $vat));
+
 	}
 
 	static function delivery_show_edit()
@@ -190,7 +190,10 @@ class Finance_Delivery
 	// POST: update delivery
 	static public function edit_wrap()
 	{
-		return self::do_create_delivery(true);
+		$send_email = GetParam("send_email", false);
+		$id = self::do_create_delivery(true);
+		if ($send_email)
+			Finance_Actions::mail_delivery($id);
 	}
 
 //	static function CreateFromOrder( $order_id )
@@ -310,6 +313,9 @@ class Finance_Delivery
 	//  -- Show comments.
 	function ShowCreate($args)
 	{
+		$user_id = GetArg($args, "user_id", get_user_id());
+		$vat = GetArg($args, "vat", 0);
+
 		$html = $this->getOrder()->infoBox( false, "יצירת תעודת משלוח ל" );
 
 		$table = array(
@@ -441,15 +447,16 @@ class Finance_Delivery
 //		$args);
 
 		$html .= Core_Html::GuiLabel("order_id", $this->order_id, array("hidden"=>true));
-		$html .= Core_Html::GuiButton("btn_add", "Create", "delivery_save_or_edit('" . Flavor::getPost() . "', 'delivery_save')") .
+		$html .= Core_Html::GuiButton("btn_add_line", "Add Line", "delivery_add_line('". Flavor::getPost() . "', $user_id, $vat, 0)");
+		$html .= Core_Html::GuiDiv(null, Core_Html::GuiButton("btn_add", "Create", "delivery_save_or_edit('" . Flavor::getPost() . "', 'delivery_save')")) .
 		         '<datalist id="products"></datalist>';
+		$html .= Core_Html::GuiDiv(null, Core_Html::GuiLabel(null, "Send to customer") . Core_Html::GuiCheckbox("chk_send_email", 1));
 
 		return $html;
 	}
 
 	static private function do_create_delivery($edit = false)
 	{
-
 		MyLog(__FUNCTION__ . " e=$edit");
 		$json_params = file_get_contents("php://input");
 		$data =null;
@@ -473,6 +480,7 @@ class Finance_Delivery
 		$fee = $data[0][3];
 
 		$d = new Finance_Delivery($order_id);
+
 		$lines = count($data) - 1;
 
 		if ($edit) {
@@ -485,6 +493,7 @@ class Finance_Delivery
 		{
 			$prod_name = urldecode($data[$i][0]);
 			$q = $data[$i][1];
+			if (! is_numeric($q)) $q = 0;
 			$p = $data[$i][2];
 			$prod_id = $data[$i][4];
 			$has_vat = $data[$i][6];
@@ -510,7 +519,7 @@ class Finance_Delivery
 			$d->AddDeliveryLine( $prod_data );
 		}
 
-		return true;
+		return $d->delivery_id;
 	}
 
 	private function AddDeliveryLine( $prod_data )
@@ -631,7 +640,12 @@ class Finance_Delivery
 	static public function save_wrap()
 	{
 		MyLog(__FUNCTION__);
-		return self::do_create_delivery(false);
+		$send_email = GetParam("send_email");
+		$del_id =  self::do_create_delivery(false);
+		if ($del_id and $send_email) {
+			Finance_Actions::delivery_send_mail($del_id);
+		}
+		return true;
 	}
 
 	static public function delete_wrap()
@@ -844,6 +858,85 @@ class Finance_Delivery
 	{
 		return "/wp-admin/admin.php?page=deliveries&delivery_id=" . $id;
 	}
+
+	function send_mail( $more_email = null, $edit = false ) {
+		global $business_name;
+		global $bank_info;
+		global $support_email;
+
+		$order_id = $this->order_id;
+
+		if ( ! ( $order_id > 0 ) ) {
+			die ( "can't get order id from delivery " . $this->delivery_id );
+		}
+		// print "oid= " . $order_id . "<br/>";
+		$client_id = $this->getUserId();
+		$C = new Fresh_Client($client_id);
+		if ( ! ( $client_id > 0 ) ) {
+			die ( "can't get client id from order " . $this->OrderId() );
+		}
+
+		MyLog( __FILE__, "client_id = " . $client_id );
+
+		$sql = "SELECT dlines FROM im_delivery WHERE id = " . $this->delivery_id;
+
+		$dlines = SqlQuerySingleScalar( $sql );
+
+		MyLog( __FILE__, "dlines = " . $dlines );
+
+		$del_user = $this->getOrder()->getOrderInfo( '_billing_first_name' );
+		$message  = Core_Html::HeaderText();
+
+		$message .= "<body>";
+		$message .= "שלום " . $del_user . "!
+<br><br>
+המשלוח שלך ארוז ויוצא לדרך!";
+
+		$message .= "<Br> להלן פרטי המשלוח";
+
+		$message .= $this->Show(false);
+
+		$message .= "<br> היתרה המעודכנת במערכת " . $C->balance();
+
+		$message .= "<br /> לפרטים אודות מצב החשבון והמשלוח האחרון הכנס " .
+		            Core_Html::GuiHyperlink( "מצב חשבון", get_site_url() . '/balance' ) .
+		            "
+ <br/>
+ העברות בנקאיות מתעדכנות בחשבונכם אצלנו עד עשרה ימים לאחר התשלום.
+<li>
+למשלמים בהעברה בנקאית - פרטי החשבון: " . $bank_info . ". 
+</li>
+<li>המחאה לפקודת " . $business_name . ".
+</li>
+<li>
+במידה ושילמתם כבר, המכתב נשלח לצורך פירוט עלות המשלוח בלבד ואין צורך לשלם שוב.
+</li>
+
+נשמח מאוד לשמוע מה דעתכם! <br/>
+ לשאלות בנוגע למשלוח מוזמנים ליצור איתנו קשר במייל " . $support_email . "
+</body>
+</html>";
+
+		$user_info = get_userdata( $client_id );
+		MyLog( $user_info->user_email );
+		$to = $user_info->user_email;
+		// print "To: " . $to . "<br/>";
+		if ( $more_email ) {
+			$to = $to . ", " . $more_email;
+		}
+		// print "From: " . $support_email . "<br/>";
+		// print "To: " . $to . "<br/>";
+		// print "Message:<br/>";
+		// print $message . "<br/>";
+		$subject = "משלוח מספר " . $this->delivery_id . " בוצע";
+		if ( $edit ) {
+			$subject = "משלוח מספר " . $this->delivery_id . " - תיקון";
+		}
+		$from = (defined ("MAIL_SENDER") ? MAIL_SENDER : get_option('admin_email'));
+		return send_mail($from, $to, $subject, $message );
+		// print "mail sent to " . $to . "<br/>";
+	}
+
 }
 
 class Finance_DocumentType {

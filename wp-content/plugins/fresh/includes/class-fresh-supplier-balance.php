@@ -22,12 +22,12 @@ class Fresh_Supplier_Balance {
 		return self::$_instance;
 	}
 
-	public function init_hooks()
+	public function init_hooks($loader)
 	{
 		$menu = Core_Admin_Menu::instance();
 
 		$menu->AddMenu("הנהלת חשבונות", "הנהלת חשבונות", "edit_shop_orders", "accounting", array(__CLASS__, 'accounting'));
-		AddAction("get_supplier_open_account", array(Fresh_Supplier_Balance::instance(), 'supplier_open_account'));
+		$loader->AddAction("get_supplier_open_account", Fresh_Supplier_Balance::instance());
 	}
 
 	function getShortcodes() {
@@ -215,7 +215,7 @@ class Fresh_Supplier_Balance {
 		return $result;
 	}
 
-	function supplier_open_account()
+	function get_supplier_open_account()
 	{
 		$multi_site = Core_Db_MultiSite::getInstance();
 		$sql = "select " . $multi_site->LocalSiteId() . ", part_id, supplier_displayname(part_id), round(sum(amount),2) as total\n"

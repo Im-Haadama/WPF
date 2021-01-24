@@ -275,18 +275,26 @@ function removeParam(key, sourceURL) {
     return rtn;
 }
 
+// function action_back(xmlhttp)
+// {
+//     if (check_result(xmlhttp)) {
+//         let operation = document.referrer;
+//         let data = xmlhttp.response;
+//         if (data.length) {
+//             if (operation.indexOf('?') === -1) operation += "?"; // Make sure this is ?
+//             else operation += '&';
+//
+//             operation += data; // The data coming back from post action will be added to the url of the calling.
+//         }
+//         location.replace(operation );
+//     }
+// }
+
 function action_back(xmlhttp)
 {
     if (check_result(xmlhttp)) {
-        let operation = document.referrer;
-        let data = xmlhttp.response.substr(5); // After .
-        if (data.length) {
-            if (operation.indexOf('?') === -1) operation += "?"; // Make sure this is ?
-            else operation += '&';
-
-            operation += data; // The data coming back from post action will be added to the url of the calling.
-        }
-        location.replace(operation );
+        history.back();
+        location.reload();
     }
 }
 

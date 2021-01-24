@@ -2,11 +2,14 @@
 
 
 class Finance_Actions {
-	function init_hooks(&$loader) {
+	function init_hooks($loader) {
 		$loader->AddAction("account_add_trans", $this);
 		$loader->AddAction("create_invoice_receipt", $this, 'create_invoice_receipt'); // חשבונית קבלה
 		$loader->AddAction("create_receipt", $this, 'create_receipt'); // קבלה
 		$loader->AddAction("create_invoice", $this, 'create_invoice'); // חשבונית
+		$loader->AddAction( "bank_create_pay", $this );
+		$loader->AddAction("finance_add_payment", $this);
+		$loader->AddAction("delivery_send_mail", $this);
 	}
 
 	function account_add_trans()
@@ -78,4 +81,87 @@ class Finance_Actions {
 		print $doc_id;
 		die ( 1 );
 	}
+
+	public function bank_create_pay()
+	{
+		$id = GetParam( "id" );
+		print Core_Html::GuiHeader( 1, "רישום העברה שבוצעה " );
+
+		$b = Finance_Bank_Transaction::createFromDB( $id );
+		print Core_Html::GuiHeader( 2, "פרטי העברה" );
+		$free_amount = $b->getOutAmount( true );
+		$client_name = $b->getClientName();
+		print Core_Html::gui_table_args( array(
+			array( "תאריך", Core_Html::gui_div( "pay_date", $b->getDate() ) ),
+			array( "סכום", Core_Html::gui_div( "bank", $b->getOutAmount() ) ),
+			array( "סכום לתיאום", Core_Html::gui_div( "bank", $free_amount ) ),
+			array( "מזהה", Core_Html::gui_div( "bank_id", $id )),
+			array( "Comment", $client_name	)
+		));
+
+		$lines = $b->getAttached();
+		if ( $lines ) {
+			print Core_Html::GuiHeader( 2, "שורות מתואמות" );
+
+			print Core_Html::gui_table_args( $lines );
+		}
+		$sums = array();
+		if ( $free_amount > 0 ) {
+//				print "a=" . $amount . "<br/>";
+			print Core_Html::GuiHeader( 2, "Select Supplier" );
+			print Finance_Bank::gui_select_open_supplier();
+		}
+		print '<div id="logging"></div>';
+		print '<div id="transactions"></div>';
+
+		print Core_Html::gui_table_args( array(
+			array("קשר",
+				Core_Html::GuiButton( "btn_receipt", "link payment to invoice", array("action" => "link_invoice_bank()"))),
+			array( "סה\"כ", " <div id=\"total\"></div>" )), "payment_table"); //, "payment_table", true, true, $sums, "", "payment_table" ));
+	}
+
+	function finance_add_payment()
+	{
+		$supplier_id = GetParam( "supplier_id", true );
+		$bank_id     = GetParam( "bank_id", true );
+		$ids         = GetParamArray( "ids" );
+		$date        = GetParam( "date", true );
+		$amount      = GetParam( "amount", true );
+		$sql         = "INSERT INTO im_business_info (part_id, date, amount, ref, document_type)\n" .
+		               "VALUES(" . $supplier_id . ", '" . $date . "' ," . $amount . ", " . $bank_id . ", " . Finance_DocumentType::bank . ")";
+		SqlQuery( $sql );
+
+		$S = new Fresh_Supplier($supplier_id);
+		$result = "התווסף תשלום בסך " . $amount . " לספק " . $S->getSupplierName() . "<br/>";
+
+		$sql = "update im_business_info\n" .
+		       "set pay_date = '" . $date . "'\n" .
+		       "where id in (" . CommaImplode( $ids ) . ")";
+
+		SqlQuery( $sql );
+		$result .= "מסמכים מספר  " . CommaImplode( $ids ) . " סומנו כמשולמים<br/>";
+		return $result;
+	}
+
+	static function delivery_send_mail_wrap()
+	{
+		$id = GetParam("delivery_id");
+		return self::delivery_send_mail($id);
+	}
+
+	static function delivery_send_mail($id)
+	{
+
+//		print "info: " . $info_email;
+//		print "track: " . $track_email;
+
+//		$option = $delivery->getPrintDeliveryOption();
+
+		$track_email = get_option('admin_email');
+//		if ( strstr( $option, 'M' ) ) {
+//		$id = GetParam("id", true);
+		$delivery = new Finance_Delivery(0, $id);
+		return $delivery->send_mail( $track_email);
+	}
+
 }

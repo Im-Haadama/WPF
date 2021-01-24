@@ -31,7 +31,6 @@ class Finance_Bank
 
 	private function init_remoting($loader)
 	{
-		$loader->AddAction("finance_add_payment", $this, 'add_payment');
 		$loader->AddAction("bank_status", $this, 'bank_status');
 //		AddAction("bank_show_import", array($this, "show_import"));
 		$loader->AddAction("bank_create_invoice_receipt", $this, "bank_create_invoice_receipt");
@@ -63,21 +62,15 @@ class Finance_Bank
 			$db->install($this->version);;
 		}
 
-		AddAction( "finance_bank_accounts", array( $this, "show_bank_accounts" ) );
-		AddAction( "finance_bank_account", array( $this, "show_bank_account" ) );
-		AddAction( "finance_bank_payments", array( $this, "show_bank_payments" ) );
-//		AddAction( "finance_bank_receipts", array( $this, "show_bank_receipts" ) );
-//		AddAction( "finance_show_bank_import", array( $this, "show_bank_import" ) );
-//		AddAction( "finance_do_import", array( $this, 'do_bank_import' ) );
-
-		AddAction( "bank_show_create_invoice_receipt", array( $this, 'bank_show_create_invoice_receipt' ) );
-		AddAction( "bank_show_create_receipt", array( $this, 'bank_show_create_receipt' ) );
-		AddAction( "bank_create_pay", array( $this, 'bank_payments' ) );
-		AddAction("finance_get_transaction_amount", array($this, 'get_transaction_amount'));
-		AddAction('create_bank_account', array($this, 'create_bank_account'));
-		AddAction("bank_link_invoice", array($this, 'bank_link_invoice'));
-
-		add_filter('bank_check_valid', array(__CLASS__, 'bank_check_valid'), 10, 2);
+		$loader->AddAction( "finance_bank_accounts", $this, "show_bank_accounts" );
+		$loader->AddAction( "finance_bank_account", $this, "show_bank_account" );
+		$loader->AddAction( "finance_bank_payments", $this, "show_bank_payments" );
+		$loader->AddAction( "bank_show_create_invoice_receipt", $this, 'bank_show_create_invoice_receipt' );
+		$loader->AddAction( "bank_show_create_receipt", $this, 'bank_show_create_receipt' );
+		$loader->AddAction("finance_get_transaction_amount", $this, 'get_transaction_amount');
+		$loader->AddAction('create_bank_account', $this, 'create_bank_account');
+		$loader->AddAction("bank_link_invoice", $this, 'bank_link_invoice');
+		$loader->AddAction('bank_check_valid', $this, 'bank_check_valid');
 
 		add_action('admin_menu', array($this, 'admin_menu'));
 
@@ -144,13 +137,15 @@ class Finance_Bank
 	function show_bank_account($account_id)
 	{
 		$table_prefix = GetTablePrefix("bank");
-//		print __FUNCTION__;
 		if (! current_user_can("show_bank", $account_id))
 			return "no permissions";
 
 		$operation = GetParam("operation", false, null, true);
+		$args = [];
 		if ($operation) {
-			return apply_filters( $operation, "" );
+			print Core_Hook_Handler::instance()->DoAction($operation, $args);
+			return;
+//			return apply_filters( $operation, "" );
 		}
 
 		$args = [];
@@ -166,6 +161,10 @@ class Finance_Bank
 					                  im_bank_transaction_types where cfo = 1)";
 					break;
 				case "income":
+					$args["query"] .= " and in_amount > 0 " .
+					                  " and description not in (select description from ${table_prefix}bank_transaction_types) ";
+					break;
+				case "income_to_receipt":
 					$args["query"] .= " and receipt is null and in_amount > 0 " .
 						" and description not in (select description from ${table_prefix}bank_transaction_types) ";
 					break;
@@ -225,29 +224,6 @@ class Finance_Bank
 		$sql = "SELECT amount FROM im_business_info \n" .
 		       " WHERE id = " . GetParam( "id", true );
 		print SqlQuerySingleScalar( $sql );
-	}
-
-	function add_payment()
-	{
-		$supplier_id = GetParam( "supplier_id", true );
-		$bank_id     = GetParam( "bank_id", true );
-		$ids         = GetParamArray( "ids" );
-		$date        = GetParam( "date", true );
-		$amount      = GetParam( "amount", true );
-		$sql         = "INSERT INTO im_business_info (part_id, date, amount, ref, document_type)\n" .
-		               "VALUES(" . $supplier_id . ", '" . $date . "' ," . $amount . ", " . $bank_id . ", " . Finance_DocumentType::bank . ")";
-		SqlQuery( $sql );
-
-		$S = new Fresh_Supplier($supplier_id);
-		$result = "התווסף תשלום בסך " . $amount . " לספק " . $S->getSupplierName() . "<br/>";
-
-		$sql = "update im_business_info\n" .
-		       "set pay_date = '" . $date . "'\n" .
-		       "where id in (" . CommaImplode( $ids ) . ")";
-
-		SqlQuery( $sql );
-		$result .= "מסמכים מספר  " . CommaImplode( $ids ) . " סומנו כמשולמים<br/>";
-		return $result;
 	}
 
 	function handle_bank_operation($operation, $url = null) {
@@ -450,7 +426,7 @@ class Finance_Bank
 		$date = $b->getDate();
 
 	// 2) mark the invoices to transaction.
-		$command = Finance::getPostFile() . "?operation=finance_add_payment&ids=" . implode( $ids, "," ) . "&supplier_id=" . $supplier_id .
+		$command = Finance::getPostFile() . "?operation=finance_add_payment&ids=" . implode( ",", $ids ) . "&supplier_id=" . $supplier_id .
 		           "&bank_id=" . $bank_id . "&date=" . $date .
 		           "&amount=" . $bank;
 	//			print $command;
@@ -465,12 +441,13 @@ class Finance_Bank
 		return SqlQuery( $sql );
 	}
 
-	function gui_select_open_supplier( $id = "supplier" ) {
+	static function gui_select_open_supplier( $id = "supplier" ) {
 		$multi_site = Core_Db_MultiSite::getInstance();
 
-		$values  = Core_Html::html2array( $multi_site->GetAll( self::getPost() . "?operation=get_supplier_open_account" ) );
+		$url = self::getPost() . "?operation=get_supplier_open_account";
+		$values  = Core_Html::html2array( $multi_site->GetAll( $url ) );
 
-		if (! $values) 	return "nothing found";
+		if (! $values) 	return "nothing found " . $url;
 		$open    = array();
 		$list_id = 1;
 		foreach ( $values as $value ) {
@@ -522,43 +499,6 @@ class Finance_Bank
 		return $output;
 	}
 
-	 public function bank_payments()
-	{
-		$id = GetParam( "id" );
-		print Core_Html::GuiHeader( 1, "רישום העברה שבוצעה " );
-
-		$b = Finance_Bank_Transaction::createFromDB( $id );
-		print Core_Html::GuiHeader( 2, "פרטי העברה" );
-		$free_amount = $b->getOutAmount( true );
-		$client_name = $b->getClientName();
-		print Core_Html::gui_table_args( array(
-			array( "תאריך", Core_Html::gui_div( "pay_date", $b->getDate() ) ),
-			array( "סכום", Core_Html::gui_div( "bank", $b->getOutAmount() ) ),
-			array( "סכום לתיאום", Core_Html::gui_div( "bank", $free_amount ) ),
-			array( "מזהה", Core_Html::gui_div( "bank_id", $id )),
-			array( "Comment", $client_name	)
-		));
-
-		$lines = $b->getAttached();
-		if ( $lines ) {
-			print Core_Html::GuiHeader( 2, "שורות מתואמות" );
-
-			print Core_Html::gui_table_args( $lines );
-		}
-		$sums = array();
-		if ( $free_amount > 0 ) {
-//				print "a=" . $amount . "<br/>";
-			print Core_Html::GuiHeader( 2, "Select Supplier" );
-			print self::gui_select_open_supplier();
-		}
-		print '<div id="logging"></div>';
-		print '<div id="transactions"></div>';
-
-		print Core_Html::gui_table_args( array(
-			array("קשר",
-				Core_Html::GuiButton( "btn_receipt", "link payment to invoice", array("action" => "link_invoice_bank()"))),
-			array( "סה\"כ", " <div id=\"total\"></div>" )), "payment_table"); //, "payment_table", true, true, $sums, "", "payment_table" ));
-	}
 
 	static public function bank_wrapper()
 	{

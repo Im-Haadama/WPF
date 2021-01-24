@@ -365,7 +365,6 @@ return round(_amount, 0);
 END;";
 		SqlQuery($sql);
 
-
 		SqlQuery("drop function supplier_from_business");
 		SqlQuery("create
      function supplier_from_business(bus_id int) returns text CHARSET utf8
