@@ -22,10 +22,6 @@
 //));
 
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 $AppID = "1360571697612487";
 $secret = "095913da417ebb02b1516724c5c172ed";
 

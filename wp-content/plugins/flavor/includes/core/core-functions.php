@@ -701,7 +701,7 @@ function br2nl($html)
 /**
  *
  */
-function show_errors()
+function my_show_errors()
 {
 	ini_set('display_errors', 1);
 	ini_set('display_startup_errors', 1);

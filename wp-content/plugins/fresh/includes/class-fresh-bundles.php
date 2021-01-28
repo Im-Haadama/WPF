@@ -26,7 +26,6 @@ class Fresh_Bundles {
 
 	function init_hooks($loader)
 	{
-		show_errors();
 		Core_Gem::getInstance()->AddTable("bundles", $loader);
 		self::AddHook('bundle_change_quantity');
 		self::AddHook('bundle_add_item');
@@ -49,7 +48,6 @@ class Fresh_Bundles {
 	}
 	function bundle_change_quantity()
 	{
-		show_errors();
 		$id = GetParam("id", true);
 		$q = GetParam("q", true);
 
@@ -91,7 +89,6 @@ class Fresh_Bundles {
 	}
 
 	function PrintHTML( $only_active = true ) {
-		show_errors();
 		$args = [];
 		$args["headers"] = array("prod_id" => "Product name", "quantity" => "Quantity", "margin"=>"Profit(%/$)", "bundle_prod_id"=>"Bundle name","bundle_price" => "Bundle price");
 		$args["selectors"] = array("prod_id" => 'Fresh_Product::gui_select_product',

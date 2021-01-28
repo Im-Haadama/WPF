@@ -29,7 +29,7 @@ class Freight {
 	 *
 	 * @var string
 	 */
-	public $version = '1.4.4';
+	public $version = '1.4.5';
 
 	private $plugin_name;
 
@@ -547,3 +547,7 @@ function FreightLog($message, $print = false)
 	if ($print) print $message;
 	MyLog($message, '', 'freight.log');
 }
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+

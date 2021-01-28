@@ -150,7 +150,7 @@ class Focus_Views {
 	}
 
 	static function Args( $table_name = null, $action = null, $narrow = false ) {
-		$ignore_list = ["st_main", "page_number"];
+		$ignore_list = ["st_main", "page_number", "new"];
 		$args        = array(
 			"page_number"  => GetParam( "page_number", false, 1 ),
 			"post_file"    => self::getPost(),

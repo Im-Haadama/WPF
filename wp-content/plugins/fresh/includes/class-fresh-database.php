@@ -140,19 +140,6 @@ order by 1;");
 
 		SqlQuery("alter table ${db_prefix}mission_types add default_price float");
 
-		SqlQuery("create table im_distance
-(
-	id int auto_increment
-		primary key,
-	distance int null,
-	duration int null,
-	address_a varchar(50) null,
-	address_b varchar(50) null
-)
-engine=MyISAM charset=utf8;
-
-");
-
 		SqlQuery("create table im_client_types
 (
 	id int auto_increment

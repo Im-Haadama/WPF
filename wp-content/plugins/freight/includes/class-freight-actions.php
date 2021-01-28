@@ -158,69 +158,8 @@ class Freight_Actions {
 		Freight_Mission_Manager::clean($o->getField('mission_id'));
 	}
 
-
-	function freight_do_import_wrap($mission_id)
+	function the_import($mission_id, $rows)
 	{
-		if (! isset($_FILES["fileToUpload"]["tmp_name"])) {
-			print "No file selected";
-
-			return;
-		}
-
-		$file_name = $_FILES["fileToUpload"]["tmp_name"];
-
-		$file = fopen( $file_name, "r" );
-		$header = fgetcsv( $file ); // Skip header.
-		$customer = new Finance_Client(1);
-		$zone = $customer->getZone();
-		$the_shipping = null;
-		$m = new Mission($mission_id);
-		foreach ($zone->get_shipping_methods(true) as $shipping_method) {
-			// Take the first option.
-			$the_shipping = $shipping_method;
-			break;
-		}
-		$valid = 0;
-		$bad_address = 0;
-		while ($line = fgetcsv( $file ))
-		{
-			$order_id = $line[0];
-			$client_name = $line[1];
-			$address1 = $line[2];
-			$address2 = $line[3];
-			$city = $line[4];
-			$comments = $order_id . " " . $line[5];
-			$phone = $line[6];
-
-			$delivery_info = array(
-				'shipping_first_name' => $client_name,
-				'shipping_last_name' => '',
-				'shipping_address_1' => $address1,
-				'shipping_address_2'=> $address2,
-				'shipping_city'=>$city,
-				'shipping_postcode'=>'',
-				'billing_phone'=>$phone
-			);
-
-			$O = Finance_Order::CreateOrder(1, $mission_id,  null, $the_shipping, $comments, 10, $delivery_info);
-//			print "Created order  " . $O->GetID() . " client $client_name $comments";
-			if (! $m->getStartAddress()) {
-				print "No start address for mission " . $m->getMissionName();
-				return false;
-			}
-			if (Freight_Mission_Manager::get_distance($m->getStartAddress(), $address1 . " " . $city)) {
-				$O->update_status( "wc-processing" );
-//				print "processing<br/>";
-				$valid ++;
-			} else {
-				print "bad address<br/>";
-				$bad_address ++;
-			}
-		}
-		print "Summary:<br/>";
-		print $valid . " new orders in processing<br/>";
-		if ($bad_address) print $bad_address . " orders to fix address (remain waiting for payment<Br/>";
-		Freight_Mission_Manager::clean($mission_id);
 
 	}
 
@@ -231,159 +170,40 @@ class Freight_Actions {
 		Freight_Mission_Manager::clean($id);
 	}
 
-	function freight_do_import_baldar($mission_id, $file_name = null)
-	{
-		// http://84.228.229.231/smartphone/TasksList.aspx#
-		$m = new Mission($mission_id);
-		$valid = 0;
-		$bad_address = 0;
-
-		if (! $file_name and !isset($_FILES["fileToUpload"]["tmp_name"])) {
+	function freight_do_import_wrap($mission_id) {
+		if (! isset($_FILES["fileToUpload"]["tmp_name"])) {
 			print "No file selected";
 
 			return;
 		}
 
+		//		$file_name = '/var/www/html/21-1-2021.html';
+//		if (! $file_name and !isset($_FILES["fileToUpload"]["tmp_name"])) {
+//			$file_name = '/var/www/html/28-1-2021.csv';
+//			// print "No file selected";
+//			// return;
+//		}
+
+		$file_name = $_FILES["fileToUpload"]["tmp_name"];
+
+		$importer = new Freight_Importer();
+		$importer->import_csv( $file_name, $mission_id );
+	}
+
+	function freight_do_import_baldar($mission_id, $file_name = null) {
+		//		$file_name = '/var/www/html/21-1-2021.html';
+		if (! $file_name and !isset($_FILES["fileToUpload"]["tmp_name"])) {
+			$file_name = '/var/www/html/21-1-2021.html';
+			// print "No file selected";
+			// return;
+		}
+
 		if (! $file_name) $file_name = $_FILES["fileToUpload"]["tmp_name"];
 
-		$customer = new Finance_Client(1);
-		$zone = $customer->getZone();
-		$the_shipping = null;
-		foreach ($zone->get_shipping_methods(true) as $shipping_method) {
-			// Take the first option.
-			$the_shipping = $shipping_method;
-			break;
-		}
-		$html = file_get_contents($file_name);
-		$html = str_replace("charset=windows-1255", "", $html);
-
-		// Create a new DOM Document
-		$doc = new DOMDocument();
-
-		// Load the html contents into the DOM
-		$doc->loadHTML($html);
-		$db_prefix = GetTablePrefix();
-
-		$all_cities = SqlQueryArrayScalar("select city_name from ${db_prefix}cities");
-
-		//Loop through each <li> tag in the dom
-		foreach ($doc->getElementsByTagName('li') as $li) {
-			$phone = '';
-			//Loop through each <h3> tag within the li, then extract the node value
-			foreach ($li->getElementsByTagName('h3') as $links) {
-				$order_id = $links->nodeValue;
-//				print $order_id . "<br/>";
-			}
-			$client_name = '';
-			$street = '';
-			$city = '';
-			$address_2 = '';
-
-			//Loop through each <p> tag within the li, then extract the node value
-			foreach ($li->getElementsByTagName('p') as $links) {
-				$order_details = baldar_fix($links->nodeValue);
-//				print "X${order_details}X<br/>";
-				$word = strtok($order_details, " ");
-				$word_array = [];
-				while ($word) {
-//					print "$word ";
-					if ($word != '-' and $word != 'טל' and $word != '.')
-						array_unshift($word_array, $word);
-
-					$word = strtok (" ");
-				}
-
-				$phone = $word_array[0]; unset($word_array[0]);	$word_array=array_values($word_array);
-				$word_array=array_values($word_array);
-
-				for ($i = 0; $i < count($word_array) - 1; $i++) {
-					if ( in_array( $word_array[ $i + 1 ] . " " . $word_array[ $i ], $all_cities ) ) {
-						// 2 word city
-						$city = $word_array[ $i+1 ] . " " . $word_array[ $i ];
-//						print "city2 at $i<br/>";
-						unset ( $word_array[ $i ] );
-						unset ( $word_array[ $i + 1 ] );
-						break;
-					}
-					if ( in_array( $word_array[ $i ], $all_cities ) ) {
-//						print "city1 at $i<br/>";
-						// 2 word city
-						$city = $word_array[ $i ];
-						unset ( $word_array[ $i ] );
-						break;
-					}
-				}
-//				print "finding city. i=$i<br/>";
-				// The street address is between the city and senders phone.
-				for ($j = $i + 1; $j < count($word_array); $j++) {
-					if (! isset($word_array[$j])) continue; // Two word city name.
-//					print "checking $j " . $word_array[$j];
-					if ((strlen ($word_array[$j]) > 5) and ($word_array[$j][0] == '0' or $word_array[$j][0] == '5' or $word_array[$j][0] == '+')) { // Sender phone.
-//						print "<br/>phone: $j " . $word_array[$j] . "<br/>";
-						for ($k = $i+1; $k < $j; $k++) {
-							if (isset($word_array[$k])) $street .= $word_array[ $k ] . " ";
-							unset ($word_array[$k]);
-						}
-						$street = trim($street, " ");
-						for ($k = 0; $k < $j; $k++) {
-							if (isset($word_array[$k])) $address_2 .= $word_array[ $k ] . " ";
-							unset ($word_array[$k]);
-						}
-						$address_2 = trim($address_2, " ");
-						break;
-					}
-				}
-//				var_dump($word_array);
-//				print "st=$street<br/>";
-				if ($street == '') { // No sender phone
-					for ($k = 0; $k < count($word_array); $k++) {
-						if (isset($word_array[$k])) $street .= $word_array[ $k ] . " ";
-						unset ($word_array[$k]);
-					}
-				}
-
-				$delivery_info = array(
-					'shipping_first_name' => $client_name,
-					'shipping_last_name' => '',
-					'shipping_address_1' => $street,
-					'shipping_address_2'=> $address_2,
-					'shipping_city'=> $city,
-					'shipping_postcode'=>'',
-					'billing_phone'=>$phone
-				);
-//				var_dump($delivery_info);
-				$O = Finance_Order::CreateOrder(1, $mission_id,  null, $the_shipping, '', 10, $delivery_info);
-				$O->setField('baldar_id', $order_id);
-				print "Created order  " . $O->GetID() . " client $client_name $order_id";
-				if (-1 != Freight_Mission_Manager::get_distance($m->getStartAddress(), $street . " " . $city)) {
-					$O->update_status( "wc-processing" );
-					print "processing<br/>";
-					$valid ++;
-				} else {
-					print "bad address<br/>";
-					$bad_address ++;
-				}
-			}
-		}
-		print "Summary:<br/>";
-		print $valid . " new orders in processing<br/>";
-		if ($bad_address) print $bad_address . " orders to fix address (remain waiting for payment<Br/>";
-		Freight_Mission_Manager::clean($mission_id);
-
+		$importer = new Freight_Importer();
+		$importer->import_baldar( $file_name, $mission_id );
 	}
 }
 
 
-function baldar_fix($src)
-{
-	$hex = bin2hex($src);
-	$i =0;
-	$dst = "";
-	while ($i < strlen($hex)){
-		if (($hex[$i] == 'c') and ($hex[$i+1] == '3')) $i += 4;
-		else if (($hex[$i] == 'c') and ($hex[$i + 1] == '2')) { $dst .= ('d7' . $hex[$i+2] . $hex[$i+3]); $i +=4;}
-		else { $dst .= ($hex[$i] . $hex[$i+1]); $i +=2; }
-	}
 
-	return hex2bin($dst);
-}

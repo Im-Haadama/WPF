@@ -16,7 +16,8 @@ class Focus_Project {
 	static public function create_from_task($task_id)
 	{
 		$id = SqlQuerySingleScalar("select project_id from im_tasklist where id = $task_id");
-		if ($id) return new Focus_Tasklist($id);
+//		print "tid=$task_id id=$id<br/>";
+		if ($id) return new Focus_Project($id);
 		return null;
 	}
 

@@ -167,8 +167,6 @@ class Focus {
 
 		$focus_views = Focus_Views::instance();
 		$focus_views->init_hooks($this->loader);
-
-		$this->salary = Finance_Salary::instance();
 	}
 
 	function next_page($input)
@@ -259,49 +257,49 @@ class Focus {
 	 * operation can also output dynamic queried values- autolist.
 	 * @throws Exception
 	 */
-	function handle_operation($operation)
-	{
-		$ignore_list = array("operation");
-		$input = null;
-
-		////////////////////////
-		// called by post.php //
-		////////////////////////
-		Core_Hook_Handler::instance()->DoAction($operation, GetParams($ignore_list));
-		return;
-		if ( $result ) return $result;
-
-		// Handle global operation
-		switch ($operation)
-		{
-			case "bad_url":
-				$template_id = GetParam("id", true);
-				return Focus_Actions::show_task($template_id);
-				break;
-		}
-		$args["post_file"] = GetUrl(1);
-		$args["page"] = GetParam("page", false, 1);
-		// Pass to relevant module.
-		$module = strtok($operation, "_");
-		switch ($module){
-			case "gem":
-				return Core_Gem::handle_operation($operation, $args);
-			case "salary":
-				$salary = Finance_Salary::instance();
-				return ($salary->handle_operation($operation));
-				break;
-			case "data":
-				$data = Core_Data::instance();
-				return ($data->handle_operation($operation));
-				break;
-			default:
-//				print "fault";
-//				return "no handler found for $operation";
-				$focus = Focus_Actions::instance();
-				return $focus->handle_focus_do($operation);
-		}
-
-	}
+//	function handle_operation($operation)
+//	{
+//		$ignore_list = array("operation");
+//		$input = null;
+//
+//		////////////////////////
+//		// called by post.php //
+//		////////////////////////
+//		Core_Hook_Handler::instance()->DoAction($operation, GetParams($ignore_list));
+//		return;
+//		if ( $result ) return $result;
+//
+//		// Handle global operation
+//		switch ($operation)
+//		{
+//			case "bad_url":
+//				$template_id = GetParam("id", true);
+//				return Focus_Actions::show_task($template_id);
+//				break;
+//		}
+//		$args["post_file"] = GetUrl(1);
+//		$args["page"] = GetParam("page", false, 1);
+//		// Pass to relevant module.
+//		$module = strtok($operation, "_");
+//		switch ($module){
+//			case "gem":
+//				return Core_Gem::handle_operation($operation, $args);
+//			case "salary":
+//				$salary = Finance_Salary::instance();
+//				return ($salary->handle_operation($operation));
+//				break;
+//			case "data":
+//				$data = Core_Data::instance();
+//				return ($data->handle_operation($operation));
+//				break;
+//			default:
+////				print "fault";
+////				return "no handler found for $operation";
+//				$focus = Focus_Actions::instance();
+//				return $focus->handle_focus_do($operation);
+//		}
+//
+//	}
 	/**
 	 * Include required core files used in admin and on the frontend.
 	 */

@@ -155,11 +155,22 @@ function freight_import(post_file, div)
 
     // execute_url(action, show_response, div);
     div.innerHTML = '<h1>Import deliveries</h1>' +
-        '<div><form action="' + action + '" name="import_csv" method="post" enctype="multipart/form-data">Import from csv file' +
+        '<div style="border: thin solid black"><form action="' + action + '" name="import_csv" method="post" enctype="multipart/form-data"><h1>Import from csv file</h1>' +
+        '<p>Create and edit sprreadsheet with columns:</p>' +
+        '<li>A: Order number</li>' +
+        '<li>B: Client name (optional)</li>' +
+        '<li>C: Address 2 (optional)</li>' +
+        '<li>D: Address 1</li>' +
+        '<li>E: City</li>' +
+        '<li>F: Comments (optional)</li>' +
+        '<li>G: Phone (optional)</li>' +
         '<input type="file" name="fileToUpload" id="fileToUpload">' +
         '<input type="submit" value="טען" name="submit"></form></div>' +
 
-        '<div><form action="' + action_baldar + '" name="import_html" method="post" enctype="multipart/form-data">Import from baldar html file' +
+        '<div style="border: thin solid black"><form action="' + action_baldar + '" name="import_html" method="post" enctype="multipart/form-data"><h1>Import from baldar html file</h1>' +
+        '<p>Save baldar file using ctrl-s</p>' +
+        '<p>Press choose file to select it</p>' +
+        '<p>Press Load button</p>' +
         '<input type="file" name="fileToUpload" id="fileToUpload">' +
         '<input type="submit" value="טען" name="submit"></form></div>';
 

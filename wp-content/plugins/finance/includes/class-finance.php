@@ -2,10 +2,6 @@
 
 require_once(ABSPATH . '/wp-content/plugins/flavor/flavor.php');
 
-//ini_set('display_errors', 1);
-//ini_set('display_startup_errors', 1);
-//error_reporting(E_ALL);
-
 class Finance {
 	/**
 	 * The loader that's responsible for maintaining and registering all hooks that power

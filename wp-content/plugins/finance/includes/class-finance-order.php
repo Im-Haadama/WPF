@@ -32,7 +32,7 @@ class Finance_Order {
 
 		$this->WC_Order = wc_get_order($order_id);
 		if (! $this->WC_Order) {
-			print debug_trace(10);
+//			print debug_trace(10);
 			throw new Exception("Failed: can't load order $order_id");
 		}
 
@@ -1071,6 +1071,9 @@ class Finance_Order {
 		array_push($fields, $this->getShippingFee());
 
 		array_push($fields, $this->GetDriverComments());
+
+		if ($ext_id = GetMetaField($this->order_id, 'external_order_id'))
+			array_push($fields, $ext_id);
 
 		return  "<tr> " . self::delivery_table_line( 1, $fields ) . "</tr>";
 	}

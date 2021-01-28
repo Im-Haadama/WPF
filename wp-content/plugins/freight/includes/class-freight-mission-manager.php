@@ -23,7 +23,8 @@ abstract class OrderTableFields
 	const site_id = 10;
 	const fee = 11;
 	const comments = 12;
-	const max = 13;
+	const external_order_id = 13;
+	const max = 14;
 }
 
 class Freight_Mission_Manager 
@@ -234,10 +235,14 @@ group by pm.meta_value, p.post_status");
 			$pri = Freight_Mission_Manager::order_get_pri($order_id, $site_id);
 
 			$address = $point[OrderTableFields::address_1] . " " . $point[OrderTableFields::city];
-			$comments = strtok($point[OrderTableFields::comments], " "); $name = $point[OrderTableFields::client_name];
-			if (! $comments) $comments = $name;
+
+			// Set the name;
+			$ext = $point[OrderTableFields::external_order_id];
+			if ($ext) $name = $ext;
+			else $name = strtok($point[OrderTableFields::comments], " ");
+
 			$lat_long = Freight_Mission_Manager::get_lat_long($address);
-			$output .='<marker id="' . $pri . '" name="' . $comments . '" address="' . urlencode($address) . '" type="Delivery"'.
+			$output .='<marker id="' . $pri . '" name="' . $name . '" address="' . urlencode($address) . '" type="Delivery"'.
 			' lat="' . $lat_long[0]. '" lng="' . $lat_long[1] . '" ';
 			$output .='/>' . PHP_EOL;
 		}
@@ -266,8 +271,9 @@ group by pm.meta_value, p.post_status");
 		}
 
 		$path = [];
+		FreightLog("before prepare_route");
 		$this->prepare_route( $path);
-
+		FreightLog("after prepare_route");
 
 		$arrive_time = strtotime( $m->getStartTime());
 		$prev           = $m->getStartAddress();
@@ -285,7 +291,7 @@ group by pm.meta_value, p.post_status");
 			for ( $i = 0; $i < count( $path ); $i ++ ) {
 				if ( isset( $this->lines_per_station[ $path[ $i ] ] ) ) {
 					foreach ( $this->lines_per_station[ $path[ $i ] ] as $order_info ) {
-						var_dump($order_info); print "<br/>";
+//						var_dump($order_info); print "<br/>";
 						$arrive_time += 6 *60; // 6 minutes
 						$order_id  = $order_info[ OrderTableFields::order_number ];
 						$site_id   = $order_info[ OrderTableFields::site_id ];
@@ -322,21 +328,27 @@ group by pm.meta_value, p.post_status");
 						$city = $order_info[OrderTableFields::city];
 						$address_1 = $order_info[OrderTableFields::address_1];
 						$address_2 = $order_info[ OrderTableFields::address_2 ];
-						print "c=$city a1=$address_1 a2=$address_2<br/>";
+//						print "c=$city a1=$address_1 a2=$address_2<br/>";
 						$link = '';
 
 						// Editable fields
-						if ($site_id == $multi_site->getLocalSiteID() and $edit) {
+						if (($site_id == $multi_site->getLocalSiteID()) and $edit and ($type == "orders")) {
 							$comments  = Core_Html::GuiInput( "comments_$order_id", $comments,
 									array( "events" => "onchange=\"order_update_driver_comment('" . Freight::getPost() . "', $order_id)\"" ));
+							$city = Core_Html::GuiInput("city_$order_id", $city,
+								array( "events" => "onchange=\"order_update_field('" . Freight::getPost() . "', $order_id, 'city')\"" ));
 							$address_1 = Core_Html::GuiInput("address_1_$order_id", $address_1,
 								array( "events" => "onchange=\"order_update_field('" . Freight::getPost() . "', $order_id, 'address_1')\"" ));
 							$address_2 = Core_Html::GuiInput("address_2_$order_id", $address_2,
 								array( "events" => "onchange=\"order_update_field('" . Freight::getPost() . "', $order_id, 'address_2')\"" ));
 
-							$o = new Finance_Order($order_id);
-							if (($external_id = $o->getField('baldar_id') > 0))
-								$link = $external_id; // Core_html::GuiHyperlink($external_id, "http://84.228.229.231?TaskDetails.aspx?dlv=$external_id");
+							try {
+								$o = new Finance_Order( $order_id );
+								if (($external_id = $o->getField('baldar_id') > 0))
+									$link = $external_id; // Core_html::GuiHyperlink($external_id, "http://84.228.229.231?TaskDetails.aspx?dlv=$external_id");
+							} catch (Exception $e){
+								print $e->getMessage() . " site_id = $site_id type = $type<br/>";
+							}
 
 
 						}
@@ -364,7 +376,7 @@ group by pm.meta_value, p.post_status");
 					}
 				} else {
 //					var_dump($lines_per_station[$path[$i]]);
-					print "no lines per station $path[$i]<br/>";
+//					print "no lines per station $path[$i]<br/>";
 				}
 
 				$prev = $path[ $i];
@@ -391,7 +403,8 @@ group by pm.meta_value, p.post_status");
 
 			$args["hide_cols"] = array( OrderTableFields::client_nubmer - 1 => 1 );
 			$result            .= Core_Html::gui_table_args( $path_info, "dispatch_" . $the_mission, $args );
-			$total_distance += round(self::get_distance($prev, $m->getEndAddress()) / 1000, 1);
+			if (($end_address = $m->getEndAddress()))
+				$total_distance += round(self::get_distance($prev, $m->getEndAddress()) / 1000, 1);
 
 			$result .= __("Total distance") . ": $total_distance<br/>";
 		}
@@ -431,6 +444,7 @@ group by pm.meta_value, p.post_status");
 		$rows = self::parse_output($output);
 
 		if (count($rows) < 2) {
+			print $output;
 			print "No orders found<br/>";
 			return false;
 		}
@@ -477,7 +491,7 @@ group by pm.meta_value, p.post_status");
 //			$order_info = $data_lines[$i];
 //			print $order_info[OrderTableFields::client_name] . "<br/>";
 //		}
-		for ( $i = 0; $i < count( $data_lines ); $i ++ ) {
+		for ( $i = 1; $i < count( $data_lines ); $i ++ ) {
 			$order_info = $data_lines[ $i ];
 			$stop_point = str_replace( '-', ' ', $order_info[ OrderTableFields::address_1 ] . " " . $order_info[ OrderTableFields::city ] );
 			$order_id   = $order_info[ OrderTableFields::order_number ];
@@ -518,7 +532,7 @@ group by pm.meta_value, p.post_status");
 			}
 
 			if (self::get_distance($mission->getStartAddress(), $stop_point) == -1) {
-				print "Address of order $order_id is not vaild. " . $stop_point . "<br/>";
+//				print "Address of order $order_id is not vaild. " . $stop_point . "<br/>";
 				continue;
 			} else
 				self::add_stop_point( $stop_point, $order_id, $site_id );
@@ -585,6 +599,50 @@ group by pm.meta_value, p.post_status");
 
 	}
 
+	static function geodecode_address($text)
+	{
+//		$r = InfoGet("geodecode_city" . $address);
+//
+//		if ($r) {
+//			return $r;
+//		}
+		$s = "https://maps.googleapis.com/maps/api/geocode/json?address=" . urlencode( $text ).
+		     "&key=" . MAPS_KEY; // . "&language=iw";
+
+		// print $s;
+//		var_dump($address);	print "<br/>";
+		$result = @file_get_contents( $s );
+		if (! $result) return null;
+
+		$j = json_decode( $result );
+
+		$city = '';
+		$address_1= '';
+		$address_2 = '';
+		$street_number = '';
+
+		foreach ($j->results as $result) {
+//			var_dump($result); print "<br/>";
+			foreach ($result->address_components as $comp) {
+//				var_dump($comp); print "<br/>";
+				if (in_array("locality", $comp->types )) {
+					$city = $comp->long_name;
+				}
+				if (in_array("route", $comp->types))
+					$address_1 = $comp->long_name;
+
+				if (in_array("street_number", $comp->types )) {
+					$street_number = $comp->long_name;
+				}
+			}
+		}
+//		InfoUpdate("geodecode_city".  $address, $city);
+		$address = array("city" => $city,
+			"address_1" => $street_number . " " . $address_1,
+			"address_2" => $address_2);
+		return $address;
+	}
+
 	static function get_lat_long($address)
 	{
 		$r = InfoGet("lat_long" . $address);
@@ -604,6 +662,7 @@ group by pm.meta_value, p.post_status");
 		InfoUpdate("lat_long".  $address, $lat . ":" . $long);
 		return array($lat, $long);
 	}
+
 	static function get_distance( $address_a, $address_b ) {
 		if ( 0) {
 			print "a: " . $address_a . "<br/>";
@@ -622,7 +681,7 @@ group by pm.meta_value, p.post_status");
 		}
 		$r = self::do_get_distance( $address_a, $address_b );
 		if (! $r or ! is_array($r)) {
-			print "no distance $address_b<br/>";
+//			print "no distance $address_a $address_b<br/>";
 //			print debug_trace(10); print "<br/>";
 			// One is invalid
 			return -1;
@@ -685,6 +744,7 @@ group by pm.meta_value, p.post_status");
 	// Make sure that point doesn't appear twice
 	function find_route( $rest, &$path ) {
 		$debug = false;
+		FreightLog(__FUNCTION__ . count($rest));
 
 		$current_node = end($path);
 		if ($debug) {

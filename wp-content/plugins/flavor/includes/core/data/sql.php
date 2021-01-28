@@ -384,20 +384,28 @@ function SqlError( $sql ) {
 	try {
 		$conn = GetSqlConn();
 	} catch ( Exception $e ) {
-		print "Error (1): " . $e->getMessage() . "<br/>";
+		SqlReport("Error (1): " . $e->getMessage() . "<br/>");
 		return;
 	}
 	if ( is_string( $sql ) ) {
 		$message = "Error: sql = `" . $sql;
 		if ($conn) $message .= "`. Sql error : " . mysqli_error( $conn ) . "<br/>";
 		else $message .= "not connected";
-		print debug_trace(10);
+		SqlReport(debug_trace(10));
 	} else {
 		$message = $sql->error;
 		// $message = "sql not string";
 	}
-	MyLog( $message );
-	print "<div style=\"direction: ltr;\">" . $message . "</div>";
+	SqlReport("<div style=\"direction: ltr;\">" . $message . "</div>");
+}
+
+function SqlReport($message)
+{
+	MyLog($message);
+	$current_error_reporting = error_reporting();
+	var_dump($current_error_reporting);
+	if ($current_error_reporting & E_ERROR)
+		print $message;
 }
 
 /**

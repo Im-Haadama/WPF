@@ -35,37 +35,6 @@ class Core_Data
 		SqlQuery($sql);
 	}
 
-//	static function handle_operation( $operation )
-//	{
-//		switch ($operation){
-//			case "data_update":
-//				$table_name = GetParam("table_name", true);
-//				return self::data_update($table_name);
-//
-//			case "data_save_new":
-//				$table_name = GetParam("table_name", true);
-//				return self::SaveNew($table_name);
-//
-//			case "data_active":
-//				$active = GetParam("active", true);
-//				$table_name = GetParam("table_name", true);
-//				$row_id = GetParam("id", true);
-//				return self::Active($table_name, $row_id, $active);
-//
-//			case "data_delete":
-//				$ids = GetParamArray("ids", true);
-//				$table = GetParam("type", true);
-//				// Todo: check permissions
-//				return self::Delete($table, $ids);
-//
-////			case "data_delete_team":
-////				$team_id = GetParam("team_id", true);
-////				$team = new Org_Team($team_id);
-////				return $team->removeMember(GetParam("ids"));
-//
-//		}
-//	}
-
 	static function data_save_new()
 	{
 		$table_name = GetParam("table_name", true);

@@ -17,6 +17,12 @@ class Freight_Database extends Core_Database {
 
 		if ($current == $version and ! $force) return true;
 
+		SqlQuery("truncate table ${db_prefix}distance");
+
+		SqlQuery("create index  ${db_prefix}distance_address_a_address_b_index
+	on im_distance (address_a, address_b)");
+
+
 		SqlQuery("alter table ${db_prefix}mission_types add default_price float");
 
 		SqlQuery("alter table ${db_prefix}mission_types add start_address varchar(200) charset utf8, add end_address varchar(200) charset utf8;");

@@ -499,10 +499,6 @@ class Flavor {
 	public function init() {
 		// Before init action.
 
-		ini_set('display_errors', 1);
-		ini_set('display_startup_errors', 1);
-		error_reporting(E_ALL);
-
 		add_action('wp_loaded', 'Flavor::wp_loaded');
 		do_action( 'before_flavor_init' );
 		add_filter( 'woocommerce_settings_tabs_array', __CLASS__ . '::add_settings_tab', 50 );
