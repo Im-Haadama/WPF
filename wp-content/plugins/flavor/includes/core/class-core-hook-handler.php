@@ -75,7 +75,8 @@ class Core_Hook_Handler {
 	 * @param    int                  $accepted_args    Optional. The number of arguments that should be passed to the $callback. Default is 1.
 	 */
 	public function AddAction( $hook, $component, $callback = null, $priority = 10, $accepted_args = 1 ) {
-		$debug = false; // ($hook=='bank_create_pay');
+		$debug = ($hook=='bank_show_create_invoice_receipt');
+//		if ($debug) print 1/0;
 		if (!$callback) {
 			if ($debug) print "using $hook<br/>";
 			$callback = $hook;
@@ -140,14 +141,15 @@ class Core_Hook_Handler {
 	 */
 	public function run()
 	{
-		$this->debug = false;
+		$this->debug = false; // (get_user_id() == 1);
+//		if ($this->debug) print 1/0;
 		foreach ( $this->filters as $hook ) {
-			if ($this->debug) print ("Adding " . $hook['hook']) . "<br/>";
+//			if ($this->debug) print ("Adding " . $hook['hook']) . "<br/>";
 			add_filter( $hook['hook'], array( $hook['component'], $hook['callback'] ), $hook['priority'], $hook['accepted_args'] );
 		}
 
 		foreach ( $this->actions as $hook ) {
-			if ($this->debug and $hook == 'bank_create_pay') print ("===================== Adding " . $hook['hook']) . "<br/>";
+			if ($this->debug and ($hook == 'bank_show_create_invoice_receipt')) print ("===================== Adding " . $hook['hook'] . " " .$hook['callback'])  . "<br/>";
  			// print "adding " . $hook['hook'] . " " . var_dump($hook['component']) . " " . $hook['callback'] . "<br/>";
 			add_action($hook['hook'], array( $hook['component'], $hook['callback'] ), $hook['priority'], $hook['accepted_args'] );
 		}

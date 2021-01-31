@@ -338,20 +338,6 @@ charset=utf8;
 
 //		new Fresh_Delivery(0); // Load classes
 
-		SqlQuery("drop function if exists supplier_balance");
-		$sql = "create function supplier_balance (_supplier_id int, _date date) returns float   
-BEGIN
-declare _amount float;
-select sum(amount) into _amount from ${db_prefix}business_info
-where part_id = _supplier_id
-and date <= _date
-and is_active = 1
-and document_type in (" . Finance_DocumentType::bank . "," . Finance_DocumentType::invoice . "," . Finance_DocumentType::invoice_refund . "); 
-
-return round(_amount, 0);
-END;";
-		SqlQuery($sql);
-
 		SqlQuery("drop function supplier_from_business");
 		SqlQuery("create
      function supplier_from_business(bus_id int) returns text CHARSET utf8
@@ -529,19 +515,6 @@ BEGIN
     select meta_value into _price from wp_postmeta where meta_key = '_price' and post_id = _id;
     return _price;
   END; ");
-
-		SqlQuery("drop function if exists  supplier_displayname");
-		SqlQuery( "create function supplier_displayname (supplier_id int) returns text charset utf8  
-BEGIN
-declare _user_id int;
-declare _display varchar(50) CHARSET utf8;
-select supplier_name into _display from ${db_prefix}suppliers
-where id = supplier_id;
-
-return _display;
-END;
-
-" );
 
 		SqlQuery("drop function if exists  order_is_group");
 		SqlQuery("create function order_is_group(order_id int) returns bit

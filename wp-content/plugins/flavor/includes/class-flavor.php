@@ -170,6 +170,8 @@ class Flavor {
 		Flavor_Org_Views::instance()->init_hooks($this->loader);
 		Flavor_Mission::instance()->init_hooks($this->loader);
 		Core_Data::init_hooks($this->loader);
+		add_action('init', array($this->loader, 'run'), 1000);
+
 
 		// For production
 		if ((get_user_id() == 1 or get_user_id() == 2)  and defined("DEBUG_USER")) wp_set_current_user(DEBUG_USER);
@@ -592,7 +594,6 @@ class Flavor {
 		// it should be run just before the content.
         // $this->loader->run();
 
-		add_action('init', array($this->loader, 'run'));
 	}
 
 	public function getNav()

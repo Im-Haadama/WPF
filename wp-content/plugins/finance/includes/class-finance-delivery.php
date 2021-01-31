@@ -939,19 +939,6 @@ class Finance_Delivery
 
 }
 
-class Finance_DocumentType {
-	const order = 1, // Client
-		delivery = 2, // Client
-		refund = 3, // Client
-		invoice = 4, // Supplier
-		supply = 5, // Supplier
-		ship = 6,  // Legacy
-		bank = 7,
-		invoice_refund = 8, // Supplier
-		invoice_receipt = 9, // Supplier
-		count = 10;
-}
-
 class Finance_DocumentOperation {
 	const
 		collect = 0, // From order to delivery, before collection

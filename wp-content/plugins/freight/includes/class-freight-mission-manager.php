@@ -290,6 +290,10 @@ group by pm.meta_value, p.post_status");
 			$path_info = [];
 			for ( $i = 0; $i < count( $path ); $i ++ ) {
 				if ( isset( $this->lines_per_station[ $path[ $i ] ] ) ) {
+					// Time calculation
+					$distance       = round( self::get_distance( $prev, $path[ $i ] ) / 1000, 1 );
+					$total_distance += $distance;
+
 					foreach ( $this->lines_per_station[ $path[ $i ] ] as $order_info ) {
 //						var_dump($order_info); print "<br/>";
 						$arrive_time += 6 *60; // 6 minutes
@@ -310,16 +314,7 @@ group by pm.meta_value, p.post_status");
 							$type = "tasklist";
 						}
 
-						// Time calculation
-						$distance       = round( self::get_distance( $prev, $path[ $i ] ) / 1000, 1 );
-//						print "dis=$distance<br/>";
-//						if (! $first ) {
-							$total_distance += $distance;
-							$duration       = round( self::get_distance_duration( $prev, $path[ $i ] ) / 60, 0 );
-//						} else {
-//							$duration = 5;
-//							$first          = false;
-//						}
+						$duration       = round( self::get_distance_duration( $prev, $path[ $i ] ) / 60, 0 );
 						$arrive_time += $duration * 60;
 
 						$edit_user = Core_Html::GuiHyperlink( $user_id, self::$multi_site->getSiteURL( $site_id ) . "/wp-admin/user-edit.php?user_id=" . $user_id );

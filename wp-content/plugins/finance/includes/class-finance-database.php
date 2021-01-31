@@ -208,10 +208,40 @@ charset=utf8;
 		self::UpdateInstalled( "tables", $version);
 	}
 
-	function CreateFunctions($version, $force = false) {
-
-		return;
+	function CreateFunctions($version, $force = false)
+	{
 		$current = self::CheckInstalled("Finance", "functions");
+		$db_prefix = GetTablePrefix();
+
+
+		if ($current == $version and ! $force) return true;
+
+		SqlQuery("drop function if exists  supplier_displayname");
+		SqlQuery( "create function supplier_displayname (supplier_id int) returns text charset utf8  
+BEGIN
+declare _user_id int;
+declare _display varchar(50) CHARSET utf8;
+select supplier_name into _display from ${db_prefix}suppliers
+where id = supplier_id;
+
+return _display;
+END;
+
+" );
+
+		SqlQuery("drop function if exists supplier_balance");
+		$sql = "create function supplier_balance (_supplier_id int, _date date) returns float   
+BEGIN
+declare _amount float;
+select sum(amount) into _amount from ${db_prefix}business_info
+where part_id = _supplier_id
+and date <= _date
+and is_active = 1
+and document_type in (" . Finance_DocumentType::bank . "," . Finance_DocumentType::invoice . "," . Finance_DocumentType::invoice_refund . "); 
+
+return round(_amount, 0);
+END;";
+		SqlQuery($sql);
 
 		SqlQuery("drop function working_rate");
 		SqlQuery("create
@@ -254,8 +284,6 @@ END;
 
 ");
 
-		if ($current == $version and ! $force) return true;
-
 		SqlQuery("drop function delivery_receipt");
 		SqlQuery("create function delivery_receipt(_del_id int) returns int
 BEGIN
@@ -286,18 +314,6 @@ from im_client_accounts where date <= _date
                           and client_id = _client_id;
 return round(_amount, 0);
 END;
-
-");
-
-		SqlQuery("create function client_payment_method(_user_id int) returns text charset utf8
-BEGIN
-    declare _method_id int;
-    declare _name VARCHAR(50) CHARSET 'utf8';
-    select meta_value into _method_id from wp_usermeta where user_id = _user_id and meta_key = 'payment_method';
-    select name into _name from im_payments where id = _method_id;
-
-    return _name;
-  END;
 
 ");
 

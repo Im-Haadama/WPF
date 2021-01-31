@@ -22,7 +22,7 @@ class Fresh_Accounting
 //		print "del_id:$delivery_id<br/>";
 		$delivery = new Fresh_Delivery($delivery_id);
 		//	 Todo: move it to a fresh filter.
-		$row['due_vat'] = $delivery->getDeliveryDueVat() - $delivery->DeliveryFee();
+		$row['due_vat'] = $delivery->getDeliveryDueVat(); // -  $delivery->DeliveryFee();
 //		$due_vat +=$rows_data[ $delivery_id ]['due_vat'];
 		$row['fresh'] = $row['amount'] - $row['due_vat'];
 		return $row;

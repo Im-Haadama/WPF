@@ -80,7 +80,7 @@ class Finance_Bank
 //		Flavor_Roles::addRole('business_admin', array('finance'));
 	}
 
-	function bank_show_create_invoice_receipt()
+	function bank_show_create_invoice_receipt($params = null)
 	{
 		$id = GetParam( "id" );
 		print $this->show_create_invoice_receipt($id);
@@ -143,7 +143,7 @@ class Finance_Bank
 		$operation = GetParam("operation", false, null, true);
 		$args = [];
 		if ($operation) {
-			print Core_Hook_Handler::instance()->DoAction($operation, $args);
+			Core_Hook_Handler::instance()->DoAction($operation, $args);
 			return;
 //			return apply_filters( $operation, "" );
 		}

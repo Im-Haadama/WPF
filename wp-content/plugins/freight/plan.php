@@ -62,7 +62,7 @@ $id = GetParam("id");
                 var id = markerElem.getAttribute('id');
                 var name = markerElem.getAttribute('name');
                 var address = decodeURI(markerElem.getAttribute('address'));
-                address = address.replaceAll("+", " ");
+                address = address.replace("/+/g", " ");
                 var type = markerElem.getAttribute('type');
                 var point = new google.maps.LatLng(
                     parseFloat(markerElem.getAttribute('lat')),

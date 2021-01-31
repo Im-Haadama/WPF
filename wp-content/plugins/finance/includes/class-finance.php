@@ -26,7 +26,7 @@ class Finance {
 	protected $salary;
 	protected $inventory;
 	protected $message;
-
+	protected $accounting;
 
 	/**
 	 * @return mixed
@@ -142,6 +142,10 @@ class Finance {
 
 		$finance_actions = new Finance_Actions();
 		$finance_actions->init_hooks($this->loader);
+
+		$this->accounting = new Finance_Accounting();
+		$this->accounting->init_hooks($this->loader);
+
 
 		$bl = new Finance_Business_Logic();
 		$bl->init_hooks($hook_manager);
@@ -844,4 +848,17 @@ function FinanceLog($message, $print = false)
 {
 	if ($print) print $message;
 	MyLog($message, '', 'finance.log');
+}
+
+class Finance_DocumentType {
+	const order = 1, // Client
+		delivery = 2, // Client
+		refund = 3, // Client
+		invoice = 4, // Supplier
+		supply = 5, // Supplier
+		ship = 6,  // Legacy
+		bank = 7,
+		invoice_refund = 8, // Supplier
+		invoice_receipt = 9, // Supplier
+		count = 10;
 }
