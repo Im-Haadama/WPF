@@ -193,7 +193,7 @@ class Finance_Delivery
 		$send_email = GetParam("send_email", false);
 		$id = self::do_create_delivery(true);
 		if ($send_email)
-			Finance_Actions::mail_delivery($id);
+			Finance_Actions::delivery_send_mail($id);
 	}
 
 //	static function CreateFromOrder( $order_id )

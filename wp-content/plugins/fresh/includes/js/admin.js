@@ -110,7 +110,7 @@ function pricelist_map_products(post_file)
         let pricelist_id = collection[i];
         let product_id = get_value_by_name("prd" + pricelist_id);
         if (! product_id) {
-            alert("לא נבחר מוצר עבור " + table.rows[i + 1].cells[2].innerHTML);
+            alert("לא נבחר מוצר עבור " + pricelist_id);
             return;
         }
         // Handle local

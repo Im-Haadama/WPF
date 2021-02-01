@@ -3,7 +3,7 @@
 class Fresh_Suppliers {
 	private $gem;
 
-	function init_hooks($loader) {
+	function init_hooks(Core_Hook_Handler $loader) {
 		$loader->AddAction( "gem_v_show", $this, "pricelist_header" , 9 );
 //		AddAction( "gem_v_show", $this, "draftable_products" ), 12 );
 		$loader->AddAction( "gem_v_show", $this, "pricelist_functions" , 11 );

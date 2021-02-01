@@ -75,7 +75,7 @@ class Core_Hook_Handler {
 	 * @param    int                  $accepted_args    Optional. The number of arguments that should be passed to the $callback. Default is 1.
 	 */
 	public function AddAction( $hook, $component, $callback = null, $priority = 10, $accepted_args = 1 ) {
-		$debug = false; // (get_user_id() == 1); // true; // ($hook=='gem_v_show');
+		$debug = ($hook=='gem_v_show');
 		
 //		if ($debug) dd($callback);
 		if (!$callback) {
@@ -89,7 +89,7 @@ class Core_Hook_Handler {
 //		if ($debug) var_dump($component);
 		if ($this->debug) print "=-======================================" . __FUNCTION__ . " h=$hook c=$callback" . "<br/>";
 		if ($this->debug and ! is_callable(array($component, $callback))) die ("Not callable");
-		$this->actions = $this->add( $this->actions, $hook, $component, $callback, $priority, $accepted_args );
+		$this->add_action( $hook, $component, $callback, $priority, $accepted_args );
 	}
 
 	/**
@@ -104,7 +104,7 @@ class Core_Hook_Handler {
 	 */
 	public function AddFilter( $hook, $component, $callback = null, $priority = 10, $accepted_args = 1 ) {
 		if (!$callback) $callback = $hook;
-		$this->filters = $this->add( $this->filters, $hook, $component, $callback, $priority, $accepted_args );
+		$this->add_filter( $hook, $component, $callback, $priority, $accepted_args );
 	}
 
 	/**
@@ -113,7 +113,6 @@ class Core_Hook_Handler {
 	 *
 	 * @since    1.0.0
 	 * @access   private
-	 * @param    array                $hooks            The collection of hooks that is being registered (that is, actions or filters).
 	 * @param    string               $hook             The name of the WordPress filter that is being registered.
 	 * @param    object               $component        A reference to the instance of the object on which the filter is defined.
 	 * @param    string               $callback         The name of the function definition on the $component.
@@ -122,17 +121,28 @@ class Core_Hook_Handler {
 	 * @return   array                                  The collection of actions and filters registered with WordPress.
 	 */
 
-	private function add( $hooks, $hook, $component, $callback, $priority, $accepted_args ) {
-
-		$hooks[$hook] = array(
+	private function add_action( $hook, $component, $callback, $priority, $accepted_args ) 
+	{
+		if (! isset($this->actions[$hook])) $this->actions[$hook] = array();
+		array_push($this->actions[$hook], array(
 			'hook'          => $hook,
 			'component'     => $component,
 			'callback'      => $callback,
 			'priority'      => $priority,
 			'accepted_args' => $accepted_args
-		);
+		));
+	}
 
-		return $hooks;
+	private function add_filter( $hook, $component, $callback, $priority, $accepted_args )
+	{
+		if (! isset($this->filters[$hook])) $this->filters[$hook] = array();
+		array_push($this->filters[$hook], array(
+			'hook'          => $hook,
+			'component'     => $component,
+			'callback'      => $callback,
+			'priority'      => $priority,
+			'accepted_args' => $accepted_args
+		));
 	}
 
 	/**
@@ -146,15 +156,17 @@ class Core_Hook_Handler {
 
 		$this->debug = false; // (get_user_id() == 1);
 //		if ($this->debug) print 1/0;
-		foreach ( $this->filters as $hook ) {
+		foreach ( $this->filters as $hooks) {
 //			if ($this->debug) print ("Adding " . $hook['hook']) . "<br/>";
-			add_filter( $hook['hook'], array( $hook['component'], $hook['callback'] ), $hook['priority'], $hook['accepted_args'] );
+			foreach ($hooks as $hook)
+				add_filter( $hook['hook'], array( $hook['component'], $hook['callback'] ), $hook['priority'], $hook['accepted_args'] );
 		}
 
-		foreach ( $this->actions as $hook ) {
-			if ($this->debug and ($hook == 'bank_show_create_invoice_receipt')) print ("===================== Adding " . $hook['hook'] . " " .$hook['callback'])  . "<br/>";
+		foreach ( $this->actions as $hooks ) {
+//			if ($this->debug and ($hook['hook'] == 'gem_v_show')) print ("===================== Adding " . $hook['hook'] . " " .$hook['callback'])  . "<br/>";
  			// print "adding " . $hook['hook'] . " " . var_dump($hook['component']) . " " . $hook['callback'] . "<br/>";
-			add_action($hook['hook'], array( $hook['component'], $hook['callback'] ), $hook['priority'], $hook['accepted_args'] );
+			foreach ($hooks as $hook)
+				add_action($hook['hook'], array( $hook['component'], $hook['callback'] ), $hook['priority'], $hook['accepted_args'] );
 		}
 	}
 
