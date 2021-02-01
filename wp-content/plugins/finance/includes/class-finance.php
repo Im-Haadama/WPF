@@ -813,12 +813,6 @@ class Finance {
 		print Core_Db_MultiSite::getInstance()->getLocalSiteID();
 	}
 
-	function credit_clear_token()
-	{
-		$client_id = GetParam("id");
-		Finance_Yaad::ClearToken($client_id);
-	}
-
 	static function getPost()
 	{
 		return Flavor::getPost();

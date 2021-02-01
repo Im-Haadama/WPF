@@ -61,8 +61,9 @@ class Fresh_Packing {
 			if ( $P->isDraft() ) $row[] = "טיוטא";
 			else $row[] = Core_Html::GuiCheckbox( "chk" . $prod_id, 0, array("checkbox_class" => $checkbox_class ));
 			$row[] = $P->getName();
-			$row[] = Core_Html::GuiHyperlink( isset( $quantity_array[0] ) ? round( $quantity_array[0], 1 ) : 0,
-				"get-orders-per-item.php?prod_id=" . $prod_id . ( $history ? "&history" : "" ) );
+//			$row[] = Core_Html::GuiHyperlink( isset( $quantity_array[0] ) ? round( $quantity_array[0], 1 ) : 0,
+//				"get-orders-per-item.php?prod_id=" . $prod_id . ( $history ? "&history" : "" ) );
+//			$row[] = (isset( $quantity_array[0] ) ? round( $quantity_array[0], 1 ) : 0);
 
 			// Units. disabbled for now.
 			//		if ( isset( $quantity_array[1] ) ) {
@@ -71,6 +72,7 @@ class Fresh_Packing {
 //			$line .= "<td></td>";
 //		}
 			$quantity = isset( $quantity_array[0] ) ? $quantity_array[0] : 0;
+			$row[] = $quantity;
 
 			$p     = new Fresh_Product( $prod_id );
 			if ( $inventory_managed ) {
@@ -298,7 +300,10 @@ class Fresh_Packing {
 		return $columns;
 	}
 
-	static function orders_per_item( $prod_id, $multiply, $short = false, $include_basket = false, $include_bundle = false, $just_total = false, $month = null ) {
+	static function orders_per_item( $prod_id, $multiply, $short = false, $include_basket = false, $include_bundle = false, $just_total = false, $month = null )
+	{
+		$debug = false; // ($prod_id == 288);
+		$prod = new Fresh_Product($prod_id);
 		$sql = 'select woi.order_item_id, order_id'
 		       . ' from wp_woocommerce_order_items woi join wp_woocommerce_order_itemmeta woim'
 		       . ' where order_id in';
@@ -314,10 +319,14 @@ class Fresh_Packing {
 			        " and post_status = 'wc-completed')";
 		}
 
+
 		$baskets = null;
 		if ( $include_basket ) {
-			$sql1    = "select basket_id from im_baskets where product_id = $prod_id";
-			$baskets = SqlQueryArrayScalar( $sql1 );
+			$baskets = $prod->get_baskets();
+
+//			$sql1    = "select basket_id from im_baskets where product_id = $prod_id";
+//			$baskets = SqlQueryArrayScalar( $sql1 );
+			if ($debug) var_dump($baskets);
 		}
 		$bundles = null;
 		if ( $include_bundle ) {
@@ -336,6 +345,8 @@ class Fresh_Packing {
 		}
 		$sql .= ")";
 
+		if ($debug) var_dump($sql);
+
 		$result         = SqlQuery( $sql );
 		$lines          = "";
 		$total_quantity = 0;
@@ -343,6 +354,7 @@ class Fresh_Packing {
 		while ( $row = mysqli_fetch_row( $result ) ) {
 			$order_item_id = $row[0];
 			$order_id      = $row[1];
+			if ($debug) var_dump ($order_id);
 			$o = new Fresh_Order($order_id);
 			$quantity      = Finance_Delivery::get_order_itemmeta( $order_item_id, '_qty' );
 
@@ -353,10 +365,12 @@ class Fresh_Packing {
 				$b        = Fresh_Bundle::CreateFromBundleProd( $pid );
 				$quantity *= $b->GetQuantity();
 			}
-//			else if ( $p->is_basket() ) {
-//				$b        = new Fresh_Basket( $pid );
-//				$quantity *= $b->GetQuantity( $prod_id );
-//			}
+			else if ( $p->is_basket() ) {
+				$b        = new Fresh_Basket( $pid );
+				if ($debug) var_dump($b->get_basket_content($prod_id));
+
+				$quantity *= $b->GetQuantity( $prod_id );
+			}
 			$first_name = get_postmeta_field( $order_id, '_shipping_first_name' );
 			$last_name  = get_postmeta_field( $order_id, '_shipping_last_name' );
 

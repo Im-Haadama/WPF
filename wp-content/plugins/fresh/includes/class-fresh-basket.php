@@ -6,7 +6,8 @@
  * Date: 07/11/18
  * Time: 07:22
  */
-class Fresh_Basket extends  Fresh_Product  {
+class Fresh_Basket extends Fresh_Product  {
+	private $all_products;
 
 	/**
 	 * Basket constructor.
@@ -15,6 +16,12 @@ class Fresh_Basket extends  Fresh_Product  {
 	 */
 	public function __construct( $id ) {
 		parent::__construct($id);
+		$this->all_products = self::calc_all_products(true);
+//		foreach ($this->all_products as $p)
+//		{
+//			$pp = new Fresh_Product($p[0]);
+//			print $pp->getName() . " " . $p[1] . "<br/>";
+//		}
 	}
 
 	static public function init(Core_Hook_Handler $loader)
@@ -25,12 +32,12 @@ class Fresh_Basket extends  Fresh_Product  {
 		$loader->AddAction( "basket_delete", __CLASS__, "delete" );
 	}
 
+	// Find how many of the product is in this basket.
 	public function GetQuantity( $prod_id ) {
-		$sql = "SELECT quantity FROM im_baskets WHERE basket_id = " . $this->id .
-		       " AND product_id = " . $prod_id;
-
-		// print $sql;
-		return SqlQuerySingleScalar( $sql );
+		foreach ($this->all_products as $prod_info){
+			if ($prod_info[0] == $prod_id) return $prod_info[1];
+		}
+		return -1;
 	}
 
 	function get_basket_date( $basket_id ) {
@@ -352,5 +359,28 @@ class Fresh_Basket extends  Fresh_Product  {
 	static function getAll()
 	{
 		return SqlQueryArrayScalar("select distinct basket_id from im_baskets");
+	}
+
+	private function calc_all_products($expand = false)
+	{
+		$sql = "select product_id, quantity from im_baskets where basket_id = " .$this->getId();
+		$result = SqlQueryArray($sql);
+
+		if ($expand){
+			foreach ($result as $key => $prod_info) {
+				$prod_id = $prod_info[0];
+				$p = new Fresh_Product($prod_id);
+				if ($p->is_basket()) {
+					$quantity = $prod_info[1];
+					unset($result[$key]);
+					$b = new Fresh_Basket($prod_id);
+					foreach ($b->all_products as $sub_prod)
+					{
+						array_push($result, $sub_prod);
+					}
+				}
+			}
+		}
+		return $result;
 	}
 }

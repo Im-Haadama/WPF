@@ -50,7 +50,7 @@ class Finance_Bank
 		return self::instance()->post_file;
 	}
 
-	function init_hooks($loader) {
+	function init_hooks(Core_Hook_Handler  $loader) {
 //		if (get_user_id() == 1) {
 //			print debug_trace( 10 );
 //			print '=====================================<br/>';
@@ -70,7 +70,7 @@ class Finance_Bank
 		$loader->AddAction("finance_get_transaction_amount", $this, 'get_transaction_amount');
 		$loader->AddAction('create_bank_account', $this, 'create_bank_account');
 		$loader->AddAction("bank_link_invoice", $this, 'bank_link_invoice');
-		$loader->AddAction('bank_check_valid', $this, 'bank_check_valid');
+		$loader->AddAction('bank_check_valid', $this, 'bank_check_valid', 10, 2);
 
 		add_action('admin_menu', array($this, 'admin_menu'));
 

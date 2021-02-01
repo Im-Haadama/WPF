@@ -127,6 +127,8 @@ class Flavor {
 		// Fires early. Don't use loader.
 		add_action('admin_menu', array($this, 'admin_menu'));
 		add_action('admin_bar_menu', array(Core_Admin_Menu::instance(), 'do_modify_admin_bar'), 200 );
+		add_action( 'wp_enqueue_scripts', array($this, 'enqueue_scripts' ));
+
 
 //		if (get_user_id() == 1)
 //			print "loading flavor";
@@ -162,7 +164,6 @@ class Flavor {
 
 		// WP actions.
 		add_action( 'admin_enqueue_scripts', array($this, 'admin_scripts' ));
-		add_action( 'wp_enqueue_scripts', array($this, 'enqueue_scripts' ));
 		add_action( 'admin_notices', array($this, 'admin_notices' ));
 		add_action('admin_init', array($this, 'blog_settings'));
 
@@ -717,6 +718,9 @@ class Flavor {
 	}
 
 	public function admin_scripts() {
+		$file = FLAVOR_INCLUDES_URL . 'core/gui/client_tools.js';
+		wp_enqueue_script( 'client_tools', $file, null, $this->version, false );
+
 		$file = FLAVOR_INCLUDES_URL . 'core/gem.js';
 		wp_enqueue_script( 'gem', $file, null, $this->version, false );
 	}
@@ -733,9 +737,7 @@ class Flavor {
 
 		$file = FLAVOR_INCLUDES_URL . 'js/company.js';
 		wp_enqueue_script( 'company', $file, null, $this->version, false );
-
 	}
-
 
 	function add_admin_notice($message)
 	{

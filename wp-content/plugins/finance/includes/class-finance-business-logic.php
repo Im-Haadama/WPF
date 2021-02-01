@@ -368,4 +368,11 @@ class Finance_Business_Logic {
 		}
 		return false;
 	}
+
+	function credit_clear_token()
+	{
+		$client_id = GetParam("id");
+		Finance_Yaad::ClearToken($client_id);
+	}
+
 }

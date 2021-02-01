@@ -400,6 +400,21 @@ class Fresh_Product  extends Finance_Product {
 		return true;
 	}
 
+	// Return baskets that contain this product.
+	public function get_baskets()
+	{
+		$prod_id = $this->getId();
+		$sql    = "select basket_id from im_baskets where product_id = $prod_id";
+		$baskets = SqlQueryArrayScalar($sql);
+		$result = $baskets;
+		foreach ($baskets as $basket) {
+			$super_baskets = SqlQueryArrayScalar("select basket_id from im_baskets where product_id = $basket");
+			foreach ($super_baskets as $b)
+				if (! in_array($b, $result)) array_push($result, $b);
+		}
+		return $result;
+	}
+
 }
 
 class Fresh_ProductIterator implements  Iterator {
@@ -530,4 +545,5 @@ class Fresh_ProductIterator implements  Iterator {
 		// TODO: Implement rewind() method.
 		$this->position = 0;
 	}
+
 }
