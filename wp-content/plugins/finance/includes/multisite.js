@@ -19,5 +19,5 @@ function multisite_connect(post_file)
     }
 
     execute_url(post_file + '?operation=multisite_connect&server='+encodeURIComponent(server) + '&user=' + user + '&password=' + encodeURI(password),
-        reload_location);
+        location_reload);
 }

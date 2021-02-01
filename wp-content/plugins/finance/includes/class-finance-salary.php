@@ -531,6 +531,7 @@ class Finance_Salary {
 		);
 		$args["selectors"]     = array( "project_id" => "WPF_Organization::gui_select_project" );
 		$args["skip_id"]       = true;
+		$args["worker_id"] = $user_id;
 		if ( $edit ) {
 			$args["add_checkbox"] = true;
 		}

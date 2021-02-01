@@ -115,7 +115,6 @@ class Org_Worker extends Core_users
 		$sql =  "select id1 from ${table_prefix}links " .
 		        " where id2=$worker_id and type1=$type1 and type2=$type2";
 
-//		print $sql;
 		$ids = SqlQueryArrayScalar($sql);
 
 		if ($include_name) {
@@ -136,6 +135,7 @@ class Org_Worker extends Core_users
 		$type1 = FlavorDbObjects::users;
 		$type2 = FlavorDbObjects::company;
 		$sql = "select id2 from ${db_prefix}links where type1=$type1 and type2=$type2 and id1=$worker_id";
+//		print $sql;
 		return SqlQueryArrayScalar($sql);
 	}
 

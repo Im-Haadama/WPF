@@ -23,13 +23,17 @@ class Flavor_Database extends Core_Database {
 	function CreateFunctions($version, $force)
 	{
 		$current   = $this->checkInstalled(  "functions" );
+
 		if ( $current == $version and ! $force ) return true;
 
-			SqlQuery("create function FIRST_DAY_OF_WEEK(day date) returns date
+		SqlQuery("drop function FIRST_DAY_OF_WEEK");
+
+		SqlQuery("create function FIRST_DAY_OF_WEEK(day date) returns date
 BEGIN
-    RETURN SUBDATE(day, WEEKDAY(day) + 1);
+    RETURN SUBDATE(day, WEEKDAY(day) + 2);
 END;
 ");
+
 
 		SqlQuery("create function supplier_last_pricelist_date(_supplier_id int) returns date
 		BEGIN

@@ -48,7 +48,7 @@ class Flavor_Mission {
 		}
 
 		$header = "";
-		$week = GetParam("week", false, date('Y-m-d', strtotime('last sunday')));
+		$week = GetParam("week", false, date('Y-m-d', strtotime('last saturday')));
 		if ($week)
 			$header .= __("Missions of week") . " " . $week;
 
@@ -66,7 +66,7 @@ class Flavor_Mission {
 		}
 
 		$result .= self::show_missions($week ? " first_day_of_week(date) = '$week'" : null, $multi->isMaster());
-		$result .= Core_Html::GuiHyperlink("last week", AddToUrl("week", date('Y-m-d', strtotime("$week -1 week"))));
+		$result .= "<br/>" . Core_Html::GuiHyperlink("last week", AddToUrl("week", date('Y-m-d', strtotime("$week -1 week"))));
 
 		print $result;
 	}

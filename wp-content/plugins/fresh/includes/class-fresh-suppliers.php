@@ -66,6 +66,7 @@ class Fresh_Suppliers {
 				"product_name" => "", "price"=>Core_Html::GuiInput("price_new_row", "", array("size"=>3)));
 
 		$this->gem->AddVirtualTable( "pricelist", $args );
+//		if (get_user_id() == 1) print '============================== ADD<br/>';
 
 		// load classes
 		new Fresh_supply(1);

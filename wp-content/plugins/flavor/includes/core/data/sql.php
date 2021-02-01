@@ -403,7 +403,6 @@ function SqlReport($message)
 {
 	MyLog($message);
 	$current_error_reporting = error_reporting();
-	var_dump($current_error_reporting);
 	if ($current_error_reporting & E_ERROR)
 		print $message;
 }

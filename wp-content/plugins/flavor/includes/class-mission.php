@@ -197,6 +197,7 @@ class Mission {
 	public static function CreateFromType($type_id) // from tomorrow till tomorrow+forward_days
 	{
 		$last_mission_id = SqlQuerySingleScalar("select max(id) from im_missions where mission_type = $type_id and date > curdate()");
+//		print "$type_id $last_mission_id<br/>";
 		if ($last_mission_id) return true;
 
 		$type_info = SqlQuerySingleAssoc("select * from im_mission_types where id = $type_id");

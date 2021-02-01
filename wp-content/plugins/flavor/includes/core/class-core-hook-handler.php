@@ -75,8 +75,9 @@ class Core_Hook_Handler {
 	 * @param    int                  $accepted_args    Optional. The number of arguments that should be passed to the $callback. Default is 1.
 	 */
 	public function AddAction( $hook, $component, $callback = null, $priority = 10, $accepted_args = 1 ) {
-		$debug = ($hook=='bank_show_create_invoice_receipt');
-//		if ($debug) print 1/0;
+		$debug = false; // (get_user_id() == 1); // true; // ($hook=='gem_v_show');
+		
+//		if ($debug) dd($callback);
 		if (!$callback) {
 			if ($debug) print "using $hook<br/>";
 			$callback = $hook;
@@ -86,7 +87,7 @@ class Core_Hook_Handler {
 			$callback .= "_wrap";
 		}
 //		if ($debug) var_dump($component);
-		if ($this->debug) print "=-======================================" . __FUNCTION__ . " $hook $callback" . "<br/>";
+		if ($this->debug) print "=-======================================" . __FUNCTION__ . " h=$hook c=$callback" . "<br/>";
 		if ($this->debug and ! is_callable(array($component, $callback))) die ("Not callable");
 		$this->actions = $this->add( $this->actions, $hook, $component, $callback, $priority, $accepted_args );
 	}
@@ -141,6 +142,8 @@ class Core_Hook_Handler {
 	 */
 	public function run()
 	{
+//		if (get_user_id() == 1) print '============================== RUN<br/>';
+
 		$this->debug = false; // (get_user_id() == 1);
 //		if ($this->debug) print 1/0;
 		foreach ( $this->filters as $hook ) {

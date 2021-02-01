@@ -20,7 +20,7 @@ class Flavor {
 	 *
 	 * @var string
 	 */
-	public $version = '1.6.3';
+	public $version = '1.6.5';
 
 	/**
 	 * @var
@@ -166,12 +166,12 @@ class Flavor {
 		add_action( 'admin_notices', array($this, 'admin_notices' ));
 		add_action('admin_init', array($this, 'blog_settings'));
 
+
 		Core_Gem::getInstance()->init_hooks($this->loader);
 		Flavor_Org_Views::instance()->init_hooks($this->loader);
 		Flavor_Mission::instance()->init_hooks($this->loader);
 		Core_Data::init_hooks($this->loader);
 		add_action('init', array($this->loader, 'run'), 1000);
-
 
 		// For production
 		if ((get_user_id() == 1 or get_user_id() == 2)  and defined("DEBUG_USER")) wp_set_current_user(DEBUG_USER);
