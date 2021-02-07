@@ -87,7 +87,7 @@ class Focus_Actions
 
 		$T       = new Focus_Tasklist( $task_id );
         if($T->getPriority() == 10) return false;
-		return   $T->setPriority( $T->getPriority() + 1 );
+		return   $T->setPriority( $T->getPriority() + 1, "pri inc" );
 	}
 
 	static function PriMinus($args)
@@ -97,7 +97,7 @@ class Focus_Actions
 
 		$T       = new Focus_Tasklist( $task_id );
 		if($T->getPriority() == 1) return false;
-		return $T->setPriority( $T->getPriority() - 1 );
+		return $T->setPriority( $T->getPriority() - 1, "pri dec" );
 	}
 
 	function team_remove_member() {

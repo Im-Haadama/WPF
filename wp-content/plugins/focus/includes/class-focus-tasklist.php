@@ -138,10 +138,11 @@ class Focus_Tasklist {
 	 *
 	 * @return bool|mysqli_result|null
 	 */
-	public function setPriority( $priority )
+	public function setPriority( $priority, $message )
 	{
 		$db_prefix = GetTablePrefix();
 		$this->priority = $priority;
+		self::add_time($message . " $priority");
 		$sql            = "UPDATE ${db_prefix}tasklist SET priority = $priority " .
 		                  " WHERE id = " . $this->id;
 
@@ -157,11 +158,14 @@ class Focus_Tasklist {
 				SET ended = now(),
 				    owner = $user_id,
 				    status = " . $new_status;
+		$message = "ended";
 		if ($this->creator() != $user_id) $sql .= ", team = 0, owner = 0 ";
+		else $message .= " (creator)";
 
 		$sql .= " WHERE id = " . $this->id;
 
 		FocusLog($sql);
+		self::add_time($message);
 		// print $sql;
 		return SqlQuery( $sql );
 	}
@@ -172,10 +176,19 @@ class Focus_Tasklist {
 		$sql = "UPDATE ${db_prefix}tasklist set date = NOW() + INTERVAL 1 DAY\n" .
 		       " where id = " . $this->id;
 		if ( SqlQuery( $sql ) ) {
+			self::add_time("postpone");
 			return true;
 		}
 
 		return false;
+	}
+
+	private function add_time($message)
+	{
+		$db_prefix = GetTablePrefix();
+		$id = $this->getId();
+		$user = get_user_id();
+		SqlQuery("insert into ${db_prefix}tasklist_times (task_id, action, user, time) values ($id, '$message', $user, NOW())");
 	}
 
 	function task_started( $owner )
@@ -200,7 +213,10 @@ class Focus_Tasklist {
 
 	function update_status( $status, $owner = 0 )
 	{
+		global $Tasklist_Status_Names;
 		$db_prefix = GetTablePrefix();
+
+		self::add_time($Tasklist_Status_Names[$status]);
 
 		$sql = "UPDATE ${db_prefix}tasklist SET owner = $owner, started = now(), status = $status " .
 		       " WHERE id = " . $this->id;
@@ -484,7 +500,7 @@ class Focus_Tasklist {
 			$t = new Focus_Tasklist( $task_id );
 
 			$row = array(
-				Core_Html::GuiHyperlink( $t->getId(), "c-get-tasklist.php?id=" . $t->getId() ),
+				Core_Html::GuiHyperlink( $t->getId(), self::get_url() ),
 				$t->getPriority(),
 				$t->getTaskDescription()
 			);
@@ -542,6 +558,8 @@ class Focus_Tasklist {
 
 		$sql = "UPDATE ${db_prefix}tasklist SET status = " . enumTasklist::canceled . // . ", status = " . enumTasklist::done .
 		       " WHERE id = " . $this->id;
+		$this->add_time("cancel");
+
 		MyLog($sql);
 		return SqlQuery( $sql );
 	}
@@ -553,6 +571,7 @@ class Focus_Tasklist {
 		$sql = "UPDATE ${db_prefix}tasklist SET team = null " .
 		       " WHERE id = " . $this->id;
 
+		$this->add_time("remove assignment");
 		MyLog($sql);
 		return SqlQuery( $sql );
 
@@ -562,7 +581,7 @@ class Focus_Tasklist {
 		$fields = array();
 		array_push( $fields, "משימות" );
 
-		$ref = Core_Html::GuiHyperlink( $this->id, "../tasklist/c-get-tasklist.php?id=" . $this->id );
+		$ref = Core_Html::GuiHyperlink( $this->id, self::get_url());
 
 		array_push( $fields, $ref );
 
@@ -584,6 +603,11 @@ class Focus_Tasklist {
 		return $line;
 	}
 
+	function get_url()
+	{
+		return "/task?id=" . $this->getId();
+	}
+
 }
 
 class enumTasklist {
@@ -596,3 +620,5 @@ class enumTasklist {
 		failed = 5,
 		done_creator = 6;
 }
+
+$Tasklist_Status_Names = array("waiting", "started", "done", "canceled", "bad_url", "failed", "done_creator");

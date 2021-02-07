@@ -482,7 +482,8 @@ class Core_Gem {
 		} else {
 			$result .=  $no_data_message . Core_Html::Br();
 		}
-		if ($edit and ($page == 1 or $page == -1) and GetArg($args, "add_button", true))
+		// Add is not limited to edit!
+		if (($page == 1 or $page == -1) and GetArg($args, "add_button", true))
 			$result .= Core_Html::GuiHyperlink("[" . __("Add") . "]", AddToUrl("operation" , "gem_add_" . $table_id)) . " ";
 //			$result .= self::Entry($table_id);
 

@@ -530,7 +530,7 @@ class Finance {
 
 		$this->shortcodes->do_init();
 
-		$this->invoices->init( Flavor::getPost() );
+		$this->invoices->init( $this->loader);
 
 //		InfoUpdate("finance_bank_enabled", 1);
 		if (InfoGet("finance_bank_enabled")) {

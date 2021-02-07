@@ -93,3 +93,5 @@ classes Org_Company, Org_Team, Org_Worker, Org_Project in org folder.
 
 admin_page - what shop manages users. Fresh: shop_manager. Focus: Company admin.
 shortcodes - what use sees. Fresh: clients. Focus: workers and managers.
+
+22309501

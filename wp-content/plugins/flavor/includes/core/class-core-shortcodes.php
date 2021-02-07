@@ -136,7 +136,7 @@ class Core_Shortcodes {
 	public static function missing_capability($a, $b, $cap)
 	{
 		$id = get_user_id();
-		if (! $id) return ETranslate("This content is for registered users. Login") . " " . Core_Html::GuiHyperlink("here", wp_login_url()) .".";
+		if (! $id) return ETranslate("This content is for registered users. Login") . " " . Core_Html::GuiHyperlink("here", wp_login_url(get_permalink())) .".";
 		return
 			greeting() . "<br/>" .
 			ETranslate("Not authorized to see this content. Login") . " " . Core_Html::GuiHyperlink("here", wp_login_url()) .".";

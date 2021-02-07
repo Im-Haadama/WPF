@@ -72,17 +72,16 @@ class Org_Worker extends Core_users
 		$companies = self::GetAllCompanies(true);
 		if ($companies) {
 			$this->workers = array();
-			$result = $this->workers;
 			foreach ($companies as $company_id){
 				$company = new Org_Company($company_id);
 				$workers_company = $company->getWorkers();
                 foreach ($workers_company as $worker) {
-                    if(!in_array($worker,$result)) // check if a user is already exist in another team
-                        $this->workers = array_push($result, $worker);
+                    if(!in_array($worker, $this->workers)) // check if a user is already exist in another team
+                        array_push($this->workers, $worker);
                 }
 			}
 
-			return $result;
+			return $this->workers;
 		}
 
 		return null;

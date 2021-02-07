@@ -225,6 +225,8 @@ class FVideo {
 		do_action( 'before_fVideo_init' );
 
 		$this->shortcodes = Core_Shortcodes::instance();
+		$this->shortcodes->add($this->getShortcodes());
+
 
 		// Set up localisation.
 		$this->load_plugin_textdomain();
@@ -234,6 +236,36 @@ class FVideo {
 		self::addRoles();
 	}
 
+	function getShortcodes() {
+		//           code                   function                              capablity (not checked, for now).
+		return array( 'fvideo_player'      => array( 'FVideo::player',    null ));          // Payments data entry
+	}
+
+	static function player($atts)
+	{
+		$video_id = GetParam("video_id");
+		$v = FVideo_Video($video_id);
+		$torrent_url = $v->get_video();
+		?>
+<script>
+    var client = new WebTorrent();
+
+    var torrentId = '<?php print $torrent_url; ?>';
+    client.add(torrentId, function (torrent) {
+        // Torrents can contain many files. Let's use the .mp4 file
+        var file = torrent.files.find(function (file) {
+            return file.name.endsWith('.mp4')
+        })
+
+        // Display the file by adding it to the DOM.
+        // Supports video, audio, image files, and more!
+        file.appendTo('body')
+    });
+    var client = new WebTorrent();
+</script>
+<?php
+
+}
 	function addRoles()
 	{
 	}
@@ -455,7 +487,7 @@ class FVideo {
 		$post_id = $post->ID;
 		wp_nonce_field( plugin_basename( __FILE__ ), 'fvideo_box_content_nonce' );
 		echo '<label for="video_link"></label>';
-		$video_link = 'enter a video link';
+		$video_link = 'Enter url to video torrent';
 		if ($post_id) $value = get_post_meta($post_id, 'video_link', 1);
 		echo '<input type="text" id="video_link" name="video_link"';
 		if ($value)  echo "value=\"$value\"";

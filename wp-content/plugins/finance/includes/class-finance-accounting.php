@@ -310,7 +310,7 @@ class Finance_Accounting {
 	static function SupplierTransactions($include_zero = false)
 	{
 		$supplier_id = GetParam( "supplier_id", false, null );
-		if ( $supplier_id ) return self::get_supplier_transactions($supplier_id);
+		if ( $supplier_id ) return Fresh_Supplier_Balance::get_supplier_transactions($supplier_id);
 
 		$result = "<table>";
 

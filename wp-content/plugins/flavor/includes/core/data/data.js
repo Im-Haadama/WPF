@@ -55,7 +55,7 @@ function data_save_new(post_operation, table_name, page)
     operation += '&table_name=' + table_name;
     let form_params = get_form_params(table_id, true);
     if (! form_params) {
-        alert("form not found");
+        alert("form " + table_id + " not found");
         return;
     }
     operation += form_params;

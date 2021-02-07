@@ -193,6 +193,10 @@ AND (meta_value = "legacy" or meta_value = 1)';
 
 	function delivery_notes() {
 		$result = "";
+		if ($operation = GetParam("operation", null)) {
+			Core_Hook_Handler::instance()->DoAction($operation, null);
+			return;
+		}
 		$data = self::business_open_ship( $this->legacy_user );
 
 // print $data . " " . strlen($data);
@@ -267,10 +271,12 @@ AND (meta_value = "legacy" or meta_value = 1)';
 		       " from im_business_info " .
 		       " where part_id = " . $part_id .
 		       " and invoice is null " .
+		       " and is_active = 1 " .
 		       " and document_type = " . Finance_DocumentType::ship;
 
 
-		$args = array("add_checkbox" => 1, "checkbox_class" => "delivery_note", "page_number"=>-1);
+		$args = array("add_checkbox" => 1, "checkbox_class" => "delivery_note", "page_number"=>-1,
+			"links" => array("id"=>AddToUrl(array("operation" => "invoice_show", "id"=>"%d"))));
 
 
 		$data = Core_Html::GuiTableContent( "table", $sql, $args );

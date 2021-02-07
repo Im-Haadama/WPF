@@ -16,11 +16,11 @@ class Finance_Invoices {
 		return self::$_instance;
 	}
 
-	function init( $post ) {
-		self::$_post = $post;
-		AddAction( "invoice_add", __CLASS__ . "::invoice_add" );
-		AddAction( "invoice_show", __CLASS__ . "::invoice_show" );
-		AddAction( "invoice_supplier", array($this, "supplier"));
+	function init( Core_Hook_Handler $loader) {
+		self::$_post = Flavor::getPost();
+		$loader->AddAction( "invoice_add", $this, "invoice_add" );
+		$loader->AddAction( "invoice_show", $this, "invoice_show" );
+		$loader->AddAction( "invoice_supplier", $this, "supplier");
 	}
 
 	/**
@@ -212,7 +212,7 @@ class Finance_Invoices {
 		// $result .=  Core_Html::GuiButton("btn_save", 'data_save_entity(\'im_business_info\', ' . $row_id .')', "שמור");
 		$result .=  Core_Gem::GemElement("business_info", $id, $args);
 
-		return $result;
+		print $result;
 	}
 
 }
