@@ -166,11 +166,9 @@ and curdate() > order_mission_date(id)" );
 
 		foreach ( $ids as $id ) {
 			$order = new Finance_Order( $id );
-			if (! $order->justDelivery()) {
-				if ($debug) MyLog("adding $id");
-				$order->delivered( $message );
-				$result .= "Order $id $message\n";
-			}
+			FinanceLog("adding $id");
+			$order->delivered( $message );
+			$result .= "Order $id $message\n";
 		}
 
 		if ( strlen( $result ) > 39) {

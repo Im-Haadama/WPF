@@ -1,0 +1,49 @@
+<html>
+<head>
+    <style>
+        body {
+            width: 8.5in;
+            margin: 0.7in .1875in;
+        }
+        .label{
+            /* Avery 5160 labels -- CSS and HTML by MM at Boulder Information Services */
+            width: 2in;
+            height: 2.1in; /* plus .125 inches from padding */
+            padding: .125in .3in 0;
+            margin-right: .125in; /* the gutter */
+
+            float: left;
+
+            text-align: center;
+            overflow: hidden;
+
+            outline: 1px dotted; /* outline doesn't occupy space like border does */
+        }
+        .page-break  {
+            clear: left;
+            display:block;
+            page-break-after:always;
+        }
+    </style>
+</head>
+<div class="label" >AA1</div>
+<div class="label" >BB1</div>
+<div class="label" >CC1</div>
+
+<div class="label" >AA2</div>
+<div class="label" >BB2</div>
+<div class="label" >CC2</div>
+
+<div class="label" >AA3</div>
+<div class="label" >BB3</div>
+<div class="label" >CC3</div>
+
+<div class="label" >AA4</div>
+<div class="label" >BB4</div>
+<div class="label" >CC4</div>
+
+<div class="label" >AA5</div>
+<div class="label" >BB5</div>
+<div class="label" >CC5</div>
+
+</html>

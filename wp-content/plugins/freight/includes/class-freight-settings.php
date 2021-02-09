@@ -132,6 +132,11 @@
 				$url . "mission_types",
 				$tab == "mission_types" ? Freight_Methods::mission_types($args, $operation) : ""
 			);
+//			$tabs["debug"] = array(
+//				"Debug",
+//				$url."debug",
+//				$tab == "debug" ? self::debug() : ""
+//			);
 
 			$cities_tab = apply_filters("wpf_freight_cities", "");
 			if ($cities_tab)
@@ -165,4 +170,19 @@
 
 		 return $result;
 		}
+
+		static function debug()
+		{
+			$post = 18255;
+
+			$meta = SqlQueryArray("select meta_key, meta_value from wp_postmeta where post_id = $post");
+			foreach ($meta as $item){
+				$array =  @unserialize($item[1]);
+				if ($array) {
+					print $item[0] . ":<br/>";
+					print_r(unserialize($item[1]));
+				}
+			}
+		}
 	}
+

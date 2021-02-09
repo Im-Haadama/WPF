@@ -591,12 +591,11 @@ class Finance_Order {
 	}
 
 	function delivered(&$message) {
+		FinanceLog(__FUNCTION__ . $message . $this->order_id);
 		$message = "";
 		$new_status = "wc-completed";
 
-		$c = SqlQuerySingleScalar( "SELECT count(*) FROM wp_posts " .
-		                           " WHERE id = " . $this->order_id .
-		                           " AND post_excerpt LIKE '%משלוח המכולת%'" );
+		$c = $this->getField("legacy");
 
 		if ( $c ) { // legacy
 			$new_status = "wc-awaiting-document";
@@ -622,7 +621,7 @@ class Finance_Order {
 	}
 
 	function setStatus( $status, $ids = null ) {
-		MyLog(__FUNCTION__ . " $status");
+		FinanceLog(__FUNCTION__ . " $status");
 		if ( $ids and is_array( $ids ) ) {
 			$args = $ids;
 		} else {
@@ -630,7 +629,7 @@ class Finance_Order {
 		}
 		foreach ( $args as $id ) {
 			$order = new WC_Order( $id );
-			MyLog( __METHOD__, $id . " changed to " . $status );
+			FinanceLog( __METHOD__, $id . " changed to " . $status );
 			// var_dump($order);
 			switch ( $status ) {
 				case 'wc-completed':
@@ -1041,8 +1040,7 @@ class Finance_Order {
 		$ref           = $this->getLink($this->order_id);
 		$address       = self::getAddress();
 		$city = self::getCity();
-		$receiver_name = GetMetaField( $this->order_id, '_shipping_first_name' ) . " " .
-		                 GetMetaField( $this->order_id, '_shipping_last_name' );
+		$receiver_name = $this->receiver();
 		$shipping2     = GetMetaField( $this->order_id, '_shipping_address_2' );
 		$biiling_phone = GetMetaField($this->order_id, '_billing_phone');
 
@@ -1090,6 +1088,11 @@ class Finance_Order {
 		return $row_text;
 	}
 
+	function reciever()
+	{
+		return GetMetaField( $this->order_id, '_shipping_first_name' ) . " " .
+		       GetMetaField( $this->order_id, '_shipping_last_name' );
+	}
 	function OrdersTable($args)
 	{
 		$result = "";
@@ -1534,5 +1537,22 @@ class Finance_Order {
 	public function update_status($status, $note = '')
 	{
 		return $this->WC_Order->update_status($status, $note);
+	}
+
+	public function box_number()
+	{
+		$n = 1;
+		$list = array('ק"ג', "ק''ג", "משקל");
+		foreach ($this->getItems() as $item)
+		{
+			$prod_id = $item->get_product_id();
+			$p = new Fresh_Product($prod_id);
+			if ($p->is_basket()) $n++;
+			else
+				foreach ($list as $word)
+					if (strstr($p->getName(),$word)) $n += ($item->get_quantity() / 8);
+//			print $p->getName( ) . " " . $item->get_quantity() . " $n <br/>";
+		}
+		return ceil($n);
 	}
 }

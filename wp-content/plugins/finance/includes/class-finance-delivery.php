@@ -728,19 +728,19 @@ class Finance_Delivery
 
 	public function order_complete($force = false)
 	{
+		FreightLog(__FUNCTION__ . $this->getId());
 		$order_id = $this->order_id;
 		$O = new Finance_Delivery($order_id);
 
+		$order = $O->getOrder();
+		if ($order->getField("legacy")) return true;
+
 		if (! $O->delivery_id) {
-			$fee = $O->getOrder()->getShippingFee();
+			$fee = $order->getShippingFee();
 			// Check if there is delivery fee.
 			if (! $fee) {
 				MyLog("No delivery fee for order $order_id");
 				Flavor::instance()->add_admin_notice("No delivery fee for order $order_id");
-			}
-			if ($fee and ($fee == $O->getDeliveryTotal())) { // Todo: No delivery at this stage.
-				// order that is just delivery. Handled separately.
-				return true;
 			}
 			$del_id = $O->CreateDeliveryFromOrder($order_id, 1);
 			Flavor::instance()->add_admin_notice("Delivery $del_id created");

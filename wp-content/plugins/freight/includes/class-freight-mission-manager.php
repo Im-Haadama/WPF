@@ -961,19 +961,13 @@ group by pm.meta_value, p.post_status");
 	}
 
 	static function print_deliveries( $mission_id, $selectable = false, $debug = false ) {
+		$m = new Mission($mission_id);
+		$orders = $m->getOrders();
 		$data = "";
-		$sql  = 'SELECT posts.id, order_user(posts.id) '
-		        . ' FROM `wp_posts` posts'
-		        . ' WHERE ' .
-		        " `post_status` in ('wc-awaiting-shipment', 'wc-processing') and " .
-		        " id in (select post_id from wp_postmeta " .
-		        " WHERE meta_key = 'mission_id' " .
-		        " AND meta_value = " . $mission_id . ") ";
-		$sql .= ' order by 1';
-		$orders    = SqlQuery( $sql );
 
 		$prev_user = - 1;
-		while ( $order = SqlFetchRow( $orders ) ) {
+		foreach ($orders as $order) {
+//		while ( $order = SqlFetchRow( $orders ) ) {
 			$order_id   = $order[0];
 //			print "order: $order_id<br/>";
 			if ($debug) MyLog(__FUNCTION__ . ': $order_id');

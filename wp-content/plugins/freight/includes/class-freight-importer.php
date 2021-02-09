@@ -127,16 +127,22 @@ class Freight_Importer {
 	{
 		$valid = 0;
 		$bad_address = 0;
+		$duplicate = 0;
 
 		foreach ($deliveries_info as $delivery_info)
 		{
+			$external_id = $delivery_info['order_id'];
+			if ($external_id and SqlQuerySingleScalar("select count (*) from wp_postmeta where meta_key='external_order_id' and meta_value=$external_id")) {
+				$duplicate++;
+				continue;
+			}
 			$O = Finance_Order::CreateOrder(1, $mission_id,  null, $the_shipping, '', 10, $delivery_info);
 			if (isset($delivery_info['order_id']))
 				$O->setField('external_order_id', $delivery_info['order_id']);
 			$street = $delivery_info['shipping_address_1'];
 			$city = $delivery_info['shipping_city'];
 //			print "<br/>Created order  " . $O->GetID() . " client $client_name $order_id";
-			$long_lat = Freight_Mission_Manager::get_lat_long($street . " " . $city);
+//			$long_lat = Freight_Mission_Manager::get_lat_long($street . " " . $city);
 			if ((strlen($street) > 1) and (strlen($city) > 1)){ // and (floor($long_lat[0])== 32) and (floor($long_lat[1]) == 34)) {
 				$O->update_status( "wc-processing" );
 				$valid ++;
@@ -147,6 +153,7 @@ class Freight_Importer {
 		print "Summary:<br/>";
 		print $valid . " new orders in processing<br/>";
 		if ($bad_address) print $bad_address . " orders to fix address (remain waiting for payment<Br/>";
+		if ($duplicate) print $duplicate . " duplicate<br/>";
 		Freight_Mission_Manager::clean($mission_id);
 	}
 

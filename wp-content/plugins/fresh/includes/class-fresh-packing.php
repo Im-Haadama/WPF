@@ -83,6 +83,10 @@ class Fresh_Packing {
 
 				$row[] = Core_Html::GuiInput( "qua_" . $prod_id, $numeric_quantity,
 					"onchange=\"line_selected('" . $prod_id . "')\"" );
+			} else {
+				$row[] = Core_Html::GuiInput( "qua_" . $prod_id, $quantity,
+					"onchange=\"line_selected('" . $prod_id . "')\"" );
+
 			}
 
 			$row [] = self::orders_per_item( $prod_id, 1, true, true, true );
@@ -231,7 +235,7 @@ class Fresh_Packing {
 					if (! strlen ($tab_content)) continue;
 
 					if ( $supply_id = Fresh_Suppliers::TodaySupply( $supplier->getId() ) ) {
-						$tab_content .= Core_Html::GuiHyperlink( "Supply " . $supply_id, "/fresh/supplies/supplies-page.php?operation=show&id=" . $supply_id ) . "<br/>";
+						$tab_content .= Core_Html::GuiHyperlink( "Supply " . $supply_id, Fresh_Supply::getLink($supply_id ) ). "<br/>";
 					}
 
 					$tab_content .= Core_Html::GuiButton( "btn_create_supply_" . $supplier->getId(), "Create a supply", array( "action" => "needed_create_supplies('" . Fresh::getPost() . "', " .$supplier->getId() . ")" ) );
@@ -261,6 +265,10 @@ class Fresh_Packing {
 	function init_hooks($loader) {
 		add_filter( 'manage_edit-shop_order_columns', array(__CLASS__, 'wc_new_order_column' ));
 		add_action( 'manage_shop_order_posts_custom_column', array(__CLASS__, 'add_freight' ));
+
+		$loader->AddAction("mission_labels", $this);
+		$loader->AddFilter("mission_actions", $this);
+
 		$loader->AddAction('inventory_save', $this);
 	}
 
@@ -633,6 +641,20 @@ class Fresh_Packing {
 		}
 		return $Table->GetTable();
 	}
+
+	function mission_actions($actions)
+	{
+		$actions['labels'] = Core_Html::GuiHyperlink("labels", Flavor::getPost() . '?operation=mission_labels&id=%d');
+
+		return $actions;
+	}
+
+	function mission_labels()
+	{
+		$mission_id = GetParam("id");
+		require FRESH_INCLUDES . "label.php";
+	}
+
 }
 /*
  *

@@ -86,6 +86,7 @@ class Freight_Actions {
 
 		$o = Finance_Order::CreateOrder( $client, $mission_id, null, $the_shipping,
 			" משלוח המכולת " . date( 'Y-m-d' ) . " " . $customer->getName(), Israel_Shop::addVat($fee));
+		$o->setField("legacy", 1);
 
 		if (! $o)
 			return false;
