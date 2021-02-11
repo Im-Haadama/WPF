@@ -22,6 +22,13 @@ class FVideo_Video {
 
 	public function get_video()
 	{
-		return get_post_meta($this->id, 'video_link', 1);
+		$a= get_post_meta($this->id, 'torrent', 1);
+		// var_dump($a);
+		return $a['url'];
+	}
+
+	public function get_title()
+	{
+		return get_post_meta($this->id, 'שם התוכנית / שם הפרק', 1);
 	}
 }

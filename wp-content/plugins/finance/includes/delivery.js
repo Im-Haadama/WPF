@@ -79,7 +79,7 @@ function delivery_delete(post_file)
 }
 
 function delivery_save_or_edit(post_file, operation) {
-    // document.getElementById('btn_add').disabled = true;
+    document.getElementById('btn_add').disabled = true;
 
     var table = document.getElementById('del_table');
     var total = get_value_by_name("total");

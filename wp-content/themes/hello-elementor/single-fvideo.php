@@ -19,6 +19,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
+	ini_set('display_errors', 1);
+	ini_set('display_startup_errors', 1);
+	error_reporting(E_ALL);
+
 get_header();
 //FinanceLog(__FILE__);
 # get_header( 'shop' );
@@ -36,7 +40,8 @@ $post = get_post();
 $v = new FVideo_Video($post->ID);
 $torrent_url = $v->get_video();
 //print $torrent_key;
-while ( have_posts() )the_post();
+while ( have_posts() ) the_post();
+print "כותרת: " . $v->get_title() ."<br/>";
 ?>
 
 <script>

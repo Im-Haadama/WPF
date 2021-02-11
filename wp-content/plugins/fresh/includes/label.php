@@ -40,22 +40,27 @@ $body_m="1.4cm 0.8cm";?>
 $m = new Mission($mission_id);
 $orders = $m->getOrders();
 the_custom_logo();
+$box_count = 0;
 
 foreach ($orders as $order) {
     $order_id = $order[0];
     $O = new Finance_Order($order_id);
 //    print $order_id . " " . $O->box_number() . "<br/>";
 //    $client_id = $order[1]; $C = new Fresh_Client($client_id);
-    for ($i = 1; $i <= $O->box_number(); $i++) {?>
-        <div class="label">
-        <table width="100%">
+    for ($i = 1; $i <= $O->box_number(); $i++) {
+        $box_count++;
+        ?>
+        <div class="label"><table width="100%">
             <tr><td> <?php print $logo_i; ?>
                     </td><td><h1> <?php print $i; ?> </h1></td></tr></table>
-               <h3 style="line-height: 0.7"> <?php print $O->reciever(); ?> </h3>
+               <h3 style="line-height: 0.7"> <?php print $O->receiver(); ?> </h3>
             <?php print $O->getOrderInfo( '_billing_phone' ) ?> <br/>
               <h2> <?php print $O->getAddress() . " " . $O->getCity(); ?> </h2>
         </div>
 <?php
+	    if ( ( $box_count % 15 ) == 0 )
+		    print '<p style="page-break-after: always;">&nbsp;</p>';
+
 }
 }
 ?>

@@ -433,6 +433,7 @@ group by pm.meta_value, p.post_status");
 		$mission_id = $this->mission_id;
 		// Read from all sites.
 		$data_url = Flavor::getPost() . "?operation=get_local_anonymous&mission_ids=$mission_id";
+
 		$output   = self::$multi_site->GetAll( $data_url, false, $debug );
 
 		// Parse the output
@@ -475,6 +476,7 @@ group by pm.meta_value, p.post_status");
 
 	// Calculates points_pe
 	function collect_points($data_lines, $mission_id) {
+		$debug = false;
 		FreightLog(__FUNCTION__);
 		$multisite         = Core_Db_MultiSite::getInstance();
 		$this->stop_points = array();
@@ -488,7 +490,9 @@ group by pm.meta_value, p.post_status");
 //		}
 		for ( $i = 1; $i < count( $data_lines ); $i ++ ) {
 			$order_info = $data_lines[ $i ];
+
 			$stop_point = str_replace( '-', ' ', $order_info[ OrderTableFields::address_1 ] . " " . $order_info[ OrderTableFields::city ] );
+			if ($debug) print $stop_point ."<br/>";
 			$order_id   = $order_info[ OrderTableFields::order_number ];
 			$order_site = $order_info[ OrderTableFields::site_name ];
 			$site_id    = $order_info[ OrderTableFields::site_id ];

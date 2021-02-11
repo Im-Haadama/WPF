@@ -89,7 +89,7 @@ class Fresh_Packing {
 
 			}
 
-			$row [] = self::orders_per_item( $prod_id, 1, true, true, true );
+			$row [] = self::orders_per_item( $prod_id, 1, true, ! $p->is_basket(), true );
 
 			if ($debug) var_dump($row);
 
@@ -263,9 +263,6 @@ class Fresh_Packing {
 	}
 
 	function init_hooks($loader) {
-		add_filter( 'manage_edit-shop_order_columns', array(__CLASS__, 'wc_new_order_column' ));
-		add_action( 'manage_shop_order_posts_custom_column', array(__CLASS__, 'add_freight' ));
-
 		$loader->AddAction("mission_labels", $this);
 		$loader->AddFilter("mission_actions", $this);
 
@@ -280,32 +277,6 @@ class Fresh_Packing {
 
 		$p = new Fresh_Product($prod_id);
 		return $p->setStock($q);
-	}
-
-	static function add_freight($col)
-	{
-		global $post;
-		$O = new Fresh_Order($post->ID);
-		switch ($col) {
-			case "freight":
-			    print Flavor_Mission::gui_select_mission("mis_" . $post->ID, $O->getMission(),
-				    array("events" => 'onclick="event.stopPropagation();order_mission_changed(\'' . Fresh::getPost() . "', " . $post->ID .')"'));
-			    break;
-			case 'city':
-				print $O->getOrderInfo( '_shipping_city' );
-				break;
-			case 'fee':
-				print $O->getShippingFee();
-				break;
-		}
-	}
-
-	static function wc_new_order_column( $columns ) {
-		$columns['city'] = __("City");
-		$columns['fee'] = __("fee");
-		$columns['freight'] = __("Freight");
-
-		return $columns;
 	}
 
 	static function orders_per_item( $prod_id, $multiply, $short = false, $include_basket = false, $include_bundle = false, $just_total = false, $month = null )

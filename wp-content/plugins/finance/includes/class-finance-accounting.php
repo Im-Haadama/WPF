@@ -271,7 +271,7 @@ class Finance_Accounting {
 				break;
 
 			case "supplier_transactions":
-				$tab_content = self::SupplierTransactions();
+				$tab_content = self::SupplierTransactions(GetParam("include_zero", false, false));
 				$tabs[1][2] = $tab_content;
 //				if ($ms->getLocalSiteID() != 2) { // Makolet
 //					ardray_push( $tabs, array( "", "",  ) );
@@ -284,7 +284,7 @@ class Finance_Accounting {
 				break;
 
 			case "supplier_invoices":
-				$tabs[2][2] = Finance_Invoices::Table( AddToUrl( "selected_tab", "supplier_invoices" ));
+				$tabs[2][2] = Finance_Invoices::Table( GetUrl());
 				break;
 
 			case "subcontract": // Added by different class. Todo: add a filter(?)
@@ -359,6 +359,8 @@ class Finance_Accounting {
 		$result .= "<center><h1>יתרות לתשלום</h1></center>";
 
 		$result .= "</table>";
+
+		$result .= Core_html::GuiHyperlink("הצג גם מאופסים", AddToUrl("include_zero", true));
 
 		return $result;
 	}

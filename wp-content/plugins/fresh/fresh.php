@@ -86,3 +86,10 @@ run_fresh();
 //
 //	return $sizes;
 //}
+
+//if (get_user_id() == 1) add_filter('pre_get_posts', 'query_test');
+
+function query_test($query)
+{
+		var_dump($query);
+}

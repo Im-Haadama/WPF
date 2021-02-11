@@ -24,6 +24,9 @@ class Finance_Order_Management {
 		$loader->AddAction( 'woocommerce_proceed_to_checkout', $this, 'disable_checkout_button_no_shipping', 1 );
 		$loader->AddFilter( 'woocommerce_cart_no_shipping_available_html', $this, 'no_shipping_message' );
 		$loader->AddFilter( 'woocommerce_no_shipping_available_html', $this, 'no_shipping_message' );
+		add_filter( 'manage_edit-shop_order_columns', array(__CLASS__, 'wc_new_order_column' ));
+		add_action( 'manage_shop_order_posts_custom_column', array(__CLASS__, 'add_freight' ));
+
 //		FinanceLog("before_delete_post added");
 	}
 
@@ -233,5 +236,32 @@ class Finance_Order_Management {
 	function no_shipping_message( $message ) {
 		return __( 'Check with us availability of deliveries to your area.' );
 	}
+
+	static function wc_new_order_column( $columns ) {
+		$columns['city'] = __("City");
+		$columns['fee'] = __("fee");
+		$columns['freight'] = __("Freight");
+
+		return $columns;
+	}
+
+	static function add_freight($col)
+	{
+		global $post;
+		$O = new Fresh_Order($post->ID);
+		switch ($col) {
+			case "freight":
+				print Flavor_Mission::gui_select_mission("mis_" . $post->ID, $O->getMission(),
+					array("events" => 'onclick="event.stopPropagation();order_mission_changed(\'' . Fresh::getPost() . "', " . $post->ID .')"'));
+				break;
+			case 'city':
+				print $O->getOrderInfo( '_shipping_city' );
+				break;
+			case 'fee':
+				print $O->getShippingFee();
+				break;
+		}
+	}
+
 
 }

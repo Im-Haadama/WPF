@@ -488,7 +488,9 @@ class Finance_Order {
 		if ( $p->is_basket( $prod_or_var ) ) {
 			// Add basket content.
 			foreach (Fresh_Basket::get_basket_content_array( $prod_or_var,  $item_id ) as $basket_prod => $basket_q) {
-				Finance_Order::AddProducts( array( $basket_prod, '' ), $qty * $basket_q, $needed_products );
+				$bp = new Fresh_Product($basket_prod);
+				if (! $bp->is_basket())
+					Finance_Order::AddProducts( array( $basket_prod, '' ), $qty * $basket_q, $needed_products );
 			}
 			// Add also the basket
 			if ( ! isset( $needed_products[ $prod_or_var ][ 0 ] ) ) $needed_products[ $prod_or_var ][ 0 ] = 0;
@@ -597,7 +599,7 @@ class Finance_Order {
 
 		$c = $this->getField("legacy");
 
-		if ( $c ) { // legacy
+		if ( $c or $this->justDelivery()) { // legacy
 			$new_status = "wc-awaiting-document";
 		} else {
 			$d = new Finance_Delivery($this->order_id );
@@ -1087,12 +1089,12 @@ class Finance_Order {
 
 		return $row_text;
 	}
-
-	function reciever()
+	function receiver() : string
 	{
 		return GetMetaField( $this->order_id, '_shipping_first_name' ) . " " .
 		       GetMetaField( $this->order_id, '_shipping_last_name' );
 	}
+
 	function OrdersTable($args)
 	{
 		$result = "";

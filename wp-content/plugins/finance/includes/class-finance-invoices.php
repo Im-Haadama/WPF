@@ -20,7 +20,7 @@ class Finance_Invoices {
 		self::$_post = Flavor::getPost();
 		$loader->AddAction( "invoice_add", $this, "invoice_add" );
 		$loader->AddAction( "invoice_show", $this, "invoice_show" );
-		$loader->AddAction( "invoice_supplier", $this, "supplier");
+		$loader->AddAction( "invoice_supplier", $this);
 	}
 
 	/**
@@ -157,7 +157,7 @@ class Finance_Invoices {
 		) );
 	}
 
-	static function supplier() {
+	static function invoice_supplier() {
 		$result  = "";
 		$part_id = GetParam( "part_id" );
 		$year    = GetParam( "the_year", false, date("Y") );
@@ -179,7 +179,7 @@ class Finance_Invoices {
 
 		$args ["sql"] = $sql;
 		$args["page"] = GetParam( "page" );
-		$result       .= Core_Gem::GemTable( "transactions", $args );
+		$result       .= Core_Gem::GemTable( "business_info", $args );
 
 		$date = date( 'Y-m-d', strtotime( "last day of previous month" ) );
 
