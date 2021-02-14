@@ -46,7 +46,8 @@ class Focus_Tasklist {
 		$this->priority         = $row[5];
 		$this->project          = $row[6];
 		$this->team             = $row[7];
-		$this->creator = $row[8];
+		$this->creator          = $row[8];
+		$this->last_check       = $row[9];
 
 		if ( $row[4] ) {
 			$row = SqlQuerySingle( "SELECT repeat_freq, repeat_freq_numbers, timezone " .
@@ -367,116 +368,6 @@ class Focus_Tasklist {
 		}
 	}
 
-	static function create_if_needed($id, $row, &$output, $default_owner, &$verbose_line)
-	{
-		$db_prefix = GetTablePrefix();
-		$verbose_line = array();
-		$last_run = SqlQuerySingleScalar( "select max(date) from ${db_prefix}tasklist where task_template = " . $id);
-		if ($last_run=='Error') die('Can\'t work');
-		$project_id = $row["project_id"];
-		if ( ! $project_id ) {
-			$project_id = 0;
-		}
-
-		array_push( $verbose_line, $id );
-		array_push( $verbose_line, Focus_Tasklist::check_frequency( $row["repeat_freq"], $row["repeat_freq_numbers"], $last_run ) );
-		array_push( $verbose_line, Focus_Tasklist::check_query( $row["condition_query"] ) );
-		array_push( $verbose_line, Focus_Tasklist::check_active( $id, $row["repeat_freq"] ) );
-		$test_result = "";
-		for ( $i = 1; $i < 4; $i ++ )
-			$test_result .= substr( $verbose_line[ $i ], 0, 1);
-
-		$output .= "template " . $id . " result: $test_result" . Core_Html::Br();
-
-		SqlQuery( "update {$db_prefix}task_templates set last_check = now() where id = " . $id);
-
-		array_push( $verbose_line, $test_result );
-		if ( strpos(  $test_result, "0" ) !== false) {
-			array_push( $verbose_line, "skipped" );
-			// array_push( $verbose_table, $verbose_line);
-			$output .= CommaImplode($verbose_line) . "Template " . $id . Core_Html::Br();
-			return;
-		}
-
-		$team = SqlQuerySingleScalar( "SELECT team FROM {$db_prefix}task_templates WHERE id = " . $id );
-
-		$creator = SqlQuerySingleScalar( "SELECT creator FROM {$db_prefix}task_templates WHERE id = " . $id );
-		if (! $creator)
-			$creator = $default_owner;
-
-		$priority = SqlQuerySingleScalar( "SELECT priority FROM {$db_prefix}task_templates WHERE id = " . $id );
-		if ( ! $priority ) $priority = SqlQuerySingleScalar( "SELECT project_priority FROM ${db_prefix}projects WHERE id = " . $project_id );
-		if ( ! $priority ) $priority = 0;
-		array_push( $verbose_line, $priority);
-
-		$sql = "INSERT INTO ${db_prefix}tasklist " .
-		       "(task_description, task_template, status, date, project_id, priority, team, creator) VALUES ( " .
-		       "'" . $row["task_description"] . "', " . $id . ", " . enumTasklist::waiting . ", now(), " . $project_id . ",  " .
-		       $priority . "," . $team . "," . $creator . ")";
-
-		SqlQuery( $sql );
-
-		array_push( $verbose_line, SqlInsertId() );
-
-		$output .= "Template " . $id . " " . CommaImplode($verbose_line) . Core_Html::Br();
-	}
-
-	static function check_frequency( $repeat_freq, $repeat_freq_numbers, $last_run )
-	{
-		$result = "";
-		// print "rf=$repeat_freq. rfn=$repeat_freq_numbers<br/>";
-		if ( strlen( $repeat_freq ) == 0 ) return "1 empty freq passed";
-
-		if (substr($repeat_freq, 0, 1) == 'c') return "1 c passed";
-
-		// Check from day after last run till today
-		$check_date = ($last_run ? strtotime($last_run . ' +1 day') : strtotime('now'));
-		$now = strtotime(date('y-m-d'));
-
-		$result .= "Now= " . date('y-m-d') . " Checking from " . date('y-m-d', $check_date) . "<br/>";
-
-		while ($check_date <= ($now + 23*60*60)){
-			$repeat_freq = explode( " ", $repeat_freq )[0]; // Change from "w - weekly" to "w"
-			if ( in_array( date( $repeat_freq, $check_date ), explode( ",", $repeat_freq_numbers ) ) ) {
-				return "1 " . $result;
-			}
-
-			$check_date += 86400;
-		}
-		return "0 " . $result;
-	}
-
-	static function check_query( $query ) {
-		require_once( ABSPATH . 'vendor/simple_html_dom.php' );
-
-		if ( strlen( $query ) == 0 ) {
-			return "1 empty query passed<br/>";
-		}
-		if ( ! ( strlen( $query ) > 5 ) ) {
-			return "0 short or bad query. " . $query . " failed";
-		}
-
-		return strip_tags( \Dom\file_get_html( $query ));
-	}
-
-	static function check_active( $id, $repeat_freq ) {
-		$db_prefix = GetTablePrefix();
-
-		// status < 2 - active.
-		// Date(date) = curdate() - due today. (or should it be finish date?)
-
-		$running_id = SqlQuerySingleScalar( "select id from ${db_prefix}tasklist where task_template = " . $id .
-		                                    " and (status < 2 or date(ended) = curdate()) limit 1");
-
-		if ($running_id  == 'Error')
-			die ("Can't work");
-		if ( $running_id ) {
-			return "0 " . $running_id;
-		}
-
-		return "1 not active";
-	}
-
 // Select relative optional preq for given task:
 // 1) not finished.
 // 2) in the same project.
@@ -608,17 +499,6 @@ class Focus_Tasklist {
 		return "/task?id=" . $this->getId();
 	}
 
-}
-
-class enumTasklist {
-	const
-		waiting = 0,
-		started = 1,
-		done = 2,
-		canceled = 3,
-		bad_url = 4,
-		failed = 5,
-		done_creator = 6;
 }
 
 $Tasklist_Status_Names = array("waiting", "started", "done", "canceled", "bad_url", "failed", "done_creator");

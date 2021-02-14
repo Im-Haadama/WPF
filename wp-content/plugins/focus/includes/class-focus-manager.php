@@ -4,23 +4,23 @@ include_once FLAVOR_INCLUDES_ABSPATH . 'core/core-functions.php';
 
 class Focus_Manager {
 	protected static $_instance = null;
-	protected static $logger = null;
-	protected static $post_file;
+	protected $logger = null;
+	protected $post_file;
 
 	/**
 	 * Focus_Manager constructor.
 	 *
 	 * @param $post_file
 	 */
-	public function __construct($post_file) {
-		self::$post_file = $post_file;
-		self::$logger = new Core_Logger(__CLASS__, "file", "focus.log");
+	private function __construct($post_file) {
+		$this->$post_file = $post_file;
+		$this->logger = new Core_Logger(__CLASS__, "file", "focus.log");
 		self::$_instance  = $this;
 	}
 
 	public static function instance() {
 		if ( is_null( self::$_instance ) ) {
-			self::$_instance = new Focus_Manager();
+			self::$_instance = new Focus_Manager(Flavor::getPost());
 		}
 		return self::$_instance;
 	}
@@ -29,7 +29,7 @@ class Focus_Manager {
 	 * @return Core_Logger|null
 	 */
 	public static function getLogger(): ?Core_Logger {
-		return self::$logger;
+		return self::instance()->logger;
 	}
 
 	function init()
@@ -39,15 +39,18 @@ class Focus_Manager {
 
 	function create_tasks( $freqs = null, $verbose = false, $default_owner = 1 )
 	{
-		$debug = 0;
+		$debug = 1;
 		if ($debug == 2) $verbose = 1;
 
+
+		// For Debug:
+//		SqlQuery("update im_task_templates set last_check = null where id = 77");
 		$table_prefix = GetTablePrefix();
 
-		$last_run = get_wp_option("focus_create_tasks_last_run");
+		$last_run = 0; // get_wp_option("focus_create_tasks_last_run");
 		$run_period = get_wp_option("focus_create_tasks_run_period", 5*60); // every 5 min
 		if ($last_run and ((time() - $last_run) < $run_period)) {
-			if ( $debug ) self::$logger->info("run before " . ( time() - $last_run ) . "seconds");
+			if ( $debug ) $this->logger->info("run before " . ( time() - $last_run ) . "seconds");
 
 			return true;
 		}
@@ -55,11 +58,11 @@ class Focus_Manager {
 		update_wp_option("focus_create_tasks_last_run", time()); // Immediate update so won't be activated in parallel
 
 		if ( ! TableExists( "task_templates" ) ) {
-			self::$logger->fatal("no table");
+			$this->logger->fatal("no table");
 			return false;
 		}
 		$output = "Creating tasks freqs";
-		self::$logger->Info($output);
+		$this->logger->Info($output);
 
 		if ( ! $freqs ) $freqs = SqlQueryArrayScalar( "select DISTINCT repeat_freq from ${table_prefix}task_templates" );
 
@@ -69,21 +72,24 @@ class Focus_Manager {
 		foreach ( $freqs as $freq ) {
 			if ($debug) $output .= "Handling " . $freq . PHP_EOL;
 
-			$sql = "SELECT id, task_description, task_url, project_id, repeat_freq, repeat_freq_numbers, condition_query, priority, creator, team " .
+			$sql = "SELECT id" .
 			       " FROM ${table_prefix}task_templates " .
 			       " where repeat_freq = '" . $freq . "' and ((last_check is null) or (last_check < " . QuoteText(date('Y-m-j')) . ") or repeat_freq like 'c%')";
 
 			$result = SqlQuery( $sql );
 
 			$verbose_line = "";
+
 			while ( $row = mysqli_fetch_assoc( $result ) ) {
-				Focus_Tasklist::create_if_needed($row["id"], $row, $output, $default_owner, $verbose_line);
+				$this->logger->info("handling " . $row["id"]);
+				$T = new Focus_Task_Template($row["id"]);
+				$T->create_if_needed($verbose_line);
 				array_push( $verbose_table, $verbose_line);
 			}
 		}
 		if ( $verbose ) $output .= Core_Html::gui_table_args( $verbose_table);
 
-		self::$logger->info($output);
+		$this->logger->info($output);
 		return true;
 	}
 
@@ -101,12 +107,12 @@ class Focus_Manager {
 		if ($last_run and ((time() - $last_run) < $run_period)) return;
 
 		update_wp_option("focus_robot_last_run", time()); // Immediate update so won't be activated in parallel
-		self::$logger->info("create tasks");
+		$this->logger->info("create tasks");
 
-		self::$logger->trace("start robot");
+		$this->logger->trace("start robot");
 		$team = Org_Team::getByName("robot");
 		if (! $team) {
-			self::$logger->fatal("robot team not exists");
+			$this->logger->fatal("robot team not exists");
 			return;
 		}
 		// Just one every time
@@ -119,7 +125,7 @@ class Focus_Manager {
 		while ($row = SqlFetchAssoc($result)) {
 			$task_id = $row["id"];
 			$debug_message .= "task $task_id ";
-			$task    = new Focus_Tasklist( $task_id, self::$logger );
+			$task    = new Focus_Tasklist( $task_id, $this->logger );
 			if ( ! $task->working_time() ) {
 				$debug_message .= " not working_time";
 				continue;
@@ -127,21 +133,21 @@ class Focus_Manager {
 
 			// if (get_user_id() == 1) print $sql;
 
-			self::$logger->trace( "running $task_id" );
+			$this->logger->trace( "running $task_id" );
 			self::execute_task( $task_id );
 			$debug_message .= " run. ";
 			break;
 		}
-		self::$logger->trace($debug_message);
+		$this->logger->trace($debug_message);
 	}
 
 	function execute_task($id)
 	{
 		$task = new Focus_Tasklist($id);
-		self::$logger->trace("going to run $id");
+		$this->logger->trace("going to run $id");
 		$rc = $task->run();
-		self::$logger->info($rc);
+		$this->logger->info($rc);
 		if (! ($rc === true))
-			self::$logger->fatal("running task $id: $rc");
+			$this->logger->fatal("running task $id: $rc");
 	}
 }

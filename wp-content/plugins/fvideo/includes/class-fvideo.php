@@ -162,7 +162,7 @@ class FVideo {
 
 		// FVideo type.
 		add_action('init', array($this, 'register_fvideo'));
-		add_action('add_meta_boxes', array($this, 'fvideo_box'));
+//		add_action('add_meta_boxes', array($this, 'fvideo_box'));
 		add_action( 'save_post', array($this, 'fvideo_box_save'));
 	}
 
@@ -207,6 +207,8 @@ class FVideo {
 		define_const( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path( __FILE__ ) . '../../flavor/includes/' );  // for php
 		define_const( 'FVideo_DELIMITER', '|' );
 		define_const( 'FVideo_LOG_DIR', $upload_dir['basedir'] . '/fVideo-logs/' );
+		define_const("FVideo_Torrent_Folder", $upload_dir['basedir'] . '/torrents/');
+		define_const("FVideo_TEMP_Folder", $upload_dir['basedir'] . '/temp/');
 	}
 
 	static function admin_menu() {
@@ -221,6 +223,7 @@ class FVideo {
 	 * Init WooCommerce when WordPress Initialises.
 	 */
 	public function init() {
+		FVideoLog(__FUNCTION__);
 		// Before init action.
 		do_action( 'before_fVideo_init' );
 
@@ -232,6 +235,15 @@ class FVideo {
 		$this->load_plugin_textdomain();
 
 		$this->shortcodes->do_init();
+		if (!file_exists(FVideo_Torrent_Folder)) {
+			FVideoLog("mkdir torrent");
+			mkdir(FVideo_Torrent_Folder, 0777, true);
+		}
+
+		if (!file_exists(FVideo_TEMP_Folder)) {
+			FVideoLog("mkdir temp");
+			mkdir(FVideo_TEMP_Folder, 0777, true);
+		}
 
 		self::addRoles();
 	}
@@ -241,16 +253,21 @@ class FVideo {
 		return array( 'fvideo_player'      => array( 'FVideo::player',    null ));          // Payments data entry
 	}
 
-	static function player($atts)
+	static function player($atts) // [fvideo_player]
 	{
-		$video_id = GetParam("video_id");
-		$v = FVideo_Video($video_id);
-		$torrent_url = $v->get_video();
-		?>
-<script>
+	    FVideoLog(__FUNCTION__);
+		$video_id = get_the_ID();
+		FVideoLog(StringVar($video_id));
+		$v = new FVideo_Video($video_id);
+		$torrent_url = $v->get_torrent();
+		$result = '<div id="video"></div>';
+		if (! $torrent_url) return "Sorry, video not found";
+
+		$result = "<div id='video''></div>
+    <script>
     var client = new WebTorrent();
 
-    var torrentId = '<?php print $torrent_url; ?>';
+    var torrentId = \"$torrent_url\";
     client.add(torrentId, function (torrent) {
         // Torrents can contain many files. Let's use the .mp4 file
         var file = torrent.files.find(function (file) {
@@ -259,12 +276,14 @@ class FVideo {
 
         // Display the file by adding it to the DOM.
         // Supports video, audio, image files, and more!
-        file.appendTo('body')
+        let video = document.getElementById(\"video\");
+        file.appendTo(video);
     });
-    var client = new WebTorrent();
 </script>
-<?php
+";
+		FVideoLog($result);
 
+        return $result;
 }
 	function addRoles()
 	{

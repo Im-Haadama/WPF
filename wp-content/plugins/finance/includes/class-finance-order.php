@@ -610,7 +610,7 @@ class Finance_Order {
 
 			if (! $d->getId()) {
 //				$message = "failed: no delivery id";
-				add_post_meta($this->order_id, "delivered", 1);
+				update_post_meta($this->order_id, "delivered", 1);
 				return true;
 			}
 		}
@@ -1398,10 +1398,10 @@ class Finance_Order {
 		return true;
 	}
 
-	function getLink($text = null)
+	static function getLink($id, $text = null)
 	{
-		if (! $text) $text = __("Order number") . " " . $this->order_id;
-		return Core_Html::GuiHyperlink($text, "/wp-admin/post.php?post=". $this->order_id . "&action=edit");
+		if (! $text) $text = __("Order number") . " " . $id;
+		return Core_Html::GuiHyperlink($text, "/wp-admin/post.php?post=". $id . "&action=edit");
 	}
 
 	function getCustomerType()

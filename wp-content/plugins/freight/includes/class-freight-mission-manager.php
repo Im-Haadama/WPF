@@ -606,7 +606,7 @@ group by pm.meta_value, p.post_status");
 //			return $r;
 //		}
 		$s = "https://maps.googleapis.com/maps/api/geocode/json?address=" . urlencode( $text ).
-		     "&key=" . MAPS_KEY; // . "&language=iw";
+		     "&key=" . MAPS_KEY . "&language=iw";
 
 		// print $s;
 //		var_dump($address);	print "<br/>";

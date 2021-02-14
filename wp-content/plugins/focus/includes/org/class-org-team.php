@@ -14,7 +14,7 @@ class Org_Team {
 	public function __construct( $id ) {
 		$this->id = $id;
 		$this->name = SqlQuerySingleScalar( "select team_name from im_working_teams where id = " . $this->id);
-		$this->company = SqlQuerySingleScalar( "select company_id from im_working_teams where id = " . $this->id);
+		$this->company = 1; // SqlQuerySingleScalar( "select company_id from im_working_teams where id = " . $this->id);
 	}
 
 	/**
@@ -88,7 +88,7 @@ class Org_Team {
 			return true;
 		}
 		$member = $members;
-		$current = get_usermeta($member, 'teams');
+		$current = get_user_meta($member, 'teams');
 		$teams = CommaArrayExplode($current);
 
 		$idx = array_search($team_id, $teams);
@@ -144,7 +144,7 @@ class Org_Team {
 	 */
 	function AddWorker($user_id)
 	{
-		$current = get_usermeta($user_id, 'teams');
+		$current = get_user_meta($user_id, 'teams');
 		if (strstr($current ,":" . $this->id . ":")) return true; // Already in.
 		if (!$current or strlen($current) < 1) $current = ":";
 

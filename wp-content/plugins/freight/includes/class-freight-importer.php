@@ -62,9 +62,9 @@ class Freight_Importer {
 		$doc->loadHTML($html);
 		$db_prefix = GetTablePrefix();
 
-		$all_cities = SqlQueryArrayScalar("select city_name from ${db_prefix}cities");
-		foreach ($all_cities as $key => $city)
-			$all_cities[$key] = str_replace("  ", " ", str_replace("-", " ", $city));
+//		$all_cities = SqlQueryArrayScalar("select city_name from ${db_prefix}cities");
+//		foreach ($all_cities as $key => $city)
+//			$all_cities[$key] = str_replace("  ", " ", str_replace("-", " ", $city));
 
 		$deliveries_info = [];
 		//Loop through each <li> tag in the dom
@@ -106,7 +106,8 @@ class Freight_Importer {
 					'shipping_city'=> $city,
 					'shipping_postcode'=>'',
 					'billing_phone'=>$phone,
-					'order_id'=>$order_id
+					'order_id'=>$order_id,
+					'raw_info' => $order_details
 				);
 				array_push($deliveries_info, $delivery_info);
 			}
@@ -117,36 +118,44 @@ class Freight_Importer {
 	function end_of_import($deliveries_info, $mission_id, $the_shipping)
 	{
 		print Core_Html::GuiHeader(1, "imported data");
-		array_unshift($deliveries_info, array("first name", "last name", "address 1", "address 2", "city", "zip", "phone", "order_id"));
-		print Core_Html::gui_table_args($deliveries_info);
-		unset($deliveries_info[0]);
+		array_unshift($deliveries_info, array("first name", "last name", "address 1", "address 2", "city", "zip", "phone", "order_id","raw data", "baldar id"));
+//		unset($deliveries_info[0]);
 		self::create_orders($mission_id,$the_shipping,$deliveries_info);
+		$args = array("links" => array("order_id" => "/wp-admin/post.php?post=%d&action=edit"));
+		print Core_Gem::GemArray($deliveries_info, $args, "imported_orders");
 	}
 
-	function create_orders($mission_id, $the_shipping, $deliveries_info)
+	function create_orders($mission_id, $the_shipping, &$deliveries_info)
 	{
 		$valid = 0;
 		$bad_address = 0;
 		$duplicate = 0;
 
-		foreach ($deliveries_info as $delivery_info)
+		foreach ($deliveries_info as $key => $delivery_info)
 		{
+			if ($key == 0) continue;
 			$external_id = $delivery_info['order_id'];
 			if ($external_id and SqlQuerySingleScalar("select count (*) from wp_postmeta where meta_key='external_order_id' and meta_value=$external_id")) {
 				$duplicate++;
 				continue;
 			}
 			$O = Finance_Order::CreateOrder(1, $mission_id,  null, $the_shipping, '', 10, $delivery_info);
+			$deliveries_info[$key]['external_order_id'] = $deliveries_info[$key]['order_id'];
+			$deliveries_info[$key]['order_id'] = $O->GetID();
 			if (isset($delivery_info['order_id']))
 				$O->setField('external_order_id', $delivery_info['order_id']);
+			if (isset($deliveries_info['raw_info']))
+				$O->SetComments($deliveries_info['raw_info']);
 			$street = $delivery_info['shipping_address_1'];
 			$city = $delivery_info['shipping_city'];
 //			print "<br/>Created order  " . $O->GetID() . " client $client_name $order_id";
 //			$long_lat = Freight_Mission_Manager::get_lat_long($street . " " . $city);
 			if ((strlen($street) > 1) and (strlen($city) > 1)){ // and (floor($long_lat[0])== 32) and (floor($long_lat[1]) == 34)) {
 				$O->update_status( "wc-processing" );
+				$delivery_info[$key]['status'] = __("processing");
 				$valid ++;
 			} else {
+				$delivery_info[$key]['status'] = __("waiting");
 				$bad_address ++;
 			}
 		}

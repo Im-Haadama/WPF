@@ -358,7 +358,7 @@ class Fresh_Packing {
 			if ( $short ) {
 					$lines .= $quantity . " " . $last_name . ", ";
 			} else {
-					$line  = "<tr>" . "<td> " . $o->getLink() . "</td>";
+					$line  = "<tr>" . "<td> " . $o->getLink($order_id) . "</td>";
 					$line  .= "<td>" . $quantity * $multiply . "</td><td>" . $first_name . "</td><td>" . $last_name . "</td></tr>";
 					$lines .= $line;
 			}

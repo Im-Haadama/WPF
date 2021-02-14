@@ -16,7 +16,7 @@ class Focus {
 	 *
 	 * @var string
 	 */
-	public $version = '1.6.2';
+	public $version = '1.6.3';
 
 	/**
 	 * @var
@@ -361,7 +361,7 @@ class Focus {
 		// Before init action.
 		do_action( 'before_focus_init' );
 
-		$this->manager = new Focus_Manager(self::getPost());
+		$this->manager = Focus_Manager::instance();
 		$this->views = Focus_Views::instance(self::getPost());
 
 		WPF_Organization::instance()->init($this->loader);
@@ -482,4 +482,15 @@ class Focus {
 function FocusLog($message)
 {
 	MyLog($message, '', 'focus.log');
+}
+
+class enumTasklist {
+	const
+		waiting = 0,
+		started = 1,
+		done = 2,
+		canceled = 3,
+		bad_url = 4,
+		failed = 5,
+		done_creator = 6;
 }

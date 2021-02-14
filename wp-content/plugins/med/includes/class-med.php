@@ -53,7 +53,7 @@ class Med {
 
 		$result = Core_Html::GuiHeader(1, $user->getName());
 
-		$symtoms = get_usermeta($id, "med_case_symtoms");
+		$symtoms = get_user_meta($id, "med_case_symtoms");
 		if ($symtoms) {
 			$result .= Core_Html::GuiHeader(2, "Symptoms");
 			foreach (unserialize($symtoms) as $symtom)

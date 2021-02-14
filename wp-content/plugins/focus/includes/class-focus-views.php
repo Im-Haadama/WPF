@@ -563,11 +563,11 @@ class Focus_Views {
 			case "save_add_member":
 				$member  = GetParam( "member", true );
 				$team_id = GetParam( "team", true );
-				$current = get_usermeta( $member, "teams" );
+				$current = get_user_meta( $member, "teams" );
 				if ( ! $current ) {
 					$current = ":";
 				}
-				update_usermeta( $member, "teams", ":" . $team_id . $current ); // should be :11:22:3:4:
+				update_user_meta( $member, "teams", ":" . $team_id . $current ); // should be :11:22:3:4:
 
 				return true;
 

@@ -33,34 +33,22 @@ class Org_Worker extends Core_users
 //			if (strstr(, "Personal"))
 	}
 
-    function GetAllTeams($include_names = false)
+    function GetAllTeams()
     {
-        if ($this->teams)
-            return $this->teams;
+	    if ($this->teams)
+		    return $this->teams;
 
-	    $data = get_usermeta($this->id, 'teams');
-	    $this->teams = @unserialize($data);
-	    if (! $this->teams) {
-	    	// Try backward compability
-		    $this->teams = CommaArrayExplode($data);
-	    }
+	    $db_prefix = GetTablePrefix();
+	    $worker_id = $this->getId();
+	    $type1 = FlavorDbObjects::users;
+	    $type2 = FlavorDbObjects::team;
+	    $sql = "select id2 from ${db_prefix}links where type1=$type1 and type2=$type2 and id1=$worker_id";
 
-        if ($include_names){  //return the teams that the user belong to
-            $result = array();
-            foreach ($this->teams as $team_id){
-                $team = new Org_Team($team_id);
-                $team_name = $team->getName();
-                $team = array( "id" =>$team_id, "team_name" =>$team_name);
-                if(!in_array( $team,$result) and $team["team_name"] != null )
-                    array_push($result,$team);
-            }
-            return $result;
-        }
+	    $this->teams = SqlQueryArrayScalar($sql);
 
         if (! $this->teams) {
-        	//die ("AAAAA");
             // Add personal team and return it.
-            return array( Org_Team::Create($this->id, __("Personal team") . " " . EscapeString($this->getName())));
+	        $this->teams = Org_Team::Create($this->id, __("Personal team") . " " . EscapeString($this->getName()));
         }
         return $this->teams;
     }
@@ -152,7 +140,7 @@ class Org_Worker extends Core_users
 //	function AddCompany($company_id)
 //	{
 //
-//		$current = unserialize(get_usermeta($this->id, 'companies'));
+//		$current = unserialize(get_user_meta($this->id, 'companies'));
 //		var_dump($current);
 //		var_dump($company_id);
 //		if (! $current) $current = array();
@@ -289,7 +277,7 @@ class Org_Worker extends Core_users
 
 //	function GetProjects()
 //	{
-//		return get_usermeta($this->id, 'teams'
+//		return get_user_meta($this->id, 'teams'
 //		$worker_id = $this->id;
 //		$worker = new Org_Worker($worker_id);
 //		$result = [];

@@ -22,13 +22,51 @@ class FVideo_Video {
 
 	public function get_video()
 	{
-		$a= get_post_meta($this->id, 'torrent', 1);
-		// var_dump($a);
-		return $a['url'];
+		return get_post_meta($this->id, 'וידאו', 1);
 	}
 
 	public function get_title()
 	{
 		return get_post_meta($this->id, 'שם התוכנית / שם הפרק', 1);
+	}
+
+	public function get_torrent()
+	{
+		$tracker = 'wss://tracker.openwebtorrent.com';
+
+		print $this->get_video();
+		$torrent_abs_path = FVideo_Torrent_Folder . $this->id . '.torrent';
+		if (1 or ! file_exists($torrent_abs_path)) {
+			$video          = $this->get_video();
+			$filename_parts = explode( '/', $video );
+			$file_name      = end( $filename_parts );
+
+//			$orig_server = $filename_parts[0] . '/' . $filename_parts[1] . '/' . $filename_parts[2]. "<br/>";
+//			return null;
+			shell_exec( "cd " . FVideo_TEMP_Folder . "; wget $video" );
+			if ( ! file_exists( FVideo_TEMP_Folder . $file_name ) ) {
+				print "Error: can't create torrent. Download file failed<br/>";
+
+				return null;
+			}
+//
+			$tracker = 'wss://tracker.openwebtorrent.com';
+			// wss://tracker.btorrent.xyz
+			$command = "cd " . FVideo_TEMP_Folder . "; node /usr/local/lib/node_modules/webtorrent-cli/bin/cmd.js create -a \"$tracker\" " .
+			           "\"$video\" > " . $torrent_abs_path;
+
+//			print $command;
+			shell_exec( $command );
+
+			if ( ! file_exists( $torrent_abs_path ) ) {
+				print "Error: can't create torrent. webtorrent-cli failed.";
+
+				return null;
+			}
+		}
+		$result = get_site_url() . "/wp-content/uploads/torrents/" .  $this->id . '.torrent?tr='  .$tracker;
+//		print $result;
+		return $result;
+//		return 'https://site.weact.live/wp-content/uploads/videos/Trump.torrent?tr=wss://tracker.webtorrent.io';
 	}
 }

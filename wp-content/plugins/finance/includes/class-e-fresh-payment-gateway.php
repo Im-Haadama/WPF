@@ -132,7 +132,7 @@ if (class_exists("WC_Payment_Gateway")) {
                 $valid_id = Israel_Shop::ValidID($id_number);
 
 //                update_usermeta($current_user_id, 'credit_token', 'invoice4u00');
-				$token = get_usermeta($current_user_id, 'credit_token');
+				$token = get_user_meta($current_user_id, 'credit_token');
 //				MyLog("token: $token");
 //				MyLog(strstr($card_number, 'XX'));
 
